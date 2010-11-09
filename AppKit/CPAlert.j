@@ -51,6 +51,8 @@ CPInformationalAlertStyle   = 1;
 */
 CPCriticalAlertStyle        = 2;
 
+var CPAlertLabelOffset      = 3.0;
+
 /*!
     @ingroup appkit
 
@@ -75,18 +77,19 @@ CPCriticalAlertStyle        = 2;
 */
 @implementation CPAlert : CPView
 {
-    CPPanel         _alertPanel;
+    CPTextField     _messageLabel       @accessors(getter=messageText);
+    CPTextField     _informativeLabel   @accessors(getter=informativeText);
+    CPAlertStyle    _alertStyle         @accessors(property=alertStyle);
+    id              _delegate           @accessors(property=delegate);
+    CPView          _accessoryView      @accessors(property=accessoryView);
 
-    CPTextField     _messageLabel;
-    CPTextField     _informativeLabel;
+
     CPImageView     _alertImageView;
 
-    CPAlertStyle    _alertStyle;
-    CPString        _windowTitle;
     int             _windowStyle;
     CPArray         _buttons;
 
-    id              _delegate;
+    CPPanel         _alertPanel;
     SEL             _didEndSelector;
     id              _modalDelegate;
 }
@@ -104,6 +107,7 @@ CPCriticalAlertStyle        = 2;
                                                 CGPointMake(15, 12),
                                                 [CPNull null],
                                                 [CPNull null],
+                                                [CPNull null],
                                                 [CPNull null]
                                                 ]
                                        forKeys:[@"size", @"content-inset", @"informative-offset", @"button-offset",
@@ -112,8 +116,38 @@ CPCriticalAlertStyle        = 2;
                                                 @"image-offset",
                                                 @"information-image",
                                                 @"warning-image",
-                                                @"error-image"
+                                                @"error-image",
+                                                @"bezel-color"
                                                 ]];
+}
+
++ alertWithMessageText:(CPString)aMessage defaultButton:(CPString)defaultButtonText alternateButton:(CPString)alternateButtonText otherButton:(CPString)otherButtonText informativeTextWithFormat:(CPString)informativeText
+{
+    var alert = [[CPAlert alloc] init];
+
+    [alert setMessageText:aMessage];
+    [alert addButtonWithTitle:defaultButtonText];
+
+    if (alternateButtonText)
+        [alert addButtonWithTitle:alternateButtonText];
+
+    if (otherButtonText)
+        [alert addButtonWithTitle:otherButtonText];
+
+    if (informativeText)
+        [alert setInformativeText:informativeText];
+
+    return alert;
+}
+
++ alertWithError:(CPString)anErrorMessage
+{
+    var alert = [[CPAlert alloc] init];
+
+    [alert setMessageText:anErrorMessage];
+    [alert setStyle:CPCriticalAlertStyle];
+
+    return alert;
 }
 
 /*!
@@ -126,7 +160,6 @@ CPCriticalAlertStyle        = 2;
         _buttons = [CPArray array];
         _alertStyle = CPWarningAlertStyle;
         _alertPanel = nil;
-        _windowStyle = nil;
         _didEndSelector = nil;
 
         _messageLabel = [CPTextField labelWithTitle:@"Alert"];
@@ -137,27 +170,16 @@ CPCriticalAlertStyle        = 2;
     return self;
 }
 
-/*!
-    Sets the window appearance. If CPHUDBackgroundWindowMask is set, the default HUD theme
-    will be activated.
-
-    @param styleMask - Either CPHUDBackgroundWindowMask or nil for standard.
-*/
-- (void)setWindowStyle:(int)styleMask
+- (void)_createPanelWithStyle:(int)forceStyle
 {
-    _windowStyle = styleMask;
+    var frame = CGRectMakeZero(),
+        styleMask = [self currentValueForThemeAttribute:@"bezel-color"] ? CPBorderlessWindowMask : CPTitledWindowMask;
 
-    [self setTheme:(_windowStyle & CPHUDBackgroundWindowMask) ? [CPTheme defaultHudTheme] : [CPTheme defaultTheme]];
-
-    // We'll need to recreate the panel to get the new window style.
-    _alertPanel = nil;
-}
-
-- (void)_createPanel
-{
-    var frame = CGRectMakeZero();
     frame.size = [self currentValueForThemeAttribute:@"size"];
-    _alertPanel = [[CPPanel alloc] initWithContentRect:frame styleMask:_windowStyle ? _windowStyle | CPTitledWindowMask : CPTitledWindowMask];
+
+    _alertPanel = [[CPPanel alloc] initWithContentRect:frame styleMask:forceStyle || styleMask];
+
+    [_alertPanel setMovableByWindowBackground:YES];
 
     var contentView = [_alertPanel contentView],
         count = [_buttons count];
@@ -175,98 +197,25 @@ CPCriticalAlertStyle        = 2;
     [contentView addSubview:_informativeLabel];
 }
 
-/*!
-    Sets the window's title. If this is not defined, a default title based on your warning level will be used.
-    @param aTitle the title to use in place of the default. Set to nil to use default.
-*/
-- (void)setTitle:(CPString)aTitle
-{
-    _windowTitle = aTitle;
-}
 
 /*!
-    Gets the window's title.
+    Gets the window
 */
-- (CPString)title
+- (CPWindow)window
 {
-    return _windowTitle;
+    return [_alertPanel window];
 }
 
-/*!
-    Gets the window's style.
-*/
-- (int)windowStyle
+- (void)setMessageText:(CPString)aText
 {
-    return _windowStyle;
+    [_messageLabel setStringValue:aText];
 }
 
-/*!
-    Sets the receiver’s delegate.
-    @param delegate - Delegate for the alert. nil removes the delegate.
-*/
-- (void)setDelegate:(id)delegate
+- (void)setInformativeText:(CPString)aText
 {
-    _delegate = delegate;
+    [_informativeLabel setStringValue:aText];
 }
 
-/*!
-    Gets the receiver's delegate.
-*/
-- (void)delegate
-{
-    return _delegate;
-}
-
-/*!
-    Sets the alert style of the receiver.
-    @param style - Alert style for the alert.
-*/
-- (void)setAlertStyle:(CPAlertStyle)style
-{
-    _alertStyle = style;
-}
-
-/*!
-    Gets the alert style.
-*/
-- (CPAlertStyle)alertStyle
-{
-    return _alertStyle;
-}
-
-/*!
-    Sets the receiver’s message text, or title, to a given text.
-    @param messageText - Message text for the alert.
-*/
-- (void)setMessageText:(CPString)messageText
-{
-    [_messageLabel setStringValue:messageText];
-}
-
-/*!
-    Returns the receiver's message text body.
-*/
-- (CPString)messageText
-{
-    return [_messageLabel stringValue];
-}
-
-/*!
-    Sets the receiver's informative text, shown below the message text.
-    @param informativeText - The informative text.
-*/
-- (void)setInformativeText:(CPString)informativeText
-{
-    [_informativeLabel setStringValue:informativeText];
-}
-
-/*!
-    Returns the receiver's informative text.
-*/
-- (CPString)informativeText
-{
-    return [_informativeLabel stringValue];
-}
 
 /*!
     Adds a button with a given title to the receiver.
@@ -301,37 +250,13 @@ CPCriticalAlertStyle        = 2;
     [_buttons insertObject:button atIndex:0];
 }
 
-- (void)layoutPanel
+
+- (void)_layoutMessageView
 {
-    if (!_alertPanel)
-        [self _createPanel];
-
     var inset = [self currentValueForThemeAttribute:@"content-inset"],
-        iconOffset = [self currentValueForThemeAttribute:@"image-offset"],
-        theTitle,
-        theImage;
-
-    switch (_alertStyle)
-    {
-        case CPWarningAlertStyle:       theImage = [self currentValueForThemeAttribute:@"warning-image"];
-                                        theTitle = @"Warning";
-                                        break;
-        case CPInformationalAlertStyle: theImage = [self currentValueForThemeAttribute:@"information-image"];
-                                        theTitle = @"Information";
-                                        break;
-        case CPCriticalAlertStyle:      theImage = [self currentValueForThemeAttribute:@"error-image"];
-                                        theTitle = @"Error";
-                                        break;
-    }
-
-    [_alertImageView setImage:theImage];
-
-    var imageSize = theImage ? [theImage size] : CGSizeMakeZero();
-    [_alertImageView setFrame:CGRectMake(iconOffset.x, iconOffset.y, imageSize.width, imageSize.height)];
-
-    [_alertPanel setTitle:_windowTitle ? _windowTitle : theTitle];
-    [_alertPanel setFloatingPanel:YES];
-    [_alertPanel center];
+        sizeWithFontCorrection = 6.0,
+        messageLabelWidth,
+        messageLabelTextSize;
 
     [_messageLabel setTextColor:[self currentValueForThemeAttribute:@"message-text-color"]];
     [_messageLabel setFont:[self currentValueForThemeAttribute:@"message-text-font"]];
@@ -340,61 +265,150 @@ CPCriticalAlertStyle        = 2;
     [_messageLabel setAlignment:[self currentValueForThemeAttribute:@"message-text-alignment"]];
     [_messageLabel setLineBreakMode:CPLineBreakByWordWrapping];
 
+    messageLabelWidth = [_alertPanel frame].size.width - inset.left - inset.right,
+    messageLabelTextSize = [[_messageLabel stringValue] sizeWithFont:[_messageLabel font] inWidth:messageLabelWidth];
+
+    [_messageLabel setFrame:CGRectMake(inset.left, inset.top, messageLabelTextSize.width, messageLabelTextSize.height + sizeWithFontCorrection)];
+}
+
+
+#pragma mark -
+#pragma mark Layouting
+
+/*! @ignore
+*/
+- (void)_layoutInformativeView
+{
+    var inset = [self currentValueForThemeAttribute:@"content-inset"],
+        sizeWithFontCorrection = 6.0,
+        informativeLabelWidth,
+        informativeLabelOriginY,
+        informativeLabelTextSize;
+
     [_informativeLabel setTextColor:[self currentValueForThemeAttribute:@"informative-text-color"]];
     [_informativeLabel setFont:[self currentValueForThemeAttribute:@"informative-text-font"]];
     [_informativeLabel setTextShadowColor:[self currentValueForThemeAttribute:@"informative-text-shadow-color"]];
     [_informativeLabel setTextShadowOffset:[self currentValueForThemeAttribute:@"informative-text-shadow-offset"]];
     [_informativeLabel setLineBreakMode:CPLineBreakByWordWrapping];
 
-    // FIXME sizeWithFontCorrection shouldn't be needed.
-    var bounds = [[_alertPanel contentView] bounds],
-        offsetX = CGRectGetWidth(bounds) - inset.right,
-        informativeOffset = [self currentValueForThemeAttribute:@"informative-offset"],
+    informativeLabelWidth = [_alertPanel frame].size.width - inset.left - inset.right,
+    informativeLabelOriginY = [_messageLabel frameOrigin].y + [_messageLabel frameSize].height + CPAlertLabelOffset,
+    informativeLabelTextSize = [[_informativeLabel stringValue] sizeWithFont:[_informativeLabel font] inWidth:informativeLabelWidth];
+
+    [_informativeLabel setFrame:CGRectMake(inset.left, informativeLabelOriginY, informativeLabelTextSize.width, informativeLabelTextSize.height + sizeWithFontCorrection)];
+}
+
+/*! @ignore
+*/
+- (void)_layoutAccessoryView
+{
+    if (_accessoryView)
+    {
+        var inset = [self currentValueForThemeAttribute:@"content-inset"],
+            accessoryViewWidth = [_alertPanel frame].size.width - inset.left - inset.right,
+            accessoryViewOriginY = CPRectGetMaxY([_informativeLabel frame]) + CPAlertLabelOffset;
+
+        [_accessoryView setFrameOrigin:CGPointMake(inset.left, accessoryViewOriginY)];
+        [[_alertPanel contentView] addSubview:_accessoryView];
+    }
+}
+
+/*! @ignore
+*/
+- (CGSize)_layoutButtonsFromView:(CPView)lastView
+{
+    var inset = [self currentValueForThemeAttribute:@"content-inset"],
+        minimumSize = [self currentValueForThemeAttribute:@"size"],
         buttonOffset = [self currentValueForThemeAttribute:@"button-offset"],
-
-        textWidth = offsetX - inset.left,
-        messageSize = [([_messageLabel stringValue] || " ") sizeWithFont:[_messageLabel font] inWidth:textWidth],
-        informationString = [_informativeLabel stringValue],
-        informativeSize = [(informationString || " ") sizeWithFont:[_informativeLabel font] inWidth:textWidth],
-        sizeWithFontCorrection = 6.0;
-
-    [_messageLabel setFrame:CGRectMake(inset.left, inset.top, textWidth, messageSize.height + sizeWithFontCorrection)];
-    [_informativeLabel setFrame:CGRectMake(inset.left, CGRectGetMaxY([_messageLabel frame]) + informativeOffset, textWidth, informativeSize.height + sizeWithFontCorrection)];
-    // Don't let an empty informative label partially cover the buttons.
-    [_informativeLabel setHidden:!informationString];
-
-    var aRepresentativeButton = _buttons[0],
-        buttonY = MAX(CGRectGetMaxY([_alertImageView frame]), CGRectGetMaxY(informationString ? [_informativeLabel frame] : [_messageLabel frame])) + buttonOffset; // the lower of the bottom of the text and the bottom of the icon.
+        aRepresentativeButton = [_buttons objectAtIndex:0],
+        panelSize = [_alertPanel frame].size,
+        buttonsOriginY,
+        offsetX;
 
     [aRepresentativeButton setTheme:[self theme]];
     [aRepresentativeButton sizeToFit];
 
-    // Make the window just tall enough to fit everything. Bit of a hack really.
-    var minimumSize = [self currentValueForThemeAttribute:@"size"],
-        desiredHeight = MAX(minimumSize.height, buttonY + CGRectGetHeight([aRepresentativeButton bounds]) + inset.bottom),
-        deltaY = desiredHeight - CGRectGetHeight(bounds),
-        frameSize = CGSizeMakeCopy([_alertPanel frame].size);
+    panelSize.height = CPRectGetMaxY([lastView frame]) + CPAlertLabelOffset + [aRepresentativeButton frameSize].height;
 
-    frameSize.height += deltaY;
-    [_alertPanel setFrameSize:frameSize];
+    if (panelSize.height < minimumSize.height)
+        panelSize.height = minimumSize.height;
 
-    var count = [_buttons count];
+    buttonsOriginY = panelSize.height - [aRepresentativeButton frameSize].height + buttonOffset,
+    offsetX = panelSize.width - inset.right;
 
-    while (count--)
+    for (var i = [_buttons count] - 1; i >= 0 ; i--)
     {
-        var button = _buttons[count];
+        var button = _buttons[i];
+
         [button setTheme:[self theme]];
         [button sizeToFit];
 
-        var buttonBounds = [button bounds],
-            width = MAX(80.0, CGRectGetWidth(buttonBounds)),
-            height = CGRectGetHeight(buttonBounds);
+        var buttonFrame = [button frame],
+            width = MAX(80.0, CGRectGetWidth(buttonFrame)),
+            height = CGRectGetHeight(buttonFrame);
 
         offsetX -= width;
-        [button setFrame:CGRectMake(offsetX, buttonY, width, height)];
+        [button setFrame:CGRectMake(offsetX, buttonsOriginY, width, height)];
         offsetX -= 10;
     }
+
+    panelSize.height += [aRepresentativeButton frameSize].height + inset.bottom + buttonOffset;
+    return panelSize;
 }
+
+/*! @ignore
+*/
+- (void)layoutPanel
+{
+    if (!_alertPanel)
+        [self _createPanelWithStyle:nil];
+
+    var iconOffset = [self currentValueForThemeAttribute:@"image-offset"],
+        theTitle = @"",
+        theImage,
+        finalSize;
+
+    switch (_alertStyle)
+    {
+        case CPWarningAlertStyle:
+            theImage = [self currentValueForThemeAttribute:@"warning-image"];
+            theTitle = "Warning";
+            break;
+        case CPInformationalAlertStyle:
+            theImage = [self currentValueForThemeAttribute:@"information-image"];
+            theTitle = "Information";
+            break;
+        case CPCriticalAlertStyle:
+            theImage = [self currentValueForThemeAttribute:@"error-image"];
+            theTitle = @"Critical";
+            break;
+    }
+
+    if ([_alertPanel styleMask] == CPTitledWindowMask)
+        [_alertPanel setTitle:theTitle];
+
+    [_alertImageView setImage:theImage];
+
+    var imageSize = theImage ? [theImage size] : CGSizeMakeZero();
+    [_alertImageView setFrame:CGRectMake(iconOffset.x, iconOffset.y, imageSize.width, imageSize.height)];
+
+    [_alertPanel setFloatingPanel:YES];
+    [_alertPanel center];
+    [[_alertPanel contentView] setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
+
+
+    [self _layoutMessageView];
+    [self _layoutInformativeView];
+    [self _layoutAccessoryView];
+    finalSize = [self _layoutButtonsFromView:(_accessoryView || _informativeLabel)];
+
+    if (([_alertPanel styleMask] & CPDocModalWindowMask) || ([_alertPanel styleMask] & CPBorderlessWindowMask))
+        finalSize.height -= 26; // adjust the absence of title bar
+
+    //alert panel size resetting
+    [_alertPanel setFrameSize:finalSize];
+}
+
 
 /*!
     Displays the \c CPAlert panel as a modal dialog. The user will not be
@@ -417,8 +431,8 @@ CPCriticalAlertStyle        = 2;
 */
 - (void)beginSheetModalForWindow:(CPWindow)window modalDelegate:(id)modalDelegate didEndSelector:(SEL)alertDidEndSelector contextInfo:(void)contextInfo
 {
-    if (!(_windowStyle & CPDocModalWindowMask))
-        [self setWindowStyle:CPDocModalWindowMask];
+    if (!([_alertPanel styleMask] & CPDocModalWindowMask))
+        [self _createPanelWithStyle:CPDocModalWindowMask]
     [self layoutPanel];
 
     _didEndSelector = alertDidEndSelector;

@@ -1422,15 +1422,19 @@ var themedButtonValues = nil,
 + (CPAlert)themedAlert
 {
     var alert = [CPAlert new],
+
         size = CGSizeMake(400.0, 110.0),
         inset = CGInsetMake(15, 15, 15, 80),
         imageOffset = CGPointMake(15, 18),
+        buttonOffset = 10.0,
+        alertBezelColor = nil,
         messageFont = [CPFont boldSystemFontOfSize:13.0],
         informativeFont = [CPFont systemFontOfSize:12.0],
         informationIcon = PatternImage("alert-info.png", 53.0, 46.0),
         warningIcon = PatternImage("alert-warning.png", 53.0, 46.0),
-        errorIcon = PatternImage("alert-error.png", 53.0, 46.0);
-
+        errorIcon = PatternImage("alert-error.png", 53.0, 46.0),
+        
+        
     themedAlertValues =
     [
         [@"size",                           size],
@@ -1444,14 +1448,15 @@ var themedButtonValues = nil,
         [@"image-offset",                   imageOffset],
         [@"information-image",              informationIcon],
         [@"warning-image",                  warningIcon],
-        [@"error-image",                    errorIcon]
+        [@"error-image",                    errorIcon],
+        [@"bezel-color",                    alertBezelColor],
+        [@"button-offset",                  buttonOffset]
     ];
-
+    
     [self registerThemeValues:themedAlertValues forView:alert];
 
     return alert;
 }
-
 + (CPStepper)themedStepper
 {
     var stepper = [CPStepper stepper],
