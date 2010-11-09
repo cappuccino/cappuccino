@@ -82,17 +82,21 @@ var CPAlertLabelOffset      = 3.0;
     CPAlertStyle    _alertStyle         @accessors(property=alertStyle);
     id              _delegate           @accessors(property=delegate);
     CPView          _accessoryView      @accessors(property=accessoryView);
-
+    BOOL            _showHelp           @accessors(getter=showsHelp, setter=setShowsHelp:);
+    CPString        _helpAnchor         @accessors(property=helpAnchor);
+    CPImage         _icon               @accessors(property=icon);
 
     CPImageView     _alertImageView;
-
+    CPButton        _alertHelpButton;
     int             _windowStyle;
     CPArray         _buttons;
-
     CPPanel         _alertPanel;
     SEL             _didEndSelector;
     id              _modalDelegate;
 }
+
+#pragma mark -
+#pragma mark Theming
 
 + (CPString)defaultThemeClass
 {
@@ -108,6 +112,8 @@ var CPAlertLabelOffset      = 3.0;
                                                 [CPNull null],
                                                 [CPNull null],
                                                 [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
                                                 [CPNull null]
                                                 ]
                                        forKeys:[@"size", @"content-inset", @"informative-offset", @"button-offset",
@@ -117,10 +123,25 @@ var CPAlertLabelOffset      = 3.0;
                                                 @"information-image",
                                                 @"warning-image",
                                                 @"error-image",
-                                                @"bezel-color"
+                                                @"bezel-color",
+                                                @"help-image",
+                                                @"help-image-left-offset"
                                                 ]];
 }
 
+
+#pragma mark -
+#pragma mark Class Methods
+
+/*! Return an CPAlert with given info
+
+    @param aMessage the message of the alert
+    @param defaultButton the title of the default button
+    @param alternateButton if not nil, the title of a second button
+    @param otherButton if not nil, the title of the third button
+    @param informativeText if not nil the informative text of the alert
+    @return fully initialized CPAlert
+*/
 + alertWithMessageText:(CPString)aMessage defaultButton:(CPString)defaultButtonText alternateButton:(CPString)alternateButtonText otherButton:(CPString)otherButtonText informativeTextWithFormat:(CPString)informativeText
 {
     var alert = [[CPAlert alloc] init];
@@ -140,6 +161,11 @@ var CPAlertLabelOffset      = 3.0;
     return alert;
 }
 
+/*! Return an CPAlert with type error
+
+    @param anErrorMessage the message of the alert
+    @return fully initialized CPAlert
+*/
 + alertWithError:(CPString)anErrorMessage
 {
     var alert = [[CPAlert alloc] init];
@@ -150,25 +176,30 @@ var CPAlertLabelOffset      = 3.0;
     return alert;
 }
 
-/*!
-    Initializes a \c CPAlert panel with the default alert style \c CPWarningAlertStyle.
+/*! Initializes a \c CPAlert panel with the default alert style \c CPWarningAlertStyle.
 */
 - (id)init
 {
     if (self = [super init])
     {
-        _buttons = [CPArray array];
-        _alertStyle = CPWarningAlertStyle;
-        _alertPanel = nil;
-        _didEndSelector = nil;
-
-        _messageLabel = [CPTextField labelWithTitle:@"Alert"];
-        _alertImageView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
-        _informativeLabel = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
+        _buttons            = [CPArray array];
+        _alertStyle         = CPWarningAlertStyle;
+        _alertHelpButton    = [[CPButton alloc] initWithFrame:CPRectMake(0.0, 0.0, 16.0, 16.0)];    
+        _messageLabel       = [CPTextField labelWithTitle:@"Alert"];
+        _alertImageView     = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
+        _informativeLabel   = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
+        _showHelp           = NO;
+        
+        [_alertHelpButton setTarget:self];
+        [_alertHelpButton setAction:@selector(didHelpButtonClick:)];
     }
 
     return self;
 }
+
+
+#pragma mark -
+#pragma mark Utilities
 
 - (void)_createPanelWithStyle:(int)forceStyle
 {
@@ -195,22 +226,35 @@ var CPAlertLabelOffset      = 3.0;
     [contentView addSubview:_messageLabel];
     [contentView addSubview:_alertImageView];
     [contentView addSubview:_informativeLabel];
+    
+    if (_showHelp)
+        [contentView addSubview:_alertHelpButton];
 }
 
 
-/*!
-    Gets the window
+#pragma mark -
+#pragma mark Custom getters and setters
+
+/*! return the window of the alert
 */
 - (CPWindow)window
 {
     return [_alertPanel window];
 }
 
+/*! set the text of the alert's message
+
+    @aText CPString containing the text
+*/
 - (void)setMessageText:(CPString)aText
 {
     [_messageLabel setStringValue:aText];
 }
 
+/*! set the text of the alert's informative text
+
+    @aText CPString containing the informative text
+*/
 - (void)setInformativeText:(CPString)aText
 {
     [_informativeLabel setStringValue:aText];
@@ -226,6 +270,8 @@ var CPAlertLabelOffset      = 3.0;
     and any button titled "Cancel" will be given a key equivalent of Escape.
 
     You really shouldn't need more than 3 buttons.
+    
+    @param title the title of the button
 */
 - (void)addButtonWithTitle:(CPString)title
 {
@@ -289,6 +335,7 @@ var CPAlertLabelOffset      = 3.0;
     [_informativeLabel setFont:[self currentValueForThemeAttribute:@"informative-text-font"]];
     [_informativeLabel setTextShadowColor:[self currentValueForThemeAttribute:@"informative-text-shadow-color"]];
     [_informativeLabel setTextShadowOffset:[self currentValueForThemeAttribute:@"informative-text-shadow-offset"]];
+    [_informativeLabel setAlignment:[self currentValueForThemeAttribute:@"informative-text-alignment"]];
     [_informativeLabel setLineBreakMode:CPLineBreakByWordWrapping];
 
     informativeLabelWidth = [_alertPanel frame].size.width - inset.left - inset.right,
@@ -320,6 +367,8 @@ var CPAlertLabelOffset      = 3.0;
     var inset = [self currentValueForThemeAttribute:@"content-inset"],
         minimumSize = [self currentValueForThemeAttribute:@"size"],
         buttonOffset = [self currentValueForThemeAttribute:@"button-offset"],
+        helpImage = [self currentValueForThemeAttribute:@"help-image"],
+        helpLeftOffset = [self currentValueForThemeAttribute:@"help-image-left-offset"],
         aRepresentativeButton = [_buttons objectAtIndex:0],
         panelSize = [_alertPanel frame].size,
         buttonsOriginY,
@@ -351,14 +400,24 @@ var CPAlertLabelOffset      = 3.0;
         [button setFrame:CGRectMake(offsetX, buttonsOriginY, width, height)];
         offsetX -= 10;
     }
-
+    
+    if (_showHelp)
+    {
+        var helpImageSize = helpImage ? [helpImage size] : CGSizeMakeZero(),
+            helpFrame = CPRectMake(helpLeftOffset, buttonsOriginY, helpImageSize.width, helpImageSize.height)
+        [_alertHelpButton setImage:helpImage];
+        [_alertHelpButton setBordered:NO];
+        [_alertHelpButton setFrame:helpFrame];
+        
+    }
+    
     panelSize.height += [aRepresentativeButton frameSize].height + inset.bottom + buttonOffset;
     return panelSize;
 }
 
 /*! @ignore
 */
-- (void)layoutPanel
+- (void)layout
 {
     if (!_alertPanel)
         [self _createPanelWithStyle:nil];
@@ -367,22 +426,25 @@ var CPAlertLabelOffset      = 3.0;
         theTitle = @"",
         theImage,
         finalSize;
-
-    switch (_alertStyle)
-    {
-        case CPWarningAlertStyle:
-            theImage = [self currentValueForThemeAttribute:@"warning-image"];
-            theTitle = "Warning";
-            break;
-        case CPInformationalAlertStyle:
-            theImage = [self currentValueForThemeAttribute:@"information-image"];
-            theTitle = "Information";
-            break;
-        case CPCriticalAlertStyle:
-            theImage = [self currentValueForThemeAttribute:@"error-image"];
-            theTitle = @"Critical";
-            break;
-    }
+    
+    if (_icon)
+        theImage = _icon;
+    else
+        switch (_alertStyle)
+        {
+            case CPWarningAlertStyle:
+                theImage = [self currentValueForThemeAttribute:@"warning-image"];
+                theTitle = "Warning";
+                break;
+            case CPInformationalAlertStyle:
+                theImage = [self currentValueForThemeAttribute:@"information-image"];
+                theTitle = "Information";
+                break;
+            case CPCriticalAlertStyle:
+                theImage = [self currentValueForThemeAttribute:@"error-image"];
+                theTitle = @"Critical";
+                break;
+        }
 
     if ([_alertPanel styleMask] == CPTitledWindowMask)
         [_alertPanel setTitle:theTitle];
@@ -391,11 +453,10 @@ var CPAlertLabelOffset      = 3.0;
 
     var imageSize = theImage ? [theImage size] : CGSizeMakeZero();
     [_alertImageView setFrame:CGRectMake(iconOffset.x, iconOffset.y, imageSize.width, imageSize.height)];
-
+    
     [_alertPanel setFloatingPanel:YES];
     [_alertPanel center];
     [[_alertPanel contentView] setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
-
 
     [self _layoutMessageView];
     [self _layoutInformativeView];
@@ -410,19 +471,26 @@ var CPAlertLabelOffset      = 3.0;
 }
 
 
-/*!
-    Displays the \c CPAlert panel as a modal dialog. The user will not be
+- (IBAction)didHelpButtonClick:(id)aSender
+{
+    if ([_delegate respondsToSelector:@selector(alertShowHelp:)])
+        [_delegate alertShowHelp:self];
+}
+
+#pragma mark -
+#pragma mark Running alert
+
+/*! Displays the \c CPAlert panel as a modal dialog. The user will not be
     able to interact with any other controls until s/he has dismissed the alert
     by clicking on one of the buttons.
 */
 - (void)runModal
 {
-    [self layoutPanel];
+    [self layout];
     [CPApp runModalForWindow:_alertPanel];
 }
 
-/*!
-    Runs the receiver modally as an alert sheet attached to a specified window.
+/*! Runs the receiver modally as an alert sheet attached to a specified window.
 
     @param window The parent window for the sheet.
     @param modalDelegate The delegate for the modal-dialog session.
@@ -433,7 +501,7 @@ var CPAlertLabelOffset      = 3.0;
 {
     if (!([_alertPanel styleMask] & CPDocModalWindowMask))
         [self _createPanelWithStyle:CPDocModalWindowMask]
-    [self layoutPanel];
+    [self layout];
 
     _didEndSelector = alertDidEndSelector;
     _modalDelegate = modalDelegate;
@@ -441,8 +509,7 @@ var CPAlertLabelOffset      = 3.0;
     [CPApp beginSheet:_alertPanel modalForWindow:window modalDelegate:self didEndSelector:@selector(_alertDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
 }
 
-/*!
-    Runs the receiver modally as an alert sheet attached to a specified window.
+/*! Runs the receiver modally as an alert sheet attached to a specified window.
 
     @param window The parent window for the sheet.
 */
@@ -450,11 +517,13 @@ var CPAlertLabelOffset      = 3.0;
 {
     if (!(_windowStyle & CPDocModalWindowMask))
         [self setWindowStyle:CPDocModalWindowMask];
-    [self layoutPanel];
+    [self layout];
 
     [CPApp beginSheet:_alertPanel modalForWindow:window modalDelegate:self didEndSelector:@selector(_alertDidEnd:returnCode:contextInfo:) contextInfo:nil];
 }
 
+/*! @ignore
+*/
 - (void)_alertDidEnd:(CPWindow)aSheet returnCode:(CPInteger)returnCode contextInfo:(id)contextInfo
 {
     if ([_delegate respondsToSelector:@selector(alertDidEnd:returnCode:)])
@@ -467,7 +536,8 @@ var CPAlertLabelOffset      = 3.0;
     _modalDelegate = nil;
 }
 
-/* @ignore */
+/* @ignore 
+*/
 - (void)_dismissAlert:(CPButton)button
 {
     if ([_alertPanel isSheet])
