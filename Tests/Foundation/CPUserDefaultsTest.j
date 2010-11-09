@@ -109,8 +109,11 @@ CPUserDefaultsTestKey2 = @"KEY2";
 
 - (void)testString
 {
-    [target setString:@"Hello World" forKey:CPUserDefaultsTestKey1];
-    [self assert:[target stringForKey:CPUserDefaultsTestKey1] equals:@"Hello World"];
+    [target setObject:@"Hello World" forKey:CPUserDefaultsTestKey1];
+
+    var string = [target stringForKey:CPUserDefaultsTestKey1];
+    [self assert:string equals:@"Hello World"];
+    [self assertTrue:[string isKindOfClass:[CPString class]]];
 
     [target removeObjectForKey:CPUserDefaultsTestKey1];
     [self assert:[target stringForKey:CPUserDefaultsTestKey1] equals:nil];
