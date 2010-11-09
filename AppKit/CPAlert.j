@@ -497,7 +497,7 @@ var CPAlertLabelOffset      = 3.0;
     @param alertDidEndSelector Message the alert sends to modalDelegate after the sheet is dismissed.
     @param contextInfo Contextual data passed to modalDelegate in didEndSelector message.
 */
-- (void)beginSheetModalForWindow:(CPWindow)window modalDelegate:(id)modalDelegate didEndSelector:(SEL)alertDidEndSelector contextInfo:(void)contextInfo
+- (void)beginSheetModalForWindow:(CPWindow)aWindow modalDelegate:(id)modalDelegate didEndSelector:(SEL)alertDidEndSelector contextInfo:(void)contextInfo
 {
     if (!([_alertPanel styleMask] & CPDocModalWindowMask))
         [self _createPanelWithStyle:CPDocModalWindowMask]
@@ -506,20 +506,16 @@ var CPAlertLabelOffset      = 3.0;
     _didEndSelector = alertDidEndSelector;
     _modalDelegate = modalDelegate;
 
-    [CPApp beginSheet:_alertPanel modalForWindow:window modalDelegate:self didEndSelector:@selector(_alertDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
+    [CPApp beginSheet:_alertPanel modalForWindow:aWindow modalDelegate:self didEndSelector:@selector(_alertDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
 }
 
 /*! Runs the receiver modally as an alert sheet attached to a specified window.
 
     @param window The parent window for the sheet.
 */
-- (void)beginSheetModalForWindow:(CPWindow)window
+- (void)beginSheetModalForWindow:(CPWindow)aWindow
 {
-    if (!(_windowStyle & CPDocModalWindowMask))
-        [self setWindowStyle:CPDocModalWindowMask];
-    [self layout];
-
-    [CPApp beginSheet:_alertPanel modalForWindow:window modalDelegate:self didEndSelector:@selector(_alertDidEnd:returnCode:contextInfo:) contextInfo:nil];
+    [self beginSheetModalForWindow:aWindow modalDelegate:nil didEndSelector:nil contextInfo:nil];
 }
 
 /*! @ignore
