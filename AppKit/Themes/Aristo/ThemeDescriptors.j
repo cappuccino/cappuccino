@@ -1427,7 +1427,8 @@ var themedButtonValues = nil,
         inset = CGInsetMake(15, 15, 15, 80),
         imageOffset = CGPointMake(15, 18),
         buttonOffset = 10.0,
-        supressionButtonOffset = 10.0,
+        supressionButtonYOffset = 10.0,
+        supressionButtonXOffset = 2.0,
         helpLeftOffset = 15,
         messageFont = [CPFont boldSystemFontOfSize:13.0],
         informativeFont = [CPFont systemFontOfSize:12.0],
@@ -1456,7 +1457,8 @@ var themedButtonValues = nil,
         [@"help-image-pressed",             helpIconPressed], 
         [@"help-image-left-offset",         helpLeftOffset],
         [@"button-offset",                  buttonOffset],
-        [@"supression-button-offset",       supressionButtonOffset]
+        [@"supression-button-x-offset",     supressionButtonXOffset],
+        [@"supression-button-y-offset",     supressionButtonYOffset]
     ];
     
     [self registerThemeValues:themedAlertValues forView:alert];

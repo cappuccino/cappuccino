@@ -363,10 +363,11 @@ var CPAlertLabelOffset      = 3.0;
     if (_showSupressionButton)
     {
         var inset = [self currentValueForThemeAttribute:@"content-inset"],
-            suppressionViewOffset = [self currentValueForThemeAttribute:@"supression-button-offset"],
-            suppressionButtonViewOriginY = CPRectGetMaxY([(_accessoryView || _informativeLabel) frame]) + CPAlertLabelOffset + suppressionViewOffset;
+            suppressionViewXOffset = [self currentValueForThemeAttribute:@"supression-button-x-offset"],
+            suppressionViewYOffset = [self currentValueForThemeAttribute:@"supression-button-y-offset"],
+            suppressionButtonViewOriginY = CPRectGetMaxY([(_accessoryView || _informativeLabel) frame]) + CPAlertLabelOffset + suppressionViewYOffset;
 
-        [_supressionButton setFrameOrigin:CGPointMake(inset.left, suppressionButtonViewOriginY)];
+        [_supressionButton setFrameOrigin:CGPointMake(inset.left + suppressionViewXOffset, suppressionButtonViewOriginY)];
         [[_alertPanel contentView] addSubview:_supressionButton];
     }
 }
@@ -599,6 +600,7 @@ var CPAlertLabelOffset      = 3.0;
                                                 [CPNull null],
                                                 [CPNull null],
                                                 [CPNull null],
+                                                0.0,
                                                 0.0
                                                 ]
                                        forKeys:[@"size", @"content-inset", @"informative-offset", @"button-offset",
@@ -611,7 +613,8 @@ var CPAlertLabelOffset      = 3.0;
                                                 @"help-image",
                                                 @"help-image-left-offset",
                                                 @"help-image-pressed",
-                                                @"supression-button-offset"
+                                                @"supression-button-y-offset",
+                                                @"supression-button-x-offset"
                                                 ]];
 }
 
