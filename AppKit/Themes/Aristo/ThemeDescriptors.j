@@ -397,7 +397,7 @@ var themedButtonValues = nil,
             [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0], CPThemeStateBordered | CPThemeStateDisabled],
             [@"text-shadow-offset", CGSizeMake(0.0, 1.0), CPThemeStateBordered],
             [@"line-break-mode",    CPLineBreakByTruncatingTail],
-            [@"content-inset",      CGInsetMake(0.0, 5.0, 0.0, 5.0), CPThemeStateBordered],
+            [@"content-inset",      CGInsetMake(0.0, 7.0, 0.0, 7.0), CPThemeStateBordered],
 
             [@"bezel-color",        bezelColor,             CPThemeStateBordered],
             [@"bezel-color",        highlightedBezelColor,  CPThemeStateBordered | CPThemeStateHighlighted],
@@ -1455,7 +1455,7 @@ var themedButtonValues = nil,
 + (CPStepper)themedStepper
 {
     var stepper = [CPStepper stepper],
-    
+
         bezelUp = PatternColor(
             [
                 ["stepper-bezel-big-up-left.png", 3.0, 13.0],
@@ -1463,7 +1463,7 @@ var themedButtonValues = nil,
                 ["stepper-bezel-big-up-right.png", 3.0, 13.0]
             ],
             PatternIsHorizontal),
-        
+
         bezelDown = PatternColor(
             [
                 ["stepper-bezel-big-down-left.png", 3.0, 12.0],
@@ -1471,7 +1471,7 @@ var themedButtonValues = nil,
                 ["stepper-bezel-big-down-right.png", 3.0, 12.0]
             ],
             PatternIsHorizontal),
-        
+
         bezelUpDisabled = PatternColor(
             [
                 ["stepper-bezel-big-disabled-up-left.png", 3.0, 13.0],
@@ -1487,7 +1487,7 @@ var themedButtonValues = nil,
                 ["stepper-bezel-big-disabled-down-right.png", 3.0, 12.0]
             ],
             PatternIsHorizontal),
-        
+
         bezelUpHighlighted = PatternColor(
             [
                 [@"stepper-bezel-big-highlighted-up-left.png", 3.0, 13.0],
@@ -1511,7 +1511,7 @@ var themedButtonValues = nil,
             [@"bezel-color-up-button",      bezelUpDisabled,                CPThemeStateBordered | CPThemeStateDisabled],
             [@"bezel-color-down-button",    bezelDownDisabled,              CPThemeStateBordered | CPThemeStateDisabled],
             [@"bezel-color-up-button",      bezelUpHighlighted,             CPThemeStateBordered | CPThemeStateHighlighted],
-            [@"bezel-color-down-button",    bezelDownHighlighted,           CPThemeStateBordered | CPThemeStateHighlighted],            
+            [@"bezel-color-down-button",    bezelDownHighlighted,           CPThemeStateBordered | CPThemeStateHighlighted],
             [@"min-size",                   CGSizeMake(19.0, 25.0)]
         ];
 
