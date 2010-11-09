@@ -32,19 +32,19 @@
     if (self = [super NS_initWithCoder:aCoder])
     {
         var flags = [aCoder decodeObjectForKey:@"NSTvFlags"];
-        
-        _tabViewType = flags & 0x7;
-        
-        _tabViewItems           = [aCoder decodeObjectForKey:@"NSTabViewItems"];
-        _selectedTabViewItem    = [aCoder decodeObjectForKey:@"NSSelectedTabViewItem"];
-        
+
+        type = flags & 0x7;
+
+        items           = [aCoder decodeObjectForKey:@"NSTabViewItems"];
+        selectedIndex   = [items indexOfObject:[aCoder decodeObjectForKey:@"NSSelectedTabViewItem"]];
+
         //_delegate               = [aCoder decodeObjectForKey:@""];
-        
+
         // not yet supported:
         //_allowsTruncatedLabels    = [aCoder decodeBoolForKey:@"NSAllowTruncatedLabels"];
         //_drawsBackground          = [aCoder decodeBoolForKey:@"NSDrawsBackground"];
     }
-    
+
     return self;
 }
 

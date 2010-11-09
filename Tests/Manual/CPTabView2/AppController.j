@@ -20,22 +20,24 @@
 	var tabView = [[CPTabView alloc] initWithFrame:CGRectMake(50,50,400,400)];
 	[tabView setTabViewType:CPNoTabsBezelBorder];
 	[tabView setTabViewType:CPTopTabsBezelBorder];
-	
+
 	var view = [[CPView alloc] initWithFrame:CGRectMake(20, 20, 200, 200)];
 	[view addSubview:[CPTextField labelWithTitle:@"First"]];
 	var item = [[CPTabViewItem alloc] initWithIdentifier:@"a"];
 	[item setView:view];
 	[item setLabel:"Test"];
 	[tabView addTabViewItem:item];
-	
+
 	view = [[CPView alloc] initWithFrame:CGRectMake(20, 20, 200, 200)];
 	[view addSubview:[CPTextField labelWithTitle:@"Second"]];
 	item = [[CPTabViewItem alloc] initWithIdentifier:@"a"];
 	[item setView:view];
 	[item setLabel:"Test2"];
 	[tabView addTabViewItem:item];
-	
+
 	[contentView addSubview:tabView];
+
+	[tabView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
     [theWindow orderFront:self];
 }

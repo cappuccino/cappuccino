@@ -493,6 +493,9 @@ CPButtonImageOffset   = 3.0;
         size.height = MIN(size.height, maxSize.height);
 
     [self setFrameSize:size];
+
+    if (contentView)
+        [self layoutSubviews];
 }
 
 - (CGRect)rectForEphemeralSubviewNamed:(CPString)aName

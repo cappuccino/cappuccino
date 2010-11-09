@@ -12,7 +12,7 @@
 {
     [super initWithExpressionType:CPVariableExpressionType];
     _variable = [variable copy];
-    
+
     return self;
 }
 
@@ -20,10 +20,10 @@
 {
     if (self == object)
         return YES;
-    
+
     if (object.isa != self.isa || [object expressionType] != [self expressionType] || ![[object variable] isEqualToString:[self variable]])
         return NO;
-    
+
     return YES;
 }
 
@@ -34,7 +34,9 @@
 
 - (id)expressionValueWithObject:object context:(CPDictionary)context
 {
-    return [context objectForKey:_variable];
+    var expression = [self _expressionWithSubstitutionVariables:context];
+        
+    return [expression expressionValueWithObject:object context:context];    
 }
 
 - (CPString)description
@@ -44,12 +46,14 @@
 
 - (CPExpression)_expressionWithSubstitutionVariables:(CPDictionary)variables
 {
-    var aconstant = [variables objectForKey:_variable];
-      
-    if (aconstant != nil)
-        return [CPExpression expressionForConstantValue:aconstant];
-   
-    return self;
+    var value = [variables objectForKey:_variable];
+    if (value == nil)
+        [CPException raise:CPInvalidArgumentException reason:@"Can't get value for '" + _variable + "' in bindings" + variables];
+        
+    if ([value isKindOfClass:[CPExpression class]])
+        return value;
+        
+    return [CPExpression expressionForConstantValue:value];
 }
 
 @end

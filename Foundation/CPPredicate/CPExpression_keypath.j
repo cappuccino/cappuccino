@@ -17,9 +17,17 @@
 {
     var arg = [CPExpression expressionForConstantValue:keyPath];
     // Cocoa: if it's a direct path selector is valueForKey:
-    self = [super initWithTarget:operand selector:@selector(valueForKeyPath:) arguments:[arg]];
+    self = [super initWithTarget:operand selector:@selector(valueForKeyPath:) arguments:[arg] type:CPKeyPathExpressionType];
 
     return self;
+}
+
+- (BOOL)isEqual:(id)object
+{
+    if (object === self)
+        return YES;
+
+    return ([object keyPath] == [self keyPath]); //If it appears that parsing generates nested keypaths with different targets and same keyPath, comparing -keyPath won't work.
 }
 
 - (CPExpression)pathExpression

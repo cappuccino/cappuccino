@@ -62,7 +62,7 @@
     [self assertNotNull:expression_aggregate message:"Aggregate Expression should not be nil"];
 
     var expression_subquery = [CPExpression expressionForSubquery:expression_collection usingIteratorVariable:@"self" predicate:[CPPredicate predicateWithValue:YES]];
-    // [self assertNotNull:expression_subquery message:"Subquery Expression should not be nil"];
+    [self assertNotNull:expression_subquery message:"Subquery Expression should not be nil"];
 
     var set = [CPExpression expressionForConstantValue:[CPSet setWithObjects:@"a",@"b",@"c"]];
     var array = [CPExpression expressionForConstantValue:[CPArray arrayWithObjects:@"a",@"b",@"d"]];
@@ -112,12 +112,34 @@
 
 - (void)testVariableExpressionEvaluation
 {
-    var variable_exp = [CPExpression expressionForVariable:@"variable"];
-    var pred = [[CPComparisonPredicate alloc] initWithLeftExpression:[CPExpression expressionForKeyPath:@"Record1.Age"] rightExpression:variable_exp modifier:CPDirectPredicateModifier type:CPGreaterThanPredicateOperatorType options:0];
+// Replace with constant
+    var expression = [CPExpression expressionForVariable:@"variable"],
+        bindings = [CPDictionary dictionaryWithObject:20 forKey:@"variable"],
+        eval = [expression expressionValueWithObject:@"variable" context:bindings];    
+    [self assertTrue:(eval == 20) message:"'"+ eval  + "' should be 20"];
 
-    var variables = [CPDictionary dictionaryWithObject:20 forKey:@"variable"];
+// Replace with constant expression
+    bindings = [CPDictionary dictionaryWithObject:[CPExpression expressionForConstantValue:10] forKey:@"variable"];
+    eval = [expression expressionValueWithObject:nil context:bindings];
+    [self assertTrue:(eval == 10) message:"'"+ eval  + "' should be 10"];
 
-    [self assertTrue:[pred evaluateWithObject:dict substitutionVariables:variables] message:"'"+ [pred description]  + "' should be true"];
+// Replace with keypath expression
+    bindings = [CPDictionary dictionaryWithObject:[CPExpression expressionForKeyPath:@"Record1.Age"] forKey:@"variable"];
+    eval = [expression expressionValueWithObject:dict context:bindings];
+    [self assertTrue:(eval == 34) message:"'"+ eval  + "' should be 34"];
+}
+
+- (void)testSubqueryExpressionEvaluation
+{
+    var collection = [CPExpression expressionForKeyPath:@"Record1.Children"],
+        iteratorVariable = @"x",    
+        predicate = [CPPredicate predicateWithFormat:@"$x BEGINSWITH 'Kid'"];
+    
+    var expression = [CPExpression expressionForSubquery:collection usingIteratorVariable:iteratorVariable predicate:predicate];
+    
+    var eval = [expression expressionValueWithObject:dict context:nil];
+    var expected = [CPArray arrayWithObjects:"Kid1", "Kid2"];
+    [self assertTrue:([eval isEqual:expected]) message:"'"+ [expression predicateFormat]  + "' result is "+ eval + "but should be " + expected];
 }
 
 - (void)testOptions
@@ -281,8 +303,19 @@
     predicate = [CPPredicate predicateWithFormat: @"a BETWEEN {%f,%f}", 20, 40];
     [self assertTrue:([predicate predicateOperatorType] == CPBetweenPredicateOperatorType) message:[predicate description] + " operator should be a CPBetweenPredicateOperatorType"];
 
+// TEST Empty string
     predicate = [CPPredicate predicateWithFormat: @"a CONTAINS \"\""];
     [self assertNotNull:predicate message:[predicate description] + " should not be nil"];
+    
+// TEST variable
+    predicate = [CPPredicate predicateWithFormat: @"$x CONTAINS \"\""];
+    [self assertTrue:[[predicate leftExpression] expressionType] == CPVariableExpressionType message:"Left Expression should be a CPVariableExpressionType"];
+/*
+  Variable in multiple paths will fail. Left exp should be FUNCTION(keyPathExp"keypath", valueForKey:, variableExp"variable")
+    predicate = [CPPredicate predicateWithFormat: @"keypath.$variable CONTAINS \"\""];
+  var type = [[predicate leftExpression] expressionType];
+    [self assertTrue: type == CPFunctionExpressionType message:"Left Expression should be a CPFunctionExpressionType is " + type];
+*/
 }
 
 @end

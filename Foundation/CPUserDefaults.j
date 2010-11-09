@@ -361,7 +361,19 @@ var StandardUserDefaults;
     }
 }
 
-// Value accessors
+#pragma mark Getting Default Values
+
+/*!
+    Returns the array value associated with the specified key.
+*/
+- (CPArray)arrayForKey:(CPString)aKey
+{
+    var value = [self objectForKey:aKey];
+    if ([value isKindOfClass:CPArray])
+        return value;
+
+    return nil;
+}
 
 /*!
     Returns the Boolean value associated with the specified key.
@@ -370,33 +382,49 @@ var StandardUserDefaults;
 {
     var value = [self objectForKey:aKey];
     if ([value respondsToSelector:@selector(boolValue)])
-        return [value boolValue]
+        return [value boolValue];
 
-    return value;
+    return NO;
+}
+
+
+/*!
+    Returns the data object associated with the specified key.
+*/
+- (CPData)dataForKey:(CPString)aKey
+{
+    var value = [self objectForKey:aKey];
+    if ([value isKindOfClass:CPData])
+        return value;
+
+    return nil;
 }
 
 /*!
-    Returns the floating-point value associated with the specified key.
+    Returns the Boolean value associated with the specified key.
+*/
+- (CPDictionary)dictionaryForKey:(CPString)aKey
+{
+    var value = [self objectForKey:aKey];
+    if ([value isKindOfClass:CPDictionary])
+        return value;
+
+    return nil;
+}
+
+/*!
+    Returns the float value associated with the specified key.
 */
 - (float)floatForKey:(CPString)aKey
 {
     var value = [self objectForKey:aKey];
+    if (value === nil)
+        return 0;
+
     if ([value respondsToSelector:@selector(floatValue)])
-        return [value floatValue];
+        value = [value floatValue];
 
-    return value;
-}
-
-/*!
-    Returns the double value associated with the specified key.
-*/
-- (double)doubleForKey:(CPString)aKey
-{
-    var value = [self objectForKey:aKey];
-    if ([value respondsToSelector:@selector(doubleValue)])
-        return [value doubleValue];
-
-    return value;
+    return parseFloat(value);
 }
 
 /*!
@@ -405,10 +433,124 @@ var StandardUserDefaults;
 - (int)integerForKey:(CPString)aKey
 {
     var value = [self objectForKey:aKey];
+    if (value === nil)
+        return 0;
+
     if ([value respondsToSelector:@selector(intValue)])
-        return [value intValue];
+        value = [value intValue];
+
+    return parseInt(value);
+}
+
+/*!
+    Returns the double value associated with the specified key.
+*/
+- (double)doubleForKey:(CPString)aKey
+{
+    return [self floatForKey:aKey];
+}
+
+/*!
+    Returns the string value associated with the specified key.
+*/
+- (CPString)stringForKey:(CPString)aKey
+{
+    var value = [self objectForKey:aKey];
+
+    if ([value isKindOfClass:CPString])
+        return value;
+
+    else if ([value respondsToSelector:@selector(stringValue)])
+        return [value stringValue];
+
+    return nil;
+}
+
+/*!
+    Returns the string array value associated with the specified key.
+*/
+- (CPArray)stringArrayForKey:(CPString)aKey
+{
+    var value = [self objectForKey:aKey];
+    if (![value isKindOfClass:CPArray])
+        return nil;
+
+    for (var i = 0, count = [value count]; i < count; i++)
+        if (![value[i] isKindOfClass:CPString])
+            return nil;
 
     return value;
+}
+
+/*!
+    Returns the CPURL value associated with the specified key.
+*/
+- (CPURL)URLForKey:(CPString)aKey
+{
+    var value = [self objectForKey:aKey];
+    if ([value isKindOfClass:CPURL])
+        return value;
+
+    if ([value isKindOfClass:CPString])
+        return [CPURL URLWithString:value];
+
+    return nil;
+}
+
+#pragma mark Setting Default Values
+
+/*!
+    Sets the value of the specified default key to the specified Boolean value.
+    A cast will be attempted with -boolValue.
+*/
+- (void)setBool:(BOOL)aValue forKey:(CPString)aKey
+{
+    if ([aValue respondsToSelector:@selector(boolValue)])
+        [self setObject:[aValue boolValue] forKey:aKey];
+}
+
+/*!
+    Sets the value of the specified default key to the specified float value.
+    A cast will be attempted with -floatValue and parseFloat().
+*/
+- (void)setFloat:(float)aValue forKey:(CPString)aKey
+{
+    if ([aValue respondsToSelector:@selector(aValue)])
+        aValue = [aValue floatValue];
+
+    [self setObject:parseFloat(aValue) forKey:aKey];
+}
+
+/*!
+    Sets the value of the specified default key to the double value.
+*/
+- (void)setDouble:(double)aValue forKey:(CPString)aKey
+{
+    [self setFloat:aValue forKey:aKey];
+}
+
+/*!
+    Sets the value of the specified default key to the specified integer value.
+    A cast will be attempted with -intValue and parseInt().
+*/
+- (void)setInteger:(int)aValue forKey:(CPString)aKey
+{
+    if ([aValue respondsToSelector:@selector(intValue)])
+        aValue = [aValue intValue];
+
+    [self setObject:parseInt(aValue) forKey:aKey];
+}
+
+/*!
+    Sets the value of the specified default key to the specified URL.
+    The adjustments made in Cocoa are not present here.
+*/
+- (void)setURL:(CPURL)aValue forKey:(CPString)aKey
+{
+    if ([aValue isKindOfClass:CPString])
+        aValue = [CPURL URLWithString:aValue];
+
+    [self setObject:aValue forKey:aKey];
 }
 
 @end
