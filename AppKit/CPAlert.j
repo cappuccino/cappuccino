@@ -95,40 +95,6 @@ var CPAlertLabelOffset      = 3.0;
     id              _modalDelegate;
 }
 
-#pragma mark -
-#pragma mark Theming
-
-+ (CPString)defaultThemeClass
-{
-    return @"alert";
-}
-
-+ (id)themeAttributes
-{
-    return [CPDictionary dictionaryWithObjects:[CGSizeMake(400.0, 110.0), CGInsetMake(15, 15, 15, 50), 6, 10,
-                                                CPJustifiedTextAlignment, [CPColor blackColor], [CPFont boldSystemFontOfSize:13.0], [CPNull null], CGSizeMakeZero(),
-                                                CPJustifiedTextAlignment, [CPColor blackColor], [CPFont systemFontOfSize:12.0], [CPNull null], CGSizeMakeZero(),
-                                                CGPointMake(15, 12),
-                                                [CPNull null],
-                                                [CPNull null],
-                                                [CPNull null],
-                                                [CPNull null],
-                                                [CPNull null],
-                                                [CPNull null]
-                                                ]
-                                       forKeys:[@"size", @"content-inset", @"informative-offset", @"button-offset",
-                                                @"message-text-alignment", @"message-text-color", @"message-text-font", @"message-text-shadow-color", @"message-text-shadow-offset",
-                                                @"informative-text-alignment", @"informative-text-color", @"informative-text-font", @"informative-text-shadow-color", @"informative-text-shadow-offset",
-                                                @"image-offset",
-                                                @"information-image",
-                                                @"warning-image",
-                                                @"error-image",
-                                                @"bezel-color",
-                                                @"help-image",
-                                                @"help-image-left-offset"
-                                                ]];
-}
-
 
 #pragma mark -
 #pragma mark Class Methods
@@ -176,6 +142,10 @@ var CPAlertLabelOffset      = 3.0;
     return alert;
 }
 
+
+#pragma mark -
+#pragma mark Initialization
+
 /*! Initializes a \c CPAlert panel with the default alert style \c CPWarningAlertStyle.
 */
 - (id)init
@@ -184,14 +154,14 @@ var CPAlertLabelOffset      = 3.0;
     {
         _buttons            = [CPArray array];
         _alertStyle         = CPWarningAlertStyle;
-        _alertHelpButton    = [[CPButton alloc] initWithFrame:CPRectMake(0.0, 0.0, 16.0, 16.0)];    
+        _alertHelpButton    = [[CPButton alloc] initWithFrame:CPRectMake(0.0, 0.0, 16.0, 16.0)];
         _messageLabel       = [CPTextField labelWithTitle:@"Alert"];
         _alertImageView     = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
         _informativeLabel   = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
         _showHelp           = NO;
-        
+
         [_alertHelpButton setTarget:self];
-        [_alertHelpButton setAction:@selector(didHelpButtonClick:)];
+        [_alertHelpButton setAction:@selector(_didHelpButtonClick:)];
     }
 
     return self;
@@ -226,7 +196,7 @@ var CPAlertLabelOffset      = 3.0;
     [contentView addSubview:_messageLabel];
     [contentView addSubview:_alertImageView];
     [contentView addSubview:_informativeLabel];
-    
+
     if (_showHelp)
         [contentView addSubview:_alertHelpButton];
 }
@@ -260,7 +230,6 @@ var CPAlertLabelOffset      = 3.0;
     [_informativeLabel setStringValue:aText];
 }
 
-
 /*!
     Adds a button with a given title to the receiver.
     Buttons will be added starting from the right hand side of the \c CPAlert panel.
@@ -270,7 +239,7 @@ var CPAlertLabelOffset      = 3.0;
     and any button titled "Cancel" will be given a key equivalent of Escape.
 
     You really shouldn't need more than 3 buttons.
-    
+
     @param title the title of the button
 */
 - (void)addButtonWithTitle:(CPString)title
@@ -297,6 +266,12 @@ var CPAlertLabelOffset      = 3.0;
 }
 
 
+
+#pragma mark -
+#pragma mark Layouting
+
+/*! @ignore
+*/
 - (void)_layoutMessageView
 {
     var inset = [self currentValueForThemeAttribute:@"content-inset"],
@@ -316,10 +291,6 @@ var CPAlertLabelOffset      = 3.0;
 
     [_messageLabel setFrame:CGRectMake(inset.left, inset.top, messageLabelTextSize.width, messageLabelTextSize.height + sizeWithFontCorrection)];
 }
-
-
-#pragma mark -
-#pragma mark Layouting
 
 /*! @ignore
 */
@@ -400,7 +371,7 @@ var CPAlertLabelOffset      = 3.0;
         [button setFrame:CGRectMake(offsetX, buttonsOriginY, width, height)];
         offsetX -= 10;
     }
-    
+
     if (_showHelp)
     {
         var helpImageSize = helpImage ? [helpImage size] : CGSizeMakeZero(),
@@ -408,9 +379,9 @@ var CPAlertLabelOffset      = 3.0;
         [_alertHelpButton setImage:helpImage];
         [_alertHelpButton setBordered:NO];
         [_alertHelpButton setFrame:helpFrame];
-        
+
     }
-    
+
     panelSize.height += [aRepresentativeButton frameSize].height + inset.bottom + buttonOffset;
     return panelSize;
 }
@@ -426,7 +397,7 @@ var CPAlertLabelOffset      = 3.0;
         theTitle = @"",
         theImage,
         finalSize;
-    
+
     if (_icon)
         theImage = _icon;
     else
@@ -453,7 +424,7 @@ var CPAlertLabelOffset      = 3.0;
 
     var imageSize = theImage ? [theImage size] : CGSizeMakeZero();
     [_alertImageView setFrame:CGRectMake(iconOffset.x, iconOffset.y, imageSize.width, imageSize.height)];
-    
+
     [_alertPanel setFloatingPanel:YES];
     [_alertPanel center];
     [[_alertPanel contentView] setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
@@ -471,12 +442,6 @@ var CPAlertLabelOffset      = 3.0;
 }
 
 
-- (IBAction)didHelpButtonClick:(id)aSender
-{
-    if ([_delegate respondsToSelector:@selector(alertShowHelp:)])
-        [_delegate alertShowHelp:self];
-}
-
 #pragma mark -
 #pragma mark Running alert
 
@@ -487,6 +452,7 @@ var CPAlertLabelOffset      = 3.0;
 - (void)runModal
 {
     [self layout];
+    [_alertPanel setMovableByWindowBackground:YES];
     [CPApp runModalForWindow:_alertPanel];
 }
 
@@ -503,6 +469,8 @@ var CPAlertLabelOffset      = 3.0;
         [self _createPanelWithStyle:CPDocModalWindowMask]
     [self layout];
 
+    [_alertPanel setMovableByWindowBackground:NO];
+
     _didEndSelector = alertDidEndSelector;
     _modalDelegate = modalDelegate;
 
@@ -516,6 +484,18 @@ var CPAlertLabelOffset      = 3.0;
 - (void)beginSheetModalForWindow:(CPWindow)aWindow
 {
     [self beginSheetModalForWindow:aWindow modalDelegate:nil didEndSelector:nil contextInfo:nil];
+}
+
+
+#pragma mark -
+#pragma mark Internal delegates and actions
+
+/*! @ignore
+*/
+- (IBAction)_didHelpButtonClick:(id)aSender
+{
+    if ([_delegate respondsToSelector:@selector(alertShowHelp:)])
+        [_delegate alertShowHelp:self];
 }
 
 /*! @ignore
@@ -532,7 +512,7 @@ var CPAlertLabelOffset      = 3.0;
     _modalDelegate = nil;
 }
 
-/* @ignore 
+/* @ignore
 */
 - (void)_dismissAlert:(CPButton)button
 {
@@ -545,6 +525,41 @@ var CPAlertLabelOffset      = 3.0;
 
         [self _alertDidEnd:nil returnCode:[button tag] contextInfo:nil];
     }
+}
+
+
+#pragma mark -
+#pragma mark Theming
+
++ (CPString)defaultThemeClass
+{
+    return @"alert";
+}
+
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[CGSizeMake(400.0, 110.0), CGInsetMake(15, 15, 15, 50), 6, 10,
+                                                CPJustifiedTextAlignment, [CPColor blackColor], [CPFont boldSystemFontOfSize:13.0], [CPNull null], CGSizeMakeZero(),
+                                                CPJustifiedTextAlignment, [CPColor blackColor], [CPFont systemFontOfSize:12.0], [CPNull null], CGSizeMakeZero(),
+                                                CGPointMake(15, 12),
+                                                [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null]
+                                                ]
+                                       forKeys:[@"size", @"content-inset", @"informative-offset", @"button-offset",
+                                                @"message-text-alignment", @"message-text-color", @"message-text-font", @"message-text-shadow-color", @"message-text-shadow-offset",
+                                                @"informative-text-alignment", @"informative-text-color", @"informative-text-font", @"informative-text-shadow-color", @"informative-text-shadow-offset",
+                                                @"image-offset",
+                                                @"information-image",
+                                                @"warning-image",
+                                                @"error-image",
+                                                @"bezel-color",
+                                                @"help-image",
+                                                @"help-image-left-offset"
+                                                ]];
 }
 
 @end
