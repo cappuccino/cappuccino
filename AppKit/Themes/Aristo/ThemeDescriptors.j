@@ -1427,6 +1427,7 @@ var themedButtonValues = nil,
         inset = CGInsetMake(15, 15, 15, 80),
         imageOffset = CGPointMake(15, 18),
         buttonOffset = 10.0,
+        supressionButtonOffset = 10.0,
         helpLeftOffset = 15,
         alertBezelColor = nil,
         messageFont = [CPFont boldSystemFontOfSize:13.0],
@@ -1435,6 +1436,7 @@ var themedButtonValues = nil,
         warningIcon = PatternImage("alert-warning.png", 53.0, 46.0),
         errorIcon = PatternImage("alert-error.png", 53.0, 46.0),
         helpIcon = PatternImage("alert-help.png", 24.0, 24.0),
+        helpIconPressed = PatternImage("alert-help-pressed.png", 24.0, 24.0),
         
         
     themedAlertValues =
@@ -1452,9 +1454,11 @@ var themedButtonValues = nil,
         [@"warning-image",                  warningIcon],
         [@"error-image",                    errorIcon],
         [@"help-image",                     helpIcon], 
+        [@"help-image-pressed",             helpIconPressed], 
         [@"help-image-left-offset",         helpLeftOffset],
         [@"bezel-color",                    alertBezelColor],
-        [@"button-offset",                  buttonOffset]
+        [@"button-offset",                  buttonOffset],
+        [@"supression-button-offset",       supressionButtonOffset]
     ];
     
     [self registerThemeValues:themedAlertValues forView:alert];

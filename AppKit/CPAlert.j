@@ -77,15 +77,18 @@ var CPAlertLabelOffset      = 3.0;
 */
 @implementation CPAlert : CPView
 {
-    CPTextField     _messageLabel       @accessors(getter=messageText);
-    CPTextField     _informativeLabel   @accessors(getter=informativeText);
-    CPAlertStyle    _alertStyle         @accessors(property=alertStyle);
-    id              _delegate           @accessors(property=delegate);
-    CPView          _accessoryView      @accessors(property=accessoryView);
-    BOOL            _showHelp           @accessors(getter=showsHelp, setter=setShowsHelp:);
-    CPString        _helpAnchor         @accessors(property=helpAnchor);
-    CPImage         _icon               @accessors(property=icon);
-
+    CPTextField     _messageLabel           @accessors(getter=messageText);
+    CPTextField     _informativeLabel       @accessors(getter=informativeText);
+    CPAlertStyle    _alertStyle             @accessors(property=alertStyle);
+    id              _delegate               @accessors(property=delegate);
+    CPView          _accessoryView          @accessors(getter=accessoryView);
+    BOOL            _showHelp               @accessors(getter=showsHelp, setter=setShowsHelp:);
+    CPString        _helpAnchor             @accessors(property=helpAnchor);
+    CPImage         _icon                   @accessors(property=icon);
+    BOOL            _showSupressionButton   @accessors(getter=showsSupressionButton);
+    CPCheckBox      _supressionButton       @accessors(getter=suppressionButton);
+    
+    BOOL            _needsLayout;
     CPImageView     _alertImageView;
     CPButton        _alertHelpButton;
     int             _windowStyle;
@@ -158,7 +161,9 @@ var CPAlertLabelOffset      = 3.0;
         _messageLabel       = [CPTextField labelWithTitle:@"Alert"];
         _alertImageView     = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
         _informativeLabel   = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
+        _supressionButton   = [CPCheckBox checkBoxWithTitle:@"Do not show this message again"];
         _showHelp           = NO;
+        _needsLayout        = YES;
 
         [_alertHelpButton setTarget:self];
         [_alertHelpButton setAction:@selector(_didHelpButtonClick:)];
@@ -214,20 +219,42 @@ var CPAlertLabelOffset      = 3.0;
 
 /*! set the text of the alert's message
 
-    @aText CPString containing the text
+    @param aText CPString containing the text
 */
 - (void)setMessageText:(CPString)aText
 {
     [_messageLabel setStringValue:aText];
+    _needsLayout = YES;
 }
 
 /*! set the text of the alert's informative text
 
-    @aText CPString containing the informative text
+    @param aText CPString containing the informative text
 */
 - (void)setInformativeText:(CPString)aText
 {
     [_informativeLabel setStringValue:aText];
+    _needsLayout = YES;
+}
+
+/*! set the accessory view
+
+    @param aView the accessory view
+*/
+- (void)setAccessoryView:(CPView)aView
+{
+    _accessoryView = aView;
+    _needsLayout = YES;
+}
+
+/*! set if alert shows the supression button
+
+    @param shouldShowSupressionButton YES or NO
+*/
+- (void)setShowsSupressionButton:(BOOL)shouldShowSupressionButton
+{
+    _showSupressionButton = shouldShowSupressionButton;
+    _needsLayout = YES;
 }
 
 /*!
@@ -333,12 +360,26 @@ var CPAlertLabelOffset      = 3.0;
 
 /*! @ignore
 */
+- (void)_layoutSuppressionButton
+{
+    if (_showSupressionButton)
+    {
+        var inset = [self currentValueForThemeAttribute:@"content-inset"],
+            suppressionViewOffset = [self currentValueForThemeAttribute:@"supression-button-offset"],
+            suppressionButtonViewOriginY = CPRectGetMaxY([(_accessoryView || _informativeLabel) frame]) + CPAlertLabelOffset + suppressionViewOffset;
+
+        [_supressionButton setFrameOrigin:CGPointMake(inset.left, suppressionButtonViewOriginY)];
+        [[_alertPanel contentView] addSubview:_supressionButton];   
+    }
+}
+
+/*! @ignore
+*/
 - (CGSize)_layoutButtonsFromView:(CPView)lastView
 {
     var inset = [self currentValueForThemeAttribute:@"content-inset"],
         minimumSize = [self currentValueForThemeAttribute:@"size"],
         buttonOffset = [self currentValueForThemeAttribute:@"button-offset"],
-        helpImage = [self currentValueForThemeAttribute:@"help-image"],
         helpLeftOffset = [self currentValueForThemeAttribute:@"help-image-left-offset"],
         aRepresentativeButton = [_buttons objectAtIndex:0],
         panelSize = [_alertPanel frame].size,
@@ -374,12 +415,15 @@ var CPAlertLabelOffset      = 3.0;
 
     if (_showHelp)
     {
-        var helpImageSize = helpImage ? [helpImage size] : CGSizeMakeZero(),
-            helpFrame = CPRectMake(helpLeftOffset, buttonsOriginY, helpImageSize.width, helpImageSize.height)
+        var helpImage = [self currentValueForThemeAttribute:@"help-image"],
+            helpImagePressed = [self currentValueForThemeAttribute:@"help-image-pressed"],
+            helpImageSize = helpImage ? [helpImage size] : CGSizeMakeZero(),
+            helpFrame = CPRectMake(helpLeftOffset, buttonsOriginY, helpImageSize.width, helpImageSize.height);
+
         [_alertHelpButton setImage:helpImage];
+        [_alertHelpButton setAlternateImage:helpImagePressed];
         [_alertHelpButton setBordered:NO];
         [_alertHelpButton setFrame:helpFrame];
-
     }
 
     panelSize.height += [aRepresentativeButton frameSize].height + inset.bottom + buttonOffset;
@@ -390,6 +434,9 @@ var CPAlertLabelOffset      = 3.0;
 */
 - (void)layout
 {
+    if (!_needsLayout)
+        return;
+    
     if (!_alertPanel)
         [self _createPanelWithStyle:nil];
 
@@ -432,13 +479,23 @@ var CPAlertLabelOffset      = 3.0;
     [self _layoutMessageView];
     [self _layoutInformativeView];
     [self _layoutAccessoryView];
-    finalSize = [self _layoutButtonsFromView:(_accessoryView || _informativeLabel)];
+    [self _layoutSuppressionButton];
+    
+    var lastView = _informativeLabel;
+    if (_showSupressionButton)
+        lastView = _supressionButton;
+    else if (_accessoryView)
+        lastView = _accessoryView
+    
+    finalSize = [self _layoutButtonsFromView:lastView];
 
     if (([_alertPanel styleMask] & CPDocModalWindowMask) || ([_alertPanel styleMask] & CPBorderlessWindowMask))
         finalSize.height -= 26; // adjust the absence of title bar
 
     //alert panel size resetting
     [_alertPanel setFrameSize:finalSize];
+    
+    _needsLayout = NO;
 }
 
 
@@ -547,7 +604,9 @@ var CPAlertLabelOffset      = 3.0;
                                                 [CPNull null],
                                                 [CPNull null],
                                                 [CPNull null],
-                                                [CPNull null]
+                                                [CPNull null],
+                                                [CPNull null],
+                                                0.0
                                                 ]
                                        forKeys:[@"size", @"content-inset", @"informative-offset", @"button-offset",
                                                 @"message-text-alignment", @"message-text-color", @"message-text-font", @"message-text-shadow-color", @"message-text-shadow-offset",
@@ -558,7 +617,9 @@ var CPAlertLabelOffset      = 3.0;
                                                 @"error-image",
                                                 @"bezel-color",
                                                 @"help-image",
-                                                @"help-image-left-offset"
+                                                @"help-image-left-offset",
+                                                @"help-image-pressed",
+                                                @"supression-button-offset"
                                                 ]];
 }
 
