@@ -75,25 +75,25 @@ CPCriticalAlertStyle        = 2;
 */
 @implementation CPAlert : CPView
 {
-    CPTextField     _messageLabel           @accessors(getter=messageText);
-    CPTextField     _informativeLabel       @accessors(getter=informativeText);
-    CPAlertStyle    _alertStyle             @accessors(property=alertStyle);
-    id              _delegate               @accessors(property=delegate);
-    CPView          _accessoryView          @accessors(getter=accessoryView);
     BOOL            _showHelp               @accessors(getter=showsHelp, setter=setShowsHelp:);
-    CPString        _helpAnchor             @accessors(property=helpAnchor);
-    CPImage         _icon                   @accessors(property=icon);
     BOOL            _showSupressionButton   @accessors(getter=showsSupressionButton);
+    CPAlertStyle    _alertStyle             @accessors(property=alertStyle);
+    CPArray         _buttons                @accessors(getter=buttons);
     CPCheckBox      _supressionButton       @accessors(getter=suppressionButton);
+    CPImage         _icon                   @accessors(property=icon);
+    CPString        _helpAnchor             @accessors(property=helpAnchor);
+    CPView          _accessoryView          @accessors(getter=accessoryView);
+    id              _delegate               @accessors(property=delegate);
 
     BOOL            _needsLayout;
-    CPImageView     _alertImageView;
     CPButton        _alertHelpButton;
-    int             _windowStyle;
-    CPArray         _buttons;
+    CPImageView     _alertImageView;
     CPPanel         _alertPanel;
-    SEL             _didEndSelector;
+    CPTextField     _informativeLabel;
+    CPTextField     _messageLabel;
     id              _modalDelegate;
+    int             _windowStyle;
+    SEL             _didEndSelector;
 }
 
 
@@ -223,6 +223,36 @@ CPCriticalAlertStyle        = 2;
     _needsLayout = YES;
 }
 
+/*! return the content of the message text
+    @return CPString containing the message text
+*/
+- (CPString)messageText
+{
+    return [_messageLabel stringValue];
+}
+
+/*! @deprecated
+    set the text of the alert's message
+
+    @param aText CPString containing the text
+*/
+- (void)setTitle:(CPString)aText
+{
+    CPLog.warn("DEPRECATED: 'setTitle:' is deprecated. please use 'setMessageText:'")
+    [self setMessageText:aText];
+}
+
+/*! @deprecated
+    set the text of the alert's message
+
+    @param aText CPString containing the text
+*/
+- (CPString)title
+{
+    CPLog.warn("DEPRECATED: 'title' is deprecated. please use 'messageText'");
+    return [_messageLabel stringValue];
+}
+
 /*! set the text of the alert's informative text
 
     @param aText CPString containing the informative text
@@ -231,6 +261,15 @@ CPCriticalAlertStyle        = 2;
 {
     [_informativeLabel setStringValue:aText];
     _needsLayout = YES;
+}
+
+/*! return the content of the message text
+    
+    @return CPString containing the message text
+*/
+- (CPString)informativeText
+{
+    return [_informativeLabel stringValue];
 }
 
 /*! set the accessory view
@@ -252,6 +291,10 @@ CPCriticalAlertStyle        = 2;
     _showSupressionButton = shouldShowSupressionButton;
     _needsLayout = YES;
 }
+
+
+#pragma mark -
+#pragma mark Buttons management
 
 /*!
     Adds a button with a given title to the receiver.
@@ -287,7 +330,6 @@ CPCriticalAlertStyle        = 2;
 
     [_buttons insertObject:button atIndex:0];
 }
-
 
 
 #pragma mark -
