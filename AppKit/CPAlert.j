@@ -51,8 +51,6 @@ CPInformationalAlertStyle   = 1;
 */
 CPCriticalAlertStyle        = 2;
 
-var CPAlertLabelOffset      = 3.0;
-
 /*!
     @ingroup appkit
 
@@ -322,6 +320,7 @@ var CPAlertLabelOffset      = 3.0;
 - (void)_layoutInformativeView
 {
     var inset = [self currentValueForThemeAttribute:@"content-inset"],
+        defaultElementsMargin = [self currentValueForThemeAttribute:@"default-elements-margin"],
         sizeWithFontCorrection = 6.0,
         informativeLabelWidth,
         informativeLabelOriginY,
@@ -335,7 +334,7 @@ var CPAlertLabelOffset      = 3.0;
     [_informativeLabel setLineBreakMode:CPLineBreakByWordWrapping];
 
     informativeLabelWidth = [_alertPanel frame].size.width - inset.left - inset.right,
-    informativeLabelOriginY = [_messageLabel frameOrigin].y + [_messageLabel frameSize].height + CPAlertLabelOffset,
+    informativeLabelOriginY = [_messageLabel frameOrigin].y + [_messageLabel frameSize].height + defaultElementsMargin,
     informativeLabelTextSize = [[_informativeLabel stringValue] sizeWithFont:[_informativeLabel font] inWidth:informativeLabelWidth];
 
     [_informativeLabel setFrame:CGRectMake(inset.left, informativeLabelOriginY, informativeLabelTextSize.width, informativeLabelTextSize.height + sizeWithFontCorrection)];
@@ -348,8 +347,9 @@ var CPAlertLabelOffset      = 3.0;
     if (_accessoryView)
     {
         var inset = [self currentValueForThemeAttribute:@"content-inset"],
+            defaultElementsMargin = [self currentValueForThemeAttribute:@"default-elements-margin"],
             accessoryViewWidth = [_alertPanel frame].size.width - inset.left - inset.right,
-            accessoryViewOriginY = CPRectGetMaxY([_informativeLabel frame]) + CPAlertLabelOffset;
+            accessoryViewOriginY = CPRectGetMaxY([_informativeLabel frame]) + defaultElementsMargin;
 
         [_accessoryView setFrameOrigin:CGPointMake(inset.left, accessoryViewOriginY)];
         [[_alertPanel contentView] addSubview:_accessoryView];
@@ -365,7 +365,8 @@ var CPAlertLabelOffset      = 3.0;
         var inset = [self currentValueForThemeAttribute:@"content-inset"],
             suppressionViewXOffset = [self currentValueForThemeAttribute:@"supression-button-x-offset"],
             suppressionViewYOffset = [self currentValueForThemeAttribute:@"supression-button-y-offset"],
-            suppressionButtonViewOriginY = CPRectGetMaxY([(_accessoryView || _informativeLabel) frame]) + CPAlertLabelOffset + suppressionViewYOffset;
+            defaultElementsMargin = [self currentValueForThemeAttribute:@"default-elements-margin"],
+            suppressionButtonViewOriginY = CPRectGetMaxY([(_accessoryView || _informativeLabel) frame]) + defaultElementsMargin + suppressionViewYOffset;
 
         [_supressionButton setFrameOrigin:CGPointMake(inset.left + suppressionViewXOffset, suppressionButtonViewOriginY)];
         [[_alertPanel contentView] addSubview:_supressionButton];
@@ -381,6 +382,7 @@ var CPAlertLabelOffset      = 3.0;
         buttonOffset = [self currentValueForThemeAttribute:@"button-offset"],
         helpLeftOffset = [self currentValueForThemeAttribute:@"help-image-left-offset"],
         aRepresentativeButton = [_buttons objectAtIndex:0],
+        defaultElementsMargin = [self currentValueForThemeAttribute:@"default-elements-margin"],
         panelSize = [_alertPanel frame].size,
         buttonsOriginY,
         offsetX;
@@ -388,7 +390,7 @@ var CPAlertLabelOffset      = 3.0;
     [aRepresentativeButton setTheme:[self theme]];
     [aRepresentativeButton sizeToFit];
 
-    panelSize.height = CPRectGetMaxY([lastView frame]) + CPAlertLabelOffset + [aRepresentativeButton frameSize].height;
+    panelSize.height = CPRectGetMaxY([lastView frame]) + defaultElementsMargin + [aRepresentativeButton frameSize].height;
 
     if (panelSize.height < minimumSize.height)
         panelSize.height = minimumSize.height;
@@ -594,7 +596,8 @@ var CPAlertLabelOffset      = 3.0;
                                                 [CPNull null],
                                                 [CPNull null],
                                                 0.0,
-                                                0.0
+                                                0.0,
+                                                3.0
                                                 ]
                                        forKeys:[@"size", @"content-inset", @"informative-offset", @"button-offset",
                                                 @"message-text-alignment", @"message-text-color", @"message-text-font", @"message-text-shadow-color", @"message-text-shadow-offset",
@@ -607,7 +610,8 @@ var CPAlertLabelOffset      = 3.0;
                                                 @"help-image-left-offset",
                                                 @"help-image-pressed",
                                                 @"supression-button-y-offset",
-                                                @"supression-button-x-offset"
+                                                @"supression-button-x-offset",
+                                                @"default-elements-margin"
                                                 ]];
 }
 

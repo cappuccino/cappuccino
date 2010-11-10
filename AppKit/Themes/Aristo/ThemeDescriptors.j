@@ -1423,44 +1423,45 @@ var themedButtonValues = nil,
 {
     var alert = [CPAlert new],
 
-        size = CGSizeMake(400.0, 110.0),
-        inset = CGInsetMake(15, 15, 15, 80),
-        imageOffset = CGPointMake(15, 18),
         buttonOffset = 10.0,
-        supressionButtonYOffset = 10.0,
-        supressionButtonXOffset = 2.0,
-        helpLeftOffset = 15,
-        messageFont = [CPFont boldSystemFontOfSize:13.0],
-        informativeFont = [CPFont systemFontOfSize:12.0],
-        informationIcon = PatternImage("alert-info.png", 53.0, 46.0),
-        warningIcon = PatternImage("alert-warning.png", 53.0, 46.0),
+        defaultElementsMargin = 3.0,
         errorIcon = PatternImage("alert-error.png", 53.0, 46.0),
         helpIcon = PatternImage("alert-help.png", 24.0, 24.0),
         helpIconPressed = PatternImage("alert-help-pressed.png", 24.0, 24.0),
-        
-        
-    themedAlertValues =
-    [
-        [@"size",                           size],
-        [@"content-inset",                  inset],
-        [@"message-text-alignment",         CPJustifiedTextAlignment],
-        [@"message-text-color",             [CPColor blackColor]],
-        [@"message-text-font",              messageFont],
-        [@"informative-text-alignment",     CPJustifiedTextAlignment],
-        [@"informative-text-color",         [CPColor blackColor]],
-        [@"informative-text-font",          informativeFont],
-        [@"image-offset",                   imageOffset],
-        [@"information-image",              informationIcon],
-        [@"warning-image",                  warningIcon],
-        [@"error-image",                    errorIcon],
-        [@"help-image",                     helpIcon], 
-        [@"help-image-pressed",             helpIconPressed], 
-        [@"help-image-left-offset",         helpLeftOffset],
-        [@"button-offset",                  buttonOffset],
-        [@"supression-button-x-offset",     supressionButtonXOffset],
-        [@"supression-button-y-offset",     supressionButtonYOffset]
-    ];
-    
+        helpLeftOffset = 15,
+        imageOffset = CGPointMake(15, 18),
+        informationIcon = PatternImage("alert-info.png", 53.0, 46.0),
+        informativeFont = [CPFont systemFontOfSize:12.0],
+        inset = CGInsetMake(15, 15, 15, 80),
+        messageFont = [CPFont boldSystemFontOfSize:13.0],
+        size = CGSizeMake(400.0, 110.0),
+        supressionButtonXOffset = 2.0,
+        supressionButtonYOffset = 10.0,
+        warningIcon = PatternImage("alert-warning.png", 53.0, 46.0),
+
+        themedAlertValues =
+        [
+            [@"button-offset",                  buttonOffset],
+            [@"content-inset",                  inset],
+            [@"default-elements-margin",        defaultElementsMargin],
+            [@"error-image",                    errorIcon],
+            [@"help-image",                     helpIcon],
+            [@"help-image-left-offset",         helpLeftOffset],
+            [@"help-image-pressed",             helpIconPressed],
+            [@"image-offset",                   imageOffset],
+            [@"information-image",              informationIcon],
+            [@"informative-text-alignment",     CPJustifiedTextAlignment],
+            [@"informative-text-color",         [CPColor blackColor]],
+            [@"informative-text-font",          informativeFont],
+            [@"message-text-alignment",         CPJustifiedTextAlignment],
+            [@"message-text-color",             [CPColor blackColor]],
+            [@"message-text-font",              messageFont],
+            [@"size",                           size],
+            [@"supression-button-x-offset",     supressionButtonXOffset],
+            [@"supression-button-y-offset",     supressionButtonYOffset],
+            [@"warning-image",                  warningIcon]
+        ];
+
     [self registerThemeValues:themedAlertValues forView:alert];
 
     return alert;
@@ -1469,7 +1470,7 @@ var themedButtonValues = nil,
 + (CPStepper)themedStepper
 {
     var stepper = [CPStepper stepper],
-    
+
         bezelUp = PatternColor(
             [
                 ["stepper-bezel-big-up-left.png", 3.0, 13.0],
@@ -1477,7 +1478,7 @@ var themedButtonValues = nil,
                 ["stepper-bezel-big-up-right.png", 3.0, 13.0]
             ],
             PatternIsHorizontal),
-        
+
         bezelDown = PatternColor(
             [
                 ["stepper-bezel-big-down-left.png", 3.0, 12.0],
@@ -1485,7 +1486,7 @@ var themedButtonValues = nil,
                 ["stepper-bezel-big-down-right.png", 3.0, 12.0]
             ],
             PatternIsHorizontal),
-        
+
         bezelUpDisabled = PatternColor(
             [
                 ["stepper-bezel-big-disabled-up-left.png", 3.0, 13.0],
@@ -1501,7 +1502,7 @@ var themedButtonValues = nil,
                 ["stepper-bezel-big-disabled-down-right.png", 3.0, 12.0]
             ],
             PatternIsHorizontal),
-        
+
         bezelUpHighlighted = PatternColor(
             [
                 [@"stepper-bezel-big-highlighted-up-left.png", 3.0, 13.0],
@@ -1525,7 +1526,7 @@ var themedButtonValues = nil,
             [@"bezel-color-up-button",      bezelUpDisabled,                CPThemeStateBordered | CPThemeStateDisabled],
             [@"bezel-color-down-button",    bezelDownDisabled,              CPThemeStateBordered | CPThemeStateDisabled],
             [@"bezel-color-up-button",      bezelUpHighlighted,             CPThemeStateBordered | CPThemeStateHighlighted],
-            [@"bezel-color-down-button",    bezelDownHighlighted,           CPThemeStateBordered | CPThemeStateHighlighted],            
+            [@"bezel-color-down-button",    bezelDownHighlighted,           CPThemeStateBordered | CPThemeStateHighlighted],
             [@"min-size",                   CGSizeMake(19.0, 25.0)]
         ];
 
