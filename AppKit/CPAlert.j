@@ -220,6 +220,17 @@ CPCriticalAlertStyle        = 2;
 }
 
 /*!
+    Sets the title of the alert window.
+    This API is not present in Cocoa.
+    @param aTitle CPString containing the window title
+*/
+- (void)setTitle:(CPString)aTitle
+{
+    _title = aTitle;
+    [_window setTitle:aTitle];
+}
+
+/*!
     set the accessory view
 
     @param aView the accessory view
@@ -530,6 +541,9 @@ CPCriticalAlertStyle        = 2;
     frame.size = [self currentValueForThemeAttribute:@"size"];
 
     _window = [[CPWindow alloc] initWithContentRect:frame styleMask:forceStyle || CPTitledWindowMask];
+
+    if (_title)
+        [_window setTitle:_title];
 
     var contentView = [_window contentView],
         count = [_buttons count];
