@@ -1435,8 +1435,8 @@ var themedButtonValues = nil,
         inset = CGInsetMake(15, 15, 15, 80),
         messageFont = [CPFont boldSystemFontOfSize:13.0],
         size = CGSizeMake(400.0, 110.0),
-        supressionButtonXOffset = 2.0,
-        supressionButtonYOffset = 10.0,
+        suppressionButtonXOffset = 2.0,
+        suppressionButtonYOffset = 10.0,
         warningIcon = PatternImage("alert-warning.png", 53.0, 46.0),
 
         themedAlertValues =
@@ -1457,8 +1457,8 @@ var themedButtonValues = nil,
             [@"message-text-color",             [CPColor blackColor]],
             [@"message-text-font",              messageFont],
             [@"size",                           size],
-            [@"supression-button-x-offset",     supressionButtonXOffset],
-            [@"supression-button-y-offset",     supressionButtonYOffset],
+            [@"suppression-button-x-offset",    suppressionButtonXOffset],
+            [@"suppression-button-y-offset",    suppressionButtonYOffset],
             [@"warning-image",                  warningIcon]
         ];
 
