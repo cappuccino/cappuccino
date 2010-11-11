@@ -495,6 +495,12 @@ CPCriticalAlertStyle        = 2;
 */
 - (void)runModal
 {
+    if (!([_window styleMask] & CPTitledWindowMask))
+    {
+        _needsLayout = YES;
+        [self _createWindowWithStyle:CPTitledWindowMask];
+    }
+        
     [self layout];
     [CPApp runModalForWindow:_window];
 }
@@ -510,7 +516,10 @@ CPCriticalAlertStyle        = 2;
 - (void)beginSheetModalForWindow:(CPWindow)aWindow modalDelegate:(id)modalDelegate didEndSelector:(SEL)alertDidEndSelector contextInfo:(id)contextInfo
 {
     if (!([_window styleMask] & CPDocModalWindowMask))
+    {
+        _needsLayout = YES;
         [self _createWindowWithStyle:CPDocModalWindowMask];
+    }
 
     [self layout];
 
