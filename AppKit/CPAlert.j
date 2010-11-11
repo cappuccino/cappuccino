@@ -93,7 +93,8 @@ CPCriticalAlertStyle        = 2;
     SEL             _didEndSelector;
 
     CPWindow        _window                 @accessors(property=window,readonly);
-
+    int             _defaultWindowStyle;
+    
     CPImageView     _alertImageView;
     CPTextField     _informativeLabel;
     CPTextField     _messageLabel;
@@ -162,6 +163,7 @@ CPCriticalAlertStyle        = 2;
         _alertStyle         = CPWarningAlertStyle;
         _showHelp           = NO;
         _needsLayout        = YES;
+        _defaultWindowStyle = CPTitledWindowMask;
 
         _messageLabel       = [CPTextField labelWithTitle:@"Alert"];
         _alertImageView     = [[CPImageView alloc] init];
@@ -177,6 +179,43 @@ CPCriticalAlertStyle        = 2;
 }
 
 #pragma mark Accessors
+
+/*! 
+    set the theme to use
+    
+    @param the theme to use
+*/
+- (void)setTheme:(CPTheme)aTheme
+{
+    if (aTheme === [self theme])
+        return;
+    
+    if (aTheme === [CPTheme defaultHudTheme])
+        _defaultWindowStyle = CPTitledWindowMask | CPHUDBackgroundWindowMask;
+    else
+        _defaultWindowStyle = CPTitledWindowMask;
+    
+    _window = nil; // will be regenerated at next layout
+    _needsLayout = YES;
+    [super setTheme:aTheme];
+}
+
+/*! @deprecated
+*/
+- (void)setWindowStyle:(int)aStyle
+{
+    CPLog.warn("DEPRECATED: setWindowStyle: is deprecated. use setTheme: instead");
+    [self setTheme:(aStyle === CPHUDBackgroundWindowMask) ? [CPTheme defaultHudTheme] : [CPTheme defaultTheme]];
+}
+
+/*! @deprecated
+*/
+- (int)windowStyle
+{
+    CPLog.warn("DEPRECATED: windowStyle: is deprecated. use theme instead");
+    return _defaultWindowStyle;
+}
+
 
 /*!
     set the text of the alert's message
@@ -369,7 +408,13 @@ CPCriticalAlertStyle        = 2;
         suppressionViewYOffset = [self currentValueForThemeAttribute:@"suppression-button-y-offset"],
         defaultElementsMargin = [self currentValueForThemeAttribute:@"default-elements-margin"],
         suppressionButtonViewOriginY = CGRectGetMaxY([(_accessoryView || _informativeLabel) frame]) + defaultElementsMargin + suppressionViewYOffset;
-
+    
+    [_suppressionButton setTextColor:[self currentValueForThemeAttribute:@"suppression-button-text-color"]];
+    [_suppressionButton setFont:[self currentValueForThemeAttribute:@"suppression-button-text-font"]];
+    [_suppressionButton setTextShadowColor:[self currentValueForThemeAttribute:@"suppression-button-text-shadow-color"]];
+    [_suppressionButton setTextShadowOffset:[self currentValueForThemeAttribute:@"suppression-button-text-shadow-offset"]];
+    [_suppressionButton sizeToFit];
+    
     [_suppressionButton setFrameOrigin:CGPointMake(inset.left + suppressionViewXOffset, suppressionButtonViewOriginY)];
     [[_window contentView] addSubview:_suppressionButton];
 }
@@ -461,7 +506,7 @@ CPCriticalAlertStyle        = 2;
         }
 
     [_alertImageView setImage:theImage];
-
+    
     var imageSize = theImage ? [theImage size] : CGSizeMakeZero();
     [_alertImageView setFrame:CGRectMake(iconOffset.x, iconOffset.y, imageSize.width, imageSize.height)];
 
@@ -495,10 +540,10 @@ CPCriticalAlertStyle        = 2;
 */
 - (void)runModal
 {
-    if (!([_window styleMask] & CPTitledWindowMask))
+    if (!([_window styleMask] & _defaultWindowStyle))
     {
         _needsLayout = YES;
-        [self _createWindowWithStyle:CPTitledWindowMask];
+        [self _createWindowWithStyle:_defaultWindowStyle];
     }
         
     [self layout];
@@ -549,7 +594,7 @@ CPCriticalAlertStyle        = 2;
     var frame = CGRectMakeZero();
     frame.size = [self currentValueForThemeAttribute:@"size"];
 
-    _window = [[CPWindow alloc] initWithContentRect:frame styleMask:forceStyle || CPTitledWindowMask];
+    _window = [[CPWindow alloc] initWithContentRect:frame styleMask:forceStyle || _defaultWindowStyle];
 
     if (_title)
         [_window setTitle:_title];
@@ -632,7 +677,11 @@ CPCriticalAlertStyle        = 2;
                                                 [CPNull null],
                                                 0.0,
                                                 0.0,
-                                                3.0
+                                                3.0,
+                                                [CPColor blackColor],
+                                                [CPFont systemFontOfSize:12.0],
+                                                [CPNull null],
+                                                0.0
                                                 ]
                                        forKeys:[@"size", @"content-inset", @"informative-offset", @"button-offset",
                                                 @"message-text-alignment", @"message-text-color", @"message-text-font", @"message-text-shadow-color", @"message-text-shadow-offset",
@@ -646,7 +695,11 @@ CPCriticalAlertStyle        = 2;
                                                 @"help-image-pressed",
                                                 @"suppression-button-y-offset",
                                                 @"suppression-button-x-offset",
-                                                @"default-elements-margin"
+                                                @"default-elements-margin",
+                                                @"suppression-button-text-color",
+                                                @"suppression-button-text-font",
+                                                @"suppression-button-text-shadow-color",
+                                                @"suppression-button-text-shadow-offset"
                                                 ]];
 }
 
