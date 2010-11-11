@@ -351,4 +351,13 @@
         [self assert:[anException reason] equals:@"componentsSeparatedByCharactersInSet: the separator can't be 'nil'"];
 	}
 }
+
+- (void)testIsEqual
+{
+    var str = "s";
+    [self assert:str equals:[CPString stringWithString:str]];
+    [self assert:str equals:[str copy]];
+    [self assert:[str copy] equals:str];
+    [self assert:[str copy] equals:[str copy]];
+}
 @end
