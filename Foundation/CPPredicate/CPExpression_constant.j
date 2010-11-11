@@ -1,6 +1,6 @@
 
 @import "CPExpression.j"
-@import <Foundation/CPDictionary.j>
+@import "CPDictionary.j"
 
 @implementation CPExpression_constant : CPExpression
 {

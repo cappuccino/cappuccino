@@ -1,8 +1,8 @@
 
 @import "CPExpression.j"
-@import <Foundation/CPString.j>
-@import <Foundation/CPKeyValueCoding.j>
 @import "CPExpression_function.j"
+@import "CPString.j"
+@import "CPKeyValueCoding.j"
 
 @implementation CPExpression_keypath : CPExpression_function
 {
@@ -37,13 +37,26 @@
 
 - (CPString)keyPath
 {
-    return [[self pathExpression] constantValue];
+    return [[self pathExpression] keyPath];
 }
 
 - (CPString)description
 {
-    return [self keyPath];
+    var result = "";
+    if ([_operand expressionType] != CPEvaluatedObjectExpressionType)
+        result += [_operand description] + ".";
+    result += [self keyPath];
+
+    return result;
 }
 
 @end
 
+@implementation CPExpression_constant (KeyPath)
+
+- (CPString)keyPath
+{
+    return [self constantValue];
+}
+
+@end

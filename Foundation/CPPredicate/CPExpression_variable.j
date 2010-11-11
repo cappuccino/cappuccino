@@ -1,7 +1,7 @@
 
 @import "CPExpression.j"
-@import <Foundation/CPString.j>
-@import <Foundation/CPDictionary.j>
+@import "CPString.j"
+@import "CPDictionary.j"
 
 @implementation CPExpression_variable :  CPExpression
 {
@@ -35,8 +35,8 @@
 - (id)expressionValueWithObject:object context:(CPDictionary)context
 {
     var expression = [self _expressionWithSubstitutionVariables:context];
-        
-    return [expression expressionValueWithObject:object context:context];    
+
+    return [expression expressionValueWithObject:object context:context];
 }
 
 - (CPString)description
@@ -49,10 +49,10 @@
     var value = [variables objectForKey:_variable];
     if (value == nil)
         [CPException raise:CPInvalidArgumentException reason:@"Can't get value for '" + _variable + "' in bindings" + variables];
-        
+
     if ([value isKindOfClass:[CPExpression class]])
         return value;
-        
+
     return [CPExpression expressionForConstantValue:value];
 }
 
