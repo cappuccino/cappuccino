@@ -1,3 +1,23 @@
+/*
+ * CPExpression.j
+ *
+ * Created by cacaodev.
+ * Copyright 2010.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
 @import "CPString.j"
 @import "CPArray.j"
@@ -113,7 +133,6 @@ CPMinusSetExpressionType = 9;
     return [[CPExpression_keypath alloc] initWithKeyPath:keyPath];
 }
 
-//Creating a Collection Expression
 /*!
     Returns a new aggregate expression for a given collection.
     @param collection A collection object (an instance of CPArray, CPSet, or CPDictionary) that contains further expressions.
@@ -126,7 +145,7 @@ CPMinusSetExpressionType = 9;
 
 /*!
     Returns a new CPExpression object that represent the union of a given set and collection.
-    @param left An expression that evaluates to an CPSet object.
+    @param left An expression that evaluates to a CPSet object.
     @param right An expression that evaluates to a collection object (an instance of CPArray, CPSet, or CPDictionary).
     @return A new CPExpression object that represents the union of left and right.
 */
@@ -137,7 +156,7 @@ CPMinusSetExpressionType = 9;
 
 /*!
     Returns a new CPExpression object that represent the intersection of a given set and collection.
-    @param left An expression that evaluates to an CPSet object.
+    @param left An expression that evaluates to a CPSet object.
     @param right An expression that evaluates to a collection object (an instance of CPArray, CPSet, or CPDictionary).
     @return A new CPExpression object that represents the intersection of left and right.
 */
@@ -148,7 +167,7 @@ CPMinusSetExpressionType = 9;
 
 /*!
     Returns a new CPExpression object that represent the subtraction of a given collection from a given set.
-    @param left An expression that evaluates to an CPSet object.
+    @param left An expression that evaluates to a CPSet object.
     @param left An expression that evaluates to a collection object (an instance of CPArray, CPSet, or CPDictionary).
     @return A new CPExpression object that represents the subtraction of right from left.
 */
@@ -196,16 +215,8 @@ CPMinusSetExpressionType = 9;
     trunc:            one CPExpression instance representing a number    CPNumber
     uppercase:        one CPExpression instance representing a string    CPString
     lowercase:        one CPExpression instance representing a string    CPString
-    random            none                                               CPNumber (integer)
     random:           one CPExpression instance representing a number    CPNumber (integer) such that 0 <= rand < param
-    now               none                                               [CPDate now]
-    bitwiseAnd:with:  two CPExpression instances representing numbers    CPNumber    (numbers will be treated as CPInteger)
-    bitwiseOr:with:   two CPExpression instances representing numbers    CPNumber    (numbers will be treated as CPInteger)
-    bitwiseXor:with:  two CPExpression instances representing numbers    CPNumber    (numbers will be treated as CPInteger)
-    leftshift:by:     two CPExpression instances representing numbers    CPNumber    (numbers will be treated as CPInteger)
-    rightshift:by:    two CPExpression instances representing numbers    CPNumber    (numbers will be treated as CPInteger)
-    onesComplement:   one CPExpression instance representing a numbers   CPNumber    (numbers will be treated as CPInteger)
- @endverbatim
+    now:               none                                               [CPDate now]
 
     This method raises an exception immediately if the selector is invalid; it raises an exception at runtime if the parameters are incorrect.
 */
@@ -217,16 +228,23 @@ CPMinusSetExpressionType = 9;
 /*!
     Returns an expression which will return the result of invoking on a given target a selector with a given name using given arguments.
     @param target A CPExpression object which will evaluate an object on which the selector identified by name may be invoked.
-    @param function_name The name of the method to be invoked.
+    @param selectorName The name of the method to be invoked.
     @param parameters An array containing CPExpression objects which can be evaluated to provide parameters for the method specified by name.
     @return An expression which will return the result of invoking the selector named name on the result of evaluating the target expression with the parameters specified by evaluating the elements of parameters.
     See the description of expressionForFunction:arguments: for examples of how to construct the parameter array.
 */
-+ (CPExpression)expressionForFunction:(CPExpression)target selectorName:(CPString)function_name arguments:(CPArray)parameters
++ (CPExpression)expressionForFunction:(CPExpression)target selectorName:(CPString)selectorName arguments:(CPArray)parameters
 {
-    return [[CPExpression_function alloc] initWithTarget:target selector:CPSelectorFromString(function_name) arguments:parameters];
+    return [[CPExpression_function alloc] initWithTarget:target selector:CPSelectorFromString(selectorName) arguments:parameters];
 }
 
+/*!
+    Returns an expression that filters a collection by storing elements in the collection in a given variable and keeping the elements for which qualifier returns true.
+    @param expression A CPExpression that evaluates to a collection.
+    @param variable Used as a local variable, and will shadow any instances of variable in the bindings dictionary. The variable is removed or the old value replaced once evaluation completes.
+    @param predicate The predicate used to determine whether the element belongs in the result collection.
+    @return An expression that filters a collection by storing elements in the collection in the variable variable and keeping the elements for which qualifier returns true.
+*/
 + (CPExpression)expressionForSubquery:(CPExpression)expression usingIteratorVariable:(CPString)variable predicate:(CPPredicate)predicate
 {
     return [[CPExpression_subquery alloc] initWithExpression:expression usingIteratorVariable:variable predicate:predicate];
