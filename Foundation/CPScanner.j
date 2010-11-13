@@ -16,41 +16,6 @@
     CPCharacterSet  _charactersToBeSkipped;
 }
 
-// TODO Not all methods of NSScanner are available!
-
-/*
-- (BOOL)scanLongLong:(long long *)longLongValue
-{
-}
-- (BOOL)scanDecimal:(NSDecimal *)decimalValue
-{
-}
-- (BOOL)scanHexDouble:(double *)result
-{
-}
-- (BOOL)scanHexFloat:(float *)result
-{
-}
-- (BOOL)scanHexInt:(unsigned *)intValue
-{
-}
-- (BOOL)scanHexLongLong:(unsigned long long *)result
-{
-}
-- (BOOL)scanInteger:(NSInteger *)value
-{
-}
-+ (id)localizedScannerWithString:(CPString)string
-{
-    var scanner = [self scannerWithString:string];
-
-    [scanner setLocale:[CPLocale currentLocale]];
-
-    return scanner;
-}
-
-*/
-
 + (id)scannerWithString:(CPString)aString
 {
     return [[self alloc] initWithString:aString];
@@ -72,12 +37,12 @@
 - (id)copy
 {
     var copy = [[CPScanner alloc] initWithString:[self string]];
-    
+
     [copy setCharactersToBeSkipped:[self charactersToBeSkipped]];
     [copy setCaseSensitive:[self caseSensitive]];
     [copy setLocale:[self locale]];
     [copy setScanLocation:[self scanLocation]];
-   
+
     return copy;
 }
 
@@ -140,10 +105,10 @@
 - (BOOL)_performScanWithSelector:(SEL)s withObject:(id)arg into:(id)ref
 {
     var ret = [self performSelector:s withObject:arg];
-    
+
     if (ret == nil)
         return NO;
-        
+
     if (ref != nil)
         ref(ret);
 
@@ -182,14 +147,14 @@
 {
     if ([self isAtEnd])
         return nil;
-    
-    var current = [self scanLocation];
-    var str = nil;
-    
+
+    var current = [self scanLocation],
+        str = nil;
+
     while (current < _string.length)
     {
         var c = (_string.charAt(current));
-        
+
         if ([scanSet characterIsMember:c] == stop)
             break;
 
@@ -199,13 +164,13 @@
                 str = '';
             str += c;
         }
-        
+
         current++;
     }
-    
+
     if (str)
         [self setScanLocation:current];
-        
+
     return str;
 }
 
@@ -215,18 +180,18 @@
 
 - (void)_movePastCharactersToBeSkipped
 {
-    var current = [self scanLocation];
-    var string = [self string];
-    var toSkip = [self charactersToBeSkipped];
-    
+    var current = [self scanLocation],
+        string = [self string],
+        toSkip = [self charactersToBeSkipped];
+
     while (current < string.length)
     {
         if (![toSkip characterIsMember:string.charAt(current)])
             break;
-        
+
         current++;
     }
-    
+
     [self setScanLocation:current];
 }
 
@@ -261,29 +226,31 @@
 
 - (CPString)scanUpToString:(CPString)s
 {
-    var current = [self scanLocation], str = [self string];
-    var captured = nil;
+    var current = [self scanLocation],
+        str = [self string],
+        captured = nil;
+
     while (current < str.length)
     {
         var currentStr = str.substr(current, s.length);
         if (currentStr == s || (!_caseSensitive && currentStr.toLowerCase() == s.toLowerCase()))
             break;
-            
+
         if (!captured)
             captured = '';
         captured += str.charAt(current);
         current++;
     }
-    
+
     if (captured)
         [self setScanLocation:current];
-    
+
     // evil private method use!
     // this method is defined in the category on CPString
     // in CPCharacterSet.j
     if ([self charactersToBeSkipped])
         captured = [captured _stringByTrimmingCharactersInSet:[self charactersToBeSkipped] options:_CPCharacterSetTrimAtBeginning];
-        
+
     return captured;
 }
 
@@ -291,81 +258,39 @@
 /* = Scanning numbers = */
 /* ==================== */
 
-- (float)scanFloat
+- (float)scanWithParseFunction:(Function)parseFunction
 {
     [self _movePastCharactersToBeSkipped];
-    var str = [self string], current = [self scanLocation];
-    
+    var str = [self string],
+        loc = [self scanLocation];
+
     if ([self isAtEnd])
         return 0;
-    
-    var s = str.substring(current, str.length);
-    var f =  parseFloat(s); // wont work with non . decimal separator !!
-    if (f)
-    {
-        var pos, foundDash = NO;
-/*
-        var decimalSeparatorString;
-        if(_locale != nil)
-            decimalSeparatorString = [_locale objectForKey:CPLocaleDecimalSeparator];
-        else
-            decimalSeparatorString = [[CPLocale systemLocale] objectForKey:CPLocaleDecimalSeparator];
-            
-        var separatorCode = (decimalSeparatorString.length >0) decimalSeparatorString.charCodeAt(0) : 45;
-*/
-        var separatorCode = 45;
 
-        for(pos = current; pos < current + str.length; pos++)
-        {
-            var charCode = str.charCodeAt(pos);
-            if (charCode == separatorCode)
-            {
-                if (foundDash == YES)
-                    break; // We already found a decimal separator so this one is an extra char
-                foundDash = YES;
-            }
-            else if (charCode < 48 || charCode > 57 || (charCode == 45 && pos != current)) // not a digit or a "-" but not prefix
-                break;
-        }
-        
-        [self setScanLocation:pos];
-        return f;
-    }
-    
-    return nil;
+    var s = str.substring(loc, str.length),
+        f =  parseFunction(s);
+
+    if (isNaN(f))
+        return nil;
+
+    loc += (""+f).length;
+    var i = 0;
+    while (!isNaN(parseFloat(str.substring(loc+i, str.length))))
+        {i++;}
+
+    [self setScanLocation:loc + i];
+    return f;
+
+}
+
+- (float)scanFloat
+{
+    return [self scanWithParseFunction:parseFloat];
 }
 
 - (int)scanInt
 {
-    [self _movePastCharactersToBeSkipped];
-    var str = [self string], current = [self scanLocation];
-
-    if ([self isAtEnd])
-        return 0;
-    var s = str.substring(current, str.length);
-
-    var i =  parseInt(s);
-    if (i)
-    {
-        var pos, foundDash = NO;
-        for (pos = current; pos < current + str.length; pos++)
-        {
-            var charCode = str.charCodeAt(pos);
-            if (charCode == 46)
-            {
-                if (foundDash == YES)
-                    break;
-                foundDash = YES;
-            }
-            else if (charCode < 48 || charCode > 57 || (charCode == 45 && pos != current))
-                break;
-        }
-        
-        [self setScanLocation:pos];
-        return i;
-    }
-    
-    return nil;
+    return [self scanWithParseFunction:parseInt];
 }
 
 - (BOOL)scanInt:(int)intoInt
