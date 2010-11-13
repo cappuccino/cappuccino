@@ -1,5 +1,6 @@
 
 @import <Foundation/CPObject.j>
+@import <Foundation/CPIndexPath.j>
 
 
 @implementation CPTreeNode : CPObject
@@ -85,6 +86,18 @@
 
     while (count--)
         [_childNodes[count] sortWithSortDescriptors:sortDescriptors recursively:YES];
+}
+
+- (CPTreeNode)descendantNodeAtIndexPath:(CPIndexPath)indexPath
+{
+    var count = [indexPath length],
+        node = self;
+    
+    for(var i = 0; i < count; i++) {
+        node = [node objectInChildNodesAtIndex:[indexPath indexAtPosition:i]];
+    }
+    
+    return node;
 }
 
 @end
