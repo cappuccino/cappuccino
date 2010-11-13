@@ -6,7 +6,7 @@
 @implementation CPTreeNode : CPObject
 {
     id              _representedObject @accessors(readonly, property=representedObject);
-    
+
     CPTreeNode      _parentNode @accessors(readonly, property=parentNode);
     CPMutableArray  _childNodes;
 }
@@ -90,13 +90,13 @@
 
 - (CPTreeNode)descendantNodeAtIndexPath:(CPIndexPath)indexPath
 {
-    var count = [indexPath length],
+    var index = 0,
+        count = [indexPath length],
         node = self;
-    
-    for(var i = 0; i < count; i++) {
-        node = [node objectInChildNodesAtIndex:[indexPath indexAtPosition:i]];
-    }
-    
+
+    for (; index < count; ++index)
+        node = [node objectInChildNodesAtIndex:[indexPath indexAtPosition:index]];
+
     return node;
 }
 

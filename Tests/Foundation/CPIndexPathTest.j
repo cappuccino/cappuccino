@@ -37,7 +37,7 @@
 {
     var ip = [indexPath indexes];
     [ip removeLastObject];
-    
+
     [self assert:[CPIndexPath indexPathWithIndexes:ip]
           equals:[indexPath indexPathByRemovingLastIndex]];
 }
@@ -50,19 +50,18 @@
 - (void)testCompare
 {
     var comparisonIndexPath = [CPIndexPath indexPathWithIndexes:[CPArray arrayWithObjects:1,5,2]];
+
     [self assert:CPOrderedDescending equals:[indexPath compare:comparisonIndexPath]];
-    
+
     comparisonIndexPath = [CPIndexPath indexPathWithIndexes:[CPArray arrayWithObjects:1,4]];
     [self assert:CPOrderedDescending equals:[indexPath compare:comparisonIndexPath]];
-    
-    
+
     comparisonIndexPath = [CPIndexPath indexPathWithIndexes:[CPArray arrayWithObjects:1,5,3]];
     [self assert:CPOrderedSame equals:[indexPath compare:comparisonIndexPath]];
-    
-    
+
     comparisonIndexPath = [CPIndexPath indexPathWithIndexes:[CPArray arrayWithObjects:1,5,4]];
     [self assert:CPOrderedAscending equals:[indexPath compare:comparisonIndexPath]];
-    
+
     comparisonIndexPath = [CPIndexPath indexPathWithIndexes:[CPArray arrayWithObjects:1,6]];
     [self assert:CPOrderedAscending equals:[indexPath compare:comparisonIndexPath]];
 }
