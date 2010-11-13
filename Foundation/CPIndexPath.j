@@ -11,6 +11,11 @@
     CPArray _indexes @accessors(property=indexes);
 }
 
++ (id)indexPathWithIndex:(int)index
+{
+    return [[self alloc] initWithIndexes:[index] length:1];
+}
+
 + (id)indexPathWithIndexes:(CPArray)indexes length:(int)length
 {
     return [[self alloc] initWithIndexes:indexes length:length];

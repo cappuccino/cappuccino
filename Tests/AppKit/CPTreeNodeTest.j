@@ -22,7 +22,7 @@
     [self assert:childNode equals:[treeNode descendantNodeAtIndexPath:indexPath]];
     
     indexPath = [CPIndexPath indexPathWithIndex:1];
-    [self assert:nil equals:[treeNode descendantNodeAtIndexPath:indexPath]];
+    [self assert:undefined equals:[treeNode descendantNodeAtIndexPath:indexPath]];
 }
 
 @end

@@ -1,5 +1,6 @@
 
 @import <Foundation/CPObject.j>
+@import <Foundation/CPIndexPath.j>
 
 
 @implementation CPTreeNode : CPObject
