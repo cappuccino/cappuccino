@@ -730,22 +730,14 @@ CPOutlineViewDropOnItemIndex = -1;
        if (!isExpandable)
             continue;
 
-        var control = [self _dequeueDisclosureControl],
-            frame = [control frame],
-            dataViewFrame = [self frameOfDataViewAtColumn:outlineColumn row:row];
-
-        frame.origin.x = _indentationMarkerFollowsDataView ? _CGRectGetMinX(dataViewFrame) - _CGRectGetWidth(frame) : 0.0;
-        frame.origin.y = _CGRectGetMinY(dataViewFrame);
-        frame.size.height = _CGRectGetHeight(dataViewFrame);
-        // FIXME: center instead?
-        //frame.origin.y = _CGRectGetMidY(dataViewFrame) - _CGRectGetHeight(frame) / 2.0;
-
+        var control = [self _dequeueDisclosureControl];
         _disclosureControlsForRows[row] = control;
+
+        [self _layoutDisclosureControlInRow:row column:outlineColumn];       
 
         [control setState:[self isItemExpanded:item] ? CPOnState : CPOffState];
         var selector = [self isRowSelected:row] ? @"setThemeState:" : @"unsetThemeState:";
         [control performSelector:CPSelectorFromString(selector) withObject:CPThemeStateSelected];
-        [control setFrame:frame];
 
         [self addSubview:control];
     }
@@ -781,6 +773,41 @@ CPOutlineViewDropOnItemIndex = -1;
 
         _disclosureControlsForRows[row] = nil;
     }
+}
+
+- (void)_layoutDataViewsInRows:(CPIndexSet)rows columns:(CPIndexSet)columns
+{
+    [super _layoutDataViewsInRows:rows columns:columns];
+
+    var outlineColumn = [_tableColumns indexOfObjectIdenticalTo:[self outlineTableColumn]],
+        rowArray = [];
+
+    [rows getIndexes:rowArray maxCount:-1 inIndexRange:nil];
+
+    var rowIndex = 0,
+        rowsCount = rowArray.length;
+
+    for (; rowIndex < rowsCount; ++rowIndex)
+    {
+        [self _layoutDisclosureControlInRow:rowArray[rowIndex] column:outlineColumn];
+    }
+}
+
+- (void)_layoutDisclosureControlInRow:(int)row column:(int)outlineColumn
+{
+    var control = _disclosureControlsForRows[row];
+
+    if (!control)
+        return;
+
+    var frame = [control frame],
+        dataViewFrame = [self frameOfDataViewAtColumn:outlineColumn row:row];
+
+    frame.origin.x = _indentationMarkerFollowsDataView ? _CGRectGetMinX(dataViewFrame) - _CGRectGetWidth(frame) : 0.0;
+    frame.origin.y = _CGRectGetMinY(dataViewFrame);
+    frame.size.height = _CGRectGetHeight(dataViewFrame);
+
+    [control setFrame:frame];
 }
 
 - (void)_toggleFromDisclosureControl:(CPControl)aControl
