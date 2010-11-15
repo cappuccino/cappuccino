@@ -1076,7 +1076,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
 - (void)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(int)row
 {
-    return [_cachedCompletions objectAtIndex:row];
+    return [self tokenField:self displayStringForRepresentedObject:[_cachedCompletions objectAtIndex:row]];
 }
 
 - (void)tableViewSelectionDidChange:(CPNotification)notification
