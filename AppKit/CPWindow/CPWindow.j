@@ -1223,10 +1223,10 @@ CPTexturedBackgroundWindowMask
     if (_firstResponder === aResponder)
         return YES;
 
-    if(![_firstResponder resignFirstResponder])
+    if (![_firstResponder resignFirstResponder])
         return NO;
 
-    if(!aResponder || ![aResponder acceptsFirstResponder] || ![aResponder becomeFirstResponder])
+    if (!aResponder || ![aResponder acceptsFirstResponder] || ![aResponder becomeFirstResponder])
     {
         _firstResponder = self;
 
@@ -2155,7 +2155,7 @@ CPTexturedBackgroundWindowMask
     aSheet._isSheet = YES;
     aSheet._parentView = self;
 
-    var originx = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width)/2),
+    var originx = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width) / 2),
         originy = frame.origin.y + [[self contentView] frame].origin.y,
         startFrame = CGRectMake(originx, originy, sheetFrame.size.width, 0),
         endFrame = CGRectMake(originx, originy, sheetFrame.size.width, sheetFrame.size.height);
@@ -2314,7 +2314,7 @@ CPTexturedBackgroundWindowMask
 
     // Apple's documentation is inconsistent with their behavior here. According to the docs
     // an event going of the responder chain is passed to the input system as a last resort.
-    // However, the only methods I could get Cocoa to call automatically are 
+    // However, the only methods I could get Cocoa to call automatically are
     // moveUp: moveDown: moveLeft: moveRight: pageUp: pageDown: and complete:
     [self _processKeyboardUIKey:anEvent];
 }
@@ -2366,7 +2366,7 @@ CPTexturedBackgroundWindowMask
 
     [self _appendSubviewsOf:_contentView toArray:subviews];
 
-    for (var i = 0, count = [subviews count]; i<count; i++)
+    for (var i = 0, count = [subviews count]; i < count; i++)
     {
         if (subviews[i]._nextKeyView)
             return YES;
@@ -2384,8 +2384,8 @@ CPTexturedBackgroundWindowMask
     var keyViewOrder = [subviews sortedArrayUsingFunction:keyViewComparator context:_contentView],
         count = [keyViewOrder count];
 
-    for (var i=0; i<count; i++)
-        [keyViewOrder[i] setNextKeyView:keyViewOrder[(i+1)%count]];
+    for (var i = 0; i < count; i++)
+        [keyViewOrder[i] setNextKeyView:keyViewOrder[(i + 1) % count]];
 
     _keyViewLoopIsDirty = NO;
 }
