@@ -2324,7 +2324,7 @@ CPTexturedBackgroundWindowMask
     Interprets the key event for action messages and sends the action message down the responder chain
     Cocoa only sends moveDown:, moveUp:, moveLeft:, moveRight:, pageUp:, pageDown: and complete: messages.
     We deviate from this by sending (the default) scrollPageUp: scrollPageDown: for pageUp and pageDown keys.
-    @param anEvent the event to handle. 
+    @param anEvent the event to handle.
     @return YES if the key event was handled, NO if no responder handled the key event
 */
 - (BOOL)_processKeyboardUIKey:(CPEvent)anEvent
@@ -2498,19 +2498,24 @@ CPTexturedBackgroundWindowMask
 
 @end
 
-var keyViewComparator = function(a, b, context)
+var keyViewComparator = function(lhs, rhs, context)
 {
-    var viewBounds = [a convertRect:[a bounds] toView:nil],
-        otherBounds = [b convertRect:[b bounds] toView:nil];
+    var lhsOrigin = [lhs convertRect:[lhs bounds] toView:nil].origin,
+        rhsOrigin = [rhs convertRect:[rhs bounds] toView:nil].origin;
 
-    if (CGRectGetMinY(viewBounds) < CGRectGetMinY(otherBounds))
+    if (lhsOrigin.y < rhsOrigin.y)
         return -1;
-    else if (CGRectGetMinY(viewBounds) == CGRectGetMinY(otherBounds) && CGRectGetMinX(viewBounds) < CGRectGetMinX(otherBounds))
-        return -1;
-    else if (CGRectGetMinX(viewBounds) == CGRectGetMinX(otherBounds) && CGRectGetMinX(viewBounds) == CGRectGetMinX(otherBounds))
-        return 0;
-    else
-        return 1;
+
+    if (lhsOrigin.y === rhsOrigin.y)
+        if (lhsOrigin.x < rhsOrigin.x)
+            return -1;
+
+        else if (lhsOrigin.x === rhsOrigin.x)
+            return 0;
+
+    // lhsOrigin.y === rhsOrigin.y && lhsOrigin.x > rhsOrigin.x || lhsOrigin.y > rhsOrigin.y
+
+    return 1;
 }
 
 @implementation CPWindow (MenuBar)
