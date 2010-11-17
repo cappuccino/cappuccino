@@ -2362,43 +2362,29 @@ CPTexturedBackgroundWindowMask
 
 - (BOOL)_hasKeyViewLoop
 {
-    var subviews = [];
+    var views = allViews(self),
+        index = [views count];
 
-    [self _appendSubviewsOf:_contentView toArray:subviews];
-
-    for (var i = 0, count = [subviews count]; i < count; i++)
-    {
-        if (subviews[i]._nextKeyView)
+    while (index--)
+        if ([views[index] nextKeyView])
             return YES;
-    }
 
     return NO;
 }
 
 - (void)recalculateKeyViewLoop
 {
-    var subviews = [];
+    var views = allViews(self);
 
-    [self _appendSubviewsOf:_contentView toArray:subviews];
+    [views sortUsingFunction:keyViewComparator context:nil];
 
-    var keyViewOrder = [subviews sortedArrayUsingFunction:keyViewComparator context:_contentView],
-        count = [keyViewOrder count];
+    var index = 0,
+        count = [views count];
 
-    for (var i = 0; i < count; i++)
-        [keyViewOrder[i] setNextKeyView:keyViewOrder[(i + 1) % count]];
+    for (; index < count; ++index)
+        [views[index] setNextKeyView:views[(index + 1) % count]];
 
     _keyViewLoopIsDirty = NO;
-}
-
-- (void)_appendSubviewsOf:(CPView)aView toArray:(CPArray)anArray
-{
-    var subviews = [aView subviews],
-        count = [subviews count];
-
-    while (count--)
-        [self _appendSubviewsOf:subviews[count] toArray:anArray];
-
-    [anArray addObject:aView];
 }
 
 - (void)setAutorecalculatesKeyViewLoop:(BOOL)shouldRecalculate
@@ -2498,24 +2484,46 @@ CPTexturedBackgroundWindowMask
 
 @end
 
+var allViews = function(aWindow)
+{
+    var views = [[aWindow contentView] subviews],
+        index = 0;
+
+    for (; index < views.length; ++index)
+        views = views.concat([views[index] subviews]);
+
+    return views;
+}
+
 var keyViewComparator = function(lhs, rhs, context)
 {
-    var lhsOrigin = [lhs convertRect:[lhs bounds] toView:nil].origin,
-        rhsOrigin = [rhs convertRect:[rhs bounds] toView:nil].origin;
+    var lhsBounds = [lhs convertRect:[lhs bounds] toView:nil],
+        rhsBounds = [rhs convertRect:[rhs bounds] toView:nil],
+        lhsY = _CGRectGetMinY(lhsBounds),
+        rhsY = _CGRectGetMinY(rhsBounds),
+        lhsX = _CGRectGetMinX(lhsBounds),
+        rhsX = _CGRectGetMinX(rhsBounds),
+        intersectsVertically = MIN(_CGRectGetMaxY(lhsBounds), _CGRectGetMaxY(rhsBounds)) - MAX(lhsY, rhsY);
 
-    if (lhsOrigin.y < rhsOrigin.y)
-        return -1;
+    // If two views are "on the same line" (intersect vertically), then rely on the x comparison.
+    if (intersectsVertically > 0)
+    {
+        if (lhsX < rhsX)
+            return CPOrderedAscending;
 
-    if (lhsOrigin.y === rhsOrigin.y)
-        if (lhsOrigin.x < rhsOrigin.x)
-            return -1;
+        if (lhsX === rhsX)
+            return CPOrderedSame;
 
-        else if (lhsOrigin.x === rhsOrigin.x)
-            return 0;
+        return CPOrderedDescending;
+    }
 
-    // lhsOrigin.y === rhsOrigin.y && lhsOrigin.x > rhsOrigin.x || lhsOrigin.y > rhsOrigin.y
+    if (lhsY < rhsY)
+        return CPOrderedAscending;
 
-    return 1;
+    if (lhsY === rhsY)
+        return CPOrderedSame;
+
+    return CPOrderedDescending;
 }
 
 @implementation CPWindow (MenuBar)
