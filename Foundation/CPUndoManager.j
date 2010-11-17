@@ -594,6 +594,14 @@ if (_currentGroup == nil)
 */
 - (void)removeAllActions
 {
+    // Close off any groupings.
+    while (_currentGrouping)
+        [self endUndoGrouping];
+
+    // Won't need this anymore
+    [self _unregisterWithRunLoop];
+
+    _state = CPUndoManagerNormal;
     _redoStack = [];
     _undoStack = [];
     _disableCount = 0;
