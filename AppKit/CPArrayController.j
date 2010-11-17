@@ -534,9 +534,6 @@
 
 - (void)removeObject:(id)object
 {
-    if (![self canRemove])
-        return;
-
    [self willChangeValueForKey:@"content"];
    [_contentObject removeObject:object];
 
@@ -598,9 +595,6 @@
 
 - (void)removeObjects:(CPArray)objects
 {
-    if (![self canRemove])
-        return;
-
     [self _removeObjects:objects];
 }
 
