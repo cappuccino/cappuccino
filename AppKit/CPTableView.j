@@ -100,6 +100,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 #define NUMBER_OF_COLUMNS() (_tableColumns.length)
 #define UPDATE_COLUMN_RANGES_IF_NECESSARY() if (_dirtyTableColumnRangeIndex !== CPNotFound) [self _recalculateTableColumnRanges];
 
+
 @implementation _CPTableDrawView : CPView
 {
     CPTableView _tableView;
@@ -179,6 +180,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     unsigned    _numberOfRows;
     CPIndexSet  _groupRows;
+
+    CPArray    _cachedRowHeights;
 
     // Persistence
     CPString                _autosaveName;
@@ -275,7 +278,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _lastSelectedRow = -1;
         _currentHighlightedTableColumn = nil;
 
-        _sortDescriptors = [CPArray array];
+        _sortDescriptors = [];
 
         _draggedRowIndexes = [CPIndexSet indexSet];
         _verticalMotionCanDrag = YES;
@@ -295,6 +298,15 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 // FIX ME: we have a lot of redundent init stuff in initWithFrame: and initWithCoder: we should move it all into here.
 - (void)_init
 {
+        HEIGHT_OF_TABLEVIEW = function()
+        {
+            if (!(_implementedDataSourceMethods & CPTableViewDelegate_tableView_heightOfRow_))
+                return (_rowHeight + _intercellSpacing.height) * _numberOfRows;
+
+            var heightObject = _cachedRowHeights[_cachedRowHeights.length];
+            return heightObject.heightAboveRow + heightObject.height + intercellSpacing.height;
+        }
+
         _tableViewFlags = 0;
 
         _selectedColumnIndexes = [CPIndexSet indexSet];
@@ -321,6 +333,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _exposedRows = [CPIndexSet indexSet];
         _exposedColumns = [CPIndexSet indexSet];
         _cachedDataViews = { };
+        _cachedRowHeights = [];
 
         _groupRows = [CPIndexSet indexSet];
 
@@ -430,6 +443,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     _reloadAllRows = YES;
     _objectValues = { };
+    _cachedRowHeights = [];
 
     // This updates the size too.
     [self noteNumberOfRowsChanged];
@@ -1130,7 +1144,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (int)numberOfRows
 {
-    if (_numberOfRows)
+    if (_numberOfRows !== nil)
         return _numberOfRows;
 
     var contentBindingInfo = [self infoForBinding:@"content"];
@@ -1140,13 +1154,14 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         var destination = [contentBindingInfo objectForKey:CPObservedObjectKey],
             keyPath = [contentBindingInfo objectForKey:CPObservedKeyPathKey];
 
-        return [[destination valueForKeyPath:keyPath] count];
+        _numberOfRows = [[destination valueForKeyPath:keyPath] count];
     }
-
     else if (_dataSource)
-        return [_dataSource numberOfRowsInTableView:self];
+        _numberOfRows = [_dataSource numberOfRowsInTableView:self];
+    else
+        _numberOfRows = 0;
 
-    return 0;
+    return _numberOfRows;
 }
 
 //Displaying Cell
@@ -1284,6 +1299,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 // Complexity:
 // O(1)
+/*!
+    Returns a CGRect with the location and size of the column
+    @param aColumnIndex the index of the column you want the rect of
+*/
 - (CGRect)rectOfColumn:(CPInteger)aColumnIndex
 {
     aColumnIndex = +aColumnIndex;
@@ -1297,14 +1316,30 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     var range = _tableColumnRanges[aColumnIndex];
 
-    return _CGRectMake(range.location, 0.0, range.length, CGRectGetHeight([self bounds]));
+    return _CGRectMake(range.location, 0.0, range.length, _CGRectGetHeight([self bounds]));
 }
 
+// Complexity:
+// O(1)
+/*!
+    Returns a CGRect with the location and size of the row
+    @param aRowIndex the index of the row you want the rect of
+*/
 - (CGRect)rectOfRow:(CPInteger)aRowIndex
 {
-    var height = _rowHeight + _intercellSpacing.height;
+    if (_implementedDataSourceMethods & CPTableViewDelegate_tableView_heightOfRow_)
+    {
+        var y = _cachedRowHeights[aRowIndex].heightAboveRow,
+            height = _cachedRowHeights[aRowIndex].height;
+    }
+    else
+    {
+        var y = aRowIndex * (_rowHeight + _intercellSpacing.height),
+            height = _rowHeight;
+    }
+    
 
-    return _CGRectMake(0.0, aRowIndex * height, _CGRectGetWidth([self bounds]), height);
+    return _CGRectMake(0.0, y, _CGRectGetWidth([self bounds]), height);
 }
 
 // Complexity:
@@ -1313,7 +1348,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     Returns a range of indices for the rows that lie wholly or partially within the vertical boundaries of a given rectangle.
     @param aRect A rectangle in the coordinate system of the receiver.
 */
-
+// FIX ME: Variable row heights
 - (CPRange)rowsInRect:(CGRect)aRect
 {
     // If we have no rows, then we won't intersect anything.
@@ -1419,26 +1454,64 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
    return CPNotFound;
 }
 
+//Complexity
+// O(1) for static row height
+// 0(lg Rows) for variable row heights
 - (CPInteger)rowAtPoint:(CGPoint)aPoint
 {
+    if (_implementedDataSourceMethods & CPTableViewDelegate_tableView_heightOfRow_)
+    {
+
+        // FIX ME: binary search plz
+        var currIndex = [self numberOfRows];//FLOOR([self numberOfRows] / 2);
+        while(currIndex--)
+        {
+            var upperBound = _cachedRowHeights[currIndex].heightAboveRow,
+                lowerBound = upperBound + _cachedRowHeights[currIndex].height;
+            
+            if (aPoint.y > upperBound && aPoint.y < lowerBound)
+                return currIndex;
+        }
+
+        return CPNotFound;
+    }
+
     var y = aPoint.y,
         row = FLOOR(y / (_rowHeight + _intercellSpacing.height));
 
     if (row >= _numberOfRows)
-        return -1;
+        return CPNotFound;
 
     return row;
 }
 
+/*!
+    returns a rect for the dataview / cell at the column and row given
+    if the column or row index is greater than the number of columns or rows a CGZeroRect is returned
+
+    @param aColumn index of the column
+    @param aRow index of the row
+*/
 - (CGRect)frameOfDataViewAtColumn:(CPInteger)aColumn row:(CPInteger)aRow
 {
     UPDATE_COLUMN_RANGES_IF_NECESSARY();
+
+    if (aColumn > [self numberOfColumns] || aRow > [self numberOfRows])
+        return _CGRectMakeZero();
 
     var tableColumnRange = _tableColumnRanges[aColumn],
         rectOfRow = [self rectOfRow:aRow],
         leftInset = FLOOR(_intercellSpacing.width / 2.0),
         topInset = FLOOR(_intercellSpacing.height / 2.0);
 
+    // FIX ME: this could be cleaned up
+    if (_implementedDataSourceMethods & CPTableViewDelegate_tableView_heightOfRow_)
+    {
+        return _CGRectMake(tableColumnRange.location + leftInset,
+                       _CGRectGetMinY(rectOfRow) + topInset,
+                       tableColumnRange.length - _intercellSpacing.width,
+                       _cachedRowHeights[aRow].height);
+    }
     return _CGRectMake(tableColumnRange.location + leftInset,
                        _CGRectGetMinY(rectOfRow) + topInset,
                        tableColumnRange.length - _intercellSpacing.width,
@@ -1634,7 +1707,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     var oldNumberOfRows = _numberOfRows;
 
     _numberOfRows = nil;
-    _numberOfRows = [self numberOfRows];
+    _cachedRowHeights = [];
+
+    // this line serves two purposes
+    // 1. it updates the _numberOfRows cache with the -numberOfRows call
+    // 2. it updates the row height cache if needed
+    [self noteHeightOfRowsWithIndexesChanged:[CPIndexSet indexSetWithIndexesInRange::CPMakeRange(0, [self numberOfRows])];
 
     // remove row indexes from the selection if they no longer exist
     var hangingSelections = oldNumberOfRows - _numberOfRows;
@@ -1648,13 +1726,49 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self tile];
 }
 
+
+/*!
+    Informs the receiver that the rows specified in indexSet have changed height.
+
+    @param anIndexSet an index set containing the indexes of the rows which changed height
+*/
+- (void)noteHeightOfRowsWithIndexesChanged:(CPIndexSet)anIndexSet
+{
+    if (!(_implementedDataSourceMethods & CPTableViewDelegate_tableView_heightOfRow_)
+        return;
+
+    // this method will update the height of those rows, but since the cached array also contains 
+    // the height above the row it needs to recalculate for the rows below it too
+    var i = [anIndexSet firstIndex],
+        count = _numberOfRows - i,
+        heightAbove = (i > 0) ? _cachedRowHeights[i - 1].height + _cachedRowHeights[i - 1].heightAboveRow + intercellSpacing.height : 0;
+
+    for (; i < count; i++)
+    {
+        // update the cache if the user told us to
+        if ([anIndexSet containsIndex:i])
+            var height = [_delegate tableView:self heightOfRow:indexesToUpdate];
+
+        if (_cachedRowHeight.length > i)
+        {
+            // since it exists, update it
+            _cachedRowHeight[i].height = height;
+            _cachedRowHeight[i].heightAboveRow = heightAbove;
+        }
+        else
+            _cachedRowHeights[i] = {"height":height, "heightAboveRow":heightAbove};   
+
+        heightAbove += height + intercellSpacing.height;
+    }
+}
+
 - (void)tile
 {
     UPDATE_COLUMN_RANGES_IF_NECESSARY();
 
     // FIXME: variable row heights.
     var width = _tableColumnRanges.length > 0 ? CPMaxRange([_tableColumnRanges lastObject]) : 0.0,
-        height = (_rowHeight + _intercellSpacing.height) * _numberOfRows,
+        height = HEIGHT_OF_TABLEVIEW(),
         superview = [self superview];
 
     if ([superview isKindOfClass:[CPClipView class]])
