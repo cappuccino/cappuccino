@@ -1641,8 +1641,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if (hangingSelections > 0)
     {
+        var previousSelectionCount = [_selectedRowIndexes count];
         [_selectedRowIndexes removeIndexesInRange:CPMakeRange(_numberOfRows, hangingSelections)];
-        [self _noteSelectionDidChange];
+
+        // For optimal performance, only send a notification if indices were actually removed.
+        if (previousSelectionCount > [_selectedRowIndexes count])
+            [self _noteSelectionDidChange];
     }
 
     [self tile];
@@ -2648,7 +2652,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             if (row >= firstRow)
             {
                 if (![_groupRows containsIndex:row] && _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleSourceList)
-                    CGContextAddRect(context, CGRectIntersection(aRect, fillRect = [self rectOfRow:row]));    
+                    CGContextAddRect(context, CGRectIntersection(aRect, fillRect = [self rectOfRow:row]));
                 else
                     groupRowRects.push(CGRectIntersection(aRect, [self rectOfRow:row]));
             }
@@ -2663,9 +2667,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     }
     // console.profileEnd("row-paint");
 
-    
 
-    // FIX ME: this is really terrible, it seems like such a hack... 
+
+    // FIX ME: this is really terrible, it seems like such a hack...
     var totalHeight = _CGRectGetMaxY(aRect);
 
     if (heightFilled >= totalHeight || _rowHeight <= 0.0)
@@ -2811,7 +2815,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             bottomLineColor = [gradientCache objectForKey:CPSourceListBottomLineColor],
             gradientColor = [gradientCache objectForKey:CPSourceListGradient];
     }
-    
+
     var normalSelectionHighlightColor = [self selectionHighlightColor];
 
     // dont do these lookups if there are no group rows
@@ -2823,7 +2827,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     }
 
     while (count--)
-    {   
+    {
         var currentIndex = indexes[count],
             rowRect = CGRectIntersection(objj_msgSend(self, rectSelector, currentIndex), aRect);
 
@@ -2932,7 +2936,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     var gradientCache = [self selectionGradientColors],
         topLineColor = [CPColor colorWithHexString:"d3d3d3"],
         bottomLineColor = [CPColor colorWithHexString:"bebebd"],
-        gradientColor = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [220.0 / 255.0, 220.0 / 255.0, 220.0 / 255.0,1.0, 
+        gradientColor = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [220.0 / 255.0, 220.0 / 255.0, 220.0 / 255.0,1.0,
                                                                                             199.0 / 255.0, 199.0 / 255.0, 199.0 / 255.0,1.0], [0,1], 2),
         drawGradient = YES;
 
