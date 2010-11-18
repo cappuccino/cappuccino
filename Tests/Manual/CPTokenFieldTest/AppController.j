@@ -13,6 +13,8 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
 @implementation AppController : CPObject
 {
     CPTokenField    tokenFieldD;
+
+    CPArray         allPersons;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -43,7 +45,7 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     [tokenFieldB setBezeled:NO];
     [tokenFieldB setPlaceholderString:"Edit me!"];
 
-	[tokenFieldB setObjectValue:["Missouri", "California"]];
+    [tokenFieldB setObjectValue:["Missouri", "California"]];
     [tokenFieldB setDelegate:self];
 
     [contentView addSubview:tokenFieldB];
@@ -57,12 +59,12 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     [tokenFieldC setEditable:YES];
     [tokenFieldC setPlaceholderString:"Edit me!"];
 
-	[tokenFieldC setObjectValue:['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado']];
+    [tokenFieldC setObjectValue:['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado']];
     [tokenFieldC setDelegate:self];
 
     [contentView addSubview:tokenFieldC];
 
-    
+
     tokenFieldD = [[CPTokenField alloc] initWithFrame:CGRectMake(15, 230, 500, 30)],
         labelD = [[CPTextField alloc] initWithFrame:CGRectMake(15, 210, 500, 24)];
 
@@ -70,24 +72,25 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     [contentView addSubview:labelD];
 
     [tokenFieldD setEditable:YES];
-    
-    // Delegate must be setted before objectValue
+
+    // Delegate must be set before objectValue
     [tokenFieldD setDelegate:self];
 
-    [tokenFieldD setObjectValue:[
+    allPersons = [
         [Person personWithFirstName:@"Luc" lastName:@"Vauvillier"],
         [Person personWithFirstName:@"John" lastName:@"Doe"],
         [Person personWithFirstName:@"Amélie" lastName:@"Poulain"],
         [Person personWithFirstName:@"Jean" lastName:@"Valjean"]
-    ]];
+    ];
+    [tokenFieldD setObjectValue:[allPersons copy]];
 
     [contentView addSubview:tokenFieldD];
-    
+
     var button = [[CPButton alloc] initWithFrame:CGRectMake(15, 270, 0, 0)];
     [button setTitle:"Get Object Values"];
     [button sizeToFit];
     [button setTarget:self];
-    [button setAction:@selector(getObjectValues:)];                
+    [button setAction:@selector(getObjectValues:)];
     [contentView addSubview:button];
 
     [theWindow orderFront:self];
@@ -107,9 +110,19 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     if (!substring)
         return r;
 
-    for (var i = 0; i < STATES.length; i++)
-        if (STATES[i].toLowerCase().indexOf(substring.toLowerCase()) == 0)
-            r.push(STATES[i]);
+
+    if (aTokenField !== tokenFieldD)
+    {
+        for (var i = 0; i < STATES.length; i++)
+            if (STATES[i].toLowerCase().indexOf(substring.toLowerCase()) == 0)
+                r.push(STATES[i]);
+    }
+    else
+    {
+        for (var i = 0; i < allPersons.length; i++)
+            if ([allPersons[i] fullname].toLowerCase().indexOf(substring.toLowerCase()) == 0)
+                r.push(allPersons[i]);
+    }
 
     return r;
 }
@@ -120,7 +133,7 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     {
         return [representedObject fullname];
     }
-    
+
     return representedObject;
 }
 
@@ -140,11 +153,11 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
 }
 
 - (id)initWithFirstName:(CPString)aFirstName lastName:(CPString)aLastName {
-    self = [super init]; 
+    self = [super init];
     if (self)
     {
-        _firstName = aFirstName; 
-        _lastName = aLastName; 
+        _firstName = aFirstName;
+        _lastName = aLastName;
     }
     return self;
 }
