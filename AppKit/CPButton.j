@@ -129,6 +129,11 @@ CPButtonImageOffset   = 3.0;
                                        forKeys:[@"image", @"image-offset", @"bezel-inset", @"content-inset", @"bezel-color"]];
 }
 
+/*!
+	Initializes and returns a newly allocated CPButton object with a specified frame rectangle.
+	@param aFrame The frame rectangle for the created button object.
+	@return An initialized CPView object or nil if the object couldn't be created.
+*/
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
@@ -155,7 +160,8 @@ CPButtonImageOffset   = 3.0;
 
 // Setting the state
 /*!
-    Returns \c YES if the button has a 'mixed' state in addition to on and off.
+	Returns a Boolean value indicating whether the button allows a mixed state.
+    @return \c YES if the button has a 'mixed' state in addition to on and off.
 */
 - (BOOL)allowsMixedState
 {
@@ -179,6 +185,10 @@ CPButtonImageOffset   = 3.0;
         [self setState:CPOnState];
 }
 
+/*!
+	Sets the value of the button using an Objective-J object.
+	@param anObjectValue The value of the button interpreted as an Objective-J object.
+*/
 - (void)setObjectValue:(id)anObjectValue
 {
     if (!anObjectValue || anObjectValue === @"" || ([anObjectValue intValue] === 0))
@@ -213,6 +223,13 @@ CPButtonImageOffset   = 3.0;
     }
 }
 
+/*!
+	Returns the button's next state.
+	@return The button's state. A button can have two or three states. 
+	If it has two, this value is either \c CPOffState (the normal or unpressed state) 
+	or \c CPOnState (the alternate or pressed state). 
+	If it has three, this value can be \c CPOnState (the feature is in effect everywhere), \c CPOffState (the feature is in effect nowhere), or \c CPMixedState (the feature is in effect somewhere).
+*/
 - (CPInteger)nextState
 {
    if ([self allowsMixedState])
@@ -225,6 +242,11 @@ CPButtonImageOffset   = 3.0;
     return 1 - [self state];
 }
 
+/*!
+    Sets the button's next state to \c aState.
+    @param aState Possible states are any of the CPButton globals:
+    \c CPOffState, \c CPOnState, \c CPMixedState
+*/
 - (void)setNextState
 {
     [self setState:[self nextState]];
@@ -248,6 +270,11 @@ CPButtonImageOffset   = 3.0;
     return [self intValue];
 }
 
+/*!
+	Sets the title displayed by the button when in its normal state.
+	@param aTitle The string to set as the button's title. This title is always shown on buttons 
+	that don’t use their alternate contents when highlighting or displaying their alternate state.
+*/
 - (void)setTitle:(CPString)aTitle
 {
     if (_title === aTitle)
@@ -259,6 +286,11 @@ CPButtonImageOffset   = 3.0;
     [self setNeedsDisplay:YES];
 }
 
+/*!
+	Returns the title displayed on the button when it’s in its normal state.
+	@return	The title displayed on the receiver when it’s in its normal state 
+	or the empty string if the button doesn’t display a title.
+*/
 - (CPString)title
 {
     return _title;
