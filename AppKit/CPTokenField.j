@@ -1126,7 +1126,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
             return stringForRepresentedObject;
         }
     }
-    
+
     return representedObject;
 }
 
