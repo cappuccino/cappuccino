@@ -31,8 +31,9 @@ CPSoundPlayBackStateStop    = 1;
 CPSoundPlayBackStatePause   = 2;
 
 
-/*! CPSound is a Cappuccino for binding for HTML5 audio element
-    respecting the NSSound protocol
+/*!
+    CPSound provides a way to load and play sounds. In the browser it relies on the
+    HTML5 audio tag being available.
 
     CPSound delegate:
         - sound:didFinishPlaying: called when sound has finished to played
@@ -59,21 +60,24 @@ CPSoundPlayBackStatePause   = 2;
         _loops = NO;
         _audioTag = document.createElement("audio");
         _audioTag.preload = YES;
-        _audioTag.addEventListener("canplay", function(){
+        _audioTag.addEventListener("canplay", function()
+        {
             [self _soundDidload];
-        })
-        _audioTag.addEventListener("ended", function(){
+        });
+        _audioTag.addEventListener("ended", function()
+        {
             [self _soundDidEnd];
-        })
-
+        });
     }
 
     return self;
 }
 
-/*! init the sound with contents of file located at url represetend by CPString.
-    @param aFile CPString containing the path of the sound
-    @param byRef ignored. keeped for Cocoa compat
+/*!
+    Initialize with the sound contents of the URL represented by aFile.
+
+    @param aFile CPString the path of the sound
+    @param byRef ignored (Cocoa compatibibility)
 */
 - (id)initWithContentsOfFile:(CPString)aFile byReference:(BOOL)byRef
 {
@@ -86,18 +90,22 @@ CPSoundPlayBackStatePause   = 2;
     return self;
 }
 
-/*! init the sound with contents of file located at CURL.
-    @param aFile CPURL containing the URL of the sound
-    @param byRef ignored. keeped for Cocoa compat
+/*!
+    Initialize with the sound contents of the file located at aURL.
+
+    @param aURL CPURL containing the URL of the sound
+    @param byRef ignored (Cocoa compatibibility)
 */
-- (id)initWithContentsOfURL:(CPURL)anURL byReference:(BOOL)byRef
+- (id)initWithContentsOfURL:(CPURL)aURL byReference:(BOOL)byRef
 {
-    return [self initWithContentsOfFile:[anURL absoluteString] byReference:NO];
+    return [self initWithContentsOfFile:[aURL absoluteString] byReference:NO];
 }
 
-/*! init the sound with contents given CPData.
-    @param aFile CPData containing the sound
-    @param byRef ignored. keeped for Cocoa compat
+/*!
+    Initialize with the sound contents of someData.
+
+    @param someData CPData containing the sound
+    @param byRef ignored (Cocoa compatibibility)
 */
 - (id)initWithData:(CPData)someData
 {
@@ -133,7 +141,8 @@ CPSoundPlayBackStatePause   = 2;
 #pragma mark -
 #pragma mark Media controls
 
-/*! play the sound
+/*!
+    Play the sound.
 */
 - (void)play
 {
@@ -145,7 +154,8 @@ CPSoundPlayBackStatePause   = 2;
     _playBackStatus = CPSoundPlayBackStatePlay;
 }
 
-/*! stop the sound
+/*!
+    Stop the sound.
 */
 - (void)stop
 {
@@ -161,7 +171,8 @@ CPSoundPlayBackStatePause   = 2;
         [_delegate sound:self didFinishPlaying:YES];
 }
 
-/*! pause the sound
+/*!
+    Pause the sound.
 */
 - (void)pause
 {
@@ -173,7 +184,8 @@ CPSoundPlayBackStatePause   = 2;
     _playBackStatus = CPSoundPlayBackStatePause;
 }
 
-/*! resume paused sound
+/*!
+    Resume playback of a paused sound.
 */
 - (void)resume
 {
@@ -185,7 +197,9 @@ CPSoundPlayBackStatePause   = 2;
     _playBackStatus = CPSoundPlayBackStatePlay;
 }
 
-/*! return if the sounds is in loop mode
+/*!
+    Return YES if the sound is in loop mode.
+
     @return BOOL YES if in loop mode, NO otherwise
 */
 - (BOOL)loops
@@ -193,7 +207,9 @@ CPSoundPlayBackStatePause   = 2;
     return _audioTag.loop;
 }
 
-/*! set if the sounds should be in loop mode
+/*!
+    Specifies whether the sound should repeat.
+
     @param BOOL YES for loop mode, NO otherwise
 */
 - (void)setLoops:(BOOL)shouldLoop
@@ -201,16 +217,20 @@ CPSoundPlayBackStatePause   = 2;
     _audioTag.loop = shouldLoop;
 }
 
-/*! return value of the volume
+/*!
+    Returns the volume of the receiver.
+
     @return double from 0.0 to 1.0
 */
-- (BOOL)volume
+- (double)volume
 {
     return _audioTag.volume;
 }
 
-/*! set if the sounds should be in loop mode
-    @param double set the volume value
+/*!
+    Set the volume the sound should be played at.
+
+    @param double a volume value between 0.0 and 1.0
 */
 - (void)setVolume:(double)aVolume
 {
@@ -225,7 +245,9 @@ CPSoundPlayBackStatePause   = 2;
 #pragma mark -
 #pragma mark Accessors
 
-/*! return the duration in seconds of the sound
+/*!
+    Returns the duration in seconds of the sound.
+
     @return double the duration
 */
 - (double)duration
@@ -233,8 +255,10 @@ CPSoundPlayBackStatePause   = 2;
     return _audioTag.duration;
 }
 
-/*! return if sound is playing or not
-    @return BOOL YES is sound is playing, NO otherwise
+/*!
+    Returns if the sound is playing or not.
+
+    @return BOOL YES if the sound is playing, NO otherwise
 */
 - (BOOL)isPlaying
 {
