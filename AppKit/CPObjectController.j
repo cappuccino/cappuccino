@@ -11,6 +11,7 @@
     id              _selection;
 
     Class           _objectClass;
+    CPString        _objectClassName;
 
     BOOL            _isEditable;
     BOOL            _automaticallyPreparesContent;
@@ -218,7 +219,8 @@
 
 @end
 
-var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerObjectClassNameKey",
+var CPObjectControllerContentKey                        = @"CPObjectControllerContentKey",
+    CPObjectControllerObjectClassNameKey                = @"CPObjectControllerObjectClassNameKey",
     CPObjectControllerIsEditableKey                     = @"CPObjectControllerIsEditableKey",
     CPObjectControllerAutomaticallyPreparesContentKey   = @"CPObjectControllerAutomaticallyPreparesContentKey";
 
@@ -233,11 +235,10 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
         var objectClassName = [aCoder decodeObjectForKey:CPObjectControllerObjectClassNameKey],
             objectClass = CPClassFromString(objectClassName);
 
-        // FIXME: Error if objectClass === nil
-
-        [self setObjectClass:objectClass];
+        [self setObjectClass:objectClass || [CPMutableDictionary class]];
         [self setEditable:[aCoder decodeBoolForKey:CPObjectControllerIsEditableKey]];
         [self setAutomaticallyPreparesContent:[aCoder decodeBoolForKey:CPObjectControllerAutomaticallyPreparesContentKey] || NO];
+        [self setContent:[aCoder decodeObjectForKey:CPObjectControllerContentKey]];
 
         _observedKeys = [[CPCountedSet alloc] init];
     }
@@ -247,11 +248,15 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    [aCoder encodeObject:CPStringFromClass(objectClass) forKey:CPObjectControllerObjectClassNameKey];
-    [aCoder encodeObject:[self isEditable] forKey:CPObjectControllerIsEditableKey];
+    [aCoder encodeObject:[self content] forKey:CPObjectControllerContentKey];
 
-    if (![self automaticallyPreparesContent])
-        [aCoder encodeBOOL:YES forKey:CPObjectControllerAutomaticallyPreparesContentKey];
+    if (_objectClass)
+        [aCoder encodeObject:CPStringFromClass(_objectClass) forKey:CPObjectControllerObjectClassNameKey];
+    else if (_objectClassName)
+        [aCoder encodeObject:_objectClassName forKey:CPObjectControllerObjectClassNameKey];
+
+    [aCoder encodeBool:[self isEditable] forKey:CPObjectControllerIsEditableKey];
+    [aCoder encodeBool:[self automaticallyPreparesContent] forKey:CPObjectControllerAutomaticallyPreparesContentKey];
 }
 
 @end

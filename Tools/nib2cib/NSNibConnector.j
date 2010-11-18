@@ -108,3 +108,39 @@ NIB_CONNECTION_EQUIVALENCY_TABLE = {};
 }
 
 @end
+
+@implementation CPCibBindingConnector (NSCoding)
+
+- (id)NS_initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+
+    if (self)
+    {
+        _binding = [aCoder decodeObjectForKey:@"NSBinding"];
+        _keyPath = [aCoder decodeObjectForKey:@"NSKeyPath"];
+        _options = [aCoder decodeObjectForKey:@"NSOptions"];
+
+        CPLog.debug(@"Binding Connector: " + [_binding description] + " " + [_keyPath description] + " " + [_options description]);
+    }
+
+    return self;
+}
+
+@end
+
+@implementation NSNibBindingConnector : CPCibBindingConnector
+{
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    return [self NS_initWithCoder:aCoder];
+}
+
+- (Class)classForKeyedArchiver
+{
+    return [CPCibBindingConnector class];
+}
+
+@end
