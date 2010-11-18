@@ -10,7 +10,7 @@
     CPSlider    slider;
     CPButton    button;
 
-    Track       track;
+    Track       track @accessors;
 }
 
 - (void)setUp
@@ -57,6 +57,37 @@
     [self verifyVolume:0 method:"actions"];
 }
 
+/*!
+    Using bindings and an object controller.
+*/
+- (void)testSimpleBindings02
+{
+    var controller = [CPObjectController new];
+    [controller bind:@"contentObject" toObject:self withKeyPath:@"track" options:nil];
+
+    [textField bind:@"value" toObject:controller withKeyPath:@"selection.volume" options:nil];
+    [slider bind:@"value" toObject:controller withKeyPath:@"selection.volume" options:nil];
+
+    [button setTarget:self];
+    [button setAction:@selector(muteTrack02:)];
+
+    // Test the interaction.
+    [textField setStringValue:@"0.7"];
+    // Simulate user interaction. By default bindings update on action only.
+    [textField simulateAction];
+
+    [self verifyVolume:0.7 method:"bindings"];
+
+    [slider setFloatValue:9.0];
+    [slider simulateAction];
+
+    [self verifyVolume:9 method:"bindings"];
+
+    [button performClick:self];
+
+    [self verifyVolume:0 method:"bindings"];
+}
+
 - (void)verifyVolume:(float)aVolume method:(CPString)aMethod
 {
     [self assert:aVolume equals:[track volume] message:"volume should update through " + aMethod];
@@ -85,6 +116,13 @@
     [self updateUserInterface];
 }
 
+#pragma mark ----- actions used by implementation 02 -----
+
+- (void)muteTrack02:(id)sender
+{
+    [track setVolume:0.0];
+
+}
 @end
 
 @implementation Track : CPObject
@@ -97,7 +135,10 @@
 {
     if (volume != aValue)
     {
-        volume = aValue;
+        // The Cocoa version does not need this explicit conversion but we do,
+        // because otherwise bindings will turn this into a string when reading
+        // from the text field. A side effect of loose typing.
+        volume = parseFloat(aValue);
     }
 }
 
