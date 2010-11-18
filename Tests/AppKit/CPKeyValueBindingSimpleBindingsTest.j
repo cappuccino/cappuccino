@@ -45,20 +45,21 @@
     // Simulate user interaction to fire action.
     [textField simulateAction];
 
-    [self assert:0.7 equals:[track volume] message:"volume should update through actions"];
-    [self assert:[track volume] equals:[textField floatValue]];
-    [self assert:[track volume] equals:[slider floatValue]];
+    [self verifyVolume:0.7 method:"actions"];
 
     [slider setFloatValue:9.0];
     [slider simulateAction];
 
-    [self assert:9 equals:[track volume] message:"volume should update through actions"];
-    [self assert:[track volume] equals:[textField floatValue]];
-    [self assert:[track volume] equals:[slider floatValue]];
+    [self verifyVolume:9 method:"actions"];
 
     [button performClick:self];
 
-    [self assert:0 equals:[track volume] message:"volume should update through actions"];
+    [self verifyVolume:0 method:"actions"];
+}
+
+- (void)verifyVolume:(float)aVolume method:(CPString)aMethod
+{
+    [self assert:aVolume equals:[track volume] message:"volume should update through " + aMethod];
     [self assert:[track volume] equals:[textField floatValue]];
     [self assert:[track volume] equals:[slider floatValue]];
 }
@@ -67,35 +68,35 @@
 
 - (void)updateVolumeFrom:(id)sender
 {
-	newVolume = [sender floatValue];
-	[track setVolume:newVolume];
-	[self updateUserInterface];
+    newVolume = [sender floatValue];
+    [track setVolume:newVolume];
+    [self updateUserInterface];
 }
 
 - (void)updateUserInterface
 {
-	[slider setFloatValue:[track volume]];
-	[textField setFloatValue:[track volume]];
+    [slider setFloatValue:[track volume]];
+    [textField setFloatValue:[track volume]];
 }
 
 - (void)muteTrack:(id)sender
 {
-	[track setVolume:0.0];
-	[self updateUserInterface];
+    [track setVolume:0.0];
+    [self updateUserInterface];
 }
 
 @end
 
 @implementation Track : CPObject
 {
-	float       volume @accessors;
-	CPString    title @accessors;
+    float       volume @accessors;
+    CPString    title @accessors;
 }
 
 - (void)setVolume:(float)aValue
 {
     if (volume != aValue)
-	{
+    {
         volume = aValue;
     }
 }
@@ -103,8 +104,8 @@
 - (void)setTitle:(CPString)newTitle
 {
     if (title != newTitle)
-	{
-	    title = [newTitle copy];
+    {
+        title = [newTitle copy];
     }
 }
 
