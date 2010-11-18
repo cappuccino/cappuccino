@@ -75,6 +75,7 @@
 @import "CPSegmentedControl.j"
 @import "CPShadow.j"
 @import "CPSlider.j"
+@import "CPSound.j"
 @import "CPSplitView.j"
 @import "CPStepper.j"
 @import "CPTableColumn.j"
@@ -92,3 +93,4 @@
 @import "CPWebView.j"
 @import "CPWindow.j"
 @import "CPWindowController.j"
+
