@@ -238,7 +238,7 @@ CPSoundPlayBackStatePause   = 2;
 */
 - (BOOL)isPlaying
 {
-    return (_playBackStatus === CPSoundPlayBackStatePlay) ? YES : NO;
+    return (_playBackStatus === CPSoundPlayBackStatePlay);
 }
 
 @end
