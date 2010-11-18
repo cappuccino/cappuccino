@@ -12,6 +12,7 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
 
 @implementation AppController : CPObject
 {
+    CPTokenField    tokenFieldD;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -61,8 +62,41 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
 
     [contentView addSubview:tokenFieldC];
 
+    
+    tokenFieldD = [[CPTokenField alloc] initWithFrame:CGRectMake(15, 230, 500, 30)],
+        labelD = [[CPTextField alloc] initWithFrame:CGRectMake(15, 210, 500, 24)];
+
+    [labelD setStringValue:"This token field contains represented objects."];
+    [contentView addSubview:labelD];
+
+    [tokenFieldD setEditable:YES];
+    
+    // Delegate must be setted before objectValue
+    [tokenFieldD setDelegate:self];
+
+    [tokenFieldD setObjectValue:[
+        [Person personWithFirstName:@"Luc" lastName:@"Vauvillier"],
+        [Person personWithFirstName:@"John" lastName:@"Doe"],
+        [Person personWithFirstName:@"Amélie" lastName:@"Poulain"],
+        [Person personWithFirstName:@"Jean" lastName:@"Valjean"]
+    ]];
+
+    [contentView addSubview:tokenFieldD];
+    
+    var button = [[CPButton alloc] initWithFrame:CGRectMake(15, 270, 0, 0)];
+    [button setTitle:"Get Object Values"];
+    [button sizeToFit];
+    [button setTarget:self];
+    [button setAction:@selector(getObjectValues:)];                
+    [contentView addSubview:button];
+
     [theWindow orderFront:self];
 
+}
+
+- (void)getObjectValues:(id)sender
+{
+    alert([tokenFieldD objectValue]);
 }
 
 - (CPArray)tokenField:(CPTokenField)aTokenField completionsForSubstring:(CPString)substring indexOfToken:(int)tokenIndex indexOfSelectedItem:(int)selectedIndex
@@ -78,6 +112,46 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
             r.push(STATES[i]);
 
     return r;
+}
+
+- (CPString)tokenField:(CPTokenField)tokenField displayStringForRepresentedObject:(id)representedObject
+{
+    if ([representedObject isKindOfClass:Person])
+    {
+        return [representedObject fullname];
+    }
+    
+    return representedObject;
+}
+
+@end
+
+// A sample of a custom Object
+
+@implementation Person : CPObject
+{
+    CPString    _firstName;
+    CPString    _lastName;
+}
+
++ (id)personWithFirstName:(CPString)aFirstName lastName:(CPString)aLastName
+{
+    return [[self alloc] initWithFirstName:aFirstName lastName:aLastName];
+}
+
+- (id)initWithFirstName:(CPString)aFirstName lastName:(CPString)aLastName {
+    self = [super init]; 
+    if (self)
+    {
+        _firstName = aFirstName; 
+        _lastName = aLastName; 
+    }
+    return self;
+}
+
+- (CPString)fullname
+{
+    return [CPString stringWithFormat:@"%@ %@", _firstName, _lastName];
 }
 
 @end
