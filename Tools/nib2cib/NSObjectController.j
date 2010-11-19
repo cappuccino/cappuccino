@@ -27,13 +27,15 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
         _declaredKeys = [aCoder decodeObjectForKey:@"NSDeclaredKeys"];
-        _objectClassName = CP_NSMapClassName([aCoder decodeObjectForKey:@"NSObjectClassName"]);
 
-        if (!_objectClassName)
+        var className = [aCoder decodeObjectForKey:@"NSObjectClassName"];
+        if (className)
+            _objectClassName = CP_NSMapClassName(className);
+        else
             _objectClass = [CPMutableDictionary class];
 
         _editable = [aCoder decodeBoolForKey:@"NSEditable"];

@@ -35,7 +35,7 @@ var CPCibBindingConnectorBindingKey = @"CPCibBindingConnectorBindingKey",
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    if (self = [super initWithCoder:coder])
+    if (self = [super initWithCoder:aCoder])
     {
 		_binding = [aCoder decodeObjectForKey:CPCibBindingConnectorBindingKey];
 		_keyPath = [aCoder decodeObjectForKey:CPCibBindingConnectorKeyPathKey];
