@@ -51,12 +51,12 @@
     // Test the interaction.
     [textField setStringValue:@"0.7"];
     // Simulate user interaction to fire action.
-    [textField simulateAction];
+    [textField performClick:self];
 
     [self verifyVolume:0.7 method:"actions"];
 
     [slider setFloatValue:9.0];
-    [slider simulateAction];
+    [slider performClick:self];
 
     [self verifyVolume:9 method:"actions"];
 
@@ -84,12 +84,12 @@
     // Test the interaction.
     [textField setStringValue:@"0.7"];
     // Simulate user interaction. By default bindings update on action only.
-    [textField simulateAction];
+    [textField performClick:self];
 
     [self verifyVolume:0.7 method:"bindings"];
 
     [slider setFloatValue:9.0];
-    [slider simulateAction];
+    [slider performClick:self];
 
     [self verifyVolume:9 method:"bindings"];
 
@@ -110,12 +110,12 @@
     // Test the interaction.
     [textField setStringValue:@"0.7"];
     // Simulate user interaction. By default bindings update on action only.
-    [textField simulateAction];
+    [textField performClick:self];
 
     [self verifyVolume:0.7 method:"bindings"];
 
     [slider setFloatValue:9.0];
-    [slider simulateAction];
+    [slider performClick:self];
 
     [self verifyVolume:9 method:"bindings"];
 
@@ -184,15 +184,6 @@
     {
         title = [newTitle copy];
     }
-}
-
-@end
-
-@implementation CPControl (Simulation)
-
-- (void)simulateAction
-{
-    [self sendAction:[self action] to:[self target]];
 }
 
 @end
