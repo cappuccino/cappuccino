@@ -41,7 +41,7 @@
         _editable = [aCoder decodeBoolForKey:@"NSEditable"];
         _automaticallyPreparesContent = [aCoder decodeBoolForKey:@"NSAutomaticallyPreparesContent"];
     }
-    
+
     return self;
 }
 

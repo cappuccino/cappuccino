@@ -28,7 +28,7 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
-    
+
     if (self)
     {
         _avoidsEmptySelection = [aCoder decodeBoolForKey:@"NSAvoidsEmptySelection"];
@@ -38,7 +38,7 @@
         _selectsInsertedObjects = [aCoder decodeBoolForKey:@"NSSelectsInsertedObjects"];
         _alwaysUsesMultipleValuesMarker = [aCoder decodeBoolForKey:@"NSAlwaysUsesMultipleValuesMarker"];
     }
-    
+
     return self;
 }
 
