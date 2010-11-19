@@ -105,7 +105,7 @@
 {
     // Note: this cib will connect 'objectController'. This is only for debugging purposes,
     // this code should run with or without that connection.
-    var cib = [CPBundle loadCibFile:[[CPBundle bundleForClass:CPKeyValueBindingSimpleBindingsTest] pathForResource:"../Tests/AppKit/Resources/SimpleBindingsAdoption_03.cib"] externalNameTable:[CPDictionary dictionaryWithObject:self forKey:CPCibOwner]];
+    var cib = [CPBundle loadCibFile:[[CPBundle bundleForClass:CPKeyValueBindingSimpleBindingsTest] pathForResource:"SimpleBindingsAdoption_03.cib"] externalNameTable:[CPDictionary dictionaryWithObject:self forKey:CPCibOwner]];
 
     // Test the interaction.
     [textField setStringValue:@"0.7"];
