@@ -47,6 +47,8 @@ var CPCibBindingConnectorBindingKey = @"CPCibBindingConnectorBindingKey",
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
+    [super encodeWithCoder:aCoder];
+
     [aCoder encodeObject:_binding forKey:CPCibBindingConnectorBindingKey];
     [aCoder encodeObject:_keyPath forKey:CPCibBindingConnectorKeyPathKey];
     [aCoder encodeObject:_options forKey:CPCibBindingConnectorOptionsKey];
