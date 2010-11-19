@@ -37,12 +37,12 @@ var CPCibBindingConnectorBindingKey = @"CPCibBindingConnectorBindingKey",
 {
     if (self = [super initWithCoder:aCoder])
     {
-		_binding = [aCoder decodeObjectForKey:CPCibBindingConnectorBindingKey];
-		_keyPath = [aCoder decodeObjectForKey:CPCibBindingConnectorKeyPathKey];
-		_options = [aCoder decodeObjectForKey:CPCibBindingConnectorOptionsKey];
-	}
+        _binding = [aCoder decodeObjectForKey:CPCibBindingConnectorBindingKey];
+        _keyPath = [aCoder decodeObjectForKey:CPCibBindingConnectorKeyPathKey];
+        _options = [aCoder decodeObjectForKey:CPCibBindingConnectorOptionsKey];
+    }
 
-	return self;
+    return self;
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder
