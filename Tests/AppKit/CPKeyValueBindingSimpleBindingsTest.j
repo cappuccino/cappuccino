@@ -6,11 +6,14 @@
 */
 @implementation CPKeyValueBindingSimpleBindingsTest : OJTestCase
 {
-    CPTextField textField;
-    CPSlider    slider;
-    CPButton    button;
+    CPTextField         textField @accessors;
+    CPSlider            slider @accessors;
+    CPButton            button @accessors;
 
-    Track       track @accessors;
+    Track               track @accessors;
+
+    CPWindow            theWindow @accessors;
+    CPObjectConstroller objectController @accessors;
 }
 
 - (void)setUp
@@ -18,12 +21,15 @@
     // CPApp must be initialised or action sending will not work.
     [CPApplication sharedApplication];
 
+    track = [Track new];
+    [track setVolume:5.0];
+}
+
+- (void)createControls
+{
     textField = [CPTextField textFieldWithStringValue:@"" placeholder:@"" width:100];
     slider = [[CPSlider alloc] initWithFrame:CGRectMakeZero()];
     button = [CPButton buttonWithTitle:@"Mute"];
-
-    track = [Track new];
-    [track setVolume:5.0];
 }
 
 /*!
@@ -31,6 +37,8 @@
 */
 - (void)testSimpleBindings01
 {
+    [self createControls];
+
     [textField setTarget:self];
     [textField setAction:@selector(updateVolumeFrom:)];
 
@@ -38,7 +46,7 @@
     [slider setAction:@selector(updateVolumeFrom:)];
 
     [button setTarget:self];
-    [button setAction:@selector(muteTrack:)];
+    [button setAction:@selector(muteTrack01:)];
 
     // Test the interaction.
     [textField setStringValue:@"0.7"];
@@ -62,14 +70,42 @@
 */
 - (void)testSimpleBindings02
 {
-    var controller = [CPObjectController new];
-    [controller bind:@"contentObject" toObject:self withKeyPath:@"track" options:nil];
+    [self createControls];
 
-    [textField bind:@"value" toObject:controller withKeyPath:@"selection.volume" options:nil];
-    [slider bind:@"value" toObject:controller withKeyPath:@"selection.volume" options:nil];
+    objectController = [CPObjectController new];
+    [objectController bind:@"contentObject" toObject:self withKeyPath:@"track" options:nil];
+
+    [textField bind:@"value" toObject:objectController withKeyPath:@"selection.volume" options:nil];
+    [slider bind:@"value" toObject:objectController withKeyPath:@"selection.volume" options:nil];
 
     [button setTarget:self];
-    [button setAction:@selector(muteTrack02:)];
+    [button setAction:@selector(muteTrack:)];
+
+    // Test the interaction.
+    [textField setStringValue:@"0.7"];
+    // Simulate user interaction. By default bindings update on action only.
+    [textField simulateAction];
+
+    [self verifyVolume:0.7 method:"bindings"];
+
+    [slider setFloatValue:9.0];
+    [slider simulateAction];
+
+    [self verifyVolume:9 method:"bindings"];
+
+    [button performClick:self];
+
+    [self verifyVolume:0 method:"bindings"];
+}
+
+/*!
+    Using bindings and a controller set up in a cib (e.g. using Interface Builder).
+*/
+- (void)testSimpleBindings03
+{
+    // Note: this cib will connect 'objectController'. This is only for debugging purposes,
+    // this code should run with or without that connection.
+    var cib = [CPBundle loadCibFile:[[CPBundle bundleForClass:CPKeyValueBindingSimpleBindingsTest] pathForResource:"../Tests/AppKit/Resources/SimpleBindingsAdoption_03.cib"] externalNameTable:[CPDictionary dictionaryWithObject:self forKey:CPCibOwner]];
 
     // Test the interaction.
     [textField setStringValue:@"0.7"];
@@ -110,19 +146,19 @@
     [textField setFloatValue:[track volume]];
 }
 
-- (void)muteTrack:(id)sender
+- (void)muteTrack01:(id)sender
 {
     [track setVolume:0.0];
     [self updateUserInterface];
 }
 
-#pragma mark ----- actions used by implementation 02 -----
+#pragma mark ----- actions used by implementation 02 and 03 -----
 
-- (void)muteTrack02:(id)sender
+- (void)muteTrack:(id)sender
 {
     [track setVolume:0.0];
-
 }
+
 @end
 
 @implementation Track : CPObject
