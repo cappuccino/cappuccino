@@ -503,11 +503,13 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 
 @implementation CPControllerSelectionProxy : CPObject
 {
-    id              _controller;
-    id              _keys;
+    id                  _controller;
+    id                  _keys;
 
-    CPDictionary    _cachedValues;
-    CPArray         _observationProxies;
+    CPDictionary        _cachedValues;
+    CPArray             _observationProxies;
+
+    _CPObservableArray  _observedObjects;
 }
 
 - (id)initWithController:(id)aController
@@ -610,7 +612,10 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
     [proxy setNotifyObject:YES];
     [_observationProxies addObject:proxy];
 
-    [[_controller selectedObjects] addObserver:proxy forKeyPath:aKeyPath options:options context:context];
+    // We keep are reference to the observed objects
+    // because the removeObserver: will be called after the selection changes
+    _observedObjects = [_controller selectedObjects];
+    [_observedObjects addObserver:proxy forKeyPath:aKeyPath options:options context:context];
 }
 
 - (void)removeObserver:(id)anObject forKeyPath:(CPString)aKeyPath
@@ -618,8 +623,10 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
     var proxy = [[_CPObservationProxy alloc] initWithKeyPath:aKeyPath observer:anObject object:self],
         index = [_observationProxies indexOfObject:proxy];
 
-    [[_controller selectedObjects] removeObserver:[_observationProxies objectAtIndex:index] forKeyPath:aKeyPath];
+    [_observedObjects removeObserver:[_observationProxies objectAtIndex:index] forKeyPath:aKeyPath];
     [_observationProxies removeObjectAtIndex:index];
+
+    _observedObjects = nil;
 }
 
 @end
