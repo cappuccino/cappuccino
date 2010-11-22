@@ -270,7 +270,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 
 - (id)initWithKeyPath:(id)aKeyPath observer:(id)anObserver object:(id)anObject
 {
-    if (self=[super init])
+    if (self = [super init])
     {
         _keyPath  = aKeyPath;
         _observer = anObserver;
@@ -375,7 +375,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
     return self;
 }
 
--(void)addObserver:(id)anObserver forKeyPath:(CPString)aKeyPath options:(CPKeyValueObservingOptions)options context:(id)context
+- (void)addObserver:(id)anObserver forKeyPath:(CPString)aKeyPath options:(CPKeyValueObservingOptions)options context:(id)context
 {
     if (aKeyPath.indexOf("@") === 0)
     {
@@ -387,7 +387,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
         [_observationProxies addObject:proxy];
 
         var dotIndex = aKeyPath.indexOf("."),
-            remaining = aKeyPath.substring(dotIndex+1),
+            remaining = aKeyPath.substring(dotIndex + 1),
             indexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self count])];
 
         [self addObserver:proxy toObjectsAtIndexes:indexes forKeyPath:remaining options:options context:context];
@@ -409,7 +409,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
         proxy = [_observationProxies objectAtIndex:index];
 
         var dotIndex = aKeyPath.indexOf("."),
-            remaining = aKeyPath.substring(dotIndex+1),
+            remaining = aKeyPath.substring(dotIndex + 1),
             indexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self count])];
 
         [self removeObserver:proxy fromObjectsAtIndexes:indexes forKeyPath:remaining];
@@ -423,7 +423,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 
 - (void)insertObject:(id)anObject atIndex:(unsigned)anIndex
 {
-    for (var i=0, count=[_observationProxies count]; i<count; i++)
+    for (var i = 0, count = [_observationProxies count]; i < count; i++)
     {
         var proxy = [_observationProxies objectAtIndex:i],
             keyPath = [proxy keyPath],
@@ -443,7 +443,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 
 - (void)removeObjectAtIndex:(unsigned)anIndex
 {
-    for (var i=0, count=[_observationProxies count]; i<count; i++)
+    for (var i = 0, count = [_observationProxies count]; i < count; i++)
     {
         var proxy = [_observationProxies objectAtIndex:i],
             keyPath = [proxy keyPath],
@@ -480,7 +480,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 {
     var currentObject = [self objectAtIndex:anIndex];
 
-    for (var i=0, count=[_observationProxies count]; i<count; i++)
+    for (var i = 0, count = [_observationProxies count]; i < count; i++)
     {
         var proxy = [_observationProxies objectAtIndex:i],
             keyPath = [proxy keyPath],
@@ -544,7 +544,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
         {
             value = [allValues objectAtIndex:0];
 
-            for (var i=0, count=[allValues count]; i<count && value!=CPMultipleValuesMarker; i++)
+            for (var i = 0, count= [allValues count]; i < count && value != CPMultipleValuesMarker; i++)
             {
                 if (![value isEqual:[allValues objectAtIndex:i]])
                     value = CPMultipleValuesMarker;
@@ -572,27 +572,27 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
     [[_controller selectedObjects] setValue:aValue forKey:aKey];
 }
 
--(void)controllerWillChange
+- (void)controllerWillChange
 {
     _keys = [_cachedValues allKeys];
 
     if (!_keys)
         return;
 
-    for (var i=0, count=_keys.length; i<count; i++)
+    for (var i = 0, count = _keys.length; i < count; i++)
         [self willChangeValueForKey:_keys[i]];
 
     [_cachedValues removeAllObjects];
 }
 
--(void)controllerDidChange
+- (void)controllerDidChange
 {
     [_cachedValues removeAllObjects];
 
     if (!_keys)
         return;
 
-    for (var i=0, count=_keys.length; i<count; i++)
+    for (var i = 0, count = _keys.length; i < count; i++)
         [self didChangeValueForKey:_keys[i]];
 
    _keys = nil;
