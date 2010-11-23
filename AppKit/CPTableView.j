@@ -1749,11 +1749,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         if ([anIndexSet containsIndex:i])
             var height = [_delegate tableView:self heightOfRow:indexesToUpdate];
 
-        if (_cachedRowHeight.length > i)
+        if (_cachedRowHeights.length > i)
         {
             // since it exists, update it
-            _cachedRowHeight[i].height = height;
-            _cachedRowHeight[i].heightAboveRow = heightAbove;
+            _cachedRowHeights[i].height = height;
+            _cachedRowHeights[i].heightAboveRow = heightAbove;
         }
         else
             _cachedRowHeights[i] = {"height":height, "heightAboveRow":heightAbove};   
