@@ -178,7 +178,7 @@ var CPBindingOperationAnd = 0,
 
     [_source setValue:newValue forKey:aBinding];
 
-    if ([_source respondsToSelector:@selector(_setCurrentValueIsPlaceholder:)])
+    if (aBinding === @"objectValue" && [_source respondsToSelector:@selector(_setCurrentValueIsPlaceholder:)])
         [_source _setCurrentValueIsPlaceholder:isPlaceholder];
 }
 

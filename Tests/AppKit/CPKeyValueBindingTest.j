@@ -201,19 +201,26 @@
 
     content = [
         [BindingTester testerWithCheese:@"yellow"],
-        [BindingTester testerWithCheese:@"green"]
+        [BindingTester testerWithCheese:@"green"],
     ];
     arrayController = [[CPArrayController alloc] initWithContent:content];
 
-    [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)]];
+    [arrayController setSelectionIndex:0];
 
     var options = [CPDictionary dictionaryWithJSObject:{CPMultipleValuesPlaceholderBindingOption:@"Multiple Values"}];
     [textField bind:@"value" toObject:arrayController withKeyPath:@"selection.cheese" options:options];
 
-    [self assert:@"Multiple Values" equals:[textField placeholderString]];
+    [self assert:@"yellow" equals:[textField stringValue] message:@"text field string value should be 'yellow'"];
+    [self assert:@"cheese" equals:[textField placeholderString] message:@"text field placeholder should be 'cheese'"];
+
+    [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)]];
+
+    [self assert:@"" equals:[textField stringValue] message:@"text field string value should be cleared"];
+    [self assert:@"Multiple Values" equals:[textField placeholderString] message:@"text field placeholder should be 'Multiple Values'"];
 
     [arrayController setSelectionIndex:0];
-    [self assert:@"cheese" equals:[textField placeholderString]];
+    [self assert:@"yellow" equals:[textField stringValue] message:"text field string value should be 'yellow'"];
+    [self assert:@"cheese" equals:[textField placeholderString] message:"text field placeholder should be restored"];
 }
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)changes context:(id)aContext
