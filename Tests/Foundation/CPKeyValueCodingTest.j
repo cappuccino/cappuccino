@@ -30,4 +30,66 @@
     [self assert:[CPNull null] equals:[nullObject valueForKey:@"a"] message:@"CPNull valueForKey:X returns nil"];
 }
 
+- (void)testValueForKeyPath
+{
+    var department = [Department departmentWithName:@"Engineering"],
+        employee = [Employee employeeWithName:@"Klaas Pieter" department:department];
+
+    [self assert:department equals:[employee valueForKey:@"department"]];
+    [self assert:@"Engineering" equals:[employee valueForKeyPath:@"department.name"]];
+
+    // When using selection bindings, part of a keypath might contain a controller marker
+    // (e.g. the selection.employees part of selection.employees.name might return the CPMultipleValuesMarker)
+    // This test makes sure that in such a case we return the controller marker in stead of trying to ask the controller
+    // marker for it's value for key.
+    [employee setDepartment:CPMultipleValuesMarker];
+    [self assert:CPMultipleValuesMarker equals:[employee valueForKeyPath:@"department.name"]];
+}
+
+@end
+
+@implementation Employee : CPObject
+{
+    CPString                    _name @accessors(property=name);
+    Department                  _department @accessors(property=department);
+}
+
++ (id)employeeWithName:(CPString)theName department:(Department)theDepartment
+{
+    return [[self alloc] initWithName:theName department:theDepartment];
+}
+
+- (id)initWithName:(CPString)theName department:(Department)theDepartment
+{
+    if (self = [super init])
+    {
+        _name = theName;
+        _department = theDepartment;
+    }
+
+    return self;
+}
+
+@end
+
+@implementation Department : CPObject
+{
+    CPString                _name @accessors(property=name);
+}
+
++ (id)departmentWithName:(CPString)theName
+{
+    return [[self alloc] initWithName:theName];
+}
+
+- (id)initWithName:(CPString)theName
+{
+    if (self = [super init])
+    {
+        _name = theName;
+    }
+
+    return self;
+}
+
 @end

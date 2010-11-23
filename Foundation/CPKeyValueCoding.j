@@ -178,6 +178,9 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
         remainingKeyPath = aKeyPath.substring(firstDotIndex + 1),
         value = [self valueForKey:firstKeyComponent];
 
+    if (CPIsControllerMarker(value))
+        return value;
+
     return [value valueForKeyPath:remainingKeyPath];
 }
 
