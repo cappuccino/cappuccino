@@ -525,6 +525,15 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
     return self;
 }
 
+/*
+    @ignore
+    Can be used to get the actual value for key in stead of the controller markers
+*/
+- (id)_valueForKey:(CPString)aKey
+{
+    return [[_controller selectedObjects] valueForKey:aKey];
+}
+
 - (id)valueForKey:(CPString)aKey
 {
     var value = [_cachedValues objectForKey:aKey];
