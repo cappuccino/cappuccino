@@ -178,6 +178,9 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
         remainingKeyPath = aKeyPath.substring(firstDotIndex + 1),
         value = [self valueForKey:firstKeyComponent];
 
+    if (CPIsControllerMarker(value))
+        return value;
+
     return [value valueForKeyPath:remainingKeyPath];
 }
 
@@ -218,7 +221,14 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
         owner = self;
 
     for (; i < count; ++i)
-        owner = [owner valueForKey:keys[i]];
+    {
+        var newOwner = [owner valueForKey:keys[i]];
+
+        if (CPIsControllerMarker(newOwner))
+            newOwner = [owner _valueForKey:keys[i]];
+
+        owner = newOwner;
+    }
 
     [owner setValue:aValue forKey:keys[i]];
 }
