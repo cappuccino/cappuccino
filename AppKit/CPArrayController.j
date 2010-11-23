@@ -1,4 +1,5 @@
 
+
 /*
  * CPArrayController.j
  * AppKit
@@ -150,6 +151,9 @@
 
 - (void)setContent:(id)value
 {
+    if (value === nil)
+        value = [];
+
     if (![value isKindOfClass:[CPArray class]])
         value = [value];
 
@@ -201,7 +205,7 @@
 
 - (void)_setContentSet:(id)aSet
 {
-    [self setContent:aSet];
+    [self setContent:[aSet allObjects]];
 }
 
 - (id)contentArray
@@ -211,7 +215,7 @@
 
 - (id)contentSet
 {
-    return [self content];
+    return [CPSet setWithArray:[self content]];
 }
 
 - (CPArray)arrangeObjects:(CPArray)objects
@@ -530,9 +534,6 @@
 
 - (void)removeObject:(id)object
 {
-    if (![self canRemove])
-        return;
-
    [self willChangeValueForKey:@"content"];
    [_contentObject removeObject:object];
 
@@ -594,9 +595,6 @@
 
 - (void)removeObjects:(CPArray)objects
 {
-    if (![self canRemove])
-        return;
-
     [self _removeObjects:objects];
 }
 
@@ -638,28 +636,47 @@
 
 @end
 
+var CPArrayControllerAvoidsEmptySelection             = @"CPArrayControllerAvoidsEmptySelection",
+    CPArrayControllerClearsFilterPredicateOnInsertion = @"CPArrayControllerClearsFilterPredicateOnInsertion",
+    CPArrayControllerFilterRestrictsInsertion         = @"CPArrayControllerFilterRestrictsInsertion",
+    CPArrayControllerPreservesSelection               = @"CPArrayControllerPreservesSelection",
+    CPArrayControllerSelectsInsertedObjects           = @"CPArrayControllerSelectsInsertedObjects",
+    CPArrayControllerAlwaysUsesMultipleValuesMarker   = @"CPArrayControllerAlwaysUsesMultipleValuesMarker";
+
 @implementation CPArrayController (CPCoding)
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    self = [super initWithCoder:coder];
+    self = [super initWithCoder:aCoder];
 
     if (self)
     {
-        _avoidsEmptySelection = [coder decodeBoolForKey:@"CPArrayControllerAvoidsEmptySelection"];
-        _clearsFilterPredicateOnInsertion = [coder decodeBoolForKey:@"CPClearsFilterPredicateOnInsertion"];
-        _filterRestrictsInsertion = [coder decodeBoolForKey:@"CPArrayControllerFilterRestrictsInsertion"];
-        _preservesSelection = [coder decodeBoolForKey:@"CPArrayControllerPreservesSelection"];
-        _selectsInsertedObjects = [coder decodeBoolForKey:@"CPArrayControllerSelectsInsertedObjects"];
-        _alwaysUsesMultipleValuesMarker = [coder decodeBoolForKey:@"CPArrayControllerAlwaysUsesMultipleValuesMarker"];
+        _avoidsEmptySelection = [aCoder decodeBoolForKey:CPArrayControllerAvoidsEmptySelection];
+        _clearsFilterPredicateOnInsertion = [aCoder decodeBoolForKey:CPArrayControllerClearsFilterPredicateOnInsertion];
+        _filterRestrictsInsertion = [aCoder decodeBoolForKey:CPArrayControllerFilterRestrictsInsertion];
+        _preservesSelection = [aCoder decodeBoolForKey:CPArrayControllerPreservesSelection];
+        _selectsInsertedObjects = [aCoder decodeBoolForKey:CPArrayControllerSelectsInsertedObjects];
+        _alwaysUsesMultipleValuesMarker = [aCoder decodeBoolForKey:CPArrayControllerAlwaysUsesMultipleValuesMarker];
 
-        if ([self automaticallyPreparesContent])
+        if (![self content] && [self automaticallyPreparesContent])
             [self prepareContent];
-        else
+        else if (![self content])
             [self _setContentArray:[]];
     }
 
     return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+
+    [aCoder encodeBool:_avoidsEmptySelection forKey:CPArrayControllerAvoidsEmptySelection];
+    [aCoder encodeBool:_clearsFilterPredicateOnInsertion forKey:CPArrayControllerClearsFilterPredicateOnInsertion];
+    [aCoder encodeBool:_filterRestrictsInsertion forKey:CPArrayControllerFilterRestrictsInsertion];
+    [aCoder encodeBool:_preservesSelection forKey:CPArrayControllerPreservesSelection];
+    [aCoder encodeBool:_selectsInsertedObjects forKey:CPArrayControllerSelectsInsertedObjects];
+    [aCoder encodeBool:_alwaysUsesMultipleValuesMarker forKey:CPArrayControllerAlwaysUsesMultipleValuesMarker];
 }
 
 - (void)awakeFromCib

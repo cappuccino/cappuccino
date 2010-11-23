@@ -10,6 +10,11 @@
     return tabs;
 }
 
+- (CPBox)box
+{
+    return box;
+}
+
 @end
 
 
@@ -61,5 +66,15 @@
     [_tabView setBounds:CPRectMake(100, 100, 20, 300)];
     [self assert:([tabs boundsSize].width / 2)  equals:CPRectGetMidX([tabs bounds])];
 }
+
+- (void)testBoxHeight
+{
+    var box = [_tabView box],
+        tabs = [_tabView tabs];
+    
+    [_tabView setFrame:CPRectMake(0, 0, 800, 800)];
+    [self assert:[box frameSize].height  equals:800 - ([box frameOrigin].y) - [tabs frameSize].height / 2];
+}
+
 
 @end

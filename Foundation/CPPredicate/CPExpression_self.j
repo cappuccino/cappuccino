@@ -1,28 +1,31 @@
 
 @import "CPExpression.j"
-@import <Foundation/CPString.j>
-@import <Foundation/CPDictionary.j>
-@import <Foundation/CPCoder.j>
+@import "CPString.j"
+@import "CPDictionary.j"
 
-var defaultInstance = nil;
+var evaluatedObject = nil;
 @implementation CPExpression_self : CPExpression
 {
 }
 
++ (id)evaluatedObject
+{
+    if (evaluatedObject == nil)
+        evaluatedObject = [CPExpression_self new];
+
+    return evaluatedObject;
+}
+
 - (id)init
 {
-    if (defaultInstance == nil)
-    {
-        [super initWithExpressionType:CPEvaluatedObjectExpressionType];
-        defaultInstance = self;
-    }    
-    
-    return defaultInstance;
+    [super initWithExpressionType:CPEvaluatedObjectExpressionType];
+
+    return self;
 }
 
 - (id)initWithCoder:(CPCoder)coder
 {
-    return [self init];
+    return [CPExpression_self evaluatedObject];
 }
 
 - (void)encodeWithCoder:(CPCoder)coder
@@ -37,11 +40,6 @@ var defaultInstance = nil;
 - (id)expressionValueWithObject:(id)object context:(CPDictionary)context
 {
     return object;
-}
-
-- (CPExpression)_expressionWithSubstitutionVariables:(CPDictionary)variables
-{
-    return self;
 }
 
 - (CPString)description

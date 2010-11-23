@@ -97,7 +97,6 @@ CPTableViewReverseSequentialColumnAutoresizingStyle = 3;
 CPTableViewLastColumnOnlyAutoresizingStyle = 4;
 CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
-
 #define NUMBER_OF_COLUMNS() (_tableColumns.length)
 #define UPDATE_COLUMN_RANGES_IF_NECESSARY() if (_dirtyTableColumnRangeIndex !== CPNotFound) [self _recalculateTableColumnRanges];
 
@@ -181,6 +180,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     unsigned    _numberOfRows;
     CPIndexSet  _groupRows;
 
+    // Persistence
+    CPString                _autosaveName;
+    BOOL                    _autosaveTableColumns;
 
     CPTableHeaderView _headerView;
     _CPCornerView     _cornerView;
@@ -768,12 +770,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self reloadDataForRowIndexes:_exposedRows columnIndexes:[CPIndexSet indexSetWithIndex:[_tableColumns indexOfObject:aColumn]]];
 }
 
-/*!
-    Moves the column and heading at a given index to a new given index.
-    @param columnIndex The current index of the column to move.
-    @param newIndex The new index for the moved column.
+/*
+    @ignore
+    Same as moveColumn:toColumn: but doesn't trigger an autosave
 */
-- (void)moveColumn:(unsigned)fromIndex toColumn:(unsigned)toIndex
+- (void)_moveColumn:(unsigned)fromIndex toColumn:(unsigned)toIndex
 {
     fromIndex = +fromIndex;
     toIndex = +toIndex;
@@ -798,6 +799,17 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         columnIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(fromIndex, toIndex)];
 
     [self reloadDataForRowIndexes:rowIndexes columnIndexes:columnIndexes];
+}
+
+/*!
+    Moves the column and heading at a given index to a new given index.
+    @param theColumnIndex The current index of the column to move.
+    @param theToIndex The new index for the moved column.
+*/
+- (void)moveColumn:(int)theColumnIndex toColumn:(int)theToIndex
+{
+    [self _moveColumn:theColumnIndex toColumn:theToIndex];
+    [self _autosave];
 }
 
 /*!
@@ -844,6 +856,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         return nil;
 
     return _tableColumns[index];
+}
+
+- (void)_didResizeTableColumn:(CPTableColumn)theColumn
+{
+    [self _autosave];
 }
 
 //Selecting Columns and Rows
@@ -1624,8 +1641,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if (hangingSelections > 0)
     {
+        var previousSelectionCount = [_selectedRowIndexes count];
         [_selectedRowIndexes removeIndexesInRange:CPMakeRange(_numberOfRows, hangingSelections)];
-        [self _noteSelectionDidChange];
+
+        // For optimal performance, only send a notification if indices were actually removed.
+        if (previousSelectionCount > [_selectedRowIndexes count])
+            [self _noteSelectionDidChange];
     }
 
     [self tile];
@@ -1684,13 +1705,94 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     /*FIX ME: tableview header isn't rendered until you click the horizontal scroller (or scroll)*/
 }
 
-//Persistence
-/*
-    * - autosaveName
-    * - autosaveTableColumns
-    * - setAutosaveName:
-    * - setAutosaveTableColumns:
+- (void)setAutosaveName:(CPString)theAutosaveName
+{
+    if (_autosaveName === theAutosaveName)
+        return;
+
+    _autosaveName = theAutosaveName;
+
+    [self setAutosaveTableColumns:!!theAutosaveName];
+    [self _restoreFromAutosave];
+}
+
+- (CPString)autosaveName
+{
+    return _autosaveName;
+}
+
+- (void)setAutosaveTableColumns:(BOOL)shouldAutosave
+{
+    _autosaveTableColumns = shouldAutosave;
+}
+
+- (BOOL)autosaveTableColumns
+{
+    return _autosaveTableColumns;
+}
+
+- (CPString)_columnsKeyForAutosaveName:(CPString)theAutosaveName
+{
+    return @"CPTableView Columns " + theAutosaveName;
+}
+
+- (BOOL)_autosaveEnabled
+{
+    return [self autosaveName] && [self autosaveTableColumns];
+}
+
+/*!
+    @ignore
+    Stores the tablecolumn setup in user defaults.
+    I believe Apple stores the entire encoded table column,
+    in our case that seems overkill since we need to store everything in a cookie.
 */
+- (void)_autosave
+{
+    if (![self _autosaveEnabled])
+        return;
+
+    var userDefaults = [CPUserDefaults standardUserDefaults],
+        autosaveName = [self autosaveName];
+
+    var columns = [self tableColumns],
+        columnsSetup = [];
+
+    for (var i = 0; i < [columns count]; i++)
+    {
+        var column = [columns objectAtIndex:i];
+
+        var metaData = [CPDictionary dictionaryWithJSObject:{
+            @"identifier": [column identifier],
+            @"width": [column width]
+        }]
+
+        [columnsSetup addObject:metaData];
+    }
+
+    [userDefaults setObject:columnsSetup forKey:[self _columnsKeyForAutosaveName:autosaveName]];
+}
+
+- (void)_restoreFromAutosave
+{
+    if (![self _autosaveEnabled])
+        return;
+
+    var userDefaults = [CPUserDefaults standardUserDefaults],
+        autosaveName = [self autosaveName],
+        tableColumns = [userDefaults objectForKey:[self _columnsKeyForAutosaveName:autosaveName]];
+
+    for (var i = 0; i < [tableColumns count]; i++)
+    {
+        var metaData = [tableColumns objectAtIndex:i],
+            columnIdentifier = [metaData objectForKey:@"identifier"],
+            column = [self columnWithIdentifier:columnIdentifier],
+            tableColumn = [self tableColumnWithIdentifier:columnIdentifier];
+
+        [self _moveColumn:column toColumn:i];
+        [tableColumn setWidth:[metaData objectForKey:@"width"]];
+    }
+}
 
 //Setting the Delegate:(id)aDelegate
 
@@ -2550,7 +2652,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             if (row >= firstRow)
             {
                 if (![_groupRows containsIndex:row] && _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleSourceList)
-                    CGContextAddRect(context, CGRectIntersection(aRect, fillRect = [self rectOfRow:row]));    
+                    CGContextAddRect(context, CGRectIntersection(aRect, fillRect = [self rectOfRow:row]));
                 else
                     groupRowRects.push(CGRectIntersection(aRect, [self rectOfRow:row]));
             }
@@ -2565,9 +2667,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     }
     // console.profileEnd("row-paint");
 
-    
 
-    // FIX ME: this is really terrible, it seems like such a hack... 
+
+    // FIX ME: this is really terrible, it seems like such a hack...
     var totalHeight = _CGRectGetMaxY(aRect);
 
     if (heightFilled >= totalHeight || _rowHeight <= 0.0)
@@ -2713,7 +2815,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             bottomLineColor = [gradientCache objectForKey:CPSourceListBottomLineColor],
             gradientColor = [gradientCache objectForKey:CPSourceListGradient];
     }
-    
+
     var normalSelectionHighlightColor = [self selectionHighlightColor];
 
     // dont do these lookups if there are no group rows
@@ -2725,7 +2827,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     }
 
     while (count--)
-    {   
+    {
         var currentIndex = indexes[count],
             rowRect = CGRectIntersection(objj_msgSend(self, rectSelector, currentIndex), aRect);
 
@@ -2834,7 +2936,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     var gradientCache = [self selectionGradientColors],
         topLineColor = [CPColor colorWithHexString:"d3d3d3"],
         bottomLineColor = [CPColor colorWithHexString:"bebebd"],
-        gradientColor = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [220.0 / 255.0, 220.0 / 255.0, 220.0 / 255.0,1.0, 
+        gradientColor = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [220.0 / 255.0, 220.0 / 255.0, 220.0 / 255.0,1.0,
                                                                                             199.0 / 255.0, 199.0 / 255.0, 199.0 / 255.0,1.0], [0,1], 2),
         drawGradient = YES;
 
@@ -3651,7 +3753,8 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     CPTableViewUsesAlternatingBackgroundKey = @"CPTableViewUsesAlternatingBackgroundKey",
     CPTableViewAlternatingRowColorsKey      = @"CPTableViewAlternatingRowColorsKey",
     CPTableViewHeaderViewKey                = @"CPTableViewHeaderViewKey",
-    CPTableViewCornerViewKey                = @"CPTableViewCornerViewKey";
+    CPTableViewCornerViewKey                = @"CPTableViewCornerViewKey",
+    CPTableViewAutosaveNameKey              = @"CPTableViewAutosaveNameKey";
 
 @implementation CPTableView (CPCoding)
 
@@ -3702,6 +3805,9 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
         [self _init];
 
         [self viewWillMoveToSuperview:[self superview]];
+
+        // Do this as late as possible to make sure the tableview is fully configured
+        [self setAutosaveName:[aCoder decodeObjectForKey:CPTableViewAutosaveNameKey]];
     }
 
     return self;
@@ -3736,6 +3842,8 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
     [aCoder encodeObject:_cornerView forKey:CPTableViewCornerViewKey];
     [aCoder encodeObject:_headerView forKey:CPTableViewHeaderViewKey];
+
+    [aCoder encodeObject:_autosaveName forKey:CPTableViewAutosaveNameKey];
 }
 
 @end

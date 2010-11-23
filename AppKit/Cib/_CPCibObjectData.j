@@ -28,6 +28,7 @@
 @import "CPCibConnector.j"
 @import "CPCibControlConnector.j"
 @import "CPCibOutletConnector.j"
+@import "CPCibBindingConnector.j"
 
 
 @implementation _CPCibObjectData : CPObject

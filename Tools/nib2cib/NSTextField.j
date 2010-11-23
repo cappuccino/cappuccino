@@ -58,14 +58,19 @@
         var textColor = [cell textColor],
             defaultColor = [self currentValueForThemeAttribute:@"text-color"];
 
-        // Don't change the text color if it is not the default, that messes up the theme lookups later        
+        // Don't change the text color if it is not the default, that messes up the theme lookups later
         if (![textColor isEqual:defaultColor])
             [self setTextColor:[cell textColor]];
 
-        var frame = [self frame];
+        // Only adjust the origin and size if this is a bezeled textfield.
+        // This ensures that labels positioned in IB are properly positioned after nibcib.
+        if ([self isBezeled])
+        {
+            var frame = [self frame];
 
-        [self setFrameOrigin:CGPointMake(frame.origin.x, frame.origin.y)];
-        [self setFrameSize:CGSizeMake(frame.size.width, frame.size.height)];
+            [self setFrameOrigin:CGPointMake(frame.origin.x - 4.0, frame.origin.y - 4.0)];
+            [self setFrameSize:CGSizeMake(frame.size.width + 8.0, frame.size.height + 8.0)];
+        }
 
         CPLog.debug([self stringValue] + " => isBordered=" + [self isBordered] + ", isBezeled="  + [self isBezeled] + ", bezelStyle=" + [self bezelStyle] + "("+[cell stringValue]+", " + [cell placeholderString] + ")");
     }

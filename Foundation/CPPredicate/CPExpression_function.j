@@ -1,8 +1,8 @@
 
 @import "CPExpression.j"
-@import <Foundation/CPString.j>
-@import <Foundation/CPArray.j>
-@import <Foundation/CPDictionary.j>
+@import "CPString.j"
+@import "CPArray.j"
+@import "CPDictionary.j"
 
 @implementation CPExpression_function : CPExpression
 {
@@ -10,6 +10,7 @@
     SEL             _selector;
     CPArray         _arguments;
     int             _argc;
+    int             _maxargs;
 }
 
 - (id)initWithSelector:(SEL)aSelector arguments:(CPArray)parameters
@@ -22,16 +23,22 @@
     return [self initWithTarget:operand selector:aSelector arguments:parameters];
 }
 
-- (id)initWithTarget:(CPExpression)targetExpression selector:aSelector arguments:parameters
+- (id)initWithTarget:(CPExpression)operand selector:(SEL)aSelector arguments:(CPArray)parameters
 {
-    [super initWithExpressionType:CPFunctionExpressionType];
+    return [self initWithTarget:operand selector:aSelector arguments:parameters type:CPFunctionExpressionType];
+}
+
+- (id)initWithTarget:(CPExpression)operand selector:(SEL)aSelector arguments:(CPArray)parameters type:(int)type
+{
+    [super initWithExpressionType:type];
 
 // Cocoa doc: "This method throws an exception immediately if the selector is unknown"
-// but targetExpression's value (selector's target) may be resolved only at runtime.
+// but operand's value (the target) may be resolved only at runtime.
     _selector = aSelector;
-    _operand = targetExpression;
+    _operand = operand;
     _arguments = parameters;
     _argc = [parameters count];
+    _maxargs = [[CPStringFromSelector(_selector) componentsSeparatedByString:@":"] count] - 1;
 
     return self;
 }
@@ -79,47 +86,64 @@
         objj_args.push(arg);
     }
 
+    // If we have too much arguments, concatenate remaining args on the last one.
+    if (_argc > _maxargs)
+    {
+        var r = MAX(_maxargs + 1, 2);
+        objj_args = objj_args.slice(0, r).concat([objj_args.slice(r)]);
+    }
+
     return objj_msgSend.apply(this, objj_args);
 }
 
 - (CPString)description
 {
-    var result = _operand + [self _function] + "(";
+    var result = "";
+    if ([_operand isEqual:[CPExpression expressionForConstantValue:[CPPredicateUtilities class]]])
+        result += CPStringFromSelector(_selector) + "(";
+    else
+    {
+        result += "FUNCTION(";
+        result += _operand ? [_operand description] + ", ":"";
+        result += _selector ? CPStringFromSelector(_selector) + ", ":"";
+    }
 
     for (var i = 0; i < _argc; i++)
         result = result + [_arguments[i] description] + ((i + 1 < _argc) ? ", " : "");
 
-    result = result + ")";
+    result += ")";
 
     return result ;
 }
 
 - (CPExpression)_expressionWithSubstitutionVariables:(CPDictionary)variables
 {
-    var array = [CPArray array],
-        i;
+    var operand = [[self operand] _expressionWithSubstitutionVariables:variables],
+        args = [CPArray array];
 
-    for (i = 0; i < _argc; i++)
-        [array addObject:[[_arguments objectAtIndex:i] _expressionWithSubstitutionVariables:variables]];
+    for (var i = 0; i < _argc; i++)
+        [args addObject:[_arguments[i] _expressionWithSubstitutionVariables:variables]];
 
-    return [CPExpression expressionForFunction:[self operand] selectorName:[self _function] arguments:array];
+    return [CPExpression expressionForFunction:operand selectorName:[self _function] arguments:args];
 }
 
 @end
 
 var CPSelectorNameKey = @"CPSelectorName",
     CPArgumentsKey = @"CPArguments",
-    CPOperandKey = @"CPOperand";
+    CPOperandKey = @"CPOperand",
+    CPExpressionTypeKey = @"CPExpressionType";
 
 @implementation CPExpression_function (CPCoding)
 
 - (id)initWithCoder:(CPCoder)coder
 {
-    var target = [coder decodeObjectForKey:CPOperandKey],
+    var type = [coder decodeIntForKey:CPExpressionTypeKey],
+        operand = [coder decodeObjectForKey:CPOperandKey],
         selector = CPSelectorFromString([coder decodeObjectForKey:CPSelectorNameKey]),
-        arguments = [coder decodeObjectForKey:CPArgumentsKey];
+        parameters = [coder decodeObjectForKey:CPArgumentsKey];
 
-    return [self initWithTarget:target selector:selector arguments:arguments];
+    return [self initWithTarget:operand selector:selector arguments:parameters type:type];
 }
 
 - (void)encodeWithCoder:(CPCoder)coder
@@ -127,6 +151,7 @@ var CPSelectorNameKey = @"CPSelectorName",
     [coder encodeObject:[self _function] forKey:CPSelectorNameKey];
     [coder encodeObject:_arguments forKey:CPArgumentsKey];
     [coder encodeObject:_operand forKey:CPOperandKey];
+    [coder encodeInt:_type forKey:CPExpressionTypeKey];
 }
 
 @end
@@ -247,7 +272,7 @@ var CPSelectorNameKey = @"CPSelectorName",
     return ROUND(RAND() * num);
 }
 
-+ (int)modulus:(int)n by:(int)n
++ (int)modulus:(int)n by:(int)m
 {
     return n % m;
 }

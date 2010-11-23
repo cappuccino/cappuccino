@@ -27,6 +27,12 @@
     [self assert:[_CPObservableArray class] equals:[[[self arrayController] arrangedObjects] class] message:"arranged objects should be observable"];
 }
 
+- (void)testInitWithoutContent
+{
+    _arrayController = [[CPArrayController alloc] init];
+    [self assert:[] equals:[[self arrayController] contentArray]];
+}
+
 - (void)testSetContent
 {
     otherContent = [@"5", @"6"];
@@ -114,6 +120,35 @@
     // Remove from all
     [arrayController removeObjects:[[[arrayController content] objectAtIndex:0]]];
     [self assert:[CPIndexSet indexSet] equals:[arrayController selectionIndexes] message:@"no objects left, selection should disappear"];
+}
+
+- (void)testRemoveObjectsWithoutSelection
+{
+    var arrayController = [self arrayController],
+        objectsToRemove = [[[self arrayController] arrangedObjects] objectsAtIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(1, 2)]];
+
+    // without any selection
+    [arrayController setSelectedObjects:[]];
+
+    // we should be able to remove arbitrary sets of objects
+    [arrayController removeObjects:objectsToRemove];
+
+    for (var i = 0; i < [objectsToRemove count]; i++)
+        [self assertFalse:[[arrayController arrangedObjects] containsObject:[objectsToRemove objectAtIndex:i]] message:@"remove objects should no longer appear in arrangedObjects"];
+}
+
+- (void)testRemoveObject
+{
+    var arrayController = [self arrayController],
+        objectToRemove = [[arrayController arrangedObjects] objectAtIndex:0];
+
+    // without any selection
+    [arrayController setSelectedObjects:[]];
+
+    // we should be able to remove arbitrary objects
+    [arrayController removeObject:objectToRemove];
+
+    [self assertFalse:[[arrayController arrangedObjects] containsObject:objectToRemove] message:@"removed objects should no longer appear in arrangedObjects"];
 }
 
 - (void)testSelectionWhenObjectsDisappear

@@ -59,25 +59,31 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
     if (self)
     {
         items = [CPArray array];
-
-        tabs = [[CPSegmentedControl alloc] initWithFrame:CGRectMake(0, 0, 0, HEIGHT_OF_SEGMENTED_CONTROL)];
-        [tabs setHitTests:NO];
-
-        box = [[CPBox alloc] initWithFrame:CGRectMake(0, HEIGHT_OF_SEGMENTED_CONTROL / 2, CGRectGetWidth(aFrame),
-                                                            CGRectGetHeight(aFrame) - HEIGHT_OF_SEGMENTED_CONTROL)];
-
         selectedIndex = CPNotFound;
-
         [self setTabViewType:CPTopTabsBezelBorder];
-        [self setBackgroundColor:[CPColor colorWithCalibratedWhite:0.95 alpha:1.0]];
 
-        [self addSubview:box];
-        [self addSubview:tabs];
-
-        [box setAutoresizingMask:CPViewWidthSizable];
-        [tabs setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin];
+        [self _init];
     }
     return self;
+}
+
+- (void)_init
+{
+    tabs = [[CPSegmentedControl alloc] initWithFrame:CGRectMake(0, 0, 0, HEIGHT_OF_SEGMENTED_CONTROL)];
+    [tabs setHitTests:NO];
+
+    var aFrame = [self frame];
+
+    box = [[CPBox alloc] initWithFrame:CGRectMake(0, HEIGHT_OF_SEGMENTED_CONTROL / 2, CGRectGetWidth(aFrame),
+                                                        CGRectGetHeight(aFrame) - HEIGHT_OF_SEGMENTED_CONTROL)];
+
+    [self setBackgroundColor:[CPColor colorWithCalibratedWhite:0.95 alpha:1.0]];
+
+    [box setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+    [tabs setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin];
+
+    [self addSubview:box];
+    [self addSubview:tabs];
 }
 
 // Adding and Removing Tabs
@@ -419,18 +425,20 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 {
     if (self = [super initWithCoder:aCoder])
     {
-        type    = [aCoder decodeIntForKey:CPTabViewTypeKey];
-        items   = [];
+        [self _init];
 
-        var encodedItems = [aCoder decodeObjectForKey:CPTabViewItemsKey];
-        for (var i = 0; encodedItems && i < encodedItems.length; i++)
-            [self insertTabViewItem:encodedItems[i] atIndex:i];
+        items = [aCoder decodeObjectForKey:CPTabViewItemsKey];
+
+        [self _updateItems];
+        [self _repositionTabs];
 
         var selected = [aCoder decodeObjectForKey:CPTabViewSelectedItemKey];
         if (selected)
             [self selectTabViewItem:selected];
 
         [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
+
+        [self setTabViewType:[aCoder decodeIntForKey:CPTabViewTypeKey]];
     }
 
     return self;
@@ -440,7 +448,7 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 {
     [super encodeWithCoder:aCoder];
 
-    [aCoder encodeObject:items forKey:CPTabViewItemsKey];;
+    [aCoder encodeObject:items forKey:CPTabViewItemsKey];
     [aCoder encodeObject:[self selectedTabViewItem] forKey:CPTabViewSelectedItemKey];
 
     [aCoder encodeInt:type forKey:CPTabViewTypeKey];

@@ -31,13 +31,13 @@
     {
         _identifier     = [aCoder decodeObjectForKey:"NSIdentifier"];
         _label          = [aCoder decodeObjectForKey:"NSLabel"];
-        
+
         _view           = [aCoder decodeObjectForKey:"NSView"];
-        
+
         // doesn't exist in Cocoa
         //_auxiliaryView  = [aCoder decodeObjectForKey:CPTabViewItemAuxViewKey]
     }
-    
+
     return self;
 }
 

@@ -45,6 +45,8 @@
         _headerView = [aCoder decodeObjectForKey:@"NSHeaderView"];     
         _cornerView = [aCoder decodeObjectForKey:@"NSCornerView"];
     
+        _autosaveName = [aCoder decodeObjectForKey:@"NSAutosaveName"];
+    
         _tableColumns = [aCoder decodeObjectForKey:@"NSTableColumns"];
         [_tableColumns makeObjectsPerformSelector:@selector(setTableView:) withObject:self];
         

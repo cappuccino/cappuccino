@@ -37,7 +37,10 @@
         
         _headerClipView         = [aCoder decodeObjectForKey:"NSHeaderClipView"];
         _cornerView             = [aCoder decodeObjectForKey:"NSCornerView"];
-        
+        _bottomCornerView       = [[CPView alloc] init];
+
+        [self addSubview:_bottomCornerView];
+
         _hasVerticalScroller    = !!(flags & (1 << 4));
         _hasHorizontalScroller  = !!(flags & (1 << 5));
         _autohidesScrollers     = !!(flags & (1 << 9));

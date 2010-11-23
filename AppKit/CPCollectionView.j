@@ -203,9 +203,6 @@
 */
 - (void)setContent:(CPArray)anArray
 {
-    if (_content == anArray)
-        return;
-
     _content = anArray;
 
     [self reloadContent];

@@ -397,7 +397,7 @@ var themedButtonValues = nil,
             [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0], CPThemeStateBordered | CPThemeStateDisabled],
             [@"text-shadow-offset", CGSizeMake(0.0, 1.0), CPThemeStateBordered],
             [@"line-break-mode",    CPLineBreakByTruncatingTail],
-            [@"content-inset",      CGInsetMake(0.0, 5.0, 0.0, 5.0), CPThemeStateBordered],
+            [@"content-inset",      CGInsetMake(0.0, 7.0, 0.0, 7.0), CPThemeStateBordered],
 
             [@"bezel-color",        bezelColor,             CPThemeStateBordered],
             [@"bezel-color",        highlightedBezelColor,  CPThemeStateBordered | CPThemeStateHighlighted],
@@ -1422,34 +1422,117 @@ var themedButtonValues = nil,
 + (CPAlert)themedAlert
 {
     var alert = [CPAlert new],
-        size = CGSizeMake(400.0, 110.0),
-        inset = CGInsetMake(15, 15, 15, 80),
-        imageOffset = CGPointMake(15, 18),
-        messageFont = [CPFont boldSystemFontOfSize:13.0],
-        informativeFont = [CPFont systemFontOfSize:12.0],
-        informationIcon = PatternImage("alert-info.png", 53.0, 46.0),
-        warningIcon = PatternImage("alert-warning.png", 53.0, 46.0),
-        errorIcon = PatternImage("alert-error.png", 53.0, 46.0);
 
-    themedAlertValues =
-    [
-        [@"size",                           size],
-        [@"content-inset",                  inset],
-        [@"message-text-alignment",         CPJustifiedTextAlignment],
-        [@"message-text-color",             [CPColor blackColor]],
-        [@"message-text-font",              messageFont],
-        [@"informative-text-alignment",     CPJustifiedTextAlignment],
-        [@"informative-text-color",         [CPColor blackColor]],
-        [@"informative-text-font",          informativeFont],
-        [@"image-offset",                   imageOffset],
-        [@"information-image",              informationIcon],
-        [@"warning-image",                  warningIcon],
-        [@"error-image",                    errorIcon]
-    ];
+        buttonOffset = 10.0,
+        defaultElementsMargin = 3.0,
+        errorIcon = PatternImage("alert-error.png", 53.0, 46.0),
+        helpIcon = PatternImage("alert-help.png", 24.0, 24.0),
+        helpIconPressed = PatternImage("alert-help-pressed.png", 24.0, 24.0),
+        helpLeftOffset = 15,
+        imageOffset = CGPointMake(15, 18),
+        informationIcon = PatternImage("alert-info.png", 53.0, 46.0),
+        informativeFont = [CPFont systemFontOfSize:12.0],
+        inset = CGInsetMake(15, 15, 15, 80),
+        messageFont = [CPFont boldSystemFontOfSize:13.0],
+        size = CGSizeMake(400.0, 110.0),
+        suppressionButtonXOffset = 2.0,
+        suppressionButtonYOffset = 10.0,
+        warningIcon = PatternImage("alert-warning.png", 53.0, 46.0),
+
+        themedAlertValues =
+        [
+            [@"button-offset",                  buttonOffset],
+            [@"content-inset",                  inset],
+            [@"default-elements-margin",        defaultElementsMargin],
+            [@"error-image",                    errorIcon],
+            [@"help-image",                     helpIcon],
+            [@"help-image-left-offset",         helpLeftOffset],
+            [@"help-image-pressed",             helpIconPressed],
+            [@"image-offset",                   imageOffset],
+            [@"information-image",              informationIcon],
+            [@"informative-text-alignment",     CPJustifiedTextAlignment],
+            [@"informative-text-color",         [CPColor blackColor]],
+            [@"informative-text-font",          informativeFont],
+            [@"message-text-alignment",         CPJustifiedTextAlignment],
+            [@"message-text-color",             [CPColor blackColor]],
+            [@"message-text-font",              messageFont],
+            [@"size",                           size],
+            [@"suppression-button-x-offset",    suppressionButtonXOffset],
+            [@"suppression-button-y-offset",    suppressionButtonYOffset],
+            [@"warning-image",                  warningIcon]
+        ];
 
     [self registerThemeValues:themedAlertValues forView:alert];
 
     return alert;
+}
+
++ (CPStepper)themedStepper
+{
+    var stepper = [CPStepper stepper],
+
+        bezelUp = PatternColor(
+            [
+                ["stepper-bezel-big-up-left.png", 3.0, 13.0],
+                ["stepper-bezel-big-up-center.png", 13.0, 13.0],
+                ["stepper-bezel-big-up-right.png", 3.0, 13.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelDown = PatternColor(
+            [
+                ["stepper-bezel-big-down-left.png", 3.0, 12.0],
+                ["stepper-bezel-big-down-center.png", 13.0, 12.0],
+                ["stepper-bezel-big-down-right.png", 3.0, 12.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelUpDisabled = PatternColor(
+            [
+                ["stepper-bezel-big-disabled-up-left.png", 3.0, 13.0],
+                ["stepper-bezel-big-disabled-up-center.png", 13.0, 13.0],
+                ["stepper-bezel-big-disabled-up-right.png", 3.0, 13.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelDownDisabled = PatternColor(
+            [
+                ["stepper-bezel-big-disabled-down-left.png", 3.0, 12.0],
+                ["stepper-bezel-big-disabled-down-center.png", 13.0, 12.0],
+                ["stepper-bezel-big-disabled-down-right.png", 3.0, 12.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelUpHighlighted = PatternColor(
+            [
+                [@"stepper-bezel-big-highlighted-up-left.png", 3.0, 13.0],
+                [@"stepper-bezel-big-highlighted-up-center.png", 13.0, 13.0],
+                [@"stepper-bezel-big-highlighted-up-right.png", 3.0, 13.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelDownHighlighted = PatternColor(
+            [
+                [@"stepper-bezel-big-highlighted-down-left.png", 3.0, 12.0],
+                [@"stepper-bezel-big-highlighted-down-center.png", 13.0, 12.0],
+                [@"stepper-bezel-big-highlighted-down-right.png", 3.0, 12.0]
+            ],
+            PatternIsHorizontal),
+
+        themeValues =
+        [
+            [@"bezel-color-up-button",      bezelUp,                        CPThemeStateBordered],
+            [@"bezel-color-down-button",    bezelDown,                      CPThemeStateBordered],
+            [@"bezel-color-up-button",      bezelUpDisabled,                CPThemeStateBordered | CPThemeStateDisabled],
+            [@"bezel-color-down-button",    bezelDownDisabled,              CPThemeStateBordered | CPThemeStateDisabled],
+            [@"bezel-color-up-button",      bezelUpHighlighted,             CPThemeStateBordered | CPThemeStateHighlighted],
+            [@"bezel-color-down-button",    bezelDownHighlighted,           CPThemeStateBordered | CPThemeStateHighlighted],
+            [@"min-size",                   CGSizeMake(19.0, 25.0)]
+        ];
+
+    [self registerThemeValues:themeValues forView:stepper];
+
+    return stepper;
 }
 
 @end

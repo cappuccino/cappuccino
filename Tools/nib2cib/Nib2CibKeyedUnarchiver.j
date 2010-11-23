@@ -22,7 +22,7 @@
 
 @import <Foundation/CPKeyedUnarchiver.j>
 
-var File = require("file");
+var FILE = require("file");
 
 
 @implementation Nib2CibKeyedUnarchiver : CPKeyedUnarchiver
@@ -50,7 +50,7 @@ var File = require("file");
     if (!resourcesPath)
         return NULL;
 
-    var pathGroups = [File.listPaths(resourcesPath)];
+    var pathGroups = [FILE.listPaths(resourcesPath)];
 
     while (pathGroups.length > 0)
     {
@@ -62,11 +62,14 @@ var File = require("file");
         {
             var path = paths[index];
 
-            if (File.basename(path) === aName)
+            if (FILE.basename(path) === aName)
                 return path;
 
-            if (File.isDirectory(path))
-                pathGroups.push(File.listPaths(path));
+            else if (FILE.isDirectory(path))
+                pathGroups.push(FILE.listPaths(path));
+
+            else if (!FILE.extension(aName) && FILE.basename(path).replace(/\.[^.]*$/, "") === aName)
+                return path;
         }
     }
 
@@ -75,13 +78,13 @@ var File = require("file");
 
 @end
 
-File.listPaths = function(aPath)
+FILE.listPaths = function(aPath)
 {
-    var paths = File.list(aPath),
+    var paths = FILE.list(aPath),
         count = paths.length;
 
     while (count--)
-        paths[count] = File.join(aPath, paths[count]);
+        paths[count] = FILE.join(aPath, paths[count]);
 
     return paths;
 }
