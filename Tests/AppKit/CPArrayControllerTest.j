@@ -13,9 +13,9 @@
 {
     _contentArray = [];
 
-    [_contentArray addObject:[Person personWithName:@"Francisco" age:21]];
-    [_contentArray addObject:[Person personWithName:@"Ross" age:30]];
-    [_contentArray addObject:[Person personWithName:@"Tom" age:15]];
+    [_contentArray addObject:[Employee employeeWithName:@"Francisco" department:[Department departmentWithName:@"Cappuccino"]]];
+    [_contentArray addObject:[Employee employeeWithName:@"Ross" department:[Department departmentWithName:@"Cappuccino"]]];
+    [_contentArray addObject:[Employee employeeWithName:@"Tom" department:[Department departmentWithName:@"CommonJS"]]];
 
     // Copy the array since we'll reuse the original array later. Also see issue #795.
     _arrayController = [[CPArrayController alloc] initWithContent:[[self contentArray] copy]];
@@ -46,10 +46,10 @@
 
 - (void)testInsertObjectAtArrangedObjectIndex
 {
-    var object = [Person personWithName:@"Klaas Pieter" age:24],
+    var object = [Employee employeeWithName:@"Klaas Pieter" department:[Department departmentWithName:@"Theming"]],
         arrayController = [self arrayController];
 
-    [arrayController setSortDescriptors:[[CPSortDescriptor sortDescriptorWithKey:@"age" ascending:YES]]];
+    [arrayController setSortDescriptors:[[CPSortDescriptor sortDescriptorWithKey:@"name" ascending:YES]]];
     [arrayController insertObject:object atArrangedObjectIndex:1];
 
     [self assert:object equals:[[arrayController arrangedObjects] objectAtIndex:1]];
@@ -296,6 +296,24 @@
     [self assert:newSelection equals:[arrayController selectionIndexes] message:@"selection was not set properly"];
 }
 
+- (void)testCompoundKeyPaths
+{
+    var departmentNameField = [[CPTextField alloc] init];
+    [departmentNameField bind:@"value" toObject:[self arrayController] withKeyPath:@"selection.department.name" options:nil];
+
+    // This should be 'No Selection'
+    [self assert:@"" equals:[departmentNameField stringValue]];
+
+    [[self arrayController] setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
+    [self assert:@"Cappuccino" equals:[departmentNameField stringValue]];
+
+    [[self arrayController] setSelectionIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)]];
+    [self assert:@"Cappuccino" equals:[departmentNameField stringValue] message:@"key path values should be equal"];
+
+    [[self arrayController] setValue:@"280North" forKeyPath:@"selection.department.name"];
+    [self assert:@"280North" equals:[departmentNameField stringValue]];
+}
+
 - (void)observeValueForKeyPath:keyPath
     ofObject:anActivity
     change:change
@@ -313,23 +331,23 @@
 
 @end
 
-@implementation Person : CPObject
+@implementation Employee : CPObject
 {
-    CPString  _name @accessors(property=name);
-    int       _age @accessors(property=age);
+    CPString            _name @accessors(property=name);
+    Department          _department @accessors(property=department);
 }
 
-+ (id)personWithName:(CPString)aName age:(int)anAge
++ (id)employeeWithName:(CPString)theName department:(Department)theDepartment
 {
-    return [[self alloc] initWithName:aName age:anAge];
+    return [[self alloc] initWithName:theName department:theDepartment];
 }
 
-- (id)initWithName:(CPString)aName age:(int)anAge
+- (id)initWithName:(CPString)theName department:(Department)theDepartment
 {
     if (self = [super init])
     {
-        _name = aName;
-        _age = anAge;
+        _name = theName;
+        _department = theDepartment;
     }
 
     return self;
@@ -337,7 +355,29 @@
 
 - (CPString)description
 {
-    return [CPString stringWithFormat:@"<Person %@ : %@>", [self name], [self age]];
+    return [CPString stringWithFormat:@"<Employee %@>", [self name]];
+}
+
+@end
+
+@implementation Department : CPObject
+{
+    CPString                    _name @accessors(property=name);
+}
+
++ (id)departmentWithName:(CPString)theName
+{
+    return [[self alloc] initWithName:theName];
+}
+
+- (id)initWithName:(CPString)theName
+{
+    if (self = [super init])
+    {
+        _name = theName;
+    }
+
+    return self;
 }
 
 @end

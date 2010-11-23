@@ -530,48 +530,62 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
     return self;
 }
 
-/*
-    @ignore
-    Can be used to get the actual value for key in stead of the controller markers
-*/
-- (id)_valueForKey:(CPString)aKey
+- (id)_controllerMarkerForValues:(CPArray)theValues
 {
-    return [[_controller selectedObjects] valueForKey:aKey];
-}
-
-- (id)valueForKey:(CPString)aKey
-{
-    var value = [_cachedValues objectForKey:aKey];
-
-    if (value !== undefined && value !== nil)
-        return value;
-
-    var allValues = [[_controller selectedObjects] valueForKeyPath:aKey],
-        count = [allValues count];
+ var count = [theValues count];
 
     if (!count)
         value = CPNoSelectionMarker;
     else if (count === 1)
-        value = [allValues objectAtIndex:0];
+        value = [theValues objectAtIndex:0];
     else
     {
         if ([_controller alwaysUsesMultipleValuesMarker])
             value = CPMultipleValuesMarker;
         else
         {
-            value = [allValues objectAtIndex:0];
+            value = [theValues objectAtIndex:0];
 
-            for (var i = 0, count= [allValues count]; i < count && value != CPMultipleValuesMarker; i++)
+            for (var i = 0, count= [theValues count]; i < count && value != CPMultipleValuesMarker; i++)
             {
-                if (![value isEqual:[allValues objectAtIndex:i]])
+                if (![value isEqual:[theValues objectAtIndex:i]])
                     value = CPMultipleValuesMarker;
             }
         }
     }
 
-    [_cachedValues setValue:value forKey:aKey];
+    return value;
+}
+
+- (id)valueForKeyPath:(CPString)theKeyPath
+{
+    var value = [_cachedValues objectForKey:theKeyPath];
+
+    if (value !== undefined && value !== nil)
+        return value;
+
+    var values = [[_controller selectedObjects] valueForKeyPath:theKeyPath];
+    value = [self _controllerMarkerForValues:values];
+
+    [_cachedValues setObject:value forKey:theKeyPath];
 
     return value;
+}
+
+- (id)valueForKey:(CPString)theKeyPath
+{
+    return [self valueForKeyPath:theKeyPath];
+}
+
+- (void)setValue:(id)theValue forKeyPath:(CPString)theKeyPath
+{
+    [[_controller selectedObjects] setValue:theValue forKeyPath:theKeyPath];
+    [_cachedValues removeObjectForKey:theKeyPath];
+}
+
+- (void)setValue:(id)theValue forKey:(CPString)theKeyPath
+{
+    [self setValue:theKeyPath forKeyPath:theKeyPath];
 }
 
 - (unsigned)count
@@ -582,11 +596,6 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 - (id)keyEnumerator
 {
     return [_cachedValues keyEnumerator];
-}
-
-- (void)setValue:(id)aValue forKey:(CPString)aKey
-{
-    [[_controller selectedObjects] setValue:aValue forKey:aKey];
 }
 
 - (void)controllerWillChange

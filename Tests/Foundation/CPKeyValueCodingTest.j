@@ -37,13 +37,6 @@
 
     [self assert:department equals:[employee valueForKey:@"department"]];
     [self assert:@"Engineering" equals:[employee valueForKeyPath:@"department.name"]];
-
-    // When using selection bindings, part of a keypath might contain a controller marker
-    // (e.g. the selection.employees part of selection.employees.name might return the CPMultipleValuesMarker)
-    // This test makes sure that in such a case we return the controller marker in stead of trying to ask the controller
-    // marker for it's value for key.
-    [employee setDepartment:CPMultipleValuesMarker];
-    [self assert:CPMultipleValuesMarker equals:[employee valueForKeyPath:@"department.name"]];
 }
 
 @end

@@ -178,9 +178,6 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
         remainingKeyPath = aKeyPath.substring(firstDotIndex + 1),
         value = [self valueForKey:firstKeyComponent];
 
-    if (CPIsControllerMarker(value))
-        return value;
-
     return [value valueForKeyPath:remainingKeyPath];
 }
 
@@ -213,24 +210,18 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
 
 - (void)setValue:(id)aValue forKeyPath:(CPString)aKeyPath
 {
-    if (!aKeyPath) aKeyPath = "self";
+    if (!aKeyPath) aKeyPath = @"self";
 
-    var i = 0,
-        keys = aKeyPath.split("."),
-        count = keys.length - 1,
-        owner = self;
+    var firstDotIndex = aKeyPath.indexOf(".");
 
-    for (; i < count; ++i)
-    {
-        var newOwner = [owner valueForKey:keys[i]];
+    if (firstDotIndex === -1)
+        return [self setValue:aValue forKey:aKeyPath];
 
-        if (CPIsControllerMarker(newOwner))
-            newOwner = [owner _valueForKey:keys[i]];
+    var firstKeyComponent = aKeyPath.substring(0, firstDotIndex),
+        remainingKeyPath = aKeyPath.substring(firstDotIndex + 1),
+        value = [self valueForKey:firstKeyComponent];
 
-        owner = newOwner;
-    }
-
-    [owner setValue:aValue forKey:keys[i]];
+    return [value setValue:aValue forKeyPath:remainingKeyPath];
 }
 
 - (void)setValue:(id)aValue forKey:(CPString)aKey
