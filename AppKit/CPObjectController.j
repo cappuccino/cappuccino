@@ -559,11 +559,6 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 
 - (id)valueForKeyPath:(CPString)theKeyPath
 {
-    var value = [_cachedValues objectForKey:theKeyPath];
-
-    if (value !== undefined && value !== nil)
-        return value;
-
     var values = [[_controller selectedObjects] valueForKeyPath:theKeyPath];
     value = [self _controllerMarkerForValues:values];
 

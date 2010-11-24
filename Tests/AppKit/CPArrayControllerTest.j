@@ -312,6 +312,22 @@
 
     [[self arrayController] setValue:@"280North" forKeyPath:@"selection.department.name"];
     [self assert:@"280North" equals:[departmentNameField stringValue]];
+
+    [[self arrayController] setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
+
+    [[self arrayController] valueForKeyPath:@"selection.department.name"];
+    [[self arrayController] valueForKeyPath:@"selection.department.building"];
+    [[self arrayController] valueForKeyPath:@"selection.department"];
+
+    var employee = [[[self arrayController] selectedObjects] lastObject],
+        department = [Department departmentWithName:@"Meh"];
+
+    [department setBuilding:@"Building 1"];
+    [employee setDepartment:department];
+
+    [self assert:@"Meh" equals:[departmentNameField stringValue]];
+    [self assert:department equals:[[self arrayController] valueForKeyPath:@"selection.department"]];
+    [self assert:@"Building 1" equals:[[self arrayController] valueForKeyPath:@"selection.department.building"]];
 }
 
 - (void)observeValueForKeyPath:keyPath
@@ -363,6 +379,7 @@
 @implementation Department : CPObject
 {
     CPString                    _name @accessors(property=name);
+    CPString                    _building @accessors(property=building);
 }
 
 + (id)departmentWithName:(CPString)theName
