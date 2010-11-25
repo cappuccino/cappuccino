@@ -456,7 +456,10 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
                 {
                     token = tokens.next();
                     if (token === TOKEN_ACCESSORS)
+                    {
                         attributes = this.accessors(tokens);
+                        attributes["type"] = declaration[0];
+                    }
                     else if (token !== TOKEN_OUTLET)
                         throw new SyntaxError(this.error_message("*** Unexpected '@' token in ivar declaration ('@"+token+"')."));
                 }
@@ -502,11 +505,12 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
             for (ivar_name in accessors)
             {
                 var accessor = accessors[ivar_name],
+                    ivar_type = accessor["type"] || "id",
                     property = accessor["property"] || ivar_name;
 
                 // getter
                 var getterName = accessor["getter"] || property,
-                    getterCode = "(id)" + getterName + "\n{\nreturn " + ivar_name + ";\n}";
+                    getterCode = "(" + ivar_type + ")" + getterName + "\n{\nreturn " + ivar_name + ";\n}";
 
                 if (IS_NOT_EMPTY(instance_methods))
                     CONCAT(instance_methods, ",\n");
@@ -525,7 +529,7 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
                     setterName = (start ? "_" : "") + "set" + property.substr(start, 1).toUpperCase() + property.substring(start + 1) + ":";
                 }
 
-                var setterCode = "(void)" + setterName + "(id)newValue\n{\n";
+                var setterCode = "(void)" + setterName + "(" + ivar_type + ")newValue\n{\n";
 
                 if (accessor["copy"])
                     setterCode += "if (" + ivar_name + " !== newValue)\n" + ivar_name + " = [newValue copy];\n}";
