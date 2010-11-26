@@ -272,7 +272,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         _cornerView = nil; //[[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
 
-        _lastSelectedRow = -1;
         _currentHighlightedTableColumn = nil;
 
         _sortDescriptors = [CPArray array];
@@ -296,6 +295,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 - (void)_init
 {
         _tableViewFlags = 0;
+        _lastSelectedRow = -1;
 
         _selectedColumnIndexes = [CPIndexSet indexSet];
         _selectedRowIndexes = [CPIndexSet indexSet];
