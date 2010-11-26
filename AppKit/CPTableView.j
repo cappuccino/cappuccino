@@ -294,57 +294,57 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 // FIX ME: we have a lot of redundent init stuff in initWithFrame: and initWithCoder: we should move it all into here.
 - (void)_init
 {
-        _tableViewFlags = 0;
-        _lastSelectedRow = -1;
+    _tableViewFlags = 0;
+    _lastSelectedRow = -1;
 
-        _selectedColumnIndexes = [CPIndexSet indexSet];
-        _selectedRowIndexes = [CPIndexSet indexSet];
+    _selectedColumnIndexes = [CPIndexSet indexSet];
+    _selectedRowIndexes = [CPIndexSet indexSet];
 
-        _dropOperationFeedbackView = [[_CPDropOperationDrawingView alloc] initWithFrame:_CGRectMakeZero()];
-        [_dropOperationFeedbackView setTableView:self];
+    _dropOperationFeedbackView = [[_CPDropOperationDrawingView alloc] initWithFrame:_CGRectMakeZero()];
+    [_dropOperationFeedbackView setTableView:self];
 
-        _lastColumnShouldSnap = NO;
+    _lastColumnShouldSnap = NO;
 
-        if (!_alternatingRowBackgroundColors)
-            _alternatingRowBackgroundColors = [[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"]];
+    if (!_alternatingRowBackgroundColors)
+        _alternatingRowBackgroundColors = [[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"]];
 
-        _selectionHighlightColor = [CPColor colorWithHexString:@"5f83b9"];
+    _selectionHighlightColor = [CPColor colorWithHexString:@"5f83b9"];
 
-        _tableColumnRanges = [];
-        _dirtyTableColumnRangeIndex = 0;
-        _numberOfHiddenColumns = 0;
+    _tableColumnRanges = [];
+    _dirtyTableColumnRangeIndex = 0;
+    _numberOfHiddenColumns = 0;
 
-        _objectValues = { };
-        _dataViewsForTableColumns = { };
-        _dataViews=  [];
-        _numberOfRows = 0;
-        _exposedRows = [CPIndexSet indexSet];
-        _exposedColumns = [CPIndexSet indexSet];
-        _cachedDataViews = { };
+    _objectValues = { };
+    _dataViewsForTableColumns = { };
+    _dataViews=  [];
+    _numberOfRows = 0;
+    _exposedRows = [CPIndexSet indexSet];
+    _exposedColumns = [CPIndexSet indexSet];
+    _cachedDataViews = { };
 
-        _groupRows = [CPIndexSet indexSet];
+    _groupRows = [CPIndexSet indexSet];
 
-        _tableDrawView = [[_CPTableDrawView alloc] initWithTableView:self];
-        [_tableDrawView setBackgroundColor:[CPColor clearColor]];
-        [self addSubview:_tableDrawView];
+    _tableDrawView = [[_CPTableDrawView alloc] initWithTableView:self];
+    [_tableDrawView setBackgroundColor:[CPColor clearColor]];
+    [self addSubview:_tableDrawView];
 
-        if (!_headerView)
-            _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, _rowHeight)];
+    if (!_headerView)
+        _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, _rowHeight)];
 
-        [_headerView setTableView:self];
+    [_headerView setTableView:self];
 
-        if (!_cornerView)
-            _cornerView = [[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
+    if (!_cornerView)
+        _cornerView = [[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
 
-        _draggedColumn = nil;
+    _draggedColumn = nil;
 
 /*      //gradients for the source list when CPTableView is NOT first responder or the window is NOT key
-        // FIX ME: we need to actually implement this.
-        _sourceListInactiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [168.0/255.0,183.0/255.0,205.0/255.0,1.0,157.0/255.0,174.0/255.0,199.0/255.0,1.0], [0,1], 2);
-        _sourceListInactiveTopLineColor = [CPColor colorWithCalibratedRed:(173.0/255.0) green:(187.0/255.0) blue:(209.0/255.0) alpha:1.0];
-        _sourceListInactiveBottomLineColor = [CPColor colorWithCalibratedRed:(150.0/255.0) green:(161.0/255.0) blue:(183.0/255.0) alpha:1.0];*/
-        _differedColumnDataToRemove = [ ];
-        _implementsCustomDrawRow = [self implementsSelector:@selector(drawRow:clipRect:)];
+    // FIX ME: we need to actually implement this.
+    _sourceListInactiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [168.0/255.0,183.0/255.0,205.0/255.0,1.0,157.0/255.0,174.0/255.0,199.0/255.0,1.0], [0,1], 2);
+    _sourceListInactiveTopLineColor = [CPColor colorWithCalibratedRed:(173.0/255.0) green:(187.0/255.0) blue:(209.0/255.0) alpha:1.0];
+    _sourceListInactiveBottomLineColor = [CPColor colorWithCalibratedRed:(150.0/255.0) green:(161.0/255.0) blue:(183.0/255.0) alpha:1.0];*/
+    _differedColumnDataToRemove = [];
+    _implementsCustomDrawRow = [self implementsSelector:@selector(drawRow:clipRect:)];
 }
 
 /*!
@@ -1765,7 +1765,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         var metaData = [CPDictionary dictionaryWithJSObject:{
             @"identifier": [column identifier],
             @"width": [column width]
-        }]
+        }];
 
         [columnsSetup addObject:metaData];
     }
