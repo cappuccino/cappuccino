@@ -275,7 +275,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         _cornerView = nil; //[[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
 
-        _lastSelectedRow = -1;
         _currentHighlightedTableColumn = nil;
 
         _sortDescriptors = [];
@@ -308,23 +307,25 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         }
 
         _tableViewFlags = 0;
+    _tableViewFlags = 0;
+    _lastSelectedRow = -1;
 
-        _selectedColumnIndexes = [CPIndexSet indexSet];
-        _selectedRowIndexes = [CPIndexSet indexSet];
+    _selectedColumnIndexes = [CPIndexSet indexSet];
+    _selectedRowIndexes = [CPIndexSet indexSet];
 
-        _dropOperationFeedbackView = [[_CPDropOperationDrawingView alloc] initWithFrame:_CGRectMakeZero()];
-        [_dropOperationFeedbackView setTableView:self];
+    _dropOperationFeedbackView = [[_CPDropOperationDrawingView alloc] initWithFrame:_CGRectMakeZero()];
+    [_dropOperationFeedbackView setTableView:self];
 
-        _lastColumnShouldSnap = NO;
+    _lastColumnShouldSnap = NO;
 
-        if (!_alternatingRowBackgroundColors)
-            _alternatingRowBackgroundColors = [[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"]];
+    if (!_alternatingRowBackgroundColors)
+        _alternatingRowBackgroundColors = [[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"]];
 
-        _selectionHighlightColor = [CPColor colorWithHexString:@"5f83b9"];
+    _selectionHighlightColor = [CPColor colorWithHexString:@"5f83b9"];
 
-        _tableColumnRanges = [];
-        _dirtyTableColumnRangeIndex = 0;
-        _numberOfHiddenColumns = 0;
+    _tableColumnRanges = [];
+    _dirtyTableColumnRangeIndex = 0;
+    _numberOfHiddenColumns = 0;
 
         _objectValues = { };
         _dataViewsForTableColumns = { };
@@ -335,29 +336,29 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _cachedDataViews = { };
         _cachedRowHeights = [];
 
-        _groupRows = [CPIndexSet indexSet];
+    _groupRows = [CPIndexSet indexSet];
 
-        _tableDrawView = [[_CPTableDrawView alloc] initWithTableView:self];
-        [_tableDrawView setBackgroundColor:[CPColor clearColor]];
-        [self addSubview:_tableDrawView];
+    _tableDrawView = [[_CPTableDrawView alloc] initWithTableView:self];
+    [_tableDrawView setBackgroundColor:[CPColor clearColor]];
+    [self addSubview:_tableDrawView];
 
-        if (!_headerView)
-            _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, _rowHeight)];
+    if (!_headerView)
+        _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, _rowHeight)];
 
-        [_headerView setTableView:self];
+    [_headerView setTableView:self];
 
-        if (!_cornerView)
-            _cornerView = [[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
+    if (!_cornerView)
+        _cornerView = [[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
 
-        _draggedColumn = nil;
+    _draggedColumn = nil;
 
 /*      //gradients for the source list when CPTableView is NOT first responder or the window is NOT key
-        // FIX ME: we need to actually implement this.
-        _sourceListInactiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [168.0/255.0,183.0/255.0,205.0/255.0,1.0,157.0/255.0,174.0/255.0,199.0/255.0,1.0], [0,1], 2);
-        _sourceListInactiveTopLineColor = [CPColor colorWithCalibratedRed:(173.0/255.0) green:(187.0/255.0) blue:(209.0/255.0) alpha:1.0];
-        _sourceListInactiveBottomLineColor = [CPColor colorWithCalibratedRed:(150.0/255.0) green:(161.0/255.0) blue:(183.0/255.0) alpha:1.0];*/
-        _differedColumnDataToRemove = [ ];
-        _implementsCustomDrawRow = [self implementsSelector:@selector(drawRow:clipRect:)];
+    // FIX ME: we need to actually implement this.
+    _sourceListInactiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [168.0/255.0,183.0/255.0,205.0/255.0,1.0,157.0/255.0,174.0/255.0,199.0/255.0,1.0], [0,1], 2);
+    _sourceListInactiveTopLineColor = [CPColor colorWithCalibratedRed:(173.0/255.0) green:(187.0/255.0) blue:(209.0/255.0) alpha:1.0];
+    _sourceListInactiveBottomLineColor = [CPColor colorWithCalibratedRed:(150.0/255.0) green:(161.0/255.0) blue:(183.0/255.0) alpha:1.0];*/
+    _differedColumnDataToRemove = [];
+    _implementsCustomDrawRow = [self implementsSelector:@selector(drawRow:clipRect:)];
 }
 
 /*!
@@ -1719,8 +1720,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if (hangingSelections > 0)
     {
+        var previousSelectionCount = [_selectedRowIndexes count];
         [_selectedRowIndexes removeIndexesInRange:CPMakeRange(_numberOfRows, hangingSelections)];
-        [self _noteSelectionDidChange];
+
+        // For optimal performance, only send a notification if indices were actually removed.
+        if (previousSelectionCount > [_selectedRowIndexes count])
+            [self _noteSelectionDidChange];
     }
 
     [self tile];
@@ -1875,7 +1880,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         var metaData = [CPDictionary dictionaryWithJSObject:{
             @"identifier": [column identifier],
             @"width": [column width]
-        }]
+        }];
 
         [columnsSetup addObject:metaData];
     }
@@ -2762,7 +2767,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             if (row >= firstRow)
             {
                 if (![_groupRows containsIndex:row] && _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleSourceList)
-                    CGContextAddRect(context, CGRectIntersection(aRect, fillRect = [self rectOfRow:row]));    
+                    CGContextAddRect(context, CGRectIntersection(aRect, fillRect = [self rectOfRow:row]));
                 else
                     groupRowRects.push(CGRectIntersection(aRect, [self rectOfRow:row]));
             }
@@ -2777,9 +2782,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     }
     // console.profileEnd("row-paint");
 
-    
 
-    // FIX ME: this is really terrible, it seems like such a hack... 
+
+    // FIX ME: this is really terrible, it seems like such a hack...
     var totalHeight = _CGRectGetMaxY(aRect);
 
     if (heightFilled >= totalHeight || _rowHeight <= 0.0)
@@ -2925,7 +2930,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             bottomLineColor = [gradientCache objectForKey:CPSourceListBottomLineColor],
             gradientColor = [gradientCache objectForKey:CPSourceListGradient];
     }
-    
+
     var normalSelectionHighlightColor = [self selectionHighlightColor];
 
     // dont do these lookups if there are no group rows
@@ -2937,7 +2942,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     }
 
     while (count--)
-    {   
+    {
         var currentIndex = indexes[count],
             rowRect = CGRectIntersection(objj_msgSend(self, rectSelector, currentIndex), aRect);
 
@@ -3046,7 +3051,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     var gradientCache = [self selectionGradientColors],
         topLineColor = [CPColor colorWithHexString:"d3d3d3"],
         bottomLineColor = [CPColor colorWithHexString:"bebebd"],
-        gradientColor = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [220.0 / 255.0, 220.0 / 255.0, 220.0 / 255.0,1.0, 
+        gradientColor = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [220.0 / 255.0, 220.0 / 255.0, 220.0 / 255.0,1.0,
                                                                                             199.0 / 255.0, 199.0 / 255.0, 199.0 / 255.0,1.0], [0,1], 2),
         drawGradient = YES;
 

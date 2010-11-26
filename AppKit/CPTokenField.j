@@ -465,7 +465,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
         if ([token isKindOfClass:[CPString class]])
             continue;
 
-        [objectValue addObject:[token stringValue]];
+        [objectValue addObject:[token representedObject]];
     }
 
 #if PLATFORM(DOM)
@@ -501,13 +501,14 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
         for (var i = 0, count = [aValue count]; i < count; i++)
         {
             // Do we have this token among the old ones?
-            var tokenValue = aValue[i],
+            var tokenObject = aValue[i],
+                tokenValue = [self tokenField:self displayStringForRepresentedObject:tokenObject],
                 newToken = nil;
 
             for (var j = 0, oldCount = [oldTokens count]; j < oldCount; j++)
             {
                 var oldToken = oldTokens[j];
-                if ([oldToken stringValue] == tokenValue)
+                if ([oldToken representedObject] == tokenObject)
                 {
                     // Yep. Reuse it.
                     [oldTokens removeObjectAtIndex:j];
@@ -520,6 +521,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
             {
                 newToken = [[_CPTokenFieldToken alloc] init];
                 [newToken setTokenField:self];
+                [newToken setRepresentedObject:tokenObject];
                 [newToken setStringValue:tokenValue];
                 [contentView addSubview:newToken];
             }
@@ -1074,7 +1076,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
 - (void)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(int)row
 {
-    return [_cachedCompletions objectAtIndex:row];
+    return [self tokenField:self displayStringForRepresentedObject:[_cachedCompletions objectAtIndex:row]];
 }
 
 - (void)tableViewSelectionDidChange:(CPNotification)notification
@@ -1111,6 +1113,23 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
     return [];
 }
+
+// // Alows the delegate to provide a string to be displayed as a proxy for the given represented object.
+// // If you return nil or do not implement this method, then representedObject is displayed as the string.
+- (CPString)tokenField:(CPTokenField)tokenField displayStringForRepresentedObject:(id)representedObject
+{
+    if ([[self delegate] respondsToSelector:@selector(tokenField:displayStringForRepresentedObject:)])
+    {
+        var stringForRepresentedObject = [[self delegate] tokenField:tokenField displayStringForRepresentedObject:representedObject];
+        if (stringForRepresentedObject !== nil)
+        {
+            return stringForRepresentedObject;
+        }
+    }
+
+    return representedObject;
+}
+
 //
 // // return an array of represented objects you want to add.
 // // If you want to reject the add, return an empty array.
@@ -1119,7 +1138,6 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 //
 // // If you return nil or don't implement these delegate methods, we will assume
 // // editing string = display string = represented object
-// - (NSString *)tokenField:(NSTokenField *)tokenField displayStringForRepresentedObject:(id)representedObject;
 // - (NSString *)tokenField:(NSTokenField *)tokenField editingStringForRepresentedObject:(id)representedObject;
 // - (id)tokenField:(NSTokenField *)tokenField representedObjectForEditingString: (NSString *)editingString;
 //
@@ -1143,6 +1161,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 {
     _CPTokenFieldTokenCloseButton   _deleteButton;
     CPTokenField                    _tokenField;
+    id                              _representedObject;
 }
 
 + (CPString)defaultThemeClass
@@ -1173,6 +1192,16 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 - (void)setTokenField:(CPTokenField)tokenField
 {
     _tokenField = tokenField;
+}
+
+- (id)representedObject
+{
+    return _representedObject;
+}
+
+- (void)setRepresentedObject:(id)representedObject
+{
+    _representedObject = representedObject;
 }
 
 - (CGSize)_minimumFrameSize

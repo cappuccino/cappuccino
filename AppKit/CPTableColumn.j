@@ -522,25 +522,25 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
 - (void)setHeaderCell:(CPView)aView
 {
     [CPException raise:CPUnsupportedMethodException
-                reason:@"setHeaderCell: is not supported. -setHeaderCell:aView instead."];
+                reason:@"setHeaderCell: is not supported. Use -setHeaderView:aView instead."];
 }
 
 - (CPView)headerCell
 {
     [CPException raise:CPUnsupportedMethodException
-                reason:@"headCell is not supported. -headerView instead."];
+                reason:@"headCell is not supported. Use -headerView instead."];
 }
 
 - (void)setDataCell:(CPView)aView
 {
     [CPException raise:CPUnsupportedMethodException
-                reason:@"setDataCell: is not supported. Use -setHeaderCell:aView instead."];
+                reason:@"setDataCell: is not supported. Use -setDataView:aView instead."];
 }
 
 - (CPView)dataCell
 {
     [CPException raise:CPUnsupportedMethodException
-                reason:@"dataCell is not supported. Use -dataCell instead."];
+                reason:@"dataCell is not supported. Use -dataView instead."];
 }
 
 - (id)dataCellForRow:(int)row

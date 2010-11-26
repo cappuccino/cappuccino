@@ -103,7 +103,7 @@ function CPDecimalMakeWithString(string, locale)
 {
     if (!string)
         return CPDecimalMakeZero();
-    
+
     // Regexp solution as found in JSON spec, with working regexp (I added groupings)
     // Test here: http://www.regexplanet.com/simple/index.html
     // Info from: http://stackoverflow.com/questions/638565/parsing-scientific-notation-sensibly
@@ -125,14 +125,14 @@ function CPDecimalMakeWithString(string, locale)
         exp = matches[5];
 
     var isNegative = NO;
-    if (ds && ds==="-")
+    if (ds && ds === "-")
         isNegative = YES;
 
     var exponent = 0;
     if (exp)
-        exponent = parseInt(exp) * ((es && es==="-")?-1:1);
+        exponent = parseInt(exp) * ((es && es === "-")?-1:1);
 
-    if(decpart) // push decimal point to last digit, then let compact handle the zeros
+    if (decpart) // push decimal point to last digit, then let compact handle the zeros
         exponent -= decpart.length;
 
     var inputlength = (intpart?intpart.length:0) + (decpart?decpart.length:0);
@@ -148,14 +148,14 @@ function CPDecimalMakeWithString(string, locale)
     // Representation internally starts at most significant digit
     var m = [CPArray array],
         i = 0;
-    for(; i < (intpart?intpart.length:0); i++)
+    for (; i < (intpart?intpart.length:0); i++)
     {
         if (i >= CPDecimalMaxDigits)
             break; // truncate
         [m addObject:parseInt(intpart[i])];
     }
     var j = 0;
-    for(; j < (decpart?decpart.length:0); j++)
+    for (; j < (decpart?decpart.length:0); j++)
     {
         if ((i + j) >= CPDecimalMaxDigits)
             break; // truncate
@@ -193,7 +193,7 @@ function CPDecimalMakeWithParts(mantissa, exponent)
         return nil;
 
     // remaining digits are disposed of via truncation
-    while((mantissa > 0) &&  ([m count] < CPDecimalMaxDigits)) // count selector here could be optimised away
+    while ((mantissa > 0) && ([m count] < CPDecimalMaxDigits)) // count selector here could be optimised away
     {
         [m insertObject:parseInt(mantissa % 10) atIndex:0];
         mantissa = FLOOR(mantissa / 10);
@@ -251,7 +251,7 @@ function CPDecimalIsZero(dcm)
     {
         for (var i = 0; i < dcm._mantissa.length; i++)
             if (dcm._mantissa[i] !== 0)
-                return NO; 
+                return NO;
 
         return YES;
     }
@@ -270,7 +270,7 @@ function CPDecimalIsOne(dcm)
     // exponent doesnt matter as long as mantissa = 0
     if (!dcm._isNaN)
     {
-        if (dcm._mantissa && ([dcm._mantissa count]==1) && (dcm._mantissa[0]==1))
+        if (dcm._mantissa && ([dcm._mantissa count] == 1) && (dcm._mantissa[0] == 1))
             return YES;
     }
     return NO;
@@ -343,10 +343,10 @@ function CPDecimalCompare(leftOperand, rightOperand)
 {
     if (leftOperand._isNegative != rightOperand._isNegative)
     {
-	    if (rightOperand._isNegative)
-		    return CPOrderedDescending;
-		else
-		    return CPOrderedAscending;
+        if (rightOperand._isNegative)
+            return CPOrderedDescending;
+        else
+            return CPOrderedAscending;
     }
 
     var s1 = leftOperand._exponent + [leftOperand._mantissa count],
@@ -355,17 +355,17 @@ function CPDecimalCompare(leftOperand, rightOperand)
     // Sign is the same, quick check size (length + exp)
     if (s1 < s2)
     {
-	    if (rightOperand._isNegative)
-		    return CPOrderedDescending;
-		else
-		    return CPOrderedAscending;
+        if (rightOperand._isNegative)
+            return CPOrderedDescending;
+        else
+            return CPOrderedAscending;
     }
     if (s1 > s2)
     {
-	    if (rightOperand._isNegative)
-		    return CPOrderedAscending;
-		else
-		    return CPOrderedDescending;
+        if (rightOperand._isNegative)
+            return CPOrderedAscending;
+        else
+            return CPOrderedDescending;
     }
 
     // Same size, so check mantissa
@@ -379,33 +379,33 @@ function CPDecimalCompare(leftOperand, rightOperand)
         if (d > 0)
         {
             if (rightOperand._isNegative)
-		        return CPOrderedDescending;
-		    else
-		        return CPOrderedAscending;
-	    }
+                return CPOrderedDescending;
+            else
+                return CPOrderedAscending;
+        }
         if (d < 0)
         {
             if (rightOperand._isNegative)
-		        return CPOrderedAscending;
-		    else
-		        return CPOrderedDescending;
-	    }
+                return CPOrderedAscending;
+            else
+                return CPOrderedDescending;
+        }
     }
 
     // Same digits, check length
     if ([leftOperand._mantissa count] > [rightOperand._mantissa count])
     {
         if (rightOperand._isNegative)
-		    return CPOrderedAscending;
-		else
-		    return CPOrderedDescending;
+            return CPOrderedAscending;
+        else
+            return CPOrderedDescending;
     }
     if ([leftOperand._mantissa count] < [rightOperand._mantissa count])
     {
         if (rightOperand._isNegative)
-		    return CPOrderedDescending;
-		else
-		    return CPOrderedAscending;
+            return CPOrderedDescending;
+        else
+            return CPOrderedAscending;
     }
 
     return CPOrderedSame;
@@ -422,7 +422,7 @@ function _SimpleAdd(result, leftOperand, rightOperand, roundingMode, longMode)
 
     var j = [leftOperand._mantissa count] - [rightOperand._mantissa count],
         l = [rightOperand._mantissa count],
-        i = l-1,
+        i = l - 1,
         carry = 0,
         error = CPCalculationNoError;
 
@@ -432,11 +432,11 @@ function _SimpleAdd(result, leftOperand, rightOperand, roundingMode, longMode)
         var d = rightOperand._mantissa[i] + result._mantissa[i + j] + carry;
         if (d >= 10)
         {
-	        d = d % 10;  // a division. subtraction and conditions faster?
-	        carry = 1;
-	    }
+            d = d % 10;  // a division. subtraction and conditions faster?
+            carry = 1;
+        }
         else
-	        carry = 0;
+            carry = 0;
 
         result._mantissa[i + j] = d;
     }
@@ -444,34 +444,34 @@ function _SimpleAdd(result, leftOperand, rightOperand, roundingMode, longMode)
     if (carry)
     {
         for (i = j-1; i >= 0; i--)
-	    {
-	        if (result._mantissa[i] != 9)
-	        {
-	            result._mantissa[i]++;
-	            carry = 0;
-	            break;
-	        }
-	        result._mantissa[i] = 0;
-	    }
+        {
+            if (result._mantissa[i] != 9)
+            {
+                result._mantissa[i]++;
+                carry = 0;
+                break;
+            }
+            result._mantissa[i] = 0;
+        }
 
         if (carry)
-	    {
+        {
             [result._mantissa insertObject:1 atIndex:0];
 
-	        // The number must be shifted to the right
-            if ((CPDecimalMaxDigits*factor) == [leftOperand._mantissa count])
-	        {
+            // The number must be shifted to the right
+            if ((CPDecimalMaxDigits * factor) == [leftOperand._mantissa count])
+            {
                 var scale = - result._exponent - 1;
                 CPDecimalRound(result, result,scale,roundingMode);
-	        }
+            }
 
-	        if (CPDecimalMaxExponent < result._exponent)
-	        {
-	            result._isNaN = YES;
-	            error = CPCalculationOverflow;
+            if (CPDecimalMaxExponent < result._exponent)
+            {
+                result._isNaN = YES;
+                error = CPCalculationOverflow;
                 result._exponent = CPDecimalMaxExponent;
-	        }
-	    }
+            }
+        }
     }
     return error;
 }
@@ -512,14 +512,14 @@ function CPDecimalAdd(result, leftOperand, rightOperand, roundingMode, longMode)
     {
         if (leftOperand._isNegative)
         {
-	        n1._isNegative = NO;
-	        return CPDecimalSubtract(result, rightOperand, n1, roundingMode);
-	    }
+            n1._isNegative = NO;
+            return CPDecimalSubtract(result, rightOperand, n1, roundingMode);
+        }
         else
         {
-	        n2._isNegative = NO;
-	        return CPDecimalSubtract(result, leftOperand, n2, roundingMode);
-	    }
+            n2._isNegative = NO;
+            return CPDecimalSubtract(result, leftOperand, n2, roundingMode);
+        }
     }
 
     var normerror = CPDecimalNormalize(n1, n2, roundingMode, longMode);
@@ -543,29 +543,29 @@ function CPDecimalAdd(result, leftOperand, rightOperand, roundingMode, longMode)
         // SimpleCompare does not look at sign
         if (comp == CPOrderedDescending)
         {
-	        adderror = _SimpleAdd(result, n1, n2, roundingMode, longMode);
-	    }
+            adderror = _SimpleAdd(result, n1, n2, roundingMode, longMode);
+        }
         else
         {
-	        adderror = _SimpleAdd(result, n2, n1, roundingMode, longMode);
-	    }
+            adderror = _SimpleAdd(result, n2, n1, roundingMode, longMode);
+        }
         result._isNegative = YES;
         // swap sign over over/underflow exception
         if (CPCalculationUnderflow == adderror)
-	        adderror = CPCalculationOverflow;
+            adderror = CPCalculationOverflow;
         else if (CPCalculationUnderflow == adderror)
-	        adderror = CPCalculationUnderflow;
+            adderror = CPCalculationUnderflow;
     }
     else
     {
         if (comp == CPOrderedAscending)
         {
-	        adderror = _SimpleAdd(result, n2, n1, roundingMode, longMode);
-	    }
+            adderror = _SimpleAdd(result, n2, n1, roundingMode, longMode);
+        }
         else
         {
-	        adderror = _SimpleAdd(result, n1, n2, roundingMode, longMode);
-	    }
+            adderror = _SimpleAdd(result, n1, n2, roundingMode, longMode);
+        }
     }
 
     CPDecimalCompact(result);
@@ -583,7 +583,7 @@ function _SimpleSubtract(result, leftOperand, rightOperand, roundingMode)
         borrow = 0,
         l = [rightOperand._mantissa count],
         j = [leftOperand._mantissa count] - l,
-        i = l-1;
+        i = l - 1;
 
     _CPDecimalSet(result, leftOperand);
 
@@ -593,11 +593,11 @@ function _SimpleSubtract(result, leftOperand, rightOperand, roundingMode)
         var d = result._mantissa[i + j] - rightOperand._mantissa[i] - borrow;
         if (d < 0)
         {
-	        d = d + 10;
-	        borrow = 1;
-	    }
+            d = d + 10;
+            borrow = 1;
+        }
         else
-	        borrow = 0;
+            borrow = 0;
 
         result._mantissa[i + j] = d;
     }
@@ -605,19 +605,19 @@ function _SimpleSubtract(result, leftOperand, rightOperand, roundingMode)
     if (borrow)
     {
         for (i = j-1; i >= 0; i--)
-	    {
-	        if (result._mantissa[i] != 0)
-	        {
-	            result._mantissa[i]--;
-	            break;
-	        }
-	        result._mantissa[i] = 9;
-	    }
+        {
+            if (result._mantissa[i] != 0)
+            {
+                result._mantissa[i]--;
+                break;
+            }
+            result._mantissa[i] = 9;
+        }
 
         if (-1 == i)
-	    {
-		    error = nil;
-	    }
+        {
+            error = nil;
+        }
     }
 
     return error;
@@ -654,7 +654,7 @@ function CPDecimalSubtract(result, leftOperand, rightOperand, roundingMode)
     }
 
      var n1 = CPDecimalCopy(leftOperand),
-         n2 = CPDecimalCopy(rightOperand)
+         n2 = CPDecimalCopy(rightOperand),
          error1 = CPCalculationNoError;
 
     // For different signs use addition
@@ -662,24 +662,24 @@ function CPDecimalSubtract(result, leftOperand, rightOperand, roundingMode)
     {
         if (leftOperand._isNegative)
         {
-	        n1._isNegative = NO;
-	        error1 = CPDecimalAdd(result, n1, rightOperand, roundingMode);
-	        result._isNegative = YES;
-	        if (error1 == CPCalculationUnderflow)
-	            error1 = CPCalculationOverflow;
-	        else if (error1 == CPCalculationOverflow) // gnustep has bug here
-	            error1 = CPCalculationUnderflow;
-	        return error1;
-	    }
+            n1._isNegative = NO;
+            error1 = CPDecimalAdd(result, n1, rightOperand, roundingMode);
+            result._isNegative = YES;
+            if (error1 == CPCalculationUnderflow)
+                error1 = CPCalculationOverflow;
+            else if (error1 == CPCalculationOverflow) // gnustep has bug here
+                error1 = CPCalculationUnderflow;
+            return error1;
+        }
         else
         {
-	        n2._isNegative = NO;
-	        return CPDecimalAdd(result, leftOperand, n2, roundingMode);
-	    }
+            n2._isNegative = NO;
+            return CPDecimalAdd(result, leftOperand, n2, roundingMode);
+        }
     }
 
-    var error = CPDecimalNormalize(n1, n2, roundingMode);
-    var comp = CPDecimalCompare(leftOperand, rightOperand);
+    var error = CPDecimalNormalize(n1, n2, roundingMode),
+        comp = CPDecimalCompare(leftOperand, rightOperand);
 
     if (comp == CPOrderedSame)
     {
@@ -694,25 +694,25 @@ function CPDecimalSubtract(result, leftOperand, rightOperand, roundingMode)
         n2._isNegative = NO;
         if (comp == CPOrderedAscending)
         {
-	        error1 = _SimpleSubtract(result, n1, n2, roundingMode);
-	        result._isNegative = YES;
-	    }
+            error1 = _SimpleSubtract(result, n1, n2, roundingMode);
+            result._isNegative = YES;
+        }
         else
         {
-	        error1 = _SimpleSubtract(result, n2, n1, roundingMode);
-	    }
+            error1 = _SimpleSubtract(result, n2, n1, roundingMode);
+        }
     }
     else
     {
         if (comp == CPOrderedAscending)
         {
-	        error1 = _SimpleSubtract(result, n2, n1, roundingMode);
-	        result._isNegative = YES;
-	    }
+            error1 = _SimpleSubtract(result, n2, n1, roundingMode);
+            result._isNegative = YES;
+        }
         else
         {
-	        error1 = _SimpleSubtract(result, n1, n2, roundingMode);
-	    }
+            error1 = _SimpleSubtract(result, n1, n2, roundingMode);
+        }
     }
 
     CPDecimalCompact(result);
@@ -730,8 +730,8 @@ function _SimpleDivide(result, leftOperand, rightOperand, roundingMode)
         n1 = CPDecimalMakeZero(),
         k = 0,
         firsttime = YES,
-        stopk = CPDecimalMaxDigits+1,
-        used = 0;// How many digits of l have been used?
+        stopk = CPDecimalMaxDigits + 1,
+        used = 0; // How many digits of l have been used?
 
     _CPDecimalSetZero(result);
 
@@ -744,15 +744,15 @@ function _SimpleDivide(result, leftOperand, rightOperand, roundingMode)
         {
             if (stopk == k)
                 break;
-	        if (n1._exponent)
-	        {
+            if (n1._exponent)
+            {
                 // Put back zeros removed by compacting
-	            [n1._mantissa addObject:0];
-	            n1._exponent--;
+                [n1._mantissa addObject:0];
+                n1._exponent--;
                 n1._isCompact = NO;
-	        }
-	        else
-	        {
+            }
+            else
+            {
                 if (used < [leftOperand._mantissa count])
                 {
                     // Fill up with own digits
@@ -785,7 +785,7 @@ function _SimpleDivide(result, leftOperand, rightOperand, roundingMode)
                 if (!firsttime)
                 {
                     k++;
-                    result._mantissa[k-1] = 0;
+                    result._mantissa[k - 1] = 0;
                 }
             }
         }
@@ -809,7 +809,7 @@ function _SimpleDivide(result, leftOperand, rightOperand, roundingMode)
         if (error1 != CPCalculationNoError)
             error = error1;
 
-        result._mantissa[k-1]++;
+        result._mantissa[k - 1]++;
     }
 
     return error;
@@ -865,9 +865,9 @@ function CPDecimalDivide(result, leftOperand, rightOperand, roundingMode)
     {
         result._isNaN = YES;
         if (neg)
-	        return CPCalculationUnderflow;
+            return CPCalculationUnderflow;
         else
-	        return CPCalculationOverflow;
+            return CPCalculationOverflow;
     }
     else if (result._exponent + exp < CPDecimalMinExponent)
     {
@@ -877,8 +877,8 @@ function CPDecimalDivide(result, leftOperand, rightOperand, roundingMode)
 
         if (result._exponent + exp < CPDecimalMinExponent)
         {
-	        CPDecimalSetZero(result);
-	        return error;
+            CPDecimalSetZero(result);
+            return error;
         }
     }
     result._exponent += exp;
@@ -907,23 +907,23 @@ function _SimpleMultiply(result, leftOperand, rightOperand, roundingMode, powerM
         d = rightOperand._mantissa[i];
 
         if (d == 0)
-	        continue;
+            continue;
 
-        var j =0;
+        var j = 0;
         for (j = [leftOperand._mantissa count]-1; j >= 0; j--)
         {
-	        e = leftOperand._mantissa[j] * d + carry;
-	        if (e >= 10)
-	        {
-	            carry = FLOOR(e / 10);
-	            e = e % 10;
-	        }
-	        else
-	            carry = 0;
+            e = leftOperand._mantissa[j] * d + carry;
+            if (e >= 10)
+            {
+                carry = FLOOR(e / 10);
+                e = e % 10;
+            }
+            else
+                carry = 0;
 
-	        // This is one off to allow final carry
-	        n._mantissa[j+1] = e;
-	    }
+            // This is one off to allow final carry
+            n._mantissa[j + 1] = e;
+        }
         n._mantissa[0] = carry;
 
         CPDecimalCompact(n);
@@ -931,7 +931,7 @@ function _SimpleMultiply(result, leftOperand, rightOperand, roundingMode, powerM
         error1 = CPDecimalAdd(result, result, n, roundingMode, YES);
 
         if (error1 != CPCalculationNoError)
-	        error = error1;
+            error = error1;
     }
 
     if (result._exponent + exp > CPDecimalMaxExponent)
@@ -988,9 +988,9 @@ function CPDecimalMultiply(result, leftOperand, rightOperand, roundingMode, powe
     {
         result._isNaN = YES;
         if (neg)
-	        return CPCalculationUnderflow;
+            return CPCalculationUnderflow;
         else
-	        return CPCalculationOverflow;
+            return CPCalculationOverflow;
     }
 
     var n1 = CPDecimalCopy(leftOperand),
@@ -1028,20 +1028,20 @@ function CPDecimalMultiply(result, leftOperand, rightOperand, roundingMode, powe
     {
         result._isNaN = YES;
         if (neg)
-	        return CPCalculationUnderflow;
+            return CPCalculationUnderflow;
         else
-	        return CPCalculationOverflow;
+            return CPCalculationOverflow;
     }
     else if (result._exponent + exp < CPDecimalMinExponent)
     {
         // We must cut off some digits
-        CPDecimalRound(result, result, exp+CPDecimalMaxExponent+1, roundingMode);
+        CPDecimalRound(result, result, exp + CPDecimalMaxExponent + 1, roundingMode);
         error = CPCalculationLossOfPrecision;
 
         if (result._exponent + exp < CPDecimalMinExponent)
         {
-	        _CPDecimalSetZero(result);
-	        return error;
+            _CPDecimalSetZero(result);
+            return error;
         }
     }
 
@@ -1102,7 +1102,7 @@ function CPDecimalPower(result, dcm, power, roundingMode)
     {
         if (e & 1)
         {
-	        error = CPDecimalMultiply(result, result, n1, roundingMode); //, YES); // enable for high precision powers
+            error = CPDecimalMultiply(result, result, n1, roundingMode); //, YES); // enable for high precision powers
         }
 
         error = CPDecimalMultiply(n1, n1, n1, roundingMode); //, YES); // enable for high precision powers
@@ -1147,9 +1147,9 @@ function CPDecimalNormalize(dcm1, dcm2, roundingMode, longMode)
         return CPCalculationNoError; // FIXME: correct behavior?
 
     // ensure compact
-    if(!dcm1._isCompact)
+    if (!dcm1._isCompact)
         CPDecimalCompact(dcm1);
-    if(!dcm2._isCompact)
+    if (!dcm2._isCompact)
         CPDecimalCompact(dcm2);
 
     if (dcm1._exponent == dcm2._exponent)
@@ -1161,7 +1161,7 @@ function CPDecimalNormalize(dcm1, dcm2, roundingMode, longMode)
     // Add zeros
     var l2 = [dcm2._mantissa count],
         l1 = [dcm1._mantissa count],
-        l=0;
+        l = 0;
 
     var e = 0;
     if (e2 > e1 && e1 >= 0 && e2 >= 0)
@@ -1206,7 +1206,7 @@ function CPDecimalNormalize(dcm1, dcm2, roundingMode, longMode)
         // no..
         // Round of some digits to increase exponent - will compact too
         // One number may become zero after this
-        if( e2 > e1 )
+        if (e2 > e1)
         {
             CPDecimalRound(dcm1, dcm1, -dcm2._exponent, roundingMode);
             l1 = CPDecimalIsZero(dcm1);
@@ -1217,22 +1217,24 @@ function CPDecimalNormalize(dcm1, dcm2, roundingMode, longMode)
             l2 = CPDecimalIsZero(dcm2);
         }
 
-        if ((dcm1._exponent != dcm2._exponent) && ((!l1) || (!l2)) )
-	    {
-	        // Some zeros where cut of again by compacting
-            if( e2 > e1 )
+        if ((dcm1._exponent != dcm2._exponent) && ((!l1) || (!l2)))
+        {
+            // Some zeros where cut of again by compacting
+            if (e2 > e1)
             {
                 l1 = [dcm1._mantissa count];
-                l = MIN((CPDecimalMaxDigits*factor) - l1, ABS(dcm1._exponent - dcm2._exponent));
+                l = MIN((CPDecimalMaxDigits * factor) - l1, ABS(dcm1._exponent - dcm2._exponent));
                 for (var i = 0; i < l; i++)
                 {
                     dcm1._mantissa[i + l1] = 0; // or addObject: ? one faster than other?
                 }
                 dcm1._isCompact = NO;
                 dcm1._exponent = dcm2._exponent;
-            } else {
+            }
+            else
+            {
                 l2 = [dcm2._mantissa count];
-                l = MIN((CPDecimalMaxDigits*factor) - l2, ABS(dcm2._exponent - dcm1._exponent));
+                l = MIN((CPDecimalMaxDigits * factor) - l2, ABS(dcm2._exponent - dcm1._exponent));
                 for (var i = 0; i < l; i++)
                 {
                     dcm2._mantissa[i + l2] = 0; // or addObject: ? one faster than other?
@@ -1240,7 +1242,7 @@ function CPDecimalNormalize(dcm1, dcm2, roundingMode, longMode)
                 dcm2._exponent = dcm1._exponent;
                 dcm2._isCompact = NO;
             }
-	    }
+        }
         return CPCalculationLossOfPrecision;
     }
 
@@ -1294,64 +1296,64 @@ function CPDecimalRound(result, dcm, scale ,roundingMode)
 
         switch (roundingMode)
         {
-	    case CPRoundDown:
-	        up = result._isNegative;
-	        break;
-	    case CPRoundUp:
-	        up = !result._isNegative;
-	        break;
-	    case CPRoundPlain:
-	        n = result._mantissa[l];
-	        up = (n >= 5);
-	        break;
-	    case CPRoundBankers:
-	        n = result._mantissa[l];
-	        if (n > 5)
-	            up = YES;
-	        else if (n < 5)
-	            up = NO;
-	        else
-	        {
-		        if (l == 0)
-		            c = 0;
-		        else
-		            c = result._mantissa[l-1];
-		        up = ((c % 2) != 0);
-	        }
-	        break;
-	    default:
-	        up = NO;
-	        break;
-	    }
+        case CPRoundDown:
+            up = result._isNegative;
+            break;
+        case CPRoundUp:
+            up = !result._isNegative;
+            break;
+        case CPRoundPlain:
+            n = result._mantissa[l];
+            up = (n >= 5);
+            break;
+        case CPRoundBankers:
+            n = result._mantissa[l];
+            if (n > 5)
+                up = YES;
+            else if (n < 5)
+                up = NO;
+            else
+            {
+                if (l == 0)
+                    c = 0;
+                else
+                    c = result._mantissa[l - 1];
+                up = ((c % 2) != 0);
+            }
+            break;
+        default:
+            up = NO;
+            break;
+        }
         // cut mantissa
         result._mantissa = [result._mantissa subarrayWithRange:CPMakeRange(0, l)];
 
         if (up)
         {
-	        for (var i = l-1; i >= 0; i--)
-	        {
-	            if (result._mantissa[i] != 9)
-	            {
-		            result._mantissa[i]++;
-		            break;
-	            }
-	            result._mantissa[i] = 0;
-	        }
-	        // Final overflow?
-	        if (i == -1)
-	        {
-	            // As all digits are zeros, just change the first
-	            result._mantissa[0] = 1;
-	            if (result._exponent >= CPDecimalMaxExponent)
-	            {
-		            // Overflow in rounding.
-		            // Add one zero add the end. There must be space as
-		            // we just cut off some digits.
-		            [result._mantissa addObject:0];
-	            }
-	            else
-	                result._exponent++;
-	        }
+            for (var i = l-1; i >= 0; i--)
+            {
+                if (result._mantissa[i] != 9)
+                {
+                    result._mantissa[i]++;
+                    break;
+                }
+                result._mantissa[i] = 0;
+            }
+            // Final overflow?
+            if (i == -1)
+            {
+                // As all digits are zeros, just change the first
+                result._mantissa[0] = 1;
+                if (result._exponent >= CPDecimalMaxExponent)
+                {
+                    // Overflow in rounding.
+                    // Add one zero add the end. There must be space as
+                    // we just cut off some digits.
+                    [result._mantissa addObject:0];
+                }
+                else
+                    result._exponent++;
+            }
         }
     }
 
@@ -1367,10 +1369,10 @@ function CPDecimalCompact(dcm)
 {
     // if positive or zero exp leading zeros simply delete, trailing ones u need to increment exponent
     if (!dcm || [dcm._mantissa count] == 0 || CPDecimalIsNotANumber(dcm) )
-    	return;
+        return;
 
 
-    if( CPDecimalIsZero(dcm) )
+    if (CPDecimalIsZero(dcm))
     {
         // handle zero number compacting
         _CPDecimalSetZero(dcm);
@@ -1378,16 +1380,16 @@ function CPDecimalCompact(dcm)
     }
     // leading zeros, when exponent is zero these mean we need to move our decimal point to compact
     // if exp is zero does it make sense to have them? dont think so so delete them
-    while( dcm._mantissa[0] === 0 )
+    while (dcm._mantissa[0] === 0)
     {
         [dcm._mantissa removeObjectAtIndex:0];
     }
     // trailing zeros, strip them
-    while( [dcm._mantissa lastObject] === 0 )
+    while ([dcm._mantissa lastObject] === 0)
     {
         [dcm._mantissa removeLastObject];
         dcm._exponent++;
-        if (dcm._exponent+1 > CPDecimalMaxExponent)
+        if (dcm._exponent + 1 > CPDecimalMaxExponent)
         {
           // TODO: test case for this
           // overflow if we compact anymore, so dont
@@ -1415,12 +1417,12 @@ function CPDecimalString(dcm, locale)
     if (dcm._isNegative)
         string += "-";
     var k = [dcm._mantissa count],
-        l = ((dcm._exponent < 0)?dcm._exponent:0) + k;
+        l = ((dcm._exponent < 0) ? dcm._exponent : 0) + k;
     if (l < 0)
     {
         // add leading zeros
         string += "0.";
-        for(i = 0; i < ABS(l); i++)
+        for (i = 0; i < ABS(l); i++)
         {
             string += "0";
         }
@@ -1431,19 +1433,19 @@ function CPDecimalString(dcm, locale)
         string += "0";
     }
 
-    for(i = 0; i < l; i++)
+    for (i = 0; i < l; i++)
     {
         string += dcm._mantissa[i];
     }
     if (l < k)
     {
         string += ".";
-        for(i = l; i < k; i++)
+        for (i = l; i < k; i++)
         {
             string += dcm._mantissa[i];
         }
     }
-    for(i = 0; i < dcm._exponent; i++)
+    for (i = 0; i < dcm._exponent; i++)
     {
         string += "0";
     }

@@ -3,3 +3,9 @@
 }
 
 @end
+
+@implementation NSNumberFormatter : CPObject
+{
+}
+
+@end

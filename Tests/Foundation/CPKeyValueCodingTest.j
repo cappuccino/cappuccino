@@ -30,4 +30,59 @@
     [self assert:[CPNull null] equals:[nullObject valueForKey:@"a"] message:@"CPNull valueForKey:X returns nil"];
 }
 
+- (void)testValueForKeyPath
+{
+    var department = [Department departmentWithName:@"Engineering"],
+        employee = [Employee employeeWithName:@"Klaas Pieter" department:department];
+
+    [self assert:department equals:[employee valueForKey:@"department"]];
+    [self assert:@"Engineering" equals:[employee valueForKeyPath:@"department.name"]];
+}
+
+@end
+
+@implementation Employee : CPObject
+{
+    CPString                    _name @accessors(property=name);
+    Department                  _department @accessors(property=department);
+}
+
++ (id)employeeWithName:(CPString)theName department:(Department)theDepartment
+{
+    return [[self alloc] initWithName:theName department:theDepartment];
+}
+
+- (id)initWithName:(CPString)theName department:(Department)theDepartment
+{
+    if (self = [super init])
+    {
+        _name = theName;
+        _department = theDepartment;
+    }
+
+    return self;
+}
+
+@end
+
+@implementation Department : CPObject
+{
+    CPString                _name @accessors(property=name);
+}
+
++ (id)departmentWithName:(CPString)theName
+{
+    return [[self alloc] initWithName:theName];
+}
+
+- (id)initWithName:(CPString)theName
+{
+    if (self = [super init])
+    {
+        _name = theName;
+    }
+
+    return self;
+}
+
 @end

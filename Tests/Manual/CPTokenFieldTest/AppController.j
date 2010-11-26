@@ -12,6 +12,9 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
 
 @implementation AppController : CPObject
 {
+    CPTokenField    tokenFieldD;
+
+    CPArray         allPersons;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -42,7 +45,7 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     [tokenFieldB setBezeled:NO];
     [tokenFieldB setPlaceholderString:"Edit me!"];
 
-	[tokenFieldB setObjectValue:["Missouri", "California"]];
+    [tokenFieldB setObjectValue:["Missouri", "California"]];
     [tokenFieldB setDelegate:self];
 
     [contentView addSubview:tokenFieldB];
@@ -56,13 +59,47 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     [tokenFieldC setEditable:YES];
     [tokenFieldC setPlaceholderString:"Edit me!"];
 
-	[tokenFieldC setObjectValue:['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado']];
+    [tokenFieldC setObjectValue:['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado']];
     [tokenFieldC setDelegate:self];
 
     [contentView addSubview:tokenFieldC];
 
+
+    tokenFieldD = [[CPTokenField alloc] initWithFrame:CGRectMake(15, 230, 500, 30)],
+        labelD = [[CPTextField alloc] initWithFrame:CGRectMake(15, 210, 500, 24)];
+
+    [labelD setStringValue:"This token field contains represented objects."];
+    [contentView addSubview:labelD];
+
+    [tokenFieldD setEditable:YES];
+
+    // Delegate must be set before objectValue
+    [tokenFieldD setDelegate:self];
+
+    allPersons = [
+        [Person personWithFirstName:@"Luc" lastName:@"Vauvillier"],
+        [Person personWithFirstName:@"John" lastName:@"Doe"],
+        [Person personWithFirstName:@"Amélie" lastName:@"Poulain"],
+        [Person personWithFirstName:@"Jean" lastName:@"Valjean"]
+    ];
+    [tokenFieldD setObjectValue:[allPersons copy]];
+
+    [contentView addSubview:tokenFieldD];
+
+    var button = [[CPButton alloc] initWithFrame:CGRectMake(15, 270, 0, 0)];
+    [button setTitle:"Get Object Values"];
+    [button sizeToFit];
+    [button setTarget:self];
+    [button setAction:@selector(getObjectValues:)];
+    [contentView addSubview:button];
+
     [theWindow orderFront:self];
 
+}
+
+- (void)getObjectValues:(id)sender
+{
+    alert([tokenFieldD objectValue]);
 }
 
 - (CPArray)tokenField:(CPTokenField)aTokenField completionsForSubstring:(CPString)substring indexOfToken:(int)tokenIndex indexOfSelectedItem:(int)selectedIndex
@@ -73,11 +110,61 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     if (!substring)
         return r;
 
-    for (var i = 0; i < STATES.length; i++)
-        if (STATES[i].toLowerCase().indexOf(substring.toLowerCase()) == 0)
-            r.push(STATES[i]);
+
+    if (aTokenField !== tokenFieldD)
+    {
+        for (var i = 0; i < STATES.length; i++)
+            if (STATES[i].toLowerCase().indexOf(substring.toLowerCase()) == 0)
+                r.push(STATES[i]);
+    }
+    else
+    {
+        for (var i = 0; i < allPersons.length; i++)
+            if ([allPersons[i] fullname].toLowerCase().indexOf(substring.toLowerCase()) == 0)
+                r.push(allPersons[i]);
+    }
 
     return r;
+}
+
+- (CPString)tokenField:(CPTokenField)tokenField displayStringForRepresentedObject:(id)representedObject
+{
+    if ([representedObject isKindOfClass:Person])
+    {
+        return [representedObject fullname];
+    }
+
+    return representedObject;
+}
+
+@end
+
+// A sample of a custom Object
+
+@implementation Person : CPObject
+{
+    CPString    _firstName;
+    CPString    _lastName;
+}
+
++ (id)personWithFirstName:(CPString)aFirstName lastName:(CPString)aLastName
+{
+    return [[self alloc] initWithFirstName:aFirstName lastName:aLastName];
+}
+
+- (id)initWithFirstName:(CPString)aFirstName lastName:(CPString)aLastName {
+    self = [super init];
+    if (self)
+    {
+        _firstName = aFirstName;
+        _lastName = aLastName;
+    }
+    return self;
+}
+
+- (CPString)fullname
+{
+    return [CPString stringWithFormat:@"%@ %@", _firstName, _lastName];
 }
 
 @end
