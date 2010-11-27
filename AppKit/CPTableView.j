@@ -1324,12 +1324,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_)
     {
         var y = _cachedRowHeights[aRowIndex].heightAboveRow,
-            height = _cachedRowHeights[aRowIndex].height;
+            height = _cachedRowHeights[aRowIndex].height + _intercellSpacing.height;
     }
     else
     {
         var y = aRowIndex * (_rowHeight + _intercellSpacing.height),
-            height = _rowHeight;
+            height = _rowHeight + _intercellSpacing.height;
     }
     
 
