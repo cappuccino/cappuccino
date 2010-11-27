@@ -2731,65 +2731,31 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         return;
     }
-    // CGContextFillRect(context, CGRectIntersection(aRect, fillRect));
-    // console.profile("row-paint");
+
     var exposedRows = [self rowsInRect:aRect],
-        firstRow = exposedRows.location,
-        lastRow = CPMaxRange(exposedRows) - 1,
-        colorIndex = MIN(exposedRows.length, colorCount),
-        heightFilled = 0.0,
-        groupRowRects = [ ];
+        lastRow = CPMaxRange(exposedRows),
+        colorIndex = 0,
+        groupRowRects = [],
+        row = exposedRows.location;
 
-    while (colorIndex--)
+    //loop through each color so we only draw once for each color 
+    while(colorIndex < colorCount)
     {
-        var row = firstRow - firstRow % colorCount + colorIndex,
-            fillRect = _CGRectMakeZero();
-
         CGContextBeginPath(context);
-
-        for (; row <= lastRow; row += colorCount)
-            if (row >= firstRow)
-            {
-                if (![_groupRows containsIndex:row] && _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleSourceList)
-                    CGContextAddRect(context, CGRectIntersection(aRect, fillRect = [self rectOfRow:row]));
-                else
-                    groupRowRects.push(CGRectIntersection(aRect, [self rectOfRow:row]));
-            }
-
-        if (row - colorCount === lastRow)
-            heightFilled = _CGRectGetMaxY(fillRect);
-
+        for (var row = colorIndex; row < lastRow; row += colorCount)
+        {
+            // if it's not a group row draw it otherwise we draw it later
+            if (![_groupRows containsIndex:row])
+                CGContextAddRect(context, CGRectIntersection(aRect, [self rectOfRow:row]));
+            else
+                groupRowRects.push(CGRectIntersection(aRect, [self rectOfRow:row]));
+        }
         CGContextClosePath(context);
 
         CGContextSetFillColor(context, rowColors[colorIndex]);
         CGContextFillPath(context);
-    }
-    // console.profileEnd("row-paint");
 
-
-
-    // FIX ME: this is really terrible, it seems like such a hack...
-    var totalHeight = _CGRectGetMaxY(aRect);
-
-    if (heightFilled >= totalHeight || _rowHeight <= 0.0)
-    {
-        [self _drawGroupRowsForRects:groupRowRects];
-        return;
-    }
-
-    var rowHeight = _rowHeight + _intercellSpacing.height,
-        fillRect = _CGRectMake(_CGRectGetMinX(aRect), _CGRectGetMinY(aRect) + heightFilled, _CGRectGetWidth(aRect), rowHeight);
-
-    for (row = lastRow + 1; heightFilled < totalHeight; ++row)
-    {
-        if(![_groupRows containsIndex:row] && _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleSourceList)
-        {
-            CGContextSetFillColor(context, rowColors[row % colorCount]);
-            CGContextFillRect(context, fillRect);
-        }
-
-        heightFilled += rowHeight;
-        fillRect.origin.y += rowHeight;
+        colorIndex++;
     }
 
     [self _drawGroupRowsForRects:groupRowRects];
