@@ -1,8 +1,8 @@
-@import <Foundation/CPString.j>
-@import <Foundation/CPArray.j>
-@import <Foundation/CPKeyValueCoding.j>
-@import <Foundation/CPDictionary.j>
-@import <Foundation/CPCoder.j>
+
+@import "CPString.j"
+@import "CPArray.j"
+@import "CPKeyValueCoding.j"
+@import "CPDictionary.j"
 
 /*!
     An expression that always returns the same value.
@@ -25,7 +25,7 @@ CPKeyPathExpressionType = 3;
 */
 CPFunctionExpressionType = 4;
 /*!
-    An expression that defines an aggregate of NSExpression objects.
+    An expression that defines an aggregate of CPExpression objects.
 */
 CPAggregateExpressionType = 5;
 /*!
@@ -90,7 +90,7 @@ CPMinusSetExpressionType = 9;
 */
 + (CPExpression)expressionForEvaluatedObject
 {
-    return [[CPExpression_self alloc] init];
+    return [CPExpression_self evaluatedObject];
 }
 
 /*!
@@ -161,9 +161,9 @@ CPMinusSetExpressionType = 9;
 /*!
     Returns a new expression that will invoke one of the predefined functions.
     @param function_name The name of the function to invoke.
-    @param parameters An array containing NSExpression objects that will be used as parameters during the invocation of selector.
+    @param parameters An array containing CPExpression objects that will be used as parameters during the invocation of selector.
 
-    For a selector taking no parameters, the array should be empty. For a selector taking one or more parameters, the array should contain one NSExpression object which will evaluate to an instance of the appropriate type for each parameter.
+    For a selector taking no parameters, the array should be empty. For a selector taking one or more parameters, the array should contain one CPExpression object which will evaluate to an instance of the appropriate type for each parameter.
 
     If there is a mismatch between the number of parameters expected and the number you provide during evaluation, an exception may be raised or missing parameters may simply be replaced by nil (which occurs depends on how many parameters are provided, and whether you have over- or underflow).
     @return A new expression that invokes the function name using the parameters in parameters.

@@ -48,7 +48,7 @@
     CPArray     _rangeEntries;
 }
 
-//Creating an NSAttributedString Object
+// Creating a CPAttributedString Object
 /*!
     Creates a new attributed string from a character string.
     @param aString is the string to initialise from.

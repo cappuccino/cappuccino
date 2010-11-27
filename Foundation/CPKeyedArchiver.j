@@ -156,7 +156,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     return data;
 }
 
-// Initializing an NSKeyedArchiver object
+// Initializing a CPKeyedArchiver object
 /*!
     Initializes the keyed archiver with the specified \c CPMutableData for writing.
     @param data the object to archive to

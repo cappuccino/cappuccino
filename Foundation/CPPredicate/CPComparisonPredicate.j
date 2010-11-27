@@ -1,3 +1,4 @@
+
 @import "CPArray.j"
 @import "CPNull.j"
 @import "CPString.j"
@@ -6,7 +7,7 @@
 @import "CPExpression.j"
 
 /*!
-    A predicate to compare directly the left and right hand sides.
+    A predicate to directly compare the left and right hand sides.
     @global
     @class CPComparisonPredicate
 */
@@ -105,7 +106,7 @@ CPEndsWithPredicateOperatorType = 9;
 /*!
     A predicate to determine if the left hand side is in the right hand side.
 
-    For strings, returns YES if the left hand side is a substring of the right hand side . For collections, returns YES if the left hand side is in the right hand side.
+    For strings, returns YES if the left hand side is a substring of the right hand side. For collections, returns YES if the left hand side is in the right hand side.
     @global
     @class CPComparisonPredicate
 */

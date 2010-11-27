@@ -388,6 +388,7 @@ CPTexturedBackgroundWindowMask
         _registeredDraggedTypes = [CPSet set];
         _registeredDraggedTypesArray = [];
         _isSheet = NO;
+        _acceptsMouseMovedEvents = YES;
 
         // Set up our window number.
         _windowNumber = [CPApp._windows count];
@@ -1223,10 +1224,10 @@ CPTexturedBackgroundWindowMask
     if (_firstResponder === aResponder)
         return YES;
 
-    if(![_firstResponder resignFirstResponder])
+    if (![_firstResponder resignFirstResponder])
         return NO;
 
-    if(!aResponder || ![aResponder acceptsFirstResponder] || ![aResponder becomeFirstResponder])
+    if (!aResponder || ![aResponder acceptsFirstResponder] || ![aResponder becomeFirstResponder])
     {
         _firstResponder = self;
 
@@ -2155,7 +2156,7 @@ CPTexturedBackgroundWindowMask
     aSheet._isSheet = YES;
     aSheet._parentView = self;
 
-    var originx = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width)/2),
+    var originx = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width) / 2),
         originy = frame.origin.y + [[self contentView] frame].origin.y,
         startFrame = CGRectMake(originx, originy, sheetFrame.size.width, 0),
         endFrame = CGRectMake(originx, originy, sheetFrame.size.width, sheetFrame.size.height);
@@ -2314,7 +2315,7 @@ CPTexturedBackgroundWindowMask
 
     // Apple's documentation is inconsistent with their behavior here. According to the docs
     // an event going of the responder chain is passed to the input system as a last resort.
-    // However, the only methods I could get Cocoa to call automatically are 
+    // However, the only methods I could get Cocoa to call automatically are
     // moveUp: moveDown: moveLeft: moveRight: pageUp: pageDown: and complete:
     [self _processKeyboardUIKey:anEvent];
 }
@@ -2324,56 +2325,13 @@ CPTexturedBackgroundWindowMask
     Interprets the key event for action messages and sends the action message down the responder chain
     Cocoa only sends moveDown:, moveUp:, moveLeft:, moveRight:, pageUp:, pageDown: and complete: messages.
     We deviate from this by sending (the default) scrollPageUp: scrollPageDown: for pageUp and pageDown keys.
-    @param anEvent the event to handle. 
+    @param anEvent the event to handle.
     @return YES if the key event was handled, NO if no responder handled the key event
 */
 - (BOOL)_processKeyboardUIKey:(CPEvent)anEvent
 {
     var character = [anEvent charactersIgnoringModifiers],
         uiKeys = [CPLeftArrowFunctionKey, CPRightArrowFunctionKey, CPUpArrowFunctionKey, CPDownArrowFunctionKey, CPPageUpFunctionKey, CPPageDownFunctionKey, CPEscapeFunctionKey];
-
-    if (![uiKeys containsObject:character])
-        return NO;
-
-    var selectors = [CPKeyBinding selectorsForKey:character modifierFlags:0];
-
-    if ([selectors count] <= 0)
-        return NO;
-
-    if (character !== CPEscapeFunctionKey)
-    {
-        var selector = [selectors objectAtIndex:0];
-        return [[self firstResponder] tryToPerform:selector with:self];
-    }
-    else
-    {
-        // Cocoa sends complete: for the escape key (in stead of the default cancelOperation:)
-        // This is also the only action that is not sent directly to the first responder, but through doCommandBySelector.
-        // The difference is that doCommandBySelector: will also send the action to the window and application delegates.
-        [[self firstResponder] doCommandBySelector:@selector(complete:)];
-    }
-}
-
-/*
-    @ignore
-    Interprets the key event for action messages and sends the action message down the responder chain
-    Cocoa only sends moveDown:, moveUp:, moveLeft:, moveRight:, pageUp:, pageDown: and complete: messages.
-    We deviate from this by sending (the default) scrollPageUp: scrollPageDown: for pageUp and pageDown keys.
-    @param anEvent the event to handle. 
-    @return YES if the key event was handled, NO if no responder handled the key event
-*/
-- (BOOL)_processKeyboardUIKey:(CPEvent)anEvent
-{
-    var character = [anEvent charactersIgnoringModifiers],
-        uiKeys = [
-            CPLeftArrowFunctionKey,
-            CPRightArrowFunctionKey,
-            CPUpArrowFunctionKey,
-            CPDownArrowFunctionKey,
-            CPPageUpFunctionKey,
-            CPPageDownFunctionKey,
-            CPEscapeFunctionKey
-        ];
 
     if (![uiKeys containsObject:character])
         return NO;
@@ -2405,43 +2363,29 @@ CPTexturedBackgroundWindowMask
 
 - (BOOL)_hasKeyViewLoop
 {
-    var subviews = [];
+    var views = allViews(self),
+        index = [views count];
 
-    [self _appendSubviewsOf:_contentView toArray:subviews];
-
-    for (var i = 0, count = [subviews count]; i<count; i++)
-    {
-        if (subviews[i]._nextKeyView)
+    while (index--)
+        if ([views[index] nextKeyView])
             return YES;
-    }
 
     return NO;
 }
 
 - (void)recalculateKeyViewLoop
 {
-    var subviews = [];
+    var views = allViews(self);
 
-    [self _appendSubviewsOf:_contentView toArray:subviews];
+    [views sortUsingFunction:keyViewComparator context:nil];
 
-    var keyViewOrder = [subviews sortedArrayUsingFunction:keyViewComparator context:_contentView],
-        count = [keyViewOrder count];
+    var index = 0,
+        count = [views count];
 
-    for (var i=0; i<count; i++)
-        [keyViewOrder[i] setNextKeyView:keyViewOrder[(i+1)%count]];
+    for (; index < count; ++index)
+        [views[index] setNextKeyView:views[(index + 1) % count]];
 
     _keyViewLoopIsDirty = NO;
-}
-
-- (void)_appendSubviewsOf:(CPView)aView toArray:(CPArray)anArray
-{
-    var subviews = [aView subviews],
-        count = [subviews count];
-
-    while (count--)
-        [self _appendSubviewsOf:subviews[count] toArray:anArray];
-
-    [anArray addObject:aView];
 }
 
 - (void)setAutorecalculatesKeyViewLoop:(BOOL)shouldRecalculate
@@ -2541,19 +2485,46 @@ CPTexturedBackgroundWindowMask
 
 @end
 
-var keyViewComparator = function(a, b, context)
+var allViews = function(aWindow)
 {
-    var viewBounds = [a convertRect:[a bounds] toView:nil],
-        otherBounds = [b convertRect:[b bounds] toView:nil];
+    var views = [[aWindow contentView] subviews],
+        index = 0;
 
-    if (CGRectGetMinY(viewBounds) < CGRectGetMinY(otherBounds))
-        return -1;
-    else if (CGRectGetMinY(viewBounds) == CGRectGetMinY(otherBounds) && CGRectGetMinX(viewBounds) < CGRectGetMinX(otherBounds))
-        return -1;
-    else if (CGRectGetMinX(viewBounds) == CGRectGetMinX(otherBounds) && CGRectGetMinX(viewBounds) == CGRectGetMinX(otherBounds))
-        return 0;
-    else
-        return 1;
+    for (; index < views.length; ++index)
+        views = views.concat([views[index] subviews]);
+
+    return views;
+}
+
+var keyViewComparator = function(lhs, rhs, context)
+{
+    var lhsBounds = [lhs convertRect:[lhs bounds] toView:nil],
+        rhsBounds = [rhs convertRect:[rhs bounds] toView:nil],
+        lhsY = _CGRectGetMinY(lhsBounds),
+        rhsY = _CGRectGetMinY(rhsBounds),
+        lhsX = _CGRectGetMinX(lhsBounds),
+        rhsX = _CGRectGetMinX(rhsBounds),
+        intersectsVertically = MIN(_CGRectGetMaxY(lhsBounds), _CGRectGetMaxY(rhsBounds)) - MAX(lhsY, rhsY);
+
+    // If two views are "on the same line" (intersect vertically), then rely on the x comparison.
+    if (intersectsVertically > 0)
+    {
+        if (lhsX < rhsX)
+            return CPOrderedAscending;
+
+        if (lhsX === rhsX)
+            return CPOrderedSame;
+
+        return CPOrderedDescending;
+    }
+
+    if (lhsY < rhsY)
+        return CPOrderedAscending;
+
+    if (lhsY === rhsY)
+        return CPOrderedSame;
+
+    return CPOrderedDescending;
 }
 
 @implementation CPWindow (MenuBar)

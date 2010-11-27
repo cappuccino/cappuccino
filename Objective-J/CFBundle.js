@@ -235,12 +235,14 @@ CFBundle.prototype.isLoading = function()
     return this._loadStatus & CFBundleLoading;
 }
 
+DISPLAY_NAME(CFBundle.prototype.isLoading);
+
 CFBundle.prototype.isLoaded = function()
 {
     return this._loadStatus & CFBundleLoaded;
 }
 
-DISPLAY_NAME(CFBundle.prototype.isLoading);
+DISPLAY_NAME(CFBundle.prototype.isLoaded);
 
 CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
 {

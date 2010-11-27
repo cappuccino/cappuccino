@@ -1,11 +1,19 @@
 
 @import "CPExpression.j"
-@import <Foundation/CPString.j>
-@import <Foundation/CPDictionary.j>
-@import <Foundation/CPCoder.j>
+@import "CPString.j"
+@import "CPDictionary.j"
 
+var evaluatedObject = nil;
 @implementation CPExpression_self : CPExpression
 {
+}
+
++ (id)evaluatedObject
+{
+    if (evaluatedObject == nil)
+        evaluatedObject = [CPExpression_self new];
+
+    return evaluatedObject;
 }
 
 - (id)init
@@ -17,7 +25,7 @@
 
 - (id)initWithCoder:(CPCoder)coder
 {
-    return [self init];
+    return [CPExpression_self evaluatedObject];
 }
 
 - (void)encodeWithCoder:(CPCoder)coder
@@ -26,7 +34,7 @@
 
 - (BOOL)isEqual:(id)object
 {
-    return (_type == CPEvaluatedObjectExpressionType);
+    return (object === self);
 }
 
 - (id)expressionValueWithObject:(id)object context:(CPDictionary)context

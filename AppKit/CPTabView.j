@@ -79,11 +79,11 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
 
     [self setBackgroundColor:[CPColor colorWithCalibratedWhite:0.95 alpha:1.0]];
 
-    [self addSubview:box];
-    [self addSubview:tabs];
-
     [box setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [tabs setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin];
+
+    [self addSubview:box];
+    [self addSubview:tabs];
 }
 
 // Adding and Removing Tabs
@@ -425,13 +425,12 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 {
     if (self = [super initWithCoder:aCoder])
     {
-        items   = [];
-
         [self _init];
 
-        var encodedItems = [aCoder decodeObjectForKey:CPTabViewItemsKey];
-        for (var i = 0; encodedItems && i < encodedItems.length; i++)
-            [self insertTabViewItem:encodedItems[i] atIndex:i];
+        items = [aCoder decodeObjectForKey:CPTabViewItemsKey];
+
+        [self _updateItems];
+        [self _repositionTabs];
 
         var selected = [aCoder decodeObjectForKey:CPTabViewSelectedItemKey];
         if (selected)
@@ -449,7 +448,7 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 {
     [super encodeWithCoder:aCoder];
 
-    [aCoder encodeObject:items forKey:CPTabViewItemsKey];;
+    [aCoder encodeObject:items forKey:CPTabViewItemsKey];
     [aCoder encodeObject:[self selectedTabViewItem] forKey:CPTabViewSelectedItemKey];
 
     [aCoder encodeInt:type forKey:CPTabViewTypeKey];

@@ -286,9 +286,14 @@ var CPControlBlackColor     = [CPColor blackColor];
         [self stopTracking:_previousTrackingLocation at:currentLocation mouseIsUp:YES];
 
         _trackingMouseDownFlags = 0;
+
+        if (isWithinFrame)
+            [self setThemeState:CPThemeStateHovered];
     }
     else
     {
+        [self unsetThemeState:CPThemeStateHovered];
+
         if (type === CPLeftMouseDown)
         {
             _trackingMouseDownFlags = [anEvent modifierFlags];
@@ -382,6 +387,25 @@ var CPControlBlackColor     = [CPColor blackColor];
         return;
 
     [self trackMouse:anEvent];
+}
+
+- (void)mouseEntered:(CPEvent)anEvent
+{
+    if (![self isEnabled])
+        return;
+
+    [self setThemeState:CPThemeStateHovered];
+}
+
+- (void)mouseExited:(CPEvent)anEvent
+{
+    var currentLocation = [self convertPoint:[anEvent locationInWindow] fromView:nil],
+        isWithinFrame = [self tracksMouseOutsideOfFrame] || CGRectContainsPoint([self bounds], currentLocation);
+
+    // Make sure we're not still in the frame because Cappuccino will sent mouseExited events
+    // for all of the (ephemeral) subviews of a view as well.
+    if (!isWithinFrame)
+        [self unsetThemeState:CPThemeStateHovered];
 }
 
 /*!

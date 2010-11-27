@@ -405,6 +405,7 @@ function CPThemeStateName(aState)
 CPThemeStateNames[0]        = "normal";
 CPThemeStateNormal          = CPThemeStates["normal"] = 0;
 CPThemeStateDisabled        = CPThemeState("disabled");
+CPThemeStateHovered         = CPThemeState("hovered");
 CPThemeStateHighlighted     = CPThemeState("highlighted");
 CPThemeStateSelected        = CPThemeState("selected");
 CPThemeStateTableDataView   = CPThemeState("tableDataView");

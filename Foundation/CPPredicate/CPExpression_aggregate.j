@@ -1,7 +1,7 @@
 
 @import "CPExpression.j"
-@import <Foundation/CPArray.j>
-@import <Foundation/CPString.j>
+@import "CPArray.j"
+@import "CPString.j"
 
 @implementation CPExpression_aggregate : CPExpression
 {

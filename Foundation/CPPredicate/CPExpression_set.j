@@ -30,7 +30,7 @@
 - (id)expressionValueWithObject:object context:(CPDictionary)context
 {
     var right = [_right expressionValueWithObject:object context:context];
-    if ([right isKindOfClass:[CPArray class]]) // Or we could do [[right objectEnumerator] allObjects]
+    if ([right isKindOfClass:[CPArray class]])
         right = [CPSet setWithArray:right];
     else if ([right isKindOfClass:[CPDictionary class]])
         right = [CPSet setWithArray:[right allValues]];
@@ -53,7 +53,7 @@
         default:
     }
 
-    return [CPExpression expressionForConstantValue:result];
+    return result;
 }
 
 - (CPExpression )_expressionWithSubstitutionVariables:(CPDictionary )variables

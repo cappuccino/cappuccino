@@ -1,21 +1,20 @@
+
 @import "CPPredicate.j"
-@import <Foundation/CPArray.j>
-@import <Foundation/CPString.j>
 
 /*!
-    A predicate to compare directly the left and right hand sides.
+    A predicate to directly compare the left and right hand sides.
     @global
     @class CPCompoundPredicate
 */
 CPNotPredicateType = 0;
 /*!
-    A predicate to compare directly the left and right hand sides.
+    A predicate to directly compare the left and right hand sides.
     @global
     @class CPCompoundPredicate
 */
 CPAndPredicateType = 1;
 /*!
-    A predicate to compare directly the left and right hand sides.
+    A predicate to directly compare the left and right hand sides.
     @global
     @class CPCompoundPredicate
 */

@@ -45,7 +45,7 @@
 }
 
 /*!
-    Returns a new NSTimer object and adds it to the current NSRunLoop object in the default mode.
+    Returns a new CPTimer object and adds it to the current CPRunLoop object in the default mode.
 */
 + (CPTimer)scheduledTimerWithTimeInterval:(CPTimeInterval)seconds invocation:(CPInvocation)anInvocation repeats:(BOOL)shouldRepeat
 {
@@ -58,7 +58,7 @@
 }
 
 /*!
-    Returns a new NSTimer object and adds it to the current NSRunLoop object in the default mode.
+    Returns a new CPTimer object and adds it to the current CPRunLoop object in the default mode.
 */
 + (CPTimer)scheduledTimerWithTimeInterval:(CPTimeInterval)seconds target:(id)aTarget selector:(SEL)aSelector userInfo:(id)userInfo repeats:(BOOL)shouldRepeat
 {
@@ -71,7 +71,7 @@
 }
 
 /*!
-    Returns a new NSTimer object and adds it to the current NSRunLoop object in the default mode.
+    Returns a new CPTimer object and adds it to the current CPRunLoop object in the default mode.
 */
 + (CPTimer)scheduledTimerWithTimeInterval:(CPTimeInterval)seconds callback:(Function)aFunction repeats:(BOOL)shouldRepeat
 {
@@ -84,7 +84,7 @@
 }
 
 /*!
-    Returns a new NSTimer that, when added to a run loop, will fire after seconds.
+    Returns a new CPTimer that, when added to a run loop, will fire after seconds.
 */
 + (CPTimer)timerWithTimeInterval:(CPTimeInterval)seconds invocation:(CPInvocation)anInvocation repeats:(BOOL)shouldRepeat
 {
@@ -92,7 +92,7 @@
 }
 
 /*!
-    Returns a new NSTimer that, when added to a run loop, will fire after seconds.
+    Returns a new CPTimer that, when added to a run loop, will fire after seconds.
 */
 + (CPTimer)timerWithTimeInterval:(CPTimeInterval)seconds target:(id)aTarget selector:(SEL)aSelector userInfo:(id)userInfo repeats:(BOOL)shouldRepeat
 {
@@ -100,7 +100,7 @@
 }
 
 /*!
-    Returns a new NSTimer that, when added to a run loop, will fire after seconds.
+    Returns a new CPTimer that, when added to a run loop, will fire after seconds.
 */
 + (CPTimer)timerWithTimeInterval:(CPTimeInterval)seconds callback:(Function)aFunction repeats:(BOOL)shouldRepeat
 {
@@ -108,7 +108,7 @@
 }
 
 /*!
-    Initializes a new NSTimer that, when added to a run loop, will fire at date and then, if repeats is YES, every seconds after that.
+    Initializes a new CPTimer that, when added to a run loop, will fire at date and then, if repeats is YES, every seconds after that.
 */
 - (id)initWithFireDate:(CPDate)aDate interval:(CPTimeInterval)seconds invocation:(CPInvocation)anInvocation repeats:(BOOL)shouldRepeat
 {
@@ -127,7 +127,7 @@
 }
 
 /*!
-    Initializes a new NSTimer that, when added to a run loop, will fire at date and then, if repeats is YES, every seconds after that.
+    Initializes a new CPTimer that, when added to a run loop, will fire at date and then, if repeats is YES, every seconds after that.
 */
 - (id)initWithFireDate:(CPDate)aDate interval:(CPTimeInterval)seconds target:(id)aTarget selector:(SEL)aSelector userInfo:(id)userInfo repeats:(BOOL)shouldRepeat
 {
@@ -146,7 +146,7 @@
 }
 
 /*!
-    Initializes a new NSTimer that, when added to a run loop, will fire at date and then, if repeats is YES, every seconds after that.
+    Initializes a new CPTimer that, when added to a run loop, will fire at date and then, if repeats is YES, every seconds after that.
 */
 - (id)initWithFireDate:(CPDate)aDate interval:(CPTimeInterval)seconds callback:(Function)aFunction repeats:(BOOL)shouldRepeat
 {
@@ -220,7 +220,7 @@
 }
 
 /*!
-    Stops the receiver from ever firing again and requests its removal from its NSRunLoop object.
+    Stops the receiver from ever firing again and requests its removal from its CPRunLoop object.
 */
 - (void)invalidate
 {

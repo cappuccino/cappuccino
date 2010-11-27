@@ -102,7 +102,7 @@
 
 - (void)setFont:(CPFont)aFont
 {
-    [_textField setFont:aFont];
+    [self setValue:aFont forThemeAttribute:"text-font"];
 }
 
 - (void)_setIndicatorImage:(CPImage)anImage

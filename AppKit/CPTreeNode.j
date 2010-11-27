@@ -1,11 +1,12 @@
 
 @import <Foundation/CPObject.j>
+@import <Foundation/CPIndexPath.j>
 
 
 @implementation CPTreeNode : CPObject
 {
     id              _representedObject @accessors(readonly, property=representedObject);
-    
+
     CPTreeNode      _parentNode @accessors(readonly, property=parentNode);
     CPMutableArray  _childNodes;
 }
@@ -85,6 +86,18 @@
 
     while (count--)
         [_childNodes[count] sortWithSortDescriptors:sortDescriptors recursively:YES];
+}
+
+- (CPTreeNode)descendantNodeAtIndexPath:(CPIndexPath)indexPath
+{
+    var index = 0,
+        count = [indexPath length],
+        node = self;
+
+    for (; index < count; ++index)
+        node = [node objectInChildNodesAtIndex:[indexPath indexAtPosition:index]];
+
+    return node;
 }
 
 @end
