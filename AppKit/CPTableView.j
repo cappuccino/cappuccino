@@ -1712,7 +1712,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     // this line serves two purposes
     // 1. it updates the _numberOfRows cache with the -numberOfRows call
     // 2. it updates the row height cache if needed
-    [self noteHeightOfRowsWithIndexesChanged:[CPIndexSet indexSetWithIndexesInRange::CPMakeRange(0, [self numberOfRows])];
+    [self noteHeightOfRowsWithIndexesChanged:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])]];
 
     // remove row indexes from the selection if they no longer exist
     var hangingSelections = oldNumberOfRows - _numberOfRows;
@@ -1738,7 +1738,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (void)noteHeightOfRowsWithIndexesChanged:(CPIndexSet)anIndexSet
 {
-    if (!(_implementedDataSourceMethods & CPTableViewDelegate_tableView_heightOfRow_)
+    if (!(_implementedDataSourceMethods & CPTableViewDelegate_tableView_heightOfRow_))
         return;
 
     // this method will update the height of those rows, but since the cached array also contains 
@@ -1760,12 +1760,15 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             _cachedRowHeights[i].heightAboveRow = heightAbove;
         }
         else
-            _cachedRowHeights[i] = {"height":height, "heightAboveRow":heightAbove};   
+            _cachedRowHeights[i] = {"height":height, "heightAboveRow":heightAbove};
 
         heightAbove += height + intercellSpacing.height;
     }
 }
 
+/*!
+    lays out the dataviews and resizes the tableview so that everything fits
+*/
 - (void)tile
 {
     UPDATE_COLUMN_RANGES_IF_NECESSARY();
@@ -1788,17 +1791,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
-
-/*
-    * - tile
-    * - sizeToFit
-    * - noteHeightOfRowsWithIndexesChanged:
-*/
-//Scrolling
-/*
-    * - scrollRowToVisible:
-    * - scrollColumnToVisible:
-*/
 
 /*!
     Scrolls the receiver vertically in an enclosing NSClipView so the row specified by rowIndex is visible.
