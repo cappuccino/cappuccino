@@ -319,7 +319,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         _objectValues = { };
         _dataViewsForTableColumns = { };
-        _dataViews=  [];
+        _dataViews =  [];
         _numberOfRows = 0;
         _exposedRows = [CPIndexSet indexSet];
         _exposedColumns = [CPIndexSet indexSet];
@@ -1339,7 +1339,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     Returns a range of indices for the rows that lie wholly or partially within the vertical boundaries of a given rectangle.
     @param aRect A rectangle in the coordinate system of the receiver.
 */
-// FIX ME: Variable row heights
 - (CPRange)rowsInRect:(CGRect)aRect
 {
     // If we have no rows, then we won't intersect anything.
@@ -1452,19 +1451,17 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_)
     {
-        console.log("row at point");
-        // FIX ME: binary search plz
-        var currIndex = [self numberOfRows];//FLOOR([self numberOfRows] / 2);
-        while(currIndex--)
-        {
-            var upperBound = _cachedRowHeights[currIndex].heightAboveRow,
-                lowerBound = upperBound + _cachedRowHeights[currIndex].height;
-            
-            if (aPoint.y > upperBound && aPoint.y < lowerBound)
-                return currIndex;
-        }
+            return idx = [_cachedRowHeights indexOfObject:aPoint sortedByFunction:function(aPoint, rowCache) {
+                          var upperBound = rowCache.heightAboveRow;
 
-        return CPNotFound;
+                          if (aPoint.y < upperBound) 
+                              return CPOrderedAscending; 
+
+                          if (aPoint.y > upperBound + rowCache.height) 
+                              return CPOrderedDescending; 
+
+                          return CPOrderedSame; 
+                      }];
     }
 
     var y = aPoint.y,
@@ -1755,7 +1752,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     UPDATE_COLUMN_RANGES_IF_NECESSARY();
 
-    // FIXME: variable row heights.
     var width = _tableColumnRanges.length > 0 ? CPMaxRange([_tableColumnRanges lastObject]) : 0.0,
         superview = [self superview];
 
@@ -1763,7 +1759,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         var height =  (_rowHeight + _intercellSpacing.height) * _numberOfRows;
     else
     {
-        console.log("tile");
         // if this is the fist run we need to populate the cache
         if ([self numberOfRows] !== _cachedRowHeights.length)
             [self noteHeightOfRowsWithIndexesChanged:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])]];
