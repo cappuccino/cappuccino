@@ -532,6 +532,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     CPArray             _invisibleItems;
 
     CPPopUpButton       _additionalItemsButton;
+    CPDictionary        _toolbarItemsByMenuItem;
     CPColor             _labelColor;
     CPColor             _labelShadowColor;
 
@@ -571,6 +572,8 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
         [[_additionalItemsButton menu] setAutoenablesItems:NO];
 
         [_additionalItemsButton setAlternateImage:_CPToolbarViewExtraItemsAlternateImage];
+
+        _toolbarItemsByMenuItem = [CPDictionary dictionary];
     }
 
     return self;
@@ -772,6 +775,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
         [self addSubview:_additionalItemsButton];
 
         [_additionalItemsButton removeAllItems];
+        [_toolbarItemsByMenuItem removeAllObjects];
 
         [_additionalItemsButton addItemWithTitle:@"Additional Items"];
         [[_additionalItemsButton itemArray][0] setImage:_CPToolbarViewExtraItemsImage];
@@ -799,17 +803,28 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
             hasNonSeparatorItem = YES;
 
-            var menuItem = [[CPMenuItem alloc] initWithTitle:[item label] action:[item action] keyEquivalent:nil];
+            var menuItem = [[CPMenuItem alloc] initWithTitle:[item label] action:@selector(didSelectMenuItem:) keyEquivalent:nil];
 
             [menuItem setImage:[item image]];
-            [menuItem setTarget:[item target]];
+            [menuItem setTarget:self];
             [menuItem setEnabled:[item isEnabled]];
 
             [_additionalItemsButton addItem:menuItem];
+            [_toolbarItemsByMenuItem setObject:item forKey:[menuItem UID]];
         }
     }
     else
         [_additionalItemsButton removeFromSuperview];
+}
+
+/*
+    Used privately.
+    @ignore
+*/
+- (void)didSelectMenuItem:(id)sender
+{
+  var toolbarItem = [_toolbarItemsByMenuItem objectForKey:[sender UID]];
+  [CPApp sendAction:[toolbarItem action] to:[toolbarItem target] from:toolbarItem];
 }
 
 - (void)reloadToolbarItems
