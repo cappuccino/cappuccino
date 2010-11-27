@@ -79,7 +79,7 @@ var tableTestDragType = "tableTestDragType";
 
 - (int)numberOfRowsInTableView:(id)tableView
 {
-    return 2000;
+    return 5;
 }
 
 - (id)tableView:(id)tableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRow
@@ -124,7 +124,7 @@ var tableTestDragType = "tableTestDragType";
                    proposedRow:(CPInteger)row 
                    proposedDropOperation:(CPTableViewDropOperation)operation
 {
-    [aTableView setDropRow:row dropOperation:CPTableViewDropOn];
+    [aTableView setDropRow:(row) dropOperation:CPTableViewDropOn];
         
     return CPDragOperationMove;
 }
@@ -135,5 +135,3 @@ var tableTestDragType = "tableTestDragType";
 }
 
 @end
-
-

@@ -1318,6 +1318,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (CGRect)rectOfRow:(CPInteger)aRowIndex
 {
+    if(aRowIndex > [self numberOfRows] - 1 || aRowIndex < 0)
+        return _CGRectMakeZero();
+
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_)
     {
         var y = _cachedRowHeights[aRowIndex].heightAboveRow,
@@ -2224,8 +2227,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     }
 
     var dragPoint = [self convertPoint:[theDragEvent locationInWindow] fromView:nil];
-    dragViewOffset.x = CGRectGetWidth(bounds) / 2 - dragPoint.x;
-    dragViewOffset.y = CGRectGetHeight(bounds) / 2 - dragPoint.y;
+    dragViewOffset.x = _CGRectGetWidth(bounds) / 2 - dragPoint.x;
+    dragViewOffset.y = _CGRectGetHeight(bounds) / 2 - dragPoint.y;
 
     return view;
 }
@@ -2240,7 +2243,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     var dragView = [[_CPColumnDragView alloc] initWithLineColor:[self gridColor]],
         tableColumn = [[self tableColumns] objectAtIndex:theColumnIndex],
-        bounds = CPRectMake(0.0, 0.0, [tableColumn width], _CGRectGetHeight([self visibleRect]) + 23.0),
+        bounds = _CGRectMake(0.0, 0.0, [tableColumn width], _CGRectGetHeight([self visibleRect]) + 23.0),
         columnRect = [self rectOfColumn:theColumnIndex],
         headerView = [tableColumn headerView],
         row = [_exposedRows firstIndex];
@@ -3434,21 +3437,20 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (CPInteger)_proposedRowAtPoint:(CGPoint)dragPoint
 {
-    // We don't use rowAtPoint here because the drag indicator can appear below the last row
-    // and rowAtPoint doesn't return rows that are larger than numberOfRows
-    // FIX ME: this is going to break when we implement variable row heights...
-    var row = FLOOR(dragPoint.y / ( _rowHeight + _intercellSpacing.height )),
+    var row = [self rowAtPoint:dragPoint],
     // Determine if the mouse is currently closer to this row or the row below it
         lowerRow = row + 1,
         rect = [self rectOfRow:row],
-        bottomPoint = CGRectGetMaxY(rect),
-        bottomThirty = bottomPoint - ((bottomPoint - CGRectGetMinY(rect)) * 0.3);
+        bottomPoint = _CGRectGetMaxY(rect),
+        bottomThirty = bottomPoint - ((bottomPoint - _CGRectGetMinY(rect)) * 0.3),
+        numberOfRows = [self numberOfRows];
 
-    if (dragPoint.y > MAX(bottomThirty, bottomPoint - 6))
+    if (row < 0)
+        row = (_cachedRowHeights[numberOfRows-1].heightAboveRow + _cachedRowHeights[numberOfRows-1].height + _intercellSpacing.height < dragPoint.y) ? numberOfRows : row;
+    else if (dragPoint.y > MAX(bottomThirty, bottomPoint - 6))
         row = lowerRow;
 
-    if (row >= [self numberOfRows])
-        row = [self numberOfRows];
+    row = MIN(numberOfRows, row);
 
     return row;
 }
@@ -3490,8 +3492,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         row = _retargetedDropRow;
 
 
-    if (dropOperation === CPTableViewDropOn && row >= [self numberOfRows])
-        row = [self numberOfRows] - 1;
+    if (dropOperation === CPTableViewDropOn && row >= numberOfRows)
+        row = numberOfRows - 1;
 
     var rect = _CGRectMakeZero();
 
@@ -4012,7 +4014,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     else if (dropOperation === CPTableViewDropAbove)
     {
         //reposition the view up a tad
-        [self setFrameOrigin:CGPointMake(_frame.origin.x, _frame.origin.y - 8)];
+        [self setFrameOrigin:_CGPointMake(_frame.origin.x, _frame.origin.y - 8)];
 
         var selectedRows = [tableView selectedRowIndexes];
 
