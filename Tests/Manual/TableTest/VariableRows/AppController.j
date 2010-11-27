@@ -38,6 +38,7 @@ var tableTestDragType = "tableTestDragType";
     [table setDataSource:self];
     [table setDelegate:self];
     [table setUsesAlternatingRowBackgroundColors:YES];
+
     [table setGridStyleMask:CPTableViewSolidVerticalGridLineMask|CPTableViewSolidHorizontalGridLineMask];
     [table setAllowsMultipleSelection:YES];
     [table registerForDraggedTypes:[tableTestDragType]];
@@ -79,7 +80,7 @@ var tableTestDragType = "tableTestDragType";
 
 - (int)numberOfRowsInTableView:(id)tableView
 {
-    return 5;
+    return 2000;
 }
 
 - (id)tableView:(id)tableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRow
@@ -89,7 +90,8 @@ var tableTestDragType = "tableTestDragType";
 
 - (int)tableView:(CPTableView)aTableView heightOfRow:(int)aRow
 {
-    return aRow % 2 ? 20 : 50;
+    return aRow % 2 ? 200 : 50;
+    return aRow % 2 ? 1010 - (aRow * 10) : 10 + (aRow * 10);
 }
 
 - (BOOL)tableView:(CPTableView)aTableView isGroupRow:(int)aRow
