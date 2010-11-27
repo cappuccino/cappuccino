@@ -21,6 +21,8 @@ var SharedMenuManager           = nil;
     CPMutableArray      _menuContainerStack;
 
     Function            _trackingCallback;
+
+    CPString            _keyBuffer;
 }
 
 + (_CPMenuManager)sharedMenuManager
@@ -95,7 +97,28 @@ var SharedMenuManager           = nil;
     if (type === CPAppKitDefined)
         return [self completeTracking];
 
-    [CPApp setTarget:self selector:@selector(trackEvent:) forNextEventMatchingMask:CPPeriodicMask | CPMouseMovedMask | CPLeftMouseDraggedMask | CPLeftMouseUpMask | CPAppKitDefinedMask untilDate:nil inMode:nil dequeue:YES];
+    [CPApp setTarget:self selector:@selector(trackEvent:) forNextEventMatchingMask:CPKeyDownMask | CPPeriodicMask | CPMouseMovedMask | CPLeftMouseDraggedMask | CPLeftMouseUpMask | CPAppKitDefinedMask untilDate:nil inMode:nil dequeue:YES];
+
+    if(type === CPKeyDown)
+	{	var menu = trackingMenu,
+			submenu = [[menu  highlightedItem] submenu];
+
+		// get the current active menu
+		while(submenu && [submenu._menuWindow isVisible])
+		{	menu = submenu;
+			submenu = [[menu  highlightedItem] submenu];
+		}	
+		if([menu numberOfItems])
+			[self interpretKeyEvent:anEvent forMenu:menu];
+		return;
+	}
+	if(_keyBuffer)
+	{
+		if(([CPDate date] - _startTime) > STICKY_TIME_INTERVAL)
+			[self selectNextItemBeginningWith:_keyBuffer inMenu:menu clearBuffer:YES];
+		if(type  === CPPeriodic)
+			return;
+	}
 
     // Periodic events don't have a valid location.
     var globalLocation = type === CPPeriodic ? _lastGlobalLocation : [anEvent globalLocation];
@@ -363,5 +386,165 @@ var SharedMenuManager           = nil;
     [menuWindow setFrameOrigin:aGlobalLocation];
     [menuWindow orderFront:self];
 }
+
+
+/// handle keyboard navigation
+- (void)interpretKeyEvent:(CPEvent)anEvent forMenu:(CPMenu)menu
+{
+	var	modifierFlags = [anEvent modifierFlags],
+		character = [anEvent charactersIgnoringModifiers],
+		selectorNames = [CPKeyBinding selectorsForKey:character modifierFlags:modifierFlags];
+
+	if(selectorNames)
+	{	var iter = [selectorNames objectEnumerator],
+			obj;
+		while(obj = [iter nextObject])
+		{	  
+			var aSelector = CPSelectorFromString(obj);
+		    if ([self respondsToSelector:aSelector])
+        		[self performSelector:aSelector withObject:menu];
+		}
+	}
+	else if (!(modifierFlags & (CPCommandKeyMask | CPControlKeyMask)))
+	{
+		if(!_keyBuffer)
+		{
+			_startTime = [CPDate date];
+			_keyBuffer = character;
+			[CPEvent startPeriodicEventsAfterDelay:0.1 withPeriod:0.1];	
+		}
+		else
+			_keyBuffer += character;
+			
+		[self selectNextItemBeginningWith:_keyBuffer inMenu:menu clearBuffer:NO];
+	}
+
+}
+
+- (void)selectNextItemBeginningWith:(CPString)characters inMenu:(CPMenu)menu clearBuffer:(BOOL)shouldClear
+{
+	var iter = [[menu itemArray] objectEnumerator],
+		obj;
+	while(obj = [iter nextObject])
+	{	
+		if([[[obj title] commonPrefixWithString:characters options:CPCaseInsensitiveSearch] length] == [characters length])
+		{
+			[menu _highlightItemAtIndex:iter._index];
+			break;
+		}
+	}
+	if(shouldClear)
+	{
+		[CPEvent stopPeriodicEvents];	
+		_keyBuffer = Nil;
+	}
+	else
+		_startTime = [CPDate date];
+}
+
+
+- (void)moveToBeginningOfDocument:(CPMenu)menu
+{
+	[self scrollPageUp:menu];
+}
+
+- (void)moveToEndOfDocument:(CPMenu)menu
+{
+	[self scrollPageDown:menu];
+}
+
+- (void)scrollPageUp:(CPMenu)menu
+{
+	[menu _highlightItemAtIndex:0];
+}
+
+- (void)scrollPageDown:(CPMenu)menu
+{
+	[menu _highlightItemAtIndex:[menu numberOfItems] - 1];
+}
+
+- (void)moveLeft:(CPMenu)menu
+{	
+	if([menu supermenu])
+	{
+		if([menu supermenu] == [CPApp mainMenu])
+		{
+        	[self showMenu:nil fromMenu:[menu supermenu] atPoint:CGPointMakeZero()];
+			[self moveUp:[CPApp mainMenu]];
+
+			var activeItem = [[CPApp mainMenu] highlightedItem],
+		        menuLocation = CGPointMake([[activeItem _menuItemView] frameOrigin].x , [[activeItem _menuItemView] frameSize].height);
+        	[self showMenu:[activeItem submenu] fromMenu:[activeItem menu] atPoint:menuLocation];
+		}
+		else
+        	[self showMenu:nil fromMenu:[menu supermenu] atPoint:CGPointMakeZero()];
+	}
+}
+
+- (void)moveRight:(CPMenu)menu
+{
+	var activeItem = [menu highlightedItem];
+    if ([activeItem hasSubmenu])
+    {	if([[activeItem submenu] numberOfItems])
+		{
+			var activeItemIndex = [menu indexOfItem:activeItem],
+				activeMenuContainer = menu._menuWindow;
+				activeItemRect = [activeMenuContainer rectForItemAtIndex:activeItemIndex];
+	
+			if ([activeMenuContainer isMenuBar])
+				var newMenuOrigin = CGPointMake(CGRectGetMinX(activeItemRect), CGRectGetMaxY(activeItemRect));
+			else
+				var newMenuOrigin = CGPointMake(CGRectGetMaxX(activeItemRect), CGRectGetMinY(activeItemRect));
+	
+			newMenuOrigin = [activeMenuContainer convertBaseToGlobal:newMenuOrigin];
+	
+			[self showMenu:[activeItem submenu] fromMenu:[activeItem menu] atPoint:newMenuOrigin];
+			[self moveDown:[activeItem submenu]];
+		}
+    }
+    else if([self trackingMenu] == [CPApp mainMenu])
+	{
+		[self showMenu:nil fromMenu:menu atPoint:CGPointMakeZero()];
+		[self moveDown:[CPApp mainMenu]];
+
+		var activeItem = [[CPApp mainMenu] highlightedItem],
+			menuLocation = CGPointMake([[activeItem _menuItemView] frameOrigin].x , [[activeItem _menuItemView] frameSize].height);
+		
+		[self showMenu:[activeItem submenu] fromMenu:[activeItem menu] atPoint:menuLocation];
+	}
+}
+
+- (void)moveDown:(CPMenu)menu
+{	
+	var	index = menu._highlightedIndex + 1;
+
+	[menu _highlightItemAtIndex:(index==[menu numberOfItems]?0:index)];
+	
+	var item = [menu highlightedItem];
+	if([item isSeparatorItem] || [item isHidden] || ![item isEnabled])
+		[self moveDown:menu];
+}
+
+- (void)moveUp:(CPMenu)menu
+{
+	var	index = menu._highlightedIndex - 1;
+	[menu _highlightItemAtIndex:(index<0?[menu numberOfItems]-1:index)];
+
+	var item = [menu highlightedItem];
+	if([item isSeparatorItem] || [item isHidden] || ![item isEnabled])
+		[self moveUp:menu];
+}
+
+- (void)insertNewline:(CPMenu)menu
+{
+	if([[menu highlightedItem] hasSubmenu])
+		[self moveRight:menu];
+	else
+	{
+		[menu cancelTracking]
+		[menu performActionForItemAtIndex:[menu indexOfItem:[menu highlightedItem]]];
+	}
+}
+
 
 @end
