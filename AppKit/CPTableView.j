@@ -306,7 +306,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             return heightObject.heightAboveRow + heightObject.height + intercellSpacing.height;
         }
 
-        _tableViewFlags = 0;
     _tableViewFlags = 0;
     _lastSelectedRow = -1;
 
