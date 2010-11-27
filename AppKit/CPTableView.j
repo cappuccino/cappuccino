@@ -297,15 +297,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 // FIX ME: we have a lot of redundent init stuff in initWithFrame: and initWithCoder: we should move it all into here.
 - (void)_init
 {
-        HEIGHT_OF_TABLEVIEW = function()
-        {
-            if (!(_implementedDataSourceMethods & CPTableViewDelegate_tableView_heightOfRow_))
-                return (_rowHeight + _intercellSpacing.height) * _numberOfRows;
-
-            var heightObject = _cachedRowHeights[_cachedRowHeights.length];
-            return heightObject.heightAboveRow + heightObject.height + intercellSpacing.height;
-        }
-
     _tableViewFlags = 0;
     _lastSelectedRow = -1;
 
@@ -1327,7 +1318,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (CGRect)rectOfRow:(CPInteger)aRowIndex
 {
-    if (_implementedDataSourceMethods & CPTableViewDelegate_tableView_heightOfRow_)
+    if (_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_)
     {
         var y = _cachedRowHeights[aRowIndex].heightAboveRow,
             height = _cachedRowHeights[aRowIndex].height;
@@ -1459,9 +1450,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 // 0(lg Rows) for variable row heights
 - (CPInteger)rowAtPoint:(CGPoint)aPoint
 {
-    if (_implementedDataSourceMethods & CPTableViewDelegate_tableView_heightOfRow_)
+    if (_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_)
     {
-
+        console.log("row at point");
         // FIX ME: binary search plz
         var currIndex = [self numberOfRows];//FLOOR([self numberOfRows] / 2);
         while(currIndex--)
@@ -1504,18 +1495,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         leftInset = FLOOR(_intercellSpacing.width / 2.0),
         topInset = FLOOR(_intercellSpacing.height / 2.0);
 
-    // FIX ME: this could be cleaned up
-    if (_implementedDataSourceMethods & CPTableViewDelegate_tableView_heightOfRow_)
-    {
-        return _CGRectMake(tableColumnRange.location + leftInset,
-                       _CGRectGetMinY(rectOfRow) + topInset,
-                       tableColumnRange.length - _intercellSpacing.width,
-                       _cachedRowHeights[aRow].height);
-    }
-    return _CGRectMake(tableColumnRange.location + leftInset,
-                       _CGRectGetMinY(rectOfRow) + topInset,
-                       tableColumnRange.length - _intercellSpacing.width,
-                       _CGRectGetHeight(rectOfRow) - _intercellSpacing.height);
+    return _CGRectMake(tableColumnRange.location + leftInset,  _CGRectGetMinY(rectOfRow) + topInset, tableColumnRange.length - _intercellSpacing.width, _CGRectGetHeight(rectOfRow) - _intercellSpacing.height);
+
+
 }
 
 - (void)resizeWithOldSuperviewSize:(CGSize)aSize
@@ -1738,7 +1720,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (void)noteHeightOfRowsWithIndexesChanged:(CPIndexSet)anIndexSet
 {
-    if (!(_implementedDataSourceMethods & CPTableViewDelegate_tableView_heightOfRow_))
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_))
         return;
 
     // this method will update the height of those rows, but since the cached array also contains 
@@ -1751,7 +1733,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     {
         // update the cache if the user told us to
         if ([anIndexSet containsIndex:i])
-            var height = [_delegate tableView:self heightOfRow:indexesToUpdate];
+            var height = [_delegate tableView:self heightOfRow:i];
 
         if (_cachedRowHeights.length > i)
         {
@@ -1762,7 +1744,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         else
             _cachedRowHeights[i] = {"height":height, "heightAboveRow":heightAbove};
 
-        heightAbove += height + intercellSpacing.height;
+        heightAbove += height + _intercellSpacing.height;
     }
 }
 
@@ -1775,8 +1757,21 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     // FIXME: variable row heights.
     var width = _tableColumnRanges.length > 0 ? CPMaxRange([_tableColumnRanges lastObject]) : 0.0,
-        height = HEIGHT_OF_TABLEVIEW(),
         superview = [self superview];
+
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_))
+        var height =  (_rowHeight + _intercellSpacing.height) * _numberOfRows;
+    else
+    {
+        console.log("tile");
+        // if this is the fist run we need to populate the cache
+        if ([self numberOfRows] !== _cachedRowHeights.length)
+            [self noteHeightOfRowsWithIndexesChanged:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])]];
+
+        var heightObject = _cachedRowHeights[_cachedRowHeights.length -1],
+            height = heightObject.heightAboveRow + heightObject.height + _intercellSpacing.height;
+    }
+
 
     if ([superview isKindOfClass:[CPClipView class]])
     {
