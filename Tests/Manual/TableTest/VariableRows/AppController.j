@@ -8,6 +8,7 @@
 
 @import <Foundation/CPObject.j>
 
+var tableTestDragType = "tableTestDragType";
 
 @implementation AppController : CPObject
 {
@@ -16,20 +17,32 @@
     CPTableColumn columnB;
     CPTableColumn columnC;
     CPTableColumn columnD;
-
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
-        contentView = [theWindow contentView];
+        contentView = [theWindow contentView],
+        button = [[CPButton alloc] initWithFrame:CGRectMake(10,10,100,24)];
+
+    [button setTitle:"toggle selection style"];
+    [button sizeToFit];
+    [button setTarget:self];
+    [button setAction:@selector(toggleStyle:)];
+
+    [contentView addSubview:button];
 
     var scroll = [[CPScrollView alloc] initWithFrame:CGRectMake(100,100,700,400)];
 
     table = [[CPTableView alloc] initWithFrame:CGRectMakeZero()];
     [table setDataSource:self];
+    [table setDelegate:self];
     [table setUsesAlternatingRowBackgroundColors:YES];
-    [table setAlternatingRowBackgroundColors:[[CPColor redColor], [CPColor blueColor]]];
+    [table setGridStyleMask:CPTableViewSolidVerticalGridLineMask|CPTableViewSolidHorizontalGridLineMask];
+    [table setAllowsMultipleSelection:YES];
+    [table registerForDraggedTypes:[tableTestDragType]];
+
+    [table setIntercellSpacing:CGSizeMake(0,0)];
 
     columnA = [[CPTableColumn alloc] initWithIdentifier:"A"];
     [table addTableColumn:columnA];
@@ -66,7 +79,7 @@
 
 - (int)numberOfRowsInTableView:(id)tableView
 {
-    return 10000;
+    return 2000;
 }
 
 - (id)tableView:(id)tableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRow
@@ -76,8 +89,51 @@
 
 - (int)tableView:(CPTableView)aTableView heightOfRow:(int)aRow
 {
-    console.log("heightOfRow:");
-    return 30;
+    return aRow % 2 ? 20 : 50;
+}
+
+- (BOOL)tableView:(CPTableView)aTableView isGroupRow:(int)aRow
+{
+    return !(aRow % 5);
+}
+
+- (void)toggleStyle:(id)sender
+{
+    var style = [table selectionHighlightStyle];
+
+    if (style === CPTableViewSelectionHighlightStyleSourceList)
+        [table setSelectionHighlightStyle:CPTableViewSelectionHighlightStyleRegular];
+    else
+        [table setSelectionHighlightStyle:CPTableViewSelectionHighlightStyleSourceList]
+}
+
+
+- (BOOL)tableView:(CPTableView)aTableView writeRowsWithIndexes:(CPIndexSet)rowIndexes toPasteboard:(CPPasteboard)pboard
+{
+    var data = [rowIndexes, [aTableView UID]];
+    
+    var encodedData = [CPKeyedArchiver archivedDataWithRootObject:data];
+    [pboard declareTypes:[CPArray arrayWithObject:tableTestDragType] owner:self];
+    [pboard setData:encodedData forType:tableTestDragType];
+    
+    return YES;
+}
+
+- (CPDragOperation)tableView:(CPTableView)aTableView 
+                   validateDrop:(id)info 
+                   proposedRow:(CPInteger)row 
+                   proposedDropOperation:(CPTableViewDropOperation)operation
+{
+    [aTableView setDropRow:row dropOperation:CPTableViewDropOn];
+        
+    return CPDragOperationMove;
+}
+
+- (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id)info row:(int)row dropOperation:(CPTableViewDropOperation)operation
+{
+    return YES;
 }
 
 @end
+
+
