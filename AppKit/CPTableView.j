@@ -1727,7 +1727,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     // the height above the row it needs to recalculate for the rows below it too
     var i = [anIndexSet firstIndex],
         count = _numberOfRows - i,
-        heightAbove = (i > 0) ? _cachedRowHeights[i - 1].height + _cachedRowHeights[i - 1].heightAboveRow + intercellSpacing.height : 0;
+        heightAbove = (i > 0) ? _cachedRowHeights[i - 1].height + _cachedRowHeights[i - 1].heightAboveRow + _intercellSpacing.height : 0;
 
     for (; i < count; i++)
     {
