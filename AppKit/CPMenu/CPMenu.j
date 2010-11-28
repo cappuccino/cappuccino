@@ -851,7 +851,7 @@ var _CPMenuBarVisible               = NO,
 
 // Handling Tracking
 /*!
-	Cancels tracking.
+    Cancels tracking.
 */
 - (void)cancelTracking
 {
@@ -972,8 +972,8 @@ var _CPMenuBarVisible               = NO,
     if (_highlightedIndex !== CPNotFound)
         [[_items[_highlightedIndex] _menuItemView] highlight:YES];
 
-	if (_highlightedIndex !== CPNotFound && _menuWindow)
-		[_menuWindow._menuView scrollRectToVisible:[[_items[_highlightedIndex] _menuItemView] frame]];
+    if (_highlightedIndex !== CPNotFound && _menuWindow)
+        [_menuWindow._menuView scrollRectToVisible:[[_items[_highlightedIndex] _menuItemView] frame]];
 }
 
 - (void)_setMenuName:(CPString)aName
