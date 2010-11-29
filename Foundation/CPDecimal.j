@@ -152,14 +152,14 @@ function CPDecimalMakeWithString(string, locale)
     {
         if (i >= CPDecimalMaxDigits)
             break; // truncate
-        [m addObject:parseInt(intpart[i])];
+        [m addObject:parseInt(intpart.charAt(i))];
     }
     var j = 0;
     for (; j < (decpart?decpart.length:0); j++)
     {
         if ((i + j) >= CPDecimalMaxDigits)
             break; // truncate
-        [m addObject:parseInt(decpart[j])];
+        [m addObject:parseInt(decpart.charAt(j))];
     }
 
     var dcm = {_exponent:exponent, _isNegative:isNegative, _isCompact:NO, _isNaN:NO, _mantissa:m};
