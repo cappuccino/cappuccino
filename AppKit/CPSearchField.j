@@ -52,7 +52,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
 {
     CPButton    _searchButton;
     CPButton    _cancelButton;
-    CPMenu      searchMenuTemplate;
+    CPMenu      _searchMenuTemplate;
     CPMenu      _searchMenu;
 
     CPString    _recentsAutosaveName;
@@ -159,7 +159,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
 - (void)resetSearchButton
 {
     var button = [self searchButton],
-        searchButtonImage = (searchMenuTemplate === nil) ? CPSearchFieldSearchImage : CPSearchFieldFindImage;
+        searchButtonImage = (_searchMenuTemplate === nil) ? CPSearchFieldSearchImage : CPSearchFieldFindImage;
 
     [button setBordered:NO];
     [button setImageScaling:CPScaleToFit];
@@ -267,7 +267,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
 */
 - (CPMenu)searchMenuTemplate
 {
-    return searchMenuTemplate;
+    return _searchMenuTemplate;
 }
 
 /*!
@@ -277,7 +277,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
 */
 - (void)setSearchMenuTemplate:(CPMenu)aMenu
 {
-    searchMenuTemplate = aMenu;
+    _searchMenuTemplate = aMenu;
 
     [self resetSearchButton];
     [self _loadRecentSearchList];
@@ -489,7 +489,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
 
     if (_CGRectContainsPoint([self searchButtonRectForBounds:[self bounds]], point))
     {
-        if (searchMenuTemplate == nil)
+        if (_searchMenuTemplate == nil)
             [self _sendAction:self];
         else
            [self _showMenu];
@@ -571,16 +571,16 @@ var RECENT_SEARCH_PREFIX = @"   ";
 
 - (void)_updateSearchMenu
 {
-    if (searchMenuTemplate === nil)
+    if (_searchMenuTemplate === nil)
         return;
 
     var menu = [[CPMenu alloc] init],
         countOfRecents = [_recentSearches count],
-        numberOfItems = [searchMenuTemplate numberOfItems];
+        numberOfItems = [_searchMenuTemplate numberOfItems];
 
     for (var i = 0; i < numberOfItems; i++)
     {
-        var item = [[searchMenuTemplate itemAtIndex:i] copy];
+        var item = [[_searchMenuTemplate itemAtIndex:i] copy];
 
         switch ([item tag])
         {
@@ -769,8 +769,8 @@ var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
     if (_recentsAutosaveName)
         [coder encodeObject:_recentsAutosaveName forKey:CPRecentsAutosaveNameKey];
 
-    if (searchMenuTemplate)
-        [coder encodeObject:searchMenuTemplate forKey:CPSearchMenuTemplateKey];
+    if (_searchMenuTemplate)
+        [coder encodeObject:_searchMenuTemplate forKey:CPSearchMenuTemplateKey];
 }
 
 - (id)initWithCoder:(CPCoder)coder
