@@ -151,7 +151,6 @@ var SharedMenuManager           = nil;
     {
         if (_scrollingState === _CPMenuManagerScrollingStateUp)
             [activeMenuContainer scrollUp];
-
         else if (_scrollingState === _CPMenuManagerScrollingStateDown)
             [activeMenuContainer scrollDown];
     }
@@ -195,10 +194,9 @@ var SharedMenuManager           = nil;
 
         [activeMenu _highlightItemAtIndex:activeItemIndex];
 
-        if (type === CPMouseMoved || type === CPLeftMouseDragged || type === CPLeftMouseDown)
+        if (type === CPMouseMoved || type === CPLeftMouseDragged || type === CPLeftMouseDown || type === CPPeriodic)
         {
             var oldScrollingState = _scrollingState;
-
             _scrollingState = [activeMenuContainer scrollingStateForPoint:globalLocation];
 
             if (_scrollingState !== oldScrollingState)

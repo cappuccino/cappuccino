@@ -384,16 +384,15 @@ var STICKY_TIME_INTERVAL        = 500,
 - (_CPManagerScrollingState)scrollingStateForPoint:(CGPoint)aGlobalLocation
 {
     var frame = [self frame];
-
-    if (![self canScroll])
+    if(!CPRectContainsPoint(frame,aGlobalLocation) || ![self canScroll])
         return _CPMenuManagerScrollingStateNone;
 
     // If we're at or above of the top scroll indicator...
-    if (aGlobalLocation.y < CGRectGetMinY(frame) + TOP_MARGIN + SCROLL_INDICATOR_HEIGHT)
+    if (aGlobalLocation.y < CGRectGetMinY(frame) + TOP_MARGIN + SCROLL_INDICATOR_HEIGHT &&  ![_moreAboveView isHidden])
         return _CPMenuManagerScrollingStateUp;
 
     // If we're at or below the bottom scroll indicator...
-    if (aGlobalLocation.y > CGRectGetMaxY(frame) - BOTTOM_MARGIN - SCROLL_INDICATOR_HEIGHT)
+    if (aGlobalLocation.y > CGRectGetMaxY(frame) - BOTTOM_MARGIN - SCROLL_INDICATOR_HEIGHT &&  ![_moreBelowView isHidden])
         return _CPMenuManagerScrollingStateDown;
 
     return _CPMenuManagerScrollingStateNone;
