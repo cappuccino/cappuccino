@@ -266,9 +266,6 @@ var SharedMenuManager = nil;
     // Stop all periodic events at this point.
     [CPEvent stopPeriodicEvents];
 
-    // Get the highlighted item from the original menu.
-    var highlightedItem = [trackingMenu highlightedItem];
-
     // Hide all submenus.
     [self showMenu:nil fromMenu:trackingMenu atPoint:nil];
 
@@ -552,5 +549,11 @@ var SharedMenuManager = nil;
         [menu cancelTracking]
 }
 
+- (void)cancelOperation:(CPMenu)menu
+{
+    [menu _highlightItemAtIndex:CPNotFound];
+    [CPEvent stopPeriodicEvents];
+    [[self trackingMenu] cancelTracking];
+}
 
 @end
