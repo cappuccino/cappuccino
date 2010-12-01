@@ -45,7 +45,7 @@ var CPSharedFontManager     = nil,
 {
     if (!CPSharedFontManager)
         CPSharedFontManager = [[CPFontManagerFactory alloc] init];
-    
+
     return CPSharedFontManager;
 }
 
@@ -65,7 +65,7 @@ var CPSharedFontManager     = nil,
 - (CPArray)availableFonts
 {
     if (!_availableFonts)
-    {   
+    {
         _CPFontDetectSpan = document.createElement("span");
         _CPFontDetectSpan.fontSize = "24px";
         _CPFontDetectSpan.appendChild(document.createTextNode("mmmmmmmmmml"));
@@ -74,13 +74,13 @@ var CPSharedFontManager     = nil,
         div.style.top = "-1000px";
         div.appendChild(_CPFontDetectSpan);
         document.getElementsByTagName("body")[0].appendChild(div);
-    
-	   _CPFontDetectReferenceFonts = _CPFontDetectPickTwoDifferentFonts(["monospace", "serif", "sans-serif", "cursive"]);
-    
+
+        _CPFontDetectReferenceFonts = _CPFontDetectPickTwoDifferentFonts(["monospace", "serif", "sans-serif", "cursive"]);
+
         _availableFonts = [];
         for (var i = 0; i < _CPFontDetectAllFonts.length; i++) {
             var available = _CPFontDetectFontAvailable(_CPFontDetectAllFonts[i]);
-		    if (available)
+            if (available)
                 _availableFonts.push(_CPFontDetectAllFonts[i]);
         }
     }
@@ -101,8 +101,8 @@ var CPSharedFontManager     = nil,
 var _CPFontDetectSpan,
     _CPFontDetectReferenceFonts,
     _CPFontDetectAllFonts = [
-        /* "04b_21","A Charming Font","Abadi MT Condensed","Abadi MT Condensed Extra Bold","Abadi MT Condensed Light","Academy Engraved LET","Agency FB","Alba","Alba Matter","Alba Super","Algerian",*/ 
-        "American Typewriter", 
+        /* "04b_21","A Charming Font","Abadi MT Condensed","Abadi MT Condensed Extra Bold","Abadi MT Condensed Light","Academy Engraved LET","Agency FB","Alba","Alba Matter","Alba Super","Algerian",*/
+        "American Typewriter",
         /* "Andale Mono","Andale Mono IPA","Andy", */
         "Apple Chancery","Arial","Arial Black","Arial Narrow","Arial Rounded MT Bold","Arial Unicode MS",
         /* "Avant Garde","Avantgarde","Baby Kruffy","Base 02","Baskerville","Baskerville Old Face","Bauhaus 93","Beesknees ITC","Bell MT","Berlin Sans FB","Berlin Sans FB Demi","Bernard MT Condensed","Bickley Script",*/
@@ -122,8 +122,8 @@ var _CPFontDetectSpan,
         /* "GlooGun","Gloucester MT Extra Condensed","Goudy Old Style","Goudy Stout","Haettenschweiler","Harlow Solid Italic","Harrington",*/
         "Helvetica","Helvetica Narrow","Helvetica Neue","Herculanum","High Tower Text","Highlight LET","Hoefler Text","Impact","Imprint MT Shadow",
         /* "Informal Roman","Jenkins v2.0","John Handy LET","Jokerman","Jokerman LET","Jokewood","Juice ITC","Kabel Ult BT","Kartika","Kino MT","Kristen ITC","Kunstler Script","La Bamba LET", */
-        "Lucida","Lucida Bright","Lucida Calligraphy","Lucida Console","Lucida Fax","Lucida Grande","Lucida Handwriting","Lucida Sans","Lucida Sans Typewriter","Lucida Sans Unicode", 
-        /* "Luxi Mono","Luxi Sans","Luxi Serif","MARKETPRO","MS Reference Sans Serif","MS Reference Serif","Magneto","Maiandra GD", */ 
+        "Lucida","Lucida Bright","Lucida Calligraphy","Lucida Console","Lucida Fax","Lucida Grande","Lucida Handwriting","Lucida Sans","Lucida Sans Typewriter","Lucida Sans Unicode",
+        /* "Luxi Mono","Luxi Sans","Luxi Serif","MARKETPRO","MS Reference Sans Serif","MS Reference Serif","Magneto","Maiandra GD", */
         "Marker Felt",
         /* "Matisse ITC","Matura MT Script Capitals","Mead Bold","Mekanik LET","Mercurius Script MT Bold", */
         "Microsoft Sans Serif","Milano LET","Minion Web","MisterEarl BT","Mistral","Monaco","Monotype Corsiva","Monotype.com","New Century Schoolbook","New York","News Gothic MT",
@@ -137,10 +137,10 @@ var _CPFontDetectSpan,
 
 // Compare against the reference fonts. Return true if it produces a different size than at least one of them.
 var _CPFontDetectFontAvailable = function(font) {
-	for (var i = 0; i < _CPFontDetectReferenceFonts.length; i++)
-		if (_CPFontDetectCompareFonts(_CPFontDetectReferenceFonts[i], font))
-			return true;
-	return false;
+    for (var i = 0; i < _CPFontDetectReferenceFonts.length; i++)
+        if (_CPFontDetectCompareFonts(_CPFontDetectReferenceFonts[i], font))
+            return true;
+    return false;
 }
 
 var _CPFontDetectCache = {};
@@ -148,27 +148,29 @@ var _CPFontDetectCache = {};
 // Compares two given fonts. Returns true if they produce different sizes (i.e. fontA didn't fallback to fontB)
 var _CPFontDetectCompareFonts = function(fontA, fontB) {
     var a;
-    if (_CPFontDetectCache[fontA]) {
+    if (_CPFontDetectCache[fontA])
         a = _CPFontDetectCache[fontA];
-    } else {
-    	_CPFontDetectSpan.style.fontFamily = '"' + fontA + '"';
+
+    else
+    {
+        _CPFontDetectSpan.style.fontFamily = '"' + fontA + '"';
         _CPFontDetectCache[fontA] = a = { w: _CPFontDetectSpan.offsetWidth, h: _CPFontDetectSpan.offsetHeight };
     }
-	
-	_CPFontDetectSpan.style.fontFamily= '"' + fontB + '", "' + fontA + '"';
-	var bWidth = _CPFontDetectSpan.offsetWidth;
-	var bHeight = _CPFontDetectSpan.offsetHeight;
-	
-	return (a.w != bWidth || a.h != bHeight);
+
+    _CPFontDetectSpan.style.fontFamily = '"' + fontB + '", "' + fontA + '"';
+    var bWidth = _CPFontDetectSpan.offsetWidth,
+        Height = _CPFontDetectSpan.offsetHeight;
+
+    return (a.w != bWidth || a.h != bHeight);
 }
 
 // Test the candidate fonts pairwise until we find two that are different. Otherwise return the first.
 var _CPFontDetectPickTwoDifferentFonts = function(candidates) {
-	for (var i = 0; i < candidates.length; i++)
-		for (var j = 0; j < i; j++)
-			if (_CPFontDetectCompareFonts(candidates[i], candidates[j]))
-				return [candidates[i], candidates[j]];
-	return [candidates[0]];
+    for (var i = 0; i < candidates.length; i++)
+        for (var j = 0; j < i; j++)
+            if (_CPFontDetectCompareFonts(candidates[i], candidates[j]))
+                return [candidates[i], candidates[j]];
+    return [candidates[0]];
 }
 
 [CPFontManager setFontManagerFactory:[CPFontManager class]];

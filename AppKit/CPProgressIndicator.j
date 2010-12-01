@@ -47,7 +47,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     CPProgressIndicatorStyleIdentifiers     = nil,
     CPProgressIndicatorStyleSizes           = nil;
 
-/*! 
+/*!
     @ingroup appkit
     @class CPProgressIndicator
 
@@ -59,19 +59,19 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 {
     double                      _minValue;
     double                      _maxValue;
-    
+
     double                      _doubleValue;
-    
+
     CPControlSize               _controlSize;
-    
+
     BOOL                        _isIndeterminate;
     CPProgressIndicatorStyle    _style;
-    
+
     BOOL                        _isAnimating;
-    
+
     BOOL                        _isDisplayedWhenStoppedSet;
     BOOL                        _isDisplayedWhenStopped;
-    
+
     CPView                      _barView;
 }
 
@@ -82,11 +82,11 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 {
     if (self != [CPProgressIndicator class])
         return;
-    
+
     var bundle = [CPBundle bundleForClass:self];
-    
+
     CPProgressIndicatorSpinningStyleColors = [];
-    
+
     CPProgressIndicatorSpinningStyleColors[CPMiniControlSize]       = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:
         [bundle pathForResource:@"CPProgressIndicator/CPProgressIndicatorSpinningStyleRegular.gif"] size:CGSizeMake(64.0, 64.0)]];
     CPProgressIndicatorSpinningStyleColors[CPSmallControlSize]      = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:
@@ -95,10 +95,10 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
         [bundle pathForResource:@"CPProgressIndicator/CPProgressIndicatorSpinningStyleRegular.gif"] size:CGSizeMake(64.0, 64.0)]];
 
     CPProgressIndicatorBezelBorderViewPool = [];
-    
+
     var start = CPProgressIndicatorBarStyle,
         end = CPProgressIndicatorHUDBarStyle;
-    
+
     for (; start <= end; ++start)
     {
         CPProgressIndicatorBezelBorderViewPool[start] = [];
@@ -106,14 +106,14 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
         CPProgressIndicatorBezelBorderViewPool[start][CPSmallControlSize]   = [];
         CPProgressIndicatorBezelBorderViewPool[start][CPRegularControlSize]  = [];
     }
-    
+
     CPProgressIndicatorClassName = [self className];
     CPProgressIndicatorStyleIdentifiers = [];
 
     CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle]        = @"Bar";
     CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorSpinningStyle]   = @"Spinny";
     CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorHUDBarStyle]     = @"HUDBar";
-    
+
     var regularIdentifier = _CPControlIdentifierForControlSize(CPRegularControlSize),
         smallIdentifier = _CPControlIdentifierForControlSize(CPSmallControlSize),
         miniIdentifier = _CPControlIdentifierForControlSize(CPMiniControlSize);
@@ -140,23 +140,23 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
-    
+
     if (self)
     {
         _minValue = 0.0;
         _maxValue = 100.0;
-        
+
         _doubleValue = 0.0;
-        
+
         _style = CPProgressIndicatorBarStyle;
         _isDisplayedWhenStoppedSet = NO;
-        
+
         _controlSize = CPRegularControlSize;
-        
+
         [self updateBackgroundColor];
         [self drawBar];
     }
-    
+
     return self;
 }
 
@@ -174,7 +174,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 - (void)startAnimation:(id)aSender
 {
     _isAnimating = YES;
-    
+
     [self _hideOrDisplay];
 }
 
@@ -213,7 +213,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 - (void)setDoubleValue:(double)aValue
 {
     _doubleValue = MIN(MAX(aValue, _minValue), _maxValue);
-    
+
     [self drawBar];
 }
 
@@ -268,7 +268,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 {
     if (_controlSize == aControlSize)
         return;
-    
+
     _controlSize = aControlSize;
 
     [self updateBackgroundColor];
@@ -320,7 +320,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 {
     if (_isIndeterminate == isIndeterminate)
         return;
-    
+
     _isIndeterminate = isIndeterminate;
 
     [self updateBackgroundColor];
@@ -342,9 +342,9 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 {
     if (_style == aStyle)
         return;
-    
+
     _style = aStyle;
-    
+
     [self updateBackgroundColor];
 }
 
@@ -357,8 +357,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
         [self setFrameSize:[[CPProgressIndicatorSpinningStyleColors[_controlSize] patternImage] size]];
     else
         [self setFrameSize:CGSizeMake(CGRectGetWidth([self frame]), CPProgressIndicatorStyleSizes[
-            CPProgressIndicatorClassName + @"BezelBorder" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle] + 
-            _CPControlIdentifierForControlSize(_controlSize)][0].height)];
+            CPProgressIndicatorClassName + @"BezelBorder" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle] + _CPControlIdentifierForControlSize(_controlSize)][0].height)];
 }
 
 /*!
@@ -370,11 +369,11 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 {
     if (_isDisplayedWhenStoppedSet && _isDisplayedWhenStopped == isDisplayedWhenStopped)
         return;
-        
+
     _isDisplayedWhenStoppedSet = YES;
-    
+
     _isDisplayedWhenStopped = isDisplayedWhenStopped;
-    
+
     [self _hideOrDisplay];
 }
 
@@ -385,10 +384,10 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 {
     if (_isDisplayedWhenStoppedSet)
         return _isDisplayedWhenStopped;
-    
+
     if (_style == CPProgressIndicatorBarStyle || _style == CPProgressIndicatorHUDBarStyle)
         return YES;
-    
+
     return NO;
 }
 
@@ -401,7 +400,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 - (void)setFrameSize:(CGSize)aSize
 {
     [super setFrameSize:aSize];
-    
+
     [self drawBar];
 }
 
@@ -410,13 +409,13 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 {
     if (_style == CPProgressIndicatorSpinningStyle)
         return;
-    
+
     if (!_barView)
     {
-        _barView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 0.0, 16.0)];        
+        _barView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 0.0, 16.0)];
         [self addSubview:_barView];
     }
-    
+
     [_barView setBackgroundColor:_CPControlThreePartImagePattern(
         NO,
         CPProgressIndicatorStyleSizes,
@@ -442,9 +441,9 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
         if (_style == CPProgressIndicatorSpinningStyle)
         {
             [_barView removeFromSuperview];
-            
+
             _barView = nil;
-            
+
             [self setBackgroundColor:CPProgressIndicatorSpinningStyleColors[_controlSize]];
         }
         else
@@ -456,7 +455,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
                 @"BezelBorder",
                 CPProgressIndicatorStyleIdentifiers[_style],
                 _CPControlIdentifierForControlSize(_controlSize))];
-                
+
             [self drawBar];
         }
     }

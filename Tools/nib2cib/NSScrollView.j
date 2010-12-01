@@ -30,11 +30,11 @@
     if (self = [super NS_initWithCoder:aCoder])
     {
         var flags = [aCoder decodeIntForKey:"NSsFlags"];
-        
+
         _verticalScroller       = [aCoder decodeObjectForKey:"NSVScroller"];
         _horizontalScroller     = [aCoder decodeObjectForKey:"NSHScroller"];
         _contentView            = [aCoder decodeObjectForKey:"NSContentView"];
-        
+
         _headerClipView         = [aCoder decodeObjectForKey:"NSHeaderClipView"];
         _cornerView             = [aCoder decodeObjectForKey:"NSCornerView"];
         _bottomCornerView       = [[CPView alloc] init];
@@ -44,7 +44,7 @@
         _hasVerticalScroller    = !!(flags & (1 << 4));
         _hasHorizontalScroller  = !!(flags & (1 << 5));
         _autohidesScrollers     = !!(flags & (1 << 9));
-        
+
         _borderType             = flags & 0x03;
 
         //[aCoder decodeBytesForKey:"NSScrollAmts"];
@@ -53,7 +53,7 @@
         _horizontalLineScroll   = 10.0;
         _horizontalPageScroll   = 10.0;
     }
-    
+
     return self;
 }
 

@@ -32,17 +32,17 @@
     if (self = [super NS_initWithCoder:aCoder])
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
-        
+
         _menu = [cell menu];
 
          // make sure it's not null/undefined
         //FIXME push this check to CPPopUpButton?
         _selectedIndex  = [cell selectedIndex] || 0;
-        
+
         [self setPullsDown:[cell pullsDown]];
         _preferredEdge  = [cell preferredEdge];
     }
-    
+
     return self;
 }
 
@@ -76,15 +76,15 @@
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
-    
+
     if (self)
-    {   
+    {
         pullsDown      = [aCoder decodeBoolForKey:@"NSPullDown"];
         selectedIndex  = [aCoder decodeIntForKey:@"NSSelectedIndex"];
         preferredEdge  = [aCoder decodeIntForKey:@"NSPreferredEdge"];
         menu           = [aCoder decodeObjectForKey:@"NSMenu"];
     }
-    
+
     return self;
 }
 
