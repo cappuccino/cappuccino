@@ -239,7 +239,7 @@
     var testStrings = [
         ["tmp/scratch", ["tmp", "scratch"]],
         ["/tmp/scratch", ["/", "tmp", "scratch"]]
-    ]
+    ];
 
     for (var i = 0; i < testStrings.length; i++)
     {

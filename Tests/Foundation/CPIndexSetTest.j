@@ -23,7 +23,7 @@ function descriptionWithoutEntity(aString)
 
     // Test no indexes
     [self assert:descriptionWithoutEntity(indexSet) equals:@"(no indexes)"];
-    
+
     // Test adding initial range
     [indexSet addIndexesInRange:CPMakeRange(30,10)];
 

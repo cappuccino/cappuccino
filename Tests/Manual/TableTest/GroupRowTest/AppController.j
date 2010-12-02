@@ -119,7 +119,7 @@
 {
     var groups = [];
 
-    for(var i = 0; i < 100; i += 5)
+    for (var i = 0; i < 100; i += 5)
         groups.push(i);
 
     return [groups containsObject:aRow];

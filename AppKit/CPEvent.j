@@ -557,7 +557,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     if (_modifierFlags & (CPCommandKeyMask | CPControlKeyMask))
         return YES;
 
-    for(var i=0; i<characterCount; i++)
+    for (var i = 0; i < characterCount; i++)
     {
         switch(_characters.charAt(i))
         {
