@@ -6,19 +6,19 @@
 
 - (void)testStringByReplacingOccurrencesOfStringWithString
 {
-    var expectedString = @"hello world. A new world!";
-    var dummyString = @"hello woold. A new woold!";
-    var actualString = [dummyString stringByReplacingOccurrencesOfString:@"woold" withString:@"world"];
-    [self assertTrue:(expectedString === actualString) 
+    var expectedString = @"hello world. A new world!",
+        dummyString = @"hello woold. A new woold!",
+        actualString = [dummyString stringByReplacingOccurrencesOfString:@"woold" withString:@"world"];
+
+    [self assertTrue:(expectedString === actualString)
              message:"stringByAppendingFormat: expected:" + expectedString + " actual:" + actualString];
-    
 }
 
 - (void)testStringByReplacingWithRegexCharacters
 {
     var stringToTest = "${foo} {foo}",
         result = [stringToTest stringByReplacingOccurrencesOfString:"${foo}" withString:"BAR"];
-    
+
     [self assert:result equals:"BAR {foo}"];
 }
 
@@ -28,8 +28,8 @@
         expectedString = "2 X 3 = 6",
         dummyString = @"",
         actualString = [dummyString stringByAppendingFormat:format, 2, 3, 6];
-        
-    [self assertTrue:(expectedString === actualString) 
+
+    [self assertTrue:(expectedString === actualString)
              message:"stringByAppendingFormat: expected:" + expectedString + " actual:" + actualString];
 }
 
@@ -57,7 +57,7 @@
     [self assert:"42" equals:str];
 
     str = [[CPString alloc] initWithFormat:"%f", 42.2];
-    [self assert:"42.2" equals:str];    
+    [self assert:"42.2" equals:str];
 }
 
 - (void)testStringWithFormat
@@ -70,7 +70,7 @@
     [self assert:"42" equals:str];
 
     str = [CPString stringWithFormat:"%f", 42.2];
-    [self assert:"42.2" equals:str];    
+    [self assert:"42.2" equals:str];
 }
 
 - (void)testLength
@@ -97,16 +97,16 @@
 
 - (void)testStringByPaddingToLength
 {
-    [self assert:"onebcd" 
-	      equals:["one" stringByPaddingToLength:6 
-			                         withString:"abcdefg"
-	                            startingAtIndex:1]];
+    [self assert:"onebcd"
+          equals:["one" stringByPaddingToLength:6
+                                     withString:"abcdefg"
+                                startingAtIndex:1]];
 }
 
 - (void)testComponentsSeparatedByString
 {
     [self assert:["arash", "francisco", "ross", "tom"]
-	  equals:["arash.francisco.ross.tom" componentsSeparatedByString:"."]];
+          equals:["arash.francisco.ross.tom" componentsSeparatedByString:"."]];
 }
 
 - (void)testSubstringFromIndex
@@ -146,9 +146,9 @@
         ["  -N00",  NO],
         ["  00",    NO],
         ["  -00",   NO],
-		["  -+001", NO],
+        ["  -+001", NO],
     ];
-    
+
     for (var i = 0; i < testStrings.length; i++)
         [self assert:[testStrings[i][0] boolValue] equals:testStrings[i][1]];
 }
@@ -161,14 +161,14 @@
         ["Abcd", "Abcd", "Abcd"],
         ["A long string", "A longer string", "A long"]
     ];
-    
+
     var testStringsCaseless = [
         ["hElLo", "HeLiCoPtEr", "hEl"],
         ["tEsTeR", "TaSeR", "t"],
         ["aBcD", "AbCd", "aBcD"],
         ["a LoNg StRiNg", "A lOnGeR sTrInG", "a LoNg"]
     ];
-    
+
     for (var i = 0; i < testStringsCase.length; i++)
         [self assert: [testStringsCase[i][0] commonPrefixWithString:testStringsCase[i][1]]
               equals: testStringsCase[i][2]];
@@ -187,9 +187,9 @@
         [" monkey-Cow", " Monkey-cow"],
         ["tHe QuicK bRowN-Fox JumPed_Over +the LaZy%dog", "The Quick Brown-fox Jumped_over +the Lazy%dog"]
     ];
-    
+
     for (var i = 0; i < testStrings.length; i++)
-        [self assert:[testStrings[i][0] capitalizedString] equals:testStrings[i][1]];	
+        [self assert:[testStrings[i][0] capitalizedString] equals:testStrings[i][1]];
 }
 
 - (void)testUppercaseString
@@ -197,7 +197,7 @@
     var str = "This is a test";
     [self assert:[str uppercaseString] equals:"THIS IS A TEST"];
 }
- 
+
 - (void)testLowercaseString
 {
     var str = "This Is A TEST";
@@ -240,9 +240,11 @@
         ["tmp/scratch", ["tmp", "scratch"]],
         ["/tmp/scratch", ["/", "tmp", "scratch"]]
     ]
-    
-    for (var i = 0; i < testStrings.length; i++) {
+
+    for (var i = 0; i < testStrings.length; i++)
+    {
         var result = [testStrings[i][0] pathComponents];
+
         [self assertTrue:[result isEqualToArray:testStrings[i][1]] message:"Expected [" + testStrings[i][1] + "] was [" + result + "]"];
     }
 }
@@ -256,7 +258,7 @@
         ["scratch", "scratch"],
         ["/", "/"]
     ];
-        
+
     for (var i = 0; i < testStrings.length; i++)
         [self assert:testStrings[i][1] equals:[testStrings[i][0] lastPathComponent]];
 }
@@ -270,7 +272,7 @@
         ["/tmp", ""],
         ["scratch", ""],
     ];
-        
+
     for (var i = 0; i < testStrings.length; i++)
         [self assert:testStrings[i][1] equals:[testStrings[i][0] pathExtension]];
 }
@@ -316,40 +318,40 @@
 
 - (void)testComponentsSeparatedByCharactersInSetEmptyString
 {
-	[self assert:[""]
-	  equals:["" componentsSeparatedByCharactersInSet:[CPCharacterSet whitespaceCharacterSet]]];
+    [self assert:[""]
+          equals:["" componentsSeparatedByCharactersInSet:[CPCharacterSet whitespaceCharacterSet]]];
 }
 
 - (void)testComponentsSeparatedByCharactersInSetStringWithoutCharactersFromSet
 {
-	[self assert:["Abradab"] 
-	  equals:["Abradab" componentsSeparatedByCharactersInSet:[CPCharacterSet whitespaceCharacterSet]]];
+    [self assert:["Abradab"]
+          equals:["Abradab" componentsSeparatedByCharactersInSet:[CPCharacterSet whitespaceCharacterSet]]];
 }
 
 - (void)testComponentsSeparatedByCharactersInSet
 {
-	[self assert:["Baku", "baku", "to", "jest", "", "skład."]
-	  equals:["Baku baku to jest  skład." componentsSeparatedByCharactersInSet:[CPCharacterSet whitespaceCharacterSet]]];
+    [self assert:["Baku", "baku", "to", "jest", "", "skład."]
+          equals:["Baku baku to jest  skład." componentsSeparatedByCharactersInSet:[CPCharacterSet whitespaceCharacterSet]]];
 }
 
 - (void)testComponentsSeparatedByCharactersInSetLeadingAndTrailingCharacterFromSet
 {
-	[self assert:["", "Test", ""]
-	  equals:[" Test " componentsSeparatedByCharactersInSet:[CPCharacterSet whitespaceCharacterSet]]];
+    [self assert:["", "Test", ""]
+          equals:[" Test " componentsSeparatedByCharactersInSet:[CPCharacterSet whitespaceCharacterSet]]];
 }
 
-- (void)testComponentsSeparatedByCharactersExceptionRaiseOnNilSeparator 
+- (void)testComponentsSeparatedByCharactersExceptionRaiseOnNilSeparator
 {
-	try
+    try
     {
         [[CPString string] componentsSeparatedByCharactersInSet:nil];
-		[self assert:false];
+        [self assert:false];
     }
     catch (anException)
-	{
-		[self assert:[anException name] equals:CPInvalidArgumentException];
+    {
+        [self assert:[anException name] equals:CPInvalidArgumentException];
         [self assert:[anException reason] equals:@"componentsSeparatedByCharactersInSet: the separator can't be 'nil'"];
-	}
+    }
 }
 
 - (void)testIsEqual

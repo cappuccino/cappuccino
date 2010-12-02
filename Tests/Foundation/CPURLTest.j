@@ -15,7 +15,6 @@ var exampleProtocol = "http",
 
 @implementation CPURLTest : OJTestCase
 {
-    
 }
 
 - (void)testAbsolute
@@ -23,17 +22,17 @@ var exampleProtocol = "http",
     var pathString = exampleFullPath,
         urlString = exampleURL,
         url = [CPURL URLWithString:urlString];
-        
+
     [self assert:[url baseURL] equals:nil];
-    
+
     [self assert:[url relativeString] equals:urlString];
     [self assert:[url absoluteString] equals:urlString];
-    
+
     [self assert:[url relativePath] equals:pathString];
     [self assert:[url path] equals:pathString];
-    
+
     [self assert:[url absoluteURL] same:url];
-    
+
     [self assert:[url scheme] equals:exampleProtocol];
     [self assert:[url user] equals:exampleUser];
     [self assert:[url password] equals:examplePassword];
@@ -41,7 +40,7 @@ var exampleProtocol = "http",
     [self assert:[url port] equals:examplePort];
     [self assert:[url parameterString] equals:exampleQuery];
     [self assert:[url fragment] equals:exampleAnchor];
-    
+
     [self assert:[url pathExtension] equals:"php"];
     [self assert:[url lastPathComponent] equals:examplePathRelative];
 }
@@ -55,13 +54,13 @@ var exampleProtocol = "http",
         url = [CPURL URLWithString:urlString relativeToURL:baseURL];
 
     [self assert:[url baseURL] equals:baseURL];
-    
+
     [self assert:[url relativeString] equals:urlString];
     [self assert:[url absoluteString] equals:exampleURL];
 
     [self assert:[url relativePath] equals:pathString];
     [self assert:[url path] equals:exampleFullPath];
-    
+
     [self assert:[url absoluteURL] notSame:url];
 
     [self assert:[url scheme] equals:exampleProtocol];
@@ -102,7 +101,6 @@ var exampleProtocol = "http",
 
     [self assert:[url pathExtension] equals:"php"];
     [self assert:[url lastPathComponent] equals:examplePathRelative];
-    
 }
 
 - (void)testURLToString

@@ -16,16 +16,15 @@ tableTestDragType = @"CPTableViewTestDragType";
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
-    
     dataSet1 = [],
     dataSet2 = [],
     dataSet3 = [];
-    
-    for(var i = 1; i < 10; i++)
+
+    for (var i = 1; i < 10; i++)
     {
         dataSet1[i - 1] = [CPNumber numberWithInt:i];
-        dataSet2[i - 1] = [CPNumber numberWithInt:i+10];
-        dataSet3[i - 1] = [CPNumber numberWithInt:i+20];
+        dataSet2[i - 1] = [CPNumber numberWithInt:i + 10];
+        dataSet3[i - 1] = [CPNumber numberWithInt:i + 20];
     }
 
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(50,50,700,500) styleMask:CPClosableWindowMask],
@@ -37,7 +36,7 @@ tableTestDragType = @"CPTableViewTestDragType";
     [tableView setAllowsColumnSelection:YES];
     [tableView setUsesAlternatingRowBackgroundColors:YES];
     [tableView setAlternatingRowBackgroundColors:[[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"], [CPColor colorWithHexString:@"f4e7ff"]]];
-    [tableView setGridStyleMask:CPTableViewSolidHorizontalGridLineMask | CPTableViewSolidVerticalGridLineMask];    
+    [tableView setGridStyleMask:CPTableViewSolidHorizontalGridLineMask | CPTableViewSolidVerticalGridLineMask];
     [tableView setVerticalMotionCanBeginDrag:NO];
     [tableView setDraggingDestinationFeedbackStyle:CPTableViewDropOn];
     [tableView registerForDraggedTypes:[CPArray arrayWithObject:tableTestDragType]];
@@ -46,7 +45,6 @@ tableTestDragType = @"CPTableViewTestDragType";
     [tableView setSelectionHighlightColor:[CPColor redColor]];
     [tableView setDataSource:self];
 
-    
     var iconView = [[CPImageView alloc] initWithFrame:CGRectMake(16,16,0,0)];
     [iconView setImageScaling:CPScaleNone];
     var iconColumn = [[CPTableColumn alloc] initWithIdentifier:"icons"];
@@ -67,7 +65,7 @@ tableTestDragType = @"CPTableViewTestDragType";
         [column setMinWidth:50.0];
         [column setMaxWidth:500.0];
         [column setWidth:75.0];
-        
+
         [column setEditable:YES];
         [tableView addTableColumn:column];
 
@@ -78,10 +76,10 @@ tableTestDragType = @"CPTableViewTestDragType";
     // we offset this scrollview to make sure all the coordinates are calculated correctly
     // bad things can happen when the tableview doesn't sit at (0,0)
     var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(200, 50, CGRectGetWidth([contentView bounds]) - 200, CGRectGetHeight([contentView bounds]) -200)];
-   
+
     [scrollView setDocumentView:tableView];
     [scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-    
+
     [contentView addSubview:scrollView];
 
     [theWindow orderFront:self];
@@ -176,7 +174,7 @@ tableTestDragType = @"CPTableViewTestDragType";
 {
 
     var window2 = [[CPWindow alloc] initWithContentRect:CGRectMake(450, 50, 500, 400) styleMask:CPTitledWindowMask | CPResizableWindowMask];
-    
+
     tableView2 = [[CPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 500.0, 500.0)];
 
     [tableView2 setAllowsMultipleSelection:YES];
@@ -202,11 +200,11 @@ tableTestDragType = @"CPTableViewTestDragType";
         [column setSortDescriptorPrototype:desc];
         [[column headerView] setStringValue:"Number "+i];
 
-        [column setWidth:i*75];
+        [column setWidth:i * 75];
         [column setMinWidth:50.0];
 
         [column setEditable:YES];
-        
+
         [tableView2 addTableColumn:column];
     }
 
@@ -216,19 +214,18 @@ tableTestDragType = @"CPTableViewTestDragType";
     [tableView2 setRowHeight:32.0];
     [scrollView setDocumentView:tableView2];
     [scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-    
+
     [[window2 contentView] addSubview:scrollView];
 
     //[scrollView setAutohidesScrollers:YES];
 
-    
     [window2 orderFront:self];
 }
 
 - (void)sourceList
 {
     var window3 = [[CPWindow alloc] initWithContentRect:CGRectMake(450, 250, 500, 400) styleMask:CPTitledWindowMask | CPResizableWindowMask];
-    
+
     tableView3 = [[CPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 500.0)];
 
     [tableView3 setAllowsMultipleSelection:NO];
@@ -247,7 +244,7 @@ tableTestDragType = @"CPTableViewTestDragType";
     [column setMinWidth:50.0];
     [column setEditable:YES];
     [tableView3 addTableColumn:column];
-    
+
     var column = [[CPTableColumn alloc] initWithIdentifier:"sourcelist2"];
     [[column headerView] setStringValue:"Source List 2"];
     [tableView3 addTableColumn:column];
@@ -257,25 +254,25 @@ tableTestDragType = @"CPTableViewTestDragType";
     [scrollView3 setDocumentView:tableView3];
     [scrollView3 setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
-    var sourceListActiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [255.0/255.0, 153.0/255.0, 209.0/255.0,1.0, 33.0/255.0, 94.0/255.0, 208.0/255.0,1.0], [0,1], 2),
-        sourceListActiveTopLineColor = [CPColor colorWithCalibratedRed:(255.0/255.0) green:(123.0/255.0) blue:(218.0/255.0) alpha:1.0],
-        sourceListActiveBottomLineColor = [CPColor colorWithCalibratedRed:(255.0/255.0) green:(92.0/255.0) blue:(207.0/255.0) alpha:1.0];
+    var sourceListActiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [255.0 / 255.0, 153.0 / 255.0, 209.0 / 255.0, 1.0, 33.0 / 255.0, 94.0 / 255.0, 208.0 / 255.0, 1.0], [0, 1], 2),
+        sourceListActiveTopLineColor = [CPColor colorWithCalibratedRed:(255.0 / 255.0) green:(123.0 / 255.0) blue:(218.0 / 255.0) alpha:1.0],
+        sourceListActiveBottomLineColor = [CPColor colorWithCalibratedRed:(255.0 / 255.0) green:(92.0 / 255.0) blue:(207.0 / 255.0) alpha:1.0];
     [tableView3 setSelectionGradientColors:[CPDictionary dictionaryWithObjects:[sourceListActiveGradient, sourceListActiveTopLineColor, sourceListActiveBottomLineColor] forKeys:[CPSourceListGradient, CPSourceListTopLineColor, CPSourceListBottomLineColor]]];
-    
+
     [[window3 contentView] addSubview:scrollView3];
 
     [scrollView3 setAutohidesScrollers:YES];
-  
-  [window3 orderFront:self];
+
+    [window3 orderFront:self];
 }
 
 - (int)numberOfRowsInTableView:(CPTableView)atableView
 {
-    if(atableView === tableView)
+    if (atableView === tableView)
         return dataSet1.length;
-    else if(atableView === tableView2)
+    else if (atableView === tableView2)
         return dataSet2.length;
-    else if(atableView === tableView3)
+    else if (atableView === tableView3)
         return dataSet3.length;
 }
 
@@ -283,21 +280,21 @@ tableTestDragType = @"CPTableViewTestDragType";
 {
     if ([aColumn identifier] === "icons")
         return iconImage;
-    
+
     if (aTableView === tableView)
-        return String(dataSet1[aRow]* ([[aTableView tableColumns] indexOfObject:aColumn] + 1));
+        return String(dataSet1[aRow] * ([[aTableView tableColumns] indexOfObject:aColumn] + 1));
     else if (aTableView === tableView2)
         return String(dataSet2[aRow]);
-    else if(aTableView === tableView3)
+    else if (aTableView === tableView3)
         return String(dataSet3[aRow]);
 }
 
 - (void)tableView:(CPTableView)aTableView sortDescriptorsDidChange:(CPArray)oldDescriptors
 {
     //CPLogConsole(_cmd + [oldDescriptors description]);
-    
+
     var newDescriptors = [aTableView sortDescriptors];
-    
+
     [(aTableView === tableView) ? dataSet1:dataSet2 sortUsingDescriptors:newDescriptors];
 	[aTableView reloadData];
 }
@@ -341,7 +338,7 @@ tableTestDragType = @"CPTableViewTestDragType";
 }
 - (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)tableColumn row:(int)row
 {
-    if(aTableView === tableView3)
+    if (aTableView === tableView3)
         return YES;
     else
         return NO;
@@ -349,21 +346,21 @@ tableTestDragType = @"CPTableViewTestDragType";
 
 - (void)tableView:(CPTableView)aTableView willDisplayView:(CPView)aView forTableColumn:(CPTableColumn)tableColumn row:(int)row
 {
-    //CPLogConsole(_cmd + " column: " + [tableColumn identifier] + " row:" + row)    
+    //CPLogConsole(_cmd + " column: " + [tableColumn identifier] + " row:" + row)
 }
 
 - (void)tableView:(CPTableView)aTableView setObjectValue:(id)aValue forTableColumn:(CPTableColumn)tableColumn row:(int)row
 {
-    if(aTableView === tableView3)
+    if (aTableView === tableView3)
         dataSet3[row] = aValue;
 }
 
 - (void)tableView:(CPTableView)aTableView sortDescriptorsDidChange:(CPArray)oldDescriptors
 {
     //CPLogConsole(_cmd + [oldDescriptors description]);
-    
+
     var newDescriptors = [aTableView sortDescriptors];
-    
+
     [(aTableView === tableView) ? dataSet1:dataSet2 sortUsingDescriptors:newDescriptors];
 	[aTableView reloadData];
 }
@@ -374,57 +371,57 @@ tableTestDragType = @"CPTableViewTestDragType";
         return NO;
 
     var data = [rowIndexes, [aTableView UID]];
-    
+
     var encodedData = [CPKeyedArchiver archivedDataWithRootObject:data];
     [pboard declareTypes:[CPArray arrayWithObject:tableTestDragType] owner:self];
     [pboard setData:encodedData forType:tableTestDragType];
-    
+
     return YES;
 }
 
-- (CPDragOperation)tableView:(CPTableView)aTableView 
-                   validateDrop:(id)info 
-                   proposedRow:(CPInteger)row 
+- (CPDragOperation)tableView:(CPTableView)aTableView
+                   validateDrop:(id)info
+                   proposedRow:(CPInteger)row
                    proposedDropOperation:(CPTableViewDropOperation)operation
 {
 
     [[aTableView window] orderFront:nil];
 
-    if(aTableView === tableView)
+    if (aTableView === tableView)
         [aTableView setDropRow:row dropOperation:CPTableViewDropOn];
-    else 
+    else
         [aTableView setDropRow:row dropOperation:CPTableViewDropAbove];
-        
+
     return CPDragOperationMove;
 }
 
 - (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id)info row:(int)row dropOperation:(CPTableViewDropOperation)operation
-{    
+{
     var pboard = [info draggingPasteboard],
         rowData = [pboard dataForType:tableTestDragType],
         tables = [tableView, tableView2],
-        dataSets = [dataSet1, dataSet2];   
-    
+        dataSets = [dataSet1, dataSet2];
+
     rowData = [CPKeyedUnarchiver unarchiveObjectWithData:rowData];
-    
+
     var sourceIndexes = rowData[0],
         sourceTableUID = rowData[1];
-     
+
     var index = (aTableView == tableView) ? 1 : 0;
-        
+
     var destinationTable = tables[1 - index],
         sourceTable = tables[index],
         destinationDataSet = dataSets[1 - index],
         sourceDataSet = dataSets[index];
 
-    if(operation | CPDragOperationMove)
+    if (operation | CPDragOperationMove)
     {
         if (sourceTableUID == [aTableView UID])
         {
             [destinationDataSet moveIndexes:sourceIndexes toIndex:row];
             [destinationTable reloadData];
             var destIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(row, [sourceIndexes count])];
-            [destinationTable selectRowIndexes:destIndexes byExtendingSelection:NO];            
+            [destinationTable selectRowIndexes:destIndexes byExtendingSelection:NO];
         }
         else
         {
@@ -434,19 +431,19 @@ tableTestDragType = @"CPTableViewTestDragType";
             [destinationDataSet insertObjects:sourceObjects atIndexes:destIndexes];
             [destinationTable reloadData];
             [destinationTable selectRowIndexes:destIndexes byExtendingSelection:NO];
-            
+
             [sourceDataSet removeObjectsAtIndexes:sourceIndexes];
             [sourceTable reloadData];
-            [sourceTable selectRowIndexes:[CPIndexSet indexSet] byExtendingSelection:NO];                
+            [sourceTable selectRowIndexes:[CPIndexSet indexSet] byExtendingSelection:NO];
         }
     }
-        
+
     return YES;
 }
 
 - (void)tableView:(CPTableView)aTableView didEndDraggedImage:(CPImage)anImage atPosition:(CGPoint)aPoint operation:(CPDragOperation)anOperation
 {
-    //for convenience     
+    //for convenience
 }
 
 - (void)tableView:(CPTableView)aTableView didClickTableColumn:(CPTableColumn)aColumn

@@ -15,16 +15,16 @@ var categories = ["firstName","lastName"],
     CPTextField   predicateField;
 
     CPSearchField searchField;
-	CPMenu        searchMenuTemplate;
+    CPMenu        searchMenuTemplate;
 
-	CPArray       searchCategoryIndexes;
-	CPInteger     searchCategoryIndex;
+    CPArray       searchCategoryIndexes;
+    CPInteger     searchCategoryIndex;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
-	searchCategoryIndex = 0;
-	searchCategoryIndexes = [CPArray arrayWithArray:[1, 2]];
+    searchCategoryIndex = 0;
+    searchCategoryIndexes = [CPArray arrayWithArray:[1, 2]];
 
     searchField = [[CPSearchField alloc] initWithFrame:CPMakeRect(30,72,150,30)];
 
@@ -75,7 +75,7 @@ var categories = ["firstName","lastName"],
     [self updateFilter:searchField];
 
     [theWindow center];
-	[theWindow orderFront:self];
+    [theWindow orderFront:self];
 }
 
 - (void)awakeFromCib
@@ -105,24 +105,24 @@ var categories = ["firstName","lastName"],
 - (void)_updateSearchMenuTemplate
 {
     for (var i = 0; i < searchCategoryIndexes.length; ++i)
-    	[[searchMenuTemplate itemAtIndex:i + 1] setState:CPOffState];
+        [[searchMenuTemplate itemAtIndex:i + 1] setState:CPOffState];
 
-	[[searchMenuTemplate itemAtIndex:searchCategoryIndex + 1] setState:CPOnState];
+    [[searchMenuTemplate itemAtIndex:searchCategoryIndex + 1] setState:CPOnState];
     [searchField setSearchMenuTemplate:searchMenuTemplate];
 }
 
 - (void)updateFilter:(id)sender
 {
-	var searchString = [sender stringValue];
-	[self filteredArrayWithString:searchString];
+    var searchString = [sender stringValue];
+    [self filteredArrayWithString:searchString];
 }
 
 - (void)filteredArrayWithString:(CPString)value
 {
-	var keyPath = categories[searchCategoryIndex],
-	    predicate = [CPPredicate predicateWithFormat:@"%K CONTAINS %@", keyPath, value];
+    var keyPath = categories[searchCategoryIndex],
+        predicate = [CPPredicate predicateWithFormat:@"%K CONTAINS %@", keyPath, value];
 
-	[predicateField setStringValue:[predicate predicateFormat]];
+    [predicateField setStringValue:[predicate predicateFormat]];
 }
 
 @end
