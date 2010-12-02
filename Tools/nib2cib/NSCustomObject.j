@@ -28,10 +28,10 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
-    if (self){
+
+    if (self)
         _className = CP_NSMapClassName([aCoder decodeObjectForKey:@"NSClassName"]);
-    }
+
     return self;
 }
 

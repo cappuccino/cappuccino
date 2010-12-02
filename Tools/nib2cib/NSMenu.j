@@ -41,7 +41,7 @@ NS_CPMenuNameMap =
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
         _title = [aCoder decodeObjectForKey:@"NSTitle"];
@@ -55,7 +55,7 @@ NS_CPMenuNameMap =
 
         _showsStateColumn = ![aCoder containsValueForKey:@"NSMenuExcludeMarkColumn"] || ![aCoder decodeBoolForKey:@"NSMenuExcludeMarkColumn"];
     }
-    
+
     return self;
 }
 

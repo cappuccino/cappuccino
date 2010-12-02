@@ -32,10 +32,10 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
 @implementation CPFlashView : CPView
 {
     CPFlashMovie    _flashMovie;
-    
+
     CPDictionary    _params;
     CPDictionary    _paramElements;
-#if PLATFORM(DOM)    
+#if PLATFORM(DOM)
     DOMElement      _DOMParamElement;
     DOMElement      _DOMObjectElement;
     DOMElement      _DOMInnerObjectElement;
@@ -45,7 +45,7 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
-    
+
     if (self)
     {
 #if PLATFORM(DOM)
@@ -58,24 +58,24 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
             _DOMObjectElement.style.left = @"0px";
             _DOMObjectElement.type = @"application/x-shockwave-flash";
             _DOMObjectElement.setAttribute(@"classid", IEFlashCLSID);
-            
+
             _DOMParamElement = document.createElement(@"param");
             _DOMParamElement.name = @"movie";
-            
+
             _DOMInnerObjectElement = document.createElement(@"object");
             _DOMInnerObjectElement.width = @"100%";
             _DOMInnerObjectElement.height = @"100%";
-            
+
             _DOMObjectElement.appendChild(_DOMParamElement);
             _DOMObjectElement.appendChild(_DOMInnerObjectElement);
-            
+
             _DOMElement.appendChild(_DOMObjectElement);
         }
         else
             [self _rebuildIEObjects];
 #endif
     }
-    
+
     return self;
 }
 
@@ -83,7 +83,7 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
 {
     if (_flashMovie == aFlashMovie)
         return;
-        
+
     _flashMovie = aFlashMovie;
 #if PLATFORM(DOM)
     if (!CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
@@ -105,14 +105,14 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
 {
     var varString = @"",
         enumerator = [aDictionary keyEnumerator];
-    
+
     var key;
     while (key = [enumerator nextObject])
         varString = [varString stringByAppendingFormat:@"&%@=%@", key, [aDictionary objectForKey:key]];
-    
+
     if (!_params)
         _params = [CPDictionary dictionary];
-    
+
     [_params setObject:varString forKey:@"flashvars"];
     [self setParameters:_params];
 }
@@ -129,7 +129,7 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
     {
         var elements = [_paramElements allValues],
             count = [elements count];
-        
+
         for (var i = 0; i < count; i++)
             _DOMObjectElement.removeChild([elements objectAtIndex:i]);
     }
@@ -139,18 +139,18 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
     if (!CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
     {
         _paramElements = [CPDictionary dictionary];
-        
+
         var enumerator = [_params keyEnumerator],
             key;
-        
+
         while (key = [enumerator nextObject] && _DOMObjectElement)
         {
             var param = document.createElement(@"param");
             param.name = key;
             param.value = [_params objectForKey:key];
-            
+
             _DOMObjectElement.appendChild(param);
-            
+
             [_paramElements setObject:param forKey:key];
         }
     }
@@ -170,17 +170,17 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
     _DOMElement.innerHTML = @"";
     if (![_flashMovie filename])
         return;
-    
+
     var paramString = [CPString stringWithFormat:@"<param name='movie' value='%@' />", [_flashMovie filename]],
         paramEnumerator = [_params keyEnumerator],
         key;
-    
+
     while (key = [paramEnumerator nextObject])
         paramString = [paramString stringByAppendingFormat:@"<param name='%@' value='%@' />", key, [_params objectForKey:key]];
-    
+
     _DOMObjectElement = document.createElement(@"object");
     _DOMElement.appendChild(_DOMObjectElement);
-    
+
     _DOMObjectElement.outerHTML = [CPString stringWithFormat:@"<object classid=%@ width=%@ height=%@>%@</object>", IEFlashCLSID, CGRectGetWidth([self bounds]), CGRectGetHeight([self bounds]), paramString];
 }
 #endif

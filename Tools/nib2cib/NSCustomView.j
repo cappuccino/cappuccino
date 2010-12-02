@@ -35,17 +35,17 @@ var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super NS_initWithCoder:aCoder];
-    
+
     if (self)
         _className = [aCoder decodeObjectForKey:@"NSClassName"];
-    
+
     return self;
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
-    
+
     [aCoder encodeObject:CP_NSMapClassName(_className) forKey:_CPCibCustomViewClassNameKey];
 }
 

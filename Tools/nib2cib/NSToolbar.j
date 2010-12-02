@@ -34,15 +34,15 @@
         _showsBaselineSeparator     = [aCoder decodeBoolForKey:"NSToolbarShowsBaselineSeparator"];
         _allowsUserCustomization    = [aCoder decodeBoolForKey:"NSToolbarAllowsUserCustomization"];
         _isVisible                  = [aCoder decodeBoolForKey:"NSToolbarPrefersToBeShown"];
-        
+
         _identifiedItems            = [aCoder decodeObjectForKey:"NSToolbarIBIdentifiedItems"];
         _defaultItems               = [aCoder decodeObjectForKey:"NSToolbarIBDefaultItems"];
         _allowedItems               = [aCoder decodeObjectForKey:"NSToolbarIBAllowedItems"];
         _selectableItems            = [aCoder decodeObjectForKey:"NSToolbarIBSelectableItems"];
-        
+
         _delegate                   = [aCoder decodeObjectForKey:"NSToolbarDelegate"];
     }
-    
+
     return self;
 }
 

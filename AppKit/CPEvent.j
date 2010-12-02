@@ -158,6 +158,7 @@ CPFindFunctionKey                       = "\uF745";
 CPHelpFunctionKey                       = "\uF746";
 CPModeSwitchFunctionKey                 = "\uF747";
 CPEscapeFunctionKey                     = "\u001B";
+CPSpaceFunctionKey                      = "\u0020";
 
 
 CPDOMEventDoubleClick                                = "dblclick",
@@ -566,6 +567,7 @@ var _CPEventPeriodicEventPeriod         = 0,
             case CPTabCharacter:
             case CPCarriageReturnCharacter:
             case CPNewlineCharacter:
+            case CPSpaceFunctionKey:
             case CPEscapeFunctionKey:
             case CPPageUpFunctionKey:
             case CPPageDownFunctionKey:
@@ -576,7 +578,7 @@ var _CPEventPeriodicEventPeriod         = 0,
                 return YES;
         }
     }
-    // FIXME: More cases? Space?
+    // FIXME: More cases?
     return NO;
 }
 

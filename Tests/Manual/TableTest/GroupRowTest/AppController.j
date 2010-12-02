@@ -28,7 +28,6 @@
     [tableView setDelegate:self];
     [tableView setDataSource:self];
 
-    
     var iconView = [[CPImageView alloc] initWithFrame:CGRectMake(16,16,0,0)];
     [iconView setImageScaling:CPScaleNone];
     var iconColumn = [[CPTableColumn alloc] initWithIdentifier:"icons"];
@@ -48,15 +47,15 @@
 
         [column setMaxWidth:500.0];
         [column setWidth:200.0];
-        
+
         [tableView addTableColumn:column];
     }
 
     var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth([contentView bounds]), CGRectGetHeight([contentView bounds]) / 2)];
-   
+
     [scrollView setDocumentView:tableView];
     [scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-    
+
     [contentView addSubview:scrollView];
 
     tableView = [[CPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 400.0)];
@@ -69,7 +68,6 @@
     [tableView setDelegate:self];
     [tableView setDataSource:self];
 
-    
     var iconView = [[CPImageView alloc] initWithFrame:CGRectMake(16,16,0,0)];
     [iconView setImageScaling:CPScaleNone];
     var iconColumn = [[CPTableColumn alloc] initWithIdentifier:"icons"];
@@ -89,15 +87,15 @@
 
         [column setMaxWidth:500.0];
         [column setWidth:200.0];
-        
+
         [tableView addTableColumn:column];
     }
 
     var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, CGRectGetHeight([contentView bounds]) / 2, CGRectGetWidth([contentView bounds]), CGRectGetHeight([contentView bounds]) / 2)];
-   
+
     [scrollView setDocumentView:tableView];
     [scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-    
+
     [contentView addSubview:scrollView];
 
     [theWindow orderFront:self];
@@ -113,7 +111,7 @@
 {
     if ([aColumn identifier] === "icons")
         return iconImage;
-    
+
     return aRow;
 }
 
@@ -121,7 +119,7 @@
 {
     var groups = [];
 
-    for(var i = 0; i < 100; i+=5)
+    for(var i = 0; i < 100; i += 5)
         groups.push(i);
 
     return [groups containsObject:aRow];

@@ -28,20 +28,20 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [super NS_initWithCoder:aCoder];
-    
+
     if (self)
     {
-        if([aCoder containsValueForKey:"NSOutlineViewOutlineTableColumnKey"])
+        if ([aCoder containsValueForKey:"NSOutlineViewOutlineTableColumnKey"])
             _outlineTableColumn = [aCoder decodeObjectForKey:@"NSOutlineViewOutlineTableColumnKey"];
         else
             _outlineTableColumn = [[self tableColumns] objectAtIndex:0];
-        
+
         _indentationPerLevel = [aCoder decodeFloatForKey:@"NSOutlineViewIndentationPerLevelKey"];
-        
+
         _outlineViewDataSource = [aCoder decodeObjectForKey:@"NSDataSource"];
         _outlineViewDelegate = [aCoder decodeObjectForKey:@"NSDelegate"];
     }
-    
+
     return self;
 }
 
