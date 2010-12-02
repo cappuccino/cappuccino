@@ -95,7 +95,7 @@
 */
 + (id)defaultDecimalNumberHandler
 {
-    return _cappdefaultDcmHandler;
+    return CPDefaultDcmHandler;
 }
 
 @end
@@ -166,12 +166,12 @@
 @end
 
 // CPCoding category
-var CPDecimalNumberHandlerRoundingModeKey = @"CPDecimalNumberHandlerRoundingModeKey",
-    CPDecimalNumberHandlerScaleKey = @"CPDecimalNumberHandlerScaleKey",
-    CPDecimalNumberHandlerRaiseOnExactKey = @"CPDecimalNumberHandlerRaiseOnExactKey",
-    CPDecimalNumberHandlerRaiseOnOverflowKey = @"CPDecimalNumberHandlerRaiseOnOverflowKey",
-    CPDecimalNumberHandlerRaiseOnUnderflowKey = @"CPDecimalNumberHandlerRaiseOnUnderflowKey",
-    CPDecimalNumberHandlerDivideByZeroKey = @"CPDecimalNumberHandlerDivideByZeroKey";
+var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundingModeKey",
+    CPDecimalNumberHandlerScaleKey              = @"CPDecimalNumberHandlerScaleKey",
+    CPDecimalNumberHandlerRaiseOnExactKey       = @"CPDecimalNumberHandlerRaiseOnExactKey",
+    CPDecimalNumberHandlerRaiseOnOverflowKey    = @"CPDecimalNumberHandlerRaiseOnOverflowKey",
+    CPDecimalNumberHandlerRaiseOnUnderflowKey   = @"CPDecimalNumberHandlerRaiseOnUnderflowKey",
+    CPDecimalNumberHandlerDivideByZeroKey       = @"CPDecimalNumberHandlerDivideByZeroKey";
 
 @implementation CPDecimalNumberHandler (CPCoding)
 
@@ -211,11 +211,7 @@ var CPDecimalNumberHandlerRoundingModeKey = @"CPDecimalNumberHandlerRoundingMode
 @end
 
 // create the default global behavior class
-_cappdefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:CPRoundPlain scale:0 raiseOnExactness:NO raiseOnOverflow:YES raiseOnUnderflow:YES raiseOnDivideByZero:YES];
-
-// After discussing with boucher about this it makes sense not to inherit, as
-// CPNumber is toll free bridged and anyway its methods will need to be
-// overrided here as CPDecimalNumber is not interchangable with CPNumbers.
+var CPDefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:CPRoundPlain scale:0 raiseOnExactness:NO raiseOnOverflow:YES raiseOnUnderflow:YES raiseOnDivideByZero:YES];
 
 /*!
     @class CPDecimalNumber
@@ -231,6 +227,7 @@ _cappdefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundin
     CPDecimal _data;
 }
 
+// overriding alloc means CPDecimalNumbers are not toll free bridged
 + (id)alloc
 {
     return class_createInstance(self);
@@ -281,14 +278,7 @@ _cappdefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundin
 
 - (id)initWithString:(CPString)numberValue
 {
-    if (self = [self init])
-    {
-        _data = CPDecimalMakeWithString(numberValue, nil);
-        if (_data === nil)
-            [CPException raise:CPInvalidArgumentException reason:"A CPDecimalNumber has been passed an invalid string. '" + numberValue + "'"];
-    }
-
-    return self;
+    return [self initWithString:numberValue locale:nil];
 }
 
 - (id)initWithString:(CPString)numberValue locale:(CPDictionary)locale
@@ -326,27 +316,17 @@ _cappdefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundin
 
 + (id)defaultBehavior
 {
-    return _cappdefaultDcmHandler;
+    return CPDefaultDcmHandler;
 }
 
 + (CPDecimalNumber)maximumDecimalNumber
 {
-    var s = @"",
-        i = 0;
-    for (;i < CPDecimalMaxDigits; i++)
-        s += "9";
-    s += "e" + CPDecimalMaxExponent;
-    return [[self alloc] initWithString:s];
+    return [[self alloc] initWithDecimal:_CPDecimalMakeMaximum()];
 }
 
 + (CPDecimalNumber)minimumDecimalNumber
 {
-    var s = @"-",
-        i = 0;
-    for (;i < CPDecimalMaxDigits; i++)
-        s += "9";
-    s += "e" + CPDecimalMinExponent;
-    return [[self alloc] initWithString:s];
+    return [[self alloc] initWithDecimal:_CPDecimalMakeMinimum()];
 }
 
 + (CPDecimalNumber)notANumber
@@ -354,25 +334,25 @@ _cappdefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundin
     return [[self alloc] initWithDecimal:CPDecimalMakeNaN()];
 }
 
++ (CPDecimalNumber)zero
+{
+    return [[self alloc] initWithDecimal:CPDecimalMakeZero()];
+}
+
 + (CPDecimalNumber)one
 {
-    return [[self alloc] initWithString:"1"];
+    return [[self alloc] initWithDecimal:CPDecimalMakeOne()];
 }
 
 + (void)setDefaultBehavior:(id <CPDecimalNumberBehaviors>)behavior
 {
-    _cappdefaultDcmHandler = behavior;
-}
-
-+ (CPDecimalNumber)zero
-{
-    return [[self alloc] initWithString:"0"];
+    CPDefaultDcmHandler = behavior;
 }
 
 // instance methods
 - (CPDecimalNumber)decimalNumberByAdding:(CPDecimalNumber)decimalNumber
 {
-    return [self decimalNumberByAdding:decimalNumber withBehavior:_cappdefaultDcmHandler];
+    return [self decimalNumberByAdding:decimalNumber withBehavior:CPDefaultDcmHandler];
 }
 
 - (CPDecimalNumber)decimalNumberByAdding:(CPDecimalNumber)decimalNumber withBehavior:(id <CPDecimalNumberBehaviors>)behavior
@@ -394,7 +374,7 @@ _cappdefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundin
 
 - (CPDecimalNumber)decimalNumberBySubtracting:(CPDecimalNumber)decimalNumber
 {
-    return [self decimalNumberBySubtracting:decimalNumber withBehavior:_cappdefaultDcmHandler];
+    return [self decimalNumberBySubtracting:decimalNumber withBehavior:CPDefaultDcmHandler];
 }
 
 - (CPDecimalNumber)decimalNumberBySubtracting:(CPDecimalNumber)decimalNumber withBehavior:(id <CPDecimalNumberBehaviors>)behavior
@@ -414,7 +394,7 @@ _cappdefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundin
 
 - (CPDecimalNumber)decimalNumberByDividingBy:(CPDecimalNumber)decimalNumber
 {
-    return [self decimalNumberByDividingBy:decimalNumber withBehavior:_cappdefaultDcmHandler];
+    return [self decimalNumberByDividingBy:decimalNumber withBehavior:CPDefaultDcmHandler];
 }
 
 - (CPDecimalNumber)decimalNumberByDividingBy:(CPDecimalNumber)decimalNumber withBehavior:(id <CPDecimalNumberBehaviors>)behavior
@@ -434,7 +414,7 @@ _cappdefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundin
 
 - (CPDecimalNumber)decimalNumberByMultiplyingBy:(CPDecimalNumber)decimalNumber
 {
-    return [self decimalNumberByMultiplyingBy:decimalNumber withBehavior:_cappdefaultDcmHandler];
+    return [self decimalNumberByMultiplyingBy:decimalNumber withBehavior:CPDefaultDcmHandler];
 }
 
 - (CPDecimalNumber)decimalNumberByMultiplyingBy:(CPDecimalNumber)decimalNumber withBehavior:(id <CPDecimalNumberBehaviors>)behavior
@@ -454,7 +434,7 @@ _cappdefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundin
 
 - (CPDecimalNumber)decimalNumberByMultiplyingByPowerOf10:(short)power
 {
-    return [self decimalNumberByMultiplyingByPowerOf10:power withBehavior:_cappdefaultDcmHandler];
+    return [self decimalNumberByMultiplyingByPowerOf10:power withBehavior:CPDefaultDcmHandler];
 }
 
 - (CPDecimalNumber)decimalNumberByMultiplyingByPowerOf10:(short)power withBehavior:(id <CPDecimalNumberBehaviors>)behavior
@@ -474,7 +454,7 @@ _cappdefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundin
 
 - (CPDecimalNumber)decimalNumberByRaisingToPower:(unsigned)power
 {
-    return [self decimalNumberByRaisingToPower:power withBehavior:_cappdefaultDcmHandler];
+    return [self decimalNumberByRaisingToPower:power withBehavior:CPDefaultDcmHandler];
 }
 
 - (CPDecimalNumber)decimalNumberByRaisingToPower:(unsigned)power withBehavior:(id <CPDecimalNumberBehaviors>)behavior

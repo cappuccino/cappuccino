@@ -48,7 +48,7 @@
 
 - (void)testdefaultDecimalNumberHandler
 {
-    [self assert:_cappdefaultDcmHandler equals:[CPDecimalNumberHandler defaultDecimalNumberHandler] message:"T1 defaultDecimalNumberHandler returned different handler than the current default"];
+    [self assertTrue:[CPDecimalNumberHandler defaultDecimalNumberHandler] message:"T1 defaultDecimalNumberHandler returned nothing"];
 }
 
 - (void)testroundingMode

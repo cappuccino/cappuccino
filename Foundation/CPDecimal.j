@@ -239,6 +239,27 @@ function CPDecimalMakeNaN()
     return d;
 }
 
+// private methods
+function _CPDecimalMakeMaximum()
+{
+    var s = @"",
+        i = 0;
+    for (; i < CPDecimalMaxDigits; i++)
+        s += "9";
+    s += "e" + CPDecimalMaxExponent;
+    return CPDecimalMakeWithString(s);
+}
+
+function _CPDecimalMakeMinimum()
+{
+    var s = @"-",
+        i = 0;
+    for (; i < CPDecimalMaxDigits; i++)
+        s += "9";
+    s += "e" + CPDecimalMinExponent;
+    return CPDecimalMakeWithString(s);
+}
+
 /*!
     @ingroup foundation
     Checks to see if a CPDecimal is zero. Can handle uncompacted strings.

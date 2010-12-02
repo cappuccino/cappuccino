@@ -93,7 +93,7 @@
     [self assert:NO equals:dcm._isNegative message:"decimalNumberWithMantissa:exponent:isNegative: - sign"];
 
     // Def behavior
-    [self assert:[CPDecimalNumber defaultBehavior] equals:_cappdefaultDcmHandler message:"defaultBehavior: - returned different object"];
+    [self assertTrue:[CPDecimalNumber defaultBehavior] message:"defaultBehavior: - returned nothing"];
 
     [CPDecimalNumber setDefaultBehavior:_dcmnhWithExactness];
     [self assertTrue:[CPDecimalNumber defaultBehavior]._raiseOnExactness message:"setDefaultBehavior: - new behavior not set"];
