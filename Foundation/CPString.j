@@ -135,7 +135,7 @@ var CPStringRegexSpecialCharacters = [
 */
 - (id)initWithString:(CPString)aString
 {
-    if (aClass === CPString) 
+    if ([self class] === CPString) 
         return String(aString);
 
     var result = new String(aString);
