@@ -667,7 +667,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
     // Determine all the items that have flexible width.
     // Also determine the height of the toolbar.
-    var count = _visibleItems.length
+    var count = _visibleItems.length,
         flexibleItemIndexes = [CPIndexSet indexSet];
 
     while (count--)

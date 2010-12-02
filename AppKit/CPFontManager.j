@@ -78,7 +78,8 @@ var CPSharedFontManager     = nil,
         _CPFontDetectReferenceFonts = _CPFontDetectPickTwoDifferentFonts(["monospace", "serif", "sans-serif", "cursive"]);
 
         _availableFonts = [];
-        for (var i = 0; i < _CPFontDetectAllFonts.length; i++) {
+        for (var i = 0; i < _CPFontDetectAllFonts.length; i++)
+        {
             var available = _CPFontDetectFontAvailable(_CPFontDetectAllFonts[i]);
             if (available)
                 _availableFonts.push(_CPFontDetectAllFonts[i]);
@@ -136,7 +137,8 @@ var _CPFontDetectSpan,
         "Zapfino"];
 
 // Compare against the reference fonts. Return true if it produces a different size than at least one of them.
-var _CPFontDetectFontAvailable = function(font) {
+var _CPFontDetectFontAvailable = function(font)
+{
     for (var i = 0; i < _CPFontDetectReferenceFonts.length; i++)
         if (_CPFontDetectCompareFonts(_CPFontDetectReferenceFonts[i], font))
             return true;
@@ -146,7 +148,8 @@ var _CPFontDetectFontAvailable = function(font) {
 var _CPFontDetectCache = {};
 
 // Compares two given fonts. Returns true if they produce different sizes (i.e. fontA didn't fallback to fontB)
-var _CPFontDetectCompareFonts = function(fontA, fontB) {
+var _CPFontDetectCompareFonts = function(fontA, fontB)
+{
     var a;
     if (_CPFontDetectCache[fontA])
         a = _CPFontDetectCache[fontA];
@@ -165,7 +168,8 @@ var _CPFontDetectCompareFonts = function(fontA, fontB) {
 }
 
 // Test the candidate fonts pairwise until we find two that are different. Otherwise return the first.
-var _CPFontDetectPickTwoDifferentFonts = function(candidates) {
+var _CPFontDetectPickTwoDifferentFonts = function(candidates)
+{
     for (var i = 0; i < candidates.length; i++)
         for (var j = 0; j < i; j++)
             if (_CPFontDetectCompareFonts(candidates[i], candidates[j]))

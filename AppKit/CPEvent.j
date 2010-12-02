@@ -559,7 +559,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 
     for (var i = 0; i < characterCount; i++)
     {
-        switch(_characters.charAt(i))
+        switch (_characters.charAt(i))
         {
             case CPBackspaceCharacter:
             case CPDeleteCharacter:
