@@ -23,13 +23,13 @@
 @import "CPAnimation.j"
 
 
-CPViewAnimationTargetKey = @"CPViewAnimationTarget";
-CPViewAnimationStartFrameKey = @"CPViewAnimationStartFrame";
-CPViewAnimationEndFrameKey = @"CPViewAnimationEndFrame";
-CPViewAnimationEffectKey = @"CPViewAnimationEffect";
+CPViewAnimationTargetKey = @"CPViewAnimationTargetKey";
+CPViewAnimationStartFrameKey = @"CPViewAnimationStartFrameKey";
+CPViewAnimationEndFrameKey = @"CPViewAnimationEndFrameKey";
+CPViewAnimationEffectKey = @"CPViewAnimationEffectKey";
 
-CPViewAnimationFadeInEffect = @"CPViewAnimationFadeIn";
-CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOut";
+CPViewAnimationFadeInEffect = @"CPViewAnimationFadeInEffect";
+CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOutEffect";
 
 @implementation CPViewAnimation : CPAnimation
 {
