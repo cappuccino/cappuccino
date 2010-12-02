@@ -283,14 +283,68 @@
 
 }
 
-- (void)testInitWithArrayCopyItems
+- (void)testInitWithArrayCopyItemsYes
 {
-    var a = [[CopyableObject new], 2, 3, {empty:true}];
-    var b = [[CPArray alloc] initWithArray:a copyItems:YES];
+    var a = [[CopyableObject new], 2, 3, {empty:true}],
+        b = [[CPArray alloc] initWithArray:a copyItems:YES];
 
+    [self assertTrue:(a !== b)];
+    // check references are not same
     [self assert:a notEqual:b];
 
     [self assert:a[0] notEqual:b[0]];
+    [self assert:a[1] equals:b[1]];
+    [self assert:a[2] equals:b[2]];
+    // second object is not copyable
+    [self assertTrue:a[3] === b[3]];
+}
+
+- (void)testInitWithArrayCopyItemsNo
+{
+    var a = [[CopyableObject new], 2, 3, {empty:true}],
+        b = [[CPArray alloc] initWithArray:a copyItems:NO];
+
+    [self assertTrue:(a !== b)];
+    // check references are same
+    [self assert:a equals:b];
+
+    [self assert:a[0] equals:b[0]];
+    [self assert:a[1] equals:b[1]];
+    [self assert:a[2] equals:b[2]];
+    [self assertTrue:a[3] === b[3]];
+}
+
+- (void)testInitWithArray
+{
+    var a = [[CopyableObject new], 2, 3, {empty:true}],
+        b = [[CPArray alloc] initWithArray:a];
+
+    [self assertTrue:(a !== b)];
+    [self assert:a[0] equals:b[0]];
+    [self assert:a[1] equals:b[1]];
+    [self assert:a[2] equals:b[2]];
+    [self assertTrue:a[3] === b[3]];
+}
+
+- (void)testInitWithObjectsVars
+{
+    var o1 = [CopyableObject new],
+        o2 = {empty:true},
+        a = [[CPArray alloc] initWithObjects:o1, 2, 3, o2];
+
+    [self assert:o1 equals:a[0]];
+    [self assert:2 equals:a[1]];
+    [self assert:3 equals:a[2]];
+    [self assertTrue:o2 === a[3]];
+}
+
+- (void)testInitWithObjectsCount
+{
+    var a = [[CopyableObject new], 2, 3, {empty:true}],
+        b = [[CPArray alloc] initWithObjects:a count:[a count]];
+
+    [self assertTrue:(a != b)];
+    [self assert:a[0] equals:b[0]];
     [self assert:a[1] equals:b[1]];
     [self assert:a[2] equals:b[2]];
     [self assertTrue:a[3] === b[3]];

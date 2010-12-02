@@ -184,10 +184,7 @@ CPEnumerationReverse    = 1 << 1;
 */
 - (id)initWithArray:(CPArray)anArray
 {
-    self = [super init];
-
-    if (self)
-        [self setArray:anArray];
+    [self initWithObjects:anArray count:[anArray count]];
 
     return self;
 }
@@ -205,22 +202,20 @@ CPEnumerationReverse    = 1 << 1;
     if (!copyItems)
         return [self initWithArray:anArray];
 
-    self = [super init];
+    var copies = [],
+        index = 0,
+        count = [anArray count];
 
-    if (self)
+    for (; index < count; ++index)
     {
-        var index = 0,
-            count = [anArray count];
-
-        for (; index < count; ++index)
-        {
-            if (anArray[index].isa)
-                self[index] = [anArray[index] copy];
-            // Do a deep/shallow copy?
-            else
-                self[index] = anArray[index];
-        }
+        if (anArray[index].isa)
+            copies[index] = [anArray[index] copy];
+        // Do a deep/shallow copy?
+        else
+            copies[index] = anArray[index];
     }
+
+    [self initWithArray:copies];
 
     return self;
 }
@@ -228,14 +223,14 @@ CPEnumerationReverse    = 1 << 1;
 /*!
     initializes an array with the contents of anArray
 */
-- (id)initWithObjects:(Array)anArray, ...
+- (id)initWithObjects:(id)firstObj, ...
 {
     // The arguments array contains self and _cmd, so the first object is at position 2.
-    var i = 2,
-        count = arguments.length;
+    var start = 2,
+        count = arguments.length,
+        objects = slice.apply(arguments, [start]);
 
-    for (; i < count; ++i)
-        push(arguments[i]);
+    [self initWithObjects:objects count:(count - 2)];
 
     return self;
 }
@@ -246,17 +241,12 @@ CPEnumerationReverse    = 1 << 1;
     @param aCount the number of objects in \c objects
     @return the initialized CPArray
 */
-- (id)initWithObjects:(id)objects count:(unsigned)aCount
+- (id)initWithObjects:(Array)objects count:(unsigned)aCount
 {
-    self = [super init];
+    self = [self init];
 
     if (self)
-    {
-        var index = 0;
-
-        for (; index < aCount; ++index)
-            push(objects[index]);
-    }
+        splice.apply(self, [0, length].concat(objects));
 
     return self;
 }
