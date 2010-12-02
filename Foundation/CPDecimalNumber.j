@@ -19,24 +19,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPObject.j"
 @import "CPDecimal.j"
 @import "CPException.j"
+@import "CPNumber.j"
+@import "CPObject.j"
 
-/* The protocol is defined as : Make sure CPDecimalNumberHandler implements these methods
-@protocol CPDecimalNumberBehaviors
-- (CPRoundingMode)roundingMode;
-- (short)scale;
-- (CPDecimalNumber)exceptionDuringOperation:(SEL)operation error:(CPCalculationError)error leftOperand:(CPDecimalNumber)leftOperand rightOperand:(CPDecimalNumber)rightOperand;
-@end
-*/
-
-/*! @class CPDecimalNumberHandler
+/*!
+    @class CPDecimalNumberHandler
     @ingroup foundation
     @brief Decimal floating point number exception and rounding behavior. This
     class is mutable.
 */
-// protocols this implements <CPCoding, CPDecimalNumberBehaviors>
 @implementation CPDecimalNumberHandler : CPObject
 {
     CPRoundingMode _roundingMode;
@@ -50,12 +43,21 @@
 // initializers
 - (id)init
 {
-    if (self = [super init])
-    {
-    }
+    self = [super init];
+
     return self;
 }
 
+/*!
+    Initialise a CPDecimalNumberHandler object with the parameters specified. This class handles the behaviour of the decimal number calculation engine on certain exception.
+    @param roundingMode the technique used for rounding (see \e CPRoundingMode values)
+    @param scale The number of digits after the decimal point that a number which is rounded should have
+    @param exact if true, a change in precision (i.e. rounding) will cause a \e CPDecimalNumberExactnessException exception to be raised, else they are ignored
+    @param overflow if true, a calculation overflow will cause a \e CPDecimalNumberOverflowException exception to be raised, else the maximum possible valid number is returned
+    @param underflow if true, a calculation underflow will cause a \e CPDecimalNumberUnderflowException exception to be raised, else the minimum possible valid number is returned
+    @param divideByZero if true, a divide by zero will cause a \e CPDecimalNumberDivideByZeroException exception to be raised, else a NotANumber (NaN) CPDecimal is returned
+    @return the reference to the receiver CPDecimalNumberHandler
+*/
 - (id)initWithRoundingMode:(CPRoundingMode)roundingMode scale:(short)scale raiseOnExactness:(BOOL)exact raiseOnOverflow:(BOOL)overflow raiseOnUnderflow:(BOOL)underflow raiseOnDivideByZero:(BOOL)divideByZero
 {
     if (self = [self init])
@@ -72,73 +74,138 @@
 }
 
 // class methods
+/*!
+    Create a new CPDecimalNumberHandler object with the parameters specified. This class handles the behaviour of the decimal number calculation engine on certain exception.
+    @param roundingMode the technique used for rounding (see \e CPRoundingMode values)
+    @param scale The number of digits after the decimal point that a number which is rounded should have
+    @param exact if true, a change in precision (i.e. rounding) will cause a \e CPDecimalNumberExactnessException exception to be raised, else they are ignored
+    @param overflow if true, a calculation overflow will cause a \e CPDecimalNumberOverflowException exception to be raised, else the maximum possible valid number is returned
+    @param underflow if true, a calculation underflow will cause a \e CPDecimalNumberUnderflowException exception to be raised, else the minimum possible valid number is returned
+    @param divideByZero if true, a divide by zero will cause a \e CPDecimalNumberDivideByZeroException exception to be raised, else a NotANumber (NaN) CPDecimal is returned
+    @return the reference to the receiver CPDecimalNumberHandler
+*/
 + (id)decimalNumberHandlerWithRoundingMode:(CPRoundingMode)roundingMode scale:(short)scale raiseOnExactness:(BOOL)exact raiseOnOverflow:(BOOL)overflow raiseOnUnderflow:(BOOL)underflow raiseOnDivideByZero:(BOOL)divideByZero
 {
     return [[self alloc] initWithRoundingMode:roundingMode scale:scale raiseOnExactness:exact raiseOnOverflow:overflow raiseOnUnderflow:underflow raiseOnDivideByZero:divideByZero];
 }
 
+/*!
+    Return the default Cappuccino CPDecimalNumberHandler object instance. This is created when the framework is initialised.
+    @return the default CPDecimalNumberHandler object reference with Rounding = \e CPRoundPlain, Scale = 0 and Raise on [exactness, overflow, underflow, divide by zero] = [no, yes, yes, yes]
+*/
 + (id)defaultDecimalNumberHandler
 {
     return _cappdefaultDcmHandler;
 }
 
-// CPCoding methods
-- (void)encodeWithCoder:(CPCoder)aCoder
-{
-}
+@end
 
-- (id)initWithCoder:(CPCoder)aDecoder
-{
-}
+// CPDecimalNumberBehaviors protocol
+@implementation CPDecimalNumberHandler (CPDecimalNumberBehaviors)
 
-// CPDecimalNumberBehaviors methods
+/*!
+    Returns the current rounding mode. One of \e CPRoundingMode enum: CPRoundPlain, CPRoundDown, CPRoundUp, CPRoundBankers.
+    @return the current rounding mode
+*/
 - (CPRoundingMode)roundingMode
 {
     return _roundingMode;
 }
 
+/*!
+    Returns the number of digits allowed after the decimal point.
+    @return the current number of digits
+*/
 - (short)scale
 {
     return _scale;
 }
 
-// FIXME: LOCALE?
+/*!
+    This method is invoked by the framework when an exception occurs on a decimal operation. Depending on the specified behaviour of the CPDecimalNumberHandler this will throw
+    exceptions accordingly with formatted error messages.
+    @param operation the selector of the method of the operation being performed when the exception occured
+    @param error the actual error type. From the \e CPCalculationError enum: CPCalculationNoError, CPCalculationLossOfPrecision, CPCalculationOverflow, CPCalculationUnderflow, CPCalculationDivideByZero
+    @param leftOperand the CPDecimalNumber left-hand side operand used in the calculation that caused the exception
+    @param rightOperand the CPDecimalNumber right-hand side operand used in the calculation that caused the exception
+    @return if appropriate a CPDecimalNumber is returned (either the maxumum, minimum or NaN values), or nil
+*/
 - (CPDecimalNumber)exceptionDuringOperation:(SEL)operation error:(CPCalculationError)error leftOperand:(CPDecimalNumber)leftOperand rightOperand:(CPDecimalNumber)rightOperand
 {
-    // default behavior of throwing exceptions a la gnustep
+    // TODO: default behavior of throwing exceptions a la gnustep, check if same on Cocoa
+    // FIXME: locale?
     switch (error)
     {
-    case CPCalculationNoError:
-        return nil;
-    case CPCalculationOverflow:
-        if (_raiseOnOverflow)
-            [CPException raise:CPDecimalNumberOverflowException reason:("A CPDecimalNumber overflow has occured. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
-        else
-            return [CPDecimalNumber maximumDecimalNumber]; // there was overflow return largest possible val
-        break;
-    case CPCalculationUnderflow:
-        if (_raiseOnUnderflow)
-            [CPException raise:CPDecimalNumberUnderflowException reason:("A CPDecimalNumber underflow has occured. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
-        else
-            return [CPDecimalNumber minimumDecimalNumber]; // there was underflow, return smallest possible value
-        break;
-    case CPCalculationLossOfPrecision:
-        if (_raiseOnExactness)
-            [CPException raise:CPDecimalNumberExactnessException reason:("A CPDecimalNumber has been rounded off during a calculation. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
-        else
-            return nil; // Ignore.
-        break;
-    case CPCalculationDivideByZero:
-        if (_raiseOnDivideByZero)
-            [CPException raise:CPDecimalNumberDivideByZeroException reason:("A CPDecimalNumber divide by zero has occured. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
-        else
-            return [CPDecimalNumber notANumber]; // Div by zero returns NaN
-        break;
-    default:
-        [CPException raise:CPInvalidArgumentException reason:("An unknown CPDecimalNumber error has occured. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
+        case CPCalculationNoError:          return nil;
+        case CPCalculationOverflow:         if (_raiseOnOverflow)
+                                                [CPException raise:CPDecimalNumberOverflowException reason:("A CPDecimalNumber overflow has occured. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
+                                            else
+                                                return [CPDecimalNumber maximumDecimalNumber]; // there was overflow return largest possible val
+                                            break;
+        case CPCalculationUnderflow:        if (_raiseOnUnderflow)
+                                                [CPException raise:CPDecimalNumberUnderflowException reason:("A CPDecimalNumber underflow has occured. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
+                                            else
+                                                return [CPDecimalNumber minimumDecimalNumber]; // there was underflow, return smallest possible value
+                                            break;
+        case CPCalculationLossOfPrecision:  if (_raiseOnExactness)
+                                                [CPException raise:CPDecimalNumberExactnessException reason:("A CPDecimalNumber has been rounded off during a calculation. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
+                                            else
+                                                return nil; // Ignore.
+                                            break;
+        case CPCalculationDivideByZero:     if (_raiseOnDivideByZero)
+                                                [CPException raise:CPDecimalNumberDivideByZeroException reason:("A CPDecimalNumber divide by zero has occured. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
+                                            else
+                                                return [CPDecimalNumber notANumber]; // Div by zero returns NaN
+                                            break;
+        default:                            [CPException raise:CPInvalidArgumentException reason:("An unknown CPDecimalNumber error has occured. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
     }
 
   return nil;
+}
+
+@end
+
+// CPCoding category
+var CPDecimalNumberHandlerRoundingModeKey = @"CPDecimalNumberHandlerRoundingModeKey",
+    CPDecimalNumberHandlerScaleKey = @"CPDecimalNumberHandlerScaleKey",
+    CPDecimalNumberHandlerRaiseOnExactKey = @"CPDecimalNumberHandlerRaiseOnExactKey",
+    CPDecimalNumberHandlerRaiseOnOverflowKey = @"CPDecimalNumberHandlerRaiseOnOverflowKey",
+    CPDecimalNumberHandlerRaiseOnUnderflowKey = @"CPDecimalNumberHandlerRaiseOnUnderflowKey",
+    CPDecimalNumberHandlerDivideByZeroKey = @"CPDecimalNumberHandlerDivideByZeroKey";
+
+@implementation CPDecimalNumberHandler (CPCoding)
+
+/*!
+    Called by CPCoder's \e decodeObject: to initialise the object with an archived one.
+    @param aCoder a \c CPCoder instance
+*/
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    if (self)
+    {
+        [self initWithRoundingMode:[aCoder decodeIntForKey:CPDecimalNumberHandlerRoundingModeKey]
+              scale:[aCoder decodeIntForKey:CPDecimalNumberHandlerScaleKey]
+              raiseOnExactness:[aCoder decodeBoolForKey:CPDecimalNumberHandlerRaiseOnExactKey]
+              raiseOnOverflow:[aCoder decodeBoolForKey:CPDecimalNumberHandlerRaiseOnOverflowKey]
+              raiseOnUnderflow:[aCoder decodeBoolForKey:CPDecimalNumberHandlerRaiseOnUnderflowKey]
+              raiseOnDivideByZero:[aCoder decodeBoolForKey:CPDecimalNumberHandlerDivideByZeroKey]];
+    }
+
+    return self;
+}
+
+/*!
+    Called by CPCoder's \e encodeObject: to archive the object instance.
+    @param aCoder a \c CPCoder instance
+*/
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeInt:[self roundingMode] forKey:CPDecimalNumberHandlerRoundingModeKey];
+    [aCoder encodeInt:[self scale] forKey:CPDecimalNumberHandlerScaleKey];
+    [aCoder encodeBool:_raiseOnExactness forKey:CPDecimalNumberHandlerRaiseOnExactKey];
+    [aCoder encodeBool:_raiseOnOverflow forKey:CPDecimalNumberHandlerRaiseOnOverflowKey];
+    [aCoder encodeBool:_raiseOnUnderflow forKey:CPDecimalNumberHandlerRaiseOnUnderflowKey];
+    [aCoder encodeBool:_raiseOnDivideByZero forKey:CPDecimalNumberHandlerDivideByZeroKey];
 }
 
 @end
@@ -150,16 +217,15 @@ _cappdefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundin
 // CPNumber is toll free bridged and anyway its methods will need to be
 // overrided here as CPDecimalNumber is not interchangable with CPNumbers.
 
-/*! @class CPDecimalNumber
+/*!
+    @class CPDecimalNumber
     @ingroup foundation
     @brief Decimal floating point number
 
-    This class represents a decimal floating point number and the relavent
-    mathematical operations to go with it.
+    This class represents a decimal floating point number and the relavent mathematical operations to go with it.
+    The default number handler can be accessed at [CPDecimalNumberHandler +defaultDecimalNumberHandler]
     This class is mutable.
 */
-
-
 @implementation CPDecimalNumber : CPNumber
 {
     CPDecimal _data;
@@ -173,8 +239,8 @@ _cappdefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundin
 // initializers
 - (id)init
 {
-    if (self = [super init])
-    {}
+    self = [super init];
+
     return self;
 }
 
@@ -191,7 +257,15 @@ _cappdefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundin
     return self;
 }
 
-// NOTE: long long doesnt exist in JS, so this is actually a double
+/*!
+    Initialise a CPDecimalNumber object with the given mantissa and exponent.
+    Note that since 'long long' doesn't exist in JS the mantissa is smaller
+    than possible in Cocoa.
+    @param mantissa the mantissa of the decimal number
+    @param exponent the exponent of the number
+    @param flag true if number is negative
+    @return the reference to the receiver CPDecimalNumber
+*/
 - (id)initWithMantissa:(unsigned long long)mantissa exponent:(short)exponent isNegative:(BOOL)flag
 {
     if (self = [self init])

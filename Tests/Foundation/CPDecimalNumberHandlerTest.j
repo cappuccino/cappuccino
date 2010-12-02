@@ -19,8 +19,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <Foundation/CPString.j>
 @import <Foundation/CPDecimalNumber.j>
+@import <Foundation/CPKeyedArchiver.j>
+@import <Foundation/CPKeyedUnarchiver.j>
+@import <Foundation/CPString.j>
 
 @implementation CPDecimalNumberHandlerTest : OJTestCase
 
@@ -72,8 +74,8 @@
     var h1 = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:CPRoundDown scale:0 raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:NO];
     [self assertTrue:h1 message:"T1 exceptionDuringOperation: no alloc"];
 
-    var a = [CPDecimalNumber decimalNumberWithString:@"100"];
-    var b = [CPDecimalNumber decimalNumberWithString:@"100"];
+    var a = [CPDecimalNumber decimalNumberWithString:@"100"],
+        b = [CPDecimalNumber decimalNumberWithString:@"100"];
 
     // no throw first
     try {
@@ -138,6 +140,34 @@
     try {
         [h1 exceptionDuringOperation:nil error:CPCalculationDivideByZero leftOperand:a rightOperand:b];
         [self fail:"T5 exceptionDuringOperation: Should have thrown a div by zero exception"];
+    }
+    catch (e)
+    {
+        if ((e.isa) && [e name] == AssertionFailedError)
+            throw e;
+    }
+}
+
+- (void)testEncoding
+{
+    var handler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:CPRoundDown scale:3 raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:YES raiseOnDivideByZero:NO],
+        encoded = [CPKeyedArchiver archivedDataWithRootObject:handler],
+        decoded = [CPKeyedUnarchiver unarchiveObjectWithData:encoded];
+
+    [self assert:[handler roundingMode] equals:[decoded roundingMode]];
+    [self assert:[handler scale] equals:[decoded scale]];
+    
+    try {
+        [decoded exceptionDuringOperation:nil error:CPCalculationDivideByZero leftOperand:CPDecimalMakeZero() rightOperand:CPDecimalMakeZero()];
+    }
+    catch (e)
+    {
+        [self fail:"Should not have thrown a divide by zero exception"];
+    }
+
+    try {
+        [decoded exceptionDuringOperation:nil error:CPCalculationUnderflow leftOperand:CPDecimalMakeZero() rightOperand:CPDecimalMakeZero()];
+        [self fail:"Should have thrown an underflow exception"];
     }
     catch (e)
     {
