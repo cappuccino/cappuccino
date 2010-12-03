@@ -6,21 +6,21 @@
     CPString value @accessors;
 }
 
-- (void)main 
+- (void)main
 {
     [self setName:@"test"];
 }
 
 @end
 
-@implementation TestObserver : CPObject 
+@implementation TestObserver : CPObject
 {
     CPArray changedKeyPaths @accessors;
 }
 
-- (id)init 
+- (id)init
 {
-    if (self = [super init]) 
+    if (self = [super init])
     {
         changedKeyPaths = [[CPArray alloc] init];
     }
@@ -44,7 +44,7 @@
 {
     var co = [[CPOperation alloc] init],
         co_dep = [[CPOperation alloc] init];
-    
+
     [co addDependency:co_dep];
     [self assert:1 equals:[[co dependencies] count]];
 }
@@ -54,26 +54,26 @@
     var co = [[CPOperation alloc] init],
         co_dep1 = [[CPOperation alloc] init],
         co_dep2 = [[CPOperation alloc] init];
-    
+
     [co addDependency:co_dep1];
     [co addDependency:co_dep2];
-    
+
     [self assert:2 equals:[[co dependencies] count]];
-    
+
     [co removeDependency:co_dep2];
     [self assert:1 equals:[[co dependencies] count]];
-    
+
     [co removeDependency:co_dep2];
     [self assert:1 equals:[[co dependencies] count]];
-    
+
     [co removeDependency:co_dep1];
     [self assert:0 equals:[[co dependencies] count]];
 }
 
-- (void)testCorrectValuesOnInit 
+- (void)testCorrectValuesOnInit
 {
     var co = [[CPOperation alloc] init];
-    
+
     [self assertTrue:[co isReady]];
     [self assertFalse:[co isCancelled]];
     [self assertFalse:[co isConcurrent]];
@@ -82,57 +82,56 @@
     [self assert:CPOperationQueuePriorityNormal equals:[co queuePriority]];
 }
 
-- (void)testIsReadyWithDependencies 
+- (void)testIsReadyWithDependencies
 {
     var co = [[CPOperation alloc] init],
         co_dep1 = [[CPOperation alloc] init],
         co_dep2 = [[CPOperation alloc] init];
-    
+
     [self assertTrue:[co isReady]];
-    
+
     [co addDependency:co_dep1];
     [co addDependency:co_dep2];
-    
+
     [self assertFalse:[co isReady]];
-    
+
     [co_dep1 start];
-    
+
     [self assertFalse:[co isReady]];
-    
+
     [co_dep2 start];
-    
+
     [self assertTrue:[co isReady]];
 }
 
-- (void)testCompletionFunction 
+- (void)testCompletionFunction
 {
     var to = [[TestOperation alloc] init];
-    
+
     [to setCompletionFunction:function() {[to setValue:@"something"];}];
     [to start];
-    
+
     [self assert:@"something" equals:[to value]];
 }
 
 // KVO Tests
 
-- (void)testKVO 
+- (void)testKVO
 {
     var to = [[TestOperation alloc] init],
         to2 = [[TestOperation alloc] init],
         obs = [[TestObserver alloc] init];
 
-    
     [to addObserver:obs
          forKeyPath:@"isCancelled"
             options:(CPKeyValueObservingOptionNew)
             context:NULL];
-            
+
     [to addObserver:obs
          forKeyPath:@"isExecuting"
             options:(CPKeyValueObservingOptionNew)
-            context:NULL];        
-            
+            context:NULL];
+
     [to addObserver:obs
          forKeyPath:@"isFinished"
             options:(CPKeyValueObservingOptionNew)
@@ -141,12 +140,12 @@
     [to addObserver:obs
          forKeyPath:@"isReady"
             options:(CPKeyValueObservingOptionNew)
-            context:NULL];        
-            
+            context:NULL];
+
     [to addObserver:obs
          forKeyPath:@"dependencies"
             options:(CPKeyValueObservingOptionNew)
-            context:NULL];        
+            context:NULL];
 
     [to addObserver:obs
          forKeyPath:@"queuePriority"
@@ -156,9 +155,8 @@
     [to addObserver:obs
          forKeyPath:@"completionFunction"
             options:(CPKeyValueObservingOptionNew)
-            context:NULL];     
-            
-            
+            context:NULL];
+
     [to addDependency:to2];
     [self assert:@"dependencies" equals:[[obs changedKeyPaths] objectAtIndex:0]];
     [self assert:@"isReady" equals:[[obs changedKeyPaths] objectAtIndex:1]];
@@ -166,19 +164,19 @@
     [self assert:@"isReady" equals:[[obs changedKeyPaths] objectAtIndex:2]];
     [to removeDependency:to2];
     [self assert:@"dependencies" equals:[[obs changedKeyPaths] objectAtIndex:3]];
-    [to setQueuePriority:CPOperationQueuePriorityHigh];    
+    [to setQueuePriority:CPOperationQueuePriorityHigh];
     [self assert:@"queuePriority" equals:[[obs changedKeyPaths] objectAtIndex:4]];
-    [to setCompletionFunction:function() {}];     
-    [self assert:@"completionFunction" equals:[[obs changedKeyPaths] objectAtIndex:5]]; 
-            
+    [to setCompletionFunction:function() {}];
+    [self assert:@"completionFunction" equals:[[obs changedKeyPaths] objectAtIndex:5]];
+
     // this should set executing = yes, executing = no, finished = yes.
     [to start];
     [self assert:@"isExecuting" equals:[[obs changedKeyPaths] objectAtIndex:6]];
-    [self assert:@"isExecuting" equals:[[obs changedKeyPaths] objectAtIndex:7]];                   
+    [self assert:@"isExecuting" equals:[[obs changedKeyPaths] objectAtIndex:7]];
     [self assert:@"isFinished" equals:[[obs changedKeyPaths] objectAtIndex:8]];
-        
+
     [to cancel];
-        
+
     [self assert:@"isCancelled" equals:[[obs changedKeyPaths] objectAtIndex:9]];                                      
 }
 

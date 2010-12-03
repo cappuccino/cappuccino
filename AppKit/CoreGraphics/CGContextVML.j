@@ -255,8 +255,6 @@ function CGContextDrawPath(aContext, aMode)
     
     vml.push("</cg_vml_:shape>");
 
-    aContext.path = NULL;
-
     if (aContext.buffer != nil)
         aContext.buffer += vml.join("");
     else

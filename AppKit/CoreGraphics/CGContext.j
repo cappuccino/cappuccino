@@ -535,6 +535,7 @@ function CGContextEOFillPath(aContext)
 function CGContextFillPath(aContext)
 {
     CGContextDrawPath(aContext, kCGPathFill);
+    CGContextClosePath(aContext);
 }
 
 var KAPPA = 4.0 * ((SQRT2 - 1.0) / 3.0);
@@ -588,6 +589,7 @@ function CGContextStrokeEllipseInRect(aContext, aRect)
 function CGContextStrokePath(aContext)
 {
     CGContextDrawPath(aContext, kCGPathStroke);
+    CGContextClosePath(aContext);
 }
 
 /*!

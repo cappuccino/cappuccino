@@ -28,10 +28,10 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
         [self setNextResponder:[aCoder decodeObjectForKey:@"NSNextResponder"]];
-    
+
     return self;
 }
 

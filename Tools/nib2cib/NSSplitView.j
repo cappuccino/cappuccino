@@ -32,7 +32,7 @@
         _isVertical = [aCoder decodeBoolForKey:@"NSIsVertical"];
         _isPaneSplitter = [aCoder decodeIntForKey:@"NSDividerStyle"] == 2 ? YES : NO;
     }
-    
+
     return self;
 }
 

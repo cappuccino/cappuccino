@@ -31,13 +31,13 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [super NS_initWithCoder:aCoder];
-    
+
     if (self)
     {
         [self setBordered:[aCoder decodeBoolForKey:"NSIsBordered"]];
         [self setColor:[aCoder decodeObjectForKey:"NSColor"]];
     }
-    
+
     return self;
 }
 

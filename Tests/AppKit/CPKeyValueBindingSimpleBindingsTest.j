@@ -13,7 +13,7 @@
     Track               track @accessors;
 
     CPWindow            theWindow @accessors;
-    CPObjectConstroller objectController @accessors;
+    CPObjectController  objectController @accessors;
 }
 
 - (void)setUp

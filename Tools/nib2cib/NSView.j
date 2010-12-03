@@ -46,24 +46,24 @@ var NSViewAutoresizingMask = 0x3F,
     if (self)
     {
         _tag = 0;
-        
+
         if ([aCoder containsValueForKey:@"NSTag"])
             _tag = [aCoder decodeIntForKey:@"NSTag"];
-        
+
         _bounds = CGRectMake(0.0, 0.0, CGRectGetWidth(_frame), CGRectGetHeight(_frame));
-    
+
         _window = [aCoder decodeObjectForKey:@"NSWindow"];
         _superview = [aCoder decodeObjectForKey:@"NSSuperview"];
         _subviews = [aCoder decodeObjectForKey:@"NSSubviews"];
 
         if (!_subviews)
             _subviews = [];
-        
+
         var vFlags = [aCoder decodeIntForKey:@"NSvFlags"];
 
         _autoresizingMask = vFlags & NSViewAutoresizingMask;
         _autoresizesSubviews = vFlags & NSViewAutoresizesSubviewsMask;
-        
+
         _hitTests = YES;
         _isHidden = vFlags & NSViewHiddenMask;
         _opacity = 1.0;//[aCoder decodeIntForKey:CPViewOpacityKey];
@@ -72,7 +72,7 @@ var NSViewAutoresizingMask = 0x3F,
         _themeState = CPThemeStateNormal;
         [self _loadThemeAttributes];
     }
-    
+
     return self;
 }
 

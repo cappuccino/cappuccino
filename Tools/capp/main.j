@@ -8,7 +8,7 @@
 function main(args)
 {
     args.shift();
-    
+
     if (args.length < 1)
         return printUsage();
 
@@ -18,7 +18,7 @@ function main(args)
     for (; index < count; ++index)
     {
         var argument = args[index];
-        
+
         switch (argument)
         {
             case "version":
@@ -30,7 +30,7 @@ function main(args)
             case "config":      return config.apply(this, args.slice(index + 1));
 
             case "gen":         return gen.apply(this, args.slice(index + 1));
-            
+
             default:            print("unknown command " + argument);
         }
     }
@@ -66,38 +66,38 @@ function getFiles(/*File*/ sourceDirectory, /*nil|String|Array<String>*/ extensi
     {
         var index = 0,
             count = files.length;
-        
+
         for (; index < count; ++index)
         {
             var file = files[index],
                 name = FILE.basename(file),
                 isValidExtension = !extensions;
-            
+
             if (exclusions && fileArrayContainsFile(exclusions, file))
                 continue;
-            
+
             if (!isValidExtension)
                 if (hasMultipleExtensions)
                 {
                     var extensionCount = extensions.length;
-                    
+
                     while (extensionCount-- && !isValidExtension)
                     {
                         var extension = extensions[extensionCount];
-                        
+
                         if (name.substring(name.length - extension.length - 1) === ("." + extension))
                             isValidExtension = true;
                     }
                 }
                 else if (name.substring(name.length - extensions.length - 1) === ("." + extensions))
                     isValidExtension = true;
-                
+
             if (FILE.isDirectory(file))
                 matches = matches.concat(getFiles(file, extensions, exclusions));
             else if (isValidExtension)
                 matches.push(file);
         }
     }
-    
+
     return matches;
 }

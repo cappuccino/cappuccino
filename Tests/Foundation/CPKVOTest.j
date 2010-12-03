@@ -7,7 +7,7 @@
     BOOL    _sawPriorObservation;
     BOOL    _sawObservation;
     BOOL    _sawDependentObservation;
-    
+
     id      bob;
     id      obj;
     id      cs101;
@@ -24,11 +24,11 @@
 - (void)testAddObserver
 {
     bob = [[PersonTester alloc] init];
-    
+
     [bob addObserver:self forKeyPath:@"name" options:nil context:"testAddObserver"];
-        
+
     [bob setValue:@"bob" forKey:@"name"];
-    
+
     [self assertTrue: [bob valueForKey:@"name"] == @"set_bob" message: "valueForKey:'name' should be 'set_bob', was: "+[bob valueForKey:@"name"]];
     [self assertTrue: bob.name == @"set_bob" message: "bob.name should be 'set_bob', was: "+bob.name];
     [self assertTrue: _sawObservation message:"Never recieved an observation"];
@@ -37,11 +37,11 @@
 - (void)testUnobservedKey
 {
     bob = [[PersonTester alloc] init];
-    
+
     [bob addObserver:self forKeyPath:@"name" options:nil context:"testUnobservedKey"];
-        
+
     [bob setValue:@"555" forKey:@"phoneNumber"];
-    
+
     [self assertTrue: [bob valueForKey:@"phoneNumber"] == @"555" message: "'phoneNumber' should be '555', was: "+[bob valueForKey:@"phoneNumber"]];
     [self assertFalse: _sawObservation message:"Should not have recieved an observation"];
 }
@@ -49,12 +49,12 @@
 - (void)testAddTwoObservers
 {
     bob = [[PersonTester alloc] init];
-    
+
     [bob addObserver:self forKeyPath:@"name" options:nil context:"testAddTwoObservers"];
     [bob addObserver:[CPObject new] forKeyPath:@"name" options:nil context:"testAddTwoObservers"];
-        
+
     [bob setValue:@"bob" forKey:@"name"];
-    
+
     [self assertTrue: [bob valueForKey:@"name"] == @"set_bob" message: "valueForKey:'name' should be bob, was: "+[bob valueForKey:@"name"]];
     [self assertTrue: bob.name == @"set_bob" message: "bob.name should be 'bob', was: "+bob.name];
     [self assertTrue: _sawObservation message:"Never recieved an observation"];
@@ -63,11 +63,11 @@
 - (void)testDirectIVarObservation
 {
     var bob = [[PersonTester alloc] init];
-    
+
     [bob addObserver:self forKeyPath:@"phoneNumber" options:nil context:"testDirectIVarObservation"];
-    
+
     [bob setValue:@"555" forKey:@"phoneNumber"];
-    
+
     [self assertTrue: [bob valueForKey:@"phoneNumber"] == @"555" message: "valueForKey:'phoneNumber' should be '555', was: "+[bob valueForKey:@"phoneNumber"]];
     [self assertTrue: bob.phoneNumber == @"555" message: "bob.phoneNumber should be '555', was: "+bob.phoneNumber];
     [self assertTrue: _sawObservation message:"Never recieved an observation"];
@@ -76,14 +76,14 @@
 - (void)testRemoveObserver
 {
     bob = [[PersonTester alloc] init];
-        
+
     [bob addObserver:self forKeyPath:@"name" options:nil context:"testRemoveObserver"];
     [bob addObserver:[CPString new] forKeyPath:@"name" options:nil context:"testRemoveObserver"];
-    
+
     [bob removeObserver:self forKeyPath:@"name"];
-    
+
     [bob setValue:@"bob" forKey:@"name"];
-    
+
     [self assertTrue: [bob valueForKey:@"name"] == @"set_bob" message: "valueForKey:'name' should be bob, was: "+[bob valueForKey:@"name"]];
 }
 
@@ -91,14 +91,14 @@
 {
     bob = [[PersonTester alloc] init];
     obj = [CPString new];
-        
+
     [bob addObserver:self forKeyPath:@"name" options:nil context:"testRemoveOtherObserver"];
     [bob addObserver:obj forKeyPath:@"name" options:nil context:"testRemoveOtherObserver"];
-    
+
     [bob removeObserver:obj forKeyPath:@"name"];
-    
+
     [bob setValue:@"bob" forKey:@"name"];
-    
+
     [self assertTrue: [bob valueForKey:@"name"] == @"set_bob" message: "valueForKey:'name' should be bob, was: "+[bob valueForKey:@"name"]];
     [self assertTrue: _sawObservation message:"Never recieved an observation"];
 }
@@ -108,16 +108,16 @@
     bob = [[PersonTester alloc] init];
     obj = [CPArray new];
     obj2 = [CPString new];
-        
+
     [bob addObserver:obj forKeyPath:@"name" options:nil context:"testRemoveAllObservers"];
     [bob addObserver:obj2 forKeyPath:@"name" options:nil context:"testRemoveAllObservers"];
-    
+
     [bob removeObserver:obj forKeyPath:@"name"];
     [bob removeObserver:obj2 forKeyPath:@"name"];
     [bob removeObserver:nil forKeyPath:nil];
-    
+
     [bob setValue:@"bob" forKey:@"name"];
-    
+
     [self assertTrue: [bob valueForKey:@"name"] == @"set_bob" message: "valueForKey:'name' should be bob, was: "+[bob valueForKey:@"name"]];
 
 }
@@ -125,7 +125,7 @@
 - (void)testDictionary
 {
     var dict = [[CPDictionary alloc] init];
-    
+
     [dict setObject:@"Bob Jones" forKey:@"dictionaryKey"];
 
     [dict addObserver:self
@@ -141,9 +141,9 @@
 - (void)testPriorObservationOption
 {
     _sawPriorObservation = NO;
-    
+
     bob = [[PersonTester alloc] init];
-    
+
     [bob addObserver:self forKeyPath:@"name" options:CPKeyValueObservingOptionPrior context:"testPriorObservationOption"];
 
     [bob setValue:@"bob" forKey:@"name"];
@@ -170,10 +170,10 @@
 - (void)testDependentKeyObservation
 {
     _sawDependentObservation = NO;
-    
+
     bob = [[PersonTester alloc] init];
-    
-    bob.name = "paul";    
+
+    bob.name = "paul";
 
     [bob addObserver:self forKeyPath:@"bobName" options:0 context:"testDependentKeyObservation"];
     [bob addObserver:self forKeyPath:@"twiceRemoved" options:0 context:"testDependentKeyObservation2"];
@@ -181,7 +181,7 @@
     [bob setValue:@"bob" forKey:@"name"];
 
     [self assertTrue:_sawDependentObservation message:"asked for bobName but did not recieve corresponding notification"];
-    [self assertTrue: [bob valueForKey:@"bobName"] === @"BOB! set_bob" message: "should have been BOB! set_bob, was "+[bob valueForKey:@"bobName"]];    
+    [self assertTrue: [bob valueForKey:@"bobName"] === @"BOB! set_bob" message: "should have been BOB! set_bob, was "+[bob valueForKey:@"bobName"]];
 }
 
 - (void)testMultipartKey
@@ -190,11 +190,11 @@
     bob = [PersonTester new];
 
     [cs101 setTeacher:bob];
-    
+
     [cs101 addObserver:self forKeyPath:@"teacher.name" options:0 context:"testMultipartKey"];
-    
+
     [bob setName:@"bob"];
-    
+
     [self assertTrue:[cs101 valueForKeyPath:@"teacher.name"] == "set_bob" message:"teacher.name should be: set_bob, was: "+[cs101 valueForKeyPath:@"teacher.name"]];
     [self assertTrue: _sawObservation message:"Never recieved an observation"];
 }
@@ -238,7 +238,7 @@
     [focus setValue:"2000" forKey:"year"];
 
     [cs101 addObserver:self forKeyPath:@"teacher.car.year" options:0 context:"testThreePartKeyPart2"];
-    
+
     [bob setValue:focus forKey:"car"];
 
     [self assertTrue: _sawObservation message:"Never recieved an observation"];
@@ -250,13 +250,13 @@
     bob = [PersonTester new];
 
     [cs101 setTeacher:bob];
-    
+
     [cs101 addObserver:self forKeyPath:@"teacher.name" options:0 context:"testRemoveMultipartKey"];
-    
+
     [cs101 removeObserver:self forKeyPath:@"teacher.name"];
-    
+
     [bob setName:@"bob"];
-    
+
     [self assertFalse: _sawObservation message:"Should not have recieved an observation"];
 }
 
@@ -281,51 +281,51 @@
 - (void)testCrazyKeyPathChanges
 {
     var a = [A new];
-    
+
     [a setValue:[B new] forKeyPath:"b"];
     [a setValue:[C new] forKeyPath:"b.c"];
     [a setValue:[D new] forKeyPath:"b.c.d"];
     [a setValue:[E new] forKeyPath:"b.c.d.e"];
     [a setValue:[F new] forKeyPath:"b.c.d.e.f"];
-    
+
     [a addObserver:self forKeyPath:"b.c.d.e.f" options:0 context:"testCrazyKeyPathChanges"];
-    
+
     [a setValue:[D new] forKeyPath:"b.c.d"];
-    
+
     [self assertTrue: _sawObservation message:"Never recieved an observation"];
 }
 
 - (void)testCrazyKeyPathChanges2
 {
     var a = [A new];
-    
+
     [a setValue:[B new] forKeyPath:"b"];
     [a setValue:[C new] forKeyPath:"b.c"];
     [a setValue:[D new] forKeyPath:"b.c.d"];
     [a setValue:[E new] forKeyPath:"b.c.d.e"];
     [a setValue:[F new] forKeyPath:"b.c.d.e.f"];
-    
+
     [a addObserver:self forKeyPath:"b.c.d.e.f" options:0 context:"testCrazyKeyPathChanges2"];
-    
+
     [a setValue:nil forKeyPath:"b.c"];
-    
+
     [self assertTrue: _sawObservation message:"Never recieved an observation"];
 }
 
 - (void)testCrazyKeyPathChanges3
 {
     var a = [A new];
-    
+
     [a setValue:[B new] forKeyPath:"b"];
     [a setValue:[C new] forKeyPath:"b.c"];
     [a setValue:[D new] forKeyPath:"b.c.d"];
     [a setValue:[E new] forKeyPath:"b.c.d.e"];
     [a setValue:[F new] forKeyPath:"b.c.d.e.f"];
-    
+
     [a addObserver:self forKeyPath:"b.c.d.e.f" options:0 context:"testCrazyKeyPathChanges3"];
-    
+
     [a setValue:7 forKeyPath:"b.c.d.e.f"];
-    
+
     [self assertTrue: _sawObservation message:"Never recieved an observation"];
 }
 
@@ -386,9 +386,9 @@
 {
     var one = [1, 1, 1, 1, 1, 1, 1, 1],
         two = [1, 2, 3, 4, 8, 0];
-    
+
     [self assert:[one valueForKey:"@count"] equals:8];
-    [self assert:[one valueForKeyPath:"@sum.intValue"] equals:8]; 
+    [self assert:[one valueForKeyPath:"@sum.intValue"] equals:8];
     [self assert:[two valueForKeyPath:"@avg.intValue"] equals:3];
     [self assert:[two valueForKeyPath:"@max.intValue"] equals:8];
     [self assert:[two valueForKeyPath:"@min.intValue"] equals:0];
@@ -407,8 +407,8 @@
 
     var startTime = new Date();
 
-    for(var i=0; i<1000; i++)
-        [bob setValue:i+"bob" forKey:"name"];
+    for (var i = 0; i < 1000; i++)
+        [bob setValue:i + "bob" forKey:"name"];
 
     var total = new Date() - startTime;
 
@@ -416,8 +416,8 @@
 
     startTime = new Date();
 
-    for(var i=0; i<1000; i++)
-        [bob setValue: i+"bob" forKey:"name"];
+    for (var i = 0; i < 1000; i++)
+        [bob setValue: i + "bob" forKey:"name"];
 
     var secondTotal = new Date() - startTime;
 
@@ -449,19 +449,19 @@
     {
         case "testDependentKeysPaths":  ++observationCount;
                                         break;
-        case "testAddObserver": 
+        case "testAddObserver":
             [self assertTrue: newValue == "set_bob" message: "newValue should be: set_bob was: "+newValue];
             [self assertTrue: oldValue == [CPNull null] message: "oldValue should be CPNull was: "+oldValue];
             [self assertTrue: anObject == bob message: "anObject should be: "+[bob description]+", was: "+[anObject description]];
             break;
-        case "testUnobservedKey": 
+        case "testUnobservedKey":
             [self assertFalse: YES message: "not observing this key, should never get here"];
             break;
-        case "testAddTwoObservers":             
+        case "testAddTwoObservers":
             [self assertTrue: newValue == "set_bob" message: "newValue should be: set_bob was: "+newValue];
             [self assertTrue: oldValue == [CPNull null] message: "oldValue should be CPNull was: "+oldValue];
             break;
-            
+
         case "testDirectIVarObservation":
             [self assertTrue: newValue == "555" message: "newValue should be: 555 was: "+newValue];
             [self assertTrue: oldValue == [CPNull null] message: "oldValue should be CPNull was: "+oldValue];
@@ -479,10 +479,10 @@
         case "testRemoveAllObservers":
             [self assertTrue: NO message: "all observers were removed, but notification was still received"];
             break;
-            
+
         case "testPriorObservationOption":
             var prior = [changes objectForKey:CPKeyValueChangeNotificationIsPriorKey];
-            
+
             if (!_sawPriorObservation)
             {
                 [self assertTrue:prior message:"Have not been sent the prior notification, but it should have been sent"];
@@ -496,7 +496,7 @@
                 [self assertTrue: newValue == "set_bob" message: "newValue should be: set_bob was: "+newValue];
             }
             break;
-            
+
         case "testInitialObservationOption":
             if (!_sawInitialObservation)
             {
@@ -508,13 +508,13 @@
                 [self assertFalse:YES message:"Should never have received this notification"];
 
             break;
-            
+
         case "testMultipartKey":
             [self assertTrue: aKeyPath == "teacher.name" message:"Keypath should be: teacher.name, was: "+aKeyPath];
             [self assertTrue: newValue == "set_bob" message:"New value should be: set_bob, was: "+newValue];
             [self assertTrue: anObject == cs101 message: "anObject should be: "+[cs101 description]+", was: "+[anObject description]];
             break;
-            
+
         case "testRemoveMultipartKey":
             [self assertFalse:YES message:"Should never have received this notification"];
             break;
@@ -534,7 +534,7 @@
             [self assertTrue: newValue.year == "2000" message:"New value should be a car with year: 2000, was: "+[newValue description]];
             [self assertTrue: anObject == cs101 message: "anObject should be: "+[cs101 description]+", was: "+[anObject description]];
             break;
-            
+
         case "testCrazyKeyPathChanges":
             [self assertTrue: [anObject class] == A message:"Should be observing an A class, was: "+[anObject class]];
             [self assertTrue: [newValue class] == D message:"Changed class was a D class, got: "+[newValue class]];
@@ -552,7 +552,7 @@
             [self assertTrue: newValue == 7 message:"Expected 7, got: "+newValue];
             [self assertTrue: aKeyPath == "b.c.d.e.f" message:"Expected keyPath b.c.d.e.f, got: "+aKeyPath];
             break;
-            
+
         case "testDependentKeyObservation":
 
             [self assertTrue:aKeyPath === "bobName"

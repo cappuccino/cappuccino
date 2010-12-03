@@ -37,7 +37,7 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
     int         _increment      @accessors(property=increment);
     int         _maxValue       @accessors(property=maxValue);
     int         _minValue       @accessors(property=minValue);
-    
+
     _CPContinuousButton    _buttonDown;
     _CPContinuousButton    _buttonUp;
 }
@@ -57,11 +57,11 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
     [stepper setDoubleValue:aValue];
     [stepper setMinValue:aMinValue];
     [stepper setMaxValue:aMaxValue];
-    
+
     return stepper;
 }
 
-/*! Initializes a CPStepper with default values: 
+/*! Initializes a CPStepper with default values:
         - minValue = 0.0
         - maxValue = 59.0
         - value = 0.0
@@ -84,23 +84,23 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
         _minValue       = 0.0;
         _increment      = 1.0;
         _valueWraps     = YES;
-        
+
         [self setDoubleValue:0.0];
-        
+
         _buttonUp = [[_CPContinuousButton alloc] initWithFrame:CPRectMake(aFrame.size.width - CPStepperButtonsSize.width, 0, CPStepperButtonsSize.width, CPStepperButtonsSize.height)];
         [_buttonUp setContinuous:YES];
         [_buttonUp setTarget:self];
         [_buttonUp setAction:@selector(_buttonDidClick:)];
         [_buttonUp setAutoresizingMask:CPViewNotSizable];
         [self addSubview:_buttonUp];
-        
+
         _buttonDown = [[_CPContinuousButton alloc] initWithFrame:CPRectMake(aFrame.size.width - CPStepperButtonsSize.width, CPStepperButtonsSize.height, CPStepperButtonsSize.width, CPStepperButtonsSize.height - 1)];
         [_buttonDown setContinuous:YES];
         [_buttonDown setTarget:self];
         [_buttonDown setAction:@selector(_buttonDidClick:)];
         [_buttonDown setAutoresizingMask:CPViewNotSizable];
         [self addSubview:_buttonDown];
-        
+
         [self setNeedsLayout];
     }
 
@@ -139,7 +139,7 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
     [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:CPThemeStateBordered | CPThemeStateHighlighted] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateHighlighted];
     [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
     [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered | CPThemeStateDisabled] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateDisabled];
-    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered | CPThemeStateHighlighted] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateHighlighted];    
+    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered | CPThemeStateHighlighted] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateHighlighted];
 }
 
 /*! set if CPStepper should autorepeat
@@ -235,7 +235,7 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
-    
+
     [aCoder encodeObject:_maxValue forKey:@"_maxValue"];
     [aCoder encodeObject:_minValue forKey:@"_minValue"];
     [aCoder encodeObject:_increment forKey:@"_increment"];
@@ -264,7 +264,7 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
         _periodicInterval   = 0.05;
         _periodicDelay      = 0.5;
     }
-    
+
     return self;
 }
 
@@ -278,13 +278,15 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
 {
     if ([self isContinuous])
     {
-        _continuousDelayTimer = [CPTimer scheduledTimerWithTimeInterval:_periodicDelay callback: function(){
+        _continuousDelayTimer = [CPTimer scheduledTimerWithTimeInterval:_periodicDelay callback: function()
+        {
             if (!_continuousTimer)
                 _continuousTimer = [CPTimer scheduledTimerWithTimeInterval:_periodicInterval target:self selector:@selector(onContinousEvent:) userInfo:anEvent repeats:YES];
-        } 
+        }
+
         repeats:NO];
     }
-    
+
     [super mouseDown:anEvent];
 }
 
@@ -304,10 +306,10 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
 {
     if (_continuousTimer)
     {
-        [_continuousTimer invalidate];    
+        [_continuousTimer invalidate];
         _continuousTimer = nil;
     }
-    
+
     if (_continuousDelayTimer)
     {
         [_continuousDelayTimer invalidate];
@@ -334,7 +336,7 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
-    
+
     [self invalidateTimers];
     [aCoder encodeObject:_periodicDelay forKey:@"_periodicDelay"];
     [aCoder encodeObject:_periodicInterval forKey:@"_periodicInterval"];
