@@ -3412,7 +3412,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         numberOfRows = [self numberOfRows];
 
     if (row < 0)
-        row = (_cachedRowHeights[numberOfRows-1].heightAboveRow + _cachedRowHeights[numberOfRows-1].height + _intercellSpacing.height < dragPoint.y) ? numberOfRows : row;
+        row = (_CGRectGetMaxY(rect) < dragPoint.y) ? numberOfRows : row;
     else if (dragPoint.y > MAX(bottomThirty, bottomPoint - 6))
         row = lowerRow;
 
