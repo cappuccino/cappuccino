@@ -71,27 +71,33 @@ function gen(/*va_args*/)
     var args = ["capp gen"].concat(Array.prototype.slice.call(arguments));
     var options = parser.parse(args, null, null, true);
 
-    if (options.args.length > 1) {
+    if (options.args.length > 1)
+    {
         parser.printUsage(options);
         OS.exit(1);
     }
 
-    if (options.listTemplates) {
+    if (options.listTemplates)
+    {
         listTemplates();
         return;
     }
 
-    if (options.listFrameworks) {
+    if (options.listFrameworks)
+    {
         listFrameworks();
         return;
     }
 
     var destination = options.args[0];
 
-    if (!destination) {
+    if (!destination)
+    {
         if (options.justFrameworks)
             destination = ".";
-        else {
+
+        else
+        {
             parser.printUsage(options);
             OS.exit(1);
         }
@@ -114,9 +120,8 @@ function gen(/*va_args*/)
         configuration = options.noconfig ? [Configuration defaultConfiguration] : [Configuration userConfiguration];
 
     var frameworks = options.frameworks;
-    if (!options.noFrameworks) {
+    if (!options.noFrameworks)
         frameworks.push("Objective-J", "Foundation", "AppKit");
-    }
 
     if (options.justFrameworks)
         createFrameworksInFile(frameworks, destinationProject, options.symlink, options.useCappBuild, options.force);
@@ -174,7 +179,9 @@ function gen(/*va_args*/)
 
         createFrameworksInFile(frameworks, frameworkDestination, options.symlink, options.useCappBuild);
     }
-    else {
+
+    else
+    {
         stream.print("Directory already exists");
         OS.exit(1);
     }
@@ -195,7 +202,8 @@ function createFrameworksInFile(/*Array*/ frameworks, /*String*/ aFile, /*Boolea
     //destinationFrameworks.mkdirs(); // redundant
     destinationDebugFrameworks.mkdirs();
 
-    if (build) {
+    if (build)
+    {
         if (!(SYSTEM.env["CAPP_BUILD"] || SYSTEM.env["STEAM_BUILD"]))
             throw "CAPP_BUILD or STEAM_BUILD must be defined";
 
@@ -204,16 +212,21 @@ function createFrameworksInFile(/*Array*/ frameworks, /*String*/ aFile, /*Boolea
         var sourceFrameworks = builtFrameworks.join("Release"),
             sourceDebugFrameworks = builtFrameworks.join("Debug");
 
-        frameworks.forEach(function(framework) {
+        frameworks.forEach(function(framework)
+        {
             installFramework(sourceFrameworks.join(framework), destinationFrameworks.join(framework), force, symlink);
             installFramework(sourceDebugFrameworks.join(framework), destinationDebugFrameworks.join(framework), force, symlink);
         });
     }
-    else {
+
+    else
+    {
         // Frameworks. Search frameworks paths
-        frameworks.forEach(function(framework) {
+        frameworks.forEach(function(framework)
+        {
             // Need a special case for Objective-J
-            if (framework === "Objective-J") {
+            if (framework === "Objective-J")
+            {
                 // Objective-J. Take from OBJJ_HOME.
                 var objjHome = FILE.path(OBJJ.OBJJ_HOME);
                 var objjPath = objjHome.join("Frameworks", "Objective-J");
@@ -227,9 +240,11 @@ function createFrameworksInFile(/*Array*/ frameworks, /*String*/ aFile, /*Boolea
 
             var found;
 
-            for (var i = 0, found = false; !found && i < OBJJ.objj_frameworks.length; i++) {
+            for (var i = 0, found = false; !found && i < OBJJ.objj_frameworks.length; i++)
+            {
                 var sourceFramework = FILE.path(OBJJ.objj_frameworks[i]).join(framework);
-                if (FILE.isDirectory(sourceFramework)) {
+                if (FILE.isDirectory(sourceFramework))
+                {
                     installFramework(sourceFramework, destinationFrameworks.join(framework), force, symlink);
                     found = true;
                 }
@@ -237,9 +252,11 @@ function createFrameworksInFile(/*Array*/ frameworks, /*String*/ aFile, /*Boolea
             if (!found)
                 stream.print("\0yellow(Warning:\0) Couldn't find framework \0cyan(" + framework +"\0)");
 
-            for (var i = 0, found = false; !found && i < OBJJ.objj_debug_frameworks.length; i++) {
+            for (var i = 0, found = false; !found && i < OBJJ.objj_debug_frameworks.length; i++)
+            {
                 var sourceDebugFramework = FILE.path(OBJJ.objj_debug_frameworks[i]).join(framework);
-                if (FILE.isDirectory(sourceDebugFramework)) {
+                if (FILE.isDirectory(sourceDebugFramework))
+                {
                     installFramework(sourceDebugFramework, destinationDebugFrameworks.join(framework), force, symlink);
                     found = true;
                 }
@@ -250,16 +267,21 @@ function createFrameworksInFile(/*Array*/ frameworks, /*String*/ aFile, /*Boolea
     }
 }
 
-function installFramework(source, dest, force, symlink) {
-    if (dest.exists()) {
-        if (force) {
+function installFramework(source, dest, force, symlink)
+{
+    if (dest.exists())
+    {
+        if (force)
             dest.rmtree();
-        } else {
+
+        else
+        {
             stream.print("\0yellow(Warning:\0) " + dest + " already exists. Use --force to overwrite.");
             return;
         }
     }
-    if (source.exists()) {
+    if (source.exists())
+    {
         stream.print((symlink ? "Symlinking " : "Copying ") + source + " to " + dest);
         if (symlink)
             FILE.symlink(source, dest);
@@ -299,24 +321,31 @@ function toIdentifier(/*String*/ aString)
     return identifier;
 }
 
-function listTemplates() {
-    FILE.list(templatesDirectory).forEach(function(templateName) {
+function listTemplates()
+{
+    FILE.list(templatesDirectory).forEach(function(templateName)
+    {
         stream.print(templateName);
     });
 }
 
-function listFrameworks() {
+function listFrameworks()
+{
     stream.print("Frameworks:");
-    OBJJ.objj_frameworks.forEach(function(frameworksDirectory) {
+    OBJJ.objj_frameworks.forEach(function(frameworksDirectory)
+    {
         stream.print("  " + frameworksDirectory);
-        FILE.list(frameworksDirectory).forEach(function(templateName) {
+        FILE.list(frameworksDirectory).forEach(function(templateName)
+        {
             stream.print("    + " + templateName);
         });
     });
     stream.print("Frameworks (Debug):");
-    OBJJ.objj_debug_frameworks.forEach(function(frameworksDirectory) {
+    OBJJ.objj_debug_frameworks.forEach(function(frameworksDirectory)
+    {
         stream.print("  " + frameworksDirectory);
-        FILE.list(frameworksDirectory).forEach(function(frameworkName) {
+        FILE.list(frameworksDirectory).forEach(function(frameworkName)
+        {
             stream.print("    + " + frameworkName);
         });
     });

@@ -513,10 +513,10 @@ CPOutlineViewDropOnItemIndex = -1;
         ],
         delegateCount = [delegateMethods count];
 
-    for (var i=0; i < delegateCount; i += 2)
+    for (var i = 0; i < delegateCount; i += 2)
     {
         var bitMask = delegateMethods[i],
-            selector = delegateMethods[i+1];
+            selector = delegateMethods[i + 1];
 
         if ([_outlineViewDelegate respondsToSelector:selector])
             _implementedOutlineViewDelegateMethods |= bitMask;
@@ -670,8 +670,8 @@ CPOutlineViewDropOnItemIndex = -1;
     if (_shouldRetargetItem)
         return _retargetedItem;
 
-    var lowerLevel = [self levelForRow:theLowerRowIndex]
-        upperItem = [self itemAtRow:theUpperRowIndex];
+    var lowerLevel = [self levelForRow:theLowerRowIndex],
+        upperItem = [self itemAtRow:theUpperRowIndex],
         upperLevel = [self levelForItem:upperItem];
 
     // If the row above us has a higher level the item can be added to multiple parent items
@@ -875,7 +875,7 @@ var _reloadItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anItem)
     if (!anItem)
         return;
 
-    with(anOutlineView)
+    with (anOutlineView)
     {
         // Get the existing info if it exists.
         var itemInfosForItems = _itemInfosForItems,
@@ -911,7 +911,7 @@ var _reloadItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anItem)
 // FIX ME: We're using with() here because Safari fails if we use anOutlineView._itemInfosForItems or whatever...
 var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anItem,  /*BOOL*/ isIntermediate)
 {
-    with(anOutlineView)
+    with (anOutlineView)
     {
         var itemInfosForItems = _itemInfosForItems,
             dataSource = _outlineViewDataSource;
@@ -1261,12 +1261,16 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
     CGContextBeginPath(context);
     CGContextMoveToPoint(context, 0.0, 0.0);
-    if(_angle === 0.0) {
+
+    if (_angle === 0.0)
+    {
         CGContextAddLineToPoint(context, 4.5, 8.0);
         CGContextAddLineToPoint(context, 9.0, 0.0);
-    } else {
-        CGContextAddLineToPoint(context, 4.5, 8.0);
     }
+
+    else
+        CGContextAddLineToPoint(context, 4.5, 8.0);
+
     CGContextSetStrokeColor(context, [CPColor colorWithCalibratedWhite:1.0 alpha: 0.8]);
     CGContextStrokePath(context);
 }

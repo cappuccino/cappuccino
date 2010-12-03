@@ -534,7 +534,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 {
     var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
 
-     if(point.x > [self bounds].size.width - 1 || point.x < 1)
+     if (point.x > [self bounds].size.width - 1 || point.x < 1)
         return NO;
 
     [[CPPasteboard pasteboardWithName:CPDragPboard] declareTypes:[CPArray arrayWithObject:CPColorDragType] owner:self];

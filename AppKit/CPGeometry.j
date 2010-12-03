@@ -71,7 +71,7 @@ function CPPointMake(x, y)
 function CPRectInset(aRect, dX, dY)
 {
     return CPRectMake(  aRect.origin.x + dX, aRect.origin.y + dY,
-                        aRect.size.width - 2 * dX, aRect.size.height - 2*dY);
+                        aRect.size.width - 2 * dX, aRect.size.height - 2 * dY);
 }
 
 /*!

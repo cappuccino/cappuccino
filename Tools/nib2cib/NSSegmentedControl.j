@@ -47,7 +47,7 @@
         _trackingMode       = [cell trackingMode];
 
         [self setValue:CPCenterTextAlignment forThemeAttribute:@"alignment"];
-        
+
         // HACK
 
         for (var i = 0; i < _segments.length; i++)
@@ -98,11 +98,11 @@
         _selectedSegment    = [aCoder decodeIntForKey:"NSSelectedSegment"] || -1;
         _segmentStyle       = [aCoder decodeIntForKey:"NSSegmentStyle"];
         _trackingMode       = [aCoder decodeIntForKey:"NSTrackingMode"] || CPSegmentSwitchTrackingSelectOne;
-        
+
         if (_trackingMode == CPSegmentSwitchTrackingSelectOne && _selectedSegment == -1)
             _selectedSegment = 0;
     }
-    
+
     return self;
 }
 
@@ -128,7 +128,7 @@
         // NSSegmentItemImageScaling
         // NSSegmentItemTooltip
     }
-    
+
     return self;
 }
 

@@ -71,10 +71,10 @@ var CPGraphicsContextCurrent    = nil;
 - (id)initWithGraphicsPort:(CPContext)aGraphicsPort
 {
     self = [super init];
-    
+
     if (self)
         _graphicsPort = aGraphicsPort;
-    
+
     return self;
 }
 

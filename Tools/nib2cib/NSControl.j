@@ -31,18 +31,18 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [super NS_initWithCoder:aCoder];
-    
+
     if (self)
     {
         [self sendActionOn:CPLeftMouseUpMask];
-        
+
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
-        
+
         [self setObjectValue:[cell objectValue]];
-        
+
         [self setFont:[cell font]];
         [self setAlignment:[cell alignment]];
-        
+
         [self setEnabled:[aCoder decodeObjectForKey:@"NSEnabled"]];
         [self setContinuous:[cell isContinuous]];
 
@@ -51,7 +51,7 @@
 
         [self setLineBreakMode:[cell lineBreakMode]];
     }
-    
+
     return self;
 }
 

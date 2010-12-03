@@ -30,13 +30,13 @@
     if (self = [super NS_initWithCoder:aCoder])
     {
         _documentView = [aCoder decodeObjectForKey:"NSDocView"];
-        
+
         if ([aCoder containsValueForKey:"NSBGColor"])
             [self setBackgroundColor:[aCoder decodeObjectForKey:"NSBGColor"]];
-        
+
         //var flags = [aCoder decodeIntForKey:"NScvFlags"];
     }
-    
+
     return self;
 }
 

@@ -28,30 +28,30 @@
 {
     _items = [];
     _content = [];
-  
+
     _cachedItems = [];
-    
+
     _itemSize = CGSizeMakeZero();
     _minItemSize = CGSizeMakeZero();
     _maxItemSize = CGSizeMakeZero();
 
     _verticalMargin = 5.0;
     _tileWidth = -1.0;
-    
+
     _selectionIndexes = [CPIndexSet indexSet];
     _allowsEmptySelection = YES;
-        
+
     if (self = [super NS_initWithCoder:aCoder])
     {
         _backgroundColors = [aCoder decodeObjectForKey:@"NSBackgroundColors"];
 
         _maxNumberOfRows = [aCoder decodeIntForKey:@"NSMaxNumberOfGridRows"];
         _maxNumberOfColumns = [aCoder decodeIntForKey:@"NSMaxNumberOfGridColumns"];
-        
+
         _isSelectable             = [aCoder decodeBoolForKey:@"NSSelectable"];
         _allowsMultipleSelection  = [aCoder decodeBoolForKey:@"NSAllowsMultipleSelection"];
     }
-    
+
     return self;
 }
 

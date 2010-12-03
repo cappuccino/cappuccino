@@ -98,48 +98,48 @@ CPLogRegister(CPLogConsole);
 
 - (void)createBindings
 {
- 	// bind array controller to self's itemsArray
+    // bind array controller to self's itemsArray
     [arrayController bind:@"contentArray" toObject:self
-			  withKeyPath:@"itemsArray" options:nil];
+              withKeyPath:@"itemsArray" options:nil];
 
     // bind the total field -- no options on this one
     // Currently broken, crashes the app as it tries to pull valueForKey @sum at some point.
-	//[totalCountField bind:CPValueBinding toObject:arrayController
-	//		  withKeyPath:@"arrangedObjects.@sum.price" options:nil];
+    //[totalCountField bind:CPValueBinding toObject:arrayController
+    //        withKeyPath:@"arrangedObjects.@sum.price" options:nil];
 
-	var bindingOptions = [CPDictionary dictionary];
+    var bindingOptions = [CPDictionary dictionary];
 
-	// binding options for "name"
-	//[bindingOptions setObject:@"No Name" forKey:@"NSNullPlaceholder"];
+    // binding options for "name"
+    //[bindingOptions setObject:@"No Name" forKey:@"NSNullPlaceholder"];
 
-	// binding for selected "name" field
+    // binding for selected "name" field
     //[selectedNameField bind: @"value" toObject: arrayController
-	//			withKeyPath:@"selection.name" options:bindingOptions];
+    //          withKeyPath:@"selection.name" options:bindingOptions];
 
-	// binding for "name" column
+    // binding for "name" column
     var tableColumn = [tableView tableColumnWithIdentifier:@"name"];
 
-	[tableColumn bind:@"value" toObject: arrayController
-		  withKeyPath:@"arrangedObjects.name" options:bindingOptions];
+    [tableColumn bind:@"value" toObject: arrayController
+          withKeyPath:@"arrangedObjects.name" options:bindingOptions];
 
 
     // binding options for "price"
-	// no need for placeholder as overridden by formatters
-	//[bindingOptions removeObjectForKey:@"NSNullPlaceholder"];
+    // no need for placeholder as overridden by formatters
+    //[bindingOptions removeObjectForKey:@"NSNullPlaceholder"];
 
-	//[bindingOptions setObject:YES
-	//				   forKey:CPValidatesImmediatelyBindingOption];
+    //[bindingOptions setObject:YES
+    //                 forKey:CPValidatesImmediatelyBindingOption];
 
-	// binding for selected "price" field
-	//[selectedPriceField bind: @"value" toObject: arrayController
-	//			 withKeyPath:@"selection.price" options:bindingOptions];
+    // binding for selected "price" field
+    //[selectedPriceField bind: @"value" toObject: arrayController
+    //           withKeyPath:@"selection.price" options:bindingOptions];
 
 
-	// binding for "price" column
+    // binding for "price" column
     tableColumn = [tableView tableColumnWithIdentifier:@"price"];
 
     [tableColumn bind:@"value" toObject: arrayController
-		  withKeyPath:@"arrangedObjects.price" options:bindingOptions];
+          withKeyPath:@"arrangedObjects.price" options:bindingOptions];
 
     tableColumn = [tableView tableColumnWithIdentifier:@"all right"];
 

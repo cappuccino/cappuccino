@@ -39,7 +39,7 @@ var tableTestDragType = "tableTestDragType";
     [table setDelegate:self];
     [table setUsesAlternatingRowBackgroundColors:YES];
 
-    [table setGridStyleMask:CPTableViewSolidVerticalGridLineMask|CPTableViewSolidHorizontalGridLineMask];
+    [table setGridStyleMask:CPTableViewSolidVerticalGridLineMask | CPTableViewSolidHorizontalGridLineMask];
     [table setAllowsMultipleSelection:YES];
     [table registerForDraggedTypes:[tableTestDragType]];
 
@@ -113,21 +113,21 @@ var tableTestDragType = "tableTestDragType";
 - (BOOL)tableView:(CPTableView)aTableView writeRowsWithIndexes:(CPIndexSet)rowIndexes toPasteboard:(CPPasteboard)pboard
 {
     var data = [rowIndexes, [aTableView UID]];
-    
+
     var encodedData = [CPKeyedArchiver archivedDataWithRootObject:data];
     [pboard declareTypes:[CPArray arrayWithObject:tableTestDragType] owner:self];
     [pboard setData:encodedData forType:tableTestDragType];
-    
+
     return YES;
 }
 
-- (CPDragOperation)tableView:(CPTableView)aTableView 
-                   validateDrop:(id)info 
-                   proposedRow:(CPInteger)row 
+- (CPDragOperation)tableView:(CPTableView)aTableView
+                   validateDrop:(id)info
+                   proposedRow:(CPInteger)row
                    proposedDropOperation:(CPTableViewDropOperation)operation
 {
     [aTableView setDropRow:(row) dropOperation:CPTableViewDropOn];
-        
+
     return CPDragOperationMove;
 }
 

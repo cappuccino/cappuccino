@@ -23,7 +23,7 @@ function descriptionWithoutEntity(aString)
 
     // Test no indexes
     [self assert:descriptionWithoutEntity(indexSet) equals:@"(no indexes)"];
-    
+
     // Test adding initial range
     [indexSet addIndexesInRange:CPMakeRange(30,10)];
 
@@ -76,7 +76,7 @@ function descriptionWithoutEntity(aString)
 
     // Test no indexes
     [self assert:descriptionWithoutEntity(indexSet) equals:@"(no indexes)"];
-    
+
     // Test adding initial range
     [indexSet addIndexesInRange:CPMakeRange(0, 70)];
 
@@ -121,12 +121,12 @@ function descriptionWithoutEntity(aString)
     [indexSet removeIndexesInRange:CPMakeRange(20, 36)];
 
     [self assert:@"[number of indexes: 31 (in 3 ranges), indexes: (0-19 56 60-69)]" equals:descriptionWithoutEntity(indexSet)];
-    
+
     // Remove single index that represents an entire range.
     [indexSet removeIndex:56];
 
     [self assert:@"[number of indexes: 30 (in 2 ranges), indexes: (0-19 60-69)]" equals:descriptionWithoutEntity(indexSet)];
-    
+
     // Remove index set that is subset of existing range, causing a split.
     [indexSet removeIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(5, 10)]];
 
@@ -185,12 +185,10 @@ function descriptionWithoutEntity(aString)
 - (void)testIndexSet:(CPIndexSet)set containsRange:(CPRange)range
 {
     [self assertFalse:[set containsIndex:range.location -1]];
-    
-    for (var i=range.location, max=CPMaxRange(range); i<max; i++)
-    {
+
+    for (var i = range.location, max = CPMaxRange(range); i < max; i++)
         [self assertTrue:[set containsIndex:i]];
-    }
-    
+
     [self assertFalse:[set containsIndex:i]];
 }
 
@@ -296,14 +294,14 @@ function descriptionWithoutEntity(aString)
 - (void)testAddSpeed
 {
     var startTime = [CPDate date];
-    
+
     for (var i = 0; i < 1000; i++)
     {
        [_set addIndex:ROUND(RAND()*100000)];
     }
 
     print([startTime timeIntervalSinceNow]);
-    //[self assertTrue: ABS([startTime timeIntervalSinceNow]) < 2];  
+    //[self assertTrue: ABS([startTime timeIntervalSinceNow]) < 2];
 }
 */
 - (void)testIndexGreaterThanIndex
@@ -372,19 +370,19 @@ function descriptionWithoutEntity(aString)
     var startRange = CPMakeRange(1, 5),
         shiftRange = CPMakeRange(2, 5);
     _set = [CPIndexSet indexSetWithIndexesInRange:startRange];
-    
+
     // positive delta for downward shift
     [_set shiftIndexesStartingAtIndex:1 by:1];
     [self assertTrue:[_set containsIndexes:[CPIndexSet indexSetWithIndexesInRange:shiftRange]]];
-    
+
     // negative delta for downward shift
     [_set shiftIndexesStartingAtIndex:1 by:-1];
     [self assertTrue:[_set containsIndexes:[CPIndexSet indexSetWithIndexesInRange:startRange]]];
-    
+
     // test for fix to issue #746 (last item is mistakenly shifted)
     _set = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 1)];
     [self assertTrue:[_set lastIndex] === 0];
-    
+
     [_set shiftIndexesStartingAtIndex:[_set lastIndex] + 1 by:1];
     [self assertTrue:[_set lastIndex] === 0];
 
