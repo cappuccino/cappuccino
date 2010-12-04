@@ -17,9 +17,11 @@
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
         contentView = [theWindow contentView];
 
-    function plainFormatter(aString, aLevel, aTitle){
+    function plainFormatter(aString, aLevel, aTitle)
+    {
         return aString;
     }
+
     CPLogRegisterRange(CPLogDefault, "debug", "debug", plainFormatter);
     CPLogRegisterRange(CPLogDefault, "warn", "warn", plainFormatter);
 
