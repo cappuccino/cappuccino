@@ -152,6 +152,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     BOOL        _reloadAllRows;
     Object      _objectValues;
+
+    CGRect      _exposedRect;
     CPIndexSet  _exposedRows;
     CPIndexSet  _exposedColumns;
 
@@ -2242,7 +2244,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     var dragView = [[_CPColumnDragView alloc] initWithLineColor:[self gridColor]],
         tableColumn = [[self tableColumns] objectAtIndex:theColumnIndex],
-        bounds = _CGRectMake(0.0, 0.0, [tableColumn width], _CGRectGetHeight([self visibleRect]) + 23.0),
+        bounds = _CGRectMake(0.0, 0.0, [tableColumn width], _CGRectGetHeight([self exposedRect]) + 23.0),
         columnRect = [self rectOfColumn:theColumnIndex],
         headerView = [tableColumn headerView],
         row = [_exposedRows firstIndex];
@@ -2256,7 +2258,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         dataViewFrame.origin.x = 0.0;
 
         // Offset by table header height - scroll position
-        dataViewFrame.origin.y = ( _CGRectGetMinY(dataViewFrame) - _CGRectGetMinY([self visibleRect]) ) + 23.0;
+        dataViewFrame.origin.y = ( _CGRectGetMinY(dataViewFrame) - _CGRectGetMinY([self exposedRect]) ) + 23.0;
         [dataView setFrame:dataViewFrame];
 
         [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
@@ -2396,6 +2398,24 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return objectValue;
 }
 
+- (CGRect)exposedRect
+{
+    if (!_exposedRect)
+    {
+        var superview = [self superview];
+
+        // FIXME: Should we be rect intersecting in case 
+        // there are multiple views in the clip view?
+        if ([superview isKindOfClass:[CPClipView class]])
+            _exposedRect = [superview bounds];
+
+        else
+            _exposedRect = [self bounds];
+    }
+
+    return _exposedRect;
+}
+
 - (void)load
 {
     if (_reloadAllRows)
@@ -2408,7 +2428,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _reloadAllRows = NO;
     }
 
-    var exposedRect = [self visibleRect],
+    var exposedRect = [self exposedRect],
         exposedRows = [CPIndexSet indexSetWithIndexesInRange:[self rowsInRect:exposedRect]],
         exposedColumns = [self columnIndexesInRect:exposedRect],
         obscuredRows = [_exposedRows copy],
@@ -2687,6 +2707,29 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if (_headerView)
         [_headerView setFrameSize:_CGSizeMake(_CGRectGetWidth([self frame]), _CGRectGetHeight([_headerView frame]))];
+
+    _exposedRect = nil;
+}
+
+- (void)setFrameOrigin:(CGPoint)aPoint
+{
+    [super setFrameOrigin:aPoint];
+
+    _exposedRect = nil;
+}
+
+- (void)setBoundsOrigin:(CGPoint)aPoint
+{
+    [super setBoundsOrigin:aPoint];
+
+    _exposedRect = nil;
+}
+
+- (void)setBoundsSize:(CGSize)aSize
+{
+    [super setBoundsSize:aSize];
+
+    _exposedRect = nil;
 }
 
 - (void)setNeedsDisplay:(BOOL)aFlag
@@ -2700,7 +2743,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     // FIX ME: All three of these methods will likely need to be rewritten for 1.0
     // We've got grid drawing in highlightSelection and crap everywhere.
 
-    var exposedRect = [self visibleRect];
+    var exposedRect = [self exposedRect];
 
     [self drawBackgroundInClipRect:exposedRect];
     [self drawGridInClipRect:exposedRect];
@@ -3080,7 +3123,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
                     object:superview];
     }
 
-    if (aView)
+    if ([aView isKindOfClass:[CPClipView class]])
     {
         [aView setPostsFrameChangedNotifications:YES];
         [aView setPostsBoundsChangedNotifications:YES];
@@ -3101,12 +3144,16 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)superviewBoundsChanged:(CPNotification)aNotification
 {
+    _exposedRect = nil;
+
     [self setNeedsDisplay:YES];
     [self setNeedsLayout];
 }
 
 - (void)superviewFrameChanged:(CPNotification)aNotification
 {
+    _exposedRect = nil;
+
     [self tile];
 }
 
@@ -3450,8 +3497,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         dropOperation = [self _proposedDropOperationAtPoint:location],
         numberOfRows = [self numberOfRows],
         row = [self _proposedRowAtPoint:location],
-        dragOperation = [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation],
-        exposedClipRect = [self visibleRect];
+        dragOperation = [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
 
     if (_retargetedDropRow !== nil)
         row = _retargetedDropRow;
@@ -3463,7 +3509,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     var rect = _CGRectMakeZero();
 
     if (row === -1)
-        rect = exposedClipRect;
+        rect = [self exposedRect];
 
     else if (dropOperation === CPTableViewDropAbove)
         rect = [self _rectForDropHighlightViewBetweenUpperRow:row - 1 andLowerRow:row offset:location];
