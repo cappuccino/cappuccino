@@ -51,7 +51,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 + (CPSet)keyPathsForValuesAffectingSelectedTag
 {
-    return [CPSet setWithObject:CPValueBinding];
+    return [CPSet setWithObject:@"selectedIndex"];
 }
 
 /*!
@@ -283,8 +283,6 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     if (_selectedIndex == anIndex)
         return;
 
-    [self willChangeValueForKey:CPValueBinding];
-
     if (_selectedIndex >= 0 && ![self pullsDown])
         [[self selectedItem] setState:CPOffState];
 
@@ -294,8 +292,6 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
         [[self selectedItem] setState:CPOnState];
 
     [self synchronizeTitleAndSelectedItem];
-
-    [self didChangeValueForKey:CPValueBinding];
 }
 
 /*!
