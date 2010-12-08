@@ -117,8 +117,17 @@ NIB_CONNECTION_EQUIVALENCY_TABLE = {};
     {
         _binding = [aCoder decodeObjectForKey:@"NSBinding"];
         _keyPath = [aCoder decodeObjectForKey:@"NSKeyPath"];
-        _options = [aCoder decodeObjectForKey:@"NSOptions"];
-
+        
+        _options = [CPDictionary dictionary];
+        var nsoptions = [aCoder decodeObjectForKey:@"NSOptions"],
+            keyEnum = [nsoptions keyEnumerator],
+            aKey;            
+        while (aKey = [keyEnum nextObject])
+        {
+            var CPKey = "CP" + aKey.substring(2);
+            [_options setObject:[nsoptions objectForKey:aKey] forKey:CPKey];
+        }
+        
         CPLog.debug(@"Binding Connector: " + [_binding description] + " to: " + _destination + " " + [_keyPath description] + " " + [_options description]);
     }
 

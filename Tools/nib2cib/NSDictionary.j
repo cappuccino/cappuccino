@@ -23,7 +23,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@implementation NSMutableDictionary : CPObject
+@implementation NSDictionary : CPObject
 {
 }
 
@@ -33,3 +33,7 @@
 }
 
 @end
+
+@implementation NSMutableDictionary : NSDictionary
+{
+}
