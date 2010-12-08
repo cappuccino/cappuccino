@@ -70,7 +70,13 @@ CPPushInCellMask            = CPPushInButtonMask;
 CPChangeGrayCellMask        = CPGrayButtonMask;
 CPChangeBackgroundCellMask  = CPBackgroundButtonMask;
 
-CPButtonStateMixed  = CPThemeState("mixed");
+CPButtonStateMixed                  = CPThemeState("mixed");
+CPButtonStateBezelStyleRounded      = CPThemeState("rounded");
+
+// add all future correspondance between bezel styles and theme state here.
+var CPButtonBezelStyleStateMap = [CPDictionary dictionaryWithObjects:[CPButtonStateBezelStyleRounded, nil]
+                                                             forKeys:[CPRoundedBezelStyle, CPRoundRectBezelStyle]];
+
 
 CPButtonDefaultHeight = 24.0;
 CPButtonImageOffset   = 3.0;
@@ -151,7 +157,7 @@ CPButtonImageOffset   = 3.0;
         _keyEquivalent = @"";
         _keyEquivalentModifierMask = 0;
 
-//        [self setBezelStyle:CPRoundRectBezelStyle];
+        [self setBezelStyle:CPRoundRectBezelStyle];
         [self setBordered:YES];
     }
 
@@ -678,10 +684,24 @@ CPButtonImageOffset   = 3.0;
 
 - (void)setBezelStyle:(unsigned)aBezelStyle
 {
+    if (aBezelStyle === _bezelStyle)
+        return;
+    
+    var currentState = [CPButtonBezelStyleStateMap objectForKey:_bezelStyle], 
+        newState = [CPButtonBezelStyleStateMap objectForKey:aBezelStyle];
+    
+    if (currentState)
+        [self unsetThemeState:currentState];
+    
+    if (newState)
+        [self setThemeState:newState];
+        
+    _bezelStyle = aBezelStyle;
 }
 
 - (unsigned)bezelStyle
 {
+    return _bezelStyle;
 }
 
 @end
