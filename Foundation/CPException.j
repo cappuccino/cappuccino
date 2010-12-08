@@ -54,8 +54,9 @@ if (input == nil)
 */
 + (id)alloc
 {
-	if ([self class] !== CPException) return [super alloc];
-    return new Error();
+    var result = new Error();
+    result.isa = [self class];
+    return result;
 }
 
 /*!
@@ -89,9 +90,7 @@ if (input == nil)
 */
 - (id)initWithName:(CPString)aName reason:(CPString)aReason userInfo:(CPDictionary)aUserInfo
 {
-    self = [super init];
-
-    if (self)
+    if (self = [super init])
     {
         name = aName;
         message = aReason;
@@ -141,6 +140,17 @@ if (input == nil)
     throw self;
 }
 
+- (BOOL)isEqual:(id)anObject
+{
+    if (!anObject || !anObject.isa)
+        return NO;
+
+    return [anObject isKindOfClass:CPException] && 
+           name === [anObject name] && 
+           message === [anObject message] &&
+           (_userInfo === [anObject userInfo] || ([_userInfo isEqual:[anObject userInfo]]));
+}
+
 @end
 
 @implementation CPException (CPCopying)
@@ -165,9 +175,7 @@ var CPExceptionNameKey = "CPExceptionNameKey",
 */
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    self = [super init];
-
-    if (self)
+    if (self = [super init])
     {
         name = [aCoder decodeObjectForKey:CPExceptionNameKey];
         message = [aCoder decodeObjectForKey:CPExceptionReasonKey];
@@ -193,7 +201,7 @@ var CPExceptionNameKey = "CPExceptionNameKey",
 // toll-free bridge Error to CPException
 // [CPException alloc] uses an objj_exception, which is a subclass of Error
 Error.prototype.isa = CPException;
-Error.prototype._userInfo = NULL;
+Error.prototype._userInfo = null;
 
 [CPException initialize];
 

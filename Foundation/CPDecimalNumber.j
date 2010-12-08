@@ -444,7 +444,7 @@ _cappdefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundin
 */
 - (CPString)hash
 {
-    objj_exception_throw("hash: NOT YET IMPLEMENTED");
+    [CPException raise:CPUnsupportedMethodException reason:"hash: NOT YET IMPLEMENTED"];
 }
 
 /*!

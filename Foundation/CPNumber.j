@@ -43,8 +43,8 @@ var __placeholder   = new Number(),
 
 + (id)alloc
 {
-	var result = new Number();
-	result.isa = [self class];
+    var result = new Number();
+    result.isa = [self class];
     return result;
 }
 

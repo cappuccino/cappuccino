@@ -108,8 +108,8 @@ CPEnumerationReverse    = 1 << 1;
 */
 + (id)alloc
 {
-	var result = [];
-	result.isa = [self class];
+    var result = [];
+    result.isa = [self class];
     return result;
 }
 
