@@ -54,6 +54,7 @@ if (input == nil)
 */
 + (id)alloc
 {
+	if ([self class] !== CPException) return [super alloc];
     return new Error();
 }
 

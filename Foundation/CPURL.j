@@ -54,7 +54,9 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
 
 + (id)alloc
 {
-    return new CFURL();
+    var result = new CFURL();
+	result.isa = [self class];
+	return result;
 }
 
 - (id)init
@@ -81,7 +83,9 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
 
 - (id)initWithString:(CPString)URLString relativeToURL:(CPURL)aBaseURL
 {
-    return new CFURL(URLString, aBaseURL);
+    var result = new CFURL(URLString, aBaseURL);
+	result.isa = [self class];
+	return result;
 }
 
 + (id)URLWithString:(CPString)URLString relativeToURL:(CPURL)aBaseURL

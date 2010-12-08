@@ -39,7 +39,9 @@ var CPDateReferenceDate = new Date(Date.UTC(2001, 1, 1, 0, 0, 0, 0));
 
 + (id)alloc
 {
-    return new Date;
+	var result = new Date;
+	result.isa = [self class];
+    return result;
 }
 
 + (id)date

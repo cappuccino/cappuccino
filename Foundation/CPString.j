@@ -91,6 +91,7 @@ var CPStringRegexSpecialCharacters = [
 */
 + (id)alloc
 {
+	if ([self class] !== CPString) return [super alloc];
     return new String;
 }
 
@@ -134,7 +135,14 @@ var CPStringRegexSpecialCharacters = [
 */
 - (id)initWithString:(CPString)aString
 {
-    return String(aString);
+    if ([self class] === CPString) 
+        return String(aString);
+
+    var result = new String(aString);
+
+    result.isa = [self class];
+
+    return result;
 }
 
 /*!
