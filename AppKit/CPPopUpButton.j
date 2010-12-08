@@ -283,6 +283,8 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     if (_selectedIndex == anIndex)
         return;
 
+    [self willChangeValueForKey:@"selectedIndex"];
+
     if (_selectedIndex >= 0 && ![self pullsDown])
         [[self selectedItem] setState:CPOffState];
 
@@ -292,6 +294,8 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
         [[self selectedItem] setState:CPOnState];
 
     [self synchronizeTitleAndSelectedItem];
+
+    [self didChangeValueForKey:@"selectedIndex"];
 }
 
 /*!
