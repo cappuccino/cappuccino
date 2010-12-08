@@ -502,6 +502,16 @@ var themedButtonValues = nil,
     return button;
 }
 
++ (CPButton)themedRoundedButton
+{
+    var button = [self button];
+
+    [button setTitle:@"Save"];
+    [button setThemeState:CPButtonStateBezelStyleRounded];
+
+    return button;
+}
+
 + (CPPopUpButton)themedPopUpButton
 {
     var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0) pullsDown:NO],
