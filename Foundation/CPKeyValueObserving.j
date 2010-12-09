@@ -96,7 +96,10 @@
         newValue = nil;
 
     if (changeKind === CPKeyValueChangeSetting)
+    {
         [self setValue:newValue forKeyPath:aKeyPath];
+        return;
+    }
 
     //decide if this is a unordered or ordered to-many relationship
     if([newValue isKindOfClass: [CPSet class]] || [oldValue isKindOfClass: [CPSet class]])
@@ -104,7 +107,7 @@
         if (changeKind === CPKeyValueChangeInsertion)
             [[self mutableSetValueForKeyPath:aKeyPath] unionSet:newValue];
         else if (changeKind === CPKeyValueChangeRemoval)
-            [[self mutableSetValueForKeyPath:aKeyPath] minusSet:newValue];
+            [[self mutableSetValueForKeyPath:aKeyPath] minusSet:oldValue];
         else if (changeKind === CPKeyValueChangeReplacement)
             [[self mutableSetValueForKeyPath:aKeyPath] setSet: newValue];
     }
@@ -363,9 +366,11 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
 
         [affectedKeys addObject:aKey];
 
-        // Observe key paths of objects other then ourselves, so ware notified of the changes
+        //observe key paths of objects other then ourselves, so we are notified of the changes
+        //use CPKeyValueObservingOptionPrior to ensure proper wrapping around changes
+        //so CPKeyValueObservingOptionPrior and CPKeyValueObservingOptionOld can be fulfilled even for dependent keys
         if (affectingKey.indexOf(@".") !== -1)
-            [_targetObject addObserver:self forKeyPath:affectingKey options:0 context:nil];
+            [_targetObject addObserver:self forKeyPath:affectingKey options:CPKeyValueObservingOptionPrior | kvoNewAndOld  context:nil];
         else
             [self _replaceModifiersForKey:affectingKey];
     }
@@ -377,10 +382,11 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
     var dependentKeysForClass = _nativeClass[DependentKeysKey],
         dependantKeys = [dependentKeysForClass[theKeyPath] allObjects];
 
+    var isBeforeFlag = !![theChanges objectForKey:CPKeyValueChangeNotificationIsPriorKey];
     for (var i = 0; i < [dependantKeys count]; i++)
     {
         var dependantKey = [dependantKeys objectAtIndex:i];
-        [self _sendNotificationsForKey:dependantKey changeOptions:theChanges isBefore:NO];
+        [self _sendNotificationsForKey:dependantKey changeOptions:theChanges isBefore:isBeforeFlag];
     }
 }
 
@@ -531,7 +537,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
         else if (indexes)
         {
             var type = [changes objectForKey:CPKeyValueChangeKindKey];
-            // for to-many relationships, newvalue is only sensible for replace and insert
+            // for ordered to-many relationships, newvalue is only sensible for replace and insert
             if (type == CPKeyValueChangeReplacement || type == CPKeyValueChangeInsertion)
             {
                 //FIXME: do we need to go through and replace "" with CPNull?
@@ -768,6 +774,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
     id          _object;
     id          _observer;
     id          _context;
+    unsigned    _options;
                              //a.b
     CPString    _firstPart;  //a
     CPString    _secondPart; //b
@@ -782,8 +789,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
     _context = aContext;
     _observer = anObserver;
     _object = anObject;
-
-    //current ignoring options (FIXME?)
+    _options = options;
 
     var dotIndex = aKeyPath.indexOf('.');
 
@@ -794,13 +800,13 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
     _secondPart = aKeyPath.substring(dotIndex + 1);
 
     //become an observer of the first part of our key (a)
-    [_object addObserver:self forKeyPath:_firstPart options:kvoNewAndOld context:nil];
+    [_object addObserver:self forKeyPath:_firstPart options:_options context:nil];
 
     //the current value of a (not the value of a.b)
     _value = [_object valueForKey:_firstPart];
 
     if (_value)
-        [_value addObserver:self forKeyPath:_secondPart options:kvoNewAndOld context:nil]; //we're observing b on current a
+        [_value addObserver:self forKeyPath:_secondPart options:_options context:nil]; //we're observing b on current a
 
     return self;
 }
@@ -818,7 +824,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
         _value = [_object valueForKey:_firstPart];
 
         if (_value)
-            [_value addObserver:self forKeyPath:_secondPart options:kvoNewAndOld context:nil];
+            [_value addObserver:self forKeyPath:_secondPart options:_options context:nil];
     }
     else
     {
