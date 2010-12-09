@@ -35,30 +35,30 @@
 {
     CPArray             _namesKeys;
     CPArray             _namesValues;
-    
+
     CPArray             _accessibilityConnectors;
     CPArray             _accessibilityOidsKeys;
     CPArray             _accessibilityOidsValues;
-    
+
     CPArray             _classesKeys;
     CPArray             _classesValues;
-    
+
     CPArray             _connections;
-    
+
     id                  _fontManager;
-    
+
     CPString            _framework;
-    
+
     int                 _nextOid;
-    
+
     CPArray             _objectsKeys;
     CPArray             _objectsValues;
-    
+
     CPArray             _oidKeys;
     CPArray             _oidValues;
-    
+
     _CPCibCustomObject  _fileOwner;
-    
+
     CPSet               _visibleWindows;
 
     JSObject            _replacementObjects;
@@ -114,28 +114,28 @@
 
 var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey",
     _CPCibObjectDataNamesValuesKey              = @"_CPCibObjectDataNamesValuesKey",
-    
+
     _CPCibObjectDataAccessibilityConnectorsKey  = @"_CPCibObjectDataAccessibilityConnectors",
     _CPCibObjectDataAccessibilityOidsKeysKey    = @"_CPCibObjectDataAccessibilityOidsKeys",
     _CPCibObjectDataAccessibilityOidsValuesKey  = @"_CPCibObjectDataAccessibilityOidsValues",
 
     _CPCibObjectDataClassesKeysKey              = @"_CPCibObjectDataClassesKeysKey",
     _CPCibObjectDataClassesValuesKey            = @"_CPCibObjectDataClassesValuesKey",
-    
+
     _CPCibObjectDataConnectionsKey              = @"_CPCibObjectDataConnectionsKey",
-    
+
     _CPCibObjectDataFontManagerKey              = @"_CPCibObjectDataFontManagerKey",
-    
+
     _CPCibObjectDataFrameworkKey                = @"_CPCibObjectDataFrameworkKey",
 
     _CPCibObjectDataNextOidKey                  = @"_CPCibObjectDataNextOidKey",
-    
+
     _CPCibObjectDataObjectsKeysKey              = @"_CPCibObjectDataObjectsKeysKey",
     _CPCibObjectDataObjectsValuesKey            = @"_CPCibObjectDataObjectsValuesKey",
-    
+
     _CPCibObjectDataOidKeysKey                  = @"_CPCibObjectDataOidKeysKey",
     _CPCibObjectDataOidValuesKey                = @"_CPCibObjectDataOidValuesKey",
-    
+
     _CPCibObjectDataFileOwnerKey                = @"_CPCibObjectDataFileOwnerKey",
     _CPCibObjectDataVisibleWindowsKey           = @"_CPCibObjectDataVisibleWindowsKey";
 
@@ -195,17 +195,17 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
     [aCoder encodeObject:_connections forKey:_CPCibObjectDataConnectionsKey];
 
     //id              _fontManager;
-    
+
     [aCoder encodeObject:_framework forKey:_CPCibObjectDataFrameworkKey];
 
     [aCoder encodeInt:_nextOid forKey:_CPCibObjectDataNextOidKey];
-    
+
     [aCoder encodeObject:_objectsKeys forKey:_CPCibObjectDataObjectsKeysKey];
     [aCoder encodeObject:_objectsValues forKey:_CPCibObjectDataObjectsValuesKey];
-    
+
     [aCoder encodeObject:_oidKeys forKey:_CPCibObjectDataOidKeysKey];
     [aCoder encodeObject:_oidValues forKey:_CPCibObjectDataOidValuesKey];
-    
+
     [aCoder encodeObject:_fileOwner forKey:_CPCibObjectDataFileOwnerKey];
 //    CPCustomObject  _fileOwner;
 

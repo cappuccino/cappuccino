@@ -621,17 +621,20 @@ var CPSplitViewHorizontalImage = nil,
             viewFrame = CGRectMakeCopy(bounds),
             isSizable = isVertical ? [view autoresizingMask] & CPViewWidthSizable : [view autoresizingMask] & CPViewHeightSizable;
 
-            if (index + 1 == count)
-                viewFrame.size[_sizeComponent] = bounds.size[_sizeComponent] - viewFrame.origin[_originComponent];
-            else if (totalSizableSpace && isSizable && lastSizableIndex === index)
-                viewFrame.size[_sizeComponent] = MAX(0, ROUND([view frame].size[_sizeComponent] + remainingFlexibleSpace))
-            else if (isSizable || !totalSizableSpace)
-            {
-                viewFrame.size[_sizeComponent] = MAX(0, ROUND(ratio * [view frame].size[_sizeComponent]));
-                remainingFlexibleSpace -= (viewFrame.size[_sizeComponent] - [view frame].size[_sizeComponent]);
-            }
-            else if (totalSizableSpace && !isSizable)
-                viewFrame.size[_sizeComponent] = [view frame].size[_sizeComponent];
+        if (index + 1 === count)
+            viewFrame.size[_sizeComponent] = bounds.size[_sizeComponent] - viewFrame.origin[_originComponent];
+
+        else if (totalSizableSpace && isSizable && lastSizableIndex === index)
+            viewFrame.size[_sizeComponent] = MAX(0, ROUND([view frame].size[_sizeComponent] + remainingFlexibleSpace))
+
+        else if (isSizable || !totalSizableSpace)
+        {
+            viewFrame.size[_sizeComponent] = MAX(0, ROUND(ratio * [view frame].size[_sizeComponent]));
+            remainingFlexibleSpace -= (viewFrame.size[_sizeComponent] - [view frame].size[_sizeComponent]);
+        }
+
+        else if (totalSizableSpace && !isSizable)
+            viewFrame.size[_sizeComponent] = [view frame].size[_sizeComponent];
 
         bounds.origin[_originComponent] += viewFrame.size[_sizeComponent] + dividerThickness;
 

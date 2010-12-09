@@ -23,7 +23,7 @@
 @import <Foundation/CPObject.j>
 
 
-/*! 
+/*!
     @ingroup appkit
     @class CPFlashMovie
 
@@ -52,10 +52,10 @@
 - (id)initWithFile:(CPString)aFilename
 {
     self = [super init];
-    
+
     if (self)
         _filename = aFilename;
-    
+
     return self;
 }
 

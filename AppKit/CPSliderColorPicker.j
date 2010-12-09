@@ -63,7 +63,7 @@
     return [super initWithPickerMask:mask colorPanel: owningColorPanel];
 }
 
--(id)initView
+- (id)initView
 {
     aFrame = CGRectMake(0, 0, CPColorPickerViewWidth, CPColorPickerViewHeight);    
 
