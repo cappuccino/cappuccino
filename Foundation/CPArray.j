@@ -215,7 +215,7 @@ CPEnumerationReverse    = 1 << 1;
             copies[index] = anArray[index];
     }
 
-    [self initWithArray:copies];
+    [self initWithObjects:copies count:count];
 
     return self;
 }
