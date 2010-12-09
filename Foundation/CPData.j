@@ -37,8 +37,8 @@
 + (id)alloc
 {
     var result = new CFMutableData();
-	result.isa = [self class];
-	return result;
+    result.isa = [self class];
+    return result;
 }
 
 + (CPData)data

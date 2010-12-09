@@ -62,7 +62,7 @@ CPLogRegister(CPLogConsole);
 
 - (void)changeDefault:(id)sender
 {
-    var buttonWindow = [sender window]
+    var buttonWindow = [sender window],
         tag = [[buttonWindow defaultButton] tag] === 1 ? 2 : 1;
 
     [buttonWindow setDefaultButton:[[buttonWindow contentView] viewWithTag:tag]];

@@ -55,13 +55,13 @@
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
         contentView = [theWindow contentView];
 
-    var box = [[CPBox alloc] initWithFrame:CGRectMake(0,0,500,300)];
-    browser = [[CPBrowser alloc] initWithFrame:CGRectMake(0,0,500,300)];
+    var box = [[CPBox alloc] initWithFrame:CGRectMake(0, 0, 500, 300)],
+        browser = [[CPBrowser alloc] initWithFrame:CGRectMake(0, 0, 500, 300)];
 
     [browser setWidth:300 ofColumn:1];
     [box setContentView:browser];
     [box setBorderType:CPBezelBorder];
-    [box setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+    [box setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [box setCenter:[contentView center]];
     [contentView addSubview:box];
 
@@ -96,7 +96,7 @@
 
 - (void)browserClicked:(id)sender
 {
-    console.log("selected column: "+[browser selectedColumn]+" row: "+[browser selectedRowInColumn:[browser selectedColumn]]);
+    console.log("selected column: " + [browser selectedColumn] + " row: " + [browser selectedRowInColumn:[browser selectedColumn]]);
 }
 
 - (void)dblClicked:(id)sender

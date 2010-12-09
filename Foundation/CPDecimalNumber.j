@@ -196,7 +196,7 @@ _cappdefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundin
 {
     if (self = [self init])
     {
-        if( flag )
+        if (flag)
             mantissa *= -1;
 
         _data = CPDecimalMakeWithParts(mantissa, exponent);
@@ -259,7 +259,7 @@ _cappdefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundin
 {
     var s = @"",
         i = 0;
-    for(;i < CPDecimalMaxDigits; i++)
+    for (;i < CPDecimalMaxDigits; i++)
         s += "9";
     s += "e" + CPDecimalMaxExponent;
     return [[self alloc] initWithString:s];
@@ -269,7 +269,7 @@ _cappdefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundin
 {
     var s = @"-",
         i = 0;
-    for(;i < CPDecimalMaxDigits; i++)
+    for (;i < CPDecimalMaxDigits; i++)
         s += "9";
     s += "e" + CPDecimalMinExponent;
     return [[self alloc] initWithString:s];

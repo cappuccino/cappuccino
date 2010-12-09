@@ -485,7 +485,7 @@ var CPStringRegexSpecialCharacters = [
         rhs = rhs.toLowerCase();
     }
 
-    if(aMask & CPDiacriticInsensitiveSearch)
+    if (aMask & CPDiacriticInsensitiveSearch)
     {
         lhs = lhs.stripDiacritics();
         rhs = rhs.stripDiacritics();
@@ -493,7 +493,8 @@ var CPStringRegexSpecialCharacters = [
 
     if (lhs < rhs)
         return CPOrderedAscending;
-    else if (lhs > rhs)
+
+    if (lhs > rhs)
         return CPOrderedDescending;
 
     return CPOrderedSame;
@@ -818,7 +819,7 @@ String.prototype.stripDiacritics = function ()
         {
             var drange = diacritics[i];
 
-            if (code >= drange[0] && code <= drange[drange.length-1])
+            if (code >= drange[0] && code <= drange[drange.length - 1])
             {
                 code = normalized[i];
                 break;

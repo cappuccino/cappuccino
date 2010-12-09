@@ -84,8 +84,8 @@
 */
 + (id)alloc
 {
-	var result = new CFMutableDictionary();
-	result.isa = [self class];
+    var result = new CFMutableDictionary();
+    result.isa = [self class];
     return result;
 }
 

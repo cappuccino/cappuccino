@@ -1,6 +1,6 @@
 @import <Foundation/CPOperation.j>
 
-@implementation TestOperation : CPOperation 
+@implementation TestOperation : CPOperation
 {
     CPString name @accessors;
     CPString value @accessors;
@@ -177,7 +177,7 @@
 
     [to cancel];
 
-    [self assert:@"isCancelled" equals:[[obs changedKeyPaths] objectAtIndex:9]];                                      
+    [self assert:@"isCancelled" equals:[[obs changedKeyPaths] objectAtIndex:9]];
 }
 
 @end
