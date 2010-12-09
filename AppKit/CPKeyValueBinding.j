@@ -43,12 +43,12 @@ var CPBindingOperationAnd = 0,
 
 + (void)exposeBinding:(CPString)aBinding forClass:(Class)aClass
 {
-    var bindings = [exposedBindingsMap objectForKey:[aClass hash]];
+    var bindings = [exposedBindingsMap objectForKey:[aClass UID]];
 
     if (!bindings)
     {
         bindings = [];
-        [exposedBindingsMap setObject:bindings forKey:[aClass hash]];
+        [exposedBindingsMap setObject:bindings forKey:[aClass UID]];
     }
 
     bindings.push(aBinding);
@@ -56,12 +56,12 @@ var CPBindingOperationAnd = 0,
 
 + (CPArray)exposedBindingsForClass:(Class)aClass
 {
-    return [[exposedBindingsMap objectForKey:[aClass hash]] copy];
+    return [[exposedBindingsMap objectForKey:[aClass UID]] copy];
 }
 
 + (CPKeyValueBinding)getBinding:(CPString)aBinding forObject:(id)anObject
 {
-    return [[bindingsMap objectForKey:[anObject hash]] objectForKey:aBinding];
+    return [[bindingsMap objectForKey:[anObject UID]] objectForKey:aBinding];
 }
 
 + (CPDictionary)infoForBinding:(CPString)aBinding forObject:(id)anObject
@@ -76,12 +76,12 @@ var CPBindingOperationAnd = 0,
 
 + (CPDictionary)allBindingsForObject:(id)anObject
 {
-    return [bindingsMap objectForKey:[anObject hash]];
+    return [bindingsMap objectForKey:[anObject UID]];
 }
 
 + (void)unbind:(CPString)aBinding forObject:(id)anObject
 {
-    var bindings = [bindingsMap objectForKey:[anObject hash]];
+    var bindings = [bindingsMap objectForKey:[anObject UID]];
 
     if (!bindings)
         return;
@@ -101,7 +101,7 @@ var CPBindingOperationAnd = 0,
 
 + (void)unbindAllForObject:(id)anObject
 {
-    var bindings = [bindingsMap objectForKey:[anObject hash]];
+    var bindings = [bindingsMap objectForKey:[anObject UID]];
     if (!bindings)
         return;
 
@@ -111,7 +111,7 @@ var CPBindingOperationAnd = 0,
     while (count--)
         [anObject unbind:[bindings objectForKey:allKeys[count]]];
 
-    [bindingsMap removeObjectForKey:[anObject hash]];
+    [bindingsMap removeObjectForKey:[anObject UID]];
 }
 
 - (id)initWithBinding:(CPString)aBinding name:(CPString)aName to:(id)aDestination keyPath:(CPString)aKeyPath options:(CPDictionary)options from:(id)aSource
@@ -128,11 +128,11 @@ var CPBindingOperationAnd = 0,
 
         [aDestination addObserver:self forKeyPath:aKeyPath options:CPKeyValueObservingOptionNew context:aBinding];
 
-        var bindings = [bindingsMap objectForKey:[_source hash]];
+        var bindings = [bindingsMap objectForKey:[_source UID]];
         if (!bindings)
         {
             bindings = [CPDictionary new];
-            [bindingsMap setObject:bindings forKey:[_source hash]];
+            [bindingsMap setObject:bindings forKey:[_source UID]];
         }
 
         [bindings setObject:self forKey:aName];
@@ -320,7 +320,7 @@ var CPBindingOperationAnd = 0,
 
 - (void)setValueFor:(CPString)aBinding
 {
-    var bindings = [bindingsMap valueForKey:[_source hash]];
+    var bindings = [bindingsMap valueForKey:[_source UID]];
 
     if (!bindings)
         return;
@@ -341,7 +341,7 @@ var CPBindingOperationAnd = 0,
 
 - (void)setValueFor:(CPString)aBinding
 {
-    var bindings = [bindingsMap objectForKey:[_source hash]];
+    var bindings = [bindingsMap objectForKey:[_source UID]];
 
     if (!bindings)
         return;
