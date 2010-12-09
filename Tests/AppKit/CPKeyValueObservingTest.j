@@ -102,3 +102,5 @@
 {
     return [[self observingTester] cheese];
 }
+
+@end

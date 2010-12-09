@@ -974,38 +974,6 @@ CPEnumerationReverse    = 1 << 1;
     return array;
 }
 
-// Key value coding
-/*!
-    Sets the key-value for each element in the array.
-    @param aValue the value for the coding
-    @param aKey the key for the coding
-*/
-- (void)setValue:(id)aValue forKey:(CPString)aKey
-{
-    var i = 0,
-        count = [self count];
-
-    for (; i < count; ++i)
-        [self[i] setValue:aValue forKey:aKey];
-}
-
-/*!
-    Returns the value for \c aKey from each element in the array.
-    @param aKey the key to return the value for
-    @return an array of containing a value for each element in the array
-*/
-- (CPArray)valueForKey:(CPString)aKey
-{
-    var i = 0,
-        count = [self count],
-        array = [];
-
-    for (; i < count; ++i)
-        array.push([self[i] valueForKey:aKey]);
-
-    return array;
-}
-
 // Copying arrays
 
 /*!
