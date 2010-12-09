@@ -36,7 +36,7 @@
 
 + (id)alloc
 {
-    result = new CFMutableData();
+    var result = new CFMutableData();
 	result.isa = [self class];
 	return result;
 }

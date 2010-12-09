@@ -24,8 +24,7 @@
 @import "CPObjJRuntime.j"
 
 
-var __placeholder   = new Number(),
-    CPNumberUIDs    = new CFMutableDictionary();
+var CPNumberUIDs    = new CFMutableDictionary();
 
 /*!
     @class CPNumber
