@@ -454,11 +454,9 @@ var _classVersion = 0;
     Sets the class version number.
     @param the new version number for the class
 */
-+ (id)setVersion:(int)aVersion
++ (void)setVersion:(int)aVersion
 {
-    _classVersion = aVersion;
-
-    return self;
+    class_setVersion(self, aVersion);
 }
 
 /*!
@@ -466,7 +464,7 @@ var _classVersion = 0;
 */
 + (int)version
 {
-    return _classVersion;
+    return class_getVersion(self);
 }
 
 // Scripting (?)
