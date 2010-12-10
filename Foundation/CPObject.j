@@ -61,6 +61,10 @@ CPLog(@"Got some class: %@", inst);
 
     @todo document KVC usage.
 */
+
+
+var _classVersion = 0;
+
 @implementation CPObject
 {
     Class   isa;
@@ -452,7 +456,7 @@ CPLog(@"Got some class: %@", inst);
 */
 + (id)setVersion:(int)aVersion
 {
-    version = aVersion;
+    _classVersion = aVersion;
 
     return self;
 }
@@ -462,7 +466,7 @@ CPLog(@"Got some class: %@", inst);
 */
 + (int)version
 {
-    return version;
+    return _classVersion;
 }
 
 // Scripting (?)
