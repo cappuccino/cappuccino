@@ -83,9 +83,9 @@
 - (void)testRemoveObjectsAtIndexes
 {
     var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four", nil],
-            indexes = [CPMutableIndexSet indexSetWithIndex: 2];
+        indexes = [CPMutableIndexSet indexSetWithIndex: 2];
 
-    [array removeObjectsAtIndexes: indexes];
+    [array removeObjectsAtIndexes:indexes];
 
     [self assert:array equals:[@"one", @"two", @"four", nil]];
 }
@@ -425,7 +425,7 @@
 - (CPArray)arrayByReversingArray
 {
     var a = [];
-    for (i = length - 1; i>0; --i)
+    for (i = length - 1; i > 0; --i)
         a.push(self[i]);
 
     return a;

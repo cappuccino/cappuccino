@@ -459,7 +459,7 @@ CPOffState
 
     if (supermenu)
         [CPException raise:CPInvalidArgumentException
-		   reason: @"Can't add submenu \"" + [aMenu title] + "\" to item \"" + [self title] + "\", because it is already submenu of \"" + [[aMenu supermenu] title] + "\""];
+           reason: @"Can't add submenu \"" + [aMenu title] + "\" to item \"" + [self title] + "\", because it is already submenu of \"" + [[aMenu supermenu] title] + "\""];
 
     _submenu = aMenu;
 
@@ -592,7 +592,7 @@ CPControlKeyMask
         return @"";
 
     var string = _keyEquivalent.toUpperCase(),
-        needsShift = _keyEquivalentModifierMask & CPShiftKeyMask || 
+        needsShift = _keyEquivalentModifierMask & CPShiftKeyMask ||
                     (string === _keyEquivalent && _keyEquivalent.toLowerCase() !== _keyEquivalent.toUpperCase());
 
     if (CPBrowserIsOperatingSystem(CPMacOperatingSystem))
@@ -791,12 +791,12 @@ CPControlKeyMask
 - (id)copy
 {
     var item = [[CPMenuItem alloc] init];
-    
+
     // No point in going through accessors and doing lots of unnecessary state checking/updating
     item._isSeparator = _isSeparator;
-    
+
     [item setTitle:_title];
-    [item setFont:_font];        
+    [item setFont:_font];
     [item setTarget:_target];
     [item setAction:_action];
     [item setEnabled:_isEnabled];
@@ -815,7 +815,7 @@ CPControlKeyMask
     [item setIndentationLevel:_indentationLevel];
     [item setToolTip:_toolTip];
     [item setRepresentedObject:_representedObject];
-    
+
     return item;
 }
 

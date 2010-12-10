@@ -162,7 +162,7 @@ var _CPFontDetectCompareFonts = function(fontA, fontB)
 
     _CPFontDetectSpan.style.fontFamily = '"' + fontB + '", "' + fontA + '"';
     var bWidth = _CPFontDetectSpan.offsetWidth,
-        Height = _CPFontDetectSpan.offsetHeight;
+        bHeight = _CPFontDetectSpan.offsetHeight;
 
     return (a.w != bWidth || a.h != bHeight);
 }

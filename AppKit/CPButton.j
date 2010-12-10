@@ -70,7 +70,13 @@ CPPushInCellMask            = CPPushInButtonMask;
 CPChangeGrayCellMask        = CPGrayButtonMask;
 CPChangeBackgroundCellMask  = CPBackgroundButtonMask;
 
-CPButtonStateMixed  = CPThemeState("mixed");
+CPButtonStateMixed                  = CPThemeState("mixed");
+CPButtonStateBezelStyleRounded      = CPThemeState("rounded");
+
+// add all future correspondance between bezel styles and theme state here.
+var CPButtonBezelStyleStateMap = [CPDictionary dictionaryWithObjects:[CPButtonStateBezelStyleRounded, nil]
+                                                             forKeys:[CPRoundedBezelStyle, CPRoundRectBezelStyle]];
+
 
 CPButtonDefaultHeight = 24.0;
 CPButtonImageOffset   = 3.0;
@@ -151,7 +157,7 @@ CPButtonImageOffset   = 3.0;
         _keyEquivalent = @"";
         _keyEquivalentModifierMask = 0;
 
-//        [self setBezelStyle:CPRoundRectBezelStyle];
+        [self setBezelStyle:CPRoundRectBezelStyle];
         [self setBordered:YES];
     }
 
@@ -225,9 +231,9 @@ CPButtonImageOffset   = 3.0;
 
 /*!
 	Returns the button's next state.
-	@return The button's state. A button can have two or three states. 
-	If it has two, this value is either \c CPOffState (the normal or unpressed state) 
-	or \c CPOnState (the alternate or pressed state). 
+	@return The button's state. A button can have two or three states.
+	If it has two, this value is either \c CPOffState (the normal or unpressed state)
+	or \c CPOnState (the alternate or pressed state).
 	If it has three, this value can be \c CPOnState (the feature is in effect everywhere), \c CPOffState (the feature is in effect nowhere), or \c CPMixedState (the feature is in effect somewhere).
 */
 - (CPInteger)nextState
@@ -272,7 +278,7 @@ CPButtonImageOffset   = 3.0;
 
 /*!
 	Sets the title displayed by the button when in its normal state.
-	@param aTitle The string to set as the button's title. This title is always shown on buttons 
+	@param aTitle The string to set as the button's title. This title is always shown on buttons
 	that don’t use their alternate contents when highlighting or displaying their alternate state.
 */
 - (void)setTitle:(CPString)aTitle
@@ -288,7 +294,7 @@ CPButtonImageOffset   = 3.0;
 
 /*!
 	Returns the title displayed on the button when it’s in its normal state.
-	@return	The title displayed on the receiver when it’s in its normal state 
+	@return	The title displayed on the receiver when it’s in its normal state
 	or the empty string if the button doesn’t display a title.
 */
 - (CPString)title
@@ -678,10 +684,24 @@ CPButtonImageOffset   = 3.0;
 
 - (void)setBezelStyle:(unsigned)aBezelStyle
 {
+    if (aBezelStyle === _bezelStyle)
+        return;
+
+    var currentState = [CPButtonBezelStyleStateMap objectForKey:_bezelStyle],
+        newState = [CPButtonBezelStyleStateMap objectForKey:aBezelStyle];
+
+    if (currentState)
+        [self unsetThemeState:currentState];
+
+    if (newState)
+        [self setThemeState:newState];
+
+    _bezelStyle = aBezelStyle;
 }
 
 - (unsigned)bezelStyle
 {
+    return _bezelStyle;
 }
 
 @end

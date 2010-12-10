@@ -72,12 +72,12 @@
 - (id)copy
 {
     var copy = [[CPScanner alloc] initWithString:[self string]];
-    
+
     [copy setCharactersToBeSkipped:[self charactersToBeSkipped]];
     [copy setCaseSensitive:[self caseSensitive]];
     [copy setLocale:[self locale]];
     [copy setScanLocation:[self scanLocation]];
-   
+
     return copy;
 }
 
@@ -179,14 +179,14 @@
 {
     if ([self isAtEnd])
         return nil;
-    
+
     var current = [self scanLocation];
     var str = nil;
-    
+
     while (current < _string.length)
     {
         var c = (_string.charAt(current));
-        
+
         if ([scanSet characterIsMember:c] == stop)
             break;
 
@@ -196,13 +196,13 @@
                 str = '';
             str += c;
         }
-        
+
         current++;
     }
-    
+
     if (str)
         [self setScanLocation:current];
-        
+
     return str;
 }
 
@@ -215,15 +215,15 @@
     var current = [self scanLocation];
     var string = [self string];
     var toSkip = [self charactersToBeSkipped];
-    
+
     while (current < string.length)
     {
         if (![toSkip characterIsMember:string.charAt(current)])
             break;
-        
+
         current++;
     }
-    
+
     [self setScanLocation:current];
 }
 
@@ -265,22 +265,22 @@
         var currentStr = str.substr(current, s.length);
         if (currentStr == s || (!_caseSensitive && currentStr.toLowerCase() == s.toLowerCase()))
             break;
-            
+
         if (!captured)
             captured = '';
         captured += str.charAt(current);
         current++;
     }
-    
+
     if (captured)
         [self setScanLocation:current];
-    
+
     // evil private method use!
     // this method is defined in the category on CPString
     // in CPCharacterSet.j
     if ([self charactersToBeSkipped])
         captured = [captured _stringByTrimmingCharactersInSet:[self charactersToBeSkipped] options:_CPCharacterSetTrimAtBeginning];
-        
+
     return captured;
 }
 
@@ -292,10 +292,10 @@
 {
     [self _movePastCharactersToBeSkipped];
     var str = [self string], current = [self scanLocation];
-    
+
     if ([self isAtEnd])
         return 0;
-    
+
     var s = str.substring(current, str.length);
     var f =  parseFloat(s); // wont work with non . decimal separator !!
     if (f)
@@ -303,16 +303,16 @@
         var pos, foundDash = NO;
 /*
         var decimalSeparatorString;
-        if(_locale != nil)
+        if (_locale != nil)
             decimalSeparatorString = [_locale objectForKey:CPLocaleDecimalSeparator];
         else
             decimalSeparatorString = [[CPLocale systemLocale] objectForKey:CPLocaleDecimalSeparator];
-            
+
         var separatorCode = (decimalSeparatorString.length >0) decimalSeparatorString.charCodeAt(0) : 45;
 */
         var separatorCode = 45;
 
-        for(pos = current; pos < current + str.length; pos++)
+        for (pos = current; pos < current + str.length; pos++)
         {
             var charCode = str.charCodeAt(pos);
             if (charCode == separatorCode)
@@ -324,11 +324,11 @@
             else if (charCode < 48 || charCode > 57 || (charCode == 45 && pos != current)) // not a digit or a "-" but not prefix
                 break;
         }
-        
+
         [self setScanLocation:pos];
         return f;
     }
-    
+
     return nil;
 }
 
@@ -357,11 +357,11 @@
             else if (charCode < 48 || charCode > 57 || (charCode == 45 && pos != current))
                 break;
         }
-        
+
         [self setScanLocation:pos];
         return i;
     }
-    
+
     return nil;
 }
 

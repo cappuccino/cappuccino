@@ -10,17 +10,18 @@
 
 @implementation AppController : CPObject
 {
-	CPWindow 	window;
-	CPWindow 	sheet;
-	CPTextField textField;
+    CPWindow    window;
+    CPWindow    sheet;
+    CPTextField textField;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     window = [[CPWindow alloc] initWithContentRect:CGRectMake(100,100,500,300) styleMask:CPResizableWindowMask],
         contentView = [window contentView];
-   	[window setMinSize:CGSizeMake(300, 200)];
-    sheet = [[CPWindow alloc] initWithContentRect:CGRectMake(0,0,300,100) styleMask:CPDocModalWindowMask|CPResizableWindowMask];
+
+    [window setMinSize:CGSizeMake(300, 200)];
+    sheet = [[CPWindow alloc] initWithContentRect:CGRectMake(0,0,300,100) styleMask:CPDocModalWindowMask | CPResizableWindowMask];
     [sheet setMinSize:CGSizeMake(300,100)];
 
     var sheetContent = [sheet contentView];
@@ -35,14 +36,14 @@
     [okButton setTarget:self];
     [okButton setTag:1];
     [okButton setAction:@selector(closeSheet:)];
-    [okButton setAutoresizingMask:CPViewMinXMargin|CPViewMinYMargin];
+    [okButton setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
 
     var cancelButton = [[CPButton alloc] initWithFrame:CGRectMake(120,70,100,24)];
     [cancelButton setTitle:"Cancel"];
     [cancelButton setTarget:self];
     [cancelButton setTag:0];
     [cancelButton setAction:@selector(closeSheet:)];
-    [cancelButton setAutoresizingMask:CPViewMinXMargin|CPViewMinYMargin];
+    [cancelButton setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
 
     [sheetContent addSubview:textField];
     [sheetContent addSubview:okButton];
@@ -52,9 +53,9 @@
     [displayButton setTitle:"Display Sheet"];
     [displayButton setTarget:self];
     [displayButton setAction:@selector(displaySheet:)];
-	[contentView addSubview:displayButton];
+    [contentView addSubview:displayButton];
 
-	[window orderFront:self]
+    [window orderFront:self]
 }
 
 - (void)displaySheet:(id)sender
@@ -75,10 +76,9 @@
     var str = [textField stringValue];
 
     [sheet orderOut:self];
+
     if (returnCode == CPOKButton && [str length] > 0)
-    {
-    	[window setTitle:str];
-    }
+        [window setTitle:str];
 }
 
 @end
