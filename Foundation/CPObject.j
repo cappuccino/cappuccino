@@ -63,8 +63,6 @@ CPLog(@"Got some class: %@", inst);
 */
 
 
-var _classVersion = 0;
-
 @implementation CPObject
 {
     Class   isa;
