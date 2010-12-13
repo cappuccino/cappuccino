@@ -241,7 +241,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 /*!
     @ignore
 */
-- (int)selectedTag
+- (int)_selectedTag
 {
     return [[self selectedItem] tag];
 }
@@ -252,16 +252,6 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 - (void)_setSelectedTag:(int)aTag
 {
     [self selectItemWithTag:aTag];
-}
-
-/*!
-    @ignore
-*/
-- (void)_reverseSetBinding
-{
-    var theBinding = [CPKeyValueBinding getBinding:@"selectedTag" forObject:self];
-    [theBinding reverseSetValueFor:@"selectedTag"];
-    [super _reverseSetBinding];
 }
 
 // Setting the Current Selection
