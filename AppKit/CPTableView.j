@@ -1310,15 +1310,16 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return _CGRectMake(range.location, 0.0, range.length, _CGRectGetHeight([self bounds]));
 }
 
-// Complexity:
-// O(1)
+
 /*!
+    @ignore
     Returns a CGRect with the location and size of the row
     @param aRowIndex the index of the row you want the rect of
+    @param checkRange if YES this method will return a zero rect if the aRowIndex is outside of the range of valid indices
 */
-- (CGRect)rectOfRow:(CPInteger)aRowIndex
+- (CGRect)_rectOfRow:(CPInteger)aRowIndex checkRange:(BOOL)checkRange
 {
-    if (aRowIndex > [self numberOfRows] - 1 || aRowIndex < 0)
+    if (checkRange && (aRowIndex > [self numberOfRows] - 1 || aRowIndex < 0))
         return _CGRectMakeZero();
 
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_)
@@ -1333,6 +1334,17 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     }
 
     return _CGRectMake(0.0, y, _CGRectGetWidth([self bounds]), height);
+}
+
+// Complexity:
+// O(1)
+/*!
+    Returns a CGRect with the location and size of the row
+    @param aRowIndex the index of the row you want the rect of
+*/
+- (CGRect)rectOfRow:(CPInteger)aRowIndex
+{
+    return [self _rectOfRow:aRowIndex checkRange:YES];
 }
 
 // Complexity:
@@ -3483,7 +3495,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (theRowIndex >= [self numberOfRows])
         theRowIndex = [self numberOfRows] - 1;
 
-    return [self rectOfRow:theRowIndex];
+    return [self _rectOfRow:theRowIndex checkRange:NO];
 }
 
 - (CPRect)_rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex offset:(CPPoint)theOffset
@@ -3491,7 +3503,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (theLowerRowIndex > [self numberOfRows])
         theLowerRowIndex = [self numberOfRows];
 
-    return [self rectOfRow:theLowerRowIndex];
+    return [self _rectOfRow:theLowerRowIndex checkRange:NO];
 }
 
 - (CPDragOperation)draggingUpdated:(id)sender
