@@ -184,7 +184,6 @@ var DefaultLineWidth = 1.0;
     CGContextBeginPath(ctx);
     CGContextAddPath(ctx, _path);
     CGContextSetLineWidth(ctx, [self lineWidth]);
-    CGContextClosePath(ctx);
     CGContextStrokePath(ctx);
 }
 
@@ -281,6 +280,7 @@ var DefaultLineWidth = 1.0;
 {
     CGPathAddPath(_path, nil, other._path);
 }
+
 /*!
     Remove all path elements; clears path.
 */

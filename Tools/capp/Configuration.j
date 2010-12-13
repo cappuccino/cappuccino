@@ -30,7 +30,7 @@ var DefaultDictionary       = nil,
     [DefaultDictionary setObject:@"feedback @nospam@ yourcompany.com" forKey:@"organization.email"];
     [DefaultDictionary setObject:@"http://yourcompany.com" forKey:@"organization.url"];
     [DefaultDictionary setObject:@"com.yourcompany" forKey:@"organization.identifier"];
-    
+
     var date = new Date(),
         months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -90,7 +90,7 @@ var DefaultDictionary       = nil,
 
     [set addObjectsFromArray:[temporaryDictionary allKeys]];
     [set addObjectsFromArray:[DefaultDictionary allKeys]];
-    
+
     return [set objectEnumerator];
 }
 
@@ -147,7 +147,7 @@ function config(/*va_args*/)
             case "--get":   shouldGet = YES;
                             break;
 
-            case "-l": 
+            case "-l":
             case "--list":  shouldList = YES;
                             break;
 
@@ -164,14 +164,14 @@ function config(/*va_args*/)
     {
         var key = nil,
             keyEnumerator = [configuration storedKeyEnumerator];
-    
+
         while (key = [keyEnumerator nextObject])
             print(key + '=' + [configuration valueForKey:key]);
     }
     else if (shouldGet)
     {
         var value = [configuration valueForKey:key];
-    
+
         if (value)
             print(value);
     }

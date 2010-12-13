@@ -87,7 +87,8 @@ function main(args)
 {
     var options = parser.parse(args, null, null, true);
 
-    if (options.args.length < 1 || options.args.length > 2) {
+    if (options.args.length < 1 || options.args.length > 2)
+    {
         parser.printUsage(options);
         OS.exit(1);
     }
@@ -101,9 +102,9 @@ function main(args)
         CPLogRegister(CPLogPrint);
 
     CPLog.debug("Input:      " + options.args[0]);
-    CPLog.debug("Output:     " + (options.args[1]||""));
+    CPLog.debug("Output:     " + (options.args[1] || ""));
     CPLog.debug("Format:     " + ["Auto","Mac","iPhone"][options.format]);
-    CPLog.debug("Resources:  " + (options.resources||""));
+    CPLog.debug("Resources:  " + (options.resources || ""));
     CPLog.debug("Frameworks: " + options.frameworks);
 
     var converter = [[Converter alloc] init];

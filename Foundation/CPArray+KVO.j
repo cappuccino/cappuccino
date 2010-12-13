@@ -41,12 +41,12 @@
     var firstPart = aKeyPath.substring(0, dotIndex),
         lastPart = aKeyPath.substring(dotIndex + 1);
 
-    return [[self valueForKeyPath:firstPart] valueForKeyPath:lastPart];
+    return [[self valueForKeyPath:firstPart] mutableArrayValueForKeyPath:lastPart];
 }
 
 @end
 
-@implementation _CPKVCArray : CPArray
+@implementation _CPKVCArray : CPMutableArray
 {
     id _proxyObject;
     id _key;
@@ -71,6 +71,9 @@
 
     SEL         _objectAtIndexSEL;
     Function    _objectAtIndex;
+
+    SEL         _objectsAtIndexesSEL;
+    Function    _objectsAtIndexes;
 
     SEL         _countSEL;
     Function    _count;
@@ -114,25 +117,29 @@
     if ([_proxyObject respondsToSelector:_removeSEL])
         _remove = [_proxyObject methodForSelector:_removeSEL];
 
-    _replaceSEL = sel_getName(@"replaceObjectFrom"+capitalizedKey+"AtIndex:withObject:");
+    _replaceSEL = sel_getName(@"replaceObjectIn"+capitalizedKey+"AtIndex:withObject:");
     if ([_proxyObject respondsToSelector:_replaceSEL])
         _replace = [_proxyObject methodForSelector:_replaceSEL];
 
-    _insertManySEL = sel_getName(@"insertObjects:in"+capitalizedKey+"AtIndexes:");
+    _insertManySEL = sel_getName(@"insert"+capitalizedKey+":atIndexes:");
     if ([_proxyObject respondsToSelector:_insertManySEL])
         _insertMany = [_proxyObject methodForSelector:_insertManySEL];
 
-    _removeManySEL = sel_getName(@"removeObjectsFrom"+capitalizedKey+"AtIndexes:");
+    _removeManySEL = sel_getName(@"remove"+capitalizedKey+"AtIndexes:");
     if ([_proxyObject respondsToSelector:_removeManySEL])
         _remove = [_proxyObject methodForSelector:_removeManySEL];
 
-    _replaceManySEL = sel_getName(@"replaceObjectsFrom"+capitalizedKey+"AtIndexes:withObjects:");
+    _replaceManySEL = sel_getName(@"replace"+capitalizedKey+"AtIndexes:with"+capitalizedKey+":");
     if ([_proxyObject respondsToSelector:_replaceManySEL])
         _replace = [_proxyObject methodForSelector:_replaceManySEL];
 
     _objectAtIndexSEL = sel_getName(@"objectIn"+capitalizedKey+"AtIndex:");
     if ([_proxyObject respondsToSelector:_objectAtIndexSEL])
         _objectAtIndex = [_proxyObject methodForSelector:_objectAtIndexSEL];
+
+    _objectsAtIndexesSEL = sel_getName(_key+"AtIndexes:");
+    if ([_proxyObject respondsToSelector:_objectsAtIndexesSEL])
+        _objectsAtIndexes = [_proxyObject methodForSelector:_objectsAtIndexesSEL];
 
     _countSEL = sel_getName(@"countOf"+capitalizedKey);
     if ([_proxyObject respondsToSelector:_countSEL])

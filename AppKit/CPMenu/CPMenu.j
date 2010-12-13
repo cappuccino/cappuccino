@@ -692,7 +692,7 @@ var _CPMenuBarVisible               = NO,
     var delegate = [self delegate];
 
     if ([delegate respondsToSelector:@selector(menuWillOpen:)])
-        [delegate menuWillOpen:aMenu];
+        [delegate menuWillOpen:self];
 
     // Convert location to global coordinates if not already in them.
     if (aView)

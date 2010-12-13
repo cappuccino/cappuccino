@@ -667,7 +667,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
     // Determine all the items that have flexible width.
     // Also determine the height of the toolbar.
-    var count = _visibleItems.length
+    var count = _visibleItems.length,
         flexibleItemIndexes = [CPIndexSet indexSet];
 
     while (count--)
@@ -799,10 +799,11 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
             hasNonSeparatorItem = YES;
 
-            var menuItem = [[CPMenuItem alloc] initWithTitle:[item label] action:[item action] keyEquivalent:nil];
+            var menuItem = [[CPMenuItem alloc] initWithTitle:[item label] action:@selector(didSelectMenuItem:) keyEquivalent:nil];
 
+            [menuItem setRepresentedObject:item];
             [menuItem setImage:[item image]];
-            [menuItem setTarget:[item target]];
+            [menuItem setTarget:self];
             [menuItem setEnabled:[item isEnabled]];
 
             [_additionalItemsButton addItem:menuItem];
@@ -810,6 +811,18 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     }
     else
         [_additionalItemsButton removeFromSuperview];
+}
+
+/*
+    Used privately.
+    @ignore
+*/
+
+- (void)didSelectMenuItem:(id)aSender
+{
+    var toolbarItem = [aSender representedObject];
+
+    [CPApp sendAction:[toolbarItem action] to:[toolbarItem target] from:toolbarItem];
 }
 
 - (void)reloadToolbarItems

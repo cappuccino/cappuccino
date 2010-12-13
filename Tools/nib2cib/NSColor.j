@@ -47,7 +47,7 @@ var NSUnknownColorSpaceModel    = -1,
     {
         case 1: // [NSColor colorWithCalibratedRed:values[0] green:values[1] blue:values[2] alpha:values[3]];
         case 2: // [NSColor colorWithDeviceRed:values[0] green:values[1] blue:values[2] alpha:values[3]];
-        
+
             // NSComponents data
             // NSCustomColorSpace NSColorSpace
             var rgb         = [aCoder decodeBytesForKey:@"NSRGB"],
@@ -60,15 +60,15 @@ var NSUnknownColorSpaceModel    = -1,
 
             result = [CPColor colorWithCalibratedRed:values[0] green:values[1] blue:values[2] alpha:values[3]];
             break;
-            
+
         case 3: // [NSColor colorWithCalibratedWhite:values[0] alpha:values[1]];
         case 4: // [NSColor colorWithDeviceWhite:values[0] alpha:values[1]];
-        
+
             var bytes       = [aCoder decodeBytesForKey:@"NSWhite"],
                 string      = CFData.bytesToString(bytes),
                 components  = [string componentsSeparatedByString:@" "],
                 values      = [0,1];
-                
+
             for (var i = 0; i < components.length && i < 2; i++)
                 values[i] = [components[i] floatValue];
 
@@ -80,7 +80,7 @@ var NSUnknownColorSpaceModel    = -1,
                 string      = CFData.bytesToString(rgb),
                 components  = [string componentsSeparatedByString:@" "],
                 values      = [0,0,0,0,1];
-            
+
             for (var i = 0; i < components.length && i < 5; i++)
                 values[i] = [components[i] floatValue];
 
@@ -91,9 +91,9 @@ var NSUnknownColorSpaceModel    = -1,
             var catalogName = [aCoder decodeObjectForKey:@"NSCatalogName"],
                 colorName   = [aCoder decodeObjectForKey:@"NSColorName"],
                 color       = [aCoder decodeObjectForKey:@"NSColor"];
-                
+
             // We don't having color mappings implemented, so just use the cached NSColor
-            
+
             if (catalogName === @"System")
             {
                 var //display = [NSDisplay currentDisplay],

@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPTextField.j"
 @import "_CPWindowView.j"
 
 
@@ -40,7 +41,7 @@ var _CPTexturedWindowHeadGradientColor  = nil,
     if (!_CPTexturedWindowHeadGradientColor)
     {
         var bundle = [CPBundle bundleForClass:[_CPWindowView class]];
-        
+
         _CPTexturedWindowHeadGradientColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
             [
                 [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/Standard/CPWindowStandardTop0.png"] size:CGSizeMake(6.0, 41.0)],
@@ -50,7 +51,7 @@ var _CPTexturedWindowHeadGradientColor  = nil,
             isVertical:NO
         ]];
     }
-    
+
     return _CPTexturedWindowHeadGradientColor;
 }
 
@@ -58,37 +59,37 @@ var _CPTexturedWindowHeadGradientColor  = nil,
 {
     if (!_CPTexturedWindowHeadSolidColor)
         _CPTexturedWindowHeadSolidColor = [CPColor colorWithCalibratedRed:195.0 / 255.0 green:195.0 / 255.0 blue:195.0 / 255.0 alpha:1.0];
-    
+
     return _CPTexturedWindowHeadSolidColor;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
-    
+
     if (self)
     {
         var theClass = [self class],
             bounds = [self bounds];
-        
+
         _gradientView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), GRADIENT_HEIGHT)];
         [_gradientView setBackgroundColor:[theClass gradientColor]];
-        
+
         [self addSubview:_gradientView];
-        
+
         _solidView = [[CPView alloc] initWithFrame:CGRectMake(0.0, GRADIENT_HEIGHT, CGRectGetWidth(bounds), CGRectGetHeight(bounds) - GRADIENT_HEIGHT)];
         [_solidView setBackgroundColor:[theClass solidColor]];
-    
+
         [self addSubview:_solidView];
     }
-    
+
     return self;
 }
 
 - (void)resizeSubviewsWithOldSize:(CGSize)aSize
 {
     var bounds = [self bounds];
-    
+
     [_gradientView setFrameSize:CGSizeMake(CGRectGetWidth(bounds), GRADIENT_HEIGHT)];
     [_solidView setFrameSize:CGSizeMake(CGRectGetWidth(bounds), CGRectGetHeight(bounds) - GRADIENT_HEIGHT)];
 }
@@ -114,7 +115,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
     CPView                      _dividerView;
     CPView                      _bodyView;
     CPView                      _toolbarView;
-    
+
     CPTextField                 _titleField;
     CPButton                    _closeButton;
     CPButton                    _minimizeButton;
@@ -126,15 +127,15 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 {
     if (!_CPStandardWindowViewBodyBackgroundColor)
         _CPStandardWindowViewBodyBackgroundColor = [CPColor colorWithWhite:0.96 alpha:1.0];
-        
-    return _CPStandardWindowViewBodyBackgroundColor;    
+
+    return _CPStandardWindowViewBodyBackgroundColor;
 }
 
 + (CPColor)dividerBackgroundColor
 {
     if (!_CPStandardWindowViewDividerBackgroundColor)
         _CPStandardWindowViewDividerBackgroundColor = [CPColor colorWithCalibratedRed:125.0 / 255.0 green:125.0 / 255.0 blue:125.0 / 255.0 alpha:1.0];
-    
+
     return _CPStandardWindowViewDividerBackgroundColor;
 }
 
@@ -142,7 +143,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 {
     if (!_CPStandardWindowViewTitleBackgroundColor)
         _CPStandardWindowViewTitleBackgroundColor = [CPColor colorWithCalibratedRed:44.0 / 255.0 green:44.0 / 255.0 blue:44.0 / 255.0 alpha:1.0];
-    
+
     return _CPStandardWindowViewTitleBackgroundColor;
 }
 
@@ -150,7 +151,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 {
     var contentRect = CGRectMakeCopy(aFrameRect),
         titleBarHeight = [self titleBarHeight] + 1.0;
-        
+
     contentRect.origin.y += titleBarHeight;
     contentRect.size.height -= titleBarHeight;
 
@@ -161,10 +162,10 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 {
     var frameRect = CGRectMakeCopy(aContentRect),
         titleBarHeight = [self titleBarHeight] + 1.0;
-    
+
     frameRect.origin.y -= titleBarHeight;
     frameRect.size.height += titleBarHeight;
-    
+
     return frameRect;
 }
 
@@ -177,15 +178,15 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 {
     var contentRect = [[self class] contentRectForFrameRect:aFrameRect],
         theToolbar = [[self window] toolbar];
-    
+
     if ([theToolbar isVisible])
     {
         toolbarHeight = CGRectGetHeight([[theToolbar _toolbarView] frame]);
-        
+
         contentRect.origin.y += toolbarHeight;
         contentRect.size.height -= toolbarHeight;
     }
-    
+
     return contentRect;
 }
 
@@ -193,72 +194,72 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 {
     var frameRect = [[self class] frameRectForContentRect:aContentRect],
         theToolbar = [[self window] toolbar];
-    
+
     if ([theToolbar isVisible])
     {
         toolbarHeight = CGRectGetHeight([[theToolbar _toolbarView] frame]);
-        
+
         frameRect.origin.y -= toolbarHeight;
         frameRect.size.height += toolbarHeight;
     }
-    
+
     return frameRect;
 }
 
 - (id)initWithFrame:(CPRect)aFrame styleMask:(unsigned)aStyleMask
 {
     self = [super initWithFrame:aFrame styleMask:aStyleMask];
-    
+
     if (self)
     {
         var theClass = [self class],
             bounds = [self bounds];
-        
+
         _headView = [[_CPTexturedWindowHeadView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), [[self class] titleBarHeight])];
-          
+
         [_headView setAutoresizingMask:CPViewWidthSizable];;
         [_headView setHitTests:NO];
-        
+
         [self addSubview:_headView];
-        
+
         _dividerView = [[CPView alloc] initWithFrame:CGRectMake(0.0, CGRectGetMaxY([_headView frame]), CGRectGetWidth(bounds), 1.0)];
-        
+
         [_dividerView setAutoresizingMask:CPViewWidthSizable];
         [_dividerView setBackgroundColor:[theClass dividerBackgroundColor]];
         [_dividerView setHitTests:NO];
-        
+
         [self addSubview:_dividerView];
-        
+
         var y = CGRectGetMaxY([_dividerView frame]);
-        
+
         _bodyView = [[CPView alloc] initWithFrame:CGRectMake(0.0, y, CGRectGetWidth(bounds), CGRectGetHeight(bounds) - y)];
-        
+
         [_bodyView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
         [_bodyView setBackgroundColor:[theClass bodyBackgroundColor]];
         [_bodyView setHitTests:NO];
-        
+
         [self addSubview:_bodyView];
 
         [self setResizeIndicatorOffset:CGSizeMake(2.0, 2.0)];
-        
+
         _titleField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
-        
+
         [_titleField setFont:[CPFont boldSystemFontOfSize:12.0]];
         [_titleField setAutoresizingMask:CPViewWidthSizable];
-        
+
         // FIXME: Make this to CPLineBreakByTruncatingMiddle once it's implemented.
         [_titleField setLineBreakMode:CPLineBreakByTruncatingTail];
         [_titleField setAlignment:CPCenterTextAlignment];
         [_titleField setTextShadowColor:[CPColor whiteColor]];
         [_titleField setTextShadowOffset:CGSizeMake(0.0, 1.0)];
-        
+
         [_titleField setStringValue:@"Untitled"];
         [_titleField sizeToFit];
         [_titleField setAutoresizingMask:CPViewWidthSizable];
         [_titleField setStringValue:@""];
-        
+
         [self addSubview:_titleField];
-        
+
         if (_styleMask & CPClosableWindowMask)
         {
             if (!_CPStandardWindowViewCloseButtonImage)

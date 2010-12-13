@@ -107,7 +107,7 @@ CPWebViewScrollNative                           = 2;
     _ignoreLoadEnd  = YES;
 
     _iframe = document.createElement("iframe");
-    _iframe.name = "iframe_" + Math.floor(Math.random()*10000);
+    _iframe.name = "iframe_" + FLOOR(RAND() * 10000);
     _iframe.style.width = "100%";
     _iframe.style.height = "100%";
     _iframe.style.borderWidth = "0px";
@@ -116,47 +116,46 @@ CPWebViewScrollNative                           = 2;
     [self setDrawsBackground:YES];
 
     _loadCallback = function() {
-	    // HACK: this block handles the case where we don't know about loads initiated by the user clicking a link
-	    if (!_ignoreLoadStart)
-	    {
-	        // post the start load notification
-	        [self _startedLoading];
+        // HACK: this block handles the case where we don't know about loads initiated by the user clicking a link
+        if (!_ignoreLoadStart)
+        {
+            // post the start load notification
+            [self _startedLoading];
 
-	        if (_mainFrameURL)
-	            [_backwardStack addObject:_mainFrameURL];
+            if (_mainFrameURL)
+                [_backwardStack addObject:_mainFrameURL];
 
-	        // FIXME: this doesn't actually get the right URL for different domains. Not possible due to browser security restrictions.
+            // FIXME: this doesn't actually get the right URL for different domains. Not possible due to browser security restrictions.
             _mainFrameURL = _iframe.src;
             _mainFrameURL = _iframe.src;
 
             // clear the forward
-	        [_forwardStack removeAllObjects];
-	    }
-	    else
+            [_forwardStack removeAllObjects];
+        }
+        else
             _ignoreLoadStart = NO;
 
-	    if (!_ignoreLoadEnd)
-	    {
+        if (!_ignoreLoadEnd)
+        {
             [self _finishedLoading];
-	    }
-	    else
-	        _ignoreLoadEnd = NO;
+        }
+        else
+            _ignoreLoadEnd = NO;
 
         [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-	}
+    }
 
-	if (_iframe.addEventListener)
-	    _iframe.addEventListener("load", _loadCallback, false);
-	else if (_iframe.attachEvent)
-		_iframe.attachEvent("onload", _loadCallback);
-
+    if (_iframe.addEventListener)
+        _iframe.addEventListener("load", _loadCallback, false);
+    else if (_iframe.attachEvent)
+        _iframe.attachEvent("onload", _loadCallback);
 
     _frameView = [[CPView alloc] initWithFrame:[self bounds]];
-    [_frameView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+    [_frameView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
     _scrollView = [[CPScrollView alloc] initWithFrame:[self bounds]];
     [_scrollView setAutohidesScrollers:YES];
-    [_scrollView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+    [_scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [_scrollView setDocumentView:_frameView];
 
     _frameView._DOMElement.appendChild(_iframe);

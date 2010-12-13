@@ -23,8 +23,8 @@
 @import <Foundation/CPObject.j>
 
 
-/*! 
-    @deprecated 
+/*!
+    @deprecated
     @class CPShadow
 
     Instances of this class contain the attributes of a drop shadow used in Cappuccino.
@@ -34,7 +34,7 @@
     CPSize      _offset;
     float       _blurRadius;
     CPColor     _color;
-    
+
     CPString    _cssString;
 }
 
@@ -54,16 +54,16 @@
 - (id)_initWithOffset:(CPSize)anOffset blurRadius:(float)aBlurRadius color:(CPColor)aColor
 {
     self = [super init];
-    
+
     if (self)
     {
         _offset = anOffset;
         _blurRadius = aBlurRadius;
         _color = aColor;
-        
+
         _cssString = [_color cssString] + " " + Math.round(anOffset.width) + @"px " + Math.round(anOffset.height) + @"px " + Math.round(_blurRadius) + @"px";
     }
-    
+
     return self;
 }
 

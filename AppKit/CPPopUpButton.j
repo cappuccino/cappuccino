@@ -49,6 +49,11 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     return "popup-button";
 }
 
++ (CPSet)keyPathsForValuesAffectingSelectedTag
+{
+    return [CPSet setWithObject:@"selectedIndex"];
+}
+
 /*!
     Initializes the pop-up button to the specified size.
     @param aFrame the size for the button
@@ -233,6 +238,22 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     return _selectedIndex;
 }
 
+/*!
+    @ignore
+*/
+- (int)_selectedTag
+{
+    return [[self selectedItem] tag];
+}
+
+/*!
+    @ignore
+*/
+- (void)_setSelectedTag:(int)aTag
+{
+    [self selectItemWithTag:aTag];
+}
+
 // Setting the Current Selection
 /*!
     Selects the specified menu item.
@@ -252,6 +273,8 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     if (_selectedIndex == anIndex)
         return;
 
+    [self willChangeValueForKey:@"selectedIndex"];
+
     if (_selectedIndex >= 0 && ![self pullsDown])
         [[self selectedItem] setState:CPOffState];
 
@@ -261,6 +284,8 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
         [[self selectedItem] setState:CPOnState];
 
     [self synchronizeTitleAndSelectedItem];
+
+    [self didChangeValueForKey:@"selectedIndex"];
 }
 
 /*!

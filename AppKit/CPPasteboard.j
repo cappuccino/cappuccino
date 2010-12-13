@@ -50,18 +50,18 @@ CPImagePboardType       = @"CPImagePboardType";
 var CPPasteboards = nil,
     supportsNativePasteboard = NO;
 
-/*! 
+/*!
     @ingroup appkit
     @class CPPasteboard
 
-    CPPasteBoard is the object responsible for cut/copy/paste and drag&drop operations. 
+    CPPasteBoard is the object responsible for cut/copy/paste and drag&drop operations.
 */
 @implementation CPPasteboard : CPObject
 {
     CPArray         _types;
     CPDictionary    _owners;
     CPDictionary    _provided;
-    
+
     unsigned        _changeCount;
     CPString        _stateUID;
 
@@ -77,7 +77,7 @@ var CPPasteboards = nil,
         return;
 
     [self setVersion:1.0];
-    
+
     CPPasteboards = [CPDictionary dictionary];
 
     if (typeof window.cpPasteboardWithName !== "undefined")
@@ -103,10 +103,10 @@ var CPPasteboards = nil,
 
     if (pasteboard)
         return pasteboard;
-    
+
     pasteboard = [[CPPasteboard alloc] _initWithName:aName];
     [CPPasteboards setObject:pasteboard forKey:aName];
-    
+
     return pasteboard;
 }
 
@@ -114,15 +114,15 @@ var CPPasteboards = nil,
 - (id)_initWithName:(CPString)aName
 {
     self = [super init];
-    
+
     if (self)
     {
         _name = aName;
         _types = [];
-        
+
         _owners = [CPDictionary dictionary];
         _provided = [CPDictionary dictionary];
-        
+
         _changeCount = 0;
 
         if (supportsNativePasteboard)
@@ -131,7 +131,7 @@ var CPPasteboards = nil,
             [self _synchronizePasteboard];
         }
     }
-    
+
     return self;
 }
 
@@ -145,17 +145,17 @@ var CPPasteboards = nil,
 {
     var i = 0,
         count = types.length;
-    
+
     for (; i < count; ++i)
     {
         var type = types[i];
-        
-        if(![_owners objectForKey:type])
+
+        if (![_owners objectForKey:type])
         {
             [_types addObject:type];
             [_provided removeObjectForKey:type];
         }
-        
+
         [_owners setObject:anOwner forKey:type];
     }
 
@@ -191,7 +191,7 @@ var CPPasteboards = nil,
     _provided = [CPDictionary dictionary];
 
     var count = _types.length;
-    
+
     while (count--)
         [_owners setObject:anOwner forKey:_types[count]];
 
@@ -283,18 +283,18 @@ var CPPasteboards = nil,
 - (CPData)dataForType:(CPString)aType
 {
     var data = [_provided objectForKey:aType];
-    
+
     if (data)
         return data;
-        
+
     var owner = [_owners objectForKey:aType];
-    
+
     if (owner)
     {
-        [owner pasteboard:self provideDataForType:aType];        
+        [owner pasteboard:self provideDataForType:aType];
         return [_provided objectForKey:aType];
     }
-    
+
     if (aType === CPStringPboardType)
         return [self dataForType:UTF8PboardType];
 
@@ -339,10 +339,10 @@ var CPPasteboards = nil,
 - (id)propertyListForType:(CPString)aType
 {
     var data = [self dataForType:aType];
-    
+
     if (data)
         return [CPPropertyListSerialization propertyListFromData:data format:CPPropertyList280NorthFormat_v1_0];
-        
+
     return nil;
 }
 
@@ -360,9 +360,9 @@ var CPPasteboards = nil,
 - (CPString)_generateStateUID
 {
     var bits = 32;
-        
+
     _stateUID = @"";
-    
+
     while (bits--)
         _stateUID += FLOOR(RAND() * 16.0).toString(16).toUpperCase();
 

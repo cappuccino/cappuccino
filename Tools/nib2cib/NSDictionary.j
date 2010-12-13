@@ -23,7 +23,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@implementation NSMutableDictionary : CPObject
+@implementation NSDictionary : CPObject
 {
 }
 
@@ -32,4 +32,9 @@
     return [CPDictionary dictionaryWithObjects:[aCoder decodeObjectForKey:@"NS.objects"] forKeys:[aCoder decodeObjectForKey:@"NS.keys"]];
 }
 
+@end
+
+@implementation NSMutableDictionary : NSDictionary
+{
+}
 @end
