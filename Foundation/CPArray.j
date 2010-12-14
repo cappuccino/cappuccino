@@ -466,7 +466,9 @@ CPEnumerationReverse    = 1 << 1;
     // We don't use an enumerator because they return nil to indicate end of enumeration,
     // but nil may actually be the value we are looking for, so we have to loop over the array.
 
-    var start, stop, increment;
+    var start,
+        stop,
+        increment;
 
     if (opts & CPEnumerationReverse)
     {
@@ -1296,8 +1298,17 @@ CPEnumerationReverse    = 1 << 1;
 */
 - (void)sortUsingFunction:(Function)aFunction context:(id)aContext
 {
-    var h, i, j, k, l, m, n = [self count], o;
-    var A, B = [];
+    var h,
+        i,
+        j,
+        k,
+        l,
+        m,
+        n = [self count],
+        o;
+
+    var A,
+        B = [];
 
     for (h = 1; h < n; h += h)
     {
