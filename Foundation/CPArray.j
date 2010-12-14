@@ -1067,22 +1067,28 @@ CPEnumerationReverse    = 1 << 1;
 
 - (unsigned)insertObject:(id)anObject inArraySortedByDescriptors:(CPArray)descriptors
 {
-    var count = [descriptors count];
+    var count = [descriptors count],
+        index;
 
-    var index = [self _indexOfObject:anObject sortedByFunction:function(lhs, rhs)
+    if (count)
     {
-        var i = 0,
-            result = CPOrderedSame;
+        index = [self _indexOfObject:anObject sortedByFunction:function(lhs, rhs)
+        {
+            var i = 0,
+                result = CPOrderedSame;
 
-        while (i < count)
-            if ((result = [descriptors[i++] compareObject:lhs withObject:rhs]) != CPOrderedSame)
-                return result;
+            while (i < count)
+                if ((result = [descriptors[i++] compareObject:lhs withObject:rhs]) != CPOrderedSame)
+                    return result;
 
-        return result;
-    } context:nil];
+            return result;
+        } context:nil];
 
-    if (index < 0)
-        index = -index - 1;
+        if (index < 0)
+            index = -index - 1;
+    }
+    else
+        index = self.length;
 
     [self insertObject:anObject atIndex:index];
     return index;
