@@ -23,7 +23,7 @@
 @import "MyDocument.j"
 
 /*!
-    Bindings test exercising the functionality seen in the Cocoa example "WithAndWithoutBindings" part 1. Part 1 does in fact not use bindings and serves as a base line case.
+    Bindings test exercising the functionality seen in the Cocoa example "WithAndWithoutBindings" part 1. Part 1 does in fact not use bindings and serves only as a base line test case.
 */
 
 @implementation WithoutBindingsTest : OJTestCase
@@ -52,12 +52,42 @@
 
     // Action taken when the Add button is clicked.
     [theDocument addBookmark:nil];
-    [self assert:1 equals:[theDocument numberOfRowsInTableView:theDocument.tableView]];
+    [theDocument addBookmark:nil];
+    [self assert:2 equals:[theDocument numberOfRowsInTableView:theDocument.tableView]];
 
     [theDocument.tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:0] byExtendingSelection:NO]
 
     [self assert:@"new title" equals:[theDocument.selectedBookmarkTitleField stringValue]];
     [self assert:@"No URL" equals:[theDocument.selectedBookmarkURLField stringValue]];
+
+    // Edit the selected entry.
+    [theDocument.selectedBookmarkTitleField setStringValue:@"A Title"];
+    [theDocument.selectedBookmarkTitleField performClick:self];
+    [self assert:@"A Title" equals:[theDocument.collection[0] title]];
+
+    [theDocument.selectedBookmarkURLField setStringValue:@"http://www.slevenbits.com"];
+    [theDocument.selectedBookmarkURLField performClick:self];
+    [self assert:[CPURL URLWithString:@"http://www.slevenbits.com"] equals:[theDocument.collection[0] URL]];
+
+    // Edit the other entry.
+    [theDocument.tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:1] byExtendingSelection:NO]
+    [theDocument.selectedBookmarkTitleField setStringValue:@"Another Title"];
+    [theDocument.selectedBookmarkTitleField performClick:self];
+    [self assert:@"Another Title" equals:[theDocument.collection[1] title]];
+
+    [theDocument.selectedBookmarkURLField setStringValue:@"http://www.cappuccino.org"];
+    [theDocument.selectedBookmarkURLField performClick:self];
+    [self assert:[CPURL URLWithString:@"http://www.cappuccino.org"] equals:[theDocument.collection[1] URL]];
+
+    // Verify the first entry remains.
+    [theDocument.tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:0] byExtendingSelection:NO]
+    [self assert:@"A Title" equals:[theDocument.selectedBookmarkTitleField stringValue]];
+    [self assert:@"http://www.slevenbits.com" equals:[theDocument.selectedBookmarkURLField stringValue]];
+
+    // Remove it.
+    [theDocument removeSelectedBookmarks:self];
+    [self assert:@"Another Title" equals:[theDocument.selectedBookmarkTitleField stringValue]];
+    [self assert:@"http://www.cappuccino.org" equals:[theDocument.selectedBookmarkURLField stringValue]];
 }
 
 @end
