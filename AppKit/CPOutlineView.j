@@ -1119,8 +1119,8 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     if (!(_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_acceptDrop_item_childIndex_))
         return NO;
 
-     var location = [_outlineView convertPoint:[theInfo draggingLocation] fromView:nil],
-        parentItem = [self _parentItemForDropOperation:theOperation row:theRow offset:location];
+    var location = [_outlineView convertPoint:[theInfo draggingLocation] fromView:nil],
+        parentItem = [self _parentItemForDropOperation:theOperation row:theRow offset:location],
         childIndex = [self _childIndexForDropOperation:theOperation row:theRow offset:location];
 
     _outlineView._retargetedItem = nil;

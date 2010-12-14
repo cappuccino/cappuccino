@@ -108,7 +108,9 @@ CPEnumerationReverse    = 1 << 1;
 */
 + (id)alloc
 {
-    return [];
+    var result = [];
+    result.isa = [self class];
+    return result;
 }
 
 /*!
@@ -968,38 +970,6 @@ CPEnumerationReverse    = 1 << 1;
     for (; index < count; ++index)
         if (self[index].isa && [self[index] isKindOfClass:[CPString class]] && [filterTypes containsObject:[self[index] pathExtension]])
             array.push(self[index]);
-
-    return array;
-}
-
-// Key value coding
-/*!
-    Sets the key-value for each element in the array.
-    @param aValue the value for the coding
-    @param aKey the key for the coding
-*/
-- (void)setValue:(id)aValue forKey:(CPString)aKey
-{
-    var i = 0,
-        count = [self count];
-
-    for (; i < count; ++i)
-        [self[i] setValue:aValue forKey:aKey];
-}
-
-/*!
-    Returns the value for \c aKey from each element in the array.
-    @param aKey the key to return the value for
-    @return an array of containing a value for each element in the array
-*/
-- (CPArray)valueForKey:(CPString)aKey
-{
-    var i = 0,
-        count = [self count],
-        array = [];
-
-    for (; i < count; ++i)
-        array.push([self[i] valueForKey:aKey]);
 
     return array;
 }

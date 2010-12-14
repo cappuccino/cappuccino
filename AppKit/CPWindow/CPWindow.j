@@ -938,7 +938,7 @@ CPTexturedBackgroundWindowMask
 /*!
     Sets the window's minimum size. If the provided
     size is the same as the current minimum size, the method simply returns.
-    @aSize the new minimum size for the window
+    @param aSize the new minimum size for the window
 */
 - (void)setMinSize:(CGSize)aSize
 {

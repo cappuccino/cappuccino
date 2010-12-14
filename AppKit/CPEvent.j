@@ -528,7 +528,8 @@ var _CPEventPeriodicEventPeriod         = 0,
     if (_CPEventUpperCaseRegex.test(aKeyEquivalent))
         aKeyEquivalentModifierMask |= CPShiftKeyMask;
 
-    if (CPBrowserIsOperatingSystem(CPWindowsOperatingSystem) && (aKeyEquivalentModifierMask & CPCommandKeyMask))
+    // Windows and Linux don't have command keys, so just switch it to ctrl.
+    if (!CPBrowserIsOperatingSystem(CPMacOperatingSystem) && (aKeyEquivalentModifierMask & CPCommandKeyMask))
     {
         aKeyEquivalentModifierMask |= CPControlKeyMask;
         aKeyEquivalentModifierMask &= ~CPCommandKeyMask;
@@ -557,9 +558,9 @@ var _CPEventPeriodicEventPeriod         = 0,
     if (_modifierFlags & (CPCommandKeyMask | CPControlKeyMask))
         return YES;
 
-    for(var i=0; i<characterCount; i++)
+    for (var i = 0; i < characterCount; i++)
     {
-        switch(_characters.charAt(i))
+        switch (_characters.charAt(i))
         {
             case CPBackspaceCharacter:
             case CPDeleteCharacter:

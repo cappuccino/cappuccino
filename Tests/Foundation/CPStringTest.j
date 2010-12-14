@@ -47,7 +47,7 @@
     [self assert:"str" equals:str];
 }
 
-- (void) testInitWithFormat
+- (void)testInitWithFormat
 {
     // this could be really big
     var str = [[CPString alloc] initWithFormat:"%s", "str"];
@@ -239,7 +239,7 @@
     var testStrings = [
         ["tmp/scratch", ["tmp", "scratch"]],
         ["/tmp/scratch", ["/", "tmp", "scratch"]]
-    ]
+    ];
 
     for (var i = 0; i < testStrings.length; i++)
     {

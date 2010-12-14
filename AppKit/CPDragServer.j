@@ -220,14 +220,14 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     [_draggingUpdateTimer invalidate];
     _draggingUpdateTimer = nil;
 
-    var dragOperation = CPDragOperationCopy;
+    var dragOperation = CPDragOperationCopy,
     // We have to convert base to bridge since the drag event comes from the source window, not the drag window.
-    var draggingDestination = [aPlatformWindow _dragHitTest:aLocation pasteboard:[CPDragServerDraggingInfo draggingPasteboard]];
+        draggingDestination = [aPlatformWindow _dragHitTest:aLocation pasteboard:[CPDragServerDraggingInfo draggingPasteboard]];
 
     if (draggingDestination)
         _draggingLocation = [DRAGGING_WINDOW(draggingDestination) convertPlatformWindowToBase:aLocation];
 
-    if(draggingDestination !== _draggingDestination)
+    if (draggingDestination !== _draggingDestination)
     {
         if ([_draggingDestination respondsToSelector:@selector(draggingExited:)])
             [_draggingDestination draggingExited:CPDragServerDraggingInfo];

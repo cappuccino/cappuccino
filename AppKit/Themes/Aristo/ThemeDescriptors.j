@@ -337,7 +337,8 @@ var themedButtonValues = nil,
 + (CPButton)button
 {
     var button = [self makeButton],
-
+    
+        // RoundRect
         bezelColor = PatternColor(
             [
                 ["button-bezel-left.png", 4.0, 24.0],
@@ -353,7 +354,15 @@ var themedButtonValues = nil,
                 ["button-bezel-highlighted-right.png", 4.0, 24.0]
             ],
             PatternIsHorizontal),
-
+        
+        disabledBezelColor = PatternColor(
+            [
+                ["button-bezel-disabled-left.png", 4.0, 24.0],
+                ["button-bezel-disabled-center.png", 1.0, 24.0],
+                ["button-bezel-disabled-right.png", 4.0, 24.0]
+            ],
+            PatternIsHorizontal),
+        
         defaultBezelColor = PatternColor(
             [
                 ["default-button-bezel-left.png", 4.0, 24.0],
@@ -378,13 +387,56 @@ var themedButtonValues = nil,
             ],
             PatternIsHorizontal),
 
-        disabledBezelColor = PatternColor(
+            
+        // Rounded
+        roundedBezelColor = PatternColor(
             [
-                ["button-bezel-disabled-left.png", 4.0, 24.0],
-                ["button-bezel-disabled-center.png", 1.0, 24.0],
-                ["button-bezel-disabled-right.png", 4.0, 24.0]
+                ["button-bezel-rounded-left.png", 12.0, 24.0],
+                ["button-bezel-rounded-center.png", 1.0, 24.0],
+                ["button-bezel-rounded-right.png", 12.0, 24.0]
             ],
             PatternIsHorizontal),
+            
+        roundedHighlightedBezelColor = PatternColor(
+            [
+                ["button-bezel-rounded-highlighted-left.png", 12.0, 24.0],
+                ["button-bezel-rounded-highlighted-center.png", 1.0, 24.0],
+                ["button-bezel-rounded-highlighted-right.png", 12.0, 24.0]
+            ],
+            PatternIsHorizontal),
+        
+        roundedDisabledBezelColor = PatternColor(
+            [
+                ["button-bezel-rounded-disabled-left.png", 12.0, 24.0],
+                ["button-bezel-rounded-disabled-center.png", 1.0, 24.0],
+                ["button-bezel-rounded-disabled-right.png", 12.0, 24.0]
+            ],
+            PatternIsHorizontal),
+        
+        defaultRoundedBezelColor = PatternColor(
+            [
+                ["default-button-bezel-rounded-left.png", 12.0, 24.0],
+                ["default-button-bezel-rounded-center.png", 1.0, 24.0],
+                ["default-button-bezel-rounded-right.png", 12.0, 24.0]
+            ],
+            PatternIsHorizontal),
+
+        defaultRoundedHighlightedBezelColor = PatternColor(
+            [
+                ["default-button-bezel-rounded-highlighted-left.png", 12.0, 24.0],
+                ["default-button-bezel-rounded-highlighted-center.png", 1.0, 24.0],
+                ["default-button-bezel-rounded-highlighted-right.png", 12.0, 24.0]
+            ],
+            PatternIsHorizontal),
+
+        defaultRoundedDisabledBezelColor = PatternColor(
+            [
+                ["default-button-bezel-rounded-disabled-left.png", 12.0, 24.0],
+                ["default-button-bezel-rounded-disabled-center.png", 1.0, 24.0],
+                ["default-button-bezel-rounded-disabled-right.png", 12.0, 24.0]
+            ],
+            PatternIsHorizontal),
+        
 
         defaultTextColor = [CPColor colorWithCalibratedRed:13.0 / 255.0 green:51.0 / 255.0 blue:70.0 / 255.0 alpha:1.0],
         defaultDisabledTextColor = [CPColor colorWithCalibratedRed:13.0 / 255.0 green:51.0 / 255.0 blue:70.0 / 255.0 alpha:0.6];
@@ -398,18 +450,27 @@ var themedButtonValues = nil,
             [@"text-shadow-offset", CGSizeMake(0.0, 1.0), CPThemeStateBordered],
             [@"line-break-mode",    CPLineBreakByTruncatingTail],
             [@"content-inset",      CGInsetMake(0.0, 7.0, 0.0, 7.0), CPThemeStateBordered],
-
-            [@"bezel-color",        bezelColor,             CPThemeStateBordered],
-            [@"bezel-color",        highlightedBezelColor,  CPThemeStateBordered | CPThemeStateHighlighted],
-
-            [@"text-color",         [CPColor colorWithCalibratedWhite:0.6 alpha:1.0],   CPThemeStateDisabled],
-            [@"bezel-color",        disabledBezelColor,                                 CPThemeStateBordered | CPThemeStateDisabled],
-            [@"bezel-color",        defaultDisabledBezelColor,                          CPThemeStateBordered | CPThemeStateDefault | CPThemeStateDisabled],
-
-            [@"text-color",         defaultTextColor,               CPThemeStateDefault],
-            [@"text-color",         defaultDisabledTextColor,       CPThemeStateDefault | CPThemeStateDisabled],
+            [@"bezel-color",        bezelColor,                     CPThemeStateBordered],
+            [@"bezel-color",        highlightedBezelColor,          CPThemeStateBordered | CPThemeStateHighlighted],
+            [@"bezel-color",        disabledBezelColor,             CPThemeStateBordered | CPThemeStateDisabled],
             [@"bezel-color",        defaultBezelColor,              CPThemeStateBordered | CPThemeStateDefault],
             [@"bezel-color",        defaultHighlightedBezelColor,   CPThemeStateBordered | CPThemeStateHighlighted | CPThemeStateDefault],
+            [@"bezel-color",        defaultDisabledBezelColor,      CPThemeStateBordered | CPThemeStateDefault | CPThemeStateDisabled],
+            [@"content-inset",      CGInsetMake(0.0, 5.0, 0.0, 5.0), CPThemeStateBordered],
+            
+            [@"bezel-color",        roundedBezelColor,                      CPThemeStateBordered | CPButtonStateBezelStyleRounded],
+            [@"bezel-color",        roundedHighlightedBezelColor,           CPThemeStateBordered | CPThemeStateHighlighted | CPButtonStateBezelStyleRounded],
+            [@"bezel-color",        roundedDisabledBezelColor,              CPThemeStateBordered | CPThemeStateDisabled | CPButtonStateBezelStyleRounded],
+            [@"bezel-color",        defaultRoundedBezelColor,               CPThemeStateBordered | CPThemeStateDefault | CPButtonStateBezelStyleRounded],
+            [@"bezel-color",        defaultRoundedHighlightedBezelColor,    CPThemeStateBordered | CPThemeStateHighlighted | CPThemeStateDefault | CPButtonStateBezelStyleRounded],
+            [@"bezel-color",        defaultRoundedDisabledBezelColor,       CPThemeStateBordered | CPThemeStateDefault | CPThemeStateDisabled | CPButtonStateBezelStyleRounded],
+            [@"content-inset",      CGInsetMake(0.0, 10.0, 0.0, 10.0), CPThemeStateBordered],
+
+            [@"text-color",         [CPColor colorWithCalibratedWhite:0.6 alpha:1.0],   CPThemeStateDisabled],
+            
+            
+            [@"text-color",         defaultTextColor,               CPThemeStateDefault],
+            [@"text-color",         defaultDisabledTextColor,       CPThemeStateDefault | CPThemeStateDisabled],
 
             [@"min-size",           CGSizeMake(0.0, CPButtonDefaultHeight)],
             [@"max-size",           CGSizeMake(-1.0, CPButtonDefaultHeight)],
@@ -437,6 +498,16 @@ var themedButtonValues = nil,
 
     [button setTitle:@"OK"];
     [button setThemeState:CPThemeStateDefault];
+
+    return button;
+}
+
++ (CPButton)themedRoundedButton
+{
+    var button = [self button];
+
+    [button setTitle:@"Save"];
+    [button setThemeState:CPButtonStateBezelStyleRounded];
 
     return button;
 }

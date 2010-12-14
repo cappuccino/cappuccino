@@ -85,7 +85,7 @@
     if (anObject === self)
         return YES;
 
-    if([anObject class] !== [CPIndexPath class])
+    if ([anObject class] !== [CPIndexPath class])
         return NO;
 
     return [_indexes isEqualToArray:[anObject indexes]];

@@ -54,6 +54,8 @@ GLOBAL(objj_class) = function(displayName)
 {
     this.isa            = NULL;
 
+    this.version        = 0;
+
     this.super_class    = NULL;
     this.sub_classes    = [];
 
@@ -269,6 +271,20 @@ GLOBAL(class_copyMethodList) = function(/*Class*/ aClass)
 }
 
 DISPLAY_NAME(class_copyMethodList);
+
+GLOBAL(class_getVersion) = function(/*Class*/ aClass)
+{
+    return aClass.version;
+}
+
+DISPLAY_NAME(class_getVersion);
+
+GLOBAL(class_setVersion) = function(/*Class*/ aClass, /*Integer*/ aVersion)
+{
+    aClass.version = parseInt(aVersion, 10);
+}
+
+DISPLAY_NAME(class_setVersion);
 
 GLOBAL(class_replaceMethod) = function(/*Class*/ aClass, /*SEL*/ aSelector, /*IMP*/ aMethodImplementation)
 {

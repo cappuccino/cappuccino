@@ -31,7 +31,7 @@ var categories = ["firstName","lastName"],
     [searchField setRecentsAutosaveName:"autosave"];
     [searchField setTarget:self];
     [searchField setAction:@selector(updateFilter:)];
-    [searchField setAutoresizingMask:CPViewMaxXMargin|CPViewMaxYMargin];
+    [searchField setAutoresizingMask:CPViewMaxXMargin | CPViewMaxYMargin];
 
     searchMenuTemplate = [searchField defaultSearchMenuTemplate];
 

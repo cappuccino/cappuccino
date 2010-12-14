@@ -61,7 +61,7 @@ CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOutEffect";
         if (effect === CPViewAnimationFadeInEffect)
         {
             [view setAlphaValue:0.0];
-            [view setHidden:NO];
+            [self _targetView:view setHidden:NO];
         }
         else if (effect === CPViewAnimationFadeOutEffect)
             [view setAlphaValue:1.0];
@@ -104,7 +104,7 @@ CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOutEffect";
             [view setAlphaValue:1.0 + ( 0.0 - 1.0 ) * progress];
 
         if (progress === 1.0)
-            [view setHidden:_CGRectIsNull(endFrame) || [view alphaValue] === 0.0];
+            [self _targetView:view setHidden:_CGRectIsNull(endFrame) || [view alphaValue] === 0.0];
     }
 }
 
@@ -125,10 +125,23 @@ CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOutEffect";
         else if (effect === CPViewAnimationFadeOutEffect)
             [view setAlphaValue:0.0];
 
-        [view setHidden:_CGRectIsNull(endFrame) || [view alphaValue] === 0.0];
+        [self _targetView:view setHidden:_CGRectIsNull(endFrame) || [view alphaValue] === 0.0];
     }
 
     [super stopAnimation];
+}
+
+- (void)_targetView:(id)theView setHidden:(BOOL)isHidden
+{
+    if ([theView isKindOfClass:[CPWindow class]])
+    {
+        if (isHidden)
+            [theView orderOut:self];
+        else
+            [theView orderFront:self];
+    }
+    else
+        [theView setHidden:isHidden];
 }
 
 - (id)_targetView:(CPDictionary)dictionary

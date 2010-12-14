@@ -280,6 +280,7 @@ var DefaultLineWidth = 1.0;
 {
     CGPathAddPath(_path, nil, other._path);
 }
+
 /*!
     Remove all path elements; clears path.
 */

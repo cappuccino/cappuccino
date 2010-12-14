@@ -128,7 +128,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
         CPProgressIndicatorClassName + @"Bar" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorHUDBarStyle]
     ];
 
-    for (var i = 0, count = prefixes.length; i<count; i++)
+    for (var i = 0, count = prefixes.length; i < count; i++)
     {
         var prefix = prefixes[i];
         CPProgressIndicatorStyleSizes[prefix + regularIdentifier] = [_CGSizeMake(3.0, 16.0), _CGSizeMake(1.0, 16.0), _CGSizeMake(3.0, 16.0)];

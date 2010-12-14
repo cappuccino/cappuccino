@@ -45,7 +45,7 @@ tableTestDragType = @"CPTableViewTestDragType";
     [tableView setSelectionHighlightColor:[CPColor redColor]];
     [tableView setDataSource:self];
 
-    var iconView = [[CPImageView alloc] initWithFrame:CGRectMake(16,16,0,0)];
+    var iconView = [[CPImageView alloc] initWithFrame:CGRectMake(16, 16, 0, 0)];
     [iconView setImageScaling:CPScaleNone];
     var iconColumn = [[CPTableColumn alloc] initWithIdentifier:"icons"];
     [iconColumn setWidth:32.0];
@@ -122,9 +122,9 @@ tableTestDragType = @"CPTableViewTestDragType";
     [button setAction:@selector(addColumn:)];
     [contentView addSubview:button];
 
-    var sourceListActiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [255.0/255.0, 153.0/255.0, 209.0/255.0,1.0, 33.0/255.0, 94.0/255.0, 208.0/255.0,1.0], [0,1], 2),
-        sourceListActiveTopLineColor = [CPColor colorWithCalibratedRed:(255.0/255.0) green:(123.0/255.0) blue:(218.0/255.0) alpha:1.0],
-        sourceListActiveBottomLineColor = [CPColor colorWithCalibratedRed:(255.0/255.0) green:(92.0/255.0) blue:(207.0/255.0) alpha:1.0];
+    var sourceListActiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [255.0 / 255.0, 153.0 / 255.0, 209.0 / 255.0, 1.0, 33.0 / 255.0, 94.0 / 255.0, 208.0 / 255.0, 1.0], [0, 1], 2),
+        sourceListActiveTopLineColor = [CPColor colorWithCalibratedRed:(255.0 / 255.0) green:(123.0 / 255.0) blue:(218.0 / 255.0) alpha:1.0],
+        sourceListActiveBottomLineColor = [CPColor colorWithCalibratedRed:(255.0 / 255.0) green:(92.0 / 255.0) blue:(207.0 / 255.0) alpha:1.0];
     [tableView setSelectionGradientColors:[CPDictionary dictionaryWithObjects:[sourceListActiveGradient, sourceListActiveTopLineColor, sourceListActiveBottomLineColor] forKeys:[CPSourceListGradient, CPSourceListTopLineColor, CPSourceListBottomLineColor]]];
 }
 
@@ -296,18 +296,18 @@ tableTestDragType = @"CPTableViewTestDragType";
     var newDescriptors = [aTableView sortDescriptors];
 
     [(aTableView === tableView) ? dataSet1:dataSet2 sortUsingDescriptors:newDescriptors];
-	[aTableView reloadData];
+    [aTableView reloadData];
 }
 
 
 - (void)tableViewSelectionIsChanging:(CPNotification)aNotification
 {
-	//CPLog.debug(@"changing! %@", [aNotification description]);
+    //CPLog.debug(@"changing! %@", [aNotification description]);
 }
 
 - (void)tableViewSelectionDidChange:(CPNotification)aNotification
 {
-	//CPLog.debug(@"did change! %@", [aNotification description]);
+    //CPLog.debug(@"did change! %@", [aNotification description]);
 }
 
 - (BOOL)tableView:(CPTableView)aTableView shouldSelectRow:(int)rowIndex
@@ -318,8 +318,8 @@ tableTestDragType = @"CPTableViewTestDragType";
 
 - (BOOL)selectionShouldChangeInTableView:(CPTableView)aTableView
 {
-	//CPLog.debug(@"selectionShouldChangeInTableView");
-	return YES;
+    //CPLog.debug(@"selectionShouldChangeInTableView");
+    return YES;
 }
 
 - (void)tableViewSelectionDidChange:(id)notification
@@ -362,7 +362,7 @@ tableTestDragType = @"CPTableViewTestDragType";
     var newDescriptors = [aTableView sortDescriptors];
 
     [(aTableView === tableView) ? dataSet1:dataSet2 sortUsingDescriptors:newDescriptors];
-	[aTableView reloadData];
+    [aTableView reloadData];
 }
 
 - (BOOL)tableView:(CPTableView)aTableView writeRowsWithIndexes:(CPIndexSet)rowIndexes toPasteboard:(CPPasteboard)pboard
@@ -414,7 +414,7 @@ tableTestDragType = @"CPTableViewTestDragType";
         destinationDataSet = dataSets[1 - index],
         sourceDataSet = dataSets[index];
 
-    if (operation | CPDragOperationMove)
+    if (operation & CPDragOperationMove)
     {
         if (sourceTableUID == [aTableView UID])
         {
@@ -454,33 +454,34 @@ tableTestDragType = @"CPTableViewTestDragType";
 @end
 
 @implementation CPArray (MoveIndexes)
+
 - (void)moveIndexes:(CPIndexSet)indexes toIndex:(int)insertIndex
 {
     var aboveCount = 0,
         object,
         removeIndex;
-	
-	var index = [indexes lastIndex];
-	
+
+    var index = [indexes lastIndex];
+
     while (index != CPNotFound)
-	{
-		if (index >= insertIndex)
-		{
-			removeIndex = index + aboveCount;
-			aboveCount ++;
-		}
-		else
-		{
-			removeIndex = index;
-			insertIndex --;
-		}
-		
-		object = [self objectAtIndex:removeIndex];
-		[self removeObjectAtIndex:removeIndex];
-		[self insertObject:object atIndex:insertIndex];
-		
-		index = [indexes indexLessThanIndex:index];
-	}
+    {
+        if (index >= insertIndex)
+        {
+            removeIndex = index + aboveCount;
+            aboveCount ++;
+        }
+        else
+        {
+            removeIndex = index;
+            insertIndex --;
+        }
+
+        object = [self objectAtIndex:removeIndex];
+        [self removeObjectAtIndex:removeIndex];
+        [self insertObject:object atIndex:insertIndex];
+
+        index = [indexes indexLessThanIndex:index];
+    }
 }
 
 @end

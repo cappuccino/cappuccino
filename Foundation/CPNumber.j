@@ -24,8 +24,7 @@
 @import "CPObjJRuntime.j"
 
 
-var __placeholder   = new Number(),
-    CPNumberUIDs    = new CFMutableDictionary();
+var CPNumberUIDs    = new CFMutableDictionary();
 
 /*!
     @class CPNumber
@@ -43,7 +42,9 @@ var __placeholder   = new Number(),
 
 + (id)alloc
 {
-    return __placeholder;
+    var result = new Number();
+    result.isa = [self class];
+    return result;
 }
 
 + (id)numberWithBool:(BOOL)aBoolean

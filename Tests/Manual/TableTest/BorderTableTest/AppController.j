@@ -27,13 +27,13 @@ CPLogRegister(CPLogConsole);
 {
     // This is called when the cib is done loading.
     // You can implement this method on any object instantiated from a Cib.
-    // It's a useful hook for setting up current UI values, and other things. 
-    
+    // It's a useful hook for setting up current UI values, and other things.
+
     // In this case, we want the window from Cib to become our full browser window
     [theWindow setFullPlatformWindow:YES];
-    
+
     [theWindow setBackgroundColor:[CPColor colorWithHexString:@"f3f4f5"]];
-    
+
     [theBorderTypePopup selectItemWithTag:[theScrollView borderType]];
 }
 
@@ -53,7 +53,7 @@ CPLogRegister(CPLogConsole);
 {
     var type = [[sender selectedItem] tag];
     console.log('type=%d', type);
-    
+
     [theScrollView setBorderType:type];
 }
 

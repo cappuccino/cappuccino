@@ -51,7 +51,7 @@ CPCancelButton  = 0;
     @global
     @class CPWindow
 */
-CPDocModalWindowMask			= 1 << 6;
+CPDocModalWindowMask    = 1 << 6;
 
 @implementation CPPanel : CPWindow
 {

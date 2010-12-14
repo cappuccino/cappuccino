@@ -2,7 +2,7 @@
 
 @implementation CPFormatterTest : OJTestCase
 
-- (void)testThatCPFormatterIsConstructed 
+- (void)testThatCPFormatterIsConstructed
 {
     [self assertNotNull:[[CPFormatter alloc] init]];
 }

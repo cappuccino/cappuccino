@@ -1,5 +1,5 @@
 
-@import <AppKit/CPKeyValueBinding.j>
+@import <AppKit/AppKit.j>
 
 /*!
     Bindings tests exercising the functionality seen in the Cocoa example "SimpleBindingsAdoption".
@@ -122,6 +122,11 @@
     [button performClick:self];
 
     [self verifyVolume:0 method:"bindings"];
+
+    // Test if CPNullPlaceholderBindingOption is correctly decoded
+    var bindingInfo = [textField infoForBinding:@"value"];
+    var nullPlaceHolder = [[bindingInfo objectForKey:CPOptionsKey] objectForKey:CPNullPlaceholderBindingOption];
+    [self assert:@"Nothing" equals:nullPlaceHolder];
 }
 
 - (void)verifyVolume:(float)aVolume method:(CPString)aMethod

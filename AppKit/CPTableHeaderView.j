@@ -56,7 +56,7 @@
 {
     _textField = [[_CPImageAndTextView alloc] initWithFrame:_CGRectMakeZero()];
 
-    [_textField setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+    [_textField setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
     [_textField setLineBreakMode:CPLineBreakByTruncatingTail];
     [_textField setAlignment:CPLeftTextAlignment];
@@ -107,15 +107,15 @@
 
 - (void)_setIndicatorImage:(CPImage)anImage
 {
-	if (anImage)
-	{
-		[_textField setImage:anImage];
-		[_textField setImagePosition:CPImageRight];
-	}
-	else
-	{
-		[_textField setImagePosition:CPNoImage];
-	}
+    if (anImage)
+    {
+        [_textField setImage:anImage];
+        [_textField setImagePosition:CPImageRight];
+    }
+    else
+    {
+        [_textField setImagePosition:CPNoImage];
+    }
 }
 
 @end
@@ -634,7 +634,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         columnMaxX;
 
     CGContextBeginPath(context);
-    for(; columnArrayIndex < columnArrayCount; columnArrayIndex++)
+    for (; columnArrayIndex < columnArrayCount; columnArrayIndex++)
     {
         // grab each column rect and add vertical lines
         var columnIndex = columnsArray[columnArrayIndex],

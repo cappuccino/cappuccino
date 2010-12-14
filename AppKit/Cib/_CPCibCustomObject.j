@@ -34,7 +34,7 @@ var _CPCibCustomObjectClassName = @"_CPCibCustomObjectClassName";
 
     if (self)
         _className = [aCoder decodeObjectForKey:_CPCibCustomObjectClassName];
-    
+
     return self;
 }
 
@@ -65,7 +65,7 @@ var _CPCibCustomObjectClassName = @"_CPCibCustomObjectClassName";
 
     if (theClass === [CPApplication class])
         return [CPApplication sharedApplication];
-    
+
     return [[theClass alloc] init];
 }
 
