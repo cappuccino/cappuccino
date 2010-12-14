@@ -279,8 +279,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         _currentHighlightedTableColumn = nil;
 
-        _sortDescriptors = [];
-
         _draggedRowIndexes = [CPIndexSet indexSet];
         _verticalMotionCanDrag = YES;
         _isSelectingSession = NO;
@@ -351,6 +349,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _sourceListInactiveBottomLineColor = [CPColor colorWithCalibratedRed:(150.0/255.0) green:(161.0/255.0) blue:(183.0/255.0) alpha:1.0];*/
     _differedColumnDataToRemove = [];
     _implementsCustomDrawRow = [self implementsSelector:@selector(drawRow:clipRect:)];
+
+    if (!_sortDescriptors)
+        _sortDescriptors = [];
 }
 
 /*!
