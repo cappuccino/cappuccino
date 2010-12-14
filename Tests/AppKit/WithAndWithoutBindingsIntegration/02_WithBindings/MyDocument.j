@@ -31,7 +31,13 @@
     CPArray             collection @accessors;
 
     @outlet CPTableView tableView;
+
+    // For debugging only.
     @outlet CPTextField nameField;
+
+    @outlet CPButton    addButton;
+    @outlet CPButton    removeButton;
+    @outlet MyArrayController arrayController;
 
     @outlet CPTextField selectedBookmarkTitleField;
     @outlet CPTextField selectedBookmarkURLField;

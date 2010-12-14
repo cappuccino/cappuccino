@@ -21,6 +21,7 @@
  */
 
 @import "MyDocument.j"
+@import "StringToURLTransformer.j"
 
 /*!
     Bindings test exercising the functionality seen in the Cocoa example "WithAndWithoutBindings" part 1. Part 1 does in fact not use bindings and serves only as a base line test case.
@@ -39,7 +40,7 @@
 - (void)test
 {
     var theDocument = [MyDocument new],
-        cib = [CPBundle loadCibFile:[[CPBundle bundleForClass:WithoutBindingsTest] pathForResource:"01_WithoutBindings.cib"] externalNameTable:[CPDictionary dictionaryWithObject:theDocument forKey:CPCibOwner]];
+        cib = [CPBundle loadCibFile:[[CPBundle bundleForClass:WithBindingsTest] pathForResource:"02_WithBindings.cib"] externalNameTable:[CPDictionary dictionaryWithObject:theDocument forKey:CPCibOwner]];
 
     [theDocument windowControllerDidLoadCib:self];
 
@@ -47,23 +48,22 @@
     [theDocument.nameField performClick:self];
     [self assert:@"Document A" equals:[theDocument name]];
 
-    [self assert:@"No selection" equals:[theDocument.selectedBookmarkTitleField stringValue]];
-    [self assert:@"No selection" equals:[theDocument.selectedBookmarkURLField stringValue]];
+    [self assert:@"No Selection" equals:[theDocument.selectedBookmarkTitleField placeholderString]];
+    [self assert:@"No Selection" equals:[theDocument.selectedBookmarkURLField placeholderString]];
 
-    // Action taken when the Add button is clicked.
-    [theDocument addBookmark:nil];
-    [theDocument addBookmark:nil];
-    [self assert:2 equals:[theDocument numberOfRowsInTableView:theDocument.tableView]];
+    [theDocument.addButton performClick:self];
+    [theDocument.addButton performClick:self];
+    [self assert:2 equals:[theDocument.collection count]];
 
     [theDocument.tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:0] byExtendingSelection:NO]
 
     [self assert:@"new title" equals:[theDocument.selectedBookmarkTitleField stringValue]];
-    [self assert:@"No URL" equals:[theDocument.selectedBookmarkURLField stringValue]];
+    [self assert:@"" equals:[theDocument.selectedBookmarkURLField stringValue]];
 
     // Edit the selected entry.
     [theDocument.selectedBookmarkTitleField setStringValue:@"A Title"];
     [theDocument.selectedBookmarkTitleField performClick:self];
-    [self assert:@"A Title" equals:[theDocument.collection[0] title]];
+    [self assert:@"A Title" equals:[theDocument.collection[0] title] message:"changing selectedBookmarkTitleField updated the model title"];
 
     [theDocument.selectedBookmarkURLField setStringValue:@"http://www.slevenbits.com"];
     [theDocument.selectedBookmarkURLField performClick:self];
@@ -81,11 +81,11 @@
 
     // Verify the first entry remains.
     [theDocument.tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:0] byExtendingSelection:NO]
-    [self assert:@"A Title" equals:[theDocument.selectedBookmarkTitleField stringValue]];
+    [self assert:@"A Title" equals:[theDocument.selectedBookmarkTitleField stringValue] message:"first entry should not change when the second is deleted"];
     [self assert:@"http://www.slevenbits.com" equals:[theDocument.selectedBookmarkURLField stringValue]];
 
     // Remove it.
-    [theDocument removeSelectedBookmarks:self];
+    [theDocument.removeButton performClick:self];
     [self assert:@"Another Title" equals:[theDocument.selectedBookmarkTitleField stringValue]];
     [self assert:@"http://www.cappuccino.org" equals:[theDocument.selectedBookmarkURLField stringValue]];
 }

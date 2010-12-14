@@ -383,12 +383,13 @@
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
 				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
 			</object>
-			<object class="NSArrayController" id="875350520">
+			<object class="NSArrayController" id="672964204">
 				<object class="NSMutableArray" key="NSDeclaredKeys">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>title</string>
 					<string>URL</string>
 				</object>
+				<string key="NSObjectClassName">Bookmark</string>
 				<bool key="NSEditable">YES</bool>
 				<object class="_NSManagedProxy" key="_NSManagedProxy"/>
 				<bool key="NSAvoidsEmptySelection">YES</bool>
@@ -453,10 +454,10 @@
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">value: arrangedObjects.title</string>
 						<reference key="source" ref="99307196"/>
-						<reference key="destination" ref="875350520"/>
+						<reference key="destination" ref="672964204"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="99307196"/>
-							<reference key="NSDestination" ref="875350520"/>
+							<reference key="NSDestination" ref="672964204"/>
 							<string key="NSLabel">value: arrangedObjects.title</string>
 							<string key="NSBinding">value</string>
 							<string key="NSKeyPath">arrangedObjects.title</string>
@@ -468,10 +469,10 @@
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">contentArray: collection</string>
-						<reference key="source" ref="875350520"/>
+						<reference key="source" ref="672964204"/>
 						<reference key="destination" ref="1001"/>
 						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="875350520"/>
+							<reference key="NSSource" ref="672964204"/>
 							<reference key="NSDestination" ref="1001"/>
 							<string key="NSLabel">contentArray: collection</string>
 							<string key="NSBinding">contentArray</string>
@@ -485,10 +486,10 @@
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">value: selection.title</string>
 						<reference key="source" ref="912895224"/>
-						<reference key="destination" ref="875350520"/>
+						<reference key="destination" ref="672964204"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="912895224"/>
-							<reference key="NSDestination" ref="875350520"/>
+							<reference key="NSDestination" ref="672964204"/>
 							<string key="NSLabel">value: selection.title</string>
 							<string key="NSBinding">value</string>
 							<string key="NSKeyPath">selection.title</string>
@@ -498,30 +499,10 @@
 					<int key="connectionID">48</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: selection.title</string>
-						<reference key="source" ref="384957067"/>
-						<reference key="destination" ref="875350520"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="384957067"/>
-							<reference key="NSDestination" ref="875350520"/>
-							<string key="NSLabel">value: selection.title</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">selection.title</string>
-							<object class="NSDictionary" key="NSOptions">
-								<string key="NS.key.0">NSValueTransformerName</string>
-								<string key="NS.object.0">StringToURLTransformer</string>
-							</object>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">53</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">dataSource</string>
 						<reference key="source" ref="555316680"/>
-						<reference key="destination" ref="875350520"/>
+						<reference key="destination" ref="672964204"/>
 					</object>
 					<int key="connectionID">54</int>
 				</object>
@@ -529,14 +510,14 @@
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">delegate</string>
 						<reference key="source" ref="555316680"/>
-						<reference key="destination" ref="875350520"/>
+						<reference key="destination" ref="672964204"/>
 					</object>
 					<int key="connectionID">55</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">tableView</string>
-						<reference key="source" ref="875350520"/>
+						<reference key="source" ref="672964204"/>
 						<reference key="destination" ref="555316680"/>
 					</object>
 					<int key="connectionID">56</int>
@@ -544,7 +525,7 @@
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
 						<string key="label">add:</string>
-						<reference key="source" ref="875350520"/>
+						<reference key="source" ref="672964204"/>
 						<reference key="destination" ref="739944512"/>
 					</object>
 					<int key="connectionID">57</int>
@@ -552,10 +533,54 @@
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
 						<string key="label">remove:</string>
-						<reference key="source" ref="875350520"/>
+						<reference key="source" ref="672964204"/>
 						<reference key="destination" ref="987622507"/>
 					</object>
 					<int key="connectionID">58</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">addButton</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="739944512"/>
+					</object>
+					<int key="connectionID">59</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">removeButton</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="987622507"/>
+					</object>
+					<int key="connectionID">60</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">arrayController</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="672964204"/>
+					</object>
+					<int key="connectionID">61</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.URL</string>
+						<reference key="source" ref="384957067"/>
+						<reference key="destination" ref="672964204"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="384957067"/>
+							<reference key="NSDestination" ref="672964204"/>
+							<string key="NSLabel">value: selection.URL</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.URL</string>
+							<object class="NSDictionary" key="NSOptions">
+								<string key="NS.key.0">NSValueTransformerName</string>
+								<string key="NS.object.0">StringToURLTransformer</string>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">64</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -777,7 +802,7 @@
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">41</int>
-						<reference key="object" ref="875350520"/>
+						<reference key="object" ref="672964204"/>
 						<reference key="parent" ref="0"/>
 						<string key="objectName">My Array Controller</string>
 					</object>
@@ -934,7 +959,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">58</int>
+			<int key="maxID">64</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -998,14 +1023,20 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addButton</string>
+							<string>arrayController</string>
 							<string>nameField</string>
+							<string>removeButton</string>
 							<string>selectedBookmarkTitleField</string>
 							<string>selectedBookmarkURLField</string>
 							<string>tableView</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSButton</string>
+							<string>MyArrayController</string>
 							<string>NSTextField</string>
+							<string>NSButton</string>
 							<string>NSTextField</string>
 							<string>NSTextField</string>
 							<string>NSTableView</string>
@@ -1015,7 +1046,10 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addButton</string>
+							<string>arrayController</string>
 							<string>nameField</string>
+							<string>removeButton</string>
 							<string>selectedBookmarkTitleField</string>
 							<string>selectedBookmarkURLField</string>
 							<string>tableView</string>
@@ -1023,8 +1057,20 @@
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<object class="IBToOneOutletInfo">
+								<string key="name">addButton</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">arrayController</string>
+								<string key="candidateClassName">MyArrayController</string>
+							</object>
+							<object class="IBToOneOutletInfo">
 								<string key="name">nameField</string>
 								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">removeButton</string>
+								<string key="candidateClassName">NSButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">selectedBookmarkTitleField</string>

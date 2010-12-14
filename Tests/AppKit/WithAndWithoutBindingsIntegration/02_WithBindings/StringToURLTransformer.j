@@ -22,7 +22,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@implementation StringToURLTransformer
+@implementation StringToURLTransformer : CPValueTransformer
 
 + (void)initialize
 {
@@ -42,12 +42,12 @@
 
 - (id)transformedValue:(id)value
 {
-    return value ? [value absoluteString] : nil;
+    return (value && ![value isEqual:[CPNull null]]) ? [value absoluteString] : nil;
 }
 
 - (id)reverseTransformedValue:(id)value
 {
-    return value ? [CPURL URLWithString:value] : nil;
+    return (value && ![value isEqual:[CPNull null]]) ? [CPURL URLWithString:value] : nil;
 }
 
 @end
