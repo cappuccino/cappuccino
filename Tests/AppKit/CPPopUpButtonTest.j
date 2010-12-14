@@ -40,7 +40,7 @@
      withKeyPath:@"weight"
          options:nil];
 
-    [self assert:20 equals:[button _selectedTag]];
+    [self assert:20 equals:[button selectedTag]];
 
     [button selectItemAtIndex:1];
     // simulate selection by the user (this fails because we don't reverse set the value)
