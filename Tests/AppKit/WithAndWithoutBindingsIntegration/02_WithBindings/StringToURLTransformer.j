@@ -1,11 +1,11 @@
 /*
- * Bookmark.j
+ * StringToURLTransformer.j
  * AppKit Tests
  *
  * Created by Alexander Ljungberg.
  * Copyright 2010, WireLoad, LLC.
  *
- * Adapted from Bookmark.m in WithAndWithoutBindings by Apple Inc.
+ * Adapted from StringToURLTransformer.m in WithAndWithoutBindings by Apple Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,41 +22,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@implementation Bookmark : CPObject
+@implementation StringToURLTransformer
+
++ (void)initialize
 {
-    CPString    title @accessors;
-    CPDate      creationDate @accessors;
-    CPURL       URL @accessors;
+    [CPValueTransformer setValueTransformer:[self new]
+                                    forName:@"StringToURLTransformer"];
 }
 
-- (id)init
++ (Class)transformedValueClass
 {
-    if (self = [super init])
-    {
-        title = @"new title";
-        creationDate = [CPDate date];
-    }
-
-    return self;
+    return [CPString class];
 }
 
-- (void)encodeWithCoder:(CPCoder)coder
++ (BOOL)allowsReverseTransformation
 {
-    [coder encodeObject:[self title] forKey:@"title"];
-    [coder encodeObject:[self creationDate] forKey:@"creationDate"];
-    [coder encodeObject:[self URL] forKey:@"URL"];
+    return YES;
 }
 
-- (id)initWithCoder:(CPCoder)coder
+- (id)transformedValue:(id)value
 {
-    if (self = [super initWithCoder:coder])
-    {
-        title = [coder decodeObjectForKey:@"title"];
-        creationDate = [coder decodeObjectForKey:@"creationDate"];
-        URL = [coder decodeObjectForKey:@"URL"];
-    }
+    return value ? [value absoluteString] : nil;
+}
 
-    return self;
+- (id)reverseTransformedValue:(id)value
+{
+    return value ? [CPURL URLWithString:value] : nil;
 }
 
 @end
