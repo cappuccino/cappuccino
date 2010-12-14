@@ -173,6 +173,12 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
 
 - (BOOL)isEqual:(id)anObject
 {
+    if (self === anObject)
+        return YES;
+
+    if (!anObject || ![anObject isKindOfClass:[CPURL class]])
+        return NO;
+
     // Is checking if baseURL isEqual correct? Does "identical" mean same object or equivalent values?
     return [self relativeString] === [anObject relativeString] &&
         ([self baseURL] === [anObject baseURL] || [[self baseURL] isEqual:[anObject baseURL]]);
