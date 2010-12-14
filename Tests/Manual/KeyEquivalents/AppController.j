@@ -83,7 +83,9 @@
         ["left arrow", CPLeftArrowFunctionKey],
         ["up arrow", CPUpArrowFunctionKey],
         ["right arrow", CPRightArrowFunctionKey],
-        ["down arrow", CPDownArrowFunctionKey]
+        ["down arrow", CPDownArrowFunctionKey],
+        ["home", CPHomeFunctionKey],
+        ["end", CPEndFunctionKey]
         ];
 
     for (var i = 0, buttonsWide = 6, yOffset = 0; i < functionKeysToTest.length; i++)
