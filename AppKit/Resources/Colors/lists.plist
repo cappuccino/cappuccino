@@ -28,10 +28,10 @@
 		<dict>
 			<key>ffffff</key>
 			<array>
-				<integer>255</integer>
-				<integer>255</integer>
-				<integer>255</integer>
-				<integer>255</integer>
+				<real>1</real>
+				<real>1</real>
+				<real>1</real>
+				<real>1</real>
 			</array>
 		</dict>
 	</dict>

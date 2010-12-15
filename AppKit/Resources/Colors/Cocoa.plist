@@ -10,22 +10,122 @@
 		<dict>
 			<key>en</key>
 			<dict>
+				<key>black</key>
+				<string>Black</string>
+				<key>blue</key>
+				<string>Blue</string>
+				<key>brown</key>
+				<string>Brown</string>
+				<key>cyan</key>
+				<string>Cyan</string>
+				<key>green</key>
+				<string>Green</string>
+				<key>magenta</key>
+				<string>Magenta</string>
+				<key>orange</key>
+				<string>Orange</string>
+				<key>purple</key>
+				<string>Purple</string>
 				<key>red</key>
 				<string>Red</string>
+				<key>yellow</key>
+				<string>Yellow</string>
+				<key>white</key>
+				<string>White</string>
 			</dict>
 		</dict>
 		<key>Keys</key>
 		<array>
+			<string>black</string>
+			<string>blue</string>
+			<string>brown</string>
+			<string>cyan</string>
+			<string>green</string>
+			<string>magenta</string>
+			<string>orange</string>
+			<string>purple</string>
 			<string>red</string>
+			<string>yellow</string>
+			<string>white</string>
 		</array>
 		<key>Colors</key>
 		<dict>
+			<key>black</key>
+			<array>
+				<real>0</real>
+				<real>0</real>
+				<real>0</real>
+				<real>1</real>
+			</array>
+			<key>blue</key>
+			<array>
+				<real>0</real>
+				<real>0</real>
+				<real>1</real>
+				<real>1</real>
+			</array>
+			<key>brown</key>
+			<array>
+				<real>0.6</real>
+				<real>0.4</real>
+				<real>0.2</real>
+				<real>1</real>
+			</array>
+			<key>cyan</key>
+			<array>
+				<real>0</real>
+				<real>1</real>
+				<real>1</real>
+				<real>1</real>
+			</array>
+			<key>green</key>
+			<array>
+				<real>0</real>
+				<real>1</real>
+				<real>0</real>
+				<real>1</real>
+			</array>
+			<key>magenta</key>
+			<array>
+				<real>1</real>
+				<real>0</real>
+				<real>1</real>
+				<real>1</real>
+			</array>
+			<key>orange</key>
+			<array>
+				<real>1</real>
+				<real>0.5</real>
+				<real>0</real>
+				<real>1</real>
+			</array>
+			<key>purple</key>
+			<array>
+				<real>0.5</real>
+				<real>0</real>
+				<real>0.5</real>
+				<real>1</real>
+			</array>
 			<key>red</key>
 			<array>
-				<integer>255</integer>
-				<integer>0</integer>
-				<integer>0</integer>
-				<integer>255</integer>
+				<real>1</real>
+				<real>0</real>
+				<real>0</real>
+				<real>1</real>
+			</array>
+			<key>yellow</key>
+			<array>
+				<real>1</real>
+				<real>1</real>
+				<real>0</real>
+				<real>1</real>
+			</array>
+			<key>white</key>
+			<array>
+				<real>1</real>
+				<real>1</real>
+				<real>1</real>
+				<real>1</real>
 			</array>
 		</dict>
 	</dict>
@@ -49,10 +149,10 @@
 		<dict>
 			<key>orchid</key>
 			<array>
-				<integer>102</integer>
-				<integer>102</integer>
-				<integer>255</integer>
-				<integer>255</integer>
+				<real>0.4</real>
+				<real>0.4</real>
+				<real>1</real>
+				<real>1</real>
 			</array>
 		</dict>
 	</dict>
@@ -76,10 +176,10 @@
 		<dict>
 			<key>alternateSelectedControlColor</key>
 			<array>
-				<integer>42</integer>
-				<integer>91</integer>
-				<integer>213</integer>
-				<integer>255</integer>
+				<real>0.164705882352941</real>
+				<real>0.356862745098039</real>
+				<real>0.835294117647059</real>
+				<real>1</real>
 			</array>
 		</dict>
 	</dict>
