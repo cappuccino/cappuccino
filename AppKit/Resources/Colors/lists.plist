@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Cocoa.plist</key>
+	<array>
+		<string>Apple</string>
+		<string>Crayons</string>
+		<string>System</string>
+	</array>
+	<key>Web Safe Colors</key>
+	<dict>
+		<key>Mode</key>
+		<string>RGBA</string>
+		<key>Names</key>
+		<dict>
+			<key>en</key>
+			<dict>
+				<key>ffffff</key>
+				<string>FFFFFF</string>
+			</dict>
+		</dict>
+		<key>Keys</key>
+		<array>
+			<string>ffffff</string>
+		</array>
+		<key>Colors</key>
+		<dict>
+			<key>ffffff</key>
+			<array>
+				<integer>255</integer>
+				<integer>255</integer>
+				<integer>255</integer>
+				<integer>255</integer>
+			</array>
+		</dict>
+	</dict>
+</dict>
+</plist>
