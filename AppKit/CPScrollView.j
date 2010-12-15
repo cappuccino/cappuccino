@@ -974,6 +974,22 @@
     [self moveByOffset:CGSizeMake(0.0, _CGRectGetHeight(contentBounds) - _verticalPageScroll)];
 }
 
+- (void)scrollToBeginningOfDocument:(id)sender
+{
+    [_contentView scrollToPoint:_CGPointMakeZero()];
+    [_headerClipView scrollToPoint:_CGPointMakeZero()];
+}
+
+- (void)scrollToEndOfDocument:(id)sender
+{
+    var contentBounds = [_contentView bounds],
+        documentFrame = [[self documentView] frame],
+        scrollPoint = _CGPointMake(0.0, _CGRectGetHeight(documentFrame) - _CGRectGetHeight(contentBounds));
+
+    [_contentView scrollToPoint:scrollPoint];
+    [_headerClipView scrollToPoint:_CGPointMakeZero()];
+}
+
 - (void)moveLeft:(id)sender
 {
     [self moveByOffset:CGSizeMake(-_horizontalLineScroll, 0.0)];
@@ -1003,7 +1019,7 @@
     contentBounds.origin.y += aSize.height;
 
     [_contentView scrollToPoint:contentBounds.origin];
-    [_headerClipView scrollToPoint:CGPointMake(contentBounds.origin, 0)];
+    [_headerClipView scrollToPoint:CGPointMake(contentBounds.origin.x, 0)];
 }
 
 @end

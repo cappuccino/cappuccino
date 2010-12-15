@@ -123,9 +123,14 @@
     return _objectClass;
 }
 
-- (id)newObject
+- (id)_defaultNewObject
 {
     return [[[self objectClass] alloc] init];
+}
+
+- (id)newObject
+{
+    return [self _defaultNewObject];
 }
 
 - (void)addObject:(id)anObject

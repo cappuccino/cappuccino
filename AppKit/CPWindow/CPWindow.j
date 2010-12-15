@@ -197,6 +197,21 @@ var CPWindowSaveImage       = nil,
 
 var CPWindowResizeTime = 0.2;
 
+/*
+    Keys for which action messages will be sent by default when unhandled, e.g. complete:.
+*/
+var CPWindowActionMessageKeys = [
+    CPLeftArrowFunctionKey,
+    CPRightArrowFunctionKey,
+    CPUpArrowFunctionKey,
+    CPDownArrowFunctionKey,
+    CPPageUpFunctionKey,
+    CPPageDownFunctionKey,
+    CPHomeFunctionKey,
+    CPEndFunctionKey,
+    CPEscapeFunctionKey
+];
+
 /*!
     @ingroup appkit
     @class CPWindow
@@ -2324,16 +2339,15 @@ CPTexturedBackgroundWindowMask
     @ignore
     Interprets the key event for action messages and sends the action message down the responder chain
     Cocoa only sends moveDown:, moveUp:, moveLeft:, moveRight:, pageUp:, pageDown: and complete: messages.
-    We deviate from this by sending (the default) scrollPageUp: scrollPageDown: for pageUp and pageDown keys.
+    We deviate from this by sending (the default) scrollPageUp:, scrollPageDown:, scrollToBeginningOfDocument: and scrollToEndOfDocument: for pageUp, pageDown, home and end keys.
     @param anEvent the event to handle.
     @return YES if the key event was handled, NO if no responder handled the key event
 */
 - (BOOL)_processKeyboardUIKey:(CPEvent)anEvent
 {
-    var character = [anEvent charactersIgnoringModifiers],
-        uiKeys = [CPLeftArrowFunctionKey, CPRightArrowFunctionKey, CPUpArrowFunctionKey, CPDownArrowFunctionKey, CPPageUpFunctionKey, CPPageDownFunctionKey, CPEscapeFunctionKey];
+    var character = [anEvent charactersIgnoringModifiers];
 
-    if (![uiKeys containsObject:character])
+    if (![CPWindowActionMessageKeys containsObject:character])
         return NO;
 
     var selectors = [CPKeyBinding selectorsForKey:character modifierFlags:0];

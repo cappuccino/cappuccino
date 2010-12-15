@@ -168,6 +168,8 @@ KeyCodesToUnicodeMap[CPKeyCodes.LEFT]                   = CPLeftArrowFunctionKey
 KeyCodesToUnicodeMap[CPKeyCodes.UP]                     = CPUpArrowFunctionKey;
 KeyCodesToUnicodeMap[CPKeyCodes.RIGHT]                  = CPRightArrowFunctionKey;
 KeyCodesToUnicodeMap[CPKeyCodes.DOWN]                   = CPDownArrowFunctionKey;
+KeyCodesToUnicodeMap[CPKeyCodes.HOME]                   = CPHomeFunctionKey;
+KeyCodesToUnicodeMap[CPKeyCodes.END]                    = CPEndFunctionKey;
 KeyCodesToUnicodeMap[CPKeyCodes.SEMICOLON]              = ";";
 KeyCodesToUnicodeMap[CPKeyCodes.DASH]                   = "-";
 KeyCodesToUnicodeMap[CPKeyCodes.EQUALS]                 = "=";

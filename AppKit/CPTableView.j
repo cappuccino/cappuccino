@@ -65,7 +65,8 @@ var CPTableViewDelegate_selectionShouldChangeInTableView_                       
     CPTableViewDelegate_tableView_typeSelectStringForTableColumn_row_                                   = 1 << 16,
     CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_                                   = 1 << 17,
     CPTableViewDelegate_tableViewSelectionDidChange_                                                    = 1 << 18,
-    CPTableViewDelegate_tableViewSelectionIsChanging_                                                   = 1 << 19;
+    CPTableViewDelegate_tableViewSelectionIsChanging_                                                   = 1 << 19,
+    CPTableViewDelegate_tableViewMenuForTableColumn_Row_                                                = 1 << 20;
 
 //CPTableViewDraggingDestinationFeedbackStyles
 CPTableViewDraggingDestinationFeedbackStyleNone = -1;
@@ -279,8 +280,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         _currentHighlightedTableColumn = nil;
 
-        _sortDescriptors = [];
-
         _draggedRowIndexes = [CPIndexSet indexSet];
         _verticalMotionCanDrag = YES;
         _isSelectingSession = NO;
@@ -351,6 +350,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _sourceListInactiveBottomLineColor = [CPColor colorWithCalibratedRed:(150.0/255.0) green:(161.0/255.0) blue:(183.0/255.0) alpha:1.0];*/
     _differedColumnDataToRemove = [];
     _implementsCustomDrawRow = [self implementsSelector:@selector(drawRow:clipRect:)];
+
+    if (!_sortDescriptors)
+        _sortDescriptors = [];
 }
 
 /*!
@@ -372,15 +374,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if ([_dataSource respondsToSelector:@selector(numberOfRowsInTableView:)])
         _implementedDataSourceMethods |= CPTableViewDataSource_numberOfRowsInTableView_;
-    else if (!hasContentBinding)
-        [CPException raise:CPInternalInconsistencyException
-                reason:[aDataSource description] + " does not implement numberOfRowsInTableView:."];
 
     if ([_dataSource respondsToSelector:@selector(tableView:objectValueForTableColumn:row:)])
         _implementedDataSourceMethods |= CPTableViewDataSource_tableView_objectValueForTableColumn_row_;
-    else if (!hasContentBinding)
-        [CPException raise:CPInternalInconsistencyException
-                reason:[aDataSource description] + " does not implement tableView:objectValueForTableColumn:row:"];
 
     if ([_dataSource respondsToSelector:@selector(tableView:setObjectValue:forTableColumn:row:)])
         _implementedDataSourceMethods |= CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_;
@@ -1149,10 +1145,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         _numberOfRows = [[destination valueForKeyPath:keyPath] count];
     }
-    else if (_dataSource)
+    else if (_dataSource && (_implementedDataSourceMethods & CPTableViewDataSource_numberOfRowsInTableView_))
         _numberOfRows = [_dataSource numberOfRowsInTableView:self];
     else
+    {
+        CPLog(@"no content binding established and data source " + [_dataSource description] + " does not implement numberOfRowsInTableView:");
         _numberOfRows = 0;
+    }
 
     return _numberOfRows;
 }
@@ -1312,15 +1311,16 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return _CGRectMake(range.location, 0.0, range.length, _CGRectGetHeight([self bounds]));
 }
 
-// Complexity:
-// O(1)
+
 /*!
+    @ignore
     Returns a CGRect with the location and size of the row
     @param aRowIndex the index of the row you want the rect of
+    @param checkRange if YES this method will return a zero rect if the aRowIndex is outside of the range of valid indices
 */
-- (CGRect)rectOfRow:(CPInteger)aRowIndex
+- (CGRect)_rectOfRow:(CPInteger)aRowIndex checkRange:(BOOL)checkRange
 {
-    if (aRowIndex > [self numberOfRows] - 1 || aRowIndex < 0)
+    if (checkRange && (aRowIndex > [self numberOfRows] - 1 || aRowIndex < 0))
         return _CGRectMakeZero();
 
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_)
@@ -1335,6 +1335,17 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     }
 
     return _CGRectMake(0.0, y, _CGRectGetWidth([self bounds]), height);
+}
+
+// Complexity:
+// O(1)
+/*!
+    Returns a CGRect with the location and size of the row
+    @param aRowIndex the index of the row you want the rect of
+*/
+- (CGRect)rectOfRow:(CPInteger)aRowIndex
+{
+    return [self _rectOfRow:aRowIndex checkRange:YES];
 }
 
 // Complexity:
@@ -1497,8 +1508,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         topInset = FLOOR(_intercellSpacing.height / 2.0);
 
     return _CGRectMake(tableColumnRange.location + leftInset,  _CGRectGetMinY(rectOfRow) + topInset, tableColumnRange.length - _intercellSpacing.width, _CGRectGetHeight(rectOfRow) - _intercellSpacing.height);
-
-
 }
 
 - (void)resizeWithOldSuperviewSize:(CGSize)aSize
@@ -1987,6 +1996,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if ([_delegate respondsToSelector:@selector(tableView:willDisplayView:forTableColumn:row:)])
         _implementedDelegateMethods |= CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_;
 
+    if ([_delegate respondsToSelector:@selector(tableView:menuForTableColumn:row:)])
+        _implementedDelegateMethods |= CPTableViewDelegate_tableViewMenuForTableColumn_Row_;
+
     if ([_delegate respondsToSelector:@selector(tableViewColumnDidMove:)])
         [defaultCenter
             addObserver:_delegate
@@ -2389,10 +2401,17 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     var objectValue = tableColumnObjectValues[aRowIndex];
 
     // tableView:objectValueForTableColumn:row: is optional if content bindings are in place.
-    if (objectValue === undefined && (_implementedDataSourceMethods & CPTableViewDataSource_tableView_objectValueForTableColumn_row_))
+    if (objectValue === undefined)
     {
-        objectValue = [_dataSource tableView:self objectValueForTableColumn:aTableColumn row:aRowIndex];
-        tableColumnObjectValues[aRowIndex] = objectValue;
+        if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_objectValueForTableColumn_row_)
+        {
+            objectValue = [_dataSource tableView:self objectValueForTableColumn:aTableColumn row:aRowIndex];
+            tableColumnObjectValues[aRowIndex] = objectValue;
+        }
+        else if (![self infoForBinding:@"content"])
+        {
+            CPLog(@"no content binding established and data source " + [_dataSource description] + " does not implement tableView:objectValueForTableColumn:row:");
+        }
     }
 
     return objectValue;
@@ -2404,7 +2423,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     {
         var superview = [self superview];
 
-        // FIXME: Should we be rect intersecting in case 
+        // FIXME: Should we be rect intersecting in case
         // there are multiple views in the clip view?
         if ([superview isKindOfClass:[CPClipView class]])
             _exposedRect = [superview bounds];
@@ -3201,6 +3220,19 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return YES;
 }
 
+- (CPMenu)menuForEvent:(CPEvent)theEvent
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableViewMenuForTableColumn_Row_))
+        return;
+
+    var location = [self convertPoint:[theEvent locationInWindow] fromView:nil],
+        row = [self rowAtPoint:location],
+        column = [self columnAtPoint:location],
+        tableColumn = [[self tableColumns] objectAtIndex:column];
+
+    return [[self delegate] tableView:self menuForTableColumn:tableColumn row:row];
+}
+
 /*
     @ignore
 */
@@ -3480,7 +3512,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (theRowIndex >= [self numberOfRows])
         theRowIndex = [self numberOfRows] - 1;
 
-    return [self rectOfRow:theRowIndex];
+    return [self _rectOfRow:theRowIndex checkRange:NO];
 }
 
 - (CPRect)_rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex offset:(CPPoint)theOffset
@@ -3488,7 +3520,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (theLowerRowIndex > [self numberOfRows])
         theLowerRowIndex = [self numberOfRows];
 
-    return [self rectOfRow:theLowerRowIndex];
+    return [self _rectOfRow:theLowerRowIndex checkRange:NO];
 }
 
 - (CPDragOperation)draggingUpdated:(id)sender

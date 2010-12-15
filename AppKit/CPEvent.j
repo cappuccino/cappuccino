@@ -576,6 +576,8 @@ var _CPEventPeriodicEventPeriod         = 0,
             case CPUpArrowFunctionKey:
             case CPRightArrowFunctionKey:
             case CPDownArrowFunctionKey:
+            case CPEndFunctionKey:
+            case CPHomeFunctionKey:
                 return YES;
         }
     }

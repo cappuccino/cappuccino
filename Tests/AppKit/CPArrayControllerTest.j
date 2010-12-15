@@ -92,6 +92,30 @@
     [self assert:[CPIndexSet indexSetWithIndex:count - 1] equals:[arrayController selectionIndexes]];
 }
 
+/*
+    Verify that the arranged objects ordering is correct versus the content array when objects are added with addObject and no sort descriptors are set.
+*/
+- (void)testAddObjects
+{
+    _arrayController = [[CPArrayController alloc] init];
+    var content = [];
+    [_arrayController setContent:content];
+
+    [_arrayController addObject:[CPNumber numberWithInt:1]];
+    [_arrayController addObject:[CPNumber numberWithInt:2]];
+
+    [self assert:[CPNumber numberWithInt:1] equals:content[0]];
+    [self assert:[CPNumber numberWithInt:2] equals:content[1]];
+
+    [self assert:[CPNumber numberWithInt:1] equals:[_arrayController arrangedObjects][0] message:"arranged objects should be in the correct order"];
+    [self assert:[CPNumber numberWithInt:2] equals:[_arrayController arrangedObjects][1] message:"arranged objects should be in the correct order"];
+
+    [_arrayController rearrangeObjects];
+
+    [self assert:[CPNumber numberWithInt:1] equals:[_arrayController arrangedObjects][0]];
+    [self assert:[CPNumber numberWithInt:2] equals:[_arrayController arrangedObjects][1]];
+}
+
 - (void)testRemoveObjects
 {
     var arrayController = [self arrayController];
