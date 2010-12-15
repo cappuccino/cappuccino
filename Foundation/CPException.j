@@ -145,8 +145,8 @@ if (input == nil)
     if (!anObject || !anObject.isa)
         return NO;
 
-    return [anObject isKindOfClass:CPException] && 
-           name === [anObject name] && 
+    return [anObject isKindOfClass:CPException] &&
+           name === [anObject name] &&
            message === [anObject message] &&
            (_userInfo === [anObject userInfo] || ([_userInfo isEqual:[anObject userInfo]]));
 }

@@ -92,7 +92,7 @@
         newValue = [aChange objectForKey:CPKeyValueChangeNewKey],
         indexes = [aChange objectForKey:CPKeyValueChangeIndexesKey];
 
-    if(newValue === [CPNull null])
+    if (newValue === [CPNull null])
         newValue = nil;
 
     if (changeKind === CPKeyValueChangeSetting)
@@ -102,7 +102,7 @@
     }
 
     //decide if this is a unordered or ordered to-many relationship
-    if([newValue isKindOfClass: [CPSet class]] || [oldValue isKindOfClass: [CPSet class]])
+    if ([newValue isKindOfClass: [CPSet class]] || [oldValue isKindOfClass: [CPSet class]])
     {
         if (changeKind === CPKeyValueChangeInsertion)
             [[self mutableSetValueForKeyPath:aKeyPath] unionSet:newValue];
@@ -205,7 +205,7 @@ _CPKeyValueChangeSetMutationNewValueKey = @"_CPKeyValueChangeSetMutationNewValue
 
 var _changeKindForSetMutationKind = function(mutationKind)
 {
-    switch(mutationKind)
+    switch (mutationKind)
     {
         case CPKeyValueUnionSetMutation:
             return CPKeyValueChangeInsertion;
@@ -247,7 +247,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
 
 - (id)initWithTarget:(id)aTarget
 {
-    if(self = [super init])
+    if (self = [super init])
     {
         _targetObject       = aTarget;
         _nativeClass        = [aTarget class];
@@ -460,14 +460,15 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
     {
         changes = changeOptions;
 
-        var indexes = [changes objectForKey:CPKeyValueChangeIndexesKey];
-        var setMutationKind = changes[_CPKeyValueChangeSetMutationKindKey];
+        var indexes = [changes objectForKey:CPKeyValueChangeIndexesKey],
+            setMutationKind = changes[_CPKeyValueChangeSetMutationKindKey];
 
-        if(setMutationKind)
+        if (setMutationKind)
         {
-            var setMutationObjects = [changes[_CPKeyValueChangeSetMutationObjectsKey] copy];
-            var setExistingObjects = [[_targetObject valueForKey: aKey] copy];
-            if(setMutationKind == CPKeyValueMinusSetMutation)
+            var setMutationObjects = [changes[_CPKeyValueChangeSetMutationObjectsKey] copy],
+                setExistingObjects = [[_targetObject valueForKey: aKey] copy];
+
+            if (setMutationKind == CPKeyValueMinusSetMutation)
             {
                 [setExistingObjects intersectSet: setMutationObjects];
                 [changes setValue:setExistingObjects forKey:CPKeyValueChangeOldKey];
@@ -477,13 +478,13 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
                 [setExistingObjects minusSet: setMutationObjects];
                 [changes setValue:setExistingObjects forKey:CPKeyValueChangeOldKey];
             }
-            
+
             //for unordered to-many relationships (CPSet) even new values can only be calculated before!!!
             if (setMutationKind === CPKeyValueUnionSetMutation || setMutationKind === CPKeyValueSetSetMutation)
             {
                 [setMutationObjects minusSet: setExistingObjects];
                 //hide new value (for CPKeyValueObservingOptionPrior messages)
-                //as long as "didChangeValue..." is not yet called! 
+                //as long as "didChangeValue..." is not yet called!
                 changes[_CPKeyValueChangeSetMutationNewValueKey] = setMutationObjects;
             }
         }
@@ -519,10 +520,10 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
 
         [changes removeObjectForKey:CPKeyValueChangeNotificationIsPriorKey];
 
-        var indexes = [changes objectForKey:CPKeyValueChangeIndexesKey];
-        var setMutationKind = changes[_CPKeyValueChangeSetMutationKindKey];
+        var indexes = [changes objectForKey:CPKeyValueChangeIndexesKey],
+            setMutationKind = changes[_CPKeyValueChangeSetMutationKindKey];
 
-        if(setMutationKind)
+        if (setMutationKind)
         {
             //old and new values for unordered to-many relationships can only be calculated before
             //set precalculated hidden new value as soon as "didChangeValue..." is called!
@@ -668,8 +669,9 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
 
     if (!aKey)
         return;
-    var changeKind = _changeKindForSetMutationKind(mutationKind);
-    var changeOptions = [CPDictionary dictionaryWithObject:changeKind forKey:CPKeyValueChangeKindKey];
+
+    var changeKind = _changeKindForSetMutationKind(mutationKind),
+        changeOptions = [CPDictionary dictionaryWithObject:changeKind forKey:CPKeyValueChangeKindKey];
     //set hidden change-dict ivars to support unordered to-many relationships
     changeOptions[_CPKeyValueChangeSetMutationObjectsKey] = objects;
     changeOptions[_CPKeyValueChangeSetMutationKindKey] = mutationKind;
