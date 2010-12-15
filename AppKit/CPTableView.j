@@ -65,7 +65,8 @@ var CPTableViewDelegate_selectionShouldChangeInTableView_                       
     CPTableViewDelegate_tableView_typeSelectStringForTableColumn_row_                                   = 1 << 16,
     CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_                                   = 1 << 17,
     CPTableViewDelegate_tableViewSelectionDidChange_                                                    = 1 << 18,
-    CPTableViewDelegate_tableViewSelectionIsChanging_                                                   = 1 << 19;
+    CPTableViewDelegate_tableViewSelectionIsChanging_                                                   = 1 << 19,
+    CPTableViewDelegate_tableViewMenuForTableColumn_Row_                                                = 1 << 20;
 
 //CPTableViewDraggingDestinationFeedbackStyles
 CPTableViewDraggingDestinationFeedbackStyleNone = -1;
@@ -1310,15 +1311,16 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return _CGRectMake(range.location, 0.0, range.length, _CGRectGetHeight([self bounds]));
 }
 
-// Complexity:
-// O(1)
+
 /*!
+    @ignore
     Returns a CGRect with the location and size of the row
     @param aRowIndex the index of the row you want the rect of
+    @param checkRange if YES this method will return a zero rect if the aRowIndex is outside of the range of valid indices
 */
-- (CGRect)rectOfRow:(CPInteger)aRowIndex
+- (CGRect)_rectOfRow:(CPInteger)aRowIndex checkRange:(BOOL)checkRange
 {
-    if (aRowIndex > [self numberOfRows] - 1 || aRowIndex < 0)
+    if (checkRange && (aRowIndex > [self numberOfRows] - 1 || aRowIndex < 0))
         return _CGRectMakeZero();
 
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_)
@@ -1333,6 +1335,17 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     }
 
     return _CGRectMake(0.0, y, _CGRectGetWidth([self bounds]), height);
+}
+
+// Complexity:
+// O(1)
+/*!
+    Returns a CGRect with the location and size of the row
+    @param aRowIndex the index of the row you want the rect of
+*/
+- (CGRect)rectOfRow:(CPInteger)aRowIndex
+{
+    return [self _rectOfRow:aRowIndex checkRange:YES];
 }
 
 // Complexity:
@@ -1982,6 +1995,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if ([_delegate respondsToSelector:@selector(tableView:willDisplayView:forTableColumn:row:)])
         _implementedDelegateMethods |= CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_;
+
+    if ([_delegate respondsToSelector:@selector(tableView:menuForTableColumn:row:)])
+        _implementedDelegateMethods |= CPTableViewDelegate_tableViewMenuForTableColumn_Row_;
 
     if ([_delegate respondsToSelector:@selector(tableViewColumnDidMove:)])
         [defaultCenter
@@ -3204,6 +3220,19 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return YES;
 }
 
+- (CPMenu)menuForEvent:(CPEvent)theEvent
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableViewMenuForTableColumn_Row_))
+        return;
+
+    var location = [self convertPoint:[theEvent locationInWindow] fromView:nil],
+        row = [self rowAtPoint:location],
+        column = [self columnAtPoint:location],
+        tableColumn = [[self tableColumns] objectAtIndex:column];
+
+    return [[self delegate] tableView:self menuForTableColumn:tableColumn row:row];
+}
+
 /*
     @ignore
 */
@@ -3483,7 +3512,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (theRowIndex >= [self numberOfRows])
         theRowIndex = [self numberOfRows] - 1;
 
-    return [self rectOfRow:theRowIndex];
+    return [self _rectOfRow:theRowIndex checkRange:NO];
 }
 
 - (CPRect)_rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex offset:(CPPoint)theOffset
@@ -3491,7 +3520,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (theLowerRowIndex > [self numberOfRows])
         theLowerRowIndex = [self numberOfRows];
 
-    return [self rectOfRow:theLowerRowIndex];
+    return [self _rectOfRow:theLowerRowIndex checkRange:NO];
 }
 
 - (CPDragOperation)draggingUpdated:(id)sender
