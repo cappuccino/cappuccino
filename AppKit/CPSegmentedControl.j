@@ -94,7 +94,9 @@ CPSegmentSwitchTrackingMomentary = 2;
     if (_segments.length == aCount)
         return;
 
-    var height = CGRectGetHeight([self bounds]);
+    var height = CGRectGetHeight([self bounds]),
+        dividersBefore = MAX(0, _segments.length - 1),
+        dividersAfter = MAX(0, aCount - 1);
 
     if (_segments.length < aCount)
     {
@@ -112,6 +114,14 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     if (_selectedSegment >= _segments.length)
         _selectedSegment = -1;
+
+    // Make space for/remove space used by dividers.
+    var thickness = [self currentValueForThemeAttribute:@"divider-thickness"],
+        delta = thickness * (dividersAfter - dividersBefore),
+        frame = [self frame];
+
+    if (delta)
+        [self setFrameSize:CGSizeMake(frame.size.width + delta, frame.size.height)];
 
     [self tileWithChangedSegment:0];
 }
@@ -607,7 +617,7 @@ CPSegmentSwitchTrackingMomentary = 2;
         segmentWidth = [segment width],
         themeState = _themeStates[aSegment] | (_themeState & CPThemeStateDisabled),
         contentInset = [self valueForThemeAttribute:@"content-inset" inState:themeState],
-        font = [self valueForThemeAttribute:@"font" inState:themeState];
+        font = [self font];
 
     if (!segmentWidth)
     {
