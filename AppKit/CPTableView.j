@@ -65,7 +65,8 @@ var CPTableViewDelegate_selectionShouldChangeInTableView_                       
     CPTableViewDelegate_tableView_typeSelectStringForTableColumn_row_                                   = 1 << 16,
     CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_                                   = 1 << 17,
     CPTableViewDelegate_tableViewSelectionDidChange_                                                    = 1 << 18,
-    CPTableViewDelegate_tableViewSelectionIsChanging_                                                   = 1 << 19;
+    CPTableViewDelegate_tableViewSelectionIsChanging_                                                   = 1 << 19,
+    CPTableViewDelegate_tableViewMenuForTableColumn_Row_                                                = 1 << 20;
 
 //CPTableViewDraggingDestinationFeedbackStyles
 CPTableViewDraggingDestinationFeedbackStyleNone = -1;
@@ -1995,6 +1996,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if ([_delegate respondsToSelector:@selector(tableView:willDisplayView:forTableColumn:row:)])
         _implementedDelegateMethods |= CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_;
 
+    if ([_delegate respondsToSelector:@selector(tableView:menuForTableColumn:row:)])
+        _implementedDelegateMethods |= CPTableViewDelegate_tableViewMenuForTableColumn_Row_;
+
     if ([_delegate respondsToSelector:@selector(tableViewColumnDidMove:)])
         [defaultCenter
             addObserver:_delegate
@@ -3214,6 +3218,19 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     [[self window] makeFirstResponder:self];
     return YES;
+}
+
+- (CPMenu)menuForEvent:(CPEvent)theEvent
+{
+    if (!(_implementedDelegateMethods & CPTableViewDelegate_tableViewMenuForTableColumn_Row_))
+        return;
+
+    var location = [self convertPoint:[theEvent locationInWindow] fromView:nil],
+        row = [self rowAtPoint:location],
+        column = [self columnAtPoint:location],
+        tableColumn = [[self tableColumns] objectAtIndex:column];
+
+    return [[self delegate] tableView:self menuForTableColumn:tableColumn row:row];
 }
 
 /*
