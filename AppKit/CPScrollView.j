@@ -976,16 +976,18 @@
 
 - (void)scrollToBeginningOfDocument:(id)sender
 {
-    var contentBounds = [_contentView bounds];
-    [self _moveToPoint:_CGPointMakeZero()];
+    [_contentView scrollToPoint:_CGPointMakeZero()];
+    [_headerClipView scrollToPoint:_CGPointMakeZero()];
 }
 
 - (void)scrollToEndOfDocument:(id)sender
 {
     var contentBounds = [_contentView bounds],
-        documentFrame = [[self documentView] frame];
+        documentFrame = [[self documentView] frame],
+        scrollPoint = _CGPointMake(0.0, _CGRectGetHeight(documentFrame) - _CGRectGetHeight(contentBounds));
 
-    [self _moveToPoint:_CGPointMake(0.0, _CGRectGetHeight(documentFrame) - _CGRectGetHeight(contentBounds))]
+    [_contentView scrollToPoint:scrollPoint];
+    [_headerClipView scrollToPoint:_CGPointMakeZero()];
 }
 
 - (void)moveLeft:(id)sender
@@ -1016,13 +1018,8 @@
     contentBounds.origin.x += aSize.width;
     contentBounds.origin.y += aSize.height;
 
-    [self _moveToPoint:contentBounds.origin];
-}
-
-- (void)_moveToPoint:(CGPoint)aPoint
-{
-    [_contentView scrollToPoint:aPoint];
-    [_headerClipView scrollToPoint:CGPointMake(aPoint, 0)];
+    [_contentView scrollToPoint:contentBounds.origin];
+    [_headerClipView scrollToPoint:CGPointMake(contentBounds.origin.x, 0)];
 }
 
 @end
