@@ -134,7 +134,10 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
             _DOMObjectElement.removeChild([elements objectAtIndex:i]);
     }
 #endif
-    _params = aDictionary;
+    if (!_params)
+        _params = aDictionary;
+    else
+        [_params addEntriesFromDictionary:aDictionary];
 #if PLATFORM(DOM)
     if (!CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
     {
@@ -143,7 +146,7 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
         var enumerator = [_params keyEnumerator],
             key;
 
-        while (key = [enumerator nextObject] && _DOMObjectElement)
+        while (_DOMObjectElement && (key = [enumerator nextObject]))
         {
             var param = document.createElement(@"param");
             param.name = key;
