@@ -25,25 +25,6 @@
 @import "CPString.j"
 
 /*!
-    The left operand is smaller than the right.
-    @global
-    @group CPComparisonResult
-*/
-CPOrderedAscending      = -1;
-/*!
-    The left and right operands are equal.
-    @global
-    @group CPComparisonResult
-*/
-CPOrderedSame           =  0;
-/*!
-    The left operand is greater than the right.
-    @global
-    @group CPComparisonResult
-*/
-CPOrderedDescending     =  1;
-
-/*!
     @class CPSortDescriptor
     @ingroup foundation
     @brief Holds attributes necessary to describe how to sort a set of objects.
