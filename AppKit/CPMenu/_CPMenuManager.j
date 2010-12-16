@@ -446,24 +446,66 @@ var SharedMenuManager           = nil;
 }
 
 
-- (void)moveToBeginningOfDocument:(CPMenu)menu
-{
-    [self scrollPageUp:menu];
-}
-
-- (void)moveToEndOfDocument:(CPMenu)menu
-{
-    [self scrollPageDown:menu];
-}
-
-- (void)scrollPageUp:(CPMenu)menu
+- (void)scrollToBeginningOfDocument:(CPMenu)menu
 {
     [menu _highlightItemAtIndex:0];
 }
 
-- (void)scrollPageDown:(CPMenu)menu
+- (void)scrollToEndOfDocument:(CPMenu)menu
 {
     [menu _highlightItemAtIndex:[menu numberOfItems] - 1];
+}
+
+- (void)scrollPageDown:(CPMenu)menu
+{
+    var menuWindow = menu._menuWindow,
+        menuClipView = menuWindow._menuClipView,
+        bottom = [menuClipView bounds].size.height,
+        first = [menuWindow itemIndexAtPoint:CGPointMake(1, 10)],
+        last = [menuWindow itemIndexAtPoint:CGPointMake(1, bottom)],
+        current = [menu indexOfItem:[menu highlightedItem]];
+
+    if(current == CPNotFound)
+    {
+        [menu _highlightItemAtIndex:0];
+        return;
+    }
+    next = current + (last - first);
+
+    if(next<[menu numberOfItems])
+        [menu _highlightItemAtIndex:next];
+    else
+        [menu _highlightItemAtIndex:[menu numberOfItems]-1];
+
+    var item = [menu highlightedItem];
+    if([item isSeparatorItem] || [item isHidden] || ![item isEnabled])
+        [self moveDown:menu];
+}
+
+- (void)scrollPageUp:(CPMenu)menu
+{
+    var menuWindow = menu._menuWindow,
+        menuClipView = menuWindow._menuClipView,
+        bottom = [menuClipView bounds].size.height,
+        first = [menuWindow itemIndexAtPoint:CGPointMake(1, 10)],
+        last = [menuWindow itemIndexAtPoint:CGPointMake(1, bottom)],
+        current = [menu indexOfItem:[menu highlightedItem]];
+
+    if(current == CPNotFound)
+    {
+        [menu _highlightItemAtIndex:0];
+        return;
+    }
+    next = current - (last - first);
+
+    if(next < 0)
+        [menu _highlightItemAtIndex:0];
+    else
+        [menu _highlightItemAtIndex:next];
+
+    var item = [menu highlightedItem];
+    if([item isSeparatorItem] || [item isHidden] || ![item isEnabled])
+        [self moveUp:menu];
 }
 
 - (void)moveLeft:(CPMenu)menu
