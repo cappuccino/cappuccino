@@ -22,9 +22,10 @@
 
 @import "CPException.j"
 @import "CPObject.j"
+@import "CPObjJRuntime.j"
+@import "CPRange.j"
 @import "CPSortDescriptor.j"
 @import "CPValue.j"
-
 
 /*!
     A case insensitive search

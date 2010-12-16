@@ -23,12 +23,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPObject.j"
+@import "CPData.j"
 @import "CPDictionary.j"
-
+@import "CPException.j"
+@import "CPKeyedArchiver.j"
+@import "CPKeyedUnarchiver.j"
+@import "CPNumber.j"
+@import "CPObject.j"
 
 var transformerMap = [CPDictionary dictionary];
-
 
 @implementation CPValueTransformer : CPObject
 {
@@ -75,7 +78,7 @@ var transformerMap = [CPDictionary dictionary];
 {
     if ([[self class] allowsReverseTransformation])
     {
-        [CPException raise:CPInvalidArgumentException reason:(self+" is not reversible.")];
+        [CPException raise:CPInvalidArgumentException reason:(self + " is not reversible.")];
     }
 
     return [self transformedValue:aValue];
@@ -184,7 +187,7 @@ var transformerMap = [CPDictionary dictionary];
 
 @end
 
-CPNegateBooleanTransformerName  = @"CPNegateBooleanTransformerName";
-CPIsNilTransformerName          = @"CPIsNilTransformerName";
-CPIsNotNilTransformerName       = @"CPIsNotNilTransformerName";
-CPUnarchiveFromDataTransformerName = @"CPUnarchiveFromDataTransformerName";
+CPNegateBooleanTransformerName      = @"CPNegateBooleanTransformerName";
+CPIsNilTransformerName              = @"CPIsNilTransformerName";
+CPIsNotNilTransformerName           = @"CPIsNotNilTransformerName";
+CPUnarchiveFromDataTransformerName  = @"CPUnarchiveFromDataTransformerName";

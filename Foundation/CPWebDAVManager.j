@@ -20,9 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <Foundation/CPObject.j>
-@import <Foundation/CPDictionary.j>
-@import <Foundation/CPURL.j>
+@import "CPArray.j"
+@import "CPDictionary.j"
+@import "CPObject.j"
+@import "CPString.j"
+@import "CPURL.j"
+@import "CPURLConnection.j"
+@import "CPURLRequest.j"
 
 var setURLResourceValuesForKeysFromProperties = function(aURL, keys, properties)
 {
@@ -174,7 +178,7 @@ WebDAVPropertiesForURLKeys[CPURLIsDirectoryKey]     = @"resourcetype";
 //CPURLCustomIconKey                  = @"CPURLCustomIconKey";
 
 var XMLDocumentFromString = function(anXMLString)
-{//console.log(anXMLString);
+{
     if (typeof window["ActiveXObject"] !== "undefined")
     {
         var XMLDocument = new ActiveXObject("Microsoft.XMLDOM");
@@ -193,9 +197,8 @@ var parsePROPFINDResponse = function(anXMLString)
     var XMLDocument = XMLDocumentFromString(anXMLString),
         responses = XMLDocument.getElementsByTagNameNS("*", "response"),
         responseIndex = 0,
-        responseCount = responses.length;
-
-    var propertiesForURLs = [CPDictionary dictionary];
+        responseCount = responses.length,
+        propertiesForURLs = [CPDictionary dictionary];
 
     for (; responseIndex < responseCount; ++responseIndex)
     {
@@ -220,7 +223,6 @@ var parsePROPFINDResponse = function(anXMLString)
 
             if (nodeName === @"resourcetype")
                 [properties setObject:element.firstChild ? CPWebDAVManagerCollectionResourceType : CPWebDAVManagerNonCollectionResourceType forKey:nodeName];
-
             else
                 [properties setObject:element.firstChild.nodeValue forKey:nodeName];
         }

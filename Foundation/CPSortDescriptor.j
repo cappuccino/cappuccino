@@ -22,7 +22,7 @@
 
 @import "CPObject.j"
 @import "CPObjJRuntime.j"
-
+@import "CPString.j"
 
 /*!
     The left operand is smaller than the right.
