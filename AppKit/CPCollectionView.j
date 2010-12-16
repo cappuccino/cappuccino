@@ -205,7 +205,7 @@
 {
     // reset the _selectionIndexes if the content is different
     if (_content !== anArray)
-        _selectionIndexes = [CPIndexSet indexSet];
+        [self setSelectionIndexes:[CPIndexSet indexSet]];
 
     _content = anArray;
 
