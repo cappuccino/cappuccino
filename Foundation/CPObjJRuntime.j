@@ -59,8 +59,4 @@ CPOrderedSame           =  0;
 */
 CPOrderedDescending     =  1;
 
-CPNotFound          = -1;
-
-MIN = Math.min;
-MAX = Math.max;
-ABS = Math.abs;
+CPNotFound              = -1;
