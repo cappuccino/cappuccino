@@ -977,7 +977,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         // fall through to the return
     }
 
-    return CGMakeRange(0, 0);
+    return CPMakeRange(0, 0);
 }
 
 - (void)setSelectedRange:(CPRange)aRange
