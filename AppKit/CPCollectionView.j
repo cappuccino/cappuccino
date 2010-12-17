@@ -203,9 +203,8 @@
 */
 - (void)setContent:(CPArray)anArray
 {
-    // reset the _selectionIndexes if the content is different
-    if (_content !== anArray)
-        [self setSelectionIndexes:[CPIndexSet indexSet]];
+    // reset the _selectionIndexes
+    [self setSelectionIndexes:[CPIndexSet indexSet]];
 
     _content = anArray;
 

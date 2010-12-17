@@ -16,7 +16,7 @@
 // delegate method
 - (void)collectionViewDidChangeSelection:(CPCollectionView)aCollectionView
 {
-    _globalResults = "selection changed";
+    _globalResults = "selection changed: " + [[aCollectionView selectionIndexes] count];
 }
 
 - (void)testItemPrototypeActuallyReturnsTheItemPrototype
@@ -67,24 +67,23 @@
     [_collectionView setContent:content1];
     [_collectionView setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
     // the first time the delegate does get called
-    [self assert:"selection changed" equals:_globalResults];
+    [self assert:"selection changed: 1" equals:_globalResults];
     _globalResults = nil;
 
-    // setting the same content again and setting the 0 selection should not trigger the delegate
+    // setting the same content again should still trigger the delegate but with no selection
     [_collectionView setContent:content1];
-    [_collectionView setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
-    [self assert:nil equals:_globalResults];
+    [self assert:"selection changed: 0" equals:_globalResults];
     _globalResults = nil;
 
     // now lets change the contents
     [_collectionView setContent:content2];
     // we set the selection to 0 again, but on the NEW content
     [_collectionView setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
-    [self assert:"selection changed" equals:_globalResults];
+    [self assert:"selection changed: 1" equals:_globalResults];
 
     _globalResults = nil;
     [_collectionView setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
-    [self assert:"selection changed" equals:_globalResults];
+    [self assert:"selection changed: 1" equals:_globalResults];
 }
 
 @end
