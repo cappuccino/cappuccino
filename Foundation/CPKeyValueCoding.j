@@ -252,11 +252,14 @@ var _ivarForKey = function(theObject, aKey)
 
 - (void)setValuesForKeysWithDictionary:(CPDictionary)keyedValues
 {
-    var value, key, keyEnumerator = [keyedValues keyEnumerator];
-    while(key = [keyEnumerator nextObject])
+    var value,
+        key,
+        keyEnumerator = [keyedValues keyEnumerator];
+
+    while (key = [keyEnumerator nextObject])
     {
         value = [keyedValues objectForKey: key];
-        if(value === [CPNull null])
+        if (value === [CPNull null])
             [self setValue: nil forKey: key];
         else
             [self setValue: value forKey: key];
@@ -284,7 +287,7 @@ var _ivarForKey = function(theObject, aKey)
 
 - (void)setValue:(id)aValue forKey:(CPString)aKey
 {
-    if(aValue)
+    if (aValue)
         [self setObject:aValue forKey:aKey];
     else
         [self removeObjectForKey: aKey];

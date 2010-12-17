@@ -755,7 +755,8 @@ var CPStringRegexSpecialCharacters = [
 
 - (CPString)stringByStandardizingPath
 {
-    return objj_standardize_path(self);
+    // FIXME: Expand tildes etc. in CommonJS?
+    return [[CPURL URLWithString:self] absoluteString];
 }
 
 - (CPString)copy

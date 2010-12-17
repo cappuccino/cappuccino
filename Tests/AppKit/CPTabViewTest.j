@@ -7,12 +7,12 @@
 
 - (CPSegmentedControl)tabs
 {
-    return tabs;
+    return _tabs;
 }
 
 - (CPBox)box
 {
-    return box;
+    return _box;
 }
 
 @end
@@ -73,7 +73,7 @@
         tabs = [_tabView tabs];
     
     [_tabView setFrame:CPRectMake(0, 0, 800, 800)];
-    [self assert:[box frameSize].height  equals:800 - ([box frameOrigin].y) - [tabs frameSize].height / 2];
+    [self assert:[box frameSize].height  equals:800 - [tabs frameSize].height / 2];
 }
 
 

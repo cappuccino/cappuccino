@@ -39,7 +39,7 @@ var _CPKeyedUnarchiverCannotDecodeObjectOfClassNameOriginalClassesSelector      
     _CPKeyedUnarchiverDidFinishSelector                                                 = 1 << 4,
     CPKeyedUnarchiverDelegate_unarchiver_cannotDecodeObjectOfClassName_originalClasses_ = 1 << 5;
 
-var _CPKeyedArchiverNullString                                              = "$null"
+var _CPKeyedArchiverNullString                                              = "$null",
 
     _CPKeyedArchiverUIDKey                                                  = "CP$UID",
 
