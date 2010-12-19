@@ -1349,9 +1349,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             height = _rowHeight + _intercellSpacing.height;
     }
 
-
-//    console.log(aRowIndex, _CGRectMake(0.0, y, _CGRectGetWidth([self bounds]), height));
-
     return _CGRectMake(0.0, y, _CGRectGetWidth([self bounds]), height);
 }
 
@@ -1520,7 +1517,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     }
 
     var y = aPoint.y,
-        row = FLOOR(y / (_rowHeight + (_intercellSpacing.height / 2)));
+        row = FLOOR(y / (_rowHeight + _intercellSpacing.height));
 
     if (row >= _numberOfRows)
         return CPNotFound;
