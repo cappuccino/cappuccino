@@ -184,7 +184,8 @@ var transformerMap = [CPDictionary dictionary];
 
 @end
 
-CPNegateBooleanTransformerName  = @"CPNegateBooleanTransformerName";
-CPIsNilTransformerName          = @"CPIsNilTransformerName";
-CPIsNotNilTransformerName       = @"CPIsNotNilTransformerName";
-CPUnarchiveFromDataTransformerName = @"CPUnarchiveFromDataTransformerName";
+CPNegateBooleanTransformerName          = @"CPNegateBoolean";
+CPIsNilTransformerName                  = @"CPIsNil";
+CPIsNotNilTransformerName               = @"CPIsNotNil";
+CPUnarchiveFromDataTransformerName      = @"CPUnarchiveFromData";
+CPKeyedUnarchiveFromDataTransformerName = @"CPKeyedUnarchiveFromData";

@@ -124,8 +124,14 @@ NIB_CONNECTION_EQUIVALENCY_TABLE = {};
             aKey;
         while (aKey = [keyEnum nextObject])
         {
-            var CPKey = "CP" + aKey.substring(2);
-            [_options setObject:[nsoptions objectForKey:aKey] forKey:CPKey];
+            var CPKey = [CPString stringWithFormat:@"CP%@", aKey.substring(2)],
+                nsvalue = [nsoptions objectForKey:aKey],
+                nstramsformers = [CPArray arrayWithObjects:@"NSNegateBoolean", @"NSIsNil", @"NSIsNotNil", @"NSUnarchiveFromData", @"NSKeyedUnarchiveFromData"];
+            
+            if (CPKey == CPValueTransformerNameBindingOption && [nstramsformers containsObject:nsvalue])
+                nsvalue = [CPString stringWithFormat:@"CP%@", nsvalue.substring(2)];
+                
+            [_options setObject:nsvalue forKey:CPKey];
         }
 
         CPLog.debug(@"Binding Connector: " + [_binding description] + " to: " + _destination + " " + [_keyPath description] + " " + [_options description]);
