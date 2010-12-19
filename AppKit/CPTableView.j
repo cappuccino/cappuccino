@@ -1410,9 +1410,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (bottom <= bottomOfBoundedRows)
         return boundedRange;
 
-    var numberOfNewRows = CEIL(bottom -  bottomOfBoundedRows) * ([self rowHeight] + _intercellSpacing.height);
+    var numberOfNewRows = CEIL(bottom -  bottomOfBoundedRows) / ([self rowHeight] + _intercellSpacing.height);
 
-    boundedRange.length += numberOfNewRows;
+    boundedRange.length += numberOfNewRows + 1;
 
     return boundedRange;
     
@@ -2840,7 +2840,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     while (colorIndex < colorCount)
     {
         CGContextBeginPath(context);
-        for (var row = colorIndex; row < lastRow; row += colorCount)
+        for (var row = colorIndex; row <= lastRow; row += colorCount)
         {
             // if it's not a group row draw it otherwise we draw it later
             if (![_groupRows containsIndex:row])
