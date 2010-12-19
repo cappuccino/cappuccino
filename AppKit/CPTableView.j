@@ -550,9 +550,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self setNeedsLayout];
     [_headerView setNeedsDisplay:YES];
     [_headerView setNeedsLayout];
+
+    // height above the rows will change
+    [self noteHeightOfRowsWithIndexesChanged:[CPIndexSet  indexSetWithIndexesInRange:CPMakeRange(0,[self numberOfRows])]];
 }
 
-- (void)setThemeState:(int)astae
+- (void)setThemeState:(int)aState
 {
 }
 
@@ -1311,7 +1314,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return _CGRectMake(range.location, 0.0, range.length, _CGRectGetHeight([self bounds]));
 }
 
-
+// Complexity:
+// O(1)
 /*!
     @ignore
     Returns a CGRect with the location and size of the row
@@ -1320,13 +1324,24 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (CGRect)_rectOfRow:(CPInteger)aRowIndex checkRange:(BOOL)checkRange
 {
-    if (checkRange && (aRowIndex > [self numberOfRows] - 1 || aRowIndex < 0))
+    var lastIndex = [self numberOfRows] - 1;
+
+    if (checkRange && (aRowIndex > lastIndex || aRowIndex < 0))
         return _CGRectMakeZero();
 
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_)
     {
-        var y = _cachedRowHeights[aRowIndex].heightAboveRow,
-            height = _cachedRowHeights[aRowIndex].height + _intercellSpacing.height;
+        var rowToLookUp = MIN(aRowIndex, lastIndex),
+            y = _cachedRowHeights[rowToLookUp].heightAboveRow,
+            height = _cachedRowHeights[rowToLookUp].height + _intercellSpacing.height,
+            rowDelta = aRowIndex - rowToLookUp;
+
+        // if we need the rect of a row past the last index
+        if (rowDelta > 0)
+        {
+            y += rowDelta * (_rowHeight + _intercellSpacing.height);
+            height = _rowHeight + _intercellSpacing.height;
+        }
     }
     else
     {
@@ -1334,11 +1349,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             height = _rowHeight + _intercellSpacing.height;
     }
 
+
+//    console.log(aRowIndex, _CGRectMake(0.0, y, _CGRectGetWidth([self bounds]), height));
+
     return _CGRectMake(0.0, y, _CGRectGetWidth([self bounds]), height);
 }
 
-// Complexity:
-// O(1)
 /*!
     Returns a CGRect with the location and size of the row
     @param aRowIndex the index of the row you want the rect of
@@ -1379,6 +1395,30 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         lastRow = _numberOfRows - 1;
 
     return CPMakeRange(firstRow, lastRow - firstRow + 1);
+}
+
+/*!
+    @ignore  
+    when we draw the row backgrounds we dont want an index bounding our range
+*/
+- (CPRange)_unboundedRowsInRect:(CGRect)aRect
+{
+    var boundedRange = [self rowsInRect:aRect],
+        lastRow = CPMaxRange(boundedRange),
+        rectOfLastRow = [self _rectOfRow:lastRow checkRange:NO],
+        bottom = _CGRectGetMaxY(aRect),
+        bottomOfBoundedRows = _CGRectGetMaxY(rectOfLastRow);
+
+    // we only have to worry about the rows below the last...
+    if (bottom <= bottomOfBoundedRows)
+        return boundedRange;
+
+    var numberOfNewRows = CEIL(bottom -  bottomOfBoundedRows) * ([self rowHeight] + _intercellSpacing.height);
+
+    boundedRange.length += numberOfNewRows;
+
+    return boundedRange;
+    
 }
 
 // Complexity:
@@ -1472,7 +1512,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
                           if (aPoint.y < upperBound)
                               return CPOrderedAscending;
 
-                          if (aPoint.y > upperBound + rowCache.height)
+                          if (aPoint.y > upperBound + rowCache.height + _intercellSpacing.height)
                               return CPOrderedDescending;
 
                           return CPOrderedSame;
@@ -1480,7 +1520,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     }
 
     var y = aPoint.y,
-        row = FLOOR(y / (_rowHeight + _intercellSpacing.height));
+        row = FLOOR(y / (_rowHeight + (_intercellSpacing.height / 2)));
 
     if (row >= _numberOfRows)
         return CPNotFound;
@@ -2793,7 +2833,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         return;
     }
 
-    var exposedRows = [self rowsInRect:aRect],
+    var exposedRows = [self _unboundedRowsInRect:aRect],
         lastRow = CPMaxRange(exposedRows),
         colorIndex = 0,
         groupRowRects = [],
@@ -2807,9 +2847,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         {
             // if it's not a group row draw it otherwise we draw it later
             if (![_groupRows containsIndex:row])
-                CGContextAddRect(context, CGRectIntersection(aRect, [self rectOfRow:row]));
+                CGContextAddRect(context, CGRectIntersection(aRect, [self _rectOfRow:row checkRange:NO]));
             else
-                groupRowRects.push(CGRectIntersection(aRect, [self rectOfRow:row]));
+                groupRowRects.push(CGRectIntersection(aRect, [self _rectOfRow:row checkRange:NO]));
         }
         CGContextClosePath(context);
 
@@ -2834,7 +2874,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if (gridStyleMask & CPTableViewSolidHorizontalGridLineMask)
     {
-        var exposedRows = [self rowsInRect:aRect],
+        var exposedRows = [self _unboundedRowsInRect:aRect],
             row = exposedRows.location,
             lastRow = CPMaxRange(exposedRows) - 1,
             rowY = -0.5,
@@ -2844,7 +2884,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         for (; row <= lastRow; ++row)
         {
             // grab each row rect and add the top and bottom lines
-            var rowRect = [self rectOfRow:row],
+            var rowRect = [self _rectOfRow:row checkRange:NO],
                 rowY = _CGRectGetMaxY(rowRect) - 0.5;
 
             CGContextMoveToPoint(context, minX, rowY);
