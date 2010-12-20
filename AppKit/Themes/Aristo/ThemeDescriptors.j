@@ -561,17 +561,17 @@ var themedButtonValues = nil,
     var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0) pullsDown:YES],
         color = PatternColor(
             [
-                ["popup-bezel-left.png", 4.0, 24.0],
+                ["popup-bezel-left.png", 3.0, 24.0],
                 ["popup-bezel-center.png", 1.0, 24.0],
-                ["popup-bezel-right-pullsdown.png", 27.0, 24.0]
+                ["popup-bezel-right-pullsdown.png", 21.0, 24.0]
             ],
             PatternIsHorizontal),
 
         disabledColor = PatternColor(
             [
-                ["popup-bezel-disabled-left.png", 4.0, 24.0],
+                ["popup-bezel-disabled-left.png", 3.0, 24.0],
                 ["popup-bezel-disabled-center.png", 1.0, 24.0],
-                ["popup-bezel-disabled-right-pullsdown.png", 27.0, 24.0]
+                ["popup-bezel-disabled-right-pullsdown.png", 21.0, 24.0]
             ],
             PatternIsHorizontal),
 
