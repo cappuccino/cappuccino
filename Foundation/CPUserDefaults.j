@@ -20,9 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CPApplication.j>
-@import <AppKit/CPCookie.j>
-
 @import "CPBundle.j"
 @import "CPData.j"
 @import "CPDictionary.j"
@@ -36,6 +33,7 @@
 @import "CPURL.j"
 @import "CPURLConnection.j"
 @import "CPURLRequest.j"
+
 
 CPArgumentDomain        = @"CPArgumentDomain";
 CPApplicationDomain     = [[[CPBundle mainBundle] infoDictionary] objectForKey:@"CPBundleIdentifier"] || @"CPApplicationDomain";
