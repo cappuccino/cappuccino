@@ -21,7 +21,7 @@
  */
 
 @import "CPObject.j"
-
+@import "CPURL.j"
 
 /*
     CPURL       _URL;

@@ -20,7 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-
 function CPStringFromSelector(aSelector)
 {
     return sel_getName(aSelector);
@@ -41,27 +40,23 @@ function CPStringFromClass(aClass)
     return class_getName(aClass);
 }
 
-CPOrderedAscending  = -1;
-CPOrderedSame       = 0;
-CPOrderedDescending = 1;
+/*!
+    The left operand is smaller than the right.
+    @global
+    @group CPComparisonResult
+*/
+CPOrderedAscending      = -1;
+/*!
+    The left and right operands are equal.
+    @global
+    @group CPComparisonResult
+*/
+CPOrderedSame           =  0;
+/*!
+    The left operand is greater than the right.
+    @global
+    @group CPComparisonResult
+*/
+CPOrderedDescending     =  1;
 
-CPNotFound          = -1;
-
-MIN = Math.min;
-MAX = Math.max;
-ABS = Math.abs;
-
-/*function MIN(lhs, rhs)
-{
-    return Math.min(lhs, rhs);
-}
-
-function MAX(lhs, rhs)
-{
-    return Math.max(lhs, rhs);
-}
-
-function ABS(argument)
-{
-    return Math.abs(argument);
-}*/
+CPNotFound              = -1;
