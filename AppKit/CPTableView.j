@@ -1415,7 +1415,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     boundedRange.length += numberOfNewRows + 1;
 
     return boundedRange;
-    
 }
 
 // Complexity:
@@ -1782,13 +1781,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         if ([anIndexSet containsIndex:i])
             var height = [_delegate tableView:self heightOfRow:i];
 
-        if (_cachedRowHeights.length > i)
-        {
-            // since it exists, update it
-            _cachedRowHeights[i].height = height;
-            _cachedRowHeights[i].heightAboveRow = heightAbove;
-        }
-        else
             _cachedRowHeights[i] = {"height":height, "heightAboveRow":heightAbove};
 
         heightAbove += height + _intercellSpacing.height;
@@ -1906,12 +1898,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     for (var i = 0; i < [columns count]; i++)
     {
-        var column = [columns objectAtIndex:i];
-
-        var metaData = [CPDictionary dictionaryWithJSObject:{
+        var column = [columns objectAtIndex:i],
+            metaData = [CPDictionary dictionaryWithJSObject:{
             @"identifier": [column identifier],
             @"width": [column width]
-        }];
+            }];
 
         [columnsSetup addObject:metaData];
     }
@@ -3046,7 +3037,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     CGContextBeginPath(context);
     var gridStyleMask = [self gridStyleMask];
-    for(var i = 0; i < count2; i++)
+    for (var i = 0; i < count2; i++)
     {
          var rect = objj_msgSend(self, rectSelector, indexes[i]),
              minX = _CGRectGetMinX(rect) - 0.5,
@@ -3103,37 +3094,37 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
                                                                                             199.0 / 255.0, 199.0 / 255.0, 199.0 / 255.0,1.0], [0,1], 2),
         drawGradient = YES;
 
-        while (i--)
+    while (i--)
+    {
+        var rowRect = rects[i];
+
+        CGContextAddRect(context, rowRect);
+
+        if (drawGradient)
         {
-            var rowRect = rects[i];
+            var minX = CGRectGetMinX(rowRect),
+                minY = CGRectGetMinY(rowRect),
+                maxX = CGRectGetMaxX(rowRect),
+                maxY = CGRectGetMaxY(rowRect);
 
-            CGContextAddRect(context, rowRect);
+            CGContextDrawLinearGradient(context, gradientColor, rowRect.origin, CGPointMake(minX, maxY), 0);
+            CGContextClosePath(context);
 
-            if (drawGradient)
-            {
-                var minX = CGRectGetMinX(rowRect),
-                    minY = CGRectGetMinY(rowRect),
-                    maxX = CGRectGetMaxX(rowRect),
-                    maxY = CGRectGetMaxY(rowRect);
+            CGContextBeginPath(context);
+            CGContextMoveToPoint(context, minX, minY);
+            CGContextAddLineToPoint(context, maxX, minY);
+            CGContextClosePath(context);
+            CGContextSetStrokeColor(context, topLineColor);
+            CGContextStrokePath(context);
 
-                CGContextDrawLinearGradient(context, gradientColor, rowRect.origin, CGPointMake(minX, maxY), 0);
-                CGContextClosePath(context);
-
-                CGContextBeginPath(context);
-                CGContextMoveToPoint(context, minX, minY);
-                CGContextAddLineToPoint(context, maxX, minY);
-                CGContextClosePath(context);
-                CGContextSetStrokeColor(context, topLineColor);
-                CGContextStrokePath(context);
-
-                CGContextBeginPath(context);
-                CGContextMoveToPoint(context, minX, maxY);
-                CGContextAddLineToPoint(context, maxX, maxY - 1);
-                CGContextClosePath(context);
-                CGContextSetStrokeColor(context, bottomLineColor);
-                CGContextStrokePath(context);
-            }
+            CGContextBeginPath(context);
+            CGContextMoveToPoint(context, minX, maxY);
+            CGContextAddLineToPoint(context, maxX, maxY - 1);
+            CGContextClosePath(context);
+            CGContextSetStrokeColor(context, bottomLineColor);
+            CGContextStrokePath(context);
         }
+    }
 
     CGContextClosePath(context);
 }
@@ -4030,18 +4021,22 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
 - (void)removeMatches:(CPIndexSet)otherSet
 {
-    var firstindex = [self firstIndex];
-    var index = MIN(firstindex, [otherSet firstIndex]);
-    var switchFlag = (index == firstindex);
+    var firstindex = [self firstIndex],
+        index = MIN(firstindex, [otherSet firstIndex]),
+        switchFlag = (index == firstindex);
+
     while (index != CPNotFound)
     {
         var indexSet = (switchFlag) ? otherSet : self;
+
         otherIndex = [indexSet indexGreaterThanOrEqualToIndex:index];
+
         if (otherIndex == index)
         {
             [self removeIndex:index];
             [otherSet removeIndex:index];
         }
+
         index = otherIndex;
         switchFlag = !switchFlag;
     }
