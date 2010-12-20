@@ -109,29 +109,39 @@ NIB_CONNECTION_EQUIVALENCY_TABLE = {};
 
 @end
 
+var NSTramsformers = [CPSet setWithObjects:
+                        @"NSNegateBoolean",
+                        @"NSIsNil",
+                        @"NSIsNotNil",
+                        @"NSUnarchiveFromData",
+                        @"NSKeyedUnarchiveFromData"];
+
 @implementation CPCibBindingConnector (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    if (self = [super NS_initWithCoder:aCoder])
+    self = [super NS_initWithCoder:aCoder];
+
+    if (self)
     {
         _binding = [aCoder decodeObjectForKey:@"NSBinding"];
         _keyPath = [aCoder decodeObjectForKey:@"NSKeyPath"];
 
         _options = [CPDictionary dictionary];
-        var nsoptions = [aCoder decodeObjectForKey:@"NSOptions"],
-            keyEnum = [nsoptions keyEnumerator],
-            aKey;
-        while (aKey = [keyEnum nextObject])
+
+        var NSOptions = [aCoder decodeObjectForKey:@"NSOptions"],
+            keyEnumerator = [NSOptions keyEnumerator],
+            key;
+
+        while (key = [keyEnumerator nextObject])
         {
-            var CPKey = [CPString stringWithFormat:@"CP%@", aKey.substring(2)],
-                nsvalue = [nsoptions objectForKey:aKey],
-                nstramsformers = [CPArray arrayWithObjects:@"NSNegateBoolean", @"NSIsNil", @"NSIsNotNil", @"NSUnarchiveFromData", @"NSKeyedUnarchiveFromData"];
-            
-            if (CPKey == CPValueTransformerNameBindingOption && [nstramsformers containsObject:nsvalue])
-                nsvalue = [CPString stringWithFormat:@"CP%@", nsvalue.substring(2)];
-                
-            [_options setObject:nsvalue forKey:CPKey];
+            var CPKey = @"CP" + key.substring(2),
+                NSValue = [NSOptions objectForKey:key];
+
+            if (CPKey === CPValueTransformerNameBindingOption && [NSTramsformers containsObject:NSValue])
+                NSValue = @"CP" + NSValue.substring(2);
+
+            [_options setObject:NSValue forKey:CPKey];
         }
 
         CPLog.debug(@"Binding Connector: " + [_binding description] + " to: " + _destination + " " + [_keyPath description] + " " + [_options description]);

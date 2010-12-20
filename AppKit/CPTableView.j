@@ -1152,7 +1152,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _numberOfRows = [_dataSource numberOfRowsInTableView:self];
     else
     {
-        CPLog(@"no content binding established and data source " + [_dataSource description] + " does not implement numberOfRowsInTableView:");
+        if (_dataSource)
+            CPLog(@"no content binding established and data source " + [_dataSource description] + " does not implement numberOfRowsInTableView:");
         _numberOfRows = 0;
     }
 

@@ -27,6 +27,7 @@
 @import "CPButton.j"
 @import "CPScrollView.j"
 @import "CPTextField.j"
+@import "CPTableView.j"
 @import "CPWindow.j"
 @import "_CPMenuWindow.j"
 
