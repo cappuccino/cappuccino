@@ -108,7 +108,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 }
 
 /*!
-    Return the column's parent dataview
+    Return the column's parent tableview
 */
 - (CPTableView)tableView
 {
@@ -171,7 +171,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 }
 
 /*!
-    Sets the mininum width of the column. 
+    Sets the minimum width of the column. 
     Default value is 10.
 */
 - (void)setMinWidth:(float)aMinWidth
