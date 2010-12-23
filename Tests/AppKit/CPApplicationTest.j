@@ -67,7 +67,7 @@ globalResults = [];
     app = [CPApplication sharedApplication];
 
     // fake the window.location.hash
-    app.window = {location: {hash: "#var1=1/var2=2"}};   
+    app.window = {location: {hash: "#var1=1/var2=2"}};
     [app setDelegate:[[MyAppDelegate alloc] init]];
 
     aWindow = [[CPWindow alloc] init];
@@ -143,7 +143,7 @@ globalResults = [];
 
 - (void)testDelegate
 {
-    [self assert:[[app delegate] class] equals:MyAppDelegate]; 
+    [self assert:[[app delegate] class] equals:MyAppDelegate];
 }
 
 - (void)testDoCommandBySelector
@@ -192,9 +192,9 @@ globalResults = [];
 
 - (void)testReplyToApplicationShouldTerminate
 {
-    [[CPNotificationCenter defaultCenter] addObserver:self 
-                                             selector:@selector(receiveNotification:) 
-                                                 name:CPApplicationWillTerminateNotification 
+    [[CPNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(receiveNotification:)
+                                                 name:CPApplicationWillTerminateNotification
                                               object:nil];
 
     [app replyToApplicationShouldTerminate:CPTerminateNow];
@@ -203,7 +203,7 @@ globalResults = [];
     [[CPNotificationCenter defaultCenter] removeObserver:self];
 }
 
-- (void)testTryToPerformWith 
+- (void)testTryToPerformWith
 {
     //first on self
     var success = [app tryToPerform:@selector(someTestMethod:) with:@"Sweet!"];

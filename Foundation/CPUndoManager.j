@@ -20,11 +20,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPArray.j"
+@import "CPException.j"
 @import "CPInvocation.j"
+@import "CPNotificationCenter.j"
 @import "CPObject.j"
 @import "CPProxy.j"
+@import "CPKeyValueObserving.j"
 @import "CPRunLoop.j"
-
 
 var CPUndoManagerNormal     = 0,
     CPUndoManagerUndoing    = 1,

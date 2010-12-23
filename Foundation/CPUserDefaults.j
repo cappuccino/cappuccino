@@ -20,14 +20,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPBundle.j"
+@import "CPData.j"
+@import "CPDictionary.j"
+@import "CPException.j"
+@import "CPKeyedArchiver.j"
+@import "CPKeyedUnarchiver.j"
+@import "CPNotificationCenter.j"
 @import "CPObject.j"
+@import "CPRunLoop.j"
+@import "CPString.j"
+@import "CPURL.j"
+@import "CPURLConnection.j"
+@import "CPURLRequest.j"
 
 
-CPArgumentDomain = @"CPArgumentDomain";
-CPApplicationDomain = [[[CPBundle mainBundle] infoDictionary] objectForKey:@"CPBundleIdentifier"] || @"CPApplicationDomain";
-CPGlobalDomain = @"CPGlobalDomain";
-CPLocaleDomain = @"CPLocaleDomain";
-CPRegistrationDomain = @"CPRegistrationDomain";
+CPArgumentDomain        = @"CPArgumentDomain";
+CPApplicationDomain     = [[[CPBundle mainBundle] infoDictionary] objectForKey:@"CPBundleIdentifier"] || @"CPApplicationDomain";
+CPGlobalDomain          = @"CPGlobalDomain";
+CPLocaleDomain          = @"CPLocaleDomain";
+CPRegistrationDomain    = @"CPRegistrationDomain";
 
 CPUserDefaultsDidChangeNotification = @"CPUserDefaultsDidChangeNotification";
 
@@ -110,9 +122,10 @@ var StandardUserDefaults;
 {
     var args = [CPApp namedArguments],
         keys = [args allKeys],
-        count = [keys count];
+        count = [keys count],
+        i = 0;
 
-    for (var i = 0; i < count; i++)
+    for (; i < count; i++)
     {
         var key = keys[i];
         [self setObject:[args objectForKey:key] forKey:key inDomain:CPArgumentDomain];
@@ -214,9 +227,10 @@ var StandardUserDefaults;
 - (void)registerDefaults:(CPDictionary)aDictionary
 {
     var keys = [aDictionary allKeys],
-        count = [keys count];
+        count = [keys count],
+        i = 0;
 
-    for (var i = 0; i < count; i++)
+    for (; i < count; i++)
     {
         var key = keys[i];
         [self setObject:[aDictionary objectForKey:key] forKey:key inDomain:CPRegistrationDomain];
@@ -231,8 +245,8 @@ var StandardUserDefaults;
 */
 - (void)registerDefaultsFromContentsOfFile:(CPURL)aURL
 {
-    var contents = [CPURLConnection sendSynchronousRequest:[CPURLRequest requestWithURL:aURL] returningResponse:nil error:nil],
-        data = [CPData dataWithRawString:[contents string]],
+    var contents = [CPURLConnection sendSynchronousRequest:[CPURLRequest requestWithURL:aURL] returningResponse:nil],
+        data = [CPData dataWithRawString:[contents rawString]],
         plist = [data plistObject];
 
     [self registerDefaults:plist];
@@ -246,20 +260,22 @@ var StandardUserDefaults;
     _searchListNeedsReload = NO;
 
     var dicts = [CPRegistrationDomain, CPGlobalDomain, CPApplicationDomain, CPArgumentDomain],
-        count = [dicts count];
+        count = [dicts count],
+        i = 0;
 
     _searchList = [CPDictionary dictionary];
 
-    for (var i = 0; i < count; i++)
+    for (; i < count; i++)
     {
         var domain = [_domains objectForKey:dicts[i]];
         if (!domain)
             continue;
 
         var keys = [domain allKeys],
-            keysCount = [keys count];
+            keysCount = [keys count],
+            j = 0;
 
-        for (var j = 0; j < keysCount; j++)
+        for (; j < keysCount; j++)
         {
             var key = keys[j];
             [_searchList setObject:[domain objectForKey:key] forKey:key];
@@ -557,7 +573,7 @@ var StandardUserDefaults;
 
 @implementation CPUserDefaultsStore : CPObject
 {
-    CPString    domain  @accessors;
+    CPString    _domain  @accessors(property=domain);
 }
 
 - (CPData)data
@@ -580,12 +596,12 @@ var StandardUserDefaults;
 
 - (void)setDomain:(CPString)aDomain
 {
-    if (domain === aDomain)
+    if (_domain === aDomain)
         return;
 
-    domain = aDomain;
+    _domain = aDomain;
 
-    _cookie = [[CPCookie alloc] initWithName:domain];
+    _cookie = [[CPCookie alloc] initWithName:_domain];
 }
 
 - (CPData)data
@@ -626,7 +642,7 @@ var StandardUserDefaults;
 
 - (CPData)data
 {
-    var result = localStorage.getItem(domain);
+    var result = localStorage.getItem(_domain);
     if (!result || [result length] < 1)
         return nil;
 
@@ -635,7 +651,7 @@ var StandardUserDefaults;
 
 - (void)setData:(CPData)aData
 {
-    localStorage.setItem(domain, encodeURIComponent([aData rawString]));
+    localStorage.setItem(_domain, encodeURIComponent([aData rawString]));
 }
 
 @end

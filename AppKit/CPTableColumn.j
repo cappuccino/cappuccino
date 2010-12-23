@@ -33,6 +33,14 @@ CPTableColumnNoResizing         = 0;
 CPTableColumnAutoresizingMask   = 1 << 0;
 CPTableColumnUserResizingMask   = 1 << 1;
 
+/*!
+    @class CPTableColumn
+
+    A CPTableColumn contains a dataview to display for its column of the CPTableView.
+    A CPTableColumn determines its own size constrains and resizing behaviour.
+
+    The default dataview is a CPTextField but you can set it to any view you'd like. See -setDataView:
+*/
 @implementation CPTableColumn : CPObject
 {
     CPTableView         _tableView;
@@ -54,11 +62,18 @@ CPTableColumnUserResizingMask   = 1 << 1;
     BOOL _disableResizingPosting @accessors(property=disableResizingPosting);
 }
 
+/*!
+    @ignore
+*/
 - (id)init
 {
     return [self initWithIdentifier:@""];
 }
 
+/*!
+    Initializes a newly created CPTableColumn with a given identifier.
+
+*/
 - (id)initWithIdentifier:(id)anIdentifier
 {
     self = [super init];
@@ -84,17 +99,29 @@ CPTableColumnUserResizingMask   = 1 << 1;
     return self;
 }
 
-
+/*!
+    Set the columns's parent tableview
+*/
 - (void)setTableView:(CPTableView)aTableView
 {
     _tableView = aTableView;
 }
 
+/*!
+    Return the column's parent tableview
+*/
 - (CPTableView)tableView
 {
     return _tableView;
 }
 
+/*!
+    Set the width of the column
+    Default value is: 100
+
+    If the value is greater than the maxWidth the maxWidth will be reset with the supplied width here
+    If the value is less than the minWidth the minWidth will be reset with the supplied width.
+*/
 - (void)setWidth:(float)aWidth
 {
     aWidth = +aWidth;
@@ -135,11 +162,18 @@ CPTableColumnUserResizingMask   = 1 << 1;
     }
 }
 
+/*!
+    Returns the column's width
+*/
 - (float)width
 {
     return _width;
 }
 
+/*!
+    Sets the minimum width of the column. 
+    Default value is 10.
+*/
 - (void)setMinWidth:(float)aMinWidth
 {
     aMinWidth = +aMinWidth;
@@ -156,11 +190,18 @@ CPTableColumnUserResizingMask   = 1 << 1;
         [self setWidth:newWidth];
 }
 
+/*!
+    Returns the minimum width of the column.
+*/
 - (float)minWidth
 {
     return _minWidth;
 }
 
+/*!
+    Sets the maximum width of the table column. 
+    Default value is: 1000000
+*/
 - (void)setMaxWidth:(float)aMaxWidth
 {
     aMaxWidth = +aMaxWidth;
@@ -177,21 +218,40 @@ CPTableColumnUserResizingMask   = 1 << 1;
         [self setWidth:newWidth];
 }
 
+/*!
+    Returns the maximum width of the column
+*/
 - (float)maxWidth
 {
     return _maxWidth;
 }
 
+/*!
+    Set the resizing mask of the column. 
+    By default the column can be resized automatically with the tableview and manaully by the user
+
+    Possible masking values are:
+    CPTableColumnNoResizing
+    CPTableColumnAutoresizingMask
+    CPTableColumnUserResizingMask
+*/
 - (void)setResizingMask:(unsigned)aResizingMask
 {
     _resizingMask = aResizingMask;
 }
 
+
+/*!
+    Returns the resizing mask of the column
+*/
 - (unsigned)resizingMask
 {
     return _resizingMask;
 }
 
+/*!
+    Sizes the column to fix the column header text. 
+*/
 - (void)sizeToFit
 {
     var width = _CGRectGetWidth([_headerView frame]);
@@ -205,7 +265,11 @@ CPTableColumnUserResizingMask   = 1 << 1;
         [self setWidth:width];
 }
 
-//Setting Component Cells
+
+/*!
+    Sets the header view for the column.
+    The headerview handles the display of sort indicators, text, etc
+*/
 - (void)setHeaderView:(CPView)aView
 {
     if (!aView)
@@ -219,13 +283,16 @@ CPTableColumnUserResizingMask   = 1 << 1;
     [tableHeaderView setNeedsDisplay:YES];
 }
 
+/*!
+    Returns the headerview for the column
+*/
 - (CPView)headerView
 {
     return _headerView;
 }
 
 /*!
-    This method set's the "prototype" view which will be used to create all table cells in this column.
+    This method sets the "prototype" view which will be used to create all table cells in this column.
 
     It creates a snapshot of aView, using keyed archiving, which is then copied over and over for each
     individual cell that is shown. As a result, changes made after calling this method won't be reflected.
@@ -239,6 +306,8 @@ CPTableColumnUserResizingMask   = 1 << 1;
 
         [someView setSomething:x];
         [tableColumn setDataView:someView];
+
+    REMEMBER: you should implement CPKeyedArchiving otherwise you might see unexpected results
 */
 - (void)setDataView:(CPView)aView
 {
@@ -269,6 +338,9 @@ CPTableColumnUserResizingMask   = 1 << 1;
     return [self dataView];
 }
 
+/*!
+    @ignore
+*/
 - (id)_newDataViewForRow:(int)aRowIndex
 {
     var dataView = [self dataViewForRow:aRowIndex],
@@ -329,19 +401,26 @@ CPTableColumnUserResizingMask   = 1 << 1;
     return _isEditable;
 }
 
-//Sorting
+/*!
+    Sets the sort descriptor prototype for the column. 
+*/
 - (void)setSortDescriptorPrototype:(CPSortDescriptor)aSortDescriptor
 {
     _sortDescriptorPrototype = aSortDescriptor;
 }
 
+/*!
+    Returns the sort descriptor prototype for the column.
+*/
 - (CPSortDescriptor)sortDescriptorPrototype
 {
     return _sortDescriptorPrototype;
 }
 
-//Setting Column Visibility
-
+/*!
+    If NO the tablecolumn will no longer be visisble in the tableview
+    If YES the tablecolumn will be visible in the tableview.
+*/
 - (void)setHidden:(BOOL)shouldBeHidden
 {
     shouldBeHidden = !!shouldBeHidden
@@ -354,6 +433,9 @@ CPTableColumnUserResizingMask   = 1 << 1;
     [[self tableView] _tableColumnVisibilityDidChange:self];
 }
 
+/*!
+    Returns the visibility status of the column.
+*/
 - (BOOL)isHidden
 {
     return _isHidden;
@@ -370,11 +452,17 @@ CPTableColumnUserResizingMask   = 1 << 1;
     _headerToolTip = aToolTip;
 }
 
+/*!
+    Returns the tooltip for the column header
+*/
 - (CPString)headerToolTip
 {
     return _headerToolTip;
 }
 
+/*!
+    @ignore
+*/
 - (void)_postDidResizeNotificationWithOldWidth:(float)oldWidth
 {
     [[self tableView] _didResizeTableColumn:self];
@@ -388,7 +476,6 @@ CPTableColumnUserResizingMask   = 1 << 1;
 @end
 
 @implementation CPTableColumn (Bindings)
-
 - (void)bind:(CPString)aBinding toObject:(id)anObject withKeyPath:(CPString)aKeyPath options:(CPDictionary)options
 {
     [super bind:aBinding toObject:anObject withKeyPath:aKeyPath options:options];

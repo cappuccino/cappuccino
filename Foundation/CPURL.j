@@ -21,6 +21,7 @@
  */
 
 @import "CPObject.j"
+@import "CPString.j"
 
 CPURLNameKey                        = @"CPURLNameKey";
 CPURLLocalizedNameKey               = @"CPURLLocalizedNameKey";

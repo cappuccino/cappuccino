@@ -25,7 +25,6 @@
 @import "CPObject.j"
 @import "CPRunLoop.j"
 
-
 /*!
     @class CPTimer
     @ingroup foundation
@@ -51,7 +50,6 @@
 {
     var timer = [[self alloc] initWithFireDate:[CPDate dateWithTimeIntervalSinceNow:seconds] interval:seconds invocation:anInvocation repeats:shouldRepeat];
 
-    //add to the runloop
     [[CPRunLoop currentRunLoop] addTimer:timer forMode:CPDefaultRunLoopMode];
 
     return timer;
@@ -64,7 +62,6 @@
 {
     var timer =  [[self alloc] initWithFireDate:[CPDate dateWithTimeIntervalSinceNow:seconds] interval:seconds target:aTarget selector:aSelector userInfo:userInfo repeats:shouldRepeat];
 
-    //add to the runloop
     [[CPRunLoop currentRunLoop] addTimer:timer forMode:CPDefaultRunLoopMode];
 
     return timer;
@@ -77,7 +74,6 @@
 {
     var timer = [[self alloc] initWithFireDate:[CPDate dateWithTimeIntervalSinceNow:seconds] interval:seconds callback:aFunction repeats:shouldRepeat];
 
-    //add to the runloop
     [[CPRunLoop currentRunLoop] addTimer:timer forMode:CPDefaultRunLoopMode];
 
     return timer;
