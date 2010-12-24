@@ -34,35 +34,6 @@ var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
     CPObjectModifiersForClassKey            = @"$CPObjectModifiersForClassKey",
     CPObjectInstanceVariablesForClassKey    = @"$CPObjectInstanceVariablesForClassKey";
 
-var _accessorForKey = function(theClass, aKey)
-{
-    var selector = nil,
-        accessors = theClass[CPObjectAccessorsForClassKey];
-
-    if (!accessors)
-        accessors = theClass[CPObjectAccessorsForClassKey] = { };
-
-    else if (accessors.hasOwnProperty(aKey))
-        return accessors[aKey];
-
-    var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1);
-
-    [theClass instancesRespondToSelector:selector = CPSelectorFromString("get" + capitalizedKey)] ||
-    [theClass instancesRespondToSelector:selector = CPSelectorFromString(aKey)] ||
-    [theClass instancesRespondToSelector:selector = CPSelectorFromString("is" + capitalizedKey)] ||
-    //FIXME: is deprecated in Cocoa 10.3
-    [theClass instancesRespondToSelector:selector = CPSelectorFromString("_get" + capitalizedKey)] ||
-    //FIXME: is deprecated in Cocoa 10.3
-    [theClass instancesRespondToSelector:selector = CPSelectorFromString("_" + aKey)] ||
-    //FIXME: was NEVER supported by Cocoa
-    [theClass instancesRespondToSelector:selector = CPSelectorFromString("_is" + capitalizedKey)] ||
-    (selector = nil);
-
-    accessors[aKey] = selector;
-
-    return selector;
-}
-
 var _modifierForKey = function(theClass, aKey)
 {
     var selector = nil,
@@ -120,24 +91,79 @@ var _ivarForKey = function(theClass, aKey)
     return YES;
 }
 
+- (id)_arrayValueForKey:(CPString)aKey
+{
+    return [[_CPKVCArray alloc] initWithKey:aKey forProxyObject:self];
+}
+
+- (id)_setValueForKey:(CPString)aKey
+{
+    return [[_CPKVCSet alloc] initWithKey:aKey forProxyObject:self];
+}
+
 - (id)valueForKey:(CPString)aKey
 {
     var theClass = [self class],
-        selector = _accessorForKey(theClass, aKey);
+        accessor = nil,
+        accessors = theClass[CPObjectAccessorsForClassKey];
 
-    if (selector)
-        return objj_msgSend(self, selector);
+    if (!accessors)
+        accessors = theClass[CPObjectAccessorsForClassKey] = { };
 
-    //FIXME: at this point search for array access methods: "countOf<Key>", "objectIn<Key>AtIndex:", "<key>AtIndexes:"
-    // or set access methods: "countOf<Key>", "enumeratorOf<Key>", "memberOf<Key>:"
-    //and return (immutable) array/set proxy! (see NSKeyValueCoding.h)
+    if (accessors.hasOwnProperty(aKey))
+        accessor = accessors[aKey];
 
-    if ([theClass accessInstanceVariablesDirectly])
+    else
     {
-        var ivar = _ivarForKey(theClass, aKey);
+        var selector = nil,
+            capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1),
+            underscoreKey = nil,
+            isKey = nil;
 
-        if (ivar)
-            return self[ivar];
+        if ([theClass instancesRespondToSelector:selector = sel_getUid("get" + capitalizedKey)] ||
+            [theClass instancesRespondToSelector:selector = sel_getUid(aKey)] ||
+            [theClass instancesRespondToSelector:selector = sel_getUid((isKey = "is" + capitalizedKey))] ||
+            //FIXME: is deprecated in Cocoa 10.3
+            [theClass instancesRespondToSelector:selector = sel_getUid("_get" + capitalizedKey)] ||
+            //FIXME: is deprecated in Cocoa 10.3
+            [theClass instancesRespondToSelector:selector = sel_getUid((underscoreKey = "_" + aKey))] ||
+            //FIXME: was NEVER supported by Cocoa
+            [theClass instancesRespondToSelector:selector = sel_getUid("_" + isKey)])
+            accessor = accessors[aKey] = [0, selector];
+
+        // countOf means this might be an ordered to-many or unordered to-many
+        else if ([theClass instancesRespondToSelector:sel_getUid("countOf" + capitalizedKey)])
+        {
+            // Ordered to-many
+            if ([theClass instancesRespondToSelector:sel_getUid("objectIn" + capitalizedKey + "atIndex:")] ||
+                [theClass instancesRespondToSelector:sel_getUid(key + "AtIndexes:")])
+                accessor = accessors[aKey] = [1, @selector(_arrayValueForKey:)];
+
+            // Unordered to-many
+            else if ([theClass instancesRespondToSelector:sel_getUid("objectIn" + capitalizedKey + "atIndex:")] ||
+                    [theClass instancesRespondToSelector:sel_getUid(key + "AtIndexes:")])
+                accessor = accessors[aKey] = [1, @selector(_setValueForKey:)];
+        }
+
+        if (!accessor)
+        {
+            if (class_getInstanceVariable(theClass, name = underscoreKey) ||
+                class_getInstanceVariable(theClass, name = "_" + isKey) ||
+                class_getInstanceVariable(theClass, name = aKey) ||
+                class_getInstanceVariable(theClass, name = isKey))
+                accessor = accessors[aKey] = [2, name];
+
+            else
+                accessor = accessors[aKey] = [];
+        }
+    }
+
+    switch (accessor[0])
+    {
+        case 0:     return objj_msgSend(self, accessor[1]);
+        case 1:     return objj_msgSend(self, accessor[1], aKey);
+        case 2:     if ([theClass accessInstanceVariablesDirectly])
+                        return self[accessor[1]];
     }
 
     return [self valueForUndefinedKey:aKey];
