@@ -26,114 +26,91 @@
 @import "CPObject.j"
 
 
-var CPObjectAccessorsForClass   = nil,
-    CPObjectModifiersForClass   = nil;
-
 CPUndefinedKeyException     = @"CPUndefinedKeyException";
 CPTargetObjectUserInfoKey   = @"CPTargetObjectUserInfoKey";
 CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
 
-var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
-    CPObjectModifiersForClassKey = @"$CPObjectModifiersForClassKey";
+var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
+    CPObjectModifiersForClassKey            = @"$CPObjectModifiersForClassKey",
+    CPObjectInstanceVariablesForClassKey    = @"$CPObjectInstanceVariablesForClassKey";
 
-var Null = [CPNull null];
 var _accessorForKey = function(theClass, aKey)
 {
     var selector = nil,
         accessors = theClass[CPObjectAccessorsForClassKey];
 
-    if (accessors)
-    {
-        selector = accessors[aKey];
+    if (!accessors)
+        accessors = theClass[CPObjectAccessorsForClassKey] = { };
 
-        if (selector)
-            return selector === Null ? nil : selector;
-    }
-    else
-        accessors = theClass[CPObjectAccessorsForClassKey] = {};
+    else if (accessors.hasOwnProperty(aKey))
+        return accessors[aKey];
 
     var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1);
 
-    if ([theClass instancesRespondToSelector:selector = CPSelectorFromString("get" + capitalizedKey)] ||
-        [theClass instancesRespondToSelector:selector = CPSelectorFromString(aKey)] ||
-        [theClass instancesRespondToSelector:selector = CPSelectorFromString("is" + capitalizedKey)] ||
-        [theClass instancesRespondToSelector:selector = CPSelectorFromString("_get" + capitalizedKey)] ||   //FIXME: is deprecated in Cocoa 10.3
-        [theClass instancesRespondToSelector:selector = CPSelectorFromString("_" + aKey)] ||                //FIXME: is deprecated in Cocoa 10.3
-        [theClass instancesRespondToSelector:selector = CPSelectorFromString("_is" + capitalizedKey)])      //FIXME: was NEVER supported by Cocoa
-    {
-        accessors[aKey] = selector;
+    [theClass instancesRespondToSelector:selector = CPSelectorFromString("get" + capitalizedKey)] ||
+    [theClass instancesRespondToSelector:selector = CPSelectorFromString(aKey)] ||
+    [theClass instancesRespondToSelector:selector = CPSelectorFromString("is" + capitalizedKey)] ||
+    //FIXME: is deprecated in Cocoa 10.3
+    [theClass instancesRespondToSelector:selector = CPSelectorFromString("_get" + capitalizedKey)] ||
+    //FIXME: is deprecated in Cocoa 10.3
+    [theClass instancesRespondToSelector:selector = CPSelectorFromString("_" + aKey)] ||
+    //FIXME: was NEVER supported by Cocoa
+    [theClass instancesRespondToSelector:selector = CPSelectorFromString("_is" + capitalizedKey)] ||
+    (selector = nil);
 
-        return selector;
-    }
+    accessors[aKey] = selector;
 
-    accessors[aKey] = Null;
-
-    return nil;
+    return selector;
 }
 
 var _modifierForKey = function(theClass, aKey)
 {
-    if (!CPObjectModifiersForClass)
-        CPObjectModifiersForClass = [CPDictionary dictionary];
+    var selector = nil,
+        modifiers = theClass[CPObjectModifiersForClassKey];
 
-    var UID = [theClass UID],
-        selector = nil,
-        modifiers = [CPObjectModifiersForClass objectForKey:UID];
+    if (!modifiers)
+        modifiers = theClass[CPObjectModifiersForClassKey] = { };
 
-    if (modifiers)
-    {
-        selector = [modifiers objectForKey:aKey];
-
-        if (selector)
-            return selector === Null ? nil : selector;
-    }
-    else
-    {
-        modifiers = [CPDictionary dictionary];
-
-        [CPObjectModifiersForClass setObject:modifiers forKey:UID];
-    }
+    else if (modifiers.hasOwnProperty(aKey))
+        return modifiers[aKey];
 
     var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1) + ':';
 
-    if ([theClass instancesRespondToSelector:selector = CPSelectorFromString("set" + capitalizedKey)] ||
-        [theClass instancesRespondToSelector:selector = CPSelectorFromString("_set" + capitalizedKey)])     //FIXME: deprecated in Cocoa 10.3
-    {
-        [modifiers setObject:selector forKey:aKey];
+    [theClass instancesRespondToSelector:selector = CPSelectorFromString("set" + capitalizedKey)] ||
+    //FIXME: deprecated in Cocoa 10.3
+    [theClass instancesRespondToSelector:selector = CPSelectorFromString("_set" + capitalizedKey)] ||
+    (selector = nil);
 
-        return selector;
-    }
+    modifiers[aKey] = selector;
 
-    [modifiers setObject:Null forKey:aKey];
-
-    return nil;
+    return selector;
 }
 
-var _ivarForKey = function(theObject, aKey)
+var _ivarForKey = function(theClass, aKey)
 {
-    var ivar = '_' + aKey;
+    var variables = theClass[CPObjectInstanceVariablesForClassKey];
 
-    if (typeof theObject[ivar] != "undefined")
-        return ivar;
+    if (!variables)
+        variables = theClass[CPObjectInstanceVariablesForClassKey] = { };
 
-    var isKey = "is" + aKey.charAt(0).toUpperCase() + aKey.substr(1);
+    else if (variables.hasOwnProperty(aKey))
+        return variables[aKey];
 
-    ivar = '_' + isKey;
+    var name = '_' + aKey;
 
-    if (typeof theObject[ivar] != "undefined")
-        return ivar;
+    if (!class_getInstanceVariable(theClass, name))
+    {
+        var isKey = "is" + aKey.charAt(0).toUpperCase() + aKey.substr(1);
 
-    ivar = aKey;
+        class_getInstanceVariable(theClass, name = '_' + isKey) ||
+        class_getInstanceVariable(theClass, name = aKey) ||
+        class_getInstanceVariable(theClass, name = isKey) ||
+        (name = nil);
+    }
 
-    if (typeof theObject[ivar] != "undefined")
-        return ivar;
+    variables[aKey] = name;
 
-    ivar = isKey;
-
-    if (typeof theObject[ivar] != "undefined")
-        return ivar;
-
-    return nil;
+    return name;
 }
 
 @implementation CPObject (CPKeyValueCoding)
@@ -157,7 +134,7 @@ var _ivarForKey = function(theObject, aKey)
 
     if ([theClass accessInstanceVariablesDirectly])
     {
-        var ivar = _ivarForKey(self, aKey);
+        var ivar = _ivarForKey(theClass, aKey);
 
         if (ivar)
             return self[ivar];
@@ -170,7 +147,7 @@ var _ivarForKey = function(theObject, aKey)
 {
     var firstDotIndex = aKeyPath.indexOf(".");
 
-    if (firstDotIndex === -1)
+    if (firstDotIndex === CPNotFound)
         return [self valueForKey:aKeyPath];
 
     var firstKeyComponent = aKeyPath.substring(0, firstDotIndex),
@@ -193,6 +170,7 @@ var _ivarForKey = function(theObject, aKey)
 
         if (value === nil)
             [dictionary setObject:[CPNull null] forKey:key];
+
         else
             [dictionary setObject:value forKey:key];
     }
@@ -209,11 +187,12 @@ var _ivarForKey = function(theObject, aKey)
 
 - (void)setValue:(id)aValue forKeyPath:(CPString)aKeyPath
 {
-    if (!aKeyPath) aKeyPath = @"self";
+    if (!aKeyPath)
+        aKeyPath = @"self";
 
     var firstDotIndex = aKeyPath.indexOf(".");
 
-    if (firstDotIndex === -1)
+    if (firstDotIndex === CPNotFound)
         return [self setValue:aValue forKey:aKeyPath];
 
     var firstKeyComponent = aKeyPath.substring(0, firstDotIndex),
@@ -233,7 +212,7 @@ var _ivarForKey = function(theObject, aKey)
 
     if ([theClass accessInstanceVariablesDirectly])
     {
-        var ivar = _ivarForKey(self, aKey);
+        var ivar = _ivarForKey(theClass, aKey);
 
         if (ivar)
         {
@@ -259,8 +238,10 @@ var _ivarForKey = function(theObject, aKey)
     while (key = [keyEnumerator nextObject])
     {
         value = [keyedValues objectForKey: key];
+
         if (value === [CPNull null])
             [self setValue: nil forKey: key];
+
         else
             [self setValue: value forKey: key];
     }
@@ -275,7 +256,7 @@ var _ivarForKey = function(theObject, aKey)
 
 @end
 
-@implementation CPDictionary (KeyValueCoding)
+@implementation CPDictionary (CPKeyValueCoding)
 
 - (id)valueForKey:(CPString)aKey
 {
@@ -287,15 +268,16 @@ var _ivarForKey = function(theObject, aKey)
 
 - (void)setValue:(id)aValue forKey:(CPString)aKey
 {
-    if (aValue)
+    if (aValue !== nil)
         [self setObject:aValue forKey:aKey];
+
     else
-        [self removeObjectForKey: aKey];
+        [self removeObjectForKey:aKey];
 }
 
 @end
 
-@implementation CPNull (KeyValueCoding)
+@implementation CPNull (CPKeyValueCoding)
 
 - (id)valueForKey:(CPString)aKey
 {
