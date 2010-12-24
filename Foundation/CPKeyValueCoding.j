@@ -31,58 +31,7 @@ CPTargetObjectUserInfoKey   = @"CPTargetObjectUserInfoKey";
 CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
 
 var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
-    CPObjectModifiersForClassKey            = @"$CPObjectModifiersForClassKey",
-    CPObjectInstanceVariablesForClassKey    = @"$CPObjectInstanceVariablesForClassKey";
-
-var _modifierForKey = function(theClass, aKey)
-{
-    var selector = nil,
-        modifiers = theClass[CPObjectModifiersForClassKey];
-
-    if (!modifiers)
-        modifiers = theClass[CPObjectModifiersForClassKey] = { };
-
-    else if (modifiers.hasOwnProperty(aKey))
-        return modifiers[aKey];
-
-    var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1) + ':';
-
-    [theClass instancesRespondToSelector:selector = CPSelectorFromString("set" + capitalizedKey)] ||
-    //FIXME: deprecated in Cocoa 10.3
-    [theClass instancesRespondToSelector:selector = CPSelectorFromString("_set" + capitalizedKey)] ||
-    (selector = nil);
-
-    modifiers[aKey] = selector;
-
-    return selector;
-}
-
-var _ivarForKey = function(theClass, aKey)
-{
-    var variables = theClass[CPObjectInstanceVariablesForClassKey];
-
-    if (!variables)
-        variables = theClass[CPObjectInstanceVariablesForClassKey] = { };
-
-    else if (variables.hasOwnProperty(aKey))
-        return variables[aKey];
-
-    var name = '_' + aKey;
-
-    if (!class_getInstanceVariable(theClass, name))
-    {
-        var isKey = "is" + aKey.charAt(0).toUpperCase() + aKey.substr(1);
-
-        class_getInstanceVariable(theClass, name = '_' + isKey) ||
-        class_getInstanceVariable(theClass, name = aKey) ||
-        class_getInstanceVariable(theClass, name = isKey) ||
-        (name = nil);
-    }
-
-    variables[aKey] = name;
-
-    return name;
-}
+    CPObjectModifiersForClassKey            = @"$CPObjectModifiersForClassKey";
 
 @implementation CPObject (CPKeyValueCoding)
 
@@ -115,21 +64,21 @@ var _ivarForKey = function(theClass, aKey)
 
     else
     {
-        var selector = nil,
+        var string = nil,
             capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1),
             underscoreKey = nil,
             isKey = nil;
 
-        if ([theClass instancesRespondToSelector:selector = sel_getUid("get" + capitalizedKey)] ||
-            [theClass instancesRespondToSelector:selector = sel_getUid(aKey)] ||
-            [theClass instancesRespondToSelector:selector = sel_getUid((isKey = "is" + capitalizedKey))] ||
+        if ([theClass instancesRespondToSelector:string = sel_getUid("get" + capitalizedKey)] ||
+            [theClass instancesRespondToSelector:string = sel_getUid(aKey)] ||
+            [theClass instancesRespondToSelector:string = sel_getUid((isKey = "is" + capitalizedKey))] ||
             //FIXME: is deprecated in Cocoa 10.3
-            [theClass instancesRespondToSelector:selector = sel_getUid("_get" + capitalizedKey)] ||
+            [theClass instancesRespondToSelector:string = sel_getUid("_get" + capitalizedKey)] ||
             //FIXME: is deprecated in Cocoa 10.3
-            [theClass instancesRespondToSelector:selector = sel_getUid((underscoreKey = "_" + aKey))] ||
+            [theClass instancesRespondToSelector:string = sel_getUid((underscoreKey = "_" + aKey))] ||
             //FIXME: was NEVER supported by Cocoa
-            [theClass instancesRespondToSelector:selector = sel_getUid("_" + isKey)])
-            accessor = accessors[aKey] = [0, selector];
+            [theClass instancesRespondToSelector:string = sel_getUid("_" + isKey)])
+            accessor = accessors[aKey] = [0, string];
 
         // countOf means this might be an ordered to-many or unordered to-many
         else if ([theClass instancesRespondToSelector:sel_getUid("countOf" + capitalizedKey)])
@@ -147,11 +96,11 @@ var _ivarForKey = function(theClass, aKey)
 
         if (!accessor)
         {
-            if (class_getInstanceVariable(theClass, name = underscoreKey) ||
-                class_getInstanceVariable(theClass, name = "_" + isKey) ||
-                class_getInstanceVariable(theClass, name = aKey) ||
-                class_getInstanceVariable(theClass, name = isKey))
-                accessor = accessors[aKey] = [2, name];
+            if (class_getInstanceVariable(theClass, string = underscoreKey) ||
+                class_getInstanceVariable(theClass, string = "_" + isKey) ||
+                class_getInstanceVariable(theClass, string = aKey) ||
+                class_getInstanceVariable(theClass, string = isKey))
+                accessor = accessors[aKey] = [2, string];
 
             else
                 accessor = accessors[aKey] = [];
@@ -231,28 +180,52 @@ var _ivarForKey = function(theClass, aKey)
 - (void)setValue:(id)aValue forKey:(CPString)aKey
 {
     var theClass = [self class],
-        selector = _modifierForKey(theClass, aKey);
+        modifier = nil,
+        modifiers = theClass[CPObjectModifiersForClassKey];
 
-    if (selector)
-        return objj_msgSend(self, selector, aValue);
+    if (!modifiers)
+        modifiers = theClass[CPObjectModifiersForClassKey] = { };
 
-    if ([theClass accessInstanceVariablesDirectly])
+    if (modifiers.hasOwnProperty(aKey))
+        modifier = modifiers[aKey];
+
+    else
     {
-        var ivar = _ivarForKey(theClass, aKey);
+        var string = nil,
+            capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1),
+            isKey = nil;
 
-        if (ivar)
-        {
-            [self willChangeValueForKey:aKey];
+        if ([theClass instancesRespondToSelector:string = sel_getUid("set" + capitalizedKey + ":")] ||
+            //FIXME: deprecated in Cocoa 10.3
+            [theClass instancesRespondToSelector:string = sel_getUid("_set" + capitalizedKey + ":")])
+            modifier = modifiers[aKey] = [0, string];
 
-            self[ivar] = aValue;
+        else if (class_getInstanceVariable(theClass, string = "_" + aKey) ||
+            class_getInstanceVariable(theClass, string = "_" + (isKey = "is" + capitalizedKey)) ||
+            class_getInstanceVariable(theClass, string = aKey) ||
+            class_getInstanceVariable(theClass, string = isKey))
+            modifier = modifiers[aKey] = [1, string];
 
-            [self didChangeValueForKey:aKey];
-
-            return;
-        }
+        else
+            modifier = modifiers[aKey] = [];
     }
 
-    [self setValue:aValue forUndefinedKey:aKey];
+    switch (modifier[0])
+    {
+        case 0:     return objj_msgSend(self, modifier[1], aValue);
+
+        case 1:     if ([theClass accessInstanceVariablesDirectly])
+                    {
+                        [self willChangeValueForKey:aKey];
+
+                        self[modifier[1]] = aValue;
+
+                        return [self didChangeValueForKey:aKey];
+                    }
+    }
+
+    return [self setValue:aValue forUndefinedKey:aKey];
+
 }
 
 - (void)setValuesForKeysWithDictionary:(CPDictionary)keyedValues
