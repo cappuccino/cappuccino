@@ -320,7 +320,7 @@
 
     if (f)
     {
-        var pos = current, 
+        var pos = current,
             foundDash = NO;
 /*
         var decimalSeparatorString;
@@ -367,7 +367,7 @@
 
     if (i)
     {
-        var pos = current, 
+        var pos = current,
             foundDash = NO;
 
         for (; pos < current + str.length; pos++)

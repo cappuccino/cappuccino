@@ -1,9 +1,32 @@
+/*
+ * CPPredicate.j
+ * Foundation
+ *
+ * Copyright 2009, 280 North, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
-@import "CPValue.j"
 @import "CPArray.j"
-@import "CPSet.j"
+@import "CPException.j"
 @import "CPNull.j"
+@import "CPObject.j"
 @import "CPScanner.j"
+@import "CPSet.j"
+@import "CPValue.j"
+@import "CPCharacterSet.j"
 
 /*!
     @ingroup foundation
@@ -164,9 +187,9 @@
 {
     var count = [self count],
         result = [CPArray array],
-        i;
+        i = 0;
 
-    for (i = 0; i < count; i++)
+    for (; i < count; i++)
     {
         var object = self[i];
         if ([predicate evaluateWithObject:object])
@@ -195,9 +218,9 @@
 {
     var count = [self count],
         result = [CPSet set],
-        i;
+        i = 0;
 
-    for (i = 0; i < count; i++)
+    for (; i < count; i++)
     {
         var object = [self objectAtIndex:i];
 
@@ -240,8 +263,9 @@ function(newValue)\
 
 - (id)initWithString:(CPString)format args:(CPArray)args
 {
-    self = [super initWithString:format];
-    if (self != nil)
+    self = [super initWithString:format]
+
+    if (self)
     {
         _args = [args objectEnumerator];
     }
@@ -255,8 +279,7 @@ function(newValue)\
 
 - (BOOL)scanPredicateKeyword:(CPString)key
 {
-    var loc = [self scanLocation],
-        c;
+    var loc = [self scanLocation];
 
     [self setCaseSensitive:NO];
     if (![self scanString:key intoString:NULL])
@@ -265,7 +288,7 @@ function(newValue)\
     if ([self isAtEnd])
         return YES;
 
-    c = [[self string] characterAtIndex:[self scanLocation]];
+    var c = [[self string] characterAtIndex:[self scanLocation]];
     if (![[CPCharacterSet alphanumericCharacterSet] characterIsMember:c])
         return YES;
 
@@ -285,7 +308,7 @@ function(newValue)\
     }
     catch(error)
     {
-        CPLogConsole(@"Unable to parse predicate '"+[self string]+"' with " + error);
+        CPLogConsole(@"Unable to parse predicate '" + [self string] + "' with " + error);
     }
     finally
     {

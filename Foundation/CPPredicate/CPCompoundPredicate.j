@@ -1,4 +1,25 @@
+/*
+ * CPCompoundPredicate.j
+ * Foundation
+ *
+ * Copyright 2009, 280 North, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
+@import "CPArray.j"
 @import "CPPredicate.j"
 
 /*!
@@ -45,8 +66,13 @@ var CPCompoundPredicateType;
 */
 - (id)initWithType:(CPCompoundPredicateType)type subpredicates:(CPArray)predicates
 {
-    _type = type;
-    _predicates = predicates;
+    self = [super init];
+
+    if (self)
+    {
+        _type = type;
+        _predicates = predicates;
+    }
 
     return self;
 }
@@ -103,10 +129,10 @@ var CPCompoundPredicateType;
 - (CPPredicate)predicateWithSubstitutionVariables:(CPDictionary)variables
 {
     var subp = [CPArray array],
-        count = [subp count];
-        i;
+        count = [subp count],
+        i = 0;
 
-    for (i = 0; i < count; i++)
+    for (; i < count; i++)
     {
         var p = [subp objectAtIndex:i],
             sp = [p predicateWithSubstitutionVariables:variables];
@@ -122,12 +148,12 @@ var CPCompoundPredicateType;
     var result = "",
         args = [CPArray array],
         count = [_predicates count],
-        i;
+        i = 0;
 
     if (count == 0)
         return @"TRUPREDICATE";
 
-    for (i = 0; i < count; i++)
+    for (; i < count; i++)
     {
         var subpredicate = [_predicates objectAtIndex:i],
             precedence = [subpredicate predicateFormat];
@@ -141,21 +167,20 @@ var CPCompoundPredicateType;
 
     switch (_type)
     {
-        case CPNotPredicateType:
-            result += "NOT %s" + [args objectAtIndex:0];
-            break;
-        case CPAndPredicateType:
-            result += [args objectAtIndex:0];
-            var count = [args count];
-            for (var j = 1; j < count; j++)
-                result += " AND " + [args objectAtIndex:j];
-            break;
-        case CPOrPredicateType:
-            result += [args objectAtIndex:0];
-            var count = [args count];
-            for (var j = 1; j < count; j++)
-                result += " OR " + [args objectAtIndex:j];
-            break;
+        case CPNotPredicateType:    result += "NOT %s" + [args objectAtIndex:0];
+                                    break;
+
+        case CPAndPredicateType:    result += [args objectAtIndex:0];
+                                    var count = [args count];
+                                    for (var j = 1; j < count; j++)
+                                        result += " AND " + [args objectAtIndex:j];
+                                    break;
+
+        case CPOrPredicateType:     result += [args objectAtIndex:0];
+                                    var count = [args count];
+                                    for (var j = 1; j < count; j++)
+                                        result += " OR " + [args objectAtIndex:j];
+                                    break;
     }
 
     return result;
@@ -170,31 +195,30 @@ var CPCompoundPredicateType;
 {
     var result = NO,
         count = [_predicates count],
-        i;
+        i = 0;
 
     if (count == 0)
         return YES;
 
-    for (i = 0; i < count; i++)
+    for (; i < count; i++)
     {
         var predicate = [_predicates objectAtIndex:i];
 
         switch (_type)
         {
-            case CPNotPredicateType:
-                return ![predicate evaluateWithObject:object substitutionVariables:variables];
-            case CPAndPredicateType:
-                if (i == 0)
-                    result = [predicate evaluateWithObject:object substitutionVariables:variables];
-                else
-                    result = result && [predicate evaluateWithObject:object substitutionVariables:variables];
-                if (!result)
-                    return NO;
-                break;
-            case CPOrPredicateType:
-                if ([predicate evaluateWithObject:object substitutionVariables:variables])
-                    return YES;
-                break;
+            case CPNotPredicateType:    return ![predicate evaluateWithObject:object substitutionVariables:variables];
+
+            case CPAndPredicateType:    if (i == 0)
+                                            result = [predicate evaluateWithObject:object substitutionVariables:variables];
+                                        else
+                                            result = result && [predicate evaluateWithObject:object substitutionVariables:variables];
+                                        if (!result)
+                                            return NO;
+                                        break;
+
+            case CPOrPredicateType:     if ([predicate evaluateWithObject:object substitutionVariables:variables])
+                                            return YES;
+                                        break;
         }
     }
 

@@ -1,17 +1,37 @@
+/*
+ * CPComparisonPredicate.j
+ * Foundation
+ *
+ * Copyright 2009, 280 North, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
 @import "CPArray.j"
-@import "CPNull.j"
-@import "CPString.j"
 @import "CPEnumerator.j"
-@import "CPPredicate.j"
 @import "CPExpression.j"
+@import "CPNull.j"
+@import "CPPredicate.j"
+@import "CPString.j"
 
 /*!
     A predicate to directly compare the left and right hand sides.
     @global
     @class CPComparisonPredicate
 */
-CPDirectPredicateModifier = 0;
+CPDirectPredicateModifier               = 0;
 /*!
     A predicate to compare all entries in the destination of a to-many relationship.
 
@@ -19,7 +39,7 @@ CPDirectPredicateModifier = 0;
     @global
     @class CPComparisonPredicate
 */
-CPAllPredicateModifier = 1;
+CPAllPredicateModifier                  = 1;
 /*!
     A predicate to match with any entry in the destination of a to-many relationship.
 
@@ -27,28 +47,28 @@ CPAllPredicateModifier = 1;
     @global
     @class CPComparisonPredicate
 */
-CPAnyPredicateModifier = 2;
+CPAnyPredicateModifier                  = 2;
 
 /*!
     A case-insensitive predicate.
     @global
     @class CPComparisonPredicate
 */
-CPCaseInsensitivePredicateOption = 1;
+CPCaseInsensitivePredicateOption        = 1;
 /*!
     A diacritic-insensitive predicate.
     @global
     @class CPComparisonPredicate
 */
-CPDiacriticInsensitivePredicateOption = 2;
-CPDiacriticInsensitiveSearch = 128;
+CPDiacriticInsensitivePredicateOption   = 2;
+CPDiacriticInsensitiveSearch            = 128;
 
 /*!
     A less-than predicate.
     @global
     @class CPComparisonPredicate
 */
-CPLessThanPredicateOperatorType = 0;
+CPLessThanPredicateOperatorType         = 0;
 /*!
     A less-than-or-equal-to predicate.
     @global
@@ -60,7 +80,7 @@ CPLessThanOrEqualToPredicateOperatorType = 1;
     @global
     @class CPComparisonPredicate
 */
-CPGreaterThanPredicateOperatorType = 2;
+CPGreaterThanPredicateOperatorType      = 2;
 /*!
     A greater-than-or-equal-to predicate.
     @global
@@ -72,37 +92,37 @@ CPGreaterThanOrEqualToPredicateOperatorType = 3;
     @global
     @class CPComparisonPredicate
 */
-CPEqualToPredicateOperatorType = 4;
+CPEqualToPredicateOperatorType          = 4;
 /*!
     A not-equal-to predicate.
     @global
     @class CPComparisonPredicate
 */
-CPNotEqualToPredicateOperatorType = 5;
+CPNotEqualToPredicateOperatorType       = 5;
 /*!
     A full regular expression matching predicate.
     @global
     @class CPComparisonPredicate
 */
-CPMatchesPredicateOperatorType = 6;
+CPMatchesPredicateOperatorType          = 6;
 /*!
     A simple subset of the matches predicate, similar in behavior to SQL LIKE.
     @global
     @class CPComparisonPredicate
 */
-CPLikePredicateOperatorType = 7;
+CPLikePredicateOperatorType             = 7;
 /*!
     A begins-with predicate.
     @global
     @class CPComparisonPredicate
 */
-CPBeginsWithPredicateOperatorType = 8;
+CPBeginsWithPredicateOperatorType       = 8;
 /*!
     An ends-with predicate.
     @global
     @class CPComparisonPredicate
 */
-CPEndsWithPredicateOperatorType = 9;
+CPEndsWithPredicateOperatorType         = 9;
 /*!
     A predicate to determine if the left hand side is in the right hand side.
 
@@ -110,7 +130,7 @@ CPEndsWithPredicateOperatorType = 9;
     @global
     @class CPComparisonPredicate
 */
-CPInPredicateOperatorType = 10;
+CPInPredicateOperatorType               = 10;
 /*!
     Predicate that uses a custom selector that takes a single argument and returns a BOOL value.
 
@@ -118,7 +138,7 @@ CPInPredicateOperatorType = 10;
     @global
     @class CPComparisonPredicate
 */
-CPCustomSelectorPredicateOperatorType = 11;
+CPCustomSelectorPredicateOperatorType   = 11;
 /*!
     A predicate to determine if the left hand side contains the right hand side.
 
@@ -126,7 +146,7 @@ CPCustomSelectorPredicateOperatorType = 11;
     @global
     @class CPComparisonPredicate
 */
-CPContainsPredicateOperatorType = 99;
+CPContainsPredicateOperatorType         = 99;
 /*!
     A predicate to determine if the right hand side lies between bounds specified by the left hand side.
 
@@ -134,7 +154,7 @@ CPContainsPredicateOperatorType = 99;
     @global
     @class CPComparisonPredicate
 */
-CPBetweenPredicateOperatorType = 100;
+CPBetweenPredicateOperatorType          = 100;
 
 var CPComparisonPredicateModifier,
     CPPredicateOperatorType;
@@ -193,12 +213,17 @@ var CPComparisonPredicateModifier,
 */
 - (id)initWithLeftExpression:(CPExpression)left rightExpression:(CPExpression)right customSelector:(SEL)selector
 {
-    _left = left;
-    _right = right;
-    _modifier = CPDirectPredicateModifier;
-    _type = CPCustomSelectorPredicateOperatorType;
-    _options = 0;
-    _customSelector = selector;
+    self = [super init];
+
+    if (self)
+    {
+        _left = left;
+        _right = right;
+        _modifier = CPDirectPredicateModifier;
+        _type = CPCustomSelectorPredicateOperatorType;
+        _options = 0;
+        _customSelector = selector;
+    }
 
     return self;
 }
@@ -214,18 +239,23 @@ var CPComparisonPredicateModifier,
 */
 - (id)initWithLeftExpression:(CPExpression)left rightExpression:(CPExpression)right modifier:(CPComparisonPredicateModifier)modifier type:(CPPredicateOperatorType)type options:(unsigned)options
 {
-    _left = left;
-    _right = right;
-    _modifier = modifier;
-    _type = type;
-    _options = (type != CPMatchesPredicateOperatorType &&
-                type != CPLikePredicateOperatorType &&
-                type != CPBeginsWithPredicateOperatorType &&
-                type != CPEndsWithPredicateOperatorType &&
-                type != CPInPredicateOperatorType &&
-                type != CPContainsPredicateOperatorType) ? 0 : options;
+    self = [super init];
 
-    _customSelector = NULL;
+    if (self)
+    {
+        _left = left;
+        _right = right;
+        _modifier = modifier;
+        _type = type;
+        _options = (type != CPMatchesPredicateOperatorType &&
+                    type != CPLikePredicateOperatorType &&
+                    type != CPBeginsWithPredicateOperatorType &&
+                    type != CPEndsWithPredicateOperatorType &&
+                    type != CPInPredicateOperatorType &&
+                    type != CPContainsPredicateOperatorType) ? 0 : options;
+
+        _customSelector = NULL;
+    }
 
     return self;
 }
@@ -292,81 +322,63 @@ var CPComparisonPredicateModifier,
 
     switch (_modifier)
     {
-        case CPDirectPredicateModifier:
-            modifier = "";
-            break;
-        case CPAllPredicateModifier:
-            modifier = "ALL ";
-            break;
-        case CPAnyPredicateModifier:
-            modifier = "ANY ";
-            break;
-        default:
-            modifier = "";
-            break;
+        case CPDirectPredicateModifier: modifier = "";
+                                        break;
+        case CPAllPredicateModifier:    modifier = "ALL ";
+                                        break;
+        case CPAnyPredicateModifier:    modifier = "ANY ";
+                                        break;
+
+        default:                        modifier = "";
+                                        break;
     }
 
     var options;
 
     switch (_options)
     {
-        case CPCaseInsensitivePredicateOption:
-            options = "[c]";
-            break;
-        case CPDiacriticInsensitivePredicateOption:
-            options = "[d]";
-            break;
+        case CPCaseInsensitivePredicateOption:      options = "[c]";
+                                                    break;
+        case CPDiacriticInsensitivePredicateOption: options = "[d]";
+                                                    break;
         case CPCaseInsensitivePredicateOption | CPDiacriticInsensitivePredicateOption:
-            options = "[cd]";
-            break;
-        default:
-            options = "";
-            break;
+                                                    options = "[cd]";
+                                                    break;
+
+        default:                                    options = "";
+                                                    break;
     }
 
     var operator;
 
     switch (_type)
     {
-        case CPLessThanPredicateOperatorType:
-            operator = "<";
-            break;
-        case CPLessThanOrEqualToPredicateOperatorType:
-            operator = "<=";
-            break;
-        case CPGreaterThanPredicateOperatorType:
-            operator = ">";
-            break;
-        case CPGreaterThanOrEqualToPredicateOperatorType:
-            operator = ">=";
-            break;
-        case CPEqualToPredicateOperatorType:
-            operator = "==";
-            break;
-        case CPNotEqualToPredicateOperatorType:
-            operator = "!=";
-            break;
-        case CPMatchesPredicateOperatorType:
-            operator = "MATCHES";
-            break;
-        case CPLikePredicateOperatorType:
-            operator = "LIKE";
-            break;
-        case CPBeginsWithPredicateOperatorType:
-            operator = "BEGINSWITH";
-            break;
-        case CPEndsWithPredicateOperatorType:
-            operator = "ENDSWITH";
-            break;
-        case CPInPredicateOperatorType:
-            operator = "IN";
-            break;
-        case CPContainsPredicateOperatorType:
-            operator = "CONTAINS";
-            break;
-        case CPCustomSelectorPredicateOperatorType:
-            operator = CPStringFromSelector(_customSelector);
-            break;
+        case CPLessThanPredicateOperatorType:               operator = "<";
+                                                            break;
+        case CPLessThanOrEqualToPredicateOperatorType:      operator = "<=";
+                                                            break;
+        case CPGreaterThanPredicateOperatorType:            operator = ">";
+                                                            break;
+        case CPGreaterThanOrEqualToPredicateOperatorType:   operator = ">=";
+                                                            break;
+        case CPEqualToPredicateOperatorType:                operator = "==";
+                                                            break;
+        case CPNotEqualToPredicateOperatorType:             operator = "!=";
+                                                            break;
+        case CPMatchesPredicateOperatorType:                operator = "MATCHES";
+                                                            break;
+        case CPLikePredicateOperatorType:                   operator = "LIKE";
+                                                            break;
+        case CPBeginsWithPredicateOperatorType:             operator = "BEGINSWITH";
+                                                            break;
+        case CPEndsWithPredicateOperatorType:               operator = "ENDSWITH";
+                                                            break;
+        case CPInPredicateOperatorType:                     operator = "IN";
+                                                            break;
+        case CPContainsPredicateOperatorType:               operator = "CONTAINS";
+                                                            break;
+        case CPCustomSelectorPredicateOperatorType:         operator = CPStringFromSelector(_customSelector);
+                                                            break;
     }
 
     return [CPString stringWithFormat:@"%s%s %s%s %s",modifier,[_left description],operator,options,[_right description]];
@@ -399,76 +411,66 @@ var CPComparisonPredicateModifier,
     // left and right should be casted first [CAST()] following 10.5 rules.
     switch (_type)
     {
-        case CPLessThanPredicateOperatorType:
-            return ([lhs compare:rhs] == CPOrderedAscending);
-        case CPLessThanOrEqualToPredicateOperatorType:
-            return ([lhs compare:rhs] != CPOrderedDescending);
-        case CPGreaterThanPredicateOperatorType:
-            return ([lhs compare:rhs] == CPOrderedDescending);
-        case CPGreaterThanOrEqualToPredicateOperatorType:
-            return ([lhs compare:rhs] != CPOrderedAscending);
-        case CPEqualToPredicateOperatorType:
-            return [lhs isEqual:rhs];
-        case CPNotEqualToPredicateOperatorType:
-            return (![lhs isEqual:rhs]);
-        case CPMatchesPredicateOperatorType:
-            var commut = (_options & CPCaseInsensitivePredicateOption) ? "gi":"g";
-            if (_options & CPDiacriticInsensitivePredicateOption)
-            {
-                lhs = lhs.stripDiacritics();
-                rhs = rhs.stripDiacritics();
-            }
+        case CPLessThanPredicateOperatorType:               return ([lhs compare:rhs] == CPOrderedAscending);
+        case CPLessThanOrEqualToPredicateOperatorType:      return ([lhs compare:rhs] != CPOrderedDescending);
+        case CPGreaterThanPredicateOperatorType:            return ([lhs compare:rhs] == CPOrderedDescending);
+        case CPGreaterThanOrEqualToPredicateOperatorType:   return ([lhs compare:rhs] != CPOrderedAscending);
+        case CPEqualToPredicateOperatorType:                return [lhs isEqual:rhs];
+        case CPNotEqualToPredicateOperatorType:             return (![lhs isEqual:rhs]);
 
-            return (new RegExp(rhs,commut)).test(lhs);
-        case CPLikePredicateOperatorType:
-            if (_options & CPDiacriticInsensitivePredicateOption)
-            {
-                lhs = lhs.stripDiacritics();
-                rhs = rhs.stripDiacritics();
-            }
-            var commut = (_options & CPCaseInsensitivePredicateOption) ? "gi":"g",
-                reg = new RegExp(rhs.escapeForRegExp(),commut);
-            return reg.test(lhs);
-        case CPBeginsWithPredicateOperatorType:
-            var range = CPMakeRange(0,[rhs length]);
-            if (_options & CPCaseInsensitivePredicateOption) string_compare_options |= CPCaseInsensitiveSearch;
-            if (_options & CPDiacriticInsensitivePredicateOption) string_compare_options |= CPDiacriticInsensitiveSearch;
+        case CPMatchesPredicateOperatorType:                var commut = (_options & CPCaseInsensitivePredicateOption) ? "gi":"g";
+                                                            if (_options & CPDiacriticInsensitivePredicateOption)
+                                                            {
+                                                                lhs = lhs.stripDiacritics();
+                                                                rhs = rhs.stripDiacritics();
+                                                            }
+                                                            return (new RegExp(rhs,commut)).test(lhs);
 
-            return ([lhs compare:rhs options:string_compare_options range:range] == CPOrderedSame);
-        case CPEndsWithPredicateOperatorType:
-            var range = CPMakeRange([lhs length] - [rhs length],[rhs length]);
-            if (_options & CPCaseInsensitivePredicateOption) string_compare_options |= CPCaseInsensitiveSearch;
-            if (_options & CPDiacriticInsensitivePredicateOption) string_compare_options |= CPDiacriticInsensitiveSearch;
+        case CPLikePredicateOperatorType:                   if (_options & CPDiacriticInsensitivePredicateOption)
+                                                            {
+                                                                lhs = lhs.stripDiacritics();
+                                                                rhs = rhs.stripDiacritics();
+                                                            }
+                                                            var commut = (_options & CPCaseInsensitivePredicateOption) ? "gi":"g",
+                                                                reg = new RegExp(rhs.escapeForRegExp(),commut);
+                                                            return reg.test(lhs);
 
-            return ([lhs compare:rhs options:string_compare_options range:range] == CPOrderedSame);
-        case CPCustomSelectorPredicateOperatorType:
-            return [lhs performSelector:_customSelector withObject:rhs];
-        case CPInPredicateOperatorType:
-            var a = lhs; // swap
-            lhs = rhs;
-            rhs = a;
-        case CPContainsPredicateOperatorType:
-            if (![lhs isKindOfClass:[CPString class]])
-            {
-                 if (![lhs respondsToSelector: @selector(objectEnumerator)])
-                     [CPException raise:CPInvalidArgumentException reason:@"The left/right hand side for a CONTAINS/IN  operator must be a collection or a string"];
+        case CPBeginsWithPredicateOperatorType:             var range = CPMakeRange(0,[rhs length]);
+                                                            if (_options & CPCaseInsensitivePredicateOption) string_compare_options |= CPCaseInsensitiveSearch;
+                                                            if (_options & CPDiacriticInsensitivePredicateOption) string_compare_options |= CPDiacriticInsensitiveSearch;
+                                                            return ([lhs compare:rhs options:string_compare_options range:range] == CPOrderedSame);
 
-                 return [lhs containsObject:rhs];
-            }
+        case CPEndsWithPredicateOperatorType:               var range = CPMakeRange([lhs length] - [rhs length],[rhs length]);
+                                                            if (_options & CPCaseInsensitivePredicateOption) string_compare_options |= CPCaseInsensitiveSearch;
+                                                            if (_options & CPDiacriticInsensitivePredicateOption) string_compare_options |= CPDiacriticInsensitiveSearch;
+                                                            return ([lhs compare:rhs options:string_compare_options range:range] == CPOrderedSame);
 
-            if (_options & CPCaseInsensitivePredicateOption)
-                string_compare_options |= CPCaseInsensitiveSearch;
-            if (_options & CPDiacriticInsensitivePredicateOption)
-                string_compare_options |= CPDiacriticInsensitiveSearch;
+        case CPCustomSelectorPredicateOperatorType:         return [lhs performSelector:_customSelector withObject:rhs];
 
-             return ([lhs rangeOfString:rhs options:string_compare_options].location != CPNotFound);
-        case CPBetweenPredicateOperatorType:
-            if ([rhs count] < 2)
-                [CPException raise:CPInvalidArgumentException reason:@"The right hand side for a BETWEEN operator must contain 2 objects"];
+        case CPInPredicateOperatorType:                     var a = lhs; // swap
+                                                            lhs = rhs;
+                                                            rhs = a;
+        case CPContainsPredicateOperatorType:               if (![lhs isKindOfClass:[CPString class]])
+                                                            {
+                                                                 if (![lhs respondsToSelector: @selector(objectEnumerator)])
+                                                                     [CPException raise:CPInvalidArgumentException reason:@"The left/right hand side for a CONTAINS/IN  operator must be a collection or a string"];
 
-            return ([lhs compare:rhs[0]] == CPOrderedDescending && [lhs compare:rhs[1]] == CPOrderedAscending);
-        default:
-            return NO;
+                                                                 return [lhs containsObject:rhs];
+                                                            }
+
+                                                            if (_options & CPCaseInsensitivePredicateOption)
+                                                                string_compare_options |= CPCaseInsensitiveSearch;
+                                                            if (_options & CPDiacriticInsensitivePredicateOption)
+                                                                string_compare_options |= CPDiacriticInsensitiveSearch;
+
+                                                            return ([lhs rangeOfString:rhs options:string_compare_options].location != CPNotFound);
+
+        case CPBetweenPredicateOperatorType:                if ([rhs count] < 2)
+                                                                [CPException raise:CPInvalidArgumentException reason:@"The right hand side for a BETWEEN operator must contain 2 objects"];
+
+                                                            return ([lhs compare:rhs[0]] == CPOrderedDescending && [lhs compare:rhs[1]] == CPOrderedAscending);
+
+        default:                                            return NO;
     }
 }
 
@@ -541,8 +543,10 @@ var source = ['*','?','(',')','{','}','.','+','|','/','$','^'],
 
 String.prototype.escapeForRegExp = function()
 {
-    var foundChar = false;
-    for (var i = 0; i < source.length; ++i)
+    var foundChar = false,
+        i = 0;
+
+    for (; i < source.length; ++i)
     {
         if (this.indexOf(source[i]) !== -1)
         {
@@ -554,9 +558,9 @@ String.prototype.escapeForRegExp = function()
     if (!foundChar)
         return this;
 
-    var result = "",
-        sourceIndex;
-    for (var i = 0; i < this.length; ++i)
+    var result = "";
+
+    for (i = 0; i < this.length; ++i)
     {
         var sourceIndex = source.indexOf(this.charAt(i));
         if (sourceIndex !== -1)
