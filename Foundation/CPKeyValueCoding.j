@@ -41,16 +41,6 @@ var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
     return YES;
 }
 
-- (id)_arrayValueForKey:(CPString)aKey
-{
-    return [[_CPKVCArray alloc] initWithKey:aKey forProxyObject:self];
-}
-
-- (id)_setValueForKey:(CPString)aKey
-{
-    return [[_CPKVCSet alloc] initWithKey:aKey forProxyObject:self];
-}
-
 - (id)valueForKey:(CPString)aKey
 {
     var theClass = [self class],
@@ -86,8 +76,8 @@ var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
         else if ([theClass instancesRespondToSelector:sel_getUid("countOf" + capitalizedKey)])
         {
             // Otherwise, search for ordered to-many relationships:
-            // -countOf<Key> and either of -objectIn<Key>:atIndex: or -<key>AtIndexes:.
-            if ([theClass instancesRespondToSelector:sel_getUid("objectIn" + capitalizedKey + "atIndex:")] ||
+            // -countOf<Key> and either of -objectIn<Key>atIndex: or -<key>AtIndexes:.
+            if ([theClass instancesRespondToSelector:sel_getUid("objectIn" + capitalizedKey + "AtIndex:")] ||
                 [theClass instancesRespondToSelector:sel_getUid(aKey + "AtIndexes:")])
                 accessor = accessors[aKey] = [1];
 
@@ -116,7 +106,9 @@ var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
     switch (accessor[0])
     {
         case 0:     return objj_msgSend(self, accessor[1]);
-        case 1:     return objj_msgSend(self, accessor[1], aKey);
+                    // FIXME: We shouldn't be creating a new one every time.
+        case 1:     return [[_CPKeyValueCodingArray alloc] initWithTarget:self key:aKey];
+                    // FIXME: We shouldn't be creating a new one every time.
         case 2:     return [[_CPKeyValueCodingSet alloc] initWithTarget:self key:aKey];
         case 3:     if ([theClass accessInstanceVariablesDirectly])
                         return self[accessor[1]];
@@ -292,6 +284,69 @@ var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
 
 @end
 
+@implementation _CPKeyValueCodingArray : CPArray
+{
+    id  _target;
+
+    SEL _countOfSelector;
+    SEL _objectInAtIndexSelector;
+    SEL _atIndexesSelector;
+}
+
+- (id)initWithTarget:(id)aTarget key:(CPString)aKey
+{
+    self = [super init];
+
+    if (self)
+    {
+        var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1);
+
+        _target = aTarget;
+
+        _countOfSelector = CPSelectorFromString("countOf" + capitalizedKey);
+
+        _objectInAtIndexSelector = CPSelectorFromString("objectIn" + capitalizedKey + "AtIndex:");
+
+        if (![_target respondsToSelector:_objectInAtIndexSelector])
+            _objectInAtIndexSelector = nil;
+
+        _atIndexesSelector = CPSelectorFromString(aKey + "AtIndexes:");
+
+        if (![_target respondsToSelector:_atIndexesSelector])
+            _atIndexesSelector = nil;
+    }
+
+    return self;
+}
+
+- (CPUInteger)count
+{
+    return objj_msgSend(_target, _countOfSelector);
+}
+
+- (id)objectAtIndex:(CPUInteger)anIndex
+{
+    if (_objectInAtIndexSelector)
+        return objj_msgSend(_target, _objectInAtIndexSelector, anIndex);
+
+    return objj_msgSend(_target, _atIndexesSelector, [CPIndexSet indexSetWithIndex:anIndex])[0];
+}
+
+- (CPArray)objectsAtIndexes:(CPIndexSet)indexes
+{
+    if (_atIndexesSelector)
+        return objj_msgSend(_target, _atIndexesSelector, indexes);
+
+    return [super objectsAtIndexes:indexes];
+}
+
+- (Class)classForCoder
+{
+    return [CPArray class];
+}
+
+@end
+
 @implementation _CPKeyValueCodingSet : CPSet
 {
     id  _target;
@@ -333,6 +388,12 @@ var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
 {
     return objj_msgSend(_target, _memberOfSelector, anObject);
 }
+
+- (Class)classForCoder
+{
+    return [CPSet class];
+}
+
 
 @end
 

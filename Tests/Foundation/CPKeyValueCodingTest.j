@@ -469,7 +469,6 @@ var accessIVARS = YES;
     [self assert:[CPNull null] equals:[nullObject valueForKey:@"a"] message:@"CPNull valueForKey:X returns nil"];
 }
 
-<<<<<<< HEAD
 - (void)testValueForKeyPath
 {
     var department = [Department departmentWithName:@"Engineering"],
@@ -523,6 +522,93 @@ var accessIVARS = YES;
     }
 
     return self;
+}
+
+@end
+
+@implementation ObjectInObjectsAtIndexClass : CPObject
+{
+}
+
+- (id)objectInObjectsAtIndex:(CPUInteger)anIndex
+{
+    switch (anIndex)
+    {
+        case 0: return @"one";
+        case 1: return @"two";
+        case 2: return @"three";
+        case 3: return @"four";
+        case 4: return @"five";
+    }
+
+    [CPException raise:CPRangeException reason:@"index (" + anIndex + @") beyond bounds (" + [self count] + @")"];
+}
+
+- (CPUInteger)countOfObjects
+{
+    return 5;
+}
+
+@end
+
+@implementation ObjectsAtIndexesClass : CPObject
+{
+}
+
+- (id)objectsAtIndexes:(CPIndexSet)indexes
+{
+    return [[@"one", @"two", @"three", @"four", @"five"] objectsAtIndexes:indexes];
+}
+
+- (CPUInteger)countOfObjects
+{
+    return 5;
+}
+
+@end
+
+@implementation CPKeyValueCodingTest (IndexedAccessorPattern)
+
+- (void)testObjectInObjectsAtIndex_
+{
+    var object = [ObjectInObjectsAtIndexClass new],
+        array = [object valueForKey:@"objects"];
+
+    [self assert:5 equals:[array count]];
+
+    [self assert:@"one" equals:[array objectAtIndex:0]];
+    [self assert:@"two" equals:[array objectAtIndex:1]];
+    [self assert:@"three" equals:[array objectAtIndex:2]];
+    [self assert:@"four" equals:[array objectAtIndex:3]];
+    [self assert:@"five" equals:[array objectAtIndex:4]];
+
+    var indexes = [CPIndexSet indexSet];
+
+    [indexes addIndex:1];
+    [indexes addIndex:3];
+
+    [self assert:[@"two", @"four"] equals:[array objectsAtIndexes:indexes]];
+}
+
+- (void)testObjectsAtIndexes_
+{
+    var object = [ObjectsAtIndexesClass new],
+        array = [object valueForKey:@"objects"];
+
+    [self assert:5 equals:[array count]];
+
+    [self assert:@"one" equals:[array objectAtIndex:0]];
+    [self assert:@"two" equals:[array objectAtIndex:1]];
+    [self assert:@"three" equals:[array objectAtIndex:2]];
+    [self assert:@"four" equals:[array objectAtIndex:3]];
+    [self assert:@"five" equals:[array objectAtIndex:4]];
+
+    var indexes = [CPIndexSet indexSet];
+
+    [indexes addIndex:1];
+    [indexes addIndex:3];
+
+    [self assert:[@"two", @"four"] equals:[array objectsAtIndexes:indexes]];
 }
 
 @end
