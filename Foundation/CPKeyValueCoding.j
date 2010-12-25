@@ -24,6 +24,7 @@
 @import "CPDictionary.j"
 @import "CPNull.j"
 @import "CPObject.j"
+@import "CPSet.j"
 
 
 CPUndefinedKeyException     = @"CPUndefinedKeyException";
@@ -69,6 +70,8 @@ var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
             underscoreKey = nil,
             isKey = nil;
 
+        // First search for accessor methods of the form -get<Key>, -<key>, -is<Key>
+        // (the underscore versions are deprecated)
         if ([theClass instancesRespondToSelector:string = sel_getUid("get" + capitalizedKey)] ||
             [theClass instancesRespondToSelector:string = sel_getUid(aKey)] ||
             [theClass instancesRespondToSelector:string = sel_getUid((isKey = "is" + capitalizedKey))] ||
@@ -80,28 +83,31 @@ var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
             [theClass instancesRespondToSelector:string = sel_getUid("_" + isKey)])
             accessor = accessors[aKey] = [0, string];
 
-        // countOf means this might be an ordered to-many or unordered to-many
         else if ([theClass instancesRespondToSelector:sel_getUid("countOf" + capitalizedKey)])
         {
-            // Ordered to-many
+            // Otherwise, search for ordered to-many relationships:
+            // -countOf<Key> and either of -objectIn<Key>:atIndex: or -<key>AtIndexes:.
             if ([theClass instancesRespondToSelector:sel_getUid("objectIn" + capitalizedKey + "atIndex:")] ||
                 [theClass instancesRespondToSelector:sel_getUid(aKey + "AtIndexes:")])
-                accessor = accessors[aKey] = [1, @selector(_arrayValueForKey:)];
+                accessor = accessors[aKey] = [1];
 
-            // Unordered to-many
-            else if ([theClass instancesRespondToSelector:sel_getUid("enumeratorOf" + capitalizedKey)] ||
+            // Otherwise, search for unordered to-many relationships
+            // -countOf<Key>, -enumeratorOf<Key>, and -memberOf<Key>:.
+            else if ([theClass instancesRespondToSelector:sel_getUid("enumeratorOf" + capitalizedKey)] &&
                     [theClass instancesRespondToSelector:sel_getUid("memberOf" + capitalizedKey + ":")])
-                accessor = accessors[aKey] = [1, @selector(_setValueForKey:)];
+                accessor = accessors[aKey] = [2];
         }
 
         if (!accessor)
         {
+            // Otherwise search for instance variable: _<key>, _is<Key>, key, is<Key>
             if (class_getInstanceVariable(theClass, string = underscoreKey) ||
                 class_getInstanceVariable(theClass, string = "_" + isKey) ||
                 class_getInstanceVariable(theClass, string = aKey) ||
                 class_getInstanceVariable(theClass, string = isKey))
-                accessor = accessors[aKey] = [2, string];
+                accessor = accessors[aKey] = [3, string];
 
+            // Otherwise return valueForUndefinedKey:
             else
                 accessor = accessors[aKey] = [];
         }
@@ -111,7 +117,8 @@ var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
     {
         case 0:     return objj_msgSend(self, accessor[1]);
         case 1:     return objj_msgSend(self, accessor[1], aKey);
-        case 2:     if ([theClass accessInstanceVariablesDirectly])
+        case 2:     return [[_CPKeyValueCodingSet alloc] initWithTarget:self key:aKey];
+        case 3:     if ([theClass accessInstanceVariablesDirectly])
                         return self[accessor[1]];
     }
 
@@ -281,6 +288,50 @@ var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
 - (id)valueForKey:(CPString)aKey
 {
     return self;
+}
+
+@end
+
+@implementation _CPKeyValueCodingSet : CPSet
+{
+    id  _target;
+
+    SEL _countOfSelector;
+    SEL _enumeratorOfSelector;
+    SEL _memberOfSelector;
+}
+
+- (id)initWithTarget:(id)aTarget key:(CPString)aKey
+{
+    self = [super initWithObjects:nil count:0];
+
+    if (self)
+    {
+        var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1);
+
+        _target = aTarget;
+
+        _countOfSelector = CPSelectorFromString("countOf" + capitalizedKey);
+        _enumeratorOfSelector = CPSelectorFromString("enumeratorOf" + capitalizedKey);
+        _memberOfSelector = CPSelectorFromString("memberOf" + capitalizedKey);
+    }
+
+    return self;
+}
+
+- (CPUInteger)count
+{
+    return objj_msgSend(_target, _countOfSelector);
+}
+
+- (CPEnumerator)objectEnumerator
+{
+    return objj_msgSend(_target, _enumeratorOfSelector);
+}
+
+- (id)member:(id)anObject
+{
+    return objj_msgSend(_target, _memberOfSelector, anObject);
 }
 
 @end
