@@ -471,6 +471,8 @@ CPLog(@"Got some class: %@", inst);
 */
 - (CPString)className
 {
+    // FIXME: Why doesn't this work in KVO???
+    // return class_getName([self class]);
     return isa.name;
 }
 

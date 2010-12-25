@@ -89,8 +89,8 @@ var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
                 accessor = accessors[aKey] = [1, @selector(_arrayValueForKey:)];
 
             // Unordered to-many
-            else if ([theClass instancesRespondToSelector:sel_getUid("objectIn" + capitalizedKey + "atIndex:")] ||
-                    [theClass instancesRespondToSelector:sel_getUid(key + "AtIndexes:")])
+            else if ([theClass instancesRespondToSelector:sel_getUid("enumeratorOf" + capitalizedKey)] ||
+                    [theClass instancesRespondToSelector:sel_getUid("memberOf" + capitalizedKey + ":")])
                 accessor = accessors[aKey] = [1, @selector(_setValueForKey:)];
         }
 
