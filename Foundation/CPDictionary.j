@@ -23,8 +23,8 @@
 @import "CPArray.j"
 @import "CPEnumerator.j"
 @import "CPException.j"
+@import "CPNull.j"
 @import "CPObject.j"
-
 
 /* @ignore */
 @implementation _CPDictionaryValueEnumerator : CPEnumerator

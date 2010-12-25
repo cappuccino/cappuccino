@@ -22,7 +22,6 @@
 
 @import "CPObject.j"
 
-
 CPPropertyListUnknownFormat         = 0;
 CPPropertyListOpenStepFormat        = kCFPropertyListOpenStepFormat;
 CPPropertyListXMLFormat_v1_0        = kCFPropertyListXMLFormat_v1_0;

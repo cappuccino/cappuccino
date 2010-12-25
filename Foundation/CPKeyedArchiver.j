@@ -28,7 +28,6 @@
 @import "CPString.j"
 @import "CPValue.j"
 
-
 var CPArchiverReplacementClassNames                     = nil;
 
 var _CPKeyedArchiverDidEncodeObjectSelector             = 1,

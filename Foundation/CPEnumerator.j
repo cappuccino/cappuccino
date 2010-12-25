@@ -22,7 +22,6 @@
 
 @import "CPObject.j"
 
-
 /*!
     @class CPEnumerator
     @ingroup foundation
