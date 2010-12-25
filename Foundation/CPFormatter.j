@@ -33,7 +33,9 @@
            make sure that you cannot configure the public subclasses CPDateFormatter and CPNumberFormatter to satisfy your requirements.
 */
 
-@import <Foundation/CPObject.j>
+@import "CPException.j"
+@import "CPObject.j"
+
 
 @implementation CPFormatter : CPObject
 
@@ -51,7 +53,7 @@
 */
 - (CPString)stringForObjectValue:(id)anObject
 {
-    _CPRaiseInvalidAbstractInvocation(self, @selector(stringForObjectValue:));
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return nil;
 }
 
@@ -96,7 +98,7 @@
 */
 - (BOOL)getObjectValue:(id)anObject forString:(CPString)aString errorDescription:(CPString)anError
 {
-    _CPRaiseInvalidAbstractInvocation(self, @selector(getObjectValue:forString:errorDescription:));
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return NO;
 }
 
@@ -125,7 +127,7 @@
 */
 - (BOOL)isPartialStringValid:(CPString)aPartialString newEditingString:(CPString)aNewString errorDescription:(CPString)anError
 {
-    _CPRaiseInvalidAbstractInvocation(self, @selector(isPartialStringValid:newEditingString:errorDescription:));
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return NO;
 }
 
@@ -150,7 +152,7 @@
 */
 - (BOOL)isPartialStringValue:(CPString)aPartialString proposedSelectedRange:(CPRange)aProposedSelectedRange originalString:(CPString)originalString originalSelectedRange:(CPRange)originalSelectedRange errorDescription:(CPString)anError
 {
-    _CPRaiseInvalidAbstractInvocation(self, @selector(isPartialStringValue:proposedSelectedRange:originalString:originalSelectedRange:errorDescription:));
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return NO;
 }
 

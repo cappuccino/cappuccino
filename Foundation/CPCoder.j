@@ -54,7 +54,7 @@
 */
 - (void)encodeValueOfObjCType:(CPString)aType at:(id)anObject
 {
-   CPInvalidAbstractInvocation();
+   _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 /*!
@@ -63,7 +63,7 @@
 */
 - (void)encodeDataObject:(CPData)aData
 {
-   CPInvalidAbstractInvocation();
+   _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
 /*!

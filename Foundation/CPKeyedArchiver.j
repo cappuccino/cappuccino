@@ -434,7 +434,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     if (!CPArchiverReplacementClassNames)
         return aClass.name;
 
-    var className = [CPArchiverReplacementClassNames objectForKey:CPStringFromClass(aClassName)];
+    var className = [CPArchiverReplacementClassNames objectForKey:CPStringFromClass(aClass)];
 
     return className ? className : aClass.name;
 }
