@@ -23,6 +23,7 @@
 @import "CPException.j"
 @import "CPObject.j"
 @import "CPString.j"
+@import "CPURL.j"
 
 // CPCharacterSet is a class cluster. Concrete implementations
 // follow after the main abstract class.
@@ -232,7 +233,7 @@ var _builtInCharacterSets = {};
 {
     // the highest Unicode plane we reach.
     // (There are 65536 code points in each plane.)
-    var maxPlane = Math.floor((range.start + range.length - 1) / 65536); // should iterate _ranges
+    var maxPlane = Math.floor((range.start + range.length - 1) / 65536); // FIXME: should iterate _ranges
 
     return (plane <= maxPlane);
 }
