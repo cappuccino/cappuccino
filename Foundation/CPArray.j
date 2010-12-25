@@ -814,10 +814,7 @@ CPEnumerationReverse    = 1 << 1;
 */
 - (CPArray)arrayByAddingObject:(id)anObject
 {
-    var array = [self copy];
-    array.push(anObject);
-
-    return array;
+    return self.concat(anObject);
 }
 
 /*!
@@ -826,7 +823,7 @@ CPEnumerationReverse    = 1 << 1;
 */
 - (CPArray)arrayByAddingObjectsFromArray:(CPArray)anArray
 {
-    return slice(0).concat(anArray);
+    return self.concat(anArray);
 }
 
 /*

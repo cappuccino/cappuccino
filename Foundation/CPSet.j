@@ -102,6 +102,21 @@
     return [[self alloc] initWithSet:set];
 }
 
+- (id)setByAddingObject:(id)anObject
+{
+    return [[self class] setWithArray:[[self allObjects] arrayByAddingObject:anObject]];
+}
+
+- (id)setByAddingObjectsFromSet:(CPSet)aSet
+{
+    return [self setByAddingObjectsFromArray:[aSet allObjects]];
+}
+
+- (id)setByAddingObjectsFromArray:(CPArray)anArray
+{
+    return [[self class] setWithArray:[[self allObjects] arrayByAddingObjectsFromArray:anArray]];
+}
+
 /*
     Basic initializer, returns an empty set
 */

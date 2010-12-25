@@ -356,6 +356,12 @@ var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
     SEL _memberOfSelector;
 }
 
+// This allows things like setByAddingObject: to work (since they use [[self class] alloc] internally).
+- (id)initWithObjects:(CPArray)objects count:(CPUInteger)aCount
+{
+    return [[CPSet alloc] initWithObjects:objects count:aCount];
+}
+
 - (id)initWithTarget:(id)aTarget key:(CPString)aKey
 {
     self = [super initWithObjects:nil count:0];
@@ -368,7 +374,7 @@ var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
 
         _countOfSelector = CPSelectorFromString("countOf" + capitalizedKey);
         _enumeratorOfSelector = CPSelectorFromString("enumeratorOf" + capitalizedKey);
-        _memberOfSelector = CPSelectorFromString("memberOf" + capitalizedKey);
+        _memberOfSelector = CPSelectorFromString("memberOf" + capitalizedKey + ":");
     }
 
     return self;

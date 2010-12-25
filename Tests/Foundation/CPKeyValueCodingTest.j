@@ -612,3 +612,76 @@ var accessIVARS = YES;
 }
 
 @end
+
+
+@implementation UnorderedAccessorClass : CPObject
+{
+}
+
+- (id)memberOfObjects:(id)anObject
+{
+    if ([[0, 1, 3, 5, 7] indexOfObjectIdenticalTo:anObject] !== CPNotFound)
+        return anObject;
+
+    return nil;
+}
+
+- (CPEnumerator)enumeratorOfObjects
+{
+    return [[0, 1, 3, 5, 7] objectEnumerator];
+}
+
+- (CPUInteger)countOfObjects
+{
+    return 5;
+}
+
+@end
+
+@implementation CPKeyValueCodingTest (UnorderedAccessorPattern)
+
+- (void)testUnorderedAccessorPattern
+{
+    var object = [UnorderedAccessorClass new],
+        set = [object valueForKey:@"objects"];
+
+    [self assert:set equals:[CPSet setWithObjects:0, 1, 3, 5, 7]];
+
+    [self assertTrue:[set containsObject:0]];
+    [self assertTrue:[set containsObject:1]];
+    [self assertTrue:[set containsObject:3]];
+    [self assertTrue:[set containsObject:5]];
+    [self assertTrue:[set containsObject:7]];
+
+    [self assertFalse:[set containsObject:2]];
+    [self assertFalse:[set containsObject:4]];
+    [self assertFalse:[set containsObject:6]];
+    [self assertFalse:[set containsObject:8]];
+    [self assertFalse:[set containsObject:10]];
+
+    [self   assert:[set setByAddingObjectsFromArray:[2, 3, 4, 5, 6]]
+            equals:[CPSet setWithObjects:0, 1, 2, 3, 4, 5, 6, 7]];
+}
+
+- (void)testObjectsAtIndexes_
+{
+    var object = [ObjectsAtIndexesClass new],
+        array = [object valueForKey:@"objects"];
+
+    [self assert:5 equals:[array count]];
+
+    [self assert:@"one" equals:[array objectAtIndex:0]];
+    [self assert:@"two" equals:[array objectAtIndex:1]];
+    [self assert:@"three" equals:[array objectAtIndex:2]];
+    [self assert:@"four" equals:[array objectAtIndex:3]];
+    [self assert:@"five" equals:[array objectAtIndex:4]];
+
+    var indexes = [CPIndexSet indexSet];
+
+    [indexes addIndex:1];
+    [indexes addIndex:3];
+
+    [self assert:[@"two", @"four"] equals:[array objectsAtIndexes:indexes]];
+}
+
+@end
