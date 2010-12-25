@@ -226,9 +226,8 @@ CPEnumerationReverse    = 1 << 1;
 - (id)initWithObjects:(id)firstObj, ...
 {
     // The arguments array contains self and _cmd, so the first object is at position 2.
-    var start = 2,
-        count = arguments.length,
-        objects = slice.apply(arguments, [start]);
+    var count = arguments.length,
+        objects = Array.prototype.slice.apply(arguments, [2]);
 
     [self initWithObjects:objects count:(count - 2)];
 
@@ -246,7 +245,11 @@ CPEnumerationReverse    = 1 << 1;
     self = [self init];
 
     if (self)
-        splice.apply(self, [0, length].concat(objects));
+    {
+        if (aCount !== objects.length)
+            objects = Array.prototype.slice.apply(objects, [0, aCount]);
+        Array.prototype.splice.apply(self, [0, length].concat(objects));
+    }
 
     return self;
 }
