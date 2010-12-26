@@ -26,9 +26,15 @@
 @import "CPRange.j"
 @import "CPSortDescriptor.j"
 
-CPEnumerationNormal     = 0;
-CPEnumerationConcurrent = 1 << 0;
-CPEnumerationReverse    = 1 << 1;
+
+CPEnumerationNormal             = 0;
+CPEnumerationConcurrent         = 1 << 0;
+CPEnumerationReverse            = 1 << 1;
+
+CPBinarySearchingFirstEqual     = 1 << 8;
+CPBinarySearchingLastEqual      = 1 << 9;
+CPBinarySearchingInsertionIndex = 1 << 10;
+
 
 #define FORWARD_TO_CONCRETE_CLASS()\
     if (self === _CPSharedPlaceholderArray)\
@@ -393,145 +399,67 @@ CPEnumerationReverse    = 1 << 1;
     return CPNotFound;
 }
 
-/*!
-    Returns the index of \c anObject in the array, which must be sorted in the same order as
-    calling sortUsingSelector: with the selector passed to this method would result in.
-    @param anObject the object to search for
-    @param aSelector the comparison selector to call on each item in the list, the same
-    selector should have been used to sort the array (or to maintain its sorted order).
-    @return the index of the object, or \c CPNotFound if it was not found.
-*/
-- (unsigned)indexOfObject:(id)anObject sortedBySelector:(SEL)aSelector
+- (CPUInteger)indexOfObject:(id)anObject
+              inSortedRange:(CPRange)aRange
+                    options:(CPBinarySearchingOptions)options
+            usingComparator:(Function)aComparator
 {
-    return [self indexOfObject:anObject sortedByFunction:function(lhs, rhs)
-    {
-        return objj_msgSend(lhs, aSelector, rhs);
-    }];
-}
+    // FIXME: comparator is not a function
+    if (!aComparator)
+        _CPRaiseInvalidArgumentException(self, _cmd, "comparator is nil");
 
-/*!
-    Returns the index of \c anObject in the array, which must be sorted in the same order as
-    calling sortUsingFunction: with the selector passed to this method would result in.
-    The function will be called like so:
-    <pre>
-    aFunction(anObject, currentObjectInArrayForComparison)
-    </pre>
-    @param anObject the object to search for
-    @param aFunction the comparison function to call on each item in the array that we search. the same
-    selector should have been used to sort the array (or to maintain its sorted order).
-    @return the index of the object, or \c CPNotFound if it was not found.
-*/
-- (unsigned)indexOfObject:(id)anObject sortedByFunction:(Function)aFunction
-{
-    return [self indexOfObject:anObject sortedByFunction:aFunction context:nil];
-}
-
-/*!
-    Returns the index of \c anObject in the array, which must be sorted in the same order as
-    calling sortUsingFunction: with the selector passed to this method would result in.
-    The function will be called like so:
-    <pre>
-    aFunction(anObject, currentObjectInArrayForComparison, context)
-    </pre>
-    @param anObject the object to search for
-    @param aFunction the comparison function to call on each item in the array that we search. the same
-    function should have been used to sort the array (or to maintain its sorted order).
-    @param aContext a context object that will be passed to the sort function
-    @return the index of the object, or \c CPNotFound if it was not found.
-*/
-- (CPUInteger)indexOfObject:(id)anObject sortedByFunction:(Function)aFunction context:(id)aContext
-{
-    if (!aFunction)
-        return CPNotFound;
+    if ((options & CPBinarySearchingFirstEqual) && (options & CPBinarySearchingLastEqual))
+        _CPRaiseInvalidArgumentException(self, _cmd,
+            "both CPBinarySearchingFirstEqual and CPBinarySearchingLastEqual options cannot be specified");
 
     var count = [self count];
 
     if (count <= 0)
-        return CPNotFound;
+        return (options & CPBinarySearchingInsertionIndex) ? 0 : CPNotFound;
 
-    var mid,
-        c,
-        first = 0,
-        last = count - 1;
+    var first = aRange ? aRange.location : 0,
+        last = aRange ? CPMaxRange(aRange) : [self count] - 1;
+
+    if (first < 0)
+        _CPRaiseRangeException(self, _cmd, first, count);
+
+    if (last >= count)
+        _CPRaiseRangeException(self, _cmd, last, count);
 
     while (first <= last)
     {
-        mid = FLOOR((first + last) / 2);
-          c = aFunction(anObject, [self objectAtIndex:mid], aContext);
+        var middle = FLOOR((first + last) / 2),
+            result = aComparator(anObject, [self objectAtIndex:middle]);
 
-        if (c > 0)
-            first = mid + 1;
+        if (result > 0)
+            first = middle + 1;
 
-        else if (c < 0)
-            last = mid - 1;
+        else if (result < 0)
+            last = middle - 1;
 
         else
         {
-            while (mid < count - 1 &&
-                aFunction(anObject, [self objectAtIndex:mid + 1], aContext) === CPOrderedSame)
-                mid++;
+            if (options & CPBinarySearchingFirstEqual)
+                while (middle++ < count - 1 &&
+                    aComparator(anObject, [self objectAtIndex:middle]) === CPOrderedSame);
 
-            return mid;
+            else if (options & CPBinarySearchingLastEqual)
+            {
+                while (middle-- > 0 &&
+                    aComparator(anObject, [self objectAtIndex:middle]) === CPOrderedSame);
+
+                if (options & CPBinarySearchingInsertionIndex)
+                    ++middle;
+            }
+
+            return middle;
         }
     }
 
-    var result = -first - 1;
+    if (options & CPBinarySearchingInsertionIndex)
+        return MAX(first, 0);
 
-    if (result < 0)
-        return CPNotFound;
-
-    return result;
-}
-
-/*!
-    Returns the index of \c anObject in the array, which must be sorted in the same order as
-    calling sortUsingDescriptors: with the descriptors passed to this method would result in.
-    @param anObject the object to search for
-    @param descriptors the array of descriptors to use to compare each item in the array that we search. the same
-    descriptors should have been used to sort the array (or to maintain its sorted order).
-    @return the index of the object, or \c CPNotFound if it was not found.
-*/
-- (unsigned)indexOfObject:(id)anObject sortedByDescriptors:(CPArray)descriptors
-{
-    var count = [descriptors count];
-
-    return [self indexOfObject:anObject sortedByFunction:function(lhs, rhs)
-    {
-        var index = 0,
-            result = CPOrderedSame;
-
-        while (index < count && (result = [[descriptors objectAtIndex:index++] compareObject:lhs withObject:rhs]) === CPOrderedSame);
-
-        return result;
-    }];
-}
-
-- (unsigned)insertObject:(id)anObject inArraySortedByDescriptors:(CPArray)descriptors
-{
-    if (!descriptors || ![descriptors count])
-    {
-        [self addObject:anObject];
-        return [self count] - 1;
-    }
-
-    var index = [self _insertObject:anObject sortedByFunction:function(lhs, rhs)
-    {
-        var i = 0,
-            count = [descriptors count],
-            result = CPOrderedSame;
-
-        while (i < count)
-            if ((result = [descriptors[i++] compareObject:lhs withObject:rhs]) != CPOrderedSame)
-                return result;
-
-        return result;
-    } context:nil];
-
-    if (index < 0)
-        index = -result-1;
-
-    [self insertObject:anObject atIndex:index];
-    return index;
+    return CPNotFound;
 }
 
 // Sending messages to elements

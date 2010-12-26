@@ -90,31 +90,29 @@
 
 - (unsigned)insertObject:(id)anObject inArraySortedByDescriptors:(CPArray)descriptors
 {
-    var count = [descriptors count],
-        index;
+    var index,
+        count = [descriptors count];
 
     if (count)
-    {
-        // FIXME: UGH
-        index = [self indexOfObject:anObject sortedByFunction:function(lhs, rhs)
+        index = [self indexOfObject:anObject
+                      inSortedRange:nil
+                            options:CPBinarySearchingInsertionIndex
+                    usingComparator:function(lhs, rhs)
         {
-            var i = 0,
+            var index = 0,
                 result = CPOrderedSame;
 
-            while (i < count)
-                if ((result = [descriptors[i++] compareObject:lhs withObject:rhs]) != CPOrderedSame)
-                    return result;
+            while (index < count && ((result = [[descriptors objectAtIndex:index] compareObject:lhs withObject:rhs]) === CPOrderedSame))
+                ++index;
 
             return result;
-        } context:nil];
+        }];
 
-        if (index < 0)
-            index = -index - 1;
-    }
     else
-        index = self.length;
+        index = [self count];
 
     [self insertObject:anObject atIndex:index];
+
     return index;
 }
 

@@ -38,8 +38,8 @@
 
     [self assert:array equals:[@"one", @"two", @"three", @"four", @"a", @"b"]];
 
-    var array = [CPMutableArray arrayWithObjects: @"one", @"two", @"three", @"four"],
-        newAdditions = [CPArray arrayWithObjects: @"a", @"b", @"c"],
+    var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four"],
+        newAdditions = [CPArray arrayWithObjects:@"a", @"b", @"c"],
         indexes = [CPMutableIndexSet indexSetWithIndex:1];
 
     [indexes addIndex:2];
@@ -50,8 +50,8 @@
     [self assert:array equals:[@"one", @"a", @"b", @"two", @"c", @"three", @"four"]];
 
 
-    var array = [CPMutableArray arrayWithObjects: @"one", @"two", @"three", @"four"],
-        newAdditions = [CPArray arrayWithObjects: @"a", @"b", @"c"],
+    var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four"],
+        newAdditions = [CPArray arrayWithObjects:@"a", @"b", @"c"],
         indexes = [CPMutableIndexSet indexSetWithIndex:1];
 
     [indexes addIndex:2];
@@ -140,25 +140,12 @@
     [self assert:[array indexOfObjectWithOptions:CPEnumerationReverse passingTest:agePredicate context:7] equals:3];
 }
 
-- (void)testIndexOfObjectSortedByFunction
+- (void)testIndexOfObject_inSortedRange_options_usingComparator_
 {
     var array = [0, 1, 2, 3, 4, 7];
 
-    [self assert:[array indexOfObject:3 sortedByFunction:function(a, b){ return a - b; }] equals:3];
-    [self assert:[[array arrayByReversingArray] indexOfObject:3 sortedByFunction:function(a, b){ return b - a; }] equals:2];
-}
-
-- (void)testIndexOfObjectSortedByDescriptors
-{
-    var array = [0, 1, 2, 3, 4, 7];
-
-    [self assert:[array indexOfObject:3
-                  sortedByDescriptors:[[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:YES]]]
-          equals:3];
-
-    [self assert:[[array arrayByReversingArray] indexOfObject:3
-                  sortedByDescriptors:[[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:NO]]]
-          equals:2];
+    [self assert:[array indexOfObject:3 inSortedRange:nil options:0 usingComparator:function(a, b){ return a - b; }] equals:3];
+    [self assert:[[array arrayByReversingArray] indexOfObject:3 inSortedRange:nil options:0 usingComparator:function(a, b){ return a - b; }] equals:2];
 }
 
 - (void)testIndexOutOfBounds
@@ -171,7 +158,7 @@
     catch (anException)
     {
         [self assert:[anException name] equals:CPRangeException];
-        [self assert:[anException reason] equals:@"index (0) beyond bounds (0)"];
+        [self assertTrue:[[anException reason] rangeOfString:(@"index (0) beyond bounds (0)")].location !== CPNotFound];
     }
 
     [[0, 1, 2] objectAtIndex:0];
@@ -186,7 +173,7 @@
     catch (anException)
     {
         [self assert:[anException name] equals:CPRangeException];
-        [self assert:[anException reason] equals:@"index (3) beyond bounds (3)"];
+        [self assertTrue:[[anException reason] rangeOfString:(@"index (3) beyond bounds (3)")].location !== CPNotFound];
     }
 
     try
@@ -197,7 +184,7 @@
     catch (anException)
     {
         [self assert:[anException name] equals:CPRangeException];
-        [self assert:[anException reason] equals:@"index (4) beyond bounds (3)"];
+        [self assertTrue:[[anException reason] rangeOfString:(@"index (4) beyond bounds (3)")].location !== CPNotFound];
     }
 }
 
@@ -206,79 +193,79 @@
     var descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:YES]];
     var array = [1, 3, 5];
 
-    [array insertObject: 0 inArraySortedByDescriptors:descriptors];
+    [array insertObject:0 inArraySortedByDescriptors:descriptors];
     [self assert:[0, 1, 3, 5] equals:array];
 
     array = [1, 3, 5];
-    [array insertObject: 2 inArraySortedByDescriptors:descriptors];
+    [array insertObject:2 inArraySortedByDescriptors:descriptors];
     [self assert:[1, 2, 3, 5] equals:array];
 
     array = [1, 3, 5];
-    [array insertObject: 1 inArraySortedByDescriptors:descriptors];
+    [array insertObject:1 inArraySortedByDescriptors:descriptors];
     [self assert:[1, 1, 3, 5] equals:array];
 
     array = [1, 3, 5];
-    [array insertObject: 6 inArraySortedByDescriptors:descriptors];
+    [array insertObject:6 inArraySortedByDescriptors:descriptors];
     [self assert:[1, 3, 5, 6] equals:array];
 
     array = [1, 3, 5];
-    [array insertObject: 3 inArraySortedByDescriptors:descriptors];
+    [array insertObject:3 inArraySortedByDescriptors:descriptors];
     [self assert:[1, 3, 3, 5] equals:array];
 
     array = [];
-    [array insertObject: 3 inArraySortedByDescriptors:descriptors];
+    [array insertObject:3 inArraySortedByDescriptors:descriptors];
     [self assert:[3] equals:array];
 
     descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:NO]];
 
     array = [5, 3, 1];
-    [array insertObject: 0 inArraySortedByDescriptors:descriptors];
+    [array insertObject:0 inArraySortedByDescriptors:descriptors];
     [self assert:[5, 3, 1, 0] equals:array];
 
     array = [5, 3, 1];
-    [array insertObject: 2 inArraySortedByDescriptors:descriptors];
+    [array insertObject:2 inArraySortedByDescriptors:descriptors];
     [self assert:[5, 3, 2, 1] equals:array];
 
     array = [5, 3, 1];
-    [array insertObject: 1 inArraySortedByDescriptors:descriptors];
+    [array insertObject:1 inArraySortedByDescriptors:descriptors];
     [self assert:[5, 3, 1, 1] equals:array];
 
     array = [5, 3, 1];
-    [array insertObject: 6 inArraySortedByDescriptors:descriptors];
+    [array insertObject:6 inArraySortedByDescriptors:descriptors];
     [self assert:[6, 5, 3, 1] equals:array];
 
     array = [5, 3, 1];
-    [array insertObject: 3 inArraySortedByDescriptors:descriptors];
+    [array insertObject:3 inArraySortedByDescriptors:descriptors];
     [self assert:[5, 3, 3, 1] equals:array];
 
     array = [];
-    [array insertObject: 3 inArraySortedByDescriptors:descriptors];
+    [array insertObject:3 inArraySortedByDescriptors:descriptors];
     [self assert:[3] equals:array];
 
     descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:NO]];
 
     array = [5, 3, 1];
-    [array insertObject: 0 inArraySortedByDescriptors:descriptors];
+    [array insertObject:0 inArraySortedByDescriptors:descriptors];
     [self assert:[5, 3, 1, 0] equals:array];
 
     array = [5, 3, 1];
-    [array insertObject: 2 inArraySortedByDescriptors:descriptors];
+    [array insertObject:2 inArraySortedByDescriptors:descriptors];
     [self assert:[5, 3, 2, 1] equals:array];
 
     array = [5, 3, 1];
-    [array insertObject: 1 inArraySortedByDescriptors:descriptors];
+    [array insertObject:1 inArraySortedByDescriptors:descriptors];
     [self assert:[5, 3, 1, 1] equals:array];
 
     array = [5, 3, 1];
-    [array insertObject: 6 inArraySortedByDescriptors:descriptors];
+    [array insertObject:6 inArraySortedByDescriptors:descriptors];
     [self assert:[6, 5, 3, 1] equals:array];
 
     array = [5, 3, 1];
-    [array insertObject: 3 inArraySortedByDescriptors:descriptors];
+    [array insertObject:3 inArraySortedByDescriptors:descriptors];
     [self assert:[5, 3, 3, 1] equals:array];
 
     array = [];
-    [array insertObject: 3 inArraySortedByDescriptors:descriptors];
+    [array insertObject:3 inArraySortedByDescriptors:descriptors];
     [self assert:[3] equals:array];
 
 }

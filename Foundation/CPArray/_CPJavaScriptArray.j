@@ -101,8 +101,7 @@
 - (id)objectAtIndex:(CPUInteger)anIndex
 {
     if (anIndex >= self.length || anIndex < 0)
-        [CPException raise:CPRangeException 
-                    reason:@"index (" + anIndex + @") beyond bounds (" + self.length + @")"];
+        _CPRaiseRangeException(self, _cmd, anIndex, self.length);
 
     return self[anIndex];
 }
