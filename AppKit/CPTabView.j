@@ -242,7 +242,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 
     var aTabViewItem = [self tabViewItemAtIndex:anIndex];
 
-    if ((_delegateSelectors & CPTabViewShouldSelectTabViewItemSelector) && ![delegate tabView:self shouldSelectTabViewItem:aTabViewItem])
+    if ((_delegateSelectors & CPTabViewShouldSelectTabViewItemSelector) && ![_delegate tabView:self shouldSelectTabViewItem:aTabViewItem])
         return;
 
     if (_delegateSelectors & CPTabViewWillSelectTabViewItemSelector)
