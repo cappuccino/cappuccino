@@ -18,7 +18,7 @@
 
 @import <Foundation/Foundation.j>
 @import <AppKit/AppKit.j>
-@import "../../Foundation/CPUserDefaults.j"
+
 
 CPUserDefaultsTestKey1 = @"KEY1";
 CPUserDefaultsTestKey2 = @"KEY2";
@@ -136,7 +136,7 @@ CPUserDefaultsTestKey2 = @"KEY2";
 - (void)testArray
 {
     [target setObject:[@"a", @"b", 3] forKey:CPUserDefaultsTestKey1];
-    [self assert:[[target arrayForKey:CPUserDefaultsTestKey1] class] equals:CPArray];
+    [self assertTrue:[[target arrayForKey:CPUserDefaultsTestKey1] isKindOfClass:CPArray]];
     [self assert:[[target arrayForKey:CPUserDefaultsTestKey1] objectAtIndex:1] equals:@"b"];
     [self assert:[[target arrayForKey:CPUserDefaultsTestKey1] objectAtIndex:2] equals:3];
     [self assert:[target stringArrayForKey:CPUserDefaultsTestKey1] equals:nil];

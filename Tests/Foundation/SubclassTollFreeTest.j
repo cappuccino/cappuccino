@@ -102,6 +102,29 @@
 @end
 
 @implementation MyArray : CPArray
+{
+    CPArray _storage;
+}
+
+- (id)initWithObjects:(id)anObject, ...
+{
+    self = [super init];
+
+    if (self)
+        _storage = [[CPArray alloc] initWithObjects:Array.prototype.slice.call(arguments, 2)];
+
+    return self
+}
+
+- (id)objectAtIndex:(CPUInteger)anIndex
+{
+    return [_storage objectAtIndex:anIndex];
+}
+
+- (CPUInteger)count
+{
+    return [_storage count];
+}
 
 - (id)newMessage
 {

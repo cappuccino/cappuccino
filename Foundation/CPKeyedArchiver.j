@@ -385,7 +385,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 {
     var i = 0,
         count = objects.length,
-        references = [CPArray arrayWithCapacity:count];
+        references = [];
 
     for (; i < count; ++i)
         [references addObject:_CPKeyedArchiverEncodeObject(self, objects[i], NO)];
@@ -434,7 +434,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     if (!CPArchiverReplacementClassNames)
         return aClass.name;
 
-    var className = [CPArchiverReplacementClassNames objectForKey:CPStringFromClass(aClassName)];
+    var className = [CPArchiverReplacementClassNames objectForKey:CPStringFromClass(aClass)];
 
     return className ? className : aClass.name;
 }

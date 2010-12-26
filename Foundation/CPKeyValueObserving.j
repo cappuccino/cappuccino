@@ -37,19 +37,19 @@
 {
 }
 
-- (void)willChange:(CPKeyValueChange)change valuesAtIndexes:(CPIndexSet)indexes forKey:(CPString)key
+- (void)willChange:(CPKeyValueChange)aChange valuesAtIndexes:(CPIndexSet)indexes forKey:(CPString)aKey
 {
 }
 
-- (void)didChange:(CPKeyValueChange)change valuesAtIndexes:(CPIndexSet)indexes forKey:(CPString)key
+- (void)didChange:(CPKeyValueChange)aChange valuesAtIndexes:(CPIndexSet)indexes forKey:(CPString)aKey
 {
 }
 
-- (void)willChangeValueForKey:(CPString)key withSetMutation:(CPKeyValueSetMutationKind)mutationKind usingObjects:(CPSet)objects
+- (void)willChangeValueForKey:(CPString)aKey withSetMutation:(CPKeyValueSetMutationKind)aMutationKind usingObjects:(CPSet)objects
 {
 }
 
-- (void)didChangeValueForKey:(CPString)key withSetMutation:(CPKeyValueSetMutationKind)mutationKind usingObjects:(CPSet)objects
+- (void)didChangeValueForKey:(CPString)aKey withSetMutation:(CPKeyValueSetMutationKind)aMutationKind usingObjects:(CPSet)objects
 {
 }
 
@@ -89,36 +89,38 @@
 {
     var changeKind = [aChange objectForKey:CPKeyValueChangeKindKey],
         oldValue = [aChange objectForKey:CPKeyValueChangeOldKey],
-        newValue = [aChange objectForKey:CPKeyValueChangeNewKey],
-        indexes = [aChange objectForKey:CPKeyValueChangeIndexesKey];
+        newValue = [aChange objectForKey:CPKeyValueChangeNewKey];
 
     if (newValue === [CPNull null])
         newValue = nil;
 
     if (changeKind === CPKeyValueChangeSetting)
-    {
-        [self setValue:newValue forKeyPath:aKeyPath];
-        return;
-    }
+        return [self setValue:newValue forKeyPath:aKeyPath];
 
-    //decide if this is a unordered or ordered to-many relationship
-    if ([newValue isKindOfClass: [CPSet class]] || [oldValue isKindOfClass: [CPSet class]])
+    var indexes = [aChange objectForKey:CPKeyValueChangeIndexesKey];
+
+    // If we have an indexes entry, then we have an ordered to-many relationship
+    if (indexes)
     {
         if (changeKind === CPKeyValueChangeInsertion)
-            [[self mutableSetValueForKeyPath:aKeyPath] unionSet:newValue];
+            [[self mutableArrayValueForKeyPath:aKeyPath] insertObjects:newValue atIndexes:indexes];
+
         else if (changeKind === CPKeyValueChangeRemoval)
-            [[self mutableSetValueForKeyPath:aKeyPath] minusSet:oldValue];
+            [[self mutableArrayValueForKeyPath:aKeyPath] removeObjectsAtIndexes:indexes];
+
         else if (changeKind === CPKeyValueChangeReplacement)
-            [[self mutableSetValueForKeyPath:aKeyPath] setSet: newValue];
+            [[self mutableArrayValueForKeyPath:aKeyPath] replaceObjectAtIndexes:indexes withObjects:newValue];
     }
     else
     {
         if (changeKind === CPKeyValueChangeInsertion)
-            [[self mutableArrayValueForKeyPath:aKeyPath] insertObjects:newValue atIndexes:indexes];
+            [[self mutableSetValueForKeyPath:aKeyPath] unionSet:newValue];
+
         else if (changeKind === CPKeyValueChangeRemoval)
-            [[self mutableArrayValueForKeyPath:aKeyPath] removeObjectsAtIndexes:indexes];
+            [[self mutableSetValueForKeyPath:aKeyPath] minusSet:oldValue];
+
         else if (changeKind === CPKeyValueChangeReplacement)
-            [[self mutableArrayValueForKeyPath:aKeyPath] replaceObjectAtIndexes:indexes withObjects:newValue];
+            [[self mutableSetValueForKeyPath:aKeyPath] setSet:newValue];
     }
 }
 
@@ -282,18 +284,12 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
     kvoClass._replacedKeys = _replacedKeys;
 
     //copy in the methods from our model subclass
-    var methodList = _CPKVOModelSubclass.method_list;
+    var methods = class_copyMethodList(_CPKVOModelSubclass);
+
     if ([_targetObject isKindOfClass:[CPDictionary class]])
-        methodList = methodList.concat(_CPKVOModelDictionarySubclass.method_list);
+        methods = methods.concat(class_copyMethodList(_CPKVOModelDictionarySubclass));
 
-    var count = methodList.length,
-        i = 0;
-
-    for (; i < count; i++)
-    {
-        var method = methodList[i];
-        class_addMethod(kvoClass, method_getName(method), method_getImplementation(method), "");
-    }
+    class_addMethods(kvoClass, methods);
 
     _targetObject.isa = kvoClass;
 }

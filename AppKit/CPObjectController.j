@@ -182,7 +182,7 @@
 
 - (CPArray)selectedObjects
 {
-    return [[_CPObservableArray alloc] initWithObjects:[_contentObject] count:1];
+    return [[_CPObservableArray alloc] initWithArray:[_contentObject]];
 }
 
 - (id)selection
@@ -341,7 +341,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 
 @end
 
-@implementation _CPObservableArray : CPMutableArray
+@implementation _CPObservableArray : _CPJavaScriptArray
 {
     CPArray     _observationProxies;
 }
@@ -367,20 +367,10 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 
 - (id)initWithArray:(CPArray)anArray
 {
-    if (self = [super initWithArray:anArray])
-    {
-        _observationProxies = [];
-    }
+    self = [super initWithArray:anArray];
 
-    return self;
-}
-
-- (id)initWithObjects:(CPArray)objects count:(unsigned)count
-{
-    if (self = [super initWithObjects:objects count:count])
-    {
-        _observationProxies = [];
-    }
+    self.isa = [_CPObservableArray class];
+    self._observationProxies = [];
 
     return self;
 }

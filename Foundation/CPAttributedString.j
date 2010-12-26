@@ -146,7 +146,7 @@
             return CPOrderedAscending;
     }
 
-    return [_rangeEntries indexOfObject:anIndex sortedByFunction:sortFunction];
+    return [_rangeEntries indexOfObject:anIndex inSortedRange:nil options:0 usingComparator:sortFunction];
 }
 
 //Retrieving Attribute Information

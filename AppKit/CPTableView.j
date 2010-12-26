@@ -1714,7 +1714,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_)
     {
-            return idx = [_cachedRowHeights indexOfObject:aPoint sortedByFunction:function(aPoint, rowCache) {
+            return idx = [_cachedRowHeights indexOfObject:aPoint
+                                            inSortedRange:nil
+                                                  options:0
+                                          usingComparator:function(aPoint, rowCache)
+                    {
                           var upperBound = rowCache.heightAboveRow;
 
                           if (aPoint.y < upperBound)
@@ -1724,7 +1728,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
                               return CPOrderedDescending;
 
                           return CPOrderedSame;
-                      }];
+                    }];
     }
 
     var y = aPoint.y,
