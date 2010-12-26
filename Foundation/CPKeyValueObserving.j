@@ -89,36 +89,38 @@
 {
     var changeKind = [aChange objectForKey:CPKeyValueChangeKindKey],
         oldValue = [aChange objectForKey:CPKeyValueChangeOldKey],
-        newValue = [aChange objectForKey:CPKeyValueChangeNewKey],
-        indexes = [aChange objectForKey:CPKeyValueChangeIndexesKey];
+        newValue = [aChange objectForKey:CPKeyValueChangeNewKey];
 
     if (newValue === [CPNull null])
         newValue = nil;
 
     if (changeKind === CPKeyValueChangeSetting)
-    {
-        [self setValue:newValue forKeyPath:aKeyPath];
-        return;
-    }
+        return [self setValue:newValue forKeyPath:aKeyPath];
 
-    //decide if this is a unordered or ordered to-many relationship
-    if ([newValue isKindOfClass: [CPSet class]] || [oldValue isKindOfClass: [CPSet class]])
+    var indexes = [aChange objectForKey:CPKeyValueChangeIndexesKey];
+
+    // If we have an indexes entry, then we have an ordered to-many relationship
+    if (indexes)
     {
         if (changeKind === CPKeyValueChangeInsertion)
-            [[self mutableSetValueForKeyPath:aKeyPath] unionSet:newValue];
+            [[self mutableArrayValueForKeyPath:aKeyPath] insertObjects:newValue atIndexes:indexes];
+
         else if (changeKind === CPKeyValueChangeRemoval)
-            [[self mutableSetValueForKeyPath:aKeyPath] minusSet:oldValue];
+            [[self mutableArrayValueForKeyPath:aKeyPath] removeObjectsAtIndexes:indexes];
+
         else if (changeKind === CPKeyValueChangeReplacement)
-            [[self mutableSetValueForKeyPath:aKeyPath] setSet: newValue];
+            [[self mutableArrayValueForKeyPath:aKeyPath] replaceObjectAtIndexes:indexes withObjects:newValue];
     }
     else
     {
         if (changeKind === CPKeyValueChangeInsertion)
-            [[self mutableArrayValueForKeyPath:aKeyPath] insertObjects:newValue atIndexes:indexes];
+            [[self mutableSetValueForKeyPath:aKeyPath] unionSet:newValue];
+
         else if (changeKind === CPKeyValueChangeRemoval)
-            [[self mutableArrayValueForKeyPath:aKeyPath] removeObjectsAtIndexes:indexes];
+            [[self mutableSetValueForKeyPath:aKeyPath] minusSet:oldValue];
+
         else if (changeKind === CPKeyValueChangeReplacement)
-            [[self mutableArrayValueForKeyPath:aKeyPath] replaceObjectAtIndexes:indexes withObjects:newValue];
+            [[self mutableSetValueForKeyPath:aKeyPath] setSet:newValue];
     }
 }
 
