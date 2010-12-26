@@ -375,16 +375,6 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
     return self;
 }
 
-- (id)initWithObjects:(CPArray)objects count:(unsigned)count
-{
-    if (self = [super initWithObjects:objects count:count])
-    {
-        _observationProxies = [];
-    }
-
-    return self;
-}
-
 - (void)addObserver:(id)anObserver forKeyPath:(CPString)aKeyPath options:(CPKeyValueObservingOptions)options context:(id)context
 {
     if (aKeyPath.indexOf("@") === 0)

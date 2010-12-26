@@ -18,9 +18,6 @@
 
 + (id)arrayWithArray:(CPArray)anArray
 {
-    if (anArray.isa === _CPJavaScriptArray)
-        return anArray.slice(0);
-
     return [[self alloc] initWithArray:anArray];
 }
 
