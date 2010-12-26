@@ -182,7 +182,7 @@
 
 - (CPArray)selectedObjects
 {
-    return [[_CPObservableArray alloc] initWithObjects:[_contentObject] count:1];
+    return [[_CPObservableArray alloc] initWithArray:[_contentObject]];
 }
 
 - (id)selection
@@ -367,10 +367,10 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 
 - (id)initWithArray:(CPArray)anArray
 {
-    if (self = [super initWithArray:anArray])
-    {
-        _observationProxies = [];
-    }
+    self = [super initWithArray:anArray];
+
+    self.isa = [_CPObservableArray class];
+    self._observationProxies = [];
 
     return self;
 }
