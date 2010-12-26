@@ -631,8 +631,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [_headerView setNeedsDisplay:YES];
     [_headerView setNeedsLayout];
 
-    // height above the rows will change
-    [self noteHeightOfRowsWithIndexesChanged:[CPIndexSet  indexSetWithIndexesInRange:CPMakeRange(0,[self numberOfRows])]];
+    [self reloadData];
 }
 
 /*!
