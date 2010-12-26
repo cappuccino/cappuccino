@@ -138,15 +138,12 @@ CPEnumerationReverse    = 1 << 1;
     Initializes a the array with the contents of \c anArray
     and optionally performs a deep copy of the objects based on \c copyItems.
     @param anArray the array to copy the data from
-    @param copyItems if \c YES, each object will be copied by having a \c -copy message sent to it, and the
-    returned object will be added to the receiver. Otherwise, no copying will be performed.
+    @param shouldCopyItems if \c YES, each object will be copied by having a \c -copy message
+    sent to it, and the returned object will be added to the receiver. Otherwise, no copying will be performed.
     @return the initialized array of objects
 */
 - (id)initWithArray:(CPArray)anArray copyItems:(BOOL)shouldCopyItems
 {
-    if (!copyItems)
-        return [self initWithArray:anArray];
-
     FORWARD_TO_CONCRETE_CLASS();
 }
 
@@ -470,7 +467,7 @@ CPEnumerationReverse    = 1 << 1;
 
         else
         {
-            while (mid < count - 1 && 
+            while (mid < count - 1 &&
                 aFunction(anObject, [self objectAtIndex:mid + 1], aContext) === CPOrderedSame)
                 mid++;
 
