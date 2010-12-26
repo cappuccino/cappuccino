@@ -503,6 +503,15 @@ var _CPSharedPlaceholderSet   = nil;
     _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
+- (void)removeObjectsInArray:(CPArray)anArray
+{
+    var index = 0,
+        count = [anArray count];
+
+    for (; index < count; ++index)
+        [self removeObject:[anArray objectAtIndex:index]];
+}
+
 - (void)removeAllObjects
 {
     var object,
