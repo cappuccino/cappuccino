@@ -62,11 +62,6 @@ CPTableColumnUserResizingMask   = 1 << 1;
     BOOL _disableResizingPosting @accessors(property=disableResizingPosting);
 }
 
-+ (Class)_binderClassForBinding:(CPString)theBinding
-{
-    return [CPBinder class];
-}
-
 /*!
     @ignore
 */
@@ -541,7 +536,32 @@ CPTableColumnUserResizingMask   = 1 << 1;
 
 @end
 
+@implementation CPTableColumnValueBinder : CPBinder
+{
+}
+
+- (void)setValueFor:(CPString)aBinding
+{
+    var tableView = [_source tableView],
+        column = [[tableView tableColumns] indexOfObjectIdenticalTo:_source],
+        rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [tableView numberOfRows])],
+        columnIndexes = [CPIndexSet indexSetWithIndex:column];
+        
+    [tableView reloadDataForRowIndexes:rowIndexes columnIndexes:columnIndexes];
+}
+
+@end
+
 @implementation CPTableColumn (Bindings)
+
++ (id)_binderClassForBinding:(CPString)aBinding
+{
+    if (aBinding == CPValueBinding)
+        return [CPTableColumnValueBinder class];
+        
+    return [super _binderClassForBinding:aBinding];
+}
+
 - (void)bind:(CPString)aBinding toObject:(id)anObject withKeyPath:(CPString)aKeyPath options:(CPDictionary)options
 {
     [super bind:aBinding toObject:anObject withKeyPath:aKeyPath options:options];
@@ -600,11 +620,6 @@ CPTableColumnUserResizingMask   = 1 << 1;
 //{
 //    return nil;
 //}
-
-- (void)setValue:(CPArray)content
-{
-    [[self tableView] reloadData];
-}
 
 @end
 
