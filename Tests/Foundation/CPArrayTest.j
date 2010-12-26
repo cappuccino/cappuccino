@@ -83,11 +83,11 @@
 - (void)testRemoveObjectsAtIndexes
 {
     var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four", nil],
-        indexes = [CPMutableIndexSet indexSetWithIndex: 2];
+        indexes = [CPMutableIndexSet indexSetWithIndex:2];
 
     [array removeObjectsAtIndexes:indexes];
 
-    [self assert:array equals:[@"one", @"two", @"four", nil]];
+    [self assert:array equals:[@"one", @"two", @"four"]];
 }
 
 - (void)testIndexOfObjectPassingTest

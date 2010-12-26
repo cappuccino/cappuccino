@@ -341,7 +341,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 
 @end
 
-@implementation _CPObservableArray : CPMutableArray
+@implementation _CPObservableArray : _CPJavaScriptArray
 {
     CPArray     _observationProxies;
 }

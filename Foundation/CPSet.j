@@ -85,12 +85,12 @@
 */
 + (id)setWithObjects:(id)anObject, ...
 {
-    var args = Array.prototype.slice.apply(arguments);
+    var argumentsArray = Array.prototype.slice.apply(arguments);
 
-    args[0] = [self alloc];
-    args[1] = @selector(initWithObjects:);
+    argumentsArray[0] = [self alloc];
+    argumentsArray[1] = @selector(initWithObjects:);
 
-    return objj_msgSend.apply(this, args);
+    return objj_msgSend.apply(this, argumentsArray);
 }
 
 /*

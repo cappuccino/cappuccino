@@ -385,7 +385,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 {
     var i = 0,
         count = objects.length,
-        references = [CPArray arrayWithCapacity:count];
+        references = [];
 
     for (; i < count; ++i)
         [references addObject:_CPKeyedArchiverEncodeObject(self, objects[i], NO)];
