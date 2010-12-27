@@ -418,18 +418,15 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
 
             class_addMethod(KVOClass, removeKeyAtIndexes_selector, function(self, _cmd, indexes)
             {
-                var isKeyObserved = self._KVOObservedKeys.hasOwnProperty(aKey);
-
                 [self willChange:CPKeyValueChangeRemoval
                  valuesAtIndexes:[indexes copy]
                           forKey:aKey];
 
                 removeKeyAtIndexes_method_imp(self, _cmd, indexes);
 
-                if (isKeyObserved)
-                    [self   didChange:CPKeyValueChangeRemoval
-                      valuesAtIndexes:[indexes copy]
-                               forKey:aKey];
+                [self didChange:CPKeyValueChangeRemoval
+                valuesAtIndexes:[indexes copy]
+                         forKey:aKey];
             }, "");
         }
 
@@ -504,8 +501,6 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
 
             class_addMethod(KVOClass, addKeyObject_selector, function(self, _cmd, anObject)
             {
-                var isKeyObserved = self._KVOObservedKeys.hasOwnProperty(aKey);
-
                 [self willChangeValueForKey:aKey
                             withSetMutation:CPKeyValueUnionSetMutation
                                usingObjects:[CPSet setWithObject:anObject]];
@@ -542,8 +537,6 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
 
             class_addMethod(KVOClass, removeKeyObject_selector, function(self, _cmd, anObject)
             {
-                var isKeyObserved = self._KVOObservedKeys.hasOwnProperty(aKey);
-
                 [self willChangeValueForKey:aKey
                             withSetMutation:CPKeyValueMinusSetMutation
                                usingObjects:[CPSet setWithObject:anObject]];
