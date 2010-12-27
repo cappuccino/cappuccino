@@ -1953,7 +1953,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         var columnToResize = _tableColumns[count],
             newSize = MAX(0.0, superviewSize.width - CGRectGetMinX([self rectOfColumn:count]) - _intercellSpacing.width);
 
-        [columnToResize newWidth:newSize];
+        [columnToResize setWidth:newSize];
     }
 
     [self setNeedsLayout];
