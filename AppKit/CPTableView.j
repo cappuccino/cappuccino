@@ -4163,7 +4163,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         else
             newSelection = [CPIndexSet indexSetWithIndex:aRow];
     }
-
     else if (_allowsMultipleSelection)
     {
         newSelection = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(MIN(aRow, _selectionAnchorRow), ABS(aRow - _selectionAnchorRow) + 1)];
@@ -4171,10 +4170,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
                                 ((_lastSelectedRow == [_selectedRowIndexes lastIndex] && aRow > _lastSelectedRow) ||
                                 (_lastSelectedRow == [_selectedRowIndexes firstIndex] && aRow < _lastSelectedRow));
     }
-
     else if (aRow >= 0 && aRow < _numberOfRows)
         newSelection = [CPIndexSet indexSetWithIndex:aRow];
-
     else
         newSelection = [CPIndexSet indexSet];
 
@@ -4217,6 +4214,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         return;
 
     [self selectRowIndexes:newSelection byExtendingSelection:shouldExtendSelection];
+
+    _lastSelectedRow = [newSelection containsIndex:aRow] ? aRow : [newSelection lastIndex];
 }
 
 /*!
@@ -4274,10 +4273,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         // but Cocoa doesn't handle that situation either.
         if ([self numberOfRows] !== 0)
         {
-            if (character === CPUpArrowFunctionKey)
-                [self _moveSelectionUp:anEvent];
-            else
-                [self _moveSelectionDown:anEvent]
+            [self _moveSelectionWithEvent:anEvent upward:(character === CPUpArrowFunctionKey)];
 
             return;
         }
@@ -4294,99 +4290,82 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 /*!
     @ignore
+    Selection behaviour depends on two things
+    _lastSelectedRow and the anchored selection (The last row selected by itself)
 */
-- (void)_moveSelectionDown:(CPEvent)theEvent
+- (void)_moveSelectionWithEvent:(CPEvent)theEvent upward:(BOOL)shouldGoUpward
 {
-    if (_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ &&
-        ![_delegate selectionShouldChangeInTableView:self])
+    if (_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ && ![_delegate selectionShouldChangeInTableView:self])
         return;
+    var selectedIndexes = [self selectedRowIndexes];
 
-    if ([[self selectedRowIndexes] count] > 0)
+    if ([selectedIndexes count] > 0)
     {
-        var extend = NO;
+        var extend = (([theEvent modifierFlags] & CPShiftKeyMask) && _allowsMultipleSelection),
+            i = [self selectedRow];
 
-        if (([theEvent modifierFlags] & CPShiftKeyMask) && _allowsMultipleSelection)
-            extend = YES;
-
-        var i = [[self selectedRowIndexes] lastIndex];
-        if (i < [self numberOfRows] - 1)
-            i++; //set index to the next row after the last row selected
+        shouldGoUpward ? i-- : i++;
     }
     else
     {
         var extend = NO;
         //no rows are currently selected
         if ([self numberOfRows] > 0)
-            var i = 0; //select the first row
+            var i = shouldGoUpward ? [self numberOfRows] - 1 : 0; // if we select upward select the last row, otherwise select the first row
     }
+
+    if (i >= [self numberOfRows] || i < 0)
+        return;
 
 
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_)
     {
 
-        while ((![_delegate tableView:self shouldSelectRow:i]) && i < [self numberOfRows])
-        {
-            //check to see if the row can be selected if it can't be then see if the next row can be selected
-            i++;
-        }
+        while (![_delegate tableView:self shouldSelectRow:i] && (i < [self numberOfRows] || i > 0))
+            shouldGoUpward ? i-- : i++; //check to see if the row can be selected if it can't be then see if the next row can be selected
 
         //if the index still can be selected after the loop then just return
          if (![_delegate tableView:self shouldSelectRow:i])
              return;
     }
 
-    [self selectRowIndexes:[CPIndexSet indexSetWithIndex:i] byExtendingSelection:extend];
-
-    if (i >= 0)
-        [self scrollRowToVisible:i];
-}
-
-/*!
-    @ignore
-*/
-- (void)_moveSelectionUp:(CPEvent)theEvent
-{
-    if (_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ &&
-        ![_delegate selectionShouldChangeInTableView:self])
-        return;
-
-    if ([[self selectedRowIndexes] count] > 0)
+    // if we go upward and see that this row is already selected we should deselect the row below
+    if ([selectedIndexes containsIndex:i] && extend)
     {
-         var extend = NO;
+        // the row we're on is the last to be selected
+        var differedLastSelectedRow = i;
 
-         if (([theEvent modifierFlags] & CPShiftKeyMask) && _allowsMultipleSelection)
-           extend = YES;
+        // no remove the one before/after it
+        shouldGoUpward ? i++  : i--;
 
-          var i = [[self selectedRowIndexes] firstIndex];
-          if (i > 0)
-              i--; //set index to the prev row before the first row selected
+        [selectedIndexes removeIndex:i];
+
+        //we're going to replace the selection
+        extend = NO;
+    }
+    else if (extend)
+    {
+        if ([selectedIndexes containsIndex:i])
+        {
+            i = shouldGoUpward ? [selectedIndexes firstIndex] -1 : [selectedIndexes lastIndex] + 1;
+            i = MIN(MAX(i,0), [self numberOfRows]-1);
+        }
+
+        [selectedIndexes addIndex:i];
+        var differedLastSelectedRow = i;
     }
     else
     {
-      var extend = NO;
-      //no rows are currently selected
-        if ([self numberOfRows] > 0)
-            var i = [self numberOfRows] - 1; //select the first row
-     }
+        selectedIndexes = [CPIndexSet indexSetWithIndex:i];
+        var differedLastSelectedRow = i;
+    }
 
+    [self selectRowIndexes:selectedIndexes byExtendingSelection:extend];
 
-     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_)
-     {
+    // we differ because selectRowIndexes: does its own thing which would set the wrong index
+    _lastSelectedRow = differedLastSelectedRow;
 
-          while ((![_delegate tableView:self shouldSelectRow:i]) && i > 0)
-          {
-              //check to see if the row can be selected if it can't be then see if the prev row can be selected
-              i--;
-          }
-
-          //if the index still can be selected after the loop then just return
-           if (![_delegate tableView:self shouldSelectRow:i])
-               return;
-     }
-
-     [self selectRowIndexes:[CPIndexSet indexSetWithIndex:i] byExtendingSelection:extend];
-
-     if (i >= 0)
+    if (i !== CPNotFound)
         [self scrollRowToVisible:i];
 }
 
