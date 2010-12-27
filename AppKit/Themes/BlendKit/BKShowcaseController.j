@@ -144,8 +144,18 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
     [_themedObjectsCollectionView setMaxItemSize:itemSize];
 
     [_themedObjectsCollectionView setContent:[themeDescriptorClass themedShowcaseObjectTemplates]];
-    [BKShowcaseCell setBackgroundColor:[themeDescriptorClass showcaseBackgroundColor]];
+    var color = [themeDescriptorClass showcaseBackgroundColor];
+    [BKShowcaseCell setBackgroundColor:color];
 
+    var colorPopUp = [[[[theWindow toolbar] items] objectAtIndex:2] view],
+        items = [colorPopUp itemArray],
+        i = 0;
+        count = [items count];
+
+    for (; i < count; i++)
+        if ([[items[i] representedObject] isEqual:color])
+            [colorPopUp selectItemAtIndex:i];
+    
     [self updateControlState];
 }
 
@@ -280,22 +290,23 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
     var color = nil;
 
     if ([aSender isKindOfClass:[CPColorPanel class]])
+    {
         color = [aSender color];
-
+        var colorPopUp = [[[[theWindow toolbar] items] objectAtIndex:2] view],
+            title = @"Other " + [color cssString];
+        [colorPopUp addItemWithTitle:title];
+        [[colorPopUp itemWithTitle:title] setRepresentedObject:color];
+        [colorPopUp selectItemWithTitle:title];
+    }
     else
     {
         if ([aSender titleOfSelectedItem] === @"More Choices...")
         {
-            [aSender addItemWithTitle:@"Other"];
-            [aSender selectItemWithTitle:@"Other"];
-
             [CPApp orderFrontColorPanel:self];
         }
         else
         {
             color = [[aSender selectedItem] representedObject];
-
-            [aSender removeItemWithTitle:@"Other"];
         }
     }
 
