@@ -344,7 +344,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
         insertObject_inKeyAtIndex_method =
             class_getInstanceMethod(theClass, insertObject_inKeyAtIndex_selector),
 
-        insertKey_atIndexes_selector = sel_getUid("insert" + capitalizedKey + ":atIndex:"),
+        insertKey_atIndexes_selector = sel_getUid("insert" + capitalizedKey + ":atIndexes:"),
         insertKey_atIndexes_method =
             class_getInstanceMethod(theClass, insertKey_atIndexes_selector),
 
