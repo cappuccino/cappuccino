@@ -1499,15 +1499,19 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 // O(1)
 /*!
     Returns a CGRect with the location and size of the column
+    If aColumnIndex lies outside the range of the table columns a CGZeroRect is returned
     @param aColumnIndex the index of the column you want the rect of
 */
 - (CGRect)rectOfColumn:(CPInteger)aColumnIndex
 {
     aColumnIndex = +aColumnIndex;
 
+    if (aColumnIndex < 0 || aColumnIndex >= NUMBER_OF_COLUMNS())
+        return _CGRectMakeZero();
+
     var column = [[self tableColumns] objectAtIndex:aColumnIndex];
 
-    if ([column isHidden] || aColumnIndex < 0 || aColumnIndex >= NUMBER_OF_COLUMNS())
+    if ([column isHidden])
         return _CGRectMakeZero();
 
     UPDATE_COLUMN_RANGES_IF_NECESSARY();
