@@ -341,6 +341,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 
 @end
 
+// FIXME: This should subclass CPMutableArray not _CPJavaScriptArray
 @implementation _CPObservableArray : _CPJavaScriptArray
 {
     CPArray     _observationProxies;
