@@ -2145,10 +2145,17 @@ setBoundsOrigin:
 
 - (CPView)nextValidKeyView
 {
-    var result = [self nextKeyView];
+    var result = [self nextKeyView],
+        firstResult = result;
 
     while (result && ![result canBecomeKeyView])
+    {
         result = [result nextKeyView];
+
+        // Cycled.
+        if (result === firstResult)
+            return nil;
+    }
 
     return result;
 }
