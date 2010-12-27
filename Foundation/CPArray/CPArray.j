@@ -851,6 +851,4 @@ var _CPSharedPlaceholderArray   = nil;
 
 @end
 
-@import "CPArray.j"
-@import "CPMutableArray.j"
 @import "_CPJavaScriptArray.j"
