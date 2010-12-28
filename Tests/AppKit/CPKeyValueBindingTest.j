@@ -112,6 +112,10 @@
     [bindTesterA setStringValue:nil];
     [self assert:nil equals:[bindTesterA stringValue] message:"A value reset (placeholder)"];
     [self assert:@"placeholder" equals:[bindTesterB stringValue] message:"B value updated (placeholder)"];
+
+    [bindTesterA setStringValue:[CPNull null]];
+    [self assert:[CPNull null] equals:[bindTesterA stringValue] message:"A value reset (placeholder)"];
+    [self assert:@"placeholder" equals:[bindTesterB stringValue] message:"B value updated (placeholder)"];
 }
 
 - (void)testControl

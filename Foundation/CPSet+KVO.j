@@ -372,32 +372,6 @@
 
 @implementation CPSet (CPKeyValueCoding)
 
-- (id)valueForKey:(CPString)aKey
-{
-    if (aKey.indexOf("@") === 0)
-    {
-        if (aKey.indexOf(".") !== -1)
-            [CPException raise:CPInvalidArgumentException reason:"called valueForKey: on a set with a complex key ("+aKey+"). use valueForKeyPath:"];
-
-        if (aKey == "@count")
-            return [self count];
-
-        return nil;
-    }
-    else
-    {
-        var valuesForKeySet = [CPSet set];
-        var containedObject, containedObjectValue, containedObjectEnumerator = [self objectEnumerator];
-        while(containedObject = [containedObjectEnumerator nextObject])
-        {
-            containedObjectValue = [containedObject valueForKey:aKey];
-            if(containedObjectValue)
-                [valuesForKeySet addObject:containedObjectValue];
-        }
-        return valuesForKeySet;
-    }
-}
-
 - (id)valueForKeyPath:(CPString)aKeyPath
 {
     if (aKeyPath.indexOf("@") === 0)
@@ -438,13 +412,6 @@
     var containedObject, containedObjectEnumerator = [self objectEnumerator];
     while (containedObject = [containedObjectEnumerator nextObject])
         [containedObject setValue:aValue forKey:aKey];
-}
-
-- (void)setValue:(id)aValue forKeyPath:(CPString)aKeyPath
-{
-    var containedObject, containedObjectEnumerator = [self objectEnumerator];
-    while (containedObject = [containedObjectEnumerator nextObject])
-        [containedObject setValue:aValue forKeyPath:aKeyPath];
 }
 
 @end

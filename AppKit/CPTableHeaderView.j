@@ -669,7 +669,15 @@ var CPTableHeaderViewTableViewKey = @"CPTableHeaderViewTableViewKey",
     {
         [self _init];
         _tableView = [aCoder decodeObjectForKey:CPTableHeaderViewTableViewKey];
-        _drawsColumnLines = [aCoder decodeBoolForKey:CPTableHeaderViewDrawsColumnLines];
+
+        // FIX ME: Take this out before 1.0
+        if ([aCoder containsValueForKey:CPTableHeaderViewDrawsColumnLines])
+            _drawsColumnLines = [aCoder decodeBoolForKey:CPTableHeaderViewDrawsColumnLines];
+        else
+        {
+            _drawsColumnLines = YES;
+            CPLog.warn("The tableview header being decoded is using an old cib. Please run Nib2Cib.");
+        }
     }
 
     return self;

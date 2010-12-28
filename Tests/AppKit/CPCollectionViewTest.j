@@ -4,11 +4,19 @@
 @implementation CPCollectionViewTest : OJTestCase
 {
     CPCollectionView _collectionView;
+    id _globalResults;
 }
 
 - (void)setUp
 {
     _collectionView = [[CPCollectionView alloc] initWithFrame:CGRectMakeZero()];
+    _globalResults = nil;
+}
+
+// delegate method
+- (void)collectionViewDidChangeSelection:(CPCollectionView)aCollectionView
+{
+    _globalResults = "selection changed: " + [[aCollectionView selectionIndexes] count];
 }
 
 - (void)testItemPrototypeActuallyReturnsTheItemPrototype
@@ -47,6 +55,35 @@
     reloadContentCount = [collectionView reloadContentCallCount];
     [collectionView setContent:content];
     [self assert:[collectionView reloadContentCallCount] equals:reloadContentCount+1 message:@"subsequent calls to setContent should have called reloadContent once"];
+}
+
+- (void)testCallCollectionViewDidChangeSelectionDelegateMethod
+{
+    var content1 = ["a", "b", "c"],
+        content2 = ["d", "e", "f"];
+
+    [_collectionView setSelectable:YES];
+    [_collectionView setDelegate:self];
+    [_collectionView setContent:content1];
+    [_collectionView setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
+    // the first time the delegate does get called
+    [self assert:"selection changed: 1" equals:_globalResults];
+    _globalResults = nil;
+
+    // setting the same content again should still trigger the delegate but with no selection
+    [_collectionView setContent:content1];
+    [self assert:"selection changed: 0" equals:_globalResults];
+    _globalResults = nil;
+
+    // now lets change the contents
+    [_collectionView setContent:content2];
+    // we set the selection to 0 again, but on the NEW content
+    [_collectionView setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
+    [self assert:"selection changed: 1" equals:_globalResults];
+
+    _globalResults = nil;
+    [_collectionView setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
+    [self assert:"selection changed: 1" equals:_globalResults];
 }
 
 @end

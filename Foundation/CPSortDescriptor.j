@@ -22,26 +22,7 @@
 
 @import "CPObject.j"
 @import "CPObjJRuntime.j"
-
-
-/*!
-    The left operand is smaller than the right.
-    @global
-    @group CPComparisonResult
-*/
-CPOrderedAscending      = -1;
-/*!
-    The left and right operands are equal.
-    @global
-    @group CPComparisonResult
-*/
-CPOrderedSame           =  0;
-/*!
-    The left operand is greater than the right.
-    @global
-    @group CPComparisonResult
-*/
-CPOrderedDescending     =  1;
+@import "CPString.j"
 
 /*!
     @class CPSortDescriptor

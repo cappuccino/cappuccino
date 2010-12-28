@@ -203,6 +203,9 @@
 */
 - (void)setContent:(CPArray)anArray
 {
+    // reset the _selectionIndexes
+    [self setSelectionIndexes:[CPIndexSet indexSet]];
+
     _content = anArray;
 
     [self reloadContent];

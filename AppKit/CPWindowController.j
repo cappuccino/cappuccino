@@ -276,6 +276,10 @@
         [self setViewController:viewController];
 
     [self synchronizeWindowTitleWithDocumentName];
+
+    // Change of document means toolbar items may no longer make sense.
+    // FIXME: DOCUMENT ARCHITECTURE Should we setToolbar: as well?
+    [[[self window] toolbar] validateVisibleItems];
 }
 
 - (void)setSupportsMultipleDocuments:(BOOL)shouldSupportMultipleDocuments
