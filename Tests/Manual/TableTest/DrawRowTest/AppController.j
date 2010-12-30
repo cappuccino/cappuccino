@@ -11,12 +11,11 @@
 
 @implementation AppController : CPObject
 {
-    CPTableView table;
-    CPTableColumn columnA;
-    CPTableColumn columnB;
-    CPTableColumn columnC;
-    CPTableColumn columnD;
-
+    CPTableView     table;
+    CPTableColumn   columnA;
+    CPTableColumn   columnB;
+    CPTableColumn   columnC;
+    CPTableColumn   columnD;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -92,16 +91,16 @@ var randomColors = {};
 - (void)drawRow:(CPInteger)aRow clipRect:(CGRect)clipRect
 {
     var viewRect = [self frameOfDataViewAtColumn:[self columnWithIdentifier:@"A"] row:aRow],
-        badgeWidth = CGRectGetWidth(viewRect)/5,
+        badgeWidth = CGRectGetWidth(viewRect) / 5,
         badgePath = [CPBezierPath bezierPath];
-    
-	var badgeFrame = CGRectMake(CGRectGetMaxX(viewRect) - badgeWidth - ROW_RIGHT_MARGIN,
-	    					   CGRectGetMidY(viewRect) - BADGE_HEIGHT / 2.0,
-	    					   badgeWidth,
-	    					   BADGE_HEIGHT);
-   	
-    [badgePath appendBezierPathWithRoundedRect:badgeFrame xRadius:(BADGE_HEIGHT/2.0) yRadius:(BADGE_HEIGHT/2.0)];
-    [[TableViewDrawRow colorForRow:aRow] setFill];    
+
+    var badgeFrame = CGRectMake(CGRectGetMaxX(viewRect) - badgeWidth - ROW_RIGHT_MARGIN,
+                                CGRectGetMidY(viewRect) - BADGE_HEIGHT / 2.0,
+                                badgeWidth,
+                                BADGE_HEIGHT);
+
+    [badgePath appendBezierPathWithRoundedRect:badgeFrame xRadius:(BADGE_HEIGHT / 2.0) yRadius:(BADGE_HEIGHT / 2.0)];
+    [[TableViewDrawRow colorForRow:aRow] setFill];
     [badgePath fill];
 }
 

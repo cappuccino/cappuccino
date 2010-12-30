@@ -174,4 +174,30 @@
     [self assert:[[scrollView verticalScroller] isEnabled] equals:NO];
 }
 
+- (void)testSetContentView
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)];
+    var documentView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 400.0)];
+
+    var replacementContentView = [[CPClipView alloc] initWithFrame:[scrollView _insetBounds]];
+    var replacementDocumentView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 400.0)];
+
+    [replacementContentView setDocumentView:replacementDocumentView];
+
+    // Test the obvious condition that they aren't the same
+    [self assert:replacementContentView notEqual:[scrollView contentView] message:@"contentView somehow equals the replacement"];
+
+    // Test the obvious condition that the document view can be get/set
+    [scrollView setDocumentView:documentView];
+    [self assert:documentView equals:[scrollView documentView] message:@"documentView is not set as expected"];
+
+    // Change the content view
+    [scrollView setContentView:replacementContentView];
+
+    // Test that the content view has been replaced
+    [self assert:replacementContentView equals:[scrollView contentView] message:@"contentView was not replaced properly"];
+    // and that the document view has been replaced
+    [self assert:replacementDocumentView equals:[scrollView documentView] message:@"documentView was not replaced properly"];
+}
+
 @end

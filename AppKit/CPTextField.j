@@ -26,9 +26,6 @@
 @import "CPCompatibility.j"
 @import "_CPImageAndTextView.j"
 
-#include "CoreGraphics/CGGeometry.h"
-#include "Platform/Platform.h"
-#include "Platform/DOM/CPDOMDisplayServer.h"
 
 CPTextFieldSquareBezel          = 0;    /*! A textfield bezel with a squared corners. */
 CPTextFieldRoundedBezel         = 1;    /*! A textfield bezel with rounded corners. */
@@ -158,7 +155,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     return textField;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return "textfield";
 }
@@ -795,7 +792,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (isPlaceholder)
     {
         // Save the original placeholder value so we can restore it later
-        // Only do this if the placeholder is not already overridden because the bindings logic might call this method 
+        // Only do this if the placeholder is not already overridden because the bindings logic might call this method
         // several times and we don't want the bindings placeholder to ever become the original placeholder
         if (!_currentValueIsPlaceholder)
             _originalPlaceholderString = [self placeholderString];
@@ -804,7 +801,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self setPlaceholderString:[self stringValue]];
         [self setStringValue:@""];
     }
-    else
+    else if (_originalPlaceholderString)
     {
         // Restore the original placeholder, the actual textfield value is already correct
         // because it was set using setValue:forKey:
@@ -815,42 +812,72 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 /*!
-    Size to fit has two behavior, depending on if the receiver is an editable text field or not.
+    For non-bezeled text fields (typically a label), sizeToFit has two behaviors, depending
+    on the line break mode of the receiver.
 
-    For non-editable text fields (typically, a label), sizeToFit will change the frame of the
-    receiver to perfectly fit the current text in stringValue in the current font, and respecting
-    the current theme values for content-inset, min-size, and max-size.
+    For non-bezeled receivers with a non-wrapping line break mode, sizeToFit will change the frame of the
+    receiver to perfectly fit the current text in stringValue in the current font, respecting
+    the current theme value for content-inset. For receivers with a wrapping line break mode,
+    sizeToFit will wrap the text within the current width (respecting the current content-inset),
+    so it will ONLY change the HEIGHT.
 
-    For editable text fields, sizeToFit will ONLY change the HEIGHT of the text field. It will not
-    change the width of the text field. You can use setFrameSize: with the current height to set the
-    width, and you can get the size of a string with [CPString sizeWithFont:].
+    For bezeled text fields (typically editable fields), sizeToFit will ONLY change the HEIGHT
+    of the text field. It will not change the width of the text field. sizeToFit will attempt to
+    change the height to fit a single line of text, respecting the current theme values for min-size,
+    max-size and content-inset.
 
     The logic behind this decision is that most of the time you do not know what content will be placed
-    in an editable text field, so you want to just choose a fixed width and leave it at that size.
+    in a bezeled text field, so you want to just choose a fixed width and leave it at that size.
     However, since you don't know how tall it needs to be if you change the font, sizeToFit will still be
     useful for making the textfield an appropriate height.
 */
 
 - (void)sizeToFit
 {
-    var size = [([self stringValue] || " ") sizeWithFont:[self currentValueForThemeAttribute:@"font"]],
+    [self setFrameSize:[self _minimumFrameSize]];
+}
+
+- (CGSize)_minimumFrameSize
+{
+    var frameSize = [self frameSize],
         contentInset = [self currentValueForThemeAttribute:@"content-inset"],
         minSize = [self currentValueForThemeAttribute:@"min-size"],
-        maxSize = [self currentValueForThemeAttribute:@"max-size"];
+        maxSize = [self currentValueForThemeAttribute:@"max-size"],
+        lineBreakMode = [self lineBreakMode],
+        text = ([self stringValue] || @" "),
+        textSize = _CGSizeMakeCopy(frameSize),
+        font = [self currentValueForThemeAttribute:@"font"];
 
-    size.width = MAX(size.width + contentInset.left + contentInset.right, minSize.width);
-    size.height = MAX(size.height + contentInset.top + contentInset.bottom, minSize.height);
+    textSize.width -= contentInset.left + contentInset.right;
+    textSize.height -= contentInset.top + contentInset.bottom;
 
-    if (maxSize.width >= 0.0)
-        size.width = MIN(size.width, maxSize.width);
+    if (frameSize.width !== 0 &&
+        ![self isBezeled]     &&
+        (lineBreakMode === CPLineBreakByWordWrapping || lineBreakMode === CPLineBreakByCharWrapping))
+    {
+        textSize = [text sizeWithFont:font inWidth:textSize.width];
+    }
+    else
+        textSize = [text sizeWithFont:font];
 
-    if (maxSize.height >= 0.0)
-        size.height = MIN(size.height, maxSize.height);
+    frameSize.height = textSize.height + contentInset.top + contentInset.bottom;
 
-    if ([self isEditable])
-        size.width = CGRectGetWidth([self frame]);
+    if ([self isBezeled])
+    {
+        frameSize.height = MAX(frameSize.height, minSize.height);
 
-    [self setFrameSize:size];
+        if (maxSize.width > 0.0)
+            frameSize.width = MIN(frameSize.width, maxSize.width);
+
+        if (maxSize.height > 0.0)
+            frameSize.height = MIN(frameSize.height, maxSize.height);
+    }
+    else
+        frameSize.width = textSize.width + contentInset.left + contentInset.right;
+
+    frameSize.width = MAX(frameSize.width, minSize.width);
+
+    return frameSize;
 }
 
 /*!
@@ -950,7 +977,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         // fall through to the return
     }
 
-    return CGMakeRange(0, 0);
+    return CPMakeRange(0, 0);
 }
 
 - (void)setSelectedRange:(CPRange)aRange
@@ -1231,6 +1258,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         [self setAlignment:[aCoder decodeIntForKey:CPTextFieldAlignmentKey]];
 
         [self setPlaceholderString:[aCoder decodeObjectForKey:CPTextFieldPlaceholderStringKey]];
+
     }
 
     return self;

@@ -24,17 +24,15 @@
 @import "CPDictionary.j"
 @import "CPNull.j"
 @import "CPObject.j"
+@import "CPSet.j"
 
-
-var CPObjectAccessorsForClass   = nil,
-    CPObjectModifiersForClass   = nil;
 
 CPUndefinedKeyException     = @"CPUndefinedKeyException";
 CPTargetObjectUserInfoKey   = @"CPTargetObjectUserInfoKey";
 CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
 
-var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
-    CPObjectModifiersForClassKey = @"$CPObjectModifiersForClassKey";
+var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
+    CPObjectModifiersForClassKey            = @"$CPObjectModifiersForClassKey";
 
 @implementation CPObject (CPKeyValueCoding)
 
@@ -43,125 +41,77 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
     return YES;
 }
 
-/* @ignore */
-+ (SEL)_accessorForKey:(CPString)aKey
-{
-    var selector = nil,
-        accessors = isa[CPObjectAccessorsForClassKey];
-
-    if (accessors)
-    {
-        selector = accessors[aKey];
-
-        if (selector)
-            return selector === [CPNull null] ? nil : selector;
-    }
-    else
-        accessors = isa[CPObjectAccessorsForClassKey] = {};
-
-    var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1);
-
-    if ([self instancesRespondToSelector:selector = CPSelectorFromString("get" + capitalizedKey)] ||
-        [self instancesRespondToSelector:selector = CPSelectorFromString(aKey)] ||
-        [self instancesRespondToSelector:selector = CPSelectorFromString("is" + capitalizedKey)] ||
-        [self instancesRespondToSelector:selector = CPSelectorFromString("_get" + capitalizedKey)] ||
-        [self instancesRespondToSelector:selector = CPSelectorFromString("_" + aKey)] ||
-        [self instancesRespondToSelector:selector = CPSelectorFromString("_is" + capitalizedKey)])
-    {
-        accessors[aKey] = selector;
-
-        return selector;
-    }
-
-    accessors[aKey] = [CPNull null];
-
-    return nil;
-}
-
-/* @ignore */
-+ (SEL)_modifierForKey:(CPString)aKey
-{
-    if (!CPObjectModifiersForClass)
-        CPObjectModifiersForClass = [CPDictionary dictionary];
-
-    var UID = [isa UID],
-        selector = nil,
-        modifiers = [CPObjectModifiersForClass objectForKey:UID];
-
-    if (modifiers)
-    {
-        selector = [modifiers objectForKey:aKey];
-
-        if (selector)
-            return selector === [CPNull null] ? nil : selector;
-    }
-    else
-    {
-        modifiers = [CPDictionary dictionary];
-
-        [CPObjectModifiersForClass setObject:modifiers forKey:UID];
-    }
-
-    if (selector)
-        return selector === [CPNull null] ? nil : selector;
-
-    var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1) + ':';
-
-    if ([self instancesRespondToSelector:selector = CPSelectorFromString("set" + capitalizedKey)] ||
-        [self instancesRespondToSelector:selector = CPSelectorFromString("_set" + capitalizedKey)])
-    {
-        [modifiers setObject:selector forKey:aKey];
-
-        return selector;
-    }
-
-    [modifiers setObject:[CPNull null] forKey:aKey];
-
-    return nil;
-}
-
-/* @ignore */
-- (CPString)_ivarForKey:(CPString)aKey
-{
-    var ivar = '_' + aKey;
-
-    if (typeof self[ivar] != "undefined")
-        return ivar;
-
-    var isKey = "is" + aKey.charAt(0).toUpperCase() + aKey.substr(1);
-
-    ivar = '_' + isKey;
-
-    if (typeof self[ivar] != "undefined")
-        return ivar;
-
-    ivar = aKey;
-
-    if (typeof self[ivar] != "undefined")
-        return ivar;
-
-    ivar = isKey;
-
-    if (typeof self[ivar] != "undefined")
-        return ivar;
-
-    return nil;
-}
-
 - (id)valueForKey:(CPString)aKey
 {
     var theClass = [self class],
-        selector = _accessorForKey(theClass, aKey);
+        accessor = nil,
+        accessors = theClass[CPObjectAccessorsForClassKey];
 
-    if (selector)
-        return objj_msgSend(self, selector);
+    if (!accessors)
+        accessors = theClass[CPObjectAccessorsForClassKey] = { };
 
-    if ([theClass accessInstanceVariablesDirectly])
+    if (accessors.hasOwnProperty(aKey))
+        accessor = accessors[aKey];
+
+    else
     {
-        var ivar = [self _ivarForKey:aKey];
+        var string = nil,
+            capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1),
+            underscoreKey = nil,
+            isKey = nil;
 
-        if (ivar)
-            return self[ivar];
+        // First search for accessor methods of the form -get<Key>, -<key>, -is<Key>
+        // (the underscore versions are deprecated)
+        if ([theClass instancesRespondToSelector:string = sel_getUid("get" + capitalizedKey)] ||
+            [theClass instancesRespondToSelector:string = sel_getUid(aKey)] ||
+            [theClass instancesRespondToSelector:string = sel_getUid((isKey = "is" + capitalizedKey))] ||
+            //FIXME: is deprecated in Cocoa 10.3
+            [theClass instancesRespondToSelector:string = sel_getUid("_get" + capitalizedKey)] ||
+            //FIXME: is deprecated in Cocoa 10.3
+            [theClass instancesRespondToSelector:string = sel_getUid((underscoreKey = "_" + aKey))] ||
+            //FIXME: was NEVER supported by Cocoa
+            [theClass instancesRespondToSelector:string = sel_getUid("_" + isKey)])
+            accessor = accessors[aKey] = [0, string];
+
+        else if ([theClass instancesRespondToSelector:sel_getUid("countOf" + capitalizedKey)])
+        {
+            // Otherwise, search for ordered to-many relationships:
+            // -countOf<Key> and either of -objectIn<Key>atIndex: or -<key>AtIndexes:.
+            if ([theClass instancesRespondToSelector:sel_getUid("objectIn" + capitalizedKey + "AtIndex:")] ||
+                [theClass instancesRespondToSelector:sel_getUid(aKey + "AtIndexes:")])
+                accessor = accessors[aKey] = [1];
+
+            // Otherwise, search for unordered to-many relationships
+            // -countOf<Key>, -enumeratorOf<Key>, and -memberOf<Key>:.
+            else if ([theClass instancesRespondToSelector:sel_getUid("enumeratorOf" + capitalizedKey)] &&
+                    [theClass instancesRespondToSelector:sel_getUid("memberOf" + capitalizedKey + ":")])
+                accessor = accessors[aKey] = [2];
+        }
+
+        if (!accessor)
+        {
+            // Otherwise search for instance variable: _<key>, _is<Key>, key, is<Key>
+            if (class_getInstanceVariable(theClass, string = underscoreKey) ||
+                class_getInstanceVariable(theClass, string = "_" + isKey) ||
+                class_getInstanceVariable(theClass, string = aKey) ||
+                class_getInstanceVariable(theClass, string = isKey))
+                accessor = accessors[aKey] = [3, string];
+
+            // Otherwise return valueForUndefinedKey:
+            else
+                accessor = accessors[aKey] = [];
+        }
+    }
+
+    switch (accessor[0])
+    {
+        case 0:     return objj_msgSend(self, accessor[1]);
+                    // FIXME: We shouldn't be creating a new one every time.
+        case 1:     return [[_CPKeyValueCodingArray alloc] initWithTarget:self key:aKey];
+                    // FIXME: We shouldn't be creating a new one every time.
+        case 2:     return [[_CPKeyValueCodingSet alloc] initWithTarget:self key:aKey];
+        case 3:     if ([theClass accessInstanceVariablesDirectly])
+                        return self[accessor[1]];
     }
 
     return [self valueForUndefinedKey:aKey];
@@ -171,7 +121,7 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
 {
     var firstDotIndex = aKeyPath.indexOf(".");
 
-    if (firstDotIndex === -1)
+    if (firstDotIndex === CPNotFound)
         return [self valueForKey:aKeyPath];
 
     var firstKeyComponent = aKeyPath.substring(0, firstDotIndex),
@@ -194,6 +144,7 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
 
         if (value === nil)
             [dictionary setObject:[CPNull null] forKey:key];
+
         else
             [dictionary setObject:value forKey:key];
     }
@@ -210,44 +161,88 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
 
 - (void)setValue:(id)aValue forKeyPath:(CPString)aKeyPath
 {
-    if (!aKeyPath) aKeyPath = "self";
+    if (!aKeyPath)
+        aKeyPath = @"self";
 
-    var i = 0,
-        keys = aKeyPath.split("."),
-        count = keys.length - 1,
-        owner = self;
+    var firstDotIndex = aKeyPath.indexOf(".");
 
-    for (; i < count; ++i)
-        owner = [owner valueForKey:keys[i]];
+    if (firstDotIndex === CPNotFound)
+        return [self setValue:aValue forKey:aKeyPath];
 
-    [owner setValue:aValue forKey:keys[i]];
+    var firstKeyComponent = aKeyPath.substring(0, firstDotIndex),
+        remainingKeyPath = aKeyPath.substring(firstDotIndex + 1),
+        value = [self valueForKey:firstKeyComponent];
+
+    return [value setValue:aValue forKeyPath:remainingKeyPath];
 }
 
 - (void)setValue:(id)aValue forKey:(CPString)aKey
 {
     var theClass = [self class],
-        selector = [theClass _modifierForKey:aKey];
+        modifier = nil,
+        modifiers = theClass[CPObjectModifiersForClassKey];
 
-    if (selector)
-        return objj_msgSend(self, selector, aValue);
+    if (!modifiers)
+        modifiers = theClass[CPObjectModifiersForClassKey] = { };
 
-    if ([theClass accessInstanceVariablesDirectly])
+    if (modifiers.hasOwnProperty(aKey))
+        modifier = modifiers[aKey];
+
+    else
     {
-        var ivar = [self _ivarForKey:aKey];
+        var string = nil,
+            capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1),
+            isKey = nil;
 
-        if (ivar)
-        {
-            [self willChangeValueForKey:aKey];
+        if ([theClass instancesRespondToSelector:string = sel_getUid("set" + capitalizedKey + ":")] ||
+            //FIXME: deprecated in Cocoa 10.3
+            [theClass instancesRespondToSelector:string = sel_getUid("_set" + capitalizedKey + ":")])
+            modifier = modifiers[aKey] = [0, string];
 
-            self[ivar] = aValue;
+        else if (class_getInstanceVariable(theClass, string = "_" + aKey) ||
+            class_getInstanceVariable(theClass, string = "_" + (isKey = "is" + capitalizedKey)) ||
+            class_getInstanceVariable(theClass, string = aKey) ||
+            class_getInstanceVariable(theClass, string = isKey))
+            modifier = modifiers[aKey] = [1, string];
 
-            [self didChangeValueForKey:aKey];
-
-            return;
-        }
+        else
+            modifier = modifiers[aKey] = [];
     }
 
-    [self setValue:aValue forUndefinedKey:aKey];
+    switch (modifier[0])
+    {
+        case 0:     return objj_msgSend(self, modifier[1], aValue);
+
+        case 1:     if ([theClass accessInstanceVariablesDirectly])
+                    {
+                        [self willChangeValueForKey:aKey];
+
+                        self[modifier[1]] = aValue;
+
+                        return [self didChangeValueForKey:aKey];
+                    }
+    }
+
+    return [self setValue:aValue forUndefinedKey:aKey];
+
+}
+
+- (void)setValuesForKeysWithDictionary:(CPDictionary)keyedValues
+{
+    var value,
+        key,
+        keyEnumerator = [keyedValues keyEnumerator];
+
+    while (key = [keyEnumerator nextObject])
+    {
+        value = [keyedValues objectForKey: key];
+
+        if (value === [CPNull null])
+            [self setValue: nil forKey: key];
+
+        else
+            [self setValue: value forKey: key];
+    }
 }
 
 - (void)setValue:(id)aValue forUndefinedKey:(CPString)aKey
@@ -259,42 +254,7 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
 
 @end
 
-var Null = [CPNull null];
-var _accessorForKey = function(theClass, aKey)
-{
-    var selector = nil,
-        accessors = theClass.isa[CPObjectAccessorsForClassKey];
-
-    if (accessors)
-    {
-        selector = accessors[aKey];
-
-        if (selector)
-            return selector === Null ? nil : selector;
-    }
-    else
-        accessors = theClass.isa[CPObjectAccessorsForClassKey] = {};
-
-    var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1);
-
-    if ([theClass instancesRespondToSelector:selector = CPSelectorFromString("get" + capitalizedKey)] ||
-        [theClass instancesRespondToSelector:selector = CPSelectorFromString(aKey)] ||
-        [theClass instancesRespondToSelector:selector = CPSelectorFromString("is" + capitalizedKey)] ||
-        [theClass instancesRespondToSelector:selector = CPSelectorFromString("_get" + capitalizedKey)] ||
-        [theClass instancesRespondToSelector:selector = CPSelectorFromString("_" + aKey)] ||
-        [theClass instancesRespondToSelector:selector = CPSelectorFromString("_is" + capitalizedKey)])
-    {
-        accessors[aKey] = selector;
-
-        return selector;
-    }
-
-    accessors[aKey] = Null;
-
-    return nil;
-}
-
-@implementation CPDictionary (KeyValueCoding)
+@implementation CPDictionary (CPKeyValueCoding)
 
 - (id)valueForKey:(CPString)aKey
 {
@@ -306,12 +266,16 @@ var _accessorForKey = function(theClass, aKey)
 
 - (void)setValue:(id)aValue forKey:(CPString)aKey
 {
-    [self setObject:aValue forKey:aKey];
+    if (aValue !== nil)
+        [self setObject:aValue forKey:aKey];
+
+    else
+        [self removeObjectForKey:aKey];
 }
 
 @end
 
-@implementation CPNull (KeyValueCoding)
+@implementation CPNull (CPKeyValueCoding)
 
 - (id)valueForKey:(CPString)aKey
 {
@@ -320,5 +284,123 @@ var _accessorForKey = function(theClass, aKey)
 
 @end
 
+@implementation _CPKeyValueCodingArray : CPArray
+{
+    id  _target;
+
+    SEL _countOfSelector;
+    SEL _objectInAtIndexSelector;
+    SEL _atIndexesSelector;
+}
+
+- (id)initWithTarget:(id)aTarget key:(CPString)aKey
+{
+    self = [super init];
+
+    if (self)
+    {
+        var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1);
+
+        _target = aTarget;
+
+        _countOfSelector = CPSelectorFromString("countOf" + capitalizedKey);
+
+        _objectInAtIndexSelector = CPSelectorFromString("objectIn" + capitalizedKey + "AtIndex:");
+
+        if (![_target respondsToSelector:_objectInAtIndexSelector])
+            _objectInAtIndexSelector = nil;
+
+        _atIndexesSelector = CPSelectorFromString(aKey + "AtIndexes:");
+
+        if (![_target respondsToSelector:_atIndexesSelector])
+            _atIndexesSelector = nil;
+    }
+
+    return self;
+}
+
+- (CPUInteger)count
+{
+    return objj_msgSend(_target, _countOfSelector);
+}
+
+- (id)objectAtIndex:(CPUInteger)anIndex
+{
+    if (_objectInAtIndexSelector)
+        return objj_msgSend(_target, _objectInAtIndexSelector, anIndex);
+
+    return objj_msgSend(_target, _atIndexesSelector, [CPIndexSet indexSetWithIndex:anIndex])[0];
+}
+
+- (CPArray)objectsAtIndexes:(CPIndexSet)indexes
+{
+    if (_atIndexesSelector)
+        return objj_msgSend(_target, _atIndexesSelector, indexes);
+
+    return [super objectsAtIndexes:indexes];
+}
+
+- (Class)classForCoder
+{
+    return [CPArray class];
+}
+
+@end
+
+@implementation _CPKeyValueCodingSet : CPSet
+{
+    id  _target;
+
+    SEL _countOfSelector;
+    SEL _enumeratorOfSelector;
+    SEL _memberOfSelector;
+}
+
+// This allows things like setByAddingObject: to work (since they use [[self class] alloc] internally).
+- (id)initWithObjects:(CPArray)objects count:(CPUInteger)aCount
+{
+    return [[CPSet alloc] initWithObjects:objects count:aCount];
+}
+
+- (id)initWithTarget:(id)aTarget key:(CPString)aKey
+{
+    self = [super initWithObjects:nil count:0];
+
+    if (self)
+    {
+        var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1);
+
+        _target = aTarget;
+
+        _countOfSelector = CPSelectorFromString("countOf" + capitalizedKey);
+        _enumeratorOfSelector = CPSelectorFromString("enumeratorOf" + capitalizedKey);
+        _memberOfSelector = CPSelectorFromString("memberOf" + capitalizedKey + ":");
+    }
+
+    return self;
+}
+
+- (CPUInteger)count
+{
+    return objj_msgSend(_target, _countOfSelector);
+}
+
+- (CPEnumerator)objectEnumerator
+{
+    return objj_msgSend(_target, _enumeratorOfSelector);
+}
+
+- (id)member:(id)anObject
+{
+    return objj_msgSend(_target, _memberOfSelector, anObject);
+}
+
+- (Class)classForCoder
+{
+    return [CPSet class];
+}
+
+
+@end
+
 @import "CPKeyValueObserving.j"
-@import "CPArray+KVO.j"

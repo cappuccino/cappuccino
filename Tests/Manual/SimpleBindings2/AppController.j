@@ -4,7 +4,7 @@
  * Created by __Me__ on __Date__.
  * Copyright 2008 __MyCompanyName__. All rights reserved.
  */
- 
+
 CPLogRegister(CPLogConsole);
 
 @import <Foundation/CPObject.j>
@@ -14,8 +14,8 @@ CPLogRegister(CPLogConsole);
 {
     CPSlider       slider;
     CPTextField    textField;
-	
-	Track          track @accessors;
+
+    Track          track @accessors;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -37,17 +37,17 @@ CPLogRegister(CPLogConsole);
     [contentView addSubview:textField];
 
     var textFrame = [textField frame];
-    
+
     slider = [[CPSlider alloc] initWithFrame:CGRectMake(CGRectGetMinX(textFrame), CGRectGetMaxY(textFrame)+10, CGRectGetWidth(textFrame), 12)];
 
     [slider setContinuous:YES];
-    
+
     [contentView addSubview:slider];
-    
+
     var button = [[CPButton alloc] initWithFrame:CGRectMake(CGRectGetMinX(textFrame)+25, CGRectGetMaxY(textFrame)+40, 100, 18)];
-    
+
     [button setTitle:@"mute"];
-    
+
     [button setTarget:self];
     [button setAction:@selector(muteTrack:)];
 
@@ -59,19 +59,19 @@ CPLogRegister(CPLogConsole);
 
 
     //SET UP AN OBJECT CONTROLLER
-    
-	var controller = [[CPObjectController alloc] init];
+
+    var controller = [[CPObjectController alloc] init];
     [controller bind:@"contentObject" toObject:self withKeyPath:@"track" options:nil];
-	
-	[textField bind:CPValueBinding toObject:controller withKeyPath:@"selection.volume" options:nil];
-	[slider bind:CPValueBinding toObject:controller withKeyPath:@"selection.volume" options:nil];
+
+    [textField bind:CPValueBinding toObject:controller withKeyPath:@"selection.volume" options:nil];
+    [slider bind:CPValueBinding toObject:controller withKeyPath:@"selection.volume" options:nil];
 
     [theWindow orderFront:self];
 }
 
 - (IBAction)muteTrack:(id)sender
 {
-	[track setVolume:0.0];
+    [track setVolume:0.0];
 }
 
 
@@ -80,8 +80,8 @@ CPLogRegister(CPLogConsole);
 
 @implementation Track : CPObject
 {
-	float      volume @accessors;
-	CPString   title @accessors;
+    float      volume @accessors;
+    CPString   title @accessors;
 }
 
 @end

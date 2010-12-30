@@ -31,9 +31,6 @@
 @import "CPMenuItem.j"
 @import "CPPanel.j"
 
-#include "../CoreGraphics/CGGeometry.h"
-#include "../Platform/Platform.h"
-
 
 CPMenuDidAddItemNotification        = @"CPMenuDidAddItemNotification";
 CPMenuDidChangeItemNotification     = @"CPMenuDidChangeItemNotification";
@@ -695,7 +692,7 @@ var _CPMenuBarVisible               = NO,
     var delegate = [self delegate];
 
     if ([delegate respondsToSelector:@selector(menuWillOpen:)])
-        [delegate menuWillOpen:aMenu];
+        [delegate menuWillOpen:self];
 
     // Convert location to global coordinates if not already in them.
     if (aView)

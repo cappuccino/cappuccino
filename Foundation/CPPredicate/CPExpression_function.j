@@ -1,8 +1,8 @@
 
 @import "CPExpression.j"
-@import <Foundation/CPString.j>
-@import <Foundation/CPArray.j>
-@import <Foundation/CPDictionary.j>
+@import "CPString.j"
+@import "CPArray.j"
+@import "CPDictionary.j"
 
 @implementation CPExpression_function : CPExpression
 {
@@ -10,61 +10,47 @@
     SEL             _selector;
     CPArray         _arguments;
     int             _argc;
+    int             _maxargs;
 }
 
-- (id)initWithSelector:(SEL)aselector arguments:(CPArray)parameters
+- (id)initWithSelector:(SEL)aSelector arguments:(CPArray)parameters
 {
-    [super initWithExpressionType:CPFunctionExpressionType];  
-     
-    if (![self respondsToSelector:aselector])
-       [CPException raise: CPInvalidArgumentException reason:@"Unknown function implementation: " + aselector];
-     
-    _selector = aselector;
-    _operand = nil;
+    var target = [CPPredicateUtilities class];
+    if (![target respondsToSelector:aSelector])
+        [CPException raise:CPInvalidArgumentException reason:@"Unknown function implementation: " + aSelector];
+
+    var operand = [CPExpression expressionForConstantValue:target];
+    return [self initWithTarget:operand selector:aSelector arguments:parameters];
+}
+
+- (id)initWithTarget:(CPExpression)operand selector:(SEL)aSelector arguments:(CPArray)parameters
+{
+    return [self initWithTarget:operand selector:aSelector arguments:parameters type:CPFunctionExpressionType];
+}
+
+- (id)initWithTarget:(CPExpression)operand selector:(SEL)aSelector arguments:(CPArray)parameters type:(int)type
+{
+    [super initWithExpressionType:type];
+
+// Cocoa doc: "This method throws an exception immediately if the selector is unknown"
+// but operand's value (the target) may be resolved only at runtime.
+    _selector = aSelector;
+    _operand = operand;
     _arguments = parameters;
     _argc = [parameters count];
-    
+    _maxargs = [[CPStringFromSelector(_selector) componentsSeparatedByString:@":"] count] - 1;
+
     return self;
-}
-
-- (id)initWithTarget:(CPExpression)targetExpression selector:(SEL)aselector arguments:(CPArray)parameters
-{
-    [super initWithExpressionType:CPFunctionExpressionType];  
-    
-    var target = [targetExpression expressionValueWithObject:object context:context];
-    if (![target respondsToSelector:aselector])
-       [CPException raise: CPInvalidArgumentException reason:@"Unknown function implementation: " + aselector];
-     
-    _selector = aselector;
-    _operand = targetExpression;
-    _arguments = parameters;
-    _argc = [parameters count];
-    
-    return self;
-}
-
-- (id)initWithCoder:(CPCoder)coder
-{
-    var selector = CPSelectorFromString([coder decodeObjectForKey:@"CPExpressionFunctionName"]);
-    var arguments = [coder decodeObjectForKey:@"CPExpressionFunctionArguments"];
-    
-    return [self initWithSelector:selector arguments:arguments];
-}
-
-- (void)encodeWithCoder:(CPCoder)coder
-{
-    [coder encodeObject:[self _function] forKey:@"CPExpressionFunctionName"];
-    [coder encodeObject:_arguments forKey:@"CPExpressionArguments"];
 }
 
 - (BOOL)isEqual:(id)object
 {
     if (self == object)
         return YES;
-        
+
     if (object.isa != self.isa || [object expressionType] != [self expressionType] || ![[object _function] isEqualToString:[self _function]] || ![[object operand] isEqual:[self operand]] || ![[object arguments] isEqualToArray:[self arguments]])
         return NO;
-        
+
     return YES;
 }
 
@@ -90,284 +76,211 @@
 
 - (id)expressionValueWithObject:(id)object context:(CPDictionary)context
 {
-    var eval_args = [CPArray array],
+    var target = [_operand expressionValueWithObject:object context:context],
+        objj_args = [target, _selector],
         i;
 
     for (i = 0; i < _argc; i++)
     {
-      var arg = [[_arguments objectAtIndex:i] expressionValueWithObject:object context:context];
-      if (arg != nil)
-        [eval_args addObject:arg];
+        var arg = [_arguments[i] expressionValueWithObject:object context:context];
+        objj_args.push(arg);
     }
 
-    var target = (_operand == nil) ? self : [_operand expressionValueWithObject:object context:context];
-    return [target performSelector:_selector withObject:eval_args];
+    // If we have too much arguments, concatenate remaining args on the last one.
+    if (_argc > _maxargs)
+    {
+        var r = MAX(_maxargs + 1, 2);
+        objj_args = objj_args.slice(0, r).concat([objj_args.slice(r)]);
+    }
+
+    return objj_msgSend.apply(this, objj_args);
 }
 
 - (CPString)description
-{  
-    var result =  [CPString stringWithFormat:@"%@ %s(", [_operand description], [self _function]],
-        i;
-  
-    for (i = 0; i < _argc; i++)
-        result = result + [_arguments objectAtIndex:i] + (i+1<_argc) ? ", " : "";
-    
-    result = result + ")";
-   
+{
+    var result = "";
+    if ([_operand isEqual:[CPExpression expressionForConstantValue:[CPPredicateUtilities class]]])
+        result += CPStringFromSelector(_selector) + "(";
+    else
+    {
+        result += "FUNCTION(";
+        result += _operand ? [_operand description] + ", ":"";
+        result += _selector ? CPStringFromSelector(_selector) + ", ":"";
+    }
+
+    for (var i = 0; i < _argc; i++)
+        result = result + [_arguments[i] description] + ((i + 1 < _argc) ? ", " : "");
+
+    result += ")";
+
     return result ;
 }
 
-
 - (CPExpression)_expressionWithSubstitutionVariables:(CPDictionary)variables
 {
-    var array = [CPArray array],
-        i;
-    
-    for (i = 0; i < _argc; i++)
-        [array addObject:[[_arguments objectAtIndex:i] _expressionWithSubstitutionVariables:variables]];
+    var operand = [[self operand] _expressionWithSubstitutionVariables:variables],
+        args = [CPArray array];
 
-    return [CPExpression expressionForFunction:[self operand] selectorName:[self _function] arguments:array];
+    for (var i = 0; i < _argc; i++)
+        [args addObject:[_arguments[i] _expressionWithSubstitutionVariables:variables]];
+
+    return [CPExpression expressionForFunction:operand selectorName:[self _function] arguments:args];
 }
 
-- (CPNumber)sum:(CPArray)parameters
+@end
+
+var CPSelectorNameKey = @"CPSelectorName",
+    CPArgumentsKey = @"CPArguments",
+    CPOperandKey = @"CPOperand",
+    CPExpressionTypeKey = @"CPExpressionType";
+
+@implementation CPExpression_function (CPCoding)
+
+- (id)initWithCoder:(CPCoder)coder
 {
-    if (_argc < 1)
-        [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
-    var i,
-        sum = 0.0;
-    
-    for (i = 0; i < _argc; i++)
-        sum += [[parameters objectAtIndex:i] doubleValue];
-    
-    return [CPNumber numberWithDouble: sum];
+    var type = [coder decodeIntForKey:CPExpressionTypeKey],
+        operand = [coder decodeObjectForKey:CPOperandKey],
+        selector = CPSelectorFromString([coder decodeObjectForKey:CPSelectorNameKey]),
+        parameters = [coder decodeObjectForKey:CPArgumentsKey];
+
+    return [self initWithTarget:operand selector:selector arguments:parameters type:type];
 }
 
-- (CPNumber)count:(CPArray)parameters
+- (void)encodeWithCoder:(CPCoder)coder
 {
-    if (_argc < 1)
-        [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
-    return [CPNumber numberWithUnsignedInt: [[parameters objectAtIndex:0] count]];
+    [coder encodeObject:[self _function] forKey:CPSelectorNameKey];
+    [coder encodeObject:_arguments forKey:CPArgumentsKey];
+    [coder encodeObject:_operand forKey:CPOperandKey];
+    [coder encodeInt:_type forKey:CPExpressionTypeKey];
 }
 
-- (CPNumber)min:(CPArray)parameters
+@end
+
+// Built-in functions
+@implementation CPPredicateUtilities : CPObject
 {
-    if (_argc < 1)
-        [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
-    return MIN([parameters objectAtIndex:0],[parameters objectAtIndex:1]);
 }
 
-- (CPNumber)max:(CPArray)parameters
++ (float)sum:(CPArray)parameters
 {
-    if (_argc < 1)
-        [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
-    return MAX([parameters objectAtIndex:0],[parameters objectAtIndex:1]);
+    var sum = 0,
+        count = parameters.length;
+
+    while (count--)
+        sum += parameters[count];
+
+    return sum;
 }
 
-- (CPNumber)average:(CPArray)parameters 
++ (float)count:(CPArray)parameters
 {
-    if (_argc < 1)
-        [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
-    var i,
-        sum = 0.0;
-    
-    for (i = 0; i < _argc; i++)
-        sum += [[parameters objectAtIndex:i] doubleValue];
-    
-    return [CPNumber numberWithDouble: sum / _argc];
+    return [parameters count];
 }
 
-- (CPNumber)add:to:(CPArray)parameters
++ (float)min:(CPArray)parameters
 {
-    if (_argc != 2)
-        [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
-    var left = [parameters objectAtIndex:0],
-        right = [parameters objectAtIndex:1];
-    
-    return [CPNumber numberWithDouble: [left doubleValue] + [right doubleValue]];
+    return parameters.sort()[0];
 }
 
-- (CPNumber)from:subtract:(CPArray)parameters
++ (float)max:(CPArray)parameters
 {
-    if (_argc != 2)
-        [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
-    var left = [parameters objectAtIndex:0],
-        right = [parameters objectAtIndex:1];
-    
-    return [CPNumber numberWithDouble: [left doubleValue] - [right doubleValue]];
+    return parameters.sort()[parameters.length - 1];
 }
 
-- (CPNumber)multiply:by:(CPArray)parameters
++ (float)average:(CPArray)parameters
 {
-    if (_argc != 2)
-      [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
-    var left = [parameters objectAtIndex:0],
-        right = [parameters objectAtIndex:1];
-    
-    return [CPNumber numberWithDouble: [left doubleValue] * [right doubleValue]];
+    return [self sum:parameters] / parameters.length;
 }
 
-- (CPNumber)divide:by:(CPArray)parameters
++ (id)first:(CPArray)parameters
 {
-    if (_argc != 2)
-        [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
-    var left = [parameters objectAtIndex:0],
-        right = [parameters objectAtIndex:1];
-    
-    return [CPNumber numberWithDouble: [left doubleValue] / [right doubleValue]];
+    return parameters[0];
 }
 
-- (CPNumber)sqrt:(CPArray)parameters
++ (id)last:(CPArray)parameters
 {
-    if (_argc != 1)
-        [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
-    var num = [[parameters objectAtIndex:0] doubleValue];
-    
-    return [CPNumber numberWithDouble: SQRT(num)];
+    return parameters[parameters.length - 1];
 }
 
-- (CPNumber)raise:to:(CPArray)parameters
++ (id)fromObject:(id)object index:(id)anIndex
 {
-    if (_argc < 2)
-        [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
-    var num = [[parameters objectAtIndex:0] doubleValue],
-        power = [[parameters objectAtIndex:1] doubleValue];
-    
-    return [CPNumber numberWithDouble: POW(num,power)];    
+    if ([object isKindOfClass:[CPDictionary class]])
+        return [object objectForKey:anIndex];
+    else ([object isKindOfClass:[CPArray class]])
+        return [object objectAtIndex:anIndex];
+
+    [CPException raise:CPInvalidArgumentException reason:@"object[#] requires a CPDictionary or CPArray"];
 }
 
-- (CPNumber)abs:(CPArray)parameters
++ (float)add:(int)n to:(int)m
 {
-    if (_argc != 1)
-        [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
-    var num = [[parameters objectAtIndex:0] doubleValue];
-    
-    return [CPNumber numberWithDouble:ABS(num)];
+    return n + m;
 }
 
-- (CPDate)now
++ (float)from:(int)n substract:(int)m
+{
+    return n - m;
+}
+
++ (float)multiply:(float)n by:(int)m
+{
+    return n * m;
+}
+
++ (float)divide:(float)n by:(float)m
+{
+    return n / m;
+}
+
++ (float)sqrt:(float)n
+{
+    return SQRT(n);
+}
+
++ (float)raise:(float)num to:(int)power
+{
+    return POW(num, power);
+}
+
++ (float)abs:(float)num
+{
+    return ABS(num);
+}
+
++ (CPDate)now
 {
     return [CPDate date];
 }
 
-- (CPNumber)ln:(CPArray)parameters
++ (float)ln:(float)num
 {
-    if (_argc != 1)
-        [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
-    var num = [[parameters objectAtIndex:0] doubleValue];
-    
-    return [CPNumber numberWithDouble:Math.log(num)];
+    return LN10(num);
 }
 
-- (CPNumber)exp:(CPArray)parameters
++ (float)exp:(float)num
 {
-    if (_argc != 1)
-        [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
-    var num = [[parameters objectAtIndex:0] doubleValue];
-    
-    return [CPNumber numberWithDouble:EXP(num)];
+    return EXP(num);
 }
 
-- (CPNumber)ceiling:(CPArray)parameters
++ (float)ceiling:(float)num
 {
-    if (_argc != 1)
-        [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
-    var num = [[parameters objectAtIndex:0] doubleValue];
-    
-    return [CPNumber numberWithDouble:CEIL(num)];
+    return CEIL(num);
 }
 
-- (CPNumber)random
++ (int)random:(int)num
 {
-    return [CPNumber numberWithDouble:RAND()];
+    return ROUND(RAND() * num);
 }
 
-- (CPNumber)modulus:by:(CPArray)parameters
++ (int)modulus:(int)n by:(int)m
 {
-    if (_argc != 2)
-        [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
-    var left = [parameters objectAtIndex:0],
-        right = [parameters objectAtIndex:1];
-    
-    return [CPNumber numberWithInt:([left intValue] % [right intValue])];
+    return n % m;
 }
 
-
-- (id)first:(CPArray)parameters
++ (float)chs:(int)num
 {
-    if (_argc == 0)
-        [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
-    return [[parameters objectAtIndex:0] objectAtIndex:0];
+    return -num;
 }
-
-- (id)last:(CPArray)parameters
-{
-    if (_argc == 0)
-        [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
-    return [[parameters objectAtIndex:0] lastObject];
-}
-
-- (CPNumber)chs:(CPArray)parameters
-{
-    if (_argc == 0)
-        [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
-    return [CPNumber numberWithInt: - [[parameters objectAtIndex:0] intValue]];
-}
-
-- (id)index:(CPArray)parameters
-{
-    if (_argc < 2)
-        [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
-    var left = [parameters objectAtIndex:0],
-        right = [parameters objectAtIndex:1];
-    
-    if ([left isKindOfClass: [CPDictionary class]])
-        return [left objectForKey:right];
-    else
-        return [left objectAtIndex: [right intValue]];
-}
-
-/*
-- (CPNumber)median:(CPArray)parameters
-{
-}
-- (CPNumber)mode:(CPArray)parameters
-{
-}
-- (CPNumber)stddev:(CPArray)parameters
-{
-}
-- (CPNumber)log:(CPArray)parameters
-{
-}
-- (CPNumber)raise:to:(CPArray)parameters
-{
-}
-- (CPNumber)trunc:(CPArray)parameters
-{
-}
-
-// These functions are used when parsing
-*/
 
 @end
 

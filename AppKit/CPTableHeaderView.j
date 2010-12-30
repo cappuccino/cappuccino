@@ -20,18 +20,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/CPIndexSet.j>
+
 @import "CPTableColumn.j"
 @import "CPTableView.j"
 @import "CPView.j"
 
-#include "CoreGraphics/CGGeometry.h"
 
 @implementation _CPTableColumnHeaderView : CPView
 {
     _CPImageAndTextView     _textField;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"columnHeader";
 }
@@ -55,7 +56,7 @@
 {
     _textField = [[_CPImageAndTextView alloc] initWithFrame:_CGRectMakeZero()];
 
-    [_textField setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+    [_textField setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
     [_textField setLineBreakMode:CPLineBreakByTruncatingTail];
     [_textField setAlignment:CPLeftTextAlignment];
@@ -101,20 +102,20 @@
 
 - (void)setFont:(CPFont)aFont
 {
-    [_textField setFont:aFont];
+    [self setValue:aFont forThemeAttribute:"text-font"];
 }
 
 - (void)_setIndicatorImage:(CPImage)anImage
 {
-	if (anImage)
-	{
-		[_textField setImage:anImage];
-		[_textField setImagePosition:CPImageRight];
-	}
-	else
-	{
-		[_textField setImagePosition:CPNoImage];
-	}
+    if (anImage)
+    {
+        [_textField setImage:anImage];
+        [_textField setImagePosition:CPImageRight];
+    }
+    else
+    {
+        [_textField setImagePosition:CPNoImage];
+    }
 }
 
 @end
@@ -166,7 +167,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     CPTableView             _tableView @accessors(property=tableView);
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"tableHeaderRow";
 }
@@ -633,7 +634,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         columnMaxX;
 
     CGContextBeginPath(context);
-    for(; columnArrayIndex < columnArrayCount; columnArrayIndex++)
+    for (; columnArrayIndex < columnArrayCount; columnArrayIndex++)
     {
         // grab each column rect and add vertical lines
         var columnIndex = columnsArray[columnArrayIndex],
@@ -668,7 +669,15 @@ var CPTableHeaderViewTableViewKey = @"CPTableHeaderViewTableViewKey",
     {
         [self _init];
         _tableView = [aCoder decodeObjectForKey:CPTableHeaderViewTableViewKey];
-        _drawsColumnLines = [aCoder decodeBoolForKey:CPTableHeaderViewDrawsColumnLines];
+
+        // FIX ME: Take this out before 1.0
+        if ([aCoder containsValueForKey:CPTableHeaderViewDrawsColumnLines])
+            _drawsColumnLines = [aCoder decodeBoolForKey:CPTableHeaderViewDrawsColumnLines];
+        else
+        {
+            _drawsColumnLines = YES;
+            CPLog.warn("The tableview header being decoded is using an old cib. Please run Nib2Cib.");
+        }
     }
 
     return self;

@@ -25,7 +25,6 @@
 @import "CPObject.j"
 @import "CPRunLoop.j"
 
-
 /*!
     @class CPTimer
     @ingroup foundation
@@ -45,46 +44,43 @@
 }
 
 /*!
-    Returns a new NSTimer object and adds it to the current NSRunLoop object in the default mode.
+    Returns a new CPTimer object and adds it to the current CPRunLoop object in the default mode.
 */
 + (CPTimer)scheduledTimerWithTimeInterval:(CPTimeInterval)seconds invocation:(CPInvocation)anInvocation repeats:(BOOL)shouldRepeat
 {
     var timer = [[self alloc] initWithFireDate:[CPDate dateWithTimeIntervalSinceNow:seconds] interval:seconds invocation:anInvocation repeats:shouldRepeat];
 
-    //add to the runloop
     [[CPRunLoop currentRunLoop] addTimer:timer forMode:CPDefaultRunLoopMode];
 
     return timer;
 }
 
 /*!
-    Returns a new NSTimer object and adds it to the current NSRunLoop object in the default mode.
+    Returns a new CPTimer object and adds it to the current CPRunLoop object in the default mode.
 */
 + (CPTimer)scheduledTimerWithTimeInterval:(CPTimeInterval)seconds target:(id)aTarget selector:(SEL)aSelector userInfo:(id)userInfo repeats:(BOOL)shouldRepeat
 {
     var timer =  [[self alloc] initWithFireDate:[CPDate dateWithTimeIntervalSinceNow:seconds] interval:seconds target:aTarget selector:aSelector userInfo:userInfo repeats:shouldRepeat];
 
-    //add to the runloop
     [[CPRunLoop currentRunLoop] addTimer:timer forMode:CPDefaultRunLoopMode];
 
     return timer;
 }
 
 /*!
-    Returns a new NSTimer object and adds it to the current NSRunLoop object in the default mode.
+    Returns a new CPTimer object and adds it to the current CPRunLoop object in the default mode.
 */
 + (CPTimer)scheduledTimerWithTimeInterval:(CPTimeInterval)seconds callback:(Function)aFunction repeats:(BOOL)shouldRepeat
 {
     var timer = [[self alloc] initWithFireDate:[CPDate dateWithTimeIntervalSinceNow:seconds] interval:seconds callback:aFunction repeats:shouldRepeat];
 
-    //add to the runloop
     [[CPRunLoop currentRunLoop] addTimer:timer forMode:CPDefaultRunLoopMode];
 
     return timer;
 }
 
 /*!
-    Returns a new NSTimer that, when added to a run loop, will fire after seconds.
+    Returns a new CPTimer that, when added to a run loop, will fire after seconds.
 */
 + (CPTimer)timerWithTimeInterval:(CPTimeInterval)seconds invocation:(CPInvocation)anInvocation repeats:(BOOL)shouldRepeat
 {
@@ -92,7 +88,7 @@
 }
 
 /*!
-    Returns a new NSTimer that, when added to a run loop, will fire after seconds.
+    Returns a new CPTimer that, when added to a run loop, will fire after seconds.
 */
 + (CPTimer)timerWithTimeInterval:(CPTimeInterval)seconds target:(id)aTarget selector:(SEL)aSelector userInfo:(id)userInfo repeats:(BOOL)shouldRepeat
 {
@@ -100,7 +96,7 @@
 }
 
 /*!
-    Returns a new NSTimer that, when added to a run loop, will fire after seconds.
+    Returns a new CPTimer that, when added to a run loop, will fire after seconds.
 */
 + (CPTimer)timerWithTimeInterval:(CPTimeInterval)seconds callback:(Function)aFunction repeats:(BOOL)shouldRepeat
 {
@@ -108,7 +104,7 @@
 }
 
 /*!
-    Initializes a new NSTimer that, when added to a run loop, will fire at date and then, if repeats is YES, every seconds after that.
+    Initializes a new CPTimer that, when added to a run loop, will fire at date and then, if repeats is YES, every seconds after that.
 */
 - (id)initWithFireDate:(CPDate)aDate interval:(CPTimeInterval)seconds invocation:(CPInvocation)anInvocation repeats:(BOOL)shouldRepeat
 {
@@ -127,7 +123,7 @@
 }
 
 /*!
-    Initializes a new NSTimer that, when added to a run loop, will fire at date and then, if repeats is YES, every seconds after that.
+    Initializes a new CPTimer that, when added to a run loop, will fire at date and then, if repeats is YES, every seconds after that.
 */
 - (id)initWithFireDate:(CPDate)aDate interval:(CPTimeInterval)seconds target:(id)aTarget selector:(SEL)aSelector userInfo:(id)userInfo repeats:(BOOL)shouldRepeat
 {
@@ -146,7 +142,7 @@
 }
 
 /*!
-    Initializes a new NSTimer that, when added to a run loop, will fire at date and then, if repeats is YES, every seconds after that.
+    Initializes a new CPTimer that, when added to a run loop, will fire at date and then, if repeats is YES, every seconds after that.
 */
 - (id)initWithFireDate:(CPDate)aDate interval:(CPTimeInterval)seconds callback:(Function)aFunction repeats:(BOOL)shouldRepeat
 {
@@ -220,7 +216,7 @@
 }
 
 /*!
-    Stops the receiver from ever firing again and requests its removal from its NSRunLoop object.
+    Stops the receiver from ever firing again and requests its removal from its CPRunLoop object.
 */
 - (void)invalidate
 {
@@ -263,27 +259,32 @@ var _CPTimerBridgeTimer = function(codeOrFunction, aDelay, shouldRepeat, functio
     return timeoutID;
 }
 
-window.setTimeout = function(codeOrFunction, aDelay)
+// Avoid "TypeError: Result of expression 'window' [undefined] is not an object" when running unit tests.
+// We can't use a regular PLATFORM(DOM) check because that platform constant is not defined in Foundation.
+if (typeof(window) !== 'undefined')
 {
-    return _CPTimerBridgeTimer(codeOrFunction, aDelay, NO, Array.prototype.slice.apply(arguments, [2]));
-}
+    window.setTimeout = function(codeOrFunction, aDelay)
+    {
+        return _CPTimerBridgeTimer(codeOrFunction, aDelay, NO, Array.prototype.slice.apply(arguments, [2]));
+    }
 
-window.clearTimeout = function(aTimeoutID)
-{
-    var timer = CPTimersForTimeoutIDs[aTimeoutID];
+    window.clearTimeout = function(aTimeoutID)
+    {
+        var timer = CPTimersForTimeoutIDs[aTimeoutID];
 
-    if (timer)
-        [timer invalidate];
+        if (timer)
+            [timer invalidate];
 
-    CPTimersForTimeoutIDs[aTimeoutID] = nil;
-}
+        CPTimersForTimeoutIDs[aTimeoutID] = nil;
+    }
 
-window.setInterval = function(codeOrFunction, aDelay, functionArgs)
-{
-    return _CPTimerBridgeTimer(codeOrFunction, aDelay, YES, Array.prototype.slice.apply(arguments, [2]));
-}
+    window.setInterval = function(codeOrFunction, aDelay, functionArgs)
+    {
+        return _CPTimerBridgeTimer(codeOrFunction, aDelay, YES, Array.prototype.slice.apply(arguments, [2]));
+    }
 
-window.clearInterval = function(aTimeoutID)
-{
-    window.clearTimeout(aTimeoutID);
+    window.clearInterval = function(aTimeoutID)
+    {
+        window.clearTimeout(aTimeoutID);
+    }
 }

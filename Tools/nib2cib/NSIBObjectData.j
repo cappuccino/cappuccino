@@ -30,14 +30,14 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [self init];
-    
+
     if (self)
     {
 /*         id                    owner;
-    
+
         if((owner=[nameTable objectForKey:NSNibOwner])!=nil)
          [nameTable setObject:owner forKey:@"File's Owner"];
-        
+
         [nameTable setObject:[NSFontManager sharedFontManager] forKey:@"Font Manager"];
 */
         _namesKeys = [aCoder decodeObjectForKey:@"NSNamesKeys"];
@@ -51,7 +51,7 @@
         _classesValues = [aCoder decodeObjectForKey:@"NSClassesValues"];
 
         _connections = [aCoder decodeObjectForKey:@"NSConnections"];
-        
+
         //_fontManager = [aCoder decodeObjectForKey:@"NSFontManager"] retain];
         _framework = [aCoder decodeObjectForKey:@"NSFramework"];
 
@@ -76,8 +76,8 @@
 {
     // FIXME: Remove from top level objects and connections?
 
-    // Most cell references should be naturally removed by the fact that we don't manually 
-    // encode them anywhere, however, they remain in our object graph. For each cell found, 
+    // Most cell references should be naturally removed by the fact that we don't manually
+    // encode them anywhere, however, they remain in our object graph. For each cell found,
     // take its children and promote them to our parent object's children.
     var count = _objectsKeys.length,
         parentForCellUIDs = { },

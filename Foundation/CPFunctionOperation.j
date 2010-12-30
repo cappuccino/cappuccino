@@ -74,7 +74,7 @@
 }
 
 /*!
-    Creates and returns an NSFunctionOperation object and adds the specified function to it.
+    Creates and returns an CPFunctionOperation object and adds the specified function to it.
 */
 + (id)functionOperationWithFunction:(JSObject)jsFunction
 {

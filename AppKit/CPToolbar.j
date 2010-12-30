@@ -28,8 +28,6 @@
 @import "CPPopUpButton.j"
 @import "CPToolbarItem.j"
 
-#include "CoreGraphics/CGGeometry.h"
-
 
 /*
     @global
@@ -470,7 +468,14 @@ var CPToolbarIdentifierKey              = @"CPToolbarIdentifierKey",
         // specified, it will be read later and the resulting call to -setDelegate:
         // will cause -_reloadToolbarItems] to run again :-(
         // FIXME: Can we make this better?
-        [self _reloadToolbarItems];
+
+        // Do this at the end of the run loop to allow all the cib-stuff to
+        // finish (establishing connections, etc.).
+        [[CPRunLoop currentRunLoop]
+            performSelector:@selector(_reloadToolbarItems)
+                     target:self
+                   argument:nil
+                      order:0 modes:[CPDefaultRunLoopMode]];
     }
 
     return self;
@@ -662,7 +667,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
     // Determine all the items that have flexible width.
     // Also determine the height of the toolbar.
-    var count = _visibleItems.length
+    var count = _visibleItems.length,
         flexibleItemIndexes = [CPIndexSet indexSet];
 
     while (count--)
@@ -794,10 +799,11 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
             hasNonSeparatorItem = YES;
 
-            var menuItem = [[CPMenuItem alloc] initWithTitle:[item label] action:[item action] keyEquivalent:nil];
+            var menuItem = [[CPMenuItem alloc] initWithTitle:[item label] action:@selector(didSelectMenuItem:) keyEquivalent:nil];
 
+            [menuItem setRepresentedObject:item];
             [menuItem setImage:[item image]];
-            [menuItem setTarget:[item target]];
+            [menuItem setTarget:self];
             [menuItem setEnabled:[item isEnabled]];
 
             [_additionalItemsButton addItem:menuItem];
@@ -805,6 +811,18 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     }
     else
         [_additionalItemsButton removeFromSuperview];
+}
+
+/*
+    Used privately.
+    @ignore
+*/
+
+- (void)didSelectMenuItem:(id)aSender
+{
+    var toolbarItem = [aSender representedObject];
+
+    [CPApp sendAction:[toolbarItem action] to:[toolbarItem target] from:toolbarItem];
 }
 
 - (void)reloadToolbarItems
@@ -974,7 +992,7 @@ var TOP_MARGIN      = 5.0,
         {
             _imageView = [[CPImageView alloc] initWithFrame:[self bounds]];
 
-            [_imageView setImageScaling:CPScaleNone];
+            [_imageView setImageScaling:CPScaleProportionally];
 
             [self addSubview:_imageView];
         }

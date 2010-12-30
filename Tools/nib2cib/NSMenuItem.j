@@ -31,7 +31,7 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
         _isSeparator = [aCoder decodeObjectForKey:@"NSIsSeparator"] || NO;
@@ -62,15 +62,15 @@
         _keyEquivalentModifierMask = CP_NSMapKeyMask([aCoder decodeObjectForKey:"NSKeyEquivModMask"]);
 
 //      _mnemonicLocation = [aCoder decodeObjectForKey:"NSMnemonicLoc"];
-        
+
 //      _isAlternate = [aCoder decodeBoolForKey:"NSIsAlternate"];
         _indentationLevel = [aCoder decodeIntForKey:"NSIndent"];
-        
+
 //      _toolTip;
 
 //      _representedObject = [aCoder decodeObjectForKey:CPMenuItemRepresentedObjectKey];
     }
-    
+
     return self;
 }
 

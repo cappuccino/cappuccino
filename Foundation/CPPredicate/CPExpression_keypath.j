@@ -1,63 +1,62 @@
 
 @import "CPExpression.j"
-@import <Foundation/CPString.j>
-@import <Foundation/CPKeyValueCoding.j>
+@import "CPExpression_function.j"
+@import "CPString.j"
+@import "CPKeyValueCoding.j"
 
-@implementation CPExpression_keypath : CPExpression
+@implementation CPExpression_keypath : CPExpression_function
 {
-    CPString _keyPath;
 }
 
 - (id)initWithKeyPath:(CPString)keyPath
 {
-    [super initWithExpressionType:CPKeyPathExpressionType];
-    _keyPath = keyPath ;
-    
+    return [self initWithOperand:[CPExpression expressionForEvaluatedObject] andKeyPath:keyPath];
+}
+
+- (id)initWithOperand:(CPExpression)operand andKeyPath:(CPString)keyPath
+{
+    var arg = [CPExpression expressionForConstantValue:keyPath];
+    // Cocoa: if it's a direct path selector use valueForKey:
+    self = [super initWithTarget:operand selector:@selector(valueForKeyPath:) arguments:[arg] type:CPKeyPathExpressionType];
+
     return self;
-}
-
-- (id)initWithCoder:(CPCoder)coder
-{
-    var keyPath = [coder decodeObjectForKey:@"CPExpressionKeyPath"];
-    
-    return [self initWithKeyPath:keyPath];
-}
-
-- (void)encodeWithCoder:(CPCoder)coder
-{
-    [coder encodeObject:_keyPath forKey:@"CPExpressionKeyPath"];
 }
 
 - (BOOL)isEqual:(id)object
 {
-    if (self == object)
+    if (object === self)
         return YES;
-        
-    if (object.isa != self.isa || [object expressionType] != [self expressionType] || ![[object keyPath] isEqualToString:[self keyPath]])
-        return NO;
-        
-    return YES;
+
+    return ([object keyPath] == [self keyPath]); // If it appears that parsing generates nested keypaths with different targets and same keyPath, comparing -keyPath won't work.
+}
+
+- (CPExpression)pathExpression
+{
+    return [[self arguments] objectAtIndex:0];
 }
 
 - (CPString)keyPath
 {
-    return _keyPath;
-}
-
-- (id)expressionValueWithObject:object context:(CPDictionary)context
-{
-    return [object valueForKeyPath:_keyPath];
-}
-
-- (CPExpression)_expressionWithSubstitutionVariables:(CPDictionary)variables
-{
-    return self;
+    return [[self pathExpression] keyPath];
 }
 
 - (CPString)description
 {
-    return _keyPath;
+    var result = "";
+    if ([_operand expressionType] != CPEvaluatedObjectExpressionType)
+        result += [_operand description] + ".";
+    result += [self keyPath];
+
+    return result;
 }
 
 @end
 
+@implementation CPExpression_constant (KeyPath)
+
+- (CPString)keyPath
+{
+    return [self constantValue];
+}
+
+@end

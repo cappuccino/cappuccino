@@ -54,16 +54,19 @@ GLOBAL(objj_class) = function(displayName)
 {
     this.isa            = NULL;
 
+    this.version        = 0;
+
     this.super_class    = NULL;
     this.sub_classes    = [];
 
     this.name           = NULL;
     this.info           = 0;
-    this.ivars          = [];
+
+    this.ivar_list      = [];
+    this.ivar_store     = function() { };
+    this.ivar_dtable    = this.ivar_store.prototype;
 
     this.method_list    = [];
-    this.method_hash    = {};
-
     this.method_store   = function() { };
     this.method_dtable  = this.method_store.prototype;
 
@@ -133,10 +136,15 @@ GLOBAL(class_addIvar) = function(/*Class*/ aClass, /*String*/ aName, /*String*/ 
 {
     var thePrototype = aClass.allocator.prototype;
 
+    // FIXME: Use getInstanceVariable
     if (typeof thePrototype[aName] != "undefined")
         return NO;
 
-    aClass.ivars.push(new objj_ivar(aName, aType));
+    var ivar = new objj_ivar(aName, aType);
+
+    aClass.ivar_list.push(ivar);
+    aClass.ivar_dtable[aName] = ivar;
+
     thePrototype[aName] = NULL;
 
     return YES;
@@ -155,9 +163,12 @@ GLOBAL(class_addIvars) = function(/*Class*/ aClass, /*Array*/ivars)
         var ivar = ivars[index],
             name = ivar.name;
 
+        // FIXME: Use getInstanceVariable
         if (typeof thePrototype[name] === "undefined")
         {
-            aClass.ivars.push(ivar);
+            aClass.ivar_list.push(ivar);
+            aClass.ivar_dtable[name] = ivar;
+
             thePrototype[name] = NULL;
         }
     }
@@ -167,20 +178,18 @@ DISPLAY_NAME(class_addIvars);
 
 GLOBAL(class_copyIvarList) = function(/*Class*/ aClass)
 {
-    return aClass.ivars.slice(0);
+    return aClass.ivar_list.slice(0);
 }
 
 DISPLAY_NAME(class_copyIvarList);
 
-//#define class_copyIvarList(aClass) (aClass.ivars.slice(0))
+//#define class_copyIvarList(aClass) (aClass.ivar_list.slice(0))
 
 #define METHOD_DISPLAY_NAME(aClass, aMethod) (ISMETA(aClass) ? '+' : '-') + " [" + class_getName(aClass) + ' ' + method_getName(aMethod) + ']'
 
 GLOBAL(class_addMethod) = function(/*Class*/ aClass, /*SEL*/ aName, /*IMP*/ anImplementation, /*Array<String>*/ types)
 {
-    if (aClass.method_hash[aName])
-        return NO;
-
+    // FIXME: return NO if it exists?
     var method = new objj_method(aName, anImplementation, types);
 
     aClass.method_list.push(method);
@@ -213,9 +222,7 @@ GLOBAL(class_addMethods) = function(/*Class*/ aClass, /*Array*/ methods)
     {
         var method = methods[index];
 
-        if (aClass.method_hash[method.name])
-            continue;
-
+        // FIXME: Don't do it if it exists?
         method_list.push(method);
         method_dtable[method.name] = method;
 
@@ -244,6 +251,19 @@ GLOBAL(class_getInstanceMethod) = function(/*Class*/ aClass, /*SEL*/ aSelector)
 
 DISPLAY_NAME(class_getInstanceMethod);
 
+GLOBAL(class_getInstanceVariable) = function(/*Class*/ aClass, /*String*/ aName)
+{
+    if (!aClass || !aName)
+        return NULL;
+
+    // FIXME: this doesn't appropriately deal with Object's properties.
+    var variable = aClass.ivar_dtable[aName];
+
+    return variable;
+}
+
+DISPLAY_NAME(class_getInstanceVariable);
+
 GLOBAL(class_getClassMethod) = function(/*Class*/ aClass, /*SEL*/ aSelector)
 {
     if (!aClass || !aSelector)
@@ -269,6 +289,20 @@ GLOBAL(class_copyMethodList) = function(/*Class*/ aClass)
 }
 
 DISPLAY_NAME(class_copyMethodList);
+
+GLOBAL(class_getVersion) = function(/*Class*/ aClass)
+{
+    return aClass.version;
+}
+
+DISPLAY_NAME(class_getVersion);
+
+GLOBAL(class_setVersion) = function(/*Class*/ aClass, /*Integer*/ aVersion)
+{
+    aClass.version = parseInt(aVersion, 10);
+}
+
+DISPLAY_NAME(class_setVersion);
 
 GLOBAL(class_replaceMethod) = function(/*Class*/ aClass, /*SEL*/ aSelector, /*IMP*/ aMethodImplementation)
 {
@@ -354,12 +388,11 @@ GLOBAL(objj_allocateClassPair) = function(/*Class*/ superclass, /*String*/ aName
         // Give our current allocator all the instance variables of our super class' allocator.
         classObject.allocator.prototype = new superclass.allocator;
 
-        // "Inheret" parent methods.
-        classObject.method_store.prototype = new superclass.method_store;
-        classObject.method_dtable = classObject.method_store.prototype;
+        // "Inheret" parent properties.
+        classObject.ivar_dtable = classObject.ivar_store.prototype = new superclass.ivar_store;
+        classObject.method_dtable = classObject.method_store.prototype = new superclass.method_store;
 
-        metaClassObject.method_store.prototype = new superclass.isa.method_store;
-        metaClassObject.method_dtable = metaClassObject.method_store.prototype;
+        metaClassObject.method_dtable = metaClassObject.method_store.prototype = new superclass.isa.method_store;
 
         // Set up the actual class hierarchy.
         classObject.super_class = superclass;
@@ -440,7 +473,7 @@ class_createInstance = function(/*Class*/ aClass)
 
         while (theClass)
         {
-            var ivars = theClass.ivars;
+            var ivars = theClass.ivar_list,
                 count = ivars.length;
 
             while (count--)

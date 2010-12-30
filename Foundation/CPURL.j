@@ -21,6 +21,7 @@
  */
 
 @import "CPObject.j"
+@import "CPString.j"
 
 CPURLNameKey                        = @"CPURLNameKey";
 CPURLLocalizedNameKey               = @"CPURLLocalizedNameKey";
@@ -54,7 +55,9 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
 
 + (id)alloc
 {
-    return new CFURL();
+    var result = new CFURL();
+    result.isa = [self class];
+    return result;
 }
 
 - (id)init
@@ -81,7 +84,9 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
 
 - (id)initWithString:(CPString)URLString relativeToURL:(CPURL)aBaseURL
 {
-    return new CFURL(URLString, aBaseURL);
+    var result = new CFURL(URLString, aBaseURL);
+    result.isa = [self class];
+    return result;
 }
 
 + (id)URLWithString:(CPString)URLString relativeToURL:(CPURL)aBaseURL
@@ -169,9 +174,23 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
 
 - (BOOL)isEqual:(id)anObject
 {
+    if (self === anObject)
+        return YES;
+
+    if (!anObject || ![anObject isKindOfClass:[CPURL class]])
+        return NO;
+
+    return [self isEqualToURL:anObject];
+}
+
+- (BOOL)isEqualToURL:(id)aURL
+{
+    if (self === aURL)
+        return YES;
+
     // Is checking if baseURL isEqual correct? Does "identical" mean same object or equivalent values?
-    return [self relativeString] === [anObject relativeString] &&
-        ([self baseURL] === [anObject baseURL] || [[self baseURL] isEqual:[anObject baseURL]]);
+    return [self relativeString] === [aURL relativeString] &&
+        ([self baseURL] === [aURL baseURL] || [[self baseURL] isEqual:[aURL baseURL]]);
 }
 
 - (CPString)lastPathComponent

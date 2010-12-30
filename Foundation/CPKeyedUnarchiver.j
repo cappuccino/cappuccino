@@ -20,8 +20,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPArray.j"
+@import "CPData.j"
+@import "CPDictionary.j"
 @import "CPCoder.j"
+@import "CPKeyedArchiver.j"
 @import "CPNull.j"
+@import "CPNumber.j"
+@import "CPString.j"
 
 
 CPInvalidUnarchiveOperationException    = @"CPInvalidUnarchiveOperationException";
@@ -33,7 +39,7 @@ var _CPKeyedUnarchiverCannotDecodeObjectOfClassNameOriginalClassesSelector      
     _CPKeyedUnarchiverDidFinishSelector                                                 = 1 << 4,
     CPKeyedUnarchiverDelegate_unarchiver_cannotDecodeObjectOfClassName_originalClasses_ = 1 << 5;
 
-var _CPKeyedArchiverNullString                                              = "$null"
+var _CPKeyedArchiverNullString                                              = "$null",
 
     _CPKeyedArchiverUIDKey                                                  = "CP$UID",
 
@@ -329,7 +335,7 @@ var CPArrayClass                                                            = Ni
     else if (objectClass === CPNumberClass || objectClass === CPDataClass || objectClass === CPStringClass)
         return object;
 
-    else if (objectClass === CPArrayClass || objectClass === CPMutableArrayClass)
+    else if (objectClass === _CPJavaScriptArray)
     {
         var index = 0,
             count = object.length,

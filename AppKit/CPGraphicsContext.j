@@ -20,6 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/CPObject.j>
+
+@import "CGContext.j"
+
+
 var CPGraphicsContextCurrent    = nil;
 
 /*!
@@ -66,10 +71,10 @@ var CPGraphicsContextCurrent    = nil;
 - (id)initWithGraphicsPort:(CPContext)aGraphicsPort
 {
     self = [super init];
-    
+
     if (self)
         _graphicsPort = aGraphicsPort;
-    
+
     return self;
 }
 

@@ -52,7 +52,7 @@ ConverterConversionException    = @"ConverterConversionException";
 }
 
 - (void)convert
-{   
+{
     try
     {
         if ([resourcesPath length] && !FILE.isReadable(resourcesPath))

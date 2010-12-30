@@ -1,8 +1,8 @@
-@import <Foundation/CPString.j>
-@import <Foundation/CPArray.j>
-@import <Foundation/CPKeyValueCoding.j>
-@import <Foundation/CPDictionary.j>
-@import <Foundation/CPCoder.j>
+
+@import "CPString.j"
+@import "CPArray.j"
+@import "CPKeyValueCoding.j"
+@import "CPDictionary.j"
 
 /*!
     An expression that always returns the same value.
@@ -25,7 +25,7 @@ CPKeyPathExpressionType = 3;
 */
 CPFunctionExpressionType = 4;
 /*!
-    An expression that defines an aggregate of NSExpression objects.
+    An expression that defines an aggregate of CPExpression objects.
 */
 CPAggregateExpressionType = 5;
 /*!
@@ -90,7 +90,7 @@ CPMinusSetExpressionType = 9;
 */
 + (CPExpression)expressionForEvaluatedObject
 {
-    return [[CPExpression_self alloc] init];
+    return [CPExpression_self evaluatedObject];
 }
 
 /*!
@@ -132,7 +132,7 @@ CPMinusSetExpressionType = 9;
 */
 + (CPExpression)expressionForUnionSet:(CPExpression)left with:(CPExpression)right
 {
-    return [[CPExpression_unionset alloc] initWithLeft:left right:right];
+    return [[CPExpression_set alloc] initWithType:CPUnionSetExpressionType left:left right:right];
 }
 
 /*!
@@ -143,7 +143,7 @@ CPMinusSetExpressionType = 9;
 */
 + (CPExpression)expressionForIntersectSet:(CPExpression)left with:(CPExpression)right
 {
-    return [[CPExpression_intersectset alloc] initWithLeft:left right:right];
+    return [[CPExpression_set alloc] initWithType:CPIntersectSetExpressionType left:left right:right];
 }
 
 /*!
@@ -154,16 +154,16 @@ CPMinusSetExpressionType = 9;
 */
 + (CPExpression)expressionForMinusSet:(CPExpression)left with:(CPExpression)right
 {
-    return [[CPExpression_minusset alloc] initWithLeft:left right:right];
+    return [[CPExpression_set alloc] initWithType:CPMinusSetExpressionType left:left right:right];
 }
 
 // Creating an Expression for a Function
 /*!
     Returns a new expression that will invoke one of the predefined functions.
     @param function_name The name of the function to invoke.
-    @param parameters An array containing NSExpression objects that will be used as parameters during the invocation of selector.
+    @param parameters An array containing CPExpression objects that will be used as parameters during the invocation of selector.
 
-    For a selector taking no parameters, the array should be empty. For a selector taking one or more parameters, the array should contain one NSExpression object which will evaluate to an instance of the appropriate type for each parameter.
+    For a selector taking no parameters, the array should be empty. For a selector taking one or more parameters, the array should contain one CPExpression object which will evaluate to an instance of the appropriate type for each parameter.
 
     If there is a mismatch between the number of parameters expected and the number you provide during evaluation, an exception may be raised or missing parameters may simply be replaced by nil (which occurs depends on how many parameters are provided, and whether you have over- or underflow).
     @return A new expression that invokes the function name using the parameters in parameters.
@@ -227,12 +227,10 @@ CPMinusSetExpressionType = 9;
     return [[CPExpression_function alloc] initWithTarget:target selector:CPSelectorFromString(function_name) arguments:parameters];
 }
 
-
-+ (CPExpression)expressionForSubquery:(CPExpression)expression usingIteratorVariable:(CPString)variable predicate:(id)predicate
++ (CPExpression)expressionForSubquery:(CPExpression)expression usingIteratorVariable:(CPString)variable predicate:(CPPredicate)predicate
 {
-    return nil; // UNIMPLEMENTED
+    return [[CPExpression_subquery alloc] initWithExpression:expression usingIteratorVariable:variable predicate:predicate];
 }
-
 
 // Getting Information About an Expression
 /*!
@@ -252,7 +250,7 @@ CPMinusSetExpressionType = 9;
 */
 - (id)constantValue
 {
-    [CPException raise:CPInvalidArgumentException reason:@"self is not of CPConstantValueExpressionType"];
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return nil;
 }
 
@@ -263,7 +261,7 @@ CPMinusSetExpressionType = 9;
 */
 - (CPString)variable
 {
-    [CPException raise:CPInvalidArgumentException reason:@"self is not of CPVariableExpressionType"];
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return nil;
 }
 
@@ -274,7 +272,7 @@ CPMinusSetExpressionType = 9;
 */
 - (CPString)keyPath
 {
-    [CPException raise:CPInvalidArgumentException reason:@"self is not of CPKeyPathExpressionType"];
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return nil;
 }
 
@@ -285,7 +283,7 @@ CPMinusSetExpressionType = 9;
 */
 - (CPString)function
 {
-    [CPException raise:CPInvalidArgumentException reason:@"self is not of CPFunctionExpressionType"];
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return nil;
 }
 
@@ -296,19 +294,68 @@ CPMinusSetExpressionType = 9;
 */
 - (CPArray)arguments
 {
-    [CPException raise:CPInvalidArgumentException reason:@"self is not of CPFunctionExpressionType"];
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return nil;
 }
 
 /*!
     Returns the collection of expressions in an aggregate expression, or the collection element of a subquery expression.
-    @return Returns the collection of expressions in an aggregate expression, or the collection element of a subquery expression.
+    @return The collection of expressions in an aggregate expression, or the collection element of a subquery expression.
     This method raises an exception if it is not applicable to the receiver.
 */
 - (id)collection
 {
-    [CPException raise:CPInvalidArgumentException reason:@"self is not of CPAggregateExpressionType"];
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return nil;
+}
+
+/*!
+    Returns the predicate in a subquery expression.
+    @return The predicate in a subquery expression..
+    This method raises an exception if it is not applicable to the receiver.
+*/
+- (CPPredicate)predicate
+{
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
+    return nil;
+}
+
+/*!
+    Returns the operand for the receiver.
+    @return The operand for the receiver—that is, the object on which the selector will be invoked.
+    This method raises an exception if it is not applicable to the receiver.
+*/
+- (CPExpression)operand
+{
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
+    return nil;
+}
+
+/*!
+    Returns the left expression of a set expression.
+    @return The left expression of a set expression.
+    This method raises an exception if it is not applicable to the receiver.
+*/
+- (CPExpression)leftExpression
+{
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
+    return nil;
+}
+
+/*!
+    Returns the right expression of a set expression.
+    @return The right expression of a set expression.
+    This method raises an exception if it is not applicable to the receiver.
+*/
+- (CPExpression)rightExpression
+{
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
+    return nil;
+}
+
+- (CPExpression)_expressionWithSubstitutionVariables:(CPDictionary)variables
+{
+    return self;
 }
 
 @end
@@ -319,6 +366,5 @@ CPMinusSetExpressionType = 9;
 @import "CPExpression_keypath.j"
 @import "CPExpression_function.j"
 @import "CPExpression_aggregate.j"
-@import "CPExpression_unionset.j"
-@import "CPExpression_intersectset.j"
-@import "CPExpression_minusset.j"
+@import "CPExpression_set.j"
+@import "CPExpression_subquery.j"

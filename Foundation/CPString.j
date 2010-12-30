@@ -22,9 +22,10 @@
 
 @import "CPException.j"
 @import "CPObject.j"
+@import "CPObjJRuntime.j"
+@import "CPRange.j"
 @import "CPSortDescriptor.j"
 @import "CPValue.j"
-
 
 /*!
     A case insensitive search
@@ -91,6 +92,9 @@ var CPStringRegexSpecialCharacters = [
 */
 + (id)alloc
 {
+    if ([self class] !== CPString)
+       return [super alloc];
+
     return new String;
 }
 
@@ -134,7 +138,14 @@ var CPStringRegexSpecialCharacters = [
 */
 - (id)initWithString:(CPString)aString
 {
-    return String(aString);
+    if ([self class] === CPString) 
+        return String(aString);
+
+    var result = new String(aString);
+
+    result.isa = [self class];
+
+    return result;
 }
 
 /*!
@@ -425,7 +436,7 @@ var CPStringRegexSpecialCharacters = [
 
 - (CPString)stringByReplacingCharactersInRange:(CPRange)range withString:(CPString)replacement
 {
-	return '' + substring(0, range.location) + replacement + substring(range.location + range.length, self.length);
+    return '' + substring(0, range.location) + replacement + substring(range.location + range.length, self.length);
 }
 
 /*!
@@ -475,15 +486,16 @@ var CPStringRegexSpecialCharacters = [
         rhs = rhs.toLowerCase();
     }
 
-    if(aMask & CPDiacriticInsensitiveSearch)
+    if (aMask & CPDiacriticInsensitiveSearch)
     {
-    	lhs = lhs.stripDiacritics();
-    	rhs = rhs.stripDiacritics();
+        lhs = lhs.stripDiacritics();
+        rhs = rhs.stripDiacritics();
     }
 
     if (lhs < rhs)
         return CPOrderedAscending;
-    else if (lhs > rhs)
+
+    if (lhs > rhs)
         return CPOrderedDescending;
 
     return CPOrderedSame;
@@ -541,7 +553,7 @@ var CPStringRegexSpecialCharacters = [
 */
 - (BOOL)isEqualToString:(CPString)aString
 {
-    return self == aString;
+    return self == String(aString);
 }
 
 /*!
@@ -707,9 +719,9 @@ var CPStringRegexSpecialCharacters = [
 }
 
 /*!
-	Deletes the last path component of a string.
-	This method assumes that the string's content is a '/'
-	separated file system path.
+    Deletes the last path component of a string.
+    This method assumes that the string's content is a '/'
+    separated file system path.
 */
 - (CPString)stringByDeletingLastPathComponent
 {
@@ -744,7 +756,8 @@ var CPStringRegexSpecialCharacters = [
 
 - (CPString)stringByStandardizingPath
 {
-    return objj_standardize_path(self);
+    // FIXME: Expand tildes etc. in CommonJS?
+    return [[CPURL URLWithString:self] absoluteString];
 }
 
 - (CPString)copy
@@ -808,7 +821,7 @@ String.prototype.stripDiacritics = function ()
         {
             var drange = diacritics[i];
 
-            if (code >= drange[0] && code <= drange[drange.length-1])
+            if (code >= drange[0] && code <= drange[drange.length - 1])
             {
                 code = normalized[i];
                 break;

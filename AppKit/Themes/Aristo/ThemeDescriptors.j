@@ -11,6 +11,7 @@
 @import <AppKit/CPTableHeaderView.j>
 
 var themedButtonValues = nil,
+    themedTextFieldValues = nil,
     themedVerticalScrollerValues = nil,
     themedHorizontalScrollerValues = nil,
     themedSegmentedControlValues = nil,
@@ -337,6 +338,7 @@ var themedButtonValues = nil,
 {
     var button = [self makeButton],
 
+        // RoundRect
         bezelColor = PatternColor(
             [
                 ["button-bezel-left.png", 4.0, 24.0],
@@ -350,6 +352,14 @@ var themedButtonValues = nil,
                 ["button-bezel-highlighted-left.png", 4.0, 24.0],
                 ["button-bezel-highlighted-center.png", 1.0, 24.0],
                 ["button-bezel-highlighted-right.png", 4.0, 24.0]
+            ],
+            PatternIsHorizontal),
+
+        disabledBezelColor = PatternColor(
+            [
+                ["button-bezel-disabled-left.png", 4.0, 24.0],
+                ["button-bezel-disabled-center.png", 1.0, 24.0],
+                ["button-bezel-disabled-right.png", 4.0, 24.0]
             ],
             PatternIsHorizontal),
 
@@ -377,16 +387,59 @@ var themedButtonValues = nil,
             ],
             PatternIsHorizontal),
 
-        disabledBezelColor = PatternColor(
+
+        // Rounded
+        roundedBezelColor = PatternColor(
             [
-                ["button-bezel-disabled-left.png", 4.0, 24.0],
-                ["button-bezel-disabled-center.png", 1.0, 24.0],
-                ["button-bezel-disabled-right.png", 4.0, 24.0]
+                ["button-bezel-rounded-left.png", 12.0, 24.0],
+                ["button-bezel-rounded-center.png", 1.0, 24.0],
+                ["button-bezel-rounded-right.png", 12.0, 24.0]
             ],
             PatternIsHorizontal),
 
-        defaultTextColor = [CPColor colorWithCalibratedRed:13.0/255.0 green:51.0/255.0 blue:70.0/255.0 alpha:1.0],
-        defaultDisabledTextColor = [CPColor colorWithCalibratedRed:13.0/255.0 green:51.0/255.0 blue:70.0/255.0 alpha:0.6];
+        roundedHighlightedBezelColor = PatternColor(
+            [
+                ["button-bezel-rounded-highlighted-left.png", 12.0, 24.0],
+                ["button-bezel-rounded-highlighted-center.png", 1.0, 24.0],
+                ["button-bezel-rounded-highlighted-right.png", 12.0, 24.0]
+            ],
+            PatternIsHorizontal),
+
+        roundedDisabledBezelColor = PatternColor(
+            [
+                ["button-bezel-rounded-disabled-left.png", 12.0, 24.0],
+                ["button-bezel-rounded-disabled-center.png", 1.0, 24.0],
+                ["button-bezel-rounded-disabled-right.png", 12.0, 24.0]
+            ],
+            PatternIsHorizontal),
+
+        defaultRoundedBezelColor = PatternColor(
+            [
+                ["default-button-bezel-rounded-left.png", 12.0, 24.0],
+                ["default-button-bezel-rounded-center.png", 1.0, 24.0],
+                ["default-button-bezel-rounded-right.png", 12.0, 24.0]
+            ],
+            PatternIsHorizontal),
+
+        defaultRoundedHighlightedBezelColor = PatternColor(
+            [
+                ["default-button-bezel-rounded-highlighted-left.png", 12.0, 24.0],
+                ["default-button-bezel-rounded-highlighted-center.png", 1.0, 24.0],
+                ["default-button-bezel-rounded-highlighted-right.png", 12.0, 24.0]
+            ],
+            PatternIsHorizontal),
+
+        defaultRoundedDisabledBezelColor = PatternColor(
+            [
+                ["default-button-bezel-rounded-disabled-left.png", 12.0, 24.0],
+                ["default-button-bezel-rounded-disabled-center.png", 1.0, 24.0],
+                ["default-button-bezel-rounded-disabled-right.png", 12.0, 24.0]
+            ],
+            PatternIsHorizontal),
+
+
+        defaultTextColor = [CPColor colorWithCalibratedRed:13.0 / 255.0 green:51.0 / 255.0 blue:70.0 / 255.0 alpha:1.0],
+        defaultDisabledTextColor = [CPColor colorWithCalibratedRed:13.0 / 255.0 green:51.0 / 255.0 blue:70.0 / 255.0 alpha:0.6];
 
     themedButtonValues =
         [
@@ -396,19 +449,28 @@ var themedButtonValues = nil,
             [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0], CPThemeStateBordered | CPThemeStateDisabled],
             [@"text-shadow-offset", CGSizeMake(0.0, 1.0), CPThemeStateBordered],
             [@"line-break-mode",    CPLineBreakByTruncatingTail],
+            [@"content-inset",      CGInsetMake(0.0, 7.0, 0.0, 7.0), CPThemeStateBordered],
+            [@"bezel-color",        bezelColor,                     CPThemeStateBordered],
+            [@"bezel-color",        highlightedBezelColor,          CPThemeStateBordered | CPThemeStateHighlighted],
+            [@"bezel-color",        disabledBezelColor,             CPThemeStateBordered | CPThemeStateDisabled],
+            [@"bezel-color",        defaultBezelColor,              CPThemeStateBordered | CPThemeStateDefault],
+            [@"bezel-color",        defaultHighlightedBezelColor,   CPThemeStateBordered | CPThemeStateHighlighted | CPThemeStateDefault],
+            [@"bezel-color",        defaultDisabledBezelColor,      CPThemeStateBordered | CPThemeStateDefault | CPThemeStateDisabled],
             [@"content-inset",      CGInsetMake(0.0, 5.0, 0.0, 5.0), CPThemeStateBordered],
 
-            [@"bezel-color",        bezelColor,             CPThemeStateBordered],
-            [@"bezel-color",        highlightedBezelColor,  CPThemeStateBordered | CPThemeStateHighlighted],
+            [@"bezel-color",        roundedBezelColor,                      CPThemeStateBordered | CPButtonStateBezelStyleRounded],
+            [@"bezel-color",        roundedHighlightedBezelColor,           CPThemeStateBordered | CPThemeStateHighlighted | CPButtonStateBezelStyleRounded],
+            [@"bezel-color",        roundedDisabledBezelColor,              CPThemeStateBordered | CPThemeStateDisabled | CPButtonStateBezelStyleRounded],
+            [@"bezel-color",        defaultRoundedBezelColor,               CPThemeStateBordered | CPThemeStateDefault | CPButtonStateBezelStyleRounded],
+            [@"bezel-color",        defaultRoundedHighlightedBezelColor,    CPThemeStateBordered | CPThemeStateHighlighted | CPThemeStateDefault | CPButtonStateBezelStyleRounded],
+            [@"bezel-color",        defaultRoundedDisabledBezelColor,       CPThemeStateBordered | CPThemeStateDefault | CPThemeStateDisabled | CPButtonStateBezelStyleRounded],
+            [@"content-inset",      CGInsetMake(0.0, 10.0, 0.0, 10.0), CPThemeStateBordered],
 
             [@"text-color",         [CPColor colorWithCalibratedWhite:0.6 alpha:1.0],   CPThemeStateDisabled],
-            [@"bezel-color",        disabledBezelColor,                                 CPThemeStateBordered | CPThemeStateDisabled],
-            [@"bezel-color",        defaultDisabledBezelColor,                          CPThemeStateBordered | CPThemeStateDefault | CPThemeStateDisabled],
+
 
             [@"text-color",         defaultTextColor,               CPThemeStateDefault],
             [@"text-color",         defaultDisabledTextColor,       CPThemeStateDefault | CPThemeStateDisabled],
-            [@"bezel-color",        defaultBezelColor,              CPThemeStateBordered | CPThemeStateDefault],
-            [@"bezel-color",        defaultHighlightedBezelColor,   CPThemeStateBordered | CPThemeStateHighlighted | CPThemeStateDefault],
 
             [@"min-size",           CGSizeMake(0.0, CPButtonDefaultHeight)],
             [@"max-size",           CGSizeMake(-1.0, CPButtonDefaultHeight)],
@@ -440,22 +502,32 @@ var themedButtonValues = nil,
     return button;
 }
 
++ (CPButton)themedRoundedButton
+{
+    var button = [self button];
+
+    [button setTitle:@"Save"];
+    [button setThemeState:CPButtonStateBezelStyleRounded];
+
+    return button;
+}
+
 + (CPPopUpButton)themedPopUpButton
 {
     var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0) pullsDown:NO],
         color = PatternColor(
             [
-                ["button-bezel-left.png", 4.0, 24.0],
-                ["button-bezel-center.png", 1.0, 24.0],
-                ["popup-bezel-right.png", 27.0, 24.0]
+                ["popup-bezel-left.png", 3.0, 24.0],
+                ["popup-bezel-center.png", 1.0, 24.0],
+                ["popup-bezel-right.png", 21.0, 24.0]
             ],
             PatternIsHorizontal),
 
         disabledColor = PatternColor(
             [
-                ["button-bezel-disabled-left.png", 4.0, 24.0],
-                ["button-bezel-disabled-center.png", 1.0, 24.0],
-                ["popup-bezel-disabled-right.png", 27.0, 24.0]
+                ["popup-bezel-disabled-left.png", 3.0, 24.0],
+                ["popup-bezel-disabled-center.png", 1.0, 24.0],
+                ["popup-bezel-disabled-right.png", 21.0, 24.0]
             ],
             PatternIsHorizontal),
 
@@ -464,7 +536,7 @@ var themedButtonValues = nil,
             [@"bezel-color",        color,          CPThemeStateBordered],
             [@"bezel-color",        disabledColor,  CPThemeStateBordered | CPThemeStateDisabled],
 
-            [@"content-inset",      CGInsetMake(0, 27.0 + 5.0, 0, 5.0), CPThemeStateBordered],
+            [@"content-inset",      CGInsetMake(0, 21.0 + 5.0, 0, 5.0), CPThemeStateBordered],
             [@"font",               [CPFont boldSystemFontOfSize:12.0]],
             [@"text-color",         [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0]],
             [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0]],
@@ -489,17 +561,17 @@ var themedButtonValues = nil,
     var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0) pullsDown:YES],
         color = PatternColor(
             [
-                ["button-bezel-left.png", 4.0, 24.0],
-                ["button-bezel-center.png", 1.0, 24.0],
-                ["popup-bezel-right-pullsdown.png", 27.0, 24.0]
+                ["popup-bezel-left.png", 3.0, 24.0],
+                ["popup-bezel-center.png", 1.0, 24.0],
+                ["popup-bezel-right-pullsdown.png", 21.0, 24.0]
             ],
             PatternIsHorizontal),
 
         disabledColor = PatternColor(
             [
-                ["button-bezel-disabled-left.png", 4.0, 24.0],
-                ["button-bezel-disabled-center.png", 1.0, 24.0],
-                ["popup-bezel-disabled-right-pullsdown.png", 27.0, 24.0]
+                ["popup-bezel-disabled-left.png", 3.0, 24.0],
+                ["popup-bezel-disabled-center.png", 1.0, 24.0],
+                ["popup-bezel-disabled-right-pullsdown.png", 21.0, 24.0]
             ],
             PatternIsHorizontal),
 
@@ -535,7 +607,7 @@ var themedButtonValues = nil,
     var borderColor = [CPColor colorWithWhite:0.0 alpha:0.2],
         bottomCornerColor = PatternColor(@"scrollview-bottom-corner-color.png", 15.0, 15.0);
 
-    var themedScrollViewValues = 
+    var themedScrollViewValues =
         [
             [@"border-color", borderColor],
             [@"bottom-corner-color", bottomCornerColor]
@@ -691,54 +763,77 @@ var themedButtonValues = nil,
 
         bezelColor = PatternColor(
             [
-                ["textfield-bezel-square-0.png", 2.0, 3.0],
-                ["textfield-bezel-square-1.png", 1.0, 3.0],
-                ["textfield-bezel-square-2.png", 2.0, 3.0],
-                ["textfield-bezel-square-3.png", 2.0, 1.0],
+                ["textfield-bezel-square-0.png", 3.0, 4.0],
+                ["textfield-bezel-square-1.png", 1.0, 4.0],
+                ["textfield-bezel-square-2.png", 3.0, 4.0],
+                ["textfield-bezel-square-3.png", 3.0, 1.0],
                 ["textfield-bezel-square-4.png", 1.0, 1.0],
-                ["textfield-bezel-square-5.png", 2.0, 1.0],
-                ["textfield-bezel-square-6.png", 2.0, 2.0],
-                ["textfield-bezel-square-7.png", 1.0, 2.0],
-                ["textfield-bezel-square-8.png", 2.0, 2.0]
+                ["textfield-bezel-square-5.png", 3.0, 1.0],
+                ["textfield-bezel-square-6.png", 3.0, 4.0],
+                ["textfield-bezel-square-7.png", 1.0, 4.0],
+                ["textfield-bezel-square-8.png", 3.0, 4.0]
             ]),
 
         bezelFocusedColor = PatternColor(
             [
-                ["textfield-bezel-square-focused-0.png", 6.0, 7.0],
+                ["textfield-bezel-square-focused-0.png", 7.0, 7.0],
                 ["textfield-bezel-square-focused-1.png", 1.0, 7.0],
-                ["textfield-bezel-square-focused-2.png", 6.0, 7.0],
-                ["textfield-bezel-square-focused-3.png", 6.0, 1.0],
+                ["textfield-bezel-square-focused-2.png", 7.0, 7.0],
+                ["textfield-bezel-square-focused-3.png", 7.0, 1.0],
                 ["textfield-bezel-square-focused-4.png", 1.0, 1.0],
-                ["textfield-bezel-square-focused-5.png", 6.0, 1.0],
-                ["textfield-bezel-square-focused-6.png", 6.0, 5.0],
-                ["textfield-bezel-square-focused-7.png", 1.0, 5.0],
-                ["textfield-bezel-square-focused-8.png", 6.0, 5.0]
+                ["textfield-bezel-square-focused-5.png", 7.0, 1.0],
+                ["textfield-bezel-square-focused-6.png", 7.0, 7.0],
+                ["textfield-bezel-square-focused-7.png", 1.0, 7.0],
+                ["textfield-bezel-square-focused-8.png", 7.0, 7.0]
             ]),
 
-        placeholderColor = [CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0],
+        bezelDisabledColor = PatternColor(
+            [
+                ["textfield-bezel-square-disabled-0.png", 3.0, 4.0],
+                ["textfield-bezel-square-disabled-1.png", 1.0, 4.0],
+                ["textfield-bezel-square-disabled-2.png", 3.0, 4.0],
+                ["textfield-bezel-square-disabled-3.png", 3.0, 1.0],
+                ["textfield-bezel-square-disabled-4.png", 1.0, 1.0],
+                ["textfield-bezel-square-disabled-5.png", 3.0, 1.0],
+                ["textfield-bezel-square-disabled-6.png", 3.0, 4.0],
+                ["textfield-bezel-square-disabled-7.png", 1.0, 4.0],
+                ["textfield-bezel-square-disabled-8.png", 3.0, 4.0]
+            ]),
 
-        themeValues =
-        [
-            [@"bezel-color",        bezelColor,                         CPThemeStateBezeled],
-            [@"bezel-color",        bezelFocusedColor,                  CPThemeStateBezeled | CPThemeStateEditing],
-            [@"font",               [CPFont systemFontOfSize:12.0],     CPThemeStateBezeled],
+        placeholderColor = [CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0];
 
-            [@"content-inset",      CGInsetMake(9.0, 7.0, 5.0, 8.0),    CPThemeStateBezeled],
-            [@"bezel-inset",        CGInsetMake(4.0, 4.0, 3.0, 4.0),    CPThemeStateBezeled],
-            [@"bezel-inset",        CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled | CPThemeStateEditing],
+    // Global for reuse by CPTokenField.
+    themedTextFieldValues =
+    [
+        [@"bezel-color",        bezelColor,                         CPThemeStateBezeled],
+        [@"bezel-color",        bezelFocusedColor,                  CPThemeStateBezeled | CPThemeStateEditing],
+        [@"bezel-color",        bezelDisabledColor,                 CPThemeStateBezeled | CPThemeStateDisabled],
+        [@"font",               [CPFont systemFontOfSize:12.0],     CPThemeStateBezeled],
 
-            [@"text-color",         placeholderColor,                   CPTextFieldStatePlaceholder],
+        [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 8.0),    CPThemeStateBezeled],
+        [@"content-inset",      CGInsetMake(7.0, 7.0, 5.0, 8.0),    CPThemeStateBezeled | CPThemeStateEditing],
+        [@"bezel-inset",        CGInsetMake(3.0, 4.0, 3.0, 4.0),    CPThemeStateBezeled],
+        [@"bezel-inset",        CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled | CPThemeStateEditing],
 
-            [@"line-break-mode",    CPLineBreakByTruncatingTail,        CPThemeStateTableDataView],
-            [@"vertical-alignment", CPCenterVerticalTextAlignment,      CPThemeStateTableDataView],
-            [@"content-inset",      CGInsetMake(0.0, 0.0, 0.0, 5.0),    CPThemeStateTableDataView],
+        [@"text-color",         placeholderColor,                   CPTextFieldStatePlaceholder],
 
-            [@"text-color",         [CPColor colorWithCalibratedWhite:51.0 / 255.0 alpha:1.0], CPThemeStateTableDataView],
-            [@"text-color",         [CPColor whiteColor],               CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
-            [@"font",               [CPFont boldSystemFontOfSize:12.0], CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
-        ];
+        [@"line-break-mode",    CPLineBreakByTruncatingTail,        CPThemeStateTableDataView],
+        [@"vertical-alignment", CPCenterVerticalTextAlignment,      CPThemeStateTableDataView],
+        [@"content-inset",      CGInsetMake(0.0, 0.0, 0.0, 5.0),    CPThemeStateTableDataView],
 
-    [self registerThemeValues:themeValues forView:textfield];
+        [@"text-color",         [CPColor colorWithCalibratedWhite:51.0 / 255.0 alpha:1.0], CPThemeStateTableDataView],
+        [@"text-color",         [CPColor whiteColor],               CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
+        [@"font",               [CPFont boldSystemFontOfSize:12.0], CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
+
+        [@"text-color",         [CPColor colorWithCalibratedWhite:125.0 / 255.0 alpha:1.0], CPThemeStateTableDataView | CPThemeStateGroupRow],
+        [@"text-color",         [CPColor colorWithCalibratedWhite:1.0 alpha:1.0], CPThemeStateTableDataView | CPThemeStateGroupRow | CPThemeStateSelectedTableDataView],
+        [@"text-shadow-color",  [CPColor whiteColor],                CPThemeStateTableDataView | CPThemeStateGroupRow],
+        [@"text-shadow-offset",  CGSizeMake(0,1),                    CPThemeStateTableDataView | CPThemeStateGroupRow],
+        [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:0.0 alpha:0.6],                CPThemeStateTableDataView | CPThemeStateGroupRow | CPThemeStateSelectedTableDataView],
+        [@"font",               [CPFont boldSystemFontOfSize:12.0],  CPThemeStateTableDataView | CPThemeStateGroupRow]
+    ];
+
+    [self registerThemeValues:themedTextFieldValues forView:textfield];
 
     [textfield setBezeled:YES];
 
@@ -768,9 +863,10 @@ var themedButtonValues = nil,
             ],
             PatternIsHorizontal),
 
-        placeholderColor = [CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0],
+        placeholderColor = [CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0];
 
-        themeValues =
+    // Global for reuse by CPSearchField
+    themedRoundedTextFieldValues =
         [
             [@"bezel-color",    bezelColor,                         CPTextFieldStateRounded | CPThemeStateBezeled],
             [@"bezel-color",    bezelFocusedColor,                  CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
@@ -786,7 +882,7 @@ var themedButtonValues = nil,
             [@"max-size",       CGSizeMake(-1.0, 30.0), CPTextFieldStateRounded | CPThemeStateBezeled]
         ];
 
-    [self registerThemeValues:themeValues forView:textfield];
+    [self registerThemeValues:themedRoundedTextFieldValues forView:textfield];
 
     [textfield setBezeled:YES];
     [textfield setBezelStyle:CPTextFieldRoundedBezel];
@@ -796,6 +892,103 @@ var themedButtonValues = nil,
     [textfield setEditable:YES];
 
     return textfield;
+}
+
++ (CPSearchField)themedSearchField
+{
+    var searchField = [[CPSearchField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 30.0)];
+    [self registerThemeValues:nil forView:searchField inherit:themedRoundedTextFieldValues];
+    return searchField;
+}
+
++ (CPTokenField)themedTokenField
+{
+    var tokenfield = [[CPTokenField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 29.0)],
+
+        overrides =
+        [
+            [@"content-inset", CGInsetMake(8.0, 0.0, 4.0, 0.0)],
+            // Placeholder is displayed as regular text, not tokens; requires a different inset.
+            [@"content-inset", CGInsetMake(9.0, 0.0, 5.0, 2.0), CPTextFieldStatePlaceholder],
+            [@"content-inset", CGInsetMake(6.0, 5.0, 5.0, 6.0), CPThemeStateBezeled],
+            [@"content-inset", CGInsetMake(9.0, 7.0, 6.0, 8.0), CPThemeStateBezeled | CPTextFieldStatePlaceholder],
+        ];
+
+    [self registerThemeValues:overrides forView:tokenfield inherit:themedTextFieldValues];
+
+    return tokenfield;
+}
+
++ (_CPTokenFieldToken)themedTokenFieldToken
+{
+    var token = [[_CPTokenFieldToken alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 19.0)],
+
+        bezelColor = PatternColor(
+            [
+                ["token-left.png", 11.0, 19.0],
+                ["token-center.png", 1.0, 19.0],
+                ["token-right.png", 11.0, 19.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelHighlightedColor = PatternColor(
+            [
+                ["token-highlighted-left.png", 11.0, 19.0],
+                ["token-highlighted-center.png", 1.0, 19.0],
+                ["token-highlighted-right.png", 11.0, 19.0]
+            ],
+            PatternIsHorizontal),
+
+        textColor = [CPColor colorWithRed:41.0 / 255.0 green:51.0 / 255.0 blue:64.0 / 255.0 alpha:1.0],
+        textHighlightedColor = [CPColor whiteColor],
+
+        themeValues =
+        [
+            [@"bezel-color",    bezelColor,                         CPThemeStateBezeled],
+            [@"bezel-color",    bezelHighlightedColor,              CPThemeStateBezeled | CPThemeStateHighlighted],
+
+            [@"text-color",     textColor],
+            [@"text-color",     textHighlightedColor,               CPThemeStateHighlighted],
+
+            [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled],
+            [@"content-inset",  CGInsetMake(1.0, 24.0, 2.0, 16.0),  CPThemeStateBezeled],
+
+            // Minimum height == maximum height since tokens are fixed height.
+            [@"min-size",       CGSizeMake(0.0, 19.0)],
+            [@"max-size",       CGSizeMake(-1.0, 19.0)],
+
+            [@"vertical-alignment", CPCenterTextAlignment],
+        ];
+
+    [self registerThemeValues:themeValues forView:token];
+
+    return token;
+}
+
++ (_CPTokenFieldTokenCloseButton)themedTokenFieldTokenCloseButton
+{
+    var button = [[_CPTokenFieldTokenCloseButton alloc] initWithFrame:CGRectMake(0, 0, 9, 9)],
+
+        bezelColor = PatternColor("token-close.png", 8.0, 8.0),
+        bezelHighlightedColor = PatternColor("token-close-highlighted.png", 8.0, 8.0),
+
+        themeValues =
+        [
+            [@"bezel-color",    bezelColor,                         CPThemeStateBordered],
+            [@"bezel-color",    bezelHighlightedColor,              CPThemeStateBordered | CPThemeStateHighlighted],
+
+            [@"min-size",       CGSizeMake(8.0, 8.0)],
+            [@"max-size",       CGSizeMake(8.0, 8.0)],
+
+            [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBordered],
+            [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBordered | CPThemeStateHighlighted],
+
+            [@"offset",         CGPointMake(18, 6),                 CPThemeStateBordered]
+        ];
+
+    [self registerThemeValues:themeValues forView:button];
+
+    return button;
 }
 
 + (CPRadioButton)themedRadioButton
@@ -1255,9 +1448,9 @@ var themedButtonValues = nil,
         alternatingRowColors = [[CPColor whiteColor], [CPColor colorWithRed:245.0 / 255.0 green:249.0 / 255.0 blue:252.0 / 255.0 alpha:1.0]],
         gridColor = [CPColor colorWithHexString:@"dce0e2"],
         selectionColor = [CPColor colorWithHexString:@"5f83b9"],
-        sourceListSelectionColor = [CPDictionary dictionaryWithObjects: [CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [89.0/255.0, 153.0/255.0, 209.0/255.0,1.0, 33.0/255.0, 94.0/255.0, 208.0/255.0,1.0], [0,1], 2),
-                                                                          [CPColor colorWithCalibratedRed:(61.0/255.0) green:(123.0/255.0) blue:(218.0/255.0) alpha:1.0],
-                                                                          [CPColor colorWithCalibratedRed:(31.0/255.0) green:(92.0/255.0) blue:(207.0/255.0) alpha:1.0]
+        sourceListSelectionColor = [CPDictionary dictionaryWithObjects: [CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [89.0 / 255.0, 153.0 / 255.0, 209.0 / 255.0,1.0, 33.0 / 255.0, 94.0 / 255.0, 208.0 / 255.0,1.0], [0,1], 2),
+                                                                          [CPColor colorWithCalibratedRed:(61.0 / 255.0) green:(123.0 / 255.0) blue:(218.0 / 255.0) alpha:1.0],
+                                                                          [CPColor colorWithCalibratedRed:(31.0 / 255.0) green:(92.0 / 255.0) blue:(207.0 / 255.0) alpha:1.0]
                                                                         ]
                                                                forKeys: [CPSourceListGradient, CPSourceListTopLineColor, CPSourceListBottomLineColor]],
 
@@ -1298,10 +1491,13 @@ var themedButtonValues = nil,
     [splitView addSubview:rightView];
 
 
-    var themedSplitViewValues = 
+    [splitView setIsPaneSplitter:YES];
+
+    var themedSplitViewValues =
         [
             [@"divider-thickness", 10.0],
-            [@"pane-divider-thickness", 1.0]
+            [@"pane-divider-thickness", 1.0],
+            [@"pane-divider-color", [CPColor colorWithRed:165.0 / 255.0 green:165.0 / 255.0 blue:165.0 / 255.0 alpha:1.0]]
         ];
 
     [self registerThemeValues:themedSplitViewValues forView:splitView];
@@ -1312,34 +1508,120 @@ var themedButtonValues = nil,
 + (CPAlert)themedAlert
 {
     var alert = [CPAlert new],
-        size = CGSizeMake(400.0, 110.0),
-        inset =  CGInsetMake(15, 15, 15, 80),
+
+        buttonOffset = 10.0,
+        defaultElementsMargin = 3.0,
+        errorIcon = PatternImage("alert-error.png", 53.0, 46.0),
+        helpIcon = PatternImage("alert-help.png", 24.0, 24.0),
+        helpIconPressed = PatternImage("alert-help-pressed.png", 24.0, 24.0),
+        helpLeftOffset = 15,
         imageOffset = CGPointMake(15, 18),
-        messageFont = [CPFont boldSystemFontOfSize:13.0],
-        informativeFont = [CPFont systemFontOfSize:12.0],
         informationIcon = PatternImage("alert-info.png", 53.0, 46.0),
-        warningIcon = PatternImage("alert-warning.png", 53.0, 46.0),
-        errorIcon = PatternImage("alert-error.png", 53.0, 46.0);
+        informativeFont = [CPFont systemFontOfSize:12.0],
+        inset = CGInsetMake(15, 15, 15, 80),
+        messageFont = [CPFont boldSystemFontOfSize:13.0],
+        size = CGSizeMake(400.0, 110.0),
+        suppressionButtonXOffset = 2.0,
+        suppressionButtonYOffset = 10.0,
+        suppressionButtonFont = [CPFont systemFontOfSize:12.0],
+        warningIcon = PatternImage("alert-warning.png", 53.0, 46.0);
 
     themedAlertValues =
     [
-        [@"size",                           size],
-        [@"content-inset",                  inset],
-        [@"message-text-alignment",         CPJustifiedTextAlignment],
-        [@"message-text-color",             [CPColor blackColor]],
-        [@"message-text-font",              messageFont],
-        [@"informative-text-alignment",     CPJustifiedTextAlignment],
-        [@"informative-text-color",         [CPColor blackColor]],
-        [@"informative-text-font",          informativeFont],
-        [@"image-offset",                   imageOffset],
-        [@"information-image",              informationIcon],
-        [@"warning-image",                  warningIcon],
-        [@"error-image",                    errorIcon]
+        [@"button-offset",                      buttonOffset],
+        [@"content-inset",                      inset],
+        [@"default-elements-margin",            defaultElementsMargin],
+        [@"error-image",                        errorIcon],
+        [@"help-image",                         helpIcon],
+        [@"help-image-left-offset",             helpLeftOffset],
+        [@"help-image-pressed",                 helpIconPressed],
+        [@"image-offset",                       imageOffset],
+        [@"information-image",                  informationIcon],
+        [@"informative-text-alignment",         CPJustifiedTextAlignment],
+        [@"informative-text-color",             [CPColor blackColor]],
+        [@"informative-text-font",              informativeFont],
+        [@"message-text-alignment",             CPJustifiedTextAlignment],
+        [@"message-text-color",                 [CPColor blackColor]],
+        [@"message-text-font",                  messageFont],
+        [@"suppression-button-text-color",      [CPColor blackColor]],
+        [@"suppression-button-text-font",       suppressionButtonFont],
+        [@"size",                               size],
+        [@"suppression-button-x-offset",        suppressionButtonXOffset],
+        [@"suppression-button-y-offset",        suppressionButtonYOffset],
+        [@"warning-image",                      warningIcon]
     ];
 
     [self registerThemeValues:themedAlertValues forView:alert];
 
     return alert;
+}
+
++ (CPStepper)themedStepper
+{
+    var stepper = [CPStepper stepper],
+
+        bezelUp = PatternColor(
+            [
+                ["stepper-bezel-big-up-left.png", 3.0, 13.0],
+                ["stepper-bezel-big-up-center.png", 13.0, 13.0],
+                ["stepper-bezel-big-up-right.png", 3.0, 13.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelDown = PatternColor(
+            [
+                ["stepper-bezel-big-down-left.png", 3.0, 12.0],
+                ["stepper-bezel-big-down-center.png", 13.0, 12.0],
+                ["stepper-bezel-big-down-right.png", 3.0, 12.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelUpDisabled = PatternColor(
+            [
+                ["stepper-bezel-big-disabled-up-left.png", 3.0, 13.0],
+                ["stepper-bezel-big-disabled-up-center.png", 13.0, 13.0],
+                ["stepper-bezel-big-disabled-up-right.png", 3.0, 13.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelDownDisabled = PatternColor(
+            [
+                ["stepper-bezel-big-disabled-down-left.png", 3.0, 12.0],
+                ["stepper-bezel-big-disabled-down-center.png", 13.0, 12.0],
+                ["stepper-bezel-big-disabled-down-right.png", 3.0, 12.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelUpHighlighted = PatternColor(
+            [
+                [@"stepper-bezel-big-highlighted-up-left.png", 3.0, 13.0],
+                [@"stepper-bezel-big-highlighted-up-center.png", 13.0, 13.0],
+                [@"stepper-bezel-big-highlighted-up-right.png", 3.0, 13.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelDownHighlighted = PatternColor(
+            [
+                [@"stepper-bezel-big-highlighted-down-left.png", 3.0, 12.0],
+                [@"stepper-bezel-big-highlighted-down-center.png", 13.0, 12.0],
+                [@"stepper-bezel-big-highlighted-down-right.png", 3.0, 12.0]
+            ],
+            PatternIsHorizontal),
+
+        themeValues =
+        [
+            [@"bezel-color-up-button",      bezelUp,                        CPThemeStateBordered],
+            [@"bezel-color-down-button",    bezelDown,                      CPThemeStateBordered],
+            [@"bezel-color-up-button",      bezelUpDisabled,                CPThemeStateBordered | CPThemeStateDisabled],
+            [@"bezel-color-down-button",    bezelDownDisabled,              CPThemeStateBordered | CPThemeStateDisabled],
+            [@"bezel-color-up-button",      bezelUpHighlighted,             CPThemeStateBordered | CPThemeStateHighlighted],
+            [@"bezel-color-down-button",    bezelDownHighlighted,           CPThemeStateBordered | CPThemeStateHighlighted],
+            [@"min-size",                   CGSizeMake(19.0, 25.0)]
+        ];
+
+    [self registerThemeValues:themeValues forView:stepper];
+
+    return stepper;
 }
 
 @end
@@ -1477,6 +1759,7 @@ var themedButtonValues = nil,
         [
             [@"message-text-color",             [CPColor whiteColor]],
             [@"informative-text-color",         [CPColor whiteColor]],
+            [@"suppression-button-text-color",  [CPColor whiteColor]],
         ];
 
     [self registerThemeValues:hudSpecificValues forView:alert inherit:themedAlertValues];

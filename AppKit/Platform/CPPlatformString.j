@@ -22,9 +22,6 @@
 
 @import <Foundation/CPObject.j>
 
-#include "../CoreGraphics/CGGeometry.h"
-#include "Platform.h"
-
 
 @implementation CPBasePlatformString : CPObject
 {

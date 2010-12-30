@@ -34,7 +34,7 @@
     {
         var bounds = [aView bounds],
             sides = [CPMinYEdge, CPMaxYEdge, CPMinXEdge, CPMaxXEdge],
-            grays = [192.0/255.0, 1.0, 192.0/255.0, 1.0],
+            grays = [192.0 / 255.0, 1.0, 192.0 / 255.0, 1.0],
             clipRect = [aView bounds];
 
         if (aView === view2)

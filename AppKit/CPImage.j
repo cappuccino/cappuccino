@@ -28,8 +28,6 @@
 
 @import "CPGeometry.j"
 
-#include "Platform/Platform.h"
-
 
 CPImageLoadStatusInitialized    = 0;
 CPImageLoadStatusLoading        = 1;
@@ -67,7 +65,7 @@ function CPAppKitImage(aFilename, aSize)
     return CPImageInBundle(aFilename, aSize, [CPBundle bundleForClass:[CPView class]]);
 }
 
-/*! 
+/*!
     @ingroup appkit
     @class CPImage
 
@@ -75,7 +73,7 @@ function CPAppKitImage(aFilename, aSize)
     all image types supported by the browser.
 
     @par Delegate Methods
-    
+
     @delegate -(void)imageDidLoad:(CPImage)image;
     Called when the specified image has finished loading.
     @param image the image that loaded

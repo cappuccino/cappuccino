@@ -25,8 +25,6 @@
 @import "CPMenu.j"
 @import "CPMenuItem.j"
 
-#include "CoreGraphics/CGGeometry.h"
-
 
 var VISIBLE_MARGIN  = 7.0;
 
@@ -46,9 +44,14 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     CPMenu      _menu;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return "popup-button";
+}
+
++ (CPSet)keyPathsForValuesAffectingSelectedTag
+{
+    return [CPSet setWithObject:@"selectedIndex"];
 }
 
 /*!
@@ -235,6 +238,22 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     return _selectedIndex;
 }
 
+/*!
+    @ignore
+*/
+- (int)selectedTag
+{
+    return [[self selectedItem] tag];
+}
+
+/*!
+    @ignore
+*/
+- (void)_setSelectedTag:(int)aTag
+{
+    [self selectItemWithTag:aTag];
+}
+
 // Setting the Current Selection
 /*!
     Selects the specified menu item.
@@ -254,6 +273,8 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     if (_selectedIndex == anIndex)
         return;
 
+    [self willChangeValueForKey:@"selectedIndex"];
+
     if (_selectedIndex >= 0 && ![self pullsDown])
         [[self selectedItem] setState:CPOffState];
 
@@ -263,6 +284,8 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
         [[self selectedItem] setState:CPOnState];
 
     [self synchronizeTitleAndSelectedItem];
+
+    [self didChangeValueForKey:@"selectedIndex"];
 }
 
 /*!
@@ -662,7 +685,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
             location = CGPointMake(CGRectGetMinX(contentRect) - standardLeftMargin, 0.0);
 
         minimumWidth += standardLeftMargin;
-        
+
         // To ensure the selected item is highlighted correctly, unset the highlighted item
         [menu _highlightItemAtIndex:CPNotFound];
     }
@@ -700,6 +723,11 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
         menuOrigin.y -= CGRectGetMinY(menuItemRect) + (CGRectGetHeight(menuItemRect) - CGRectGetHeight(contentRect)) / 2.0;
     }
 */
+}
+
+- (void)rightMouseDown:(CPEvent)anEvent
+{
+    // Disable standard CPView behaviour which incorrectly displays the menu as a 'context menu'.
 }
 
 - (void)_popUpItemAction:(id)aSender

@@ -64,7 +64,7 @@ var UseFix = NO;
     }
 }
 
--(void)alertDidEnd:(CPAlert)theAlert returnCode:(int)returnCode
+- (void)alertDidEnd:(CPAlert)theAlert returnCode:(int)returnCode
 {
     [button highlight:NO];
 }

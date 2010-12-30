@@ -11,7 +11,7 @@ var _CPCibClassSwapperClassNameKey          = @"_CPCibClassSwapperClassNameKey",
 
 + (id)swapperClassForClassName:(CPString)aClassName originalClassName:(CPString)anOriginalClassName
 {
-    var swapperClassName = "$NSClassSwapper_" + aClassName + "_" + anOriginalClassName;
+    var swapperClassName = "$NSClassSwapper_" + aClassName + "_" + anOriginalClassName,
         swapperClass = objj_lookUpClass(swapperClassName);
 
     if (!swapperClass)
@@ -41,11 +41,11 @@ var _CPCibClassSwapperClassNameKey          = @"_CPCibClassSwapperClassNameKey",
         {
             return [_CPCibClassSwapper class];
         }, "");
-        
+
         class_addMethod(swapperClass, @selector(encodeWithCoder:), function(self, _cmd, aCoder)
         {
             objj_msgSendSuper({super_class:originalClass, receiver:self}, _cmd, aCoder);
-            
+
             // FIXME: map class name as well?
             [aCoder encodeObject:aClassName forKey:_CPCibClassSwapperClassNameKey];
             [aCoder encodeObject:CP_NSMapClassName(anOriginalClassName) forKey:_CPCibClassSwapperOriginalClassNameKey];

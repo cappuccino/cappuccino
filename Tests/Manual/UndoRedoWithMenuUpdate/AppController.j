@@ -89,7 +89,7 @@
 //this will be called whenver the user clicks on an autoenabled menu
 - (BOOL)validateMenuItem:(id)anItem
 {
-    switch([anItem tag])
+    switch ([anItem tag])
     {
         case @"Undo" :
             [anItem setTitle:[undoManager undoMenuItemTitle]];
@@ -118,10 +118,10 @@
 - (void)update
 {
     var cnt = [_items count];
-    for(var i=0; i<cnt; ++i)
+    for (var i = 0; i < cnt; ++i)
     {
         var item = [_items objectAtIndex:i];
-        if([[item target] respondsToSelector:@selector(validateMenuItem:)])
+        if ([[item target] respondsToSelector:@selector(validateMenuItem:)])
             [item _setEnabledByMenu:[[item target] validateMenuItem:item]];
         else
             [item _setEnabledByMenu:[item isEnabled]]; /// BD Change from NO
@@ -216,7 +216,7 @@
     if (!newMenu)
         return;
 
-    if([newMenu autoenablesItems])
+    if ([newMenu autoenablesItems])
         [newMenu update];
     // Unhighlight any previously highlighted item.
     [newMenu _highlightItemAtIndex:CPNotFound];

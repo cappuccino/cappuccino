@@ -20,11 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPView.j"
+@import "CPBox.j"
 @import "CPClipView.j"
 @import "CPScroller.j"
-
-#include "CoreGraphics/CGGeometry.h"
+@import "CPView.j"
 
 
 /*!
@@ -59,7 +58,7 @@
     CPBorderType    _borderType;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"scrollview"
 }
@@ -185,7 +184,7 @@
 */
 - (void)setContentView:(CPClipView)aContentView
 {
-    if (_contentView !== aContentView || !aContentView)
+    if (_contentView === aContentView || !aContentView)
         return;
 
     var documentView = [aContentView documentView];
@@ -232,7 +231,7 @@
 */
 - (void)reflectScrolledClipView:(CPClipView)aClipView
 {
-    if(_contentView !== aClipView)
+    if (_contentView !== aClipView)
         return;
 
     if (_recursionCount > 5)
@@ -697,7 +696,7 @@
 /*
     @ignore
 */
--(void)resizeSubviewsWithOldSize:(CGSize)aSize
+- (void)resizeSubviewsWithOldSize:(CGSize)aSize
 {
     [self reflectScrolledClipView:_contentView];
 }
@@ -844,7 +843,7 @@
 - (void)_drawGrayBezelInContext:(CGContext)context bounds:(CGRect)aRect
 {
     CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:142.0/255.0 alpha:1.0]);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:142.0 / 255.0 alpha:1.0]);
 
     var y = _CGRectGetMinY(aRect) + 0.5;
 
@@ -853,19 +852,19 @@
     CGContextStrokePath(context);
 
     CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0/255.0 alpha:1.0]);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0 / 255.0 alpha:1.0]);
     CGContextMoveToPoint(context, _CGRectGetMinX(aRect) + 1.0, y);
     CGContextAddLineToPoint(context, _CGRectGetMaxX(aRect) - 1.0, y);
     CGContextStrokePath(context);
 
     CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:142.0/255.0 alpha:1.0]);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:142.0 / 255.0 alpha:1.0]);
     CGContextMoveToPoint(context, _CGRectGetMaxX(aRect) - 1.0, y);
     CGContextAddLineToPoint(context, _CGRectGetMaxX(aRect), y);
     CGContextStrokePath(context);
 
     CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:190.0/255.0 alpha:1.0]);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:190.0 / 255.0 alpha:1.0]);
 
     var x = _CGRectGetMaxX(aRect) - 0.5;
 
@@ -886,7 +885,7 @@
 - (void)_drawGrooveInContext:(CGContext)context bounds:(CGRect)aRect
 {
     CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:159.0/255.0 alpha:1.0]);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:159.0 / 255.0 alpha:1.0]);
 
     var y = _CGRectGetMinY(aRect) + 0.5;
 
@@ -920,7 +919,7 @@
     CGContextStrokeRect(context, _CGRectInset(rect, 0.5, 0.5));
 
     CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0/255.0 alpha:1.0]);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0 / 255.0 alpha:1.0]);
 
     y = _CGRectGetMinY(aRect) + 2.5;
 
@@ -975,6 +974,22 @@
     [self moveByOffset:CGSizeMake(0.0, _CGRectGetHeight(contentBounds) - _verticalPageScroll)];
 }
 
+- (void)scrollToBeginningOfDocument:(id)sender
+{
+    [_contentView scrollToPoint:_CGPointMakeZero()];
+    [_headerClipView scrollToPoint:_CGPointMakeZero()];
+}
+
+- (void)scrollToEndOfDocument:(id)sender
+{
+    var contentBounds = [_contentView bounds],
+        documentFrame = [[self documentView] frame],
+        scrollPoint = _CGPointMake(0.0, _CGRectGetHeight(documentFrame) - _CGRectGetHeight(contentBounds));
+
+    [_contentView scrollToPoint:scrollPoint];
+    [_headerClipView scrollToPoint:_CGPointMakeZero()];
+}
+
 - (void)moveLeft:(id)sender
 {
     [self moveByOffset:CGSizeMake(-_horizontalLineScroll, 0.0)];
@@ -1004,24 +1019,25 @@
     contentBounds.origin.y += aSize.height;
 
     [_contentView scrollToPoint:contentBounds.origin];
-    [_headerClipView scrollToPoint:CGPointMake(contentBounds.origin, 0)];
+    [_headerClipView scrollToPoint:CGPointMake(contentBounds.origin.x, 0)];
 }
 
 @end
 
-var CPScrollViewContentViewKey       = "CPScrollViewContentView",
-    CPScrollViewHeaderClipViewKey    = "CPScrollViewHeaderClipViewKey",
-    CPScrollViewVLineScrollKey       = "CPScrollViewVLineScroll",
-    CPScrollViewHLineScrollKey       = "CPScrollViewHLineScroll",
-    CPScrollViewVPageScrollKey       = "CPScrollViewVPageScroll",
-    CPScrollViewHPageScrollKey       = "CPScrollViewHPageScroll",
-    CPScrollViewHasVScrollerKey      = "CPScrollViewHasVScroller",
-    CPScrollViewHasHScrollerKey      = "CPScrollViewHasHScroller",
-    CPScrollViewVScrollerKey         = "CPScrollViewVScroller",
-    CPScrollViewHScrollerKey         = "CPScrollViewHScroller",
-    CPScrollViewAutohidesScrollerKey = "CPScrollViewAutohidesScroller",
-    CPScrollViewCornerViewKey        = "CPScrollViewCornerViewKey",
-    CPScrollViewBorderTypeKey        = "CPScrollViewBorderTypeKey";
+var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
+    CPScrollViewHeaderClipViewKey       = @"CPScrollViewHeaderClipViewKey",
+    CPScrollViewVLineScrollKey          = @"CPScrollViewVLineScroll",
+    CPScrollViewHLineScrollKey          = @"CPScrollViewHLineScroll",
+    CPScrollViewVPageScrollKey          = @"CPScrollViewVPageScroll",
+    CPScrollViewHPageScrollKey          = @"CPScrollViewHPageScroll",
+    CPScrollViewHasVScrollerKey         = @"CPScrollViewHasVScroller",
+    CPScrollViewHasHScrollerKey         = @"CPScrollViewHasHScroller",
+    CPScrollViewVScrollerKey            = @"CPScrollViewVScroller",
+    CPScrollViewHScrollerKey            = @"CPScrollViewHScroller",
+    CPScrollViewAutohidesScrollerKey    = @"CPScrollViewAutohidesScroller",
+    CPScrollViewCornerViewKey           = @"CPScrollViewCornerViewKey",
+    CPScrollViewBottomCornerViewKey     = @"CPScrollViewBottomCornerViewKey",
+    CPScrollViewBorderTypeKey           = @"CPScrollViewBorderTypeKey";
 
 @implementation CPScrollView (CPCoding)
 
@@ -1044,9 +1060,6 @@ var CPScrollViewContentViewKey       = "CPScrollViewContentView",
             [self addSubview:_headerClipView];
         }
 
-        _bottomCornerView       = [[CPView alloc] init];
-        [self addSubview:_bottomCornerView];
-
         _verticalScroller       = [aCoder decodeObjectForKey:CPScrollViewVScrollerKey];
         _horizontalScroller     = [aCoder decodeObjectForKey:CPScrollViewHScrollerKey];
 
@@ -1057,6 +1070,7 @@ var CPScrollViewContentViewKey       = "CPScrollViewContentView",
         _borderType             = [aCoder decodeIntForKey:CPScrollViewBorderTypeKey];
 
         _cornerView             = [aCoder decodeObjectForKey:CPScrollViewCornerViewKey];
+        _bottomCornerView       = [aCoder decodeObjectForKey:CPScrollViewBottomCornerViewKey];
 
         // Do to the anything goes nature of decoding, our subviews may not exist yet, so layout at the end of the run loop when we're sure everything is in a correct state.
         [[CPRunLoop currentRunLoop] performSelector:@selector(reflectScrolledClipView:) target:self argument:_contentView order:0 modes:[CPDefaultRunLoopMode]];
@@ -1085,6 +1099,7 @@ var CPScrollViewContentViewKey       = "CPScrollViewContentView",
     [aCoder encodeBool:_autohidesScrollers      forKey:CPScrollViewAutohidesScrollerKey];
 
     [aCoder encodeObject:_cornerView            forKey:CPScrollViewCornerViewKey];
+    [aCoder encodeObject:_bottomCornerView      forKey:CPScrollViewBottomCornerViewKey];
 
     [aCoder encodeInt:_borderType               forKey:CPScrollViewBorderTypeKey];
 }

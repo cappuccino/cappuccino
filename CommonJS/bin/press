@@ -12,8 +12,8 @@ var OS = require("os");
 
 var CACHEMANIFEST = require("objective-j/cache-manifest");
 
-var stream = require("term").stream;
-var parser = new (require("args").Parser)();
+var stream = require("narwhal/term").stream;
+var parser = new (require("narwhal/args").Parser)();
 
 parser.usage("INPUT_PROJECT OUTPUT_PROJECT");
 parser.help("Analyze and strip unused files from a Cappuccino project's .sj bundles.");

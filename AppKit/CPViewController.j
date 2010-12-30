@@ -20,7 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CPResponder.j>
+@import <Foundation/CPArray.j>
+
+@import "CPApplication.j"
+@import "CPCib.j"
+@import "CPResponder.j"
+
 
 var CPViewControllerCachedCibs;
 

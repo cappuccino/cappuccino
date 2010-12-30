@@ -1,9 +1,9 @@
 
-@import <Foundation/CPValue.j>
-@import <Foundation/CPArray.j>
-@import <Foundation/CPSet.j>
-@import <Foundation/CPNull.j>
-@import <Foundation/CPScanner.j>
+@import "CPValue.j"
+@import "CPArray.j"
+@import "CPSet.j"
+@import "CPNull.j"
+@import "CPScanner.j"
 
 /*!
     @ingroup foundation
@@ -37,7 +37,7 @@
     @param … A comma-separated list of arguments to substitute into format.
     @return A new predicate formed by creating a new string with format and parsing the result.
 */
-+ (CPPredicate)predicateWithFormat:(CPString) format, ...
++ (CPPredicate)predicateWithFormat:(CPString)format, ...
 {
     if (!format)
         [CPException raise:CPInvalidArgumentException reason:_cmd + " the format can't be 'nil'"];
@@ -238,7 +238,7 @@ function(newValue)\
     unsigned        _retrieved;
 }
 
-- (id) initWithString:(CPString)format args:(CPArray)args
+- (id)initWithString:(CPString)format args:(CPArray)args
 {
     self = [super initWithString:format];
     if (self != nil)
@@ -248,15 +248,15 @@ function(newValue)\
     return self;
 }
 
-- (id) nextArg
+- (id)nextArg
 {
     return [_args nextObject];
 }
 
 - (BOOL)scanPredicateKeyword:(CPString)key
 {
-    var loc = [self scanLocation];
-    var c;
+    var loc = [self scanLocation],
+        c;
 
     [self setCaseSensitive:NO];
     if (![self scanString:key intoString:NULL])
@@ -274,7 +274,7 @@ function(newValue)\
     return NO;
 }
 
-- (CPPredicate) parse
+- (CPPredicate)parse
 {
     var r = nil;
 
@@ -285,23 +285,27 @@ function(newValue)\
     }
     catch(error)
     {
-        CPLogConsole(@"Parsing failed for "+[self string]+" with " + error);
+        CPLogConsole(@"Unable to parse predicate '"+[self string]+"' with " + error);
     }
     finally
     {
         if (![self isAtEnd])
-            CPLogConsole(@"Format string contains extra characters: \""+[self string]+"\"");
+        {
+            var pstr = [self string],
+                loc = [self scanLocation];
+            CPLogConsole(@"Format string contains extra characters: '" + [pstr substringToIndex:loc] + "**" + [pstr substringFromIndex:loc] + "**'");
+        }
     }
 
     return r;
 }
 
-- (CPPredicate) parsePredicate
+- (CPPredicate)parsePredicate
 {
     return [self parseAnd];
 }
 
-- (CPPredicate) parseAnd
+- (CPPredicate)parseAnd
 {
     var l = [self parseOr];
 
@@ -333,14 +337,14 @@ function(newValue)\
     return l;
 }
 
-- (CPPredicate) parseNot
+- (CPPredicate)parseNot
 {
     if ([self scanString:@"(" intoString:NULL])
     {
         var r = [self parsePredicate];
 
         if (![self scanString:@")" intoString:NULL])
-            [CPException raise:CPInvalidArgumentException reason:@"Missing ) in compound predicate"];
+            CPRaiseParseError(self, @"predicate");
 
         return r;
     }
@@ -361,7 +365,7 @@ function(newValue)\
     return [self parseComparison];
 }
 
-- (CPPredicate) parseOr
+- (CPPredicate)parseOr
 {
     var l = [self parseNot];
     while ([self scanPredicateKeyword:@"OR"] || [self scanPredicateKeyword:@"||"])
@@ -392,7 +396,7 @@ function(newValue)\
     return l;
 }
 
-- (CPPredicate) parseComparison
+- (CPPredicate)parseComparison
 {
     var modifier = CPDirectPredicateModifier,
         type = 0,
@@ -400,8 +404,7 @@ function(newValue)\
         left,
         right,
         p,
-        negate = NO,
-        swap = NO;
+        negate = NO;
 
     if ([self scanPredicateKeyword:@"ANY"])
     {
@@ -469,39 +472,14 @@ function(newValue)\
     }
     else if ([self scanPredicateKeyword:@"CONTAINS"])
     {
-        type = CPInPredicateOperatorType;
-        swap = YES;
+        type = CPContainsPredicateOperatorType;
     }
     else if ([self scanPredicateKeyword:@"BETWEEN"])
     {
-        var exp = [self parseSimpleExpression],
-            a = [exp constantValue],
-            lower, upper,
-            lexp, uexp,
-            lp, up;
-
-        if (![a isKindOfClass:[CPArray class]])
-            [CPException raise:CPInvalidArgumentException reason:@"BETWEEN operator requires array argument"];
-
-        lower = [a objectAtIndex:0];
-        upper = [a objectAtIndex:1];
-        lexp = [CPExpression expressionForConstantValue:lower];
-        uexp = [CPExpression expressionForConstantValue:upper];
-        lp = [CPComparisonPredicate predicateWithLeftExpression:left
-              rightExpression:lexp
-              modifier:modifier
-              type:CPGreaterThanPredicateOperatorType
-              options:opts];
-        up = [CPComparisonPredicate predicateWithLeftExpression:left
-              rightExpression:uexp
-              modifier:modifier
-              type:CPLessThanPredicateOperatorType
-              options:opts];
-        return [CPCompoundPredicate andPredicateWithSubpredicates:
-                [CPArray arrayWithObjects:lp, up]];
+        type = CPBetweenPredicateOperatorType;
     }
     else
-        [CPException raise:CPInvalidArgumentException reason:@"Invalid comparison predicate: "+ [[self string] substringFromIndex: [self scanLocation]]];
+        CPRaiseParseError(self, @"comparison predicate");
 
     if ([self scanString:@"[cd]" intoString:NULL])
     {
@@ -518,14 +496,6 @@ function(newValue)\
 
     right = [self parseExpression];
 
-    if (swap == YES)
-    {
-        var tmp = left;
-
-        left = right;
-        right = tmp;
-    }
-
     p = [CPComparisonPredicate predicateWithLeftExpression:left
          rightExpression:right
          modifier:modifier
@@ -535,12 +505,12 @@ function(newValue)\
     return negate ? [CPCompoundPredicate notPredicateWithSubpredicate:p]:p;
 }
 
-- (CPExpression) parseExpression
+- (CPExpression)parseExpression
 {
     return [self parseBinaryExpression];
 }
 
-- (CPExpression) parseSimpleExpression
+- (CPExpression)parseSimpleExpression
 {
     var identifier,
         location,
@@ -548,37 +518,38 @@ function(newValue)\
         dbl;
 
     if ([self scanDouble:REFERENCE(dbl)])
-        return [CPExpression expressionForConstantValue:[CPNumber numberWithDouble:dbl]];
+        return [CPExpression expressionForConstantValue:dbl];
 
     // FIXME: handle integer, hex constants, 0x 0o 0b
     if ([self scanString:@"-" intoString:NULL])
-        return [CPExpression expressionForFunction:@"chs" arguments:[CPArray arrayWithObject:[self parseExpression]]];
+        return [CPExpression expressionForFunction:@"chs:" arguments:[CPArray arrayWithObject:[self parseExpression]]];
 
     if ([self scanString:@"(" intoString:NULL])
     {
         var arg = [self parseExpression];
 
         if (![self scanString:@")" intoString:NULL])
-            [CPException raise:CPInvalidArgumentException reason:@"Missing ) in expression"];
+            CPRaiseParseError(self, @"expression");
 
         return arg;
     }
 
     if ([self scanString:@"{" intoString:NULL])
     {
-        var a = [CPMutableArray arrayWithCapacity:10];
-
         if ([self scanString:@"}" intoString:NULL])
             return [CPExpression expressionForConstantValue:a];
 
+        var a = [];
+
         [a addObject:[self parseExpression]];
+
         while ([self scanString:@"," intoString:NULL])
             [a addObject:[self parseExpression]];
 
         if (![self scanString:@"}" intoString:NULL])
-            [CPException raise:CPInvalidArgumentException reason:@"Missing } in aggregate"];
+            CPRaiseParseError(self, @"expression");
 
-        return [CPExpression expressionForConstantValue:a];
+        return [CPExpression expressionForAggregate:a];
     }
 
     if ([self scanPredicateKeyword:@"NULL"] || [self scanPredicateKeyword:@"NIL"])
@@ -600,12 +571,12 @@ function(newValue)\
 
     if ([self scanString:@"$" intoString:NULL])
     {
-        var variable = [self parseExpression];
+        var variable = [self parseSimpleExpression];
 
         if (![variable keyPath])
-            [CPException raise:CPInvalidArgumentException reason:@"Invalid variable identifier: " + variable];
+            CPRaiseParseError(self, @"expression");
 
-        return [CPExpression expressionForVariable:[variable keyPath]];
+        return [CPExpression expressionForVariable:variable];
     }
 
     location = [self scanLocation];
@@ -676,33 +647,30 @@ function(newValue)\
     if ([self scanString:@"\"" intoString:NULL])
     {
         var skip = [self charactersToBeSkipped],
-            str;
+            str = @"";
 
         [self setCharactersToBeSkipped:nil];
-        if ([self scanUpToString:@"\"" intoString:REFERENCE(str)] == NO)
-        {
-            [self setCharactersToBeSkipped:skip];
-            [CPException raise:CPInvalidArgumentException reason:@"Invalid double quoted literal at "+location];
-        }
+        [self scanUpToString:@"\"" intoString:REFERENCE(str)];
 
-        [self scanString:@"\"" intoString:NULL];
+        if ([self scanString:@"\"" intoString:NULL] == NO)
+            CPRaiseParseError(self, @"expression");
+
         [self setCharactersToBeSkipped:skip];
 
         return [CPExpression expressionForConstantValue:str];
     }
+
     if ([self scanString:@"'" intoString:NULL])
     {
         var skip = [self charactersToBeSkipped],
-            str;
+            str = @"";
 
         [self setCharactersToBeSkipped:nil];
-        if ([self scanUpToString:@"'" intoString:REFERENCE(str)] == NO)
-        {
-            [self setCharactersToBeSkipped:skip];
-            [CPException raise:CPInvalidArgumentException reason:@"Invalid single quoted literal at "+location];
-        }
+        [self scanUpToString:@"'" intoString:REFERENCE(str)];
 
-        [self scanString:@"'" intoString:NULL];
+        if ([self scanString:@"'" intoString:NULL] == NO)
+            CPRaiseParseError(self, @"expression");
+
         [self setCharactersToBeSkipped:skip];
 
         return [CPExpression expressionForConstantValue:str];
@@ -713,9 +681,47 @@ function(newValue)\
         var e = [self parseExpression];
 
         if (![e keyPath])
-            [CPException raise:CPInvalidArgumentException reason:@"Invalid keypath identifier: "+e];
+            CPRaiseParseError(self, @"expression");
 
-        return [CPExpression expressionForKeyPath:[e keyPath]+"@"];
+        return [CPExpression expressionForKeyPath:[e keyPath] + "@"];
+    }
+
+    if ([self scanString:@"SUBQUERY" intoString:NULL])
+    {
+        if (![self scanString:@"(" intoString:NULL])
+            CPRaiseParseError(self, @"expression");
+
+        var collection = [self parseExpression],
+            variableExpression,
+            subpredicate;
+
+        if (![self scanString:@"," intoString:NULL])
+            CPRaiseParseError(self, @"expression");
+        variableExpression = [self parseExpression];
+
+        if (![self scanString:@"," intoString:NULL])
+            CPRaiseParseError(self, @"expression");
+        subpredicate = [self parsePredicate];
+
+        if (![self scanString:@")" intoString:NULL])
+            CPRaiseParseError(self, @"expression");
+
+        return [[CPExpression_subquery alloc] initWithExpression:collection usingIteratorExpression:variableExpression predicate:subpredicate];
+    }
+
+    if ([self scanString:@"FUNCTION" intoString:NULL])
+    {
+        if (![self scanString:@"(" intoString:NULL])
+            CPRaiseParseError(self, @"expression");
+
+        var args = [CPArray arrayWithObject:[self parseExpression]];
+        while ([self scanString:@"," intoString:NULL])
+            [args addObject:[self parseExpression]];
+
+        if (![self scanString:@")" intoString:NULL] || [args count] < 2 || [args[1] expressionType] != CPConstantValueExpressionType)
+            CPRaiseParseError(self, @"expression");
+
+         return [CPExpression expressionForFunction:args[0] selectorName:[args[1] constantValue] arguments:args.slice(2)];
     }
 
     [self scanString:@"#" intoString:NULL];
@@ -723,7 +729,7 @@ function(newValue)\
         identifier = [CPCharacterSet characterSetWithCharactersInString:@"_$abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"];
 
     if (![self scanCharactersFromSet:identifier intoString:REFERENCE(ident)])
-        [CPException raise:CPInvalidArgumentException reason:@"Missing identifier: "+[[self string] substringFromIndex:[self scanLocation]]];
+        CPRaiseParseError(self, @"expression");
 
     return [CPExpression expressionForKeyPath:ident];
 }
@@ -734,69 +740,73 @@ function(newValue)\
 
     while (YES)
     {
-        if ([self scanString:@"(" intoString:NULL])
+        if ([self scanString:@"." intoString:NULL])
         {
-            // function - this parser allows for (max)(a, b, c) to be properly
-            // recognized and even (%K)(a, b, c) if %K evaluates to "max"
-            var args = [CPMutableArray arrayWithCapacity:5];
+            var right = [self parseSimpleExpression],
+                expressionType = [right expressionType];
 
-            if (![left keyPath])
-                [CPException raise:CPInvalidArgumentException reason:@"Invalid function identifier: " + left];
-
-            if (![self scanString:@")" intoString:NULL])
-            {
-                // any arguments
-                // first argument
-                [args addObject:[self parseExpression]];
-                while ([self scanString:@"," intoString:NULL])
-                {
-                    // more arguments
-                    [args addObject:[self parseExpression]];
-                }
-
-                if (![self scanString:@")" intoString:NULL])
-                    [CPException raise:CPInvalidArgumentException reason:@"Missing ) in function arguments"];
-            }
-            left = [CPExpression expressionForFunction:[left keyPath] arguments:args];
+            if (expressionType == CPKeyPathExpressionType)
+                left = [[CPExpression_keypath alloc] initWithOperand:left andKeyPath:[right keyPath]];
+            else if (expressionType == CPVariableExpressionType)
+                left = [CPExpression expressionForFunction:left selectorName:@"valueForKey:" arguments:[right]];
+            else
+                CPRaiseParseError(self, @"expression");
         }
         else if ([self scanString:@"[" intoString:NULL])
         {
             // index expression
             if ([self scanPredicateKeyword:@"FIRST"])
             {
-                left = [CPExpression expressionForFunction:@"first" arguments:[CPArray arrayWithObject:[self parseExpression]]];
+                left = [CPExpression expressionForFunction:@"first:" arguments:[CPArray arrayWithObject:left]];
             }
             else if ([self scanPredicateKeyword:@"LAST"])
             {
-                left = [CPExpression expressionForFunction:@"last" arguments:[CPArray arrayWithObject:[self parseExpression]]];
+                left = [CPExpression expressionForFunction:@"last:" arguments:[CPArray arrayWithObject:left]];
             }
             else if ([self scanPredicateKeyword:@"SIZE"])
             {
-                left = [CPExpression expressionForFunction:@"count" arguments:[CPArray arrayWithObject:[self parseExpression]]];
+                left = [CPExpression expressionForFunction:@"count:" arguments:[CPArray arrayWithObject:left]];
             }
             else
             {
-                left = [CPExpression expressionForFunction:@"index" arguments:[CPArray arrayWithObjects:left, [self parseExpression]]];
+                var index = [self parseExpression];
+                left = [CPExpression expressionForFunction:@"fromObject:index:" arguments:[CPArray arrayWithObjects:left, index]];
             }
+
             if (![self scanString:@"]" intoString:NULL])
-                [CPException raise:CPInvalidArgumentException reason:@"Missing ] in index argument"];
+                CPRaiseParseError(self, @"expression");
         }
-        else if ([self scanString:@"." intoString:NULL])
+        else if ([self scanString:@":(" intoString:NULL])
         {
-            // keypath - this parser allows for (a).(b.c)
-            // to be properly recognized
-            // and even %K.((%K)) if the first %K evaluates to "a" and the
-            // second %K to "b.c"
+            // function - this parser allows for (max)(a, b, c) to be properly
+            // recognized and even (%K)(a, b, c) if %K evaluates to "max"
+            var args = [];
 
             if (![left keyPath])
-                [CPException raise:CPInvalidArgumentException reason:@"Invalid left keypath:" + left];
+                CPRaiseParseError(self, @"expression");
 
-            var right = [self parseExpression];
-            if (![right keyPath])
-                [CPException raise:CPInvalidArgumentException reason:@"Invalid right keypath:" + right];
+            if (![self scanString:@")" intoString:NULL])
+            {
+                [args addObject:[self parseExpression]];
+                while ([self scanString:@"," intoString:NULL])
+                    [args addObject:[self parseExpression]];
 
-            // concatenate
-            left = [CPExpression expressionForKeyPath:[left keyPath]+ "." + [right keyPath]];
+                if (![self scanString:@")" intoString:NULL])
+                    CPRaiseParseError(self, @"expression");
+            }
+            left = [CPExpression expressionForFunction:([left keyPath] + ":") arguments:args];
+        }
+        else if ([self scanString:@"UNION" intoString:NULL])
+        {
+            left = [CPExpression expressionForUnionSet:left with:[self parseExpression]];
+        }
+        else if ([self scanString:@"INTERSECT" intoString:NULL])
+        {
+            left = [CPExpression expressionForIntersectSet:left with:[self parseExpression]];
+        }
+        else if ([self scanString:@"MINUS" intoString:NULL])
+        {
+            left = [CPExpression expressionForMinusSet:left with:[self parseExpression]];
         }
         else
         {
@@ -817,7 +827,7 @@ function(newValue)\
         if ([self scanString:@"**" intoString:NULL])
         {
             right = [self parseFunctionalExpression];
-            left = [CPExpression expressionForFunction:@"pow" arguments:[CPArray arrayWithObjects:left, right]];
+            left = [CPExpression expressionForFunction:@"raise:to:" arguments:[CPArray arrayWithObjects:left, right]];
         }
         else
         {
@@ -837,12 +847,12 @@ function(newValue)\
         if ([self scanString:@"*" intoString:NULL])
         {
             right = [self parsePowerExpression];
-            left = [CPExpression expressionForFunction:@"_mul" arguments:[CPArray arrayWithObjects:left, right]];
+            left = [CPExpression expressionForFunction:@"multiply:by:" arguments:[CPArray arrayWithObjects:left, right]];
         }
         else if ([self scanString:@"/" intoString:NULL])
         {
             right = [self parsePowerExpression];
-            left = [CPExpression expressionForFunction:@"_div" arguments:[CPArray arrayWithObjects:left, right]];
+            left = [CPExpression expressionForFunction:@"divide:by:" arguments:[CPArray arrayWithObjects:left, right]];
         }
         else
         {
@@ -862,12 +872,12 @@ function(newValue)\
         if ([self scanString:@"+" intoString:NULL])
         {
             right = [self parseMultiplicationExpression];
-            left = [CPExpression expressionForFunction:@"_add" arguments:[CPArray arrayWithObjects:left, right]];
+            left = [CPExpression expressionForFunction:@"add:to:" arguments:[CPArray arrayWithObjects:left, right]];
         }
         else if ([self scanString:@"-" intoString:NULL])
         {
             right = [self parseMultiplicationExpression];
-            left = [CPExpression expressionForFunction:@"_sub" arguments:[CPArray arrayWithObjects:left, right]];
+            left = [CPExpression expressionForFunction:@"from:substract:" arguments:[CPArray arrayWithObjects:left, right]];
         }
         else
         {
@@ -899,10 +909,11 @@ function(newValue)\
 
 @end
 
+var CPRaiseParseError = function CPRaiseParseError(aScanner, target)
+{
+    [CPException raise:CPInvalidArgumentException reason:@"unable to parse " + target + " at index " + [aScanner scanLocation]];
+}
+
 @import "CPCompoundPredicate.j"
 @import "CPComparisonPredicate.j"
-
 @import "CPExpression.j"
-@import "CPExpression_operator.j"
-@import "CPExpression_aggregate.j"
-@import "CPExpression_assignment.j"

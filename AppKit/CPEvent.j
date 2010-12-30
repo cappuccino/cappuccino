@@ -23,8 +23,6 @@
 @import <Foundation/CPObject.j>
 @import "CPText.j"
 
-#include "CoreGraphics/CGGeometry.h"
-
 
 CPLeftMouseDown                         = 1;
 CPLeftMouseUp                           = 2;
@@ -160,6 +158,7 @@ CPFindFunctionKey                       = "\uF745";
 CPHelpFunctionKey                       = "\uF746";
 CPModeSwitchFunctionKey                 = "\uF747";
 CPEscapeFunctionKey                     = "\u001B";
+CPSpaceFunctionKey                      = "\u0020";
 
 
 CPDOMEventDoubleClick                                = "dblclick",
@@ -529,7 +528,8 @@ var _CPEventPeriodicEventPeriod         = 0,
     if (_CPEventUpperCaseRegex.test(aKeyEquivalent))
         aKeyEquivalentModifierMask |= CPShiftKeyMask;
 
-    if (CPBrowserIsOperatingSystem(CPWindowsOperatingSystem) && (aKeyEquivalentModifierMask & CPCommandKeyMask))
+    // Windows and Linux don't have command keys, so just switch it to ctrl.
+    if (!CPBrowserIsOperatingSystem(CPMacOperatingSystem) && (aKeyEquivalentModifierMask & CPCommandKeyMask))
     {
         aKeyEquivalentModifierMask |= CPControlKeyMask;
         aKeyEquivalentModifierMask &= ~CPCommandKeyMask;
@@ -558,9 +558,9 @@ var _CPEventPeriodicEventPeriod         = 0,
     if (_modifierFlags & (CPCommandKeyMask | CPControlKeyMask))
         return YES;
 
-    for(var i=0; i<characterCount; i++)
+    for (var i = 0; i < characterCount; i++)
     {
-        switch(_characters.charAt(i))
+        switch (_characters.charAt(i))
         {
             case CPBackspaceCharacter:
             case CPDeleteCharacter:
@@ -568,6 +568,7 @@ var _CPEventPeriodicEventPeriod         = 0,
             case CPTabCharacter:
             case CPCarriageReturnCharacter:
             case CPNewlineCharacter:
+            case CPSpaceFunctionKey:
             case CPEscapeFunctionKey:
             case CPPageUpFunctionKey:
             case CPPageDownFunctionKey:
@@ -575,10 +576,12 @@ var _CPEventPeriodicEventPeriod         = 0,
             case CPUpArrowFunctionKey:
             case CPRightArrowFunctionKey:
             case CPDownArrowFunctionKey:
+            case CPEndFunctionKey:
+            case CPHomeFunctionKey:
                 return YES;
         }
     }
-    // FIXME: More cases? Space?
+    // FIXME: More cases?
     return NO;
 }
 

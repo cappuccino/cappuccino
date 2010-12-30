@@ -1,4 +1,6 @@
 
+@import <AppKit/CPControl.j>
+
 @import "_CPMenuItemSeparatorView.j"
 @import "_CPMenuItemStandardView.j"
 @import "_CPMenuItemMenuBarView.j"

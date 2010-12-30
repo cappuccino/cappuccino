@@ -8,8 +8,10 @@
 // Adapted from GNUStep
 // Copyright (C) 2007 Free Software Foundation, Inc
 // Released under the LGPL.
-// 
+//
 
+
+@import <Foundation/CPObject.j>
 
 var CPControllerDeclaredKeysKey = @"CPControllerDeclaredKeysKey";
 
@@ -22,13 +24,13 @@ var CPControllerDeclaredKeysKey = @"CPControllerDeclaredKeysKey";
 - (id)init
 {
     self = [super init];
-    
+
     if (self)
     {
         _editors = [];
         _declaredKeys = [];
     }
-    
+
     return self;
 }
 
@@ -41,7 +43,7 @@ var CPControllerDeclaredKeysKey = @"CPControllerDeclaredKeysKey";
 - (id)initWithCoder:(CPCoder)aDecoder
 {
     self = [super init];
-    
+
     if (self)
     {
         _editors = [];

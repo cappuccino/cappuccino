@@ -28,6 +28,7 @@
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPValueTransformer.j>
 
+
 var exposedBindingsMap = [CPDictionary new],
     bindingsMap = [CPDictionary new];
 
@@ -42,12 +43,12 @@ var CPBindingOperationAnd = 0,
 
 + (void)exposeBinding:(CPString)aBinding forClass:(Class)aClass
 {
-    var bindings = [exposedBindingsMap objectForKey:[aClass hash]];
+    var bindings = [exposedBindingsMap objectForKey:[aClass UID]];
 
     if (!bindings)
     {
         bindings = [];
-        [exposedBindingsMap setObject:bindings forKey:[aClass hash]];
+        [exposedBindingsMap setObject:bindings forKey:[aClass UID]];
     }
 
     bindings.push(aBinding);
@@ -55,12 +56,12 @@ var CPBindingOperationAnd = 0,
 
 + (CPArray)exposedBindingsForClass:(Class)aClass
 {
-    return [[exposedBindingsMap objectForKey:[aClass hash]] copy];
+    return [[exposedBindingsMap objectForKey:[aClass UID]] copy];
 }
 
 + (CPKeyValueBinding)getBinding:(CPString)aBinding forObject:(id)anObject
 {
-    return [[bindingsMap objectForKey:[anObject hash]] objectForKey:aBinding];
+    return [[bindingsMap objectForKey:[anObject UID]] objectForKey:aBinding];
 }
 
 + (CPDictionary)infoForBinding:(CPString)aBinding forObject:(id)anObject
@@ -75,12 +76,12 @@ var CPBindingOperationAnd = 0,
 
 + (CPDictionary)allBindingsForObject:(id)anObject
 {
-    return [bindingsMap objectForKey:[anObject hash]];
+    return [bindingsMap objectForKey:[anObject UID]];
 }
 
 + (void)unbind:(CPString)aBinding forObject:(id)anObject
 {
-    var bindings = [bindingsMap objectForKey:[anObject hash]];
+    var bindings = [bindingsMap objectForKey:[anObject UID]];
 
     if (!bindings)
         return;
@@ -100,7 +101,7 @@ var CPBindingOperationAnd = 0,
 
 + (void)unbindAllForObject:(id)anObject
 {
-    var bindings = [bindingsMap objectForKey:[anObject hash]];
+    var bindings = [bindingsMap objectForKey:[anObject UID]];
     if (!bindings)
         return;
 
@@ -110,7 +111,7 @@ var CPBindingOperationAnd = 0,
     while (count--)
         [anObject unbind:[bindings objectForKey:allKeys[count]]];
 
-    [bindingsMap removeObjectForKey:[anObject hash]];
+    [bindingsMap removeObjectForKey:[anObject UID]];
 }
 
 - (id)initWithBinding:(CPString)aBinding name:(CPString)aName to:(id)aDestination keyPath:(CPString)aKeyPath options:(CPDictionary)options from:(id)aSource
@@ -127,11 +128,11 @@ var CPBindingOperationAnd = 0,
 
         [aDestination addObserver:self forKeyPath:aKeyPath options:CPKeyValueObservingOptionNew context:aBinding];
 
-        var bindings = [bindingsMap objectForKey:[_source hash]];
+        var bindings = [bindingsMap objectForKey:[_source UID]];
         if (!bindings)
         {
             bindings = [CPDictionary new];
-            [bindingsMap setObject:bindings forKey:[_source hash]];
+            [bindingsMap setObject:bindings forKey:[_source UID]];
         }
 
         [bindings setObject:self forKey:aName];
@@ -177,7 +178,7 @@ var CPBindingOperationAnd = 0,
 
     [_source setValue:newValue forKey:aBinding];
 
-    if ([_source respondsToSelector:@selector(_setCurrentValueIsPlaceholder:)])
+    if (aBinding === @"objectValue" && [_source respondsToSelector:@selector(_setCurrentValueIsPlaceholder:)])
         [_source _setCurrentValueIsPlaceholder:isPlaceholder];
 }
 
@@ -230,7 +231,7 @@ var CPBindingOperationAnd = 0,
         aValue = [valueTransformer transformedValue:aValue];
 
 
-    if (aValue === undefined || aValue === nil)
+    if (aValue === undefined || aValue === nil || aValue === [CPNull null])
         aValue = [options objectForKey:CPNullPlaceholderBindingOption] || nil;
 
     return aValue;
@@ -247,7 +248,7 @@ var CPBindingOperationAnd = 0,
         valueTransformer = [options objectForKey:CPValueTransformerBindingOption];
 
     if (valueTransformer && [[valueTransformer class] allowsReverseTransformation])
-        aValue = [valueTransformer transformedValue:aValue];
+        aValue = [valueTransformer reverseTransformedValue:aValue];
 
     return aValue;
 }
@@ -319,7 +320,7 @@ var CPBindingOperationAnd = 0,
 
 - (void)setValueFor:(CPString)aBinding
 {
-    var bindings = [bindingsMap valueForKey:[_source hash]];
+    var bindings = [bindingsMap valueForKey:[_source UID]];
 
     if (!bindings)
         return;
@@ -340,7 +341,7 @@ var CPBindingOperationAnd = 0,
 
 - (void)setValueFor:(CPString)aBinding
 {
-    var bindings = [bindingsMap objectForKey:[_source hash]];
+    var bindings = [bindingsMap objectForKey:[_source UID]];
 
     if (!bindings)
         return;
@@ -440,30 +441,30 @@ CPToolTipBinding        = @"CPToolTipBinding";
 CPValueBinding          = @"value";
 
 //Binding options constants
-CPAllowsEditingMultipleValuesSelectionBindingOption = @"CPAllowsEditingMultipleValuesSelectionBindingOption";
-CPAllowsNullArgumentBindingOption                   = @"CPAllowsNullArgumentBindingOption";
-CPConditionallySetsEditableBindingOption            = @"CPConditionallySetsEditableBindingOption";
-CPConditionallySetsEnabledBindingOption             = @"CPConditionallySetsEnabledBindingOption";
-CPConditionallySetsHiddenBindingOption              = @"CPConditionallySetsHiddenBindingOption";
-CPContinuouslyUpdatesValueBindingOption             = @"CPContinuouslyUpdatesValueBindingOption";
-CPCreatesSortDescriptorBindingOption                = @"CPCreatesSortDescriptorBindingOption";
-CPDeletesObjectsOnRemoveBindingsOption              = @"CPDeletesObjectsOnRemoveBindingsOption";
-CPDisplayNameBindingOption                          = @"CPDisplayNameBindingOption";
-CPDisplayPatternBindingOption                       = @"CPDisplayPatternBindingOption";
-CPHandlesContentAsCompoundValueBindingOption        = @"CPHandlesContentAsCompoundValueBindingOption";
-CPInsertsNullPlaceholderBindingOption               = @"CPInsertsNullPlaceholderBindingOption";
-CPInvokesSeparatelyWithArrayObjectsBindingOption    = @"CPInvokesSeparatelyWithArrayObjectsBindingOption";
-CPMultipleValuesPlaceholderBindingOption            = @"CPMultipleValuesPlaceholderBindingOption";
-CPNoSelectionPlaceholderBindingOption               = @"CPNoSelectionPlaceholderBindingOption";
-CPNotApplicablePlaceholderBindingOption             = @"CPNotApplicablePlaceholderBindingOption";
-CPNullPlaceholderBindingOption                      = @"CPNullPlaceholderBindingOption";
-CPPredicateFormatBindingOption                      = @"CPPredicateFormatBindingOption";
-CPRaisesForNotApplicableKeysBindingOption           = @"CPRaisesForNotApplicableKeysBindingOption";
-CPSelectorNameBindingOption                         = @"CPSelectorNameBindingOption";
-CPSelectsAllWhenSettingContentBindingOption         = @"CPSelectsAllWhenSettingContentBindingOption";
-CPValidatesImmediatelyBindingOption                 = @"CPValidatesImmediatelyBindingOption";
-CPValueTransformerNameBindingOption                 = @"CPValueTransformerNameBindingOption";
-CPValueTransformerBindingOption                     = @"CPValueTransformerBindingOption";
+CPAllowsEditingMultipleValuesSelectionBindingOption = @"CPAllowsEditingMultipleValuesSelection";
+CPAllowsNullArgumentBindingOption                   = @"CPAllowsNullArgument";
+CPConditionallySetsEditableBindingOption            = @"CPConditionallySetsEditable";
+CPConditionallySetsEnabledBindingOption             = @"CPConditionallySetsEnabled";
+CPConditionallySetsHiddenBindingOption              = @"CPConditionallySetsHidden";
+CPContinuouslyUpdatesValueBindingOption             = @"CPContinuouslyUpdatesValue";
+CPCreatesSortDescriptorBindingOption                = @"CPCreatesSortDescriptor";
+CPDeletesObjectsOnRemoveBindingsOption              = @"CPDeletesObjectsOnRemove";
+CPDisplayNameBindingOption                          = @"CPDisplayName";
+CPDisplayPatternBindingOption                       = @"CPDisplayPattern";
+CPHandlesContentAsCompoundValueBindingOption        = @"CPHandlesContentAsCompoundValue";
+CPInsertsNullPlaceholderBindingOption               = @"CPInsertsNullPlaceholder";
+CPInvokesSeparatelyWithArrayObjectsBindingOption    = @"CPInvokesSeparatelyWithArrayObjects";
+CPMultipleValuesPlaceholderBindingOption            = @"CPMultipleValuesPlaceholder";
+CPNoSelectionPlaceholderBindingOption               = @"CPNoSelectionPlaceholder";
+CPNotApplicablePlaceholderBindingOption             = @"CPNotApplicablePlaceholder";
+CPNullPlaceholderBindingOption                      = @"CPNullPlaceholder";
+CPPredicateFormatBindingOption                      = @"CPPredicateFormat";
+CPRaisesForNotApplicableKeysBindingOption           = @"CPRaisesForNotApplicableKeys";
+CPSelectorNameBindingOption                         = @"CPSelectorName";
+CPSelectsAllWhenSettingContentBindingOption         = @"CPSelectsAllWhenSettingContent";
+CPValidatesImmediatelyBindingOption                 = @"CPValidatesImmediately";
+CPValueTransformerNameBindingOption                 = @"CPValueTransformerName";
+CPValueTransformerBindingOption                     = @"CPValueTransformer";
 
 CPIsControllerMarker = function(/*id*/anObject)
 {

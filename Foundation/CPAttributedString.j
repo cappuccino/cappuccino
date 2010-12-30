@@ -48,7 +48,7 @@
     CPArray     _rangeEntries;
 }
 
-//Creating an NSAttributedString Object
+// Creating a CPAttributedString Object
 /*!
     Creates a new attributed string from a character string.
     @param aString is the string to initialise from.
@@ -146,7 +146,7 @@
             return CPOrderedAscending;
     }
 
-    return [_rangeEntries indexOfObject:anIndex sortedByFunction:sortFunction];
+    return [_rangeEntries indexOfObject:anIndex inSortedRange:nil options:0 usingComparator:sortFunction];
 }
 
 //Retrieving Attribute Information
@@ -390,11 +390,11 @@
 */
 - (BOOL)isEqualToAttributedString:(CPAttributedString)aString
 {
-	if (!aString)
-		return NO;
+    if (!aString)
+        return NO;
 
-	if (_string != [aString string])
-		return NO;
+    if (_string != [aString string])
+        return NO;
 
     var myRange = CPMakeRange(),
         comparisonRange = CPMakeRange(),
@@ -424,13 +424,13 @@
 */
 - (BOOL)isEqual:(id)anObject
 {
-	if (anObject == self)
-		return YES;
+    if (anObject == self)
+        return YES;
 
-	if ([anObject isKindOfClass:[self class]])
-		return [self isEqualToAttributedString:anObject];
+    if ([anObject isKindOfClass:[self class]])
+        return [self isEqualToAttributedString:anObject];
 
-	return NO;
+    return NO;
 }
 
 //Extracting a Substring
@@ -530,8 +530,8 @@
 
     endingIndex = startingIndex + 1;
 
-    while(endingIndex < _rangeEntries.length)
-        _rangeEntries[endingIndex++].range.location+=additionalLength;
+    while (endingIndex < _rangeEntries.length)
+        _rangeEntries[endingIndex++].range.location += additionalLength;
 }
 
 /*!

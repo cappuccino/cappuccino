@@ -61,6 +61,8 @@ CPLog(@"Got some class: %@", inst);
 
     @todo document KVC usage.
 */
+
+
 @implementation CPObject
 {
     Class   isa;
@@ -352,7 +354,7 @@ CPLog(@"Got some class: %@", inst);
 
     if (signature)
     {
-        invocation = [CPInvocation invocationWithMethodSignature:signature];
+        var invocation = [CPInvocation invocationWithMethodSignature:signature];
 
         [invocation setTarget:self];
         [invocation setSelector:aSelector];
@@ -450,11 +452,9 @@ CPLog(@"Got some class: %@", inst);
     Sets the class version number.
     @param the new version number for the class
 */
-+ (id)setVersion:(int)aVersion
++ (void)setVersion:(int)aVersion
 {
-    version = aVersion;
-
-    return self;
+    class_setVersion(self, aVersion);
 }
 
 /*!
@@ -462,7 +462,7 @@ CPLog(@"Got some class: %@", inst);
 */
 + (int)version
 {
-    return version;
+    return class_getVersion(self);
 }
 
 // Scripting (?)
@@ -471,6 +471,8 @@ CPLog(@"Got some class: %@", inst);
 */
 - (CPString)className
 {
+    // FIXME: Why doesn't this work in KVO???
+    // return class_getName([self class]);
     return isa.name;
 }
 

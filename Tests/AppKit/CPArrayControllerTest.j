@@ -1,3 +1,6 @@
+
+@import <AppKit/CPArrayController.j>
+
 @implementation CPArrayControllerTest : OJTestCase
 {
     CPArrayController   _arrayController @accessors(property=arrayController);
@@ -10,9 +13,9 @@
 {
     _contentArray = [];
 
-    [_contentArray addObject:[Person personWithName:@"Francisco" age:21]];
-    [_contentArray addObject:[Person personWithName:@"Ross" age:30]];
-    [_contentArray addObject:[Person personWithName:@"Tom" age:15]];
+    [_contentArray addObject:[Employee employeeWithName:@"Francisco" department:[Department departmentWithName:@"Cappuccino"]]];
+    [_contentArray addObject:[Employee employeeWithName:@"Ross" department:[Department departmentWithName:@"Cappuccino"]]];
+    [_contentArray addObject:[Employee employeeWithName:@"Tom" department:[Department departmentWithName:@"CommonJS"]]];
 
     // Copy the array since we'll reuse the original array later. Also see issue #795.
     _arrayController = [[CPArrayController alloc] initWithContent:[[self contentArray] copy]];
@@ -22,6 +25,12 @@
 {
     [self assert:[self contentArray] equals:[[self arrayController] contentArray]];
     [self assert:[_CPObservableArray class] equals:[[[self arrayController] arrangedObjects] class] message:"arranged objects should be observable"];
+}
+
+- (void)testInitWithoutContent
+{
+    _arrayController = [[CPArrayController alloc] init];
+    [self assert:[] equals:[[self arrayController] contentArray]];
 }
 
 - (void)testSetContent
@@ -37,10 +46,10 @@
 
 - (void)testInsertObjectAtArrangedObjectIndex
 {
-    var object = [Person personWithName:@"Klaas Pieter" age:24],
+    var object = [Employee employeeWithName:@"Klaas Pieter" department:[Department departmentWithName:@"Theming"]],
         arrayController = [self arrayController];
 
-    [arrayController setSortDescriptors:[[CPSortDescriptor sortDescriptorWithKey:@"age" ascending:YES]]];
+    [arrayController setSortDescriptors:[[CPSortDescriptor sortDescriptorWithKey:@"name" ascending:YES]]];
     [arrayController insertObject:object atArrangedObjectIndex:1];
 
     [self assert:object equals:[[arrayController arrangedObjects] objectAtIndex:1]];
@@ -83,6 +92,30 @@
     [self assert:[CPIndexSet indexSetWithIndex:count - 1] equals:[arrayController selectionIndexes]];
 }
 
+/*
+    Verify that the arranged objects ordering is correct versus the content array when objects are added with addObject and no sort descriptors are set.
+*/
+- (void)testAddObjects
+{
+    _arrayController = [[CPArrayController alloc] init];
+    var content = [];
+    [_arrayController setContent:content];
+
+    [_arrayController addObject:[CPNumber numberWithInt:1]];
+    [_arrayController addObject:[CPNumber numberWithInt:2]];
+
+    [self assert:[CPNumber numberWithInt:1] equals:content[0]];
+    [self assert:[CPNumber numberWithInt:2] equals:content[1]];
+
+    [self assert:[CPNumber numberWithInt:1] equals:[_arrayController arrangedObjects][0] message:"arranged objects should be in the correct order"];
+    [self assert:[CPNumber numberWithInt:2] equals:[_arrayController arrangedObjects][1] message:"arranged objects should be in the correct order"];
+
+    [_arrayController rearrangeObjects];
+
+    [self assert:[CPNumber numberWithInt:1] equals:[_arrayController arrangedObjects][0]];
+    [self assert:[CPNumber numberWithInt:2] equals:[_arrayController arrangedObjects][1]];
+}
+
 - (void)testRemoveObjects
 {
     var arrayController = [self arrayController];
@@ -111,6 +144,35 @@
     // Remove from all
     [arrayController removeObjects:[[[arrayController content] objectAtIndex:0]]];
     [self assert:[CPIndexSet indexSet] equals:[arrayController selectionIndexes] message:@"no objects left, selection should disappear"];
+}
+
+- (void)testRemoveObjectsWithoutSelection
+{
+    var arrayController = [self arrayController],
+        objectsToRemove = [[[self arrayController] arrangedObjects] objectsAtIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(1, 2)]];
+
+    // without any selection
+    [arrayController setSelectedObjects:[]];
+
+    // we should be able to remove arbitrary sets of objects
+    [arrayController removeObjects:objectsToRemove];
+
+    for (var i = 0; i < [objectsToRemove count]; i++)
+        [self assertFalse:[[arrayController arrangedObjects] containsObject:[objectsToRemove objectAtIndex:i]] message:@"remove objects should no longer appear in arrangedObjects"];
+}
+
+- (void)testRemoveObject
+{
+    var arrayController = [self arrayController],
+        objectToRemove = [[arrayController arrangedObjects] objectAtIndex:0];
+
+    // without any selection
+    [arrayController setSelectedObjects:[]];
+
+    // we should be able to remove arbitrary objects
+    [arrayController removeObject:objectToRemove];
+
+    [self assertFalse:[[arrayController arrangedObjects] containsObject:objectToRemove] message:@"removed objects should no longer appear in arrangedObjects"];
 }
 
 - (void)testSelectionWhenObjectsDisappear
@@ -258,6 +320,40 @@
     [self assert:newSelection equals:[arrayController selectionIndexes] message:@"selection was not set properly"];
 }
 
+- (void)testCompoundKeyPaths
+{
+    var departmentNameField = [[CPTextField alloc] init];
+    [departmentNameField bind:@"value" toObject:[self arrayController] withKeyPath:@"selection.department.name" options:nil];
+
+    // This should be 'No Selection'
+    [self assert:@"" equals:[departmentNameField stringValue]];
+
+    [[self arrayController] setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
+    [self assert:@"Cappuccino" equals:[departmentNameField stringValue]];
+
+    [[self arrayController] setSelectionIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)]];
+    [self assert:@"Cappuccino" equals:[departmentNameField stringValue] message:@"key path values should be equal"];
+
+    [[self arrayController] setValue:@"280North" forKeyPath:@"selection.department.name"];
+    [self assert:@"280North" equals:[departmentNameField stringValue]];
+
+    [[self arrayController] setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
+
+    [[self arrayController] valueForKeyPath:@"selection.department.name"];
+    [[self arrayController] valueForKeyPath:@"selection.department.building"];
+    [[self arrayController] valueForKeyPath:@"selection.department"];
+
+    var employee = [[[self arrayController] selectedObjects] lastObject],
+        department = [Department departmentWithName:@"Meh"];
+
+    [department setBuilding:@"Building 1"];
+    [employee setDepartment:department];
+
+    [self assert:@"Meh" equals:[departmentNameField stringValue]];
+    [self assert:department equals:[[self arrayController] valueForKeyPath:@"selection.department"]];
+    [self assert:@"Building 1" equals:[[self arrayController] valueForKeyPath:@"selection.department.building"]];
+}
+
 - (void)observeValueForKeyPath:keyPath
     ofObject:anActivity
     change:change
@@ -275,23 +371,23 @@
 
 @end
 
-@implementation Person : CPObject
+@implementation Employee : CPObject
 {
-    CPString  _name @accessors(property=name);
-    int       _age @accessors(property=age);
+    CPString            _name @accessors(property=name);
+    Department          _department @accessors(property=department);
 }
 
-+ (id)personWithName:(CPString)aName age:(int)anAge
++ (id)employeeWithName:(CPString)theName department:(Department)theDepartment
 {
-    return [[self alloc] initWithName:aName age:anAge];
+    return [[self alloc] initWithName:theName department:theDepartment];
 }
 
-- (id)initWithName:(CPString)aName age:(int)anAge
+- (id)initWithName:(CPString)theName department:(Department)theDepartment
 {
     if (self = [super init])
     {
-        _name = aName;
-        _age = anAge;
+        _name = theName;
+        _department = theDepartment;
     }
 
     return self;
@@ -299,7 +395,30 @@
 
 - (CPString)description
 {
-    return [CPString stringWithFormat:@"<Person %@ : %@>", [self name], [self age]];
+    return [CPString stringWithFormat:@"<Employee %@>", [self name]];
+}
+
+@end
+
+@implementation Department : CPObject
+{
+    CPString                    _name @accessors(property=name);
+    CPString                    _building @accessors(property=building);
+}
+
++ (id)departmentWithName:(CPString)theName
+{
+    return [[self alloc] initWithName:theName];
+}
+
+- (id)initWithName:(CPString)theName
+{
+    if (self = [super init])
+    {
+        _name = theName;
+    }
+
+    return self;
 }
 
 @end

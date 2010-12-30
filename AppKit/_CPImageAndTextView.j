@@ -28,10 +28,6 @@
 @import "CPView.j"
 @import "CPControl.j"
 
-#include "CoreGraphics/CGGeometry.h"
-
-#include "Platform/Platform.h"
-#include "Platform/DOM/CPDOMDisplayServer.h"
 
 var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     _CPImageAndTextViewImageChangedFlag             = 1 << 1,
@@ -66,7 +62,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     CPImage                 _image;
     CPString                _text;
 
-    CGRect                  _textSize;
+    CGSize                  _textSize;
 
     unsigned                _flags;
 
@@ -107,7 +103,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
             [self setImageScaling:CPScaleNone];
         }
 
-        _textSize = NULL;
+        _textSize = nil;
     }
 
     return self;
@@ -251,7 +247,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
     _font = aFont;
     _flags |= _CPImageAndTextViewFontChangedFlag;
-    _textSize = NULL;
+    _textSize = nil;
 
     [self setNeedsLayout];
 }
@@ -345,7 +341,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     _text = text;
     _flags |= _CPImageAndTextViewTextChangedFlag;
 
-    _textSize = NULL;
+    _textSize = nil;
 
     [self setNeedsLayout];
 }
@@ -368,7 +364,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         {
             _DOMElement.removeChild(_DOMTextElement);
 
-            _DOMTextElement = NULL;
+            _DOMTextElement = nil;
 
             hasDOMTextElement = NO;
         }
@@ -406,7 +402,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         {
             _DOMElement.removeChild(_DOMTextShadowElement);
 
-            _DOMTextShadowElement = NULL;
+            _DOMTextShadowElement = nil;
 
             hasDOMTextShadowElement = NO;
         }
@@ -544,7 +540,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         {
             _DOMElement.removeChild(_DOMImageElement);
 
-            _DOMImageElement = NULL;
+            _DOMImageElement = nil;
 
             hasDOMImageElement = NO;
         }
@@ -718,7 +714,12 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         if (!_textSize)
             _textSize = [_text sizeWithFont:_font ? _font : [CPFont systemFontOfSize:12.0]];
 
-        if (_imagePosition === CPImageLeft || _imagePosition === CPImageRight)
+        if (!_image || _imagePosition === CPImageOverlaps)
+        {
+            size.width = MAX(size.width, _textSize.width);
+            size.height = MAX(size.height, _textSize.height);
+        }
+        else if (_imagePosition === CPImageLeft || _imagePosition === CPImageRight)
         {
             size.width += _textSize.width + _imageOffset;
             size.height = MAX(size.height, _textSize.height);
@@ -727,11 +728,6 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         {
             size.width = MAX(size.width, _textSize.width);
             size.height += _textSize.height + _imageOffset;
-        }
-        else // if (_imagePosition == CPImageOverlaps)
-        {
-            size.width = MAX(size.width, _textSize.width);
-            size.height = MAX(size.height, _textSize.height);
         }
     }
 

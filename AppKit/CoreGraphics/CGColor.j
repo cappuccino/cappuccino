@@ -31,7 +31,7 @@ function CFHashCode(aCFObject)
 {
     if (!aCFObject.hash)
         aCFObject.hash = ++CFTypeGlobalCount;
-        
+
     return aCFObject;
 }
 
@@ -47,7 +47,7 @@ function CGColorGetConstantColor(aColorName)
 }
 
 /*!
-    This function is for source compatability.    
+    This function is for source compatability.
 */
 function CGColorRetain(aColor)
 {
@@ -55,7 +55,7 @@ function CGColorRetain(aColor)
 }
 
 /*!
-    This function is for source compatability.    
+    This function is for source compatability.
 */
 function CGColorRelease()
 {
@@ -74,14 +74,14 @@ function CGColorCreate(aColorSpace, components)
         return NULL;
 
     var components = components.slice();
-    
+
     CGColorSpaceStandardizeComponents(aColorSpace, components);
-    
+
     var UID = CFHashCode(aColorSpace) + components.join("");
-    
+
     if (_CGColorMap[UID])
         return _CGColorMap[UID];
-    
+
     return _CGColorMap[UID] = { colorspace:aColorSpace, pattern:NULL, components:components };
 }
 
@@ -150,9 +150,9 @@ function CGColorCreateGenericCMYK(cyan, magenta, yellow, black, alpha)
 function CGColorCreateCopyWithAlpha(aColor, anAlpha)
 {
     var components = aColor.components;
-    
+
     if (!aColor || anAlpha == components[components.length - 1])
-    	return aColor;
+        return aColor;
 
     if (aColor.pattern)
         var copy = CGColorCreateWithPattern(aColor.colorspace, aColor.pattern, components);
@@ -160,7 +160,7 @@ function CGColorCreateCopyWithAlpha(aColor, anAlpha)
         var copy = CGColorCreate(aColor.colorspace, components);
 
     copy.components[components.length - 1] = anAlpha;
-    
+
     return copy;
 }
 
@@ -191,7 +191,7 @@ function CGColorEqualToColor(lhs, rhs)
 {
     if (lhs == rhs)
         return true;
-        
+
     if (!lhs || !rhs)
         return false;
 
@@ -201,17 +201,17 @@ function CGColorEqualToColor(lhs, rhs)
 
     if (lhsComponentCount != rhsComponents.length)
         return false;
-    
-    while (lhsComponentCount--) 
+
+    while (lhsComponentCount--)
         if (lhsComponents[lhsComponentCount] != rhsComponents[lhsComponentCount])
             return false;
-            
+
     if (lhs.pattern != rhs.pattern)
         return false;
-        
+
     if (CGColorSpaceEqualToColorSpace(lhs.colorspace, rhs.colorspace))
         return false;
-        
+
     return true;
 }
 
@@ -224,7 +224,7 @@ function CGColorEqualToColor(lhs, rhs)
 function CGColorGetAlpha(aColor)
 {
     var components = aColor.components;
-    
+
     return components[components.length - 1];
 }
 
@@ -273,13 +273,13 @@ function CGColorGetPattern(aColor)
 }
 
 /*    var components = aColor.components;
-    
+
     case :  _CGCSSForColor[CFGetHash(aColor)] = "rgba(" + ROUND(components[0] * 255.0) + ',' + ROUND(components[0] * 255.0) + ',' ROUND(components[0] * 255.0) + ',' + ROUND(components[0] * 255.0);
-        	_cssString = (hasAlpha ? "rgba(" : "rgb(") + 
-        	    parseInt(_components[0] * 255.0) + ", " + 
-        	    parseInt(_components[1] * 255.0) + ", " + 
-        	    parseInt(_components[2] * 255.0) + 
-        	    (hasAlpha ?  (", " + _components[3]) : "") + ")";
+            _cssString = (hasAlpha ? "rgba(" : "rgb(") +
+                parseInt(_components[0] * 255.0) + ", " +
+                parseInt(_components[1] * 255.0) + ", " +
+                parseInt(_components[2] * 255.0) +
+                (hasAlpha ?  (", " + _components[3]) : "") + ")";
 
 function CFStringFromColor()
 {

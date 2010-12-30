@@ -23,8 +23,6 @@
 @import <Foundation/CPArray.j>
 @import <Foundation/CPObject.j>
 
-#include "CPDOMDisplayServer.h"
-
 
 @implementation CPDOMWindowLayer : CPObject
 {
