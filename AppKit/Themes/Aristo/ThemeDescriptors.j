@@ -1523,30 +1523,33 @@ var themedButtonValues = nil,
         size = CGSizeMake(400.0, 110.0),
         suppressionButtonXOffset = 2.0,
         suppressionButtonYOffset = 10.0,
-        warningIcon = PatternImage("alert-warning.png", 53.0, 46.0),
+        suppressionButtonFont = [CPFont systemFontOfSize:12.0],
+        warningIcon = PatternImage("alert-warning.png", 53.0, 46.0);
 
-        themedAlertValues =
-        [
-            [@"button-offset",                  buttonOffset],
-            [@"content-inset",                  inset],
-            [@"default-elements-margin",        defaultElementsMargin],
-            [@"error-image",                    errorIcon],
-            [@"help-image",                     helpIcon],
-            [@"help-image-left-offset",         helpLeftOffset],
-            [@"help-image-pressed",             helpIconPressed],
-            [@"image-offset",                   imageOffset],
-            [@"information-image",              informationIcon],
-            [@"informative-text-alignment",     CPJustifiedTextAlignment],
-            [@"informative-text-color",         [CPColor blackColor]],
-            [@"informative-text-font",          informativeFont],
-            [@"message-text-alignment",         CPJustifiedTextAlignment],
-            [@"message-text-color",             [CPColor blackColor]],
-            [@"message-text-font",              messageFont],
-            [@"size",                           size],
-            [@"suppression-button-x-offset",    suppressionButtonXOffset],
-            [@"suppression-button-y-offset",    suppressionButtonYOffset],
-            [@"warning-image",                  warningIcon]
-        ];
+    themedAlertValues =
+    [
+        [@"button-offset",                      buttonOffset],
+        [@"content-inset",                      inset],
+        [@"default-elements-margin",            defaultElementsMargin],
+        [@"error-image",                        errorIcon],
+        [@"help-image",                         helpIcon],
+        [@"help-image-left-offset",             helpLeftOffset],
+        [@"help-image-pressed",                 helpIconPressed],
+        [@"image-offset",                       imageOffset],
+        [@"information-image",                  informationIcon],
+        [@"informative-text-alignment",         CPJustifiedTextAlignment],
+        [@"informative-text-color",             [CPColor blackColor]],
+        [@"informative-text-font",              informativeFont],
+        [@"message-text-alignment",             CPJustifiedTextAlignment],
+        [@"message-text-color",                 [CPColor blackColor]],
+        [@"message-text-font",                  messageFont],
+        [@"suppression-button-text-color",      [CPColor blackColor]],
+        [@"suppression-button-text-font",       suppressionButtonFont],
+        [@"size",                               size],
+        [@"suppression-button-x-offset",        suppressionButtonXOffset],
+        [@"suppression-button-y-offset",        suppressionButtonYOffset],
+        [@"warning-image",                      warningIcon]
+    ];
 
     [self registerThemeValues:themedAlertValues forView:alert];
 
@@ -1756,6 +1759,7 @@ var themedButtonValues = nil,
         [
             [@"message-text-color",             [CPColor whiteColor]],
             [@"informative-text-color",         [CPColor whiteColor]],
+            [@"suppression-button-text-color",  [CPColor whiteColor]],
         ];
 
     [self registerThemeValues:hudSpecificValues forView:alert inherit:themedAlertValues];
