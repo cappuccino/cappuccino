@@ -135,10 +135,17 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     CPTableView object displays record-oriented data in a table and
     allows the user to edit values and resize and rearrange columns.
-    A CPTableView requires you to set a dataSource which implements numberOfRowsInTableView:
-    and tableView:objectValueForTableColumn:row:
+    A CPTableView requires you to either set a data source which implements
+    numberOfRowsInTableView: and tableView:objectValueForTableColumn:row:,
+    or alternatively to provide data through Key Value Bindings.
 
-    All delegate and datasource methods are documented in the setDataSource: and setDelegate: methods
+    To use a table view with Key Value Bindings, bind each column's
+    CPValueBinding to an array.field path - typically this would be to a path
+    in an array controller like "arrangedObjects.X", where X is the name of a
+    field. Optionally also bind the table's "selectionIndexes" and
+    "sortDescriptors" to the array controller.
+
+    All delegate and data source methods are documented in the setDataSource: and setDelegate: methods.
 
     If you want to display something other than just text in the table you should call setDataView: on CPColumn. More documentation in that class.
 */
@@ -380,7 +387,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     - (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRowIndex;
         Returns the object value for each dataview. Each dataview will be sent a setObjectValue: method which will contai
-        the object you return from this datasource method. 
+        the object you return from this datasource method.
 
     Editing:
     - (void)tableView:(CPTableView)aTableView setObjectValue:(id)anObject forTableColumn:(CPTableColumn)aTableColumn row:(int)rowIndex;
@@ -395,10 +402,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     - (CPDragOperation)tableView:(CPTableView)aTableView validateDrop:(CPDraggingInfo)info proposedRow:(int)row proposedDropOperation:(CPTableViewDropOperation)operation;
         Return the drag operation (move, copy, etc) that should be performaned if a registered drag type is over the tableview
-        The data source can retarget a drop if you want by calling -(void)setDropRow:(int)aRow dropOperation:(CPTableViewDropOperation)anOperation; 
+        The data source can retarget a drop if you want by calling -(void)setDropRow:(int)aRow dropOperation:(CPTableViewDropOperation)anOperation;
 
     - (BOOL)tableView:(CPTableView)aTableView writeRowsWithIndexes:(CPIndexSet)rowIndexes toPasteboard:(CPPasteboard)pboard;
-        Returns YES if the drop operation is allowed otherwise NO. 
+        Returns YES if the drop operation is allowed otherwise NO.
         This method is invoked by the tabeview after a drag should begin, but before it is started. If you dont want the drag to being return NO.
         If you want the drag to begin you should return YES and place the drag data on the pboard.
 
@@ -553,7 +560,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 /*!
-    Returns YES if the user is allowed to manually resize the columns, otherwise NO. 
+    Returns YES if the user is allowed to manually resize the columns, otherwise NO.
 */
 - (BOOL)allowsColumnResizing
 {
@@ -650,8 +657,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 /*!
-    Sets the height of each row. 
-    NOTE: This may still used even if variable row height is being used. 
+    Sets the height of each row.
+    NOTE: This may still used even if variable row height is being used.
 
     @param aRowHeight the height of each row
 */
@@ -995,7 +1002,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     Retuns the CPTableColumn object with the given identifier string
 
     @param anIdentifier the string value of the identifier
-    @return a CPTableColumn object with the given identifier 
+    @return a CPTableColumn object with the given identifier
 */
 - (CPTableColumn)tableColumnWithIdentifier:(CPString)anIdentifier
 {
@@ -1602,7 +1609,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 /*!
-    @ignore  
+    @ignore
     when we draw the row backgrounds we dont want an index bounding our range
 */
 - (CPRange)_unboundedRowsInRect:(CGRect)aRect
@@ -2077,8 +2084,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 /*!
     Set the name under which the table information is automatically saved to theAutosaveName.
-    The table information is saved separately for each user and for each application that user uses. 
-    Note that even though a table view has an autosave name, it may not be saving table information automatically. 
+    The table information is saved separately for each user and for each application that user uses.
+    Note that even though a table view has an autosave name, it may not be saving table information automatically.
     To set whether table information is being saved automatically, use setAutosaveTableColumns:
 */
 - (void)setAutosaveName:(CPString)theAutosaveName
@@ -2103,7 +2110,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 /*!
     Sets whether the order and width of this table view’s columns are automatically saved.
 
-    The table information is saved separately for each user and for each application that user uses. 
+    The table information is saved separately for each user and for each application that user uses.
     Note that if autosaveName returns nil, this setting is ignored and table information isn’t saved.
 */
 - (void)setAutosaveTableColumns:(BOOL)shouldAutosave
@@ -2217,13 +2224,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     - (BOOL)tableView:(CPTableView)aTableView shouldSelectRow:(int)rowIndex;
         Return YES if the row at a given index should be selected, other NO to deny the selection.
         NOTE: this is only called via user interaction
-        
+
     - (BOOL)tableView:(CPTableView)aTableView shouldSelectTableColumn:(CPTableColumn)aTableColumn;
         Return YES if the table column given should be selected, otherwise NO to deny the selection.
         NOTE: this is only called via user interaction
 
     - (void)tableViewSelectionIsChanging:(CPNotification)aNotification
-        Inform the delegate that the tableview is in the process of chaning the selection. 
+        Inform the delegate that the tableview is in the process of chaning the selection.
         This usually happens when the user is dragging their mouse across rows.
         NOTE: this is only called via user interaction
 
@@ -2784,7 +2791,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 /*!
-    Set the tableviews CPSortDescriptors objects in an array. 
+    Set the tableviews CPSortDescriptors objects in an array.
 
     @param sortDescriptors an array of sort descritors.
 */
@@ -2807,7 +2814,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 /*!
-    Returns an array of the current sort descriptors currently used by the table. 
+    Returns an array of the current sort descriptors currently used by the table.
 */
 - (CPArray)sortDescriptors
 {
@@ -3621,7 +3628,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 /*!
     This method doesn't do anything in cappuccino however subclasses can override it to customize the
-    appearance of a row. 
+    appearance of a row.
 
     NOTE: tableView:willDisplayView:forTableColumn:row is sent to the delegate before drawing
 */
