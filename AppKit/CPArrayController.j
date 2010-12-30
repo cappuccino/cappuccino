@@ -235,7 +235,7 @@
     else if (sortDescriptors)
         return [objects sortedArrayUsingDescriptors:sortDescriptors];
 
-    return [objects copy];
+    return objects;
 }
 
 - (void)rearrangeObjects
