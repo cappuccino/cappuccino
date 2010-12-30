@@ -94,7 +94,7 @@ CPCriticalAlertStyle        = 2;
 
     CPWindow        _window                 @accessors(property=window,readonly);
     int             _defaultWindowStyle;
-    
+
     CPImageView     _alertImageView;
     CPTextField     _informativeLabel;
     CPTextField     _messageLabel;
@@ -180,21 +180,21 @@ CPCriticalAlertStyle        = 2;
 
 #pragma mark Accessors
 
-/*! 
+/*!
     set the theme to use
-    
+
     @param the theme to use
 */
 - (void)setTheme:(CPTheme)aTheme
 {
     if (aTheme === [self theme])
         return;
-    
+
     if (aTheme === [CPTheme defaultHudTheme])
         _defaultWindowStyle = CPTitledWindowMask | CPHUDBackgroundWindowMask;
     else
         _defaultWindowStyle = CPTitledWindowMask;
-    
+
     _window = nil; // will be regenerated at next layout
     _needsLayout = YES;
     [super setTheme:aTheme];
@@ -250,7 +250,7 @@ CPCriticalAlertStyle        = 2;
 
 /*!
     return the content of the message text
-    
+
     @return CPString containing the message text
 */
 - (CPString)informativeText
@@ -408,13 +408,13 @@ CPCriticalAlertStyle        = 2;
         suppressionViewYOffset = [self currentValueForThemeAttribute:@"suppression-button-y-offset"],
         defaultElementsMargin = [self currentValueForThemeAttribute:@"default-elements-margin"],
         suppressionButtonViewOriginY = CGRectGetMaxY([(_accessoryView || _informativeLabel) frame]) + defaultElementsMargin + suppressionViewYOffset;
-    
+
     [_suppressionButton setTextColor:[self currentValueForThemeAttribute:@"suppression-button-text-color"]];
     [_suppressionButton setFont:[self currentValueForThemeAttribute:@"suppression-button-text-font"]];
     [_suppressionButton setTextShadowColor:[self currentValueForThemeAttribute:@"suppression-button-text-shadow-color"]];
     [_suppressionButton setTextShadowOffset:[self currentValueForThemeAttribute:@"suppression-button-text-shadow-offset"]];
     [_suppressionButton sizeToFit];
-    
+
     [_suppressionButton setFrameOrigin:CGPointMake(inset.left + suppressionViewXOffset, suppressionButtonViewOriginY)];
     [[_window contentView] addSubview:_suppressionButton];
 }
@@ -506,7 +506,7 @@ CPCriticalAlertStyle        = 2;
         }
 
     [_alertImageView setImage:theImage];
-    
+
     var imageSize = theImage ? [theImage size] : CGSizeMakeZero();
     [_alertImageView setFrame:CGRectMake(iconOffset.x, iconOffset.y, imageSize.width, imageSize.height)];
 
@@ -545,7 +545,7 @@ CPCriticalAlertStyle        = 2;
         _needsLayout = YES;
         [self _createWindowWithStyle:_defaultWindowStyle];
     }
-        
+
     [self layout];
     [CPApp runModalForWindow:_window];
 }
