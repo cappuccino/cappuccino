@@ -460,7 +460,7 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
                     else if (token !== TOKEN_OUTLET)
                         throw new SyntaxError(this.error_message("*** Unexpected '@' token in ivar declaration ('@"+token+"')."));
                 }
-                else if (token == TOKEN_SEMICOLON)
+                else if (token == TOKEN_SEMICOLON || token == TOKEN_COMMA)
                 {
                     if (ivar_count++ === 0)
                         CONCAT(buffer, "class_addIvars(the_class, [");
