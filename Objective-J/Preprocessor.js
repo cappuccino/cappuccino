@@ -446,6 +446,7 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
         {
             var ivar_names = {},
                 ivar_count = 0,
+                statement_ivar_count = 0,
                 declaration = [],
                 attributes,
                 accessors = {};
@@ -462,14 +463,28 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
                 }
                 else if (token == TOKEN_SEMICOLON || token == TOKEN_COMMA)
                 {
+                    if (statement_ivar_count && declaration.length > 1)
+                        throw new SyntaxError(this.error_message("*** Only ivar name expected between ',' in ivar declaration."));
+
                     if (ivar_count++ === 0)
                         CONCAT(buffer, "class_addIvars(the_class, [");
                     else
                         CONCAT(buffer, ", ");
 
-                    var name = declaration[declaration.length - 1];
+                    var name;
+                    if (statement_ivar_count++ === 0)
+                        name = declaration[declaration.length - 1];
+                    else
+                    {
+                        if (declaration.length > 1)
+                            throw new SyntaxError(this.error_message("*** Ivar name expected between ',' in ivar declaration."));
+                        name = declaration[0];
+                    }
 
                     CONCAT(buffer, "new objj_ivar(\"" + name + "\")");
+
+                    if (token == TOKEN_SEMICOLON)
+                        statement_ivar_count = 0;
 
                     ivar_names[name] = 1;
                     declaration = [];
@@ -485,7 +500,7 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
             }
 
             // If we have objects in our declaration, the user forgot a ';'.
-            if (declaration.length)
+            if (declaration.length || statement_ivar_count)
                 throw new SyntaxError(this.error_message("*** Expected ';' in ivar declaration, found '}'."));
 
             if (ivar_count)
