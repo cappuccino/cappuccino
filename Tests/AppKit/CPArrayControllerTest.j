@@ -1,5 +1,6 @@
 
 @import <AppKit/CPArrayController.j>
+@import <AppKit/CPTextField.j>
 
 @implementation CPArrayControllerTest : OJTestCase
 {
@@ -190,8 +191,7 @@
 
     [arrayController setContent:newContent];
 
-    [self assert:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)] equals:[arrayController selectionIndexes]
-         message:@"last object cannot be selected"];
+    [self assert:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)] equals:[arrayController selectionIndexes] message:@"last object cannot be selected"];
 }
 
 - (void)testContentBinding
@@ -352,6 +352,16 @@
     [self assert:@"Meh" equals:[departmentNameField stringValue]];
     [self assert:department equals:[[self arrayController] valueForKeyPath:@"selection.department"]];
     [self assert:@"Building 1" equals:[[self arrayController] valueForKeyPath:@"selection.department.building"]];
+}
+
+- (void)testArrangedObjectsNotEmptyAfterSetContentWhenClearsFilterOnInsertionIsTrue
+{
+    var arrayController = [[CPArrayController alloc] init];
+    [arrayController setFilterPredicate:nil];
+    [arrayController setClearsFilterPredicateOnInsertion:YES];  
+    [arrayController setContent:[CPArray arrayWithObject:@"a"]];
+    
+    [self assertTrue:[[arrayController arrangedObjects] count] > 0];
 }
 
 - (void)observeValueForKeyPath:keyPath

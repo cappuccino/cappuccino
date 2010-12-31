@@ -220,7 +220,7 @@
     // We need to be in control of when notifications fire.
     _contentObject = value;
 
-    if (_clearsFilterPredicateOnInsertion)
+    if (_clearsFilterPredicateOnInsertion && _filterPredicate != nil)
         [self __setFilterPredicate:nil]; // Causes a _rearrangeObjects.
     else
         [self _rearrangeObjects];
