@@ -79,6 +79,43 @@
     selectionDidChangeNotificationsReceived++;
 }
 
+/*!
+    Test inline table editing.
+*/
+- (void)testEditCell
+{
+    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0,0,200,150)
+                                                styleMask:CPWindowNotSizable];
+
+    [[theWindow contentView] addSubview:tableView];
+
+    var dataSource = [TestDataSource new];
+
+    [dataSource setTableEntries:["A", "B", "C"]];
+    [tableView setDataSource:dataSource];
+    [tableView setDelegate:[EditableTableDelegate new]];
+
+    [theWindow makeFirstResponder:tableView];
+    [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:1] byExtendingSelection:NO];
+    [tableView editColumn:0 row:1 withEvent:nil select:YES];
+
+    // Process all events immediately to make sure table data views are reloaded.
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    // Now some text field should be the first responder.
+    var fieldEditor = [theWindow firstResponder];
+    [self assert:[fieldEditor class] equals:CPTextField message:"table cell editor should be a text field"];
+
+    [fieldEditor setStringValue:"edited text"];
+    [fieldEditor performClick:nil];
+
+    [self assert:"edited text" equals:[dataSource tableEntries][1] message:"table cell edit should propagate to model"]
+
+    // The first responder status should revert to the table view so that, for example, the user may continue
+    // keyboard navigation to edit the next row.
+    [self assert:[theWindow firstResponder] equals:tableView message:"table view should be first responder after cell edit"];
+}
+
 @end
 
 @implementation TestDataSource : CPObject
@@ -94,6 +131,22 @@
 - (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRow
 {
     return tableEntries[aRow];
+}
+
+- (void)tableView:(CPTableView)aTableView setObjectValue:(id)anObject forTableColumn:(CPTableColumn)aTableColumn row:(int)aRow
+{
+    tableEntries[aRow] = anObject;
+}
+
+@end
+
+@implementation EditableTableDelegate : CPObject
+{
+}
+
+- (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)aTableColumn row:(int)anRow
+{
+    return YES;
 }
 
 @end
