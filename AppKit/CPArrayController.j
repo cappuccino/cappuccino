@@ -38,6 +38,7 @@
     BOOL    _preservesSelection;
     BOOL    _selectsInsertedObjects;
     BOOL    _alwaysUsesMultipleValuesMarker;
+    BOOL    _automaticallyRearrangesObjects;
 
     id      _selectionIndexes;
     id      _sortDescriptors;
@@ -224,7 +225,7 @@
     var filterPredicate = [self filterPredicate],
         sortDescriptors = [self sortDescriptors];
 
-    if (filterPredicate && sortDescriptors)
+    if (filterPredicate && [sortDescriptors count] > 0)
     {
         var sortedObjects = [objects filteredArrayUsingPredicate:filterPredicate];
         [sortedObjects sortUsingDescriptors:sortDescriptors];
@@ -232,7 +233,7 @@
     }
     else if (filterPredicate)
         return [objects filteredArrayUsingPredicate:filterPredicate];
-    else if (sortDescriptors)
+    else if ([sortDescriptors count] > 0)
         return [objects sortedArrayUsingDescriptors:sortDescriptors];
 
     return objects;
@@ -643,7 +644,8 @@ var CPArrayControllerAvoidsEmptySelection             = @"CPArrayControllerAvoid
     CPArrayControllerFilterRestrictsInsertion         = @"CPArrayControllerFilterRestrictsInsertion",
     CPArrayControllerPreservesSelection               = @"CPArrayControllerPreservesSelection",
     CPArrayControllerSelectsInsertedObjects           = @"CPArrayControllerSelectsInsertedObjects",
-    CPArrayControllerAlwaysUsesMultipleValuesMarker   = @"CPArrayControllerAlwaysUsesMultipleValuesMarker";
+    CPArrayControllerAlwaysUsesMultipleValuesMarker   = @"CPArrayControllerAlwaysUsesMultipleValuesMarker",
+    CPArrayControllerAutomaticallyRearrangesObjects   = @"CPArrayControllerAutomaticallyRearrangesObjects";
 
 @implementation CPArrayController (CPCoding)
 
@@ -659,7 +661,9 @@ var CPArrayControllerAvoidsEmptySelection             = @"CPArrayControllerAvoid
         _preservesSelection = [aCoder decodeBoolForKey:CPArrayControllerPreservesSelection];
         _selectsInsertedObjects = [aCoder decodeBoolForKey:CPArrayControllerSelectsInsertedObjects];
         _alwaysUsesMultipleValuesMarker = [aCoder decodeBoolForKey:CPArrayControllerAlwaysUsesMultipleValuesMarker];
-
+        _automaticallyRearrangesObjects = [aCoder decodeBoolForKey:CPArrayControllerAutomaticallyRearrangesObjects];
+        _sortDescriptors = [CPArray array];
+        
         if (![self content] && [self automaticallyPreparesContent])
             [self prepareContent];
         else if (![self content])
@@ -679,6 +683,7 @@ var CPArrayControllerAvoidsEmptySelection             = @"CPArrayControllerAvoid
     [aCoder encodeBool:_preservesSelection forKey:CPArrayControllerPreservesSelection];
     [aCoder encodeBool:_selectsInsertedObjects forKey:CPArrayControllerSelectsInsertedObjects];
     [aCoder encodeBool:_alwaysUsesMultipleValuesMarker forKey:CPArrayControllerAlwaysUsesMultipleValuesMarker];
+    [aCoder encodeBool:_automaticallyRearrangesObjects forKey:CPArrayControllerAutomaticallyRearrangesObjects];
 }
 
 - (void)awakeFromCib
