@@ -1809,7 +1809,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         // Fix me: this fires on the table setup at times
         if (lastColumnMaxX >= superviewWidth && lastColumnMaxX <= aSize.width || lastColumnMaxX <= superviewWidth && lastColumnMaxX >= aSize.width)
             _lastColumnShouldSnap = YES;
-        else
+        else if (mask === CPTableViewUniformColumnAutoresizingStyle)
             return;
     }
 
@@ -1964,10 +1964,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     var count = NUMBER_OF_COLUMNS();
 
-    //decrement the counter until we get to the last row that's not hidden
-    while (count-- && [_tableColumns[count] isHidden]) ;
+    // Decrement the counter until we get to the last column that's not hidden
+    while (count-- && [_tableColumns[count] isHidden]);
 
-    //if the last column exists
+    // If the last column exists
     if (count >= 0)
     {
         var columnToResize = _tableColumns[count],
