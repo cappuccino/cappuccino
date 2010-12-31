@@ -108,6 +108,7 @@
 
     if (self)
     {
+        _sortDescriptors = [CPArray array];
         _selectionIndexes = [CPIndexSet indexSet];
     }
 

@@ -33,10 +33,10 @@
     {
         var flags = [aCoder decodeObjectForKey:@"NSTvFlags"];
 
-        type = flags & 0x7;
+        _type = flags & 0x7;
 
-        items           = [aCoder decodeObjectForKey:@"NSTabViewItems"];
-        selectedIndex   = [items indexOfObject:[aCoder decodeObjectForKey:@"NSSelectedTabViewItem"]];
+        _items           = [aCoder decodeObjectForKey:@"NSTabViewItems"];
+        _selectedIndex   = [_items indexOfObject:[aCoder decodeObjectForKey:@"NSSelectedTabViewItem"]];
 
         //_delegate               = [aCoder decodeObjectForKey:@""];
 

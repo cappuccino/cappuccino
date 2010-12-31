@@ -231,7 +231,7 @@ var CPBindingOperationAnd = 0,
         aValue = [valueTransformer transformedValue:aValue];
 
 
-    if (aValue === undefined || aValue === nil)
+    if (aValue === undefined || aValue === nil || aValue === [CPNull null])
         aValue = [options objectForKey:CPNullPlaceholderBindingOption] || nil;
 
     return aValue;

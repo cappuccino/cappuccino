@@ -96,6 +96,7 @@
         [alert addButtonWithTitle:message[2]];
     if (message.length > 3)
         [alert addButtonWithTitle:message[3]];
+    [alert setTheme:(windowStyle === CPHUDBackgroundWindowMask) ? [CPTheme defaultHudTheme] : [CPTheme defaultTheme]];
     [alert setAlertStyle:variation[1]];
 
     if (windowStyle & CPDocModalWindowMask)

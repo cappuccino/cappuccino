@@ -27,7 +27,7 @@
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    self = [super initWithCoder:aCoder];
+    self = [super NS_initWithCoder:aCoder];
 
     if (self)
     {

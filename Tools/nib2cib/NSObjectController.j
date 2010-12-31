@@ -38,7 +38,7 @@
         else
             _objectClass = [CPMutableDictionary class];
 
-        _editable = [aCoder decodeBoolForKey:@"NSEditable"];
+        _isEditable = [aCoder decodeBoolForKey:@"NSEditable"];
         _automaticallyPreparesContent = [aCoder decodeBoolForKey:@"NSAutomaticallyPreparesContent"];
     }
 

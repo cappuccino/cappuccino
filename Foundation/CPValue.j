@@ -23,7 +23,6 @@
 @import "CPCoder.j"
 @import "CPObject.j"
 
-
 /*!
     @class CPValue
     @ingroup foundation

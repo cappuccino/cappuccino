@@ -145,8 +145,8 @@ if (input == nil)
     if (!anObject || !anObject.isa)
         return NO;
 
-    return [anObject isKindOfClass:CPException] && 
-           name === [anObject name] && 
+    return [anObject isKindOfClass:CPException] &&
+           name === [anObject name] &&
            message === [anObject message] &&
            (_userInfo === [anObject userInfo] || ([_userInfo isEqual:[anObject userInfo]]));
 }
@@ -205,9 +205,24 @@ Error.prototype._userInfo = null;
 
 [CPException initialize];
 
+#define METHOD_CALL_STRING()\
+    ((class_isMetaClass(anObject.isa) ? "+" : "-") + "[" + [anObject className] + " " + aSelector + "]: ")
+
 function _CPRaiseInvalidAbstractInvocation(anObject, aSelector)
 {
     [CPException raise:CPInvalidArgumentException reason:@"*** -" + sel_getName(aSelector) + @" cannot be sent to an abstract object of class " + [anObject className] + @": Create a concrete instance!"];
+}
+
+function _CPRaiseInvalidArgumentException(anObject, aSelector, aMessage)
+{
+    [CPException raise:CPInvalidArgumentException
+                reason:METHOD_CALL_STRING() + aMessage];
+}
+
+function _CPRaiseRangeException(anObject, aSelector, anIndex, aCount)
+{
+    [CPException raise:CPRangeException
+                reason:METHOD_CALL_STRING() + "index (" + anIndex + ") beyond bounds (" + aCount + ")"];
 }
 
 function _CPReportLenientDeprecation(/*Class*/ aClass, /*SEL*/ oldSelector, /*SEL*/ newSelector)

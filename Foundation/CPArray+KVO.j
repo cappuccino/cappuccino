@@ -109,39 +109,39 @@
 
     var capitalizedKey = _key.charAt(0).toUpperCase() + _key.substring(1);
 
-    _insertSEL = sel_getName(@"insertObject:in"+capitalizedKey+"AtIndex:");
+    _insertSEL = sel_getName(@"insertObject:in" + capitalizedKey + "AtIndex:");
     if ([_proxyObject respondsToSelector:_insertSEL])
         _insert = [_proxyObject methodForSelector:_insertSEL];
 
-    _removeSEL = sel_getName(@"removeObjectFrom"+capitalizedKey+"AtIndex:");
+    _removeSEL = sel_getName(@"removeObjectFrom" + capitalizedKey + "AtIndex:");
     if ([_proxyObject respondsToSelector:_removeSEL])
         _remove = [_proxyObject methodForSelector:_removeSEL];
 
-    _replaceSEL = sel_getName(@"replaceObjectIn"+capitalizedKey+"AtIndex:withObject:");
+    _replaceSEL = sel_getName(@"replaceObjectIn" + capitalizedKey + "AtIndex:withObject:");
     if ([_proxyObject respondsToSelector:_replaceSEL])
         _replace = [_proxyObject methodForSelector:_replaceSEL];
 
-    _insertManySEL = sel_getName(@"insert"+capitalizedKey+":atIndexes:");
+    _insertManySEL = sel_getName(@"insert" + capitalizedKey + ":atIndexes:");
     if ([_proxyObject respondsToSelector:_insertManySEL])
         _insertMany = [_proxyObject methodForSelector:_insertManySEL];
 
-    _removeManySEL = sel_getName(@"remove"+capitalizedKey+"AtIndexes:");
+    _removeManySEL = sel_getName(@"remove" + capitalizedKey + "AtIndexes:");
     if ([_proxyObject respondsToSelector:_removeManySEL])
         _remove = [_proxyObject methodForSelector:_removeManySEL];
 
-    _replaceManySEL = sel_getName(@"replace"+capitalizedKey+"AtIndexes:with"+capitalizedKey+":");
+    _replaceManySEL = sel_getName(@"replace" + capitalizedKey + "AtIndexes:with" + capitalizedKey + ":");
     if ([_proxyObject respondsToSelector:_replaceManySEL])
         _replace = [_proxyObject methodForSelector:_replaceManySEL];
 
-    _objectAtIndexSEL = sel_getName(@"objectIn"+capitalizedKey+"AtIndex:");
+    _objectAtIndexSEL = sel_getName(@"objectIn" + capitalizedKey + "AtIndex:");
     if ([_proxyObject respondsToSelector:_objectAtIndexSEL])
         _objectAtIndex = [_proxyObject methodForSelector:_objectAtIndexSEL];
 
-    _objectsAtIndexesSEL = sel_getName(_key+"AtIndexes:");
+    _objectsAtIndexesSEL = sel_getName(_key + "AtIndexes:");
     if ([_proxyObject respondsToSelector:_objectsAtIndexesSEL])
         _objectsAtIndexes = [_proxyObject methodForSelector:_objectsAtIndexesSEL];
 
-    _countSEL = sel_getName(@"countOf"+capitalizedKey);
+    _countSEL = sel_getName(@"countOf" + capitalizedKey);
     if ([_proxyObject respondsToSelector:_countSEL])
         _count = [_proxyObject methodForSelector:_countSEL];
 
@@ -149,7 +149,7 @@
     if ([_proxyObject respondsToSelector:_accessSEL])
         _access = [_proxyObject methodForSelector:_accessSEL];
 
-    _setSEL = sel_getName(@"set"+capitalizedKey+":");
+    _setSEL = sel_getName(@"set" + capitalizedKey + ":");
     if ([_proxyObject respondsToSelector:_setSEL])
         _set = [_proxyObject methodForSelector:_setSEL];
 
@@ -424,7 +424,11 @@
 var kvoOperators = [];
 
 // HACK: prevent these from becoming globals. workaround for obj-j "function foo(){}" behavior
-var avgOperator, maxOperator, minOperator, countOperator, sumOperator;
+var avgOperator,
+    maxOperator,
+    minOperator,
+    countOperator,
+    sumOperator;
 
 kvoOperators["avg"] = function avgOperator(self, _cmd, param)
 {

@@ -300,7 +300,7 @@ var XML_XML                 = "xml",
 
 #define NODE_NAME(anXMLNode)        (String(anXMLNode.nodeName))
 #define NODE_TYPE(anXMLNode)        (anXMLNode.nodeType)
-#define NODE_VALUE(anXMLNode)       (String(anXMLNode.nodeValue))
+#define TEXT_CONTENT(anXMLNode)     (anXMLNode.textContent || (anXMLNode.textContent !== "" && textContent([anXMLNode])))
 #define FIRST_CHILD(anXMLNode)      (anXMLNode.firstChild)
 #define NEXT_SIBLING(anXMLNode)     (anXMLNode.nextSibling)
 #define PARENT_NODE(anXMLNode)      (anXMLNode.parentNode)
@@ -317,8 +317,25 @@ var XML_XML                 = "xml",
 #define PLIST_NEXT_SIBLING(anXMLNode) while ((anXMLNode = NEXT_SIBLING(anXMLNode)) && IS_WHITESPACE(anXMLNode)) ;
 #define PLIST_FIRST_CHILD(anXMLNode) anXMLNode = FIRST_CHILD(anXMLNode); if (anXMLNode !== NULL && IS_WHITESPACE(anXMLNode)) PLIST_NEXT_SIBLING(anXMLNode)
 
-// FIXME: no first child?
-#define CHILD_VALUE(anXMLNode) (NODE_VALUE(FIRST_CHILD(anXMLNode)))
+var textContent = function(nodes)
+{
+    var text = "",
+        index = 0,
+        count = nodes.length;
+
+    for (; index < count; ++index)
+    {
+        var node = nodes[index];
+
+        if (node.nodeType === 3 || node.nodeType === 4)
+            text += node.nodeValue;
+
+        else if (node.nodeType !== 8)
+            text += textContent(node.childNodes);
+    }
+
+    return text;
+}
 
 var _plist_traverseNextNode = function(anXMLNode, stayWithin, stack)
 {
@@ -549,7 +566,7 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
             
         if (NODE_NAME(XMLNode) === PLIST_KEY)
         {
-            key = CHILD_VALUE(XMLNode);
+            key = TEXT_CONTENT(XMLNode);
             PLIST_NEXT_SIBLING(XMLNode);
         }
 
@@ -562,15 +579,15 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
                                         containers.push(object);
                                         break;
 
-            case PLIST_NUMBER_REAL:     object = parseFloat(CHILD_VALUE(XMLNode));
+            case PLIST_NUMBER_REAL:     object = parseFloat(TEXT_CONTENT(XMLNode));
                                         break;
-            case PLIST_NUMBER_INTEGER:  object = parseInt(CHILD_VALUE(XMLNode), 10);
+            case PLIST_NUMBER_INTEGER:  object = parseInt(TEXT_CONTENT(XMLNode), 10);
                                         break;
 
             case PLIST_STRING:          if (HAS_ATTRIBUTE_VALUE(XMLNode, "type", "base64"))
-                                            object = FIRST_CHILD(XMLNode) ? CFData.decodeBase64ToString(CHILD_VALUE(XMLNode)) : "";
+                                            object = FIRST_CHILD(XMLNode) ? CFData.decodeBase64ToString(TEXT_CONTENT(XMLNode)) : "";
                                         else
-                                            object = decodeHTMLComponent(FIRST_CHILD(XMLNode) ? CHILD_VALUE(XMLNode) : "");
+                                            object = decodeHTMLComponent(FIRST_CHILD(XMLNode) ? TEXT_CONTENT(XMLNode) : "");
 
                                         break;
                                         
@@ -580,7 +597,7 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
                                         break;
                                         
             case PLIST_DATA:            object = new CFMutableData();
-                                        object.bytes = FIRST_CHILD(XMLNode) ? CFData.decodeBase64ToArray(CHILD_VALUE(XMLNode), YES) : [];
+                                        object.bytes = FIRST_CHILD(XMLNode) ? CFData.decodeBase64ToArray(TEXT_CONTENT(XMLNode), YES) : [];
                                         break;
                                         
             default:                    throw new Error("*** " + NODE_NAME(XMLNode) + " tag not recognized in Plist.");

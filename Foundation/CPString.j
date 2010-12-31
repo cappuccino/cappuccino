@@ -22,9 +22,10 @@
 
 @import "CPException.j"
 @import "CPObject.j"
+@import "CPObjJRuntime.j"
+@import "CPRange.j"
 @import "CPSortDescriptor.j"
 @import "CPValue.j"
-
 
 /*!
     A case insensitive search
@@ -755,7 +756,8 @@ var CPStringRegexSpecialCharacters = [
 
 - (CPString)stringByStandardizingPath
 {
-    return objj_standardize_path(self);
+    // FIXME: Expand tildes etc. in CommonJS?
+    return [[CPURL URLWithString:self] absoluteString];
 }
 
 - (CPString)copy

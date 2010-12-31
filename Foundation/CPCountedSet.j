@@ -29,7 +29,7 @@
     @brief An mutable collection which may contain a specific object
     numerous times.
 */
-@implementation CPCountedSet : CPMutableSet
+@implementation CPCountedSet : _CPConcreteMutableSet
 {
     Object  _counts;
 }

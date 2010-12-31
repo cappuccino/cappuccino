@@ -63,8 +63,6 @@ CPLog(@"Got some class: %@", inst);
 */
 
 
-var _classVersion = 0;
-
 @implementation CPObject
 {
     Class   isa;
@@ -473,6 +471,8 @@ var _classVersion = 0;
 */
 - (CPString)className
 {
+    // FIXME: Why doesn't this work in KVO???
+    // return class_getName([self class]);
     return isa.name;
 }
 

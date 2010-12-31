@@ -37,3 +37,4 @@
 @implementation NSMutableDictionary : NSDictionary
 {
 }
+@end
