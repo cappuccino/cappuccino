@@ -3172,7 +3172,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if ([sender respondsToSelector:@selector(setSelectable:)])
         [sender setSelectable:NO];
-    
+
     [[self window] makeFirstResponder:self];
 }
 
