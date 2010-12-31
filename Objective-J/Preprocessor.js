@@ -481,6 +481,9 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
                         name = declaration[0];
                     }
 
+                    if (ivar_names.hasOwnProperty(name))
+                        throw new SyntaxError(this.error_message("*** Ivar name '" + name + "' already declared."));
+
                     CONCAT(buffer, "new objj_ivar(\"" + name + "\")");
 
                     if (token == TOKEN_SEMICOLON)
