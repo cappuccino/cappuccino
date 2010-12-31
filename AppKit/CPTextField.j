@@ -881,21 +881,28 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 /*!
-    Select all the text in the CPTextField.
+    Make the receiver the first responder and select all the text in the field.
 */
 - (void)selectText:(id)sender
 {
-#if PLATFORM(DOM)
-    var element = [self _inputElement];
+    // FIXME Should this really make the text field the first responder?
 
     if (([self isEditable] || [self isSelectable]))
     {
+#if PLATFORM(DOM)
+        var element = [self _inputElement];
+
         if ([[self window] firstResponder] === self)
             window.setTimeout(function() { element.select(); }, 0);
         else if ([self window] !== nil && [[self window] makeFirstResponder:self])
             window.setTimeout(function() {[self selectText:sender];}, 0);
-    }
+#else
+        // Even if we can't actually select the text we need to preserve the first
+        // responder side effect.
+        if ([self window] !== nil && [[self window] firstResponder] !== self)
+            [[self window] makeFirstResponder:self];
 #endif
+    }
 }
 
 - (void)copy:(id)sender
