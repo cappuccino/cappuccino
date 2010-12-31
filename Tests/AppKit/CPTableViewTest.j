@@ -5,8 +5,6 @@
     CPTableView     tableView;
     CPTableColumn   tableColumn;
 
-    CPArray         tableEntries;
-
     BOOL            doubleActionReceived;
     int             selectionDidChangeNotificationsReceived;
 }
@@ -47,8 +45,11 @@
 */
 - (void)testNumberOfRowsChangedSelectionNotification
 {
-    tableEntries = ["A", "B", "C"];
-    [tableView setDataSource:self];
+    var dataSource = [TestDataSource new];
+
+    [dataSource setTableEntries:["A", "B", "C"]];
+    [tableView setDataSource:dataSource];
+
 
     selectionDidChangeNotificationsReceived = 0;
     [[CPNotificationCenter defaultCenter] addObserver:self
@@ -60,17 +61,29 @@
     [self assert:selectionDidChangeNotificationsReceived equals:1 message:"CPTableViewSelectionDidChangeNotification expected when selecting rows"];
 
     // If we remove the last row, the selection should change and we should be notified.
-    [tableEntries removeObjectAtIndex:2];
+    [[dataSource tableEntries] removeObjectAtIndex:2];
     [tableView reloadData];
 
     [self assert:selectionDidChangeNotificationsReceived equals:2  message:"CPTableViewSelectionDidChangeNotification when selected rows go away"];
 
     [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
     [self assert:selectionDidChangeNotificationsReceived equals:3 message:"CPTableViewSelectionDidChangeNotification expected when selecting rows"];
-    [tableEntries removeObjectAtIndex:1];
+    [[dataSource tableEntries] removeObjectAtIndex:1];
     [tableView reloadData];
 
     [self assert:selectionDidChangeNotificationsReceived equals:3 message:"no CPTableViewSelectionDidChangeNotification expected when removing a row which does not change the selection"];
+}
+
+- (void)selectionDidChange:(CPNotification)aNotification
+{
+    selectionDidChangeNotificationsReceived++;
+}
+
+@end
+
+@implementation TestDataSource : CPObject
+{
+    CPArray tableEntries @accessors;
 }
 
 - (int)numberOfRowsInTableView:(CPTableView)aTableView
@@ -81,11 +94,6 @@
 - (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRow
 {
     return tableEntries[aRow];
-}
-
-- (void)selectionDidChange:(CPNotification)aNotification
-{
-    selectionDidChangeNotificationsReceived++;
 }
 
 @end
