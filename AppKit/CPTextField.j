@@ -674,6 +674,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     if ([anEvent keyCode] === CPReturnKeyCode)
     {
+        // selectText: has a side effect - it can change first responder of the window
+        // we have to prevent such behaviour inside this method because target should be able to change first responder after receiving action.
+        [self selectText:nil];
+
         if (_isEditing)
         {
             _isEditing = NO;
@@ -681,7 +685,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         }
 
         [self sendAction:[self action] to:[self target]];
-        [self selectText:nil];
 
         [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
     }

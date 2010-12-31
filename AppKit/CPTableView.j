@@ -3161,10 +3161,19 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 /*!
     @ignore
     The action for any dataview that supports editing. This will only be called when the value was changed.
+    The table view becomes the first responder after user is done editing a dataview.
 */
 - (void)_commitDataViewObjectValue:(id)sender
 {
     [_dataSource tableView:self setObjectValue:[sender objectValue] forTableColumn:sender.tableViewEditedColumnObj row:sender.tableViewEditedRowIndex];
+
+    if ([sender respondsToSelector:@selector(setEditable:)])
+        [sender setEditable:NO];
+
+    if ([sender respondsToSelector:@selector(setSelectable:)])
+        [sender setSelectable:NO];
+    
+    [[self window] makeFirstResponder:self];
 }
 
 /*!
