@@ -106,6 +106,27 @@
     return self[anIndex];
 }
 
+- (CPArray)objectsAtIndexes:(CPIndexSet)indexes
+{
+    if ([indexes lastIndex] >= self.length)
+        _CPRaiseRangeException(self, _cmd, [indexes lastIndex], self.length);
+
+    var ranges = indexes._ranges,
+        count = ranges.length,
+        objects = [];
+
+    for (var i = 0; i < count; i++)
+    {
+        var range = ranges[i],
+            loc = range.location,
+            len = range.length;
+
+        push.apply(objects, slice(loc, loc + len));
+    }
+
+    return objects;
+}
+
 - (CPUInteger)indexOfObject:(id)anObject
 {
     return [self indexOfObject:anObject inRange:nil];

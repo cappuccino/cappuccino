@@ -96,6 +96,57 @@ var ELEMENTS = 100,
     }
 }
 
+- (void)testObjectsAtIndexesPerformance
+{
+    var array = [CPArray array],
+        indexes = [CPIndexSet indexSet],
+        i = count = 1000,
+        repeats1 = repeats2 = 1000,
+        rcount = 10,
+        rsize = 10;
+
+    // Create array
+    while (i--)
+        [array addObject:(count - 1 - i)];
+
+    // create indexes in 10 ranges of size 10
+    while (rcount--)
+    {
+        var randomLocation = ROUND(RAND()*(count - rsize)), // 0-990
+            randomLength = ROUND(RAND()*rsize); // 0-9
+
+        [indexes addIndexesInRange:CPMakeRange(randomLocation, randomLength)];
+    }
+
+    var start = (new Date).getTime();
+    while (repeats1--)
+        var objects = [array objectsAtIndexes:indexes];
+    var end = (new Date).getTime();
+
+    while (repeats2--)
+        var prevObjects = [array _prev_objectsAtIndexes:indexes];
+    var prevEnd = (new Date).getTime();
+
+    [self assert:[objects count] equals:[indexes count]];
+    [self assert:[prevObjects count] equals:[indexes count]];
+
+    CPLog.warn("-objectsAtIndexes: with "+ count + " elements and random indexes in 10 ranges of size 10 - old: " + (prevEnd - end) + "ms new: " + (end - start)+"ms");
+}
+@end
+
+@implementation CPArray (objectsAtIndexes)
+
+- (CPArray)_prev_objectsAtIndexes:(CPIndexSet)indexes
+{
+    var index = CPNotFound,
+        objects = [];
+
+    while ((index = [indexes indexGreaterThanIndex:index]) !== CPNotFound)
+        objects.push([self objectAtIndex:index]);
+
+    return objects;
+}
+
 @end
 
 @implementation Sortable : CPObject
