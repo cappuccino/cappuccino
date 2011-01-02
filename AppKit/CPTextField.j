@@ -672,7 +672,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)keyDown:(CPEvent)anEvent
 {
-    if ([anEvent keyCode] === CPReturnKeyCode)
+    var characters = [anEvent characters];
+    // Treat \r and \n the same. See issue #710.
+    if (characters === CPNewlineCharacter || characters === CPCarriageReturnCharacter)
     {
         // selectText: has a side effect - it can change first responder of the window
         // we have to prevent such behaviour inside this method because target should be able to change first responder after receiving action.
