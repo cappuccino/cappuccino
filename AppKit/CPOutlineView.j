@@ -766,6 +766,54 @@ CPOutlineViewDropOnItemIndex = -1;
     return rect;
 }
 
+/*!
+    @ignore
+    We need to move the disclosure control too
+*/
+- (void)_layoutDataViewsInRows:(CPIndexSet)rows columns:(CPIndexSet)columns
+{
+    var rowArray = [],
+        columnArray = [];
+
+    [rows getIndexes:rowArray maxCount:-1 inIndexRange:nil];
+    [columns getIndexes:columnArray maxCount:-1 inIndexRange:nil];
+
+    var columnIndex = 0,
+        columnsCount = columnArray.length;
+
+    for (; columnIndex < columnsCount; ++columnIndex)
+    {
+        var column = columnArray[columnIndex],
+            tableColumn = _tableColumns[column],
+            tableColumnUID = [tableColumn UID],
+            dataViewsForTableColumn = _dataViewsForTableColumns[tableColumnUID],
+            columnRange = _tableColumnRanges[column],
+            rowIndex = 0,
+            rowsCount = rowArray.length;
+
+        for (; rowIndex < rowsCount; ++rowIndex)
+        {
+            var row = rowArray[rowIndex],
+                dataView = dataViewsForTableColumn[row],
+                dataViewFrame = [self frameOfDataViewAtColumn:column row:row];
+
+            [dataView setFrame:dataViewFrame];
+
+            if (tableColumn === _outlineTableColumn)
+            {
+                console.log("bam");
+                var control = _disclosureControlsForRows[row],
+                    frame = [control frame];
+                if (frame)
+                {
+                    frame.origin.x = _indentationMarkerFollowsDataView ? _CGRectGetMinX(dataViewFrame) - _CGRectGetWidth(frame) : 0.0;
+                    [control setFrame:frame];
+                }
+            }
+        }
+    }
+}
+
 - (void)_loadDataViewsInRows:(CPIndexSet)rows columns:(CPIndexSet)columns
 {
     [super _loadDataViewsInRows:rows columns:columns];

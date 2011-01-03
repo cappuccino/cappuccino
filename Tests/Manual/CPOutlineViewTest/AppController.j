@@ -151,37 +151,27 @@ CustomOutlineViewDragType = @"CustomOutlineViewDragType";
                 [Menu menuWithTitle:@"1.2.3"]
             ]]
         ]],
-        // [Menu menuWithTitle:@"2" children:[
-        //  [Menu menuWithTitle:@"2.1" children:[
-        //      [Menu menuWithTitle:@"2.1.1"],
-        //      [Menu menuWithTitle:@"2.1.2"],
-        //      [Menu menuWithTitle:@"2.1.3"],
-        //  ]],
-        //  [Menu menuWithTitle:@"2.2" children:[
-        //      [Menu menuWithTitle:@"2.2.1"],
-        //      [Menu menuWithTitle:@"2.2.2"],
-        //  ]]
-        // ]],
-        // [Menu menuWithTitle:@"3" children:[
-        //  [Menu menuWithTitle:@"3.1" children:[
-        //      [Menu menuWithTitle:@"3.1.1"],
-        //      [Menu menuWithTitle:@"3.1.2"],
-        //      [Menu menuWithTitle:@"3.1.3"],
-        //  ]],
-        //  [Menu menuWithTitle:@"3.2" children:[
-        //      [Menu menuWithTitle:@"3.2.1"],
-        //      [Menu menuWithTitle:@"3.2.2"],
-        //      [Menu menuWithTitle:@"3.2.3"],
-        //      [Menu menuWithTitle:@"3.2.4"],
-        //  ]],
-        //  [Menu menuWithTitle:@"3.3" children:[
-        //      [Menu menuWithTitle:@"3.3.1"],
-        //      [Menu menuWithTitle:@"3.3.2"],
-        //      [Menu menuWithTitle:@"3.3.3"],
-        //      [Menu menuWithTitle:@"3.3.4"],
-        //      [Menu menuWithTitle:@"3.3.5"],
-        //  ]]
-        // ]]
+         [Menu menuWithTitle:@"2" children:nil],
+         [Menu menuWithTitle:@"3" children:[
+          [Menu menuWithTitle:@"3.1" children:[
+              [Menu menuWithTitle:@"3.1.1"],
+              [Menu menuWithTitle:@"3.1.2"],
+              [Menu menuWithTitle:@"3.1.3"],
+          ]],
+          [Menu menuWithTitle:@"3.2" children:[
+              [Menu menuWithTitle:@"3.2.1"],
+              [Menu menuWithTitle:@"3.2.2"],
+              [Menu menuWithTitle:@"3.2.3"],
+              [Menu menuWithTitle:@"3.2.4"],
+          ]],
+          [Menu menuWithTitle:@"3.3" children:[
+              [Menu menuWithTitle:@"3.3.1"],
+              [Menu menuWithTitle:@"3.3.2"],
+              [Menu menuWithTitle:@"3.3.3"],
+              [Menu menuWithTitle:@"3.3.4"],
+              [Menu menuWithTitle:@"3.3.5"],
+          ]]
+         ]]
     ]];
 
     var scrollView = [[CPScrollView alloc] initWithFrame:[contentView bounds]];
@@ -191,8 +181,12 @@ CustomOutlineViewDragType = @"CustomOutlineViewDragType";
     var column = [[CPTableColumn alloc] initWithIdentifier:@"One"];
     [_outlineView addTableColumn:column];
     [_outlineView setOutlineTableColumn:column];
+    setTimeout(function(){
+    [column setWidth:200];
+    },0);
 
     [_outlineView addTableColumn:[[CPTableColumn alloc] initWithIdentifier:@"Two"]];
+[_outlineView addTableColumn:[[CPTableColumn alloc] initWithIdentifier:@"Three"]];
 
     [_outlineView registerForDraggedTypes:[CustomOutlineViewDragType]];
 
