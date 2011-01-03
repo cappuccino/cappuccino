@@ -801,7 +801,6 @@ CPOutlineViewDropOnItemIndex = -1;
 
             if (tableColumn === _outlineTableColumn)
             {
-                console.log("bam");
                 var control = _disclosureControlsForRows[row],
                     frame = [control frame];
                 if (frame)
