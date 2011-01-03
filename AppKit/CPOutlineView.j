@@ -611,6 +611,67 @@ CPOutlineViewDropOnItemIndex = -1;
     return [super frameOfDataViewAtColumn:aColumn row:aRow];
 }
 
+/*!
+    @ignore
+    we need to offset the dataview and add the dislosure triangle
+*/
+- (CPView)_dragViewForColumn:(int)theColumnIndex event:(CPEvent)theDragEvent offset:(CPPointPointer)theDragViewOffset
+{
+    var dragView = [[_CPColumnDragView alloc] initWithLineColor:[self gridColor]],
+        tableColumn = [[self tableColumns] objectAtIndex:theColumnIndex],
+        bounds = _CGRectMake(0.0, 0.0, [tableColumn width], _CGRectGetHeight([self exposedRect]) + 23.0),
+        columnRect = [self rectOfColumn:theColumnIndex],
+        headerView = [tableColumn headerView],
+        row = [_exposedRows firstIndex];
+
+    while (row !== CPNotFound)
+    {
+        var dataView = [self _newDataViewForRow:row tableColumn:tableColumn],
+            dataViewFrame = [self frameOfDataViewAtColumn:theColumnIndex row:row];
+
+        // Only one column is ever dragged so we just place the view at
+        dataViewFrame.origin.x = 0.0;
+
+        // Offset by table header height - scroll position
+        dataViewFrame.origin.y = ( _CGRectGetMinY(dataViewFrame) - _CGRectGetMinY([self exposedRect]) ) + 23.0;
+        [dataView setFrame:dataViewFrame];
+
+        [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
+
+
+        if (tableColumn === _outlineTableColumn)
+        {
+            // first inset the dragview
+            var indentationWidth = ([self levelForRow:row] + 1) * [self indentationPerLevel];
+
+            dataViewFrame.origin.x += indentationWidth;
+            dataViewFrame.size.width -= indentationWidth;
+
+            [dataView setFrame:dataViewFrame];
+        }
+
+        [dragView addSubview:dataView];
+
+        row = [_exposedRows indexGreaterThanIndex:row];
+    }
+
+    // Add the column header view
+    var headerFrame = [headerView frame];
+    headerFrame.origin = _CGPointMakeZero();
+
+    var columnHeaderView = [[_CPTableColumnHeaderView alloc] initWithFrame:headerFrame];
+    [columnHeaderView setStringValue:[headerView stringValue]];
+    [columnHeaderView setThemeState:[headerView themeState]];
+    [dragView addSubview:columnHeaderView];
+
+    [dragView setBackgroundColor:[CPColor whiteColor]];
+    [dragView setAlphaValue:0.7];
+    [dragView setFrame:bounds];
+
+    return dragView;
+}
+
+
 - (void)setDropItem:(id)theItem dropChildIndex:(int)theIndex
 {
     if (_dropItem !== theItem && theIndex < 0 && [self isExpandable:theItem] && ![self isItemExpanded:theItem])
@@ -711,7 +772,7 @@ CPOutlineViewDropOnItemIndex = -1;
 
     var outlineColumn = [[self tableColumns] indexOfObjectIdenticalTo:[self outlineTableColumn]];
 
-    if (![columns containsIndex:outlineColumn])
+    if (![columns containsIndex:outlineColumn] ||  [self outlineTableColumn] === _draggedColumn)
         return;
 
     var rowArray = [];
