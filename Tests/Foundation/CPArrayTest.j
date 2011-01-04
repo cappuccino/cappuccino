@@ -142,10 +142,70 @@
 
 - (void)testIndexOfObject_inSortedRange_options_usingComparator_
 {
-    var array = [0, 1, 2, 3, 4, 7];
+    var array = [0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 7];
+    var numComparator = function(a, b){ return a - b; };
 
-    [self assert:[array indexOfObject:3 inSortedRange:nil options:0 usingComparator:function(a, b){ return a - b; }] equals:3];
-    [self assert:[[array arrayByReversingArray] indexOfObject:3 inSortedRange:nil options:0 usingComparator:function(a, b){ return a - b; }] equals:2];
+    var index = [array indexOfObject:1
+                       inSortedRange:nil
+                             options:0
+                     usingComparator:numComparator];
+    [self assertTrue:[[1, 2, 3] containsObject:index]];
+    [self assert:[array indexOfObject:1
+                        inSortedRange:nil
+                              options:CPBinarySearchingFirstEqual
+                      usingComparator:numComparator]
+          equals:1];
+    [self assert:[array indexOfObject:1
+                        inSortedRange:nil
+                              options:CPBinarySearchingLastEqual
+                      usingComparator:numComparator]
+          equals:3];
+    index = [array indexOfObject:1
+                   inSortedRange:nil
+                         options:CPBinarySearchingInsertionIndex
+                 usingComparator:numComparator];
+    [self assertTrue:[[1, 2, 3, 4] containsObject:index]];
+    [self assert:[array indexOfObject:1
+                        inSortedRange:nil
+                              options:CPBinarySearchingFirstEqual | CPBinarySearchingInsertionIndex
+                      usingComparator:numComparator]
+          equals:1];
+    [self assert:[array indexOfObject:1
+                        inSortedRange:nil
+                              options:CPBinarySearchingLastEqual | CPBinarySearchingInsertionIndex
+                      usingComparator:numComparator]
+          equals:4];
+
+    index = [array indexOfObject:2
+                   inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
+                         options:0
+                 usingComparator:numComparator];
+    [self assertTrue:[[4, 5] containsObject:index]];
+    [self assert:[array indexOfObject:2
+                        inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
+                              options:CPBinarySearchingFirstEqual
+                      usingComparator:numComparator]
+          equals:4];
+    [self assert:[array indexOfObject:2
+                        inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
+                              options:CPBinarySearchingLastEqual
+                      usingComparator:numComparator]
+          equals:5];
+    index = [array indexOfObject:2
+                   inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
+                         options:CPBinarySearchingInsertionIndex
+                 usingComparator:numComparator];
+    [self assertTrue:[[4, 5, 6] containsObject:index]];
+    [self assert:[array indexOfObject:2
+                        inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
+                              options:CPBinarySearchingFirstEqual | CPBinarySearchingInsertionIndex
+                      usingComparator:numComparator]
+          equals:4];
+    [self assert:[array indexOfObject:2
+                        inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
+                              options:CPBinarySearchingLastEqual | CPBinarySearchingInsertionIndex
+                      usingComparator:numComparator]
+          equals:6];
 }
 
 - (void)testIndexOutOfBounds
