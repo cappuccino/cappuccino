@@ -42,4 +42,19 @@
     [self assert:undefined same:[_CPDisplayServer run]];
 }
 
+- (void)testThemeState
+{
+    [self assertTrue:[view hasThemeState:CPThemeStateNormal]];
+
+    [view setThemeState:CPThemeStateNormal];
+    [self assertTrue:[view hasThemeState:CPThemeStateNormal]];
+
+    [view setThemeState:CPThemeStateHighlighted];
+    [self assertTrue:[view hasThemeState:CPThemeStateHighlighted]];
+
+    [view setThemeState:CPThemeStateNormal | CPThemeStateHighlighted];
+    [self assertTrue:[view hasThemeState:CPThemeStateNormal]];
+    [self assertTrue:[view hasThemeState:CPThemeStateHighlighted]];
+}
+
 @end
