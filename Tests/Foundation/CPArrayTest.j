@@ -142,8 +142,8 @@
 
 - (void)testIndexOfObject_inSortedRange_options_usingComparator_
 {
-    var array = [0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 7];
-    var numComparator = function(a, b){ return a - b; };
+    var array = [0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 7],
+        numComparator = function(a, b) { return a - b; };
 
     var index = [array indexOfObject:1
                        inSortedRange:nil
@@ -250,8 +250,8 @@
 
 - (void)testInsertObjectInArraySortedByDescriptors
 {
-    var descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:YES]];
-    var array = [1, 3, 5];
+    var descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:YES]],
+        array = [1, 3, 5];
 
     [array insertObject:0 inArraySortedByDescriptors:descriptors];
     [self assert:[0, 1, 3, 5] equals:array];
@@ -332,8 +332,8 @@
 
 - (void)testInitWithArrayCopyItems
 {
-    var a = [[CopyableObject new], 2, 3, {empty:true}];
-    var b = [[CPArray alloc] initWithArray:a copyItems:YES];
+    var a = [[CopyableObject new], 2, 3, {empty:true}],
+        b = [[CPArray alloc] initWithArray:a copyItems:YES];
 
     [self assert:a notEqual:b];
 
@@ -368,7 +368,7 @@
     var target = ["a", "b", "c", "d"],
         pretty = [];
 
-    for(var i = 0; i < target.length; i++)
+    for (var i = 0; i < target.length; i++)
         pretty.push([[CPPrettyObject alloc] initWithValue:target[i] number:i]);
 
     [pretty sortUsingDescriptors:[[[CPSortDescriptor alloc] initWithKey:@"value" ascending:NO]]];
