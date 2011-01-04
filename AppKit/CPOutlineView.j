@@ -1073,7 +1073,6 @@ CPOutlineViewDropOnItemIndex = -1;
             tableColumn = _tableColumns[column],
             tableColumnUID = [tableColumn UID],
             dataViewsForTableColumn = _dataViewsForTableColumns[tableColumnUID],
-            columnRange = _tableColumnRanges[column],
             rowIndex = 0,
             rowsCount = rowArray.length;
 
