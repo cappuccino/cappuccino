@@ -149,9 +149,6 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 */
 - (CPTabViewItem)tabViewItemAtIndex:(unsigned)anIndex
 {
-    if (anIndex >= [_items count])
-        return nil;
-
     return [_items objectAtIndex:anIndex];
 }
 
