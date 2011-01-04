@@ -440,13 +440,13 @@ CPBinarySearchingInsertionIndex = 1 << 10;
         else
         {
             if (options & CPBinarySearchingFirstEqual)
-                while (middle++ < count - 1 &&
-                    aComparator(anObject, [self objectAtIndex:middle]) === CPOrderedSame);
+                while (middle > first && aComparator(anObject, [self objectAtIndex:middle - 1]) === CPOrderedSame)
+                    --middle;
 
             else if (options & CPBinarySearchingLastEqual)
             {
-                while (middle-- > 0 &&
-                    aComparator(anObject, [self objectAtIndex:middle]) === CPOrderedSame);
+                while (middle < last && aComparator(anObject, [self objectAtIndex:middle + 1]) === CPOrderedSame)
+                    ++middle;
 
                 if (options & CPBinarySearchingInsertionIndex)
                     ++middle;
