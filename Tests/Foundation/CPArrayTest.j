@@ -163,13 +163,19 @@
                          inSortedRange:nil
                                options:0
                        usingComparator:numComparator];
-    [self assert:CPNotFound equals:index message:"simple index of non existant value"];
+    [self assert:CPNotFound equals:index message:"simple index of non existent value"];
 
     index = [arraySimple indexOfObject:6
                          inSortedRange:nil
                                options:CPBinarySearchingInsertionIndex
                        usingComparator:numComparator];
-    [self assert:2 equals:index message:"simple insertion index of non existant value"];
+    [self assert:2 equals:index message:"simple insertion index of non existent value"];
+
+    index = [arraySimple indexOfObject:6
+                         inSortedRange:CPMakeRange(3, 2) // [ -, -, -, 7, 8]
+                               options:CPBinarySearchingInsertionIndex
+                       usingComparator:numComparator];
+    [self assert:3 equals:index message:"simple insertion index with range"];
 
     index = [array indexOfObject:1
                        inSortedRange:nil
