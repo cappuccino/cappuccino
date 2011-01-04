@@ -418,7 +418,7 @@ CPBinarySearchingInsertionIndex = 1 << 10;
         return (options & CPBinarySearchingInsertionIndex) ? 0 : CPNotFound;
 
     var first = aRange ? aRange.location : 0,
-        last = aRange ? CPMaxRange(aRange) : [self count] - 1;
+        last = (aRange ? CPMaxRange(aRange) : [self count]) - 1;
 
     if (first < 0)
         _CPRaiseRangeException(self, _cmd, first, count);

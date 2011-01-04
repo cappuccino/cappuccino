@@ -238,6 +238,19 @@
                               options:CPBinarySearchingLastEqual | CPBinarySearchingInsertionIndex
                       usingComparator:numComparator]
           equals:6];
+
+    [self assert:[array indexOfObject:3
+                      inSortedRange:CPMakeRange(2, 6) // [ -, -, 1, 1, 2, 2, 3, 3, -, -, -]
+                            options:CPBinarySearchingLastEqual | CPBinarySearchingInsertionIndex
+                    usingComparator:numComparator]
+        equals:8 message:"inserting index at end of range"];
+
+    [self assert:[[1, 2, 2] indexOfObject:2
+                            inSortedRange:CPMakeRange(0, 2) // [1, 2]
+                                  options:CPBinarySearchingLastEqual | CPBinarySearchingInsertionIndex
+                          usingComparator:numComparator]
+          equals:2 message:"insertion index should not be off by one when applying a range"];
+
 }
 
 - (void)testIndexOutOfBounds
