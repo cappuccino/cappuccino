@@ -672,8 +672,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)keyDown:(CPEvent)anEvent
 {
-    if ([anEvent keyCode] === CPReturnKeyCode)
+    var characters = [anEvent characters];
+    // Treat \r and \n the same. See issue #710.
+    if (characters === CPNewlineCharacter || characters === CPCarriageReturnCharacter)
     {
+        // selectText: has a side effect - it can change first responder of the window
+        // we have to prevent such behaviour inside this method because target should be able to change first responder after receiving action.
+        [self selectText:nil];
+
         if (_isEditing)
         {
             _isEditing = NO;
@@ -681,7 +687,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         }
 
         [self sendAction:[self action] to:[self target]];
-        [self selectText:nil];
 
         [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
     }
@@ -881,21 +886,28 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 /*!
-    Select all the text in the CPTextField.
+    Make the receiver the first responder and select all the text in the field.
 */
 - (void)selectText:(id)sender
 {
-#if PLATFORM(DOM)
-    var element = [self _inputElement];
+    // FIXME Should this really make the text field the first responder?
 
     if (([self isEditable] || [self isSelectable]))
     {
+#if PLATFORM(DOM)
+        var element = [self _inputElement];
+
         if ([[self window] firstResponder] === self)
             window.setTimeout(function() { element.select(); }, 0);
         else if ([self window] !== nil && [[self window] makeFirstResponder:self])
             window.setTimeout(function() {[self selectText:sender];}, 0);
-    }
+#else
+        // Even if we can't actually select the text we need to preserve the first
+        // responder side effect.
+        if ([self window] !== nil && [[self window] firstResponder] !== self)
+            [[self window] makeFirstResponder:self];
 #endif
+    }
 }
 
 - (void)copy:(id)sender

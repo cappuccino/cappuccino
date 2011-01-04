@@ -337,7 +337,7 @@ var themedButtonValues = nil,
 + (CPButton)button
 {
     var button = [self makeButton],
-    
+
         // RoundRect
         bezelColor = PatternColor(
             [
@@ -354,7 +354,7 @@ var themedButtonValues = nil,
                 ["button-bezel-highlighted-right.png", 4.0, 24.0]
             ],
             PatternIsHorizontal),
-        
+
         disabledBezelColor = PatternColor(
             [
                 ["button-bezel-disabled-left.png", 4.0, 24.0],
@@ -362,7 +362,7 @@ var themedButtonValues = nil,
                 ["button-bezel-disabled-right.png", 4.0, 24.0]
             ],
             PatternIsHorizontal),
-        
+
         defaultBezelColor = PatternColor(
             [
                 ["default-button-bezel-left.png", 4.0, 24.0],
@@ -387,7 +387,7 @@ var themedButtonValues = nil,
             ],
             PatternIsHorizontal),
 
-            
+
         // Rounded
         roundedBezelColor = PatternColor(
             [
@@ -396,7 +396,7 @@ var themedButtonValues = nil,
                 ["button-bezel-rounded-right.png", 12.0, 24.0]
             ],
             PatternIsHorizontal),
-            
+
         roundedHighlightedBezelColor = PatternColor(
             [
                 ["button-bezel-rounded-highlighted-left.png", 12.0, 24.0],
@@ -404,7 +404,7 @@ var themedButtonValues = nil,
                 ["button-bezel-rounded-highlighted-right.png", 12.0, 24.0]
             ],
             PatternIsHorizontal),
-        
+
         roundedDisabledBezelColor = PatternColor(
             [
                 ["button-bezel-rounded-disabled-left.png", 12.0, 24.0],
@@ -412,7 +412,7 @@ var themedButtonValues = nil,
                 ["button-bezel-rounded-disabled-right.png", 12.0, 24.0]
             ],
             PatternIsHorizontal),
-        
+
         defaultRoundedBezelColor = PatternColor(
             [
                 ["default-button-bezel-rounded-left.png", 12.0, 24.0],
@@ -436,7 +436,7 @@ var themedButtonValues = nil,
                 ["default-button-bezel-rounded-disabled-right.png", 12.0, 24.0]
             ],
             PatternIsHorizontal),
-        
+
 
         defaultTextColor = [CPColor colorWithCalibratedRed:13.0 / 255.0 green:51.0 / 255.0 blue:70.0 / 255.0 alpha:1.0],
         defaultDisabledTextColor = [CPColor colorWithCalibratedRed:13.0 / 255.0 green:51.0 / 255.0 blue:70.0 / 255.0 alpha:0.6];
@@ -457,7 +457,7 @@ var themedButtonValues = nil,
             [@"bezel-color",        defaultHighlightedBezelColor,   CPThemeStateBordered | CPThemeStateHighlighted | CPThemeStateDefault],
             [@"bezel-color",        defaultDisabledBezelColor,      CPThemeStateBordered | CPThemeStateDefault | CPThemeStateDisabled],
             [@"content-inset",      CGInsetMake(0.0, 5.0, 0.0, 5.0), CPThemeStateBordered],
-            
+
             [@"bezel-color",        roundedBezelColor,                      CPThemeStateBordered | CPButtonStateBezelStyleRounded],
             [@"bezel-color",        roundedHighlightedBezelColor,           CPThemeStateBordered | CPThemeStateHighlighted | CPButtonStateBezelStyleRounded],
             [@"bezel-color",        roundedDisabledBezelColor,              CPThemeStateBordered | CPThemeStateDisabled | CPButtonStateBezelStyleRounded],
@@ -467,8 +467,8 @@ var themedButtonValues = nil,
             [@"content-inset",      CGInsetMake(0.0, 10.0, 0.0, 10.0), CPThemeStateBordered],
 
             [@"text-color",         [CPColor colorWithCalibratedWhite:0.6 alpha:1.0],   CPThemeStateDisabled],
-            
-            
+
+
             [@"text-color",         defaultTextColor,               CPThemeStateDefault],
             [@"text-color",         defaultDisabledTextColor,       CPThemeStateDefault | CPThemeStateDisabled],
 
@@ -1523,30 +1523,33 @@ var themedButtonValues = nil,
         size = CGSizeMake(400.0, 110.0),
         suppressionButtonXOffset = 2.0,
         suppressionButtonYOffset = 10.0,
-        warningIcon = PatternImage("alert-warning.png", 53.0, 46.0),
+        suppressionButtonFont = [CPFont systemFontOfSize:12.0],
+        warningIcon = PatternImage("alert-warning.png", 53.0, 46.0);
 
-        themedAlertValues =
-        [
-            [@"button-offset",                  buttonOffset],
-            [@"content-inset",                  inset],
-            [@"default-elements-margin",        defaultElementsMargin],
-            [@"error-image",                    errorIcon],
-            [@"help-image",                     helpIcon],
-            [@"help-image-left-offset",         helpLeftOffset],
-            [@"help-image-pressed",             helpIconPressed],
-            [@"image-offset",                   imageOffset],
-            [@"information-image",              informationIcon],
-            [@"informative-text-alignment",     CPJustifiedTextAlignment],
-            [@"informative-text-color",         [CPColor blackColor]],
-            [@"informative-text-font",          informativeFont],
-            [@"message-text-alignment",         CPJustifiedTextAlignment],
-            [@"message-text-color",             [CPColor blackColor]],
-            [@"message-text-font",              messageFont],
-            [@"size",                           size],
-            [@"suppression-button-x-offset",    suppressionButtonXOffset],
-            [@"suppression-button-y-offset",    suppressionButtonYOffset],
-            [@"warning-image",                  warningIcon]
-        ];
+    themedAlertValues =
+    [
+        [@"button-offset",                      buttonOffset],
+        [@"content-inset",                      inset],
+        [@"default-elements-margin",            defaultElementsMargin],
+        [@"error-image",                        errorIcon],
+        [@"help-image",                         helpIcon],
+        [@"help-image-left-offset",             helpLeftOffset],
+        [@"help-image-pressed",                 helpIconPressed],
+        [@"image-offset",                       imageOffset],
+        [@"information-image",                  informationIcon],
+        [@"informative-text-alignment",         CPJustifiedTextAlignment],
+        [@"informative-text-color",             [CPColor blackColor]],
+        [@"informative-text-font",              informativeFont],
+        [@"message-text-alignment",             CPJustifiedTextAlignment],
+        [@"message-text-color",                 [CPColor blackColor]],
+        [@"message-text-font",                  messageFont],
+        [@"suppression-button-text-color",      [CPColor blackColor]],
+        [@"suppression-button-text-font",       suppressionButtonFont],
+        [@"size",                               size],
+        [@"suppression-button-x-offset",        suppressionButtonXOffset],
+        [@"suppression-button-y-offset",        suppressionButtonYOffset],
+        [@"warning-image",                      warningIcon]
+    ];
 
     [self registerThemeValues:themedAlertValues forView:alert];
 
@@ -1756,6 +1759,7 @@ var themedButtonValues = nil,
         [
             [@"message-text-color",             [CPColor whiteColor]],
             [@"informative-text-color",         [CPColor whiteColor]],
+            [@"suppression-button-text-color",  [CPColor whiteColor]],
         ];
 
     [self registerThemeValues:hudSpecificValues forView:alert inherit:themedAlertValues];

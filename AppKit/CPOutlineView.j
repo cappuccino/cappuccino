@@ -75,6 +75,16 @@ var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_              
 
 CPOutlineViewDropOnItemIndex = -1;
 
+/*!
+    @ingroup appkit
+    @class CPOutlineView
+
+    CPOutlineView is a subclass of CPTableView that inherates the row and column format to display hierarchial data. 
+    The outlineview adds the ability to expand and collapse items. This is useful for browsing a tree like structure such as directories or a filesystem.
+
+    Like the tableview, an outlineview uses a data source to supply its data. For this reason you must implement a couple data source methods (documented in setDataSource:)
+    
+*/
 @implementation CPOutlineView : CPTableView
 {
     id              _outlineViewDataSource;
@@ -139,7 +149,54 @@ CPOutlineViewDropOnItemIndex = -1;
 
     return self;
 }
+/*!
+    In addition to standard delegation, the outline view also supports data source delegation. This method sets the data source object.
+    Just like the TableView you have CPTableColumns but instead of rows you deal with items. 
 
+    You must implement these data source methods:
+
+    - (id)outlineView:(CPOutlineView)outlineView child:(CPInteger)index ofItem:(id)item;
+        Returns the child item at an index of a given item. if item is nil you should return the appropriate root item.
+
+    - (BOOL)outlineView:(CPOutlineView)outlineView isItemExpandable:(id)item;
+        Returns YES if the item is expandable, otherwise NO.
+
+    - (int)outlineView:(CPOutlineView)outlineView numberOfChildrenOfItem:(id)item;
+        Returns the number of child items of a given item. If item is nil you should return the number of top level (root) items.
+
+    - (id)outlineView:(CPOutlineView)outlineView objectValueForTableColumn:(CPTableColumn)tableColumn byItem:(id)item;
+        Returns the object value of the item in a given column. 
+
+
+    The following methods are optional:
+
+    Editing:
+    - (void)outlineView:(CPOutlineView)outlineView setObjectValue:(id)object forTableColumn:(CPTableColumn)tableColumn byItem:(id)item;
+        Sets the data object value for an item in a given column. This needs to be implemented if you want inline editing support.
+
+
+    Sorting:
+    - (void)outlineView:(CPOutlineView)outlineView sortDescriptorsDidChange:(CPArray)oldDescriptors;
+        The outlineview will call this method if you click the tableheader. You should sort the datasource based off of the new sort descriptors and reload the data
+
+    Drag and Drop:
+    In order for the outlineview to recieve drops dont forget to first register the tableview for drag types like you do with every other view
+
+    - (BOOL)outlineView:(CPOutlineView)outlineView acceptDrop:(id < CPDraggingInfo >)info item:(id)item childIndex:(CPInteger)index;
+        Return YES if the operation was successful otherwise return NO.
+        The data source should incorporate the data from the dragging pasteboard in this method implementation.
+        To get this data use the draggingPasteboard method on the CPDraggingInfo object.
+
+    - (CPDragOperation)outlineView:(CPOutlineView)outlineView validateDrop:(id < CPDraggingInfo >)info proposedItem:(id)item proposedChildIndex:(CPInteger)index;
+        Return the drag operation (move, copy, etc) that should be performaned if a registered drag type is over the tableview
+        The data source can retarget a drop if you want by calling -(void)setDropItem:(id)anItem dropChildIndex:(int)anIndex;
+
+    - (BOOL)outlineView:(CPOutlineView)outlineView writeItems:(CPArray)items toPasteboard:(CPPasteboard)pboard;
+        Returns YES if the drop operation is allowed otherwise NO.
+        This method is invoked by the outlineview after a drag should begin, but before it is started. If you dont want the drag to being return NO.
+        If you want the drag to begin you should return YES and place the drag data on the pboard.
+    
+*/
 - (void)setDataSource:(id)aDataSource
 {
     if (_outlineViewDataSource === aDataSource)
@@ -193,11 +250,22 @@ CPOutlineViewDropOnItemIndex = -1;
     [self reloadData];
 }
 
+/*!
+    Returns the datasource object.
+    @return id - The data source object
+*/
 - (id)dataSource
 {
     return _outlineViewDataSource;
 }
 
+/*!
+    Used to query whether an item is expandable or not.
+
+    @param anItem - the item you are interested in.
+
+    @return BOOL - YES if the item is expandable, otherwise NO.
+*/
 - (BOOL)isExpandable:(id)anItem
 {
     if (!anItem)
@@ -211,7 +279,14 @@ CPOutlineViewDropOnItemIndex = -1;
     return itemInfo.isExpandable;
 }
 
-- (void)isItemExpanded:(id)anItem
+/*!
+   Used to find if an item is already expanded. 
+
+    @param anItem - the item you are interest in.
+
+    @return BOOL - Yes if the item is already expanded, otherwise NO. 
+*/
+- (BOOL)isItemExpanded:(id)anItem
 {
     if (!anItem)
         return YES;
@@ -224,11 +299,22 @@ CPOutlineViewDropOnItemIndex = -1;
     return itemInfo.isExpanded;
 }
 
+/*!
+    Expends a given item.
+
+    @param anItem - the item to expand.
+*/
 - (void)expandItem:(id)anItem
 {
     [self expandItem:anItem expandChildren:NO];
 }
 
+/*!
+    Expands a given item, and optionally all the children of that item.
+
+    @param anItem - the item you want to expand.
+    @param shouldExpandChildren - Pass YES if you want to expand all the children of anItem, otherwise NO.
+*/
 - (void)expandItem:(id)anItem expandChildren:(BOOL)shouldExpandChildren
 {
     var itemInfo = null;
@@ -260,6 +346,11 @@ CPOutlineViewDropOnItemIndex = -1;
     }
 }
 
+/*!
+    Collapse a given item.
+
+    @param anItem - The item you want to collapse.
+*/
 - (void)collapseItem:(id)anItem
 {
     if (!anItem)
@@ -280,11 +371,22 @@ CPOutlineViewDropOnItemIndex = -1;
     [self reloadItem:anItem reloadChildren:YES];
 }
 
+/*!
+    Reloads the data for an item.
+
+    @param anItem - The item you want to reload.
+*/
 - (void)reloadItem:(id)anItem
 {
     [self reloadItem:anItem reloadChildren:NO];
 }
 
+/*!
+    Reloads the data for a given item and optionally the children.
+
+    @param anItem - The item you want to reload.
+    @param shouldReloadChildren - Pass YES if you want to reload all the children, otherwise NO.
+*/
 - (void)reloadItem:(id)anItem reloadChildren:(BOOL)shouldReloadChildren
 {
     if (!!shouldReloadChildren || !anItem)
@@ -295,11 +397,23 @@ CPOutlineViewDropOnItemIndex = -1;
     [super reloadData];
 }
 
+/*!
+    Returns the item at a given row index. If no item exists nil is returned.
+
+    @param aRow - The rown index you want to find the item at.
+    @return id - The item at a given index.
+*/
 - (id)itemAtRow:(CPInteger)aRow
 {
     return _itemsForRows[aRow] || nil;
 }
 
+/*!
+    Returns the row of a given item
+
+    @param anItem - The item you want to find the row of.
+    @return int - The row index of a given item.
+*/
 - (CPInteger)rowForItem:(id)anItem
 {
     if (!anItem)
@@ -313,6 +427,11 @@ CPOutlineViewDropOnItemIndex = -1;
     return itemInfo.row;
 }
 
+/*!
+    Sets the table column you want to display the disclosure button in.
+
+    @param aTableColumn - The CPTableColumn you want to use for hierarchical data.
+*/
 - (void)setOutlineTableColumn:(CPTableColumn)aTableColumn
 {
     if (_outlineTableColumn === aTableColumn)
@@ -324,11 +443,22 @@ CPOutlineViewDropOnItemIndex = -1;
     [self reloadData];
 }
 
+/*!
+    Returns the table column used to display hierarchical data.
+
+    @return CPTableColumn - The table column that displays the disclosure button.
+*/
 - (CPTableColumn)outlineTableColumn
 {
     return _outlineTableColumn;
 }
 
+/*!
+    Returns the indentation level of a given item. If the item is nil (the top level root item) CPNotFound is returned. Indentation levels are zero based, thus items that are not indented return 0.
+
+    @param anItem - The item you want the indentation level for.
+    @return int - the indentation level of anItem.
+*/
 - (CPInteger)levelForItem:(id)anItem
 {
     if (!anItem)
@@ -342,11 +472,22 @@ CPOutlineViewDropOnItemIndex = -1;
     return itemInfo.level;
 }
 
+/*!
+    Returns the indentation level for a given row. If the row is invalid CPNotFound is returned. Rows that are nto indented return 0.
+
+    @param aRow - the row of the reciever
+    @return int - the indentation level of aRow.
+*/
 - (CPInteger)levelForRow:(CPInteger)aRow
 {
     return [self levelForItem:[self itemAtRow:aRow]];
 }
 
+/*!
+    Sets the number of pixels to indent an item at each indentation level.
+
+    @param anIndentationWidth - the width of each indentation level.
+*/
 - (void)setIndentationPerLevel:(float)anIndentationWidth
 {
     if (_indentationPerLevel === anIndentationWidth)
@@ -358,11 +499,21 @@ CPOutlineViewDropOnItemIndex = -1;
     [self reloadData];
 }
 
+/*!
+    Returns the width of an indentation level. 
+
+    @return float - the width of the indentation per level.
+*/
 - (float)indentationPerLevel
 {
     return _indentationPerLevel;
 }
 
+/*!
+    Sets the layout behaviour of disclosure button. If you pass NO the disclosure button will always align itself to the left of the outline column.
+
+    @param indentationMarkerShouldFollowDataView - Pass YES if the disclosure control should be indented along with the dataview, otherwise NO.
+*/
 - (void)setIndentationMarkerFollowsDataView:(BOOL)indentationMarkerShouldFollowDataView
 {
     if (_indentationMarkerFollowsDataView === indentationMarkerShouldFollowDataView)
@@ -374,11 +525,22 @@ CPOutlineViewDropOnItemIndex = -1;
     [self reloadData];
 }
 
+/*!
+    Returns the layout behaviour of the disclosure buttons.
+
+    @return BOOL - YES if the disclosure control indents itself with the dataview, otherwise NO if the control is always aligned to the left of the outline column
+*/
 - (BOOL)indentationMarkerFollowsDataView
 {
     return _indentationMarkerFollowsDataView;
 }
 
+/*!
+    Returns the parent item for a given item. If the item is a top level root object nil is returned.
+
+    @param anItem - The item of the reciver.
+    @return id - The parent item of anItem. If no parent exists (the item is a root item) nil is returned.
+*/
 - (id)parentForItem:(id)anItem
 {
     if (!anItem)
@@ -398,9 +560,15 @@ CPOutlineViewDropOnItemIndex = -1;
     return parent;
 }
 
-- (CGRect)frameOfOutlineDataViewAtColumn:(CPInteger)aColumn row:(CPInteger)aRow
+/*!
+    @ignore
+
+    Returns the frame of the dataview at the row given for the outline column
+*/
+- (CGRect)_frameOfOutlineDataViewAtRow:(CPInteger)aRow
 {
-    var frame = [super frameOfDataViewAtColumn:aColumn row:aRow],
+    var columnIndex = [[self tableColumns] indexOfObject:_outlineTableColumn],
+        frame = [super frameOfDataViewAtColumn:columnIndex row:aRow],
         indentationWidth = ([self levelForRow:aRow] + 1) * [self indentationPerLevel];
 
     frame.origin.x += indentationWidth;
@@ -409,6 +577,29 @@ CPOutlineViewDropOnItemIndex = -1;
     return frame;
 }
 
+/*!
+    Returns the frame of the disclosure button for the outline column.
+    If the item is not expandable a CGZeroRect is returned.
+    Subclasses can return a CGZeroRect to prevent the disclosure control from being displayed. 
+
+    @param aRow - The row of the reciever
+    @return CGRect - The rect of the disclosure button at aRow.
+*/
+- (CGRect)frameOfOutlineDisclosureControlAtRow:(CPInteger)aRow
+{
+    if (![self isExpandable:[self itemAtRow:aRow]]) 
+        return _CGRectMakeZero();
+
+    var dataViewFrame = [self _frameOfOutlineDataViewAtRow:aRow],
+        frame = _CGRectMake(_CGRectGetMinX(dataViewFrame) - 10, _CGRectGetMinY(dataViewFrame), 10, _CGRectGetHeight(dataViewFrame));
+
+    return frame;
+}
+
+/*!
+    @ignore
+    Select or deselect rows, this is overridden because we need to change the color or the outline control
+*/
 - (void)_performSelection:(BOOL)select forRow:(CPInteger)rowIndex context:(id)context
 {
     [super _performSelection:select forRow:rowIndex context:context];
@@ -419,6 +610,68 @@ CPOutlineViewDropOnItemIndex = -1;
     [control performSelector:CPSelectorFromString(selector) withObject:CPThemeStateSelected];
 }
 
+/*!
+    Sets the delegate for the outlineview.
+
+    The following methods can be implemented:
+
+    User Interaction Notifications:
+    - (void)outlineViewColumnDidMove:(CPNotification)notification;
+        Called when the user moves a column in the outlineview.
+
+    - (void)outlineViewColumnDidResize:(CPNotification)notification;
+        Called when the user resizes a column in the outlineview.
+
+    - (void)outlineViewItemDidCollapse:(CPNotification)notification;
+        Called when the user collapses an item in teh outlineview.
+
+    - (void)outlineViewItemDidExpand:(CPNotification)notification;
+        Called when the user expands an item in the outlineview.
+
+    - (void)outlineViewItemWillCollapse:(CPNotification)notification;
+        Called when the user collapses an item in the outlineview, but before the item is actually collapsed.
+
+    - (void)outlineViewItemWillExpand:(CPNotification)notification;
+        Called when the used expands an item, but before the item is actually expanded.
+
+    - (void)outlineViewSelectionDidChange:(CPNotification)notification;
+        Called when the user changes the selection of the outlineview.
+
+    - (void)outlineViewSelectionIsChanging:(CPNotification)notification
+        Called when the user changes the selection of the outlineview, but before the change is made.
+
+    Expanding and collapsing items:
+    - (BOOL)outlineView:(CPOutlineView)outlineView shouldExpandItem:(id)item;
+        Return YES if the item should be given permission to expand, otherwise NO.
+
+    - (BOOL)outlineView:(CPOutlineView)outlineView shouldCollapseItem:(id)item;
+        Return YES if the item should be given permission to collapse, otherwise NO.
+
+    Selection:
+    - (BOOL)outlineView:(CPOutlineView)outlineView shouldSelectTableColumn:(CPTableColumn)tableColumn;
+        Return YES to allow the selection of tableColumn, otherwise NO.
+
+    - (BOOL)outlineView:(CPOutlineView)outlineView shouldSelectItem:(id)item;
+        Return YES to allow the selection of an item, otherwise NO.
+
+    - (BOOL)selectionShouldChangeInOutlineView:(CPOutlineView)outlineView;
+        Return YES to allow the selection of the outlineview to be changed, otherwise NO.
+
+    Displaying DataViews:
+    - (void)outlineView:(CPOutlineView)outlineView willDisplayView:(id)dataView forTableColumn:(CPTableColumn)tableColumn item:(id)item;
+        Called when a dataView is about to be displayed. This gives you the ability to alter the dataView if needed.
+
+    Editing:
+    - (BOOL)outlineView:(CPOutlineView)outlineView shouldEditTableColumn:(CPTableColumn)tableColumn item:(id)item;
+        Return YES to allow for editing of a dataview at given item and tableColumn, otherwise NO to prevent the edit.
+
+    Group Items:
+    - (BOOL)outlineView:(CPOutlineView)outlineView isGroupItem:(id)item;
+        Implement this to indicate whether a given item should be rendered using the group item style.
+        Return YES if the item is a group item, otherwise NO.
+
+    @param aDelegate - the delegate object you wish to set for the reciever. 
+*/
 - (void)setDelegate:(id)aDelegate
 {
     if (_outlineViewDelegate === aDelegate)
@@ -581,11 +834,20 @@ CPOutlineViewDropOnItemIndex = -1;
 
 }
 
+/*!
+    Returns the delegate object for the outlineview.
+*/
 - (id)delegate
 {
     return _outlineViewDelegate;
 }
 
+/*!
+    Sets the prototype of the disclosure control. This is used if you want to set a special type of button, instead of the default triangle.
+    The control must implement CPCoding.
+
+    @param aControl - the control to be used to expand and collapse items.
+*/
 - (void)setDisclosureControlPrototype:(CPControl)aControl
 {
     _disclosureControlPrototype = aControl;
@@ -596,21 +858,97 @@ CPOutlineViewDropOnItemIndex = -1;
     [self reloadData];
 }
 
+/*!
+    Reloads all the data of the outlineview.
+*/
 - (void)reloadData
 {
     [self reloadItem:nil reloadChildren:YES];
 }
 
+/*!
+    @ignore
+    We overide this because we need a special behaviour for the outline column
+*/
 - (CGRect)frameOfDataViewAtColumn:(CPInteger)aColumn row:(CPInteger)aRow
 {
     var tableColumn = [self tableColumns][aColumn];
 
     if (tableColumn === _outlineTableColumn)
-        return [self frameOfOutlineDataViewAtColumn:aColumn row:aRow];
+        return [self _frameOfOutlineDataViewAtRow:aRow];
 
     return [super frameOfDataViewAtColumn:aColumn row:aRow];
 }
 
+/*!
+    @ignore
+    we need to offset the dataview and add the dislosure triangle
+*/
+- (CPView)_dragViewForColumn:(int)theColumnIndex event:(CPEvent)theDragEvent offset:(CPPointPointer)theDragViewOffset
+{
+    var dragView = [[_CPColumnDragView alloc] initWithLineColor:[self gridColor]],
+        tableColumn = [[self tableColumns] objectAtIndex:theColumnIndex],
+        bounds = _CGRectMake(0.0, 0.0, [tableColumn width], _CGRectGetHeight([self exposedRect]) + 23.0),
+        columnRect = [self rectOfColumn:theColumnIndex],
+        headerView = [tableColumn headerView],
+        row = [_exposedRows firstIndex];
+
+    while (row !== CPNotFound)
+    {
+        var dataView = [self _newDataViewForRow:row tableColumn:tableColumn],
+            dataViewFrame = [self frameOfDataViewAtColumn:theColumnIndex row:row];
+
+        // Only one column is ever dragged so we just place the view at
+        dataViewFrame.origin.x = 0.0;
+
+        // Offset by table header height - scroll position
+        dataViewFrame.origin.y = ( _CGRectGetMinY(dataViewFrame) - _CGRectGetMinY([self exposedRect]) ) + 23.0;
+        [dataView setFrame:dataViewFrame];
+
+        [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
+
+
+        if (tableColumn === _outlineTableColumn)
+        {
+            // first inset the dragview
+            var indentationWidth = ([self levelForRow:row] + 1) * [self indentationPerLevel];
+
+            dataViewFrame.origin.x += indentationWidth;
+            dataViewFrame.size.width -= indentationWidth;
+
+            [dataView setFrame:dataViewFrame];
+        }
+
+        [dragView addSubview:dataView];
+
+        row = [_exposedRows indexGreaterThanIndex:row];
+    }
+
+    // Add the column header view
+    var headerFrame = [headerView frame];
+    headerFrame.origin = _CGPointMakeZero();
+
+    var columnHeaderView = [[_CPTableColumnHeaderView alloc] initWithFrame:headerFrame];
+    [columnHeaderView setStringValue:[headerView stringValue]];
+    [columnHeaderView setThemeState:[headerView themeState]];
+    [dragView addSubview:columnHeaderView];
+
+    [dragView setBackgroundColor:[CPColor whiteColor]];
+    [dragView setAlphaValue:0.7];
+    [dragView setFrame:bounds];
+
+    return dragView;
+}
+
+/*!
+    Retargets the drop item for the outlineview.
+    To specify a drop on theItem, you specify item as theItem and index as CPOutlineViewDropOnItemIndex.
+    To specify a drop between child 1 and 2 of theItem, you specify item as theItem and index as 2.
+    To specify a drop on an item that can’t be expanded theItem, you specify item as someOutlineItem and index as CPOutlineViewDropOnItemIndex.
+
+    @param theItem - The item you want to retarget the drop on.
+    @param theIndex - The index of the child item you want to retarget the drop between. Pass CPOutlineViewDropOnItemIndex if you want to drop on theItem.
+*/
 - (void)setDropItem:(id)theItem dropChildIndex:(int)theIndex
 {
     if (_dropItem !== theItem && theIndex < 0 && [self isExpandable:theItem] && ![self isItemExpanded:theItem])
@@ -657,6 +995,9 @@ CPOutlineViewDropOnItemIndex = -1;
     }
 }
 
+/*!
+    @ignore
+*/
 - (void)_draggingEnded
 {
     [super _draggingEnded];
@@ -665,6 +1006,9 @@ CPOutlineViewDropOnItemIndex = -1;
     _dragHoverTimer = nil;
 }
 
+/*!
+    @ignore
+*/
 - (id)_parentItemForUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex atMouseOffset:(CPPoint)theOffset
 {
     if (_shouldRetargetItem)
@@ -692,6 +1036,9 @@ CPOutlineViewDropOnItemIndex = -1;
     return [self parentForItem:[self itemAtRow:theLowerRowIndex]];
 }
 
+/*!
+    @ignore
+*/
 - (CPRect)_rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex offset:(CPPoint)theOffset
 {
     // Call super and the update x to reflect the current indentation level
@@ -705,13 +1052,59 @@ CPOutlineViewDropOnItemIndex = -1;
     return rect;
 }
 
+/*!
+    @ignore
+    We need to move the disclosure control too
+*/
+- (void)_layoutDataViewsInRows:(CPIndexSet)rows columns:(CPIndexSet)columns
+{
+    var rowArray = [],
+        columnArray = [];
+
+    [rows getIndexes:rowArray maxCount:-1 inIndexRange:nil];
+    [columns getIndexes:columnArray maxCount:-1 inIndexRange:nil];
+
+    var columnIndex = 0,
+        columnsCount = columnArray.length;
+
+    for (; columnIndex < columnsCount; ++columnIndex)
+    {
+        var column = columnArray[columnIndex],
+            tableColumn = _tableColumns[column],
+            tableColumnUID = [tableColumn UID],
+            dataViewsForTableColumn = _dataViewsForTableColumns[tableColumnUID],
+            rowIndex = 0,
+            rowsCount = rowArray.length;
+
+        for (; rowIndex < rowsCount; ++rowIndex)
+        {
+            var row = rowArray[rowIndex],
+                dataView = dataViewsForTableColumn[row],
+                dataViewFrame = [self frameOfDataViewAtColumn:column row:row];
+
+            [dataView setFrame:dataViewFrame];
+
+            if (tableColumn === _outlineTableColumn)
+            {
+                var control = _disclosureControlsForRows[row],
+                    frame = [self frameOfOutlineDisclosureControlAtRow:row];
+
+                [control setFrame:frame];
+            }
+        }
+    }
+}
+
+/*!
+    @ignore
+*/
 - (void)_loadDataViewsInRows:(CPIndexSet)rows columns:(CPIndexSet)columns
 {
     [super _loadDataViewsInRows:rows columns:columns];
 
     var outlineColumn = [[self tableColumns] indexOfObjectIdenticalTo:[self outlineTableColumn]];
 
-    if (![columns containsIndex:outlineColumn])
+    if (![columns containsIndex:outlineColumn] ||  [self outlineTableColumn] === _draggedColumn)
         return;
 
     var rowArray = [];
@@ -730,27 +1123,22 @@ CPOutlineViewDropOnItemIndex = -1;
        if (!isExpandable)
             continue;
 
-        var control = [self _dequeueDisclosureControl],
-            frame = [control frame],
-            dataViewFrame = [self frameOfDataViewAtColumn:outlineColumn row:row];
-
-        frame.origin.x = _indentationMarkerFollowsDataView ? _CGRectGetMinX(dataViewFrame) - _CGRectGetWidth(frame) : 0.0;
-        frame.origin.y = _CGRectGetMinY(dataViewFrame);
-        frame.size.height = _CGRectGetHeight(dataViewFrame);
-        // FIXME: center instead?
-        //frame.origin.y = _CGRectGetMidY(dataViewFrame) - _CGRectGetHeight(frame) / 2.0;
+        var control = [self _dequeueDisclosureControl];
 
         _disclosureControlsForRows[row] = control;
 
         [control setState:[self isItemExpanded:item] ? CPOnState : CPOffState];
         var selector = [self isRowSelected:row] ? @"setThemeState:" : @"unsetThemeState:";
         [control performSelector:CPSelectorFromString(selector) withObject:CPThemeStateSelected];
-        [control setFrame:frame];
+        [control setFrame:[self frameOfOutlineDisclosureControlAtRow:row]];
 
         [self addSubview:control];
     }
 }
 
+/*!
+    @ignore
+*/
 - (void)_unloadDataViewsInRows:(CPIndexSet)rows columns:(CPIndexSet)columns
 {
     [super _unloadDataViewsInRows:rows columns:columns];
@@ -783,6 +1171,9 @@ CPOutlineViewDropOnItemIndex = -1;
     }
 }
 
+/*!
+    @ignore
+*/
 - (void)_toggleFromDisclosureControl:(CPControl)aControl
 {
     var controlFrame = [aControl frame],
@@ -795,11 +1186,17 @@ CPOutlineViewDropOnItemIndex = -1;
         [self expandItem:item];
 }
 
+/*!
+    @ignore
+*/
 - (void)_enqueueDisclosureControl:(CPControl)aControl
 {
     _disclosureControlQueue.push(aControl);
 }
 
+/*!
+    @ignore
+*/
 - (CPControl)_dequeueDisclosureControl
 {
     if (_disclosureControlQueue.length)
@@ -819,6 +1216,9 @@ CPOutlineViewDropOnItemIndex = -1;
     return disclosureControl;
 }
 
+/*!
+    @ignore
+*/
 - (void)_noteSelectionIsChanging
 {
     [[CPNotificationCenter defaultCenter]
@@ -827,6 +1227,9 @@ CPOutlineViewDropOnItemIndex = -1;
                     userInfo:nil];
 }
 
+/*!
+    @ignore
+*/
 - (void)_noteSelectionDidChange
 {
     [[CPNotificationCenter defaultCenter]
@@ -835,6 +1238,9 @@ CPOutlineViewDropOnItemIndex = -1;
                     userInfo:nil];
 }
 
+/*!
+    @ignore
+*/
 - (void)_noteItemWillExpand:(id)item
 {
     [[CPNotificationCenter defaultCenter]
@@ -843,6 +1249,9 @@ CPOutlineViewDropOnItemIndex = -1;
                     userInfo:[CPDictionary dictionaryWithObject:item forKey:"CPObject"]];
 }
 
+/*!
+    @ignore
+*/
 - (void)_noteItemDidExpand:(id)item
 {
     [[CPNotificationCenter defaultCenter]
@@ -851,6 +1260,9 @@ CPOutlineViewDropOnItemIndex = -1;
                     userInfo:[CPDictionary dictionaryWithObject:item forKey:"CPObject"]];
 }
 
+/*!
+    @ignore
+*/
 - (void)_noteItemWillCollapse:(id)item
 {
     [[CPNotificationCenter defaultCenter]
@@ -859,6 +1271,9 @@ CPOutlineViewDropOnItemIndex = -1;
                     userInfo:[CPDictionary dictionaryWithObject:item forKey:"CPObject"]];
 }
 
+/*!
+    @ignore
+*/
 - (void)_noteItemDidCollapse:(id)item
 {
     [[CPNotificationCenter defaultCenter]
@@ -1308,6 +1723,7 @@ var CPOutlineViewIndentationPerLevelKey = @"CPOutlineViewIndentationPerLevelKey"
         _outlineViewDelegate = [aCoder decodeObjectForKey:CPOutlineViewDelegateKey];
 
         [super setDataSource:[[_CPOutlineViewTableViewDataSource alloc] initWithOutlineView:self]];
+        [super setDelegate:[[_CPOutlineViewTableViewDelegate alloc] initWithOutlineView:self]];
     }
 
     return self;

@@ -102,7 +102,7 @@
 }
 
 /*
-    Removes from the receiver each object that isn’t a member of another given set.
+    Removes from the receiver each object that isn't a member of another given set.
     @param set The set with which to perform the intersection.
 */
 - (void)intersectSet:(CPSet)aSet

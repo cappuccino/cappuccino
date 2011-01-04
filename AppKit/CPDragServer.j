@@ -456,8 +456,8 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     }
     else if (type === CPKeyDown)
     {
-        var keyCode = [anEvent keyCode];
-        if (keyCode === CPEscapeKeyCode)
+        var characters = [anEvent characters];
+        if (characters === CPEscapeFunctionKey)
         {
             _dragOperation = CPDragOperationNone;
             [self draggingEndedInPlatformWindow:platformWindow globalLocation:CGPointMakeZero() operation:_dragOperation];

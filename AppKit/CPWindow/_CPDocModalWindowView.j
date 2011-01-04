@@ -6,6 +6,7 @@ var _CPStandardWindowViewBodyBackgroundColor = nil;
 @implementation _CPDocModalWindowView : _CPWindowView
 {
     CPView _bodyView;
+    CPView _shadowView;
 }
 
 + (CPColor)bodyBackgroundColor
@@ -25,13 +26,19 @@ var _CPStandardWindowViewBodyBackgroundColor = nil;
         var theClass = [self class],
               bounds = [self bounds];
         
-       _bodyView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), CGRectGetHeight(bounds))];
+       _bodyView = [[CPView alloc] initWithFrame:_CGRectMake(0.0, 0.0, _CGRectGetWidth(bounds), _CGRectGetHeight(bounds))];
         
         [_bodyView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
         [_bodyView setBackgroundColor:[theClass bodyBackgroundColor]];
         [_bodyView setHitTests:NO];
         
         [self addSubview:_bodyView];
+
+        var bundle = [CPBundle bundleForClass:[CPWindow class]];
+        _shadowView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, _CGRectGetWidth(bounds), 8)];
+        [_shadowView setAutoresizingMask:CPViewWidthSizable];
+        [_shadowView setBackgroundColor:[CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowAttachedSheetShadow.png"] size:CGSizeMake(9,8)]]];
+        [self addSubview:_shadowView];
      }
 
     return self;    
