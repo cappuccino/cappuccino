@@ -143,9 +143,35 @@
 - (void)testIndexOfObject_inSortedRange_options_usingComparator_
 {
     var array = [0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 7],
-        numComparator = function(a, b) { return a - b; };
+        arraySimple = [4, 5, 7, 8, 9, 10],
+        numComparator = function(a, b) { return a - b; },
+        index;
 
-    var index = [array indexOfObject:1
+    index = [arraySimple indexOfObject:7
+                         inSortedRange:nil
+                               options:0
+                       usingComparator:numComparator];
+    [self assert:2 equals:index message:"simple index of 7"];
+
+    index = [[arraySimple arrayByReversingArray] indexOfObject:7
+                                                 inSortedRange:nil
+                                                       options:0
+                                               usingComparator: function(a, b) { return b - a; }];
+    [self assert:3 equals:index message:"simple index of 7 reversed"];
+
+    index = [arraySimple indexOfObject:6
+                         inSortedRange:nil
+                               options:0
+                       usingComparator:numComparator];
+    [self assert:CPNotFound equals:index message:"simple index of non existant value"];
+
+    index = [arraySimple indexOfObject:6
+                         inSortedRange:nil
+                               options:CPBinarySearchingInsertionIndex
+                       usingComparator:numComparator];
+    [self assert:2 equals:index message:"simple insertion index of non existant value"];
+
+    index = [array indexOfObject:1
                        inSortedRange:nil
                              options:0
                      usingComparator:numComparator];
@@ -154,7 +180,7 @@
                         inSortedRange:nil
                               options:CPBinarySearchingFirstEqual
                       usingComparator:numComparator]
-          equals:1];
+          equals:1 message:"binary search first equal to 1"];
     [self assert:[array indexOfObject:1
                         inSortedRange:nil
                               options:CPBinarySearchingLastEqual
@@ -174,7 +200,7 @@
                         inSortedRange:nil
                               options:CPBinarySearchingLastEqual | CPBinarySearchingInsertionIndex
                       usingComparator:numComparator]
-          equals:4];
+          equals:4 message:"last equal insertion index"];
 
     index = [array indexOfObject:2
                    inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
@@ -185,7 +211,7 @@
                         inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
                               options:CPBinarySearchingFirstEqual
                       usingComparator:numComparator]
-          equals:4];
+          equals:4 message:"first equal in range 2-7"];
     [self assert:[array indexOfObject:2
                         inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
                               options:CPBinarySearchingLastEqual
@@ -200,7 +226,7 @@
                         inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
                               options:CPBinarySearchingFirstEqual | CPBinarySearchingInsertionIndex
                       usingComparator:numComparator]
-          equals:4];
+          equals:4 message:"first equal insertion index in range 2-7"];
     [self assert:[array indexOfObject:2
                         inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
                               options:CPBinarySearchingLastEqual | CPBinarySearchingInsertionIndex
@@ -472,7 +498,7 @@
 - (CPArray)arrayByReversingArray
 {
     var a = [];
-    for (i = length - 1; i > 0; --i)
+    for (i = length - 1; i >= 0; --i)
         a.push(self[i]);
 
     return a;
