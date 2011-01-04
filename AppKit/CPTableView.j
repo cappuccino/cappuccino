@@ -1953,6 +1953,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (void)sizeLastColumnToFit
 {
+    _lastColumnShouldSnap = YES;
+
     var superview = [self superview];
 
     if (!superview)
