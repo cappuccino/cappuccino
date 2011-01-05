@@ -1,0 +1,88 @@
+@import <AppKit/AppKit.j>
+
+@implementation CPOutlineViewTest : OJTestCase
+{
+    CPOutlineView   outlineView;
+    CPTableColumn   tableColumn;
+    TestDataSource  dataSource;
+}
+
+- (void)setUp
+{
+    outlineView = [[CPOutlineView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+
+    tableColumn = [[CPTableColumn alloc] initWithIdentifier:@"Foo"];
+    [outlineView addTableColumn:tableColumn];
+    [outlineView setOutlineTableColumn:tableColumn];
+
+    [outlineView setAllowsMultipleSelection:YES];
+
+    dataSource = [TestDataSource new];
+    [dataSource setEntries:[".1", ".1.1", ".1.2", ".1.2.1", ".1.2.2", ".2", ".3", ".3.1"]];
+
+    [outlineView setDataSource:dataSource];
+    [outlineView expandItem:nil expandChildren:YES];
+}
+
+- (void)testCollapse
+{
+    // By default all rows should be visible.
+    var entries = [dataSource entries];
+    for (var i = 0; i < entries.length; i++)
+    {
+        var item = [outlineView itemAtRow:i];
+        [self assert:entries[i] equals:item message:"item " + i + " visible, in correct order"];
+    }
+
+    // Now collapse the .1 group.
+    [outlineView collapseItem:".1"];
+    var expected = [".1", ".2", ".3", ".3.1"]
+    for (var i = 0; i < expected.length; i++)
+    {
+        var item = [outlineView itemAtRow:i];
+        [self assert:expected[i] equals:item message:"item " + i + " visible after collapse, in correct order"];
+    }
+}
+
+@end
+
+@implementation TestDataSource : CPObject
+{
+    CPArray entries @accessors;
+}
+
+- (CPArray)childrenOfPrefix:(CPString)theItem
+{
+    if (!theItem)
+        theItem = "";
+
+    var matcher = new RegExp("^" + theItem + "\\.\\d$"),
+        children = [];
+    for (var i = 0; i < entries.length; i++)
+        if (matcher.exec(entries[i]))
+            children.push(entries[i]);
+
+    return children;
+}
+
+- (id)outlineView:(CPOutlineView)theOutlineView child:(int)theIndex ofItem:(id)theItem
+{
+    return [self childrenOfPrefix:theItem][theIndex];
+}
+
+- (BOOL)outlineView:(CPOutlineView)theOutlineView isItemExpandable:(id)theItem
+{
+    return !![[self childrenOfPrefix:theItem] count];
+}
+
+- (int)outlineView:(CPOutlineView)theOutlineView numberOfChildrenOfItem:(id)theItem
+{
+    return [[self childrenOfPrefix:theItem] count];
+}
+
+- (id)outlineView:(CPOutlineView)anOutlineView objectValueForTableColumn:(CPTableColumn)theColumn byItem:(id)theItem
+{
+    return theItem;
+}
+
+@end
