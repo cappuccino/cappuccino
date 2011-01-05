@@ -756,7 +756,7 @@ CPBinarySearchingInsertionIndex = 1 << 10;
 */
 - (id)copy
 {
-    return [[[self class] arrayWithArray:self];
+    return [[self class] arrayWithArray:self];
 }
 
 @end
