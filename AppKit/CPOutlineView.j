@@ -365,7 +365,29 @@ CPOutlineViewDropOnItemIndex = -1;
         return;
 
     [self _noteItemWillCollapse:anItem];
+    // Update selections:
+    // * Deselect items inside the collapsed item.
+    var collapseTopIndex = [self rowForItem:anItem],
+        topLevel = [self levelForRow:collapseTopIndex],
+        collapseEndIndex = collapseTopIndex;
+
+    while (collapseEndIndex + 1 < _itemsForRows.length && [self levelForRow:collapseEndIndex + 1] > topLevel)
+        collapseEndIndex++;
+
+    var collapseRange = CPMakeRange(collapseTopIndex + 1, collapseEndIndex - collapseTopIndex);
+    if (collapseRange.length)
+    {
+        var selection = [self selectedRowIndexes];
+        if ([selection intersectsIndexesInRange:collapseRange])
+        {
+            [self _noteSelectionIsChanging];
+            [selection removeIndexesInRange:collapseRange];
+            // Will call _noteSelectionDidChange
+            [self _setSelectedRowIndexes:selection];
+        }
+    }
     itemInfo.isExpanded = NO;
+
     [self _noteItemDidCollapse:anItem];
 
     [self reloadItem:anItem reloadChildren:YES];

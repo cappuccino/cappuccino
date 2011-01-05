@@ -44,6 +44,25 @@
     }
 }
 
+/*!
+    Test that when an ancestor item containing a selected item is collapsed, the item is deselected.
+*/
+- (void)testCollapseDeselect
+{
+    var preSelection = [CPIndexSet indexSet];
+    [preSelection addIndex:[outlineView rowForItem:".1.2.2"]];
+    [preSelection addIndex:[outlineView rowForItem:".1.1"]];
+
+    [outlineView selectRowIndexes:preSelection byExtendingSelection:NO];
+
+    [outlineView collapseItem:".1.2"];
+
+    var afterSelection = [outlineView selectedRowIndexes];
+
+    [self assert:1 equals:[afterSelection count] message:"1 selection should remain"];
+    [self assert:".1.1" equals:[outlineView itemAtRow:[outlineView selectedRow]] message:".1.1 selection should remain"];
+}
+
 @end
 
 @implementation TestDataSource : CPObject
