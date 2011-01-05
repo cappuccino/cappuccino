@@ -58,7 +58,7 @@
 
     for (; index < count; ++index)
     {
-        var object = [anArray objectatIndex:index];
+        var object = [anArray objectAtIndex:index];
 
         self[index] = object.isa ? [object copy] : object;
     }
@@ -210,6 +210,11 @@
 - (void)replaceObjectAtIndex:(int)anIndex withObject:(id)anObject
 {
     self[anIndex] = anObject;
+}
+
+- (void)copy
+{
+    return self.slice(0);
 }
 
 - (Class)classForCoder
