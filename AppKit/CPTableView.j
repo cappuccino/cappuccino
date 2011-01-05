@@ -2059,8 +2059,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         if ([self numberOfRows] !== _cachedRowHeights.length)
             [self noteHeightOfRowsWithIndexesChanged:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])]];
 
-        var heightObject = _cachedRowHeights[_cachedRowHeights.length - 1],
+        var heightObject = _cachedRowHeights[_cachedRowHeights.length - 1];
+
+        if (heightObject)
             height = heightObject.heightAboveRow + heightObject.height + _intercellSpacing.height;
+        else
+            height = 0;
     }
 
 
