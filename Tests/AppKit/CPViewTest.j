@@ -44,17 +44,18 @@
 
 - (void)testThemeState
 {
-    [self assertTrue:[view hasThemeState:CPThemeStateNormal]];
+    [self assertTrue:[view hasThemeState:CPThemeStateNormal] message:@"CPView should initialy have CPThemeStateNormal"];
+    [self assertFalse:[view hasThemeState:CPThemeStateDisabled] message:@"view should be disabled"];
 
-    [view setThemeState:CPThemeStateNormal];
-    [self assertTrue:[view hasThemeState:CPThemeStateNormal]];
+    [view setThemeState:CPThemeStateDisabled];
+    [self assertTrue:[view hasThemeState:CPThemeStateDisabled] message:@"The view should be CPThemeStateDisabled"];
 
     [view setThemeState:CPThemeStateHighlighted];
-    [self assertTrue:[view hasThemeState:CPThemeStateHighlighted]];
+    [self assertTrue:[view hasThemeState:CPThemeStateHighlighted] message:@"Theme state should be CPThemeStateHighlighted"];
 
     [view setThemeState:CPThemeStateNormal | CPThemeStateHighlighted];
-    [self assertTrue:[view hasThemeState:CPThemeStateNormal]];
-    [self assertTrue:[view hasThemeState:CPThemeStateHighlighted]];
+    [self assertFalse:[view hasThemeState:CPThemeStateNormal] message:@"CPThemeStateNormal cannot exist as part of a compound state"];
+    [self assertTrue:[view hasThemeState:CPThemeStateHighlighted] message:@"The view should be CPThemeStateHighlighted"];
 }
 
 @end

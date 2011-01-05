@@ -350,7 +350,7 @@ function CPThemeState(aStateName)
     if (state === undefined)
     {
         if (aStateName.indexOf('+') === -1)
-            state = 1 << ++CPThemeStateCount;
+            state = 1 << CPThemeStateCount++;
         else
         {
             var state = 0,
@@ -364,7 +364,7 @@ function CPThemeState(aStateName)
 
                 if (individualState === undefined)
                 {
-                    individualState = 1 << ++CPThemeStateCount;
+                    individualState = 1 << CPThemeStateCount++;
                     CPThemeStates[stateName] = individualState;
                     CPThemeStateNames[individualState] = stateName;
                 }
@@ -402,8 +402,8 @@ function CPThemeStateName(aState)
     return name;
 }
 
-CPThemeStateNames[1]        = "normal";
-CPThemeStateNormal          = CPThemeStates["normal"] = 1;
+CPThemeStateNames[0]        = "normal";
+CPThemeStateNormal          = CPThemeStates["normal"] = 0;
 CPThemeStateDisabled        = CPThemeState("disabled");
 CPThemeStateHovered         = CPThemeState("hovered");
 CPThemeStateHighlighted     = CPThemeState("highlighted");
