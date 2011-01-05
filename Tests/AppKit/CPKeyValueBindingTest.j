@@ -222,9 +222,23 @@
     [self assert:@"" equals:[textField stringValue] message:@"text field string value should be cleared"];
     [self assert:@"Multiple Values" equals:[textField placeholderString] message:@"text field placeholder should be 'Multiple Values'"];
 
+    [textField unbind:@"value"];
+    [self assert:@"cheese" equals:[textField placeholderString] message:@"text field placeholder should be reset"];
+
+    [textField bind:@"value" toObject:arrayController withKeyPath:@"selection.cheese" options:options];
+
     [arrayController setSelectionIndex:0];
     [self assert:@"yellow" equals:[textField stringValue] message:"text field string value should be 'yellow'"];
     [self assert:@"cheese" equals:[textField placeholderString] message:"text field placeholder should be restored"];
+
+    textField = [[CPTextField alloc] init];
+    [textField bind:@"value" toObject:arrayController withKeyPath:@"selection.cheese" options:options];
+    [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)]];
+    [self assert:@"Multiple Values" equals:[textField placeholderString] message:@"text field placeholder should 'Multiple Values'"];
+
+    [arrayController setSelectionIndex:0];
+    [self assert:@"" equals:[textField placeholderString] message:@"empty text field placeholder should be restored"];
+
 }
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)changes context:(id)aContext

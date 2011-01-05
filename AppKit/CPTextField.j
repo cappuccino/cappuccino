@@ -258,6 +258,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self setStringValue:@""];
         [self setPlaceholderString:@""];
 
+        _originalPlaceholderString = undefined;
+
         _sendActionOn = CPKeyUpMask | CPKeyDownMask;
 
         [self setValue:CPLeftTextAlignment forThemeAttribute:@"alignment"];
@@ -733,6 +735,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 /*
     @ignore
+    Sets the internal string value without updating the value in the input element
 */
 - (void)_setStringValue:(id)aValue
 {
@@ -806,14 +809,25 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self setPlaceholderString:[self stringValue]];
         [self setStringValue:@""];
     }
-    else if (_originalPlaceholderString)
+    else if (_originalPlaceholderString !== undefined)
     {
         // Restore the original placeholder, the actual textfield value is already correct
         // because it was set using setValue:forKey:
         [self setPlaceholderString:_originalPlaceholderString];
+        _originalPlaceholderString = undefined;
     }
 
     _currentValueIsPlaceholder = isPlaceholder;
+}
+
+- (void)unbind:(CPString)theBinding
+{
+    if (theBinding === CPValueBinding)
+    {
+        [self _setCurrentValueIsPlaceholder:NO];
+    }
+
+    [super unbind:theBinding];
 }
 
 /*!
@@ -1270,6 +1284,8 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         [self setAlignment:[aCoder decodeIntForKey:CPTextFieldAlignmentKey]];
 
         [self setPlaceholderString:[aCoder decodeObjectForKey:CPTextFieldPlaceholderStringKey]];
+        _originalPlaceholderString = undefined;
+
 
     }
 
