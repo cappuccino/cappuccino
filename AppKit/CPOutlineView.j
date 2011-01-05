@@ -79,11 +79,11 @@ CPOutlineViewDropOnItemIndex = -1;
     @ingroup appkit
     @class CPOutlineView
 
-    CPOutlineView is a subclass of CPTableView that inherates the row and column format to display hierarchial data. 
+    CPOutlineView is a subclass of CPTableView that inherates the row and column format to display hierarchial data.
     The outlineview adds the ability to expand and collapse items. This is useful for browsing a tree like structure such as directories or a filesystem.
 
     Like the tableview, an outlineview uses a data source to supply its data. For this reason you must implement a couple data source methods (documented in setDataSource:)
-    
+
 */
 @implementation CPOutlineView : CPTableView
 {
@@ -151,7 +151,7 @@ CPOutlineViewDropOnItemIndex = -1;
 }
 /*!
     In addition to standard delegation, the outline view also supports data source delegation. This method sets the data source object.
-    Just like the TableView you have CPTableColumns but instead of rows you deal with items. 
+    Just like the TableView you have CPTableColumns but instead of rows you deal with items.
 
     You must implement these data source methods:
 
@@ -165,7 +165,7 @@ CPOutlineViewDropOnItemIndex = -1;
         Returns the number of child items of a given item. If item is nil you should return the number of top level (root) items.
 
     - (id)outlineView:(CPOutlineView)outlineView objectValueForTableColumn:(CPTableColumn)tableColumn byItem:(id)item;
-        Returns the object value of the item in a given column. 
+        Returns the object value of the item in a given column.
 
 
     The following methods are optional:
@@ -195,7 +195,7 @@ CPOutlineViewDropOnItemIndex = -1;
         Returns YES if the drop operation is allowed otherwise NO.
         This method is invoked by the outlineview after a drag should begin, but before it is started. If you dont want the drag to being return NO.
         If you want the drag to begin you should return YES and place the drag data on the pboard.
-    
+
 */
 - (void)setDataSource:(id)aDataSource
 {
@@ -280,11 +280,11 @@ CPOutlineViewDropOnItemIndex = -1;
 }
 
 /*!
-   Used to find if an item is already expanded. 
+   Used to find if an item is already expanded.
 
     @param anItem - the item you are interest in.
 
-    @return BOOL - Yes if the item is already expanded, otherwise NO. 
+    @return BOOL - Yes if the item is already expanded, otherwise NO.
 */
 - (BOOL)isItemExpanded:(id)anItem
 {
@@ -500,7 +500,7 @@ CPOutlineViewDropOnItemIndex = -1;
 }
 
 /*!
-    Returns the width of an indentation level. 
+    Returns the width of an indentation level.
 
     @return float - the width of the indentation per level.
 */
@@ -580,14 +580,14 @@ CPOutlineViewDropOnItemIndex = -1;
 /*!
     Returns the frame of the disclosure button for the outline column.
     If the item is not expandable a CGZeroRect is returned.
-    Subclasses can return a CGZeroRect to prevent the disclosure control from being displayed. 
+    Subclasses can return a CGZeroRect to prevent the disclosure control from being displayed.
 
     @param aRow - The row of the reciever
     @return CGRect - The rect of the disclosure button at aRow.
 */
 - (CGRect)frameOfOutlineDisclosureControlAtRow:(CPInteger)aRow
 {
-    if (![self isExpandable:[self itemAtRow:aRow]]) 
+    if (![self isExpandable:[self itemAtRow:aRow]])
         return _CGRectMakeZero();
 
     var dataViewFrame = [self _frameOfOutlineDataViewAtRow:aRow],
@@ -670,7 +670,7 @@ CPOutlineViewDropOnItemIndex = -1;
         Implement this to indicate whether a given item should be rendered using the group item style.
         Return YES if the item is a group item, otherwise NO.
 
-    @param aDelegate - the delegate object you wish to set for the reciever. 
+    @param aDelegate - the delegate object you wish to set for the reciever.
 */
 - (void)setDelegate:(id)aDelegate
 {
@@ -944,7 +944,7 @@ CPOutlineViewDropOnItemIndex = -1;
     Retargets the drop item for the outlineview.
     To specify a drop on theItem, you specify item as theItem and index as CPOutlineViewDropOnItemIndex.
     To specify a drop between child 1 and 2 of theItem, you specify item as theItem and index as 2.
-    To specify a drop on an item that can’t be expanded theItem, you specify item as someOutlineItem and index as CPOutlineViewDropOnItemIndex.
+    To specify a drop on an item that can't be expanded theItem, you specify item as someOutlineItem and index as CPOutlineViewDropOnItemIndex.
 
     @param theItem - The item you want to retarget the drop on.
     @param theIndex - The index of the child item you want to retarget the drop between. Pass CPOutlineViewDropOnItemIndex if you want to drop on theItem.
