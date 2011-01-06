@@ -2105,8 +2105,14 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (void)scrollColumnToVisible:(int)columnIndex
 {
-    [self scrollRectToVisible:[self rectOfColumn:columnIndex]];
-    /*FIX ME: tableview header isn't rendered until you click the horizontal scroller (or scroll)*/
+    var visible = [self visibleRect],
+        colRect = [self rectOfColumn:columnIndex];
+
+    visible.origin.x = colRect.origin.x;
+    visible.size.width = colRect.size.width;
+
+    [self scrollRectToVisible:visible];
+    [_headerView scrollRectToVisible:colRect];
 }
 
 /*!
