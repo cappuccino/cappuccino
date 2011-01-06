@@ -316,7 +316,7 @@
         objectEnumerator = [self objectEnumerator];
 
     while ((object = [objectEnumerator nextObject]) !== nil)
-        if (![self containsObject:object])
+        if (![aSet containsObject:object])
             return NO;
 
     return YES;
