@@ -2053,18 +2053,17 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_))
         var height =  (_rowHeight + _intercellSpacing.height) * _numberOfRows;
+    else if ([self numberOfRows] === 0)
+        var height = 0;
     else
     {
         // if this is the fist run we need to populate the cache
         if ([self numberOfRows] !== _cachedRowHeights.length)
             [self noteHeightOfRowsWithIndexesChanged:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])]];
 
-        var heightObject = _cachedRowHeights[_cachedRowHeights.length - 1];
-
-        if (heightObject)
+        var heightObject = _cachedRowHeights[_cachedRowHeights.length - 1],
             height = heightObject.heightAboveRow + heightObject.height + _intercellSpacing.height;
-        else
-            height = 0;
+
     }
 
 
@@ -2081,6 +2080,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
+
 
 /*!
     Scrolls the receiver vertically in an enclosing CPClipView so the row specified by rowIndex is visible.
