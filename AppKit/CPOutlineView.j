@@ -367,6 +367,7 @@ CPOutlineViewDropOnItemIndex = -1;
     [self _noteItemWillCollapse:anItem];
     // Update selections:
     // * Deselect items inside the collapsed item.
+    // * Shift row selections below the collapsed item so that the same logical items remain selected.
     var collapseTopIndex = [self rowForItem:anItem],
         topLevel = [self levelForRow:collapseTopIndex],
         collapseEndIndex = collapseTopIndex;
@@ -377,14 +378,31 @@ CPOutlineViewDropOnItemIndex = -1;
     var collapseRange = CPMakeRange(collapseTopIndex + 1, collapseEndIndex - collapseTopIndex);
     if (collapseRange.length)
     {
-        var selection = [self selectedRowIndexes];
+        var selection = [self selectedRowIndexes],
+            didChange = NO;
+
         if ([selection intersectsIndexesInRange:collapseRange])
         {
-            [self _noteSelectionIsChanging];
             [selection removeIndexesInRange:collapseRange];
+            [self _noteSelectionIsChanging];
+            didChange = YES;
             // Will call _noteSelectionDidChange
             [self _setSelectedRowIndexes:selection];
         }
+
+        // Shift any selected rows below upwards.
+        if ([selection intersectsIndexesInRange:CPMakeRange(collapseEndIndex + 1, _itemsForRows.length)])
+        {
+            // Notify if that wasn't already done above.
+            if (!didChange)
+                [self _noteSelectionIsChanging];
+            didChange = YES;
+
+            [selection shiftIndexesStartingAtIndex:collapseEndIndex + 1 by:-collapseRange.length];
+        }
+
+        if (didChange)
+            [self _setSelectedRowIndexes:selection];
     }
     itemInfo.isExpanded = NO;
 

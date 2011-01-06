@@ -24,6 +24,9 @@
     [outlineView expandItem:nil expandChildren:YES];
 }
 
+/*!
+    Test that entries load and hide correctly.
+*/
 - (void)testCollapse
 {
     // By default all rows should be visible.
@@ -61,6 +64,42 @@
 
     [self assert:1 equals:[afterSelection count] message:"1 selection should remain"];
     [self assert:".1.1" equals:[outlineView itemAtRow:[outlineView selectedRow]] message:".1.1 selection should remain"];
+}
+
+/*!
+    Test that the selection stays on the same item below a collapse.
+*/
+- (void)testCollapseWithSelectionBelow
+{
+    // [".1", ".1.1", ".1.2", ".1.2.1", ".1.2.2", ".2", ".3", ".3.1"]
+    var preSelection = [CPIndexSet indexSet];
+    [preSelection addIndex:[outlineView rowForItem:".1.1"]];
+    [preSelection addIndex:[outlineView rowForItem:".3.1"]];
+
+    [outlineView selectRowIndexes:preSelection byExtendingSelection:NO];
+
+    [outlineView collapseItem:".1.2"];
+
+    var afterSelection = [outlineView selectedRowIndexes];
+
+    [self assert:2 equals:[afterSelection count] message:"selections should remain"];
+    [self assert:".1.1" equals:[outlineView itemAtRow:[afterSelection firstIndex]] message:".1.1 selection should remain"];
+    [self assert:".3.1" equals:[outlineView itemAtRow:[afterSelection lastIndex]] message:".3.1 selection should remain"];
+
+    // Collapse where one selection disappears and one shifts.
+    preSelection = [CPIndexSet indexSet];
+    [preSelection addIndex:[outlineView rowForItem:".1.1"]];
+    [preSelection addIndex:[outlineView rowForItem:".3"]];
+
+    [outlineView selectRowIndexes:preSelection byExtendingSelection:NO];
+
+    [outlineView collapseItem:".1"];
+
+    afterSelection = [outlineView selectedRowIndexes];
+
+    [self assert:1 equals:[afterSelection count] message:"1 selection should disappear"];
+
+    [self assert:".3" equals:[outlineView itemAtRow:[afterSelection firstIndex]] message:".3 selection should remain"];
 }
 
 @end
