@@ -2089,7 +2089,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (void)scrollRowToVisible:(int)rowIndex
 {
-    [self scrollRectToVisible:[self rectOfRow:rowIndex]];
+    var visible = [self visibleRect],
+        rowRect = [self rectOfRow:rowIndex];
+
+    visible.origin.y = rowRect.origin.y;
+    visible.size.height = rowRect.size.height;
+
+    [self scrollRectToVisible:visible];
 }
 
 /*!
