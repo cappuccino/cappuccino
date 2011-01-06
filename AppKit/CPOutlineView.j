@@ -331,6 +331,22 @@ CPOutlineViewDropOnItemIndex = -1;
     if (!itemInfo.isExpanded)
     {
         [self _noteItemWillExpand:anItem];
+
+        // Shift selection indexes below so that the same items remain selected.
+        var newRowCount = [_outlineViewDataSource outlineView:self numberOfChildrenOfItem:anItem];
+        if (newRowCount)
+        {
+            var selection = [self selectedRowIndexes],
+                expandIndex = [self rowForItem:anItem] + 1;
+
+            if ([selection intersectsIndexesInRange:CPMakeRange(expandIndex, _itemsForRows.length)])
+            {
+                [self _noteSelectionIsChanging];
+                [selection shiftIndexesStartingAtIndex:expandIndex by:newRowCount];
+                [self _setSelectedRowIndexes:selection];
+            }
+        }
+
         itemInfo.isExpanded = YES;
         [self _noteItemDidExpand:anItem];
         [self reloadItem:anItem reloadChildren:YES];

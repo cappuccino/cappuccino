@@ -39,7 +39,7 @@
 
     // Now collapse the .1 group.
     [outlineView collapseItem:".1"];
-    var expected = [".1", ".2", ".3", ".3.1"]
+    var expected = [".1", ".2", ".3", ".3.1"];
     for (var i = 0; i < expected.length; i++)
     {
         var item = [outlineView itemAtRow:i];
@@ -100,6 +100,29 @@
     [self assert:1 equals:[afterSelection count] message:"1 selection should disappear"];
 
     [self assert:".3" equals:[outlineView itemAtRow:[afterSelection firstIndex]] message:".3 selection should remain"];
+}
+
+/*!
+    Test that the selection stays on the same item below an expand.
+*/
+- (void)testExpandWithSelectionBelow
+{
+    // [".1", ".1.1", ".1.2", ".1.2.1", ".1.2.2", ".2", ".3", ".3.1"]
+    [outlineView collapseItem:".1.2"];
+
+    var preSelection = [CPIndexSet indexSet];
+    [preSelection addIndex:[outlineView rowForItem:".1.1"]];
+    [preSelection addIndex:[outlineView rowForItem:".2"]];
+
+    [outlineView selectRowIndexes:preSelection byExtendingSelection:NO];
+
+    [outlineView expandItem:".1.2"];
+    afterSelection = [outlineView selectedRowIndexes];
+
+    [self assert:2 equals:[afterSelection count] message:"selections should remain"];
+
+    [self assert:".1.1" equals:[outlineView itemAtRow:[afterSelection firstIndex]] message:".1.1 selection should remain"];
+    [self assert:".2" equals:[outlineView itemAtRow:[afterSelection lastIndex]] message:".2 selection should remain"];
 }
 
 @end
