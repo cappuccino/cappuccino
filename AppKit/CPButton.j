@@ -255,6 +255,9 @@ CPButtonImageOffset   = 3.0;
 */
 - (void)setNextState
 {
+    if ([self infoForBinding:CPValueBinding])
+        [self setAllowsMixedState:NO];
+
     [self setState:[self nextState]];
 }
 
