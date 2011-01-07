@@ -316,7 +316,7 @@
         objectEnumerator = [self objectEnumerator];
 
     while ((object = [objectEnumerator nextObject]) !== nil)
-        if (![self containsObject:object])
+        if (![aSet containsObject:object])
             return NO;
 
     return YES;
@@ -459,4 +459,6 @@ var _CPSharedPlaceholderSet   = nil;
 
 @end
 
-@import "_CPConcreteMutableSet.j"
+// We actually want _CPConcreteMutableSet, but this introduces the possibility of an invalid @import loop.
+// This will be correctly solved when we move to true immutable/mutable pairs.
+@import "CPMutableSet.j"

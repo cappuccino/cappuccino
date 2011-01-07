@@ -35,7 +35,7 @@ var exposedBindingsMap = [CPDictionary new],
 var CPBindingOperationAnd = 0,
     CPBindingOperationOr  = 1;
 
-@implementation CPKeyValueBinding : CPObject
+@implementation CPBinder : CPObject
 {
     CPDictionary    _info;
     id              _source;
@@ -59,7 +59,7 @@ var CPBindingOperationAnd = 0,
     return [[exposedBindingsMap objectForKey:[aClass UID]] copy];
 }
 
-+ (CPKeyValueBinding)getBinding:(CPString)aBinding forObject:(id)anObject
++ (CPBinder)getBinding:(CPString)aBinding forObject:(id)anObject
 {
     return [[bindingsMap objectForKey:[anObject UID]] objectForKey:aBinding];
 }
@@ -147,39 +147,10 @@ var CPBindingOperationAnd = 0,
     var destination = [_info objectForKey:CPObservedObjectKey],
         keyPath = [_info objectForKey:CPObservedKeyPathKey],
         options = [_info objectForKey:CPOptionsKey],
-        newValue = [destination valueForKeyPath:keyPath],
-        isPlaceholder = CPIsControllerMarker(newValue);
+        newValue = [destination valueForKeyPath:keyPath];
 
-    if (isPlaceholder)
-    {
-        switch (newValue)
-        {
-            case CPMultipleValuesMarker:
-                newValue = [options objectForKey:CPMultipleValuesPlaceholderBindingOption] || @"Multiple Values";
-                break;
-
-            case CPNoSelectionMarker:
-                newValue = [options objectForKey:CPNoSelectionPlaceholderBindingOption] || @"No Selection";
-                break;
-
-            case CPNotApplicableMarker:
-                if ([options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
-                    [CPException raise:CPGenericException reason:@"can't transform non applicable key on: "+_source+" value: "+newValue];
-
-                newValue = [options objectForKey:CPNotApplicablePlaceholderBindingOption] || @"Not Applicable";
-                break;
-        }
-    }
-    else
-    {
-        // Only transform the value if the current value is not a placeholder
-        newValue = [self transformValue:newValue withOptions:options];
-    }
-
+    newValue = [self transformValue:newValue withOptions:options];
     [_source setValue:newValue forKey:aBinding];
-
-    if (aBinding === @"objectValue" && [_source respondsToSelector:@selector(_setCurrentValueIsPlaceholder:)])
-        [_source _setCurrentValueIsPlaceholder:isPlaceholder];
 }
 
 - (void)reverseSetValueFor:(CPString)aBinding
@@ -259,7 +230,13 @@ var CPBindingOperationAnd = 0,
 
 + (void)exposeBinding:(CPString)aBinding
 {
-    [CPKeyValueBinding exposeBinding:aBinding forClass:[self class]];
+    [CPBinder exposeBinding:aBinding forClass:[self class]];
+}
+
+
++ (Class)_binderClassForBinding:(CPString)theBinding
+{
+    return [CPBinder class];
 }
 
 - (CPArray)exposedBindings
@@ -269,7 +246,7 @@ var CPBindingOperationAnd = 0,
 
     while (theClass)
     {
-        var temp = [CPKeyValueBinding exposedBindingsForClass:theClass];
+        var temp = [CPBinder exposedBindingsForClass:theClass];
 
         if (temp)
             [exposedBindings addObjectsFromArray:temp];
@@ -293,18 +270,21 @@ var CPBindingOperationAnd = 0,
     //if (![[self exposedBindings] containsObject:aBinding])
     //    CPLog.warn("No binding exposed on "+self+" for "+aBinding);
 
+    var binderClass = [[self class] _binderClassForBinding:aBinding];
+
     [self unbind:aBinding];
-    [[CPKeyValueBinding alloc] initWithBinding:[self _replacementKeyPathForBinding:aBinding] name:aBinding to:anObject keyPath:aKeyPath options:options from:self];
+    [[binderClass alloc] initWithBinding:[self _replacementKeyPathForBinding:aBinding] name:aBinding to:anObject keyPath:aKeyPath options:options from:self];
 }
 
 - (CPDictionary)infoForBinding:(CPString)aBinding
 {
-    return [CPKeyValueBinding infoForBinding:aBinding forObject:self];
+    return [CPBinder infoForBinding:aBinding forObject:self];
 }
 
 - (void)unbind:(CPString)aBinding
 {
-    [CPKeyValueBinding unbind:aBinding forObject:self];
+    var binderClass = [[self class] _binderClassForBinding:aBinding];
+    [binderClass unbind:aBinding forObject:self];
 }
 
 - (id)_replacementKeyPathForBinding:(CPString)binding
@@ -314,7 +294,29 @@ var CPBindingOperationAnd = 0,
 
 @end
 
-@implementation _CPKeyValueOrBinding : CPKeyValueBinding
+/*!
+    @ignore
+    Provides stub implementations that simply call super for the "objectValue" binding
+    This class should not be necessary but assures backwards compliance with our old way of doing bindings
+    Every class with a value binding should implement a subclass to handle it's specific value binding logic
+*/
+@implementation _CPValueBinder : CPBinder
+{
+}
+
+- (void)setValueFor:(CPString)theBinding
+{
+    [super setValueFor:@"objectValue"];
+}
+
+- (void)reverseSetValueFor:(CPString)theBinding
+{
+    [super reverseSetValueFor:@"objectValue"];
+}
+
+@end
+
+@implementation _CPKeyValueOrBinding : CPBinder
 {
 }
 
@@ -335,7 +337,7 @@ var CPBindingOperationAnd = 0,
 
 @end
 
-@implementation _CPKeyValueAndBinding : CPKeyValueBinding
+@implementation _CPKeyValueAndBinding : CPBinder
 {
 }
 

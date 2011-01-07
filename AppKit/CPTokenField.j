@@ -264,7 +264,8 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
 - (void)_controlTextDidChange
 {
-    var theBinding = [CPKeyValueBinding getBinding:CPValueBinding forObject:self];
+    var binderClass = [[self class] _binderClassForBinding:CPValueBinding],
+        theBinding = [binderClass getBinding:CPValueBinding forObject:self];
 
     if (theBinding)
         [theBinding reverseSetValueFor:@"objectValue"];
