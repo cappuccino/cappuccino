@@ -84,7 +84,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     CPColor                 _textFieldBackgroundColor;
 
     id                      _placeholderString;
-    id                      _originalPlaceholderString;
     BOOL                    _currentValueIsPlaceholder;
 
     id                      _delegate;
@@ -158,6 +157,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 + (CPString)defaultThemeClass
 {
     return "textfield";
+}
+
++ (Class)_binderClassForBinding:(CPString)theBinding
+{
+    if (theBinding === CPValueBinding)
+        return [_CPTextFieldValueBinder class];
+
+    return [super _binderClassForBinding:theBinding];
 }
 
 + (id)themeAttributes
@@ -257,8 +264,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     {
         [self setStringValue:@""];
         [self setPlaceholderString:@""];
-
-        _originalPlaceholderString = undefined;
 
         _sendActionOn = CPKeyUpMask | CPKeyDownMask;
 
@@ -795,41 +800,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     return _placeholderString;
 }
 
-- (void)_setCurrentValueIsPlaceholder:(BOOL)isPlaceholder
-{
-    if (isPlaceholder)
-    {
-        // Save the original placeholder value so we can restore it later
-        // Only do this if the placeholder is not already overridden because the bindings logic might call this method
-        // several times and we don't want the bindings placeholder to ever become the original placeholder
-        if (!_currentValueIsPlaceholder)
-            _originalPlaceholderString = [self placeholderString];
-
-        // Set the current string value as the current placeholder and clear the string value
-        [self setPlaceholderString:[self stringValue]];
-        [self setStringValue:@""];
-    }
-    else if (_originalPlaceholderString !== undefined)
-    {
-        // Restore the original placeholder, the actual textfield value is already correct
-        // because it was set using setValue:forKey:
-        [self setPlaceholderString:_originalPlaceholderString];
-        _originalPlaceholderString = undefined;
-    }
-
-    _currentValueIsPlaceholder = isPlaceholder;
-}
-
-- (void)unbind:(CPString)theBinding
-{
-    if (theBinding === CPValueBinding)
-    {
-        [self _setCurrentValueIsPlaceholder:NO];
-    }
-
-    [super unbind:theBinding];
-}
-
 /*!
     For non-bezeled text fields (typically a label), sizeToFit has two behaviors, depending
     on the line break mode of the receiver.
@@ -1284,9 +1254,6 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         [self setAlignment:[aCoder decodeIntForKey:CPTextFieldAlignmentKey]];
 
         [self setPlaceholderString:[aCoder decodeObjectForKey:CPTextFieldPlaceholderStringKey]];
-        _originalPlaceholderString = undefined;
-
-
     }
 
     return self;
@@ -1311,6 +1278,51 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
     [aCoder encodeInt:[self alignment] forKey:CPTextFieldAlignmentKey];
 
     [aCoder encodeObject:_placeholderString forKey:CPTextFieldPlaceholderStringKey];
+}
+
+@end
+
+@implementation _CPTextFieldValueBinder : CPBinder
+{
+}
+
+- (void)setValueFor:(CPString)theBinding
+{
+    var destination = [_info objectForKey:CPObservedObjectKey],
+        keyPath = [_info objectForKey:CPObservedKeyPathKey],
+        options = [_info objectForKey:CPOptionsKey],
+        newValue = [destination valueForKeyPath:keyPath],
+        isPlaceholder = CPIsControllerMarker(newValue);
+
+    if (isPlaceholder)
+    {
+        switch (newValue)
+        {
+            case CPMultipleValuesMarker:
+                newValue = [options objectForKey:CPMultipleValuesPlaceholderBindingOption] || @"Multiple Values";
+                break;
+
+            case CPNoSelectionMarker:
+                newValue = [options objectForKey:CPNoSelectionPlaceholderBindingOption] || @"No Selection";
+                break;
+
+            case CPNotApplicableMarker:
+                if ([options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
+                    [CPException raise:CPGenericException
+                                reason:@"can't transform non applicable key on: "+_source+" value: "+newValue];
+
+                newValue = [options objectForKey:CPNotApplicablePlaceholderBindingOption] || @"Not Applicable";
+                break;
+        }
+
+        [_source setPlaceholderString:newValue];
+        [_source setObjectValue:nil];
+    }
+    else
+    {
+        newValue = [self transformValue:newValue withOptions:options];
+        [_source setObjectValue:newValue];
+    }
 }
 
 @end

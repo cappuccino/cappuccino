@@ -62,6 +62,11 @@ CPTableColumnUserResizingMask   = 1 << 1;
     BOOL _disableResizingPosting @accessors(property=disableResizingPosting);
 }
 
++ (Class)_binderClassForBinding:(CPString)theBinding
+{
+    return [CPBinder class];
+}
+
 /*!
     @ignore
 */
@@ -507,7 +512,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 
 - (void)prepareDataView:(CPView)aDataView forRow:(unsigned)aRow
 {
-    var bindingsDictionary = [CPKeyValueBinding allBindingsForObject:self],
+    var bindingsDictionary = [CPBinder allBindingsForObject:self],
         keys = [bindingsDictionary allKeys];
 
     for (var i = 0, count = [keys count]; i < count; i++)
@@ -547,9 +552,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
         }
 
         value = [binding transformValue:value withOptions:[bindingInfo objectForKey:CPOptionsKey]];
-
-        // console.log(bindingName+" : "+keyPath+" : "+aRow+" : "+[[destination valueForKeyPath:keyPath] objectAtIndex:aRow]);
-        [aDataView setValue:value forKey:bindingPath];
+        [aDataView setValue:value forKey:@"objectValue"];
     }
 }
 

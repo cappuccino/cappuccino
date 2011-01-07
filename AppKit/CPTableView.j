@@ -1078,7 +1078,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self setNeedsDisplay:YES]; // FIXME: should be setNeedsDisplayInRect:enclosing rect of new (de)selected rows
                               // but currently -drawRect: is not implemented here
 
-    [[CPKeyValueBinding getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectedRowIndexes"];
+    var binderClass = [[self class] _binderClassForBinding:@"selectionIndexes"];
+    [[binderClass getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectedRowIndexes"];
 
     [self _noteSelectionDidChange];
 }

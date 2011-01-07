@@ -394,7 +394,8 @@
 
     // Push back the new selection to the model for selectionIndexes if we have one.
     // There won't be an infinite loop because of the equality check above.
-    [[CPKeyValueBinding getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectionIndexes"];
+    var binderClass = [[self class] _binderClassForBinding:@"selectionIndexes"];
+    [[binderClass getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectionIndexes"];
 
     return YES;
 }
