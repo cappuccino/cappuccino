@@ -345,6 +345,12 @@ var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
     return [CPArray class];
 }
 
+- (id)copy
+{
+    var objects = [self objectsAtIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self count])]];
+    return [[CPArray alloc] initWithArray:objects];
+}
+
 @end
 
 @implementation _CPKeyValueCodingSet : CPSet
@@ -400,6 +406,17 @@ var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
     return [CPSet class];
 }
 
+- (id)copy
+{
+    var objects = [],
+        object = nil,
+        objectEnumerator = [self objectEnumerator];
+
+    while ((object = [objectEnumerator nextObject]) !== nil)
+            objects.push(object);
+
+    return [[CPSet alloc] initWithArray:objects];
+}
 
 @end
 
