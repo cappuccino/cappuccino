@@ -35,12 +35,12 @@ var indexOf = Array.prototype.indexOf,
 
 - (id)initWithArray:(CPArray)anArray
 {
-    return slice.call(anArray, 0);
+    return [self initWithArray:anArray copyItems:NO];
 }
 
 - (id)initWithArray:(CPArray)anArray copyItems:(BOOL)shouldCopyItems
 {
-    if (!shouldCopyItems)
+    if (!shouldCopyItems && anArray.isa === _CPJavaScriptArray)
         return slice.call(anArray, 0);
 
     self = [super init];
