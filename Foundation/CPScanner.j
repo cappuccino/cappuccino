@@ -180,8 +180,8 @@
     if ([self isAtEnd])
         return nil;
 
-    var current = [self scanLocation];
-    var str = nil;
+    var current = [self scanLocation],
+        str = nil;
 
     while (current < _string.length)
     {
@@ -212,9 +212,9 @@
 
 - (void)_movePastCharactersToBeSkipped
 {
-    var current = [self scanLocation];
-    var string = [self string];
-    var toSkip = [self charactersToBeSkipped];
+    var current = [self scanLocation],
+        string = [self string],
+        toSkip = [self charactersToBeSkipped];
 
     while (current < string.length)
     {
@@ -258,8 +258,9 @@
 
 - (CPString)scanUpToString:(CPString)s
 {
-    var current = [self scanLocation], str = [self string];
-    var captured = nil;
+    var current = [self scanLocation],
+        str = [self string],
+        captured = nil;
     while (current < str.length)
     {
         var currentStr = str.substr(current, s.length);
@@ -296,11 +297,12 @@
     if ([self isAtEnd])
         return 0;
 
-    var s = str.substring(current, str.length);
-    var f =  parseFloat(s); // wont work with non . decimal separator !!
+    var s = str.substring(current, str.length),
+        f =  parseFloat(s); // wont work with non . decimal separator !!
     if (f)
     {
-        var pos, foundDash = NO;
+        var pos,
+            foundDash = NO;
 /*
         var decimalSeparatorString;
         if (_locale != nil)
@@ -339,12 +341,12 @@
 
     if ([self isAtEnd])
         return 0;
-    var s = str.substring(current, str.length);
-
-    var i =  parseInt(s);
+    var s = str.substring(current, str.length),
+        i =  parseInt(s);
     if (i)
     {
-        var pos, foundDash = NO;
+        var pos,
+            foundDash = NO;
         for (pos = current; pos < current + str.length; pos++)
         {
             var charCode = str.charCodeAt(pos);
@@ -384,7 +386,7 @@
 /* = Debug = */
 /* ========= */
 
-- (void) description
+- (void)description
 {
     return [super description] + " {" + CPStringFromClass([self class]) + ", state = '" + ([self string].substr(0, _scanLocation) + "{{ SCAN LOCATION ->}}" + [self string].substr(_scanLocation)) + "'; }";
 }

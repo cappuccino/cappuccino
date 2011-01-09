@@ -142,10 +142,115 @@
 
 - (void)testIndexOfObject_inSortedRange_options_usingComparator_
 {
-    var array = [0, 1, 2, 3, 4, 7];
+    var array = [0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 7],
+        arraySimple = [4, 5, 7, 8, 9, 10],
+        numComparator = function(a, b) { return a - b; },
+        index;
 
-    [self assert:[array indexOfObject:3 inSortedRange:nil options:0 usingComparator:function(a, b){ return a - b; }] equals:3];
-    [self assert:[[array arrayByReversingArray] indexOfObject:3 inSortedRange:nil options:0 usingComparator:function(a, b){ return a - b; }] equals:2];
+    index = [arraySimple indexOfObject:7
+                         inSortedRange:nil
+                               options:0
+                       usingComparator:numComparator];
+    [self assert:2 equals:index message:"simple index of 7"];
+
+    index = [[arraySimple arrayByReversingArray] indexOfObject:7
+                                                 inSortedRange:nil
+                                                       options:0
+                                               usingComparator: function(a, b) { return b - a; }];
+    [self assert:3 equals:index message:"simple index of 7 reversed"];
+
+    index = [arraySimple indexOfObject:6
+                         inSortedRange:nil
+                               options:0
+                       usingComparator:numComparator];
+    [self assert:CPNotFound equals:index message:"simple index of non existent value"];
+
+    index = [arraySimple indexOfObject:6
+                         inSortedRange:nil
+                               options:CPBinarySearchingInsertionIndex
+                       usingComparator:numComparator];
+    [self assert:2 equals:index message:"simple insertion index of non existent value"];
+
+    index = [arraySimple indexOfObject:6
+                         inSortedRange:CPMakeRange(3, 2) // [ -, -, -, 7, 8]
+                               options:CPBinarySearchingInsertionIndex
+                       usingComparator:numComparator];
+    [self assert:3 equals:index message:"simple insertion index with range"];
+
+    index = [array indexOfObject:1
+                       inSortedRange:nil
+                             options:0
+                     usingComparator:numComparator];
+    [self assertTrue:[[1, 2, 3] containsObject:index]];
+    [self assert:[array indexOfObject:1
+                        inSortedRange:nil
+                              options:CPBinarySearchingFirstEqual
+                      usingComparator:numComparator]
+          equals:1 message:"binary search first equal to 1"];
+    [self assert:[array indexOfObject:1
+                        inSortedRange:nil
+                              options:CPBinarySearchingLastEqual
+                      usingComparator:numComparator]
+          equals:3];
+    index = [array indexOfObject:1
+                   inSortedRange:nil
+                         options:CPBinarySearchingInsertionIndex
+                 usingComparator:numComparator];
+    [self assertTrue:[[1, 2, 3, 4] containsObject:index]];
+    [self assert:[array indexOfObject:1
+                        inSortedRange:nil
+                              options:CPBinarySearchingFirstEqual | CPBinarySearchingInsertionIndex
+                      usingComparator:numComparator]
+          equals:1];
+    [self assert:[array indexOfObject:1
+                        inSortedRange:nil
+                              options:CPBinarySearchingLastEqual | CPBinarySearchingInsertionIndex
+                      usingComparator:numComparator]
+          equals:4 message:"last equal insertion index"];
+
+    index = [array indexOfObject:2
+                   inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
+                         options:0
+                 usingComparator:numComparator];
+    [self assertTrue:[[4, 5] containsObject:index]];
+    [self assert:[array indexOfObject:2
+                        inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
+                              options:CPBinarySearchingFirstEqual
+                      usingComparator:numComparator]
+          equals:4 message:"first equal in range 2-7"];
+    [self assert:[array indexOfObject:2
+                        inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
+                              options:CPBinarySearchingLastEqual
+                      usingComparator:numComparator]
+          equals:5];
+    index = [array indexOfObject:2
+                   inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
+                         options:CPBinarySearchingInsertionIndex
+                 usingComparator:numComparator];
+    [self assertTrue:[[4, 5, 6] containsObject:index]];
+    [self assert:[array indexOfObject:2
+                        inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
+                              options:CPBinarySearchingFirstEqual | CPBinarySearchingInsertionIndex
+                      usingComparator:numComparator]
+          equals:4 message:"first equal insertion index in range 2-7"];
+    [self assert:[array indexOfObject:2
+                        inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
+                              options:CPBinarySearchingLastEqual | CPBinarySearchingInsertionIndex
+                      usingComparator:numComparator]
+          equals:6];
+
+    [self assert:[array indexOfObject:3
+                      inSortedRange:CPMakeRange(2, 6) // [ -, -, 1, 1, 2, 2, 3, 3, -, -, -]
+                            options:CPBinarySearchingLastEqual | CPBinarySearchingInsertionIndex
+                    usingComparator:numComparator]
+        equals:8 message:"inserting index at end of range"];
+
+    [self assert:[[1, 2, 2] indexOfObject:2
+                            inSortedRange:CPMakeRange(0, 2) // [1, 2]
+                                  options:CPBinarySearchingLastEqual | CPBinarySearchingInsertionIndex
+                          usingComparator:numComparator]
+          equals:2 message:"insertion index should not be off by one when applying a range"];
+
 }
 
 - (void)testIndexOutOfBounds
@@ -190,8 +295,8 @@
 
 - (void)testInsertObjectInArraySortedByDescriptors
 {
-    var descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:YES]];
-    var array = [1, 3, 5];
+    var descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:YES]],
+        array = [1, 3, 5];
 
     [array insertObject:0 inArraySortedByDescriptors:descriptors];
     [self assert:[0, 1, 3, 5] equals:array];
@@ -272,8 +377,8 @@
 
 - (void)testInitWithArrayCopyItems
 {
-    var a = [[CopyableObject new], 2, 3, {empty:true}];
-    var b = [[CPArray alloc] initWithArray:a copyItems:YES];
+    var a = [[CopyableObject new], 2, 3, {empty:true}],
+        b = [[CPArray alloc] initWithArray:a copyItems:YES];
 
     [self assert:a notEqual:b];
 
@@ -308,7 +413,7 @@
     var target = ["a", "b", "c", "d"],
         pretty = [];
 
-    for(var i = 0; i < target.length; i++)
+    for (var i = 0; i < target.length; i++)
         pretty.push([[CPPrettyObject alloc] initWithValue:target[i] number:i]);
 
     [pretty sortUsingDescriptors:[[[CPSortDescriptor alloc] initWithKey:@"value" ascending:NO]]];
@@ -412,7 +517,7 @@
 - (CPArray)arrayByReversingArray
 {
     var a = [];
-    for (i = length - 1; i > 0; --i)
+    for (i = length - 1; i >= 0; --i)
         a.push(self[i]);
 
     return a;

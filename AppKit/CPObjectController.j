@@ -137,7 +137,8 @@
 {
     [self setContent:anObject];
 
-    [[CPKeyValueBinding getBinding:@"contentObject" forObject:self] reverseSetValueFor:@"contentObject"];
+    var binderClass = [[self class] _binderClassForBinding:@"contentObject"];
+    [[binderClass getBinding:@"contentObject" forObject:self] reverseSetValueFor:@"contentObject"];
 }
 
 - (void)removeObject:(id)anObject
@@ -145,7 +146,8 @@
     if ([self content] === anObject)
         [self setContent:nil];
 
-    [[CPKeyValueBinding getBinding:@"contentObject" forObject:self] reverseSetValueFor:@"contentObject"];
+    var binderClass = [[self class] _binderClassForBinding:@"contentObject"];
+    [[binderClass getBinding:@"contentObject" forObject:self] reverseSetValueFor:@"contentObject"];
 }
 
 - (void)add:(id)aSender

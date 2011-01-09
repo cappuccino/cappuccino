@@ -418,7 +418,7 @@ CPBinarySearchingInsertionIndex = 1 << 10;
         return (options & CPBinarySearchingInsertionIndex) ? 0 : CPNotFound;
 
     var first = aRange ? aRange.location : 0,
-        last = aRange ? CPMaxRange(aRange) : [self count] - 1;
+        last = (aRange ? CPMaxRange(aRange) : [self count]) - 1;
 
     if (first < 0)
         _CPRaiseRangeException(self, _cmd, first, count);
@@ -440,13 +440,13 @@ CPBinarySearchingInsertionIndex = 1 << 10;
         else
         {
             if (options & CPBinarySearchingFirstEqual)
-                while (middle++ < count - 1 &&
-                    aComparator(anObject, [self objectAtIndex:middle]) === CPOrderedSame);
+                while (middle > first && aComparator(anObject, [self objectAtIndex:middle - 1]) === CPOrderedSame)
+                    --middle;
 
             else if (options & CPBinarySearchingLastEqual)
             {
-                while (middle-- > 0 &&
-                    aComparator(anObject, [self objectAtIndex:middle]) === CPOrderedSame);
+                while (middle < last && aComparator(anObject, [self objectAtIndex:middle + 1]) === CPOrderedSame)
+                    ++middle;
 
                 if (options & CPBinarySearchingInsertionIndex)
                     ++middle;
@@ -756,7 +756,7 @@ CPBinarySearchingInsertionIndex = 1 << 10;
 */
 - (id)copy
 {
-    return slice(0);
+    return [[self class] arrayWithArray:self];
 }
 
 @end

@@ -129,6 +129,12 @@
     return [[[self class] alloc] initWithKey:_key ascending:!_ascending selector:_selector];
 }
 
+- (CPString)description
+{
+    return [CPString stringWithFormat:@"(%@, %@, %@)",
+        [self key], [self ascending] ? @"ascending": @"descending", CPStringFromSelector([self selector])];
+}
+
 @end
 
 var CPSortDescriptorKeyKey          = @"CPSortDescriptorKeyKey", // Don't you just love naming schemes ;)

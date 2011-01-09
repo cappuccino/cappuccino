@@ -2,6 +2,13 @@
 @import "CPMutableArray.j"
 
 
+var indexOf = Array.prototype.indexOf,
+    join = Array.prototype.join,
+    pop = Array.prototype.pop,
+    push = Array.prototype.push,
+    slice = Array.prototype.slice,
+    splice = Array.prototype.splice;
+
 @implementation _CPJavaScriptArray : CPMutableArray
 {
 }
@@ -28,13 +35,13 @@
 
 - (id)initWithArray:(CPArray)anArray
 {
-    return anArray.slice(0);
+    return slice.call(anArray, 0);
 }
 
 - (id)initWithArray:(CPArray)anArray copyItems:(BOOL)shouldCopyItems
 {
     if (!shouldCopyItems)
-        return anArray.slice(0);
+        return slice.call(anArray, 0);
 
     self = [super init];
 
@@ -58,7 +65,7 @@
 
     for (; index < count; ++index)
     {
-        var object = [anArray objectatIndex:index];
+        var object = [anArray objectAtIndex:index];
 
         self[index] = object.isa ? [object copy] : object;
     }
@@ -76,19 +83,19 @@
         if (arguments[index] === nil)
             break;
 
-    return Array.prototype.slice.call(arguments, 2, index);
+    return slice.call(arguments, 2, index);
 }
 
 - (id)initWithObjects:(CPArray)objects count:(CPUInteger)aCount
 {
     if (objects.isa === _CPJavaScriptArray)
-        return objects.slice(0);
+        return slice.call(objects, 0);
 
     var array = [],
         index = 0;
 
     for (; index < aCount; ++index)
-        array.push([objects objectAtIndex:index]);
+        push.call(array, [objects objectAtIndex:index]);
 
     return array;
 }
@@ -104,11 +111,6 @@
         _CPRaiseRangeException(self, _cmd, anIndex, self.length);
 
     return self[anIndex];
-}
-
-- (CPUInteger)indexOfObject:(id)anObject
-{
-    return [self indexOfObject:anObject inRange:nil];
 }
 
 - (CPUInteger)indexOfObject:(id)anObject inRange:(CPRange)aRange
@@ -129,15 +131,10 @@
     return [self indexOfObjectIdenticalTo:anObject inRange:aRange];
 }
 
-- (CPUInteger)indexOfObjectIdenticalTo:(id)anObject
-{
-    return [self indexOfObjectIdenticalTo:anObject inRange:nil];
-}
-
 - (CPUInteger)indexOfObjectIdenticalTo:(id)anObject inRange:(CPRange)aRange
 {
-    if (self.indexOf)
-        return self.indexOf(anObject);
+    if (indexOf && !aRange)
+        return indexOf.call(self, anObject);
 
     var index = aRange ? aRange.location : 0,
         count = aRange ? CPMaxRange(aRange) : self.length;
@@ -179,37 +176,42 @@
     if (aRange.location < 0 || CPMaxRange(aRange) > self.length)
         [CPException raise:CPRangeException reason:"subarrayWithRange: aRange out of bounds"];
 
-    return self.slice(aRange.location, CPMaxRange(aRange));
+    return slice.call(self, aRange.location, CPMaxRange(aRange));
 }
 
 - (CPString)componentsJoinedByString:(CPString)aString
 {
-    return self.join(aString);
+    return join.call(self, aString);
 }
 
 - (void)insertObject:(id)anObject atIndex:(CPUInteger)anIndex
 {
-    self.splice(anIndex, 0, anObject);
+    splice.call(self, anIndex, 0, anObject);
 }
 
 - (void)removeObjectAtIndex:(CPUInteger)anIndex
 {
-    self.splice(anIndex, 1);
+    splice.call(self, anIndex, 1);
 }
 
 - (void)addObject:(id)anObject
 {
-    self.push(anObject);
+    push.call(self, anObject);
 }
 
 - (void)removeLastObject
 {
-    self.pop();
+    pop.call(self);
 }
 
 - (void)replaceObjectAtIndex:(int)anIndex withObject:(id)anObject
 {
     self[anIndex] = anObject;
+}
+
+- (void)copy
+{
+    return slice.call(self, 0);
 }
 
 - (Class)classForCoder

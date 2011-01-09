@@ -80,6 +80,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     CPEvent             _mouseDownEvent;
 
     BOOL                _preventResign;
+    BOOL                _shouldNotifyTarget;
 }
 
 + (CPCharacterSet)defaultTokenizingCharacterSet
@@ -209,10 +210,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     [self _inputElement].value = @"";
     [self setNeedsLayout];
 
-    var theBinding = [CPKeyValueBinding getBinding:CPValueBinding forObject:self];
-
-    if (theBinding)
-        [theBinding reverseSetValueFor:@"objectValue"];
+    [self _controlTextDidChange];
 }
 
 - (void)_autocomplete
@@ -266,12 +264,15 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
 - (void)_controlTextDidChange
 {
-    var theBinding = [CPKeyValueBinding getBinding:CPValueBinding forObject:self];
+    var binderClass = [[self class] _binderClassForBinding:CPValueBinding],
+        theBinding = [binderClass getBinding:CPValueBinding forObject:self];
 
     if (theBinding)
         [theBinding reverseSetValueFor:@"objectValue"];
 
     [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
+
+    _shouldNotifyTarget = YES;
 }
 
 - (void)_removeSelectedTokens:(id)sender
@@ -402,7 +403,14 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
     [self setNeedsLayout];
 
-    [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+    if (_shouldNotifyTarget)
+    {
+        _shouldNotifyTarget = NO;
+        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
+
+        if ([self sendsActionOnEndEditing])
+            [self sendAction:[self action] to:[self target]];
+    }
 
     return YES;
 }
@@ -553,6 +561,12 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     _shouldScrollTo = CPScrollDestinationRight;
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
+}
+
+- (void)sendAction:(SEL)anAction to:(id)anObject
+{
+    _shouldNotifyTarget = NO;
+    [super sendAction:anAction to:anObject];
 }
 
 // Incredible hack to disable supers implementation
