@@ -49,13 +49,14 @@ var indexOf = Array.prototype.indexOf,
 
     if (anArray.isa === _CPJavaScriptArray)
     {
+        // If we're this far, shouldCopyItems must be YES.
         var count = anArray.length;
 
         for (; index < count; ++index)
         {
             var object = anArray[index];
 
-            self[index] = object.isa ? [object copy] : object;
+            self[index] = (object && object.isa) ? [object copy] : object;
         }
 
         return self;
@@ -67,7 +68,7 @@ var indexOf = Array.prototype.indexOf,
     {
         var object = [anArray objectAtIndex:index];
 
-        self[index] = object.isa ? [object copy] : object;
+        self[index] = (shouldCopyItems && object && object.isa) ? [object copy] : object;
     }
 
     return self;
