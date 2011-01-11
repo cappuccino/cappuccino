@@ -1078,7 +1078,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self setNeedsDisplay:YES]; // FIXME: should be setNeedsDisplayInRect:enclosing rect of new (de)selected rows
                               // but currently -drawRect: is not implemented here
 
-    [[CPKeyValueBinding getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectedRowIndexes"];
+    var binderClass = [[self class] _binderClassForBinding:@"selectionIndexes"];
+    [[binderClass getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectedRowIndexes"];
 
     [self _noteSelectionDidChange];
 }
@@ -1953,6 +1954,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (void)sizeLastColumnToFit
 {
+    _lastColumnShouldSnap = YES;
+
     var superview = [self superview];
 
     if (!superview)
@@ -2051,6 +2054,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_))
         var height =  (_rowHeight + _intercellSpacing.height) * _numberOfRows;
+    else if ([self numberOfRows] === 0)
+        var height = 0;
     else
     {
         // if this is the fist run we need to populate the cache
@@ -2059,6 +2064,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         var heightObject = _cachedRowHeights[_cachedRowHeights.length - 1],
             height = heightObject.heightAboveRow + heightObject.height + _intercellSpacing.height;
+
     }
 
 
@@ -2076,6 +2082,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self setNeedsDisplay:YES];
 }
 
+
 /*!
     Scrolls the receiver vertically in an enclosing CPClipView so the row specified by rowIndex is visible.
 
@@ -2083,7 +2090,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (void)scrollRowToVisible:(int)rowIndex
 {
-    [self scrollRectToVisible:[self rectOfRow:rowIndex]];
+    var visible = [self visibleRect],
+        rowRect = [self rectOfRow:rowIndex];
+
+    visible.origin.y = rowRect.origin.y;
+    visible.size.height = rowRect.size.height;
+
+    [self scrollRectToVisible:visible];
 }
 
 /*!
@@ -2093,8 +2106,14 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (void)scrollColumnToVisible:(int)columnIndex
 {
-    [self scrollRectToVisible:[self rectOfColumn:columnIndex]];
-    /*FIX ME: tableview header isn't rendered until you click the horizontal scroller (or scroll)*/
+    var visible = [self visibleRect],
+        colRect = [self rectOfColumn:columnIndex];
+
+    visible.origin.x = colRect.origin.x;
+    visible.size.width = colRect.size.width;
+
+    [self scrollRectToVisible:visible];
+    [_headerView scrollRectToVisible:colRect];
 }
 
 /*!
@@ -2459,7 +2478,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 - (void)_sendDataSourceSortDescriptorsDidChange:(CPArray)oldDescriptors
 {
     if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_sortDescriptorsDidChange_)
-            [_dataSource tableView:self sortDescriptorsDidChange:oldDescriptors];
+        [_dataSource tableView:self sortDescriptorsDidChange:oldDescriptors];
 }
 
 
@@ -2537,13 +2556,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [newSortDescriptors removeObjectsInArray:outdatedDescriptors];
     [newSortDescriptors insertObject:newMainSortDescriptor atIndex:0];
 
-    // Update indicator image & highlighted column before
-    var image = [newMainSortDescriptor ascending] ? [self _tableHeaderSortImage] : [self _tableHeaderReverseSortImage];
-
-    [self setIndicatorImage:nil inTableColumn:_currentHighlightedTableColumn];
-    [self setIndicatorImage:image inTableColumn:tableColumn];
     [self setHighlightedTableColumn:tableColumn];
-
     [self setSortDescriptors:newSortDescriptors];
 }
 
@@ -2808,6 +2821,28 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return _verticalMotionCanDrag;
 }
 
+- (CPTableColumn)_tableColumnForSortDescriptor:(CPSortDescriptor)theSortDescriptor
+{
+    var tableColumns = [self tableColumns];
+
+    for (var i = 0; i < [tableColumns count]; i++)
+    {
+        var tableColumn = [tableColumns objectAtIndex:i],
+            sortDescriptorPrototype = [tableColumn sortDescriptorPrototype];
+
+        if (!sortDescriptorPrototype)
+            continue;
+
+        if ([sortDescriptorPrototype key] === [theSortDescriptor key]
+            && [sortDescriptorPrototype selector] === [theSortDescriptor selector])
+        {
+            return tableColumn;
+        }
+    }
+
+    return nil;
+}
+
 /*!
     Sets the table view's CPSortDescriptors objects in an array.
 
@@ -2815,7 +2850,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (void)setSortDescriptors:(CPArray)sortDescriptors
 {
-    var oldSortDescriptors = [self sortDescriptors],
+    var oldSortDescriptors = [[self sortDescriptors] copy],
         newSortDescriptors = nil;
 
     if (sortDescriptors == nil)
@@ -2827,6 +2862,25 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         return;
 
     _sortDescriptors = newSortDescriptors;
+
+    var oldColumn = nil,
+        newColumn = nil;
+
+    if ([newSortDescriptors count] > 0)
+    {
+        var newMainSortDescriptor = [newSortDescriptors objectAtIndex:0];
+        newColumn = [self _tableColumnForSortDescriptor:newMainSortDescriptor];
+    }
+
+    if ([oldSortDescriptors count] > 0)
+    {
+        var oldMainSortDescriptor = [oldSortDescriptors objectAtIndex:0];
+        oldColumn = [self _tableColumnForSortDescriptor:oldMainSortDescriptor];
+    }
+
+    var image = [newMainSortDescriptor ascending] ? [self _tableHeaderSortImage] : [self _tableHeaderReverseSortImage];
+    [self setIndicatorImage:nil inTableColumn:oldColumn];
+    [self setIndicatorImage:image inTableColumn:newColumn];
 
     [self _sendDataSourceSortDescriptorsDidChange:oldSortDescriptors];
 }

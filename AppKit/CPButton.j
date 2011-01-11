@@ -203,7 +203,7 @@ CPButtonImageOffset   = 3.0;
     else if (![anObjectValue isKindOfClass:[CPNumber class]])
         anObjectValue = CPOnState;
 
-    else if (anObjectValue > CPOnState)
+    else if (anObjectValue >= CPOnState)
         anObjectValue = CPOnState
 
     else if (anObjectValue < CPOffState)
@@ -255,6 +255,9 @@ CPButtonImageOffset   = 3.0;
 */
 - (void)setNextState
 {
+    if ([self infoForBinding:CPValueBinding])
+        [self setAllowsMixedState:NO];
+
     [self setState:[self nextState]];
 }
 

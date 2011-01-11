@@ -44,6 +44,14 @@ CPCheckBoxImageOffset = 4.0;
     return @"check-box";
 }
 
++ (Class)_binderClassForBinding:(CPString)theBinding
+{
+    if (theBinding === CPValueBinding)
+        return [_CPCheckBoxValueBinder class];
+
+    return [super _binderClassForBinding:theBinding];
+}
+
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
@@ -84,6 +92,56 @@ CPCheckBoxImageOffset = 4.0;
 - (void)takeValueFromKeyPath:(CPString)aKeyPath ofObjects:(CPArray)objects
 {
     [self takeStateFromKeyPath:aKeyPath ofObjects:objects];
+}
+
+@end
+
+@implementation _CPCheckBoxValueBinder : CPBinder
+{
+}
+
+- (void)setValueFor:(CPString)theBinding
+{
+    var destination = [_info objectForKey:CPObservedObjectKey],
+        keyPath = [_info objectForKey:CPObservedKeyPathKey],
+        options = [_info objectForKey:CPOptionsKey],
+        newValue = [destination valueForKeyPath:keyPath],
+        isPlaceholder = CPIsControllerMarker(newValue);
+
+    if (isPlaceholder)
+    {
+        switch (newValue)
+        {
+            case CPMultipleValuesMarker:
+                newValue = CPMixedState;
+                break;
+
+            case CPNoSelectionMarker:
+                newValue = CPOffState;
+                break;
+
+            case CPNotApplicableMarker:
+                if ([options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
+                    [CPException raise:CPGenericException reason:@"can't transform non applicable key on: "+_source+" value: "+newValue];
+
+                newValue = CPOffState;
+                break;
+        }
+
+        if (newValue === CPMixedState)
+        {
+            [_source setAllowsMixedState:YES];
+        }
+        else
+        {
+            // Cocoa will always set allowsMixedState to NO
+            // This behavior will be fine for Cappuccino as well if we (like Cocoa)
+            // default the CPConditionallySetsEnabledBindingOption to YES
+            [_source setAllowsMixedState:NO];
+        }
+    }
+
+    [_source setState:newValue];
 }
 
 @end
