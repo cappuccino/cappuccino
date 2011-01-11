@@ -2,7 +2,8 @@
 @import "CPMutableArray.j"
 
 
-var indexOf = Array.prototype.indexOf,
+var concat = Array.prototype.concat,
+    indexOf = Array.prototype.indexOf,
     join = Array.prototype.join,
     pop = Array.prototype.pop,
     push = Array.prototype.push,
@@ -170,6 +171,23 @@ var indexOf = Array.prototype.indexOf,
     else
         for (; index < count; ++index)
             objj_msgSend(self[index], aSelector);
+}
+
+- (CPArray)arrayByAddingObject:(id)anObject
+{
+    // concat flattens arrays, so wrap it in an *additional* array if anObject is an array itself.
+    if ([anObject isKindOfClass:CPArray])
+        return concat.call(self, [anObject]);
+
+    return concat.call(self, anObject);
+}
+
+- (CPArray)arrayByAddingObjectsFromArray:(CPArray)anArray
+{
+    if (!anArray)
+        return [self copy];
+
+    return concat.call(self, anArray.isa === _CPJavaScriptArray ? anArray : [anArray _javaScriptArrayCopy]);
 }
 
 - (CPArray)subarrayWithRange:(CPRange)aRange
