@@ -238,6 +238,17 @@ var concat = Array.prototype.concat,
     self[anIndex] = anObject;
 }
 
+- (void)replaceObjectsInRange:(CPRange)aRange withObjectsFromArray:(CPArray)anArray range:(CPRange)otherRange
+{
+    if (otherRange && (otherRange.location !== 0 || otherRange.length !== [anArray count]))
+        anArray = [anArray subarrayWithRange:otherRange];
+
+    if (anArray.isa !== _CPJavaScriptArray)
+        anArray = [anArray _javaScriptArrayCopy];
+
+    splice.apply(self, [aRange.location, aRange.length].concat(anArray));
+}
+
 - (void)setArray:(CPArray)anArray
 {
     if (anArray.isa === _CPJavaScriptArray)

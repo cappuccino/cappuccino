@@ -141,7 +141,7 @@
     var i = 0,
         index = [anIndexSet firstIndex];
 
-    while (index != CPNotFound)
+    while (index !== CPNotFound)
     {
         [self replaceObjectAtIndex:index withObject:objects[i++]];
         index = [anIndexSet indexGreaterThanIndex:index];
@@ -158,10 +158,14 @@
 */
 - (void)replaceObjectsInRange:(CPRange)aRange withObjectsFromArray:(CPArray)anArray range:(CPRange)otherRange
 {
-    if (!otherRange.location && otherRange.length == [anArray count])
-        [self replaceObjectsInRange:aRange withObjectsFromArray:anArray];
-    else
-        splice.apply(self, [aRange.location, aRange.length].concat([anArray subarrayWithRange:otherRange]));
+    [self removeObjectsInRange:aRange];
+
+    if (otherRange && (otherRange.location !== 0 || otherRange.length !== [anArray count]))
+        anArray = [anArray subarrayWithRange:otherRange];
+
+    var indexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(aRange.location, [anArray count])];
+
+    [self insertObjects:anArray atIndexes:indexes];
 }
 
 /*!
@@ -173,7 +177,7 @@
 */
 - (void)replaceObjectsInRange:(CPRange)aRange withObjectsFromArray:(CPArray)anArray
 {
-    splice.apply(self, [aRange.location, aRange.length].concat(anArray));
+    [self replaceObjectsInRange:aRange withObjectsFromArray:anArray range:nil];
 }
 
 /*!
@@ -319,9 +323,13 @@
 */
 - (void)exchangeObjectAtIndex:(unsigned)anIndex withObjectAtIndex:(unsigned)otherIndex
 {
-    var temporary = self[anIndex];
-    self[anIndex] = self[otherIndex];
-    self[otherIndex] = temporary;
+    if (anIndex === otherIndex)
+        return;
+
+    var temporary = [self objectAtIndex:anIndex];
+
+    [self replaceObjectAtIndex:anIndex withObject:[self objectAtIndex:otherIndex]];
+    [self replaceObjectAtIndex:otherIndex withObject:temporary];
 }
 
 - (CPArray)sortUsingDescriptors:(CPArray)descriptors

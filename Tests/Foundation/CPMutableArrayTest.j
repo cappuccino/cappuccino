@@ -50,7 +50,7 @@
 {
     var arrayClass = [[self class] arrayClass],
         array = [arrayClass array];
-    
+
     [array insertObjects:[arrayClass arrayWithObjects:2, 4] atIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)]];
 
     [self assert:array equals:[arrayClass arrayWithObjects:2, 4]];
@@ -78,7 +78,7 @@
     [array insertObjects:[arrayClass arrayWithObjects:1, 3] atIndexes:indexSet];
 
     [self assert:array equals:[arrayClass arrayWithObjects:-2, -1, 0, 1, 2, 3, 4, 5, 6, 7]];
-    
+
     [self assertThrows:function()
     {
         [array insertObjects:[arrayClass array] atIndexes:[CPIndexSet indexSetWithIndex:13]];
@@ -186,89 +186,170 @@
     [self assert:[arrayClass arrayWithObjects:-1, 0, 1] equals:array];
 }
 
-// Old tests
-- (void)testInsertObjectInArraySortedByDescriptors
+- (void)test_insertObject_inArraySortedByDescriptors_
 {
-    var descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:YES]],
-        array = [1, 3, 5];
+    var arrayClass = [[self class] arrayClass],
+        descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:YES]],
+        array = [arrayClass arrayWithObjects:1, 3, 5];
 
     [array insertObject:0 inArraySortedByDescriptors:descriptors];
     [self assert:[0, 1, 3, 5] equals:array];
 
-    array = [1, 3, 5];
+    array = [arrayClass arrayWithObjects:1, 3, 5];
     [array insertObject:2 inArraySortedByDescriptors:descriptors];
     [self assert:[1, 2, 3, 5] equals:array];
 
-    array = [1, 3, 5];
+    array = [arrayClass arrayWithObjects:1, 3, 5];
     [array insertObject:1 inArraySortedByDescriptors:descriptors];
     [self assert:[1, 1, 3, 5] equals:array];
 
-    array = [1, 3, 5];
+    array = [arrayClass arrayWithObjects:1, 3, 5];
     [array insertObject:6 inArraySortedByDescriptors:descriptors];
     [self assert:[1, 3, 5, 6] equals:array];
 
-    array = [1, 3, 5];
+    array = [arrayClass arrayWithObjects:1, 3, 5];
     [array insertObject:3 inArraySortedByDescriptors:descriptors];
     [self assert:[1, 3, 3, 5] equals:array];
 
-    array = [];
+    array = [arrayClass array];
     [array insertObject:3 inArraySortedByDescriptors:descriptors];
     [self assert:[3] equals:array];
 
     descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:NO]];
 
-    array = [5, 3, 1];
+    array = [arrayClass arrayWithObjects:5, 3, 1];
     [array insertObject:0 inArraySortedByDescriptors:descriptors];
     [self assert:[5, 3, 1, 0] equals:array];
 
-    array = [5, 3, 1];
+    array = [arrayClass arrayWithObjects:5, 3, 1];
     [array insertObject:2 inArraySortedByDescriptors:descriptors];
     [self assert:[5, 3, 2, 1] equals:array];
 
-    array = [5, 3, 1];
+    array = [arrayClass arrayWithObjects:5, 3, 1];
     [array insertObject:1 inArraySortedByDescriptors:descriptors];
     [self assert:[5, 3, 1, 1] equals:array];
 
-    array = [5, 3, 1];
+    array = [arrayClass arrayWithObjects:5, 3, 1];
     [array insertObject:6 inArraySortedByDescriptors:descriptors];
     [self assert:[6, 5, 3, 1] equals:array];
 
-    array = [5, 3, 1];
+    array = [arrayClass arrayWithObjects:5, 3, 1];
     [array insertObject:3 inArraySortedByDescriptors:descriptors];
     [self assert:[5, 3, 3, 1] equals:array];
 
-    array = [];
+    array = [arrayClass array];
     [array insertObject:3 inArraySortedByDescriptors:descriptors];
     [self assert:[3] equals:array];
 
     descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:NO]];
 
-    array = [5, 3, 1];
+    array = [arrayClass arrayWithObjects:5, 3, 1];
     [array insertObject:0 inArraySortedByDescriptors:descriptors];
     [self assert:[5, 3, 1, 0] equals:array];
 
-    array = [5, 3, 1];
+    array = [arrayClass arrayWithObjects:5, 3, 1];
     [array insertObject:2 inArraySortedByDescriptors:descriptors];
     [self assert:[5, 3, 2, 1] equals:array];
 
-    array = [5, 3, 1];
+    array = [arrayClass arrayWithObjects:5, 3, 1];
     [array insertObject:1 inArraySortedByDescriptors:descriptors];
     [self assert:[5, 3, 1, 1] equals:array];
 
-    array = [5, 3, 1];
+    array = [arrayClass arrayWithObjects:5, 3, 1];
     [array insertObject:6 inArraySortedByDescriptors:descriptors];
     [self assert:[6, 5, 3, 1] equals:array];
 
-    array = [5, 3, 1];
+    array = [arrayClass arrayWithObjects:5, 3, 1];
     [array insertObject:3 inArraySortedByDescriptors:descriptors];
     [self assert:[5, 3, 3, 1] equals:array];
 
-    array = [];
+    array = [arrayClass array];
     [array insertObject:3 inArraySortedByDescriptors:descriptors];
     [self assert:[3] equals:array];
-
 }
 
+- (void)test_replaceObjectsInRange_withObjectFromArray_
+{
+    var arrayClass = [[self class] arrayClass],
+        array = [arrayClass arrayWithObjects:1, 2, 3, 4, 5];
+
+    [array replaceObjectsInRange:CPMakeRange(0, 0) withObjectsFromArray:[arrayClass array]];
+    [self assert:[1, 2, 3, 4, 5] equals:array];
+
+    [array replaceObjectsInRange:CPMakeRange(0, 1) withObjectsFromArray:[arrayClass array]];
+    [self assert:[2, 3, 4, 5] equals:array];
+
+    [array replaceObjectsInRange:CPMakeRange(3, 1) withObjectsFromArray:[arrayClass array]];
+    [self assert:[2, 3, 4] equals:array];
+
+    [array replaceObjectsInRange:CPMakeRange(0, 3) withObjectsFromArray:[5, 4, 3, 2, 1]];
+    [self assert:[5, 4, 3, 2, 1] equals:array];
+
+    [array replaceObjectsInRange:CPMakeRange(2, 0) withObjectsFromArray:[5, 4, 3, 2, 1]];
+    [self assert:[5, 4, 5, 4, 3, 2, 1, 3, 2, 1] equals:array];
+
+    [array replaceObjectsInRange:CPMakeRange(2, 5) withObjectsFromArray:[1]];
+    [self assert:[5, 4, 1, 3, 2, 1] equals:array];
+
+    [array replaceObjectsInRange:CPMakeRange(3, 3) withObjectsFromArray:[1, 4, 5]];
+    [self assert:[5, 4, 1, 1, 4, 5] equals:array];
+
+    [array replaceObjectsInRange:CPMakeRange(0, 3) withObjectsFromArray:[1, 4, 5]];
+    [self assert:[1, 4, 5, 1, 4, 5] equals:array];
+}
+
+- (void)test_replaceObjectsInRange_withObjectFromArray_range_
+{
+    var arrayClass = [[self class] arrayClass],
+        array = [arrayClass arrayWithObjects:1, 2, 3, 4, 5];
+
+    [array replaceObjectsInRange:CPMakeRange(0, 0) withObjectsFromArray:[arrayClass array] range:CPMakeRange(0, 0)];
+    [self assert:[1, 2, 3, 4, 5] equals:array];
+
+    [array replaceObjectsInRange:CPMakeRange(0, 1) withObjectsFromArray:[arrayClass array] range:CPMakeRange(0, 0)];
+    [self assert:[2, 3, 4, 5] equals:array];
+
+    [array replaceObjectsInRange:CPMakeRange(3, 1) withObjectsFromArray:[arrayClass array] range:CPMakeRange(0, 0)];
+    [self assert:[2, 3, 4] equals:array];
+
+    [array replaceObjectsInRange:CPMakeRange(0, 3) withObjectsFromArray:[5, 4, 3, 2, 1] range:CPMakeRange(1, 3)];
+    [self assert:[4, 3, 2] equals:array];
+
+    [array replaceObjectsInRange:CPMakeRange(2, 0) withObjectsFromArray:[5, 4, 3, 2, 1] range:CPMakeRange(4, 1)];
+    [self assert:[4, 3, 1, 2] equals:array];
+
+    [array replaceObjectsInRange:CPMakeRange(1, 2) withObjectsFromArray:[5] range:CPMakeRange(0, 0)];
+    [self assert:[4, 2] equals:array];
+
+    [array replaceObjectsInRange:CPMakeRange(1, 1) withObjectsFromArray:[1, 4, 5] range:CPMakeRange(0, 3)];
+    [self assert:[4, 1, 4, 5] equals:array];
+
+    [array replaceObjectsInRange:CPMakeRange(0, 3) withObjectsFromArray:[1, 4, 5] range:CPMakeRange(1, 1)];
+    [self assert:[4, 5] equals:array];
+}
+
+- (void)test_exchangeObjectAtIndex_withObjectAtIndex_
+{
+    var arrayClass = [[self class] arrayClass],
+        array = [arrayClass arrayWithObjects:1, 2, 3, 4, 5];
+
+    [array exchangeObjectAtIndex:0 withObjectAtIndex:0];
+    [self assert:[1, 2, 3, 4, 5] equals:array];
+
+    [array exchangeObjectAtIndex:0 withObjectAtIndex:1];
+    [self assert:[2, 1, 3, 4, 5] equals:array];
+
+    [array exchangeObjectAtIndex:1 withObjectAtIndex:3];
+    [self assert:[2, 4, 3, 1, 5] equals:array];
+
+    [array exchangeObjectAtIndex:1 withObjectAtIndex:3];
+    [self assert:[2, 1, 3, 4, 5] equals:array];
+
+    [array exchangeObjectAtIndex:4 withObjectAtIndex:2];
+    [self assert:[2, 1, 5, 4, 3] equals:array];
+}
+
+// Old Tests
 - (void)testInitWithArrayCopyItems
 {
     var a = [[CopyableObject new], 2, 3, {empty:true}],
