@@ -5,7 +5,7 @@ _CPMenuManagerScrollingStateUp      = -1,
 _CPMenuManagerScrollingStateDown    = 1,
 _CPMenuManagerScrollingStateNone    = 0;
 
-var STICKY_TIME_INTERVAL        = 500;
+var STICKY_TIME_INTERVAL        = 750;
 
 var SharedMenuManager = nil;
 
