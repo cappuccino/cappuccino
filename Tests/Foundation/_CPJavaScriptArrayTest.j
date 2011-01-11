@@ -1,10 +1,10 @@
 
 @import <Foundation/Foundation.j>
 
-@import "CPArrayTest.j"
+@import "CPMutableArrayTest.j"
 
 
-@implementation _CPJavaScriptArrayTest : CPArrayTest
+@implementation _CPJavaScriptArrayTest : CPMutableArrayTest
 {
 }
 

@@ -218,15 +218,44 @@ var concat = Array.prototype.concat,
     push.call(self, anObject);
 }
 
+- (void)removeAllObjects
+{
+    splice.call(self, 0, self.length);
+}
+
 - (void)removeLastObject
 {
     pop.call(self);
+}
+
+- (void)removeObjectsInRange:(CPRange)aRange
+{
+    splice.call(self, aRange.location, aRange.length);
 }
 
 - (void)replaceObjectAtIndex:(int)anIndex withObject:(id)anObject
 {
     self[anIndex] = anObject;
 }
+
+- (void)setArray:(CPArray)anArray
+{
+    if (anArray.isa === _CPJavaScriptArray)
+        splice.apply(self, [0, self.length].concat(anArray));
+
+    else
+        [super setArray:anArray];
+}
+
+- (void)addObjectsFromArray:(CPArray)anArray
+{
+    if (anArray.isa === _CPJavaScriptArray)
+        splice.apply(self, [self.length, 0].concat(anArray));
+
+    else
+        [super addObjectsFromArray:anArray];
+}
+
 
 - (void)copy
 {

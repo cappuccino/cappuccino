@@ -50,7 +50,11 @@
 */
 - (void)addObjectsFromArray:(CPArray)anArray
 {
-    splice.apply(self, [length, 0].concat(anArray));
+    var index = 0,
+        count = [anArray count];
+
+    for (; index < count; ++index)
+        [self addObject:[anArray objectAtIndex:index]];
 }
 
 /*!
@@ -85,7 +89,7 @@
         currentIndex = [indexes firstIndex];
 
     for (; index < objectsCount; ++index, currentIndex = [indexes indexGreaterThanIndex:currentIndex])
-        [self insertObject:objects[index] atIndex:currentIndex];
+        [self insertObject:[objects objectAtIndex:index] atIndex:currentIndex];
 }
 
 - (unsigned)insertObject:(id)anObject inArraySortedByDescriptors:(CPArray)descriptors
@@ -178,10 +182,11 @@
 */
 - (void)setArray:(CPArray)anArray
 {
-    if (self == anArray)
+    if (self === anArray)
         return;
 
-    splice.apply(self, [0, length].concat(anArray));
+    [self removeAllObjects];
+    [self addObjectsFromArray:anArray];
 }
 
 // Removing Objects
@@ -190,7 +195,8 @@
 */
 - (void)removeAllObjects
 {
-    splice(0, length);
+    while ([self count])
+        [self removeLastObject];
 }
 
 /*!
@@ -243,7 +249,7 @@
 {
     var index = [anIndexSet lastIndex];
 
-    while (index != CPNotFound)
+    while (index !== CPNotFound)
     {
         [self removeObjectAtIndex:index];
         index = [anIndexSet indexLessThanIndex:index];
@@ -289,7 +295,7 @@
         count = [anArray count];
 
     for (; index < count; ++index)
-        [self removeObject:anArray[index]];
+        [self removeObject:[anArray objectAtIndex:index]];
 }
 
 /*!
@@ -298,7 +304,11 @@
 */
 - (void)removeObjectsInRange:(CPRange)aRange
 {
-    splice(aRange.location, aRange.length);
+    var index = aRange.location,
+        count = CPMaxRange(aRange);
+
+    while (count-- > index)
+        [self removeObjectAtIndex:index];
 }
 
 // Rearranging objects
