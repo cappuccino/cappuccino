@@ -639,6 +639,33 @@
 
 @end
 
+@implementation CPArrayController (CPBinder)
+
++ (Class)_binderClassForBinding:(CPString)theBinding
+{
+    if (theBinding == @"contentArray")
+        return [_CPArrayControllerContentBinder class];
+        
+    return [super _binderClassForBinding:theBinding];
+}
+
+@end
+
+@implementation _CPArrayControllerContentBinder : CPBinder
+
+- (void)setValueFor:(CPString)aBinding
+{
+    var destination = [_info objectForKey:CPObservedObjectKey],
+        keyPath = [_info objectForKey:CPObservedKeyPathKey],
+        options = [_info objectForKey:CPOptionsKey],
+        newValue = [destination mutableArrayValueForKeyPath:keyPath];
+
+    newValue = [self transformValue:newValue withOptions:options];
+    [_source setValue:newValue forKey:aBinding];
+}
+
+@end
+
 var CPArrayControllerAvoidsEmptySelection             = @"CPArrayControllerAvoidsEmptySelection",
     CPArrayControllerClearsFilterPredicateOnInsertion = @"CPArrayControllerClearsFilterPredicateOnInsertion",
     CPArrayControllerFilterRestrictsInsertion         = @"CPArrayControllerFilterRestrictsInsertion",
