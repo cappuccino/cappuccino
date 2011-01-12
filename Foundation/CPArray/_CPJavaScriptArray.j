@@ -41,14 +41,14 @@ var concat = Array.prototype.concat,
 
 - (id)initWithArray:(CPArray)anArray copyItems:(BOOL)shouldCopyItems
 {
-    if (!shouldCopyItems && anArray.isa === _CPJavaScriptArray)
+    if (!shouldCopyItems && [anArray isKindOfClass:_CPJavaScriptArray])
         return slice.call(anArray, 0);
 
     self = [super init];
 
     var index = 0;
 
-    if (anArray.isa === _CPJavaScriptArray)
+    if ([anArray isKindOfClass:_CPJavaScriptArray])
     {
         // If we're this far, shouldCopyItems must be YES.
         var count = anArray.length;
@@ -90,7 +90,7 @@ var concat = Array.prototype.concat,
 
 - (id)initWithObjects:(CPArray)objects count:(CPUInteger)aCount
 {
-    if (objects.isa === _CPJavaScriptArray)
+    if ([objects isKindOfClass:_CPJavaScriptArray])
         return slice.call(objects, 0);
 
     var array = [],
@@ -176,7 +176,7 @@ var concat = Array.prototype.concat,
 - (CPArray)arrayByAddingObject:(id)anObject
 {
     // concat flattens arrays, so wrap it in an *additional* array if anObject is an array itself.
-    if ([anObject isKindOfClass:CPArray])
+    if (anObject && anObject.isa && [anObject isKindOfClass:_CPJavaScriptArray])
         return concat.call(self, [anObject]);
 
     return concat.call(self, anObject);
@@ -187,7 +187,7 @@ var concat = Array.prototype.concat,
     if (!anArray)
         return [self copy];
 
-    return concat.call(self, anArray.isa === _CPJavaScriptArray ? anArray : [anArray _javaScriptArrayCopy]);
+    return concat.call(self, [anArray isKindOfClass:_CPJavaScriptArray] ? anArray : [anArray _javaScriptArrayCopy]);
 }
 
 - (CPArray)subarrayWithRange:(CPRange)aRange
@@ -251,7 +251,7 @@ var concat = Array.prototype.concat,
 
 - (void)setArray:(CPArray)anArray
 {
-    if (anArray.isa === _CPJavaScriptArray)
+    if ([anArray isKindOfClass:_CPJavaScriptArray])
         splice.apply(self, [0, self.length].concat(anArray));
 
     else
@@ -260,7 +260,7 @@ var concat = Array.prototype.concat,
 
 - (void)addObjectsFromArray:(CPArray)anArray
 {
-    if (anArray.isa === _CPJavaScriptArray)
+    if ([anArray isKindOfClass:_CPJavaScriptArray])
         splice.apply(self, [self.length, 0].concat(anArray));
 
     else

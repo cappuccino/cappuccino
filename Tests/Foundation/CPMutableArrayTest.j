@@ -26,6 +26,14 @@
 
     [array addObject:[arrayClass arrayWithObjects:0, 1, 2]];
     [self assert:array equals:[arrayClass arrayWithObjects:0, 0, 1, [arrayClass arrayWithObjects:0, 1, 2]]];
+
+    [array addObject:[0, 1, 2]];
+    [self assert:array equals:[arrayClass arrayWithObjects:0, 0, 1, [arrayClass arrayWithObjects:0, 1, 2], [0, 1, 2]]];
+
+    var object = { };
+
+    [array addObject:object];
+    [self assert:array equals:[arrayClass arrayWithObjects:0, 0, 1, [arrayClass arrayWithObjects:0, 1, 2], [0, 1, 2], object]];
 }
 
 - (void)test_addObjectsFromArray_
