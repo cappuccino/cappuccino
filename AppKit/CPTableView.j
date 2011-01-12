@@ -2002,8 +2002,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if (hangingSelections > 0)
     {
+
         var previousSelectionCount = [_selectedRowIndexes count];
         [_selectedRowIndexes removeIndexesInRange:CPMakeRange(_numberOfRows, hangingSelections)];
+
+        if (![_selectedRowIndexes containsIndex:[self selectedRow]])
+            _lastSelectedRow = CPNotFound;
 
         // For optimal performance, only send a notification if indices were actually removed.
         if (previousSelectionCount > [_selectedRowIndexes count])
