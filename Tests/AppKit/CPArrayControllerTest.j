@@ -365,14 +365,14 @@
     [self assertTrue:(objects === arranged)];
 }
 
-- (void)testArrangedObjectsExistsAfterSetContentWithClearsFilterOnInsertionOn
+- (void)testArrangedObjectsNotEmptyAfterSetContentWithClearsFilterOnInsertionOn
 {
     var arrayController = [[CPArrayController alloc] init];
     [arrayController setFilterPredicate:nil];
     [arrayController setClearsFilterPredicateOnInsertion:YES];  
     [arrayController setContent:[CPArray arrayWithObject:@"a"]];
     
-    [self assertNotNull:[arrayController arrangedObjects]];
+    [self assertTrue:[[arrayController arrangedObjects] count] > 0];
 }
 
 - (void)observeValueForKeyPath:keyPath
