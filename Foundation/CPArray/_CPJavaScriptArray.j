@@ -2,7 +2,8 @@
 @import "CPMutableArray.j"
 
 
-var indexOf = Array.prototype.indexOf,
+var concat = Array.prototype.concat,
+    indexOf = Array.prototype.indexOf,
     join = Array.prototype.join,
     pop = Array.prototype.pop,
     push = Array.prototype.push,
@@ -35,12 +36,12 @@ var indexOf = Array.prototype.indexOf,
 
 - (id)initWithArray:(CPArray)anArray
 {
-    return slice.call(anArray, 0);
+    return [self initWithArray:anArray copyItems:NO];
 }
 
 - (id)initWithArray:(CPArray)anArray copyItems:(BOOL)shouldCopyItems
 {
-    if (!shouldCopyItems)
+    if (!shouldCopyItems && anArray.isa === _CPJavaScriptArray)
         return slice.call(anArray, 0);
 
     self = [super init];
@@ -49,13 +50,14 @@ var indexOf = Array.prototype.indexOf,
 
     if (anArray.isa === _CPJavaScriptArray)
     {
+        // If we're this far, shouldCopyItems must be YES.
         var count = anArray.length;
 
         for (; index < count; ++index)
         {
             var object = anArray[index];
 
-            self[index] = object.isa ? [object copy] : object;
+            self[index] = (object && object.isa) ? [object copy] : object;
         }
 
         return self;
@@ -67,7 +69,7 @@ var indexOf = Array.prototype.indexOf,
     {
         var object = [anArray objectAtIndex:index];
 
-        self[index] = object.isa ? [object copy] : object;
+        self[index] = (shouldCopyItems && object && object.isa) ? [object copy] : object;
     }
 
     return self;
@@ -171,6 +173,23 @@ var indexOf = Array.prototype.indexOf,
             objj_msgSend(self[index], aSelector);
 }
 
+- (CPArray)arrayByAddingObject:(id)anObject
+{
+    // concat flattens arrays, so wrap it in an *additional* array if anObject is an array itself.
+    if ([anObject isKindOfClass:CPArray])
+        return concat.call(self, [anObject]);
+
+    return concat.call(self, anObject);
+}
+
+- (CPArray)arrayByAddingObjectsFromArray:(CPArray)anArray
+{
+    if (!anArray)
+        return [self copy];
+
+    return concat.call(self, anArray.isa === _CPJavaScriptArray ? anArray : [anArray _javaScriptArrayCopy]);
+}
+
 - (CPArray)subarrayWithRange:(CPRange)aRange
 {
     if (aRange.location < 0 || CPMaxRange(aRange) > self.length)
@@ -199,15 +218,55 @@ var indexOf = Array.prototype.indexOf,
     push.call(self, anObject);
 }
 
+- (void)removeAllObjects
+{
+    splice.call(self, 0, self.length);
+}
+
 - (void)removeLastObject
 {
     pop.call(self);
+}
+
+- (void)removeObjectsInRange:(CPRange)aRange
+{
+    splice.call(self, aRange.location, aRange.length);
 }
 
 - (void)replaceObjectAtIndex:(int)anIndex withObject:(id)anObject
 {
     self[anIndex] = anObject;
 }
+
+- (void)replaceObjectsInRange:(CPRange)aRange withObjectsFromArray:(CPArray)anArray range:(CPRange)otherRange
+{
+    if (otherRange && (otherRange.location !== 0 || otherRange.length !== [anArray count]))
+        anArray = [anArray subarrayWithRange:otherRange];
+
+    if (anArray.isa !== _CPJavaScriptArray)
+        anArray = [anArray _javaScriptArrayCopy];
+
+    splice.apply(self, [aRange.location, aRange.length].concat(anArray));
+}
+
+- (void)setArray:(CPArray)anArray
+{
+    if (anArray.isa === _CPJavaScriptArray)
+        splice.apply(self, [0, self.length].concat(anArray));
+
+    else
+        [super setArray:anArray];
+}
+
+- (void)addObjectsFromArray:(CPArray)anArray
+{
+    if (anArray.isa === _CPJavaScriptArray)
+        splice.apply(self, [self.length, 0].concat(anArray));
+
+    else
+        [super addObjectsFromArray:anArray];
+}
+
 
 - (void)copy
 {

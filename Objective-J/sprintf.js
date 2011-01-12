@@ -42,10 +42,12 @@ exports.sprintf = function(format)
         }
         index += t.length;
 
-        if (t.charAt(0) != "%")
-        {
+        if (t.charAt(0) !== "%")
             result += t;
-        }
+
+        else if (t === "%%")
+            result += "%";
+
         else
         {
             var subtokens = t.match(tagRegex);

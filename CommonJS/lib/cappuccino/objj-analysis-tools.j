@@ -83,7 +83,7 @@ ObjectiveJRuntimeAnalyzer.prototype.initializeGlobalRecorder = function()
 
         if (before && currentFile) {
             self.files[currentFile] = self.files[currentFile] || {};
-            self.files[currentFile].globals = self.files[currentFile].global || {};
+            self.files[currentFile].globals = self.files[currentFile].globals || {};
 
             diff({
                 before : before,

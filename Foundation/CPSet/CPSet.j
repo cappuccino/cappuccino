@@ -383,7 +383,7 @@
 
 - (id)copy
 {
-    return [[CPSet alloc] initWithSet:self];
+    return [[self class] setWithSet:self];
 }
 
 - (id)mutableCopy
