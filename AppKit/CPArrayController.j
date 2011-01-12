@@ -38,12 +38,12 @@
     BOOL    _preservesSelection;
     BOOL    _selectsInsertedObjects;
     BOOL    _alwaysUsesMultipleValuesMarker;
-    BOOL    _automaticallyRearrangesObjects;
+    BOOL    _automaticallyRearrangesObjects; // FIXME: Not in use
 
-    id      _selectionIndexes;
-    id      _sortDescriptors;
-    id      _filterPredicate;
-    id      _arrangedObjects;
+    CPIndexSet  _selectionIndexes;
+    CPArray     _sortDescriptors;
+    CPPredicate _filterPredicate;
+    CPArray     _arrangedObjects;
 }
 
 + (void)initialize
@@ -109,11 +109,26 @@
 
     if (self)
     {
-        _sortDescriptors = [CPArray array];
-        _selectionIndexes = [CPIndexSet indexSet];
+        _preservesSelection = YES;
+        _selectsInsertedObjects = YES;
+        _avoidsEmptySelection = YES;
+        _clearsFilterPredicateOnInsertion = YES;
+        _filterRestrictsInsertion = YES; // ?? What is it ?
+        _alwaysUsesMultipleValuesMarker = NO;
+        _automaticallyRearrangesObjects = NO;
+
+        [self _init];
     }
 
     return self;
+}
+
+- (void)_init
+{
+    _sortDescriptors = [CPArray array];
+    _filterPredicate = nil;
+    _selectionIndexes = [CPIndexSet indexSet];
+    _arrangedObjects = nil;
 }
 
 - (void)prepareContent
@@ -149,6 +164,36 @@
 - (void)setAvoidsEmptySelection:(BOOL)value
 {
     _avoidsEmptySelection = value;
+}
+
+- (BOOL)clearsFilterPredicateOnInsertion
+{
+    return _clearsFilterPredicateOnInsertion;
+}
+
+- (void)setClearsFilterPredicateOnInsertion:(BOOL)value
+{
+    _clearsFilterPredicateOnInsertion = value;
+}
+
+- (BOOL)alwaysUsesMultipleValuesMarker
+{
+    return _alwaysUsesMultipleValuesMarker;
+}
+
+- (void)setAlwaysUsesMultipleValuesMarker:(BOOL)value
+{
+    _alwaysUsesMultipleValuesMarker = value;
+}
+
+- (BOOL)automaticallyRearrangesObjects
+{
+    return _automaticallyRearrangesObjects;
+}
+
+- (void)setAutomaticallyRearrangesObjects:(BOOL)value
+{
+    _automaticallyRearrangesObjects = value;
 }
 
 - (void)setContent:(id)value
@@ -277,7 +322,7 @@
     if (_arrangedObjects === value)
         return;
 
-   _arrangedObjects = [[_CPObservableArray alloc] initWithArray:value];
+    _arrangedObjects = [[_CPObservableArray alloc] initWithArray:value];
 }
 
 - (id)arrangedObjects
@@ -645,7 +690,7 @@
 {
     if (theBinding == @"contentArray")
         return [_CPArrayControllerContentBinder class];
-        
+
     return [super _binderClassForBinding:theBinding];
 }
 
@@ -689,7 +734,8 @@ var CPArrayControllerAvoidsEmptySelection             = @"CPArrayControllerAvoid
         _selectsInsertedObjects = [aCoder decodeBoolForKey:CPArrayControllerSelectsInsertedObjects];
         _alwaysUsesMultipleValuesMarker = [aCoder decodeBoolForKey:CPArrayControllerAlwaysUsesMultipleValuesMarker];
         _automaticallyRearrangesObjects = [aCoder decodeBoolForKey:CPArrayControllerAutomaticallyRearrangesObjects];
-        _sortDescriptors = [CPArray array];
+
+        [self _init];
 
         if (![self content] && [self automaticallyPreparesContent])
             [self prepareContent];
