@@ -1,5 +1,6 @@
 
 @import <AppKit/CPArrayController.j>
+@import <AppKit/CPTextField.j>
 
 @implementation CPArrayControllerTest : OJTestCase
 {
@@ -190,8 +191,7 @@
 
     [arrayController setContent:newContent];
 
-    [self assert:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)] equals:[arrayController selectionIndexes]
-         message:@"last object cannot be selected"];
+    [self assert:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)] equals:[arrayController selectionIndexes] message:@"last object cannot be selected"];
 }
 
 - (void)testContentBinding
@@ -352,6 +352,27 @@
     [self assert:@"Meh" equals:[departmentNameField stringValue]];
     [self assert:department equals:[[self arrayController] valueForKeyPath:@"selection.department"]];
     [self assert:@"Building 1" equals:[[self arrayController] valueForKeyPath:@"selection.department.building"]];
+}
+
+- (void)testArrangeObjects_WithNoFilteringNoSorting
+{
+    var arrayController = [[CPArrayController alloc] init];
+    var objects = [CPArray arrayWithObject:@"a"];
+    var arranged = [arrayController arrangeObjects:objects];
+    
+    [self assertNull:[arrayController filterPredicate]];
+    [self assert:[[arrayController sortDescriptors] count] equals:0];
+    [self assertTrue:(objects === arranged)];
+}
+
+- (void)testArrangedObjectsExistsAfterSetContentWithClearsFilterOnInsertionOn
+{
+    var arrayController = [[CPArrayController alloc] init];
+    [arrayController setFilterPredicate:nil];
+    [arrayController setClearsFilterPredicateOnInsertion:YES];  
+    [arrayController setContent:[CPArray arrayWithObject:@"a"]];
+    
+    [self assertNotNull:[arrayController arrangedObjects]];
 }
 
 - (void)observeValueForKeyPath:keyPath
