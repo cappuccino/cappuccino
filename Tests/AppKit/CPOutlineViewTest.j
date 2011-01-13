@@ -112,9 +112,15 @@
 
     var preSelection = [CPIndexSet indexSet];
     [preSelection addIndex:[outlineView rowForItem:".1.1"]];
-    [preSelection addIndex:[outlineView rowForItem:".2"]];
+    [preSelection addIndex:[outlineView rowForItem:".3.1"]];
 
     [outlineView selectRowIndexes:preSelection byExtendingSelection:NO];
+
+    // Test that by the time the selection notification is sent out, rows have
+    // been expanded. E.g. the outline view is made consistent before notifying.
+    var delegate = [TestNotificationsDelegate new];
+    [delegate setTester:self];
+    [outlineView setDelegate:delegate];
 
     [outlineView expandItem:".1.2"];
     afterSelection = [outlineView selectedRowIndexes];
@@ -122,7 +128,7 @@
     [self assert:2 equals:[afterSelection count] message:"selections should remain"];
 
     [self assert:".1.1" equals:[outlineView itemAtRow:[afterSelection firstIndex]] message:".1.1 selection should remain"];
-    [self assert:".2" equals:[outlineView itemAtRow:[afterSelection lastIndex]] message:".2 selection should remain"];
+    [self assert:".3.1" equals:[outlineView itemAtRow:[afterSelection lastIndex]] message:".3.1 selection should remain"];
 }
 
 @end
@@ -164,6 +170,28 @@
 - (id)outlineView:(CPOutlineView)anOutlineView objectValueForTableColumn:(CPTableColumn)theColumn byItem:(id)theItem
 {
     return theItem;
+}
+
+@end
+
+@implementation TestNotificationsDelegate : CPObject
+{
+    id  tester @accessors;
+}
+
+- (void)outlineViewSelectionDidChange:(CPNotification)aNotification
+{
+    // Verify that the state is consistent - every selected row has been loaded.
+    var anOutlineView = [aNotification object],
+        selection = [anOutlineView selectedRowIndexes],
+        rows = [];
+
+    [selection getIndexes:rows maxCount:-1 inIndexRange:nil];
+
+    for (var i = 0, count = [rows count]; i < count; i++)
+    {
+        [tester assertTrue:[anOutlineView itemAtRow:rows[i]] !== nil message:"selected row " + i + " should exist"];
+    }
 }
 
 @end

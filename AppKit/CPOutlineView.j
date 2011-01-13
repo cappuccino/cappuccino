@@ -333,7 +333,8 @@ CPOutlineViewDropOnItemIndex = -1;
         [self _noteItemWillExpand:anItem];
 
         // Shift selection indexes below so that the same items remain selected.
-        var newRowCount = [_outlineViewDataSource outlineView:self numberOfChildrenOfItem:anItem];
+        var newRowCount = [_outlineViewDataSource outlineView:self numberOfChildrenOfItem:anItem],
+            newSelection = nil;
         if (newRowCount)
         {
             var selection = [self selectedRowIndexes],
@@ -343,13 +344,19 @@ CPOutlineViewDropOnItemIndex = -1;
             {
                 [self _noteSelectionIsChanging];
                 [selection shiftIndexesStartingAtIndex:expandIndex by:newRowCount];
-                [self _setSelectedRowIndexes:selection];
+                newSelection = selection;
             }
         }
 
         itemInfo.isExpanded = YES;
         [self _noteItemDidExpand:anItem];
         [self reloadItem:anItem reloadChildren:YES];
+
+        // Update the selection - and send the associated notification - first
+        // after the items have loaded so that the new selection is consistent
+        // with the actual rows for any observers.
+        if (newSelection !== nil)
+            [self _setSelectedRowIndexes:selection];
     }
 
     if (shouldExpandChildren)
