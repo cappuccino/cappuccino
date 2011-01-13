@@ -113,6 +113,8 @@ CPOutlineViewDropOnItemIndex = -1;
     CPInteger       _retargedChildIndex;
     CPTimer         _dragHoverTimer;
     id              _dropItem;
+
+    BOOL            _suppressSelectionNotifications;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -349,14 +351,15 @@ CPOutlineViewDropOnItemIndex = -1;
         }
 
         itemInfo.isExpanded = YES;
+        // XXX Shouldn't the items reload before the notification is sent?
         [self _noteItemDidExpand:anItem];
         [self reloadItem:anItem reloadChildren:YES];
 
         // Update the selection - and send the associated notification - first
         // after the items have loaded so that the new selection is consistent
         // with the actual rows for any observers.
-        if (newSelection !== nil)
-            [self _setSelectedRowIndexes:selection];
+        if (newSelection)
+            [self _setSelectedRowIndexes:newSelection]; // Will call _noteSelectionDidChange
     }
 
     if (shouldExpandChildren)
@@ -398,40 +401,47 @@ CPOutlineViewDropOnItemIndex = -1;
     while (collapseEndIndex + 1 < _itemsForRows.length && [self levelForRow:collapseEndIndex + 1] > topLevel)
         collapseEndIndex++;
 
-    var collapseRange = CPMakeRange(collapseTopIndex + 1, collapseEndIndex - collapseTopIndex);
+    var collapseRange = CPMakeRange(collapseTopIndex + 1, collapseEndIndex - collapseTopIndex),
+        newSelection = nil;
+
     if (collapseRange.length)
     {
-        var selection = [self selectedRowIndexes],
-            didChange = NO;
+        var selection = [self selectedRowIndexes];
 
         if ([selection intersectsIndexesInRange:collapseRange])
         {
             [selection removeIndexesInRange:collapseRange];
             [self _noteSelectionIsChanging];
-            didChange = YES;
-            // Will call _noteSelectionDidChange
-            [self _setSelectedRowIndexes:selection];
+            newSelection = selection;
         }
 
         // Shift any selected rows below upwards.
         if ([selection intersectsIndexesInRange:CPMakeRange(collapseEndIndex + 1, _itemsForRows.length)])
         {
             // Notify if that wasn't already done above.
-            if (!didChange)
+            if (!newSelection)
                 [self _noteSelectionIsChanging];
-            didChange = YES;
 
             [selection shiftIndexesStartingAtIndex:collapseEndIndex + 1 by:-collapseRange.length];
+            newSelection = selection;
         }
-
-        if (didChange)
-            [self _setSelectedRowIndexes:selection];
     }
     itemInfo.isExpanded = NO;
 
+    // XXX Shouldn't the items reload before the notification is sent?
     [self _noteItemDidCollapse:anItem];
 
+    // Reload item calls [super reload], which can lead to hanging selection
+    // removal and a selection notification before we are consistent.
+    _suppressSelectionNotifications = YES;
     [self reloadItem:anItem reloadChildren:YES];
+    _suppressSelectionNotifications = NO;
+
+    // Update the selection - and send the associated notification - first
+    // after the items have loaded so that the new selection is consistent
+    // with the actual rows for any observers.
+    if (newSelection)
+        [self _setSelectedRowIndexes:newSelection]; // Will call _noteSelectionDidChange
 }
 
 /*!
@@ -1284,6 +1294,9 @@ CPOutlineViewDropOnItemIndex = -1;
 */
 - (void)_noteSelectionIsChanging
 {
+    if (_suppressSelectionNotifications)
+        return;
+
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPOutlineViewSelectionIsChangingNotification
                       object:self
@@ -1295,6 +1308,9 @@ CPOutlineViewDropOnItemIndex = -1;
 */
 - (void)_noteSelectionDidChange
 {
+    if (_suppressSelectionNotifications)
+        return;
+
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPOutlineViewSelectionDidChangeNotification
                       object:self

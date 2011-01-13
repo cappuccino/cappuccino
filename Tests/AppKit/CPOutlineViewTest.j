@@ -93,12 +93,17 @@
 
     [outlineView selectRowIndexes:preSelection byExtendingSelection:NO];
 
+    // Test that by the time the selection notification is sent out, rows have
+    // updated so that the selection matches the right items in the outline view.
+    var delegate = [TestNotificationsDelegate new];
+    [delegate setTester:self];
+    [delegate setExpectedSelectedItems:[".3", ]];
+    [outlineView setDelegate:delegate];
+
     [outlineView collapseItem:".1"];
 
     afterSelection = [outlineView selectedRowIndexes];
-
     [self assert:1 equals:[afterSelection count] message:"1 selection should disappear"];
-
     [self assert:".3" equals:[outlineView itemAtRow:[afterSelection firstIndex]] message:".3 selection should remain"];
 }
 
@@ -176,7 +181,8 @@
 
 @implementation TestNotificationsDelegate : CPObject
 {
-    id  tester @accessors;
+    id      tester @accessors;
+    CPArray expectedSelectedItems @accessors;
 }
 
 - (void)outlineViewSelectionDidChange:(CPNotification)aNotification
@@ -190,7 +196,10 @@
 
     for (var i = 0, count = [rows count]; i < count; i++)
     {
-        [tester assertTrue:[anOutlineView itemAtRow:rows[i]] !== nil message:"selected row " + i + " should exist"];
+        var item = [anOutlineView itemAtRow:rows[i]];
+        [tester assertTrue: item !== nil message:"selected row #" + i + " should exist"];
+        if (expectedSelectedItems)
+            [tester assert:expectedSelectedItems[i] equals:item message:"in notification selected row #" + i];
     }
 }
 
