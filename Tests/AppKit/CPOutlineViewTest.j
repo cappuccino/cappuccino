@@ -105,6 +105,7 @@
     afterSelection = [outlineView selectedRowIndexes];
     [self assert:1 equals:[afterSelection count] message:"1 selection should disappear"];
     [self assert:".3" equals:[outlineView itemAtRow:[afterSelection firstIndex]] message:".3 selection should remain"];
+    [self assert:1 equals:[delegate selectionChangeCount] message:"selection notifications during collapseItem"];
 }
 
 /*!
@@ -128,12 +129,13 @@
     [outlineView setDelegate:delegate];
 
     [outlineView expandItem:".1.2"];
-    afterSelection = [outlineView selectedRowIndexes];
 
+    afterSelection = [outlineView selectedRowIndexes];
     [self assert:2 equals:[afterSelection count] message:"selections should remain"];
 
     [self assert:".1.1" equals:[outlineView itemAtRow:[afterSelection firstIndex]] message:".1.1 selection should remain"];
     [self assert:".3.1" equals:[outlineView itemAtRow:[afterSelection lastIndex]] message:".3.1 selection should remain"];
+    [self assert:1 equals:[delegate selectionChangeCount] message:"selection notifications during expandItem"];
 }
 
 @end
@@ -183,10 +185,20 @@
 {
     id      tester @accessors;
     CPArray expectedSelectedItems @accessors;
+    int     selectionChangeCount @accessors;
+}
+
+- (id)init
+{
+    if (self = [super init])
+        selectionChangeCount = 0;
+    return self;
 }
 
 - (void)outlineViewSelectionDidChange:(CPNotification)aNotification
 {
+    selectionChangeCount++;
+
     // Verify that the state is consistent - every selected row has been loaded.
     var anOutlineView = [aNotification object],
         selection = [anOutlineView selectedRowIndexes],

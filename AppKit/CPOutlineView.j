@@ -75,6 +75,10 @@ var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_              
 
 CPOutlineViewDropOnItemIndex = -1;
 
+var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
+    CPOutlineViewCoalesceSelectionNotificationStateOn   = 1,
+    CPOutlineViewCoalesceSelectionNotificationStateDid  = 2;
+
 /*!
     @ingroup appkit
     @class CPOutlineView
@@ -114,7 +118,7 @@ CPOutlineViewDropOnItemIndex = -1;
     CPTimer         _dragHoverTimer;
     id              _dropItem;
 
-    BOOL            _suppressSelectionNotifications;
+    BOOL            _coalesceSelectionNotificationState;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -123,7 +127,6 @@ CPOutlineViewDropOnItemIndex = -1;
 
     if (self)
     {
-
         _selectionHighlightStyle = CPTableViewSelectionHighlightStyleSourceList;
 
         // The root item has weight "0", thus represents the weight solely of its descendants.
@@ -329,14 +332,23 @@ CPOutlineViewDropOnItemIndex = -1;
     if (!itemInfo)
         return;
 
+    // When shouldExpandChildren is YES, we need to make sure we're collecting
+    // selection notifications so that exactly one IsChanging and one DidChange
+    // is sent as needed, for the totallity of the operation.
+    var isTopLevel = NO;
+    if (!_coalesceSelectionNotificationState)
+    {
+        isTopLevel = YES;
+        _coalesceSelectionNotificationState = CPOutlineViewCoalesceSelectionNotificationStateOn;
+    }
+
     // to prevent items which are already expanded from firing notifications
     if (!itemInfo.isExpanded)
     {
         [self _noteItemWillExpand:anItem];
 
         // Shift selection indexes below so that the same items remain selected.
-        var newRowCount = [_outlineViewDataSource outlineView:self numberOfChildrenOfItem:anItem],
-            newSelection = nil;
+        var newRowCount = [_outlineViewDataSource outlineView:self numberOfChildrenOfItem:anItem];
         if (newRowCount)
         {
             var selection = [self selectedRowIndexes],
@@ -346,7 +358,7 @@ CPOutlineViewDropOnItemIndex = -1;
             {
                 [self _noteSelectionIsChanging];
                 [selection shiftIndexesStartingAtIndex:expandIndex by:newRowCount];
-                newSelection = selection;
+                [self _setSelectedRowIndexes:selection]; // _noteSelectionDidChange will be suppressed.
             }
         }
 
@@ -354,12 +366,6 @@ CPOutlineViewDropOnItemIndex = -1;
         // XXX Shouldn't the items reload before the notification is sent?
         [self _noteItemDidExpand:anItem];
         [self reloadItem:anItem reloadChildren:YES];
-
-        // Update the selection - and send the associated notification - first
-        // after the items have loaded so that the new selection is consistent
-        // with the actual rows for any observers.
-        if (newSelection)
-            [self _setSelectedRowIndexes:newSelection]; // Will call _noteSelectionDidChange
     }
 
     if (shouldExpandChildren)
@@ -369,6 +375,14 @@ CPOutlineViewDropOnItemIndex = -1;
 
         while (childIndex--)
             [self expandItem:children[childIndex] expandChildren:YES];
+    }
+
+    if (isTopLevel)
+    {
+        var r = _coalesceSelectionNotificationState;
+        _coalesceSelectionNotificationState = CPOutlineViewCoalesceSelectionNotificationStateOff;
+        if (r === CPOutlineViewCoalesceSelectionNotificationStateDid)
+            [self _noteSelectionDidChange];
     }
 }
 
@@ -390,6 +404,9 @@ CPOutlineViewDropOnItemIndex = -1;
     if (!itemInfo.isExpanded)
         return;
 
+    // Don't spam notifications.
+    _coalesceSelectionNotificationState = CPOutlineViewCoalesceSelectionNotificationStateOn;
+
     [self _noteItemWillCollapse:anItem];
     // Update selections:
     // * Deselect items inside the collapsed item.
@@ -401,8 +418,7 @@ CPOutlineViewDropOnItemIndex = -1;
     while (collapseEndIndex + 1 < _itemsForRows.length && [self levelForRow:collapseEndIndex + 1] > topLevel)
         collapseEndIndex++;
 
-    var collapseRange = CPMakeRange(collapseTopIndex + 1, collapseEndIndex - collapseTopIndex),
-        newSelection = nil;
+    var collapseRange = CPMakeRange(collapseTopIndex + 1, collapseEndIndex - collapseTopIndex);
 
     if (collapseRange.length)
     {
@@ -410,38 +426,31 @@ CPOutlineViewDropOnItemIndex = -1;
 
         if ([selection intersectsIndexesInRange:collapseRange])
         {
-            [selection removeIndexesInRange:collapseRange];
             [self _noteSelectionIsChanging];
-            newSelection = selection;
+            [selection removeIndexesInRange:collapseRange];
+            [self _setSelectedRowIndexes:selection]; // _noteSelectionDidChange will be suppressed.
         }
 
         // Shift any selected rows below upwards.
         if ([selection intersectsIndexesInRange:CPMakeRange(collapseEndIndex + 1, _itemsForRows.length)])
         {
-            // Notify if that wasn't already done above.
-            if (!newSelection)
-                [self _noteSelectionIsChanging];
-
+            [self _noteSelectionIsChanging];
             [selection shiftIndexesStartingAtIndex:collapseEndIndex + 1 by:-collapseRange.length];
-            newSelection = selection;
+            [self _setSelectedRowIndexes:selection]; // _noteSelectionDidChange will be suppressed.
         }
     }
     itemInfo.isExpanded = NO;
 
     // XXX Shouldn't the items reload before the notification is sent?
     [self _noteItemDidCollapse:anItem];
-
-    // Reload item calls [super reload], which can lead to hanging selection
-    // removal and a selection notification before we are consistent.
-    _suppressSelectionNotifications = YES;
     [self reloadItem:anItem reloadChildren:YES];
-    _suppressSelectionNotifications = NO;
 
-    // Update the selection - and send the associated notification - first
-    // after the items have loaded so that the new selection is consistent
-    // with the actual rows for any observers.
-    if (newSelection)
-        [self _setSelectedRowIndexes:newSelection]; // Will call _noteSelectionDidChange
+    // Send selection notifications only after the items have loaded so that
+    // the new selection is consistent with the actual rows for any observers.
+    var r = _coalesceSelectionNotificationState;
+    _coalesceSelectionNotificationState = CPOutlineViewCoalesceSelectionNotificationStateOff;
+    if (r === CPOutlineViewCoalesceSelectionNotificationStateDid)
+        [self _noteSelectionDidChange];
 }
 
 /*!
@@ -1294,13 +1303,16 @@ CPOutlineViewDropOnItemIndex = -1;
 */
 - (void)_noteSelectionIsChanging
 {
-    if (_suppressSelectionNotifications)
-        return;
+    if (!_coalesceSelectionNotificationState || _coalesceSelectionNotificationState === CPOutlineViewCoalesceSelectionNotificationStateOn)
+    {
+        [[CPNotificationCenter defaultCenter]
+            postNotificationName:CPOutlineViewSelectionIsChangingNotification
+                          object:self
+                        userInfo:nil];
+    }
 
-    [[CPNotificationCenter defaultCenter]
-        postNotificationName:CPOutlineViewSelectionIsChangingNotification
-                      object:self
-                    userInfo:nil];
+    if (_coalesceSelectionNotificationState === CPOutlineViewCoalesceSelectionNotificationStateOn)
+        _coalesceSelectionNotificationState = CPOutlineViewCoalesceSelectionNotificationStateDid;
 }
 
 /*!
@@ -1308,13 +1320,16 @@ CPOutlineViewDropOnItemIndex = -1;
 */
 - (void)_noteSelectionDidChange
 {
-    if (_suppressSelectionNotifications)
-        return;
+    if (!_coalesceSelectionNotificationState)
+    {
+        [[CPNotificationCenter defaultCenter]
+            postNotificationName:CPOutlineViewSelectionDidChangeNotification
+                          object:self
+                        userInfo:nil];
+    }
 
-    [[CPNotificationCenter defaultCenter]
-        postNotificationName:CPOutlineViewSelectionDidChangeNotification
-                      object:self
-                    userInfo:nil];
+    if (_coalesceSelectionNotificationState === CPOutlineViewCoalesceSelectionNotificationStateOn)
+        _coalesceSelectionNotificationState = CPOutlineViewCoalesceSelectionNotificationStateDid;
 }
 
 /*!
