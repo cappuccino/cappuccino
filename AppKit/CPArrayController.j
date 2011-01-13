@@ -147,7 +147,7 @@
 }
 
 /*!
-    @return BOOL - Returns YES if new objects are automatically selected, otherwise NO. 
+    @return BOOL - Returns YES if new objects are automatically selected, otherwise NO.
 */
 - (BOOL)selectsInsertedObjects
 {
@@ -352,7 +352,7 @@
 
 /*!
     Returns the receiver's array of sort descriptors.
-    @return CPArray an array of sort descriptors 
+    @return CPArray an array of sort descriptors
 */
 - (CPArray)sortDescriptors
 {
@@ -388,7 +388,7 @@
 
 /*!
     Sets the predicate for the controller to filter the content.
-    Passing nil will remove an existing prediate. 
+    Passing nil will remove an existing prediate.
 
     @param CPPrediate aPredicate - the new predicate.
 */
@@ -453,10 +453,10 @@
 }
 
 /*!
-    Sets the selection indexes of the controller. 
+    Sets the selection indexes of the controller.
 
     @param CPIndexSet indexes - the indexes to select
-    @return BOOL - Returns YES if the selection changed, otherwise NO. 
+    @return BOOL - Returns YES if the selection changed, otherwise NO.
 */
 - (BOOL)setSelectionIndexes:(CPIndexSet)indexes
 {
@@ -609,7 +609,7 @@
 //Add/Remove
 
 /*!
-    Adds object to the receiver’s content collection and the arranged objects array.
+    Adds object to the receiver's content collection and the arranged objects array.
 
     @param id anObject - the object to add the controller.
 */
@@ -707,7 +707,7 @@
 }
 
 /*!
-    Creates and adds a new object to the receiver’s content and arranged objects.
+    Creates and adds a new object to the receiver's content and arranged objects.
 
     @param id sender - The sender of the message.
 */
@@ -720,7 +720,7 @@
 }
 
 /*!
-    Creates a new object and inserts it into the receiver’s content array.
+    Creates a new object and inserts it into the receiver's content array.
     @param id sender - The sender of the message.
 */
 - (void)insert:(id)sender
