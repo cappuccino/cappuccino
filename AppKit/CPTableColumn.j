@@ -39,7 +39,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
     A CPTableColumn contains a dataview to display for its column of the CPTableView.
     A CPTableColumn determines its own size constrains and resizing behaviour.
 
-    The default dataview is a CPTextField but you can set it to any view you'd like. See -setDataView:
+    The default dataview is a CPTextField but you can set it to any view you'd like. See -setDataView: for documentaion including theme states.
 */
 @implementation CPTableColumn : CPObject
 {
@@ -253,6 +253,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 }
 
 /*!
+<pre>
     Set the resizing mask of the column. 
     By default the column can be resized automatically with the tableview and manaully by the user
 
@@ -260,6 +261,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
     CPTableColumnNoResizing
     CPTableColumnAutoresizingMask
     CPTableColumnUserResizingMask
+</pre>
 */
 - (void)setResizingMask:(unsigned)aResizingMask
 {
@@ -318,10 +320,18 @@ CPTableColumnUserResizingMask   = 1 << 1;
 }
 
 /*!
+<pre>
     This method sets the "prototype" view which will be used to create all table cells in this column.
 
     It creates a snapshot of aView, using keyed archiving, which is then copied over and over for each
     individual cell that is shown. As a result, changes made after calling this method won't be reflected.
+
+    When you set a dataview and it is added to the tableview the theme state will be set to CPThemeStateTableDataView
+    When the dataview becomes selected the theme state will be set to CPThemeStateSelectedDataView.
+
+    If the dataview shows up in a group row of the tablview the theme state will be set to CPThemeStateGroupRow.
+
+    You should overide setThemeState: and unsetThemeState: to handle these theme state changes in your dataview.
 
     Example:
 
@@ -333,7 +343,37 @@ CPTableColumnUserResizingMask   = 1 << 1;
         [someView setSomething:x];
         [tableColumn setDataView:someView];
 
-    REMEMBER: you should implement CPKeyedArchiving otherwise you might see unexpected results
+    REMEMBER: you should implement CPKeyedArchiving otherwise you might see unexpected results.
+    This is done by adding the following methods to your class:
+    - (id)initWithCoder(CPCoder)aCoder;
+    - (void)encodeWithCoder:(CPCoder)aCoder;
+
+    Example:
+    Say you have two instance variables in your object that need to be set up each time an object is create.
+    We will call these instance variables "image" and "text".
+    Your CPCoding methods will look like the following:
+
+    - (id)initWithCoder:(CPCoder)aCoder
+    {
+        self = [super initWithCoder:aCoder];
+
+        if (self)
+        {
+            image = [aCoder decodeObjectForKey:"MyDataViewImage"];
+            text = [aCoder decodeObjectForKey:"MyDataViewText"];
+        }
+
+        return self;
+    }
+
+    - (void)encodeWithCoder:(CPCoder)aCoder
+    {
+        [super encodeWithCoder:aCoder];
+
+        [aCoder encodeObject:image forKey:"MyDataViewImage"];
+        [aCoder encodeObject:text forKey:"MyDataViewText"];
+    }
+</pre>
 */
 - (void)setDataView:(CPView)aView
 {
@@ -355,7 +395,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
     Returns the CPView object used by the CPTableView to draw values for the receiver.
 
     By default, this method just calls dataView. Subclassers can override if they need to
-    potentially use different cells for different rows. Subclasses should expect this method
+    potentially use different "cells" or dataViews for different rows. Subclasses should expect this method
     to be invoked with row equal to -1 in cases where no actual row is involved but the table
     view needs to get some generic cell info.
 */
@@ -392,7 +432,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 
 //Setting the Identifier
 
-/*
+/*!
     Sets the receiver identifier to anIdentifier.
 */
 - (void)setIdentifier:(id)anIdentifier
@@ -400,7 +440,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
     _identifier = anIdentifier;
 }
 
-/*
+/*!
     Returns the object used by the data source to identify the attribute corresponding to the receiver.
 */
 - (id)identifier
@@ -410,7 +450,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 
 //Controlling Editability
 
-/*
+/*!
     Controls whether the user can edit cells in the receiver by double-clicking them.
 */
 - (void)setEditable:(BOOL)shouldBeEditable
@@ -418,7 +458,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
     _isEditable = shouldBeEditable;
 }
 
-/*
+/*!
     Returns YES if the user can edit cells associated with the receiver by double-clicking the
     column in the NSTableView, NO otherwise.
 */
@@ -469,7 +509,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 
 //Setting Tool Tips
 
-/*
+/*!
     Sets the tooltip string that is displayed when the cursor pauses over the
     header cell of the receiver.
 */

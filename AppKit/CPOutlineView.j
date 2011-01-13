@@ -88,6 +88,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     Like the tableview, an outlineview uses a data source to supply its data. For this reason you must implement a couple data source methods (documented in setDataSource:)
 
+    Theme states for custom data views are documented in CPTableView
 */
 @implementation CPOutlineView : CPTableView
 {
@@ -155,6 +156,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     return self;
 }
 /*!
+<pre>
     In addition to standard delegation, the outline view also supports data source delegation. This method sets the data source object.
     Just like the TableView you have CPTableColumns but instead of rows you deal with items.
 
@@ -200,7 +202,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         Returns YES if the drop operation is allowed otherwise NO.
         This method is invoked by the outlineview after a drag should begin, but before it is started. If you dont want the drag to being return NO.
         If you want the drag to begin you should return YES and place the drag data on the pboard.
-
+</pre>
 */
 - (void)setDataSource:(id)aDataSource
 {
@@ -693,6 +695,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 }
 
 /*!
+<pre>
     Sets the delegate for the outlineview.
 
     The following methods can be implemented:
@@ -753,6 +756,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         Return YES if the item is a group item, otherwise NO.
 
     @param aDelegate - the delegate object you wish to set for the reciever.
+<pre>
 */
 - (void)setDelegate:(id)aDelegate
 {

@@ -147,7 +147,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     All delegate and data source methods are documented in the setDataSource: and setDelegate: methods.
 
-    If you want to display something other than just text in the table you should call setDataView: on CPColumn. More documentation in that class.
+    If you want to display something other than just text in the table you should call setDataView: on a CPColumn object. More documentation in that class including theme states.
 */
 @implementation CPTableView : CPControl
 {
@@ -378,6 +378,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 /*!
+<pre>
     Sets the receiver's data source to a given object.
     The data source implements various methods for handeling the tableview's data when bindings are not used.
 
@@ -416,7 +417,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     - (CPArray)tableView:(CPTableView)aTableView namesOfPromisedFilesDroppedAtDestination:(CPURL)dropDestination forDraggedRowsWithIndexes:(CPIndexSet)indexSet;
         NOT YET IMPLEMENTED
-
+</pre>
     @param anObject The data source for the receiver. This object must implement numberOfRowsInTableView: and tableView:objectValueForTableColumn:row:
 */
 - (void)setDataSource:(id)aDataSource
@@ -722,11 +723,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 /*!
     Returns an enumerated value for the selection highlight style.
+<pre>
 
     Valid values are:
         CPTableViewSelectionHighlightStyleNone
         CPTableViewSelectionHighlightStyleRegular
         CPTableViewSelectionHighlightStyleSourceList
+</pre>
 */
 - (unsigned)selectionHighlightStyle
 {
@@ -734,6 +737,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 /*!
+<pre>
     Sets the selection highlight style to an enumerated value.
     This value can also affect the way the tableview draws feedback when the user is dragging.
 
@@ -741,6 +745,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         CPTableViewSelectionHighlightStyleNone
         CPTableViewSelectionHighlightStyleRegular
         CPTableViewSelectionHighlightStyleSourceList
+</pre>
 */
 - (void)setSelectionHighlightStyle:(unsigned)aSelectionHighlightStyle
 {
@@ -778,12 +783,14 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 /*!
+<pre>
     Sets the highlight gradient for a row or column selection
     This is specific to the
     @param aDictionary a CPDictionary expects three keys to be set:
         CPSourceListGradient which is a CGGradient
         CPSourceListTopLineColor which is a CPColor
         CPSourceListBottomLineColor which is a CPColor
+</pre>
 */
 - (void)setSelectionGradientColors:(CPDictionary)aDictionary
 {
@@ -793,10 +800,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 /*!
+<pre>
     Returns a dictionary of containing the keys:
     CPSourceListGradient
     CPSourceListTopLineColor
     CPSourceListBottomLineColor
+</pre>
 */
 - (CPDictionary)selectionGradientColors
 {
@@ -1927,6 +1936,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 /*!
+<pre>
     Sets the column autoresizing style of the receiver to a given style.
 
     @param aStyle the column autoresizing style for the receiver. Valid values are:
@@ -1934,6 +1944,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         CPTableViewUniformColumnAutoresizingStyle
         CPTableViewLastColumnOnlyAutoresizingStyle
         CPTableViewFirstColumnOnlyAutoresizingStyle
+</pre>
 */
 - (void)setColumnAutoresizingStyle:(unsigned)style
 {
@@ -2002,8 +2013,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if (hangingSelections > 0)
     {
+
         var previousSelectionCount = [_selectedRowIndexes count];
         [_selectedRowIndexes removeIndexesInRange:CPMakeRange(_numberOfRows, hangingSelections)];
+
+        if (![_selectedRowIndexes containsIndex:[self selectedRow]])
+            _lastSelectedRow = CPNotFound;
 
         // For optimal performance, only send a notification if indices were actually removed.
         if (previousSelectionCount > [_selectedRowIndexes count])
@@ -2233,6 +2248,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 
 /*!
+<pre>
     Sets the delegate of the receiver. The delegate can implement the following methods:
     Displaying Cells
     - (void)tableView:(CPTableView)aTableView willDisplayView:(id)aView forTableColumn:(CPTableColumn)aTableColumn row:(int)rowIndex;
@@ -2298,7 +2314,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     - (CPMenu)tableView:(CPTableView)aTableView menuForTableColumn:(CPTableColumn)aColumn row:(int)aRow
         Called when the user right clicks on the tableview. -1 is passed for the row or column if the user doesn't right click on a real row or column
         Return a CPMenu that should be displayed if the user right clicks. If you do not implement this the tableview will just call super on menuForEvent
-
+</pre>
     @param aDelegate the delegate object for the tableview.
 
 */
@@ -2778,11 +2794,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 /*!
+<pre>
     Sets the feedback style for when the table is the destination of a drag operation.
     Can be:
         CPTableViewDraggingDestinationFeedbackStyleNone
         CPTableViewDraggingDestinationFeedbackStyleRegular
         CPTableViewDraggingDestinationFeedbackStyleSourceList
+</pre>
 */
 - (void)setDraggingDestinationFeedbackStyle:(CPTableViewDraggingDestinationFeedbackStyle)aStyle
 {
@@ -2791,12 +2809,14 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 /*!
+<pre>
     Returns the tableview dragging destination feedback style.
 
     Can be:
         CPTableViewDraggingDestinationFeedbackStyleNone
         CPTableViewDraggingDestinationFeedbackStyleRegular
         CPTableViewDraggingDestinationFeedbackStyleSourceList
+</pre>
 */
 - (CPTableViewDraggingDestinationFeedbackStyle)draggingDestinationFeedbackStyle
 {
