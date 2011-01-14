@@ -665,7 +665,6 @@
     {
         [self _init];
 
-        [self setAutohidesScroller:[aCoder decodeBoolForKey:@"CPBrowserAutohidesScrollerKey"]];
         _allowsEmptySelection = [aCoder decodeBoolForKey:@"CPBrowserAllowsEmptySelectionKey"];
         _allowsMultipleSelection = [aCoder decodeBoolForKey:@"CPBrowserAllowsMultipleSelectionKey"];
         _prototypeView = [aCoder decodeObjectForKey:@"CPBrowserPrototypeViewKey"];
@@ -675,6 +674,7 @@
         _columnWidths = [aCoder decodeObjectForKey:@"CPBrowserColumnWidthsKey"];
 
         [self setDelegate:[aCoder decodeObjectForKey:@"CPBrowserDelegateKey"]];
+        [self setAutohidesScroller:[aCoder decodeBoolForKey:@"CPBrowserAutohidesScrollerKey"]];
     }
 
     return self;

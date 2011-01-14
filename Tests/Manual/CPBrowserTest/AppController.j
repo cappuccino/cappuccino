@@ -94,9 +94,9 @@
     return YES;
 }
 
-- (void)browserClicked:(id)sender
+- (void)browserClicked:(id)aBrowser
 {
-    console.log("selected column: " + [browser selectedColumn] + " row: " + [browser selectedRowInColumn:[browser selectedColumn]]);
+    console.log("selected column: " + [aBrowser selectedColumn] + " row: " + [aBrowser selectedRowInColumn:[aBrowser selectedColumn]]);
 }
 
 - (void)dblClicked:(id)sender
