@@ -75,6 +75,10 @@ var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_              
 
 CPOutlineViewDropOnItemIndex = -1;
 
+var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
+    CPOutlineViewCoalesceSelectionNotificationStateOn   = 1,
+    CPOutlineViewCoalesceSelectionNotificationStateDid  = 2;
+
 /*!
     @ingroup appkit
     @class CPOutlineView
@@ -84,6 +88,7 @@ CPOutlineViewDropOnItemIndex = -1;
 
     Like the tableview, an outlineview uses a data source to supply its data. For this reason you must implement a couple data source methods (documented in setDataSource:)
 
+    Theme states for custom data views are documented in CPTableView
 */
 @implementation CPOutlineView : CPTableView
 {
@@ -113,6 +118,8 @@ CPOutlineViewDropOnItemIndex = -1;
     CPInteger       _retargedChildIndex;
     CPTimer         _dragHoverTimer;
     id              _dropItem;
+
+    BOOL            _coalesceSelectionNotificationState;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -121,7 +128,6 @@ CPOutlineViewDropOnItemIndex = -1;
 
     if (self)
     {
-
         _selectionHighlightStyle = CPTableViewSelectionHighlightStyleSourceList;
 
         // The root item has weight "0", thus represents the weight solely of its descendants.
@@ -150,6 +156,7 @@ CPOutlineViewDropOnItemIndex = -1;
     return self;
 }
 /*!
+<pre>
     In addition to standard delegation, the outline view also supports data source delegation. This method sets the data source object.
     Just like the TableView you have CPTableColumns but instead of rows you deal with items.
 
@@ -195,7 +202,7 @@ CPOutlineViewDropOnItemIndex = -1;
         Returns YES if the drop operation is allowed otherwise NO.
         This method is invoked by the outlineview after a drag should begin, but before it is started. If you dont want the drag to being return NO.
         If you want the drag to begin you should return YES and place the drag data on the pboard.
-
+</pre>
 */
 - (void)setDataSource:(id)aDataSource
 {
@@ -327,14 +334,31 @@ CPOutlineViewDropOnItemIndex = -1;
     if (!itemInfo)
         return;
 
+    // When shouldExpandChildren is YES, we need to make sure we're collecting
+    // selection notifications so that exactly one IsChanging and one DidChange
+    // is sent as needed, for the totallity of the operation.
+    var isTopLevel = NO;
+    if (!_coalesceSelectionNotificationState)
+    {
+        isTopLevel = YES;
+        _coalesceSelectionNotificationState = CPOutlineViewCoalesceSelectionNotificationStateOn;
+    }
+
     // to prevent items which are already expanded from firing notifications
     if (!itemInfo.isExpanded)
     {
         [self _noteItemWillExpand:anItem];
 
+        var previousRowCount = [self numberOfRows];
+
+        itemInfo.isExpanded = YES;
+        // XXX Shouldn't the items reload before the notification is sent?
+        [self _noteItemDidExpand:anItem];
+        [self reloadItem:anItem reloadChildren:YES];
+
         // Shift selection indexes below so that the same items remain selected.
-        var newRowCount = [_outlineViewDataSource outlineView:self numberOfChildrenOfItem:anItem];
-        if (newRowCount)
+        var rowCountDelta = [self numberOfRows] - previousRowCount;
+        if (rowCountDelta)
         {
             var selection = [self selectedRowIndexes],
                 expandIndex = [self rowForItem:anItem] + 1;
@@ -342,14 +366,10 @@ CPOutlineViewDropOnItemIndex = -1;
             if ([selection intersectsIndexesInRange:CPMakeRange(expandIndex, _itemsForRows.length)])
             {
                 [self _noteSelectionIsChanging];
-                [selection shiftIndexesStartingAtIndex:expandIndex by:newRowCount];
-                [self _setSelectedRowIndexes:selection];
+                [selection shiftIndexesStartingAtIndex:expandIndex by:rowCountDelta];
+                [self _setSelectedRowIndexes:selection]; // _noteSelectionDidChange will be suppressed.
             }
         }
-
-        itemInfo.isExpanded = YES;
-        [self _noteItemDidExpand:anItem];
-        [self reloadItem:anItem reloadChildren:YES];
     }
 
     if (shouldExpandChildren)
@@ -359,6 +379,14 @@ CPOutlineViewDropOnItemIndex = -1;
 
         while (childIndex--)
             [self expandItem:children[childIndex] expandChildren:YES];
+    }
+
+    if (isTopLevel)
+    {
+        var r = _coalesceSelectionNotificationState;
+        _coalesceSelectionNotificationState = CPOutlineViewCoalesceSelectionNotificationStateOff;
+        if (r === CPOutlineViewCoalesceSelectionNotificationStateDid)
+            [self _noteSelectionDidChange];
     }
 }
 
@@ -380,6 +408,9 @@ CPOutlineViewDropOnItemIndex = -1;
     if (!itemInfo.isExpanded)
         return;
 
+    // Don't spam notifications.
+    _coalesceSelectionNotificationState = CPOutlineViewCoalesceSelectionNotificationStateOn;
+
     [self _noteItemWillCollapse:anItem];
     // Update selections:
     // * Deselect items inside the collapsed item.
@@ -392,39 +423,38 @@ CPOutlineViewDropOnItemIndex = -1;
         collapseEndIndex++;
 
     var collapseRange = CPMakeRange(collapseTopIndex + 1, collapseEndIndex - collapseTopIndex);
+
     if (collapseRange.length)
     {
-        var selection = [self selectedRowIndexes],
-            didChange = NO;
+        var selection = [self selectedRowIndexes];
 
         if ([selection intersectsIndexesInRange:collapseRange])
         {
-            [selection removeIndexesInRange:collapseRange];
             [self _noteSelectionIsChanging];
-            didChange = YES;
-            // Will call _noteSelectionDidChange
-            [self _setSelectedRowIndexes:selection];
+            [selection removeIndexesInRange:collapseRange];
+            [self _setSelectedRowIndexes:selection]; // _noteSelectionDidChange will be suppressed.
         }
 
         // Shift any selected rows below upwards.
         if ([selection intersectsIndexesInRange:CPMakeRange(collapseEndIndex + 1, _itemsForRows.length)])
         {
-            // Notify if that wasn't already done above.
-            if (!didChange)
-                [self _noteSelectionIsChanging];
-            didChange = YES;
-
+            [self _noteSelectionIsChanging];
             [selection shiftIndexesStartingAtIndex:collapseEndIndex + 1 by:-collapseRange.length];
+            [self _setSelectedRowIndexes:selection]; // _noteSelectionDidChange will be suppressed.
         }
-
-        if (didChange)
-            [self _setSelectedRowIndexes:selection];
     }
     itemInfo.isExpanded = NO;
 
+    // XXX Shouldn't the items reload before the notification is sent?
     [self _noteItemDidCollapse:anItem];
-
     [self reloadItem:anItem reloadChildren:YES];
+
+    // Send selection notifications only after the items have loaded so that
+    // the new selection is consistent with the actual rows for any observers.
+    var r = _coalesceSelectionNotificationState;
+    _coalesceSelectionNotificationState = CPOutlineViewCoalesceSelectionNotificationStateOff;
+    if (r === CPOutlineViewCoalesceSelectionNotificationStateDid)
+        [self _noteSelectionDidChange];
 }
 
 /*!
@@ -667,6 +697,7 @@ CPOutlineViewDropOnItemIndex = -1;
 }
 
 /*!
+<pre>
     Sets the delegate for the outlineview.
 
     The following methods can be implemented:
@@ -727,6 +758,7 @@ CPOutlineViewDropOnItemIndex = -1;
         Return YES if the item is a group item, otherwise NO.
 
     @param aDelegate - the delegate object you wish to set for the reciever.
+<pre>
 */
 - (void)setDelegate:(id)aDelegate
 {
@@ -1277,10 +1309,16 @@ CPOutlineViewDropOnItemIndex = -1;
 */
 - (void)_noteSelectionIsChanging
 {
-    [[CPNotificationCenter defaultCenter]
-        postNotificationName:CPOutlineViewSelectionIsChangingNotification
-                      object:self
-                    userInfo:nil];
+    if (!_coalesceSelectionNotificationState || _coalesceSelectionNotificationState === CPOutlineViewCoalesceSelectionNotificationStateOn)
+    {
+        [[CPNotificationCenter defaultCenter]
+            postNotificationName:CPOutlineViewSelectionIsChangingNotification
+                          object:self
+                        userInfo:nil];
+    }
+
+    if (_coalesceSelectionNotificationState === CPOutlineViewCoalesceSelectionNotificationStateOn)
+        _coalesceSelectionNotificationState = CPOutlineViewCoalesceSelectionNotificationStateDid;
 }
 
 /*!
@@ -1288,10 +1326,16 @@ CPOutlineViewDropOnItemIndex = -1;
 */
 - (void)_noteSelectionDidChange
 {
-    [[CPNotificationCenter defaultCenter]
-        postNotificationName:CPOutlineViewSelectionDidChangeNotification
-                      object:self
-                    userInfo:nil];
+    if (!_coalesceSelectionNotificationState)
+    {
+        [[CPNotificationCenter defaultCenter]
+            postNotificationName:CPOutlineViewSelectionDidChangeNotification
+                          object:self
+                        userInfo:nil];
+    }
+
+    if (_coalesceSelectionNotificationState === CPOutlineViewCoalesceSelectionNotificationStateOn)
+        _coalesceSelectionNotificationState = CPOutlineViewCoalesceSelectionNotificationStateDid;
 }
 
 /*!
@@ -1787,7 +1831,14 @@ var CPOutlineViewIndentationPerLevelKey = @"CPOutlineViewIndentationPerLevelKey"
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
+    // Make sure we don't encode our internal delegate and data source.
+    var internalDelegate = _delegate,
+        internalDataSource = _dataSource;
+    _delegate = nil;
+    _dataSource = nil;
     [super encodeWithCoder:aCoder];
+    _delegate = internalDelegate;
+    _dataSource = internalDataSource;
 
     [aCoder encodeObject:_outlineTableColumn forKey:CPOutlineViewOutlineTableColumnKey];
     [aCoder encodeFloat:_indentationPerLevel forKey:CPOutlineViewIndentationPerLevelKey];

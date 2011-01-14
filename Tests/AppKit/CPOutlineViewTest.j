@@ -93,13 +93,19 @@
 
     [outlineView selectRowIndexes:preSelection byExtendingSelection:NO];
 
+    // Test that by the time the selection notification is sent out, rows have
+    // updated so that the selection matches the right items in the outline view.
+    var delegate = [TestNotificationsDelegate new];
+    [delegate setTester:self];
+    [delegate setExpectedSelectedItems:[".3", ]];
+    [outlineView setDelegate:delegate];
+
     [outlineView collapseItem:".1"];
 
     afterSelection = [outlineView selectedRowIndexes];
-
     [self assert:1 equals:[afterSelection count] message:"1 selection should disappear"];
-
     [self assert:".3" equals:[outlineView itemAtRow:[afterSelection firstIndex]] message:".3 selection should remain"];
+    [self assert:1 equals:[delegate selectionChangeCount] message:"selection notifications during collapseItem"];
 }
 
 /*!
@@ -112,17 +118,57 @@
 
     var preSelection = [CPIndexSet indexSet];
     [preSelection addIndex:[outlineView rowForItem:".1.1"]];
-    [preSelection addIndex:[outlineView rowForItem:".2"]];
+    [preSelection addIndex:[outlineView rowForItem:".3.1"]];
 
     [outlineView selectRowIndexes:preSelection byExtendingSelection:NO];
 
-    [outlineView expandItem:".1.2"];
-    afterSelection = [outlineView selectedRowIndexes];
+    // Test that by the time the selection notification is sent out, rows have
+    // been expanded. E.g. the outline view is made consistent before notifying.
+    var delegate = [TestNotificationsDelegate new];
+    [delegate setTester:self];
+    [outlineView setDelegate:delegate];
 
+    [outlineView expandItem:".1.2"];
+
+    afterSelection = [outlineView selectedRowIndexes];
     [self assert:2 equals:[afterSelection count] message:"selections should remain"];
 
     [self assert:".1.1" equals:[outlineView itemAtRow:[afterSelection firstIndex]] message:".1.1 selection should remain"];
-    [self assert:".2" equals:[outlineView itemAtRow:[afterSelection lastIndex]] message:".2 selection should remain"];
+    [self assert:".3.1" equals:[outlineView itemAtRow:[afterSelection lastIndex]] message:".3.1 selection should remain"];
+    [self assert:1 equals:[delegate selectionChangeCount] message:"selection notifications during expandItem"];
+}
+
+/*!
+    Test selection updates when an expanded node has pre-expanded children.
+*/
+- (void)testExpandWithSelectionBelowAndExpandedChildren
+{
+    // [".1", ".1.1", ".1.2", ".1.2.1", ".1.2.2", ".2", ".3", ".3.1"]
+    [outlineView collapseItem:".1"];
+
+    var preSelection = [CPIndexSet indexSet];
+    [preSelection addIndex:[outlineView rowForItem:".2"]];
+    [preSelection addIndex:[outlineView rowForItem:".3.1"]];
+
+    [outlineView selectRowIndexes:preSelection byExtendingSelection:NO];
+    var delegate = [TestNotificationsDelegate new];
+    [delegate setTester:self];
+    [delegate setExpectedSelectedItems:[".2", ".3.1"]];
+    [outlineView setDelegate:delegate];
+
+    [outlineView expandItem:".1"];
+    // The delegate will check the selection update but not the count.
+    [self assert:2 equals:[[outlineView selectedRowIndexes] count] message:"selections should remain"];
+}
+
+/*!
+    Test that the outline view is properly careful about not encoding its
+    non-encodable delegate and data source.
+*/
+- (void)testCoding
+{
+    // This should simply not crash.
+    var decoded = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:outlineView]];
 }
 
 @end
@@ -164,6 +210,59 @@
 - (id)outlineView:(CPOutlineView)anOutlineView objectValueForTableColumn:(CPTableColumn)theColumn byItem:(id)theItem
 {
     return theItem;
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+
+    if (self)
+    {
+        entries = [aCoder decodeObjectForKey:"entries"];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:entries forKey:"entries"];
+}
+
+@end
+
+@implementation TestNotificationsDelegate : CPObject
+{
+    id      tester @accessors;
+    CPArray expectedSelectedItems @accessors;
+    int     selectionChangeCount @accessors;
+}
+
+- (id)init
+{
+    if (self = [super init])
+        selectionChangeCount = 0;
+    return self;
+}
+
+- (void)outlineViewSelectionDidChange:(CPNotification)aNotification
+{
+    selectionChangeCount++;
+
+    // Verify that the state is consistent - every selected row has been loaded.
+    var anOutlineView = [aNotification object],
+        selection = [anOutlineView selectedRowIndexes],
+        rows = [];
+
+    [selection getIndexes:rows maxCount:-1 inIndexRange:nil];
+
+    for (var i = 0, count = [rows count]; i < count; i++)
+    {
+        var item = [anOutlineView itemAtRow:rows[i]];
+        [tester assertTrue: item !== nil message:"selected row #" + i + " should exist"];
+        if (expectedSelectedItems)
+            [tester assert:expectedSelectedItems[i] equals:item message:"in notification selected row #" + i];
+    }
 }
 
 @end
