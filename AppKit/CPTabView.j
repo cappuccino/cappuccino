@@ -85,7 +85,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 
     [self _updateItems];
     [self _repositionTabs];
-    
+
     [aTabViewItem _setTabView:self];
 
     if (_delegateSelectors & CPTabViewDidChangeNumberOfTabViewItemsSelector)
@@ -110,7 +110,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 
     [self _updateItems];
     [self _repositionTabs];
-    
+
     [aTabViewItem _setTabView:nil];
 
     if (_delegateSelectors & CPTabViewDidChangeNumberOfTabViewItemsSelector)
