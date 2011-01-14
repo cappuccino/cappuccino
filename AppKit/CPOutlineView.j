@@ -1829,7 +1829,14 @@ var CPOutlineViewIndentationPerLevelKey = @"CPOutlineViewIndentationPerLevelKey"
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
+    // Make sure we don't encode our internal delegate and data source.
+    var internalDelegate = _delegate,
+        internalDataSource = _dataSource;
+    _delegate = nil;
+    _dataSource = nil;
     [super encodeWithCoder:aCoder];
+    _delegate = internalDelegate;
+    _dataSource = internalDataSource;
 
     [aCoder encodeObject:_outlineTableColumn forKey:CPOutlineViewOutlineTableColumnKey];
     [aCoder encodeFloat:_indentationPerLevel forKey:CPOutlineViewIndentationPerLevelKey];

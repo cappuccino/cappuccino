@@ -138,6 +138,16 @@
     [self assert:1 equals:[delegate selectionChangeCount] message:"selection notifications during expandItem"];
 }
 
+/*!
+    Test that the outline view is properly careful about not encoding its
+    non-encodable delegate and data source.
+*/
+- (void)testCoding
+{
+    // This should simply not crash.
+    var decoded = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:outlineView]];
+}
+
 @end
 
 @implementation TestDataSource : CPObject
@@ -177,6 +187,23 @@
 - (id)outlineView:(CPOutlineView)anOutlineView objectValueForTableColumn:(CPTableColumn)theColumn byItem:(id)theItem
 {
     return theItem;
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+
+    if (self)
+    {
+        entries = [aCoder decodeObjectForKey:"entries"];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:entries forKey:"entries"];
 }
 
 @end
