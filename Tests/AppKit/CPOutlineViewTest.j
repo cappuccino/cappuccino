@@ -139,6 +139,29 @@
 }
 
 /*!
+    Test selection updates when an expanded node has pre-expanded children.
+*/
+- (void)testExpandWithSelectionBelowAndExpandedChildren
+{
+    // [".1", ".1.1", ".1.2", ".1.2.1", ".1.2.2", ".2", ".3", ".3.1"]
+    [outlineView collapseItem:".1"];
+
+    var preSelection = [CPIndexSet indexSet];
+    [preSelection addIndex:[outlineView rowForItem:".2"]];
+    [preSelection addIndex:[outlineView rowForItem:".3.1"]];
+
+    [outlineView selectRowIndexes:preSelection byExtendingSelection:NO];
+    var delegate = [TestNotificationsDelegate new];
+    [delegate setTester:self];
+    [delegate setExpectedSelectedItems:[".2", ".3.1"]];
+    [outlineView setDelegate:delegate];
+
+    [outlineView expandItem:".1"];
+    // The delegate will check the selection update but not the count.
+    [self assert:2 equals:[[outlineView selectedRowIndexes] count] message:"selections should remain"];
+}
+
+/*!
     Test that the outline view is properly careful about not encoding its
     non-encodable delegate and data source.
 */

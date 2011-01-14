@@ -349,9 +349,16 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     {
         [self _noteItemWillExpand:anItem];
 
+        var previousRowCount = [self numberOfRows];
+
+        itemInfo.isExpanded = YES;
+        // XXX Shouldn't the items reload before the notification is sent?
+        [self _noteItemDidExpand:anItem];
+        [self reloadItem:anItem reloadChildren:YES];
+
         // Shift selection indexes below so that the same items remain selected.
-        var newRowCount = [_outlineViewDataSource outlineView:self numberOfChildrenOfItem:anItem];
-        if (newRowCount)
+        var rowCountDelta = [self numberOfRows] - previousRowCount;
+        if (rowCountDelta)
         {
             var selection = [self selectedRowIndexes],
                 expandIndex = [self rowForItem:anItem] + 1;
@@ -359,15 +366,10 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
             if ([selection intersectsIndexesInRange:CPMakeRange(expandIndex, _itemsForRows.length)])
             {
                 [self _noteSelectionIsChanging];
-                [selection shiftIndexesStartingAtIndex:expandIndex by:newRowCount];
+                [selection shiftIndexesStartingAtIndex:expandIndex by:rowCountDelta];
                 [self _setSelectedRowIndexes:selection]; // _noteSelectionDidChange will be suppressed.
             }
         }
-
-        itemInfo.isExpanded = YES;
-        // XXX Shouldn't the items reload before the notification is sent?
-        [self _noteItemDidExpand:anItem];
-        [self reloadItem:anItem reloadChildren:YES];
     }
 
     if (shouldExpandChildren)
