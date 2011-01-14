@@ -673,6 +673,8 @@
         _imageWidth = [aCoder decodeFloatForKey:@"CPBrowserImageWidthKey"];
         _minColumnWidth = [aCoder decodeFloatForKey:@"CPBrowserMinColumnWidthKey"];
         _columnWidths = [aCoder decodeObjectForKey:@"CPBrowserColumnWidthsKey"];
+
+        [self setDelegate:[aCoder decodeObjectForKey:@"CPBrowserDelegateKey"]];
     }
 
     return self;
@@ -689,6 +691,7 @@
     [aCoder encodeBool:[self autohidesScroller] forKey:@"CPBrowserAutohidesScrollerKey"];
     [aCoder encodeBool:_allowsEmptySelection forKey:@"CPBrowserAllowsEmptySelectionKey"];
     [aCoder encodeBool:_allowsMultipleSelection forKey:@"CPBrowserAllowsMultipleSelectionKey"];
+    [aCoder encodeObject:_delegate forKey:@"CPBrowserDelegateKey"];
     [aCoder encodeObject:_prototypeView forKey:@"CPBrowserPrototypeViewKey"];
     [aCoder encodeFloat:_rowHeight forKey:@"CPBrowserRowHeightKey"];
     [aCoder encodeFloat:_imageWidth forKey:@"CPBrowserImageWidthKey"];

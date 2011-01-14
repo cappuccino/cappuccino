@@ -37,6 +37,10 @@
 {
     // This should preferably not crash.
     var decoded = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:browser]];
+
+    // This basic test will serve to verify that the decoded object is not broken.
+    browser = decoded;
+    [self testRows];
 }
 
 @end
