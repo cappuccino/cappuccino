@@ -956,6 +956,17 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 /*!
     @ignore
+    If the outlineTableColumn doesn't exist yet, we set it to the first column added.
+*/
+- (void)addTableColumn:(CPTableColumn)aTableColumn
+{
+    if (_outlineTableColumn === nil)
+        _outlineTableColumn = aTableColumn;
+
+    [super addTableColumn:aTableColumn];
+}
+/*!
+    @ignore
     We overide this because we need a special behaviour for the outline column
 */
 - (CGRect)frameOfDataViewAtColumn:(CPInteger)aColumn row:(CPInteger)aRow
