@@ -162,13 +162,17 @@
 }
 
 /*!
-    Test that the outline view is properly careful about not encoding its
-    non-encodable delegate and data source.
+    Test that the outline view archives properly.
 */
 - (void)testCoding
 {
-    // This should simply not crash.
     var decoded = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:outlineView]];
+
+    outlineView = decoded;
+    // Expansion state does not archive.
+    [outlineView expandItem:nil expandChildren:YES];
+    // While not exhaustive, if this test works nothing is majorly broken with the unarchived outline view.
+    [self testCollapse];
 }
 
 @end
