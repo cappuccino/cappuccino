@@ -33,6 +33,12 @@
     [self assert:".1.2" equals:[browser itemAtRow:1 inColumn:1]];
 }
 
+- (void)testCoding
+{
+    // This should preferably not crash.
+    var decoded = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:browser]];
+}
+
 @end
 
 @implementation CPBrowserDelegate : CPObject
