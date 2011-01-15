@@ -249,18 +249,62 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
     @ingroup foundation
     @brief Decimal floating point number
 
-    This class represents a decimal floating point number and the relavent mathematical operations to go with it.
-    The default number handler can be accessed at [CPDecimalNumberHandler +defaultDecimalNumberHandler]
-    This class is mutable.
+    This class represents a decimal floating point number and the relavent
+    mathematical operations to go with it. It guarantees accuracy up to 38
+    digits in the mantissa/coefficient and can handle numbers in the range:
+        +/- 99999999999999999999999999999999999999 x 10^(127/-128)
+    Methods are available for: Addition, Subtraction, Multiplication, Division,
+    Powers and Rounding.
+    Exceptions can be thrown on: Overflow, Underflow, Loss of Precision
+    (rounding) and Divide by zero, the behaviour of which is controlled via the
+    CPDecimalNumberHandler class.
+
+    Note: The aim here is to try to produce the exact same output as Cocoa.
+    However, this is effectively not possible but to get as close as possible
+    we must perform our calculations in a way such that we even get the same
+    rounding errors building up, say when computing large powers which require
+    many multiplications. The code here almost matches the results of Cocoa but
+    there are some small differences as outlined below:
+
+    An example where a small rounding error difference creeps in:
+    For the calculation (0.875 ^ 101) the result becomes:
+        In Cocoa:  0.00000(13893554059925661274821814636807535200)1
+                the 38 digits are bracketed, the extra 39th digit in Cocoa
+                is explained below.
+        In Cappuccino: 0.00000(13893554059925661274821814636807535204)
+        Difference: 4e-41
+
+    Since, in Cocoa, NSDecimalNumber uses a binary internal format for
+    the mantissa (coefficient) the maximum it can store before truly
+    losing precision is actually 2^128, which is a 39 digit number. After this
+    rounding and exponent changes occur. In our implementation each digit is
+    stored separately hence the mantissa maximum value is the maximum possible
+    38 digit number. Obviously Apple can only say precision is guaranteed to
+    38 digits cause at some point in the 39 digits numbers rounding starts.
+    Hence there will be inherent differences between Cocoa and Cappuccino
+    answers if rounding occurs (see above example). They both still provide
+    the same 38 digit guarantee however.
+
+    So the actual range of NSDecimal is
+    +/- 340282366920938463463374607431768211455 x 10^(127/-128)
+    (Notice this is 39 digits)
+    Compared to in Cappuccino:
+    +/- 99999999999999999999999999999999999999 x 10^(127/-128)
 */
 @implementation CPDecimalNumber : CPNumber
 {
     CPDecimal _data;
 }
 
-// overriding alloc means CPDecimalNumbers are not toll free bridged
+/*!
+    Create a new CPDecimalNumber object uninitialised.
+    Note: eventhough CPDecimalNumber inherits from CPNumber it is not toll free
+    bridged to a JS type as CPNumber is.
+    @return a new CPDecimalNumber instance
+*/
 + (id)alloc
 {
+    // overriding alloc means CPDecimalNumbers are not toll free bridged
     return class_createInstance(self);
 }
 
@@ -355,7 +399,7 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
 }
 
 /*!
-    Create a new CPDecimalNumber object with the given mantissa and exponent.
+    Creates a new CPDecimalNumber object with the given mantissa and exponent.
     See \c -initWithMantissa:exponent:isNegative: for some extra notes.
     @param mantissa the mantissa of the decimal number
     @param exponent the exponent of the number
@@ -368,7 +412,7 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
 }
 
 /*!
-    Create a new CPDecimalNumber with a string. If the string is badly formed
+    Creates a new CPDecimalNumber with a string. If the string is badly formed
     or outside of the acceptable range of a CPDecimal then the number is
     initialised to NaN.
     @param numberValue the string to parse.
@@ -380,7 +424,7 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
 }
 
 /*!
-    Create a new CPDecimalNumber with a string using the given locale. If the
+    Creates a new CPDecimalNumber with a string using the given locale. If the
     string is badly formed or outside of the acceptable range of a CPDecimal
     then the number is initialised to NaN. NOTE: Locales are currently
     not supported.
@@ -395,21 +439,28 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
 
 /*!
     Return the default \c CPDecimalNumberHandler object.
-    @return the new default CPDecimalNumberHandler object
+    @return the default CPDecimalNumberHandler object
 */
 + (id)defaultBehavior
 {
     return [CPDecimalNumberHandler defaultDecimalNumberHandler];
 }
 
+/*!
+    Set the default \c CPDecimalNumberHandler object. This is a framework wide
+    setting. All subsequent decimal number operations will use this behaviour.
+    @param behavior the new default CPDecimalNumberHandler object
+*/
 + (void)setDefaultBehavior:(id <CPDecimalNumberBehaviors>)behavior
 {
     CPDefaultDcmHandler = behavior;
 }
 
 /*!
-    340282366920938463463374607431768211455e127
-    99999999999999999999999999999999999999e127
+    Returns a new CPDecimalNumer with the maximum permissable decimal number
+    value. Note: this is different to the number Cocoa returns. See
+    CPDecimalNumber class description for details.
+    @return a new CPDecimalNumber object
 */
 + (CPDecimalNumber)maximumDecimalNumber
 {
@@ -417,57 +468,100 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
 }
 
 /*!
-    -340282366920938463463374607431768211455e127
-    -99999999999999999999999999999999999999e127
+    Returns a new CPDecimalNumer with the minimum permissable decimal number
+    value. Note: this is different to the number Cocoa returns. See
+    CPDecimalNumber class description for details.
+    @return a new CPDecimalNumber object
 */
 + (CPDecimalNumber)minimumDecimalNumber
 {
     return [[self alloc] initWithDecimal:_CPDecimalMakeMinimum()];
 }
 
+/*!
+    Returns a new CPDecimalNumer initialised to \e NaN.
+    @return a new CPDecimalNumber object
+*/
 + (CPDecimalNumber)notANumber
 {
     return [[self alloc] initWithDecimal:CPDecimalMakeNaN()];
 }
 
+/*!
+    Returns a new CPDecimalNumer initialised to zero (0.0).
+    @return a new CPDecimalNumber object
+*/
 + (CPDecimalNumber)zero
 {
     return [[self alloc] initWithDecimal:CPDecimalMakeZero()];
 }
 
+/*!
+    Returns a new CPDecimalNumer initialised to one (1.0).
+    @return a new CPDecimalNumber object
+*/
 + (CPDecimalNumber)one
 {
     return [[self alloc] initWithDecimal:CPDecimalMakeOne()];
 }
 
 // instance methods
+/*!
+    Returns a new CPDecimalNumber object with the result of the summation of
+    the receiver object and \c decimalNumber. If overflow occurs then the
+    consequence depends on the current default CPDecimalNumberHandler.
+    @param decimalNumber the decimal number to add to the receiver
+    @return a new CPDecimalNumber object
+*/
 - (CPDecimalNumber)decimalNumberByAdding:(CPDecimalNumber)decimalNumber
 {
     return [self decimalNumberByAdding:decimalNumber withBehavior:[CPDecimalNumber defaultBehavior]];
 }
 
+/*!
+    Returns a new CPDecimalNumber object with the result of the summation of
+    the receiver object and \c decimalNumber. If overflow occurs then the
+    consequence depends on the CPDecimalNumberHandler object \e behavior.
+    @param decimalNumber the decimal number to add to the receiver
+    @param behavior a CPDecimalNumberHandler object
+    @return a new CPDecimalNumber object
+*/
 - (CPDecimalNumber)decimalNumberByAdding:(CPDecimalNumber)decimalNumber withBehavior:(id <CPDecimalNumberBehaviors>)behavior
 {
-    // FIXME: Surely this can take CPNumber (any JS number) as an argument as CPNumber is CPDecimalNumbers super normally (not here tho)
     var result = CPDecimalMakeZero(),
-        res = 0,
         error = CPDecimalAdd(result, [self decimalValue], [decimalNumber decimalValue], [behavior roundingMode]);
 
     if (error > CPCalculationNoError)
     {
-        res = [behavior exceptionDuringOperation:_cmd error:error leftOperand:self rightOperand:decimalNumber];
-        // Gnustep does this, not sure if it is correct behavior
+        var res = [behavior exceptionDuringOperation:_cmd error:error leftOperand:self rightOperand:decimalNumber];
         if (res != nil)
-            return res; // say on overflow and no exception handling, returns max decimal val
+            return res;
     }
     return [CPDecimalNumber decimalNumberWithDecimal:result];
 }
 
+/*!
+    Returns a new CPDecimalNumber object with the result of the subtraction of
+    \c decimalNumber from the receiver object. If underflow or loss of precision
+    occurs then the consequence depends on the current default
+    CPDecimalNumberHandler.
+    @param decimalNumber the decimal number to subtract from the receiver
+    @return a new CPDecimalNumber object
+*/
 - (CPDecimalNumber)decimalNumberBySubtracting:(CPDecimalNumber)decimalNumber
 {
     return [self decimalNumberBySubtracting:decimalNumber withBehavior:[CPDecimalNumber defaultBehavior]];
 }
 
+/*!
+    Returns a new CPDecimalNumber object with the result of the subtraction of
+    \c decimalNumber from the receiver object. If underflow or loss of
+    precision occurs then the consequence depends on the CPDecimalNumberHandler
+    object \e behavior.
+    @param decimalNumber the decimal number to subtract from the receiver
+    @param behavior a CPDecimalNumberHandler object
+    @return a new CPDecimalNumber object
+*/
 - (CPDecimalNumber)decimalNumberBySubtracting:(CPDecimalNumber)decimalNumber withBehavior:(id <CPDecimalNumberBehaviors>)behavior
 {
     var result = CPDecimalMakeZero(),
@@ -476,18 +570,34 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
     if (error > CPCalculationNoError)
     {
         var res = [behavior exceptionDuringOperation:_cmd error:error leftOperand:self rightOperand:decimalNumber];
-        // Gnustep does this, not sure if it is correct behavior
         if (res != nil)
-            return res; // say on overflow and no exception handling, returns max decimal val
+            return res;
     }
     return [CPDecimalNumber decimalNumberWithDecimal:result];
 }
 
+/*!
+    Returns a new CPDecimalNumber object with the result of dividing the
+    receiver object by \c decimalNumber. If underflow, divide by zero or loss
+    of precision occurs then the consequence depends on the current default
+    CPDecimalNumberHandler object.
+    @param decimalNumber the decimal number to divide the the receiver by
+    @return a new CPDecimalNumber object
+*/
 - (CPDecimalNumber)decimalNumberByDividingBy:(CPDecimalNumber)decimalNumber
 {
     return [self decimalNumberByDividingBy:decimalNumber withBehavior:[CPDecimalNumber defaultBehavior]];
 }
 
+/*!
+    Returns a new CPDecimalNumber object with the result of dividing the
+    receiver object by \c decimalNumber. If underflow, divide by zero or loss
+    of precision occurs then the consequence depends on the
+    CPDecimalNumberHandler object \e behavior.
+    @param decimalNumber the decimal number to divide the the receiver by
+    @param behavior a CPDecimalNumberHandler object
+    @return a new CPDecimalNumber object
+*/
 - (CPDecimalNumber)decimalNumberByDividingBy:(CPDecimalNumber)decimalNumber withBehavior:(id <CPDecimalNumberBehaviors>)behavior
 {
     var result = CPDecimalMakeZero(),
@@ -496,18 +606,34 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
     if (error > CPCalculationNoError)
     {
         var res = [behavior exceptionDuringOperation:_cmd error:error leftOperand:self rightOperand:decimalNumber];
-        // Gnustep does this, not sure if it is correct behavior
         if (res != nil)
-            return res; // say on overflow and no exception handling, returns max decimal val
+            return res;
     }
     return [CPDecimalNumber decimalNumberWithDecimal:result];
 }
 
+/*!
+    Returns a new CPDecimalNumber object with the result of multiplying the
+    receiver object by \c decimalNumber. If overflow or loss of precision
+    occurs then the consequence depends on the current default
+    CPDecimalNumberHandler object.
+    @param decimalNumber the decimal number to multiply the the receiver by
+    @return a new CPDecimalNumber object
+*/
 - (CPDecimalNumber)decimalNumberByMultiplyingBy:(CPDecimalNumber)decimalNumber
 {
     return [self decimalNumberByMultiplyingBy:decimalNumber withBehavior:[CPDecimalNumber defaultBehavior]];
 }
 
+/*!
+    Returns a new CPDecimalNumber object with the result of multiplying the
+    receiver object by \c decimalNumber. If overflow or loss of precision
+    occurs then the consequence depends on the CPDecimalNumberHandler object
+    \e behavior.
+    @param decimalNumber the decimal number to multiply the the receiver by
+    @param behavior a CPDecimalNumberHandler object
+    @return a new CPDecimalNumber object
+*/
 - (CPDecimalNumber)decimalNumberByMultiplyingBy:(CPDecimalNumber)decimalNumber withBehavior:(id <CPDecimalNumberBehaviors>)behavior
 {
     var result = CPDecimalMakeZero(),
@@ -516,18 +642,34 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
     if (error > CPCalculationNoError)
     {
         var res = [behavior exceptionDuringOperation:_cmd error:error leftOperand:self rightOperand:decimalNumber];
-        // Gnustep does this, not sure if it is correct behavior
         if (res != nil)
-            return res; // say on overflow and no exception handling, returns max decimal val
+            return res;
     }
     return [CPDecimalNumber decimalNumberWithDecimal:result];
 }
 
+/*!
+    Returns a new CPDecimalNumber object with the result of multiplying the
+    receiver object by (10 ^ \c power). If overflow, underflow or loss of
+    precision occurs then the consequence depends on the current default
+    CPDecimalNumberHandler object.
+    @param power the power of 10 to multiply the receiver by
+    @return a new CPDecimalNumber object
+*/
 - (CPDecimalNumber)decimalNumberByMultiplyingByPowerOf10:(short)power
 {
     return [self decimalNumberByMultiplyingByPowerOf10:power withBehavior:[CPDecimalNumber defaultBehavior]];
 }
 
+/*!
+    Returns a new CPDecimalNumber object with the result of multiplying the
+    receiver object by (10 ^ \c power). If overflow, underflowor loss of
+    precision occurs then the consequence depends on the CPDecimalNumberHandler
+    object \e behavior.
+    @param power the power of 10 to multiply the receiver by
+    @param behavior a CPDecimalNumberHandler object
+    @return a new CPDecimalNumber object
+*/
 - (CPDecimalNumber)decimalNumberByMultiplyingByPowerOf10:(short)power withBehavior:(id <CPDecimalNumberBehaviors>)behavior
 {
     var result = CPDecimalMakeZero(),
@@ -536,18 +678,34 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
     if (error > CPCalculationNoError)
     {
         var res = [behavior exceptionDuringOperation:_cmd error:error leftOperand:self rightOperand:[CPDecimalNumber decimalNumberWithString:power.toString()]];
-        // Gnustep does this, not sure if it is correct behavior
         if (res != nil)
-            return res; // say on overflow and no exception handling, returns max decimal val
+            return res;
     }
     return [CPDecimalNumber decimalNumberWithDecimal:result];
 }
 
+/*!
+    Returns a new CPDecimalNumber object with the result of raising the
+    receiver object to the power \c power. If overflow, underflow or loss of
+    precision occurs then the consequence depends on the current default
+    CPDecimalNumberHandler object.
+    @param power the power to raise the receiver by
+    @return a new CPDecimalNumber object
+*/
 - (CPDecimalNumber)decimalNumberByRaisingToPower:(unsigned)power
 {
     return [self decimalNumberByRaisingToPower:power withBehavior:[CPDecimalNumber defaultBehavior]];
 }
 
+/*!
+    Returns a new CPDecimalNumber object with the result of raising the
+    receiver object to the power \c power. If overflow, underflow or loss of
+    precision occurs then the consequence depends on the CPDecimalNumberHandler
+    object \e behavior.
+    @param power the power to raise the receiver by
+    @param behavior a CPDecimalNumberHandler object
+    @return a new CPDecimalNumber object
+*/
 - (CPDecimalNumber)decimalNumberByRaisingToPower:(unsigned)power withBehavior:(id <CPDecimalNumberBehaviors>)behavior
 {
     if (power < 0)
@@ -559,13 +717,19 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
     if (error > CPCalculationNoError)
     {
         var res = [behavior exceptionDuringOperation:_cmd error:error leftOperand:self rightOperand:[CPDecimalNumber decimalNumberWithString:power.toString()]];
-        // Gnustep does this, not sure if it is correct behavior
         if (res != nil)
-            return res; // say on overflow and no exception handling, returns max decimal val
+            return res;
     }
     return [CPDecimalNumber decimalNumberWithDecimal:result];
 }
 
+/*!
+    Returns a new CPDecimalNumber object with the result of rounding the number
+    according to the rounding behavior specified by the CPDecimalNumberHandler
+    object \e behavior.
+    @param behavior a CPDecimalNumberHandler object
+    @return a new rounded CPDecimalNumber object
+*/
 - (CPDecimalNumber)decimalNumberByRoundingAccordingToBehavior:(id <CPDecimalNumberBehaviors>)behavior
 {
     var result = CPDecimalMakeZero();
@@ -575,21 +739,19 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
     return [CPDecimalNumber decimalNumberWithDecimal:result];
 }
 
-// This method takes a CPNumber. Thus the parameter may be a CPDecimalNumber or a CPNumber class.
-// Thus the type is checked to send the operand to the correct compare function.
-- (CPComparisonResult)compare:(CPNumber)decimalNumber
-{
-    if (![decimalNumber isKindOfClass:[CPDecimalNumber class]])
-        decimalNumber = [CPDecimalNumber decimalNumberWithString:decimalNumber.toString()];
-    return CPDecimalCompare([self decimalValue], [decimalNumber decimalValue]);
-}
-
 /*!
-    Unimplemented
+    Compare the reciever CPDecimalNumber to \c aNumber. This is a CPNumber or
+    subclass. Returns \e CPOrderedDescending, \e CPOrderedAscending or
+    \e CPOrderedSame.
+    @param aNumber an object of kind CPNumber to compare against.
+    @return result from \e CPComparisonResult enum.
 */
-- (CPString)hash
+- (CPComparisonResult)compare:(CPNumber)aNumber
 {
-    [CPException raise:CPUnsupportedMethodException reason:"hash: NOT YET IMPLEMENTED"];
+    // aNumber type is checked to convert if appropriate
+    if (![aNumber isKindOfClass:[CPDecimalNumber class]])
+        aNumber = [CPDecimalNumber decimalNumberWithString:aNumber.toString()];
+    return CPDecimalCompare([self decimalValue], [aNumber decimalValue]);
 }
 
 /*!
@@ -601,17 +763,30 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
     return @"d";
 }
 
+/*!
+    Returns a string representation of the decimal number.
+    @return a CPString
+*/
 - (CPString)description
 {
-    // FIXME:  I expect here locale should be some default locale
     return [self descriptionWithLocale:nil]
 }
 
+/*!
+    Returns a string representation of the decimal number given the specified
+    locale. Note: locales are currently unsupported
+    @param locale the locale
+    @return a CPString
+*/
 - (CPString)descriptionWithLocale:(CPDictionary)locale
 {
     return CPDecimalString(_data, locale);
 }
 
+/*!
+    Returns a string representation of the decimal number.
+    @return a CPString
+*/
 - (CPString)stringValue
 {
     return [self description];
@@ -628,148 +803,272 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
 }
 
 // Type Conversion Methods
+/*!
+    Returns a JS float representation. Truncation may occur.
+    @return a JS float
+*/
 - (double)doubleValue
 {
     // FIXME: locale support / bounds check?
     return parseFloat([self stringValue]);
 }
 
+/*!
+    Returns a JS bool representation.
+    @return a JS bool
+*/
 - (BOOL)boolValue
 {
     return (CPDecimalIsZero(_data))?NO:YES;
 }
 
+/*!
+    Returns a JS int representation. Truncation may occur.
+    @return a JS int
+*/
 - (char)charValue
 {
     // FIXME: locale support / bounds check?
     return parseInt([self stringValue]);
 }
 
+/*!
+    Returns a JS float representation. Truncation may occur.
+    @return a JS float
+*/
 - (float)floatValue
 {
     // FIXME: locale support / bounds check?
     return parseFloat([self stringValue]);
 }
 
+/*!
+    Returns a JS int representation. Truncation may occur.
+    @return a JS int
+*/
 - (int)intValue
 {
     // FIXME: locale support / bounds check?
     return parseInt([self stringValue]);
 }
 
+/*!
+    Returns a JS int representation. Truncation may occur.
+    @return a JS int
+*/
 - (long long)longLongValue
 {
     // FIXME: locale support / bounds check?
-    return parseFloat([self stringValue]);
+    return parseInt([self stringValue]);
 }
 
+/*!
+    Returns a JS int representation. Truncation may occur.
+    @return a JS int
+*/
 - (long)longValue
 {
     // FIXME: locale support / bounds check?
     return parseInt([self stringValue]);
 }
 
+/*!
+    Returns a JS int representation. Truncation may occur.
+    @return a JS int
+*/
 - (short)shortValue
 {
     // FIXME: locale support / bounds check?
     return parseInt([self stringValue]);
 }
 
+/*!
+    Returns a JS int representation. Truncation may occur.
+    @return a JS int
+*/
 - (unsigned char)unsignedCharValue
 {
     // FIXME: locale support / bounds check?
     return parseInt([self stringValue]);
 }
 
+/*!
+    Returns a JS int representation. Truncation may occur.
+    @return a JS int
+*/
 - (unsigned int)unsignedIntValue
 {
     // FIXME: locale support / bounds check?
     return parseInt([self stringValue]);
 }
 
+/*!
+    Returns a JS int representation. Truncation may occur.
+    @return a JS int
+*/
 - (unsigned long)unsignedLongValue
 {
     // FIXME: locale support / bounds check?
     return parseInt([self stringValue]);
 }
 
+/*!
+    Returns a JS int representation. Truncation may occur.
+    @return a JS int
+*/
 - (unsigned short)unsignedShortValue
 {
     // FIXME: locale support / bounds check?
     return parseInt([self stringValue]);
 }
 
+// CPNumber inherited methods
+/*!
+    Compare the reciever CPDecimalNumber to \c aNumber and return \e YES if
+    equal.
+    @param aNumber an object of kind CPNumber to compare against.
+    @return a boolean
+*/
 - (BOOL)isEqualToNumber:(CPNumber)aNumber
 {
     return (CPDecimalCompare(CPDecimalMakeWithString(aNumber.toString(),nil), _data) == CPOrderedSame)?YES:NO;
 }
 
-// CPNumber inherited methods
+/*!
+    Create a new CPDecimalNumber initialised with \e aBoolean.
+    @param aBoolean a JS boolean value
+    @return a new CPDecimalNumber object
+*/
 + (id)numberWithBool:(BOOL)aBoolean
 {
     return [[self alloc] initWithBool:aBoolean];
 }
 
+/*!
+    Create a new CPDecimalNumber initialised with \e aChar.
+    @param aChar a JS int value
+    @return a new CPDecimalNumber object
+*/
 + (id)numberWithChar:(char)aChar
 {
     return [[self alloc] initWithChar:aChar];
 }
 
+/*!
+    Create a new CPDecimalNumber initialised with \e aDouble.
+    @param aDouble a JS float value
+    @return a new CPDecimalNumber object
+*/
 + (id)numberWithDouble:(double)aDouble
 {
     return [[self alloc] initWithDouble:aDouble];
 }
 
+/*!
+    Create a new CPDecimalNumber initialised with \e aFloat.
+    @param aFloat a JS float value
+    @return a new CPDecimalNumber object
+*/
 + (id)numberWithFloat:(float)aFloat
 {
     return [[self alloc] initWithFloat:aFloat];
 }
 
+/*!
+    Create a new CPDecimalNumber initialised with \e anInt.
+    @param anInt a JS int value
+    @return a new CPDecimalNumber object
+*/
 + (id)numberWithInt:(int)anInt
 {
     return [[self alloc] initWithInt:anInt];
 }
 
+/*!
+    Create a new CPDecimalNumber initialised with \e aLong.
+    @param aLong a JS int value
+    @return a new CPDecimalNumber object
+*/
 + (id)numberWithLong:(long)aLong
 {
     return [[self alloc] initWithLong:aLong];
 }
 
+/*!
+    Create a new CPDecimalNumber initialised with \e aLongLong.
+    @param aLongLong a JS int value
+    @return a new CPDecimalNumber object
+*/
 + (id)numberWithLongLong:(long long)aLongLong
 {
     return [[self alloc] initWithLongLong:aLongLong];
 }
 
+/*!
+    Create a new CPDecimalNumber initialised with \e aShort.
+    @param aShort a JS int value
+    @return a new CPDecimalNumber object
+*/
 + (id)numberWithShort:(short)aShort
 {
     return [[self alloc] initWithShort:aShort];
 }
 
+/*!
+    Create a new CPDecimalNumber initialised with \e aChar.
+    @param aChar a JS int value
+    @return a new CPDecimalNumber object
+*/
 + (id)numberWithUnsignedChar:(unsigned char)aChar
 {
     return [[self alloc] initWithUnsignedChar:aChar];
 }
 
+/*!
+    Create a new CPDecimalNumber initialised with \e anUnsignedInt.
+    @param anUnsignedInt a JS int value
+    @return a new CPDecimalNumber object
+*/
 + (id)numberWithUnsignedInt:(unsigned)anUnsignedInt
 {
     return [[self alloc] initWithUnsignedInt:anUnsignedInt];
 }
 
+/*!
+    Create a new CPDecimalNumber initialised with \e aChar.
+    @param aChar a JS int value
+    @return a new CPDecimalNumber object
+*/
 + (id)numberWithUnsignedLong:(unsigned long)anUnsignedLong
 {
     return [[self alloc] initWithUnsignedLong:anUnsignedLong];
 }
 
+/*!
+    Create a new CPDecimalNumber initialised with \e anUnsignedLongLong.
+    @param anUnsignedLongLong a JS int value
+    @return a new CPDecimalNumber object
+*/
 + (id)numberWithUnsignedLongLong:(unsigned long)anUnsignedLongLong
 {
     return [[self alloc] initWithUnsignedLongLong:anUnsignedLongLong];
 }
 
+/*!
+    Create a new CPDecimalNumber initialised with \e anUnsignedShort.
+    @param anUnsignedShort a JS int value
+    @return a new CPDecimalNumber object
+*/
 + (id)numberWithUnsignedShort:(unsigned short)anUnsignedShort
 {
     return [[self alloc] initWithUnsignedShort:anUnsignedShort];
 }
 
+/*!
+    Initialise the receiver with a boolean \e value.
+    @param value a JS boolean value
+    @return a reference to the initialised object
+*/
 - (id)initWithBool:(BOOL)value
 {
     if (self = [self init])
@@ -777,61 +1076,121 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
     return self;
 }
 
+/*!
+    Initialise the receiver with an int \e value.
+    @param value a JS int value
+    @return a reference to the initialised object
+*/
 - (id)initWithChar:(char)value
 {
     return [self _initWithJSNumber:value];
 }
 
+/*!
+    Initialise the receiver with a float \e value.
+    @param value a JS float value
+    @return a reference to the initialised object
+*/
 - (id)initWithDouble:(double)value
 {
     return [self _initWithJSNumber:value];
 }
 
+/*!
+    Initialise the receiver with a float \e value.
+    @param value a JS float value
+    @return a reference to the initialised object
+*/
 - (id)initWithFloat:(float)value
 {
     return [self _initWithJSNumber:value];
 }
 
+/*!
+    Initialise the receiver with an int \e value.
+    @param value a JS int value
+    @return a reference to the initialised object
+*/
 - (id)initWithInt:(int)value
 {
     return [self _initWithJSNumber:value];
 }
 
+/*!
+    Initialise the receiver with an int \e value.
+    @param value a JS int value
+    @return a reference to the initialised object
+*/
 - (id)initWithLong:(long)value
 {
     return [self _initWithJSNumber:value];
 }
 
+/*!
+    Initialise the receiver with an int \e value.
+    @param value a JS int value
+    @return a reference to the initialised object
+*/
 - (id)initWithLongLong:(long long)value
 {
     return [self _initWithJSNumber:value];
 }
 
+/*!
+    Initialise the receiver with an int \e value.
+    @param value a JS int value
+    @return a reference to the initialised object
+*/
 - (id)initWithShort:(short)value
 {
     return [self _initWithJSNumber:value];
 }
 
+/*!
+    Initialise the receiver with an int \e value.
+    @param value a JS int value
+    @return a reference to the initialised object
+*/
 - (id)initWithUnsignedChar:(unsigned char)value
 {
     return [self _initWithJSNumber:value];
 }
 
+/*!
+    Initialise the receiver with an int \e value.
+    @param value a JS int value
+    @return a reference to the initialised object
+*/
 - (id)initWithUnsignedInt:(unsigned)value
 {
     return [self _initWithJSNumber:value];
 }
 
+/*!
+    Initialise the receiver with an int \e value.
+    @param value a JS int value
+    @return a reference to the initialised object
+*/
 - (id)initWithUnsignedLong:(unsigned long)value
 {
     return [self _initWithJSNumber:value];
 }
 
+/*!
+    Initialise the receiver with an int \e value.
+    @param value a JS int value
+    @return a reference to the initialised object
+*/
 - (id)initWithUnsignedLongLong:(unsigned long long)value
 {
     return [self _initWithJSNumber:value];
 }
 
+/*!
+    Initialise the receiver with an int \e value.
+    @param value a JS int value
+    @return a reference to the initialised object
+*/
 - (id)initWithUnsignedShort:(unsigned short)value
 {
     return [self _initWithJSNumber:value];
