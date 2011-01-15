@@ -234,11 +234,13 @@ var CPDefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundi
 }
 
 // initializers
+/*!
+    Initialise a CPDecimalNumber object with NaN
+    @return the reference to the receiver CPDecimalNumber
+*/
 - (id)init
 {
-    self = [super init];
-
-    return self;
+    return [self initWithDecimal:CPDecimalMakeNaN()];
 }
 
 /*!
@@ -248,7 +250,7 @@ var CPDefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundi
 */
 - (id)initWithDecimal:(CPDecimal)dcm
 {
-    if (self = [self init])
+    if (self = [super init])
         _data = CPDecimalCopy(dcm);
 
     return self;
@@ -256,8 +258,11 @@ var CPDefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundi
 
 /*!
     Initialise a CPDecimalNumber object with the given mantissa and exponent.
-    Note that since 'long long' doesn't exist in JS the mantissa is smaller
-    than possible in Cocoa.
+    Note: that since 'long long' doesn't exist in JS the mantissa is smaller
+    than possible in Cocoa and can thus not create the full number range
+    possible for a CPDecimal. Also note that at extreme cases where overflow
+    or truncation will occur to the parameters in Cocoa this method produces
+    different results to its Cocoa counterpart.
     @param mantissa the mantissa of the decimal number
     @param exponent the exponent of the number
     @param flag true if number is negative
@@ -276,39 +281,82 @@ var CPDefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundi
     return self;
 }
 
+/*!
+    Initialise a CPDecimalNumber with a string. If the string is badly formed
+    or outside of the acceptable range of a CPDecimal then the number is
+    initialised to NaN.
+    @param numberValue the string to parse.
+    @return the reference to the receiver CPDecimalNumber
+*/
 - (id)initWithString:(CPString)numberValue
 {
     return [self initWithString:numberValue locale:nil];
 }
 
+/*!
+    Initialise a CPDecimalNumber with a string using the given locale. If the
+    string is badly formed or outside of the acceptable range of a CPDecimal
+    then the number is initialised to NaN. NOTE: Locales are currently
+    not supported.
+    @param numberValue the string to parse
+    @param locale the CPLocale object to use when parsing the number string
+    @return the reference to the receiver CPDecimalNumber
+*/
 - (id)initWithString:(CPString)numberValue locale:(CPDictionary)locale
 {
     if (self = [self init])
     {
-        _data = CPDecimalMakeWithString(numberValue,locale);
-        if (!_data)
-            [CPException raise:CPInvalidArgumentException reason:"A CPDecimalNumber has been passed an invalid string. '" + numberValue + "'"];
+        _data = CPDecimalMakeWithString(numberValue, locale);
     }
 
     return self;
 }
 
 // class methods
+/*!
+    Return a new CPDecimalNumber object with the contents of a CPDecimal object
+    @param dcm the CPDecimal object to copy
+    @return the new CPDecimalNumber object
+*/
 + (CPDecimalNumber)decimalNumberWithDecimal:(CPDecimal)dcm
 {
     return [[self alloc] initWithDecimal:dcm];
 }
 
+/*!
+    Create a new CPDecimalNumber object with the given mantissa and exponent.
+    See \c -initWithMantissa:exponent:isNegative: for some extra notes.
+    @param mantissa the mantissa of the decimal number
+    @param exponent the exponent of the number
+    @param flag true if number is negative
+    @return the new CPDecimalNumber object
+*/
 + (CPDecimalNumber)decimalNumberWithMantissa:(unsigned long long)mantissa exponent:(short)exponent isNegative:(BOOL)flag
 {
     return [[self alloc] initWithMantissa:mantissa exponent:exponent isNegative:flag];
 }
 
+/*!
+    Create a new CPDecimalNumber with a string. If the string is badly formed
+    or outside of the acceptable range of a CPDecimal then the number is
+    initialised to NaN.
+    @param numberValue the string to parse.
+    @return the new CPDecimalNumber object
+*/
 + (CPDecimalNumber)decimalNumberWithString:(CPString)numberValue
 {
     return [[self alloc] initWithString:numberValue];
 }
 
+/*!
+    Create a new CPDecimalNumber with a string using the given locale. If the
+    string is badly formed or outside of the acceptable range of a CPDecimal
+    then the number is initialised to NaN. NOTE: Locales are currently
+    not supported.
+    @param numberValue the string to parse
+    @param locale the CPLocale object to use when parsing the number string
+    @return the new CPDecimalNumber object
+*/
 + (CPDecimalNumber)decimalNumberWithString:(CPString)numberValue locale:(CPDictionary)locale
 {
     return [[self alloc] initWithString:numberValue locale:locale];
@@ -319,11 +367,19 @@ var CPDefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundi
     return CPDefaultDcmHandler;
 }
 
+/*!
+    340282366920938463463374607431768211455e127
+    99999999999999999999999999999999999999e127
+*/
 + (CPDecimalNumber)maximumDecimalNumber
 {
     return [[self alloc] initWithDecimal:_CPDecimalMakeMaximum()];
 }
 
+/*!
+    -340282366920938463463374607431768211455e127
+    -99999999999999999999999999999999999999e127
+*/
 + (CPDecimalNumber)minimumDecimalNumber
 {
     return [[self alloc] initWithDecimal:_CPDecimalMakeMinimum()];

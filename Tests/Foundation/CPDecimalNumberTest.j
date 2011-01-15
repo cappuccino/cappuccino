@@ -108,7 +108,7 @@
 
     dcmn = [CPDecimalNumber minimumDecimalNumber];
     dcm = [dcmn decimalValue];
-    [self assert:CPDecimalMinExponent equals:dcm._exponent message:"minimumDecimalNumber: - exponent"];
+    [self assert:CPDecimalMaxExponent equals:dcm._exponent message:"minimumDecimalNumber: - exponent"];
     [self assert:[9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9] equals:dcm._mantissa message:"minimumDecimalNumber: - mantissa"];
     [self assert:YES equals:dcm._isNegative message:"minimumDecimalNumber: - sign"];
 
@@ -139,63 +139,26 @@
     dcm = [dcmn boolValue];
     [self assert:true equals:dcm message:"boolValue: - should be true"];
 
-    // exceptions
-    try {
-        dcmn = [[CPDecimalNumber alloc] initWithString:@"111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"];
-        [self fail:"initWithString: TEX1: overflow from string"];
-    } catch (e)
-    {
-        if ((e.isa) && [e name] == AssertionFailedError)
-            throw e;
-    }
-    try {
-        dcmn = [[CPDecimalNumber alloc] initWithString:@"foo"];
-        [self fail:"initWithString: TEX2: invalid string"];
-    } catch (e)
-    {
-        if ((e.isa) && [e name] == AssertionFailedError)
-            throw e;
-    }
-    try {
-        dcmn = [[CPDecimalNumber alloc] initWithString:@".123"];
-        [self fail:"initWithString: TEX3: invalid string"];
-    } catch (e)
-    {
-        if ((e.isa) && [e name] == AssertionFailedError)
-            throw e;
-    }
-    try {
-        dcmn = [[CPDecimalNumber alloc] initWithString:@"-.123"];
-        [self fail:"initWithString: TEX4: invalid string"];
-    } catch (e)
-    {
-        if ((e.isa) && [e name] == AssertionFailedError)
-            throw e;
-    }
-    try {
-        dcmn = [[CPDecimalNumber alloc] initWithString:@"0123"];
-        [self fail:"initWithString: TEX5: invalid string"];
-    } catch (e)
-    {
-        if ((e.isa) && [e name] == AssertionFailedError)
-            throw e;
-    }
-    try {
-        dcmn = [[CPDecimalNumber alloc] initWithString:@"1e200"];
-        [self fail:"initWithString: TEX6: exponent overflow"];
-    } catch (e)
-    {
-        if ((e.isa) && [e name] == AssertionFailedError)
-            throw e;
-    }
-    try{
-        dcmn = [[CPDecimalNumber alloc] initWithString:@"12312e-23421"];
-        [self fail:"initWithString: TEX7: exponent underflow"];
-    } catch (e)
-    {
-        if ((e.isa) && [e name] == AssertionFailedError)
-            throw e;
-    }
+    dcmn = [[CPDecimalNumber alloc] initWithString:@"111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"];
+    [self assertTrue:[dcm compare:[CPDecimalNumber notANumber]] message:"initWithString: overflow should return NaN"];
+   
+    dcmn = [[CPDecimalNumber alloc] initWithString:@"foo"];
+    [self assertTrue:[dcm compare:[CPDecimalNumber notANumber]] message:"initWithString: overflow should return NaN"];
+    
+    dcmn = [[CPDecimalNumber alloc] initWithString:@".123"];
+    [self assertTrue:[dcm compare:[CPDecimalNumber notANumber]] message:"initWithString: overflow should return NaN"];
+    
+    dcmn = [[CPDecimalNumber alloc] initWithString:@"-.123"];
+    [self assertTrue:[dcm compare:[CPDecimalNumber notANumber]] message:"initWithString: overflow should return NaN"];
+    
+    dcmn = [[CPDecimalNumber alloc] initWithString:@"0123"];
+    [self assertTrue:[dcm compare:[CPDecimalNumber notANumber]] message:"initWithString: overflow should return NaN"];
+    
+    dcmn = [[CPDecimalNumber alloc] initWithString:@"1e200"];
+    [self assertTrue:[dcm compare:[CPDecimalNumber notANumber]] message:"initWithString: overflow should return NaN"];
+    
+    dcmn = [[CPDecimalNumber alloc] initWithString:@"12312e-23421"];
+    [self assertTrue:[dcm compare:[CPDecimalNumber notANumber]] message:"initWithString: overflow should return NaN"];
 }
 
 - (void)testAdd
