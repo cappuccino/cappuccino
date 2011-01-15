@@ -958,6 +958,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     Adds a new table column to the reciever. If this is the first column added it will automatically be set to the outline column.
     Also see -setOutlineTableColumn:
     NOTE: This behavior deviates from cocoa slightly.
+    @param CPTableColumn aTableColumn - The table column to add.
 */
 - (void)addTableColumn:(CPTableColumn)aTableColumn
 {
@@ -965,6 +966,16 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     if ([self numberOfColumns] === 1)
         _outlineTableColumn = aTableColumn;
+}
+/*!
+    @ignore
+*/
+- (void)removeTableColumn:(CPTableColumn)aTableColumn
+{
+    if (aTableColumn === [self outlineTableColumn])
+        CPLog("CPOutlineView cannot remove outlineTableColumn with removeTableColumn:. User setOutlineTableColumn: instead.");
+    else
+        [super removeTableColumn:aTableColumn];
 }
 /*!
     @ignore
