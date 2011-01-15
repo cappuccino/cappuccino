@@ -25,7 +25,7 @@
 @import <Foundation/CPBundle.j>
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPException.j>
-@import <Foundation/CPNotification.j>
+@import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPObject.j>
 @import <Foundation/CPPropertyListSerialization.j>
 @import <Foundation/CPString.j>
@@ -109,7 +109,7 @@ CPColorListNotEditableException = @"CPColorListNotEditableException";
     {
         var object = [lists objectForKey:key];
 
-        if ([object class] == [CPArray class])
+        if ([object isKindOfClass:[CPArray class]])
         {
             var count = [object count],
                 i = 0;
@@ -125,7 +125,7 @@ CPColorListNotEditableException = @"CPColorListNotEditableException";
                 }
             }
         }
-        else if ([object class] == [CPDictionary class] || [object class] == [CPMutableDictionary class])
+        else if ([object isKindOfClass:[CPDictionary class]] || [object isKindOfClass:[CPMutableDictionary class]])
         {
             if (![colorlistkeys containsObject:key])
             {
