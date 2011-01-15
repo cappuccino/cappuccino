@@ -63,22 +63,22 @@
 
     SEL         _enumeratorSEL;
     Function    _enumerator;
-    
+
     SEL         _memberSEL;
     Function    _member;
-    
+
     SEL         _addSEL;
     Function    _add;
-    
+
     SEL         _addManySEL;
     Function    _addMany;
-    
+
     SEL         _removeSEL;
     Function    _remove;
-    
+
     SEL         _removeManySEL;
     Function    _removeMany;
-    
+
     SEL         _intersectSEL;
     Function    _intersect;
 }
@@ -194,7 +194,7 @@
 {
     if (_add)
         _add(_proxyObject, _addSEL, anObject);
-    else if(_addMany)
+    else if (_addMany)
     {
         var objectSet = [CPSet setWithObject: anObject];
         _addMany(_proxyObject, _addManySEL, objectSet);
@@ -209,15 +209,16 @@
 
 - (void)addObjectsFromArray:(CPArray)objects
 {
-    if(_addMany)
+    if (_addMany)
     {
         var objectSet = [CPSet setWithArray: objects];
         _addMany(_proxyObject, _addManySEL, objectSet);
     }
-    else if(_add)
+    else if (_add)
     {
-        var object, objectEnumerator = [objects objectEnumerator];
-        while(object = [objectEnumerator nextObject])
+        var object,
+            objectEnumerator = [objects objectEnumerator];
+        while (object = [objectEnumerator nextObject])
             _add(_proxyObject, _addSEL, object);
     }
     else
@@ -232,10 +233,11 @@
 {
     if (_addMany)
         _addMany(_proxyObject, _addManySEL, aSet);
-    else if(_add)
+    else if (_add)
     {
-        var object, objectEnumerator = [aSet objectEnumerator];
-        while(object = [objectEnumerator nextObject])
+        var object,
+            objectEnumerator = [aSet objectEnumerator];
+        while (object = [objectEnumerator nextObject])
             _add(_proxyObject, _addSEL, object);
     }
     else
@@ -250,7 +252,7 @@
 {
     if (_remove)
         _remove(_proxyObject, _removeSEL, anObject);
-    else if(_removeMany)
+    else if (_removeMany)
     {
         var objectSet = [CPSet setWithObject: anObject];
         _removeMany(_proxyObject, _removeManySEL, objectSet);
@@ -265,12 +267,13 @@
 
 - (void)minusSet:(CPSet)aSet
 {
-    if(_removeMany)
+    if (_removeMany)
         _removeMany(_proxyObject, _removeManySEL, aSet);
-    else if(_remove)
+    else if (_remove)
     {
-        var object, objectEnumerator = [aSet objectEnumerator];
-        while(object = [objectEnumerator nextObject])
+        var object,
+            objectEnumerator = [aSet objectEnumerator];
+        while (object = [objectEnumerator nextObject])
             _remove(_proxyObject, _removeSEL, object);
     }
     else
@@ -283,15 +286,16 @@
 
 - (void)removeObjectsInArray:(CPArray)objects
 {
-    if(_removeMany)
+    if (_removeMany)
     {
         var objectSet = [CPSet setWithArray:objects];
         _removeMany(_proxyObject, _removeManySEL, objectSet);
     }
-    else if(_remove)
+    else if (_remove)
     {
-        var object, objectEnumerator = [objects objectEnumerator];
-        while(object = [objectEnumerator nextObject])
+        var object,
+            objectEnumerator = [objects objectEnumerator];
+        while (object = [objectEnumerator nextObject])
             _remove(_proxyObject, _removeSEL, object);
     }
     else
@@ -304,15 +308,16 @@
 
 - (void)removeAllObjects
 {
-    if(_removeMany)
+    if (_removeMany)
     {
         var allObjectsSet = [[self _representedObject] copy];
         _removeMany(_proxyObject, _removeManySEL, allObjectsSet);
     }
-    else if(_remove)
+    else if (_remove)
     {
-        var object, objectEnumerator = [[[self _representedObject] copy] objectEnumerator];
-        while(object = [objectEnumerator nextObject])
+        var object,
+            objectEnumerator = [[[self _representedObject] copy] objectEnumerator];
+        while (object = [objectEnumerator nextObject])
             _remove(_proxyObject, _removeSEL, object);
     }
     else
@@ -325,7 +330,7 @@
 
 - (void)intersectSet:(CPSet)aSet
 {
-    if(_intersect)
+    if (_intersect)
         _intersect(_proxyObject, _intersectSEL, aSet);
     else
     {
@@ -397,12 +402,14 @@
     }
     else
     {
-        var valuesForKeySet = [CPSet set];
-        var containedObject, containedObjectValue, containedObjectEnumerator = [self objectEnumerator];
-        while(containedObject = [containedObjectEnumerator nextObject])
+        var valuesForKeySet = [CPSet set],
+            containedObject,
+            containedObjectValue,
+            containedObjectEnumerator = [self objectEnumerator];
+        while (containedObject = [containedObjectEnumerator nextObject])
         {
             containedObjectValue = [containedObject valueForKeyPath:aKeyPath];
-            if(containedObjectValue)
+            if (containedObjectValue)
                 [valuesForKeySet addObject:containedObjectValue];
         }
         return valuesForKeySet;
@@ -411,7 +418,8 @@
 
 - (void)setValue:(id)aValue forKey:(CPString)aKey
 {
-    var containedObject, containedObjectEnumerator = [self objectEnumerator];
+    var containedObject,
+        containedObjectEnumerator = [self objectEnumerator];
     while (containedObject = [containedObjectEnumerator nextObject])
         [containedObject setValue:aValue forKey:aKey];
 }
@@ -422,14 +430,18 @@ var kvoOperators = [];
 
 // FIXME: this is not DRY because the implementation in CPArray+KVO is merely the same!
 // HACK: prevent these from becoming globals. workaround for obj-j "function foo(){}" behavior
-var avgOperator, maxOperator, minOperator, countOperator, sumOperator;
+var avgOperator,
+    maxOperator,
+    minOperator,
+    countOperator,
+    sumOperator;
 
 kvoOperators["avg"] = function avgOperator(self, _cmd, param)
 {
     //CPSet returns a CPSet - to obtain an array call allObjects
     var objects = [[self valueForKeyPath:param] allObjects],
         length = [objects count],
-        index = length;
+        index = length,
         average = 0.0;
 
     if (!length)
@@ -504,7 +516,7 @@ kvoOperators["sum"] = function sumOperator(self, _cmd, param)
         [super addObserver:observer forKeyPath:aKeyPath options:options context:context];
 }
 
--(void)removeObserver:(id)observer forKeyPath:(CPString)aKeyPath
+- (void)removeObserver:(id)observer forKeyPath:(CPString)aKeyPath
 {
     if ([isa instanceMethodForSelector:_cmd] === [CPSet instanceMethodForSelector:_cmd])
         [CPException raise:CPInvalidArgumentException reason:"Unsupported method on CPSet"];

@@ -183,16 +183,24 @@ var CPDateReferenceDate = new Date(Date.UTC(2001, 1, 1, 0, 0, 0, 0));
 }
 
 /*!
+    Returns timezone offset as a string in ±HHMM format
+*/
++ (CPString)timezoneOffsetString:(int)timezoneOffset
+{
+    var offset = -timezoneOffset,
+        positive = offset >= 0,
+        hours = positive ? FLOOR(offset / 60) : CEIL(offset / 60),
+        minutes = offset - hours * 60;
+    return [CPString stringWithFormat:@"%s%02d%02d", positive ? "+" : "-", ABS(hours), ABS(minutes)];
+}
+
+/*!
     Returns the date as a string in the international format
     YYYY-MM-DD HH:MM:SS ±HHMM.
 */
 - (CPString)description
 {
-    var positive = self.getTimezoneOffset() >= 0,
-        hours = FLOOR(self.getTimezoneOffset() / 60),
-        minutes = self.getTimezoneOffset() - hours * 60;
-
-    return [CPString stringWithFormat:@"%04d-%02d-%02d %02d:%02d:%02d %s%02d%02d", self.getFullYear(), self.getMonth()+1, self.getDate(), self.getHours(), self.getMinutes(), self.getSeconds(), positive ? "+" : "-", ABS(hours), ABS(minutes)];
+    return [CPString stringWithFormat:@"%04d-%02d-%02d %02d:%02d:%02d %s", self.getFullYear(), self.getMonth()+1, self.getDate(), self.getHours(), self.getMinutes(), self.getSeconds(), [CPDate timezoneOffsetString:self.getTimezoneOffset()]];
 }
 
 - (id)copy

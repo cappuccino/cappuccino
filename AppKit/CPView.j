@@ -2145,10 +2145,17 @@ setBoundsOrigin:
 
 - (CPView)nextValidKeyView
 {
-    var result = [self nextKeyView];
+    var result = [self nextKeyView],
+        firstResult = result;
 
     while (result && ![result canBecomeKeyView])
+    {
         result = [result nextKeyView];
+
+        // Cycled.
+        if (result === firstResult)
+            return nil;
+    }
 
     return result;
 }
@@ -2253,6 +2260,10 @@ setBoundsOrigin:
 
 - (BOOL)hasThemeState:(CPThemeState)aState
 {
+    // Because CPThemeStateNormal is defined as 0 we need to check for it explicitly here
+    if (aState === CPThemeStateNormal && _themeState === CPThemeStateNormal)
+        return YES;
+
     return !!(_themeState & ((typeof aState === "string") ? CPThemeState(aState) : aState));
 }
 

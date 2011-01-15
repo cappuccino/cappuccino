@@ -26,7 +26,7 @@
 CPOKButton      = 1;
 CPCancelButton  = 0;
 
-/*! 
+/*!
     @ingroup appkit
     @class CPPanel
 

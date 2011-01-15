@@ -48,6 +48,9 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     [tokenFieldB setObjectValue:["Missouri", "California"]];
     [tokenFieldB setDelegate:self];
 
+    [tokenFieldB setAction:@selector(tokenFieldAction:)];
+    [tokenFieldB setTarget:self];
+
     [contentView addSubview:tokenFieldB];
 
     var tokenFieldC = [[CPTokenField alloc] initWithFrame:CGRectMake(15, 170, 500, 30)],
@@ -64,6 +67,9 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
 
     [contentView addSubview:tokenFieldC];
 
+    [tokenFieldC setSendsActionOnEndEditing:YES];
+    [tokenFieldC setAction:@selector(tokenFieldAction:)];
+    [tokenFieldC setTarget:self];
 
     tokenFieldD = [[CPTokenField alloc] initWithFrame:CGRectMake(15, 230, 500, 30)],
         labelD = [[CPTextField alloc] initWithFrame:CGRectMake(15, 210, 500, 24)];
@@ -137,6 +143,11 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     return representedObject;
 }
 
+- (@action)tokenFieldAction:(id)sender
+{
+    CPLog.info("tokenFieldAction: " + sender);
+}
+
 @end
 
 // A sample of a custom Object
@@ -152,7 +163,8 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     return [[self alloc] initWithFirstName:aFirstName lastName:aLastName];
 }
 
-- (id)initWithFirstName:(CPString)aFirstName lastName:(CPString)aLastName {
+- (id)initWithFirstName:(CPString)aFirstName lastName:(CPString)aLastName
+{
     self = [super init];
     if (self)
     {

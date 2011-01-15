@@ -85,12 +85,12 @@
 */
 + (id)setWithObjects:(id)anObject, ...
 {
-    var args = Array.prototype.slice.apply(arguments);
+    var argumentsArray = Array.prototype.slice.apply(arguments);
 
-    args[0] = [self alloc];
-    args[1] = @selector(initWithObjects:);
+    argumentsArray[0] = [self alloc];
+    argumentsArray[1] = @selector(initWithObjects:);
 
-    return objj_msgSend.apply(this, args);
+    return objj_msgSend.apply(this, argumentsArray);
 }
 
 /*
@@ -316,7 +316,7 @@
         objectEnumerator = [self objectEnumerator];
 
     while ((object = [objectEnumerator nextObject]) !== nil)
-        if (![self containsObject:object])
+        if (![aSet containsObject:object])
             return NO;
 
     return YES;
@@ -383,7 +383,7 @@
 
 - (id)copy
 {
-    return [[CPSet alloc] initWithSet:self];
+    return [[self class] setWithSet:self];
 }
 
 - (id)mutableCopy
@@ -459,246 +459,6 @@ var _CPSharedPlaceholderSet   = nil;
 
 @end
 
-/*!
-    @class CPMutableSet
-    @ingroup compatability
-
-    This class is just an empty subclass of CPSet.
-    CPSet already implements mutable methods and
-    this class only exists for source compatability.
-*/
-
-@implementation CPMutableSet : CPSet
-
-/*
-    Returns an initialized set with a given initial capacity.
-    @param aCapacity, only present for compatability
-*/
-- (id)initWithCapacity:(unsigned)aCapacity
-{
-    return [self init];
-}
-
-/*
-    Creates and returns a set with a given initial capacity.
-    @param aCapacity, only present for compatability
-*/
-+ (id)setWithCapacity:(CPUInteger)aCapacity
-{
-    return [[self alloc] initWithCapacity:aCapacity];
-}
-
-- (void)filterUsingPredicate:(CPPredicate)aPredicate
-{
-    var object,
-        objectEnumerator = [self objectEnumerator];
-
-    while ((object = [objectEnumerator nextObject]) !== nil)
-        if (![aPredicate evaluateWithObject:object])
-            [self removeObject:object];
-}
-
-- (void)removeObject:(id)anObject
-{
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-}
-
-- (void)removeAllObjects
-{
-    var object,
-        objectEnumerator = [self objectEnumerator];
-
-    while ((object = [objectEnumerator nextObject]) !== nil)
-        [self removeObject:object];
-}
-
-/*
-    Adds to the receiver each object contained in a given array that is not already a member.
-    @param array An array of objects to add to the receiver.
-*/
-- (void)addObjectsFromArray:(CPArray)objects
-{
-    var count = [objects count];
-
-    while (count--)
-        [self addObject:objects[count]];
-}
-
-/*
-    Adds to the receiver each object contained in another given set
-    @param set The set of objects to add to the receiver.
-*/
-- (void)unionSet:(CPSet)aSet
-{
-    var object,
-        objectEnumerator = [aSet objectEnumerator];
-
-    while ((object = [objectEnumerator nextObject]) !== nil)
-        [self addObject:object];
-}
-
-/*
-    Removes from the receiver each object contained in another given set that is present in the receiver.
-    @param set The set of objects to remove from the receiver.
-*/
-- (void)minusSet:(CPSet)aSet
-{
-    var object,
-        objectEnumerator = [aSet objectEnumerator];
-
-    while ((object = [objectEnumerator nextObject]) !== nil)
-        [self removeObject:object];
-}
-
-/*
-    Removes from the receiver each object that isn’t a member of another given set.
-    @param set The set with which to perform the intersection.
-*/
-- (void)intersectSet:(CPSet)aSet
-{
-    var object,
-        objectEnumerator = [self objectEnumerator],
-        objectsToRemove = [];
-
-    while ((object = [objectEnumerator nextObject]) !== nil)
-        if (![aSet containsObject:object])
-            objectsToRemove.push(object);
-
-    var count = [objectsToRemove count];
-
-    while (count--)
-        [self removeObject:objectsToRemove[count]];
-}
-
-/*
-    Empties the receiver, then adds to the receiver each object contained in another given set.
-    @param set The set whose members replace the receiver's content.
-*/
-- (void)setSet:(CPSet)aSet
-{
-    [self removeAllObjects];
-    [self unionSet:aSet];
-}
-
-@end
-
-var hasOwnProperty = Object.prototype.hasOwnProperty;
-
-/*!
-    @class CPSet
-    @ingroup foundation
-    @brief An unordered collection of objects.
-*/
-@implementation _CPConcreteMutableSet : CPMutableSet
-{
-    Object      _contents;
-    unsigned    _count;
-}
-
-/*
-    Initializes a newly allocated set with members taken from the specified list of objects.
-    @param objects A array of objects to add to the new set. If the same object appears more than once objects, it is added only once to the returned set.
-    @param count The number of objects from objects to add to the new set.
-*/
-- (id)initWithObjects:(CPArray)objects count:(CPUInteger)aCount
-{
-    self = [super initWithObjects:objects count:aCount];
-
-    if (self)
-    {
-        _count = 0;
-        _contents = { };
-
-        var index = 0,
-            count = MIN([objects count], aCount);
-
-        for (; index < count; ++index)
-            [self addObject:objects[index]];
-    }
-
-    return self;
-}
-
-- (CPUInteger)count
-{
-    return _count;
-}
-
-- (id)member:(id)anObject
-{
-    var UID = [anObject UID];
-
-    if (!hasOwnProperty.call(_contents, UID))
-        return nil;
-
-    var object = _contents[UID];
-
-    if (object === anObject || [object isEqual:anObject])
-        return object;
-
-    return nil;
-}
-
-- (CPArray)allObjects
-{
-    var array = [],
-        property;
-
-    for (property in _contents)
-    {
-        if (hasOwnProperty.call(_contents, property))
-            array.push(_contents[property]);
-    }
-
-    return array;
-}
-
-- (CPEnumerator)objectEnumerator
-{
-    return [[self allObjects] objectEnumerator];
-}
-
-/*
-    Adds a given object to the receiver.
-    @param anObject The object to add to the receiver.
-*/
-- (void)addObject:(id)anObject
-{
-    if (anObject === nil || anObject === undefined)
-        return;
-
-    if ([self containsObject:anObject])
-        return;
-
-    _contents[[anObject UID]] = anObject;
-    _count++;
-}
-
-/*
-    Removes a given object from the receiver.
-    @param anObject The object to remove from the receiver.
-*/
-- (void)removeObject:(id)anObject
-{
-    if (![self containsObject:anObject])
-        return;
-
-    delete _contents[[anObject UID]];
-    _count--;
-}
-
-/*
-    Performance improvement.
-*/
-- (void)removeAllObjects
-{
-    _contents = {};
-    _count = 0;
-}
-
-- (Class)classForCoder
-{
-    return [CPSet class];
-}
-
-@end
+// We actually want _CPConcreteMutableSet, but this introduces the possibility of an invalid @import loop.
+// This will be correctly solved when we move to true immutable/mutable pairs.
+@import "CPMutableSet.j"

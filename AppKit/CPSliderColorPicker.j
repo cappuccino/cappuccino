@@ -65,7 +65,7 @@
 
 - (id)initView
 {
-    aFrame = CGRectMake(0, 0, CPColorPickerViewWidth, CPColorPickerViewHeight);    
+    aFrame = CGRectMake(0, 0, CPColorPickerViewWidth, CPColorPickerViewHeight);
 
     _contentView = [[CPView alloc] initWithFrame:aFrame];
     [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
@@ -240,7 +240,7 @@
     return (mode == CPSliderColorPickerMode) ? YES : NO;
 }
 
--(void)sliderChanged:(id)sender
+- (void)sliderChanged:(id)sender
 {
     var newColor,
         colorPanel = [self colorPanel],
@@ -274,7 +274,7 @@
     [colorPanel setColor: newColor];
 }
 
--(void)setColor:(CPColor)aColor
+- (void)setColor:(CPColor)aColor
 {
     [self updateRGBSliders: aColor];
     [self updateHSBSliders: aColor];
@@ -282,7 +282,7 @@
     [self updateLabels];
 }
 
--(void)updateHSBSliders:(CPColor)aColor
+- (void)updateHSBSliders:(CPColor)aColor
 {
     var hsb = [aColor hsbComponents];
 

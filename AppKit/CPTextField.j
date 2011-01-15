@@ -84,7 +84,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     CPColor                 _textFieldBackgroundColor;
 
     id                      _placeholderString;
-    id                      _originalPlaceholderString;
     BOOL                    _currentValueIsPlaceholder;
 
     id                      _delegate;
@@ -158,6 +157,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 + (CPString)defaultThemeClass
 {
     return "textfield";
+}
+
++ (Class)_binderClassForBinding:(CPString)theBinding
+{
+    if (theBinding === CPValueBinding)
+        return [_CPTextFieldValueBinder class];
+
+    return [super _binderClassForBinding:theBinding];
 }
 
 + (id)themeAttributes
@@ -672,8 +679,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)keyDown:(CPEvent)anEvent
 {
-    if ([anEvent keyCode] === CPReturnKeyCode)
+    var characters = [anEvent characters];
+    // Treat \r and \n the same. See issue #710.
+    if (characters === CPNewlineCharacter || characters === CPCarriageReturnCharacter)
     {
+        // selectText: has a side effect - it can change first responder of the window
+        // we have to prevent such behaviour inside this method because target should be able to change first responder after receiving action.
+        [self selectText:nil];
+
         if (_isEditing)
         {
             _isEditing = NO;
@@ -681,7 +694,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         }
 
         [self sendAction:[self action] to:[self target]];
-        [self selectText:nil];
 
         [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
     }
@@ -728,6 +740,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 /*
     @ignore
+    Sets the internal string value without updating the value in the input element
 */
 - (void)_setStringValue:(id)aValue
 {
@@ -785,30 +798,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (CPString)placeholderString
 {
     return _placeholderString;
-}
-
-- (void)_setCurrentValueIsPlaceholder:(BOOL)isPlaceholder
-{
-    if (isPlaceholder)
-    {
-        // Save the original placeholder value so we can restore it later
-        // Only do this if the placeholder is not already overridden because the bindings logic might call this method
-        // several times and we don't want the bindings placeholder to ever become the original placeholder
-        if (!_currentValueIsPlaceholder)
-            _originalPlaceholderString = [self placeholderString];
-
-        // Set the current string value as the current placeholder and clear the string value
-        [self setPlaceholderString:[self stringValue]];
-        [self setStringValue:@""];
-    }
-    else if (_originalPlaceholderString)
-    {
-        // Restore the original placeholder, the actual textfield value is already correct
-        // because it was set using setValue:forKey:
-        [self setPlaceholderString:_originalPlaceholderString];
-    }
-
-    _currentValueIsPlaceholder = isPlaceholder;
 }
 
 /*!
@@ -881,21 +870,28 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 /*!
-    Select all the text in the CPTextField.
+    Make the receiver the first responder and select all the text in the field.
 */
 - (void)selectText:(id)sender
 {
-#if PLATFORM(DOM)
-    var element = [self _inputElement];
+    // FIXME Should this really make the text field the first responder?
 
     if (([self isEditable] || [self isSelectable]))
     {
+#if PLATFORM(DOM)
+        var element = [self _inputElement];
+
         if ([[self window] firstResponder] === self)
             window.setTimeout(function() { element.select(); }, 0);
         else if ([self window] !== nil && [[self window] makeFirstResponder:self])
             window.setTimeout(function() {[self selectText:sender];}, 0);
-    }
+#else
+        // Even if we can't actually select the text we need to preserve the first
+        // responder side effect.
+        if ([self window] !== nil && [[self window] firstResponder] !== self)
+            [[self window] makeFirstResponder:self];
 #endif
+    }
 }
 
 - (void)copy:(id)sender
@@ -1258,7 +1254,6 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         [self setAlignment:[aCoder decodeIntForKey:CPTextFieldAlignmentKey]];
 
         [self setPlaceholderString:[aCoder decodeObjectForKey:CPTextFieldPlaceholderStringKey]];
-
     }
 
     return self;
@@ -1283,6 +1278,51 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
     [aCoder encodeInt:[self alignment] forKey:CPTextFieldAlignmentKey];
 
     [aCoder encodeObject:_placeholderString forKey:CPTextFieldPlaceholderStringKey];
+}
+
+@end
+
+@implementation _CPTextFieldValueBinder : CPBinder
+{
+}
+
+- (void)setValueFor:(CPString)theBinding
+{
+    var destination = [_info objectForKey:CPObservedObjectKey],
+        keyPath = [_info objectForKey:CPObservedKeyPathKey],
+        options = [_info objectForKey:CPOptionsKey],
+        newValue = [destination valueForKeyPath:keyPath],
+        isPlaceholder = CPIsControllerMarker(newValue);
+
+    if (isPlaceholder)
+    {
+        switch (newValue)
+        {
+            case CPMultipleValuesMarker:
+                newValue = [options objectForKey:CPMultipleValuesPlaceholderBindingOption] || @"Multiple Values";
+                break;
+
+            case CPNoSelectionMarker:
+                newValue = [options objectForKey:CPNoSelectionPlaceholderBindingOption] || @"No Selection";
+                break;
+
+            case CPNotApplicableMarker:
+                if ([options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
+                    [CPException raise:CPGenericException
+                                reason:@"can't transform non applicable key on: "+_source+" value: "+newValue];
+
+                newValue = [options objectForKey:CPNotApplicablePlaceholderBindingOption] || @"Not Applicable";
+                break;
+        }
+
+        [_source setPlaceholderString:newValue];
+        [_source setObjectValue:nil];
+    }
+    else
+    {
+        newValue = [self transformValue:newValue withOptions:options];
+        [_source setObjectValue:newValue];
+    }
 }
 
 @end

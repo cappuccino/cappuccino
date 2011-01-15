@@ -139,7 +139,7 @@ var CPStringRegexSpecialCharacters = [
 */
 - (id)initWithString:(CPString)aString
 {
-    if ([self class] === CPString) 
+    if ([self class] === CPString)
         return String(aString);
 
     var result = new String(aString);
@@ -808,10 +808,10 @@ var CPStringRegexSpecialCharacters = [
 
 @end
 
-var diacritics = [[192,198],[224,230],[231,231],[232,235],[236,239],[242,246],[249,252]]; // Basic Latin ; Latin-1 Supplement.
-var normalized = [65,97,99,101,105,111,117];
+var diacritics = [[192,198],[224,230],[231,231],[232,235],[236,239],[242,246],[249,252]], // Basic Latin ; Latin-1 Supplement.
+    normalized = [65,97,99,101,105,111,117];
 
-String.prototype.stripDiacritics = function ()
+String.prototype.stripDiacritics = function()
 {
     var output = "";
     for (var indexSource = 0; indexSource < this.length; indexSource++)

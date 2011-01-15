@@ -345,6 +345,12 @@ var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
     return [CPArray class];
 }
 
+- (id)copy
+{
+    // We do this to ensure we return a CPArray.
+    return [CPArray arrayWithArray:self];
+}
+
 @end
 
 @implementation _CPKeyValueCodingSet : CPSet
@@ -400,6 +406,11 @@ var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
     return [CPSet class];
 }
 
+- (id)copy
+{
+    // We do this to ensure we return a CPSet.
+    return [CPSet setWithSet:self];
+}
 
 @end
 

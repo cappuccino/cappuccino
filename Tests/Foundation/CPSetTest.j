@@ -196,6 +196,14 @@
     [self assertFalse:[set containsObject:nil]];
 }
 
+- (void)testIsSubsetOfSet
+{
+    var set = [CPSet setWithArray:[1, 2, 3, 4, 5]];
+    [self assertTrue:[[CPSet setWithArray:[1, 2, 3]] isSubsetOfSet:set]];
+    [self assertFalse:[[CPSet setWithArray:[1, 2, 3, 100]] isSubsetOfSet:set]];
+    [self assertTrue:[[CPSet new] isSubsetOfSet:set]];
+}
+
 - (void)testDescription
 {
     var set = [CPSet new];

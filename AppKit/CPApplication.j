@@ -908,7 +908,7 @@ CPRunContinuesResponse  = -1002;
         return;
     }
 
-    if ([args class] != CPArray)
+    if (![args isKindOfClass:CPArray])
         args = [CPArray arrayWithObject:args];
 
     _args = args;

@@ -559,12 +559,13 @@ function(newValue)\
 
     if ([self scanString:@"{" intoString:NULL])
     {
-        var a = [CPMutableArray arrayWithCapacity:10];
-
         if ([self scanString:@"}" intoString:NULL])
             return [CPExpression expressionForConstantValue:a];
 
+        var a = [];
+
         [a addObject:[self parseExpression]];
+
         while ([self scanString:@"," intoString:NULL])
             [a addObject:[self parseExpression]];
 
@@ -802,7 +803,7 @@ function(newValue)\
         {
             // function - this parser allows for (max)(a, b, c) to be properly
             // recognized and even (%K)(a, b, c) if %K evaluates to "max"
-            var args = [CPMutableArray arrayWithCapacity:5];
+            var args = [];
 
             if (![left keyPath])
                 CPRaiseParseError(self, @"expression");

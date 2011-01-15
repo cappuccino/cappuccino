@@ -50,8 +50,8 @@ CPToolbarDisplayModeIconOnly            = 2;
 */
 CPToolbarDisplayModeLabelOnly           = 3;
 
-var CPToolbarsByIdentifier              = nil;
-var CPToolbarConfigurationsByIdentifier = nil;
+var CPToolbarsByIdentifier              = nil,
+    CPToolbarConfigurationsByIdentifier = nil;
 
 /*!
     @ingroup appkit

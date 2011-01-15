@@ -335,7 +335,7 @@ var CPArrayClass                                                            = Ni
     else if (objectClass === CPNumberClass || objectClass === CPDataClass || objectClass === CPStringClass)
         return object;
 
-    else if (objectClass === CPArrayClass || objectClass === CPMutableArrayClass)
+    else if (objectClass === _CPJavaScriptArray)
     {
         var index = 0,
             count = object.length,
