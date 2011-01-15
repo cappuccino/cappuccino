@@ -326,7 +326,7 @@ var themedButtonValues = nil,
 
 + (CPArray)themeShowcaseExcludes
 {
-    return ["alert", "cornerview", "columnHeader", "tableView", "tableHeaderRow", "tableDataView"];
+    return ["alert", "cornerview", "columnHeader", "tableView", "tableHeaderRow", "tableDataView", @"ruleeditor"];
 }
 
 + (CPButton)makeButton
@@ -1629,6 +1629,37 @@ var themedButtonValues = nil,
     [self registerThemeValues:themeValues forView:stepper];
 
     return stepper;
+}
+
++ (CPRuleEditor)themedRuleEditor
+{
+    var ruleEditor = [[CPRuleEditor alloc] initWithFrame:CGRectMake(0, 0, 400, 300)];
+
+    var backgroundColors = [[CPColor whiteColor], [CPColor colorWithRed:235/255 green:239/255 blue:252/255 alpha:1]],
+        selectedActiveRowColor = [CPColor colorWithHexString:@"5f83b9"],
+        selectedInactiveRowColor = [CPColor colorWithWhite:0.83 alpha:1],
+        sliceTopBorderColor = [CPColor colorWithWhite:0.9 alpha:1],
+        sliceBottomBorderColor = [CPColor colorWithWhite:0.729412 alpha:1],
+        sliceLastBottomBorderColor = [CPColor colorWithWhite:0.6 alpha:1],
+        addImage = PatternImage(@"rule-editor-add.png", 8.0, 8.0),
+        removeImage = PatternImage(@"rule-editor-remove.png", 8.0, 8.0);
+
+    var ruleEditorThemedValues =
+    [
+        [@"alternating-row-colors",         backgroundColors],
+        [@"selected-color",                 selectedActiveRowColor, CPThemeStateNormal],
+        [@"selected-color",                 selectedInactiveRowColor, CPThemeStateDisabled],
+        [@"slice-top-border-color",         sliceTopBorderColor],
+        [@"slice-bottom-border-color",      sliceBottomBorderColor],
+        [@"slice-last-bottom-border-color", sliceLastBottomBorderColor],
+        [@"font",                           [CPFont systemFontOfSize:10.0]],
+        [@"add-image",                      addImage],
+        [@"remove-image",                   removeImage]
+    ];
+
+    [self registerThemeValues:ruleEditorThemedValues forView:ruleEditor];
+
+    return ruleEditor;
 }
 
 @end

@@ -1,0 +1,490 @@
+/*
+ * CPPredicateEditor.j
+ * AppKit
+ *
+ * Created by cacaodev.
+ * Copyright 2011, cacaodev.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+@import "CPRuleEditor.j"
+@import "_CPPredicateEditorTree.j"
+@import "_CPPredicateEditorRowNode.j"
+@import "CPPredicateEditorRowTemplate.j"
+
+@implementation CPPredicateEditor : CPRuleEditor
+{
+    CPArray _allTemplates;
+    CPArray _rootTrees;
+    CPArray _rootHeaderTrees;
+    id      _predicateTarget @accessors(property=target);
+    SEL     _predicateAction @accessors(property=action);
+}
+
+#pragma mark public methods
+/*!
+    @ingroup appkit
+    @class CPPredicateEditor
+
+    @brief CPPredicateEditor is a subclass of CPRuleEditor that is specialized for editing CPPredicate objects.
+
+    CPPredicateEditor provides a CPPredicate property—objectValue (inherited from CPControl)—that you can get and set directly, and that you can bind using bindings (you typically configure a predicate editor in Interface Builder). CPPredicateEditor depends on another class, CPPredicateEditorRowTemplate, that describes the available predicates and how to display them.
+
+    Unlike CPRuleEditor, CPPredicateEditor does not depend on its delegate to populate its rows (and does not call the populating delegate methods). Instead, its rows are populated from its objectValue property (an instance of CPPredicate). CPPredicateEditor relies on instances CPPredicateEditorRowTemplate, which are responsible for mapping back and forth between the displayed view values and various predicates.
+
+    CPPredicateEditor exposes one property, rowTemplates, which is an array of CPPredicateEditorRowTemplate objects.
+*/
+
+/*!
+    @brief Returns the row templates for the receiver.
+    @return The row templates for the receiver.
+    @discussion Until otherwise set, this contains a single compound CPPredicateEditorRowTemplate object.
+    @see setRowTemplates:
+*/
+- (CPArray)rowTemplates
+{
+    return _allTemplates;
+}
+
+/*!
+    @brief Sets the row templates for the receiver.
+    @param rowTemplates An array of CPPredicateEditorRowTemplate objects.
+    @see rowTemplates
+*/
+- (void)setRowTemplates:(id)rowTemplates
+{
+    if (_allTemplates == rowTemplates)
+        return;
+
+    _allTemplates = rowTemplates;
+
+    [self _updateItemsByCompoundTemplates];
+    [self _updateItemsBySimpleTemplates];
+
+    if ([self numberOfRows] > 0)
+    {
+        var predicate = [super predicate];
+        [self _reflectPredicate:predicate];
+    }
+}
+
+/*! @cond */
+- (void)_initRuleEditorShared
+{
+    [super _initRuleEditorShared];
+
+    _rootTrees = [CPArray array];
+    _rootHeaderTrees = [CPArray array];
+}
+
+- (id)initWithFrame:(CGRect)aFrame
+{
+    self = [super initWithFrame:aFrame];
+    if (self != nil)
+    {
+        var initialTemplate = [[CPPredicateEditorRowTemplate alloc] initWithCompoundTypes:[CPAndPredicateType, CPOrPredicateType]];
+        _allTemplates = [CPArray arrayWithObject:initialTemplate];
+    }
+
+    return self;
+}
+
+- (id)objectValue
+{
+    return [super predicate];
+}
+
+- (void)_updateItemsBySimpleTemplates
+{
+    var templates = [CPMutableArray array],
+        count = [_allTemplates count],
+        t;
+
+    while (count--)
+    {
+        var t = _allTemplates[count];
+        if ([t _rowType] == CPRuleEditorRowTypeSimple)
+            [templates insertObject:t atIndex:0];
+    }
+
+    var trees = [self _constructTreesForTemplates:templates];
+    if ([trees count] > 0)
+        _rootTrees = [self _mergeTree:trees];
+}
+
+- (void)_updateItemsByCompoundTemplates
+{
+    var templates = [CPMutableArray array],
+        count = [_allTemplates count],
+        t;
+
+    while (count--)
+    {
+        var t = _allTemplates[count];
+        if ([t _rowType] == CPRuleEditorRowTypeCompound)
+            [templates insertObject:t atIndex:0];
+    }
+
+    var trees = [self _constructTreesForTemplates:templates];
+    if ([trees count] > 0)
+        _rootHeaderTrees = [self _mergeTree:trees];
+}
+
+- (CPArray)_constructTreesForTemplates:(id)templates
+{
+    var trees = [CPMutableArray array],
+        count = [templates count];
+
+    for (var i = 0; i < count; i++)
+    {
+        var tree = [self _constructTreeForTemplate:templates[i]];
+        [trees addObjectsFromArray:tree];
+    }
+
+    return trees;
+}
+
+- (id)_mergeTree:(id)tree
+{
+    var merged = [CPMutableArray array],
+        titles = [CPMutableArray array],
+        count = [tree count];
+
+    for (var i = 0; i < count; i++)
+    {
+        var t = tree[i],
+            title = [CPString stringWithString:[t title]];
+
+        if ([titles containsObject:title])
+        {
+            CPLogConsole("CPPredicate does not support templates merging yet. Ignoring duplicate template: " + [t description]);
+            continue;
+        }
+
+        [merged addObject:t];
+        [titles addObject:title];
+    }
+
+    return merged;
+}
+
+- (id)_constructTreeForTemplate:(CPPredicateEditorRowTemplate)aTemplate
+{
+    var tree = [CPArray array],
+        templateViews = [aTemplate templateViews],
+        count = [templateViews count];
+
+    while (count--)
+    {
+        var children = [CPArray array],
+            itemsCount = 0,
+            menuIndex = -1,
+            itemsArray,
+
+            templateView = [templateViews objectAtIndex:count],
+            isPopup = [templateView isKindOfClass:[CPPopUpButton class]];
+
+        if (isPopup)
+        {
+            itemArray = [[templateView itemArray] valueForKey:@"title"];
+            itemsCount = [itemArray count],
+            menuIndex = 0;
+        }
+
+        for (; menuIndex < itemsCount; menuIndex++)
+        {
+            var item = [_CPPredicateEditorTree new];
+            [item setIndexIntoTemplate:count];
+            [item setTemplate:aTemplate];
+            [item setMenuItemIndex:menuIndex];
+            if (isPopup)
+                [item setTitle:[itemArray objectAtIndex:menuIndex]];
+
+            [children addObject:item];
+        }
+
+        [children makeObjectsPerformSelector:@selector(setChildren:) withObject:tree];
+        tree = children;
+    }
+
+    return tree;
+}
+
+#pragma mark Set the Predicate
+
+- (void)setObjectValue:(id)objectValue
+{
+    if (![[objectValue predicateFormat] isEqualToString:[[super predicate] predicateFormat]]) // ??
+        [self _reflectPredicate:objectValue];
+}
+
+- (void)_reflectPredicate:(id)predicate
+{
+    var animation = _currentAnimation;
+    _currentAnimation = nil;
+
+    if (predicate != nil)
+    {
+        if ((_nestingMode == CPRuleEditorNestingModeSimple || _nestingMode == CPRuleEditorNestingModeCompound)
+            && [predicate isKindOfClass:[CPComparisonPredicate class]])
+            predicate = [[CPCompoundPredicate alloc] initWithType:[self _compoundPredicateTypeForRootRows] subpredicates:[CPArray arrayWithObject:predicate]];
+
+        var row = [self _rowObjectFromPredicate:predicate];
+        if (row != nil)
+            [_boundArrayOwner setValue:[CPArray arrayWithObject:row] forKey:_boundArrayKeyPath];
+    }
+
+    [self setAnimation:animation];
+}
+
+- (id)_rowObjectFromPredicate:(CPPredicate)predicate
+{
+    var quality, // TODO: We should use this ref somewhere !
+        type,
+        matchedTemplate = [CPPredicateEditorRowTemplate _bestMatchForPredicate:predicate inTemplates:[self rowTemplates] quality:quality];
+
+    if (matchedTemplate == nil)
+        return nil;
+
+    var copyTemplate = [matchedTemplate copy],
+        subpredicates = [matchedTemplate displayableSubpredicatesOfPredicate:predicate];
+
+    if (subpredicates == nil)
+    {
+        [copyTemplate _setComparisonPredicate:predicate];
+        type = CPRuleEditorRowTypeSimple;
+    }
+    else
+    {
+        [copyTemplate _setCompoundPredicate:predicate];
+        type = CPRuleEditorRowTypeCompound;
+    }
+
+    var row = [self _rowFromTemplate:copyTemplate originalTemplate:matchedTemplate withRowType:type];
+
+    if (subpredicates == nil)
+        return row;
+
+    var count = [subpredicates count],
+        subrows = [CPMutableArray array];
+
+    for (var i = 0; i < count; i++)
+    {
+        var subrow = [self _rowObjectFromPredicate:subpredicates[i]];
+        if (subrow != nil)
+            [subrows addObject:subrow];
+    }
+
+    [row setValue:subrows forKey:[super subrowsKeyPath]];
+
+    return row;
+}
+
+- (id)_rowFromTemplate:(CPPredicateEditorRowTemplate)aTemplate originalTemplate:(CPPredicateEditorRowTemplate)originalTemplate withRowType:(CPRuleEditorRowType)rowType
+{
+    var criteria = [CPArray array],
+        values = [CPArray array],
+        templateViews = [aTemplate templateViews],
+        rootItems,
+        count;
+
+    rootItems = (rowType == CPRuleEditorRowTypeSimple) ? _rootTrees : _rootHeaderTrees;
+
+    while ((count = [rootItems count]) > 0)
+    {
+        var treeChild;
+        for (var i = 0; i < count; i++)
+        {
+            treeChild = [rootItems objectAtIndex:i];
+
+            var currentView = [templateViews objectAtIndex:[treeChild indexIntoTemplate]],
+                menuItemIndex = [treeChild menuItemIndex];
+
+            if (menuItemIndex == -1 || [[treeChild title] isEqual:[currentView titleOfSelectedItem]])
+            {
+                var node = [_CPPredicateEditorRowNode _rowNodeFromTree:treeChild withTemplate:aTemplate];
+                [criteria addObject:node];
+                [values addObject:[node displayValue]];
+                break;
+            }
+        }
+
+        rootItems = [treeChild children];
+    }
+
+    var row = [CPDictionary dictionaryWithObjectsAndKeys:criteria, @"criteria", values, @"displayValues", rowType, @"rowType"];
+
+    return row;
+}
+
+#pragma mark Get the predicate
+
+- (void)_updatePredicate
+{
+    //[self willChangeValueForKey:@"objectValue"];
+    [self _updatePredicateFromRows];
+    //[self didChangeValueForKey:@"objectValue"];
+}
+
+- (void)_updatePredicateFromRows
+{
+    var rootRowsArray = [super _rootRowsArray],
+        subpredicates = [CPMutableArray array],
+        count = count2 = [rootRowsArray count],
+        predicate;
+
+    while (count--)
+    {
+        var item = [rootRowsArray objectAtIndex:count],
+            subpredicate = [self _predicateFromRowItem:item];
+
+        if (subpredicate != nil)
+            [subpredicates insertObject:subpredicate atIndex:0];
+    }
+
+    if (_nestingMode != CPRuleEditorNestingModeList && count2 == 1)
+        predicate = [subpredicates lastObject];
+    else
+        predicate = [[CPCompoundPredicate alloc] initWithType:[self _compoundPredicateTypeForRootRows] subpredicates:subpredicates];
+
+    [super _setPredicate:predicate];
+}
+
+- (id)_predicateFromRowItem:(id)rowItem
+{
+    var subpredicates = [CPArray array],
+        subrows = [rowItem valueForKey:[super subrowsKeyPath]],
+        count = [subrows count];
+
+    for (var i = 0; i < count; i++)
+    {
+        var predicate = [self _predicateFromRowItem:subrows[i]];
+        [subpredicates addObject:predicate];
+    }
+
+    var criteria = [rowItem valueForKey:[super criteriaKeyPath]],
+        displayValues = [rowItem valueForKey:[super displayValuesKeyPath]],
+        leftNode = [criteria objectAtIndex:0],
+        templateViews = [leftNode templateViews],
+        count = [criteria count];
+
+    for (var j = 0; j < count; j++)
+    {
+        var view = [templateViews objectAtIndex:j],
+            value = [displayValues objectAtIndex:j];
+
+        if ([view respondsToSelector:@selector(selectItemWithTitle:)])
+            [view selectItemWithTitle:value];
+        else
+            [view setObjectValue:[value objectValue]];
+
+    }
+
+    return [[leftNode templateForRow] predicateWithSubpredicates:subpredicates];
+}
+
+- (CPCompoundPredicateType)_compoundPredicateTypeForRootRows
+{
+    return CPAndPredicateType;
+}
+
+#pragma mark Control delegate
+
+- (void)_setDefaultTargetAndActionOnView:(CPView)view
+{
+    if ([view isKindOfClass:[CPControl class]])
+    {
+        [view setAction:@selector(_templateControlValueDidChange:)];
+        [view setTarget:self];
+    }
+}
+
+- (void)controlTextDidEndEditing:(CPNotification)notification
+{
+    [self _updatePredicate];
+}
+
+- (void)_templateControlValueDidChange:(id)sender
+{
+    //[self _updatePredicate];
+}
+
+- (void)controlTextDidBeginEditing:(CPNotification)notification
+{
+}
+
+- (void)controlTextDidChange:(CPNotification)notification
+{
+}
+
+#pragma mark RuleEditor delegate methods
+
+- (int)_queryNumberOfChildrenOfItem:(id)rowItem withRowType:(int)type
+{
+    if (rowItem == nil)
+    {
+        var trees = (type == CPRuleEditorRowTypeSimple) ? _rootTrees : _rootHeaderTrees;
+        return [trees count];
+    }
+
+    return [[rowItem children] count];
+}
+
+- (id)_queryChild:(int)index ofItem:(id)rowItem withRowType:(int)type
+{
+    if (rowItem == nil)
+    {
+        var trees = (type == CPRuleEditorRowTypeSimple) ? _rootTrees : _rootHeaderTrees;
+        return [_CPPredicateEditorRowNode rowNodeFromTree:trees[index]];
+    }
+
+    return [[rowItem children] objectAtIndex:index];
+}
+
+- (id)_queryValueForItem:(id)rowItem inRow:(int)rowIndex
+{
+    [rowItem copyTemplateIfNecessary];
+    return [rowItem displayValue];
+}
+
+@end
+
+var CPPredicateTemplatesKey = @"CPPredicateTemplates";
+
+@implementation CPPredicateEditor (CPCoding)
+
+- (id)initWithCoder:(id)aCoder
+{
+    self = [super initWithCoder:aCoder];
+    if (self != nil)
+    {
+        var nibTemplates = [aCoder decodeObjectForKey:CPPredicateTemplatesKey];
+        if (nibTemplates != nil)
+            [self setRowTemplates:nibTemplates];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(id)aCoder
+{
+    [super encodeWithCoder:aCoder];
+    [aCoder encodeObject:_allTemplates forKey:CPPredicateTemplatesKey];
+}
+
+@end
+
+/*! @endcond */
