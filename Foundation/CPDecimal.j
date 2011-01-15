@@ -102,7 +102,7 @@ CPDecimal format:
 function CPDecimalMakeWithString(string, locale)
 {
     if (!string)
-        return CPDecimalMakeZero();
+        return CPDecimalMakeNaN();
 
     // Regexp solution as found in JSON spec, with working regexp (I added groupings)
     // Test here: http://www.regexplanet.com/simple/index.html
@@ -116,7 +116,7 @@ function CPDecimalMakeWithString(string, locale)
     // If yes simply add '?' after integer part group, ie ([+\-]?)((?:0|[1-9]\d*)?)
     var matches = string.match(/^([+\-]?)((?:0|[1-9]\d*))(?:\.(\d*))?(?:[eE]([+\-]?)(\d+))?$/);
     if (!matches)
-        return nil;
+        return CPDecimalMakeNaN();
 
     var ds = matches[1],
         intpart = matches[2],
@@ -143,7 +143,7 @@ function CPDecimalMakeWithString(string, locale)
     }
 
     if (exponent > CPDecimalMaxExponent || exponent < CPDecimalMinExponent)
-        return nil;
+        return CPDecimalMakeNaN();
 
     // Representation internally starts at most significant digit
     var m = [CPArray array],
@@ -190,7 +190,7 @@ function CPDecimalMakeWithParts(mantissa, exponent)
         [m addObject: 0];
 
     if (exponent > CPDecimalMaxExponent || exponent < CPDecimalMinExponent)
-        return nil;
+        return CPDecimalMakeNaN();
 
     // remaining digits are disposed of via truncation
     while ((mantissa > 0) && ([m count] < CPDecimalMaxDigits)) // count selector here could be optimised away
@@ -256,7 +256,7 @@ function _CPDecimalMakeMinimum()
         i = 0;
     for (; i < CPDecimalMaxDigits; i++)
         s += "9";
-    s += "e" + CPDecimalMinExponent;
+    s += "e" + CPDecimalMaxExponent;
     return CPDecimalMakeWithString(s);
 }
 
