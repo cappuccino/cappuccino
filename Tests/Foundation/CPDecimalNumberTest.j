@@ -532,4 +532,18 @@
     [self assert:"82346.2341144" equals:[dcmn descriptionWithLocale:nil] message:"descriptionWithLocale: - large number"];
 }
 
+
+- (void)testEncoding
+{
+    var number = [CPDecimalNumber decimalNumberWithString:@"-1.233e24"],
+        encoded = [CPKeyedArchiver archivedDataWithRootObject:number],
+        decoded = [CPKeyedUnarchiver unarchiveObjectWithData:encoded];
+
+    [self assert:21 equals:decoded._data._exponent message:"exponent not unarchived correctly"];
+    [self assert:[1,2,3,3] equals:decoded._data._mantissa message:"mantissa  not unarchived correctly"];
+    [self assert:YES equals:decoded._data._isNegative message:"sign  not unarchived correctly"];
+    [self assert:NO equals:decoded._data._isNaN message:"isNaN  not unarchived correctly"];
+    [self assert:YES equals:decoded._data._isCompact message:"isCompact not unarchived correctly"];
+}
+
 @end

@@ -754,3 +754,47 @@ var CPDefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundi
 }
 
 @end
+
+// CPCoding category
+var CPDecimalNumberDecimalExponent      = @"CPDecimalNumberDecimalExponent",
+    CPDecimalNumberDecimalIsNegative    = @"CPDecimalNumberDecimalIsNegative",
+    CPDecimalNumberDecimalIsCompact     = @"CPDecimalNumberDecimalIsCompact",
+    CPDecimalNumberDecimalIsNaN         = @"CPDecimalNumberDecimalIsNaN",
+    CPDecimalNumberDecimalMantissa      = @"CPDecimalNumberDecimalMantissa";
+
+@implementation CPDecimalNumber (CPCoding)
+
+/*!
+    Called by CPCoder's \e decodeObject: to initialise the object with an archived one.
+    @param aCoder a \c CPCoder instance
+*/
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    if (self)
+    {
+        var dcm = CPDecimalMakeZero();
+        dcm._exponent       = [aCoder decodeIntForKey:CPDecimalNumberDecimalExponent];
+        dcm._isNegative     = [aCoder decodeBoolForKey:CPDecimalNumberDecimalIsNegative];
+        dcm._isCompact      = [aCoder decodeBoolForKey:CPDecimalNumberDecimalIsCompact];
+        dcm._isNaN          = [aCoder decodeBoolForKey:CPDecimalNumberDecimalIsNaN];
+        dcm._mantissa       = [aCoder decodeObjectForKey:CPDecimalNumberDecimalMantissa];
+        [self initWithDecimal:dcm];
+    }
+
+    return self;
+}
+
+/*!
+    Called by CPCoder's \e encodeObject: to archive the object instance.
+    @param aCoder a \c CPCoder instance
+*/
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeInt:_data._exponent forKey:CPDecimalNumberDecimalExponent];
+    [aCoder encodeBool:_data._isNegative forKey:CPDecimalNumberDecimalIsNegative];
+    [aCoder encodeBool:_data._isCompact forKey:CPDecimalNumberDecimalIsCompact];
+    [aCoder encodeBool:_data._isNaN forKey:CPDecimalNumberDecimalIsNaN];
+    [aCoder encodeObject:_data._mantissa forKey:CPDecimalNumberDecimalMantissa];
+}
+
+@end
