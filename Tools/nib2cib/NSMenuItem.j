@@ -68,7 +68,7 @@
 
 //      _toolTip;
 
-//      _representedObject = [aCoder decodeObjectForKey:CPMenuItemRepresentedObjectKey];
+        _representedObject = [aCoder decodeObjectForKey:"NSRepObject"];
     }
 
     return self;
