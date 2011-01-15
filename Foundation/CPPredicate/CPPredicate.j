@@ -1,6 +1,29 @@
+/*
+ * CPPredicate.j
+ *
+ * CPPredicate parsing based on NSPredicate.m in GNUStep Base Library (http://www.gnustep.org/)
+ * Copyright (c) 2005 Free Software Foundation.
+ *
+ * Created by cacaodev.
+ * Copyright 2010.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
-@import "CPValue.j"
 @import "CPArray.j"
+@import "CPDictionary.j"
 @import "CPSet.j"
 @import "CPNull.j"
 @import "CPScanner.j"
@@ -776,14 +799,27 @@ function(newValue)\
             if (![self scanString:@"]" intoString:NULL])
                 CPRaiseParseError(self, @"expression");
         }
-        else if ([self scanString:@":(" intoString:NULL])
+        else if ([self scanString:@":" intoString:NULL])
         {
             // function - this parser allows for (max)(a, b, c) to be properly
             // recognized and even (%K)(a, b, c) if %K evaluates to "max"
-            var args = [];
 
             if (![left keyPath])
                 CPRaiseParseError(self, @"expression");
+
+            var selector = [left keyPath] + @":",
+                args = [];
+
+            if (![self scanString:@"(" intoString:NULL])
+            {
+                var str;
+                [self scanCharactersFromSet:[CPCharacterSet lowercaseLetterCharacterSet] intoString:REFERENCE(str)];
+
+                if (![self scanString:@":(" intoString:NULL])
+                    CPRaiseParseError(self, @"expression");
+
+                selector += str + @":";
+            }
 
             if (![self scanString:@")" intoString:NULL])
             {
@@ -794,7 +830,8 @@ function(newValue)\
                 if (![self scanString:@")" intoString:NULL])
                     CPRaiseParseError(self, @"expression");
             }
-            left = [CPExpression expressionForFunction:([left keyPath] + ":") arguments:args];
+
+            left = [CPExpression expressionForFunction:selector arguments:args];
         }
         else if ([self scanString:@"UNION" intoString:NULL])
         {

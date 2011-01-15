@@ -272,7 +272,7 @@
     [self assertTrue:[predicate evaluateWithObject:dict] message:[predicate description] + " should be true"];
 
 // Test Symbolic token
-    predicate = [CPPredicate predicateWithFormat:@"Record1.Children[FIRST] = 'Kid1'"];
+    predicate = [CPPredicate predicateWithFormat:@"Record1.Children[  FIRST ] = 'Kid1'"];
     [self assertTrue:[predicate evaluateWithObject:dict] message:[predicate description] + " should be true"];
 
     predicate = [CPPredicate predicateWithFormat:@"Record1.Children[1] = 'Kid2'"];
@@ -332,8 +332,8 @@
     predicate = [CPPredicate predicateWithFormat: @"sum:(1,1) = 2"];
     [self assertTrue:[predicate evaluateWithObject:nil] message:"Predicate " + predicate + " should evaluate to TRUE"];
 
-//  predicate = [CPPredicate predicateWithFormat: @"multiply:by:(5,3) = 15"];
-//  [self assertTrue:[predicate evaluateWithObject:nil] message:"Predicate " + predicate + " should evaluate to TRUE"];
+    predicate = [CPPredicate predicateWithFormat: @"multiply:by:(5,3) = 15"];
+    [self assertTrue:[predicate evaluateWithObject:nil] message:"Predicate " + predicate + " should evaluate to TRUE"];
 
 // TEST custom functions
     predicate = [CPPredicate predicateWithFormat:@"FUNCTION('a/path', 'lastPathComponent') = 'path'"];
@@ -342,14 +342,16 @@
     predicate = [CPPredicate predicateWithFormat:@"FUNCTION('a/path', 'substringFromIndex:', 2) = 'path'"];
     [self assertTrue:[predicate evaluateWithObject:nil] message:"Predicate " + predicate + " should evaluate to TRUE"];
 
+    predicate = [CPPredicate predicateWithFormat:@"FUNCTION('toto', 'stringByReplacingOccurrencesOfString:withString:', 'o', 'a') == 'tata'"];
+    [self assertTrue:[predicate evaluateWithObject:nil] message:"Predicate " + predicate + " should be TRUE"];
+
 // TEST Subquery -- This means: search people who have 2 boys.
     predicate = [CPPredicate predicateWithFormat: @"SUBQUERY(Record1.Children, $x, $x BEGINSWITH 'Kid')[SIZE] = 2"];
     [self assertTrue:[predicate evaluateWithObject:dict] message:"Predicate " + predicate + " should evaluate to TRUE"];
 
 // Test Set expressions
-// Parsing is ok but the evaluation of this predicate will return NO for 2 reasons:
-// 1- CPSet -isEqual: is unimplemented.
-// 2- lhs will evaluate to a CPSet and rhs to a CPArray (aggregate exp). Comparing sets against arrays will always fail in CPComparisonPredicate. This is also cocoa behavior but i guess it's for historical reasons (set expressions are 10.5+) and should be changed in capp in my opinion.
+// Parsing is ok but the evaluation of this predicate will return NO because:
+// - lhs will evaluate to a CPSet and rhs to a CPArray (aggregate exp). Comparing sets against arrays will always fail in CPComparisonPredicate. This is also cocoa behavior but i guess it's for historical reasons (set expressions are 10.5+) and should be changed in capp in my opinion.
     var object = [CPDictionary dictionaryWithObject:[CPSet setWithObjects:@"a"] forKey:"a"],
         result = [CPSet setWithObjects:@"a",@"b"];
 
