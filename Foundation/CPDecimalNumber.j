@@ -172,21 +172,19 @@ var CPDefaultDcmHandler = nil;
 {
     switch (error)
     {
-        case CPCalculationNoError:          return nil;
+        case CPCalculationNoError:          break;
         case CPCalculationOverflow:         if (_raiseOnOverflow)
                                                 [CPException raise:CPDecimalNumberOverflowException reason:("A CPDecimalNumber overflow has occured. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
                                             else
-                                                return [CPDecimalNumber maximumDecimalNumber]; // there was overflow return largest possible val
+                                                return [CPDecimalNumber notANumber];
                                             break;
         case CPCalculationUnderflow:        if (_raiseOnUnderflow)
                                                 [CPException raise:CPDecimalNumberUnderflowException reason:("A CPDecimalNumber underflow has occured. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
                                             else
-                                                return [CPDecimalNumber minimumDecimalNumber]; // there was underflow, return smallest possible value
+                                                return [CPDecimalNumber notANumber];
                                             break;
         case CPCalculationLossOfPrecision:  if (_raiseOnExactness)
                                                 [CPException raise:CPDecimalNumberExactnessException reason:("A CPDecimalNumber has been rounded off during a calculation. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
-                                            else
-                                                return nil; // Ignore.
                                             break;
         case CPCalculationDivideByZero:     if (_raiseOnDivideByZero)
                                                 [CPException raise:CPDecimalNumberDivideByZeroException reason:("A CPDecimalNumber divide by zero has occured. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
@@ -196,7 +194,7 @@ var CPDefaultDcmHandler = nil;
         default:                            [CPException raise:CPInvalidArgumentException reason:("An unknown CPDecimalNumber error has occured. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
     }
 
-  return nil;
+    return nil;
 }
 
 @end
@@ -581,7 +579,7 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
 // Thus the type is checked to send the operand to the correct compare function.
 - (CPComparisonResult)compare:(CPNumber)decimalNumber
 {
-    if ([decimalNumber class] != CPDecimalNumber)
+    if (![decimalNumber isKindOfClass:[CPDecimalNumber class]])
         decimalNumber = [CPDecimalNumber decimalNumberWithString:decimalNumber.toString()];
     return CPDecimalCompare([self decimalValue], [decimalNumber decimalValue]);
 }

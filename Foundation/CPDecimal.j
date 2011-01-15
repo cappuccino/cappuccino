@@ -146,7 +146,7 @@ function CPDecimalMakeWithString(string, locale)
         return CPDecimalMakeNaN();
 
     // Representation internally starts at most significant digit
-    var m = [CPArray array],
+    var m = [CPMutableArray array],
         i = 0;
     for (; i < (intpart?intpart.length:0); i++)
     {
@@ -177,7 +177,7 @@ function CPDecimalMakeWithString(string, locale)
 */
 function CPDecimalMakeWithParts(mantissa, exponent)
 {
-    var m = [CPArray array],
+    var m = [CPMutableArray array],
         isNegative = NO;
 
     if (mantissa < 0 )
@@ -310,7 +310,7 @@ function _CPDecimalSet(t,s)
 
 function _CPDecimalSetZero(result)
 {
-    result._mantissa = [CPArray arrayWithObject:0];
+    result._mantissa = [CPMutableArray arrayWithObject:0];
     result._exponent = 0;
     result._isNegative = NO;
     result._isCompact = YES;
@@ -319,7 +319,7 @@ function _CPDecimalSetZero(result)
 
 function _CPDecimalSetOne(result)
 {
-    result._mantissa = [CPArray arrayWithObject:1];
+    result._mantissa = [CPMutableArray arrayWithObject:1];
     result._exponent = 0;
     result._isNegative = NO;
     result._isCompact = YES;
@@ -362,6 +362,9 @@ function CPDecimalCopy(dcm)
 */
 function CPDecimalCompare(leftOperand, rightOperand)
 {
+    if (leftOperand._isNaN && rightOperand._isNaN)
+        return CPOrderedSame;
+
     if (leftOperand._isNegative != rightOperand._isNegative)
     {
         if (rightOperand._isNegative)
@@ -756,7 +759,7 @@ function _SimpleDivide(result, leftOperand, rightOperand, roundingMode)
 
     _CPDecimalSetZero(result);
 
-    n1._mantissa = [CPArray array];
+    n1._mantissa = [CPMutableArray array];
 
     while ((k < [leftOperand._mantissa count]) || ([n1._mantissa count]
                                                     && !(([n1._mantissa count] == 1) && (n1._mantissa[0] == 0))))
@@ -1432,6 +1435,9 @@ function CPDecimalString(dcm, locale)
 {
     // Cocoa seems to just add all the zeros... this maybe controlled by locale,
     // will check.
+    if (dcm._isNaN)
+        return @"NaN";
+
     var string = @"",
         i = 0;
 
