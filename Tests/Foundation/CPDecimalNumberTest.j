@@ -93,7 +93,7 @@
     [self assert:NO equals:dcm._isNegative message:"decimalNumberWithMantissa:exponent:isNegative: - sign"];
 
     // Def behavior
-    [self assert:[CPDecimalNumber defaultBehavior] equals:_cappdefaultDcmHandler message:"defaultBehavior: - returned different object"];
+    [self assertTrue:[CPDecimalNumber defaultBehavior] message:"defaultBehavior: - returned nothing"];
 
     [CPDecimalNumber setDefaultBehavior:_dcmnhWithExactness];
     [self assertTrue:[CPDecimalNumber defaultBehavior]._raiseOnExactness message:"setDefaultBehavior: - new behavior not set"];
@@ -108,7 +108,7 @@
 
     dcmn = [CPDecimalNumber minimumDecimalNumber];
     dcm = [dcmn decimalValue];
-    [self assert:CPDecimalMinExponent equals:dcm._exponent message:"minimumDecimalNumber: - exponent"];
+    [self assert:CPDecimalMaxExponent equals:dcm._exponent message:"minimumDecimalNumber: - exponent"];
     [self assert:[9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9] equals:dcm._mantissa message:"minimumDecimalNumber: - mantissa"];
     [self assert:YES equals:dcm._isNegative message:"minimumDecimalNumber: - sign"];
 
@@ -139,63 +139,26 @@
     dcm = [dcmn boolValue];
     [self assert:true equals:dcm message:"boolValue: - should be true"];
 
-    // exceptions
-    try {
-        dcmn = [[CPDecimalNumber alloc] initWithString:@"111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"];
-        [self fail:"initWithString: TEX1: overflow from string"];
-    } catch (e)
-    {
-        if ((e.isa) && [e name] == AssertionFailedError)
-            throw e;
-    }
-    try {
-        dcmn = [[CPDecimalNumber alloc] initWithString:@"foo"];
-        [self fail:"initWithString: TEX2: invalid string"];
-    } catch (e)
-    {
-        if ((e.isa) && [e name] == AssertionFailedError)
-            throw e;
-    }
-    try {
-        dcmn = [[CPDecimalNumber alloc] initWithString:@".123"];
-        [self fail:"initWithString: TEX3: invalid string"];
-    } catch (e)
-    {
-        if ((e.isa) && [e name] == AssertionFailedError)
-            throw e;
-    }
-    try {
-        dcmn = [[CPDecimalNumber alloc] initWithString:@"-.123"];
-        [self fail:"initWithString: TEX4: invalid string"];
-    } catch (e)
-    {
-        if ((e.isa) && [e name] == AssertionFailedError)
-            throw e;
-    }
-    try {
-        dcmn = [[CPDecimalNumber alloc] initWithString:@"0123"];
-        [self fail:"initWithString: TEX5: invalid string"];
-    } catch (e)
-    {
-        if ((e.isa) && [e name] == AssertionFailedError)
-            throw e;
-    }
-    try {
-        dcmn = [[CPDecimalNumber alloc] initWithString:@"1e200"];
-        [self fail:"initWithString: TEX6: exponent overflow"];
-    } catch (e)
-    {
-        if ((e.isa) && [e name] == AssertionFailedError)
-            throw e;
-    }
-    try{
-        dcmn = [[CPDecimalNumber alloc] initWithString:@"12312e-23421"];
-        [self fail:"initWithString: TEX7: exponent underflow"];
-    } catch (e)
-    {
-        if ((e.isa) && [e name] == AssertionFailedError)
-            throw e;
-    }
+    dcmn = [[CPDecimalNumber alloc] initWithString:@"111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"];
+    [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 1 overflow should return NaN"];
+   
+    dcmn = [[CPDecimalNumber alloc] initWithString:@"foo"];
+    [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 2 overflow should return NaN"];
+    
+    dcmn = [[CPDecimalNumber alloc] initWithString:@".123"];
+    [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 3 overflow should return NaN"];
+    
+    dcmn = [[CPDecimalNumber alloc] initWithString:@"-.123"];
+    [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 4 overflow should return NaN"];
+    
+    dcmn = [[CPDecimalNumber alloc] initWithString:@"0123"];
+    [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 5 overflow should return NaN"];
+    
+    dcmn = [[CPDecimalNumber alloc] initWithString:@"1e200"];
+    [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 6 overflow should return NaN"];
+    
+    dcmn = [[CPDecimalNumber alloc] initWithString:@"12312e-23421"];
+    [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 7 overflow should return NaN"];
 }
 
 - (void)testAdd
@@ -530,6 +493,20 @@
     [self assert:"123456789123456789123456789000000000000000" equals:[dcmn stringValue] message:"stringValue: - large number"];
     dcmn = [CPDecimalNumber decimalNumberWithString:@"82346.2341144"];
     [self assert:"82346.2341144" equals:[dcmn descriptionWithLocale:nil] message:"descriptionWithLocale: - large number"];
+}
+
+
+- (void)testEncoding
+{
+    var number = [CPDecimalNumber decimalNumberWithString:@"-1.233e24"],
+        encoded = [CPKeyedArchiver archivedDataWithRootObject:number],
+        decoded = [CPKeyedUnarchiver unarchiveObjectWithData:encoded];
+
+    [self assert:21 equals:decoded._data._exponent message:"exponent not unarchived correctly"];
+    [self assert:[1,2,3,3] equals:decoded._data._mantissa message:"mantissa  not unarchived correctly"];
+    [self assert:YES equals:decoded._data._isNegative message:"sign  not unarchived correctly"];
+    [self assert:NO equals:decoded._data._isNaN message:"isNaN  not unarchived correctly"];
+    [self assert:YES equals:decoded._data._isCompact message:"isCompact not unarchived correctly"];
 }
 
 @end

@@ -486,11 +486,15 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 #if PLATFORM(DOM)
 
     var string = [self stringValue],
-        element = [self _inputElement];
+        element = [self _inputElement],
+        font = [self currentValueForThemeAttribute:@"font"];
+
+    // generate the font metric
+    [font _getMetrics];
 
     element.value = string;
     element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
-    element.style.font = [[self currentValueForThemeAttribute:@"font"] cssString];
+    element.style.font = [font cssString];
     element.style.zIndex = 1000;
 
     switch ([self alignment])
@@ -502,12 +506,32 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         default:                    element.style.textAlign = "left";
     }
 
-    var contentRect = [self contentRectForBounds:[self bounds]];
+    var contentRect = [self contentRectForBounds:[self bounds]],
+        verticalAlign = [self currentValueForThemeAttribute:"vertical-alignment"];
 
-    element.style.top = _CGRectGetMinY(contentRect) + "px";
+    switch(verticalAlign)
+    {
+        case CPTopVerticalTextAlignment:
+            var topPoint = (_CGRectGetMinY(contentRect) + 1) + "px"; // for the same reason we have a -1 for the left, we also have a + 1 here
+            break;
+
+        case CPCenterVerticalTextAlignment:
+            var topPoint = (_CGRectGetMidY(contentRect) - (font._lineHeight / 2) + 1) + "px";
+            break;
+
+        case CPBottomVerticalTextAlignment:
+            var topPoint = (_CGRectGetMaxY(contentRect) - font._lineHeight) + "px";
+            break;
+
+        default:
+            var topPoint = (_CGRectGetMinY(contentRect) + 1) + "px";
+            break;
+    }
+
+    element.style.top = topPoint; 
     element.style.left = (_CGRectGetMinX(contentRect) - 1) + "px"; // why -1?
     element.style.width = _CGRectGetWidth(contentRect) + "px";
-    element.style.height = _CGRectGetHeight(contentRect) + "px";
+    element.style.height = font._lineHeight + "px"; // private ivar for the line height of the DOM text at this particaulr size
 
     _DOMElement.appendChild(element);
 

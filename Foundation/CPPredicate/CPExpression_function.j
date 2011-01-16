@@ -1,8 +1,8 @@
 /*
  * CPExpression_function.j
- * Foundation
  *
- * Copyright 2009, 280 North, Inc.
+ * Created by cacaodev.
+ * Copyright 2010.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -272,7 +272,7 @@ var CPSelectorNameKey   = @"CPSelectorName",
     return ABS(num);
 }
 
-+ (CPDate)now
++ (CPDate)now:(id)_
 {
     return [CPDate date];
 }

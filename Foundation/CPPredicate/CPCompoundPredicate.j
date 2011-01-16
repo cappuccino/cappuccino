@@ -1,8 +1,11 @@
 /*
  * CPCompoundPredicate.j
- * Foundation
  *
- * Copyright 2009, 280 North, Inc.
+ * Portions based on NSCompoundPredicate.m in Cocotron (http://www.cocotron.org/)
+ * Copyright (c) 2006-2007 Christopher J. W. Lloyd
+ *
+ * Created by cacaodev.
+ * Copyright 2010.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
