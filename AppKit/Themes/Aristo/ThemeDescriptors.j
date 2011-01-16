@@ -804,6 +804,7 @@ var themedButtonValues = nil,
     // Global for reuse by CPTokenField.
     themedTextFieldValues =
     [
+        [@"vertical-alignment", CPTopVerticalTextAlignment,         CPThemeStateBezeled],
         [@"bezel-color",        bezelColor,                         CPThemeStateBezeled],
         [@"bezel-color",        bezelFocusedColor,                  CPThemeStateBezeled | CPThemeStateEditing],
         [@"bezel-color",        bezelDisabledColor,                 CPThemeStateBezeled | CPThemeStateDisabled],
