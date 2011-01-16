@@ -298,7 +298,7 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
 
 /*!
     Create a new CPDecimalNumber object uninitialised.
-    Note: eventhough CPDecimalNumber inherits from CPNumber it is not toll free
+    Note: even though CPDecimalNumber inherits from CPNumber it is not toll free
     bridged to a JS type as CPNumber is.
     @return a new CPDecimalNumber instance
 */
