@@ -176,6 +176,17 @@
     return self;
 }
 
+- (BOOL)isEqual:(id)anObject
+{
+    if (self === anObject)
+        return YES;
+
+    if (self.isa !== anObject.isa || _value !== [anObject evaluateObject:nil])
+        return NO;
+
+    return YES;
+}
+
 - (BOOL)evaluateObject:(id)object
 {
     return _value;

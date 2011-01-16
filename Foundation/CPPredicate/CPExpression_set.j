@@ -44,10 +44,10 @@
 
 - (BOOL)isEqual:(id)object
 {
-    if (self == object)
+    if (self === object)
         return YES;
 
-    if (object.isa != self.isa || [object expressionType] != [self expressionType] || ![[object leftExpression] isEqual:[self leftExpression]] || ![[object rightExpression] isEqual:[self rightExpression]])
+    if (object.isa !== self.isa || ![[object leftExpression] isEqual:_left] || ![[object rightExpression] isEqual:_right])
         return NO;
 
     return YES;

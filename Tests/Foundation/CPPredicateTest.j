@@ -382,6 +382,60 @@
     [self assertTrue:[left isEqualToSet:result] message:"Expression eval " + left + " should be " + result];
 }
 
+- (void)testExpressionAndPredicateIsEqual
+{
+    var cexp1 = [CPExpression expressionForConstantValue:2];
+    var cexp2 = [CPExpression expressionForConstantValue:2];
+    [self assert:cexp1 equals:cexp2];
+
+    var exp1 = [CPExpression expressionForKeyPath:"path"];
+    var exp2 = [CPExpression expressionForKeyPath:"path"];
+    [self assert:exp1 equals:exp2];
+
+    exp1 = [CPExpression expressionForEvaluatedObject];
+    exp2 = [CPExpression expressionForEvaluatedObject];
+    [self assert:exp1 equals:exp2];
+
+    exp1 = [CPExpression expressionForVariable:"toto"];
+    exp2 = [CPExpression expressionForVariable:"toto"];
+    [self assert:exp1 equals:exp2];
+
+    var left = [CPExpression expressionForConstantValue:[CPSet setWithObjects:@"a",@"b",@"c"]];
+    var right = [CPExpression expressionForConstantValue:[CPArray arrayWithObjects:@"a",@"b",@"d"]];
+
+    exp1 = [CPExpression expressionForIntersectSet:left with:right];
+    exp2 = [CPExpression expressionForIntersectSet:[left copy] with:[right copy]];
+    [self assert:exp1 equals:exp2];
+
+    exp1 = [CPExpression expressionForFunction:cexp1 selectorName:@"isEqual:" arguments:[CPArray arrayWithObjects:cexp2]];
+    exp2 = [CPExpression expressionForFunction:cexp1 selectorName:@"isEqual:" arguments:[CPArray arrayWithObjects:cexp2]];
+    [self assert:exp1 equals:exp2];
+
+    var aexp1 = [CPExpression expressionForAggregate:[CPArray arrayWithObjects:cexp1,cexp2]];
+    var aexp2 = [CPExpression expressionForAggregate:[CPArray arrayWithObjects:cexp1,cexp2]];
+    [self assert:aexp1 equals:aexp2];
+
+    exp1 = [CPExpression expressionForSubquery:right usingIteratorVariable:@"self" predicate:[CPPredicate predicateWithValue:YES]];
+    exp2 = [CPExpression expressionForSubquery:right usingIteratorVariable:@"self" predicate:[CPPredicate predicateWithValue:YES]];
+    [self assert:exp1 equals:exp2];
+
+    var pred1 = [CPPredicate predicateWithFormat:@"FUNCTION('toto', 'stringByReplacingOccurrencesOfString:withString:', 'o', 'a') == 'tata'"];
+    var pred2 = [CPPredicate predicateWithFormat:@"FUNCTION('toto', 'stringByReplacingOccurrencesOfString:withString:', 'o', 'a') == 'tata'"];
+    [self assert:pred1 equals:pred2];
+
+    pred1 = [CPPredicate predicateWithFormat:@"$record.$age = 34"];
+    pred2 = [CPPredicate predicateWithFormat:@"$record.$age = 34"];
+    [self assert:pred1 equals:pred2];
+
+    pred1 = [CPPredicate predicateWithFormat:@"SUBQUERY(Record1.Children, $x, $x BEGINSWITH 'Kid')[SIZE] = 2"];
+    pred2 = [CPPredicate predicateWithFormat:@"SUBQUERY(Record1.Children, $x, $x BEGINSWITH 'Kid')[SIZE] = 2"];
+    [self assert:pred1 equals:pred2];
+
+    pred1 = [CPPredicate predicateWithFormat:@"$x CONTAINS 'a'"];
+    pred2 = [CPPredicate predicateWithFormat:@"$x CONTAINS 'a'"];
+    [self assert:pred1 equals:pred2];
+}
+
 @end
 
 @implementation CPObject (PredicateTesting)

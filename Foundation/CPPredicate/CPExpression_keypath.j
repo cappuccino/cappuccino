@@ -50,7 +50,10 @@
     if (object === self)
         return YES;
 
-    return ([object keyPath] == [self keyPath]); // If it appears that parsing generates nested keypaths with different targets and same keyPath, comparing -keyPath won't work.
+    if (object.isa !== self.isa || ![[object keyPath] isEqualToString:[self keyPath]])
+        return NO;
+
+    return YES;
 }
 
 - (CPExpression)pathExpression

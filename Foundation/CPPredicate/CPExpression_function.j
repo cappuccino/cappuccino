@@ -69,10 +69,10 @@
 
 - (BOOL)isEqual:(id)object
 {
-    if (self == object)
+    if (self === object)
         return YES;
 
-    if (object.isa != self.isa || [object expressionType] != [self expressionType] || ![[object _function] isEqualToString:[self _function]] || ![[object operand] isEqual:[self operand]] || ![[object arguments] isEqualToArray:[self arguments]])
+    if (object.isa !== self.isa || ![[object _function] isEqual:_selector] || ![[object operand] isEqual:_operand] || ![[object arguments] isEqualToArray:_arguments])
         return NO;
 
     return YES;

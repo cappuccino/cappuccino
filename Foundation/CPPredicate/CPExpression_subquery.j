@@ -73,7 +73,7 @@
     if (self === object)
         return YES;
 
-    if (![_collection isEqual:[object collection]] || ![_subpredicate isEqual:[object predicate]])
+    if (object.isa !== self.isa || ![_collection isEqual:[object collection]] || ![_variableExpression isEqual:[object variableExpression]] || ![_subpredicate isEqual:[object predicate]])
         return NO;
 
     return YES;
@@ -113,6 +113,7 @@
 {
     return _variableExpression;
 }
+
 @end
 
 var CPExpressionKey     = @"CPExpression",

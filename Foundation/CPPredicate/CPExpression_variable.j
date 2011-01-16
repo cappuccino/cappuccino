@@ -45,10 +45,10 @@
 
 - (BOOL)isEqual:(id)object
 {
-    if (self == object)
+    if (self === object)
         return YES;
 
-    if (object.isa != self.isa || [object expressionType] != [self expressionType] || ![[object variable] isEqualToString:[self variable]])
+    if (object.isa !== self.isa || ![[object variable] isEqual:_variable])
         return NO;
 
     return YES;
@@ -101,4 +101,3 @@ var CPVariableKey = @"CPVariable";
 }
 
 @end
-

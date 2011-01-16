@@ -39,10 +39,10 @@
 
 - (BOOL)isEqual:(id)object
 {
-    if (self == object)
+    if (self === object)
         return YES;
 
-    if (object.isa != self.isa || [object expressionType] != [self expressionType] || ![[object collection] isEqual:[self collection]])
+    if (object.isa !== self.isa || ![[object collection] isEqual:_aggregate])
         return NO;
 
     return YES;
