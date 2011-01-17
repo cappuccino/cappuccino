@@ -274,22 +274,7 @@ var _CPMenuBarVisible               = NO,
 */
 - (void)insertItem:(CPMenuItem)aMenuItem atIndex:(unsigned)anIndex
 {
-    var menu = [aMenuItem menu];
-
-    if (menu)
-        if (menu !== self)
-            [CPException raise:CPInternalInconsistencyException reason:@"Attempted to insert item into menu that was already in another menu."];
-        else
-            return;
-
-    [aMenuItem setMenu:self];
-    [_items insertObject:aMenuItem atIndex:anIndex];
-
-    [[CPNotificationCenter defaultCenter]
-        postNotificationName:CPMenuDidAddItemNotification
-                      object:self
-                    userInfo:[CPDictionary dictionaryWithObject:anIndex forKey:@"CPMenuItemIndex"]];
-
+    [self insertObject:aMenuItem inItemsAtIndex:anIndex];
 }
 
 /*!
@@ -346,16 +331,7 @@ var _CPMenuBarVisible               = NO,
 */
 - (void)removeItemAtIndex:(unsigned)anIndex
 {
-    if (anIndex < 0 || anIndex >= _items.length)
-        return;
-
-    [_items[anIndex] setMenu:nil];
-    [_items removeObjectAtIndex:anIndex];
-
-    [[CPNotificationCenter defaultCenter]
-        postNotificationName:CPMenuDidRemoveItemNotification
-                      object:self
-                    userInfo:[CPDictionary dictionaryWithObject:anIndex forKey:@"CPMenuItemIndex"]];
+    [self removeObjectFromItemsAtIndex:anIndex];
 }
 
 /*!
@@ -364,8 +340,10 @@ var _CPMenuBarVisible               = NO,
 */
 - (void)itemChanged:(CPMenuItem)aMenuItem
 {
-    if ([aMenuItem menu] != self)
+    if ([aMenuItem menu] !== self)
         return;
+
+    [aMenuItem setValue:[aMenuItem valueForKey:@"changeCount"] + 1 forKey:@"changeCount"];
 
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPMenuDidChangeItemNotification
@@ -1035,6 +1013,61 @@ var _CPMenuBarVisible               = NO,
 
 @end
 
+@implementation CPMenu (CPKeyValueCoding)
+
+- (CPUInteger)countOfItems
+{
+    return [_items count];
+}
+
+- (CPMenuItem)objectInItemsAtIndex:(CPUInteger)anIndex
+{
+    return [_items objectAtIndex:anIndex];
+}
+
+- (CPArray)itemsAtIndexes:(CPIndexSet)indexes
+{
+    return [_items objectsAtIndexes:indexes];
+}
+
+@end
+
+@implementation CPMenu (CPKeyValueObserving)
+
+- (void)insertObject:(CPMenuItem)aMenuItem inItemsAtIndex:(CPUInteger)anIndex
+{
+    var menu = [aMenuItem menu];
+
+    if (menu)
+        if (menu !== self)
+            [CPException raise:CPInternalInconsistencyException reason:@"Attempted to insert item into menu that was already in another menu."];
+        else
+            return;
+
+    [aMenuItem setMenu:self];
+    [_items insertObject:aMenuItem atIndex:anIndex];
+
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPMenuDidAddItemNotification
+                      object:self
+                    userInfo:[CPDictionary dictionaryWithObject:anIndex forKey:@"CPMenuItemIndex"]];
+}
+
+- (void)removeObjectFromItemsAtIndex:(CPUInteger)anIndex
+{
+    if (anIndex < 0 || anIndex >= [_items count])
+        return;
+
+    [[_items objectAtIndex:anIndex] setMenu:nil];
+    [_items removeObjectAtIndex:anIndex];
+
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPMenuDidRemoveItemNotification
+                      object:self
+                    userInfo:[CPDictionary dictionaryWithObject:anIndex forKey:@"CPMenuItemIndex"]];
+}
+
+@end
 
 var CPMenuTitleKey              = @"CPMenuTitleKey",
     CPMenuNameKey               = @"CPMenuNameKey",

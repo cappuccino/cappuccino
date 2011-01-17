@@ -517,6 +517,14 @@ var concat = Array.prototype.concat,
             objj_msgSend([self objectAtIndex:index], aSelector);
 }
 
+- (void)enumerateObjectsUsingBlock:(Function)aFunction
+{
+    var index = 0,
+        count = [self count];
+
+    for (; index < count; ++index)
+        aFunction([self objectAtIndex:index], index);
+}
 
 // Comparing arrays
 /*!
