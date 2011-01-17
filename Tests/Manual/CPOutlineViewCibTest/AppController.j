@@ -1,0 +1,79 @@
+/*
+ * AppController.j
+ * CPOutlineViewCibTest
+ *
+ * Created by cacaodev on January 14, 2011.
+ * Copyright 2011, Your Company All rights reserved.
+ */
+
+@import <Foundation/CPObject.j>
+
+@implementation AppController : CPObject
+{
+    CPWindow      theWindow;
+    CPOutlineView outlineView;
+
+    CPDictionary  rootItem;
+}
+
+- (void)awakeFromCib
+{
+    var path = [[CPBundle mainBundle] pathForResource:@"InitInfo.dict"],
+        request = [CPURLRequest requestWithURL:path],
+        connection = [CPURLConnection connectionWithRequest:request delegate:self];
+
+    rootItem = nil;
+    [theWindow setFullBridge:YES];
+}
+
+- (void)connection:(CPURLConnection)connection didReceiveData:(CPString)dataString
+{
+    if (!dataString)
+        return;
+
+    var data = [[CPData alloc] initWithRawString:dataString],
+        rootItem = [CPPropertyListSerialization propertyListFromData:data format:CPPropertyListXMLFormat_v1_0];
+
+    [outlineView reloadData];
+}
+
+// ========================== 
+// ! CPOutlineView Delegate   
+// ========================== 
+
+- (int)outlineView:(CPOutlineView)theOutlineView numberOfChildrenOfItem:(id)theItem
+{
+    if (theItem == nil)
+        theItem = rootItem;
+
+    if ([theItem isKindOfClass:[CPString class]])
+        return 0;
+
+    return [[theItem objectForKey:"Children"] count];
+}
+
+- (id)outlineView:(CPOutlineView)theOutlineView child:(int)theIndex ofItem:(id)theItem
+{
+    if (theItem == nil)
+        theItem = rootItem;
+
+    return [[theItem objectForKey:"Children"] objectAtIndex:theIndex];
+}
+
+- (BOOL)outlineView:(CPOutlineView)theOutlineView isItemExpandable:(id)theItem
+{
+    if (theItem == nil)
+        theItem = rootItem;
+
+    return ![theItem isKindOfClass:[CPString class]];
+}
+
+- (id)outlineView:(CPOutlineView)anOutlineView objectValueForTableColumn:(CPTableColumn)theColumn byItem:(id)theItem
+{
+    if ([theItem isKindOfClass:[CPString class]])
+        return theItem;
+
+    return [theItem objectForKey:"Name"];
+}
+
+@end

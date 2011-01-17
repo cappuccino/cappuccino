@@ -5,6 +5,8 @@
 	<key>Main cib file base name</key>
 	<string>MainMenu.cib</string>
 	<key>CPBundleName</key>
-	<string>__project.name__</string>
+	<string>CPOutlineViewCibTest</string>
+	<key>CPPrincipalClass</key>
+	<string>CPApplication</string>
 </dict>
 </plist>

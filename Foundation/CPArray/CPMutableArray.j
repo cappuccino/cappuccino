@@ -136,15 +136,15 @@
     @param anIndexSet the set of indices to array positions that will be replaced
     @param objects the array of objects to place in the specified indices
 */
-- (void)replaceObjectsAtIndexes:(CPIndexSet)anIndexSet withObjects:(CPArray)objects
+- (void)replaceObjectsAtIndexes:(CPIndexSet)indexes withObjects:(CPArray)objects
 {
     var i = 0,
-        index = [anIndexSet firstIndex];
+        index = [indexes firstIndex];
 
     while (index !== CPNotFound)
     {
-        [self replaceObjectAtIndex:index withObject:objects[i++]];
-        index = [anIndexSet indexGreaterThanIndex:index];
+        [self replaceObjectAtIndex:index withObject:[objects objectAtIndex:i++]];
+        index = [indexes indexGreaterThanIndex:index];
     }
 }
 

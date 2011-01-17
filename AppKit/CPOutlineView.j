@@ -515,7 +515,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 /*!
     Sets the table column you want to display the disclosure button in.
-
+    If you do not want an outline column pass nil. 
     @param aTableColumn - The CPTableColumn you want to use for hierarchical data.
 */
 - (void)setOutlineTableColumn:(CPTableColumn)aTableColumn
@@ -954,6 +954,29 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     [self reloadItem:nil reloadChildren:YES];
 }
 
+/*!
+    Adds a new table column to the reciever. If this is the first column added it will automatically be set to the outline column.
+    Also see -setOutlineTableColumn:
+    NOTE: This behavior deviates from cocoa slightly.
+    @param CPTableColumn aTableColumn - The table column to add.
+*/
+- (void)addTableColumn:(CPTableColumn)aTableColumn
+{
+    [super addTableColumn:aTableColumn];
+
+    if ([self numberOfColumns] === 1)
+        _outlineTableColumn = aTableColumn;
+}
+/*!
+    @ignore
+*/
+- (void)removeTableColumn:(CPTableColumn)aTableColumn
+{
+    if (aTableColumn === [self outlineTableColumn])
+        CPLog("CPOutlineView cannot remove outlineTableColumn with removeTableColumn:. User setOutlineTableColumn: instead.");
+    else
+        [super removeTableColumn:aTableColumn];
+}
 /*!
     @ignore
     We overide this because we need a special behaviour for the outline column

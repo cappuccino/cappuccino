@@ -77,6 +77,8 @@
     id              _representedObject;
     CPView          _view;
 
+    int             _changeCount;
+
     _CPMenuItemView _menuItemView;
 }
 
@@ -98,12 +100,14 @@
 
     if (self)
     {
+        _changeCount = 0;
         _isSeparator = NO;
 
         _title = aTitle;
         _action = anAction;
 
         _isEnabled = YES;
+        _isHidden = NO;
 
         _tag = 0;
         _state = CPOffState;
@@ -890,6 +894,7 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
 
     if (self)
     {
+        _changeCount = 0;
         _isSeparator = [aCoder containsValueForKey:CPMenuItemIsSeparatorKey] && [aCoder decodeBoolForKey:CPMenuItemIsSeparatorKey];
 
         _title = [aCoder decodeObjectForKey:CPMenuItemTitleKey];

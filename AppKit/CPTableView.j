@@ -1933,6 +1933,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             }
         }
     }
+
+    // now that we've reached the end we know there are likely rounding errors
+    // so we should size the last resized to fit
+    var delta = superviewWidth - _CGRectGetMaxX([self rectOfColumn:[self numberOfColumns] - 1]),
+        newSize = [item width] + delta;
+
+    [item _tryToResizeToWidth:newSize];
 }
 
 /*!

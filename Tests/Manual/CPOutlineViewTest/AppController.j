@@ -180,13 +180,13 @@ CustomOutlineViewDragType = @"CustomOutlineViewDragType";
 
     var column = [[CPTableColumn alloc] initWithIdentifier:@"One"];
     [_outlineView addTableColumn:column];
-    [_outlineView setOutlineTableColumn:column];
+    //[_outlineView setOutlineTableColumn:column];
     setTimeout(function(){
     [column setWidth:200];
     },0);
 
     [_outlineView addTableColumn:[[CPTableColumn alloc] initWithIdentifier:@"Two"]];
-[_outlineView addTableColumn:[[CPTableColumn alloc] initWithIdentifier:@"Three"]];
+    [_outlineView addTableColumn:[[CPTableColumn alloc] initWithIdentifier:@"Three"]];
 
     [_outlineView registerForDraggedTypes:[CustomOutlineViewDragType]];
 
