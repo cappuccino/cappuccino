@@ -3593,15 +3593,15 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             CGContextClosePath(context);
 
             CGContextBeginPath(context);
-            CGContextMoveToPoint(context, minX, minY);
-            CGContextAddLineToPoint(context, maxX, minY);
+            CGContextMoveToPoint(context, minX, minY + .5);
+            CGContextAddLineToPoint(context, maxX, minY + .5);
             CGContextClosePath(context);
             CGContextSetStrokeColor(context, (shouldUseGroupGradient) ? topGroupLineColor : topLineColor);
             CGContextStrokePath(context);
 
             CGContextBeginPath(context);
-            CGContextMoveToPoint(context, minX, maxY);
-            CGContextAddLineToPoint(context, maxX, maxY - 1);
+            CGContextMoveToPoint(context, minX, maxY - .5);
+            CGContextAddLineToPoint(context, maxX, maxY - .5);
             CGContextClosePath(context);
             CGContextSetStrokeColor(context, (shouldUseGroupGradient) ? bottomGroupLineColor : bottomLineColor);
             CGContextStrokePath(context);
