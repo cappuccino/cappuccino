@@ -209,20 +209,16 @@ var _changeKindForSetMutationKind = function(mutationKind)
 {
     switch (mutationKind)
     {
-        case CPKeyValueUnionSetMutation:
-            return CPKeyValueChangeInsertion;
-        case CPKeyValueMinusSetMutation:
-            return CPKeyValueChangeRemoval;
-        case CPKeyValueIntersectSetMutation:
-            return CPKeyValueChangeRemoval;
-        case CPKeyValueSetSetMutation:
-            return CPKeyValueChangeReplacement;
+        case CPKeyValueUnionSetMutation:        return CPKeyValueChangeInsertion;
+        case CPKeyValueMinusSetMutation:        return CPKeyValueChangeRemoval;
+        case CPKeyValueIntersectSetMutation:    return CPKeyValueChangeRemoval;
+        case CPKeyValueSetSetMutation:          return CPKeyValueChangeReplacement;
     }
 }
 
-var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
-    DependentKeysKey = "$KVODEPENDENT",
-    KVOProxyKey = "$KVOPROXY";
+var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
+    DependentKeysKey    = "$KVODEPENDENT",
+    KVOProxyKey         = "$KVOPROXY";
 
 //rule of thumb: _ methods are called on the real proxy object, others are called on the "fake" proxy object (aka the real object)
 

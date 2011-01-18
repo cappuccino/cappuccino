@@ -20,9 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPArray.j"
 @import "CPObject.j"
 @import "CPRange.j"
-
 
 #define _CPMaxRange(aRange) ((aRange).location + (aRange).length)
 #define _CPMakeRange(aLocation, aLength) { location:(aLocation), length:aLength }

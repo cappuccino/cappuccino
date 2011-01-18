@@ -870,6 +870,17 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     else
         _dirtyTableColumnRangeIndex = MIN(NUMBER_OF_COLUMNS() - 1, _dirtyTableColumnRangeIndex);
 
+    if ([[self sortDescriptors] count] > 0)
+    {
+        var mainSortDescriptor = [[self sortDescriptors] objectAtIndex:0];
+
+        if (aTableColumn === [self _tableColumnForSortDescriptor:mainSortDescriptor])
+        {
+            var image = [mainSortDescriptor ascending] ? [self _tableHeaderSortImage] : [self _tableHeaderReverseSortImage];
+            [self setIndicatorImage:image inTableColumn:aTableColumn];
+        }
+    }
+
     [self tile];
     [self setNeedsLayout];
 }
@@ -2873,7 +2884,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 /*!
     Sets the table view's CPSortDescriptors objects in an array.
 
-    @param sortDescriptors an array of sort descritors.
+    @param sortDescriptors an array of sort descriptors.
 */
 - (void)setSortDescriptors:(CPArray)sortDescriptors
 {
@@ -2910,6 +2921,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self setIndicatorImage:image inTableColumn:newColumn];
 
     [self _sendDataSourceSortDescriptorsDidChange:oldSortDescriptors];
+
+    var binderClass = [[self class] _binderClassForBinding:@"sortDescriptors"];
+    [[binderClass getBinding:@"sortDescriptors" forObject:self] reverseSetValueFor:@"sortDescriptors"];
 }
 
 /*!

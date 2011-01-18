@@ -36,7 +36,6 @@
 @import "CPException.j"
 @import "CPObject.j"
 
-
 @implementation CPFormatter : CPObject
 
 /*!
@@ -57,12 +56,10 @@
     return nil;
 }
 
-
 /*- (CPAttributedString)attributedStringForObjectValue:(id)anObject withDefaultAttributes:(CPDictionary)attributes
 {
 
 }*/
-
 
 /*!
     The default implementation of this method invokes stringForObjectValue:.
@@ -79,7 +76,6 @@
 {
     return [self stringForObjectValue:anObject];
 }
-
 
 /*!
     The default implementation of this method raises an exception.
@@ -101,7 +97,6 @@
     _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return NO;
 }
-
 
 /*!
     Returns a Boolean value that indicates whether a partial string is valid.

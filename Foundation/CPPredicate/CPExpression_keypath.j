@@ -24,8 +24,8 @@
 
 @import "CPExpression.j"
 @import "CPExpression_function.j"
-@import "CPString.j"
 @import "CPKeyValueCoding.j"
+@import "CPString.j"
 
 @implementation CPExpression_keypath : CPExpression_function
 {

@@ -25,6 +25,7 @@
 @import "CPObjJRuntime.j"
 @import "CPRange.j"
 @import "CPSortDescriptor.j"
+@import "CPURL.j"
 @import "CPValue.j"
 
 /*!

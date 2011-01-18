@@ -19,7 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPException.j"
 @import "CPExpression.j"
+@import "CPSet.j"
 
 @implementation CPExpression_set : CPExpression
 {
@@ -29,9 +31,13 @@
 
 - (id)initWithType:(int)type left:(CPExpression)left right:(CPExpression)right
 {
-    [super initWithExpressionType:type];
-    _left = left;
-    _right = right;
+    self = [super initWithExpressionType:type];
+
+    if (self)
+    {
+        _left = left;
+        _right = right;
+    }
 
     return self;
 }
@@ -65,11 +71,11 @@
     switch (_type)
     {
         case CPIntersectSetExpressionType : [result intersectSet:right];
-        break;
+                                            break;
         case CPUnionSetExpressionType     : [result unionSet:right];
-        break;
+                                            break;
         case CPMinusSetExpressionType     : [result minusSet:right];
-        break;
+                                            break;
         default:
     }
 
@@ -98,11 +104,11 @@
     switch (_type)
     {
         case CPIntersectSetExpressionType : desc = @" INTERSECT ";
-        break;
-        case CPUnionSetExpressionType : desc = @" UNION ";
-        break;
-        case CPMinusSetExpressionType : desc = @" MINUS ";
-        break;
+                                            break;
+        case CPUnionSetExpressionType :     desc = @" UNION ";
+                                            break;
+        case CPMinusSetExpressionType :     desc = @" MINUS ";
+                                            break;
         default:
     }
 
@@ -111,9 +117,9 @@
 
 @end
 
-var CPLeftExpressionKey = @"CPLeftExpression",
-    CPRightExpressionKey = @"CPRightExpression",
-    CPExpressionType = @"CPExpressionType";
+var CPLeftExpressionKey     = @"CPLeftExpression",
+    CPRightExpressionKey    = @"CPRightExpression",
+    CPExpressionType        = @"CPExpressionType";
 
 @implementation CPExpression_set (CPCoding)
 

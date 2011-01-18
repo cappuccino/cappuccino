@@ -22,8 +22,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPExpression.j"
 @import "CPDictionary.j"
+@import "CPExpression.j"
 
 @implementation CPExpression_constant : CPExpression
 {
@@ -32,8 +32,10 @@
 
 - (id)initWithValue:(id)value
 {
-    [super initWithExpressionType:CPConstantValueExpressionType];
-    _value = value;
+    self = [super initWithExpressionType:CPConstantValueExpressionType];
+
+    if (self)
+        _value = value;
 
     return self;
 }

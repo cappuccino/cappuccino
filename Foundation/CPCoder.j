@@ -23,7 +23,6 @@
 @import "CPException.j"
 @import "CPObject.j"
 
-
 /*!
     @class CPCoder
     @ingroup foundation

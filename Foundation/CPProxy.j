@@ -22,8 +22,8 @@
 
 @import "CPException.j"
 @import "CPInvocation.j"
+@import "CPObject.j"
 @import "CPString.j"
-
 
 @implementation CPProxy
 {
