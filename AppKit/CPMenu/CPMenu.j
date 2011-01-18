@@ -80,6 +80,9 @@ var _CPMenuBarVisible               = NO,
 
 + (void)initialize
 {
+    if (self !== CPMenu)
+        return;
+
     [[self class] setMenuBarAttributes:[CPDictionary dictionary]];
 }
 
