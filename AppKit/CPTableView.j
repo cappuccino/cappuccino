@@ -2873,7 +2873,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 /*!
     Sets the table view's CPSortDescriptors objects in an array.
 
-    @param sortDescriptors an array of sort descritors.
+    @param sortDescriptors an array of sort descriptors.
 */
 - (void)setSortDescriptors:(CPArray)sortDescriptors
 {
@@ -2910,6 +2910,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self setIndicatorImage:image inTableColumn:newColumn];
 
     [self _sendDataSourceSortDescriptorsDidChange:oldSortDescriptors];
+
+    var binderClass = [[self class] _binderClassForBinding:@"sortDescriptors"];
+    [[binderClass getBinding:@"sortDescriptors" forObject:self] reverseSetValueFor:@"sortDescriptors"];
 }
 
 /*!
