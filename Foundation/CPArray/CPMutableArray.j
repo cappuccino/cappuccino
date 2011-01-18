@@ -29,10 +29,10 @@
     Initializes an array able to store at least \c aCapacity items. Because CPArray
     is backed by JavaScript arrays, this method ends up simply returning a regular array.
 */
-- (id)initWithCapacity:(unsigned)aCapacity
+/*- (id)initWithCapacity:(unsigned)aCapacity
 {
     return self;
-}
+}*/
 
 // Adding and replacing objects
 /*!
