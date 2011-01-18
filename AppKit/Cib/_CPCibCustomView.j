@@ -84,7 +84,7 @@ var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
     {
 #if DEBUG
         CPLog("Unknown class \"" + _className + "\" in cib file, using CPView instead.");
-#endif        
+#endif
         theClass = [CPView class];
     }
 
@@ -97,16 +97,16 @@ var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
     }
 
     var view = [[theClass alloc] initWithFrame:[self frame]];
-        
+
     if (view)
     {
         [view setBounds:[self bounds]];
-        
+
         // Since the object replacement logic hasn't had a chance to kick in yet, we need to do it manually:
         var subviews = [self subviews],
             index = 0,
             count = subviews.length;
-        
+
         for (; index < count; ++index)
             [view addSubview:subviews[index]];
 
@@ -116,7 +116,7 @@ var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
         [view setHitTests:[self hitTests]];
         [view setHidden:[self isHidden]];
         [view setAlphaValue:[self alphaValue]];
-        
+
         [_superview replaceSubview:self with:view];
 
         [view setBackgroundColor:[self backgroundColor]];

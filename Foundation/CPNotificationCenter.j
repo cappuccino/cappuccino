@@ -26,7 +26,6 @@
 @import "CPNotification.j"
 @import "CPNull.j"
 
-
 var CPNotificationDefaultCenter = nil;
 
 /*!

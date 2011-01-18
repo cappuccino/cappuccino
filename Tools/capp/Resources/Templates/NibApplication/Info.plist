@@ -6,7 +6,5 @@
 	<string>MainMenu.cib</string>
 	<key>CPBundleName</key>
 	<string>__project.name__</string>
-	<key>CPPrincipalClass</key>
-	<string>CPApplication</string>
 </dict>
 </plist>

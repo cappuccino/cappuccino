@@ -24,11 +24,10 @@
 @import "CPObject.j"
 @import "CPString.j"
 
-
-CPInvalidArgumentException          = "CPInvalidArgumentException";
-CPUnsupportedMethodException        = "CPUnsupportedMethodException";
-CPRangeException                    = "CPRangeException";
-CPInternalInconsistencyException    = "CPInternalInconsistencyException";
+CPInvalidArgumentException          = @"CPInvalidArgumentException";
+CPUnsupportedMethodException        = @"CPUnsupportedMethodException";
+CPRangeException                    = @"CPRangeException";
+CPInternalInconsistencyException    = @"CPInternalInconsistencyException";
 
 /*!
     @class CPException
@@ -90,7 +89,9 @@ if (input == nil)
 */
 - (id)initWithName:(CPString)aName reason:(CPString)aReason userInfo:(CPDictionary)aUserInfo
 {
-    if (self = [super init])
+    self = [super init];
+
+    if (self)
     {
         name = aName;
         message = aReason;
@@ -162,9 +163,9 @@ if (input == nil)
 
 @end
 
-var CPExceptionNameKey = "CPExceptionNameKey",
-    CPExceptionReasonKey = "CPExceptionReasonKey",
-    CPExceptionUserInfoKey = "CPExceptionUserInfoKey";
+var CPExceptionNameKey      = @"CPExceptionNameKey",
+    CPExceptionReasonKey    = @"CPExceptionReasonKey",
+    CPExceptionUserInfoKey  = @"CPExceptionUserInfoKey";
 
 @implementation CPException (CPCoding)
 

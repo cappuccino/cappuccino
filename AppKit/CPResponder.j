@@ -358,8 +358,8 @@ var CPResponderNextResponderKey = @"CPResponderNextResponderKey",
 
     if (self)
     {
-        _nextResponder = [aCoder decodeObjectForKey:CPResponderNextResponderKey];
-        _menu = [aCoder decodeObjectForKey:CPResponderMenuKey];
+        [self setNextResponder:[aCoder decodeObjectForKey:CPResponderNextResponderKey]];
+        [self setMenu:[aCoder decodeObjectForKey:CPResponderMenuKey]];
     }
 
     return self;

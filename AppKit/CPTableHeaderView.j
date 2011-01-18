@@ -604,7 +604,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
         [headerView setFrame:frame];
 
-        if([headerView superview] != self)
+        if ([headerView superview] != self)
             [self addSubview:headerView];
     }
 

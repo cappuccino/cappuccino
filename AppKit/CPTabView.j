@@ -49,7 +49,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 {
     _tabs = [[CPSegmentedControl alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
     [_tabs setHitTests:NO];
-    
+
     var height = [_tabs valueForThemeAttribute:@"default-height"];
     [_tabs setFrameSize:CGSizeMake(0, height)];
 
@@ -86,6 +86,8 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     [self _updateItems];
     [self _repositionTabs];
 
+    [aTabViewItem _setTabView:self];
+
     if (_delegateSelectors & CPTabViewDidChangeNumberOfTabViewItemsSelector)
         [_delegate tabViewDidChangeNumberOfTabViewItems:self];
 }
@@ -99,15 +101,17 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     var count = [_items count];
     for (var i = 0; i < count; i++)
     {
-        if ([items objectAtIndex:i] === aTabViewItem)
+        if ([_items objectAtIndex:i] === aTabViewItem)
         {
-            [items removeObjectAtIndex:i];
+            [_items removeObjectAtIndex:i];
             break;
         }
     }
 
     [self _updateItems];
     [self _repositionTabs];
+
+    [aTabViewItem _setTabView:nil];
 
     if (_delegateSelectors & CPTabViewDidChangeNumberOfTabViewItemsSelector)
         [_delegate tabViewDidChangeNumberOfTabViewItems:self];

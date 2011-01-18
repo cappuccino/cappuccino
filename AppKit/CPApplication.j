@@ -90,7 +90,6 @@ CPRunContinuesResponse  = -1002;
     CPWindow                _previousKeyWindow;
     CPWindow                _previousMainWindow;
 
-    CPMenu                  _mainMenu;
     CPDocumentController    _documentController;
 
     CPModalSession          _currentSession;
@@ -530,7 +529,7 @@ CPRunContinuesResponse  = -1002;
 - (BOOL)_handleKeyEquivalent:(CPEvent)anEvent
 {
     return  [[self keyWindow] performKeyEquivalent:anEvent] ||
-            [_mainMenu performKeyEquivalent:anEvent];
+            [[self mainMenu] performKeyEquivalent:anEvent];
 }
 
 /*!
@@ -637,7 +636,7 @@ CPRunContinuesResponse  = -1002;
 */
 - (CPMenu)mainMenu
 {
-    return _mainMenu;
+    return [self menu];
 }
 
 /*!
@@ -646,15 +645,20 @@ CPRunContinuesResponse  = -1002;
 */
 - (void)setMainMenu:(CPMenu)aMenu
 {
+    [self setMenu:aMenu];
+}
+
+- (void)setMenu:(CPMenu)aMenu
+{
     if ([aMenu _menuName] === "CPMainMenu")
     {
-        if (_mainMenu === aMenu)
+        if ([self menu] === aMenu)
             return;
 
-        _mainMenu = aMenu;
+        [super setMenu:aMenu];
 
         if ([CPPlatform supportsNativeMainMenu])
-            window.cpSetMainMenu(_mainMenu);
+            window.cpSetMainMenu([self menu]);
     }
     else
         [aMenu _setMenuName:@"CPMainMenu"];

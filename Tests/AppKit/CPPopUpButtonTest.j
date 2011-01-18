@@ -12,6 +12,77 @@
     button = [CPPopUpButton new];
 }
 
+- (void)testMenuSynchronization
+{
+    var popUpButton = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 28.0) pullsDown:NO];
+
+    [self assert:CPNotFound equals:[popUpButton indexOfSelectedItem]];
+
+    [popUpButton addItemWithTitle:@"one"];
+
+    [self assert:0 equals:[popUpButton indexOfSelectedItem]];
+
+    [popUpButton addItemWithTitle:@"two"];
+    [popUpButton addItemWithTitle:@"three"];
+    [popUpButton addItemWithTitle:@"four"];
+    [popUpButton addItemWithTitle:@"five"];
+    [popUpButton addItemWithTitle:@"six"];
+
+    [self assert:0 equals:[popUpButton indexOfSelectedItem]];
+
+    [popUpButton insertItemWithTitle:@"negative one" atIndex:0];
+
+    [self assert:1 equals:[popUpButton indexOfSelectedItem]];
+
+    var items = [
+        [[CPMenuItem alloc] initWithTitle:@"negative five" action:nil keyEquivalent:@""],
+        [[CPMenuItem alloc] initWithTitle:@"negative four" action:nil keyEquivalent:@""],
+        [[CPMenuItem alloc] initWithTitle:@"negative three" action:nil keyEquivalent:@""],
+        [[CPMenuItem alloc] initWithTitle:@"negative two" action:nil keyEquivalent:@""]
+                ],
+        indexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 4)],
+        mutableItemsArray = [[popUpButton menu] mutableArrayValueForKey:@"items"];
+
+    [mutableItemsArray insertObjects:items atIndexes:indexes];
+
+    [self assert:5 equals:[popUpButton indexOfSelectedItem]];
+
+    [[popUpButton menu] removeItemAtIndex:5];
+
+    [self assert:4 equals:[popUpButton indexOfSelectedItem]];
+
+    [[popUpButton menu] removeItemAtIndex:0];
+
+    [self assert:3 equals:[popUpButton indexOfSelectedItem]];
+
+    [popUpButton selectItemAtIndex:1];
+
+    indexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(1, 3)];
+    [mutableItemsArray removeObjectsAtIndexes:indexes];
+
+    [self assert:0 equals:[popUpButton indexOfSelectedItem]];
+
+    var pullDownButton = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 28.0) pullsDown:YES];
+
+    [pullDownButton addItemWithTitle:@"First Item"];
+
+    [self assert:YES equals:[[pullDownButton itemAtIndex:0] isHidden]];
+
+    [pullDownButton addItemWithTitle:@"Second Item"];
+
+    [self assert:YES equals:[[pullDownButton itemAtIndex:0] isHidden]];
+    [self assert:NO equals:[[pullDownButton itemAtIndex:1] isHidden]];
+
+    [pullDownButton removeItemAtIndex:0];
+
+    [self assert:YES equals:[[pullDownButton itemAtIndex:0] isHidden]];
+
+    [pullDownButton insertItemWithTitle:@"A Title" atIndex:0];
+
+    [self assert:YES equals:[[pullDownButton itemAtIndex:0] isHidden]];
+    [self assert:NO equals:[[pullDownButton itemAtIndex:1] isHidden]];
+}
+
 - (void)testItemTitles
 {
     [self assert:[] equals:[button itemTitles]];

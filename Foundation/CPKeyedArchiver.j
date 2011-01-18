@@ -28,7 +28,6 @@
 @import "CPString.j"
 @import "CPValue.j"
 
-
 var CPArchiverReplacementClassNames                     = nil;
 
 var _CPKeyedArchiverDidEncodeObjectSelector             = 1,
@@ -476,7 +475,7 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
     // We wrap primitive JavaScript objects in a unique subclass of CPValue.
     // This way, when we unarchive, we know to unwrap it, since
     // _CPKeyedArchiverValue should not be used anywhere else.
-    if (anObject !== nil && !anObject.isa)
+    if (anObject !== nil && anObject !== undefined && !anObject.isa)
         anObject = [_CPKeyedArchiverValue valueWithJSObject:anObject];
 
     // Get the proper replacement object

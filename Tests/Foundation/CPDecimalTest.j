@@ -68,27 +68,42 @@
     [self assert:NO equals:dcm._isNaN message:"CPDecimalMakeWithString() Tf4: NaN is incorrectly set"];
 
     dcm = CPDecimalMakeWithString(@"000000000000000000");
-    [self assertNull:dcm message:"CPDecimalMakeWithString() Tf5: Should be invalid"];
+    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Tf5: Should be invalid"];
 
-    // too large return nil
-    [self assertNull:CPDecimalMakeWithString(@"111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111") message:"CPDecimalMakeWithString() To1: number overflow handling"];
-    [self assertNull:CPDecimalMakeWithString(@"-1e1000") message:"CPDecimalMakeWithString() To2: exponent overflow not caught"];
-    [self assertNull:CPDecimalMakeWithString(@"-1e-2342") message:"CPDecimalMakeWithString() To3: exponent underflow not caught"];
+    // too large return NaN
+    dcm = CPDecimalMakeWithString(@"111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
+    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() To1: number overflow handling. Should return NaN"];
+    dcm =CPDecimalMakeWithString(@"-1e1000");
+    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() To2: exponent overflow not caught. Should return NaN"];
+    dcm = CPDecimalMakeWithString(@"-1e-2342");
+    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() To3: exponent underflow not caught. Should return NaN"];
 
     // Tests for invalid strings
-    [self assertNull:CPDecimalMakeWithString(@"abc") message:"CPDecimalMakeWithString() Ti1: catch of invalid number string"];
-    [self assertNull:CPDecimalMakeWithString(@"123a") message:"CPDecimalMakeWithString() Ti2: catch of invalid number string"];
-    [self assertNull:CPDecimalMakeWithString(@"12.7e") message:"CPDecimalMakeWithString() Ti3: catch of invalid number string"];
-    [self assertNull:CPDecimalMakeWithString(@"e") message:"CPDecimalMakeWithString() Ti4: catch of invalid number string"];
-    [self assertNull:CPDecimalMakeWithString(@"12 ") message:"CPDecimalMakeWithString() Ti5: catch of invalid number string"];
-    [self assertNull:CPDecimalMakeWithString(@"1 2 3") message:"CPDecimalMakeWithString() Ti6: catch of invalid number string"];
-    [self assertNull:CPDecimalMakeWithString(@"e10") message:"CPDecimalMakeWithString() Ti7: catch of invalid number string"];
-    [self assertNull:CPDecimalMakeWithString(@"123ee") message:"CPDecimalMakeWithString() Ti8: catch of invalid number string"];
-    [self assertNull:CPDecimalMakeWithString(@"0001") message:"CPDecimalMakeWithString() Ti9: catch of invalid number string"];
-    [self assertNull:CPDecimalMakeWithString(@"-0001") message:"CPDecimalMakeWithString() Ti10: catch of invalid number string"];
-    [self assertNull:CPDecimalMakeWithString(@".123") message:"CPDecimalMakeWithString() Ti11: catch of invalid number string"];
-    [self assertNull:CPDecimalMakeWithString(@"-.1") message:"CPDecimalMakeWithString() Ti12: catch of invalid number string"];
-
+    dcm = CPDecimalMakeWithString(@"abc");
+    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti1: catch of invalid number string. Should return NaN"];
+    dcm = CPDecimalMakeWithString(@"123a");
+    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti2: catch of invalid number string. Should return NaN"];
+    dcm = CPDecimalMakeWithString(@"12.7e");
+    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti3: catch of invalid number string. Should return NaN"];
+    dcm = CPDecimalMakeWithString(@"e");
+    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti4: catch of invalid number string. Should return NaN"];
+    dcm = CPDecimalMakeWithString(@"12 ");
+    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti5: catch of invalid number string. Should return NaN"];
+    dcm = CPDecimalMakeWithString(@"1 2 3");
+    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti6: catch of invalid number string. Should return NaN"];
+    dcm = CPDecimalMakeWithString(@"e10");
+    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti7: catch of invalid number string. Should return NaN"];
+    dcm = CPDecimalMakeWithString(@"123ee");
+    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti8: catch of invalid number string. Should return NaN"];
+    dcm = CPDecimalMakeWithString(@"0001");
+    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti9: catch of invalid number string. Should return NaN"];
+    dcm = CPDecimalMakeWithString(@"-0001");
+    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti10: catch of invalid number string. Should return NaN"];
+    dcm = CPDecimalMakeWithString(@".123");
+    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti11: catch of invalid number string. Should return NaN"];
+    dcm = CPDecimalMakeWithString(@"-.1");
+    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti12: catch of invalid number string. Should return NaN"];
+    
     //test make with parts
     dcm = CPDecimalMakeWithParts(10127658,2);
     [self assert:2 equals:dcm._exponent message:"CPDecimalMakeWithParts() Tmp1: exponent"];
@@ -101,8 +116,10 @@
     [self assert:YES equals:dcm._isNegative message:"CPDecimalMakeWithParts() Tmp2: sign"];
     [self assert:NO equals:dcm._isNaN message:"CPDecimalMakeWithParts() Tmp2: NaN is incorrectly set"];
 
-    [self assertNull:CPDecimalMakeWithParts(1,10000) message:"CPDecimalMakeWithParts() Tmp3: exponent overflow not caught"];
-    [self assertNull:CPDecimalMakeWithParts(-1,-1000) message:"CPDecimalMakeWithParts() Tmp4: exponent underflow not caught"];
+    dcm = CPDecimalMakeWithParts(1,10000);
+    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithParts() Tmp3: exponent overflow not caught. Should return NaN"];
+    dcm = CPDecimalMakeWithParts(-1,-1000);
+    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithParts() Tmp4: exponent underflow not caught. Should return NaN"];
 }
 
 - (void)testZeros

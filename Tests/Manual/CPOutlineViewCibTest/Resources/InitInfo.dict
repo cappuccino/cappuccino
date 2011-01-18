@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Children</key>
+	<array>
+		<dict>
+			<key>Children</key>
+			<array>
+				<dict>
+					<key>Children</key>
+					<array>
+						<dict>
+							<key>Children</key>
+							<array>
+								<string>Monty</string>
+								<string>Smithers</string>
+								<string>Frink</string>
+								<string>Carl</string>
+								<string>Cletus</string>
+								<string>Bobo</string>
+								<string>Duff</string>
+							</array>
+							<key>Name</key>
+							<string>Simpsons</string>
+						</dict>
+						<dict>
+							<key>Children</key>
+							<array>
+								<string>Mountain Unicycling</string>
+								<string>Rock Climbing</string>
+								<string>Bouldering</string>
+								<string>Snowboarding</string>
+							</array>
+							<key>Name</key>
+							<string>Sports</string>
+						</dict>
+						<dict>
+							<key>Children</key>
+							<array>
+								<string>Eating Strawberries</string>
+								<string>Mangoes</string>
+								<string>Treehouses</string>
+								<string>Good Weather</string>
+								<string>Maui</string>
+								<string>Trogdor</string>
+							</array>
+							<key>Name</key>
+							<string>Just Fun Stuff</string>
+						</dict>
+						<string>Foo with the Bar</string>
+						<string>Bar</string>
+						<string>BooFar</string>
+						<string>Foo Bar</string>
+					</array>
+					<key>Name</key>
+					<string>Shows</string>
+				</dict>
+				<dict>
+					<key>Children</key>
+					<array>
+						<dict>
+							<key>Children</key>
+							<array>
+								<string>Big Sur</string>
+								<string>New York</string>
+								<string>Naples</string>
+								<string>Chez Panisse</string>
+								<string>Lucia</string>
+								<string>Switzerland</string>
+								<string>Ireland</string>
+							</array>
+							<key>Name</key>
+							<string>Vacation</string>
+						</dict>
+						<dict>
+							<key>Children</key>
+							<array>
+								<string>Green Bay</string>
+								<string>Milwaukee</string>
+								<string>Monroe</string>
+							</array>
+							<key>Name</key>
+							<string>Other</string>
+						</dict>
+					</array>
+					<key>Name</key>
+					<string>Travel</string>
+				</dict>
+				<dict>
+					<key>Children</key>
+					<array>
+						<string>Kark</string>
+						<string>Valen</string>
+						<string>Kosh</string>
+						<string>Red Letter</string>
+						<string>Fluffy Ears</string>
+						<string>Hiro</string>
+					</array>
+					<key>Name</key>
+					<string>Science Fiction</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>Favorite Things Group</string>
+		</dict>
+		<dict>
+			<key>Children</key>
+			<array>
+				<string>Mischief</string>
+				<string>Mayhem</string>
+				<string>Soap</string>
+			</array>
+			<key>Name</key>
+			<string>Movies Group with a Long Title</string>
+		</dict>
+		<dict>
+			<key>Children</key>
+			<array>
+				<string>ObjC</string>
+				<string>Cocoa</string>
+				<string>KVC</string>
+				<string>NSTooblar</string>
+			</array>
+			<key>Name</key>
+			<string>Things That Rule</string>
+		</dict>
+		<string>Eagle</string>
+		<string>Boiler</string>
+		<string>Tarheel</string>
+	</array>
+	<key>Name</key>
+	<string>OVRoot</string>
+</dict>
+</plist>

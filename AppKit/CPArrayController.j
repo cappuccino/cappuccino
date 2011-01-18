@@ -29,7 +29,14 @@
 @import "CPObjectController.j"
 @import "CPKeyValueBinding.j"
 
+/*!
 
+@class CPArrayController
+
+    CPArrayController is a bindings compatible class that manages an array.
+    CPArrayController also provides selection management and sorting capabilities.
+
+*/
 @implementation CPArrayController : CPObjectController
 {
     BOOL    _avoidsEmptySelection;
@@ -102,6 +109,7 @@
     return [CPSet setWithObjects:"selectionIndexes"];
 }
 
+
 - (id)init
 {
     self = [super init];
@@ -119,37 +127,64 @@
 {
     [self _setContentArray:[[self newObject]]];
 }
-
+/*!
+    Returns YES if the selection should try to be preserved when the content changes, otherwise NO.
+    @return BOOL YES if the selection is preserved, otherwise NO.
+*/
 - (BOOL)preservesSelection
 {
     return _preservesSelection;
 }
 
+/*!
+    Sets whether the selection is kept when the content changes.
+
+    @param BOOL aFlag - YES if the selection should be kept, otherwise NO.
+*/
 - (void)setPreservesSelection:(BOOL)value
 {
     _preservesSelection = value;
 }
 
+/*!
+    @return BOOL - Returns YES if new objects are automatically selected, otherwise NO.
+*/
 - (BOOL)selectsInsertedObjects
 {
     return _selectsInsertedObjects;
 }
 
+/*!
+    Sets whether the controller will automatically select objects as they are inserted.
+    @return BOOL aFlag - YES if new objects are selected, otherwise NO.
+*/
 - (void)setSelectsInsertedObjects:(BOOL)value
 {
     _selectsInsertedObjects = value;
 }
 
+/*!
+    @return BOOL aFlag - Returns YES if the controller should try to avoid an empty selection otherwise NO.
+*/
 - (BOOL)avoidsEmptySelection
 {
     return _avoidsEmptySelection;
 }
 
+/*!
+    Sets whether the controller should try to avoid an empty selection.
+    @param BOOL aFlag - YES if the reciver should attempt to avoid an empty selection, otherwise NO.
+*/
 - (void)setAvoidsEmptySelection:(BOOL)value
 {
     _avoidsEmptySelection = value;
 }
 
+/*!
+    Sets the controller's content object.
+
+    @param id value - the content object of the controller.
+*/
 - (void)setContent:(id)value
 {
     if (value === nil)
@@ -199,26 +234,47 @@
         [self didChangeValueForKey:@"filterPredicate"];
 }
 
+/*!
+    @ignore
+*/
 - (void)_setContentArray:(id)anArray
 {
     [self setContent:anArray];
 }
 
+/*!
+    @ignore
+*/
 - (void)_setContentSet:(id)aSet
 {
     [self setContent:[aSet allObjects]];
 }
 
+/*!
+    Returns the content array of the controller.
+    @return id the content array of the reciever
+*/
 - (id)contentArray
 {
     return [self content];
 }
 
+/*!
+    Returns the content of the reciever as a CPSet.
+
+    @return id - the content of the controller as a set.
+*/
 - (id)contentSet
 {
     return [CPSet setWithArray:[self content]];
 }
 
+/*!
+    Sorts and filters a given array and returns it.
+
+    @param CPArray anArray - an array of objects.
+    @return CPArray - the array of sorted objects.
+*/
 - (CPArray)arrangeObjects:(CPArray)objects
 {
     var filterPredicate = [self filterPredicate],
@@ -238,6 +294,9 @@
     return [objects copy];
 }
 
+/*!
+    Triggers the filtering of the objects in the controller.
+*/
 - (void)rearrangeObjects
 {
     [self willChangeValueForKey:@"arrangedObjects"];
@@ -271,6 +330,9 @@
         [self __setSelectionIndexes:oldSelectionIndexes];
 }
 
+/*!
+    @ignore
+*/
 - (void)__setArrangedObjects:(id)value
 {
     if (_arrangedObjects === value)
@@ -279,16 +341,29 @@
    _arrangedObjects = [[_CPObservableArray alloc] initWithArray:value];
 }
 
+/*!
+    Returns an array of the controller's objects sorted and filtered.
+    @return - array of objects
+*/
 - (id)arrangedObjects
 {
     return _arrangedObjects;
 }
 
+/*!
+    Returns the receiver's array of sort descriptors.
+    @return CPArray an array of sort descriptors
+*/
 - (CPArray)sortDescriptors
 {
     return _sortDescriptors;
 }
 
+/*!
+    Sets the sort descriptors for the controller.
+
+    @param CPArray descriptors - the new sort descriptors.
+*/
 - (void)setSortDescriptors:(CPArray)value
 {
     if (_sortDescriptors === value)
@@ -300,11 +375,23 @@
     [self _rearrangeObjects];
 }
 
+/*!
+    Returns the predicate used by the controller to filter the contents of the reciever.
+    If no predicate is set nil is returned.
+
+    @return CPPredicate the predicate used by the controller
+*/
 - (CPPredicate)filterPredicate
 {
     return _filterPredicate;
 }
 
+/*!
+    Sets the predicate for the controller to filter the content.
+    Passing nil will remove an existing prediate.
+
+    @param CPPrediate aPredicate - the new predicate.
+*/
 - (void)setFilterPredicate:(CPPredicate)value
 {
     [self __setFilterPredicate:value];
@@ -325,28 +412,52 @@
     [self _rearrangeObjects];
 }
 
+/*!
+    Returns a BOOL indicating whether the receiver always returns the multiple values marker when multiple objects are selected.
+    @return BOOL YES is the controller always uses multiple value markers, otherwise NO.
+*/
 - (BOOL)alwaysUsesMultipleValuesMarker
 {
     return _alwaysUsesMultipleValuesMarker;
 }
 
 //Selection
-
+/*!
+    Returns the index of the first object in the controller's selection.
+    @return unsigned - Index of the first selected object.
+*/
 - (unsigned)selectionIndex
 {
     return [_selectionIndexes firstIndex];
 }
 
+/*!
+    Sets the selected index
+
+    @param unsided anIndex - the new index to select
+    @return BOOL - Returns YES if the selection was changed, otherwise NO.
+*/
 - (BOOL)setSelectionIndex:(unsigned)index
 {
     return [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
 }
 
+/*!
+    Returns an index set of the selected indexes.
+
+    @return CPIndexSet - The selected indexes.
+*/
 - (CPIndexSet)selectionIndexes
 {
     return _selectionIndexes;
 }
 
+/*!
+    Sets the selection indexes of the controller.
+
+    @param CPIndexSet indexes - the indexes to select
+    @return BOOL - Returns YES if the selection changed, otherwise NO.
+*/
 - (BOOL)setSelectionIndexes:(CPIndexSet)indexes
 {
     [self _selectionWillChange]
@@ -394,11 +505,16 @@
 
     // Push back the new selection to the model for selectionIndexes if we have one.
     // There won't be an infinite loop because of the equality check above.
-    [[CPKeyValueBinding getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectionIndexes"];
+    var binderClass = [[self class] _binderClassForBinding:@"selectionIndexes"];
+    [[binderClass getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectionIndexes"];
 
     return YES;
 }
 
+/*!
+    Returns an array of the selected objects.
+    @return CPArray - the selected objects.
+*/
 - (CPArray)selectedObjects
 {
     var objects = [[self arrangedObjects] objectsAtIndexes:[self selectionIndexes]];
@@ -406,6 +522,12 @@
     return [_CPObservableArray arrayWithArray:(objects || [])];
 }
 
+/*!
+    Sets the selected objects of the controller.
+
+    @param CPArray anArray - the objects to select
+    @return BOOL - Returns YES if the selection was changed, otherwise NO.
+*/
 - (BOOL)setSelectedObjects:(CPArray)objects
 {
     [self willChangeValueForKey:@"selectionIndexes"];
@@ -440,12 +562,20 @@
 }
 
 //Moving selection
+/*!
+    Returns YES if the previous object, relative to the current selection, in the controller's content array can be selected.
 
+    @return BOOL - YES if the object can be selected, otherwise NO.
+*/
 - (BOOL)canSelectPrevious
 {
     return [[self selectionIndexes] firstIndex] > 0
 }
 
+/*!
+    Selects the previous object, relative to the current selection, in the controllers arranged content.
+    @param id sender - the sender of the message.
+*/
 - (void)selectPrevious:(id)sender
 {
     var index = [[self selectionIndexes] firstIndex] - 1;
@@ -454,11 +584,20 @@
         [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
 }
 
+/*!
+    Returns YES if the next object, relative to the current selection, in the controller's content array can be selected.
+
+    @return BOOL - YES if the object can be selected, otherwise NO.
+*/
 - (BOOL)canSelectNext
 {
     return [[self selectionIndexes] firstIndex] < [[self arrangedObjects] count] - 1;
 }
 
+/*!
+    Selects the next object, relative to the current selection, in the controllers arranged content.
+    @param id sender - the sender of the message.
+*/
 - (void)selectNext:(id)sender
 {
     var index = [[self selectionIndexes] firstIndex] + 1;
@@ -469,6 +608,11 @@
 
 //Add/Remove
 
+/*!
+    Adds object to the receiver's content collection and the arranged objects array.
+
+    @param id anObject - the object to add the controller.
+*/
 - (void)addObject:(id)object
 {
     if (![self canAdd])
@@ -502,6 +646,12 @@
         [self didChangeValueForKey:@"filterPredicate"];
 }
 
+/*!
+    Adds an object at a given index to the reciever's collection.
+
+    @param id anObject - The object to add to the collection.
+    @param int anIndex - The index to insert the object at.
+*/
 - (void)insertObject:(id)anObject atArrangedObjectIndex:(int)anIndex
 {
     if (![self canAdd])
@@ -533,6 +683,11 @@
         [self didChangeValueForKey:@"filterPredicate"];
 }
 
+/*!
+    Removes a given object from the reciever's collection.
+
+    @param id anObject - The object to remove from the collection.
+*/
 - (void)removeObject:(id)object
 {
    [self willChangeValueForKey:@"content"];
@@ -551,6 +706,11 @@
    [self didChangeValueForKey:@"content"];
 }
 
+/*!
+    Creates and adds a new object to the receiver's content and arranged objects.
+
+    @param id sender - The sender of the message.
+*/
 - (void)add:(id)sender
 {
     if (![self canAdd])
@@ -559,6 +719,10 @@
     [self insert:sender];
 }
 
+/*!
+    Creates a new object and inserts it into the receiver's content array.
+    @param id sender - The sender of the message.
+*/
 - (void)insert:(id)sender
 {
     if (![self canInsert])
@@ -569,17 +733,29 @@
     [self addObject:newObject];
 }
 
+/*!
+    Removes the controller's selected objects from the controller's collection.
+    @param id sender - The sender of the message.
+*/
 - (void)remove:(id)sender
 {
    [self removeObjects:[[self arrangedObjects] objectsAtIndexes:[self selectionIndexes]]];
 }
 
+/*!
+    Removes the objects at the specified indexes in the controller's arranged objects from the content array.
+    @param CPIndexSet indexes - indexes of the objects to remove.
+*/
 - (void)removeObjectsAtArrangedObjectIndexes:(CPIndexSet)indexes
 {
     [self _removeObjects:[[self arrangedObjects] objectsAtIndexes:indexes]];
 }
 
+/*!
+    Adds an array of objects to the controller's collection.
 
+    @param CPArray anArray - The array of objects to add to the collection.
+*/
 - (void)addObjects:(CPArray)objects
 {
     if (![self canAdd])
@@ -594,11 +770,18 @@
     [self setContent:contentArray];
 }
 
+/*!
+    Removes an array of objects from the collection.
+    @param CPArray anArray - The array of objects to remove
+*/
 - (void)removeObjects:(CPArray)objects
 {
     [self _removeObjects:objects];
 }
 
+/*!
+    @ignore
+*/
 - (void)_removeObjects:(CPArray)objects
 {
     [self willChangeValueForKey:@"content"];
@@ -630,6 +813,10 @@
      [self didChangeValueForKey:@"content"];
 }
 
+/*!
+    Returns a BOOL indicating whether an object can be inserted into the controller's collection.
+    @return BOOL - YES if an object can be inserted, otherwise NO.
+*/
 - (BOOL)canInsert
 {
     return [self isEditable];
