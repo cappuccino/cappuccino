@@ -24,6 +24,7 @@
 
     rootItem = nil;
     [theWindow setFullBridge:YES];
+
 }
 
 - (void)connection:(CPURLConnection)connection didReceiveData:(CPString)dataString
@@ -74,6 +75,19 @@
         return theItem;
 
     return [theItem objectForKey:"Name"];
+}
+
+- (int)outlineView:(CPOutlineView)anOutlineView heightOfRowByItem:(id)anItem
+{
+    if (!anItem.customHeight)
+        anItem.customHeight = 20 + RAND() * 190;
+
+    // strings wont save the property
+    if (!anItem.customHeight)
+        return 30;
+
+
+    return anItem.customHeight;
 }
 
 @end
