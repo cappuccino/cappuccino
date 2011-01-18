@@ -122,13 +122,28 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
     [splitView addSubview:scrollView];
 
     [_themesCollectionView setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
-    
+
     // Default control state enabled
     _controlState = YES;
     [self updateControlState];
 
+    [[CPColorPanel sharedColorPanel] setDelegate:self];
+
     [theWindow setFullPlatformWindow:YES];
     [theWindow makeKeyAndOrderFront:self];
+}
+
+- (void)windowWillClose:(id)sender
+{
+    if ([sender isKindOfClass:[CPColorPanel class]])
+    {
+        var color = [sender color],
+            colorPopUp = [[[[theWindow toolbar] items] objectAtIndex:2] view],
+            title = @"Other " + [color cssString];
+        [colorPopUp addItemWithTitle:title];
+        [[colorPopUp itemWithTitle:title] setRepresentedObject:color];
+        [colorPopUp selectItemWithTitle:title];
+    }
 }
 
 - (void)collectionViewDidChangeSelection:(CPCollectionView)aCollectionView
@@ -290,14 +305,7 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
     var color = nil;
 
     if ([aSender isKindOfClass:[CPColorPanel class]])
-    {
         color = [aSender color];
-        var colorPopUp = [[[[theWindow toolbar] items] objectAtIndex:2] view],
-            title = @"Other " + [color cssString];
-        [colorPopUp addItemWithTitle:title];
-        [[colorPopUp itemWithTitle:title] setRepresentedObject:color];
-        [colorPopUp selectItemWithTitle:title];
-    }
     else
     {
         if ([aSender titleOfSelectedItem] === @"More Choices...")
