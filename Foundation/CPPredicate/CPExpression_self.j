@@ -19,11 +19,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPDictionary.j"
 @import "CPExpression.j"
 @import "CPString.j"
-@import "CPDictionary.j"
 
 var evaluatedObject = nil;
+
 @implementation CPExpression_self : CPExpression
 {
 }
@@ -38,7 +39,7 @@ var evaluatedObject = nil;
 
 - (id)init
 {
-    [super initWithExpressionType:CPEvaluatedObjectExpressionType];
+    self = [super initWithExpressionType:CPEvaluatedObjectExpressionType];
 
     return self;
 }

@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPExpression.j"
 @import "CPArray.j"
+@import "CPExpression.j"
 @import "CPString.j"
 
 @implementation CPExpression_aggregate : CPExpression
@@ -30,8 +30,10 @@
 
 - (id)initWithAggregate:(CPArray)collection
 {
-    [super initWithExpressionType:CPAggregateExpressionType];
-    _aggregate = collection;
+    self = [super initWithExpressionType:CPAggregateExpressionType];
+
+    if (self)
+        _aggregate = collection;
     return self;
 }
 
@@ -68,11 +70,11 @@
 
 - (CPString)description
 {
-    var i,
+    var i = 0,
         count = [_aggregate count],
         result = "{";
 
-    for (i = 0; i < count; i++)
+    for (; i < count; i++)
         result = result + [CPString stringWithFormat:@"%s%s", [[_aggregate objectAtIndex:i] description], (i + 1 < count) ? @", " : @""];
 
     result = result + "}";
@@ -84,9 +86,9 @@
 {
     var subst_array = [CPArray array],
         count = [_aggregate count],
-        i;
+        i = 0;
 
-    for (i = 0; i < count; i++)
+    for (; i < count; i++)
         [subst_array addObject:[[_aggregate objectAtIndex:i] _expressionWithSubstitutionVariables:variables]];
 
     return [CPExpression expressionForAggregate:subst_array];

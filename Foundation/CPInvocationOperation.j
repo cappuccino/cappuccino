@@ -23,7 +23,6 @@
 @import "CPObject.j"
 @import "CPOperation.j"
 
-
 /*!
     @class CPInvocationOperation
     @brief Represents an operation using an invocation that can be run in an CPOperationQueue

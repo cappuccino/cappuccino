@@ -19,15 +19,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPString.j"
 @import "CPArray.j"
-@import "CPKeyValueCoding.j"
 @import "CPDictionary.j"
+@import "CPKeyValueCoding.j"
+@import "CPObject.j"
+@import "CPString.j"
 
 /*!
     An expression that always returns the same value.
 */
-CPConstantValueExpressionType = 0;
+CPConstantValueExpressionType   = 0;
 /*!
     An expression that always returns the parameter object itself.
 */
@@ -35,35 +36,35 @@ CPEvaluatedObjectExpressionType = 1;
 /*!
     An expression that always returns whatever value is associated with the key specified by ‘variable’ in the bindings dictionary.
 */
-CPVariableExpressionType = 2;
+CPVariableExpressionType        = 2;
 /*!
     An expression that returns something that can be used as a key path.
 */
-CPKeyPathExpressionType = 3;
+CPKeyPathExpressionType         = 3;
 /*!
     An expression that returns the result of evaluating a function.
 */
-CPFunctionExpressionType = 4;
+CPFunctionExpressionType        = 4;
 /*!
     An expression that defines an aggregate of CPExpression objects.
 */
-CPAggregateExpressionType = 5;
+CPAggregateExpressionType       = 5;
 /*!
     An expression that filters a collection using a subpredicate.
 */
-CPSubqueryExpressionType = 6;
+CPSubqueryExpressionType        = 6;
 /*!
     An expression that creates a union of the results of two nested expressions.
 */
-CPUnionSetExpressionType = 7;
+CPUnionSetExpressionType        = 7;
 /*!
     An expression that creates an intersection of the results of two nested expressions.
 */
-CPIntersectSetExpressionType = 8;
+CPIntersectSetExpressionType    = 8;
 /*!
     An expression that combines two nested expression results by set subtraction.
 */
-CPMinusSetExpressionType = 9;
+CPMinusSetExpressionType        = 9;
 
 /*!
     @ingroup foundation
