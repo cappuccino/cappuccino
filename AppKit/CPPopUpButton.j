@@ -64,7 +64,8 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
     if (self)
     {
-        _selectedIndex = CPNotFound;
+        [self selectItemAtIndex:CPNotFound];
+
         _preferredEdge = CPMaxYEdge;
 
         [self setValue:CPImageLeft forThemeAttribute:@"image-position"];
@@ -238,15 +239,6 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     return _selectedIndex;
 }
 
-// For us, CPNumber is toll-free bridged to Number, so just return the selected index.
-/*!
-    Returns the selected item's index. If no item is selected, it returns CPNotFound.
-*/
-- (id)objectValue
-{
-    return _selectedIndex;
-}
-
 /*!
     @ignore
 */
@@ -277,26 +269,42 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     Selects the item at the specified index
     @param anIndex the index of the item to select
 */
-- (void)selectItemAtIndex:(int)anIndex
+- (void)selectItemAtIndex:(CPUInteger)anIndex
 {
-    anIndex = +anIndex;
+    var indexOfSelectedItem = [self indexOfSelectedItem];
 
-    if (_selectedIndex === anIndex)
+    anIndex = parseInt(+anIndex, 10);
+
+    if (indexOfSelectedItem === anIndex)
         return;
 
     [self willChangeValueForKey:@"selectedIndex"];
 
-    if (_selectedIndex >= 0 && ![self pullsDown])
+    if (indexOfSelectedItem >= 0 && ![self pullsDown])
         [[self selectedItem] setState:CPOffState];
 
     _selectedIndex = anIndex;
 
-    if (_selectedIndex >= 0 && ![self pullsDown])
+    if (indexOfSelectedItem >= 0 && ![self pullsDown])
         [[self selectedItem] setState:CPOnState];
 
     [self synchronizeTitleAndSelectedItem];
 
     [self didChangeValueForKey:@"selectedIndex"];
+}
+
+/*!
+    Selects the item at the specified index
+    @param anIndex the index of the item to select
+*/
+- (void)setObjectValue:(int)anIndex
+{
+    [self selectItemAtIndex:anIndex];
+}
+
+- (id)objectValue
+{
+    return [self indexOfSelectedItem];
 }
 
 /*!
@@ -315,15 +323,6 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 - (void)selectItemWithTitle:(CPString)aTitle
 {
     [self selectItemAtIndex:[self indexOfItemWithTitle:aTitle]];
-}
-
-/*!
-    Sets the object for the selected item. If no item is selected, then this method has no effect.
-    @param the object set for the selected item
-*/
-- (void)setObjectValue:(id)aValue
-{
-    [self selectItemAtIndex:[aValue intValue]];
 }
 
 // Getting Menu Items
@@ -608,7 +607,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
             {
                 [self _firstItemDidChange];
 
-                _selectedIndex = -2;
+                [self selectItemAtIndex:CPNotFound];
                 [self selectItemAtIndex:MIN([newItems count] - 1, indexOfSelectedItem)];
             }
 
@@ -763,7 +762,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 @end
 
 var CPPopUpButtonSelectedIndexKey   = @"CPPopUpButtonSelectedIndexKey",
-    CPPopUpButtonPullsDownKey       = @"CPPopUpButtonPullsDownKey";
+    DEPRECATED_CPPopUpButtonMenuKey = @"CPPopUpButtonMenuKey";
 
 @implementation CPPopUpButton (CPCoding)
 /*!
@@ -779,15 +778,20 @@ var CPPopUpButtonSelectedIndexKey   = @"CPPopUpButtonSelectedIndexKey",
 
     if (self)
     {
-        // Nothing is currently selected
-        _selectedIndex = CPNotFound;
+        // FIXME: Remove for 1.0
+        if ([aCoder containsValueForKey:DEPRECATED_CPPopUpButtonMenuKey])
+        {
+            CPLog.warn(self + " was encoded with an older version of Cappuccino. Please nib2cib the original nib again or open and re-save in Atlas.");
+            [self setMenu:[aCoder decodeObjectForKey:DEPRECATED_CPPopUpButtonMenuKey]];
+        }
 
-        [self selectItemAtIndex:[aCoder decodeObjectForKey:CPPopUpButtonSelectedIndexKey]];
+        [self selectItemAtIndex:[aCoder decodeIntForKey:CPPopUpButtonSelectedIndexKey]];
 
         var options =   CPKeyValueObservingOptionNew |
                         CPKeyValueObservingOptionOld;/* |
                         CPKeyValueObservingOptionInitial;
 */
+
         [self addObserver:self forKeyPath:@"menu.items" options:options context:nil];
         [self addObserver:self forKeyPath:@"_firstItem.changeCount" options:options context:nil];
         [self addObserver:self forKeyPath:@"selectedItem.changeCount" options:options context:nil];

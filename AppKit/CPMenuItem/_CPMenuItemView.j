@@ -34,7 +34,6 @@ var _CPMenuItemSelectionColor                   = nil,
     BOOL                    _isDirty;
     BOOL                    _showsStateColumn;
 
-    CPImageView             _stateView;
     _CPImageAndTextView     _imageAndTextView;
     CPView                  _submenuView;
 }

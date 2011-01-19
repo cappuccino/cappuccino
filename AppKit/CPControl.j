@@ -753,8 +753,10 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
     if (_sendsActionOnEndEditing)
         [aCoder encodeBool:_sendsActionOnEndEditing forKey:CPControlSendsActionOnEndEditingKey];
 
-    if (_value !== nil)
-        [aCoder encodeObject:_value forKey:CPControlValueKey];
+    var objectValue = [self objectValue];
+
+    if (objectValue !== nil)
+        [aCoder encodeObject:objectValue forKey:CPControlValueKey];
 
     if (_target !== nil)
         [aCoder encodeConditionalObject:_target forKey:CPControlTargetKey];
