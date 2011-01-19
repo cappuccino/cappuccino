@@ -38,8 +38,8 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
     int         _maxValue       @accessors(property=maxValue);
     int         _minValue       @accessors(property=minValue);
 
-    _CPContinuousButton    _buttonDown;
-    _CPContinuousButton    _buttonUp;
+    CPButton    _buttonDown;
+    CPButton    _buttonUp;
 }
 
 #pragma mark -
@@ -87,14 +87,14 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
 
         [self setDoubleValue:0.0];
 
-        _buttonUp = [[_CPContinuousButton alloc] initWithFrame:CPRectMake(aFrame.size.width - CPStepperButtonsSize.width, 0, CPStepperButtonsSize.width, CPStepperButtonsSize.height)];
+        _buttonUp = [[CPButton alloc] initWithFrame:CPRectMake(aFrame.size.width - CPStepperButtonsSize.width, 0, CPStepperButtonsSize.width, CPStepperButtonsSize.height)];
         [_buttonUp setContinuous:YES];
         [_buttonUp setTarget:self];
         [_buttonUp setAction:@selector(_buttonDidClick:)];
         [_buttonUp setAutoresizingMask:CPViewNotSizable];
         [self addSubview:_buttonUp];
 
-        _buttonDown = [[_CPContinuousButton alloc] initWithFrame:CPRectMake(aFrame.size.width - CPStepperButtonsSize.width, CPStepperButtonsSize.height, CPStepperButtonsSize.width, CPStepperButtonsSize.height - 1)];
+        _buttonDown = [[CPButton alloc] initWithFrame:CPRectMake(aFrame.size.width - CPStepperButtonsSize.width, CPStepperButtonsSize.height, CPStepperButtonsSize.width, CPStepperButtonsSize.height - 1)];
         [_buttonDown setContinuous:YES];
         [_buttonDown setTarget:self];
         [_buttonDown setAction:@selector(_buttonDidClick:)];
@@ -152,7 +152,7 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
 }
 
 /*! set the current value of the stepper
-    @param aValue a float contaning the value
+    @param aValue a float containing the value
 */
 - (void)setDoubleValue:(float)aValue
 {
@@ -243,102 +243,4 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
     [aCoder encodeObject:_buttonDown forKey:@"_buttonDown"];
 }
 
-@end
-
-
-/*! This is a subclass of CPButton that allows to send continuous action.
-    This may should be include in CPButton..
-*/
-@implementation _CPContinuousButton : CPButton
-{
-    CPTimer _continuousDelayTimer;
-    CPTimer _continuousTimer;
-    float   _periodicDelay;
-    float   _periodicInterval;
-}
-
-- (void)initWithFrame:(CGRect)aFrame
-{
-    if (self = [super initWithFrame:aFrame])
-    {
-        _periodicInterval   = 0.05;
-        _periodicDelay      = 0.5;
-    }
-
-    return self;
-}
-
-- (void)setPeriodicDelay:(float)aDelay interval:(float)anInterval
-{
-    _periodicDelay      = aDelay;
-    _periodicInterval   = anInterval;
-}
-
-- (void)mouseDown:(CPEvent)anEvent
-{
-    if ([self isContinuous])
-    {
-        _continuousDelayTimer = [CPTimer scheduledTimerWithTimeInterval:_periodicDelay callback: function()
-        {
-            if (!_continuousTimer)
-                _continuousTimer = [CPTimer scheduledTimerWithTimeInterval:_periodicInterval target:self selector:@selector(onContinousEvent:) userInfo:anEvent repeats:YES];
-        }
-
-        repeats:NO];
-    }
-
-    [super mouseDown:anEvent];
-}
-
-- (void)onContinousEvent:(CPTimer)aTimer
-{
-    if (_target && _action && [_target respondsToSelector:_action])
-        [_target performSelector:_action withObject:self];
-}
-
-- (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
-{
-    [self invalidateTimers];
-    [super stopTracking:lastPoint at:aPoint mouseIsUp:mouseIsUp];
-}
-
-- (void)invalidateTimers
-{
-    if (_continuousTimer)
-    {
-        [_continuousTimer invalidate];
-        _continuousTimer = nil;
-    }
-
-    if (_continuousDelayTimer)
-    {
-        [_continuousDelayTimer invalidate];
-        _continuousDelayTimer = nil;
-    }
-}
-
-@end
-
-
-
-@implementation _CPContinuousButton (CPCodingCompliance)
-
-- (id)initWithCoder:(CPCoder)aCoder
-{
-    if (self = [super initWithCoder:aCoder])
-    {
-        _periodicDelay      = [aCoder decodeObjectForKey:@"_periodicDelay"];
-        _periodicInterval   = [aCoder decodeObjectForKey:@"_periodicInterval"];
-    }
-    return self;
-}
-
-- (void)encodeWithCoder:(CPCoder)aCoder
-{
-    [super encodeWithCoder:aCoder];
-
-    [self invalidateTimers];
-    [aCoder encodeObject:_periodicDelay forKey:@"_periodicDelay"];
-    [aCoder encodeObject:_periodicInterval forKey:@"_periodicInterval"];
-}
 @end

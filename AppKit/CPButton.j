@@ -106,6 +106,11 @@ CPButtonImageOffset   = 3.0;
 
     CPString            _keyEquivalent;
     unsigned            _keyEquivalentModifierMask;
+
+    CPTimer _continuousDelayTimer;
+    CPTimer _continuousTimer;
+    float   _periodicDelay;
+    float   _periodicInterval;
 }
 
 + (id)buttonWithTitle:(CPString)aTitle
@@ -159,6 +164,10 @@ CPButtonImageOffset   = 3.0;
 
         [self setBezelStyle:CPRoundRectBezelStyle];
         [self setBordered:YES];
+
+        // Continuous button defaults.
+        _periodicInterval   = 0.05;
+        _periodicDelay      = 0.5;
     }
 
     return self;
@@ -450,6 +459,34 @@ CPButtonImageOffset   = 3.0;
     return _imageDimsWhenDisabled;
 }
 
+- (void)setPeriodicDelay:(float)aDelay interval:(float)anInterval
+{
+    _periodicDelay      = aDelay;
+    _periodicInterval   = anInterval;
+}
+
+- (void)mouseDown:(CPEvent)anEvent
+{
+    if ([self isContinuous])
+    {
+        _continuousDelayTimer = [CPTimer scheduledTimerWithTimeInterval:_periodicDelay callback: function()
+        {
+            if (!_continuousTimer)
+                _continuousTimer = [CPTimer scheduledTimerWithTimeInterval:_periodicInterval target:self selector:@selector(onContinousEvent:) userInfo:anEvent repeats:YES];
+        }
+
+        repeats:NO];
+    }
+
+    [super mouseDown:anEvent];
+}
+
+- (void)onContinousEvent:(CPTimer)aTimer
+{
+    if (_target && _action && [_target respondsToSelector:_action])
+        [_target performSelector:_action withObject:self];
+}
+
 - (BOOL)startTrackingAt:(CGPoint)aPoint
 {
     [self highlight:YES];
@@ -460,11 +497,27 @@ CPButtonImageOffset   = 3.0;
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
     [self highlight:NO];
+    [self invalidateTimers];
 
     [super stopTracking:lastPoint at:aPoint mouseIsUp:mouseIsUp];
 
     if (mouseIsUp && CGRectContainsPoint([self bounds], aPoint))
         [self setNextState];
+}
+
+- (void)invalidateTimers
+{
+    if (_continuousTimer)
+    {
+        [_continuousTimer invalidate];
+        _continuousTimer = nil;
+    }
+
+    if (_continuousDelayTimer)
+    {
+        [_continuousDelayTimer invalidate];
+        _continuousDelayTimer = nil;
+    }
 }
 
 - (CGRect)contentRectForBounds:(CGRect)bounds
@@ -719,7 +772,9 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
     CPButtonImageDimsWhenDisabledKey    = @"CPButtonImageDimsWhenDisabledKey",
     CPButtonImagePositionKey            = @"CPButtonImagePositionKey",
     CPButtonKeyEquivalentKey            = @"CPButtonKeyEquivalentKey",
-    CPButtonKeyEquivalentMaskKey        = @"CPButtonKeyEquivalentMaskKey";
+    CPButtonKeyEquivalentMaskKey        = @"CPButtonKeyEquivalentMaskKey",
+    CPButtonPeriodicDelayKey            = @"CPButtonPeriodicDelayKey",
+    CPButtonPeriodicIntervalKey         = @"CPButtonPeriodicIntervalKey";
 
 @implementation CPButton (CPCoding)
 
@@ -749,6 +804,12 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
         if ([aCoder containsValueForKey:CPButtonKeyEquivalentKey])
             [self setKeyEquivalent:CFData.decodeBase64ToUtf16String([aCoder decodeObjectForKey:CPButtonKeyEquivalentKey])];
 
+        if ([aCoder containsValueForKey:CPButtonPeriodicDelayKey])
+            _periodicDelay = [aCoder decodeObjectForKey:CPButtonPeriodicDelayKey];
+
+        if ([aCoder containsValueForKey:CPButtonPeriodicIntervalKey])
+            _periodicInterval = [aCoder decodeObjectForKey:CPButtonPeriodicIntervalKey];
+
         _keyEquivalentModifierMask = [aCoder decodeIntForKey:CPButtonKeyEquivalentMaskKey];
 
         [self setNeedsLayout];
@@ -765,6 +826,7 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
+    [self invalidateTimers];
 
     [aCoder encodeObject:_title forKey:CPButtonTitleKey];
     [aCoder encodeObject:_alternateTitle forKey:CPButtonAlternateTitleKey];
@@ -778,6 +840,9 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
         [aCoder encodeObject:CFData.encodeBase64Utf16String(_keyEquivalent) forKey:CPButtonKeyEquivalentKey];
 
     [aCoder encodeInt:_keyEquivalentModifierMask forKey:CPButtonKeyEquivalentMaskKey];
+
+    [aCoder encodeObject:_periodicDelay forKey:CPButtonPeriodicDelayKey];
+    [aCoder encodeObject:_periodicInterval forKey:CPButtonPeriodicIntervalKey];
 }
 
 @end
