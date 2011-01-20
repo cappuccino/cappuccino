@@ -92,7 +92,7 @@ function check_build_environment () {
     fi
 
     # make sure other dependencies are installed and on the $PATH
-    OTHER_DEPS=(gcc unzip curl)
+    OTHER_DEPS=(gcc unzip)
 
     for dep in ${OTHER_DEPS[@]}; do
         which "$dep" &> /dev/null
@@ -233,7 +233,7 @@ if [ "$install_narwhal" ]; then
         zip_ball="http://github.com/$github_path/zipball/$github_ref"
 
         echo "Downloading Narwhal from \"$zip_ball\"..."
-        curl -L -o "$tmp_zip" "$zip_ball"
+        $(which curl &> /dev/null && echo curl -L -o || echo wget --no-check-certificate -O) "$tmp_zip" "$zip_ball"
         check_and_exit
 
         echo "Installing Narwhal..."
