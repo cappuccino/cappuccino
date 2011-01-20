@@ -13,6 +13,9 @@ CPLogRegister(CPLogConsole);
 
 CustomOutlineViewDragType = @"CustomOutlineViewDragType";
 
+
+var rowHeights = [ ];
+
 @implementation Menu : CPObject
 {
     Menu            _menu @accessors(property=menu);
@@ -191,6 +194,7 @@ CustomOutlineViewDragType = @"CustomOutlineViewDragType";
     [_outlineView registerForDraggedTypes:[CustomOutlineViewDragType]];
 
     [_outlineView setDataSource:self];
+    [_outlineView setDelegate:self];
     [_outlineView setAllowsMultipleSelection:YES];
     [_outlineView expandItem:nil expandChildren:YES];
     // [_outlineView setRowHeight:50.0];
@@ -294,6 +298,14 @@ CustomOutlineViewDragType = @"CustomOutlineViewDragType";
     }
 
     return YES;
+}
+
+- (int)outlineView:(CPOutlineView)outlineView heightOfRowByItem:(id)anItem
+{
+    if (!anItem.customHeight)
+        anItem.customHeight = 20 + RAND() * 190;
+
+    return anItem.customHeight;
 }
 
 @end

@@ -175,6 +175,12 @@ var concat = Array.prototype.concat,
     FORWARD_TO_CONCRETE_CLASS();
 }
 
+// FIXME: This should be defined in CPMutableArray, not here.
+- (id)initWithCapacity:(unsigned)aCapacity
+{
+    FORWARD_TO_CONCRETE_CLASS();
+}
+
 // Querying an array
 /*!
     Returns \c YES if the array contains \c anObject. Otherwise, it returns \c NO.

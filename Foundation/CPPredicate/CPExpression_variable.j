@@ -22,9 +22,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPDictionary.j"
+@import "CPException.j"
 @import "CPExpression.j"
 @import "CPString.j"
-@import "CPDictionary.j"
 
 @implementation CPExpression_variable :  CPExpression
 {
@@ -33,9 +34,12 @@
 
 - (id)initWithVariable:(CPString)variable
 {
-    [super initWithExpressionType:CPVariableExpressionType];
-    _variable = [variable copy];
+    self = [super initWithExpressionType:CPVariableExpressionType];
 
+    if (self)
+    {
+        _variable = [variable copy];
+    }
     return self;
 }
 

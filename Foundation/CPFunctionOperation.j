@@ -19,9 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <Foundation/CPObject.j>
+@import "CPArray.j"
+@import "CPObject.j"
 @import "CPOperation.j"
-
 
 /*!
     @class CPFunctionOperation
@@ -31,7 +31,6 @@
 {
     CPArray _functions;
 }
-
 
 - (void)main
 {
@@ -50,7 +49,9 @@
 
 - (id)init
 {
-    if (self = [super init])
+    self = [super init];
+
+    if (self)
     {
         _functions = [];
     }

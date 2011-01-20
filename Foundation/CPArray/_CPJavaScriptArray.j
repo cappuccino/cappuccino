@@ -102,6 +102,11 @@ var concat = Array.prototype.concat,
     return array;
 }
 
+- (id)initWithCapacity:(CPUInteger)aCapacity
+{
+    return self;
+}
+
 - (BOOL)count
 {
     return self.length;

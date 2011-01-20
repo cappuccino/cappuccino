@@ -147,7 +147,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     All delegate and data source methods are documented in the setDataSource: and setDelegate: methods.
 
-    If you want to display something other than just text in the table you should call setDataView: on a CPColumn object. More documentation in that class including theme states.
+    If you want to display something other than just text in the table you should call setDataView: on a CPTableColumn object. More documentation in that class including theme states.
+
+    Note: CPTableView does not contain its own scrollview. You should be sure you place the tableview in a CPScrollView on your own.
 */
 @implementation CPTableView : CPControl
 {
@@ -577,6 +579,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _allowsMultipleSelection = !!shouldAllowMultipleSelection;
 }
 
+/*!
+    Returns YES if the tableview is allowed to have multiple selections, otherwise NO.
+
+    @return BOOL - YES if the tableview is allowed to have multiple selections otherwise NO.
+*/
 - (BOOL)allowsMultipleSelection
 {
     return _allowsMultipleSelection;
@@ -869,6 +876,17 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _dirtyTableColumnRangeIndex = NUMBER_OF_COLUMNS() - 1;
     else
         _dirtyTableColumnRangeIndex = MIN(NUMBER_OF_COLUMNS() - 1, _dirtyTableColumnRangeIndex);
+
+    if ([[self sortDescriptors] count] > 0)
+    {
+        var mainSortDescriptor = [[self sortDescriptors] objectAtIndex:0];
+
+        if (aTableColumn === [self _tableColumnForSortDescriptor:mainSortDescriptor])
+        {
+            var image = [mainSortDescriptor ascending] ? [self _tableHeaderSortImage] : [self _tableHeaderReverseSortImage];
+            [self setIndicatorImage:image inTableColumn:aTableColumn];
+        }
+    }
 
     [self tile];
     [self setNeedsLayout];
@@ -1442,7 +1460,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 /*!
-    Returns the headerview for the receiver. The headerview contains column headerviews for each table column
+    Returns the headerview for the receiver. The headerview contains column headerviews for each table column.
 */
 - (CPView)headerView
 {
@@ -1451,8 +1469,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 
 /*!
-    Sets the headerview for the tableview. This is the container view for the table column header views
+    Sets the headerview for the tableview. This is the container view for the table column header views.
     This view also handles events for resizing and dragging.
+
+    If you dont want your tableview to have a headerview you should pass nil. (also see setCornerView:)
+    If you're looking to customize the header text of a column see CPTableColumn's -(CPView)headerView; method.
 */
 - (void)setHeaderView:(CPView)aHeaderView
 {
@@ -2672,7 +2693,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 /*!
-    Computes and returns a view to use for dragging
+    Computes and returns a view to use for dragging. By default this is a slighly transparent copy of the dataviews which are being dragged.
+    You can override this in a subclas to show different dragging feedback. Additionally you can return nil from this method and implement:
+    - (CPImage)dragImageForRowsWithIndexes:tableColumns:event:offset: - if you want to return a simple image.
 
     @param dragRows an index set with the dragged row indexes
     @param theTableColumns an array of the table columns which are being dragged
@@ -2803,6 +2826,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 /*!
 <pre>
     Sets the feedback style for when the table is the destination of a drag operation.
+    This style is used to determine how the tableview looks when it is the reciever of a drag and drop operation.
+
     Can be:
         CPTableViewDraggingDestinationFeedbackStyleNone
         CPTableViewDraggingDestinationFeedbackStyleRegular
@@ -2873,7 +2898,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 /*!
     Sets the table view's CPSortDescriptors objects in an array.
 
-    @param sortDescriptors an array of sort descritors.
+    @param sortDescriptors an array of sort descriptors.
 */
 - (void)setSortDescriptors:(CPArray)sortDescriptors
 {
@@ -2910,6 +2935,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self setIndicatorImage:image inTableColumn:newColumn];
 
     [self _sendDataSourceSortDescriptorsDidChange:oldSortDescriptors];
+
+    var binderClass = [[self class] _binderClassForBinding:@"sortDescriptors"];
+    [[binderClass getBinding:@"sortDescriptors" forObject:self] reverseSetValueFor:@"sortDescriptors"];
 }
 
 /*!
@@ -3377,6 +3405,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 /*!
     Draws the background in a given clip rect.
+    This method should only be overridden if you want something other than a solid color or alternating row colors.
+    NOTE: this method should not be called directly, instead use setNeedsDisplay:
 */
 - (void)drawBackgroundInClipRect:(CGRect)aRect
 {
@@ -3430,6 +3460,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 /*!
     Draws the grid for the tableview based on the set grid mask in a given clip rect.
+    NOTE: this method should not be called directly, instead use setNeedsDisplay:
 */
 - (void)drawGridInClipRect:(CGRect)aRect
 {
@@ -3505,6 +3536,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 /*!
     Draws the selection with the set selection highlight style in a given clip rect.
+    You can change the highlight style to a source list style gradient in setSelectionHighlightStyle:
+    NOTE: this method should not be called directly, instead use setNeedsDisplay:
 */
 - (void)highlightSelectionInClipRect:(CGRect)aRect
 {
@@ -3593,15 +3626,15 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             CGContextClosePath(context);
 
             CGContextBeginPath(context);
-            CGContextMoveToPoint(context, minX, minY);
-            CGContextAddLineToPoint(context, maxX, minY);
+            CGContextMoveToPoint(context, minX, minY + .5);
+            CGContextAddLineToPoint(context, maxX, minY + .5);
             CGContextClosePath(context);
             CGContextSetStrokeColor(context, (shouldUseGroupGradient) ? topGroupLineColor : topLineColor);
             CGContextStrokePath(context);
 
             CGContextBeginPath(context);
-            CGContextMoveToPoint(context, minX, maxY);
-            CGContextAddLineToPoint(context, maxX, maxY - 1);
+            CGContextMoveToPoint(context, minX, maxY - .5);
+            CGContextAddLineToPoint(context, maxX, maxY - .5);
             CGContextClosePath(context);
             CGContextSetStrokeColor(context, (shouldUseGroupGradient) ? bottomGroupLineColor : bottomLineColor);
             CGContextStrokePath(context);
@@ -4075,6 +4108,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self _draggingEnded];
 }
 
+/*!
+    @ignore
+*/
 - (void)_draggingEnded
 {
     _retargetedDropOperation = nil;
@@ -4082,6 +4118,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _draggedRowIndexes = [CPIndexSet indexSet];
     [_dropOperationFeedbackView removeFromSuperview];
 }
+
 /*
     @ignore
 */

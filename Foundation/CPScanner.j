@@ -20,7 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <Foundation/CPCharacterSet.j>
+@import "CPCharacterSet.j"
+@import "CPDictionary.j"
+@import "CPString.j"
 
 @implementation CPScanner : CPObject
 {
@@ -276,6 +278,7 @@
     var current = [self scanLocation],
         str = [self string],
         captured = nil;
+
     while (current < str.length)
     {
         var currentStr = str.substr(current, s.length);
@@ -307,16 +310,18 @@
 - (float)scanFloat
 {
     [self _movePastCharactersToBeSkipped];
-    var str = [self string], current = [self scanLocation];
+    var str = [self string],
+        current = [self scanLocation];
 
     if ([self isAtEnd])
         return 0;
 
     var s = str.substring(current, str.length),
         f =  parseFloat(s); // wont work with non . decimal separator !!
+
     if (f)
     {
-        var pos,
+        var pos = current,
             foundDash = NO;
 /*
         var decimalSeparatorString;
@@ -329,7 +334,7 @@
 */
         var separatorCode = 45;
 
-        for (pos = current; pos < current + str.length; pos++)
+        for (; pos < current + str.length; pos++)
         {
             var charCode = str.charCodeAt(pos);
             if (charCode == separatorCode)
@@ -352,17 +357,21 @@
 - (int)scanInt
 {
     [self _movePastCharactersToBeSkipped];
-    var str = [self string], current = [self scanLocation];
+    var str = [self string],
+        current = [self scanLocation];
 
     if ([self isAtEnd])
         return 0;
+
     var s = str.substring(current, str.length),
         i =  parseInt(s);
+
     if (i)
     {
-        var pos,
+        var pos = current,
             foundDash = NO;
-        for (pos = current; pos < current + str.length; pos++)
+
+        for (; pos < current + str.length; pos++)
         {
             var charCode = str.charCodeAt(pos);
             if (charCode == 46)

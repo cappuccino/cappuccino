@@ -23,7 +23,6 @@
 @import "CPObject.j"
 @import "CPObjJRuntime.j"
 
-
 var CPNumberUIDs    = new CFMutableDictionary();
 
 /*!

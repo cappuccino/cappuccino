@@ -757,6 +757,12 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         Implement this to indicate whether a given item should be rendered using the group item style.
         Return YES if the item is a group item, otherwise NO.
 
+    Variable Item Heights
+    - (int)outlineView:(CPOutlineView)outlineView heightOfRowByItem:(id)anItem;
+        Implement this method to get custom heights of rows based on the item.
+        This delegate method will be passed your 'item' object and expects you to return an integer height.
+        NOTE: this should only be implemented if rows will be different heights, if you want to set a height for ALL of your rows see -setRowHeight:
+
     @param aDelegate - the delegate object you wish to set for the reciever.
 <pre>
 */
@@ -1718,13 +1724,13 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return NO;
 }
 
-/*- (float)tableView:(CPTableView)theTableView heightOfRow:(int)theRow
+- (float)tableView:(CPTableView)theTableView heightOfRow:(int)theRow
 {
     if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_heightOfRowByItem_))
         return [_outlineView._outlineViewDelegate outlineView:_outlineView heightOfRowByItem:[_outlineView itemAtRow:theRow]];
 
     return [theTableView rowHeight];
-}*/
+}
 
 - (void)tableView:(CPTableView)aTableView willDisplayView:(id)aView forTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
 {

@@ -703,28 +703,85 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)keyDown:(CPEvent)anEvent
 {
-    var characters = [anEvent characters];
-    // Treat \r and \n the same. See issue #710.
-    if (characters === CPNewlineCharacter || characters === CPCarriageReturnCharacter)
-    {
-        // selectText: has a side effect - it can change first responder of the window
-        // we have to prevent such behaviour inside this method because target should be able to change first responder after receiving action.
-        [self selectText:nil];
+    if ([anEvent _couldBeKeyEquivalent] && [self performKeyEquivalent:anEvent])
+        return;
 
-        if (_isEditing)
-        {
-            _isEditing = NO;
-            [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
-        }
+    // CPTextField uses an HTML input element to take the input so we need to
+    // propagate the dom event so the element is updated. This has to be done
+    // before interpretKeyEvents: though so individual commands have a chance
+    // to override this (escape to clear the text in a search field for example).
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 
-        [self sendAction:[self action] to:[self target]];
-
-        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
-    }
-    else
-        [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
+    [self interpretKeyEvents:[anEvent]];
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+}
+
+/*!
+    Invoke the action specified by aSelector on the current responder.
+    
+    This is implemented by CPResponder and by default it passes any unrecignized 
+    actions on to the next responder but text fields appearently aren't supposed 
+    to do that according to this documentation by Apple:
+    
+    http://developer.apple.com/mac/library/documentation/cocoa/reference/NSTextInputClient_Protocol/Reference/Reference.html#//apple_ref/occ/intfm/NSTextInputClient/doCommandBySelector:
+*/
+- (void)doCommandBySelector:(SEL)aSelector
+{
+    if ([self respondsToSelector:aSelector])
+        [self performSelector:aSelector];
+}
+
+- (void)insertNewline:(id)sender
+{
+    if (_isEditing)
+    {
+        _isEditing = NO;
+        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
+    }
+
+    [self sendAction:[self action] to:[self target]];
+    [self selectText:nil];
+
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+}
+
+- (void)insertNewlineIgnoringFieldEditor:(id)sender
+{
+    var oldValue = [self stringValue];
+
+    [self _inputElement].value += CPNewlineCharacter;
+    [self _setStringValue:[self _inputElement].value];
+
+    if (oldValue !== [self stringValue])
+    {
+        if (!_isEditing)
+        {
+            _isEditing = YES;
+            [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+        }
+
+        [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
+    }
+}
+
+- (void)insertTabIgnoringFieldEditor:(id)sender
+{
+    var oldValue = [self stringValue];
+
+    [self _inputElement].value += CPTabCharacter;
+    [self _setStringValue:[self _inputElement].value];
+
+    if (oldValue !== [self stringValue])
+    {
+        if (!_isEditing)
+        {
+            _isEditing = YES;
+            [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+        }
+
+        [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
+    }
 }
 
 - (void)textDidBlur:(CPNotification)note

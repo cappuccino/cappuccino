@@ -22,7 +22,7 @@
 
 @import "CPObject.j"
 @import "CPString.j"
-
+@import "CPException.j"
 
 var CPDateReferenceDate = new Date(Date.UTC(2001, 1, 1, 0, 0, 0, 0));
 
