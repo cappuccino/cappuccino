@@ -47,6 +47,11 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     return "popup-button";
 }
 
++ (CPSet)keyPathsForValuesAffectingSelectedIndex
+{
+    return [CPSet setWithObject:@"objectValue"];
+}
+
 + (CPSet)keyPathsForValuesAffectingSelectedTag
 {
     return [CPSet setWithObject:@"selectedIndex"];
@@ -271,14 +276,31 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 */
 - (void)selectItemAtIndex:(CPUInteger)anIndex
 {
-    var indexOfSelectedItem = [self indexOfSelectedItem];
+    [self setObjectValue:anIndex];
+}
+
+- (void)setSelectedIndex:(CPUInteger)anIndex
+{
+    [self setObjectValue:anIndex];
+}
+
+- (CPUInteger)selectedIndex
+{
+    return [self objectValue];
+}
+
+/*!
+    Selects the item at the specified index
+    @param anIndex the index of the item to select
+*/
+- (void)setObjectValue:(int)anIndex
+{
+    var indexOfSelectedItem = [self objectValue];
 
     anIndex = parseInt(+anIndex, 10);
 
     if (indexOfSelectedItem === anIndex)
         return;
-
-    [self willChangeValueForKey:@"selectedIndex"];
 
     if (indexOfSelectedItem >= 0 && ![self pullsDown])
         [[self selectedItem] setState:CPOffState];
@@ -289,22 +311,11 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
         [[self selectedItem] setState:CPOnState];
 
     [self synchronizeTitleAndSelectedItem];
-
-    [self didChangeValueForKey:@"selectedIndex"];
-}
-
-/*!
-    Selects the item at the specified index
-    @param anIndex the index of the item to select
-*/
-- (void)setObjectValue:(int)anIndex
-{
-    [self selectItemAtIndex:anIndex];
 }
 
 - (id)objectValue
 {
-    return [self indexOfSelectedItem];
+    return _selectedIndex;
 }
 
 /*!
@@ -761,8 +772,8 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 @end
 
-var CPPopUpButtonSelectedIndexKey   = @"CPPopUpButtonSelectedIndexKey",
-    DEPRECATED_CPPopUpButtonMenuKey = @"CPPopUpButtonMenuKey";
+var DEPRECATED_CPPopUpButtonMenuKey             = @"CPPopUpButtonMenuKey",
+    DEPRECATED_CPPopUpButtonSelectedIndexKey    = @"CPPopUpButtonSelectedIndexKey";
 
 @implementation CPPopUpButton (CPCoding)
 /*!
@@ -778,14 +789,18 @@ var CPPopUpButtonSelectedIndexKey   = @"CPPopUpButtonSelectedIndexKey",
 
     if (self)
     {
-        // FIXME: Remove for 1.0
+        // FIXME: (or not?) _title is nulled in - [CPButton initWithCoder:],
+        // so we need to do this again.
+        [self synchronizeTitleAndSelectedItem];
+
+        // FIXME: Remove deprecation leniency for 1.0
         if ([aCoder containsValueForKey:DEPRECATED_CPPopUpButtonMenuKey])
         {
             CPLog.warn(self + " was encoded with an older version of Cappuccino. Please nib2cib the original nib again or open and re-save in Atlas.");
-            [self setMenu:[aCoder decodeObjectForKey:DEPRECATED_CPPopUpButtonMenuKey]];
-        }
 
-        [self selectItemAtIndex:[aCoder decodeIntForKey:CPPopUpButtonSelectedIndexKey]];
+            [self setMenu:[aCoder decodeObjectForKey:DEPRECATED_CPPopUpButtonMenuKey]];
+            [self setObjectValue:[aCoder decodeObjectForKey:DEPRECATED_CPPopUpButtonSelectedIndexKey]];
+        }
 
         var options =   CPKeyValueObservingOptionNew |
                         CPKeyValueObservingOptionOld;/* |
@@ -798,18 +813,6 @@ var CPPopUpButtonSelectedIndexKey   = @"CPPopUpButtonSelectedIndexKey",
     }
 
     return self;
-}
-
-/*!
-    Encodes the data of the pop-up button into a coder
-    @param aCoder the coder to which the data
-    will be written
-*/
-- (void)encodeWithCoder:(CPCoder)aCoder
-{
-    [super encodeWithCoder:aCoder];
-
-    [aCoder encodeInt:_selectedIndex forKey:CPPopUpButtonSelectedIndexKey];
 }
 
 @end
