@@ -54,7 +54,12 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 + (CPSet)keyPathsForValuesAffectingSelectedTag
 {
-    return [CPSet setWithObject:@"selectedIndex"];
+    return [CPSet setWithObject:@"objectValue"];
+}
+
++ (CPSet)keyPathsForValuesAffectingSelectedItem
+{
+    return [CPSet setWithObject:@"objectValue"];
 }
 
 /*!
