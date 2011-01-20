@@ -270,6 +270,17 @@ fi
 # if [ ! "$install_capp" ] && prompt; then
 #     install_capp="yes"
 # fi
+
+# Make sure tusk can access GitHub's HTTPS URLs.
+NARWHAL_ENGINE=rhino js -e "javax.net.ssl.SSLContext.getDefault()" &> /dev/null
+if [ ! "$?" = "0" ]; then
+    echo "Installing packages from GitHub requires SSL support in Java."
+    if [ "$(uname)" = "Linux" ]; then
+        echo "Try installing the libbcprov-java package, if it exists for your Linux distro."
+    fi
+    exit 1
+fi
+
 extra_packages=""
 if [ "$install_capp" ]; then
     extra_packages="objective-j cappuccino"
