@@ -83,6 +83,73 @@
     [self assert:NO equals:[[pullDownButton itemAtIndex:1] isHidden]];
 }
 
+- (void)testMenuItemSynchronization
+{
+    var popUpButton = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 28.0) pullsDown:NO];
+
+    [popUpButton addItemWithTitle:@"zero"];
+    [popUpButton addItemWithTitle:@"one"];
+    [popUpButton addItemWithTitle:@"two"];
+    [popUpButton addItemWithTitle:@"three"];
+    [popUpButton addItemWithTitle:@"four"];
+    [popUpButton addItemWithTitle:@"five"];
+    [popUpButton addItemWithTitle:@"six"];
+
+    [self assert:@"zero" same:[popUpButton title]];
+
+    [[popUpButton itemAtIndex:0] setTitle:@"new title"];
+
+    [self assert:@"new title" same:[popUpButton title]];
+
+    [popUpButton selectItemAtIndex:3];
+
+    [self assert:@"three" same:[popUpButton title]];
+
+    [[popUpButton itemAtIndex:3] setTitle:@"something else"];
+
+    [self assert:@"something else" same:[popUpButton title]];
+
+    [popUpButton selectItemAtIndex:6];
+
+    [self assert:@"six" same:[popUpButton title]];
+
+    [[popUpButton itemAtIndex:6] setTitle:@"another title"];
+
+    [self assert:@"another title" same:[popUpButton title]];
+
+    var popUpButton = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 28.0) pullsDown:YES];
+
+    [popUpButton addItemWithTitle:@"zero"];
+    [popUpButton addItemWithTitle:@"one"];
+    [popUpButton addItemWithTitle:@"two"];
+    [popUpButton addItemWithTitle:@"three"];
+    [popUpButton addItemWithTitle:@"four"];
+    [popUpButton addItemWithTitle:@"five"];
+    [popUpButton addItemWithTitle:@"six"];
+
+    [self assert:@"zero" same:[popUpButton title]];
+
+    [[popUpButton itemAtIndex:0] setTitle:@"new title"];
+
+    [self assert:@"new title" same:[popUpButton title]];
+
+    [popUpButton selectItemAtIndex:3];
+
+    [self assert:@"new title" same:[popUpButton title]];
+
+    [[popUpButton itemAtIndex:3] setTitle:@"something else"];
+
+    [self assert:@"new title" same:[popUpButton title]];
+
+    [popUpButton selectItemAtIndex:6];
+
+    [self assert:@"new title" same:[popUpButton title]];
+
+    [[popUpButton itemAtIndex:6] setTitle:@"another title"];
+
+    [self assert:@"new title" same:[popUpButton title]];
+}
+
 - (void)testItemTitles
 {
     [self assert:[] equals:[button itemTitles]];

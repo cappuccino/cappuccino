@@ -2,12 +2,7 @@
 
 @implementation MyDict : CPDictionary
 {
-    int a;
-}
-
-+ (id)alloc
-{
-    return class_createInstance(self);
+    CPString _firstName;
 }
 
 - (id)init
@@ -15,7 +10,7 @@
     self = [super init];
 
     if (self)
-        _a = "Bob";
+        _firstName = "Bob";
 
     return self;
 }
@@ -27,13 +22,13 @@
 
 - (CPString)name
 {
-    return _a;
+    return _firstName;
 }
 
 @end
 
 
-@implementation TestSubclassableDictionary : OJTestCase
+@implementation CPSubclassableDictionaryTest : OJTestCase
 
 - (void)testThatMyDictContainsReplacedNameSelector
 {
@@ -53,7 +48,7 @@
 {
     var target = [[CPDictionary alloc] init];
 
-    [OJAssert assert:@"Bob" notEqual:[target name]];
+    [OJAssert assert:NO same:[target respondsToSelector:@selector(name)]];
 }
 
 - (void)testThatTollFreeDoesNotHaveNewSelector

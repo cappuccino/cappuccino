@@ -46,10 +46,12 @@
     BOOL    _selectsInsertedObjects;
     BOOL    _alwaysUsesMultipleValuesMarker;
 
-    id      _selectionIndexes;
-    id      _sortDescriptors;
-    id      _filterPredicate;
-    id      _arrangedObjects;
+    BOOL    _automaticallyRearrangesObjects; // FIXME: Not in use
+
+    CPIndexSet  _selectionIndexes;
+    CPArray     _sortDescriptors;
+    CPPredicate _filterPredicate;
+    CPArray     _arrangedObjects;
 }
 
 + (void)initialize
@@ -116,11 +118,27 @@
 
     if (self)
     {
-        _sortDescriptors = [CPArray array];
-        _selectionIndexes = [CPIndexSet indexSet];
+        _preservesSelection = YES;
+        _selectsInsertedObjects = YES;
+        _avoidsEmptySelection = YES;
+        _clearsFilterPredicateOnInsertion = YES;
+        _alwaysUsesMultipleValuesMarker = NO;
+        _automaticallyRearrangesObjects = NO;
+
+        _filterRestrictsInsertion = YES; // FIXME: Not in use
+
+        [self _init];
     }
 
     return self;
+}
+
+- (void)_init
+{
+    _sortDescriptors = [CPArray array];
+    _filterPredicate = nil;
+    _selectionIndexes = [CPIndexSet indexSet];
+    _arrangedObjects = nil;
 }
 
 - (void)prepareContent
@@ -156,7 +174,7 @@
 
 /*!
     Sets whether the controller will automatically select objects as they are inserted.
-    @return BOOL aFlag - YES if new objects are selected, otherwise NO.
+    @return BOOL - YES if new objects are selected, otherwise NO.
 */
 - (void)setSelectsInsertedObjects:(BOOL)value
 {
@@ -164,7 +182,7 @@
 }
 
 /*!
-    @return BOOL aFlag - Returns YES if the controller should try to avoid an empty selection otherwise NO.
+    @return BOOL - YES if the controller should try to avoid an empty selection otherwise NO.
 */
 - (BOOL)avoidsEmptySelection
 {
@@ -178,6 +196,76 @@
 - (void)setAvoidsEmptySelection:(BOOL)value
 {
     _avoidsEmptySelection = value;
+}
+
+/*!
+    Whether the receiver will clear its filter predicate when a new object is inserted.
+
+    @return BOOL YES if the receiver clears filter predicates on insert
+*/
+- (BOOL)clearsFilterPredicateOnInsertion
+{
+    return _clearsFilterPredicateOnInsertion;
+}
+
+/*!
+    Sets whether the receiver should clear its filter predicate when a new object is inserted.
+
+    @param BOOL YES if the receiver should clear filter predicates on insert
+*/
+- (void)setClearsFilterPredicateOnInsertion:(BOOL)aFlag
+{
+    _clearsFilterPredicateOnInsertion = aFlag;
+}
+
+/*!
+    Whether the receiver will always return the multiple values marker when multiple
+    items are selected, even if the items have the same value.
+
+    @return BOOL YES if the receiver always uses the multiple values marker
+*/
+- (BOOL)alwaysUsesMultipleValuesMarker
+{
+    return _alwaysUsesMultipleValuesMarker;
+}
+
+/*!
+    Sets whether the receiver should always return the multiple values marker when multiple
+    items are selected, even if the items have the same value.
+
+    @param BOOL aFlag YES if the receiver should always use the multiple values marker
+*/
+- (void)setAlwaysUsesMultipleValuesMarker:(BOOL)aFlag
+{
+    _alwaysUsesMultipleValuesMarker = aFlag;
+}
+
+/*!
+    Whether the receiver will rearrange its contents automatically whenever the sort
+    descriptors or filter predicates are changed.
+
+    NOTE: not yet implemented. Cappuccino always act as if this value was YES.
+
+    @return BOOL YES if the receiver will automatically rearrange its content on new sort
+        descriptors or filter predicates
+*/
+- (BOOL)automaticallyRearrangesObjects
+{
+    return _automaticallyRearrangesObjects;
+}
+
+/*!
+    Sets whether the receiver should rearrange its contents automatically whenever the sort
+    descriptors or filter predicates are changed.
+
+    NOTE: not yet implemented. Cappuccino always act as if this value was YES.
+
+    @param BOOL YES if the receiver should automatically rearrange its content on new sort
+        descriptors or filter predicates
+*/
+- (void)setAutomaticallyRearrangesObjects:(BOOL)aFlag
+{
+    _automaticallyRearrangesObjects = aFlag;
 }
 
 /*!
@@ -220,7 +308,7 @@
     // We need to be in control of when notifications fire.
     _contentObject = value;
 
-    if (_clearsFilterPredicateOnInsertion)
+    if (_clearsFilterPredicateOnInsertion && _filterPredicate != nil)
         [self __setFilterPredicate:nil]; // Causes a _rearrangeObjects.
     else
         [self _rearrangeObjects];
@@ -280,7 +368,7 @@
     var filterPredicate = [self filterPredicate],
         sortDescriptors = [self sortDescriptors];
 
-    if (filterPredicate && sortDescriptors)
+    if (filterPredicate && [sortDescriptors count] > 0)
     {
         var sortedObjects = [objects filteredArrayUsingPredicate:filterPredicate];
         [sortedObjects sortUsingDescriptors:sortDescriptors];
@@ -288,7 +376,7 @@
     }
     else if (filterPredicate)
         return [objects filteredArrayUsingPredicate:filterPredicate];
-    else if (sortDescriptors)
+    else if ([sortDescriptors count] > 0)
         return [objects sortedArrayUsingDescriptors:sortDescriptors];
 
     return [objects copy];
@@ -338,7 +426,7 @@
     if (_arrangedObjects === value)
         return;
 
-   _arrangedObjects = [[_CPObservableArray alloc] initWithArray:value];
+    _arrangedObjects = [[_CPObservableArray alloc] initWithArray:value];
 }
 
 /*!
@@ -829,7 +917,8 @@ var CPArrayControllerAvoidsEmptySelection             = @"CPArrayControllerAvoid
     CPArrayControllerFilterRestrictsInsertion         = @"CPArrayControllerFilterRestrictsInsertion",
     CPArrayControllerPreservesSelection               = @"CPArrayControllerPreservesSelection",
     CPArrayControllerSelectsInsertedObjects           = @"CPArrayControllerSelectsInsertedObjects",
-    CPArrayControllerAlwaysUsesMultipleValuesMarker   = @"CPArrayControllerAlwaysUsesMultipleValuesMarker";
+    CPArrayControllerAlwaysUsesMultipleValuesMarker   = @"CPArrayControllerAlwaysUsesMultipleValuesMarker",
+    CPArrayControllerAutomaticallyRearrangesObjects   = @"CPArrayControllerAutomaticallyRearrangesObjects";
 
 @implementation CPArrayController (CPCoding)
 
@@ -845,6 +934,8 @@ var CPArrayControllerAvoidsEmptySelection             = @"CPArrayControllerAvoid
         _preservesSelection = [aCoder decodeBoolForKey:CPArrayControllerPreservesSelection];
         _selectsInsertedObjects = [aCoder decodeBoolForKey:CPArrayControllerSelectsInsertedObjects];
         _alwaysUsesMultipleValuesMarker = [aCoder decodeBoolForKey:CPArrayControllerAlwaysUsesMultipleValuesMarker];
+        _automaticallyRearrangesObjects = [aCoder decodeBoolForKey:CPArrayControllerAutomaticallyRearrangesObjects];
+        _sortDescriptors = [CPArray array];
 
         if (![self content] && [self automaticallyPreparesContent])
             [self prepareContent];
@@ -865,6 +956,7 @@ var CPArrayControllerAvoidsEmptySelection             = @"CPArrayControllerAvoid
     [aCoder encodeBool:_preservesSelection forKey:CPArrayControllerPreservesSelection];
     [aCoder encodeBool:_selectsInsertedObjects forKey:CPArrayControllerSelectsInsertedObjects];
     [aCoder encodeBool:_alwaysUsesMultipleValuesMarker forKey:CPArrayControllerAlwaysUsesMultipleValuesMarker];
+    [aCoder encodeBool:_automaticallyRearrangesObjects forKey:CPArrayControllerAutomaticallyRearrangesObjects];
 }
 
 - (void)awakeFromCib
