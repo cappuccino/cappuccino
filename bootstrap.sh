@@ -79,19 +79,20 @@ function check_and_exit () {
 }
 
 function check_build_environment () {
-    # make sure user is running HotSpot JVM
-    java -version 2>&1 | grep HotSpot &> /dev/null
-    if [ ! "$?" = "0" ]; then
-        java_ver=`java -version 2>&1 | egrep "(Client|Server)"`
-        if [ "$java_ver" = "" ]; then
-            java_ver="your JVM"
+    # make sure user is running the Sun JVM or OpenJDK >= 6b18
+    java_version=$(java -version 2>&1)
+    echo $java_version | grep OpenJDK > /dev/null
+    if [ "$?" = "0" ]; then # OpenJDK: make sure >= 6b18
+        openjdk_version=$(echo $java_version | egrep -o '[0-9]b[0-9]+')
+        if [ $(echo $openjdk_version | tr -d 'b') -lt 618 ]; then
+            echo "Error: Narwhal is not compatible with your version of OpenJDK: $openjdk_version."
+            echo "Please upgrade to OpenJDK >= 6b18 or switch to the Sun JVM. Then re-run bootstrap.sh."
+            exit 1
         fi
-        echo "Error: Narwhal is not compatible with $java_ver. Please switch to the Sun (HotSpot) JVM and re-run bootstrap.sh."
-        exit 1
     fi
 
     # make sure other dependencies are installed and on the $PATH
-    OTHER_DEPS=(gcc unzip curl)
+    OTHER_DEPS=(gcc unzip)
 
     for dep in ${OTHER_DEPS[@]}; do
         which "$dep" &> /dev/null
@@ -232,7 +233,7 @@ if [ "$install_narwhal" ]; then
         zip_ball="http://github.com/$github_path/zipball/$github_ref"
 
         echo "Downloading Narwhal from \"$zip_ball\"..."
-        curl -L -o "$tmp_zip" "$zip_ball"
+        $(which curl &> /dev/null && echo curl -L -o || echo wget --no-check-certificate -O) "$tmp_zip" "$zip_ball"
         check_and_exit
 
         echo "Installing Narwhal..."
@@ -269,6 +270,17 @@ fi
 # if [ ! "$install_capp" ] && prompt; then
 #     install_capp="yes"
 # fi
+
+# Make sure tusk can access GitHub's HTTPS URLs.
+NARWHAL_ENGINE=rhino js -e "javax.net.ssl.SSLContext.getDefault()" &> /dev/null
+if [ ! "$?" = "0" ]; then
+    echo "Installing packages from GitHub requires SSL support in Java."
+    if [ "$(uname)" = "Linux" ]; then
+        echo "Try installing the libbcprov-java package, if it exists for your Linux distro."
+    fi
+    exit 1
+fi
+
 extra_packages=""
 if [ "$install_capp" ]; then
     extra_packages="objective-j cappuccino"
