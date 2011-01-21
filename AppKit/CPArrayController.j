@@ -174,7 +174,7 @@
 
 /*!
     Sets whether the controller will automatically select objects as they are inserted.
-    @return BOOL aFlag - YES if new objects are selected, otherwise NO.
+    @return BOOL - YES if new objects are selected, otherwise NO.
 */
 - (void)setSelectsInsertedObjects:(BOOL)value
 {
@@ -182,7 +182,7 @@
 }
 
 /*!
-    @return BOOL aFlag - Returns YES if the controller should try to avoid an empty selection otherwise NO.
+    @return BOOL - YES if the controller should try to avoid an empty selection otherwise NO.
 */
 - (BOOL)avoidsEmptySelection
 {
@@ -198,34 +198,74 @@
     _avoidsEmptySelection = value;
 }
 
+/*!
+    Whether the receiver will clear its filter predicate when a new object is inserted.
+
+    @return BOOL YES if the receiver clears filter predicates on insert
+*/
 - (BOOL)clearsFilterPredicateOnInsertion
 {
     return _clearsFilterPredicateOnInsertion;
 }
 
-- (void)setClearsFilterPredicateOnInsertion:(BOOL)value
+/*!
+    Sets whether the receiver should clear its filter predicate when a new object is inserted.
+
+    @param BOOL YES if the receiver should clear filter predicates on insert
+*/
+- (void)setClearsFilterPredicateOnInsertion:(BOOL)aFlag
 {
-    _clearsFilterPredicateOnInsertion = value;
+    _clearsFilterPredicateOnInsertion = aFlag;
 }
 
+/*!
+    Whether the receiver will always return the multiple values marker when multiple
+    items are selected, even if the items have the same value.
+
+    @return BOOL YES if the receiver always uses the multiple values marker
+*/
 - (BOOL)alwaysUsesMultipleValuesMarker
 {
     return _alwaysUsesMultipleValuesMarker;
 }
 
-- (void)setAlwaysUsesMultipleValuesMarker:(BOOL)value
+/*!
+    Sets whether the receiver should always return the multiple values marker when multiple
+    items are selected, even if the items have the same value.
+
+    @param BOOL aFlag YES if the receiver should always use the multiple values marker
+*/
+- (void)setAlwaysUsesMultipleValuesMarker:(BOOL)aFlag
 {
-    _alwaysUsesMultipleValuesMarker = value;
+    _alwaysUsesMultipleValuesMarker = aFlag;
 }
 
+/*!
+    Whether the receiver will rearrange its contents automatically whenever the sort
+    descriptors or filter predicates are changed.
+
+    NOTE: not yet implemented. Cappuccino always act as if this value was YES.
+
+    @return BOOL YES if the receiver will automatically rearrange its content on new sort
+        descriptors or filter predicates
+*/
 - (BOOL)automaticallyRearrangesObjects
 {
     return _automaticallyRearrangesObjects;
 }
 
-- (void)setAutomaticallyRearrangesObjects:(BOOL)value
+/*!
+    Sets whether the receiver should rearrange its contents automatically whenever the sort
+    descriptors or filter predicates are changed.
+
+    NOTE: not yet implemented. Cappuccino always act as if this value was YES.
+
+    @param BOOL YES if the receiver should automatically rearrange its content on new sort
+        descriptors or filter predicates
+*/
+- (void)setAutomaticallyRearrangesObjects:(BOOL)aFlag
 {
-    _automaticallyRearrangesObjects = value;
+    _automaticallyRearrangesObjects = aFlag;
 }
 
 /*!
