@@ -79,6 +79,17 @@ function check_and_exit () {
 }
 
 function check_build_environment () {
+    # make sure dependencies are installed and on the $PATH
+    CAPP_BUILD_DEPS=(java gcc unzip)
+
+    for dep in ${CAPP_BUILD_DEPS[@]}; do
+        which "$dep" &> /dev/null
+        if [ ! "$?" = "0" ]; then
+            echo "Error: $dep is required to build Cappuccino. Please install $dep and re-run bootstrap.sh."
+            exit 1
+        fi
+    done
+
     # make sure user is running the Sun JVM or OpenJDK >= 6b18
     java_version=$(java -version 2>&1)
     echo $java_version | grep OpenJDK > /dev/null
@@ -90,17 +101,6 @@ function check_build_environment () {
             exit 1
         fi
     fi
-
-    # make sure other dependencies are installed and on the $PATH
-    OTHER_DEPS=(gcc unzip)
-
-    for dep in ${OTHER_DEPS[@]}; do
-        which "$dep" &> /dev/null
-        if [ ! "$?" = "0" ]; then
-            echo "Error: $dep is required to build Cappuccino. Please install $dep and re-run bootstrap.sh."
-            exit 1
-        fi
-    done
 }
 
 check_build_environment
