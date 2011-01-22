@@ -85,10 +85,17 @@ function check_build_environment () {
     for dep in ${CAPP_BUILD_DEPS[@]}; do
         which "$dep" &> /dev/null
         if [ ! "$?" = "0" ]; then
-            echo "Error: $dep is required to build Cappuccino. Please install $dep and re-run bootstrap.sh."
+            echo "Error: $dep is required to bootstrap Cappuccino. Please install $dep and re-run bootstrap.sh."
             exit 1
         fi
     done
+
+    # special case: check for curl or wget
+    which curl &> /dev/null || which wget &> /dev/null
+    if [ ! "$?" = "0" ]; then
+        echo "Error: curl or wget are required to bootstrap Cappuccino. Please install one of them and re-run bootstrap.sh."
+        exit 1
+    fi
 
     # make sure user is running the Sun JVM or OpenJDK >= 6b18
     java_version=$(java -version 2>&1)
