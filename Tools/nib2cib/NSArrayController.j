@@ -37,6 +37,7 @@
         _preservesSelection = [aCoder decodeBoolForKey:@"NSPreservesSelection"];
         _selectsInsertedObjects = [aCoder decodeBoolForKey:@"NSSelectsInsertedObjects"];
         _alwaysUsesMultipleValuesMarker = [aCoder decodeBoolForKey:@"NSAlwaysUsesMultipleValuesMarker"];
+        _automaticallyRearrangesObjects = [aCoder decodeBoolForKey:@"NSAutomaticallyRearrangesObjects"];
     }
 
     return self;
