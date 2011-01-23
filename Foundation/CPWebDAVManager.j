@@ -102,7 +102,7 @@ CPWebDAVManagerNonCollectionResourceType    = 0;
     }
 
     if (!aBlock)
-        return makeContents(aURL, response);
+        return makeContents(aURL, [self PROPFIND:aURL properties:properties depth:1 block:nil]);
 
     [self PROPFIND:aURL properties:properties depth:1 block:function(aURL, response)
     {

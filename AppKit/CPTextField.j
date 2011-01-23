@@ -509,7 +509,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     var contentRect = [self contentRectForBounds:[self bounds]],
         verticalAlign = [self currentValueForThemeAttribute:"vertical-alignment"];
 
-    switch(verticalAlign)
+    switch (verticalAlign)
     {
         case CPTopVerticalTextAlignment:
             var topPoint = (_CGRectGetMinY(contentRect) + 1) + "px"; // for the same reason we have a -1 for the left, we also have a + 1 here
@@ -528,7 +528,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             break;
     }
 
-    element.style.top = topPoint; 
+    element.style.top = topPoint;
     element.style.left = (_CGRectGetMinX(contentRect) - 1) + "px"; // why -1?
     element.style.width = _CGRectGetWidth(contentRect) + "px";
     element.style.height = font._lineHeight + "px"; // private ivar for the line height of the DOM text at this particaulr size
@@ -719,11 +719,11 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 /*!
     Invoke the action specified by aSelector on the current responder.
-    
-    This is implemented by CPResponder and by default it passes any unrecignized 
-    actions on to the next responder but text fields appearently aren't supposed 
+
+    This is implemented by CPResponder and by default it passes any unrecignized
+    actions on to the next responder but text fields appearently aren't supposed
     to do that according to this documentation by Apple:
-    
+
     http://developer.apple.com/mac/library/documentation/cocoa/reference/NSTextInputClient_Protocol/Reference/Reference.html#//apple_ref/occ/intfm/NSTextInputClient/doCommandBySelector:
 */
 - (void)doCommandBySelector:(SEL)aSelector
