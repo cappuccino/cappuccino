@@ -2131,7 +2131,12 @@ CPTexturedBackgroundWindowMask
 
 - (CPTimeInterval)animationResizeTime:(CGRect)newWindowFrame
 {
-    return CPWindowResizeTime;
+    var oldWindowframe = [self frame],
+        distx = CGRectGetMaxX(oldWindowframe) - CGRectGetMaxX(newWindowFrame),
+        disty = CGRectGetMaxY(oldWindowframe) - CGRectGetMaxY(newWindowFrame),
+        dist = SQRT(distx * distx + disty * disty);
+
+    return CPWindowResizeTime * dist / 150;
 }
 
 /* @ignore */
