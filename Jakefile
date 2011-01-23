@@ -253,18 +253,24 @@ task ("demos", function()
 
 // Testing
 
-task("test", ["CommonJS", "test-only"]);
+task("test", ["CommonJS", "test-only", "check-missing-imports"]);
 
 task("test-only", function()
 {
-    var tests = new FileList('Tests/**/*Test.j');
-    var cmd = ["ojtest"].concat(tests.items());
+    var tests = new FileList('Tests/**/*Test.j'),
+        cmd = ["ojtest"].concat(tests.items()),
+        code = OS.system(serializedENV() + " " + cmd.map(OS.enquote).join(" "));
 
-    var code = OS.system(serializedENV() + " " + cmd.map(OS.enquote).join(" "));
     if (code !== 0)
         OS.exit(code);
+});
 
-    OS.system(serializedENV() + " " + ["js", "Tests/DetectMissingImports.js"].map(OS.enquote).join(" "));
+task("check-missing-imports", function()
+{
+    var code = OS.system(serializedENV() + " " + ["js", "Tests/DetectMissingImports.js"].map(OS.enquote).join(" "));
+
+    if (code !== 0)
+        OS.exit(code);
 });
 
 task("push-packages", ["push-cappuccino", "push-objective-j"]);

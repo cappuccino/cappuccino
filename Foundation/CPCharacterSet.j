@@ -231,6 +231,7 @@ var _builtInCharacterSets = {};
 
 - (BOOL)hasMemberInPlane:(int)plane // TO DO : when inverted
 {
+    // FIXME: range is undefined... don't know what's supposed to be going on here.
     // the highest Unicode plane we reach.
     // (There are 65536 code points in each plane.)
     var maxPlane = Math.floor((range.start + range.length - 1) / 65536); // FIXME: should iterate _ranges
