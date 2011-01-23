@@ -21,29 +21,30 @@
         contentView = [window contentView];
 
     [window setMinSize:CGSizeMake(300, 200)];
-    sheet = [[CPWindow alloc] initWithContentRect:CGRectMake(0,0,300,100) styleMask:CPDocModalWindowMask | CPResizableWindowMask];
+    sheet = [[CPWindow alloc] initWithContentRect:CGRectMake(0,0,300,500) styleMask:CPDocModalWindowMask | CPResizableWindowMask];
     [sheet setMinSize:CGSizeMake(300,100)];
 
     var sheetContent = [sheet contentView];
 
-    textField = [[CPTextField alloc] initWithFrame:CGRectMake(10,30,280,30)];
+    textField = [[CPTextField alloc] initWithFrame:CGRectMake(10,500-40-40,280,30)];
     [textField setEditable:YES];
     [textField setBezeled:YES];
-    [textField setAutoresizingMask:CPViewWidthSizable];
+    [textField setAutoresizingMask:CPViewWidthSizable | CPViewMinYMargin];
 
-    var okButton = [[CPButton alloc] initWithFrame:CGRectMake(230,70,50,24)];
+    var okButton = [[CPButton alloc] initWithFrame:CGRectMake(240,500-40,50,24)];
     [okButton setTitle:"OK"];
     [okButton setTarget:self];
     [okButton setTag:1];
     [okButton setAction:@selector(closeSheet:)];
     [okButton setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
 
-    var cancelButton = [[CPButton alloc] initWithFrame:CGRectMake(120,70,100,24)];
+    var cancelButton = [[CPButton alloc] initWithFrame:CGRectMake(130,500-40,100,24)];
     [cancelButton setTitle:"Cancel"];
     [cancelButton setTarget:self];
     [cancelButton setTag:0];
     [cancelButton setAction:@selector(closeSheet:)];
     [cancelButton setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
+  	[cancelButton setKeyEquivalent:CPEscapeFunctionKey];
 
     [sheetContent addSubview:textField];
     [sheetContent addSubview:okButton];
