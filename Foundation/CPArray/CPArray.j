@@ -559,7 +559,7 @@ var concat = Array.prototype.concat,
 }
 
 /*!
-    Returns true if anArray contains exactly the same objects as the reciever.
+    Returns true if anArray contains exactly the same objects as the receiver.
 */
 - (BOOL)isEqualToArray:(id)anArray
 {

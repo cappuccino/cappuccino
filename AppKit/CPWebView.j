@@ -46,10 +46,13 @@ CPWebViewScrollNative                           = 2;
 
     @class CPWebView
 
-    CPWebView is a class which allows you to display arbitrary HTML or embed a webpage inside your application.
+    CPWebView is a class which allows you to display arbitrary HTML or embed a
+    webpage inside your application.
 
-    It's important to note that the same origin policy applies to this view. That is, you will have limited control over this view
-    if the webpage being displayed is not located on the same origin (protocol, domain, and port) as the application.
+    It's important to note that the same origin policy applies to this view.
+    That is, if the web page being displayed is not located in the same origin
+    (protocol, domain, and port) as the application, you will have limited
+    control over the view and no access to its contents.
 */
 
 @implementation CPWebView : CPView
@@ -244,7 +247,8 @@ CPWebViewScrollNative                           = 2;
 }
 
 /*!
-    Sets the scroll mode of the receiver. This could be CPWebViewScrollAppKit or CPWebViewScrollNative.
+    Sets the scroll mode of the receiver. Valid options are
+    CPWebViewScrollAppKit and CPWebViewScrollNative.
 */
 - (void)setScrollMode:(int)aScrollMode
 {
@@ -413,6 +417,7 @@ CPWebViewScrollNative                           = 2;
 
 /*!
     Tells the webview to navigate to the previous page.
+
     @return BOOL - YES if the receiver was able to go back, otherwise NO.
 */
 - (BOOL)goBack
@@ -433,6 +438,7 @@ CPWebViewScrollNative                           = 2;
 
 /*!
     Tells the receiver to go forward in page history.
+
     @return - YES if the receiver was able to go forward, otherwise NO.
 */
 - (BOOL)goForward
@@ -452,7 +458,9 @@ CPWebViewScrollNative                           = 2;
 }
 
 /*!
-    Checks to see if the webview has a history stack you can navigate back through.
+    Checks to see if the webview has a history stack you can navigate back
+    through.
+
     @return BOOL - YES if the receiver can navigate backward through history, otherwise NO.
 */
 - (BOOL)canGoBack
@@ -461,7 +469,9 @@ CPWebViewScrollNative                           = 2;
 }
 
 /*!
-    Checks to see if the webview has a history stack you can navigate forward through.
+    Checks to see if the webview has a history stack you can navigate forward
+    through.
+
     @return BOOL - YES if the receiver can navigate forward through history, otherwise NO.
 */
 - (BOOL)canGoForward
@@ -476,7 +486,8 @@ CPWebViewScrollNative                           = 2;
 }
 
 /*!
-    Closes the webview by unloading the webpage. The webview will not longer respond to load requests or delegate methods once this is called.
+    Closes the webview by unloading the webpage. The webview will no longer
+    respond to load requests or delegate methods once this is called.
 */
 - (void)close
 {
@@ -485,6 +496,7 @@ CPWebViewScrollNative                           = 2;
 
 /*!
     Returns the window object of the webview.
+
     @return DOMWindow - The window object.
 */
 - (DOMWindow)DOMWindow
@@ -494,6 +506,7 @@ CPWebViewScrollNative                           = 2;
 
 /*!
     Returns the root Object of the webview as a CPWebScriptObject.
+
     @return CPWebScriptObject - the Object of the webview.
 */
 - (CPWebScriptObject)windowScriptObject
@@ -510,9 +523,11 @@ CPWebViewScrollNative                           = 2;
 }
 
 /*!
-    Evaluates a javascript string in the webview and returns the result of that evaluation as a string.
+    Evaluates a javascript string in the webview and returns the result of
+    that evaluation as a string.
+
     @param script - A string of javascript.
-    @return CPString - The result of the javascript.
+    @return CPString - The result of the evaluation.
 */
 - (CPString)stringByEvaluatingJavaScriptFromString:(CPString)script
 {
@@ -522,8 +537,9 @@ CPWebViewScrollNative                           = 2;
 
 /*!
     Evaluates a string of javascript in the webview and returns the result.
+
     @param script - A string of javascript.
-    @return JSObject - A JSObject resulting in the eval of a string
+    @return JSObject - A JSObject resulting from the evaluation.
 */
 - (JSObject)objectByEvaluatingJavaScriptFromString:(CPString)script
 {
@@ -559,6 +575,7 @@ CPWebViewScrollNative                           = 2;
 
 /*!
     Sets whether the webview draws its own background.
+
     @param BOOL - YES if the webview should draw its background, otherwise NO.
 */
 - (void)setDrawsBackground:(BOOL)drawsBackround
@@ -567,11 +584,12 @@ CPWebViewScrollNative                           = 2;
 }
 
 
-
 // IBActions
 
 /*!
-    Used with the target/action mechanism to automatically set the webviews mainFrameURL to the senders stringValue.
+    Used with the target/action mechanism to automatically set the webviews
+    mainFrameURL to the senders stringValue.
+
     @param sender - the sender of the action. Should respond to -stringValue.
 */
 - (@action)takeStringURLFrom:(id)sender
@@ -581,6 +599,7 @@ CPWebViewScrollNative                           = 2;
 
 /*!
     Same as -goBack but takes a sender as a param.
+
     @param sender - the sender of the action.
 */
 - (@action)goBack:(id)sender
@@ -590,6 +609,7 @@ CPWebViewScrollNative                           = 2;
 
 /*!
     Same as -goForward but takes a sender as a param.
+
     @param sender - the sender of the action.
 */
 - (@action)goForward:(id)sender
@@ -599,6 +619,7 @@ CPWebViewScrollNative                           = 2;
 
 /*!
     Stops loading the webview. (not yet implemented)
+
     @param sender - the sender of the action.
 */
 - (@action)stopLoading:(id)sender
@@ -617,7 +638,9 @@ CPWebViewScrollNative                           = 2;
 }
 
 /*!
-    Tells the webview to print. If the webview is unable to print due to browser restrictions the user is alerted to print from the file menu.
+    Tells the webview to print. If the webview is unable to print due to
+    browser restrictions the user is alerted to print from the file menu.
+
     @param sender - the sender of the receiver.
 */
 - (@action)print:(id)sender
@@ -704,6 +727,7 @@ CPWebViewScrollNative                           = 2;
 
 /*!
     Call a method with arguments on the receiver.
+
     @param methodName - The method that should be called.
     @param args - An array of arguments to pass to the method call.
 */
@@ -724,7 +748,7 @@ CPWebViewScrollNative                           = 2;
     Evaluates a string of javascript and returns the result.
 
     @param script - The script to run.
-    @return - The result of the evaluation. undefined is returned if nothing else is.
+    @return - The result of the evaluation, which may be 'undefined'.
 */
 - (id)evaluateWebScript:(CPString)script
 {
@@ -751,6 +775,7 @@ CPWebViewScrollNative                           = 2;
 
 /*!
     Initializes the web view from the data in a coder.
+
     @param aCoder the coder from which to read the data
     @return the initialized web view
 */
@@ -778,6 +803,7 @@ CPWebViewScrollNative                           = 2;
 
 /*!
     Writes out the web view's instance information to a coder.
+
     @param aCoder the coder to which to write the data
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
