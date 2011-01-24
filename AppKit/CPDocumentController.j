@@ -24,7 +24,7 @@
 @import <Foundation/CPBundle.j>
 
 @import "CPDocument.j"
-@import "CPOpenPanel.j";
+@import "CPOpenPanel.j"
 
 
 var CPSharedDocumentController = nil;
