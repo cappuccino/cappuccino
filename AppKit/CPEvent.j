@@ -211,6 +211,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 
 /*!
     Creates a new keyboard event.
+
     @param anEventType the event type. Must be one of CPKeyDown, CPKeyUp or CPFlagsChanged
     @param aPoint the location of the cursor in the window specified by \c aWindowNumber
     @param modifierFlags a bitwise combination of the modifiers specified in the CPEvent globals
@@ -235,7 +236,8 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /*!
-    Creates a new mouse event
+    Creates a new mouse event.
+
     @param anEventType the event type
     @param aPoint the location of the cursor in the window specified by \c aWindowNumber
     @param modifierFlags a bitwise combination of the modifiers specified in the CPEvent globals
@@ -257,7 +259,8 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /*!
-    Creates a new custom event
+    Creates a new custom event.
+
     @param anEventType the event type. Must be one of CPAppKitDefined, CPSystemDefined, CPApplicationDefined or CPPeriodic
     @param aLocation the location of the cursor in the window specified by \c aWindowNumber
     @param modifierFlags a bitwise combination of the modifiers specified in the CPEvent globals
@@ -349,10 +352,10 @@ var _CPEventPeriodicEventPeriod         = 0,
 
 /*!
     Returns the location of the mouse (for mouse events).
-    If this is not a mouse event, it returns \c nil.
-    If \c window returns \c nil, then
-    the mouse coordinates will be based on the screen coordinates.
+    If the receiver is not a mouse event, it returns \c nil.
+    If \c window returns \c nil, then the mouse coordinates will be based on the screen coordinates.
     Otherwise, the coordinates are relative to the window's coordinates.
+
     @return the location of the mouse, or \c nil for non-mouse events.
 */
 - (CGPoint)locationInWindow
@@ -372,7 +375,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /*!
-    Returns event information as a bit mask
+    Returns event information as a bit mask.
 */
 - (unsigned)modifierFlags
 {
@@ -380,7 +383,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /*!
-    Returns the time the event occurred
+    Returns the time the event occurred.
 */
 - (CPTimeInterval)timestamp
 {
@@ -396,7 +399,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /*!
-    Returns the event's associated window
+    Returns the event's associated window.
 */
 - (CPWindow)window
 {
@@ -427,7 +430,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /*!
-    Returns the number of clicks that caused this event. (mouse only)
+    Returns the number of clicks that caused this event (mouse only).
 */
 - (int)clickCount
 {
@@ -435,7 +438,8 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /*!
-    Returns the characters associated with this event (keyboard only)
+    Returns the characters associated with this event (keyboard only).
+
     @throws CPInternalInconsistencyException if this method is called on a non-key event
 */
 - (CPString)characters
@@ -445,6 +449,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 
 /*!
     Returns the character ignoring any modifiers (except shift).
+
     @throws CPInternalInconsistencyException if this method is called on a non-key event
 */
 - (CPString)charactersIgnoringModifiers
@@ -454,6 +459,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 
 /*!
     Returns \c YES if the keyboard event was caused by the key being held down.
+
     @throws CPInternalInconsistencyException if this method is called on a non-key event
 */
 - (BOOL)isARepeat
@@ -463,6 +469,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 
 /*!
     Returns the key's key code.
+
     @throws CPInternalInconsistencyException if this method is called on a non-key event
 */
 - (unsigned short)keyCode
@@ -586,7 +593,8 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /*!
-    Gene                            rates periodic events every \c aPeriod seconds.
+    Generates periodic events every \c aPeriod seconds.
+
     @param aDelay the number of seconds before the first event
     @param aPeriod the length of time in seconds between successive events
 */
@@ -599,7 +607,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /*!
-    Stops the periodic events from being generated
+    Stops the periodic events from being generated.
 */
 + (void)stopPeriodicEvents
 {

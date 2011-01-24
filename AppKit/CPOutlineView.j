@@ -83,12 +83,16 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     @ingroup appkit
     @class CPOutlineView
 
-    CPOutlineView is a subclass of CPTableView that inherits the row and column format to display hierarchal data.
-    The outlineview adds the ability to expand and collapse items. This is useful for browsing a tree like structure such as directories or a filesystem.
+    CPOutlineView is a subclass of CPTableView that inherits the row and
+    column format to display hierarchical data. The outlineview adds the
+    ability to expand and collapse items. This is useful for browsing a tree
+    like structure such as directories or a filesystem.
 
-    Like the tableview, an outlineview uses a data source to supply its data. For this reason you must implement a couple data source methods (documented in setDataSource:)
+    Like the tableview, an outlineview uses a data source to supply its data.
+    For this reason you must implement a couple data source methods
+    (documented in setDataSource:).
 
-    Theme states for custom data views are documented in CPTableView
+    Theme states for custom data views are documented in CPTableView.
 */
 @implementation CPOutlineView : CPTableView
 {
@@ -157,8 +161,9 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 }
 /*!
 <pre>
-    In addition to standard delegation, the outline view also supports data source delegation. This method sets the data source object.
-    Just like the TableView you have CPTableColumns but instead of rows you deal with items.
+    In addition to standard delegation, the outline view also supports data
+    source delegation. This method sets the data source object. Just like the
+    TableView you have CPTableColumns but instead of rows you deal with items.
 
     You must implement these data source methods:
 
@@ -187,7 +192,8 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         The outlineview will call this method if you click the table header. You should sort the datasource based off of the new sort descriptors and reload the data
 
     Drag and Drop:
-    In order for the outlineview to receive drops don't forget to first register the tableview for drag types like you do with every other view
+    In order for the outlineview to receive drops don't forget to first
+    register the tableview for drag types like you do with every other view
 
     - (BOOL)outlineView:(CPOutlineView)outlineView acceptDrop:(id < CPDraggingInfo >)info item:(id)item childIndex:(CPInteger)index;
         Return YES if the operation was successful otherwise return NO.
@@ -259,6 +265,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 /*!
     Returns the datasource object.
+
     @return id - The data source object
 */
 - (id)dataSource
@@ -287,7 +294,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 }
 
 /*!
-   Used to find if an item is already expanded.
+    Used to find if an item is already expanded.
 
     @param anItem - the item you are interest in.
 
@@ -307,7 +314,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 }
 
 /*!
-    Expends a given item.
+    Expands a given item.
 
     @param anItem - the item to expand.
 */
@@ -335,8 +342,8 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         return;
 
     // When shouldExpandChildren is YES, we need to make sure we're collecting
-    // selection notifications so that exactly one IsChanging and one DidChange
-    // is sent as needed, for the totality of the operation.
+    // selection notifications so that exactly one IsChanging and one
+    // DidChange is sent as needed, for the totality of the operation.
     var isTopLevel = NO;
     if (!_coalesceSelectionNotificationState)
     {
@@ -344,7 +351,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         _coalesceSelectionNotificationState = CPOutlineViewCoalesceSelectionNotificationStateOn;
     }
 
-    // to prevent items which are already expanded from firing notifications
+    // To prevent items which are already expanded from firing notifications.
     if (!itemInfo.isExpanded)
     {
         [self _noteItemWillExpand:anItem];
@@ -514,8 +521,9 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 }
 
 /*!
-    Sets the table column you want to display the disclosure button in.
-    If you do not want an outline column pass nil.
+    Sets the table column you want to display the disclosure button in. If you
+    do not want an outline column pass nil.
+
     @param aTableColumn - The CPTableColumn you want to use for hierarchical data.
 */
 - (void)setOutlineTableColumn:(CPTableColumn)aTableColumn
@@ -540,7 +548,9 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 }
 
 /*!
-    Returns the indentation level of a given item. If the item is nil (the top level root item) CPNotFound is returned. Indentation levels are zero based, thus items that are not indented return 0.
+    Returns the indentation level of a given item. If the item is nil (the top
+    level root item) CPNotFound is returned. Indentation levels are zero
+    based, thus items that are not indented return 0.
 
     @param anItem - The item you want the indentation level for.
     @return int - the indentation level of anItem.
@@ -559,7 +569,8 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 }
 
 /*!
-    Returns the indentation level for a given row. If the row is invalid CPNotFound is returned. Rows that are not indented return 0.
+    Returns the indentation level for a given row. If the row is invalid
+    CPNotFound is returned. Rows that are not indented return 0.
 
     @param aRow - the row of the receiver
     @return int - the indentation level of aRow.
@@ -596,7 +607,9 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 }
 
 /*!
-    Sets the layout behavior of disclosure button. If you pass NO the disclosure button will always align itself to the left of the outline column.
+    Sets the layout behavior of disclosure button. If you pass NO the
+    disclosure button will always align itself to the left of the outline
+    column.
 
     @param indentationMarkerShouldFollowDataView - Pass YES if the disclosure control should be indented along with the dataview, otherwise NO.
 */
@@ -614,7 +627,9 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 /*!
     Returns the layout behavior of the disclosure buttons.
 
-    @return BOOL - YES if the disclosure control indents itself with the dataview, otherwise NO if the control is always aligned to the left of the outline column
+    @return BOOL - YES if the disclosure control indents itself with the
+        dataview, otherwise NO if the control is always aligned to the left of
+        the outline column
 */
 - (BOOL)indentationMarkerFollowsDataView
 {
@@ -625,7 +640,8 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     Returns the parent item for a given item. If the item is a top level root object nil is returned.
 
     @param anItem - The item of the receiver.
-    @return id - The parent item of anItem. If no parent exists (the item is a root item) nil is returned.
+    @return id - The parent item of anItem. If no parent exists (the item is a
+        root item) nil is returned.
 */
 - (id)parentForItem:(id)anItem
 {
@@ -649,7 +665,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 /*!
     @ignore
 
-    Returns the frame of the dataview at the row given for the outline column
+    Returns the frame of the dataview at the row given for the outline column.
 */
 - (CGRect)_frameOfOutlineDataViewAtRow:(CPInteger)aRow
 {
@@ -664,9 +680,9 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 }
 
 /*!
-    Returns the frame of the disclosure button for the outline column.
-    If the item is not expandable a CGZeroRect is returned.
-    Subclasses can return a CGZeroRect to prevent the disclosure control from being displayed.
+    Returns the frame of the disclosure button for the outline column. If the
+    item is not expandable a CGZeroRect is returned. Subclasses can return a
+    CGZeroRect to prevent the disclosure control from being displayed.
 
     @param aRow - The row of the receiver
     @return CGRect - The rect of the disclosure button at aRow.
@@ -684,7 +700,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 /*!
     @ignore
-    Select or deselect rows, this is overridden because we need to change the color or the outline control
+    Select or deselect rows, this is overridden because we need to change the color or the outline control.
 */
 - (void)_performSelection:(BOOL)select forRow:(CPInteger)rowIndex context:(id)context
 {
@@ -937,8 +953,9 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 }
 
 /*!
-    Sets the prototype of the disclosure control. This is used if you want to set a special type of button, instead of the default triangle.
-    The control must implement CPCoding.
+    Sets the prototype of the disclosure control. This is used if you want to
+    set a special type of button, instead of the default triangle. The control
+    must implement CPCoding.
 
     @param aControl - the control to be used to expand and collapse items.
 */
@@ -961,9 +978,13 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 }
 
 /*!
-    Adds a new table column to the receiver. If this is the first column added it will automatically be set to the outline column.
-    Also see -setOutlineTableColumn:
+    Adds a new table column to the receiver. If this is the first column added
+    it will automatically be set to the outline column.
+
+    Also see -setOutlineTableColumn:.
+
     NOTE: This behavior deviates from cocoa slightly.
+
     @param CPTableColumn aTableColumn - The table column to add.
 */
 - (void)addTableColumn:(CPTableColumn)aTableColumn
@@ -985,7 +1006,8 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 }
 /*!
     @ignore
-    We override this because we need a special behavior for the outline column
+    We override this because we need a special behavior for the outline
+    column.
 */
 - (CGRect)frameOfDataViewAtColumn:(CPInteger)aColumn row:(CPInteger)aRow
 {
@@ -999,7 +1021,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 /*!
     @ignore
-    we need to offset the dataview and add the disclosure triangle
+    We need to offset the dataview and add the disclosure triangle.
 */
 - (CPView)_dragViewForColumn:(int)theColumnIndex event:(CPEvent)theDragEvent offset:(CPPointPointer)theDragViewOffset
 {
@@ -1059,9 +1081,15 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 /*!
     Retargets the drop item for the outlineview.
-    To specify a drop on theItem, you specify item as theItem and index as CPOutlineViewDropOnItemIndex.
-    To specify a drop between child 1 and 2 of theItem, you specify item as theItem and index as 2.
-    To specify a drop on an item that can't be expanded theItem, you specify item as someOutlineItem and index as CPOutlineViewDropOnItemIndex.
+
+    To specify a drop on theItem, you specify item as theItem and index as
+    CPOutlineViewDropOnItemIndex.
+
+    To specify a drop between child 1 and 2 of theItem, you specify item as
+    theItem and index as 2.
+
+    To specify a drop on an item that can't be expanded theItem, you specify
+    item as someOutlineItem and index as CPOutlineViewDropOnItemIndex.
 
     @param theItem - The item you want to retarget the drop on.
     @param theIndex - The index of the child item you want to retarget the drop between. Pass CPOutlineViewDropOnItemIndex if you want to drop on theItem.
@@ -1171,7 +1199,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 /*!
     @ignore
-    We need to move the disclosure control too
+    We need to move the disclosure control too.
 */
 - (void)_layoutDataViewsInRows:(CPIndexSet)rows columns:(CPIndexSet)columns
 {

@@ -114,7 +114,7 @@ var CPSplitViewHorizontalImage = nil,
 }
 
 /*!
-    Returns YES if the divers are vertical, otherwise NO.
+    Returns YES if the dividers are vertical, otherwise NO.
     @return YES if vertical, otherwise NO.
 */
 - (BOOL)isVertical
@@ -168,8 +168,9 @@ var CPSplitViewHorizontalImage = nil,
 }
 
 /*!
-    Use to find if the diver is a larger pane splitter.
-    @return BOOL - YES if the divers are the larger pane splitters. Otherwise NO.
+    Use to find if the divider is a larger pane splitter.
+
+    @return BOOL - YES if the dividers are the larger pane splitters. Otherwise NO.
 */
 - (BOOL)isPaneSplitter
 {
@@ -178,7 +179,8 @@ var CPSplitViewHorizontalImage = nil,
 
 /*!
     Used to set if the split view dividers should be the larger pane splitter.
-    @param shouldBePaneSplitter - YES if the divers should be the thicker pane splitter, otherwise NO.
+
+    @param shouldBePaneSplitter - YES if the dividers should be the thicker pane splitter, otherwise NO.
 */
 - (void)setIsPaneSplitter:(BOOL)shouldBePaneSplitter
 {
@@ -213,6 +215,7 @@ var CPSplitViewHorizontalImage = nil,
 
 /*!
     Returns the CGRect of the divider at a given index.
+
     @param int - The index of a divider.
     @return CGRect - The rect of a divider.
 */
@@ -230,7 +233,8 @@ var CPSplitViewHorizontalImage = nil,
 }
 
 /*!
-    Returns the rect of the diver which the user is able to drag to resize.
+    Returns the rect of the divider which the user is able to drag to resize.
+
     @param int - The index of the divider.
     @return CGRect - The rect the user can drag.
 */

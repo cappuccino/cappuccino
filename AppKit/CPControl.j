@@ -171,7 +171,8 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Sets the receiver's target action
+    Sets the receiver's target action.
+
     @param anAction Sets the action message that gets sent to the target.
 */
 - (void)setAction:(SEL)anAction
@@ -180,7 +181,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Returns the receiver's target action
+    Returns the receiver's target action.
 */
 - (SEL)action
 {
@@ -189,6 +190,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 /*!
     Sets the receiver's target. The target receives action messages from the receiver.
+
     @param aTarget the object that will receive the message specified by action
 */
 - (void)setTarget:(id)aTarget
@@ -206,6 +208,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 /*!
     Causes \c anAction to be sent to \c anObject.
+
     @param anAction the action to send
     @param anObject the object to which the action will be sent
 */
@@ -226,6 +229,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 /*!
     Sets the tooltip for the receiver.
+
     @param aToolTip the tooltip
 */
 /*
@@ -262,7 +266,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 /*!
     Sets whether the cell can continuously send its action messages.
- */
+*/
 - (void)setContinuous:(BOOL)flag
 {
     // Some subclasses should redefine this with CPLeftMouseDraggedMask
@@ -339,6 +343,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 /*!
     Perform a click on the receiver.
+
     @param sender - The sender object
 */
 - (void)performClick:(id)sender
@@ -425,7 +430,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Returns the receiver's object value
+    Returns the receiver's object value.
 */
 - (id)objectValue
 {
@@ -433,7 +438,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Sets the receiver's object value
+    Sets the receiver's object value.
 */
 - (void)setObjectValue:(id)anObject
 {
@@ -444,7 +449,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Returns the receiver's float value
+    Returns the receiver's float value.
 */
 - (float)floatValue
 {
@@ -453,7 +458,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Sets the receiver's float value
+    Sets the receiver's float value.
 */
 - (void)setFloatValue:(float)aValue
 {
@@ -461,7 +466,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Returns the receiver's double value
+    Returns the receiver's double value.
 */
 - (double)doubleValue
 {
@@ -470,7 +475,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Sets the receiver's double value
+    Sets the receiver's double value.
 */
 - (void)setDoubleValue:(double)anObject
 {
@@ -478,7 +483,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Returns the receiver's int value
+    Returns the receiver's int value.
 */
 - (int)intValue
 {
@@ -487,7 +492,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Sets the receiver's int value
+    Sets the receiver's int value.
 */
 - (void)setIntValue:(int)anObject
 {
@@ -495,7 +500,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Returns the receiver's int value
+    Returns the receiver's int value.
 */
 - (int)integerValue
 {
@@ -504,7 +509,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Sets the receiver's int value
+    Sets the receiver's int value.
 */
 - (void)setIntegerValue:(int)anObject
 {
@@ -512,7 +517,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Returns the receiver's string value
+    Returns the receiver's string value.
 */
 - (CPString)stringValue
 {
@@ -520,7 +525,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Sets the receiver's string value
+    Sets the receiver's string value.
 */
 - (void)setStringValue:(CPString)anObject
 {
@@ -598,6 +603,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 /*!
     Sets the text alignment of the control.
+
     <pre>
     CPLeftTextAlignment
     CPCenterTextAlignment
@@ -621,6 +627,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 /*!
     Set the vertical text alignment of the control.
+
     <pre>
     CPTopVerticalTextAlignment
     CPCenterVerticalTextAlignment
@@ -642,6 +649,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 /*!
     Sets the line break mode of the receiver.
+
     <pre>
     CPLineBreakByWordWrapping
     CPLineBreakByCharWrapping
@@ -666,6 +674,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 /*!
     Sets the text color of the receiver.
+
     @param aColor - A CPColor object.
 */
 - (void)setTextColor:(CPColor)aColor
@@ -699,6 +708,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 /*!
     Sets the shadow offset for the text.
+
     @param offset - a CGSize with the x and y offsets.
 */
 - (void)setTextShadowOffset:(CGSize)offset
@@ -732,6 +742,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 /*!
     Sets the image position of the control.
+
     <pre>
     CPNoImage
     CPImageOnly
@@ -757,6 +768,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 /*!
     Sets the image scaling of the control.
+
     <pre>
     CPScaleProportionally
     CPScaleToFit
@@ -778,7 +790,8 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 /*!
     Sets the enabled status of the control.
-    Controls that are not enabled can not be used by the user and are sent the CPThemeStateDisabled theme state.
+    Controls that are not enabled can not be used by the user and obtain the CPThemeStateDisabled theme state.
+
     @param BOOL - YES if the control should be enabled, otherwise NO.
 */
 - (void)setEnabled:(BOOL)isEnabled
@@ -799,6 +812,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 /*!
     Highlights the receiver.
+
     @param BOOL - YES if the receiver should be highlighted, otherwise NO.
 */
 - (void)highlight:(BOOL)shouldHighlight
@@ -808,6 +822,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 /*!
     Highlights the receiver.
+
     @param BOOL - YES if the receiver should be highlighted, otherwise NO.
 */
 - (void)setHighlighted:(BOOL)isHighlighted
@@ -844,6 +859,7 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
 
 /*
     Initializes the control by unarchiving it from a coder.
+
     @param aCoder the coder from which to unarchive the control
     @return the initialized control
 */
@@ -867,6 +883,7 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
 
 /*
     Archives the control to the provided coder.
+
     @param aCoder the coder to which the control will be archived.
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
