@@ -272,6 +272,9 @@ var CPControlBlackColor     = [CPColor blackColor];
         _sendActionOn &= ~CPPeriodicMask;
 }
 
+/*!
+    Returns YES if the reciever tracks the mouse outside the frame, otherwise NO.
+*/
 - (BOOL)tracksMouseOutsideOfFrame
 {
     return NO;
@@ -334,6 +337,10 @@ var CPControlBlackColor     = [CPColor blackColor];
     return 0;
 }
 
+/*!
+    Perform a click on the reciever.
+    @param sender - The sender.
+*/
 - (void)performClick:(id)sender
 {
     if (![self isEnabled])
@@ -356,11 +363,18 @@ var CPControlBlackColor     = [CPColor blackColor];
     }
 }
 
+/*!
+    @ignore
+    Fired when the button timer finished usually after the user his enter.
+*/
 - (void)unhighlightButtonTimerDidFinish:(id)sender
 {
     [self highlight:NO];
 }
 
+/*!
+    Returns the mask of modifier keys held down when the user clicked.
+*/
 - (unsigned)mouseDownFlags
 {
     return _trackingMouseDownFlags;
@@ -582,96 +596,191 @@ var CPControlBlackColor     = [CPColor blackColor];
     [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
 }
 
+/*!
+    Sets the text alignment of the control.
+    <pre>
+    CPLeftTextAlignment
+    CPCenterTextAlignment
+    CPRightTextAlignment
+    CPJustifiedTextAlignment
+    CPNaturalTextAlignment
+    </pre>
+*/
 - (void)setAlignment:(CPTextAlignment)alignment
 {
     [self setValue:alignment forThemeAttribute:@"alignment"];
 }
 
+/*!
+    Returns the text alignment of the control.
+*/
 - (CPTextAlignment)alignment
 {
     return [self valueForThemeAttribute:@"alignment"];
 }
 
+/*!
+    Set the vertical text alignment of the control.
+    <pre>
+    CPTopVerticalTextAlignment
+    CPCenterVerticalTextAlignment
+    CPBottomVerticalTextAlignment
+    </pre>
+*/
 - (void)setVerticalAlignment:(CPTextVerticalAlignment)alignment
 {
     [self setValue:alignment forThemeAttribute:@"vertical-alignment"];
 }
 
+/*!
+    Returns the vertical text alignment of the receiver.
+*/
 - (CPTextVerticalAlignment)verticalAlignment
 {
     return [self valueForThemeAttribute:@"vertical-alignment"];
 }
 
+/*!
+    Sets the line break mode of the receiver.
+    <pre>
+    CPLineBreakByWordWrapping
+    CPLineBreakByCharWrapping
+    CPLineBreakByClipping
+    CPLineBreakByTruncatingHead
+    CPLineBreakByTruncatingTail
+    CPLineBreakByTruncatingMiddle
+    </pre>
+*/
 - (void)setLineBreakMode:(CPLineBreakMode)mode
 {
     [self setValue:mode forThemeAttribute:@"line-break-mode"];
 }
 
+/*!
+    Returns the line break mode of the control.
+*/
 - (CPLineBreakMode)lineBreakMode
 {
     return [self valueForThemeAttribute:@"line-break-mode"];
 }
 
+/*!
+    Sets teh text color of the receiver.
+    @param aColor - A CPColor object.
+*/
 - (void)setTextColor:(CPColor)aColor
 {
     [self setValue:aColor forThemeAttribute:@"text-color"];
 }
 
+/*!
+    Returns the text color of the receiver.
+*/
 - (CPColor)textColor
 {
     return [self valueForThemeAttribute:@"text-color"];
 }
 
+/*!
+    Sets the shadow color of the text for the receiver.
+*/
 - (void)setTextShadowColor:(CPColor)aColor
 {
     [self setValue:aColor forThemeAttribute:@"text-shadow-color"];
 }
 
+/*!
+    Returns the shadow color of the text for the control.
+*/
 - (CPColor)textShadowColor
 {
     return [self valueForThemeAttribute:@"text-shadow-color"];
 }
 
-- (void)setTextShadowOffset:(float)offset
+/*!
+    Sets the shadow offset for the text.
+    @param offset - a CGSize with the x and y offsets.
+*/
+- (void)setTextShadowOffset:(CGSize)offset
 {
     [self setValue:offset forThemeAttribute:@"text-shadow-offset"];
 }
 
-- (float)textShadowOffset
+/*!
+    Returns the text shadow offset of the receiver.
+*/
+- (CGSize)textShadowOffset
 {
     return [self valueForThemeAttribute:@"text-shadow-offset"];
 }
 
+/*!
+    Sets the font of the control.
+*/
 - (void)setFont:(CPFont)aFont
 {
     [self setValue:aFont forThemeAttribute:@"font"];
 }
 
+/*!
+    Returns the font of the control.
+*/
 - (CPFont)font
 {
     return [self valueForThemeAttribute:@"font"];
 }
 
+/*!
+    Sets the image position of the control.
+    <pre>
+    CPNoImage
+    CPImageOnly
+    CPImageLeft
+    CPImageRight
+    CPImageBelow
+    CPImageAbove
+    CPImageOverlaps
+    </pre>
+*/
 - (void)setImagePosition:(CPCellImagePosition)position
 {
     [self setValue:position forThemeAttribute:@"image-position"];
 }
 
+/*!
+    Returns the image position of the receiver.
+*/
 - (CPCellImagePosition)imagePosition
 {
     return [self valueForThemeAttribute:@"image-position"];
 }
 
+/*!
+    Sets the image scaling of the control.
+    <pre>
+    CPScaleProportionally
+    CPScaleToFit
+    CPScaleNone
+    </pre>
+*/
 - (void)setImageScaling:(CPImageScaling)scaling
 {
     [self setValue:scaling forThemeAttribute:@"image-scaling"];
 }
 
+/*!
+    Returns the image scaling of the control.
+*/
 - (CPImageScaling)imageScaling
 {
     return [self valueForThemeAttribute:@"image-scaling"];
 }
 
+/*!
+    Sets teh enabled status of the control.
+    Controls that are not enabled can not be used by the user and are sent the CPThemeStateDisabled theme state.
+    @param BOOL - YES if the control should be enabled, otherwise NO.
+*/
 - (void)setEnabled:(BOOL)isEnabled
 {
     if (isEnabled)
@@ -680,16 +789,27 @@ var CPControlBlackColor     = [CPColor blackColor];
         [self setThemeState:CPThemeStateDisabled];
 }
 
+/*!
+    Returns YES if the receiver is enabled, otherwise NO.
+*/
 - (BOOL)isEnabled
 {
     return ![self hasThemeState:CPThemeStateDisabled];
 }
 
+/*!
+    Highlights the receiver.
+    @param BOOL - YES if the receiver should be highlighted, otherwise NO.
+*/
 - (void)highlight:(BOOL)shouldHighlight
 {
     [self setHighlighted:shouldHighlight];
 }
 
+/*!
+    Highlights the receiver.
+    @param BOOL - YES if the receiver should be highlighted, otherwise NO.
+*/
 - (void)setHighlighted:(BOOL)isHighlighted
 {
     if (isHighlighted)
@@ -698,6 +818,9 @@ var CPControlBlackColor     = [CPColor blackColor];
         [self unsetThemeState:CPThemeStateHighlighted];
 }
 
+/*!
+    Returns YEs if the control is highlighted, otherwise NO.
+*/
 - (BOOL)isHighlighted
 {
     return [self hasThemeState:CPThemeStateHighlighted];
