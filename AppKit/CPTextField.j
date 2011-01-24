@@ -1099,8 +1099,15 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)deleteBackward:(id)sender
 {
-    var selectedRange = [self selectedRange],
-        stringValue = [self stringValue],
+    var selectedRange = [self selectedRange];
+
+    if (selectedRange.length < 2)
+         return;
+
+    selectedRange.location += 1;
+    selectedRange.length -= 1;
+    
+    var stringValue = [self stringValue],
         newValue = [stringValue stringByReplacingCharactersInRange:selectedRange withString:""];
 
     [self setStringValue:newValue];
