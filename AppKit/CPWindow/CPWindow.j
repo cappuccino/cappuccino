@@ -539,6 +539,12 @@ CPTexturedBackgroundWindowMask
     }
 }
 
+/*!
+    Sets the reciever as a full platform window. If you pass YES the CPWindow instance will fill the entier browser content area, 
+    otherwise the CPWindow will be a window inside of your browser window which the user can drag around, and resize (if you allow).
+
+    @param BOOL - YES if the window should fill the browser window, otherwise NO.
+*/
 - (void)setFullPlatformWindow:(BOOL)shouldBeFullPlatformWindow
 {
     if (![_platformWindow supportsFullPlatformWindows])
@@ -579,6 +585,9 @@ CPTexturedBackgroundWindowMask
     }
 }
 
+/*!
+    @return BOOL - YES if the CPWindow fills the browser window, otherwise NO.
+*/
 - (BOOL)isFullPlatformWindow
 {
     return _isFullPlatformWindow;
@@ -594,6 +603,18 @@ CPTexturedBackgroundWindowMask
 
 /*!
     Returns the frame rectangle used by a window.
+    Style masks include:
+    <pre>
+    CPBorderlessWindowMask
+    CPTitledWindowMask
+    CPClosableWindowMask
+    CPMiniaturizableWindowMask (NOTE: only available in NativeHost)
+    CPResizableWindowMask
+    CPTexturedBackgroundWindowMask
+    CPBorderlessBridgeWindowMask
+    CPHUDBackgroundWindowMask
+    </pre>
+
     @param aContentRect the content rectangle of the window
     @param aStyleMask the style mask of the window
     @return the matching window's frame rectangle
@@ -635,7 +656,7 @@ CPTexturedBackgroundWindowMask
     the resize operation, and redraw itself if necessary.
     @param aFrame the new size and location for the window
     @param shouldDisplay whether the window should redraw its views
-    @param shouldAnimate whether the window resize should be animated
+    @param shouldAnimate whether the window resize should be animated.
 */
 - (void)_setClippedFrame:(CGRect)aFrame display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate
 {
@@ -644,6 +665,13 @@ CPTexturedBackgroundWindowMask
     [self setFrame:aFrame display:shouldDisplay animate:shouldAnimate];
 }
 
+/*!
+    Sets the frame of the window.
+
+    @param aFrame - A CGRect of the new frame for the reciever.
+    @param shouldDisplay - YES if the window should call setNeedsDisplay otherwise NO.
+    @param shouldAniamte - YES if the window should animate to it's new size and position, otherwise NO.
+*/
 - (void)setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate
 {
     aFrame = _CGRectMakeCopy(aFrame);
@@ -721,6 +749,11 @@ CPTexturedBackgroundWindowMask
     }
 }
 
+/*!
+    Sets the window's frame rect.
+    @param aFrame - The new CGRect of the window.
+    @param shouldDisplay - YES if the window should call setNeedsDisplay: otherwise NO.
+*/
 - (void)setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay
 {
     [self _setClippedFrame:aFrame display:shouldDisplay animate:NO];
@@ -728,6 +761,7 @@ CPTexturedBackgroundWindowMask
 
 /*!
     Sets the window's frame rectangle
+    @param aFrame - The CGRect of the windows new frame
 */
 - (void)setFrame:(CGRect)aFrame
 {
@@ -1111,6 +1145,17 @@ CPTexturedBackgroundWindowMask
     [self _updateShadow];
 }
 
+/*!
+    Sets the shadow style of the reciever.
+    Values are:
+    <pre>
+    CPWindowShadowStyleStandard
+    CPWindowShadowStyleMenu
+    CPWindowShadowStylePanel
+    </pre>
+
+    @param aStyle - The new shadow style of the reciever.
+*/
 - (void)setShadowStyle:(unsigned)aStyle
 {
     _shadowStyle = aStyle;
@@ -2448,16 +2493,31 @@ CPTexturedBackgroundWindowMask
     [self makeFirstResponder:[aView previousValidKeyView]];
 }
 
+/*!
+    Sets the default button for the window.
+    Note: this method is deprecated use setDefaultButton: instead.
+    @param aButton - The button that should become default.
+*/
 - (void)setDefaultButtonCell:(CPButton)aButton
 {
     [self setDefaultButton:aButton];
 }
 
+/*!
+    Returns the default button of the reciever.
+    NOTE: This method is deprecated. Use defaultButton instead.
+*/
 - (CPButton)defaultButtonCell
 {
     return [self defaultButton];
 }
 
+/*!
+    Sets the default button for the window.
+    This is equivilant to setting the the key equivilant of the button to "return".
+    Additionally this will turn your button blue (with the Aristo theme).
+    @param aButton - The button that should become default.
+*/
 - (void)setDefaultButton:(CPButton)aButton
 {
     if (_defaultButton === aButton)
@@ -2472,26 +2532,43 @@ CPTexturedBackgroundWindowMask
         [_defaultButton setKeyEquivalent:CPCarriageReturnCharacter];
 }
 
+/*!
+    Returns the default button of the reciever.
+*/
 - (CPButton)defaultButton
 {
     return _defaultButton;
 }
 
+/*!
+    Sets the default button key equivilant to "return".
+*/
 - (void)enableKeyEquivalentForDefaultButton
 {
     _defaultButtonEnabled = YES;
 }
 
+/*!
+    Sets the default button key equivilant to "return".
+    NOTE: this method is deprecated. Use enableKeyEquivalentForDefaultButton instead.
+*/
 - (void)enableKeyEquivalentForDefaultButtonCell
 {
     [self enableKeyEquivalentForDefaultButton];
 }
 
+/*!
+    Removes the key equivilant for the default button.
+*/
 - (void)disableKeyEquivalentForDefaultButton
 {
     _defaultButtonEnabled = NO;
 }
 
+/*!
+    Removes the key equivilant for the default button.
+    Note: this method is deprecated. Use disableKeyEquivalentForDefaultButton instead.
+*/
 - (void)disableKeyEquivalentForDefaultButtonCell
 {
     [self disableKeyEquivalentForDefaultButton];
@@ -2603,16 +2680,25 @@ var keyViewComparator = function(lhs, rhs, context)
     return _autoresizingMask;
 }
 
+/*!
+    Converts aPoint from the window coordinate system to the global coordinate system.
+*/
 - (CGPoint)convertBaseToGlobal:(CGPoint)aPoint
 {
     return [CPPlatform isBrowser] ? [self convertBaseToPlatformWindow:aPoint] : [self convertBaseToScreen:aPoint];
 }
 
+/*!
+    Converts aPoint from the global coordinate system to the window coordinate system.
+*/
 - (CGPoint)convertGlobalToBase:(CGPoint)aPoint
 {
     return [CPPlatform isBrowser] ? [self convertPlatformWindowToBase:aPoint] : [self convertScreenToBase:aPoint];
 }
 
+/*!
+    Converts aPoint from the window coordinate system to the coordinate system of the parent platform window.
+*/
 - (CGPoint)convertBaseToPlatformWindow:(CGPoint)aPoint
 {
     if ([self _sharesChromeWithPlatformWindow])
@@ -2623,6 +2709,9 @@ var keyViewComparator = function(lhs, rhs, context)
     return _CGPointMake(aPoint.x + origin.x, aPoint.y + origin.y);
 }
 
+/*!
+    Converts aPoint from the parent platform window coordiante system to the windows coordinate system.
+*/
 - (CGPoint)convertPlatformWindowToBase:(CGPoint)aPoint
 {
     if ([self _sharesChromeWithPlatformWindow])
@@ -2712,12 +2801,19 @@ var keyViewComparator = function(lhs, rhs, context)
 @end
 
 @implementation CPWindow (Deprecated)
-
+/*!
+    Sets the CPWindow to fill the whole browser window.
+    NOTE: this method has been deprecated in favor of setFullPlatformWindow:
+*/
 - (void)setFullBridge:(BOOL)shouldBeFullBridge
 {
     [self setFullPlatformWindow:shouldBeFullBridge];
 }
 
+/*!
+    Returns YES if the window fills the full browser window, otherwise NO.
+    NOTE: this method has been deprecated in favor of isFullPlatformWindow.
+*/
 - (BOOL)isFullBridge
 {
     return [self isFullPlatformWindow];

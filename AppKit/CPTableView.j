@@ -1411,6 +1411,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     // TODO Do something with flag.
 
     _editingCellIndex = CGPointMake(columnIndex, rowIndex);
+    _editingCellIndex._shouldSelect = flag;
+
     [self reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:rowIndex]
         columnIndexes:[CPIndexSet indexSetWithIndex:columnIndex]];
 }
@@ -3181,6 +3183,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             else
                 [dataView unsetThemeState:CPThemeStateSelectedDataView];
 
+            // FIX ME: for performance reasons we might consider diverging from cocoa and moving this to the reloadData method
             if (_implementedDelegateMethods & CPTableViewDelegate_tableView_isGroupRow_)
             {
                 if ([_delegate tableView:self isGroupRow:row])
@@ -3207,15 +3210,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
             if (isButton || (_editingCellIndex && _editingCellIndex.x === column && _editingCellIndex.y === row))
             {
-                if (!isButton)
-                    _editingCellIndex = undefined;
-
                 if (isTextField)
                 {
                     [dataView setEditable:YES];
                     [dataView setSendsActionOnEndEditing:YES];
                     [dataView setSelectable:YES];
                     [dataView selectText:nil];
+                    [dataView setBezeled:YES];
                     [dataView setDelegate:self];
                 }
 
@@ -3281,7 +3282,15 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if ([sender respondsToSelector:@selector(setSelectable:)])
         [sender setSelectable:NO];
 
+    if ([sender isKindOfClass:[CPTextField class]])
+        [sender setBezeled:NO];
+
+    [self reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:sender.tableViewEditedRowIndex] 
+                    columnIndexes:[CPIndexSet indexSetWithIndex:[_tableColumns indexOfObject:sender.tableViewEditedColumnObj]]];
+
     [[self window] makeFirstResponder:self];
+
+    _editingCellIndex = nil;
 }
 
 /*!
@@ -3298,6 +3307,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if ([dataView respondsToSelector:@selector(setSelectable:)])
         [dataView setSelectable:NO];
+
+    if ([dataView isKindOfClass:[CPTextField class]])
+        [dataView setBezeled:NO];
+
+    _editingCellIndex = nil;
 }
 
 /*!

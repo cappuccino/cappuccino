@@ -31,11 +31,39 @@ CPViewAnimationEffectKey = @"CPViewAnimationEffectKey";
 CPViewAnimationFadeInEffect = @"CPViewAnimationFadeInEffect";
 CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOutEffect";
 
+/*!
+    @class CPViewAnimation
+
+    CPViewAnimation is a subclass of CPAnimation that makes it easy to do basic animations on views.
+*/
+
 @implementation CPViewAnimation : CPAnimation
 {
     CPArray _viewAnimations;
 }
 
+/*!
+    Designated initializer.
+
+    This method takes an array of CPDictionaries.
+    Each dictionary should contain values for the following keys:
+    <pre>
+    CPViewAnimationTargetKey - (Required) The view to animate.
+    CPViewAnimationStartFrameKey - (Optional) The start frame of the target.
+    CPViewAnimationEndFrameKey - (Optional) The end frame of the target.
+    CPViewAnimationEffectKey - (Optional) a fade effect to use for the animation.
+    </pre>
+
+    For example:
+    <pre>
+    var animation = [CPDictionary dictionaryWithObjects:[myViewToAnimate, aStartFrame, anEndFrame, CPViewAnimationFadeInEffect]
+                                                forKeys:[CPViewAnimationTargetKey, CPViewAnimationStartFrameKey, CPViewAnimationEndFrameKey, CPViewAnimationEffectKey]];
+    </pre>
+
+    If you pass nil instead of an array of dictionaries you should later call setViewAnimations:
+
+    @param viewAnimtions - An array of CPDictionaries for each animation.
+*/
 - (id)initWithViewAnimations:(CPArray)viewAnimations
 {
     if (self = [super initWithDuration:0.5 animationCurve:CPAnimationLinear])
@@ -181,6 +209,10 @@ CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOutEffect";
     return _viewAnimations;
 }
 
+/*!
+    Takes an array of CPDictionaries as documented in initWithViewAnimations:
+    @param viewAnimations - An array of dictionaries describing the animation.
+*/
 - (void)setViewAnimations:(CPArray)viewAnimations
 {
     if (viewAnimations != _viewAnimations)

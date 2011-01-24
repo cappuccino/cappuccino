@@ -23,9 +23,11 @@
 @import "CPArray.j"
 @import "CPDictionary.j"
 @import "CPException.j"
+@import "CPIndexSet.j"
 @import "CPNull.j"
 @import "CPObject.j"
 @import "CPSet.j"
+
 
 CPUndefinedKeyException     = @"CPUndefinedKeyException";
 CPTargetObjectUserInfoKey   = @"CPTargetObjectUserInfoKey";

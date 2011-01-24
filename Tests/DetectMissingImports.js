@@ -5,7 +5,11 @@ var FILE     = require("file"),
 
 var cPreprocessedFileContents = function(aFilePath) 
 {
-    var gcc   = OS.popen("gcc -E -x c -P -DPLATFORM_COMMONJS " + OS.enquote(aFilePath), { charset:"UTF-8" }),
+    var INCLUDES = new FileList(FILE.join(FILE.dirname(aFilePath), "**", "*.h")).map(function(aFilename)
+    {
+        return "--include \"" + aFilename + "\"";
+    }).join(" ");
+    var gcc = OS.popen("gcc -E -x c -P -DPLATFORM_COMMONJS " + INCLUDES + " " + OS.enquote(aFilePath), { charset:"UTF-8" }),
         chunk,
         fileContents = "";
 
