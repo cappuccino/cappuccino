@@ -540,7 +540,7 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Sets the reciever as a full platform window. If you pass YES the CPWindow instance will fill the entier browser content area, 
+    Sets the receiver as a full platform window. If you pass YES the CPWindow instance will fill the entire browser content area,
     otherwise the CPWindow will be a window inside of your browser window which the user can drag around, and resize (if you allow).
 
     @param BOOL - YES if the window should fill the browser window, otherwise NO.
@@ -668,9 +668,9 @@ CPTexturedBackgroundWindowMask
 /*!
     Sets the frame of the window.
 
-    @param aFrame - A CGRect of the new frame for the reciever.
+    @param aFrame - A CGRect of the new frame for the receiver.
     @param shouldDisplay - YES if the window should call setNeedsDisplay otherwise NO.
-    @param shouldAniamte - YES if the window should animate to it's new size and position, otherwise NO.
+    @param shouldAnimate - YES if the window should animate to it's new size and position, otherwise NO.
 */
 - (void)setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate
 {
@@ -1146,7 +1146,7 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Sets the shadow style of the reciever.
+    Sets the shadow style of the receiver.
     Values are:
     <pre>
     CPWindowShadowStyleStandard
@@ -1154,7 +1154,7 @@ CPTexturedBackgroundWindowMask
     CPWindowShadowStylePanel
     </pre>
 
-    @param aStyle - The new shadow style of the reciever.
+    @param aStyle - The new shadow style of the receiver.
 */
 - (void)setShadowStyle:(unsigned)aStyle
 {
@@ -1676,7 +1676,7 @@ CPTexturedBackgroundWindowMask
     @param aLocation the lower-left corner coordinate of \c anImage
     @param mouseOffset the distance from the \c -mouseDown: location and the current location
     @param anEvent the \c -mouseDown: that triggered the drag
-    @param aPastebaord the pasteboard that holds the drag data
+    @param aPasteboard the pasteboard that holds the drag data
     @param aSourceObject the drag operation controller
     @param slideBack Whether the image should 'slide back' if the drag is rejected
 */
@@ -1713,7 +1713,7 @@ CPTexturedBackgroundWindowMask
     @param aLocation the lower-left corner coordinate of \c aView
     @param mouseOffset the distance from the \c -mouseDown: location and the current location
     @param anEvent the \c -mouseDown: that triggered the drag
-    @param aPastebaord the pasteboard that holds the drag data
+    @param aPasteboard the pasteboard that holds the drag data
     @param aSourceObject the drag operation controller
     @param slideBack Whether the view should 'slide back' if the drag is rejected
 */
@@ -1864,7 +1864,7 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Restores a mimized window to it's original size.
+    Restores a minimized window to it's original size.
 */
 - (void)deminiaturize:(id)sender
 {
@@ -2504,7 +2504,7 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Returns the default button of the reciever.
+    Returns the default button of the receiver.
     NOTE: This method is deprecated. Use defaultButton instead.
 */
 - (CPButton)defaultButtonCell
@@ -2514,7 +2514,7 @@ CPTexturedBackgroundWindowMask
 
 /*!
     Sets the default button for the window.
-    This is equivilant to setting the the key equivilant of the button to "return".
+    This is equivalent to setting the the key equivalent of the button to "return".
     Additionally this will turn your button blue (with the Aristo theme).
     @param aButton - The button that should become default.
 */
@@ -2533,7 +2533,7 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Returns the default button of the reciever.
+    Returns the default button of the receiver.
 */
 - (CPButton)defaultButton
 {
@@ -2541,7 +2541,7 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Sets the default button key equivilant to "return".
+    Sets the default button key equivalent to "return".
 */
 - (void)enableKeyEquivalentForDefaultButton
 {
@@ -2549,7 +2549,7 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Sets the default button key equivilant to "return".
+    Sets the default button key equivalent to "return".
     NOTE: this method is deprecated. Use enableKeyEquivalentForDefaultButton instead.
 */
 - (void)enableKeyEquivalentForDefaultButtonCell
@@ -2558,7 +2558,7 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Removes the key equivilant for the default button.
+    Removes the key equivalent for the default button.
 */
 - (void)disableKeyEquivalentForDefaultButton
 {
@@ -2566,7 +2566,7 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Removes the key equivilant for the default button.
+    Removes the key equivalent for the default button.
     Note: this method is deprecated. Use disableKeyEquivalentForDefaultButton instead.
 */
 - (void)disableKeyEquivalentForDefaultButtonCell
@@ -2710,7 +2710,7 @@ var keyViewComparator = function(lhs, rhs, context)
 }
 
 /*!
-    Converts aPoint from the parent platform window coordiante system to the windows coordinate system.
+    Converts aPoint from the parent platform window coordinate system to the windows coordinate system.
 */
 - (CGPoint)convertPlatformWindowToBase:(CGPoint)aPoint
 {

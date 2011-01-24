@@ -179,7 +179,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
         token = [self _inputElement].value;
 
     // Make sure the user typed an actual token to prevent the previous token from being emptied
-    // If the input area is empty, we want to fallback to the normal behaviour, resigning first responder or select the next or previous key view
+    // If the input area is empty, we want to fallback to the normal behavior, resigning first responder or select the next or previous key view
     if (!token || token === @"")
     {
         if (DOMEvent && DOMEvent.keyCode === CPTabKeyCode)
@@ -198,7 +198,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     var objectValue = [self objectValue];
 
     // Remove the uncompleted token and add the token string.
-    // Explicitely remove the last object because the array contains strings and removeObject uses isEqual to compare objects
+    // Explicitly remove the last object because the array contains strings and removeObject uses isEqual to compare objects
     if (shouldRemoveLastObject)
         [objectValue removeObjectAtIndex:_selectedRange.location];
 
@@ -455,7 +455,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 - (CPArray)_tokens
 {
     // We return super here because objectValue uses this method
-    // If we called self we would loop infinitly
+    // If we called self we would loop infinitely
     return [super objectValue];
 }
 
@@ -633,7 +633,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
             CPTokenFieldTextDidChangeValue = [CPTokenFieldInputOwner stringValue];
 
-            // Update the selectedIndex if necesary
+            // Update the selectedIndex if necessary
             var index = [[CPTokenFieldInputOwner autocompleteView] selectedRow];
 
             if (aDOMEvent.keyCode === CPUpArrowKeyCode)
@@ -665,7 +665,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
                     aDOMEvent.stopPropagation();
                 aDOMEvent.cancelBubble = true;
 
-                // Only resign first responder if we weren't autocompleting
+                // Only resign first responder if we weren't auto-completing
                 if (![CPTokenFieldInputOwner hasThemeState:CPThemeStateAutoCompleting])
                 {
                     if (aDOMEvent && aDOMEvent.keyCode === CPReturnKeyCode)
@@ -1129,7 +1129,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     return [];
 }
 
-// // Alows the delegate to provide a string to be displayed as a proxy for the given represented object.
+// // Allows the delegate to provide a string to be displayed as a proxy for the given represented object.
 // // If you return nil or do not implement this method, then representedObject is displayed as the string.
 - (CPString)tokenField:(CPTokenField)tokenField displayStringForRepresentedObject:(id)representedObject
 {

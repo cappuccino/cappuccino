@@ -77,7 +77,7 @@ CPSoundPlayBackStatePause   = 2;
     Initialize with the sound contents of the URL represented by aFile.
 
     @param aFile CPString the path of the sound
-    @param byRef ignored (Cocoa compatibibility)
+    @param byRef ignored (Cocoa compatibility)
 */
 - (id)initWithContentsOfFile:(CPString)aFile byReference:(BOOL)byRef
 {
@@ -94,7 +94,7 @@ CPSoundPlayBackStatePause   = 2;
     Initialize with the sound contents of the file located at aURL.
 
     @param aURL CPURL containing the URL of the sound
-    @param byRef ignored (Cocoa compatibibility)
+    @param byRef ignored (Cocoa compatibility)
 */
 - (id)initWithContentsOfURL:(CPURL)aURL byReference:(BOOL)byRef
 {
@@ -105,7 +105,7 @@ CPSoundPlayBackStatePause   = 2;
     Initialize with the sound contents of someData.
 
     @param someData CPData containing the sound
-    @param byRef ignored (Cocoa compatibibility)
+    @param byRef ignored (Cocoa compatibility)
 */
 - (id)initWithData:(CPData)someData
 {

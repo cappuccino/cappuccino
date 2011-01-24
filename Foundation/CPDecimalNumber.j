@@ -156,7 +156,7 @@ var CPDefaultDcmHandler = nil;
     CPDecimalNumberHandler this will throw exceptions accordingly with
     formatted error messages.
     @param operation    the selector of the method of the operation being
-                        performed when the exception occured
+                        performed when the exception occurred
     @param error        the actual error type. From the \e
                         CPCalculationError enum: CPCalculationNoError,
                         CPCalculationLossOfPrecision, CPCalculationOverflow,
@@ -165,7 +165,7 @@ var CPDefaultDcmHandler = nil;
                         calculation that caused the exception
     @param rightOperand the CPDecimalNumber right-hand side operand used in the
                         calculation that caused the exception
-    @return if appropriate a CPDecimalNumber is returned (either the maxumum,
+    @return if appropriate a CPDecimalNumber is returned (either the maximum,
             minimum or NaN values), or nil
 */
 - (CPDecimalNumber)exceptionDuringOperation:(SEL)operation error:(CPCalculationError)error leftOperand:(CPDecimalNumber)leftOperand rightOperand:(CPDecimalNumber)rightOperand
@@ -174,12 +174,12 @@ var CPDefaultDcmHandler = nil;
     {
         case CPCalculationNoError:          break;
         case CPCalculationOverflow:         if (_raiseOnOverflow)
-                                                [CPException raise:CPDecimalNumberOverflowException reason:("A CPDecimalNumber overflow has occured. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
+                                                [CPException raise:CPDecimalNumberOverflowException reason:("A CPDecimalNumber overflow has occurred. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
                                             else
                                                 return [CPDecimalNumber notANumber];
                                             break;
         case CPCalculationUnderflow:        if (_raiseOnUnderflow)
-                                                [CPException raise:CPDecimalNumberUnderflowException reason:("A CPDecimalNumber underflow has occured. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
+                                                [CPException raise:CPDecimalNumberUnderflowException reason:("A CPDecimalNumber underflow has occurred. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
                                             else
                                                 return [CPDecimalNumber notANumber];
                                             break;
@@ -187,11 +187,11 @@ var CPDefaultDcmHandler = nil;
                                                 [CPException raise:CPDecimalNumberExactnessException reason:("A CPDecimalNumber has been rounded off during a calculation. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
                                             break;
         case CPCalculationDivideByZero:     if (_raiseOnDivideByZero)
-                                                [CPException raise:CPDecimalNumberDivideByZeroException reason:("A CPDecimalNumber divide by zero has occured. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
+                                                [CPException raise:CPDecimalNumberDivideByZeroException reason:("A CPDecimalNumber divide by zero has occurred. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
                                             else
                                                 return [CPDecimalNumber notANumber]; // Div by zero returns NaN
                                             break;
-        default:                            [CPException raise:CPInvalidArgumentException reason:("An unknown CPDecimalNumber error has occured. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
+        default:                            [CPException raise:CPInvalidArgumentException reason:("An unknown CPDecimalNumber error has occurred. (Left operand= '" + [leftOperand  descriptionWithLocale:nil] + "' Right operand= '" + [rightOperand  descriptionWithLocale:nil] + "' Selector= '" + operation + "')") ];
     }
 
     return nil;
@@ -249,7 +249,7 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
     @ingroup foundation
     @brief Decimal floating point number
 
-    This class represents a decimal floating point number and the relavent
+    This class represents a decimal floating point number and the relevant
     mathematical operations to go with it. It guarantees accuracy up to 38
     digits in the mantissa/coefficient and can handle numbers in the range:
         +/- 99999999999999999999999999999999999999 x 10^(127/-128)
@@ -457,7 +457,7 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
 }
 
 /*!
-    Returns a new CPDecimalNumer with the maximum permissable decimal number
+    Returns a new CPDecimalNumber with the maximum permissible decimal number
     value. Note: this is different to the number Cocoa returns. See
     CPDecimalNumber class description for details.
     @return a new CPDecimalNumber object
@@ -468,7 +468,7 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
 }
 
 /*!
-    Returns a new CPDecimalNumer with the minimum permissable decimal number
+    Returns a new CPDecimalNumber with the minimum permissible decimal number
     value. Note: this is different to the number Cocoa returns. See
     CPDecimalNumber class description for details.
     @return a new CPDecimalNumber object
@@ -479,7 +479,7 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
 }
 
 /*!
-    Returns a new CPDecimalNumer initialised to \e NaN.
+    Returns a new CPDecimalNumber initialised to \e NaN.
     @return a new CPDecimalNumber object
 */
 + (CPDecimalNumber)notANumber
@@ -488,7 +488,7 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
 }
 
 /*!
-    Returns a new CPDecimalNumer initialised to zero (0.0).
+    Returns a new CPDecimalNumber initialised to zero (0.0).
     @return a new CPDecimalNumber object
 */
 + (CPDecimalNumber)zero
@@ -497,7 +497,7 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
 }
 
 /*!
-    Returns a new CPDecimalNumer initialised to one (1.0).
+    Returns a new CPDecimalNumber initialised to one (1.0).
     @return a new CPDecimalNumber object
 */
 + (CPDecimalNumber)one
@@ -663,7 +663,7 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
 
 /*!
     Returns a new CPDecimalNumber object with the result of multiplying the
-    receiver object by (10 ^ \c power). If overflow, underflowor loss of
+    receiver object by (10 ^ \c power). If overflow, underflow or loss of
     precision occurs then the consequence depends on the CPDecimalNumberHandler
     object \e behavior.
     @param power the power of 10 to multiply the receiver by
@@ -740,7 +740,7 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
 }
 
 /*!
-    Compare the reciever CPDecimalNumber to \c aNumber. This is a CPNumber or
+    Compare the receiver CPDecimalNumber to \c aNumber. This is a CPNumber or
     subclass. Returns \e CPOrderedDescending, \e CPOrderedAscending or
     \e CPOrderedSame.
     @param aNumber an object of kind CPNumber to compare against.
@@ -755,7 +755,7 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
 }
 
 /*!
-    The objective C type string. For compatability reasons
+    The objective C type string. For compatibility reasons
     @return returns a CPString containing "d"
 */
 - (CPString)objCType
@@ -924,7 +924,7 @@ var CPDecimalNumberHandlerRoundingModeKey       = @"CPDecimalNumberHandlerRoundi
 
 // CPNumber inherited methods
 /*!
-    Compare the reciever CPDecimalNumber to \c aNumber and return \e YES if
+    Compare the receiver CPDecimalNumber to \c aNumber and return \e YES if
     equal.
     @param aNumber an object of kind CPNumber to compare against.
     @return a boolean

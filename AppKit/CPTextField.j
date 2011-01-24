@@ -531,7 +531,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     element.style.top = topPoint;
     element.style.left = (_CGRectGetMinX(contentRect) - 1) + "px"; // why -1?
     element.style.width = _CGRectGetWidth(contentRect) + "px";
-    element.style.height = font._lineHeight + "px"; // private ivar for the line height of the DOM text at this particaulr size
+    element.style.height = font._lineHeight + "px"; // private ivar for the line height of the DOM text at this particular size
 
     _DOMElement.appendChild(element);
 
@@ -720,8 +720,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 /*!
     Invoke the action specified by aSelector on the current responder.
 
-    This is implemented by CPResponder and by default it passes any unrecignized
-    actions on to the next responder but text fields appearently aren't supposed
+    This is implemented by CPResponder and by default it passes any unrecognized
+    actions on to the next responder but text fields apparently aren't supposed
     to do that according to this documentation by Apple:
 
     http://developer.apple.com/mac/library/documentation/cocoa/reference/NSTextInputClient_Protocol/Reference/Reference.html#//apple_ref/occ/intfm/NSTextInputClient/doCommandBySelector:

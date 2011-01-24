@@ -152,7 +152,7 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
 }
 
 /*! set the current value of the stepper
-    @param aValue a float contaning the value
+    @param aValue a float containing the value
 */
 - (void)setDoubleValue:(float)aValue
 {

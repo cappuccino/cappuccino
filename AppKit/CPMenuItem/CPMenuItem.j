@@ -449,7 +449,7 @@ CPOffState
     return _mixedStateImage;
 }
 
-// Managing Subemenus
+// Managing Submenus
 /*!
     Sets the submenu for this item
     @param aMenu the submenu
@@ -648,7 +648,7 @@ CPControlKeyMask
 }
 
 /*!
-    Sets the title of the menu item and the mnemonic character. The mnemonic chracter should be preceded by an '&'.
+    Sets the title of the menu item and the mnemonic character. The mnemonic character should be preceded by an '&'.
     @param aTitle the title string with a denoted mnemonic
 */
 - (void)setTitleWithMnemonicLocation:(CPString)aTitle

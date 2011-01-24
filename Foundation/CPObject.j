@@ -35,7 +35,7 @@
 
     When you subclass CPObject, most of the time you override one selector - init.
     It is called for default initialization of custom object. You must call
-    parent class init in your overriden code:
+    parent class init in your overridden code:
     <pre>- (id)init
 {
     self = [super init];
@@ -126,7 +126,7 @@ CPLog(@"Got some class: %@", inst);
 }
 
 /*!
-    Not necessary to call in Objective-J. Only exists for code compatability.
+    Not necessary to call in Objective-J. Only exists for code compatibility.
 */
 - (void)dealloc
 {
@@ -188,7 +188,7 @@ CPLog(@"Got some class: %@", inst);
 
 /*!
     Returns \c YES if the receiver is of the \c aClass class type.
-    @param aClass the class to test the receiper
+    @param aClass the class to test the receiver
 */
 - (BOOL)isMemberOfClass:(Class)aClass
 {
@@ -273,7 +273,7 @@ CPLog(@"Got some class: %@", inst);
 /*!
     Returns the method signature for the provided selector.
     @param aSelector the selector for which to find the method signature
-    @return the selector's methd signature
+    @return the selector's method signature
 */
 - (CPMethodSignature)methodSignatureForSelector:(SEL)aSelector
 {

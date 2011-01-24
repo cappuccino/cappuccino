@@ -150,7 +150,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 /*!
     Adds a new menu item with the specified title.
-    @param the new menu item's tite
+    @param the new menu item's title
 */
 - (void)addItemWithTitle:(CPString)aTitle
 {
@@ -159,7 +159,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 /*!
     Adds multiple new menu items with the titles specified in the provided array.
-    @param titles an arry of names for the new items
+    @param titles an array of names for the new items
 */
 - (void)addItemsWithTitles:(CPArray)titles
 {
@@ -172,7 +172,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 /*!
     Inserts a new item with the specified title and index location.
-    @param aTitle the new itme's title
+    @param aTitle the new item's title
     @param anIndex the item's index in the menu
 */
 - (void)insertItemWithTitle:(CPString)aTitle atIndex:(int)anIndex
@@ -433,7 +433,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 /*!
     Returns the index of the item with the specified title or CPNotFound.
-    @param aTitle the item's titel
+    @param aTitle the item's title
 */
 - (int)indexOfItemWithTitle:(CPString)aTitle
 {
@@ -475,7 +475,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 }
 
 /*!
-    Sets the preffered edge of the button to display the
+    Sets the preferred edge of the button to display the
     pop-up when there is a limited amount of screen space.
     By default, the pop-up should draw on top of the button.
 */
@@ -738,7 +738,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 - (void)rightMouseDown:(CPEvent)anEvent
 {
-    // Disable standard CPView behaviour which incorrectly displays the menu as a 'context menu'.
+    // Disable standard CPView behavior which incorrectly displays the menu as a 'context menu'.
 }
 
 - (void)_popUpItemAction:(id)aSender

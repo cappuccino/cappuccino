@@ -6,7 +6,7 @@
  * Copyright 2008, Jake MacMullin.
  *
  * 11/10/2008 Ross Boucher
- *     - Make it conform to style guidelines, general cleanup and ehancements
+ *     - Make it conform to style guidelines, general cleanup and enhancements
  * 11/10/2010 Antoine Mercadal
  *     - Enhancements, better compliance with Cocoa API
  *

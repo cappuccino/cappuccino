@@ -207,8 +207,8 @@ var CPStringRegexSpecialCharacters = [
 // Combining strings
 
 /*!
-    Returns a string made by appending to the reciever a string constructed from a given format
-    string and the floowing arguments
+    Returns a string made by appending to the receiver a string constructed from a given format
+    string and the following arguments
     @param format the format string in printf-style.
     @return the initialized CPString
 */
@@ -316,7 +316,7 @@ var CPStringRegexSpecialCharacters = [
     Finds the range of characters in the receiver where the specified string exists. If the string
     does not exist in the receiver, the range \c length will be 0.
     @param aString the string to search for in the receiver
-    @return the range of charactrs in the receiver
+    @return the range of characters in the receiver
 */
 - (CPRange)rangeOfString:(CPString)aString
 {
@@ -392,7 +392,7 @@ var CPStringRegexSpecialCharacters = [
 }
 
 /*!
-    Returns a new string in which all occurrences of a target string in the reciever are replaced by
+    Returns a new string in which all occurrences of a target string in the receiver are replaced by
     another given string.
     @param target The string to replace.
     @param replacement the string with which to replace the \c target
@@ -587,7 +587,7 @@ var CPStringRegexSpecialCharacters = [
     Returns a string containing characters the receiver and a given string have in common, starting from
     the beginning of each up to the first characters that aren't equivalent.
     @param aString the string with which to compare the receiver
-    @param aMask options for comparision
+    @param aMask options for comparison
 */
 - (CPString)commonPrefixWithString:(CPString)aString options:(int)aMask
 {

@@ -48,7 +48,7 @@ CPWebViewScrollNative                           = 2;
 
     CPWebView is a class which allows you to display arbitrary HTML or embed a webpage inside your application.
 
-    It's imporant to note that the same origin policy applies to this view. That is, you will have limited control over this view
+    It's important to note that the same origin policy applies to this view. That is, you will have limited control over this view
     if the webpage being displayed is not located on the same origin (protocol, domain, and port) as the application.
 */
 
@@ -244,7 +244,7 @@ CPWebViewScrollNative                           = 2;
 }
 
 /*!
-    Sets the scroll mode of the reciver. This could be CPWebViewScrollAppKit or CPWebViewScrollNative.
+    Sets the scroll mode of the receiver. This could be CPWebViewScrollAppKit or CPWebViewScrollNative.
 */
 - (void)setScrollMode:(int)aScrollMode
 {
@@ -413,7 +413,7 @@ CPWebViewScrollNative                           = 2;
 
 /*!
     Tells the webview to navigate to the previous page.
-    @return BOOL - YES if the reciver was able to go back, otherwise NO.
+    @return BOOL - YES if the receiver was able to go back, otherwise NO.
 */
 - (BOOL)goBack
 {
@@ -432,8 +432,8 @@ CPWebViewScrollNative                           = 2;
 }
 
 /*!
-    Tells the reciever to go forward in page history.
-    @return - YES if the reciever was able to go forward, otherwise NO.
+    Tells the receiver to go forward in page history.
+    @return - YES if the receiver was able to go forward, otherwise NO.
 */
 - (BOOL)goForward
 {
@@ -453,7 +453,7 @@ CPWebViewScrollNative                           = 2;
 
 /*!
     Checks to see if the webview has a history stack you can navigate back through.
-    @return BOOL - YES if the reciver can navigate backward through history, otherwise NO.
+    @return BOOL - YES if the receiver can navigate backward through history, otherwise NO.
 */
 - (BOOL)canGoBack
 {
@@ -462,7 +462,7 @@ CPWebViewScrollNative                           = 2;
 
 /*!
     Checks to see if the webview has a history stack you can navigate forward through.
-    @return BOOL - YES if the reciver can navigate forward through history, otherwise NO.
+    @return BOOL - YES if the receiver can navigate forward through history, otherwise NO.
 */
 - (BOOL)canGoForward
 {
@@ -535,7 +535,7 @@ CPWebViewScrollNative                           = 2;
 
     @param DOMElement - An Element.
     @param pseudoElement - A pseudoElement.
-    @reutn DOMCSSStyleDeclaration - The computed style for an element.
+    @return DOMCSSStyleDeclaration - The computed style for an element.
 */
 - (DOMCSSStyleDeclaration)computedStyleForElement:(DOMElement)element pseudoElement:(CPString)pseudoElement
 {
@@ -571,7 +571,7 @@ CPWebViewScrollNative                           = 2;
 // IBActions
 
 /*!
-    Used with the target/action mechonism to automatically set the webviews mainFrameURL to the senders stringValue.
+    Used with the target/action mechanism to automatically set the webviews mainFrameURL to the senders stringValue.
     @param sender - the sender of the action. Should respond to -stringValue.
 */
 - (@action)takeStringURLFrom:(id)sender
@@ -580,7 +580,7 @@ CPWebViewScrollNative                           = 2;
 }
 
 /*!
-    Same as -goBack but takes a sender as a parm.
+    Same as -goBack but takes a sender as a param.
     @param sender - the sender of the action.
 */
 - (@action)goBack:(id)sender
@@ -589,7 +589,7 @@ CPWebViewScrollNative                           = 2;
 }
 
 /*!
-    Same as -goForward but takes a sender as a parm.
+    Same as -goForward but takes a sender as a param.
     @param sender - the sender of the action.
 */
 - (@action)goForward:(id)sender
@@ -703,7 +703,7 @@ CPWebViewScrollNative                           = 2;
 }
 
 /*!
-    Call a method with arguments on the reciever.
+    Call a method with arguments on the receiver.
     @param methodName - The method that should be called.
     @param args - An array of arguments to pass to the method call.
 */
@@ -724,20 +724,20 @@ CPWebViewScrollNative                           = 2;
     Evaluates a string of javascript and returns the result.
 
     @param script - The script to run.
-    @retrun - The result of the evaluation. undefined is returned if nothing else is.
+    @return - The result of the evaluation. undefined is returned if nothing else is.
 */
 - (id)evaluateWebScript:(CPString)script
 {
     try {
         return _window.eval(script);
     } catch (e) {
-        // FIX ME: if we fail inside here, shouldnt we return an exception? 
+        // FIX ME: if we fail inside here, shouldn't we return an exception?
     }
     return undefined;
 }
 
 /*!
-    Returns the recievers Window object.
+    Returns the receivers Window object.
 */
 - (Window)window
 {

@@ -79,7 +79,7 @@ kCGBlendModePlusLighter     = 27;
 */
 
 /*!
-    This function is just here for source compatability.
+    This function is just here for source compatibility.
     It does nothing.
     @group CGContext
 */
@@ -88,7 +88,7 @@ function CGContextRelease()
 }
 
 /*!
-    This function is just here for source compatability.
+    This function is just here for source compatibility.
     It does nothing.
     @param aContext a CGContext
     @return CGContext the context
@@ -466,7 +466,7 @@ function CGContextTranslateCTM(aContext, tx, ty)
 /*!
     Sets the current offset, and blur for shadows in core graphics drawing operations
     @param aContext the CGContext of the shadow
-    @param aSize a CGSize indicating the offset of the shaodw
+    @param aSize a CGSize indicating the offset of the shadow
     @param aBlur a float indicating the blur radius
     @return void
 */
@@ -483,7 +483,7 @@ function CGContextSetShadow(aContext, aSize, aBlur)
 /*!
     Sets the current offset, blur, and color for shadows in core graphics drawing operations
     @param aContext the CGContext of the shadow
-    @param aSize a CGSize indicating the offset of the shaodw
+    @param aSize a CGSize indicating the offset of the shadow
     @param aBlur a float indicating the blur radius
     @param aColor a CPColor object indicating the color of the shadow
     @return void
@@ -652,7 +652,7 @@ function CGContextSetStrokeColor(aContext, aColor)
     Fills a rounded rectangle.
     @param aContext the CGContext to draw into
     @param aRect the base rectangle
-    @param aRadius the distance from the rectange corner to the rounded corner
+    @param aRadius the distance from the rectangle corner to the rounded corner
     @param ne set it to \c YES for a rounded northeast corner
     @param se set it to \c YES for a rounded southeast corner
     @param sw set it to \c YES for a rounded southwest corner
@@ -671,7 +671,7 @@ function CGContextFillRoundedRectangleInRect(aContext, aRect, aRadius, ne, se, s
     Strokes a rounded rectangle.
     @param aContext the CGContext to draw into
     @param aRect the base rectangle
-    @param aRadius the distance from the rectange corner to the rounded corner
+    @param aRadius the distance from the rectangle corner to the rounded corner
     @param ne set it to \c YES for a rounded northeast corner
     @param se set it to \c YES for a rounded southeast corner
     @param sw set it to \c YES for a rounded southwest corner

@@ -1,5 +1,3 @@
-
-
 /*
  * CPArrayController.j
  * AppKit
@@ -191,7 +189,7 @@
 
 /*!
     Sets whether the controller should try to avoid an empty selection.
-    @param BOOL aFlag - YES if the reciver should attempt to avoid an empty selection, otherwise NO.
+    @param BOOL aFlag - YES if the receiver should attempt to avoid an empty selection, otherwise NO.
 */
 - (void)setAvoidsEmptySelection:(BOOL)value
 {
@@ -340,7 +338,7 @@
 
 /*!
     Returns the content array of the controller.
-    @return id the content array of the reciever
+    @return id the content array of the receiver
 */
 - (id)contentArray
 {
@@ -348,7 +346,7 @@
 }
 
 /*!
-    Returns the content of the reciever as a CPSet.
+    Returns the content of the receiver as a CPSet.
 
     @return id - the content of the controller as a set.
 */
@@ -464,7 +462,7 @@
 }
 
 /*!
-    Returns the predicate used by the controller to filter the contents of the reciever.
+    Returns the predicate used by the controller to filter the contents of the receiver.
     If no predicate is set nil is returned.
 
     @return CPPredicate the predicate used by the controller
@@ -522,7 +520,7 @@
 /*!
     Sets the selected index
 
-    @param unsided anIndex - the new index to select
+    @param unsigned anIndex - the new index to select
     @return BOOL - Returns YES if the selection was changed, otherwise NO.
 */
 - (BOOL)setSelectionIndex:(unsigned)index
@@ -735,7 +733,7 @@
 }
 
 /*!
-    Adds an object at a given index to the reciever's collection.
+    Adds an object at a given index to the receiver's collection.
 
     @param id anObject - The object to add to the collection.
     @param int anIndex - The index to insert the object at.
@@ -772,7 +770,7 @@
 }
 
 /*!
-    Removes a given object from the reciever's collection.
+    Removes a given object from the receiver's collection.
 
     @param id anObject - The object to remove from the collection.
 */

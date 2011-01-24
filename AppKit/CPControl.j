@@ -273,7 +273,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Returns YES if the reciever tracks the mouse outside the frame, otherwise NO.
+    Returns YES if the receiver tracks the mouse outside the frame, otherwise NO.
 */
 - (BOOL)tracksMouseOutsideOfFrame
 {
@@ -338,8 +338,8 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Perform a click on the reciever.
-    @param sender - The sender.
+    Perform a click on the receiver.
+    @param sender - The sender object
 */
 - (void)performClick:(id)sender
 {
@@ -365,7 +365,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 /*!
     @ignore
-    Fired when the button timer finished usually after the user his enter.
+    Fired when the button timer finished, usually after the user hits enter.
 */
 - (void)unhighlightButtonTimerDidFinish:(id)sender
 {
@@ -433,7 +433,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Set's the receiver's object value
+    Sets the receiver's object value
 */
 - (void)setObjectValue:(id)anObject
 {
@@ -470,7 +470,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Set's the receiver's double value
+    Sets the receiver's double value
 */
 - (void)setDoubleValue:(double)anObject
 {
@@ -487,7 +487,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Set's the receiver's int value
+    Sets the receiver's int value
 */
 - (void)setIntValue:(int)anObject
 {
@@ -504,7 +504,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Set's the receiver's int value
+    Sets the receiver's int value
 */
 - (void)setIntegerValue:(int)anObject
 {
@@ -520,7 +520,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Set's the receiver's string value
+    Sets the receiver's string value
 */
 - (void)setStringValue:(CPString)anObject
 {
@@ -665,7 +665,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Sets teh text color of the receiver.
+    Sets the text color of the receiver.
     @param aColor - A CPColor object.
 */
 - (void)setTextColor:(CPColor)aColor
@@ -777,7 +777,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Sets teh enabled status of the control.
+    Sets the enabled status of the control.
     Controls that are not enabled can not be used by the user and are sent the CPThemeStateDisabled theme state.
     @param BOOL - YES if the control should be enabled, otherwise NO.
 */
@@ -819,7 +819,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Returns YEs if the control is highlighted, otherwise NO.
+    Returns YES if the control is highlighted, otherwise NO.
 */
 - (BOOL)isHighlighted
 {

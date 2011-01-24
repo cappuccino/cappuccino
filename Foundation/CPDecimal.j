@@ -112,8 +112,8 @@ function CPDecimalMakeWithString(string, locale)
     //  (?:[eE]([+\-]?)(\d+))?   - optional exponent part plus number in group
     // group 0: string, 1: sign, 2: integer, 3: decimal, 4: exponent sign, 5: exponent
 
-    // Note: this doesnt accept .01 for example, should it?
-    // If yes simply add '?' after integer part group, ie ([+\-]?)((?:0|[1-9]\d*)?)
+    // Note: this doesn't accept .01 for example, should it?
+    // If yes simply add '?' after integer part group, i.e. ([+\-]?)((?:0|[1-9]\d*)?)
     var matches = string.match(/^([+\-]?)((?:0|[1-9]\d*))(?:\.(\d*))?(?:[eE]([+\-]?)(\d+))?$/);
     if (!matches)
         return CPDecimalMakeNaN();
@@ -170,7 +170,7 @@ function CPDecimalMakeWithString(string, locale)
 
 /*!
     @ingroup foundation
-    Creates a CPDecimal object from a given matissa and exponent. The sign is taken from the sign of the mantissa. This cant do a full 34 digit mantissa representation as JS's 32 bits or 64bit binary FP numbers cant represent that. So use the CPDecimalMakeWithString if you want longer mantissa.
+    Creates a CPDecimal object from a given mantissa and exponent. The sign is taken from the sign of the mantissa. This cant do a full 34 digit mantissa representation as JS's 32 bits or 64bit binary FP numbers cant represent that. So use the CPDecimalMakeWithString if you want longer mantissa.
     @param mantissa the mantissa (though see above note)
     @param exponent the exponent
     @return A CPDecimal object, or nil on error.
@@ -267,7 +267,7 @@ function _CPDecimalMakeMinimum()
 */
 function CPDecimalIsZero(dcm)
 {
-    // exponent doesnt matter as long as mantissa = 0
+    // exponent doesn't matter as long as mantissa = 0
     if (!dcm._isNaN)
     {
         for (var i = 0; i < dcm._mantissa.length; i++)
@@ -288,7 +288,7 @@ function CPDecimalIsZero(dcm)
 function CPDecimalIsOne(dcm)
 {
     CPDecimalCompact(dcm);
-    // exponent doesnt matter as long as mantissa = 0
+    // exponent doesn't matter as long as mantissa = 0
     if (!dcm._isNaN)
     {
         if (dcm._mantissa && (dcm._mantissa.length == 1) && (dcm._mantissa[0] == 1))
@@ -354,7 +354,7 @@ function CPDecimalCopy(dcm)
 
 /*!
     @ingroup foundation
-    Compare two CPDecimal objects. Order is left to right (ie Ascending would
+    Compare two CPDecimal objects. Order is left to right (i.e. Ascending would
     mean left is smaller than right operand).
     @param leftOperand the left CPDecimal
     @param rightOperand the right CPDecimal
@@ -548,7 +548,7 @@ function CPDecimalAdd(result, leftOperand, rightOperand, roundingMode, longMode)
 
     var normerror = CPDecimalNormalize(n1, n2, roundingMode, longMode);
 
-    // below is equiv of simple compare
+    // below is equiv. of simple compare
     var comp = 0,
         ll = n1._mantissa.length,
         lr = n2._mantissa.length;
@@ -804,8 +804,8 @@ function _SimpleDivide(result, leftOperand, rightOperand, roundingMode)
                 // Zeros must be added while enough digits are fetched to do the
                 // subtraction, but first time round this just add zeros at the
                 // start of the number , increases k, and hence reduces
-                // the avaialble precision. To solve this only inc k/add zeros if
-                // this isnt first time round.
+                // the available precision. To solve this only inc k/add zeros if
+                // this isn't first time round.
                 if (!firsttime)
                 {
                     k++;
@@ -910,7 +910,7 @@ function CPDecimalDivide(result, leftOperand, rightOperand, roundingMode)
     return error;
 }
 
-// Simple multiply O(n^2) , replace with something faster, likee divide-n-conquer algo?
+// Simple multiply O(n^2) , replace with something faster, like divide-n-conquer algo?
 function _SimpleMultiply(result, leftOperand, rightOperand, roundingMode, powerMode)
 {
     var error = CPCalculationNoError,
@@ -1025,7 +1025,7 @@ function CPDecimalMultiply(result, leftOperand, rightOperand, roundingMode, powe
     n1._isNegative = NO;
     n2._isNegative = NO;
 
-    // below is equiv of simple compare
+    // below is equiv. of simple compare
     var comp = 0,
         ll = n1._mantissa.length,
         lr = n2._mantissa.length;
@@ -1157,7 +1157,7 @@ function CPDecimalPower(result, dcm, power, roundingMode)
 /*!
     @ingroup foundation
     Normalises 2 CPDecimals. Normalisation is the process of modifying a
-    numbers manitssa to ensure that both CPDecimals have the same exponent.
+    numbers mantissa to ensure that both CPDecimals have the same exponent.
     @param dcm1 the first CPDecimal
     @param dcm2 the second CPDecimal
     @param roundingMode the rounding mode for the operation
@@ -1403,7 +1403,7 @@ function CPDecimalCompact(dcm)
         return;
     }
     // leading zeros, when exponent is zero these mean we need to move our decimal point to compact
-    // if exp is zero does it make sense to have them? dont think so so delete them
+    // if exp is zero does it make sense to have them? don't think so so delete them
     while (dcm._mantissa[0] === 0)
     {
         Array.prototype.shift.call(dcm._mantissa);
@@ -1416,7 +1416,7 @@ function CPDecimalCompact(dcm)
         if (dcm._exponent + 1 > CPDecimalMaxExponent)
         {
           // TODO: test case for this
-          // overflow if we compact anymore, so dont
+          // overflow if we compact anymore, so don't
           break;
         }
     }

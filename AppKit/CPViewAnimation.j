@@ -62,7 +62,7 @@ CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOutEffect";
 
     If you pass nil instead of an array of dictionaries you should later call setViewAnimations:
 
-    @param viewAnimtions - An array of CPDictionaries for each animation.
+    @param viewAnimations - An array of CPDictionaries for each animation.
 */
 - (id)initWithViewAnimations:(CPArray)viewAnimations
 {

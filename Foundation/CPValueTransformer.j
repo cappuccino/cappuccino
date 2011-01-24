@@ -91,7 +91,7 @@ var transformerMap = [CPDictionary dictionary];
 
 @end
 
-// builtin transformers
+// built-in transformers
 
 @implementation CPNegateBooleanTransformer : CPValueTransformer
 {

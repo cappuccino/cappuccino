@@ -495,7 +495,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _DOMEvent;
 }
 
-// Getting Scroll Wheel Event Infomration
+// Getting Scroll Wheel Event Information
 /*!
     Returns the change in the x-axis for a mouse event.
 */

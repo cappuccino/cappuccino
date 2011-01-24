@@ -506,7 +506,7 @@
 }
 
 /*!
-    Sets whether the scroll view hides its scoll bars when not needed.
+    Sets whether the scroll view hides its scroll bars when not needed.
     @param autohidesScrollers \c YES causes the scroll bars
     to be hidden when not needed.
 */
@@ -796,7 +796,7 @@
 
 /*!
     Sets the vertical page scroll amount.
-    @param aPageScroll the new vertcal page scroll amount
+    @param aPageScroll the new vertical page scroll amount
 */
 - (void)setVerticalPageScroll:(float)aPageScroll
 {

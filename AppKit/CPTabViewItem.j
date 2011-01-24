@@ -145,8 +145,8 @@ CPPressedTab    = 2;
 
 // Assigning an Auxiliary View
 /*!
-    Sets the tab's auxillary view.
-    @param anAuxillaryView the new auxillary view
+    Sets the tab's auxiliary view.
+    @param anAuxiliaryView the new auxiliary view
 */
 - (void)setAuxiliaryView:(CPView)anAuxiliaryView
 {
@@ -154,7 +154,7 @@ CPPressedTab    = 2;
 }
 
 /*!
-    Returns the tab's auxillary view
+    Returns the tab's auxiliary view
 */
 - (CPView)auxiliaryView
 {

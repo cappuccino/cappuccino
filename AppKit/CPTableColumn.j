@@ -37,9 +37,9 @@ CPTableColumnUserResizingMask   = 1 << 1;
     @class CPTableColumn
 
     A CPTableColumn contains a dataview to display for its column of the CPTableView.
-    A CPTableColumn determines its own size constrains and resizing behaviour.
+    A CPTableColumn determines its own size constrains and resizing behavior.
 
-    The default dataview is a CPTextField but you can set it to any view you'd like. See -setDataView: for documentaion including theme states.
+    The default dataview is a CPTextField but you can set it to any view you'd like. See -setDataView: for documentation including theme states.
 
     To customize the text of the column header you can simply call setStringValue: on the headerview of a table column.
     For example: [[myTableColumn headerView] setStringValue:"My Title"];
@@ -253,7 +253,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 /*!
 <pre>
     Set the resizing mask of the column.
-    By default the column can be resized automatically with the tableview and manaully by the user
+    By default the column can be resized automatically with the tableview and manually by the user
 
     Possible masking values are:
     CPTableColumnNoResizing
@@ -335,7 +335,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
     When you set a dataview and it is added to the tableview the theme state will be set to CPThemeStateTableDataView
     When the dataview becomes selected the theme state will be set to CPThemeStateSelectedDataView.
 
-    If the dataview shows up in a group row of the tablview the theme state will be set to CPThemeStateGroupRow.
+    If the dataview shows up in a group row of the tableview the theme state will be set to CPThemeStateGroupRow.
 
     You should overide setThemeState: and unsetThemeState: to handle these theme state changes in your dataview.
 
@@ -490,7 +490,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 }
 
 /*!
-    If NO the tablecolumn will no longer be visisble in the tableview
+    If NO the tablecolumn will no longer be visible in the tableview
     If YES the tablecolumn will be visible in the tableview.
 */
 - (void)setHidden:(BOOL)shouldBeHidden
@@ -574,12 +574,12 @@ CPTableColumnUserResizingMask   = 1 << 1;
 }
 
 /*!
-    Binds the reciever to an object.
+    Binds the receiver to an object.
 
     @param CPString aBinding - The binding you wish to make. Typically CPValueBinding.
-    @param id anObject - The object to bind the reciever to.
-    @param CPString aKeyPath - The key path you wish to bind the reciver to.
-    @param CPDictionary options - A dictionary of options for the binding. This paramater is optional, pass nil if you do not wish to use it.
+    @param id anObject - The object to bind the receiver to.
+    @param CPString aKeyPath - The key path you wish to bind the receiver to.
+    @param CPDictionary options - A dictionary of options for the binding. This parameter is optional, pass nil if you do not wish to use it.
 */
 - (void)bind:(CPString)aBinding toObject:(id)anObject withKeyPath:(CPString)aKeyPath options:(CPDictionary)options
 {

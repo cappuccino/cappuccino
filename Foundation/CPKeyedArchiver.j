@@ -83,7 +83,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 
     @delegate -(void)archiverDidFinish:(CPKeyedArchiver)archiver;
     Called when the archiver finishes encoding.
-    @param archiver the arhiver that finished encoding
+    @param archiver the archiver that finished encoding
 
     @delegate -(id)archiver:(CPKeyedArchiver)archiver willEncodeObject:(id)object;
     Called when an object is about to be encoded. Allows the delegate to replace
@@ -370,7 +370,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 }
 
 /*!
-    Encdoes an object
+    Encodes an object
     @param anObject the object to encode
     @param aKey the key to associate with the object
 */

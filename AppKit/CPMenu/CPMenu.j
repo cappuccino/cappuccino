@@ -52,7 +52,7 @@ var _CPMenuBarVisible               = NO,
     @class CPMenu
 
     Menus provide the user with a list of actions and/or submenus. Submenus themselves are full fledged menus
-    and so a heirarchical structure appears.
+    and so a hierarchical structure appears.
 */
 @implementation CPMenu : CPObject
 {
