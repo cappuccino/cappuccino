@@ -43,21 +43,21 @@ CPLineBreakByTruncatingHead     = 3;
 CPLineBreakByTruncatingTail     = 4;
 CPLineBreakByTruncatingMiddle   = 5;
 
-CPTopVerticalTextAlignment      = 1,
-CPCenterVerticalTextAlignment   = 2,
+CPTopVerticalTextAlignment      = 1;
+CPCenterVerticalTextAlignment   = 2;
 CPBottomVerticalTextAlignment   = 3;
 
-CPScaleProportionally   = 0;
-CPScaleToFit            = 1;
-CPScaleNone             = 2;
+CPScaleProportionally           = 0;
+CPScaleToFit                    = 1;
+CPScaleNone                     = 2;
 
-CPNoImage       = 0;
-CPImageOnly     = 1;
-CPImageLeft     = 2;
-CPImageRight    = 3;
-CPImageBelow    = 4;
-CPImageAbove    = 5;
-CPImageOverlaps = 6;
+CPNoImage                       = 0;
+CPImageOnly                     = 1;
+CPImageLeft                     = 2;
+CPImageRight                    = 3;
+CPImageBelow                    = 4;
+CPImageAbove                    = 5;
+CPImageOverlaps                 = 6;
 
 CPOnState                       = 1;
 CPOffState                      = 0;
@@ -72,7 +72,7 @@ CPControlTextDidBeginEditingNotification    = "CPControlTextDidBeginEditingNotif
 CPControlTextDidChangeNotification          = "CPControlTextDidChangeNotification";
 CPControlTextDidEndEditingNotification      = "CPControlTextDidEndEditingNotification";
 
-var CPControlBlackColor     = [CPColor blackColor];
+var CPControlBlackColor = [CPColor blackColor];
 
 /*!
     @ingroup appkit

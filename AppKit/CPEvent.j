@@ -161,21 +161,21 @@ CPEscapeFunctionKey                     = "\u001B";
 CPSpaceFunctionKey                      = "\u0020";
 
 
-CPDOMEventDoubleClick                                = "dblclick",
-CPDOMEventMouseDown                                  = "mousedown",
-CPDOMEventMouseUp                                    = "mouseup",
-CPDOMEventMouseMoved                                 = "mousemove",
-CPDOMEventMouseDragged                               = "mousedrag",
-CPDOMEventKeyUp                                      = "keyup",
-CPDOMEventKeyDown                                    = "keydown",
-CPDOMEventKeyPress                                   = "keypress";
-CPDOMEventCopy                                       = "copy";
-CPDOMEventPaste                                      = "paste";
-CPDOMEventScrollWheel                                = "mousewheel";
-CPDOMEventTouchStart                                 = "touchstart";
-CPDOMEventTouchMove                                  = "touchmove";
-CPDOMEventTouchEnd                                   = "touchend";
-CPDOMEventTouchCancel                                = "touchcancel";
+CPDOMEventDoubleClick                   = "dblclick";
+CPDOMEventMouseDown                     = "mousedown";
+CPDOMEventMouseUp                       = "mouseup";
+CPDOMEventMouseMoved                    = "mousemove";
+CPDOMEventMouseDragged                  = "mousedrag";
+CPDOMEventKeyUp                         = "keyup";
+CPDOMEventKeyDown                       = "keydown";
+CPDOMEventKeyPress                      = "keypress";
+CPDOMEventCopy                          = "copy";
+CPDOMEventPaste                         = "paste";
+CPDOMEventScrollWheel                   = "mousewheel";
+CPDOMEventTouchStart                    = "touchstart";
+CPDOMEventTouchMove                     = "touchmove";
+CPDOMEventTouchEnd                      = "touchend";
+CPDOMEventTouchCancel                   = "touchcancel";
 
 var _CPEventPeriodicEventPeriod         = 0,
     _CPEventPeriodicEventTimer          = nil,
