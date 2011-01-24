@@ -823,6 +823,10 @@ var themedButtonValues = nil,
 
         [@"text-color",         [CPColor colorWithCalibratedWhite:51.0 / 255.0 alpha:1.0], CPThemeStateTableDataView],
         [@"text-color",         [CPColor whiteColor],               CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
+        [@"text-color",         [CPColor blackColor],               CPThemeStateTableDataView | CPThemeStateSelectedTableDataView | CPThemeStateEditing],
+        [@"content-inset",      CGInsetMake(7.0, 7.0, 5.0, 8.0),    CPThemeStateTableDataView | CPThemeStateSelectedTableDataView | CPThemeStateEditing],
+        [@"font",               [CPFont systemFontOfSize:12.0],    CPThemeStateTableDataView | CPThemeStateSelectedTableDataView | CPThemeStateEditing],
+        [@"bezel-inset",        CGInsetMake(-2.0, -2.0, -2.0, -2.0),    CPThemeStateBezeled | CPThemeStateEditing],
         [@"font",               [CPFont boldSystemFontOfSize:12.0], CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
 
         [@"text-color",         [CPColor colorWithCalibratedWhite:125.0 / 255.0 alpha:1.0], CPThemeStateTableDataView | CPThemeStateGroupRow],
