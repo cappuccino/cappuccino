@@ -73,7 +73,7 @@
 /*!
     Inits and returns a CPObjectController object with the given content.
 
-    @param id aContent - The object the conroller will use.
+    @param id aContent - The object the controller will use.
     @return id the CPObjectConroller instance.
 */
 - (id)initWithContent:(id)aContent
@@ -152,7 +152,7 @@
 }
 
 /*!
-    Overridden by a subclass that require control over the creation of new objects.  
+    Overridden by a subclass that require control over the creation of new objects.
 */
 - (void)prepareContent
 {
@@ -209,7 +209,7 @@
 
 /*!
     Removes a given object from the controller.
-    @param id anObject - The object to remove from the reciver.
+    @param id anObject - The object to remove from the receiver.
 */
 - (void)removeObject:(id)anObject
 {
@@ -258,7 +258,7 @@
 
 /*!
     Sets whether the controller allows for the editing of the content.
-    @param BOOL shouldBeEditable - YES if the content should be editable, otherwise NO. 
+    @param BOOL shouldBeEditable - YES if the content should be editable, otherwise NO.
 */
 - (void)setEditable:(BOOL)shouldBeEditable
 {

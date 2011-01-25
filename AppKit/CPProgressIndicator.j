@@ -120,7 +120,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 
     CPProgressIndicatorStyleSizes = [];
 
-    // Bar Sttyle
+    // Bar Style
     var prefixes = [
         CPProgressIndicatorClassName + @"BezelBorder" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle],
         CPProgressIndicatorClassName + @"Bar" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle],
@@ -290,7 +290,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 }
 
 /*
-    Not yet impemented.
+    Not yet implemented.
 */
 - (CPControlTint)controlTint
 {

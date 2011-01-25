@@ -350,13 +350,13 @@ _CPCharacterSetTrimAtEnd        = 1 << 2;
 @implementation CPString (CPCharacterSetAdditions)
 
 /*!
-    Tokenizes the receiver string using the charactes
+    Tokenizes the receiver string using the characters
     in a given set. For example, if the receiver is:
     \c "Baku baku to jest  skład."
     and the set is [CPCharacterSet whitespaceCharacterSet]
     the returned array would contain:
     <pre> ["Baku", "baku", "to", "jest", "", "skład."] </pre>
-    Adjacent occurences of the separator characters produce empty strings in the result.
+    Adjacent occurrences of the separator characters produce empty strings in the result.
     @author Arkadiusz Młynarczyk <arek@tupux.com>
     @param A character set containing the characters to use to split the receiver. Must not be nil.
     @return An CPArray object containing substrings from the receiver that have been divided by characters in separator.

@@ -34,7 +34,8 @@ CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOutEffect";
 /*!
     @class CPViewAnimation
 
-    CPViewAnimation is a subclass of CPAnimation that makes it easy to do basic animations on views.
+    CPViewAnimation is a subclass of CPAnimation that makes it easy to do
+    basic animations on views.
 */
 
 @implementation CPViewAnimation : CPAnimation
@@ -45,8 +46,9 @@ CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOutEffect";
 /*!
     Designated initializer.
 
-    This method takes an array of CPDictionaries.
-    Each dictionary should contain values for the following keys:
+    This method takes an array of CPDictionaries. Each dictionary should
+    contain values for the following keys:
+
     <pre>
     CPViewAnimationTargetKey - (Required) The view to animate.
     CPViewAnimationStartFrameKey - (Optional) The start frame of the target.
@@ -60,9 +62,9 @@ CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOutEffect";
                                                 forKeys:[CPViewAnimationTargetKey, CPViewAnimationStartFrameKey, CPViewAnimationEndFrameKey, CPViewAnimationEffectKey]];
     </pre>
 
-    If you pass nil instead of an array of dictionaries you should later call setViewAnimations:
+    If you pass nil instead of an array of dictionaries you should later call setViewAnimations:.
 
-    @param viewAnimtions - An array of CPDictionaries for each animation.
+    @param viewAnimations - An array of CPDictionaries for each animation.
 */
 - (id)initWithViewAnimations:(CPArray)viewAnimations
 {
@@ -210,7 +212,8 @@ CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOutEffect";
 }
 
 /*!
-    Takes an array of CPDictionaries as documented in initWithViewAnimations:
+    Takes an array of CPDictionaries as documented in initWithViewAnimations:.
+
     @param viewAnimations - An array of dictionaries describing the animation.
 */
 - (void)setViewAnimations:(CPArray)viewAnimations

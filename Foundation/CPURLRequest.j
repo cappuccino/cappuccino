@@ -131,7 +131,7 @@
 }
 
 /*!
-    Returns a dictionar of the http header fields
+    Returns a dictionary of the http header fields
 */
 - (CPDictionary)allHTTPHeaderFields
 {

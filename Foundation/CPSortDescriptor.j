@@ -111,7 +111,7 @@
 // Using sort descriptors
 /*!
     Compares two objects.
-    @param lhsObject the left hand side object to compre
+    @param lhsObject the left hand side object to compare
     @param rhsObject the right hand side object to compare
     @return the comparison result
 */

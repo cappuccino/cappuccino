@@ -36,7 +36,7 @@ var CPSplitViewHorizontalImage = nil,
     @class CPSplitView
 
     CPSplitView is a view that allows you to stack several subviews vertically or horizontally. The user is given divider to resize the subviews.
-    The divider indicies are zero-based. So the divider on the top (or left for vertical dividers) will be index 0.
+    The divider indices are zero-based. So the divider on the top (or left for vertical dividers) will be index 0.
 
     CPSplitView can be supplied a delegate to provide control over the resizing of the splitview and subviews. Those methods are documented in setDelegate:
 
@@ -114,7 +114,7 @@ var CPSplitViewHorizontalImage = nil,
 }
 
 /*!
-    Returns YES if the divers are vertical, otherwise NO.
+    Returns YES if the dividers are vertical, otherwise NO.
     @return YES if vertical, otherwise NO.
 */
 - (BOOL)isVertical
@@ -124,7 +124,7 @@ var CPSplitViewHorizontalImage = nil,
 
 /*!
     Sets if the splitview dividers are vertical.
-    @param shouldBeVertical - YES if the splitview diverers should be vertical, otherwise NO.
+    @param shouldBeVertical - YES if the splitview dividers should be vertical, otherwise NO.
 */
 - (void)setVertical:(BOOL)shouldBeVertical
 {
@@ -168,8 +168,9 @@ var CPSplitViewHorizontalImage = nil,
 }
 
 /*!
-    Use to find if the diver is a larger pane splitter.
-    @return BOOL - YES if the divers are the larger pane splitters. Otherwise NO. 
+    Use to find if the divider is a larger pane splitter.
+
+    @return BOOL - YES if the dividers are the larger pane splitters. Otherwise NO.
 */
 - (BOOL)isPaneSplitter
 {
@@ -178,7 +179,8 @@ var CPSplitViewHorizontalImage = nil,
 
 /*!
     Used to set if the split view dividers should be the larger pane splitter.
-    @param shouldBePaneSplitter - YES if the divers should be the thicker pane splitter, otherwise NO.
+
+    @param shouldBePaneSplitter - YES if the dividers should be the thicker pane splitter, otherwise NO.
 */
 - (void)setIsPaneSplitter:(BOOL)shouldBePaneSplitter
 {
@@ -213,6 +215,7 @@ var CPSplitViewHorizontalImage = nil,
 
 /*!
     Returns the CGRect of the divider at a given index.
+
     @param int - The index of a divider.
     @return CGRect - The rect of a divider.
 */
@@ -230,7 +233,8 @@ var CPSplitViewHorizontalImage = nil,
 }
 
 /*!
-    Returns the rect of the diver which the user is able to drag to resize.
+    Returns the rect of the divider which the user is able to drag to resize.
+
     @param int - The index of the divider.
     @return CGRect - The rect the user can drag.
 */
@@ -256,7 +260,7 @@ var CPSplitViewHorizontalImage = nil,
     }
 }
 /*!
-    Draws the divder at a given rect.
+    Draws the divider at a given rect.
     @param aRect - the rect of the divider to draw.
 */
 - (void)drawDividerInRect:(CGRect)aRect
@@ -706,7 +710,7 @@ var CPSplitViewHorizontalImage = nil,
 }
 
 /*!
-    Sets the delegate of the reciver.
+    Sets the delegate of the receiver.
     Possible delegate methods to implement are listed below.
 
     <pre>
@@ -714,7 +718,7 @@ var CPSplitViewHorizontalImage = nil,
             Notifies the delegate when the subviews have resized.
 
         - (void)splitViewWillResizeSubviews:(CPSplitView)aSplitView;
-            Notifies the delegate when the subviews wil be resized.
+            Notifies the delegate when the subviews will be resized.
 
         - (CGRect)splitView:(CPSplitView)aSplitView effectiveRect:(CGRect)aRect forDrawnRect:(CGRect)aDrawnRect ofDividerAtIndex:(int)aDividerIndex;
             Lets the delegate specify a different rect for which the user can drag the splitView divider.
@@ -723,25 +727,25 @@ var CPSplitViewHorizontalImage = nil,
             Lets the delegate specify an additional rect for which the user can drag the splitview divider.
 
         - (BOOL)splitView:(CPSplitView)aSplitView canCollapseSubview:(CPView)aSubview;
-            Notifies teh delegate that the splitview is about to be collapsed. This usally happens when the user
+            Notifies the delegate that the splitview is about to be collapsed. This usually happens when the user
             Double clicks on the divider. Return YES if the subview can be collapsed, otherwise NO.
 
          - (BOOL)splitView:(CPSplitView)aSplitView shouldCollapseSubview:(CPView)aSubview;
-            Notifies teh delegate that the splitview is about to be collapsed. This usally happens when the user
+            Notifies the delegate that the splitview is about to be collapsed. This usually happens when the user
             Double clicks on the divider. Return YES if the subview should be collapsed, otherwise NO.
 
         - (float)splitView:(CPSplitView)aSpiltView constrainSplitPosition:(float)proposedPosition ofSubviewAt:(int)subviewIndex;
-            Allows the delegate to constrain the subview beings resized. This method is called continiously as the user resizes the divider.
+            Allows the delegate to constrain the subview beings resized. This method is called continuously as the user resizes the divider.
             For example if the subview needs to have a width which is a multiple of a certain number you could return that multiple with this method.
 
         - (float)splitView:(CPSplitView)aSplitView constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)subviewIndex;
             Allows the delegate to constrain the minimum position of a subview.
 
         - (float)splitView:(CPSplitView)aSplitView constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)subviewIndex;
-            Allows teh delegate to constraing the maximum position of a subview.
+            Allows the delegate to constrain the maximum position of a subview.
 
         - (void)splitView:(CPSplitView)aSplitView resizeSubviewsWithOldSize:(CGSize)oldSize;
-            Allows the splitview to specify a custom resizing behaviour. This is called when the splitview is resized.
+            Allows the splitview to specify a custom resizing behavior. This is called when the splitview is resized.
             The sum of the views and the sum of the dividers should be equal to the size of the splitview.
     </pre>
 
@@ -781,7 +785,7 @@ var CPSplitViewHorizontalImage = nil,
     parameters of the button bar, and will override any currently set values.
 
     @param CPButtonBar - The supplied button bar.
-    @param unsiged int - The divider index the button bar will be assigned to.
+    @param unsigned int - The divider index the button bar will be assigned to.
 */
 - (void)setButtonBar:(CPButtonBar)aButtonBar forDividerAtIndex:(unsigned)dividerIndex
 {

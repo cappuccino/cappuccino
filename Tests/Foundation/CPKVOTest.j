@@ -31,7 +31,7 @@
 
     [self assertTrue: [bob valueForKey:@"name"] == @"set_bob" message: "valueForKey:'name' should be 'set_bob', was: "+[bob valueForKey:@"name"]];
     [self assertTrue: bob.name == @"set_bob" message: "bob.name should be 'set_bob', was: "+bob.name];
-    [self assertTrue: _sawObservation message:"Never recieved an observation"];
+    [self assertTrue: _sawObservation message:"Never received an observation"];
 }
 
 - (void)testUnobservedKey

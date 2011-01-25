@@ -705,7 +705,7 @@ var CPViewFlags                     = { },
     Sets the frame size of the receiver to the dimensions and origin of the provided rectangle in the coordinate system
     of the superview. The method also posts an CPViewFrameDidChangeNotification to the notification
     center if the receiver is configured to do so. If the frame is the same as the current frame, the method simply
-    returns (and no notificaion is posted).
+    returns (and no notification is posted).
     @param aFrame the rectangle specifying the new origin and size  of the receiver
 */
 - (void)setFrame:(CGRect)aFrame
@@ -1735,7 +1735,7 @@ setBoundsOrigin:
     @param aLocation the lower-left corner coordinate of \c anImage
     @param mouseOffset the distance from the \c -mouseDown: location and the current location
     @param anEvent the \c -mouseDown: that triggered the drag
-    @param aPastebaord the pasteboard that holds the drag data
+    @param aPasteboard the pasteboard that holds the drag data
     @param aSourceObject the drag operation controller
     @param slideBack Whether the image should 'slide back' if the drag is rejected
 */
@@ -1750,7 +1750,7 @@ setBoundsOrigin:
     @param aLocation the top-left corner coordinate of \c aView
     @param mouseOffset the distance from the \c -mouseDown: location and the current location
     @param anEvent the \c -mouseDown: that triggered the drag
-    @param aPastebaord the pasteboard that holds the drag data
+    @param aPasteboard the pasteboard that holds the drag data
     @param aSourceObject the drag operation controller
     @param slideBack Whether the view should 'slide back' if the drag is rejected
 */
@@ -2100,7 +2100,7 @@ setBoundsOrigin:
 
 /*!
     Scrolls the clip view to a specified point
-    @param the clip view to scoll
+    @param the clip view to scroll
     @param the point to scroll to
 */
 - (void)scrollClipView:(CPClipView)aClipView toPoint:(CGPoint)aPoint

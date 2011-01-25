@@ -89,7 +89,7 @@ var CPArrayClass                                                            = Ni
     @delegate -(id)unarchiver:(CPKeyedUnarchiver)unarchiver didDecodeObject:(id)object;
     Called when the unarchiver decodes an object.
     @param unarchiver the unarchiver doing the decoding
-    @param object the decoded objec
+    @param object the decoded object
     @return a substitute to use for the decoded object. This can be the same object argument provide,
     another object or \c nil.
 

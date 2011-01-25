@@ -69,7 +69,7 @@
   @class CPAccordionView
 
   <p>CPAccordionView provides a container for CPAccordionViewItem objects and manages layout state
-  for all sublayout items.</p>
+  for all sub-layout items.</p>
 
   <strong>Example</strong><br />
   <pre>

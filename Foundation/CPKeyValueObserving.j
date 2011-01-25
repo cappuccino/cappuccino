@@ -773,7 +773,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
         if (setMutationKind)
         {
             //old and new values for unordered to-many relationships can only be calculated before
-            //set precalculated hidden new value as soon as "didChangeValue..." is called!
+            //set recalculated hidden new value as soon as "didChangeValue..." is called!
             var newValue = changes[_CPKeyValueChangeSetMutationNewValueKey];
             [changes setValue:newValue forKey:CPKeyValueChangeNewKey];
 

@@ -345,7 +345,7 @@
     @return A new array containing the keys corresponding to all occurrences of anObject in the receiver. If no object matching anObject is found, returns an empty array.
 
     Each object in the receiver is sent an isEqual: message to determine if it's equal to anObject.
-    If the check for isEqual fails a check is made to see if the two objects are the same object. This provides compatability for JSObjects.
+    If the check for isEqual fails a check is made to see if the two objects are the same object. This provides compatibility for JSObjects.
 */
 - (CPArray)allKeysForObject:(id)anObject
 {
@@ -594,11 +594,11 @@
 
 /*!
     @class CPMutableDictionary
-    @ingroup compatability
+    @ingroup compatibility
 
     This class is just an empty subclass of CPDictionary.
     CPDictionary already implements mutable methods and
-    this class only exists for source compatability.
+    this class only exists for source compatibility.
 */
 @implementation CPMutableDictionary : CPDictionary
 

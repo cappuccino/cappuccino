@@ -280,7 +280,7 @@ var cpOperationMainQueue = nil;
 }
 
 /*!
-    Convenience method for one system wide singelton queue. Returns the same queue as currentQueue.
+    Convenience method for one system wide singleton queue. Returns the same queue as currentQueue.
 */
 + (CPOperationQueue)mainQueue
 {
@@ -294,7 +294,7 @@ var cpOperationMainQueue = nil;
 }
 
 /*!
-    Convenience method for one system wide singelton queue. Returns the same queue as mainQueue.
+    Convenience method for one system wide singleton queue. Returns the same queue as mainQueue.
 */
 + (CPOperationQueue)currentQueue
 {

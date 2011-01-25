@@ -317,7 +317,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 /*!
     @ignore
-    FIX ME: we have a lot of redundent init stuff in initWithFrame: and initWithCoder: we should move it all into here.
+    FIX ME: we have a lot of redundant init stuff in initWithFrame: and initWithCoder: we should move it all into here.
     we should do a full audit of all the initializers before 1.0
 */
 - (void)_init
@@ -382,14 +382,14 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 /*!
 <pre>
     Sets the receiver's data source to a given object.
-    The data source implements various methods for handeling the tableview's data when bindings are not used.
+    The data source implements various methods for handling the tableview's data when bindings are not used.
 
-    Methonds include:
+    Methods include:
     - (int)numberOfRowsInTableView:(CPTableView)aTableView;
         Returns the number of rows in the tableview
 
     - (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRowIndex;
-        Returns the object value for each dataview. Each dataview will be sent a setObjectValue: method which will contai
+        Returns the object value for each dataview. Each dataview will be sent a setObjectValue: method which will contain
         the object you return from this datasource method.
 
     Editing:
@@ -401,15 +401,15 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         The tableview will call this method if you click the tableheader. You should sort the datasource based off of the new sort descriptors and reload the data
 
     Drag and Drop:
-        In order for the tableview to recieve drops dont forget to first register the tableview for drag types like you do with every other view
+        In order for the tableview to receive drops don't forget to first register the tableview for drag types like you do with every other view
 
     - (CPDragOperation)tableView:(CPTableView)aTableView validateDrop:(CPDraggingInfo)info proposedRow:(int)row proposedDropOperation:(CPTableViewDropOperation)operation;
-        Return the drag operation (move, copy, etc) that should be performaned if a registered drag type is over the tableview
+        Return the drag operation (move, copy, etc) that should be performed if a registered drag type is over the tableview
         The data source can retarget a drop if you want by calling -(void)setDropRow:(int)aRow dropOperation:(CPTableViewDropOperation)anOperation;
 
     - (BOOL)tableView:(CPTableView)aTableView writeRowsWithIndexes:(CPIndexSet)rowIndexes toPasteboard:(CPPasteboard)pboard;
         Returns YES if the drop operation is allowed otherwise NO.
-        This method is invoked by the tabeview after a drag should begin, but before it is started. If you dont want the drag to being return NO.
+        This method is invoked by the tableview after a drag should begin, but before it is started. If you don't want the drag to being return NO.
         If you want the drag to begin you should return YES and place the drag data on the pboard.
 
     - (BOOL)tableView:(CPTableView)aTableView acceptDrop:(CPDraggingInfo)info row:(int)row dropOperation:(CPTableViewDropOperation)operation;
@@ -630,7 +630,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     Sets the width and height between dataviews.
     This value is (3.0, 2.0) by default.
 
-    @param aSize a CGSize object that degined the space between the cells
+    @param aSize a CGSize object that defines the space between the cells
 */
 - (void)setIntercellSpacing:(CGSize)aSize
 {
@@ -709,7 +709,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 /*!
-    Sets the colors for the rows as they alternate. The number of colors can be arbitrary. By deafult these colors are white and light blue.
+    Sets the colors for the rows as they alternate. The number of colors can be arbitrary. By default these colors are white and light blue.
     @param anArray an array of CPColors
 */
 
@@ -927,7 +927,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 /*!
     @ignore
-    Interally used to set a column that will be dragged
+    Internally used to set a column that will be dragged
 */
 - (void)_setDraggedColumn:(CPTableColumn)aColumn
 {
@@ -1399,7 +1399,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (void)editColumn:(CPInteger)columnIndex row:(CPInteger)rowIndex withEvent:(CPEvent)theEvent select:(BOOL)flag
 {
-    // FIX ME: Cocoa documenation says all this should be called in THIS method:
+    // FIX ME: Cocoa documentation says all this should be called in THIS method:
     // sets up the field editor, and sends selectWithFrame:inView:editor:delegate:start:length: and editWithFrame:inView:editor:delegate:event: to the field editor's NSCell object with the NSTableView as the text delegate.
 
     if (![self isRowSelected:rowIndex])
@@ -1474,7 +1474,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     Sets the headerview for the tableview. This is the container view for the table column header views.
     This view also handles events for resizing and dragging.
 
-    If you dont want your tableview to have a headerview you should pass nil. (also see setCornerView:)
+    If you don't want your tableview to have a headerview you should pass nil. (also see setCornerView:)
     If you're looking to customize the header text of a column see CPTableColumn's -(CPView)headerView; method.
 */
 - (void)setHeaderView:(CPView)aHeaderView
@@ -1919,7 +1919,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         i = 0;
 
     // find resizable columns
-    // FIX ME: we could cache resizableColumns after this loop and reuse it durring the resize
+    // FIX ME: we could cache resizableColumns after this loop and reuse it during the resize
     for (; i < count; i++)
     {
         var tableColumn = _tableColumns[i];
@@ -2285,7 +2285,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         Called when the tableview is about to display a dataview
 
     - (BOOL)tableView:(CPTableView)tableView isGroupRow:(int)row;
-        Group rows are a way to seperate a groups of data in a tableview. Return YES if the given row is a group row, otherwise NO.
+        Group rows are a way to separate a groups of data in a tableview. Return YES if the given row is a group row, otherwise NO.
 
     Editing Cells
     - (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)aTableColumn row:(int)rowIndex;
@@ -2310,7 +2310,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         NOTE: this is only called via user interaction
 
     - (void)tableViewSelectionIsChanging:(CPNotification)aNotification
-        Inform the delegate that the tableview is in the process of chaning the selection.
+        Inform the delegate that the tableview is in the process of chaining the selection.
         This usually happens when the user is dragging their mouse across rows.
         NOTE: this is only called via user interaction
 
@@ -2324,7 +2324,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         Return YES if the column at a given index should move to a new column index, otherwise NO.
 
     - (void)tableView:(CPTableView)tableView didDragTableColumn:(CPTableColumn)tableColumn;
-        Notifies the delegate that the tableview drag occured. This is send on mouse up.
+        Notifies the delegate that the tableview drag occurred. This is send on mouse up.
 
     - (void)tableViewColumnDidMove:(CPNotification)aNotification;
         Notifies the delegate that a tablecolumn was moved by the user.
@@ -2685,7 +2685,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     @param dragRows an index set with the dragged row indexes
     @param theTableColumns an array of the table columns which are being dragged
     @param dragEvent the event which initiated the drag
-    @param offset a point at wihch to set the drag image to be offset from the cursor
+    @param offset a point at which to set the drag image to be offset from the cursor
 
     @return CPImage an image to use for the drag feedback
 */
@@ -2695,14 +2695,14 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 /*!
-    Computes and returns a view to use for dragging. By default this is a slighly transparent copy of the dataviews which are being dragged.
-    You can override this in a subclas to show different dragging feedback. Additionally you can return nil from this method and implement:
+    Computes and returns a view to use for dragging. By default this is a slightly transparent copy of the dataviews which are being dragged.
+    You can override this in a subclass to show different dragging feedback. Additionally you can return nil from this method and implement:
     - (CPImage)dragImageForRowsWithIndexes:tableColumns:event:offset: - if you want to return a simple image.
 
     @param dragRows an index set with the dragged row indexes
     @param theTableColumns an array of the table columns which are being dragged
     @param dragEvent the event which initiated the drag
-    @param offset a point at wihch to set the drag image to be offset from the cursor
+    @param offset a point at which to set the drag image to be offset from the cursor
 
     @return CPView a view used as the dragging feedback
 */
@@ -2795,12 +2795,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 /*!
-    Sets the default operation mask for the drag behaviour of the table view.
+    Sets the default operation mask for the drag behavior of the table view.
     NOTE: isLocal is not implemented.
 */
 - (void)setDraggingSourceOperationMask:(CPDragOperation)mask forLocal:(BOOL)isLocal
 {
-    //ignoral local for the time being since only one capp app can run at a time...
+    //ignore local for the time being since only one capp app can run at a time...
     _dragOperationDefaultMask = mask;
 }
 
@@ -2828,7 +2828,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 /*!
 <pre>
     Sets the feedback style for when the table is the destination of a drag operation.
-    This style is used to determine how the tableview looks when it is the reciever of a drag and drop operation.
+    This style is used to determine how the tableview looks when it is the receiver of a drag and drop operation.
 
     Can be:
         CPTableViewDraggingDestinationFeedbackStyleNone
@@ -3285,7 +3285,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if ([sender isKindOfClass:[CPTextField class]])
         [sender setBezeled:NO];
 
-    [self reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:sender.tableViewEditedRowIndex] 
+    [self reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:sender.tableViewEditedRowIndex]
                     columnIndexes:[CPIndexSet indexSetWithIndex:[_tableColumns indexOfObject:sender.tableViewEditedColumnObj]]];
 
     [[self window] makeFirstResponder:self];
@@ -3602,7 +3602,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     var normalSelectionHighlightColor = [self selectionHighlightColor];
 
-    // dont do these lookups if there are no group rows
+    // don't do these lookups if there are no group rows
     if ([_groupRows count])
     {
         var topGroupLineColor = [CPColor colorWithCalibratedWhite:212.0 / 255.0 alpha:1.0],
@@ -3786,7 +3786,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (void)drawRow:(CPInteger)row clipRect:(CGRect)rect
 {
-    // This method does currently nothing in cappuccino. Can be overriden by subclasses.
+    // This method does currently nothing in cappuccino. Can be overridden by subclasses.
 
 }
 
@@ -3874,7 +3874,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     var row = [self rowAtPoint:aPoint];
 
-    //if the user clicks outside a row then deslect everything
+    //if the user clicks outside a row then deselect everything
     if (row < 0 && _allowsEmptySelection)
         [self selectRowIndexes:[CPIndexSet indexSet] byExtendingSelection:NO];
 
@@ -3964,7 +3964,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
                     tableColumns = [_tableColumns objectsAtIndexes:_exposedColumns];
 
                 // We deviate from the default Cocoa implementation here by asking for a view in stead of an image
-                // We support both, but the view prefered over the image because we can mimic the rows we are dragging
+                // We support both, but the view preferred over the image because we can mimic the rows we are dragging
                 // by re-creating the data views for the dragged rows
                 var view = [self dragViewForRowsWithIndexes:_draggedRowIndexes
                                                tableColumns:tableColumns
@@ -4446,7 +4446,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     var character = [anEvent charactersIgnoringModifiers],
         modifierFlags = [anEvent modifierFlags];
 
-    // Check for the key events manually, as opossed to waiting for CPWindow to sent the actual actio message
+    // Check for the key events manually, as opposed to waiting for CPWindow to sent the actual action message
     // in _processKeyboardUIKey:, because we might not want to handle the arrow events.
     if (character === CPUpArrowFunctionKey || character === CPDownArrowFunctionKey)
     {
@@ -4472,7 +4472,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 /*!
     @ignore
-    Selection behaviour depends on two things:
+    Selection behavior depends on two things:
     _lastSelectedRow and the anchored selection (the last row selected by itself)
 */
 - (void)_moveSelectionWithEvent:(CPEvent)theEvent upward:(BOOL)shouldGoUpward

@@ -57,7 +57,7 @@ CPRunContinuesResponse  = -1002;
     @ingroup appkit
     @class CPApplication
 
-    CPApplication is THE way to start up the Cappucino framework for your application to use.
+    CPApplication is THE way to start up the Cappuccino framework for your application to use.
     Every GUI application has exactly one instance of CPApplication (or of a custom subclass of
     CPApplication). Your program's main() function can create that instance by calling the
     \c CPApplicationMain function. A simple example looks like this:

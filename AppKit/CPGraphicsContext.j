@@ -25,7 +25,7 @@
 @import "CGContext.j"
 
 
-var CPGraphicsContextCurrent    = nil;
+var CPGraphicsContextCurrent = nil;
 
 /*!
     @ingroup appkit

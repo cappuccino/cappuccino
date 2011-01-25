@@ -57,7 +57,7 @@ CPJavascriptRemedialKeySupport          = 1 << 16;
 CPJavaScriptShadowFeature               = 1 << 20;
 
 CPJavaScriptNegativeMouseWheelValues    = 1 << 22;
-CPJavaScriptMouseWheelValues_8_15       = 1 << 23
+CPJavaScriptMouseWheelValues_8_15       = 1 << 23;
 
 CPOpacityRequiresFilterFeature          = 1 << 24;
 

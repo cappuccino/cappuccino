@@ -88,7 +88,7 @@ var CPDocumentUntitledCount = 0;
     @class CPDocument
 
     CPDocument is used to represent a document/file in a Cappuccino application.
-    In a document-based application, generally multiple documents are open simutaneously
+    In a document-based application, generally multiple documents are open simultaneously
     (multiple text documents, slide presentations, spreadsheets, etc.), and multiple
     CPDocuments should be used to represent this.
 */
@@ -208,7 +208,7 @@ var CPDocumentUntitledCount = 0;
     throws an exception.
     @param aType the format of the data
     @param anError not used
-    @throws CPUnsupportedMethodException if this method hasn't been overriden by the subclass
+    @throws CPUnsupportedMethodException if this method hasn't been overridden by the subclass
     @return the document data
 */
 - (CPData)dataOfType:(CPString)aType error:({CPError})anError
