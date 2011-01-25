@@ -63,11 +63,11 @@ CPSoundPlayBackStatePause   = 2;
         _audioTag.addEventListener("canplay", function()
         {
             [self _soundDidload];
-        });
+        }, true);
         _audioTag.addEventListener("ended", function()
         {
             [self _soundDidEnd];
-        });
+        }, true);
     }
 
     return self;
