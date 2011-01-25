@@ -76,7 +76,7 @@ var transformerMap = [CPDictionary dictionary];
 
 - (id)reverseTransformedValue:(id)aValue
 {
-    if ([[self class] allowsReverseTransformation])
+    if (![[self class] allowsReverseTransformation])
     {
         [CPException raise:CPInvalidArgumentException reason:(self + " is not reversible.")];
     }
