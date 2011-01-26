@@ -206,7 +206,7 @@ if [ "$install_narwhal" ]; then
         else
             read input
         fi
-        if [ "$input" ]; then
+        if [ "$input" ] && [ ! "$input" = "yes" ]; then
             install_directory="`cd \`dirname "$input"\`; pwd`/`basename "$input"`"
         else
             install_directory="$default_directory"
