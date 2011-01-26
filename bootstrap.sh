@@ -133,6 +133,7 @@ while [ $# -gt 0 ]; do
         --noprompt)     noprompt="yes";;
         --directory)    install_directory="$2"; shift;;
         --clone)        tusk_install_command="clone";;
+        --clone_http)   tusk_install_command="clone_http";;
         --github-user)  github_user="$2"; shift;;
         --github-ref)   github_ref="$2"; shift;;
         --install-capp) install_capp="yes";;
@@ -141,7 +142,8 @@ usage: ./bootstrap.sh [OPTIONS]
 
     --noprompt:             Don't prompt, use relatively safe defaults.
     --directory [DIR]:      Use a directory other than /usr/local/narwhal.
-    --clone:                Do "git clone" instead of downloading zips.
+    --clone:                Do "git clone git://" instead of downloading zips.
+    --clone_http:           Do "git clone http://" instead of downloading zips.
     --github-user [USER]:   Use another github user (default: 280north).
     --github-ref [REF]:     Use another git ref (default: master).
     --install-capp:         Install "objective-j" and "cappuccino" packages.
@@ -206,7 +208,7 @@ if [ "$install_narwhal" ]; then
         else
             read input
         fi
-        if [ "$input" ] && [ ! "$input" = "yes" ]; then
+        if [ "$input" ]; then
             install_directory="`cd \`dirname "$input"\`; pwd`/`basename "$input"`"
         else
             install_directory="$default_directory"
@@ -233,6 +235,11 @@ if [ "$install_narwhal" ]; then
 
     if [ "$tusk_install_command" = "clone" ]; then
         git_repo="git://github.com/$github_path.git"
+        echo "Cloning Narwhal from \"$git_repo\"..."
+        git clone "$git_repo" "$install_directory"
+        (cd "$install_directory" && git checkout "origin/$github_ref")
+    elif [ "$tusk_install_command" = "clone_http" ]; then
+        git_repo="http://github.com/$github_path.git"
         echo "Cloning Narwhal from \"$git_repo\"..."
         git clone "$git_repo" "$install_directory"
         (cd "$install_directory" && git checkout "origin/$github_ref")
