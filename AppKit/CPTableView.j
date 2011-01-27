@@ -3279,6 +3279,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (void)_commitDataViewObjectValue:(id)sender
 {
+    _editingCellIndex = nil;
+
     [_dataSource tableView:self setObjectValue:[sender objectValue] forTableColumn:sender.tableViewEditedColumnObj row:sender.tableViewEditedRowIndex];
 
     if ([sender respondsToSelector:@selector(setEditable:)])
@@ -3295,7 +3297,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     [[self window] makeFirstResponder:self];
 
-    _editingCellIndex = nil;
 }
 
 /*!
