@@ -4449,7 +4449,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         var extend = (([theEvent modifierFlags] & CPShiftKeyMask) && _allowsMultipleSelection),
             i = [self selectedRow];
 
-        shouldGoUpward ? i-- : i++;
+        while ([selectedIndexes containsIndex:i])
+            shouldGoUpward ? i-- : i++;
     }
     else
     {
