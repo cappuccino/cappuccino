@@ -188,9 +188,8 @@ var ModifierKeyCodes = [
     CPKeyCodes.CTRL,
     CPKeyCodes.ALT,
     CPKeyCodes.SHIFT
-];
-
-var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
+    ],
+    supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
 @implementation CPPlatformWindow (DOM)
 
@@ -1033,7 +1032,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
     // We lag 1 event behind without this timeout.
     setTimeout(function()
-    { 
+    {
         // Find the scroll delta
         var deltaX = _DOMScrollingElement.scrollLeft - 150,
             deltaY = _DOMScrollingElement.scrollTop - 150;
