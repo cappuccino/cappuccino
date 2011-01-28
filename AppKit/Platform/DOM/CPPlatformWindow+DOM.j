@@ -322,7 +322,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     _DOMScrollingElement = theDocument.createElement("div");
     _DOMScrollingElement.style.position = "absolute";
     _DOMScrollingElement.style.visibility = "hidden";
-    _DOMScrollingElement.style.zIndex = "998";
+    _DOMScrollingElement.style.zIndex = @"999";
     _DOMScrollingElement.style.height = "60px";
     _DOMScrollingElement.style.width = "60px";
     _DOMScrollingElement.style.overflow = "scroll";
@@ -1033,7 +1033,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
     // We lag 1 event behind without this timeout.
     setTimeout(function()
-    {
+    { 
         // Find the scroll delta
         var deltaX = _DOMScrollingElement.scrollLeft - 150,
             deltaY = _DOMScrollingElement.scrollTop - 150;
