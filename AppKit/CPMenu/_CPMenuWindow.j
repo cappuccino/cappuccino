@@ -352,24 +352,29 @@ var STICKY_TIME_INTERVAL        = 500,
     return [self canScrollUp] || [self canScrollDown];
 }
 
-- (void)scrollUp
+- (void)scrollByDelta:(float)theDelta
 {
-    if (CGRectGetMinY(_unconstrainedFrame) >= CGRectGetMinY(_constraintRect))
+    if (theDelta === 0.0)
         return;
 
-    _unconstrainedFrame.origin.y += 10;
+    if (theDelta > 0.0 && ![self canScrollDown])
+        return;
 
+    if (theDelta < 0.0 && ![self canScrollUp])
+        return;
+
+    _unconstrainedFrame.origin.y -= theDelta;
     [self setFrame:_unconstrainedFrame];
+}
+
+- (void)scrollUp
+{
+    [self scrollByDelta:-10.0];
 }
 
 - (void)scrollDown
 {
-    if (CGRectGetMaxY(_unconstrainedFrame) <= CGRectGetHeight(_constraintRect))
-        return;
-
-    _unconstrainedFrame.origin.y -= 10;
-
-    [self setFrame:_unconstrainedFrame];
+    [self scrollByDelta:10.0];
 }
 
 @end

@@ -96,7 +96,7 @@ var STICKY_TIME_INTERVAL            = 500,
     if (type === CPAppKitDefined)
         return [self completeTracking];
 
-    [CPApp setTarget:self selector:@selector(trackEvent:) forNextEventMatchingMask:CPKeyDownMask | CPPeriodicMask | CPMouseMovedMask | CPLeftMouseDraggedMask | CPLeftMouseUpMask | CPAppKitDefinedMask untilDate:nil inMode:nil dequeue:YES];
+    [CPApp setTarget:self selector:@selector(trackEvent:) forNextEventMatchingMask:CPKeyDownMask | CPPeriodicMask | CPMouseMovedMask | CPLeftMouseDraggedMask | CPLeftMouseUpMask | CPAppKitDefinedMask | CPScrollWheelMask untilDate:nil inMode:nil dequeue:YES];
 
     if (type === CPKeyDown)
     {
@@ -145,6 +145,9 @@ var STICKY_TIME_INTERVAL            = 500,
     }
 
     var mouseOverMenuView = [activeItem view];
+
+    if (type === CPScrollWheel)
+        [activeMenuContainer scrollByDelta:[anEvent deltaY]];
 
     if (type === CPPeriodic)
     {
