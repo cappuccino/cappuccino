@@ -294,7 +294,12 @@ var STICKY_TIME_INTERVAL        = 500,
 
     [_moreBelowView setHidden:!moreBelow];
 
-    var clipFrame = CGRectMake(LEFT_MARGIN, topMargin, CGRectGetWidth(constrainedFrame) - LEFT_MARGIN - RIGHT_MARGIN, CGRectGetHeight(constrainedFrame) - topMargin - bottomMargin)
+    var clipFrame = CGRectMakeZero();
+
+    clipFrame.origin.x = LEFT_MARGIN;
+    clipFrame.origin.y = topMargin;
+    clipFrame.size.width = CGRectGetWidth(constrainedFrame) - LEFT_MARGIN - RIGHT_MARGIN;
+    clipFrame.size.height = CGRectGetHeight(constrainedFrame) - topMargin - bottomMargin;
 
     [_menuClipView setFrame:clipFrame];
     [_menuView setFrameSize:CGSizeMake(CGRectGetWidth(clipFrame), CGRectGetHeight([_menuView frame]))];
@@ -384,7 +389,7 @@ var STICKY_TIME_INTERVAL        = 500,
 - (_CPManagerScrollingState)scrollingStateForPoint:(CGPoint)aGlobalLocation
 {
     var frame = [self frame];
-    if(!CPRectContainsPoint(frame,aGlobalLocation) || ![self canScroll])
+    if (!CPRectContainsPoint(frame,aGlobalLocation) || ![self canScroll])
         return _CPMenuManagerScrollingStateNone;
 
     // If we're at or above of the top scroll indicator...
