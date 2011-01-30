@@ -226,6 +226,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     unsigned    _destinationDragStyle;
     BOOL        _isSelectingSession;
     CPIndexSet  _draggedRowIndexes;
+    BOOL        _wasSelectionBroken;
 
     _CPDropOperationDrawingView _dropOperationFeedbackView;
     CPDragOperation             _dragOperationDefaultMask;
@@ -235,7 +236,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     BOOL        _disableAutomaticResizing @accessors(property=disableAutomaticResizing);
     BOOL        _lastColumnShouldSnap;
     BOOL        _implementsCustomDrawRow;
-    BOOL        _wasBroken;
 
     CPTableColumn _draggedColumn;
     CPArray     _differedColumnDataToRemove;
@@ -4434,7 +4434,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [super keyDown:anEvent];
 }
 
-- (BOOL)selectionIsBroken
+/*!
+    @ignore
+    Determines if the selection is broken. A broken selection
+    is a non-continuous selection of rows.
+*/
+- (BOOL)_selectionIsBroken
 {
     return [self selectedRowIndexes]._ranges.length !== 1;
 }
@@ -4455,18 +4460,18 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         var extend = (([theEvent modifierFlags] & CPShiftKeyMask) && _allowsMultipleSelection),
             i = [self selectedRow];
 
-        if([self selectionIsBroken])
+        if([self _selectionIsBroken])
         {
             while ([selectedIndexes containsIndex:i])
             {
                 shouldGoUpward ? i-- : i++;
             }
-            _wasBroken = true;
+            _wasSelectionBroken = true;
         }
-        else if (_wasBroken && ((shouldGoUpward && i !== [selectedIndexes leastIndex]) || (!shouldGoUpward && i !== [selectedIndexes mostIndex])))
+        else if (_wasSelectionBroken && ((shouldGoUpward && i !== [selectedIndexes leastIndex]) || (!shouldGoUpward && i !== [selectedIndexes mostIndex])))
         {
-            shouldGoUpward ? i = [selectedIndexes leastIndex] - 1 : i = [selectedIndexes mostIndex];
-            _wasBroken = false;
+            shouldGoUpward ? i = [selectedIndexes firstIndex] - 1 : i = [selectedIndexes lastIndex];
+            _wasSelectionBroken = false;
         }
         else
         {
@@ -4534,28 +4539,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if (i !== CPNotFound)
         [self scrollRowToVisible:i];
-}
-
-@end
-
-@implementation CPIndexSet (LeastAndMost)
-
-- (int)leastIndex
-{
-    var least = _ranges[0].location;
-    for(var i = 1; i < _ranges.length; i++)
-        if (_ranges[i].location < least)
-            least = _ranges[i].location;
-    return least;
-}
-
-- (int)mostIndex
-{
-    var most = _ranges[0].location + _ranges[0].length;
-    for(var i = 1; i < _ranges.length; i++)
-        if (_ranges[i].location + _ranges[i].length > most)
-            most = _ranges[i].location + _ranges[i].length;
-    return most;
 }
 
 @end
