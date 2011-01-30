@@ -292,11 +292,21 @@ CPRunContinuesResponse  = -1002;
     }
 }
 
+/*!
+    Sets the applications icon image. This image is used in the default "About" window.
+    By default this value is pulled from the CPApplicationIcon key in your info.plist file.
+
+    @param anImage - The image to set.
+*/
 - (void)setApplicationIconImage:(CPImage)anImage
 {
     _applicationIconImage = anImage;
 }
 
+/*!
+    Returns the application icon image. By default this is pulled from the CPApplicationIcon key of info.plist.
+    @return CPImage - Your application icon image.
+*/
 - (CPImage)applicationIconImage
 {
     if (_applicationIconImage)
@@ -309,11 +319,38 @@ CPRunContinuesResponse  = -1002;
     return _applicationIconImage;
 }
 
+/*!
+    Opens the standard about panel with no options.
+*/
 - (void)orderFrontStandardAboutPanel:(id)sender
 {
     [self orderFrontStandardAboutPanelWithOptions:nil];
 }
 
+/*!
+    Opens the standard about panel. This method takes a single argument \c options.
+    Options is a dictionary that can contain any of the following keys:
+    <pre>
+    ApplicationName - The name of your application.
+    ApplicationIcon - Application icon image.
+    Version - The full version of your application
+    ApplicationVersion - The shorter version number of your application.
+    Copyright - Human readable copyright information.
+    </pre>
+
+    If you choose not the include any of the above keys, they will default 
+    to the following respective keys in your info.plist file.
+
+    <pre>
+    CPBundleName
+    CPApplicationIcon (through a call to -applicationIconImage, see documentation for that method for more details)
+    CPBundleVersion
+    CPBundleShortVersionString
+    CPHumanReadableCopyright
+    </pre>
+
+    @param options - A dictionary with the aboe listed keys. You can pass nil to default to your plist values.
+*/
 - (void)orderFrontStandardAboutPanelWithOptions:(CPDictionary)options
 {
     if (!_aboutPanel)
@@ -573,6 +610,10 @@ CPRunContinuesResponse  = -1002;
     [[anEvent window] sendEvent:anEvent];
 }
 
+/*!
+    If the delegate responds to the given selector it will call the method on the delegate,
+    otherwise the method will be passed to CPResponder.
+*/
 - (void)doCommandBySelector:(SEL)aSelector
 {
     if ([_delegate respondsToSelector:aSelector])
@@ -664,6 +705,10 @@ CPRunContinuesResponse  = -1002;
         [aMenu _setMenuName:@"CPMainMenu"];
 }
 
+/*!
+    Opens the shared color panel.
+    @param aSender
+*/
 - (void)orderFrontColorPanel:(id)aSender
 {
     [[CPColorPanel sharedColorPanel] orderFront:self];
@@ -832,16 +877,38 @@ CPRunContinuesResponse  = -1002;
     return nil;
 }
 
+/*!
+    Fires a callback function when an event matching a given mask occurs.
+    @param aCallback - A js function to be fired.
+    @prarm aMask - An event mask for the next event.
+    @param anExpiration - The date for which this callback expires (not implemented).
+    @param inMode (not implemented).
+    @param shouldDequeue (not implemented).
+*/
 - (void)setCallback:(Function)aCallback forNextEventMatchingMask:(unsigned int)aMask untilDate:(CPDate)anExpiration inMode:(CPString)aMode dequeue:(BOOL)shouldDequeue
 {
     _eventListeners.push(_CPEventListenerMake(aMask, aCallback));
 }
 
-- (CPEvent)setTarget:(id)aTarget selector:(SEL)aSelector forNextEventMatchingMask:(unsigned int)aMask untilDate:(CPDate)anExpiration inMode:(CPString)aMode dequeue:(BOOL)shouldDequeue
+/*!
+    Assigns a target and action for the next event matching a given event mask.
+    The callback method called will be passed the CPEvent when it fires.
+
+    @param aTarget - The target object for the callback.
+    @param aSelector - The selector which should be called on the target object.
+    @param aMask - The mask for a given event which should trigger the callback.
+    @param anExpiration - The date for which the callback expires (not implemented).
+    @param aMode (not implemented).
+    @param shouldDequeue (not implemented).
+*/
+- (void)setTarget:(id)aTarget selector:(SEL)aSelector forNextEventMatchingMask:(unsigned int)aMask untilDate:(CPDate)anExpiration inMode:(CPString)aMode dequeue:(BOOL)shouldDequeue
 {
     _eventListeners.push(_CPEventListenerMake(aMask, function (anEvent) { objj_msgSend(aTarget, aSelector, anEvent); }));
 }
 
+/*!
+    Returns the last event recieved by your application.
+*/
 - (CPEvent)currentEvent
 {
     return _currentEvent;
@@ -871,6 +938,19 @@ CPRunContinuesResponse  = -1002;
     [aWindow _attachSheet:aSheet modalDelegate:aModalDelegate didEndSelector:aDidEndSelector contextInfo:aContextInfo];
 }
 
+/*!
+    Ends a sheet modal.
+    The following are predefined return codes:
+
+    <pre>
+    CPRunStoppedResponse
+    CPRunAbortedResponse
+    CPRunContinuesResponse
+    </pre>
+
+    @param sheet - The window object (sheet) to dismiss.
+    @param returnCode - The return code to send to the delegate. You can use one of the return codes above or a custom value that you define.
+*/
 - (void)endSheet:(CPWindow)sheet returnCode:(int)returnCode
 {
     var count = [_windows count];
@@ -889,11 +969,31 @@ CPRunContinuesResponse  = -1002;
     }
 }
 
+/*!
+    Ends a sheet and sends the return code "0".
+    @param sheet - The CPWindow object (sheet) that should be dismissed.
+*/
 - (void)endSheet:(CPWindow)sheet
 {
+    // FIX ME: this is wrong: by Cocoa this should be: CPRunStoppedResponse.
    [self endSheet:sheet returnCode:0];
 }
 
+/*!
+    Returns and array of slash seperated arugments to your application.
+    These values are pulled from your window location hash.
+
+    For exampled if your application loaded:
+    <pre>
+    index.html#280north/cappuccino/issues
+    </pre>
+    The follow array would be returned:
+    <pre>
+    ["280north", "cappuccino", "issues"]
+    </pre>
+
+    @return CPArray - The array of arguments.
+*/
 - (CPArray)arguments
 {
     if (_fullArgsString !== window.location.hash)
@@ -902,6 +1002,22 @@ CPRunContinuesResponse  = -1002;
     return _args;
 }
 
+/*!
+    Sets the arguments of your application. 
+    That is, set the slash seperated values of an array as the window location hash.
+
+    For example if you pass an array:
+    <pre>
+    ["280north", "cappuccino", "issues"]
+    </pre>
+
+    The new window location would be
+    <pre>
+    index.html#280north/cappuccino/issues
+    </pre>
+
+    @param args - An array of arguments.
+*/
 - (void)setArguments:(CPArray)args
 {
     if (!args || args.length == 0)
@@ -943,6 +1059,23 @@ CPRunContinuesResponse  = -1002;
         _args = [];
 }
 
+/*!
+    Returns a dictionary of the window location named arguments.
+    For example if your location was:
+    <pre>
+    index.html?owner=280north&repo=cappuccino&type=issues
+    </pre>
+
+    a CPDictionary with the keys:
+    <pre>
+    owner, repo, type
+    </pre>
+    and respective values:
+    <pre>
+    280north, cappuccino, issues
+    </pre>
+    Will be returned.
+*/
 - (CPDictionary)namedArguments
 {
     return _namedArgs;
