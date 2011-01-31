@@ -22,6 +22,9 @@ var STICKY_TIME_INTERVAL            = 500,
     Function            _trackingCallback;
 
     CPString            _keyBuffer;
+
+    CPMenuItem          _previousActiveItem;
+    int                 _showTimerID;
 }
 
 + (_CPMenuManager)sharedMenuManager
@@ -214,6 +217,14 @@ var STICKY_TIME_INTERVAL            = 500,
             [trackingMenu cancelTracking];
     }
 
+    // Prevent previous selected menu items from opening by stopping the timer if a
+    // new item is selected before the timer runs out
+    if (_previousActiveItem !== activeItem)
+    {
+        clearTimeout(_showTimerID);
+        _showTimerID = undefined;
+    }
+
     // If the item has a submenu, show it.
     if ([activeItem hasSubmenu])// && [activeItem action] === @selector(submenuAction:))
     {
@@ -226,13 +237,24 @@ var STICKY_TIME_INTERVAL            = 500,
 
         newMenuOrigin = [activeMenuContainer convertBaseToGlobal:newMenuOrigin];
 
-        [self showMenu:[activeItem submenu] fromMenu:[activeItem menu] atPoint:newMenuOrigin];
+        // Only start a new timer if the previous was cancelled
+        if (_showTimerID === undefined)
+        {
+            // Close the current menu item because we are going to select a new one after a short delay
+            [self showMenu:nil fromMenu:activeMenu atPoint:CGPointMakeZero()];
+
+            _showTimerID = setTimeout(function() {
+                [self showMenu:[activeItem submenu] fromMenu:[activeItem menu] atPoint:newMenuOrigin];
+            }, 250);
+        }
     }
 
     // This handles both the case where we've moved away from the menu, and where
     // we've moved to an item without a submenu.
     else
         [self showMenu:nil fromMenu:activeMenu atPoint:CGPointMakeZero()];
+
+    _previousActiveItem = activeItem;
 }
 
 - (void)trackMenuBarButtonEvent:(CPEvent)anEvent
