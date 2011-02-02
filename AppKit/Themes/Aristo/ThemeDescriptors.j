@@ -901,7 +901,13 @@ var themedButtonValues = nil,
 + (CPSearchField)themedSearchField
 {
     var searchField = [[CPSearchField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 30.0)];
-    [self registerThemeValues:nil forView:searchField inherit:themedRoundedTextFieldValues];
+    
+    searchFieldThemeValues = [
+        [@"content-inset",  CGInsetMake(8.0, 14.0, 6.0, 14.0),  CPTextFieldStateRounded | CPThemeStateBezeled],
+        [@"content-inset",  CGInsetMake(7.0, 15.0, 6.0, 16.0),    CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
+    ]
+    
+    [self registerThemeValues:searchFieldThemeValues forView:searchField inherit:themedRoundedTextFieldValues];
     return searchField;
 }
 
