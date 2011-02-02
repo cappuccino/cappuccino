@@ -876,7 +876,9 @@ var themedButtonValues = nil,
             [@"bezel-color",    bezelFocusedColor,                  CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
             [@"font",           [CPFont systemFontOfSize:12.0]],
 
-            [@"content-inset",  CGInsetMake(9.0, 14.0, 6.0, 14.0),  CPTextFieldStateRounded | CPThemeStateBezeled],
+            [@"content-inset",  CGInsetMake(8.0, 14.0, 6.0, 14.0),  CPTextFieldStateRounded | CPThemeStateBezeled],
+            [@"content-inset",  CGInsetMake(7.0, 14.0, 6.0, 14.0),  CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
+
             [@"bezel-inset",    CGInsetMake(4.0, 4.0, 4.0, 4.0),    CPTextFieldStateRounded | CPThemeStateBezeled],
             [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
 
@@ -901,13 +903,8 @@ var themedButtonValues = nil,
 + (CPSearchField)themedSearchField
 {
     var searchField = [[CPSearchField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 30.0)];
-    
-    searchFieldThemeValues = [
-        [@"content-inset",  CGInsetMake(8.0, 14.0, 6.0, 14.0),  CPTextFieldStateRounded | CPThemeStateBezeled],
-        [@"content-inset",  CGInsetMake(7.0, 15.0, 6.0, 16.0),    CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
-    ]
-    
-    [self registerThemeValues:searchFieldThemeValues forView:searchField inherit:themedRoundedTextFieldValues];
+
+    [self registerThemeValues:nil forView:searchField inherit:themedRoundedTextFieldValues];
     return searchField;
 }
 
