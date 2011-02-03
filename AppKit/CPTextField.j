@@ -585,7 +585,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self _setStringValue:element.value];
 
     CPTextFieldInputResigning = YES;
-    element.blur();
+
+    if (CPTextFieldInputIsActive)
+        element.blur();
 
     if (!CPTextFieldInputDidBlur)
         CPTextFieldBlurFunction();
@@ -1106,7 +1108,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     selectedRange.location += 1;
     selectedRange.length -= 1;
-    
+
     var stringValue = [self stringValue],
         newValue = [stringValue stringByReplacingCharactersInRange:selectedRange withString:""];
 

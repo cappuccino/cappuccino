@@ -2344,6 +2344,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     - (CPMenu)tableView:(CPTableView)aTableView menuForTableColumn:(CPTableColumn)aColumn row:(int)aRow
         Called when the user right clicks on the tableview. -1 is passed for the row or column if the user doesn't right click on a real row or column
         Return a CPMenu that should be displayed if the user right clicks. If you do not implement this the tableview will just call super on menuForEvent
+
+    Delete Key
+    - (void)tableViewDeleteKeyPressed:(CPTableView)aTableView;
+        Called when the user presses the delete key. Many times you will want to delete data (or prompt for deletion) when the user hids the delete key.
+        Your delegate can implement this method to avoid subclassing the tableview to add this behaviour.
 </pre>
     @param aDelegate the delegate object for the tableview.
 
@@ -3274,6 +3279,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (void)_commitDataViewObjectValue:(id)sender
 {
+    _editingCellIndex = nil;
+
     [_dataSource tableView:self setObjectValue:[sender objectValue] forTableColumn:sender.tableViewEditedColumnObj row:sender.tableViewEditedRowIndex];
 
     if ([sender respondsToSelector:@selector(setEditable:)])
@@ -3290,7 +3297,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     [[self window] makeFirstResponder:self];
 
-    _editingCellIndex = nil;
 }
 
 /*!

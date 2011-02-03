@@ -133,6 +133,7 @@ while [ $# -gt 0 ]; do
         --noprompt)     noprompt="yes";;
         --directory)    install_directory="$2"; shift;;
         --clone)        tusk_install_command="clone";;
+        --clone-http)   tusk_install_command="clone --http";;
         --github-user)  github_user="$2"; shift;;
         --github-ref)   github_ref="$2"; shift;;
         --install-capp) install_capp="yes";;
@@ -141,7 +142,8 @@ usage: ./bootstrap.sh [OPTIONS]
 
     --noprompt:             Don't prompt, use relatively safe defaults.
     --directory [DIR]:      Use a directory other than /usr/local/narwhal.
-    --clone:                Do "git clone" instead of downloading zips.
+    --clone:                Do "git clone git://" instead of downloading zips.
+    --clone-http:           Do "git clone http://" instead of downloading zips.
     --github-user [USER]:   Use another github user (default: 280north).
     --github-ref [REF]:     Use another git ref (default: master).
     --install-capp:         Install "objective-j" and "cappuccino" packages.
@@ -206,7 +208,7 @@ if [ "$install_narwhal" ]; then
         else
             read input
         fi
-        if [ "$input" ]; then
+        if [ "$input" ] && [ ! "$input" = "yes" ]; then
             install_directory="`cd \`dirname "$input"\`; pwd`/`basename "$input"`"
         else
             install_directory="$default_directory"
@@ -231,8 +233,13 @@ if [ "$install_narwhal" ]; then
         fi
     fi
 
-    if [ "$tusk_install_command" = "clone" ]; then
-        git_repo="git://github.com/$github_path.git"
+    if [ "$(echo $tusk_install_command | cut -c-5)" = "clone" ]; then
+        if [ "$(echo $tusk_install_command | cut -c7-)" = "--http" ]; then
+            git_protocol="http"
+        else
+            git_protocol="git"
+        fi
+        git_repo="$git_protocol://github.com/$github_path.git"
         echo "Cloning Narwhal from \"$git_repo\"..."
         git clone "$git_repo" "$install_directory"
         (cd "$install_directory" && git checkout "origin/$github_ref")
