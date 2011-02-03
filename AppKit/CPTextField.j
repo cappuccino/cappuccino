@@ -84,7 +84,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     CPColor                 _textFieldBackgroundColor;
 
     id                      _placeholderString;
-    BOOL                    _currentValueIsPlaceholder;
 
     id                      _delegate;
 
@@ -806,9 +805,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)sendAction:(SEL)anAction to:(id)anObject
 {
-    // Don't reverse set our empty value
-    if (!_currentValueIsPlaceholder)
-        [self _reverseSetBinding];
+    [self _reverseSetBinding];
 
     [CPApp sendAction:anAction to:anObject from:self];
 }
