@@ -457,8 +457,9 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     }
 
     [CPApp setTarget:self selector:@selector(trackKnob:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
-
-    [self sendAction:[self action] to:[self target]];
+    
+    if (type === CPLeftMouseDragged)
+        [self sendAction:[self action] to:[self target]];
 }
 
 /*!

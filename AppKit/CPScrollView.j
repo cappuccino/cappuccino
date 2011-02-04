@@ -34,12 +34,17 @@
     places scroll bars on the side of the view to allow the user to scroll and see the entire
     contents of the view.
 */
+
+var TIMER_INTERVAL = 0.2;
+
 @implementation CPScrollView : CPView
 {
     CPClipView      _contentView;
     CPClipView      _headerClipView;
     CPView          _cornerView;
     CPView          _bottomCornerView;
+    id              _delegate @accessors(property=delegate);
+    CPTimer         _scrollTimer;
 
     BOOL            _hasVerticalScroller;
     BOOL            _hasHorizontalScroller;
@@ -86,7 +91,6 @@
         _borderType = CPNoBorder;
 
         _contentView = [[CPClipView alloc] initWithFrame:[self _insetBounds]];
-
         [self addSubview:_contentView];
 
         _headerClipView = [[CPClipView alloc] init];
@@ -97,6 +101,9 @@
 
         [self setHasVerticalScroller:YES];
         [self setHasHorizontalScroller:YES];
+
+        _delegate = nil;
+        _scrollTimer = nil;
     }
 
     return self;
@@ -653,7 +660,9 @@
         default:                        contentBounds.origin.y = ROUND(value * (_CGRectGetHeight(documentFrame) - _CGRectGetHeight(contentBounds)));
     }
 
-    [_contentView scrollToPoint:contentBounds.origin];
+    [self _sendDelegateMessages];
+    
+    [_contentView scrollToPoint:contentBounds.origin];    
 }
 
 /* @ignore */
@@ -682,6 +691,8 @@
                                         // We want integral bounds!
         default:                        contentBounds.origin.x = ROUND(value * (_CGRectGetWidth(documentFrame) - _CGRectGetWidth(contentBounds)));
     }
+
+    [self _sendDelegateMessages];
 
     [_contentView scrollToPoint:contentBounds.origin];
     [_headerClipView scrollToPoint:CGPointMake(contentBounds.origin.x, 0.0)];
@@ -960,6 +971,8 @@
         extraX = contentBounds.origin.x - constrainedOrigin.x,
         extraY = contentBounds.origin.y - constrainedOrigin.y;
 
+    [self _sendDelegateMessages];
+
     [_contentView scrollToPoint:constrainedOrigin];
     [_headerClipView scrollToPoint:CGPointMake(constrainedOrigin.x, 0.0)];
 
@@ -1024,7 +1037,33 @@
     contentBounds.origin.y += aSize.height;
 
     [_contentView scrollToPoint:contentBounds.origin];
-    [_headerClipView scrollToPoint:CGPointMake(contentBounds.origin.x, 0)];
+    [_headerClipView scrollToPoint:CGPointMake(contentBounds.origin.x, 0)];    
+}
+
+- (void)_sendDelegateMessages
+{
+    if (!_scrollTimer)
+    {
+        [self _scrollViewWillScroll];
+        _scrollTimer = [CPTimer scheduledTimerWithTimeInterval:TIMER_INTERVAL target:self selector:@selector(_scrollViewDidScroll) userInfo:nil repeats:YES];       
+    }
+    else
+        [_scrollTimer setFireDate:[CPDate dateWithTimeIntervalSinceNow:TIMER_INTERVAL]];
+}
+
+- (void)_scrollViewWillScroll
+{
+    if ([_delegate respondsToSelector:@selector(scrollViewWillScroll:)])
+        [_delegate scrollViewWillScroll:self];
+}
+
+- (void)_scrollViewDidScroll
+{
+    [_scrollTimer invalidate];
+    _scrollTimer = nil;
+
+    if ([_delegate respondsToSelector:@selector(scrollViewDidScroll:)])
+        [_delegate scrollViewDidScroll:self];
 }
 
 @end
@@ -1077,6 +1116,8 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
         _cornerView             = [aCoder decodeObjectForKey:CPScrollViewCornerViewKey];
         _bottomCornerView       = [aCoder decodeObjectForKey:CPScrollViewBottomCornerViewKey];
 
+        _delegate = nil;
+        _scrollTimer = nil;
         // Do to the anything goes nature of decoding, our subviews may not exist yet, so layout at the end of the run loop when we're sure everything is in a correct state.
         [[CPRunLoop currentRunLoop] performSelector:@selector(_updateCornerAndHeaderView) target:self argument:_contentView order:0 modes:[CPDefaultRunLoopMode]];
     }
