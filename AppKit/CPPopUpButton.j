@@ -107,6 +107,9 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 /*!
     Specifies whether the object is a pull-down or a pop-up menu.
+    If the button pulls down the menu items represent actions, not states.
+    So the text in the button will NOT change when the user selects something different.
+
     @param shouldPullDown \c YES makes the pop-up button
     a pull-down menu. \c NO makes it a pop-up menu.
 */
