@@ -162,9 +162,6 @@ unset SEALVL
 
 PATH_SAVED="$PATH"
 
-ask_remove_dir "/usr/local/share/objj"
-ask_remove_dir "/usr/local/share/narwhal"
-ask_remove_dir "/usr/local/narwhal"
 if which "narwhal" > /dev/null; then
     narwhal_path=$(which "narwhal")
     # resolve symlinks
@@ -178,20 +175,14 @@ if which "narwhal" > /dev/null; then
     dir=$(dirname -- "$(dirname -- "$narwhal_path")")
 
     ask_remove_dir "$dir"
+else
+    ask_remove_dir "/usr/local/share/objj"
+    ask_remove_dir "/usr/local/share/narwhal"
+    ask_remove_dir "/usr/local/narwhal"
 fi
 
 install_narwhal=""
-if which "narwhal" > /dev/null; then
-    dir=$(dirname -- "$(dirname -- $(which "narwhal"))")
-    echo "Using Narwhal installation at \"$dir\". Is this correct?"
-    if ! prompt "no"; then
-        echo "================================================================================"
-        echo "Narwhal JavaScript platform is required. Install it automatically now?"
-        if prompt "yes"; then
-            install_narwhal="yes"
-        fi
-    fi
-else
+if ! which "narwhal" > /dev/null; then
     echo "================================================================================"
     echo "Narwhal JavaScript platform is required. Install it automatically now?"
     if prompt "yes"; then
