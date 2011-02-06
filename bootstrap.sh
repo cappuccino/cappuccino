@@ -163,16 +163,16 @@ unset SEALVL
 PATH_SAVED="$PATH"
 
 if which "narwhal" > /dev/null; then
-    narwhal_path=$(which "narwhal")
+    narwhal_path="$(which narwhal)"
     # resolve symlinks
     while [ -h "$narwhal_path" ]; do
         dir=$(dirname -- "$narwhal_path")
         sym=$(readlink -- "$narwhal_path")
-        narwhal_path=$(cd -- "$dir" && cd -- $(dirname -- "$sym") && pwd)/$(basename -- "$sym")
+        narwhal_path="$(cd -- "$dir" && cd -- $(dirname -- "$sym") && pwd)/$(basename -- "$sym")"
     done
 
     # NARWHAL_HOME is the 2nd ancestor directory of this shell script
-    dir=$(dirname -- "$(dirname -- "$narwhal_path")")
+    dir="$(dirname -- "$(dirname -- "$narwhal_path")")"
 
     ask_remove_dir "$dir"
 else
@@ -261,7 +261,7 @@ if ! which "narwhal" > /dev/null; then
     exit 1
 fi
 
-install_directory=$(dirname -- "$(dirname -- "$(which narwhal)")")
+install_directory="$(dirname -- "$(dirname -- "$(which narwhal)")")"
 
 echo "================================================================================"
 echo "Using Narwhal installation at \"$install_directory\". Is this correct?"
