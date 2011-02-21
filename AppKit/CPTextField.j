@@ -84,7 +84,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     CPColor                 _textFieldBackgroundColor;
 
     id                      _placeholderString;
-    BOOL                    _currentValueIsPlaceholder;
 
     id                      _delegate;
 
@@ -806,9 +805,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)sendAction:(SEL)anAction to:(id)anObject
 {
-    // Don't reverse set our empty value
-    if (!_currentValueIsPlaceholder)
-        [self _reverseSetBinding];
+    [self _reverseSetBinding];
 
     [CPApp sendAction:anAction to:anObject from:self];
 }
@@ -1002,6 +999,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self copy:sender];
         [self deleteBackward:sender];
     }
+    else
+        [CPTimer scheduledTimerWithTimeInterval:0.0 target:self selector:@selector(keyUp:) userInfo:nil repeats:NO];
 }
 
 - (void)paste:(id)sender
@@ -1023,6 +1022,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self setStringValue:newValue];
         [self setSelectedRange:CPMakeRange(selectedRange.location + pasteString.length, 0)];
     }
+    else
+        [CPTimer scheduledTimerWithTimeInterval:0.0 target:self selector:@selector(keyUp:) userInfo:nil repeats:NO];
 }
 
 - (CPRange)selectedRange
