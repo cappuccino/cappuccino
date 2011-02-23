@@ -1351,7 +1351,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self selectColumnIndexes:[CPIndexSet indexSet] byExtendingSelection:NO];
 }
 
-/*
+/*!
     Returns the number of columns in the table
 */
 - (int)numberOfColumns
@@ -1359,7 +1359,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return NUMBER_OF_COLUMNS();
 }
 
-/*
+/*!
     Returns the number of rows in the receiver.
 */
 - (int)numberOfRows
