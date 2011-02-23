@@ -136,20 +136,21 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPTableView object displays record-oriented data in a table and
     allows the user to edit values and resize and rearrange columns.
     A CPTableView requires you to either set a data source which implements
-    numberOfRowsInTableView: and tableView:objectValueForTableColumn:row:,
+    @ref numberofrows "numberOfRowsInTableView:" and @ref objectValueForTable "tableView:objectValueForTableColumn:row:", 
     or alternatively to provide data through Key Value Bindings.
 
     To use a table view with Key Value Bindings, bind each column's
-    CPValueBinding to an array.field path - typically this would be to a path
-    in an array controller like "arrangedObjects.X", where X is the name of a
-    field. Optionally also bind the table's "selectionIndexes" and
-    "sortDescriptors" to the array controller.
+    \c CPValueBinding to an \c array.field path - typically this would be to a path
+    in an array controller like \c arrangedObjects.X, where \c X is the name of a
+    field. Optionally also bind the table's \c selectionIndexes and
+    \c sortDescriptors to the array controller.
 
-    All delegate and data source methods are documented in the setDataSource: and setDelegate: methods.
+    All delegate and data source methods are documented in the @ref setdatasource "setDataSource:" and @ref setdelegate "setDelegate:" methods.
 
-    If you want to display something other than just text in the table you should call setDataView: on a CPTableColumn object. More documentation in that class including theme states.
+    If you want to display something other than just text in the table you should call @link CPTableColumn::setDataView: setDataView:@endlink on a CPTableColumn object. More documentation in that class including theme states.
 
-    Note: CPTableView does not contain its own scrollview. You should be sure you place the tableview in a CPScrollView on your own.
+    @note CPTableView does not contain its own scrollview. You should be sure you place the tableview in a CPScrollView on your own.
+
 */
 @implementation CPTableView : CPControl
 {
@@ -381,47 +382,69 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 /*!
-<pre>
+@anchor setdatasource
     Sets the receiver's data source to a given object.
     The data source implements various methods for handling the tableview's data when bindings are not used.
-
-    Methods include:
-    - (int)numberOfRowsInTableView:(CPTableView)aTableView;
-        Returns the number of rows in the tableview
-
-    - (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRowIndex;
-        Returns the object value for each dataview. Each dataview will be sent a setObjectValue: method which will contain
-        the object you return from this datasource method.
-
-    Editing:
-    - (void)tableView:(CPTableView)aTableView setObjectValue:(id)anObject forTableColumn:(CPTableColumn)aTableColumn row:(int)rowIndex;
-        Sets the data object for an item in a given row and column. This needs to be implemented if you want inline editing support
-
-    Sorting:
-    - (void)tableView:(CPTableView)aTableView sortDescriptorsDidChange:(CPArray)oldDescriptors;
-        The tableview will call this method if you click the tableheader. You should sort the datasource based off of the new sort descriptors and reload the data
-
-    Drag and Drop:
-        In order for the tableview to receive drops don't forget to first register the tableview for drag types like you do with every other view
-
-    - (CPDragOperation)tableView:(CPTableView)aTableView validateDrop:(CPDraggingInfo)info proposedRow:(int)row proposedDropOperation:(CPTableViewDropOperation)operation;
-        Return the drag operation (move, copy, etc) that should be performed if a registered drag type is over the tableview
-        The data source can retarget a drop if you want by calling -(void)setDropRow:(int)aRow dropOperation:(CPTableViewDropOperation)anOperation;
-
-    - (BOOL)tableView:(CPTableView)aTableView writeRowsWithIndexes:(CPIndexSet)rowIndexes toPasteboard:(CPPasteboard)pboard;
-        Returns YES if the drop operation is allowed otherwise NO.
-        This method is invoked by the tableview after a drag should begin, but before it is started. If you don't want the drag to being return NO.
-        If you want the drag to begin you should return YES and place the drag data on the pboard.
-
-    - (BOOL)tableView:(CPTableView)aTableView acceptDrop:(CPDraggingInfo)info row:(int)row dropOperation:(CPTableViewDropOperation)operation;
-        Return YES if the operation was successful otherwise return NO.
-        The data source should incorporate the data from the dragging pasteboard in this method implementation.
-        To get this data use the draggingPasteboard method on the CPDraggingInfo object.
-
-    - (CPArray)tableView:(CPTableView)aTableView namesOfPromisedFilesDroppedAtDestination:(CPURL)dropDestination forDraggedRowsWithIndexes:(CPIndexSet)indexSet;
-        NOT YET IMPLEMENTED
-</pre>
     @param anObject The data source for the receiver. This object must implement numberOfRowsInTableView: and tableView:objectValueForTableColumn:row:
+
+    These methods are outlined below.
+
+
+@section overview Overview
+    CPTableView generally requires a datasource to run. This data source can be thought of just like a delegate, but specifically for the tableview data.
+    Methods include:
+
+@section required Required Methods
+@anchor numberofrows
+Returns the number of rows in the tableview
+    @code
+- (int)numberOfRowsInTableView:(CPTableView)aTableView;
+    @endcode
+
+Returns the object value for each dataview. Each dataview will be sent a setObjectValue: method which will contain the object you return from this datasource method.
+@anchor objectValueForTable
+    @code
+- (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRowIndex;
+    @endcode
+
+
+@section editing Editing:
+Sets the data object for an item in a given row and column. This needs to be implemented if you want inline editing support
+    @code
+- (void)tableView:(CPTableView)aTableView setObjectValue:(id)anObject forTableColumn:(CPTableColumn)aTableColumn row:(int)rowIndex;
+    @endcode
+
+
+@section sorting Sorting:
+The tableview will call this method if you click the tableheader. You should sort the datasource based off of the new sort descriptors and reload the data
+    @code
+- (void)tableView:(CPTableView)aTableView sortDescriptorsDidChange:(CPArray)oldDescriptors;
+    @endcode
+        
+
+@section draganddrop Drag and Drop:
+@note In order for the tableview to receive drops don't forget to first register the tableview for drag types like you do with every other view.
+
+Return the drag operation (move, copy, etc) that should be performed if a registered drag type is over the tableview
+        The data source can retarget a drop if you want by calling <pre>-(void)setDropRow:(int)aRow dropOperation:(CPTableViewDropOperation)anOperation;</pre>
+    @code
+- (CPDragOperation)tableView:(CPTableView)aTableView validateDrop:(CPDraggingInfo)info proposedRow:(int)row proposedDropOperation:(CPTableViewDropOperation)operation;
+    @endcode
+        
+Returns YES if the drop operation is allowed otherwise NO. This method is invoked by the tableview after a drag should begin, but before it is started. If you don't want the drag to being return NO. If you want the drag to begin you should return YES and place the drag data on the pboard.
+    @code
+- (BOOL)tableView:(CPTableView)aTableView writeRowsWithIndexes:(CPIndexSet)rowIndexes toPasteboard:(CPPasteboard)pboard;
+    @endcode
+
+Return YES if the operation was successful otherwise return NO. The data source should incorporate the data from the dragging pasteboard in this method implementation. To get this data use the draggingPasteboard method on the CPDraggingInfo object.
+    @code
+- (BOOL)tableView:(CPTableView)aTableView acceptDrop:(CPDraggingInfo)info row:(int)row dropOperation:(CPTableViewDropOperation)operation;
+    @endcode
+
+NOT YET IMPLEMENTED
+    @code
+- (CPArray)tableView:(CPTableView)aTableView namesOfPromisedFilesDroppedAtDestination:(CPURL)dropDestination forDraggedRowsWithIndexes:(CPIndexSet)indexSet;
+    @endcode
 */
 - (void)setDataSource:(id)aDataSource
 {
@@ -556,7 +579,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 /*!
     Passing YES will allow the user to resize columns. Passing NO will keep the table columns unmovable by the user.
-    Note the this does not affect autoresizing behavior.
+    @note The this does not affect autoresizing behavior.
 */
 - (void)setAllowsColumnResizing:(BOOL)shouldAllowColumnResizing
 {
@@ -667,7 +690,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 /*!
     Sets the height of each row.
-    NOTE: This may still used even if variable row height is being used.
+    @note This may still used even if variable row height is being used.
 
     @param aRowHeight the height of each row
 */
@@ -2171,8 +2194,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 /*!
     Set the name under which the table information is automatically saved to theAutosaveName.
     The table information is saved separately for each user and for each application that user uses.
-    Note that even though a table view has an autosave name, it may not be saving table information automatically.
-    To set whether table information is being saved automatically, use setAutosaveTableColumns:
+    @note Even though a table view has an autosave name, it may not be saving table information automatically.
+    To set whether table information is being saved automatically, use \c setAutosaveTableColumns:
 */
 - (void)setAutosaveName:(CPString)theAutosaveName
 {
@@ -2197,7 +2220,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     Sets whether the order and width of this table view's columns are automatically saved.
 
     The table information is saved separately for each user and for each application that user uses.
-    Note that if autosaveName returns nil, this setting is ignored and table information isn't saved.
+    @note that if autosaveName returns nil, this setting is ignored and table information isn't saved.
 */
 - (void)setAutosaveTableColumns:(BOOL)shouldAutosave
 {
@@ -2285,80 +2308,141 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 
 /*!
-<pre>
-    Sets the delegate of the receiver. The delegate can implement the following methods:
-    Displaying Cells
-    - (void)tableView:(CPTableView)aTableView willDisplayView:(id)aView forTableColumn:(CPTableColumn)aTableColumn row:(int)rowIndex;
-        Called when the tableview is about to display a dataview
-
-    - (BOOL)tableView:(CPTableView)tableView isGroupRow:(int)row;
-        Group rows are a way to separate a groups of data in a tableview. Return YES if the given row is a group row, otherwise NO.
-
-    Editing Cells
-    - (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)aTableColumn row:(int)rowIndex;
-        Return YES if the dataview at a given index and column should be edited, otherwise NO.
-
-
-    Setting Row and Column Size
-    - (float)tableView:(CPTableView)tableView heightOfRow:(int)row;
-        Return the height of the row at a given index. Only implement this if you want variable row heights. Otherwise use setRowHeight: on the tableview.
-
-    Selecting in the Tableview
-    - (BOOL)selectionShouldChangeInTableView:(CPTableView)aTableView;
-        Return YES if the selection of the tableview should change, otherwise NO to keep the current selection.
-        NOTE: this is only called via user interaction
-
-    - (BOOL)tableView:(CPTableView)aTableView shouldSelectRow:(int)rowIndex;
-        Return YES if the row at a given index should be selected, other NO to deny the selection.
-        NOTE: this is only called via user interaction
-
-    - (BOOL)tableView:(CPTableView)aTableView shouldSelectTableColumn:(CPTableColumn)aTableColumn;
-        Return YES if the table column given should be selected, otherwise NO to deny the selection.
-        NOTE: this is only called via user interaction
-
-    - (void)tableViewSelectionIsChanging:(CPNotification)aNotification
-        Inform the delegate that the tableview is in the process of chaining the selection.
-        This usually happens when the user is dragging their mouse across rows.
-        NOTE: this is only called via user interaction
-
-    - (void)tableViewSelectionDidChange:(CPNotification)aNotification;
-        Informs the delegate that the tableview selection has changed.
-        NOTE: this is only called via user interaction
-
-
-    Moving and Resizing Columns
-    - (BOOL)tableView:(CPTableView)tableView shouldReorderColumn:(int)columnIndex toColumn:(int)newColumnIndex;
-        Return YES if the column at a given index should move to a new column index, otherwise NO.
-
-    - (void)tableView:(CPTableView)tableView didDragTableColumn:(CPTableColumn)tableColumn;
-        Notifies the delegate that the tableview drag occurred. This is send on mouse up.
-
-    - (void)tableViewColumnDidMove:(CPNotification)aNotification;
-        Notifies the delegate that a tablecolumn was moved by the user.
-
-    - (void)tableViewColumnDidResize:(CPNotification)aNotification
-        Notifies the delegate that the user resized the table column
-
-
-    Responding to Mouse Events
-    - (void)tableView:(CPTableView)tableView didClickTableColumn:(CPTableColumn)tableColumn
-        Sent when the user clicks a table column but doesn't drag.
-
-    - (void)tableView:(CPTableView)tableView mouseDownInHeaderOfTableColumn:(CPTableColumn)tableColumn;
-        Notify the delegate that the user click the table header of a column.
-
-    Contextual Menus
-    - (CPMenu)tableView:(CPTableView)aTableView menuForTableColumn:(CPTableColumn)aColumn row:(int)aRow
-        Called when the user right clicks on the tableview. -1 is passed for the row or column if the user doesn't right click on a real row or column
-        Return a CPMenu that should be displayed if the user right clicks. If you do not implement this the tableview will just call super on menuForEvent
-
-    Delete Key
-    - (void)tableViewDeleteKeyPressed:(CPTableView)aTableView;
-        Called when the user presses the delete key. Many times you will want to delete data (or prompt for deletion) when the user hids the delete key.
-        Your delegate can implement this method to avoid subclassing the tableview to add this behaviour.
-</pre>
+@anchor setdelegate
+    Sets the delegate of the receiver. 
     @param aDelegate the delegate object for the tableview.
 
+    The delegate can provide easy notification for user interaction, display behaviour, contextual menus, and more.
+
+
+
+
+@section displayingcells Displaying Cells:
+
+Called when the tableview is about to display a dataview
+@code
+- (void)tableView:(CPTableView)aTableView willDisplayView:(id)aView forTableColumn:(CPTableColumn)aTableColumn row:(int)rowIndex;
+@endcode
+
+Group rows are a way to separate a groups of data in a tableview. Return YES if the given row is a group row, otherwise NO.
+@code
+- (BOOL)tableView:(CPTableView)tableView isGroupRow:(int)row;
+@endcode
+
+
+
+
+@section editingcells Editing Cells:
+
+Return YES if the dataview at a given index and column should be edited, otherwise NO.
+@code
+- (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)aTableColumn row:(int)rowIndex;
+@endcode
+
+
+
+
+
+@section sizes Setting Row and Column Size:
+
+Return the height of the row at a given index. Only implement this if you want variable row heights. Otherwise use setRowHeight: on the tableview.
+@code
+- (float)tableView:(CPTableView)tableView heightOfRow:(int)row;
+@endcode
+
+
+
+
+@section selection Selecting in the TableView:
+@note These methods are only called when the user does something.@endnote
+
+Return YES if the selection of the tableview should change, otherwise NO to keep the current selection.
+@code
+- (BOOL)selectionShouldChangeInTableView:(CPTableView)aTableView;
+@endcode
+
+Return YES if the row at a given index should be selected, other NO to deny the selection.
+@code
+- (BOOL)tableView:(CPTableView)aTableView shouldSelectRow:(int)rowIndex;
+@endcode
+
+Return YES if the table column given should be selected, otherwise NO to deny the selection.
+@code
+- (BOOL)tableView:(CPTableView)aTableView shouldSelectTableColumn:(CPTableColumn)aTableColumn;
+@endcode
+
+Inform the delegate that the tableview is in the process of chaining the selection.
+This usually happens when the user is dragging their mouse across rows.
+@code
+- (void)tableViewSelectionIsChanging:(CPNotification)aNotification
+@endcode
+
+Informs the delegate that the tableview selection has changed.
+@code
+- (void)tableViewSelectionDidChange:(CPNotification)aNotification;
+@endcode
+
+
+
+
+
+@section movingandresizingcolumsn Moving and Resizing Columns:
+
+Return YES if the column at a given index should move to a new column index, otherwise NO.
+@code
+- (BOOL)tableView:(CPTableView)tableView shouldReorderColumn:(int)columnIndex toColumn:(int)newColumnIndex;
+@endcode
+
+
+Notifies the delegate that the tableview drag occurred. This is send on mouse up.
+@code
+- (void)tableView:(CPTableView)tableView didDragTableColumn:(CPTableColumn)tableColumn;
+@endcode
+
+
+Notifies the delegate that a tablecolumn was moved by the user.
+@code
+- (void)tableViewColumnDidMove:(CPNotification)aNotification;
+@endcode
+
+Notifies the delegate that the user resized the table column
+@code
+- (void)tableViewColumnDidResize:(CPNotification)aNotification;
+@endcode
+
+
+
+
+@section mousevents Responding to Mouse Events:
+
+Sent when the user clicks a table column but doesn't drag.
+@code
+- (void)tableView:(CPTableView)tableView didClickTableColumn:(CPTableColumn)tableColumn;
+@endcode
+
+
+Notify the delegate that the user click the table header of a column.
+@code
+- (void)tableView:(CPTableView)tableView mouseDownInHeaderOfTableColumn:(CPTableColumn)tableColumn;
+@endcode
+
+
+@section contextualmenus Contextual Menus:
+
+Called when the user right clicks on the tableview. -1 is passed for the row or column if the user doesn't right click on a real row or column
+Return a CPMenu that should be displayed if the user right clicks. If you do not implement this the tableview will just call super on menuForEvent
+@code
+- (CPMenu)tableView:(CPTableView)aTableView menuForTableColumn:(CPTableColumn)aColumn row:(int)aRow;
+@endcode
+
+
+@section deletekey Delete Key
+Called when the user presses the delete key. Many times you will want to delete data (or prompt for deletion) when the user hids the delete key.
+Your delegate can implement this method to avoid subclassing the tableview to add this behaviour.
+
+@code
+- (void)tableViewDeleteKeyPressed:(CPTableView)aTableView;
+@endcode
 */
 - (void)setDelegate:(id)aDelegate
 {
@@ -2808,7 +2892,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 /*!
     Sets the default operation mask for the drag behavior of the table view.
-    NOTE: isLocal is not implemented.
+    @note isLocal is not implemented.
 */
 - (void)setDraggingSourceOperationMask:(CPDragOperation)mask forLocal:(BOOL)isLocal
 {
@@ -3433,7 +3517,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 /*!
     Draws the background in a given clip rect.
     This method should only be overridden if you want something other than a solid color or alternating row colors.
-    NOTE: this method should not be called directly, instead use setNeedsDisplay:
+    @note this method should not be called directly, instead use \c setNeedsDisplay:
 */
 - (void)drawBackgroundInClipRect:(CGRect)aRect
 {
@@ -3487,7 +3571,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 /*!
     Draws the grid for the tableview based on the set grid mask in a given clip rect.
-    NOTE: this method should not be called directly, instead use setNeedsDisplay:
+    @note this method should not be called directly, instead use setNeedsDisplay:
 */
 - (void)drawGridInClipRect:(CGRect)aRect
 {
@@ -3564,7 +3648,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 /*!
     Draws the selection with the set selection highlight style in a given clip rect.
     You can change the highlight style to a source list style gradient in setSelectionHighlightStyle:
-    NOTE: this method should not be called directly, instead use setNeedsDisplay:
+    @note this method should not be called directly, instead use \c setNeedsDisplay:
 */
 - (void)highlightSelectionInClipRect:(CGRect)aRect
 {
@@ -3795,7 +3879,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     While this method doesn't do anything in Cappuccino, subclasses can override it to customize the
     appearance of a row.
 
-    NOTE: tableView:willDisplayView:forTableColumn:row is sent to the delegate before drawing
+    @note \c tableView:willDisplayView:forTableColumn:row is sent to the delegate before drawing
 */
 - (void)drawRow:(CPInteger)row clipRect:(CGRect)rect
 {
