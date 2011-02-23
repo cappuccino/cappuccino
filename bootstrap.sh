@@ -162,36 +162,27 @@ unset SEALVL
 
 PATH_SAVED="$PATH"
 
-ask_remove_dir "/usr/local/share/objj"
-ask_remove_dir "/usr/local/share/narwhal"
-ask_remove_dir "/usr/local/narwhal"
 if which "narwhal" > /dev/null; then
-    narwhal_path=$(which "narwhal")
+    narwhal_path="$(which narwhal)"
     # resolve symlinks
     while [ -h "$narwhal_path" ]; do
         dir=$(dirname -- "$narwhal_path")
         sym=$(readlink -- "$narwhal_path")
-        narwhal_path=$(cd -- "$dir" && cd -- $(dirname -- "$sym") && pwd)/$(basename -- "$sym")
+        narwhal_path="$(cd -- "$dir" && cd -- $(dirname -- "$sym") && pwd)/$(basename -- "$sym")"
     done
 
     # NARWHAL_HOME is the 2nd ancestor directory of this shell script
-    dir=$(dirname -- "$(dirname -- "$narwhal_path")")
+    dir="$(dirname -- "$(dirname -- "$narwhal_path")")"
 
     ask_remove_dir "$dir"
+else
+    ask_remove_dir "/usr/local/share/objj"
+    ask_remove_dir "/usr/local/share/narwhal"
+    ask_remove_dir "/usr/local/narwhal"
 fi
 
 install_narwhal=""
-if which "narwhal" > /dev/null; then
-    dir=$(dirname -- "$(dirname -- $(which "narwhal"))")
-    echo "Using Narwhal installation at \"$dir\". Is this correct?"
-    if ! prompt "no"; then
-        echo "================================================================================"
-        echo "Narwhal JavaScript platform is required. Install it automatically now?"
-        if prompt "yes"; then
-            install_narwhal="yes"
-        fi
-    fi
-else
+if ! which "narwhal" > /dev/null; then
     echo "================================================================================"
     echo "Narwhal JavaScript platform is required. Install it automatically now?"
     if prompt "yes"; then
@@ -270,7 +261,7 @@ if ! which "narwhal" > /dev/null; then
     exit 1
 fi
 
-install_directory=$(dirname -- "$(dirname -- "$(which narwhal)")")
+install_directory="$(dirname -- "$(dirname -- "$(which narwhal)")")"
 
 echo "================================================================================"
 echo "Using Narwhal installation at \"$install_directory\". Is this correct?"
@@ -356,7 +347,8 @@ if [ "$CAPP_BUILD" ]; then
 else
     echo "================================================================================"
     echo "Before building Cappuccino we recommend you set the \$CAPP_BUILD environment variable to a path where you wish to build Cappuccino."
-    echo "NOTE: If you have previously set \$CAPP_BUILD and built Cappuccino you may want to delete the directory before rebuilding."
+    echo "This can be automatically set to the default value of \"$PWD/Build\", or you can set \$CAPP_BUILD yourself."
+    ask_append_shell_config "export CAPP_BUILD=\"$PWD/Build\""
 fi
 
 echo "================================================================================"
