@@ -1561,8 +1561,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     UPDATE_COLUMN_RANGES_IF_NECESSARY();
 
     var range = _tableColumnRanges[aColumnIndex];
+    var spacing = _intercellSpacing.width || 1;
 
-    return _CGRectMake(range.location, 0.0, range.length, _CGRectGetHeight([self bounds]));
+    return _CGRectMake(range.location + spacing, 0.0, range.length - (2 * spacing), _CGRectGetHeight([self bounds]));
 }
 
 // Complexity:
