@@ -18,6 +18,7 @@ CPLogRegister(CPLogConsole);
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     // This is called when the application is done loading.
+    iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino.org/images/favicon.png" size:CGSizeMake(16,16)];
 }
 
 - (void)awakeFromCib
