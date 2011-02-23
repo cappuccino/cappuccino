@@ -713,7 +713,7 @@
 */
 - (void)setLineScroll:(float)aLineScroll
 {
-    [self setHorizonalLineScroll:aLineScroll];
+    [self setHorizontalLineScroll:aLineScroll];
     [self setVerticalLineScroll:aLineScroll];
 }
 
