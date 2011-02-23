@@ -228,6 +228,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     unsigned    _destinationDragStyle;
     BOOL        _isSelectingSession;
     CPIndexSet  _draggedRowIndexes;
+    BOOL        _wasSelectionBroken;
 
     _CPDropOperationDrawingView _dropOperationFeedbackView;
     CPDragOperation             _dragOperationDefaultMask;
@@ -4479,7 +4480,17 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 /*!
     @ignore
-    Selection behavior depends on two things:
+    Determines if the selection is broken. A broken selection
+    is a non-continuous selection of rows.
+*/
+- (BOOL)_selectionIsBroken
+{
+    return [self selectedRowIndexes]._ranges.length !== 1;
+}
+
+/*!
+    @ignore
+    Selection behaviour depends on two things:
     _lastSelectedRow and the anchored selection (the last row selected by itself)
 */
 - (void)_moveSelectionWithEvent:(CPEvent)theEvent upward:(BOOL)shouldGoUpward
@@ -4493,7 +4504,23 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         var extend = (([theEvent modifierFlags] & CPShiftKeyMask) && _allowsMultipleSelection),
             i = [self selectedRow];
 
-        shouldGoUpward ? i-- : i++;
+        if([self _selectionIsBroken])
+        {
+            while ([selectedIndexes containsIndex:i])
+            {
+                shouldGoUpward ? i-- : i++;
+            }
+            _wasSelectionBroken = true;
+        }
+        else if (_wasSelectionBroken && ((shouldGoUpward && i !== [selectedIndexes firstIndex]) || (!shouldGoUpward && i !== [selectedIndexes lastindex])))
+        {
+            shouldGoUpward ? i = [selectedIndexes firstIndex] - 1 : i = [selectedIndexes lastIndex];
+            _wasSelectionBroken = false;
+        }
+        else
+        {
+            shouldGoUpward ? i-- : i++;
+        }
     }
     else
     {
