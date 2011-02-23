@@ -1901,7 +1901,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 /*!
     @ignore
-    FIX ME: this is broken
+    FIX ME: this can be a lot faster
 */
 - (void)_resizeAllColumnUniformlyWithOldSize:(CGSize)oldSize
 {
@@ -1961,7 +1961,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     // now that we've reached the end we know there are likely rounding errors
     // so we should size the last resized to fit
-    var delta = superviewWidth - _CGRectGetMaxX([self rectOfColumn:[self numberOfColumns] - 1]),
+
+    // find the last visisble column
+    while (count-- && [_tableColumns[count] isHidden]) ;
+        
+    // find the max x, but subtract a single pixel since the spacing isn't applicable here.
+    var delta = superviewWidth - _CGRectGetMaxX([self rectOfColumn:count]) - ([self intercellSpacing].width || 1),
         newSize = [item width] + delta;
 
     [item _tryToResizeToWidth:newSize];
