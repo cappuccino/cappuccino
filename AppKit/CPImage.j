@@ -100,15 +100,7 @@ function CPAppKitImage(aFilename, aSize)
 
 - (id)init
 {
-    self = [super init];
-    if (self)
-    {
-        _size = CPSizeMake(-1, -1);
-        _filename = @"";
-        _loadStatus = CPImageLoadStatusInitialized;
-    }
-
-    return self;
+    return [self initByReferencingFile:@"" size:CGSizeMake(-1, -1)];
 }
 
 /*!
@@ -121,7 +113,7 @@ function CPAppKitImage(aFilename, aSize)
 */
 - (id)initByReferencingFile:(CPString)aFilename size:(CGSize)aSize
 {
-    self = [self init];
+    self = [super init];
 
     if (self)
     {
