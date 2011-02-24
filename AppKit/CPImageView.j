@@ -140,7 +140,7 @@ var LEFT_SHADOW_INSET       = 3.0,
 
     var size = [newImage size];
 
-    if (size && size.width === -1 && size.height === -1)
+    if ([newImage loadStatus] != CPImageLoadStatusCompleted || (size && size.width === -1 && size.height === -1))
     {
         [defaultCenter addObserver:self selector:@selector(imageDidLoad:) name:CPImageDidLoadNotification object:newImage];
 
