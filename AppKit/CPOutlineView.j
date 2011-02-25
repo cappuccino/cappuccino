@@ -1704,6 +1704,15 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return [_outlineView._outlineViewDataSource outlineView:_outlineView acceptDrop:theInfo item:parentItem childIndex:childIndex];
 }
 
+- (void)tableView:(CPTableView)aTableView sortDescriptorsDidChange:(CPArray)oldSortDescriptors
+{
+    if ((_outlineView._implementedOutlineViewDataSourceMethods &
+         CPOutlineViewDataSource_outlineView_sortDescriptorsDidChange_))
+    {
+        [[_outlineView dataSource] outlineView:_outlineView sortDescriptorsDidChange:oldSortDescriptors];
+    }
+}
+
 @end
 
 @implementation _CPOutlineViewTableViewDelegate : CPObject
