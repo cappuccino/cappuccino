@@ -25,6 +25,7 @@
 @import "CPObjJRuntime.j"
 @import "CPRange.j"
 @import "CPSortDescriptor.j"
+@import "CPURL.j"
 @import "CPValue.j"
 
 /*!
@@ -138,7 +139,7 @@ var CPStringRegexSpecialCharacters = [
 */
 - (id)initWithString:(CPString)aString
 {
-    if ([self class] === CPString) 
+    if ([self class] === CPString)
         return String(aString);
 
     var result = new String(aString);
@@ -206,8 +207,8 @@ var CPStringRegexSpecialCharacters = [
 // Combining strings
 
 /*!
-    Returns a string made by appending to the reciever a string constructed from a given format
-    string and the floowing arguments
+    Returns a string made by appending to the receiver a string constructed from a given format
+    string and the following arguments
     @param format the format string in printf-style.
     @return the initialized CPString
 */
@@ -315,7 +316,7 @@ var CPStringRegexSpecialCharacters = [
     Finds the range of characters in the receiver where the specified string exists. If the string
     does not exist in the receiver, the range \c length will be 0.
     @param aString the string to search for in the receiver
-    @return the range of charactrs in the receiver
+    @return the range of characters in the receiver
 */
 - (CPRange)rangeOfString:(CPString)aString
 {
@@ -391,7 +392,7 @@ var CPStringRegexSpecialCharacters = [
 }
 
 /*!
-    Returns a new string in which all occurrences of a target string in the reciever are replaced by
+    Returns a new string in which all occurrences of a target string in the receiver are replaced by
     another given string.
     @param target The string to replace.
     @param replacement the string with which to replace the \c target
@@ -586,7 +587,7 @@ var CPStringRegexSpecialCharacters = [
     Returns a string containing characters the receiver and a given string have in common, starting from
     the beginning of each up to the first characters that aren't equivalent.
     @param aString the string with which to compare the receiver
-    @param aMask options for comparision
+    @param aMask options for comparison
 */
 - (CPString)commonPrefixWithString:(CPString)aString options:(int)aMask
 {
@@ -807,10 +808,10 @@ var CPStringRegexSpecialCharacters = [
 
 @end
 
-var diacritics = [[192,198],[224,230],[231,231],[232,235],[236,239],[242,246],[249,252]]; // Basic Latin ; Latin-1 Supplement.
-var normalized = [65,97,99,101,105,111,117];
+var diacritics = [[192,198],[224,230],[231,231],[232,235],[236,239],[242,246],[249,252]], // Basic Latin ; Latin-1 Supplement.
+    normalized = [65,97,99,101,105,111,117];
 
-String.prototype.stripDiacritics = function ()
+String.prototype.stripDiacritics = function()
 {
     var output = "";
     for (var indexSource = 0; indexSource < this.length; indexSource++)

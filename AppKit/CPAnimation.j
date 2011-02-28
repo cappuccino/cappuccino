@@ -21,6 +21,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <Foundation/CPTimer.j>
 
 @import "CAMediaTimingFunction.j"
 

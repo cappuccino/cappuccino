@@ -62,7 +62,7 @@
 /*!
     Initializes the controller with a window.
     @param aWindow the window to control
-    @return the initialzed window controller
+    @return the initialized window controller
 */
 - (id)initWithWindow:(CPWindow)aWindow
 {
@@ -82,7 +82,7 @@
 }
 
 /*!
-    Initializes the controller with a Capppuccino Interface Builder name.
+    Initializes the controller with a Cappuccino Interface Builder name.
     @param aWindowCibName the cib name of the window to control
     @return the initialized window controller
 */

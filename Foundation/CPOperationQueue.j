@@ -19,10 +19,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPArray.j"
 @import "CPFunctionOperation.j"
 @import "CPInvocationOperation.j"
 @import "CPObject.j"
 @import "CPOperation.j"
+@import "CPString.j"
 @import "CPTimer.j"
 
 // the global queue (mainQueue)
@@ -42,7 +44,9 @@ var cpOperationMainQueue = nil;
 
 - (id)init
 {
-    if (self = [super init])
+    self = [super init];
+
+    if (self)
     {
         _operations = [[CPArray alloc] init];
         _suspended = NO;
@@ -276,7 +280,7 @@ var cpOperationMainQueue = nil;
 }
 
 /*!
-    Convenience method for one system wide singelton queue. Returns the same queue as currentQueue.
+    Convenience method for one system wide singleton queue. Returns the same queue as currentQueue.
 */
 + (CPOperationQueue)mainQueue
 {
@@ -290,7 +294,7 @@ var cpOperationMainQueue = nil;
 }
 
 /*!
-    Convenience method for one system wide singelton queue. Returns the same queue as mainQueue.
+    Convenience method for one system wide singleton queue. Returns the same queue as mainQueue.
 */
 + (CPOperationQueue)currentQueue
 {

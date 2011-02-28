@@ -4,7 +4,16 @@
 
 @import "CPController.j"
 
+/*!
+    @class
 
+    CPObjectController is a bindings-compatible controller class.
+    Properties of the content object of an object of this class can be bound to user interface elements to change and access their values.
+
+    The content of an CPObjectController instance is an CPMutableDictionary object by default.
+    This allows a single CPObjectController instance to be used to manage several properties accessed by key value paths.
+    The default content object class can be changed by calling setObjectClass:, which a subclass must override.
+*/
 @implementation CPObjectController : CPController
 {
     id              _contentObject;
@@ -53,11 +62,20 @@
     return [CPSet setWithObjects:"editable", "selection"];
 }
 
+/*!
+    @ignore
+*/
 - (id)init
 {
     return [self initWithContent:nil];
 }
 
+/*!
+    Inits and returns a CPObjectController object with the given content.
+
+    @param id aContent - The object the controller will use.
+    @return id the CPObjectConroller instance.
+*/
 - (id)initWithContent:(id)aContent
 {
     if (self = [super init])
@@ -72,11 +90,19 @@
     return self;
 }
 
+/*!
+    Returns the controller's content object.
+    @return id - The content object of the controller.
+*/
 - (id)content
 {
     return _contentObject;
 }
 
+/*!
+    Sets the content object for the controller.
+    @param id aContent - The new content object for the controller.
+*/
 - (void)setContent:(id)aContent
 {
     [self willChangeValueForKey:@"contentObject"];
@@ -88,114 +114,193 @@
     [self _selectionDidChange];
 }
 
+/*!
+    @ignore
+*/
 - (void)_setContentObject:(id)aContent
 {
     [self setContent:aContent];
 }
 
+/*!
+    @ignore
+*/
 - (id)_contentObject
 {
     return [self content];
 }
 
+/*!
+    Sets whether the controller automatically creates and inserts new content objects automatically when loading from a cib file.
+    If you pass YES and the controller uses prepareContent to create the content object.
+    The default is NO.
+
+    @param BOOL shouldAutomaticallyPrepareContent - YES if the content should be prepared, otherwise NO.
+*/
 - (void)setAutomaticallyPreparesContent:(BOOL)shouldAutomaticallyPrepareContent
 {
     _automaticallyPreparesContent = shouldAutomaticallyPrepareContent;
 }
 
+/*!
+    Returns if the controller prepares the content automatically.
+    @return BOOL - YES if the content is prepared, otherwise NO.
+*/
 - (BOOL)automaticallyPreparesContent
 {
     return _automaticallyPreparesContent;
 }
 
+/*!
+    Overridden by a subclass that require control over the creation of new objects.
+*/
 - (void)prepareContent
 {
     [self setContent:[self newObject]];
 }
 
+/*!
+    Sets the object class when creating new objects.
+    @param Class - the class of new objects that will be created.
+*/
 - (void)setObjectClass:(Class)aClass
 {
     _objectClass = aClass;
 }
 
+/*!
+    Returns the class of what new objects will be when they are created.
+
+    @return Class - The class of new objects.
+*/
 - (Class)objectClass
 {
     return _objectClass;
 }
 
+/*!
+    @ignore
+*/
 - (id)_defaultNewObject
 {
     return [[[self objectClass] alloc] init];
 }
 
+/*!
+    Creates and returns a new object of the appropriate class.
+    @return id - The object created.
+*/
 - (id)newObject
 {
     return [self _defaultNewObject];
 }
 
+/*!
+    Sets the controller's content object.
+    @param id anObject - The object to set for the controller.
+*/
 - (void)addObject:(id)anObject
 {
     [self setContent:anObject];
 
-    [[CPKeyValueBinding getBinding:@"contentObject" forObject:self] reverseSetValueFor:@"contentObject"];
+    var binderClass = [[self class] _binderClassForBinding:@"contentObject"];
+    [[binderClass getBinding:@"contentObject" forObject:self] reverseSetValueFor:@"contentObject"];
 }
 
+/*!
+    Removes a given object from the controller.
+    @param id anObject - The object to remove from the receiver.
+*/
 - (void)removeObject:(id)anObject
 {
     if ([self content] === anObject)
         [self setContent:nil];
 
-    [[CPKeyValueBinding getBinding:@"contentObject" forObject:self] reverseSetValueFor:@"contentObject"];
+    var binderClass = [[self class] _binderClassForBinding:@"contentObject"];
+    [[binderClass getBinding:@"contentObject" forObject:self] reverseSetValueFor:@"contentObject"];
 }
 
+/*!
+    Creates and adds a sets the object as the controller's content.
+    @param id aSender - The sender of the message.
+*/
 - (void)add:(id)aSender
 {
     // FIXME: This should happen on the next run loop?
     [self addObject:[self newObject]];
 }
 
+/*!
+    @return BOOL - YES if you can added to the controller using add:
+*/
 - (BOOL)canAdd
 {
     return [self isEditable];
 }
 
+/*!
+    Removes the content object from the controller.
+    @param id aSender - The sender of the message.
+*/
 - (void)remove:(id)aSender
 {
     // FIXME: This should happen on the next run loop?
     [self removeObject:[self content]];
 }
 
+/*!
+    @return BOOL - Returns YES if you can remove the controller's content using remove:
+*/
 - (BOOL)canRemove
 {
     return [self isEditable] && [[self selectedObjects] count];
 }
 
+/*!
+    Sets whether the controller allows for the editing of the content.
+    @param BOOL shouldBeEditable - YES if the content should be editable, otherwise NO.
+*/
 - (void)setEditable:(BOOL)shouldBeEditable
 {
     _isEditable = shouldBeEditable;
 }
 
+/*!
+    @return BOOL - Returns YES if the content of the controller is editable, otherwise NO.
+*/
 - (BOOL)isEditable
 {
     return _isEditable;
 }
 
+/*!
+    @return CPArray - Returns an array of all objects to be affected by editing.
+*/
 - (CPArray)selectedObjects
 {
     return [[_CPObservableArray alloc] initWithArray:[_contentObject]];
 }
 
+/*!
+    Returns a proxy object representing the controller's selection.
+*/
 - (id)selection
 {
     return _selection;
 }
 
+/*!
+    @ignore
+*/
 - (void)_selectionWillChange
 {
     [_selection controllerWillChange];
     [self willChangeValueForKey:@"selection"];
 }
 
+/*!
+    @ignore
+*/
 - (void)_selectionDidChange
 {
     if (_selection === undefined || _selection === nil)
@@ -205,6 +310,9 @@
     [self didChangeValueForKey:@"selection"];
 }
 
+/*!
+    @return id - Returns the keys which are being observed.
+*/
 - (id)observedKeys
 {
     return _observedKeys;

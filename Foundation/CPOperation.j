@@ -19,43 +19,43 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPObject.j"
 @import "CPArray.j"
+@import "CPObject.j"
 
 /*!
     Operations receive very low priority for execution.
     @global
     @group CPOperationQueuePriority
 */
-CPOperationQueuePriorityVeryLow = -8;
+CPOperationQueuePriorityVeryLow     = -8;
 
 /*!
     Operations receive low priority for execution.
     @global
     @group CPOperationQueuePriority
 */
-CPOperationQueuePriorityLow = -4;
+CPOperationQueuePriorityLow         = -4;
 
 /*!
     Operations receive normal priority for execution.
     @global
     @group CPOperationQueuePriority
 */
-CPOperationQueuePriorityNormal = 0;
+CPOperationQueuePriorityNormal      = 0;
 
 /*!
     Operations receive high priority for execution.
     @global
     @group CPOperationQueuePriority
 */
-CPOperationQueuePriorityHigh = 4;
+CPOperationQueuePriorityHigh        = 4;
 
 /*!
     Operations receive very high priority for execution.
     @global
     @group CPOperationQueuePriority
 */
-CPOperationQueuePriorityVeryHigh = 8;
+CPOperationQueuePriorityVeryHigh    = 8;
 
 
 /*!
@@ -83,7 +83,9 @@ CPOperationQueuePriorityVeryHigh = 8;
 
 - (id)init
 {
-    if (self = [super init])
+    self = [super init];
+
+    if (self)
     {
         _cancelled = NO;
         _executing = NO;

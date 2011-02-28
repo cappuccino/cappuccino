@@ -43,6 +43,16 @@ CPWebViewScrollNative                           = 2;
 
 /*!
     @ingroup appkit
+
+    @class CPWebView
+
+    CPWebView is a class which allows you to display arbitrary HTML or embed a
+    webpage inside your application.
+
+    It's important to note that the same origin policy applies to this view.
+    That is, if the web page being displayed is not located in the same origin
+    (protocol, domain, and port) as the application, you will have limited
+    control over the view and no access to its contents.
 */
 
 @implementation CPWebView : CPView
@@ -236,6 +246,10 @@ CPWebViewScrollNative                           = 2;
     }
 }
 
+/*!
+    Sets the scroll mode of the receiver. Valid options are
+    CPWebViewScrollAppKit and CPWebViewScrollNative.
+*/
 - (void)setScrollMode:(int)aScrollMode
 {
     if (_scrollMode == aScrollMode)
@@ -277,11 +291,22 @@ CPWebViewScrollNative                           = 2;
     parent.appendChild(_iframe);
 }
 
+/*!
+    Loads a string of HTML into the webview.
+
+    @param CPString - The string to load.
+*/
 - (void)loadHTMLString:(CPString)aString
 {
     [self loadHTMLString:aString baseURL:nil];
 }
 
+/*!
+    Loads a string of HTML into the webview.
+
+    @param CPString - The string to load.
+    @param CPURL - The base url of the string. (not implemented)
+*/
 - (void)loadHTMLString:(CPString)aString baseURL:(CPURL)URL
 {
     // FIXME: do something with baseURL?
@@ -365,11 +390,21 @@ CPWebViewScrollNative                           = 2;
         [_frameLoadDelegate webView:self didFinishLoadForFrame:nil]; // FIXME: give this a frame somehow?
 }
 
+/*!
+    Returns the URL of the main frame.
+
+    @return CPString - The URL of the main frame.
+*/
 - (CPString)mainFrameURL
 {
     return _mainFrameURL;
 }
 
+/*!
+    Sets the URL of the main frame.
+
+    @param CPString - the url to set.
+*/
 - (void)setMainFrameURL:(CPString)URLString
 {
     if (_mainFrameURL)
@@ -380,6 +415,11 @@ CPWebViewScrollNative                           = 2;
     [self _loadMainFrameURL];
 }
 
+/*!
+    Tells the webview to navigate to the previous page.
+
+    @return BOOL - YES if the receiver was able to go back, otherwise NO.
+*/
 - (BOOL)goBack
 {
     if (_backwardStack.length > 0)
@@ -396,6 +436,11 @@ CPWebViewScrollNative                           = 2;
     return NO;
 }
 
+/*!
+    Tells the receiver to go forward in page history.
+
+    @return - YES if the receiver was able to go forward, otherwise NO.
+*/
 - (BOOL)goForward
 {
     if (_forwardStack.length > 0)
@@ -412,11 +457,23 @@ CPWebViewScrollNative                           = 2;
     return NO;
 }
 
+/*!
+    Checks to see if the webview has a history stack you can navigate back
+    through.
+
+    @return BOOL - YES if the receiver can navigate backward through history, otherwise NO.
+*/
 - (BOOL)canGoBack
 {
     return (_backwardStack.length > 0);
 }
 
+/*!
+    Checks to see if the webview has a history stack you can navigate forward
+    through.
+
+    @return BOOL - YES if the receiver can navigate forward through history, otherwise NO.
+*/
 - (BOOL)canGoForward
 {
     return (_forwardStack.length > 0);
@@ -428,16 +485,30 @@ CPWebViewScrollNative                           = 2;
     return { back: _backwardStack, forward: _forwardStack };
 }
 
+/*!
+    Closes the webview by unloading the webpage. The webview will no longer
+    respond to load requests or delegate methods once this is called.
+*/
 - (void)close
 {
     _iframe.parentNode.removeChild(_iframe);
 }
 
+/*!
+    Returns the window object of the webview.
+
+    @return DOMWindow - The window object.
+*/
 - (DOMWindow)DOMWindow
 {
     return (_iframe.contentDocument && _iframe.contentDocument.defaultView) || _iframe.contentWindow;
 }
 
+/*!
+    Returns the root Object of the webview as a CPWebScriptObject.
+
+    @return CPWebScriptObject - the Object of the webview.
+*/
 - (CPWebScriptObject)windowScriptObject
 {
     var win = [self DOMWindow];
@@ -451,17 +522,37 @@ CPWebViewScrollNative                           = 2;
     return _wso;
 }
 
+/*!
+    Evaluates a javascript string in the webview and returns the result of
+    that evaluation as a string.
+
+    @param script - A string of javascript.
+    @return CPString - The result of the evaluation.
+*/
 - (CPString)stringByEvaluatingJavaScriptFromString:(CPString)script
 {
     var result = [self objectByEvaluatingJavaScriptFromString:script];
     return result ? String(result) : nil;
 }
 
+/*!
+    Evaluates a string of javascript in the webview and returns the result.
+
+    @param script - A string of javascript.
+    @return JSObject - A JSObject resulting from the evaluation.
+*/
 - (JSObject)objectByEvaluatingJavaScriptFromString:(CPString)script
 {
     return [[self windowScriptObject] evaluateWebScript:script];
 }
 
+/*!
+    Gets the computed style for an element.
+
+    @param DOMElement - An Element.
+    @param pseudoElement - A pseudoElement.
+    @return DOMCSSStyleDeclaration - The computed style for an element.
+*/
 - (DOMCSSStyleDeclaration)computedStyleForElement:(DOMElement)element pseudoElement:(CPString)pseudoElement
 {
     var win = [[self windowScriptObject] window];
@@ -474,47 +565,85 @@ CPWebViewScrollNative                           = 2;
 }
 
 
-
+/*!
+    @return BOOL - YES if the webview draws its own background, otherwise NO.
+*/
 - (BOOL)drawsBackground
 {
     return _iframe.style.backgroundColor != "";
 }
 
+/*!
+    Sets whether the webview draws its own background.
+
+    @param BOOL - YES if the webview should draw its background, otherwise NO.
+*/
 - (void)setDrawsBackground:(BOOL)drawsBackround
 {
     _iframe.style.backgroundColor = drawsBackround ? "white" : "";
 }
 
 
-
 // IBActions
 
-- (IBAction)takeStringURLFrom:(id)sender
+/*!
+    Used with the target/action mechanism to automatically set the webviews
+    mainFrameURL to the senders stringValue.
+
+    @param sender - the sender of the action. Should respond to -stringValue.
+*/
+- (@action)takeStringURLFrom:(id)sender
 {
     [self setMainFrameURL:[sender stringValue]];
 }
 
-- (IBAction)goBack:(id)sender
+/*!
+    Same as -goBack but takes a sender as a param.
+
+    @param sender - the sender of the action.
+*/
+- (@action)goBack:(id)sender
 {
     [self goBack];
 }
 
-- (IBAction)goForward:(id)sender
+/*!
+    Same as -goForward but takes a sender as a param.
+
+    @param sender - the sender of the action.
+*/
+- (@action)goForward:(id)sender
 {
     [self goForward];
 }
 
-- (IBAction)stopLoading:(id)sender
+/*!
+    Stops loading the webview. (not yet implemented)
+
+    @param sender - the sender of the action.
+*/
+- (@action)stopLoading:(id)sender
 {
     // FIXME: what to do?
 }
 
-- (IBAction)reload:(id)sender
+/*!
+    Reloads the webview.
+
+    @param sender - the sender of the action.
+*/
+- (@action)reload:(id)sender
 {
     [self _loadMainFrameURL];
 }
 
-- (IBAction)print:(id)sender
+/*!
+    Tells the webview to print. If the webview is unable to print due to
+    browser restrictions the user is alerted to print from the file menu.
+
+    @param sender - the sender of the receiver.
+*/
+- (@action)print:(id)sender
 {
     try
     {
@@ -574,12 +703,19 @@ CPWebViewScrollNative                           = 2;
 
 @end
 
+/*!
+    @class CPWebScriptObject
 
+    A CPWebScriptObject is an Objective-J wrapper around a scripting object.
+*/
 @implementation CPWebScriptObject : CPObject
 {
     Window _window;
 }
 
+/*!
+    Initializes the scripting object with the scripting Window object.
+*/
 - (id)initWithWindow:(Window)aWindow
 {
     if (self = [super init])
@@ -589,6 +725,12 @@ CPWebViewScrollNative                           = 2;
     return self;
 }
 
+/*!
+    Call a method with arguments on the receiver.
+
+    @param methodName - The method that should be called.
+    @param args - An array of arguments to pass to the method call.
+*/
 - (id)callWebScriptMethod:(CPString)methodName withArguments:(CPArray)args
 {
     // Would using "with" be better here?
@@ -602,15 +744,25 @@ CPWebViewScrollNative                           = 2;
     return undefined;
 }
 
+/*!
+    Evaluates a string of javascript and returns the result.
+
+    @param script - The script to run.
+    @return - The result of the evaluation, which may be 'undefined'.
+*/
 - (id)evaluateWebScript:(CPString)script
 {
     try {
         return _window.eval(script);
     } catch (e) {
+        // FIX ME: if we fail inside here, shouldn't we return an exception?
     }
     return undefined;
 }
 
+/*!
+    Returns the receivers Window object.
+*/
 - (Window)window
 {
     return _window;
@@ -623,6 +775,7 @@ CPWebViewScrollNative                           = 2;
 
 /*!
     Initializes the web view from the data in a coder.
+
     @param aCoder the coder from which to read the data
     @return the initialized web view
 */
@@ -650,6 +803,7 @@ CPWebViewScrollNative                           = 2;
 
 /*!
     Writes out the web view's instance information to a coder.
+
     @param aCoder the coder to which to write the data
 */
 - (void)encodeWithCoder:(CPCoder)aCoder

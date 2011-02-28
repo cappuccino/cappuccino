@@ -209,20 +209,16 @@ var _changeKindForSetMutationKind = function(mutationKind)
 {
     switch (mutationKind)
     {
-        case CPKeyValueUnionSetMutation:
-            return CPKeyValueChangeInsertion;
-        case CPKeyValueMinusSetMutation:
-            return CPKeyValueChangeRemoval;
-        case CPKeyValueIntersectSetMutation:
-            return CPKeyValueChangeRemoval;
-        case CPKeyValueSetSetMutation:
-            return CPKeyValueChangeReplacement;
+        case CPKeyValueUnionSetMutation:        return CPKeyValueChangeInsertion;
+        case CPKeyValueMinusSetMutation:        return CPKeyValueChangeRemoval;
+        case CPKeyValueIntersectSetMutation:    return CPKeyValueChangeRemoval;
+        case CPKeyValueSetSetMutation:          return CPKeyValueChangeReplacement;
     }
 }
 
-var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
-    DependentKeysKey = "$KVODEPENDENT",
-    KVOProxyKey = "$KVOPROXY";
+var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
+    DependentKeysKey    = "$KVODEPENDENT",
+    KVOProxyKey         = "$KVOPROXY";
 
 //rule of thumb: _ methods are called on the real proxy object, others are called on the "fake" proxy object (aka the real object)
 
@@ -298,6 +294,8 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
 {
     if ([_replacedKeys containsObject:aKey] || ![_nativeClass automaticallyNotifiesObserversForKey:aKey])
         return;
+
+    [_replacedKeys addObject:aKey];
 
     var theClass = _nativeClass,
         KVOClass = _targetObject.isa,
@@ -777,7 +775,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
         if (setMutationKind)
         {
             //old and new values for unordered to-many relationships can only be calculated before
-            //set precalculated hidden new value as soon as "didChangeValue..." is called!
+            //set recalculated hidden new value as soon as "didChangeValue..." is called!
             var newValue = changes[_CPKeyValueChangeSetMutationNewValueKey];
             [changes setValue:newValue forKey:CPKeyValueChangeNewKey];
 

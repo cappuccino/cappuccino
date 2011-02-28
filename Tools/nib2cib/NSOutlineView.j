@@ -36,7 +36,10 @@
         else
             _outlineTableColumn = [[self tableColumns] objectAtIndex:0];
 
-        _indentationPerLevel = [aCoder decodeFloatForKey:@"NSOutlineViewIndentationPerLevelKey"];
+        if ([aCoder containsValueForKey:"NSOutlineViewIndentationPerLevelKey"])
+            _indentationPerLevel = [aCoder decodeFloatForKey:@"NSOutlineViewIndentationPerLevelKey"];
+        else
+            _indentationPerLevel = 16;
 
         _outlineViewDataSource = [aCoder decodeObjectForKey:@"NSDataSource"];
         _outlineViewDelegate = [aCoder decodeObjectForKey:@"NSDelegate"];

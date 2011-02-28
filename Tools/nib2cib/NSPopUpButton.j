@@ -35,10 +35,6 @@
 
         _menu = [cell menu];
 
-         // make sure it's not null/undefined
-        //FIXME push this check to CPPopUpButton?
-        _selectedIndex  = [cell selectedIndex] || 0;
-
         [self setPullsDown:[cell pullsDown]];
         _preferredEdge  = [cell preferredEdge];
     }
@@ -86,6 +82,13 @@
     }
 
     return self;
+}
+
+
+// - [NSPopUpButton objectValue] is overridden to return the selected index.
+- (CPUInteger)objectValue
+{
+    return selectedIndex;
 }
 
 @end

@@ -35,6 +35,9 @@ CPBinarySearchingFirstEqual     = 1 << 8;
 CPBinarySearchingLastEqual      = 1 << 9;
 CPBinarySearchingInsertionIndex = 1 << 10;
 
+var concat = Array.prototype.concat,
+    join = Array.prototype.join,
+    push = Array.prototype.push;
 
 #define FORWARD_TO_CONCRETE_CLASS()\
     if (self === _CPSharedPlaceholderArray)\
@@ -172,6 +175,12 @@ CPBinarySearchingInsertionIndex = 1 << 10;
     FORWARD_TO_CONCRETE_CLASS();
 }
 
+// FIXME: This should be defined in CPMutableArray, not here.
+- (id)initWithCapacity:(unsigned)aCapacity
+{
+    FORWARD_TO_CONCRETE_CLASS();
+}
+
 // Querying an array
 /*!
     Returns \c YES if the array contains \c anObject. Otherwise, it returns \c NO.
@@ -180,6 +189,11 @@ CPBinarySearchingInsertionIndex = 1 << 10;
 - (BOOL)containsObject:(id)anObject
 {
     return [self indexOfObject:anObject] !== CPNotFound;
+}
+
+- (BOOL)containsObjectIdenticalTo:(id)anObject
+{
+    return [self indexOfObjectIdenticalTo:anObject] !== CPNotFound;
 }
 
 /*!
@@ -418,7 +432,7 @@ CPBinarySearchingInsertionIndex = 1 << 10;
         return (options & CPBinarySearchingInsertionIndex) ? 0 : CPNotFound;
 
     var first = aRange ? aRange.location : 0,
-        last = aRange ? CPMaxRange(aRange) : [self count] - 1;
+        last = (aRange ? CPMaxRange(aRange) : [self count]) - 1;
 
     if (first < 0)
         _CPRaiseRangeException(self, _cmd, first, count);
@@ -440,13 +454,13 @@ CPBinarySearchingInsertionIndex = 1 << 10;
         else
         {
             if (options & CPBinarySearchingFirstEqual)
-                while (middle++ < count - 1 &&
-                    aComparator(anObject, [self objectAtIndex:middle]) === CPOrderedSame);
+                while (middle > first && aComparator(anObject, [self objectAtIndex:middle - 1]) === CPOrderedSame)
+                    --middle;
 
             else if (options & CPBinarySearchingLastEqual)
             {
-                while (middle-- > 0 &&
-                    aComparator(anObject, [self objectAtIndex:middle]) === CPOrderedSame);
+                while (middle < last && aComparator(anObject, [self objectAtIndex:middle + 1]) === CPOrderedSame)
+                    ++middle;
 
                 if (options & CPBinarySearchingInsertionIndex)
                     ++middle;
@@ -509,6 +523,14 @@ CPBinarySearchingInsertionIndex = 1 << 10;
             objj_msgSend([self objectAtIndex:index], aSelector);
 }
 
+- (void)enumerateObjectsUsingBlock:(Function)aFunction
+{
+    var index = 0,
+        count = [self count];
+
+    for (; index < count; ++index)
+        aFunction([self objectAtIndex:index], index);
+}
 
 // Comparing arrays
 /*!
@@ -537,7 +559,7 @@ CPBinarySearchingInsertionIndex = 1 << 10;
 }
 
 /*!
-    Returns true if anArray contains exactly the same objects as the reciever.
+    Returns true if anArray contains exactly the same objects as the receiver.
 */
 - (BOOL)isEqualToArray:(id)anArray
 {
@@ -573,6 +595,18 @@ CPBinarySearchingInsertionIndex = 1 << 10;
     return (self === anObject) || [self isEqualToArray:anObject];
 }
 
+- (Array)_javaScriptArrayCopy
+{
+    var index = 0,
+        count = [self count],
+        copy = [];
+
+    for (; index < count; ++index)
+        push.call(copy, [self objectAtIndex:index]);
+
+    return copy;
+}
+
 // Deriving new arrays
 /*!
     Returns a copy of this array plus \c anObject inside the copy.
@@ -582,7 +616,13 @@ CPBinarySearchingInsertionIndex = 1 << 10;
 */
 - (CPArray)arrayByAddingObject:(id)anObject
 {
-    return self.concat(anObject);
+    var argumentArray = [self _javaScriptArrayCopy];
+
+    // We push instead of concat,because concat flattens arrays, so if the object
+    // passed in is an array, we end up with its contents added instead of itself.
+    push.call(argumentArray, anObject);
+
+    return objj_msgSend([self class], @selector(arrayWithArray:), argumentArray);
 }
 
 /*!
@@ -591,7 +631,13 @@ CPBinarySearchingInsertionIndex = 1 << 10;
 */
 - (CPArray)arrayByAddingObjectsFromArray:(CPArray)anArray
 {
-    return self.concat(anArray);
+    if (!anArray)
+        return [self copy];
+
+    var anArray = anArray.isa === _CPJavaScriptArray ? anArray : [anArray _javaScriptArrayCopy],
+        argumentArray = concat.call([self _javaScriptArrayCopy], anArray);
+
+    return objj_msgSend([self class], @selector(arrayWithArray:), argumentArray);
 }
 
 /*
@@ -616,7 +662,20 @@ CPBinarySearchingInsertionIndex = 1 << 10;
 */
 - (CPArray)subarrayWithRange:(CPRange)aRange
 {
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
+    if (!aRange)
+        return [self copy];
+
+    if (aRange.location < 0 || CPMaxRange(aRange) > self.length)
+        [CPException raise:CPRangeException reason:"subarrayWithRange: aRange out of bounds"];
+
+    var index = aRange.location,
+        count = CPMaxRange(aRange),
+        argumentArray = [];
+
+    for (; index < count; ++index)
+        push.call(argumentArray, [self objectAtIndex:index]);
+
+    return objj_msgSend([self class], @selector(arrayWithArray:), argumentArray);
 }
 
 // Sorting arrays
@@ -682,19 +741,7 @@ CPBinarySearchingInsertionIndex = 1 << 10;
 */
 - (CPString)componentsJoinedByString:(CPString)aString
 {
-    var index = 0,
-        count = [self count],
-        components = [];
-
-    for (; index < count; ++index)
-    {
-        components.push([self objectAtIndex:index]);
-
-        if (index < count - 1)
-            components.push(aString);
-    }
-
-    return components.join("");
+    return join.call([self _javaScriptArrayCopy], aString);
 }
 
 // Creating a description of the array
@@ -756,7 +803,7 @@ CPBinarySearchingInsertionIndex = 1 << 10;
 */
 - (id)copy
 {
-    return slice(0);
+    return [[self class] arrayWithArray:self];
 }
 
 @end

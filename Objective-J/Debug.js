@@ -102,10 +102,13 @@ GLOBAL(objj_backtrace_decorator) = function(msgSend)
         }
         catch (anException)
         {
-            // print the exception and backtrace
-            CPLog.warn("Exception " + anException + " in " + objj_debug_message_format(aReceiver, aSelector));
-            objj_backtrace_print(CPLog.warn);
-
+            if (objj_backtrace.length)
+            {
+                // print the exception and backtrace
+                CPLog.warn("Exception " + anException + " in " + objj_debug_message_format(aReceiver, aSelector));
+                objj_backtrace_print(CPLog.warn);
+                objj_backtrace = [];
+            }
             // re-throw the exception
             throw anException;
         }

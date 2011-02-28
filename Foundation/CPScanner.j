@@ -1,11 +1,28 @@
-// CPScanner.j
-// © Emanuele Vulcano, 2008.
-//
-// Licensed under the terms of Cappuccino's license
-// (the GNU Lesser General Public License, version 2.1).
-// Please see Cappuccino's LICENSE file for details.
+/*
+ * CPScanner.j
+ * Foundation
+ *
+ * Created by Emanuele Vulcano.
+ * Copyright 2008, Emanuele Vulcano.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
-@import <Foundation/CPCharacterSet.j>
+@import "CPCharacterSet.j"
+@import "CPDictionary.j"
+@import "CPString.j"
 
 @implementation CPScanner : CPObject
 {
@@ -180,8 +197,8 @@
     if ([self isAtEnd])
         return nil;
 
-    var current = [self scanLocation];
-    var str = nil;
+    var current = [self scanLocation],
+        str = nil;
 
     while (current < _string.length)
     {
@@ -212,9 +229,9 @@
 
 - (void)_movePastCharactersToBeSkipped
 {
-    var current = [self scanLocation];
-    var string = [self string];
-    var toSkip = [self charactersToBeSkipped];
+    var current = [self scanLocation],
+        string = [self string],
+        toSkip = [self charactersToBeSkipped];
 
     while (current < string.length)
     {
@@ -258,8 +275,10 @@
 
 - (CPString)scanUpToString:(CPString)s
 {
-    var current = [self scanLocation], str = [self string];
-    var captured = nil;
+    var current = [self scanLocation],
+        str = [self string],
+        captured = nil;
+
     while (current < str.length)
     {
         var currentStr = str.substr(current, s.length);
@@ -291,16 +310,19 @@
 - (float)scanFloat
 {
     [self _movePastCharactersToBeSkipped];
-    var str = [self string], current = [self scanLocation];
+    var str = [self string],
+        current = [self scanLocation];
 
     if ([self isAtEnd])
         return 0;
 
-    var s = str.substring(current, str.length);
-    var f =  parseFloat(s); // wont work with non . decimal separator !!
+    var s = str.substring(current, str.length),
+        f =  parseFloat(s); // wont work with non . decimal separator !!
+
     if (f)
     {
-        var pos, foundDash = NO;
+        var pos = current,
+            foundDash = NO;
 /*
         var decimalSeparatorString;
         if (_locale != nil)
@@ -312,7 +334,7 @@
 */
         var separatorCode = 45;
 
-        for (pos = current; pos < current + str.length; pos++)
+        for (; pos < current + str.length; pos++)
         {
             var charCode = str.charCodeAt(pos);
             if (charCode == separatorCode)
@@ -335,17 +357,21 @@
 - (int)scanInt
 {
     [self _movePastCharactersToBeSkipped];
-    var str = [self string], current = [self scanLocation];
+    var str = [self string],
+        current = [self scanLocation];
 
     if ([self isAtEnd])
         return 0;
-    var s = str.substring(current, str.length);
 
-    var i =  parseInt(s);
+    var s = str.substring(current, str.length),
+        i =  parseInt(s);
+
     if (i)
     {
-        var pos, foundDash = NO;
-        for (pos = current; pos < current + str.length; pos++)
+        var pos = current,
+            foundDash = NO;
+
+        for (; pos < current + str.length; pos++)
         {
             var charCode = str.charCodeAt(pos);
             if (charCode == 46)
@@ -384,7 +410,7 @@
 /* = Debug = */
 /* ========= */
 
-- (void) description
+- (void)description
 {
     return [super description] + " {" + CPStringFromClass([self class]) + ", state = '" + ([self string].substr(0, _scanLocation) + "{{ SCAN LOCATION ->}}" + [self string].substr(_scanLocation)) + "'; }";
 }

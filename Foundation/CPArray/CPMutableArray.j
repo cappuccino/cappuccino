@@ -29,10 +29,10 @@
     Initializes an array able to store at least \c aCapacity items. Because CPArray
     is backed by JavaScript arrays, this method ends up simply returning a regular array.
 */
-- (id)initWithCapacity:(unsigned)aCapacity
+/*- (id)initWithCapacity:(unsigned)aCapacity
 {
     return self;
-}
+}*/
 
 // Adding and replacing objects
 /*!
@@ -50,7 +50,11 @@
 */
 - (void)addObjectsFromArray:(CPArray)anArray
 {
-    splice.apply(self, [length, 0].concat(anArray));
+    var index = 0,
+        count = [anArray count];
+
+    for (; index < count; ++index)
+        [self addObject:[anArray objectAtIndex:index]];
 }
 
 /*!
@@ -85,7 +89,7 @@
         currentIndex = [indexes firstIndex];
 
     for (; index < objectsCount; ++index, currentIndex = [indexes indexGreaterThanIndex:currentIndex])
-        [self insertObject:objects[index] atIndex:currentIndex];
+        [self insertObject:[objects objectAtIndex:index] atIndex:currentIndex];
 }
 
 - (unsigned)insertObject:(id)anObject inArraySortedByDescriptors:(CPArray)descriptors
@@ -132,15 +136,15 @@
     @param anIndexSet the set of indices to array positions that will be replaced
     @param objects the array of objects to place in the specified indices
 */
-- (void)replaceObjectsAtIndexes:(CPIndexSet)anIndexSet withObjects:(CPArray)objects
+- (void)replaceObjectsAtIndexes:(CPIndexSet)indexes withObjects:(CPArray)objects
 {
     var i = 0,
-        index = [anIndexSet firstIndex];
+        index = [indexes firstIndex];
 
-    while (index != CPNotFound)
+    while (index !== CPNotFound)
     {
-        [self replaceObjectAtIndex:index withObject:objects[i++]];
-        index = [anIndexSet indexGreaterThanIndex:index];
+        [self replaceObjectAtIndex:index withObject:[objects objectAtIndex:i++]];
+        index = [indexes indexGreaterThanIndex:index];
     }
 }
 
@@ -154,10 +158,14 @@
 */
 - (void)replaceObjectsInRange:(CPRange)aRange withObjectsFromArray:(CPArray)anArray range:(CPRange)otherRange
 {
-    if (!otherRange.location && otherRange.length == [anArray count])
-        [self replaceObjectsInRange:aRange withObjectsFromArray:anArray];
-    else
-        splice.apply(self, [aRange.location, aRange.length].concat([anArray subarrayWithRange:otherRange]));
+    [self removeObjectsInRange:aRange];
+
+    if (otherRange && (otherRange.location !== 0 || otherRange.length !== [anArray count]))
+        anArray = [anArray subarrayWithRange:otherRange];
+
+    var indexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(aRange.location, [anArray count])];
+
+    [self insertObjects:anArray atIndexes:indexes];
 }
 
 /*!
@@ -169,7 +177,7 @@
 */
 - (void)replaceObjectsInRange:(CPRange)aRange withObjectsFromArray:(CPArray)anArray
 {
-    splice.apply(self, [aRange.location, aRange.length].concat(anArray));
+    [self replaceObjectsInRange:aRange withObjectsFromArray:anArray range:nil];
 }
 
 /*!
@@ -178,10 +186,11 @@
 */
 - (void)setArray:(CPArray)anArray
 {
-    if (self == anArray)
+    if (self === anArray)
         return;
 
-    splice.apply(self, [0, length].concat(anArray));
+    [self removeAllObjects];
+    [self addObjectsFromArray:anArray];
 }
 
 // Removing Objects
@@ -190,7 +199,8 @@
 */
 - (void)removeAllObjects
 {
-    splice(0, length);
+    while ([self count])
+        [self removeLastObject];
 }
 
 /*!
@@ -243,7 +253,7 @@
 {
     var index = [anIndexSet lastIndex];
 
-    while (index != CPNotFound)
+    while (index !== CPNotFound)
     {
         [self removeObjectAtIndex:index];
         index = [anIndexSet indexLessThanIndex:index];
@@ -289,7 +299,7 @@
         count = [anArray count];
 
     for (; index < count; ++index)
-        [self removeObject:anArray[index]];
+        [self removeObject:[anArray objectAtIndex:index]];
 }
 
 /*!
@@ -298,7 +308,11 @@
 */
 - (void)removeObjectsInRange:(CPRange)aRange
 {
-    splice(aRange.location, aRange.length);
+    var index = aRange.location,
+        count = CPMaxRange(aRange);
+
+    while (count-- > index)
+        [self removeObjectAtIndex:index];
 }
 
 // Rearranging objects
@@ -309,9 +323,13 @@
 */
 - (void)exchangeObjectAtIndex:(unsigned)anIndex withObjectAtIndex:(unsigned)otherIndex
 {
-    var temporary = self[anIndex];
-    self[anIndex] = self[otherIndex];
-    self[otherIndex] = temporary;
+    if (anIndex === otherIndex)
+        return;
+
+    var temporary = [self objectAtIndex:anIndex];
+
+    [self replaceObjectAtIndex:anIndex withObject:[self objectAtIndex:otherIndex]];
+    [self replaceObjectAtIndex:otherIndex withObject:temporary];
 }
 
 - (CPArray)sortUsingDescriptors:(CPArray)descriptors

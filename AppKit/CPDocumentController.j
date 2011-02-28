@@ -24,7 +24,7 @@
 @import <Foundation/CPBundle.j>
 
 @import "CPDocument.j"
-@import "CPOpenPanel.j";
+@import "CPOpenPanel.j"
 
 
 var CPSharedDocumentController = nil;
@@ -177,7 +177,7 @@ var CPSharedDocumentController = nil;
     @param aType the document type
     @param aDelegate the delegate to notify
     @param aSelector the selector to notify with
-    @param aContextInfo the context infomration passed to the delegate
+    @param aContextInfo the context information passed to the delegate
 */
 - (CPDocument)makeDocumentWithContentsOfURL:(CPURL)anAbsoluteURL ofType:(CPString)aType delegate:(id)aDelegate didReadSelector:(SEL)aSelector contextInfo:(id)aContextInfo
 {

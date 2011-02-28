@@ -1,432 +1,570 @@
+
 @import <Foundation/Foundation.j>
 
+
 @implementation CPArrayTest : OJTestCase
-
-- (void)testComponentsJoinedByString
 {
-    var testStrings = [
-        [[], "", ""],
-        [[], "-", ""],
-        [[1,2], "-", "1-2"],
-        [[1,2,3], "-", "1-2-3"],
-        [["123", 456], "-", "123-456"]
-    ];
-
-    for (var i = 0; i < testStrings.length; i++)
-        [self assert:[testStrings[i][0] componentsJoinedByString:testStrings[i][1]] equals:testStrings[i][2]];
 }
 
-- (void)testsInsertObjectsAtIndexes
++ (Class)arrayClass
 {
-    var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four"],
-        newAdditions = [CPArray arrayWithObjects:@"a", @"b"],
-        indexes = [CPMutableIndexSet indexSetWithIndex:1];
+    return ConcreteArray;
+}
 
-    [indexes addIndex:3];
+- (void)test_containsObject_
+{
+    var arrayClass = [[self class] arrayClass],
+        array = [arrayClass arrayWithObjects:0, @"hello", [AlwaysEqual new], [arrayClass arrayWithObjects:0]];
 
-    [array insertObjects:newAdditions atIndexes:indexes];
+    [self assertTrue:[array containsObject:0]];
+    [self assertTrue:[array containsObject:@"hello"]];
+    [self assertTrue:[array containsObject:[AlwaysEqual new]]]; // test isEqual:
+    [self assertTrue:[array containsObject:[arrayClass arrayWithObjects:0]]];
 
-    [self assert:array equals:[@"one", @"a", @"two", @"b", @"three", @"four"]];
+    [self assertFalse:[array containsObject:1]];
+    [self assertFalse:[array containsObject:@"bye"]];
+    [self assertFalse:[array containsObject:[arrayClass arrayWithObjects:1]]];
+}
 
-    var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four"],
-        newAdditions = [CPArray arrayWithObjects:@"a", @"b"],
-        indexes = [CPMutableIndexSet indexSetWithIndex:5];
+- (void)test_containsObjectIdenticalTo_
+{
+    var arrayClass = [[self class] arrayClass],
+        array = [arrayClass arrayWithObjects:0, @"hello", [AlwaysEqual new], [arrayClass arrayWithObjects:0]];
 
-    [indexes addIndex:4];
+    [self assertTrue:[array containsObjectIdenticalTo:0]];
+    [self assertTrue:[array containsObjectIdenticalTo:@"hello"]];
 
-    [array insertObjects:newAdditions atIndexes:indexes];
+    [self assertFalse:[array containsObjectIdenticalTo:1]];
+    [self assertFalse:[array containsObjectIdenticalTo:@"bye"]];
+    [self assertFalse:[array containsObjectIdenticalTo:[AlwaysEqual new]]];
+    [self assertFalse:[array containsObjectIdenticalTo:[arrayClass arrayWithObjects:0]]];
+    [self assertFalse:[array containsObjectIdenticalTo:[arrayClass arrayWithObjects:1]]];
+}
 
-    [self assert:array equals:[@"one", @"two", @"three", @"four", @"a", @"b"]];
+- (void)test_count
+{
+    var arrayClass = [[self class] arrayClass];
 
-    var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four"],
-        newAdditions = [CPArray arrayWithObjects:@"a", @"b", @"c"],
-        indexes = [CPMutableIndexSet indexSetWithIndex:1];
+    [self assert:[[arrayClass array] count] same:0];
+    [self assert:[[arrayClass arrayWithObjects:0, 1, 2] count] same:3];
+    [self assert:[[arrayClass arrayWithObjects:0, 1, 2, nil] count] same:3];
+    [self assert:[[arrayClass arrayWithObjects:0, 1, nil, 2, nil] count] same:2];
+}
 
-    [indexes addIndex:2];
-    [indexes addIndex:4];
+- (void)test_lastObject
+{
+    var arrayClass = [[self class] arrayClass];
 
-    [array insertObjects:newAdditions atIndexes:indexes];
+    [self assert:[[arrayClass array] lastObject] same:nil];
+    [self assert:[[arrayClass arrayWithObjects:0, 1, 2] lastObject] same:2];
+    [self assert:[[arrayClass arrayWithObjects:0, 1, 2, nil] lastObject] same:2];
+    [self assert:[[arrayClass arrayWithObjects:0, 1, nil, 2, nil] lastObject] same:1];
+}
 
-    [self assert:array equals:[@"one", @"a", @"b", @"two", @"c", @"three", @"four"]];
+- (void)test_objectAtIndex_
+{
+    var arrayClass = [[self class] arrayClass],
+        array = [arrayClass array];
 
+    [self assertThrows:function () { [array objectAtIndex:-1] }];
+    [self assertThrows:function () { [array objectAtIndex:0] }];
 
-    var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four"],
-        newAdditions = [CPArray arrayWithObjects:@"a", @"b", @"c"],
-        indexes = [CPMutableIndexSet indexSetWithIndex:1];
+    var array = [arrayClass arrayWithObjects:0, 1, 2];
 
-    [indexes addIndex:2];
-    [indexes addIndex:6];
+    [self assertThrows:function () { [array objectAtIndex:-1] }];
+    [self assert:[array objectAtIndex:0] same:0];
+    [self assert:[array objectAtIndex:1] same:1];
+    [self assert:[array objectAtIndex:2] same:2];
+    [self assertThrows:function () { [array objectAtIndex:3] }];
+}
 
-    [array insertObjects:newAdditions atIndexes:indexes];
-
-    [self assert:array equals:[@"one", @"a", @"b", @"two", @"three", @"four", @"c"]];
-
-
-    var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four"],
-        newAdditions = [CPArray arrayWithObjects:@"a", @"b"],
-        indexes = [CPMutableIndexSet indexSetWithIndex:5];
-
-    [indexes addIndex:6];
-
-    try
+- (void)test_objectsAtIndexes_
+{
+    function rangeIndexes(location, length)
     {
-        [array insertObjects:newAdditions atIndexes:indexes];
-        [self fail];
-    }
-    catch (e)
-    {
-        if ((e.isa) && [e name] == AssertionFailedError)
-            throw e;
-    }
-}
-
-- (void)testRemoveObjectsAtIndexes
-{
-    var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four", nil],
-        indexes = [CPMutableIndexSet indexSetWithIndex:2];
-
-    [array removeObjectsAtIndexes:indexes];
-
-    [self assert:array equals:[@"one", @"two", @"four"]];
-}
-
-- (void)testIndexOfObjectPassingTest
-{
-    var array = [CPArray arrayWithObjects:{name:@"Tom", age:7}, {name:@"Dick", age:13}, {name:@"Harry", age:27}, {name:@"Zelda", age:7}],
-        namePredicate = function(object, index) { return [object.name isEqual:@"Harry"]; },
-        agePredicate = function(object, index) { return object.age === 13; },
-        failPredicate = function(object, index) { return [object.name isEqual:@"Horton"]; },
-        noPredicate = function(object, index) { return NO; },
-        stopPredicate = function(object, index) { return nil; };
-
-    [self assert:[array indexOfObjectPassingTest:namePredicate] equals:2];
-    [self assert:[array indexOfObjectPassingTest:agePredicate] equals:1];
-    [self assert:[array indexOfObjectPassingTest:failPredicate] equals:CPNotFound];
-    [self assert:[array indexOfObjectPassingTest:noPredicate] equals:CPNotFound];
-    [self assert:[array indexOfObjectPassingTest:stopPredicate] equals:CPNotFound];
-}
-
-- (void)testIndexOfObjectPassingTestContext
-{
-    var array = [CPArray arrayWithObjects:{name:@"Tom", age:7}, {name:@"Dick", age:13}, {name:@"Harry", age:27}, {name:@"Zelda", age:7}],
-        namePredicate = function(object, index, context) { return [object.name isEqual:context]; },
-        agePredicate = function(object, index, context) { return object.age === context; };
-
-    [self assert:[array indexOfObjectPassingTest:namePredicate context:@"Harry"] equals:2];
-    [self assert:[array indexOfObjectPassingTest:agePredicate context:13] equals:1];
-}
-
-- (void)testIndexOfObjectWithOptionsPassingTest
-{
-    var array = [CPArray arrayWithObjects:{name:@"Tom", age:7}, {name:@"Dick", age:13}, {name:@"Harry", age:27}, {name:@"Zelda", age:7}],
-        namePredicate = function(object, index) { return [object.name isEqual:@"Harry"]; },
-        agePredicate = function(object, index) { return object.age === 7; };
-
-    [self assert:[array indexOfObjectWithOptions:CPEnumerationNormal passingTest:namePredicate] equals:2];
-    [self assert:[array indexOfObjectWithOptions:CPEnumerationReverse passingTest:namePredicate] equals:2];
-    [self assert:[array indexOfObjectWithOptions:CPEnumerationNormal passingTest:agePredicate] equals:0];
-    [self assert:[array indexOfObjectWithOptions:CPEnumerationReverse passingTest:agePredicate] equals:3];
-}
-
-- (void)testIndexOfObjectWithOptionsPassingTestContext
-{
-    var array = [CPArray arrayWithObjects:{name:@"Tom", age:7}, {name:@"Dick", age:13}, {name:@"Harry", age:27}, {name:@"Zelda", age:7}],
-        namePredicate = function(object, index, context) { return [object.name isEqual:context]; },
-        agePredicate = function(object, index, context) { return object.age === context; };
-
-    [self assert:[array indexOfObjectWithOptions:CPEnumerationNormal passingTest:namePredicate context:@"Harry"] equals:2];
-    [self assert:[array indexOfObjectWithOptions:CPEnumerationReverse passingTest:namePredicate context:@"Harry"] equals:2];
-    [self assert:[array indexOfObjectWithOptions:CPEnumerationNormal passingTest:agePredicate context:7] equals:0];
-    [self assert:[array indexOfObjectWithOptions:CPEnumerationReverse passingTest:agePredicate context:7] equals:3];
-}
-
-- (void)testIndexOfObject_inSortedRange_options_usingComparator_
-{
-    var array = [0, 1, 2, 3, 4, 7];
-
-    [self assert:[array indexOfObject:3 inSortedRange:nil options:0 usingComparator:function(a, b){ return a - b; }] equals:3];
-    [self assert:[[array arrayByReversingArray] indexOfObject:3 inSortedRange:nil options:0 usingComparator:function(a, b){ return a - b; }] equals:2];
-}
-
-- (void)testIndexOutOfBounds
-{
-    try
-    {
-        [[] objectAtIndex:0];
-        [self assert:false];
-    }
-    catch (anException)
-    {
-        [self assert:[anException name] equals:CPRangeException];
-        [self assertTrue:[[anException reason] rangeOfString:(@"index (0) beyond bounds (0)")].location !== CPNotFound];
+        return [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(location, length)];
     }
 
-    [[0, 1, 2] objectAtIndex:0];
-    [[0, 1, 2] objectAtIndex:1];
-    [[0, 1, 2] objectAtIndex:2];
+    var arrayClass = [[self class] arrayClass],
+        array = [arrayClass array];
 
-    try
-    {
-        [[0, 1, 2] objectAtIndex:3];
-        [self assert:false];
-    }
-    catch (anException)
-    {
-        [self assert:[anException name] equals:CPRangeException];
-        [self assertTrue:[[anException reason] rangeOfString:(@"index (3) beyond bounds (3)")].location !== CPNotFound];
-    }
+    [self assertThrows:function () { [array objectsAtIndexes:rangeIndexes(0, 1)] }];
 
-    try
-    {
-        [[0, 1, 2] objectAtIndex:4];
-        [self assert:false];
-    }
-    catch (anException)
-    {
-        [self assert:[anException name] equals:CPRangeException];
-        [self assertTrue:[[anException reason] rangeOfString:(@"index (4) beyond bounds (3)")].location !== CPNotFound];
-    }
+    var array = [arrayClass arrayWithObjects:0, 1, 2];
+
+    [self assert:[array objectsAtIndexes:rangeIndexes(0, 1)] equals:[0]];
+    [self assert:[array objectsAtIndexes:rangeIndexes(0, 2)] equals:[0, 1]];
+    [self assert:[array objectsAtIndexes:rangeIndexes(0, 3)] equals:[0, 1, 2]];
+    [self assertThrows:function () { [array objectsAtIndexes:rangeIndexes(0, 4)] }];
+    [self assert:[array objectsAtIndexes:rangeIndexes(1, 1)] equals:[1]];
+    [self assert:[array objectsAtIndexes:rangeIndexes(1, 2)] equals:[1, 2]];
+    [self assertThrows:function () { [array objectsAtIndexes:rangeIndexes(1, 3)] }];
+    [self assertThrows:function () { [array objectsAtIndexes:rangeIndexes(3, 1)] }];
 }
 
-- (void)testInsertObjectInArraySortedByDescriptors
+- (void)test_indexOfObject_
 {
-    var descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:YES]];
-    var array = [1, 3, 5];
+    var arrayClass = [[self class] arrayClass],
+        array = [arrayClass array];
 
-    [array insertObject:0 inArraySortedByDescriptors:descriptors];
-    [self assert:[0, 1, 3, 5] equals:array];
+    [self assert:[array indexOfObject:0] same:CPNotFound];
 
-    array = [1, 3, 5];
-    [array insertObject:2 inArraySortedByDescriptors:descriptors];
-    [self assert:[1, 2, 3, 5] equals:array];
+    var innerArray = [arrayClass arrayWithObjects:0];
 
-    array = [1, 3, 5];
-    [array insertObject:1 inArraySortedByDescriptors:descriptors];
-    [self assert:[1, 1, 3, 5] equals:array];
+    array = [arrayClass arrayWithObjects:0, @"hello", [AlwaysEqual new], innerArray];
 
-    array = [1, 3, 5];
-    [array insertObject:6 inArraySortedByDescriptors:descriptors];
-    [self assert:[1, 3, 5, 6] equals:array];
+    [self assert:[array indexOfObject:0] same:0];
+    [self assert:[array indexOfObject:@"hello"] same:1];
+    [self assert:[array indexOfObject:[AlwaysEqual new]] same:2];
+    [self assert:[array indexOfObject:innerArray] same:3];
+    [self assert:[array indexOfObject:[arrayClass arrayWithObjects:0]] same:3];
 
-    array = [1, 3, 5];
-    [array insertObject:3 inArraySortedByDescriptors:descriptors];
-    [self assert:[1, 3, 3, 5] equals:array];
+    [self assert:[array indexOfObject:1] same:CPNotFound];
+    [self assert:[array indexOfObject:@"bye"] same:CPNotFound];
+}
 
-    array = [];
-    [array insertObject:3 inArraySortedByDescriptors:descriptors];
-    [self assert:[3] equals:array];
+- (void)test_indexOfObjectIdenticalTo_
+{
+    var arrayClass = [[self class] arrayClass],
+        array = [arrayClass array];
 
-    descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:NO]];
+    [self assert:[array indexOfObject:0] same:CPNotFound];
 
-    array = [5, 3, 1];
-    [array insertObject:0 inArraySortedByDescriptors:descriptors];
-    [self assert:[5, 3, 1, 0] equals:array];
+    var innerArray = [arrayClass arrayWithObjects:0];
 
-    array = [5, 3, 1];
-    [array insertObject:2 inArraySortedByDescriptors:descriptors];
-    [self assert:[5, 3, 2, 1] equals:array];
+    array = [arrayClass arrayWithObjects:0, @"hello", [AlwaysEqual new], innerArray];
 
-    array = [5, 3, 1];
-    [array insertObject:1 inArraySortedByDescriptors:descriptors];
-    [self assert:[5, 3, 1, 1] equals:array];
+    [self assert:[array indexOfObjectIdenticalTo:0] same:0];
+    [self assert:[array indexOfObjectIdenticalTo:@"hello"] same:1];
+    [self assert:[array indexOfObjectIdenticalTo:[AlwaysEqual new]] same:CPNotFound];
+    [self assert:[array indexOfObjectIdenticalTo:innerArray] same:3];
+    [self assert:[array indexOfObjectIdenticalTo:[arrayClass arrayWithObjects:0]] same:CPNotFound];
 
-    array = [5, 3, 1];
-    [array insertObject:6 inArraySortedByDescriptors:descriptors];
-    [self assert:[6, 5, 3, 1] equals:array];
+    [self assert:[array indexOfObjectIdenticalTo:1] same:CPNotFound];
+    [self assert:[array indexOfObjectIdenticalTo:@"bye"] same:CPNotFound];
+}
 
-    array = [5, 3, 1];
-    [array insertObject:3 inArraySortedByDescriptors:descriptors];
-    [self assert:[5, 3, 3, 1] equals:array];
+- (void)test_indexOfObjectPassingTest_
+{
+    var array = [[[self class] arrayClass] arrayWithObjects:
+            { name:@"Tom", age:7 },
+            { name:@"Dick", age:13 },
+            { name:@"Harry", age:27 },
+            { name:@"Zelda", age:7 }];
 
-    array = [];
-    [array insertObject:3 inArraySortedByDescriptors:descriptors];
-    [self assert:[3] equals:array];
+    [self assert:[array indexOfObjectPassingTest:function() { return YES; }] same:0];
+    [self assert:[array indexOfObjectPassingTest:function() { return NO; }] same:CPNotFound];
+    [self assert:[array indexOfObjectPassingTest:function() { return nil; }] same:CPNotFound];
 
-    descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:NO]];
+    [self assert:[array indexOfObjectPassingTest:function(anObject, anIndex)
+                        {
+                            return [anObject.name isEqual:@"Harry"];
+                        }] same:2];
 
-    array = [5, 3, 1];
-    [array insertObject:0 inArraySortedByDescriptors:descriptors];
-    [self assert:[5, 3, 1, 0] equals:array];
+    [self assert:[array indexOfObjectPassingTest:function(anObject, anIndex)
+                        {
+                            return anObject.age === 13;
+                        }] equals:1];
 
-    array = [5, 3, 1];
-    [array insertObject:2 inArraySortedByDescriptors:descriptors];
-    [self assert:[5, 3, 2, 1] equals:array];
+    [self assert:[array indexOfObjectPassingTest:function(anObject, anIndex)
+                        {
+                            return [anObject.name isEqual:@"Horton"];
+                        }] equals:CPNotFound];
+}
 
-    array = [5, 3, 1];
-    [array insertObject:1 inArraySortedByDescriptors:descriptors];
-    [self assert:[5, 3, 1, 1] equals:array];
+- (void)test_indexOfObjectPassingTest_context_
+{
+    var array = [[[self class] arrayClass] arrayWithObjects:
+            { name:@"Tom", age:7 },
+            { name:@"Dick", age:13 },
+            { name:@"Harry", age:27 },
+            { name:@"Zelda", age:7 }];
 
-    array = [5, 3, 1];
-    [array insertObject:6 inArraySortedByDescriptors:descriptors];
-    [self assert:[6, 5, 3, 1] equals:array];
+    [self assert:[array indexOfObjectPassingTest:function(anObject, anIndex, aContext)
+                        {
+                            return [anObject.name isEqual:aContext];
+                        } context:@"Harry"] same:2];
 
-    array = [5, 3, 1];
-    [array insertObject:3 inArraySortedByDescriptors:descriptors];
-    [self assert:[5, 3, 3, 1] equals:array];
+    [self assert:[array indexOfObjectPassingTest:function(anObject, anIndex, aContext)
+                        {
+                            return anObject.age === aContext;
+                        } context:13] same:1];
+}
 
-    array = [];
-    [array insertObject:3 inArraySortedByDescriptors:descriptors];
-    [self assert:[3] equals:array];
+
+- (void)test_indexOfObjectWithOptions_passingTest
+{
+    var array = [[[self class] arrayClass] arrayWithObjects:
+        { name:@"Tom", age:7 },
+        { name:@"Dick", age:13 },
+        { name:@"Harry", age:27 },
+        { name:@"Zelda", age:7 }],
+        namePredicate = function(anObject, anIndex)
+                        {
+                            return [anObject.name isEqual:@"Harry"];
+                        },
+        agePredicate =  function(anObject, anIndex)
+                        {
+                            return anObject.age === 7;
+                        };
+
+    [self assert:[array indexOfObjectWithOptions:CPEnumerationNormal passingTest:namePredicate] same:2];
+    [self assert:[array indexOfObjectWithOptions:CPEnumerationReverse passingTest:namePredicate] same:2];
+    [self assert:[array indexOfObjectWithOptions:CPEnumerationNormal passingTest:agePredicate] same:0];
+    [self assert:[array indexOfObjectWithOptions:CPEnumerationReverse passingTest:agePredicate] same:3];
+}
+
+- (void)test_indexOfObjectWithOptions_passingTest_context
+{
+    var array = [[[self class] arrayClass] arrayWithObjects:
+        { name:@"Tom", age:7 },
+        { name:@"Dick", age:13 },
+        { name:@"Harry", age:27 },
+        { name:@"Zelda", age:7 }],
+        namePredicate = function(anObject, anIndex, aContext)
+                        {
+                            return [anObject.name isEqual:aContext];
+                        },
+        agePredicate =  function(anObject, anIndex, aContext)
+                        {
+                            return anObject.age === aContext;
+                        };
+
+    [self assert:[array indexOfObjectWithOptions:CPEnumerationNormal passingTest:namePredicate context:@"Harry"] same:2];
+    [self assert:[array indexOfObjectWithOptions:CPEnumerationReverse passingTest:namePredicate context:@"Harry"] same:2];
+    [self assert:[array indexOfObjectWithOptions:CPEnumerationNormal passingTest:agePredicate context:7] same:0];
+    [self assert:[array indexOfObjectWithOptions:CPEnumerationReverse passingTest:agePredicate context:7] same:3];
+}
+
+- (void)test_indexOfObject_inSortedRange_options_usingComparator_
+{
+    var arrayClass = [[self class] arrayClass],
+        array = [arrayClass arrayWithObjects:0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 7],
+        arraySimple = [arrayClass arrayWithObjects:4, 5, 7, 8, 9, 10],
+        numComparator = function(lhs, rhs) { return lhs - rhs; },
+        index;
+
+    index = [arraySimple indexOfObject:7
+                         inSortedRange:nil
+                               options:0
+                       usingComparator:numComparator];
+    [self assert:2 equals:index message:"simple index of 7"];
+
+    index = [[arraySimple arrayByReversingArray] indexOfObject:7
+                                                 inSortedRange:nil
+                                                       options:0
+                                               usingComparator: function(a, b) { return b - a; }];
+    [self assert:3 equals:index message:"simple index of 7 reversed"];
+
+    index = [arraySimple indexOfObject:6
+                         inSortedRange:nil
+                               options:0
+                       usingComparator:numComparator];
+    [self assert:CPNotFound equals:index message:"simple index of non existent value"];
+
+    index = [arraySimple indexOfObject:6
+                         inSortedRange:nil
+                               options:CPBinarySearchingInsertionIndex
+                       usingComparator:numComparator];
+    [self assert:2 equals:index message:"simple insertion index of non existent value"];
+
+    index = [arraySimple indexOfObject:6
+                         inSortedRange:CPMakeRange(3, 2) // [ -, -, -, 7, 8]
+                               options:CPBinarySearchingInsertionIndex
+                       usingComparator:numComparator];
+    [self assert:3 equals:index message:"simple insertion index with range"];
+
+    index = [array indexOfObject:1
+                       inSortedRange:nil
+                             options:0
+                     usingComparator:numComparator];
+    [self assertTrue:[[1, 2, 3] containsObject:index]];
+    [self assert:[array indexOfObject:1
+                        inSortedRange:nil
+                              options:CPBinarySearchingFirstEqual
+                      usingComparator:numComparator]
+          equals:1 message:"binary search first equal to 1"];
+    [self assert:[array indexOfObject:1
+                        inSortedRange:nil
+                              options:CPBinarySearchingLastEqual
+                      usingComparator:numComparator]
+          equals:3];
+    index = [array indexOfObject:1
+                   inSortedRange:nil
+                         options:CPBinarySearchingInsertionIndex
+                 usingComparator:numComparator];
+    [self assertTrue:[[1, 2, 3, 4] containsObject:index]];
+    [self assert:[array indexOfObject:1
+                        inSortedRange:nil
+                              options:CPBinarySearchingFirstEqual | CPBinarySearchingInsertionIndex
+                      usingComparator:numComparator]
+          equals:1];
+    [self assert:[array indexOfObject:1
+                        inSortedRange:nil
+                              options:CPBinarySearchingLastEqual | CPBinarySearchingInsertionIndex
+                      usingComparator:numComparator]
+          equals:4 message:"last equal insertion index"];
+
+    index = [array indexOfObject:2
+                   inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
+                         options:0
+                 usingComparator:numComparator];
+    [self assertTrue:[[4, 5] containsObject:index]];
+    [self assert:[array indexOfObject:2
+                        inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
+                              options:CPBinarySearchingFirstEqual
+                      usingComparator:numComparator]
+          equals:4 message:"first equal in range 2-7"];
+    [self assert:[array indexOfObject:2
+                        inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
+                              options:CPBinarySearchingLastEqual
+                      usingComparator:numComparator]
+          equals:5];
+    index = [array indexOfObject:2
+                   inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
+                         options:CPBinarySearchingInsertionIndex
+                 usingComparator:numComparator];
+    [self assertTrue:[[4, 5, 6] containsObject:index]];
+    [self assert:[array indexOfObject:2
+                        inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
+                              options:CPBinarySearchingFirstEqual | CPBinarySearchingInsertionIndex
+                      usingComparator:numComparator]
+          equals:4 message:"first equal insertion index in range 2-7"];
+    [self assert:[array indexOfObject:2
+                        inSortedRange:CPMakeRange(2, 5) // [ -, -, 1, 1, 2, 2, 3, -, -, -, -]
+                              options:CPBinarySearchingLastEqual | CPBinarySearchingInsertionIndex
+                      usingComparator:numComparator]
+          equals:6];
+
+    [self assert:[array indexOfObject:3
+                      inSortedRange:CPMakeRange(2, 6) // [ -, -, 1, 1, 2, 2, 3, 3, -, -, -]
+                            options:CPBinarySearchingLastEqual | CPBinarySearchingInsertionIndex
+                    usingComparator:numComparator]
+        equals:8 message:"inserting index at end of range"];
+
+    [self assert:[[1, 2, 2] indexOfObject:2
+                            inSortedRange:CPMakeRange(0, 2) // [1, 2]
+                                  options:CPBinarySearchingLastEqual | CPBinarySearchingInsertionIndex
+                          usingComparator:numComparator]
+          equals:2 message:"insertion index should not be off by one when applying a range"];
 
 }
 
-- (void)testInitWithArrayCopyItems
+- (void)test_isEqualToArray_
 {
-    var a = [[CopyableObject new], 2, 3, {empty:true}];
-    var b = [[CPArray alloc] initWithArray:a copyItems:YES];
+    var arrayClass = [[self class] arrayClass],
+        lhs = [arrayClass arrayWithObjects:1, @"hello", [AlwaysEqual new], [arrayClass arrayWithObjects:1]],
+        rhs = [arrayClass arrayWithObjects:1, @"hello", [AlwaysEqual new], [arrayClass arrayWithObjects:1]];
 
-    [self assert:a notEqual:b];
+    [self assertTrue:[lhs isEqualToArray:lhs]];
+    [self assertTrue:[rhs isEqualToArray:rhs]];
+    [self assertFalse:[lhs isEqualToArray:nil]];
+    [self assertFalse:[rhs isEqualToArray:nil]];
+    [self assertTrue:[lhs isEqualToArray:rhs]];
+    [self assertTrue:[rhs isEqualToArray:lhs]];
 
-    [self assert:a[0] notEqual:b[0]];
-    [self assert:a[1] equals:b[1]];
-    [self assert:a[2] equals:b[2]];
-    [self assertTrue:a[3] === b[3]];
+    lhs = [arrayClass arrayWithObjects:1];
+    rhs = [arrayClass array];
+
+    [self assertTrue:[lhs isEqualToArray:lhs]];
+    [self assertTrue:[rhs isEqualToArray:rhs]];
+    [self assertFalse:[lhs isEqualToArray:nil]];
+    [self assertFalse:[rhs isEqualToArray:nil]];
+    [self assertFalse:[lhs isEqualToArray:rhs]];
+    [self assertFalse:[rhs isEqualToArray:lhs]];
+
+    lhs = [arrayClass arrayWithObjects:1, 2, 3];
+    rhs = [arrayClass arrayWithObjects:3, 2, 1];
+
+    [self assertTrue:[lhs isEqualToArray:lhs]];
+    [self assertTrue:[rhs isEqualToArray:rhs]];
+    [self assertFalse:[lhs isEqualToArray:nil]];
+    [self assertFalse:[rhs isEqualToArray:nil]];
+    [self assertFalse:[lhs isEqualToArray:rhs]];
+    [self assertFalse:[rhs isEqualToArray:lhs]];
+
+    lhs = [arrayClass arrayWithObjects:1, 2, 3];
+    rhs = [arrayClass arrayWithObjects:5];
+
+    [self assertTrue:[lhs isEqualToArray:lhs]];
+    [self assertTrue:[rhs isEqualToArray:rhs]];
+    [self assertFalse:[lhs isEqualToArray:nil]];
+    [self assertFalse:[rhs isEqualToArray:nil]];
+    [self assertFalse:[lhs isEqualToArray:rhs]];
+    [self assertFalse:[rhs isEqualToArray:lhs]];
 }
 
-- (void)testIsEqualToArray
+- (void)test_arrayByAddingObject_
 {
-    var a = [1, 2, 3],
-        b = [5];
+    var arrayClass = [[self class] arrayClass],
+        array = [arrayClass array],
+        nextArray = [array arrayByAddingObject:0];
 
-    [self assertTrue:[a isEqualToArray:a]];
-    [self assertFalse:[a isEqualToArray:b]];
-    [self assertFalse:[a isEqualToArray:nil]];
+    [self assert:[array count] same:0];
+    [self assert:[nextArray count] same:1];
+    [self assert:nextArray equals:[arrayClass arrayWithObjects:0]];
+
+    array = nextArray;
+    nextArray = [array arrayByAddingObject:1];
+
+    [self assert:[array count] same:1];
+    [self assert:[nextArray count] same:2];
+    [self assert:nextArray equals:[arrayClass arrayWithObjects:0, 1]];
+
+    array = nextArray;
+    nextArray = [array arrayByAddingObject:[arrayClass arrayWithObjects:1, 3]];
+
+    [self assert:[array count] same:2];
+    [self assert:[nextArray count] same:3];
+    [self assert:nextArray equals:[arrayClass arrayWithObjects:0, 1, [arrayClass arrayWithObjects:1, 3]]];
+
+    return array;
 }
 
-- (void)testIsEqualToArray
+- (void)test_arrayByAddingObjectFromArray_
 {
-    var a = [1, 2, 3],
-        b = [5];
+    var arrayClass = [[self class] arrayClass],
+        array = [arrayClass array],
+        otherArray = [arrayClass array],
+        nextArray = [array arrayByAddingObjectsFromArray:otherArray];
 
-    [self assertTrue:[a isEqualToArray:a]];
-    [self assertFalse:[a isEqualToArray:b]];
-    [self assertFalse:[a isEqualToArray:nil]];
+    [self assert:[array count] same:0];
+    [self assert:[nextArray count] same:0];
+    [self assert:array equals:[arrayClass array]];
+    [self assert:otherArray equals:[arrayClass array]];
+    [self assert:array equals:nextArray];
+
+    otherArray = [arrayClass arrayWithObjects:1, 2, 3];
+    nextArray = [array arrayByAddingObjectsFromArray:otherArray];
+
+    [self assert:[array count] same:0];
+    [self assert:[otherArray count] same:3];
+    [self assert:[nextArray count] same:3];
+    [self assert:array equals:[arrayClass array]];
+    [self assert:otherArray equals:[arrayClass arrayWithObjects:1, 2, 3]];
+    [self assert:nextArray equals:[arrayClass arrayWithObjects:1, 2, 3]];
+
+    array = nextArray;
+    otherArray = [arrayClass arrayWithObjects:5];
+    nextArray = [array arrayByAddingObjectsFromArray:otherArray];
+
+    [self assert:[array count] same:3];
+    [self assert:[otherArray count] same:1];
+    [self assert:[nextArray count] same:4];
+    [self assert:array equals:[arrayClass arrayWithObjects:1, 2, 3]];
+    [self assert:otherArray equals:[arrayClass arrayWithObjects:5]];
+    [self assert:nextArray equals:[arrayClass arrayWithObjects:1, 2, 3, 5]];
+
+    array = nextArray;
+    otherArray = [1, 2, 3];
+    nextArray = [array arrayByAddingObjectsFromArray:otherArray];
+
+    [self assert:[array count] same:4];
+    [self assert:[otherArray count] same:3];
+    [self assert:[nextArray count] same:7];
+    [self assert:array equals:[arrayClass arrayWithObjects:1, 2, 3, 5]];
+    [self assert:otherArray equals:[arrayClass arrayWithObjects:1, 2, 3]];
+    [self assert:nextArray equals:[arrayClass arrayWithObjects:1, 2, 3, 5, 1, 2, 3]];
+
+    return array;
 }
 
-- (void)testThatCPArrayDoesSortUsingDescriptorsForStrings
+- (void)test_componentsJoinedByString_
 {
-    var target = ["a", "b", "c", "d"],
-        pretty = [];
+    var arrayClass = [[self class] arrayClass],
+        tests = [
+                    [[arrayClass array], "", ""],
+                    [[arrayClass array], "-", ""],
+                    [[arrayClass arrayWithObjects:1, 2], "-", "1-2"],
+                    [[arrayClass arrayWithObjects:1, 2, 3], "-", "1-2-3"],
+                    [[arrayClass arrayWithObjects:"123", 456], "-", "123-456"]
+                ],
+        index = 0,
+        count = tests.length;
 
-    for(var i = 0; i < target.length; i++)
-        pretty.push([[CPPrettyObject alloc] initWithValue:target[i] number:i]);
-
-    [pretty sortUsingDescriptors:[[[CPSortDescriptor alloc] initWithKey:@"value" ascending:NO]]];
-
-    [self assert:"(\n\t3:d, \n\t2:c, \n\t1:b, \n\t0:a\n)" equals:[pretty description]];
-
-    [pretty sortUsingDescriptors:[[[CPSortDescriptor alloc] initWithKey:@"value" ascending:YES]]];
-
-    [self assert:"(\n\t0:a, \n\t1:b, \n\t2:c, \n\t3:d\n)" equals:[pretty description]]
-}
-
-- (void)testThatCPArrayDoesSortUsingTwoDescriptors
-{
-    var descriptors = [
-                        [[CPSortDescriptor alloc] initWithKey:@"value" ascending:NO],
-                        [[CPSortDescriptor alloc] initWithKey:@"number" ascending:NO]
-                      ],
-        target = [
-                    [[CPPrettyObject alloc] initWithValue:@"a" number:1],
-                    [[CPPrettyObject alloc] initWithValue:@"a" number:2],
-                    [[CPPrettyObject alloc] initWithValue:@"a" number:3],
-                    [[CPPrettyObject alloc] initWithValue:@"b" number:1],
-                    [[CPPrettyObject alloc] initWithValue:@"b" number:2],
-                    [[CPPrettyObject alloc] initWithValue:@"b" number:3],
-                 ];
-
-    [target sortUsingDescriptors:descriptors];
-
-    [self assert:@"3:b" equals:[target[0] description]];
-    [self assert:@"2:b" equals:[target[1] description]];
-    [self assert:@"1:b" equals:[target[2] description]];
-    [self assert:@"3:a" equals:[target[3] description]];
-    [self assert:@"2:a" equals:[target[4] description]];
-    [self assert:@"1:a" equals:[target[5] description]];
-}
-
-- (void)testThatCPArrayDoesSortUsingTwoDescriptorsOpposite
-{
-    var descriptors = [
-                          [[CPSortDescriptor alloc] initWithKey:@"number" ascending:NO],
-                          [[CPSortDescriptor alloc] initWithKey:@"value" ascending:NO]
-                      ],
-        target = [
-                    [[CPPrettyObject alloc] initWithValue:@"a" number:1],
-                    [[CPPrettyObject alloc] initWithValue:@"a" number:2],
-                    [[CPPrettyObject alloc] initWithValue:@"a" number:3],
-                    [[CPPrettyObject alloc] initWithValue:@"b" number:1],
-                    [[CPPrettyObject alloc] initWithValue:@"b" number:2],
-                    [[CPPrettyObject alloc] initWithValue:@"b" number:3],
-                 ];
-
-    [target sortUsingDescriptors:descriptors];
-
-    [self assert:@"3:b" equals:[target[0] description]];
-    [self assert:@"3:a" equals:[target[1] description]];
-    [self assert:@"2:b" equals:[target[2] description]];
-    [self assert:@"2:a" equals:[target[3] description]];
-    [self assert:@"1:b" equals:[target[4] description]];
-    [self assert:@"1:a" equals:[target[5] description]];
-}
-
-- (void)testThatCPArrayDoesSortUsingDescriptorWithMultipleSameValues
-{
-    var descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:NO]],
-        target = [1, 1, 2, 4, 3, 1, 2, 4, 5, 1];
-
-    [target sortUsingDescriptors:descriptors];
-
-    [self assert:[5, 4, 4, 3, 2, 2, 1, 1, 1, 1] equals:target];
+    for (; index < count; ++index)
+        [self assert:[tests[index][0] componentsJoinedByString:tests[index][1]] equals:tests[index][2]];
 }
 
 @end
 
-@implementation CPPrettyObject : CPObject
+@implementation AlwaysEqual : CPObject
 {
-    CPString        value       @accessors;
-    CPNumber        number      @accessors;
 }
 
-- (id)initWithValue:(CPString)aValue number:(CPNumber)aNumber
+- (BOOL)isEqual:(id)anObject
 {
-    self = [super init];
-    if (self)
-    {
-        number = aNumber;
-        value = aValue;
-    }
-    return self;
-}
-
-- (CPString)description
-{
-    return number + ":" + value;
+    return [anObject isKindOfClass:AlwaysEqual];
 }
 
 @end
 
-
-@implementation CPArray (reverse)
+@implementation CPArray (TestingAdditions)
 
 - (CPArray)arrayByReversingArray
 {
-    var a = [];
-    for (i = length - 1; i > 0; --i)
-        a.push(self[i]);
+    var args = [[self class], @selector(arrayWithObjects:)],
+        index = [self count];
 
-    return a;
+    while (index--)
+        args.push([self objectAtIndex:index]);
+
+    return objj_msgSend.apply(this, args);
 }
 
 @end
 
-@implementation CopyableObject : CPObject
+@implementation ConcreteArray : CPArray
 {
+    Array   array;
 }
 
-- (id)copy
+- (id)initWithObjects:(id)anObject, ...
 {
-    return [[[self class] alloc] init];
+    // The arguments array contains self and _cmd, so the first object is at position 2.
+    var index = 2,
+        count = arguments.length;
+
+    for (; index < count; ++index)
+        if (arguments[index] === nil)
+            break;
+
+    array = Array.prototype.slice.call(arguments, 2, index);
+
+    return self;
+}
+
+- (id)init
+{
+    self = [super init];
+
+    if (self)
+        array = [];
+
+    return self;
+}
+
+- (id)initWithArray:(CPArray)anArray
+{
+    self = [super init];
+
+    if (self)
+        array = [anArray copy];
+
+    return self;
+}
+
+- (CPUInteger)count
+{
+    return array.length;
+}
+
+- (id)objectAtIndex:(CPUInteger)anIndex
+{
+    if (anIndex < 0 || anIndex >= [self count])
+        throw "range error";
+
+    return array[anIndex];
 }
 
 @end

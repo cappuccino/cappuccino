@@ -20,9 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPArray.j"
 @import "CPObject.j"
 @import "CPRange.j"
-
 
 #define _CPMaxRange(aRange) ((aRange).location + (aRange).length)
 #define _CPMakeRange(aLocation, aLength) { location:(aLocation), length:aLength }
@@ -159,7 +159,7 @@
     var rangesCount = _ranges.length,
         otherRanges = anIndexSet._ranges;
 
-    // If we have a discrepency in the number of ranges or the number of indexes,
+    // If we have a discrepancy in the number of ranges or the number of indexes,
     // simply return NO.
     if (rangesCount !== otherRanges.length || _count !== anIndexSet._count)
         return NO;
@@ -215,7 +215,7 @@
 }
 
 /*!
-    Returns \c YES if the receving index set contains all the indices in the argument.
+    Returns \c YES if the receiving index set contains all the indices in the argument.
     @param anIndexSet the set of indices to check for in the receiving index set
 */
 - (BOOL)containsIndexes:(CPIndexSet)anIndexSet
@@ -836,7 +836,7 @@ var CPIndexSetCountKey              = @"CPIndexSetCountKey",
 /*!
     Creates a deep copy of the index set. The returned copy
     is mutable. The reason for the two copy methods is for
-    source compatability with GNUStep code.
+    source compatibility with GNUStep code.
     @return the index set copy
 */
 - (id)copy
@@ -847,7 +847,7 @@ var CPIndexSetCountKey              = @"CPIndexSetCountKey",
 /*!
     Creates a deep copy of the index set. The returned copy
     is mutable. The reason for the two copy methods is for
-    source compatability with GNUStep code.
+    source compatibility with GNUStep code.
     @return the index set copy
 */
 - (id)mutableCopy
@@ -859,11 +859,11 @@ var CPIndexSetCountKey              = @"CPIndexSetCountKey",
 
 /*!
     @class CPMutableIndexSet
-    @ingroup compatability
+    @ingroup compatibility
 
     This class is an empty of subclass of CPIndexSet.
     CPIndexSet already implements mutable methods, and
-    this class only exists for source compatability.
+    this class only exists for source compatibility.
 */
 @implementation CPMutableIndexSet : CPIndexSet
 

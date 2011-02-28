@@ -449,14 +449,13 @@ var themedButtonValues = nil,
             [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0], CPThemeStateBordered | CPThemeStateDisabled],
             [@"text-shadow-offset", CGSizeMake(0.0, 1.0), CPThemeStateBordered],
             [@"line-break-mode",    CPLineBreakByTruncatingTail],
-            [@"content-inset",      CGInsetMake(0.0, 7.0, 0.0, 7.0), CPThemeStateBordered],
             [@"bezel-color",        bezelColor,                     CPThemeStateBordered],
             [@"bezel-color",        highlightedBezelColor,          CPThemeStateBordered | CPThemeStateHighlighted],
             [@"bezel-color",        disabledBezelColor,             CPThemeStateBordered | CPThemeStateDisabled],
             [@"bezel-color",        defaultBezelColor,              CPThemeStateBordered | CPThemeStateDefault],
             [@"bezel-color",        defaultHighlightedBezelColor,   CPThemeStateBordered | CPThemeStateHighlighted | CPThemeStateDefault],
             [@"bezel-color",        defaultDisabledBezelColor,      CPThemeStateBordered | CPThemeStateDefault | CPThemeStateDisabled],
-            [@"content-inset",      CGInsetMake(0.0, 5.0, 0.0, 5.0), CPThemeStateBordered],
+            [@"content-inset",      CGInsetMake(0.0, 7.0, 0.0, 7.0), CPThemeStateBordered],
 
             [@"bezel-color",        roundedBezelColor,                      CPThemeStateBordered | CPButtonStateBezelStyleRounded],
             [@"bezel-color",        roundedHighlightedBezelColor,           CPThemeStateBordered | CPThemeStateHighlighted | CPButtonStateBezelStyleRounded],
@@ -464,7 +463,7 @@ var themedButtonValues = nil,
             [@"bezel-color",        defaultRoundedBezelColor,               CPThemeStateBordered | CPThemeStateDefault | CPButtonStateBezelStyleRounded],
             [@"bezel-color",        defaultRoundedHighlightedBezelColor,    CPThemeStateBordered | CPThemeStateHighlighted | CPThemeStateDefault | CPButtonStateBezelStyleRounded],
             [@"bezel-color",        defaultRoundedDisabledBezelColor,       CPThemeStateBordered | CPThemeStateDefault | CPThemeStateDisabled | CPButtonStateBezelStyleRounded],
-            [@"content-inset",      CGInsetMake(0.0, 10.0, 0.0, 10.0), CPThemeStateBordered],
+            [@"content-inset",      CGInsetMake(0.0, 10.0, 0.0, 10.0), CPThemeStateBordered | CPButtonStateBezelStyleRounded],
 
             [@"text-color",         [CPColor colorWithCalibratedWhite:0.6 alpha:1.0],   CPThemeStateDisabled],
 
@@ -805,6 +804,7 @@ var themedButtonValues = nil,
     // Global for reuse by CPTokenField.
     themedTextFieldValues =
     [
+        [@"vertical-alignment", CPTopVerticalTextAlignment,         CPThemeStateBezeled],
         [@"bezel-color",        bezelColor,                         CPThemeStateBezeled],
         [@"bezel-color",        bezelFocusedColor,                  CPThemeStateBezeled | CPThemeStateEditing],
         [@"bezel-color",        bezelDisabledColor,                 CPThemeStateBezeled | CPThemeStateDisabled],
@@ -822,8 +822,12 @@ var themedButtonValues = nil,
         [@"content-inset",      CGInsetMake(0.0, 0.0, 0.0, 5.0),    CPThemeStateTableDataView],
 
         [@"text-color",         [CPColor colorWithCalibratedWhite:51.0 / 255.0 alpha:1.0], CPThemeStateTableDataView],
-        [@"text-color",         [CPColor whiteColor],               CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
-        [@"font",               [CPFont boldSystemFontOfSize:12.0], CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
+        [@"text-color",         [CPColor whiteColor],                CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
+        [@"font",               [CPFont boldSystemFontOfSize:12.0],  CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
+        [@"text-color",         [CPColor blackColor],                CPThemeStateTableDataView | CPThemeStateEditing],
+        [@"content-inset",      CGInsetMake(7.0, 7.0, 5.0, 8.0),     CPThemeStateTableDataView | CPThemeStateEditing],
+        [@"font",               [CPFont systemFontOfSize:12.0],      CPThemeStateTableDataView | CPThemeStateEditing],
+        [@"bezel-inset",        CGInsetMake(-2.0, -2.0, -2.0, -2.0), CPThemeStateTableDataView | CPThemeStateEditing],
 
         [@"text-color",         [CPColor colorWithCalibratedWhite:125.0 / 255.0 alpha:1.0], CPThemeStateTableDataView | CPThemeStateGroupRow],
         [@"text-color",         [CPColor colorWithCalibratedWhite:1.0 alpha:1.0], CPThemeStateTableDataView | CPThemeStateGroupRow | CPThemeStateSelectedTableDataView],
@@ -872,7 +876,9 @@ var themedButtonValues = nil,
             [@"bezel-color",    bezelFocusedColor,                  CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
             [@"font",           [CPFont systemFontOfSize:12.0]],
 
-            [@"content-inset",  CGInsetMake(9.0, 14.0, 6.0, 14.0),  CPTextFieldStateRounded | CPThemeStateBezeled],
+            [@"content-inset",  CGInsetMake(8.0, 14.0, 6.0, 14.0),  CPTextFieldStateRounded | CPThemeStateBezeled],
+            [@"content-inset",  CGInsetMake(7.0, 14.0, 6.0, 14.0),  CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
+
             [@"bezel-inset",    CGInsetMake(4.0, 4.0, 4.0, 4.0),    CPTextFieldStateRounded | CPThemeStateBezeled],
             [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
 
@@ -897,6 +903,7 @@ var themedButtonValues = nil,
 + (CPSearchField)themedSearchField
 {
     var searchField = [[CPSearchField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 30.0)];
+
     [self registerThemeValues:nil forView:searchField inherit:themedRoundedTextFieldValues];
     return searchField;
 }
@@ -1448,9 +1455,9 @@ var themedButtonValues = nil,
         alternatingRowColors = [[CPColor whiteColor], [CPColor colorWithRed:245.0 / 255.0 green:249.0 / 255.0 blue:252.0 / 255.0 alpha:1.0]],
         gridColor = [CPColor colorWithHexString:@"dce0e2"],
         selectionColor = [CPColor colorWithHexString:@"5f83b9"],
-        sourceListSelectionColor = [CPDictionary dictionaryWithObjects: [CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [89.0 / 255.0, 153.0 / 255.0, 209.0 / 255.0,1.0, 33.0 / 255.0, 94.0 / 255.0, 208.0 / 255.0,1.0], [0,1], 2),
-                                                                          [CPColor colorWithCalibratedRed:(61.0 / 255.0) green:(123.0 / 255.0) blue:(218.0 / 255.0) alpha:1.0],
-                                                                          [CPColor colorWithCalibratedRed:(31.0 / 255.0) green:(92.0 / 255.0) blue:(207.0 / 255.0) alpha:1.0]
+        sourceListSelectionColor = [CPDictionary dictionaryWithObjects: [CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [98.0 / 255.0, 143.0 / 210.0, 209.0 / 255.0, 1.0, 46.0 / 255.0, 88.0 / 176.0, 208.0 / 255.0,1.0], [0,1], 2),
+                                                                          [CPColor colorWithCalibratedRed:81.0/255.0 green:127.0/255.0 blue:200.0/255.0 alpha:1.0],
+                                                                          [CPColor colorWithCalibratedRed:34.0/255.0 green:63.0/255.0 blue:123.0/255.0 alpha:1.0]
                                                                         ]
                                                                forKeys: [CPSourceListGradient, CPSourceListTopLineColor, CPSourceListBottomLineColor]],
 
@@ -1495,8 +1502,8 @@ var themedButtonValues = nil,
 
     var themedSplitViewValues =
         [
-            [@"divider-thickness", 10.0],
-            [@"pane-divider-thickness", 1.0],
+            [@"divider-thickness", 1.0],
+            [@"pane-divider-thickness", 10.0],
             [@"pane-divider-color", [CPColor colorWithRed:165.0 / 255.0 green:165.0 / 255.0 blue:165.0 / 255.0 alpha:1.0]]
         ];
 

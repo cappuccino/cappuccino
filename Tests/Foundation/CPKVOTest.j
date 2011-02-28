@@ -31,7 +31,7 @@
 
     [self assertTrue: [bob valueForKey:@"name"] == @"set_bob" message: "valueForKey:'name' should be 'set_bob', was: "+[bob valueForKey:@"name"]];
     [self assertTrue: bob.name == @"set_bob" message: "bob.name should be 'set_bob', was: "+bob.name];
-    [self assertTrue: _sawObservation message:"Never recieved an observation"];
+    [self assertTrue: _sawObservation message:"Never received an observation"];
 }
 
 - (void)testUnobservedKey
@@ -438,6 +438,30 @@
     [object setOtherAffectingKey:@"value"];
 
     [self assert:observationCount equals:3];
+}
+
+- (void)testSettersReplacedOnce
+{
+    var bob = [[PersonTester alloc] init],
+        betty = [CPObject new];
+
+    [bob addObserver:self forKeyPath:@"name" options:nil context:"testSettersReplacedOnce"];
+
+    var oldImp = class_getMethodImplementation(bob.isa, @selector(setName:));
+
+    [bob removeObserver:self forKeyPath:@"name"];
+
+    [bob addObserver:self forKeyPath:@"name" options:nil context:"testSettersReplacedOnce"];
+
+    var newImp = class_getMethodImplementation(bob.isa, @selector(setName:));
+
+    [self assertTrue:newImp === oldImp];
+
+    [bob addObserver:betty forKeyPath:@"name" options:nil context:"testSettersReplacedOnce"];
+
+    var newImp = class_getMethodImplementation(bob.isa, @selector(setName:));
+
+    [self assertTrue:newImp === oldImp];
 }
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)changes context:(id)aContext

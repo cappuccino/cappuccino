@@ -125,7 +125,7 @@ var cachedBlackColor,
 }
 
 /*!
-    @deprecated in favor of colorWithWhite:apha:
+    @deprecated in favor of colorWithWhite:alpha:
 
     Creates a new color object with \c white for the RGB components.
     For the alpha component, a value of 1.0 is opaque, and 0.0 means completely transparent.

@@ -384,7 +384,7 @@ CPCircularSlider    = 1;
 
 /*!
     @ignore
-    shoudl we have _continuous?
+    should we have _continuous?
 */
 - (void)setContinuous:(BOOL)flag
 {

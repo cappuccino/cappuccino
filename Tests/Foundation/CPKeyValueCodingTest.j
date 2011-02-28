@@ -349,7 +349,7 @@ var accessIVARS = YES;
                     "propertyWithPublicAccessor","propertyWithPrivateAccessor"
                     ];
     var allValues = [value,value,value,value,value,value];
-    var dictForKeys = [CPDictionary dictionaryWithObjects: allValues forKeys: allKeys];             
+    var dictForKeys = [CPDictionary dictionaryWithObjects: allValues forKeys: allKeys];
     [self assertNoThrow:function(){[kvcTestObject setValuesForKeysWithDictionary: dictForKeys];}];
 }
 
@@ -361,7 +361,7 @@ var accessIVARS = YES;
                     "propertyWithPublicAccessor","propertyWithPrivateAccessor"
                     ];
     var allValues = [value,value,value,value,value,value];
-    var dictForKeys = [CPDictionary dictionaryWithObjects: allValues forKeys: allKeys];             
+    var dictForKeys = [CPDictionary dictionaryWithObjects: allValues forKeys: allKeys];
     [self assertThrows:function(){[kvcTestObject setValuesForKeysWithDictionary: dictForKeys];}];
 }
 
@@ -375,7 +375,7 @@ var accessIVARS = YES;
                     "propertyWithPublicAccessor","propertyWithPrivateAccessor"
                     ];
     var allValues = [value,value,value,value,value,value];
-    var dictForKeys = [CPDictionary dictionaryWithObjects: allValues forKeys: allKeys];             
+    var dictForKeys = [CPDictionary dictionaryWithObjects: allValues forKeys: allKeys];
     [kvcTestObject setValuesForKeysWithDictionary: dictForKeys];
 
     var key, aValue, keyEnumerator = [dictForKeys keyEnumerator];
@@ -426,7 +426,7 @@ var accessIVARS = YES;
                     "propertyWithPublicAccessor","propertyWithPrivateAccessor"
                     ];
     var allValues = [value,value,value,value,value,value];
-    var dictForKeys = [CPDictionary dictionaryWithObjects: allValues forKeys: allKeys];             
+    var dictForKeys = [CPDictionary dictionaryWithObjects: allValues forKeys: allKeys];
     [kvcTestObject setValuesForKeysWithDictionary: dictForKeys];
 
     [self assertNull: [kvcTestObject valueForKey: "privatePropertyWithoutAccessors"]];
@@ -459,7 +459,7 @@ var accessIVARS = YES;
 
 @end
 
-// CPNull 
+// CPNull
 
 @implementation CPKeyValueCodingTest (CPNullTest)
 
@@ -611,6 +611,14 @@ var accessIVARS = YES;
     [self assert:[@"two", @"four"] equals:[array objectsAtIndexes:indexes]];
 }
 
+- (void)testKVArrayCopy
+{
+    var object = [ObjectsAtIndexesClass new],
+        array = [object valueForKey:@"objects"];
+
+    [self assert:[CPArray arrayWithObjects:@"one", @"two", @"three", @"four", @"five"] equals:[array copy]];
+}
+
 @end
 
 
@@ -659,29 +667,16 @@ var accessIVARS = YES;
     [self assertFalse:[set containsObject:8]];
     [self assertFalse:[set containsObject:10]];
 
-    [self   assert:[set setByAddingObjectsFromArray:[2, 3, 4, 5, 6]]
+    [self assert:[set setByAddingObjectsFromArray:[2, 3, 4, 5, 6]]
             equals:[CPSet setWithObjects:0, 1, 2, 3, 4, 5, 6, 7]];
 }
 
-- (void)testObjectsAtIndexes_
+- (void)testKVSetCopy
 {
-    var object = [ObjectsAtIndexesClass new],
-        array = [object valueForKey:@"objects"];
+    var object = [UnorderedAccessorClass new],
+        set = [object valueForKey:@"objects"];
 
-    [self assert:5 equals:[array count]];
-
-    [self assert:@"one" equals:[array objectAtIndex:0]];
-    [self assert:@"two" equals:[array objectAtIndex:1]];
-    [self assert:@"three" equals:[array objectAtIndex:2]];
-    [self assert:@"four" equals:[array objectAtIndex:3]];
-    [self assert:@"five" equals:[array objectAtIndex:4]];
-
-    var indexes = [CPIndexSet indexSet];
-
-    [indexes addIndex:1];
-    [indexes addIndex:3];
-
-    [self assert:[@"two", @"four"] equals:[array objectsAtIndexes:indexes]];
+    [self assert:[CPSet setWithObjects:0, 1, 3, 5, 7] equals:[set copy]];
 }
 
 @end

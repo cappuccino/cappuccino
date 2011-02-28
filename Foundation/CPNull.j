@@ -22,7 +22,6 @@
 
 @import "CPObject.j"
 
-
 var CPNullSharedNull = nil;
 
 /*!

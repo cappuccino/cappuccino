@@ -21,12 +21,11 @@
  */
 
 @import "CPDictionary.j"
-@import "CPObject.j"
 @import "CPNotification.j"
 @import "CPNotificationCenter.j"
+@import "CPObject.j"
 
-
-CPBundleDidLoadNotification = "CPBundleDidLoadNotification";
+CPBundleDidLoadNotification = @"CPBundleDidLoadNotification";
 
 /*!
     @class CPBundle

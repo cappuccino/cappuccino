@@ -23,7 +23,6 @@
 @import "CPException.j"
 @import "CPObject.j"
 
-
 /*!
     @class CPCoder
     @ingroup foundation
@@ -147,7 +146,7 @@
 
 /*!
     Called after an object is unarchived in case a different object should be used in place of it.
-    The defaut method returns \c self. Interested subclasses should override this.
+    The default method returns \c self. Interested subclasses should override this.
     @param aDecoder
     @return the original object or it's substitute.
 */

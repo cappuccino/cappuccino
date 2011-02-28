@@ -47,7 +47,7 @@ function CGColorGetConstantColor(aColorName)
 }
 
 /*!
-    This function is for source compatability.
+    This function is for source compatibility.
 */
 function CGColorRetain(aColor)
 {
@@ -55,7 +55,7 @@ function CGColorRetain(aColor)
 }
 
 /*!
-    This function is for source compatability.
+    This function is for source compatibility.
 */
 function CGColorRelease()
 {

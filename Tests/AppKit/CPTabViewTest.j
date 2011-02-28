@@ -76,5 +76,15 @@
     [self assert:[box frameSize].height  equals:800 - [tabs frameSize].height / 2];
 }
 
+- (void)testTabViewGetsSetOnViewItem
+{
+    [self assert:[_tabItem1 tabView] equals:_tabView];
+}
+
+- (void)testTabViewGetsRemoveOnViewItem
+{
+    [_tabView removeTabViewItem:_tabItem1];
+    [self assertNull:[_tabItem1 tabView]];
+}
 
 @end

@@ -36,30 +36,41 @@
 
         var dataViewCell = [aCoder decodeObjectForKey:@"NSDataCell"];
 
-        _dataView = [[CPTextField alloc] initWithFrame:CPRectMakeZero()];
+        if ([dataViewCell isKindOfClass:[NSImageCell class]])
+        {
+            _dataView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
+            [_dataView setImageScaling:[dataViewCell imageScaling]];
+            [_dataView setImageAlignment:[dataViewCell imageAlignment]];
+        }
+        else
+        {
+            _dataView = [[CPTextField alloc] initWithFrame:CPRectMakeZero()];
+            
+            var font = [dataViewCell font],
+                selectedFont = nil;
+            
+            if (!font)
+                font = [CPFont systemFontOfSize:12.0];
+            
+            var selectedFont = [CPFont boldFontWithName:[font familyName] size:[font size]];
+            
+            [_dataView setFont:font];
+            [_dataView setValue:selectedFont forThemeAttribute:@"font" inState:CPThemeStateSelectedDataView];
+            
+            [_dataView setLineBreakMode:CPLineBreakByTruncatingTail];
 
-        var font = [dataViewCell font],
-            selectedFont = nil;
+            [_dataView setValue:CPCenterVerticalTextAlignment forThemeAttribute:@"vertical-alignment"];
+            [_dataView setValue:CGInsetMake(0.0, 5.0, 0.0, 5.0) forThemeAttribute:@"content-inset"];
+            
+            var textColor = [dataViewCell textColor],
+                defaultColor = [_dataView currentValueForThemeAttribute:@"text-color"];
+            
+            // Don't change the text color if it is not the default, that messes up the theme lookups later
+            if (![textColor isEqual:defaultColor])
+                [_dataView setTextColor:[dataViewCell textColor]];
+        }
 
-        if (!font)
-            font = [CPFont systemFontOfSize:12.0];
-
-        var selectedFont = [CPFont boldFontWithName:[font familyName] size:[font size]];
-
-        [_dataView setFont:font];
-        [_dataView setValue:selectedFont forThemeAttribute:@"font" inState:CPThemeStateSelectedDataView];
-
-        [_dataView setLineBreakMode:CPLineBreakByTruncatingTail];
         [_dataView setValue:[dataViewCell alignment] forThemeAttribute:@"alignment"];
-        [_dataView setValue:CPCenterVerticalTextAlignment forThemeAttribute:@"vertical-alignment"];
-        [_dataView setValue:CGInsetMake(0.0, 5.0, 0.0, 5.0) forThemeAttribute:@"content-inset"];
-
-        var textColor = [dataViewCell textColor],
-            defaultColor = [_dataView currentValueForThemeAttribute:@"text-color"];
-
-        // Don't change the text color if it is not the default, that messes up the theme lookups later
-        if (![textColor isEqual:defaultColor])
-            [_dataView setTextColor:[dataViewCell textColor]];
 
         var headerCell = [aCoder decodeObjectForKey:@"NSHeaderCell"],
             headerView = [[_CPTableColumnHeaderView alloc] initWithFrame:CPRectMakeZero()];
