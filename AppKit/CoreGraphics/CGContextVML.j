@@ -304,7 +304,7 @@ function CGContextDrawLinearGradient(aContext, aGradient, aStartPoint, anEndPoin
         vml.push("colors=\"");
 
         for (var i = 0; i < count; i++)
-            vml.push((aGradient.locations[i]*100).toFixed(0)+"% "+to_string(colors[i])+(i<count-1 ? "," : ""));
+            vml.push((aGradient.locations[i] * 100).toFixed(0)+"% " + to_string(colors[i])+(i < count - 1 ? "," : ""));
 
         vml.push("\" />");
     }

@@ -7,7 +7,7 @@ _CPMenuManagerScrollingStateNone    = 0;
 
 var STICKY_TIME_INTERVAL        = 500;
 
-var SharedMenuManager = nil;
+var SharedMenuManager           = nil;
 
 @implementation _CPMenuManager: CPObject
 {
@@ -36,7 +36,7 @@ var SharedMenuManager = nil;
     if (SharedMenuManager)
         return SharedMenuManager;
 
-    return [super init];    
+    return [super init];
 }
 
 - (id)trackingMenuContainer
@@ -135,13 +135,13 @@ var SharedMenuManager = nil;
     {
         if (!_lastMouseOverMenuView)
             [activeMenu _highlightItemAtIndex:CPNotFound];
-        
+
         if (_lastMouseOverMenuView != mouseOverMenuView)
         {
             [mouseOverMenuView mouseExited:anEvent];
             // FIXME: Possibly multiple of these?
             [_lastMouseOverMenuView mouseEntered:anEvent];
-            
+
             _lastMouseOverMenuView = mouseOverMenuView;
         }
 
@@ -166,9 +166,9 @@ var SharedMenuManager = nil;
             [_lastMouseOverMenuView mouseExited:anEvent];
             _lastMouseOverMenuView = nil;
         }
-        
+
         [activeMenu _highlightItemAtIndex:activeItemIndex];
-        
+
         if (type === CPMouseMoved || type === CPLeftMouseDragged || type === CPLeftMouseDown)
         {
             var oldScrollingState = _scrollingState;
@@ -179,7 +179,7 @@ var SharedMenuManager = nil;
             {
                 if (_scrollingState === _CPMenuManagerScrollingStateNone)
                     [CPEvent stopPeriodicEvents];
-            
+
                 else if (oldScrollingState === _CPMenuManagerScrollingStateNone)
                     [CPEvent startPeriodicEventsAfterDelay:0.0 withPeriod:0.04];
             }
@@ -203,7 +203,7 @@ var SharedMenuManager = nil;
         [self showMenu:[activeItem submenu] fromMenu:[activeItem menu] atPoint:newMenuOrigin];
     }
 
-    // This handles both the case where we've moved away from the menu, and where 
+    // This handles both the case where we've moved away from the menu, and where
     // we've moved to an item without a submenu.
     else
         [self showMenu:nil fromMenu:activeMenu atPoint:CGPointMakeZero()];
@@ -358,8 +358,8 @@ var SharedMenuManager = nil;
     if (baseMenu === [self trackingMenu] && [[self trackingMenuContainer] isMenuBar])
         [menuWindow setBackgroundStyle:_CPMenuWindowMenuBarBackgroundStyle];
     else
-        [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];        
-    
+        [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
+
     [menuWindow setFrameOrigin:aGlobalLocation];
     [menuWindow orderFront:self];
 }

@@ -34,13 +34,13 @@
 - (id)initWithLevel:(int)aLevel
 {
     self = [super init];
-    
+
     if (self)
     {
         _level = aLevel;
-        
+
         _windows = [];
-        
+
         _DOMElement = document.createElement("div");
         _DOMElement.style.position = "absolute";
         _DOMElement.style.top = "0px";
@@ -48,7 +48,7 @@
         _DOMElement.style.width = "1px";
         _DOMElement.style.height = "1px";
     }
-    
+
     return self;
 }
 
@@ -74,7 +74,7 @@
         _windows[index]._index = index;
         _windows[index]._DOMElement.style.zIndex = index;
     }
-    
+
     aWindow._isVisible = NO;
 }
 
@@ -84,8 +84,8 @@
     var count = [_windows count],
         zIndex = (anIndex == CPNotFound ? count : anIndex),
         isVisible = aWindow._isVisible;
-    
-    // If the window is already a resident of this layer, remove it.    
+
+    // If the window is already a resident of this layer, remove it.
     if (isVisible)
     {
         zIndex = MIN(zIndex, aWindow._index);
@@ -93,12 +93,12 @@
     }
     else
         ++count;
-    
+
     if (anIndex == CPNotFound || anIndex >= count)
         [_windows addObject:aWindow];
     else
         [_windows insertObject:aWindow atIndex:anIndex];
-    
+
     // Adjust all the affected z-indexes.
     for (; zIndex < count; ++zIndex)
     {
@@ -112,7 +112,7 @@
         CPDOMDisplayServerAppendChild(_DOMElement, aWindow._DOMElement);
 
         aWindow._isVisible = YES;
-        
+
         if ([aWindow isFullBridge])
             [aWindow setFrame:[aWindow._platformWindow usableContentFrame]];
     }
