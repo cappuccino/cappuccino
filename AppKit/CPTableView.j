@@ -136,7 +136,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPTableView object displays record-oriented data in a table and
     allows the user to edit values and resize and rearrange columns.
     A CPTableView requires you to either set a data source which implements
-    @ref numberofrows "numberOfRowsInTableView:" and @ref objectValueForTable "tableView:objectValueForTableColumn:row:", 
+    @ref numberofrows "numberOfRowsInTableView:" and @ref objectValueForTable "tableView:objectValueForTableColumn:row:",
     or alternatively to provide data through Key Value Bindings.
 
     To use a table view with Key Value Bindings, bind each column's
@@ -420,7 +420,7 @@ The tableview will call this method if you click the tableheader. You should sor
     @code
 - (void)tableView:(CPTableView)aTableView sortDescriptorsDidChange:(CPArray)oldDescriptors;
     @endcode
-        
+
 
 @section draganddrop Drag and Drop:
 @note In order for the tableview to receive drops don't forget to first register the tableview for drag types like you do with every other view.
@@ -430,7 +430,7 @@ Return the drag operation (move, copy, etc) that should be performed if a regist
     @code
 - (CPDragOperation)tableView:(CPTableView)aTableView validateDrop:(CPDraggingInfo)info proposedRow:(int)row proposedDropOperation:(CPTableViewDropOperation)operation;
     @endcode
-        
+
 Returns YES if the drop operation is allowed otherwise NO. This method is invoked by the tableview after a drag should begin, but before it is started. If you don't want the drag to being return NO. If you want the drag to begin you should return YES and place the drag data on the pboard.
     @code
 - (BOOL)tableView:(CPTableView)aTableView writeRowsWithIndexes:(CPIndexSet)rowIndexes toPasteboard:(CPPasteboard)pboard;
@@ -1987,7 +1987,7 @@ NOT YET IMPLEMENTED
 
     // find the last visisble column
     while (count-- && [_tableColumns[count] isHidden]) ;
-        
+
     // find the max x, but subtract a single pixel since the spacing isn't applicable here.
     var delta = superviewWidth - _CGRectGetMaxX([self rectOfColumn:count]) - ([self intercellSpacing].width || 1),
         newSize = [item width] + delta;
@@ -2309,7 +2309,7 @@ NOT YET IMPLEMENTED
 
 /*!
 @anchor setdelegate
-    Sets the delegate of the receiver. 
+    Sets the delegate of the receiver.
     @param aDelegate the delegate object for the tableview.
 
     The delegate can provide easy notification for user interaction, display behaviour, contextual menus, and more.
@@ -4593,7 +4593,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         var extend = (([theEvent modifierFlags] & CPShiftKeyMask) && _allowsMultipleSelection),
             i = [self selectedRow];
 
-        if([self _selectionIsBroken])
+        if ([self _selectionIsBroken])
         {
             while ([selectedIndexes containsIndex:i])
             {

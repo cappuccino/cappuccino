@@ -123,17 +123,17 @@ function CGColorSpaceCreatePattern(aBaseColorSpace)
 {
     if (aBaseColorSpace)
         return _CGColorSpaceCreateWithModel(kCGColorSpaceModelPattern, aBaseColorSpace.count, aBaseColorSpace);
-    
+
     return _CGColorSpaceCreateWithModel(kCGColorSpaceModelPattern, 0, NULL);
 }
 
 function CGColorSpaceCreateWithName(aName)
 {
     var colorSpace = _CGNamedColorSpaces[aName];
-    
+
     if (colorSpace)
         return colorSpace;
-    
+
     switch (aName)
     {
         case kCGColorSpaceGenericGray:      return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelMonochrome, 1, NULL);
@@ -144,7 +144,7 @@ function CGColorSpaceCreateWithName(aName)
         case kCGColorSpaceAdobeRGB1998:     return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelRGB, 3, NULL);
         case kCGColorSpaceSRGB:             return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelRGB, 3, NULL);
     }
-    
+
     return NULL;
 }
 
@@ -214,9 +214,9 @@ function CGColorSpaceRetain(aColorSpace)
 function CGColorSpaceStandardizeComponents(aColorSpace, components)
 {
     var count = aColorSpace.count;
-    
-    // Standardize the alpha value.  We allow the alpha value to have a 
-    // higher precision than other components since it is not ultimately 
+
+    // Standardize the alpha value.  We allow the alpha value to have a
+    // higher precision than other components since it is not ultimately
     // bound to 256 bits like RGB.
     STANDARDIZE(components, count, 0, 1, 1000);
 
@@ -231,7 +231,7 @@ function CGColorSpaceStandardizeComponents(aColorSpace, components)
         case kCGColorSpaceModelDeviceN:     while (count--)
                                                 STANDARDIZE(components, count, 0, 1, 255);
                                             break;
-                                            
+
         // We don't currently support these color spaces.
         case kCGColorSpaceModelIndexed:
         case kCGColorSpaceModelLab:

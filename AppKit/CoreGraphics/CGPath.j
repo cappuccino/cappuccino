@@ -53,9 +53,9 @@ function CGPathCreateMutable()
 function CGPathCreateMutableCopy(aPath)
 {
     var path = CGPathCreateMutable();
-    
+
     CGPathAddPath(path, aPath);
-    
+
     return path;
 }
 
@@ -99,7 +99,7 @@ function CGPathAddArc(aPath, aTransform, x, y, aRadius, aStartAngle, anEndAngle,
         aStartAngle = ATAN2(start.y - aTransform.ty, start.x - aTransform.tx);
 
         // Angles that equal "modulo" 2 pi return as equal after transforming them,
-        // so we have to make sure to make them different again if they were different 
+        // so we have to make sure to make them different again if they were different
         // to start out with.  It's the difference between no circle and a full circle.
         if (anEndAngle == aStartAngle && oldEndAngle != oldStartAngle)
             if (oldStartAngle > oldEndAngle)
@@ -111,7 +111,7 @@ function CGPathAddArc(aPath, aTransform, x, y, aRadius, aStartAngle, anEndAngle,
         aRadius = _CGSizeApplyAffineTransform(aRadius, aTransform);
         aRadius = SQRT(aRadius.width * aRadius.width + aRadius.height * aRadius.height);
     }
-    
+
     aPath.current = _CGPointMake(x + aRadius * COS(anEndAngle), y + aRadius * SIN(anEndAngle));
     aPath.elements[aPath.count++] = { type:kCGPathElementAddArc, x:x, y:y, radius:aRadius, startAngle:aStartAngle, endAngle:anEndAngle };
 }
@@ -125,14 +125,14 @@ function CGPathAddCurveToPoint(aPath, aTransform, cp1x, cp1y, cp2x, cp2y, x, y)
     var cp1 = _CGPointMake(cp1x, cp1y),
         cp2 = _CGPointMake(cp2x, cp2y),
         end = _CGPointMake(x, y);
-        
+
     if (aTransform)
     {
         cp1 = _CGPointApplyAffineTransform(cp1, aTransform);
         cp2 = _CGPointApplyAffineTransform(cp2, aTransform);
         end = _CGPointApplyAffineTransform(end, aTransform);
     }
-   
+
    aPath.current = end;
    aPath.elements[aPath.count++] = { type:kCGPathElementAddCurveToPoint, cp1x:cp1.x, cp1y:cp1.y, cp2x:cp2.x, cp2y:cp2.y, x:end.x, y:end.y };
 }
@@ -140,13 +140,13 @@ function CGPathAddCurveToPoint(aPath, aTransform, cp1x, cp1y, cp2x, cp2y, x, y)
 function CGPathAddLines(aPath, aTransform, points, count)
 {
     var i = 1;
-    
+
     if (arguments["count"] == NULL)
         var count = points.length;
-        
+
     if (!aPath || count < 2)
         return;
-        
+
     CGPathMoveToPoint(aPath, aTransform, points[0].x, points[0].y);
 
     for (; i < count; ++i)
@@ -156,7 +156,7 @@ function CGPathAddLines(aPath, aTransform, points, count)
 function CGPathAddLineToPoint(aPath, aTransform, x, y)
 {
     var point = _CGPointMake(x, y);
-    
+
     if (aTransform != NULL)
         point = _CGPointApplyAffineTransform(point, aTransform);
 
@@ -204,13 +204,13 @@ function CGPathAddQuadCurveToPoint(aPath, aTransform, cpx, cpy, x, y)
 {
     var cp = _CGPointMake(cpx, cpy),
         end = _CGPointMake(x, y);
-        
+
     if (aTransform)
     {
         cp = _CGPointApplyAffineTransform(cp, aTransform);
         end = _CGPointApplyAffineTransform(end, aTransform);
     }
-    
+
     aPath.elements[aPath.count++] = { type:kCGPathElementAddQuadCurveToPoint, cpx:cp.x, cpy:cp.y, x:end.x, y:end.y }
     aPath.current = end;
 }
@@ -223,19 +223,19 @@ function CGPathAddRect(aPath, aTransform, aRect)
 function CGPathAddRects(aPath, aTransform, rects, count)
 {
     var i = 0;
-    
+
     if (arguments["count"] == NULL)
         var count = rects.length;
-        
+
     for (; i < count; ++i)
     {
         var rect = rects[i];
-            
+
         CGPathMoveToPoint(aPath, aTransform, _CGRectGetMinX(rect), _CGRectGetMinY(rect));
         CGPathAddLineToPoint(aPath, aTransform, _CGRectGetMaxX(rect), _CGRectGetMinY(rect));
         CGPathAddLineToPoint(aPath, aTransform, _CGRectGetMaxX(rect), _CGRectGetMaxY(rect));
         CGPathAddLineToPoint(aPath, aTransform, _CGRectGetMinX(rect), _CGRectGetMaxY(rect));
-    
+
         CGPathCloseSubpath(aPath);
     }
 }
@@ -244,15 +244,15 @@ function CGPathMoveToPoint(aPath, aTransform, x, y)
 {
     var point = _CGPointMake(x, y),
         count = aPath.count;
-    
+
     if (aTransform != NULL)
         point = _CGPointApplyAffineTransform(point, aTransform);
 
     aPath.start = point;
     aPath.current = point;
-    
+
     var previous = aPath.elements[count - 1];
-    
+
     if (count != 0 && previous.type == kCGPathElementMoveToPoint)
     {
         previous.x = point.x;
@@ -338,11 +338,11 @@ function CGPathWithRoundedRectangleInRect(aRect, xRadius, yRadius/*not currently
 function CGPathCloseSubpath(aPath)
 {
     var count = aPath.count;
-    
+
     // Don't bother closing this subpath if there aren't any current elements, or the last element already closed the subpath.
     if (count == 0 || aPath.elements[count - 1].type == kCGPathElementCloseSubpath)
         return;
-    
+
     aPath.elements[aPath.count++] = { type:kCGPathElementCloseSubpath, points:[aPath.start] };
 }
 
@@ -350,32 +350,32 @@ function CGPathEqualToPath(aPath, anotherPath)
 {
     if (aPath == anotherPath)
         return YES;
-    
+
     if (aPath.count != anotherPath.count || !_CGPointEqualToPoint(aPath.start, anotherPath.start) || !_CGPointEqualToPoint(aPath.current, anotherPath.current))
         return NO;
-        
+
     var i = 0,
         count = aPath.count;
-        
+
     for (; i < count; ++i)
     {
         var element = aPath[i],
             anotherElement = anotherPath[i];
-        
+
         if (element.type != anotherElement.type)
             return NO;
-        
-        if ((element.type == kCGPathElementAddArc || element.type == kCGPathElementAddArcToPoint) && 
+
+        if ((element.type == kCGPathElementAddArc || element.type == kCGPathElementAddArcToPoint) &&
             element.radius != anotherElement.radius)
             return NO;
-        
+
         var j = element.points.length;
-        
+
         while (j--)
             if (!_CGPointEqualToPoint(element.points[j], anotherElement.points[j]))
                 return NO;
     }
-    
+
     return YES;
 }
 

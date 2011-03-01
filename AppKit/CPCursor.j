@@ -9,7 +9,7 @@ Cursor support by browser:
     OS X/Opera 9             : All except disappearingItemCursor, closedHandCursor, openHandCursor, contextualMenuCursor, dragLinkCursor, dragCopyCursor, operationNotAllowedCursor, resizeUpDownCursor, resizeLeftRightCursor  (no url() support)
     OS X/Opera 10            : All except disappearingItemCursor, closedHandCursor, contextualMenuCursor, dragLinkCursor, dragCopyCursor, operationNotAllowedCursor (no url() support)
     OS X/Opera 11            : All except disappearingItemCursor, closedHandCursor, contextualMenuCursor, dragLinkCursor, dragCopyCursor, operationNotAllowedCursor (no url() support)
-    Win XP/Chrome 8          : All 
+    Win XP/Chrome 8          : All
     Win XP/Safari 5          : All
     Win XP/Firefox 3         : All
     Win XP/Firefox 3.5       : All
@@ -53,7 +53,7 @@ var currentCursor = nil,
 }
 
 // foregroundColor and backgroundColor are ignored in Cocoa as well.  See http://developer.apple.com/library/mac/#documentation/Cocoa/Reference/ApplicationKit/Classes/NSCursor_Class/Reference/Reference.html
-– (id)initWithImage:(CPImage)image foregroundColorHint:(CPColor)foregroundColor backgroundColorHint:(CPColor)backgroundColor hotSpot:(CPPoint)aHotSpot
+- (id)initWithImage:(CPImage)image foregroundColorHint:(CPColor)foregroundColor backgroundColorHint:(CPColor)backgroundColor hotSpot:(CPPoint)aHotSpot
 {
     return [self initWithImage:image hotSpot:hotSpot];
 }
