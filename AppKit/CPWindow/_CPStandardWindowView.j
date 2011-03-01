@@ -106,7 +106,7 @@ var _CPStandardWindowViewBodyBackgroundColor                = nil,
     _CPStandardWindowViewMinimizeButtonImage                = nil,
     _CPStandardWindowViewMinimizeButtonHighlightedImage     = nil;
 
-var STANDARD_GRADIENT_HEIGHT                    = 41.0;
+var STANDARD_GRADIENT_HEIGHT                    = 41.0,
     STANDARD_TITLEBAR_HEIGHT                    = 25.0;
 
 @implementation _CPStandardWindowView : _CPWindowView

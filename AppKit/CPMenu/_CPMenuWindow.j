@@ -462,7 +462,7 @@ var STICKY_TIME_INTERVAL        = 500,
     while (low <= high)
     {
         var middle = FLOOR(low + (high - low) / 2),
-            info = _visibleMenuItemInfos[middle]
+            info = _visibleMenuItemInfos[middle],
             frame = [info.view frame];
 
         if (y < CGRectGetMinY(frame))
