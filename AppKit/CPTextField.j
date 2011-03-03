@@ -78,6 +78,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     BOOL                    _isSelectable;
     BOOL                    _isSecure;
     BOOL                    _willBecomeFirstResponderByClick;
+    
+    int                     _maxLength;
 
     BOOL                    _drawsBackground;
 
@@ -179,6 +181,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (!CPTextFieldDOMInputElement)
     {
         CPTextFieldDOMInputElement = document.createElement("input");
+        CPTextFieldDOMInputElement = _maxLength ? _maxLength : null;
         CPTextFieldDOMInputElement.style.position = "absolute";
         CPTextFieldDOMInputElement.style.border = "0px";
         CPTextFieldDOMInputElement.style.padding = "0px";
@@ -232,6 +235,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         if (!CPTextFieldDOMPasswordInputElement)
         {
             CPTextFieldDOMPasswordInputElement = document.createElement("input");
+            CPTextFieldDOMInputElement.maxLength = _maxLength ? _maxLength : null;
             CPTextFieldDOMPasswordInputElement.style.position = "absolute";
             CPTextFieldDOMPasswordInputElement.style.border = "0px";
             CPTextFieldDOMPasswordInputElement.style.padding = "0px";
@@ -346,6 +350,26 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (BOOL)isSecure
 {
     return _isSecure;
+}
+
+/*!
+    Sets the field's max length.
+    @param aLength sets the field's max length
+*/
+- (void)setMaxLength:(int)aLength
+{
+    _maxLength = aLength;
+    
+    if (CPTextFieldDOMInputElement)
+        CPTextFieldDOMInputElement.maxLength = _maxLength;
+}
+
+/*!
+    Returns the field's max length.
+*/
+- (int)maxLength
+{
+    return _maxLength;
 }
 
 // Setting the Bezel Style
