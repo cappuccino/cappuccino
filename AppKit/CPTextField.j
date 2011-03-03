@@ -181,7 +181,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (!CPTextFieldDOMInputElement)
     {
         CPTextFieldDOMInputElement = document.createElement("input");
-        CPTextFieldDOMInputElement = _maxLength ? _maxLength : null;
+        CPTextFieldDOMInputElement.maxLength = _maxLength ? _maxLength : null;
         CPTextFieldDOMInputElement.style.position = "absolute";
         CPTextFieldDOMInputElement.style.border = "0px";
         CPTextFieldDOMInputElement.style.padding = "0px";
