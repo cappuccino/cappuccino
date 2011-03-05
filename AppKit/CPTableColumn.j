@@ -326,39 +326,38 @@ CPTableColumnUserResizingMask   = 1 << 1;
 }
 
 /*!
-<pre>
     This method sets the "prototype" view which will be used to create all table cells in this column.
 
     It creates a snapshot of aView, using keyed archiving, which is then copied over and over for each
     individual cell that is shown. As a result, changes made after calling this method won't be reflected.
 
-    When you set a dataview and it is added to the tableview the theme state will be set to CPThemeStateTableDataView
-    When the dataview becomes selected the theme state will be set to CPThemeStateSelectedDataView.
-
-    If the dataview shows up in a group row of the tableview the theme state will be set to CPThemeStateGroupRow.
-
-    You should overide setThemeState: and unsetThemeState: to handle these theme state changes in your dataview.
-
     Example:
-
+        @code
         [tableColumn setDataView:someView]; // snapshot taken
         [[tableColumn dataView] setSomething:x]; //won't work
+        @endcode
 
     This doesn't work because the snapshot is taken before the new property is applied. Instead, do:
-
+        @code
         [someView setSomething:x];
         [tableColumn setDataView:someView];
+        @endcode
 
-    REMEMBER: you should implement CPKeyedArchiving otherwise you might see unexpected results.
+    @note you should implement CPKeyedArchiving otherwise you might see unexpected results.
     This is done by adding the following methods to your class:
+    @endnote
+
+    @code
     - (id)initWithCoder(CPCoder)aCoder;
     - (void)encodeWithCoder:(CPCoder)aCoder;
+    @code
 
     Example:
     Say you have two instance variables in your object that need to be set up each time an object is create.
     We will call these instance variables "image" and "text".
     Your CPCoding methods will look like the following:
 
+    @code
     - (id)initWithCoder:(CPCoder)aCoder
     {
         self = [super initWithCoder:aCoder];
@@ -379,7 +378,16 @@ CPTableColumnUserResizingMask   = 1 << 1;
         [aCoder encodeObject:image forKey:"MyDataViewImage"];
         [aCoder encodeObject:text forKey:"MyDataViewText"];
     }
-</pre>
+    @endcode
+
+    @section Themeing
+
+    When you set a dataview and it is added to the tableview the theme state will be set to \c CPThemeStateTableDataView
+    When the dataview becomes selected the theme state will be set to \c CPThemeStateSelectedDataView.
+
+    If the dataview shows up in a group row of the tableview the theme state will be set to \c CPThemeStateGroupRow.
+
+    You should overide \c setThemeState: and \c unsetThemeState: to handle these theme state changes in your dataview.
 */
 - (void)setDataView:(CPView)aView
 {
@@ -466,7 +474,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 
 /*!
     Returns YES if the user can edit cells associated with the receiver by double-clicking the
-    column in the NSTableView, NO otherwise.
+    column in the CPTableView, NO otherwise.
 */
 - (BOOL)isEditable
 {
