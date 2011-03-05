@@ -350,7 +350,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
     @code
     - (id)initWithCoder(CPCoder)aCoder;
     - (void)encodeWithCoder:(CPCoder)aCoder;
-    @code
+    @endcode
 
     Example:
     Say you have two instance variables in your object that need to be set up each time an object is create.
