@@ -279,7 +279,7 @@ CPWebViewScrollNative                           = 2;
     }
     else if (_scrollMode == CPWebViewScrollAppKit && !_contentIsAccessible)
     {
-        CPLog.error(self + " unable to use CPWebViewScrollAppKit scroll mode due to same origin policy.");
+        CPLog.warn(self + " unable to use CPWebViewScrollAppKit scroll mode due to same origin policy.");
         _newScrollMode = CPWebViewScrollNative;
     }
 

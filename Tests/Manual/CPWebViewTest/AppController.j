@@ -23,8 +23,6 @@
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
-    // This is called when the application is done loading.
-
     [webView1 setScrollMode:CPWebViewScrollAuto];
     [webView1 loadHTMLString:"<html><body><img src='http://cappuccino.org/images/cappuccino-icon.png'><img src='http://cappuccino.org/images/cappuccino-icon.png'></body></html>"];
 
@@ -36,7 +34,15 @@
     [webView4 setScrollMode:CPWebViewScrollNative];
     [webView4 setMainFrameURL:[[CPBundle mainBundle] pathForResource:"hello_world.html"]];
 
-    // XXX If this program is run from file:// in Safari, it will actually have SOP access.
+    /*
+    XXX If this program is run from file:// in Safari, it will actually have SOP access,
+    disturbing test #5 and #6. A simple way to run this test is to change the current directory
+    to the root of the test and executing:
+
+    python -m "SimpleHTTPServer"
+    */
+    if (document.location.href.indexOf('file://') == 0)
+        alert("This test should be run from http://, not file:// in order to properly enable SOP testing.");
     [webView5 setScrollMode:CPWebViewScrollAuto];
     [webView5 setMainFrameURL:"http://www.cappuccino.org"];
 
