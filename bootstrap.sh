@@ -133,6 +133,7 @@ while [ $# -gt 0 ]; do
         --noprompt)     noprompt="yes";;
         --directory)    install_directory="$2"; shift;;
         --clone)        tusk_install_command="clone";;
+        --clone-http)   tusk_install_command="clone --http";;
         --github-user)  github_user="$2"; shift;;
         --github-ref)   github_ref="$2"; shift;;
         --install-capp) install_capp="yes";;
@@ -141,7 +142,8 @@ usage: ./bootstrap.sh [OPTIONS]
 
     --noprompt:             Don't prompt, use relatively safe defaults.
     --directory [DIR]:      Use a directory other than /usr/local/narwhal.
-    --clone:                Do "git clone" instead of downloading zips.
+    --clone:                Do "git clone git://" instead of downloading zips.
+    --clone-http:           Do "git clone http://" instead of downloading zips.
     --github-user [USER]:   Use another github user (default: 280north).
     --github-ref [REF]:     Use another git ref (default: master).
     --install-capp:         Install "objective-j" and "cappuccino" packages.
@@ -160,36 +162,27 @@ unset SEALVL
 
 PATH_SAVED="$PATH"
 
-ask_remove_dir "/usr/local/share/objj"
-ask_remove_dir "/usr/local/share/narwhal"
-# ask_remove_dir "/usr/local/narwhal"
 if which "narwhal" > /dev/null; then
-    narwhal_path=$(which "narwhal")
+    narwhal_path="$(which narwhal)"
     # resolve symlinks
     while [ -h "$narwhal_path" ]; do
         dir=$(dirname -- "$narwhal_path")
         sym=$(readlink -- "$narwhal_path")
-        narwhal_path=$(cd -- "$dir" && cd -- $(dirname -- "$sym") && pwd)/$(basename -- "$sym")
+        narwhal_path="$(cd -- "$dir" && cd -- $(dirname -- "$sym") && pwd)/$(basename -- "$sym")"
     done
 
     # NARWHAL_HOME is the 2nd ancestor directory of this shell script
-    dir=$(dirname -- "$(dirname -- "$narwhal_path")")
+    dir="$(dirname -- "$(dirname -- "$narwhal_path")")"
 
     ask_remove_dir "$dir"
+else
+    ask_remove_dir "/usr/local/share/objj"
+    ask_remove_dir "/usr/local/share/narwhal"
+    ask_remove_dir "/usr/local/narwhal"
 fi
 
 install_narwhal=""
-if which "narwhal" > /dev/null; then
-    dir=$(dirname -- "$(dirname -- $(which "narwhal"))")
-    echo "Using Narwhal installation at \"$dir\". Is this correct?"
-    if ! prompt "no"; then
-        echo "================================================================================"
-        echo "Narwhal JavaScript platform is required. Install it automatically now?"
-        if prompt "yes"; then
-            install_narwhal="yes"
-        fi
-    fi
-else
+if ! which "narwhal" > /dev/null; then
     echo "================================================================================"
     echo "Narwhal JavaScript platform is required. Install it automatically now?"
     if prompt "yes"; then
@@ -206,7 +199,7 @@ if [ "$install_narwhal" ]; then
         else
             read input
         fi
-        if [ "$input" ]; then
+        if [ "$input" ] && [ ! "$input" = "yes" ]; then
             install_directory="`cd \`dirname "$input"\`; pwd`/`basename "$input"`"
         else
             install_directory="$default_directory"
@@ -231,8 +224,13 @@ if [ "$install_narwhal" ]; then
         fi
     fi
 
-    if [ "$tusk_install_command" = "clone" ]; then
-        git_repo="git://github.com/$github_path.git"
+    if [ "$(echo $tusk_install_command | cut -c-5)" = "clone" ]; then
+        if [ "$(echo $tusk_install_command | cut -c7-)" = "--http" ]; then
+            git_protocol="http"
+        else
+            git_protocol="git"
+        fi
+        git_repo="$git_protocol://github.com/$github_path.git"
         echo "Cloning Narwhal from \"$git_repo\"..."
         git clone "$git_repo" "$install_directory"
         (cd "$install_directory" && git checkout "origin/$github_ref")
@@ -263,7 +261,7 @@ if ! which "narwhal" > /dev/null; then
     exit 1
 fi
 
-install_directory=$(dirname -- "$(dirname -- "$(which narwhal)")")
+install_directory="$(dirname -- "$(dirname -- "$(which narwhal)")")"
 
 echo "================================================================================"
 echo "Using Narwhal installation at \"$install_directory\". Is this correct?"
@@ -349,7 +347,8 @@ if [ "$CAPP_BUILD" ]; then
 else
     echo "================================================================================"
     echo "Before building Cappuccino we recommend you set the \$CAPP_BUILD environment variable to a path where you wish to build Cappuccino."
-    echo "NOTE: If you have previously set \$CAPP_BUILD and built Cappuccino you may want to delete the directory before rebuilding."
+    echo "This can be automatically set to the default value of \"$PWD/Build\", or you can set \$CAPP_BUILD yourself."
+    ask_append_shell_config "export CAPP_BUILD=\"$PWD/Build\""
 fi
 
 echo "================================================================================"

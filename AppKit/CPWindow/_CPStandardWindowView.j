@@ -106,7 +106,7 @@ var _CPStandardWindowViewBodyBackgroundColor                = nil,
     _CPStandardWindowViewMinimizeButtonImage                = nil,
     _CPStandardWindowViewMinimizeButtonHighlightedImage     = nil;
 
-var STANDARD_GRADIENT_HEIGHT                    = 41.0;
+var STANDARD_GRADIENT_HEIGHT                    = 41.0,
     STANDARD_TITLEBAR_HEIGHT                    = 25.0;
 
 @implementation _CPStandardWindowView : _CPWindowView
@@ -342,7 +342,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
     if (_minimizeButton)
         leftOffset += 19.0;
 
-    [_titleField setFrame:CGRectMake(leftOffset, 5.0, width - leftOffset*2.0, CGRectGetHeight([_titleField frame]))];
+    [_titleField setFrame:CGRectMake(leftOffset, 5.0, width - leftOffset * 2.0, CGRectGetHeight([_titleField frame]))];
 
     [[theWindow contentView] setFrameOrigin:CGPointMake(0.0, CGRectGetMaxY([_dividerView frame]))];
 }

@@ -30,7 +30,7 @@
     if (self = [super NS_initWithCoder:aCoder])
     {
         _isVertical = [aCoder decodeBoolForKey:@"NSIsVertical"];
-        _isPaneSplitter = [aCoder decodeIntForKey:@"NSDividerStyle"] == 2 ? YES : NO;
+        _isPaneSplitter = [aCoder decodeIntForKey:@"NSDividerStyle"] == 3 ? YES : NO;
     }
 
     return self;

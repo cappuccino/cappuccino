@@ -181,7 +181,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
         [_cancelButton setFrame:[self cancelButtonRectForBounds:[self bounds]]];
         [_cancelButton setAutoresizingMask:CPViewMinXMargin];
         [_cancelButton setTarget:self];
-        [_cancelButton setAction:@selector(cancelOperation:)];   
+        [_cancelButton setAction:@selector(cancelOperation:)];
         [self _updateCancelButtonVisibility];
         [self addSubview:_cancelButton];
     }

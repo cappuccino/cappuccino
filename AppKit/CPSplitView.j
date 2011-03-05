@@ -72,7 +72,7 @@ var CPSplitViewHorizontalImage = nil,
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[10.0, 1.0, [CPColor grayColor]]
+    return [CPDictionary dictionaryWithObjects:[1.0, 10.0, [CPColor grayColor]]
                                        forKeys:[@"divider-thickness", @"pane-divider-thickness", @"pane-divider-color"]];
 }
 
@@ -286,13 +286,13 @@ var CPSplitViewHorizontalImage = nil,
 {
     if (_isPaneSplitter)
     {
-        _DOMDividerElements[_drawingDivider].style.backgroundColor = [[self currentValueForThemeAttribute:@"pane-divider-color"] cssString];
-        _DOMDividerElements[_drawingDivider].style.backgroundImage = "";
+        _DOMDividerElements[_drawingDivider].style.backgroundColor = "";
+        _DOMDividerElements[_drawingDivider].style.backgroundImage = "url('"+_dividerImagePath+"')";
     }
     else
     {
-        _DOMDividerElements[_drawingDivider].style.backgroundColor = "";
-        _DOMDividerElements[_drawingDivider].style.backgroundImage = "url('"+_dividerImagePath+"')";
+        _DOMDividerElements[_drawingDivider].style.backgroundColor = [[self currentValueForThemeAttribute:@"pane-divider-color"] cssString];
+        _DOMDividerElements[_drawingDivider].style.backgroundImage = "";
     }
 }
 
@@ -730,8 +730,8 @@ var CPSplitViewHorizontalImage = nil,
             Notifies the delegate that the splitview is about to be collapsed. This usually happens when the user
             Double clicks on the divider. Return YES if the subview can be collapsed, otherwise NO.
 
-         - (BOOL)splitView:(CPSplitView)aSplitView shouldCollapseSubview:(CPView)aSubview;
-            Notifies the delegate that the splitview is about to be collapsed. This usually happens when the user
+         - (BOOL)splitView:(CPSplitView)aSplitView shouldCollapseSubview:(CPView)aSubview forDoubleClickOnDividerAtIndex:(int)indexOfDivider;
+            Notifies the delegate that the subview at indexOfDivider is about to be collapsed. This usually happens when the user
             Double clicks on the divider. Return YES if the subview should be collapsed, otherwise NO.
 
         - (float)splitView:(CPSplitView)aSpiltView constrainSplitPosition:(float)proposedPosition ofSubviewAt:(int)subviewIndex;

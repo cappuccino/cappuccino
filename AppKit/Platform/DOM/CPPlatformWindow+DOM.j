@@ -188,9 +188,8 @@ var ModifierKeyCodes = [
     CPKeyCodes.CTRL,
     CPKeyCodes.ALT,
     CPKeyCodes.SHIFT
-];
-
-var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
+    ],
+    supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
 @implementation CPPlatformWindow (DOM)
 
@@ -322,7 +321,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     _DOMScrollingElement = theDocument.createElement("div");
     _DOMScrollingElement.style.position = "absolute";
     _DOMScrollingElement.style.visibility = "hidden";
-    _DOMScrollingElement.style.zIndex = "998";
+    _DOMScrollingElement.style.zIndex = @"999";
     _DOMScrollingElement.style.height = "60px";
     _DOMScrollingElement.style.width = "60px";
     _DOMScrollingElement.style.overflow = "scroll";
@@ -1114,7 +1113,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     {
         var newEvent = {};
 
-        switch(aDOMEvent.type)
+        switch (aDOMEvent.type)
         {
             case CPDOMEventTouchStart:  newEvent.type = CPDOMEventMouseDown;
                                         break;
@@ -1282,7 +1281,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     // if there are any tracking event listeners then show the event guard so we don't lose events to iframes
     // TODO Actually check for tracking event listeners, not just any listener but _CPRunModalLoop.
     var hasTrackingEventListener = NO;
-    for (var i=0; i < CPApp._eventListeners.length; i++)
+    for (var i = 0; i < CPApp._eventListeners.length; i++)
     {
         if (CPApp._eventListeners[i]._callback !== _CPRunModalLoop)
         {
@@ -1522,7 +1521,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 + (void)preventKeyCodesFromPropagating:(CPArray)keyCodes
 {
     for (var i = keyCodes.length; i > 0; i--)
-        KeyCodesToPrevent[keyCodes[i-1]] = YES;
+        KeyCodesToPrevent[keyCodes[i - 1]] = YES;
 }
 
 /*!

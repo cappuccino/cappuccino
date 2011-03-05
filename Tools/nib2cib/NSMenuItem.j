@@ -49,8 +49,8 @@
         _tag = [aCoder decodeIntForKey:"NSTag"];
         _state = [aCoder decodeIntForKey:"NSState"];
 
-//      _image = [aCoder decodeObjectForKey:"NSImage"];
-//      _alternateImage = [aCoder decodeObjectForKey:""];
+         _image = [aCoder decodeObjectForKey:"NSImage"];
+     // _alternateImage = [aCoder decodeObjectForKey:""];
 //      _onStateImage = [aCoder decodeObjectForKey:"NSOnImage"];
 //      _offStateImage = [aCoder decodeObjectForKey:"NSOffImage"];
 //      _mixedStateImage = [aCoder decodeObjectForKey:"NSMixedImage"];
@@ -68,7 +68,7 @@
 
 //      _toolTip;
 
-//      _representedObject = [aCoder decodeObjectForKey:CPMenuItemRepresentedObjectKey];
+        _representedObject = [aCoder decodeObjectForKey:"NSRepObject"];
     }
 
     return self;

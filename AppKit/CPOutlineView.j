@@ -160,55 +160,55 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     return self;
 }
 /*!
-<pre>
     In addition to standard delegation, the outline view also supports data
     source delegation. This method sets the data source object. Just like the
     TableView you have CPTableColumns but instead of rows you deal with items.
 
-    You must implement these data source methods:
+    @section required You must implement these data source methods:
 
-    - (id)outlineView:(CPOutlineView)outlineView child:(CPInteger)index ofItem:(id)item;
-        Returns the child item at an index of a given item. if item is nil you should return the appropriate root item.
+    Returns the child item at an index of a given item. if item is nil you should return the appropriate root item.
+    @code - (id)outlineView:(CPOutlineView)outlineView child:(CPInteger)index ofItem:(id)item; @endcode
 
-    - (BOOL)outlineView:(CPOutlineView)outlineView isItemExpandable:(id)item;
-        Returns YES if the item is expandable, otherwise NO.
+    Returns YES if the item is expandable, otherwise NO.
+    @code - (BOOL)outlineView:(CPOutlineView)outlineView isItemExpandable:(id)item; @endcode
 
-    - (int)outlineView:(CPOutlineView)outlineView numberOfChildrenOfItem:(id)item;
-        Returns the number of child items of a given item. If item is nil you should return the number of top level (root) items.
+    Returns the number of child items of a given item. If item is nil you should return the number of top level (root) items.
+    @code - (int)outlineView:(CPOutlineView)outlineView numberOfChildrenOfItem:(id)item; @endcode
 
-    - (id)outlineView:(CPOutlineView)outlineView objectValueForTableColumn:(CPTableColumn)tableColumn byItem:(id)item;
-        Returns the object value of the item in a given column.
+    Returns the object value of the item in a given column.
+    @code - (id)outlineView:(CPOutlineView)outlineView objectValueForTableColumn:(CPTableColumn)tableColumn byItem:(id)item; @endcode
+
+    ---------
+
+    @section optional The following methods are optional:
+
+    @section editin Editing:
+    Sets the data object value for an item in a given column. This needs to be implemented if you want inline editing support.
+    @code - (void)outlineView:(CPOutlineView)outlineView setObjectValue:(id)object forTableColumn:(CPTableColumn)tableColumn byItem:(id)item; @endcode
 
 
-    The following methods are optional:
+    @section sorting Sorting:
+    The outlineview will call this method if you click the table header. You should sort the datasource based off of the new sort descriptors and reload the data
+    @code - (void)outlineView:(CPOutlineView)outlineView sortDescriptorsDidChange:(CPArray)oldDescriptors; @endcode
 
-    Editing:
-    - (void)outlineView:(CPOutlineView)outlineView setObjectValue:(id)object forTableColumn:(CPTableColumn)tableColumn byItem:(id)item;
-        Sets the data object value for an item in a given column. This needs to be implemented if you want inline editing support.
+    @section draganddrop Drag and Drop:
+    @note In order for the outlineview to receive drops don't forget to first
+    register the tableview for drag types like you do with every other view @endnote
+
+    Return YES if the operation was successful otherwise return NO.
+    The data source should incorporate the data from the dragging pasteboard in this method implementation.
+    To get this data use the draggingPasteboard method on the CPDraggingInfo object.
+    @code - (BOOL)outlineView:(CPOutlineView)outlineView acceptDrop:(id < CPDraggingInfo >)info item:(id)item childIndex:(CPInteger)index; @endcode
 
 
-    Sorting:
-    - (void)outlineView:(CPOutlineView)outlineView sortDescriptorsDidChange:(CPArray)oldDescriptors;
-        The outlineview will call this method if you click the table header. You should sort the datasource based off of the new sort descriptors and reload the data
+    Return the drag operation (move, copy, etc) that should be performed if a registered drag type is over the tableview
+    The data source can retarget a drop if you want by calling <pre>-(void)setDropItem:(id)anItem dropChildIndex:(int)anIndex;</pre>
+    @code - (CPDragOperation)outlineView:(CPOutlineView)outlineView validateDrop:(id < CPDraggingInfo >)info proposedItem:(id)item proposedChildIndex:(CPInteger)index; @endcode
 
-    Drag and Drop:
-    In order for the outlineview to receive drops don't forget to first
-    register the tableview for drag types like you do with every other view
-
-    - (BOOL)outlineView:(CPOutlineView)outlineView acceptDrop:(id < CPDraggingInfo >)info item:(id)item childIndex:(CPInteger)index;
-        Return YES if the operation was successful otherwise return NO.
-        The data source should incorporate the data from the dragging pasteboard in this method implementation.
-        To get this data use the draggingPasteboard method on the CPDraggingInfo object.
-
-    - (CPDragOperation)outlineView:(CPOutlineView)outlineView validateDrop:(id < CPDraggingInfo >)info proposedItem:(id)item proposedChildIndex:(CPInteger)index;
-        Return the drag operation (move, copy, etc) that should be performed if a registered drag type is over the tableview
-        The data source can retarget a drop if you want by calling -(void)setDropItem:(id)anItem dropChildIndex:(int)anIndex;
-
-    - (BOOL)outlineView:(CPOutlineView)outlineView writeItems:(CPArray)items toPasteboard:(CPPasteboard)pboard;
-        Returns YES if the drop operation is allowed otherwise NO.
-        This method is invoked by the outlineview after a drag should begin, but before it is started. If you don't want the drag to being return NO.
-        If you want the drag to begin you should return YES and place the drag data on the pboard.
-</pre>
+    Returns YES if the drop operation is allowed otherwise NO.
+    This method is invoked by the outlineview after a drag should begin, but before it is started. If you don't want the drag to being return NO.
+    If you want the drag to begin you should return YES and place the drag data on the pboard.
+    @code - (BOOL)outlineView:(CPOutlineView)outlineView writeItems:(CPArray)items toPasteboard:(CPPasteboard)pboard; @endcode
 */
 - (void)setDataSource:(id)aDataSource
 {
@@ -713,74 +713,80 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 }
 
 /*!
-<pre>
+
     Sets the delegate for the outlineview.
 
     The following methods can be implemented:
-
-    User Interaction Notifications:
-    - (void)outlineViewColumnDidMove:(CPNotification)notification;
-        Called when the user moves a column in the outlineview.
-
-    - (void)outlineViewColumnDidResize:(CPNotification)notification;
-        Called when the user resizes a column in the outlineview.
-
-    - (void)outlineViewItemDidCollapse:(CPNotification)notification;
-        Called when the user collapses an item in the outlineview.
-
-    - (void)outlineViewItemDidExpand:(CPNotification)notification;
-        Called when the user expands an item in the outlineview.
-
-    - (void)outlineViewItemWillCollapse:(CPNotification)notification;
-        Called when the user collapses an item in the outlineview, but before the item is actually collapsed.
-
-    - (void)outlineViewItemWillExpand:(CPNotification)notification;
-        Called when the used expands an item, but before the item is actually expanded.
-
-    - (void)outlineViewSelectionDidChange:(CPNotification)notification;
-        Called when the user changes the selection of the outlineview.
-
-    - (void)outlineViewSelectionIsChanging:(CPNotification)notification
-        Called when the user changes the selection of the outlineview, but before the change is made.
-
-    Expanding and collapsing items:
-    - (BOOL)outlineView:(CPOutlineView)outlineView shouldExpandItem:(id)item;
-        Return YES if the item should be given permission to expand, otherwise NO.
-
-    - (BOOL)outlineView:(CPOutlineView)outlineView shouldCollapseItem:(id)item;
-        Return YES if the item should be given permission to collapse, otherwise NO.
-
-    Selection:
-    - (BOOL)outlineView:(CPOutlineView)outlineView shouldSelectTableColumn:(CPTableColumn)tableColumn;
-        Return YES to allow the selection of tableColumn, otherwise NO.
-
-    - (BOOL)outlineView:(CPOutlineView)outlineView shouldSelectItem:(id)item;
-        Return YES to allow the selection of an item, otherwise NO.
-
-    - (BOOL)selectionShouldChangeInOutlineView:(CPOutlineView)outlineView;
-        Return YES to allow the selection of the outlineview to be changed, otherwise NO.
-
-    Displaying DataViews:
-    - (void)outlineView:(CPOutlineView)outlineView willDisplayView:(id)dataView forTableColumn:(CPTableColumn)tableColumn item:(id)item;
-        Called when a dataView is about to be displayed. This gives you the ability to alter the dataView if needed.
-
-    Editing:
-    - (BOOL)outlineView:(CPOutlineView)outlineView shouldEditTableColumn:(CPTableColumn)tableColumn item:(id)item;
-        Return YES to allow for editing of a dataview at given item and tableColumn, otherwise NO to prevent the edit.
-
-    Group Items:
-    - (BOOL)outlineView:(CPOutlineView)outlineView isGroupItem:(id)item;
-        Implement this to indicate whether a given item should be rendered using the group item style.
-        Return YES if the item is a group item, otherwise NO.
-
-    Variable Item Heights
-    - (int)outlineView:(CPOutlineView)outlineView heightOfRowByItem:(id)anItem;
-        Implement this method to get custom heights of rows based on the item.
-        This delegate method will be passed your 'item' object and expects you to return an integer height.
-        NOTE: this should only be implemented if rows will be different heights, if you want to set a height for ALL of your rows see -setRowHeight:
-
     @param aDelegate - the delegate object you wish to set for the receiver.
-<pre>
+
+    @section notifications User Interaction Notifications:
+
+    Called when the user moves a column in the outlineview.
+    @code - (void)outlineViewColumnDidMove:(CPNotification)notification; @endcode
+
+    Called when the user resizes a column in the outlineview.
+    @code - (void)outlineViewColumnDidResize:(CPNotification)notification; @endcode
+
+    Called when the user collapses an item in the outlineview.
+    @code - (void)outlineViewItemDidCollapse:(CPNotification)notification; @endcode
+
+    Called when the user expands an item in the outlineview.
+    @code - (void)outlineViewItemDidExpand:(CPNotification)notification; @endcode
+
+    Called when the user collapses an item in the outlineview, but before the item is actually collapsed.
+    @code - (void)outlineViewItemWillCollapse:(CPNotification)notification; @endcode
+
+    Called when the used expands an item, but before the item is actually expanded.
+    @code - (void)outlineViewItemWillExpand:(CPNotification)notification; @endcode
+
+    Called when the user changes the selection of the outlineview.
+    @code - (void)outlineViewSelectionDidChange:(CPNotification)notification; @endcode
+
+    Called when the user changes the selection of the outlineview, but before the change is made.
+    @code - (void)outlineViewSelectionIsChanging:(CPNotification)notification; @endcode
+
+    @section expandingandcollapsing Expanding and collapsing items:
+
+    Return YES if the item should be given permission to expand, otherwise NO.
+    @code - (BOOL)outlineView:(CPOutlineView)outlineView shouldExpandItem:(id)item; @endcode
+
+    Return YES if the item should be given permission to collapse, otherwise NO.
+    @code - (BOOL)outlineView:(CPOutlineView)outlineView shouldCollapseItem:(id)item; @endcode
+
+    @section selection Selection:
+    Return YES to allow the selection of tableColumn, otherwise NO.
+    @code- (BOOL)outlineView:(CPOutlineView)outlineView shouldSelectTableColumn:(CPTableColumn)tableColumn; @endcode
+
+    Return YES to allow the selection of an item, otherwise NO.
+    @code- (BOOL)outlineView:(CPOutlineView)outlineView shouldSelectItem:(id)item; @endcode
+
+    Return YES to allow the selection of the outlineview to be changed, otherwise NO.
+    @code - (BOOL)selectionShouldChangeInOutlineView:(CPOutlineView)outlineView; @endcode
+
+    @section dataviews Displaying DataViews:
+
+    Called when a dataView is about to be displayed. This gives you the ability to alter the dataView if needed.
+    @code - (void)outlineView:(CPOutlineView)outlineView willDisplayView:(id)dataView forTableColumn:(CPTableColumn)tableColumn item:(id)item; @endcode
+
+    @section editin Editing:
+
+    Return YES to allow for editing of a dataview at given item and tableColumn, otherwise NO to prevent the edit.
+    @code - (BOOL)outlineView:(CPOutlineView)outlineView shouldEditTableColumn:(CPTableColumn)tableColumn item:(id)item; @endcode
+
+    @section groups Group Items:
+
+    Implement this to indicate whether a given item should be rendered using the group item style.
+    Return YES if the item is a group item, otherwise NO.
+    @code - (BOOL)outlineView:(CPOutlineView)outlineView isGroupItem:(id)item; @endcode
+
+
+    @section variableitems Variable Item Heights
+
+    Implement this method to get custom heights of rows based on the item.
+    This delegate method will be passed your 'item' object and expects you to return an integer height.
+    @note This should only be implemented if rows will be different heights, if you want to set a height for ALL of your rows see -setRowHeight:@endnote
+    @code - (int)outlineView:(CPOutlineView)outlineView heightOfRowByItem:(id)anItem; @endcode
+
 */
 - (void)setDelegate:(id)aDelegate
 {
@@ -983,7 +989,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     Also see -setOutlineTableColumn:.
 
-    NOTE: This behavior deviates from cocoa slightly.
+    @note This behavior deviates from cocoa slightly.
 
     @param CPTableColumn aTableColumn - The table column to add.
 */
@@ -1702,6 +1708,15 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     _outlineView._shouldRetargetChildIndex = NO;
 
     return [_outlineView._outlineViewDataSource outlineView:_outlineView acceptDrop:theInfo item:parentItem childIndex:childIndex];
+}
+
+- (void)tableView:(CPTableView)aTableView sortDescriptorsDidChange:(CPArray)oldSortDescriptors
+{
+    if ((_outlineView._implementedOutlineViewDataSourceMethods &
+         CPOutlineViewDataSource_outlineView_sortDescriptorsDidChange_))
+    {
+        [[_outlineView dataSource] outlineView:_outlineView sortDescriptorsDidChange:oldSortDescriptors];
+    }
 }
 
 @end

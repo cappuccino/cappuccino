@@ -33,7 +33,7 @@ var CPGraphicsContextCurrent = nil;
 */
 @implementation CPGraphicsContext : CPObject
 {
-    CPContext   _graphicsPort;
+    CGContext   _graphicsPort;
 }
 
 /*!

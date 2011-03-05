@@ -432,14 +432,14 @@ CPNoSelectionMarker     = @"CPNoSelectionMarker";
 CPNotApplicableMarker   = @"CPNotApplicableMarker";
 
 // Binding name constants
-CPAlignmentBinding      = @"CPAlignmentBinding";
-CPEditableBinding       = @"CPEditableBinding";
-CPEnabledBinding        = @"CPEnabledBinding";
-CPFontBinding           = @"CPFontBinding";
-CPHiddenBinding         = @"CPHiddenBinding";
-CPSelectedIndexBinding  = @"CPSelectedIndexBinding";
-CPTextColorBinding      = @"CPTextColorBinding";
-CPToolTipBinding        = @"CPToolTipBinding";
+CPAlignmentBinding      = @"alignment";
+CPEditableBinding       = @"editable";
+CPEnabledBinding        = @"enabled";
+CPFontBinding           = @"font";
+CPHiddenBinding         = @"hidden";
+CPSelectedIndexBinding  = @"selectedIndex";
+CPTextColorBinding      = @"textColor";
+CPToolTipBinding        = @"toolTip";
 CPValueBinding          = @"value";
 
 //Binding options constants

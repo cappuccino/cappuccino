@@ -46,10 +46,10 @@
 - (id)init
 {
     self = [super init];
-    
+
     if (self)
         _isRemovedOnCompletion = YES;
-        
+
     return self;
 }
 
@@ -130,12 +130,12 @@
 @end
 
 /*
-    
+
 */
 @implementation CAPropertyAnimation : CAAnimation
 {
     CPString    _keyPath;
-    
+
     BOOL        _isCumulative;
     BOOL        _isAdditive;
 }
@@ -143,9 +143,9 @@
 + (id)animationWithKeyPath:(CPString)aKeyPath
 {
     var animation = [self animation];
-    
+
     [animation setKeyPath:aKeyPath];
-    
+
     return animation;
 }
 

@@ -44,8 +44,8 @@ var CPDragServerPreviousEvent = nil,
 
 var CPSharedDragServer = nil;
 
-var CPDragServerSource             = nil;
-var CPDragServerDraggingInfo       = nil;
+var CPDragServerSource             = nil,
+    CPDragServerDraggingInfo       = nil;
 
 /*
     CPDraggingInfo is a container of information about a specific dragging session.

@@ -16,61 +16,80 @@
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
-    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
-        contentView = [theWindow contentView];
+     theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask];
 
-    var scroll = [[CPScrollView alloc] initWithFrame:[contentView bounds]];
+    var aFrame = CGRectMake(0,32,CGRectGetWidth([[theWindow contentView] bounds]), CGRectGetHeight([[theWindow contentView] bounds]) -32);
 
+     view1 = [[CPView alloc] initWithFrame:aFrame];
+     view2 = [[CPView alloc] initWithFrame:aFrame];
+
+    var scroll = [[CPScrollView alloc] initWithFrame:aFrame];
     [scroll setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
 
-    table = [[CPTableView alloc] initWithFrame:CGRectMakeZero()];
-    [table setDataSource:self];
-    [table setDelegate:self];
-    [table setColumnAutoresizingStyle:CPTableViewUniformColumnAutoresizingStyle];
-    [table setUsesAlternatingRowBackgroundColors:YES];
+    table1 = [[CPTableView alloc] initWithFrame:CGRectMakeZero()];
+    [table1 setDataSource:self];
+    [table1 setDelegate:self];
+    [table1 setColumnAutoresizingStyle:CPTableViewUniformColumnAutoresizingStyle];
+    [table1 setUsesAlternatingRowBackgroundColors:YES];
 
-    [table setGridStyleMask:CPTableViewSolidVerticalGridLineMask | CPTableViewSolidHorizontalGridLineMask];
-    [table setAllowsMultipleSelection:YES];
+    [table1 setGridStyleMask:CPTableViewSolidVerticalGridLineMask | CPTableViewSolidHorizontalGridLineMask];
+    [table1 setAllowsMultipleSelection:YES];
 
-    [table setIntercellSpacing:CGSizeMake(0,0)];
+    [table1 setIntercellSpacing:CGSizeMake(0,0)];
 
-    columnA = [[CPTableColumn alloc] initWithIdentifier:"A"];
-    [table addTableColumn:columnA];
-    [[columnA headerView] setStringValue:"A"];
-    [columnA setWidth:175];
-    [columnA setMinWidth:100];
-    [columnA setMaxWidth:250];
+    var column = [[CPTableColumn alloc] initWithIdentifier:"A"];
+    [table1 addTableColumn:column];
+    [[column headerView] setStringValue:"A"];
+    [column setWidth:175];
+    [column setMinWidth:100];
+    [column setMaxWidth:250];
+    [scroll setDocumentView:table1];
+    [view1 addSubview:scroll];
 
-    columnB = [[CPTableColumn alloc] initWithIdentifier:"B"];
-    [table addTableColumn:columnB];
-    [[columnB headerView] setStringValue:"B"];
-    [columnB setWidth:175];
-    [columnB setMinWidth:100];
+    var scroll = [[CPScrollView alloc] initWithFrame:aFrame];
+    [scroll setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
 
-    columnC = [[CPTableColumn alloc] initWithIdentifier:"C"];
-    [table addTableColumn:columnC];
-    [[columnC headerView] setStringValue:"C"];
-    [columnC setWidth:175];
-    [columnC setMinWidth:100];
+    table2 = [[CPTableView alloc] initWithFrame:CGRectMakeZero()];
+    [table2 setDataSource:self];
+    [table2 setDelegate:self];
+    [table2 setColumnAutoresizingStyle:CPTableViewUniformColumnAutoresizingStyle];
+    [table2 setUsesAlternatingRowBackgroundColors:YES];
 
-    columnD = [[CPTableColumn alloc] initWithIdentifier:"D"];
-    [table addTableColumn:columnD];
-    [[columnD headerView] setStringValue:"D"];
-    [columnD setWidth:175];
-    [columnD setMaxWidth:200];
-    [columnD setMinWidth:100];
+    [table2 setGridStyleMask:CPTableViewSolidVerticalGridLineMask | CPTableViewSolidHorizontalGridLineMask];
+    [table2 setAllowsMultipleSelection:YES];
 
-    columnE = [[CPTableColumn alloc] initWithIdentifier:"E"];
-    [table addTableColumn:columnE];
-    [[columnE headerView] setStringValue:"E"];
-    [columnE setWidth:175];
-    [columnE setMaxWidth:200];
-    [columnE setMinWidth:100];
+    [table2 setIntercellSpacing:CGSizeMake(0,0)];
+
+    var column = [[CPTableColumn alloc] initWithIdentifier:"B"];
+    [table2 addTableColumn:column];
+    [[column headerView] setStringValue:"B"];
+    [column setWidth:175];
+    [column setMinWidth:100];
+    [column setMaxWidth:250];
+    [scroll setDocumentView:table2];
+    [view2 addSubview:scroll];
 
 
-    [scroll setDocumentView:table];
 
-    [contentView addSubview:scroll];
+        var aButton = [[CPButton alloc] initWithFrame:CGRectMake(6,6, 24, 24)];
+        [aButton setTitle:@"B"];
+        [aButton setTarget:self];
+        [aButton setEnabled:YES];
+        [aButton setAction:@selector(goToB)];
+        [[theWindow contentView] addSubview:aButton];      
+
+        aButton = [[CPButton alloc] initWithFrame:CGRectMake(36,6, 24, 24)];
+        [aButton setTitle:@"A"];
+        [aButton setTarget:self];
+        [aButton setEnabled:YES];
+        [aButton setAction:@selector(goToA)];
+        [[theWindow contentView] addSubview:aButton];      
+
+
+
+
+
+    [[theWindow contentView] addSubview:view1];
 
     [theWindow orderFront:self];
 
@@ -80,7 +99,7 @@
 
 - (int)numberOfRowsInTableView:(id)tableView
 {
-    return 2000;
+    return 100;
 }
 
 - (id)tableView:(id)tableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRow
@@ -90,8 +109,20 @@
 
 - (int)tableView:(CPTableView)aTableView heightOfRow:(int)aRow
 {
-    return aRow % 2 ? 200 : 50;
-    return aRow % 2 ? 1010 - (aRow * 10) : 10 + (aRow * 10);
+    return 24;
+}
+
+- (void)goToA
+{
+    [view2 removeFromSuperview];
+    [[theWindow contentView] addSubview:view1];
+    [table1 _setSelectedRowIndexes:[[table2 selectedRowIndexes] copy]];
+}
+- (void)goToB
+{
+    [view1 removeFromSuperview];
+    [[theWindow contentView] addSubview:view2];
+    [table2 _setSelectedRowIndexes:[[table1 selectedRowIndexes] copy]];
 }
 
 @end

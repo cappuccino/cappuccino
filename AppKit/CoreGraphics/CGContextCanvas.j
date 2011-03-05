@@ -22,12 +22,12 @@
 
 var CANVAS_LINECAP_TABLE    = [ "butt", "round", "square" ],
     CANVAS_LINEJOIN_TABLE   = [ "miter", "round", "bevel" ],
-    CANVAS_COMPOSITE_TABLE  = [ "source-over", "source-over", "source-over", "source-over", "darker", 
-                                "lighter", "source-over", "source-over", "source-over", "source-over", 
-                                "source-over", "source-over", "source-over", "source-over", "source-over", 
-                                "source-over", "source-over", 
-                                "copy", "source-in", "source-out", "source-atop", 
-                                "destination-over", "destination-in", "destination-out", "destination-atop", 
+    CANVAS_COMPOSITE_TABLE  = [ "source-over", "source-over", "source-over", "source-over", "darker",
+                                "lighter", "source-over", "source-over", "source-over", "source-over",
+                                "source-over", "source-over", "source-over", "source-over", "source-over",
+                                "source-over", "source-over",
+                                "copy", "source-in", "source-out", "source-atop",
+                                "destination-over", "destination-in", "destination-out", "destination-atop",
                                 "xor", "source-over", "source-over" ];
 
 #define _CGContextAddArcCanvas(aContext, x, y, radius, startAngle, endAngle, anticlockwise) aContext.arc(x, y, radius, startAngle, endAngle, anticlockwise)
@@ -106,15 +106,15 @@ function CGContextAddPath(aContext, aPath)
         return;
 
     var elements = aPath.elements,
-        
+
         i = 0,
         count = aPath.count;
-    
+
     for (; i < count; ++i)
     {
         var element = elements[i],
             type = element.type;
-            
+
         switch (type)
         {
             case kCGPathElementMoveToPoint:         _CGContextMoveToPointCanvas(aContext, element.x, element.y);
@@ -143,10 +143,10 @@ function CGContextAddRect(aContext, aRect)
 function CGContextAddRects(aContext, rects, count)
 {
     var i = 0;
-    
+
     if (arguments["count"] == NULL)
         var count = rects.length;
-    
+
     for (; i < count; ++i)
     {
         var rect = rects[i];
@@ -180,7 +180,7 @@ function CGContextDrawPath(aContext, aMode)
         aContext.fill();
     else if (aMode == kCGPathEOFill || aMode == kCGPathEOFillStroke)
         alert("not implemented!!!");
-    
+
     if (aMode == kCGPathStroke || aMode == kCGPathFillStroke || aMode == kCGPathEOFillStroke)
         aContext.stroke();
 }
@@ -193,10 +193,10 @@ function CGContextFillRect(aContext, aRect)
 function CGContextFillRects(aContext, rects, count)
 {
     var i = 0;
-    
+
     if (arguments["count"] == NULL)
         var count = rects.length;
-    
+
     for (; i < count; ++i)
     {
         var rect = rects[i];
@@ -219,7 +219,7 @@ function CGContextClipToRect(aContext, aRect)
     _CGContextBeginPathCanvas(aContext);
     _CGContextAddRectCanvas(aContext, aRect);
     _CGContextClosePathCanvas(aContext);
-    
+
     _CGContextClipCanvas(aContext);
 }
 
@@ -302,7 +302,7 @@ function CGContextTranslateCTM(aContext, tx, ty)
             sx = (abs_cos * a / cos + abs_sin * -c / sin) / (abs_cos + abs_sin);\
             sy = (abs_cos * d / cos + abs_sin * b / sin) / (abs_cos + abs_sin);\
         }\
-        
+
 #define rotate_scale(a, b, c, d) \
         var sign = (a * d < 0.0 || b * c > 0.0) ? -1.0 : 1.0;\
             a1 = (Math.atan2(sign * b, sign * a) + Math.atan2(-c, d)) / 2.0,\
@@ -350,7 +350,7 @@ CGContextConcatCTM = function(aContext, anAffineTransform)
 {
     var a = anAffineTransform.a,
         b = anAffineTransform.b,
-        c = anAffineTransform.c,      
+        c = anAffineTransform.c,
         d = anAffineTransform.d,
         tx = anAffineTransform.tx,
         ty = anAffineTransform.ty,
@@ -365,13 +365,13 @@ CGContextConcatCTM = function(aContext, anAffineTransform)
         sx = a;
         sy = d;
     }
-    
+
     // a scale followed by a rotate
     else if (a * b == -c * d)
     {
         scale_rotate(a, b, c, d)
     }
-        
+
     // rotate, then scale.
     else if (a * c == -b * d)
     {
@@ -384,8 +384,8 @@ CGContextConcatCTM = function(aContext, anAffineTransform)
             v = eigen(CGAffineTransformConcat(transpose, anAffineTransform)),
             U = CGAffineTransformMake(u.vector_1.x, u.vector_2.x, u.vector_1.y, u.vector_2.y, 0.0, 0.0), // inline
             VT = CGAffineTransformMake(v.vector_1.x, v.vector_1.y, v.vector_2.x, v.vector_2.y, 0.0, 0.0),
-            S = CGAffineTransformConcat(CGAffineTransformConcat(CGAffineTransformInvert(U), anAffineTransform), CGAffineTransformInvert(VT));        
-    
+            S = CGAffineTransformConcat(CGAffineTransformConcat(CGAffineTransformInvert(U), anAffineTransform), CGAffineTransformInvert(VT));
+
         a = VT.a;
         b = VT.b;
         c = VT.c;
@@ -401,7 +401,7 @@ CGContextConcatCTM = function(aContext, anAffineTransform)
         sx = S.a * sx;
         sy = S.d * sy;
     }
-    
+
     if (tx != 0 || ty != 0)
         CGContextTranslateCTM(aContext, tx, ty);
     if (a1 != 0.0)
@@ -428,12 +428,12 @@ function CGContextDrawLinearGradient(aContext, aGradient, aStartPoint, anEndPoin
 {
     var colors = aGradient.colors,
         count = colors.length,
-        
+
         linearGradient = aContext.createLinearGradient(aStartPoint.x, aStartPoint.y, anEndPoint.x, anEndPoint.y);
 
     while (count--)
         linearGradient.addColorStop(aGradient.locations[count], to_string(colors[count]));
-    
+
     aContext.fillStyle = linearGradient;
     aContext.fill();
 }
@@ -442,8 +442,8 @@ function CGBitmapGraphicsContextCreate()
 {
     var DOMElement = document.createElement("canvas"),
         context = DOMElement.getContext("2d");
-    
+
     context.DOMElement = DOMElement;
-    
+
     return context;
 }

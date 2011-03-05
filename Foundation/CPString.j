@@ -761,13 +761,7 @@ var CPStringRegexSpecialCharacters = [
     return [[CPURL URLWithString:self] absoluteString];
 }
 
-- (CPString)copy
-{
-    return new String(self);
-}
-
 @end
-
 
 @implementation CPString (JSON)
 

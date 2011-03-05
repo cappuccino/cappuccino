@@ -304,7 +304,7 @@
             tableHeight = CGRectGetHeight([tableView bounds]);
 
         [[tableView tableColumnWithIdentifier:"Image"] setWidth:_imageWidth];
-        [[tableView tableColumnWithIdentifier:"Content"] setWidth:width - (_leafWidth + _delegateSupportsImages ? _imageWidth : 0) - scrollerWidth - scrollerWidth];
+        [[tableView tableColumnWithIdentifier:"Content"] setWidth:[self columnContentWidthForColumnWidth:width]];
         [[tableView tableColumnWithIdentifier:"Leaf"] setWidth:_leafWidth];
 
         [tableView setRowHeight:_rowHeight];
@@ -436,12 +436,14 @@
 
 - (float)columnContentWidthForColumnWidth:(float)aWidth
 {
-    return aWidth - (_leafWidth + _delegateSupportsImages ? _imageWidth : 0) - [CPScroller scrollerWidth];
+    var columnSpacing = [_tableViews[0] intercellSpacing].width;
+    return aWidth - (_leafWidth + columnSpacing + (_delegateSupportsImages ? _imageWidth + columnSpacing : 0)) - columnSpacing - [CPScroller scrollerWidth];
 }
 
 - (float)columnWidthForColumnContentWidth:(float)aWidth
 {
-    return aWidth + (_leafWidth + _delegateSupportsImages ? _imageWidth : 0) + [CPScroller scrollerWidth];
+    var columnSpacing = [_tableViews[0] intercellSpacing].width;
+    return aWidth + (_leafWidth + columnSpacing + (_delegateSupportsImages ? _imageWidth + columnSpacing: 0)) + columnSpacing + [CPScroller scrollerWidth];
 }
 
 - (void)setImageWidth:(float)aWidth

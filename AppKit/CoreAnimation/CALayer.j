@@ -791,7 +791,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 
         layer._runLoopUpdateMask = 0;
     }
-    window.loop= false;
+    window.loop = false;
     CALayerRegisteredRunLoopUpdates = nil;
 }
 
