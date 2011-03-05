@@ -36,6 +36,7 @@ CPWebViewProgressEstimateChangedNotification    = "CPWebViewProgressEstimateChan
 CPWebViewProgressStartedNotification            = "CPWebViewProgressStartedNotification";
 CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNotification";
 
+CPWebViewScrollAuto                             = 0;
 CPWebViewScrollAppKit                           = 1;
 CPWebViewScrollNative                           = 2;
 
@@ -82,6 +83,8 @@ CPWebViewScrollNative                           = 2;
     Function    _loadCallback;
 
     int         _scrollMode;
+    int         _effectiveScrollMode;
+    BOOL        _contentIsAccessible;
     CGSize      _scrollSize;
 
     int         _loadHTMLStringTimer;
@@ -100,10 +103,12 @@ CPWebViewScrollNative                           = 2;
 {
     if (self = [super initWithFrame:aFrame])
     {
-        _mainFrameURL   = nil;
-        _backwardStack  = [];
-        _forwardStack   = [];
-        _scrollMode     = CPWebViewScrollNative;
+        _mainFrameURL           = nil;
+        _backwardStack          = [];
+        _forwardStack           = [];
+        _scrollMode             = CPWebViewScrollAuto;
+        _effectiveScrollMode    = nil; // Unknown.
+        _contentIsAccessible    = YES;
 
         [self _initDOMWithFrame:aFrame];
     }
@@ -170,11 +175,10 @@ CPWebViewScrollNative                           = 2;
 
     _frameView._DOMElement.appendChild(_iframe);
 
-    [self _setScrollMode:_scrollMode];
+    [self _updateEffectiveScrollMode];
 
     [self addSubview:_scrollView];
 }
-
 
 - (void)setFrameSize:(CPSize)aSize
 {
@@ -184,7 +188,7 @@ CPWebViewScrollNative                           = 2;
 
 - (void)_attachScrollEventIfNecessary
 {
-    if (_scrollMode !== CPWebViewScrollAppKit)
+    if (_effectiveScrollMode !== CPWebViewScrollAppKit)
         return;
 
     var win = null;
@@ -209,7 +213,7 @@ CPWebViewScrollNative                           = 2;
 
 - (void)_resizeWebFrame
 {
-    if (_scrollMode === CPWebViewScrollAppKit)
+    if (_effectiveScrollMode === CPWebViewScrollAppKit)
     {
         if (_scrollSize)
         {
@@ -236,6 +240,7 @@ CPWebViewScrollNative                           = 2;
             }
             else
             {
+                // TODO If we do have access to the content, it might be that the 'body' element simply hasn't loaded yet.
                 CPLog.warn("using default size 800*1600");
 
                 [_frameView setFrameSize:CGSizeMake(800, 1600)];
@@ -247,23 +252,44 @@ CPWebViewScrollNative                           = 2;
 }
 
 /*!
-    Sets the scroll mode of the receiver. Valid options are
-    CPWebViewScrollAppKit and CPWebViewScrollNative.
+    Sets the scroll mode of the receiver. Valid options are:
+        CPWebViewScrollAuto     - (Default) Try to use Cappuccino style scrollbars whenever possible.
+        CPWebViewScrollAppKit   - Always use Cappuccino style scrollbars.
+        CPWebViewScrollNative   - Always use Native style scrollbars.
 */
 - (void)setScrollMode:(int)aScrollMode
 {
     if (_scrollMode == aScrollMode)
         return;
 
-    [self _setScrollMode:aScrollMode];
+    _scrollMode = aScrollMode;
+
+    [self _updateEffectiveScrollMode];
 }
 
-- (void)_setScrollMode:(int)aScrollMode
+- (void)_updateEffectiveScrollMode
 {
-    if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
-        _scrollMode = CPWebViewScrollNative;
-    else
-        _scrollMode = aScrollMode;
+    var _newScrollMode = CPWebViewScrollAppKit;
+
+    if (_scrollMode == CPWebViewScrollNative
+        || (_scrollMode == CPWebViewScrollAuto && !_contentIsAccessible)
+        || CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
+    {
+        _newScrollMode = CPWebViewScrollNative;
+    }
+    else if (_scrollMode == CPWebViewScrollAppKit && !_contentIsAccessible)
+    {
+        CPLog.error(self + " unable to use CPWebViewScrollAppKit scroll mode due to same origin policy.");
+        _newScrollMode = CPWebViewScrollNative;
+    }
+
+    if (_newScrollMode !== _effectiveScrollMode)
+        [self _setEffectiveScrollMode:_newScrollMode];
+}
+
+- (void)_setEffectiveScrollMode:(int)aScrollMode
+{
+    _effectiveScrollMode = aScrollMode;
 
     _ignoreLoadStart = YES;
     _ignoreLoadEnd  = YES;
@@ -271,7 +297,7 @@ CPWebViewScrollNative                           = 2;
     var parent = _iframe.parentNode;
     parent.removeChild(_iframe);
 
-    if (_scrollMode === CPWebViewScrollAppKit)
+    if (_effectiveScrollMode === CPWebViewScrollAppKit)
     {
         [_scrollView setHasHorizontalScroller:YES];
         [_scrollView setHasVerticalScroller:YES];
@@ -289,6 +315,8 @@ CPWebViewScrollNative                           = 2;
     }
 
     parent.appendChild(_iframe);
+
+    [self _resizeWebFrame];
 }
 
 /*!
@@ -310,9 +338,6 @@ CPWebViewScrollNative                           = 2;
 - (void)loadHTMLString:(CPString)aString baseURL:(CPURL)URL
 {
     // FIXME: do something with baseURL?
-
-    [self _setScrollMode:CPWebViewScrollAppKit];
-
     [_frameView setFrameSize:[_scrollView contentSize]];
 
     [self _startedLoading];
@@ -328,8 +353,6 @@ CPWebViewScrollNative                           = 2;
 
 - (void)_loadMainFrameURL
 {
-    [self _setScrollMode:CPWebViewScrollNative];
-
     [self _startedLoading];
 
     _ignoreLoadStart = YES;
@@ -345,12 +368,19 @@ CPWebViewScrollNative                           = 2;
 {
     if (_url)
     {
+        // Assume NO until proven otherwise.
+        _contentIsAccessible = NO;
+        [self _updateEffectiveScrollMode];
+
         _iframe.src = _url;
     }
     else if (_html)
     {
         // clear the iframe
         _iframe.src = "";
+
+        _contentIsAccessible = YES;
+        [self _updateEffectiveScrollMode];
 
         if (_loadHTMLStringTimer !== nil)
         {
@@ -381,6 +411,19 @@ CPWebViewScrollNative                           = 2;
 
 - (void)_finishedLoading
 {
+    CPLog.info(self + '(void)_finishedLoading');
+
+    // Check if we have access.
+    try
+    {
+        _contentIsAccessible = !![self DOMWindow].document;
+    }
+    catch (e)
+    {
+        _contentIsAccessible = NO;
+    }
+    [self _updateEffectiveScrollMode];
+
     [self _resizeWebFrame];
     [self _attachScrollEventIfNecessary];
 
@@ -789,7 +832,7 @@ CPWebViewScrollNative                           = 2;
         _mainFrameURL   = nil;
         _backwardStack  = [];
         _forwardStack   = [];
-        _scrollMode     = CPWebViewScrollNative;
+        _scrollMode     = CPWebViewScrollAuto;
 
 #if PLATFORM(DOM)
         [self _initDOMWithFrame:[self frame]];

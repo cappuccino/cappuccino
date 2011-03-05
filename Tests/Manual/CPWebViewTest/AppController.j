@@ -25,22 +25,22 @@
 {
     // This is called when the application is done loading.
 
-    //[webView1 setScrollMode:CPWebViewScrollAuto];
+    [webView1 setScrollMode:CPWebViewScrollAuto];
     [webView1 loadHTMLString:"<html><body><img src='http://cappuccino.org/images/cappuccino-icon.png'><img src='http://cappuccino.org/images/cappuccino-icon.png'></body></html>"];
 
     [webView2 setScrollMode:CPWebViewScrollNative];
     [webView2 loadHTMLString:"<html><body><img src='http://cappuccino.org/images/cappuccino-icon.png'><img src='http://cappuccino.org/images/cappuccino-icon.png'></body></html>"];
 
-    //[webView3 setScrollMode:CPWebViewScrollAuto];
+    [webView3 setScrollMode:CPWebViewScrollAuto];
     [webView3 setMainFrameURL:[[CPBundle mainBundle] pathForResource:"hello_world.html"]];
-
     [webView4 setScrollMode:CPWebViewScrollNative];
     [webView4 setMainFrameURL:[[CPBundle mainBundle] pathForResource:"hello_world.html"]];
 
-    //[webView5 setScrollMode:CPWebViewScrollAuto];
+    // XXX If this program is run from file:// in Safari, it will actually have SOP access.
+    [webView5 setScrollMode:CPWebViewScrollAuto];
     [webView5 setMainFrameURL:"http://www.cappuccino.org"];
 
-    //[webView5 setScrollMode:CPWebViewScrollAuto];
+    [webView6 setScrollMode:CPWebViewScrollAppKit];
     [webView6 setMainFrameURL:"http://www.cappuccino.org"];
 }
 
