@@ -530,7 +530,13 @@ var ModifierKeyCodes = [
 - (void)orderFront:(id)aSender
 {
     if (_DOMWindow)
+    {
+        // Hack to avoid Chrome bug
+        if (_DOMWindow.focus === null)
+            delete _DOMWindow.focus;
+
         return _DOMWindow.focus();
+    }
 
     _DOMWindow = window.open("", "_blank", "menubar=no,location=no,resizable=yes,scrollbars=no,status=no,left=" + _CGRectGetMinX(_contentRect) + ",top=" + _CGRectGetMinY(_contentRect) + ",width=" + _CGRectGetWidth(_contentRect) + ",height=" + _CGRectGetHeight(_contentRect));
 
