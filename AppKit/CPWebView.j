@@ -124,7 +124,6 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
         _backwardStack          = [];
         _forwardStack           = [];
         _scrollMode             = CPWebViewScrollAuto;
-        _effectiveScrollMode    = nil; // Unknown.
         _contentIsAccessible    = YES;
 
         [self _initDOMWithFrame:aFrame];
@@ -458,8 +457,6 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 
 - (void)_finishedLoading
 {
-    CPLog.info(self + '(void)_finishedLoading');
-
     // Check if we have access.
     try
     {
@@ -886,6 +883,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 #endif
 
         [self setBackgroundColor:[CPColor whiteColor]];
+        [_updateEffectiveScrollMode];
     }
 
     return self;
