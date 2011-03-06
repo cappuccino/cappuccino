@@ -40,7 +40,22 @@ CPWebViewScrollAuto                             = 0;
 CPWebViewScrollAppKit                           = 1;
 CPWebViewScrollNative                           = 2;
 
-// FIXME: somehow make CPWebView work with CPScrollView instead of native scrollbars (is this even possible?)
+
+/*!
+    How often the size of the document will be checked at page load time when
+    AppKit scrollbars are used.
+*/
+CPWebViewAppKitScrollPollInterval               = 1.0;
+/*!
+    How many times the size of the size of the document will be checked at
+    page load time when AppKit scrollbars are used.
+
+    The polling method is bad for performance so we wish to disable it as
+    soon as the page has finished loading. The assumption is that after
+    CPWebViewAppKitScrollMaxPollCount * CPWebViewAppKitScrollPollInterval,
+    the page should be fully loaded and the size final.
+*/
+CPWebViewAppKitScrollMaxPollCount                  = 3;
 
 /*!
     @ingroup appkit
@@ -85,6 +100,8 @@ CPWebViewScrollNative                           = 2;
     int         _scrollMode;
     int         _effectiveScrollMode;
     BOOL        _contentIsAccessible;
+    CPTimer     _contentSizeCheckTimer;
+    int         _contentSizePollCount;
     CGSize      _scrollSize;
 
     int         _loadHTMLStringTimer;
@@ -240,10 +257,13 @@ CPWebViewScrollNative                           = 2;
             }
             else
             {
-                // TODO If we do have access to the content, it might be that the 'body' element simply hasn't loaded yet.
-                CPLog.warn("using default size 800*1600");
-
-                [_frameView setFrameSize:CGSizeMake(800, 1600)];
+                // If we do have access to the content, it might be that the 'body' element simply hasn't loaded yet.
+                // The size will be updated by the content size timer in this case.
+                if (!win || !win.document)
+                {
+                    CPLog.warn("using default size 800*1600");
+                    [_frameView setFrameSize:CGSizeMake(800, 1600)];
+                }
             }
 
             [_frameView scrollRectToVisible:visibleRect];
@@ -297,12 +317,31 @@ CPWebViewScrollNative                           = 2;
     var parent = _iframe.parentNode;
     parent.removeChild(_iframe);
 
+    [_contentSizeCheckTimer invalidate];
     if (_effectiveScrollMode === CPWebViewScrollAppKit)
     {
         [_scrollView setHasHorizontalScroller:YES];
         [_scrollView setHasVerticalScroller:YES];
 
         _iframe.setAttribute("scrolling", "no");
+
+        /*
+        FIXME Need better method.
+        We don't know when the content of the iframe changes size (e.g. a
+        picture finishes loading, dynamic content is loaded). Often when a
+        page has initially 'loaded', it does not yet have its final size. In
+        lieu of any resize events we will simply check back in a few times
+        some time after loading.
+
+        We run these checks only a limited number of times as to not deplete
+        battery life and slow down the software needlessly. This does mean
+        there are situations where the content changes size and the AppKit
+        scrollbars will be out of sync. Users who have dynamic content
+        in their web view will, for now, have to implement domain specific
+        fixes.
+        */
+        _contentSizePollCount = 0;
+        _contentSizeCheckTimer = [CPTimer scheduledTimerWithTimeInterval:CPWebViewAppKitScrollPollInterval target:self selector:@selector(_maybePollWebFrameSize) userInfo:nil repeats:YES];
     }
     else
     {
@@ -317,6 +356,14 @@ CPWebViewScrollNative                           = 2;
     parent.appendChild(_iframe);
 
     [self _resizeWebFrame];
+}
+
+- (void)_maybePollWebFrameSize
+{
+    if (CPWebViewAppKitScrollMaxPollCount == 0 || _contentSizePollCount++ < CPWebViewAppKitScrollMaxPollCount)
+        [self _resizeWebFrame];
+    else
+        [_contentSizeCheckTimer invalidate];
 }
 
 /*!
