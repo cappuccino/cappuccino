@@ -883,7 +883,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 #endif
 
         [self setBackgroundColor:[CPColor whiteColor]];
-        [_updateEffectiveScrollMode];
+        [self _updateEffectiveScrollMode];
     }
 
     return self;
