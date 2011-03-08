@@ -30,6 +30,17 @@ var NSViewAutoresizingMask = 0x3F,
     NSViewAutoresizesSubviewsMask = 1 << 8,
     NSViewHiddenMask = 1 << 31;
 
+NSViewAlignLayoutMinValue       = 1000;
+NSViewAlignLayoutBaselineLeft   = 1000;
+NSViewAlignLayoutTopLeft        = 2000;
+NSViewAlignLayoutTop            = 3000;
+NSViewAlignLayoutTopRight       = 4000;
+NSViewAlignLayoutBaselineRight  = 5000;
+NSViewAlignLayoutBottomRight    = 6000;
+NSViewAlignLayoutBottom         = 7000;
+NSViewAlignLayoutBottomLeft     = 8000;
+NSViewAlignLayoutMaxValue       = 8000;
+
 @implementation CPView (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
@@ -84,8 +95,6 @@ var NSViewAutoresizingMask = 0x3F,
 @end
 
 @implementation NSView : CPView
-{
-}
 
 - (id)initWithCoder:(CPCoder)aCoder
 {

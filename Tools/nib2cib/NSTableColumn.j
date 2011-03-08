@@ -50,7 +50,7 @@
                 selectedFont = nil;
             
             if (!font)
-                font = [CPFont systemFontOfSize:12.0];
+                font = [CPFont systemFontOfSize:[CPFont systemFontSize]];
             
             var selectedFont = [CPFont boldFontWithName:[font familyName] size:[font size]];
             

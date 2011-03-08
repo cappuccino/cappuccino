@@ -32,6 +32,7 @@
 
 
 var _CPButtonBezelStyleHeights = {};
+
 _CPButtonBezelStyleHeights[CPRoundedBezelStyle] = 18;
 _CPButtonBezelStyleHeights[CPTexturedRoundedBezelStyle] = 20;
 _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
@@ -100,18 +101,18 @@ var NSButtonIsBorderedMask = 0x00800000,
                 case CPHelpButtonBezelStyle:
                 case CPCircularBezelStyle:
                 case CPDisclosureBezelStyle:
-                    CPLog.warn("Unsupported bezel style: " + _bezelStyle);
+                    CPLog.warn("NSButton [%s]: unsupported bezel style: %d", _title == null ? "<no title>" : '"' + _title + '"', _bezelStyle);
                     _bezelStyle = CPHUDBezelStyle;
                     break;
                 // error:
                 default:
-                    CPLog.error("Unknown bezel style: " + _bezelStyle);
+                    CPLog.warn("NSButton [%s]: unknown bezel style: %d", _title == null ? "<no title>" : '"' + _title + '"', _bezelStyle);
                     _bezelStyle = CPHUDBezelStyle;
             }
 
             if ([cell isBordered])
             {
-                CPLog.info("Adjusting CPButton height from " +_frame.size.height+ " / " + _bounds.size.height+" to " + CPButtonDefaultHeight);
+                CPLog.debug("NSButton [%s]: adjusting height from %d to %d", _title == null ? "<no title>" : '"' + _title + '"', _frame.size.height, CPButtonDefaultHeight);
                 _frame.size.height = CPButtonDefaultHeight;
                 _frame.origin.y += 4.0;
                 _bounds.size.height = CPButtonDefaultHeight;
