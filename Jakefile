@@ -116,6 +116,9 @@ task ("documentation", function()
 
         if (!OS.system([doxygen, FILE.join(documentationDir, "Cappuccino.doxygen")]))
         {
+            if (!FILE.isDirectory($BUILD_DIR))
+                FILE.mkdirs($BUILD_DIR);
+
             rm_rf($DOCUMENTATION_BUILD);
             mv("debug.txt", FILE.join("Documentation", "debug.txt"));
             mv("Documentation", $DOCUMENTATION_BUILD);
