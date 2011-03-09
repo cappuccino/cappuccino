@@ -127,10 +127,8 @@ function main(args)
     else
         CPLogRegister(CPLogPrint, null, logFormatter);
 
-    printVersion();
-
-    if (options.showVersion)
-        OS.exit(0);
+    if (!options.quiet && options.verbose > 0)
+        printVersion(options.showVersion);
 
     var inputFile = options.args[0];
 
@@ -348,7 +346,7 @@ function setSystemFontAndSize(configFile, inputFile)
     return configPath;
 }
 
-function printVersion()
+function printVersion(exitAfter)
 {
     // SYS.args[0] has the path to the nib2cib binary, from that we can get
     // to the lib/nib2cib directory which the Info.plist for nib2cib.
@@ -376,6 +374,9 @@ function printVersion()
         if (version)
             print("nib2cib v" + version);
     }
+
+    if (exitAfter)
+        OS.exit(0);
 }
 
 function fail(message)

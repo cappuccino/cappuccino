@@ -29,6 +29,8 @@
 var _CPFonts                        = {},
     _CPFontSystemFontFace           = @"Arial",
     _CPFontSystemFontSize           = 12,
+    _CPFontDefaultSystemFontFace    = @"Arial, sans-serif",
+    _CPFontDefaultSystemFontSize    = 12,
     _CPFontFallbackFaces            = [@"Arial", @"sans-serif"],
     _CPFontStripRegExp              = new RegExp("(^\\s*[\"']?|[\"']?\\s*$)", "g"),
     _CPFontStripPropertiesRegExp    = new RegExp("^(italic |bold )*\\d+px ");
@@ -63,7 +65,7 @@ var _CPFonts                        = {},
         systemFontFace = [[CPBundle bundleForClass:[CPView class]] objectForInfoDictionaryKey:@"CPSystemFontFace"];
 
     if (systemFontFace)
-        _CPFontSystemFontFace = systemFontFace;
+        [self setSystemFontFace:systemFontFace];
 
     var systemFontSize = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPSystemFontSize"];
 
@@ -87,8 +89,12 @@ var _CPFonts                        = {},
 */
 + (CPString)setSystemFontFace:(CPString)aFace
 {
+    var names = _CPFontNormalizedNames(aFace);
 
-    _CPFontSystemFontFace = aFace;
+    _CPFontSystemFontFace = names.shift();
+
+    if (names.length)
+        _CPFontFallbackFaces = names;
 }
 
 /*!
@@ -311,6 +317,14 @@ var CPFontNameKey     = @"CPFontNameKey",
         size = [aCoder decodeFloatForKey:CPFontSizeKey],
         isBold = [aCoder decodeBoolForKey:CPFontIsBoldKey],
         isItalic = [aCoder decodeBoolForKey:CPFontIsItalicKey];
+
+    if (fontName === _CPFontDefaultSystemFontFace)
+    {
+        fontName = [_CPFontSystemFontFace].concat(_CPFontFallbackFaces).join(",");
+
+        if (size === _CPFontDefaultSystemFontSize)
+            size = _CPFontSystemFontSize;
+    }
 
     return [self _initWithName:fontName size:size bold:isBold italic:isItalic];
 }
