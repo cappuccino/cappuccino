@@ -320,7 +320,7 @@ var CPFontNameKey     = @"CPFontNameKey",
 
     if (fontName === _CPFontDefaultSystemFontFace)
     {
-        fontName = [_CPFontSystemFontFace].concat(_CPFontFallbackFaces).join(",");
+        fontName = _CPFontConcatNameWithFallback(_CPFontSystemFontFace);
 
         if (size === _CPFontDefaultSystemFontSize)
             size = _CPFontSystemFontSize;
@@ -346,29 +346,37 @@ var CPFontNameKey     = @"CPFontNameKey",
 @end
 
 
-var _CPFontCreateCSSString = function(aName, aSize, isBold, isItalic)
+var _CPFontConcatNameWithFallback = function(aName)
 {
     // aName might be a string or an array of preprocessed names
     var names = typeof(aName) === "string" ? _CPFontNormalizedNames(aName) : aName,
-        properties = (isItalic ? "italic " : "") + (isBold ? "bold " : "") + aSize + "px ",
         fallbackFaces = _CPFontFallbackFaces.slice(0);
 
     // Remove the standard fallback names from the names passed in
-    for (var i = 0; i < fallbackFaces.length; )
+    for (var i = 0; i < names.length; ++i)
     {
-        for (var j = 0; j < names.length; ++j)
+        for (var j = 0; j < fallbackFaces.length; ++j)
         {
-            if (fallbackFaces[i].toLowerCase() === names[j].toLowerCase())
+            if (names[i].toLowerCase() === fallbackFaces[j].toLowerCase())
             {
-                fallbackFaces.splice(i, 1);
-                continue;
+                fallbackFaces.splice(j, 1);
+                break;
             }
         }
 
-        ++i;
+        if (names[i].indexOf(" ") > 0)
+            names[i] = '"' + names[i] + '"';
     }
 
-    return properties + '"' + names.concat(fallbackFaces).join("\", \"") + '"';
+    return names.concat(fallbackFaces).join(", ");
+};
+
+var _CPFontCreateCSSString = function(aName, aSize, isBold, isItalic)
+{
+    // aName might be a string or an array of preprocessed names
+    var properties = (isItalic ? "italic " : "") + (isBold ? "bold " : "") + aSize + "px ";
+
+    return properties + _CPFontConcatNameWithFallback(aName);
 };
 
 var _CPFontNormalizedNames = function(aName)
