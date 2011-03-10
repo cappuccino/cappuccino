@@ -61,16 +61,22 @@ CPSoundPlayBackStatePause   = 2;
         _loops = NO;
         _audioTag = document.createElement("audio");
         _audioTag.preload = YES;
+
         _audioTag.addEventListener("canplay", function()
         {
+            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
             [self _soundDidload];
         }, true);
+
         _audioTag.addEventListener("ended", function()
         {
+            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
             [self _soundDidEnd];
         }, true);
+
         _audioTag.addEventListener("error", function()
         {
+            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
             [self _soundError];
         }, true);
     }
