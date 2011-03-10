@@ -132,4 +132,19 @@
     [self assert:CPMixedState equals:[button state] message:@"Mixed state is allowed, state should be CPMixedState"];
 }
 
+- (void)testThemeAttributes
+{
+    var attributes = [CPButton themeAttributes];
+
+    if (attributes)
+    {
+        var keys = [attributes allKeys],
+            firstKey = [keys objectAtIndex:0];
+
+        [self assertTrue:[button hasThemeAttribute:[firstKey]] message:[button className] + " should have the theme attribute \"" + firstKey + "\""];
+    }
+
+    [self assertFalse:[button hasThemeAttribute:@"foobar"] message:[button className] + " should not have theme attribute \"" + firstKey + "\""];
+}
+
 @end

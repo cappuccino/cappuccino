@@ -2498,6 +2498,11 @@ setBoundsOrigin:
     return [_themeAttributes[aName] valueForState:_themeState];
 }
 
+- (BOOL)hasThemeAttribute:(CPString)aName
+{
+    return (_themeAttributes && _themeAttributes[aName] !== undefined);
+}
+
 - (CPView)createEphemeralSubviewNamed:(CPString)aViewName
 {
     return nil;
