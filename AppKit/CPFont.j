@@ -27,16 +27,17 @@
 
 
 var _CPFonts                        = {},
-    _CPFontSystemFontFace           = @"Arial",
+    _CPFontSystemFontFace           = @"Arial, sans-serif",
     _CPFontSystemFontSize           = 12,
     _CPFontDefaultSystemFontFace    = @"Arial, sans-serif",
     _CPFontDefaultSystemFontSize    = 12,
-    _CPFontFallbackFaces            = [@"Arial", @"sans-serif"],
+    _CPFontFallbackFaces            = _CPFontDefaultSystemFontFace.split(", "),
     _CPFontStripRegExp              = new RegExp("(^\\s*[\"']?|[\"']?\\s*$)", "g"),
     _CPFontStripPropertiesRegExp    = new RegExp("^(italic |bold )*\\d+px ");
 
 
-#define _CPCachedFont(aName, aSize, isBold, isItalic) _CPFonts[_CPFontCreateCSSString(aName, aSize, isBold, isItalic)]
+#define _CPFontNormalizedNames(aName)  _CPFontNormalizedNameArray(aName).join(", ")
+#define _CPCachedFont(aName, aSize, isBold, isItalic)  _CPFonts[_CPFontCreateCSSString(_CPFontNormalizedNames(aName), aSize, isBold, isItalic)]
 
 /*!
     @ingroup appkit
@@ -89,12 +90,7 @@ var _CPFonts                        = {},
 */
 + (CPString)setSystemFontFace:(CPString)aFace
 {
-    var names = _CPFontNormalizedNames(aFace);
-
-    _CPFontSystemFontFace = names.shift();
-
-    if (names.length)
-        _CPFontFallbackFaces = names;
+    _CPFontSystemFontFace = _CPFontNormalizedNames(aFace);
 }
 
 /*!
@@ -194,10 +190,7 @@ var _CPFonts                        = {},
 
     if (self)
     {
-        // Normalize all of the names
-        var names = _CPFontNormalizedNames(aName);
-
-        _name = names[0];
+        _name = _CPFontNormalizedNames(aName);
         _size = aSize;
         _ascender = 0;
         _descender = 0;
@@ -205,7 +198,7 @@ var _CPFonts                        = {},
         _isBold = isBold;
         _isItalic = isItalic;
 
-        _cssString = _CPFontCreateCSSString(names, _size, _isBold, _isItalic);
+        _cssString = _CPFontCreateCSSString(_name, _size, _isBold, _isItalic);
 
         _CPFonts[_cssString] = self;
     }
@@ -318,9 +311,9 @@ var CPFontNameKey     = @"CPFontNameKey",
         isBold = [aCoder decodeBoolForKey:CPFontIsBoldKey],
         isItalic = [aCoder decodeBoolForKey:CPFontIsItalicKey];
 
-    if (fontName === _CPFontDefaultSystemFontFace)
+    if (fontName === _CPFontDefaultSystemFontFace && _CPFontDefaultSystemFontFace !== _CPFontSystemFontFace)
     {
-        fontName = _CPFontConcatNameWithFallback(_CPFontSystemFontFace);
+        fontName = _CPFontSystemFontFace;
 
         if (size === _CPFontDefaultSystemFontSize)
             size = _CPFontSystemFontSize;
@@ -335,9 +328,7 @@ var CPFontNameKey     = @"CPFontNameKey",
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    var name = _cssString.replace(_CPFontStripPropertiesRegExp, "");
-
-    [aCoder encodeObject:name forKey:CPFontNameKey];
+    [aCoder encodeObject:_name forKey:CPFontNameKey];
     [aCoder encodeFloat:_size forKey:CPFontSizeKey];
     [aCoder encodeBool:_isBold forKey:CPFontIsBoldKey];
     [aCoder encodeBool:_isItalic forKey:CPFontIsItalicKey];
@@ -346,13 +337,21 @@ var CPFontNameKey     = @"CPFontNameKey",
 @end
 
 
-var _CPFontConcatNameWithFallback = function(aName)
+// aName must normalized
+var _CPFontCreateCSSString = function(aName, aSize, isBold, isItalic)
 {
     // aName might be a string or an array of preprocessed names
-    var names = typeof(aName) === "string" ? _CPFontNormalizedNames(aName) : aName,
+    var properties = (isItalic ? "italic " : "") + (isBold ? "bold " : "") + aSize + "px ";
+
+    return properties + _CPFontConcatNameWithFallback(aName);
+};
+
+var _CPFontConcatNameWithFallback = function(aName)
+{
+    var names = _CPFontNormalizedNameArray(aName),
         fallbackFaces = _CPFontFallbackFaces.slice(0);
 
-    // Remove the standard fallback names from the names passed in
+    // Remove the fallback names used in the names passed in
     for (var i = 0; i < names.length; ++i)
     {
         for (var j = 0; j < fallbackFaces.length; ++j)
@@ -371,15 +370,7 @@ var _CPFontConcatNameWithFallback = function(aName)
     return names.concat(fallbackFaces).join(", ");
 };
 
-var _CPFontCreateCSSString = function(aName, aSize, isBold, isItalic)
-{
-    // aName might be a string or an array of preprocessed names
-    var properties = (isItalic ? "italic " : "") + (isBold ? "bold " : "") + aSize + "px ";
-
-    return properties + _CPFontConcatNameWithFallback(aName);
-};
-
-var _CPFontNormalizedNames = function(aName)
+var _CPFontNormalizedNameArray = function(aName)
 {
     var names = aName.split(",");
 
