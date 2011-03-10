@@ -56,9 +56,24 @@
 
             if (![cibFont isEqual:nibFont])
             {
+                var source = "";
+
+                if (!cibFont)
+                {
+                    cibFont = [theme valueForAttributeWithName:@"font" inState:[object themeState] forClass:[object class]];
+
+                    if ([cibFont familyName] === "Arial, sans-serif")
+                    {
+                        var size = [cibFont size];
+
+                        cibFont = [cibFont isBold] ? [CPFont boldSystemFontOfSize:size] : [CPFont systemFontOfSize:size];
+                        source = " (from theme)"
+                    }
+                }
+
                 [object setFont:cibFont];
 
-                CPLog.debug("%s: substituted <%s> for <%fpx %s>", [object className], cibFont ? [cibFont cssString] : "theme default", [nibFont size], [nibFont familyName]);
+                CPLog.debug("%s: substituted <%s>%s for <%fpx %s>", [object className], cibFont ? [cibFont cssString] : "theme default", source, [nibFont size], [nibFont familyName]);
             }
         }
 

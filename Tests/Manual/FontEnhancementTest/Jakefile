@@ -1,8 +1,8 @@
 /*
  * Jakefile
- * FontEnhancements
+ * test
  *
- * Created by aparajita on March 8, 2011.
+ * Created by aparajita on March 9, 2011.
  * Copyright 2011, Victory-Heart Productions All rights reserved.
  */
 
@@ -15,17 +15,17 @@ var ENV = require("system").env,
     configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
     OS = require("os");
 
-app ("FontEnhancements", function(task)
+app ("test", function(task)
 {
-    task.setBuildIntermediatesPath(FILE.join("Build", "FontEnhancements.build", configuration));
+    task.setBuildIntermediatesPath(FILE.join("Build", "test.build", configuration));
     task.setBuildPath(FILE.join("Build", configuration));
 
-    task.setProductName("FontEnhancements");
-    task.setIdentifier("com.aparajitaworld.FontEnhancements");
+    task.setProductName("test");
+    task.setIdentifier("com.aparajitaworld.test");
     task.setVersion("1.0");
     task.setAuthor("Victory-Heart Productions");
     task.setEmail("feedback @nospam@ yourcompany.com");
-    task.setSummary("FontEnhancements");
+    task.setSummary("test");
     task.setSources((new FileList("**/*.j")).exclude(FILE.join("Build", "**")));
     task.setResources(new FileList("Resources/**"));
     task.setIndexFilePath("index.html");
@@ -38,7 +38,7 @@ app ("FontEnhancements", function(task)
         task.setCompilerFlags("-O");
 });
 
-task ("default", ["FontEnhancements"], function()
+task ("default", ["test"], function()
 {
     printResults(configuration);
 });
@@ -59,36 +59,36 @@ task ("release", function()
 
 task ("run", ["debug"], function()
 {
-    OS.system(["open", FILE.join("Build", "Debug", "FontEnhancements", "index.html")]);
+    OS.system(["open", FILE.join("Build", "Debug", "test", "index.html")]);
 });
 
 task ("run-release", ["release"], function()
 {
-    OS.system(["open", FILE.join("Build", "Release", "FontEnhancements", "index.html")]);
+    OS.system(["open", FILE.join("Build", "Release", "test", "index.html")]);
 });
 
 task ("deploy", ["release"], function()
 {
-    FILE.mkdirs(FILE.join("Build", "Deployment", "FontEnhancements"));
-    OS.system(["press", "-f", FILE.join("Build", "Release", "FontEnhancements"), FILE.join("Build", "Deployment", "FontEnhancements")]);
+    FILE.mkdirs(FILE.join("Build", "Deployment", "test"));
+    OS.system(["press", "-f", FILE.join("Build", "Release", "test"), FILE.join("Build", "Deployment", "test")]);
     printResults("Deployment")
 });
 
 task ("desktop", ["release"], function()
 {
-    FILE.mkdirs(FILE.join("Build", "Desktop", "FontEnhancements"));
-    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", "FontEnhancements"), FILE.join("Build", "Desktop", "FontEnhancements", "FontEnhancements.app"));
+    FILE.mkdirs(FILE.join("Build", "Desktop", "test"));
+    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", "test"), FILE.join("Build", "Desktop", "test", "test.app"));
     printResults("Desktop")
 });
 
 task ("run-desktop", ["desktop"], function()
 {
-    OS.system([FILE.join("Build", "Desktop", "FontEnhancements", "FontEnhancements.app", "Contents", "MacOS", "NativeHost"), "-i"]);
+    OS.system([FILE.join("Build", "Desktop", "test", "test.app", "Contents", "MacOS", "NativeHost"), "-i"]);
 });
 
 function printResults(configuration)
 {
     print("----------------------------");
-    print(configuration+" app built at path: "+FILE.join("Build", configuration, "FontEnhancements"));
+    print(configuration+" app built at path: "+FILE.join("Build", configuration, "test"));
     print("----------------------------");
 }
