@@ -54,7 +54,7 @@ parser.option("--mac", "format")
     .def(NibFormatUndetermined)
     .help("Set format to Mac");
 
-parser.option("--legacy", "conversionMode")
+parser.option("--legacy", "layoutMode")
     .set(ConverterModeLegacy)
     .def(ConverterModeNew)
     .help("Use legacy code that does not preserve view positioning/sizing");

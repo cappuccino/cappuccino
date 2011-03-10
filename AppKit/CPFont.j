@@ -311,6 +311,7 @@ var CPFontNameKey     = @"CPFontNameKey",
         isBold = [aCoder decodeBoolForKey:CPFontIsBoldKey],
         isItalic = [aCoder decodeBoolForKey:CPFontIsItalicKey];
 
+    // Substitute configured font for legacy font
     if (fontName === _CPFontDefaultSystemFontFace && _CPFontDefaultSystemFontFace !== _CPFontSystemFontFace)
     {
         fontName = _CPFontSystemFontFace;
