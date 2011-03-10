@@ -19,6 +19,8 @@ var fontLabelField = nil,
     CPTextField label1;
     CPTextField fontLabel;
     CPTableView theTableView;
+    CPRadio     radio1;
+    CPRadio     radio2;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -37,6 +39,11 @@ var fontLabelField = nil,
 
     fontLabelField = fontLabel;
     defaultFontLabelText = [fontLabelField stringValue];
+
+    var font = [CPFont fontWithName:@"Palatino, Cambria" size:14];
+
+    [radio1 setFont:font];
+    [radio2 setFont:font];
 }
 
 - (int)numberOfRowsInTableView:(id)aTableView
@@ -75,8 +82,8 @@ var fontLabelField = nil,
 
     var size = [self frameSize],
         lineHeight = [[self font] defaultLineHeightForFont],
-        inset = [self themeAttribute:@"content-inset"],
-        minSize = [self themeAttribute:@"min-size"],
+        inset = [self hasThemeAttribute:@"content-inset"] ? [self currentValueForThemeAttribute:@"content-inset"] : nil,
+        minSize = [self hasThemeAttribute:@"min-size"] ? [self currentValueForThemeAttribute:@"min-size"] : nil,
         height = lineHeight + (inset ? inset.top + inset.bottom : 0);
 
     if (minSize)
@@ -93,18 +100,6 @@ var fontLabelField = nil,
 - (void)mouseExited:(CPEvent)anEvent
 {
     [self doMouseExited];
-}
-
-- (id)themeAttribute:(CPString)aName
-{
-    try
-    {
-        return [self currentValueForThemeAttribute:aName];
-    }
-    catch (e)
-    {
-        return nil;
-    }
 }
 
 @end
