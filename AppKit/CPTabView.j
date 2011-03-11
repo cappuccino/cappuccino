@@ -443,7 +443,6 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
         [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
 
         [self setTabViewType:[aCoder decodeIntForKey:CPTabViewTypeKey]];
-
     }
 
     return self;
