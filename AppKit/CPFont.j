@@ -353,10 +353,9 @@ var CPFontNameKey     = @"CPFontNameKey",
 @end
 
 
-// aName must normalized
+// aName must be normalized
 var _CPFontCreateCSSString = function(aName, aSize, isBold, isItalic)
 {
-    // aName might be a string or an array of preprocessed names
     var properties = (isItalic ? "italic " : "") + (isBold ? "bold " : "") + aSize + "px ";
 
     return properties + _CPFontConcatNameWithFallback(aName);
