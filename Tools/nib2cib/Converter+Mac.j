@@ -54,7 +54,7 @@
             else
                 cibFont = [NSFont cibFontForNibFont:[object font]];
 
-            if (![cibFont isEqual:nibFont])
+            if (!cibFont || ![cibFont isEqual:nibFont])
             {
                 var source = "";
 
