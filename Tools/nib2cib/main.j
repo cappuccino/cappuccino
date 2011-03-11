@@ -130,9 +130,6 @@ function main(args)
     if (!FILE.exists(inputFile))
         fail("No such file: " + FILE.canonical(inputFile));
 
-    if (!haveFontInfo())
-        fail("The fontinfo package is not installed, please install it.");
-
     var configPath = setSystemFontAndSize(options.configFile || "", inputFile),
         themeName = "",
         themeDir = options.themeDir || "";
@@ -268,20 +265,6 @@ function loadTheme(themeName, themeDir)
 
     CPLog.debug("Loaded theme: " + themePath);
     return theme;
-}
-
-function haveFontInfo()
-{
-    try
-    {
-        var fontinfo = require("fontinfo").fontinfo;
-    }
-    catch (e)
-    {
-        return false;
-    }
-
-    return true;
 }
 
 function setSystemFontAndSize(configFile, inputFile)
