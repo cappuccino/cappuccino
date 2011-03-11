@@ -223,8 +223,10 @@ function loadTheme(themeName, themeDir)
         themeDir = FILE.join(cappBuild, baseThemeName + ".build");
     }
 
+    themeDir = FILE.canonical(themeDir);
+
     if (!FILE.isDirectory(themeDir))
-        fail("No such theme directory: " + themeDir);
+        fail("Cannot find the theme directory: " + themeDir);
 
     var themePath = null;
 
@@ -240,7 +242,7 @@ function loadTheme(themeName, themeDir)
     }
 
     if (!themePath)
-        fail("Could not find the keyed theme data for: " + themeName);
+        fail("Could not find the keyed theme data for \"" + themeName + "\" in the directory: " + themeDir);
 
     themePath = FILE.canonical(themePath);
     var plist = FILE.read(themePath);
