@@ -40,12 +40,11 @@ ConverterConversionException = @"ConverterConversionException";
 
 @implementation Converter : CPObject
 {
-    CPString            inputPath       @accessors(readonly);
-    CPString            outputPath      @accessors;
-    CPString            resourcesPath   @accessors;
-    ConverterLayoutMode layoutMode      @accessors(readonly);
-    NibFormat           format          @accessors(readonly);
-    CPTheme             theme           @accessors(readonly);
+    CPString     inputPath       @accessors(readonly);
+    CPString     outputPath      @accessors;
+    CPString     resourcesPath   @accessors;
+    NibFormat    format          @accessors(readonly);
+    CPTheme      theme           @accessors(readonly);
 }
 
 + (Converter)sharedConverter
@@ -56,7 +55,7 @@ ConverterConversionException = @"ConverterConversionException";
     return SharedConverter;
 }
 
-- (id)initWithInputPath:(CPString)aPath format:(NibFormat)nibFormat layoutMode:(ConverterLayoutMode)aLayoutMode theme:(CPTheme)aTheme
+- (id)initWithInputPath:(CPString)aPath format:(NibFormat)nibFormat theme:(CPTheme)aTheme
 {
     self = [super init];
 
@@ -64,7 +63,6 @@ ConverterConversionException = @"ConverterConversionException";
     {
         inputPath = aPath;
         format = nibFormat;
-        layoutMode = aLayoutMode;
         theme = aTheme;
     }
 

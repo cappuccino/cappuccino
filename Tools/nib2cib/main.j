@@ -54,11 +54,6 @@ parser.option("--mac", "format")
     .def(NibFormatUndetermined)
     .help("Set format to Mac");
 
-parser.option("--legacy", "layoutMode")
-    .set(ConverterModeLegacy)
-    .def(ConverterModeNew)
-    .help("Use legacy code that does not preserve view positioning/sizing");
-
 parser.option("-t", "--theme-dir", "themeDir")
     .set()
     .help("A <theme>.build directory to use for theme attribute values");
@@ -135,7 +130,7 @@ function main(args)
     if (!FILE.exists(inputFile))
         fail("No such file: " + FILE.canonical(inputFile));
 
-    if (options.layoutMode === ConverterModeNew && !haveFontInfo())
+    if (!haveFontInfo())
         fail("The fontinfo package is not installed, please install it.");
 
     var configPath = setSystemFontAndSize(options.configFile || "", inputFile),
@@ -158,7 +153,6 @@ function main(args)
     CPLog.info("Format      : " + ["Auto", "Mac", "iPhone"][options.format]);
     CPLog.info("Resources   : " + (options.resources || ""));
     CPLog.info("Frameworks  : " + options.frameworks);
-    CPLog.info("Layout Mode : " + (options.layoutMode === ConverterModeLegacy ? "legacy" : "new"));
     CPLog.info("Theme       : " + themeName);
     CPLog.info("Config file : " + (configPath || ""));
     CPLog.info("System Font : " + [CPFont systemFontSize] + "px " + [CPFont systemFontFace]);
@@ -166,7 +160,6 @@ function main(args)
 
     var converter = [[Converter alloc] initWithInputPath:inputFile
                                                   format:options.format
-                                              layoutMode:options.layoutMode
                                                    theme:theme];
 
     if (options.resources)
