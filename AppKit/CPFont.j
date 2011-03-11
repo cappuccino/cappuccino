@@ -42,7 +42,32 @@ var _CPFonts                        = {},
     @ingroup appkit
     @class CPFont
 
-    The CPFont class allows control of the fonts used for displaying text anywhere on the screen. The primary method for getting a particular font is through one of the class methods that take a name and/or size as arguments, and return the appropriate CPFont.
+    The CPFont class allows control of the fonts used for displaying text anywhere on the screen.
+    The primary method for getting a particular font is through one of the class methods that take
+    a name and/or size as arguments, and return the appropriate CPFont.
+
+    By default the system font face/size is Arial 12px, with a fallback to sans-serif. You may
+    configure this at runtime in two ways:
+
+    - By sending [CPFont @link CPFont::setSystemFontFace: setSystemFontFace:@endlink] and/or [CPFont @link CPFont::setSystemFontSize: setSystemFontSize:@endlink].
+    - By configuring Info.plist for your application or for AppKit. You can set the font face
+      by adding a CPSystemFontFace string item to the Info.plist, and you can set the font size
+      by adding a CPSystemFontSize integer item to the Info.plist.
+
+    Note that in either case, you can specify a comma-delimited list of fonts as the font face.
+    The browser will use the first available font in the list. CPFont always ensures that Arial
+    and sans-serif are always in the generated CSS string, so there is no need to add them to
+    the end of your font list.
+
+    If you are using nib2cib, you should use the second method (using Info.plist),
+    and be sure to run nib2cib again any time you modify the CPSystemFontFace or CPSystemFontSize items.
+    For example, you might add this to your application's Info.plist to set the system font to Lucida Grande,
+    with an automatic fallback to Arial or sans-serif:
+
+    @code
+<key>CPSystemFontFace</key>
+<string>Lucida Grande</string>
+	@endcode
 */
 @implementation CPFont : CPObject
 {
