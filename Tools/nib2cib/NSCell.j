@@ -30,23 +30,24 @@
 
 @implementation NSCell : CPObject
 {
-    int             _state          @accessors(readonly, getter=state);
-    BOOL            _isHighlighted  @accessors(readonly, getter=isHighlighted);
-    BOOL            _isEnabled      @accessors(readonly, getter=isEnabled);
-    BOOL            _isEditable     @accessors(readonly, getter=isEditable);
-    BOOL            _isBordered     @accessors(readonly, getter=isBordered);
-    BOOL            _isBezeled      @accessors(readonly, getter=isBezeled);
-    BOOL            _isSelectable   @accessors(readonly, getter=isSelectable);
-    BOOL            _isScrollable   @accessors(readonly, getter=isScrollable);
-    BOOL            _isContinuous   @accessors(readonly, getter=isContinuous);
-    BOOL            _scrolls        @accessors(readonly, getter=scrolls);
-    BOOL            _wraps          @accessors(readonly, getter=wraps);
-    BOOL            _truncates      @accessors(readonly, getter=truncates);
-    CPTextAlignment _alignment      @accessors(readonly, getter=alignment);
-    CPControlSize   _controlSize    @accessors(readonly, getter=controlSize);
-    id              _objectValue    @accessors(readonly, getter=objectValue);
-    CPFont          _font           @accessors(readonly, getter=font);
-    int             _lineBreakMode  @accessors(readonly, getter=lineBreakMode);
+    int             _state                      @accessors(readonly, getter=state);
+    BOOL            _isHighlighted              @accessors(readonly, getter=isHighlighted);
+    BOOL            _isEnabled                  @accessors(readonly, getter=isEnabled);
+    BOOL            _isEditable                 @accessors(readonly, getter=isEditable);
+    BOOL            _isBordered                 @accessors(readonly, getter=isBordered);
+    BOOL            _isBezeled                  @accessors(readonly, getter=isBezeled);
+    BOOL            _isSelectable               @accessors(readonly, getter=isSelectable);
+    BOOL            _isScrollable               @accessors(readonly, getter=isScrollable);
+    BOOL            _isContinuous               @accessors(readonly, getter=isContinuous);
+    BOOL            _scrolls                    @accessors(readonly, getter=scrolls);
+    BOOL            _wraps                      @accessors(readonly, getter=wraps);
+    BOOL            _truncates                  @accessors(readonly, getter=truncates);
+    BOOL            _sendsActionOnEndEditing    @accessors(readonly, getter=sendsActionOnEndEditing);
+    CPTextAlignment _alignment                  @accessors(readonly, getter=alignment);
+    CPControlSize   _controlSize                @accessors(readonly, getter=controlSize);
+    id              _objectValue                @accessors(readonly, getter=objectValue);
+    CPFont          _font                       @accessors(readonly, getter=font);
+    int             _lineBreakMode              @accessors(readonly, getter=lineBreakMode);
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -73,6 +74,7 @@
         _alignment      = (flags2 & 0x1c000000) >> 26;
         _lineBreakMode  = (flags2 & 0x0E00) >> 9;
         _controlSize    = (flags2 & 0xE0000) >> 17;
+        _sendsActionOnEndEditing = (flags2 & 0x00400000) ? YES : NO;
 
         _objectValue    = [aCoder decodeObjectForKey:@"NSContents"];
         _font           = [aCoder decodeObjectForKey:@"NSSupport"];
