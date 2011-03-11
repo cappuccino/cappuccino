@@ -32,8 +32,7 @@ var _CPFonts                        = {},
     _CPFontDefaultSystemFontFace    = @"Arial, sans-serif",
     _CPFontDefaultSystemFontSize    = 12,
     _CPFontFallbackFaces            = _CPFontDefaultSystemFontFace.split(", "),
-    _CPFontStripRegExp              = new RegExp("(^\\s*[\"']?|[\"']?\\s*$)", "g"),
-    _CPFontStripPropertiesRegExp    = new RegExp("^(italic |bold )*\\d+px ");
+    _CPFontStripRegExp              = new RegExp("(^\\s*[\"']?|[\"']?\\s*$)", "g");
 
 
 #define _CPFontNormalizedNames(aName)  _CPFontNormalizedNameArray(aName).join(", ")

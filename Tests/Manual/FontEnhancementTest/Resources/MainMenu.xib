@@ -338,6 +338,7 @@
 									</object>
 									<string key="NSFrame">{{1, 17}, {453, 117}}</string>
 									<reference key="NSSuperview" ref="34816847"/>
+									<reference key="NSNextKeyView" ref="164099841"/>
 									<reference key="NSDocView" ref="164099841"/>
 									<reference key="NSBGColor" ref="181840125"/>
 									<int key="NScvFlags">4</int>
@@ -370,6 +371,7 @@
 									</object>
 									<string key="NSFrame">{{1, 0}, {453, 17}}</string>
 									<reference key="NSSuperview" ref="34816847"/>
+									<reference key="NSNextKeyView" ref="62911344"/>
 									<reference key="NSDocView" ref="62911344"/>
 									<reference key="NSBGColor" ref="181840125"/>
 									<int key="NScvFlags">4</int>
@@ -378,6 +380,7 @@
 							</object>
 							<string key="NSFrame">{{32, 124}, {455, 135}}</string>
 							<reference key="NSSuperview" ref="439893737"/>
+							<reference key="NSNextKeyView" ref="941606776"/>
 							<int key="NSsFlags">530</int>
 							<reference key="NSVScroller" ref="927749950"/>
 							<reference key="NSHScroller" ref="69583515"/>
@@ -1071,7 +1074,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							</object>
 							<int key="NSTvFlags">0</int>
 							<bool key="NSAllowTruncatedLabels">YES</bool>
-							<bool key="NSDrawsBackground">YES</bool>
 							<object class="NSMutableArray" key="NSSubviews">
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<reference ref="88189651"/>
@@ -1112,7 +1114,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<reference key="NSFont" ref="613390050"/>
 							<int key="NSTvFlags">0</int>
 							<bool key="NSAllowTruncatedLabels">YES</bool>
-							<bool key="NSDrawsBackground">YES</bool>
 							<object class="NSMutableArray" key="NSSubviews">
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<reference ref="338115759"/>
