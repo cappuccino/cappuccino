@@ -293,9 +293,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         [self setGridColor:[CPColor colorWithHexString:@"dce0e2"]];
         [self setGridStyleMask:CPTableViewGridNone];
 
-        _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, _rowHeight)];
-
-        [_headerView setTableView:self];
+        [self setHeaderView:[[CPTableHeaderView alloc] initWithFrame:_CGRectMake(0, 0, [self bounds].size.width, _rowHeight)]];
+        [self setCornerView:[[_CPCornerView alloc] initWithFrame:_CGRectMake(0, 0, [CPScroller scrollerWidth], _CGRectGetHeight([_headerView frame]))]];
 
         _currentHighlightedTableColumn = nil;
 
