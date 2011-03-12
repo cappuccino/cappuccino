@@ -213,10 +213,11 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 - (CGRect)headerRectOfColumn:(int)aColumnIndex
 {
     var headerRect = [self bounds],
-        columnRect = [_tableView rectOfColumn:aColumnIndex];
+        columnRect = [_tableView rectOfColumn:aColumnIndex],
+        spacingWidth = [[self tableView] intercellSpacing].width;
 
-    headerRect.origin.x = _CGRectGetMinX(columnRect);
-    headerRect.size.width = _CGRectGetWidth(columnRect);
+    headerRect.origin.x = _CGRectGetMinX(columnRect) - spacingWidth;
+    headerRect.size.width = _CGRectGetWidth(columnRect) + (spacingWidth *2);
 
     return headerRect;
 }
@@ -595,6 +596,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
             headerView = [column headerView];
 
         var frame = [self headerRectOfColumn:i];
+
         frame.size.height -= 0.5;
         if (i > 0)
         {

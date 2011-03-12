@@ -293,11 +293,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         [self setGridColor:[CPColor colorWithHexString:@"dce0e2"]];
         [self setGridStyleMask:CPTableViewGridNone];
 
-        _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, _rowHeight)];
-
-        [_headerView setTableView:self];
-
-        [[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
+        [self setHeaderView:[[CPTableHeaderView alloc] initWithFrame:_CGRectMake(0, 0, [self bounds].size.width, _rowHeight)]];
+        [self setCornerView:[[_CPCornerView alloc] initWithFrame:_CGRectMake(0, 0, [CPScroller scrollerWidth], _CGRectGetHeight([_headerView frame]))]];
 
         _currentHighlightedTableColumn = nil;
 
@@ -4760,19 +4757,6 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
         _headerView = [aCoder decodeObjectForKey:CPTableViewHeaderViewKey];
         _cornerView = [aCoder decodeObjectForKey:CPTableViewCornerViewKey];
-
-        if (!_headerView)
-        {
-            // A tableview loaded from IB will always have a corner view, even if there is no header view.
-            // Set the corner view to nil, because CPScrollView doesn't respect the hidden flag.
-            _cornerView = nil;
-        }
-        else
-        {
-            // Make sure we unhide the cornerview because a corner view loaded from cib is always hidden
-            // This might be a bug in IB, or the way we load the NSvFlags might be broken for _NSCornerView
-            [_cornerView setHidden:NO];
-        }
 
         [self setDataSource:[aCoder decodeObjectForKey:CPTableViewDataSourceKey]];
         [self setDelegate:[aCoder decodeObjectForKey:CPTableViewDelegateKey]];
