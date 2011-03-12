@@ -109,8 +109,9 @@ var RECENT_SEARCH_PREFIX = @"   ";
     [self setBezelStyle:CPTextFieldRoundedBezel];
     [self setBordered:YES];
     [self setEditable:YES];
-    [self setDelegate:self];
     [self setContinuous:YES];
+    
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_searchFieldTextDidChange:) name:CPControlTextDidChangeNotification object:self];
 
     var bounds = [self bounds],
         cancelButton = [[CPButton alloc] initWithFrame:[self cancelButtonRectForBounds:bounds]],
@@ -198,7 +199,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
 
 /*!
     Resets the cancel button to its default attributes.
-    This method resets the target, action, regular image, and pressed image. By default, when users click the cancel button, the delete: action message is sent up the responder chain. This method gives you a way to customize the cancel button for specific situations and then reset the button defaults without having to undo changes individually.
+    This method resets the target, action, regular image, and pressed image. This method gives you a way to customize the cancel button for specific situations and then reset the button defaults without having to undo changes individually.
 */
 - (void)resetCancelButton
 {
@@ -420,7 +421,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
     [_cancelButton setHidden:([[self stringValue] length] === 0)];
 }
 
-- (void)controlTextDidChange:(CPNotification)aNotification
+- (void)_searchFieldTextDidChange:(CPNotification)aNotification
 {
     if (![self sendsWholeSearchString])
     {
@@ -680,7 +681,8 @@ var RECENT_SEARCH_PREFIX = @"   ";
 - (void)cancelOperation:(id)sender
 {
     [self setObjectValue:@""];
-    [self _sendPartialString];
+    [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
+
     [self _updateCancelButtonVisibility];
 }
 
