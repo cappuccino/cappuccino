@@ -117,36 +117,50 @@ ConverterConversionException = @"ConverterConversionException";
 {
     CPLog.info("Converting Xib file to plist...");
 
-    // Compile xib or nib to make sure we have a non-new format nib.
-    var temporaryNibFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.nib");
+    var temporaryNibFilePath = "",
+        temporaryPlistFilePath = "";
 
-    if (OS.popen(["/usr/bin/ibtool", aFilePath, "--compile", temporaryNibFilePath]).wait() === 1)
-        throw "Could not compile file: " + aFilePath;
-
-    // Convert from binary plist to XML plist
-    var temporaryPlistFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.plist");
-
-    if (OS.popen(["/usr/bin/plutil", "-convert", "xml1", temporaryNibFilePath, "-o", temporaryPlistFilePath]).wait() === 1)
-        throw "Could not convert to xml plist for file: " + aFilePath;
-
-    if (!FILE.isReadable(temporaryPlistFilePath))
-        [CPException raise:ConverterConversionException reason:@"Unable to convert nib file."];
-
-    var plistContents = FILE.read(temporaryPlistFilePath, { charset:"UTF-8" });
-
-    // Minor NS keyed archive to CP keyed archive conversion.
-    // Use Java directly because rhino's string.replace is *so slow*. 4 seconds vs. 1 millisecond.
-    // plistContents = plistContents.replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>");
-    if (system.engine === "rhino")
-        plistContents = String(java.lang.String(plistContents).replaceAll("\\<key\\>\\s*CF\\$UID\\s*\\<\/key\\>", "<key>CP\\$UID</key>"));
-    else
-        plistContents = plistContents.replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>");
-
-    plistContents = plistContents.replace(/<string>[\u0000-\u0008\u000B\u000C\u000E-\u001F]<\/string>/g, function(c)
+    try
     {
-        CPLog.warn("Warning: converting character 0x" + c.charCodeAt(8).toString(16) + " to base64 representation");
-        return "<string type=\"base64\">"+CFData.encodeBase64String(c.charAt(8))+"</string>";
-    });
+        // Compile xib or nib to make sure we have a non-new format nib.
+        temporaryNibFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.nib");
+
+        if (OS.popen(["/usr/bin/ibtool", aFilePath, "--compile", temporaryNibFilePath]).wait() === 1)
+            [CPException raise:ConverterConversionException reason:@"Could not compile file: " + aFilePath];
+
+        // Convert from binary plist to XML plist
+        var temporaryPlistFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.plist");
+
+        if (OS.popen(["/usr/bin/plutil", "-convert", "xml1", temporaryNibFilePath, "-o", temporaryPlistFilePath]).wait() === 1)
+            [CPException raise:ConverterConversionException reason:@"Could not convert to xml plist for file: " + aFilePath];
+
+        if (!FILE.isReadable(temporaryPlistFilePath))
+            [CPException raise:ConverterConversionException reason:@"Unable to convert nib file."];
+
+        var plistContents = FILE.read(temporaryPlistFilePath, { charset:"UTF-8" });
+
+        // Minor NS keyed archive to CP keyed archive conversion.
+        // Use Java directly because rhino's string.replace is *so slow*. 4 seconds vs. 1 millisecond.
+        // plistContents = plistContents.replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>");
+        if (system.engine === "rhino")
+            plistContents = String(java.lang.String(plistContents).replaceAll("\\<key\\>\\s*CF\\$UID\\s*\\<\/key\\>", "<key>CP\\$UID</key>"));
+        else
+            plistContents = plistContents.replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>");
+
+        plistContents = plistContents.replace(/<string>[\u0000-\u0008\u000B\u000C\u000E-\u001F]<\/string>/g, function(c)
+        {
+            CPLog.warn("Warning: converting character 0x" + c.charCodeAt(8).toString(16) + " to base64 representation");
+            return "<string type=\"base64\">"+CFData.encodeBase64String(c.charAt(8))+"</string>";
+        });
+    }
+    finally
+    {
+        if (temporaryNibFilePath !== "" && FILE.isWritable(temporaryNibFilePath))
+            FILE.remove(temporaryNibFilePath);
+
+        if (temporaryPlistFilePath !== "" && FILE.isWritable(temporaryPlistFilePath))
+            FILE.remove(temporaryPlistFilePath);
+    }
 
     return [CPData dataWithRawString:plistContents];
 }

@@ -39,7 +39,7 @@ var FILE = require("file"),
 
 var parser = new (require("narwhal/args").Parser)();
 
-parser.usage("INPUT_FILE [OUTPUT_FILE]");
+parser.usage("[INPUT_FILE [OUTPUT_FILE]]");
 
 parser.option("-F", "framework", "frameworks")
     .push()
@@ -106,69 +106,96 @@ function logFormatter(aString, aLevel, aTitle)
 
 function main(args)
 {
-    var options = parser.parse(args, null, null, true);
-
-    if (options.args.length > 2)
+    try
     {
-        parser.printUsage(options);
-        OS.exit(0);
+        var options = parser.parse(args, null, null, true);
+
+        if (options.args.length > 2)
+        {
+            parser.printUsage(options);
+            OS.exit(0);
+        }
+
+        if (options.quiet) {}
+        else if (options.verbose === 0)
+            CPLogRegister(CPLogPrint, "warn", logFormatter);
+        else if (options.verbose === 1)
+            CPLogRegister(CPLogPrint, "info", logFormatter);
+        else
+            CPLogRegister(CPLogPrint, null, logFormatter);
+
+        if (!options.quiet && options.verbose > 0)
+            printVersion(options.showVersion);
+
+        var inputFile = FILE.canonical(options.args[0] || "MainMenu.xib");
+
+        if (!FILE.isReadable(inputFile))
+            fail("Cannot read the input file: " + inputFile);
+
+        var outputFile;
+
+        if (options.args.length > 1)
+            outputFile = options.args[1];
+        else
+            outputFile = FILE.basename(inputFile, FILE.extension(inputFile)) + ".cib";
+
+        outputFile = FILE.canonical(outputFile);
+
+        if (!FILE.isWritable(outputFile))
+            fail("Cannot write the output file at: " + outputFile);
+
+        [converter setOutputPath:outputFile];
+
+        var resourcesPath = "";
+
+        if (options.resources)
+        {
+            resourcesPath = FILE.canonical(options.resources);
+
+            if (!FILE.isReadable(resourcesPath))
+                fail("Cannot read resources at: " + resourcesPath);
+
+            [converter setResourcesPath:resourcesPath];
+        }
+
+        var configPath = setSystemFontAndSize(options.configFile || "", inputFile),
+            themeName = "",
+            themeDir = options.themeDir || "";
+
+        if (themeDir)
+            themeName = FILE.basename(themeDir, FILE.extension(themeDir));
+
+        themeName = themeName || getDefaultThemeName();
+
+        if (!themeName)
+            fail("Could not determine the theme name.");
+
+        var theme = loadTheme(themeName, themeDir);
+
+        CPLog.info("\n-------------------------------------------------------------");
+        CPLog.info("Input       : " + inputFile);
+        CPLog.info("Output      : " + outputFile);
+        CPLog.info("Format      : " + ["Auto", "Mac", "iPhone"][options.format]);
+        CPLog.info("Resources   : " + resourcesPath);
+        CPLog.info("Frameworks  : " + (options.frameworks || ""));
+        CPLog.info("Theme       : " + themeName);
+        CPLog.info("Config file : " + (configPath || ""));
+        CPLog.info("System Font : " + [CPFont systemFontSize] + "px " + [CPFont systemFontFace]);
+        CPLog.info("-------------------------------------------------------------\n");
+
+        var converter = [[Converter alloc] initWithInputPath:inputFile
+                                                      format:options.format
+                                                       theme:theme];
+
+        loadFrameworks(options.frameworks, function()
+        {
+            [converter convert];
+        });
     }
-
-    if (options.quiet) {}
-    else if (options.verbose === 0)
-        CPLogRegister(CPLogPrint, "warn", logFormatter);
-    else if (options.verbose === 1)
-        CPLogRegister(CPLogPrint, "info", logFormatter);
-    else
-        CPLogRegister(CPLogPrint, null, logFormatter);
-
-    if (!options.quiet && options.verbose > 0)
-        printVersion(options.showVersion);
-
-    var inputFile = options.args[0];
-
-    if (!FILE.exists(inputFile))
-        fail("No such file: " + FILE.canonical(inputFile));
-
-    var configPath = setSystemFontAndSize(options.configFile || "", inputFile),
-        themeName = "",
-        themeDir = options.themeDir || "";
-
-    if (themeDir)
-        themeName = FILE.basename(themeDir, FILE.extension(themeDir));
-
-    themeName = themeName || getDefaultThemeName();
-
-    if (!themeName)
-        fail("Could not determine the theme name.");
-
-    var theme = loadTheme(themeName, themeDir);
-
-    CPLog.info("\n-------------------------------------------------------------");
-    CPLog.info("Input       : " + FILE.canonical(inputFile));
-    CPLog.info("Output      : " + (options.args[1] || ""));
-    CPLog.info("Format      : " + ["Auto", "Mac", "iPhone"][options.format]);
-    CPLog.info("Resources   : " + (options.resources || ""));
-    CPLog.info("Frameworks  : " + options.frameworks);
-    CPLog.info("Theme       : " + themeName);
-    CPLog.info("Config file : " + (configPath || ""));
-    CPLog.info("System Font : " + [CPFont systemFontSize] + "px " + [CPFont systemFontFace]);
-    CPLog.info("-------------------------------------------------------------\n");
-
-    var converter = [[Converter alloc] initWithInputPath:inputFile
-                                                  format:options.format
-                                                   theme:theme];
-
-    if (options.resources)
-        [converter setResourcesPath:options.resources];
-
-    if (options.args.length > 1)
-        [converter setOutputPath:options.args[1]];
-
-    loadFrameworks(options.frameworks, function()
+    catch (anException)
     {
-        [converter convert];
-    });
+        CPLog.fatal([anException reason]);
+    }
 }
 
 function getDefaultThemeName()
@@ -193,7 +220,7 @@ function getDefaultThemeName()
 
 function themeNameFromPropertyList(path)
 {
-    if (!FILE.exists(path))
+    if (!FILE.isReadable(path))
         return nil;
 
     var themeName = nil,
@@ -212,7 +239,10 @@ function loadTheme(themeName, themeDir)
         cappBuild = SYS.env["CAPP_BUILD"];
 
         if (!cappBuild)
-            fail("Could not find $CAPP_BUILD, exiting.");
+            fail("$CAPP_BUILD is not set, exiting.");
+
+        if (!FILE.isDirectory(cappBuild))
+            fail("$CAPP_BUILD does not exist: " + cappBuild)
 
         var baseThemeName = themeName,
             pos = themeName.indexOf("-");
@@ -234,7 +264,7 @@ function loadTheme(themeName, themeDir)
     {
         var path = FILE.join(themeDir, BuildTypes[i], "Browser.environment/Resources", themeName + ".keyedtheme");
 
-        if (FILE.exists(path))
+        if (FILE.isReadable(path))
         {
             themePath = path;
             break;
@@ -278,7 +308,7 @@ function setSystemFontAndSize(configFile, inputFile)
     {
         var path = FILE.canonical(configFile);
 
-        if (!FILE.exists(path))
+        if (!FILE.isReadable(path))
             fail("Cannot find the config file: " + path);
 
         configPath = path;
@@ -293,7 +323,7 @@ function setSystemFontAndSize(configFile, inputFile)
         {
             path = FILE.join(FILE.dirname(path), "Info.plist");
 
-            if (FILE.exists(path))
+            if (FILE.isReadable(path))
                 configPath = path;
         }
     }
@@ -335,7 +365,7 @@ function printVersion(exitAfter)
 
     path = FILE.join(path, "lib", "nib2cib", "Info.plist");
 
-    if (FILE.exists(path))
+    if (FILE.isReadable(path))
     {
         var plist = FILE.read(path);
 
@@ -359,6 +389,5 @@ function printVersion(exitAfter)
 
 function fail(message)
 {
-    CPLog.error(message);
-    OS.exit(1);
+    [CPException raise:ConverterConversionException reason:message];
 }
