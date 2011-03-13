@@ -141,7 +141,7 @@ function main(args)
 
         outputFile = FILE.canonical(outputFile);
 
-        if (!FILE.isWritable(outputFile))
+        if (!FILE.isWritable(FILE.dirname(outputFile)))
             fail("Cannot write the output file at: " + outputFile);
 
         [converter setOutputPath:outputFile];
