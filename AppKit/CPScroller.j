@@ -316,7 +316,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
         {
             _partRects[CPScrollerIncrementLine] = _CGRectMakeZero();
             _partRects[CPScrollerDecrementLine] = _CGRectMakeZero();
-            _partRects[CPScrollerKnobSlot]      = _CGRectMake(0.0, 0.0,  width, slotHeight);
+            _partRects[CPScrollerKnobSlot]      = _CGRectMake(0.0, 0.0,  width, height - trackInset.top - trackInset.bottom);
         }
     }
 }
