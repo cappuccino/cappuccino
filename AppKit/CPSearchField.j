@@ -111,7 +111,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
     [self setEditable:YES];
     [self setContinuous:YES];
     
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_searchFieldTextDidChange:) name:CPControlTextDidChangeNotification object:self];
+    
 
     var bounds = [self bounds],
         cancelButton = [[CPButton alloc] initWithFrame:[self cancelButtonRectForBounds:bounds]],
@@ -124,6 +124,18 @@ var RECENT_SEARCH_PREFIX = @"   ";
     [self resetSearchButton];
 
     _canResignFirstResponder = YES;
+}
+
+- (void)viewWillMoveToSuperview:(CPView)aView
+{
+    [super viewWillMoveToSuperview:aView];
+
+    // In order to prevent a memory leak we add the observer here instead of _init, since it doesn't hurt to add it more than once
+    // but more importantly we remove it if the view is removed from the superview.
+    if (aView)
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_searchFieldTextDidChange:) name:CPControlTextDidChangeNotification object:self];
+    else
+        [[CPNotificationCenter defaultCenter] removeObserver:self name:CPControlTextDidChangeNotification object:self];
 }
 
 // Managing Buttons
