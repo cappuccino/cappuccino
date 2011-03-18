@@ -56,6 +56,24 @@
     [self assert:object equals:[[arrayController arrangedObjects] objectAtIndex:1]];
 }
 
+- (void)testAddObjectUpdatesArrangedObjectsWithoutSortDescriptors
+{
+    var arrayController = [[CPArrayController alloc] init];
+
+    [arrayController addObject:@"content"];
+    [self assert:[@"content"] equals:[arrayController content]];
+    [self assert:[@"content"] equals:[arrayController arrangedObjects]];
+}
+
+- (void)testInsertObjectUpdatesArrangedObjectsWithoutSortDescriptors
+{
+    var arrayController = [[CPArrayController alloc] init];
+
+    [arrayController insertObject:@"content" atArrangedObjectIndex:0];
+    [self assert:[@"content"] equals:[arrayController content]];
+    [self assert:[@"content"] equals:[arrayController arrangedObjects]];
+}
+
 - (void)testSelectPrevious
 {
     var arrayController = [self arrayController];
