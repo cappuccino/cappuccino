@@ -27,9 +27,10 @@
 @import "CPShadowView.j"
 
 
-CPScaleProportionally   = 0;
-CPScaleToFit            = 1;
-CPScaleNone             = 2;
+CPScaleProportionally       = 0;
+CPScaleToFit                = 1;
+CPScaleNone                 = 2;
+CPScaleToFitProportionally  = 4;
 
 CPImageAlignCenter      = 0;
 CPImageAlignTop         = 1;
@@ -318,11 +319,11 @@ var LEFT_SHADOW_INSET       = 3.0,
         if (size.width == -1 && size.height == -1)
             return;
 
-        if (imageScaling === CPScaleProportionally)
+        if (imageScaling === CPScaleProportionally || CPScaleToFitProportionally)
         {
             // The max size it can be is size.width x size.height, so only
             // only proportion otherwise.
-            if (width >= size.width && height >= size.height)
+            if (width >= size.width && height >= size.height && imageScaling === CPScaleProportionally)
             {
                 width = size.width;
                 height = size.height;
