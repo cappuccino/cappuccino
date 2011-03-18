@@ -319,7 +319,7 @@ var LEFT_SHADOW_INSET       = 3.0,
         if (size.width == -1 && size.height == -1)
             return;
 
-        if (imageScaling === CPScaleProportionally || CPScaleToFitProportionally)
+        if (imageScaling === CPScaleProportionally || imageScaling === CPScaleToFitProportionally)
         {
             // The max size it can be is size.width x size.height, so only
             // only proportion otherwise.
