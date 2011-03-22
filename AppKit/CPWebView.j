@@ -721,7 +721,11 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 */
 - (@action)reload:(id)sender
 {
-    [self _loadMainFrameURL];
+    // If we're displaying pure HTML, redisplay it.
+    if(!_url && _html)
+        [self loadHTMLString:_html];
+    else
+        [self _loadMainFrameURL];
 }
 
 /*!
