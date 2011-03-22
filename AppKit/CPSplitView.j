@@ -259,6 +259,26 @@ var CPSplitViewHorizontalImage = nil,
         [self drawDividerInRect:[self rectOfDividerAtIndex:count]];
     }
 }
+
+/*!
+    @ignore
+    Because we're use drawRect: to draw the dividers, but use DOM elements instead of CoreGraphics
+    We must remove those DOM elements (the splitters) when the subview is removed.
+*/
+- (void)willRemoveSubview:(CPView)aView
+{
+#if PLATFORM(DOM)
+    CPDOMDisplayServerRemoveChild(_DOMElement, _DOMDividerElements.pop());
+#endif
+
+    _needsResizeSubviews = YES;
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
+
+    // because we have to wait for the subview to ACTUALLY be removed, we need to wait until the next runloop to recalculate everything.
+    window.setTimeout(function(){[self _adjustSubviewsWithCalculatedSize]},0);
+}
+
 /*!
     Draws the divider at a given rect.
     @param aRect - the rect of the divider to draw.
