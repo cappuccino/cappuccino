@@ -39,6 +39,7 @@ CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNoti
 CPWebViewScrollAuto                             = 0;
 CPWebViewScrollAppKit                           = 1;
 CPWebViewScrollNative                           = 2;
+CPWebViewScrollNone                             = 3;
 
 
 /*!
@@ -83,6 +84,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 
     BOOL        _ignoreLoadStart;
     BOOL        _ignoreLoadEnd;
+    BOOL        _isLoading;
 
     id          _downloadDelegate;
     id          _frameLoadDelegate;
@@ -125,6 +127,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
         _forwardStack           = [];
         _scrollMode             = CPWebViewScrollAuto;
         _contentIsAccessible    = YES;
+        _isLoading              = NO;
 
         [self _initDOMWithFrame:aFrame];
     }
@@ -291,15 +294,25 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     var _newScrollMode = CPWebViewScrollAppKit;
 
     if (_scrollMode == CPWebViewScrollNative
-        || (_scrollMode == CPWebViewScrollAuto && !_contentIsAccessible)
         || CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
     {
         _newScrollMode = CPWebViewScrollNative;
     }
+    else if (_scrollMode == CPWebViewScrollAuto && !_contentIsAccessible)
+    {
+        // If the content is not accessible, but we're still loading the content,
+        // display no scroll bar. This method will be called again when loading finishes.
+        // If on the other hand, loading is done and we still can't access the content,
+        // we must fall back on the native scroll bar.
+        _newScrollMode = _isLoading ? CPWebViewScrollNone : CPWebViewScrollNative;
+    }
     else if (_scrollMode == CPWebViewScrollAppKit && !_contentIsAccessible)
     {
-        CPLog.warn(self + " unable to use CPWebViewScrollAppKit scroll mode due to same origin policy.");
-        _newScrollMode = CPWebViewScrollNative;
+        // Same behaviour as the previous case except that a warning is logged when AppKit
+        // scrollers can't be used.
+        _newScrollMode = _isLoading ? CPWebViewScrollNone : CPWebViewScrollNative;
+        if (!_isLoading)
+            CPLog.warn(self + " unable to use CPWebViewScrollAppKit scroll mode due to same origin policy.");
     }
 
     if (_newScrollMode !== _effectiveScrollMode)
@@ -323,24 +336,13 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
         [_scrollView setHasVerticalScroller:YES];
 
         _iframe.setAttribute("scrolling", "no");
+    }
+    else if (_effectiveScrollMode === CPWebViewScrollNone)
+    {
+        [_scrollView setHasHorizontalScroller:NO];
+        [_scrollView setHasVerticalScroller:NO];
 
-        /*
-        FIXME Need better method.
-        We don't know when the content of the iframe changes size (e.g. a
-        picture finishes loading, dynamic content is loaded). Often when a
-        page has initially 'loaded', it does not yet have its final size. In
-        lieu of any resize events we will simply check back in a few times
-        some time after loading.
-
-        We run these checks only a limited number of times as to not deplete
-        battery life and slow down the software needlessly. This does mean
-        there are situations where the content changes size and the AppKit
-        scrollbars will be out of sync. Users who have dynamic content
-        in their web view will, for now, have to implement domain specific
-        fixes.
-        */
-        _contentSizePollCount = 0;
-        _contentSizeCheckTimer = [CPTimer scheduledTimerWithTimeInterval:CPWebViewAppKitScrollPollInterval target:self selector:@selector(_maybePollWebFrameSize) userInfo:nil repeats:YES];
+        _iframe.setAttribute("scrolling", "no");
     }
     else
     {
@@ -449,6 +451,8 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 
 - (void)_startedLoading
 {
+    _isLoading = YES;
+
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWebViewProgressStartedNotification object:self];
 
     if ([_frameLoadDelegate respondsToSelector:@selector(webView:didStartProvisionalLoadForFrame:)])
@@ -457,6 +461,8 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 
 - (void)_finishedLoading
 {
+    _isLoading = NO;
+
     // Check if we have access.
     try
     {
@@ -470,6 +476,24 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 
     [self _resizeWebFrame];
     [self _attachScrollEventIfNecessary];
+
+    /*
+    FIXME Need better method.
+    We don't know when the content of the iframe changes size (e.g. a
+    picture finishes loading, dynamic content is loaded). Often when a
+    page has initially 'loaded', it does not yet have its final size. In
+    lieu of any resize events we will simply check back in a few times
+    some time after loading.
+
+    We run these checks only a limited number of times as to not deplete
+    battery life and slow down the software needlessly. This does mean
+    there are situations where the content changes size and the AppKit
+    scrollbars will be out of sync. Users who have dynamic content
+    in their web view will, for now, have to implement domain specific
+    fixes.
+    */
+    _contentSizePollCount = 0;
+    _contentSizeCheckTimer = [CPTimer scheduledTimerWithTimeInterval:CPWebViewAppKitScrollPollInterval target:self selector:@selector(_maybePollWebFrameSize) userInfo:nil repeats:YES];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWebViewProgressFinishedNotification object:self];
 
