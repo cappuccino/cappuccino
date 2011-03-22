@@ -32,10 +32,15 @@
     @ingroup appkit
     @class CPWindowController
 
-    An instance of a CPWindowController manages a CPWindow. It has methods
-    that get called when the window is loading, and after the window has loaded. In the
-    Model-View-Controller method of program design, the CPWindowController would be
-    considered the 'Controller' and the CPWindow the 'Model.'
+    An instance of a CPWindowController manages a CPWindow. Windows are typically loaded via a cib,
+    but they can also manage windows created in code. A CPWindowController can manage a window by 
+    itself or work with  AppKits's document-based architecture.
+
+    In a Document based app, a CPWindowController instance is created and managed by a CPDocument subclass.
+
+    If the CPWindowController is managing a CPWindow created in a cib the \c owner of the CPWindow is this controller.
+
+    @note When creating the window programatically (instead of a cib) you should override the \c loadWindow method.\c loadWindow is called the first time the window object is needed. @endnote
 */
 @implementation CPWindowController : CPResponder
 {
@@ -124,7 +129,8 @@
 }
 
 /*!
-    Loads the window
+    Loads the window. This method should never be called directly. Instead call \c window which will in turn call windowWillLoad and windowDidLoad.
+    This method should be overwritten if you are creating the view programatically.
 */
 - (void)loadWindow
 {
@@ -158,7 +164,8 @@
 }
 
 /*!
-    Returns the window this object controls.
+    Returns the CPWindow the reciever controls.
+    This will cause \c loadWindow to be called if no window object exists yet.
 */
 - (CPWindow)window
 {
@@ -377,7 +384,7 @@
 }
 
 /*!
-    Returns the document in the controlled window.
+    Returns the CPDocument in the controlled window.
 */
 - (CPDocument)document
 {
