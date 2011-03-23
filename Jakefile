@@ -103,12 +103,13 @@ function installSymlink(sourcePath)
             var binary = binPath.join(name);
             binary.chmod(0755);
 
-            var target = narwhalBin.join(name);
+            var target = narwhalBin.join(name),
+                relative = FILE.relative(target, binary);
 
             if (target.linkExists())
                 target.remove();
 
-            binary.symlink(target);
+            FILE.symlink(relative, target);
         });
     }
 }
