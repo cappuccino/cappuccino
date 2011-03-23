@@ -268,15 +268,21 @@ var CPSplitViewHorizontalImage = nil,
 - (void)willRemoveSubview:(CPView)aView
 {
 #if PLATFORM(DOM)
-    CPDOMDisplayServerRemoveChild(_DOMElement, _DOMDividerElements.pop());
+    var dividerToRemove = _DOMDividerElements.pop();
+
+    // The divider may not exist if we never rendered out the DOM.
+    if (dividerToRemove)
+        CPDOMDisplayServerRemoveChild(_DOMElement, dividerToRemove);
 #endif
 
     _needsResizeSubviews = YES;
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
+}
 
-    // because we have to wait for the subview to ACTUALLY be removed, we need to wait until the next runloop to recalculate everything.
-    window.setTimeout(function(){[self _adjustSubviewsWithCalculatedSize]},0);
+- (void)layoutSubviews
+{
+    [self _adjustSubviewsWithCalculatedSize]
 }
 
 /*!
