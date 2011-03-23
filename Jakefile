@@ -59,8 +59,7 @@ task ("sudo-install", ["CommonJS"], function()
     if (OS.system(["sudo", "tusk", "install", "--force", $BUILD_CJS_OBJECTIVE_J, $BUILD_CJS_CAPPUCCINO]))
     {
         // Attempt a hackish work-around for sudo compiled with the --with-secure-path option
-        if (OS.system("sudo bash -c 'source " + getShellConfigFile() + "; tusk install --force " + $BUILD_CJS_OBJECTIVE_J + " " + $BUILD_CJS_CAPPUCCINO + "'"))
-            OS.exit(1); //rake abort if ($? != 0)
+        sudo("tusk install --force " + $BUILD_CJS_OBJECTIVE_J + " " + $BUILD_CJS_CAPPUCCINO)
     }
 });
 
@@ -70,49 +69,11 @@ task ("install-symlinks", function()
     installSymlink($BUILD_CJS_CAPPUCCINO);
 });
 
-task ("sudo-install-symlinks", function()
+task ("install-debug-symlinks", function()
 {
-    if (OS.system("sudo bash -c 'source " + getShellConfigFile() + "; jake install-symlinks'"))
-        OS.exit(1); //rake abort if ($? != 0)
+    SYSTEM.env["CONFIG"] = "Debug";
+    spawnJake("install-symlinks");
 });
-
-function installSymlink(sourcePath)
-{
-    if (!FILE.isDirectory(sourcePath))
-        return;
-
-    var packageName = FILE.basename(sourcePath),
-        targetPath = FILE.join(SYSTEM.prefix, "packages", packageName);
-
-    if (FILE.isDirectory(targetPath))
-        FILE.rmtree(targetPath);
-    else if (FILE.linkExists(targetPath))
-        FILE.remove(targetPath);
-
-    stream.print("Symlinking \0cyan(" + targetPath + "\0) ==> \0cyan(" + sourcePath + "\0)");
-    FILE.symlink(sourcePath, targetPath);
-
-    var binPath = FILE.Path(FILE.join(targetPath, "bin"));
-
-    if (binPath.isDirectory())
-    {
-        var narwhalBin = FILE.Path(FILE.join(SYSTEM.prefix, "bin"));
-
-        binPath.list().forEach(function (name)
-        {
-            var binary = binPath.join(name);
-            binary.chmod(0755);
-
-            var target = narwhalBin.join(name),
-                relative = FILE.relative(target, binary);
-
-            if (target.linkExists())
-                target.remove();
-
-            FILE.symlink(relative, target);
-        });
-    }
-}
 
 // Documentation
 
@@ -386,20 +347,4 @@ function buildCmd(arrayOfCommands)
     return arrayOfCommands.map(function(cmd) {
         return cmd.map(OS.enquote).join(" ");
     }).join(" && ");
-}
-
-function getShellConfigFile()
-{
-    var homeDir = SYSTEM.env["HOME"] + "/";
-    // use order outlined by http://hayne.net/MacDev/Notes/unixFAQ.html#shellStartup
-    var possibilities = [homeDir + ".bash_profile",
-                         homeDir + ".bash_login",
-                         homeDir + ".profile",
-                         homeDir + ".bashrc"];
-
-    for (var i = 0; i < possibilities.length; i++)
-    {
-        if (FILE.exists(possibilities[i]))
-            return possibilities[i];
-    }
 }
