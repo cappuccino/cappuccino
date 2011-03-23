@@ -64,22 +64,53 @@ task ("sudo-install", ["CommonJS"], function()
     }
 });
 
-task ("install-symlinks",  function()
+task ("install-symlinks", function()
 {
     installSymlink($BUILD_CJS_OBJECTIVE_J);
     installSymlink($BUILD_CJS_CAPPUCCINO);
 });
 
-function installSymlink(sourcePath) {
-    var TUSK = require("narwhal/tusk");
-    var INSTALL = require("narwhal/tusk/commands/install");
+task ("sudo-install-symlinks", function()
+{
+    if (OS.system("sudo bash -c 'source " + getShellConfigFile() + "; jake install-symlinks'"))
+        OS.exit(1); //rake abort if ($? != 0)
+});
 
-    var packageName = FILE.basename(sourcePath);
-    var packageDir = TUSK.getPackagesDirectory().join(packageName);
-    stream.print("Symlinking \0cyan(" + packageDir + "\0) to \0cyan(" + sourcePath + "\0)");
+function installSymlink(sourcePath)
+{
+    if (!FILE.isDirectory(sourcePath))
+        return;
 
-    FILE.symlink(sourcePath, packageDir);
-    INSTALL.finishInstall(packageDir);
+    var packageName = FILE.basename(sourcePath),
+        targetPath = FILE.join(SYSTEM.prefix, "packages", packageName);
+
+    if (FILE.isDirectory(targetPath))
+        FILE.rmtree(targetPath);
+    else if (FILE.linkExists(targetPath))
+        FILE.remove(targetPath);
+
+    stream.print("Symlinking \0cyan(" + targetPath + "\0) ==> \0cyan(" + sourcePath + "\0)");
+    FILE.symlink(sourcePath, targetPath);
+
+    var binPath = FILE.Path(FILE.join(targetPath, "bin"));
+
+    if (binPath.isDirectory())
+    {
+        var narwhalBin = FILE.Path(FILE.join(SYSTEM.prefix, "bin"));
+
+        binPath.list().forEach(function (name)
+        {
+            var binary = binPath.join(name);
+            binary.chmod(0755);
+
+            var target = narwhalBin.join(name);
+
+            if (target.linkExists())
+                target.remove();
+
+            binary.symlink(target);
+        });
+    }
 }
 
 // Documentation
