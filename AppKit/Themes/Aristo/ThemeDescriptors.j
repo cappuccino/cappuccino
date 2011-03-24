@@ -1437,9 +1437,11 @@ var themedButtonValues = nil,
 {
     var scrollerWidth = [CPScroller scrollerWidth],
         corner = [[_CPCornerView alloc] initWithFrame:CGRectMake(0.0, 0.0, scrollerWidth, 23.0)],
-        normal = PatternColor("tableview-headerview.png", 1.0, 23.0);
+        normal = PatternColor("tableview-headerview.png", 1.0, 23.0),
+        dividerColor = [CPColor colorWithHexString:@"dce0e2"];
 
     [corner setValue:normal forThemeAttribute:"background-color"];
+    [corner setValue:dividerColor forThemeAttribute:"divider-color"];
 
     return corner;
 }
