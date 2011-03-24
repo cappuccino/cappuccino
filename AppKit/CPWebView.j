@@ -76,50 +76,50 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 
     @class CPWebView
 
-    CPWebView is a class which allows you to display arbitrary HTML or embed a
+    CPWebView allows you to display arbitrary HTML or embed a
     webpage inside your application.
 
     It's important to note that the same origin policy applies to this view.
     That is, if the web page being displayed is not located in the same origin
     (protocol, domain, and port) as the application, you will have limited
-    control over the view and no access to its contents.
+    control over the view and no access to its contents. Furthermore,
+    Cappuccino style scrollbars can't be used to scroll it.
 */
-
 @implementation CPWebView : CPView
 {
-    CPScrollView    _scrollView;
-    CPView          _frameView;
+    CPScrollView        _scrollView;
+    CPView              _frameView;
 
-    IFrame      _iframe;
-    CPString    _mainFrameURL;
-    CPArray     _backwardStack;
-    CPArray     _forwardStack;
+    IFrame              _iframe;
+    CPString            _mainFrameURL;
+    CPArray             _backwardStack;
+    CPArray             _forwardStack;
 
-    BOOL        _ignoreLoadStart;
-    BOOL        _ignoreLoadEnd;
-    BOOL        _isLoading;
+    BOOL                _ignoreLoadStart;
+    BOOL                _ignoreLoadEnd;
+    BOOL                _isLoading;
 
-    id          _downloadDelegate;
-    id          _frameLoadDelegate;
-    id          _policyDelegate;
-    id          _resourceLoadDelegate;
-    id          _UIDelegate;
+    id                  _downloadDelegate;
+    id                  _frameLoadDelegate;
+    id                  _policyDelegate;
+    id                  _resourceLoadDelegate;
+    id                  _UIDelegate;
 
-    CPWebScriptObject _wso;
+    CPWebScriptObject   _wso;
 
-    CPString    _url;
-    CPString    _html;
+    CPString            _url;
+    CPString            _html;
 
-    Function    _loadCallback;
+    Function            _loadCallback;
 
-    int         _scrollMode;
-    int         _effectiveScrollMode;
-    BOOL        _contentIsAccessible;
-    CPTimer     _contentSizeCheckTimer;
-    int         _contentSizePollCount;
-    CGSize      _scrollSize;
+    int                 _scrollMode;
+    int                 _effectiveScrollMode;
+    BOOL                _contentIsAccessible;
+    CPTimer             _contentSizeCheckTimer;
+    int                 _contentSizePollCount;
+    CGSize              _scrollSize;
 
-    int         _loadHTMLStringTimer;
+    int                 _loadHTMLStringTimer;
 }
 
 - (id)initWithFrame:(CPRect)frameRect frameName:(CPString)frameName groupName:(CPString)groupName
@@ -128,7 +128,8 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     {
         _iframe.name = frameName;
     }
-    return self
+
+    return self;
 }
 
 - (id)initWithFrame:(CPRect)aFrame
@@ -162,7 +163,8 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 
     [self setDrawsBackground:YES];
 
-    _loadCallback = function() {
+    _loadCallback = function()
+    {
         // HACK: this block handles the case where we don't know about loads initiated by the user clicking a link
         if (!_ignoreLoadStart)
         {
@@ -173,7 +175,6 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
                 [_backwardStack addObject:_mainFrameURL];
 
             // FIXME: this doesn't actually get the right URL for different domains. Not possible due to browser security restrictions.
-            _mainFrameURL = _iframe.src;
             _mainFrameURL = _iframe.src;
 
             // clear the forward
@@ -326,11 +327,8 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     var _newScrollMode = CPWebViewScrollAppKit;
 
     if (_scrollMode == CPWebViewScrollNative
+        || (_scrollMode == CPWebViewScrollAuto && !_contentIsAccessible)
         || CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
-    {
-        _newScrollMode = CPWebViewScrollNative;
-    }
-    else if (_scrollMode == CPWebViewScrollAuto && !_contentIsAccessible)
     {
         _newScrollMode = CPWebViewScrollNative;
     }
@@ -354,6 +352,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     _ignoreLoadEnd  = YES;
 
     var parent = _iframe.parentNode;
+    // FIXME "scrolling" can't be changed without readding the iframe. Unfortunately this causes a reload.
     parent.removeChild(_iframe);
 
     if (_effectiveScrollMode === CPWebViewScrollAppKit)
@@ -394,7 +393,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 }
 
 /*!
-    Loads a string of HTML into the webview.
+    Loads a string of HTML into the receiver.
 
     @param CPString - The string to load.
 */
@@ -404,7 +403,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 }
 
 /*!
-    Loads a string of HTML into the webview.
+    Loads a string of HTML into the receiver.
 
     @param CPString - The string to load.
     @param CPURL - The base url of the string. (not implemented)
@@ -419,7 +418,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     _ignoreLoadStart = YES;
     _ignoreLoadEnd = NO;
 
-    _url = null;
+    _url = nil;
     _html = aString;
 
     [self _load];
@@ -433,7 +432,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     _ignoreLoadEnd = NO;
 
     _url = _mainFrameURL;
-    _html = null;
+    _html = nil;
 
     [self _load];
 }
@@ -768,7 +767,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 - (@action)reload:(id)sender
 {
     // If we're displaying pure HTML, redisplay it.
-    if(!_url && _html)
+    if(!_url && (_html !== nil))
         [self loadHTMLString:_html];
     else
         [self _loadMainFrameURL];
