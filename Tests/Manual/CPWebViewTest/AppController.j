@@ -50,6 +50,16 @@
     [webView6 setMainFrameURL:"http://www.cappuccino.org"];
 }
 
+- (void)clearAll:(id)sender
+{
+    var allViews = [webView1, webView2, webView3, webView4, webView5, webView6];
+    for (var i = 0; i < 6; i++)
+    {
+        var view = allViews[i];
+        [view loadHTMLString:""];
+    }
+}
+
 - (void)awakeFromCib
 {
     // This is called when the cib is done loading.

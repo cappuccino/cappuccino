@@ -418,7 +418,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 
         _iframe.src = _url;
     }
-    else if (_html)
+    else if (_html !== nil)
     {
         // clear the iframe
         _iframe.src = "";
