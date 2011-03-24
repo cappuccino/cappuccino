@@ -483,7 +483,7 @@ var ModifierKeyCodes = [
         _DOMBodyElement.ondrag = function () { return NO; };
         _DOMBodyElement.onselectstart = function () { return _DOMWindow.event.srcElement === _DOMPasteboardElement; };
 
-        _DOMWindow.attachEvent("onbeforeunload", function()
+        _DOMWindow.attachEvent("onunload", function()
         {
             [self updateFromNativeContentRect];
             [self _removeLayers];

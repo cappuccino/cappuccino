@@ -73,9 +73,16 @@ var categories = ["firstName","lastName"],
 
     [self changeCategory:[[searchField menu] itemAtIndex:1]];
     [self updateFilter:searchField];
+    
+    [searchField setDelegate:self];
 
     [theWindow center];
     [theWindow orderFront:self];
+}
+
+- (void)controlTextDidChange:(id)note
+{
+    CPLogConsole(_cmd);
 }
 
 - (void)awakeFromCib

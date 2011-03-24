@@ -25,6 +25,7 @@
 CPSoundLoadStateEmpty       = 0;
 CPSoundLoadStateLoading     = 1;
 CPSoundLoadStateCanBePlayed = 2;
+CPSoundLoadStateError       = 3;
 
 CPSoundPlayBackStatePlay    = 0;
 CPSoundPlayBackStateStop    = 1;
@@ -60,14 +61,24 @@ CPSoundPlayBackStatePause   = 2;
         _loops = NO;
         _audioTag = document.createElement("audio");
         _audioTag.preload = YES;
+
         _audioTag.addEventListener("canplay", function()
         {
+            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
             [self _soundDidload];
-        });
+        }, true);
+
         _audioTag.addEventListener("ended", function()
         {
+            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
             [self _soundDidEnd];
-        });
+        }, true);
+
+        _audioTag.addEventListener("error", function()
+        {
+            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+            [self _soundError];
+        }, true);
     }
 
     return self;
@@ -137,31 +148,45 @@ CPSoundPlayBackStatePause   = 2;
         [self stop];
 }
 
+/*! @ignore
+*/
+- (void)_soundError
+{
+    _loadStatus = CPSoundLoadStateError;
+    CPLog.error("Cannot load sound. Maybe the format of your sound is not compatible with your browser.");
+}
+
 
 #pragma mark -
 #pragma mark Media controls
 
 /*!
     Play the sound.
+
+    @return YES when the receiver is playing its audio data, NO otherwise.
 */
-- (void)play
+- (BOOL)play
 {
     if ((_loadStatus !== CPSoundLoadStateCanBePlayed)
         || (_playBackStatus === CPSoundPlayBackStatePlay))
-        return;
+        return NO;
 
     _audioTag.play();
     _playBackStatus = CPSoundPlayBackStatePlay;
+
+    return YES;
 }
 
 /*!
     Stop the sound.
+
+    @return YES when the receiver is playing its audio data, NO otherwise.
 */
-- (void)stop
+- (BOOL)stop
 {
     if ((_loadStatus !== CPSoundLoadStateCanBePlayed)
         || (_playBackStatus === CPSoundPlayBackStateStop))
-        return;
+        return NO;
 
     _audioTag.pause();
     _audioTag.currentTime = 0.0;
@@ -169,32 +194,42 @@ CPSoundPlayBackStatePause   = 2;
 
     if (_delegate && [_delegate respondsToSelector:@selector(sound:didFinishPlaying:)])
         [_delegate sound:self didFinishPlaying:YES];
+
+    return YES;
 }
 
 /*!
     Pause the sound.
+
+    @return YES when the receiver is playing its audio data, NO otherwise.
 */
-- (void)pause
+- (BOOL)pause
 {
     if ((_loadStatus !== CPSoundLoadStateCanBePlayed)
         || (_playBackStatus === CPSoundPlayBackStatePause))
-        return;
+        return NO;
 
     _audioTag.pause();
     _playBackStatus = CPSoundPlayBackStatePause;
+
+    return YES;
 }
 
 /*!
     Resume playback of a paused sound.
+
+    @return YES when the receiver is playing its audio data, NO otherwise.
 */
-- (void)resume
+- (BOOL)resume
 {
     if ((_loadStatus !== CPSoundLoadStateCanBePlayed)
         || (_playBackStatus !== CPSoundPlayBackStatePause))
-        return;
+        return NO;
 
     _audioTag.play();
     _playBackStatus = CPSoundPlayBackStatePlay;
+
+    return YES;
 }
 
 /*!

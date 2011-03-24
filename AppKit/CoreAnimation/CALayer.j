@@ -449,23 +449,28 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     CGContextClearRect(_context, _CGRectMake(0.0, 0.0, _CGRectGetWidth(_backingStoreFrame), _CGRectGetHeight(_backingStoreFrame)));
 
     // Recomposite
-    var transform = _transformFromLayer;
+    var transform;
 
     if (_superlayer)
     {
         var superlayerTransform = _CALayerGetTransform(_superlayer, nil),
             superlayerOrigin = CGPointApplyAffineTransform(_superlayer._bounds.origin, superlayerTransform);
 
-        transform = CGAffineTransformConcat(transform, superlayerTransform);
+        transform = CGAffineTransformConcat(_transformFromLayer, superlayerTransform);
 
         transform.tx -= superlayerOrigin.x;
         transform.ty -= superlayerOrigin.y;
     }
 
+    else
+        // Copy so we don't affect the original.
+        transform = CGAffineTransformCreateCopy(_transformFromLayer);
+
     transform.tx -= _CGRectGetMinX(_backingStoreFrame);
     transform.ty -= _CGRectGetMinY(_backingStoreFrame);
 
     CGContextSaveGState(_context);
+
     CGContextConcatCTM(_context, transform);//_transformFromView);
     if (USE_BUFFER)
     {

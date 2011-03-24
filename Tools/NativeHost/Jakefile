@@ -9,17 +9,20 @@ task ("build", function()
 {
     if (executableExists("xcodebuild"))
     {
-        if (OS.popen("xcodebuild -version").stdout.read().match("Xcode 4.0"))
-            stream.print("\0red(Building NativeHost was skipped due to your Xcode 4.0 pre-release not including the Mac OS X 10.5 SDK.\0)");
+        var args = "-alltargets -configuration Release";
+
+        if (FILE.exists(FILE.join("/", "Developer", "SDKs", "MacOSX10.5.sdk")))
+            args = "-sdk macosx10.5 " + args;
+
         else
-        {
-            if (OS.system("xcodebuild -alltargets -configuration Release"))
-                OS.exit(1);
-        
-            rm_rf(FILE.join($BUILD_CJS_CAPPUCCINO, "support", "NativeHost.app"));
-            FILE.mkdirs(FILE.join($BUILD_CJS_CAPPUCCINO, "support"))
-            cp_r(FILE.join("build", "Release", "NativeHost.app"), FILE.join($BUILD_CJS_CAPPUCCINO, "support", "NativeHost.app"));
-        }
+            args = "-sdk macosx " + args;
+
+        if (OS.system("xcodebuild " + args))
+            OS.exit(1);
+
+        rm_rf(FILE.join($BUILD_CJS_CAPPUCCINO, "support", "NativeHost.app"));
+        FILE.mkdirs(FILE.join($BUILD_CJS_CAPPUCCINO, "support"))
+        cp_r(FILE.join("build", "Release", "NativeHost.app"), FILE.join($BUILD_CJS_CAPPUCCINO, "support", "NativeHost.app"));
     }
     else
     {

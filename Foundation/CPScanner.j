@@ -33,41 +33,6 @@
     CPCharacterSet  _charactersToBeSkipped;
 }
 
-// TODO Not all methods of NSScanner are available!
-
-/*
-- (BOOL)scanLongLong:(long long *)longLongValue
-{
-}
-- (BOOL)scanDecimal:(NSDecimal *)decimalValue
-{
-}
-- (BOOL)scanHexDouble:(double *)result
-{
-}
-- (BOOL)scanHexFloat:(float *)result
-{
-}
-- (BOOL)scanHexInt:(unsigned *)intValue
-{
-}
-- (BOOL)scanHexLongLong:(unsigned long long *)result
-{
-}
-- (BOOL)scanInteger:(NSInteger *)value
-{
-}
-+ (id)localizedScannerWithString:(CPString)string
-{
-    var scanner = [self scannerWithString:string];
-
-    [scanner setLocale:[CPLocale currentLocale]];
-
-    return scanner;
-}
-
-*/
-
 + (id)scannerWithString:(CPString)aString
 {
     return [[self alloc] initWithString:aString];
@@ -158,10 +123,13 @@
 {
     var ret = [self performSelector:s withObject:arg];
 
+    if (ret == nil)
+        return NO;
+
     if (ref != nil)
         ref(ret);
 
-    return ret != NULL;
+    return YES;
 }
 
 /* ================================ */
@@ -307,88 +275,39 @@
 /* = Scanning numbers = */
 /* ==================== */
 
-- (float)scanFloat
+- (float)scanWithParseFunction:(Function)parseFunction
 {
     [self _movePastCharactersToBeSkipped];
     var str = [self string],
-        current = [self scanLocation];
+        loc = [self scanLocation];
 
     if ([self isAtEnd])
         return 0;
 
-    var s = str.substring(current, str.length),
-        f =  parseFloat(s); // wont work with non . decimal separator !!
+    var s = str.substring(loc, str.length),
+        f =  parseFunction(s);
 
-    if (f)
-    {
-        var pos = current,
-            foundDash = NO;
-/*
-        var decimalSeparatorString;
-        if (_locale != nil)
-            decimalSeparatorString = [_locale objectForKey:CPLocaleDecimalSeparator];
-        else
-            decimalSeparatorString = [[CPLocale systemLocale] objectForKey:CPLocaleDecimalSeparator];
+    if (isNaN(f))
+        return nil;
 
-        var separatorCode = (decimalSeparatorString.length >0) decimalSeparatorString.charCodeAt(0) : 45;
-*/
-        var separatorCode = 45;
+    loc += (""+f).length;
+    var i = 0;
+    while (!isNaN(parseFloat(str.substring(loc+i, str.length))))
+        {i++;}
 
-        for (; pos < current + str.length; pos++)
-        {
-            var charCode = str.charCodeAt(pos);
-            if (charCode == separatorCode)
-            {
-                if (foundDash == YES)
-                    break; // We already found a decimal separator so this one is an extra char
-                foundDash = YES;
-            }
-            else if (charCode < 48 || charCode > 57 || (charCode == 45 && pos != current)) // not a digit or a "-" but not prefix
-                break;
-        }
+    [self setScanLocation:loc + i];
+    return f;
 
-        [self setScanLocation:pos];
-        return f;
-    }
+}
 
-    return nil;
+- (float)scanFloat
+{
+    return [self scanWithParseFunction:parseFloat];
 }
 
 - (int)scanInt
 {
-    [self _movePastCharactersToBeSkipped];
-    var str = [self string],
-        current = [self scanLocation];
-
-    if ([self isAtEnd])
-        return 0;
-
-    var s = str.substring(current, str.length),
-        i =  parseInt(s);
-
-    if (i)
-    {
-        var pos = current,
-            foundDash = NO;
-
-        for (; pos < current + str.length; pos++)
-        {
-            var charCode = str.charCodeAt(pos);
-            if (charCode == 46)
-            {
-                if (foundDash == YES)
-                    break;
-                foundDash = YES;
-            }
-            else if (charCode < 48 || charCode > 57 || (charCode == 45 && pos != current))
-                break;
-        }
-
-        [self setScanLocation:pos];
-        return i;
-    }
-
-    return nil;
+    return [self scanWithParseFunction:parseInt];
 }
 
 - (BOOL)scanInt:(int)intoInt

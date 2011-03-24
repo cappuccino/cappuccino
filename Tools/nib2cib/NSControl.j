@@ -34,9 +34,10 @@
 
     if (self)
     {
-        [self sendActionOn:CPLeftMouseUpMask];
-
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
+
+        [self sendActionOn:CPLeftMouseUpMask];
+        [self setSendsActionOnEndEditing:[cell sendsActionOnEndEditing]];
 
         [self setObjectValue:[cell objectValue]];
 

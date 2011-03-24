@@ -38,6 +38,15 @@ function CGBitmapGraphicsContextCreate()
     return _CGBitmapGraphicsContextCreate();
 }
 
+function CGContextSetFillColor(aContext, aColor)
+{
+    if ([aColor patternImage])
+        // Prefix a marker character to the string so we know it's a pattern image filename
+        aContext.gState.fillStyle = "!" + [[aColor patternImage] filename];
+    else
+        aContext.gState.fillStyle = [aColor cssString];
+}
+
 // FIXME: aRect is ignored.
 function CGContextClearRect(aContext, aRect)
 {
@@ -54,7 +63,7 @@ var W = 10.0,
     Z = 10.0,
     Z_2 = Z / 2.0;
 
-#define COORD(aCoordinate) (ROUND(Z * (aCoordinate) - Z_2))
+#define COORD(aCoordinate) (aCoordinate === 0.0 ? 0 : ROUND(Z * (aCoordinate) - Z_2))
 
 function CGContextDrawImage(aContext, aRect, anImage)
 {
@@ -121,15 +130,18 @@ function CGContextDrawPath(aContext, aMode)
         fill = (aMode == kCGPathFill || aMode == kCGPathFillStroke) ? 1 : 0,
         stroke = (aMode == kCGPathStroke || aMode == kCGPathFillStroke) ? 1 : 0,
         opacity = gState.alpha,
-        vml = [ "<cg_vml_:shape",
-                " fillcolor=\"", gState.fillStyle,
-                "\" filled=\"", VML_TRUTH_TABLE[fill],
+        vml = ["<cg_vml_:shape"];
+
+    if (gState.fillStyle.charAt(0) !== "!")
+        vml.push(" fillcolor=\"", gState.fillStyle, "\"");
+
+    vml.push(   " filled=\"", VML_TRUTH_TABLE[fill],
                 "\" style=\"position:absolute;width:", W, ";height:", H,
                 ";\" coordorigin=\"0 0\" coordsize=\"", Z * W, " ", Z * H,
                 "\" stroked=\"", VML_TRUTH_TABLE[stroke],
                 "\" strokeweight=\"", gState.lineWidth,
                 "\" strokecolor=\"", gState.strokeStyle,
-                "\" path=\""];
+                "\" path=\"");
 
     for (; i < count; ++i)
     {
@@ -233,7 +245,12 @@ function CGContextDrawPath(aContext, aMode)
         vml.push(gState.gradient)
 
     else if (fill)
-        vml.push("<cg_vml_:fill color=\"", gState.fillStyle, "\" opacity=\"", opacity, "\" />");
+    {
+        if (gState.fillStyle.charAt(0) === "!")
+            vml.push("<cg_vml_:fill type=\"tile\" src=\"", gState.fillStyle.substring(1), "\" opacity=\"", opacity, "\" />");
+        else // should be a CSS color spec
+            vml.push("<cg_vml_:fill color=\"", gState.fillStyle, "\" opacity=\"", opacity, "\" />");
+    }
 
     if (stroke)
         vml.push(   "<cg_vml_:stroke opacity=\"", opacity,
