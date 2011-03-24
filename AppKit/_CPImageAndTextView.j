@@ -445,14 +445,14 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     {
         // Update the text contents if necessary.
         if (_flags & _CPImageAndTextViewTextChangedFlag)
-            if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
+            if (CPFeatureIsCompatible(CPJavaScriptInnerTextFeature))
             {
                 _DOMTextElement.innerText = _text;
 
                 if (_DOMTextShadowElement)
                     _DOMTextShadowElement.innerText = _text;
             }
-            else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
+            else if (CPFeatureIsCompatible(CPJavaScriptTextContentFeature))
             {
                 _DOMTextElement.textContent = _text;
 

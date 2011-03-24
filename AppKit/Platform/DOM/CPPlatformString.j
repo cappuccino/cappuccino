@@ -174,9 +174,9 @@ var DOMFixedWidthSpanElement    = nil,
 
     span.style.font = [aFont cssString];
 
-    if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
+    if (CPFeatureIsCompatible(CPJavaScriptInnerTextFeature))
         span.innerText = aString;
-    else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
+    else if (CPFeatureIsCompatible(CPJavaScriptTextContentFeature))
         span.textContent = aString;
 
     return _CGSizeMake(span.clientWidth, span.clientHeight);

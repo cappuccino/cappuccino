@@ -158,7 +158,7 @@ CPKeyCodes = {
  */
 CPKeyCodes.firesKeyPressEvent = function(keyCode, opt_heldKeyCode, opt_shiftKey, opt_ctrlKey, opt_altKey)
 {
-    if (!CPFeatureIsCompatible(CPJavascriptRemedialKeySupport))
+    if (!CPFeatureIsCompatible(CPJavaScriptRemedialKeySupport))
         return true;
 
     if (CPBrowserIsOperatingSystem(CPMacOperatingSystem) && opt_altKey)
