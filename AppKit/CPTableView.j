@@ -1573,8 +1573,8 @@ NOT YET IMPLEMENTED
 
     UPDATE_COLUMN_RANGES_IF_NECESSARY();
 
-    var range = _tableColumnRanges[aColumnIndex];
-    var spacing = _intercellSpacing.width || 1;
+    var range = _tableColumnRanges[aColumnIndex],
+        spacing = _intercellSpacing.width || 1;
 
     return _CGRectMake(range.location + spacing, 0.0, range.length - (2 * spacing), _CGRectGetHeight([self bounds]));
 }
@@ -1599,7 +1599,7 @@ NOT YET IMPLEMENTED
     {
         var rowToLookUp = MIN(aRowIndex, lastIndex);
 
-        // if the row doesn't exist 
+        // if the row doesn't exist
         if (rowToLookUp !== CPNotFound)
         {
             var y = _cachedRowHeights[rowToLookUp].heightAboveRow,
@@ -4012,7 +4012,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         column = [self columnAtPoint:location],
         tableColumn = [[self tableColumns] objectAtIndex:column];
 
-    return [[self delegate] tableView:self menuForTableColumn:tableColumn row:row];
+    return [_delegate tableView:self menuForTableColumn:tableColumn row:row];
 }
 
 /*
