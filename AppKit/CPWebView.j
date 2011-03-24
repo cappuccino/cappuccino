@@ -37,7 +37,10 @@ CPWebViewProgressStartedNotification            = "CPWebViewProgressStartedNotif
 CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNotification";
 
 /*!
-    Automatically choose between AppKit (Cappuccino style) scrollbars and native scrollbars. In this mode AppKit scrollbars are always used except when the web view is loaded with a URL which does not appear to pass the same origin policy.
+    Automatically choose between AppKit (Cappuccino style) scrollbars and
+    native scrollbars. In this mode AppKit scrollbars are always used except
+    when the web view is loaded with a URL which does not appear to pass the
+    same origin policy.
 */
 CPWebViewScrollAuto                             = 0;
 /*!
@@ -520,6 +523,15 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 
     if ([_frameLoadDelegate respondsToSelector:@selector(webView:didFinishLoadForFrame:)])
         [_frameLoadDelegate webView:self didFinishLoadForFrame:nil]; // FIXME: give this a frame somehow?
+}
+
+/*!
+    Returns whether the web view is loading. Note: due to browser limitations
+    this value is not particularly reliable.
+*/
+- (BOOL)isLoading
+{
+    return _isLoading;
 }
 
 /*!
