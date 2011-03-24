@@ -65,6 +65,7 @@ CPOpacityRequiresFilterFeature          = 1 << 24;
 CPInputTypeCanBeChangedFeature          = 1 << 25;
 CPHTML5DragAndDropSourceYOffBy1         = 1 << 26;
 
+CPSOPDisabledFromFileURLs               = 1 << 27;
 
 var USER_AGENT                          = "",
     PLATFORM_ENGINE                     = CPUnknownBrowserEngine,
@@ -133,6 +134,9 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
 
     if (majorVersion < 532 || (majorVersion === 532 && minorVersion < 6))
         PLATFORM_FEATURES |= CPHTML5DragAndDropSourceYOffBy1;
+
+    if (USER_AGENT.indexOf("Chrome") === CPNotFound)
+        PLATFORM_FEATURES |= CPSOPDisabledFromFileURLs;
 }
 
 // KHTML

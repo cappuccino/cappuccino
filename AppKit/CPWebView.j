@@ -300,19 +300,14 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     }
     else if (_scrollMode == CPWebViewScrollAuto && !_contentIsAccessible)
     {
-        // If the content is not accessible, but we're still loading the content,
-        // display no scroll bar. This method will be called again when loading finishes.
-        // If on the other hand, loading is done and we still can't access the content,
-        // we must fall back on the native scroll bar.
-        _newScrollMode = _isLoading ? CPWebViewScrollNone : CPWebViewScrollNative;
+        _newScrollMode = CPWebViewScrollNative;
     }
     else if (_scrollMode == CPWebViewScrollAppKit && !_contentIsAccessible)
     {
         // Same behaviour as the previous case except that a warning is logged when AppKit
         // scrollers can't be used.
-        _newScrollMode = _isLoading ? CPWebViewScrollNone : CPWebViewScrollNative;
-        if (!_isLoading)
-            CPLog.warn(self + " unable to use CPWebViewScrollAppKit scroll mode due to same origin policy.");
+        CPLog.warn(self + " unable to use CPWebViewScrollAppKit scroll mode due to same origin policy.");
+        _newScrollMode = CPWebViewScrollNative;
     }
 
     if (_newScrollMode !== _effectiveScrollMode)
@@ -329,7 +324,6 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     var parent = _iframe.parentNode;
     parent.removeChild(_iframe);
 
-    [_contentSizeCheckTimer invalidate];
     if (_effectiveScrollMode === CPWebViewScrollAppKit)
     {
         [_scrollView setHasHorizontalScroller:YES];
@@ -416,8 +410,10 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 {
     if (_url)
     {
-        // Assume NO until proven otherwise.
-        _contentIsAccessible = NO;
+        // Try to figure out if this URL will pass the same origin policy and hence allow us to potentially
+        // use appkit scrollbars.
+        var cpurl = [CPURL URLWithString:_url];
+        _contentIsAccessible = [cpurl _passesSameOriginPolicy];
         [self _updateEffectiveScrollMode];
 
         _iframe.src = _url;
@@ -463,37 +459,31 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 {
     _isLoading = NO;
 
-    // Check if we have access.
-    try
-    {
-        _contentIsAccessible = !![self DOMWindow].document;
-    }
-    catch (e)
-    {
-        _contentIsAccessible = NO;
-    }
-    [self _updateEffectiveScrollMode];
-
     [self _resizeWebFrame];
     [self _attachScrollEventIfNecessary];
 
-    /*
-    FIXME Need better method.
-    We don't know when the content of the iframe changes size (e.g. a
-    picture finishes loading, dynamic content is loaded). Often when a
-    page has initially 'loaded', it does not yet have its final size. In
-    lieu of any resize events we will simply check back in a few times
-    some time after loading.
+    [_contentSizeCheckTimer invalidate];
+    if (_effectiveScrollMode === CPWebViewScrollAppKit)
+    {
+        /*
+        FIXME Need better method.
+        We don't know when the content of the iframe changes size (e.g. a
+        picture finishes loading, dynamic content is loaded). Often when a
+        page has initially 'loaded', it does not yet have its final size. In
+        lieu of any resize events we will simply check back in a few times
+        some time after loading.
 
-    We run these checks only a limited number of times as to not deplete
-    battery life and slow down the software needlessly. This does mean
-    there are situations where the content changes size and the AppKit
-    scrollbars will be out of sync. Users who have dynamic content
-    in their web view will, for now, have to implement domain specific
-    fixes.
-    */
-    _contentSizePollCount = 0;
-    _contentSizeCheckTimer = [CPTimer scheduledTimerWithTimeInterval:CPWebViewAppKitScrollPollInterval target:self selector:@selector(_maybePollWebFrameSize) userInfo:nil repeats:YES];
+        We run these checks only a limited number of times as to not deplete
+        battery life and slow down the software needlessly. This does mean
+        there are situations where the content changes size and the AppKit
+        scrollbars will be out of sync. Users who have dynamic content
+        in their web view will, for now, have to implement domain specific
+        fixes.
+        */
+
+        _contentSizePollCount = 0;
+        _contentSizeCheckTimer = [CPTimer scheduledTimerWithTimeInterval:CPWebViewAppKitScrollPollInterval target:self selector:@selector(_maybePollWebFrameSize) userInfo:nil repeats:YES];
+    }
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWebViewProgressFinishedNotification object:self];
 
@@ -928,6 +918,25 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     _subviews = [];
     [super encodeWithCoder:aCoder];
     _subviews = actualSubviews;
+}
+
+@end
+
+@implementation CPURL(SOP)
+
+/*!
+    Private API.
+
+    Return YES if the receiver URL would pass the same origin policy if loaded by the current runtime environment.
+
+    Since Cappuccino runs in the browser, it is often restricted from accessing URLs from outside of its own origin (protocol, domain, port). This method tries to determine if the URL represented by the receiver is of the same origin, or if other circumstances will allow the content at the URL to be interacted with.
+*/
+- (BOOL)_passesSameOriginPolicy
+{
+    var documentURL = [CPURL URLWithString:window.location.href];
+    if ([documentURL isFileURL] && CPFeatureIsCompatible(CPSOPDisabledFromFileURLs))
+        return YES;
+    return ([documentURL scheme] == [self scheme] && [documentURL host] == [self host] && [documentURL port] == [self port]);
 }
 
 @end
