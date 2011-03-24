@@ -36,25 +36,38 @@ CPWebViewProgressEstimateChangedNotification    = "CPWebViewProgressEstimateChan
 CPWebViewProgressStartedNotification            = "CPWebViewProgressStartedNotification";
 CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNotification";
 
+/*!
+    Automatically choose between AppKit (Cappuccino style) scrollbars and native scrollbars. In this mode AppKit scrollbars are always used except when the web view is loaded with a URL which does not appear to pass the same origin policy.
+*/
 CPWebViewScrollAuto                             = 0;
+/*!
+    Always use AppKit scrollbars. If a URL is loaded whcih does not appear to
+    pass the same origin policy, native scrollbars will be used but a warnning
+    will be logged.
+*/
 CPWebViewScrollAppKit                           = 1;
+/*!
+    Always use native (platform dependent) scrollbars.
+*/
 CPWebViewScrollNative                           = 2;
+/*!
+    Never display scrollbars.
+*/
 CPWebViewScrollNone                             = 3;
 
-
 /*!
-    How often the size of the document will be checked at page load time when
-    AppKit scrollbars are used.
+    How frequently the size of the document will be checked at page load time
+    when AppKit scrollbars are used.
 */
 CPWebViewAppKitScrollPollInterval               = 1.0;
+
 /*!
     How many times the size of the size of the document will be checked at
     page load time when AppKit scrollbars are used.
 
-    The polling method is bad for performance so we wish to disable it as
-    soon as the page has finished loading. The assumption is that after
-    CPWebViewAppKitScrollMaxPollCount * CPWebViewAppKitScrollPollInterval,
-    the page should be fully loaded and the size final.
+    AppKit scrollbars must check the size of the document to display the
+    correct size of scrollbars. To improve performance the checks are only
+    performed a limited number of times per reload.
 */
 CPWebViewAppKitScrollMaxPollCount                  = 3;
 
@@ -274,10 +287,15 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 }
 
 /*!
-    Sets the scroll mode of the receiver. Valid options are:
-        CPWebViewScrollAuto     - (Default) Try to use Cappuccino style scrollbars whenever possible.
-        CPWebViewScrollAppKit   - Always use Cappuccino style scrollbars.
-        CPWebViewScrollNative   - Always use Native style scrollbars.
+    Sets the scroll mode of the receiver.
+
+    Valid values are:
+        CPWebViewScrollAuto
+        CPWebViewScrollAppKit
+        CPWebViewScrollNative
+        CPWebViewScrollNone
+
+    CPWebViewScrollAuto
 */
 - (void)setScrollMode:(int)aScrollMode
 {
@@ -287,6 +305,20 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     _scrollMode = aScrollMode;
 
     [self _updateEffectiveScrollMode];
+}
+
+/*!
+    Returns the effective scroll mode of the receiver.
+
+    Valied values are:
+        CPWebViewScrollAuto
+        CPWebViewScrollAppKit
+        CPWebViewScrollNative
+        CPWebViewScrollNone
+*/
+- (int)effectiveScrollMode
+{
+    return _effectiveScrollMode;
 }
 
 - (void)_updateEffectiveScrollMode
@@ -927,7 +959,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 /*!
     Private API.
 
-    Return YES if the receiver URL would pass the same origin policy if loaded by the current runtime environment.
+    Returns YES if the receiver URL would pass the same origin policy if loaded by the current runtime environment.
 
     Since Cappuccino runs in the browser, it is often restricted from accessing URLs from outside of its own origin (protocol, domain, port). This method tries to determine if the URL represented by the receiver is of the same origin, or if other circumstances will allow the content at the URL to be interacted with.
 */
