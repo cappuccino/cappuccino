@@ -1077,7 +1077,7 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
         _cornerView             = [aCoder decodeObjectForKey:CPScrollViewCornerViewKey];
         _bottomCornerView       = [aCoder decodeObjectForKey:CPScrollViewBottomCornerViewKey];
 
-        // Do to the anything goes nature of decoding, our subviews may not exist yet, so layout at the end of the run loop when we're sure everything is in a correct state.
+        // Due to the anything goes nature of decoding, our subviews may not exist yet, so layout at the end of the run loop when we're sure everything is in a correct state.
         [[CPRunLoop currentRunLoop] performSelector:@selector(_updateCornerAndHeaderView) target:self argument:_contentView order:0 modes:[CPDefaultRunLoopMode]];
     }
 
