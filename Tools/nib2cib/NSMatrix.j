@@ -9,61 +9,73 @@ var NSMatrixRadioModeMask = 0x40000000,
     NSMatrixDrawsBackgroundMask = 0x01000000;
 
 
-@implementation NSMatrix : CPObject
-{
-}
+@implementation NSMatrix : CPView
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    var view = [[CPView alloc] NS_initWithCoder:aCoder];
+    return [self NS_initWithCoder:aCoder];
+}
 
-    var numberOfRows = [aCoder decodeIntForKey:@"NSNumRows"],
-        numberOfColumns = [aCoder decodeIntForKey:@"NSNumCols"],
-        cellSize = [aCoder decodeSizeForKey:@"NSCellSize"],
-        intercellSpacing = [aCoder decodeSizeForKey:@"NSIntercellSpacing"],
-        flags = [aCoder decodeIntForKey:@"NSMatrixFlags"],
-        isRadioMode = flags & NSMatrixRadioModeMask,
-        drawsBackground = flags & NSMatrixDrawsBackgroundMask,
-        backgroundColor = [aCoder decodeObjectForKey:@"NSBackgroundColor"],
-        cells = [aCoder decodeObjectForKey:@"NSCells"],
-        selectedCell = [aCoder decodeObjectForKey:@"NSSelectedCell"];
+- (id)NS_initWithCoder:(CPCoder)aCoder
+{
+    self = [super NS_initWithCoder:aCoder];
 
-    if (isRadioMode)
+    if (self)
     {
-        var radioGroup = [CPRadioGroup new],
-            frame = CGRectMake(0.0, 0.0, cellSize.width, cellSize.height);
+        var numberOfRows = [aCoder decodeIntForKey:@"NSNumRows"],
+            numberOfColumns = [aCoder decodeIntForKey:@"NSNumCols"],
+            cellSize = [aCoder decodeSizeForKey:@"NSCellSize"],
+            intercellSpacing = [aCoder decodeSizeForKey:@"NSIntercellSpacing"],
+            flags = [aCoder decodeIntForKey:@"NSMatrixFlags"],
+            isRadioMode = flags & NSMatrixRadioModeMask,
+            drawsBackground = flags & NSMatrixDrawsBackgroundMask,
+            backgroundColor = [aCoder decodeObjectForKey:@"NSBackgroundColor"],
+            cells = [aCoder decodeObjectForKey:@"NSCells"],
+            selectedCell = [aCoder decodeObjectForKey:@"NSSelectedCell"];
 
-        for (var rowIndex = 0; rowIndex < numberOfRows; ++rowIndex)
+        if (isRadioMode)
         {
-            frame.origin.x = 0;
+            var radioGroup = [CPRadioGroup new],
+                frame = CGRectMake(0.0, 0.0, cellSize.width, cellSize.height);
 
-            for (var columnIndex = 0; columnIndex < numberOfColumns; ++columnIndex)
+            for (var rowIndex = 0; rowIndex < numberOfRows; ++rowIndex)
             {
-                var cell = cells[rowIndex * numberOfColumns + columnIndex],
-                    cellView = [[CPRadio alloc] initWithFrame:frame radioGroup:radioGroup];
+                frame.origin.x = 0;
 
-                [cellView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-                [cellView setTitle:[cell title]];
-                [cellView setBackgroundColor:[CPColor clearColor]];  // the IB default
-                [cellView setObjectValue:[cell objectValue]];
+                for (var columnIndex = 0; columnIndex < numberOfColumns; ++columnIndex)
+                {
+                    var cell = cells[rowIndex * numberOfColumns + columnIndex],
+                        cellView = [[CPRadio alloc] initWithFrame:frame radioGroup:radioGroup];
 
-                [view addSubview:cellView];
+                    [cellView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+                    [cellView setTitle:[cell title]];
+                    [cellView setBackgroundColor:[CPColor clearColor]];  // the IB default
+                    [cellView setObjectValue:[cell objectValue]];
 
-                NIB_CONNECTION_EQUIVALENCY_TABLE[[cell UID]] = cellView;
+                    [self addSubview:cellView];
 
-                frame.origin.x = CGRectGetMaxX(frame) + intercellSpacing.width;
+                    NIB_CONNECTION_EQUIVALENCY_TABLE[[cell UID]] = cellView;
+
+                    frame.origin.x = CGRectGetMaxX(frame) + intercellSpacing.width;
+                }
+
+                frame.origin.y = CGRectGetMaxY(frame) + intercellSpacing.height;
             }
 
-            frame.origin.y = CGRectGetMaxY(frame) + intercellSpacing.height;
+            if (drawsBackground)
+                [self setBackgroundColor:backgroundColor];
+
+            // Change this object into a CPView
+            self.isa = [CPView class];
         }
-
-        if (drawsBackground)
-            [view setBackgroundColor:backgroundColor];
-
-        NIB_CONNECTION_EQUIVALENCY_TABLE[[self UID]] = view;
+        else
+        {
+            // Non-radio group NSMatrix is not supported
+            self = nil;
+        }
     }
 
-    return view;
+    return self;
 }
 
 @end
