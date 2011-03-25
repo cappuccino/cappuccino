@@ -478,8 +478,11 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
         {
             var win = [self DOMWindow];
 
+            /*
+            If _html is the empty string, subtitute in an empty HTML structure. Just leaving the contents entirely empty prompts the browser to subtitute in a white page which would interfere with any custom background colours in use by this web view.
+            */
             if (win)
-                win.document.write(_html);
+                win.document.write(_html || "<html><body></body></html>");
 
             window.setTimeout(_loadCallback, 1);
         }, 0);
