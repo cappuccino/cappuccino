@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>com.apple.ibtool.document.hierarchy</key>
+	<array>
+		<dict>
+			<key>custom-class</key>
+			<string>NSApplication</string>
+			<key>label</key>
+			<string>File's Owner</string>
+			<key>name</key>
+			<string>File's Owner</string>
+			<key>object-id</key>
+			<integer>-2</integer>
+		</dict>
+		<dict>
+			<key>custom-class</key>
+			<string>FirstResponder</string>
+			<key>label</key>
+			<string>First Responder</string>
+			<key>name</key>
+			<string>First Responder</string>
+			<key>object-id</key>
+			<integer>-1</integer>
+		</dict>
+		<dict>
+			<key>label</key>
+			<string>Application</string>
+			<key>name</key>
+			<string>Application</string>
+			<key>object-id</key>
+			<integer>-3</integer>
+		</dict>
+		<dict>
+			<key>children</key>
+			<array>
+				<dict>
+					<key>children</key>
+					<array>
+						<dict>
+							<key>children</key>
+							<array>
+								<dict>
+									<key>label</key>
+									<string>Button Cell</string>
+									<key>object-id</key>
+									<integer>495</integer>
+								</dict>
+								<dict>
+									<key>label</key>
+									<string>Button Cell</string>
+									<key>object-id</key>
+									<integer>497</integer>
+								</dict>
+								<dict>
+									<key>label</key>
+									<string>Button Cell</string>
+									<key>object-id</key>
+									<integer>498</integer>
+								</dict>
+							</array>
+							<key>label</key>
+							<string>Matrix</string>
+							<key>object-id</key>
+							<integer>494</integer>
+						</dict>
+						<dict>
+							<key>children</key>
+							<array>
+								<dict>
+									<key>label</key>
+									<string>Button Cell</string>
+									<key>object-id</key>
+									<integer>500</integer>
+								</dict>
+								<dict>
+									<key>label</key>
+									<string>Button Cell</string>
+									<key>object-id</key>
+									<integer>501</integer>
+								</dict>
+								<dict>
+									<key>label</key>
+									<string>Button Cell</string>
+									<key>object-id</key>
+									<integer>502</integer>
+								</dict>
+							</array>
+							<key>label</key>
+							<string>Matrix</string>
+							<key>object-id</key>
+							<integer>499</integer>
+						</dict>
+					</array>
+					<key>label</key>
+					<string>View</string>
+					<key>object-id</key>
+					<integer>372</integer>
+				</dict>
+			</array>
+			<key>label</key>
+			<string>Window - Window</string>
+			<key>object-id</key>
+			<integer>371</integer>
+		</dict>
+		<dict>
+			<key>custom-class</key>
+			<string>AppController</string>
+			<key>label</key>
+			<string>App Controller</string>
+			<key>object-id</key>
+			<integer>450</integer>
+		</dict>
+	</array>
+</dict>
+</plist>
