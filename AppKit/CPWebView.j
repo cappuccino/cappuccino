@@ -426,7 +426,6 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     [self _startedLoading];
 
     _ignoreLoadStart = YES;
-    _ignoreLoadEnd = NO;
 
     _url = nil;
     _html = aString;
@@ -439,7 +438,6 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     [self _startedLoading];
 
     _ignoreLoadStart = YES;
-    _ignoreLoadEnd = NO;
 
     _url = _mainFrameURL;
     _html = nil;
@@ -457,6 +455,8 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
         _contentIsAccessible = [cpurl _passesSameOriginPolicy];
         [self _updateEffectiveScrollMode];
 
+        _ignoreLoadEnd = NO;
+
         _iframe.src = _url;
     }
     else if (_html !== nil)
@@ -466,6 +466,8 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 
         _contentIsAccessible = YES;
         [self _updateEffectiveScrollMode];
+
+        _ignoreLoadEnd = NO;
 
         if (_loadHTMLStringTimer !== nil)
         {
@@ -507,7 +509,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     [self _attachScrollEventIfNecessary];
 
     [_contentSizeCheckTimer invalidate];
-    if (_effectiveScrollMode === CPWebViewScrollAppKit)
+    if (_effectiveScrollMode == CPWebViewScrollAppKit)
     {
         /*
         FIXME Need better method.
