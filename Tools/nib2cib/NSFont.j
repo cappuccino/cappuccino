@@ -23,7 +23,7 @@
 @import <AppKit/CPFont.j>
 
 var OS = require("os"),
-    fontinfo = require("fontinfo").fontinfo;
+    fontinfo = require("cappuccino/fontinfo").fontinfo;
 
 var IBDefaultFontFace = @"Lucida Grande",
     IBDefaultFontSize = 13.0;

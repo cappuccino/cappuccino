@@ -1,5 +1,7 @@
 
 require("../common.jake");
 
-// nib2cib has to come before capp since capp uses nib2cib
-subtasks(["nib2cib", "capp", "NativeHost"], ["build"/*, "clean", "clobber"*/]);
+// nib2cib uses fontinfo and capp uses nib2cib
+subtasks(["fontinfo", "nib2cib", "capp", "NativeHost"], ["build"/*, "clean", "clobber"*/]);
+
+subtasks(["fontinfo"], ["clean", "clobber"]);
