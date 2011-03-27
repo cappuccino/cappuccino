@@ -133,6 +133,12 @@ var NSButtonIsBorderedMask = 0x00800000,
             _frame.origin.y += 4.0;
             _bounds.size.height = CPButtonDefaultHeight;
         }
+
+        _keyEquivalent = [cell keyEquivalent];
+        _keyEquivalentModifierMask = [cell keyEquivalentModifierMask];
+
+        _allowsMixedState = [cell allowsMixedState];
+        [self setImagePosition:[cell imagePosition]];
     }
 
     return self;
