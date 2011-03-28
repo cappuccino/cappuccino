@@ -803,6 +803,20 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     [[CPNotificationCenter defaultCenter] postNotification:note];
 }
 
+- (void)textDidChange:(CPNotification)note
+{
+    if ([note object] !== self)
+        return;
+
+    var binderClass = [[self class] _binderClassForBinding:CPValueBinding],
+        theBinding = [binderClass getBinding:CPValueBinding forObject:self];
+
+    if ([theBinding continuouslyUpdatesValue])
+        [self _reverseSetBinding];
+
+    [super textDidChange:note];
+}
+
 - (void)sendAction:(SEL)anAction to:(id)anObject
 {
     [self _reverseSetBinding];

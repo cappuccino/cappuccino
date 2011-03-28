@@ -224,6 +224,12 @@ var CPBindingOperationAnd = 0,
     return aValue;
 }
 
+- (BOOL)continuouslyUpdatesValue
+{
+    var options = [_info objectForKey:CPOptionsKey];
+    return [[options objectForKey:CPContinuouslyUpdatesValueBindingOption] boolValue];
+}
+
 @end
 
 @implementation CPObject (KeyValueBindingCreation)
