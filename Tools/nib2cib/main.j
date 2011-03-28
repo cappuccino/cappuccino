@@ -35,116 +35,19 @@ var FILE = require("file"),
     SYS = require("system"),
 
     DefaultTheme = "Aristo",
-    BuildTypes = ["Debug", "Release"];
+    BuildTypes = ["Debug", "Release"],
+    DefaultXibFile = "MainMenu.xib";
 
 var parser = new (require("narwhal/args").Parser)();
 
-parser.usage("[INPUT_FILE [OUTPUT_FILE]]");
-
-parser.option("-F", "framework", "frameworks")
-    .push()
-    .help("Add a framework to load");
-
-parser.option("-R", "resources")
-    .set()
-    .help("Set the Resources directory");
-
-parser.option("--mac", "format")
-    .set(NibFormatMac)
-    .def(NibFormatUndetermined)
-    .help("Set format to Mac");
-
-parser.option("-t", "--theme-dir", "themeDir")
-    .set()
-    .help("A <theme>.build directory to use for theme attribute values");
-
-parser.option("--config", "configFile")
-    .set()
-    .help("A path to an Info.plist file from which the system font and/or size can be retrieved");
-
-// parser.option("--iphone", "format")
-//     .set(NibFormatIPhone)
-//     .help("Set format to iPhone");
-
-parser.option("-v", "--verbose", "verbose")
-    .inc()
-    .help("Increase verbosity level");
-
-parser.option("-q", "--quiet", "quiet")
-    .set(true)
-    .help("No output");
-
-parser.option("--version", "showVersion")
-    .set(true)
-    .help("Show the version of nib2cib and quit");
-
-parser.helpful();
-
-function loadFrameworks(frameworkPaths, aCallback)
-{
-    if (!frameworkPaths || frameworkPaths.length === 0)
-        return aCallback();
-
-    frameworkPaths.forEach(function(aFrameworkPath)
-    {
-        print("Loading " + aFrameworkPath);
-
-        var frameworkBundle = [[CPBundle alloc] initWithPath:aFrameworkPath];
-
-        [frameworkBundle loadWithDelegate:nil];
-
-        require("browser/timeout").serviceTimeouts();
-    });
-
-    aCallback();
-}
-
-function logFormatter(aString, aLevel, aTitle)
-{
-    return CPLogColorize(aString, aLevel);
-}
 
 function main(args)
 {
     try
     {
-        var options = parser.parse(args, null, null, true);
-
-        if (options.args.length > 2)
-        {
-            parser.printUsage(options);
-            OS.exit(0);
-        }
-
-        if (options.quiet) {}
-        else if (options.verbose === 0)
-            CPLogRegister(CPLogPrint, "warn", logFormatter);
-        else if (options.verbose === 1)
-            CPLogRegister(CPLogPrint, "info", logFormatter);
-        else
-            CPLogRegister(CPLogPrint, null, logFormatter);
-
-        if (!options.quiet && options.verbose > 0)
-            printVersion(options.showVersion);
-
-        var inputFile = FILE.canonical(options.args[0] || "MainMenu.xib");
-
-        if (!FILE.isReadable(inputFile))
-            fail("Cannot read the input file: " + inputFile);
-
-        var outputFile;
-
-        if (options.args.length > 1)
-            outputFile = options.args[1];
-        else
-            outputFile = FILE.basename(inputFile, FILE.extension(inputFile)) + ".cib";
-
-        outputFile = FILE.canonical(outputFile);
-
-        if (!FILE.isWritable(FILE.dirname(outputFile)))
-            fail("Cannot write the output file at: " + outputFile);
-
-        [converter setOutputPath:outputFile];
+        var options = parseOptions(args),
+            inputFile = getInputFile(options.args),
+            outputFile = getOutputFile(inputFile, options.args);
 
         var resourcesPath = "";
 
@@ -152,10 +55,8 @@ function main(args)
         {
             resourcesPath = FILE.canonical(options.resources);
 
-            if (!FILE.isReadable(resourcesPath))
+            if (!FILE.isDirectory(resourcesPath) || !FILE.isReadable(resourcesPath))
                 fail("Cannot read resources at: " + resourcesPath);
-
-            [converter setResourcesPath:resourcesPath];
         }
 
         var configPath = setSystemFontAndSize(options.configFile || "", inputFile),
@@ -187,6 +88,9 @@ function main(args)
                                                       format:options.format
                                                        theme:theme];
 
+        [converter setOutputPath:outputFile];
+        [converter setResourcesPath:resourcesPath];
+
         loadFrameworks(options.frameworks, function()
         {
             [converter convert];
@@ -196,6 +100,140 @@ function main(args)
     {
         CPLog.fatal([anException reason]);
     }
+}
+
+function parseOptions(args)
+{
+    parser.usage("[INPUT_FILE [OUTPUT_FILE]]");
+
+    parser.option("-F", "framework", "frameworks")
+        .push()
+        .help("Add a framework to load");
+
+    parser.option("-R", "resources")
+        .set()
+        .help("Set the Resources directory");
+
+    parser.option("--mac", "format")
+        .set(NibFormatMac)
+        .def(NibFormatUndetermined)
+        .help("Set format to Mac");
+
+    parser.option("-t", "--theme-dir", "themeDir")
+        .set()
+        .help("A <theme>.build directory to use for theme attribute values");
+
+    parser.option("--config", "configFile")
+        .set()
+        .help("A path to an Info.plist file from which the system font and/or size can be retrieved");
+
+    // parser.option("--iphone", "format")
+    //     .set(NibFormatIPhone)
+    //     .help("Set format to iPhone");
+
+    parser.option("-v", "--verbose", "verbose")
+        .inc()
+        .help("Increase verbosity level");
+
+    parser.option("-q", "--quiet", "quiet")
+        .set(true)
+        .help("No output");
+
+    parser.option("--version", "showVersion")
+        .set(true)
+        .help("Show the version of nib2cib and quit");
+
+    parser.helpful();
+
+    var options = parser.parse(args, null, null, true);
+
+    if (options.args.length > 2)
+    {
+        parser.printUsage(options);
+        OS.exit(0);
+    }
+
+    if (options.quiet) {}
+    else if (options.verbose === 0)
+        CPLogRegister(CPLogPrint, "warn", logFormatter);
+    else if (options.verbose === 1)
+        CPLogRegister(CPLogPrint, "info", logFormatter);
+    else
+        CPLogRegister(CPLogPrint, null, logFormatter);
+
+    if (options.showVersion || (!options.quiet && options.verbose > 0))
+        printVersion(options.showVersion);
+
+    if (options.showVersion)
+        OS.exit(0);
+
+    return options;
+}
+
+function getInputFile(args)
+{
+    var inputFile = args[0] || DefaultXibFile;
+
+    if (!/^.+\.xib$/.test(inputFile))
+        inputFile += ".xib";
+
+    inputFile = FILE.canonical(inputFile);
+
+    if (!FILE.exists(inputFile) && FILE.basename(FILE.dirname(inputFile)) !== "Resources")
+        if (FILE.isDirectory("Resources"))
+            inputFile = FILE.resolve(inputFile, FILE.join("Resources", FILE.basename(inputFile)));
+
+    if (!FILE.isReadable(inputFile))
+        fail("Cannot read the input file: " + inputFile);
+
+    return inputFile;
+}
+
+function getOutputFile(inputFile, args)
+{
+    var outputFile = null;
+
+    if (args.length > 1)
+        outputFile = args[1];
+    else
+        outputFile = FILE.basename(inputFile, FILE.extension(inputFile));
+
+    if (!/^.+\.cib$/.test(outputFile))
+        outputFile += ".cib";
+
+    outputFile = FILE.resolve(inputFile, outputFile);
+
+    if (!FILE.isWritable(FILE.dirname(outputFile)))
+        fail("Cannot write the output file at: " + outputFile);
+
+    return outputFile;
+}
+
+function loadFrameworks(frameworkPaths, aCallback)
+{
+    if (!frameworkPaths || frameworkPaths.length === 0)
+        return aCallback();
+
+    frameworkPaths.forEach(function(aFrameworkPath)
+    {
+        print("Loading " + aFrameworkPath);
+
+        var frameworkBundle = [[CPBundle alloc] initWithPath:aFrameworkPath];
+
+        [frameworkBundle loadWithDelegate:nil];
+
+        require("browser/timeout").serviceTimeouts();
+    });
+
+    aCallback();
+}
+
+function logFormatter(aString, aLevel, aTitle)
+{
+    if (aLevel === "info")
+        return aString;
+    else
+        return CPLogColorize(aString, aLevel);
 }
 
 function getDefaultThemeName()
@@ -356,9 +394,17 @@ function setSystemFontAndSize(configFile, inputFile)
 
 function printVersion(exitAfter)
 {
-    // SYS.args[0] has the path to the nib2cib binary, from that we can get
-    // to the lib/nib2cib directory which the Info.plist for nib2cib.
-    var path = FILE.dirname(FILE.dirname(SYS.args[0]));
+    /*
+        There are two usual possibilities for the location of the nib2cib binary.
+        If we are executing the installed narwhal binary, the location is:
+            <narwhal>/packages/cappuccino/bin/nib2cib
+        If we are executing the built binary, the location is:
+            <CAPP_BUILD>/Debug|Release/CommonJS/cappuccino/bin/nib2cib
+
+        Base on these paths we can locate nib2cib's Info.plist.
+    */
+    var path = FILE.dirname(FILE.dirname(FILE.canonical(SYS.args[0]))),
+        version = null;
 
     if (FILE.basename(path) === "narwhal")
         path = FILE.join(path, "packages", "cappuccino");
@@ -377,11 +423,14 @@ function printVersion(exitAfter)
         if (!plist)
             return;
 
-        var version = plist.valueForKey("CPBundleVersion");
+        version = plist.valueForKey("CPBundleVersion");
 
         if (version)
             print("nib2cib v" + version);
     }
+
+    if (!version)
+        print("<No version info available>");
 
     if (exitAfter)
         OS.exit(0);
