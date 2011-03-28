@@ -533,6 +533,17 @@ SW5pdGlhbEZpcnN0UmVzcG9uZGVyIG1ldGhvZA</string>
 								<string key="keyPath">initialResponder</string>
 								<real value="2" key="value"/>
 							</object>
+							<object class="IBUserDefinedRuntimeAttribute">
+								<string key="typeIdentifier">com.apple.InterfaceBuilder.userDefinedRuntimeAttributeType.string</string>
+								<string key="keyPath">localized</string>
+								<string key="value">foo</string>
+								<bool key="localized">YES</bool>
+							</object>
+							<object class="IBUserDefinedRuntimeAttribute">
+								<string key="typeIdentifier">com.apple.InterfaceBuilder.userDefinedRuntimeAttributeType.nil</string>
+								<string key="keyPath">null</string>
+								<nil key="value"/>
+							</object>
 						</array>
 					</object>
 				</object>

@@ -54,7 +54,8 @@ NIB_CONNECTION_EQUIVALENCY_TABLE = {};
             _destination = NIB_CONNECTION_EQUIVALENCY_TABLE[destinationUID];
         }
 
-        CPLog.debug(@"Connection: " + [_source description] + " " + [_destination description] + " " + _label);
+        if (_source && _destination)
+            CPLog.debug(@"Connection: " + [_source description] + " " + [_destination description] + " " + _label);
     }
 
     return self;
@@ -180,6 +181,13 @@ var NSTramsformers = [CPSet setWithObjects:
         _source = [aCoder decodeObjectForKey:@"NSObject"];
         _keyPaths = [aCoder decodeObjectForKey:@"NSKeyPaths"];
         _values = [aCoder decodeObjectForKey:@"NSValues"];
+
+        var count = [_keyPaths count];
+
+        CPLog.debug(@"Runtime Attributes Connector: " + [_source description]);
+
+        while (count--)
+            CPLog.debug(@"   %s (%s): %s", _keyPaths[count], [_values[count] className], _values[count]);
     }
 
     return self;
