@@ -2167,23 +2167,38 @@ setBoundsOrigin:
 
 - (CPView)previousValidKeyView
 {
-    var result = [self previousKeyView];
+    var result = [self previousKeyView],
+        firstResult = result;
 
     while (result && ![result canBecomeKeyView])
+    {
         result = [result previousKeyView];
+
+        // Cycled.
+        if (result === firstResult)
+            return nil;
+    }
 
     return result;
 }
 
 - (void)_setPreviousKeyView:(CPView)previous
 {
-    _previousKeyView = previous;
+    if ([previous isEqual:self])
+        _previousKeyView = nil;
+    else
+        _previousKeyView = previous;
 }
 
 - (void)setNextKeyView:(CPView)next
 {
-    _nextKeyView = next;
-    [_nextKeyView _setPreviousKeyView:self];
+    if ([next isEqual:self])
+        _nextKeyView = nil;
+    else
+    {
+        _nextKeyView = next;
+        [_nextKeyView _setPreviousKeyView:self];
+    }
 }
 
 @end
@@ -2732,12 +2747,12 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
     var nextKeyView = [self nextKeyView];
 
-    if (nextKeyView !== nil)
+    if (nextKeyView !== nil && ![nextKeyView isEqual:self])
         [aCoder encodeConditionalObject:nextKeyView forKey:CPViewNextKeyViewKey];
 
     var previousKeyView = [self previousKeyView];
 
-    if (previousKeyView !== nil)
+    if (previousKeyView !== nil && ![previousKeyView isEqual:self])
         [aCoder encodeConditionalObject:previousKeyView forKey:CPViewPreviousKeyViewKey];
 
     [aCoder encodeObject:[self themeClass] forKey:CPViewThemeClassKey];
