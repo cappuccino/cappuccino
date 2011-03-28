@@ -393,6 +393,12 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
     [aCoder encodeBool:[self automaticallyPreparesContent] forKey:CPObjectControllerAutomaticallyPreparesContentKey];
 }
 
+- (void)awakeFromCib
+{
+    if (![self content] && [self automaticallyPreparesContent])
+        [self prepareContent];
+}
+
 @end
 
 @implementation _CPObservationProxy : CPObject
