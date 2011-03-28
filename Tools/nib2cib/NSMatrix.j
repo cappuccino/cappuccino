@@ -45,6 +45,7 @@ var NSMatrixRadioModeMask = 0x40000000,
                 [cellView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
                 [cellView setTitle:[cell title]];
                 [cellView setBackgroundColor:[CPColor clearColor]];  // the IB default
+                [cellView setFont:[cell font]];
                 [cellView setObjectValue:[cell objectValue]];
 
                 [view addSubview:cellView];

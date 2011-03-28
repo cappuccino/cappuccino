@@ -32,7 +32,7 @@
     var unarchiver = [[Nib2CibKeyedUnarchiver alloc] initForReadingWithData:data resourcesPath:aResourcesPath],
         objectData = [unarchiver decodeObjectForKey:@"IB.objectdata"];
 
-    // Perform a bit of post-processing on views since all CP views are flipped.
+    // Perform a bit of post-processing on fonts and views since all CP views are flipped.
     // It's better to do this here (instead of say, in NSView::initWithCoder:),
     // because at this point all the objects an mappings are stabilized.
     var objects = [unarchiver allObjects],
@@ -41,6 +41,41 @@
     while (count--)
     {
         var object = objects[count];
+
+        if ([object respondsToSelector:@selector(font)] &&
+            [object respondsToSelector:@selector(setFont:)] &&
+            [object font] != nil)
+        {
+            var nibFont = [object font],
+                cibFont = nil;
+
+            if ([object respondsToSelector:@selector(cibFontForNibFont)])
+                cibFont = [object cibFontForNibFont];
+            else
+                cibFont = [NSFont cibFontForNibFont:[object font]];
+
+            if (!cibFont || ![cibFont isEqual:nibFont])
+            {
+                var source = "";
+
+                if (!cibFont)
+                {
+                    cibFont = [theme valueForAttributeWithName:@"font" inState:[object themeState] forClass:[object class]];
+
+                    if ([cibFont familyName] === "Arial, sans-serif")
+                    {
+                        var size = [cibFont size];
+
+                        cibFont = [cibFont isBold] ? [CPFont boldSystemFontOfSize:size] : [CPFont systemFontOfSize:size];
+                        source = " (from theme)"
+                    }
+                }
+
+                [object setFont:cibFont];
+
+                CPLog.debug("%s: substituted <%s>%s for <%fpx %s>", [object className], cibFont ? [cibFont cssString] : "theme default", source, [nibFont size], [nibFont familyName]);
+            }
+        }
 
         if (![object isKindOfClass:[CPView class]])
             continue;

@@ -18,35 +18,53 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- */
+*/
 
-@import <Foundation/CPObject.j>
-@import <Foundation/CPData.j>
+@import <Foundation/Foundation.j>
+@import <AppKit/AppKit.j>
+@import <BlendKit/BlendKit.j>
 
 var FILE = require("file"),
-    OS = require("os");
+    OS = require("os"),
 
+    SharedConverter = nil;
 
-NibFormatUndetermined           = 0,
-NibFormatMac                    = 1,
-NibFormatIPhone                 = 2;
+NibFormatUndetermined   = 0,
+NibFormatMac            = 1,
+NibFormatIPhone         = 2;
 
-ConverterConversionException    = @"ConverterConversionException";
+ConverterModeLegacy   = 0;
+ConverterModeNew      = 1;
+
+ConverterConversionException = @"ConverterConversionException";
 
 @implementation Converter : CPObject
 {
-    NibFormat   format @accessors;
-    CPString    inputPath @accessors;
-    CPString    outputPath @accessors;
-    CPString    resourcesPath @accessors;
+    CPString     inputPath       @accessors(readonly);
+    CPString     outputPath      @accessors;
+    CPString     resourcesPath   @accessors;
+    NibFormat    format          @accessors(readonly);
+    CPTheme      theme           @accessors(readonly);
 }
 
-- (id)init
++ (Converter)sharedConverter
+{
+    if (!SharedConverter)
+        SharedConverter = [[Converter alloc] init];
+
+    return SharedConverter;
+}
+
+- (id)initWithInputPath:(CPString)aPath format:(NibFormat)nibFormat theme:(CPTheme)aTheme
 {
     self = [super init];
 
     if (self)
-        [self setFormat:NibFormatUndetermined];
+    {
+        inputPath = aPath;
+        format = nibFormat;
+        theme = aTheme;
+    }
 
     return self;
 }
@@ -87,8 +105,9 @@ ConverterConversionException    = @"ConverterConversionException";
             outputPath = inputPath.substr(0, inputPath.length - FILE.extension(inputPath).length) + ".cib";
 
         FILE.write(outputPath, [convertedData rawString], { charset:"UTF-8" });
+        CPLog.info("Conversion successful");
     }
-    catch(anException)
+    catch (anException)
     {
         CPLog.fatal(anException);
     }
@@ -96,35 +115,52 @@ ConverterConversionException    = @"ConverterConversionException";
 
 - (CPData)CPCompliantNibDataAtFilePath:(CPString)aFilePath
 {
-    // Compile xib or nib to make sure we have a non-new format nib.
-    var temporaryNibFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.nib");
+    CPLog.info("Converting Xib file to plist...");
 
-    if (OS.popen(["/usr/bin/ibtool", aFilePath, "--compile", temporaryNibFilePath]).wait() === 1)
-        throw "Could not compile file at " + aFilePath;
+    var temporaryNibFilePath = "",
+        temporaryPlistFilePath = "";
 
-    // Convert from binary plist to XML plist
-    var temporaryPlistFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.plist");
+    try
+    {
+        // Compile xib or nib to make sure we have a non-new format nib.
+        temporaryNibFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.nib");
 
-    if (OS.popen(["/usr/bin/plutil", "-convert", "xml1", temporaryNibFilePath, "-o", temporaryPlistFilePath]).wait() === 1)
-        throw "Could not convert to xml plist for file at " + aFilePath;
+        if (OS.popen(["/usr/bin/ibtool", aFilePath, "--compile", temporaryNibFilePath]).wait() === 1)
+            [CPException raise:ConverterConversionException reason:@"Could not compile file: " + aFilePath];
 
-    if (!FILE.isReadable(temporaryPlistFilePath))
-        [CPException raise:ConverterConversionException reason:@"Unable to convert nib file."];
+        // Convert from binary plist to XML plist
+        var temporaryPlistFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.plist");
 
-    var plistContents = FILE.read(temporaryPlistFilePath, { charset:"UTF-8" });
+        if (OS.popen(["/usr/bin/plutil", "-convert", "xml1", temporaryNibFilePath, "-o", temporaryPlistFilePath]).wait() === 1)
+            [CPException raise:ConverterConversionException reason:@"Could not convert to xml plist for file: " + aFilePath];
 
-    // Minor NS keyed archive to CP keyed archive conversion.
-    // Use Java directly because rhino's string.replace is *so slow*. 4 seconds vs. 1 millisecond.
-    // plistContents = plistContents.replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>");
-    if (system.engine === "rhino")
-        plistContents = String(java.lang.String(plistContents).replaceAll("\\<key\\>\\s*CF\\$UID\\s*\\<\/key\\>", "<key>CP\\$UID</key>"));
-    else
-        plistContents = plistContents.replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>");
+        if (!FILE.isReadable(temporaryPlistFilePath))
+            [CPException raise:ConverterConversionException reason:@"Unable to convert nib file."];
 
-    plistContents = plistContents.replace(/<string>[\u0000-\u0008\u000B\u000C\u000E-\u001F]<\/string>/g, function(c) {
-        CPLog.warn("Warning: Converting character 0x"+c.charCodeAt(8).toString(16)+" to base64 representation");
-        return "<string type=\"base64\">"+CFData.encodeBase64String(c.charAt(8))+"</string>";
-    });
+        var plistContents = FILE.read(temporaryPlistFilePath, { charset:"UTF-8" });
+
+        // Minor NS keyed archive to CP keyed archive conversion.
+        // Use Java directly because rhino's string.replace is *so slow*. 4 seconds vs. 1 millisecond.
+        // plistContents = plistContents.replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>");
+        if (system.engine === "rhino")
+            plistContents = String(java.lang.String(plistContents).replaceAll("\\<key\\>\\s*CF\\$UID\\s*\\<\/key\\>", "<key>CP\\$UID</key>"));
+        else
+            plistContents = plistContents.replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>");
+
+        plistContents = plistContents.replace(/<string>[\u0000-\u0008\u000B\u000C\u000E-\u001F]<\/string>/g, function(c)
+        {
+            CPLog.warn("Warning: converting character 0x" + c.charCodeAt(8).toString(16) + " to base64 representation");
+            return "<string type=\"base64\">"+CFData.encodeBase64String(c.charAt(8))+"</string>";
+        });
+    }
+    finally
+    {
+        if (temporaryNibFilePath !== "" && FILE.isWritable(temporaryNibFilePath))
+            FILE.remove(temporaryNibFilePath);
+
+        if (temporaryPlistFilePath !== "" && FILE.isWritable(temporaryPlistFilePath))
+            FILE.remove(temporaryPlistFilePath);
+    }
 
     return [CPData dataWithRawString:plistContents];
 }
