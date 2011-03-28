@@ -23,6 +23,7 @@
 @import <AppKit/CPCibConnector.j>
 @import <AppKit/CPCibControlConnector.j>
 @import <AppKit/CPCibOutletConnector.j>
+@import <AppKit/CPCibRuntimeAttributesConnector.j>
 
 NIB_CONNECTION_EQUIVALENCY_TABLE = {};
 
@@ -164,6 +165,38 @@ var NSTramsformers = [CPSet setWithObjects:
 - (Class)classForKeyedArchiver
 {
     return [CPCibBindingConnector class];
+}
+
+@end
+
+@implementation CPCibRuntimeAttributesConnector (NSCoding)
+
+- (id)NS_initWithCoder:(CPCoder)aCoder
+{
+    self = [super NS_initWithCoder:aCoder];
+
+    if (self)
+    {
+        _source = [aCoder decodeObjectForKey:@"NSObject"];
+        _keyPaths = [aCoder decodeObjectForKey:@"NSKeyPaths"];
+        _values = [aCoder decodeObjectForKey:@"NSValues"];
+    }
+
+    return self;
+}
+
+@end
+
+@implementation NSIBUserDefinedRuntimeAttributesConnector : CPCibRuntimeAttributesConnector
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    return [self NS_initWithCoder:aCoder];
+}
+
+- (Class)classForKeyedArchiver
+{
+    return [CPCibRuntimeAttributesConnector class];
 }
 
 @end

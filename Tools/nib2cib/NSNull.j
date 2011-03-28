@@ -1,9 +1,9 @@
 /*
- * NSFoundation.j
+ * NSNull.j
  * nib2cib
  *
- * Created by Francisco Tolmasky.
- * Copyright 2008, 280 North, Inc.
+ * Created by Aparajita Fishman.
+ * Copyright 2011, 280 North, Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,8 +20,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "NSArray.j"
-@import "NSDictionary.j"
-@import "NSMutableString.j"
-@import "NSNull.j"
-@import "NSSet.j"
+@import <Foundation/CPNull.j>
+
+@implementation NSNull : CPNull
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    return [CPNull null];
+}
+
+- (Class)classForKeyedArchiver
+{
+    return [CPNull class];
+}
+
+@end

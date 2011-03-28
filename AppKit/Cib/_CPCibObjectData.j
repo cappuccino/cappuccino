@@ -29,6 +29,7 @@
 @import "CPCibControlConnector.j"
 @import "CPCibOutletConnector.j"
 @import "CPCibBindingConnector.j"
+@import "CPCibRuntimeAttributesConnector.j"
 
 
 @implementation _CPCibObjectData : CPObject
@@ -257,11 +258,29 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
     _replacementObjects[[_fileOwner UID]] = anOwner;
 
     var index = 0,
-        count = _connections.length;
+        count = _connections.length,
+        runtimeAttributeConnectors = [],
+        connection = nil;
 
     for (; index < count; ++index)
     {
-        var connection = _connections[index];
+        connection = _connections[index];
+
+        if ([connection isKindOfClass:[CPCibRuntimeAttributesConnector class]])
+            // Defer runtime attribute connections until after all other connections are made
+            runtimeAttributeConnectors.push(connection);
+        else
+        {
+            [connection replaceObjects:_replacementObjects];
+            [connection establishConnection];
+        }
+    }
+
+    count = runtimeAttributeConnectors.length;
+
+    for (index = 0; index < count; ++index)
+    {
+        connection = runtimeAttributeConnectors[index];
 
         [connection replaceObjects:_replacementObjects];
         [connection establishConnection];
