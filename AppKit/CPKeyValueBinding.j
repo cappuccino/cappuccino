@@ -430,6 +430,7 @@ CPOptionsKey            = @"CPOptionsKey";
 CPMultipleValuesMarker  = @"CPMultipleValuesMarker";
 CPNoSelectionMarker     = @"CPNoSelectionMarker";
 CPNotApplicableMarker   = @"CPNotApplicableMarker";
+CPNullMarker            = @"CPNullMarker";
 
 // Binding name constants
 CPAlignmentBinding      = @"alignment";
@@ -470,5 +471,5 @@ CPValueTransformerBindingOption                     = @"CPValueTransformer";
 
 CPIsControllerMarker = function(/*id*/anObject)
 {
-    return anObject === CPMultipleValuesMarker || anObject === CPNoSelectionMarker || anObject === CPNotApplicableMarker;
+    return anObject === CPMultipleValuesMarker || anObject === CPNoSelectionMarker || anObject === CPNotApplicableMarker || anObject === CPNullMarker;
 }

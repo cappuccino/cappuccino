@@ -1404,6 +1404,10 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
                 newValue = [options objectForKey:CPNotApplicablePlaceholderBindingOption] || @"Not Applicable";
                 break;
+
+            case CPNullMarker:
+                newValue = [options objectForKey:CPNullPlaceholderBindingOption] || @"";
+                break;
         }
 
         [_source setPlaceholderString:newValue];
