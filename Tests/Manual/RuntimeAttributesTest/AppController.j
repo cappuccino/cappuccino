@@ -2,8 +2,8 @@
  * AppController.j
  * RuntimeAttributesTest
  *
- * Created by aparajita on March 26, 2011.
- * Copyright 2011, Victory-Heart Productions All rights reserved.
+ * Created by Aparajita Fishman on March 26, 2011.
+ * Copyright 2009, 280 North, Inc. All rights reserved.
  */
 
 @import <Foundation/CPObject.j>
