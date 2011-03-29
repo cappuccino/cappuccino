@@ -217,7 +217,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         spacingWidth = [[self tableView] intercellSpacing].width;
 
     headerRect.origin.x = _CGRectGetMinX(columnRect) - spacingWidth;
-    headerRect.size.width = _CGRectGetWidth(columnRect) + (spacingWidth *2);
+    headerRect.size.width = _CGRectGetWidth(columnRect) + (spacingWidth * 2);
 
     return headerRect;
 }
