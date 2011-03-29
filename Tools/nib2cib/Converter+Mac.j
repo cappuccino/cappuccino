@@ -23,8 +23,6 @@
 
 @import "Converter.j"
 
-var LegacySystemFontSize
-
 @implementation Converter (Mac)
 
 - (void)convertedDataFromMacData:(CPData)data resourcesPath:(CPString)aResourcesPath
