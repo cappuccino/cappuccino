@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="371"/>
+			<integer value="372"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -839,35 +839,36 @@
 							<object class="NSMutableArray" key="NSCells">
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSButtonCell" id="889214967">
-									<int key="NSCellFlags">-2080244224</int>
+									<int key="NSCellFlags">67239424</int>
 									<int key="NSCellFlags2">0</int>
 									<string key="NSContents">Palatino or</string>
-									<object class="NSFont" key="NSSupport" id="688526652">
-										<string key="NSName">LucidaGrande</string>
+									<object class="NSFont" key="NSSupport" id="174154104">
+										<string key="NSName">Palatino-Roman</string>
 										<double key="NSSize">14</double>
 										<int key="NSfFlags">16</int>
 									</object>
 									<reference key="NSControlView" ref="1037053875"/>
 									<int key="NSTag">1</int>
 									<int key="NSButtonFlags">1211912703</int>
-									<int key="NSButtonFlags2">0</int>
+									<int key="NSButtonFlags2">402653184</int>
 									<object class="NSButtonImageSource" key="NSAlternateImage" id="347902426">
 										<string key="NSImageName">NSRadioButton</string>
 									</object>
 									<string key="NSAlternateContents"/>
-									<string key="NSKeyEquivalent"/>
+									<string key="NSKeyEquivalent">p</string>
 									<int key="NSPeriodicDelay">200</int>
 									<int key="NSPeriodicInterval">25</int>
 								</object>
 								<object class="NSButtonCell" id="307228594">
-									<int key="NSCellFlags">67239424</int>
-									<int key="NSCellFlags2">0</int>
+									<int key="NSCellFlags">-2080244224</int>
+									<int key="NSCellFlags2">33554432</int>
 									<string key="NSContents">Cambria 14</string>
-									<reference key="NSSupport" ref="688526652"/>
+									<reference key="NSSupport" ref="174154104"/>
 									<reference key="NSControlView" ref="1037053875"/>
 									<int key="NSButtonFlags">1211912703</int>
-									<int key="NSButtonFlags2">0</int>
+									<int key="NSButtonFlags2">268435456</int>
 									<reference key="NSAlternateImage" ref="347902426"/>
+									<string key="NSKeyEquivalent">C</string>
 									<int key="NSPeriodicDelay">400</int>
 									<int key="NSPeriodicInterval">75</int>
 								</object>
@@ -931,7 +932,8 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 								<int key="NSPeriodicDelay">400</int>
 								<int key="NSPeriodicInterval">75</int>
 							</object>
-							<reference key="NSSelectedCell" ref="889214967"/>
+							<int key="NSSelectedCol">1</int>
+							<reference key="NSSelectedCell" ref="307228594"/>
 							<reference key="NSBackgroundColor" ref="37461814"/>
 							<reference key="NSCellBackgroundColor" ref="105537950"/>
 							<reference key="NSFont" ref="613390050"/>
@@ -948,7 +950,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSButtonCell" id="465481883">
 									<int key="NSCellFlags">-2080244224</int>
-									<int key="NSCellFlags2">0</int>
+									<int key="NSCellFlags2">134217728</int>
 									<string key="NSContents">Default</string>
 									<reference key="NSSupport" ref="450713112"/>
 									<reference key="NSControlView" ref="494585472"/>
@@ -962,8 +964,8 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 									<int key="NSPeriodicInterval">25</int>
 								</object>
 								<object class="NSButtonCell" id="124879598">
-									<int key="NSCellFlags">67239424</int>
-									<int key="NSCellFlags2">0</int>
+									<int key="NSCellFlags">604110336</int>
+									<int key="NSCellFlags2">67108864</int>
 									<string key="NSContents">IB font</string>
 									<reference key="NSSupport" ref="450713112"/>
 									<reference key="NSControlView" ref="494585472"/>
