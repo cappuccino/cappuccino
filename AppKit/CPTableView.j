@@ -3505,8 +3505,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     var exposedRect = [self exposedRect];
 
     [self drawBackgroundInClipRect:exposedRect];
-    [self drawGridInClipRect:exposedRect];
     [self highlightSelectionInClipRect:exposedRect];
+    [self drawGridInClipRect:exposedRect];
 
     if (_implementsCustomDrawRow)
         [self _drawRows:_exposedRows clipRect:exposedRect];
@@ -3664,7 +3664,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
         [_selectedRowIndexes getIndexes:indexes maxCount:-1 inIndexRange:exposedRange];
     }
-
     else if ([_selectedColumnIndexes count] >= 1)
     {
         rectSelector = @selector(rectOfColumn:);
