@@ -1573,10 +1573,9 @@ NOT YET IMPLEMENTED
 
     UPDATE_COLUMN_RANGES_IF_NECESSARY();
 
-    var range = _tableColumnRanges[aColumnIndex],
-        spacing = _intercellSpacing.width || 1;
+    var range = _tableColumnRanges[aColumnIndex];
 
-    return _CGRectMake(range.location + spacing, 0.0, range.length - (2 * spacing), _CGRectGetHeight([self bounds]));
+    return _CGRectMake(range.location, 0.0, range.length, _CGRectGetHeight([self bounds]));
 }
 
 // Complexity:
@@ -3628,11 +3627,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             minY = _CGRectGetMinY(aRect),
             maxY = _CGRectGetMaxY(aRect);
 
-
         for (; columnArrayIndex < columnArrayCount; ++columnArrayIndex)
         {
             var columnRect = [self rectOfColumn:columnsArray[columnArrayIndex]],
-                columnX = _CGRectGetMaxX(columnRect) + 0.5;
+                columnX = _CGRectGetMaxX(columnRect) +  0.5;
 
             CGContextMoveToPoint(context, columnX, minY);
             CGContextAddLineToPoint(context, columnX, maxY);

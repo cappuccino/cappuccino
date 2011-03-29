@@ -213,11 +213,10 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 - (CGRect)headerRectOfColumn:(int)aColumnIndex
 {
     var headerRect = [self bounds],
-        columnRect = [_tableView rectOfColumn:aColumnIndex],
-        spacingWidth = [[self tableView] intercellSpacing].width;
+        columnRect = [_tableView rectOfColumn:aColumnIndex];
 
-    headerRect.origin.x = _CGRectGetMinX(columnRect) - spacingWidth;
-    headerRect.size.width = _CGRectGetWidth(columnRect) + (spacingWidth * 2);
+    headerRect.origin.x = _CGRectGetMinX(columnRect);
+    headerRect.size.width = _CGRectGetWidth(columnRect);
 
     return headerRect;
 }
@@ -603,6 +602,8 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
             frame.origin.x += 0.5;
             frame.size.width -= 1;
         }
+        // Note: we're not adding in intercell spacing here. This setting only affects the regular
+        // table cell data views, not the header. Verified in Cocoa on March 29th, 2011.
 
         [headerView setFrame:frame];
 
@@ -647,7 +648,6 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         CGContextMoveToPoint(context, ROUND(columnMaxX) + 0.5, ROUND(_CGRectGetMinY(columnToStroke)));
         CGContextAddLineToPoint(context, ROUND(columnMaxX) + 0.5, ROUND(_CGRectGetMaxY(columnToStroke)));
     }
-
     CGContextClosePath(context);
     CGContextStrokePath(context);
 
