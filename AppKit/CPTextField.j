@@ -808,11 +808,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if ([note object] !== self)
         return;
 
-    var binderClass = [[self class] _binderClassForBinding:CPValueBinding],
-        theBinding = [binderClass getBinding:CPValueBinding forObject:self];
-
-    if ([theBinding continuouslyUpdatesValue])
-        [self _reverseSetBinding];
+    [self _continuouslyReverseSetBinding];
 
     [super textDidChange:note];
 }

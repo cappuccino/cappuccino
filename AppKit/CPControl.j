@@ -149,6 +149,18 @@ var CPControlBlackColor = [CPColor blackColor];
     return [super _binderClassForBinding:theBinding];
 }
 
+/*!
+    Reverse set the binding iff the CPContinuouslyUpdatesValueBindingOption is set.
+*/
+- (void)_continuouslyReverseSetBinding
+{
+    var binderClass = [[self class] _binderClassForBinding:CPValueBinding],
+        theBinding = [binderClass getBinding:CPValueBinding forObject:self];
+
+    if ([theBinding continuouslyUpdatesValue])
+        [theBinding reverseSetValueFor:@"objectValue"];
+}
+
 - (void)_reverseSetBinding
 {
     var binderClass = [[self class] _binderClassForBinding:CPValueBinding],
