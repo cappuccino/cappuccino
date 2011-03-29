@@ -140,7 +140,7 @@ function parseOptions(args)
         .help("No output");
 
     parser.option("--version", "showVersion")
-        .set(true)
+        .action(printVersionAndExit)
         .help("Show the version of nib2cib and quit");
 
     parser.helpful();
@@ -161,11 +161,8 @@ function parseOptions(args)
     else
         CPLogRegister(CPLogPrint, null, logFormatter);
 
-    if (options.showVersion || (!options.quiet && options.verbose > 0))
-        printVersion(options.showVersion);
-
-    if (options.showVersion)
-        OS.exit(0);
+    if (!options.quiet && options.verbose > 0)
+        printVersion();
 
     return options;
 }
@@ -392,7 +389,13 @@ function setSystemFontAndSize(configFile, inputFile)
     return configPath;
 }
 
-function printVersion(exitAfter)
+function printVersionAndExit()
+{
+    printVersion();
+    OS.exit(0);
+}
+
+function printVersion()
 {
     /*
         There are two usual possibilities for the location of the nib2cib binary.
@@ -431,9 +434,6 @@ function printVersion(exitAfter)
 
     if (!version)
         print("<No version info available>");
-
-    if (exitAfter)
-        OS.exit(0);
 }
 
 function fail(message)
