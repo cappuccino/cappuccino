@@ -342,6 +342,7 @@
 
     [_contentView setFrame:contentFrame];
     [_headerClipView setFrame:headerClipViewFrame];
+    [[_headerClipView documentView] setNeedsDisplay:YES];
     [_cornerView setFrame:[self _cornerViewFrame]];
 
     [[self bottomCornerView] setFrame:[self _bottomCornerViewFrame]];
