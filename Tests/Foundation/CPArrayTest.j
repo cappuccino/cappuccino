@@ -51,6 +51,14 @@
     [self assert:[[arrayClass arrayWithObjects:0, 1, nil, 2, nil] count] same:2];
 }
 
+- (void)test_firstObject
+{
+    var arrayClass = [[self class] arrayClass];
+
+    [self assert:[[arrayClass array] firstObject] same:nil];
+    [self assert:[[arrayClass arrayWithObjects:0, 1, 2] firstObject] same:0];
+}
+
 - (void)test_lastObject
 {
     var arrayClass = [[self class] arrayClass];

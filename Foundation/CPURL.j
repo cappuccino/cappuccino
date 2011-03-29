@@ -189,8 +189,7 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
         return YES;
 
     // Is checking if baseURL isEqual correct? Does "identical" mean same object or equivalent values?
-    return [self relativeString] === [aURL relativeString] &&
-        ([self baseURL] === [aURL baseURL] || [[self baseURL] isEqual:[aURL baseURL]]);
+    return [[self absoluteString] isEqual:[aURL absoluteString]];
 }
 
 - (CPString)lastPathComponent

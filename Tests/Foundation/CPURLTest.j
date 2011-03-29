@@ -112,12 +112,14 @@ var exampleProtocol = "http",
 {
     var url = [CPURL URLWithString:@"http://www.cappuccino.org"],
         url2 = [CPURL URLWithString:@"http://www.cappuccino.org"],
-        url3 = [CPURL URLWithString:@"http://www.cappuccino.org/index.html"];
+        url3 = [CPURL URLWithString:@"http://www.cappuccino.org/index.html"],
+        url4 = [CPURL URLWithString:@"http://www.cappuccino.org//index.html"];
 
     [self assert:url equals:url];
     [self assert:url equals:url2];
     [self assert:url notEqual:url3];
     [self assert:url notEqual:[CPNull null]];
+    [self assert:url3 equals:url4];
 }
 
 - (void)testIsEqualToURL

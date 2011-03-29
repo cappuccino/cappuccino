@@ -205,7 +205,20 @@ var concat = Array.prototype.concat,
 }
 
 /*!
-    Returns the last object in the array. If the array is empty, returns \c nil/
+    Returns the first object in the array. If the array is empty, returns \c nil
+*/
+- (id)firstObject
+{
+    var count = [self count];
+
+    if (count > 0)
+        return [self objectAtIndex:0];
+
+    return nil;
+}
+
+/*!
+    Returns the last object in the array. If the array is empty, returns \c nil
 */
 - (id)lastObject
 {
