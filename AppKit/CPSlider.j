@@ -382,6 +382,11 @@ CPCircularSlider    = 1;
     [self setNeedsDisplay:YES];
 }
 
+- (BOOL)isContinuous
+{
+    return (_sendActionOn & CPLeftMouseDraggedMask) !== 0;
+}
+
 /*!
     @ignore
     should we have _continuous?
