@@ -42,40 +42,7 @@
     {
         var object = objects[count];
 
-        if ([object respondsToSelector:@selector(font)] &&
-            [object respondsToSelector:@selector(setFont:)] &&
-            [object font] != nil)
-        {
-            var nibFont = [object font],
-                cibFont = nil;
-
-            if ([object respondsToSelector:@selector(cibFontForNibFont)])
-                cibFont = [object cibFontForNibFont];
-            else
-                cibFont = [NSFont cibFontForNibFont:[object font]];
-
-            if (!cibFont || ![cibFont isEqual:nibFont])
-            {
-                var source = "";
-
-                if (!cibFont)
-                {
-                    cibFont = [theme valueForAttributeWithName:@"font" inState:[object themeState] forClass:[object class]];
-
-                    if ([cibFont familyName] === "Arial, sans-serif")
-                    {
-                        var size = [cibFont size];
-
-                        cibFont = [cibFont isBold] ? [CPFont boldSystemFontOfSize:size] : [CPFont systemFontOfSize:size];
-                        source = " (from theme)"
-                    }
-                }
-
-                [object setFont:cibFont];
-
-                CPLog.debug("%s: substituted <%s>%s for <%fpx %s>", [object className], cibFont ? [cibFont cssString] : "theme default", source, [nibFont size], [nibFont familyName]);
-            }
-        }
+        [self replaceFontForObject:object];
 
         if (![object isKindOfClass:[CPView class]])
             continue;
@@ -125,6 +92,70 @@
         return nil;
     else
         return object;
+}
+
+- (void)replaceFontForObject:(id)object
+{
+    if ([object respondsToSelector:@selector(font)] &&
+        [object respondsToSelector:@selector(setFont:)])
+    {
+        var nibFont = [object font];
+
+        if (nibFont)
+            [self replaceFont:nibFont forObject:object];
+    }
+    else if ([object isKindOfClass:[CPView class]])
+    {
+        /*
+            Determine if a view is actually a container for radio buttons.
+            They have to be manually iterated over because they are not
+            part of the top level object data.
+        */
+        var subviews = [object subviews],
+            count = [subviews count];
+
+        if (count && [subviews[0] isKindOfClass:[CPRadio class]])
+        {
+            while (count--)
+            {
+                var radio = subviews[count];
+
+                [self replaceFont:[radio font] forObject:radio];
+            }
+        }
+    }
+}
+
+- (void)replaceFont:(CPFont)nibFont forObject:(id)object
+{
+    var cibFont = nil;
+
+    if ([object respondsToSelector:@selector(cibFontForNibFont)])
+        cibFont = [object cibFontForNibFont];
+    else
+        cibFont = [NSFont cibFontForNibFont:[object font]];
+
+    if (!cibFont || ![cibFont isEqual:nibFont])
+    {
+        var source = "";
+
+        if (!cibFont)
+        {
+            cibFont = [theme valueForAttributeWithName:@"font" inState:[object themeState] forClass:[object class]];
+
+            if ([cibFont familyName] === "Arial, sans-serif")
+            {
+                var size = [cibFont size];
+
+                cibFont = [cibFont isBold] ? [CPFont boldSystemFontOfSize:size] : [CPFont systemFontOfSize:size];
+                source = " (from theme)"
+            }
+        }
+
+        [object setFont:cibFont];
+
+        CPLog.debug("%s: substituted <%s>%s for <%fpx %s>", [object className], cibFont ? [cibFont cssString] : "theme default", source, [nibFont size], [nibFont familyName]);
+    }
 }
 
 @end
