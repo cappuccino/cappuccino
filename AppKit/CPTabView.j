@@ -268,6 +268,27 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     return [_items objectAtIndex:_selectedIndex];
 }
 
+// Modifying the font
+/*!
+    Returns the font for tab label text.
+*/
+- (CPFont)font
+{
+    return _font;
+}
+
+/*!
+    Sets the font for tab label text to font.
+*/
+- (void)setFont:(CPFont)font
+{
+    if ([_font isEqual:font])
+        return;
+
+    _font = font;
+    [_tabs setFont:_font];
+}
+
 //
 /*!
     Sets the tab view type.
