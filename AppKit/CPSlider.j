@@ -430,8 +430,6 @@ var CPSliderMinValueKey             = "CPSliderMinValueKey",
     {
         _altIncrementValue = [aCoder decodeDoubleForKey:CPSliderAltIncrValueKey];
 
-        [self setContinuous:YES];
-
         [self _recalculateIsVertical];
 
         [self setNeedsLayout];

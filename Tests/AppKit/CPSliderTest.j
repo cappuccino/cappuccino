@@ -17,4 +17,18 @@
     [self assertTrue:[slider isContinuous]];
 }
 
+- (void)testEncoding
+{
+    // Previously, the isContinuous state has not been properly preserved through cpcoding.
+    var slider = [[CPSlider alloc] initWithFrame:CGRectMakeZero()];
+
+    [slider setContinuous:NO];
+    decoded = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:slider]];
+    [self assert:[slider isContinuous] equals:[decoded isContinuous] message:@"a decoded slider should preserve isContinuous (NO case)"];
+
+    [slider setContinuous:YES];
+    decoded = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:slider]];
+    [self assert:[slider isContinuous] equals:[decoded isContinuous] message:@"a decoded slider should preserve isContinuous (YES case)"];
+}
+
 @end
