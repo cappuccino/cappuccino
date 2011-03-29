@@ -842,7 +842,7 @@
 									<int key="NSCellFlags">67239424</int>
 									<int key="NSCellFlags2">0</int>
 									<string key="NSContents">Palatino or</string>
-									<object class="NSFont" key="NSSupport" id="174154104">
+									<object class="NSFont" key="NSSupport" id="714389266">
 										<string key="NSName">Palatino-Roman</string>
 										<double key="NSSize">14</double>
 										<int key="NSfFlags">16</int>
@@ -863,7 +863,7 @@
 									<int key="NSCellFlags">-2080244224</int>
 									<int key="NSCellFlags2">33554432</int>
 									<string key="NSContents">Cambria 14</string>
-									<reference key="NSSupport" ref="174154104"/>
+									<reference key="NSSupport" ref="714389266"/>
 									<reference key="NSControlView" ref="1037053875"/>
 									<int key="NSButtonFlags">1211912703</int>
 									<int key="NSButtonFlags2">268435456</int>
@@ -1091,9 +1091,10 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 								<object class="NSTabViewItem" id="261632281">
 									<string key="NSIdentifier">1</string>
 									<object class="NSView" key="NSView" id="395877833">
-										<nil key="NSNextResponder"/>
+										<reference key="NSNextResponder" ref="431941332"/>
 										<int key="NSvFlags">256</int>
 										<string key="NSFrame">{{10, 33}, {246, 39}}</string>
+										<reference key="NSSuperview" ref="431941332"/>
 									</object>
 									<string key="NSLabel">Default</string>
 									<reference key="NSColor" ref="37461814"/>
@@ -1102,23 +1103,26 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 								<object class="NSTabViewItem" id="166375558">
 									<string key="NSIdentifier">2</string>
 									<object class="NSView" key="NSView" id="338115759">
-										<reference key="NSNextResponder" ref="431941332"/>
+										<nil key="NSNextResponder"/>
 										<int key="NSvFlags">256</int>
 										<string key="NSFrame">{{10, 33}, {246, 39}}</string>
-										<reference key="NSSuperview" ref="431941332"/>
 									</object>
 									<string key="NSLabel">IB font</string>
 									<reference key="NSColor" ref="37461814"/>
 									<reference key="NSTabView" ref="431941332"/>
 								</object>
 							</object>
-							<reference key="NSSelectedTabViewItem" ref="166375558"/>
-							<reference key="NSFont" ref="613390050"/>
+							<reference key="NSSelectedTabViewItem" ref="261632281"/>
+							<object class="NSFont" key="NSFont">
+								<string key="NSName">LucidaGrande-Bold</string>
+								<double key="NSSize">13</double>
+								<int key="NSfFlags">16</int>
+							</object>
 							<int key="NSTvFlags">0</int>
 							<bool key="NSAllowTruncatedLabels">YES</bool>
 							<object class="NSMutableArray" key="NSSubviews">
 								<bool key="EncodedWithXMLCoder">YES</bool>
-								<reference ref="338115759"/>
+								<reference ref="395877833"/>
 							</object>
 						</object>
 					</object>

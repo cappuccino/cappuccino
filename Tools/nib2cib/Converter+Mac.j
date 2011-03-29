@@ -23,6 +23,7 @@
 
 @import "Converter.j"
 
+var LegacySystemFontSize
 
 @implementation Converter (Mac)
 
@@ -36,7 +37,7 @@
 
     // Perform a bit of post-processing on fonts and views since all CP views are flipped.
     // It's better to do this here (instead of say, in NSView::initWithCoder:),
-    // because at this point all the objects an mappings are stabilized.
+    // because at this point all the objects and mappings are stabilized.
     while (count--)
     {
         var object = objects[count];
@@ -128,15 +129,23 @@
     {
         var source = "";
 
+        // nil cibFont means try to use theme font
         if (!cibFont)
         {
+            var bold = [nibFont isBold];
+
             cibFont = [theme valueForAttributeWithName:@"font" inState:[object themeState] forClass:[object class]];
 
-            if ([cibFont familyName] === "Arial, sans-serif")
+            // Substitute legacy theme fonts for the current system font
+            if (!cibFont || [cibFont familyName] === CPFontDefaultSystemFontFace)
             {
-                var size = [cibFont size];
+                var size = [cibFont size] || CPFontDefaultSystemFontSize,
+                    bold = cibFont ? [cibFont isBold] : bold;
 
-                cibFont = [cibFont isBold] ? [CPFont boldSystemFontOfSize:size] : [CPFont systemFontOfSize:size];
+                if (size === CPFontDefaultSystemFontSize)
+                    size = [CPFont systemFontSize];
+
+                cibFont = bold ? [CPFont boldSystemFontOfSize:size] : [CPFont systemFontOfSize:size];
                 source = " (from theme)"
             }
         }
