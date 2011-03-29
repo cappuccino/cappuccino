@@ -25,13 +25,13 @@
 
 @import "CPView.j"
 
+CPFontDefaultSystemFontFace = @"Arial, sans-serif";
+CPFontDefaultSystemFontSize = 12;
 
 var _CPFonts                        = {},
-    _CPFontSystemFontFace           = @"Arial, sans-serif",
+    _CPFontSystemFontFace           = CPFontDefaultSystemFontFace,
     _CPFontSystemFontSize           = 12,
-    _CPFontDefaultSystemFontFace    = @"Arial, sans-serif",
-    _CPFontDefaultSystemFontSize    = 12,
-    _CPFontFallbackFaces            = _CPFontDefaultSystemFontFace.split(", "),
+    _CPFontFallbackFaces            = CPFontDefaultSystemFontFace.split(", "),
     _CPFontStripRegExp              = new RegExp("(^\\s*[\"']?|[\"']?\\s*$)", "g");
 
 
