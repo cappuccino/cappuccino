@@ -33,23 +33,35 @@
 var FILE = require("file"),
     OS = require("os"),
     SYS = require("system"),
+    FileList = require("jake").FileList,
+    stream = require("narwhal/term").stream,
 
     DefaultTheme = "Aristo",
     BuildTypes = ["Debug", "Release"],
     DefaultXibFile = "MainMenu.xib";
 
-var parser = new (require("narwhal/args").Parser)();
+var parser = new (require("narwhal/args").Parser)(),
+    nibInfo = {};
 
 
 function main(args)
 {
+    var options = parseOptions(args);
+
+    if (options.watch)
+        watch(options);
+    else
+        convert(options);
+}
+
+function convert(options, inputFile)
+{
     try
     {
-        var options = parseOptions(args),
-            inputFile = getInputFile(options.args),
-            outputFile = getOutputFile(inputFile, options.args);
+        inputFile = inputFile || getInputFile(options.args);
 
-        var resourcesPath = "";
+        var outputFile = getOutputFile(inputFile, options.args),
+            resourcesPath = "";
 
         if (options.resources)
         {
@@ -95,16 +107,71 @@ function main(args)
         {
             [converter convert];
         });
+
+        return true;
     }
     catch (anException)
     {
         CPLog.fatal([anException reason]);
+        return false;
+    }
+}
+
+function watch(options)
+{
+    var verbosity = options.quiet ? -1 : options.verbosity;
+
+    // Turn on info messages
+    setLogLevel(1);
+
+    directory = FILE.canonical(options.args[0] || ".");
+
+    if (!FILE.isDirectory(directory))
+        fail("Cannot find the directory: " + directory);
+
+    CPLog.info("Watching: " + CPLogColorize(directory, "debug"));
+    CPLog.info("Press Control-C to stop...");
+
+    while (true)
+    {
+        var modifiedNibs = getModifiedNibs(directory);
+
+        for (var i = 0; i < modifiedNibs.length; ++i)
+        {
+            var action = modifiedNibs[i][0],
+                path = modifiedNibs[i][1],
+                label = action === "add" ? "Added:" : "Modified:",
+                level = action === "add" ? "info" : "debug";
+
+            CPLog.info(">> %s %s", CPLogColorize(label, level), path);
+
+            // Let the converter log however the user configured it
+            setLogLevel(verbosity);
+
+            var success = convert(options, path);
+
+            setLogLevel(1);
+
+            if (success)
+            {
+                if (verbosity > 0)
+                    stream.print();
+                else
+                    CPLog.warn("Conversion successful");
+            }
+        }
+
+        OS.sleep(1);
     }
 }
 
 function parseOptions(args)
 {
-    parser.usage("[INPUT_FILE [OUTPUT_FILE]]");
+    parser.usage("[--watch DIRECTORY] [INPUT_FILE [OUTPUT_FILE]]");
+
+    parser.option("--watch", "watch")
+        .set(true)
+        .help("Ask nib2cib to watch a directory for changes");
 
     parser.option("-F", "framework", "frameworks")
         .push()
@@ -131,7 +198,7 @@ function parseOptions(args)
     //     .set(NibFormatIPhone)
     //     .help("Set format to iPhone");
 
-    parser.option("-v", "--verbose", "verbose")
+    parser.option("-v", "--verbose", "verbosity")
         .inc()
         .help("Increase verbosity level");
 
@@ -153,18 +220,24 @@ function parseOptions(args)
         OS.exit(0);
     }
 
-    if (options.quiet) {}
-    else if (options.verbose === 0)
-        CPLogRegister(CPLogPrint, "warn", logFormatter);
-    else if (options.verbose === 1)
-        CPLogRegister(CPLogPrint, "info", logFormatter);
-    else
-        CPLogRegister(CPLogPrint, null, logFormatter);
+    setLogLevel(options.quiet ? -1 : options.verbosity);
 
-    if (!options.quiet && options.verbose > 0)
+    if (!options.quiet && options.verbosity > 0)
         printVersion();
 
     return options;
+}
+
+function setLogLevel(level)
+{
+    CPLogUnregister(CPLogPrint);
+
+    if (level === 0)
+        CPLogRegister(CPLogPrint, "warn", logFormatter);
+    else if (level === 1)
+        CPLogRegister(CPLogPrint, "info", logFormatter);
+    else if (level > 1)
+        CPLogRegister(CPLogPrint, null, logFormatter);
 }
 
 function getInputFile(args)
@@ -213,7 +286,7 @@ function loadFrameworks(frameworkPaths, aCallback)
 
     frameworkPaths.forEach(function(aFrameworkPath)
     {
-        print("Loading " + aFrameworkPath);
+        CPLog.info("Loading " + aFrameworkPath);
 
         var frameworkBundle = [[CPBundle alloc] initWithPath:aFrameworkPath];
 
@@ -389,6 +462,43 @@ function setSystemFontAndSize(configFile, inputFile)
     return configPath;
 }
 
+function getModifiedNibs(path)
+{
+    var nibs = new FileList(FILE.join(path, "*.xib")).items(),
+        count = nibs.length,
+        newNibInfo = {},
+        modifiedNibs = [];
+
+    while (count--)
+    {
+        var nib = nibs[count];
+
+        newNibInfo[nib] = FILE.mtime(nib);
+
+        if (!nibInfo.hasOwnProperty(nib))
+            modifiedNibs.push(["add", nib]);
+        else
+        {
+            if (newNibInfo[nib] - nibInfo[nib] !== 0)
+                modifiedNibs.push(["mod", nib]);
+
+            // Remove matching nibs so that we leave
+            // deleted nibs in nibInfo.
+            delete nibInfo[nib];
+        }
+    }
+
+    for (var nib in nibInfo)
+    {
+        if (nibInfo.hasOwnProperty(nib))
+            CPLog.info(">> %s %s", CPLogColorize("Deleted:", "warn"), nib);
+    }
+
+    nibInfo = newNibInfo;
+
+    return modifiedNibs;
+}
+
 function printVersionAndExit()
 {
     printVersion();
@@ -429,11 +539,11 @@ function printVersion()
         version = plist.valueForKey("CPBundleVersion");
 
         if (version)
-            print("nib2cib v" + version);
+            stream.print("nib2cib v" + version);
     }
 
     if (!version)
-        print("<No version info available>");
+        stream.print("<No version info available>");
 }
 
 function fail(message)

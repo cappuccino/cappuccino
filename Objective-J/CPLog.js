@@ -166,16 +166,11 @@ var stream;
 
 GLOBAL(CPLogColorize) = function(aString, aLevel)
 {
-    if (stream)
-    {
-        // Try to determine if a colorizing stanza is already open, they can't be nested
-        if (/^.*\x00\w+\([^\x00]*$/.test(aString))
-            return aString;
-        else
-            return "\0" + (levelColorMap[aLevel] || "info") + "(" + aString + "\0)";
-    }
-    else
+    // Try to determine if a colorizing stanza is already open, they can't be nested
+    if (/^.*\x00\w+\([^\x00]*$/.test(aString))
         return aString;
+    else
+        return "\0" + (levelColorMap[aLevel] || "info") + "(" + aString + "\0)";
 }
 
 GLOBAL(CPLogPrint) = function(aString, aLevel, aTitle, aFormatter)

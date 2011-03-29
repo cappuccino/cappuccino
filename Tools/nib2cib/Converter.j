@@ -71,46 +71,39 @@ ConverterConversionException = @"ConverterConversionException";
 
 - (void)convert
 {
-    try
+    if ([resourcesPath length] && !FILE.isReadable(resourcesPath))
+        [CPException raise:ConverterConversionException reason:@"Could not read Resources at path \"" + resourcesPath + "\""];
+
+    var inferredFormat = format;
+
+    if (inferredFormat === NibFormatUndetermined)
     {
-        if ([resourcesPath length] && !FILE.isReadable(resourcesPath))
-            [CPException raise:ConverterConversionException reason:@"Could not read Resources at path \"" + resourcesPath + "\""];
+        // Assume its a Mac file.
+        inferredFormat = NibFormatMac;
 
-        var inferredFormat = format;
-
-        if (inferredFormat === NibFormatUndetermined)
-        {
-            // Assume its a Mac file.
-            inferredFormat = NibFormatMac;
-
-            // Some .xibs are iPhone nibs, check the actual contents in this case.
-            if (FILE.extension(inputPath) !== ".nib" && FILE.isFile(inputPath) &&
-                FILE.read(inputPath, { charset:"UTF-8" }).indexOf("<archive type=\"com.apple.InterfaceBuilder3.CocoaTouch.XIB\"") !== -1)
-                inferredFormat = NibFormatIPhone;
-
-            if (inferredFormat === NibFormatMac)
-                CPLog.info("Auto-detected Cocoa Nib or Xib File");
-            else
-                CPLog.info("Auto-detected CocoaTouch Xib File");
-        }
-
-        var nibData = [self CPCompliantNibDataAtFilePath:inputPath];
+        // Some .xibs are iPhone nibs, check the actual contents in this case.
+        if (FILE.extension(inputPath) !== ".nib" && FILE.isFile(inputPath) &&
+            FILE.read(inputPath, { charset:"UTF-8" }).indexOf("<archive type=\"com.apple.InterfaceBuilder3.CocoaTouch.XIB\"") !== -1)
+            inferredFormat = NibFormatIPhone;
 
         if (inferredFormat === NibFormatMac)
-            var convertedData = [self convertedDataFromMacData:nibData resourcesPath:resourcesPath];
+            CPLog.info("Auto-detected Cocoa Nib or Xib File");
         else
-            [CPException raise:ConverterConversionException reason:@"nib2cib does not understand this nib format."];
-
-        if (![outputPath length])
-            outputPath = inputPath.substr(0, inputPath.length - FILE.extension(inputPath).length) + ".cib";
-
-        FILE.write(outputPath, [convertedData rawString], { charset:"UTF-8" });
-        CPLog.info("Conversion successful");
+            CPLog.info("Auto-detected CocoaTouch Xib File");
     }
-    catch (anException)
-    {
-        CPLog.fatal(anException);
-    }
+
+    var nibData = [self CPCompliantNibDataAtFilePath:inputPath];
+
+    if (inferredFormat === NibFormatMac)
+        var convertedData = [self convertedDataFromMacData:nibData resourcesPath:resourcesPath];
+    else
+        [CPException raise:ConverterConversionException reason:@"nib2cib does not understand this nib format."];
+
+    if (![outputPath length])
+        outputPath = inputPath.substr(0, inputPath.length - FILE.extension(inputPath).length) + ".cib";
+
+    FILE.write(outputPath, [convertedData rawString], { charset:"UTF-8" });
+    CPLog.info(CPLogColorize("Conversion successful", "warn"));
 }
 
 - (CPData)CPCompliantNibDataAtFilePath:(CPString)aFilePath
