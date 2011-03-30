@@ -7,16 +7,21 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 
+#define resultFormat @"{\"familyName\":\"%@\", \"bold\":%@, \"italic\":%@, \"ascender\":%g, \"descender\":%g, \"lineHeight\":%g, \"width\":%g}"
+
 enum {
 	kErrInvalidArguments = 1,
 	kErrInvalidFontName
 };
 
 
-int main (int argc, const char * argv[])
+int main(int argc, const char* argv[])
 {
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 	int exitCode = 0;
+	NSString* stringToMeasure = nil;
+
+    // usage: fontinfo [-n] face [size [string]]
 
     if (argc >= 2)
 	{
@@ -29,7 +34,6 @@ int main (int argc, const char * argv[])
 			{
 				appendLineFeed = NO;
 				++nextArgument;
-				--argc;
 			}
 			else
 				exitCode = kErrInvalidArguments;
@@ -41,8 +45,8 @@ int main (int argc, const char * argv[])
 
 			NSString* fontName = [NSString stringWithUTF8String:argv[nextArgument++]];
 
-			if (argc > 2)
-				fontSize = atof(argv[nextArgument]);
+			if (argc > nextArgument)
+				fontSize = atof(argv[nextArgument++]);
 
 			if (fontSize > 0.0)
 			{
@@ -50,6 +54,9 @@ int main (int argc, const char * argv[])
 
 				if (font)
 				{
+					if (argc > nextArgument)
+						stringToMeasure = [NSString stringWithUTF8String:argv[nextArgument]];
+
 					NSString* familyName = [font familyName];
 					NSFontDescriptor* descriptor = [font fontDescriptor];
 					NSFontSymbolicTraits traits = [descriptor symbolicTraits];
@@ -57,19 +64,34 @@ int main (int argc, const char * argv[])
 					BOOL isItalic = traits & NSFontItalicTrait;
 					CGFloat ascender = [font ascender];
 					CGFloat descender = [font descender];
-					NSRect box = [font boundingRectForFont];
-					NSMutableString* result = [NSMutableString stringWithFormat:@"{\"familyName\": \"%@\", \"bold\": %@, \"italic\": %@, \"ascender\": %g, \"descender\": %g, \"lineHeight\": %g}",
+
+					NSLayoutManager* layout = [NSLayoutManager new];
+					CGFloat lineHeight = [layout defaultLineHeightForFont:font];
+                    [layout release];
+
+					CGFloat width = 0.0;
+
+					if (stringToMeasure)
+					{
+						NSDictionary* attributes = [NSDictionary dictionaryWithObject:font forKey:NSFontAttributeName];
+						NSAttributedString* attrString = [[NSAttributedString alloc] initWithString:stringToMeasure attributes:attributes];
+
+						if (attrString)
+							width = [attrString size].width;
+
+                        [attrString release];
+					}
+
+					NSMutableString* result = [NSMutableString stringWithFormat:resultFormat,
 												familyName,
 												isBold ? @"true" : @"false", isItalic ? @"true" : @"false",
-												ascender, descender, box.size.height];
+												ascender, descender, lineHeight,
+												width];
 
 					if (appendLineFeed)
 						[result appendString:@"\n"];
 
 					printf("%s", [result UTF8String]);
-
-					[familyName release];
-					[font release];
 				}
 				else
 				{
@@ -80,8 +102,6 @@ int main (int argc, const char * argv[])
 			{
 				exitCode = kErrInvalidArguments;
 			}
-
-			[fontName release];
 		}
 	}
 	else
