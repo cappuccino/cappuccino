@@ -138,12 +138,15 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)";
+				CONFIGURATION_TEMP_DIR = "$(CAPP_BUILD)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = fontinfo_Prefix.pch;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				OBJROOT = "$(CAPP_BUILD)";
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					"-framework",
@@ -154,6 +157,7 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = fontinfo;
 				SDKROOT = macosx10.5;
+				SYMROOT = "$(CAPP_BUILD)/Debug/CommonJS/cappuccino/bin";
 			};
 			name = Debug;
 		};
@@ -161,6 +165,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)";
+				CONFIGURATION_TEMP_DIR = "$(CAPP_BUILD)";
 				DEPLOYMENT_LOCATION = NO;
 				DEPLOYMENT_POSTPROCESSING = NO;
 				DSTROOT = "/tmp/$(PROJECT_NAME).dst";
@@ -168,10 +174,12 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INSTALL_PATH = "";
+				OBJROOT = "$(CAPP_BUILD)";
 				ONLY_ACTIVE_ARCH = NO;
 				PREBINDING = NO;
 				PRODUCT_NAME = fontinfo;
 				SDKROOT = macosx10.5;
+				SYMROOT = "$(CAPP_BUILD)/Release/CommonJS/cappuccino/bin";
 			};
 			name = Release;
 		};

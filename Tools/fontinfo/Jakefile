@@ -8,7 +8,7 @@ task ("build", function()
 {
     if (executableExists("xcodebuild"))
     {
-        var args = "-alltargets -configuration Release";
+        var args = "-alltargets -configuration " + $CONFIGURATION;
 
         if (FILE.exists(FILE.join("/", "Developer", "SDKs", "MacOSX10.5.sdk")))
             args = "-sdk macosx10.5 " + args;
@@ -18,11 +18,6 @@ task ("build", function()
 
         if (OS.system("xcodebuild " + args))
             OS.exit(1);
-
-        var binPath = FILE.join($BUILD_CJS_CAPPUCCINO_BIN, "fontinfo");
-
-        FILE.copy(FILE.join("build", "Release", "fontinfo"), binPath);
-        FILE.chmod(binPath, 0755);
     }
     else
     {
