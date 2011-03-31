@@ -281,16 +281,28 @@ var _CPEventPeriodicEventPeriod         = 0,
         timestamp:aTimestamp windowNumber:aWindowNumber context:aGraphicsContext subtype:aSubtype data1:aData1 data2:aData2];
 }
 
+- (id)_initWithType:(CPEventType)anEventType
+{
+    if (self = [super init])
+    {
+        _type = anEventType;
+
+        // Make sure these are 0 rather than nil.
+        _deltaX = 0;
+        _deltaY = 0;
+        _deltaZ = 0;
+    }
+
+    return self;
+}
+
 /* @ignore */
 - (id)_initMouseEventWithType:(CPEventType)anEventType location:(CPPoint)aPoint modifierFlags:(unsigned)modifierFlags
     timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
     eventNumber:(int)anEventNumber clickCount:(int)aClickCount pressure:(float)aPressure
 {
-    self = [super init];
-
-    if (self)
+    if (self = [self _initWithType:anEventType])
     {
-        _type = anEventType;
         _location = CPPointCreateCopy(aPoint);
         _modifierFlags = modifierFlags;
         _timestamp = aTimestamp;
@@ -309,11 +321,8 @@ var _CPEventPeriodicEventPeriod         = 0,
     timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
     characters:(CPString)characters charactersIgnoringModifiers:(CPString)unmodCharacters isARepeat:(BOOL)isARepeat keyCode:(unsigned short)code
 {
-    self = [super init];
-
-    if (self)
+    if (self = [self _initWithType:anEventType])
     {
-        _type = anEventType;
         _location = CPPointCreateCopy(aPoint);
         _modifierFlags = modifierFlags;
         _timestamp = aTimestamp;
@@ -333,11 +342,8 @@ var _CPEventPeriodicEventPeriod         = 0,
     timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
     subtype:(short)aSubtype data1:(int)aData1 data2:(int)aData2
 {
-    self = [super init];
-
-    if (self)
+    if (self = [self _initWithType:anEventType])
     {
-        _type = anEventType;
         _location = CPPointCreateCopy(aPoint);
         _modifierFlags = modifierFlags;
         _timestamp = aTimestamp;
