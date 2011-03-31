@@ -46,12 +46,20 @@ var parser = new (require("narwhal/args").Parser)(),
 
 function main(args)
 {
-    var options = parseOptions(args);
+    try
+    {
+        var options = parseOptions(args);
 
-    if (options.watch)
-        watch(options);
-    else
-        convert(options);
+        if (options.watch)
+            watch(options);
+        else
+            convert(options);
+    }
+    catch (anException)
+    {
+        CPLog.fatal([anException reason]);
+        OS.exit(1);
+    }
 }
 
 function convert(options, inputFile)
@@ -124,7 +132,7 @@ function watch(options)
     // Turn on info messages
     setLogLevel(1);
 
-    directory = FILE.canonical(options.args[0] || ".");
+    directory = FILE.canonical(options.args[0] || "Resources");
 
     if (!FILE.isDirectory(directory))
         fail("Cannot find the directory: " + directory);
