@@ -1,0 +1,131 @@
+.Dd March 30, 2011
+.Os "Cappuccino"
+.Dt CAPP 1 "PRM"
+.\"-----------------------------------------------------------------------------------------
+.Sh NAME
+.\"-----------------------------------------------------------------------------------------
+.Nm capp
+.Nd generate cappuccino projects
+.\"-----------------------------------------------------------------------------------------
+.Sh SYNOPSIS
+.\"-----------------------------------------------------------------------------------------
+.Nm
+.Sy gen
+.Op options
+.Pa PATH
+.Nm
+.Cm gen
+.Op --list-templates | --list-frameworks
+.Nm
+.Cm config
+.Op options
+.Nm
+.Op --version | -h | --help
+.\"-----------------------------------------------------------------------------------------
+.Sh "DESCRIPTION"
+.\"-----------------------------------------------------------------------------------------
+.Nm
+generates starter projects for cappuccino, ensuring that all of the necessary files
+are present, and applying the values in your
+.Ar configuration
+to placeholders the template.
+.\"-----------------------------------------------------------------------------------------
+.Sh "GENERATING PROJECTS"
+.\"-----------------------------------------------------------------------------------------
+When invoked using
+.Nm
+.Cm gen ,
+you either create a new project or modify the frameworks of an existing project.
+.Ss Create options
+When creating a new project, if no options are specified,
+.Nm
+will use the
+.Ar Application
+template, which by default does not use a
+.Ar cib
+to create its interface. If you wish to use a different template, the following options are available:
+.Bl -tag -width 4n
+.It Fl t, \-template Ar template
+Specifies the template name to use when generating the project. This determines the type
+of project to generate.
+.It Fl \-list-templates
+Displays the templates names available for use with the
+.Sy -t/--template
+option.
+.El
+.Ss Frameworks options
+There are a number of options available for specifying how to create or update
+the Frameworks directory in your project. The available options are:
+.Bl -tag -width 4n
+.It Fl f, \-frameworks
+This will copy or symlink
+.Sy only
+the Frameworks directory instead of generating an entire project. This is
+especially useful if you want to update the Frameworks for an existing project.
+.It Fl F, \-framework Ar name
+The
+.Sy -f/--frameworks
+option always copies/symlinks the Objective-J, Foundation, and AppKit frameworks. You may
+include additional frameworks with this option. You may use this option multiple times
+to include multiple frameworks.
+.It Fl \-list-frameworks
+Displays a list of frameworks that are available for use with the
+.Sy -F/--framework
+option.
+.It Fl \-symlink
+By default frameworks are copied to the project directory. Use this option to symlink
+to the source frameworks instead of copying.
+.It Fl \-build
+By default frameworks are copied/symlinked from the installed version created with
+.Sy jake install.
+Use this option to copy/symlink the version created in
+.Ar $CAPP_BUILD
+with
+.Sy jake debug
+or
+.Sy jake release.
+.It Fl l
+This is a handy shortcut for
+.Sy --symlink --build.
+.El
+.\"-----------------------------------------------------------------------------------------
+.Sh CONFIGURING
+.\"-----------------------------------------------------------------------------------------
+When invoked using
+.Nm
+.Cm config ,
+you can set or inspect the values used to replace placeholder text in the templates. The syntax
+for
+.Cm capp config
+is as follows:
+.Bl -tag -width 4n
+.It Ar key value
+Creates or updates a configuration item with the given key and value.
+.It Fl \-get Ar key
+Displays the configuration value with the given key. If no item with the given key exists,
+nothing happens.
+.It Fl \-remove Ar key
+Removes the configuration value with the given key. If no item with the given key exists,
+nothing happens.
+.It Fl -l, \-list
+Displays a list of all configuration items in the form
+.Sy key=value.
+.El
+.\"-----------------------------------------------------------------------------------------
+.Sh GENERAL OPTIONS
+.\"-----------------------------------------------------------------------------------------
+.Bl -tag -width 4n
+.It Fl \-version
+Displays the current
+.Nm
+version and exits.
+.It Fl h, \-help
+Displays a concise list of the available commands and options.
+.El
+.\"-----------------------------------------------------------------------------------------
+.Sh FILES
+.\"-----------------------------------------------------------------------------------------
+.Bl -hang -width 4n
+.It Em ~/.cappconfig
+Contains your configuration in 280north plist format.
+.El

@@ -412,6 +412,51 @@ global.sudo = function(/*String*/ aTaskName)
         OS.exit(1); //rake abort if ($? != 0)
 }
 
+global.copyManPage = function(/*String*/ name, /*int*/ section)
+{
+    var manDir = "/usr/local/share/man/man" + section,
+        pageFile = name + "." + section,
+        manPagePath = FILE.join(manDir, pageFile);
+
+    if (!FILE.exists(manPagePath) || FILE.mtime(pageFile) > FILE.mtime(manPagePath))
+    {
+        var sudo = ["sudo", "-p", "\nEnter your admin password: "],
+            useSudo = false,
+            success = true,
+            cmd;
+
+        if (!FILE.isDirectory(manDir))
+        {
+            cmd = ["mkdir", "-p", "-m", "0755", manDir];
+
+            if (FILE.isWritable(FILE.dirname(manDir)))
+                success = OS.system(cmd) === 0;
+            else
+            {
+                useSudo = true;
+                success = OS.system(sudo.concat(cmd)) === 0;
+            }
+
+            if (!success)
+            {
+                stream.print("\0red(Unable to create the man directory.\0)");
+                OS.exit(1);
+            }
+        }
+
+        cmd = ["cp", "-f", pageFile, manDir];
+
+        if (FILE.isWritable(manDir))
+            success = OS.system(cmd) === 0;
+        else
+            success = OS.system(sudo.concat(cmd)) === 0;
+
+        if (!success)
+            stream.print("\0red(Unable to copy the man file.\0)");
+    }
+}
+
+
 // built in tasks
 
 task ("build");
