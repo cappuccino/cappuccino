@@ -2824,7 +2824,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
 
             // If the column uses content bindings, allow them to override the objectValueForTableColumn.
-            [tableColumn prepareDataView:dataView forRow:row];
+            [tableColumn _prepareDataView:dataView forRow:row];
 
             [view addSubview:dataView];
 
@@ -3270,7 +3270,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
             // This gives the table column an opportunity to apply its bindings.
             // It will override the value set above if there is a binding.
-            [tableColumn prepareDataView:dataView forRow:row];
+            [tableColumn _prepareDataView:dataView forRow:row];
 
             if (isColumnSelected || [self isRowSelected:row])
                 [dataView setThemeState:CPThemeStateSelectedDataView];
@@ -3375,7 +3375,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     // Allow the column binding to do a reverse set. Note that we do this even if the data source method above
     // is implemented.
-    [sender.tableViewEditedColumnObj reverseSetDataView:sender forRow:sender.tableViewEditedRowIndex];
+    [sender.tableViewEditedColumnObj _reverseSetDataView:sender forRow:sender.tableViewEditedRowIndex];
 
     if ([sender respondsToSelector:@selector(setEditable:)])
         [sender setEditable:NO];

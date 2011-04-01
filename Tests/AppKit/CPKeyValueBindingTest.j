@@ -171,11 +171,11 @@
     for (var i = 0; i < [content count]; i++)
         [content[i] setAccesses:0];
     var testView = [DataViewTester new];
-    [tableColumn prepareDataView:testView forRow:0];
+    [tableColumn _prepareDataView:testView forRow:0];
     [self assert:'1' equals:testView.lastValue];
     [self assert:'objectValue' equals:testView.lastKey];
 
-    [tableColumn prepareDataView:testView forRow:1];
+    [tableColumn _prepareDataView:testView forRow:1];
     [self assert:'3' equals:testView.lastValue];
     [self assert:'objectValue' equals:testView.lastKey];
 
@@ -189,7 +189,7 @@
     [tableColumn bind:@"value" toObject:arrayController withKeyPath:@"arrangedObjects" options:nil];
     [arrayController setContent:content];
 
-    [tableColumn prepareDataView:testView forRow:1];
+    [tableColumn _prepareDataView:testView forRow:1];
     [self assert:'old' equals:testView.lastValue];
     [self assert:'objectValue' equals:testView.lastKey];
 }

@@ -600,7 +600,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 /*!
     @ignore
 */
-- (void)prepareDataView:(CPView)aDataView forRow:(unsigned)aRow
+- (void)_prepareDataView:(CPView)aDataView forRow:(unsigned)aRow
 {
     var bindingsDictionary = [CPBinder allBindingsForObject:self],
         keys = [bindingsDictionary allKeys];
@@ -646,7 +646,10 @@ CPTableColumnUserResizingMask   = 1 << 1;
     }
 }
 
-- (void)reverseSetDataView:(CPView)aDataView forRow:(unsigned)aRow
+/*!
+    @ignore
+*/
+- (void)_reverseSetDataView:(CPView)aDataView forRow:(unsigned)aRow
 {
     var bindingsDictionary = [CPBinder allBindingsForObject:self],
         keys = [bindingsDictionary allKeys],
