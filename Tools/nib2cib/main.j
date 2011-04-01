@@ -127,15 +127,19 @@ function convert(options, inputFile)
 
 function watch(options)
 {
-    var verbosity = options.quiet ? -1 : options.verbosity;
+    var verbosity = options.quiet ? -1 : options.verbosity,
+        directory = options.args[0];
 
-    // Turn on info messages
-    setLogLevel(1);
+    if (!directory)
+        directory = FILE.isDirectory("Resources") ? "Resources" : ".";
 
-    directory = FILE.canonical(options.args[0] || "Resources");
+    directory = FILE.canonical(directory);
 
     if (!FILE.isDirectory(directory))
         fail("Cannot find the directory: " + directory);
+
+    // Turn on info messages
+    setLogLevel(1);
 
     CPLog.info("Watching: " + CPLogColorize(directory, "debug"));
     CPLog.info("Press Control-C to stop...");
