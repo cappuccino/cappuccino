@@ -49,9 +49,10 @@ CPLogRegister(CPLogConsole);
     tableView = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 400, 200)];
     //[tableView setCenter:[contentView center]];
     [tableView setBackgroundColor:[CPColor redColor]];
+    [tableView setDelegate:self];
 
     var column = [[CPTableColumn alloc] initWithIdentifier:@"name"];
-
+    [column setEditable:YES];
     [tableView addTableColumn:column];
 
     column = [[CPTableColumn alloc] initWithIdentifier:@"price"];
@@ -86,6 +87,12 @@ CPLogRegister(CPLogConsole);
     return "foo";
 }
 */
+
+- (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)aTableColumn row:(int)rowIndex
+{
+    return YES;
+}
+
 - (void)add:(id)aSender
 {
     [arrayController add:self];
@@ -99,6 +106,9 @@ CPLogRegister(CPLogConsole);
 - (void)createBindings
 {
     // bind array controller to self's itemsArray
+
+    // FIXME There is an open bug where binding the content array causes it to become
+    // uneditable (add: and remove: will fail).
     [arrayController bind:@"contentArray" toObject:self
               withKeyPath:@"itemsArray" options:nil];
 
