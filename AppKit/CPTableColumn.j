@@ -646,6 +646,38 @@ CPTableColumnUserResizingMask   = 1 << 1;
     }
 }
 
+- (void)reverseSetDataView:(CPView)aDataView forRow:(unsigned)aRow
+{
+    var bindingsDictionary = [CPBinder allBindingsForObject:self],
+        keys = [bindingsDictionary allKeys],
+        newValue = [aDataView valueForKey:@"objectValue"];
+
+    for (var i = 0, count = [keys count]; i < count; i++)
+    {
+        var bindingName = keys[i],
+            bindingPath = [aDataView _replacementKeyPathForBinding:bindingName],
+            binding = [bindingsDictionary objectForKey:bindingName],
+            bindingInfo = binding._info,
+            destination = [bindingInfo objectForKey:CPObservedObjectKey],
+            keyPath = [bindingInfo objectForKey:CPObservedKeyPathKey],
+            dotIndex = keyPath.lastIndexOf(".");
+
+        if (dotIndex === CPNotFound)
+            [[destination valueForKeyPath:keyPath] replaceObjectAtIndex:aRow withObject:newValue];
+        else
+        {
+            var firstPart = keyPath.substring(0, dotIndex),
+                secondPart = keyPath.substring(dotIndex + 1),
+                firstValue = [destination valueForKeyPath:firstPart];
+
+            if ([firstValue isKindOfClass:CPArray])
+                 [[firstValue objectAtIndex:aRow] setValue:newValue forKeyPath:secondPart];
+            else
+                 [[firstValue valueForKeyPath:secondPart] replaceObjectAtIndex:aRow withObject:newValue];
+        }
+    }
+}
+
 //- (void)objectValue
 //{
 //    return nil;

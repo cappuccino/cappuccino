@@ -3370,7 +3370,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     _editingCellIndex = nil;
 
-    [_dataSource tableView:self setObjectValue:[sender objectValue] forTableColumn:sender.tableViewEditedColumnObj row:sender.tableViewEditedRowIndex];
+    if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_)
+        [_dataSource tableView:self setObjectValue:[sender objectValue] forTableColumn:sender.tableViewEditedColumnObj row:sender.tableViewEditedRowIndex];
+
+    // Allow the column binding to do a reverse set. Note that we do this even if the data source method above
+    // is implemented.
+    [sender.tableViewEditedColumnObj reverseSetDataView:sender forRow:sender.tableViewEditedRowIndex];
 
     if ([sender respondsToSelector:@selector(setEditable:)])
         [sender setEditable:NO];
@@ -4139,10 +4144,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         }
     }
 
+    // Accept either tableView:setObjectValue:forTableColumn:row: delegate method, or a binding.
     if (mouseIsUp
-        && (_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_)
         && !_trackingPointMovedOutOfClickSlop
-        && ([[CPApp currentEvent] clickCount] > 1))
+        && ([[CPApp currentEvent] clickCount] > 1)
+        && ((_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_)
+            || [self infoForBinding:@"content"]))
     {
         columnIndex = [self columnAtPoint:lastPoint];
         if (columnIndex !== -1)
