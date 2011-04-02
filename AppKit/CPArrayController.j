@@ -50,6 +50,8 @@
     CPArray     _sortDescriptors;
     CPPredicate _filterPredicate;
     CPArray     _arrangedObjects;
+
+    BOOL    _disableSetContent;
 }
 
 + (void)initialize
@@ -273,6 +275,12 @@
 */
 - (void)setContent:(id)value
 {
+    // This is used to ignore expected setContent: calls caused by a binding to our content
+    // object when we are the ones modifying the content object and can deal with the update
+    // faster directly in the code in charge of the modification.
+    if (_disableSetContent)
+        return;
+
     if (value === nil)
         value = [];
 
@@ -708,7 +716,17 @@
         [self willChangeValueForKey:@"filterPredicate"];
 
     [self willChangeValueForKey:@"content"];
+
+    /*
+    If the content array is bound then our addObject: message below will cause the observed
+    array to change. The binding will call setContent:_contentObject on this array
+    controller to let it know about the change. We want to ignore that message since we
+    A) already have the right _contentObject and B) properly update _arrangedObjects
+    by hand below.
+    */
+    _disableSetContent = YES;
     [_contentObject addObject:object];
+    _disableSetContent = NO;
 
     if (_clearsFilterPredicateOnInsertion)
         [self __setFilterPredicate:nil];
@@ -747,7 +765,13 @@
         [self willChangeValueForKey:@"filterPredicate"];
 
     [self willChangeValueForKey:@"content"];
+
+    /*
+    See _disableSetContent explanation in addObject:.
+    */
+    _disableSetContent = YES;
     [_contentObject insertObject:anObject atIndex:anIndex];
+    _disableSetContent = NO;
 
     if (_clearsFilterPredicateOnInsertion)
         [self __setFilterPredicate:nil];
@@ -777,12 +801,18 @@
 - (void)removeObject:(id)object
 {
    [self willChangeValueForKey:@"content"];
+
+   /*
+   See _disableSetContent explanation in addObject:.
+   */
+   _disableSetContent = YES;
    [_contentObject removeObject:object];
+   _disableSetContent = NO;
 
    if (_filterPredicate === nil || [_filterPredicate evaluateWithObject:object])
    {
-       // selectionIndexes change notification will be fired as a result of the
-       // content change. Don't fire manually.
+        // selectionIndexes change notification will be fired as a result of the
+        // content change. Don't fire manually.
         var pos = [_arrangedObjects indexOfObject:object];
 
         [_arrangedObjects removeObjectAtIndex:pos];
@@ -871,7 +901,13 @@
 - (void)_removeObjects:(CPArray)objects
 {
     [self willChangeValueForKey:@"content"];
+
+    /*
+    See _disableSetContent explanation in addObject:.
+    */
+    _disableSetContent = YES;
     [_contentObject removeObjectsInArray:objects];
+    _disableSetContent = NO;
 
     var arrangedObjects = [self arrangedObjects],
         position = [arrangedObjects indexOfObject:[objects objectAtIndex:0]];
@@ -916,7 +952,7 @@
 {
     if (theBinding == @"contentArray")
         return [_CPArrayControllerContentBinder class];
-        
+
     return [super _binderClassForBinding:theBinding];
 }
 
