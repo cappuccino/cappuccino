@@ -813,9 +813,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     {
         var observerInfo = observers[count];
 
-        if (isBefore && (observerInfo.options & CPKeyValueObservingOptionPrior))
-            [observerInfo.observer observeValueForKeyPath:aKey ofObject:_targetObject change:changes context:observerInfo.context];
-        else if (!isBefore)
+        if (!isBefore || (observerInfo.options & CPKeyValueObservingOptionPrior))
             [observerInfo.observer observeValueForKeyPath:aKey ofObject:_targetObject change:changes context:observerInfo.context];
     }
 
