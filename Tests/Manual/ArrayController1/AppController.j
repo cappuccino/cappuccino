@@ -14,14 +14,13 @@ CPLogRegister(CPLogConsole);
 
 @implementation AppController : CPObject
 {
-    CPArray             itemsArray;
-    CPWindow            theWindow;
-
-    CPTableView         tableView;
+    @outlet CPWindow            theWindow;
+    @outlet CPTableView         tableView;
+    @outlet CPTextField         totalCountField;
     //CPTextField         selectedNameField;
     //CPTextField         selectedPriceField;
-    CPTextField         totalCountField;
 
+    CPArray             itemsArray;
     CPArrayController   arrayController;
 }
 
@@ -46,7 +45,6 @@ CPLogRegister(CPLogConsole);
 
     //create our UI elements
 
-    tableView = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 400, 200)];
     //[tableView setCenter:[contentView center]];
     [tableView setBackgroundColor:[CPColor redColor]];
     [tableView setDelegate:self];
@@ -64,8 +62,6 @@ CPLogRegister(CPLogConsole);
     [tableView addTableColumn:column];
 
     //[tableView setDataSource:self];
-
-    [contentView addSubview:tableView];
 
     //create our bindings
 

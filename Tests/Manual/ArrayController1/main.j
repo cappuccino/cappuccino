@@ -1,9 +1,9 @@
 /*
  * main.j
- * ArrayController
+ * ArrayController1
  *
- * Created by __Me__ on __Date__.
- * Copyright 2008 __MyCompanyName__. All rights reserved.
+ * Created by Alexander Ljungberg on April 2, 2011.
+ * Copyright 2011, WireLoad All rights reserved.
  */
 
 @import <Foundation/Foundation.j>
