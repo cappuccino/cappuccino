@@ -21,11 +21,23 @@
  */
 @import <Foundation/CPObject.j>
 
+/*!
+    @ingroup appkit
+    @class CPScreen
 
+    A CPScreen object describes the attributes of a display device available
+    to Cappuccino.
+*/
 @implementation CPScreen : CPObject
 {
 }
 
+/*!
+    Returns the position and size of the visible area of the receiving screen.
+    This will normally be smaller than the full size of the screen to account
+    for system UI elements. For example, on a Mac the top of the visible frame
+    is placed below the bottom of the menu bar.
+*/
 - (CGRect)visibleFrame
 {
 #if PLATFORM(DOM)
