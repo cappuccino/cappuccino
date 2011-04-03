@@ -127,7 +127,7 @@
 
             children.forEach(function(aChild)
             {
-                CPLog.info("Promoted " + aChild + " to child of " + parent);
+                CPLog.debug("NSIBObjectData: promoted " + aChild + " to child of " + parent);
                 _objectsKeys.push(aChild);
                 _objectsValues.push(parent);
             });

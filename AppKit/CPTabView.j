@@ -26,6 +26,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     CPNumber            _selectedIndex;
 
     CPTabViewType       _type;
+    CPFont              _font;
 
     id                  _delegate;
     unsigned            _delegateSelectors;
@@ -267,6 +268,27 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     return [_items objectAtIndex:_selectedIndex];
 }
 
+// Modifying the font
+/*!
+    Returns the font for tab label text.
+*/
+- (CPFont)font
+{
+    return _font;
+}
+
+/*!
+    Sets the font for tab label text to font.
+*/
+- (void)setFont:(CPFont)font
+{
+    if ([_font isEqual:font])
+        return;
+
+    _font = font;
+    [_tabs setFont:_font];
+}
+
 //
 /*!
     Sets the tab view type.
@@ -415,6 +437,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 var CPTabViewItemsKey               = "CPTabViewItemsKey",
     CPTabViewSelectedItemKey        = "CPTabViewSelectedItemKey",
     CPTabViewTypeKey                = "CPTabViewTypeKey",
+    CPTabViewFontKey                = "CPTabViewFontKey",
     CPTabViewDelegateKey            = "CPTabViewDelegateKey";
 
 @implementation CPTabView (CPCoding)
@@ -425,12 +448,16 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
     {
         [self _init];
 
+        _font = [aCoder decodeObjectForKey:CPTabViewFontKey];
+        [_tabs setFont:_font];
+
         _items = [aCoder decodeObjectForKey:CPTabViewItemsKey];
 
         [self _updateItems];
         [self _repositionTabs];
 
         var selected = [aCoder decodeObjectForKey:CPTabViewSelectedItemKey];
+
         if (selected)
             [self selectTabViewItem:selected];
 
@@ -450,6 +477,7 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
     [aCoder encodeObject:[self selectedTabViewItem] forKey:CPTabViewSelectedItemKey];
 
     [aCoder encodeInt:_type forKey:CPTabViewTypeKey];
+    [aCoder encodeObject:_font forKey:CPTabViewFontKey];
 
     [aCoder encodeConditionalObject:_delegate forKey:CPTabViewDelegateKey];
 }

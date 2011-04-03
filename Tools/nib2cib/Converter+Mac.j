@@ -23,24 +23,24 @@
 
 @import "Converter.j"
 
-
 @implementation Converter (Mac)
 
 - (void)convertedDataFromMacData:(CPData)data resourcesPath:(CPString)aResourcesPath
 {
     // Unarchive the NS data
     var unarchiver = [[Nib2CibKeyedUnarchiver alloc] initForReadingWithData:data resourcesPath:aResourcesPath],
-        objectData = [unarchiver decodeObjectForKey:@"IB.objectdata"];
-
-    // Perform a bit of post-processing on views since all CP views are flipped.
-    // It's better to do this here (instead of say, in NSView::initWithCoder:),
-    // because at this point all the objects an mappings are stabilized.
-    var objects = [unarchiver allObjects],
+        objectData = [unarchiver decodeObjectForKey:@"IB.objectdata"],
+        objects = [unarchiver allObjects],
         count = [objects count];
 
+    // Perform a bit of post-processing on fonts and views since all CP views are flipped.
+    // It's better to do this here (instead of say, in NSView::initWithCoder:),
+    // because at this point all the objects and mappings are stabilized.
     while (count--)
     {
         var object = objects[count];
+
+        [self replaceFontForObject:object];
 
         if (![object isKindOfClass:[CPView class]])
             continue;
@@ -76,20 +76,82 @@
     var convertedData = [CPData data],
         archiver = [[CPKeyedArchiver alloc] initForWritingWithMutableData:convertedData];
 
-    [archiver setDelegate:self];
     [archiver encodeObject:objectData forKey:@"CPCibObjectDataKey"];
     [archiver finishEncoding];
 
     return convertedData;
 }
 
-// For some reason, occasionally an attempt is made to archive NSMatrix. That will fail, so prevent it here.
-- (id)archiver:(CPKeyedArchiver)archiver willEncodeObject:(id)object
+- (void)replaceFontForObject:(id)object
 {
-    if ([object isKindOfClass:[NSMatrix class]])
-        return nil;
+    if ([object respondsToSelector:@selector(font)] &&
+        [object respondsToSelector:@selector(setFont:)])
+    {
+        var nibFont = [object font];
+
+        if (nibFont)
+            [self replaceFont:nibFont forObject:object];
+    }
+    else if ([object isKindOfClass:[CPView class]])
+    {
+        /*
+            Determine if a view is actually a container for radio buttons.
+            They have to be manually iterated over because they are not
+            part of the top level object data.
+        */
+        var subviews = [object subviews],
+            count = [subviews count];
+
+        if (count && [subviews[0] isKindOfClass:[CPRadio class]])
+        {
+            while (count--)
+            {
+                var radio = subviews[count];
+
+                [self replaceFont:[radio font] forObject:radio];
+            }
+        }
+    }
+}
+
+- (void)replaceFont:(CPFont)nibFont forObject:(id)object
+{
+    var cibFont = nil;
+
+    if ([object respondsToSelector:@selector(cibFontForNibFont)])
+        cibFont = [object cibFontForNibFont];
     else
-        return object;
+        cibFont = [NSFont cibFontForNibFont:[object font]];
+
+    if (!cibFont || ![cibFont isEqual:nibFont])
+    {
+        var source = "";
+
+        // nil cibFont means try to use theme font
+        if (!cibFont)
+        {
+            var bold = [nibFont isBold];
+
+            cibFont = [theme valueForAttributeWithName:@"font" inState:[object themeState] forClass:[object class]];
+
+            // Substitute legacy theme fonts for the current system font
+            if (!cibFont || [cibFont familyName] === CPFontDefaultSystemFontFace)
+            {
+                var size = [cibFont size] || CPFontDefaultSystemFontSize,
+                    bold = cibFont ? [cibFont isBold] : bold;
+
+                if (size === CPFontDefaultSystemFontSize)
+                    size = [CPFont systemFontSize];
+
+                cibFont = bold ? [CPFont boldSystemFontOfSize:size] : [CPFont systemFontOfSize:size];
+                source = " (from theme)"
+            }
+        }
+
+        [object setFont:cibFont];
+
+        CPLog.debug("%s: substituted <%s>%s for <%fpx %s>", [object className], cibFont ? [cibFont cssString] : "theme default", source, [nibFont size], [nibFont familyName]);
+    }
 }
 
 @end

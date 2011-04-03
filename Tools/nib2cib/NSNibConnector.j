@@ -43,17 +43,17 @@ NIB_CONNECTION_EQUIVALENCY_TABLE = {};
 
         if (sourceUID in NIB_CONNECTION_EQUIVALENCY_TABLE)
         {
-            CPLog.trace("Swapped object: "+_source+" for object: "+NIB_CONNECTION_EQUIVALENCY_TABLE[sourceUID]);
+            CPLog.debug("NSNibConnector: swapped object: " + _source + " for object: " + NIB_CONNECTION_EQUIVALENCY_TABLE[sourceUID]);
             _source = NIB_CONNECTION_EQUIVALENCY_TABLE[sourceUID];
         }
 
         if (destinationUID in NIB_CONNECTION_EQUIVALENCY_TABLE)
         {
-            CPLog.trace("Swapped object: "+_destination+" for object: "+NIB_CONNECTION_EQUIVALENCY_TABLE[destinationUID]);
+            CPLog.debug("NSNibConnector: swapped object: " + _destination + " for object: " + NIB_CONNECTION_EQUIVALENCY_TABLE[destinationUID]);
             _destination = NIB_CONNECTION_EQUIVALENCY_TABLE[destinationUID];
         }
 
-        CPLog.debug(@"Connection: " + [_source description] + " " + [_destination description] + " " + _label);
+        CPLog.debug(@"NSNibConnector: connection: " + [_source description] + " " + [_destination description] + " " + _label);
     }
 
     return self;
@@ -144,7 +144,7 @@ var NSTramsformers = [CPSet setWithObjects:
             [_options setObject:NSValue forKey:CPKey];
         }
 
-        CPLog.debug(@"Binding Connector: " + [_binding description] + " to: " + _destination + " " + [_keyPath description] + " " + [_options description]);
+        CPLog.debug(@"NSNibConnector: binding connector: " + [_binding description] + " to: " + _destination + " " + [_keyPath description] + " " + [_options description]);
     }
 
     return self;

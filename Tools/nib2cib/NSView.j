@@ -84,8 +84,6 @@ var NSViewAutoresizingMask = 0x3F,
 @end
 
 @implementation NSView : CPView
-{
-}
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
