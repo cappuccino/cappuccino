@@ -56,8 +56,8 @@ var _CPFonts                        = {},
 
     Note that in either case, you can specify a comma-delimited list of fonts as the font face.
     The browser will use the first available font in the list. CPFont always ensures that Arial
-    and sans-serif are always in the generated CSS string, so there is no need to add them to
-    the end of your font list.
+    and sans-serif are in the generated CSS string, so there is no need to add them to the end
+    of your font list.
 
     If you are using nib2cib, you should use the second method (using Info.plist),
     and be sure to run nib2cib again any time you modify the CPSystemFontFace or CPSystemFontSize items.
