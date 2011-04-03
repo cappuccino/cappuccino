@@ -37,6 +37,8 @@
     This will normally be smaller than the full size of the screen to account
     for system UI elements. For example, on a Mac the top of the visible frame
     is placed below the bottom of the menu bar.
+
+    @return the visible screen rectangle
 */
 - (CGRect)visibleFrame
 {
