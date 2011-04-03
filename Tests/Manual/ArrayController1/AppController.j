@@ -17,8 +17,8 @@ CPLogRegister(CPLogConsole);
     @outlet CPWindow            theWindow;
     @outlet CPTableView         tableView;
     @outlet CPTextField         totalCountField;
-    //CPTextField         selectedNameField;
-    //CPTextField         selectedPriceField;
+    @outlet CPTextField         selectedNameField;
+    @outlet CPTextField         selectedPriceField;
 
     CPArray             itemsArray;
     CPArrayController   arrayController;
@@ -51,14 +51,15 @@ CPLogRegister(CPLogConsole);
 
     var column = [[CPTableColumn alloc] initWithIdentifier:@"name"];
     [column setEditable:YES];
+    [[column headerView] setStringValue:@"Name"];
     [tableView addTableColumn:column];
 
     column = [[CPTableColumn alloc] initWithIdentifier:@"price"];
-
+    [[column headerView] setStringValue:@"Price"];
     [tableView addTableColumn:column];
 
     column = [[CPTableColumn alloc] initWithIdentifier:@"all right"];
-
+    [[column headerView] setStringValue:@"Righteousness"];
     [tableView addTableColumn:column];
 
     //[tableView setDataSource:self];
@@ -103,55 +104,43 @@ CPLogRegister(CPLogConsole);
 {
     // bind array controller to self's itemsArray
 
-    // FIXME There is an open bug where binding the content array causes it to become
-    // uneditable (add: and remove: will fail).
     [arrayController bind:@"contentArray" toObject:self
               withKeyPath:@"itemsArray" options:nil];
 
     // bind the total field -- no options on this one
-    // Currently broken, crashes the app as it tries to pull valueForKey @sum at some point.
-    //[totalCountField bind:CPValueBinding toObject:arrayController
-    //        withKeyPath:@"arrangedObjects.@sum.price" options:nil];
+    [totalCountField bind:CPValueBinding toObject:arrayController
+              withKeyPath:@"selectedObjects.@sum.price" options:nil];
 
     var bindingOptions = [CPDictionary dictionary];
-
-    // binding options for "name"
     //[bindingOptions setObject:@"No Name" forKey:@"NSNullPlaceholder"];
-
-    // binding for selected "name" field
-    //[selectedNameField bind: @"value" toObject: arrayController
-    //          withKeyPath:@"selection.name" options:bindingOptions];
+    [selectedNameField bind: @"value" toObject:arrayController
+              withKeyPath:@"selection.name" options:bindingOptions];
 
     // binding for "name" column
-    var tableColumn = [tableView tableColumnWithIdentifier:@"name"];
-
+    var tableColumn = [tableView tableColumnWithIdentifier:@"name"],
+    bindingOptions = [CPDictionary dictionary];
     [tableColumn bind:@"value" toObject: arrayController
           withKeyPath:@"arrangedObjects.name" options:bindingOptions];
 
 
     // binding options for "price"
     // no need for placeholder as overridden by formatters
+    bindingOptions = [CPDictionary dictionary];
     //[bindingOptions removeObjectForKey:@"NSNullPlaceholder"];
-
     //[bindingOptions setObject:YES
     //                 forKey:CPValidatesImmediatelyBindingOption];
-
-    // binding for selected "price" field
-    //[selectedPriceField bind: @"value" toObject: arrayController
-    //           withKeyPath:@"selection.price" options:bindingOptions];
-
+    [selectedPriceField bind:@"value" toObject: arrayController
+                 withKeyPath:@"selection.price" options:bindingOptions];
 
     // binding for "price" column
     tableColumn = [tableView tableColumnWithIdentifier:@"price"];
-
+    bindingOptions = [CPDictionary dictionary];
     [tableColumn bind:@"value" toObject: arrayController
           withKeyPath:@"arrangedObjects.price" options:bindingOptions];
 
     tableColumn = [tableView tableColumnWithIdentifier:@"all right"];
-
-    var bindingOptions = [CPDictionary dictionaryWithObject:[WLWrongToRightTransformer new] forKey:CPValueTransformerBindingOption];
+    bindingOptions = [CPDictionary dictionaryWithObject:[WLWrongToRightTransformer new] forKey:CPValueTransformerBindingOption];
     [tableColumn bind:@"value" toObject:arrayController withKeyPath:@"arrangedObjects.rightOrWrong" options:bindingOptions];
-
 }
 
 - (unsigned int)countOfItemsArray
