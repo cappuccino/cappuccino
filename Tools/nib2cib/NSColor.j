@@ -119,7 +119,7 @@ var NSUnknownColorSpaceModel    = -1,
             }
             break;
         default:
-            CPLog(@"-[%@ %s] unknown color space %d", isa, _cmd, colorSpace);
+            CPLog.warn(@"-[%@ %s] unknown color space %d", isa, _cmd, colorSpace);
             result  = [CPColor blackColor];
             break;
     }

@@ -41,13 +41,13 @@ var FILE = require("file");
         var size = CGSizeMakeZero();
 
         if (![[aCoder resourcesPath] length])
-            CPLog.warn("*** WARNING: Resources found in nib, but no resources path specified with -R option.");
+            CPLog.warn("Resources found in nib, but no resources path specified with -R option.");
         else
         {
             var resourcePath = [aCoder resourcePathForName:_resourceName];
 
             if (!resourcePath)
-                CPLog.warn("*** WARNING: Resource named " + _resourceName + " not found in supplied resources path.");
+                CPLog.warn("Resource named " + _resourceName + " not found in the supplied resources path.");
             else
                 size = imageSize(FILE.join(FILE.cwd(), resourcePath));
 
