@@ -283,7 +283,7 @@ function getOutputFile(inputFile, args)
     if (!/^.+\.cib$/.test(outputFile))
         outputFile += ".cib";
 
-    outputFile = FILE.resolve(inputFile, outputFile);
+    outputFile = FILE.absolute(outputFile);
 
     if (!FILE.isWritable(FILE.dirname(outputFile)))
         fail("Cannot write the output file at: " + outputFile);
