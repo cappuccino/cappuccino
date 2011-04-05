@@ -384,7 +384,7 @@ var StandardUserDefaults;
 */
 - (CPArray)arrayForKey:(CPString)aKey inDomain:(CPString)aDomain
 {
-    var value = [self objectForKey:aKey inDomain:aDomain];
+    var value = [self objectForKey:aKey inDomain:aDomain] || [self objectForKey:aKey];
     if ([value isKindOfClass:CPArray])
         return value;
 
@@ -404,7 +404,7 @@ var StandardUserDefaults;
 */
 - (BOOL)boolForKey:(CPString)aKey inDomain:(CPString)aDomain
 {
-    var value = [self objectForKey:aKey inDomain:aDomain];
+    var value = [self objectForKey:aKey inDomain:aDomain] || [self objectForKey:aKey];
     if ([value respondsToSelector:@selector(boolValue)])
         return [value boolValue];
 
@@ -424,7 +424,7 @@ var StandardUserDefaults;
 */
 - (CPData)dataForKey:(CPString)aKey inDomain:(CPString)aDomain
 {
-    var value = [self objectForKey:aKey inDomain:aDomain];
+    var value = [self objectForKey:aKey inDomain:aDomain] || [self objectForKey:aKey];
     if ([value isKindOfClass:CPData])
         return value;
 
@@ -444,7 +444,7 @@ var StandardUserDefaults;
 */
 - (CPDictionary)dictionaryForKey:(CPString)aKey inDomain:(CPString)aDomain
 {
-    var value = [self objectForKey:aKey inDomain:aDomain];
+    var value = [self objectForKey:aKey inDomain:aDomain] || [self objectForKey:aKey];
     if ([value isKindOfClass:CPDictionary])
         return value;
 
@@ -464,7 +464,7 @@ var StandardUserDefaults;
 */
 - (float)floatForKey:(CPString)aKey inDomain:(CPString)aDomain
 {
-    var value = [self objectForKey:aKey inDomain:aDomain];
+    var value = [self objectForKey:aKey inDomain:aDomain] || [self objectForKey:aKey];
     if (value === nil)
         return 0;
 
@@ -487,7 +487,7 @@ var StandardUserDefaults;
 */
 - (int)integerForKey:(CPString)aKey inDomain:(CPString)aDomain
 {
-    var value = [self objectForKey:aKey inDomain:aDomain];
+    var value = [self objectForKey:aKey inDomain:aDomain] || [self objectForKey:aKey];
     if (value === nil)
         return 0;
 
@@ -526,7 +526,7 @@ var StandardUserDefaults;
 */
 - (CPString)stringForKey:(CPString)aKey inDomain:(CPString)aDomain
 {
-    var value = [self objectForKey:aKey inDomain:aDomain];
+    var value = [self objectForKey:aKey inDomain:aDomain] || [self objectForKey:aKey];
 
     if ([value isKindOfClass:CPString])
         return value;
@@ -550,7 +550,7 @@ var StandardUserDefaults;
 */
 - (CPArray)stringArrayForKey:(CPString)aKey inDomain:(CPString)aDomain
 {
-    var value = [self objectForKey:aKey inDomain:aDomain];
+    var value = [self objectForKey:aKey inDomain:aDomain] || [self objectForKey:aKey];
     if (![value isKindOfClass:CPArray])
         return nil;
 
@@ -574,7 +574,7 @@ var StandardUserDefaults;
 */
 - (CPURL)URLForKey:(CPString)aKey inDomain:(CPString)aDomain
 {
-    var value = [self objectForKey:aKey inDomain:aDomain];
+    var value = [self objectForKey:aKey inDomain:aDomain] || [self objectForKey:aKey];
     if ([value isKindOfClass:CPURL])
         return value;
 
