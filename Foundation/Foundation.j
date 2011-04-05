@@ -74,9 +74,7 @@
 /*! @mainpage
     Cappuccino is distributed under the @ref license "GNU LGPL".
 
-    @htmlonly <pre>@endhtmlonly
-    @htmlinclude README
-    @htmlonly </pre>@endhtmlonly
+    @htmlinclude README.html
 
     @page license License
     @htmlonly <pre>@endhtmlonly

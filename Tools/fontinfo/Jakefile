@@ -27,13 +27,13 @@ task ("build", function()
 
 task ("clean", function()
 {
-    if (OS.system("xcodebuild clean"))
+    if (executableExists("xcodebuild") && OS.system("xcodebuild clean"))
         OS.exit(1);
 });
 
 task ("clobber", function()
 {
-    if (OS.system("xcodebuild clean"))
+    if (executableExists("xcodebuild") && OS.system("xcodebuild clean"))
         OS.exit(1);
 });
 

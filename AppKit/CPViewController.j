@@ -29,26 +29,38 @@
 
 var CPViewControllerCachedCibs;
 
-/*! @class CPViewController
-    The CPViewController class provides the fundamental view-management controller for Cappuccino applications.
-    The basic view controller class supports the presentation of an associated view in addition to basic support
-    for managing modal views and, in the future, animations. Subclasses such as CPNavigationController and
-    CPTabBarController provide additional behavior for managing complex hierarchies of view controllers and views.
+/*!
+    @ingroup appkit
+    @class CPViewController
 
-    You use each instance of CPViewController to manage a single view (and hierarchy). For a simple view controller,
-    this entails managing the view hierarchy responsible for presenting your application content.
-    A typical view hierarchy consists of a root viewŃa reference to which is available in the view property of this classŃ
-    and one or more subviews presenting the actual content. In the case of navigation and tab bar controllers, the view
-    controller manages not only the high-level view hierarchy (which provides the navigation controls) but also one
-    or more additional view controllers that handle the presentation of the application content.
+    The CPViewController class provides the fundamental view-management
+    controller for Cappuccino applications. The basic view controller class
+    supports the presentation of an associated view in addition to basic
+    support for managing modal views and, in the future, animations.
+    Subclasses such as CPNavigationController and CPTabBarController provide
+    additional behavior for managing complex hierarchies of view controllers
+    and views.
 
-    Unlike UIViewController in Cocoa Touch, a CPViewController does not represent an entire screen of content. You
-    will add your root view to an existing view or window's content view. You can manage many view controllers
-    on screen at once. CPViewController is also the preferred way of working with Cibs.
+    You use each instance of CPViewController to manage a single view (and
+    hierarchy). For a simple view controller, this entails managing the view
+    hierarchy responsible for presenting your application content. A typical
+    view hierarchy consists of a root view, a reference to which is available
+    in the view property of this class, and one or more subviews presenting
+    the actual content. In the case of navigation and tab bar controllers, the
+    view controller manages not only the high-level view hierarchy (which
+    provides the navigation controls) but also one or more additional view
+    controllers that handle the presentation of the application content.
 
-    Subclasses can override -loadView to create their custom view hierarchy, or specify a cib name to be loaded automatically.
-    It has methods that are called when a view appears or disappears.
-    This class is also a good place for delegate & datasource methods, and other controller stuff.
+    Unlike UIViewController in Cocoa Touch, a CPViewController does not
+    represent an entire screen of content. You will add your root view to an
+    existing view or window's content view. You can manage many view
+    controllers on screen at once. CPViewController is also the preferred way
+    of working with Cibs.
+
+    Subclasses can override -loadView to create their custom view hierarchy,
+    or specify a cib name to be loaded automatically. It has methods that are
+    called when a view appears or disappears. This class is also a good place
+    for delegate & datasource methods, and other controller stuff.
 */
 @implementation CPViewController : CPResponder
 {
@@ -88,9 +100,14 @@ var CPViewControllerCachedCibs;
 }
 
 /*!
-    The designated initializer. If you subclass CPViewController, you must call the super implementation of this method, even if you aren't using a Cib.
-    In the specified Cib, the File's Owner proxy should have its class set to your view controller subclass, with the view outlet connected to the main view.
-    If you pass in a nil Cib name, then you must either call -setView: before -view is invoked, or override -loadView to set up your views.
+    The designated initializer. If you subclass CPViewController, you must
+    call the super implementation of this method, even if you aren't using a
+    Cib.
+
+    In the specified Cib, the File's Owner proxy should have its class set to
+    your view controller subclass, with the view outlet connected to the main
+    view. If you pass in a nil Cib name, then you must either call -setView:
+    before -view is invoked, or override -loadView to set up your views.
 
     @param cibNameOrNil The path to the cib to load for the root view or nil to programmatically create views.
     @param cibBundleOrNil The bundle that the cib is located in or nil for the main bundle.
@@ -113,14 +130,18 @@ var CPViewControllerCachedCibs;
 }
 
 /*!
-    Programmatically creates the view that the controller manages.
-    You should never call this method directly. The view controller calls this method when the view property is requested but is nil.
+    Programmatically creates the view that the controller manages. You should
+    never call this method directly. The view controller calls this method
+    when the view property is requested but is nil.
 
-    If you create your views manually, you must override this method and use it to create your view and assign it to the view property.
-    The default implementation for programmatic views is to create a plain view. You can invoke super to utilize this view.
+    If you create your views manually, you must override this method and use
+    it to create your view and assign it to the view property. The default
+    implementation for programmatic views is to create a plain view. You can
+    invoke super to utilize this view.
 
-    If you use Interface Builder to create your views, you initialize the view using the
-    initWithCibName:bundle: method then you must not override this method. The consequences risk shattering the space-time continuum.
+    If you use Interface Builder to create your views, you initialize the view
+    using the initWithCibName:bundle: method then you must not override this
+    method. The consequences risk shattering the space-time continuum.
 
     Note: The cib loading system is currently synchronous.
 */
@@ -144,8 +165,10 @@ var CPViewControllerCachedCibs;
 
 /*!
     Returns the view that the controller manages.
-    If this property is nil, the controller sends loadView to itself to create the view that it manages.
-    Subclasses should override the loadView method to create any custom views. The default value is nil.
+
+    If this property is nil, the controller sends loadView to itself to create
+    the view that it manages. Subclasses should override the loadView method
+    to create any custom views. The default value is nil.
 */
 - (CPView)view
 {
@@ -183,8 +206,11 @@ var CPViewControllerCachedCibs;
 
 /*!
     This method is called after the view controller has loaded its associated views into memory.
-    This method is called regardless of whether the views were stored in a nib file or created programmatically in the loadView method.
-    This method is most commonly used to perform additional initialization steps on views that are loaded from cib files.
+
+    This method is called regardless of whether the views were stored in a nib
+    file or created programmatically in the loadView method. This method is
+    most commonly used to perform additional initialization steps on views
+    that are loaded from cib files.
 */
 - (void)viewDidLoad
 {
@@ -194,7 +220,9 @@ var CPViewControllerCachedCibs;
 
 /*!
     Manually sets the view that the controller manages.
-    Setting to nil will cause -loadView to be called on all subsequent calls of -view.
+
+    Setting to nil will cause -loadView to be called on all subsequent calls
+    of -view.
 
     @param aView The view this controller should represent.
 */

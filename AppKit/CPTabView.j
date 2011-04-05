@@ -16,6 +16,14 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     CPTabViewWillSelectTabViewItemSelector          = 4,
     CPTabViewDidChangeNumberOfTabViewItemsSelector  = 8;
 
+/*!
+    @ingroup appkit
+    @class CPTabView
+
+    A CPTabView object presents a tabbed interface where each page is one a
+    complete view hiearchy of its own. The user can navigate between various
+    pages by clicking on the tab headers.
+*/
 @implementation CPTabView : CPView
 {
     CPArray             _items;
@@ -75,8 +83,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 }
 
 /*!
-    Inserts a CPTabViewItem into the tab view
-    at the specified index.
+    Inserts a CPTabViewItem into the tab view at the specified index.
     @param aTabViewItem the item to insert
     @param anIndex the index for the item
 */
@@ -122,6 +129,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 /*!
     Returns the index of the specified item
     @param aTabViewItem the item to find the index for
+    @return the index of aTabViewItem or CPNotFound
 */
 - (int)indexOfTabViewItem:(CPTabViewItem)aTabViewItem
 {
@@ -131,6 +139,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 /*!
     Returns the index of the CPTabViewItem with the specified identifier.
     @param anIdentifier the identifier of the item
+    @return the index of the tab view item identified by anIdentifier, or CPNotFound
 */
 - (int)indexOfTabViewItemWithIdentifier:(CPString)anIdentifier
 {
@@ -143,6 +152,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 
 /*!
     Returns the number of items in the tab view.
+    @return the number of tab view items in the receiver
 */
 - (unsigned)numberOfTabViewItems
 {
@@ -151,6 +161,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 
 /*!
     Returns the CPTabViewItem at the specified index.
+    @return a tab view item, or nil
 */
 - (CPTabViewItem)tabViewItemAtIndex:(unsigned)anIndex
 {
@@ -159,6 +170,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 
 /*!
     Returns the array of items that backs this tab view.
+    @return a copy of the array of items in the receiver
 */
 - (CPArray)tabViewItems
 {
@@ -262,6 +274,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 
 /*!
     Returns the current item being displayed.
+    @return the tab view item currenly being displayed by the receiver
 */
 - (CPTabViewItem)selectedTabViewItem
 {
@@ -271,6 +284,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 // Modifying the font
 /*!
     Returns the font for tab label text.
+    @return the font for tab label text
 */
 - (CPFont)font
 {
@@ -279,6 +293,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 
 /*!
     Sets the font for tab label text to font.
+    @param font the font the receiver should use for tab label text
 */
 - (void)setFont:(CPFont)font
 {
@@ -336,6 +351,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 
 /*!
     Returns the tab view type.
+    @return the tab view type of the receiver
 */
 - (CPTabViewType)tabViewType
 {
@@ -344,6 +360,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 
 /*!
     Returns the receiver's delegate.
+    @return the receiver's delegate
 */
 - (id)delegate
 {

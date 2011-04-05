@@ -98,29 +98,44 @@ task ("documentation", function()
         }
     }
 
-    if (doxygen && FILE.exists(doxygen))
+    if (!doxygen || !FILE.exists(doxygen))
     {
-        stream.print("\0green(Using " + doxygen + " for doxygen binary.\0)");
-
-        var documentationDir = FILE.join("Tools", "Documentation");
-
-        if (OS.system([FILE.join(documentationDir, "make_headers.sh")]))
-            OS.exit(1); //rake abort if ($? != 0)
-
-        if (!OS.system([doxygen, FILE.join(documentationDir, "Cappuccino.doxygen")]))
-        {
-            if (!FILE.isDirectory($BUILD_DIR))
-                FILE.mkdirs($BUILD_DIR);
-
-            rm_rf($DOCUMENTATION_BUILD);
-            mv("debug.txt", FILE.join("Documentation", "debug.txt"));
-            mv("Documentation", $DOCUMENTATION_BUILD);
-        }
-
-        OS.system(["ruby", FILE.join(documentationDir, "cleanup_headers")]);
-    }
-    else
         stream.print("\0yellow(Doxygen not installed, skipping documentation generation.\0)");
+        return;
+    }
+
+    stream.print("\0green(Using " + doxygen + " for doxygen binary.\0)");
+
+    // Also need Markdown to proccess README file (`brew install Markdown` on the Mac).
+    var markdown = executableExists("markdown")
+    if (!markdown || !FILE.exists(markdown))
+    {
+        stream.print("\0yellow(Markdown not installed, skipping documentation generation.\0)");
+        return;
+    }
+
+    stream.print("\0green(Using " + markdown + " for Markdown binary.\0)");
+
+    var documentationDir = FILE.join("Tools", "Documentation");
+
+    if (OS.system([FILE.join(documentationDir, "process_markdown.sh"), markdown]))
+        OS.exit(1); //rake abort if ($? != 0)
+
+    if (OS.system([FILE.join(documentationDir, "make_headers.sh")]))
+        OS.exit(1); //rake abort if ($? != 0)
+
+    if (!OS.system([doxygen, FILE.join(documentationDir, "Cappuccino.doxygen")]))
+    {
+        if (!FILE.isDirectory($BUILD_DIR))
+            FILE.mkdirs($BUILD_DIR);
+
+        rm_rf($DOCUMENTATION_BUILD);
+        mv("debug.txt", FILE.join("Documentation", "debug.txt"));
+        mv("Documentation", $DOCUMENTATION_BUILD);
+    }
+
+    OS.system(["ruby", FILE.join(documentationDir, "cleanup_headers")]);
+    OS.system([FILE.join(documentationDir, "cleanup_markdown.sh")]);
 });
 
 // Downloads
