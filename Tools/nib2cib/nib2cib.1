@@ -62,7 +62,8 @@ will respond to:
 .Bl -tag -hang
 .It add, modify
 When a new xib/nib file is detected or an existing xib/nib file is modified, it is converted into
-a cib file with the same base name.
+a cib file with the same base name if there is no corresponding cib file with a later
+modification time.
 .It delete
 When a xib/nib file is deleted, the corresponding cib file is deleted as well.
 .El
@@ -129,14 +130,14 @@ this is assumed.
 .\"-----------------------------------------------------------------------------------------
 .Ss "Themes"
 .\"-----------------------------------------------------------------------------------------
-To do its conversions accurately, 
+To do its conversions accurately,
 .Nm
 needs to access the themes you use. If you are using the standard Aristo theme, there is
 nothing extra to do.
 .Pp
-If you are using a custom default theme, usually you specify this using a 
+If you are using a custom default theme, usually you specify this using a
 .Ar CPDefaultTheme
-item in your application's Info.plist. In this case 
+item in your application's Info.plist. In this case
 .Nm
 will read the theme name from the Info.plist. If you set the default theme programmatically
 and not in the Info.plist, then you should use the
@@ -149,7 +150,7 @@ If you are loading additional themes in your code using:
 .Pp
 then you should inform
 .Nm
-about it by passing the theme names as 
+about it by passing the theme names as
 .Fl \-theme Ar name
 options, one for each theme that you load.
 .Pp
@@ -168,7 +169,7 @@ is displayed.
 .It Fl R Pa path
 NOTE: This option is for the most part no longer necessary.
 .Pp
-Specifies the path (relative or absolute) to a directory from which images 
+Specifies the path (relative or absolute) to a directory from which images
 and custom themes are retrieved. Formerly
 it was necessary to use this when your xib/nib contained references to images, but now
 .Nm
@@ -193,9 +194,9 @@ use this option, as
 uses the Info.plist in the application directory, which is inferred from
 the input file.
 .It Fl \-quiet
-Tells 
+Tells
 .Nm
-to output nothing. This is useful if you are using 
+to output nothing. This is useful if you are using
 .Nm
 in a shell script and are only interested in the return value.
 .It Fl \-version
@@ -205,7 +206,7 @@ and immediately exits.
 .Nm
 in a shell script and are only interested in the return value.
 .It Fl h, \-help
-Displays 
+Displays
 .Nm
 usage and options.
 .It Fl F

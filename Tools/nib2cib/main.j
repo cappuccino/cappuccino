@@ -60,7 +60,7 @@ function main(args)
     }
     catch (anException)
     {
-        CPLog.fatal([anException reason]);
+        CPLog.fatal(exceptionReason(anException));
         OS.exit(1);
     }
 }
@@ -125,7 +125,7 @@ function convert(options, inputFile)
     }
     catch (anException)
     {
-        CPLog.fatal([anException reason]);
+        CPLog.fatal(exceptionReason(anException));
         return false;
     }
 }
@@ -133,49 +133,72 @@ function convert(options, inputFile)
 function watch(options)
 {
     var verbosity = options.quiet ? -1 : options.verbosity,
-        directory = options.args[0];
+        watchDir = options.args[0];
 
-    if (!directory)
-        directory = FILE.canonical(FILE.isDirectory("Resources") ? "Resources" : ".");
+    if (!watchDir)
+        watchDir = FILE.canonical(FILE.isDirectory("Resources") ? "Resources" : ".");
     else
     {
-        directory = FILE.canonical(directory);
+        watchDir = FILE.canonical(watchDir);
 
-        if (FILE.basename(directory) !== "Resources")
+        if (FILE.basename(watchDir) !== "Resources")
         {
-            var path = FILE.join(directory, "Resources");
+            var path = FILE.join(watchDir, "Resources");
 
             if (FILE.isDirectory(path))
-                directory = path;
+                watchDir = path;
         }
     }
 
-    if (!FILE.isDirectory(directory))
-        fail("Cannot find the directory: " + directory);
+    if (!FILE.isDirectory(watchDir))
+        fail("Cannot find the directory: " + watchDir);
 
     // Turn on info messages
     setLogLevel(1);
 
-    CPLog.info("Watching: " + CPLogColorize(directory, "debug"));
+    var nibs = new FileList(FILE.join(watchDir, "*.[nx]ib")).items(),
+        count = nibs.length;
+
+    // First time through only IB files with no corresponding cib
+    // or a cib with an earlier mtime are converted.
+    while (count--)
+    {
+        var nib = nibs[count],
+            cib = nib.substr(0, nib.length - 4) + ".cib";
+
+        if (FILE.exists(cib) && (FILE.mtime(nib) - FILE.mtime(cib)) < 0)
+            nibInfo[nib] = FILE.mtime(nib);
+    }
+
+    CPLog.info("Watching: " + CPLogColorize(watchDir, "debug"));
     CPLog.info("Press Control-C to stop...");
 
     while (true)
     {
-        var modifiedNibs = getModifiedNibs(directory);
+        var modifiedNibs = getModifiedNibs(watchDir);
 
         for (var i = 0; i < modifiedNibs.length; ++i)
         {
             var action = modifiedNibs[i][0],
-                path = modifiedNibs[i][1],
-                label = action === "add" ? "Added:" : "Modified:",
+                nib = modifiedNibs[i][1],
+                label = action === "add" ? "Added" : "Modified",
                 level = action === "add" ? "info" : "debug";
 
-            CPLog.info(">> %s %s", CPLogColorize(label, level), path);
+            CPLog.info(">> %s: %s", CPLogColorize(label, level), nib);
+
+            // Don't convert an add if there is an existing cib with a later mtime
+            if (action === "add")
+            {
+                var cib = nib.substr(0, nib.length - 4) + ".cib";
+
+                if (FILE.exists(cib) && (FILE.mtime(nib) - FILE.mtime(cib)) < 0)
+                    continue;
+            }
 
             // Let the converter log however the user configured it
             setLogLevel(verbosity);
 
-            var success = convert(options, path);
+            var success = convert(options, nib);
 
             setLogLevel(1);
 
@@ -627,25 +650,8 @@ function getModifiedNibs(path)
     }
 
     for (var nib in nibInfo)
-    {
         if (nibInfo.hasOwnProperty(nib))
-        {
-            CPLog.info(">> %s %s", CPLogColorize("Deleted:", "warn"), nib);
-
-            var cib = nib.substr(0, nib.length - 3) + "cib";
-
-            if (FILE.exists(cib))
-            {
-                if (FILE.isWritable(cib))
-                {
-                    FILE.remove(cib);
-                    CPLog.warn("Deleted: " + cib);
-                }
-                else
-                    CPLog.info("%s could not remove the file: %s", CPLogColorize("Warning:", "warn"), cib);
-            }
-        }
-    }
+            CPLog.info(">> %s: %s", CPLogColorize("Deleted", "warn"), nib);
 
     nibInfo = newNibInfo;
 
@@ -697,6 +703,16 @@ function printVersion()
 
     if (!version)
         stream.print("<No version info available>");
+}
+
+function exceptionReason(exception)
+{
+    if (typeof(exception) === "string")
+        return exception;
+    else if (exception.isa && [exception respondsToSelector:@selector(reason)])
+        return [exception reason];
+    else
+        return "An unknown error occurred";
 }
 
 function fail(message)
