@@ -44,7 +44,7 @@ ConverterConversionException = @"ConverterConversionException";
     CPString     outputPath      @accessors;
     CPString     resourcesPath   @accessors;
     NibFormat    format          @accessors(readonly);
-    CPTheme      theme           @accessors(readonly);
+    CPArray      themes          @accessors(readonly);
 }
 
 + (Converter)sharedConverter
@@ -55,7 +55,7 @@ ConverterConversionException = @"ConverterConversionException";
     return SharedConverter;
 }
 
-- (id)initWithInputPath:(CPString)aPath format:(NibFormat)nibFormat theme:(CPTheme)aTheme
+- (id)initWithInputPath:(CPString)aPath format:(NibFormat)nibFormat themes:(CPArray)themeList
 {
     self = [super init];
 
@@ -63,7 +63,7 @@ ConverterConversionException = @"ConverterConversionException";
     {
         inputPath = aPath;
         format = nibFormat;
-        theme = aTheme;
+        themes = themeList;
     }
 
     return self;

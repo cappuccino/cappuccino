@@ -47,9 +47,9 @@ var FILE = require("file");
             var resourcePath = [aCoder resourcePathForName:_resourceName];
 
             if (!resourcePath)
-                CPLog.warn("Resource named " + _resourceName + " not found in the supplied resources path.");
+                CPLog.warn("Resource \"" + _resourceName + "\" not found in the resources path: " + [aCoder resourcesPath]);
             else
-                size = imageSize(FILE.join(FILE.cwd(), resourcePath));
+                size = imageSize(FILE.canonical(resourcePath));
 
             // Account for the fact that an extension may have been inferred.
             if (resourcePath && FILE.extension(resourcePath) !== FILE.extension(_resourceName))

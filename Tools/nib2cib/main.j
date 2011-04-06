@@ -35,13 +35,16 @@ var FILE = require("file"),
     SYS = require("system"),
     FileList = require("jake").FileList,
     stream = require("narwhal/term").stream,
+    StaticResource = require("objective-j").StaticResource,
 
     DefaultTheme = "Aristo",
     BuildTypes = ["Debug", "Release"],
-    DefaultXibFile = "MainMenu.xib";
+    DefaultFile = "MainMenu";
 
 var parser = new (require("narwhal/args").Parser)(),
-    nibInfo = {};
+    nibInfo = {},
+    appDirectory = "",
+    resourcesDirectory = "";
 
 
 function main(args)
@@ -57,7 +60,7 @@ function main(args)
     }
     catch (anException)
     {
-        CPLog.fatal([anException reason]);
+        CPLog.fatal(exceptionReason(anException));
         OS.exit(1);
     }
 }
@@ -68,50 +71,52 @@ function convert(options, inputFile)
     {
         inputFile = inputFile || getInputFile(options.args);
 
+        getAppAndResourceDirectoriesFromInputFile(inputFile, options);
+
         var outputFile = getOutputFile(inputFile, options.args),
-            resourcesPath = "";
+            configInfo = readConfigFile(options.configFile || "", inputFile),
+            defaultTheme = null;
 
-        if (options.resources)
+        if (configInfo.plist)
         {
-            resourcesPath = FILE.canonical(options.resources);
+            var systemFontFace = configInfo.plist.valueForKey("CPSystemFontFace");
 
-            if (!FILE.isDirectory(resourcesPath) || !FILE.isReadable(resourcesPath))
-                fail("Cannot read resources at: " + resourcesPath);
+            if (systemFontFace)
+                [CPFont setSystemFontFace:systemFontFace];
+
+            var systemFontSize = configInfo.plist.valueForKey("CPSystemFontSize");
+
+            if (systemFontSize)
+                [CPFont setSystemFontSize:parseFloat(systemFontSize, 10)];
+
+            if (!options.defaultTheme)
+                defaultTheme = configInfo.plist.valueForKey("CPDefaultTheme");
         }
 
-        var configPath = setSystemFontAndSize(options.configFile || "", inputFile),
-            themeName = "",
-            themeDir = options.themeDir || "";
-
-        if (themeDir)
-            themeName = FILE.basename(themeDir, FILE.extension(themeDir));
-
-        themeName = themeName || getDefaultThemeName();
-
-        if (!themeName)
-            fail("Could not determine the theme name.");
-
-        var theme = loadTheme(themeName, themeDir);
+        var themeList = getThemeList(defaultTheme || options.defaultTheme, options),
+            themes = loadThemes(themeList);
 
         CPLog.info("\n-------------------------------------------------------------");
-        CPLog.info("Input       : " + inputFile);
-        CPLog.info("Output      : " + outputFile);
-        CPLog.info("Format      : " + ["Auto", "Mac", "iPhone"][options.format]);
-        CPLog.info("Resources   : " + resourcesPath);
-        CPLog.info("Frameworks  : " + (options.frameworks || ""));
-        CPLog.info("Theme       : " + themeName);
-        CPLog.info("Config file : " + (configPath || ""));
-        CPLog.info("System Font : " + [CPFont systemFontSize] + "px " + [CPFont systemFontFace]);
+        CPLog.info("Input         : " + inputFile);
+        CPLog.info("Output        : " + outputFile);
+        CPLog.info("Format        : " + ["Auto", "Mac", "iPhone"][options.format]);
+        CPLog.info("Application   : " + appDirectory);
+        CPLog.info("Resources     : " + resourcesDirectory);
+        CPLog.info("Frameworks    : " + (options.frameworks || ""));
+        CPLog.info("Default theme : " + themeList[0]);
+        CPLog.info("Extra themes  : " + themeList.slice(1).join(", "));
+        CPLog.info("Config file   : " + (configInfo.path || ""));
+        CPLog.info("System Font   : " + [CPFont systemFontSize] + "px " + [CPFont systemFontFace]);
         CPLog.info("-------------------------------------------------------------\n");
 
         var converter = [[Converter alloc] initWithInputPath:inputFile
                                                       format:options.format
-                                                       theme:theme];
+                                                      themes:themes];
 
         [converter setOutputPath:outputFile];
-        [converter setResourcesPath:resourcesPath];
+        [converter setResourcesPath:resourcesDirectory];
 
-        loadFrameworks(options.frameworks, function()
+        loadFrameworks(options.frameworks, options.verbosity, function()
         {
             [converter convert];
         });
@@ -120,7 +125,7 @@ function convert(options, inputFile)
     }
     catch (anException)
     {
-        CPLog.fatal([anException reason]);
+        CPLog.fatal(exceptionReason(anException));
         return false;
     }
 }
@@ -128,39 +133,72 @@ function convert(options, inputFile)
 function watch(options)
 {
     var verbosity = options.quiet ? -1 : options.verbosity,
-        directory = options.args[0];
+        watchDir = options.args[0];
 
-    if (!directory)
-        directory = FILE.isDirectory("Resources") ? "Resources" : ".";
+    if (!watchDir)
+        watchDir = FILE.canonical(FILE.isDirectory("Resources") ? "Resources" : ".");
+    else
+    {
+        watchDir = FILE.canonical(watchDir);
 
-    directory = FILE.canonical(directory);
+        if (FILE.basename(watchDir) !== "Resources")
+        {
+            var path = FILE.join(watchDir, "Resources");
 
-    if (!FILE.isDirectory(directory))
-        fail("Cannot find the directory: " + directory);
+            if (FILE.isDirectory(path))
+                watchDir = path;
+        }
+    }
+
+    if (!FILE.isDirectory(watchDir))
+        fail("Cannot find the directory: " + watchDir);
 
     // Turn on info messages
     setLogLevel(1);
 
-    CPLog.info("Watching: " + CPLogColorize(directory, "debug"));
+    var nibs = new FileList(FILE.join(watchDir, "*.[nx]ib")).items(),
+        count = nibs.length;
+
+    // First time through only IB files with no corresponding cib
+    // or a cib with an earlier or equal mtime are converted.
+    while (count--)
+    {
+        var nib = nibs[count],
+            cib = nib.substr(0, nib.length - 4) + ".cib";
+
+        if (FILE.exists(cib) && (FILE.mtime(nib) - FILE.mtime(cib)) <= 0)
+            nibInfo[nib] = FILE.mtime(nib);
+    }
+
+    CPLog.info("Watching: " + CPLogColorize(watchDir, "debug"));
     CPLog.info("Press Control-C to stop...");
 
     while (true)
     {
-        var modifiedNibs = getModifiedNibs(directory);
+        var modifiedNibs = getModifiedNibs(watchDir);
 
         for (var i = 0; i < modifiedNibs.length; ++i)
         {
             var action = modifiedNibs[i][0],
-                path = modifiedNibs[i][1],
-                label = action === "add" ? "Added:" : "Modified:",
+                nib = modifiedNibs[i][1],
+                label = action === "add" ? "Added" : "Modified",
                 level = action === "add" ? "info" : "debug";
 
-            CPLog.info(">> %s %s", CPLogColorize(label, level), path);
+            CPLog.info(">> %s: %s", CPLogColorize(label, level), nib);
+
+            // Don't convert an add if there is an existing cib with a later mtime
+            if (action === "add")
+            {
+                var cib = nib.substr(0, nib.length - 4) + ".cib";
+
+                if (FILE.exists(cib) && (FILE.mtime(nib) - FILE.mtime(cib)) < 0)
+                    continue;
+            }
 
             // Let the converter log however the user configured it
             setLogLevel(verbosity);
 
-            var success = convert(options, path);
+            var success = convert(options, nib);
 
             setLogLevel(1);
 
@@ -185,25 +223,24 @@ function parseOptions(args)
         .set(true)
         .help("Ask nib2cib to watch a directory for changes");
 
-    parser.option("-F", "framework", "frameworks")
+    parser.option("-R", "resourcesDir")
+        .set()
+        .displayName("directory")
+        .help("Set the Resources directory, usually unnecessary as it is inferred from the input path");
+
+    parser.option("--default-theme", "defaultTheme")
+        .set()
+        .displayName("name")
+        .help("Specify a custom default theme which is not set in your Info.plist");
+
+    parser.option("-t", "--theme", "extraThemes")
         .push()
-        .help("Add a framework to load");
-
-    parser.option("-R", "resources")
-        .set()
-        .help("Set the Resources directory");
-
-    parser.option("--mac", "format")
-        .set(NibFormatMac)
-        .def(NibFormatUndetermined)
-        .help("Set format to Mac");
-
-    parser.option("-t", "--theme-dir", "themeDir")
-        .set()
-        .help("A <theme>.build directory to use for theme attribute values");
+        .displayName("name")
+        .help("An additional theme loaded dynamically by your application");
 
     parser.option("--config", "configFile")
         .set()
+        .displayName("path")
         .help("A path to an Info.plist file from which the system font and/or size can be retrieved");
 
     // parser.option("--iphone", "format")
@@ -217,6 +254,15 @@ function parseOptions(args)
     parser.option("-q", "--quiet", "quiet")
         .set(true)
         .help("No output");
+
+    parser.option("-F", "framework", "frameworks")
+        .push()
+        .help("Add a framework to load");
+
+    parser.option("--mac", "format")
+        .set(NibFormatMac)
+        .def(NibFormatUndetermined)
+        .help("Set format to Mac");
 
     parser.option("--version", "showVersion")
         .action(printVersionAndExit)
@@ -254,21 +300,80 @@ function setLogLevel(level)
 
 function getInputFile(args)
 {
-    var inputFile = args[0] || DefaultXibFile;
+    var inputFile = args[0] || DefaultFile,
+        path = "";
 
-    if (!/^.+\.xib$/.test(inputFile))
-        inputFile += ".xib";
+    if (!/^.+\.[nx]ib$/.test(inputFile))
+    {
+        if (path = findInputFile(inputFile, ".xib"))
+            inputFile = path;
+        else if (path = findInputFile(inputFile, ".nib"))
+            inputFile = path;
+        else
+            fail("Cannot find the input file (.xib or .nib): " + FILE.canonical(inputFile));
+    }
+    else if (path = findInputFile(inputFile))
+        inputFile = path;
+    else
+        fail("Could not read the input file: " + FILE.canonical(inputFile));
 
-    inputFile = FILE.canonical(inputFile);
+    return FILE.canonical(inputFile);
+}
 
-    if (!FILE.exists(inputFile) && FILE.basename(FILE.dirname(inputFile)) !== "Resources")
-        if (FILE.isDirectory("Resources"))
-            inputFile = FILE.resolve(inputFile, FILE.join("Resources", FILE.basename(inputFile)));
+function findInputFile(inputFile, extension)
+{
+    var path = inputFile;
 
-    if (!FILE.isReadable(inputFile))
-        fail("Cannot read the input file: " + inputFile);
+    if (extension)
+        path += extension;
 
-    return inputFile;
+    if (FILE.isReadable(path))
+        return path;
+
+    if (FILE.basename(FILE.dirname(inputFile)) !== "Resources" && FILE.isDirectory("Resources"))
+    {
+        path = FILE.resolve(path, FILE.join("Resources", FILE.basename(path)));
+
+        if (FILE.isReadable(path))
+            return path;
+    }
+
+    return null;
+}
+
+function getAppAndResourceDirectoriesFromInputFile(inputFile, options)
+{
+    appDirectory = resourcesDirectory = "";
+
+    if (options.resourcesDir)
+    {
+        var path = FILE.canonical(options.resourcesDir);
+
+        if (!FILE.isDirectory(path))
+            fail("Cannot read resources at: " + path);
+
+        resourcesDirectory = path;
+    }
+
+    var parentDir = FILE.dirname(inputFile);
+
+    if (FILE.basename(parentDir) === "Resources")
+    {
+        appDirectory = FILE.dirname(parentDir);
+        resourcesDirectory = resourcesDirectory || parentDir;
+    }
+    else
+    {
+        appDirectory = parentDir;
+
+        if (!resourcesDirectory)
+        {
+            var path = FILE.join(appDirectory, "Resources");
+
+            if (FILE.isDirectory(path))
+                resourcesDirectory = path;
+        }
+    }
 }
 
 function getOutputFile(inputFile, args)
@@ -276,14 +381,16 @@ function getOutputFile(inputFile, args)
     var outputFile = null;
 
     if (args.length > 1)
+    {
         outputFile = args[1];
+
+        if (!/^.+\.cib$/.test(outputFile))
+            outputFile += ".cib";
+    }
     else
-        outputFile = FILE.basename(inputFile, FILE.extension(inputFile));
+        outputFile = FILE.join(FILE.dirname(inputFile), FILE.basename(inputFile, FILE.extension(inputFile))) + ".cib";
 
-    if (!/^.+\.cib$/.test(outputFile))
-        outputFile += ".cib";
-
-    outputFile = FILE.absolute(outputFile);
+    outputFile = FILE.canonical(outputFile);
 
     if (!FILE.isWritable(FILE.dirname(outputFile)))
         fail("Cannot write the output file at: " + outputFile);
@@ -291,18 +398,30 @@ function getOutputFile(inputFile, args)
     return outputFile;
 }
 
-function loadFrameworks(frameworkPaths, aCallback)
+function loadFrameworks(frameworkPaths, verbosity, aCallback)
 {
     if (!frameworkPaths || frameworkPaths.length === 0)
         return aCallback();
 
     frameworkPaths.forEach(function(aFrameworkPath)
     {
+        setLogLevel(verbosity);
         CPLog.info("Loading " + aFrameworkPath);
 
-        var frameworkBundle = [[CPBundle alloc] initWithPath:aFrameworkPath];
+        try
+        {
+            // CPBundle is a bit loquacious with logging, we will defer
+            // logging its exceptions till later.
+            setLogLevel(-1);
 
-        [frameworkBundle loadWithDelegate:nil];
+            var frameworkBundle = [[CPBundle alloc] initWithPath:aFrameworkPath];
+
+            [frameworkBundle loadWithDelegate:nil];
+        }
+        finally
+        {
+            setLogLevel(verbosity);
+        }
 
         require("browser/timeout").serviceTimeouts();
     });
@@ -318,6 +437,18 @@ function logFormatter(aString, aLevel, aTitle)
         return CPLogColorize(aString, aLevel);
 }
 
+function getThemeList(defaultTheme, options)
+{
+    var themes = [defaultTheme || getDefaultThemeName()];
+
+    if (options.extraThemes)
+        for (var i = 0; i < options.extraThemes.length; ++i)
+            if (themes.indexOf(options.extraThemes[i]) < 0)
+                themes.push(options.extraThemes[i]);
+
+    return themes;
+}
+
 function getDefaultThemeName()
 {
     var themeName = nil,
@@ -328,6 +459,7 @@ function getDefaultThemeName()
         for (var i = 0; i < BuildTypes.length; ++i)
         {
             var path = FILE.join(cappBuild, BuildTypes[i], "AppKit", "Info.plist");
+
             themeName = themeNameFromPropertyList(path);
 
             if (themeName)
@@ -352,11 +484,36 @@ function themeNameFromPropertyList(path)
     return themeName;
 }
 
+function loadThemes(themeList)
+{
+    var themes = [];
+
+    for (var i = 0; i < themeList.length; ++i)
+        themes.push(loadTheme(themeList[i], resourcesDirectory));
+
+    return themes;
+}
+
 function loadTheme(themeName, themeDir)
 {
+    if (/^.+\.blend$/.test(themeName))
+        themeName = themeName.substr(0, themeName.length - ".blend".length);
+
+    var blendName = themeName + ".blend",
+        themePath = "";
+
+    if (themeDir)
+    {
+        themePath = FILE.join(FILE.canonical(themeDir), blendName);
+
+        if (!FILE.isDirectory(themePath))
+            themePath = themeDir = null;
+    }
+
     if (!themeDir)
     {
-        cappBuild = SYS.env["CAPP_BUILD"];
+        // Try in $CAPP_BUILD
+        cappBuild = FILE.canonical(SYS.env["CAPP_BUILD"]);
 
         if (!cappBuild)
             fail("$CAPP_BUILD is not set, exiting.");
@@ -364,69 +521,76 @@ function loadTheme(themeName, themeDir)
         if (!FILE.isDirectory(cappBuild))
             fail("$CAPP_BUILD does not exist: " + cappBuild)
 
-        var baseThemeName = themeName,
-            pos = themeName.indexOf("-");
-
-        if (pos > 0)
-            baseThemeName = themeName.substr(0, pos);
-
-        themeDir = FILE.join(cappBuild, baseThemeName + ".build");
-    }
-
-    themeDir = FILE.canonical(themeDir);
-
-    if (!FILE.isDirectory(themeDir))
-        fail("Cannot find the theme directory: " + themeDir);
-
-    var themePath = null;
-
-    for (var i = 0; i < BuildTypes.length; ++i)
-    {
-        var path = FILE.join(themeDir, BuildTypes[i], "Browser.environment/Resources", themeName + ".keyedtheme");
-
-        if (FILE.isReadable(path))
+        for (var i = 0; i < BuildTypes.length; ++i)
         {
-            themePath = path;
-            break;
+            var path = FILE.join(cappBuild, BuildTypes[i], blendName);
+
+            if (FILE.isDirectory(path))
+            {
+                themePath = path;
+                break;
+            }
+        }
+
+        // Last resort, try the cwd
+        if (!themePath)
+        {
+            var path = FILE.canonical(blendName);
+
+            if (FILE.isDirectory(path))
+                themePath = path;
         }
     }
 
     if (!themePath)
-        fail("Could not find the keyed theme data for \"" + themeName + "\" in the directory: " + themeDir);
+        fail("Cannot find the theme \"" + themeName + "\"");
 
-    themePath = FILE.canonical(themePath);
-    var plist = FILE.read(themePath);
+    return readTheme(themeName, themePath);
+}
 
-    if (!plist)
-        fail("Could not read the keyed theme at: " + themePath);
+function readTheme(name, path)
+{
+    var themeBundle = new CFBundle(path);
 
-    // The .keyedtheme file has a header that is data I don't need. Strip it off.
-    var m = plist.match(/^t;\d+;/);
+    // By default when we try to load the bundle it will use the CommonJS environment,
+    // but we want the Browser environment. So we override mostEligibleEnvironment().
+    themeBundle.mostEligibleEnvironment = function() { return "Browser"; }
+    themeBundle.load();
 
-    if (!m || m.length === 0)
-        fail("Invalid keyed theme data at: " + themePath);
+    var keyedThemes = themeBundle.valueForInfoDictionaryKey("CPKeyedThemes");
 
-    plist = plist.substr(m[0].length);
-    plist = CFPropertyList.propertyListFromString(plist);
+    if (!keyedThemes)
+        fail("Could not find the keyed themes in the theme: " + path);
 
-    var data = [CPData dataWithPlistObject:plist],
-        theme = [CPKeyedUnarchiver unarchiveObjectWithData:data];
+    var index = keyedThemes.indexOf(name + ".keyedtheme");
+
+    if (index < 0)
+        fail("Could not find the main theme data (" + name + ".keyedtheme" + ") in the theme: " + path);
+
+    // Load the keyed theme data, making sure to resolve it
+    var resourcePath = themeBundle.pathForResource(keyedThemes[index]),
+        themeData = new CFMutableData();
+
+    themeData.setRawString(StaticResource.resourceAtURL(new CFURL(resourcePath), true).contents());
+
+    var theme = [CPKeyedUnarchiver unarchiveObjectWithData:themeData];
 
     if (!theme)
-        fail("Could not unarchive the theme at: " + themePath);
+        fail("Could not unarchive the theme at: " + path);
 
-    CPLog.debug("Loaded theme: " + themePath);
+    CPLog.debug("Loaded theme: " + path);
     return theme;
 }
 
-function setSystemFontAndSize(configFile, inputFile)
+function readConfigFile(configFile, inputFile)
 {
-    var configPath = null;
+    var configPath = null,
+        path;
 
     // First see if the user passed a config file path
     if (configFile)
     {
-        var path = FILE.canonical(configFile);
+        path = FILE.canonical(configFile);
 
         if (!FILE.isReadable(path))
             fail("Cannot find the config file: " + path);
@@ -435,18 +599,13 @@ function setSystemFontAndSize(configFile, inputFile)
     }
     else
     {
-        // See if we can find an Info.plist in the parent directory of the input file,
-        // if the input file's directory is "Resources".
-        var path = FILE.canonical(FILE.dirname(inputFile));
+        path = FILE.join(appDirectory, "Info.plist");
 
-        if (FILE.basename(path) === "Resources")
-        {
-            path = FILE.join(FILE.dirname(path), "Info.plist");
-
-            if (FILE.isReadable(path))
-                configPath = path;
-        }
+        if (FILE.isReadable(path))
+            configPath = path;
     }
+
+    var plist = null;
 
     if (configPath)
     {
@@ -459,24 +618,14 @@ function setSystemFontAndSize(configFile, inputFile)
 
         if (!plist)
             fail("Could not parse the Info.plist at: " + configPath);
-
-        var systemFontFace = plist.valueForKey("CPSystemFontFace");
-
-        if (systemFontFace)
-            [CPFont setSystemFontFace:systemFontFace];
-
-        var systemFontSize = plist.valueForKey("CPSystemFontSize");
-
-        if (systemFontSize)
-            [CPFont setSystemFontSize:parseFloat(systemFontSize, 10)];
     }
 
-    return configPath;
+    return {path: configPath, plist: plist};
 }
 
 function getModifiedNibs(path)
 {
-    var nibs = new FileList(FILE.join(path, "*.xib")).items(),
+    var nibs = new FileList(FILE.join(path, "*.[nx]ib")).items(),
         count = nibs.length,
         newNibInfo = {},
         modifiedNibs = [];
@@ -501,10 +650,8 @@ function getModifiedNibs(path)
     }
 
     for (var nib in nibInfo)
-    {
         if (nibInfo.hasOwnProperty(nib))
-            CPLog.info(">> %s %s", CPLogColorize("Deleted:", "warn"), nib);
-    }
+            CPLog.info(">> %s: %s", CPLogColorize("Deleted", "warn"), nib);
 
     nibInfo = newNibInfo;
 
@@ -556,6 +703,16 @@ function printVersion()
 
     if (!version)
         stream.print("<No version info available>");
+}
+
+function exceptionReason(exception)
+{
+    if (typeof(exception) === "string")
+        return exception;
+    else if (exception.isa && [exception respondsToSelector:@selector(reason)])
+        return [exception reason];
+    else
+        return "An unknown error occurred";
 }
 
 function fail(message)

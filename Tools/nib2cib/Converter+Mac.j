@@ -132,7 +132,16 @@
         {
             var bold = [nibFont isBold];
 
-            cibFont = [theme valueForAttributeWithName:@"font" inState:[object themeState] forClass:[object class]];
+            for (var i = 0; i < themes.length; ++i)
+            {
+                cibFont = [themes[i] valueForAttributeWithName:@"font" inState:[object themeState] forClass:[object class]];
+
+                if (cibFont)
+                {
+                    source = " (from " + [themes[i] name] + ")";
+                    break;
+                }
+            }
 
             // Substitute legacy theme fonts for the current system font
             if (!cibFont || [cibFont familyName] === CPFontDefaultSystemFontFace)
@@ -144,7 +153,6 @@
                     size = [CPFont systemFontSize];
 
                 cibFont = bold ? [CPFont boldSystemFontOfSize:size] : [CPFont systemFontOfSize:size];
-                source = " (from theme)"
             }
         }
 

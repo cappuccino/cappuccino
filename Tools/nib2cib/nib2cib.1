@@ -1,0 +1,227 @@
+.Dd April 3, 2011
+.Os "Cappuccino"
+.Dt NIB2CIB 1 "PRM"
+.\"-----------------------------------------------------------------------------------------
+.Sh NAME
+.\"-----------------------------------------------------------------------------------------
+.Nm nib2cib
+.Nd convert Interface Builder files to Cappuccino cib files
+.\"-----------------------------------------------------------------------------------------
+.Sh SYNOPSIS
+.\"-----------------------------------------------------------------------------------------
+.Nm
+--watch
+.Op options
+.Op Pa directory
+.Nm
+.Op options
+.Op Pa input Op Pa output
+.Nm
+.Op --version | -h | --help
+.\"-----------------------------------------------------------------------------------------
+.Sh "DESCRIPTION"
+.\"-----------------------------------------------------------------------------------------
+.Nm
+converts an Interface Builder file into a Cappuccino cib file that can be loaded
+into a Cappuccino application.
+.Pp
+There are two main converting modes in which nib2cib can be used:
+.Sy watch mode
+and
+.Sy single mode.
+.\"-----------------------------------------------------------------------------------------
+.Ss "Watch Mode"
+.\"-----------------------------------------------------------------------------------------
+The easiest way to use nib2cib is in
+.Sy watch mode.
+This is done by using the syntax:
+.Pp
+.D1 nib2cib --watch [options] Op Pa directory
+.Pp
+If
+.Ar directory
+is omitted, a "Resources" directory in the current working directory is watched,
+and if no "Resources" directory exists, the current working directory is watched.
+.Pp
+If
+.Ar directory
+is passed, is not a path to a "Resources" directory, and there is a "Resources" directory
+within
+.Ar directory ,
+then that "Resources" directory is watched. Otherwise
+.Ar directory
+is watched. This allows you to pass the path to your application directory instead
+of its "Resources" directory.
+.Pp
+In watch mode,
+.Nm
+goes into an infinite loop and monitors the watched directory for changes to xib/nib
+files. There are three types of changes
+.Nm
+will respond to:
+.Bl -tag -hang
+.It add, modify
+When a new xib/nib file is detected or an existing xib/nib file is modified, it is converted into
+a cib file with the same base name if there is no corresponding cib file with a later
+modification time.
+.It delete
+When a xib/nib file is deleted, the corresponding cib file is deleted as well.
+.El
+.Pp
+Ordinarily in watch mode
+.Nm
+will only display a log line for each file that is added, modified or deleted, and a confirmation
+when the corresponding cib has been generated or deleted. You can use the
+.Fl v
+option in watch mode to display more detailed information when a cib is generated.
+.\"-----------------------------------------------------------------------------------------
+.Ss "Single Mode"
+.\"-----------------------------------------------------------------------------------------
+In
+.Sy single mode,
+you convert a single file xib/nib file into a cib. The only advantages of using single mode over
+watch mode are:
+.Bl -dash -width 0n
+.It
+You may want to view verbose output temporarily to debug the conversion, or use different
+options for different source files.
+.It
+You can specify an output name that is not based on the input name.
+.El
+.Pp
+Most of the time watch mode will be sufficient, but if you do need to use single mode,
+.Nm
+tries to make it as easy as possible. If you navigate to your application directory and invoke:
+.Pp
+.D1 nib2cib
+.Pp
+this will look for "MainMenu.xib" or "MainMenu.nib" in the current directory and then in a "Resources"
+directory within the current directory, if such a directory exists. Since these are
+the default names used in Cappuccino, this usage covers the default case with no extra work.
+.Pp
+If your xib/nib file is not named "MainMenu.xib" or "MainMenu.nib", or you want to run
+.Nm
+from a directory other than the application directory or its "Resources" directory,
+you can specify an input path:
+.Pp
+.D1 nib2cib Pa path
+.Pp
+Note that
+.Pa path
+does not need the ".xib" or ".nib" extension, since that is assumed. If you were to invoke:
+.Pp
+.D1 nib2cib foo
+.Pp
+this would look for "foo.xib" and "foo.nib" in the current directory and in a "Resources" directory
+within the current directory. The output of nib2cib in this case would be "foo.cib" in
+the same directory as the source file.
+.Pp
+If you want
+.Nm
+to generate a cib file with a different base name or in a different directory than
+the input file, you may also specify an output path:
+.Pp
+.D1 nib2cib Pa input Pa output
+.Pp
+As with input filenames, you do not need to add the ".cib" extension to the output path,
+this is assumed.
+.\"-----------------------------------------------------------------------------------------
+.Ss "Themes"
+.\"-----------------------------------------------------------------------------------------
+To do its conversions accurately,
+.Nm
+needs to access the themes you use. If you are using the standard Aristo theme, there is
+nothing extra to do.
+.Pp
+If you are using a custom default theme, usually you specify this using a
+.Ar CPDefaultTheme
+item in your application's Info.plist. In this case
+.Nm
+will read the theme name from the Info.plist. If you set the default theme programmatically
+and not in the Info.plist, then you should use the
+.Fl \-default-theme
+option to specify the theme name.
+.Pp
+If you are loading additional themes in your code using:
+.Pp
+.D1 [[CPThemeBlend alloc] initWithContentsOfURL:]
+.Pp
+then you should inform
+.Nm
+about it by passing the theme names as
+.Fl \-theme Ar name
+options, one for each theme that you load.
+.Pp
+Themes are searched for in the Resources, $CAPP_BUILD/Debug and
+$CAPP_BUILD/Release directories.
+.\"-----------------------------------------------------------------------------------------
+.Sh "COMMON OPTIONS"
+.\"-----------------------------------------------------------------------------------------
+The following options are available in watch mode or single mode:
+.Bl -tag -width 4n
+.It Fl v, \-verbose
+Displays more information about the internal workings of nib2cib. This can be set multiple
+times to increase the amount of information displayed. If passed once, general information
+is displayed. If passed more than once, detailed information about individual view conversions
+is displayed.
+.It Fl R Pa path
+NOTE: This option is for the most part no longer necessary.
+.Pp
+Specifies the path (relative or absolute) to a directory from which images
+and custom themes are retrieved. Formerly
+it was necessary to use this when your xib/nib contained references to images, but now
+.Nm
+infers the "Resources" directory from the input file, so usually you will not need to use
+this option.
+.It Fl \-default-theme Ar name
+Specifies the name of the default theme used by your application. This is only necessary
+if you are not using Aristo and you have not specified the default theme in your application's
+Info.plist. For more information see
+.Sy Themes
+above.
+.It Fl t, \-theme Ar name
+Specifies the name of an additional theme to load. May be used multiple times. For more
+information, see
+.Sy Themes
+above.
+.It Fl \-config Pa path
+Specifies the path to an Info.plist file from which to read configuration information about
+your application, such as the system font and default theme. Ordinarily you do not need to
+use this option, as
+.Nm
+uses the Info.plist in the application directory, which is inferred from
+the input file.
+.It Fl F
+Specify the path of a framework to load before converting. This is only useful if:
+.Bl -dash -width 0n -hang
+.It
+Your IB files use classes from the framework.
+.It
+Those classes need to serialize/deserialize more data than their superclasses.
+.It
+Those classes implement encodeWithCoder: and initWithCoder:.
+.El
+.Pp
+This option may be used multiple times to load multiple frameworks.
+.It Fl \-quiet
+Tells
+.Nm
+to output nothing. This is useful if you are using
+.Nm
+in a shell script and are only interested in the return value.
+.It Fl \-version
+Prints the current version of
+.Nm
+and immediately exits.
+.Nm
+in a shell script and are only interested in the return value.
+.It Fl h, \-help
+Displays
+.Nm
+usage and options.
+.El
+.\"-----------------------------------------------------------------------------------------
+.Sh "RETURN VALUES"
+.\"-----------------------------------------------------------------------------------------
+.Nm
+returns 0 for a successful conversion and >0 if an error occurred.
