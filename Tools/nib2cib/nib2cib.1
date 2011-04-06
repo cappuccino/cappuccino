@@ -81,7 +81,7 @@ In
 .Sy single mode,
 you convert a single file xib/nib file into a cib. The only advantages of using single mode over
 watch mode are:
-.Bl -bullet -width 1n
+.Bl -dash -width 0n
 .It
 You may want to view verbose output temporarily to debug the conversion, or use different
 options for different source files.
@@ -91,9 +91,7 @@ You can specify an output name that is not based on the input name.
 .Pp
 Most of the time watch mode will be sufficient, but if you do need to use single mode,
 .Nm
-tries to make it as easy as possible.
-.Pp
-If you navigate to your application directory and invoke:
+tries to make it as easy as possible. If you navigate to your application directory and invoke:
 .Pp
 .D1 nib2cib
 .Pp
@@ -193,6 +191,18 @@ use this option, as
 .Nm
 uses the Info.plist in the application directory, which is inferred from
 the input file.
+.It Fl F
+Specify the path of a framework to load before converting. This is only useful if:
+.Bl -dash -width 0n -hang
+.It
+Your IB files use classes from the framework.
+.It
+Those classes need to serialize/deserialize more data than their superclasses.
+.It
+Those classes implement encodeWithCoder: and initWithCoder:.
+.El
+.Pp
+This option may be used multiple times to load multiple frameworks.
 .It Fl \-quiet
 Tells
 .Nm
@@ -209,9 +219,6 @@ in a shell script and are only interested in the return value.
 Displays
 .Nm
 usage and options.
-.It Fl F
-Specify the URL of a framework to load before converting. How this is useful is not actually
-known at this time.
 .El
 .\"-----------------------------------------------------------------------------------------
 .Sh "RETURN VALUES"
