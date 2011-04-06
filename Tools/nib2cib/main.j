@@ -160,13 +160,13 @@ function watch(options)
         count = nibs.length;
 
     // First time through only IB files with no corresponding cib
-    // or a cib with an earlier mtime are converted.
+    // or a cib with an earlier or equal mtime are converted.
     while (count--)
     {
         var nib = nibs[count],
             cib = nib.substr(0, nib.length - 4) + ".cib";
 
-        if (FILE.exists(cib) && (FILE.mtime(nib) - FILE.mtime(cib)) < 0)
+        if (FILE.exists(cib) && (FILE.mtime(nib) - FILE.mtime(cib)) <= 0)
             nibInfo[nib] = FILE.mtime(nib);
     }
 
