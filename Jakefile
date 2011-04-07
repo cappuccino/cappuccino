@@ -90,9 +90,11 @@ task ("documentation", function()
     if (!doxygen && executableExists("mdfind"))
     {
         var p = OS.popen(["mdfind", "kMDItemContentType == 'com.apple.application-bundle' && kMDItemCFBundleIdentifier == 'org.doxygen'"]);
+
         if (p.wait() === 0)
         {
             var doxygenApps = p.stdout.read().split("\n");
+
             if (doxygenApps[0])
                 doxygen = FILE.join(doxygenApps[0], "Contents/Resources/doxygen");
         }
@@ -106,12 +108,28 @@ task ("documentation", function()
 
     stream.print("\0green(Using " + doxygen + " for doxygen binary.\0)");
 
-    // Also need Markdown to proccess README file (`brew install Markdown` on the Mac).
-    var markdown = executableExists("markdown")
-    if (!markdown || !FILE.exists(markdown))
+    // Also need Markdown to process README file (`brew install Markdown` on the Mac).
+    var markdown = executableExists("markdown");
+
+    if (!markdown)
     {
-        stream.print("\0yellow(Markdown not installed, skipping documentation generation.\0)");
-        return;
+        var brew = executableExists("brew");
+
+        if (brew)
+        {
+            stream.print("\0yellow(Installing Markdown, please wait...\0)");
+
+            var p = OS.popen(["brew", "install", "Markdown"]);
+
+            if (p.wait() === 0)
+                markdown = executableExists("markdown");
+        }
+
+        if (!markdown)
+        {
+            stream.print("\0yellow(Markdown not installed, skipping documentation generation.\0)");
+            return;
+        }
     }
 
     stream.print("\0green(Using " + markdown + " for Markdown binary.\0)");
