@@ -952,6 +952,17 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
 }
 
+- (BOOL)_sendDelegateDeleteKeyPressed
+{
+    if ([[self delegate] respondsToSelector: @selector(outlineViewDeleteKeyPressed:)])
+    {
+        [[self delegate] outlineViewDeleteKeyPressed:self];
+        return YES;
+    }
+
+    return NO;
+}
+
 /*!
     Returns the delegate object for the outlineview.
 */

@@ -1,8 +1,12 @@
 
 require ("../../common.jake");
 
-var app = require("objective-j/jake").app;
-var BundleTask = require("objective-j/jake").BundleTask;
+var app = require("objective-j/jake").app,
+    BundleTask = require("objective-j/jake").BundleTask,
+    fileCreate = require("jake").fileCreate,
+    FILE = require("file"),
+    OS = require("os"),
+    stream = require("narwhal/term").stream;
 
 app ("capp", function(cappTask)
 {
@@ -35,6 +39,8 @@ filedir($BUILD_CJS_CAPP, ["capp"], function()
 {
     make_objj_executable($BUILD_CJS_CAPP);
 });
+
+copyManPage("capp", 1);
 
 task ("build", ["capp", $BUILD_CJS_CAPP]);
 
