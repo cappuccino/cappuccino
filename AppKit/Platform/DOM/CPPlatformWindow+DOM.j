@@ -204,6 +204,7 @@ var ModifierKeyCodes = [
 
         _windowLevels = [];
         _windowLayers = [CPDictionary dictionary];
+        
 
         [self registerDOMWindow];
         [self updateFromNativeContentRect];
@@ -1157,6 +1158,7 @@ var ModifierKeyCodes = [
 {
     var type = _overriddenEventType || aDOMEvent.type;
 
+
     // IE's event order is down, up, up, dblclick, so we have create these events artificially.
     if (type === @"dblclick")
     {
@@ -1202,7 +1204,7 @@ var ModifierKeyCodes = [
     {
         if (_mouseIsDown)
         {
-            event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseDownIsRightClick ? CPRightMouseUp : CPLeftMouseUp, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseUp, timestamp, location), 0);
+            event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseDownIsRightClick ? CPRightMouseUp : CPLeftMouseUp, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseUp, timestamp, location), 0, nil);
 
             _mouseIsDown = NO;
             _lastMouseUp = event;
@@ -1252,7 +1254,7 @@ var ModifierKeyCodes = [
 
         StopContextMenuDOMEventPropagation = YES;
 
-        event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseDownIsRightClick ? CPRightMouseDown : CPLeftMouseDown, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseDown, timestamp, location), 0);
+        event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseDownIsRightClick ? CPRightMouseDown : CPLeftMouseDown, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseDown, timestamp, location), 0, nil);
 
         _mouseIsDown = YES;
         _lastMouseDown = event;
@@ -1263,7 +1265,8 @@ var ModifierKeyCodes = [
         if (_DOMEventMode)
             return;
 
-        event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseIsDown ? (_mouseDownIsRightClick ? CPRightMouseDragged : CPLeftMouseDragged) : CPMouseMoved, location, modifierFlags, timestamp, windowNumber, nil, -1, 1, 0);
+        event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseIsDown ? (_mouseDownIsRightClick ? CPRightMouseDragged : CPLeftMouseDragged) : CPMouseMoved, location, modifierFlags, timestamp, windowNumber, nil, -1, 1, 0, _lastMouseEventLocation);
+        
     }
 
     var isDragging = [[CPDragServer sharedDragServer] isDragging];
@@ -1289,6 +1292,7 @@ var ModifierKeyCodes = [
             break;
         }
     }
+    _lastMouseEventLocation = location;
 
     _DOMEventGuard.style.display = hasTrackingEventListener ? "" : "none";
 
@@ -1545,7 +1549,7 @@ var ModifierKeyCodes = [
 
 var CPEventClass = [CPEvent class];
 
-var _CPEventFromNativeMouseEvent = function(aNativeEvent, anEventType, aPoint, modifierFlags, aTimestamp, aWindowNumber, aGraphicsContext, anEventNumber, aClickCount, aPressure)
+var _CPEventFromNativeMouseEvent = function(aNativeEvent, anEventType, aPoint, modifierFlags, aTimestamp, aWindowNumber, aGraphicsContext, anEventNumber, aClickCount, aPressure, aMouseDragStart)
 {
     aNativeEvent.isa = CPEventClass;
 
@@ -1559,6 +1563,17 @@ var _CPEventFromNativeMouseEvent = function(aNativeEvent, anEventType, aPoint, m
     aNativeEvent._eventNumber = anEventNumber;
     aNativeEvent._clickCount = aClickCount;
     aNativeEvent._pressure = aPressure;
+    if((anEventType == CPLeftMouseDragged) || (anEventType == CPRightMouseDragged) || (anEventType == CPMouseMoved))
+    {
+        aNativeEvent._deltaX = aPoint.x - aMouseDragStart.x;
+        aNativeEvent._deltaY = aPoint.y - aMouseDragStart.y;
+    }
+    else
+    {
+        aNativeEvent._deltaX = 0;
+        aNativeEvent._deltaY = 0;
+    }
+
 
     return aNativeEvent;
 }
