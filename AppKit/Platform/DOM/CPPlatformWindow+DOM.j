@@ -1158,6 +1158,7 @@ var ModifierKeyCodes = [
 {
     var type = _overriddenEventType || aDOMEvent.type;
 
+
     // IE's event order is down, up, up, dblclick, so we have create these events artificially.
     if (type === @"dblclick")
     {
@@ -1221,7 +1222,6 @@ var ModifierKeyCodes = [
     else if (type === "mousedown")
     {
         var button = aDOMEvent.button;
-        _mouseDragStart = location;
         _mouseDownIsRightClick = button == 2 || (CPBrowserIsOperatingSystem(CPMacOperatingSystem) && button == 0 && modifierFlags & CPControlKeyMask);
 
         if (sourceElement.tagName === "INPUT" && sourceElement != _DOMFocusElement)
@@ -1265,8 +1265,8 @@ var ModifierKeyCodes = [
         if (_DOMEventMode)
             return;
 
-        event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseIsDown ? (_mouseDownIsRightClick ? CPRightMouseDragged : CPLeftMouseDragged) : CPMouseMoved, location, modifierFlags, timestamp, windowNumber, nil, -1, 1, 0, _mouseDragStart);
-        _mouseDragStart = location;
+        event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseIsDown ? (_mouseDownIsRightClick ? CPRightMouseDragged : CPLeftMouseDragged) : CPMouseMoved, location, modifierFlags, timestamp, windowNumber, nil, -1, 1, 0, _lastMouseEventLocation);
+        
     }
 
     var isDragging = [[CPDragServer sharedDragServer] isDragging];
@@ -1292,6 +1292,7 @@ var ModifierKeyCodes = [
             break;
         }
     }
+    _lastMouseEventLocation = location;
 
     _DOMEventGuard.style.display = hasTrackingEventListener ? "" : "none";
 
@@ -1562,10 +1563,15 @@ var _CPEventFromNativeMouseEvent = function(aNativeEvent, anEventType, aPoint, m
     aNativeEvent._eventNumber = anEventNumber;
     aNativeEvent._clickCount = aClickCount;
     aNativeEvent._pressure = aPressure;
-    if((anEventType == CPLeftMouseDragged) || (anEventType == CPRightMouseDragged))
+    if((anEventType == CPLeftMouseDragged) || (anEventType == CPRightMouseDragged) || (anEventType == CPMouseMoved))
     {
         aNativeEvent._deltaX = aPoint.x - aMouseDragStart.x;
         aNativeEvent._deltaY = aPoint.y - aMouseDragStart.y;
+    }
+    else
+    {
+        aNativeEvent._deltaX = 0;
+        aNativeEvent._deltaY = 0;
     }
 
 
