@@ -267,6 +267,32 @@ function CGPointFromEvent(anEvent)
     return _CGPointMake(anEvent.clientX, anEvent.clientY);
 }
 
+/*!
+    Combines two insets by adding their individual elements and returns the result.
+
+    @group CGInset
+*/
+function CGInsetUnion(lhsInset, rhsInset)
+{
+    return _CGInsetMake(lhsInset.top + rhsInset.top,
+                        lhsInset.right + rhsInset.right,
+                        lhsInset.bottom + rhsInset.bottom,
+                        lhsInset.left + rhsInset.left);
+}
+
+/*!
+    Subtract one inset from another by subtracting their individual elements and returns the result.
+
+    @group CGInset
+*/
+function CGInsetDifference(lhsInset, rhsInset)
+{
+    return _CGInsetMake(lhsInset.top - rhsInset.top,
+                        lhsInset.right - rhsInset.right,
+                        lhsInset.bottom - rhsInset.bottom,
+                        lhsInset.left - rhsInset.left);
+}
+
 function CGInsetFromString(aString)
 {
     var numbers = aString.substr(1, aString.length - 2).split(',');
