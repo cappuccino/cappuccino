@@ -362,4 +362,22 @@
     [self assert:[str copy] equals:str];
     [self assert:[str copy] equals:[str copy]];
 }
+
+- (void)testRangeOfString
+{
+    // Based on the Cocoa "String Programming Guide" example.
+    var searchString = @"age",
+        beginsTest = @"Agencies",
+        prefixRange = [beginsTest rangeOfString:searchString options:(CPCaseInsensitiveSearch)];
+
+    [self assert:0 equals:prefixRange.location message:@"forward search for age (location)"];
+    [self assert:3 equals:prefixRange.length message:@"forward search for age (length)"];
+
+    var endsTest = @"BRICOLAGE",
+        suffixRange = [endsTest rangeOfString:searchString options:(CPCaseInsensitiveSearch | CPBackwardsSearch)];
+
+    [self assert:6 equals:suffixRange.location message:@"backward search for age (location)"];
+    [self assert:3 equals:suffixRange.length message:@"backward search for age (length)"];
+}
+
 @end
