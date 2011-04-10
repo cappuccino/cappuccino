@@ -12,11 +12,11 @@
 
 - (void)testDate
 {
-    var before = new Date();
-    var middle = [CPDate date];
-    var after = new Date();
-    var future = [CPDate distantFuture];
-    var past = [CPDate distantPast];
+    var before = new Date(),
+        middle = [CPDate date],
+        after = new Date(),
+        future = [CPDate distantFuture],
+        past = [CPDate distantPast];
 
     [self assertTrue:(before <= middle) message:"before not less than middle"];
     [self assertTrue:(middle <= after) message:"middle not less than after ("+middle+","+after+")"];
@@ -59,8 +59,8 @@
 
     for (var i = 0; i < tests.length; i++)
     {
-        var parsed = [[CPDate alloc] initWithString:tests[i][0]];
-        var correctSeconds = tests[i][1];
+        var parsed = [[CPDate alloc] initWithString:tests[i][0]],
+            correctSeconds = tests[i][1];
         [self assert:correctSeconds equals:[parsed timeIntervalSince1970]];
     }
 }
