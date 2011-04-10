@@ -204,7 +204,7 @@ var ModifierKeyCodes = [
 
         _windowLevels = [];
         _windowLayers = [CPDictionary dictionary];
-        
+
 
         [self registerDOMWindow];
         [self updateFromNativeContentRect];
@@ -1265,8 +1265,9 @@ var ModifierKeyCodes = [
         if (_DOMEventMode)
             return;
 
-        event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseIsDown ? (_mouseDownIsRightClick ? CPRightMouseDragged : CPLeftMouseDragged) : CPMouseMoved, location, modifierFlags, timestamp, windowNumber, nil, -1, 1, 0, _lastMouseEventLocation);
-        
+        // _lastMouseEventLocation might be nil on the very first mousemove event. Just send in the current location
+        // in this case - this will result in a delta x and delta y of 0 which seems natural for the first event.
+        event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseIsDown ? (_mouseDownIsRightClick ? CPRightMouseDragged : CPLeftMouseDragged) : CPMouseMoved, location, modifierFlags, timestamp, windowNumber, nil, -1, 1, 0, _lastMouseEventLocation || location);
     }
 
     var isDragging = [[CPDragServer sharedDragServer] isDragging];
