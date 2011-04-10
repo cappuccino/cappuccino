@@ -33,6 +33,19 @@
     [self assertFalse:[now isEqual:nil]];
 }
 
+/*!
+    [date description] displays time in the current timezone. This test is a crude
+    way to validate that this works right for different timezones: just run the test
+    with different timezones configured.
+*/
+- (void)testParseNow
+{
+    var now = [CPDate new],
+        alsoNow = [[CPDate alloc] initWithString:[now description]];
+
+    [self assert:[now description] equals:[alsoNow description]];
+}
+
 - (void)testInitWithString
 {
     var tests = [
@@ -41,6 +54,7 @@
         ["1970-01-01 01:00:00 +0000", 60*60],
         ["1970-01-02 00:00:00 +0000", 24*60*60],
         ["2009-11-17 17:52:04 +0000", 1258480324],
+        ["2009-11-17 18:52:04 +0200", 1258476724],
     ];
 
     for (var i = 0; i < tests.length; i++)
@@ -65,7 +79,7 @@
     // Unfortunately the result will be different depending on the testing machine's timezone, so
     // this test turns out to be more complex than the code tested. We can't just reuse the
     // original code as then we'd have exactly the same bugs.
-    var date = [CPDate dateWithTimeIntervalSince1970: 1234567890],
+    var date = [CPDate dateWithTimeIntervalSince1970:1234567890],
         expectedDay = 13,
         expectedHour = 23,
         expectedMinute = 31,
@@ -106,11 +120,11 @@
 
     // Now test that timezone convertion algorithm in CPDate works correctly for
     // different timezones
-    [self assert:"+0000" equals: [CPDate timezoneOffsetString:0]];
-    [self assert:"-0900" equals: [CPDate timezoneOffsetString:+540]];
-    [self assert:"+0300" equals: [CPDate timezoneOffsetString:-180]];
-    [self assert:"-0130" equals: [CPDate timezoneOffsetString:+90]];
-    [self assert:"+0130" equals: [CPDate timezoneOffsetString:-90]];
+    [self assert:"+0000" equals:[CPDate timezoneOffsetString:0]];
+    [self assert:"-0900" equals:[CPDate timezoneOffsetString:+540]];
+    [self assert:"+0300" equals:[CPDate timezoneOffsetString:-180]];
+    [self assert:"-0130" equals:[CPDate timezoneOffsetString:+90]];
+    [self assert:"+0130" equals:[CPDate timezoneOffsetString:-90]];
 }
 
 - (void)testCopy
