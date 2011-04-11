@@ -28,6 +28,8 @@
 @import "CPURL.j"
 @import "CPValue.j"
 
+#define _CPMaxRange(aRange) ((aRange).location + (aRange).length)
+
 /*!
     A case insensitive search
     @global
@@ -297,6 +299,9 @@ var CPStringRegexSpecialCharacters = [
 */
 - (CPString)substringWithRange:(CPRange)aRange
 {
+    if (aRange.location < 0 || _CPMaxRange(aRange) > length)
+        [CPException raise:CPRangeException reason:"aRange out of bounds"];
+
     return substr(aRange.location, aRange.length);
 }
 

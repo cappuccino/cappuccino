@@ -417,6 +417,18 @@
     hitRange = [testString rangeOfString:@"i" options:0 range:CPMakeRange(10, 20)];
     [self assert:12 equals:hitRange.location message:@"search for 'i' in partial range (location)"];
     [self assert:1 equals:hitRange.length message:@"search for 'i' in partial range (position)"];
+
+    var sawException = false;
+    try
+    {
+        hitRange = [testString rangeOfString:@"i" options:0 range:CPMakeRange(50, 60)];
+    }
+    catch (anException)
+    {
+        sawException = true;
+        [self assert:CPRangeException equals:[anException name]];
+    }
+    [self assertTrue:sawException message:"expected CPRangeException"];
 }
 
 @end
