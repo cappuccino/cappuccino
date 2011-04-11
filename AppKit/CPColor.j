@@ -416,7 +416,7 @@ var cachedBlackColor,
         parseInt(parts[0], 10) / 255.0,
         parseInt(parts[1], 10) / 255.0,
         parseInt(parts[2], 10) / 255.0,
-        parts[3] ? parseInt(parts[3], 10) / 255.0 : 1.0
+        parts[3] ? parseFloat(parts[3], 10) : 1.0
     ];
 
     _cssString = aString;
