@@ -397,7 +397,26 @@
     [self assert:endsTest.length equals:anchoredSuffixRange.length message:"anchored backwards search for whole string (length)"];
 
     anchoredSuffixRange = [endsTest rangeOfString:@"" options:(CPAnchoredSearch | CPCaseInsensitiveSearch | CPBackwardsSearch)];
-    [self assert:CPNotFound equals:anchoredSuffixRange.location message:"anchored backwards search for nothing"];
+    [self assert:CPNotFound equals:anchoredSuffixRange.location message:"anchored backwards search for nothing (location)"];
+    [self assert:0 equals:anchoredSuffixRange.length message:"anchored backwards search for nothing (length)"];
+}
+
+- (void)testRangeOfString_options_range
+{
+    var testString = @"In another life you would have made a excellent criminal.",
+        hitRange;
+
+    hitRange = [testString rangeOfString:@"life" options:0 range:CPMakeRange(0, testString.length)];
+    [self assert:11 equals:hitRange.location message:@"search for 'life' in full range (location)"];
+    [self assert:4 equals:hitRange.length message:@"search for 'life' in full range (position)"];
+
+    hitRange = [testString rangeOfString:@"i" options:0 range:CPMakeRange(0, testString.length)];
+    [self assert:12 equals:hitRange.location message:@"search for 'i' in full range (location)"];
+    [self assert:1 equals:hitRange.length message:@"search for 'i' in full range (position)"];
+
+    hitRange = [testString rangeOfString:@"i" options:0 range:CPMakeRange(10, 20)];
+    [self assert:12 equals:hitRange.location message:@"search for 'i' in partial range (location)"];
+    [self assert:1 equals:hitRange.length message:@"search for 'i' in partial range (position)"];
 }
 
 @end

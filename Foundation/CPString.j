@@ -346,10 +346,9 @@ var CPStringRegexSpecialCharacters = [
 }
 
 /*!
-    Finds the range of characters in the receiver
-    where the specified string exists in the given range
-    of the receiver.The search is subject to the options specified in the
-    specified mask which can be a combination of:
+    Finds the range of characters in the receiver where the specified string
+    exists in the given range of the receiver.The search is subject to the
+    options specified in the specified mask which can be a combination of:
     <pre>
     CPCaseInsensitiveSearch
     CPLiteralSearch
@@ -360,8 +359,10 @@ var CPStringRegexSpecialCharacters = [
     @param aString the string to search for
     @param aMask the options to use in the search
     @param aRange the range of the receiver in which to search for
-    @return the range of characters in the receiver. If the string was not found,
-        or if it was @"", the range will be {CPNotFound, 0}.
+    @return the range of characters in the receiver. The range is relative to
+        the start of the full string and not the passed-in range. If the
+        string was not found, or if it was @"", the range will be
+        {CPNotFound, 0}.
 */
 - (CPRange)rangeOfString:(CPString)aString options:(int)aMask range:(CPrange)aRange
 {
@@ -389,7 +390,10 @@ var CPStringRegexSpecialCharacters = [
     else
         location = string.indexOf(aString);
 
-    return CPMakeRange(location, location == CPNotFound ? 0 : aString.length);
+    if (location == CPNotFound)
+        return CPMakeRange(CPNotFound, 0);
+
+    return CPMakeRange(location + (aRange ? aRange.location : 0), aString.length);
 }
 
 //Replacing Substrings
