@@ -375,7 +375,7 @@ var CPStringRegexSpecialCharacters = [
     }
 
     if (aMask & CPBackwardsSearch)
-        location = string.lastIndexOf(aString, aMask & CPAnchoredSearch ? length - aString.length : 0);
+        location = string.lastIndexOf(aString, aMask & CPAnchoredSearch ? string.length - aString.length : string.length);
     else if (aMask & CPAnchoredSearch)
         location = string.substr(0, aString.length).indexOf(aString) != CPNotFound ? 0 : CPNotFound;
     else
