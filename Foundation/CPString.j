@@ -361,10 +361,14 @@ var CPStringRegexSpecialCharacters = [
     @param aMask the options to use in the search
     @param aRange the range of the receiver in which to search for
     @return the range of characters in the receiver. If the string was not found,
-    the \c length of the range will be 0.
+        or if it was @"", the range will be {CPNotFound, 0}.
 */
 - (CPRange)rangeOfString:(CPString)aString options:(int)aMask range:(CPrange)aRange
 {
+    // Searching for @"" always returns CPNotFound.
+    if (!aString)
+        return CPMakeRange(CPNotFound, 0);
+
     var string = (aRange == nil) ? self : [self substringWithRange:aRange],
         location = CPNotFound;
 

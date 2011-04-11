@@ -388,6 +388,16 @@
 
     [self assert:8 equals:unAnchoredSuffixRange.location message:"backwards search for LAG"];
     [self assert:CPNotFound equals:anchoredSuffixRange.location message:"anchored backwards search for LAG"];
+
+    anchoredSuffixRange = [endsTest rangeOfString:@"AGE" options:(CPAnchoredSearch | CPCaseInsensitiveSearch | CPBackwardsSearch)];
+    [self assert:9 equals:anchoredSuffixRange.location message:"anchored backwards search for AGE"];
+
+    anchoredSuffixRange = [endsTest rangeOfString:endsTest options:(CPAnchoredSearch | CPCaseInsensitiveSearch | CPBackwardsSearch)];
+    [self assert:0 equals:anchoredSuffixRange.location message:"anchored backwards search for whole string (location)"];
+    [self assert:endsTest.length equals:anchoredSuffixRange.length message:"anchored backwards search for whole string (length)"];
+
+    anchoredSuffixRange = [endsTest rangeOfString:@"" options:(CPAnchoredSearch | CPCaseInsensitiveSearch | CPBackwardsSearch)];
+    [self assert:CPNotFound equals:anchoredSuffixRange.location message:"anchored backwards search for nothing"];
 }
 
 @end
