@@ -204,7 +204,7 @@ var ModifierKeyCodes = [
 
         _windowLevels = [];
         _windowLayers = [CPDictionary dictionary];
-        
+
 
         [self registerDOMWindow];
         [self updateFromNativeContentRect];
@@ -1266,7 +1266,7 @@ var ModifierKeyCodes = [
             return;
 
         event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseIsDown ? (_mouseDownIsRightClick ? CPRightMouseDragged : CPLeftMouseDragged) : CPMouseMoved, location, modifierFlags, timestamp, windowNumber, nil, -1, 1, 0, _lastMouseEventLocation);
-        
+
     }
 
     var isDragging = [[CPDragServer sharedDragServer] isDragging];
@@ -1563,10 +1563,11 @@ var _CPEventFromNativeMouseEvent = function(aNativeEvent, anEventType, aPoint, m
     aNativeEvent._eventNumber = anEventNumber;
     aNativeEvent._clickCount = aClickCount;
     aNativeEvent._pressure = aPressure;
-    if((anEventType == CPLeftMouseDragged) || (anEventType == CPRightMouseDragged) || (anEventType == CPMouseMoved))
+
+    if ((anEventType == CPLeftMouseDragged) || (anEventType == CPRightMouseDragged) || (anEventType == CPMouseMoved))
     {
-        aNativeEvent._deltaX = aPoint.x - aMouseDragStart.x;
-        aNativeEvent._deltaY = aPoint.y - aMouseDragStart.y;
+        aNativeEvent._deltaX = aPoint.x - (aMouseDragStart ? aMouseDragStart.x : 0);
+        aNativeEvent._deltaY = aPoint.y - (aMouseDragStart ? aMouseDragStart.y : 0);
     }
     else
     {
