@@ -376,8 +376,18 @@
     var endsTest = @"BRICOLAGE",
         suffixRange = [endsTest rangeOfString:searchString options:(CPCaseInsensitiveSearch | CPBackwardsSearch)];
 
-    [self assert:6 equals:suffixRange.location message:@"backward search for age (location)"];
-    [self assert:3 equals:suffixRange.length message:@"backward search for age (length)"];
+    [self assert:6 equals:suffixRange.location message:@"backwards search for age (location)"];
+    [self assert:3 equals:suffixRange.length message:@"backwards search for age (length)"];
+}
+
+- (void)testRangeOfString_Anchored_Backwards
+{
+    var endsTest = @"AGEBRICOLAGE",
+        unAnchoredSuffixRange = [endsTest rangeOfString:@"LAG" options:(CPCaseInsensitiveSearch | CPBackwardsSearch)],
+        anchoredSuffixRange = [endsTest rangeOfString:@"LAG" options:(CPAnchoredSearch | CPCaseInsensitiveSearch | CPBackwardsSearch)];
+
+    [self assert:8 equals:unAnchoredSuffixRange.location message:"backwards search for LAG"];
+    [self assert:CPNotFound equals:anchoredSuffixRange.location message:"anchored backwards search for LAG"];
 }
 
 @end
