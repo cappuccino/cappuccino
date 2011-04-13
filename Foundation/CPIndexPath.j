@@ -145,3 +145,24 @@
 }
 
 @end
+
+var CPIndexPathIndexesKey = @"CPIndexPathIndexes";
+
+@implementation CPIndexPath (CPCoding)
+
+- (id)initWithCoder:(CPCoder)theCoder
+{
+    if (self = [self init])
+    {
+        _indexes = [theCoder decodeObjectForKey:CPIndexPathIndexesKey];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)theCoder
+{
+    [theCoder encodeObject:_indexes forKey:CPIndexPathIndexesKey];
+}
+
+@end
