@@ -7,23 +7,34 @@ function main(args)
 {
     var fileURL = new CFURL(args[1]),
         sourcesURL = new CFURL(args[2]),
-        classes = [],
-        registerClassPair = objj_registerClassPair;
-
-
-    var source = FILE.read(fileURL, { charset: "UTF-8" }),
+        source = FILE.read(fileURL, { charset: "UTF-8" }),
         flags = ObjectiveJ.Preprocessor.Flags.IncludeDebugSymbols |
-                ObjectiveJ.Preprocessor.Flags.IncludeTypeSignatures;
+                ObjectiveJ.Preprocessor.Flags.IncludeTypeSignatures,
+        superClasses = { };
 
     source = ObjectiveJ.preprocess(source, fileURL, flags).code();
 
-    source = source.replace(/objj_allocateClassPair\([a-zA-Z_$](\w|$)*/g, function()
+    source = source.replace(/objj_allocateClassPair\([a-zA-Z_$](\w|$)*/g, function(aString)
     {
-        return "objj_allocateClassPair(CPObject";
+        var superClassName = aString.substr("objj_allocateClassPair(".length);
+
+        return "objj_allocateClassPair(\"" + superClassName + "\", CPObject";
     });
+
+    var allocateClassPair = objj_allocateClassPair;
+
+    objj_allocateClassPair = function(superClassName)
+    {
+        superClasses[arguments[2]] = superClassName;
+        return allocateClassPair(arguments[1], arguments[2]);
+    }
+
+    var classes = [],
+        registerClassPair = objj_registerClassPair;
 
     objj_registerClassPair = function(aClass)
     {
+        aClass.actual_super_class;
         registerClassPair(aClass);
         classes.push(aClass);
     }
@@ -69,9 +80,12 @@ function main(args)
                 actions.push("- (IBAction)" + method_getName(aMethod) + "(" + NSCompatibleClassName(types[1] || "id", YES)+ ")aSender;");
         });
 
+        var className = class_getName(aClass),
+            superClassName = superClasses[className];
+
         ObjectiveCSource +=
-            "\n@interface " + class_getName(aClass) + " : " +
-            NSCompatibleClassName(class_getName(class_getSuperclass(aClass))) +
+            "\n@interface " + class_getName(aClass) +
+            (superClassName === "Nil" ? "" : (" : " + NSCompatibleClassName(superClassName))) +
             "\n{\n" +
             outlets.join("\n") +
             "\n}\n" +
