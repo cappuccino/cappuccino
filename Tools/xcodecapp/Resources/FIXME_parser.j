@@ -99,20 +99,21 @@ function main(args)
 
 function NSCompatibleClassName(aClassName, asPointer)
 {
-    if (aClassName === "var")
+    if (aClassName === "var" || aClassName === "id")
         return "id";
 
-    var suffix = aClassName.substr(0, 2);
+    var suffix = aClassName.substr(0, 2),
+        asterisk = asPointer ? "*" : "";
 
     if (suffix !== "CP")
-        return aClassName;
+        return aClassName + asterisk;
 
     var NSClassName = "NS" + aClassName.substr(2);
 
     if (NSClasses[NSClassName])
-        return NSClassName + (asPointer ? "*" : "");
+        return NSClassName + asterisk;
 
-    return aClassName + (asPointer ? "*" : "");
+    return aClassName + asterisk;
 }
 
 var NSClasses = {
