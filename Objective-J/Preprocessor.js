@@ -448,7 +448,8 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
                 ivar_count = 0,
                 declaration = [],
                 attributes,
-                accessors = {};
+                accessors = {},
+                types = [];
 
             while((token = tokens.skip_whitespace()) && token != TOKEN_CLOSE_BRACE)
             {
@@ -457,8 +458,11 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
                     token = tokens.next();
                     if (token === TOKEN_ACCESSORS)
                         attributes = this.accessors(tokens);
+
                     else if (token !== TOKEN_OUTLET)
                         throw new SyntaxError(this.error_message("*** Unexpected '@' token in ivar declaration ('@"+token+"')."));
+                    else
+                        types.push("@" + token);
                 }
                 else if (token == TOKEN_SEMICOLON)
                 {
@@ -469,10 +473,14 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
 
                     var name = declaration[declaration.length - 1];
 
-                    CONCAT(buffer, "new objj_ivar(\"" + name + "\")");
+                    if (this._flags & Preprocessor.Flags.IncludeTypeSignatures)
+                        CONCAT(buffer, "new objj_ivar(\"" + name + "\", \"" + types.slice(0, types.length - 1). join(" ") + "\")");
+                    else
+                        CONCAT(buffer, "new objj_ivar(\"" + name + "\")");
 
                     ivar_names[name] = 1;
                     declaration = [];
+                    types = [];
 
                     if (attributes)
                     {
@@ -481,7 +489,10 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
                     }
                 }
                 else
+                {
                     declaration.push(token);
+                    types.push(token);
+                }
             }
 
             // If we have objects in our declaration, the user forgot a ';'.
