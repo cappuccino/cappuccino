@@ -51,8 +51,8 @@ var FILE = require("file"),
     var filePath = nil,
         filePaths = [m_mtimesForFilePaths keyEnumerator];
 
-    while (filePath = [filePath nextObject])
-        if (![mtimesForFilePaths objectForKey:filePath] === nil)
+    while (filePath = [filePaths nextObject])
+        if ([mtimesForFilePaths objectForKey:filePath] === nil)
             [m_removedFilePaths addObject:filePath];
 
     m_mtimesForFilePaths = mtimesForFilePaths;

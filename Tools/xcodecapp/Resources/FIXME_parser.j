@@ -6,7 +6,7 @@ var FILE = require("file");
 function main(args)
 {
     var fileURL = new CFURL(args[1]),
-        sourcesURL = new CFURL(args[2]),
+        outputURL = new CFURL(args[2]),
         source = FILE.read(fileURL, { charset: "UTF-8" }),
         flags = ObjectiveJ.Preprocessor.Flags.IncludeDebugSymbols |
                 ObjectiveJ.Preprocessor.Flags.IncludeTypeSignatures,
@@ -94,15 +94,7 @@ function main(args)
     });
 
     if (ObjectiveCSource.length)
-        FILE.write(FILE.join(sourcesURL, xCodeSupportShadowURL(fileURL)), ObjectiveCSource, { charset:"UTF-8" });
-}
-
-function xCodeSupportShadowURL(aURL)
-{
-    var flattenedPath = (aURL + "").replace(/\//g, "_"),
-        extension = FILE.extension(flattenedPath);
-
-    return new CFURL(flattenedPath.substr(0, flattenedPath.length - extension.length) + ".h");
+        FILE.write(outputURL, ObjectiveCSource, { charset:"UTF-8" });
 }
 
 function NSCompatibleClassName(aClassName, asPointer)
