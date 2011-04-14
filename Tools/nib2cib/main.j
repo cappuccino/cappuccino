@@ -439,7 +439,7 @@ function logFormatter(aString, aLevel, aTitle)
 
 function getThemeList(defaultTheme, options)
 {
-    var themes = [defaultTheme || getDefaultThemeName()];
+    var themes = [defaultTheme || getAppKitDefaultThemeName()];
 
     if (options.extraThemes)
         for (var i = 0; i < options.extraThemes.length; ++i)
@@ -449,23 +449,62 @@ function getThemeList(defaultTheme, options)
     return themes;
 }
 
-function getDefaultThemeName()
+// Returns undefined if $CAPP_BUILD is not defined, false if path cannot be found in $CAPP_BUILD
+function findInCappBuild(path, isDirectory, callback)
 {
-    var themeName = nil,
-        cappBuild = SYS.env["CAPP_BUILD"];
+    var cappBuild = SYS.env["CAPP_BUILD"];
 
-    if (cappBuild)
+    if (!cappBuild)
+        return undefined;
+
+    cappBuild = FILE.canonical(cappBuild);
+
+    if (FILE.isDirectory(cappBuild))
     {
-        for (var i = 0; i < BuildTypes.length; ++i)
+        var result = null;
+
+        for (var i = 0; i < BuildTypes.length && !result; ++i)
         {
-            var path = FILE.join(cappBuild, BuildTypes[i], "AppKit", "Info.plist");
+            var findPath = FILE.join(cappBuild, BuildTypes[i], path);
 
-            themeName = themeNameFromPropertyList(path);
-
-            if (themeName)
-                break;
+            if ((isDirectory && FILE.isDirectory(findPath)) || (!isDirectory && FILE.exists(findPath)))
+                result = callback(findPath);
         }
+
+        return result;
     }
+    else
+        return false;
+}
+
+function findInInstalledFrameworks(path, isDirectory, callback)
+{
+    // NOTE: It's safe to use '/' directly in the path, we're guaranteed to be on a Mac
+    var frameworks = FILE.canonical(FILE.join(SYS.prefix, "packages/cappuccino/Frameworks")),
+        result = null,
+        findPath = FILE.join(frameworks, "Debug", path);
+
+    if ((isDirectory && FILE.isDirectory(findPath)) || (!isDirectory && FILE.exists(findPath)))
+        result = callback(findPath);
+
+    if (!result)
+    {
+        findPath = FILE.join(frameworks, path);
+
+        if ((isDirectory && FILE.isDirectory(findPath)) || (!isDirectory && FILE.exists(findPath)))
+            result = callback(findPath);
+    }
+
+    return result;
+}
+
+function getAppKitDefaultThemeName()
+{
+    var callback = function(path) { return themeNameFromPropertyList(path); },
+        themeName = findInCappBuild("AppKit/Info.plist", false, callback);
+
+    if (!themeName)
+        themeName = findInInstalledFrameworks("AppKit/Info.plist", false, callback);
 
     return themeName || DefaultTheme;
 }
@@ -512,25 +551,12 @@ function loadTheme(themeName, themeDir)
 
     if (!themeDir)
     {
-        // Try in $CAPP_BUILD
-        cappBuild = FILE.canonical(SYS.env["CAPP_BUILD"]);
+        var returnPath = function(path) { return path; };
 
-        if (!cappBuild)
-            fail("$CAPP_BUILD is not set, exiting.");
+        themePath = findInCappBuild(blendName, true, returnPath);
 
-        if (!FILE.isDirectory(cappBuild))
-            fail("$CAPP_BUILD does not exist: " + cappBuild)
-
-        for (var i = 0; i < BuildTypes.length; ++i)
-        {
-            var path = FILE.join(cappBuild, BuildTypes[i], blendName);
-
-            if (FILE.isDirectory(path))
-            {
-                themePath = path;
-                break;
-            }
-        }
+        if (!themePath)
+            themePath = findInInstalledFrameworks("AppKit/Resources/" + blendName, true, returnPath);
 
         // Last resort, try the cwd
         if (!themePath)
@@ -543,7 +569,7 @@ function loadTheme(themeName, themeDir)
     }
 
     if (!themePath)
-        fail("Cannot find the theme \"" + themeName + "\"");
+        fail('Cannot find the theme "' + themeName + '"');
 
     return readTheme(themeName, themePath);
 }
