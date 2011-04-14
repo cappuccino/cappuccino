@@ -1641,14 +1641,14 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     if (!(_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_writeItems_toPasteboard_))
         return NO;
 
-    var rowIndexes = [];
-    [theIndexes getIndexes:rowIndexes maxCount:[theIndexes count] inIndexRange:nil];
+    var items = [],
+        index = [theIndexes firstIndex];
 
-    var rowIndex = [rowIndexes count],
-        items = [];
-
-    while (rowIndex--)
-        [items addObject:[_outlineView itemAtRow:[rowIndexes objectAtIndex:rowIndex]]];
+    while (index !== CPNotFound)
+    {
+        [items addObject:[_outlineView itemAtRow:index]]
+        index = [theIndexes indexGreaterThanIndex:index];
+    }
 
     return [_outlineView._outlineViewDataSource outlineView:_outlineView writeItems:items toPasteboard:thePasteboard];
 }

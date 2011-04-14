@@ -55,7 +55,10 @@ function ask_append_shell_config () {
         shell_config_file="$HOME/.profile"
     elif [ -f "$HOME/.bashrc" ]; then
         shell_config_file="$HOME/.bashrc"
+    elif [ -f "$HOME/.zshrc" ]; then
+        shell_config_file="$HOME/.zshrc"
     fi
+
 
     echo "    \"$config_string\" will be appended to \"$shell_config_file\"."
     if prompt "no"; then
