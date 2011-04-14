@@ -99,6 +99,15 @@ var FILE = require("file"),
     [self updateNibFiles];
 }
 
+- (CPURL)shadowURLForSourceURL:(CPURL)aSourceURL
+{
+    var flattenedPath = (aSourceURL + "").replace(new RegExp("\/", "g"), "_"),
+        extension = FILE.extension(flattenedPath),
+        basename = flattenedPath.substr(0, flattenedPath.length - extension.length) + ".h";
+
+    return new CFURL(basename, m_xCodeSupportSourcesURL.asDirectoryPathURL());
+}
+
 - (void)updateSourceFiles
 {
     // Require the new parser for this.
@@ -107,20 +116,19 @@ var FILE = require("file"),
     [m_sourceResourceMonitor addedFilePaths].forEach(function(aFilePath)
     {
         print("Added " + aFilePath);
-        OS.system("objj " + [self xCodeProjectParserURL] + " " + aFilePath + " " + m_xCodeSupportSourcesURL);
+        OS.system("objj " + [self xCodeProjectParserURL] + " " + aFilePath + " " + [self shadowURLForSourceURL:aFilePath]);
     });
 
     [m_sourceResourceMonitor editedFilePaths].forEach(function(aFilePath)
     {
         print("Edited " + aFilePath);
-        OS.system("objj " + [self xCodeProjectParserURL] + " " + aFilePath + " " + m_xCodeSupportSourcesURL);
+        OS.system("objj " + [self xCodeProjectParserURL] + " " + aFilePath + " " + [self shadowURLForSourceURL:aFilePath]);
     });
 
     [m_sourceResourceMonitor removedFilePaths].forEach(function(aFilePath)
     {
-        // delete?
         print("Removed " + aFilePath);
-        // OS.system("nib2cib " + aFilePath);
+        FILE.remove([self shadowURLForSourceURL:aFilePath]);
     });
 }
 
