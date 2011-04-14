@@ -39,7 +39,7 @@ function main(args)
     classes.forEach(function(aClass)
     {
         var outlets = [];
-        
+
         class_copyIvarList(aClass).forEach(function(anIvar)
         {
             var types = ivar_getTypeEncoding(anIvar).split(" ");
@@ -69,10 +69,10 @@ function main(args)
                 actions.push("- (IBAction)" + method_getName(aMethod) + "(" + NSCompatibleClassName(types[1] || "id", YES)+ ")aSender;");
         });
 
-        ObjectiveCSource += 
-            "@interface " + class_getName(aClass) + " : " + 
-            NSCompatibleClassName(class_getName(class_getSuperclass(aClass))) + 
-            "\n{\n" + 
+        ObjectiveCSource +=
+            "\n@interface " + class_getName(aClass) + " : " +
+            NSCompatibleClassName(class_getName(class_getSuperclass(aClass))) +
+            "\n{\n" +
             outlets.join("\n") +
             "\n}\n" +
             actions.join("\n") +
