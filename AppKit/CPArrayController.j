@@ -138,7 +138,7 @@
     _sortDescriptors = [CPArray array];
     _filterPredicate = nil;
     _selectionIndexes = [CPIndexSet indexSet];
-    _arrangedObjects = [CPArray array];
+    [self __setArrangedObjects:[CPArray array]];
 }
 
 - (void)prepareContent
