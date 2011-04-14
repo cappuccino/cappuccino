@@ -61,7 +61,8 @@ function main(args)
                 {
                     if (aType === "@outlet")
                         types[anIndex] = "IBOutlet";
-                    else
+
+                    else if (aType !== "IBOutlet")
                         types[anIndex] = NSCompatibleClassName(aType, YES);
                 });
 
