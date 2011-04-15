@@ -31,8 +31,16 @@ var FILE = require("file"),
     m_removedFilePaths = [];
     m_editedFilePaths = [];
 
-    var paths = new FileList(m_pattern),
-        mtimesForFilePaths = [CPMutableDictionary new];
+    // FIXME: There must be a better way to do this.
+    var subProjects = new FileList(FILE.join(FILE.dirname(FILE.dirname(m_pattern)), "*/**/Jakefile")),
+        paths = new FileList(m_pattern);
+
+    subProjects.forEach(function(aPath)
+    {
+        paths.exclude(FILE.join(FILE.dirname(aPath), "**", "*"));
+    });
+
+    var mtimesForFilePaths = [CPMutableDictionary new];
 
     paths.forEach(function(aPath)
     {
