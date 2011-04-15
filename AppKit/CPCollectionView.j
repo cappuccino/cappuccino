@@ -898,6 +898,21 @@ var CPCollectionViewMinItemSizeKey              = @"CPCollectionViewMinItemSizeK
 
 @implementation CPCollectionView (CPCoding)
 
+- (void)awakeFromCib
+{
+    [super awakeFromCib];
+
+    if (CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()) || CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
+    {
+        var item = _itemPrototype;
+
+        if (CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()))
+            _minItemSize = [[item view] frameSize];
+        else if (CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
+            _maxItemSize = [[item view] frameSize];
+    }
+}
+
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
