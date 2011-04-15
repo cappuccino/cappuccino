@@ -2629,7 +2629,11 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         _registeredDraggedTypes = [CPSet set];
         _registeredDraggedTypesArray = [];
 
-        _autoresizingMask = [aCoder decodeIntForKey:CPViewAutoresizingMaskKey] || CPViewNotSizable;
+        // Other views (CPBox) might set an autoresizes mask on their subviews before it is actually decoded.
+        // We make sure we don't override the value by checking if it was already set.
+        if (_autoresizingMask === nil)
+            _autoresizingMask = [aCoder decodeIntForKey:CPViewAutoresizingMaskKey] || CPViewNotSizable;
+
         _autoresizesSubviews = ![aCoder containsValueForKey:CPViewAutoresizesSubviewsKey] || [aCoder decodeBoolForKey:CPViewAutoresizesSubviewsKey];
 
         _hitTests = ![aCoder containsValueForKey:CPViewHitTestsKey] || [aCoder decodeObjectForKey:CPViewHitTestsKey];
