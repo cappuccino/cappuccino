@@ -1,6 +1,7 @@
 .Dd April 3, 2011
 .Os "Cappuccino"
 .Dt NIB2CIB 1 "PRM"
+.nh
 .\"-----------------------------------------------------------------------------------------
 .Sh NAME
 .\"-----------------------------------------------------------------------------------------
@@ -155,7 +156,7 @@ options, one for each theme that you load.
 Themes are searched for in the Resources, $CAPP_BUILD/Debug and
 $CAPP_BUILD/Release directories.
 .\"-----------------------------------------------------------------------------------------
-.Sh "COMMON OPTIONS"
+.Sh "OPTIONS"
 .\"-----------------------------------------------------------------------------------------
 The following options are available in watch mode or single mode:
 .Bl -tag -width 4n
@@ -208,7 +209,16 @@ Tells
 .Nm
 to output nothing. This is useful if you are using
 .Nm
-in a shell script and are only interested in the return value.
+in a shell script and are only interested in the return value. Note that this
+option overrides the
+.Fl v
+option.
+.It Fl \-no-stored-options
+Tells
+.Nm
+not to read stored options. See
+.Sy Stored Options
+below for more information.
 .It Fl \-version
 Prints the current version of
 .Nm
@@ -220,6 +230,45 @@ Displays
 .Nm
 usage and options.
 .El
+.\"-----------------------------------------------------------------------------------------
+.Ss "Stored Options"
+.\"-----------------------------------------------------------------------------------------
+To make it easier to use nib2cib in an automated way, you can store command line options
+that will apply to converted xibs/nibs. To store command line options, you enter the
+options on a single line into a text file. For example, if you always want to set
+"MyTheme" as the default theme, you would create a text file with this line:
+.Pp
+.D1 --default-theme MyTheme
+.Pp
+If an option takes a parameter and the parameter contains spaces, it must be enclosed in
+single or double quotes. You may store options in the following three places, in increasing
+order of precedence:
+.Bl -ohang -offset 4n
+.It Em ~/.nib2cibconfig
+nib2cib options that apply to all nibs converted under your user account.
+.It Em <app>/nib2cib.conf
+nib2cib options that apply to all nibs in <app>/Resources.
+.It Em <app>/Resources/<xib-or-nib-basename>.conf
+nib2cib options that apply to a specific xib or nib. For example, if the xib
+is called MainMenu.xib, the stored options file would be MainMenu.conf.
+.El
+.Pp
+Each of these files is read in the order listed above, and if it exists, its options
+are merged with the previous file's options. Options in later files (more specific)
+override options in earlier files (more generic). After all of the stored options
+are merged, the command line options are merged in. Thus command line options always
+override stored options.
+.Pp
+Using stored options is especially useful if your xibs/nibs use custom themes or
+frameworks. By using stored options, you can avoid remembering (or forgetting!) to
+specify the theme or framework every time you invoke
+.Nm .
+.Pp
+To prevent
+.Nm
+from reading stored options, and thus only use command line options, use the
+.Fl \-no-stored-options
+option on the command line.
 .\"-----------------------------------------------------------------------------------------
 .Sh "RETURN VALUES"
 .\"-----------------------------------------------------------------------------------------

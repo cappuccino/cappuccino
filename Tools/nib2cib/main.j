@@ -37,18 +37,23 @@ var FILE = require("file"),
     stream = require("narwhal/term").stream,
     StaticResource = require("objective-j").StaticResource,
 
-    DefaultTheme = "Aristo",
-    BuildTypes = ["Debug", "Release"],
-    DefaultFile = "MainMenu";
-
-var parser = new (require("narwhal/args").Parser)(),
+    Parser = require("narwhal/args").Parser,
     nibInfo = {},
     appDirectory = "",
-    resourcesDirectory = "";
+    resourcesDirectory = "",
+    logLevel = -1,
+
+    DefaultTheme = "Aristo",
+    BuildTypes = ["Debug", "Release"],
+    DefaultFile = "MainMenu",
+    AllowedStoredOptionsRe = new RegExp("^(defaultTheme|extraThemes|verbosity|quiet|frameworks|format)$");
+    ArgsRe = /"[^\"]+"|'[^\']+'|\S+/g;
 
 
 function main(args)
 {
+    setLogLevel(0);
+
     try
     {
         var options = parseOptions(args);
@@ -72,6 +77,14 @@ function convert(options, inputFile)
         inputFile = inputFile || getInputFile(options.args);
 
         getAppAndResourceDirectoriesFromInputFile(inputFile, options);
+
+        if (options.readStoredOptions)
+            options = mergeOptionsWithStoredOptions(options, inputFile);
+
+        setLogLevel(options.quiet ? -1 : options.verbosity);
+
+        if (!options.quiet && options.verbosity > 0)
+            printVersion();
 
         var outputFile = getOutputFile(inputFile, options.args),
             configInfo = readConfigFile(options.configFile || "", inputFile),
@@ -110,7 +123,7 @@ function convert(options, inputFile)
         CPLog.info("-------------------------------------------------------------\n");
 
         var converter = [[Converter alloc] initWithInputPath:inputFile
-                                                      format:options.format
+                                                      format:options.format || NibFormatUndetermined
                                                       themes:themes];
 
         [converter setOutputPath:outputFile];
@@ -132,8 +145,10 @@ function convert(options, inputFile)
 
 function watch(options)
 {
-    var verbosity = options.quiet ? -1 : options.verbosity,
+    var level = options.quiet ? -1 : options.verbosity,
         watchDir = options.args[0];
+
+    setLogLevel(level);
 
     if (!watchDir)
         watchDir = FILE.canonical(FILE.isDirectory("Resources") ? "Resources" : ".");
@@ -195,16 +210,18 @@ function watch(options)
                     continue;
             }
 
-            // Let the converter log however the user configured it
-            setLogLevel(verbosity);
+            // Let the converter log however the user configured it.
+            // Since convert() may change the log level, capture it after convert().
+            setLogLevel(level);
 
-            var success = convert(options, nib);
+            var success = convert(options, nib),
+                level = logLevel;
 
             setLogLevel(1);
 
             if (success)
             {
-                if (verbosity > 0)
+                if (level > 0)
                     stream.print();
                 else
                     CPLog.warn("Conversion successful");
@@ -217,6 +234,8 @@ function watch(options)
 
 function parseOptions(args)
 {
+    var parser = new Parser();
+
     parser.usage("[--watch DIRECTORY] [INPUT_FILE [OUTPUT_FILE]]");
 
     parser.option("--watch", "watch")
@@ -255,13 +274,17 @@ function parseOptions(args)
         .set(true)
         .help("No output");
 
-    parser.option("-F", "framework", "frameworks")
+    parser.option("-F", "--framework", "frameworks")
         .push()
         .help("Add a framework to load");
 
+    parser.option("--no-stored-options", "readStoredOptions")
+        .set(false)
+        .def(true)
+        .help("Do not read stored options");
+
     parser.option("--mac", "format")
         .set(NibFormatMac)
-        .def(NibFormatUndetermined)
         .help("Set format to Mac");
 
     parser.option("--version", "showVersion")
@@ -278,16 +301,106 @@ function parseOptions(args)
         OS.exit(0);
     }
 
-    setLogLevel(options.quiet ? -1 : options.verbosity);
-
-    if (!options.quiet && options.verbosity > 0)
-        printVersion();
-
     return options;
+}
+
+function mergeOptionsWithStoredOptions(options, inputFile)
+{
+    // We have to clone options
+    var userOptions = readStoredOptions(FILE.join(SYS.env["HOME"], ".nib2cibconfig")),
+        appOptions = readStoredOptions(FILE.join(appDirectory, "nib2cib.conf")),
+        filename = FILE.basename(inputFile, FILE.extension(inputFile)) + ".conf",
+        fileOptions = readStoredOptions(FILE.join(FILE.dirname(inputFile), filename));
+
+    // At this point we have an array of args without the initial command in args[0],
+    // add the command and parse the options.
+    userOptions = parseOptions([options.command].concat(userOptions), null, null, true);
+    appOptions = parseOptions([options.command].concat(appOptions), null, null, true);
+    fileOptions = parseOptions([options.command].concat(fileOptions), null, null, true);
+
+    // The increasing order of precedence is: user -> app -> file -> command line
+    var mergedOptions = userOptions;
+
+    mergeOptions(appOptions, mergedOptions);
+    mergeOptions(fileOptions, mergedOptions);
+    mergeOptions(options, mergedOptions);
+    mergedOptions.args = options.args;
+
+    return mergedOptions;
+}
+
+function readStoredOptions(path)
+{
+    path = FILE.canonical(path);
+
+    if (!FILE.isReadable(path))
+        return [];
+
+    var file = FILE.open(path, "r"),
+        line = file.readLine(),
+        matches = line.match(ArgsRe) || [];
+
+    file.close();
+
+    if (matches)
+    {
+        for (var i = 0; i < matches.length; ++i)
+        {
+            var str = matches[i];
+
+            if ((str.charAt(0) === '"' && str.substr(-1) === '"') || (str.charAt(0) === "'" && str.substr(-1) === "'"))
+                matches[i] = str.substr(1, str.length - 2);
+        }
+
+        return matches;
+    }
+    else
+        return [];
+}
+
+function printOptions(options)
+{
+    for (option in options)
+    {
+        var value = options[option];
+
+        if (value)
+        {
+            var show = value.length !== undefined ? value.length > 0 : !!value;
+
+            if (show)
+                print(option + ": " + value);
+        }
+    }
+}
+
+// Merges properties in sourceOptions into targetOptions, overriding properties in targetOptions
+function mergeOptions(sourceOptions, targetOptions)
+{
+    for (option in sourceOptions)
+    {
+        // Make sure only a supported option is given
+        if (!AllowedStoredOptionsRe.test(option))
+            continue;
+
+        if (sourceOptions.hasOwnProperty(option))
+        {
+            var value = sourceOptions[option];
+
+            if (value)
+            {
+                var copy = value.length !== undefined ? value.length > 0 : !!value;
+
+                if (copy)
+                    targetOptions[option] = value;
+            }
+        }
+    }
 }
 
 function setLogLevel(level)
 {
+    logLevel = level;
     CPLogUnregister(CPLogPrint);
 
     if (level === 0)
@@ -635,15 +748,10 @@ function readConfigFile(configFile, inputFile)
 
     if (configPath)
     {
-        var plist = FILE.read(configPath);
+        plist = readPlist(configPath);
 
         if (!plist)
             fail("Could not read the Info.plist at: " + configPath);
-
-        plist = CFPropertyList.propertyListFromString(plist);
-
-        if (!plist)
-            fail("Could not parse the Info.plist at: " + configPath);
     }
 
     return {path: configPath, plist: plist};
@@ -684,6 +792,19 @@ function getModifiedNibs(path)
     return modifiedNibs;
 }
 
+function readPlist(path)
+{
+    if (!FILE.isReadable(path))
+        return null;
+
+    var plist = FILE.read(path);
+
+    if (!plist)
+        return null;
+
+    return CFPropertyList.propertyListFromString(plist);
+}
+
 function printVersionAndExit()
 {
     printVersion();
@@ -709,18 +830,10 @@ function printVersion()
 
     path = FILE.join(path, "lib", "nib2cib", "Info.plist");
 
-    if (FILE.isReadable(path))
+    var plist = readPlist(path);
+
+    if (plist)
     {
-        var plist = FILE.read(path);
-
-        if (!plist)
-            return;
-
-        plist = CFPropertyList.propertyListFromString(plist);
-
-        if (!plist)
-            return;
-
         version = plist.valueForKey("CPBundleVersion");
 
         if (version)
