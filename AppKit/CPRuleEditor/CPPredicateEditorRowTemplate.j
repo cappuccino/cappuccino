@@ -231,7 +231,7 @@ CPTransformableAttributeType = 1800;
         var subpredicates = [predicate subpredicates];
         if ([subpredicates count] == 0)
             return nil;
-        
+
         return subpredicates;
     }
 
@@ -476,44 +476,7 @@ CPTransformableAttributeType = 1800;
 
 - (id)copy
 {
-    var t = [[CPPredicateEditorRowTemplate alloc] init],
-        views;
-
-    [t _setTemplateType:_templateType];
-    [t _setOptions:_predicateOptions];
-    [t _setModifier:_predicateModifier];
-    [t _setLeftAttributeType:_leftAttributeType];
-    [t _setRightAttributeType:_rightAttributeType];
-    [t setLeftIsWildcard:_leftIsWildcard];
-    [t setRightIsWildcard:_rightIsWildcard];
-
-    if (_templateType == 2)
-    {
-        var left = [self _viewFromCompoundTypes:[self compoundTypes]],
-            right = [_views objectAtIndex:1];
-        views = [CPArray arrayWithObjects:left,right];
-    }
-    else if (_templateType == 1)
-    {
-        var left = [self _viewFromExpressions:[self leftExpressions]],
-            middle = [self _viewFromOperatorTypes:[self operators]],
-            right;
-
-        if (_rightIsWildcard == YES)
-            right = [self _viewFromAttributeType:_rightAttributeType];
-        else
-            right = [self _viewFromExpressions:[self rightExpressions]];
-
-        views = [CPArray arrayWithObjects:left,middle,right];
-    }
-
-    var count = [views count];
-    while (count--)
-        [views[count] setObjectValue:[_views[count] objectValue]];
-
-    [t setTemplateViews:views];
-
-    return t;
+    return [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:self]];
 }
 
 + (id)_operatorsForAttributeType:(CPAttributeType)attributeType
@@ -786,7 +749,26 @@ var CPPredicateTemplateTypeKey = @"CPPredicateTemplateType",
         _leftIsWildcard = [coder decodeBoolForKey:CPPredicateTemplateLeftIsWildcardKey];
         _rightIsWildcard = [coder decodeBoolForKey:CPPredicateTemplateRightIsWildcardKey];
         _views = [coder decodeObjectForKey:CPPredicateTemplateViewsKey];
+
+        // In Xcode 4, when the menu item title == template's expression keypath, representedObject is empty.
+        // So we need to regenerate expressions from titles.
+        if (_templateType == 1 && _leftIsWildcard == NO)
+        {
+            var itemArray = [_views[0] itemArray],
+                count = [itemArray count];
+
+            for (var i = 0; i < count; i++)
+            {
+                var item = itemArray[i];
+                if ([item representedObject] == nil)
+                {
+                    var exp = [CPExpression expressionForKeyPath:[item title]];
+                    [item setRepresentedObject:exp];
+                }
+            }
+        }
     }
+
     return self;
 }
 
