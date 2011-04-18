@@ -170,7 +170,7 @@
 
         if ([titles containsObject:title])
         {
-            CPLogConsole("CPPredicate does not support templates merging yet. Ignoring duplicate template: " + [t description]);
+            CPLogConsole("CPPredicateEditor does not support templates merging yet. Ignoring duplicate template: " + [t description]);
             continue;
         }
 
