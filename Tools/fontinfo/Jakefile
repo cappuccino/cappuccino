@@ -16,7 +16,9 @@ task ("build", function()
         else
             args = "-sdk macosx " + args;
 
-        if (OS.system("xcodebuild " + args))
+        var xcodebuild = env.CAPP_BUILD ? "xcodebuild " : "CAPP_BUILD=../../Build xcodebuild ";
+
+        if (OS.system(xcodebuild + args))
             OS.exit(1);
     }
     else
