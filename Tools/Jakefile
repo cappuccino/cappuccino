@@ -2,6 +2,6 @@
 require("../common.jake");
 
 // nib2cib uses fontinfo and capp uses nib2cib
-subtasks(["fontinfo", "nib2cib", "capp", "NativeHost"], ["build"/*, "clean", "clobber"*/]);
+subtasks(["fontinfo", "nib2cib", "capp", "NativeHost", "xcodecapp"], ["build"/*, "clean", "clobber"*/]);
 
 subtasks(["fontinfo"], ["clean", "clobber"]);

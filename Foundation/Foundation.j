@@ -36,6 +36,7 @@
 @import "CPExpression.j"
 @import "CPFormatter.j"
 @import "CPIndexSet.j"
+@import "CPIndexPath.j"
 @import "CPInvocation.j"
 @import "CPJSONPConnection.j"
 @import "CPKeyedArchiver.j"
