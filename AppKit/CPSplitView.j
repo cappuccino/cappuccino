@@ -739,41 +739,59 @@ var CPSplitViewHorizontalImage = nil,
     Sets the delegate of the receiver.
     Possible delegate methods to implement are listed below.
 
-    <pre>
-        - (void)splitViewDidResizeSubviews:(CPSplitView)aSplitView;
-            Notifies the delegate when the subviews have resized.
+Notifies the delegate when the subviews have resized.
+@code
+- (void)splitViewDidResizeSubviews:(CPNotification)aNotification;
+@endcode
 
-        - (void)splitViewWillResizeSubviews:(CPSplitView)aSplitView;
-            Notifies the delegate when the subviews will be resized.
+Notifies the delegate when the subviews will be resized.
+@code
+- (void)splitViewWillResizeSubviews:(CPNotification)aNotification;
+@endcode
 
-        - (CGRect)splitView:(CPSplitView)aSplitView effectiveRect:(CGRect)aRect forDrawnRect:(CGRect)aDrawnRect ofDividerAtIndex:(int)aDividerIndex;
-            Lets the delegate specify a different rect for which the user can drag the splitView divider.
+Lets the delegate specify a different rect for which the user can drag the splitView divider.
+@code
+- (CGRect)splitView:(CPSplitView)aSplitView effectiveRect:(CGRect)aRect forDrawnRect:(CGRect)aDrawnRect ofDividerAtIndex:(int)aDividerIndex;
+@endcode
 
-        - (CGRect)splitView:(CPSplitView)aSplitView additionalEffectiveRectOfDividerAtIndex:(int)indexOfDivider;
-            Lets the delegate specify an additional rect for which the user can drag the splitview divider.
+Lets the delegate specify an additional rect for which the user can drag the splitview divider.
+@code
+- (CGRect)splitView:(CPSplitView)aSplitView additionalEffectiveRectOfDividerAtIndex:(int)indexOfDivider;
+@endcode
 
-        - (BOOL)splitView:(CPSplitView)aSplitView canCollapseSubview:(CPView)aSubview;
-            Notifies the delegate that the splitview is about to be collapsed. This usually happens when the user
-            Double clicks on the divider. Return YES if the subview can be collapsed, otherwise NO.
+Notifies the delegate that the splitview is about to be collapsed. This usually happens when the user
+Double clicks on the divider. Return YES if the subview can be collapsed, otherwise NO.
+@code
+- (BOOL)splitView:(CPSplitView)aSplitView canCollapseSubview:(CPView)aSubview;
+@endcode
 
-         - (BOOL)splitView:(CPSplitView)aSplitView shouldCollapseSubview:(CPView)aSubview forDoubleClickOnDividerAtIndex:(int)indexOfDivider;
-            Notifies the delegate that the subview at indexOfDivider is about to be collapsed. This usually happens when the user
-            Double clicks on the divider. Return YES if the subview should be collapsed, otherwise NO.
+Notifies the delegate that the subview at indexOfDivider is about to be collapsed. This usually happens when the user
+Double clicks on the divider. Return YES if the subview should be collapsed, otherwise NO.
+@code
+ - (BOOL)splitView:(CPSplitView)aSplitView shouldCollapseSubview:(CPView)aSubview forDoubleClickOnDividerAtIndex:(int)indexOfDivider;
+@endcode
 
-        - (float)splitView:(CPSplitView)aSpiltView constrainSplitPosition:(float)proposedPosition ofSubviewAt:(int)subviewIndex;
-            Allows the delegate to constrain the subview beings resized. This method is called continuously as the user resizes the divider.
-            For example if the subview needs to have a width which is a multiple of a certain number you could return that multiple with this method.
+Allows the delegate to constrain the subview beings resized. This method is called continuously as the user resizes the divider.
+For example if the subview needs to have a width which is a multiple of a certain number you could return that multiple with this method.
+@code
+- (float)splitView:(CPSplitView)aSpiltView constrainSplitPosition:(float)proposedPosition ofSubviewAt:(int)subviewIndex;
+@endcode
 
-        - (float)splitView:(CPSplitView)aSplitView constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)subviewIndex;
-            Allows the delegate to constrain the minimum position of a subview.
+Allows the delegate to constrain the minimum position of a subview.
+@code
+- (float)splitView:(CPSplitView)aSplitView constrainMinCoordinate:(float)proposedMin ofSubviewAt:(int)subviewIndex;
+@endcode
 
-        - (float)splitView:(CPSplitView)aSplitView constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)subviewIndex;
-            Allows the delegate to constrain the maximum position of a subview.
+Allows the delegate to constrain the maximum position of a subview.
+@code
+- (float)splitView:(CPSplitView)aSplitView constrainMaxCoordinate:(float)proposedMax ofSubviewAt:(int)subviewIndex;
+@endcode
 
-        - (void)splitView:(CPSplitView)aSplitView resizeSubviewsWithOldSize:(CGSize)oldSize;
-            Allows the splitview to specify a custom resizing behavior. This is called when the splitview is resized.
-            The sum of the views and the sum of the dividers should be equal to the size of the splitview.
-    </pre>
+Allows the splitview to specify a custom resizing behavior. This is called when the splitview is resized.
+The sum of the views and the sum of the dividers should be equal to the size of the splitview.
+@code
+- (void)splitView:(CPSplitView)aSplitView resizeSubviewsWithOldSize:(CGSize)oldSize;
+@endcode
 
     @param delegate - The delegate of the splitview.
 */
