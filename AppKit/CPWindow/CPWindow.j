@@ -193,24 +193,24 @@ var SHADOW_MARGIN_LEFT      = 20.0,
     _CPWindowShadowColor    = nil;
 
 var CPWindowSaveImage       = nil,
-    CPWindowSavingImage     = nil;
+    CPWindowSavingImage     = nil,
 
-var CPWindowResizeTime = 0.2;
+    CPWindowResizeTime      = 0.2;
 
 /*
     Keys for which action messages will be sent by default when unhandled, e.g. complete:.
 */
 var CPWindowActionMessageKeys = [
-    CPLeftArrowFunctionKey,
-    CPRightArrowFunctionKey,
-    CPUpArrowFunctionKey,
-    CPDownArrowFunctionKey,
-    CPPageUpFunctionKey,
-    CPPageDownFunctionKey,
-    CPHomeFunctionKey,
-    CPEndFunctionKey,
-    CPEscapeFunctionKey
-];
+        CPLeftArrowFunctionKey,
+        CPRightArrowFunctionKey,
+        CPUpArrowFunctionKey,
+        CPDownArrowFunctionKey,
+        CPPageUpFunctionKey,
+        CPPageDownFunctionKey,
+        CPHomeFunctionKey,
+        CPEndFunctionKey,
+        CPEscapeFunctionKey
+    ];
 
 /*!
     @ingroup appkit
@@ -2377,7 +2377,9 @@ CPTexturedBackgroundWindowMask
     // an event going of the responder chain is passed to the input system as a last resort.
     // However, the only methods I could get Cocoa to call automatically are
     // moveUp: moveDown: moveLeft: moveRight: pageUp: pageDown: and complete:
-    [self _processKeyboardUIKey:anEvent];
+    // Unhandled events just travel further up the responder chain _past_ the window.
+    if (![self _processKeyboardUIKey:anEvent])
+        [super keyDown:anEvent];
 }
 
 /*
@@ -2412,6 +2414,8 @@ CPTexturedBackgroundWindowMask
         // The difference is that doCommandBySelector: will also send the action to the window and application delegates.
         [[self firstResponder] doCommandBySelector:@selector(complete:)];
     }
+
+    return NO;
 }
 
 - (void)_dirtyKeyViewLoop
