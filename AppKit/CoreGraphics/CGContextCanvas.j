@@ -144,7 +144,7 @@ function CGContextAddRects(aContext, rects, count)
 {
     var i = 0;
 
-    if (arguments["count"] == NULL)
+    if (count === NULL)
         var count = rects.length;
 
     for (; i < count; ++i)
@@ -194,7 +194,7 @@ function CGContextFillRects(aContext, rects, count)
 {
     var i = 0;
 
-    if (arguments["count"] == NULL)
+    if (count === NULL)
         var count = rects.length;
 
     for (; i < count; ++i)
@@ -225,7 +225,7 @@ function CGContextClipToRect(aContext, aRect)
 
 function CGContextClipToRects(aContext, rects, count)
 {
-    if (arguments["count"] == NULL)
+    if (count === NULL)
         var count = rects.length;
 
     _CGContextBeginPathCanvas(aContext);
