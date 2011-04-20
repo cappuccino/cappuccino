@@ -595,8 +595,12 @@ var _CPMenuBarVisible               = NO,
     var items = [self itemArray];
     for (var i = 0; i < [items count]; i++)
     {
-        var item = [items objectAtIndex:i],
-            validator = [CPApp targetForAction:[item action] to:[item target] from:item];
+        var item = [items objectAtIndex:i];
+
+        if ([item hasSubmenu])
+            continue;
+
+        var validator = [CPApp targetForAction:[item action] to:[item target] from:item];
 
         if (!validator || ![validator respondsToSelector:[item action]])
             [item _setEnabled:NO];
