@@ -536,7 +536,6 @@ var _CPMenuBarVisible               = NO,
 */
 - (void)submenuAction:(id)aSender
 {
-
 }
 
 /*!
@@ -584,11 +583,30 @@ var _CPMenuBarVisible               = NO,
 }
 
 /*!
-    Not implemented.
+    Enables or disables the receiver’s menu items.
+    If the target does not implement the menu item's action method the item is disabled.
+    If the target responsds to selector validateMenuItem: or validateUserInterfaceItem: (in that order) the return value is used.
 */
 - (void)update
 {
+    if (![self autoenablesItems])
+        return;
 
+    var items = [self itemArray];
+    for (var i = 0; i < [items count]; i++)
+    {
+        var item = [items objectAtIndex:i],
+            validator = [CPApp targetForAction:[item action] to:[item target] from:item];
+
+        if (!validator || ![validator respondsToSelector:[item action]])
+            [item _setEnabled:NO];
+        else if ([validator respondsToSelector:@selector(validateMenuItem:)])
+            [item _setEnabled:[validator validateMenuItem:item]];
+        else if ([validator respondsToSelector:@selector(validateUserInterfaceItem:)])
+            [item _setEnabled:[validator validateUserInterfaceItem:item]];
+    }
+
+    [[_menuWindow _menuView] tile];
 }
 
 // Managing the Title
@@ -1099,6 +1117,8 @@ var CPMenuTitleKey              = @"CPMenuTitleKey",
         [self _setMenuName:[aCoder decodeObjectForKey:CPMenuNameKey]];
 
         _showsStateColumn = ![aCoder containsValueForKey:CPMenuShowsStateColumnKey] || [aCoder decodeBoolForKey:CPMenuShowsStateColumnKey];
+
+        _autoenablesItems = YES;
 
         [self setMinimumWidth:0];
     }
