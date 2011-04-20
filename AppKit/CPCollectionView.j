@@ -589,9 +589,7 @@
     _mouseDownEvent = anEvent;
 
     var location = [self convertPoint:[anEvent locationInWindow] fromView:nil],
-        row = FLOOR(location.y / (_itemSize.height + _verticalMargin)),
-        column = FLOOR(location.x / (_itemSize.width + _horizontalMargin)),
-        index = row * _numberOfColumns + column;
+        index = [self _indexAtPoint:location];
 
     if (index >= 0 && index < _items.length)
     {
@@ -725,6 +723,28 @@
 - (id)delegate
 {
     return _delegate;
+}
+
+/*!
+    @ignore
+*/
+- (CPMenu)menuForEvent:(CPEvent)theEvent
+{
+    if (![[self delegate] respondsToSelector:@selector(collectionView:menuForItemAtIndex:)])
+        return [super menuForEvent:theEvent];
+
+    var location = [self convertPoint:[theEvent locationInWindow] fromView:nil],
+        index = [self _indexAtPoint:location];
+
+    return [_delegate collectionView:self menuForItemAtIndex:index];
+}
+
+- (int)_indexAtPoint:(CGPoint)thePoint
+{
+    var row = FLOOR(thePoint.y / (_itemSize.height + _verticalMargin)),
+        column = FLOOR(thePoint.x / (_itemSize.width + _horizontalMargin));
+
+    return row * _numberOfColumns + column;
 }
 
 - (CPCollectionViewItem)itemAtIndex:(unsigned)anIndex
