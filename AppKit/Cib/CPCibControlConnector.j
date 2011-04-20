@@ -47,11 +47,7 @@
 
     // If the destination doesn't respond to this selector, warn but don't die.
     if (_destination && ![_destination respondsToSelector:selector])
-    {
         CPLog.warn(@"Could not connect the action " + selector + @" to target of class " + [_destination className]);
-
-        return;
-    }
 
     // Not being able to set the action is a fatal error.
     if ([_source respondsToSelector:@selector(setAction:)])
