@@ -243,9 +243,15 @@ var STICKY_TIME_INTERVAL            = 500,
             // Close the current menu item because we are going to select a new one after a short delay
             [self showMenu:nil fromMenu:activeMenu atPoint:CGPointMakeZero()];
 
-            _showTimerID = setTimeout(function() {
+
+            if (![activeMenuContainer isMenuBar])
+            {
+                _showTimerID = setTimeout(function() {
+                    [self showMenu:[activeItem submenu] fromMenu:[activeItem menu] atPoint:newMenuOrigin];
+                }, 250);
+            }
+            else
                 [self showMenu:[activeItem submenu] fromMenu:[activeItem menu] atPoint:newMenuOrigin];
-            }, 250);
         }
     }
 
