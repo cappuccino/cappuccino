@@ -606,7 +606,7 @@ function CGContextStrokeLineSegments(aContext, points, count)
 {
     var i = 0;
 
-    if (arguments["count"] == NULL)
+    if (count === NULL)
         var count = points.length;
 
     CGContextBeginPath(aContext);
