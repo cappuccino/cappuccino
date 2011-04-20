@@ -4327,6 +4327,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (CPDragOperation)draggingUpdated:(id)sender
 {
+    _retargetedDropRow = nil;
+    _retargetedDropOperation = nil;
+
     var location = [self convertPoint:[sender draggingLocation] fromView:nil],
         dropOperation = [self _proposedDropOperationAtPoint:location],
         numberOfRows = [self numberOfRows],
@@ -4335,6 +4338,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     if (_retargetedDropRow !== nil)
         row = _retargetedDropRow;
+    if (_retargetedDropOperation !== nil)
+        dropOperation = _retargetedDropOperation;
 
 
     if (dropOperation === CPTableViewDropOn && row >= numberOfRows)
