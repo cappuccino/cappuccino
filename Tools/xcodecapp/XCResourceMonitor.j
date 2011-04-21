@@ -8,19 +8,24 @@ var FILE = require("file"),
 @implementation XCResourceCollection : CPObject
 {
     CPString        m_pattern;
+    CPString        m_ignorePattern;
     CPDictionary    m_mtimesForFilePaths;
-    
+
     CPMutableArray  m_addedFilePaths    @accessors(readonly, getter=addedFilePaths);
     CPMutableArray  m_removedFilePaths  @accessors(readonly, getter=removedFilePaths);
     CPMutableArray  m_editedFilePaths   @accessors(readonly, getter=editedFilePaths);
 }
 
-- (id)initWithPattern:(CPString)aPattern
+- (id)initWithPattern:(CPString)aPattern ignore:(CPArray)someIgnorePatterns
 {
     self = [super init];
 
     if (self)
+    {
         m_pattern = aPattern;
+        m_ignorePattern = someIgnorePatterns;
+    }
+
 
     return self;
 }
@@ -31,16 +36,23 @@ var FILE = require("file"),
     m_removedFilePaths = [];
     m_editedFilePaths = [];
 
-    // FIXME: There must be a better way to do this.
-    var subProjects = new FileList(FILE.join(FILE.dirname(FILE.dirname(m_pattern)), "*/**/Jakefile")),
-        paths = new FileList(m_pattern);
+    var paths = new FileList(m_pattern),
+        mtimesForFilePaths = [CPMutableDictionary new];
 
-    subProjects.forEach(function(aPath)
+    // FIXME: I guess this can be greatly optimized,
+    // but I'm not at ease with CommonJS.
+    m_ignorePattern.forEach(function(anIgnorePattern)
     {
-        paths.exclude(FILE.join(FILE.dirname(aPath), "**", "*"));
-    });
-
-    var mtimesForFilePaths = [CPMutableDictionary new];
+        var ignorePaths = new FileList(FILE.join(FILE.dirname(FILE.dirname(anIgnorePattern))));
+        ignorePaths.forEach(function(aPath)
+        {
+            if (aPath != "")
+            {
+                var p = FILE.join(FILE.cwd(), aPath, "*/**");
+                paths.exclude(p);
+            }
+        });
+    })
 
     paths.forEach(function(aPath)
     {

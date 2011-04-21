@@ -29,10 +29,20 @@ var FILE = require("file"),
     {
         m_URL = new CFURL(aPath);
 
+        var ignorePatterns = [];
+        try
+        {
+            ignorePatterns = FILE.read(FILE.join(m_URL, ".xcodecapp-ignore")).split("\n");
+        }
+        catch(e)
+        {
+            print("No .xcodecapp-ignore found");
+        }
+
         [self prepare_xCodeProject];
 
-        m_sourceResourceMonitor = [[XCResourceCollection alloc] initWithPattern:FILE.join(m_URL, "/**/*.j")];
-        m_nibResourceMonitor = [[XCResourceCollection alloc] initWithPattern:FILE.join(m_URL, "/**/*.[nx]ib")];
+        m_sourceResourceMonitor = [[XCResourceCollection alloc] initWithPattern:FILE.join(m_URL, "/**/*.j") ignore:ignorePatterns];
+        m_nibResourceMonitor = [[XCResourceCollection alloc] initWithPattern:FILE.join(m_URL, "/**/*.[nx]ib") ignore:ignorePatterns];
 
         [self launch];
     }
