@@ -156,6 +156,7 @@ var FILE = require("file"),
     {
         print("Edited " + aFilePath);
         OS.system("nib2cib " + aFilePath);
+        print("Conversion for " + aFilePath + ": done.");
     });
 
     [m_nibResourceMonitor removedFilePaths].forEach(function(aFilePath)
