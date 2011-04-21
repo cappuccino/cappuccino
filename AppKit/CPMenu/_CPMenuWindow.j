@@ -208,8 +208,14 @@ var STICKY_TIME_INTERVAL        = 500,
     return [_menuView menu];
 }
 
+- (_CPMenuView)_menuView
+{
+    return _menuView;
+}
+
 - (void)orderFront:(id)aSender
 {
+    [[self menu] update];
     [self setFrame:_unconstrainedFrame];
 
     [super orderFront:aSender];

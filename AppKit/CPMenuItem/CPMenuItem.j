@@ -133,10 +133,17 @@
     if ([_menu autoenablesItems])
         return;
 
-    _isEnabled = isEnabled;
+    [self _setEnabled:isEnabled];
+}
+
+- (void)_setEnabled:(BOOL)isEnabled
+{
+    if (_isEnabled === isEnabled)
+        return;
+
+    _isEnabled = !!isEnabled;
 
     [_menuItemView setDirty];
-
     [_menu itemChanged:self];
 }
 
@@ -849,6 +856,11 @@ CPControlKeyMask
 - (BOOL)_isMenuBarButton
 {
     return ![self submenu] && [self menu] === [CPApp mainMenu];
+}
+
+- (CPString)description
+{
+    return [super description] + @" target: " + [self target] + @" action: " + CPStringFromSelector([self action]);
 }
 
 @end
