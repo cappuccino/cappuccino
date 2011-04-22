@@ -125,7 +125,7 @@ var cachedBlackColor,
 }
 
 /*!
-    @deprecated in favor of colorWithWhite:apha:
+    @deprecated in favor of colorWithWhite:alpha:
 
     Creates a new color object with \c white for the RGB components.
     For the alpha component, a value of 1.0 is opaque, and 0.0 means completely transparent.
@@ -416,7 +416,7 @@ var cachedBlackColor,
         parseInt(parts[0], 10) / 255.0,
         parseInt(parts[1], 10) / 255.0,
         parseInt(parts[2], 10) / 255.0,
-        parts[3] ? parseInt(parts[3], 10) / 255.0 : 1.0
+        parts[3] ? parseFloat(parts[3], 10) : 1.0
     ];
 
     _cssString = aString;

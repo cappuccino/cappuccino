@@ -55,7 +55,10 @@ function ask_append_shell_config () {
         shell_config_file="$HOME/.profile"
     elif [ -f "$HOME/.bashrc" ]; then
         shell_config_file="$HOME/.bashrc"
+    elif [ -f "$HOME/.zshrc" ]; then
+        shell_config_file="$HOME/.zshrc"
     fi
+
 
     echo "    \"$config_string\" will be appended to \"$shell_config_file\"."
     if prompt "no"; then
@@ -79,27 +82,35 @@ function check_and_exit () {
 }
 
 function check_build_environment () {
-    # make sure user is running HotSpot JVM
-    java -version 2>&1 | grep HotSpot &> /dev/null
-    if [ ! "$?" = "0" ]; then
-        java_ver=`java -version 2>&1 | egrep "(Client|Server)"`
-        if [ "$java_ver" = "" ]; then
-            java_ver="your JVM"
-        fi
-        echo "Error: Narwhal is not compatible with $java_ver. Please switch to the Sun (HotSpot) JVM and re-run bootstrap.sh."
-        exit 1
-    fi
+    # make sure dependencies are installed and on the $PATH
+    CAPP_BUILD_DEPS=(java gcc unzip)
 
-    # make sure other dependencies are installed and on the $PATH
-    OTHER_DEPS=(gcc unzip curl)
-
-    for dep in ${OTHER_DEPS[@]}; do
+    for dep in ${CAPP_BUILD_DEPS[@]}; do
         which "$dep" &> /dev/null
         if [ ! "$?" = "0" ]; then
-            echo "Error: $dep is required to build Cappuccino. Please install $dep and re-run bootstrap.sh."
+            echo "Error: $dep is required to bootstrap Cappuccino. Please install $dep and re-run bootstrap.sh."
             exit 1
         fi
     done
+
+    # special case: check for curl or wget
+    which curl &> /dev/null || which wget &> /dev/null
+    if [ ! "$?" = "0" ]; then
+        echo "Error: curl or wget are required to bootstrap Cappuccino. Please install one of them and re-run bootstrap.sh."
+        exit 1
+    fi
+
+    # make sure user is running the Sun JVM or OpenJDK >= 6b18
+    java_version=$(java -version 2>&1)
+    echo $java_version | grep OpenJDK > /dev/null
+    if [ "$?" = "0" ]; then # OpenJDK: make sure >= 6b18
+        openjdk_version=$(echo $java_version | egrep -o '[0-9]b[0-9]+')
+        if [ $(echo $openjdk_version | tr -d 'b') -lt 618 ]; then
+            echo "Error: Narwhal is not compatible with your version of OpenJDK: $openjdk_version."
+            echo "Please upgrade to OpenJDK >= 6b18 or switch to the Sun JVM. Then re-run bootstrap.sh."
+            exit 1
+        fi
+    fi
 }
 
 check_build_environment
@@ -125,6 +136,7 @@ while [ $# -gt 0 ]; do
         --noprompt)     noprompt="yes";;
         --directory)    install_directory="$2"; shift;;
         --clone)        tusk_install_command="clone";;
+        --clone-http)   tusk_install_command="clone --http";;
         --github-user)  github_user="$2"; shift;;
         --github-ref)   github_ref="$2"; shift;;
         --install-capp) install_capp="yes";;
@@ -133,7 +145,8 @@ usage: ./bootstrap.sh [OPTIONS]
 
     --noprompt:             Don't prompt, use relatively safe defaults.
     --directory [DIR]:      Use a directory other than /usr/local/narwhal.
-    --clone:                Do "git clone" instead of downloading zips.
+    --clone:                Do "git clone git://" instead of downloading zips.
+    --clone-http:           Do "git clone http://" instead of downloading zips.
     --github-user [USER]:   Use another github user (default: 280north).
     --github-ref [REF]:     Use another git ref (default: master).
     --install-capp:         Install "objective-j" and "cappuccino" packages.
@@ -152,36 +165,27 @@ unset SEALVL
 
 PATH_SAVED="$PATH"
 
-ask_remove_dir "/usr/local/share/objj"
-ask_remove_dir "/usr/local/share/narwhal"
-ask_remove_dir "/usr/local/narwhal"
 if which "narwhal" > /dev/null; then
-    narwhal_path=$(which "narwhal")
+    narwhal_path="$(which narwhal)"
     # resolve symlinks
     while [ -h "$narwhal_path" ]; do
         dir=$(dirname -- "$narwhal_path")
         sym=$(readlink -- "$narwhal_path")
-        narwhal_path=$(cd -- "$dir" && cd -- $(dirname -- "$sym") && pwd)/$(basename -- "$sym")
+        narwhal_path="$(cd -- "$dir" && cd -- $(dirname -- "$sym") && pwd)/$(basename -- "$sym")"
     done
 
     # NARWHAL_HOME is the 2nd ancestor directory of this shell script
-    dir=$(dirname -- "$(dirname -- "$narwhal_path")")
+    dir="$(dirname -- "$(dirname -- "$narwhal_path")")"
 
     ask_remove_dir "$dir"
+else
+    ask_remove_dir "/usr/local/share/objj"
+    ask_remove_dir "/usr/local/share/narwhal"
+    ask_remove_dir "/usr/local/narwhal"
 fi
 
 install_narwhal=""
-if which "narwhal" > /dev/null; then
-    dir=$(dirname -- "$(dirname -- $(which "narwhal"))")
-    echo "Using Narwhal installation at \"$dir\". Is this correct?"
-    if ! prompt "no"; then
-        echo "================================================================================"
-        echo "Narwhal JavaScript platform is required. Install it automatically now?"
-        if prompt "yes"; then
-            install_narwhal="yes"
-        fi
-    fi
-else
+if ! which "narwhal" > /dev/null; then
     echo "================================================================================"
     echo "Narwhal JavaScript platform is required. Install it automatically now?"
     if prompt "yes"; then
@@ -198,7 +202,7 @@ if [ "$install_narwhal" ]; then
         else
             read input
         fi
-        if [ "$input" ]; then
+        if [ "$input" ] && [ ! "$input" = "yes" ]; then
             install_directory="`cd \`dirname "$input"\`; pwd`/`basename "$input"`"
         else
             install_directory="$default_directory"
@@ -223,8 +227,13 @@ if [ "$install_narwhal" ]; then
         fi
     fi
 
-    if [ "$tusk_install_command" = "clone" ]; then
-        git_repo="git://github.com/$github_path.git"
+    if [ "$(echo $tusk_install_command | cut -c-5)" = "clone" ]; then
+        if [ "$(echo $tusk_install_command | cut -c7-)" = "--http" ]; then
+            git_protocol="http"
+        else
+            git_protocol="git"
+        fi
+        git_repo="$git_protocol://github.com/$github_path.git"
         echo "Cloning Narwhal from \"$git_repo\"..."
         git clone "$git_repo" "$install_directory"
         (cd "$install_directory" && git checkout "origin/$github_ref")
@@ -232,7 +241,7 @@ if [ "$install_narwhal" ]; then
         zip_ball="http://github.com/$github_path/zipball/$github_ref"
 
         echo "Downloading Narwhal from \"$zip_ball\"..."
-        curl -L -o "$tmp_zip" "$zip_ball"
+        $(which curl &> /dev/null && echo curl -L -o || echo wget --no-check-certificate -O) "$tmp_zip" "$zip_ball"
         check_and_exit
 
         echo "Installing Narwhal..."
@@ -255,7 +264,7 @@ if ! which "narwhal" > /dev/null; then
     exit 1
 fi
 
-install_directory=$(dirname -- "$(dirname -- "$(which narwhal)")")
+install_directory="$(dirname -- "$(dirname -- "$(which narwhal)")")"
 
 echo "================================================================================"
 echo "Using Narwhal installation at \"$install_directory\". Is this correct?"
@@ -269,6 +278,17 @@ fi
 # if [ ! "$install_capp" ] && prompt; then
 #     install_capp="yes"
 # fi
+
+# Make sure tusk can access GitHub's HTTPS URLs.
+NARWHAL_ENGINE=rhino js -e "javax.net.ssl.SSLContext.getDefault()" &> /dev/null
+if [ ! "$?" = "0" ]; then
+    echo "Installing packages from GitHub requires SSL support in Java."
+    if [ "$(uname)" = "Linux" ]; then
+        echo "Try installing the libbcprov-java package, if it exists for your Linux distro."
+    fi
+    exit 1
+fi
+
 extra_packages=""
 if [ "$install_capp" ]; then
     extra_packages="objective-j cappuccino"
@@ -330,7 +350,8 @@ if [ "$CAPP_BUILD" ]; then
 else
     echo "================================================================================"
     echo "Before building Cappuccino we recommend you set the \$CAPP_BUILD environment variable to a path where you wish to build Cappuccino."
-    echo "NOTE: If you have previously set \$CAPP_BUILD and built Cappuccino you may want to delete the directory before rebuilding."
+    echo "This can be automatically set to the default value of \"$PWD/Build\", or you can set \$CAPP_BUILD yourself."
+    ask_append_shell_config "export CAPP_BUILD=\"$PWD/Build\""
 fi
 
 echo "================================================================================"

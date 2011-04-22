@@ -3,9 +3,9 @@
 
 var _CPMenuWindowPool                       = [],
     _CPMenuWindowPoolCapacity               = 5,
-    
+
     _CPMenuWindowBackgroundColors           = [];
-    
+
 _CPMenuWindowMenuBarBackgroundStyle         = 0;
 _CPMenuWindowPopUpBackgroundStyle           = 1;
 _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
@@ -16,7 +16,7 @@ var STICKY_TIME_INTERVAL        = 500,
     LEFT_MARGIN                 = 1.0,
     RIGHT_MARGIN                = 1.0,
     BOTTOM_MARGIN               = 5.0,
-    
+
     SCROLL_INDICATOR_HEIGHT     = 16.0;
 
 /*
@@ -26,10 +26,10 @@ var STICKY_TIME_INTERVAL        = 500,
 {
     _CPMenuView         _menuView;
     CPClipView          _menuClipView;
-    
+
     CPImageView         _moreAboveView;
     CPImageView         _moreBelowView;
-    
+
     CGRect              _unconstrainedFrame;
     CGRect              _constraintRect;
 }
@@ -67,9 +67,9 @@ var STICKY_TIME_INTERVAL        = 500,
 {
     if (self != [_CPMenuWindow class])
         return;
-    
+
     var bundle = [CPBundle bundleForClass:self];
-    
+
     _CPMenuWindowMoreAboveImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindowMoreAbove.png"] size:CGSizeMake(38.0, 18.0)];
     _CPMenuWindowMoreBelowImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindowMoreBelow.png"] size:CGSizeMake(38.0, 18.0)];
 }
@@ -89,31 +89,31 @@ var STICKY_TIME_INTERVAL        = 500,
         [self setAcceptsMouseMovedEvents:YES];
 
         var contentView = [self contentView];
-        
+
         _menuView = [[_CPMenuView alloc] initWithFrame:CGRectMakeZero()];
-        
+
         _menuClipView = [[CPClipView alloc] initWithFrame:CGRectMake(LEFT_MARGIN, TOP_MARGIN, 0.0, 0.0)];
         [_menuClipView setDocumentView:_menuView];
-        
+
         [contentView addSubview:_menuClipView];
-        
+
         _moreAboveView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
-        
+
         [_moreAboveView setImage:_CPMenuWindowMoreAboveImage];
         [_moreAboveView setFrameSize:[_CPMenuWindowMoreAboveImage size]];
-        
+
         [contentView addSubview:_moreAboveView];
-        
+
         _moreBelowView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
-    
+
         [_moreBelowView setImage:_CPMenuWindowMoreBelowImage];
         [_moreBelowView setFrameSize:[_CPMenuWindowMoreBelowImage size]];
-        
+
         [contentView addSubview:_moreBelowView];
 
         [self setShadowStyle:CPWindowShadowStyleMenu];
     }
-    
+
     return self;
 }
 
@@ -135,7 +135,7 @@ var STICKY_TIME_INTERVAL        = 500,
 + (CPColor)backgroundColorForBackgroundStyle:(_CPMenuWindowBackgroundStyle)aBackgroundStyle
 {
     var color = _CPMenuWindowBackgroundColors[aBackgroundStyle];
-    
+
     if (!color)
     {
         var bundle = [CPBundle bundleForClass:[self class]];
@@ -146,32 +146,32 @@ var STICKY_TIME_INTERVAL        = 500,
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindowRounded0.png"] size:CGSizeMake(4.0, 4.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow1.png"] size:CGSizeMake(1.0, 4.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindowRounded2.png"] size:CGSizeMake(4.0, 4.0)],
-                    
+
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow3.png"] size:CGSizeMake(4.0, 1.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow4.png"] size:CGSizeMake(1.0, 1.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow5.png"] size:CGSizeMake(4.0, 1.0)],
-                    
+
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindowRounded6.png"] size:CGSizeMake(4.0, 4.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow7.png"] size:CGSizeMake(1.0, 4.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindowRounded8.png"] size:CGSizeMake(4.0, 4.0)]
                 ]]];
-        
+
         else if (aBackgroundStyle == _CPMenuWindowMenuBarBackgroundStyle)
             color = [CPColor colorWithPatternImage:[[CPNinePartImage alloc] initWithImageSlices:
                 [
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow3.png"] size:CGSizeMake(4.0, 0.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow4.png"] size:CGSizeMake(1.0, 0.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow5.png"] size:CGSizeMake(4.0, 0.0)],
-                    
+
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow3.png"] size:CGSizeMake(4.0, 1.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow4.png"] size:CGSizeMake(1.0, 1.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow5.png"] size:CGSizeMake(4.0, 1.0)],
-                    
+
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindowRounded6.png"] size:CGSizeMake(4.0, 4.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow7.png"] size:CGSizeMake(1.0, 4.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindowRounded8.png"] size:CGSizeMake(4.0, 4.0)]
                 ]]];
-                
+
         _CPMenuWindowBackgroundColors[aBackgroundStyle] = color;
     }
 
@@ -187,11 +187,11 @@ var STICKY_TIME_INTERVAL        = 500,
 {
     [aMenu _setMenuWindow:self];
     [_menuView setMenu:aMenu];
-    
+
     var menuViewSize = [_menuView frame].size;
-    
+
     [self setFrameSize:CGSizeMake(LEFT_MARGIN + menuViewSize.width + RIGHT_MARGIN, TOP_MARGIN + menuViewSize.height + BOTTOM_MARGIN)];
-    
+
     [_menuView scrollPoint:CGPointMake(0.0, 0.0)];
     [_menuClipView setFrame:CGRectMake(LEFT_MARGIN, TOP_MARGIN, menuViewSize.width, menuViewSize.height)];
 }
@@ -208,10 +208,16 @@ var STICKY_TIME_INTERVAL        = 500,
     return [_menuView menu];
 }
 
+- (_CPMenuView)_menuView
+{
+    return _menuView;
+}
+
 - (void)orderFront:(id)aSender
 {
+    [[self menu] update];
     [self setFrame:_unconstrainedFrame];
-    
+
     [super orderFront:aSender];
 }
 
@@ -270,16 +276,16 @@ var STICKY_TIME_INTERVAL        = 500,
 
         topMargin = TOP_MARGIN,
         bottomMargin = BOTTOM_MARGIN,
-        
+
         contentView = [self contentView],
         bounds = [contentView bounds];
 
     if (moreAbove)
     {
         topMargin += SCROLL_INDICATOR_HEIGHT;
-    
+
         var frame = [_moreAboveView frame];
-        
+
         [_moreAboveView setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - CGRectGetWidth(frame)) / 2.0, (TOP_MARGIN + SCROLL_INDICATOR_HEIGHT - CGRectGetHeight(frame)) / 2.0)];
     }
 
@@ -288,13 +294,18 @@ var STICKY_TIME_INTERVAL        = 500,
     if (moreBelow)
     {
         bottomMargin += SCROLL_INDICATOR_HEIGHT;
-    
+
         [_moreBelowView setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - CGRectGetWidth([_moreBelowView frame])) / 2.0, CGRectGetHeight(bounds) - SCROLL_INDICATOR_HEIGHT - BOTTOM_MARGIN)];
     }
-    
+
     [_moreBelowView setHidden:!moreBelow];
 
-    var clipFrame = CGRectMake(LEFT_MARGIN, topMargin, CGRectGetWidth(constrainedFrame) - LEFT_MARGIN - RIGHT_MARGIN, CGRectGetHeight(constrainedFrame) - topMargin - bottomMargin)
+    var clipFrame = CGRectMakeZero();
+
+    clipFrame.origin.x = LEFT_MARGIN;
+    clipFrame.origin.y = topMargin;
+    clipFrame.size.width = CGRectGetWidth(constrainedFrame) - LEFT_MARGIN - RIGHT_MARGIN;
+    clipFrame.size.height = CGRectGetHeight(constrainedFrame) - topMargin - bottomMargin;
 
     [_menuClipView setFrame:clipFrame];
     [_menuView setFrameSize:CGSizeMake(CGRectGetWidth(clipFrame), CGRectGetHeight([_menuView frame]))];
@@ -347,24 +358,29 @@ var STICKY_TIME_INTERVAL        = 500,
     return [self canScrollUp] || [self canScrollDown];
 }
 
-- (void)scrollUp
+- (void)scrollByDelta:(float)theDelta
 {
-    if (CGRectGetMinY(_unconstrainedFrame) >= CGRectGetMinY(_constraintRect))
+    if (theDelta === 0.0)
         return;
 
-    _unconstrainedFrame.origin.y += 10;
+    if (theDelta > 0.0 && ![self canScrollDown])
+        return;
 
+    if (theDelta < 0.0 && ![self canScrollUp])
+        return;
+
+    _unconstrainedFrame.origin.y -= theDelta;
     [self setFrame:_unconstrainedFrame];
+}
+
+- (void)scrollUp
+{
+    [self scrollByDelta:-10.0];
 }
 
 - (void)scrollDown
 {
-    if (CGRectGetMaxY(_unconstrainedFrame) <= CGRectGetHeight(_constraintRect))
-        return;
-
-    _unconstrainedFrame.origin.y -= 10;
-
-    [self setFrame:_unconstrainedFrame];
+    [self scrollByDelta:10.0];
 }
 
 @end
@@ -384,16 +400,15 @@ var STICKY_TIME_INTERVAL        = 500,
 - (_CPManagerScrollingState)scrollingStateForPoint:(CGPoint)aGlobalLocation
 {
     var frame = [self frame];
-
-    if (![self canScroll])
+    if (!CPRectContainsPoint(frame,aGlobalLocation) || ![self canScroll])
         return _CPMenuManagerScrollingStateNone;
 
     // If we're at or above of the top scroll indicator...
-    if (aGlobalLocation.y < CGRectGetMinY(frame) + TOP_MARGIN + SCROLL_INDICATOR_HEIGHT)
+    if (aGlobalLocation.y < CGRectGetMinY(frame) + TOP_MARGIN + SCROLL_INDICATOR_HEIGHT &&  ![_moreAboveView isHidden])
         return _CPMenuManagerScrollingStateUp;
 
     // If we're at or below the bottom scroll indicator...
-    if (aGlobalLocation.y > CGRectGetMaxY(frame) - BOTTOM_MARGIN - SCROLL_INDICATOR_HEIGHT)
+    if (aGlobalLocation.y > CGRectGetMaxY(frame) - BOTTOM_MARGIN - SCROLL_INDICATOR_HEIGHT &&  ![_moreBelowView isHidden])
         return _CPMenuManagerScrollingStateDown;
 
     return _CPMenuManagerScrollingStateNone;
@@ -428,7 +443,7 @@ var STICKY_TIME_INTERVAL        = 500,
 {
     CPArray _menuItemViews;
     CPArray _visibleMenuItemInfos;
-    
+
     CPFont  _font @accessors(property=font);
 }
 
@@ -462,7 +477,7 @@ var STICKY_TIME_INTERVAL        = 500,
     while (low <= high)
     {
         var middle = FLOOR(low + (high - low) / 2),
-            info = _visibleMenuItemInfos[middle]
+            info = _visibleMenuItemInfos[middle],
             frame = [info.view frame];
 
         if (y < CGRectGetMinY(frame))
@@ -480,7 +495,7 @@ var STICKY_TIME_INTERVAL        = 500,
 
 - (void)tile
 {
-    [_menuItemViews makeObjectsPerformSelector:@selector(removeFromSuperview)];   
+    [_menuItemViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
 
     _menuItemViews = [];
     _visibleMenuItemInfos = [];
@@ -500,15 +515,15 @@ var STICKY_TIME_INTERVAL        = 500,
     for (; index < count; ++index)
     {
         var item = items[index],
-            view = [item _menuItemView];        
-        
+            view = [item _menuItemView];
+
         _menuItemViews.push(view);
-        
+
         if ([item isHidden])
             continue;
 
         _visibleMenuItemInfos.push({ view:view, index:index });
-        
+
         [view setFont:_font];
         [view setShowsStateColumn:showsStateColumn];
         [view synchronizeWithMenuItem];

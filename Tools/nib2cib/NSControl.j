@@ -34,16 +34,19 @@
 
     if (self)
     {
-        [self sendActionOn:CPLeftMouseUpMask];
-
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
+
+        [self sendActionOn:CPLeftMouseUpMask];
+        [self setSendsActionOnEndEditing:[cell sendsActionOnEndEditing]];
 
         [self setObjectValue:[cell objectValue]];
 
         [self setFont:[cell font]];
         [self setAlignment:[cell alignment]];
 
-        [self setEnabled:[aCoder decodeObjectForKey:@"NSEnabled"]];
+        // The NSEnabled flag is never changed when changing the enabled state of a control
+        // Enabled state should is derived from the NSCellFlags decoded by NSCell
+        [self setEnabled:[cell isEnabled]];
         [self setContinuous:[cell isContinuous]];
 
         [self setTarget:[aCoder decodeObjectForKey:@"NSTarget"]];

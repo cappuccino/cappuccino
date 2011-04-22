@@ -33,7 +33,8 @@
            make sure that you cannot configure the public subclasses CPDateFormatter and CPNumberFormatter to satisfy your requirements.
 */
 
-@import <Foundation/CPObject.j>
+@import "CPException.j"
+@import "CPObject.j"
 
 @implementation CPFormatter : CPObject
 
@@ -51,16 +52,14 @@
 */
 - (CPString)stringForObjectValue:(id)anObject
 {
-    _CPRaiseInvalidAbstractInvocation(self, @selector(stringForObjectValue:));
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return nil;
 }
-
 
 /*- (CPAttributedString)attributedStringForObjectValue:(id)anObject withDefaultAttributes:(CPDictionary)attributes
 {
 
 }*/
-
 
 /*!
     The default implementation of this method invokes stringForObjectValue:.
@@ -71,13 +70,12 @@
     this method if you want the dollar signs in displayed strings removed for editing.
 
     @param anObject the object for which to return an editing string
-    @return CPString object that is used for editing the textual represntation of an object
+    @return CPString object that is used for editing the textual representation of an object
 */
 - (CPString)editingStringForObjectValue:(id)anObject
 {
     return [self stringForObjectValue:anObject];
 }
-
 
 /*!
     The default implementation of this method raises an exception.
@@ -91,15 +89,14 @@
 
     @param anObject if conversion is successful, upon return contains the object created from the string
     @param aString the string to parse.
-    @param anError if non-nil, if there is an error durring the conversion, upon return contains an CPString object that describes the problem.
+    @param anError if non-nil, if there is an error during the conversion, upon return contains an CPString object that describes the problem.
     @return BOOL YES if the conversion from the string to a view content object was successful, otherwise NO.
 */
 - (BOOL)getObjectValue:(id)anObject forString:(CPString)aString errorDescription:(CPString)anError
 {
-    _CPRaiseInvalidAbstractInvocation(self, @selector(getObjectValue:forString:errorDescription:));
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return NO;
 }
-
 
 /*!
     Returns a Boolean value that indicates whether a partial string is valid.
@@ -120,12 +117,12 @@
 
     @param aPartialString the text currently in the view.
     @param aNewString if aPartialString needs to be modified, upon return contains the replacement string.
-    @param anError if non-nil, if validation fails contains a CPString object that desibes the problem.
+    @param anError if non-nil, if validation fails contains a CPString object that describes the problem.
     @return YES if aPartialString is an acceptable value, otherwise NO.
 */
 - (BOOL)isPartialStringValid:(CPString)aPartialString newEditingString:(CPString)aNewString errorDescription:(CPString)anError
 {
-    _CPRaiseInvalidAbstractInvocation(self, @selector(isPartialStringValid:newEditingString:errorDescription:));
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return NO;
 }
 
@@ -144,13 +141,13 @@
     @param aProposedSelectedRange The selection range that will be used if the string is accepted or replaced.
     @param originalString The original string, before the proposed change.
     @param originalSelectedRange The selection range over which the change is to take place.
-    @param error If non-nil, if validation fails contains an CPString object that descibes the problem.
+    @param error If non-nil, if validation fails contains an CPString object that describes the problem.
     @return YES if aPartialString is acceptable, otherwise NO.
 
 */
 - (BOOL)isPartialStringValue:(CPString)aPartialString proposedSelectedRange:(CPRange)aProposedSelectedRange originalString:(CPString)originalString originalSelectedRange:(CPRange)originalSelectedRange errorDescription:(CPString)anError
 {
-    _CPRaiseInvalidAbstractInvocation(self, @selector(isPartialStringValue:proposedSelectedRange:originalString:originalSelectedRange:errorDescription:));
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return NO;
 }
 

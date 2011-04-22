@@ -83,40 +83,45 @@
 {
     if (self = [super initWithFrame:aFrame])
     {
-        _rowHeight = 23.0;
-        _defaultColumnWidth = 140.0;
-        _minColumnWidth = 80.0;
-        _imageWidth = 23.0;
-        _leafWidth = 13.0;
-        _columnWidths = [];
-
-        _pathSeparator = "/";
-        _tableViews = [];
-        _tableDelegates = [];
-        _allowsMultipleSelection = YES;
-        _allowsEmptySelection = YES;
-        _tableViewClass = [_CPBrowserTableView class];
-
-        _prototypeView = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
-        [_prototypeView setVerticalAlignment:CPCenterVerticalTextAlignment];
-        [_prototypeView setValue:[CPColor whiteColor] forThemeAttribute:"text-color" inState:CPThemeStateSelectedDataView];
-        [_prototypeView setLineBreakMode:CPLineBreakByTruncatingTail];
-
-        _horizontalScrollView = [[CPScrollView alloc] initWithFrame:[self bounds]];
-
-        [_horizontalScrollView setHasVerticalScroller:NO];
-        [_horizontalScrollView setAutohidesScrollers:YES];
-        [_horizontalScrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-
-        _contentView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 0, CGRectGetHeight([self bounds]))];
-        [_contentView setAutoresizingMask:CPViewHeightSizable];
-
-        [_horizontalScrollView setDocumentView:_contentView];
-
-        [self addSubview:_horizontalScrollView];
+        [self _init];
     }
 
     return self;
+}
+
+- (void)_init
+{
+    _rowHeight = 23.0;
+    _defaultColumnWidth = 140.0;
+    _minColumnWidth = 80.0;
+    _imageWidth = 23.0;
+    _leafWidth = 13.0;
+    _columnWidths = [];
+
+    _pathSeparator = "/";
+    _tableViews = [];
+    _tableDelegates = [];
+    _allowsMultipleSelection = YES;
+    _allowsEmptySelection = YES;
+    _tableViewClass = [_CPBrowserTableView class];
+
+    _prototypeView = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
+    [_prototypeView setVerticalAlignment:CPCenterVerticalTextAlignment];
+    [_prototypeView setValue:[CPColor whiteColor] forThemeAttribute:"text-color" inState:CPThemeStateSelectedDataView];
+    [_prototypeView setLineBreakMode:CPLineBreakByTruncatingTail];
+
+    _horizontalScrollView = [[CPScrollView alloc] initWithFrame:[self bounds]];
+
+    [_horizontalScrollView setHasVerticalScroller:NO];
+    [_horizontalScrollView setAutohidesScrollers:YES];
+    [_horizontalScrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+
+    _contentView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 0, CGRectGetHeight([self bounds]))];
+    [_contentView setAutoresizingMask:CPViewHeightSizable];
+
+    [_horizontalScrollView setDocumentView:_contentView];
+
+    [self addSubview:_horizontalScrollView];
 }
 
 - (void)setPrototypeView:(CPView)aPrototypeView
@@ -299,7 +304,7 @@
             tableHeight = CGRectGetHeight([tableView bounds]);
 
         [[tableView tableColumnWithIdentifier:"Image"] setWidth:_imageWidth];
-        [[tableView tableColumnWithIdentifier:"Content"] setWidth:width - (_leafWidth + _delegateSupportsImages ? _imageWidth : 0) - scrollerWidth - scrollerWidth];
+        [[tableView tableColumnWithIdentifier:"Content"] setWidth:[self columnContentWidthForColumnWidth:width]];
         [[tableView tableColumnWithIdentifier:"Leaf"] setWidth:_leafWidth];
 
         [tableView setRowHeight:_rowHeight];
@@ -431,12 +436,14 @@
 
 - (float)columnContentWidthForColumnWidth:(float)aWidth
 {
-    return aWidth - (_leafWidth + _delegateSupportsImages ? _imageWidth : 0) - [CPScroller scrollerWidth];
+    var columnSpacing = [_tableViews[0] intercellSpacing].width;
+    return aWidth - (_leafWidth + columnSpacing + (_delegateSupportsImages ? _imageWidth + columnSpacing : 0)) - columnSpacing - [CPScroller scrollerWidth];
 }
 
 - (float)columnWidthForColumnContentWidth:(float)aWidth
 {
-    return aWidth + (_leafWidth + _delegateSupportsImages ? _imageWidth : 0) + [CPScroller scrollerWidth];
+    var columnSpacing = [_tableViews[0] intercellSpacing].width;
+    return aWidth + (_leafWidth + columnSpacing + (_delegateSupportsImages ? _imageWidth + columnSpacing: 0)) + columnSpacing + [CPScroller scrollerWidth];
 }
 
 - (void)setImageWidth:(float)aWidth
@@ -649,6 +656,53 @@
 }
 
 @end
+
+@implementation CPBrowser (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+
+    if (self)
+    {
+        [self _init];
+
+        _allowsEmptySelection = [aCoder decodeBoolForKey:@"CPBrowserAllowsEmptySelectionKey"];
+        _allowsMultipleSelection = [aCoder decodeBoolForKey:@"CPBrowserAllowsMultipleSelectionKey"];
+        _prototypeView = [aCoder decodeObjectForKey:@"CPBrowserPrototypeViewKey"];
+        _rowHeight = [aCoder decodeFloatForKey:@"CPBrowserRowHeightKey"];
+        _imageWidth = [aCoder decodeFloatForKey:@"CPBrowserImageWidthKey"];
+        _minColumnWidth = [aCoder decodeFloatForKey:@"CPBrowserMinColumnWidthKey"];
+        _columnWidths = [aCoder decodeObjectForKey:@"CPBrowserColumnWidthsKey"];
+
+        [self setDelegate:[aCoder decodeObjectForKey:@"CPBrowserDelegateKey"]];
+        [self setAutohidesScroller:[aCoder decodeBoolForKey:@"CPBrowserAutohidesScrollerKey"]];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    // Don't encode the subviews, they're transient and will be recreated from data.
+    var actualSubviews = _subviews;
+    _subviews = [];
+    [super encodeWithCoder:aCoder];
+    _subviews = actualSubviews;
+
+    [aCoder encodeBool:[self autohidesScroller] forKey:@"CPBrowserAutohidesScrollerKey"];
+    [aCoder encodeBool:_allowsEmptySelection forKey:@"CPBrowserAllowsEmptySelectionKey"];
+    [aCoder encodeBool:_allowsMultipleSelection forKey:@"CPBrowserAllowsMultipleSelectionKey"];
+    [aCoder encodeObject:_delegate forKey:@"CPBrowserDelegateKey"];
+    [aCoder encodeObject:_prototypeView forKey:@"CPBrowserPrototypeViewKey"];
+    [aCoder encodeFloat:_rowHeight forKey:@"CPBrowserRowHeightKey"];
+    [aCoder encodeFloat:_imageWidth forKey:@"CPBrowserImageWidthKey"];
+    [aCoder encodeFloat:_minColumnWidth forKey:@"CPBrowserMinColumnWidthKey"];
+    [aCoder encodeObject:_columnWidths forKey:@"CPBrowserColumnWidthsKey"];
+}
+
+@end
+
 
 var _CPBrowserResizeControlBackgroundImage = nil;
 

@@ -362,4 +362,73 @@
     [self assert:[str copy] equals:str];
     [self assert:[str copy] equals:[str copy]];
 }
+
+- (void)testRangeOfString
+{
+    // Based on the Cocoa "String Programming Guide" example.
+    var searchString = @"age",
+        beginsTest = @"Agencies",
+        prefixRange = [beginsTest rangeOfString:searchString options:(CPCaseInsensitiveSearch)];
+
+    [self assert:0 equals:prefixRange.location message:@"forward search for age (location)"];
+    [self assert:3 equals:prefixRange.length message:@"forward search for age (length)"];
+
+    var endsTest = @"BRICOLAGE",
+        suffixRange = [endsTest rangeOfString:searchString options:(CPCaseInsensitiveSearch | CPBackwardsSearch)];
+
+    [self assert:6 equals:suffixRange.location message:@"backwards search for age (location)"];
+    [self assert:3 equals:suffixRange.length message:@"backwards search for age (length)"];
+}
+
+- (void)testRangeOfString_Anchored_Backwards
+{
+    var endsTest = @"AGEBRICOLAGE",
+        unAnchoredSuffixRange = [endsTest rangeOfString:@"LAG" options:(CPCaseInsensitiveSearch | CPBackwardsSearch)],
+        anchoredSuffixRange = [endsTest rangeOfString:@"LAG" options:(CPAnchoredSearch | CPCaseInsensitiveSearch | CPBackwardsSearch)];
+
+    [self assert:8 equals:unAnchoredSuffixRange.location message:"backwards search for LAG"];
+    [self assert:CPNotFound equals:anchoredSuffixRange.location message:"anchored backwards search for LAG"];
+
+    anchoredSuffixRange = [endsTest rangeOfString:@"AGE" options:(CPAnchoredSearch | CPCaseInsensitiveSearch | CPBackwardsSearch)];
+    [self assert:9 equals:anchoredSuffixRange.location message:"anchored backwards search for AGE"];
+
+    anchoredSuffixRange = [endsTest rangeOfString:endsTest options:(CPAnchoredSearch | CPCaseInsensitiveSearch | CPBackwardsSearch)];
+    [self assert:0 equals:anchoredSuffixRange.location message:"anchored backwards search for whole string (location)"];
+    [self assert:endsTest.length equals:anchoredSuffixRange.length message:"anchored backwards search for whole string (length)"];
+
+    anchoredSuffixRange = [endsTest rangeOfString:@"" options:(CPAnchoredSearch | CPCaseInsensitiveSearch | CPBackwardsSearch)];
+    [self assert:CPNotFound equals:anchoredSuffixRange.location message:"anchored backwards search for nothing (location)"];
+    [self assert:0 equals:anchoredSuffixRange.length message:"anchored backwards search for nothing (length)"];
+}
+
+- (void)testRangeOfString_options_range
+{
+    var testString = @"In another life you would have made a excellent criminal.",
+        hitRange;
+
+    hitRange = [testString rangeOfString:@"life" options:0 range:CPMakeRange(0, testString.length)];
+    [self assert:11 equals:hitRange.location message:@"search for 'life' in full range (location)"];
+    [self assert:4 equals:hitRange.length message:@"search for 'life' in full range (position)"];
+
+    hitRange = [testString rangeOfString:@"i" options:0 range:CPMakeRange(0, testString.length)];
+    [self assert:12 equals:hitRange.location message:@"search for 'i' in full range (location)"];
+    [self assert:1 equals:hitRange.length message:@"search for 'i' in full range (position)"];
+
+    hitRange = [testString rangeOfString:@"i" options:0 range:CPMakeRange(10, 20)];
+    [self assert:12 equals:hitRange.location message:@"search for 'i' in partial range (location)"];
+    [self assert:1 equals:hitRange.length message:@"search for 'i' in partial range (position)"];
+
+    var sawException = false;
+    try
+    {
+        hitRange = [testString rangeOfString:@"i" options:0 range:CPMakeRange(50, 60)];
+    }
+    catch (anException)
+    {
+        sawException = true;
+        [self assert:CPRangeException equals:[anException name]];
+    }
+    [self assertTrue:sawException message:"expected CPRangeException"];
+}
+
 @end

@@ -32,6 +32,7 @@
 
 
 var _CPButtonBezelStyleHeights = {};
+
 _CPButtonBezelStyleHeights[CPRoundedBezelStyle] = 18;
 _CPButtonBezelStyleHeights[CPTexturedRoundedBezelStyle] = 20;
 _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
@@ -60,162 +61,101 @@ var NSButtonIsBorderedMask = 0x00800000,
 
     if (self)
     {
-        var cell = [aCoder decodeObjectForKey:@"NSCell"];
+        var cell = [aCoder decodeObjectForKey:@"NSCell"],
+            alternateImage = [cell alternateImage];
+
+        if ([alternateImage isKindOfClass:[NSButtonImageSource class]])
+        {
+            /*
+                Because CPCheckBox and CPRadio are direct subclasses,
+                we can just change the class of this object. In the
+                case of CPRadio, we can add its _radioGroup ivar by setting it
+                directly on self.
+            */
+            if ([alternateImage imageName] === @"NSSwitch")
+                self.isa = [CPCheckBox class];
+
+            else if ([alternateImage imageName] === @"NSRadioButton")
+            {
+                self.isa = [CPRadio class];
+                self._radioGroup = [CPRadioGroup new];
+            }
+        }
+
         NIB_CONNECTION_EQUIVALENCY_TABLE[[cell UID]] = self;
 
         _title = [cell title];
+        _controlSize = CPRegularControlSize;
 
-        if (![self NS_isCheckBox] && ![self NS_isRadio])
+        [self setBordered:[cell isBordered]];
+        _bezelStyle = [cell bezelStyle];
+
+        // clean up:
+        switch (_bezelStyle)
         {
-            _controlSize = CPRegularControlSize;
-
-            [self setBordered:[cell isBordered]];
-            _bezelStyle = [cell bezelStyle];
-
-            // clean up:
-            switch (_bezelStyle)
-            {
-                // implemented:
-                case CPRoundedBezelStyle:
-                case CPTexturedRoundedBezelStyle:
-                case CPHUDBezelStyle:
-                    break;
-                // approximations:
-                case CPRoundRectBezelStyle:
-                    _bezelStyle = CPRoundedBezelStyle;
-                    break;
-                case CPSmallSquareBezelStyle:
-                case CPThickSquareBezelStyle:
-                case CPThickerSquareBezelStyle:
-                case CPRegularSquareBezelStyle:
-                case CPTexturedSquareBezelStyle:
-                case CPShadowlessSquareBezelStyle:
-                    _bezelStyle = CPTexturedRoundedBezelStyle;
-                    break;
-                case CPRecessedBezelStyle:
-                    _bezelStyle = CPHUDBezelStyle;
-                    break;
-                // unsupported
-                case CPRoundedDisclosureBezelStyle:
-                case CPHelpButtonBezelStyle:
-                case CPCircularBezelStyle:
-                case CPDisclosureBezelStyle:
-                    CPLog.warn("Unsupported bezel style: " + _bezelStyle);
-                    _bezelStyle = CPHUDBezelStyle;
-                    break;
-                // error:
-                default:
-                    CPLog.error("Unknown bezel style: " + _bezelStyle);
-                    _bezelStyle = CPHUDBezelStyle;
-            }
-
-            if ([cell isBordered])
-            {
-                CPLog.info("Adjusting CPButton height from " +_frame.size.height+ " / " + _bounds.size.height+" to " + CPButtonDefaultHeight);
-                _frame.size.height = CPButtonDefaultHeight;
-                _frame.origin.y += 4.0;
-                _bounds.size.height = CPButtonDefaultHeight;
-            }
+            // implemented:
+            case CPRoundedBezelStyle:
+            case CPTexturedRoundedBezelStyle:
+            case CPHUDBezelStyle:
+                break;
+            // approximations:
+            case CPRoundRectBezelStyle:
+                _bezelStyle = CPRoundedBezelStyle;
+                break;
+            case CPSmallSquareBezelStyle:
+            case CPThickSquareBezelStyle:
+            case CPThickerSquareBezelStyle:
+            case CPRegularSquareBezelStyle:
+            case CPTexturedSquareBezelStyle:
+            case CPShadowlessSquareBezelStyle:
+                _bezelStyle = CPTexturedRoundedBezelStyle;
+                break;
+            case CPRecessedBezelStyle:
+                _bezelStyle = CPHUDBezelStyle;
+                break;
+            // unsupported
+            case CPRoundedDisclosureBezelStyle:
+            case CPHelpButtonBezelStyle:
+            case CPCircularBezelStyle:
+            case CPDisclosureBezelStyle:
+                CPLog.warn("NSButton [%s]: unsupported bezel style: %d", _title == null ? "<no title>" : '"' + _title + '"', _bezelStyle);
+                _bezelStyle = CPHUDBezelStyle;
+                break;
+            // error:
+            default:
+                CPLog.warn("NSButton [%s]: unknown bezel style: %d", _title == null ? "<no title>" : '"' + _title + '"', _bezelStyle);
+                _bezelStyle = CPHUDBezelStyle;
         }
-        else
+
+        if ([cell isBordered])
         {
-            if (![self isKindOfClass:CPCheckBox] && ![self isKindOfClass:CPRadio])
-            {
-                if ([self NS_isCheckBox])
-                    return [[CPCheckBox alloc] NS_initWithCoder:aCoder];
-                else
-                    return [[CPRadio alloc] NS_initWithCoder:aCoder];
-            }
-
-            [self setBordered:YES];
+            CPLog.debug("NSButton [%s]: adjusting height from %d to %d", _title == null ? "<no title>" : '"' + _title + '"', _frame.size.height, CPButtonDefaultHeight);
+            _frame.size.height = CPButtonDefaultHeight;
+            _frame.origin.y += 4.0;
+            _bounds.size.height = CPButtonDefaultHeight;
         }
+
+        _keyEquivalent = [cell keyEquivalent];
+        _keyEquivalentModifierMask = [cell keyEquivalentModifierMask];
+
+        _allowsMixedState = [cell allowsMixedState];
+        [self setImagePosition:[cell imagePosition]];
     }
 
     return self;
-}
-
-- (BOOL)NS_isCheckBox
-{
-    return NO;
-}
-
-- (BOOL)NS_isRadio
-{
-    return NO;
-}
-
-@end
-
-@implementation CPRadio (NS)
-
-- (BOOL)NS_isRadio
-{
-    return YES;
-}
-
-- (id)NS_initWithCoder:(CPCoder)aCoder
-{
-    if (self = [super NS_initWithCoder:aCoder])
-        _radioGroup = [CPRadioGroup new];
-
-    return self;
-}
-
-@end
-
-@implementation CPCheckBox (NS)
-
-- (BOOL)NS_isCheckBox
-{
-    return YES;
 }
 
 @end
 
 @implementation NSButton : CPButton
-{
-    BOOL    _isCheckBox @accessors(readonly, getter=NS_isCheckBox);
-    BOOL    _isRadio @accessors(readonly, getter=NS_isRadio);
-}
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    // We need to do a bit of magic to determine if this is a checkbox or radio button
-    // BEFORE we can initialize the rest of the object.
-    var cell = [aCoder decodeObjectForKey:@"NSCell"],
-        alternateImage = [cell alternateImage];
-
-    if ([alternateImage isKindOfClass:[NSButtonImageSource class]])
-    {
-        if ([alternateImage imageName] === @"NSSwitch")
-            _isCheckBox = YES;
-
-        else if ([alternateImage imageName] === @"NSRadioButton")
-        {
-            _isRadio = YES;
-            _radioGroup = [CPRadioGroup new];
-        }
-    }
-
-    self = [self NS_initWithCoder:aCoder];
-
-    self._allowsMixedState = [cell allowsMixedState];
-    [self setImagePosition:[cell imagePosition]];
-
-    [self setKeyEquivalent:[cell keyEquivalent]];
-    self._keyEquivalentModifierMask = [cell keyEquivalentModifierMask];
-
-    return self;
+    return [self NS_initWithCoder:aCoder];
 }
 
 - (Class)classForKeyedArchiver
 {
-    if ([self NS_isCheckBox])
-        return [CPCheckBox class];
-
-    if ([self NS_isRadio])
-        return [CPRadio class];
-
     return [CPButton class];
 }
 
@@ -232,7 +172,7 @@ var NSButtonIsBorderedMask = 0x00800000,
     BOOL        _allowsMixedState   @accessors(readonly, getter=allowsMixedState);
     BOOL        _imagePosition      @accessors(readonly, getter=imagePosition);
 
-    CPString    _keyEquivalent  @accessors(readonly, getter=keyEquivalent);
+    CPString    _keyEquivalent      @accessors(readonly, getter=keyEquivalent);
     unsigned    _keyEquivalentModifierMask @accessors(readonly, getter=keyEquivalentModifierMask);
 }
 
@@ -287,7 +227,7 @@ var NSButtonIsBorderedMask = 0x00800000,
 
 @implementation NSButtonImageSource : CPObject
 {
-    CPString    _imageName @accessors(readonly, getter=imageName);
+    CPString _imageName @accessors(readonly, getter=imageName);
 }
 
 - (id)initWithCoder:(CPCoder)aCoder

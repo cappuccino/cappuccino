@@ -19,7 +19,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
- 
+
 // Keycodes taken and modified from Google Closure, available under Apache 2 License
 
 CPKeyCodes = {
@@ -156,12 +156,12 @@ CPKeyCodes = {
  * @param opt_altKey Whether the alt key is held down.
  * @return Returns YES if it's a key that fires a keypress event.
  */
-CPKeyCodes.firesKeyPressEvent = function(keyCode, opt_heldKeyCode, opt_shiftKey, opt_ctrlKey, opt_altKey) 
+CPKeyCodes.firesKeyPressEvent = function(keyCode, opt_heldKeyCode, opt_shiftKey, opt_ctrlKey, opt_altKey)
 {
-    if (!CPFeatureIsCompatible(CPJavascriptRemedialKeySupport))
+    if (!CPFeatureIsCompatible(CPJavaScriptRemedialKeySupport))
         return true;
 
-    if (CPBrowserIsOperatingSystem(CPMacOperatingSystem) && opt_altKey) 
+    if (CPBrowserIsOperatingSystem(CPMacOperatingSystem) && opt_altKey)
         return CPKeyCodes.isCharacterKey(keyCode);
 
     // Alt but not AltGr which is represented as Alt+Ctrl.
@@ -193,7 +193,7 @@ CPKeyCodes.firesKeyPressEvent = function(keyCode, opt_heldKeyCode, opt_shiftKey,
  * @param keyCode A key code.
  * @return Returns YES if the keyCode is a character key.
  */
-CPKeyCodes.isCharacterKey = function(keyCode) 
+CPKeyCodes.isCharacterKey = function(keyCode)
 {
     if (keyCode >= CPKeyCodes.ZERO && keyCode <= CPKeyCodes.NINE)
         return true;
@@ -204,7 +204,7 @@ CPKeyCodes.isCharacterKey = function(keyCode)
     if (keyCode >= CPKeyCodes.A && keyCode <= CPKeyCodes.Z)
         return true;
 
-    switch (keyCode) 
+    switch (keyCode)
     {
         case CPKeyCodes.SPACE:
         case CPKeyCodes.QUESTION_MARK:

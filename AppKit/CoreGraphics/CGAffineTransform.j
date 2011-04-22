@@ -65,7 +65,7 @@ function CGAffineTransformMakeRotation(anAngle)
 {
     var sin = SIN(anAngle),
         cos = COS(anAngle);
-        
+
     return _CGAffineTransformMake(cos, sin, -sin, cos, 0.0, 0.0);
 }
 
@@ -133,7 +133,7 @@ function CGRectApplyAffineTransform(aRect, anAffineTransform)
         maxX = MAX(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x),
         minY = MIN(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y),
         maxY = MAX(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
-        
+
     return _CGRectMake(minX, minY, (maxX - minX), (maxY - minY));
 }
 

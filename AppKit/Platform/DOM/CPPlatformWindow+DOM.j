@@ -188,9 +188,8 @@ var ModifierKeyCodes = [
     CPKeyCodes.CTRL,
     CPKeyCodes.ALT,
     CPKeyCodes.SHIFT
-];
-
-var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
+    ],
+    supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
 @implementation CPPlatformWindow (DOM)
 
@@ -205,6 +204,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
         _windowLevels = [];
         _windowLayers = [CPDictionary dictionary];
+
 
         [self registerDOMWindow];
         [self updateFromNativeContentRect];
@@ -322,7 +322,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     _DOMScrollingElement = theDocument.createElement("div");
     _DOMScrollingElement.style.position = "absolute";
     _DOMScrollingElement.style.visibility = "hidden";
-    _DOMScrollingElement.style.zIndex = "998";
+    _DOMScrollingElement.style.zIndex = @"999";
     _DOMScrollingElement.style.height = "60px";
     _DOMScrollingElement.style.width = "60px";
     _DOMScrollingElement.style.overflow = "scroll";
@@ -484,7 +484,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         _DOMBodyElement.ondrag = function () { return NO; };
         _DOMBodyElement.onselectstart = function () { return _DOMWindow.event.srcElement === _DOMPasteboardElement; };
 
-        _DOMWindow.attachEvent("onbeforeunload", function()
+        _DOMWindow.attachEvent("onunload", function()
         {
             [self updateFromNativeContentRect];
             [self _removeLayers];
@@ -1114,7 +1114,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     {
         var newEvent = {};
 
-        switch(aDOMEvent.type)
+        switch (aDOMEvent.type)
         {
             case CPDOMEventTouchStart:  newEvent.type = CPDOMEventMouseDown;
                                         break;
@@ -1157,6 +1157,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 - (void)mouseEvent:(DOMEvent)aDOMEvent
 {
     var type = _overriddenEventType || aDOMEvent.type;
+
 
     // IE's event order is down, up, up, dblclick, so we have create these events artificially.
     if (type === @"dblclick")
@@ -1203,7 +1204,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     {
         if (_mouseIsDown)
         {
-            event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseDownIsRightClick ? CPRightMouseUp : CPLeftMouseUp, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseUp, timestamp, location), 0);
+            event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseDownIsRightClick ? CPRightMouseUp : CPLeftMouseUp, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseUp, timestamp, location), 0, nil);
 
             _mouseIsDown = NO;
             _lastMouseUp = event;
@@ -1253,7 +1254,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
         StopContextMenuDOMEventPropagation = YES;
 
-        event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseDownIsRightClick ? CPRightMouseDown : CPLeftMouseDown, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseDown, timestamp, location), 0);
+        event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseDownIsRightClick ? CPRightMouseDown : CPLeftMouseDown, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseDown, timestamp, location), 0, nil);
 
         _mouseIsDown = YES;
         _lastMouseDown = event;
@@ -1264,7 +1265,9 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         if (_DOMEventMode)
             return;
 
-        event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseIsDown ? (_mouseDownIsRightClick ? CPRightMouseDragged : CPLeftMouseDragged) : CPMouseMoved, location, modifierFlags, timestamp, windowNumber, nil, -1, 1, 0);
+        // _lastMouseEventLocation might be nil on the very first mousemove event. Just send in the current location
+        // in this case - this will result in a delta x and delta y of 0 which seems natural for the first event.
+        event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseIsDown ? (_mouseDownIsRightClick ? CPRightMouseDragged : CPLeftMouseDragged) : CPMouseMoved, location, modifierFlags, timestamp, windowNumber, nil, -1, 1, 0, _lastMouseEventLocation || location);
     }
 
     var isDragging = [[CPDragServer sharedDragServer] isDragging];
@@ -1282,7 +1285,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     // if there are any tracking event listeners then show the event guard so we don't lose events to iframes
     // TODO Actually check for tracking event listeners, not just any listener but _CPRunModalLoop.
     var hasTrackingEventListener = NO;
-    for (var i=0; i < CPApp._eventListeners.length; i++)
+    for (var i = 0; i < CPApp._eventListeners.length; i++)
     {
         if (CPApp._eventListeners[i]._callback !== _CPRunModalLoop)
         {
@@ -1290,6 +1293,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
             break;
         }
     }
+    _lastMouseEventLocation = location;
 
     _DOMEventGuard.style.display = hasTrackingEventListener ? "" : "none";
 
@@ -1522,7 +1526,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 + (void)preventKeyCodesFromPropagating:(CPArray)keyCodes
 {
     for (var i = keyCodes.length; i > 0; i--)
-        KeyCodesToPrevent[keyCodes[i-1]] = YES;
+        KeyCodesToPrevent[keyCodes[i - 1]] = YES;
 }
 
 /*!
@@ -1546,7 +1550,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
 var CPEventClass = [CPEvent class];
 
-var _CPEventFromNativeMouseEvent = function(aNativeEvent, anEventType, aPoint, modifierFlags, aTimestamp, aWindowNumber, aGraphicsContext, anEventNumber, aClickCount, aPressure)
+var _CPEventFromNativeMouseEvent = function(aNativeEvent, anEventType, aPoint, modifierFlags, aTimestamp, aWindowNumber, aGraphicsContext, anEventNumber, aClickCount, aPressure, aMouseDragStart)
 {
     aNativeEvent.isa = CPEventClass;
 
@@ -1560,6 +1564,17 @@ var _CPEventFromNativeMouseEvent = function(aNativeEvent, anEventType, aPoint, m
     aNativeEvent._eventNumber = anEventNumber;
     aNativeEvent._clickCount = aClickCount;
     aNativeEvent._pressure = aPressure;
+    if((anEventType == CPLeftMouseDragged) || (anEventType == CPRightMouseDragged) || (anEventType == CPMouseMoved))
+    {
+        aNativeEvent._deltaX = aPoint.x - aMouseDragStart.x;
+        aNativeEvent._deltaY = aPoint.y - aMouseDragStart.y;
+    }
+    else
+    {
+        aNativeEvent._deltaX = 0;
+        aNativeEvent._deltaY = 0;
+    }
+
 
     return aNativeEvent;
 }

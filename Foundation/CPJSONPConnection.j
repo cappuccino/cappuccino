@@ -20,8 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPException.j"
 @import "CPObject.j"
-
+@import "CPRunLoop.j"
 
 CPJSONPConnectionCallbacks = {};
 
@@ -68,16 +69,19 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
 {
     self = [super init];
 
-    _request = aRequest;
-    _delegate = aDelegate;
+    if (self)
+    {
+        _request = aRequest;
+        _delegate = aDelegate;
 
-    _callbackParameter = aString;
+        _callbackParameter = aString;
 
-    if (!_callbackParameter && [[_request URL] absoluteString].indexOf(CPJSONPCallbackReplacementString) < 0)
-         [CPException raise:CPInvalidArgumentException reason:@"JSONP source specified without callback parameter or CPJSONPCallbackReplacementString in URL."];
+        if (!_callbackParameter && [[_request URL] absoluteString].indexOf(CPJSONPCallbackReplacementString) < 0)
+             [CPException raise:CPInvalidArgumentException reason:@"JSONP source specified without callback parameter or CPJSONPCallbackReplacementString in URL."];
 
-    if (shouldStartImmediately)
-        [self start];
+        if (shouldStartImmediately)
+            [self start];
+    }
 
     return self;
 }

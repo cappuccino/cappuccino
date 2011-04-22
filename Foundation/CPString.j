@@ -25,7 +25,10 @@
 @import "CPObjJRuntime.j"
 @import "CPRange.j"
 @import "CPSortDescriptor.j"
+@import "CPURL.j"
 @import "CPValue.j"
+
+#define _CPMaxRange(aRange) ((aRange).location + (aRange).length)
 
 /*!
     A case insensitive search
@@ -138,7 +141,7 @@ var CPStringRegexSpecialCharacters = [
 */
 - (id)initWithString:(CPString)aString
 {
-    if ([self class] === CPString) 
+    if ([self class] === CPString)
         return String(aString);
 
     var result = new String(aString);
@@ -206,8 +209,8 @@ var CPStringRegexSpecialCharacters = [
 // Combining strings
 
 /*!
-    Returns a string made by appending to the reciever a string constructed from a given format
-    string and the floowing arguments
+    Returns a string made by appending to the receiver a string constructed from a given format
+    string and the following arguments
     @param format the format string in printf-style.
     @return the initialized CPString
 */
@@ -296,6 +299,9 @@ var CPStringRegexSpecialCharacters = [
 */
 - (CPString)substringWithRange:(CPRange)aRange
 {
+    if (aRange.location < 0 || _CPMaxRange(aRange) > length)
+        [CPException raise:CPRangeException reason:"aRange out of bounds"];
+
     return substr(aRange.location, aRange.length);
 }
 
@@ -315,7 +321,7 @@ var CPStringRegexSpecialCharacters = [
     Finds the range of characters in the receiver where the specified string exists. If the string
     does not exist in the receiver, the range \c length will be 0.
     @param aString the string to search for in the receiver
-    @return the range of charactrs in the receiver
+    @return the range of characters in the receiver
 */
 - (CPRange)rangeOfString:(CPString)aString
 {
@@ -345,10 +351,9 @@ var CPStringRegexSpecialCharacters = [
 }
 
 /*!
-    Finds the range of characters in the receiver
-    where the specified string exists in the given range
-    of the receiver.The search is subject to the options specified in the
-    specified mask which can be a combination of:
+    Finds the range of characters in the receiver where the specified string
+    exists in the given range of the receiver.The search is subject to the
+    options specified in the specified mask which can be a combination of:
     <pre>
     CPCaseInsensitiveSearch
     CPLiteralSearch
@@ -359,11 +364,17 @@ var CPStringRegexSpecialCharacters = [
     @param aString the string to search for
     @param aMask the options to use in the search
     @param aRange the range of the receiver in which to search for
-    @return the range of characters in the receiver. If the string was not found,
-    the \c length of the range will be 0.
+    @return the range of characters in the receiver. The range is relative to
+        the start of the full string and not the passed-in range. If the
+        string was not found, or if it was @"", the range will be
+        {CPNotFound, 0}.
 */
 - (CPRange)rangeOfString:(CPString)aString options:(int)aMask range:(CPrange)aRange
 {
+    // Searching for @"" always returns CPNotFound.
+    if (!aString)
+        return CPMakeRange(CPNotFound, 0);
+
     var string = (aRange == nil) ? self : [self substringWithRange:aRange],
         location = CPNotFound;
 
@@ -374,13 +385,20 @@ var CPStringRegexSpecialCharacters = [
     }
 
     if (aMask & CPBackwardsSearch)
-        location = string.lastIndexOf(aString, aMask & CPAnchoredSearch ? length - aString.length : 0);
+    {
+        location = string.lastIndexOf(aString);
+        if (aMask & CPAnchoredSearch && location + aString.length != string.length)
+            location = CPNotFound;
+    }
     else if (aMask & CPAnchoredSearch)
         location = string.substr(0, aString.length).indexOf(aString) != CPNotFound ? 0 : CPNotFound;
     else
         location = string.indexOf(aString);
 
-    return CPMakeRange(location, location == CPNotFound ? 0 : aString.length);
+    if (location == CPNotFound)
+        return CPMakeRange(CPNotFound, 0);
+
+    return CPMakeRange(location + (aRange ? aRange.location : 0), aString.length);
 }
 
 //Replacing Substrings
@@ -391,7 +409,7 @@ var CPStringRegexSpecialCharacters = [
 }
 
 /*!
-    Returns a new string in which all occurrences of a target string in the reciever are replaced by
+    Returns a new string in which all occurrences of a target string in the receiver are replaced by
     another given string.
     @param target The string to replace.
     @param replacement the string with which to replace the \c target
@@ -586,7 +604,7 @@ var CPStringRegexSpecialCharacters = [
     Returns a string containing characters the receiver and a given string have in common, starting from
     the beginning of each up to the first characters that aren't equivalent.
     @param aString the string with which to compare the receiver
-    @param aMask options for comparision
+    @param aMask options for comparison
 */
 - (CPString)commonPrefixWithString:(CPString)aString options:(int)aMask
 {
@@ -760,13 +778,7 @@ var CPStringRegexSpecialCharacters = [
     return [[CPURL URLWithString:self] absoluteString];
 }
 
-- (CPString)copy
-{
-    return new String(self);
-}
-
 @end
-
 
 @implementation CPString (JSON)
 
@@ -807,10 +819,10 @@ var CPStringRegexSpecialCharacters = [
 
 @end
 
-var diacritics = [[192,198],[224,230],[231,231],[232,235],[236,239],[242,246],[249,252]]; // Basic Latin ; Latin-1 Supplement.
-var normalized = [65,97,99,101,105,111,117];
+var diacritics = [[192,198],[224,230],[231,231],[232,235],[236,239],[242,246],[249,252]], // Basic Latin ; Latin-1 Supplement.
+    normalized = [65,97,99,101,105,111,117];
 
-String.prototype.stripDiacritics = function ()
+String.prototype.stripDiacritics = function()
 {
     var output = "";
     for (var indexSource = 0; indexSource < this.length; indexSource++)

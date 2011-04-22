@@ -32,13 +32,13 @@
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
         _label = [aCoder decodeObjectForKey:@"BKThemedObjectTemplateLabel"];
         _themedObject = [aCoder decodeObjectForKey:@"BKThemedObjectTemplateThemedObject"];
     }
-    
+
     return self;
 }
 

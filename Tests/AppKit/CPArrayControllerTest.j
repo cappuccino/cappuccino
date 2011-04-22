@@ -1,5 +1,6 @@
 
 @import <AppKit/CPArrayController.j>
+@import <AppKit/CPTextField.j>
 
 @implementation CPArrayControllerTest : OJTestCase
 {
@@ -9,16 +10,30 @@
     CPArray             observations;
 }
 
+- (CPArray)makeTestArray
+{
+    return [[Employee employeeWithName:@"Francisco" department:[Department departmentWithName:@"Cappuccino"]],
+        [Employee employeeWithName:@"Ross" department:[Department departmentWithName:@"Cappuccino"]],
+        [Employee employeeWithName:@"Tom" department:[Department departmentWithName:@"CommonJS"]]];
+}
+
+- (void)initControllerWithSimpleArray
+{
+    // Copy the array to allow the original to be reused.
+    _arrayController = [[CPArrayController alloc] initWithContent:[[self contentArray] copy]];
+}
+
+- (void)initControllerWithContentBinding
+{
+    _arrayController = [CPArrayController new];
+    // The itemsArray keypath is implemented through KVC methods pointing to _contentArray.
+    [_arrayController bind:@"contentArray" toObject:self withKeyPath:@"itemsArray" options:nil];
+}
+
 - (void)setUp
 {
-    _contentArray = [];
-
-    [_contentArray addObject:[Employee employeeWithName:@"Francisco" department:[Department departmentWithName:@"Cappuccino"]]];
-    [_contentArray addObject:[Employee employeeWithName:@"Ross" department:[Department departmentWithName:@"Cappuccino"]]];
-    [_contentArray addObject:[Employee employeeWithName:@"Tom" department:[Department departmentWithName:@"CommonJS"]]];
-
-    // Copy the array since we'll reuse the original array later. Also see issue #795.
-    _arrayController = [[CPArrayController alloc] initWithContent:[[self contentArray] copy]];
+    _contentArray = [self makeTestArray];
+    [self initControllerWithSimpleArray]
 }
 
 - (void)testInitWithContent
@@ -44,7 +59,19 @@
     [self assert:[_CPObservableArray class] equals:[[[self arrayController] arrangedObjects] class]];
 }
 
-- (void)testInsertObjectAtArrangedObjectIndex
+- (void)testInsertObjectAtArrangedObjectIndex_SimpleArray
+{
+    [self initControllerWithSimpleArray];
+    [self _testInsertObjectAtArrangedObjectIndex];
+}
+
+- (void)testInsertObjectAtArrangedObjectIndex_ContentBinding
+{
+    [self initControllerWithContentBinding];
+    [self _testInsertObjectAtArrangedObjectIndex];
+}
+
+- (void)_testInsertObjectAtArrangedObjectIndex
 {
     var object = [Employee employeeWithName:@"Klaas Pieter" department:[Department departmentWithName:@"Theming"]],
         arrayController = [self arrayController];
@@ -53,6 +80,24 @@
     [arrayController insertObject:object atArrangedObjectIndex:1];
 
     [self assert:object equals:[[arrayController arrangedObjects] objectAtIndex:1]];
+}
+
+- (void)testAddObjectUpdatesArrangedObjectsWithoutSortDescriptors
+{
+    var arrayController = [[CPArrayController alloc] init];
+
+    [arrayController addObject:@"content"];
+    [self assert:[@"content"] equals:[arrayController content]];
+    [self assert:[@"content"] equals:[arrayController arrangedObjects]];
+}
+
+- (void)testInsertObjectUpdatesArrangedObjectsWithoutSortDescriptors
+{
+    var arrayController = [[CPArrayController alloc] init];
+
+    [arrayController insertObject:@"content" atArrangedObjectIndex:0];
+    [self assert:[@"content"] equals:[arrayController content]];
+    [self assert:[@"content"] equals:[arrayController arrangedObjects]];
 }
 
 - (void)testSelectPrevious
@@ -92,21 +137,41 @@
     [self assert:[CPIndexSet indexSetWithIndex:count - 1] equals:[arrayController selectionIndexes]];
 }
 
-/*
-    Verify that the arranged objects ordering is correct versus the content array when objects are added with addObject and no sort descriptors are set.
-*/
-- (void)testAddObjects
-{
-    _arrayController = [[CPArrayController alloc] init];
-    var content = [];
-    [_arrayController setContent:content];
 
+/*!
+    Verify that the arranged objects ordering is correct versus the content array when objects are added with addObject and no sort descriptors are set.
+
+    (setContent: based version.)
+*/
+- (void)testAddObject_SimpleArray
+{
+    _contentArray = [];
+    // Don't use a copy, use direct access for this particular test.
+    _arrayController = [[CPArrayController alloc] initWithContent:_contentArray];
+    [self _testAddObject];
+}
+
+/*!
+    Verify that the arranged objects ordering is correct versus the content array when objects are added with addObject and no sort descriptors are set.
+
+    (content binding based version.)
+*/
+- (void)testAddObject_ContentBinding
+{
+    _contentArray = [];
+    [self initControllerWithContentBinding];
+    [self _testAddObject];
+}
+
+- (void)_testAddObject
+{
     [_arrayController addObject:[CPNumber numberWithInt:1]];
     [_arrayController addObject:[CPNumber numberWithInt:2]];
 
-    [self assert:[CPNumber numberWithInt:1] equals:content[0]];
-    [self assert:[CPNumber numberWithInt:2] equals:content[1]];
+    [self assert:[CPNumber numberWithInt:1] equals:_contentArray[0]];
+    [self assert:[CPNumber numberWithInt:2] equals:_contentArray[1]];
 
+    [self assert:2 equals:[[_arrayController arrangedObjects] count]];
     [self assert:[CPNumber numberWithInt:1] equals:[_arrayController arrangedObjects][0] message:"arranged objects should be in the correct order"];
     [self assert:[CPNumber numberWithInt:2] equals:[_arrayController arrangedObjects][1] message:"arranged objects should be in the correct order"];
 
@@ -116,18 +181,46 @@
     [self assert:[CPNumber numberWithInt:2] equals:[_arrayController arrangedObjects][1]];
 }
 
-- (void)testRemoveObjects
+- (void)testRemoveObjectsWithoutAvoidingEmptySelection_SimpleArray
+{
+    [self initControllerWithSimpleArray];
+    [self _testRemoveObjectsWithoutAvoidingEmptySelection];
+}
+
+- (void)testRemoveObjectsWithoutAvoidingEmptySelection_ContentBinding
+{
+    [self initControllerWithContentBinding];
+    [self _testRemoveObjectsWithoutAvoidingEmptySelection];
+}
+
+- (void)_testRemoveObjectsWithoutAvoidingEmptySelection
 {
     var arrayController = [self arrayController];
+    [arrayController setAvoidsEmptySelection:NO];
     [arrayController setPreservesSelection:NO];
 
     [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(1, 2)]];
     [arrayController removeObjects:[arrayController selectedObjects]]
 
     [self assert:[CPIndexSet indexSet] equals:[arrayController selectionIndexes]
-         message:@"selection should be empty if arraycontroller doesn't preserve selection"];
+         message:@"selection should be empty if arraycontroller doesn't avoid empty selection"];
+}
 
-    arrayController = [[CPArrayController alloc] initWithContent:[self contentArray]];
+- (void)testRemoveObjectsWithPreservesSelection_SimpleArray
+{
+    [self initControllerWithSimpleArray];
+    [self _testRemoveObjectsWithPreservesSelection];
+}
+
+- (void)testRemoveObjectsWithPreservesSelection_ContentBinding
+{
+    [self initControllerWithContentBinding];
+    [self _testRemoveObjectsWithPreservesSelection];
+}
+
+- (void)_testRemoveObjectsWithPreservesSelection
+{
+    var arrayController = [self arrayController];
     [arrayController setPreservesSelection:YES];
 
     // Remove from middle
@@ -177,7 +270,7 @@
 
 - (void)testSelectionWhenObjectsDisappear
 {
-    // If the selected object disappeares during a rearrange, the selection
+    // If the selected object disappears during a rearrange, the selection
     // should update appropriately, even if preserve selection is off.
     var arrayController = [self arrayController];
     [arrayController setPreservesSelection:NO];
@@ -190,8 +283,7 @@
 
     [arrayController setContent:newContent];
 
-    [self assert:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)] equals:[arrayController selectionIndexes]
-         message:@"last object cannot be selected"];
+    [self assert:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)] equals:[arrayController selectionIndexes] message:@"last object cannot be selected"];
 }
 
 - (void)testContentBinding
@@ -354,6 +446,16 @@
     [self assert:@"Building 1" equals:[[self arrayController] valueForKeyPath:@"selection.department.building"]];
 }
 
+- (void)testArrangedObjectsNotEmptyAfterSetContentWhenClearsFilterOnInsertionIsTrue
+{
+    var arrayController = [[CPArrayController alloc] init];
+    [arrayController setFilterPredicate:nil];
+    [arrayController setClearsFilterPredicateOnInsertion:YES];
+    [arrayController setContent:[CPArray arrayWithObject:@"a"]];
+
+    [self assertTrue:[[arrayController arrangedObjects] count] > 0];
+}
+
 - (void)observeValueForKeyPath:keyPath
     ofObject:anActivity
     change:change
@@ -367,6 +469,35 @@
         oldValue: [change valueForKey:CPKeyValueChangeOldKey],
         newValue: [change valueForKey:CPKeyValueChangeNewKey]
     }];
+}
+
+/*!
+    The code below makes the key "itemsArray" KVC compliant so that it can be used for testing
+    array controllers bound to destinations with such setups.
+*/
+- (unsigned int)countOfItemsArray
+{
+    return [_contentArray count];
+}
+
+- (id)objectInItemsArrayAtIndex:(unsigned int)index
+{
+    return [_contentArray objectAtIndex:index];
+}
+
+- (void)insertObject:(id)anObject inItemsArrayAtIndex:(unsigned int)index
+{
+    [_contentArray insertObject:anObject atIndex:index];
+}
+
+- (void)removeObjectFromItemsArrayAtIndex:(unsigned int)index
+{
+    [_contentArray removeObjectAtIndex:index];
+}
+
+- (void)replaceObjectInItemsArrayAtIndex:(unsigned int)index withObject:(id)anObject
+{
+    [_contentArray replaceObjectAtIndex:index withObject:anObject];
 }
 
 @end

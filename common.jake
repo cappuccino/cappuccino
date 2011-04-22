@@ -14,7 +14,7 @@ SYSTEM.args.slice(1).forEach(function(arg){
 function ensurePackageUpToDate(packageName, requiredVersion, options)
 {
     options = options || {};
-    
+
     var packageInfo = require("narwhal/packages").catalog[packageName];
     if (!packageInfo)
     {
@@ -28,7 +28,7 @@ function ensurePackageUpToDate(packageName, requiredVersion, options)
     var version = packageInfo.version;
     if (typeof version === "string")
         version = version.split(".");
-        
+
     if (typeof requiredVersion === "string")
         requiredVersion = requiredVersion.split(".");
 
@@ -152,21 +152,21 @@ function additionalPackages()
 {
     var builtObjectiveJPackage = FILE.path($BUILD_CONFIGURATION_DIR).join("CommonJS", "objective-j", "");
     var builtCappuccinoPackage = FILE.path($BUILD_CONFIGURATION_DIR).join("CommonJS", "cappuccino", "");
-    
+
     var packages = [];
-    
+
     // load built objective-j if exists, otherwise unbuilt
     if (builtObjectiveJPackage.join("package.json").exists()) {
         if (!packageInCatalog(builtObjectiveJPackage))
             packages.push(builtObjectiveJPackage);
     }
-    
+
     // load built cappuccino if it exists
     if (builtCappuccinoPackage.join("package.json").exists()) {
         if (!packageInCatalog(builtCappuccinoPackage))
             packages.push(builtCappuccinoPackage);
     }
-    
+
     return packages;
 }
 
@@ -183,7 +183,7 @@ function packageInCatalog(path)
 serializedENV = function()
 {
     var envNew = {};
-    
+
     // add changed keys to the new ENV
     Object.keys(SYSTEM.env).forEach(function(key) {
         if (SYSTEM.env[key] !== envInitial[key])
@@ -200,6 +200,22 @@ serializedENV = function()
     return Object.keys(envNew).map(function(key) {
         return key + "=" + OS.enquote(envNew[key]);
     }).join(" ");
+}
+
+function getShellConfigFile()
+{
+    var homeDir = SYSTEM.env["HOME"] + "/";
+    // use order outlined by http://hayne.net/MacDev/Notes/unixFAQ.html#shellStartup
+    var possibilities = [homeDir + ".bash_profile",
+                         homeDir + ".bash_login",
+                         homeDir + ".profile",
+                         homeDir + ".bashrc"];
+
+    for (var i = 0; i < possibilities.length; i++)
+    {
+        if (FILE.exists(possibilities[i]))
+            return possibilities[i];
+    }
 }
 
 function reforkWithPackages()
@@ -251,7 +267,7 @@ global.cp_r = function(/*String*/ from, /*String*/ to)
 global.cp = function(/*String*/ from, /*String*/ to)
 {
     FILE.copy(from, to);
-//    FILE.chmod(to, FILE.mod(from));  
+//    FILE.chmod(to, FILE.mod(from));
 }
 
 global.mv = function(/*String*/ from, /*String*/ to)
@@ -344,11 +360,102 @@ global.subtasks = function(subprojects, taskNames)
     });
 }
 
-function spawnJake(/*String*/ aTaskName)
+global.installSymlink = function(sourcePath)
+{
+    if (!FILE.isDirectory(sourcePath))
+        return;
+
+    var packageName = FILE.basename(sourcePath),
+        targetPath = FILE.join(SYSTEM.prefix, "packages", packageName);
+
+    if (FILE.isDirectory(targetPath))
+        FILE.rmtree(targetPath);
+    else if (FILE.linkExists(targetPath))
+        FILE.remove(targetPath);
+
+    stream.print("Symlinking \0cyan(" + targetPath + "\0) ==> \0cyan(" + sourcePath + "\0)");
+    FILE.symlink(sourcePath, targetPath);
+
+    var binPath = FILE.Path(FILE.join(targetPath, "bin"));
+
+    if (binPath.isDirectory())
+    {
+        var narwhalBin = FILE.Path(FILE.join(SYSTEM.prefix, "bin"));
+
+        binPath.list().forEach(function (name)
+        {
+            var binary = binPath.join(name);
+            binary.chmod(0755);
+
+            var target = narwhalBin.join(name),
+                relative = FILE.relative(target, binary);
+
+            if (target.linkExists())
+                target.remove();
+
+            FILE.symlink(relative, target);
+        });
+    }
+}
+
+global.spawnJake = function(/*String*/ aTaskName)
 {
     if (OS.system(serializedENV() + " " + SYSTEM.args[0] + " " + aTaskName))
         OS.exit(1);//rake abort if ($? != 0)
 }
+
+global.sudo = function(/*String*/ aTaskName)
+{
+    var cmd = "sudo bash -c 'source " + getShellConfigFile() + "; " + aTaskName + "'";
+
+    if (OS.system(cmd))
+        OS.exit(1); //rake abort if ($? != 0)
+}
+
+global.copyManPage = function(/*String*/ name, /*int*/ section)
+{
+    var manDir = "/usr/local/share/man/man" + section,
+        pageFile = name + "." + section,
+        manPagePath = FILE.join(manDir, pageFile);
+
+    if (!FILE.exists(manPagePath) || FILE.mtime(pageFile) > FILE.mtime(manPagePath))
+    {
+        var sudo = ["sudo", "-p", "\nEnter your admin password: "],
+            useSudo = false,
+            success = true,
+            cmd;
+
+        if (!FILE.isDirectory(manDir))
+        {
+            cmd = ["mkdir", "-p", "-m", "0755", manDir];
+
+            if (FILE.isWritable(FILE.dirname(manDir)))
+                success = OS.system(cmd) === 0;
+            else
+            {
+                useSudo = true;
+                success = OS.system(sudo.concat(cmd)) === 0;
+            }
+
+            if (!success)
+            {
+                stream.print("\0red(Unable to create the man directory.\0)");
+                OS.exit(1);
+            }
+        }
+
+        cmd = ["cp", "-f", pageFile, manDir];
+
+        if (FILE.isWritable(manDir))
+            success = OS.system(cmd) === 0;
+        else
+            success = OS.system(sudo.concat(cmd)) === 0;
+
+        if (!success)
+            stream.print("\0red(Unable to copy the man file.\0)");
+    }
+}
+
 
 // built in tasks
 
@@ -368,6 +475,16 @@ task ("debug", function()
 });
 
 task ("all", ["debug", "release"]);
+
+task ("sudo-install-symlinks", function()
+{
+    sudo("jake install-symlinks");
+});
+
+task ("sudo-install-debug-symlinks", function()
+{
+    sudo("jake install-debug-symlinks")
+});
 
 task ("clean-debug", function()
 {

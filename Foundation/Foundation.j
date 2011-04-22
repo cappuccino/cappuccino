@@ -36,12 +36,15 @@
 @import "CPExpression.j"
 @import "CPFormatter.j"
 @import "CPIndexSet.j"
+@import "CPIndexPath.j"
 @import "CPInvocation.j"
 @import "CPJSONPConnection.j"
 @import "CPKeyedArchiver.j"
 @import "CPKeyedUnarchiver.j"
 @import "CPKeyValueCoding.j"
 @import "CPKeyValueObserving.j"
+@import "CPMutableArray.j"
+@import "CPMutableSet.j"
 @import "CPNotification.j"
 @import "CPNotificationCenter.j"
 @import "CPNull.j"
@@ -72,9 +75,7 @@
 /*! @mainpage
     Cappuccino is distributed under the @ref license "GNU LGPL".
 
-    @htmlonly <pre>@endhtmlonly
-    @htmlinclude README
-    @htmlonly </pre>@endhtmlonly
+    @htmlinclude README.html
 
     @page license License
     @htmlonly <pre>@endhtmlonly

@@ -47,6 +47,7 @@ var PrimaryPlatformWindow   = NULL;
 
     BOOL            _mouseIsDown;
     BOOL            _mouseDownIsRightClick;
+    CGPoint         _lastMouseEventLocation;
     CPWindow        _mouseDownWindow;
     CPTimeInterval  _lastMouseUp;
     CPTimeInterval  _lastMouseDown;
@@ -103,7 +104,7 @@ var PrimaryPlatformWindow   = NULL;
 #if PLATFORM(DOM)
         _windowLevels = [];
         _windowLayers = [CPDictionary dictionary];
-        
+
         _charCodes = {};
 #endif
     }

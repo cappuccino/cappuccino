@@ -50,8 +50,8 @@ CPToolbarDisplayModeIconOnly            = 2;
 */
 CPToolbarDisplayModeLabelOnly           = 3;
 
-var CPToolbarsByIdentifier              = nil;
-var CPToolbarConfigurationsByIdentifier = nil;
+var CPToolbarsByIdentifier              = nil,
+    CPToolbarConfigurationsByIdentifier = nil;
 
 /*!
     @ingroup appkit
@@ -464,7 +464,7 @@ var CPToolbarIdentifierKey              = @"CPToolbarIdentifierKey",
         // Because we don't know if a delegate will be set later (it is optional
         // as of OS X 10.5), we need to call -_reloadToolbarItems here.
         // In order to load any toolbar items that may have been configured in the
-        // Cib. Unfortunatelly this means that if there is a delegate
+        // Cib. Unfortunately this means that if there is a delegate
         // specified, it will be read later and the resulting call to -setDelegate:
         // will cause -_reloadToolbarItems] to run again :-(
         // FIXME: Can we make this better?

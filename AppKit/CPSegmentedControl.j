@@ -361,9 +361,9 @@ CPSegmentSwitchTrackingMomentary = 2;
 }
 
 /*!
-    Enables/diables the specified segment.
+    Enables/disables the specified segment.
     @param isEnabled \c YES enables the segment
-    @param aSegment the segment to enable/disble
+    @param aSegment the segment to enable/disable
     @throws CPRangeException if \c aSegment is out of bounds
 */
 - (void)setEnabled:(BOOL)isEnabled forSegment:(unsigned)aSegment

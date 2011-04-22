@@ -111,7 +111,7 @@
 // Using sort descriptors
 /*!
     Compares two objects.
-    @param lhsObject the left hand side object to compre
+    @param lhsObject the left hand side object to compare
     @param rhsObject the right hand side object to compare
     @return the comparison result
 */
@@ -127,6 +127,12 @@
 - (id)reversedSortDescriptor
 {
     return [[[self class] alloc] initWithKey:_key ascending:!_ascending selector:_selector];
+}
+
+- (CPString)description
+{
+    return [CPString stringWithFormat:@"(%@, %@, %@)",
+        [self key], [self ascending] ? @"ascending": @"descending", CPStringFromSelector([self selector])];
 }
 
 @end

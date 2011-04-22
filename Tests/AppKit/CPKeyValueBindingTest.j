@@ -171,13 +171,13 @@
     for (var i = 0; i < [content count]; i++)
         [content[i] setAccesses:0];
     var testView = [DataViewTester new];
-    [tableColumn prepareDataView:testView forRow:0];
+    [tableColumn _prepareDataView:testView forRow:0];
     [self assert:'1' equals:testView.lastValue];
-    [self assert:'value' equals:testView.lastKey];
+    [self assert:'objectValue' equals:testView.lastKey];
 
-    [tableColumn prepareDataView:testView forRow:1];
+    [tableColumn _prepareDataView:testView forRow:1];
     [self assert:'3' equals:testView.lastValue];
-    [self assert:'value' equals:testView.lastKey];
+    [self assert:'objectValue' equals:testView.lastKey];
 
     // Test that CPTableColumn is optimized to only read one value per row.
     [self assert:0 equals:[content[2] accesses] message:"row 2 used "+[content[2] accesses]+" accesses but was never prepared"];
@@ -189,9 +189,9 @@
     [tableColumn bind:@"value" toObject:arrayController withKeyPath:@"arrangedObjects" options:nil];
     [arrayController setContent:content];
 
-    [tableColumn prepareDataView:testView forRow:1];
+    [tableColumn _prepareDataView:testView forRow:1];
     [self assert:'old' equals:testView.lastValue];
-    [self assert:'value' equals:testView.lastKey];
+    [self assert:'objectValue' equals:testView.lastKey];
 }
 
 - (void)testTextField
@@ -215,16 +215,33 @@
     [textField bind:@"value" toObject:arrayController withKeyPath:@"selection.cheese" options:options];
 
     [self assert:@"yellow" equals:[textField stringValue] message:@"text field string value should be 'yellow'"];
-    [self assert:@"cheese" equals:[textField placeholderString] message:@"text field placeholder should be 'cheese'"];
 
     [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)]];
 
     [self assert:@"" equals:[textField stringValue] message:@"text field string value should be cleared"];
     [self assert:@"Multiple Values" equals:[textField placeholderString] message:@"text field placeholder should be 'Multiple Values'"];
 
+    [textField unbind:@"value"];
+    // Cocoa doesn't do this
+    // [self assert:@"cheese" equals:[textField placeholderString] message:@"text field placeholder should be reset"];
+
+    [textField bind:@"value" toObject:arrayController withKeyPath:@"selection.cheese" options:options];
+
     [arrayController setSelectionIndex:0];
     [self assert:@"yellow" equals:[textField stringValue] message:"text field string value should be 'yellow'"];
-    [self assert:@"cheese" equals:[textField placeholderString] message:"text field placeholder should be restored"];
+
+    // Cocoa doesn't do this
+    // [self assert:@"cheese" equals:[textField placeholderString] message:"text field placeholder should be restored"];
+
+    textField = [[CPTextField alloc] init];
+    [textField bind:@"value" toObject:arrayController withKeyPath:@"selection.cheese" options:options];
+    [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)]];
+    [self assert:@"Multiple Values" equals:[textField placeholderString] message:@"text field placeholder should 'Multiple Values'"];
+
+    // Cocoa doesn't do this
+    // [arrayController setSelectionIndex:0];
+    // [self assert:@"" equals:[textField placeholderString] message:@"empty text field placeholder should be restored"];
+
 }
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)changes context:(id)aContext

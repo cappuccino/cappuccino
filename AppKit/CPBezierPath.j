@@ -38,7 +38,7 @@ var DefaultLineWidth = 1.0;
     @class CPBezierPath
 
     A CPBezierPath allows you to create paths for drawing to the screen using a simpler API than CoreGraphics.
-    Paths can form any shape, including regular polgyons like squares and triangles; circles, arcs; or complex
+    Paths can form any shape, including regular polygons like squares and triangles; circles, arcs; or complex
     line segments.
 
     A path can be stroked and filled using the relevant method. The currently active fill and stroke color will

@@ -1,6 +1,26 @@
+/*
+ * CPExpression_aggregate.j
+ *
+ * Created by cacaodev.
+ * Copyright 2010.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
-@import "CPExpression.j"
 @import "CPArray.j"
+@import "CPExpression.j"
 @import "CPString.j"
 
 @implementation CPExpression_aggregate : CPExpression
@@ -10,8 +30,10 @@
 
 - (id)initWithAggregate:(CPArray)collection
 {
-    [super initWithExpressionType:CPAggregateExpressionType];
-    _aggregate = collection;
+    self = [super initWithExpressionType:CPAggregateExpressionType];
+
+    if (self)
+        _aggregate = collection;
     return self;
 }
 
@@ -48,11 +70,11 @@
 
 - (CPString)description
 {
-    var i,
+    var i = 0,
         count = [_aggregate count],
         result = "{";
 
-    for (i = 0; i < count; i++)
+    for (; i < count; i++)
         result = result + [CPString stringWithFormat:@"%s%s", [[_aggregate objectAtIndex:i] description], (i + 1 < count) ? @", " : @""];
 
     result = result + "}";
@@ -64,9 +86,9 @@
 {
     var subst_array = [CPArray array],
         count = [_aggregate count],
-        i;
+        i = 0;
 
-    for (i = 0; i < count; i++)
+    for (; i < count; i++)
         [subst_array addObject:[[_aggregate objectAtIndex:i] _expressionWithSubstitutionVariables:variables]];
 
     return [CPExpression expressionForAggregate:subst_array];

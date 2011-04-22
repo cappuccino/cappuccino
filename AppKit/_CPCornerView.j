@@ -33,8 +33,23 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null]]
-                                       forKeys:[@"background-color"]];
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null]]
+                                       forKeys:[@"background-color", "divider-color"]];
+}
+
+- (void)drawRect:(CGRect)aRect
+{
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        color = [self currentValueForThemeAttribute:@"divider-color"];
+
+    CGContextSetLineWidth(context, 1);
+    CGContextSetStrokeColor(context, [self currentValueForThemeAttribute:@"divider-color"]);
+
+    CGContextMoveToPoint(context, _CGRectGetMinX(aRect) + 0.5, ROUND(_CGRectGetMinY(aRect)));
+    CGContextAddLineToPoint(context, _CGRectGetMinX(aRect) + 0.5, ROUND(_CGRectGetMaxY(aRect)));
+
+    CGContextClosePath(context);
+    CGContextStrokePath(context);
 }
 
 - (void)layoutSubviews

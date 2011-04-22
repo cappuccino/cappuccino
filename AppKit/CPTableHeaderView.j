@@ -595,16 +595,19 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
             headerView = [column headerView];
 
         var frame = [self headerRectOfColumn:i];
+
         frame.size.height -= 0.5;
         if (i > 0)
         {
             frame.origin.x += 0.5;
             frame.size.width -= 1;
         }
+        // Note: we're not adding in intercell spacing here. This setting only affects the regular
+        // table cell data views, not the header. Verified in Cocoa on March 29th, 2011.
 
         [headerView setFrame:frame];
 
-        if([headerView superview] != self)
+        if ([headerView superview] != self)
             [self addSubview:headerView];
     }
 
@@ -645,7 +648,6 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         CGContextMoveToPoint(context, ROUND(columnMaxX) + 0.5, ROUND(_CGRectGetMinY(columnToStroke)));
         CGContextAddLineToPoint(context, ROUND(columnMaxX) + 0.5, ROUND(_CGRectGetMaxY(columnToStroke)));
     }
-
     CGContextClosePath(context);
     CGContextStrokePath(context);
 
@@ -669,7 +671,15 @@ var CPTableHeaderViewTableViewKey = @"CPTableHeaderViewTableViewKey",
     {
         [self _init];
         _tableView = [aCoder decodeObjectForKey:CPTableHeaderViewTableViewKey];
-        _drawsColumnLines = [aCoder decodeBoolForKey:CPTableHeaderViewDrawsColumnLines];
+
+        // FIX ME: Take this out before 1.0
+        if ([aCoder containsValueForKey:CPTableHeaderViewDrawsColumnLines])
+            _drawsColumnLines = [aCoder decodeBoolForKey:CPTableHeaderViewDrawsColumnLines];
+        else
+        {
+            _drawsColumnLines = YES;
+            CPLog.warn("The tableview header being decoded is using an old cib. Please run Nib2Cib.");
+        }
     }
 
     return self;

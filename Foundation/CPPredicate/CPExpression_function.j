@@ -1,8 +1,30 @@
+/*
+ * CPExpression_function.j
+ *
+ * Created by cacaodev.
+ * Copyright 2010.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
+@import "CPArray.j"
+@import "CPDate.j"
+@import "CPDictionary.j"
+@import "CPException.j"
 @import "CPExpression.j"
 @import "CPString.j"
-@import "CPArray.j"
-@import "CPDictionary.j"
 
 @implementation CPExpression_function : CPExpression
 {
@@ -30,16 +52,18 @@
 
 - (id)initWithTarget:(CPExpression)operand selector:(SEL)aSelector arguments:(CPArray)parameters type:(int)type
 {
-    [super initWithExpressionType:type];
+    self = [super initWithExpressionType:type];
 
-// Cocoa doc: "This method throws an exception immediately if the selector is unknown"
-// but operand's value (the target) may be resolved only at runtime.
-    _selector = aSelector;
-    _operand = operand;
-    _arguments = parameters;
-    _argc = [parameters count];
-    _maxargs = [[CPStringFromSelector(_selector) componentsSeparatedByString:@":"] count] - 1;
-
+    if (self)
+    {
+        // Cocoa doc: "This method throws an exception immediately if the selector is unknown"
+        // but operand's value (the target) may be resolved only at runtime.
+        _selector = aSelector;
+        _operand = operand;
+        _arguments = parameters;
+        _argc = [parameters count];
+        _maxargs = [[CPStringFromSelector(_selector) componentsSeparatedByString:@":"] count] - 1;
+    }
     return self;
 }
 
@@ -78,9 +102,9 @@
 {
     var target = [_operand expressionValueWithObject:object context:context],
         objj_args = [target, _selector],
-        i;
+        i = 0;
 
-    for (i = 0; i < _argc; i++)
+    for (; i < _argc; i++)
     {
         var arg = [_arguments[i] expressionValueWithObject:object context:context];
         objj_args.push(arg);
@@ -119,9 +143,10 @@
 - (CPExpression)_expressionWithSubstitutionVariables:(CPDictionary)variables
 {
     var operand = [[self operand] _expressionWithSubstitutionVariables:variables],
-        args = [CPArray array];
+        args = [CPArray array],
+        i = 0;
 
-    for (var i = 0; i < _argc; i++)
+    for (; i < _argc; i++)
         [args addObject:[_arguments[i] _expressionWithSubstitutionVariables:variables]];
 
     return [CPExpression expressionForFunction:operand selectorName:[self _function] arguments:args];
@@ -129,9 +154,9 @@
 
 @end
 
-var CPSelectorNameKey = @"CPSelectorName",
-    CPArgumentsKey = @"CPArguments",
-    CPOperandKey = @"CPOperand",
+var CPSelectorNameKey   = @"CPSelectorName",
+    CPArgumentsKey      = @"CPArguments",
+    CPOperandKey        = @"CPOperand",
     CPExpressionTypeKey = @"CPExpressionType";
 
 @implementation CPExpression_function (CPCoding)
@@ -247,7 +272,7 @@ var CPSelectorNameKey = @"CPSelectorName",
     return ABS(num);
 }
 
-+ (CPDate)now
++ (CPDate)now:(id)_
 {
     return [CPDate date];
 }
@@ -283,4 +308,3 @@ var CPSelectorNameKey = @"CPSelectorName",
 }
 
 @end
-

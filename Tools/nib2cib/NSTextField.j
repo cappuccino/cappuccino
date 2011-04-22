@@ -68,11 +68,11 @@
         {
             var frame = [self frame];
 
-            [self setFrameOrigin:CGPointMake(frame.origin.x - 4.0, frame.origin.y - 4.0)];
-            [self setFrameSize:CGSizeMake(frame.size.width + 8.0, frame.size.height + 8.0)];
+            [self setFrameOrigin:CGPointMake(frame.origin.x - 3.0, frame.origin.y - 3.0)];
+            [self setFrameSize:CGSizeMake(frame.size.width + 7.0, frame.size.height + 7.0)];
         }
 
-        CPLog.debug([self stringValue] + " => isBordered=" + [self isBordered] + ", isBezeled="  + [self isBezeled] + ", bezelStyle=" + [self bezelStyle] + "("+[cell stringValue]+", " + [cell placeholderString] + ")");
+        CPLog.debug("NSTextField: title=\"" + [self stringValue] + "\", placeholder=" + ([cell placeholderString] == null ? "<none>" : '"' + [cell placeholderString] + '"') + ", isBordered=" + [self isBordered] + ", isBezeled="  + [self isBezeled] + ", bezelStyle=" + [self bezelStyle]);
     }
 
     return self;

@@ -705,7 +705,7 @@ var CPViewFlags                     = { },
     Sets the frame size of the receiver to the dimensions and origin of the provided rectangle in the coordinate system
     of the superview. The method also posts an CPViewFrameDidChangeNotification to the notification
     center if the receiver is configured to do so. If the frame is the same as the current frame, the method simply
-    returns (and no notificaion is posted).
+    returns (and no notification is posted).
     @param aFrame the rectangle specifying the new origin and size  of the receiver
 */
 - (void)setFrame:(CGRect)aFrame
@@ -1735,7 +1735,7 @@ setBoundsOrigin:
     @param aLocation the lower-left corner coordinate of \c anImage
     @param mouseOffset the distance from the \c -mouseDown: location and the current location
     @param anEvent the \c -mouseDown: that triggered the drag
-    @param aPastebaord the pasteboard that holds the drag data
+    @param aPasteboard the pasteboard that holds the drag data
     @param aSourceObject the drag operation controller
     @param slideBack Whether the image should 'slide back' if the drag is rejected
 */
@@ -1750,7 +1750,7 @@ setBoundsOrigin:
     @param aLocation the top-left corner coordinate of \c aView
     @param mouseOffset the distance from the \c -mouseDown: location and the current location
     @param anEvent the \c -mouseDown: that triggered the drag
-    @param aPastebaord the pasteboard that holds the drag data
+    @param aPasteboard the pasteboard that holds the drag data
     @param aSourceObject the drag operation controller
     @param slideBack Whether the view should 'slide back' if the drag is rejected
 */
@@ -2100,7 +2100,7 @@ setBoundsOrigin:
 
 /*!
     Scrolls the clip view to a specified point
-    @param the clip view to scoll
+    @param the clip view to scroll
     @param the point to scroll to
 */
 - (void)scrollClipView:(CPClipView)aClipView toPoint:(CGPoint)aPoint
@@ -2145,10 +2145,17 @@ setBoundsOrigin:
 
 - (CPView)nextValidKeyView
 {
-    var result = [self nextKeyView];
+    var result = [self nextKeyView],
+        firstResult = result;
 
     while (result && ![result canBecomeKeyView])
+    {
         result = [result nextKeyView];
+
+        // Cycled.
+        if (result === firstResult)
+            return nil;
+    }
 
     return result;
 }
@@ -2160,23 +2167,38 @@ setBoundsOrigin:
 
 - (CPView)previousValidKeyView
 {
-    var result = [self previousKeyView];
+    var result = [self previousKeyView],
+        firstResult = result;
 
     while (result && ![result canBecomeKeyView])
+    {
         result = [result previousKeyView];
+
+        // Cycled.
+        if (result === firstResult)
+            return nil;
+    }
 
     return result;
 }
 
 - (void)_setPreviousKeyView:(CPView)previous
 {
-    _previousKeyView = previous;
+    if ([previous isEqual:self])
+        _previousKeyView = nil;
+    else
+        _previousKeyView = previous;
 }
 
 - (void)setNextKeyView:(CPView)next
 {
-    _nextKeyView = next;
-    [_nextKeyView _setPreviousKeyView:self];
+    if ([next isEqual:self])
+        _nextKeyView = nil;
+    else
+    {
+        _nextKeyView = next;
+        [_nextKeyView _setPreviousKeyView:self];
+    }
 }
 
 @end
@@ -2253,6 +2275,10 @@ setBoundsOrigin:
 
 - (BOOL)hasThemeState:(CPThemeState)aState
 {
+    // Because CPThemeStateNormal is defined as 0 we need to check for it explicitly here
+    if (aState === CPThemeStateNormal && _themeState === CPThemeStateNormal)
+        return YES;
+
     return !!(_themeState & ((typeof aState === "string") ? CPThemeState(aState) : aState));
 }
 
@@ -2487,6 +2513,11 @@ setBoundsOrigin:
     return [_themeAttributes[aName] valueForState:_themeState];
 }
 
+- (BOOL)hasThemeAttribute:(CPString)aName
+{
+    return (_themeAttributes && _themeAttributes[aName] !== undefined);
+}
+
 - (CPView)createEphemeralSubviewNamed:(CPString)aViewName
 {
     return nil;
@@ -2598,7 +2629,11 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         _registeredDraggedTypes = [CPSet set];
         _registeredDraggedTypesArray = [];
 
-        _autoresizingMask = [aCoder decodeIntForKey:CPViewAutoresizingMaskKey] || CPViewNotSizable;
+        // Other views (CPBox) might set an autoresizes mask on their subviews before it is actually decoded.
+        // We make sure we don't override the value by checking if it was already set.
+        if (_autoresizingMask === nil)
+            _autoresizingMask = [aCoder decodeIntForKey:CPViewAutoresizingMaskKey] || CPViewNotSizable;
+
         _autoresizesSubviews = ![aCoder containsValueForKey:CPViewAutoresizesSubviewsKey] || [aCoder decodeBoolForKey:CPViewAutoresizesSubviewsKey];
 
         _hitTests = ![aCoder containsValueForKey:CPViewHitTestsKey] || [aCoder decodeObjectForKey:CPViewHitTestsKey];
@@ -2716,12 +2751,12 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
     var nextKeyView = [self nextKeyView];
 
-    if (nextKeyView !== nil)
+    if (nextKeyView !== nil && ![nextKeyView isEqual:self])
         [aCoder encodeConditionalObject:nextKeyView forKey:CPViewNextKeyViewKey];
 
     var previousKeyView = [self previousKeyView];
 
-    if (previousKeyView !== nil)
+    if (previousKeyView !== nil && ![previousKeyView isEqual:self])
         [aCoder encodeConditionalObject:previousKeyView forKey:CPViewPreviousKeyViewKey];
 
     [aCoder encodeObject:[self themeClass] forKey:CPViewThemeClassKey];

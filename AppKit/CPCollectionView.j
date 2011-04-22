@@ -312,7 +312,8 @@
     while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound)
         [_items[index] setSelected:YES];
 
-    [[CPKeyValueBinding getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectionIndexes"];
+    var binderClass = [[self class] _binderClassForBinding:@"selectionIndexes"];
+    [[binderClass getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectionIndexes"];
 
     if ([_delegate respondsToSelector:@selector(collectionViewDidChangeSelection:)])
         [_delegate collectionViewDidChangeSelection:self];
@@ -588,9 +589,7 @@
     _mouseDownEvent = anEvent;
 
     var location = [self convertPoint:[anEvent locationInWindow] fromView:nil],
-        row = FLOOR(location.y / (_itemSize.height + _verticalMargin)),
-        column = FLOOR(location.x / (_itemSize.width + _horizontalMargin)),
-        index = row * _numberOfColumns + column;
+        index = [self _indexAtPoint:location];
 
     if (index >= 0 && index < _items.length)
     {
@@ -724,6 +723,28 @@
 - (id)delegate
 {
     return _delegate;
+}
+
+/*!
+    @ignore
+*/
+- (CPMenu)menuForEvent:(CPEvent)theEvent
+{
+    if (![[self delegate] respondsToSelector:@selector(collectionView:menuForItemAtIndex:)])
+        return [super menuForEvent:theEvent];
+
+    var location = [self convertPoint:[theEvent locationInWindow] fromView:nil],
+        index = [self _indexAtPoint:location];
+
+    return [_delegate collectionView:self menuForItemAtIndex:index];
+}
+
+- (int)_indexAtPoint:(CGPoint)thePoint
+{
+    var row = FLOOR(thePoint.y / (_itemSize.height + _verticalMargin)),
+        column = FLOOR(thePoint.x / (_itemSize.width + _horizontalMargin));
+
+    return row * _numberOfColumns + column;
 }
 
 - (CPCollectionViewItem)itemAtIndex:(unsigned)anIndex
@@ -896,6 +917,21 @@ var CPCollectionViewMinItemSizeKey              = @"CPCollectionViewMinItemSizeK
 
 
 @implementation CPCollectionView (CPCoding)
+
+- (void)awakeFromCib
+{
+    [super awakeFromCib];
+
+    if (CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()) || CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
+    {
+        var item = _itemPrototype;
+
+        if (CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()))
+            _minItemSize = [[item view] frameSize];
+        else if (CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
+            _maxItemSize = [[item view] frameSize];
+    }
+}
 
 - (id)initWithCoder:(CPCoder)aCoder
 {

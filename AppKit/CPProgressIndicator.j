@@ -120,7 +120,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 
     CPProgressIndicatorStyleSizes = [];
 
-    // Bar Sttyle
+    // Bar Style
     var prefixes = [
         CPProgressIndicatorClassName + @"BezelBorder" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle],
         CPProgressIndicatorClassName + @"Bar" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle],
@@ -290,7 +290,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 }
 
 /*
-    Not yet impemented.
+    Not yet implemented.
 */
 - (CPControlTint)controlTint
 {
@@ -461,6 +461,44 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     }
     else
         [self setBackgroundColor:nil];
+}
+
+@end
+
+
+@implementation CPProgressIndicator (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    if (self = [super initWithCoder:aCoder])
+    {
+        _minValue                   = [aCoder decodeObjectForKey:@"_minValue"];
+        _maxValue                   = [aCoder decodeObjectForKey:@"_maxValue"];
+        _doubleValue                = [aCoder decodeObjectForKey:@"_doubleValue"];
+        _controlSize                = [aCoder decodeObjectForKey:@"_controlSize"];
+        _isIndeterminate            = [aCoder decodeObjectForKey:@"_isIndeterminate"];
+        _style                      = [aCoder decodeObjectForKey:@"_style"];
+        _isAnimating                = [aCoder decodeObjectForKey:@"_isAnimating"];
+        _isDisplayedWhenStoppedSet  = [aCoder decodeObjectForKey:@"_isDisplayedWhenStoppedSet"];
+        _isDisplayedWhenStopped     = [aCoder decodeObjectForKey:@"_isDisplayedWhenStopped"];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+
+    [aCoder encodeObject:_minValue forKey:@"_minValue"];
+    [aCoder encodeObject:_maxValue forKey:@"_maxValue"];
+    [aCoder encodeObject:_doubleValue forKey:@"_doubleValue"];
+    [aCoder encodeObject:_controlSize forKey:@"_controlSize"];
+    [aCoder encodeObject:_isIndeterminate forKey:@"_isIndeterminate"];
+    [aCoder encodeObject:_style forKey:@"_style"];
+    [aCoder encodeObject:_isAnimating forKey:@"_isAnimating"];
+    [aCoder encodeObject:_isDisplayedWhenStoppedSet forKey:@"_isDisplayedWhenStoppedSet"];
+    [aCoder encodeObject:_isDisplayedWhenStopped forKey:@"_isDisplayedWhenStopped"];
 }
 
 @end

@@ -26,7 +26,7 @@
 @import "CPMenuItem.j"
 
 
-var VISIBLE_MARGIN  = 7.0;
+var VISIBLE_MARGIN = 7.0;
 
 CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
@@ -38,10 +38,8 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 */
 @implementation CPPopUpButton : CPButton
 {
-    int         _selectedIndex;
+    CPUInteger  _selectedIndex;
     CPRectEdge  _preferredEdge;
-
-    CPMenu      _menu;
 }
 
 + (CPString)defaultThemeClass
@@ -49,9 +47,19 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     return "popup-button";
 }
 
++ (CPSet)keyPathsForValuesAffectingSelectedIndex
+{
+    return [CPSet setWithObject:@"objectValue"];
+}
+
 + (CPSet)keyPathsForValuesAffectingSelectedTag
 {
-    return [CPSet setWithObject:@"selectedIndex"];
+    return [CPSet setWithObject:@"objectValue"];
+}
+
++ (CPSet)keyPathsForValuesAffectingSelectedItem
+{
+    return [CPSet setWithObject:@"objectValue"];
 }
 
 /*!
@@ -66,7 +74,8 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
     if (self)
     {
-        _selectedIndex = CPNotFound;
+        [self selectItemAtIndex:CPNotFound];
+
         _preferredEdge = CPMaxYEdge;
 
         [self setValue:CPImageLeft forThemeAttribute:@"image-position"];
@@ -76,6 +85,14 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
         [self setMenu:[[CPMenu alloc] initWithTitle:@""]];
 
         [self setPullsDown:shouldPullDown];
+
+        var options =   CPKeyValueObservingOptionNew |
+                        CPKeyValueObservingOptionOld;/* |
+                        CPKeyValueObservingOptionInitial;
+*/
+        [self addObserver:self forKeyPath:@"menu.items" options:options context:nil];
+        [self addObserver:self forKeyPath:@"_firstItem.changeCount" options:options context:nil];
+        [self addObserver:self forKeyPath:@"selectedItem.changeCount" options:options context:nil];
     }
 
     return self;
@@ -90,6 +107,9 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 /*!
     Specifies whether the object is a pull-down or a pop-up menu.
+    If the button pulls down the menu items represent actions, not states.
+    So the text in the button will NOT change when the user selects something different.
+
     @param shouldPullDown \c YES makes the pop-up button
     a pull-down menu. \c NO makes it a pop-up menu.
 */
@@ -103,7 +123,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     if (!changed)
         return;
 
-    var items = [_menu itemArray];
+    var items = [[self menu] itemArray];
 
     if ([items count] <= 0)
         return;
@@ -128,21 +148,21 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 */
 - (void)addItem:(CPMenuItem)anItem
 {
-    [_menu addItem:anItem];
+    [[self menu] addItem:anItem];
 }
 
 /*!
     Adds a new menu item with the specified title.
-    @param the new menu item's tite
+    @param the new menu item's title
 */
 - (void)addItemWithTitle:(CPString)aTitle
 {
-    [_menu addItemWithTitle:aTitle action:NULL keyEquivalent:nil];
+    [[self menu] addItemWithTitle:aTitle action:NULL keyEquivalent:nil];
 }
 
 /*!
     Adds multiple new menu items with the titles specified in the provided array.
-    @param titles an arry of names for the new items
+    @param titles an array of names for the new items
 */
 - (void)addItemsWithTitles:(CPArray)titles
 {
@@ -155,7 +175,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 /*!
     Inserts a new item with the specified title and index location.
-    @param aTitle the new itme's title
+    @param aTitle the new item's title
     @param anIndex the item's index in the menu
 */
 - (void)insertItemWithTitle:(CPString)aTitle atIndex:(int)anIndex
@@ -167,7 +187,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
         if ([items[count] title] == aTitle)
             [self removeItemAtIndex:count];
 
-    [_menu insertItemWithTitle:aTitle action:NULL keyEquivalent:nil atIndex:anIndex];
+    [[self menu] insertItemWithTitle:aTitle action:NULL keyEquivalent:nil atIndex:anIndex];
 }
 
 /*!
@@ -175,10 +195,11 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 */
 - (void)removeAllItems
 {
-    var count = [_menu numberOfItems];
+    var menu = [self menu],
+        count = [menu numberOfItems];
 
     while (count--)
-        [_menu removeItemAtIndex:0];
+        [menu removeItemAtIndex:0];
 }
 
 /*!
@@ -197,7 +218,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 */
 - (void)removeItemAtIndex:(int)anIndex
 {
-    [_menu removeItemAtIndex:anIndex];
+    [[self menu] removeItemAtIndex:anIndex];
     [self synchronizeTitleAndSelectedItem];
 }
 
@@ -207,10 +228,12 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 */
 - (CPMenuItem)selectedItem
 {
-    if (_selectedIndex < 0 || _selectedIndex > [self numberOfItems] - 1)
+    var indexOfSelectedItem = [self indexOfSelectedItem];
+
+    if (indexOfSelectedItem < 0 || indexOfSelectedItem > [self numberOfItems] - 1)
         return nil;
 
-    return [_menu itemAtIndex:_selectedIndex];
+    return [[self menu] itemAtIndex:indexOfSelectedItem];
 }
 
 /*!
@@ -225,15 +248,6 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     Returns the index of the selected item. If no item is selected, it returns CPNotFound.
 */
 - (int)indexOfSelectedItem
-{
-    return _selectedIndex;
-}
-
-// For us, CPNumber is toll-free bridged to Number, so just return the selected index.
-/*!
-    Returns the selected item's index. If no item is selected, it returns CPNotFound.
-*/
-- (id)objectValue
 {
     return _selectedIndex;
 }
@@ -268,24 +282,48 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     Selects the item at the specified index
     @param anIndex the index of the item to select
 */
-- (void)selectItemAtIndex:(int)anIndex
+- (void)selectItemAtIndex:(CPUInteger)anIndex
 {
-    if (_selectedIndex == anIndex)
+    [self setObjectValue:anIndex];
+}
+
+- (void)setSelectedIndex:(CPUInteger)anIndex
+{
+    [self setObjectValue:anIndex];
+}
+
+- (CPUInteger)selectedIndex
+{
+    return [self objectValue];
+}
+
+/*!
+    Selects the item at the specified index
+    @param anIndex the index of the item to select
+*/
+- (void)setObjectValue:(int)anIndex
+{
+    var indexOfSelectedItem = [self objectValue];
+
+    anIndex = parseInt(+anIndex, 10);
+
+    if (indexOfSelectedItem === anIndex)
         return;
 
-    [self willChangeValueForKey:@"selectedIndex"];
-
-    if (_selectedIndex >= 0 && ![self pullsDown])
+    if (indexOfSelectedItem >= 0 && ![self pullsDown])
         [[self selectedItem] setState:CPOffState];
 
     _selectedIndex = anIndex;
 
-    if (_selectedIndex >= 0 && ![self pullsDown])
+    if (indexOfSelectedItem >= 0 && ![self pullsDown])
         [[self selectedItem] setState:CPOnState];
 
     [self synchronizeTitleAndSelectedItem];
+}
 
-    [self didChangeValueForKey:@"selectedIndex"];
+- (id)objectValue
+{
+    return _selectedIndex;
 }
 
 /*!
@@ -306,84 +344,14 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     [self selectItemAtIndex:[self indexOfItemWithTitle:aTitle]];
 }
 
-/*!
-    Sets the object for the selected item. If no item is selected, then this method has no effect.
-    @param the object set for the selected item
-*/
-- (void)setObjectValue:(id)aValue
-{
-    [self selectItemAtIndex:[aValue intValue]];
-}
-
 // Getting Menu Items
-/*!
-    Returns the button's menu of items.
-*/
-- (CPMenu)menu
-{
-    return _menu;
-}
-
-/*!
-    Sets the menu for the button
-*/
-- (void)setMenu:(CPMenu)aMenu
-{
-    if (_menu === aMenu)
-        return;
-
-    var defaultCenter = [CPNotificationCenter defaultCenter];
-
-    if (_menu)
-    {
-        [defaultCenter
-            removeObserver:self
-                      name:CPMenuDidAddItemNotification
-                    object:_menu];
-
-        [defaultCenter
-            removeObserver:self
-                      name:CPMenuDidChangeItemNotification
-                    object:_menu];
-
-        [defaultCenter
-            removeObserver:self
-                      name:CPMenuDidRemoveItemNotification
-                    object:_menu];
-    }
-
-    _menu = aMenu;
-
-    if (_menu)
-    {
-        [defaultCenter
-            addObserver:self
-              selector:@selector(menuDidAddItem:)
-                  name:CPMenuDidAddItemNotification
-                object:_menu];
-
-        [defaultCenter
-            addObserver:self
-              selector:@selector(menuDidChangeItem:)
-                  name:CPMenuDidChangeItemNotification
-                object:_menu];
-
-        [defaultCenter
-            addObserver:self
-              selector:@selector(menuDidRemoveItem:)
-                  name:CPMenuDidRemoveItemNotification
-                object:_menu];
-    }
-
-    [self synchronizeTitleAndSelectedItem];
-}
 
 /*!
     Returns a count of the number of items in the button's menu.
 */
 - (int)numberOfItems
 {
-    return [_menu numberOfItems];
+    return [[self menu] numberOfItems];
 }
 
 /*!
@@ -391,7 +359,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 */
 - (CPArray)itemArray
 {
-    return [_menu itemArray];
+    return [[self menu] itemArray];
 }
 
 /*!
@@ -400,7 +368,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 */
 - (CPMenuItem)itemAtIndex:(unsigned)anIndex
 {
-    return [_menu itemAtIndex:anIndex];
+    return [[self menu] itemAtIndex:anIndex];
 }
 
 /*!
@@ -409,7 +377,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 */
 - (CPString)itemTitleAtIndex:(unsigned)anIndex
 {
-    return [[_menu itemAtIndex:anIndex] title];
+    return [[[self menu] itemAtIndex:anIndex] title];
 }
 
 /*!
@@ -434,7 +402,9 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 */
 - (CPMenuItem)itemWithTitle:(CPString)aTitle
 {
-    return [_menu itemAtIndex:[_menu indexOfItemWithTitle:aTitle]];
+    var menu = [self menu];
+
+    return [menu itemAtIndex:[menu indexOfItemWithTitle:aTitle]];
 }
 
 /*!
@@ -442,7 +412,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 */
 - (CPMenuItem)lastItem
 {
-    return [[_menu itemArray] lastObject];
+    return [[[self menu] itemArray] lastObject];
 }
 
 // Getting the Indices of Menu Items
@@ -452,7 +422,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 */
 - (int)indexOfItem:(CPMenuItem)aMenuItem
 {
-    return [_menu indexOfItem:aMenuItem];
+    return [[self menu] indexOfItem:aMenuItem];
 }
 
 /*!
@@ -461,16 +431,16 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 */
 - (int)indexOfItemWithTag:(int)aTag
 {
-    return [_menu indexOfItemWithTag:aTag];
+    return [[self menu] indexOfItemWithTag:aTag];
 }
 
 /*!
     Returns the index of the item with the specified title or CPNotFound.
-    @param aTitle the item's titel
+    @param aTitle the item's title
 */
 - (int)indexOfItemWithTitle:(CPString)aTitle
 {
-    return [_menu indexOfItemWithTitle:aTitle];
+    return [[self menu] indexOfItemWithTitle:aTitle];
 }
 
 /*!
@@ -481,7 +451,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 */
 - (int)indexOfItemWithRepresentedObject:(id)anObject
 {
-    return [_menu indexOfItemWithRepresentedObject:anObject];
+    return [[self menu] indexOfItemWithRepresentedObject:anObject];
 }
 
 /*!
@@ -493,7 +463,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 */
 - (int)indexOfItemWithTarget:(id)aTarget action:(SEL)anAction
 {
-    return [_menu indexOfItemWithTarget:aTarget action:anAction];
+    return [[self menu] indexOfItemWithTarget:aTarget action:anAction];
 }
 
 // Setting the Cell Edge to Pop out in Restricted Situations
@@ -508,7 +478,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 }
 
 /*!
-    Sets the preffered edge of the button to display the
+    Sets the preferred edge of the button to display the
     pop-up when there is a limited amount of screen space.
     By default, the pop-up should draw on top of the button.
 */
@@ -529,7 +499,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
     if ([self pullsDown])
     {
-        var items = [_menu itemArray];
+        var items = [[self menu] itemArray];
 
         if ([items count] <= 0)
             [self addItemWithTitle:aTitle];
@@ -577,7 +547,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
     if ([self pullsDown])
     {
-        var items = [_menu itemArray];
+        var items = [[self menu] itemArray];
 
         if ([items count] > 0)
             item = items[0];
@@ -589,73 +559,117 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     [super setTitle:[item title]];
 }
 
-//
-/*!
-    Called when the menu has a new item added to it.
-    @param aNotification information about the event
-*/
-- (void)menuDidAddItem:(CPNotification)aNotification
+- (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)changes context:(id)aContext
 {
-    var index = [[aNotification userInfo] objectForKey:@"CPMenuItemIndex"];
+    var pullsDown = [self pullsDown];
 
-    if (_selectedIndex < 0)
-        [self selectItemAtIndex:0];
-
-    else if (index == _selectedIndex)
+    if (!pullsDown && aKeyPath === @"selectedItem.changeCount" ||
+        pullsDown && (aKeyPath === @"_firstItem" || aKeyPath === @"_firstItem.changeCount"))
         [self synchronizeTitleAndSelectedItem];
 
-    else if (index < _selectedIndex)
-        ++_selectedIndex;
-
-    if (index == 0 && [self pullsDown])
+    // FIXME: This is due to a bug in KVO, we should never get it for "menu".
+    if (aKeyPath === @"menu")
     {
-        var items = [_menu itemArray];
+        aKeyPath = @"menu.items";
 
-        [items[0] setHidden:YES];
-
-        if (items.length > 0)
-            [items[1] setHidden:NO];
+        [changes setObject:CPKeyValueChangeSetting forKey:CPKeyValueChangeKindKey];
+        [changes setObject:[[self menu] itemArray] forKey:CPKeyValueChangeNewKey];
     }
 
-    var item = [_menu itemArray][index],
-        action = [item action];
-
-    if (!action || (action === @selector(_popUpItemAction:)))
+    if (aKeyPath === @"menu.items")
     {
-        [item setTarget:self];
-        [item setAction:@selector(_popUpItemAction:)];
+        var changeKind = [changes objectForKey:CPKeyValueChangeKindKey],
+            indexOfSelectedItem = [self indexOfSelectedItem];
+
+        if (changeKind === CPKeyValueChangeRemoval)
+        {
+            var index = CPNotFound,
+                indexes = [changes objectForKey:CPKeyValueChangeIndexesKey];
+
+            if ([indexes containsIndex:0] && [self pullsDown])
+                [self _firstItemDidChange];
+
+            // See whether the index has changed, despite the actual item not changing.
+            while ((index = [indexes indexGreaterThanIndex:index]) !== CPNotFound &&
+                    index <= indexOfSelectedItem)
+                --indexOfSelectedItem;
+
+            [self selectItemAtIndex:indexOfSelectedItem];
+        }
+
+        else if (changeKind === CPKeyValueChangeReplacement)
+        {
+            var indexes = [changes objectForKey:CPKeyValueChangeIndexesKey];
+
+            if (pullsDown && [indexes containsIndex:0] ||
+                !pullsDown && [indexes containsIndex:indexOfSelectedItem])
+                [self synchronizeTitleAndSelectedItem];
+        }
+
+        else
+        {
+            // No matter what, we want to prepare the new items.
+            var newItems = [changes objectForKey:CPKeyValueChangeNewKey];
+
+            [newItems enumerateObjectsUsingBlock:function(aMenuItem)
+            {
+                var action = [aMenuItem action];
+
+                if (!action)
+                    [aMenuItem setAction:action = @selector(_popUpItemAction:)];
+
+                if (action === @selector(_popUpItemAction:))
+                    [aMenuItem setTarget:self];
+            }];
+
+            if (changeKind === CPKeyValueChangeSetting)
+            {
+                [self _firstItemDidChange];
+
+                [self selectItemAtIndex:CPNotFound];
+                [self selectItemAtIndex:MIN([newItems count] - 1, indexOfSelectedItem)];
+            }
+
+            else //if (changeKind === CPKeyValueChangeInsertion)
+            {
+                var indexes = [changes objectForKey:CPKeyValueChangeIndexesKey];
+
+                if ([self pullsDown] && [indexes containsIndex:0])
+                {
+                    [self _firstItemDidChange];
+
+                    if ([self numberOfItems] > 1)
+                    {
+                        var index = CPNotFound,
+                            originalIndex = 0;
+
+                        while ((index = [indexes indexGreaterThanIndex:index]) !== CPNotFound &&
+                                index <= originalIndex)
+                            ++originalIndex;
+
+                        [[self itemAtIndex:originalIndex] setHidden:NO];
+                    }
+                }
+
+                if (indexOfSelectedItem < 0)
+                    [self selectItemAtIndex:0];
+
+                else
+                {
+                    var index = CPNotFound;
+
+                    // See whether the index has changed, despite the actual item not changing.
+                    while ((index = [indexes indexGreaterThanIndex:index]) !== CPNotFound &&
+                            index <= indexOfSelectedItem)
+                        ++indexOfSelectedItem;
+
+                    [self selectItemAtIndex:indexOfSelectedItem];
+                }
+            }
+        }
     }
-}
 
-/*!
-    Called when a menu item has changed.
-    @param aNotification information about the event
-*/
-- (void)menuDidChangeItem:(CPNotification)aNotification
-{
-    var index = [[aNotification userInfo] objectForKey:@"CPMenuItemIndex"];
-
-    if ([self pullsDown] && index != 0)
-        return;
-
-    if (![self pullsDown] && index != _selectedIndex)
-        return;
-
-    [self synchronizeTitleAndSelectedItem];
-}
-
-/*!
-    Called when an item was removed from the menu.
-    @param aNotification information about the event
-*/
-- (void)menuDidRemoveItem:(CPNotification)aNotification
-{
-    var numberOfItems = [self numberOfItems];
-
-    if (numberOfItems <= _selectedIndex && numberOfItems > 0)
-        [self selectItemAtIndex:numberOfItems - 1];
-    else
-        [self synchronizeTitleAndSelectedItem];
+//    [super observeValueForKeyPath:aKeyPath ofObject:anObject change:changes context:aContext];
 }
 
 - (void)mouseDown:(CPEvent)anEvent
@@ -727,12 +741,28 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 - (void)rightMouseDown:(CPEvent)anEvent
 {
-    // Disable standard CPView behaviour which incorrectly displays the menu as a 'context menu'.
+    // Disable standard CPView behavior which incorrectly displays the menu as a 'context menu'.
 }
 
 - (void)_popUpItemAction:(id)aSender
 {
     [self sendAction:[self action] to:[self target]];
+}
+
+- (void)_firstItemDidChange
+{
+    [self willChangeValueForKey:@"_firstItem"];
+    [self didChangeValueForKey:@"_firstItem"];
+
+    [[self _firstItem] setHidden:YES];
+}
+
+- (CPMenuItem)_firstItem
+{
+    if ([self numberOfItems] <= 0)
+        return nil;
+
+    return [[self menu] itemAtIndex:0];
 }
 
 - (void)takeValueFromKeyPath:(CPString)aKeyPath ofObjects:(CPArray)objects
@@ -744,19 +774,14 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     [self setEnabled:YES];
 
     while (count-- > 1)
-    {
         if (value !== [objects[count] valueForKeyPath:aKeyPath])
-        {
             [[self selectedItem] setState:CPOffState];
-        }
-    }
 }
 
 @end
 
-var CPPopUpButtonMenuKey            = @"CPPopUpButtonMenuKey",
-    CPPopUpButtonSelectedIndexKey   = @"CPPopUpButtonSelectedIndexKey",
-    CPPopUpButtonPullsDownKey       = @"CPPopUpButtonPullsDownKey";
+var DEPRECATED_CPPopUpButtonMenuKey             = @"CPPopUpButtonMenuKey",
+    DEPRECATED_CPPopUpButtonSelectedIndexKey    = @"CPPopUpButtonSelectedIndexKey";
 
 @implementation CPPopUpButton (CPCoding)
 /*!
@@ -772,27 +797,30 @@ var CPPopUpButtonMenuKey            = @"CPPopUpButtonMenuKey",
 
     if (self)
     {
-        // Nothing is currently selected
-        _selectedIndex = -1;
+        // FIXME: (or not?) _title is nulled in - [CPButton initWithCoder:],
+        // so we need to do this again.
+        [self synchronizeTitleAndSelectedItem];
 
-        [self setMenu:[aCoder decodeObjectForKey:CPPopUpButtonMenuKey]];
-        [self selectItemAtIndex:[aCoder decodeObjectForKey:CPPopUpButtonSelectedIndexKey]];
+        // FIXME: Remove deprecation leniency for 1.0
+        if ([aCoder containsValueForKey:DEPRECATED_CPPopUpButtonMenuKey])
+        {
+            CPLog.warn(self + " was encoded with an older version of Cappuccino. Please nib2cib the original nib again or open and re-save in Atlas.");
+
+            [self setMenu:[aCoder decodeObjectForKey:DEPRECATED_CPPopUpButtonMenuKey]];
+            [self setObjectValue:[aCoder decodeObjectForKey:DEPRECATED_CPPopUpButtonSelectedIndexKey]];
+        }
+
+        var options =   CPKeyValueObservingOptionNew |
+                        CPKeyValueObservingOptionOld;/* |
+                        CPKeyValueObservingOptionInitial;
+*/
+
+        [self addObserver:self forKeyPath:@"menu.items" options:options context:nil];
+        [self addObserver:self forKeyPath:@"_firstItem.changeCount" options:options context:nil];
+        [self addObserver:self forKeyPath:@"selectedItem.changeCount" options:options context:nil];
     }
 
     return self;
-}
-
-/*!
-    Encodes the data of the pop-up button into a coder
-    @param aCoder the coder to which the data
-    will be written
-*/
-- (void)encodeWithCoder:(CPCoder)aCoder
-{
-    [super encodeWithCoder:aCoder];
-
-    [aCoder encodeObject:_menu forKey:CPPopUpButtonMenuKey];
-    [aCoder encodeInt:_selectedIndex forKey:CPPopUpButtonSelectedIndexKey];
 }
 
 @end

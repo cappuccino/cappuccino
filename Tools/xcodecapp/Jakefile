@@ -1,0 +1,42 @@
+
+require ("../../common.jake");
+
+var app = require("objective-j/jake").app,
+    BundleTask = require("objective-j/jake").BundleTask,
+    FILE = require("file"),
+    OS = require("os"),
+    stream = require("narwhal/term").stream;
+
+app ("xcodecapp", function(xcodecappTask)
+{
+    xcodecappTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "xcodecapp.build", $CONFIGURATION))
+    xcodecappTask.setBuildPath($BUILD_CJS_CAPPUCCINO_LIB);
+
+    xcodecappTask.setSummary("xCode 4 Integration for Cappuccino projects");
+    xcodecappTask.setIdentifier("org.cappuccino.xcodecapp");
+    xcodecappTask.setLicense(BundleTask.License.LGPL_v2_1);
+    xcodecappTask.setVersion(getCappuccinoVersion());
+    xcodecappTask.setSources(new FileList("*.j"));
+    xcodecappTask.setResources(new FileList("Resources/*"));
+    xcodecappTask.setIncludesNibsAndXibs(true);
+    xcodecappTask.setEnvironments(require("objective-j/jake/environment").CommonJS);
+    xcodecappTask.setFlattensSources(true);
+    xcodecappTask.setSpritesResources(false);
+
+    if ($CONFIGURATION === "Release")
+        xcodecappTask.setCompilerFlags("-O");
+    else
+        xcodecappTask.setCompilerFlags("-DDEBUG -g");
+});
+
+$BUILD_CJS_XCODECAPP = FILE.join($BUILD_CJS_CAPPUCCINO_BIN, "xcodecapp");
+
+// executable in environment directory
+filedir($BUILD_CJS_XCODECAPP, ["xcodecapp"], function()
+{
+    make_objj_executable($BUILD_CJS_XCODECAPP);
+});
+
+task ("build", ["xcodecapp", $BUILD_CJS_XCODECAPP]);
+
+CLOBBER.include($BUILD_CJS_CAPPUCCINO_BIN);

@@ -38,22 +38,30 @@ function main(args)
 
 function printUsage()
 {
-    print("capp [--version] COMMAND [ARGS]");
-    print("    --version         Print version");
-    print("    -h, --help        Print usage");
+    print("capp [--version] COMMAND [OPTIONS] [ARGS]");
+    print("    --version    Print version");
+    print("    -h, --help   Print this help");
     print("");
-    print("    gen PATH          Generate new project at PATH from a predefined template");
-    print("    -l                Symlink the Frameworks folder to your $CAPP_BUILD or $STEAM_BUILD directory");
-    print("    -t, --template    Specify the template name to use (listed in capp/Resources/Templates)");
-    print("    -f, --frameworks  Create only frameworks, not a full application");
-    print("    --force           Overwrite Frameworks directory if it already exists");
-    print("    --symlink         Create a symlink to the source Frameworks");
-    print("    --build           Source the Frameworks directory files from your $CAPP_BUILD or $STEAM_BUILD directory");
+    print("  gen [OPTIONS] PATH       Generate a new project at PATH from a predefined template");
+    print("      -l                     Same as --symlink --build, symlinks $CAPP_BUILD Frameworks into your project");
+    print("      -t, --template NAME    Specify the template name to use (see `capp gen --list-templates`)");
+    print("      -f, --frameworks       Copy/symlink *only* the Frameworks directory to a new or existing project");
+    print("      -F, --framework NAME   Additional framework to copy/symlink (default: Objective-J, Foundation, AppKit)")
+    print("      --force                Overwrite Frameworks directory if it already exists");
+    print("      --symlink              Symlink the source Frameworks directory to the project, don't copy");
+    print("      --build                Copy/symlink the Frameworks directory files from your $CAPP_BUILD directory");
+    print("      --noconfig             Use the default configuration when replacing template variables");
     print("");
-    print("    config ");
-    print("    name value        Set a value for a given key");
-    print("    -l, --list        List all variables set in config file.");
-    print("    --get name        Get the value for a given key");
+    print("      Without -l or --build, frameworks from your narwhal installation are copied/symlinked")
+    print("");
+    print("  gen --list-templates     List the template names available for use with `capp gen -t/--template`");
+    print("  gen --list-frameworks    List the framework names available for use with `capp gen -F/--framework`");
+    print("");
+    print("  config ...");
+    print("      KEY VALUE       Set a value for a given key");
+    print("      -l, --list      List all variables set in config file.");
+    print("      --get KEY       Get the value for a given key");
+    print("      --remove KEY    Remove the value for a given key");
 }
 
 function getFiles(/*File*/ sourceDirectory, /*nil|String|Array<String>*/ extensions, /*Array*/ exclusions)

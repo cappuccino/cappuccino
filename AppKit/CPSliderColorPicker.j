@@ -65,7 +65,7 @@
 
 - (id)initView
 {
-    aFrame = CGRectMake(0, 0, CPColorPickerViewWidth, CPColorPickerViewHeight);    
+    aFrame = CGRectMake(0, 0, CPColorPickerViewWidth, CPColorPickerViewHeight);
 
     _contentView = [[CPView alloc] initWithFrame:aFrame];
     [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
@@ -74,7 +74,7 @@
     [_rgbLabel setStringValue: "Red, Green, Blue"];
     [_rgbLabel setTextColor:[CPColor blackColor]];
 
-    _redLabel = [[CPTextField alloc] initWithFrame: CGRectMake(0, 35, 15, 20)];
+    _redLabel = [[CPTextField alloc] initWithFrame: CGRectMake(0, 37, 15, 20)];
     [_redLabel setStringValue: "R"];
     [_redLabel setTextColor:[CPColor blackColor]];
 
@@ -86,18 +86,18 @@
     [_redSlider setAutoresizingMask: CPViewWidthSizable];
 
     // red value input box
-    _redValue = [[CPTextField alloc] initWithFrame: CGRectMake(aFrame.size.width - 45, 30, 45, 29)];
+    _redValue = [[CPTextField alloc] initWithFrame: CGRectMake(aFrame.size.width - 45, 30, 45, 28)];
     [_redValue setAutoresizingMask: CPViewMinXMargin];
     [_redValue setEditable: YES];
     [_redValue setBezeled: YES];
     [_redValue setDelegate: self];
     [_contentView addSubview: _redValue];
 
-    _greenLabel = [[CPTextField alloc] initWithFrame: CGRectMake(0, 58, 15, 20)];
+    _greenLabel = [[CPTextField alloc] initWithFrame: CGRectMake(0, 63, 15, 20)];
     [_greenLabel setStringValue: "G"];
     [_greenLabel setTextColor:[CPColor blackColor]];
 
-    _greenSlider = [[CPSlider alloc] initWithFrame: CGRectMake(15, 58, aFrame.size.width - 70, 20)];
+    _greenSlider = [[CPSlider alloc] initWithFrame: CGRectMake(15, 61, aFrame.size.width - 70, 20)];
     [_greenSlider setMaxValue: 1.0];
     [_greenSlider setMinValue: 0.0];
     [_greenSlider setTarget: self];
@@ -105,18 +105,18 @@
     [_greenSlider setAutoresizingMask: CPViewWidthSizable];
 
     // green value input box
-    _greenValue = [[CPTextField alloc] initWithFrame: CGRectMake(aFrame.size.width - 45, 53, 45, 29)];
+    _greenValue = [[CPTextField alloc] initWithFrame: CGRectMake(aFrame.size.width - 45, 56, 45, 28)];
     [_greenValue setAutoresizingMask: CPViewMinXMargin];
     [_greenValue setEditable: YES];
     [_greenValue setBezeled: YES];
     [_greenValue setDelegate: self];
     [_contentView addSubview: _greenValue];
 
-    _blueLabel = [[CPTextField alloc] initWithFrame: CGRectMake(0, 81, 15, 20)];
+    _blueLabel = [[CPTextField alloc] initWithFrame: CGRectMake(0, 90, 15, 20)];
     [_blueLabel setStringValue: "B"];
     [_blueLabel setTextColor:[CPColor blackColor]];
 
-    _blueSlider = [[CPSlider alloc] initWithFrame: CGRectMake(15, 81, aFrame.size.width - 70, 20)];
+    _blueSlider = [[CPSlider alloc] initWithFrame: CGRectMake(15, 87, aFrame.size.width - 70, 20)];
     [_blueSlider setMaxValue: 1.0];
     [_blueSlider setMinValue: 0.0];
     [_blueSlider setTarget: self];
@@ -124,7 +124,7 @@
     [_blueSlider setAutoresizingMask: CPViewWidthSizable];
 
     // blue value input box
-    _blueValue = [[CPTextField alloc] initWithFrame: CGRectMake(aFrame.size.width - 45, 76, 45, 29)];
+    _blueValue = [[CPTextField alloc] initWithFrame: CGRectMake(aFrame.size.width - 45, 82, 45, 28)];
     [_blueValue setAutoresizingMask: CPViewMinXMargin];
     [_blueValue setEditable: YES];
     [_blueValue setBezeled: YES];
@@ -139,7 +139,7 @@
     [_hueLabel setStringValue: "H"];
     [_hueLabel setTextColor:[CPColor blackColor]];
 
-    _hueSlider = [[CPSlider alloc] initWithFrame: CGRectMake(15, 145, aFrame.size.width - 70, 20)];
+    _hueSlider = [[CPSlider alloc] initWithFrame: CGRectMake(15, 143, aFrame.size.width - 70, 20)];
     [_hueSlider setMaxValue: 359.0];
     [_hueSlider setMinValue: 0.0];
     [_hueSlider setTarget: self];
@@ -147,14 +147,14 @@
     [_hueSlider setAutoresizingMask: CPViewWidthSizable];
 
     // hue value input box
-    _hueValue = [[CPTextField alloc] initWithFrame: CGRectMake(aFrame.size.width - 45, 140, 45, 29)];
+    _hueValue = [[CPTextField alloc] initWithFrame: CGRectMake(aFrame.size.width - 45, 138, 45, 28)];
     [_hueValue setAutoresizingMask: CPViewMinXMargin];
     [_hueValue setEditable: YES];
     [_hueValue setBezeled: YES];
     [_hueValue setDelegate: self];
     [_contentView addSubview: _hueValue];
 
-    _saturationLabel = [[CPTextField alloc] initWithFrame: CGRectMake(0, 168, 15, 20)];
+    _saturationLabel = [[CPTextField alloc] initWithFrame: CGRectMake(0, 170, 15, 20)];
     [_saturationLabel setStringValue: "S"];
     [_saturationLabel setTextColor:[CPColor blackColor]];
 
@@ -166,18 +166,18 @@
     [_saturationSlider setAutoresizingMask: CPViewWidthSizable];
 
     // saturation value input box
-    _saturationValue = [[CPTextField alloc] initWithFrame: CGRectMake(aFrame.size.width - 45, 163, 45, 29)];
+    _saturationValue = [[CPTextField alloc] initWithFrame: CGRectMake(aFrame.size.width - 45, 164, 45, 28)];
     [_saturationValue setAutoresizingMask: CPViewMinXMargin];
     [_saturationValue setEditable: YES];
     [_saturationValue setBezeled: YES];
     [_saturationValue setDelegate: self];
     [_contentView addSubview: _saturationValue];
 
-    _brightnessLabel = [[CPTextField alloc] initWithFrame: CGRectMake(0, 191, 15, 20)];
+    _brightnessLabel = [[CPTextField alloc] initWithFrame: CGRectMake(0, 196, 15, 20)];
     [_brightnessLabel setStringValue: "B"];
     [_brightnessLabel setTextColor:[CPColor blackColor]];
 
-    _brightnessSlider = [[CPSlider alloc] initWithFrame: CGRectMake(15, 191, aFrame.size.width - 70, 20)];
+    _brightnessSlider = [[CPSlider alloc] initWithFrame: CGRectMake(15, 194, aFrame.size.width - 70, 20)];
     [_brightnessSlider setMaxValue: 100.0];
     [_brightnessSlider setMinValue: 0.0];
     [_brightnessSlider setTarget: self];
@@ -185,7 +185,7 @@
     [_brightnessSlider setAutoresizingMask: CPViewWidthSizable];
 
     // brightness value input box
-    _brightnessValue = [[CPTextField alloc] initWithFrame: CGRectMake(aFrame.size.width - 45, 186, 45, 29)];
+    _brightnessValue = [[CPTextField alloc] initWithFrame: CGRectMake(aFrame.size.width - 45, 190, 45, 28)];
     [_brightnessValue setAutoresizingMask: CPViewMinXMargin];
     [_brightnessValue setEditable: YES];
     [_brightnessValue setBezeled: YES];
@@ -197,7 +197,7 @@
     [_hexLabel setTextColor:[CPColor blackColor]];
 
     //hex input box
-    _hexValue = [[CPTextField alloc] initWithFrame: CGRectMake(32, 225, 80, 29)];
+    _hexValue = [[CPTextField alloc] initWithFrame: CGRectMake(32, 225, 80, 28)];
     [_hexValue setEditable: YES];
     [_hexValue setBezeled: YES];
     [_hexValue setDelegate: self];
@@ -240,7 +240,7 @@
     return (mode == CPSliderColorPickerMode) ? YES : NO;
 }
 
--(void)sliderChanged:(id)sender
+- (void)sliderChanged:(id)sender
 {
     var newColor,
         colorPanel = [self colorPanel],
@@ -274,7 +274,7 @@
     [colorPanel setColor: newColor];
 }
 
--(void)setColor:(CPColor)aColor
+- (void)setColor:(CPColor)aColor
 {
     [self updateRGBSliders: aColor];
     [self updateHSBSliders: aColor];
@@ -282,7 +282,7 @@
     [self updateLabels];
 }
 
--(void)updateHSBSliders:(CPColor)aColor
+- (void)updateHSBSliders:(CPColor)aColor
 {
     var hsb = [aColor hsbComponents];
 

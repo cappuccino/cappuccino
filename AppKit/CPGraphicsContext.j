@@ -25,7 +25,7 @@
 @import "CGContext.j"
 
 
-var CPGraphicsContextCurrent    = nil;
+var CPGraphicsContextCurrent = nil;
 
 /*!
     @ingroup appkit
@@ -33,7 +33,7 @@ var CPGraphicsContextCurrent    = nil;
 */
 @implementation CPGraphicsContext : CPObject
 {
-    CPContext   _graphicsPort;
+    CGContext   _graphicsPort;
 }
 
 /*!

@@ -24,11 +24,10 @@
 @import "CPObject.j"
 @import "CPString.j"
 
-
-CPInvalidArgumentException          = "CPInvalidArgumentException";
-CPUnsupportedMethodException        = "CPUnsupportedMethodException";
-CPRangeException                    = "CPRangeException";
-CPInternalInconsistencyException    = "CPInternalInconsistencyException";
+CPInvalidArgumentException          = @"CPInvalidArgumentException";
+CPUnsupportedMethodException        = @"CPUnsupportedMethodException";
+CPRangeException                    = @"CPRangeException";
+CPInternalInconsistencyException    = @"CPInternalInconsistencyException";
 
 /*!
     @class CPException
@@ -90,7 +89,9 @@ if (input == nil)
 */
 - (id)initWithName:(CPString)aName reason:(CPString)aReason userInfo:(CPDictionary)aUserInfo
 {
-    if (self = [super init])
+    self = [super init];
+
+    if (self)
     {
         name = aName;
         message = aReason;
@@ -162,9 +163,9 @@ if (input == nil)
 
 @end
 
-var CPExceptionNameKey = "CPExceptionNameKey",
-    CPExceptionReasonKey = "CPExceptionReasonKey",
-    CPExceptionUserInfoKey = "CPExceptionUserInfoKey";
+var CPExceptionNameKey      = @"CPExceptionNameKey",
+    CPExceptionReasonKey    = @"CPExceptionReasonKey",
+    CPExceptionUserInfoKey  = @"CPExceptionUserInfoKey";
 
 @implementation CPException (CPCoding)
 
@@ -205,9 +206,24 @@ Error.prototype._userInfo = null;
 
 [CPException initialize];
 
+#define METHOD_CALL_STRING()\
+    ((class_isMetaClass(anObject.isa) ? "+" : "-") + "[" + [anObject className] + " " + aSelector + "]: ")
+
 function _CPRaiseInvalidAbstractInvocation(anObject, aSelector)
 {
     [CPException raise:CPInvalidArgumentException reason:@"*** -" + sel_getName(aSelector) + @" cannot be sent to an abstract object of class " + [anObject className] + @": Create a concrete instance!"];
+}
+
+function _CPRaiseInvalidArgumentException(anObject, aSelector, aMessage)
+{
+    [CPException raise:CPInvalidArgumentException
+                reason:METHOD_CALL_STRING() + aMessage];
+}
+
+function _CPRaiseRangeException(anObject, aSelector, anIndex, aCount)
+{
+    [CPException raise:CPRangeException
+                reason:METHOD_CALL_STRING() + "index (" + anIndex + ") beyond bounds (" + aCount + ")"];
 }
 
 function _CPReportLenientDeprecation(/*Class*/ aClass, /*SEL*/ oldSelector, /*SEL*/ newSelector)

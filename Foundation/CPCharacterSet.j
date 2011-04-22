@@ -19,8 +19,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <Foundation/CPObject.j>
-@import <Foundation/CPString.j>
+@import "CPArray.j"
+@import "CPException.j"
+@import "CPObject.j"
+@import "CPString.j"
+@import "CPURL.j"
 
 // CPCharacterSet is a class cluster. Concrete implementations
 // follow after the main abstract class.
@@ -48,7 +51,9 @@ var _builtInCharacterSets = {};
 - (id)init
 {
     self = [super init];
-    _inverted = NO;
+
+    if (self)
+        _inverted = NO;
 
     return self;
 }
@@ -144,11 +149,11 @@ var _builtInCharacterSets = {};
     var cs = _builtInCharacterSets[csname];
     if (cs == nil)
     {
-        var i,
+        var i = 0,
             ranges = [CPArray array],
             rangeArray = eval(csname);
 
-        for (i = 0; i < rangeArray.length; i+= 2)
+        for (; i < rangeArray.length; i+= 2)
         {
             var loc = rangeArray[i],
                 length = rangeArray[i + 1],
@@ -185,7 +190,9 @@ var _builtInCharacterSets = {};
 // Creates a range character set with multiple ranges.
 - (id)initWithRanges:(CPArray)ranges
 {
-    if (self = [super init])
+    self = [super init];
+
+    if (self)
     {
         _ranges = ranges;
     }
@@ -224,9 +231,10 @@ var _builtInCharacterSets = {};
 
 - (BOOL)hasMemberInPlane:(int)plane // TO DO : when inverted
 {
+    // FIXME: range is undefined... don't know what's supposed to be going on here.
     // the highest Unicode plane we reach.
     // (There are 65536 code points in each plane.)
-    var maxPlane = Math.floor((range.start + range.length - 1) / 65536); // should iterate _ranges
+    var maxPlane = Math.floor((range.start + range.length - 1) / 65536); // FIXME: should iterate _ranges
 
     return (plane <= maxPlane);
 }
@@ -238,9 +246,9 @@ var _builtInCharacterSets = {};
 
 - (void)addCharactersInString:(CPString)aString // Needs _inverted support
 {
-    var i;
+    var i = 0;
 
-    for (i = 0; i < aString.length; i++)
+    for (; i < aString.length; i++)
     {
         var code = aString.charCodeAt(i),
             range = CPMakeRange(code,1);
@@ -260,7 +268,9 @@ var _builtInCharacterSets = {};
 
 - (id)initWithString:(CPString)s
 {
-    if (self = [super init])
+    self = [super init];
+
+    if (self)
     {
         _string = s;
     }
@@ -307,8 +317,10 @@ var _builtInCharacterSets = {};
 
 - (void)addCharactersInRange:(CPRange)aRange // Needs _inverted support
 {
-    var i;
-    for (i = aRange.location; i < aRange.location + aRange.length; i++)
+    var i = aRange.location,
+        count = aRange.location + aRange.length;
+
+    for (; i < count; i++)
     {
         var s = String.fromCharCode(i);
 
@@ -319,9 +331,9 @@ var _builtInCharacterSets = {};
 
 - (void)addCharactersInString:(CPString)aString // Needs _inverted support
 {
-    var i;
+    var i = 0;
 
-    for (i = 0; i < aString.length; i++)
+    for (; i < aString.length; i++)
     {
         var s = aString.charAt(i);
 
@@ -332,19 +344,19 @@ var _builtInCharacterSets = {};
 
 @end
 
-_CPCharacterSetTrimAtBeginning = 1 << 1;
-_CPCharacterSetTrimAtEnd = 1 << 2;
+_CPCharacterSetTrimAtBeginning  = 1 << 1;
+_CPCharacterSetTrimAtEnd        = 1 << 2;
 
 @implementation CPString (CPCharacterSetAdditions)
 
 /*!
-    Tokenizes the receiver string using the charactes
+    Tokenizes the receiver string using the characters
     in a given set. For example, if the receiver is:
     \c "Baku baku to jest  skład."
     and the set is [CPCharacterSet whitespaceCharacterSet]
     the returned array would contain:
     <pre> ["Baku", "baku", "to", "jest", "", "skład."] </pre>
-    Adjacent occurences of the separator characters produce empty strings in the result.
+    Adjacent occurrences of the separator characters produce empty strings in the result.
     @author Arkadiusz Młynarczyk <arek@tupux.com>
     @param A character set containing the characters to use to split the receiver. Must not be nil.
     @return An CPArray object containing substrings from the receiver that have been divided by characters in separator.
@@ -356,9 +368,10 @@ _CPCharacterSetTrimAtEnd = 1 << 2;
                     reason:"componentsSeparatedByCharactersInSet: the separator can't be 'nil'"];
 
     var components = [CPMutableArray array],
-        componentRange = CPMakeRange(0, 0);
+        componentRange = CPMakeRange(0, 0),
+        i = 0;
 
-    for (var i = 0; i < self.length; i++)
+    for (; i < self.length; i++)
     {
         if ([separator characterIsMember:self.charAt(i)])
         {

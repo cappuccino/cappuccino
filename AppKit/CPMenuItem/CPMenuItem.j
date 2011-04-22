@@ -77,6 +77,8 @@
     id              _representedObject;
     CPView          _view;
 
+    int             _changeCount;
+
     _CPMenuItemView _menuItemView;
 }
 
@@ -98,12 +100,14 @@
 
     if (self)
     {
+        _changeCount = 0;
         _isSeparator = NO;
 
         _title = aTitle;
         _action = anAction;
 
         _isEnabled = YES;
+        _isHidden = NO;
 
         _tag = 0;
         _state = CPOffState;
@@ -129,10 +133,17 @@
     if ([_menu autoenablesItems])
         return;
 
-    _isEnabled = isEnabled;
+    [self _setEnabled:isEnabled];
+}
+
+- (void)_setEnabled:(BOOL)isEnabled
+{
+    if (_isEnabled === isEnabled)
+        return;
+
+    _isEnabled = !!isEnabled;
 
     [_menuItemView setDirty];
-
     [_menu itemChanged:self];
 }
 
@@ -445,7 +456,7 @@ CPOffState
     return _mixedStateImage;
 }
 
-// Managing Subemenus
+// Managing Submenus
 /*!
     Sets the submenu for this item
     @param aMenu the submenu
@@ -644,7 +655,7 @@ CPControlKeyMask
 }
 
 /*!
-    Sets the title of the menu item and the mnemonic character. The mnemonic chracter should be preceded by an '&'.
+    Sets the title of the menu item and the mnemonic character. The mnemonic character should be preceded by an '&'.
     @param aTitle the title string with a denoted mnemonic
 */
 - (void)setTitleWithMnemonicLocation:(CPString)aTitle
@@ -847,6 +858,11 @@ CPControlKeyMask
     return ![self submenu] && [self menu] === [CPApp mainMenu];
 }
 
+- (CPString)description
+{
+    return [super description] + @" target: " + [self target] + @" action: " + CPStringFromSelector([self action]);
+}
+
 @end
 
 var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
@@ -890,6 +906,7 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
 
     if (self)
     {
+        _changeCount = 0;
         _isSeparator = [aCoder containsValueForKey:CPMenuItemIsSeparatorKey] && [aCoder decodeBoolForKey:CPMenuItemIsSeparatorKey];
 
         _title = [aCoder decodeObjectForKey:CPMenuItemTitleKey];

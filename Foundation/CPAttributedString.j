@@ -20,11 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPArray.j"
 @import "CPDictionary.j"
+@import "CPException.j"
 @import "CPObject.j"
 @import "CPRange.j"
 @import "CPString.j"
-
 
 /*!
     @class CPAttributedString
@@ -32,7 +33,7 @@
     @brief A mutable character string with attributes.
 
     A character string with sets of attributes that apply to single or ranges of
-    characters. The attributes are containted within a CPDictionary class.
+    characters. The attributes are contained within a CPDictionary class.
     Attributes can be any name/value pair. The data type of the value is not
     restricted.
     This class is mutable.
@@ -146,7 +147,7 @@
             return CPOrderedAscending;
     }
 
-    return [_rangeEntries indexOfObject:anIndex sortedByFunction:sortFunction];
+    return [_rangeEntries indexOfObject:anIndex inSortedRange:nil options:0 usingComparator:sortFunction];
 }
 
 //Retrieving Attribute Information
@@ -794,11 +795,11 @@
 
 /*!
     @class CPMutableAttributedString
-    @ingroup compatability
+    @ingroup compatibility
 
     This class is just an empty subclass of CPAttributedString.
     CPAttributedString already implements mutable methods and
-    this class only exists for source compatability.
+    this class only exists for source compatibility.
 */
 @implementation CPMutableAttributedString : CPAttributedString
 

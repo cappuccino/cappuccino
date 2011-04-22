@@ -1,11 +1,28 @@
-// CPScanner.j
-// © Emanuele Vulcano, 2008.
-//
-// Licensed under the terms of Cappuccino's license
-// (the GNU Lesser General Public License, version 2.1).
-// Please see Cappuccino's LICENSE file for details.
+/*
+ * CPScanner.j
+ * Foundation
+ *
+ * Created by Emanuele Vulcano.
+ * Copyright 2008, Emanuele Vulcano.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
-@import <Foundation/CPCharacterSet.j>
+@import "CPCharacterSet.j"
+@import "CPDictionary.j"
+@import "CPString.j"
 
 @implementation CPScanner : CPObject
 {
@@ -15,41 +32,6 @@
     BOOL            _caseSensitive;
     CPCharacterSet  _charactersToBeSkipped;
 }
-
-// TODO Not all methods of NSScanner are available!
-
-/*
-- (BOOL)scanLongLong:(long long *)longLongValue
-{
-}
-- (BOOL)scanDecimal:(NSDecimal *)decimalValue
-{
-}
-- (BOOL)scanHexDouble:(double *)result
-{
-}
-- (BOOL)scanHexFloat:(float *)result
-{
-}
-- (BOOL)scanHexInt:(unsigned *)intValue
-{
-}
-- (BOOL)scanHexLongLong:(unsigned long long *)result
-{
-}
-- (BOOL)scanInteger:(NSInteger *)value
-{
-}
-+ (id)localizedScannerWithString:(CPString)string
-{
-    var scanner = [self scannerWithString:string];
-
-    [scanner setLocale:[CPLocale currentLocale]];
-
-    return scanner;
-}
-
-*/
 
 + (id)scannerWithString:(CPString)aString
 {
@@ -141,10 +123,13 @@
 {
     var ret = [self performSelector:s withObject:arg];
 
+    if (ret == nil)
+        return NO;
+
     if (ref != nil)
         ref(ret);
 
-    return ret != NULL;
+    return YES;
 }
 
 /* ================================ */
@@ -180,8 +165,8 @@
     if ([self isAtEnd])
         return nil;
 
-    var current = [self scanLocation];
-    var str = nil;
+    var current = [self scanLocation],
+        str = nil;
 
     while (current < _string.length)
     {
@@ -212,9 +197,9 @@
 
 - (void)_movePastCharactersToBeSkipped
 {
-    var current = [self scanLocation];
-    var string = [self string];
-    var toSkip = [self charactersToBeSkipped];
+    var current = [self scanLocation],
+        string = [self string],
+        toSkip = [self charactersToBeSkipped];
 
     while (current < string.length)
     {
@@ -258,8 +243,10 @@
 
 - (CPString)scanUpToString:(CPString)s
 {
-    var current = [self scanLocation], str = [self string];
-    var captured = nil;
+    var current = [self scanLocation],
+        str = [self string],
+        captured = nil;
+
     while (current < str.length)
     {
         var currentStr = str.substr(current, s.length);
@@ -288,81 +275,39 @@
 /* = Scanning numbers = */
 /* ==================== */
 
-- (float)scanFloat
+- (float)scanWithParseFunction:(Function)parseFunction
 {
     [self _movePastCharactersToBeSkipped];
-    var str = [self string], current = [self scanLocation];
+    var str = [self string],
+        loc = [self scanLocation];
 
     if ([self isAtEnd])
         return 0;
 
-    var s = str.substring(current, str.length);
-    var f =  parseFloat(s); // wont work with non . decimal separator !!
-    if (f)
-    {
-        var pos, foundDash = NO;
-/*
-        var decimalSeparatorString;
-        if (_locale != nil)
-            decimalSeparatorString = [_locale objectForKey:CPLocaleDecimalSeparator];
-        else
-            decimalSeparatorString = [[CPLocale systemLocale] objectForKey:CPLocaleDecimalSeparator];
+    var s = str.substring(loc, str.length),
+        f =  parseFunction(s);
 
-        var separatorCode = (decimalSeparatorString.length >0) decimalSeparatorString.charCodeAt(0) : 45;
-*/
-        var separatorCode = 45;
+    if (isNaN(f))
+        return nil;
 
-        for (pos = current; pos < current + str.length; pos++)
-        {
-            var charCode = str.charCodeAt(pos);
-            if (charCode == separatorCode)
-            {
-                if (foundDash == YES)
-                    break; // We already found a decimal separator so this one is an extra char
-                foundDash = YES;
-            }
-            else if (charCode < 48 || charCode > 57 || (charCode == 45 && pos != current)) // not a digit or a "-" but not prefix
-                break;
-        }
+    loc += (""+f).length;
+    var i = 0;
+    while (!isNaN(parseFloat(str.substring(loc+i, str.length))))
+        {i++;}
 
-        [self setScanLocation:pos];
-        return f;
-    }
+    [self setScanLocation:loc + i];
+    return f;
 
-    return nil;
+}
+
+- (float)scanFloat
+{
+    return [self scanWithParseFunction:parseFloat];
 }
 
 - (int)scanInt
 {
-    [self _movePastCharactersToBeSkipped];
-    var str = [self string], current = [self scanLocation];
-
-    if ([self isAtEnd])
-        return 0;
-    var s = str.substring(current, str.length);
-
-    var i =  parseInt(s);
-    if (i)
-    {
-        var pos, foundDash = NO;
-        for (pos = current; pos < current + str.length; pos++)
-        {
-            var charCode = str.charCodeAt(pos);
-            if (charCode == 46)
-            {
-                if (foundDash == YES)
-                    break;
-                foundDash = YES;
-            }
-            else if (charCode < 48 || charCode > 57 || (charCode == 45 && pos != current))
-                break;
-        }
-
-        [self setScanLocation:pos];
-        return i;
-    }
-
-    return nil;
+    return [self scanWithParseFunction:parseInt];
 }
 
 - (BOOL)scanInt:(int)intoInt
@@ -384,7 +329,7 @@
 /* = Debug = */
 /* ========= */
 
-- (void) description
+- (void)description
 {
     return [super description] + " {" + CPStringFromClass([self class]) + ", state = '" + ([self string].substr(0, _scanLocation) + "{{ SCAN LOCATION ->}}" + [self string].substr(_scanLocation)) + "'; }";
 }

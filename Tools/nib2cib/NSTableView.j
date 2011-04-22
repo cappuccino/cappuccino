@@ -43,7 +43,13 @@
             _rowHeight = 23;
 
         _headerView = [aCoder decodeObjectForKey:@"NSHeaderView"];
-        _cornerView = [aCoder decodeObjectForKey:@"NSCornerView"];
+
+        // There will always be a corner view in nib, even if there isn't a headerview. Consider this a bug in IB.
+        _cornerView = _headerView ? [aCoder decodeObjectForKey:@"NSCornerView"] : nil;
+
+        // Make sure we unhide the cornerview because a corner view loaded from cib is always hidden
+        // This might be a bug in IB, or the way we load the NSvFlags might be broken for _NSCornerView
+        [_cornerView setHidden:NO];
 
         _autosaveName = [aCoder decodeObjectForKey:@"NSAutosaveName"];
 

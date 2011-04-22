@@ -59,28 +59,21 @@ task ("sudo-install", ["CommonJS"], function()
     if (OS.system(["sudo", "tusk", "install", "--force", $BUILD_CJS_OBJECTIVE_J, $BUILD_CJS_CAPPUCCINO]))
     {
         // Attempt a hackish work-around for sudo compiled with the --with-secure-path option
-        if (OS.system("sudo bash -c 'source " + getShellConfigFile() + "; tusk install --force " + $BUILD_CJS_OBJECTIVE_J + " " + $BUILD_CJS_CAPPUCCINO + "'"))
-            OS.exit(1); //rake abort if ($? != 0)
+        sudo("tusk install --force " + $BUILD_CJS_OBJECTIVE_J + " " + $BUILD_CJS_CAPPUCCINO)
     }
 });
 
-task ("install-symlinks",  function()
+task ("install-symlinks", function()
 {
     installSymlink($BUILD_CJS_OBJECTIVE_J);
     installSymlink($BUILD_CJS_CAPPUCCINO);
 });
 
-function installSymlink(sourcePath) {
-    var TUSK = require("narwhal/tusk");
-    var INSTALL = require("narwhal/tusk/commands/install");
-
-    var packageName = FILE.basename(sourcePath);
-    var packageDir = TUSK.getPackagesDirectory().join(packageName);
-    stream.print("Symlinking \0cyan(" + packageDir + "\0) to \0cyan(" + sourcePath + "\0)");
-
-    FILE.symlink(sourcePath, packageDir);
-    INSTALL.finishInstall(packageDir);
-}
+task ("install-debug-symlinks", function()
+{
+    SYSTEM.env["CONFIG"] = "Debug";
+    spawnJake("install-symlinks");
+});
 
 // Documentation
 
@@ -105,26 +98,44 @@ task ("documentation", function()
         }
     }
 
-    if (doxygen && FILE.exists(doxygen))
+    if (!doxygen || !FILE.exists(doxygen))
     {
-        stream.print("\0green(Using " + doxygen + " for doxygen binary.\0)");
-
-        var documentationDir = FILE.join("Tools", "Documentation");
-
-        if (OS.system([FILE.join(documentationDir, "make_headers.sh")]))
-            OS.exit(1); //rake abort if ($? != 0)
-
-        if (!OS.system([doxygen, FILE.join(documentationDir, "Cappuccino.doxygen")]))
-        {
-            rm_rf($DOCUMENTATION_BUILD);
-            mv("debug.txt", FILE.join("Documentation", "debug.txt"));
-            mv("Documentation", $DOCUMENTATION_BUILD);
-        }
-
-        OS.system(["ruby", FILE.join(documentationDir, "cleanup_headers")]);
-    }
-    else
         stream.print("\0yellow(Doxygen not installed, skipping documentation generation.\0)");
+        return;
+    }
+
+    stream.print("\0green(Using " + doxygen + " for doxygen binary.\0)");
+
+    // Also need Markdown to proccess README file (`brew install Markdown` on the Mac).
+    var markdown = executableExists("markdown")
+    if (!markdown || !FILE.exists(markdown))
+    {
+        stream.print("\0yellow(Markdown not installed, skipping documentation generation.\0)");
+        return;
+    }
+
+    stream.print("\0green(Using " + markdown + " for Markdown binary.\0)");
+
+    var documentationDir = FILE.join("Tools", "Documentation");
+
+    if (OS.system([FILE.join(documentationDir, "process_markdown.sh"), markdown]))
+        OS.exit(1); //rake abort if ($? != 0)
+
+    if (OS.system([FILE.join(documentationDir, "make_headers.sh")]))
+        OS.exit(1); //rake abort if ($? != 0)
+
+    if (!OS.system([doxygen, FILE.join(documentationDir, "Cappuccino.doxygen")]))
+    {
+        if (!FILE.isDirectory($BUILD_DIR))
+            FILE.mkdirs($BUILD_DIR);
+
+        rm_rf($DOCUMENTATION_BUILD);
+        mv("debug.txt", FILE.join("Documentation", "debug.txt"));
+        mv("Documentation", $DOCUMENTATION_BUILD);
+    }
+
+    OS.system(["ruby", FILE.join(documentationDir, "cleanup_headers")]);
+    OS.system([FILE.join(documentationDir, "cleanup_markdown.sh")]);
 });
 
 // Downloads
@@ -253,18 +264,24 @@ task ("demos", function()
 
 // Testing
 
-task("test", ["CommonJS", "test-only"]);
+task("test", ["CommonJS", "test-only", "check-missing-imports"]);
 
 task("test-only", function()
 {
-    var tests = new FileList('Tests/**/*Test.j');
-    var cmd = ["ojtest"].concat(tests.items());
+    var tests = new FileList('Tests/**/*Test.j'),
+        cmd = ["ojtest"].concat(tests.items()),
+        code = OS.system(serializedENV() + " " + cmd.map(OS.enquote).join(" "));
 
-    var code = OS.system(serializedENV() + " " + cmd.map(OS.enquote).join(" "));
     if (code !== 0)
         OS.exit(code);
+});
 
-    OS.system(serializedENV() + " " + ["js", "Tests/DetectMissingImports.js"].map(OS.enquote).join(" "));
+task("check-missing-imports", function()
+{
+    var code = OS.system(serializedENV() + " " + ["js", "Tests/DetectMissingImports.js"].map(OS.enquote).join(" "));
+
+    if (code !== 0)
+        OS.exit(code);
 });
 
 task("push-packages", ["push-cappuccino", "push-objective-j"]);
@@ -345,20 +362,4 @@ function buildCmd(arrayOfCommands)
     return arrayOfCommands.map(function(cmd) {
         return cmd.map(OS.enquote).join(" ");
     }).join(" && ");
-}
-
-function getShellConfigFile()
-{
-    var homeDir = SYSTEM.env["HOME"] + "/";
-    // use order outlined by http://hayne.net/MacDev/Notes/unixFAQ.html#shellStartup
-    var possibilities = [homeDir + ".bash_profile",
-                         homeDir + ".bash_login",
-                         homeDir + ".profile",
-                         homeDir + ".bashrc"];
-
-    for (var i = 0; i < possibilities.length; i++)
-    {
-        if (FILE.exists(possibilities[i]))
-            return possibilities[i];
-    }
 }

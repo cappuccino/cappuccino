@@ -102,7 +102,7 @@ CPDecimal format:
 function CPDecimalMakeWithString(string, locale)
 {
     if (!string)
-        return CPDecimalMakeZero();
+        return CPDecimalMakeNaN();
 
     // Regexp solution as found in JSON spec, with working regexp (I added groupings)
     // Test here: http://www.regexplanet.com/simple/index.html
@@ -112,11 +112,11 @@ function CPDecimalMakeWithString(string, locale)
     //  (?:[eE]([+\-]?)(\d+))?   - optional exponent part plus number in group
     // group 0: string, 1: sign, 2: integer, 3: decimal, 4: exponent sign, 5: exponent
 
-    // Note: this doesnt accept .01 for example, should it?
-    // If yes simply add '?' after integer part group, ie ([+\-]?)((?:0|[1-9]\d*)?)
+    // Note: this doesn't accept .01 for example, should it?
+    // If yes simply add '?' after integer part group, i.e. ([+\-]?)((?:0|[1-9]\d*)?)
     var matches = string.match(/^([+\-]?)((?:0|[1-9]\d*))(?:\.(\d*))?(?:[eE]([+\-]?)(\d+))?$/);
     if (!matches)
-        return nil;
+        return CPDecimalMakeNaN();
 
     var ds = matches[1],
         intpart = matches[2],
@@ -143,23 +143,23 @@ function CPDecimalMakeWithString(string, locale)
     }
 
     if (exponent > CPDecimalMaxExponent || exponent < CPDecimalMinExponent)
-        return nil;
+        return CPDecimalMakeNaN();
 
     // Representation internally starts at most significant digit
-    var m = [CPArray array],
+    var m = [],
         i = 0;
     for (; i < (intpart?intpart.length:0); i++)
     {
         if (i >= CPDecimalMaxDigits)
             break; // truncate
-        [m addObject:parseInt(intpart.charAt(i))];
+        Array.prototype.push.call(m, parseInt(intpart.charAt(i)));
     }
     var j = 0;
     for (; j < (decpart?decpart.length:0); j++)
     {
         if ((i + j) >= CPDecimalMaxDigits)
             break; // truncate
-        [m addObject:parseInt(decpart.charAt(j))];
+        Array.prototype.push.call(m, parseInt(decpart.charAt(j)));
     }
 
     var dcm = {_exponent:exponent, _isNegative:isNegative, _isCompact:NO, _isNaN:NO, _mantissa:m};
@@ -170,14 +170,14 @@ function CPDecimalMakeWithString(string, locale)
 
 /*!
     @ingroup foundation
-    Creates a CPDecimal object from a given matissa and exponent. The sign is taken from the sign of the mantissa. This cant do a full 34 digit mantissa representation as JS's 32 bits or 64bit binary FP numbers cant represent that. So use the CPDecimalMakeWithString if you want longer mantissa.
+    Creates a CPDecimal object from a given mantissa and exponent. The sign is taken from the sign of the mantissa. This cant do a full 34 digit mantissa representation as JS's 32 bits or 64bit binary FP numbers cant represent that. So use the CPDecimalMakeWithString if you want longer mantissa.
     @param mantissa the mantissa (though see above note)
     @param exponent the exponent
     @return A CPDecimal object, or nil on error.
 */
 function CPDecimalMakeWithParts(mantissa, exponent)
 {
-    var m = [CPArray array],
+    var m = [],
         isNegative = NO;
 
     if (mantissa < 0 )
@@ -187,15 +187,15 @@ function CPDecimalMakeWithParts(mantissa, exponent)
     }
 
     if (mantissa == 0)
-        [m addObject: 0];
+        Array.prototype.push.call(m, 0);
 
     if (exponent > CPDecimalMaxExponent || exponent < CPDecimalMinExponent)
-        return nil;
+        return CPDecimalMakeNaN();
 
     // remaining digits are disposed of via truncation
-    while ((mantissa > 0) && ([m count] < CPDecimalMaxDigits)) // count selector here could be optimised away
+    while ((mantissa > 0) && (m.length < CPDecimalMaxDigits)) // count selector here could be optimised away
     {
-        [m insertObject:parseInt(mantissa % 10) atIndex:0];
+        Array.prototype.unshift.call(m, parseInt(mantissa % 10));
         mantissa = FLOOR(mantissa / 10);
     }
 
@@ -239,6 +239,27 @@ function CPDecimalMakeNaN()
     return d;
 }
 
+// private methods
+function _CPDecimalMakeMaximum()
+{
+    var s = @"",
+        i = 0;
+    for (; i < CPDecimalMaxDigits; i++)
+        s += "9";
+    s += "e" + CPDecimalMaxExponent;
+    return CPDecimalMakeWithString(s);
+}
+
+function _CPDecimalMakeMinimum()
+{
+    var s = @"-",
+        i = 0;
+    for (; i < CPDecimalMaxDigits; i++)
+        s += "9";
+    s += "e" + CPDecimalMaxExponent;
+    return CPDecimalMakeWithString(s);
+}
+
 /*!
     @ingroup foundation
     Checks to see if a CPDecimal is zero. Can handle uncompacted strings.
@@ -246,7 +267,7 @@ function CPDecimalMakeNaN()
 */
 function CPDecimalIsZero(dcm)
 {
-    // exponent doesnt matter as long as mantissa = 0
+    // exponent doesn't matter as long as mantissa = 0
     if (!dcm._isNaN)
     {
         for (var i = 0; i < dcm._mantissa.length; i++)
@@ -267,10 +288,10 @@ function CPDecimalIsZero(dcm)
 function CPDecimalIsOne(dcm)
 {
     CPDecimalCompact(dcm);
-    // exponent doesnt matter as long as mantissa = 0
+    // exponent doesn't matter as long as mantissa = 0
     if (!dcm._isNaN)
     {
-        if (dcm._mantissa && ([dcm._mantissa count] == 1) && (dcm._mantissa[0] == 1))
+        if (dcm._mantissa && (dcm._mantissa.length == 1) && (dcm._mantissa[0] == 1))
             return YES;
     }
     return NO;
@@ -284,12 +305,12 @@ function _CPDecimalSet(t,s)
     t._isNegative = s._isNegative;
     t._isCompact = s._isCompact;
     t._isNaN = s._isNaN;
-    t._mantissa = [s._mantissa copy];
+    t._mantissa = Array.prototype.slice.call(s._mantissa, 0);
 }
 
 function _CPDecimalSetZero(result)
 {
-    result._mantissa = [CPArray arrayWithObject:0];
+    result._mantissa = [0];
     result._exponent = 0;
     result._isNegative = NO;
     result._isCompact = YES;
@@ -298,7 +319,7 @@ function _CPDecimalSetZero(result)
 
 function _CPDecimalSetOne(result)
 {
-    result._mantissa = [CPArray arrayWithObject:1];
+    result._mantissa = [1];
     result._exponent = 0;
     result._isNegative = NO;
     result._isCompact = YES;
@@ -327,13 +348,13 @@ function CPDecimalCopy(dcm)
             _isNegative:dcm._isNegative,
             _isCompact:dcm._isCompact,
             _isNaN:dcm._isNaN,
-            _mantissa:[dcm._mantissa copy]
+            _mantissa:Array.prototype.slice.call(dcm._mantissa, 0)
             };
 }
 
 /*!
     @ingroup foundation
-    Compare two CPDecimal objects. Order is left to right (ie Ascending would
+    Compare two CPDecimal objects. Order is left to right (i.e. Ascending would
     mean left is smaller than right operand).
     @param leftOperand the left CPDecimal
     @param rightOperand the right CPDecimal
@@ -341,6 +362,9 @@ function CPDecimalCopy(dcm)
 */
 function CPDecimalCompare(leftOperand, rightOperand)
 {
+    if (leftOperand._isNaN && rightOperand._isNaN)
+        return CPOrderedSame;
+
     if (leftOperand._isNegative != rightOperand._isNegative)
     {
         if (rightOperand._isNegative)
@@ -349,8 +373,8 @@ function CPDecimalCompare(leftOperand, rightOperand)
             return CPOrderedAscending;
     }
 
-    var s1 = leftOperand._exponent + [leftOperand._mantissa count],
-        s2 = rightOperand._exponent + [rightOperand._mantissa count];
+    var s1 = leftOperand._exponent + leftOperand._mantissa.length,
+        s2 = rightOperand._exponent + rightOperand._mantissa.length;
 
     // Sign is the same, quick check size (length + exp)
     if (s1 < s2)
@@ -369,7 +393,7 @@ function CPDecimalCompare(leftOperand, rightOperand)
     }
 
     // Same size, so check mantissa
-    var l = MIN([leftOperand._mantissa count], [rightOperand._mantissa count]),
+    var l = MIN(leftOperand._mantissa.length, rightOperand._mantissa.length),
         i = 0;
 
     for (; i < l; i++)
@@ -393,14 +417,14 @@ function CPDecimalCompare(leftOperand, rightOperand)
     }
 
     // Same digits, check length
-    if ([leftOperand._mantissa count] > [rightOperand._mantissa count])
+    if (leftOperand._mantissa.length > rightOperand._mantissa.length)
     {
         if (rightOperand._isNegative)
             return CPOrderedAscending;
         else
             return CPOrderedDescending;
     }
-    if ([leftOperand._mantissa count] < [rightOperand._mantissa count])
+    if (leftOperand._mantissa.length < rightOperand._mantissa.length)
     {
         if (rightOperand._isNegative)
             return CPOrderedDescending;
@@ -420,8 +444,8 @@ function _SimpleAdd(result, leftOperand, rightOperand, roundingMode, longMode)
 
     _CPDecimalSet(result, leftOperand);
 
-    var j = [leftOperand._mantissa count] - [rightOperand._mantissa count],
-        l = [rightOperand._mantissa count],
+    var j = leftOperand._mantissa.length - rightOperand._mantissa.length,
+        l = rightOperand._mantissa.length,
         i = l - 1,
         carry = 0,
         error = CPCalculationNoError;
@@ -443,7 +467,7 @@ function _SimpleAdd(result, leftOperand, rightOperand, roundingMode, longMode)
 
     if (carry)
     {
-        for (i = j-1; i >= 0; i--)
+        for (i = j - 1; i >= 0; i--)
         {
             if (result._mantissa[i] != 9)
             {
@@ -456,13 +480,13 @@ function _SimpleAdd(result, leftOperand, rightOperand, roundingMode, longMode)
 
         if (carry)
         {
-            [result._mantissa insertObject:1 atIndex:0];
+            Array.prototype.splice.call(result._mantissa, 0, 0, 1);
 
             // The number must be shifted to the right
-            if ((CPDecimalMaxDigits * factor) == [leftOperand._mantissa count])
+            if ((CPDecimalMaxDigits * factor) == leftOperand._mantissa.length)
             {
                 var scale = - result._exponent - 1;
-                CPDecimalRound(result, result,scale,roundingMode);
+                CPDecimalRound(result, result, scale, roundingMode);
             }
 
             if (CPDecimalMaxExponent < result._exponent)
@@ -524,10 +548,10 @@ function CPDecimalAdd(result, leftOperand, rightOperand, roundingMode, longMode)
 
     var normerror = CPDecimalNormalize(n1, n2, roundingMode, longMode);
 
-    // below is equiv of simple compare
+    // below is equiv. of simple compare
     var comp = 0,
-        ll = [n1._mantissa count],
-        lr = [n2._mantissa count];
+        ll = n1._mantissa.length,
+        lr = n2._mantissa.length;
     if (ll == lr)
         comp = CPOrderedSame;
     else if (ll > lr)
@@ -581,8 +605,8 @@ function _SimpleSubtract(result, leftOperand, rightOperand, roundingMode)
 {
     var error = CPCalculationNoError,
         borrow = 0,
-        l = [rightOperand._mantissa count],
-        j = [leftOperand._mantissa count] - l,
+        l = rightOperand._mantissa.length,
+        j = leftOperand._mantissa.length - l,
         i = l - 1;
 
     _CPDecimalSet(result, leftOperand);
@@ -604,7 +628,7 @@ function _SimpleSubtract(result, leftOperand, rightOperand, roundingMode)
 
     if (borrow)
     {
-        for (i = j-1; i >= 0; i--)
+        for (i = j - 1; i >= 0; i--)
         {
             if (result._mantissa[i] != 0)
             {
@@ -735,10 +759,10 @@ function _SimpleDivide(result, leftOperand, rightOperand, roundingMode)
 
     _CPDecimalSetZero(result);
 
-    n1._mantissa = [CPArray array];
+    n1._mantissa = [];
 
-    while ((k < [leftOperand._mantissa count]) || ([n1._mantissa count]
-                                                    && !(([n1._mantissa count] == 1) && (n1._mantissa[0] == 0))))
+    while ((k < leftOperand._mantissa.length) || (n1._mantissa.length
+                                                    && !((n1._mantissa.length == 1) && (n1._mantissa[0] == 0))))
     {
         while (CPOrderedAscending == CPDecimalCompare(n1, rightOperand))
         {
@@ -747,19 +771,19 @@ function _SimpleDivide(result, leftOperand, rightOperand, roundingMode)
             if (n1._exponent)
             {
                 // Put back zeros removed by compacting
-                [n1._mantissa addObject:0];
+                Array.prototype.push.call(n1._mantissa, 0);
                 n1._exponent--;
                 n1._isCompact = NO;
             }
             else
             {
-                if (used < [leftOperand._mantissa count])
+                if (used < leftOperand._mantissa.length)
                 {
                     // Fill up with own digits
-                    if ([n1._mantissa count] || leftOperand._mantissa[used])
+                    if (n1._mantissa.length || leftOperand._mantissa[used])
                     {
                         // only add 0 if there is already something
-                        [n1._mantissa addObject:(leftOperand._mantissa[used])];
+                        Array.prototype.push.call(n1._mantissa, (leftOperand._mantissa[used]));
                         n1._isCompact = NO;
                     }
                     used++;
@@ -773,15 +797,15 @@ function _SimpleDivide(result, leftOperand, rightOperand, roundingMode)
                         break;
                     }
                     // Borrow one digit
-                    [n1._mantissa addObject:0];
+                    Array.prototype.push.call(n1._mantissa, 0);
                     result._exponent--;
                 }
 
                 // Zeros must be added while enough digits are fetched to do the
                 // subtraction, but first time round this just add zeros at the
                 // start of the number , increases k, and hence reduces
-                // the avaialble precision. To solve this only inc k/add zeros if
-                // this isnt first time round.
+                // the available precision. To solve this only inc k/add zeros if
+                // this isn't first time round.
                 if (!firsttime)
                 {
                     k++;
@@ -886,7 +910,7 @@ function CPDecimalDivide(result, leftOperand, rightOperand, roundingMode)
     return error;
 }
 
-// Simple multiply O(n^2) , replace with something faster, likee divide-n-conquer algo?
+// Simple multiply O(n^2) , replace with something faster, like divide-n-conquer algo?
 function _SimpleMultiply(result, leftOperand, rightOperand, roundingMode, powerMode)
 {
     var error = CPCalculationNoError,
@@ -898,11 +922,11 @@ function _SimpleMultiply(result, leftOperand, rightOperand, roundingMode, powerM
 
     // Do every digit of the second number
     var i = 0;
-    for (; i < [rightOperand._mantissa count]; i++)
+    for (; i < rightOperand._mantissa.length; i++)
     {
         _CPDecimalSetZero(n);
 
-        n._exponent = [rightOperand._mantissa count] - i - 1;
+        n._exponent = rightOperand._mantissa.length - i - 1;
         carry = 0;
         d = rightOperand._mantissa[i];
 
@@ -910,7 +934,7 @@ function _SimpleMultiply(result, leftOperand, rightOperand, roundingMode, powerM
             continue;
 
         var j = 0;
-        for (j = [leftOperand._mantissa count]-1; j >= 0; j--)
+        for (j = leftOperand._mantissa.length - 1; j >= 0; j--)
         {
             e = leftOperand._mantissa[j] * d + carry;
             if (e >= 10)
@@ -943,11 +967,11 @@ function _SimpleMultiply(result, leftOperand, rightOperand, roundingMode, powerM
     result._exponent += exp;
 
     // perform round to CPDecimalMaxDigits
-    if ([result._mantissa count] > CPDecimalMaxDigits && !powerMode)
+    if (result._mantissa.length > CPDecimalMaxDigits && !powerMode)
     {
         result._isCompact = NO;
-        var scale = CPDecimalMaxDigits - ([result._mantissa count] + result._exponent);
-        CPDecimalRound(result, result, scale ,roundingMode); // calls compact
+        var scale = CPDecimalMaxDigits - (result._mantissa.length + result._exponent);
+        CPDecimalRound(result, result, scale, roundingMode); // calls compact
 
         error = CPCalculationLossOfPrecision;
     }
@@ -1001,10 +1025,10 @@ function CPDecimalMultiply(result, leftOperand, rightOperand, roundingMode, powe
     n1._isNegative = NO;
     n2._isNegative = NO;
 
-    // below is equiv of simple compare
+    // below is equiv. of simple compare
     var comp = 0,
-        ll = [n1._mantissa count],
-        lr = [n2._mantissa count];
+        ll = n1._mantissa.length,
+        lr = n2._mantissa.length;
     if (ll == lr)
         comp = CPOrderedSame;
     else if (ll > lr)
@@ -1133,7 +1157,7 @@ function CPDecimalPower(result, dcm, power, roundingMode)
 /*!
     @ingroup foundation
     Normalises 2 CPDecimals. Normalisation is the process of modifying a
-    numbers manitssa to ensure that both CPDecimals have the same exponent.
+    numbers mantissa to ensure that both CPDecimals have the same exponent.
     @param dcm1 the first CPDecimal
     @param dcm2 the second CPDecimal
     @param roundingMode the rounding mode for the operation
@@ -1159,8 +1183,8 @@ function CPDecimalNormalize(dcm1, dcm2, roundingMode, longMode)
         e2 = dcm2._exponent;
 
     // Add zeros
-    var l2 = [dcm2._mantissa count],
-        l1 = [dcm1._mantissa count],
+    var l2 = dcm2._mantissa.length,
+        l1 = dcm1._mantissa.length,
         l = 0;
 
     var e = 0;
@@ -1178,16 +1202,16 @@ function CPDecimalNormalize(dcm1, dcm2, roundingMode, longMode)
         e = e1 - e2;
 
     if (e2 > e1)
-        l = MIN((CPDecimalMaxDigits*factor) - l2, e); //(e2 - e1));
+        l = MIN((CPDecimalMaxDigits * factor) - l2, e); //(e2 - e1));
     else
-        l = MIN((CPDecimalMaxDigits*factor) - l1, e); //(e1 - e2));
+        l = MIN((CPDecimalMaxDigits * factor) - l1, e); //(e1 - e2));
 
     for (var i = 0; i < l; i++)
     {
         if (e2 > e1)
-            [dcm2._mantissa addObject:0]; //dcm2._mantissa[i + l2] = 0;
+            Array.prototype.push.call(dcm2._mantissa, 0); //dcm2._mantissa[i + l2] = 0;
         else
-            [dcm1._mantissa addObject:0];
+            Array.prototype.push.call(dcm1._mantissa, 0);
     }
     if (e2 > e1)
     {
@@ -1222,7 +1246,7 @@ function CPDecimalNormalize(dcm1, dcm2, roundingMode, longMode)
             // Some zeros where cut of again by compacting
             if (e2 > e1)
             {
-                l1 = [dcm1._mantissa count];
+                l1 = dcm1._mantissa.length;
                 l = MIN((CPDecimalMaxDigits * factor) - l1, ABS(dcm1._exponent - dcm2._exponent));
                 for (var i = 0; i < l; i++)
                 {
@@ -1233,7 +1257,7 @@ function CPDecimalNormalize(dcm1, dcm2, roundingMode, longMode)
             }
             else
             {
-                l2 = [dcm2._mantissa count];
+                l2 = dcm2._mantissa.length;
                 l = MIN((CPDecimalMaxDigits * factor) - l2, ABS(dcm2._exponent - dcm1._exponent));
                 for (var i = 0; i < l; i++)
                 {
@@ -1277,7 +1301,7 @@ function CPDecimalRound(result, dcm, scale ,roundingMode)
 
     _CPDecimalSet(result,dcm);
 
-    var mc = [result._mantissa count],
+    var mc = result._mantissa.length,
         l = mc + scale + result._exponent;
 
     if (mc <= l)
@@ -1326,7 +1350,7 @@ function CPDecimalRound(result, dcm, scale ,roundingMode)
             break;
         }
         // cut mantissa
-        result._mantissa = [result._mantissa subarrayWithRange:CPMakeRange(0, l)];
+        result._mantissa = Array.prototype.slice.call(result._mantissa, 0, l);
 
         if (up)
         {
@@ -1349,7 +1373,7 @@ function CPDecimalRound(result, dcm, scale ,roundingMode)
                     // Overflow in rounding.
                     // Add one zero add the end. There must be space as
                     // we just cut off some digits.
-                    [result._mantissa addObject:0];
+                    Array.prototype.push.call(result._mantissa, 0);
                 }
                 else
                     result._exponent++;
@@ -1368,7 +1392,7 @@ function CPDecimalRound(result, dcm, scale ,roundingMode)
 function CPDecimalCompact(dcm)
 {
     // if positive or zero exp leading zeros simply delete, trailing ones u need to increment exponent
-    if (!dcm || [dcm._mantissa count] == 0 || CPDecimalIsNotANumber(dcm) )
+    if (!dcm || dcm._mantissa.length == 0 || CPDecimalIsNotANumber(dcm) )
         return;
 
 
@@ -1379,20 +1403,20 @@ function CPDecimalCompact(dcm)
         return;
     }
     // leading zeros, when exponent is zero these mean we need to move our decimal point to compact
-    // if exp is zero does it make sense to have them? dont think so so delete them
+    // if exp is zero does it make sense to have them? don't think so so delete them
     while (dcm._mantissa[0] === 0)
     {
-        [dcm._mantissa removeObjectAtIndex:0];
+        Array.prototype.shift.call(dcm._mantissa);
     }
     // trailing zeros, strip them
-    while ([dcm._mantissa lastObject] === 0)
+    while (dcm._mantissa[dcm._mantissa.length - 1] === 0)
     {
-        [dcm._mantissa removeLastObject];
+        Array.prototype.pop.call(dcm._mantissa);
         dcm._exponent++;
         if (dcm._exponent + 1 > CPDecimalMaxExponent)
         {
           // TODO: test case for this
-          // overflow if we compact anymore, so dont
+          // overflow if we compact anymore, so don't
           break;
         }
     }
@@ -1411,13 +1435,18 @@ function CPDecimalString(dcm, locale)
 {
     // Cocoa seems to just add all the zeros... this maybe controlled by locale,
     // will check.
+    if (dcm._isNaN)
+        return @"NaN";
+
     var string = @"",
         i = 0;
 
     if (dcm._isNegative)
         string += "-";
-    var k = [dcm._mantissa count],
+
+    var k = dcm._mantissa.length,
         l = ((dcm._exponent < 0) ? dcm._exponent : 0) + k;
+
     if (l < 0)
     {
         // add leading zeros

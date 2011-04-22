@@ -28,7 +28,6 @@
 @import "CPString.j"
 @import "CPValue.j"
 
-
 var CPArchiverReplacementClassNames                     = nil;
 
 var _CPKeyedArchiverDidEncodeObjectSelector             = 1,
@@ -84,7 +83,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 
     @delegate -(void)archiverDidFinish:(CPKeyedArchiver)archiver;
     Called when the archiver finishes encoding.
-    @param archiver the arhiver that finished encoding
+    @param archiver the archiver that finished encoding
 
     @delegate -(id)archiver:(CPKeyedArchiver)archiver willEncodeObject:(id)object;
     Called when an object is about to be encoded. Allows the delegate to replace
@@ -371,7 +370,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 }
 
 /*!
-    Encdoes an object
+    Encodes an object
     @param anObject the object to encode
     @param aKey the key to associate with the object
 */
@@ -385,7 +384,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 {
     var i = 0,
         count = objects.length,
-        references = [CPArray arrayWithCapacity:count];
+        references = [];
 
     for (; i < count; ++i)
         [references addObject:_CPKeyedArchiverEncodeObject(self, objects[i], NO)];
@@ -434,7 +433,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     if (!CPArchiverReplacementClassNames)
         return aClass.name;
 
-    var className = [CPArchiverReplacementClassNames objectForKey:CPStringFromClass(aClassName)];
+    var className = [CPArchiverReplacementClassNames objectForKey:CPStringFromClass(aClass)];
 
     return className ? className : aClass.name;
 }
@@ -476,7 +475,7 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
     // We wrap primitive JavaScript objects in a unique subclass of CPValue.
     // This way, when we unarchive, we know to unwrap it, since
     // _CPKeyedArchiverValue should not be used anywhere else.
-    if (anObject !== nil && !anObject.isa)
+    if (anObject !== nil && anObject !== undefined && !anObject.isa)
         anObject = [_CPKeyedArchiverValue valueWithJSObject:anObject];
 
     // Get the proper replacement object

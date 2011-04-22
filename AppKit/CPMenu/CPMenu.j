@@ -52,7 +52,7 @@ var _CPMenuBarVisible               = NO,
     @class CPMenu
 
     Menus provide the user with a list of actions and/or submenus. Submenus themselves are full fledged menus
-    and so a heirarchical structure appears.
+    and so a hierarchical structure appears.
 */
 @implementation CPMenu : CPObject
 {
@@ -80,6 +80,9 @@ var _CPMenuBarVisible               = NO,
 
 + (void)initialize
 {
+    if (self !== CPMenu)
+        return;
+
     [[self class] setMenuBarAttributes:[CPDictionary dictionary]];
 }
 
@@ -192,7 +195,7 @@ var _CPMenuBarVisible               = NO,
     }
 
     if (!highlightColor)
-        [_CPMenuBarAttributes setObject:[CPColor colorWithCalibratedRed:94.0/255.0 green:130.0/255.0 blue:186.0/255.0 alpha:1.0] forKey:@"CPMenuBarHighlightColor"];
+        [_CPMenuBarAttributes setObject:[CPColor colorWithCalibratedRed:94.0 / 255.0 green:130.0 / 255.0 blue:186.0 / 255.0 alpha:1.0] forKey:@"CPMenuBarHighlightColor"];
 
     if (!highlightTextColor)
         [_CPMenuBarAttributes setObject:[CPColor whiteColor] forKey:@"CPMenuBarHighlightTextColor"];
@@ -274,22 +277,7 @@ var _CPMenuBarVisible               = NO,
 */
 - (void)insertItem:(CPMenuItem)aMenuItem atIndex:(unsigned)anIndex
 {
-    var menu = [aMenuItem menu];
-
-    if (menu)
-        if (menu !== self)
-            [CPException raise:CPInternalInconsistencyException reason:@"Attempted to insert item into menu that was already in another menu."];
-        else
-            return;
-
-    [aMenuItem setMenu:self];
-    [_items insertObject:aMenuItem atIndex:anIndex];
-
-    [[CPNotificationCenter defaultCenter]
-        postNotificationName:CPMenuDidAddItemNotification
-                      object:self
-                    userInfo:[CPDictionary dictionaryWithObject:anIndex forKey:@"CPMenuItemIndex"]];
-
+    [self insertObject:aMenuItem inItemsAtIndex:anIndex];
 }
 
 /*!
@@ -346,16 +334,7 @@ var _CPMenuBarVisible               = NO,
 */
 - (void)removeItemAtIndex:(unsigned)anIndex
 {
-    if (anIndex < 0 || anIndex >= _items.length)
-        return;
-
-    [_items[anIndex] setMenu:nil];
-    [_items removeObjectAtIndex:anIndex];
-
-    [[CPNotificationCenter defaultCenter]
-        postNotificationName:CPMenuDidRemoveItemNotification
-                      object:self
-                    userInfo:[CPDictionary dictionaryWithObject:anIndex forKey:@"CPMenuItemIndex"]];
+    [self removeObjectFromItemsAtIndex:anIndex];
 }
 
 /*!
@@ -364,8 +343,10 @@ var _CPMenuBarVisible               = NO,
 */
 - (void)itemChanged:(CPMenuItem)aMenuItem
 {
-    if ([aMenuItem menu] != self)
+    if ([aMenuItem menu] !== self)
         return;
+
+    [aMenuItem setValue:[aMenuItem valueForKey:@"changeCount"] + 1 forKey:@"changeCount"];
 
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPMenuDidChangeItemNotification
@@ -555,7 +536,6 @@ var _CPMenuBarVisible               = NO,
 */
 - (void)submenuAction:(id)aSender
 {
-
 }
 
 /*!
@@ -603,11 +583,34 @@ var _CPMenuBarVisible               = NO,
 }
 
 /*!
-    Not implemented.
+    Enables or disables the receiver’s menu items.
+    If the target does not implement the menu item's action method the item is disabled.
+    If the target responsds to selector validateMenuItem: or validateUserInterfaceItem: (in that order) the return value is used.
 */
 - (void)update
 {
+    if (![self autoenablesItems])
+        return;
 
+    var items = [self itemArray];
+    for (var i = 0; i < [items count]; i++)
+    {
+        var item = [items objectAtIndex:i];
+
+        if ([item hasSubmenu])
+            continue;
+
+        var validator = [CPApp targetForAction:[item action] to:[item target] from:item];
+
+        if (!validator || ![validator respondsToSelector:[item action]])
+            [item _setEnabled:NO];
+        else if ([validator respondsToSelector:@selector(validateMenuItem:)])
+            [item _setEnabled:[validator validateMenuItem:item]];
+        else if ([validator respondsToSelector:@selector(validateUserInterfaceItem:)])
+            [item _setEnabled:[validator validateUserInterfaceItem:item]];
+    }
+
+    [[_menuWindow _menuView] tile];
 }
 
 // Managing the Title
@@ -870,7 +873,7 @@ var _CPMenuBarVisible               = NO,
 
 // Handling Tracking
 /*!
-	Cancels tracking.
+    Cancels tracking.
 */
 - (void)cancelTracking
 {
@@ -930,7 +933,7 @@ var _CPMenuBarVisible               = NO,
         characters = [anEvent charactersIgnoringModifiers],
         modifierFlags = [anEvent modifierFlags];
 
-    for(; index < count; ++index)
+    for (; index < count; ++index)
     {
         var item = _items[index],
             modifierMask = [item keyEquivalentModifierMask];
@@ -990,6 +993,9 @@ var _CPMenuBarVisible               = NO,
 
     if (_highlightedIndex !== CPNotFound)
         [[_items[_highlightedIndex] _menuItemView] highlight:YES];
+
+    if (_highlightedIndex !== CPNotFound && _menuWindow)
+        [_menuWindow._menuView scrollRectToVisible:[[_items[_highlightedIndex] _menuItemView] frame]];
 }
 
 - (void)_setMenuName:(CPString)aName
@@ -1035,6 +1041,61 @@ var _CPMenuBarVisible               = NO,
 
 @end
 
+@implementation CPMenu (CPKeyValueCoding)
+
+- (CPUInteger)countOfItems
+{
+    return [_items count];
+}
+
+- (CPMenuItem)objectInItemsAtIndex:(CPUInteger)anIndex
+{
+    return [_items objectAtIndex:anIndex];
+}
+
+- (CPArray)itemsAtIndexes:(CPIndexSet)indexes
+{
+    return [_items objectsAtIndexes:indexes];
+}
+
+@end
+
+@implementation CPMenu (CPKeyValueObserving)
+
+- (void)insertObject:(CPMenuItem)aMenuItem inItemsAtIndex:(CPUInteger)anIndex
+{
+    var menu = [aMenuItem menu];
+
+    if (menu)
+        if (menu !== self)
+            [CPException raise:CPInternalInconsistencyException reason:@"Attempted to insert item into menu that was already in another menu."];
+        else
+            return;
+
+    [aMenuItem setMenu:self];
+    [_items insertObject:aMenuItem atIndex:anIndex];
+
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPMenuDidAddItemNotification
+                      object:self
+                    userInfo:[CPDictionary dictionaryWithObject:anIndex forKey:@"CPMenuItemIndex"]];
+}
+
+- (void)removeObjectFromItemsAtIndex:(CPUInteger)anIndex
+{
+    if (anIndex < 0 || anIndex >= [_items count])
+        return;
+
+    [[_items objectAtIndex:anIndex] setMenu:nil];
+    [_items removeObjectAtIndex:anIndex];
+
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPMenuDidRemoveItemNotification
+                      object:self
+                    userInfo:[CPDictionary dictionaryWithObject:anIndex forKey:@"CPMenuItemIndex"]];
+}
+
+@end
 
 var CPMenuTitleKey              = @"CPMenuTitleKey",
     CPMenuNameKey               = @"CPMenuNameKey",
@@ -1060,6 +1121,8 @@ var CPMenuTitleKey              = @"CPMenuTitleKey",
         [self _setMenuName:[aCoder decodeObjectForKey:CPMenuNameKey]];
 
         _showsStateColumn = ![aCoder containsValueForKey:CPMenuShowsStateColumnKey] || [aCoder decodeBoolForKey:CPMenuShowsStateColumnKey];
+
+        _autoenablesItems = YES;
 
         [self setMinimumWidth:0];
     }

@@ -21,6 +21,7 @@
  */
 
 @import "CPArray.j"
+@import "CPDate.j"
 @import "CPObject.j"
 @import "CPString.j"
 

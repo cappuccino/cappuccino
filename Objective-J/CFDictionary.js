@@ -188,7 +188,7 @@ CFMutableDictionary.prototype.removeValueForKey = function(/*String*/ aKey)
         var keys = this._keys,
             index = 0,
             count = keys.length;
-        
+
         for (; index < count; ++index)
             if (keys[index] === aKey)
             {

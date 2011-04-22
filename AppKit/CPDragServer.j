@@ -28,13 +28,13 @@
 @import "CPWindow.j"
 
 
-CPDragOperationNone     = 0,
-CPDragOperationCopy     = 1 << 1,
-CPDragOperationLink     = 1 << 1,
-CPDragOperationGeneric  = 1 << 2,
-CPDragOperationPrivate  = 1 << 3,
-CPDragOperationMove     = 1 << 4,
-CPDragOperationDelete   = 1 << 5,
+CPDragOperationNone     = 0;
+CPDragOperationCopy     = 1 << 1;
+CPDragOperationLink     = 1 << 1;
+CPDragOperationGeneric  = 1 << 2;
+CPDragOperationPrivate  = 1 << 3;
+CPDragOperationMove     = 1 << 4;
+CPDragOperationDelete   = 1 << 5;
 CPDragOperationEvery    = -1;
 
 #define DRAGGING_WINDOW(anObject) ([anObject isKindOfClass:[CPWindow class]] ? anObject : [anObject window])
@@ -44,8 +44,8 @@ var CPDragServerPreviousEvent = nil,
 
 var CPSharedDragServer = nil;
 
-var CPDragServerSource             = nil;
-var CPDragServerDraggingInfo       = nil;
+var CPDragServerSource             = nil,
+    CPDragServerDraggingInfo       = nil;
 
 /*
     CPDraggingInfo is a container of information about a specific dragging session.
@@ -261,7 +261,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
         {
             var contentView = [scrollView contentView],
                 bounds = [contentView bounds],
-                insetBounds = CGRectInset(bounds, 10, 10),
+                insetBounds = CGRectInset(bounds, 30, 30),
                 eventLocation = [contentView convertPoint:_draggingLocation fromView:nil],
                 deltaX = 0,
                 deltaY = 0;
@@ -456,8 +456,8 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     }
     else if (type === CPKeyDown)
     {
-        var keyCode = [anEvent keyCode];
-        if (keyCode === CPEscapeKeyCode)
+        var characters = [anEvent characters];
+        if (characters === CPEscapeFunctionKey)
         {
             _dragOperation = CPDragOperationNone;
             [self draggingEndedInPlatformWindow:platformWindow globalLocation:CGPointMakeZero() operation:_dragOperation];

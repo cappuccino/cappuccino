@@ -342,6 +342,7 @@
 
     [_contentView setFrame:contentFrame];
     [_headerClipView setFrame:headerClipViewFrame];
+    [[_headerClipView documentView] setNeedsDisplay:YES];
     [_cornerView setFrame:[self _cornerViewFrame]];
 
     [[self bottomCornerView] setFrame:[self _bottomCornerViewFrame]];
@@ -354,6 +355,11 @@
 
 /*!
     Sets the type of border to be drawn around the view.
+    Valid types are:
+        CPNoBorder
+        CPLineBorder
+        CPBezelBorder
+        CPGrooveBorder
 */
 - (void)setBorderType:(CPBorderType)borderType
 {
@@ -501,7 +507,7 @@
 }
 
 /*!
-    Sets whether the scroll view hides its scoll bars when not needed.
+    Sets whether the scroll view hides its scroll bars when not needed.
     @param autohidesScrollers \c YES causes the scroll bars
     to be hidden when not needed.
 */
@@ -708,7 +714,7 @@
 */
 - (void)setLineScroll:(float)aLineScroll
 {
-    [self setHorizonalLineScroll:aLineScroll];
+    [self setHorizontalLineScroll:aLineScroll];
     [self setVerticalLineScroll:aLineScroll];
 }
 
@@ -791,7 +797,7 @@
 
 /*!
     Sets the vertical page scroll amount.
-    @param aPageScroll the new vertcal page scroll amount
+    @param aPageScroll the new vertical page scroll amount
 */
 - (void)setVerticalPageScroll:(float)aPageScroll
 {
@@ -1072,8 +1078,8 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
         _cornerView             = [aCoder decodeObjectForKey:CPScrollViewCornerViewKey];
         _bottomCornerView       = [aCoder decodeObjectForKey:CPScrollViewBottomCornerViewKey];
 
-        // Do to the anything goes nature of decoding, our subviews may not exist yet, so layout at the end of the run loop when we're sure everything is in a correct state.
-        [[CPRunLoop currentRunLoop] performSelector:@selector(reflectScrolledClipView:) target:self argument:_contentView order:0 modes:[CPDefaultRunLoopMode]];
+        // Due to the anything goes nature of decoding, our subviews may not exist yet, so layout at the end of the run loop when we're sure everything is in a correct state.
+        [[CPRunLoop currentRunLoop] performSelector:@selector(_updateCornerAndHeaderView) target:self argument:_contentView order:0 modes:[CPDefaultRunLoopMode]];
     }
 
     return self;

@@ -1,24 +1,5 @@
-/*
- * CPUserDefaultsTest.j
- *
- * Copyright (C) 2010 Antoine Mercadal <antoine.mercadal@inframonde.eu>
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 @import <Foundation/Foundation.j>
-@import <AppKit/AppKit.j>
-@import "../../Foundation/CPUserDefaults.j"
+
 
 CPUserDefaultsTestKey1 = @"KEY1";
 CPUserDefaultsTestKey2 = @"KEY2";
@@ -136,7 +117,7 @@ CPUserDefaultsTestKey2 = @"KEY2";
 - (void)testArray
 {
     [target setObject:[@"a", @"b", 3] forKey:CPUserDefaultsTestKey1];
-    [self assert:[[target arrayForKey:CPUserDefaultsTestKey1] class] equals:CPArray];
+    [self assertTrue:[[target arrayForKey:CPUserDefaultsTestKey1] isKindOfClass:CPArray]];
     [self assert:[[target arrayForKey:CPUserDefaultsTestKey1] objectAtIndex:1] equals:@"b"];
     [self assert:[[target arrayForKey:CPUserDefaultsTestKey1] objectAtIndex:2] equals:3];
     [self assert:[target stringArrayForKey:CPUserDefaultsTestKey1] equals:nil];

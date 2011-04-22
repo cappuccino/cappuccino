@@ -1,5 +1,28 @@
+/*
+ * CPExpression_subquery.j
+ *
+ * Created by cacaodev.
+ * Copyright 2010.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
+@import "CPArray.j"
+@import "CPDictionary.j"
 @import "CPExpression.j"
+@import "CPPredicate.j"
 
 @implementation CPExpression_subquery : CPExpression
 {
@@ -16,12 +39,14 @@
 
 - (id)initWithExpression:(CPExpression)collection usingIteratorExpression:(CPExpression)variableExpression predicate:(CPPredicate)subpredicate
 {
-    [super initWithExpressionType:CPSubqueryExpressionType];
+    self = [super initWithExpressionType:CPSubqueryExpressionType];
 
-    _subpredicate = subpredicate;
-    _collection = collection;
-    _variableExpression = variableExpression;
-
+    if (self)
+    {
+        _subpredicate = subpredicate;
+        _collection = collection;
+        _variableExpression = variableExpression;
+    }
     return self;
 }
 
@@ -30,10 +55,10 @@
     var collection = [_collection expressionValueWithObject:object context:context],
         count = [collection count],
         result = [CPArray array],
+        bindings = [CPDictionary dictionaryWithObject:[CPExpression expressionForEvaluatedObject] forKey:[self variable]],
+        i = 0;
 
-        bindings = [CPDictionary dictionaryWithObject:[CPExpression expressionForEvaluatedObject] forKey:[self variable]];
-
-    for (var i = 0; i < count; i++)
+    for (; i < count; i++)
     {
         var item = [collection objectAtIndex:i];
         if ([_subpredicate evaluateWithObject:item substitutionVariables:bindings])
@@ -90,9 +115,9 @@
 }
 @end
 
-var CPExpressionKey = @"CPExpression",
-    CPSubpredicateKey = @"CPSubpredicate",
-    CPVariableKey = @"CPVariable";
+var CPExpressionKey     = @"CPExpression",
+    CPSubpredicateKey   = @"CPSubpredicate",
+    CPVariableKey       = @"CPVariable";
 
 @implementation CPExpression_subquery (CPCoding)
 

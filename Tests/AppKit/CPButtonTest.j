@@ -102,4 +102,49 @@
     [self assertTrue:wasClicked];
 }
 
+- (void)testSetObjectValue
+{
+    [button setObjectValue:CPOnState];
+    [self assert:CPOnState equals:[button objectValue] message:@"object value should be CPOnState"];
+    [self assert:CPOnState equals:[button state] message:@"state should be CPOnState"];
+
+    // YES !== CPOnState, we used to fail on this
+    [button setObjectValue:YES];
+    [self assert:CPOnState equals:[button objectValue] message:@"YES should be translated to CPOnState"];
+    [self assert:CPOnState equals:[button state] message:@"YES should be translated CPOnState"];
+
+    [button setObjectValue:NO];
+    [self assert:CPOffState equals:[button objectValue] message:@"NO should be translated to CPOffState"];
+    [self assert:CPOffState equals:[button state] message:@"NO should be translated to CPOffState"];
+
+    [button setObjectValue:CPOffState];
+    [self assert:CPOffState equals:[button objectValue] message:@"object value should be CPOffState"];
+    [self assert:CPOffState equals:[button state] message:@"state should be CPOnState"];
+
+    [button setAllowsMixedState:NO];
+    [button setObjectValue:CPMixedState];
+    [self assert:CPOnState equals:[button objectValue] message:@"Mixed state is not allowed, object value should be CPOnState"];
+    [self assert:CPOnState equals:[button state] message:@"Mixed state is not allowed, state should be CPOnState"];
+
+    [button setAllowsMixedState:YES];
+    [button setObjectValue:CPMixedState];
+    [self assert:CPMixedState equals:[button objectValue] message:@"Mixed state is allowed, object value should be CPMixedState"];
+    [self assert:CPMixedState equals:[button state] message:@"Mixed state is allowed, state should be CPMixedState"];
+}
+
+- (void)testThemeAttributes
+{
+    var attributes = [CPButton themeAttributes];
+
+    if (attributes)
+    {
+        var keys = [attributes allKeys],
+            firstKey = [keys objectAtIndex:0];
+
+        [self assertTrue:[button hasThemeAttribute:[firstKey]] message:[button className] + " should have the theme attribute \"" + firstKey + "\""];
+    }
+
+    [self assertFalse:[button hasThemeAttribute:@"foobar"] message:[button className] + " should not have theme attribute \"" + firstKey + "\""];
+}
+
 @end
