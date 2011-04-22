@@ -23,9 +23,14 @@ var FILE = require("file"),
     if (self)
     {
         m_pattern = aPattern;
-        m_ignorePattern = someIgnorePatterns;
-    }
+        m_ignorePattern = new FileList();
 
+        someIgnorePatterns.forEach(function(anIgnorePattern)
+        {
+            var ignorePaths = new FileList(FILE.join(FILE.dirname(FILE.dirname(anIgnorePattern))));
+            m_ignorePattern.include(ignorePaths);
+        });
+    }
 
     return self;
 }
@@ -36,23 +41,20 @@ var FILE = require("file"),
     m_removedFilePaths = [];
     m_editedFilePaths = [];
 
+
     var paths = new FileList(m_pattern),
         mtimesForFilePaths = [CPMutableDictionary new];
 
     // FIXME: I guess this can be greatly optimized,
     // but I'm not at ease with CommonJS.
-    m_ignorePattern.forEach(function(anIgnorePattern)
+    m_ignorePattern.forEach(function(aPath)
     {
-        var ignorePaths = new FileList(FILE.join(FILE.dirname(FILE.dirname(anIgnorePattern))));
-        ignorePaths.forEach(function(aPath)
+        if (aPath != "")
         {
-            if (aPath != "")
-            {
-                var p = FILE.join(FILE.cwd(), aPath, "*/**");
-                paths.exclude(p);
-            }
-        });
-    })
+            var p = FILE.join(FILE.cwd(), aPath, "*/**");
+            paths.exclude(p);
+        }
+    });
 
     paths.forEach(function(aPath)
     {
