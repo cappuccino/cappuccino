@@ -55,11 +55,8 @@
           message:"should be missing"];
 }
 
-
 - (void)testColorSpaceStandardizeComponents
 {
-    // the following models are all not supported.
-
     var testcases = {
         "notsupported1" : {
           testdata : {
@@ -132,6 +129,39 @@
         var components = [5,4,3,2,1];
         CGColorSpaceStandardizeComponents( testcases[key].testdata, components);
         [self assert:testcases[key].expected equals:components message:"Failed for "+key];
+    }
+}
+
+- (void)testRgbStandardize
+{
+    var clrspc = CGColorSpaceCreateDeviceRGB(),
+        testcases = {
+        "negative values" : {
+          components: [-5,-4,-3,-2,-1,-1,-1,-1],
+          expected: [0,0,0,0,-1,-1,-1,-1],
+        },
+        // TODO: this happens because first the alpha value is normalised,
+        // TODO: so the components array does not have length 0, rather 4.
+        "missing values become undefined" : {
+          components: [],
+          expected: [undefined,undefined,undefined,1],
+        },
+        "values standarized if between 0 and 1" : {
+          components: [0.3, 0.4, 0.5, 0.6],
+          expected: [ROUND(0.3*255)/255, ROUND(0.4*255)/255, 
+                          ROUND(0.5*255)/255, ROUND(0.6*255)/255],
+        },
+        "values 0 or 1 if zero or one" : {
+          components: [0, 1, 0, 1],
+          expected: [0,1,0,1],
+        }
+    };
+
+    for ( var key in testcases ) {
+        CGColorSpaceStandardizeComponents( clrspc, testcases[key].components);
+        [self assert:testcases[key].expected 
+              equals:testcases[key].components 
+              message:"Failed for "+key];
     }
 }
 
