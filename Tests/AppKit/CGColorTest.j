@@ -197,11 +197,20 @@
 
 - (void)testColorEqualToColor
 {
-    var clr1 = CGColorCreateGenericRGB(0.4, 0.3, 0.2, 0.3);
     [self assert:true equals:CGColorEqualToColor(NULL,NULL)];
+
+    var clr1 = CGColorCreateGenericRGB(0.4, 0.3, 0.2, 0.3);
     [self assert:false equals:CGColorEqualToColor(NULL,clr1)];
     [self assert:true equals:CGColorEqualToColor(clr1,clr1)];
     [self assert:false equals:CGColorEqualToColor(clr1,NULL)];
+
+    var clr2 = CGColorCreateGenericRGB(0.4, 0.3, 0.2, 0.3);
+    [self assert:true equals:CGColorEqualToColor(clr1,clr2)];
+    [self assert:true equals:CGColorEqualToColor(clr2,clr1)];
+
+    clr2 = CGColorCreateGenericCMYK(0.2, 0.3, 0.4, 0.5, 0.6);
+    [self assert:false equals:CGColorEqualToColor(clr1,clr2)];
+    [self assert:false equals:CGColorEqualToColor(clr2,clr1)];
 }
 
 @end
