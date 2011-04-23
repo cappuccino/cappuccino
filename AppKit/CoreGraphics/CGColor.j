@@ -108,7 +108,7 @@ function CGColorCreateCopy(aColor)
 */
 function CGColorCreateGenericGray(gray, alpha)
 {
-    return CGColorCreate(0, [gray, alpha]);
+    return CGColorCreate(CGColorSpaceCreateDeviceRGB(), [gray,gray,gray, alpha]);
 }
 
 /*!
@@ -122,7 +122,7 @@ function CGColorCreateGenericGray(gray, alpha)
 */
 function CGColorCreateGenericRGB(red, green, blue, alpha)
 {
-    return CGColorCreate(0, [red, green, blue, alpha]);
+    return CGColorCreate(CGColorSpaceCreateDeviceRGB(), [red, green, blue, alpha]);
 }
 
 /*!
@@ -137,7 +137,8 @@ function CGColorCreateGenericRGB(red, green, blue, alpha)
 */
 function CGColorCreateGenericCMYK(cyan, magenta, yellow, black, alpha)
 {
-    return CGColorCreate(0, [cyan, magenta, yellow, black, alpha]);
+    return CGColorCreate(CGColorSpaceCreateDeviceCMYK(), 
+                         [cyan, magenta, yellow, black, alpha]);
 }
 
 /*!
