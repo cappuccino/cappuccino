@@ -150,19 +150,21 @@ function CGColorCreateGenericCMYK(cyan, magenta, yellow, black, alpha)
 */
 function CGColorCreateCopyWithAlpha(aColor, anAlpha)
 {
-    var components = aColor.components;
+    if ( !aColor ) return aColor; // Avoid error null pointer in next line
 
-    if (!aColor || anAlpha == components[components.length - 1])
+    var components = aColor.components.slice();
+
+    if (anAlpha == components[components.length - 1])
         return aColor;
 
+    // set new alpha value now so that a potentially a new cache entry is made and
+    // not that an existing cache entry is mutated.
+    components[components.length - 1] = anAlpha;
+
     if (aColor.pattern)
-        var copy = CGColorCreateWithPattern(aColor.colorspace, aColor.pattern, components);
+        return CGColorCreateWithPattern(aColor.colorspace, aColor.pattern, components);
     else
-        var copy = CGColorCreate(aColor.colorspace, components);
-
-    copy.components[components.length - 1] = anAlpha;
-
-    return copy;
+        return CGColorCreate(aColor.colorspace, components);
 }
 
 /*!
