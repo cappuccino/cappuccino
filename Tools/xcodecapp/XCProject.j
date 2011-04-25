@@ -21,7 +21,7 @@ var FILE = require("file"),
     CFURL               m_xCodeSupportSourcesURL;
 }
 
-- (id)initWithPath:(CPString)aPath
+- (id)initWithPath:(CPString)aPath ignoreFilePath:(CPString)anIgnoreFilePath  shouldOpenProject:(BOOL)shouldOpen
 {
     self = [super init];
 
@@ -29,12 +29,19 @@ var FILE = require("file"),
     {
         m_URL = new CFURL(aPath);
 
+        var ignorePatterns = [],
+            ignoreFilePath = anIgnoreFilePath || FILE.join(m_URL, ".xcodecapp-ignore");
+
+        if (FILE.exists(ignoreFilePath))
+            ignorePatterns = FILE.read(ignoreFilePath).split("\n");
+
         [self prepare_xCodeProject];
 
-        m_sourceResourceMonitor = [[XCResourceCollection alloc] initWithPattern:FILE.join(m_URL, "/**/*.j")];
-        m_nibResourceMonitor = [[XCResourceCollection alloc] initWithPattern:FILE.join(m_URL, "/**/*.[nx]ib")];
+        m_sourceResourceMonitor = [[XCResourceCollection alloc] initWithPattern:FILE.join(m_URL, "/**/*.j") ignore:ignorePatterns];
+        m_nibResourceMonitor = [[XCResourceCollection alloc] initWithPattern:FILE.join(m_URL, "/**/*.[nx]ib") ignore:ignorePatterns];
 
-        [self launch];
+        if (shouldOpen)
+            [self launch];
     }
 
     return self;
@@ -140,12 +147,14 @@ var FILE = require("file"),
     {
         print("Added " + aFilePath);
         OS.system("nib2cib " + aFilePath);
+        print("Conversion for " + aFilePath + ": done.");
     });
 
     [m_nibResourceMonitor editedFilePaths].forEach(function(aFilePath)
     {
         print("Edited " + aFilePath);
         OS.system("nib2cib " + aFilePath);
+        print("Conversion for " + aFilePath + ": done.");
     });
 
     [m_nibResourceMonitor removedFilePaths].forEach(function(aFilePath)
