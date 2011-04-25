@@ -20,8 +20,8 @@ function main(args)
         if (options.ignorepath)
             ignoreFilePath = options.ignorepath;
 
-        if (options.loop)
-            loopDelay = options.loop;
+        if (options.loopdelay)
+            loopDelay = options.loopdelay;
 
         if (options.noproject)
             openProject = NO;
@@ -37,9 +37,9 @@ function main(args)
 
 function parseOptions(args)
 {
-    parser.usage("[--loop SECONDS] [--ignorepath PATH] [--noproject]");
+    parser.usage("[--loop-delay SECONDS] [--ignorepath PATH] [--noproject]");
 
-    parser.option("--loop", "loop")
+    parser.option("--loop-delay", "loopdelay")
         .set()
         .displayName("time")
         .help("Define the delay between two watch loops");
