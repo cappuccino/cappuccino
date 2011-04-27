@@ -40,6 +40,8 @@ var FILE = require("file"),
         paths.exclude(FILE.join(FILE.dirname(aPath), "**", "*"));
     });
 
+    paths.exclude(FILE.join("Build", "**", "*"));
+
     var mtimesForFilePaths = [CPMutableDictionary new];
 
     paths.forEach(function(aPath)

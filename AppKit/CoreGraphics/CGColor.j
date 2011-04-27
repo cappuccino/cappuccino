@@ -108,7 +108,7 @@ function CGColorCreateCopy(aColor)
 */
 function CGColorCreateGenericGray(gray, alpha)
 {
-    return CGColorCreate(0, [gray, alpha]);
+    return CGColorCreate(CGColorSpaceCreateDeviceRGB(), [gray,gray,gray, alpha]);
 }
 
 /*!
@@ -122,7 +122,7 @@ function CGColorCreateGenericGray(gray, alpha)
 */
 function CGColorCreateGenericRGB(red, green, blue, alpha)
 {
-    return CGColorCreate(0, [red, green, blue, alpha]);
+    return CGColorCreate(CGColorSpaceCreateDeviceRGB(), [red, green, blue, alpha]);
 }
 
 /*!
@@ -137,7 +137,8 @@ function CGColorCreateGenericRGB(red, green, blue, alpha)
 */
 function CGColorCreateGenericCMYK(cyan, magenta, yellow, black, alpha)
 {
-    return CGColorCreate(0, [cyan, magenta, yellow, black, alpha]);
+    return CGColorCreate(CGColorSpaceCreateDeviceCMYK(), 
+                         [cyan, magenta, yellow, black, alpha]);
 }
 
 /*!
@@ -149,19 +150,21 @@ function CGColorCreateGenericCMYK(cyan, magenta, yellow, black, alpha)
 */
 function CGColorCreateCopyWithAlpha(aColor, anAlpha)
 {
-    var components = aColor.components;
+    if ( !aColor ) return aColor; // Avoid error null pointer in next line
 
-    if (!aColor || anAlpha == components[components.length - 1])
+    var components = aColor.components.slice();
+
+    if (anAlpha == components[components.length - 1])
         return aColor;
 
+    // set new alpha value now so that a potentially a new cache entry is made and
+    // not that an existing cache entry is mutated.
+    components[components.length - 1] = anAlpha;
+
     if (aColor.pattern)
-        var copy = CGColorCreateWithPattern(aColor.colorspace, aColor.pattern, components);
+        return CGColorCreateWithPattern(aColor.colorspace, aColor.pattern, components);
     else
-        var copy = CGColorCreate(aColor.colorspace, components);
-
-    copy.components[components.length - 1] = anAlpha;
-
-    return copy;
+        return CGColorCreate(aColor.colorspace, components);
 }
 
 /*!
