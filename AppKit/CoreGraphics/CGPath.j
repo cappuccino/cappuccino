@@ -381,7 +381,12 @@ function CGPathEqualToPath(aPath, anotherPath)
 
 function CGPathGetCurrentPoint(aPath)
 {
-    return _CGPointCreateCopy(aPath.current);
+    // ensure that the current point is defined. this can happen on an CGPathCreateMutable
+    // object hence need to handle it.
+    if ( aPath && aPath.current )
+        return _CGPointCreateCopy(aPath.current);
+    else
+        return NULL;
 }
 
 function CGPathIsEmpty(aPath)
