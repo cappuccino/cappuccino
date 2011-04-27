@@ -54,7 +54,7 @@ function CGPathCreateMutableCopy(aPath)
 {
     var path = CGPathCreateMutable();
 
-    CGPathAddPath(path, aPath);
+    CGPathAddPath(path, nil, aPath);
 
     return path;
 }
