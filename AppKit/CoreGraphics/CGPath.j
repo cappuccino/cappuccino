@@ -351,29 +351,81 @@ function CGPathEqualToPath(aPath, anotherPath)
     if (aPath == anotherPath)
         return YES;
 
-    if (aPath.count != anotherPath.count || !_CGPointEqualToPoint(aPath.start, anotherPath.start) || !_CGPointEqualToPoint(aPath.current, anotherPath.current))
+    // initially, start and current are both NULL, handle this.
+    if (aPath.count != anotherPath.count)
+        return NO;
+
+    // only compare points if at least one point is defined. But return NO if one point
+    // is defined but its opposite number is not defined or both points are defined but
+    // they'ren't equal.
+    if ( (aPath.current && !anotherPath.current) ||
+         (!aPath.current && anotherPath.current) ||
+         (aPath.current && anotherPath.current &&
+          !_CGPointEqualToPoint(aPath.current, anotherPath.current)))
+        return NO;
+
+    if ( (aPath.start && !anotherPath.start) ||
+         (!aPath.start && anotherPath.start) ||
+         (aPath.start && anotherPath.start &&
+          !_CGPointEqualToPoint(aPath.start, anotherPath.start)))
         return NO;
 
     var i = 0,
-        count = aPath.count;
+        count = MAX(aPath.count, anotherPath.count);
 
     for (; i < count; ++i)
     {
-        var element = aPath[i],
-            anotherElement = anotherPath[i];
+        var element = aPath.elements[i],
+            anotherElement = anotherPath.elements[i];
 
-        if (element.type != anotherElement.type)
+        if ( !element || !anotherElement || element.type != anotherElement.type)
             return NO;
 
-        if ((element.type == kCGPathElementAddArc || element.type == kCGPathElementAddArcToPoint) &&
-            element.radius != anotherElement.radius)
+        if ( element.x != anotherElement.x || element.y != anotherElement.y )
             return NO;
 
-        var j = element.points.length;
-
-        while (j--)
-            if (!_CGPointEqualToPoint(element.points[j], anotherElement.points[j]))
+        if ( element.points )
+        {
+            if ( element.points.length != anotherElement.points.length )
                 return NO;
+
+            var j = element.points.length;
+
+            while (j--)
+                if (!_CGPointEqualToPoint(element.points[j], anotherElement.points[j]))
+                    return NO;
+        }
+
+        switch (anotherElement.type)
+        {
+        case kCGPathElementAddQuadCurveToPoint:
+            if ( element.cpx != anotherElement.cpx || element.cpy != anotherElement.cpy )
+                return NO;
+            break;
+
+        case kCGPathElementAddCurveToPoint:
+            if ( element.cp1x != anotherElement.cp1x || element.cp1y != anotherElement.cp1y ||
+                 element.cp2x != anotherElement.cp2x || element.cp2y != anotherElement.cp2y )
+                return NO;
+            break;
+
+        case kCGPathElementAddArc:
+            if ( element.radius != anotherElement.radius ||
+                 element.startAngle != anotherElement.startAngle ||
+                 element.endAngle != anotherElement.endAngle )
+                return NO;
+            break;
+
+        case kCGPathElementMoveToPoint:
+        case kCGPathElementAddLineToPoint:
+        case kCGPathElementCloseSubpath:
+        case kCGPathElementAddArcToPoint:
+            break;
+
+        default:
+            // FIXME: perhaps better to raise an exception here -- should not really happen!
+            return NO;
+        }
     }
 
     return YES;
