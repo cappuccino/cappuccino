@@ -270,10 +270,10 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
             {
                 if ([scrollView hasVerticalScroller])
                 {
-                    if (eventLocation.y < CGRectGetMinY(insetBounds))
-                        deltaY = CGRectGetMinY(insetBounds) - eventLocation.y;
-                    else if (eventLocation.y > CGRectGetMaxY(insetBounds))
-                        deltaY = CGRectGetMaxY(insetBounds) - eventLocation.y;
+                    if (eventLocation.y < _CGRectGetMinY(insetBounds))
+                        deltaY = _CGRectGetMinY(insetBounds) - eventLocation.y;
+                    else if (eventLocation.y > _CGRectGetMaxY(insetBounds))
+                        deltaY = _CGRectGetMaxY(insetBounds) - eventLocation.y;
                     if (deltaY < -insetBounds.size.height)
                         deltaY = -insetBounds.size.height;
                     if (deltaY > insetBounds.size.height)
@@ -282,17 +282,21 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
 
                 if ([scrollView hasHorizontalScroller])
                 {
-                    if (eventLocation.x < CGRectGetMinX(insetBounds))
-                        deltaX = CGRectGetMinX(insetBounds) - eventLocation.x;
-                    else if (eventLocation.x > CGRectGetMaxX(insetBounds))
-                        deltaX = CGRectGetMaxX(insetBounds) - eventLocation.x;
+                    if (eventLocation.x < _CGRectGetMinX(insetBounds))
+                        deltaX = _CGRectGetMinX(insetBounds) - eventLocation.x;
+                    else if (eventLocation.x > _CGRectGetMaxX(insetBounds))
+                        deltaX = _CGRectGetMaxX(insetBounds) - eventLocation.x;
                     if (deltaX < -insetBounds.size.width)
                         deltaX = -insetBounds.size.width;
                     if (deltaX > insetBounds.size.width)
                         deltaX = insetBounds.size.width;
                 }
 
-                [contentView scrollToPoint:CGPointMake(bounds.origin.x - deltaX, bounds.origin.y - deltaY)];
+                var scrollPoint = _CGPointMake(bounds.origin.x - deltaX, bounds.origin.y - deltaY);
+
+                [contentView scrollToPoint:scrollPoint];
+                [[scrollView _headerView] scrollPoint:scrollPoint];
+
             }
         }
     }
