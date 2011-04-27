@@ -678,6 +678,14 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 {
     var observers = _observersForKey[aPath];
 
+    if (!observers)
+    {
+        CPLog.warn(@"Cannot remove an observer %@ for the key path \"%@\" from %@ because it is not registered as an observer.",
+            _targetObject, aPath, anObserver);
+
+        return;
+    }
+
     if (aPath.indexOf('.') != CPNotFound)
     {
         var forwarder = [observers objectForKey:[anObserver UID]].forwarder;

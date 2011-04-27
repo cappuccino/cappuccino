@@ -332,7 +332,7 @@
     [self replaceObjectAtIndex:otherIndex withObject:temporary];
 }
 
-- (CPArray)sortUsingDescriptors:(CPArray)descriptors
+- (void)sortUsingDescriptors:(CPArray)descriptors
 {
     [self sortUsingFunction:compareObjectsUsingDescriptors context:descriptors];
 }
