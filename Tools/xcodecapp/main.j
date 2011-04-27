@@ -21,7 +21,7 @@ function main(args)
             ignoreFilePath = options.ignorepath;
 
         if (options.loopdelay)
-            loopDelay = options.loopdelay;
+            loopDelay = parseInt(options.loopdelay);
 
         if (options.noproject)
             openProject = NO;
