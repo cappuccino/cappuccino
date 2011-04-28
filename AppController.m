@@ -360,21 +360,22 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 #pragma mark Actions
 
 - (IBAction)chooseFolder:(id)aSender
-{
-    [spinner setHidden:NO];
-    [spinner startAnimation:nil];
-    
+{    
     NSOpenPanel *openPanel = [NSOpenPanel openPanel];
     
     [openPanel setCanChooseDirectories:YES];
     [openPanel setCanCreateDirectories:YES];
-    [openPanel setPrompt:@"Choose folder"];
+    [openPanel setPrompt:@"Choose Cappuccino project"];
     [openPanel setCanChooseFiles:NO];
     
-    [openPanel runModal];
+    if ([openPanel runModal] != NSFileHandlingPanelOKButton)
+        return;
     
-    currentProjectURL = [openPanel directoryURL];
-    currentProjectName = [[openPanel directoryURL] lastPathComponent];
+    [spinner setHidden:NO];
+    [spinner startAnimation:nil];
+
+    currentProjectURL = [[openPanel URLs] objectAtIndex:0];
+    currentProjectName = [[[openPanel URLs] objectAtIndex:0] lastPathComponent];
     
     [self computeIgnoredPaths];
     [self initializeEventStreamWithPath:[currentProjectURL path]];
