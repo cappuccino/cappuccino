@@ -368,6 +368,16 @@
     return matchingKeys;
 }
 
+- (CPArray)keysSortedByValueUsingSelector:(SEL)theSelector
+{
+    return [[self allKeys] sortedArrayUsingFunction:function(a, b) {
+        a = [self objectForKey:a];
+        b = [self objectForKey:b];
+
+        return [a performSelector:theSelector withObject:b];
+    }];
+}
+
 /*!
     Returns an enumerator that enumerates over all the dictionary's keys.
 */
