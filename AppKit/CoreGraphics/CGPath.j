@@ -141,7 +141,7 @@ function CGPathAddLines(aPath, aTransform, points, count)
 {
     var i = 1;
 
-    if (arguments["count"] == NULL)
+    if (count === NULL)
         var count = points.length;
 
     if (!aPath || count < 2)
@@ -224,7 +224,7 @@ function CGPathAddRects(aPath, aTransform, rects, count)
 {
     var i = 0;
 
-    if (arguments["count"] == NULL)
+    if (count === NULL)
         var count = rects.length;
 
     for (; i < count; ++i)

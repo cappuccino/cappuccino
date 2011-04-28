@@ -227,7 +227,7 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
     return self.setResourcePropertyForKey(aKey, anObject);
 }
 
-- (CPString)staticResourceData
+- (CPData)staticResourceData
 {
     return self.staticResourceData();
 }
