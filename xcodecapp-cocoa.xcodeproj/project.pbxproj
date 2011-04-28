@@ -18,7 +18,23 @@
 		027D999F13696A7000D3DB13 /* AppController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E01A91E0DE9EED20008BB35 /* AppController.m */; };
 		027D99A113696A7000D3DB13 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		027D99A213696A7000D3DB13 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E01A8DD0DE51A7C0008BB35 /* CoreServices.framework */; };
+		02998CEB1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict in Resources */ = {isa = PBXBuildFile; fileRef = 02998CEA1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict */; };
+		02998CF71369C339006C73DB /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02998CF61369C339006C73DB /* Growl.framework */; };
+		02998CF91369C38A006C73DB /* Growl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02998CF61369C339006C73DB /* Growl.framework */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		02998CF81369C383006C73DB /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				02998CF91369C38A006C73DB /* Growl.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		024A03DC13696C1900DCBE4D /* xcodecapp-cocoa.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "xcodecapp-cocoa.icns"; sourceTree = "<group>"; };
@@ -27,6 +43,8 @@
 		024A041113699D6800DCBE4D /* parser.j */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.objj; path = parser.j; sourceTree = "<group>"; };
 		027D9989136969DD00D3DB13 /* xcodecapp-cocoa.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "xcodecapp-cocoa.pch"; sourceTree = "<group>"; };
 		027D99A613696A7000D3DB13 /* xcodecapp-cocoa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "xcodecapp-cocoa.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		02998CEA1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "Growl Registration Ticket.growlRegDict"; sourceTree = "<group>"; };
+		02998CF61369C339006C73DB /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Growl.framework; sourceTree = "<group>"; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
@@ -47,6 +65,7 @@
 			files = (
 				027D99A113696A7000D3DB13 /* Cocoa.framework in Frameworks */,
 				027D99A213696A7000D3DB13 /* CoreServices.framework in Frameworks */,
+				02998CF71369C339006C73DB /* Growl.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -120,6 +139,7 @@
 				8D1107310486CEB800E47090 /* Info.plist */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
 				29B97318FDCFA39411CA2CEA /* MainMenu.nib */,
+				02998CEA1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -127,6 +147,7 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				02998CF61369C339006C73DB /* Growl.framework */,
 				1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */,
 				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
 			);
@@ -142,6 +163,7 @@
 			buildPhases = (
 				027D999A13696A7000D3DB13 /* Resources */,
 				027D999D13696A7000D3DB13 /* Sources */,
+				02998CF81369C383006C73DB /* CopyFiles */,
 				027D99A013696A7000D3DB13 /* Frameworks */,
 			);
 			buildRules = (
@@ -186,6 +208,7 @@
 				024A041413699DD400DCBE4D /* parser.j in Resources */,
 				024A03DF13696D9500DCBE4D /* xcodecapp-cocoa.png in Resources */,
 				024A040B13698E7800DCBE4D /* project.pbxproj in Resources */,
+				02998CEB1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -229,8 +252,14 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+					"\"/Volumes/Growl 1.2.1 SDK/Frameworks\"",
+				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_ENABLE_OBJC_GC = required;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -246,6 +275,12 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+					"\"/Volumes/Growl 1.2.1 SDK/Frameworks\"",
+				);
+				GCC_ENABLE_OBJC_GC = required;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "xcodecapp-cocoa.pch";
@@ -260,6 +295,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_ENABLE_OBJC_GC = supported;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -275,6 +311,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_ENABLE_OBJC_GC = supported;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;

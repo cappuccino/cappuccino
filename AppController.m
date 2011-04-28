@@ -44,6 +44,8 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 
     if (self)
     {
+        [GrowlApplicationBridge setGrowlDelegate:@""];
+        
         fm                  = [NSFileManager defaultManager];
         modifiedSources     = [NSMutableArray new];
         modifiedXIBs        = [NSMutableArray new];
@@ -59,7 +61,9 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 	[self registerDefaults];
     [labelCurrentPath setHidden:YES];
     [buttonOpenXCode setEnabled:NO];
-    
+    [buttonStop setEnabled:NO];
+    [buttonStart setEnabled:YES];
+    [spinner setHidden:YES];
 	appStartedTimestamp     = [NSDate date];
     pathModificationDates   = [[[NSUserDefaults standardUserDefaults] dictionaryForKey:@"pathModificationDates"] mutableCopy];
 	lastEventId             = [[NSUserDefaults standardUserDefaults] objectForKey:@"lastEventId"];
@@ -159,7 +163,17 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                 NSLog(@"nib2cib %@", fullPath);
                 int ret = system([[NSString stringWithFormat:@"source ~/.bash_profile; nib2cib %@;", fullPath] UTF8String]);
                 if (ret == 0)
-                    NSLog(@"Conversion done");
+                {
+                    if (!shouldIgnoreDate)
+                        [GrowlApplicationBridge notifyWithTitle:[fullPath lastPathComponent]
+                                                    description:@"The XIB file has been converted"
+                                               notificationName:@"DefaultNotifications"
+                                                       iconData:nil
+                                                       priority:0
+                                                       isSticky:NO
+                                                   clickContext:nil];
+
+                }
                 else
                     NSLog(@"Error in conversion: return code is %d", ret);
             }
@@ -172,7 +186,17 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                 
                 int ret = system([command UTF8String]);
                 if (ret == 0)
-                    NSLog(@"Conversion done");
+                {
+                    if (!shouldIgnoreDate)
+                        [GrowlApplicationBridge notifyWithTitle:[fullPath lastPathComponent]
+                                                    description:@"The Objective-J file has been converted"
+                                               notificationName:@"DefaultNotifications"
+                                                       iconData:nil
+                                                       priority:0
+                                                       isSticky:NO
+                                                   clickContext:nil];
+
+                }
                 else
                     NSLog(@"Error in conversion: return code is %d", ret);
             }
@@ -192,7 +216,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     return [[[path pathExtension] uppercaseString] isEqual:@"XIB"];
 }
 
-- (void)prepareXCodeSupportProject
+- (BOOL)prepareXCodeSupportProject
 {
     XCodeSupportProjectName    = [NSString stringWithFormat:@"%@.xcodeproj/", currentProjectName];
     XCodeTemplatePBXPath       = [[NSBundle mainBundle] pathForResource:@"project" ofType:@"pbxproj"];
@@ -231,18 +255,40 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
         
         
         [NSThread detachNewThreadSelector:@selector(populateXCodeProject:)toTarget:self withObject:nil];
-        
+        return NO;
     } 
+    return YES;
 }
 
 - (void)populateXCodeProject:(id)argement
 {
+    [GrowlApplicationBridge notifyWithTitle:[[currentProjectURL path] lastPathComponent]
+                                description:@"Loading of your project is running..."
+                           notificationName:@"DefaultNotifications"
+                                   iconData:nil
+                                   priority:0
+                                   isSticky:NO
+                               clickContext:nil];
+    
     [self handleFileModification:[NSString stringWithFormat:@"%@", [currentProjectURL path]] ignoreDate:YES];
     NSArray *subdirs = [fm subpathsAtPath:[currentProjectURL path]];
     for (NSString *p in subdirs)
-    {
         [self handleFileModification:[NSString stringWithFormat:@"%@/%@", [currentProjectURL path], p] ignoreDate:YES];
-    }
+    
+    [labelStatus setStringValue:@"XCodeCapp is running"];
+    [buttonOpenXCode setEnabled:YES];
+    [buttonStop setEnabled:YES];
+    [buttonStart setEnabled:NO];
+    [spinner setHidden:YES];
+    
+    [GrowlApplicationBridge notifyWithTitle:[[currentProjectURL path] lastPathComponent]
+                                description:@"Your project has been loaded successfully!"
+                           notificationName:@"DefaultNotifications"
+                                   iconData:nil
+                                   priority:0
+                                   isSticky:NO
+                               clickContext:nil];
+
 }
 
 - (NSURL*)shadowURLForSourceURL:(NSURL*)aSourceURL
@@ -309,11 +355,15 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     return isMatching;
 }
 
+
 #pragma mark -
 #pragma mark Actions
 
 - (IBAction)chooseFolder:(id)aSender
 {
+    [spinner setHidden:NO];
+    [spinner startAnimation:nil];
+    
     NSOpenPanel *openPanel = [NSOpenPanel openPanel];
     
     [openPanel setCanChooseDirectories:YES];
@@ -329,12 +379,22 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     [self computeIgnoredPaths];
     [self initializeEventStreamWithPath:[currentProjectURL path]];
     
-    [self prepareXCodeSupportProject];
+    BOOL isProjectReady = [self prepareXCodeSupportProject];
     
     [labelPath setStringValue:[currentProjectURL path]];
     [labelCurrentPath setHidden:NO];
-    [buttonOpenXCode setEnabled:YES];
-    [labelStatus setStringValue:@"XCodeCapp is running"];
+    [buttonStart setEnabled:NO];
+    
+    if (isProjectReady)
+    {
+        [spinner setHidden:YES];
+        [buttonStop setEnabled:YES];
+        [buttonOpenXCode setEnabled:YES];
+        [labelStatus setStringValue:@"XCodeCapp is running"];
+    }
+        
+    else
+        [labelStatus setStringValue:@"XCodeCapp is loading project..."];
 }
 
 - (IBAction)stopListener:(id)aSender
@@ -345,6 +405,8 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     [labelPath setStringValue:@""];
     [labelCurrentPath setHidden:YES];
     [buttonOpenXCode setEnabled:NO];
+    [buttonStop setEnabled:NO];
+    [buttonStart setEnabled:YES];
     [labelStatus setStringValue:@"XCodeCapp is not running"];
     [self stopEventStream];
 }
@@ -355,6 +417,17 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
         return;
     
     system([[NSString stringWithFormat:@"open %@", [XCodeSupportProject path ]] UTF8String]);
+}
+
+
+#pragma mark -
+#pragma mark Delegates
+
+- (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag
+{
+    [mainWindow makeKeyAndOrderFront:nil];
+
+    return YES;
 }
 
 @end

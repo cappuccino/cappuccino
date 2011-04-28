@@ -17,14 +17,18 @@
  */
 
 #import <Cocoa/Cocoa.h>
-
+#import <Growl/Growl.h>
 
 @interface AppController : NSObject
 {
-    IBOutlet NSTextField    *labelStatus;
-    IBOutlet NSTextField    *labelPath;
-    IBOutlet NSTextField    *labelCurrentPath;
-    IBOutlet NSButton       *buttonOpenXCode;
+    IBOutlet NSTextField            *labelStatus;
+    IBOutlet NSTextField            *labelPath;
+    IBOutlet NSTextField            *labelCurrentPath;
+    IBOutlet NSButton               *buttonOpenXCode;
+    IBOutlet NSButton               *buttonStart;
+    IBOutlet NSButton               *buttonStop;
+    IBOutlet NSProgressIndicator    *spinner;
+    IBOutlet NSWindow               *mainWindow;
     
     NSFileManager           *fm;
     NSMutableArray          *modifiedSources;
@@ -52,8 +56,10 @@
 - (BOOL)isObjJFile:(NSString*)path;
 - (BOOL)isXIBFile:(NSString *)path;
 - (NSURL*)shadowURLForSourceURL:(NSURL*)aSourceURL;
-- (void)prepareXCodeSupportProject;
+- (BOOL)prepareXCodeSupportProject;
 - (BOOL)isPathMatchingIgnoredPaths:(NSString*)aPath;
+
+- (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag;
 
 - (IBAction)chooseFolder:(id)aSender;
 - (IBAction)stopListener:(id)aSender;
