@@ -23,9 +23,9 @@
 
 - (void)testInitWithDictionary
 {
-    var dict = [[CPDictionary alloc] initWithObjects:[@"1", @"2"] forKeys:[@"key1", @"key2"]];
+    var dict = [[CPDictionary alloc] initWithObjects:[@"1", @"2"] forKeys:[@"key1", @"key2"]],
+        new_dict = [[CPDictionary alloc] initWithDictionary:dict];
 
-    var new_dict = [[CPDictionary alloc] initWithDictionary:dict];
     [self assert:[new_dict objectForKey:@"key1"] equals:[dict objectForKey:@"key1"]];
     [self assert:[new_dict objectForKey:@"key2"] equals:[dict objectForKey:@"key2"]];
 
@@ -63,13 +63,12 @@
 
 - (void)testDictionaryWithJSObjectRecursiveWithNull
 {
-    var json_with_nulls = {
-        "key1": ['1', '2', '3'],
-        "key2": "This is a string",
-        "key3": null
-    }
-
-    var dict = [CPDictionary dictionaryWithJSObject:json_with_nulls recursively:YES];
+    var json_with_nulls =     {
+            "key1": ['1', '2', '3'],
+            "key2": "This is a string",
+            "key3": null
+        },
+        dict = [CPDictionary dictionaryWithJSObject:json_with_nulls recursively:YES];
 
     [self assert:3 equals:[dict count]];
     [self assert:[@"key1", @"key2", @"key3"] equals:[dict allKeys]];
@@ -205,6 +204,37 @@
         var dict = [[CPDictionary alloc] initWithObjects:[1, nil] forKeys:["1", "2"]];
         [self assertFalse:dict];
     }];
+}
+
+- (void)testKeysSortedByValueUsingSelector
+{
+    var numberDictionary = [CPDictionary dictionaryWithJSObject:{
+            key1: 5,
+            key2: 1,
+            key3: 4,
+            key4: 2,
+            key5: 3
+        }];
+
+    var expected = [@"key2", @"key4", @"key5", @"key3", @"key1"],
+        result = [numberDictionary keysSortedByValueUsingSelector:@selector(compare:)];
+
+    [self assert:expected equals:result];
+
+    var stringDictionary = [CPDictionary dictionaryWithJSObject:{
+            a: @"Z", b: @"y", c: @"X", d: @"W",
+            e: @"V", f: @"u", g: @"T", h: @"s",
+            i: @"R", j: @"q", k: @"P", l: @"o"
+        }];
+
+    expected = [@"l", @"k", @"j", @"i", @"h", @"g", @"f", @"e", @"d", @"c", @"b", @"a"];
+    result = [stringDictionary keysSortedByValueUsingSelector:@selector(caseInsensitiveCompare:)];
+
+    [self assert:expected equals:result];
+
+    expected = [@"k", @"i", @"g", @"e", @"d", @"c", @"a", @"l", @"j", @"h", @"f", @"b"];
+    result = [stringDictionary keysSortedByValueUsingSelector:@selector(compare:)];
+    [self assert:expected equals:result];
 }
 
 @end
