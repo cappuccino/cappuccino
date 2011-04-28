@@ -26,7 +26,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 	size_t i;
 	for(i = 0; i < numEvents; i++)
     {
-        [ac addModifiedFilesAtPath:[(NSArray *)eventPaths objectAtIndex:i]];
+        [ac handleFileModification:[(NSArray *)eventPaths objectAtIndex:i] ignoreDate:NO];
 		[ac updateLastEventId:eventIds[i]];
 	}
 }
@@ -58,6 +58,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 {
 	[self registerDefaults];
     [labelCurrentPath setHidden:YES];
+    [buttonOpenXCode setEnabled:NO];
     
 	appStartedTimestamp     = [NSDate date];
     pathModificationDates   = [[[NSUserDefaults standardUserDefaults] dictionaryForKey:@"pathModificationDates"] mutableCopy];
@@ -136,7 +137,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 	lastEventId = [NSNumber numberWithUnsignedLongLong:eventId];
 }
 
-- (void)addModifiedFilesAtPath:(NSString*)path
+- (void)handleFileModification:(NSString*)path ignoreDate:(BOOL)shouldIgnoreDate
 {
     if ([self isPathMatchingIgnoredPaths:path])
         return;
@@ -149,7 +150,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
         NSDictionary    *fileAttributes = [fm attributesOfItemAtPath:fullPath error:NULL];
 		NSDate          *fileModDate    = [fileAttributes objectForKey:NSFileModificationDate];
             
-        if([fileModDate compare:[self lastModificationDateForPath:path]] == NSOrderedDescending)
+        if(shouldIgnoreDate || [fileModDate compare:[self lastModificationDateForPath:path]] == NSOrderedDescending)
         {
             if ([self isObjJFile:fullPath])
 				[modifiedSources addObject:fullPath];
@@ -200,7 +201,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     XCodeSupportProjectSources = [NSURL URLWithString:@"Sources/" relativeToURL:XCodeSupportFolder];
     XCodeSupportPBXPath        = [NSString stringWithFormat:@"%@/project.pbxproj", [XCodeSupportProject path]];
     
-    [fm removeItemAtURL:XCodeSupportFolder error:nil];
+    //[fm removeItemAtURL:XCodeSupportFolder error:nil];
     
     // create the template project if it doesn't exist
     if (![fm fileExistsAtPath:[XCodeSupportFolder path]])
@@ -227,9 +228,21 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
         
         NSLog(@"Creating source folder");
         [fm createDirectoryAtPath:[XCodeSupportProjectSources path] withIntermediateDirectories:YES attributes:nil error:nil];
+        
+        
+        [NSThread detachNewThreadSelector:@selector(populateXCodeProject:)toTarget:self withObject:nil];
+        
     } 
-    
-    system([[NSString stringWithFormat:@"open %@", [XCodeSupportProject path ]] UTF8String]);
+}
+
+- (void)populateXCodeProject:(id)argement
+{
+    [self handleFileModification:[NSString stringWithFormat:@"%@", [currentProjectURL path]] ignoreDate:YES];
+    NSArray *subdirs = [fm subpathsAtPath:[currentProjectURL path]];
+    for (NSString *p in subdirs)
+    {
+        [self handleFileModification:[NSString stringWithFormat:@"%@/%@", [currentProjectURL path], p] ignoreDate:YES];
+    }
 }
 
 - (NSURL*)shadowURLForSourceURL:(NSURL*)aSourceURL
@@ -320,6 +333,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     
     [labelPath setStringValue:[currentProjectURL path]];
     [labelCurrentPath setHidden:NO];
+    [buttonOpenXCode setEnabled:YES];
     [labelStatus setStringValue:@"XCodeCapp is running"];
 }
 
@@ -330,8 +344,17 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     [ignoredFilePaths removeAllObjects];
     [labelPath setStringValue:@""];
     [labelCurrentPath setHidden:YES];
+    [buttonOpenXCode setEnabled:NO];
     [labelStatus setStringValue:@"XCodeCapp is not running"];
     [self stopEventStream];
+}
+
+- (IBAction)openXCode:(id)aSender
+{
+    if (!currentProjectURL)
+        return;
+    
+    system([[NSString stringWithFormat:@"open %@", [XCodeSupportProject path ]] UTF8String]);
 }
 
 @end

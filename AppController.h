@@ -24,6 +24,7 @@
     IBOutlet NSTextField    *labelStatus;
     IBOutlet NSTextField    *labelPath;
     IBOutlet NSTextField    *labelCurrentPath;
+    IBOutlet NSButton       *buttonOpenXCode;
     
     NSFileManager           *fm;
     NSMutableArray          *modifiedSources;
@@ -46,7 +47,7 @@
 
 - (void)registerDefaults;
 - (void)initializeEventStreamWithPath:(NSString*)aPath;
-- (void)addModifiedFilesAtPath:(NSString*)path;
+- (void)handleFileModification:(NSString*)path ignoreDate:(BOOL)shouldIgnoreDate;
 - (void)updateLastEventId:(uint64_t)eventId;
 - (BOOL)isObjJFile:(NSString*)path;
 - (BOOL)isXIBFile:(NSString *)path;
@@ -56,7 +57,7 @@
 
 - (IBAction)chooseFolder:(id)aSender;
 - (IBAction)stopListener:(id)aSender;
-
+- (IBAction)openXCode:(id)aSender;
 
 @end
 
