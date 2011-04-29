@@ -315,7 +315,9 @@
 
             if (menuItemIndex == -1 || [[treeChild title] isEqual:[currentView titleOfSelectedItem]])
             {
-                var node = [_CPPredicateEditorRowNode _rowNodeFromTree:treeChild withTemplate:aTemplate];
+                var node = [_CPPredicateEditorRowNode rowNodeFromTree:treeChild];
+                [node applyTemplate:aTemplate withViews:templateViews forOriginalTemplate:originalTemplate];
+
                 [criteria addObject:node];
                 [values addObject:[node displayValue]];
                 break;
@@ -334,9 +336,9 @@
 
 - (void)_updatePredicate
 {
-    //[self willChangeValueForKey:@"objectValue"];
+    [self willChangeValueForKey:@"objectValue"];
     [self _updatePredicateFromRows];
-    //[self didChangeValueForKey:@"objectValue"];
+    [self didChangeValueForKey:@"objectValue"];
 }
 
 - (void)_updatePredicateFromRows
@@ -366,34 +368,41 @@
 - (id)_predicateFromRowItem:(id)rowItem
 {
     var subpredicates = [CPArray array],
-        subrows = [rowItem valueForKey:[super subrowsKeyPath]],
+        rowType = [rowItem valueForKey:_typeKeyPath];
+
+    if (rowType == CPRuleEditorRowTypeCompound)
+    {
+        var subrows = [rowItem valueForKey:_subrowsArrayKeyPath],
         count = [subrows count];
 
-    for (var i = 0; i < count; i++)
-    {
-        var predicate = [self _predicateFromRowItem:subrows[i]];
-        [subpredicates addObject:predicate];
+        for (var i = 0; i < count; i++)
+        {
+            var subrow = [subrows objectAtIndex:i];
+            var predicate = [self _predicateFromRowItem:subrow];
+            [subpredicates addObject:predicate];
+        }
     }
 
-    var criteria = [rowItem valueForKey:[super criteriaKeyPath]],
-        displayValues = [rowItem valueForKey:[super displayValuesKeyPath]],
-        leftNode = [criteria objectAtIndex:0],
-        templateViews = [leftNode templateViews],
-        count = [criteria count];
+    var criteria = [rowItem valueForKey:_itemsKeyPath],
+        displayValues = [rowItem valueForKey:_valuesKeyPath],
+        count = [criteria count],
+        lastItem = [criteria lastObject],
+        template = [lastItem templateForRow],
+        templateViews = [template templateViews];
 
     for (var j = 0; j < count; j++)
     {
         var view = [templateViews objectAtIndex:j],
             value = [displayValues objectAtIndex:j];
+        [[criteria objectAtIndex:j] setTemplateViews:templateViews];
 
-        if ([view respondsToSelector:@selector(selectItemWithTitle:)])
+        if ([view isKindOfClass:[CPPopUpButton class]])
             [view selectItemWithTitle:value];
-        else
+        else if ([view respondsToSelector:@selector(setObjectValue:)])
             [view setObjectValue:[value objectValue]];
-
     }
 
-    return [[leftNode templateForRow] predicateWithSubpredicates:subpredicates];
+    return [template predicateWithSubpredicates:subpredicates];
 }
 
 - (CPCompoundPredicateType)_compoundPredicateTypeForRootRows
@@ -403,32 +412,39 @@
 
 #pragma mark Control delegate
 
+- (void)_sendRuleAction
+{
+    [self _updatePredicate];
+    [super _sendRuleAction];
+}
+
+- (BOOL)_sendsActionOnIncompleteTextChange
+{
+    return NO;
+}
+
+/*
 - (void)_setDefaultTargetAndActionOnView:(CPView)view
 {
     if ([view isKindOfClass:[CPControl class]])
     {
-        [view setAction:@selector(_templateControlValueDidChange:)];
         [view setTarget:self];
+        [view setAction:@selector(_templateControlValueDidChange:)];
     }
 }
-
-- (void)controlTextDidEndEditing:(CPNotification)notification
-{
-    [self _updatePredicate];
-}
-
 - (void)_templateControlValueDidChange:(id)sender
 {
-    //[self _updatePredicate];
 }
-
 - (void)controlTextDidBeginEditing:(CPNotification)notification
 {
 }
-
+- (void)controlTextDidEndEditing:(CPNotification)notification
+{
+}
 - (void)controlTextDidChange:(CPNotification)notification
 {
 }
+*/
 
 #pragma mark RuleEditor delegate methods
 
@@ -439,24 +455,22 @@
         var trees = (type == CPRuleEditorRowTypeSimple) ? _rootTrees : _rootHeaderTrees;
         return [trees count];
     }
-
     return [[rowItem children] count];
 }
 
-- (id)_queryChild:(int)index ofItem:(id)rowItem withRowType:(int)type
+- (id)_queryChild:(int)childIndex ofItem:(id)rowItem withRowType:(int)type
 {
     if (rowItem == nil)
     {
         var trees = (type == CPRuleEditorRowTypeSimple) ? _rootTrees : _rootHeaderTrees;
-        return [_CPPredicateEditorRowNode rowNodeFromTree:trees[index]];
+        return [_CPPredicateEditorRowNode rowNodeFromTree:trees[childIndex]];
     }
 
-    return [[rowItem children] objectAtIndex:index];
+    return [[rowItem children] objectAtIndex:childIndex];
 }
 
 - (id)_queryValueForItem:(id)rowItem inRow:(int)rowIndex
 {
-    [rowItem copyTemplateIfNecessary];
     return [rowItem displayValue];
 }
 

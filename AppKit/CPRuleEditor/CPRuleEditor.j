@@ -60,7 +60,7 @@ var itemsContext                = "items",
 /*!
     @ingroup appkit
     @class CPRuleEditor
-    
+
     @brief A view for creating and configuring criteria.
 
     A CPRuleEditor object is a view that allows the user to visually create and configure a list of options which are expressed by the rule editor as a predicate (see Predicate documentation). The view has a delegate which offers a tree of choices to the view. The choices are presented by the view to the user as a row of popup buttons, static text fields, and custom views. Each row in the list represents a particular path down the tree of choices.
@@ -157,7 +157,6 @@ var itemsContext                = "items",
         [self setBoundArrayKeyPath:@"boundArray"];
 
         _slicesHolder = [[_CPRuleEditorViewSliceHolder alloc] initWithFrame:[self bounds]];
-        [_slicesHolder setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
         [self addSubview:_slicesHolder];
 
         _boundArrayOwner = [[_CPRuleEditorViewUnboundRowHolder alloc] init];
@@ -181,6 +180,8 @@ var itemsContext                = "items",
     _itemsAndValuesToAddForRowType = {};
     var animation = [[CPViewAnimation alloc] initWithDuration:0.5 animationCurve:CPAnimationEaseInOut];
     [self setAnimation:animation];
+
+    [_slicesHolder setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
     _dropLineView =  [self _createSliceDropSeparator];
     [_slicesHolder addSubview:_dropLineView];
@@ -617,7 +618,7 @@ TODO: implement
 
     if (lastSelected >= [self numberOfRows])
         [CPException raise:CPRangeException reason:@"row indexes " + indexes + " are out of range"];
-    
+
     if (!extend)
         [self _deselectAll];
 
@@ -627,7 +628,7 @@ TODO: implement
             rowIndex = [slice rowIndex],
             contains = [indexes containsIndex:rowIndex];
             shouldSelect = (contains && !(extend && [slice _isSelected]));
-            
+
         if (contains)
             [slice _setSelected:shouldSelect];
         [slice _setLastSelected:(rowIndex == lastSelected)];
@@ -1053,7 +1054,7 @@ TODO: implement
     @param rowType The type of the row.
     @return An object representing the requested child (or root) criterion. This object is used by the delegate to represent that position in the tree, and is passed as a parameter in subsequent calls to the delegate.
     @discussion This method is required.
-    
+
     - (id)ruleEditor:(CPRuleEditor)editor child:(CPInteger)index forCriterion:(id)criterion withRowType:(CPRuleEditorRowType)rowType
 */
 
@@ -1358,9 +1359,9 @@ TODO: implement
 
 - (CPMutableArray)_getItemsAndValuesToAddForRow:(int)rowIndex ofType:(CPRuleEditorRowType)type
 {
-    var cachedItemsAndValues = _itemsAndValuesToAddForRowType[type];
-    if (cachedItemsAndValues)
-        return cachedItemsAndValues;
+    //var cachedItemsAndValues = _itemsAndValuesToAddForRowType[type];
+    //if (cachedItemsAndValues)
+    //    return cachedItemsAndValues;
 
     var itemsAndValues = [CPMutableArray array],
         items = [CPMutableArray array],
@@ -1513,41 +1514,38 @@ TODO: implement
     }
 }
 
-- (void)_changedItem:(id)oldItem toItem:(id)newItem inRow:(int)rowIndex atCriteriaIndex:(int)indexInCriteria
+- (void)_changedItem:(id)fromItem toItem:(id)toItem inRow:(int)aRow atCriteriaIndex:(int)fromItemIndex
 {
-    var criteria = [self criteriaForRow:rowIndex],
-        values = [self displayValuesForRow:rowIndex],
-        type = [self rowTypeForRow:rowIndex],
+    var criteria = [self criteriaForRow:aRow],
+        displayValues = [self displayValuesForRow:aRow],
+        rowType = [self rowTypeForRow:aRow],
+        anItem = toItem;
+        //fromItemIndex = [criteria indexOfObjectIdenticalTo:fromItem];
 
-        itemToAdd = newItem,
-        relativeIndexInCriteria = 0,
-        num_childs = 1000,
+    var items = [criteria subarrayWithRange:CPMakeRange(0, fromItemIndex)],
+        values = [displayValues subarrayWithRange:CPMakeRange(0, fromItemIndex)];
 
-        remainingRange = CPMakeRange(0, indexInCriteria),
-        finalCriteria = [[CPMutableArray alloc] initWithArray:[criteria subarrayWithRange:remainingRange]],
-        finalValues = [[CPMutableArray alloc] initWithArray:[values subarrayWithRange:remainingRange]];
+    _lastRow = aRow;
 
-    while (num_childs > 0)
+    while (YES)
     {
-        var displayvalue = [self _queryValueForItem:itemToAdd inRow:rowIndex];
+        [items addObject:anItem];
+        var value = [self _queryValueForItem:anItem inRow:aRow];
+        [values addObject:value];
 
-        [finalCriteria addObject:itemToAdd];
-        [finalValues addObject:displayvalue];
+        if (![self _queryNumberOfChildrenOfItem:anItem withRowType:rowType])
+            break;
 
-        num_childs = [self _queryNumberOfChildrenOfItem:itemToAdd withRowType:type];
-
-        if (num_childs > 0)
-            itemToAdd = [self _queryChild:0 ofItem:itemToAdd withRowType:type];
-
-        relativeIndexInCriteria++;
+        anItem = [self _queryChild:0 ofItem:anItem withRowType:rowType];
     }
 
-    var object = [[self _rowCacheForIndex:rowIndex] rowObject];
-    [object setValue:finalCriteria forKey:_itemsKeyPath];
-    [object setValue:finalValues forKey:_valuesKeyPath];
+    var object = [[self _rowCacheForIndex:aRow] rowObject];
+    [object setValue:items forKey:_itemsKeyPath];
+    [object setValue:values forKey:_valuesKeyPath];
 
-    [[_slices objectAtIndex:rowIndex] _reconfigureSubviews];
-
+    var slice = [_slices objectAtIndex:aRow];
+    [slice _reconfigureSubviews];
+    [self  _sendRuleAction];
     [self _postRuleOptionChangedNotification];
 }
 
@@ -1667,11 +1665,17 @@ TODO: implement
         return;
     }
 
-    if ([observableController respondsToSelector:@selector(objectClass)])
-        _rowClass = [observableController objectClass];
-
     if ([binding isEqualToString:@"rows"])
-        [self _setBoundDataSource:observableController withKeyPath:keyPath options:options];
+    {
+        if ([observableController respondsToSelector:@selector(objectClass)])
+            _rowClass = [observableController objectClass];
+
+         [self _setBoundDataSource:observableController withKeyPath:keyPath options:options];
+    }
+    else if ([binding isEqualToString:CPValueBinding])
+        [super bind:binding toObject:observableController withKeyPath:keyPath options:options];
+    else
+        [CPException raise:CPInvalidArgumentException reason:"Keypath or bound object cannot be nil"];
 }
 
 - (void)unbind:(id)object
@@ -1801,19 +1805,18 @@ TODO: implement
 
 - (void)animationDidEnd:(CPViewAnimation)animation
 {
-    var nextSimple = [self _getItemsAndValuesToAddForRow:0 ofType:CPRuleEditorRowTypeSimple],
-        nextCompound = [self _getItemsAndValuesToAddForRow:0 ofType:CPRuleEditorRowTypeCompound];
+//  var nextSimple = [self _getItemsAndValuesToAddForRow:0 ofType:CPRuleEditorRowTypeSimple],
+//      nextCompound = [self _getItemsAndValuesToAddForRow:0 ofType:CPRuleEditorRowTypeCompound];
 
-    _itemsAndValuesToAddForRowType = {CPRuleEditorRowTypeSimple:nextSimple, CPRuleEditorRowTypeCompound:nextCompound};
+//  _itemsAndValuesToAddForRowType = {CPRuleEditorRowTypeSimple:nextSimple, CPRuleEditorRowTypeCompound:nextCompound};
 }
 
 - (void)_updateSliceRows
 {
     var width =  [self frame].size.width,
-        count = [_slices count],
-        i;
+        count = [_slices count];
 
-    for (i = 0; i < count; i++)
+    for (var i = 0; i < count; i++)
     {
         var slice = [_slices objectAtIndex:i],
             targetRect = CGRectMake(0, i * _sliceHeight, width, _sliceHeight);
@@ -1937,7 +1940,7 @@ TODO: implement
     var modifierFlags = [event modifierFlags],
         extend = (modifierFlags & CPCommandKeyMask) || (modifierFlags & CPShiftKeyMask),
         rowIndexes = [CPIndexSet indexSetWithIndex:[slice rowIndex]];
-    
+
     [self selectRowIndexes:rowIndexes byExtendingSelection:extend];
 }
 
@@ -2091,7 +2094,7 @@ TODO: implement
     if ([selected_indices containsIndex:mainRowIndex])
         [draggingRows addIndexes:selected_indices];
     _draggingRows = [self _includeSubslicesForSlicesAtIndexes:draggingRows];
-    
+
     var firstIndex = [_draggingRows firstIndex],
         firstSlice = [_slices objectAtIndex:firstIndex],
         dragview = [[CPView alloc] initWithFrame:[firstSlice frame]];
@@ -2307,6 +2310,61 @@ TODO: implement
         [self sendAction:[self action] to:[self target]];
 }
 
+- (BOOL)_sendsActionOnIncompleteTextChange
+{
+    return YES;
+}
+
+- (void)_getAllAvailableItems:(id)items values:(id)values asChildrenOfItem:(id)parentItem inRow:(int)aRow
+{
+    var type,
+        indexofCriterion,
+        numOfChildren;
+
+    var availItems = [CPMutableArray array],
+        availValues = [CPMutableArray array];
+
+    var criterion = nil,
+        value = nil;
+
+    _lastRow = aRow;
+    type = [self rowTypeForRow:aRow];
+    numOfChildren = [self _queryNumberOfChildrenOfItem:parentItem withRowType:type];
+
+    var criteria = [self criteriaForRow:aRow];
+    indexofCriterion = [criteria indexOfObject:criterion];
+
+    if (parentItem != nil
+        && indexofCriterion != CPNotFound
+        && indexofCriterion < [criteria count] - 1)
+    {
+        var next = indexofCriterion + 1;
+
+        criterion = [criteria objectAtIndex:next];
+        var values = [self displayValuesForRow:aRow];
+        value = [values objectAtIndex:next];
+    }
+
+    for (var i = 0; i < numOfChildren; ++i)
+    {
+        var aChild = [self _queryChild:i ofItem:parentItem withRowType:type];
+        var availChild = aChild,
+            availValue = value;
+
+        if ( criterion != aChild )
+            availValue = [self _queryValueForItem:aChild inRow:aRow];
+
+        if ( !availValue )
+            availValue = [self _queryValueForItem:availChild inRow:aRow];
+
+        [availItems addObject:availChild];
+        [availValues addObject:availValue];
+    }
+
+    [items addObjectsFromArray:availItems];
+    [values addObjectsFromArray:availValues];
+}
+
 @end
 
 var CPRuleEditorAlignmentGridWidthKey       = @"CPRuleEditorAlignmentGridWidth",
@@ -2508,24 +2566,31 @@ var dropSeparatorColor = [CPColor colorWithHexString:@"4886ca"];
 
 @end
 
-@implementation CPControl (ToolTip)
+@implementation CPObject (CPRuleEditorSliceRow)
 
-- (void)setToolTip:(CPString)aToolTip
+- (int)valueType
 {
-    if (_toolTip == aToolTip)
-        return;
+    var result = 0;
 
-    _toolTip = aToolTip;
-#if PLATFORM(DOM)
-    _DOMElement.title = aToolTip;
-#endif
-}
+    var isString = [self isKindOfClass:[CPString class]];
+    if ( !isString )
+    {
+        var isView = [self isKindOfClass:[CPView class]];
+        result = 1;
+        if ( !isView )
+        {
+            var ismenuItem = [self isKindOfClass:[CPMenuItem class]];
+            result = 2;
+            if ( !ismenuItem )
+            {
+                [CPException raise:CPGenericException reason:@"Unknown Type For " + self];
+                 result = -1;
+            }
+        }
+    }
 
-- (CPString)toolTip
-{
-    return _toolTip;
+    return result;
 }
 
 @end
-
 /*! @endcond */

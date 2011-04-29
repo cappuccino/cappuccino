@@ -11,7 +11,7 @@
 @implementation AppController : CPObject
 {
     CPWindow        window;
-    CPRuleEditor    predicateEditor;
+    CPPredicateEditor    predicateEditor;
     CPTextField     predicateField;
 
     CPTableView     leftTable;
@@ -33,6 +33,9 @@
 
     [templateBox setCornerRadius:10];
     [self updateAddTemplateButton];
+    
+    [predicateEditor setAction:@selector(predicateEditorAction:)];
+    [predicateEditor setTarget:self];
 
     [window setBackgroundColor:[CPColor colorWithHexString:@"f3f4f5"]];
     [window setFullBridge:YES];
@@ -47,13 +50,13 @@
 
 - (IBAction)predicateEditorAction:(id)sender
 {
-    [predicateEditor reloadPredicate];
+//    CPLogConsole(_cmd + [predicateEditor displayValuesForRow:1]);
     [predicateField setStringValue:[[predicateEditor objectValue] predicateFormat]];
 }
 
 - (void)ruleEditorRowsDidChange:(CPNotification)notification
 {
-    CPLogConsole(_cmd);
+
 }
 
 // Templates maker
