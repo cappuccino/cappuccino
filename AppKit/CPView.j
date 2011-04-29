@@ -292,7 +292,7 @@ var CPViewFlags                     = { },
         _DOMImageSizes = [];
 #endif
 
-        _theme = [CPTheme defaultTheme];
+        _theme = [CPTheme themeForView:self];
         _themeState = CPThemeStateNormal;
 
         [self setupViewFlags];

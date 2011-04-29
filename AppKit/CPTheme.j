@@ -25,9 +25,10 @@
 @import <Foundation/CPKeyedUnarchiver.j>
 
 
-var CPThemesByName          = { },
-    CPThemeDefaultTheme     = nil,
-    CPThemeDefaultHudTheme  = nil;
+var CPThemesByName              = { },
+    CPThemeNamesByInheritance   = [],
+    CPThemeDefaultTheme         = nil,
+    CPThemeDefaultHudTheme      = nil;
 
 
 /*!
@@ -76,6 +77,45 @@ var CPThemesByName          = { },
     return CPThemesByName[aName];
 }
 
+/*!
+    Returns an array of names of all loaded themes, in the order they were loaded.
+*/
++ (CPArray)allThemeNames
+{
+    return [CPThemeNamesByInheritance copy];
+}
+
+/*!
+    Returns the closest matching theme for a given view. The matching proceeds as follows:
+
+    - The default theme class name for the class is retrieved.
+    - Starting with the last loaded theme and proceeding towards the default theme,
+      each theme is checked to see if it defines that theme class.
+    - If the theme defines the class name, that theme is returned.
+    - If no themes match, the default theme is returned.
+
+    @param aView The view to match with a theme
+    @return      The first matching theme
+*/
++ (CPTheme)themeForView:(CPView)aView
+{
+    var count = CPThemeNamesByInheritance.length,
+        themeClass = [aView themeClass];
+
+    if (themeClass)
+    {
+        while (count--)
+        {
+            var theme = CPThemesByName[CPThemeNamesByInheritance[count]];
+
+            if ([theme._attributes containsKey:themeClass])
+                return theme;
+        }
+    }
+
+    return CPThemeDefaultTheme;
+}
+
 - (id)initWithName:(CPString)aName
 {
     self = [super init];
@@ -86,6 +126,9 @@ var CPThemesByName          = { },
         _attributes = [CPDictionary dictionary];
 
         CPThemesByName[_name] = self;
+
+        if (![CPThemeNamesByInheritance containsObject:_name])
+            CPThemeNamesByInheritance.push(_name);
     }
 
     return self;
@@ -299,6 +342,9 @@ var CPThemeNameKey          = @"CPThemeNameKey",
         _attributes = [aCoder decodeObjectForKey:CPThemeAttributesKey];
 
         CPThemesByName[_name] = self;
+
+        if (![CPThemeNamesByInheritance containsObject:_name])
+            CPThemeNamesByInheritance.push(_name);
     }
 
     return self;
