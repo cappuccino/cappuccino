@@ -41,8 +41,8 @@ var CONTROL_HEIGHT = 16.,
 
     _addButton = [self _createAddRowButton];
     _subtractButton = [self _createDeleteRowButton];
-    [_addButton setToolTip:[_ruleEditor _toolTipForAddSimpleRowButton]];
-    [_subtractButton setToolTip:[_ruleEditor _toolTipForDeleteRowButton]];
+    //[_addButton setToolTip:[_ruleEditor _toolTipForAddSimpleRowButton]];
+    //[_subtractButton setToolTip:[_ruleEditor _toolTipForDeleteRowButton]];
     [_addButton setHidden:!editable];
     [_subtractButton setHidden:!editable];
     [self addSubview:_addButton];
@@ -81,15 +81,16 @@ var CONTROL_HEIGHT = 16.,
 - (CPMenuItem)_createMenuItemWithTitle:(CPString )title
 {
     title = [[_ruleEditor standardLocalizer] localizedStringForString:title];
-    return [[CPMenuItem alloc] initWithTitle:title action:nil keyEquivalent:@""];
+    var mItem = [[CPMenuItem alloc] initWithTitle:title action:nil keyEquivalent:@""];
+    return mItem;
 }
 
 - (CPPopUpButton)_createPopUpButtonWithItems:(CPArray)itemsArray selectedItemIndex:(int)index
 {
-    var title = [[itemsArray objectAtIndex:index] title],
-        font = [_ruleEditor font],
+    var title = [[itemsArray objectAtIndex:index] title];
+    var font = [_ruleEditor font],
         width = [title sizeWithFont:font].width + 20,
-        rect = CGRectMake(0, ([_ruleEditor rowHeight] - CONTROL_HEIGHT)/2, (width - width % 40) + 80, CONTROL_HEIGHT);
+        rect = CGRectMake(0, 0, (width - width % 40) + 80, CONTROL_HEIGHT);
 
     var popup = [[_CPRuleEditorPopUpButton alloc] initWithFrame:rect];
     [popup setValue:font forThemeAttribute:@"font"];
@@ -143,10 +144,10 @@ var CONTROL_HEIGHT = 16.,
 {
     var layoutdict = [sender representedObject],
         newItem = [layoutdict objectForKey:@"item"],
-        indexInCriteria = [[layoutdict objectForKey:@"indexInCriteria"] intValue],
+        indexInCriteria = [layoutdict objectForKey:@"indexInCriteria"],
         oldItem = [_correspondingRuleItems objectAtIndex:indexInCriteria];
 
-    if (newItem != oldItem)
+    if (![newItem isEqual:oldItem])
     {
         [_correspondingRuleItems replaceObjectAtIndex:indexInCriteria withObject:newItem];
         [_ruleEditor _changedItem:oldItem toItem:newItem inRow:_rowIndex atCriteriaIndex:indexInCriteria];
@@ -172,150 +173,189 @@ var CONTROL_HEIGHT = 16.,
 
 - (void)_reconfigureSubviews
 {
-    var numItems;
-        currentItem = nil,
-        optionView = nil,
-        indexInCriteria = 0,
+    var ruleItems,
+        criteria,
+        repObject,
+        menuItem,
+        ruleView,
+        criterion,
+        parent,
+        numberOfCriteria,
+        numberOfChildren,
+        firstResponderIndex;
 
-        rowtype = [_ruleEditor rowTypeForRow:_rowIndex],
-        displayValues = [_ruleEditor displayValuesForRow:_rowIndex];
+    var ruleItems = [CPMutableArray array];
 
     [self _emptyRulePartSubviews];
-    [_correspondingRuleItems removeAllObjects];
 
-    while ((numItems = [_ruleEditor _queryNumberOfChildrenOfItem:currentItem withRowType:rowtype]) > 0)
+    criteria = [_ruleEditor criteriaForRow:_rowIndex];
+    numberOfCriteria = [criteria count];
+
+    firstResponderIndex = numberOfCriteria - 1;
+    var responder = [[self window] firstResponder];
+    if (responder)
+        firstResponderIndex = [_ruleOptionViews indexOfObjectIdenticalTo:responder];
+
+    for (var i = 0; i < numberOfCriteria; i++)
     {
-        var isCustomRightControl = NO;
-            isStaticTextField = NO,
-            isPopupMenu = NO,
-            isMultiValue = numItems > 1,
-            selectedMenuItemIndex = 0,
-            selectedItem = nil,
-            current_display_value = nil,
+        ruleView = nil;
+        parent = nil;
+        criterion = [criteria objectAtIndex:i];
 
-            itemsArray = [CPMutableArray array],
-            display_value_cached = [displayValues objectAtIndex:indexInCriteria];
+        if (i > 0)
+            parent = [criteria objectAtIndex:i - 1];
 
-        for (var childIndex = 0; childIndex < numItems; childIndex++)
+        var childItems = [],
+            childValues = [];
+
+        [_ruleEditor _getAllAvailableItems:childItems values:childValues asChildrenOfItem:parent inRow:_rowIndex];
+
+        numberOfChildren = [childItems count];
+        if (numberOfChildren > 1)
         {
-            var childItem = [_ruleEditor _queryChild:childIndex ofItem:currentItem withRowType:rowtype];
-            current_display_value = [_ruleEditor _queryValueForItem:childItem inRow:_rowIndex];
+            var menuItems = [CPMutableArray arrayWithCapacity:numberOfChildren];
 
-            if (isMultiValue)
+            var selectedIndex = [childItems indexOfObject:criterion];
+            if (selectedIndex == CPNotFound)
+                break;
+
+            for (var j = 0; j < numberOfChildren; ++j)
             {
-                var menuItem;
+                var childItem = [childItems objectAtIndex:j];
+                var childValue = [childValues objectAtIndex:j];
 
-                if ([current_display_value isKindOfClass:[CPString class]])
-                    menuItem = [self _createMenuItemWithTitle:current_display_value];
-                else if ([current_display_value isKindOfClass:[CPMenuItem class]])
-                    menuItem = current_display_value;
-                else
-                    [CPException raise:CPInternalInconsistencyException reason:@"Display value must be a string or a menu item"];
-
-                var layoutDictionary = [CPDictionary dictionaryWithObjectsAndKeys:childItem, @"item", indexInCriteria, @"indexInCriteria"];
-
-                [menuItem setAction:@selector(_ruleOptionPopupChangedAction:)];
-                [menuItem setTarget:self];
-                [menuItem setRepresentedObject:layoutDictionary];
-                [menuItem setTag:indexInCriteria];
-
-                [itemsArray addObject:menuItem];
-                isPopupMenu = YES;
-
-                if ((childIndex == numItems - 1 && selectedItem == nil)
-                   || ([current_display_value isEqual:display_value_cached])
-                   || ([current_display_value isKindOfClass:[CPView class]]
-                       && [[current_display_value objectValue] isEqualTo:[display_value_cached objectValue]]))
+                if ([childValue isKindOfClass:[CPMenuItem class]])
                 {
-                    selectedItem = childItem;
-                    selectedMenuItemIndex = childIndex;
+                    [[childValue menu] removeItem:childValue];
+                    menuItem = childValue;
                 }
+                else
+                {
+                    if ([childValue isEqualToString:@""])
+                        menuItem = [self _createMenuSeparatorItem];
+                    else
+                    {
+                        menuItem = [self _createMenuItemWithTitle:childValue];
+                        [menuItem setTarget:self];
+                        [menuItem setAction:@selector(_ruleOptionPopupChangedAction:)];
+                    }
+                }
+
+                repObject = [CPDictionary dictionaryWithObjectsAndKeys:childItem, @"item", childValue, @"value", i, @"indexInCriteria"];
+                [menuItem setRepresentedObject:repObject];
+                [menuItems addObject:menuItem];
             }
-            else if ([current_display_value isKindOfClass:[CPString class]])
+
+            ruleView = [self _createPopUpButtonWithItems:menuItems selectedItemIndex:selectedIndex];
+        }
+        else
+        {
+            var value = [childValues objectAtIndex:0];
+            var type = [value valueType];
+
+            if (type === 0)
+                ruleView = [self _createStaticTextFieldWithStringValue:value];
+            else
             {
-                isStaticTextField = YES;
-                selectedItem = childItem;
-                selectedMenuItemIndex =0;
+                if (type !== 1)
+                {
+                    [CPException raise:CPInternalInconsistencyException reason:@"Display value must be a string or a menu item"];
+                    continue;
+                }
+
+                ruleView = value;
+                [ruleView setTarget:self];
+                [ruleView setAction:@selector(_sendRuleAction:)];
+                if ([ruleView respondsToSelector:@selector(setDelegate:)])
+                    [ruleView setDelegate:self];
             }
-            else if ([current_display_value isKindOfClass:[CPView class]])
-            {
-                isCustomRightControl = YES;
-                selectedItem = childItem;
-                selectedMenuItemIndex = 0;
-            } else
-                [CPException raise:CPInternalInconsistencyException reason:@"Display value must be a string or a custom control"];
         }
 
-        if (isPopupMenu)
+        if (ruleView != nil)
         {
-            optionView = [self _createPopUpButtonWithItems:itemsArray selectedItemIndex:selectedMenuItemIndex];
-        }
-        else if (isStaticTextField)
-        {
-            optionView = [self _createStaticTextFieldWithStringValue:[current_display_value description]];
-        }
-        else if (isCustomRightControl)
-        {
-            optionView = display_value_cached; //display_value_cached
-            [optionView setTarget:self];
-            [optionView setAction:@selector(_sendRuleAction:)];
-            if ([optionView respondsToSelector:@selector(setEditable:)])
-                [optionView setEditable:editable];
-        }
+            [_ruleOptionViews addObject:ruleView];
+            var frame = [ruleView frame];
+            [_ruleOptionInitialViewFrames addObject:frame];
+            [_ruleOptionFrames addObject:frame];
 
-        if (optionView)
-        {
-            [_ruleOptionViews addObject:optionView];
-            [_ruleOptionInitialViewFrames addObject:[optionView frame]];
-            [_ruleOptionFrames addObject:[optionView frame]];
-        }
+            if (!criterion)
+                criterion = [CPNull null];
 
-        [_correspondingRuleItems addObject:selectedItem];
-        currentItem = selectedItem;
-        indexInCriteria++;
+            [ruleItems addObject:criterion];
+        }
     }
 
-     [self _relayoutSubviewsWidthChanged:(CGRectGetWidth([self frame]) != [_ruleEditor rowHeight])];
+    [_correspondingRuleItems setArray:ruleItems];
+
+    if (!editable)
+        [self _updateEnabledStateForSubviews];
+
+    [self _relayoutSubviewsWidthChanged:YES];
+
+    if (firstResponderIndex != CPNotFound)
+    {
+        var aView = [_ruleOptionViews objectAtIndex:firstResponderIndex];
+        [[self window] makeFirstResponder:aView]; // This is not working. bug in CPPopUpButton firstResponder ?
+    }
+
+    //[self setNeedsDisplay:YES];
+}
+
+- (void)_updateEnabledStateForSubviews
+{
+    [_ruleOptionViews makeObjectsPerformSelector:@selector(setEnabled:) withObject:NO];
 }
 
 - (void)layoutSubviews
 {
+    // CPLogConsole(_cmd);
     [self _relayoutSubviewsWidthChanged:YES];
 }
 
 - (void)_relayoutSubviewsWidthChanged:(BOOL)widthChanged
 {
     var optionViewOriginX,
+        leftHorizontalPadding,
+        leftButtonMinX,
         rowHeight = [_ruleEditor rowHeight],
         count = [_ruleOptionViews count],
         sliceFrame = [self frame];
-
-    if (widthChanged)
-        optionViewOriginX = [self _leftmostViewFixedHorizontalPadding] + [self _indentationHorizontalPadding]*[self indentation];
-    for (var i = 0; i < count; i++)
-    {
-        var ruleOptionView = _ruleOptionViews[i],
-            optionFrame = _ruleOptionFrames[i],
-            initialFrame = _ruleOptionInitialViewFrames[i];
-
-        optionFrame.origin.y = (rowHeight - CGRectGetHeight(optionFrame))/2 - 2;
-        if (widthChanged)
-        {
-            optionFrame.origin.x = optionViewOriginX;
-            optionFrame.size.width = MIN(CGRectGetMinX(optionFrame) + CGRectGetWidth(initialFrame), CGRectGetMinX([_subtractButton frame]) - [self _rowButtonsLeftHorizontalPadding]) - CGRectGetMinX(optionFrame);
-        }
-
-        [ruleOptionView setFrame:optionFrame];
-        [self addSubview:ruleOptionView];
-        if (widthChanged)
-            optionViewOriginX += CGRectGetWidth(optionFrame) + [self _interviewHorizontalPadding];
-    }
 
     var buttonFrame = CGRectMake(CGRectGetWidth(sliceFrame) - BUTTON_HEIGHT - [self _rowButtonsRightHorizontalPadding], ([_ruleEditor rowHeight] - BUTTON_HEIGHT)/2 - 2, BUTTON_HEIGHT, BUTTON_HEIGHT);
     [_addButton setFrame:buttonFrame];
 
     buttonFrame.origin.x -= BUTTON_HEIGHT + [self _rowButtonsInterviewHorizontalPadding];
     [_subtractButton setFrame:buttonFrame];
+
+    if (widthChanged)
+    {
+        optionViewOriginX = [self _leftmostViewFixedHorizontalPadding] + [self _indentationHorizontalPadding] * _indentation;
+        leftHorizontalPadding = [self _rowButtonsLeftHorizontalPadding];
+        leftButtonMinX = CGRectGetMinX(buttonFrame);
+    }
+
+    for (var i = 0; i < count; i++)
+    {
+        var ruleOptionView = _ruleOptionViews[i],
+            optionFrame = _ruleOptionFrames[i];
+
+        optionFrame.origin.y = (rowHeight - CGRectGetHeight(optionFrame))/2 - 2;
+        if (widthChanged)
+        {
+            optionFrame.origin.x = optionViewOriginX;
+            if (i == count - 1 && ![self _isRulePopup:ruleOptionView])
+            {
+                var initialFrame = _ruleOptionInitialViewFrames[i];
+                optionFrame.size.width = MIN(CGRectGetWidth(initialFrame), leftButtonMinX - leftHorizontalPadding - optionViewOriginX);
+            }
+        }
+
+        [ruleOptionView setFrame:optionFrame];
+        [self addSubview:ruleOptionView];
+
+        if (widthChanged)
+            optionViewOriginX += CGRectGetWidth(optionFrame) + [self _interviewHorizontalPadding];
+    }
 }
 
 - (void)_updateButtonVisibilities
@@ -438,30 +478,9 @@ var CONTROL_HEIGHT = 16.,
 
 - (void)_textDidChange:(CPNotification)aNotif
 {
-    if ([[aNotif object] superview] == self)
+    if ([[aNotif object] superview] == self && [_ruleEditor _sendsActionOnIncompleteTextChange])
         [_ruleEditor _sendRuleAction];
 }
-
-/*
-- (BOOL)_dropsIndentWhenImmediatelyBelow
-{
-}
-- (double)_minWidthForPass:(int)pass forView:(id)view withProposedMinWidth:(double)minWidth
-{
-}
-- (id)_sortOptionDictionariesByLayoutOrder:(id)fp8
-{
-}
-- (void)_setHideNonPartDrawing:(BOOL)value
-{
-}
-- (void)_tightenResizables:(id)fp8 intoGivenWidth:(double)fp12
-{
-}
-- (void)_updateEnabledStateForSubviews
-{
-}
-*/
 
 @end
 

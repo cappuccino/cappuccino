@@ -657,18 +657,18 @@ CPTransformableAttributeType = 1800;
 
     if (attributeType >= CPInteger16AttributeType && attributeType <= CPFloatAttributeType)
     {
-        view = [self _textFieldWithFrame:CGRectMake(0,0,50,26)];
+        view = [self _textFieldWithFrame:CGRectMake(0, 0, 50, 26)];
     }
     else if (attributeType == CPStringAttributeType)
     {
-        view = [self _textFieldWithFrame:CGRectMake(0,0,150,26)];
+        view = [self _textFieldWithFrame:CGRectMake(0, 0, 150, 26)];
     }
     else if (attributeType == CPBooleanAttributeType)
     {
-        view = [[CPCheckBox alloc] initWithFrame:CGRectMake(0,0,50,26)];
+        view = [[CPCheckBox alloc] initWithFrame:CGRectMake(0, 0, 50, 26)];
     }
     else if (attributeType == CPDateAttributeType)
-        view = [[CPDatePicker alloc] initWithFrame:CGRectMake(0,0,150,26)];
+        view = [[CPDatePicker alloc] initWithFrame:CGRectMake(0, 0, 150, 26)];
     else
         return nil;
 

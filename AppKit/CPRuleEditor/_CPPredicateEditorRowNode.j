@@ -12,60 +12,101 @@
     CPArray                              children @accessors(copy);
 }
 
-- (BOOL)applyTemplate:(id)template withViews:(id)views forOriginalTemplate:(id)arg3
-{
-    return YES; // not in use
-}
-
 + (id)rowNodeFromTree:(id)aTree
 {
-    return [_CPPredicateEditorRowNode _rowNodeFromTree:aTree withTemplate:[aTree template]];
+    var mapTable = {};
+    return [_CPPredicateEditorRowNode _rowNodeFromTree:aTree withTemplateTable:mapTable];
 }
 
-+ (id)_rowNodeFromTree:(id)aTree withTemplate:(id)template
++ (id)_rowNodeFromTree:(id)aTree withTemplateTable:(id)templateTable
 {
-    var nodeChildren = [CPArray array],
+    var node,
+        views,
+        copiedContainer;
+
+    node = [[_CPPredicateEditorRowNode alloc] init];
+    node.tree = aTree;
+
+    var template = [aTree template],
+        uuid = [template UID];
+
+    var cachedNode = templateTable[uuid];
+
+    if (cachedNode == nil)
+    {
+        views = [CPMutableArray array];
+        copiedContainer = [CPMutableArray array];
+        templateTable[uuid] = node;
+    }
+    else
+    {
+        views = [cachedNode templateViews];
+        copiedContainer = [cachedNode copiedTemplateContainer];
+    }
+
+    node.templateViews = views;
+    node.copiedTemplateContainer = copiedContainer;
+
+    var nodeChildren = [CPMutableArray array],
         treeChildren = [aTree children],
         count = [treeChildren count];
 
     for (var i = 0; i < count; i++)
     {
-        var childnode = [self _rowNodeFromTree:treeChildren[i] withTemplate:template];
-        [nodeChildren addObject:childnode];
+        var treeChild = treeChildren[i],
+            child = [_CPPredicateEditorRowNode _rowNodeFromTree:treeChild withTemplateTable:templateTable];
+
+        [nodeChildren addObject:child];
     }
 
-    var node = [_CPPredicateEditorRowNode new];
-    [node setTree:aTree];
-    [node setCopiedTemplateContainer:[CPMutableArray arrayWithObject:template]];
-    [node setTemplateViews:[template templateViews]];
     [node setChildren:nodeChildren];
 
     return node;
 }
 
+- (BOOL)applyTemplate:(id)template withViews:(id)views forOriginalTemplate:(id)originalTemplate
+{
+    var t = [tree template];
+    if (t !== template)
+    {
+        [templateViews setArray:views];
+        [copiedTemplateContainer removeAllObjects];
+        [copiedTemplateContainer addObject:template];
+    }
+
+    var count = [children count];
+    for (var i; i < count; i++)
+        [children[i] applyTemplate:template withViews:views forOriginalTemplate:originalTemplate];
+}
 
 - (BOOL)isEqual:(id)node
 {
-    return (self === node || tree === [node tree]);
+    if (![node isKindOfClass:[_CPPredicateEditorRowNode class]])
+        return NO;
+
+    return (tree === [node tree]);
 }
 
 - (void)copyTemplateIfNecessary
 {
-    if ([[self templateForRow] rightIsWildcard])
+    if ([copiedTemplateContainer count] == 0)
     {
+        CPLogConsole("COPYING TEMPLATE");
         var copy = [[tree template] copy];
-        [self setCopiedTemplateContainer:[CPMutableArray arrayWithObject:copy]];
-        [self setTemplateViews:[copy templateViews]];
+        [copiedTemplateContainer addObject:copy];
+        [templateViews addObjectsFromArray:[copy templateViews]];
     }
 }
 
 - (CPView)templateView
 {
+    [self copyTemplateIfNecessary];
     return [templateViews objectAtIndex:[tree indexIntoTemplate]];
 }
 
 - (id)templateForRow
 {
+    [self copyTemplateIfNecessary];
     return [copiedTemplateContainer lastObject];
 }
 
@@ -77,15 +118,15 @@
 - (id)displayValue
 {
     var title = [self title];
-    if (title == nil)
-        return [self templateView];
+    if (title != nil)
+        return title;
 
-    return title;
+    return [self templateView];
 }
 
 - (CPString)description
 {
-    return [CPString stringWithFormat:@"<%@ %@ %@ %p>", [self className], [self title], [self displayValue], self];
+    return [CPString stringWithFormat:@"<%@ %@ %@ tree:%@ tviews:%@", [self className],[self UID], [self title], [tree UID], [templateViews description]];
 }
 
 @end
