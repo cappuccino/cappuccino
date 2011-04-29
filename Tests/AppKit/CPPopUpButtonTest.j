@@ -4,7 +4,7 @@
 
 @implementation CPPopUpButtonTest : OJTestCase
 {
-    CPPopUpButton button;
+    CPPopUpButton button @accessors;
 }
 
 - (void)setUp
@@ -187,6 +187,19 @@
     // [button sendAction:[button action] to:[button target]];
     //
     // [self assert:4990000 equals:[dict objectForKey:@"weight"]];
+}
+
+- (void)testItemWithTitle
+{
+    [self assert:nil equals:[[self button] itemWithTitle:@"I dont exist"]];
+
+    [[self button] addItemWithTitle:@"one"];
+    [[self button] addItemWithTitle:@"two"];
+    [[self button] addItemWithTitle:@"three"];
+
+    [self assert:0 equals:[[self button] indexOfItemWithTitle:@"one"]];
+    [self assert:1 equals:[[self button] indexOfItemWithTitle:@"two"]];
+    [self assert:2 equals:[[self button] indexOfItemWithTitle:@"three"]];
 }
 
 @end
