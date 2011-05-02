@@ -466,11 +466,25 @@ CPTexturedBackgroundWindowMask
     return _platformWindow;
 }
 
+/*!
+    Sets the platform window of the reciver.
+    This method will first close the reciever,
+    change the platform window, then reopen the window (if it was originally open).
+*/
 - (void)setPlatformWindow:(CPPlatformWindow)aPlatformWindow
 {
-    // FIXME: already visible.
+    var wasVisible = [self isVisible];
+
+    // we have to close it first, otherwise we get a DOM exception.
+    if (wasVisible)
+        [self close];
+
     _platformWindow = aPlatformWindow;
+
+    if (wasVisible)
+        [self orderFront:self];
 }
+
 
 /*!
     @ignore
