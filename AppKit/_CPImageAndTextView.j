@@ -294,13 +294,13 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         return;
 
     if ([_image delegate] === self)
-        [_image setDelegate:nil];
+        [[CPNotificationCenter defaultCenter] removeObserver:self name:CPImageDidLoadNotification object:_image];
 
     _image = anImage;
     _flags |= _CPImageAndTextViewImageChangedFlag;
 
     if ([_image loadStatus] !== CPImageLoadStatusCompleted)
-        [_image setDelegate:self];
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(imageDidLoad:) name:CPImageDidLoadNotification object:_image];
 
     [self setNeedsLayout];
 }
@@ -319,13 +319,10 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     return _imageOffset;
 }
 
-- (void)imageDidLoad:(id)anImage
+- (void)imageDidLoad:(CPNotification)aNotification
 {
-    if (anImage === _image)
-    {
-        _flags |= _CPImageAndTextViewImageChangedFlag;
-        [self setNeedsLayout];
-    }
+    _flags |= _CPImageAndTextViewImageChangedFlag;
+    [self setNeedsLayout];
 }
 
 - (CPImage)image
