@@ -86,7 +86,8 @@ var CPThemesByName              = { },
 }
 
 /*!
-    Returns the closest matching theme for a given view. The matching proceeds as follows:
+    Returns the closest matching theme for a given view or view class.
+    The matching proceeds as follows:
 
     - The default theme class name for the class is retrieved.
     - Starting with the last loaded theme and proceeding towards the default theme,
@@ -94,16 +95,22 @@ var CPThemesByName              = { },
     - If the theme defines the class name, that theme is returned.
     - If no themes match, the default theme is returned.
 
-    @param aView The view to match with a theme
-    @return      The first matching theme
+    @param aViewOrClass The view or view class to match with a theme
+    @return             The first matching theme
 */
-+ (CPTheme)themeForView:(CPView)aView
++ (CPTheme)themeForView:(id)aViewOrClass
 {
-    var count = CPThemeNamesByInheritance.length,
-        themeClass = [aView themeClass];
+    var themeClass = nil;
+
+    if (class_isMetaClass(aViewOrClass.isa))
+        themeClass = [aViewOrClass defaultThemeClass];
+    else
+        themeClass = [aViewOrClass themeClass];
 
     if (themeClass)
     {
+        var count = CPThemeNamesByInheritance.length;
+
         while (count--)
         {
             var theme = CPThemesByName[CPThemeNamesByInheritance[count]];
