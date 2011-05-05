@@ -83,6 +83,16 @@
     return [_indexes objectAtIndex:position];
 }
 
+- (void)setIndexes:(CPArray)theIndexes
+{
+    _indexes = [theIndexes copy];
+}
+
+- (CPArray)indexes
+{
+    return [_indexes copy];
+}
+
 #pragma mark -
 #pragma mark Modification
 
@@ -93,7 +103,7 @@
 
 - (CPIndexPath)indexPathByRemovingLastIndex
 {
-    return [CPIndexPath indexPathWithIndexes:_indexes length:[self length]];
+    return [CPIndexPath indexPathWithIndexes:_indexes length:[self length] - 1];
 }
 
 #pragma mark -

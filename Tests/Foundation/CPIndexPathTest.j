@@ -35,11 +35,23 @@
 
 - (void)testIndexPathByRemovingLastIndex
 {
-    var ip = [indexPath indexes];
-    [ip removeLastObject];
+    // Keep removing indexes until the indexPath is empty
+    while ([indexPath length] > 0)
+    {
+        var expectedIndexes = [[indexPath indexes] copy];
+        [expectedIndexes removeObject:[expectedIndexes lastObject]];
 
-    [self assert:[CPIndexPath indexPathWithIndexes:ip]
-          equals:[indexPath indexPathByRemovingLastIndex]];
+        indexPath = [indexPath indexPathByRemovingLastIndex];
+        [self assert:[CPIndexPath indexPathWithIndexes:expectedIndexes] equals:indexPath];
+    }
+}
+
+- (void)testIndexes
+{
+    var newIndexes = [indexPath indexes];
+    [newIndexes removeObjectAtIndex:0];
+
+    [self assert:[indexPath indexes] notEqual:newIndexes];
 }
 
 - (void)testCompareThrowsOnNil
