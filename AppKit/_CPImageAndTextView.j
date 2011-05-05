@@ -294,7 +294,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         return;
 
     if ([_image delegate] === self)
-        [[CPNotificationCenter defaultCenter] removeObserver:_image name:CPImageDidLoadNotification object:_image];
+        [[CPNotificationCenter defaultCenter] removeObserver:self name:CPImageDidLoadNotification object:_image];
 
     _image = anImage;
     _flags |= _CPImageAndTextViewImageChangedFlag;
