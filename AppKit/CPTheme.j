@@ -519,12 +519,7 @@ CPThemeStateCircular        = CPThemeState("circular");
 
 - (void)setValue:(id)aValue
 {
-    _cache = {};
-
-    if (aValue === undefined || aValue === nil)
-        _values = [CPDictionary dictionary];
-    else
-        _values = [CPDictionary dictionaryWithObject:aValue forKey:String(CPThemeStateNormal)];
+    [self setValue:aValue forState:CPThemeStateNormal];
 }
 
 - (void)setValue:(id)aValue forState:(CPThemeState)aState
