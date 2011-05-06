@@ -574,142 +574,38 @@ function loadTheme(themeName, themeDir)
     return readTheme(themeName, themePath);
 }
 
-function readTheme(themeName, themePath)
+function readTheme(name, path)
 {
-    var theme = null;
+    var themeBundle = new CFBundle(path);
 
-    try
-    {
-        theme = new Theme(themePath);
+    // By default when we try to load the bundle it will use the CommonJS environment,
+    // but we want the Browser environment. So we override mostEligibleEnvironment().
+    themeBundle.mostEligibleEnvironment = function() { return "Browser"; }
+    themeBundle.load();
 
-        if (!theme)
-            fail("Could not unarchive the theme at: " + themePath);
-    }
-    catch (ex)
-    {
-        fail(ex);
-    }
+    var keyedThemes = themeBundle.valueForInfoDictionaryKey("CPKeyedThemes");
 
-    CPLog.debug("Loaded theme: " + themePath);
+    if (!keyedThemes)
+        fail("Could not find the keyed themes in the theme: " + path);
 
-    return theme.theme();
-}
+    var index = keyedThemes.indexOf(name + ".keyedtheme");
 
-var Theme = function(blendPath)
-{
-    this._theme = null;
-    this._themeName = FILE.basename(blendPath, FILE.extension(blendPath));
-    this._blendPath = FILE.join(blendPath, "Browser.Environment", FILE.basename(blendPath) + ".sj");
+    if (index < 0)
+        fail("Could not find the main theme data (" + name + ".keyedtheme" + ") in the theme: " + path);
 
-    if (!FILE.exists(this._blendPath))
-        throw "Could not find the theme blend: " + this._blendPath;
+    // Load the keyed theme data, making sure to resolve it
+    var resourcePath = themeBundle.pathForResource(keyedThemes[index]),
+        themeData = new CFMutableData();
 
-    var data = new StaticResourceData(FILE.read(this._blendPath)),
-        keyedTheme = data.readResource(this._themeName + ".keyedtheme");
+    themeData.setRawString(StaticResource.resourceAtURL(new CFURL(resourcePath), true).contents());
 
-    if (!keyedTheme)
-        throw "Could not find the keyed theme data in the theme at: " + this._blendPath;
+    var theme = [CPKeyedUnarchiver unarchiveObjectWithData:themeData];
 
-    keyedTheme = CFPropertyList.propertyListFromString(keyedTheme);
+    if (!theme)
+        fail("Could not unarchive the theme at: " + path);
 
-    this._theme = [CPKeyedUnarchiver unarchiveObjectWithData:[CPData dataWithPlistObject:keyedTheme]];
-};
-
-Theme.prototype.theme = function()
-{
-    return this._theme;
-}
-
-var StaticResourceData = function(data)
-{
-    if (!data)
-        throw "StaticResourceData: no data";
-
-    this._data = data;
-
-    // Skip the header
-    this._mark = "@STATIC;".length;
-
-    // After the header is the version
-    this._version = this.readFloatItem();
-}
-
-StaticResourceData.prototype.readResource = function(name)
-{
-    name = "Resources/" + name;
-
-    while (true)
-    {
-        var resourceName = this.readStringItem();
-
-        this._mark += 2;  // skip "t;"
-
-        var resourceLength = this.readIntItem();
-
-        if (resourceName == name)
-            return this.readDataItem(resourceLength);
-
-        this._mark += resourceLength;
-
-        if (this._data.substr(this._mark, 2) == "e;")
-            return null;
-    }
-
-    return null;
-}
-
-StaticResourceData.prototype.readIntItem = function()
-{
-    var endPos = this.endOfItem(),
-        value = parseInt(this._data.substring(this._mark, endPos), 10);
-
-    this._mark = endPos + 1;
-
-    return value;
-}
-
-StaticResourceData.prototype.readFloatItem = function()
-{
-    var endPos = this.endOfItem(this._data),
-        value = parseFloat(this._data.substring(this._mark, endPos));
-
-    this._mark = endPos + 1;
-
-    return value;
-}
-
-StaticResourceData.prototype.readStringItem = function()
-{
-    if (this._data.substr(this._mark, 2) !== "p;")
-        throw "StaticResourceData: expected string item at position " + this._mark + ", found '" + this._data.substr(this._mark, 2) + "'";
-
-    this._mark += 2;  // skip "p;"
-
-    var length = this.readIntItem(),
-        value = this._data.substr(this._mark, length);
-
-    this._mark += length;
-
-    return value;
-}
-
-StaticResourceData.prototype.endOfItem = function()
-{
-    var endPos = this._data.indexOf(";", this._mark);
-
-    if (endPos < 0)
-        throw "StaticResourceData: could not find item terminator";
-
-    return endPos;
-}
-
-StaticResourceData.prototype.readDataItem = function(dataLength)
-{
-    var data = this._data.substr(this._mark, dataLength);
-
-    this._mark += dataLength;
-
-    return data;
+    CPLog.debug("Loaded theme: " + path);
+    return theme;
 }
 
 function readConfigFile(configFile, inputFile)
