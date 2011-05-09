@@ -428,7 +428,9 @@ var avgOperator,
     maxOperator,
     minOperator,
     countOperator,
-    sumOperator;
+    sumOperator,
+    distinctUnionOfObjectsOperator,
+    unionOfObjectsOperator;
 
 kvoOperators["avg"] = function avgOperator(self, _cmd, param)
 {
@@ -493,6 +495,18 @@ kvoOperators["sum"] = function sumOperator(self, _cmd, param)
         sum += [objects[index] doubleValue];
 
     return sum;
+}
+
+kvoOperators["distinctUnionOfObjects"] = function distinctUnionOfObjectsOperator(self, _cmd, param)
+{
+    var objects = [self valueForKeyPath:param];
+
+    return [[CPSet setWithArray:objects] allObjects];
+}
+
+kvoOperators["unionOfObjects"] = function unionOfObjectsOperator(self, _cmd, param)
+{
+    return [self valueForKeyPath:param];
 }
 
 @implementation CPArray (KeyValueObserving)
