@@ -120,7 +120,6 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     BOOL                _contentIsAccessible;
     CPTimer             _contentSizeCheckTimer;
     int                 _contentSizePollCount;
-    CGSize              _scrollSize;
 
     int                 _loadHTMLStringTimer;
 
@@ -257,42 +256,35 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 {
     if (_effectiveScrollMode === CPWebViewScrollAppKit)
     {
-        if (_scrollSize)
+        var visibleRect = [_frameView visibleRect];
+        [_frameView setFrameSize:CGSizeMake(CGRectGetMaxX(visibleRect), CGRectGetMaxY(visibleRect))];
+
+        // try to get the document size so we can correctly set the frame
+        var win = null;
+        try { win = [self DOMWindow]; } catch (e) {}
+
+        if (win && win.document && win.document.body)
         {
-            [_frameView setFrameSize:_scrollSize];
+            var width = win.document.body.scrollWidth,
+                height = win.document.body.scrollHeight;
+
+            _iframe.setAttribute("width", width);
+            _iframe.setAttribute("height", height);
+
+            [_frameView setFrameSize:CGSizeMake(width, height)];
         }
         else
         {
-            var visibleRect = [_frameView visibleRect];
-            [_frameView setFrameSize:CGSizeMake(CGRectGetMaxX(visibleRect), CGRectGetMaxY(visibleRect))];
-
-            // try to get the document size so we can correctly set the frame
-            var win = null;
-            try { win = [self DOMWindow]; } catch (e) {}
-
-            if (win && win.document && win.document.body)
+            // If we do have access to the content, it might be that the 'body' element simply hasn't loaded yet.
+            // The size will be updated by the content size timer in this case.
+            if (!win || !win.document)
             {
-                var width = win.document.body.scrollWidth,
-                    height = win.document.body.scrollHeight;
-
-                _iframe.setAttribute("width", width);
-                _iframe.setAttribute("height", height);
-
-                [_frameView setFrameSize:CGSizeMake(width, height)];
+                CPLog.warn("using default size 800*1600");
+                [_frameView setFrameSize:CGSizeMake(800, 1600)];
             }
-            else
-            {
-                // If we do have access to the content, it might be that the 'body' element simply hasn't loaded yet.
-                // The size will be updated by the content size timer in this case.
-                if (!win || !win.document)
-                {
-                    CPLog.warn("using default size 800*1600");
-                    [_frameView setFrameSize:CGSizeMake(800, 1600)];
-                }
-            }
-
-            [_frameView scrollRectToVisible:visibleRect];
         }
+
+        [_frameView scrollRectToVisible:visibleRect];
     }
 }
 
