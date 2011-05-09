@@ -229,7 +229,8 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 
 - (void)viewDidUnhide
 {
-    // Catch up on resizing which happened while hidden.
+    // Sizing cannot properly happen while we're hidden because the iframe is inaccessible.
+    // So now that it is accessible again, make sure to catch up.
     [_frameView setFrameSize:[_scrollView contentSize]];
     [self _resizeWebFrame];
     [self _scheduleContentSizeCheck];
@@ -262,6 +263,14 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 
 - (void)_resizeWebFrame
 {
+    // When a webview is not in the DOM we can't inspect its contents for sizing information.
+    // If we try, we might end up setting the fallback frame size which will then become
+    // somewhat sticky.
+    if (![self _isVisible])
+    {
+        return;
+    }
+
     if (_effectiveScrollMode === CPWebViewScrollAppKit)
     {
         var visibleRect = [_frameView visibleRect];
