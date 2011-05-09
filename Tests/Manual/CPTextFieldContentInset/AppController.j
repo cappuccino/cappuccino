@@ -18,7 +18,7 @@
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
         contentView = [theWindow contentView];
 
-    var description = [CPTextField labelWithTitle:@"Notice how the new inset vertically centers the text better, and when editing there is a visible gap between the selection and the bottom of the bezel."],
+    var description = [CPTextField labelWithTitle:@"Notice how the new inset vertically centers the text better. This immediately obvious when editing. Try tabbing between fields."],
         label = [CPTextField labelWithTitle:@"Old inset:"],
         field = [CPTextField textFieldWithStringValue:@"Gnarly" placeholder:@"" width:100],
         labelFrame = [label frame];
@@ -31,11 +31,12 @@
 
     labelFrame = [label frame];
 
-    [field setFrameOrigin:CGPointMake(CGRectGetMaxX(labelFrame) + 10, CGRectGetMinY(labelFrame))];
+    [field setFrameOrigin:CGPointMake(CGRectGetMaxX(labelFrame) + 5, CGRectGetMinY(labelFrame))];
     [field setValue:CGInsetMake(8.0, 7.0, 5.0, 8.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBezeled];
     [field setValue:CGInsetMake(7.0, 7.0, 5.0, 8.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBezeled | CPThemeStateEditing];
     [field sizeToFit];
     [IOUtils alignTextBaselineOf:field withBaselineOf:label];
+    [field becomeFirstResponder];
 
     var fieldFrame = [field frame];
 
@@ -51,7 +52,7 @@
     [label setAlignment:CPRightTextAlignment];
     labelFrame = [label frame];
 
-    [field setFrameOrigin:CGPointMake(CGRectGetMaxX(labelFrame) + 10, CGRectGetMinY(labelFrame))];
+    [field setFrameOrigin:CGPointMake(CGRectGetMaxX(labelFrame) + 5, CGRectGetMinY(labelFrame))];
     [field sizeToFit];
     [IOUtils alignTextBaselineOf:field withBaselineOf:label];
 
