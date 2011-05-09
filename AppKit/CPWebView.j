@@ -227,6 +227,12 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     [self _resizeWebFrame];
 }
 
+- (void)viewDidUnhide
+{
+    // Catch up on resizing which happened while hidden.
+    [_frameView setFrameSize:[_scrollView contentSize]];
+}
+
 - (void)_attachScrollEventIfNecessary
 {
     if (_effectiveScrollMode !== CPWebViewScrollAppKit)
