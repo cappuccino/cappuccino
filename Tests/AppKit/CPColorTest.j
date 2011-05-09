@@ -6,7 +6,7 @@
 
 - (void)testHexStringConversion
 {
-    var colors = ['000000', '7E8EAB', 'FFFFFF'];
+    var colors = ['000000', '0099CC', '7E8EAB', 'FFFFFF'];
     for (var i = 0; i < colors.length; ++i)
         [self assert: colors[i] equals: [[CPColor colorWithHexString: colors[i]] hexString]];
 }
