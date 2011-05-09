@@ -120,7 +120,6 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     BOOL                _contentIsAccessible;
     CPTimer             _contentSizeCheckTimer;
     int                 _contentSizePollCount;
-    CGSize              _scrollSize;
 
     int                 _loadHTMLStringTimer;
 
@@ -228,6 +227,14 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     [self _resizeWebFrame];
 }
 
+- (void)viewDidUnhide
+{
+    // Catch up on resizing which happened while hidden.
+    [_frameView setFrameSize:[_scrollView contentSize]];
+    [self _resizeWebFrame];
+    [self _scheduleContentSizeCheck];
+}
+
 - (void)_attachScrollEventIfNecessary
 {
     if (_effectiveScrollMode !== CPWebViewScrollAppKit)
@@ -257,42 +264,35 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 {
     if (_effectiveScrollMode === CPWebViewScrollAppKit)
     {
-        if (_scrollSize)
+        var visibleRect = [_frameView visibleRect];
+        [_frameView setFrameSize:CGSizeMake(CGRectGetMaxX(visibleRect), CGRectGetMaxY(visibleRect))];
+
+        // try to get the document size so we can correctly set the frame
+        var win = null;
+        try { win = [self DOMWindow]; } catch (e) {}
+
+        if (win && win.document && win.document.body)
         {
-            [_frameView setFrameSize:_scrollSize];
+            var width = win.document.body.scrollWidth,
+                height = win.document.body.scrollHeight;
+
+            _iframe.setAttribute("width", width);
+            _iframe.setAttribute("height", height);
+
+            [_frameView setFrameSize:CGSizeMake(width, height)];
         }
         else
         {
-            var visibleRect = [_frameView visibleRect];
-            [_frameView setFrameSize:CGSizeMake(CGRectGetMaxX(visibleRect), CGRectGetMaxY(visibleRect))];
-
-            // try to get the document size so we can correctly set the frame
-            var win = null;
-            try { win = [self DOMWindow]; } catch (e) {}
-
-            if (win && win.document && win.document.body)
+            // If we do have access to the content, it might be that the 'body' element simply hasn't loaded yet.
+            // The size will be updated by the content size timer in this case.
+            if (!win || !win.document)
             {
-                var width = win.document.body.scrollWidth,
-                    height = win.document.body.scrollHeight;
-
-                _iframe.setAttribute("width", width);
-                _iframe.setAttribute("height", height);
-
-                [_frameView setFrameSize:CGSizeMake(width, height)];
+                CPLog.warn("using default size 800*1600");
+                [_frameView setFrameSize:CGSizeMake(800, 1600)];
             }
-            else
-            {
-                // If we do have access to the content, it might be that the 'body' element simply hasn't loaded yet.
-                // The size will be updated by the content size timer in this case.
-                if (!win || !win.document)
-                {
-                    CPLog.warn("using default size 800*1600");
-                    [_frameView setFrameSize:CGSizeMake(800, 1600)];
-                }
-            }
-
-            [_frameView scrollRectToVisible:visibleRect];
         }
+
+        [_frameView scrollRectToVisible:visibleRect];
     }
 }
 
@@ -508,6 +508,16 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     [self _resizeWebFrame];
     [self _attachScrollEventIfNecessary];
 
+    [self _scheduleContentSizeCheck];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPWebViewProgressFinishedNotification object:self];
+
+    if ([_frameLoadDelegate respondsToSelector:@selector(webView:didFinishLoadForFrame:)])
+        [_frameLoadDelegate webView:self didFinishLoadForFrame:nil]; // FIXME: give this a frame somehow?
+}
+
+- (void)_scheduleContentSizeCheck
+{
     [_contentSizeCheckTimer invalidate];
     if (_effectiveScrollMode == CPWebViewScrollAppKit)
     {
@@ -530,11 +540,6 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
         _contentSizePollCount = 0;
         _contentSizeCheckTimer = [CPTimer scheduledTimerWithTimeInterval:CPWebViewAppKitScrollPollInterval target:self selector:@selector(_maybePollWebFrameSize) userInfo:nil repeats:YES];
     }
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPWebViewProgressFinishedNotification object:self];
-
-    if ([_frameLoadDelegate respondsToSelector:@selector(webView:didFinishLoadForFrame:)])
-        [_frameLoadDelegate webView:self didFinishLoadForFrame:nil]; // FIXME: give this a frame somehow?
 }
 
 /*!
