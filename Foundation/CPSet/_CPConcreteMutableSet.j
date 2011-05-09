@@ -85,7 +85,7 @@ var hasOwnProperty = Object.prototype.hasOwnProperty;
 - (void)addObject:(id)anObject
 {
     if (anObject === nil || anObject === undefined)
-        return;
+        [CPException raise:CPInvalidArgumentException reason:@"attempt to insert nil or undefined"];
 
     if ([self containsObject:anObject])
         return;

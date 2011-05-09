@@ -424,9 +424,7 @@ var CPSetObjectsKey = @"CPSetObjectsKey";
     {
         var value = [object valueForKey:aKey];
 
-        // addObject: should be smart enough not to add these, but just in case...
-        if (value !== nil && value !== undefined)
-            [valueSet addObject:value];
+        [valueSet addObject:value];
     }
 
     return valueSet;
