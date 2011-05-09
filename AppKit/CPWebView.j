@@ -231,6 +231,8 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 {
     // Catch up on resizing which happened while hidden.
     [_frameView setFrameSize:[_scrollView contentSize]];
+    [self _resizeWebFrame];
+    [self _scheduleContentSizeCheck];
 }
 
 - (void)_attachScrollEventIfNecessary
@@ -506,6 +508,16 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     [self _resizeWebFrame];
     [self _attachScrollEventIfNecessary];
 
+    [self _scheduleContentSizeCheck];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPWebViewProgressFinishedNotification object:self];
+
+    if ([_frameLoadDelegate respondsToSelector:@selector(webView:didFinishLoadForFrame:)])
+        [_frameLoadDelegate webView:self didFinishLoadForFrame:nil]; // FIXME: give this a frame somehow?
+}
+
+- (void)_scheduleContentSizeCheck
+{
     [_contentSizeCheckTimer invalidate];
     if (_effectiveScrollMode == CPWebViewScrollAppKit)
     {
@@ -528,11 +540,6 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
         _contentSizePollCount = 0;
         _contentSizeCheckTimer = [CPTimer scheduledTimerWithTimeInterval:CPWebViewAppKitScrollPollInterval target:self selector:@selector(_maybePollWebFrameSize) userInfo:nil repeats:YES];
     }
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPWebViewProgressFinishedNotification object:self];
-
-    if ([_frameLoadDelegate respondsToSelector:@selector(webView:didFinishLoadForFrame:)])
-        [_frameLoadDelegate webView:self didFinishLoadForFrame:nil]; // FIXME: give this a frame somehow?
 }
 
 /*!
