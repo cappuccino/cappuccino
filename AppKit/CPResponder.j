@@ -231,11 +231,18 @@ CPDeleteForwardKeyCode  = 46;
     [_nextResponder performSelector:_cmd withObject:anEvent];
 }
 
-/*
-    FIXME This description is bad.
-    Based on \c anEvent, the receiver should simulate the event.
-    @param anEvent the event to simulate
-    @return \c YES if the event receiver simulated the  event
+/*!
+    Overridden by subclasses to handle a key equivalent.
+
+    If the character code or codes in \c anEvent match the receiver’s key equivalent,
+    the receiver should respond to the event and return \c YES. The default implementation
+    does nothing and returns \c NO.
+
+    You should extract the characters for a key equivalent using
+    \ref CPEvent::charactersIgnoringModifiers "[anEvent charactersIgnoringModifiers]".
+
+    @param anEvent An event object that represents the key equivalent pressed
+    @return \c YES if theEvent is a key equivalent that the receiver handled, \c NO if it is not a key equivalent that it should handle.
 */
 - (BOOL)performKeyEquivalent:(CPEvent)anEvent
 {
