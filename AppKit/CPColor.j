@@ -605,7 +605,7 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
 */
 - (CPString)hexString
 {
-    return rgbToHex([self redComponent], [self greenComponent], [self blueComponent])
+    return rgbToHex([self redComponent], [self greenComponent], [self blueComponent]);
 }
 
 - (BOOL)isEqual:(CPColor)aColor
@@ -616,7 +616,19 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
     if (aColor === self)
         return YES;
 
-    return [aColor isKindOfClass:CPColor] && [aColor cssString] === [self cssString];
+    if (![aColor isKindOfClass:CPColor])
+        return NO;
+
+    if (_patternImage || [aColor patternImage])
+        return [_patternImage isEqual:[aColor patternImage]];
+
+    // We don't require the components to be equal beyond 8 bits since otherwise
+    // simple rounding errors will make two colours which are exactly the same on
+    // screen compare unequal.
+    return ROUND([self redComponent] * 255.0) == ROUND([aColor redComponent] * 255.0) &&
+           ROUND([self greenComponent] * 255.0) == ROUND([aColor greenComponent] * 255.0) &&
+           ROUND([self blueComponent] * 255.0) == ROUND([aColor blueComponent] * 255.0) &&
+           [self alphaComponent] == [aColor alphaComponent];
 }
 
 - (CPString)description

@@ -1285,6 +1285,14 @@ var CPViewFlags                     = { },
 }
 
 /*!
+    Returns YES if the view is not hidden, has no hidden ancestor and doesn't belong to a hidden window.
+*/
+- (BOOL)_isVisible
+{
+    return ![self isHiddenOrHasHiddenAncestor] && [[self window] isVisible];
+}
+
+/*!
     Called when the return value of isHiddenOrHasHiddenAncestor becomes YES,
     e.g. when this view becomes hidden due to a setHidden:YES message to
     itself or to one of its superviews.

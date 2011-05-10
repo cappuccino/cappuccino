@@ -73,4 +73,34 @@
     [self assertFalse:[view hasThemeAttribute:@"foobar"] message:[view className] + " should not have theme attribute \"" + firstKey + "\""];
 }
 
+- (void)testIsVisible
+{
+    [self assertFalse:[view _isVisible] message:"view must belong to a window to be visible"];
+    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
+        contentView = [theWindow contentView];
+
+    [self assertFalse:[contentView _isVisible] message:"view must belong to a visible window to be visible"];
+    [theWindow orderFront:self];
+    // Fake this because we don't have the DOM in unit tests.
+    [theWindow._isVisible = YES];
+    [self assertTrue:[contentView _isVisible] message:"view is the content view of a visible window, hence visible"];
+
+    [self assertFalse:[view _isVisible] message:"view must belong to a window to be visible"];
+    [contentView addSubview:view];
+    [self assertTrue:[view _isVisible] message:"view is a subview of a visible content view, hence visible"];
+
+    [view setHidden:YES];
+    [self assertFalse:[view _isVisible] message:"view is hidden"];
+
+    [view setHidden:NO];
+    [self assertTrue:[view _isVisible] message:"view is not hidden again"];
+
+    [contentView setHidden:YES];
+    [self assertFalse:[view _isVisible] message:"a superview is hidden"];
+
+    [contentView setHidden:NO];
+    [contentView removeFromSuperview];
+    [self assertFalse:[view _isVisible] message:"a superview does not belong to a visible window"];
+}
+
 @end

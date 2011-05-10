@@ -73,7 +73,7 @@
 - (void)testSetWithObject
 {
     [self assertSet:[CPSet setWithObject:nil] onlyHasObjects:[]];
-    [self assertSet:[CPSet setWithObject:undefined] onlyHasObjects:[]];
+    [self assertThrows:function() { [CPSet setWithObject:undefined] }];
     [self assertSet:[CPSet setWithObject:0] onlyHasObjects:[0]];
     [self assertSet:[CPSet setWithObject:@"a"] onlyHasObjects:[@"a"]];
 }
@@ -87,7 +87,9 @@
     [self assertSet:[CPSet setWithObjects:[@"a", @"b"] count:2] onlyHasObjects:[@"a", @"b"]];
     [self assertSet:[CPSet setWithObjects:[@"a", @"b", @"a"] count:3] onlyHasObjects:[@"a", @"b"]];
     [self assertSet:[CPSet setWithObjects:[@"a", @"b", @"a", 0] count:4] onlyHasObjects:[@"a", @"b", 0]];
-    [self assertSet:[CPSet setWithObjects:[@"a", nil, undefined, 0] count:4] onlyHasObjects:[@"a", 0]];
+    [self assertThrows:function() {
+        [CPSet setWithObjects:[@"a", nil, undefined, 0] count:4];
+    }];
 
     [self assertSet:[CPSet setWithObjects:[] count:4] onlyHasObjects:[]];
     [self assertSet:[CPSet setWithObjects:[@"a"] count:2] onlyHasObjects:[@"a"]];
@@ -96,10 +98,12 @@
     [self assertSet:[CPSet setWithObjects:[@"a", @"b"] count:1] onlyHasObjects:[@"a"]];
     [self assertSet:[CPSet setWithObjects:[@"a", @"b", @"a"] count:2] onlyHasObjects:[@"a", @"b"]];
     [self assertSet:[CPSet setWithObjects:[@"a", @"b", @"a", 0] count:10] onlyHasObjects:[@"a", @"b", 0]];
-    [self assertSet:[CPSet setWithObjects:[@"a", nil, undefined, 0] count:3] onlyHasObjects:[@"a"]];
+    [self assertThrows:function() {
+        [CPSet setWithObjects:[@"a", nil, undefined, 0] count:3];
+    }];
 }
 
-- (void)testSetWithObjects_count_
+- (void)testSetWithObjects_
 {
     [self assertSet:[CPSet setWithObjects:nil] onlyHasObjects:[]];
     [self assertSet:[CPSet setWithObjects:@"a"] onlyHasObjects:[@"a"]];
@@ -116,7 +120,10 @@
     [self assertSet:[CPSet setWithObjects:@"a", @"b", @"a", 0, nil] onlyHasObjects:[@"a", @"b", 0]];
     [self assertSet:[CPSet setWithObjects:@"a", @"b", @"a", nil, 0] onlyHasObjects:[@"a", @"b"]];
     [self assertSet:[CPSet setWithObjects:@"a", nil, undefined, 0] onlyHasObjects:[@"a"]];
-    [self assertSet:[CPSet setWithObjects:@"a", undefined, 0, nil] onlyHasObjects:[@"a", 0]];
+
+    [self assertThrows:function() {
+        [CPSet setWithObjects:@"a", undefined, 0, nil];
+    }];
 }
 
 - (void)testSetWithSet_
@@ -136,7 +143,9 @@
     [self assertSet:[CPSet setWithSet:[CPSet setWithObjects:@"a", @"b", @"a", 0, nil]] onlyHasObjects:[@"a", @"b", 0]];
     [self assertSet:[CPSet setWithSet:[CPSet setWithObjects:@"a", @"b", @"a", nil, 0]] onlyHasObjects:[@"a", @"b"]];
     [self assertSet:[CPSet setWithSet:[CPSet setWithObjects:@"a", nil, undefined, 0]] onlyHasObjects:[@"a"]];
-    [self assertSet:[CPSet setWithSet:[CPSet setWithObjects:@"a", undefined, 0, nil]] onlyHasObjects:[@"a", 0]];
+    [self assertThrows:function() {
+        [CPSet setWithSet:[CPSet setWithObjects:@"a", undefined, 0, nil]];
+    }];
 }
 
 - (void)testAddObject
@@ -182,7 +191,18 @@
     var set = [CPSet new];
 
     [self assertFalse:[set containsObject:nil]];
-    [set addObject:nil];
+
+    // Should throw an exception. In Cocoa this is NSException.
+    var sawException = NO;
+    try {
+        [set addObject:nil];
+    }
+    catch (ex)
+    {
+        sawException = YES;
+        [self assert:"attempt to insert nil or undefined" equals:[ex reason]];
+    }
+    [self assertTrue:sawException message:"expected exception for set addObject:nil"];
     [self assertFalse:[set containsObject:nil]];
 }
 
@@ -190,7 +210,7 @@
 {
     var set = [CPSet new];
 
-    [set addObject:nil];
+    [self assertThrows:function() { [set addObject:nil] }];
     [self assertFalse:[set containsObject:nil]];
     [set removeObject:nil];
     [self assertFalse:[set containsObject:nil]];
