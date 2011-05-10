@@ -35,8 +35,7 @@ var buildDir = "Build";
 //  Do not edit! (unless you know what you are doing)
 //===========================================================
 
-var productName = "__project.nameasidentifier__"
-    stream = require("narwhal/term").stream,
+var stream = require("narwhal/term").stream,
     JAKE = require("jake"),
     task = JAKE.task,
     CLEAN = require("jake/clean").CLEAN,
