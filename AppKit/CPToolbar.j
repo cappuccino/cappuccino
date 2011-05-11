@@ -849,6 +849,10 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
             view = [[_CPToolbarItemView alloc] initWithToolbarItem:item toolbar:self];
 
         _viewsForToolbarItems[[item UID]] = view;
+
+        if ([item toolTip] && [view respondsToSelector:@selector(setToolTip:)])
+            [view setToolTip:[item toolTip]];
+
         [self addSubview:view];
 
         _minWidth += [view minSize].width + TOOLBAR_ITEM_MARGIN;
