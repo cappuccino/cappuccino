@@ -456,6 +456,21 @@ global.copyManPage = function(/*String*/ name, /*int*/ section)
     }
 }
 
+global.xcodebuildCanListSDKs = function ()
+{
+    return OS.system("xcodebuild -showsdks > /dev/null 2>&1") == 0;
+}
+
+global.xcodebuildHasTenPointFiveSDK = function ()
+{
+    if (xcodebuildCanListSDKs()) {
+        return OS.system("xcodebuild -showsdks | grep 'macosx10.5' > /dev/null 2>&1") == 0;
+    } else {
+        return (FILE.exists(FILE.join("/", "Developer", "SDKs", "MacOSX10.5.sdk")));
+    }
+}
+
+
 
 // built in tasks
 
