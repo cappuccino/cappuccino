@@ -157,7 +157,7 @@ var symlinkBlendKit = function(destinationPath)
         FILE.symlink(blendKitPath, destinationPath);
 }
 
-function colorPrint(message, color)
+var colorPrint = function(message, color)
 {
     var matches = color.match(/(bold(?: |\+))?(.+)/);
 
