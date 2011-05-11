@@ -107,10 +107,10 @@ CPButtonImageOffset   = 3.0;
     CPString            _keyEquivalent;
     unsigned            _keyEquivalentModifierMask;
 
-    CPTimer _continuousDelayTimer;
-    CPTimer _continuousTimer;
-    float   _periodicDelay;
-    float   _periodicInterval;
+    CPTimer             _continuousDelayTimer;
+    CPTimer             _continuousTimer;
+    float               _periodicDelay;
+    float               _periodicInterval;
 }
 
 + (id)buttonWithTitle:(CPString)aTitle
@@ -157,20 +157,25 @@ CPButtonImageOffset   = 3.0;
         [self setValue:CPImageLeft forThemeAttribute:@"image-position"];
         [self setValue:CPScaleNone forThemeAttribute:@"image-scaling"];
 
-        _controlSize = CPRegularControlSize;
-
-        _keyEquivalent = @"";
-        _keyEquivalentModifierMask = 0;
-
         [self setBezelStyle:CPRoundRectBezelStyle];
         [self setBordered:YES];
 
-        // Continuous button defaults.
-        _periodicInterval   = 0.05;
-        _periodicDelay      = 0.5;
+        [self _init];
     }
 
     return self;
+}
+
+- (void)_init
+{
+    _controlSize = CPRegularControlSize;
+
+    _keyEquivalent = @"";
+    _keyEquivalentModifierMask = 0;
+
+    // Continuous button defaults.
+    _periodicInterval   = 0.05;
+    _periodicDelay      = 0.5;
 }
 
 // Setting the state
@@ -788,7 +793,7 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
 
     if (self)
     {
-        _controlSize = CPRegularControlSize;
+        [self _init];
 
         _title = [aCoder decodeObjectForKey:CPButtonTitleKey];
         _alternateTitle = [aCoder decodeObjectForKey:CPButtonAlternateTitleKey];
