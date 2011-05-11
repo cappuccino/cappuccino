@@ -11,7 +11,7 @@ task ("build", function()
     {
         var args = "-alltargets -configuration Release";
 
-        if (FILE.exists(FILE.join("/", "Developer", "SDKs", "MacOSX10.5.sdk")))
+        if (xcodebuildHasTenPointFiveSDK())
             args = "-sdk macosx10.5 " + args;
 
         else
