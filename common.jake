@@ -465,8 +465,8 @@ global.xcodebuildHasTenPointFiveSDK = function ()
 {
     if (xcodebuildCanListSDKs())
         return OS.system("xcodebuild -showsdks | grep 'macosx10.5' > /dev/null 2>&1") == 0;
-    else
-        return (FILE.exists(FILE.join("/", "Developer", "SDKs", "MacOSX10.5.sdk")));
+
+    return FILE.exists(FILE.join("/", "Developer", "SDKs", "MacOSX10.5.sdk"));
 }
 
 
