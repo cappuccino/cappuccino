@@ -192,11 +192,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 */
 - (void)removeAllItems
 {
-    var menu = [self menu],
-        count = [menu numberOfItems];
-
-    while (count--)
-        [menu removeItemAtIndex:0];
+    [[self menu] removeAllItems];
 }
 
 /*!

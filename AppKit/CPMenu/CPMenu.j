@@ -338,6 +338,25 @@ var _CPMenuBarVisible               = NO,
 }
 
 /*!
+    Removes all the menu items in the receiver.
+    This method is more efficient than removing menu items individually.
+
+    Unlike the other remove methods, this method does not post CPMenuDidChangeItemNotification notifications.
+*/
+- (void)removeAllItems
+{
+    var count = [_items count];
+
+    // Remove the connection to this menu in case
+    // someone else has a reference to the menu item.
+    while (count--)
+        [_items[count] setMenu:nil];
+
+    _items = [CPMutableArray array];
+    _highlightedIndex = CPNotFound;
+}
+
+/*!
     Called when a menu item has visually changed.
     @param aMenuItem the item that changed
 */
@@ -970,14 +989,6 @@ var _CPMenuBarVisible               = NO,
 }
 
 //
-/*
-    @ignore
-*/
-- (BOOL)_itemIsHighlighted:(CPMenuItem)aMenuItem
-{
-    return _items[_highlightedIndex] == aMenuItem;
-}
-
 /*
     @ignore
 */
