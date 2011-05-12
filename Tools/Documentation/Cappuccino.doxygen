@@ -679,7 +679,7 @@ EXCLUDE_SYMBOLS        = _*
 # directories that contain example code fragments that are included (see
 # the \include command).
 
-EXAMPLE_PATH           = ./README.html \
+EXAMPLE_PATH           = ./Tools/Documentation/README.html \
                          ./LICENSE
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
@@ -845,7 +845,7 @@ HTML_FOOTER            =
 # the style sheet file to the HTML output directory, so don't put your own
 # stylesheet in the HTML output directory as well, or it will be erased!
 
-HTML_STYLESHEET        =
+HTML_STYLESHEET        = ./Tools/Documentation/doxygen.css
 
 # The HTML_COLORSTYLE_HUE tag controls the color of the HTML output.
 # Doxygen will adjust the colors in the stylesheet and background images

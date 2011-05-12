@@ -1,4 +1,9 @@
 #! /usr/bin/env ruby
+#
+# NOTE: The working directory should be the main capp directory when this script is run
+#
+# $1 Cappuccino documentation directory
+
 
 ACCESSOR_GET_TEMPLATE = <<EOS
 /*!
@@ -129,6 +134,7 @@ def makeAccessors(getter, setter, ivar, ivarType)
   return accessors
 end
 
+print "\033[36mGenerating header files...\033[0m\n"
 fileList = Dir['AppKit.doc/**/*.j'] + Dir['Foundation.doc/**/*.j']
 
 for fileName in fileList
