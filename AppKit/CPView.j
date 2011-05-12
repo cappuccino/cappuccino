@@ -186,6 +186,8 @@ var CPViewFlags                     = { },
     CPView              _previousKeyView;
 
     unsigned            _viewClassFlags;
+
+    CPString            _toolTip @accessors(property=toolTip);
 }
 
 /*
