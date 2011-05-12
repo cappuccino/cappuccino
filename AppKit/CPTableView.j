@@ -743,9 +743,10 @@ NOT YET IMPLEMENTED
 
 /*!
     Returns an enumerated value for the selection highlight style.
-<pre>
+
 
     Valid values are:
+<pre>
         CPTableViewSelectionHighlightStyleNone
         CPTableViewSelectionHighlightStyleRegular
         CPTableViewSelectionHighlightStyleSourceList
@@ -757,11 +758,11 @@ NOT YET IMPLEMENTED
 }
 
 /*!
-<pre>
     Sets the selection highlight style to an enumerated value.
     This value can also affect the way the tableview draws feedback when the user is dragging.
 
     Valid values are:
+<pre>
         CPTableViewSelectionHighlightStyleNone
         CPTableViewSelectionHighlightStyleRegular
         CPTableViewSelectionHighlightStyleSourceList
@@ -803,10 +804,11 @@ NOT YET IMPLEMENTED
 }
 
 /*!
-<pre>
+
     Sets the highlight gradient for a row or column selection
     This is specific to the
     @param aDictionary a CPDictionary expects three keys to be set:
+<pre>
         CPSourceListGradient which is a CGGradient
         CPSourceListTopLineColor which is a CPColor
         CPSourceListBottomLineColor which is a CPColor
@@ -820,8 +822,8 @@ NOT YET IMPLEMENTED
 }
 
 /*!
-<pre>
     Returns a dictionary of containing the keys:
+<pre>
     CPSourceListGradient
     CPSourceListTopLineColor
     CPSourceListBottomLineColor
@@ -1994,10 +1996,10 @@ NOT YET IMPLEMENTED
 }
 
 /*!
-<pre>
     Sets the column autoresizing style of the receiver to a given style.
 
     @param aStyle the column autoresizing style for the receiver. Valid values are:
+<pre>
         CPTableViewNoColumnAutoresizing
         CPTableViewUniformColumnAutoresizingStyle
         CPTableViewLastColumnOnlyAutoresizingStyle
@@ -2920,11 +2922,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 }
 
 /*!
-<pre>
     Sets the feedback style for when the table is the destination of a drag operation.
     This style is used to determine how the tableview looks when it is the receiver of a drag and drop operation.
 
     Can be:
+<pre>
         CPTableViewDraggingDestinationFeedbackStyleNone
         CPTableViewDraggingDestinationFeedbackStyleRegular
         CPTableViewDraggingDestinationFeedbackStyleSourceList
@@ -2937,10 +2939,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 }
 
 /*!
-<pre>
     Returns the tableview dragging destination feedback style.
 
     Can be:
+<pre>
         CPTableViewDraggingDestinationFeedbackStyleNone
         CPTableViewDraggingDestinationFeedbackStyleRegular
         CPTableViewDraggingDestinationFeedbackStyleSourceList
