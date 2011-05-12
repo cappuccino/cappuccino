@@ -118,7 +118,7 @@ CPToolTipDefaultColorMask = CPAttachedBlackWindowMask;
 
 @end
 
-@implementation CPControl (Tooltips)
+@implementation CPView (Tooltips)
 
 /*!
     Sets the tooltip for the receiver.
@@ -174,14 +174,6 @@ CPToolTipDefaultColorMask = CPAttachedBlackWindowMask;
             _DOMElement.detachEvent("onmouseout", fOut);
         }
     }
-}
-
-/*!
-    Returns the receiver's tooltip
-*/
-- (CPString)toolTip
-{
-    return _toolTip;
 }
 
 /*! @ignore

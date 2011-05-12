@@ -94,8 +94,6 @@ var CPControlBlackColor = [CPColor blackColor];
     BOOL                _trackingWasWithinFrame;
     unsigned            _trackingMouseDownFlags;
     CGPoint             _previousTrackingLocation;
-
-    CPString            _toolTip @accessors(property=toolTip);
 }
 
 + (CPDictionary)themeAttributes
