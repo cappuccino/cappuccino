@@ -26,10 +26,10 @@
     [menu sizeToFit];
     [menu setFrameSize:CGSizeMake(150, [menu frameSize].height)];
     [self setupAction];
-    
+
     [menu setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin | CPViewMinYMargin | CPViewMaxYMargin];
     [menu setCenter:[contentView center]];
-    
+
     [contentView addSubview:menu];
 
     [theWindow orderFront:self];
@@ -51,7 +51,7 @@
 - (void)setupAction
 {
     var item = [menu itemAtIndex:2];
-    
+
     [item setTarget:self];
     [item setAction:@selector(itemWasSelected:)];
 }
@@ -59,14 +59,14 @@
 - (void)itemWasSelected:(id)sender
 {
     var title = [menu itemTitleAtIndex:0];
-    
+
     [menu removeAllItems];
-    
+
     if (title === @"One")
         [self addAlternateItems];
     else
         [self addStandardItems];
-        
+
     [self setupAction];
 }
 
