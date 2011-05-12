@@ -25,7 +25,6 @@
 @import "CPView.j"
 @import "CPKeyValueBinding.j"
 
-
 CPLeftTextAlignment             = 0;
 CPRightTextAlignment            = 1;
 CPCenterTextAlignment           = 2;
@@ -96,7 +95,7 @@ var CPControlBlackColor = [CPColor blackColor];
     unsigned            _trackingMouseDownFlags;
     CGPoint             _previousTrackingLocation;
 
-    CPString            _toolTip;
+    CPString            _toolTip @accessors(property=toolTip);
 }
 
 + (CPDictionary)themeAttributes
@@ -238,34 +237,6 @@ var CPControlBlackColor = [CPColor blackColor];
 
     return previousMask;
 }
-
-/*!
-    Sets the tooltip for the receiver.
-
-    @param aToolTip the tooltip
-*/
-/*
--(void)setToolTip:(CPString)aToolTip
-{
-    if (_toolTip == aToolTip)
-        return;
-
-    _toolTip = aToolTip;
-
-#if PLATFORM(DOM)
-    _DOMElement.title = aToolTip;
-#endif
-}
-*/
-/*!
-    Returns the receiver's tooltip
-*/
-/*
--(CPString)toolTip
-{
-    return _toolTip;
-}
-*/
 
 /*!
     Returns whether the control can continuously send its action messages.
