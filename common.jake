@@ -456,6 +456,39 @@ global.copyManPage = function(/*String*/ name, /*int*/ section)
     }
 }
 
+global.xcodebuildCanListSDKs = function()
+{
+    return OS.system("xcodebuild -showsdks > /dev/null 2>&1") == 0;
+}
+
+global.xcodebuildHasTenPointFiveSDK = function()
+{
+    if (xcodebuildCanListSDKs())
+        return OS.system("xcodebuild -showsdks | grep 'macosx10.5' > /dev/null 2>&1") == 0;
+
+    return FILE.exists(FILE.join("/", "Developer", "SDKs", "MacOSX10.5.sdk"));
+}
+
+global.colorize = function(/* String */ message, /* String */ color)
+{
+    var matches = color.match(/(bold(?: |\+))?(.+)/);
+
+    if (!matches)
+        return;
+
+    message = "\0" + matches[2] + "(" + message + "\0)";
+
+    if (matches[1])
+        message = "\0bold(" + message + "\0)";
+
+    return message;
+}
+
+global.colorPrint = function(/* String */ message, /* String */ color)
+{
+    stream.print(colorize(message, color));
+}
+
 
 // built in tasks
 

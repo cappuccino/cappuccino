@@ -1,3 +1,0 @@
-#! /bin/sh
-rm -rf AppKit.doc
-rm -rf Foundation.doc
