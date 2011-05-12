@@ -1,5 +1,5 @@
 /*
- * CPAttachedWindow.j
+ * _CPAttachedWindow.j
  * AppKit
  *
  * Created by Antoine Mercadal
@@ -26,7 +26,7 @@
 @import "CPImageView.j"
 @import "CPView.j"
 @import "CPWindow.j"
-
+@import "_CPAttachedWindowView.j"
 
 CPClosableOnBlurWindowMask      = 1 << 4;
 CPAttachedWhiteWindowMask       = 1 << 25;
@@ -36,7 +36,7 @@ CPAttachedBlackWindowMask       = 1 << 26;
     This is a simple attached window like the one that pops up
     when you double click on a meeting in iCal
 */
-@implementation CPAttachedWindow : CPWindow
+@implementation _CPAttachedWindow : CPWindow
 {
     id              _targetView         @accessors(property=targetView);
     BOOL            _isClosed;
@@ -69,7 +69,7 @@ CPAttachedBlackWindowMask       = 1 << 26;
 */
 + (id)attachedWindowWithSize:(CGSize)aSize forView:(CPView)aView
 {
-    return [CPAttachedWindow attachedWindowWithSize:aSize forView:aView styleMask:nil];
+    return [_CPAttachedWindow attachedWindowWithSize:aSize forView:aView styleMask:nil];
 }
 
 /*! create and init a CPAttachedWindow with given size of and view
@@ -80,7 +80,7 @@ CPAttachedBlackWindowMask       = 1 << 26;
 */
 + (id)attachedWindowWithSize:(CGSize)aSize forView:(CPView)aView styleMask:(int)aMask
 {
-    var attachedWindow = [[CPAttachedWindow alloc] initWithContentRect:CPRectMake(0.0, 0.0, aSize.width, aSize.height) styleMask:aMask];
+    var attachedWindow = [[_CPAttachedWindow alloc] initWithContentRect:CPRectMake(0.0, 0.0, aSize.width, aSize.height) styleMask:aMask];
 
     [attachedWindow attachToView:aView];
 

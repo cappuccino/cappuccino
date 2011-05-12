@@ -1,5 +1,5 @@
 /*
- * CPToolTip.j
+ * _CPToolTip.j
  * AppKit
  *
  * Created by Antoine Mercadal
@@ -23,15 +23,17 @@
 @import "CPTextField.j"
 @import "CPView.j"
 
-@import "CPAttachedWindow.j"
+@import "_CPAttachedWindow.j"
 
+var CPCurrentToolTip,
+    CPCurrentToolTipTimer;
 
 CPToolTipDefaultColorMask = CPAttachedBlackWindowMask;
 
 /*! @ingroup appkit
     subclass of CPAttachedWindow in order to build quick tooltip
 */
-@implementation CPToolTip : CPAttachedWindow
+@implementation _CPToolTip : _CPAttachedWindow
 {
     CPTextField _content;
 }
@@ -43,9 +45,9 @@ CPToolTipDefaultColorMask = CPAttachedBlackWindowMask;
     @param aString the content of the tooltip
     @param aView the view where the tooltip will be attached
 */
-+ (CPToolTip)toolTipWithString:(CPString)aString forView:(CPView)aView
++ (_CPToolTip)toolTipWithString:(CPString)aString forView:(CPView)aView
 {
-    var tooltip = [[CPToolTip alloc] initWithString:aString styleMask:CPToolTipDefaultColorMask];
+    var tooltip = [[_CPToolTip alloc] initWithString:aString styleMask:CPToolTipDefaultColorMask];
 
     [tooltip setAlphaValue:0.9];
     [tooltip attachToView:aView];
@@ -88,7 +90,7 @@ CPToolTipDefaultColorMask = CPAttachedBlackWindowMask;
 - (id)initWithString:(CPString)aString styleMask:(unsigned)aStyleMask
 {
     var toolTipFrame = CPRectMake(0.0, 0.0, 250.0, 30.0),
-        layout = [CPToolTip computeCorrectSize:toolTipFrame.size text:aString],
+        layout = [_CPToolTip computeCorrectSize:toolTipFrame.size text:aString],
         textFrameSize = layout[1];
 
     toolTipFrame.size = layout[0];
@@ -112,6 +114,119 @@ CPToolTipDefaultColorMask = CPAttachedBlackWindowMask;
     }
 
     return self;
+}
+
+@end
+
+@implementation CPControl (Tooltips)
+
+/*!
+    Sets the tooltip for the receiver.
+
+    @param aToolTip the tooltip
+*/
+- (void)setToolTip:(CPString)aToolTip
+{
+    if (_toolTip == aToolTip)
+        return;
+
+    _toolTip = aToolTip;
+
+    if (!_DOMElement)
+        return;
+
+    var fIn = function(e)
+            {
+                [self _fireToolTip];
+            },
+        fOut = function(e)
+            {
+                 [self _invalidateToolTip];
+            };
+
+    if (_toolTip)
+    {
+        if (_DOMElement.addEventListener)
+        {
+            _DOMElement.addEventListener("mouseover", fIn, NO);
+            _DOMElement.addEventListener("keypress", fOut, NO);
+            _DOMElement.addEventListener("mouseout", fOut, NO);
+        }
+        else if (_DOMElement.attachEvent)
+        {
+            _DOMElement.attachEvent("onmouseover", fIn);
+            _DOMElement.attachEvent("onkeypress", fOut);
+            _DOMElement.attachEvent("onmouseout", fOut);
+        }
+    }
+    else
+    {
+        if (_DOMElement.removeEventListener)
+        {
+            _DOMElement.removeEventListener("mouseover", fIn, NO);
+            _DOMElement.removeEventListener("keypress", fOut, NO);
+            _DOMElement.removeEventListener("mouseout", fOut, NO);
+        }
+        else if (_DOMElement.detachEvent)
+        {
+            _DOMElement.detachEvent("onmouseover", fIn);
+            _DOMElement.detachEvent("onkeypress", fOut);
+            _DOMElement.detachEvent("onmouseout", fOut);
+        }
+    }
+}
+
+/*!
+    Returns the receiver's tooltip
+*/
+- (CPString)toolTip
+{
+    return _toolTip;
+}
+
+/*! @ignore
+    starts the tooltip timer
+*/
+- (void)_fireToolTip
+{
+    if (CPCurrentToolTipTimer)
+    {
+        [CPCurrentToolTipTimer invalidate];
+        if (CPCurrentToolTip)
+            [CPCurrentToolTip close:nil];
+        CPCurrentToolTip = nil;
+    }
+
+    if (_toolTip)
+        CPCurrentToolTipTimer = [CPTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(_showToolTip:) userInfo:nil repeats:NO];
+}
+
+/*! @ignore
+    Stop the tooltip timer if any
+*/
+- (void)_invalidateToolTip
+{
+    if (CPCurrentToolTipTimer)
+    {
+        [CPCurrentToolTipTimer invalidate];
+        CPCurrentToolTipTimer = nil;
+    }
+
+    if (CPCurrentToolTip)
+    {
+        [CPCurrentToolTip close:nil];
+        CPCurrentToolTip = nil;
+    }
+}
+
+/*! @ignore
+    Actually shows the tooltip if any
+*/
+- (void)_showToolTip:(CPTimer)aTimer
+{
+    if (CPCurrentToolTip)
+        [CPCurrentToolTip close:nil];
+    CPCurrentToolTip = [_CPToolTip toolTipWithString:_toolTip forView:self];
 }
 
 @end

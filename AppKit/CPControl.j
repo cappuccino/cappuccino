@@ -71,9 +71,7 @@ CPControlTextDidBeginEditingNotification    = "CPControlTextDidBeginEditingNotif
 CPControlTextDidChangeNotification          = "CPControlTextDidChangeNotification";
 CPControlTextDidEndEditingNotification      = "CPControlTextDidEndEditingNotification";
 
-var CPControlBlackColor = [CPColor blackColor],
-    CPCurrentToolTip,
-    CPCurrentToolTipTimer;
+var CPControlBlackColor = [CPColor blackColor];
 
 /*!
     @ingroup appkit
@@ -97,7 +95,7 @@ var CPControlBlackColor = [CPColor blackColor],
     unsigned            _trackingMouseDownFlags;
     CGPoint             _previousTrackingLocation;
 
-    CPString            _toolTip;
+    CPString            _toolTip @accessors(property=toolTip);
 }
 
 + (CPDictionary)themeAttributes
@@ -239,117 +237,6 @@ var CPControlBlackColor = [CPColor blackColor],
 
     return previousMask;
 }
-
-/*!
-    Sets the tooltip for the receiver.
-
-    @param aToolTip the tooltip
-*/
-- (void)setToolTip:(CPString)aToolTip
-{
-    if (_toolTip == aToolTip)
-        return;
-
-    _toolTip = aToolTip;
-
-    if (!_DOMElement)
-        return;
-
-    var fIn = function(e)
-            {
-                [self _fireToolTip];
-            },
-        fOut = function(e)
-            {
-                    [self _invalidateToolTip];
-            };
-
-
-    if (_toolTip)
-    {
-        if (_DOMElement.addEventListener)
-        {
-            _DOMElement.addEventListener("mouseover", fIn, NO);
-            _DOMElement.addEventListener("keypress", fOut, NO);
-            _DOMElement.addEventListener("mouseout", fOut, NO);
-        }
-        else if (_DOMElement.attachEvent)
-        {
-            _DOMElement.attachEvent("onmouseover", fIn);
-            _DOMElement.attachEvent("onkeypress", fOut);
-            _DOMElement.attachEvent("onmouseout", fOut);
-        }
-    }
-    else
-    {
-        if (_DOMElement.removeEventListener)
-        {
-            _DOMElement.removeEventListener("mouseover", fIn, NO);
-            _DOMElement.removeEventListener("keypress", fOut, NO);
-            _DOMElement.removeEventListener("mouseout", fOut, NO);
-        }
-        else if (_DOMElement.detachEvent)
-        {
-            _DOMElement.detachEvent("onmouseover", fIn);
-            _DOMElement.detachEvent("onkeypress", fOut);
-            _DOMElement.detachEvent("onmouseout", fOut);
-        }
-    }
-}
-
-/*!
-    Returns the receiver's tooltip
-*/
-- (CPString)toolTip
-{
-    return _toolTip;
-}
-
-/*! @ignore
-    starts the tooltip timer
-*/
-- (void)_fireToolTip
-{
-    if (CPCurrentToolTipTimer)
-    {
-        [CPCurrentToolTipTimer invalidate];
-        if (CPCurrentToolTip)
-            [CPCurrentToolTip close:nil];
-        CPCurrentToolTip = nil;
-    }
-
-    if (_toolTip)
-        CPCurrentToolTipTimer = [CPTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(_showToolTip:) userInfo:nil repeats:NO];
-}
-
-/*! @ignore
-    Stop the tooltip timer if any
-*/
-- (void)_invalidateToolTip
-{
-    if (CPCurrentToolTipTimer)
-    {
-        [CPCurrentToolTipTimer invalidate];
-        CPCurrentToolTipTimer = nil;
-    }
-
-    if (CPCurrentToolTip)
-    {
-        [CPCurrentToolTip close:nil];
-        CPCurrentToolTip = nil;
-    }
-}
-
-/*! @ignore
-    Actually shows the tooltip if any
-*/
-- (void)_showToolTip:(CPTimer)aTimer
-{
-    if (CPCurrentToolTip)
-        [CPCurrentToolTip close:nil];
-    CPCurrentToolTip = [CPToolTip toolTipWithString:_toolTip forView:self];
-}
-
 
 /*!
     Returns whether the control can continuously send its action messages.
