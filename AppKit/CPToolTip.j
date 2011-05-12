@@ -1,5 +1,5 @@
 /*
- * CPStepper.j
+ * CPToolTip.j
  * AppKit
  *
  * Created by Antoine Mercadal

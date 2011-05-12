@@ -255,12 +255,14 @@ var CPControlBlackColor = [CPColor blackColor],
     if (!_DOMElement)
         return;
 
-    var fIn = function(e){
-            [self _fireToolTip];
-        };
-        fOut = function(e){
-            [self _invalidateToolTip];
-        };
+    var fIn = function(e)
+            {
+                [self _fireToolTip];
+            },
+        fOut = function(e)
+            {
+                    [self _invalidateToolTip];
+            };
 
 
     if (_toolTip)

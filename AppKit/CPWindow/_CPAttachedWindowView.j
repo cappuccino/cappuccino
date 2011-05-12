@@ -2,7 +2,7 @@
  * _CPAttachedWindowView.j
  * AppKit
  *
- * Created by Antoine Mercadal 
+ * Created by Antoine Mercadal
  * Copyright 2011 <antoine.mercadal@inframonde.eu>
  *
  * This library is free software; you can redistribute it and/or
@@ -132,18 +132,18 @@ CPAttachedWindowGravityAuto    = 4;
             shadowSize = CGSizeMake(0, 0),
             shadowBlur = 5;
 
-        //compensate for the shadow blur
+        // Compensate for the shadow blur
         aRect.origin.x += shadowBlur;
         aRect.origin.y += shadowBlur;
         aRect.size.width -= shadowBlur * 2;
         aRect.size.height -= shadowBlur * 2;
 
-        //set the shadow
+        // Set the shadow
         CGContextSetShadow(context, CGSizeMake(0,0), 20);
         CGContextSetShadowWithColor(context, shadowSize, shadowBlur, shadowColor);
     }
 
-    //Remodulate size and origin
+    // Remodulate size and origin
     aRect.size.width -= 10;
     aRect.origin.x += 5;
     aRect.size.height -= 10;
@@ -153,7 +153,7 @@ CPAttachedWindowGravityAuto    = 4;
     CGContextDrawLinearGradient(context, gradient, CGPointMake(CPRectGetMidX(aRect), 0.0), CGPointMake(CPRectGetMidX(aRect), aRect.size.height), 0);
     CGContextClosePath(context);
 
-    //Start the arrow
+    // Start the arrow
     switch (_gravity)
     {
         case CPAttachedWindowGravityLeft:
@@ -186,7 +186,6 @@ CPAttachedWindowGravityAuto    = 4;
     CGContextFillPath(context);
 }
 
-
 - (void)mouseDown:(CPEvent)anEvent
 {
     _mouseDownPressed = YES;
@@ -200,7 +199,6 @@ CPAttachedWindowGravityAuto    = 4;
 }
 
 @end
-
 
 
 @implementation _CPAttachedWindowViewBlack : _CPAttachedWindowView

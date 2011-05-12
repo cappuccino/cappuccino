@@ -54,7 +54,7 @@ CPAttachedBlackWindowMask       = 1 << 26;
 {
     if (aStyleMask & CPAttachedWhiteWindowMask)
         return _CPAttachedWindowViewWhite;
-    
+
     return _CPAttachedWindowViewBlack;
 }
 
@@ -194,11 +194,11 @@ CPAttachedBlackWindowMask       = 1 << 26;
 
     // CPAttachedWindowGravityRight
     originRight.x += CPRectGetWidth(frameView);
-    originRight.y += (CPRectGetHeight(frameView) / 2.0) - (CPRectGetHeight([self frame]) / 2.0)
+    originRight.y += (CPRectGetHeight(frameView) / 2.0) - (CPRectGetHeight([self frame]) / 2.0);
 
     // CPAttachedWindowGravityLeft
     originLeft.x -= CPRectGetWidth([self frame]);
-    originLeft.y += (CPRectGetHeight(frameView) / 2.0) - (CPRectGetHeight([self frame]) / 2.0)
+    originLeft.y += (CPRectGetHeight(frameView) / 2.0) - (CPRectGetHeight([self frame]) / 2.0);
 
     // CPAttachedWindowGravityBottom
     originBottom.x += CPRectGetWidth(frameView) / 2.0 - CPRectGetWidth([self frame]) / 2.0;
