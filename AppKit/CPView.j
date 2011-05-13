@@ -187,7 +187,8 @@ var CPViewFlags                     = { },
 
     unsigned            _viewClassFlags;
 
-    CPString            _toolTip @accessors(property=toolTip);
+    // ToolTips
+    CPString            _toolTip    @accessors(property=toolTip);
 }
 
 /*
