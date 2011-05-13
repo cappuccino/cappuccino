@@ -118,8 +118,16 @@ div.qindex, div.navpath {
 	line-height: 140%;
 }
 
+div.qindex+table {
+    margin: 1.5em;
+}
+
 div.qindex+table td {
     padding: .2em 0;
+}
+
+div.qindex+table tr td table {
+    display: none;
 }
 
 div.navtab {
