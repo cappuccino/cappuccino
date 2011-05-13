@@ -22,13 +22,6 @@
 
 @import "_CPWindowView.j"
 
-CPAttachedWindowGravityUp      = 0;
-CPAttachedWindowGravityDown    = 1;
-CPAttachedWindowGravityLeft    = 2;
-CPAttachedWindowGravityRight   = 3;
-CPAttachedWindowGravityAuto    = 4;
-
-
 
 @implementation _CPToolTipWindowView : _CPWindowView
 {
