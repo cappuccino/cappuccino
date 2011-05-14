@@ -46,8 +46,8 @@ task ("install", ["CommonJS"], function()
     // FIXME: require("narwhal/tusk/install").install({}, $COMMONJS);
     // Doesn't work due to some weird this.print business.
     if (OS.system(["tusk", "install", "--force", $BUILD_CJS_OBJECTIVE_J, $BUILD_CJS_CAPPUCCINO])) {
-        stream.print("\0red(Installation failed, possibly because you do not have permissions.\0)");
-        stream.print("\0red(Try re-running using '\0yellow(jake sudo-install\0)'.\0)");
+        colorPrint("Installation failed, possibly because you do not have permissions.", "red");
+        colorPrint("Try re-running using '" + colorize("jake sudo-install", "yellow") + "'.", "red");
         OS.exit(1); //rake abort if ($? != 0)
     }
 });
@@ -83,6 +83,18 @@ task ("docs", ["documentation"]);
 
 task ("documentation", function()
 {
+    generateDocs(false);
+});
+
+task ("docs-no-frame", ["documentation-no-frame"]);
+
+task ("documentation-no-frame", function()
+{
+    generateDocs(true);
+});
+
+function generateDocs(/* boolean */ noFrame)
+{
     // try to find a doxygen executable in the PATH;
     var doxygen = executableExists("doxygen");
 
@@ -100,31 +112,47 @@ task ("documentation", function()
 
     if (!doxygen || !FILE.exists(doxygen))
     {
-        stream.print("\0yellow(Doxygen not installed, skipping documentation generation.\0)");
+        colorPrint("Doxygen not installed, skipping documentation generation.", "yellow");
         return;
     }
 
-    stream.print("\0green(Using " + doxygen + " for doxygen binary.\0)");
+    colorPrint("Using " + doxygen + " for doxygen binary.", "green");
+    colorPrint("Pre-processing source files...", "green");
 
-    // Also need Markdown to proccess README file (`brew install Markdown` on the Mac).
-    var markdown = executableExists("markdown")
-    if (!markdown || !FILE.exists(markdown))
+    var documentationDir = FILE.canonical(FILE.join("Tools", "Documentation")),
+        processors = FILE.glob(FILE.join(documentationDir, "preprocess/*"));
+
+    for (var i = 0; i < processors.length; ++i)
+        if (OS.system([processors[i], documentationDir]))
+            return;
+
+    if (noFrame)
     {
-        stream.print("\0yellow(Markdown not installed, skipping documentation generation.\0)");
-        return;
+        // Back up the default settings, turn off the treeview
+        if (OS.system(["sed", "-i", ".bak", "s/GENERATE_TREEVIEW.*=.*YES/GENERATE_TREEVIEW = NO/", FILE.join(documentationDir, "Cappuccino.doxygen")]))
+            return;
     }
+    else if (FILE.exists(FILE.join(documentationDir, "Cappuccino.doxygen.bak")))
+        mv(FILE.join(documentationDir, "Cappuccino.doxygen.bak"), FILE.join(documentationDir, "Cappuccino.doxygen"));
 
-    stream.print("\0green(Using " + markdown + " for Markdown binary.\0)");
+    var doxygenDidSucceed = !OS.system([doxygen, FILE.join(documentationDir, "Cappuccino.doxygen")]);
 
-    var documentationDir = FILE.join("Tools", "Documentation");
+    // Restore the original doxygen settings
+    if (FILE.exists(FILE.join(documentationDir, "Cappuccino.doxygen.bak")))
+        mv(FILE.join(documentationDir, "Cappuccino.doxygen.bak"), FILE.join(documentationDir, "Cappuccino.doxygen"));
 
-    if (OS.system([FILE.join(documentationDir, "process_markdown.sh"), markdown]))
-        OS.exit(1); //rake abort if ($? != 0)
+    colorPrint("Post-processing generated documentation...", "green");
 
-    if (OS.system([FILE.join(documentationDir, "make_headers.sh")]))
-        OS.exit(1); //rake abort if ($? != 0)
+    processors = FILE.glob(FILE.join(documentationDir, "postprocess/*"));
 
-    if (!OS.system([doxygen, FILE.join(documentationDir, "Cappuccino.doxygen")]))
+    for (var i = 0; i < processors.length; ++i)
+        if (OS.system([processors[i], documentationDir, FILE.join("Documentation", "html")]))
+        {
+            rm_rf("Documentation");
+            return;
+        }
+
+    if (doxygenDidSucceed)
     {
         if (!FILE.isDirectory($BUILD_DIR))
             FILE.mkdirs($BUILD_DIR);
@@ -133,10 +161,7 @@ task ("documentation", function()
         mv("debug.txt", FILE.join("Documentation", "debug.txt"));
         mv("Documentation", $DOCUMENTATION_BUILD);
     }
-
-    OS.system(["ruby", FILE.join(documentationDir, "cleanup_headers")]);
-    OS.system([FILE.join(documentationDir, "cleanup_markdown.sh")]);
-});
+}
 
 // Downloads
 
@@ -312,7 +337,7 @@ function pushPackage(path, remote, branch)
 
     var packagePath = pushPackagesPath.join(remote.replace(/[^\w]/g, "_"));
 
-    stream.print("Pushing \0blue(" + path + "\0) to "+branch+" of \0blue(" + remote + "\0)");
+    stream.print("Pushing " + colorize(path, "blue") + " to " + branch + " of " + colorize(remote, "blue"));
 
     if (packagePath.isDirectory())
         OS.system(buildCmd([["cd", packagePath], ["git", "fetch"]]));
@@ -336,9 +361,9 @@ function pushPackage(path, remote, branch)
 
     var pkg = JSON.parse(packagePath.join("package.json").read({ charset : "UTF-8" }));
 
-    stream.print("    Version:   \0purple(" + pkg["version"] + "\0)");
-    stream.print("    Revision:  \0purple(" + pkg["cappuccino-revision"] + "\0)");
-    stream.print("    Timestamp: \0purple(" + pkg["cappuccino-timestamp"] + "\0)");
+    stream.print("    Version:   " + colorize(pkg["version"], "purple"));
+    stream.print("    Revision:  " + colorize(pkg["cappuccino-revision"], "purple"));
+    stream.print("    Timestamp: " + colorize(pkg["cappuccino-timestamp"], "purple"));
 
     var cmd = [
         ["cd", packagePath],

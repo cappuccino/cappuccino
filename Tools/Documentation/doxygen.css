@@ -1,0 +1,783 @@
+/* The standard CSS for doxygen */
+
+body, table, td, div, p, dl, dd, dt, em {
+    margin: 0;
+    padding: 0;
+}
+
+body, table, div, p {
+    font: 13px normal "Lucida Grande", Helvetica, Arial, Geneva, sans-serif;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+pre, code {
+    font-family: Courier;
+}
+
+p {
+    margin: 1em 0;
+}
+
+dl {
+    margin-bottom: 1em;
+}
+
+dd {
+    margin: .25em 1em;
+}
+
+ul {
+    list-style-type: square;
+}
+
+li {
+    margin: 0;
+    padding: .2em 0;
+}
+
+em {
+    font-style: normal;
+    color: #7B509F;
+}
+
+/* @group Heading Levels */
+
+h1, h2, h3, h4 {
+    font-family: "Lucida Grande", Helvetica, Arial, Geneva, sans-serif;
+    margin: 2em 0 1em 0;
+}
+
+h1 {
+	font-size: 150%;
+}
+
+h2 {
+	font-size: 120%;
+}
+
+h3 {
+	font-size: 100%;
+}
+
+dt {
+	font-weight: bold;
+}
+
+div.multicol {
+	-moz-column-gap: 1em;
+	-webkit-column-gap: 1em;
+	-moz-column-count: 3;
+	-webkit-column-count: 3;
+}
+
+p.startli, p.startdd, p.starttd {
+	margin-top: 2px;
+}
+
+p.endli {
+	margin-bottom: 0px;
+}
+
+p.enddd {
+	margin-bottom: 4px;
+}
+
+p.endtd {
+	margin-bottom: 2px;
+}
+
+/* @end */
+
+caption {
+	font-weight: bold;
+}
+
+span.legend {
+        font-size: 70%;
+        text-align: center;
+}
+
+h3.version {
+        font-size: 90%;
+        text-align: center;
+}
+
+div.qindex, div.navtab {
+	background-color: #ECEFF6;
+	border: 1px solid #A4B5D6;
+	text-align: center;
+	margin: 2px;
+	padding: 2px;
+}
+
+div.qindex, div.navpath {
+	width: 100%;
+	line-height: 140%;
+}
+
+div.qindex+table td {
+    padding: .2em 0;
+}
+
+div.navtab {
+	margin-right: 15px;
+}
+
+/* @group Link Styling */
+
+a {
+	color: #2F4697;
+	font-weight: normal;
+	text-decoration: none;
+}
+
+.contents a:visited {
+}
+
+a:hover {
+	text-decoration: underline;
+	/* background-color: #D5E8FF; */
+}
+
+a.qindex {
+	font-weight: bold;
+}
+
+a.qindexHL {
+	font-weight: bold;
+	background-color: #9DAFD3;
+	color: #ffffff;
+	border: 1px double #879DC9;
+}
+
+.contents a.qindexHL:visited {
+        color: #ffffff;
+}
+
+a.el {
+	padding: 1px;
+}
+
+a.elRef {
+}
+
+a.code {
+	color: #4765A1;
+}
+
+a.codeRef {
+	color: #4765A1;
+}
+
+/* @end */
+
+dl.el {
+	margin-left: -1cm;
+}
+
+.fragment {
+	font-family: Courier, monospace, fixed;
+	font-size: 105%;
+}
+
+pre.fragment {
+    margin-top: 1em;
+	border: 1px solid #C5CFE5;
+	/* background-color: #FBFCFD; */
+	padding: 4px 6px;
+	overflow: auto;
+	word-wrap: break-word;
+	font-size: 9pt;
+	line-height: 125%;
+}
+
+div.ah {
+	background-color: black;
+	font-weight: bold;
+	color: #ffffff;
+	margin-bottom: 3px;
+	margin-top: 3px;
+	padding: 0.2em;
+	border: solid thin #333;
+	border-radius: 0.5em;
+	-webkit-border-radius: .5em;
+	-moz-border-radius: .5em;
+	-webkit-box-shadow: 2px 2px 3px #999;
+	-moz-box-shadow: rgba(0, 0, 0, 0.15) 2px 2px 2px;
+	background-image: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#000),color-stop(0.3, #444));
+	background-image: -moz-linear-gradient(center top, #eee 0%, #444 40%, #000);
+}
+
+div.groupHeader {
+	margin-left: 16px;
+	margin-top: 12px;
+	margin-bottom: 6px;
+	font-weight: bold;
+}
+
+div.groupText {
+	margin-left: 16px;
+	font-style: italic;
+}
+
+body {
+	background: white;
+	color: black;
+        margin: 0;
+}
+
+div.contents {
+    margin: 1.5em;
+}
+
+/* If the first element of the contents is a table, give it some space */
+div.contents > table {
+    margin-top: 1.5em;
+}
+
+td.indexkey {
+    font-family: Consolas, "Lucida Console";
+	border-bottom: 1px solid #eee;
+	padding: .25em 0 .25em .5em;
+}
+
+table tr.indexkey:first-child td {
+    padding-top: 1.5em;
+}
+
+td.indexvalue {
+    font-family: Consolas, "Lucida Console";
+	border-bottom: 1px solid #eee;
+	padding: .25em 0 .25em .5em;
+}
+
+table tr.memlist:first-child td {
+    padding-top: 1.5em;
+}
+
+table tr.memlist > td {
+    padding-left: .5em;
+}
+
+tr.memlist td {
+    font-family: Consolas, "Lucida Console";
+	padding: .25em 0;
+	border-bottom: 1px solid #eee;
+}
+
+/* Don't show the [static] column in full member list */
+tr.memlist td code {
+    display: none;
+}
+
+p.formulaDsp {
+	text-align: center;
+}
+
+img.formulaDsp {
+
+}
+
+img.formulaInl {
+	vertical-align: middle;
+}
+
+div.center {
+	text-align: center;
+        margin-top: 0px;
+        margin-bottom: 0px;
+        padding: 0px;
+}
+
+div.center img {
+	border: 0px;
+}
+
+address.footer {
+	text-align: right;
+	padding-right: 12px;
+}
+
+img.footer {
+	border: 0px;
+	vertical-align: middle;
+}
+
+/* @group Code Colorization */
+
+span.keyword {
+	color: #008000
+}
+
+span.keywordtype {
+	color: #604020
+}
+
+span.keywordflow {
+	color: #e08000
+}
+
+span.comment {
+	color: #A085E4
+}
+
+span.preprocessor {
+	color: #806020
+}
+
+span.stringliteral {
+	color: #002080
+}
+
+span.charliteral {
+	color: #008080
+}
+
+span.vhdldigit {
+	color: #ff00ff
+}
+
+span.vhdlchar {
+	color: #000000
+}
+
+span.vhdlkeyword {
+	color: #700070
+}
+
+span.vhdllogic {
+	color: #ff0000
+}
+
+/* @end */
+
+/*
+.search {
+	color: #003399;
+	font-weight: bold;
+}
+
+form.search {
+	margin-bottom: 0px;
+	margin-top: 0px;
+}
+
+input.search {
+	font-size: 75%;
+	color: #000080;
+	font-weight: normal;
+	background-color: #e8eef2;
+}
+*/
+
+td.tiny {
+	font-size: 75%;
+}
+
+.dirtab {
+	padding: 4px;
+	border-collapse: collapse;
+	border: 1px solid #A4B5D6;
+}
+
+th.dirtab {
+	background: #ECEFF6;
+	font-weight: bold;
+}
+
+hr {
+	height: 0px;
+	border: none;
+	border-top: 2px solid #ddd;
+	margin: 1em 0;
+}
+
+hr.footer {
+	height: 1px;
+}
+
+/* @group Member Descriptions */
+
+table.memberdecls {
+    font-family: Consolas, "Lucida Console";
+	border-spacing: 0px;
+	padding: 0px;
+}
+
+.mdescLeft, .mdescRight,
+.memItemLeft, .memItemRight,
+.memTemplItemLeft, .memTemplItemRight, .memTemplParams {
+	border: none;
+	margin: 4px;
+	padding: .25em 0;
+}
+
+.mdescLeft, .mdescRight {
+	color: #555;
+	padding-bottom: 1em;
+}
+
+.memItemLeft, .memItemRight, .memTemplParams {
+}
+
+.memItemLeft, .memTemplItemLeft {
+        white-space: nowrap;
+}
+
+.memTemplParams {
+	color: #4765A1;
+    white-space: nowrap;
+}
+
+/* @end */
+
+/* @group Member Details */
+
+/* Styles for detailed member documentation */
+
+.memtemplate {
+	font-size: 80%;
+	color: #4765A1;
+	font-weight: normal;
+	margin-left: 3px;
+}
+
+.memnav {
+	background-color: #ECEFF6;
+	border: 1px solid #A4B5D6;
+	text-align: center;
+	margin: 2px;
+	margin-right: 15px;
+	padding: 2px;
+}
+
+.memitem {
+	padding: 0;
+	margin-top: .5em;
+}
+
+.memname {
+    white-space: nowrap;
+    font: bold 105% Consolas, "Lucida Console";
+    margin: .25em 0 0 .25em;
+}
+
+.memproto {
+    margin-top: 2em;
+    border-top: 1px solid #ccc;
+    padding: 6px 0px 6px 0px;
+    color: #253554;
+    background-color: #f6f6f6;
+    font-family: Consolas, "Lucida Console";
+    font-weight: bold;
+}
+
+.memdoc {
+    padding: .5em .5em 0;
+}
+
+.memdoc > p {
+    margin-top: 0;
+}
+
+.memdoc dl dd td {
+    padding-right: 1em;
+}
+
+.memdoc dl dd table tr td:first-child {
+    padding-right: 0;
+}
+
+.memdoc dl.return dd {
+    margin-left: 1.25em;
+}
+
+.memdoc dl dd td em {
+    font-family: Consolas, "Lucida Console";
+    font-weight: bold;
+	white-space: nowrap;
+}
+
+.paramkey {
+	text-align: right;
+}
+
+.paramtype {
+	white-space: nowrap;
+	color: #DD6800;
+}
+
+.paramname {
+	color: #602020;
+	white-space: nowrap;
+}
+.paramname em {
+	font-style: normal;
+}
+
+/* @end */
+
+/* @group Directory (tree) */
+
+/* for the tree view */
+
+.ftvtree {
+	font-family: sans-serif;
+	margin: 0px;
+}
+
+/* these are for tree view when used as main index */
+
+.directory {
+	font-size: 9pt;
+	font-weight: bold;
+	margin: 5px;
+}
+
+.directory h3 {
+	margin: 0px;
+	margin-top: 1em;
+	font-size: 11pt;
+}
+
+/*
+    The following two styles can be used to replace the root node title
+    with an image of your choice.  Simply uncomment the next two styles,
+    specify the name of your image and be sure to set 'height' to the
+    proper pixel height of your image.
+*/
+
+/*
+.directory h3.swap {
+	height: 61px;
+	background-repeat: no-repeat;
+	background-image: url("yourimage.gif");
+}
+.directory h3.swap span {
+	display: none;
+}
+*/
+
+.directory > h3 {
+	margin-top: 0;
+}
+
+.directory p {
+	margin: 0px;
+	white-space: nowrap;
+}
+
+.directory div {
+	display: none;
+	margin: 0px;
+}
+
+.directory img {
+	vertical-align: -30%;
+}
+
+/* these are for tree view when not used as main index */
+
+.directory-alt {
+	font-size: 100%;
+	font-weight: bold;
+}
+
+.directory-alt h3 {
+	margin: 0px;
+	margin-top: 1em;
+	font-size: 11pt;
+}
+
+.directory-alt > h3 {
+	margin-top: 0;
+}
+
+.directory-alt p {
+	margin: 0px;
+	white-space: nowrap;
+}
+
+.directory-alt div {
+	display: none;
+	margin: 0px;
+}
+
+.directory-alt img {
+	vertical-align: -30%;
+}
+
+/* @end */
+
+div.dynheader {
+        margin-top: 8px;
+}
+
+address {
+	font-style: normal;
+	color: #2B3D61;
+}
+
+table.doxtable {
+	border-collapse:collapse;
+}
+
+table.doxtable td, table.doxtable th {
+	border: 1px solid #2E4167;
+	padding: 3px 7px 2px;
+}
+
+table.doxtable th {
+	background-color: #384F7E;
+	color: #FFFFFF;
+	font-size: 110%;
+	padding-bottom: 4px;
+	padding-top: 5px;
+	text-align:left;
+}
+
+.tabsearch {
+	top: 0px;
+	left: 10px;
+	height: 36px;
+	background-image: url('tab_b.png');
+	z-index: 101;
+	overflow: hidden;
+	font-size: 13px;
+}
+
+.navpath ul
+{
+	font-size: 11px;
+	background-image:url('tab_b.png');
+	background-repeat:repeat-x;
+	height:30px;
+	line-height:30px;
+	color:#8BA0CB;
+	border:solid 1px #C2CEE4;
+	overflow:hidden;
+	margin:0px;
+	padding:0px;
+}
+
+.navpath li
+{
+	list-style-type:none;
+	float:left;
+	padding-left:10px;
+	padding-right: 15px;
+	background-image:url('bc_s.png');
+	background-repeat:no-repeat;
+	background-position:right;
+	color:#374E7C;
+}
+
+.navpath a
+{
+	height:32px;
+	display:block;
+	text-decoration: none;
+	outline: none;
+}
+
+.navpath a:hover
+{
+	color:#6985BC;
+}
+
+div.summary
+{
+	float: right;
+	font-size: 90%;
+	padding-right: 5px;
+	width: 50%;
+	text-align: right;
+}
+
+div.summary a
+{
+	white-space: nowrap;
+}
+
+div.header
+{
+    background-image:url('nav_h.png');
+    background-repeat:repeat-x;
+	background-color: #F9FAFC;
+	margin: 0;
+	padding: 1.5em;
+	border-bottom: 1px solid #C5CFE5;
+}
+
+div.headertitle h1 {
+    margin: 0;
+}
+
+/* @group Tabs */
+
+.tabs, .tabs2, .tabs3 {
+    background-image: url('tab_b.png');
+    width: 100%;
+    z-index: 101;
+    font-size: 100%;
+}
+
+.tabs2 {
+    font-size: 90%;
+}
+
+.tabs3 {
+    font-size: 75%;
+}
+
+.tablist {
+    margin: 0;
+    padding: 0;
+    display: table;
+}
+
+.tablist li {
+    float: left;
+    display: table-cell;
+    background-image: url('tab_b.png');
+    line-height: 36px;
+    list-style: none;
+    padding: 0;
+}
+
+.tablist a {
+    display: block;
+    padding: 0 20px;
+    font-weight: bold;
+    background-image:url('tab_s.png');
+    background-repeat:no-repeat;
+    background-position:right;
+    color: #293A5C;
+    text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    outline: none;
+}
+
+.tabs3 .tablist a {
+    padding: 0 10px;
+}
+
+.tablist a:hover {
+    background-image: url('tab_h.png');
+    background-repeat:repeat-x;
+    color: #fff;
+    text-shadow: 0px 1px 1px rgba(0, 0, 0, 1.0);
+    text-decoration: none;
+}
+
+.tablist li.current a {
+    background-image: url('tab_a.png');
+    background-repeat:repeat-x;
+    color: #fff;
+    text-shadow: 0px 1px 1px rgba(0, 0, 0, 1.0);
+}
+
+/* @end */
