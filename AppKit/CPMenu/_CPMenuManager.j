@@ -73,10 +73,10 @@ var STICKY_TIME_INTERVAL            = 500,
     {
         var globalLocation = [anEvent globalLocation],
 
-        // Find which menu window the mouse is currently on top of
+            // Find which menu window the mouse is currently on top of
             menuLocation = [aMenuContainer convertGlobalToBase:globalLocation],
 
-        // Find out the item the mouse is currently on top of
+            // Find out the item the mouse is currently on top of
             activeItemIndex = [aMenuContainer itemIndexAtPoint:menuLocation],
             activeItem = activeItemIndex !== CPNotFound ? [menu itemAtIndex:activeItemIndex] : nil;
 
@@ -108,18 +108,23 @@ var STICKY_TIME_INTERVAL            = 500,
 
         // get the current active menu
         while (submenu && [submenu._menuWindow isVisible])
-        {    menu = submenu;
+        {
+            menu = submenu;
             submenu = [[menu  highlightedItem] submenu];
         }
+
         if ([menu numberOfItems])
             [self interpretKeyEvent:anEvent forMenu:menu];
+
         return;
     }
+
     if (_keyBuffer)
     {
         if (([CPDate date] - _startTime) > (STICKY_TIME_INTERVAL + [activeMenu numberOfItems] / 2))
             [self selectNextItemBeginningWith:_keyBuffer inMenu:menu clearBuffer:YES];
-        if (type  === CPPeriodic)
+
+        if (type === CPPeriodic)
             return;
     }
 
@@ -128,16 +133,17 @@ var STICKY_TIME_INTERVAL            = 500,
 
     // Remember this for the next periodic event.
     _lastGlobalLocation = globalLocation;
+
     if (!_lastGlobalLocation)
         return;
 
     // Find which menu window the mouse is currently on top of
     var activeMenuContainer = [self menuContainerForPoint:globalLocation],
         activeMenu = [activeMenuContainer menu],
-        menuLocation = [activeMenuContainer convertGlobalToBase:globalLocation];
+        menuLocation = [activeMenuContainer convertGlobalToBase:globalLocation],
 
-    // Find out the item the mouse is currently on top of
-    var activeItemIndex = activeMenuContainer ? [activeMenuContainer itemIndexAtPoint:menuLocation] : CPNotFound,
+        // Find out the item the mouse is currently on top of
+        activeItemIndex = activeMenuContainer ? [activeMenuContainer itemIndexAtPoint:menuLocation] : CPNotFound,
         activeItem = activeItemIndex !== CPNotFound ? [activeMenu itemAtIndex:activeItemIndex] : nil;
 
     // If the item isn't enabled its as if we clicked on nothing.
@@ -181,13 +187,15 @@ var STICKY_TIME_INTERVAL            = 500,
             menuContainerWindow = [menuContainerWindow window];
 
         [menuContainerWindow
-            sendEvent:[CPEvent mouseEventWithType:type location:menuLocation modifierFlags:[anEvent modifierFlags]
-            timestamp:[anEvent timestamp]
-         windowNumber:menuContainerWindow
-              context:nil
-          eventNumber:0
-           clickCount:[anEvent clickCount]
-             pressure:[anEvent pressure]]];
+            sendEvent:[CPEvent mouseEventWithType:type
+                                         location:menuLocation
+                                    modifierFlags:[anEvent modifierFlags]
+                                        timestamp:[anEvent timestamp]
+                                     windowNumber:menuContainerWindow
+                                          context:nil
+                                      eventNumber:0
+                                       clickCount:[anEvent clickCount]
+                                         pressure:[anEvent pressure]]];
     }
     else
     {
@@ -202,13 +210,13 @@ var STICKY_TIME_INTERVAL            = 500,
         if (type === CPMouseMoved || type === CPLeftMouseDragged || type === CPLeftMouseDown || type === CPPeriodic)
         {
             var oldScrollingState = _scrollingState;
+
             _scrollingState = [activeMenuContainer scrollingStateForPoint:globalLocation];
 
             if (_scrollingState !== oldScrollingState)
             {
                 if (_scrollingState === _CPMenuManagerScrollingStateNone)
                     [CPEvent stopPeriodicEvents];
-
                 else if (oldScrollingState === _CPMenuManagerScrollingStateNone)
                     [CPEvent startPeriodicEventsAfterDelay:0.0 withPeriod:0.04];
             }
@@ -228,12 +236,13 @@ var STICKY_TIME_INTERVAL            = 500,
     // If the item has a submenu, show it.
     if ([activeItem hasSubmenu])// && [activeItem action] === @selector(submenuAction:))
     {
-        var activeItemRect = [activeMenuContainer rectForItemAtIndex:activeItemIndex];
+        var activeItemRect = [activeMenuContainer rectForItemAtIndex:activeItemIndex],
+            newMenuOrigin;
 
         if ([activeMenuContainer isMenuBar])
-            var newMenuOrigin = CGPointMake(CGRectGetMinX(activeItemRect), CGRectGetMaxY(activeItemRect));
+            newMenuOrigin = CGPointMake(CGRectGetMinX(activeItemRect), CGRectGetMaxY(activeItemRect));
         else
-            var newMenuOrigin = CGPointMake(CGRectGetMaxX(activeItemRect), CGRectGetMinY(activeItemRect));
+            newMenuOrigin = CGPointMake(CGRectGetMaxX(activeItemRect), CGRectGetMinY(activeItemRect));
 
         newMenuOrigin = [activeMenuContainer convertBaseToGlobal:newMenuOrigin];
 
@@ -243,10 +252,10 @@ var STICKY_TIME_INTERVAL            = 500,
             // Close the current menu item because we are going to select a new one after a short delay
             [self showMenu:nil fromMenu:activeMenu atPoint:CGPointMakeZero()];
 
-
             if (![activeMenuContainer isMenuBar])
             {
-                _showTimerID = setTimeout(function() {
+                _showTimerID = setTimeout(function()
+                {
                     [self showMenu:[activeItem submenu] fromMenu:[activeItem menu] atPoint:newMenuOrigin];
                 }, 250);
             }
@@ -270,16 +279,15 @@ var STICKY_TIME_INTERVAL            = 500,
     if (type === CPAppKitDefined)
         return [self completeTracking];
 
-    var globalLocation = [anEvent globalLocation];
+    var globalLocation = [anEvent globalLocation],
 
-    // Find which menu window the mouse is currently on top of
-    var menu = [self trackingMenu],
+        // Find which menu window the mouse is currently on top of
+        menu = [self trackingMenu],
         trackingMenuContainer = [self trackingMenuContainer],
         menuLocation = [trackingMenuContainer convertGlobalToBase:globalLocation];
 
     if ([trackingMenuContainer itemIndexAtPoint:menuLocation] === _menuBarButtonItemIndex)
         [menu _highlightItemAtIndex:_menuBarButtonItemIndex];
-
     else
         [menu _highlightItemAtIndex:CPNotFound];
 
@@ -307,9 +315,8 @@ var STICKY_TIME_INTERVAL            = 500,
     if (_trackingCallback)
         _trackingCallback([self trackingMenuContainer], trackingMenu);
 
-    [[CPNotificationCenter defaultCenter]
-        postNotificationName:CPMenuDidEndTrackingNotification
-                      object:trackingMenu];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPMenuDidEndTrackingNotification
+                                                        object:trackingMenu];
 
     CPApp._activeMenu = nil;
 }
@@ -415,7 +422,6 @@ var STICKY_TIME_INTERVAL            = 500,
     [menuWindow orderFront:self];
 }
 
-
 /// handle keyboard navigation
 - (void)interpretKeyEvent:(CPEvent)anEvent forMenu:(CPMenu)menu
 {
@@ -424,11 +430,14 @@ var STICKY_TIME_INTERVAL            = 500,
         selectorNames = [CPKeyBinding selectorsForKey:character modifierFlags:modifierFlags];
 
     if (selectorNames)
-    {    var iter = [selectorNames objectEnumerator],
+    {
+        var iter = [selectorNames objectEnumerator],
             obj;
+
         while (obj = [iter nextObject])
         {
             var aSelector = CPSelectorFromString(obj);
+
             if ([self respondsToSelector:aSelector])
                 [self performSelector:aSelector withObject:menu];
         }
@@ -455,17 +464,19 @@ var STICKY_TIME_INTERVAL            = 500,
 {
     var iter = [[menu itemArray] objectEnumerator],
         obj;
+
     while (obj = [iter nextObject])
     {
+        if ([obj isHidden] || ![obj isEnabled])
+            continue;
+
         if ([[[obj title] commonPrefixWithString:characters options:CPCaseInsensitiveSearch] length] == [characters length])
         {
-            if (![obj isHidden] && [obj isEnabled])
-            {
-                [menu _highlightItemAtIndex:iter._index];
-                break;
-            }
+            [menu _highlightItemAtIndex:iter._index];
+            break;
         }
     }
+
     if (shouldClear)
     {
         [CPEvent stopPeriodicEvents];
@@ -474,7 +485,6 @@ var STICKY_TIME_INTERVAL            = 500,
     else
         _startTime = [CPDate date];
 }
-
 
 - (void)scrollToBeginningOfDocument:(CPMenu)menu
 {
@@ -500,6 +510,7 @@ var STICKY_TIME_INTERVAL            = 500,
         [menu _highlightItemAtIndex:0];
         return;
     }
+
     next = current + (last - first);
 
     if (next < [menu numberOfItems])
@@ -508,6 +519,7 @@ var STICKY_TIME_INTERVAL            = 500,
         [menu _highlightItemAtIndex:[menu numberOfItems] - 1];
 
     var item = [menu highlightedItem];
+
     if ([item isSeparatorItem] || [item isHidden] || ![item isEnabled])
         [self moveDown:menu];
 }
@@ -526,6 +538,7 @@ var STICKY_TIME_INTERVAL            = 500,
         [menu _highlightItemAtIndex:0];
         return;
     }
+
     next = current - (last - first);
 
     if (next < 0)
@@ -534,6 +547,7 @@ var STICKY_TIME_INTERVAL            = 500,
         [menu _highlightItemAtIndex:next];
 
     var item = [menu highlightedItem];
+
     if ([item isSeparatorItem] || [item isHidden] || ![item isEnabled])
         [self moveUp:menu];
 }
@@ -549,6 +563,7 @@ var STICKY_TIME_INTERVAL            = 500,
 
             var activeItem = [[CPApp mainMenu] highlightedItem],
                 menuLocation = CGPointMake([[activeItem _menuItemView] frameOrigin].x , [[activeItem _menuItemView] frameSize].height);
+
             [self showMenu:[activeItem submenu] fromMenu:[activeItem menu] atPoint:menuLocation];
         }
         else
@@ -559,17 +574,20 @@ var STICKY_TIME_INTERVAL            = 500,
 - (void)moveRight:(CPMenu)menu
 {
     var activeItem = [menu highlightedItem];
+
     if ([activeItem hasSubmenu])
-    {    if([[activeItem submenu] numberOfItems])
+    {
+        if ([[activeItem submenu] numberOfItems])
         {
             var activeItemIndex = [menu indexOfItem:activeItem],
                 activeMenuContainer = menu._menuWindow,
-                activeItemRect = [activeMenuContainer rectForItemAtIndex:activeItemIndex];
+                activeItemRect = [activeMenuContainer rectForItemAtIndex:activeItemIndex],
+                newMenuOrigin;
 
             if ([activeMenuContainer isMenuBar])
-                var newMenuOrigin = CGPointMake(CGRectGetMinX(activeItemRect), CGRectGetMaxY(activeItemRect));
+                newMenuOrigin = CGPointMake(CGRectGetMinX(activeItemRect), CGRectGetMaxY(activeItemRect));
             else
-                var newMenuOrigin = CGPointMake(CGRectGetMaxX(activeItemRect), CGRectGetMinY(activeItemRect));
+                newMenuOrigin = CGPointMake(CGRectGetMaxX(activeItemRect), CGRectGetMinY(activeItemRect));
 
             newMenuOrigin = [activeMenuContainer convertBaseToGlobal:newMenuOrigin];
 
@@ -592,10 +610,13 @@ var STICKY_TIME_INTERVAL            = 500,
 - (void)moveDown:(CPMenu)menu
 {
     var index = menu._highlightedIndex + 1;
+
     if (index < [menu numberOfItems])
     {
         [menu _highlightItemAtIndex:index];
+
         var item = [menu highlightedItem];
+
         if ([item isSeparatorItem] || [item isHidden] || ![item isEnabled])
             [self moveDown:menu];
     }
@@ -604,11 +625,14 @@ var STICKY_TIME_INTERVAL            = 500,
 - (void)moveUp:(CPMenu)menu
 {
     var index = menu._highlightedIndex - 1;
+
     if (index < 0)
         return;
 
     [menu _highlightItemAtIndex:index];
+
     var item = [menu highlightedItem];
+
     if ([item isSeparatorItem] || [item isHidden] || ![item isEnabled])
         [self moveUp:menu];
 }
