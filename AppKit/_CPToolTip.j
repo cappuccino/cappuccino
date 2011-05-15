@@ -42,6 +42,7 @@ var _CPToolTipHeight = 24.0,
     CPTextField _content;
 }
 
+
 #pragma mark -
 #pragma mark Class Methods
 
