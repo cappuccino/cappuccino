@@ -60,14 +60,25 @@ var _CPToolTipHeight = 24.0,
 /*!
     Compute a cool size for the given string.
 
-    @param aToolTipSize the original wanted tool tip size
+    @param aToolTipSize a frame with the maximum width desired for the tooltip
     @param aText the wanted text
     @return CPArray containing the computer toolTipSize and textFrameSize
 */
 + (CPSize)computeCorrectSize:(CPSize)aToolTipSize text:(CPString)aText
 {
     var font = [CPFont systemFontOfSize:_CPToolTipFontSize],
+        textFrameSizeSingleLine = [aText sizeWithFont:font],
         textFrameSize = [aText sizeWithFont:font inWidth:(aToolTipSize.width)];
+
+    // If the text fully fits within the maximum width, shrink to fit.
+    if (textFrameSizeSingleLine.width < aToolTipSize.width)
+    {
+        var textField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()],
+            inset = [textField currentValueForThemeAttribute:@"content-inset"] || CGInsetMakeZero();
+        textFrameSize = textFrameSizeSingleLine;
+        textFrameSize.width += inset.left + inset.right;
+        aToolTipSize.width = textFrameSize.width;
+    }
 
     if (textFrameSize.height < 100)
     {
