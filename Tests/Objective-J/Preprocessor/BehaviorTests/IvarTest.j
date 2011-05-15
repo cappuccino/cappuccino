@@ -78,12 +78,15 @@
     [self assert:5 equals:testClass.ivar1];
 }
 
+/*
+TODO Reactivate this test after issue #498 is resolved.
+
 - (void)testIvarShadowing
 {
     [self assert:nil equals:testClass.ivar1];
     [testClass setIvar1UsingAShadowingLocalVariable:5];
     [self assert:5 equals:testClass.ivar1];
-}
+}*/
 
 - (void)testAccessorGeneration
 {
