@@ -2,7 +2,7 @@
  * _CPToolTipWindowView.j
  * AppKit
  *
- * Created by Antoine Mercadal 
+ * Created by Antoine Mercadal
  * Copyright 2011 <primalmotion@archipelproject.org>
  *
  * This library is free software; you can redistribute it and/or
@@ -42,7 +42,7 @@
 + (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
     var contentRect = CGRectMakeCopy(aFrameRect);
-    
+
     contentRect.origin.x += 3;
     contentRect.origin.y += 3;
     contentRect.size.width -= 6;
@@ -92,7 +92,7 @@
     var context = [[CPGraphicsContext currentContext] graphicsPort],
         radius = 2,
         strokeWidth = 1;
-        
+
     CGContextSetStrokeColor(context, _strokeColor);
     CGContextSetFillColor(context, _backgroundColor);
     CGContextSetLineWidth(context, strokeWidth);
