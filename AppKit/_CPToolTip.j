@@ -29,9 +29,8 @@ _CPToolTipWindowMask = 1 << 27;
 var _CPToolTipHeight = 24.0,
     _CPToolTipFontSize = 11.0,
     _CPCurrentToolTip,
-    _CPCurrentToolTipTimer;
-
-
+    _CPCurrentToolTipTimer,
+    _CPToolTipDelay = 1.0;
 
 /*! @ingroup appkit
     This is a basic tooltip that behaves mostly like Cocoa ones.
@@ -263,7 +262,7 @@ var _CPToolTipHeight = 24.0,
     }
 
     if (_toolTip)
-        _CPCurrentToolTipTimer = [CPTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(_showToolTip:) userInfo:nil repeats:NO];
+        _CPCurrentToolTipTimer = [CPTimer scheduledTimerWithTimeInterval:_CPToolTipDelay target:self selector:@selector(_showToolTip:) userInfo:nil repeats:NO];
 }
 
 /*! @ignore
