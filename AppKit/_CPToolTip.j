@@ -147,13 +147,13 @@ var _CPToolTipHeight = 24.0,
     mousePosition.y += 20;
 
     if (mousePosition.x < 0)
-        mousePosition.x = 0;
+        mousePosition.x = 5;
     if (mousePosition.x + CPRectGetWidth([self frame]) > nativeRect.size.width)
-        mousePosition.x = nativeRect.size.width - CPRectGetWidth([self frame]);
+        mousePosition.x = nativeRect.size.width - CPRectGetWidth([self frame]) - 5;
     if (mousePosition.y < 0)
-        mousePosition.y = 0;
+        mousePosition.y = 5;
     if (mousePosition.y + CPRectGetHeight([self frame]) > nativeRect.size.height)
-        mousePosition.y = nativeRect.size.height - CPRectGetHeight([self frame]);
+        mousePosition.y = nativeRect.size.height - CPRectGetHeight([self frame]) - 5;
 
     [self setFrameOrigin:mousePosition];
     [self orderFront:nil];
