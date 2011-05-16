@@ -63,9 +63,11 @@ var IBDefaultFontFace = @"Lucida Grande",
 
     if (name === IBDefaultFontFace)
     {
-        var size = [aFont size];
+        var size = [aFont size],
+            bold = [aFont isBold],
+            italic = [aFont isItalic];
 
-        if (size === IBDefaultFontSize)
+        if (size === IBDefaultFontSize && !bold && !italic)
             return nil;
         else
             return [[CPFont alloc] _initWithName:[CPFont systemFontFace] size:size bold:[aFont isBold] italic:[aFont isItalic]];
