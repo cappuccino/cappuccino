@@ -34,8 +34,10 @@
 
     if (self)
     {
-        [self setBordered:[aCoder decodeBoolForKey:"NSIsBordered"]];
-        [self setColor:[aCoder decodeObjectForKey:"NSColor"]];
+        // NSColorWell keeps its own enabled state, there is no cell enabled state
+        [self setEnabled:[aCoder decodeBoolForKey:@"NSEnabled"]];
+        [self setBordered:[aCoder decodeBoolForKey:@"NSIsBordered"]];
+        [self setColor:[aCoder decodeObjectForKey:@"NSColor"]];
     }
 
     return self;
