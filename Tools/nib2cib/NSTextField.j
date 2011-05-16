@@ -75,6 +75,7 @@
         {
             var frame = [self frame];
 
+            [self setFrameOrigin:CGPointMake(frame.origin.x, frame.origin.y - 1.0)];
             [self setFrameSize:CGSizeMake(frame.size.width, frame.size.height + 2.0)];
         }
 
