@@ -70,7 +70,7 @@ var IBDefaultFontFace = @"Lucida Grande",
         if (size === IBDefaultFontSize && !bold && !italic)
             return nil;
         else
-            return [[CPFont alloc] _initWithName:[CPFont systemFontFace] size:size bold:[aFont isBold] italic:[aFont isItalic]];
+            return [[CPFont alloc] _initWithName:[CPFont systemFontFace] size:size bold:bold italic:italic];
     }
 
     return [aFont copy];
