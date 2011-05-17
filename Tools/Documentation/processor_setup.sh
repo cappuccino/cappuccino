@@ -3,7 +3,7 @@
 function processor_msg ()
 {
     color=${2:-cyan}
-    
+
     case "$color" in
         black           ) code="30";;
         red             ) code="31";;
@@ -15,7 +15,7 @@ function processor_msg ()
         white           ) code="37";;
         *               ) code="36";;
     esac
-    
+
     echo -e "\033[${code}m$1\033[0m"
 }
 

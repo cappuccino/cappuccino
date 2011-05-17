@@ -22,6 +22,8 @@ CPLogRegister(CPLogConsole);
     @outlet CPRadio         radio2;
     @outlet CPPopUpButton   positionMenu;
 
+    @outlet CPTextField     clickCount;
+
     CPArray buttons;
     CPArray checksAndRadios;
 }
@@ -90,6 +92,12 @@ CPLogRegister(CPLogConsole);
     }
 
     [checksAndRadios makeObjectsPerformSelector:@selector(setAlignment:) withObject:alignment];
+}
+
+- (IBAction)countClick:(id)sender
+{
+    var previousCount = [clickCount integerValue];
+    [clickCount setIntegerValue:(previousCount + 1)];
 }
 
 @end
