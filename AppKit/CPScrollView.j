@@ -356,10 +356,11 @@
 /*!
     Sets the type of border to be drawn around the view.
     Valid types are:
-        CPNoBorder
-        CPLineBorder
-        CPBezelBorder
-        CPGrooveBorder
+    <pre>
+    CPNoBorder
+    CPLineBorder
+    CPBezelBorder
+    CPGrooveBorder</pre>
 */
 - (void)setBorderType:(CPBorderType)borderType
 {
