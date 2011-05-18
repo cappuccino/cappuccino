@@ -6,7 +6,7 @@
 # $2 Generated documentation directory
 
 # Do this if you want to use the utility functions
-source "$1"/processor_setup.sh
+source "$1"/support/processor_setup.sh
 
 # Cleanup the files we generated to feed to doxygen
 processor_msg "Cleaning up generated header files..."
