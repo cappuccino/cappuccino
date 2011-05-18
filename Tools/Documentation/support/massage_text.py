@@ -29,11 +29,11 @@ for count, filename in enumerate(html):
     f = open(filename, "r+")
     text = f.read()
     i = 0
-    
+
     while i < len(transforms):
         text = transforms[i].sub(transforms[i + 1], text)
         i += 2
-        
+
     f.seek(0)
     f.truncate()
     f.write(text)
