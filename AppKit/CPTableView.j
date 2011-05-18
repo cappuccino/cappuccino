@@ -1470,7 +1470,7 @@ NOT YET IMPLEMENTED
 
     _cornerView = aView;
 
-    var scrollView = [[self superview] superview];
+    var scrollView = [self enclosingScrollView];
 
     if ([scrollView isKindOfClass:[CPScrollView class]] && [scrollView documentView] === self)
         [scrollView _updateCornerAndHeaderView];
@@ -1506,8 +1506,14 @@ NOT YET IMPLEMENTED
         [_headerView setTableView:self];
         [_headerView setFrameSize:_CGSizeMake(_CGRectGetWidth([self frame]), _CGRectGetHeight([_headerView frame]))];
     }
+    else
+    {
+        // If there is no header view, there should be no corner view
+        [_cornerView removeFromSuperview];
+        _cornerView = nil;
+    }
 
-    var scrollView = [[self superview] superview];
+    var scrollView = [self enclosingScrollView];
 
     if ([scrollView isKindOfClass:[CPScrollView class]] && [scrollView documentView] === self)
         [scrollView _updateCornerAndHeaderView];
