@@ -23,5 +23,6 @@ sed -i '' -E \
 -e 's/<code> \[implementation\]<\/code>/\&emsp;/g'     \
 -e 's/Static Public Member Functions/Class Methods/g'  \
 -e 's/Public Member Functions/Instance Methods/g'      \
+-e 's/Member Function Documentation/Method Documentation/g'      \
 -e 's/(AppKit|Foundation)\.doc/\1/g'               \
 "$2"/*.html
