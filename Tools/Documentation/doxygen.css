@@ -6,7 +6,7 @@ body, table, td, div, p, dl, dd, dt, em {
 }
 
 body, table, div, p {
-    font: 13px normal "Lucida Grande", Helvetica, Arial, Geneva, sans-serif;
+    font: normal 13px "Lucida Grande", Helvetica, Arial, Geneva, sans-serif;
 }
 
 table {
@@ -18,7 +18,7 @@ pre, code {
 }
 
 p {
-    margin: 1em 0;
+    margin: 0 0 1em 0;
 }
 
 dl {
@@ -47,7 +47,7 @@ em {
 
 h1, h2, h3, h4 {
     font-family: "Lucida Grande", Helvetica, Arial, Geneva, sans-serif;
-    margin: 2em 0 1em 0;
+    margin: 1.5em 0 .5em;
 }
 
 h1 {
@@ -109,17 +109,15 @@ div.qindex, div.navtab {
 	background-color: #ECEFF6;
 	border: 1px solid #A4B5D6;
 	text-align: center;
-	margin: 2px;
-	padding: 2px;
+	padding: .25em;
 }
 
 div.qindex, div.navpath {
-	width: 100%;
 	line-height: 140%;
 }
 
-div.qindex+table {
-    margin: 1.5em;
+div.contents div.qindex+table {
+    margin: 1.5em 15px;
 }
 
 div.qindex+table td {
@@ -238,12 +236,32 @@ body {
 }
 
 div.contents {
-    margin: 1.5em;
+    width: 1024px;
+    margin: auto;
+    border: 1px solid #eee;
+    border-width: 0 1px;
+    padding: 15px;
 }
 
 /* If the first element of the contents is a table, give it some space */
 div.contents > table {
-    margin-top: 1.5em;
+    margin: 1.5em 0 0;
+}
+
+div.contents > p,
+div.contents > h1,
+div.contents > h2,
+div.contents > dl,
+.dynheader,
+.dynsummary,
+.dyncontent {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+div.contents hr {
+    margin-left: -15px;
+    margin-right: -15px;
 }
 
 td.indexkey {
@@ -260,10 +278,6 @@ td.indexvalue {
     font-family: Consolas, "Lucida Console";
 	border-bottom: 1px solid #eee;
 	padding: .25em 0 .25em .5em;
-}
-
-table tr.memlist:first-child td {
-    padding-top: 1.5em;
 }
 
 table tr.memlist > td {
@@ -405,6 +419,7 @@ hr {
 
 hr.footer {
 	height: 1px;
+	margin-top: 0;
 }
 
 /* @group Member Descriptions */
@@ -413,6 +428,7 @@ table.memberdecls {
     font-family: Consolas, "Lucida Console";
 	border-spacing: 0px;
 	padding: 0px;
+	margin: 0 !important;
 }
 
 .mdescLeft, .mdescRight,
@@ -470,13 +486,13 @@ table.memberdecls {
 .memname {
     white-space: nowrap;
     font: bold 105% Consolas, "Lucida Console";
-    margin: .25em 0 0 .25em;
+    margin: .25em 0 .1em .25em;
 }
 
 .memproto {
-    margin-top: 2em;
+    margin: 2em -15px 0;
     border-top: 1px solid #ccc;
-    padding: 6px 0px 6px 0px;
+    padding: 6px 15px;
     color: #253554;
     background-color: #f7f7f7;
     font-family: Consolas, "Lucida Console";
@@ -484,7 +500,8 @@ table.memberdecls {
 }
 
 .memdoc {
-    padding: .5em .5em 0;
+    margin: 0 -15px;
+    padding: .5em 15px 0;
 }
 
 .memdoc > p {
@@ -493,6 +510,11 @@ table.memberdecls {
 
 .memdoc dl dd td {
     padding-right: 1em;
+    padding-top: .5em;
+}
+
+.memdoc dl dd table tr:first-child td {
+    padding-top: 0;
 }
 
 .memdoc dl dd table tr td:first-child {
@@ -621,7 +643,15 @@ table.memberdecls {
 /* @end */
 
 div.dynheader {
-        margin-top: 8px;
+    margin-top: 8px;
+}
+
+div.dynheader.closed {
+    margin-bottom: 1em;
+}
+
+div.dyncontent {
+    margin-bottom: 1em;
 }
 
 address {
@@ -700,7 +730,6 @@ div.summary
 {
 	float: right;
 	font-size: 90%;
-	padding-right: 5px;
 	width: 50%;
 	text-align: right;
 }
@@ -715,9 +744,12 @@ div.header
     background-image:url('nav_h.png');
     background-repeat:repeat-x;
 	background-color: #F9FAFC;
-	margin: 0;
-	padding: 1.5em;
+	width: 1024px;
+	margin: 0 auto;
+	padding: 1.5em 15px;
 	border-bottom: 1px solid #C5CFE5;
+	border-left: 1px solid #eee;
+	border-right: 1px solid #eee;
 }
 
 div.headertitle h1 {
@@ -728,7 +760,6 @@ div.headertitle h1 {
 
 .tabs, .tabs2, .tabs3 {
     background-image: url('tab_b.png');
-    width: 100%;
     z-index: 101;
     font-size: 100%;
 }
