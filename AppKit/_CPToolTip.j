@@ -168,7 +168,7 @@ var _CPToolTipHeight = 24.0,
     if (mousePosition.y < 0)
         mousePosition.y = 5;
     if (mousePosition.y + CPRectGetHeight([self frame]) > nativeRect.size.height)
-        mousePosition.y = nativeRect.size.height - CPRectGetHeight([self frame]) - 5;
+        mousePosition.y = mousePosition.y - CPRectGetHeight([self frame]) - 40;
 
     [self setFrameOrigin:mousePosition];
     [self orderFront:nil];
@@ -206,7 +206,6 @@ var _CPToolTipHeight = 24.0,
         {
             [self _invalidateToolTip];
         };
-
 
     if (_toolTip)
     {
@@ -257,7 +256,7 @@ var _CPToolTipHeight = 24.0,
     {
         [_CPCurrentToolTipTimer invalidate];
         if (_CPCurrentToolTip)
-            [_CPCurrentToolTip close:nil];
+            [_CPCurrentToolTip close];
         _CPCurrentToolTip = nil;
     }
 
@@ -289,7 +288,7 @@ var _CPToolTipHeight = 24.0,
 - (void)_showToolTip:(CPTimer)aTimer
 {
     if (_CPCurrentToolTip)
-        [_CPCurrentToolTip close:nil];
+        [_CPCurrentToolTip close];
     _CPCurrentToolTip = [_CPToolTip toolTipWithString:_toolTip];
 }
 
