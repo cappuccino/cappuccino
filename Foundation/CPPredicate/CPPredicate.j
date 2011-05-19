@@ -55,7 +55,7 @@
     You can create predicates for operations, such as <code>\@sum.items.price < 1000</code>.
 
     You can also create predicates that include variables, so that the predicate can be pre-defined before
-    substituting concrete values at runtime with the <code>evaluateWithObject:substitutionVariables:</code> method.
+    substituting concrete values at runtime with the \c evaluateWithObject:substitutionVariables: method.
 */
 
 @implementation CPPredicate : CPObject

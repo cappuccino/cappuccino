@@ -18,7 +18,9 @@ transforms = [
     re.compile(r"<code> \[implementation\]</code>"), "&emsp;",
     re.compile(r"Static Public Member Functions"), "Class Methods",
     re.compile(r"Public Member Functions"), "Instance Methods",
+    re.compile(r"Protected Attributes"), "Instance Variables",
     re.compile(r"Member Function Documentation"), "Method Documentation",
+    re.compile(r"Member Data Documentation"), "Instance Variable Documentation",
     re.compile(r"(AppKit|Foundation)\.doc"), r"\1",
     re.compile(r"\s*<tr>\n(\s*<td></td>\n){2}\s*(<td></td>){2}<td>&emsp;</td>\n\s*</tr>"), ""
 ]
