@@ -10,7 +10,9 @@ task ("build", function()
 {
     if (executableExists("xcodebuild"))
     {
-        var args = "-alltargets -configuration Release";
+        var args = "-alltargets -configuration Release",
+            supportPath = FILE.join($BUILD_CJS_CAPPUCCINO, "support", applicationName),
+            installPath = FILE.join("/", "Applications", applicationName);
 
         if (xcodebuildHasTenPointFiveSDK())
             args = "-sdk macosx10.5 " + args;
@@ -21,20 +23,19 @@ task ("build", function()
         if (OS.system("xcodebuild " + args))
             OS.exit(1);
 
-        rm_rf(FILE.join($BUILD_CJS_CAPPUCCINO, "support", applicationName));
-        FILE.mkdirs(FILE.join($BUILD_CJS_CAPPUCCINO, "support"))
-        cp_r(FILE.join("build", "Release", "xcodecapp-cocoa.app"), FILE.join($BUILD_CJS_CAPPUCCINO, "support", applicationName));
-        FILE.chmod(FILE.join($BUILD_CJS_CAPPUCCINO, "support", applicationName, "Contents", "MacOS", "xcodecapp-cocoa"), 0755);
+        rm_rf(supportPath);
+        FILE.mkdirs(supportPath);
+        cp_r(FILE.join("build", "Release", "xcodecapp-cocoa.app"), supportPath);
+        FILE.chmod(FILE.join(supportPath, "Contents", "MacOS", "xcodecapp-cocoa"), 0755);
+
+        if (FILE.exists(installPath))
+            FILE.remove(installPath);
+        FILE.symlink(supportPath, installPath);
     }
     else
     {
         print("Building "+xcodecapp-cocoa+" requires Xcode.");
     }
-});
-
-task ("install", ["build"], function()
-{
-        cp_r(FILE.join($BUILD_CJS_CAPPUCCINO, "support", applicationName), FILE.join("/", "Applications", applicationName));
 });
 
 task ("clean", function()
