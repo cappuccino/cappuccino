@@ -8,6 +8,10 @@
 
 @import <Foundation/CPObject.j>
 
+function formatter(aString, aLevel, aTitle)
+{
+    return aString;
+}
 
 @implementation AppController : CPObject
 {
@@ -26,20 +30,18 @@
 
 - (void)awakeFromCib
 {
-    // This is called when the cib is done loading.
-    // You can implement this method on any object instantiated from a Cib.
-    // It's a useful hook for setting up current UI values, and other things.
+    CPLogRegister(CPLogConsole, null, formatter);
 
     // In this case, we want the window from Cib to become our full browser window
     [theWindow setFullPlatformWindow:YES];
 
     var color = [CPColor colorWithHexString:@"88B3FF"];
-    console.log([color description]);
+    CPLog([color description]);
 
     [simpleColor setBackgroundColor:color];
 
     color = CPColorWithImages("wheel_button.png", 32, 32, [CPBundle bundleForClass:[CPView class]]);
-    console.log([color description]);
+    CPLog([color description]);
 
     [patternColor setBackgroundColor:color];
 
@@ -50,7 +52,7 @@
         ["Aristo.blend/Resources/button-bezel-center.png", 1, 24, bundle],
         ["Aristo.blend/Resources/button-bezel-right.png", 4, 24, bundle]
     ]);
-    console.log([color description]);
+    CPLog([color description]);
 
     [threePartColor setBackgroundColor:color];
 
@@ -65,13 +67,13 @@
         ["Aristo.blend/Resources/textfield-bezel-square-focused-7.png", 1, 7, bundle],
         ["Aristo.blend/Resources/textfield-bezel-square-focused-8.png", 7, 7, bundle],
     ]);
-    console.log([color description]);
+    CPLog([color description]);
 
     [ninePartColor setBackgroundColor:color];
 
     var image = CPImageInBundle("add1-32.png", CGSizeMake(32, 32));
 
-    console.log([image description]);
+    CPLog([image description]);
     [imageView setImage:image];
 }
 
