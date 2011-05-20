@@ -71,9 +71,12 @@ CPMinusSetExpressionType        = 9;
     @class CPExpression
     @brief CPExpression is used to represent expressions in a predicate.
 
-    Comparison operations in an CPPredicate are based on two expressions, as represented by instances of the CPExpression class. Expressions are created for constant values, key paths, and so on.
+    Comparison operations in an CPPredicate are based on two expressions, as represented by instances of the CPExpression class.
+    Expressions are created for constant values, key paths, and so on.
 
-    Generally, anywhere in the CPExpression class hierarchy where there is composite API and subtypes that may only reasonably respond to a subset of that API, invoking a method that does not make sense for that subtype will cause an exception to be thrown.
+    Generally, anywhere in the CPExpression class hierarchy where there is composite API and subtypes
+    that may only reasonably respond to a subset of that API, invoking a method that does not make sense
+    for that subtype will cause an exception to be thrown.
 */
 
 @implementation CPExpression : CPObject
@@ -182,11 +185,14 @@ CPMinusSetExpressionType        = 9;
     Returns a new expression that will invoke one of the predefined functions.
     @param function_name The name of the function to invoke.
     @param parameters An array containing CPExpression objects that will be used as parameters during the invocation of selector.
-
-    For a selector taking no parameters, the array should be empty. For a selector taking one or more parameters, the array should contain one CPExpression object which will evaluate to an instance of the appropriate type for each parameter.
-
-    If there is a mismatch between the number of parameters expected and the number you provide during evaluation, an exception may be raised or missing parameters may simply be replaced by nil (which occurs depends on how many parameters are provided, and whether you have over- or underflow).
     @return A new expression that invokes the function name using the parameters in parameters.
+
+    For a selector taking no parameters, the array should be empty. For a selector taking one or more parameters,
+    the array should contain one CPExpression object which will evaluate to an instance of the appropriate type for each parameter.
+
+    If there is a mismatch between the number of parameters expected and the number you provide during evaluation,
+    an exception may be raised or missing parameters may simply be replaced by nil (which occurs depends on how many
+    parameters are provided, and whether you have over- or underflow).
 
     The name parameter can be one of the following predefined functions:
  @verbatim
@@ -220,6 +226,7 @@ CPMinusSetExpressionType        = 9;
     now:               none                                               [CPDate now]
 
     This method raises an exception immediately if the selector is invalid; it raises an exception at runtime if the parameters are incorrect.
+@endverbatim
 */
 + (CPExpression)expressionForFunction:(CPString)function_name arguments:(CPArray)parameters
 {
@@ -232,7 +239,8 @@ CPMinusSetExpressionType        = 9;
     @param selectorName The name of the method to be invoked.
     @param parameters An array containing CPExpression objects which can be evaluated to provide parameters for the method specified by name.
     @return An expression which will return the result of invoking the selector named name on the result of evaluating the target expression with the parameters specified by evaluating the elements of parameters.
-    See the description of expressionForFunction:arguments: for examples of how to construct the parameter array.
+
+    See the description of \c expressionForFunction:arguments: for examples of how to construct the parameter array.
 */
 + (CPExpression)expressionForFunction:(CPExpression)target selectorName:(CPString)selectorName arguments:(CPArray)parameters
 {

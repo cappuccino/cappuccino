@@ -36,21 +36,26 @@
     @class CPPredicate
     @brief The CPPredicate class is used to define logical conditions used to constrain a search either for a fetch or for in-memory filtering.
 
-    You use predicates to represent logical conditions, used for describing objects in persistent stores and in-memory filtering of objects. Although it is common to create predicates directly from instances of CPComparisonPredicate, CPCompoundPredicate, and CPExpression, you often create predicates from a format string which is parsed by the class methods on CPPredicate. Examples of predicate format strings include:
+    You use predicates to represent logical conditions, used for describing objects in persistent stores
+    and in-memory filtering of objects. Although it is common to create predicates directly from instances
+    of CPComparisonPredicate, CPCompoundPredicate, and CPExpression, you often create predicates from a
+    format string which is parsed by the class methods on CPPredicate. Examples of predicate format strings include:
 
-    Simple comparisons, such as grade == "7" or firstName like "Shaffiq"\n
-    Case/diacritic insensitive lookups, such as name contains[cd] "itroen"\n
-    Logical operations, such as (firstName like "Mark") OR (lastName like "Adderley")\n
-    “Between” predicates such as date between {$YESTERDAY, $TOMORROW}.\n
+    - Simple comparisons, such as <code>grade == "7"</code> or <code>firstName like "Shaffiq"</code>
+    - Case/diacritic insensitive lookups, such as <code>name contains[cd] "itroen"</code>
+    - Logical operations, such as <code>(firstName like "Mark") OR (lastName like "Adderley")</code>
+    - “Between” predicates such as <code>date between {$YESTERDAY, $TOMORROW}</code>.
 
     You can create predicates for relationships, such as:
 
-    group.name like "work*"\n
-    ALL children.age > 12\n
-    ANY children.age > 12\n
-    You can create predicates for operations, such as @sum.items.price < 1000.
+    - <code>group.name like "work*"</code>
+    - <code>ALL children.age > 12</code>
+    - <code>ANY children.age > 12</code>
 
-    You can also create predicates that include variables, so that the predicate can be pre-defined before substituting concrete values at runtime with evaluateWithObject:substitutionVariables: method.
+    You can create predicates for operations, such as <code>\@sum.items.price < 1000</code>.
+
+    You can also create predicates that include variables, so that the predicate can be pre-defined before
+    substituting concrete values at runtime with the \c evaluateWithObject:substitutionVariables: method.
 */
 
 @implementation CPPredicate : CPObject
