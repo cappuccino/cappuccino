@@ -180,8 +180,10 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 				[modifiedSources addObject:fullPath];
             if ([self isXIBFile:fullPath])
             {
+                [_statusItem setTitle:@"..."];
                 NSLog(@"nib2cib %@", fullPath);
                 int ret = system([[NSString stringWithFormat:@"source %@; nib2cib %@;", _profilePath, fullPath] UTF8String]);
+                [_statusItem setTitle:@""];
                 if (ret == 0)
                 {
                     if (!shouldIgnoreDate)
@@ -204,7 +206,10 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                 
                 NSLog(@"%@", command);
                 
+                [_statusItem setTitle:@"..."];
                 int ret = system([command UTF8String]);
+                 [_statusItem setTitle:@""];
+
                 if (ret == 0)
                 {
                     if (!shouldIgnoreDate)
