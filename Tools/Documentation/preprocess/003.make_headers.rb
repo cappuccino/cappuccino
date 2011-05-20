@@ -16,8 +16,6 @@ Synthesized accessor method.
 
 EOS
 
-ACCESSOR_GET_INTERFACE_TEMPLATE = "- (\#{ivarType})\#{getter}"
-
 ACCESSOR_SET_TEMPLATE = <<EOS
 /*!
 Synthesized accessor method.
@@ -28,8 +26,6 @@ Synthesized accessor method.
 }
 
 EOS
-
-ACCESSOR_SET_INTERFACE_TEMPLATE = "- (void)\#{setter}:(\#{ivarType})aValue"
 
 ACCESSORS_IMPLEMENTATION_TEMPLATE = <<EOS
 
@@ -47,17 +43,15 @@ def makeHeaderFileFrom(fileName)
     source = sourceFile.read
     sourceFile.close()
 
-    # Remove @accessor declarations from ivars in the source file
-    source = source.gsub(/(\s*\w+\s+\w+)\s+@accessors(\(.+?\))?;/m, "\\1;")
-
     # If an implementation does not have an ivar block or an empty ivar block,
     # an one with a dummy ivar so that doxygen will parse the file correctly.
     source.gsub!(/^\s*(@implementation \s*\w+(?:\s*:\s*\w+)?)\n(\s*[^{])/, "\\1\n{\n#{DUMMY_IVAR}\n}\n\\2")
     source.gsub!(/^\s*(@implementation \s*\w+(?:\s*:\s*\w+)?)\n\s*\{\s*\}/, "\\1\n{\n#{DUMMY_IVAR}\n}")
 
-    # If there is
     sourceFile = File.new(fileName, "w")
-    sourceFile.write(source)
+
+    # Remove @accessor declarations from ivars before writing the source file
+    sourceFile.write(source.gsub(/(\s*\w+\s+\w+)\s+@accessors(\(.+?\))?;/m, "\\1;"))
 
     # Extract all the @implementations blocks. Note, there may be more than one in a given .j file.
     m = source.scan(/^\s*(@implementation\s*(\w+)\s*(?::\s*\w+)?)\s*(?:\{(.*?)\})?(.*?)^\s*@end\s*$/m)
@@ -79,8 +73,8 @@ def makeHeaderFileFrom(fileName)
         next unless ivars
 
         # Change @accessors declarations to a comment, doxygen chokes on them
-        ivars.gsub!("@accessors", "// @accessors")
-        interfaceFile.write("\n#{interfaceDeclaration}\n{#{ivars}}\n@end\n")
+        strippedIvars = ivars.gsub("@accessors", "// @accessors")
+        interfaceFile.write("\n#{interfaceDeclaration}\n{#{strippedIvars}}\n@end\n")
 
         # Skip @accessors if it's a private class
         next if className[0, 1] == "_"
@@ -135,24 +129,21 @@ def writeAccessors(className, ivars, sourceFile, interfaceFile)
             setter = "set#{getter[0,1].upcase}#{getter[1..-1]}"
         end
 
-        accessorsSource += makeAccessors(getter, setter, ivar, ivarType, false)
-        accessorsInterface += makeAccessors(getter, setter, ivar, ivarType, true)
+        accessorsSource += makeAccessors(getter, setter, ivar, ivarType)
     end
 
     sourceFile.write(eval('"' + ACCESSORS_IMPLEMENTATION_TEMPLATE + '"'))
 end
 
-def makeAccessors(getter, setter, ivar, ivarType, isInterface)
+def makeAccessors(getter, setter, ivar, ivarType)
     accessors = ""
-    getTemplate = isInterface ? ACCESSOR_GET_TEMPLATE : ACCESSOR_GET_INTERFACE_TEMPLATE
-    setTemplate = isInterface ? ACCESSOR_SET_TEMPLATE : ACCESSOR_SET_INTERFACE_TEMPLATE
 
     if not getter.nil?
-        accessors += eval('"' + getTemplate + '"')
+        accessors += eval('"' + ACCESSOR_GET_TEMPLATE + '"')
     end
 
     if not setter.nil?
-        accessors += eval('"' + setTemplate + '"')
+        accessors += eval('"' + ACCESSOR_SET_TEMPLATE + '"')
     end
 
     return accessors
