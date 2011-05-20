@@ -62,7 +62,10 @@ var NSButtonIsBorderedMask = 0x00800000,
     if (self)
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"],
-            alternateImage = [cell alternateImage];
+            alternateImage = [cell alternateImage],
+            positionOffsetSizeWidth = 0,
+            positionOffsetOriginX = 0,
+            positionOffsetOriginY = 0;
 
         if ([alternateImage isKindOfClass:[NSButtonImageSource class]])
         {
@@ -90,27 +93,59 @@ var NSButtonIsBorderedMask = 0x00800000,
         [self setBordered:[cell isBordered]];
         _bezelStyle = [cell bezelStyle];
 
+
         // clean up:
         switch (_bezelStyle)
         {
             // implemented:
             case CPRoundedBezelStyle:
+                positionOffsetOriginY = 6;
+                positionOffsetOriginX = 4;
+                positionOffsetSizeWidth = -12;
+                break;
             case CPTexturedRoundedBezelStyle:
+                positionOffsetOriginY = 2;
+                positionOffsetOriginX = -2;
+                positionOffsetSizeWidth = 0;
+                break;
             case CPHUDBezelStyle:
                 break;
             // approximations:
             case CPRoundRectBezelStyle:
+                positionOffsetOriginY = -3;
+                positionOffsetOriginX = -2;
+                positionOffsetSizeWidth = 0;
                 _bezelStyle = CPRoundedBezelStyle;
                 break;
             case CPSmallSquareBezelStyle:
+                positionOffsetOriginX = -2;
+                positionOffsetSizeWidth = 0;
+                _bezelStyle = CPTexturedRoundedBezelStyle;
+                break;
             case CPThickSquareBezelStyle:
             case CPThickerSquareBezelStyle:
             case CPRegularSquareBezelStyle:
+                positionOffsetOriginY = 3;
+                positionOffsetOriginX = 0;
+                positionOffsetSizeWidth = -4;
+                _bezelStyle = CPTexturedRoundedBezelStyle;
+                break;
             case CPTexturedSquareBezelStyle:
+                positionOffsetOriginY = 4;
+                positionOffsetOriginX = -1;
+                positionOffsetSizeWidth = -2;
+                _bezelStyle = CPTexturedRoundedBezelStyle;
+                break;
             case CPShadowlessSquareBezelStyle:
+                positionOffsetOriginY = 5;
+                positionOffsetOriginX = -2;
+                positionOffsetSizeWidth = 0;
                 _bezelStyle = CPTexturedRoundedBezelStyle;
                 break;
             case CPRecessedBezelStyle:
+                positionOffsetOriginY = -3;
+                positionOffsetOriginX = -2;
+                positionOffsetSizeWidth = 0;
                 _bezelStyle = CPHUDBezelStyle;
                 break;
             // unsupported
@@ -131,7 +166,13 @@ var NSButtonIsBorderedMask = 0x00800000,
         {
             CPLog.debug("NSButton [%s]: adjusting height from %d to %d", _title == null ? "<no title>" : '"' + _title + '"', _frame.size.height, CPButtonDefaultHeight);
             _frame.size.height = CPButtonDefaultHeight;
-            _frame.origin.y += 4.0;
+
+            // Reposition the buttons according to its particular offsets
+            _frame.origin.x += positionOffsetOriginX;
+            _frame.origin.y += positionOffsetOriginY;
+            _frame.size.width += positionOffsetSizeWidth;
+            _bounds.size.width += positionOffsetSizeWidth;
+
             _bounds.size.height = CPButtonDefaultHeight;
         }
 
