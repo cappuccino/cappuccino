@@ -1,2 +1,5 @@
-xcodecapp-cocoa.xcodeproj/project.xcworkspace/xcuserdata/Tonio.xcuserdatad
-*xcodecapp-cocoa.xcodeproj/project.xcworkspace/xcuserdata/**
+.DS_Store
+*.mode1v3
+*.pbxuser
+*.perspectivev3
+build
