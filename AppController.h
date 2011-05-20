@@ -29,6 +29,10 @@
     IBOutlet NSButton               *buttonStop;
     IBOutlet NSProgressIndicator    *spinner;
     IBOutlet NSWindow               *mainWindow;
+    IBOutlet NSMenu                 *statusMenu;
+    IBOutlet NSMenuItem             *menuItemStart;
+    IBOutlet NSMenuItem             *menuItemStop;
+    IBOutlet NSMenuItem             *menuItemOpenXCode;
     
     NSFileManager           *fm;
     NSMutableArray          *modifiedSources;
@@ -47,6 +51,10 @@
     NSString                *XCodeSupportPBXPath;
     NSString                *parserPath;
     NSMutableArray          *ignoredFilePaths;
+    NSImage                 *_iconInactive;
+    NSImage                 *_iconActive;
+    NSStatusItem            *_statusItem;
+    NSString                *_profilePath;
 }
 
 - (void)registerDefaults;
@@ -64,6 +72,7 @@
 - (IBAction)chooseFolder:(id)aSender;
 - (IBAction)stopListener:(id)aSender;
 - (IBAction)openXCode:(id)aSender;
+- (BOOL)validateMenuItem:(NSMenuItem*)menuItem;
 
 @end
 

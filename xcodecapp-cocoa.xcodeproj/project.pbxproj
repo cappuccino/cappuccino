@@ -12,6 +12,8 @@
 		024A040B13698E7800DCBE4D /* project.pbxproj in Resources */ = {isa = PBXBuildFile; fileRef = 024A040A13698E7700DCBE4D /* project.pbxproj */; };
 		024A041213699D6800DCBE4D /* parser.j in Sources */ = {isa = PBXBuildFile; fileRef = 024A041113699D6800DCBE4D /* parser.j */; };
 		024A041413699DD400DCBE4D /* parser.j in Resources */ = {isa = PBXBuildFile; fileRef = 024A041113699D6800DCBE4D /* parser.j */; };
+		026F3B6213866B0B00EE5B83 /* xcodecapp-cocoa-icon-inactive.png in Resources */ = {isa = PBXBuildFile; fileRef = 026F3B6113866B0B00EE5B83 /* xcodecapp-cocoa-icon-inactive.png */; };
+		026F3B6513866E7D00EE5B83 /* xcodecapp-cocoa-icon-active.png in Resources */ = {isa = PBXBuildFile; fileRef = 026F3B6413866E7D00EE5B83 /* xcodecapp-cocoa-icon-active.png */; };
 		027D999B13696A7000D3DB13 /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = 29B97318FDCFA39411CA2CEA /* MainMenu.nib */; };
 		027D999C13696A7000D3DB13 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		027D999E13696A7000D3DB13 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
@@ -41,6 +43,8 @@
 		024A03DE13696D9500DCBE4D /* xcodecapp-cocoa.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "xcodecapp-cocoa.png"; sourceTree = "<group>"; };
 		024A040A13698E7700DCBE4D /* project.pbxproj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.pbxproject; path = project.pbxproj; sourceTree = "<group>"; };
 		024A041113699D6800DCBE4D /* parser.j */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.objj; path = parser.j; sourceTree = "<group>"; };
+		026F3B6113866B0B00EE5B83 /* xcodecapp-cocoa-icon-inactive.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "xcodecapp-cocoa-icon-inactive.png"; sourceTree = "<group>"; };
+		026F3B6413866E7D00EE5B83 /* xcodecapp-cocoa-icon-active.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "xcodecapp-cocoa-icon-active.png"; sourceTree = "<group>"; };
 		027D9989136969DD00D3DB13 /* xcodecapp-cocoa.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "xcodecapp-cocoa.pch"; sourceTree = "<group>"; };
 		027D99A613696A7000D3DB13 /* xcodecapp-cocoa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "xcodecapp-cocoa.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		02998CEA1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "Growl Registration Ticket.growlRegDict"; sourceTree = "<group>"; };
@@ -132,6 +136,8 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				026F3B6413866E7D00EE5B83 /* xcodecapp-cocoa-icon-active.png */,
+				026F3B6113866B0B00EE5B83 /* xcodecapp-cocoa-icon-inactive.png */,
 				024A041113699D6800DCBE4D /* parser.j */,
 				024A03DE13696D9500DCBE4D /* xcodecapp-cocoa.png */,
 				024A040A13698E7700DCBE4D /* project.pbxproj */,
@@ -209,6 +215,8 @@
 				024A03DF13696D9500DCBE4D /* xcodecapp-cocoa.png in Resources */,
 				024A040B13698E7800DCBE4D /* project.pbxproj in Resources */,
 				02998CEB1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict in Resources */,
+				026F3B6213866B0B00EE5B83 /* xcodecapp-cocoa-icon-inactive.png in Resources */,
+				026F3B6513866E7D00EE5B83 /* xcodecapp-cocoa-icon-active.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

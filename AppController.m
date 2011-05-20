@@ -51,8 +51,14 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
         modifiedXIBs        = [NSMutableArray new];
         ignoredFilePaths    = [NSMutableArray new];
         parserPath          = [[NSBundle mainBundle] pathForResource:@"parser" ofType:@"j"];
-    }
 
+        if([fm fileExistsAtPath:[@"~/.bash_profile" stringByExpandingTildeInPath]])
+            _profilePath = @"~/.bash_profile";
+        else if([fm fileExistsAtPath:[@"~/.profile" stringByExpandingTildeInPath]])
+            _profilePath = @"~/.profile";
+
+    }
+    
 	return self;
 }
 
@@ -67,6 +73,20 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 	appStartedTimestamp     = [NSDate date];
     pathModificationDates   = [[[NSUserDefaults standardUserDefaults] dictionaryForKey:@"pathModificationDates"] mutableCopy];
 	lastEventId             = [[NSUserDefaults standardUserDefaults] objectForKey:@"lastEventId"];
+    
+    NSBundle *bundle = [NSBundle mainBundle];
+    
+    _iconInactive   = [[NSImage alloc] initWithContentsOfFile:[bundle pathForResource:@"xcodecapp-cocoa-icon-inactive" ofType:@"png"]];
+    _iconActive     = [[NSImage alloc] initWithContentsOfFile:[bundle pathForResource:@"xcodecapp-cocoa-icon-active" ofType:@"png"]];
+    [_iconActive setSize:NSMakeSize(14.0, 16.0)];
+    [_iconInactive setSize:NSMakeSize(14.0, 16.0)];
+    
+    _statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
+    [_statusItem setMenu:statusMenu];
+    [_statusItem setImage:_iconInactive];
+    [_statusItem setHighlightMode:YES];
+    [statusMenu setDelegate:self];
+
 }
 
 - (void)initializeEventStreamWithPath:(NSString*)aPath
@@ -161,7 +181,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
             if ([self isXIBFile:fullPath])
             {
                 NSLog(@"nib2cib %@", fullPath);
-                int ret = system([[NSString stringWithFormat:@"source ~/.bash_profile; nib2cib %@;", fullPath] UTF8String]);
+                int ret = system([[NSString stringWithFormat:@"source %@; nib2cib %@;", _profilePath, fullPath] UTF8String]);
                 if (ret == 0)
                 {
                     if (!shouldIgnoreDate)
@@ -180,7 +200,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
             if ([self isObjJFile:fullPath])
             {
                 NSString *shadowPath    = [[self shadowURLForSourceURL:[NSURL URLWithString:fullPath]] path];
-                NSString *command       = [NSString stringWithFormat:@"source ~/.bash_profile; objj %@ %@ %@;", parserPath, fullPath, shadowPath];
+                NSString *command       = [NSString stringWithFormat:@"source %@; objj %@ %@ %@;", _profilePath, parserPath, fullPath, shadowPath];
                 
                 NSLog(@"%@", command);
                 
@@ -396,6 +416,8 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
         
     else
         [labelStatus setStringValue:@"XCodeCapp is loading project..."];
+    
+    [_statusItem setImage:_iconActive];
 }
 
 - (IBAction)stopListener:(id)aSender
@@ -410,6 +432,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     [buttonStart setEnabled:YES];
     [labelStatus setStringValue:@"XCodeCapp is not running"];
     [self stopEventStream];
+    [_statusItem setImage:_iconInactive];
 }
 
 - (IBAction)openXCode:(id)aSender
@@ -428,6 +451,16 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 {
     [mainWindow makeKeyAndOrderFront:nil];
 
+    return YES;
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem*)aMenuItem
+{
+    if (aMenuItem == menuItemStart)
+        return !currentProjectURL;
+    if ((aMenuItem == menuItemStop) || (aMenuItem == menuItemOpenXCode))
+        return !!currentProjectURL;
+    
     return YES;
 }
 
