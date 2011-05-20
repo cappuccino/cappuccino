@@ -27,6 +27,7 @@
 @import "CPCompatibility.j"
 @import "CPImage.j"
 
+/// @cond IGNORE
 
 var _redComponent        = 0,
     _greenComponent      = 1,
@@ -53,6 +54,66 @@ var cachedBlackColor,
     cachedPurpleColor,
     cachedShadowColor,
     cachedClearColor;
+
+/// @endcond
+
+/*!
+    Orientation to use with \c CPColorPattern for vertical patterns.
+*/
+CPColorPatternIsVertical = YES,
+
+/*!
+    Orientation to use with \c CPColorPattern for horizontal patterns.
+*/
+CPColorPatternIsHorizontal = NO;
+
+/*!
+    To create a simple color with a pattern image:
+
+    <code>CPColorWithImages(name, width, height{, bundle})</code>
+
+    To create a color with a three part pattern image:
+
+    <code>CPColorWithImages(slices{, orientation})</code>
+
+    where slices is an array of three [name, width, height{, bundle}] arrays,
+    and orientation is \c CPColorPatternIsVertical or \ref CPColorPatternIsHorizontal.
+    If orientatation is not passed, it defaults to \ref CPColorPatternIsHorizontal.
+
+    To create a color with a nine part pattern image:
+
+    <code>CPColorWithImages(slices);</code>
+
+    where slices is an array of nine [name, width, height{, bundle}] arrays.
+*/
+function CPColorWithImages()
+{
+    if (arguments.length < 3)
+    {
+        var slices = arguments[0],
+            imageSlices = [];
+
+        for (var i = 0; i < slices.length; ++i)
+        {
+            var slice = slices[i];
+
+            imageSlices.push(slice ? CPImageInBundle(slice[0], CGSizeMake(slice[1], slice[2]), slice[3]) : nil);
+        }
+
+        if (imageSlices.length === 3)
+            return [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:imageSlices isVertical:arguments[1] || CPColorPatternIsHorizontal]];
+        else
+            return [CPColor colorWithPatternImage:[[CPNinePartImage alloc] initWithImageSlices:imageSlices]];
+    }
+    else if (arguments.length === 3 || arguments.length === 4)
+    {
+        return [CPColor colorWithPatternImage:CPImageInBundle(arguments[0], CGSizeMake(arguments[1], arguments[2]), arguments[3])];
+    }
+    else
+    {
+        return nil;
+    }
+}
 
 /*!
     @ingroup appkit
@@ -633,7 +694,36 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
 
 - (CPString)description
 {
-    return [super description]+" "+[self cssString];
+    var description = [super description],
+        patternImage = [self patternImage];
+
+    if (!patternImage)
+        return description + " " + [self cssString];
+
+    description += " {\n";
+
+    if ([patternImage isThreePartImage] || [patternImage isNinePartImage])
+    {
+        var slices = [patternImage imageSlices];
+
+        if ([patternImage isThreePartImage])
+            description += "    orientation: " + ([patternImage isVertical] ? "vertical" : "horizontal") + ",\n";
+
+        description += "    patternImage (" + slices.length + " part): [\n";
+
+        for (var i = 0; i < slices.length; ++i)
+        {
+            var imgDescription = [slices[i] description];
+
+            description += imgDescription.replace(/^/mg, "        ") + ",\n";
+        }
+
+        description = description.substr(0, description.length - 2) + "\n    ]\n}";
+    }
+    else
+        description += [patternImage description].replace(/^/mg, "    ") + "\n}";
+
+    return description;
 }
 
 @end
@@ -678,8 +768,10 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
 
 @end
 
+/// @cond IGNORE
 var CPColorComponentsKey    = @"CPColorComponentsKey",
     CPColorPatternImageKey  = @"CPColorPatternImageKey";
+/// @endcond
 
 @implementation CPColor (CPCoding)
 
@@ -710,13 +802,12 @@ var CPColorComponentsKey    = @"CPColorComponentsKey",
 @end
 
 
+/// @cond IGNORE
 var hexCharacters = "0123456789ABCDEF";
 
-/*!
-    Used for the CPColor \c +colorWithHexString: implementation
-    @ignore
-    @class CPColor
-    @return an array of rgb components
+/*
+    Used for the CPColor +colorWithHexString: implementation.
+    Returns an array of rgb components.
 */
 var hexToRGB = function(hex)
 {
@@ -754,3 +845,5 @@ var byteToHex = function(n)
     return hexCharacters.charAt((n - n % 16) / 16) +
            hexCharacters.charAt(n % 16);
 };
+
+/// @endcond
