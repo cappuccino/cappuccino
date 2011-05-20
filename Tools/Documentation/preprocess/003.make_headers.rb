@@ -44,7 +44,7 @@ def makeHeaderFileFrom(fileName)
     sourceFile.close()
 
     # If an implementation does not have an ivar block or an empty ivar block,
-    # an one with a dummy ivar so that doxygen will parse the file correctly.
+    # add one with a dummy ivar so that doxygen will parse the file correctly.
     source.gsub!(/^\s*(@implementation \s*\w+(?:\s*:\s*\w+)?)\n(\s*[^{])/, "\\1\n{\n#{DUMMY_IVAR}\n}\n\\2")
     source.gsub!(/^\s*(@implementation \s*\w+(?:\s*:\s*\w+)?)\n\s*\{\s*\}/, "\\1\n{\n#{DUMMY_IVAR}\n}")
 
