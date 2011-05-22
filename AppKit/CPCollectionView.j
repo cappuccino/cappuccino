@@ -168,7 +168,7 @@
       }
 
       @end
-    <pre>
+    </pre>
 
     This will allow the collection view to create multiple 'clean' copies
     of the item prototype which will maintain the original values for item
