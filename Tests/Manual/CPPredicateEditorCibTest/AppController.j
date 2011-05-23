@@ -10,10 +10,10 @@
 
 @implementation AppController : CPObject
 {
-    CPWindow        window;
+    CPWindow             window;
     CPPredicateEditor    predicateEditor;
-    CPTextField     predicateField;
-
+    CPTextField          predicateField;
+    
     CPTableView     leftTable;
     CPTableView     rightTable;
     CPPopUpButton   rightExpressionsType;
@@ -33,9 +33,6 @@
 
     [templateBox setCornerRadius:10];
     [self updateAddTemplateButton];
-    
-    [predicateEditor setAction:@selector(predicateEditorAction:)];
-    [predicateEditor setTarget:self];
 
     [window setBackgroundColor:[CPColor colorWithHexString:@"f3f4f5"]];
     [window setFullBridge:YES];
@@ -43,20 +40,20 @@
 
 - (IBAction)displayPredicate:(id)sender
 {
-    var pred = [CPPredicate predicateWithFormat:[sender stringValue]];
-    if (pred)
-        [predicateEditor setObjectValue:pred];
+    var predicate = [CPPredicate predicateWithFormat:[sender stringValue]];
+    if (predicate)
+        [predicateEditor setObjectValue:predicate];
 }
 
 - (IBAction)predicateEditorAction:(id)sender
 {
-//    CPLogConsole(_cmd + [predicateEditor displayValuesForRow:1]);
-    [predicateField setStringValue:[[predicateEditor objectValue] predicateFormat]];
+    CPLogConsole(_cmd);
+    [predicateField setStringValue:[sender objectValue]];
 }
 
 - (void)ruleEditorRowsDidChange:(CPNotification)notification
 {
-
+    CPLogConsole(_cmd);
 }
 
 // Templates maker

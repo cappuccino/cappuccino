@@ -41,8 +41,8 @@ var CONTROL_HEIGHT = 16.,
 
     _addButton = [self _createAddRowButton];
     _subtractButton = [self _createDeleteRowButton];
-    //[_addButton setToolTip:[_ruleEditor _toolTipForAddSimpleRowButton]];
-    //[_subtractButton setToolTip:[_ruleEditor _toolTipForDeleteRowButton]];
+    [_addButton setToolTip:[_ruleEditor _toolTipForAddSimpleRowButton]];
+    [_subtractButton setToolTip:[_ruleEditor _toolTipForDeleteRowButton]];
     [_addButton setHidden:!editable];
     [_subtractButton setHidden:!editable];
     [self addSubview:_addButton];
@@ -473,13 +473,14 @@ var CONTROL_HEIGHT = 16.,
 
 - (void)_sendRuleAction:(id)sender
 {
+    [_ruleEditor _updatePredicate];
     [_ruleEditor _sendRuleAction];
 }
 
 - (void)_textDidChange:(CPNotification)aNotif
 {
     if ([[aNotif object] superview] == self && [_ruleEditor _sendsActionOnIncompleteTextChange])
-        [_ruleEditor _sendRuleAction];
+        [self _sendRuleAction:nil];
 }
 
 @end

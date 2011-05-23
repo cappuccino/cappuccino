@@ -2307,7 +2307,7 @@ TODO: implement
         target = [self target];
 
     if (action && target)
-        [self sendAction:[self action] to:[self target]];
+        [self sendAction:action to:target];
 }
 
 - (BOOL)_sendsActionOnIncompleteTextChange
