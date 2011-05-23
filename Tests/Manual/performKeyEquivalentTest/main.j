@@ -11,8 +11,13 @@
 
 @import "AppController.j"
 
+var formatter = function(aString, aTitle, aLevel)
+{
+    return aString;
+};
 
 function main(args, namedArgs)
 {
+    CPLogRegister(CPLogConsole, nil, formatter);
     CPApplicationMain(args, namedArgs);
 }
