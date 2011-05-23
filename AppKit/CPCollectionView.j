@@ -131,6 +131,49 @@
 
 /*!
     Sets the item prototype to \c anItem
+
+    The item prototype should implement the CPCoding protocol
+    because the item is copied by archiving and unarchiving the
+    prototypal view.
+
+    Example:
+
+    <pre>
+      @implement MyCustomView : CPCollectionViewItem
+      {
+          CPArray   items   @accessors;
+      }
+
+      - (id)initWithFrame:(CGRect)aFrame
+      {
+        self = [super initWithFrame:aFrame];
+        if (self)
+        {
+          items = [];
+        }
+        return self;
+      }
+
+      - (id)initWithCoder:(CPCoder)aCoder
+      {
+        self = [super initWithCoder:aCoder];
+        items = [aCoder decodeObjectForKey:@"KEY"];
+        return self;
+      }
+
+      - (void)encodeWithCoder:(CPCoder)aCoder
+      {
+        [aCoder encodeObject:items forKey:@"KEY"];
+        [super encodeWithCoder:aCoder];
+      }
+
+      @end
+    </pre>
+
+    This will allow the collection view to create multiple 'clean' copies
+    of the item prototype which will maintain the original values for item
+    and all of the properties archived by the super class.
+
     @param anItem the new item prototype
 */
 - (void)setItemPrototype:(CPCollectionViewItem)anItem
