@@ -571,6 +571,10 @@ var _CPEventPeriodicEventPeriod         = 0,
     if (_modifierFlags & (CPCommandKeyMask | CPControlKeyMask))
         return YES;
 
+    // Cocoa does not consider space, backspace, or escape a key equivalent
+    // if the first responder is a text field (presumably a subclass of NSText).
+    var firstResponderIsText = [[_window firstResponder] isKindOfClass:[CPTextField class]];
+
     for (var i = 0; i < characterCount; i++)
     {
         var c = _characters.charAt(i);
@@ -578,7 +582,12 @@ var _CPEventPeriodicEventPeriod         = 0,
         if ((c >= CPUpArrowFunctionKey && c <= CPModeSwitchFunctionKey) ||
             c === CPEnterCharacter ||
             c === CPNewlineCharacter ||
-            c === CPCarriageReturnCharacter)
+            c === CPCarriageReturnCharacter ||
+            (!firstResponderIsText &&
+                (c === CPSpaceFunctionKey ||
+                 c === CPDeleteCharacter ||
+                 c === CPBackspaceCharacter ||
+                 c === CPEscapeFunctionKey)))
         {
             return YES;
         }

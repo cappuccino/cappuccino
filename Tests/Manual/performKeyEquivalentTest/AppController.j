@@ -14,8 +14,10 @@ var usesNewCode = YES;
 
 @implementation AppController : CPObject
 {
-    CPWindow    theWindow; //this "outlet" is connected automatically by the Cib
+    CPWindow    theWindow;
+    CPWindow    theOtherWindow;
     CPCheckBox  useNewCode;
+    CPTextField textField;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -29,8 +31,9 @@ var usesNewCode = YES;
     // You can implement this method on any object instantiated from a Cib.
     // It's a useful hook for setting up current UI values, and other things.
 
-    // In this case, we want the window from Cib to become our full browser window
-    [theWindow setFullPlatformWindow:YES];
+    [theOtherWindow orderFront:nil];
+    [theWindow setInitialFirstResponder:textField];
+    [theWindow makeKeyAndOrderFront:nil];
 }
 
 - (void)setUsesNewCode:(id)sender
@@ -45,13 +48,13 @@ var usesNewCode = YES;
 - (void)keyDown:(CPEvent)anEvent
 {
     CPLog("keyDown:%s", [self description]);
-    
+
     if (!usesNewCode)
     {
         if ([anEvent _couldBeKeyEquivalent] && [self performKeyEquivalent:anEvent])
             return;
     }
-    
+
     // CPTextField uses an HTML input element to take the input so we need to
     // propagate the dom event so the element is updated. This has to be done
     // before interpretKeyEvents: though so individual commands have a chance
@@ -66,7 +69,7 @@ var usesNewCode = YES;
 - (BOOL)performKeyEquivalent:(CPEvent)anEvent
 {
     CPLog("performKeyEquivalent:%s", [self description]);
-    
+
     return [super performKeyEquivalent:anEvent];
 }
 
@@ -87,6 +90,10 @@ var usesNewCode = YES;
     if (_modifierFlags & (CPCommandKeyMask | CPControlKeyMask))
         return YES;
 
+    // Cocoa does not consider space, backspace, or escape a key equivalent
+    // if the first responder is a text field (presumably a subclass of NSText).
+    var firstResponderIsText = [[_window firstResponder] isKindOfClass:[CPTextField class]];
+
     for (var i = 0; i < characterCount; i++)
     {
         if (usesNewCode)
@@ -96,7 +103,12 @@ var usesNewCode = YES;
             if ((c >= CPUpArrowFunctionKey && c <= CPModeSwitchFunctionKey) ||
                 c === CPEnterCharacter ||
                 c === CPNewlineCharacter ||
-                c === CPCarriageReturnCharacter)
+                c === CPCarriageReturnCharacter ||
+                (!firstResponderIsText &&
+                    (c === CPSpaceFunctionKey ||
+                     c === CPDeleteCharacter ||
+                     c === CPBackspaceCharacter ||
+                     c === CPEscapeFunctionKey)))
             {
                 return YES;
             }
