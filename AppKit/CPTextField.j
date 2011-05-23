@@ -704,9 +704,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)keyDown:(CPEvent)anEvent
 {
-    if ([anEvent _couldBeKeyEquivalent] && [self performKeyEquivalent:anEvent])
-        return;
-
     // CPTextField uses an HTML input element to take the input so we need to
     // propagate the dom event so the element is updated. This has to be done
     // before interpretKeyEvents: though so individual commands have a chance

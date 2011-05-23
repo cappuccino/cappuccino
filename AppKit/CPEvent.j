@@ -573,27 +573,17 @@ var _CPEventPeriodicEventPeriod         = 0,
 
     for (var i = 0; i < characterCount; i++)
     {
-        switch (_characters.charAt(i))
+        var c = _characters.charAt(i);
+
+        if ((c >= CPUpArrowFunctionKey && c <= CPModeSwitchFunctionKey) ||
+            c === CPEnterCharacter ||
+            c === CPNewlineCharacter ||
+            c === CPCarriageReturnCharacter)
         {
-            case CPBackspaceCharacter:
-            case CPDeleteCharacter:
-            case CPDeleteFunctionKey:
-            case CPTabCharacter:
-            case CPCarriageReturnCharacter:
-            case CPNewlineCharacter:
-            case CPSpaceFunctionKey:
-            case CPEscapeFunctionKey:
-            case CPPageUpFunctionKey:
-            case CPPageDownFunctionKey:
-            case CPLeftArrowFunctionKey:
-            case CPUpArrowFunctionKey:
-            case CPRightArrowFunctionKey:
-            case CPDownArrowFunctionKey:
-            case CPEndFunctionKey:
-            case CPHomeFunctionKey:
-                return YES;
+            return YES;
         }
     }
+
     // FIXME: More cases?
     return NO;
 }
@@ -651,4 +641,3 @@ function _CPEventFromNativeMouseEvent(aNativeEvent, anEventType, aPoint, modifie
 
     return aNativeEvent;
 }
-
