@@ -83,6 +83,7 @@ CPKeyCodes = {
   Y: 89,
   Z: 90,
   META: 91,
+  WEBKIT_RIGHT_META: 93,    // WebKit (on Mac at least) fires this for the right Command key
   CONTEXT_MENU: 93,
   NUM_ZERO: 96,
   NUM_ONE: 97,

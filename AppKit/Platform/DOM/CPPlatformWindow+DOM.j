@@ -183,11 +183,12 @@ KeyCodesToUnicodeMap[CPKeyCodes.BACKSLASH]              = "\\";
 KeyCodesToUnicodeMap[CPKeyCodes.CLOSE_SQUARE_BRACKET]   = "]";
 
 var ModifierKeyCodes = [
-    CPKeyCodes.META,
-    CPKeyCodes.MAC_FF_META,
-    CPKeyCodes.CTRL,
-    CPKeyCodes.ALT,
-    CPKeyCodes.SHIFT
+        CPKeyCodes.META,
+        CPKeyCodes.WEBKIT_RIGHT_META,
+        CPKeyCodes.MAC_FF_META,
+        CPKeyCodes.CTRL,
+        CPKeyCodes.ALT,
+        CPKeyCodes.SHIFT
     ],
     supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
