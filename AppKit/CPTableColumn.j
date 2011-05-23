@@ -332,18 +332,18 @@ CPTableColumnUserResizingMask   = 1 << 1;
     individual cell that is shown. As a result, changes made after calling this method won't be reflected.
 
     Example:
-        @code
-        [tableColumn setDataView:someView]; // snapshot taken
-        [[tableColumn dataView] setSomething:x]; //won't work
-        @endcode
+    @code
+    [tableColumn setDataView:someView]; // snapshot taken
+    [[tableColumn dataView] setSomething:x]; //won't work
+    @endcode
 
     This doesn't work because the snapshot is taken before the new property is applied. Instead, do:
-        @code
-        [someView setSomething:x];
-        [tableColumn setDataView:someView];
-        @endcode
+    @code
+    [someView setSomething:x];
+    [tableColumn setDataView:someView];
+    @endcode
 
-    @note you should implement CPKeyedArchiving otherwise you might see unexpected results.
+    @note You should implement CPKeyedArchiving otherwise you might see unexpected results.
     This is done by adding the following methods to your class:
     @endnote
 
@@ -380,7 +380,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
     }
     @endcode
 
-    @section Themeing
+    @section Theming
 
     When you set a dataview and it is added to the tableview the theme state will be set to \c CPThemeStateTableDataView
     When the dataview becomes selected the theme state will be set to \c CPThemeStateSelectedDataView.
