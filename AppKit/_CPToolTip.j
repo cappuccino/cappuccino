@@ -20,7 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPTextField.j"
 @import "CPView.j"
 @import "CPWindow.j"
 
@@ -172,124 +171,6 @@ var _CPToolTipHeight = 24.0,
 
     [self setFrameOrigin:mousePosition];
     [self orderFront:nil];
-}
-
-@end
-
-
-
-/*! @ingroup appkit
-    Add tooltip support to CPView.
-*/
-@implementation CPView (toolTips)
-
-/*!
-    Sets the tooltip for the receiver.
-
-    @param aToolTip the tooltip
-*/
-- (void)setToolTip:(CPString)aToolTip
-{
-    if (_toolTip == aToolTip)
-        return;
-
-    _toolTip = aToolTip;
-
-    if (!_DOMElement)
-        return;
-
-    var fIn = function(e)
-        {
-            [self _fireToolTip];
-        },
-        fOut = function(e)
-        {
-            [self _invalidateToolTip];
-        };
-
-    if (_toolTip)
-    {
-        if (_DOMElement.addEventListener)
-        {
-            _DOMElement.addEventListener("mouseover", fIn, NO);
-            _DOMElement.addEventListener("keypress", fOut, NO);
-            _DOMElement.addEventListener("mouseout", fOut, NO);
-        }
-        else if (_DOMElement.attachEvent)
-        {
-            _DOMElement.attachEvent("onmouseover", fIn);
-            _DOMElement.attachEvent("onkeypress", fOut);
-            _DOMElement.attachEvent("onmouseout", fOut);
-        }
-    }
-    else
-    {
-        if (_DOMElement.removeEventListener)
-        {
-            _DOMElement.removeEventListener("mouseover", fIn, NO);
-            _DOMElement.removeEventListener("keypress", fOut, NO);
-            _DOMElement.removeEventListener("mouseout", fOut, NO);
-        }
-        else if (_DOMElement.detachEvent)
-        {
-            _DOMElement.detachEvent("onmouseover", fIn);
-            _DOMElement.detachEvent("onkeypress", fOut);
-            _DOMElement.detachEvent("onmouseout", fOut);
-        }
-    }
-}
-
-/*!
-    Returns the receiver's tooltip.
-*/
-- (CPString)toolTip
-{
-    return _toolTip;
-}
-
-/*! @ignore
-    Starts the tooltip timer.
-*/
-- (void)_fireToolTip
-{
-    if (_CPCurrentToolTipTimer)
-    {
-        [_CPCurrentToolTipTimer invalidate];
-        if (_CPCurrentToolTip)
-            [_CPCurrentToolTip close];
-        _CPCurrentToolTip = nil;
-    }
-
-    if (_toolTip)
-        _CPCurrentToolTipTimer = [CPTimer scheduledTimerWithTimeInterval:_CPToolTipDelay target:self selector:@selector(_showToolTip:) userInfo:nil repeats:NO];
-}
-
-/*! @ignore
-    Stop the tooltip timer if any
-*/
-- (void)_invalidateToolTip
-{
-    if (_CPCurrentToolTipTimer)
-    {
-        [_CPCurrentToolTipTimer invalidate];
-        _CPCurrentToolTipTimer = nil;
-    }
-
-    if (_CPCurrentToolTip)
-    {
-        [_CPCurrentToolTip close];
-        _CPCurrentToolTip = nil;
-    }
-}
-
-/*! @ignore
-    Actually shows the tooltip if any
-*/
-- (void)_showToolTip:(CPTimer)aTimer
-{
-    if (_CPCurrentToolTip)
-        [_CPCurrentToolTip close];
-    _CPCurrentToolTip = [_CPToolTip toolTipWithString:_toolTip];
 }
 
 @end
