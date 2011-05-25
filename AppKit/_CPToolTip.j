@@ -26,10 +26,7 @@
 _CPToolTipWindowMask = 1 << 27;
 
 var _CPToolTipHeight = 24.0,
-    _CPToolTipFontSize = 11.0,
-    _CPCurrentToolTip,
-    _CPCurrentToolTipTimer,
-    _CPToolTipDelay = 1.0;
+    _CPToolTipFontSize = 11.0;
 
 /*! @ingroup appkit
     This is a basic tooltip that behaves mostly like Cocoa ones.

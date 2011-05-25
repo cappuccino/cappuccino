@@ -2901,6 +2901,9 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
 
 @import "_CPToolTip.j"
 
+var _CPCurrentToolTip,
+    _CPCurrentToolTipTimer,
+    _CPToolTipDelay = 1.0;
 @implementation CPView (toolTips)
 
 /*!
