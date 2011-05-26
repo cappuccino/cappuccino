@@ -3,40 +3,53 @@
  *     Copyright (c) 2011 Pear, Inc. All rights reserved.
  */
 
+var GRADIENT_START_COLOR = "#fcfcfc",
+    GRADIENT_END_COLOR = "#dfdfdf",
+    BORDER_COLOR = "#BDBDBD";
+
 var GRADIENT_NORMAL,
     GRADIENT_HIGHLIGHTED,
-    IE_FILTER = "progid:DXImageTransform.Microsoft.gradient(startColorstr='#fcfcfc', endColorstr='#dfdfdf')";
+    GRADIENT_PROPERTY;
+ 
+if (CPBrowserIsEngine(CPWebKitBrowserEngine))
+{
+    GRADIENT_NORMAL = "-webkit-gradient(linear, left top, left bottom, from(" + GRADIENT_START_COLOR + "), to(" + GRADIENT_END_COLOR + "))",
+    GRADIENT_HIGHLIGHTED = "-webkit-gradient(linear, left top, left bottom, from(" + GRADIENT_END_COLOR + "), to(" + GRADIENT_START_COLOR + "))";
+    GRADIENT_PROPERTY = "background";
+}
+else if (CPBrowserIsEngine(CPGeckoBrowserEngine))
+{
+    GRADIENT_NORMAL = "-moz-linear-gradient(top, " + GRADIENT_START_COLOR + ", " + GRADIENT_END_COLOR + ")",
+    GRADIENT_HIGHLIGHTED = "-moz-linear-gradient(top, " + GRADIENT_END_COLOR + ", " + GRADIENT_START_COLOR + ")";
+    GRADIENT_PROPERTY = "background";
+}
+else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
+{
+    GRADIENT_NORMAL = "progid:DXImageTransform.Microsoft.gradient(startColorstr='" + GRADIENT_START_COLOR + "', endColorstr='" + GRADIENT_END_COLOR + "')";
+    GRADIENT_HIGHLIGHTED = "progid:DXImageTransform.Microsoft.gradient(startColorstr='" + GRADIENT_END_COLOR + "', endColorstr='" + GRADIENT_START_COLOR + "')";
+    GRADIENT_PROPERTY = "filter";
+}else
+{
+    GRADIENT_NORMAL = GRADIENT_START_COLOR;
+    GRADIENT_HIGHLIGHTED = GRADIENT_END_COLOR;
+    GRADIENT_PROPERTY = "background";
+}
 
 @implementation _CPRuleEditorPopUpButton : CPPopUpButton
 {
     CPInteger radius;
 }
 
-+ (void)initialize
-{
-    if (CPBrowserIsEngine(CPWebKitBrowserEngine))
-    {
-        GRADIENT_NORMAL = "-webkit-gradient(linear, left top, left bottom, from(rgb(252, 252, 252)), to(rgb(223, 223, 223)))";
-        GRADIENT_HIGHLIGHTED = "-webkit-gradient(linear, left top, left bottom, from(rgb(223, 223, 223)), to(rgb(252, 252, 252)))";
-    }
-    else if (CPBrowserIsEngine(CPGeckoBrowserEngine))
-    {
-        GRADIENT_NORMAL = "-moz-linear-gradient(top,  rgb(252, 252, 252),  rgb(223, 223, 223))";
-        GRADIENT_HIGHLIGHTED = "-moz-linear-gradient(top,  rgb(223, 223, 223),  rgb(252, 252, 252))";
-    }
-}
-
 - (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
     {
-        var style = _DOMElement.style;
-        style.backgroundImage = GRADIENT_NORMAL;
-        style.border = "1px solid rgb(189, 189, 189)";
-        style.filter = IE_FILTER;
-
         [self setTextColor:[CPColor colorWithWhite:101 / 255 alpha:1]];
         [self setBordered:NO];
+
+        var style = _DOMElement.style;
+        style.border = "1px solid " + BORDER_COLOR;
+        style[GRADIENT_PROPERTY] = GRADIENT_NORMAL;
      }
 
     return self;
@@ -49,11 +62,6 @@ var GRADIENT_NORMAL,
         return nil;
 
     return self;
-}
-
-- (void)setHighlighted:(BOOL)shouldHighlight
-{
-    _DOMElement.style.backgroundImage = (shouldHighlight) ? GRADIENT_HIGHLIGHTED : GRADIENT_NORMAL;
 }
 
 - (BOOL)sliceIsEditable
@@ -81,12 +89,9 @@ var GRADIENT_NORMAL,
 - (void)layoutSubviews
 {
     radius = FLOOR(CGRectGetHeight([self bounds])/2);
-
     var style = _DOMElement.style,
         radiusCSS = radius + "px";
 
-    //style.webkitBorderRadius = radiusCSS;
-    //style.mozBorderRadius = radiusCSS;
     style.borderRadius = radiusCSS;
 
     [super layoutSubviews];
@@ -132,9 +137,10 @@ var GRADIENT_NORMAL,
         [self setAutoresizingMask:CPViewMinXMargin];
         [self setImagePosition:CPImageOnly];
         [self setBordered:NO];
+
         var style = _DOMElement.style;
-        style.border = "1px solid rgb(189, 189, 189)";
-        style.filter = IE_FILTER;
+        style.border = "1px solid " + BORDER_COLOR;
+        style[GRADIENT_PROPERTY] = GRADIENT_NORMAL;
     }
 
     return self;
@@ -148,10 +154,9 @@ var GRADIENT_NORMAL,
         radiusCSS = radius + "px";
 
     style.borderRadius = radiusCSS;
-    style.backgroundImage = ([self isHighlighted]) ? GRADIENT_HIGHLIGHTED : GRADIENT_NORMAL;
+    style[GRADIENT_PROPERTY] = ([self isHighlighted]) ? GRADIENT_HIGHLIGHTED : GRADIENT_NORMAL;
 
     [super layoutSubviews];
 }
 
 @end
-

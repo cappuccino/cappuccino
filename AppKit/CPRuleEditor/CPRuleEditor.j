@@ -1118,7 +1118,8 @@ TODO: implement
     var view = [[_CPRuleEditorViewSliceDropSeparator alloc] initWithFrame:CGRectMake(0,-10, [self frame].size.width, 2)];
     [view setAutoresizingMask:CPViewWidthSizable];
 #if PLATFORM(DOM)
-    view._DOMElement.style.webkitTransition = "opacity 300ms ease-in";
+    if (CPBrowserIsEngine(CPWebKitBrowserEngine))
+        view._DOMElement.style.webkitTransition = "opacity 300ms ease-in";
 #endif
     return view;
 }
