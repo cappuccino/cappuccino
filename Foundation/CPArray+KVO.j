@@ -127,7 +127,7 @@
 
     _removeManySEL = sel_getName(@"remove" + capitalizedKey + "AtIndexes:");
     if ([_proxyObject respondsToSelector:_removeManySEL])
-        _remove = [_proxyObject methodForSelector:_removeManySEL];
+        _removeMany = [_proxyObject methodForSelector:_removeManySEL];
 
     _replaceManySEL = sel_getName(@"replace" + capitalizedKey + "AtIndexes:with" + capitalizedKey + ":");
     if ([_proxyObject respondsToSelector:_replaceManySEL])
