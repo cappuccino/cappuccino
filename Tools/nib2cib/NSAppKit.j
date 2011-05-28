@@ -40,6 +40,7 @@
 @import "NSFormatter.j"
 @import "NSIBObjectData.j"
 @import "NSImageView.j"
+@import "NSLevelIndicator.j"
 @import "NSMatrix.j"
 @import "NSMenu.j"
 @import "NSMenuItem.j"
