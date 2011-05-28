@@ -133,14 +133,6 @@ var CPLevelIndicatorStyleKey                    = "CPLevelIndicatorStyleKey",
 {
     [super encodeWithCoder:aCoder];
 
-    _minValue = [aCoder decodeDoubleForKey:CPLevelIndicatorMinValueKey];
-    _maxValue = [aCoder decodeDoubleForKey:CPLevelIndicatorMaxValueKey];
-    _warningValue = [aCoder decodeDoubleForKey:CPLevelIndicatorWarningValueKey];
-    _criticalValue = [aCoder decodeDoubleForKey:CPLevelIndicatorCriticalValueKey];
-    _tickMarkPosition = [aCoder decodeIntForKey:CPLevelIndicatorTickMarkPositionKey];
-    _numberOfTickMarks = [aCoder decodeIntForKey:CPLevelIndicatorNumberOfTickMarksKey];
-    _numberOfMajorTickMarks = [aCoder decodeIntForKey:CPLevelIndicatorNumberOfMajorTickMarksKey];
-
     [aCoder encodeInt:_levelIndicatorStyle forKey:CPLevelIndicatorStyleKey];
     [aCoder encodeDouble:_minValue forKey:CPLevelIndicatorMinValueKey];
     [aCoder encodeDouble:_maxValue forKey:CPLevelIndicatorMaxValueKey];
