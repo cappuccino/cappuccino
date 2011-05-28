@@ -70,7 +70,8 @@
 
 + (CPSet)keyPathsForValuesAffectingArrangedObjects
 {
-    return [CPSet setWithObjects:"content", "filterPredicate", "sortDescriptors"];
+    // Also depends on "filterPredicate" but we'll handle that manually.
+    return [CPSet setWithObjects:"content", "sortDescriptors"];
 }
 
 + (CPSet)keyPathsForValuesAffectingSelection
@@ -488,7 +489,14 @@
 */
 - (void)setFilterPredicate:(CPPredicate)value
 {
+    if (_filterPredicate === value)
+        return;
+
+    // __setFilterPredicate will call _rearrangeObjects without
+    // sending notifications, so we must send them instead.
+    [self willChangeValueForKey:@"arrangedObjects"];
     [self __setFilterPredicate:value];
+    [self didChangeValueForKey:@"arrangedObjects"];
 }
 
 /*
@@ -501,8 +509,7 @@
         return;
 
     _filterPredicate = value;
-    // Use the non-notification version since arrangedObjects already depends
-    // on filterPredicate.
+    // Use the non-notification version.
     [self _rearrangeObjects];
 }
 
@@ -745,6 +752,7 @@
     else
         [self _rearrangeObjects];
 
+    // This will also send notificaitons for arrangedObjects.
     [self didChangeValueForKey:@"content"];
     if (_clearsFilterPredicateOnInsertion)
         [self didChangeValueForKey:@"filterPredicate"];
