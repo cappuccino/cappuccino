@@ -7,12 +7,12 @@
  */
 
 @import <AppKit/CPScrollView.j>
+@import "Predicatetransformer.j"
 
 @implementation AppController : CPObject
 {
     CPWindow             window;
     CPPredicateEditor    predicateEditor;
-    CPTextField          predicateField;
     
     CPTableView     leftTable;
     CPTableView     rightTable;
@@ -23,6 +23,12 @@
     CPMutableArray  operators;
     CPMutableArray  leftKeyPaths;
     CPMutableArray  rightConstants;
+}
+
++ (void)initialize
+{
+    var transformer = [[PredicateTransformer alloc] init];
+    [CPValueTransformer setValueTransformer:transformer forName:@"PredicateTransformer"];   
 }
 
 - (void)awakeFromCib
@@ -38,17 +44,9 @@
     [window setFullBridge:YES];
 }
 
-- (IBAction)displayPredicate:(id)sender
-{
-    var predicate = [CPPredicate predicateWithFormat:[sender stringValue]];
-    if (predicate)
-        [predicateEditor setObjectValue:predicate];
-}
-
 - (IBAction)predicateEditorAction:(id)sender
 {
     CPLogConsole(_cmd);
-    [predicateField setStringValue:[sender objectValue]];
 }
 
 - (void)ruleEditorRowsDidChange:(CPNotification)notification

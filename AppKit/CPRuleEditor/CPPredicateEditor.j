@@ -82,6 +82,14 @@
 }
 
 /*! @cond */
++ (Class)_binderClassForBinding:(CPString)theBinding
+{
+    if (theBinding == CPValueBinding)
+        return [CPPredicateEditorValueBinder class];
+        
+    return [super _binderClassForBinding:theBinding];
+}
+
 - (void)_initRuleEditorShared
 {
     [super _initRuleEditorShared];
@@ -514,4 +522,40 @@ var CPPredicateTemplatesKey = @"CPPredicateTemplates";
 
 @end
 
+@implementation CPPredicateEditorValueBinder : CPBinder
+{
+}
+// temporary fix. See https://github.com/cacaodev/cappuccino/commits/CPKeyValueBinding for CPbinder fix. 
+- (void)setValueFor:(CPString)aBinding
+{
+    var destination = [_info objectForKey:CPObservedObjectKey],
+        keyPath = [_info objectForKey:CPObservedKeyPathKey],
+        options = [_info objectForKey:CPOptionsKey],
+        newValue = [destination valueForKeyPath:keyPath];
+
+    var isMarker = CPIsControllerMarker(newValue);
+    if (isMarker)
+         newValue = [options objectForKey:newValue];
+    
+    if (!isMarker || newValue == nil)
+        newValue = [self transformValue:newValue withOptions:options];
+
+    [_source setValue:newValue forKey:aBinding];
+}
+
+- (void)reverseSetValueFor:(CPString)aBinding
+{
+    var destination = [_info objectForKey:CPObservedObjectKey],
+        keyPath = [_info objectForKey:CPObservedKeyPathKey],
+        options = [_info objectForKey:CPOptionsKey],
+        newValue = [_source valueForKeyPath:aBinding];
+
+    newValue = [self reverseTransformValue:newValue withOptions:options];
+    
+    [destination removeObserver:self forKeyPath:keyPath];
+    [destination setValue:newValue forKeyPath:keyPath];
+    [destination addObserver:self forKeyPath:keyPath options:CPKeyValueObservingOptionNew context:aBinding];
+}
+
+@end
 /*! @endcond */

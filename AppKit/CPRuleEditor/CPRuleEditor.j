@@ -1657,25 +1657,22 @@ TODO: implement
     }
 }
 
-- (void)bind:(CPString)binding toObject:(id)observableController withKeyPath:(CPString)keyPath options:(CPDictionary)options
+- (void)bind:(CPString)aBinding toObject:(id)observableController withKeyPath:aKeyPath options:options
 {
-    if (keyPath == nil || [observableController valueForKey:keyPath] == nil)
-    {
-        [CPException raise:CPInvalidArgumentException reason:"Keypath or bound object cannot be nil"];
-        return;
-    }
-
-    if ([binding isEqualToString:@"rows"])
-    {
-        if ([observableController respondsToSelector:@selector(objectClass)])
-            _rowClass = [observableController objectClass];
-
-         [self _setBoundDataSource:observableController withKeyPath:keyPath options:options];
-    }
-    else if ([binding isEqualToString:CPValueBinding])
-        [super bind:binding toObject:observableController withKeyPath:keyPath options:options];
-    else
-        [CPException raise:CPInvalidArgumentException reason:"Keypath or bound object cannot be nil"];
+  if ([aBinding isEqualToString:@"rows"])
+  {
+    [self unbind:aBinding];
+    [self _setBoundDataSource:observableController withKeyPath:aKeyPath options:options];
+    
+    [_rowCache removeAllObjects];
+    [_slices removeAllObjects];
+    
+    var newRows = [CPArray array];
+    var oldRows = [self _rootRowsArray];
+    [self _changedRowArray:newRows withOldRowArray:oldRows forParent:_boundArrayOwner];
+  }
+  else
+    [super bind:aBinding toObject:observableController withKeyPath:aKeyPath options:options];
 }
 
 - (void)unbind:(id)object
@@ -1686,18 +1683,18 @@ TODO: implement
 
 - (void)_setBoundDataSource:(id)datasource withKeyPath:(CPString)keyPath options:(CPDictionary)options
 {
-    if (_boundArrayOwner != nil)
-        [_boundArrayOwner removeObserver:self forKeyPath:_boundArrayKeyPath];
+    if ([observableController respondsToSelector:@selector(objectClass)])
+        _rowClass = [observableController objectClass];
 
     _boundArrayKeyPath = keyPath;
     _boundArrayOwner = datasource;
 
-    var boundRows = [_boundArrayOwner valueForKey:_boundArrayKeyPath];
+    //var boundRows = [_boundArrayOwner valueForKey:_boundArrayKeyPath];
 
     [_boundArrayOwner addObserver:self forKeyPath:_boundArrayKeyPath options:CPKeyValueObservingOptionOld|CPKeyValueObservingOptionNew context:boundArrayContext];
 
-    if ([boundRows isKindOfClass:[CPArray class]] && [boundRows count] > 0)
-        [_boundArrayOwner setValue:boundRows forKey:_boundArrayKeyPath];
+    //if ([boundRows isKindOfClass:[CPArray class]] && [boundRows count] > 0)
+    //    [_boundArrayOwner setValue:boundRows forKey:_boundArrayKeyPath];
 }
 
 - (void)_setPredicate:(CPPredicate)predicate

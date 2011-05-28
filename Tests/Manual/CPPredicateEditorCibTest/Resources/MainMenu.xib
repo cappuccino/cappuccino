@@ -12,6 +12,7 @@
 		</object>
 		<array key="IBDocument.IntegratedClassDependencies">
 			<string>NSPopUpButtonCell</string>
+			<string>NSObjectController</string>
 			<string>NSScroller</string>
 			<string>NSPredicateEditor</string>
 			<string>NSMenuItem</string>
@@ -1148,7 +1149,7 @@
 						<object class="NSTextField" id="884566601">
 							<reference key="NSNextResponder" ref="439893737"/>
 							<int key="NSvFlags">270</int>
-							<string key="NSFrame">{{20, 476}, {611, 22}}</string>
+							<string key="NSFrame">{{20, 478}, {611, 22}}</string>
 							<reference key="NSSuperview" ref="439893737"/>
 							<reference key="NSWindow"/>
 							<reference key="NSNextKeyView" ref="869316024"/>
@@ -2719,6 +2720,14 @@
 			<object class="NSCustomObject" id="773916665">
 				<string key="NSClassName">AppController</string>
 			</object>
+			<object class="NSObjectController" id="958965449">
+				<array class="NSMutableArray" key="NSDeclaredKeys">
+					<string>predicate</string>
+				</array>
+				<bool key="NSEditable">YES</bool>
+				<bool key="NSAutomaticallyPreparesContent">YES</bool>
+				<object class="_NSManagedProxy" key="_NSManagedProxy"/>
+			</object>
 		</array>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
 			<array class="NSMutableArray" key="connectionRecords">
@@ -3419,28 +3428,49 @@
 					<int key="connectionID">1345</int>
 				</object>
 				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.predicate</string>
+						<reference key="source" ref="407607490"/>
+						<reference key="destination" ref="958965449"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="407607490"/>
+							<reference key="NSDestination" ref="958965449"/>
+							<string key="NSLabel">value: selection.predicate</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.predicate</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">1435</int>
+				</object>
+				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
 						<string key="label">predicateEditorAction:</string>
 						<reference key="source" ref="773916665"/>
 						<reference key="destination" ref="407607490"/>
 					</object>
-					<int key="connectionID">1409</int>
+					<int key="connectionID">1436</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">displayPredicate:</string>
-						<reference key="source" ref="773916665"/>
-						<reference key="destination" ref="884566601"/>
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.predicate</string>
+						<reference key="source" ref="884566601"/>
+						<reference key="destination" ref="958965449"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="884566601"/>
+							<reference key="NSDestination" ref="958965449"/>
+							<string key="NSLabel">value: selection.predicate</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.predicate</string>
+							<dictionary key="NSOptions">
+								<boolean value="NO" key="NSAllowsEditingMultipleValuesSelection"/>
+								<boolean value="NO" key="NSConditionallySetsEditable"/>
+								<string key="NSValueTransformerName">PredicateTransformer</string>
+							</dictionary>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
 					</object>
-					<int key="connectionID">1412</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">predicateField</string>
-						<reference key="source" ref="773916665"/>
-						<reference key="destination" ref="884566601"/>
-					</object>
-					<int key="connectionID">1413</int>
+					<int key="connectionID">1437</int>
 				</object>
 			</array>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -3999,11 +4029,11 @@
 						<int key="objectID">372</int>
 						<reference key="object" ref="439893737"/>
 						<array class="NSMutableArray" key="children">
-							<reference ref="884566601"/>
 							<reference ref="869316024"/>
 							<reference ref="411662527"/>
 							<reference ref="196312022"/>
 							<reference ref="738552837"/>
+							<reference ref="884566601"/>
 						</array>
 						<reference key="parent" ref="972006081"/>
 					</object>
@@ -4755,6 +4785,11 @@
 						<reference key="object" ref="942261832"/>
 						<reference key="parent" ref="586880274"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1414</int>
+						<reference key="object" ref="958965449"/>
+						<reference key="parent" ref="0"/>
+					</object>
 				</array>
 			</object>
 			<dictionary class="NSMutableDictionary" key="flattenedProperties">
@@ -4837,6 +4872,7 @@
 				<string key="1343.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="136.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<integer value="1" key="136.ImportedFromIB2"/>
+				<string key="1414.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="143.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<integer value="1" key="143.ImportedFromIB2"/>
 				<string key="144.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -5036,7 +5072,7 @@
 			<nil key="activeLocalization"/>
 			<dictionary class="NSMutableDictionary" key="localizations"/>
 			<nil key="sourceID"/>
-			<int key="maxID">1413</int>
+			<int key="maxID">1437</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
