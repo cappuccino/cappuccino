@@ -94,7 +94,7 @@ var ELEMENTS = 200,
     ]];
 
     var start = (new Date).getTime();
-    for (var i = 0; i < REPEATS; i++)
+    for (var i = 0; i < REPEATS / 2; i++)
     {
         [ac setFilterPredicate:predicate];
         [ac addObject:[Sortable sortableWithA:i B:i * 2]];
@@ -112,6 +112,30 @@ var ELEMENTS = 200,
     }
     var end = (new Date).getTime();
     CPLog.warn("testAddObject_, sorted, clear filter on insert: " + (end - start) + "ms");
+
+    [ac setClearsFilterPredicateOnInsertion:NO];
+    [ac setFilterPredicate:predicate];
+
+    var start = (new Date).getTime();
+    for (var i = 0; i < REPEATS; i++)
+    {
+        [ac addObject:[Sortable sortableWithA:i B:i % 3]];
+
+        var sorted = [ac arrangedObjects],
+            last = ELEMENTS;
+
+        // Verify that all is well.
+        for (var j = 0, count = [sorted count]; j < count; j++)
+        {
+            if (sorted[j].b == 0)
+                [self fail:"b == 0 should be filtered out (position: " + j + ")"];
+            if (sorted[j].a >= last)
+                [self fail:"array values should be descending (position: " + j + ")"];
+            last = sorted[j];
+        }
+    }
+    var end = (new Date).getTime();
+    CPLog.warn("testAddObject_, sorted, filtered: " + (end - start) + "ms");
 }
 
 @end
