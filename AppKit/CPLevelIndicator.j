@@ -48,14 +48,14 @@ var _CPLevelIndicatorBezelColor = nil,
 */
 @implementation CPLevelIndicator : CPControl
 {
-    CPLevelIndicator    _levelIndicatorStyle @accessors;
-    double              _minValue @accessors;
-    double              _maxValue @accessors;
-    double              _warningValue @accessors;
-    double              _criticalValue @accessors;
-    CPTickMarkPosition  _tickMarkPosition @accessors;
-    int                 _numberOfTickMarks @accessors;
-    int                 _numberOfMajorTickMarks @accessors;
+    CPLevelIndicator    _levelIndicatorStyle    @accessors(property=levelIndicatorStyle);
+    double              _minValue               @accessors(property=minValue);
+    double              _maxValue               @accessors(property=maxValue);
+    double              _warningValue           @accessors(property=warningValue);
+    double              _criticalValue          @accessors(property=criticalValue);
+    CPTickMarkPosition  _tickMarkPosition       @accessors(property=tickMarkPosition);
+    int                 _numberOfTickMarks      @accessors(property=numberOfTickMarks);
+    int                 _numberOfMajorTickMarks @accessors(property=numberOfMajorTickMarks);
 }
 
 + (void)initialize
@@ -185,7 +185,6 @@ var _CPLevelIndicatorBezelColor = nil,
 
     return _CGRectMakeZero();
 }
-
 
 /*
 - (CPLevelIndicatorStyle)style;
