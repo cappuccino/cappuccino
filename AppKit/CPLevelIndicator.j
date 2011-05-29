@@ -56,6 +56,8 @@ var _CPLevelIndicatorBezelColor = nil,
     CPTickMarkPosition  _tickMarkPosition       @accessors(property=tickMarkPosition);
     int                 _numberOfTickMarks      @accessors(property=numberOfTickMarks);
     int                 _numberOfMajorTickMarks @accessors(property=numberOfMajorTickMarks);
+
+    BOOL                _isEditable;
 }
 
 + (void)initialize
@@ -186,6 +188,59 @@ var _CPLevelIndicatorBezelColor = nil,
     return _CGRectMakeZero();
 }
 
+/*!
+    Sets whether or not the receiver level indicator can be edited.
+*/
+- (void)setEditable:(BOOL)shouldBeEditable
+{
+    if (_isEditable === shouldBeEditable)
+        return;
+
+    _isEditable = shouldBeEditable;
+}
+
+/*!
+    Returns \c YES if the textfield is currently editable by the user.
+*/
+- (BOOL)isEditable
+{
+    return _isEditable;
+}
+
+- (void)mouseDown:(CPEvent)anEvent
+{
+    if (![self isEditable] || ![self isEnabled])
+        return;
+
+    var type = [anEvent type],
+        location = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+
+    if (type == CPLeftMouseDown)
+    {
+        var segmentCount = _maxValue - _minValue;
+
+        if (segmentCount <= 0)
+            return;
+
+        for (var i = 0; i < segmentCount; i++)
+        {
+            var rect = [self rectForEphemeralSubviewNamed:"segment-bezel-" + i];
+
+            if (CGRectContainsPoint(rect, location))
+            {
+                [self setDoubleValue:(_minValue + i + 1)];
+                [self sendAction:[self action] to:[self target]];
+                return;
+            }
+        }
+    }
+}
+
+- (void)mouseUp:(CPEvent)anEvent
+{
+    // Don't do anything special on mouse up, e.g. don't fire the action.
+}
+
 /*
 - (CPLevelIndicatorStyle)style;
 - (void)setLevelIndicatorStyle:(CPLevelIndicatorStyle)style;
@@ -224,7 +279,8 @@ var CPLevelIndicatorStyleKey                    = "CPLevelIndicatorStyleKey",
     CPLevelIndicatorCriticalValueKey            = "CPLevelIndicatorCriticalValueKey",
     CPLevelIndicatorTickMarkPositionKey         = "CPLevelIndicatorTickMarkPositionKey",
     CPLevelIndicatorNumberOfTickMarksKey        = "CPLevelIndicatorNumberOfTickMarksKey",
-    CPLevelIndicatorNumberOfMajorTickMarksKey   = "CPLevelIndicatorNumberOfMajorTickMarksKey";
+    CPLevelIndicatorNumberOfMajorTickMarksKey   = "CPLevelIndicatorNumberOfMajorTickMarksKey",
+    CPLevelIndicatorIsEditableKey               = "CPLevelIndicatorIsEditableKey";
 
 @implementation CPLevelIndicator (CPCoding)
 
@@ -242,6 +298,8 @@ var CPLevelIndicatorStyleKey                    = "CPLevelIndicatorStyleKey",
         _tickMarkPosition = [aCoder decodeIntForKey:CPLevelIndicatorTickMarkPositionKey];
         _numberOfTickMarks = [aCoder decodeIntForKey:CPLevelIndicatorNumberOfTickMarksKey];
         _numberOfMajorTickMarks = [aCoder decodeIntForKey:CPLevelIndicatorNumberOfMajorTickMarksKey];
+
+        _isEditable = [aCoder decodeBoolForKey:CPLevelIndicatorIsEditableKey];
 
         [self _init];
 
@@ -264,6 +322,7 @@ var CPLevelIndicatorStyleKey                    = "CPLevelIndicatorStyleKey",
     [aCoder encodeInt:_tickMarkPosition forKey:CPLevelIndicatorTickMarkPositionKey];
     [aCoder encodeInt:_numberOfTickMarks forKey:CPLevelIndicatorNumberOfTickMarksKey];
     [aCoder encodeInt:_numberOfMajorTickMarks forKey:CPLevelIndicatorNumberOfMajorTickMarksKey];
+    [aCoder encodeBool:_isEditable forKey:CPLevelIndicatorIsEditableKey];
 }
 
 @end

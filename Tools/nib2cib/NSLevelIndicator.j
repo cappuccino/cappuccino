@@ -41,6 +41,8 @@
         _tickMarkPosition = [cell tickMarkPosition];
         _numberOfTickMarks = [cell numberOfTickMarks];
         _numberOfMajorTickMarks = [cell numberOfMajorTickMarks];
+
+        [self setEditable:[cell isEditable]];
     }
 
     return self;
