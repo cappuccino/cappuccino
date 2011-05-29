@@ -58,6 +58,8 @@ var _CPLevelIndicatorBezelColor = nil,
     int                 _numberOfMajorTickMarks @accessors(property=numberOfMajorTickMarks);
 
     BOOL                _isEditable;
+
+    BOOL                _isTracking;
 }
 
 + (void)initialize
@@ -212,33 +214,63 @@ var _CPLevelIndicatorBezelColor = nil,
     if (![self isEditable] || ![self isEnabled])
         return;
 
-    var type = [anEvent type],
-        location = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+    [self _trackMouse:anEvent];
+}
 
-    if (type == CPLeftMouseDown)
+- (void)_trackMouse:(CPEvent)anEvent
+{
+    var type = [anEvent type];
+
+    if (type == CPLeftMouseDown || type == CPLeftMouseDragged)
     {
         var segmentCount = _maxValue - _minValue;
 
         if (segmentCount <= 0)
             return;
 
-        for (var i = 0; i < segmentCount; i++)
-        {
-            var rect = [self rectForEphemeralSubviewNamed:"segment-bezel-" + i];
+        var location = [self convertPoint:[anEvent locationInWindow] fromView:nil],
+            bounds = [self bounds],
+            oldValue = [self doubleValue];
+            newValue = oldValue;
 
-            if (CGRectContainsPoint(rect, location))
+        // Moving the mouse outside of the widget to the left sets it
+        // to its minimum, and moving outside on the right sets it to
+        // its maximum.
+        if (type == CPLeftMouseDragged && location.x < 0)
+        {
+            newValue = _minValue;
+        }
+        else if (type == CPLeftMouseDragged && location.x > bounds.size.width)
+        {
+            newValue = _maxValue;
+        }
+        else
+        {
+            for (var i = 0; i < segmentCount; i++)
             {
-                [self setDoubleValue:(_minValue + i + 1)];
-                [self sendAction:[self action] to:[self target]];
-                return;
+                var rect = [self rectForEphemeralSubviewNamed:"segment-bezel-" + i];
+
+                // Once we're tracking the mouse, we only care about horizontal mouse movement.
+                if (location.x >= CGRectGetMinX(rect) && location.x < CGRectGetMaxX(rect))
+                {
+                    newValue = (_minValue + i + 1);
+                    break;
+                }
             }
         }
-    }
-}
 
-- (void)mouseUp:(CPEvent)anEvent
-{
-    // Don't do anything special on mouse up, e.g. don't fire the action.
+        if (newValue != oldValue)
+            [self setDoubleValue:newValue];
+
+        // Track the mouse to support click and slide value editing.
+        _isTracking = YES;
+        [CPApp setTarget:self selector:@selector(_trackMouse:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
+    }
+    else if (_isTracking)
+    {
+        _isTracking = NO;
+        [self sendAction:[self action] to:[self target]];
+    }
 }
 
 /*
