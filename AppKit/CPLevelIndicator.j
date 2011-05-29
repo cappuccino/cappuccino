@@ -276,19 +276,45 @@ var _CPLevelIndicatorBezelColor = nil,
 /*
 - (CPLevelIndicatorStyle)style;
 - (void)setLevelIndicatorStyle:(CPLevelIndicatorStyle)style;
+*/
 
-- (double)minValue;
-- (void)setMinValue:(double)minValue;
+- (void)setMinValue:(double)minValue
+{
+    if (_minValue === minValue)
+        return;
+    _minValue = minValue;
 
-- (double)maxValue;
-- (void)setMaxValue:(double)maxValue;
+    [self setNeedsLayout];
+}
 
-- (double)warningValue;
+- (void)setMaxValue:(double)maxValue
+{
+    if (_maxValue === maxValue)
+        return;
+    _maxValue = maxValue;
+
+    [sef setNeedsLayout];
+}
+
 - (void)setWarningValue:(double)warningValue;
+{
+    if (_warningValue === warningValue)
+        return;
+    _warningValue = warningValue;
 
-- (double)criticalValue;
+    [sef setNeedsLayout];
+}
+
 - (void)setCriticalValue:(double)criticalValue;
+{
+    if (_criticalValue === criticalValue)
+        return;
+    _criticalValue = criticalValue;
 
+    [sef setNeedsLayout];
+}
+
+/*
 - (CPTickMarkPosition)tickMarkPosition;
 - (void)setTickMarkPosition:(CPTickMarkPosition)position;
 
