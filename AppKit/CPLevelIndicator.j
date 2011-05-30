@@ -370,7 +370,11 @@ var CPLevelIndicatorStyleKey                    = "CPLevelIndicatorStyleKey",
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
+    // There's no reason to encode the background.
+    var background = [self backgroundColor];
+    [self setBackgroundColor:nil];
     [super encodeWithCoder:aCoder];
+    [self setBackgroundColor:background];
 
     [aCoder encodeInt:_levelIndicatorStyle forKey:CPLevelIndicatorStyleKey];
     [aCoder encodeDouble:_minValue forKey:CPLevelIndicatorMinValueKey];
