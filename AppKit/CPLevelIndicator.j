@@ -131,12 +131,16 @@ var _CPLevelIndicatorBezelColor = nil,
 
 - (void)_init
 {
-    // TODO Make themable and style dependent.
-    [self setBackgroundColor:_CPLevelIndicatorBezelColor];
 }
 
 - (void)layoutSubviews
 {
+    var bezelView = [self layoutEphemeralSubviewNamed:"bezel"
+                                           positioned:CPWindowBelow
+                      relativeToEphemeralSubviewNamed:nil];
+    // TODO Make themable.
+    [bezelView setBackgroundColor:_CPLevelIndicatorBezelColor];
+
     var segmentCount = _maxValue - _minValue;
 
     if (segmentCount <= 0)
@@ -152,11 +156,11 @@ var _CPLevelIndicatorBezelColor = nil,
 
     for (var i = 0; i < segmentCount; i++)
     {
-        var bezelView = [self layoutEphemeralSubviewNamed:"segment-bezel-" + i
+        var segmentView = [self layoutEphemeralSubviewNamed:"segment-bezel-" + i
                                                positioned:CPWindowAbove
-                          relativeToEphemeralSubviewNamed:nil];
+                          relativeToEphemeralSubviewNamed:bezelView];
 
-        [bezelView setBackgroundColor:(_minValue + i) < value ? filledColor : _CPLevelIndicatorSegmentEmptyColor];
+        [segmentView setBackgroundColor:(_minValue + i) < value ? filledColor : _CPLevelIndicatorSegmentEmptyColor];
     }
 }
 
@@ -167,7 +171,18 @@ var _CPLevelIndicatorBezelColor = nil,
 
 - (CGRect)rectForEphemeralSubviewNamed:(CPString)aViewName
 {
-    if (aViewName.indexOf("segment-bezel") === 0)
+    // TODO Put into theme attributes.
+    var bezelHeight = 18,
+        segmentHeight = 17,
+        bounds = _CGRectCreateCopy([self bounds]);
+
+    if (aViewName == "bezel")
+    {
+        bounds.origin.y = (_CGRectGetHeight(bounds) - bezelHeight) / 2.0;
+        bounds.size.height = bezelHeight;
+        return bounds;
+    }
+    else if (aViewName.indexOf("segment-bezel") === 0)
     {
         var segment = parseInt(aViewName.substring("segment-bezel-".length), 10),
             segmentCount = _maxValue - _minValue;
@@ -175,13 +190,13 @@ var _CPLevelIndicatorBezelColor = nil,
         if (segment >= segmentCount)
             return _CGRectMakeZero();
 
-        var bounds = [self bounds],
-            basicSegmentWidth = bounds.size.width / segmentCount,
+        var basicSegmentWidth = bounds.size.width / segmentCount,
             segmentFrame = CGRectCreateCopy([self bounds]);
 
+        segmentFrame.origin.y = (_CGRectGetHeight(bounds) - bezelHeight) / 2.0;
         segmentFrame.origin.x =  FLOOR(segment * basicSegmentWidth);
         segmentFrame.size.width = (segment == segmentCount - 1) ? bounds.size.width - segmentFrame.origin.x : FLOOR(((segment + 1) * basicSegmentWidth)) - FLOOR((segment * basicSegmentWidth)) - _CPLevelIndicatorSpacing;
-        segmentFrame.size.height -= 1;
+        segmentFrame.size.height = segmentHeight;
 
         return segmentFrame;
     }
@@ -369,11 +384,7 @@ var CPLevelIndicatorStyleKey                    = "CPLevelIndicatorStyleKey",
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    // There's no reason to encode the background.
-    var background = [self backgroundColor];
-    [self setBackgroundColor:nil];
     [super encodeWithCoder:aCoder];
-    [self setBackgroundColor:background];
 
     [aCoder encodeInt:_levelIndicatorStyle forKey:CPLevelIndicatorStyleKey];
     [aCoder encodeDouble:_minValue forKey:CPLevelIndicatorMinValueKey];
