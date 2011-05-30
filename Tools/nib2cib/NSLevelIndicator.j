@@ -28,6 +28,7 @@
 {
     var cell = [aCoder decodeObjectForKey:@"NSCell"];
 
+    // Initialise before [super ...] to ensure setObjectValue constrains the values properly.
     _minValue = [cell minValue];
     _maxValue = [cell maxValue];
 
@@ -35,15 +36,28 @@
 
     if (self)
     {
-        _levelIndicatorStyle = [cell levelIndicatorStyle];
-        _warningValue = [cell warningValue];
-        _criticalValue = [cell criticalValue];
-        _tickMarkPosition = [cell tickMarkPosition];
-        _numberOfTickMarks = [cell numberOfTickMarks];
-        _numberOfMajorTickMarks = [cell numberOfMajorTickMarks];
-
-        [self setEditable:[cell isEditable]];
+        self = [self NS_initWithCell:cell];
     }
+
+    return self;
+}
+
+/*!
+    Intialise the receiver given a cell. This method is meant for reuse by controls which contain
+    cells other than CPLevelIndicator itself.
+*/
+- (id)NS_initWithCell:(NSCell)cell
+{
+    _minValue = [cell minValue];
+    _maxValue = [cell maxValue];
+    _levelIndicatorStyle = [cell levelIndicatorStyle];
+    _warningValue = [cell warningValue];
+    _criticalValue = [cell criticalValue];
+    _tickMarkPosition = [cell tickMarkPosition];
+    _numberOfTickMarks = [cell numberOfTickMarks];
+    _numberOfMajorTickMarks = [cell numberOfMajorTickMarks];
+
+    [self setEditable:[cell isEditable]];
 
     return self;
 }

@@ -78,6 +78,11 @@
             _dataView = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
             _dataView = [_dataView NS_initWithCell:dataViewCell];
         }
+        else if ([dataViewCell isKindOfClass:[NSLevelIndicatorCell class]])
+        {
+            _dataView = [[CPLevelIndicator alloc] initWithFrame:CGRectMakeZero()];
+            _dataView = [_dataView NS_initWithCell:dataViewCell];
+        }
 
         [_dataView setValue:[dataViewCell alignment] forThemeAttribute:@"alignment"];
 
