@@ -180,7 +180,7 @@ var _CPLevelIndicatorBezelColor = nil,
             segmentFrame = CGRectCreateCopy([self bounds]);
 
         segmentFrame.origin.x =  FLOOR(segment * basicSegmentWidth);
-        segmentFrame.size.width = FLOOR(((segment + 1) * basicSegmentWidth)) - FLOOR((segment * basicSegmentWidth)) - _CPLevelIndicatorSpacing;
+        segmentFrame.size.width = (segment == segmentCount - 1) ? bounds.size.width - segmentFrame.origin.x : FLOOR(((segment + 1) * basicSegmentWidth)) - FLOOR((segment * basicSegmentWidth)) - _CPLevelIndicatorSpacing;
         segmentFrame.size.height -= 1;
 
         return segmentFrame;
