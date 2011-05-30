@@ -293,7 +293,7 @@ var _CPLevelIndicatorBezelColor = nil,
         return;
     _maxValue = maxValue;
 
-    [sef setNeedsLayout];
+    [self setNeedsLayout];
 }
 
 - (void)setWarningValue:(double)warningValue;
@@ -302,7 +302,7 @@ var _CPLevelIndicatorBezelColor = nil,
         return;
     _warningValue = warningValue;
 
-    [sef setNeedsLayout];
+    [self setNeedsLayout];
 }
 
 - (void)setCriticalValue:(double)criticalValue;
@@ -311,7 +311,7 @@ var _CPLevelIndicatorBezelColor = nil,
         return;
     _criticalValue = criticalValue;
 
-    [sef setNeedsLayout];
+    [self setNeedsLayout];
 }
 
 /*
