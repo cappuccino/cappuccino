@@ -240,14 +240,14 @@ CFPropertyListSerializers[CFPropertyList.Format280North_v1_0] =
     "integer":      function(/*Integer*/ anInteger)
                     {
                         var string = "" + anInteger;
-    
+
                         return INTEGER_MARKER + ';' + string.length + ';' + string;
                     },
 
     "real":         function(/*Float*/ aFloat)
                     {
                         var string = "" + aFloat;
-    
+
                         return FLOAT_MARKER + ';' + string.length + ';' + string;
                     },
 
@@ -259,7 +259,7 @@ CFPropertyListSerializers[CFPropertyList.Format280North_v1_0] =
 
                         for (; index < count; ++index)
                             string += serializePropertyList(anArray[index], serializers);
-    
+
                         return string + END_MARKER + ';';
                     },
 
@@ -340,57 +340,57 @@ var textContent = function(nodes)
 var _plist_traverseNextNode = function(anXMLNode, stayWithin, stack)
 {
     var node = anXMLNode;
-    
+
     PLIST_FIRST_CHILD(node);
-    
+
     // If this element has a child, traverse to it.
     if (node)
         return node;
-    
+
     // If not, first check if it is a container class (as opposed to a designated leaf).
     // If it is, then we have to pop this container off the stack, since it is empty.
     if (NODE_NAME(anXMLNode) === PLIST_ARRAY || NODE_NAME(anXMLNode) === PLIST_DICTIONARY)
         stack.pop();
-    
+
     // If not, next check whether it has a sibling.
     else
     {
         if (node === stayWithin)
             return NULL;
-        
+
         node = anXMLNode;
-        
+
         PLIST_NEXT_SIBLING(node);
-        
+
         if (node)
-            return node; 
+            return node;
     }
-    
+
     // If it doesn't, start working our way back up the node tree.
     node = anXMLNode;
-    
+
     // While we have a node and it doesn't have a sibling (and we're within our stayWithin),
     // keep moving up.
     while (node)
     {
         var next = node;
-        
+
         PLIST_NEXT_SIBLING(next);
-        
+
         // If we have a next sibling, just go to it.
         if (next)
             return next;
-            
+
         var node = PARENT_NODE(node);
-            
-        // If we are being asked to move up, and our parent is the stay within, then just 
+
+        // If we are being asked to move up, and our parent is the stay within, then just
         if (stayWithin && node === stayWithin)
             return NULL;
-        
+
         // Pop the stack if we have officially "moved up"
         stack.pop();
     }
-        
+
     return NULL;
 }
 
@@ -428,13 +428,13 @@ var ARRAY_MARKER        = "A",
 function propertyListFrom280NorthString(/*String*/ aString)
 {
     var stream = new MarkedStream(aString),
-    
+
         marker = NULL,
-        
+
         key = "",
         object = NULL,
         plistObject = NULL,
-        
+
         containers = [],
         currentContainer = NULL;
 
@@ -445,12 +445,12 @@ function propertyListFrom280NorthString(/*String*/ aString)
             containers.pop();
             continue;
         }
-        
+
         var count = containers.length;
-        
+
         if (count)
             currentContainer = containers[count - 1];
-        
+
         if (marker === KEY_MARKER)
         {
             key = stream.getString();
@@ -465,26 +465,27 @@ function propertyListFrom280NorthString(/*String*/ aString)
             case DICTIONARY_MARKER: object = new CFMutableDictionary();
                                     containers.push(object);
                                     break;
-            
+
             case FLOAT_MARKER:      object = parseFloat(stream.getString());
                                     break;
+
             case INTEGER_MARKER:    object = parseInt(stream.getString(), 10);
                                     break;
-                                        
+
             case STRING_MARKER:     object = stream.getString();
                                     break;
-                                        
+
             case TRUE_MARKER:       object = YES;
                                     break;
             case FALSE_MARKER:      object = NO;
                                     break;
-                                        
+
             default:                throw new Error("*** " + marker + " marker not recognized in Plist.");
         }
 
         if (!plistObject)
             plistObject = object;
-            
+
         else if (currentContainer)
             // If the container is an array...
             if (currentContainer.slice)
@@ -492,7 +493,7 @@ function propertyListFrom280NorthString(/*String*/ aString)
             else
                 currentContainer.setValueForKey(key, object);
     }
-    
+
     return plistObject;
 }
 
@@ -539,7 +540,7 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
     // Skip over DOCTYPE and so forth.
     while (IS_OF_TYPE(XMLNode, XML_DOCUMENT) || IS_OF_TYPE(XMLNode, XML_XML))
         PLIST_FIRST_CHILD(XMLNode);
-    
+
     // Skip over the DOCTYPE... see a pattern?
     if (IS_DOCUMENTTYPE(XMLNode))
         PLIST_NEXT_SIBLING(XMLNode);
@@ -551,19 +552,19 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
     var key = "",
         object = NULL,
         plistObject = NULL,
-        
+
         plistNode = XMLNode,
-        
+
         containers = [],
         currentContainer = NULL;
-    
+
     while (XMLNode = _plist_traverseNextNode(XMLNode, plistNode, containers))
     {
         var count = containers.length;
-        
+
         if (count)
             currentContainer = containers[count - 1];
-            
+
         if (NODE_NAME(XMLNode) === PLIST_KEY)
         {
             key = TEXT_CONTENT(XMLNode);
@@ -590,22 +591,22 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
                                             object = decodeHTMLComponent(FIRST_CHILD(XMLNode) ? TEXT_CONTENT(XMLNode) : "");
 
                                         break;
-                                        
+
             case PLIST_BOOLEAN_TRUE:    object = YES;
                                         break;
             case PLIST_BOOLEAN_FALSE:   object = NO;
                                         break;
-                                        
+
             case PLIST_DATA:            object = new CFMutableData();
                                         object.bytes = FIRST_CHILD(XMLNode) ? CFData.decodeBase64ToArray(TEXT_CONTENT(XMLNode), YES) : [];
                                         break;
-                                        
+
             default:                    throw new Error("*** " + NODE_NAME(XMLNode) + " tag not recognized in Plist.");
         }
 
         if (!plistObject)
             plistObject = object;
-            
+
         else if (currentContainer)
             // If the container is an array...
             if (currentContainer.slice)
@@ -613,7 +614,7 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
             else
                 currentContainer.setValueForKey(key, object);
     }
-    
+
     return plistObject;
 }
 
