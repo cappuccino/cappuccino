@@ -176,13 +176,12 @@ var _CPLevelIndicatorBezelColor = nil,
             return _CGRectMakeZero();
 
         var bounds = [self bounds],
-            segmentWidth = FLOOR(bounds.size.width / segmentCount),
+            basicSegmentWidth = bounds.size.width / segmentCount;
             segmentFrame = CGRectCreateCopy([self bounds]);
 
+        segmentFrame.origin.x =  FLOOR(segment * basicSegmentWidth);
+        segmentFrame.size.width = FLOOR(((segment + 1) * basicSegmentWidth)) - FLOOR((segment * basicSegmentWidth)) - _CPLevelIndicatorSpacing;
         segmentFrame.size.height -= 1;
-        segmentFrame.origin.x = segmentWidth * segment;
-        // Make the last segment use up the remaining space.
-        segmentFrame.size.width = segment < segmentCount - 1 ? segmentWidth - _CPLevelIndicatorSpacing : bounds.size.width - segmentFrame.origin.x;
 
         return segmentFrame;
     }
@@ -293,7 +292,7 @@ var _CPLevelIndicatorBezelColor = nil,
         return;
     _maxValue = maxValue;
 
-    [sef setNeedsLayout];
+    [self setNeedsLayout];
 }
 
 - (void)setWarningValue:(double)warningValue;
@@ -302,7 +301,7 @@ var _CPLevelIndicatorBezelColor = nil,
         return;
     _warningValue = warningValue;
 
-    [sef setNeedsLayout];
+    [self setNeedsLayout];
 }
 
 - (void)setCriticalValue:(double)criticalValue;
@@ -311,7 +310,7 @@ var _CPLevelIndicatorBezelColor = nil,
         return;
     _criticalValue = criticalValue;
 
-    [sef setNeedsLayout];
+    [self setNeedsLayout];
 }
 
 /*
