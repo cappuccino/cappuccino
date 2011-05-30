@@ -61,127 +61,142 @@ var NSButtonIsBorderedMask = 0x00800000,
 
     if (self)
     {
-        var cell = [aCoder decodeObjectForKey:@"NSCell"],
-            alternateImage = [cell alternateImage],
-            positionOffsetSizeWidth = 0,
-            positionOffsetOriginX = 0,
-            positionOffsetOriginY = 0;
-
-        if ([alternateImage isKindOfClass:[NSButtonImageSource class]])
-        {
-            /*
-                Because CPCheckBox and CPRadio are direct subclasses,
-                we can just change the class of this object. In the
-                case of CPRadio, we can add its _radioGroup ivar by setting it
-                directly on self.
-            */
-            if ([alternateImage imageName] === @"NSSwitch")
-                self.isa = [CPCheckBox class];
-
-            else if ([alternateImage imageName] === @"NSRadioButton")
-            {
-                self.isa = [CPRadio class];
-                self._radioGroup = [CPRadioGroup new];
-            }
-        }
-
-        NIB_CONNECTION_EQUIVALENCY_TABLE[[cell UID]] = self;
-
-        _title = [cell title];
-        _controlSize = CPRegularControlSize;
-
-        [self setBordered:[cell isBordered]];
-        _bezelStyle = [cell bezelStyle];
-
-
-        // clean up:
-        switch (_bezelStyle)
-        {
-            // implemented:
-            case CPRoundedBezelStyle:
-                positionOffsetOriginY = 6;
-                positionOffsetOriginX = 4;
-                positionOffsetSizeWidth = -12;
-                break;
-            case CPTexturedRoundedBezelStyle:
-                positionOffsetOriginY = 2;
-                positionOffsetOriginX = -2;
-                positionOffsetSizeWidth = 0;
-                break;
-            case CPHUDBezelStyle:
-                break;
-            // approximations:
-            case CPRoundRectBezelStyle:
-                positionOffsetOriginY = -3;
-                positionOffsetOriginX = -2;
-                positionOffsetSizeWidth = 0;
-                _bezelStyle = CPRoundedBezelStyle;
-                break;
-            case CPSmallSquareBezelStyle:
-                positionOffsetOriginX = -2;
-                positionOffsetSizeWidth = 0;
-                _bezelStyle = CPTexturedRoundedBezelStyle;
-                break;
-            case CPThickSquareBezelStyle:
-            case CPThickerSquareBezelStyle:
-            case CPRegularSquareBezelStyle:
-                positionOffsetOriginY = 3;
-                positionOffsetOriginX = 0;
-                positionOffsetSizeWidth = -4;
-                _bezelStyle = CPTexturedRoundedBezelStyle;
-                break;
-            case CPTexturedSquareBezelStyle:
-                positionOffsetOriginY = 4;
-                positionOffsetOriginX = -1;
-                positionOffsetSizeWidth = -2;
-                _bezelStyle = CPTexturedRoundedBezelStyle;
-                break;
-            case CPShadowlessSquareBezelStyle:
-                positionOffsetOriginY = 5;
-                positionOffsetOriginX = -2;
-                positionOffsetSizeWidth = 0;
-                _bezelStyle = CPTexturedRoundedBezelStyle;
-                break;
-            case CPRecessedBezelStyle:
-                positionOffsetOriginY = -3;
-                positionOffsetOriginX = -2;
-                positionOffsetSizeWidth = 0;
-                _bezelStyle = CPHUDBezelStyle;
-                break;
-            // unsupported
-            case CPRoundedDisclosureBezelStyle:
-            case CPHelpButtonBezelStyle:
-            case CPCircularBezelStyle:
-            case CPDisclosureBezelStyle:
-                CPLog.warn("NSButton [%s]: unsupported bezel style: %d", _title == null ? "<no title>" : '"' + _title + '"', _bezelStyle);
-                _bezelStyle = CPHUDBezelStyle;
-                break;
-            // error:
-            default:
-                CPLog.warn("NSButton [%s]: unknown bezel style: %d", _title == null ? "<no title>" : '"' + _title + '"', _bezelStyle);
-                _bezelStyle = CPHUDBezelStyle;
-        }
-
-        if ([cell isBordered])
-        {
-            CPLog.debug("NSButton [%s]: adjusting height from %d to %d", _title == null ? "<no title>" : '"' + _title + '"', _frame.size.height, CPButtonDefaultHeight);
-            _frame.size.height = CPButtonDefaultHeight;
-
-            // Reposition the buttons according to its particular offsets
-            _frame.origin.x += positionOffsetOriginX;
-            _frame.origin.y += positionOffsetOriginY;
-            _frame.size.width += positionOffsetSizeWidth;
-            _bounds.size.width += positionOffsetSizeWidth;
-
-            _bounds.size.height = CPButtonDefaultHeight;
-        }
-
-        _keyEquivalent = [cell keyEquivalent];
-        _keyEquivalentModifierMask = [cell keyEquivalentModifierMask];
-
-        _allowsMixedState = [cell allowsMixedState];
-        [self setImagePosition:[cell imagePosition]];
+        var cell = [aCoder decodeObjectForKey:@"NSCell"];
+        self = [self NS_initWithCell:cell];
     }
+
+    return self;
+}
+
+/*!
+    Intialise a button given a cell. This method is meant for reuse by controls which contain
+    cells other than CPButton itself.
+*/
+- (id)NS_initWithCell:(NSCell)cell
+{
+    var alternateImage = [cell alternateImage],
+        positionOffsetSizeWidth = 0,
+        positionOffsetOriginX = 0,
+        positionOffsetOriginY = 0;
+
+    if ([alternateImage isKindOfClass:[NSButtonImageSource class]])
+    {
+        /*
+            Because CPCheckBox and CPRadio are direct subclasses,
+            we can just change the class of this object. In the
+            case of CPRadio, we can add its _radioGroup ivar by setting it
+            directly on self.
+
+            When swizzling the class, make sure to update the theme
+            attributes.
+        */
+        if ([alternateImage imageName] === @"NSSwitch")
+        {
+            self.isa = [CPCheckBox class];
+        }
+        else if ([alternateImage imageName] === @"NSRadioButton")
+        {
+            self.isa = [CPRadio class];
+            self._radioGroup = [CPRadioGroup new];
+        }
+    }
+
+    NIB_CONNECTION_EQUIVALENCY_TABLE[[cell UID]] = self;
+
+    _title = [cell title];
+    _controlSize = CPRegularControlSize;
+
+    [self setBordered:[cell isBordered]];
+    _bezelStyle = [cell bezelStyle];
+
+
+    // clean up:
+    switch (_bezelStyle)
+    {
+        // implemented:
+        case CPRoundedBezelStyle:
+            positionOffsetOriginY = 6;
+            positionOffsetOriginX = 4;
+            positionOffsetSizeWidth = -12;
+            break;
+        case CPTexturedRoundedBezelStyle:
+            positionOffsetOriginY = 2;
+            positionOffsetOriginX = -2;
+            positionOffsetSizeWidth = 0;
+            break;
+        case CPHUDBezelStyle:
+            break;
+        // approximations:
+        case CPRoundRectBezelStyle:
+            positionOffsetOriginY = -3;
+            positionOffsetOriginX = -2;
+            positionOffsetSizeWidth = 0;
+            _bezelStyle = CPRoundedBezelStyle;
+            break;
+        case CPSmallSquareBezelStyle:
+            positionOffsetOriginX = -2;
+            positionOffsetSizeWidth = 0;
+            _bezelStyle = CPTexturedRoundedBezelStyle;
+            break;
+        case CPThickSquareBezelStyle:
+        case CPThickerSquareBezelStyle:
+        case CPRegularSquareBezelStyle:
+            positionOffsetOriginY = 3;
+            positionOffsetOriginX = 0;
+            positionOffsetSizeWidth = -4;
+            _bezelStyle = CPTexturedRoundedBezelStyle;
+            break;
+        case CPTexturedSquareBezelStyle:
+            positionOffsetOriginY = 4;
+            positionOffsetOriginX = -1;
+            positionOffsetSizeWidth = -2;
+            _bezelStyle = CPTexturedRoundedBezelStyle;
+            break;
+        case CPShadowlessSquareBezelStyle:
+            positionOffsetOriginY = 5;
+            positionOffsetOriginX = -2;
+            positionOffsetSizeWidth = 0;
+            _bezelStyle = CPTexturedRoundedBezelStyle;
+            break;
+        case CPRecessedBezelStyle:
+            positionOffsetOriginY = -3;
+            positionOffsetOriginX = -2;
+            positionOffsetSizeWidth = 0;
+            _bezelStyle = CPHUDBezelStyle;
+            break;
+        // unsupported
+        case CPRoundedDisclosureBezelStyle:
+        case CPHelpButtonBezelStyle:
+        case CPCircularBezelStyle:
+        case CPDisclosureBezelStyle:
+            CPLog.warn("NSButton [%s]: unsupported bezel style: %d", _title == null ? "<no title>" : '"' + _title + '"', _bezelStyle);
+            _bezelStyle = CPHUDBezelStyle;
+            break;
+        // error:
+        default:
+            CPLog.warn("NSButton [%s]: unknown bezel style: %d", _title == null ? "<no title>" : '"' + _title + '"', _bezelStyle);
+            _bezelStyle = CPHUDBezelStyle;
+    }
+
+    if ([cell isBordered])
+    {
+        CPLog.debug("NSButton [%s]: adjusting height from %d to %d", _title == null ? "<no title>" : '"' + _title + '"', _frame.size.height, CPButtonDefaultHeight);
+        _frame.size.height = CPButtonDefaultHeight;
+
+        // Reposition the buttons according to its particular offsets
+        _frame.origin.x += positionOffsetOriginX;
+        _frame.origin.y += positionOffsetOriginY;
+        _frame.size.width += positionOffsetSizeWidth;
+        _bounds.size.width += positionOffsetSizeWidth;
+
+        _bounds.size.height = CPButtonDefaultHeight;
+    }
+
+    _keyEquivalent = [cell keyEquivalent];
+    _keyEquivalentModifierMask = [cell keyEquivalentModifierMask];
+
+    _allowsMixedState = [cell allowsMixedState];
+    [self setImagePosition:[cell imagePosition]];
 
     return self;
 }
