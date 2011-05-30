@@ -176,7 +176,7 @@ var _CPLevelIndicatorBezelColor = nil,
             return _CGRectMakeZero();
 
         var bounds = [self bounds],
-            basicSegmentWidth = bounds.size.width / segmentCount;
+            basicSegmentWidth = bounds.size.width / segmentCount,
             segmentFrame = CGRectCreateCopy([self bounds]);
 
         segmentFrame.origin.x =  FLOOR(segment * basicSegmentWidth);
