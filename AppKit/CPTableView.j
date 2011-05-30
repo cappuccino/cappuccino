@@ -3642,7 +3642,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         for (; columnArrayIndex < columnArrayCount; ++columnArrayIndex)
         {
             var columnRect = [self rectOfColumn:columnsArray[columnArrayIndex]],
-                columnX = _CGRectGetMaxX(columnRect) +  0.5;
+                columnX = _CGRectGetMaxX(columnRect) - 0.5;
 
             CGContextMoveToPoint(context, columnX, minY);
             CGContextAddLineToPoint(context, columnX, maxY);
