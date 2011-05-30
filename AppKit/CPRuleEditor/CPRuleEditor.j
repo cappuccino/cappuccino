@@ -84,6 +84,7 @@ var itemsContext                = "items",
     BOOL             _disallowEmpty;
     BOOL             _delegateWantsValidation;
     BOOL             _editable;
+    BOOL             _sendAction;
 
     Class           _rowClass;
 
@@ -120,8 +121,8 @@ var itemsContext                = "items",
     BOOL            _isKeyDown;
     BOOL            _nestingModeDidChange;
 
-    id              _standardLocalizer @accessors(property=standardLocalizer);
-    id              _itemsAndValuesToAddForRowType;
+    _CPRuleEditorLocalizer _standardLocalizer @accessors(property=standardLocalizer);
+    CPDictionary           _itemsAndValuesToAddForRowType;
 }
 
 /*! @cond */
@@ -177,6 +178,7 @@ var itemsContext                = "items",
     _delegateWantsValidation = YES;
     _suppressKeyDownHandling = NO;
     _nestingModeDidChange = NO;
+    _sendAction = YES;
     _itemsAndValuesToAddForRowType = {};
     var animation = [[CPViewAnimation alloc] initWithDuration:0.5 animationCurve:CPAnimationEaseInOut];
     [self setAnimation:animation];
@@ -1288,7 +1290,11 @@ TODO: implement
     }
 
     [self removeRowsAtIndexes:rowindexes includeSubrows:YES];
-    [self _postRowCountChangedNotificationOfType:CPRuleEditorRowsDidChangeNotification indexes:rowindexes]; // indexes should include childs
+
+    [self _updatePredicate];
+    [self _sendRuleAction];
+    [self _postRuleOptionChangedNotification];
+    [self _postRowCountChangedNotificationOfType:CPRuleEditorRowsDidChangeNotification indexes:rowindexes];
 }
 
 - (CPArray)_rootRowsArray
@@ -1391,14 +1397,12 @@ TODO: implement
     // for CPRuleEditorNestingModeSimple only
 
     var rowIndexEvent = [slice rowIndex],
-        rowTypeEvent = [self rowTypeForRow:rowIndexEvent];
+        rowTypeEvent = [self rowTypeForRow:rowIndexEvent],
+        insertIndex = rowIndexEvent + 1;
 
     var parentRowIndex = (rowTypeEvent == CPRuleEditorRowTypeCompound) ? rowIndexEvent:[self parentRowForRow:rowIndexEvent];
 
-    [self insertRowAtIndex:rowIndexEvent + 1 withType:type asSubrowOfRow:parentRowIndex animate:YES];
-
-    // [self _reconfigureSubviewsAnimate:YES];
-    // [self _updatePredicate];
+    [self insertRowAtIndex:insertIndex withType:type asSubrowOfRow:parentRowIndex animate:YES];
 }
 
 - (id)_insertNewRowAtIndex:(int)insertIndex ofType:(CPRuleEditorRowType)rowtype withParentRow:(int)parentRowIndex
@@ -1425,6 +1429,11 @@ TODO: implement
 
     var relInsertIndex = insertIndex - parentRowIndex - 1;
     [subrowsObjects insertObject:row atIndex:relInsertIndex];
+
+    [self _updatePredicate];
+    [self _sendRuleAction];
+    [self _postRuleOptionChangedNotification];
+    [self _postRowCountChangedNotificationOfType:CPRuleEditorRowsDidChangeNotification indexes:[CPIndexSet indexSetWithIndex:insertIndex]];
 
     return row;
 }
@@ -1502,10 +1511,7 @@ TODO: implement
         }
 
         [self _changedRowArray:newRows withOldRowArray:oldRows forParent:object];
-
         [self _reconfigureSubviewsAnimate:[self _wantsRowAnimations]];
-        [self _postRowCountChangedNotificationOfType:CPRuleEditorRowsDidChangeNotification indexes:[change objectForKey:CPKeyValueChangeIndexesKey]];
-
     }
     else if (context == itemsContext)
     {
@@ -1546,7 +1552,9 @@ TODO: implement
 
     var slice = [_slices objectAtIndex:aRow];
     [slice _reconfigureSubviews];
-    [self  _sendRuleAction];
+
+    [self _updatePredicate];
+    [self _sendRuleAction];
     [self _postRuleOptionChangedNotification];
 }
 
@@ -1664,10 +1672,10 @@ TODO: implement
   {
     [self unbind:aBinding];
     [self _setBoundDataSource:observableController withKeyPath:aKeyPath options:options];
-    
+
     [_rowCache removeAllObjects];
     [_slices removeAllObjects];
-    
+
     var newRows = [CPArray array];
     var oldRows = [self _rootRowsArray];
     [self _changedRowArray:newRows withOldRowArray:oldRows forParent:_boundArrayOwner];
@@ -2235,6 +2243,11 @@ TODO: implement
 - (void)draggedView:(CPView)dragView endedAt:(CPPoint)aPoint operation:(CPDragOperation)operation
 {
     _draggingRows = nil;
+
+    [self _updatePredicate];
+    [self _sendRuleAction];
+    [self _postRuleOptionChangedNotification];
+    [self _postRowCountChangedNotificationOfType:CPRuleEditorRowsDidChangeNotification indexes:nil]; // FIXME
 }
 
 - (BOOL)wantsPeriodicDraggingUpdates
@@ -2258,16 +2271,13 @@ TODO: implement
 
 - (void)_postRuleOptionChangedNotification
 {
-    [self reloadPredicate];
-    [self _sendRuleAction];
     [[CPNotificationCenter defaultCenter] postNotificationName:CPRuleEditorRulesDidChangeNotification object:self];
 }
 
 - (void)_postRowCountChangedNotificationOfType:(CPString)notificationName indexes:indexes
 {
-    [self reloadPredicate];
-    [self _sendRuleAction];
-    [[CPNotificationCenter defaultCenter] postNotificationName:notificationName object:self userInfo:[CPDictionary dictionaryWithObject:indexes forKey:"indexes"]];
+    var userInfo = [CPDictionary dictionaryWithObject:indexes forKey:"indexes"];
+    [[CPNotificationCenter defaultCenter] postNotificationName:notificationName object:self userInfo:userInfo];
 }
 
 - (CPIndexSet)_globalIndexesForSubrowIndexes:(CPIndexSet)indexes ofParentObject:(id)parentRowObject
@@ -2304,8 +2314,8 @@ TODO: implement
     var action = [self action],
         target = [self target];
 
-    if (action && target)
-        [self sendAction:action to:target];
+CPLogConsole(_cmd);
+    [self sendAction:action to:target];
 }
 
 - (BOOL)_sendsActionOnIncompleteTextChange

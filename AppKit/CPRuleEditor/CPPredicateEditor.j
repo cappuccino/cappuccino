@@ -86,8 +86,16 @@
 {
     if (theBinding == CPValueBinding)
         return [CPPredicateEditorValueBinder class];
-        
+
     return [super _binderClassForBinding:theBinding];
+}
+
+- (id)_replacementKeyPathForBinding:(CPString)aBinding
+{
+    if (aBinding == CPValueBinding)
+        return @"predicate";
+
+    return [super _replacementKeyPathForBinding:aBinding];
 }
 
 - (void)_initRuleEditorShared
@@ -250,13 +258,17 @@
 {
     var ov = [self objectValue];
     if ((ov == nil) != (objectValue == nil) || ![ov isEqual:objectValue])
+    {
+        [self _setPredicate:objectValue];
         [self _reflectPredicate:objectValue];
+    }
 }
 
 - (void)_reflectPredicate:(id)predicate
 {
     var animation = _currentAnimation;
     _currentAnimation = nil;
+    _sendAction = NO;
 
     if (predicate != nil)
     {
@@ -358,9 +370,7 @@
 
 - (void)_updatePredicate
 {
-    [self willChangeValueForKey:@"objectValue"];
     [self _updatePredicateFromRows];
-    [self didChangeValueForKey:@"objectValue"];
 }
 
 - (void)_updatePredicateFromRows
@@ -384,7 +394,7 @@
     else
         predicate = [[CPCompoundPredicate alloc] initWithType:[self _compoundPredicateTypeForRootRows] subpredicates:subpredicates];
 
-    [super _setPredicate:predicate];
+    [self _setPredicate:predicate];
 }
 
 - (id)_predicateFromRowItem:(id)rowItem
@@ -525,7 +535,7 @@ var CPPredicateTemplatesKey = @"CPPredicateTemplates";
 @implementation CPPredicateEditorValueBinder : CPBinder
 {
 }
-// temporary fix. See https://github.com/cacaodev/cappuccino/commits/CPKeyValueBinding for CPbinder fix. 
+// temporary fix. See https://github.com/cacaodev/cappuccino/commits/CPKeyValueBinding for CPbinder fix.
 - (void)setValueFor:(CPString)aBinding
 {
     var destination = [_info objectForKey:CPObservedObjectKey],
@@ -536,11 +546,11 @@ var CPPredicateTemplatesKey = @"CPPredicateTemplates";
     var isMarker = CPIsControllerMarker(newValue);
     if (isMarker)
          newValue = [options objectForKey:newValue];
-    
+
     if (!isMarker || newValue == nil)
         newValue = [self transformValue:newValue withOptions:options];
 
-    [_source setValue:newValue forKey:aBinding];
+    [_source _reflectPredicate:newValue];
 }
 
 - (void)reverseSetValueFor:(CPString)aBinding
@@ -551,7 +561,7 @@ var CPPredicateTemplatesKey = @"CPPredicateTemplates";
         newValue = [_source valueForKeyPath:aBinding];
 
     newValue = [self reverseTransformValue:newValue withOptions:options];
-    
+
     [destination removeObserver:self forKeyPath:keyPath];
     [destination setValue:newValue forKeyPath:keyPath];
     [destination addObserver:self forKeyPath:keyPath options:CPKeyValueObservingOptionNew context:aBinding];
