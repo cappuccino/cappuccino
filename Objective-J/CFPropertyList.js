@@ -120,7 +120,12 @@ function serializePropertyList(/*CFPropertyList*/ aPropertyList, /*Object*/ seri
 
     else if (type === "number")
     {
-        if (FLOOR(aPropertyList) === aPropertyList)
+        // A number like 3.4028234663852885e+54 should not be written as an integer, even that it is
+        // an integer - it'd be awfully long if written by expanding it. Worse, if written as an
+        // integer with scientific notation the parseInt() used to read it back will parse it as
+        // just 3, thereby wasting many hours of sanity when you're trying to nib2cib a table and
+        // columns are mysteriously showing up 3 pixels wide.
+        if (FLOOR(aPropertyList) === aPropertyList && ("" + aPropertyList).indexOf('e') == -1)
             type = "integer";
         else
             type = "real";
