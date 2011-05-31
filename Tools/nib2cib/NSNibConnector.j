@@ -109,7 +109,7 @@ NIB_CONNECTION_EQUIVALENCY_TABLE = {};
 
 @end
 
-var NSTramsformers = [CPSet setWithObjects:
+var NSTransformers = [CPSet setWithObjects:
                         @"NSNegateBoolean",
                         @"NSIsNil",
                         @"NSIsNotNil",
@@ -138,7 +138,7 @@ var NSTramsformers = [CPSet setWithObjects:
             var CPKey = @"CP" + key.substring(2),
                 NSValue = [NSOptions objectForKey:key];
 
-            if (CPKey === CPValueTransformerNameBindingOption && [NSTramsformers containsObject:NSValue])
+            if (CPKey === CPValueTransformerNameBindingOption && [NSTransformers containsObject:NSValue])
                 NSValue = @"CP" + NSValue.substring(2);
 
             [_options setObject:NSValue forKey:CPKey];

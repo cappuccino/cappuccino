@@ -412,6 +412,32 @@
     [self assert:newSelection equals:[arrayController selectionIndexes] message:@"selection was not set properly"];
 }
 
+- (void)testObservationDuringAddObject_
+{
+    var arrayController = [self arrayController];
+
+    [arrayController addObserver:self forKeyPath:@"arrangedObjects" options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:nil];
+
+    // Add something to clear.
+    [arrayController setFilterPredicate:[CPPredicate predicateWithFormat:@"(name != %@)", "Francisco"]];
+    observations = [];
+    var aPerson = [Employee employeeWithName:@"Alexander" department:[Department departmentWithName:@"Cosmic Path Finding"]];
+
+    [arrayController setClearsFilterPredicateOnInsertion:NO];
+    [self assert:0 equals:[observations count] message:@"no observations before addObject test"];
+    [arrayController addObject:aPerson];
+    [self assert:1 equals:[observations count] message:@"exactly 1 notification for addObject (clearsFilterPredicate NO)"];
+
+    observations = [];
+
+    // Even that this is on, adding an object should only result in one notification.
+    [arrayController setClearsFilterPredicateOnInsertion:YES];
+
+    [self assert:0 equals:[observations count] message:@"no observations before addObject test"];
+    [arrayController addObject:aPerson];
+    [self assert:1 equals:[observations count] message:@"exactly 1 notification for addObject  (clearsFilterPredicate YES)"];
+}
+
 - (void)testCompoundKeyPaths
 {
     var departmentNameField = [[CPTextField alloc] init];

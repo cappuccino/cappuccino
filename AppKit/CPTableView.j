@@ -323,7 +323,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     _tableViewFlags = 0;
     _lastSelectedRow = -1;
-    _clickedRow = -1;
 
     _selectedColumnIndexes = [CPIndexSet indexSet];
     _selectedRowIndexes = [CPIndexSet indexSet];
@@ -663,9 +662,6 @@ NOT YET IMPLEMENTED
     [self reloadData];
 }
 
-/*!
-    @ignore
-*/
 /*!
     Returns the intercell spacing in a CGSize object.
 */
@@ -1541,7 +1537,6 @@ NOT YET IMPLEMENTED
             _numberOfHiddenColumns += 1;
             _tableColumnRanges[index] = CPMakeRange(x, 0.0);
         }
-
         else
         {
             var width = [_tableColumns[index] width] + _intercellSpacing.width;
@@ -1840,7 +1835,7 @@ NOT YET IMPLEMENTED
         leftInset = FLOOR(_intercellSpacing.width / 2.0),
         topInset = FLOOR(_intercellSpacing.height / 2.0);
 
-    return _CGRectMake(tableColumnRange.location + leftInset,  _CGRectGetMinY(rectOfRow) + topInset, tableColumnRange.length - _intercellSpacing.width, _CGRectGetHeight(rectOfRow) - _intercellSpacing.height);
+    return _CGRectMake(tableColumnRange.location + leftInset, _CGRectGetMinY(rectOfRow) + topInset, tableColumnRange.length - _intercellSpacing.width, _CGRectGetHeight(rectOfRow) - _intercellSpacing.height);
 }
 
 /*!
@@ -3640,7 +3635,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         for (; columnArrayIndex < columnArrayCount; ++columnArrayIndex)
         {
             var columnRect = [self rectOfColumn:columnsArray[columnArrayIndex]],
-                columnX = _CGRectGetMaxX(columnRect) +  0.5;
+                columnX = _CGRectGetMaxX(columnRect) - 0.5;
 
             CGContextMoveToPoint(context, columnX, minY);
             CGContextAddLineToPoint(context, columnX, maxY);

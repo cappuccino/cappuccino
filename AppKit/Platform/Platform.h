@@ -1,5 +1,5 @@
 /*
- * Platform.j
+ * Platform.h
  * AppKit
  *
  * Created by Francisco Tolmasky.

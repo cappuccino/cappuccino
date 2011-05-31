@@ -70,7 +70,8 @@
 
 + (CPSet)keyPathsForValuesAffectingArrangedObjects
 {
-    return [CPSet setWithObjects:"content", "filterPredicate", "sortDescriptors"];
+    // Also depends on "filterPredicate" but we'll handle that manually.
+    return [CPSet setWithObjects:"content", "sortDescriptors"];
 }
 
 + (CPSet)keyPathsForValuesAffectingSelection
@@ -488,7 +489,14 @@
 */
 - (void)setFilterPredicate:(CPPredicate)value
 {
+    if (_filterPredicate === value)
+        return;
+
+    // __setFilterPredicate will call _rearrangeObjects without
+    // sending notifications, so we must send them instead.
+    [self willChangeValueForKey:@"arrangedObjects"];
     [self __setFilterPredicate:value];
+    [self didChangeValueForKey:@"arrangedObjects"];
 }
 
 /*
@@ -501,8 +509,7 @@
         return;
 
     _filterPredicate = value;
-    // Use the non-notification version since arrangedObjects already depends
-    // on filterPredicate.
+    // Use the non-notification version.
     [self _rearrangeObjects];
 }
 
@@ -712,8 +719,12 @@
     if (![self canAdd])
         return;
 
-    if (_clearsFilterPredicateOnInsertion)
+    var willClearPredicate = NO;
+    if (_clearsFilterPredicateOnInsertion && _filterPredicate)
+    {
         [self willChangeValueForKey:@"filterPredicate"];
+        willClearPredicate = YES;
+    }
 
     [self willChangeValueForKey:@"content"];
 
@@ -728,11 +739,15 @@
     [_contentObject addObject:object];
     _disableSetContent = NO;
 
-    if (_clearsFilterPredicateOnInsertion)
-        [self __setFilterPredicate:nil];
-
-    if (_filterPredicate === nil || [_filterPredicate evaluateWithObject:object])
+    if (willClearPredicate)
     {
+        // Full rearrange needed due to changed filter.
+        _filterPredicate = nil;
+        [self _rearrangeObjects];
+    }
+    else if (_filterPredicate === nil || [_filterPredicate evaluateWithObject:object])
+    {
+        // Insert directly into the array.
         var pos = [_arrangedObjects insertObject:object inArraySortedByDescriptors:_sortDescriptors];
 
         // selectionIndexes change notification will be fired as a result of the
@@ -742,11 +757,16 @@
         else
             [_selectionIndexes shiftIndexesStartingAtIndex:pos by:1];
     }
-    else
-        [self _rearrangeObjects];
+    /*
+    else if (_filterPredicate !== nil)
+    ...
+    // Implies _filterPredicate && ![_filterPredicate evaluateWithObject:object], so the new object does
+    // not appear in arrangedObjects and we do not have to update at all.
+    */
 
+    // This will also send notificaitons for arrangedObjects.
     [self didChangeValueForKey:@"content"];
-    if (_clearsFilterPredicateOnInsertion)
+    if (willClearPredicate)
         [self didChangeValueForKey:@"filterPredicate"];
 }
 
