@@ -711,7 +711,7 @@ objj_class.prototype.toString = objj_object.prototype.toString = function()
     var isa = this.isa;
 
     if (class_getInstanceMethod(isa, SEL_description))
-        return objj_msgSend(this, description);
+        return objj_msgSend(this, SEL_description);
 
     if (class_isMetaClass(isa))
         return this.name;
