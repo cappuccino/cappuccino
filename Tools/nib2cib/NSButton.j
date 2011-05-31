@@ -196,6 +196,7 @@ var NSButtonIsBorderedMask = 0x00800000,
     _keyEquivalentModifierMask = [cell keyEquivalentModifierMask];
 
     _allowsMixedState = [cell allowsMixedState];
+    [self setImage:[cell normalImage]];
     [self setImagePosition:[cell imagePosition]];
 
     return self;
@@ -223,6 +224,7 @@ var NSButtonIsBorderedMask = 0x00800000,
     int         _bezelStyle         @accessors(readonly, getter=bezelStyle);
 
     CPString    _title              @accessors(readonly, getter=title);
+    CPImage     _normalImage        @accessors(readonly, getter=normalImage);
     CPImage     _alternateImage     @accessors(readonly, getter=alternateImage);
 
     BOOL        _allowsMixedState   @accessors(readonly, getter=allowsMixedState);
@@ -251,6 +253,7 @@ var NSButtonIsBorderedMask = 0x00800000,
         // ... and _objectValue is _state
         _objectValue = [self state];
 
+        _normalImage = [aCoder decodeObjectForKey:@"NSNormalImage"];
         _alternateImage = [aCoder decodeObjectForKey:@"NSAlternateImage"];
         _allowsMixedState = (cellFlags2 & NSButtonAllowsMixedStateMask) ? YES : NO;
 

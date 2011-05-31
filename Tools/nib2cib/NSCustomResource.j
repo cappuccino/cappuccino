@@ -40,8 +40,17 @@ var FILE = require("file");
 
         var size = CGSizeMakeZero();
 
-        if (![[aCoder resourcesPath] length])
+        if (_resourceName == "NSSwitch")
+            return nil;
+        else if (_resourceName == "NSAddTemplate" || _resourceName == "NSRemoveTemplate")
+        {
+            // Defer resolving this path until runtime.
+            _resourceName = _resourceName.replace("NS", "CP");
+        }
+        else if (![[aCoder resourcesPath] length])
+        {
             CPLog.warn("Resources found in nib, but no resources path specified with -R option.");
+        }
         else
         {
             var resourcePath = [aCoder resourcePathForName:_resourceName];
