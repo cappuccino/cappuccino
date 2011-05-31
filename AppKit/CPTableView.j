@@ -323,6 +323,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     _tableViewFlags = 0;
     _lastSelectedRow = -1;
+    _clickedRow = -1;
 
     _selectedColumnIndexes = [CPIndexSet indexSet];
     _selectedRowIndexes = [CPIndexSet indexSet];
