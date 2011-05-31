@@ -93,6 +93,7 @@
 @import "CPToolbarItem.j"
 @import "_CPToolTip.j"
 @import "CPTreeNode.j"
+@import "CPUserDefaultsController.j"
 @import "CPView.j"
 @import "CPViewAnimation.j"
 @import "CPViewController.j"
