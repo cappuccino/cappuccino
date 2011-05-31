@@ -50,7 +50,7 @@ var CPControllerDeclaredKeysKey = @"CPControllerDeclaredKeysKey";
         _declaredKeys = [aDecoder decodeObjectForKey:CPControllerDeclaredKeysKey] || [];
     }
 
-    return nil;
+    return self;
 }
 
 - (BOOL)isEditing
