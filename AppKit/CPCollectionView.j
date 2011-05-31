@@ -386,7 +386,7 @@
 
     _items = [];
 
-    if (!_itemPrototype || !_content)
+    if (!_itemPrototype)
         return;
 
     var index = 0;
@@ -412,7 +412,7 @@
 {
     var width = CGRectGetWidth([self bounds]);
 
-    if (![_content count] || width == _tileWidth)
+    if (width == _tileWidth)
         return;
 
     // We try to fit as many views per row as possible.  Any remaining space is then
