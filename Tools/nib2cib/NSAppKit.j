@@ -71,6 +71,7 @@
 @import "NSToolbarShowColorsItem.j"
 @import "NSToolbarSeparatorItem.j"
 @import "NSToolbarSpaceItem.j"
+@import "NSUserDefaultsController.j"
 @import "NSView.j"
 @import "NSViewController.j"
 @import "NSWindowTemplate.j"
