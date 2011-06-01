@@ -44,9 +44,10 @@
         [self setFont:[cell font]];
         [self setAlignment:[cell alignment]];
 
-        // The NSEnabled flag is never changed when changing the enabled state of a control
-        // Enabled state should is derived from the NSCellFlags decoded by NSCell
-        [self setEnabled:[cell isEnabled]];
+        // Enabled state is derived from the NSEnabled flag or the control's cell.
+        // For example NSTableView uses the NSEnabled flag, but NSButton uses it's cell isEnabled state.
+        // We use the NSEnabled flag here and override the behavior in controls using different logic (NSButton).
+        [self setEnabled:[aCoder decodeBoolForKey:@"NSEnabled"]];
         [self setContinuous:[cell isContinuous]];
 
         [self setTarget:[aCoder decodeObjectForKey:@"NSTarget"]];
