@@ -265,7 +265,7 @@ div.contents hr {
 }
 
 td.indexkey {
-    font-family: Consolas, "Lucida Console";
+    font-family: Consolas, Menlo, "Lucida Console";
 	border-bottom: 1px solid #eee;
 	padding: .25em 0 .25em .5em;
 }
@@ -275,7 +275,7 @@ table tr.indexkey:first-child td {
 }
 
 td.indexvalue {
-    font-family: Consolas, "Lucida Console";
+    font-family: Consolas, Menlo, "Lucida Console";
 	border-bottom: 1px solid #eee;
 	padding: .25em 0 .25em .5em;
 }
@@ -285,7 +285,7 @@ table tr.memlist > td {
 }
 
 tr.memlist td {
-    font-family: Consolas, "Lucida Console";
+    font-family: Consolas, Menlo, "Lucida Console";
 	padding: .25em 0;
 	border-bottom: 1px solid #eee;
 }
@@ -425,7 +425,7 @@ hr.footer {
 /* @group Member Descriptions */
 
 table.memberdecls {
-    font-family: Consolas, "Lucida Console";
+    font-family: Consolas, Menlo, "Lucida Console";
 	border-spacing: 0px;
 	padding: 0px;
 	margin: 0 !important;
@@ -485,7 +485,7 @@ table.memberdecls {
 
 .memname {
     white-space: nowrap;
-    font: bold 105% Consolas, "Lucida Console";
+    font: bold 105% Consolas, Menlo, "Lucida Console";
     margin: .25em 0 .1em .25em;
 }
 
@@ -495,7 +495,7 @@ table.memberdecls {
     padding: 6px 15px;
     color: #253554;
     background-color: #f7f7f7;
-    font-family: Consolas, "Lucida Console";
+    font-family: Consolas, Menlo, "Lucida Console";
     font-weight: bold;
 }
 
@@ -526,7 +526,7 @@ table.memberdecls {
 }
 
 .memdoc dl dd td em {
-    font-family: Consolas, "Lucida Console";
+    font-family: Consolas, Menlo, "Lucida Console";
     font-weight: bold;
 	white-space: nowrap;
 }
