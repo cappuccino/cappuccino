@@ -39,6 +39,7 @@
 @import "NSFont.j"
 @import "NSFormatter.j"
 @import "NSIBObjectData.j"
+@import "NSImage.j"
 @import "NSImageView.j"
 @import "NSLevelIndicator.j"
 @import "NSMatrix.j"
