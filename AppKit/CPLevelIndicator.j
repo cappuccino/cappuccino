@@ -279,6 +279,9 @@ var _CPLevelIndicatorBezelColor = nil,
         // Track the mouse to support click and slide value editing.
         _isTracking = YES;
         [CPApp setTarget:self selector:@selector(_trackMouse:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
+
+        if ([self isContinuous])
+            [self sendAction:[self action] to:[self target]];
     }
     else if (_isTracking)
     {

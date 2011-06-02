@@ -199,6 +199,8 @@ var NSButtonIsBorderedMask = 0x00800000,
     [self setImage:[cell normalImage]];
     [self setImagePosition:[cell imagePosition]];
 
+    [self setEnabled:[cell isEnabled]];
+
     return self;
 }
 

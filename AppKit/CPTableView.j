@@ -663,13 +663,6 @@ NOT YET IMPLEMENTED
 }
 
 /*!
-    @ignore
-*/
-- (void)setThemeState:(int)aState
-{
-}
-
-/*!
     Returns the intercell spacing in a CGSize object.
 */
 - (CGSize)intercellSpacing
