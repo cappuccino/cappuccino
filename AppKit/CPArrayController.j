@@ -828,26 +828,26 @@
 */
 - (void)removeObject:(id)object
 {
-   [self willChangeValueForKey:@"content"];
+    [self willChangeValueForKey:@"content"];
 
-   /*
-   See _disableSetContent explanation in addObject:.
-   */
-   _disableSetContent = YES;
-   [_contentObject removeObject:object];
-   _disableSetContent = NO;
+    // See _disableSetContent explanation in addObject:.
+    _disableSetContent = YES;
 
-   if (_filterPredicate === nil || [_filterPredicate evaluateWithObject:object])
-   {
+    [_contentObject removeObject:object];
+
+    _disableSetContent = NO;
+
+    if (_filterPredicate === nil || [_filterPredicate evaluateWithObject:object])
+    {
         // selectionIndexes change notification will be fired as a result of the
         // content change. Don't fire manually.
         var pos = [_arrangedObjects indexOfObject:object];
 
         [_arrangedObjects removeObjectAtIndex:pos];
         [_selectionIndexes shiftIndexesStartingAtIndex:pos by:-1];
-   }
+    }
 
-   [self didChangeValueForKey:@"content"];
+    [self didChangeValueForKey:@"content"];
 }
 
 /*!
