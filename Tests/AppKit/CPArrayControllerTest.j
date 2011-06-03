@@ -439,6 +439,31 @@
     [self assert:1 equals:[observations count] message:@"exactly 1 notification for addObject  (clearsFilterPredicate YES)"];
 }
 
+/*!
+    Test that if there is no filter predicate to clear, insertObject:atArrangedObjectIndex: with
+    clearsFilterPredicate YES does not send a false filterPredicate notification.
+*/
+- (void)testObservationDuringInsertObject_atArrangedIndex_
+{
+    var arrayController = [self arrayController];
+
+    [arrayController addObserver:self forKeyPath:@"filterPredicate" options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:nil];
+
+    // Add something to clear.
+    [arrayController setFilterPredicate:[CPPredicate predicateWithFormat:@"(name != %@)", "Francisco"]];
+    observations = [];
+    var aPerson = [Employee employeeWithName:@"Alexander" department:[Department departmentWithName:@"Cosmic Path Finding"]];
+
+    [arrayController setClearsFilterPredicateOnInsertion:YES];
+    [self assert:0 equals:[observations count] message:@"no observations before insertObject test"];
+    [arrayController insertObject:aPerson atArrangedObjectIndex:1];
+    [self assert:1 equals:[observations count] message:@"exactly 1 notification for insertObject (clearsFilterPredicate YES)"];
+
+    // Now that the filter is already cleared, we should not get notified that it clears again on the second insert.
+    [arrayController insertObject:aPerson atArrangedObjectIndex:1];
+    [self assert:1 equals:[observations count] message:@"exactly 1 notification for insertObject x 2 (clearsFilterPredicate YES)"];
+}
+
 - (void)testCompoundKeyPaths
 {
     var departmentNameField = [[CPTextField alloc] init];

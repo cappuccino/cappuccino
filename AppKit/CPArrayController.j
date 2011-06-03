@@ -782,8 +782,12 @@
     if (![self canAdd])
         return;
 
-    if (_clearsFilterPredicateOnInsertion)
+    var willClearPredicate = NO;
+    if (_clearsFilterPredicateOnInsertion && _filterPredicate)
+    {
         [self willChangeValueForKey:@"filterPredicate"];
+        willClearPredicate = YES;
+    }
 
     [self willChangeValueForKey:@"content"];
 
@@ -797,7 +801,7 @@
     [_contentObject addObject:anObject];
     _disableSetContent = NO;
 
-    if (_clearsFilterPredicateOnInsertion)
+    if (willClearPredicate)
         [self __setFilterPredicate:nil];
 
     [[self arrangedObjects] insertObject:anObject atIndex:anIndex];
@@ -813,7 +817,7 @@
         [self __setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
 
     [self didChangeValueForKey:@"content"];
-    if (_clearsFilterPredicateOnInsertion)
+    if (willClearPredicate)
         [self didChangeValueForKey:@"filterPredicate"];
 }
 
