@@ -771,7 +771,8 @@
 }
 
 /*!
-    Adds an object at a given index to the receiver's collection.
+    Adds an object at a given index in the receiver's arrangedObjects. Also add the object
+    to the content collection (although at the end rather than the given index).
 
     @param id anObject - The object to add to the collection.
     @param int anIndex - The index to insert the object at.
@@ -790,7 +791,10 @@
     See _disableSetContent explanation in addObject:.
     */
     _disableSetContent = YES;
-    [_contentObject insertObject:anObject atIndex:anIndex];
+    // The atArrangedObjectIndex: part of this method's name only refers to where the
+    // object goes in arrangedObjects, not in the content array. So use addObject:,
+    // not insertObject:atIndex: here for speed.
+    [_contentObject addObject:anObject];
     _disableSetContent = NO;
 
     if (_clearsFilterPredicateOnInsertion)

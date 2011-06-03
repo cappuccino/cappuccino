@@ -80,6 +80,7 @@
     [arrayController insertObject:object atArrangedObjectIndex:1];
 
     [self assert:object equals:[[arrayController arrangedObjects] objectAtIndex:1]];
+    [self assertTrue:[[arrayController content] containsObject:object] message:@"object should be inserted into content"];
 }
 
 - (void)testAddObjectUpdatesArrangedObjectsWithoutSortDescriptors
