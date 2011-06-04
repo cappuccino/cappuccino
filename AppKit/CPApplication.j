@@ -1292,8 +1292,12 @@ var _CPAppBootstrapperActions = nil,
 
 + (void)blendDidFinishLoading:(CPThemeBlend)aThemeBlend
 {
-    [[CPApplication sharedApplication] setThemeBlend:aThemeBlend];
-    [CPTheme setDefaultTheme:[CPTheme themeNamed:[CPApplication defaultThemeName]]];
+    var themeBlends = [CPApp themeBlends];
+
+    [themeBlends addObject:aThemeBlend];
+
+    if ([themeBlends count] === 1)
+        [CPTheme setDefaultTheme:[CPTheme themeNamed:[CPApplication defaultThemeName]]];
 
     if (_CPAppThemeURLsToLoad.length === 0)
         [self performActions];
