@@ -54,7 +54,8 @@ NIB_CONNECTION_EQUIVALENCY_TABLE = {};
             _destination = NIB_CONNECTION_EQUIVALENCY_TABLE[destinationUID];
         }
 
-        CPLog.debug(@"NSNibConnector: connection: " + [_source description] + " " + [_destination description] + " " + _label);
+        if (_source && _destination)
+            CPLog.debug(@"NSNibConnector: connection: " + [_source description] + " " + [_destination description] + " " + _label);
     }
 
     return self;
@@ -186,7 +187,12 @@ var NSTransformers = [CPSet setWithObjects:
         CPLog.debug(@"NSNibConnector: runtime attributes connector: " + [_source description]);
 
         while (count--)
-            CPLog.debug(@"   %s (%s): %s", _keyPaths[count], [_values[count] className], _values[count]);
+        {
+            var value = _values[count],
+                type = typeof(value) === "boolean" ? "BOOL" : [value className];
+
+            CPLog.debug(@"   %s (%s): %s", _keyPaths[count], type, value);
+        }
     }
 
     return self;
