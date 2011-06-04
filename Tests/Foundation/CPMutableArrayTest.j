@@ -2,7 +2,6 @@
 @import <Foundation/Foundation.j>
 @import "CPArrayTest.j"
 
-
 @implementation CPMutableArrayTest : CPArrayTest
 
 + (Class)arrayClass
@@ -446,6 +445,19 @@
     [target sortUsingDescriptors:descriptors];
 
     [self assert:[5, 4, 4, 3, 2, 2, 1, 1, 1, 1] equals:target];
+}
+
+- (void)testMutableCopy
+{
+    var normalArray = [CPArray array];
+
+    [self assertThrows:function () { [array addObject:[CPNull null]] }];
+
+    var mutableArray = [normalArray mutableCopy];
+
+    [mutableArray addObject:[CPNull null]];
+
+    [self assert:1 equals:[mutableArray count] message:"mutable copy should have content"];
 }
 
 @end
