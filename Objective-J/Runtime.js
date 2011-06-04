@@ -33,6 +33,15 @@ var CLS_CLASS           = 0x1,
 #define GETMETA(aClass) (ISMETA(aClass) ? aClass : aClass.isa)
 #define ISINITIALIZED(aClass) GETINFO(GETMETA(aClass), CLS_INITIALIZED)
 
+
+// MAXIMUM_RECURSION_CHECKS
+// If defined, objj_msgSend will check for recursion deeper than MAXIMUM_RECURSION_DEPTH and
+// throw an error if found. While crude, this can be helpful when your JavaScript debugger
+// crashes on recursion errors (e.g. Safari) or ignores them (e.g. Chrome).
+
+// #define MAXIMUM_RECURSION_CHECKS
+#define MAXIMUM_RECURSION_DEPTH 80
+
 GLOBAL(objj_ivar) = function(/*String*/ aName, /*String*/ aType)
 {
     this.name = aName;
@@ -604,6 +613,10 @@ DISPLAY_NAME(ivar_getTypeEncoding);
 
 // Sending Messages
 
+#ifdef MAXIMUM_RECURSION_CHECKS
+var __objj_msgSend__StackDepth = 0;
+#endif
+
 GLOBAL(objj_msgSend) = function(/*id*/ aReceiver, /*SEL*/ aSelector)
 {
     if (aReceiver == nil)
@@ -613,6 +626,13 @@ GLOBAL(objj_msgSend) = function(/*id*/ aReceiver, /*SEL*/ aSelector)
 
     CLASS_GET_METHOD_IMPLEMENTATION(var implementation, isa, aSelector);
 
+#ifdef MAXIMUM_RECURSION_CHECKS
+    if (__objj_msgSend__StackDepth++ > MAXIMUM_RECURSION_DEPTH)
+        throw new Error("Maximum call stack depth exceeded.");
+
+    try {
+#endif
+
     switch(arguments.length)
     {
         case 2: return implementation(aReceiver, aSelector);
@@ -621,6 +641,12 @@ GLOBAL(objj_msgSend) = function(/*id*/ aReceiver, /*SEL*/ aSelector)
     }
 
     return implementation.apply(aReceiver, arguments);
+
+#ifdef MAXIMUM_RECURSION_CHECKS
+    } finally {
+        __objj_msgSend__StackDepth--;
+    }
+#endif
 }
 
 DISPLAY_NAME(objj_msgSend);
