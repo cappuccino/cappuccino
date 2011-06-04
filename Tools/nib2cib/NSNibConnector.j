@@ -44,18 +44,18 @@ NIB_CONNECTION_EQUIVALENCY_TABLE = {};
 
         if (sourceUID in NIB_CONNECTION_EQUIVALENCY_TABLE)
         {
-            CPLog.trace("Swapped object: "+_source+" for object: "+NIB_CONNECTION_EQUIVALENCY_TABLE[sourceUID]);
+            CPLog.debug("NSNibConnector: swapped object: " + _source + " for object: " + NIB_CONNECTION_EQUIVALENCY_TABLE[sourceUID]);
             _source = NIB_CONNECTION_EQUIVALENCY_TABLE[sourceUID];
         }
 
         if (destinationUID in NIB_CONNECTION_EQUIVALENCY_TABLE)
         {
-            CPLog.trace("Swapped object: "+_destination+" for object: "+NIB_CONNECTION_EQUIVALENCY_TABLE[destinationUID]);
+            CPLog.debug("NSNibConnector: swapped object: " + _destination + " for object: " + NIB_CONNECTION_EQUIVALENCY_TABLE[destinationUID]);
             _destination = NIB_CONNECTION_EQUIVALENCY_TABLE[destinationUID];
         }
 
         if (_source && _destination)
-            CPLog.debug(@"Connection: " + [_source description] + " " + [_destination description] + " " + _label);
+            CPLog.debug(@"NSNibConnector: connection: " + [_source description] + " " + [_destination description] + " " + _label);
     }
 
     return self;
@@ -111,7 +111,7 @@ NIB_CONNECTION_EQUIVALENCY_TABLE = {};
 
 @end
 
-var NSTramsformers = [CPSet setWithObjects:
+var NSTransformers = [CPSet setWithObjects:
                         @"NSNegateBoolean",
                         @"NSIsNil",
                         @"NSIsNotNil",
@@ -140,13 +140,13 @@ var NSTramsformers = [CPSet setWithObjects:
             var CPKey = @"CP" + key.substring(2),
                 NSValue = [NSOptions objectForKey:key];
 
-            if (CPKey === CPValueTransformerNameBindingOption && [NSTramsformers containsObject:NSValue])
+            if (CPKey === CPValueTransformerNameBindingOption && [NSTransformers containsObject:NSValue])
                 NSValue = @"CP" + NSValue.substring(2);
 
             [_options setObject:NSValue forKey:CPKey];
         }
 
-        CPLog.debug(@"Binding Connector: " + [_binding description] + " to: " + _destination + " " + [_keyPath description] + " " + [_options description]);
+        CPLog.debug(@"NSNibConnector: binding connector: " + [_binding description] + " to: " + _destination + " " + [_keyPath description] + " " + [_options description]);
     }
 
     return self;
@@ -184,10 +184,15 @@ var NSTramsformers = [CPSet setWithObjects:
 
         var count = [_keyPaths count];
 
-        CPLog.debug(@"Runtime Attributes Connector: " + [_source description]);
+        CPLog.debug(@"NSNibConnector: runtime attributes connector: " + [_source description]);
 
         while (count--)
-            CPLog.debug(@"   %s (%s): %s", _keyPaths[count], [_values[count] className], _values[count]);
+        {
+            var value = _values[count],
+                type = typeof(value) === "boolean" ? "BOOL" : [value className];
+
+            CPLog.debug(@"   %s (%s): %s", _keyPaths[count], type, value);
+        }
     }
 
     return self;
