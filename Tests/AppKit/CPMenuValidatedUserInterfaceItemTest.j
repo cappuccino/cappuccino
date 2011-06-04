@@ -43,7 +43,7 @@ var CPMenuValidatedUserInterfaceItemTestValidatedItems = [];
     var parentItem = [[self menu] itemWithTitle:@"parent"];
 
     [self assertTrue:[parentItem isEnabled] message:@"Parent items should never be disabled"];
-    [self assertFalse:[[[self menuTarget] validatedItems] containsObject:parent] message:@"Parent items should never be validated"];
+    [self assertFalse:[[[self menuTarget] validatedItems] containsObject:parentItem] message:@"Parent items should never be validated"];
 }
 
 @end
