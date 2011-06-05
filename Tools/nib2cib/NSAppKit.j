@@ -46,6 +46,7 @@
 @import "NSMenu.j"
 @import "NSMenuItem.j"
 @import "NSNibConnector.j"
+@import "NSNumberFormatter.j"
 @import "NSObjectController.j"
 @import "NSOutlineView.j"
 @import "NSPopUpButton.j"
