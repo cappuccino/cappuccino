@@ -925,6 +925,7 @@
 
         // Deselect this row if it was selected, and either way shift all selection indexes
         // following it up by 1.
+        [newSelectionIndexes removeIndex:index];
         [newSelectionIndexes shiftIndexesStartingAtIndex:index by:-1];
 
         index = [anIndexSet indexLessThanIndex:index];
