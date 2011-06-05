@@ -883,16 +883,58 @@
 */
 - (void)remove:(id)sender
 {
-   [self removeObjects:[[self arrangedObjects] objectsAtIndexes:[self selectionIndexes]]];
+   [self removeObjectsAtArrangedObjectIndexes:_selectionIndexes];
 }
 
 /*!
     Removes the objects at the specified indexes in the controller's arranged objects from the content array.
     @param CPIndexSet indexes - indexes of the objects to remove.
 */
-- (void)removeObjectsAtArrangedObjectIndexes:(CPIndexSet)indexes
+- (void)removeObjectsAtArrangedObjectIndexes:(CPIndexSet)anIndexSet
 {
-    [self _removeObjects:[[self arrangedObjects] objectsAtIndexes:indexes]];
+    [self willChangeValueForKey:@"content"];
+
+    /*
+    See _disableSetContent explanation in addObject:.
+    */
+    _disableSetContent = YES;
+
+    var arrangedObjects = [self arrangedObjects],
+        index = [anIndexSet lastIndex],
+        position = CPNotFound,
+        newSelectionIndexes = [_selectionIndexes copy];
+
+    while (index !== CPNotFound)
+    {
+        var object = [arrangedObjects objectAtIndex:index];
+
+        // First try the simple case which should work if there are no sort descriptors.
+        if ([_contentObject objectAtIndex:index] === object)
+            [_contentObject removeObjectAtIndex:index];
+        else
+        {
+            // Since we don't have a reverse mapping between the sorted order and the
+            // unsorted one, we'll just simply have to remove an arbitrary pointer. It might
+            // be the 'wrong' one - as in not the one the user selected - but the wrong
+            // one is still just another pointer to the same object, so the user will not
+            // be able to see any difference.
+            contentIndex = [_contentObject indexOfObjectIdenticalTo:object];
+            [_contentObject removeObjectAtIndex:contentIndex];
+        }
+        [arrangedObjects removeObjectAtIndex:index];
+
+        // Deselect this row if it was selected, and either way shift all selection indexes
+        // following it up by 1.
+        [newSelectionIndexes shiftIndexesStartingAtIndex:index by:-1];
+
+        index = [anIndexSet indexLessThanIndex:index];
+    }
+    _disableSetContent = NO;
+
+    // This will automatically handle the avoidsEmptySelection case.
+    [self __setSelectionIndexes:newSelectionIndexes];
+
+    [self didChangeValueForKey:@"content"];
 }
 
 /*!

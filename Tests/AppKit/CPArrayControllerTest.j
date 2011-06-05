@@ -508,6 +508,22 @@
     [self assertTrue:[[arrayController arrangedObjects] count] > 0];
 }
 
+/**
+    In a table with arranged contents like [1, 1, 2, 1], selecting the second '1' and removing it
+    should result in [1, 2, 1] - not [2]. E.g. we don't use removeObject:1 but only remove the
+    actually selected instance.
+*/
+- (void)testRemove_OneOfMultipleEqualObjects
+{
+    var ac = [CPArrayController new],
+        contentArray = [1, 1, 2, 1];
+    [ac setContent:contentArray];
+    [self assert:[1, 1, 2, 1] equals:[ac arrangedObjects]];
+    [ac setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
+    [ac remove:nil];
+    [self assert:[1, 2, 1] equals:[ac arrangedObjects] message:"only one copy of 1 removed + the right copy should be removed"];
+}
+
 - (void)observeValueForKeyPath:keyPath
     ofObject:anActivity
     change:change
