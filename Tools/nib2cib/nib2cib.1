@@ -155,6 +155,13 @@ options, one for each theme that you load.
 .Pp
 Themes are searched for in the Resources, $CAPP_BUILD/Debug and
 $CAPP_BUILD/Release directories.
+.Pp
+If you have a list of auxiliary themes in your Info.plist using the
+.Ar CPAuxiliaryThemes
+item,
+.Nm
+will load them automatically, you do not have to do anything special.
+.Nm
 .\"-----------------------------------------------------------------------------------------
 .Sh "OPTIONS"
 .\"-----------------------------------------------------------------------------------------
@@ -193,7 +200,7 @@ use this option, as
 uses the Info.plist in the application directory, which is inferred from
 the input file.
 .It Fl F
-Specify the path of a framework to load before converting. This is only useful if:
+Specify the name or path of a framework to load before converting. This is only useful if:
 .Bl -dash -width 0n -hang
 .It
 Your IB files use classes from the framework.
@@ -203,7 +210,18 @@ Those classes need to serialize/deserialize more data than their superclasses.
 Those classes implement encodeWithCoder: and initWithCoder:.
 .El
 .Pp
-This option may be used multiple times to load multiple frameworks.
+This option may be used multiple times to load multiple frameworks. If the argument
+contains a "/" character, it is considered to be a relative or absolute path and
+the framework is searched for at that location. Otherwise it is considered a framework
+name and is searched for in the following directories:
+.Bl -ohang -offset 4n
+.It $CAPP_BUILD/Debug
+.It $CAPP_BUILD/Release
+.It <App>/Frameworks/Debug
+.It <App>/Frameworks
+.It <narwhal>/packages/cappuccino/Frameworks/Debug
+.It <narwhal>/packages/cappuccino/Frameworks
+.El
 .It Fl \-quiet
 Tells
 .Nm

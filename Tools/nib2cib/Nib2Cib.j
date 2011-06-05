@@ -547,13 +547,13 @@ var FILE = require("file"),
             frameworkPath = [self findInCappBuild:aFramework isDirectory:YES callback:returnPath];
 
             if (!frameworkPath)
-                frameworkPath = [self findInInstalledFrameworks:aFramework isDirectory:YES callback:returnPath];
-
-            if (!frameworkPath)
                 frameworkPath = [self findInFrameworks:FILE.join(appDirectory, "Frameworks")
                                                   path:aFramework
                                            isDirectory:YES
                                               callback:returnPath];
+
+            if (!frameworkPath)
+                frameworkPath = [self findInInstalledFrameworks:aFramework isDirectory:YES callback:returnPath];
         }
         else
             frameworkPath = FILE.canonical(aFramework);
