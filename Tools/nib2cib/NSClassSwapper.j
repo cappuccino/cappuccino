@@ -39,10 +39,10 @@ var _CPCibClassSwapperClassNameKey          = @"_CPCibClassSwapperClassNameKey",
 
     if (!swapperClass)
     {
-        // If this is a framework NS class, call its KVC methods directly
+        // If this is a userland NS class, call its KVC methods directly
         var nsClass = nil;
 
-        if ([[[Converter sharedConverter] frameworkNSClasses] containsObject:aClassName])
+        if ([[[Converter sharedConverter] userNSClasses] containsObject:aClassName])
             nsClass = objj_lookUpClass("NS_" + aClassName);
 
         var originalClass = nsClass || objj_lookUpClass(anOriginalClassName);
@@ -51,9 +51,26 @@ var _CPCibClassSwapperClassNameKey          = @"_CPCibClassSwapperClassNameKey",
 
         objj_registerClassPair(swapperClass);
 
+        /*
+            When calling userland KVC methods, they should think that the class is
+            the NS class (not the swapper class) so that they are in their userland space,
+            not in AppKit space. For example, this ensures that bundleForClass:[self class] will work correctly.
+            We can accomplish this safely by changing the class of self temporarily and sending directly
+            to self instead of to super. This swizzle is safe because NSClassSwapper and _CPCibClassSwapper
+            do not add any ivars.
+        */
+
         class_addMethod(swapperClass, @selector(initWithCoder:), function(self, _cmd, aCoder)
         {
-            self = objj_msgSendSuper({super_class:originalClass, receiver:self}, _cmd, aCoder);
+            if (nsClass)
+            {
+                // Switch to userland temporarily
+                self.isa = nsClass;
+                self = objj_msgSend(self, _cmd, aCoder);
+                self.isa = swapperClass;
+            }
+            else
+                self = objj_msgSendSuper({super_class:originalClass, receiver:self}, _cmd, aCoder);
 
             if (self)
             {
@@ -73,7 +90,15 @@ var _CPCibClassSwapperClassNameKey          = @"_CPCibClassSwapperClassNameKey",
 
         class_addMethod(swapperClass, @selector(encodeWithCoder:), function(self, _cmd, aCoder)
         {
-            objj_msgSendSuper({super_class:originalClass, receiver:self}, _cmd, aCoder);
+            if (nsClass)
+            {
+                // Switch to userland temporarily
+                self.isa = nsClass;
+                objj_msgSend(self, _cmd, aCoder);
+                self.isa = swapperClass;
+            }
+            else
+                objj_msgSendSuper({super_class:originalClass, receiver:self}, _cmd, aCoder);
 
             // If this is a custom NS class, lookup its archiver class so that
             // the correct class is swapped during unarchiving.
