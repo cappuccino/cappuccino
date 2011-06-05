@@ -52,7 +52,7 @@ var FILE = require("file"),
     CPString        appDirectory;
     CPString        resourcesDirectory;
     CPDictionary    infoPlist;
-    CPArray         frameworkNSClasses;
+    CPArray         userNSClasses;
 }
 
 - (id)initWithArgs:(CPArray)theArgs
@@ -67,7 +67,7 @@ var FILE = require("file"),
         appDirectory = @"";
         resourcesDirectory = @"";
         infoPlist = [CPDictionary dictionary];
-        frameworkNSClasses = [];
+        userNSClasses = [];
     }
 
     return self;
@@ -153,7 +153,8 @@ var FILE = require("file"),
 
         var loadFrameworksCallback = function()
         {
-            [converter setFrameworkNSClasses:frameworkNSClasses];
+            [self loadNSClassesFromBundle:[CPBundle mainBundle]];
+            [converter setUserNSClasses:userNSClasses];
             [converter convert];
         };
 
@@ -573,18 +574,7 @@ var FILE = require("file"),
             [frameworkBundle loadWithDelegate:nil];
             [self setLogLevel:verbosity];
 
-            // See if the framework defines NS classes
-            var nsClasses = [frameworkBundle objectForInfoDictionaryKey:@"IBClasses"] || [];
-
-            for (var i = 0; i < nsClasses.length; ++i)
-            {
-                var filename = "NS_" + nsClasses[i] + ".j";
-
-                objj_importFile(FILE.join(frameworkPath, filename), YES);
-                CPLog.debug("Imported framework NS class: %s", filename);
-
-                frameworkNSClasses.push(nsClasses[i]);
-            }
+            [self loadNSClassesFromBundle:frameworkBundle];
         }
         finally
         {
@@ -595,6 +585,26 @@ var FILE = require("file"),
     });
 
     aCallback();
+}
+
+- (void)loadNSClassesFromBundle:(CPBundle)aBundle
+{
+    // See if the framework defines NS classes
+    var nsClasses = [aBundle objectForInfoDictionaryKey:@"IBClasses"] || [],
+        bundlePath = [aBundle bundlePath];
+
+    for (var i = 0; i < nsClasses.length; ++i)
+    {
+        if (userNSClasses.indexOf(nsClasses[i]) >= 0)
+            continue;
+
+        var path = FILE.join(bundlePath, "NS_" + nsClasses[i] + ".j");
+
+        objj_importFile(path, YES);
+        CPLog.debug("Imported NS class: %s", path);
+
+        userNSClasses.push(nsClasses[i]);
+    }
 }
 
 - (CPArray)getThemeList:(JSObject)options

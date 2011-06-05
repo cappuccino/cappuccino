@@ -40,12 +40,12 @@ ConverterConversionException = @"ConverterConversionException";
 
 @implementation Converter : CPObject
 {
-    CPString    inputPath           @accessors(readonly);
-    CPString    outputPath          @accessors;
-    CPString    resourcesPath       @accessors;
-    NibFormat   format              @accessors(readonly);
-    CPArray     themes              @accessors(readonly);
-    CPArray     frameworkNSClasses  @accessors;
+    CPString    inputPath       @accessors(readonly);
+    CPString    outputPath      @accessors;
+    CPString    resourcesPath   @accessors;
+    NibFormat   format          @accessors(readonly);
+    CPArray     themes          @accessors(readonly);
+    CPArray     userNSClasses   @accessors;
 }
 
 + (Converter)sharedConverter
