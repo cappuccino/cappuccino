@@ -223,6 +223,15 @@ var _CPLevelIndicatorBezelColor = nil,
     return _isEditable;
 }
 
+- (CPView)hitTest:(CPPoint)aPoint
+{
+    // Don't swallow clicks when displayed in a table.
+    if (![self isEditable])
+        return nil;
+
+    return [super hitTest:aPoint];
+}
+
 - (void)mouseDown:(CPEvent)anEvent
 {
     if (![self isEditable] || ![self isEnabled])
