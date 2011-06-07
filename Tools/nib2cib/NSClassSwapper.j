@@ -1,3 +1,26 @@
+/*
+ * NSClassSwapper.j
+ * nib2cib
+ *
+ * Created by Francisco Tolmasky
+ * Copyright 2009, 280 North, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+@import "Converter.j"
 
 var NSClassSwapperClassNames                = {},
     NSClassSwapperOriginalClassNames        = {};
@@ -16,15 +39,38 @@ var _CPCibClassSwapperClassNameKey          = @"_CPCibClassSwapperClassNameKey",
 
     if (!swapperClass)
     {
-        var originalClass = objj_lookUpClass(anOriginalClassName);
+        // If this is a userland NS class, call its KVC methods directly
+        var nsClass = nil;
+
+        if ([[[Converter sharedConverter] userNSClasses] containsObject:aClassName])
+            nsClass = objj_lookUpClass("NS_" + aClassName);
+
+        var originalClass = nsClass || objj_lookUpClass(anOriginalClassName);
 
         swapperClass = objj_allocateClassPair(originalClass, swapperClassName);
 
         objj_registerClassPair(swapperClass);
 
+        /*
+            When calling userland KVC methods, they should think that the class is
+            the NS class (not the swapper class) so that they are in their userland space,
+            not in AppKit space. For example, this ensures that bundleForClass:[self class] will work correctly.
+            We can accomplish this safely by changing the class of self temporarily and sending directly
+            to self instead of to super. This swizzle is safe because NSClassSwapper and _CPCibClassSwapper
+            do not add any ivars.
+        */
+
         class_addMethod(swapperClass, @selector(initWithCoder:), function(self, _cmd, aCoder)
         {
-            self = objj_msgSendSuper({super_class:originalClass, receiver:self}, _cmd, aCoder);
+            if (nsClass)
+            {
+                // Switch to userland temporarily
+                self.isa = nsClass;
+                self = objj_msgSend(self, _cmd, aCoder);
+                self.isa = swapperClass;
+            }
+            else
+                self = objj_msgSendSuper({super_class:originalClass, receiver:self}, _cmd, aCoder);
 
             if (self)
             {
@@ -44,9 +90,26 @@ var _CPCibClassSwapperClassNameKey          = @"_CPCibClassSwapperClassNameKey",
 
         class_addMethod(swapperClass, @selector(encodeWithCoder:), function(self, _cmd, aCoder)
         {
-            objj_msgSendSuper({super_class:originalClass, receiver:self}, _cmd, aCoder);
+            if (nsClass)
+            {
+                // Switch to userland temporarily
+                self.isa = nsClass;
+                objj_msgSend(self, _cmd, aCoder);
+                self.isa = swapperClass;
+            }
+            else
+                objj_msgSendSuper({super_class:originalClass, receiver:self}, _cmd, aCoder);
 
-            // FIXME: map class name as well?
+            // If this is a custom NS class, lookup its archiver class so that
+            // the correct class is swapped during unarchiving.
+            if (nsClass)
+            {
+                var classForArchiver = objj_msgSend(nsClass, "classForKeyedArchiver");
+
+                if (classForArchiver)
+                    aClassName = [classForArchiver className];
+            }
+
             [aCoder encodeObject:aClassName forKey:_CPCibClassSwapperClassNameKey];
             [aCoder encodeObject:CP_NSMapClassName(anOriginalClassName) forKey:_CPCibClassSwapperOriginalClassNameKey];
         }, "");
