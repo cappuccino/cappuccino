@@ -53,9 +53,9 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
         parserPath          = [[NSBundle mainBundle] pathForResource:@"parser" ofType:@"j"];
 
         if([fm fileExistsAtPath:[@"~/.bash_profile" stringByExpandingTildeInPath]])
-            _profilePath = @"~/.bash_profile";
+            _profilePath = [@"~/.bash_profile" stringByExpandingTildeInPath];
         else if([fm fileExistsAtPath:[@"~/.profile" stringByExpandingTildeInPath]])
-            _profilePath = @"~/.profile";
+            _profilePath = [@"~/.profile" stringByExpandingTildeInPath];
 
     }
     
@@ -182,7 +182,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
             {
                 [_statusItem setTitle:@"..."];
                 NSLog(@"nib2cib %@", fullPath);
-                int ret = system([[NSString stringWithFormat:@"source %@; nib2cib %@;", _profilePath, fullPath] UTF8String]);
+                int ret = system([[NSString stringWithFormat:@"source \"%@\"; nib2cib \"%@\";", _profilePath, fullPath] UTF8String]);
                 [_statusItem setTitle:@""];
                 if (ret == 0)
                 {
@@ -202,7 +202,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
             if ([self isObjJFile:fullPath])
             {
                 NSString *shadowPath    = [[self shadowURLForSourceURL:[NSURL URLWithString:fullPath]] path];
-                NSString *command       = [NSString stringWithFormat:@"source %@; objj %@ %@ %@;", _profilePath, parserPath, fullPath, shadowPath];
+                NSString *command       = [NSString stringWithFormat:@"source %@; objj \"%@\" \"%@\" \"%@\";", _profilePath, parserPath, fullPath, shadowPath];
                 
                 NSLog(@"%@", command);
                 
@@ -445,7 +445,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     if (!currentProjectURL)
         return;
     
-    system([[NSString stringWithFormat:@"open %@", [XCodeSupportProject path ]] UTF8String]);
+    system([[NSString stringWithFormat:@"open \"%@\"", [XCodeSupportProject path]] UTF8String]);
 }
 
 
