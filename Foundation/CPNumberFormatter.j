@@ -23,6 +23,7 @@
 
 @import <Foundation/CPString.j>
 @import <Foundation/CPFormatter.j>
+@import <Foundation/CPDecimalNumber.j>
 
 CPNumberFormatterNoStyle            = 0;
 CPNumberFormatterDecimalStyle       = 1;
@@ -30,6 +31,14 @@ CPNumberFormatterCurrencyStyle      = 2;
 CPNumberFormatterPercentStyle       = 3;
 CPNumberFormatterScientificStyle    = 4;
 CPNumberFormatterSpellOutStyle      = 5;
+
+CPNumberFormatterRoundCeiling       = CPRoundUp;
+CPNumberFormatterRoundFloor         = CPRoundDown;
+CPNumberFormatterRoundDown          = CPRoundDown;
+CPNumberFormatterRoundUp            = CPRoundUp;
+CPNumberFormatterRoundHalfEven      = CPRoundBankers;
+CPNumberFormatterRoundHalfDown      = _CPRoundHalfDown;
+CPNumberFormatterRoundHalfUp        = CPRoundPlain;
 
 /*!
     @ingroup foundation
@@ -41,8 +50,19 @@ CPNumberFormatterSpellOutStyle      = 5;
 */
 @implementation CPNumberFormatter : CPFormatter
 {
-    CPNumberFormatterStyle  _numberStyle @accessors(property=numberStyle);
-    CPString                _perMillSymbol @accessors(property=perMillSymbol);
+    CPNumberFormatterStyle          _numberStyle @accessors(property=numberStyle);
+    CPString                        _perMillSymbol @accessors(property=perMillSymbol);
+    CPNumberFormatterRoundingMode   _roundingMode @accessors(property=roundingMode);
+}
+
+- (id)init
+{
+    if (self = [super init])
+    {
+        _roundingMode = CPNumberFormatterRoundHalfUp;
+    }
+
+    return self;
 }
 
 - (CPString)stringFromNumber:(CPNumber)number
@@ -52,7 +72,8 @@ CPNumberFormatterSpellOutStyle      = 5;
     {
         case CPNumberFormatterDecimalStyle:
             var dcmn = [CPDecimalNumber numberWithFloat:number],
-                numberHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:CPRoundPlain scale:3 raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:YES];
+                roundingMode = [self roundingMode],
+                numberHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:roundingMode scale:3 raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:YES];
 
             dcmn = [dcmn decimalNumberByRoundingAccordingToBehavior:numberHandler];
 
