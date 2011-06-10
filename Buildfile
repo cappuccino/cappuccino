@@ -17,7 +17,7 @@ define "cappuccino" do
   project.version = VERSION_NUMBER
   project.group = "com.intalio.cloud.cappuccino"
   
-  file(_("target/Frameworks")).enhance do
+  file(_("target/patch")).enhance do
     mkdir_p "target/patch"
   end
 
