@@ -2695,7 +2695,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         [self setupViewFlags];
 
-        _theme = [CPTheme defaultTheme];
+        _theme = [CPTheme themeForView:self];
         _themeClass = [aCoder decodeObjectForKey:CPViewThemeClassKey];
         _themeState = CPThemeState([aCoder decodeIntForKey:CPViewThemeStateKey]);
         _themeAttributes = {};

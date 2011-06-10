@@ -21,6 +21,8 @@
  */
 
 @import "NSArray.j"
+@import "NSExpression.j"
 @import "NSDictionary.j"
 @import "NSMutableString.j"
+@import "NSNull.j"
 @import "NSSet.j"

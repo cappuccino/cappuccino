@@ -23,6 +23,7 @@
 @import <AppKit/CPCibConnector.j>
 @import <AppKit/CPCibControlConnector.j>
 @import <AppKit/CPCibOutletConnector.j>
+@import <AppKit/CPCibRuntimeAttributesConnector.j>
 
 NIB_CONNECTION_EQUIVALENCY_TABLE = {};
 
@@ -53,7 +54,8 @@ NIB_CONNECTION_EQUIVALENCY_TABLE = {};
             _destination = NIB_CONNECTION_EQUIVALENCY_TABLE[destinationUID];
         }
 
-        CPLog.debug(@"NSNibConnector: connection: " + [_source description] + " " + [_destination description] + " " + _label);
+        if (_source && _destination)
+            CPLog.debug(@"NSNibConnector: connection: " + [_source description] + " " + [_destination description] + " " + _label);
     }
 
     return self;
@@ -109,7 +111,7 @@ NIB_CONNECTION_EQUIVALENCY_TABLE = {};
 
 @end
 
-var NSTramsformers = [CPSet setWithObjects:
+var NSTransformers = [CPSet setWithObjects:
                         @"NSNegateBoolean",
                         @"NSIsNil",
                         @"NSIsNotNil",
@@ -138,7 +140,7 @@ var NSTramsformers = [CPSet setWithObjects:
             var CPKey = @"CP" + key.substring(2),
                 NSValue = [NSOptions objectForKey:key];
 
-            if (CPKey === CPValueTransformerNameBindingOption && [NSTramsformers containsObject:NSValue])
+            if (CPKey === CPValueTransformerNameBindingOption && [NSTransformers containsObject:NSValue])
                 NSValue = @"CP" + NSValue.substring(2);
 
             [_options setObject:NSValue forKey:CPKey];
@@ -164,6 +166,50 @@ var NSTramsformers = [CPSet setWithObjects:
 - (Class)classForKeyedArchiver
 {
     return [CPCibBindingConnector class];
+}
+
+@end
+
+@implementation CPCibRuntimeAttributesConnector (NSCoding)
+
+- (id)NS_initWithCoder:(CPCoder)aCoder
+{
+    self = [super NS_initWithCoder:aCoder];
+
+    if (self)
+    {
+        _source = [aCoder decodeObjectForKey:@"NSObject"];
+        _keyPaths = [aCoder decodeObjectForKey:@"NSKeyPaths"];
+        _values = [aCoder decodeObjectForKey:@"NSValues"];
+
+        var count = [_keyPaths count];
+
+        CPLog.debug(@"NSNibConnector: runtime attributes connector: " + [_source description]);
+
+        while (count--)
+        {
+            var value = _values[count],
+                type = typeof(value) === "boolean" ? "BOOL" : [value className];
+
+            CPLog.debug(@"   %s (%s): %s", _keyPaths[count], type, value);
+        }
+    }
+
+    return self;
+}
+
+@end
+
+@implementation NSIBUserDefinedRuntimeAttributesConnector : CPCibRuntimeAttributesConnector
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    return [self NS_initWithCoder:aCoder];
+}
+
+- (Class)classForKeyedArchiver
+{
+    return [CPCibRuntimeAttributesConnector class];
 }
 
 @end

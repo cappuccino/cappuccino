@@ -174,10 +174,6 @@ var CPBindingOperationAnd = 0,
 
 - (id)transformValue:(id)aValue withOptions:(CPDictionary)options
 {
-    var valueTransformerName,
-        valueTransformer,
-        placeholder;
-
     var valueTransformerName = [options objectForKey:CPValueTransformerNameBindingOption],
         valueTransformer;
 

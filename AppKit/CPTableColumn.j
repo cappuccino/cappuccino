@@ -428,7 +428,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 
     var x = [self tableView]._cachedDataViews[dataViewUID];
     if (x && x.length)
-    return x.pop();
+        return x.pop();
 
     // if we haven't cached an archive of the data view, do it now
     if (!_dataViewData[dataViewUID])
@@ -738,9 +738,9 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
 {
     [aCoder encodeObject:_identifier forKey:CPTableColumnIdentifierKey];
 
-    [aCoder encodeObject:_width forKey:CPTableColumnWidthKey];
-    [aCoder encodeObject:_minWidth forKey:CPTableColumnMinWidthKey];
-    [aCoder encodeObject:_maxWidth forKey:CPTableColumnMaxWidthKey];
+    [aCoder encodeFloat:_width forKey:CPTableColumnWidthKey];
+    [aCoder encodeFloat:_minWidth forKey:CPTableColumnMinWidthKey];
+    [aCoder encodeFloat:_maxWidth forKey:CPTableColumnMaxWidthKey];
 
     [aCoder encodeObject:_headerView forKey:CPTableColumnHeaderViewKey];
     [aCoder encodeObject:_dataView forKey:CPTableColumnDataViewKey];

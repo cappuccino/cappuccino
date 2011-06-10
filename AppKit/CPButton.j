@@ -560,14 +560,9 @@ CPButtonImageOffset   = 3.0;
     return bounds;
 }
 
-/*!
-    Adjust the size of the button to fit the title and surrounding button image.
-*/
-- (void)sizeToFit
+- (CGSize)_minimumFrameSize
 {
-    [self layoutSubviews];
-
-    var size,
+    var size = CGSizeMakeZero(),
         contentView = [self ephemeralSubviewNamed:@"content-view"];
 
     if (contentView)
@@ -591,9 +586,19 @@ CPButtonImageOffset   = 3.0;
     if (maxSize.height >= 0.0)
         size.height = MIN(size.height, maxSize.height);
 
-    [self setFrameSize:size];
+    return size;
+}
 
-    if (contentView)
+/*!
+    Adjust the size of the button to fit the title and surrounding button image.
+*/
+- (void)sizeToFit
+{
+    [self layoutSubviews];
+
+    [self setFrameSize:[self _minimumFrameSize]];
+
+    if ([self ephemeralSubviewNamed:@"content-view"])
         [self layoutSubviews];
 }
 

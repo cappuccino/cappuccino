@@ -438,14 +438,18 @@ var CPComparisonPredicateModifier,
                                                                 reg = new RegExp(rhs.escapeForRegExp(),commut);
                                                             return reg.test(lhs);
 
-        case CPBeginsWithPredicateOperatorType:             var range = CPMakeRange(0,[rhs length]);
-                                                            if (_options & CPCaseInsensitivePredicateOption) string_compare_options |= CPCaseInsensitiveSearch;
-                                                            if (_options & CPDiacriticInsensitivePredicateOption) string_compare_options |= CPDiacriticInsensitiveSearch;
+        case CPBeginsWithPredicateOperatorType:             var range = CPMakeRange(0, MIN([lhs length], [rhs length]));
+                                                            if (_options & CPCaseInsensitivePredicateOption)
+                                                                string_compare_options |= CPCaseInsensitiveSearch;
+                                                            if (_options & CPDiacriticInsensitivePredicateOption)
+                                                                string_compare_options |= CPDiacriticInsensitiveSearch;
                                                             return ([lhs compare:rhs options:string_compare_options range:range] == CPOrderedSame);
 
-        case CPEndsWithPredicateOperatorType:               var range = CPMakeRange([lhs length] - [rhs length],[rhs length]);
-                                                            if (_options & CPCaseInsensitivePredicateOption) string_compare_options |= CPCaseInsensitiveSearch;
-                                                            if (_options & CPDiacriticInsensitivePredicateOption) string_compare_options |= CPDiacriticInsensitiveSearch;
+        case CPEndsWithPredicateOperatorType:               var range = CPMakeRange(MAX([lhs length] - [rhs length], 0), MIN([lhs length], [rhs length]));
+                                                            if (_options & CPCaseInsensitivePredicateOption)
+                                                                string_compare_options |= CPCaseInsensitiveSearch;
+                                                            if (_options & CPDiacriticInsensitivePredicateOption)
+                                                                string_compare_options |= CPDiacriticInsensitiveSearch;
                                                             return ([lhs compare:rhs options:string_compare_options range:range] == CPOrderedSame);
 
         case CPCustomSelectorPredicateOperatorType:         return [lhs performSelector:_customSelector withObject:rhs];

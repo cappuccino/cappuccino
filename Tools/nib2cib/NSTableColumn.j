@@ -23,6 +23,7 @@
 
 @import <AppKit/CPTableColumn.j>
 @import <AppKit/CPTableHeaderView.j>
+@import <AppKit/CPButton.j>
 
 @implementation CPTableColumn (NSCoding)
 
@@ -42,7 +43,7 @@
             [_dataView setImageScaling:[dataViewCell imageScaling]];
             [_dataView setImageAlignment:[dataViewCell imageAlignment]];
         }
-        else
+        else if ([dataViewCell isKindOfClass:[NSTextFieldCell class]])
         {
             _dataView = [[CPTextField alloc] initWithFrame:CPRectMakeZero()];
 
@@ -71,6 +72,16 @@
             // Don't change the text color if it is not the default, that messes up the theme lookups later
             if (![textColor isEqual:defaultColor])
                 [_dataView setTextColor:[dataViewCell textColor]];
+        }
+        else if ([dataViewCell isKindOfClass:[NSButtonCell class]])
+        {
+            _dataView = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
+            _dataView = [_dataView NS_initWithCell:dataViewCell];
+        }
+        else if ([dataViewCell isKindOfClass:[NSLevelIndicatorCell class]])
+        {
+            _dataView = [[CPLevelIndicator alloc] initWithFrame:CGRectMakeZero()];
+            _dataView = [_dataView NS_initWithCell:dataViewCell];
         }
 
         [_dataView setValue:[dataViewCell alignment] forThemeAttribute:@"alignment"];

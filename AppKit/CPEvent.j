@@ -583,11 +583,11 @@ var _CPEventPeriodicEventPeriod         = 0,
             c === CPEnterCharacter ||
             c === CPNewlineCharacter ||
             c === CPCarriageReturnCharacter ||
+            c === CPEscapeFunctionKey ||
             (!firstResponderIsText &&
                 (c === CPSpaceFunctionKey ||
                  c === CPDeleteCharacter ||
-                 c === CPBackspaceCharacter ||
-                 c === CPEscapeFunctionKey)))
+                 c === CPBackspaceCharacter)))
         {
             return YES;
         }

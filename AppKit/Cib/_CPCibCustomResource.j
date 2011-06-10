@@ -43,6 +43,11 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
     return [[self alloc] initWithClassName:@"CPImage" resourceName:aResourceName properties:[CPDictionary dictionaryWithObject:aSize forKey:@"size"]];
 }
 
++ (id)imageResourceWithName:(CPString)aResourceName size:(CGSize)aSize bundleClass:(CPString)aBundleClass
+{
+    return [[self alloc] initWithClassName:@"CPImage" resourceName:aResourceName properties:[CPDictionary dictionaryWithObjects:[aSize, aBundleClass] forKeys:[@"size", @"bundleClass"]]];
+}
+
 - (id)initWithClassName:(CPString)aClassName resourceName:(CPString)aResourceName properties:(CPDictionary)properties
 {
     self = [super init];
@@ -83,7 +88,25 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
     if ([aCoder respondsToSelector:@selector(bundle)] &&
         (![aCoder respondsToSelector:@selector(awakenCustomResources)] || [aCoder awakenCustomResources]))
         if (_className === @"CPImage")
-            return [[CPImage alloc] initWithContentsOfFile:[[aCoder bundle] pathForResource:_resourceName] size:_properties.valueForKey(@"size")];
+        {
+            if (_resourceName == "CPAddTemplate")
+                return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPButtonBar class]] pathForResource:@"plus_button.png"] size:CGSizeMake(11, 12)];
+            else if (_resourceName == "CPRemoveTemplate")
+                return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPButtonBar class]] pathForResource:@"minus_button.png"] size:CGSizeMake(11, 4)];
+
+            var bundleClass = _properties.valueForKey(@"bundleClass"),
+                bundle = nil;
+
+            if (bundleClass)
+            {
+                bundleClass = CPClassFromString(bundleClass);
+
+                if (bundleClass)
+                    bundle = [CPBundle bundleForClass:bundleClass];
+            }
+
+            return [[CPImage alloc] initWithContentsOfFile:[(bundle || [aCoder bundle]) pathForResource:_resourceName] size:_properties.valueForKey(@"size")];
+        }
 
     return self;
 }

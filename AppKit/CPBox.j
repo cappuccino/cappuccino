@@ -35,6 +35,12 @@ CPLineBorder    = 1;
 CPBezelBorder   = 2;
 CPGrooveBorder  = 3;
 
+/*!
+    @ingroup appkit
+    @class CPBox
+
+    A CPBox is a simple view which can display a border.
+*/
 @implementation CPBox : CPView
 {
     CPBoxType       _boxType;
@@ -89,16 +95,46 @@ CPGrooveBorder  = 3;
 
 // Configuring Boxes
 
+/*!
+    Returns the receiver's border rectangle.
+
+    @return the border rectangle of the box
+*/
 - (CPRect)borderRect
 {
     return [self bounds];
 }
 
+/*!
+    Returns the receiver's border type. Possible values are:
+
+    <pre>
+    CPNoBorder
+    CPLineBorder
+    CPBezelBorder
+    CPGrooveBorder
+    </pre>
+
+    @return the border type of the box
+*/
 - (CPBorderType)borderType
 {
     return _borderType;
 }
 
+
+/*!
+    Sets the receiver's border type. Valid values are:
+
+    <pre>
+    CPNoBorder
+    CPLineBorder
+    CPBezelBorder
+    CPGrooveBorder
+    </pre>
+
+    @param borderType the border type to use
+*/
 - (void)setBorderType:(CPBorderType)aBorderType
 {
     if (_borderType === aBorderType)
@@ -108,11 +144,41 @@ CPGrooveBorder  = 3;
     [self setNeedsDisplay:YES];
 }
 
+/*!
+    Returns the receiver's box type. Possible values are:
+
+    <pre>
+    CPBoxPrimary
+    CPBoxSecondary
+    CPBoxSeparator
+    CPBoxOldStyle
+    CPBoxCustom
+    </pre>
+
+    (In the current implementation, all values act the same except CPBoxSeparator.)
+
+    @return the box type of the box.
+*/
 - (CPBoxType)boxType
 {
     return _boxType;
 }
 
+/*!
+    Sets the receiver's box type. Valid values are:
+
+    <pre>
+    CPBoxPrimary
+    CPBoxSecondary
+    CPBoxSeparator
+    CPBoxOldStyle
+    CPBoxCustom
+    </pre>
+
+    (In the current implementation, all values act the same except CPBoxSeparator.)
+
+    @param aBoxType the box type of the box.
+*/
 - (void)setBoxType:(CPBoxType)aBoxType
 {
     if (_boxType === aBoxType)

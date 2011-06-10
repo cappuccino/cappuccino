@@ -201,11 +201,10 @@ var _CPKeyedArchiverStringClass                         = Nil,
 
     for (; i < _objects.length; ++i)
     {
-        var object = _objects[i],
-            theClass = [object classForKeyedArchiver];
+        var object = _objects[i];
 
         // Do whatever with the class, yo.
-        // We call willEncodeObject previously.
+        // We called willEncodeObject previously.
 
         _plistObject = _plistObjects[[_UIDs objectForKey:[object UID]]];
         [object encodeWithCoder:self];
