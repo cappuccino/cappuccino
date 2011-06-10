@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<web-fragment 
+   xmlns="http://java.sun.com/xml/ns/javaee" 
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+   metadata-complete="false"
+   version="3.0">
+  <servlet>
+    <servlet-name>cappuccino-fragment</servlet-name>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>cappuccino-fragment</servlet-name>
+    <url-pattern>/carbon</url-pattern>
+  </servlet-mapping>
+   
+</web-fragment>

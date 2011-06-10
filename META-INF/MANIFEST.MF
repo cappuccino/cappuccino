@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: cappuccinofrag
+Bundle-SymbolicName: com.intalio.cloud.cappuccino
+Fragment-Host: com.intalio.cloud.carbon
+Jetty-WarFragmentFolderPath: /content
+Jetty-WarPatchFragmentFolderPath: /patch
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
