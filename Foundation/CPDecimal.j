@@ -72,6 +72,7 @@ CPRoundPlain                         = 1;
 CPRoundDown                          = 2;
 CPRoundUp                            = 3;
 CPRoundBankers                       = 4;
+_CPRoundHalfDown                     = 5; // Private API rounding mode used by CPNumberFormatter.
 
 //Exceptions
 CPDecimalNumberOverflowException     = @"CPDecimalNumberOverflowException";
@@ -1329,6 +1330,10 @@ function CPDecimalRound(result, dcm, scale ,roundingMode)
         case CPRoundPlain:
             n = result._mantissa[l];
             up = (n >= 5);
+            break;
+        case _CPRoundHalfDown:
+            n = result._mantissa[l];
+            up = (n > 5);
             break;
         case CPRoundBankers:
             n = result._mantissa[l];
