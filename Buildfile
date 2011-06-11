@@ -38,7 +38,7 @@ define "cappuccino" do
 
   # file(_("target/Build")).enhance do
   # end
-  package(:bundle).include _("target/patch"), :as => "content/patch"
+  package(:bundle).include _("target/patch"), :as => "patch"
   package(:bundle).include _("target/Frameworks"), :as => "content/Frameworks"
   package(:bundle).include _("build.properties"), :as => "build.properties"
   package(:bundle).meta_inf << file('META-INF/web-fragment.xml')
