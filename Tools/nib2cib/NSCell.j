@@ -48,6 +48,7 @@
     id              _objectValue                @accessors(readonly, getter=objectValue);
     CPFont          _font                       @accessors(readonly, getter=font);
     int             _lineBreakMode              @accessors(readonly, getter=lineBreakMode);
+    CPFormatter     _formatter                  @accessors(readonly, getter=formatter);
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -78,6 +79,8 @@
 
         _objectValue    = [aCoder decodeObjectForKey:@"NSContents"];
         _font           = [aCoder decodeObjectForKey:@"NSSupport"];
+
+        _formatter      = [aCoder decodeObjectForKey:@"NSFormatter"];
     }
 
     return self;
