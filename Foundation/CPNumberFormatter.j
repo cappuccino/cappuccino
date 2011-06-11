@@ -105,9 +105,9 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
 
 - (CPNumber)numberFromString:(CPString)string
 {
-
+    // TODO
+    return parseFloat(string);
 }
-
 
 /*!
     @ignore
