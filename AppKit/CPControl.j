@@ -89,6 +89,8 @@ var CPControlBlackColor = [CPColor blackColor];
     int                 _sendActionOn;
     BOOL                _sendsActionOnEndEditing @accessors(property=sendsActionOnEndEditing);
 
+    CPFormatter         _formatter @accessors(property=formatter);
+
     // Mouse Tracking Support
     BOOL                _continuousTracking;
     BOOL                _trackingWasWithinFrame;
@@ -502,6 +504,15 @@ var CPControlBlackColor = [CPColor blackColor];
 */
 - (CPString)stringValue
 {
+    var formatted;
+
+    if (_formatter)
+    {
+        formatted = [_formatter stringForObjectValue:_value];
+        if (formatted !== nil && formatted !== undefined)
+            return formatted;
+    }
+
     return (_value === undefined || _value === nil) ? "" : String(_value);
 }
 
@@ -510,7 +521,16 @@ var CPControlBlackColor = [CPColor blackColor];
 */
 - (void)setStringValue:(CPString)anObject
 {
-    [self setObjectValue:anObject];
+    var value = anObject;
+
+    if (_formatter)
+    {
+        var formattedValue = nil;
+        if ([_formatter getObjectValue:@ref(formattedValue) forString:value errorDescription:NULL])
+            value = formattedValue;
+    }
+
+    [self setObjectValue:value];
 }
 
 - (void)takeDoubleValueFrom:(id)sender
