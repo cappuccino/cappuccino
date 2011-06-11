@@ -109,6 +109,27 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
     return parseFloat(string);
 }
 
+- (CPString)stringForObjectValue:(id)anObject
+{
+    if ([anObject isKindOfClass:[CPNumber class]])
+        return [self stringFromNumber:anObject];
+    else
+        return [anObject description];
+}
+
+- (CPString)editingStringForObjectValue:(id)anObject
+{
+    return [self stringForObjectValue:anObject];
+}
+
+- (BOOL)getObjectValue:(id)anObject forString:(CPString)aString errorDescription:(CPString)anError
+{
+    // TODO Error handling.
+    var value = [self numberFromString:aString];
+    @deref(anObject, value);
+    return YES;
+}
+
 /*!
     @ignore
     Return the perMillSymbol if set, otherwise the locale default.
