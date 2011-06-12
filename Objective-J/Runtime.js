@@ -33,6 +33,15 @@ var CLS_CLASS           = 0x1,
 #define GETMETA(aClass) (ISMETA(aClass) ? aClass : aClass.isa)
 #define ISINITIALIZED(aClass) GETINFO(GETMETA(aClass), CLS_INITIALIZED)
 
+
+// MAXIMUM_RECURSION_CHECKS
+// If defined, objj_msgSend will check for recursion deeper than MAXIMUM_RECURSION_DEPTH and
+// throw an error if found. While crude, this can be helpful when your JavaScript debugger
+// crashes on recursion errors (e.g. Safari) or ignores them (e.g. Chrome).
+
+// #define MAXIMUM_RECURSION_CHECKS
+#define MAXIMUM_RECURSION_DEPTH 80
+
 GLOBAL(objj_ivar) = function(/*String*/ aName, /*String*/ aType)
 {
     this.name = aName;
@@ -71,7 +80,7 @@ GLOBAL(objj_class) = function(displayName)
     this.method_dtable  = this.method_store.prototype;
 
 #if DEBUG
-    // naming the allocator allows the WebKit heap snapshot tool to display object class names correctly
+    // Naming the allocator allows the WebKit heap snapshot tool to display object class names correctly
     // HACK: displayName property is not respected so we must eval a function to name it
     eval("this.allocator = function " + (displayName || "OBJJ_OBJECT").replace(/\W/g, "_") + "() { }");
 #else
@@ -342,10 +351,61 @@ var _class_initialize = function(/*Class*/ aClass)
     }
 }
 
-var _objj_forward = new objj_method("forward", function(self, _cmd)
+var _objj_forward = function(self, _cmd)
 {
-    return objj_msgSend(self, "forward::", _cmd, arguments);
-});
+    var isa = self.isa,
+        implementation = isa.method_dtable[SEL_forwardingTargetForSelector_];
+
+    if (implementation)
+    {
+        var target = implementation.method_imp.call(this, self, SEL_forwardingTargetForSelector_, _cmd);
+
+        if (target && target !== self)
+        {
+            arguments[0] = target;
+
+            return objj_msgSend.apply(this, arguments);
+        }
+    }
+
+    implementation = isa.method_dtable[SEL_methodSignatureForSelector_];
+
+    if (implementation)
+    {
+        var forwardInvocationImplementation = isa.method_dtable[SEL_forwardInvocation_];
+
+        if (forwardInvocationImplementation)
+        {
+            var signature = implementation.method_imp.call(this, self, SEL_methodSignatureForSelector_, _cmd);
+
+            if (signature)
+            {
+                var invocationClass = objj_lookUpClass("CPInvocation");
+
+                if (invocationClass)
+                {
+                    var invocation = objj_msgSend(invocationClass, SEL_invocationWithMethodSignature_, signature),
+                        index = 0,
+                        count = arguments.length;
+
+                    for (; index < count; ++index)
+                        objj_msgSend(invocation, SEL_setArgument_atIndex_, arguments[index], index);
+
+                    forwardInvocationImplementation.method_imp.call(this, self, SEL_forwardInvocation_, invocation);
+
+                    return objj_msgSend(invocation, SEL_returnValue);
+                }
+            }
+        }
+    }
+
+    implementation = isa.method_dtable[SEL_doesNotRecognizeSelector_];
+
+    if (implementation)
+        return implementation.method_imp.call(this, self, SEL_doesNotRecognizeSelector_, _cmd);
+
+    throw class_getName(isa) + " does not implement doesNotRecognizeSelector:. Did you forget a superclass for " + class_getName(isa) + "?";
+};
 
 // I think this forward:: may need to be a common method, instead of defined in CPObject.
 #define CLASS_GET_METHOD_IMPLEMENTATION(aMethodImplementation, aClass, aSelector)\
@@ -354,10 +414,7 @@ var _objj_forward = new objj_method("forward", function(self, _cmd)
     \
     var method = aClass.method_dtable[aSelector];\
     \
-    if (!method)\
-        method = _objj_forward;\
-    \
-    aMethodImplementation = method.method_imp;
+    aMethodImplementation = method ? method.method_imp : _objj_forward;
 
 GLOBAL(class_getMethodImplementation) = function(/*Class*/ aClass, /*SEL*/ aSelector)
 {
@@ -556,6 +613,10 @@ DISPLAY_NAME(ivar_getTypeEncoding);
 
 // Sending Messages
 
+#ifdef MAXIMUM_RECURSION_CHECKS
+var __objj_msgSend__StackDepth = 0;
+#endif
+
 GLOBAL(objj_msgSend) = function(/*id*/ aReceiver, /*SEL*/ aSelector)
 {
     if (aReceiver == nil)
@@ -565,6 +626,13 @@ GLOBAL(objj_msgSend) = function(/*id*/ aReceiver, /*SEL*/ aSelector)
 
     CLASS_GET_METHOD_IMPLEMENTATION(var implementation, isa, aSelector);
 
+#ifdef MAXIMUM_RECURSION_CHECKS
+    if (__objj_msgSend__StackDepth++ > MAXIMUM_RECURSION_DEPTH)
+        throw new Error("Maximum call stack depth exceeded.");
+
+    try {
+#endif
+
     switch(arguments.length)
     {
         case 2: return implementation(aReceiver, aSelector);
@@ -573,6 +641,12 @@ GLOBAL(objj_msgSend) = function(/*id*/ aReceiver, /*SEL*/ aSelector)
     }
 
     return implementation.apply(aReceiver, arguments);
+
+#ifdef MAXIMUM_RECURSION_CHECKS
+    } finally {
+        __objj_msgSend__StackDepth--;
+    }
+#endif
 }
 
 DISPLAY_NAME(objj_msgSend);
@@ -657,3 +731,27 @@ GLOBAL(sel_registerName) = function(/*String*/ aName)
 }
 
 DISPLAY_NAME(sel_registerName);
+
+objj_class.prototype.toString = objj_object.prototype.toString = function()
+{
+    var isa = this.isa;
+
+    if (class_getInstanceMethod(isa, SEL_description))
+        return objj_msgSend(this, SEL_description);
+
+    if (class_isMetaClass(isa))
+        return this.name;
+
+    return "[" + isa.name + " Object](-description not implemented)";
+}
+
+var SEL_description                     = sel_getUid("description"),
+    SEL_forwardingTargetForSelector_    = sel_getUid("forwardingTargetForSelector:"),
+    SEL_methodSignatureForSelector_     = sel_getUid("methodSignatureForSelector:"),
+    SEL_forwardInvocation_              = sel_getUid("forwardInvocation:"),
+    SEL_doesNotRecognizeSelector_       = sel_getUid("doesNotRecognizeSelector:"),
+    SEL_invocationWithMethodSignature_  = sel_getUid("invocationWithMethodSignature:"),
+    SEL_setTarget_                      = sel_getUid("setTarget:"),
+    SEL_setSelector_                    = sel_getUid("setSelector:"),
+    SEL_setArgument_atIndex_            = sel_getUid("setArgument:atIndex:"),
+    SEL_returnValue                     = sel_getUid("returnValue");

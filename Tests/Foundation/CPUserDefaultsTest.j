@@ -18,6 +18,7 @@ CPUserDefaultsTestKey2 = @"KEY2";
 @implementation CPUserDefaultsTest : OJTestCase
 {
     CPUserDefaults  target;
+    id              lastObservedCPUserDefaultsTestKey1;
 }
 
 - (void)setUp
@@ -39,7 +40,6 @@ CPUserDefaultsTestKey2 = @"KEY2";
     [self assert:[target objectForKey:CPUserDefaultsTestKey2] equals:@"Hello!"];
 
 }
-
 
 - (void)testSetObjectForKey
 {
@@ -133,7 +133,23 @@ CPUserDefaultsTestKey2 = @"KEY2";
 
     [target removeObjectForKey:CPUserDefaultsTestKey1];
     [self assert:[target dataForKey:CPUserDefaultsTestKey1] equals:nil];
+}
 
+- (void)testNotification
+{
+    [target setDouble:5.0 forKey:CPUserDefaultsTestKey1];
+
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(userDefaultsDidChange:) name:CPUserDefaultsDidChangeNotification object:target];
+
+    // Prod the class to resolve any outstanding _searchListNeedsReload's.
+    [self assert:5.0 equals:[target objectForKey:CPUserDefaultsTestKey1] message:"normal read"];
+    [target setDouble:10.0 forKey:CPUserDefaultsTestKey1];
+    [self assert:[target objectForKey:CPUserDefaultsTestKey1] equals:lastObservedCPUserDefaultsTestKey1 message:"should observe new value"];
+}
+
+- (void)userDefaultsDidChange:(CPNotification)aNotification
+{
+   lastObservedCPUserDefaultsTestKey1 = [target objectForKey:CPUserDefaultsTestKey1];
 }
 
 @end

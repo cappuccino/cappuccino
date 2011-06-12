@@ -8,12 +8,18 @@
     /*
       Ensure that we have no canvas nor vml support.
     */
-    [self assert:YES equals:!CPFeatureIsCompatible(CPHTMLCanvasFeature)];
+    if (system.engine !== "jsc")
+    {
+        [self assert:YES equals:!CPFeatureIsCompatible(CPHTMLCanvasFeature)];
+    }
     [self assert:YES equals:!CPFeatureIsCompatible(CPVMLFeature)];
 }
 
 - (void)testGStateCreate
 {
+    if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
+        return;
+
     var gstate = CGGStateCreate(),
         testdata = { alpha:       1.0,
                      strokeStyle: "#000",
@@ -41,6 +47,9 @@
 
 - (void)testGStateCreateCopy
 {
+    if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
+        return;
+
     var gstate = CGGStateCreate(),
         gstatecopy = CGGStateCreateCopy(gstate),
         testdata = { alpha:       1.0,

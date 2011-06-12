@@ -49,6 +49,7 @@
 @import "CPNotificationCenter.j"
 @import "CPNull.j"
 @import "CPNumber.j"
+@import "CPNumberFormatter.j"
 @import "CPObject.j"
 @import "CPObjJRuntime.j"
 @import "CPOperation.j"

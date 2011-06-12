@@ -329,6 +329,11 @@ CPLog(@"Got some class: %@", inst);
     return objj_msgSend(self, aSelector, anObject, anotherObject);
 }
 
+- (id)forwardingTargetForSelector:(SEL)aSelector
+{
+    return nil;
+}
+
 // Forwarding Messages
 /*!
     Subclasses can override this method to forward message to
@@ -341,36 +346,6 @@ CPLog(@"Got some class: %@", inst);
     [self doesNotRecognizeSelector:[anInvocation selector]];
 }
 
-/*!
-    Used for forwarding of messages to other objects.
-    @ignore
-*/
-// FIXME: This should be moved to the runtime?
-- (void)forward:(SEL)aSelector :(marg_list)args
-{
-    var signature = [self methodSignatureForSelector:aSelector];
-
-    if (signature)
-    {
-        var invocation = [CPInvocation invocationWithMethodSignature:signature];
-
-        [invocation setTarget:self];
-        [invocation setSelector:aSelector];
-
-        var index = 2,
-            count = args.length;
-
-        for (; index < count; ++index)
-            [invocation setArgument:args[index] atIndex:index];
-
-        [self forwardInvocation:invocation];
-
-        return [invocation returnValue];
-    }
-
-    [self doesNotRecognizeSelector:aSelector];
-}
-
 // Error Handling
 /*!
     Called by the Objective-J runtime when an object can't respond to
@@ -381,7 +356,7 @@ CPLog(@"Got some class: %@", inst);
 {
     [CPException raise:CPInvalidArgumentException reason:
         (class_isMetaClass(isa) ? "+" : "-") + " [" + [self className] + " " + aSelector + "] unrecognized selector sent to " +
-        (class_isMetaClass(isa) ? "class" : "instance") + " 0x" + [CPString stringWithHash:[self UID]]];
+        (class_isMetaClass(isa) ? "class " + class_getName(isa) : "instance 0x" + [CPString stringWithHash:[self UID]])];
 }
 
 // Archiving
@@ -542,13 +517,3 @@ CPLog(@"Got some class: %@", inst);
 }
 
 @end
-
-// override toString on Objective-J objects so we get the actual description of the object
-// when coerced to a string, instead of "[Object object]"
-objj_class.prototype.toString = objj_object.prototype.toString = function()
-{
-    if (this.isa && class_getInstanceMethod(this.isa, "description") != NULL)
-        return [this description];
-    else
-        return String(this) + " (-description not implemented)";
-}

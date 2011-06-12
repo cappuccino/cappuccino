@@ -212,7 +212,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 - (CGRect)headerRectOfColumn:(int)aColumnIndex
 {
-    var headerRect = [self bounds],
+    var headerRect = CGRectMakeCopy([self bounds]),
         columnRect = [_tableView rectOfColumn:aColumnIndex];
 
     headerRect.origin.x = _CGRectGetMinX(columnRect);
@@ -592,16 +592,13 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     for (var i = 0; i < count; i++)
     {
         var column = [tableColumns objectAtIndex:i],
-            headerView = [column headerView];
+            headerView = [column headerView],
+            frame = [self headerRectOfColumn:i];
 
-        var frame = [self headerRectOfColumn:i];
-
+        // Make space for the gridline on the right.
+        frame.origin.x -= 0.5;
+        frame.size.width -= 1.0;
         frame.size.height -= 0.5;
-        if (i > 0)
-        {
-            frame.origin.x += 0.5;
-            frame.size.width -= 1;
-        }
         // Note: we're not adding in intercell spacing here. This setting only affects the regular
         // table cell data views, not the header. Verified in Cocoa on March 29th, 2011.
 
@@ -645,8 +642,8 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
         columnMaxX = _CGRectGetMaxX(columnToStroke);
 
-        CGContextMoveToPoint(context, ROUND(columnMaxX) + 0.5, ROUND(_CGRectGetMinY(columnToStroke)));
-        CGContextAddLineToPoint(context, ROUND(columnMaxX) + 0.5, ROUND(_CGRectGetMaxY(columnToStroke)));
+        CGContextMoveToPoint(context, FLOOR(columnMaxX) - 0.5, ROUND(_CGRectGetMinY(columnToStroke)));
+        CGContextAddLineToPoint(context, FLOOR(columnMaxX) - 0.5, ROUND(_CGRectGetMaxY(columnToStroke)));
     }
     CGContextClosePath(context);
     CGContextStrokePath(context);

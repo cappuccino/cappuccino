@@ -498,7 +498,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 
 - (CPString)description
 {
-    return "<_CPObservableArray: "+[super description]+" >";
+    return "<_CPObservableArray: " + [super description] + " >";
 }
 
 - (id)initWithArray:(CPArray)anArray
@@ -710,6 +710,17 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 {
     [[_controller selectedObjects] setValue:theValue forKeyPath:theKeyPath];
     [_cachedValues removeObjectForKey:theKeyPath];
+
+    // Allow handlesContentAsCompoundValue to work, based on observation of Cocoa's
+    // NSArrayController - when handlesContentAsCompoundValue and setValue:forKey:@"selection.X"
+    // is called, the array controller causes the compound value to be rewritten if
+    // handlesContentAsCompoundValue == YES. Note that
+    // A) this doesn't use observation (observe: X is not visible in backtraces)
+    // B) it only happens through the selection proxy and not on arrangedObject.X, content.X
+    // or even selectedObjects.X.
+    // FIXME The main code for this should somehow be in CPArrayController and also work
+    // for table based row edits.
+    [[CPBinder getBinding:@"contentArray" forObject:_controller] _contentArrayDidChange];
 }
 
 - (void)setValue:(id)theValue forKey:(CPString)theKeyPath

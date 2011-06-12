@@ -397,6 +397,17 @@
 
 @end
 
+@implementation CPArray (CPMutableCopying)
+
+- (id)mutableCopy
+{
+    var r = [CPMutableArray new];
+    [r addObjectsFromArray:self];
+    return r;
+}
+
+@end
+
 var selectorCompare = function selectorCompare(object1, object2, selector)
 {
     return [object1 performSelector:selector withObject:object2];

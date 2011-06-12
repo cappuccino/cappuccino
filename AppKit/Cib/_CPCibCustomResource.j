@@ -83,7 +83,14 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
     if ([aCoder respondsToSelector:@selector(bundle)] &&
         (![aCoder respondsToSelector:@selector(awakenCustomResources)] || [aCoder awakenCustomResources]))
         if (_className === @"CPImage")
+        {
+            if (_resourceName == "CPAddTemplate")
+                return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPButtonBar class]] pathForResource:@"plus_button.png"] size:CGSizeMake(11, 12)];
+            else if (_resourceName == "CPRemoveTemplate")
+                return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPButtonBar class]] pathForResource:@"minus_button.png"] size:CGSizeMake(11, 4)];
+
             return [[CPImage alloc] initWithContentsOfFile:[[aCoder bundle] pathForResource:_resourceName] size:_properties.valueForKey(@"size")];
+        }
 
     return self;
 }
