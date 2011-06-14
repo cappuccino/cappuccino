@@ -276,18 +276,22 @@ if ! prompt "yes"; then
     exit 1
 fi
 
-if [ ! "$install_capp" ] && prompt; then
+if [ ! "$install_capp" ]; then
     echo "================================================================================"
     echo "Would you like to install the pre-built Objective-J and Cappuccino packages?"
     echo "If you intend to build Cappuccino yourself this is not neccessary."
-    install_capp="yes"
+    if prompt; then
+      install_capp="yes"
+    fi
 fi
 
 
-if [ ! "$install_test" ] && prompt; then
+if [ ! "$install_test" ]; then
     echo "================================================================================"
     echo "Would you like to install test OJTest package?"
-    install_test="yes"
+    if prompt; then
+      install_test="yes"
+    fi
 fi
 
 # Make sure tusk can access GitHub's HTTPS URLs.
