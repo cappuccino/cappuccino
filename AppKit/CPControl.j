@@ -19,6 +19,8 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
+ 
+#import "../Foundation/Ref.h"
 
 @import "CPFont.j"
 @import "CPShadow.j"
@@ -526,7 +528,7 @@ var CPControlBlackColor = [CPColor blackColor];
     if (_formatter)
     {
         var formattedValue = nil;
-        if ([_formatter getObjectValue:@ref(formattedValue) forString:value errorDescription:NULL])
+        if ([_formatter getObjectValue:AT_REF(formattedValue) forString:value errorDescription:NULL])
             value = formattedValue;
     }
 
