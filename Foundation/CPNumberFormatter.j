@@ -26,6 +26,10 @@
 @import <Foundation/CPFormatter.j>
 @import <Foundation/CPDecimalNumber.j>
 
+#define UPDATE_NUMBER_HANDLER_IF_NECESSARY() if (!_numberHandler) \
+    _numberHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:_roundingMode scale:_maximumFractionalDigits raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:YES];
+#define SET_NEEDS_NUMBER_HANDLER_UPDATE() _numberHandler = nil;
+
 CPNumberFormatterNoStyle            = 0;
 CPNumberFormatterDecimalStyle       = 1;
 CPNumberFormatterCurrencyStyle      = 2;
@@ -54,6 +58,9 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
     CPNumberFormatterStyle          _numberStyle @accessors(property=numberStyle);
     CPString                        _perMillSymbol @accessors(property=perMillSymbol);
     CPNumberFormatterRoundingMode   _roundingMode @accessors(property=roundingMode);
+    CPUInteger                      _maximumFractionalDigits @accessors(property=maximalFractionalDigits);
+
+    CPDecimalNumberHandler         _numberHandler;
 }
 
 - (id)init
@@ -72,11 +79,10 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
     switch(_numberStyle)
     {
         case CPNumberFormatterDecimalStyle:
-            var dcmn = [CPDecimalNumber numberWithFloat:number],
-                roundingMode = [self roundingMode],
-                numberHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:roundingMode scale:3 raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:YES];
+            UPDATE_NUMBER_HANDLER_IF_NECESSARY();
 
-            dcmn = [dcmn decimalNumberByRoundingAccordingToBehavior:numberHandler];
+            var dcmn = [CPDecimalNumber numberWithFloat:number];
+            dcmn = [dcmn decimalNumberByRoundingAccordingToBehavior:_numberHandler];
 
             var output = [dcmn descriptionWithLocale:nil],
                 parts = [output componentsSeparatedByString:"."], // FIXME Locale specific.
@@ -141,6 +147,18 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
     if (_perMillSymbol === nil || _perMillSymbol === undefined)
         return ","; // (FIXME US Locale specific.)
     return _perMillSymbol;
+}
+
+- (void)setRoundingMode:(CPNumberFormatterRoundingMode)aRoundingMode
+{
+    _roundingMode = aRoundingMode;
+    SET_NEEDS_NUMBER_HANDLER_UPDATE();
+}
+
+- (void)setMaximumFractionDigits:(CPUInteger)aNumber
+{
+    _maximumFractionalDigits = aNumber;
+    SET_NEEDS_NUMBER_HANDLER_UPDATE();
 }
 
 @end
