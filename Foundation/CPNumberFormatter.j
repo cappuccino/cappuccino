@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#import "Ref.h"
 
 @import <Foundation/CPString.j>
 @import <Foundation/CPFormatter.j>
@@ -126,7 +127,8 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
 {
     // TODO Error handling.
     var value = [self numberFromString:aString];
-    @deref(anObject, value);
+    AT_DEREF(anObject, value);
+
     return YES;
 }
 
