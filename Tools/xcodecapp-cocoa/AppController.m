@@ -173,62 +173,84 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
         NSString        *fullPath       = [NSString stringWithFormat:@"%@/%@", path, node];
         NSDictionary    *fileAttributes = [fm attributesOfItemAtPath:fullPath error:NULL];
 		NSDate          *fileModDate    = [fileAttributes objectForKey:NSFileModificationDate];
-            
+
         if(shouldIgnoreDate || [fileModDate compare:[self lastModificationDateForPath:path]] == NSOrderedDescending)
         {
-            if ([self isObjJFile:fullPath])
-				[modifiedSources addObject:fullPath];
-            if ([self isXIBFile:fullPath])
-            {
+            //Prepare the shell
+            NSTask *task;
+            task = [[NSTask alloc] init];
+            [task setLaunchPath: @"/bin/bash"];            
+            NSArray *arguments;
+            NSString *successMsg;
+            
+            //If we don't do it here we get excessive handleFileModification calls due to changes
+            [self updateLastModificationDateForPath:path];            
+            
+            if ([self isXIBFile:fullPath] || [self isObjJFile:fullPath]) {
+                if ([self isXIBFile:fullPath])
+                {
+                    
+                    NSLog(@"nib2cib %@", fullPath);                
+                    
+                    //Create the nib2cib task              
+                    arguments = [NSArray arrayWithObjects: @"-c",
+                                 [NSString stringWithFormat:@"(source %@; nib2cib %@;) 2>&1", _profilePath, fullPath],@"",nil];
+                    successMsg = @"The XIB file has been converted";
+                }
+                if ([self isObjJFile:fullPath])
+                {
+                    [modifiedSources addObject:fullPath];
+                    
+                    NSString *shadowPath    = [[self shadowURLForSourceURL:[NSURL URLWithString:fullPath]] path];
+                    NSLog(@"objj %@", shadowPath);                 
+                    //Create the objj task
+                    arguments = [NSArray arrayWithObjects: @"-c",
+                                 [NSString stringWithFormat:@"(source %@; objj %@ %@ %@;) 2>&1", _profilePath, parserPath, fullPath, shadowPath],@"",nil];
+                    successMsg = @"The Objective-J file has been converted";
+                }
+                
+                //Run the task and get the response
+                [task setArguments: arguments];
+                [task setStandardOutput:[NSPipe pipe]];                             
+                
                 [_statusItem setTitle:@"..."];
-                NSLog(@"nib2cib %@", fullPath);
-                int ret = system([[NSString stringWithFormat:@"source \"%@\"; nib2cib \"%@\";", _profilePath, fullPath] UTF8String]);
+                [task launch];
+                [task waitUntilExit];
+                
+                NSData *stdOut;
+                stdOut = [[[task standardOutput] fileHandleForReading] availableData];
+                NSString *response;
+                response = [[NSString alloc] initWithData: stdOut
+                                                 encoding: NSUTF8StringEncoding];
+                
+                NSLog(@"response was\n%@", response);                   
+                
                 [_statusItem setTitle:@""];
-                if (ret == 0)
+                if ([response length] == 0)
                 {
-                    if (!shouldIgnoreDate)
+                    if (!shouldIgnoreDate) {
                         [GrowlApplicationBridge notifyWithTitle:[fullPath lastPathComponent]
-                                                    description:@"The XIB file has been converted"
+                                                    description:successMsg
                                                notificationName:@"DefaultNotifications"
                                                        iconData:nil
                                                        priority:0
                                                        isSticky:NO
                                                    clickContext:nil];
-
+                    }
+                    
+                } else {
+                    [GrowlApplicationBridge notifyWithTitle:[fullPath lastPathComponent]
+                                                description:response
+                                           notificationName:@"DefaultNotifications"
+                                                   iconData:nil
+                                                   priority:0
+                                                   isSticky:NO
+                                               clickContext:nil];                    
+                    NSLog(@"Error in conversion: return message is %@", response);
                 }
-                else
-                    NSLog(@"Error in conversion: return code is %d", ret);
-            }
-            if ([self isObjJFile:fullPath])
-            {
-                NSString *shadowPath    = [[self shadowURLForSourceURL:[NSURL URLWithString:fullPath]] path];
-                NSString *command       = [NSString stringWithFormat:@"source %@; objj \"%@\" \"%@\" \"%@\";", _profilePath, parserPath, fullPath, shadowPath];
-                
-                NSLog(@"%@", command);
-                
-                [_statusItem setTitle:@"..."];
-                int ret = system([command UTF8String]);
-                 [_statusItem setTitle:@""];
-
-                if (ret == 0)
-                {
-                    if (!shouldIgnoreDate)
-                        [GrowlApplicationBridge notifyWithTitle:[fullPath lastPathComponent]
-                                                    description:@"The Objective-J file has been converted"
-                                               notificationName:@"DefaultNotifications"
-                                                       iconData:nil
-                                                       priority:0
-                                                       isSticky:NO
-                                                   clickContext:nil];
-
-                }
-                else
-                    NSLog(@"Error in conversion: return code is %d", ret);
             }
         }
 	}
-
-	[self updateLastModificationDateForPath:path];
 }
 
 - (BOOL)isObjJFile:(NSString *)path
@@ -351,17 +373,17 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     {   
         if ([ignoredPath isEqual:@""])
             continue;
-
+        
         NSMutableString *regexp = [NSMutableString stringWithFormat:@"%@/%@", [currentProjectURL path], ignoredPath];
         [regexp replaceOccurrencesOfString:@"/" 
-                                     withString:@"\\/"
-                                        options:NSCaseInsensitiveSearch 
-                                          range:NSMakeRange(0, [regexp length])];
+                                withString:@"\\/"
+                                   options:NSCaseInsensitiveSearch 
+                                     range:NSMakeRange(0, [regexp length])];
         
         [regexp replaceOccurrencesOfString:@"." 
-                                     withString:@"\\."
-                                        options:NSCaseInsensitiveSearch 
-                                          range:NSMakeRange(0, [regexp length])];
+                                withString:@"\\."
+                                   options:NSCaseInsensitiveSearch 
+                                     range:NSMakeRange(0, [regexp length])];
         
         [regexp replaceOccurrencesOfString:@"*" 
                                 withString:@".*"
@@ -372,7 +394,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
         if ([regextest evaluateWithObject:aPath])
         {
             isMatching = YES;
-
+            
             break;
         }
     }
@@ -398,7 +420,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     
     [spinner setHidden:NO];
     [spinner startAnimation:nil];
-
+    
     currentProjectURL = [[openPanel URLs] objectAtIndex:0];
     currentProjectName = [[[openPanel URLs] objectAtIndex:0] lastPathComponent];
     
@@ -418,7 +440,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
         [buttonOpenXCode setEnabled:YES];
         [labelStatus setStringValue:@"XCodeCapp is running"];
     }
-        
+    
     else
         [labelStatus setStringValue:@"XCodeCapp is loading project..."];
     
@@ -455,7 +477,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag
 {
     [mainWindow makeKeyAndOrderFront:nil];
-
+    
     return YES;
 }
 
