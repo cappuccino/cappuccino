@@ -86,7 +86,6 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     [_statusItem setImage:_iconInactive];
     [_statusItem setHighlightMode:YES];
     [statusMenu setDelegate:self];
-
 }
 
 - (void)initializeEventStreamWithPath:(NSString*)aPath
@@ -228,7 +227,8 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                 [_statusItem setTitle:@""];
                 if ([response length] == 0)
                 {
-                    if (!shouldIgnoreDate) {
+                    if (!shouldIgnoreDate)
+                    {
                         [GrowlApplicationBridge notifyWithTitle:[fullPath lastPathComponent]
                                                     description:successMsg
                                                notificationName:@"DefaultNotifications"
@@ -238,7 +238,9 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                                                    clickContext:nil];
                     }
                     
-                } else {
+                }
+                else
+                {
                     [GrowlApplicationBridge notifyWithTitle:[fullPath lastPathComponent]
                                                 description:response
                                            notificationName:@"DefaultNotifications"
