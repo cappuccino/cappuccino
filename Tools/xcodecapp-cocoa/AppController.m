@@ -52,11 +52,22 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
         ignoredFilePaths    = [NSMutableArray new];
         parserPath          = [[NSBundle mainBundle] pathForResource:@"parser" ofType:@"j"];
 
-        if([fm fileExistsAtPath:[@"~/.bash_profile" stringByExpandingTildeInPath]])
-            _profilePath = [@"~/.bash_profile" stringByExpandingTildeInPath];
+        if([fm fileExistsAtPath:[@"source ~/.bash_profile" stringByExpandingTildeInPath]])
+            _profilePath = [@"source ~/.bash_profile" stringByExpandingTildeInPath];
         else if([fm fileExistsAtPath:[@"~/.profile" stringByExpandingTildeInPath]])
-            _profilePath = [@"~/.profile" stringByExpandingTildeInPath];
-
+            _profilePath = [@"source ~/.profile" stringByExpandingTildeInPath];
+        else if([fm fileExistsAtPath:[@"~/.bashrc" stringByExpandingTildeInPath]])
+            _profilePath = [@"source ~/.bashrc" stringByExpandingTildeInPath];
+        else
+        {
+            NSAlert *alert = [NSAlert alertWithMessageText:@"Cannot find any valid profile file"
+                            defaultButton:@"Ok"
+                          alternateButton:nil
+                              otherButton:nil
+                informativeTextWithFormat:@"We have checked for ~/.bash_profile, ~/.profile and ~/.bashrc without luck.\n\nYou need to have on of this file to tell XCodeCapp-cocoa where is located nib2cib. Now we gonna try to without sourcing one this file and it may fail.\n\nIf you notice any error or weird behaviour, please look at Mac OS' Console.app for log message and open a ticket."];
+            [alert runModal];
+             _profilePath = @"";
+        }
     }
     
 	return self;
@@ -193,7 +204,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                     
                     //Create the nib2cib task              
                     arguments = [NSArray arrayWithObjects: @"-c",
-                                 [NSString stringWithFormat:@"(source %@; nib2cib %@;) 2>&1", _profilePath, fullPath],@"",nil];
+                                 [NSString stringWithFormat:@"(%@; nib2cib '%@';) 2>&1", _profilePath, fullPath],@"",nil];
                     successMsg = @"The XIB file has been converted";
                 }
                 if ([self isObjJFile:fullPath])
@@ -204,7 +215,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                     NSLog(@"objj %@", shadowPath);                 
                     //Create the objj task
                     arguments = [NSArray arrayWithObjects: @"-c",
-                                 [NSString stringWithFormat:@"(source %@; objj %@ %@ %@;) 2>&1", _profilePath, parserPath, fullPath, shadowPath],@"",nil];
+                                 [NSString stringWithFormat:@"(%@; objj '%@' '%@' '%@';) 2>&1", _profilePath, parserPath, fullPath, shadowPath],@"",nil];
                     successMsg = @"The Objective-J file has been converted";
                 }
                 
