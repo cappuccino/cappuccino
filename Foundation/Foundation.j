@@ -21,6 +21,7 @@
  */
 
 @import "CPArray.j"
+@import "CPAttributedString.j"
 @import "CPBundle.j"
 @import "CPCharacterSet.j"
 @import "CPCoder.j"
