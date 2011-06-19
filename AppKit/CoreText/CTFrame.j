@@ -153,13 +153,15 @@ function CTFrameDraw(/* CTFrame */ aFrame, /* CGContext */ aContext)
     for (var i = -1, count = lines.length; ++i < count;)
     {
         var line = lines[i],
-            alignment = [line.string attribute:@"alignment" atIndex:0 effectiveRange:CPMakeRange(0, 0)] || CPLeftTextAlignment,
+            alignment = [line.string attribute:@"alignment" atIndex:0 effectiveRange:CPMakeRange(0, 0)],
             position = CGContextGetTextPosition(aContext);
         
-        if (alignment === CPLeftTextAlignment)
-            line.origin = CGPointMake(origin.x, position.y);
-        else if (alignment === CPRightTextAlignment)
+        if (alignment === CPRightTextAlignment)
             line.origin = CGPointMake((aFrame.path.elements[1].x - origin.x * 2) - CTLineGetTypographicBounds(line).width, position.y);
+        else if (alignment === CPCenterTextAlignment)
+            line.origin = CGPointMake(((aFrame.path.elements[1].x - origin.x) / 2) - CTLineGetTypographicBounds(line).width / 2, position.y);
+        else
+            line.origin = CGPointMake(origin.x, position.y);
         
         CGContextSetTextPosition(aContext, line.origin.x, line.origin.y);
         CTLineDraw(line, aContext);
