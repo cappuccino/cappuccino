@@ -83,6 +83,7 @@
 @import "CPSound.j"
 @import "CPSplitView.j"
 @import "CPStepper.j"
+@import "CPString+Additions.j"
 @import "CPTableColumn.j"
 @import "CPTableView.j"
 @import "CPTabView.j"
