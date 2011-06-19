@@ -52,7 +52,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
         ignoredFilePaths    = [NSMutableArray new];
         parserPath          = [[NSBundle mainBundle] pathForResource:@"parser" ofType:@"j"];
 
-        if([fm fileExistsAtPath:[@"source ~/.bash_profile" stringByExpandingTildeInPath]])
+        if([fm fileExistsAtPath:[@"~/.bash_profile" stringByExpandingTildeInPath]])
             _profilePath = [@"source ~/.bash_profile" stringByExpandingTildeInPath];
         else if([fm fileExistsAtPath:[@"~/.profile" stringByExpandingTildeInPath]])
             _profilePath = [@"source ~/.profile" stringByExpandingTildeInPath];
