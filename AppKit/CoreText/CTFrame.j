@@ -40,7 +40,10 @@ function _CTFrameCreate(aPath, attributes, lines, attributedString)
 
 _CTFrameCreate.displayName = @"_CTFrameCreate";
 
-// Returns a CPRange
+/*!
+    Returns the range of the frame based on the original string
+    FIX ME: This implementation is wrong
+*/
 function CTFrameGetStringRange(/* CTFrame */ aFrame)
 {
     return CPMakeRange();
@@ -48,7 +51,10 @@ function CTFrameGetStringRange(/* CTFrame */ aFrame)
 
 CTFrameGetStringRange.displayName = @"CTFrameGetStringRange";
 
-// Returns a CPRange
+/*!
+    Returns a range object with the visisble characters
+    FIX ME: THis implementation is wrong
+*/
 function CTFrameGetVisibleStringRange(/* CTFrame */ aFrame)
 {
     return CPMakeRange();
@@ -56,7 +62,9 @@ function CTFrameGetVisibleStringRange(/* CTFrame */ aFrame)
 
 CTFrameGetVisibleStringRange.displayName = @"CTFrameGetVisibleStringRange";
 
-// Returns a CGPath
+/*!
+    Returns the path for the frame.
+*/
 function CTFrameGetPath(/* CTFrame */ aFrame)
 {
     return aFrame.path;
@@ -64,7 +72,9 @@ function CTFrameGetPath(/* CTFrame */ aFrame)
 
 CTFrameGetPath.displayName = @"CTFrameGetPath";
 
-// Returns a CPDictionary
+/*!
+    Returns a dictionary of attributes for the frame.
+*/
 function CTFrameGetFrameAttributes(/* CTFrame */ aFrame)
 {
     return aFrame.frameAttributes;
@@ -72,7 +82,9 @@ function CTFrameGetFrameAttributes(/* CTFrame */ aFrame)
 
 CTFrameGetFrameAttributes.displayName = @"CTFrameGetFrameAttributes";
 
-// Returns an array of CTLines
+/*!
+    Returns the array containing CTLines that make up the frame
+*/
 function CTFrameGetLines(/* CTFrame */ aFrame)
 {
     return aFrame.lines;
@@ -80,7 +92,9 @@ function CTFrameGetLines(/* CTFrame */ aFrame)
 
 CTFrameGetLines.displayName = @"CTFrameGetLines";
 
-// Returns an array of CGPoints
+/*!
+    Returns an array of CGPoints for the origin of each CTLine in the frame
+*/
 function CTFrameGetLineOrigins(/* CTFrame */ aFrame, /* CPRange */ aRange)
 {
     var results = [],
@@ -94,8 +108,10 @@ function CTFrameGetLineOrigins(/* CTFrame */ aFrame, /* CPRange */ aRange)
 
 CTFrameGetLineOrigins.displayName = @"CTFrameGetLineOrigins";
 
-// Returns an array of CTLines
-// Divergent from Cocoa and expensive.
+/*!
+    Returns an array of CTLines for a given range.
+    Divergent from Cocoa and expensive.
+*/
 function CTFrameGetLinesForRange(/* CTFrame */ aFrame, /* CPRange */ lhs)
 {
     var lines = aFrame.lines, results = [];
@@ -116,8 +132,10 @@ function CTFrameGetLinesForRange(/* CTFrame */ aFrame, /* CPRange */ lhs)
 
 CTFrameGetLinesForRange.displayName = @"CTFrameGetLinesForRange";
 
-// Returns a CPRange
-// This is divergent from Cocoa. It's a convenience method used in CPTextView.
+/*!
+    Returns a CPRange
+    This is divergent from Cocoa. It's a convenience method used in CPTextView.
+*/
 function CTFrameGetRangeForPoint(/* CTFrame */ aFrame, /* CGPoint */ aPoint)
 {
     var lines = aFrame.lines, y = aPoint.y;
@@ -143,6 +161,9 @@ function CTFrameGetRangeForPoint(/* CTFrame */ aFrame, /* CGPoint */ aPoint)
 
 CTFrameGetRangeForPoint.displayName = @"CTFrameGetRangeForPoint";
 
+/*!
+    Draws the frame to the graphics context.
+*/
 function CTFrameDraw(/* CTFrame */ aFrame, /* CGContext */ aContext)
 {
     var origin = aFrame.path.start,

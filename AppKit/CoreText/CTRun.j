@@ -25,6 +25,10 @@ kCTRunStatusRightToLeft = 1 << 0;
 kCTRunStatusNonMonotonic = 1 << 1;
 kCTRunStatusNonIdentityMatrix = 1 << 2;
 
+/*!
+    A CTRun represents a span of characters with common attribtues.
+*/
+
 function _CTRunCreate(glyphs, attributes)
 {
     return {
@@ -36,7 +40,9 @@ function _CTRunCreate(glyphs, attributes)
 
 _CTRunCreate.displayName = @"_CTRunCreate";
 
-// Returns an index
+/*!
+    Returns the number of glyphs in the run.
+*/
 function CTRunGetGlyphCount(/* CTRun */ aRun)
 {
     return aRun.glyphs.length;
@@ -44,7 +50,9 @@ function CTRunGetGlyphCount(/* CTRun */ aRun)
 
 CTRunGetGlyphCount.displayName = @"CTRunGetGlyphCount";
 
-// Returns a CPDictionary
+/*!
+    Returns a CPDictionary of attributes for the CTRun
+*/
 function CTRunGetAttributes(/* CTRun */ aRun)
 {
     return aRun.attributes;
@@ -52,7 +60,19 @@ function CTRunGetAttributes(/* CTRun */ aRun)
 
 CTRunGetAttributes.displayName = @"CTRunGetAttributes";
 
-// Returns a CTRunStatus (int)
+/*!
+    Returns a CTRunStatus
+    CTRuns have status that can be used to speed up certain operations.
+
+    Possible values:
+
+    @code
+    kCTRunStatusNoStatus
+    kCTRunStatusRightToLeft
+    kCTRunStatusNonMonotonic
+    kCTRunStatusNonIdentityMatrix
+    @endcode
+*/
 function CTRunGetStatus(/* CTRun */ aRun)
 {
     return aRun.status || kCTRunStatusNoStatus;
@@ -60,7 +80,10 @@ function CTRunGetStatus(/* CTRun */ aRun)
 
 CTRunGetStatus.displayName = @"CTRunGetStatus";
 
-// Returns an array of CGGlyphs
+/*!
+    Returns an array of CGGlyphs
+    FIX ME: Not implemented correctly
+*/
 function CTRunGetGlyphs(/* CTRun */ aRun, /* CPRange */ aRange)
 {
     if (!aRun.glyphs)
@@ -71,7 +94,10 @@ function CTRunGetGlyphs(/* CTRun */ aRun, /* CPRange */ aRange)
 
 CTRunGetGlyphs.displayName = @"CTRunGetGlyphs";
 
-// Returns an array of CGPoints
+/*!
+    Returns an array of CGPoints
+    FIX ME: Not implemented correctly
+*/
 function CTRunGetPositions(/* CTRun */ aRun, /* CPRange */ aRange)
 {
     if (!aRun.positions)
@@ -82,7 +108,10 @@ function CTRunGetPositions(/* CTRun */ aRun, /* CPRange */ aRange)
 
 CTRunGetPositions.displayName = @"CTRunGetPositions";
 
-// Returns an array of CGSizes
+/*!
+    Returns an array of CGSizes
+    FIX ME: Not implemented correctly
+*/
 function CTRunGetAdvances(/* CTRun */ aRun, /* CPRange */ aRange)
 {
     if (!aRun.advances)
@@ -93,7 +122,10 @@ function CTRunGetAdvances(/* CTRun */ aRun, /* CPRange */ aRange)
 
 CTRunGetAdvances.displayName = @"CTRunGetAdvances";
 
-// Returns an array of indexes
+/*!
+    Returns an array of indexes.
+    FIX ME: Not implemented correctly
+*/
 function CTRunGetStringIndices(/* CTRun */ aRun, /* CPRange */ aRange)
 {
     if (!aRun.stringIndices)
@@ -104,16 +136,20 @@ function CTRunGetStringIndices(/* CTRun */ aRun, /* CPRange */ aRange)
 
 CTRunGetStringIndices.displayName = @"CTRunGetStringIndices";
 
-// Returns a CPRange
+/*!
+    Returns a CPRange containing the location of the run in the parent string
+*/
 function CTRunGetStringRange(/* CTRun */ aRun)
 {
-    
+    return aRun.range;
 }
 
 CTRunGetStringRange.displayName = @"CTRunGetStringRange";
 
-// Returns a JSObject: {width: float, ascender: float, descender: float, lineHeight: float}
-// More expensive
+/*!
+    Returns a JSObject: {width: float, ascender: float, descender: float, lineHeight: float}
+    More expensive
+*/
 function CTRunGetTypographicBounds(/* CTRun */ aRun, /* CPRange */ aRange)
 {
     if (aRun._typographicBounds)
@@ -133,8 +169,10 @@ function CTRunGetTypographicBounds(/* CTRun */ aRun, /* CPRange */ aRange)
 
 CTRunGetTypographicBounds.displayName = @"CTRunGetTypographicBounds";
 
-// Returns a CGRect
-// Cheap
+/*!
+    Returns a CGRect
+    Cheap
+*/
 function CTRunGetImageBounds(/* CTRun */ aRun, /* CGContext */ aContext, /* CPRange */ aRange)
 {
     if (aRun._imageBounds)
@@ -161,6 +199,9 @@ function CTRunGetTextMatrix(/* CTRun */ aRun)
 
 CTRunGetTextMatrix.displayName = @"CTRunGetTextMatrix";
 
+/*!
+    Draws the run to the context
+*/
 function CTRunDraw(/* CTRun */ aRun, /* CGContext */ aContext, /* CPRange */ aRange)
 {
     _CTRunPrepareDraw(aRun, aContext);

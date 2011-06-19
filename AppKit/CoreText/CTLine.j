@@ -27,7 +27,9 @@ kCTLineTruncationStart = 0;
 kCTLineTruncationEnd = 1;
 kCTLineTruncationMiddle = 2;
 
-// Returns a CTLine
+/*!
+    Creates a new line with a supplied CPAttributedString
+*/
 function CTLineCreateWithAttributedString(/* CPAttributedString */ aString)
 {
     var line = {
@@ -42,7 +44,14 @@ function CTLineCreateWithAttributedString(/* CPAttributedString */ aString)
 
 CTLineCreateWithAttributedString.displayName = @"CTLineCreateWithAttributedString";
 
-// Returns a CTLine
+/*!
+    Creates a new line truncated to a given width.
+    @param aLine - The input line
+    @param width - The constraining width
+    @param truncationToken - The characters to represent the truncation. This is usually an elipsis. If not token is given the string will just clip
+
+    FIX ME: Not implemented correctly
+*/
 function CTLineCreateTruncatedLine(/* CTLine */ aLine, /* float */ width, /* CTLineTruncationType */ truncationType, /* CTLine */ truncationToken)
 {
     return aLine;
@@ -50,7 +59,10 @@ function CTLineCreateTruncatedLine(/* CTLine */ aLine, /* float */ width, /* CTL
 
 CTLineCreateTruncatedLine.displayName = @"CTLineCreateTruncatedLine";
 
-// Returns a CTLine
+/*!
+    Returns a CTLine with justified text.
+    FIX ME: This is not implemented correctly
+*/
 function CTLineCreateJustifiedLine(/* CTline */ aLine, /* float */ justificationFactor, /* float */ width)
 {
     return aLine;
@@ -58,7 +70,9 @@ function CTLineCreateJustifiedLine(/* CTline */ aLine, /* float */ justification
 
 CTLineCreateJustifiedLine.displayName = @"CTLineCreateJustifiedLine";
 
-// Returns an index
+/*!
+    Returns the number of glyphs in a given line.
+*/
 function CTLineGetGlyphCount(/* CTLine */ aLine)
 {
     return [aLine.string length];
@@ -66,7 +80,9 @@ function CTLineGetGlyphCount(/* CTLine */ aLine)
 
 CTLineGetGlyphCount.displayName = @"CTLineGetGlyphCount";
 
-// Returns an array of CTGlyphRuns
+/*!
+    Returns the array of CTRuns that make up the line.
+*/
 function CTLineGetGlyphRuns(/* CTLine */ aLine)
 {
     return aLine.runs;
@@ -74,7 +90,9 @@ function CTLineGetGlyphRuns(/* CTLine */ aLine)
 
 CTLineGetGlyphRuns.displayName = @"CTLineGetGlyphRuns";
 
-// Returns a CPRange
+/*!
+    Returns the range for which the CTLine makes up the original string
+*/
 function CTLineGetStringRange(/* CTLine */ aLine)
 {
     return CPCopyRange(aLine.range) || CPMakeRange(0, [aLine.string length])
@@ -82,13 +100,18 @@ function CTLineGetStringRange(/* CTLine */ aLine)
 
 CTLineGetStringRange.displayName = @"CTLineGetStringRange";
 
+/*!
+    No op
+*/
 function CTLineGetPenOffsetForFlush(/* CTLine */ aLine, /* float */ flushFactor, /* float */ flushWidth)
 {
     
 }
 
 CTLineGetPenOffsetForFlush.displayName = @"CTLineGetPenOffsetForFlush";
-
+/*!
+    Draws the CTLine to the graphics context.
+*/
 function CTLineDraw(/* CTLine */ aLine, /* CGContext */ aContext)
 {
     var startPosition = aLine._startPosition = CGContextGetTextPosition(aContext),
@@ -106,8 +129,9 @@ function CTLineDraw(/* CTLine */ aLine, /* CGContext */ aContext)
 
 CTLineDraw.displayName = @"CTLineDraw";
 
-// Returns a CGRect
-// Cheap
+/*!
+    Calcaulates the image bounds for a line.
+*/
 function CTLineGetImageBounds(/* CTLine */ aLine, /* CGContext */ aContext)
 {
     if (aLine._imageBounds)
@@ -129,8 +153,10 @@ function CTLineGetImageBounds(/* CTLine */ aLine, /* CGContext */ aContext)
 
 CTLineGetImageBounds.displayName = @"CTLineGetImageBounds";
 
-// Returns a JSObject: {width: float, ascent: float, descent: float, lineHeight: float}
-// More expensive
+/*!
+    Returns a JSObject: {width: float, ascent: float, descent: float, lineHeight: float}
+    This method is more expensive than CTLineGetImageBounds.
+*/
 function CTLineGetTypographicBounds(/* CTLine */ aLine)
 {
     if (aLine._typographicBounds)
@@ -161,7 +187,9 @@ function CTLineGetTypographicBounds(/* CTLine */ aLine)
 
 CTLineGetTypographicBounds.displayName = @"CTLineGetTypographicBounds";
 
-// Returns an index
+/*!
+    Returns the index of the line based on the original string
+*/
 function CTLineGetStringIndexForPosition(/* CTLine */ aLine, /* CGPoint */ aPoint)
 {
     var runs = aLine.runs, x = aPoint.x, index = 0;
@@ -190,7 +218,10 @@ function CTLineGetStringIndexForPosition(/* CTLine */ aLine, /* CGPoint */ aPoin
 
 CTLineGetStringIndexForPosition.displayName = @"CTLineGetStringIndexForPosition";
 
-// Returns a float
+/*!
+    Returns the offset corresponding to a string index,
+    this works well for for movement between adjacent lines or for drawing a custom caret.  
+*/
 function CTLineGetOffsetForStringIndex(/* CTLine */ aLine, /* int */ anIndex, /* float */ secondaryOffset)
 {
     var runs = aLine.runs;

@@ -24,7 +24,9 @@
 @import "CTTypesetter.j"
 
 
-// Returns a CTFramesetter
+/*!
+    Creates a typesetter with a given CPAttributedString
+*/
 function CTFramesetterCreateWithAttributedString(/* CPAttributedString */ aString)
 {
     return {
@@ -35,7 +37,9 @@ function CTFramesetterCreateWithAttributedString(/* CPAttributedString */ aStrin
 
 CTFramesetterCreateWithAttributedString.displayName = @"CTFramesetterCreateWithAttributedString";
 
-// Returns a CTFrame
+/*!
+    Creates a CTFrame with a given typesetter, range, path, and attributes
+*/
 function CTFramesetterCreateFrame(/* CTFramesetter */ aFramesetter, /* CPRange */ aRange, /* CGPath */ aPath, /* CPDictionary */ frameAttributes)
 {
     if (aFramesetter._cachedFrame && [aFramesetter._cachedAttributes isEqual:frameAttributes])
@@ -73,7 +77,9 @@ function CTFramesetterCreateFrame(/* CTFramesetter */ aFramesetter, /* CPRange *
 
 CTFramesetterCreateFrame.displayName = @"CTFramesetterCreateFrame";
 
-// Returns a CTTypesetter
+/*!
+    Returns a CTTypesetter
+*/
 function CTFramesetterGetTypesetter(/* CTFramesetter */ aFramesetter)
 {
     return aFramesetter.typesetter;
@@ -81,7 +87,9 @@ function CTFramesetterGetTypesetter(/* CTFramesetter */ aFramesetter)
 
 CTFramesetterGetTypesetter.displayName = @"CTFramesetterGetTypesetter";
 
-// Returns a CGSize
+/*!
+    Returns a CGSize object with the suggested size for a given frame.
+*/
 function CTFramesetterSuggestFrameSizeWithConstraints(/* CTFramesetter */ aFramesetter, /* CPRange */ aRange, /* CPDictionary */ frameAttributes, /* CGSize */ constraints, /* {CPRange} */ fitRange)
 {
     var frame = CTFramesetterCreateFrame(aFramesetter, aRange, null, frameAttributes),
@@ -103,6 +111,9 @@ function CTFramesetterSuggestFrameSizeWithConstraints(/* CTFramesetter */ aFrame
 
 CTFramesetterSuggestFrameSizeWithConstraints.displayName = @"CTFramesetterSuggestFrameSizeWithConstraints";
 
+/*!
+    Returns the CPAttributedString for a given framesetter
+*/
 function CTFramesetterGetAttributedString(/* CTFramesetter */ aFramesetter)
 {
     return aFramesetter.string;
