@@ -230,13 +230,13 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                 NSData *stdOut;
                 stdOut = [[[task standardOutput] fileHandleForReading] availableData];
                 NSString *response;
-                response = [[NSString alloc] initWithData: stdOut
-                                                 encoding: NSUTF8StringEncoding];
+                response = [[NSString alloc] initWithData:stdOut
+                                                 encoding:NSUTF8StringEncoding];
                 
                 NSLog(@"response was\n%@", response);                   
                 
                 [_statusItem setTitle:@""];
-                if ([response length] == 0)
+                if ([task terminationStatus] == 0)
                 {
                     if (!shouldIgnoreDate)
                     {
