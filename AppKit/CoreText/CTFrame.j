@@ -153,7 +153,7 @@ function CTFrameDraw(/* CTFrame */ aFrame, /* CGContext */ aContext)
     for (var i = -1, count = lines.length; ++i < count;)
     {
         var line = lines[i],
-            alignment = [line.string attribute:@"alignment" atIndex:0 effectiveRange:CPMakeRange(0, 0)],
+            alignment = [line.string attribute:@"alignment" atIndex:0 effectiveRange:CPMakeRange(0, 0)] || CPLeftTextAlignment,
             position = CGContextGetTextPosition(aContext);
         
         if (alignment === CPLeftTextAlignment)
