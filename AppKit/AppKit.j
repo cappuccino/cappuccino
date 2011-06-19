@@ -25,6 +25,7 @@
 @import "CPAnimation.j"
 @import "CPApplication.j"
 @import "CPArrayController.j"
+@import "CPAttributedString+Additions.j"
 @import "CPBezierPath.j"
 @import "CPBox.j"
 @import "CPBrowser.j"
