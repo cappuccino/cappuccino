@@ -55,7 +55,7 @@
 
     CGPathAddRect(path, nil, aRect);
     
-    var frame = CTFramesetterCreateFrame(frameSetter, CPMakeRange(0, [string length]), path, nil);
+    var frame = CTFramesetterCreateFrame(frameSetter, CPMakeRange(0, [self length]), path, nil);
 
     CTFrameDraw(frame, context);
 }
