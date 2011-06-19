@@ -27,6 +27,10 @@
 @import "CPRange.j"
 @import "CPString.j"
 
+
+CPFontAttributeName = "font";
+CPForegroundColorAttributeName = "color";
+
 /*!
     @class CPAttributedString
     @ingroup foundation
@@ -42,6 +46,11 @@
     implements functionality from both NSAttributedString and
     NSMutableAttributedString. However, to ease converting of existing
     Objective-C code a CPMutableAttributedString alias to this class exists.
+    
+    Below are a list of commonly used attributes:
+    CPFontAttributeName - Font object
+    CPForegroundColorAttributeName - CPColor object
+
 */
 @implementation CPAttributedString : CPObject
 {

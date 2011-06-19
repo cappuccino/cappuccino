@@ -37,7 +37,7 @@ function CGContextSetTextMatrix(/* CGContext */ aContext, /* CGAffineTransform *
 
 function CGContextGetTextPosition(/* CGContext */ aContext)
 {
-    return aContext._textPosition;
+    return aContext._textPosition || _CGPointMakeZero();
 }
 
 function CGContextSetTextPosition(/* CGContext */ aContext, /* float */ x, /* float */ y)
