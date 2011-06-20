@@ -104,7 +104,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     NSArray                 *pathsToWatch   = [NSArray arrayWithObject:aPath];
     void                    *appPointer     = (void *)self;
     FSEventStreamContext    context         = {0, appPointer, NULL, NULL, NULL};
-    NSTimeInterval          latency         = 3.0;
+    NSTimeInterval          latency         = 5.0;
 
 	stream = FSEventStreamCreate(NULL, &fsevents_callback, &context, (CFArrayRef) pathsToWatch,
 	                             [lastEventId unsignedLongLongValue], (CFAbsoluteTime) latency,kFSEventStreamCreateFlagUseCFTypes);
@@ -181,6 +181,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 	for(NSString *node in contents)
     {
         NSString        *fullPath       = [NSString stringWithFormat:@"%@/%@", path, node];
+        NSString        *splitedPath    = [NSString stringWithFormat:@"%@/%@", [[fullPath pathComponents] objectAtIndex:[[fullPath pathComponents] count] - 2], [fullPath lastPathComponent]];
         NSDictionary    *fileAttributes = [fm attributesOfItemAtPath:fullPath error:NULL];
 		NSDate          *fileModDate    = [fileAttributes objectForKey:NSFileModificationDate];
 
@@ -193,10 +194,8 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
             NSArray *arguments;
             NSString *successMsg;
             
-            //If we don't do it here we get excessive handleFileModification calls due to changes
-            [self updateLastModificationDateForPath:path];            
-            
-            if ([self isXIBFile:fullPath] || [self isObjJFile:fullPath]) {
+            if ([self isXIBFile:fullPath] || [self isObjJFile:fullPath])
+            {
                 if ([self isXIBFile:fullPath])
                 {
                     
@@ -207,7 +206,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                                  [NSString stringWithFormat:@"(%@; nib2cib '%@';) 2>&1", _profilePath, fullPath],@"",nil];
                     successMsg = @"The XIB file has been converted";
                 }
-                if ([self isObjJFile:fullPath])
+                else if ([self isObjJFile:fullPath])
                 {
                     [modifiedSources addObject:fullPath];
                     
@@ -240,7 +239,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                 {
                     if (!shouldIgnoreDate)
                     {
-                        [GrowlApplicationBridge notifyWithTitle:[fullPath lastPathComponent]
+                        [GrowlApplicationBridge notifyWithTitle:splitedPath
                                                     description:successMsg
                                                notificationName:@"DefaultNotifications"
                                                        iconData:nil
@@ -252,7 +251,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                 }
                 else
                 {
-                    [GrowlApplicationBridge notifyWithTitle:[fullPath lastPathComponent]
+                    [GrowlApplicationBridge notifyWithTitle:splitedPath
                                                 description:response
                                            notificationName:@"DefaultNotifications"
                                                    iconData:nil
@@ -264,6 +263,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
             }
         }
 	}
+    [self updateLastModificationDateForPath:path];
 }
 
 - (BOOL)isObjJFile:(NSString *)path
