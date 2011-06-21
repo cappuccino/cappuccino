@@ -17,9 +17,9 @@
  */
 
 #import <Cocoa/Cocoa.h>
-#import <Growl/Growl.h>
+#import "PRHEmptyGrowlDelegate.h"
 
-@interface AppController : NSObject
+@interface AppController : NSObject <NSMenuDelegate>
 {
     IBOutlet NSTextField            *labelStatus;
     IBOutlet NSTextField            *labelPath;
@@ -55,6 +55,7 @@
     NSImage                 *_iconActive;
     NSStatusItem            *_statusItem;
     NSString                *_profilePath;
+	PRHEmptyGrowlDelegate   *growlDelegateRef;
 }
 
 - (void)registerDefaults;

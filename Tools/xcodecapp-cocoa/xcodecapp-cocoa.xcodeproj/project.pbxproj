@@ -10,7 +10,6 @@
 		024A03DD13696C1900DCBE4D /* xcodecapp-cocoa.icns in Resources */ = {isa = PBXBuildFile; fileRef = 024A03DC13696C1900DCBE4D /* xcodecapp-cocoa.icns */; };
 		024A03DF13696D9500DCBE4D /* xcodecapp-cocoa.png in Resources */ = {isa = PBXBuildFile; fileRef = 024A03DE13696D9500DCBE4D /* xcodecapp-cocoa.png */; };
 		024A040B13698E7800DCBE4D /* project.pbxproj in Resources */ = {isa = PBXBuildFile; fileRef = 024A040A13698E7700DCBE4D /* project.pbxproj */; };
-		024A041213699D6800DCBE4D /* parser.j in Sources */ = {isa = PBXBuildFile; fileRef = 024A041113699D6800DCBE4D /* parser.j */; };
 		024A041413699DD400DCBE4D /* parser.j in Resources */ = {isa = PBXBuildFile; fileRef = 024A041113699D6800DCBE4D /* parser.j */; };
 		026F3B6213866B0B00EE5B83 /* xcodecapp-cocoa-icon-inactive.png in Resources */ = {isa = PBXBuildFile; fileRef = 026F3B6113866B0B00EE5B83 /* xcodecapp-cocoa-icon-inactive.png */; };
 		026F3B6513866E7D00EE5B83 /* xcodecapp-cocoa-icon-active.png in Resources */ = {isa = PBXBuildFile; fileRef = 026F3B6413866E7D00EE5B83 /* xcodecapp-cocoa-icon-active.png */; };
@@ -23,6 +22,7 @@
 		02998CEB1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict in Resources */ = {isa = PBXBuildFile; fileRef = 02998CEA1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict */; };
 		02998CF71369C339006C73DB /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02998CF61369C339006C73DB /* Growl.framework */; };
 		02998CF91369C38A006C73DB /* Growl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02998CF61369C339006C73DB /* Growl.framework */; };
+		651DAE1F13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 651DAE1D13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -56,6 +56,8 @@
 		29B97319FDCFA39411CA2CEA /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/MainMenu.nib; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		651DAE1C13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.objj.h; path = PRHEmptyGrowlDelegate.h; sourceTree = "<group>"; };
+		651DAE1D13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PRHEmptyGrowlDelegate.m; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8E01A8DD0DE51A7C0008BB35 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
 		8E01A91D0DE9EED20008BB35 /* AppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppController.h; sourceTree = "<group>"; };
@@ -79,6 +81,8 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				651DAE1C13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.h */,
+				651DAE1D13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.m */,
 				8E01A91D0DE9EED20008BB35 /* AppController.h */,
 				8E01A91E0DE9EED20008BB35 /* AppController.m */,
 			);
@@ -229,7 +233,7 @@
 			files = (
 				027D999E13696A7000D3DB13 /* main.m in Sources */,
 				027D999F13696A7000D3DB13 /* AppController.m in Sources */,
-				024A041213699D6800DCBE4D /* parser.j in Sources */,
+				651DAE1F13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -263,7 +267,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
-					"\"/Volumes/Growl 1.2.1 SDK/Frameworks\"",
 				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
