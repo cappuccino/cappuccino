@@ -44,9 +44,9 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 
     if (self)
     {
-		if (!growlDelegateRef) {
+		if (!growlDelegateRef)
 			growlDelegateRef = [[[PRHEmptyGrowlDelegate alloc] init] autorelease];
-		}
+
         [GrowlApplicationBridge setGrowlDelegate:growlDelegateRef];
         
         fm                  = [NSFileManager defaultManager];
