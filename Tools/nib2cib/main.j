@@ -51,18 +51,21 @@ function main(args)
 {
     try
     {
-        var options = parseOptions(args);
+        var options = parseOptions(args),
+            ret = 0;
 
         if (options.watch)
             watch(options);
         else
-            convert(options);
+            if (!convert(options))
+                ret = 2;
     }
     catch (anException)
     {
         CPLog.fatal(exceptionReason(anException));
         OS.exit(1);
     }
+    OS.exit(ret);
 }
 
 function convert(options, inputFile)
