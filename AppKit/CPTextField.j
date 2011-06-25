@@ -1387,39 +1387,28 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 {
 }
 
-- (void)setValueFor:(CPString)theBinding
++ (void)initialize
+{
+    [CPTextField setDefaultPlaceholder:@"Multiple Values" forMarker:CPMultipleValuesMarker withBinding:CPValueBinding];
+    [CPTextField setDefaultPlaceholder:@"No Selection" forMarker:CPNoSelectionMarker withBinding:CPValueBinding];
+    [CPTextField setDefaultPlaceholder:@"Not Applicable" forMarker:CPNotApplicableMarker withBinding:CPValueBinding];
+    [CPTextField setDefaultPlaceholder:@"" forMarker:CPNullMarker withBinding:CPValueBinding];
+}
+
+- (void)setValueFor:(CPString)aBinding
 {
     var destination = [_info objectForKey:CPObservedObjectKey],
         keyPath = [_info objectForKey:CPObservedKeyPathKey],
         options = [_info objectForKey:CPOptionsKey],
         newValue = [destination valueForKeyPath:keyPath],
-        isPlaceholder = CPIsControllerMarker(newValue);
-
-    if (isPlaceholder)
+        isMarker = CPIsControllerMarker(newValue);
+        
+    if (isMarker)
     {
-        switch (newValue)
-        {
-            case CPMultipleValuesMarker:
-                newValue = [options objectForKey:CPMultipleValuesPlaceholderBindingOption] || @"Multiple Values";
-                break;
+        if (newValue == CPNotApplicableMarker && [options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
+            return [CPException raise:CPGenericException reason:@"Can't apply not applicable value for binding " + aBinding];
 
-            case CPNoSelectionMarker:
-                newValue = [options objectForKey:CPNoSelectionPlaceholderBindingOption] || @"No Selection";
-                break;
-
-            case CPNotApplicableMarker:
-                if ([options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
-                    [CPException raise:CPGenericException
-                                reason:@"can't transform non applicable key on: "+_source+" value: "+newValue];
-
-                newValue = [options objectForKey:CPNotApplicablePlaceholderBindingOption] || @"Not Applicable";
-                break;
-
-            case CPNullMarker:
-                newValue = [options objectForKey:CPNullPlaceholderBindingOption] || @"";
-                break;
-        }
-
+        newValue = [_info objectForKey:newValue];
         [_source setPlaceholderString:newValue];
         [_source setObjectValue:nil];
     }
