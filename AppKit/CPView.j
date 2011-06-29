@@ -2543,6 +2543,32 @@ setBoundsOrigin:
     return (_themeAttributes && _themeAttributes[aName] !== undefined);
 }
 
+- (void)registerThemeValues:(CPArray)themeValues
+{
+    for (var i = 0; i < themeValues.length; ++i)
+    {
+        var attributeValueState = themeValues[i],
+            attribute = attributeValueState[0],
+            value = attributeValueState[1],
+            state = attributeValueState[2];
+
+        if (state)
+            [self setValue:value forThemeAttribute:attribute inState:state];
+        else
+            [self setValue:value forThemeAttribute:attribute];
+    }
+}
+
+- (void)registerThemeValues:(CPArray)themeValues inherit:(CPArray)inheritedValues
+{
+    // Register inherited values first, then override those with the subtheme values.
+    if (inheritedValues)
+        [self registerThemeValues:inheritedValues];
+
+    if (themeValues)
+        [self registerThemeValues:themeValues];
+}
+
 - (CPView)createEphemeralSubviewNamed:(CPString)aViewName
 {
     return nil;
