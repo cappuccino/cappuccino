@@ -710,7 +710,13 @@ var ModifierKeyCodes = [
                             // Handle key codes for which String.fromCharCode won't work.
                             if (aDOMEvent.which === 0 || aDOMEvent.charCode === 0)
                                 characters = KeyCodesToUnicodeMap[_keyCode];
-
+							//	BUGFIX 1036:
+							//	Checking for a special key breaks in Internet
+							//	Explorer, where both 'which' and 'charCode' are
+							//	undefined instead of 0. We want to replicate
+							//	the above functionality in that environment
+							if (!characters && (aDOMEvent.which === undefined && aDOMEvent.charCode === undefined))
+								characters = KeyCodesToUnicodeMap[_keyCode];
                             if (!characters)
                                 characters = String.fromCharCode(_keyCode).toLowerCase();
 
@@ -790,10 +796,10 @@ var ModifierKeyCodes = [
                             // Is this a special key?
                             if (!characters && (aDOMEvent.which === 0 || aDOMEvent.charCode === 0))
                                 characters = KeyCodesToUnicodeMap[charCode];
-
+							
                             if (!characters)
                                 characters = String.fromCharCode(charCode);
-
+							
                             charactersIgnoringModifiers = characters.toLowerCase(); // FIXME: This isn't correct. It SHOULD include Shift.
 
                             // Safari won't send proper capitalization during cmd-key events
