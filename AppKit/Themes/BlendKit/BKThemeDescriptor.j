@@ -225,7 +225,7 @@ var ItemSizes               = { },
     }
 }
 
-+ (void)registerThemeValues:(CPArray)themeValues forView:aView inherit:(CPArray)inheritedValues
++ (void)registerThemeValues:(CPArray)themeValues forView:(CPView)aView inherit:(CPArray)inheritedValues
 {
     // Register inherited values first, then override those with the subtheme values.
     if (inheritedValues)
