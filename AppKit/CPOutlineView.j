@@ -1458,6 +1458,44 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
                     userInfo:[CPDictionary dictionaryWithObject:item forKey:"CPObject"]];
 }
 
+
+- (void)keyDown:(CPEvent)anEvent
+{
+    var character = [anEvent charactersIgnoringModifiers],
+        modifierFlags = [anEvent modifierFlags];
+
+    // Check for the key events manually, as opposed to waiting for CPWindow to sent the actual action message
+    // in _processKeyboardUIKey:, because we might not want to handle the arrow events.
+
+    if (character !== CPRightArrowFunctionKey && character !== CPLeftArrowFunctionKey) 
+        return [super keyDown:anEvent];
+
+    var rows = [self selectedRowIndexes],
+        indexes = [],
+        items = [];
+
+    [rows getIndexes:indexes maxCount:-1 inIndexRange:nil];
+
+    var i = 0,
+        c = [indexes count];
+
+    for (; i < c; i++)
+        items.push([self itemAtRow:indexes[i]]);
+   
+
+    if (character === CPRightArrowFunctionKey)
+    {
+        for (var i = 0; i < c; i++)
+            [self expandItem:items[i]];
+    }
+    else if (character === CPLeftArrowFunctionKey)
+    {
+        for (var i = 0; i < c; i++)
+            [self collapseItem:items[i]]; 
+    }
+
+    [super keyDown:anEvent];
+}
 @end
 
 // FIX ME: We're using with() here because Safari fails if we use anOutlineView._itemInfosForItems or whatever...
