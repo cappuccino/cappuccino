@@ -50,7 +50,6 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
         [GrowlApplicationBridge setGrowlDelegate:growlDelegateRef];
         
         fm                  = [NSFileManager defaultManager];
-        modifiedSources     = [NSMutableArray new];
         modifiedXIBs        = [NSMutableArray new];
         ignoredFilePaths    = [NSMutableArray new];
         parserPath          = [[NSBundle mainBundle] pathForResource:@"parser" ofType:@"j"];
@@ -202,7 +201,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                 if ([self isXIBFile:fullPath])
                 {
                     
-                    NSLog(@"nib2cib %@", fullPath);                
+                    NSLog(@"running command nib2cib %@", fullPath);
                     
                     //Create the nib2cib task              
                     arguments = [NSArray arrayWithObjects: @"-c",
@@ -211,10 +210,9 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                 }
                 else if ([self isObjJFile:fullPath])
                 {
-                    [modifiedSources addObject:fullPath];
-                    
-                    NSString *shadowPath    = [[self shadowURLForSourceURL:[NSURL URLWithString:fullPath]] path];
-                    NSLog(@"objj %@", shadowPath);                 
+                    NSLog(@"Full path string is: %@", [fullPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
+                    NSString *shadowPath = [[self shadowURLForSourceURL:[NSURL URLWithString:[fullPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]] path];
+                    NSLog(@"running command objj %@", shadowPath);
                     //Create the objj task
                     arguments = [NSArray arrayWithObjects: @"-c",
                                  [NSString stringWithFormat:@"(%@; objj '%@' '%@' '%@';) 2>&1", _profilePath, parserPath, fullPath, shadowPath],@"",nil];
@@ -357,13 +355,13 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 - (NSURL*)shadowURLForSourceURL:(NSURL*)aSourceURL
 {
     NSMutableString *flattenedPath = [NSMutableString stringWithString:[aSourceURL path]];
-    
+    NSLog(@"Flattened path is : %@", flattenedPath);
     [flattenedPath replaceOccurrencesOfString:@"/" 
                                    withString:@"_"
                                       options:NSCaseInsensitiveSearch 
                                         range:NSMakeRange(0, [[aSourceURL path] length])];
     
-    NSString *basename  = [NSString stringWithFormat:@"%@.h", [flattenedPath stringByDeletingPathExtension]];
+    NSString *basename  = [NSString stringWithFormat:@"%@.h", [[flattenedPath stringByDeletingPathExtension] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
     
     return [NSURL URLWithString:basename relativeToURL:XCodeSupportProjectSources];
 }

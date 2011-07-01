@@ -35,7 +35,6 @@
     IBOutlet NSMenuItem             *menuItemOpenXCode;
     
     NSFileManager           *fm;
-    NSMutableArray          *modifiedSources;
     NSMutableArray          *modifiedXIBs;
     NSMutableDictionary     *pathModificationDates;
     NSDate                  *appStartedTimestamp;
