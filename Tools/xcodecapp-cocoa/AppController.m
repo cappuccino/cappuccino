@@ -304,7 +304,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                                        options:NSCaseInsensitiveSearch 
                                          range:NSMakeRange(0, [PBXContent length])];
         [PBXContent replaceOccurrencesOfString:@"${CappuccinoProjectRelativePath}" 
-                                    withString:[currentProjectURL path]
+                                    withString:@".."
                                        options:NSCaseInsensitiveSearch 
                                          range:NSMakeRange(0, [PBXContent length])];
 
@@ -436,8 +436,14 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     [spinner startAnimation:nil];
     
     currentProjectURL = [[openPanel URLs] objectAtIndex:0];
-    currentProjectName = [[[openPanel URLs] objectAtIndex:0] lastPathComponent];
+    NSMutableString *tempName = [NSMutableString stringWithString:[[[openPanel URLs] objectAtIndex:0] lastPathComponent]];
     
+    [tempName replaceOccurrencesOfString:@" "
+                              withString:@"_"
+                                 options:NSCaseInsensitiveSearch
+                                   range:NSMakeRange(0, [tempName length])];
+    currentProjectName = [NSString stringWithString:tempName];
+
     [self computeIgnoredPaths];
     [self initializeEventStreamWithPath:[currentProjectURL path]];
     
@@ -481,6 +487,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     if (!currentProjectURL)
         return;
     
+    NSLog(@"Open Xcode project at URL : '%@'", [XCodeSupportProject path]);
     system([[NSString stringWithFormat:@"open \"%@\"", [XCodeSupportProject path]] UTF8String]);
 }
 
