@@ -836,8 +836,7 @@ BundleTask.prototype.defineSourceTasks = function()
 
         environmentSources.forEach(function(/*String*/ aFilename)
         {
-            // if this file doesn't exist or isn't a .j file, don't preprocess it.
-            if (!FILE.exists(aFilename) || FILE.extension(aFilename) !== '.j')
+            if (!FILE.exists(aFilename))
                 return;
 
             var relativePath = aFilename.substring(basePathLength ? basePathLength + 1 : basePathLength),
@@ -845,8 +844,19 @@ BundleTask.prototype.defineSourceTasks = function()
 
             filedir (compiledEnvironmentSource, [aFilename], function()
             {
-                TERM.stream.write("Compiling [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)").flush();
-                var compiled = require("objective-j/compiler").compile(aFilename, environmentCompilerFlags);
+                var compile
+                // if this file doesn't exist or isn't a .j file, don't preprocess it.
+                if (FILE.extension(aFilename) !== ".j")
+                {
+                    TERM.stream.write("Including [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)").flush();
+                    var compiled = FILE.read(aFilename, { charset:"UTF-8" });
+                }
+                else
+                {
+                    TERM.stream.write("Compiling [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)").flush();
+                    var compiled = require("objective-j/compiler").compile(aFilename, environmentCompilerFlags);
+                }
+
                 TERM.stream.print(Array(Math.round(compiled.length / 1024) + 3).join("."));
                 FILE.write(compiledEnvironmentSource, compiled, { charset:"UTF-8" });
             });
