@@ -75,6 +75,8 @@ var FILE = require("file"),
 
 - (void)run
 {
+    var exitValue = 0;
+
     try
     {
         var options = [self parseOptionsFromArgs:commandLineArgs];
@@ -84,13 +86,16 @@ var FILE = require("file"),
         if (options.watch)
             [self watchWithOptions:options];
         else
-            [self convertWithOptions:options inputFile:nil];
+            if (![self convertWithOptions:options inputFile:nil])
+                exitValue = 2;
     }
     catch (anException)
     {
         CPLog.fatal([self exceptionReason:anException]);
-        OS.exit(1);
+        exitValue = 1;
     }
+
+    OS.exit(exitValue);
 }
 
 - (BOOL)convertWithOptions:(JSObject)options inputFile:(CPString)inputFile
