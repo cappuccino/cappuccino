@@ -39,6 +39,8 @@ var CPBindingOperationAnd = 0,
 {
     CPDictionary    _info;
     id              _source;
+
+    JSObject        _suppressedNotifications;
 }
 
 + (void)exposeBinding:(CPString)aBinding forClass:(Class)aClass
@@ -122,6 +124,7 @@ var CPBindingOperationAnd = 0,
     {
         _source = aSource;
         _info   = [CPDictionary dictionaryWithObjects:[aDestination, aKeyPath] forKeys:[CPObservedObjectKey, CPObservedKeyPathKey]];
+        _suppressedNotifications = {};
 
         if (options)
             [_info setObject:options forKey:CPOptionsKey];
@@ -167,6 +170,10 @@ var CPBindingOperationAnd = 0,
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)changes context:(id)context
 {
     if (!changes)
+        return;
+
+    var objectSuppressions = _suppressedNotifications[[anObject UID]];
+    if (objectSuppressions && objectSuppressions[aKeyPath])
         return;
 
     [self setValueFor:context];
@@ -226,6 +233,44 @@ var CPBindingOperationAnd = 0,
     return [[options objectForKey:CPContinuouslyUpdatesValueBindingOption] boolValue];
 }
 
+- (BOOL)handlesContentAsCompoundValue
+{
+    var options = [_info objectForKey:CPOptionsKey];
+    return [[options objectForKey:CPHandlesContentAsCompoundValueBindingOption] boolValue];
+}
+
+/*!
+    Use this to avoid reacting to the notifications coming out of a reverseTransformedValue:.
+*/
+- (void)suppressSpecificNotificationFromObject:(id)anObject keyPath:(CPString)aKeyPath
+{
+    if (!anObject)
+        return;
+
+    var uid = [anObject UID],
+        objectSuppressions = _suppressedNotifications[uid];
+    if (!objectSuppressions)
+        _suppressedNotifications[uid] = objectSuppressions = {};
+
+    objectSuppressions[aKeyPath] = YES;
+}
+
+/*!
+    Use this to cancel suppressSpecificNotificationFromObject:keyPath:.
+*/
+- (void)unsuppressSpecificNotificationFromObject:(id)anObject keyPath:(CPString)aKeyPath
+{
+    if (!anObject)
+        return;
+
+    var uid = [anObject UID],
+        objectSuppressions = _suppressedNotifications[uid];
+    if (!objectSuppressions)
+        return;
+
+    delete objectSuppressions[aKeyPath];
+}
+
 @end
 
 @implementation CPObject (KeyValueBindingCreation)
@@ -234,7 +279,6 @@ var CPBindingOperationAnd = 0,
 {
     [CPBinder exposeBinding:aBinding forClass:[self class]];
 }
-
 
 + (Class)_binderClassForBinding:(CPString)theBinding
 {

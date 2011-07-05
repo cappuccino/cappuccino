@@ -184,9 +184,8 @@ var StandardUserDefaults;
     }
 
     [domain setObject:anObject forKey:aKey];
-    [self domainDidChange:aDomain];
-
     _searchListNeedsReload = YES;
+    [self domainDidChange:aDomain];
 }
 
 /*!
@@ -211,9 +210,8 @@ var StandardUserDefaults;
         return;
 
     [domain removeObjectForKey:aKey];
-    [self domainDidChange:aDomain];
-
     _searchListNeedsReload = YES;
+    [self domainDidChange:aDomain];
 }
 
 /*!

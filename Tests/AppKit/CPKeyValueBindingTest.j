@@ -249,6 +249,29 @@
     CPLog(@"here: "+aKeyPath+" value: "+[anObject valueForKey:aKeyPath]);
 }
 
+- (void)testSuppressNotification
+{
+    var control = [[CPTextField alloc] init],
+        anotherControl = [[CPTextField alloc] init];
+    [control setStringValue:@"brown"];
+    [control bind:CPValueBinding toObject:self withKeyPath:@"FOO" options:nil];
+    [self setValue:@"green" forKeyPath:@"FOO"];
+    [self assert:@"green" equals:[control stringValue] message:@"normal binding action"];
+
+    var binding = [CPBinder getBinding:CPValueBinding forObject:control];
+    [binding suppressSpecificNotificationFromObject:self keyPath:@"FOO"];
+    [self setValue:@"orange" forKeyPath:@"FOO"];
+    [self assert:@"green" equals:[control stringValue] message:@"binding update suppressed"];
+
+    [binding unsuppressSpecificNotificationFromObject:anotherControl keyPath:@"FOO"];
+    [self setValue:@"blue" forKeyPath:@"FOO"];
+    [self assert:@"green" equals:[control stringValue] message:@"binding update still suppressed"];
+
+    [binding unsuppressSpecificNotificationFromObject:self keyPath:@"FOO"];
+    [self setValue:@"octarine" forKeyPath:@"FOO"];
+    [self assert:@"octarine" equals:[control stringValue] message:@"binding update no longer suppressed"];
+}
+
 @end
 
 @implementation BindingTester : CPObject

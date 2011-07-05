@@ -58,6 +58,7 @@
     _numberOfMajorTickMarks = [cell numberOfMajorTickMarks];
 
     [self setEditable:[cell isEditable]];
+    [self setEnabled:[cell isEnabled]];
     [self setContinuous:[cell isContinuous]];
 
     return self;

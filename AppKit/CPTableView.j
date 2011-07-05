@@ -2771,7 +2771,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (BOOL)canDragRowsWithIndexes:(CPIndexSet)rowIndexes atPoint:(CGPoint)mouseDownPoint
 {
-    return YES;
+    return [rowIndexes count] > 0 && [self numberOfRows] > 0;
 }
 
 /*!

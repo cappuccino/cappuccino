@@ -80,6 +80,7 @@
     [arrayController insertObject:object atArrangedObjectIndex:1];
 
     [self assert:object equals:[[arrayController arrangedObjects] objectAtIndex:1]];
+    [self assertTrue:[[arrayController content] containsObject:object] message:@"object should be inserted into content"];
 }
 
 - (void)testAddObjectUpdatesArrangedObjectsWithoutSortDescriptors
@@ -438,6 +439,31 @@
     [self assert:1 equals:[observations count] message:@"exactly 1 notification for addObject  (clearsFilterPredicate YES)"];
 }
 
+/*!
+    Test that if there is no filter predicate to clear, insertObject:atArrangedObjectIndex: with
+    clearsFilterPredicate YES does not send a false filterPredicate notification.
+*/
+- (void)testObservationDuringInsertObject_atArrangedIndex_
+{
+    var arrayController = [self arrayController];
+
+    [arrayController addObserver:self forKeyPath:@"filterPredicate" options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:nil];
+
+    // Add something to clear.
+    [arrayController setFilterPredicate:[CPPredicate predicateWithFormat:@"(name != %@)", "Francisco"]];
+    observations = [];
+    var aPerson = [Employee employeeWithName:@"Alexander" department:[Department departmentWithName:@"Cosmic Path Finding"]];
+
+    [arrayController setClearsFilterPredicateOnInsertion:YES];
+    [self assert:0 equals:[observations count] message:@"no observations before insertObject test"];
+    [arrayController insertObject:aPerson atArrangedObjectIndex:1];
+    [self assert:1 equals:[observations count] message:@"exactly 1 notification for insertObject (clearsFilterPredicate YES)"];
+
+    // Now that the filter is already cleared, we should not get notified that it clears again on the second insert.
+    [arrayController insertObject:aPerson atArrangedObjectIndex:1];
+    [self assert:1 equals:[observations count] message:@"exactly 1 notification for insertObject x 2 (clearsFilterPredicate YES)"];
+}
+
 - (void)testCompoundKeyPaths
 {
     var departmentNameField = [[CPTextField alloc] init];
@@ -480,6 +506,22 @@
     [arrayController setContent:[CPArray arrayWithObject:@"a"]];
 
     [self assertTrue:[[arrayController arrangedObjects] count] > 0];
+}
+
+/**
+    In a table with arranged contents like [1, 1, 2, 1], selecting the second '1' and removing it
+    should result in [1, 2, 1] - not [2]. E.g. we don't use removeObject:1 but only remove the
+    actually selected instance.
+*/
+- (void)testRemove_OneOfMultipleEqualObjects
+{
+    var ac = [CPArrayController new],
+        contentArray = [1, 1, 2, 1];
+    [ac setContent:contentArray];
+    [self assert:[1, 1, 2, 1] equals:[ac arrangedObjects]];
+    [ac setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
+    [ac remove:nil];
+    [self assert:[1, 2, 1] equals:[ac arrangedObjects] message:"only one copy of 1 removed + the right copy should be removed"];
 }
 
 - (void)observeValueForKeyPath:keyPath

@@ -313,6 +313,8 @@
 
     // Don't use [super setContent:] as that would fire the contentObject change.
     // We need to be in control of when notifications fire.
+    // Note that if we have a contentArray binding, setting the content does /not/
+    // cause a reverse binding set.
     _contentObject = value;
 
     if (_clearsFilterPredicateOnInsertion && _filterPredicate != nil)
@@ -737,6 +739,10 @@
     */
     _disableSetContent = YES;
     [_contentObject addObject:object];
+
+    // Allow handlesContentAsCompoundValue reverse sets to trigger.
+    [[CPBinder getBinding:@"contentArray" forObject:self] _contentArrayDidChange];
+
     _disableSetContent = NO;
 
     if (willClearPredicate)
@@ -771,7 +777,8 @@
 }
 
 /*!
-    Adds an object at a given index to the receiver's collection.
+    Adds an object at a given index in the receiver's arrangedObjects. Also add the object
+    to the content collection (although at the end rather than the given index).
 
     @param id anObject - The object to add to the collection.
     @param int anIndex - The index to insert the object at.
@@ -781,8 +788,12 @@
     if (![self canAdd])
         return;
 
-    if (_clearsFilterPredicateOnInsertion)
+    var willClearPredicate = NO;
+    if (_clearsFilterPredicateOnInsertion && _filterPredicate)
+    {
         [self willChangeValueForKey:@"filterPredicate"];
+        willClearPredicate = YES;
+    }
 
     [self willChangeValueForKey:@"content"];
 
@@ -790,10 +801,17 @@
     See _disableSetContent explanation in addObject:.
     */
     _disableSetContent = YES;
-    [_contentObject insertObject:anObject atIndex:anIndex];
+
+    // The atArrangedObjectIndex: part of this method's name only refers to where the
+    // object goes in arrangedObjects, not in the content array. So use addObject:,
+    // not insertObject:atIndex: here for speed.
+    [_contentObject addObject:anObject];
+    // Allow handlesContentAsCompoundValue reverse sets to trigger.
+    [[CPBinder getBinding:@"contentArray" forObject:self] _contentArrayDidChange];
+
     _disableSetContent = NO;
 
-    if (_clearsFilterPredicateOnInsertion)
+    if (willClearPredicate)
         [self __setFilterPredicate:nil];
 
     [[self arrangedObjects] insertObject:anObject atIndex:anIndex];
@@ -809,7 +827,7 @@
         [self __setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
 
     [self didChangeValueForKey:@"content"];
-    if (_clearsFilterPredicateOnInsertion)
+    if (willClearPredicate)
         [self didChangeValueForKey:@"filterPredicate"];
 }
 
@@ -820,26 +838,28 @@
 */
 - (void)removeObject:(id)object
 {
-   [self willChangeValueForKey:@"content"];
+    [self willChangeValueForKey:@"content"];
 
-   /*
-   See _disableSetContent explanation in addObject:.
-   */
-   _disableSetContent = YES;
-   [_contentObject removeObject:object];
-   _disableSetContent = NO;
+    // See _disableSetContent explanation in addObject:.
+    _disableSetContent = YES;
 
-   if (_filterPredicate === nil || [_filterPredicate evaluateWithObject:object])
-   {
+    [_contentObject removeObject:object];
+    // Allow handlesContentAsCompoundValue reverse sets to trigger.
+    [[CPBinder getBinding:@"contentArray" forObject:self] _contentArrayDidChange];
+
+    _disableSetContent = NO;
+
+    if (_filterPredicate === nil || [_filterPredicate evaluateWithObject:object])
+    {
         // selectionIndexes change notification will be fired as a result of the
         // content change. Don't fire manually.
         var pos = [_arrangedObjects indexOfObject:object];
 
         [_arrangedObjects removeObjectAtIndex:pos];
         [_selectionIndexes shiftIndexesStartingAtIndex:pos by:-1];
-   }
+    }
 
-   [self didChangeValueForKey:@"content"];
+    [self didChangeValueForKey:@"content"];
 }
 
 /*!
@@ -875,16 +895,61 @@
 */
 - (void)remove:(id)sender
 {
-   [self removeObjects:[[self arrangedObjects] objectsAtIndexes:[self selectionIndexes]]];
+    [self removeObjectsAtArrangedObjectIndexes:_selectionIndexes];
 }
 
 /*!
     Removes the objects at the specified indexes in the controller's arranged objects from the content array.
     @param CPIndexSet indexes - indexes of the objects to remove.
 */
-- (void)removeObjectsAtArrangedObjectIndexes:(CPIndexSet)indexes
+- (void)removeObjectsAtArrangedObjectIndexes:(CPIndexSet)anIndexSet
 {
-    [self _removeObjects:[[self arrangedObjects] objectsAtIndexes:indexes]];
+    [self willChangeValueForKey:@"content"];
+
+    /*
+    See _disableSetContent explanation in addObject:.
+    */
+    _disableSetContent = YES;
+
+    var arrangedObjects = [self arrangedObjects],
+        index = [anIndexSet lastIndex],
+        position = CPNotFound,
+        newSelectionIndexes = [_selectionIndexes copy];
+
+    while (index !== CPNotFound)
+    {
+        var object = [arrangedObjects objectAtIndex:index];
+
+        // First try the simple case which should work if there are no sort descriptors.
+        if ([_contentObject objectAtIndex:index] === object)
+            [_contentObject removeObjectAtIndex:index];
+        else
+        {
+            // Since we don't have a reverse mapping between the sorted order and the
+            // unsorted one, we'll just simply have to remove an arbitrary pointer. It might
+            // be the 'wrong' one - as in not the one the user selected - but the wrong
+            // one is still just another pointer to the same object, so the user will not
+            // be able to see any difference.
+            contentIndex = [_contentObject indexOfObjectIdenticalTo:object];
+            [_contentObject removeObjectAtIndex:contentIndex];
+        }
+        [arrangedObjects removeObjectAtIndex:index];
+
+        // Deselect this row if it was selected, and either way shift all selection indexes
+        // following it up by 1.
+        [newSelectionIndexes removeIndex:index];
+        [newSelectionIndexes shiftIndexesStartingAtIndex:index by:-1];
+
+        index = [anIndexSet indexLessThanIndex:index];
+    }
+    // Allow handlesContentAsCompoundValue reverse sets to trigger.
+    [[CPBinder getBinding:@"contentArray" forObject:self] _contentArrayDidChange];
+    _disableSetContent = NO;
+
+    // This will automatically handle the avoidsEmptySelection case.
+    [self __setSelectionIndexes:newSelectionIndexes];
+
+    [self didChangeValueForKey:@"content"];
 }
 
 /*!
@@ -904,6 +969,8 @@
         [contentArray addObject:[objects objectAtIndex:i]];
 
     [self setContent:contentArray];
+    // Allow handlesContentAsCompoundValue reverse sets to trigger.
+    [[CPBinder getBinding:@"contentArray" forObject:self] _contentArrayDidChange];
 }
 
 /*!
@@ -922,11 +989,13 @@
 {
     [self willChangeValueForKey:@"content"];
 
-    /*
-    See _disableSetContent explanation in addObject:.
-    */
+    // See _disableSetContent explanation in addObject:.
     _disableSetContent = YES;
+
     [_contentObject removeObjectsInArray:objects];
+    // Allow handlesContentAsCompoundValue reverse sets to trigger.
+    [[CPBinder getBinding:@"contentArray" forObject:self] _contentArrayDidChange];
+
     _disableSetContent = NO;
 
     var arrangedObjects = [self arrangedObjects],
@@ -985,10 +1054,51 @@
     var destination = [_info objectForKey:CPObservedObjectKey],
         keyPath = [_info objectForKey:CPObservedKeyPathKey],
         options = [_info objectForKey:CPOptionsKey],
+        isCompound = [self handlesContentAsCompoundValue];
+
+    if (!isCompound)
+    {
         newValue = [destination mutableArrayValueForKeyPath:keyPath];
+    }
+    else
+    {
+        // handlesContentAsCompoundValue == YES so we cannot just set up a proxy.
+        // Every read and every write must go through transformValue and
+        // reverseTransformValue, and the resulting object cannot be described by
+        // a key path.
+        newValue = [destination valueForKeyPath:keyPath];
+    }
 
     newValue = [self transformValue:newValue withOptions:options];
+
+    if (isCompound)
+    {
+        // Make sure we can edit our copy of the content. TODO In Cocoa, this copy
+        // appears to be deferred until the array actually needs to be edited.
+        newValue = [newValue mutableCopy];
+    }
+
     [_source setValue:newValue forKey:aBinding];
+}
+
+- (void)_contentArrayDidChange
+{
+    // When handlesContentAsCompoundValue == YES, it is not sufficient to modify the content object
+    // in place because what we are holding is an array 'unwrapped' from a compound value by
+    // a value transformer. So when we modify it we need a reverse set and transform to create
+    // a new compound value.
+    //
+    // (The Cocoa documentation on the subject is not very clear but after substantial
+    // experimentation this seems both reasonable and compliant.)
+    if ([self handlesContentAsCompoundValue])
+    {
+        var destination = [_info objectForKey:CPObservedObjectKey],
+            keyPath = [_info objectForKey:CPObservedKeyPathKey];
+
+        [self suppressSpecificNotificationFromObject:destination keyPath:keyPath];
+        [self reverseSetValueFor:@"contentArray"];
+        [self unsuppressSpecificNotificationFromObject:destination keyPath:keyPath];
+    }
 }
 
 @end
