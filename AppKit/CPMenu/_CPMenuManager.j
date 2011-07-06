@@ -306,11 +306,7 @@ var STICKY_TIME_INTERVAL            = 500,
 
     // Hide all submenus.
     [self showMenu:nil fromMenu:trackingMenu atPoint:nil];
-
-    var delegate = [trackingMenu delegate];
-
-    if ([delegate respondsToSelector:@selector(menuDidClose:)])
-        [delegate menuDidClose:trackingMenu];
+    [trackingMenu _menuDidClose];
 
     if (_trackingCallback)
         _trackingCallback([self trackingMenuContainer], trackingMenu);
