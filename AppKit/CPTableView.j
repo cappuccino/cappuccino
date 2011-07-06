@@ -4610,7 +4610,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             }
             _wasSelectionBroken = true;
         }
-        else if (_wasSelectionBroken && ((shouldGoUpward && i !== [selectedIndexes firstIndex]) || (!shouldGoUpward && i !== [selectedIndexes lastindex])))
+        else if (_wasSelectionBroken && ((shouldGoUpward && i !== [selectedIndexes firstIndex]) || (!shouldGoUpward && i !== [selectedIndexes lastIndex])))
         {
             shouldGoUpward ? i = [selectedIndexes firstIndex] - 1 : i = [selectedIndexes lastIndex];
             _wasSelectionBroken = false;
