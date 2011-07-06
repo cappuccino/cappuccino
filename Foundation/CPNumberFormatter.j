@@ -68,6 +68,7 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
     if (self = [super init])
     {
         _roundingMode = CPNumberFormatterRoundHalfUp;
+        _maximumFractionalDigits = 3;
     }
 
     return self;
