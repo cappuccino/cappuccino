@@ -11,6 +11,7 @@ var STICKY_TIME_INTERVAL            = 500,
 @implementation _CPMenuManager: CPObject
 {
     CPTimeInterval      _startTime;
+    BOOL                _hasMouseGoneUpAfterStartedTracking;
     int                 _scrollingState;
     CGPoint             _lastGlobalLocation;
 
@@ -86,6 +87,8 @@ var STICKY_TIME_INTERVAL            = 500,
         if ([activeItem _isMenuBarButton])
             return [self trackMenuBarButtonEvent:anEvent];
     }
+
+    _hasMouseGoneUpAfterStartedTracking = NO;
 
     [self trackEvent:anEvent];
 }
@@ -221,8 +224,13 @@ var STICKY_TIME_INTERVAL            = 500,
                     [CPEvent startPeriodicEventsAfterDelay:0.0 withPeriod:0.04];
             }
         }
-        else if (type === CPLeftMouseUp && ([anEvent timestamp] - _startTime > (STICKY_TIME_INTERVAL + [activeMenu numberOfItems] * 5)))
-            [trackingMenu cancelTracking];
+        else if (type === CPLeftMouseUp)
+        {
+            if (_hasMouseGoneUpAfterStartedTracking)
+                [trackingMenu cancelTracking];
+            else
+                _hasMouseGoneUpAfterStartedTracking = YES;
+        }
     }
 
     // Prevent previous selected menu items from opening by stopping the timer if a
