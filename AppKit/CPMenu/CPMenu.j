@@ -869,7 +869,7 @@ var _CPMenuBarVisible               = NO,
 */
 - (CPMenuItem)highlightedItem
 {
-    if (_highlightedIndex <= 0)
+    if (_highlightedIndex < 0)
         return nil;
 
     var highlightedItem = _items[_highlightedIndex];
