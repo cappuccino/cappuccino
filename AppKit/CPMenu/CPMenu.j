@@ -869,7 +869,15 @@ var _CPMenuBarVisible               = NO,
 */
 - (CPMenuItem)highlightedItem
 {
-    return _highlightedIndex >= 0 ? _items[_highlightedIndex] : nil;
+    if (_highlightedIndex <= 0)
+        return nil;
+
+    var highlightedItem = _items[_highlightedIndex];
+
+    if ([highlightedItem isSeparatorItem])
+        return nil;
+
+    return highlightedItem;
 }
 
 // Managing the Delegate
