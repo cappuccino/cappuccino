@@ -133,12 +133,12 @@
 
     if (_appearance == CPPopoverAppearanceMinimal)
     {
-        _strokeColor = [CPColor colorWithCalibratedRed:(172.0 / 255) green:(172.0 / 255) blue:(172.0 / 255) alpha:1.0];
+        _strokeColor = [CPColor colorWithCalibratedRed:(187.0 / 255) green:(187.0 / 255) blue:(187.0 / 255) alpha:0.7];
         _backgroundColor = [CPColor colorWithCalibratedRed:(241.0 / 255) green:(241.0 / 255) blue:(241.0 / 255) alpha:0.93];
     }
     else
     {
-        _strokeColor = [CPColor colorWithCalibratedRed:(172.0 / 255) green:(172.0 / 255) blue:(172.0 / 255) alpha:1.0];
+        _strokeColor = [CPColor colorWithCalibratedRed:(187.0 / 255) green:(187.0 / 255) blue:(187.0 / 255) alpha:0.7];
         _backgroundColor = [CPColor colorWithCalibratedRed:(50.0 / 255) green:(50.0 / 255) blue:(50.0 / 255) alpha:0.93];
     }
 
@@ -161,17 +161,16 @@
     if (_useGlowingEffect)
     {
         var shadowColor = [[CPColor blackColor] colorWithAlphaComponent:.2],
-            shadowSize = CGSizeMake(0, 0),
+            shadowSize = CGSizeMake(0, 7),
             shadowBlur = 15;
 
         //compensate for the shadow blur
         aRect.origin.x += shadowBlur;
-        aRect.origin.y += shadowBlur;
+        aRect.origin.y += shadowBlur + shadowSize.height / 2;
         aRect.size.width -= shadowBlur * 2;
-        aRect.size.height -= shadowBlur * 2;
+        aRect.size.height -= shadowBlur * 2 + shadowSize.height;
 
         //set the shadow
-        CGContextSetShadow(context, CGSizeMake(0,0), 20);
         CGContextSetShadowWithColor(context, shadowSize, shadowBlur, shadowColor);
     }
 

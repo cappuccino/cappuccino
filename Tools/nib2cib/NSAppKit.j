@@ -79,6 +79,7 @@
 @import "NSWindowTemplate.j"
 @import "WebView.j"
 @import "NSSortDescriptor.j"
+@import "NSPopover.j"
 
 
 function CP_NSMapClassName(aClassName)

@@ -36,6 +36,13 @@ CPPopoverBehaviorTransient          = 1;
 CPPopoverBehaviorSemitransient      = 2;
 
 
+var CPPopoverDelegate_popover_willShow_     = 1 << 0,
+    CPPopoverDelegate_popover_didShow_      = 1 << 1,
+    CPPopoverDelegate_popover_shouldClose_  = 1 << 2,
+    CPPopoverDelegate_popover_willClose_   = 1 << 3,
+    CPPopoverDelegate_popover_didClose_     = 1 << 4;
+
+
 /*! @ingroup appkit
     @class CPPopover
 
@@ -52,7 +59,7 @@ CPPopoverBehaviorSemitransient      = 2;
 @implementation CPPopover : CPResponder
 {
     @outlet CPViewController    _contentViewController  @accessors(property=contentViewController);
-    @outlet id                  _delegate               @accessors(property=delegate);
+    @outlet id                  _delegate               @accessors(getter=delegate);
 
     BOOL                        _animates               @accessors(property=animates);
     BOOL                        _shown                  @accessors(getter=shown);
@@ -61,6 +68,7 @@ CPPopoverBehaviorSemitransient      = 2;
 
     BOOL                        _needsCompute;
     _CPAttachedWindow           _attachedWindow;
+    int                         _implementedDelegateMethods;
 }
 
 
@@ -163,6 +171,30 @@ CPPopoverBehaviorSemitransient      = 2;
 }
 
 
+- (void)setDelegate:(id)aDelegate
+{
+    if (_delegate === aDelegate)
+        return;
+
+    _delegate = aDelegate;
+    _implementedDelegateMethods = 0;
+
+    if ([_delegate respondsToSelector:@selector(popoverWillShow:)])
+        _implementedDelegateMethods |= CPPopoverDelegate_popover_willShow_;
+
+    if ([_delegate respondsToSelector:@selector(popoverDidShow:)])
+        _implementedDelegateMethods |= CPPopoverDelegate_popover_didShow_;
+
+    if ([_delegate respondsToSelector:@selector(popoverShouldClose:)])
+        _implementedDelegateMethods |= CPPopoverDelegate_popover_shouldClose_;
+
+    if ([_delegate respondsToSelector:@selector(popoverWillClose:)])
+        _implementedDelegateMethods |= CPPopoverDelegate_popover_willClose_;
+
+    if ([_delegate respondsToSelector:@selector(popoverDidClose:)])
+        _implementedDelegateMethods |= CPPopoverDelegate_popover_didClose_;
+}
+
 #pragma mark -
 #pragma mark Positionning
 
@@ -175,7 +207,7 @@ CPPopoverBehaviorSemitransient      = 2;
 */
 - (void)showRelativeToRect:(CPRect)positioningRect ofView:(CPView)positioningView preferredEdge:(CPRectEdge)preferredEdge
 {
-    if (_delegate && [_delegate respondsToSelector:@selector(popoverWillShow:)])
+    if (_implementedDelegateMethods & CPPopoverDelegate_popover_willShow_)
         [_delegate popoverWillShow:self];
 
     if (!_contentViewController)
@@ -200,7 +232,7 @@ CPPopoverBehaviorSemitransient      = 2;
     else
         [CPException raise:CPInvalidArgumentException reason:@"you must set positioningRect or positioningRect"];
 
-    if (_delegate && [_delegate respondsToSelector:@selector(popoverDidShow:)])
+    if (_implementedDelegateMethods & CPPopoverDelegate_popover_didShow_)
         [_delegate popoverDidShow:self];
 }
 
@@ -209,16 +241,16 @@ CPPopoverBehaviorSemitransient      = 2;
 */
 - (void)close
 {
-    if (_delegate && [_delegate respondsToSelector:@selector(popoverShouldClose:)]);
+    if (_implementedDelegateMethods & CPPopoverDelegate_popover_shouldClose_)
         if (![_delegate popoverShouldClose:self])
             return;
 
-    if (_delegate && [_delegate respondsToSelector:@selector(popoverWillClose:)])
+    if (_implementedDelegateMethods & CPPopoverDelegate_popover_willClose_)
         [_delegate popoverWillClose:self];
 
     [_attachedWindow close];
 
-    if (_delegate && [_delegate respondsToSelector:@selector(popoverDidClose:)])
+    if (_implementedDelegateMethods & CPPopoverDelegate_popover_didClose_)
         [_delegate popoverDidClose:self];
 }
 
@@ -234,6 +266,39 @@ CPPopoverBehaviorSemitransient      = 2;
 - (IBAction)performClose:(id)aSender
 {
     [self close];
+}
+
+@end
+
+
+@implementation CPPopover (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+
+    if (self)
+    {
+        _needsCompute = [aCoder decodeIntForKey:@"_needsCompute"];
+        _appearance = [aCoder decodeIntForKey:@"_appearance"];
+        _animates = [aCoder decodeBoolForKey:@"_animates"];
+        _contentViewController = [aCoder decodeObjectForKey:@"_contentViewController"];
+        [self setDelegate:[aCoder decodeObjectForKey:@"_delegate"]];
+        [self setBehaviour:[aCoder decodeIntForKey:@"_behavior"]];
+    }
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+
+    [aCoder encodeInt:_behavior forKey:@"_behavior"];
+    [aCoder encodeInt:_appearance forKey:@"_appearance"];
+    [aCoder encodeBool:_needsCompute forKey:@"_needsCompute"];
+    [aCoder encodeObject:_contentViewController forKey:@"_contentViewController"];
+    [aCoder encodeObject:_delegate forKey:@"_delegate"];
+    [aCoder encodeObject:_animates forKey:@"_animates"];
 }
 
 @end
