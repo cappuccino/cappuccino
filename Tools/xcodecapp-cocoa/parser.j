@@ -480,5 +480,6 @@ var NSClasses = {
                     "NSViewController" : YES,
                     "NSWindow" : YES,
                     "NSWindowController" : YES,
-                    "NSWorkspace" : YES
+                    "NSWorkspace" : YES,
+                    "NSPopover": YES
                 };
