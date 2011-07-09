@@ -23,7 +23,7 @@
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
         contentView = [theWindow contentView];
 
-    button = [CPButton buttonWithTitle:@"click"];
+    var button = [CPButton buttonWithTitle:@"click"];
     [button setTarget:self];
     [button setAction:@selector(open:)];
     [button setFrameOrigin:CPPointMake(10, 60)];
@@ -34,7 +34,6 @@
     [button setAction:@selector(open:)];
     [button setFrameOrigin:CPPointMake( [contentView frameSize].width - 50, 60)];
     [contentView addSubview:button];
-
 
     button = [CPButton buttonWithTitle:@"click"];
     [button setTarget:self];
@@ -54,6 +53,7 @@
     [button setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin | CPViewMinYMargin | CPViewMaxYMargin]
     [button setCenter:[contentView center]];
     [contentView addSubview:button];
+
 
     buttonGravity = [[CPPopUpButton alloc] initWithFrame:CPRectMake(10, 10, 130, 24)];
     [buttonGravity addItemWithTitle:"Automatic"];
@@ -77,7 +77,6 @@
     [buttonBehaviour addItemWithTitle:"Transient"];
     [buttonBehaviour addItemWithTitle:"Not managed"];
     [contentView addSubview:buttonBehaviour];
-
 
     [theWindow orderFront:self];
 }
@@ -122,9 +121,9 @@
 
     [label setFont:[CPFont boldSystemFontOfSize:30.0]];
     [label setFrameOrigin:CPPointMake(0, 70)];
-    [label setValue:[CPColor colorWithHexString:@"fff"] forThemeAttribute:@"text-shadow-color"];
+    [label setValue:(a == CPPopoverAppearanceHUD) ? [CPColor colorWithHexString:@"333"] : [CPColor colorWithHexString:@"fff"] forThemeAttribute:@"text-shadow-color"];
     [label setValue:CGSizeMake(0.0, 1.0) forThemeAttribute:@"text-shadow-offset"];
-    [label setTextColor:[CPColor colorWithHexString:@"444"]];
+    [label setTextColor:(a == CPPopoverAppearanceHUD) ? [CPColor whiteColor] : [CPColor colorWithHexString:@"444"]];
     [label setFrameSize:CPSizeMake([view frame].size.width, 50)];
     [label setAlignment:CPCenterTextAlignment];
     [view addSubview:label];
