@@ -36,13 +36,6 @@
     int             _appearance                 @accessors(property=appearance);
     unsigned        _preferredEdge              @accessors(property=preferredEdge);
 
-    BOOL            _useGlowingEffect;
-    CPColor         _backgroundColor;
-    CPColor         _strokeColor;
-    CPImage         _cursorBackgroundBottom;
-    CPImage         _cursorBackgroundLeft;
-    CPImage         _cursorBackgroundRight;
-    CPImage         _cursorBackgroundTop;
     CPSize          _cursorSize;
 }
 
@@ -131,50 +124,42 @@
 {
     [super drawRect:aRect];
 
-    if (_appearance == CPPopoverAppearanceMinimal)
-    {
-        _strokeColor = [CPColor colorWithCalibratedRed:(187.0 / 255) green:(187.0 / 255) blue:(187.0 / 255) alpha:0.7];
-        _backgroundColor = [CPColor colorWithCalibratedRed:(241.0 / 255) green:(241.0 / 255) blue:(241.0 / 255) alpha:0.93];
-    }
-    else
-    {
-        _strokeColor = [CPColor colorWithCalibratedRed:(187.0 / 255) green:(187.0 / 255) blue:(187.0 / 255) alpha:0.7];
-        _backgroundColor = [CPColor colorWithCalibratedRed:(50.0 / 255) green:(50.0 / 255) blue:(50.0 / 255) alpha:0.93];
-    }
-
-
     var context = [[CPGraphicsContext currentContext] graphicsPort],
         radius = 5,
         arrowWidth = _cursorSize.width,
         arrowHeight = _cursorSize.height,
-        strokeWidth = 2;
+        strokeWidth = 1,
+        strokeColor,
+        shadowColor = [[CPColor blackColor] colorWithAlphaComponent:.2],
+        shadowSize = CGSizeMake(0, 7),
+        shadowBlur = 15,
+        gradient;
 
-    CGContextSetStrokeColor(context, _strokeColor);
-    CGContextSetLineWidth(context, strokeWidth);
-    CGContextBeginPath(context);
-
-    aRect.origin.x += strokeWidth;
-    aRect.origin.y += strokeWidth;
-    aRect.size.width -= strokeWidth * 2;
-    aRect.size.height -= strokeWidth * 2;
-
-    if (_useGlowingEffect)
+    if (_appearance == CPPopoverAppearanceMinimal)
     {
-        var shadowColor = [[CPColor blackColor] colorWithAlphaComponent:.2],
-            shadowSize = CGSizeMake(0, 7),
-            shadowBlur = 15;
-
-        //compensate for the shadow blur
-        aRect.origin.x += shadowBlur;
-        aRect.origin.y += shadowBlur + shadowSize.height / 2;
-        aRect.size.width -= shadowBlur * 2;
-        aRect.size.height -= shadowBlur * 2 + shadowSize.height;
-
-        //set the shadow
-        CGContextSetShadowWithColor(context, shadowSize, shadowBlur, shadowColor);
+        gradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [(254.0 / 255), (254.0 / 255), (254.0 / 255), 0.93,
+                                                                                        (231.0 / 255), (231.0 / 255), (231.0 / 255), 0.93], [0,1], 2);
+        strokeColor = [CPColor colorWithHexString:@"B8B8B8"];
+    }
+    else
+    {
+        gradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [(38.0 / 255), (38.0 / 255), (38.0 / 255), 0.93,
+                                                                                        (18.0 / 255), (18.0 / 255), (18.0 / 255), 0.93], [0,1], 2);
+        strokeColor = [CPColor colorWithHexString:@"222222"];
     }
 
-    CGContextSetFillColor(context, _backgroundColor);
+    // fix rect to take care of stroke and shadow
+    aRect.origin.x += strokeWidth + shadowBlur;
+    aRect.origin.y += strokeWidth + (shadowBlur + shadowSize.height / 2);
+    aRect.size.width -= (strokeWidth * 2) + (shadowBlur * 2);
+    aRect.size.height -= (strokeWidth * 2) + (shadowBlur * 2 + shadowSize.height);
+
+    CGContextSetStrokeColor(context, strokeColor);
+    CGContextSetLineWidth(context, strokeWidth);
+    CGContextBeginPath(context);
+    CGContextSetShadowWithColor(context, shadowSize, shadowBlur, shadowColor);
+    CGContextDrawLinearGradient(context, gradient, CGPointMake(CPRectGetMidX(aRect), 0.0), CGPointMake(CPRectGetMidX(aRect), aRect.size.height), 0);
+
 
     var xMin = _CGRectGetMinX(aRect),
         xMax = _CGRectGetMaxX(aRect),
@@ -234,7 +219,6 @@
             // nw
             CGContextAddLineToPoint(context, xMin, yMin + radius);
             CGContextAddCurveToPoint(context, xMin, yMin + radius, xMin, yMin, xMin + radius, yMin);
-
             break;
 
         case CPMaxYEdge:
