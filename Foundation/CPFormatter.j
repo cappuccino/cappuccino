@@ -33,6 +33,8 @@
            make sure that you cannot configure the public subclasses CPDateFormatter and CPNumberFormatter to satisfy your requirements.
 */
 
+#import "Ref.h"
+
 @import "CPException.j"
 @import "CPObject.j"
 
@@ -80,19 +82,19 @@
 /*!
     The default implementation of this method raises an exception.
 
-    When implementing a subclass, return by reference the object anObject after creating it from string.
-    Return YES if the conversion is successful. If you return NO, also return by indirection (in error)
+    When implementing a subclass, return by reference the object anObject after creating it from aString.
+    Return \c YES if the conversion is successful. If you return \c NO, also return by reference (in anError)
     a localized user-presentable CPString object that explains the reason why the conversion failed; the delegate
-    (if any) of the CPControl object managing the cell can then respond to the failure in
-    control:didFailToFormatString:errorDescription:. However, if error is nil, the sender is not interested in
+    (if any) of the CPControl object can then respond to the failure in
+    control:didFailToFormatString:errorDescription:. However, if anError is nil, the sender is not interested in
     the error description, and you should not attempt to assign one.
 
     @param anObject if conversion is successful, upon return contains the object created from the string
     @param aString the string to parse.
     @param anError if non-nil, if there is an error during the conversion, upon return contains an CPString object that describes the problem.
-    @return BOOL YES if the conversion from the string to a view content object was successful, otherwise NO.
+    @return BOOL \c YES if the conversion from the string to a view content object was successful, otherwise \c NO.
 */
-- (BOOL)getObjectValue:(id)anObject forString:(CPString)aString errorDescription:(CPString)anError
+- (BOOL)getObjectValue:(idRef)anObject forString:(CPString)aString errorDescription:(CPStringRef)anError
 {
     _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return NO;
@@ -104,11 +106,11 @@
     This method is invoked each time the user presses a key while the cell has the keyboard focus it lets you verify and
     edit the cell text as the user types it.
 
-    In a subclass implementation, evaluate partialString according to the context, edit the text if necessary, and return
-    by reference any edited string in newString. Return YES if partialString is acceptable and NO if partialString is unacceptable.
-    If you return NO and newString is nil, the cell displays partialString minus the last character typed. If you return NO, you can
-    also return by indirection an CPString object (in error) that explains the reason why the validation failed; the delegate (if any)
-    of the CPControl object managing the cell can then respond to the failure in control:didFailToValidatePartialString:errorDescription:.
+    In a subclass implementation, evaluate aPartialString according to the context, edit the text if necessary, and return
+    by reference any edited string in aNewString. Return \c YES if aPartialString is acceptable and \c NO if aPartialString is unacceptable.
+    If you return \c NO and aNewString is nil, the control displays aPartialString minus the last character typed. If you return \c NO, you can
+    also return by reference a CPString object (in anError) that explains the reason why the validation failed; the delegate (if any)
+    of the CPControl can then respond to the failure in control:didFailToValidatePartialString:errorDescription:.
     The selection range will always be set to the end of the text if replacement occurs.
 
     This method is a compatibility method. If a subclass overrides this method and does not override
@@ -118,12 +120,16 @@
     @param aPartialString the text currently in the view.
     @param aNewString if aPartialString needs to be modified, upon return contains the replacement string.
     @param anError if non-nil, if validation fails contains a CPString object that describes the problem.
-    @return YES if aPartialString is an acceptable value, otherwise NO.
+    @return \c YES if aPartialString is an acceptable value, otherwise \c NO.
 */
-- (BOOL)isPartialStringValid:(CPString)aPartialString newEditingString:(CPString)aNewString errorDescription:(CPString)anError
+- (BOOL)isPartialStringValid:(CPString)aPartialString newEditingString:(CPStringRef)aNewString errorDescription:(CPStringRef)anError
 {
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-    return NO;
+    AT_DEREF(aPartialString, nil);
+
+    if (anError)
+        AT_DEREF(anError, nil);
+
+    return YES;
 }
 
 /*!
@@ -131,24 +137,35 @@
     not necessarily at the end of the string, and preserve the selection (or set a different one, such as selecting the erroneous part of
     the string the user has typed).
 
-    In a subclass implementation, evaluate partialString according to the context. Return YES if partialStringPtr is acceptable and NO if partialStringPtr
-    is unacceptable. Assign a new string to partialStringPtr and a new range to proposedSelRangePtr and return NO if you want to replace the string and
-    change the selection range. If you return NO, you can also return by indirection an CPString object (in error) that explains the reason why the
-    validation failed; the delegate (if any) of the CPControl object managing the cell can then respond to the failure in
+    In a subclass implementation, evaluate aPartialString according to the context. Return \c YES if aPartialString is acceptable and \c NO if aPartialString
+    is unacceptable. Assign a new string by reference to aPartialString and a new range by reference to aProposedSelectedRange and return \c NO if you want to replace the string and
+    change the selection range. If you return \c NO, you can also return by reference a CPString object (in anError) that explains the reason why the
+    validation failed; the delegate (if any) of the CPControl can then respond to the failure in
     control:didFailToValidatePartialString:errorDescription:.
 
     @param aPartialString The new string to validate.
     @param aProposedSelectedRange The selection range that will be used if the string is accepted or replaced.
     @param originalString The original string, before the proposed change.
     @param originalSelectedRange The selection range over which the change is to take place.
-    @param error If non-nil, if validation fails contains an CPString object that describes the problem.
-    @return YES if aPartialString is acceptable, otherwise NO.
+    @param anError If non-nil, if validation fails contains an CPString object that describes the problem.
+    @return \c YES if aPartialString is acceptable, otherwise \c NO.
 
 */
-- (BOOL)isPartialStringValue:(CPString)aPartialString proposedSelectedRange:(CPRange)aProposedSelectedRange originalString:(CPString)originalString originalSelectedRange:(CPRange)originalSelectedRange errorDescription:(CPString)anError
+- (BOOL)isPartialStringValid:(CPStringRef)aPartialString proposedSelectedRange:(CPRangeRef)aProposedSelectedRange originalString:(CPString)originalString originalSelectedRange:(CPRange)originalSelectedRange errorDescription:(CPStringRef)anError
 {
-    _CPRaiseInvalidAbstractInvocation(self, _cmd);
-    return NO;
+    var newString = nil,
+        valid = [self isPartialStringValid:aPartialString newEditingString:AT_REF(newString) errorDescription:anError];
+
+    if (!valid)
+    {
+        AT_DEREF(aPartialString, newString);
+
+        // If a new string is passed back, the selection is always put at the end
+        if (newString !== nil)
+            AT_DEREF(aProposedSelectedRange, CPMakeRange(newString.length, 0));
+    }
+
+    return valid;
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -158,7 +175,6 @@
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-
 }
 
 @end
