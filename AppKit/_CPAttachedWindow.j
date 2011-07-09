@@ -478,7 +478,7 @@ CPPopoverAppearanceHUD      = 1;
 */
 - (void)close
 {
-    if (_animates)
+    if (_animates && typeof(_DOMElement.style.WebkitTransform) != "undefined")
     {
         _DOMElement.style.opacity = 0;
         var transitionEndFunction = function(){
