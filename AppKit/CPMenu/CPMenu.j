@@ -711,10 +711,7 @@ var _CPMenuBarVisible               = NO,
     if (aView && !theWindow)
         throw "In call to popUpMenuPositioningItem:atLocation:inView:callback:, view is not in any window.";
 
-    var delegate = [self delegate];
-
-    if ([delegate respondsToSelector:@selector(menuWillOpen:)])
-        [delegate menuWillOpen:self];
+    [self _menuWillOpen];
 
     // Convert location to global coordinates if not already in them.
     if (aView)
@@ -802,10 +799,7 @@ var _CPMenuBarVisible               = NO,
 
 + (void)popUpContextMenu:(CPMenu)aMenu withEvent:(CPEvent)anEvent forView:(CPView)aView withFont:(CPFont)aFont
 {
-    var delegate = [aMenu delegate];
-
-    if ([delegate respondsToSelector:@selector(menuWillOpen:)])
-        [delegate menuWillOpen:aMenu];
+    [aMenu _menuWillOpen];
 
     if (!aFont)
         aFont = [CPFont systemFontOfSize:12.0];
@@ -875,7 +869,15 @@ var _CPMenuBarVisible               = NO,
 */
 - (CPMenuItem)highlightedItem
 {
-    return _highlightedIndex >= 0 ? _items[_highlightedIndex] : nil;
+    if (_highlightedIndex < 0)
+        return nil;
+
+    var highlightedItem = _items[_highlightedIndex];
+
+    if ([highlightedItem isSeparatorItem])
+        return nil;
+
+    return highlightedItem;
 }
 
 // Managing the Delegate
@@ -888,6 +890,22 @@ var _CPMenuBarVisible               = NO,
 - (id)delegate
 {
     return _delegate;
+}
+
+- (void)_menuWillOpen
+{
+    var delegate = [self delegate];
+
+    if ([delegate respondsToSelector:@selector(menuWillOpen:)])
+        [delegate menuWillOpen:self];
+}
+
+- (void)_menuDidClose
+{
+    var delegate = [self delegate];
+
+    if ([delegate respondsToSelector:@selector(menuDidClose:)])
+        [delegate menuDidClose:self];
 }
 
 // Handling Tracking
