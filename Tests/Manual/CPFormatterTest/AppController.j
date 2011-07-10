@@ -43,7 +43,7 @@ var randomFromTo = function(from, to)
                                              selector:@selector(resetErrorMessage:)
                                                  name:CPTextFieldDidFocusNotification
                                                object:nil];
-                                               
+
     [textField setFormatter:[TextFormatter new]];
     [textField setDelegate:self];
 
@@ -156,11 +156,11 @@ var randomFromTo = function(from, to)
 - (BOOL)getObjectValue:(CPStringRef)anObject forString:(CPString)aString errorDescription:(CPStringRef)anError
 {
     var error = [self errorDescriptionForString:aString];
-    
+
     if (error)
     {
         anObject(nil);
-        
+
         if (anError)
             anError(error);
     }
