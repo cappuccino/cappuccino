@@ -102,7 +102,7 @@ var STICKY_TIME_INTERVAL            = 500,
     if (type === CPAppKitDefined)
         return [self completeTracking];
 
-    [CPApp setTarget:self selector:@selector(trackEvent:) forNextEventMatchingMask:CPKeyDownMask | CPPeriodicMask | CPMouseMovedMask | CPLeftMouseDraggedMask | CPLeftMouseUpMask | CPAppKitDefinedMask | CPScrollWheelMask untilDate:nil inMode:nil dequeue:YES];
+    [CPApp setTarget:self selector:@selector(trackEvent:) forNextEventMatchingMask:CPKeyDownMask | CPPeriodicMask | CPMouseMovedMask | CPLeftMouseDraggedMask | CPLeftMouseUpMask | CPRightMouseUpMask | CPAppKitDefinedMask | CPScrollWheelMask untilDate:nil inMode:nil dequeue:YES];
 
     if (type === CPKeyDown)
     {
@@ -224,7 +224,7 @@ var STICKY_TIME_INTERVAL            = 500,
                     [CPEvent startPeriodicEventsAfterDelay:0.0 withPeriod:0.04];
             }
         }
-        else if (type === CPLeftMouseUp)
+        else if (type === CPLeftMouseUp || type === CPRightMouseUp)
         {
             if (_hasMouseGoneUpAfterStartedTracking)
                 [trackingMenu cancelTracking];
