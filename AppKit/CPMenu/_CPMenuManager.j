@@ -61,6 +61,9 @@ var STICKY_TIME_INTERVAL            = 500,
 {
     var menu = [aMenuContainer menu];
 
+    if ([menu numberOfItems] <= 0)
+        return;
+
     CPApp._activeMenu = menu;
 
     _startTime = [anEvent timestamp];//new Date();
