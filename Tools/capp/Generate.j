@@ -189,6 +189,8 @@ function gen(/*va_args*/)
     {
         fail("The directory " + FILE.absolute(destinationProject) + " already exists.");
     }
+
+    executePostInstallScript(destinationProject);
 }
 
 function createFrameworksInFile(/*Array*/ frameworks, /*String*/ aFile, /*Boolean*/ symlink, /*Boolean*/ build, /*Boolean*/ force)
@@ -363,6 +365,19 @@ function listFrameworks()
             stream.print("    + " + frameworkName);
         });
     });
+}
+
+function executePostInstallScript(/*String*/ destinationProject)
+{
+    var path = FILE.join(destinationProject, "postinstall");
+
+    if (FILE.exists(path))
+    {
+        stream.print(colorize("Executing postinstall script...", "cyan"));
+
+        OS.system(["/bin/sh", path, destinationProject]);  // Use sh in case it isn't marked executable
+        FILE.remove(path);
+    }
 }
 
 function colorize(message, color)
