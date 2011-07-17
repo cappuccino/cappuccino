@@ -254,13 +254,6 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                 }
                 else
                 {
-                    [GrowlApplicationBridge notifyWithTitle:splitedPath
-                                                description:response
-                                           notificationName:@"DefaultNotifications"
-                                                   iconData:nil
-                                                   priority:0
-                                                   isSticky:NO
-                                               clickContext:nil];                    
                     NSLog(@"Error in conversion: return message is %@", response);
                     
                     //if (![GrowlApplicationBridge isGrowlRunning])
