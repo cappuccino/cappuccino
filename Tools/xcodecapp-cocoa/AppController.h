@@ -34,8 +34,12 @@
     IBOutlet NSMenuItem             *menuItemStop;
     IBOutlet NSMenuItem             *menuItemOpenXCode;
     
+    IBOutlet NSPanel                *errorsPanel;
+    IBOutlet NSTableView            *errorsTable;
+    
     NSFileManager           *fm;
     NSMutableArray          *modifiedXIBs;
+    NSMutableArray          *errorList;
     NSMutableDictionary     *pathModificationDates;
     NSDate                  *appStartedTimestamp;
     NSNumber                *lastEventId;
@@ -73,6 +77,13 @@
 - (IBAction)stopListener:(id)aSender;
 - (IBAction)openXCode:(id)aSender;
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem;
+
+- (void)updateErrorTable;
+- (IBAction)clearErrors:(id)sender;
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView;
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView;
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row;
+- (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(int)aRow;
 
 @end
 
