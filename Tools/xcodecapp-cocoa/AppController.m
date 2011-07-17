@@ -44,6 +44,8 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 
     if (self)
     {
+        errorList = [NSMutableArray arrayWithCapacity:10];
+
 		if (!growlDelegateRef)
 			growlDelegateRef = [[[PRHEmptyGrowlDelegate alloc] init] autorelease];
 
@@ -260,6 +262,12 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                                                    isSticky:NO
                                                clickContext:nil];                    
                     NSLog(@"Error in conversion: return message is %@", response);
+                    
+                    //if (![GrowlApplicationBridge isGrowlRunning])
+                    {
+                        [errorList addObject:response];
+                        [self updateErrorTable];
+                    }
                 }
             }
         }
@@ -274,7 +282,8 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 
 - (BOOL)isXIBFile:(NSString *)path
 {
-    return [[[path pathExtension] uppercaseString] isEqual:@"XIB"];
+    path = [[path pathExtension] uppercaseString];
+    return  [path isEqual:@"XIB"] || [path isEqual:@"NIB"];
 }
 
 - (BOOL)prepareXCodeSupportProject
@@ -492,6 +501,18 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 }
 
 
+- (void)updateErrorTable
+{
+    [errorsTable reloadData];
+    [errorsPanel orderFront:self];
+    NSLog(@"update?");
+}
+
+- (IBAction)clearErrors:(id)sender
+{
+    [errorList removeAllObjects];
+    [errorsTable reloadData];
+}
 #pragma mark -
 #pragma mark Delegates
 
@@ -502,7 +523,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     return YES;
 }
 
-- (BOOL)validateMenuItem:(NSMenuItem*)aMenuItem
+- (BOOL)validateMenuItem:(NSMenuItem *)aMenuItem
 {
     if (aMenuItem == menuItemStart)
         return !currentProjectURL;
@@ -512,4 +533,37 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     return YES;
 }
 
+
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
+{
+    return [errorList count];
+}
+- (id)tableView:(NSTableView*)aTableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
+{
+    return [errorList objectAtIndex:row];
+}
+
+- (void)tableViewColumnDidResize:(NSNotification *)tableView
+{
+    [errorsTable noteHeightOfRowsWithIndexesChanged:
+        [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [errorList count])]];
+}
+
+- (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(int)aRow
+{
+    // Get column you want - first in this case:
+    NSTableColumn *tabCol = [[tableView tableColumns] objectAtIndex:0];
+    float width = [tabCol width];
+    NSRect r = NSMakeRect(0,0,width,1000.0);
+    NSCell *cell = [tabCol dataCellForRow:aRow];
+    NSString *content = [errorList objectAtIndex:aRow];
+    [cell setObjectValue:content];
+    float height = [cell cellSizeForBounds:r].height;
+
+    if (height <= 0)
+        height = 16.0; // Ensure miniumum height is 16.0
+    
+    return height;
+    
+}
 @end
