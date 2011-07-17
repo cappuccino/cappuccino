@@ -42,7 +42,16 @@
 #include "DOM/CPPlatformString.j"
 #else
 @implementation CPPlatformString : CPBasePlatformString
+
++ (CGSize)sizeOfString:(CPString)aString withFont:(CPFont)aFont forWidth:(float)aWidth
 {
+    return _CGSizeMakeZero();
 }
+
++ (CPDictionary)metricsOfFont:(CPFont)aFont
+{
+    return [CPDictionary dictionaryWithObjectsAndKeys:0, @"ascender", 0, @"descender", 0, @"lineHeight"];
+}
+
 @end
 #endif
