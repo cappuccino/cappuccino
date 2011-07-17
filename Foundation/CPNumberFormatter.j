@@ -20,15 +20,151 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#import "Ref.h"
 
 @import <Foundation/CPString.j>
 @import <Foundation/CPFormatter.j>
+@import <Foundation/CPDecimalNumber.j>
 
+#define UPDATE_NUMBER_HANDLER_IF_NECESSARY() if (!_numberHandler) \
+    _numberHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:_roundingMode scale:_maximumFractionalDigits raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:YES];
+#define SET_NEEDS_NUMBER_HANDLER_UPDATE() _numberHandler = nil;
+
+CPNumberFormatterNoStyle            = 0;
+CPNumberFormatterDecimalStyle       = 1;
+CPNumberFormatterCurrencyStyle      = 2;
+CPNumberFormatterPercentStyle       = 3;
+CPNumberFormatterScientificStyle    = 4;
+CPNumberFormatterSpellOutStyle      = 5;
+
+CPNumberFormatterRoundCeiling       = CPRoundUp;
+CPNumberFormatterRoundFloor         = CPRoundDown;
+CPNumberFormatterRoundDown          = CPRoundDown;
+CPNumberFormatterRoundUp            = CPRoundUp;
+CPNumberFormatterRoundHalfEven      = CPRoundBankers;
+CPNumberFormatterRoundHalfDown      = _CPRoundHalfDown;
+CPNumberFormatterRoundHalfUp        = CPRoundPlain;
+
+/*!
+    @ingroup foundation
+    @class CPNumberFormatter
+
+    CPNumberFormatter takes a numeric NSNumber value and formats it as text for
+    display. It also supports the converse, taking text and interpreting it as a
+    CPNumber by configurable formatting rules.
+*/
 @implementation CPNumberFormatter : CPFormatter
 {
+    CPNumberFormatterStyle          _numberStyle @accessors(property=numberStyle);
+    CPString                        _perMillSymbol @accessors(property=perMillSymbol);
+    CPNumberFormatterRoundingMode   _roundingMode @accessors(property=roundingMode);
+    CPUInteger                      _maximumFractionalDigits @accessors(property=maximalFractionalDigits);
+
+    CPDecimalNumberHandler         _numberHandler;
+}
+
+- (id)init
+{
+    if (self = [super init])
+    {
+        _roundingMode = CPNumberFormatterRoundHalfUp;
+        _maximumFractionalDigits = 3;
+    }
+
+    return self;
+}
+
+- (CPString)stringFromNumber:(CPNumber)number
+{
+    // TODO Add locale support.
+    switch(_numberStyle)
+    {
+        case CPNumberFormatterDecimalStyle:
+            UPDATE_NUMBER_HANDLER_IF_NECESSARY();
+
+            var dcmn = [CPDecimalNumber numberWithFloat:number];
+            dcmn = [dcmn decimalNumberByRoundingAccordingToBehavior:_numberHandler];
+
+            var output = [dcmn descriptionWithLocale:nil],
+                parts = [output componentsSeparatedByString:"."], // FIXME Locale specific.
+                preFraction = parts[0],
+                fraction = parts.length > 1 ? parts[1] : "",
+                preFractionLength = [preFraction length],
+                commaPosition = 3,
+                perMillSymbol = [self _effectivePerMillSymbol];
+
+            // TODO This is just a temporary solution. Should be generalised.
+            // Add in thousands separators.
+            if (perMillSymbol)
+                while(commaPosition < [preFraction length])
+                {
+                    preFraction = [preFraction stringByReplacingCharactersInRange:CPMakeRange(commaPosition, 0) withString:perMillSymbol];
+                    commaPosition += 4;
+                }
+
+            if (fraction)
+                return preFraction + "." + fraction;
+            else
+                return preFraction;
+        default:
+            return [number description];
+    }
+}
+
+- (CPNumber)numberFromString:(CPString)string
+{
+    // TODO
+    return parseFloat(string);
+}
+
+- (CPString)stringForObjectValue:(id)anObject
+{
+    if ([anObject isKindOfClass:[CPNumber class]])
+        return [self stringFromNumber:anObject];
+    else
+        return [anObject description];
+}
+
+- (CPString)editingStringForObjectValue:(id)anObject
+{
+    return [self stringForObjectValue:anObject];
+}
+
+- (BOOL)getObjectValue:(id)anObject forString:(CPString)aString errorDescription:(CPString)anError
+{
+    // TODO Error handling.
+    var value = [self numberFromString:aString];
+    AT_DEREF(anObject, value);
+
+    return YES;
+}
+
+/*!
+    @ignore
+    Return the perMillSymbol if set, otherwise the locale default.
+*/
+- (CPString)_effectivePerMillSymbol
+{
+    if (_perMillSymbol === nil || _perMillSymbol === undefined)
+        return ","; // (FIXME US Locale specific.)
+    return _perMillSymbol;
+}
+
+- (void)setRoundingMode:(CPNumberFormatterRoundingMode)aRoundingMode
+{
+    _roundingMode = aRoundingMode;
+    SET_NEEDS_NUMBER_HANDLER_UPDATE();
+}
+
+- (void)setMaximumFractionDigits:(CPUInteger)aNumber
+{
+    _maximumFractionalDigits = aNumber;
+    SET_NEEDS_NUMBER_HANDLER_UPDATE();
 }
 
 @end
+
+var CPNumberFormatterStyleKey = "CPNumberFormatterStyleKey";
 
 @implementation CPNumberFormatter (CPCoding)
 
@@ -38,6 +174,7 @@
 
     if (self)
     {
+        _numberStyle = [aCoder decodeIntForKey:CPNumberFormatterStyleKey];
     }
 
     return self;
@@ -46,6 +183,8 @@
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
+
+    [aCoder encodeInt:_numberStyle forKey:CPNumberFormatterStyleKey];
 }
 
 @end

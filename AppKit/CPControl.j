@@ -20,6 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#import "../Foundation/Ref.h"
+
+@import "../Foundation/CPFormatter.j"
 @import "CPFont.j"
 @import "CPShadow.j"
 @import "CPView.j"
@@ -82,6 +85,7 @@ var CPControlBlackColor = [CPColor blackColor];
 @implementation CPControl : CPView
 {
     id                  _value;
+    CPFormatter         _formatter @accessors(property=formatter);
 
     // Target-Action Support
     id                  _target;
@@ -221,10 +225,11 @@ var CPControlBlackColor = [CPColor blackColor];
     @param anAction the action to send
     @param anObject the object to which the action will be sent
 */
-- (void)sendAction:(SEL)anAction to:(id)anObject
+- (BOOL)sendAction:(SEL)anAction to:(id)anObject
 {
     [self _reverseSetBinding];
-    [CPApp sendAction:anAction to:anObject from:self];
+
+    return [CPApp sendAction:anAction to:anObject from:self];
 }
 
 - (int)sendActionOn:(int)mask
@@ -502,15 +507,46 @@ var CPControlBlackColor = [CPColor blackColor];
 */
 - (CPString)stringValue
 {
+    if (_formatter && _value !== undefined && _value !== nil)
+    {
+        var formattedValue = [self hasThemeState:CPThemeStateEditing] ? [_formatter editingStringForObjectValue:_value] : [_formatter stringForObjectValue:_value];
+
+        if (formattedValue !== nil && formattedValue !== undefined)
+            return formattedValue;
+    }
+
     return (_value === undefined || _value === nil) ? "" : String(_value);
 }
 
 /*!
     Sets the receiver's string value.
 */
-- (void)setStringValue:(CPString)anObject
+- (void)setStringValue:(CPString)aString
 {
-    [self setObjectValue:anObject];
+    // Cocoa raises an invalid parameter assertion and returns if you pass nil.
+    if (aString === nil || aString === undefined)
+    {
+        CPLog.warn("nil sent to CPControl -setStringValue");
+        return;
+    }
+
+    var value;
+
+    if (_formatter)
+    {
+        value = nil;
+
+        if ([_formatter getObjectValue:AT_REF(value) forString:aString errorDescription:nil] === NO)
+        {
+            // If the given string is non-empty and doesn't work, Cocoa tries an empty string.
+            if (!aString || [_formatter getObjectValue:AT_REF(value) forString:@"" errorDescription:nil] === NO)
+                value = undefined;  // Means the value is invalid
+        }
+    }
+    else
+        value = aString;
+
+    [self setObjectValue:value];
 }
 
 - (void)takeDoubleValueFrom:(id)sender
@@ -526,20 +562,17 @@ var CPControlBlackColor = [CPColor blackColor];
         [self setFloatValue:[sender floatValue]];
 }
 
-
 - (void)takeIntegerValueFrom:(id)sender
 {
     if ([sender respondsToSelector:@selector(integerValue)])
         [self setIntegerValue:[sender integerValue]];
 }
 
-
 - (void)takeIntValueFrom:(id)sender
 {
     if ([sender respondsToSelector:@selector(intValue)])
         [self setIntValue:[sender intValue]];
 }
-
 
 - (void)takeObjectValueFrom:(id)sender
 {
@@ -882,7 +915,7 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
     if (_target !== nil)
         [aCoder encodeConditionalObject:_target forKey:CPControlTargetKey];
 
-    if (_action !== NULL)
+    if (_action !== nil)
         [aCoder encodeObject:_action forKey:CPControlActionKey];
 
     [aCoder encodeInt:_sendActionOn forKey:CPControlSendActionOnKey];

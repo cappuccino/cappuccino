@@ -99,6 +99,8 @@ var NSButtonIsBorderedMask = 0x00800000,
             self.isa = [CPRadio class];
             self._radioGroup = [CPRadioGroup new];
         }
+
+        _themeClass = [[self class] defaultThemeClass];
     }
 
     NIB_CONNECTION_EQUIVALENCY_TABLE[[cell UID]] = self;

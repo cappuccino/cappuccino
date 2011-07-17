@@ -496,6 +496,7 @@ CPOffState
     if (_submenu)
     {
         [_submenu setSupermenu:_menu];
+        [_submenu setTitle:[self title]]
 
         [self setTarget:_menu];
         [self setAction:@selector(submenuAction:)];

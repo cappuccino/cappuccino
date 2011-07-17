@@ -189,6 +189,28 @@
     [self assertTrue:[pred evaluateWithObject:dict] message:"'"+ [pred description]  + "' should be true"];
 }
 
+- (void)testBeginsWithEndsWithPredicate
+{
+    // This always worked
+    var data = ["To", "Tom", "Tomb", "Tomboy"],
+        pred = [CPPredicate predicateWithFormat:@"SELF beginsWith 'To'"],
+        result = [data filteredArrayUsingPredicate:pred];
+
+    [self assertTrue:result.length === 4 message:"'" + [pred description] + "' should return [\"To\", \"Tom\", \"Tomb\", \"Tomboy\"]"];
+
+    // Make sure beginsWith comparison string longer than source strings works
+    pred = [CPPredicate predicateWithFormat:@"SELF beginsWith 'Tomb'"];
+    result = [data filteredArrayUsingPredicate:pred];
+
+    [self assertTrue:[result isEqual:["Tomb", "Tomboy"]] message:"'" + [pred description] + "' should return [\"Tomb\", \"Tomboy\"]"];
+
+    // Make sure endsWith comparison string longer than source strings works
+    pred = [CPPredicate predicateWithFormat:@"SELF endsWith 'boy'"];
+    result = [data filteredArrayUsingPredicate:pred];
+
+    [self assertTrue:[result isEqual:["Tomboy"]] message:"'" + [pred description] + "' should return [\"Tomboy\"]"];
+}
+
 - (void)testNilComparisons
 {
 // Custom Selector Predicate

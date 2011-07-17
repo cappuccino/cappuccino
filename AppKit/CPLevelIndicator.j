@@ -149,9 +149,9 @@ var _CPLevelIndicatorBezelColor = nil,
     var filledColor = _CPLevelIndicatorSegmentNormalColor,
         value = [self doubleValue];
 
-    if (value < _criticalValue)
+    if (value <= _criticalValue)
         filledColor = _CPLevelIndicatorSegmentCriticalColor;
-    else if (value < _warningValue)
+    else if (value <= _warningValue)
         filledColor = _CPLevelIndicatorSegmentWarningColor;
 
     for (var i = 0; i < segmentCount; i++)

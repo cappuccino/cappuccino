@@ -54,6 +54,8 @@
         [self setAction:[aCoder decodeObjectForKey:@"NSAction"]];
 
         [self setLineBreakMode:[cell lineBreakMode]];
+
+        [self setFormatter:[cell formatter]];
     }
 
     return self;
