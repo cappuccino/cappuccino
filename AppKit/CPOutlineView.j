@@ -1807,6 +1807,21 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     }
 }
 
+- (CPView)_dataViewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
+{
+    var view = nil;
+    if (_implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_)
+    {
+        view = [_delegate outlineView:_outlineView
+                                           dataViewForTableColumn:aTableColumn
+                                                             item:[self itemAtRow:theRow]];
+        if (view == nil)
+            [CPException raise:CPInternalInconsistencyException reason:"The view returned by -outlineView:dataViewForTableColumn:item: should not be nil"];
+    }
+    
+    return view;
+}
+
 @end
 
 @implementation _CPOutlineViewTableViewDelegate : CPObject
@@ -1822,21 +1837,6 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
         _outlineView = anOutlineView;
 
     return self;
-}
-
-- (CPView)tableView:(CPTableView)theTableView dataViewForTableColumn:(CPTableColumn)theTableColumn row:(int)theRow
-{
-    var dataView = nil;
-
-    if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_))
-        dataView = [_outlineView._outlineViewDelegate outlineView:_outlineView
-                                       dataViewForTableColumn:theTableColumn
-                                                         item:[_outlineView itemAtRow:theRow]];
-
-    if (!dataView)
-        dataView = [theTableColumn dataViewForRow:theRow];
-
-    return dataView;
 }
 
 - (BOOL)tableView:(CPTableView)theTableView shouldSelectRow:(int)theRow

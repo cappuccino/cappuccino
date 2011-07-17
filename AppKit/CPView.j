@@ -125,6 +125,7 @@ var CPViewFlags                     = { },
     CPGraphicsContext   _graphicsContext;
 
     int                 _tag;
+    CPString            _identifier @accessors(property=identifier);
 
     CGRect              _frame;
     CGRect              _bounds;
