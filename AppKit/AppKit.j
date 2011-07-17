@@ -91,7 +91,6 @@
 @import "CPTokenField.j"
 @import "CPToolbar.j"
 @import "CPToolbarItem.j"
-@import "_CPToolTip.j"
 @import "CPTreeNode.j"
 @import "CPUserDefaultsController.j"
 @import "CPView.j"
