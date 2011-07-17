@@ -306,6 +306,9 @@ ACTUAL_FRAME_RATE = 0;
 
     if ([_delegate respondsToSelector:@selector(animation:valueForProgress:)])
         return [_delegate animation:self valueForProgress:t];
+    
+    if (_animationCurve == CPAnimationLinear)
+        return t;
 
     var c1 = [],
         c2 = [];
