@@ -571,29 +571,28 @@ var _CPEventPeriodicEventPeriod         = 0,
     if (_modifierFlags & (CPCommandKeyMask | CPControlKeyMask))
         return YES;
 
+    // Cocoa does not consider space, backspace, or escape a key equivalent
+    // if the first responder is a text field (presumably a subclass of NSText).
+    var firstResponderIsText = [[_window firstResponder] isKindOfClass:[CPTextField class]];
+
     for (var i = 0; i < characterCount; i++)
     {
-        switch (_characters.charAt(i))
+        var c = _characters.charAt(i);
+
+        if ((c >= CPUpArrowFunctionKey && c <= CPModeSwitchFunctionKey) ||
+            c === CPEnterCharacter ||
+            c === CPNewlineCharacter ||
+            c === CPCarriageReturnCharacter ||
+            c === CPEscapeFunctionKey ||
+            (!firstResponderIsText &&
+                (c === CPSpaceFunctionKey ||
+                 c === CPDeleteCharacter ||
+                 c === CPBackspaceCharacter)))
         {
-            case CPBackspaceCharacter:
-            case CPDeleteCharacter:
-            case CPDeleteFunctionKey:
-            case CPTabCharacter:
-            case CPCarriageReturnCharacter:
-            case CPNewlineCharacter:
-            case CPSpaceFunctionKey:
-            case CPEscapeFunctionKey:
-            case CPPageUpFunctionKey:
-            case CPPageDownFunctionKey:
-            case CPLeftArrowFunctionKey:
-            case CPUpArrowFunctionKey:
-            case CPRightArrowFunctionKey:
-            case CPDownArrowFunctionKey:
-            case CPEndFunctionKey:
-            case CPHomeFunctionKey:
-                return YES;
+            return YES;
         }
     }
+
     // FIXME: More cases?
     return NO;
 }
@@ -651,4 +650,3 @@ function _CPEventFromNativeMouseEvent(aNativeEvent, anEventType, aPoint, modifie
 
     return aNativeEvent;
 }
-
