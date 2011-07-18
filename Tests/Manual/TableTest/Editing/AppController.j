@@ -1,9 +1,9 @@
 /*
  * AppController.j
- * TableTest/Editing 
+ * TableTest/Editing
  *
- * Created by You on July 15, 2011.
- * Copyright 2010, Your Company All rights reserved.
+ * Created by Mike Fellows on July 15, 2011.
+ * Copyright 2010, All rights reserved.
  */
 
 @import <AppKit/CPScrollView.j>
