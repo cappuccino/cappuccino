@@ -30,6 +30,7 @@
 
     var scrollView = [self makeScrollview];
     [scrollView setDocumentView:imageView];
+    [scrollView setDelegate:self];
     [[theWindow contentView] addSubview:scrollView];
 
     // Scrollview with a CPTextField in it
@@ -60,6 +61,16 @@
 
     [[scrollView documentView] addSubview:innerScrollView];
     [[aWindow contentView] addSubview:scrollView];
+}
+
+- (void)scrollViewWillScroll:(CPScrollView)aScrollView
+{
+    CPLogConsole(_cmd+aScrollView);
+}
+
+- (void)scrollViewDidScroll:(CPScrollView)aScrollView
+{
+    CPLogConsole(_cmd+aScrollView);
 }
 
 - (void)makeScrollview

@@ -34,12 +34,21 @@
     places scroll bars on the side of the view to allow the user to scroll and see the entire
     contents of the view.
 */
+
+var TIMER_INTERVAL                              = 0.2,
+    CPScrollViewDelegate_scrollViewWillScroll_  = 1 << 0,
+    CPScrollViewDelegate_scrollViewDidScroll_   = 1 << 1;
+
+
 @implementation CPScrollView : CPView
 {
     CPClipView      _contentView;
     CPClipView      _headerClipView;
     CPView          _cornerView;
     CPView          _bottomCornerView;
+
+    id              _delegate;
+    CPTimer         _scrollTimer;
 
     BOOL            _hasVerticalScroller;
     BOOL            _hasHorizontalScroller;
@@ -48,7 +57,8 @@
     CPScroller      _verticalScroller;
     CPScroller      _horizontalScroller;
 
-    int             _recursionCount;
+    CPInteger       _recursionCount;
+    CPInteger       _implementedDelegateMethods;
 
     float           _verticalLineScroll;
     float           _verticalPageScroll;
@@ -86,7 +96,6 @@
         _borderType = CPNoBorder;
 
         _contentView = [[CPClipView alloc] initWithFrame:[self _insetBounds]];
-
         [self addSubview:_contentView];
 
         _headerClipView = [[CPClipView alloc] init];
@@ -97,11 +106,37 @@
 
         [self setHasVerticalScroller:YES];
         [self setHasHorizontalScroller:YES];
+
+        _delegate = nil;
+        _scrollTimer = nil;
+        _implementedDelegateMethods = 0;
     }
 
     return self;
 }
 
+- (id)delegate
+{
+    return _delegate;
+}
+
+- (void)setDelegate:(id)aDelegate
+{
+    if (aDelegate === _delegate)
+        return;
+
+    _delegate = aDelegate;
+    _implementedDelegateMethods = 0;
+
+    if (_delegate === nil)
+        return;
+
+    if ([_delegate respondsToSelector:@selector(scrollViewWillScroll:)])
+        _implementedDelegateMethods |= CPScrollViewDelegate_scrollViewWillScroll_;
+
+    if ([_delegate respondsToSelector:@selector(scrollViewDidScroll:)])
+        _implementedDelegateMethods |= CPScrollViewDelegate_scrollViewDidScroll_;
+}
 // Calculating Layout
 
 + (CGSize)contentSizeForFrameSize:(CGSize)frameSize hasHorizontalScroller:(BOOL)hFlag hasVerticalScroller:(BOOL)vFlag borderType:(CPBorderType)borderType
@@ -655,6 +690,8 @@
         default:                        contentBounds.origin.y = ROUND(value * (_CGRectGetHeight(documentFrame) - _CGRectGetHeight(contentBounds)));
     }
 
+    [self _sendDelegateMessages];
+
     [_contentView scrollToPoint:contentBounds.origin];
 }
 
@@ -684,6 +721,8 @@
                                         // We want integral bounds!
         default:                        contentBounds.origin.x = ROUND(value * (_CGRectGetWidth(documentFrame) - _CGRectGetWidth(contentBounds)));
     }
+
+    [self _sendDelegateMessages];
 
     [_contentView scrollToPoint:contentBounds.origin];
     [_headerClipView scrollToPoint:CGPointMake(contentBounds.origin.x, 0.0)];
@@ -962,6 +1001,8 @@
         extraX = contentBounds.origin.x - constrainedOrigin.x,
         extraY = contentBounds.origin.y - constrainedOrigin.y;
 
+    [self _sendDelegateMessages];
+
     [_contentView scrollToPoint:constrainedOrigin];
     [_headerClipView scrollToPoint:CGPointMake(constrainedOrigin.x, 0.0)];
 
@@ -1029,6 +1070,35 @@
     [_headerClipView scrollToPoint:CGPointMake(contentBounds.origin.x, 0)];
 }
 
+- (void)_sendDelegateMessages
+{
+    if (_implementedDelegateMethods == 0)
+        return;
+
+    if (!_scrollTimer)
+    {
+        [self _scrollViewWillScroll];
+        _scrollTimer = [CPTimer scheduledTimerWithTimeInterval:TIMER_INTERVAL target:self selector:@selector(_scrollViewDidScroll) userInfo:nil repeats:YES];
+    }
+    else
+        [_scrollTimer setFireDate:[CPDate dateWithTimeIntervalSinceNow:TIMER_INTERVAL]];
+}
+
+- (void)_scrollViewWillScroll
+{
+    if (_implementedDelegateMethods & CPScrollViewDelegate_scrollViewWillScroll_)
+        [_delegate scrollViewWillScroll:self];
+}
+
+- (void)_scrollViewDidScroll
+{
+    [_scrollTimer invalidate];
+    _scrollTimer = nil;
+
+    if (_implementedDelegateMethods & CPScrollViewDelegate_scrollViewDidScroll_)
+        [_delegate scrollViewDidScroll:self];
+}
+
 @end
 
 var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
@@ -1079,6 +1149,9 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
         _cornerView             = [aCoder decodeObjectForKey:CPScrollViewCornerViewKey];
         _bottomCornerView       = [aCoder decodeObjectForKey:CPScrollViewBottomCornerViewKey];
 
+        _delegate = nil;
+        _scrollTimer = nil;
+        _implementedDelegateMethods = 0;
         // Due to the anything goes nature of decoding, our subviews may not exist yet, so layout at the end of the run loop when we're sure everything is in a correct state.
         [[CPRunLoop currentRunLoop] performSelector:@selector(_updateCornerAndHeaderView) target:self argument:_contentView order:0 modes:[CPDefaultRunLoopMode]];
     }
