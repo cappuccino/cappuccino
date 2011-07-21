@@ -149,14 +149,6 @@ var CPMenuItemStringRepresentationDictionary = [CPDictionary dictionary];
 */
 - (void)setEnabled:(BOOL)isEnabled
 {
-    if ([_menu autoenablesItems])
-        return;
-
-    [self _setEnabled:isEnabled];
-}
-
-- (void)_setEnabled:(BOOL)isEnabled
-{
     if (_isEnabled === isEnabled)
         return;
 
