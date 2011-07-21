@@ -230,7 +230,14 @@ var STICKY_TIME_INTERVAL            = 500,
         else if (type === CPLeftMouseUp || type === CPRightMouseUp)
         {
             if (_hasMouseGoneUpAfterStartedTracking)
+            {
+                // Don't close the menu if the current item has a submenu
+                // and did not override it's default action
+                if ([activeItem action] === @selector(submenuAction:))
+                    return;
+
                 [trackingMenu cancelTracking];
+            }
             else
                 _hasMouseGoneUpAfterStartedTracking = YES;
         }
