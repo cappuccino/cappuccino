@@ -34,7 +34,7 @@ task ("build", function()
     }
     else
     {
-        print("Building "+xcodecapp-cocoa+" requires Xcode.");
+        print("Building " + applicationName + " requires Xcode.");
     }
 });
 
