@@ -293,7 +293,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     // create the template project if it doesn't exist
     if (![fm fileExistsAtPath:[XCodeSupportFolder path]])
     {
-        NSLog(@"XCode support folder created at: %@", [XCodeSupportProject path]);
+        NSLog(@"Xcode support folder created at: %@", [XCodeSupportProject path]);
         [fm createDirectoryAtPath:[XCodeSupportProject path] withIntermediateDirectories:YES attributes:nil error:nil];
 
         NSLog(@"Copying project.pbxproj from %@ to %@", XCodeTemplatePBXPath, [XCodeSupportProject path]);
@@ -326,7 +326,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 - (void)populateXCodeProject:(id)argement
 {
     [GrowlApplicationBridge notifyWithTitle:[[currentProjectURL path] lastPathComponent]
-                                description:@"Loading of your project is running..."
+                                description:@"Loading of project..."
                            notificationName:@"DefaultNotifications"
                                    iconData:nil
                                    priority:0
