@@ -2,7 +2,7 @@ require File.join(File.dirname(__FILE__), "repositories.rb")
 require File.join(File.dirname(__FILE__), "dependencies.rb")
 
 # Keep this structure to allow the build system to update version numbers.
-VERSION_NUMBER = "1.0.0.006"
+VERSION_NUMBER = "1.0.0.007"
 
 
 # Shorten expressions
@@ -14,7 +14,7 @@ desc "Cappuccino Distribution"
 define "cappuccino" do
   project.version = VERSION_NUMBER
   project.group = "com.intalio.cloud.cappuccino"
-  
+
   file(_("target/patch")).enhance do
     mkdir_p "target/patch"
   end
@@ -44,7 +44,7 @@ BASH
   package(:jar).with :manifest => read_m
   #package(:jar).include _("target/patch"), :as => "patch"
   package(:jar).include _("target/Frameworks"), :as => "META-INF/resources/Frameworks"
-  
+
   #do not include those: they are at best not read harmful.
   #package(:bundle).include _("build.properties"), :as => "build.properties"
   #package(:bundle).meta_inf << file('META-INF/web-fragment.xml')
