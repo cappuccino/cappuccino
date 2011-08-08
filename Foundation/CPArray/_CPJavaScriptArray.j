@@ -209,7 +209,7 @@ var concat = Array.prototype.concat,
 
 - (void)insertObject:(id)anObject atIndex:(int)anIndex
 {
-    if (anIndex >= self.length || anIndex < 0)
+    if (anIndex > self.length || anIndex < 0)
         _CPRaiseRangeException(self, _cmd, anIndex, self.length);
 
     splice.call(self, anIndex, 0, anObject);
