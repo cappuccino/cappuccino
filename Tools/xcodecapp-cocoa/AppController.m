@@ -62,13 +62,15 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
             _profilePath = [@"source ~/.profile" stringByExpandingTildeInPath];
         else if([fm fileExistsAtPath:[@"~/.bashrc" stringByExpandingTildeInPath]])
             _profilePath = [@"source ~/.bashrc" stringByExpandingTildeInPath];
+        else if([fm fileExistsAtPath:[@"~/.zshrc" stringByExpandingTildeInPath]])
+            _profilePath = [@"source ~/.zshrc" stringByExpandingTildeInPath];
         else
         {
             NSAlert *alert = [NSAlert alertWithMessageText:@"Cannot find any valid profile file"
                             defaultButton:@"Ok"
                           alternateButton:nil
                               otherButton:nil
-                informativeTextWithFormat:@"We have checked for ~/.bash_profile, ~/.profile and ~/.bashrc without luck.\n\nYou need to have on of this file to tell XCodeCapp-cocoa where is located nib2cib. Now we gonna try to without sourcing one this file and it may fail.\n\nIf you notice any error or weird behaviour, please look at Mac OS' Console.app for log message and open a ticket."];
+                informativeTextWithFormat:@"We have checked for ~/.bash_profile, ~/.profile, ~/.bashrc and ~/.zshrc without luck.\n\nYou need to have on of this file to tell XCodeCapp-cocoa where is located nib2cib. Now we gonna try to without sourcing one this file and it may fail.\n\nIf you notice any error or weird behaviour, please look at Mac OS' Console.app for log message and open a ticket."];
             [alert runModal];
              _profilePath = @"";
         }
