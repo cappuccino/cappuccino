@@ -10,15 +10,9 @@ task ("build", function()
 {
     if (executableExists("xcodebuild"))
     {
-        var args = "-alltargets -configuration Release",
+        var args = "-sdk macosx -alltargets -configuration Release",
             supportPath = FILE.join($BUILD_CJS_CAPPUCCINO, "support", applicationName),
             installPath = FILE.join("/", "Applications", applicationName);
-
-        if (xcodebuildHasTenPointFiveSDK())
-            args = "-sdk macosx10.5 " + args;
-
-        else
-            args = "-sdk macosx " + args;
 
         if (OS.system("xcodebuild " + args))
             OS.exit(1);
