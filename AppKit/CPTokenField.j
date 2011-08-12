@@ -98,7 +98,6 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     if (self = [super initWithFrame:frame])
     {
         _selectedRange = CPMakeRange(0, 0);
-        _tokenIndex = 0;
         _completionDelay = [CPTokenField defaultCompletionDelay];
         _tokenizingCharacterSet = [[self class] defaultTokenizingCharacterSet];
         [self setBezeled:YES];
@@ -164,7 +163,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 {
     var indexOfSelectedItem = 0;
 
-    _cachedCompletions = [self tokenField:self completionsForSubstring:[self _inputElement].value indexOfToken:_tokenIndex indexOfSelectedItem:indexOfSelectedItem];
+    _cachedCompletions = [self tokenField:self completionsForSubstring:[self _inputElement].value indexOfToken:0 indexOfSelectedItem:indexOfSelectedItem];
 
     [_autocompleteView selectRowIndexes:[CPIndexSet indexSetWithIndex:indexOfSelectedItem] byExtendingSelection:NO];
     [_autocompleteView reloadData];
@@ -1128,7 +1127,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 {
     if ([[self delegate] respondsToSelector:@selector(tokenField:completionsForSubstring:indexOfToken:indexOfSelectedItem:)])
     {
-        return [[self delegate] tokenField:tokenField completionsForSubstring:substring indexOfToken:_tokenIndex indexOfSelectedItem:selectedIndex];
+        return [[self delegate] tokenField:tokenField completionsForSubstring:substring indexOfToken:tokenIndex indexOfSelectedItem:selectedIndex];
     }
 
     return [];
