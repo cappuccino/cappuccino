@@ -1,9 +1,9 @@
 /*
- * NSFoundation.j
+ * NSAttributedString.j
  * nib2cib
  *
- * Created by Francisco Tolmasky.
- * Copyright 2008, 280 North, Inc.
+ * Created by Alexander Ljungberg.
+ * Copyright 2011, WireLoad Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,10 +20,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "NSArray.j"
-@import "NSAttributedString.j"
-@import "NSDictionary.j"
-@import "NSExpression.j"
-@import "NSMutableString.j"
-@import "NSSet.j"
 
+@import <Foundation/CPObject.j>
+@import <Foundation/CPAttributedString.j>
+
+/*!
+    Placeholder for nib2cib not to bail out when it sees even an empty NSAttributedString.
+*/
+@implementation NSAttributedString : CPAttributedString
+{
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+     return [[CPAttributedString alloc] initWithString:""];
+}
+
+@end
+
+@implementation NSMutableAttributedString : NSAttributedString
+{
+}
+@end
