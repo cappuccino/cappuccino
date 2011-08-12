@@ -342,6 +342,25 @@ var _builtInCharacterSets = {};
     }
 }
 
+- (BOOL)isEqual:(CPCharacterSet)aCharacterSet
+{
+    if (self === aCharacterSet)
+        return YES;
+
+    if (!aCharacterSet || ![aCharacterSet isKindOfClass:[self class]])
+        return NO;
+
+    return [self _isEqualToStringContentCharacterSet:aCharacterSet];
+}
+
+- (BOOL)_isEqualToStringContentCharacterSet:(_CPStringContentCharacterSet)aCharacterSet
+{
+    if (!aCharacterSet)
+        return NO;
+
+    return _string == aCharacterSet._string && _inverted == aCharacterSet._inverted;
+}
+
 @end
 
 var _CPStringContentCharacterSetStringKey = @"_CPStringContentCharacterSetStringKey";
@@ -350,6 +369,8 @@ var _CPStringContentCharacterSetStringKey = @"_CPStringContentCharacterSetString
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
+    // TODO Replace with self = [super initWithCoder:] when super supports it, to get
+    // "inverted" flag.
     if (self)
     {
         _string = [aCoder decodeObjectForKey:_CPStringContentCharacterSetStringKey]
@@ -360,6 +381,7 @@ var _CPStringContentCharacterSetStringKey = @"_CPStringContentCharacterSetString
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
+    // TODO When supported, call super encodeWithCoder:.
     [aCoder encodeObject:_string forKey:_CPStringContentCharacterSetStringKey];
 }
 

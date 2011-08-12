@@ -2,6 +2,18 @@
 
 @implementation CPCharacterSetTest : OJTestCase
 
+- (void)testEquals
+{
+    var charSetA = [CPCharacterSet characterSetWithCharactersInString:"abc"],
+        charSetB = [CPCharacterSet characterSetWithCharactersInString:"abc"],
+        charSetC = [CPCharacterSet characterSetWithCharactersInString:""];
+
+    [self assertFalse:[charSetA isEqual:[CPNull null]]];
+    [self assertFalse:[charSetA isEqual:charSetC]];
+    [self assertTrue:[charSetA isEqual:charSetA]];
+    [self assertTrue:[charSetA isEqual:charSetB]];
+}
+
 - (void)testArchiving
 {
     var charSet = [CPCharacterSet characterSetWithCharactersInString:"abc"],
