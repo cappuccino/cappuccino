@@ -344,6 +344,27 @@ var _builtInCharacterSets = {};
 
 @end
 
+var _CPStringContentCharacterSetStringKey = @"_CPStringContentCharacterSetStringKey";
+
+@implementation _CPStringContentCharacterSet (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    if (self)
+    {
+        _string = [aCoder decodeObjectForKey:_CPStringContentCharacterSetStringKey]
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:_string forKey:_CPStringContentCharacterSetStringKey];
+}
+
+@end
+
 _CPCharacterSetTrimAtBeginning  = 1 << 1;
 _CPCharacterSetTrimAtEnd        = 1 << 2;
 
