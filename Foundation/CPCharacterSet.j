@@ -174,6 +174,27 @@ var _builtInCharacterSets = {};
 
 @end
 
+var CPCharacterSetInvertedKey = @"CPCharacterSetInvertedKey";
+
+@implementation CPCharacterSet (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    if (self = [super init])
+    {
+        _inverted = [aCoder decodeBoolForKey:CPCharacterSetInvertedKey];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeBool:_inverted forKey:CPCharacterSetInvertedKey];
+}
+
+@end
+
 // A character set that stores a list of ranges of
 // acceptable characters.
 @implementation _CPRangeCharacterSet : CPCharacterSet
@@ -369,9 +390,7 @@ var _CPStringContentCharacterSetStringKey = @"_CPStringContentCharacterSetString
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    // TODO Replace with self = [super initWithCoder:] when super supports it, to get
-    // "inverted" flag.
-    if (self)
+    if (self = [super initWithCoder:aCoder])
     {
         _string = [aCoder decodeObjectForKey:_CPStringContentCharacterSetStringKey]
     }
@@ -381,7 +400,8 @@ var _CPStringContentCharacterSetStringKey = @"_CPStringContentCharacterSetString
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    // TODO When supported, call super encodeWithCoder:.
+    [super encodeWithCoder:aCoder];
+
     [aCoder encodeObject:_string forKey:_CPStringContentCharacterSetStringKey];
 }
 

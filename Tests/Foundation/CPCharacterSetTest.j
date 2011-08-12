@@ -24,6 +24,16 @@
     [self assertTrue:[unarchived characterIsMember:'b']];
     [self assertTrue:[unarchived characterIsMember:'c']];
     [self assertFalse:[unarchived characterIsMember:'d']];
+
+    var invertedSet = [charSet invertedSet];
+
+    archived = [CPKeyedArchiver archivedDataWithRootObject:invertedSet];
+    unarchived = [CPKeyedUnarchiver unarchiveObjectWithData:archived];
+
+    [self assertFalse:[unarchived characterIsMember:'a'] message:"in unarchived inverted set 'a' is not a member"];
+    [self assertFalse:[unarchived characterIsMember:'b'] message:"in unarchived inverted set 'b' is not a member"];
+    [self assertFalse:[unarchived characterIsMember:'c'] message:"in unarchived inverted set 'c' is not a member"];
+    [self assertTrue:[unarchived characterIsMember:'d'] message:"in unarchived inverted set 'd' is a member"];
 }
 
 @end
