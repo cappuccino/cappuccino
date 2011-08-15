@@ -98,58 +98,62 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     if (self = [super initWithFrame:frame])
     {
         _selectedRange = CPMakeRange(0, 0);
-
-        _tokenScrollView = [[CPScrollView alloc] initWithFrame:CGRectMakeZero()];
-        [_tokenScrollView setHasHorizontalScroller:NO];
-        [_tokenScrollView setHasVerticalScroller:NO];
-        [_tokenScrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-
-        var contentView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
-        [contentView setAutoresizingMask:CPViewWidthSizable];
-        [_tokenScrollView setDocumentView:contentView];
-
-        [self addSubview:_tokenScrollView];
-
-        _tokenIndex = 0;
-
-        _cachedCompletions = [];
         _completionDelay = [CPTokenField defaultCompletionDelay];
-
         _tokenizingCharacterSet = [[self class] defaultTokenizingCharacterSet];
-
-        _autocompleteContainer = [[CPView alloc] initWithFrame:CPRectMake(0.0, 0.0, frame.size.width, 92.0)];
-        [_autocompleteContainer setBackgroundColor:[_CPMenuWindow backgroundColorForBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle]];
-
-        _autocompleteScrollView = [[CPScrollView alloc] initWithFrame:CPRectMake(1.0, 1.0, frame.size.width - 2.0, 90.0)];
-        [_autocompleteScrollView setAutohidesScrollers:YES];
-        [_autocompleteScrollView setHasHorizontalScroller:NO];
-        [_autocompleteContainer addSubview:_autocompleteScrollView];
-
-        _autocompleteView = [[CPTableView alloc] initWithFrame:CPRectMakeZero()];
-
-        var tableColumn = [[CPTableColumn alloc] initWithIdentifier:CPTokenFieldTableColumnIdentifier];
-        [tableColumn setResizingMask:CPTableColumnAutoresizingMask];
-        [_autocompleteView addTableColumn:tableColumn];
-
-        [_autocompleteView setDataSource:self];
-        [_autocompleteView setDelegate:self];
-        [_autocompleteView setAllowsMultipleSelection:NO];
-        [_autocompleteView setHeaderView:nil];
-        [_autocompleteView setCornerView:nil];
-        [_autocompleteView setRowHeight:30.0];
-        [_autocompleteView setGridStyleMask:CPTableViewSolidHorizontalGridLineMask];
-        [_autocompleteView setBackgroundColor:[CPColor clearColor]];
-        [_autocompleteView setGridColor:[CPColor colorWithRed:242.0 / 255.0 green:243.0 / 255.0 blue:245.0 / 255.0 alpha:1.0]];
-
-        [_autocompleteScrollView setDocumentView:_autocompleteView];
-
         [self setBezeled:YES];
 
+        [self _init];
+
         [self setObjectValue:[]];
+
         [self setNeedsLayout];
     }
 
     return self;
+}
+
+- (void)_init
+{
+    var frame = [self frame];
+
+    _tokenScrollView = [[CPScrollView alloc] initWithFrame:CGRectMakeZero()];
+    [_tokenScrollView setHasHorizontalScroller:NO];
+    [_tokenScrollView setHasVerticalScroller:NO];
+    [_tokenScrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+
+    var contentView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+    [contentView setAutoresizingMask:CPViewWidthSizable];
+    [_tokenScrollView setDocumentView:contentView];
+
+    [self addSubview:_tokenScrollView];
+
+    _cachedCompletions = [];
+
+    _autocompleteContainer = [[CPView alloc] initWithFrame:CPRectMake(0.0, 0.0, frame.size.width, 92.0)];
+    [_autocompleteContainer setBackgroundColor:[_CPMenuWindow backgroundColorForBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle]];
+
+    _autocompleteScrollView = [[CPScrollView alloc] initWithFrame:CPRectMake(1.0, 1.0, frame.size.width - 2.0, 90.0)];
+    [_autocompleteScrollView setAutohidesScrollers:YES];
+    [_autocompleteScrollView setHasHorizontalScroller:NO];
+    [_autocompleteContainer addSubview:_autocompleteScrollView];
+
+    _autocompleteView = [[CPTableView alloc] initWithFrame:CPRectMakeZero()];
+
+    var tableColumn = [[CPTableColumn alloc] initWithIdentifier:CPTokenFieldTableColumnIdentifier];
+    [tableColumn setResizingMask:CPTableColumnAutoresizingMask];
+    [_autocompleteView addTableColumn:tableColumn];
+
+    [_autocompleteView setDataSource:self];
+    [_autocompleteView setDelegate:self];
+    [_autocompleteView setAllowsMultipleSelection:NO];
+    [_autocompleteView setHeaderView:nil];
+    [_autocompleteView setCornerView:nil];
+    [_autocompleteView setRowHeight:30.0];
+    [_autocompleteView setGridStyleMask:CPTableViewSolidHorizontalGridLineMask];
+    [_autocompleteView setBackgroundColor:[CPColor clearColor]];
+    [_autocompleteView setGridColor:[CPColor colorWithRed:242.0 / 255.0 green:243.0 / 255.0 blue:245.0 / 255.0 alpha:1.0]];
+
+    [_autocompleteScrollView setDocumentView:_autocompleteView];
 }
 
 // ===============
@@ -159,7 +163,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 {
     var indexOfSelectedItem = 0;
 
-    _cachedCompletions = [self tokenField:self completionsForSubstring:[self _inputElement].value indexOfToken:_tokenIndex indexOfSelectedItem:indexOfSelectedItem];
+    _cachedCompletions = [self tokenField:self completionsForSubstring:[self _inputElement].value indexOfToken:0 indexOfSelectedItem:indexOfSelectedItem];
 
     [_autocompleteView selectRowIndexes:[CPIndexSet indexSetWithIndex:indexOfSelectedItem] byExtendingSelection:NO];
     [_autocompleteView reloadData];
@@ -1123,7 +1127,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 {
     if ([[self delegate] respondsToSelector:@selector(tokenField:completionsForSubstring:indexOfToken:indexOfSelectedItem:)])
     {
-        return [[self delegate] tokenField:tokenField completionsForSubstring:substring indexOfToken:_tokenIndex indexOfSelectedItem:selectedIndex];
+        return [[self delegate] tokenField:tokenField completionsForSubstring:substring indexOfToken:tokenIndex indexOfSelectedItem:selectedIndex];
     }
 
     return [];
@@ -1289,6 +1293,40 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 + (CPString)defaultThemeClass
 {
     return "tokenfield-token-close-button";
+}
+
+@end
+
+
+var CPTokenFieldTokenizingCharacterSetKey   = "CPTokenFieldTokenizingCharacterSetKey",
+    CPTokenFieldCompletionDelayKey          = "CPTokenFieldCompletionDelay";
+
+@implementation CPTokenField (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+
+    if (self)
+    {
+        _tokenizingCharacterSet = [aCoder decodeObjectForKey:CPTokenFieldTokenizingCharacterSetKey] || [[self class] defaultTokenizingCharacterSet];
+        _completionDelay = [aCoder decodeDoubleForKey:CPTokenFieldCompletionDelayKey] || [[self class] defaultCompletionDelay];
+
+        [self _init];
+
+        [self setNeedsLayout];
+        [self setNeedsDisplay:YES];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+
+    [aCoder encodeInt:_tokenizingCharacterSet forKey:CPTokenFieldTokenizingCharacterSetKey];
+    [aCoder encodeDouble:_completionDelay forKey:CPTokenFieldCompletionDelayKey];
 }
 
 @end
