@@ -140,6 +140,8 @@ while [ $# -gt 0 ]; do
         --github-user)  github_user="$2"; shift;;
         --github-ref)   github_ref="$2"; shift;;
         --install-capp) install_capp="yes";;
+        --install-test) install_test="yes";;
+        --install)      install_capp="yes"; install_test="yes";;
         *)              cat >&2 <<-EOT
 usage: ./bootstrap.sh [OPTIONS]
 
@@ -150,6 +152,8 @@ usage: ./bootstrap.sh [OPTIONS]
     --github-user [USER]:   Use another github user (default: 280north).
     --github-ref [REF]:     Use another git ref (default: master).
     --install-capp:         Install "objective-j" and "cappuccino" packages.
+    --install-test:         Install "ojtest" package.
+    --install               Install all packages.
 EOT
                         exit 1;;
     esac
@@ -272,12 +276,23 @@ if ! prompt "yes"; then
     exit 1
 fi
 
-# echo "================================================================================"
-# echo "Would you like to install the pre-built Objective-J and Cappuccino packages?"
-# echo "If you intend to build Cappuccino yourself this is not neccessary."
-# if [ ! "$install_capp" ] && prompt; then
-#     install_capp="yes"
-# fi
+if [ ! "$install_capp" ]; then
+    echo "================================================================================"
+    echo "Would you like to install the pre-built Objective-J and Cappuccino packages?"
+    echo "If you intend to build Cappuccino yourself this is not neccessary."
+    if prompt; then
+      install_capp="yes"
+    fi
+fi
+
+
+if [ ! "$install_test" ]; then
+    echo "================================================================================"
+    echo "Would you like to install test OJTest package?"
+    if prompt; then
+      install_test="yes"
+    fi
+fi
 
 # Make sure tusk can access GitHub's HTTPS URLs.
 NARWHAL_ENGINE=rhino js -e "javax.net.ssl.SSLContext.getDefault()" &> /dev/null
@@ -292,6 +307,10 @@ fi
 extra_packages=""
 if [ "$install_capp" ]; then
     extra_packages="objective-j cappuccino"
+fi
+
+if [ "$install_test" ]; then
+    extra_packages="${extra_packages} https://github.com/280north/ojtest/zipball/latest"
 fi
 
 echo "Installing necessary packages..."

@@ -176,11 +176,18 @@
                 for (; i < count; i++)
                 {
                     var thisValue = value[i];
-
-                    if (thisValue.constructor === Object)
-                        newValue.push([CPDictionary dictionaryWithJSObject:thisValue recursively:YES]);
+                    
+                    if (thisValue === null)
+                    {
+                        newValue.push([CPNull null]);
+                    }
                     else
-                        newValue.push(thisValue);
+                    {
+                        if (thisValue.constructor === Object)
+                            newValue.push([CPDictionary dictionaryWithJSObject:thisValue recursively:YES]);
+                        else
+                            newValue.push(thisValue);
+                    }
                 }
 
                 value = newValue;
