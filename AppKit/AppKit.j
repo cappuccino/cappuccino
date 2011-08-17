@@ -66,6 +66,7 @@
 @import "CPOutlineView.j"
 @import "CPPanel.j"
 @import "CPPasteboard.j"
+@import "CPPopover.j"
 @import "CPPopUpButton.j"
 @import "CPPredicateEditor.j"
 @import "CPPredicateEditorRowTemplate.j"
