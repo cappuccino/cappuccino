@@ -3544,16 +3544,16 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     }
 
     var exposedRows = [self _unboundedRowsInRect:aRect],
+        firstRow = FLOOR(exposedRows.location / colorCount) * colorCount,
         lastRow = CPMaxRange(exposedRows),
         colorIndex = 0,
-        groupRowRects = [],
-        row = exposedRows.location;
+        groupRowRects = [];
 
     //loop through each color so we only draw once for each color
     while (colorIndex < colorCount)
     {
         CGContextBeginPath(context);
-        for (var row = colorIndex; row <= lastRow; row += colorCount)
+        for (var row = firstRow + colorIndex; row <= lastRow; row += colorCount)
         {
             // if it's not a group row draw it otherwise we draw it later
             if (![_groupRows containsIndex:row])
