@@ -204,7 +204,6 @@ var CPBindingOperationAnd = 0,
     if (valueTransformer)
         aValue = [valueTransformer transformedValue:aValue];
 
-
     if (aValue === undefined || aValue === nil || aValue === [CPNull null])
         aValue = [options objectForKey:CPNullPlaceholderBindingOption] || nil;
 
@@ -311,7 +310,7 @@ var CPBindingOperationAnd = 0,
 - (void)bind:(CPString)aBinding toObject:(id)anObject withKeyPath:(CPString)aKeyPath options:(CPDictionary)options
 {
     if (!anObject || !aKeyPath)
-        return CPLog.error("Invalid object or path on "+self+" for "+aBinding);
+        return CPLog.error("Invalid object or path on " + self + " for " + aBinding);
 
     //if (![[self exposedBindings] containsObject:aBinding])
     //    CPLog.warn("No binding exposed on "+self+" for "+aBinding);
@@ -488,6 +487,8 @@ CPSelectedIndexBinding  = @"selectedIndex";
 CPTextColorBinding      = @"textColor";
 CPToolTipBinding        = @"toolTip";
 CPValueBinding          = @"value";
+CPContentBinding        = @"content";
+CPContentValuesBinding  = @"contentValues";
 
 //Binding options constants
 CPAllowsEditingMultipleValuesSelectionBindingOption = @"CPAllowsEditingMultipleValuesSelection";

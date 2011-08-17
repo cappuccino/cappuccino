@@ -27,6 +27,7 @@
 @import "CPObjectController.j"
 @import "CPKeyValueBinding.j"
 
+
 /*!
 
 @class CPArrayController
@@ -284,8 +285,7 @@
 
     if (value === nil)
         value = [];
-
-    if (![value isKindOfClass:[CPArray class]])
+    else if (![value isKindOfClass:[CPArray class]])
         value = [value];
 
     var oldSelectedObjects = nil,
@@ -340,20 +340,20 @@
 }
 
 /*!
-    @ignore
-*/
-- (void)_setContentSet:(id)aSet
-{
-    [self setContent:[aSet allObjects]];
-}
-
-/*!
     Returns the content array of the controller.
     @return id the content array of the receiver
 */
 - (id)contentArray
 {
     return [self content];
+}
+
+/*!
+    @ignore
+*/
+- (void)_setContentSet:(id)aSet
+{
+    [self setContent:[aSet allObjects]];
 }
 
 /*!
@@ -564,8 +564,13 @@
 - (BOOL)setSelectionIndexes:(CPIndexSet)indexes
 {
     [self _selectionWillChange]
-    [self __setSelectionIndexes:indexes];
-    [self _selectionDidChange];
+
+    // When explicitly setting the selection, ignore avoidsEmptySelection
+    var changed = [self __setSelectionIndexes:indexes obeyAvoidsEmptySelection:NO];
+
+    [self _selectionDidChangeNotify:NO];
+
+    return changed;
 }
 
 /*
@@ -574,7 +579,7 @@
 */
 - (BOOL)__setSelectionIndex:(int)theIndex
 {
-    [self __setSelectionIndexes:[CPIndexSet indexSetWithIndex:theIndex]];
+    return [self __setSelectionIndexes:[CPIndexSet indexSetWithIndex:theIndex] obeyAvoidsEmptySelection:YES];
 }
 
 /*
@@ -583,12 +588,21 @@
 */
 - (BOOL)__setSelectionIndexes:(CPIndexSet)indexes
 {
+    [self __setSelectionIndexes:indexes  obeyAvoidsEmptySelection:YES];
+}
+
+/*
+    Like setSelectionIndexes but don't fire any change notifications.
+    @ignore
+*/
+- (BOOL)__setSelectionIndexes:(CPIndexSet)indexes obeyAvoidsEmptySelection:(BOOL)obeyAvoidsEmptySelection
+{
     if (!indexes)
         indexes = [CPIndexSet indexSet];
 
     if (![indexes count])
     {
-        if (_avoidsEmptySelection && [[self arrangedObjects] count])
+        if (obeyAvoidsEmptySelection && _avoidsEmptySelection && [[self arrangedObjects] count])
             indexes = [CPIndexSet indexSetWithIndex:0];
     }
     else
@@ -636,10 +650,10 @@
     [self willChangeValueForKey:@"selectionIndexes"];
     [self _selectionWillChange];
 
-    [self __setSelectedObjects:objects];
+    [self __setSelectedObjects:objects obeyAvoidsEmptySelection:NO];
 
     [self didChangeValueForKey:@"selectionIndexes"];
-    [self _selectionDidChange];
+    [self _selectionDidChangeNotify:NO];
 }
 
 /*
@@ -647,6 +661,15 @@
     @ignore
 */
 - (BOOL)__setSelectedObjects:(CPArray)objects
+{
+    [self __setSelectedObjects:objects obeyAvoidsEmptySelection:YES];
+}
+
+/*
+    Like setSelectedObjects but don't fire any change notifications.
+    @ignore
+*/
+- (BOOL)__setSelectedObjects:(CPArray)objects obeyAvoidsEmptySelection:(BOOL)obeyAvoidsEmptySelection
 {
     var set = [CPIndexSet indexSet],
         count = [objects count],
@@ -660,7 +683,7 @@
             [set addIndex:index];
     }
 
-    [self __setSelectionIndexes:set];
+    [self __setSelectionIndexes:set obeyAvoidsEmptySelection:obeyAvoidsEmptySelection];
     return YES;
 }
 
@@ -756,14 +779,15 @@
             [_selectionIndexes shiftIndexesStartingAtIndex:pos by:1];
     }
     /*
-    else if (_filterPredicate !== nil)
-    ...
-    // Implies _filterPredicate && ![_filterPredicate evaluateWithObject:object], so the new object does
-    // not appear in arrangedObjects and we do not have to update at all.
+        else if (_filterPredicate !== nil)
+        ...
+        Implies _filterPredicate && ![_filterPredicate evaluateWithObject:object], so the new object does
+        not appear in arrangedObjects and we do not have to update at all.
     */
 
     // This will also send notificaitons for arrangedObjects.
     [self didChangeValueForKey:@"content"];
+
     if (willClearPredicate)
         [self didChangeValueForKey:@"filterPredicate"];
 }
@@ -816,6 +840,7 @@
         [self __setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
 
     [self didChangeValueForKey:@"content"];
+
     if (willClearPredicate)
         [self didChangeValueForKey:@"filterPredicate"];
 }
@@ -942,6 +967,7 @@
 
         index = [anIndexSet indexLessThanIndex:index];
     }
+
     // Allow handlesContentAsCompoundValue reverse sets to trigger.
     [[CPBinder getBinding:@"contentArray" forObject:self] _contentArrayDidChange];
     _disableSetContent = NO;
@@ -1063,7 +1089,7 @@
 
 + (Class)_binderClassForBinding:(CPString)theBinding
 {
-    if (theBinding == @"contentArray")
+    if (theBinding === @"content" || theBinding === @"contentArray")
         return [_CPArrayControllerContentBinder class];
 
     return [super _binderClassForBinding:theBinding];
@@ -1078,7 +1104,7 @@
     var destination = [_info objectForKey:CPObservedObjectKey],
         keyPath = [_info objectForKey:CPObservedKeyPathKey],
         options = [_info objectForKey:CPOptionsKey],
-        isCompound = [self handlesContentAsCompoundValue];
+        isCompound = [self handlesContentAsCompoundValue] || keyPath.indexOf("@") !== -1;
 
     if (!isCompound)
     {

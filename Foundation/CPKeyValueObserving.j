@@ -631,12 +631,12 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 {
     // Fire change events for the dependent keys
     var dependentKeysForClass = _nativeClass[DependentKeysKey],
-        dependantKeys = [dependentKeysForClass[theKeyPath] allObjects];
+        dependentKeys = [dependentKeysForClass[theKeyPath] allObjects],
+        isBeforeFlag = !![theChanges objectForKey:CPKeyValueChangeNotificationIsPriorKey];
 
-    var isBeforeFlag = !![theChanges objectForKey:CPKeyValueChangeNotificationIsPriorKey];
-    for (var i = 0; i < [dependantKeys count]; i++)
+    for (var i = 0; i < [dependentKeys count]; i++)
     {
-        var dependantKey = [dependantKeys objectAtIndex:i];
+        var dependantKey = [dependentKeys objectAtIndex:i];
         [self _sendNotificationsForKey:dependantKey changeOptions:theChanges isBefore:isBeforeFlag];
     }
 }
