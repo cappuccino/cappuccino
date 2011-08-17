@@ -2928,5 +2928,6 @@ CPCustomWindowShadowStyle   = 3;
 @import "_CPHUDWindowView.j"
 @import "_CPBorderlessWindowView.j"
 @import "_CPBorderlessBridgeWindowView.j"
+@import "_CPAttachedWindowView.j"
 @import "CPDragServer.j"
 @import "CPView.j"
