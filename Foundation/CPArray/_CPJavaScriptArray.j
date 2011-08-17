@@ -156,8 +156,7 @@ var concat = Array.prototype.concat,
 - (void)makeObjectsPerformSelector:(SEL)aSelector withObjects:(CPArray)objects
 {
     if (!aSelector)
-        [CPException raise:CPInvalidArgumentException
-                    reason:"makeObjectsPerformSelector:withObjects: 'aSelector' can't be nil"];
+        _CPRaiseInvalidArgumentException(self, _cmd, 'attempt to pass a nil selector');
 
     var index = 0,
         count = self.length;
@@ -198,7 +197,7 @@ var concat = Array.prototype.concat,
 - (CPArray)subarrayWithRange:(CPRange)aRange
 {
     if (aRange.location < 0 || CPMaxRange(aRange) > self.length)
-        [CPException raise:CPRangeException reason:"subarrayWithRange: aRange out of bounds"];
+        [CPException raise:CPRangeException reason:_cmd + " aRange out of bounds"];
 
     return slice.call(self, aRange.location, CPMaxRange(aRange));
 }
@@ -208,13 +207,19 @@ var concat = Array.prototype.concat,
     return join.call(self, aString);
 }
 
-- (void)insertObject:(id)anObject atIndex:(CPUInteger)anIndex
+- (void)insertObject:(id)anObject atIndex:(int)anIndex
 {
+    if (anIndex > self.length || anIndex < 0)
+        _CPRaiseRangeException(self, _cmd, anIndex, self.length);
+
     splice.call(self, anIndex, 0, anObject);
 }
 
-- (void)removeObjectAtIndex:(CPUInteger)anIndex
+- (void)removeObjectAtIndex:(int)anIndex
 {
+    if (anIndex >= self.length || anIndex < 0)
+        _CPRaiseRangeException(self, _cmd, anIndex, self.length);
+
     splice.call(self, anIndex, 1);
 }
 
@@ -235,16 +240,28 @@ var concat = Array.prototype.concat,
 
 - (void)removeObjectsInRange:(CPRange)aRange
 {
+    if (aRange.location < 0 || CPMaxRange(aRange) > self.length)
+        [CPException raise:CPRangeException reason:_cmd + " aRange out of bounds"];
+
     splice.call(self, aRange.location, aRange.length);
 }
 
 - (void)replaceObjectAtIndex:(int)anIndex withObject:(id)anObject
 {
+    if (anIndex >= self.length || anIndex < 0)
+        _CPRaiseRangeException(self, _cmd, anIndex, self.length);
+
     self[anIndex] = anObject;
 }
 
 - (void)replaceObjectsInRange:(CPRange)aRange withObjectsFromArray:(CPArray)anArray range:(CPRange)otherRange
 {
+    if (aRange.location < 0 || CPMaxRange(aRange) > self.length)
+        [CPException raise:CPRangeException reason:_cmd + " aRange out of bounds"];
+
+    if (otherRange.location < 0 || CPMaxRange(otherRange) > anArray.length)
+        [CPException raise:CPRangeException reason:_cmd + " otherRange out of bounds"];
+
     if (otherRange && (otherRange.location !== 0 || otherRange.length !== [anArray count]))
         anArray = [anArray subarrayWithRange:otherRange];
 
