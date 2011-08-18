@@ -362,7 +362,7 @@
 
 - (id)valueForKeyPath:(CPString)aKeyPath
 {
-    if (aKeyPath.indexOf("@") === 0)
+    if (aKeyPath.charAt(0) === "@")
     {
         var dotIndex = aKeyPath.indexOf("."),
             operator,
