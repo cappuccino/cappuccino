@@ -20,7 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CPTableView.j>
+@import "CPTableView.j"
 
 
 /*!
@@ -55,6 +55,8 @@ _CPPopUpListDidDismissNotification = @"_CPPopUpListDidDismissNotification";
 _CPPopUpListItemWasClickedNotification = @"_CPPopUpListItemWasClickedNotification";
 
 /*!
+    @ignore
+
     The minimum number of items that must be visible below the related field.
     If less than this number would be completely visible, and there is room for this many complete items
     above the field, the list is displayed above.
@@ -98,7 +100,6 @@ var ListColumnIdentifier = @"1";
     Creates a pop up list of choices which will display relative to the given rect in base coordinates.
 
     @param aDelegate    The object that usually is controlling this list.
-    @param baseRect     A rect in base coordinates relative to which the list should be displayed
 */
 - (id)initWithDelegate:(_CPPopUpListDelegate)aDelegate
 {
@@ -107,6 +108,10 @@ var ListColumnIdentifier = @"1";
     if (self)
     {
         _delegate = aDelegate;
+        _itemWasClicked = NO;
+        _listWasClicked = NO;
+        _listWidth = 0;
+
         _tableView = [self makeTableView];
 
         // Start with a default size, we will resize it later
@@ -152,7 +157,8 @@ var ListColumnIdentifier = @"1";
     [panel setTitle:@""];
     [panel setFloatingPanel:YES];
     [panel setBecomesKeyOnlyIfNeeded:YES];
-    [panel setHasShadow:NO];
+    [panel setHasShadow:YES];
+    [panel setShadowStyle:CPMenuWindowShadowStyle];
     [panel setDelegate:self];
 
     return panel;
@@ -220,6 +226,7 @@ var ListColumnIdentifier = @"1";
 
     return scroll;
 }
+
 /*!
     Returns the desired width of the list.
 */
@@ -238,22 +245,53 @@ var ListColumnIdentifier = @"1";
     _listWidth = width;
 }
 
-/!*
+- (void)setFont:(CPFont)aFont
+{
+    var oldDataView = [_tableColumn dataView],
+        newDataView = [CPTextField new];
+
+    [newDataView setFont:aFont];
+    [newDataView setAlignment:[oldDataView alignment]];
+    [_tableColumn setDataView:newDataView];
+
+    // Force the data view cache to flush
+    [_tableView reloadData];
+}
+
+- (void)setAlignment:(CPTextAlignment)alignment
+{
+    var oldDataView = [_tableColumn dataView],
+        newDataView = [CPTextField new];
+
+    [newDataView setAlignment:alignment];
+    [newDataView setFont:[oldDataView font]];
+    [_tableColumn setDataView:newDataView];
+
+    // Force the data view cache to flush
+    [_tableView reloadData];
+}
+
+/*!
     Pop up the list if it is not already visible.
     If it is not visible, a _CPPopUpListWillPopUpNotification will be sent.
+
+    @param aRect    A rect (in \c aView coordinates) to display relative to
+    @param aView    The view whose coordinate system \c aRect is in
+    @param offset   How far to offset the list from \c aRect
 */
-- (void)popUpRelativeTo:(CGRect)baseRect
+- (void)popUpRelativeToRect:(CGRect)aRect view:(CPView)aView offset:(int)offset
 {
     if ([_panel isVisible])
         return;
 
-    var frame = CGRectMake(0, 0, MAX(_listWidth, CGRectGetWidth(baseRect)), [self rowHeightForTableView:_tableView] * [self numberOfRowsInTableView:_tableView]);
+    var frame = CGRectMake(0, 0, MAX(_listWidth, CGRectGetWidth(aRect)), [self rowHeightForTableView:_tableView] * [self numberOfRowsInTableView:_tableView]);
 
-    // Place the frame relative to the baseRect and constrain it to the screen bounds
-    frame = [self constrain:frame relativeTo:baseRect];
+    // Place the frame relative to aRect and constrain it to the screen bounds
+    frame = [self constrain:frame relativeToRect:aRect view:aView offset:offset];
 
     [_panel setFrame:frame];
     [_scrollView setFrameSize:CGSizeMakeCopy(frame.size)];
+    [self scrollItemAtIndexToTop:[_tableView selectedRow]];
 
     [self listWillPopUp];
 
@@ -261,20 +299,26 @@ var ListColumnIdentifier = @"1";
 }
 
 /*!
-    Return a frame in base coordinates such that the list, when displayed, will show at least ListMinimumItems
-    items completely on screen. Normally the list should be displayed below \c baseRect, but if there is not room
+    Return a frame in platform window base coordinates such that the list, when displayed, will show at least ListMinimumItems
+    items completely on screen. Normally the list should be displayed below \c aRect, but if there is not room
     for at least ListMinimumItems items, an attempt should be made to display that many
-    items above \c baseRect. If the minimum cannot be displayed on top, whichever direction can display more items
+    items above \c aRect. If the minimum cannot be displayed on top, whichever direction can display more items
     is chosen.
 */
-- (CGRect)constrain:(CGRect)aFrame relativeTo:(CGRect)baseRect
+- (CGRect)constrain:(CGRect)aFrame relativeToRect:(CGRect)aRect view:(CPView)aView offset:(int)offset
 {
-    var baseOrigin = CGPointMake(CGRectGetMinX(baseRect), CGRectGetMaxY(baseRect)),
+    // Convert from the view's coordinate system to the coordinate system of the primary platform window
+    var baseOrigin = [aView convertPointToBase:aRect.origin],
+        windowOrigin = [[aView window] convertBaseToPlatformWindow:baseOrigin],
         rowHeight = [self rowHeightForTableView:_tableView],
+
         // Be sure to clip the number of displayed rows to what the field wants
         numberOfRows = MIN([self numberOfRowsInTableView:_tableView], [_delegate numberOfVisibleItems]),
+
         // Add 2 to height for border
-        frame = CGRectMake(baseOrigin.x, baseOrigin.y, MAX(_listWidth, CGRectGetWidth(aFrame)), (rowHeight * numberOfRows) + 2),
+        frame = CGRectMake(windowOrigin.x, windowOrigin.y + CGRectGetHeight(aRect) + offset, MAX(_listWidth, CGRectGetWidth(aFrame)), (rowHeight * numberOfRows) + 2),
+
+        // Get the bottom coordinate of the frame and the platform window
         bottomFrame = CGRectMakeCopy(frame),
         bottom = CGRectGetMaxY(bottomFrame),
         viewRect = [[CPPlatformWindow primaryPlatformWindow] visibleFrame],
@@ -294,7 +338,7 @@ var ListColumnIdentifier = @"1";
         // The minimum number of items will not fit, try above
         var topFrame = CGRectMakeCopy(frame);
 
-        topFrame.origin.y = CGRectGetMinY(baseRect) - CGRectGetHeight(topFrame);
+        topFrame.origin.y = windowOrigin.y - offset - CGRectGetHeight(topFrame);
 
         var visibleTop = CGRectGetMinY(viewRect),
             topVisibleRows = numberOfRows;
@@ -418,7 +462,7 @@ var ListColumnIdentifier = @"1";
         return NO;
 }
 
-- (void)scrollRowToTop:(int)row
+- (void)scrollItemAtIndexToTop:(int)row
 {
     var rect = [_tableView rectOfRow:row];
 
@@ -584,6 +628,9 @@ var _CPPopUpListFieldKey        = @"_CPPopUpListDelegateKey",
 
     if (self)
     {
+        _listWasClicked = NO;
+        _itemWasClicked = NO;
+
         _delegate = [aCoder decodeObjectForKey:_CPPopUpListDelegateKey];
         _listWidth = [aCoder decodeIntForKey:_CPPopUpListListWidthKey];
         _panel = [aCoder decodeObjectForKey:_CPPopUpListListPanelKey];
@@ -606,12 +653,6 @@ var _CPPopUpListFieldKey        = @"_CPPopUpListDelegateKey",
     [aCoder encodeObject:_scrollView forKey:_CPPopUpListScrollViewKey];
     [aCoder encodeObject:_tableView forKey:_CPPopUpListTableViewKey];
 }
-
-@end
-
-@implementation _CPPopUpList (CPTableViewDelegate)
-
-
 
 @end
 
@@ -653,7 +694,7 @@ var _CPPopUpListFieldKey        = @"_CPPopUpListDelegateKey",
 */
 - (CPTableColumn)listColumn
 {
-    return [self tableColumnWithIdentifier:ListColumnIdentifier];
+    return _tableColumn;
 }
 
 @end

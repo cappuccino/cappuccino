@@ -169,8 +169,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMake(2.0, 2.0, 2.0, 2.0), [CPNull null]]
-                                       forKeys:[@"bezel-inset", @"content-inset", @"bezel-color"]];
+    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMake(2.0, 2.0, 2.0, 2.0), _CGInsetMake(3.0, 3.0, 3.0, 3.0), [CPNull null]]
+                                       forKeys:[@"bezel-inset", @"content-inset", @"border-inset", @"bezel-color"]];
 }
 
 /* @ignore */

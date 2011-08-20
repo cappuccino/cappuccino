@@ -20,8 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CPTextField.j>
-@import <AppKit/_CPPopUpList.j>
+@import "CPTextField.j"
+@import "_CPPopUpList.j"
 
 
 CPComboBoxSelectionDidChangeNotification  = @"CPComboBoxSelectionDidChangeNotification";
@@ -29,9 +29,12 @@ CPComboBoxSelectionIsChangingNotification = @"CPComboBoxSelectionIsChangingNotif
 CPComboBoxWillDismissNotification         = @"CPComboBoxWillDismissNotification";
 CPComboBoxWillPopUpNotification           = @"CPComboBoxWillPopUpNotification";
 
+CPComboBoxStateButtonBordered = CPThemeState("button-bordered");
+
 var CPComboBoxTextSubview = @"text",
     CPComboBoxButtonSubview = @"button",
-    CPComboBoxDefaultNumberOfVisibleItems = 5;
+    CPComboBoxDefaultNumberOfVisibleItems = 5,
+    CPComboBoxFocusWidth = 2;
 
 
 @implementation CPComboBox : CPTextField
@@ -47,6 +50,25 @@ var CPComboBoxTextSubview = @"text",
     BOOL                        _forceSelection;
     BOOL                        _hasVerticalScroller;
     CPString                    _selectedStringValue;
+    BOOL                        _popUpButtonCausedResign;
+}
+
++ (CPString)defaultThemeClass
+{
+    return "combobox";
+}
+
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[CGSizeMake(21.0, 23.0)] forKeys:[@"popup-button-size"]];
+}
+
++ (Class)_binderClassForBinding:(CPString)theBinding
+{
+    if (theBinding === CPContentBinding || theBinding === CPContentValuesBinding)
+        return [_CPComboBoxContentBinder class];
+
+    return [super _binderClassForBinding:theBinding];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -54,14 +76,14 @@ var CPComboBoxTextSubview = @"text",
     self = [super initWithFrame:aFrame];
 
     if (self)
-        [self _init];
+        [self _initComboBox];
 
     return self;
 }
 
-- (void)_init
+- (void)_initComboBox
 {
-    _items = []
+    _items = [CPArray array];
     _listClass = [_CPPopUpList class];
     _usesDataSource = NO;
     _completes = NO;
@@ -70,14 +92,19 @@ var CPComboBoxTextSubview = @"text",
     _forceSelection = NO;
     _hasVerticalScroller = YES;
     _selectedStringValue = @"";
+    _popUpButtonCausedResign = NO;
 
     [self setTarget:self];
     [self setAction:@selector(textFieldAction:)];
 
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(controlTextDidChange:) name:CPControlTextDidChangeNotification object:self];
+    [self setTheme:[CPTheme defaultTheme]];
+    [self setBordered:YES];
+    [self setBezeled:YES];
+    [self setEditable:YES];
+    [self setThemeState:CPComboBoxStateButtonBordered];
 }
 
-//#pragma mark Setting Display Attributes
+#pragma mark Setting Display Attributes
 
 - (BOOL)hasVerticalScroller
 {
@@ -107,13 +134,15 @@ var CPComboBoxTextSubview = @"text",
 
 - (BOOL)isButtonBordered
 {
-    return YES;
-    //return [[self ephemeralSubviewNamed:CPComboBoxButtonSubview] isBordered];
+    return [self hasThemeState:CPComboBoxStateButtonBordered];
 }
 
 - (void)setButtonBordered:(BOOL)flag
 {
-    //[[self ephemeralSubviewNamed:CPComboBoxButtonSubview] setBordered:flag];
+    if (!!flag)
+        [self setThemeState:CPComboBoxStateButtonBordered];
+    else
+        [self unsetThemeState:CPComboBoxStateButtonBordered];
 }
 
 - (float)itemHeight
@@ -124,6 +153,9 @@ var CPComboBoxTextSubview = @"text",
 - (void)setItemHeight:(float)itemHeight
 {
     [[_list tableView] setRowHeight:itemHeight];
+
+    // FIXME: This shouldn't be necessary, but CPTableView does not tile after setRowHeight
+    [[_list tableView] reloadData];
 }
 
 - (int)numberOfVisibleItems
@@ -137,7 +169,7 @@ var CPComboBoxTextSubview = @"text",
     _numberOfVisibleItems = MAX(visibleItems, 1);
 }
 
-//#pragma mark Setting a Delegate
+#pragma mark Setting a Delegate
 
 - (id < CPComboBoxDelegate >)delegate
 {
@@ -197,11 +229,11 @@ var CPComboBoxTextSubview = @"text",
     [super setDelegate:aDelegate];
 }
 
-//#pragma mark Setting a Data Source
+#pragma mark Setting a Data Source
 
 - (id < CPComboBoxDataSource >)dataSource
 {
-    if (_usesDataSource === NO)
+    if (!_usesDataSource)
         [self dataSourceWarningForMethod:_cmd condition:NO];
 
     return _dataSource;
@@ -209,7 +241,7 @@ var CPComboBoxTextSubview = @"text",
 
 - (void)setDataSource:(id < CPComboBoxDataSource >)aSource
 {
-    if (_usesDataSource === NO)
+    if (!_usesDataSource)
         [self dataSourceWarningForMethod:_cmd condition:NO];
     else if (_dataSource !== aSource)
     {
@@ -244,7 +276,7 @@ var CPComboBoxTextSubview = @"text",
     [self reloadData];
 }
 
-//#pragma mark Working with an Internal List
+#pragma mark Working with an Internal List
 
 - (void)addItemsWithObjectValues:(CPArray)objects
 {
@@ -271,8 +303,9 @@ var CPComboBoxTextSubview = @"text",
 }
 
 /*!
-    Returns the internal array of items. Note that this does a deep copy of the array,
-    effectively returning an immutable array to be consistent with Cocoa.
+    Returns the internal array of items. NOTE: Unlike Cocoa the array is mutable,
+    since all arrays in Objective-J are mutable. But you should treat it as
+    an immutable array. Do <b>NOT</b> attempt to change the returned array in any way.
 
     If usesDataSource is YES, a warning is logged and an empty array is returned.
 */
@@ -281,7 +314,7 @@ var CPComboBoxTextSubview = @"text",
     if (_usesDataSource)
         [self dataSourceWarningForMethod:_cmd condition:YES];
 
-    return [[CPArray alloc] initWithArray:_items copyItems:YES];
+    return _items;
 }
 
 - (void)removeAllItems
@@ -316,7 +349,7 @@ var CPComboBoxTextSubview = @"text",
         return _items.length;
 }
 
-//#pragma mark Manipulating the Displayed List
+#pragma mark Manipulating the Displayed List
 
 /*!
     Returns the helper class to be used when creating the pop up list.
@@ -329,7 +362,8 @@ var CPComboBoxTextSubview = @"text",
 /*!
     Sets the helper class to be used when creating the pop up list.
     By default this is _CPPopUpList. If you are using a subclass
-    of _CPPopUpList, call this method with your subclass.
+    of _CPPopUpList, call this method with your subclass <b>before</b>
+    the list is popped up for the first time.
 */
 - (void)setListClass:(Class)aClass
 {
@@ -379,7 +413,7 @@ var CPComboBoxTextSubview = @"text",
         [self makeList];
 
     [self selectMatchingItem];
-    [_list popUpRelativeTo:[self borderFrame]];
+    [_list popUpRelativeToRect:[self borderFrame] view:self offset:CPComboBoxFocusWidth];
 }
 
 /*! @ignore */
@@ -430,6 +464,10 @@ var CPComboBoxTextSubview = @"text",
                       selector:@selector(comboBoxSelectionDidChange:)
                           name:CPTableViewSelectionDidChangeNotification
                         object:tableView];
+
+    // Apply our text style to the list
+    [_list setFont:[self font]];
+    [_list setAlignment:[self alignment]];
 }
 
 /*! @ignore */
@@ -449,21 +487,30 @@ var CPComboBoxTextSubview = @"text",
 
 /*!
     If the list is non-empty, sets the value of the field from the currently selected value of the list
-    and returns YES. IF the list is empty, immediately returns NO.
+    and returns YES. If the list is empty or the list has no selected item, returns NO.
+    @ignore
 */
 - (BOOL)takeStringValueFromList
 {
-    if ([_dataSource numberOfItemsInComboBox:self] === 0)
+    if (_usesDataSource && _dataSource && [_dataSource numberOfItemsInComboBox:self] === 0)
         return NO;
 
-    _selectedStringValue = [_list selectedStringValue] || @"";
+    var selectedStringValue = [_list selectedStringValue];
+
+    if (selectedStringValue === nil)
+        return NO;
+    else
+        _selectedStringValue = selectedStringValue;
 
     [self setStringValue:_selectedStringValue];
+    [self _reverseSetBinding];
+
     return YES;
 }
 
 /*!
-    The field receives this notification when the list is about to be pop up.
+    The receiver receives this notification when the list is about to be pop up.
+    @ignore
 */
 - (void)listWillPopUp:(CPNotification)aNotification
 {
@@ -471,7 +518,8 @@ var CPComboBoxTextSubview = @"text",
 }
 
 /*!
-    The field receives this notification when the list is about to be dismissed.
+    The receiver receives this notification when the list is about to be dismissed.
+    @ignore
 */
 - (void)listWillDismiss:(CPNotification)aNotification
 {
@@ -479,7 +527,8 @@ var CPComboBoxTextSubview = @"text",
 }
 
 /*!
-    The field receives this notification when the list is closed.
+    The receiver receives this notification when the list is closed.
+    @ignore
 */
 - (void)listDidDismiss:(CPNotification)aNotification
 {
@@ -487,14 +536,15 @@ var CPComboBoxTextSubview = @"text",
 }
 
 /*!
-    The field receives this notification when an item in the list is clicked.
+    The receiver receives this notification when an item in the list is clicked.
+    @ignore
 */
 - (void)itemWasClicked:(CPNotification)aNotification
 {
     [self takeStringValueFromList];
 }
 
-//#pragma mark Manipulating the Selection
+#pragma mark Manipulating the Selection
 
 - (void)deselectItemAtIndex:(int)index
 {
@@ -546,7 +596,7 @@ var CPComboBoxTextSubview = @"text",
         [self selectItemAtIndex:index];
 }
 
-//#pragma mark Completing the Text Field
+#pragma mark Completing the Text Field
 
 - (BOOL)completes
 {
@@ -584,14 +634,26 @@ var CPComboBoxTextSubview = @"text",
     an item that is in the item list. If \c flag is \c YES and the user enters a value
     that is not in the list, when the field loses focus it will revert
     to the previous value. If \c flag is \c NO, the user can enter any value they wish.
+
+    Note that this flag is ignored if \ref setStringValue or \ref setObjectValue are
+    called directly.
 */
 - (void)setForceSelection:(BOOL)flag
 {
     _forceSelection = !!flag;
 }
 
-//#pragma mark CPTextField Delegate Methods and Overrides
+#pragma mark CPTextField Delegate Methods and Overrides
 
+/*! @ignore */
+- (void)setObjectValue:(id)object
+{
+    [super setObjectValue:object];
+
+    _selectedStringValue = [self stringValue];
+}
+
+/*! @ignore */
 - (void)keyDown:(CPEvent)anEvent
 {
     // Only if characters are added at the end of the value can completion occur
@@ -611,6 +673,7 @@ var CPComboBoxTextSubview = @"text",
     [super keyDown:anEvent];
 }
 
+/*! @ignore */
 - (void)paste:(id)sender
 {
     if (_completes)
@@ -627,7 +690,8 @@ var CPComboBoxTextSubview = @"text",
     [super paste:sender];
 }
 
-- (void)controlTextDidChange:(CPNotification)anNotification
+/*! @ignore */
+- (void)textDidChange:(CPNotification)aNotification
 {
     /*
         Completion is attempted iff:
@@ -650,8 +714,11 @@ var CPComboBoxTextSubview = @"text",
 
     [self selectMatchingItem];
     _canComplete = NO;
+
+    [super textDidChange:aNotification];
 }
 
+/*! @ignore */
 - (BOOL)performKeyEquivalent:(CPEvent)anEvent
 {
     if ([[self window] firstResponder] === self)
@@ -679,7 +746,9 @@ var CPComboBoxTextSubview = @"text",
             case CPEscapeFunctionKey:
                 if ([self listIsVisible])
                 {
-                    if (_forceSelection)
+                    // If we are forcing a selection and the user has entered a value which is not
+                    // in the list, revert to the most recent valid value.
+                    if (_forceSelection && ([self _inputElement].value !== _selectedStringValue))
                         [self setStringValue:_selectedStringValue];
 
                     [_list close];
@@ -724,25 +793,30 @@ var CPComboBoxTextSubview = @"text",
     return [super performKeyEquivalent:anEvent];
 }
 
+/*! @ignore */
 - (BOOL)resignFirstResponder
 {
+    var buttonCausedResign = _popUpButtonCausedResign;
+
+    _popUpButtonCausedResign = NO;
+
     /*
-        If the list is clicked, we lose focus. In that case the list will refuse first responder,
+        If the list or popup button is clicked, we lose focus. The list will refuse first responder,
         and we refuse to resign. But we still have to manually restore the focus to the input element.
     */
-    if ([_list listWasClicked])
+    if ([_list listWasClicked] || buttonCausedResign)
     {
         /*
             If an item was not clicked (probably the scrollbar), clear the click flag so that future
             clicks outside the list will allow it to close. It isn't so great doing that here, but
             the sequence of events is such that it has to be done here.
         */
-        if (![_list itemWasClicked])
+        if ([_list listWasClicked] && ![_list itemWasClicked])
             [_list setListWasClicked:NO];
 
-//#if PLATFORM(DOM)
+#if PLATFORM(DOM)
         [self _inputElement].focus();
-//#endif
+#endif
 
         return NO;
     }
@@ -765,32 +839,65 @@ var CPComboBoxTextSubview = @"text",
     return [super resignFirstResponder];
 }
 
-/*!
-    We override this so that we can know when the field is about to lose focus
-    because the user pressed tab.
-*/
-- (CPView)nextValidKeyView
+- (void)setFont:(CPFont)aFont
 {
-    if ([self listIsVisible])
-        [self takeStringValueFromList];
-
-    return [super nextValidKeyView];
+    [super setFont:aFont];
+    [_list setFont:aFont];
 }
 
-/*!
-    We override this so that we can know when the field is about to lose focus
-    because the user pressed shift tab.
-*/
-- (CPView)previousValidKeyView
+- (void)setAlignment:(CPTextAlignment)alignment
 {
-    if ([self listIsVisible])
-        [self takeStringValueFromList];
-
-    return [super previousValidKeyView];
+    [super setAlignment:alignment];
+    [_list setAlignment:alignment];
 }
 
-//#pragma mark Internal Helpers
+#pragma mark Pop Up Button Layout
 
+- (CGRect)popupButtonRectForBounds:(CGRect)bounds
+{
+    var inset = [self currentValueForThemeAttribute:@"border-inset"],
+        buttonSize = [self currentValueForThemeAttribute:@"popup-button-size"];
+
+    bounds.origin.x += _CGRectGetMaxX(bounds) - inset.right - buttonSize.width;
+    bounds.origin.y += inset.top;
+    bounds.size.width = buttonSize.width;
+    bounds.size.height = buttonSize.height;
+
+    return bounds;
+}
+
+- (CGRect)rectForEphemeralSubviewNamed:(CPString)aName
+{
+    if (aName === "popup-button-view")
+        return [self popupButtonRectForBounds:[self bounds]];
+
+    return [super rectForEphemeralSubviewNamed:aName];
+}
+
+- (CPView)createEphemeralSubviewNamed:(CPString)aName
+{
+    if (aName === "popup-button-view")
+    {
+        var view = [[_CPComboBoxPopUpButton alloc] initWithFrame:_CGRectMakeZero() comboBox:self];
+
+        return view;
+    }
+
+    return [super createEphemeralSubviewNamed:aName];
+}
+
+- (void)layoutSubviews
+{
+    [super layoutSubviews];
+
+    var popupButtonView = [self layoutEphemeralSubviewNamed:@"popup-button-view"
+                                                 positioned:CPWindowAbove
+                            relativeToEphemeralSubviewNamed:@"content-view"];
+}
+
+#pragma mark Internal Helpers
+
+/*! @ignore */
 - (void)dataSourceWarningForMethod:(SEL)cmd condition:(CPString)flag
 {
     CPLog.warn("-[%s %s] should not be called when usesDataSource is set to %s", [self className], cmd, flag ? "YES" : "NO");
@@ -798,11 +905,15 @@ var CPComboBoxTextSubview = @"text",
 
 - (id)objectValueForItemAtIndex:(int)index
 {
-    return [_dataSource comboBox:self objectValueForItemAtIndex:index];
+    if (_usesDataSource)
+        return [_dataSource comboBox:self objectValueForItemAtIndex:index];
+    else
+        return _items[index];
 }
 
 /*!
     Select the item that matches the current value of the combobox.
+    @ignore
 */
 - (void)selectMatchingItem
 {
@@ -822,11 +933,12 @@ var CPComboBoxTextSubview = @"text",
     // selectRow scrolls the row to visible, if a row is selected scroll it to the top
     if (index !== CPNotFound)
     {
-        [_list scrollRowToTop:index];
+        [_list scrollItemAtIndexToTop:index];
         _selectedStringValue = stringValue;
     }
 }
 
+/*! @ignore */
 - (BOOL)textFieldAction:(id)sender
 {
     if ([self listIsVisible])
@@ -839,46 +951,68 @@ var CPComboBoxTextSubview = @"text",
 }
 
 /*!
-    @ignore
-
     Calculate the frame in base coordinates that will nestle just below the visible border of the text field.
+    @ignore
 */
 - (CGRect)borderFrame
 {
-    // Calculate the focus inset by subtracting the focused bezel inset
-    // from the unfocused bezel inset
-    var unfocusedInset = [self valueForThemeAttribute:@"bezel-inset" inState:CPThemeStateBezeled],
-        focusedInset = [self valueForThemeAttribute:@"bezel-inset" inState:CPThemeStateBezeled | CPThemeStateEditing],
-        focusInset = CGInsetDifference(unfocusedInset, focusedInset),
-        bounds = [self convertRectToBase:[self bounds]];
+    var borderInset = [self valueForThemeAttribute:@"border-inset"],
+        frame = [self bounds];
 
-    bounds.origin.x += focusInset.left;
-    bounds.origin.y += focusInset.top;
-    bounds.size.width -= focusInset.left + focusInset.right;
-    bounds.size.height -= focusInset.top + focusInset.bottom;
+    frame.origin.x += borderInset.left;
+    frame.origin.y += borderInset.top;
+    frame.size.width -= borderInset.left + borderInset.right;
+    frame.size.height -= borderInset.top + borderInset.bottom;
 
-    return bounds;
+    return frame;
+}
+
+/* @ignore */
+- (void)popUpButtonWasClicked
+{
+    if (![self isEnabled])
+        return;
+
+    // If we are currently the first responder, we will be asked to resign when the list pops up.
+    // Set a flag to let resignResponder know that the button was clicked and we should not resign.
+    var firstResponder = [[self window] firstResponder];
+
+    _popUpButtonCausedResign = firstResponder === self;
+
+    if ([self listIsVisible])
+        [_list close];
+    else
+    {
+        if (firstResponder !== self)
+            [[self window] makeFirstResponder:self];
+
+        [self popUpList];
+    }
 }
 
 @end
 
 @implementation CPComboBox (CPComboBoxDelegate)
 
+/*! @ignore */
 - (void)comboBoxSelectionIsChanging:(CPNotification)aNotification
 {
     [[CPNotificationCenter defaultCenter] postNotificationName:CPComboBoxSelectionIsChangingNotification object:self];
 }
 
+/*! @ignore */
 - (void)comboBoxSelectionDidChange:(CPNotification)aNotification
 {
     [[CPNotificationCenter defaultCenter] postNotificationName:CPComboBoxSelectionDidChangeNotification object:self];
 }
 
+/*! @ignore */
 - (void)comboBoxWillPopUp
 {
     [[CPNotificationCenter defaultCenter] postNotificationName:CPComboBoxWillPopUpNotification object:self];
 }
 
+/*! @ignore */
 - (void)comboBoxWillDismiss
 {
     [[CPNotificationCenter defaultCenter] postNotificationName:CPComboBoxWillDismissNotification object:self];
@@ -888,12 +1022,43 @@ var CPComboBoxTextSubview = @"text",
 
 @implementation CPComboBox (CPComboBoxDataSource)
 
+/*! @ignore */
 - (CPString)comboBoxCompletedString:(CPString)uncompletedString
 {
     if ([_dataSource respondsToSelector:@selector(comboBox:completedString:)])
         return [_dataSource comboBox:self completedString:uncompletedString];
     else
         return nil;
+}
+
+@end
+
+@implementation CPComboBox (Bindings)
+
+/*! @ignore */
+- (void)setContentValues:(CPArray)anArray
+{
+    [self setUsesDataSource:NO];
+    [self removeAllItems];
+    [self addItemsWithObjectValues:anArray];
+}
+
+/*! @ignore */
+- (void)setContent:(CPArray)anArray
+{
+    [self setUsesDataSource:NO];
+
+    // Directly nuke _items, [_items removeAll] will trigger an extra call to setContent
+    _items = [];
+
+    var values = [];
+
+    [anArray enumerateObjectsUsingBlock:function(object)
+    {
+        values.push([object description]);
+    }];
+
+    [self addItemsWithObjectValues:values];
 }
 
 @end
@@ -905,7 +1070,8 @@ var CPComboBoxItemsKey                  = @"CPComboBoxItemsKey",
     CPComboBoxUsesDataSourceKey         = @"CPComboBoxUsesDataSourceKey",
     CPComboBoxCompletesKey              = @"CPComboBoxCompletesKey",
     CPComboBoxNumberOfVisibleItemsKey   = @"CPComboBoxNumberOfVisibleItemsKey",
-    CPComboBoxHasVerticalScrollerKey    = @"CPComboBoxHasVerticalScrollerKey";
+    CPComboBoxHasVerticalScrollerKey    = @"CPComboBoxHasVerticalScrollerKey",
+    CPComboBoxButtonBorderedKey         = @"CPComboBoxButtonBorderedKey";
 
 @implementation CPComboBox (CPCoding)
 
@@ -915,7 +1081,7 @@ var CPComboBoxItemsKey                  = @"CPComboBoxItemsKey",
 
     if (self)
     {
-        [self _init];
+        [self _initComboBox];
 
         _items = [aCoder decodeObjectForKey:CPComboBoxItemsKey];
         _list = [aCoder decodeObjectForKey:CPComboBoxListKey];
@@ -925,6 +1091,7 @@ var CPComboBoxItemsKey                  = @"CPComboBoxItemsKey",
         _completes = [aCoder decodeBoolForKey:CPComboBoxCompletesKey];
         _numberOfVisibleItems = [aCoder decodeIntForKey:CPComboBoxNumberOfVisibleItemsKey];
         _hasVerticalScroller = [aCoder decodeBoolForKey:CPComboBoxHasVerticalScrollerKey];
+        [self setButtonBordered:[aCoder decodeBoolForKey:CPComboBoxButtonBorderedKey]];
     }
 
     return self;
@@ -942,6 +1109,7 @@ var CPComboBoxItemsKey                  = @"CPComboBoxItemsKey",
     [aCoder encodeBool:_completes forKey:CPComboBoxCompletesKey];
     [aCoder encodeInt:_numberOfVisibleItems forKey:CPComboBoxNumberOfVisibleItemsKey];
     [aCoder encodeBool:_hasVerticalScroller forKey:CPComboBoxHasVerticalScrollerKey];
+    [aCoder encodeBool:[self isButtonBordered] forKey:CPComboBoxButtonBorderedKey];
 }
 
 @end
@@ -951,3 +1119,90 @@ var CPComboBoxCompletionTest = function(object, index, context)
 {
     return object.toString().indexOf(context) === 0;
 };
+
+
+/*
+    This class is only used for CPContentBinding and CPContentValuesBinding.
+*/
+@implementation _CPComboBoxContentBinder : CPBinder
+
+- (void)setValueFor:(CPString)theBinding
+{
+    var destination = [_info objectForKey:CPObservedObjectKey],
+        keyPath = [_info objectForKey:CPObservedKeyPathKey],
+        options = [_info objectForKey:CPOptionsKey],
+        newValue = [destination valueForKeyPath:keyPath],
+        isPlaceholder = CPIsControllerMarker(newValue);
+
+    [_source removeAllItems];
+
+    if (isPlaceholder)
+    {
+        // By default the placeholders will all result in an empty list
+        switch (newValue)
+        {
+            case CPMultipleValuesMarker:
+                newValue = [options objectForKey:CPMultipleValuesPlaceholderBindingOption] || [];
+                break;
+
+            case CPNoSelectionMarker:
+                newValue = [options objectForKey:CPNoSelectionPlaceholderBindingOption] || [];
+                break;
+
+            case CPNotApplicableMarker:
+                if ([options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
+                    [CPException raise:CPGenericException
+                                reason:@"can't transform non applicable key on: "+ _source + " value: " + newValue];
+
+                newValue = [options objectForKey:CPNotApplicablePlaceholderBindingOption] || [];
+                break;
+
+            case CPNullMarker:
+                newValue = [options objectForKey:CPNullPlaceholderBindingOption] || [];
+                break;
+        }
+
+        if (![newValue isKindOfClass:[CPArray class]])
+            newValue = [];
+    }
+    else
+        newValue = [self transformValue:newValue withOptions:options];
+
+    switch (theBinding)
+    {
+        case CPContentBinding:          [_source setContent:newValue];
+                                        break;
+
+        case CPContentValuesBinding:    [_source setContentValues:newValue];
+                                        break;
+    }
+}
+
+@end
+
+@implementation _CPComboBoxPopUpButton : CPView
+{
+    CPComboBox _comboBox;
+}
+
+- (id)initWithFrame:(CGRect)aFrame comboBox:(CPComboBox)aComboBox
+{
+    self = [super initWithFrame:aFrame];
+
+    if (self)
+        _comboBox = aComboBox;
+
+    return self;
+}
+
+- (void)mouseDown:(CPEvent)theEvent
+{
+    [_comboBox popUpButtonWasClicked];
+}
+
+- (BOOL)acceptsFirstResponder
+{
+    return NO;
+}
+
+@end

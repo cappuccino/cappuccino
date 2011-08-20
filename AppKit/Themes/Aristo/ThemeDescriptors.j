@@ -801,7 +801,7 @@ var themedButtonValues = nil,
 
         placeholderColor = [CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0];
 
-    // Global for reuse by CPTokenField.
+    // Global for reuse by subclasses
     themedTextFieldValues =
     [
         [@"vertical-alignment", CPTopVerticalTextAlignment,         CPThemeStateBezeled],
@@ -814,6 +814,9 @@ var themedButtonValues = nil,
         [@"content-inset",      CGInsetMake(6.0, 7.0, 7.0, 8.0),    CPThemeStateBezeled | CPThemeStateEditing],
         [@"bezel-inset",        CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled],
         [@"bezel-inset",        CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled | CPThemeStateEditing],
+
+        // Because the bezel artwork does not use insets, provide an inset to the border
+        [@"border-inset",       CGInsetMake(3.0, 3.0, 3.0, 3.0),    CPThemeStateBezeled],
 
         [@"text-color",         placeholderColor,                   CPTextFieldStatePlaceholder],
 
@@ -996,6 +999,95 @@ var themedButtonValues = nil,
     [self registerThemeValues:themeValues forView:button];
 
     return button;
+}
+
++ (CPComboBox)themedComboBox
+{
+    var combo = [[CPComboBox alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 29.0)],
+
+        bezelColor = PatternColor(
+            [
+                ["combobox-bezel-left.png", 6.0, 29.0],
+                ["combobox-bezel-center.png", 1.0, 29.0],
+                ["combobox-bezel-right.png", 24.0, 29.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelFocusedColor = PatternColor(
+            [
+                ["combobox-bezel-focused-left.png", 6.0, 29.0],
+                ["combobox-bezel-focused-center.png", 1.0, 29.0],
+                ["combobox-bezel-focused-right.png", 24.0, 29.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelDisabledColor = PatternColor(
+            [
+                ["combobox-bezel-disabled-left.png", 6.0, 29.0],
+                ["combobox-bezel-disabled-center.png", 1.0, 29.0],
+                ["combobox-bezel-disabled-right.png", 24.0, 29.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelNoBorderColor = PatternColor(
+            [
+                ["combobox-bezel-no-border-left.png", 6.0, 29.0],
+                ["combobox-bezel-no-border-center.png", 1.0, 29.0],
+                ["combobox-bezel-no-border-right.png", 24.0, 29.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelNoBorderFocusedColor = PatternColor(
+            [
+                ["combobox-bezel-no-border-focused-left.png", 6.0, 29.0],
+                ["combobox-bezel-no-border-focused-center.png", 1.0, 29.0],
+                ["combobox-bezel-no-border-focused-right.png", 24.0, 29.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelNoBorderDisabledColor = PatternColor(
+            [
+                ["combobox-bezel-no-border-disabled-left.png", 6.0, 29.0],
+                ["combobox-bezel-no-border-disabled-center.png", 1.0, 29.0],
+                ["combobox-bezel-no-border-disabled-right.png", 24.0, 29.0]
+            ],
+            PatternIsHorizontal),
+
+        overrides =
+        [
+            [@"bezel-color",        bezelColor,                     CPThemeStateBezeled | CPComboBoxStateButtonBordered],
+            [@"bezel-color",        bezelFocusedColor,              CPThemeStateBezeled | CPComboBoxStateButtonBordered | CPThemeStateEditing],
+            [@"bezel-color",        bezelDisabledColor,             CPThemeStateBezeled | CPComboBoxStateButtonBordered | CPThemeStateDisabled],
+
+            [@"bezel-color",        bezelNoBorderColor,             CPThemeStateBezeled],
+            [@"bezel-color",        bezelNoBorderFocusedColor,      CPThemeStateBezeled | CPThemeStateEditing],
+            [@"bezel-color",        bezelNoBorderDisabledColor,     CPThemeStateBezeled | CPThemeStateDisabled],
+
+            // The right inset has to make room for the popup button
+            [@"content-inset",      CGInsetMake(8.0, 28.0, 5.0, 8.0),    CPThemeStateBezeled | CPComboBoxStateButtonBordered],
+            [@"content-inset",      CGInsetMake(7.0, 26.0, 6.0, 8.0),    CPThemeStateBezeled | CPComboBoxStateButtonBordered | CPThemeStateEditing],
+
+            [@"content-inset",      CGInsetMake(8.0, 25.0, 5.0, 8.0),    CPThemeStateBezeled],
+            [@"content-inset",      CGInsetMake(7.0, 23.0, 6.0, 8.0),    CPThemeStateBezeled | CPThemeStateEditing],
+
+            [@"content-inset",      CGInsetMake(0.0, 15.0, 0.0, 5.0),    CPThemeStateTableDataView],
+            [@"content-inset",      CGInsetMake(6.0, 20.0, 6.0, 5.0),    CPThemeStateTableDataView | CPThemeStateEditing],
+
+            [@"content-inset",      CGInsetMake(0.0, 20.0, 0.0, 5.0),    CPThemeStateTableDataView | CPComboBoxStateButtonBordered],
+            [@"content-inset",      CGInsetMake(6.0, 25.0, 6.0, 5.0),    CPThemeStateTableDataView | CPComboBoxStateButtonBordered | CPThemeStateEditing],
+
+            [@"content-inset",      CGInsetMake(0.0, 20.0, 0.0, 5.0),    CPThemeStateTableDataView],
+
+            // Because combo box uses a thre-part bezel, the height is fixed
+            [@"min-size",           CGSizeMake(-1, 29.0)],
+            [@"max-size",           CGSizeMake(-1, 29.0)],
+
+            [@"popup-button-size",  CGSizeMake(21.0, 23.0)]
+        ];
+
+    [self registerThemeValues:overrides forView:combo inherit:themedTextFieldValues];
+
+    return combo;
 }
 
 + (CPRadioButton)themedRadioButton
