@@ -45,6 +45,7 @@ CPSoundPlayBackStatePause   = 2;
     CPString            _name       @accessors(property=name);
     id                  _delegate   @accessors(property=delegate);
 
+    BOOL                _playRequestBeforeLoad;
     HTMLAudioElement    _audioTag;
     int                 _loadStatus;
     int                 _playBackStatus;
@@ -61,6 +62,7 @@ CPSoundPlayBackStatePause   = 2;
         _loops = NO;
         _audioTag = document.createElement("audio");
         _audioTag.preload = YES;
+        _playRequestBeforeLoad = NO;
 
         _audioTag.addEventListener("canplay", function()
         {
@@ -138,6 +140,12 @@ CPSoundPlayBackStatePause   = 2;
 - (void)_soundDidload
 {
     _loadStatus = CPSoundLoadStateCanBePlayed;
+
+    if (_playRequestBeforeLoad)
+    {
+        _playRequestBeforeLoad = NO;
+        [self play];
+    }
 }
 
 /*! @ignore
@@ -167,6 +175,12 @@ CPSoundPlayBackStatePause   = 2;
 */
 - (BOOL)play
 {
+    if (_loadStatus === CPSoundLoadStateLoading)
+    {
+        _playRequestBeforeLoad = YES;
+        return YES;
+    }
+
     if ((_loadStatus !== CPSoundLoadStateCanBePlayed)
         || (_playBackStatus === CPSoundPlayBackStatePlay))
         return NO;
