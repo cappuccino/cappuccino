@@ -125,6 +125,10 @@
     [combo setCompletes:YES];
     [contentView addSubview:combo];
 
+    var textfield = [CPTextField textFieldWithStringValue:@"" placeholder:@"" width:200];
+    [textfield setFrameOrigin:CGPointMake(250, 290)];
+    [contentView addSubview:textfield];
+
     var center = [CPNotificationCenter defaultCenter];
 
     [center addObserver:self selector:@selector(comboNote:) name:CPComboBoxSelectionDidChangeNotification object:combo];

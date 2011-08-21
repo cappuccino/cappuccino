@@ -49,6 +49,13 @@
     [newFieldEnabler setState:CPOnState];
     [contentView addSubview:newFieldEnabler];
 
+    var bigField = [CPTextField textFieldWithStringValue:@"" placeholder:@"Big new text field" width:200];
+
+    [bigField setFrameOrigin:CGPointMake(50, 100)];
+    [bigField setFont:[CPFont systemFontOfSize:16]];
+    [bigField sizeToFit];
+    [contentView addSubview:bigField];
+
     var bezelColor = CPColorWithImages(
             [
                 ["textfield-bezel-square-0.png", 3.0, 4.0],
@@ -103,18 +110,18 @@
     oldField = [CPTextField textFieldWithStringValue:@"" placeholder:@"Old text field" width:200];
 
     [oldField registerThemeValues:themeValues];
-    [oldField setFrameOrigin:CGPointMake(50, 100)];
+    [oldField setFrameOrigin:CGPointMake(50, 150)];
     [contentView addSubview:oldField];
 
     oldFieldEnabler = [CPCheckBox checkBoxWithTitle:@"Enabled"];
 
-    [oldFieldEnabler setFrameOrigin:CGPointMake(270, 104)];
+    [oldFieldEnabler setFrameOrigin:CGPointMake(270, 154)];
     [oldFieldEnabler setTarget:self];
     [oldFieldEnabler setAction:@selector(enableField:)];
     [oldFieldEnabler setState:CPOnState];
     [contentView addSubview:oldFieldEnabler];
 
-    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(50, 150, 200, 200)],
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(50, 200, 200, 200)],
         table = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 200, 200)],
         column = [[CPTableColumn alloc] initWithIdentifier:@"1"];
 

@@ -507,31 +507,32 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
 
     var contentRect = [self contentRectForBounds:[self bounds]],
-        verticalAlign = [self currentValueForThemeAttribute:"vertical-alignment"];
+        verticalAlign = [self currentValueForThemeAttribute:"vertical-alignment"],
+        lineHeight = [font defaultLineHeightForFont];
 
     switch (verticalAlign)
     {
         case CPTopVerticalTextAlignment:
-            var topPoint = (_CGRectGetMinY(contentRect) + 1) + "px"; // for the same reason we have a -1 for the left, we also have a + 1 here
+            var topPoint = _CGRectGetMinY(contentRect) + "px"; // for the same reason we have a -1 for the left, we also have a + 1 here
             break;
 
         case CPCenterVerticalTextAlignment:
-            var topPoint = (_CGRectGetMidY(contentRect) - (font._lineHeight / 2) + 1) + "px";
+            var topPoint = (_CGRectGetMidY(contentRect) - (lineHeight / 2)) + "px";
             break;
 
         case CPBottomVerticalTextAlignment:
-            var topPoint = (_CGRectGetMaxY(contentRect) - font._lineHeight) + "px";
+            var topPoint = (_CGRectGetMaxY(contentRect) - lineHeight) + "px";
             break;
 
         default:
-            var topPoint = (_CGRectGetMinY(contentRect) + 1) + "px";
+            var topPoint = _CGRectGetMinY(contentRect) + "px";
             break;
     }
 
     element.style.top = topPoint;
     element.style.left = (_CGRectGetMinX(contentRect) - 1) + "px"; // why -1?
     element.style.width = _CGRectGetWidth(contentRect) + "px";
-    element.style.height = font._lineHeight + "px"; // private ivar for the line height of the DOM text at this particular size
+    element.style.height = lineHeight + "px";
 
     _DOMElement.appendChild(element);
 
@@ -1020,15 +1021,17 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     var frameSize = [self frameSize],
         contentInset = [self currentValueForThemeAttribute:@"content-inset"],
+        borderInset = [self currentValueForThemeAttribute:@"border-inset"],
+        textInset = CGInsetUnion(contentInset, borderInset),
         minSize = [self currentValueForThemeAttribute:@"min-size"],
         maxSize = [self currentValueForThemeAttribute:@"max-size"],
         lineBreakMode = [self lineBreakMode],
         text = (_stringValue || @" "),
-        textSize = _CGSizeMakeCopy(frameSize),
+        textSize = CGSizeMakeCopy(frameSize),
         font = [self currentValueForThemeAttribute:@"font"];
 
-    textSize.width -= contentInset.left + contentInset.right;
-    textSize.height -= contentInset.top + contentInset.bottom;
+    textSize.width -= textInset.left + textInset.right;
+    textSize.height -= textInset.top + textInset.bottom;
 
     if (frameSize.width !== 0 &&
         ![self isBezeled]     &&
@@ -1039,7 +1042,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     else
         textSize = [text sizeWithFont:font];
 
-    frameSize.height = textSize.height + contentInset.top + contentInset.bottom;
+    frameSize.height = textSize.height + textInset.top + textInset.bottom;
 
     if ([self isBezeled])
     {
@@ -1052,7 +1055,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             frameSize.height = MIN(frameSize.height, maxSize.height);
     }
     else
-        frameSize.width = textSize.width + contentInset.left + contentInset.right;
+        frameSize.width = textSize.width + textInset.left + textInset.righttextInset;
 
     frameSize.width = MAX(frameSize.width, minSize.width);
 
@@ -1294,15 +1297,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (CGRect)contentRectForBounds:(CGRect)bounds
 {
-    var contentInset = [self currentValueForThemeAttribute:@"content-inset"];
+    var contentInset = [self currentValueForThemeAttribute:@"content-inset"] || CGInsetMakeZero(),
+        borderInset = [self currentValueForThemeAttribute:@"border-inset"] || CGInsetMakeZero(),
+        textInset = CGInsetUnion(contentInset, borderInset);
 
-    if (!contentInset)
-        return bounds;
-
-    bounds.origin.x += contentInset.left;
-    bounds.origin.y += contentInset.top;
-    bounds.size.width -= contentInset.left + contentInset.right;
-    bounds.size.height -= contentInset.top + contentInset.bottom;
+    bounds.origin.x += textInset.left;
+    bounds.origin.y += textInset.top;
+    bounds.size.width -= textInset.left + textInset.right;
+    bounds.size.height -= textInset.top + textInset.bottom;
 
     return bounds;
 }
