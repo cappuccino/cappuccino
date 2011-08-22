@@ -117,7 +117,7 @@ CPCriticalAlertStyle        = 2;
 */
 + (CPAlert)alertWithMessageText:(CPString)aMessage defaultButton:(CPString)defaultButtonTitle alternateButton:(CPString)alternateButtonTitle otherButton:(CPString)otherButtonTitle informativeTextWithFormat:(CPString)informativeText
 {
-    var alert = [[CPAlert alloc] init];
+    var alert = [[self alloc] init];
 
     [alert setMessageText:aMessage];
     [alert addButtonWithTitle:defaultButtonTitle];
@@ -142,7 +142,7 @@ CPCriticalAlertStyle        = 2;
 */
 + (CPAlert)alertWithError:(CPString)anErrorMessage
 {
-    var alert = [[CPAlert alloc] init];
+    var alert = [[self alloc] init];
 
     [alert setMessageText:anErrorMessage];
     [alert setAlertStyle:CPCriticalAlertStyle];
