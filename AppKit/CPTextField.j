@@ -1055,7 +1055,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             frameSize.height = MIN(frameSize.height, maxSize.height);
     }
     else
-        frameSize.width = textSize.width + textInset.left + textInset.righttextInset;
+        frameSize.width = textSize.width + textInset.left + textInset.right;
 
     frameSize.width = MAX(frameSize.width, minSize.width);
 

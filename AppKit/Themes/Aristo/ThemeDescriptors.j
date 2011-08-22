@@ -830,7 +830,7 @@ var themedButtonValues = nil,
         [@"text-color",         [CPColor whiteColor],                CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
         [@"font",               [CPFont boldSystemFontOfSize:12.0],  CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
         [@"text-color",         [CPColor blackColor],                CPThemeStateTableDataView | CPThemeStateEditing],
-        [@"content-inset",      CGInsetMake(5.0, 5.0, 4.0, 5.0),     CPThemeStateTableDataView | CPThemeStateEditing],
+        [@"content-inset",      CGInsetMake(5.0, 5.0, 4.0, 2.0),     CPThemeStateTableDataView | CPThemeStateEditing],
         [@"font",               [CPFont systemFontOfSize:12.0],      CPThemeStateTableDataView | CPThemeStateEditing],
         [@"bezel-inset",        CGInsetMake(-1.0, -1.0, -1.0, -1.0), CPThemeStateTableDataView | CPThemeStateEditing],
 
@@ -1085,20 +1085,11 @@ var themedButtonValues = nil,
             [@"bezel-color",        bezelNoBorderFocusedColor,      CPThemeStateBezeled | CPThemeStateEditing],
             [@"bezel-color",        bezelNoBorderDisabledColor,     CPThemeStateBezeled | CPThemeStateDisabled],
 
-            // The right inset has to make room for the popup button
-            [@"content-inset",      CGInsetMake(5.0, 26.0, 4.0, 5.0),    CPThemeStateBezeled | CPComboBoxStateButtonBordered],
-            [@"content-inset",      CGInsetMake(5.0, 24.0, 4.0, 5.0),    CPThemeStateBezeled | CPComboBoxStateButtonBordered | CPThemeStateEditing],
+            // The right border inset has to make room for the popup button
+            [@"border-inset",       CGInsetMake(3.0, 21.0, 3.0, 3.0),    CPThemeStateBezeled | CPComboBoxStateButtonBordered],
+            [@"border-inset",       CGInsetMake(3.0, 17.0, 3.0, 3.0),    CPThemeStateBezeled],
 
-            [@"content-inset",      CGInsetMake(5.0, 22.0, 4.0, 5.0),    CPThemeStateBezeled],
-            [@"content-inset",      CGInsetMake(5.0, 20.0, 4.0, 5.0),    CPThemeStateBezeled | CPThemeStateEditing],
-
-            [@"content-inset",      CGInsetMake(5.0, 26.0, 4.0, 5.0),    CPThemeStateTableDataView | CPComboBoxStateButtonBordered],
-            [@"content-inset",      CGInsetMake(5.0, 24.0, 4.0, 5.0),    CPThemeStateTableDataView | CPComboBoxStateButtonBordered | CPThemeStateEditing],
-
-            [@"content-inset",      CGInsetMake(5.0, 25.0, 4.0, 5.0),    CPThemeStateTableDataView],
-            [@"content-inset",      CGInsetMake(5.0, 23.0, 4.0, 5.0),    CPThemeStateTableDataView | CPThemeStateEditing],
-
-            // Because combo box uses a thre-part bezel, the height is fixed
+            // Because combo box uses a three-part bezel, the height is fixed
             [@"min-size",           CGSizeMake(0, 29.0)],
             [@"max-size",           CGSizeMake(-1, 29.0)],
 
