@@ -22,7 +22,7 @@
         button = [[CPButton alloc] initWithFrame:CGRectMake(15, 40, 100, 30)],
         repeatButton = [[CPButton alloc] initWithFrame:CGRectMake(110, 40, 100, 30)];
 
-    [label setStringValue:"Use the buttons to play a an echoy blippy sound."];
+    [label setStringValue:"Use the buttons to play an echoy blippy sound."];
     [contentView addSubview:label];
 
     [button setTitle:"Play Cyber-jump-powerup Sound"];
