@@ -1297,9 +1297,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (CGRect)contentRectForBounds:(CGRect)bounds
 {
-    var contentInset = [self currentValueForThemeAttribute:@"content-inset"] || CGInsetMakeZero(),
-        borderInset = [self currentValueForThemeAttribute:@"border-inset"] || CGInsetMakeZero(),
-        textInset = CGInsetUnion(contentInset, borderInset);
+    var borderInset = [self borderInset],
+        contentInset = [self currentValueForThemeAttribute:@"content-inset"],
+        textInset = CGInsetUnion(borderInset, contentInset);
 
     bounds.origin.x += textInset.left;
     bounds.origin.y += textInset.top;
@@ -1322,6 +1322,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     bounds.size.height -= bezelInset.top + bezelInset.bottom;
 
     return bounds;
+}
+
+- (CGInset)borderInset
+{
+    var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"],
+        borderInset = [self currentValueForThemeAttribute:@"border-inset"];
+
+    return CGInsetUnion(bezelInset, borderInset);
 }
 
 - (CGRect)rectForEphemeralSubviewNamed:(CPString)aName

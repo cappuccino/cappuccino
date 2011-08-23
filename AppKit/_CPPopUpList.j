@@ -178,7 +178,7 @@ var ListColumnIdentifier = @"1";
     [table setColumnAutoresizingStyle:CPTableViewLastColumnOnlyAutoresizingStyle];
     [table setUsesAlternatingRowBackgroundColors:NO];
     [table setAllowsMultipleSelection:NO];
-    [table setIntercellSpacing:CGSizeMake(0, 0)];
+    [table setIntercellSpacing:CGSizeMake(3, 2)];
     [table setTarget:self];
     [table setDoubleAction:@selector(tableViewClickAction:)];
     [table setAction:@selector(tableViewClickAction:)];
@@ -284,7 +284,8 @@ var ListColumnIdentifier = @"1";
     if ([_panel isVisible])
         return;
 
-    var frame = CGRectMake(0, 0, MAX(_listWidth, CGRectGetWidth(aRect)), [self rowHeightForTableView:_tableView] * [self numberOfRowsInTableView:_tableView]);
+    var rowRect = [_tableView rectOfRow:[self numberOfRowsInTableView:_tableView] - 1],
+        frame = CGRectMake(0, 0, MAX(_listWidth, CGRectGetWidth(aRect)), CGRectGetMaxY(rowRect));
 
     // Place the frame relative to aRect and constrain it to the screen bounds
     frame = [self constrain:frame relativeToRect:aRect view:aView offset:offset];
@@ -310,7 +311,7 @@ var ListColumnIdentifier = @"1";
     // Convert from the view's coordinate system to the coordinate system of the primary platform window
     var baseOrigin = [aView convertPointToBase:aRect.origin],
         windowOrigin = [[aView window] convertBaseToPlatformWindow:baseOrigin],
-        rowHeight = [self rowHeightForTableView:_tableView],
+        rowHeight = [self rowHeightForTableView:_tableView] + [_tableView intercellSpacing].height,
 
         // Be sure to clip the number of displayed rows to what the field wants
         numberOfRows = MIN([self numberOfRowsInTableView:_tableView], [_delegate numberOfVisibleItems]),

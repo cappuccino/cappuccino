@@ -34,7 +34,7 @@ CPComboBoxStateButtonBordered = CPThemeState("button-bordered");
 var CPComboBoxTextSubview = @"text",
     CPComboBoxButtonSubview = @"button",
     CPComboBoxDefaultNumberOfVisibleItems = 5,
-    CPComboBoxFocusWidth = 2;
+    CPComboBoxFocusRingWidth = -1;
 
 
 @implementation CPComboBox : CPTextField
@@ -60,7 +60,7 @@ var CPComboBoxTextSubview = @"text",
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[CGSizeMake(21.0, 23.0)] forKeys:[@"popup-button-size"]];
+    return [CPDictionary dictionaryWithObjectsAndKeys:_CGSizeMake(21.0, 29.0), @"popup-button-size"];
 }
 
 + (Class)_binderClassForBinding:(CPString)theBinding
@@ -413,7 +413,17 @@ var CPComboBoxTextSubview = @"text",
         [self makeList];
 
     [self selectMatchingItem];
-    [_list popUpRelativeToRect:[self borderFrame] view:self offset:CPComboBoxFocusWidth];
+
+    // Note the offset here is 1 less than the focus ring width because the outer edge
+    // of the focus ring is very transparent and it looks better if the list is closer.
+    if (CPComboBoxFocusRingWidth < 0)
+    {
+        var inset = [self borderInset];
+
+        CPComboBoxFocusRingWidth = inset.top;
+    }
+
+    [_list popUpRelativeToRect:[self borderFrame] view:self offset:CPComboBoxFocusRingWidth - 1];
 }
 
 /*! @ignore */
@@ -855,11 +865,15 @@ var CPComboBoxTextSubview = @"text",
 
 - (CGRect)popupButtonRectForBounds:(CGRect)bounds
 {
-    var inset = [self currentValueForThemeAttribute:@"border-inset"],
+    var inset = [self borderInset],
         buttonSize = [self currentValueForThemeAttribute:@"popup-button-size"];
 
-    bounds.origin.x += _CGRectGetMaxX(bounds) - inset.right - buttonSize.width;
+    // The left edge of the button is the right edge of the content border rect
+    bounds.origin.x = CGRectGetMaxX(bounds) - inset.right;
+
+    // The top edge of the button is the top edge of the content border rect
     bounds.origin.y += inset.top;
+
     bounds.size.width = buttonSize.width;
     bounds.size.height = buttonSize.height;
 
@@ -956,13 +970,14 @@ var CPComboBoxTextSubview = @"text",
 */
 - (CGRect)borderFrame
 {
-    var borderInset = [self valueForThemeAttribute:@"border-inset"],
+    var inset = [self borderInset],
+        buttonSize = [self currentValueForThemeAttribute:@"popup-button-size"],
         frame = [self bounds];
 
-    frame.origin.x += borderInset.left;
-    frame.origin.y += borderInset.top;
-    frame.size.width -= borderInset.left + borderInset.right;
-    frame.size.height -= borderInset.top + borderInset.bottom;
+    frame.origin.x += inset.left;
+    frame.origin.y += inset.top;
+    frame.size.width -= inset.left + inset.right - buttonSize.width;
+    frame.size.height -= inset.top + inset.bottom;
 
     return frame;
 }
