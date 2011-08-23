@@ -813,29 +813,27 @@ var themedButtonValues = nil,
 
         // no border
         [@"bezel-inset",        CGInsetMake(0.0, 0.0, 0.0, 0.0)],
-        [@"border-inset",       CGInsetMake(0.0, 0.0, 0.0, 0.0)],
         [@"content-inset",      CGInsetMake(0.0, 0.0, 0.0, 0.0)],
 
         // with border
         [@"bezel-inset",        CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled],
         [@"bezel-inset",        CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled | CPThemeStateEditing],
         [@"border-inset",       CGInsetMake(3.0, 3.0, 3.0, 3.0),    CPThemeStateBezeled],
-        [@"content-inset",      CGInsetMake(5.0, 5.0, 4.0, 5.0),    CPThemeStateBezeled],
-        [@"content-inset",      CGInsetMake(5.0, 5.0, 4.0, 5.0),    CPThemeStateBezeled | CPThemeStateEditing],
+        [@"content-inset",      CGInsetMake(8.0, 8.0, 7.0, 8.0),    CPThemeStateBezeled],
+        [@"content-inset",      CGInsetMake(8.0, 8.0, 7.0, 8.0),    CPThemeStateBezeled | CPThemeStateEditing],
 
         [@"text-color",         textDisabledColor,                  CPThemeStateBezeled | CPThemeStateDisabled],
         [@"text-color",         placeholderColor,                   CPTextFieldStatePlaceholder],
 
         [@"line-break-mode",    CPLineBreakByTruncatingTail,        CPThemeStateTableDataView],
         [@"vertical-alignment", CPCenterVerticalTextAlignment,      CPThemeStateTableDataView],
-        [@"border-inset",       CGInsetMake(3.0, 3.0, 3.0, 3.0),    CPThemeStateTableDataView],
-        [@"content-inset",      CGInsetMake(0.0, 0.0, 0.0, 3.0),    CPThemeStateTableDataView],
+        [@"content-inset",      CGInsetMake(0.0, 0.0, 0.0, 4.0),    CPThemeStateTableDataView],
 
         [@"text-color",         [CPColor colorWithCalibratedWhite:51.0 / 255.0 alpha:1.0], CPThemeStateTableDataView],
         [@"text-color",         [CPColor whiteColor],                CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
         [@"font",               [CPFont boldSystemFontOfSize:12.0],  CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
         [@"text-color",         [CPColor blackColor],                CPThemeStateTableDataView | CPThemeStateEditing],
-        [@"content-inset",      CGInsetMake(5.0, 5.0, 4.0, 4.0),     CPThemeStateTableDataView | CPThemeStateEditing],
+        [@"content-inset",      CGInsetMake(8.0, 8.0, 7.0, 4.0),     CPThemeStateTableDataView | CPThemeStateEditing],
         [@"font",               [CPFont systemFontOfSize:12.0],      CPThemeStateTableDataView | CPThemeStateEditing],
         [@"bezel-inset",        CGInsetMake(-1.0, -1.0, -1.0, -1.0), CPThemeStateTableDataView | CPThemeStateEditing],
 
@@ -899,11 +897,8 @@ var themedButtonValues = nil,
             [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
 
             // There is one extra empty pixel at the bottom for size compatibility with an earlier version.
-            [@"border-inset",   CGInsetMake(3.0, 10.0, 4.0, 10.0),    CPTextFieldStateRounded | CPThemeStateBezeled],
-            [@"border-inset",   CGInsetMake(3.0, 10.0, 4.0, 10.0),    CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
-
-            [@"content-inset",  CGInsetMake(4.0, 5.0, 3.0, 5.0),  CPTextFieldStateRounded | CPThemeStateBezeled],
-            [@"content-inset",  CGInsetMake(4.0, 5.0, 3.0, 5.0),  CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
+            [@"content-inset",  CGInsetMake(8.0, 15.0, 8.0, 15.0),  CPTextFieldStateRounded | CPThemeStateBezeled],
+            [@"content-inset",  CGInsetMake(8.0, 15.0, 8.0, 15.0),  CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
 
             [@"text-color",     placeholderColor,       CPTextFieldStateRounded | CPTextFieldStatePlaceholder],
 
@@ -938,16 +933,16 @@ var themedButtonValues = nil,
         overrides =
         [
             // Non-bezeled token field with tokens
-            [@"content-inset", CGInsetMake(2.0, 5.0, 1.0, 5.0)],
+            [@"content-inset", CGInsetMake(5.0, 8.0, 4.0, 8.0)],
 
             // Non-bezeled token field with no tokens
-            [@"content-inset", CGInsetMake(4.0, 5.0, 3.0, 5.0), CPTextFieldStatePlaceholder],
+            [@"content-inset", CGInsetMake(7.0, 8.0, 6.0, 8.0), CPTextFieldStatePlaceholder],
 
             // Bezeled token field with tokens
-            [@"content-inset", CGInsetMake(3.0, 5.0, 2.0, 5.0), CPThemeStateBezeled],
+            [@"content-inset", CGInsetMake(6.0, 8.0, 5.0, 8.0), CPThemeStateBezeled],
 
             // Bezeled token field with no tokens
-            [@"content-inset", CGInsetMake(4.0, 5.0, 3.0, 5.0), CPThemeStateBezeled | CPTextFieldStatePlaceholder],
+            [@"content-inset", CGInsetMake(8.0, 8.0, 7.0, 8.0), CPThemeStateBezeled | CPTextFieldStatePlaceholder],
         ];
 
     [self registerThemeValues:overrides forView:tokenfield inherit:themedTextFieldValues];
@@ -987,8 +982,7 @@ var themedButtonValues = nil,
             [@"text-color",     textHighlightedColor,               CPThemeStateHighlighted],
 
             [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled],
-            [@"border-inset",   CGInsetMake(1.0, 23.0, 3.0, 15.0),  CPThemeStateBezeled],
-            [@"content-inset",  CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled],
+            [@"content-inset",  CGInsetMake(1.0, 23.0, 3.0, 15.0),  CPThemeStateBezeled],
 
             // Minimum height == maximum height since tokens are fixed height.
             [@"min-size",       CGSizeMake(0.0, 19.0)],
@@ -1091,8 +1085,9 @@ var themedButtonValues = nil,
             [@"bezel-color",        bezelNoBorderDisabledColor,     CPThemeStateBezeled | CPThemeStateDisabled],
 
             // The right border inset has to make room for the focus ring and popup button
-            [@"border-inset",       CGInsetMake(3.0, 24.0, 3.0, 3.0),    CPThemeStateBezeled | CPComboBoxStateButtonBordered],
-            [@"border-inset",       CGInsetMake(3.0, 21.0, 3.0, 3.0),    CPThemeStateBezeled],
+            [@"content-inset",      CGInsetMake(8.0, 27.0, 7.0, 8.0),    CPThemeStateBezeled | CPComboBoxStateButtonBordered],
+            [@"content-inset",      CGInsetMake(8.0, 24.0, 7.0, 8.0),    CPThemeStateBezeled],
+            [@"content-inset",      CGInsetMake(8.0, 24.0, 7.0, 8.0),    CPThemeStateBezeled | CPThemeStateEditing],
 
             [@"popup-button-size",  CGSizeMake(21.0, 23.0), CPThemeStateBezeled | CPComboBoxStateButtonBordered],
             [@"popup-button-size",  CGSizeMake(17.0, 23.0), CPThemeStateBezeled],

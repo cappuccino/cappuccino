@@ -1249,13 +1249,11 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 {
     var size = CGSizeMakeZero(),
         minSize = [self currentValueForThemeAttribute:@"min-size"],
-        borderInset = [self currentValueForThemeAttribute:@"border-inset"],
-        contentInset = [self currentValueForThemeAttribute:@"content-inset"],
-        textInset = CGInsetUnion(borderInset, contentInset);
+        contentInset = [self currentValueForThemeAttribute:@"content-inset"];
 
     // Tokens are fixed height, so we could as well have used max-size here.
     size.height = minSize.height;
-    size.width = MAX(minSize.width, [([self stringValue] || @" ") sizeWithFont:[self font]].width + textInset.left + textInset.right);
+    size.width = MAX(minSize.width, [([self stringValue] || @" ") sizeWithFont:[self font]].width + contentInset.left + contentInset.right);
 
     return size;
 }
