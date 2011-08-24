@@ -78,6 +78,27 @@
     [contentView addSubview:employeesScrollView];
     [contentView addSubview:text];
 
+    var button = [CPButton buttonWithTitle:@"Add Item"];
+
+    [button setFrameOrigin:CGPointMake(500, 30)];
+    [button setTarget:self];
+    [button setAction:@selector(addItem:)];
+    [contentView addSubview:button];
+
+    button = [CPButton buttonWithTitle:@"Insert Item"];
+
+    [button setFrameOrigin:CGPointMake(500, 70)];
+    [button setTarget:self];
+    [button setAction:@selector(insertItem:)];
+    [contentView addSubview:button];
+
+    button = [CPButton buttonWithTitle:@"Remove Item"];
+
+    [button setFrameOrigin:CGPointMake(500, 110)];
+    [button setTarget:self];
+    [button setAction:@selector(removeItem:)];
+    [contentView addSubview:button];
+
     companiesController = [CPArrayController new];
     [companiesController bind:@"contentArray" toObject:companies withKeyPath:@"items" options:nil];
 
@@ -106,6 +127,26 @@
 - (void)observeValueForKeyPath:(CPString)keyPath ofObject:(id)object change:(CPDictionary)change context:(id)context
 {
     console.log("\nkeyPath: %s\ncontext: %s\nnew: %s\nold: %s", keyPath, context, [[change valueForKey:CPKeyValueChangeNewKey] description], [[change valueForKey:CPKeyValueChangeOldKey] description]);
+}
+
+- (void)addItem:(id)sender
+{
+    var item = [CPDictionary dictionaryWithObjectsAndKeys:@"Seven Dwarves", @"name", [CPArray arrayWithObjects:@"Sneezy", @"Dopey", @"Sleepy", @"Doc", @"Bashful", @"Happy", @"Grumpy"], @"employees"];
+
+    [companiesController addObject:item];
+}
+
+- (void)insertItem:(id)sender
+{
+    var item = [CPDictionary dictionaryWithObjectsAndKeys:@"Acme Corp", @"name", [CPArray arrayWithObjects:@"Road Runner", @"Wile E. Coyote"], @"employees"];
+
+    [companiesController insertObject:item atArrangedObjectIndex:1];
+}
+
+- (void)removeItem:(id)sender
+{
+    if ([[companiesController arrangedObjects] count])
+       [companiesController removeObjectAtArrangedObjectIndex:0];
 }
 
 @end
