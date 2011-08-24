@@ -775,7 +775,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     else
     {
         if (!changes)
-            [CPException raise:@"CPKeyValueObservingException" reason:@"'didChange...' message called without prior call of 'willChange...'"];
+            return;
 
         [changes removeObjectForKey:CPKeyValueChangeNotificationIsPriorKey];
 
