@@ -22,32 +22,22 @@
 
 @import <Foundation/CPObject.j>
 
+@import "OldTextField.j"
+
 
 @implementation AppController : CPObject
 {
-    CPTextField newField;
-    CPTextField oldField;
-    CPCheckBox newFieldEnabler;
-    CPCheckBox oldFieldEnabler;
+    CPWindow        theWindow;
+    CPTextField     newField;
+    OldTextField    oldField;
+    CPCheckBox      newFieldEnabler;
+    CPCheckBox      oldFieldEnabler;
+    CPArray         themeValues;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
-    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
-        contentView = [theWindow contentView];
-
-    newField = [CPTextField textFieldWithStringValue:@"" placeholder:@"New text field" width:200];
-
-    [newField setFrameOrigin:CGPointMake(50, 50)];
-    [contentView addSubview:newField];
-
-    newFieldEnabler = [CPCheckBox checkBoxWithTitle:@"Enabled"];
-
-    [newFieldEnabler setFrameOrigin:CGPointMake(270, 54)];
-    [newFieldEnabler setTarget:self];
-    [newFieldEnabler setAction:@selector(enableField:)];
-    [newFieldEnabler setState:CPOnState];
-    [contentView addSubview:newFieldEnabler];
+    theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask];
 
     var bezelColor = CPColorWithImages(
             [
@@ -88,31 +78,45 @@
                 ["textfield-bezel-square-disabled-8.png", 3.0, 4.0]
             ]),
 
-        themeValues =
+        placeholderColor = [CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0];
+
+    themeValues =
         [
+            [@"vertical-alignment", CPTopVerticalTextAlignment,         CPThemeStateBezeled],
             [@"bezel-color",        bezelColor,                         CPThemeStateBezeled],
             [@"bezel-color",        bezelFocusedColor,                  CPThemeStateBezeled | CPThemeStateEditing],
             [@"bezel-color",        bezelDisabledColor,                 CPThemeStateBezeled | CPThemeStateDisabled],
+            [@"font",               [CPFont systemFontOfSize:12.0],     CPThemeStateBezeled],
 
-            [@"content-inset",      CGInsetMake(7.0, 7.0, 6.0, 8.0),    CPThemeStateBezeled],
-            [@"content-inset",      CGInsetMake(6.0, 7.0, 6.0, 8.0),    CPThemeStateBezeled | CPThemeStateEditing],
+            [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 8.0),    CPThemeStateBezeled],
+            [@"content-inset",      CGInsetMake(7.0, 7.0, 5.0, 8.0),    CPThemeStateBezeled | CPThemeStateEditing],
             [@"bezel-inset",        CGInsetMake(3.0, 4.0, 3.0, 4.0),    CPThemeStateBezeled],
-            [@"bezel-inset",        CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled | CPThemeStateEditing]
+            [@"bezel-inset",        CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled | CPThemeStateEditing],
+
+            [@"text-color",         placeholderColor,                   OldTextFieldStatePlaceholder],
+
+            [@"line-break-mode",    CPLineBreakByTruncatingTail,        CPThemeStateTableDataView],
+            [@"vertical-alignment", CPCenterVerticalTextAlignment,      CPThemeStateTableDataView],
+            [@"content-inset",      CGInsetMake(0.0, 0.0, 0.0, 5.0),    CPThemeStateTableDataView],
+
+            [@"text-color",         [CPColor colorWithCalibratedWhite:51.0 / 255.0 alpha:1.0], CPThemeStateTableDataView],
+            [@"text-color",         [CPColor whiteColor],                CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
+            [@"font",               [CPFont boldSystemFontOfSize:12.0],  CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
+            [@"text-color",         [CPColor blackColor],                CPThemeStateTableDataView | CPThemeStateEditing],
+            [@"content-inset",      CGInsetMake(7.0, 7.0, 5.0, 8.0),     CPThemeStateTableDataView | CPThemeStateEditing],
+            [@"font",               [CPFont systemFontOfSize:12.0],      CPThemeStateTableDataView | CPThemeStateEditing],
+            [@"bezel-inset",        CGInsetMake(-2.0, -2.0, -2.0, -2.0), CPThemeStateTableDataView | CPThemeStateEditing],
+
+            [@"text-color",         [CPColor colorWithCalibratedWhite:125.0 / 255.0 alpha:1.0], CPThemeStateTableDataView | CPThemeStateGroupRow],
+            [@"text-color",         [CPColor colorWithCalibratedWhite:1.0 alpha:1.0], CPThemeStateTableDataView | CPThemeStateGroupRow | CPThemeStateSelectedTableDataView],
+            [@"text-shadow-color",  [CPColor whiteColor],                CPThemeStateTableDataView | CPThemeStateGroupRow],
+            [@"text-shadow-offset",  CGSizeMake(0,1),                    CPThemeStateTableDataView | CPThemeStateGroupRow],
+            [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:0.0 alpha:0.6],                CPThemeStateTableDataView | CPThemeStateGroupRow | CPThemeStateSelectedTableDataView],
+            [@"font",               [CPFont boldSystemFontOfSize:12.0],  CPThemeStateTableDataView | CPThemeStateGroupRow]
         ];
 
-    oldField = [CPTextField textFieldWithStringValue:@"" placeholder:@"Old text field" width:200];
-
-    [oldField registerThemeValues:themeValues];
-    [oldField setFrameOrigin:CGPointMake(50, 100)];
-    [contentView addSubview:oldField];
-
-    oldFieldEnabler = [CPCheckBox checkBoxWithTitle:@"Enabled"];
-
-    [oldFieldEnabler setFrameOrigin:CGPointMake(270, 104)];
-    [oldFieldEnabler setTarget:self];
-    [oldFieldEnabler setAction:@selector(enableField:)];
-    [oldFieldEnabler setState:CPOnState];
-    [contentView addSubview:oldFieldEnabler];
+    [self makeFields:[CPTextField class] atPosition:50];
+    [self makeFields:[OldTextField class] atPosition:350];
 
     var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(50, 150, 200, 200)],
         table = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 200, 200)],
@@ -121,18 +125,61 @@
     [scrollView setBorderType:CPBezelBorder];
     [table setDataSource:self];
     [table setVerticalMotionCanBeginDrag:NO];
-    //[table setSelectionHighlightStyle:CPTableViewSelectionHighlightStyleNone];
     [column setResizingMask:CPTableColumnAutoresizingMask];
     [column setEditable:YES];
     [table setColumnAutoresizingStyle:CPTableViewLastColumnOnlyAutoresizingStyle];
     [table addTableColumn:column];
-    [contentView addSubview:scrollView];
+    [[theWindow contentView] addSubview:scrollView];
     [scrollView setDocumentView:table];
 
     [theWindow orderFront:self];
+}
 
-    // Uncomment the following line to turn on the standard menu bar.
-    //[CPMenu setMenuBarVisible:YES];
+- (void)makeFields:(Class)fieldClass atPosition:(int)position
+{
+    var contentView = [theWindow contentView],
+        label = [CPTextField labelWithTitle:fieldClass === CPTextField ? @"New" : @"Old"],
+        field = [fieldClass textFieldWithStringValue:@"" placeholder:@"Text field" width:200];
+
+    [label setFont:[CPFont boldSystemFontOfSize:12]];
+    [label setFrameOrigin:CGPointMake(position, 20)];
+    [contentView addSubview:label];
+
+    if (fieldClass === [CPTextField class])
+        newField = field;
+    else
+    {
+        oldField = field;
+        [field registerThemeValues:themeValues];
+    }
+
+    [field setFrameOrigin:CGPointMake(position, 50)];
+    [field sizeToFit];
+    [contentView addSubview:field];
+
+    var fieldEnabler = [CPCheckBox checkBoxWithTitle:@"Enabled"];
+
+    [fieldEnabler setFrameOrigin:CGPointMake(position + 210, 57)];
+    [fieldEnabler setTarget:self];
+    [fieldEnabler setAction:@selector(enableField:)];
+    [fieldEnabler setState:CPOnState];
+    [contentView addSubview:fieldEnabler];
+
+    var bigField = [fieldClass textFieldWithStringValue:@"" placeholder:@"Big text field" width:200];
+
+    if (fieldClass === [CPTextField class])
+        newFieldEnabler = fieldEnabler;
+    else
+    {
+        oldFieldEnabler = fieldEnabler;
+        [bigField registerThemeValues:themeValues];
+    }
+
+    [bigField setFrameOrigin:CGPointMake(position, 100)];
+    [bigField setFont:[CPFont systemFontOfSize:18]];
+    [bigField sizeToFit];
+    [contentView addSubview:bigField];
+
 }
 
 - (void)enableField:(id)sender

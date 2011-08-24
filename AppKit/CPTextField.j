@@ -169,8 +169,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMake(2.0, 2.0, 2.0, 2.0), [CPNull null]]
-                                       forKeys:[@"bezel-inset", @"content-inset", @"bezel-color"]];
+    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMake(2.0, 2.0, 2.0, 2.0), _CGInsetMake(3.0, 3.0, 3.0, 3.0), [CPNull null]]
+                                       forKeys:[@"bezel-inset", @"content-inset", @"border-inset", @"bezel-color"]];
 }
 
 /* @ignore */
@@ -507,31 +507,32 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
 
     var contentRect = [self contentRectForBounds:[self bounds]],
-        verticalAlign = [self currentValueForThemeAttribute:"vertical-alignment"];
+        verticalAlign = [self currentValueForThemeAttribute:"vertical-alignment"],
+        lineHeight = [font defaultLineHeightForFont];
 
     switch (verticalAlign)
     {
         case CPTopVerticalTextAlignment:
-            var topPoint = (_CGRectGetMinY(contentRect) + 1) + "px"; // for the same reason we have a -1 for the left, we also have a + 1 here
+            var topPoint = _CGRectGetMinY(contentRect) + "px"; // for the same reason we have a -1 for the left, we also have a + 1 here
             break;
 
         case CPCenterVerticalTextAlignment:
-            var topPoint = (_CGRectGetMidY(contentRect) - (font._lineHeight / 2) + 1) + "px";
+            var topPoint = (_CGRectGetMidY(contentRect) - (lineHeight / 2)) + "px";
             break;
 
         case CPBottomVerticalTextAlignment:
-            var topPoint = (_CGRectGetMaxY(contentRect) - font._lineHeight) + "px";
+            var topPoint = (_CGRectGetMaxY(contentRect) - lineHeight) + "px";
             break;
 
         default:
-            var topPoint = (_CGRectGetMinY(contentRect) + 1) + "px";
+            var topPoint = _CGRectGetMinY(contentRect) + "px";
             break;
     }
 
     element.style.top = topPoint;
     element.style.left = (_CGRectGetMinX(contentRect) - 1) + "px"; // why -1?
     element.style.width = _CGRectGetWidth(contentRect) + "px";
-    element.style.height = font._lineHeight + "px"; // private ivar for the line height of the DOM text at this particular size
+    element.style.height = lineHeight + "px";
 
     _DOMElement.appendChild(element);
 
@@ -1024,7 +1025,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         maxSize = [self currentValueForThemeAttribute:@"max-size"],
         lineBreakMode = [self lineBreakMode],
         text = (_stringValue || @" "),
-        textSize = _CGSizeMakeCopy(frameSize),
+        textSize = CGSizeMakeCopy(frameSize),
         font = [self currentValueForThemeAttribute:@"font"];
 
     textSize.width -= contentInset.left + contentInset.right;
@@ -1294,10 +1295,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (CGRect)contentRectForBounds:(CGRect)bounds
 {
-    var contentInset = [self currentValueForThemeAttribute:@"content-inset"];
-
-    if (!contentInset)
-        return bounds;
+    var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"],
+        contentInset = [self currentValueForThemeAttribute:@"content-inset"];
 
     bounds.origin.x += contentInset.left;
     bounds.origin.y += contentInset.top;
@@ -1320,6 +1319,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     bounds.size.height -= bezelInset.top + bezelInset.bottom;
 
     return bounds;
+}
+
+- (CGInset)borderInset
+{
+    var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"],
+        borderInset = [self currentValueForThemeAttribute:@"border-inset"];
+
+    return CGInsetUnion(bezelInset, borderInset);
 }
 
 - (CGRect)rectForEphemeralSubviewNamed:(CPString)aName

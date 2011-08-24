@@ -44,6 +44,7 @@
 @import "CPColor.j"
 @import "CPColorPanel.j"
 @import "CPColorWell.j"
+@import "CPComboBox.j"
 @import "CPCompatibility.j"
 @import "CPControl.j"
 @import "CPCookie.j"
