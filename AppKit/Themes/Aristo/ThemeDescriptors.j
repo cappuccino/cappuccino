@@ -813,7 +813,7 @@ var themedButtonValues = nil,
 
         // no border
         [@"bezel-inset",        CGInsetMake(0.0, 0.0, 0.0, 0.0)],
-        [@"content-inset",      CGInsetMake(0.0, 0.0, 0.0, 0.0)],
+        [@"content-inset",      CGInsetMake(2.0, 2.0, 2.0, 2.0)],   // as defined in [CPTextField +themeAttributes]
 
         // with border
         [@"bezel-inset",        CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled],
