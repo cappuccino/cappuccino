@@ -306,8 +306,10 @@ var CPStringRegexSpecialCharacters = [
 }
 
 /*!
-    Creates a substring from the beginning of the receiver to the specified index.
-    @param anIndex the last index of the receiver to use for the substring (inclusive)
+    Creates a substring of characters from the receiver, starting at the beginning and up to
+    the given index.
+
+    @param anIndex the index of the receiver where the substring should end (non inclusive)
     @return the substring
 */
 - (CPString)substringToIndex:(unsigned)anIndex
