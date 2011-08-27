@@ -314,6 +314,9 @@ var CPStringRegexSpecialCharacters = [
 */
 - (CPString)substringToIndex:(unsigned)anIndex
 {
+    if (anIndex > length)
+        [CPException raise:CPRangeException reason:"index out of bounds"];
+
     return substring(0, anIndex);
 }
 

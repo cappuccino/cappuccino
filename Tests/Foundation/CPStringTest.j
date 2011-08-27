@@ -128,6 +128,18 @@
     [self assert:"abcd" equals:["abcd" substringToIndex:4]];
     [self assert:"abc"  equals:["abcd" substringToIndex:3]];
     [self assert:""     equals:["abcd" substringToIndex:0]];
+
+    var sawException = false;
+    try
+    {
+        [@"abcd" substringToIndex:5];
+    }
+    catch (anException)
+    {
+        sawException = true;
+        [self assert:CPRangeException equals:[anException name]];
+    }
+    [self assertTrue:sawException message:"expected CPRangeException"];
 }
 
 - (void)testBoolValue
