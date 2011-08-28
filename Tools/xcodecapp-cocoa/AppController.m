@@ -273,6 +273,15 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                         [errorList addObject:response];
                         [self updateErrorTable];
                     }
+                    
+                    NSString *errorMsg = @"Error during conversion.";
+                    [GrowlApplicationBridge notifyWithTitle:splitedPath
+                                                description:errorMsg
+                                           notificationName:@"DefaultNotifications"
+                                                   iconData:nil
+                                                   priority:0
+                                                   isSticky:NO
+                                               clickContext:nil];
                 }
             }
         }
