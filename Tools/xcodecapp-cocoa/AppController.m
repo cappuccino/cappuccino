@@ -499,7 +499,6 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 - (void)updateErrorTable
 {
     [errorsTable reloadData];
-    [errorsPanel orderFront:self];
     NSLog(@"update?");
 }
 
