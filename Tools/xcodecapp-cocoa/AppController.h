@@ -59,6 +59,7 @@
     NSStatusItem            *_statusItem;
     NSString                *_profilePath;
 	PRHEmptyGrowlDelegate   *growlDelegateRef;
+    
 }
 
 - (void)registerDefaults;

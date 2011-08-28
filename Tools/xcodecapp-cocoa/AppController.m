@@ -31,9 +31,12 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 	}
 }
 
-
+@interface AppController ()
+@property (retain, nonatomic) NSMutableSet *workingItems;
+@end
 
 @implementation AppController
+@synthesize workingItems;
 
 #pragma mark -
 #pragma mark Initialization
@@ -103,6 +106,8 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     [_statusItem setImage:_iconInactive];
     [_statusItem setHighlightMode:YES];
     [statusMenu setDelegate:self];
+    
+    [self setWorkingItems:[NSMutableSet set]];
 }
 
 - (void)initializeEventStreamWithPath:(NSString*)aPath
@@ -190,6 +195,11 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
         NSString        *splitedPath    = [NSString stringWithFormat:@"%@/%@", [[fullPath pathComponents] objectAtIndex:[[fullPath pathComponents] count] - 2], [fullPath lastPathComponent]];
         NSDictionary    *fileAttributes = [fm attributesOfItemAtPath:fullPath error:NULL];
 		NSDate          *fileModDate    = [fileAttributes objectForKey:NSFileModificationDate];
+        
+        if([workingItems containsObject:fullPath])
+            continue;
+        else
+            [workingItems addObject:fullPath];
 
         if(shouldIgnoreDate || [fileModDate compare:[self lastModificationDateForPath:path]] == NSOrderedDescending)
         {
@@ -266,6 +276,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                 }
             }
         }
+        [workingItems removeObject:fullPath];
 	}
     [self updateLastModificationDateForPath:path];
 }
