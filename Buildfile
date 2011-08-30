@@ -3,8 +3,6 @@ require File.join(File.dirname(__FILE__), "dependencies.rb")
 
 # Keep this structure to allow the build system to update version numbers.
 VERSION_NUMBER = "1.0.0.008"
-THIS_VERSION = "1.0.0.008"
-NEXT_VERSION = "1.0.0.009"
 
 
 # Shorten expressions
