@@ -32,6 +32,7 @@ var PrimaryPlatformWindow   = NULL;
     CPInteger       _level;
     BOOL            _hasShadow;
     unsigned        _shadowStyle;
+    CPString        _title;
 
 #if PLATFORM(DOM)
     DOMWindow       _DOMWindow;
@@ -256,6 +257,21 @@ var PrimaryPlatformWindow   = NULL;
 - (BOOL)supportsFullPlatformWindows
 {
     return [CPPlatform isBrowser];
+}
+
+- (void)setTitle:(CPString)aTitle
+{
+    _title = aTitle;
+
+#if PLATFORM(DOM)
+    if (_DOMWindow && _DOMWindow.document)
+        _DOMWindow.document.title = _title;
+#endif
+}
+
+- (CPString)title
+{
+    return _title;
 }
 
 @end
