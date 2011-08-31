@@ -30,8 +30,8 @@
 {
     // This is called when the cib is done loading.
     // You can implement this method on any object instantiated from a Cib.
-    // It's a useful hook for setting up current UI values, and other things. 
-    
+    // It's a useful hook for setting up current UI values, and other things.
+
     // In this case, we want the window from Cib to become our full browser window
     //[theWindow setFullBridge:YES];
 
@@ -39,16 +39,16 @@
 
 //    [platformWindow orderFront:self];//console.log(CPStringFromRect([theWindow contentRectForFrameRect:[theWindow frame]]));
     [platformWindow setContentRect:[theWindow contentRectForFrameRect:[theWindow frame]]];
-    
+
     // [theWindow setTitle:@"My Custom Title"];
     //[platformWindow orderFront:self];
-    
+
     // seriously, this test file is dirty :)
     var slider = [[theWindow contentView] subviews][0];
     [slider setTarget:self];
     [slider setAction:@selector(randomTitle:)];
     [slider setContinuous:NO];
-        
+
 window.setTimeout(function(){
     [theWindow orderOut:self];
     [theWindow setPlatformWindow:platformWindow];
@@ -62,9 +62,9 @@ window.setTimeout(function(){
     window.setTimeout(function(){
     var view = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)];
     [view setBackgroundColor:[CPColor redColor]];
-    
+
     [[theWindow contentView] addSubview:view];},1000);
-    
+
     }, 1000);
     //window.setTimeout(function() { [platformWindow orderOut:self]; [platformWindow orderFront:self]; }, 2000);
 
