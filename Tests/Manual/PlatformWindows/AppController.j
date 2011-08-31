@@ -39,9 +39,16 @@
 
 //    [platformWindow orderFront:self];//console.log(CPStringFromRect([theWindow contentRectForFrameRect:[theWindow frame]]));
     [platformWindow setContentRect:[theWindow contentRectForFrameRect:[theWindow frame]]];
-
+    
+    // [theWindow setTitle:@"My Custom Title"];
     //[platformWindow orderFront:self];
-
+    
+    // seriously, this test file is dirty :)
+    var slider = [[theWindow contentView] subviews][0];
+    [slider setTarget:self];
+    [slider setAction:@selector(randomTitle:)];
+    [slider setContinuous:NO];
+        
 window.setTimeout(function(){
     [theWindow orderOut:self];
     [theWindow setPlatformWindow:platformWindow];
@@ -73,6 +80,11 @@ window.setTimeout(function(){
 - (void)another:(id)aSender
 {
     [platformWindow orderFront:self];
+}
+
+- (IBAction)randomTitle:(id)aSender
+{
+    [theWindow setTitle:@"Window random number " + Math.random(1000)]
 }
 
 @end
