@@ -625,15 +625,11 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 #endif
 
-    // post CPControlTextDidEndEditingNotification
-    if (_isEditing)
-    {
-        _isEditing = NO;
-        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
+    _isEditing = NO;
+    [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
 
-        if ([self sendsActionOnEndEditing])
-            [self sendAction:[self action] to:[self target]];
-    }
+    if ([self sendsActionOnEndEditing])
+        [self sendAction:[self action] to:[self target]];
 
     [self textDidBlur:[CPNotification notificationWithName:CPTextFieldDidBlurNotification object:self userInfo:nil]];
 
