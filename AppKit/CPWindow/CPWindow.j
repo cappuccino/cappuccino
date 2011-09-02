@@ -480,7 +480,7 @@ CPTexturedBackgroundWindowMask
         [self close];
 
     _platformWindow = aPlatformWindow;
-    [_platformWindow setTitle:_title];
+    [_platformWindow _setTitle:_title window:self];
 
     if (wasVisible)
         [self orderFront:self];
@@ -1360,7 +1360,7 @@ CPTexturedBackgroundWindowMask
     _title = aTitle;
 
     [_windowView setTitle:aTitle];
-    [_platformWindow setTitle:_title];
+    [_platformWindow _setTitle:_title window:self];
 
     [self _synchronizeMenuBarTitleWithWindowTitle];
 }
