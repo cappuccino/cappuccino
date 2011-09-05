@@ -21,6 +21,7 @@
  */
 
 @import "CPTableView.j"
+@import "_CPPopUpListDataSource.j"
 
 
 /*!
@@ -69,13 +70,9 @@ var ListColumnIdentifier = @"1";
 
 /*!
     This class is a controller for a panel that can pop up and display a scrollable list of items in a CPTableView.
-    For tables that display single-line rows of scalar data, no subclassing should be necessary.
+    It is used by CPComboBox to display the list of choices.
 
-    The delegate of this class MUST implement the following methods:
-
-    numberOfItems               The number of items the list should display
-    numberOfVisibleItems        The maximum number of items to display at once
-    objectValueForItemAtIndex:  Retrieves an object value for an item in the range 0..(numberOfItems - 1)
+    This class requires a data source which must conform to the interface of _CPPopUpListDataSource.
 
     Objects of this class send the following notifications:
 
@@ -86,28 +83,30 @@ var ListColumnIdentifier = @"1";
 */
 @implementation _CPPopUpList : CPObject
 {
-    _CPPopUpListDelegate    _delegate;
+    _CPPopUpListDataSource  _dataSource;
     BOOL                    _itemWasClicked;
     BOOL                    _listWasClicked;
     int                     _listWidth;
-    _CPPopUpPanel           _panel @accessors(readonly, property=panel);
-    CPScrollView            _scrollView @accessors(readonly, property=scrollView);
-    _CPPopUpTableView       _tableView @accessors(readonly, property=tableView);
+    _CPPopUpPanel           _panel;
+    CPScrollView            _scrollView;
+    _CPPopUpTableView       _tableView;
     CPTableColumn           _tableColumn;
 }
 
-/*!
-    Creates a pop up list of choices which will display relative to the given rect in base coordinates.
+#pragma mark Creating and Displaying a List
 
-    @param aDelegate    The object that usually is controlling this list.
+/*!
+    Creates a pop up list of choices that will display in a scrollable CPTableView.
+
+    @param aDataSource    A subclass of _CPPopUpListDataSource
 */
-- (id)initWithDelegate:(_CPPopUpListDelegate)aDelegate
+- (id)initWithDataSource:(_CPPopUpListDataSource)aDataSource
 {
     self = [super init];
 
     if (self)
     {
-        _delegate = aDelegate;
+        [self setDataSource:aDataSource];
         _itemWasClicked = NO;
         _listWasClicked = NO;
         _listWidth = 0;
@@ -132,24 +131,18 @@ var ListColumnIdentifier = @"1";
         [[_panel contentView] addSubview:_scrollView];
         [_panel setInitialFirstResponder:_tableView];
 
-        if ([_delegate numberOfItems] > 0)
+        if ([_dataSource numberOfItemsInList:self] > 0)
             [_tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
         else
             [_tableView setEnabled:NO];
 
         [_scrollView scrollToBeginningOfDocument:nil];
-
-        [self finalizeTableView:_tableView];
     }
 
     return self;
 }
 
-/*!
-    Create and configure the panel containing the table view.
-    Subclasses should override this (and usually call super first)
-    if they want to customize the list panel.
-*/
+/*! @ignore */
 - (CPPanel)makeListPanelWithFrame:(CGRect)aFrame
 {
     var panel = [[_CPPopUpPanel alloc] initWithContentRect:aFrame styleMask:CPBorderlessWindowMask];
@@ -164,9 +157,7 @@ var ListColumnIdentifier = @"1";
     return panel;
 }
 
-/*!
-    Create and configure the table view. Subclasses should use \ref finalizeTableView:.
-*/
+/*! @ignore */
 - (_CPPopUpTableView)makeTableView
 {
     [self removeTableViewObservers];
@@ -187,6 +178,7 @@ var ListColumnIdentifier = @"1";
     return table;
 }
 
+/*! @ignore */
 - (void)removeTableViewObservers
 {
     if (_tableView)
@@ -198,21 +190,7 @@ var ListColumnIdentifier = @"1";
     }
 }
 
-/*!
-    If subclasses want to configure the table view after it has been
-    completely configured, for example to set a custom data view,
-    this is the place. Such customization can also be done by an
-    observer of _CPPopUpListListWillDisplayNotification.
-*/
-- (void)finalizeTableView:(CPTableView)aTableView
-{
-}
-
-/*!
-    Creates and configures the scroll view containing the table view.
-    Subclasses should override this (and usually call super first)
-    if they want to customize the scroll view.
-*/
+/*! @ignore */
 - (CPScrollView)makeScrollViewWithFrame:(CGRect)aFrame
 {
     var scroll = [[CPScrollView alloc] initWithFrame:aFrame];
@@ -226,6 +204,37 @@ var ListColumnIdentifier = @"1";
 
     return scroll;
 }
+
+/*!
+    Pop up the list if it is not already visible.
+    If it is not visible, a _CPPopUpListWillPopUpNotification will be sent.
+
+    @param aRect    A rect (in \c aView coordinates) to display relative to
+    @param aView    The view whose coordinate system \c aRect is in
+    @param offset   How far to offset the list from \c aRect
+*/
+- (void)popUpRelativeToRect:(CGRect)aRect view:(CPView)aView offset:(int)offset
+{
+    if ([_panel isVisible])
+        return;
+
+    var rowRect = [_tableView rectOfRow:[self numberOfRowsInTableView:_tableView] - 1],
+        frame = CGRectMake(0, 0, MAX(_listWidth, CGRectGetWidth(aRect)), CGRectGetMaxY(rowRect));
+
+    // Place the frame relative to aRect and constrain it to the screen bounds
+    frame = [self constrain:frame relativeToRect:aRect view:aView offset:offset];
+
+    [_panel setFrame:frame];
+    [_scrollView setFrameSize:CGSizeMakeCopy(frame.size)];
+    [_tableView setEnabled:[_dataSource numberOfItemsInList:self] > 0];
+    [self scrollItemAtIndexToTop:[_tableView selectedRow]];
+
+    [self listWillPopUp];
+
+    [_panel orderFront:nil];
+}
+
+#pragma mark Setting Display Attributes
 
 /*!
     Returns the desired width of the list.
@@ -272,31 +281,388 @@ var ListColumnIdentifier = @"1";
 }
 
 /*!
-    Pop up the list if it is not already visible.
-    If it is not visible, a _CPPopUpListWillPopUpNotification will be sent.
-
-    @param aRect    A rect (in \c aView coordinates) to display relative to
-    @param aView    The view whose coordinate system \c aRect is in
-    @param offset   How far to offset the list from \c aRect
+    Returns whether the list is currently visible.
 */
-- (void)popUpRelativeToRect:(CGRect)aRect view:(CPView)aView offset:(int)offset
+- (BOOL)isVisible
 {
-    if ([_panel isVisible])
+    return [_panel isVisible];
+}
+
+/*!
+    Returns the desired row height for the table view.
+    Subclasses should override this if they want something other than the default.
+*/
+- (int)rowHeightForTableView:(CPTableView)aTableView
+{
+    return [aTableView rowHeight];
+}
+
+/*!
+    Returns the table view used by the list.
+*/
+- (CPTableView)tableView
+{
+    return _tableView;
+}
+
+/*!
+    Returns the single table column used by the list.
+*/
+- (CPTableColumn)tableColumn
+{
+    return _tableColumn;
+}
+
+/*!
+    Returns the scroll view used by the list.
+*/
+- (CPScrollView)scrollView
+{
+    return _scrollView;
+}
+
+/*!
+    Returns the panel in which the list appears.
+*/
+- (CPPanel)panel
+{
+    return _panel;
+}
+
+#pragma mark Setting a Data Source
+
+- (void)setDataSource:(_CPPopUpListDataSource)aDataSource
+{
+    if (_dataSource === aDataSource)
         return;
 
-    var rowRect = [_tableView rectOfRow:[self numberOfRowsInTableView:_tableView] - 1],
-        frame = CGRectMake(0, 0, MAX(_listWidth, CGRectGetWidth(aRect)), CGRectGetMaxY(rowRect));
+    if (![_CPPopUpListDataSource protocolIsImplementedByObject:aDataSource])
+    {
+        CPLog.warn("Illegal %s data source (%s). Must implement the methods in _CPPopUpListDataSource.", [self className], [aDataSource description]);
+    }
+    else
+        _dataSource = aDataSource;
+}
 
-    // Place the frame relative to aRect and constrain it to the screen bounds
-    frame = [self constrain:frame relativeToRect:aRect view:aView offset:offset];
+- (_CPPopUpListDataSource)dataSource
+{
+    return _dataSource;
+}
 
-    [_panel setFrame:frame];
-    [_scrollView setFrameSize:CGSizeMakeCopy(frame.size)];
-    [self scrollItemAtIndexToTop:[_tableView selectedRow]];
+#pragma mark Manipulating the Selection
 
-    [self listWillPopUp];
+/*!
+    Select the next item in the list if there one. If there is currently no selected item,
+    the first item is selected. Returns YES if the selection changed.
+*/
+- (BOOL)selectNextItem
+{
+    if (![_tableView isEnabled])
+        return NO;
 
-    [_panel orderFront:nil];
+    var row = [_tableView selectedRow];
+
+    if (row < ([_dataSource numberOfItemsInList:self] - 1))
+        return [self selectRow:++row];
+    else
+        return NO;
+}
+
+/*!
+    Select the previous item in the list. If there is currently no selected item,
+    nothing happens. Returns YES if the selection changed.
+*/
+- (BOOL)selectPreviousItem
+{
+    if (![_tableView isEnabled])
+        return NO;
+
+    var row = [_tableView selectedRow];
+
+    if (row > 0)
+        return [self selectRow:--row];
+    else
+        return NO;
+}
+
+/*!
+    Returns the selected object value. If no value is selected,
+    returns nil.
+*/
+- (id)selectedObjectValue
+{
+    var row = [_tableView selectedRow];
+
+    return (row >= 0) ? [_dataSource list:self objectValueForItemAtIndex:row] : nil;
+}
+
+/*!
+    Returns the selected value as a single-line string. If no value is selected,
+    returns nil.
+*/
+- (CPString)selectedStringValue
+{
+    var value = [self selectedObjectValue];
+
+    return value !== nil ? [_dataSource list:self stringValueForObjectValue:value] : nil;
+}
+
+/*!
+    Returns the last selected row in the list. If no row has been selected, returns -1.
+*/
+- (int)selectedRow
+{
+    return [_tableView selectedRow];
+}
+
+/*!
+    Selects a row and scrolls it to be visible. Returns YES if the selection actually changed.
+*/
+- (BOOL)selectRow:(int)row
+{
+    if (row === [_tableView selectedRow])
+        return NO;
+
+    var validRow = (row >= 0 && row < [self numberOfRowsInTableView:_tableView]),
+        indexes = validRow ? [CPIndexSet indexSetWithIndex:row] : [CPIndexSet indexSet];
+
+    [_tableView selectRowIndexes:indexes byExtendingSelection:NO];
+
+    if (validRow)
+    {
+        [_tableView scrollRowToVisible:row];
+        return YES;
+    }
+    else
+        return NO;
+}
+
+#pragma mark Manipulating the Displayed List
+
+/*!
+    Scroll the list down one page.
+*/
+- (void)scrollPageDown
+{
+    [_scrollView scrollPageDown:nil];
+}
+
+/*!
+    Scroll the list up one page.
+*/
+- (void)scrollPageUp
+{
+    [_scrollView scrollPageUp:nil];
+}
+
+/*!
+    Scroll to the top of the list.
+*/
+- (void)scrollToTop
+{
+    [_scrollView scrollToBeginningOfDocument:nil];
+}
+
+/*!
+    Scroll to the bottom of the list.
+*/
+- (void)scrollToBottom
+{
+    [_scrollView scrollToEndOfDocument:nil];
+}
+
+- (void)scrollItemAtIndexToTop:(int)row
+{
+    var rect = [_tableView rectOfRow:row];
+
+    [[_tableView superview] scrollToPoint:rect.origin];
+}
+
+/*!
+    Close the list if it is currently visible. If it is visible,
+    a CPComboBoxWillDismissNotification will be sent. If the
+    list is being closed after an item was clicked, the close
+    is delayed slightly so the user can briefly see the clicked row
+    get highlighted.
+*/
+- (void)close
+{
+    if (![_panel isVisible])
+        return;
+
+    if ([self listWasClicked])
+    {
+        [self setListWasClicked:NO];
+
+        // Wait until we get through the run loop and delay a little
+        // so the user can briefly see the clicked row get highlighted.
+        if ([self itemWasClicked])
+        {
+            [self setItemWasClicked:NO];
+            [CPTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(closeListAfterItemClick) userInfo:nil repeats:NO];
+            return;
+        }
+    }
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:_CPPopUpListWillDismissNotification object:self];
+    [_panel close];
+    [[CPNotificationCenter defaultCenter] postNotificationName:_CPPopUpListDidDismissNotification object:self];
+}
+
+/*!
+    Close the list after an item was clicked.
+*/
+- (void)closeListAfterItemClick
+{
+    [self close];
+    [[CPNotificationCenter defaultCenter] postNotificationName:_CPPopUpListItemWasClickedNotification object:self];
+}
+
+#pragma mark Handling Events
+
+/*!
+    Handles standard key equivalents for moving the selection
+    and selecting an item. This method should be called by
+    the -performKeyEquivalent method of the field that is
+    controlling the list.
+*/
+- (BOOL)performKeyEquivalent:(CPEvent)anEvent
+{
+    var key = [anEvent charactersIgnoringModifiers];
+
+    switch (key)
+    {
+        case CPDownArrowFunctionKey:
+            if ([self isVisible])
+            {
+                [self selectNextItem];
+                return YES;
+            }
+            break;
+
+        case CPUpArrowFunctionKey:
+            if ([self isVisible])
+            {
+                [self selectPreviousItem];
+                return YES;
+            }
+            break;
+
+        case CPEscapeFunctionKey:
+            if ([self isVisible])
+            {
+                [self close];
+                return YES;
+            }
+            break;
+
+        case CPPageUpFunctionKey:
+            if ([self isVisible])
+            {
+                [self scrollPageUp];
+                return YES;
+            }
+            break;
+
+        case CPPageDownFunctionKey:
+            if ([self isVisible])
+            {
+                [self scrollPageDown];
+                return YES;
+            }
+            break;
+
+        case CPHomeFunctionKey:
+            if ([self isVisible])
+            {
+                [self scrollToTop];
+                return YES;
+            }
+            break;
+
+        case CPEndFunctionKey:
+            if ([self isVisible])
+            {
+                [self scrollToBottom];
+                return YES;
+            }
+            break;
+    }
+
+    return NO;
+}
+
+/*!
+    Returns whether an item in the list was clicked since it was opened.
+    If there are no items, \ref itemWasClicked will always return NO.
+*/
+- (BOOL)itemWasClicked
+{
+    return _itemWasClicked && ([_dataSource numberOfItemsInList:self] > 0);
+}
+
+/*!
+    Sets whether an item in the list was clicked since it was opened.
+    If there are no items, \ref itemWasClicked will always return NO.
+
+    Subclasses will usually want to set this in the mouseDown:
+    of the control.
+*/
+- (void)setItemWasClicked:(BOOL)flag
+{
+    _itemWasClicked = ([_dataSource numberOfItemsInList:self] > 0) && flag;
+}
+
+/*!
+    Returns whether any view in the list was clicked since it was opened.
+    If there are no items, \ref listWasClicked will always return NO.
+*/
+- (BOOL)listWasClicked
+{
+    return _listWasClicked && ([_dataSource numberOfItemsInList:self] > 0);
+}
+
+/*!
+    Sets whether any view in the list was clicked since it was opened.
+    If there are no items, \ref listWasClicked will always return NO.
+
+    Subclasses will usually want to use a subclass of CPPanel and override
+    sendEvent: to set this flag when the event type is CPLeftMouseDown
+    or CPRightMouseDown. This is distinct from \ref itemWasClicked because,
+    for example, a scroller in the list may be clicked without clicking an
+    item in the list.
+*/
+- (void)setListWasClicked:(BOOL)flag
+{
+    _listWasClicked = ([_dataSource numberOfItemsInList:self] > 0) && flag;
+}
+
+/*!
+    Returns whether a controlling view should resign. This should be called
+    from the controlling view's resignFirstResponder method.
+*/
+- (BOOL)controllingViewShouldResign
+{
+    if ([self listWasClicked])
+    {
+        /*
+            If an item was not clicked (probably the scrollbar), clear the click flag so that future
+            clicks outside the list will allow it to close.
+        */
+        if ([self listWasClicked] && ![self itemWasClicked])
+            [self setListWasClicked:NO];
+
+        return NO;
+    }
+    else
+        return YES;
+}
+#pragma mark Internal Helpers
+
+/*! @ignore */
+- (void)listWillPopUp
+{
+    [[CPNotificationCenter defaultCenter] postNotificationName:_CPPopUpListWillPopUpNotification object:self];
 }
 
 /*!
@@ -305,6 +671,7 @@ var ListColumnIdentifier = @"1";
     for at least ListMinimumItems items, an attempt should be made to display that many
     items above \c aRect. If the minimum cannot be displayed on top, whichever direction can display more items
     is chosen.
+    @ignore
 */
 - (CGRect)constrain:(CGRect)aFrame relativeToRect:(CGRect)aRect view:(CPView)aView offset:(int)offset
 {
@@ -314,7 +681,7 @@ var ListColumnIdentifier = @"1";
         rowHeight = [self rowHeightForTableView:_tableView] + [_tableView intercellSpacing].height,
 
         // Be sure to clip the number of displayed rows to what the field wants
-        numberOfRows = MIN([self numberOfRowsInTableView:_tableView], [_delegate numberOfVisibleItems]),
+        numberOfRows = MIN([self numberOfRowsInTableView:_tableView], [_dataSource numberOfVisibleItemsInList:self]),
 
         // Add 2 to height for border
         frame = CGRectMake(windowOrigin.x, windowOrigin.y + CGRectGetHeight(aRect) + offset, MAX(_listWidth, CGRectGetWidth(aFrame)), (rowHeight * numberOfRows) + 2),
@@ -363,250 +730,6 @@ var ListColumnIdentifier = @"1";
     return frame;
 }
 
-/*!
-    Returns whether the list is currently visible.
-*/
-- (BOOL)isVisible
-{
-    return [_panel isVisible];
-}
-
-/*!
-    Subclasses MUST call this method just before the list is about to display.
-*/
-- (void)listWillPopUp
-{
-    [[CPNotificationCenter defaultCenter] postNotificationName:_CPPopUpListWillPopUpNotification object:self];
-}
-
-/*!
-    Select the next item in the list if there one. If there is currently no selected item,
-    the first item is selected. Returns YES if the selection changed.
-*/
-- (BOOL)selectNextItem
-{
-    if (![_tableView isEnabled])
-        return NO;
-
-    var row = [_tableView selectedRow];
-
-    if (row < ([_delegate numberOfItems] - 1))
-        return [self selectRow:++row];
-    else
-        return NO;
-}
-
-/*!
-    Select the previous item in the list. If there is currently no selected item,
-    nothing happens. Returns YES if the selection changed.
-*/
-- (BOOL)selectPreviousItem
-{
-    if (![_tableView isEnabled])
-        return NO;
-
-    var row = [_tableView selectedRow];
-
-    if (row > 0)
-        return [self selectRow:--row];
-    else
-        return NO;
-}
-
-/*!
-    Scroll the list down one page.
-*/
-- (void)scrollPageDown
-{
-    [_scrollView scrollPageDown:nil];
-}
-
-/*!
-    Scroll the list up one page.
-*/
-- (void)scrollPageUp
-{
-    [_scrollView scrollPageUp:nil];
-}
-
-/*!
-    Scroll to the top of the list.
-*/
-- (void)scrollToTop
-{
-    [_scrollView scrollToBeginningOfDocument:nil];
-}
-
-/*!
-    Scroll to the bottom of the list.
-*/
-- (void)scrollToBottom
-{
-    [_scrollView scrollToEndOfDocument:nil];
-}
-
-- (BOOL)selectRow:(int)row
-{
-    if (row === [_tableView selectedRow])
-        return NO;
-
-    var indexes = row >= 0 ? [CPIndexSet indexSetWithIndex:row] : [CPIndexSet indexSet];
-
-    [_tableView selectRowIndexes:indexes byExtendingSelection:NO];
-
-    if (row >= 0)
-    {
-        [_tableView scrollRowToVisible:row];
-        return YES;
-    }
-    else
-        return NO;
-}
-
-- (void)scrollItemAtIndexToTop:(int)row
-{
-    var rect = [_tableView rectOfRow:row];
-
-    [[_tableView superview] scrollToPoint:rect.origin];
-}
-
-/*!
-    Returns the selected value as a single-line string. If no value is selected,
-    returns nil.
-*/
-- (CPString)selectedStringValue
-{
-    var row = [_tableView selectedRow];
-
-    return (row >= 0) ? [self stringValueForObjectValue:[_delegate objectValueForItemAtIndex:row] row:row] : nil;
-}
-
-/*!
-    Returns whether an item in the list was clicked since it was opened.
-    If there are no items, \ref itemWasClicked will always return NO.
-*/
-- (BOOL)itemWasClicked
-{
-    return _itemWasClicked && ([_delegate numberOfItems] > 0);
-}
-
-/*!
-    Sets whether an item in the list was clicked since it was opened.
-    If there are no items, \ref itemWasClicked will always return NO.
-
-    Subclasses will usually want to set this in the mouseDown:
-    of the control.
-*/
-- (void)setItemWasClicked:(BOOL)flag
-{
-    _itemWasClicked = ([_delegate numberOfItems] > 0) && flag;
-}
-
-/*!
-    Returns whether any view in the list was clicked since it was opened.
-    If there are no items, \ref listWasClicked will always return NO.
-*/
-- (BOOL)listWasClicked
-{
-    return _listWasClicked && ([_delegate numberOfItems] > 0);
-}
-
-/*!
-    Sets whether any view in the list was clicked since it was opened.
-    If there are no items, \ref listWasClicked will always return NO.
-
-    Subclasses will usually want to use a subclass of CPPanel and override
-    sendEvent: to set this flag when the event type is CPLeftMouseDown
-    or CPRightMouseDown. This is distinct from \ref itemWasClicked because,
-    for example, a scroller in the list may be clicked without clicking an
-    item in the list.
-*/
-- (void)setListWasClicked:(BOOL)flag
-{
-    _listWasClicked = ([_delegate numberOfItems] > 0) && flag;
-}
-
-/*!
-    Close the list if it is currently visible. If it is visible,
-    a CPComboBoxWillDismissNotification will be sent. If the
-    list is being closed after an item was clicked, the close
-    is delayed slightly so the user can briefly see the clicked row
-    get highlighted.
-*/
-- (void)close
-{
-    if (![_panel isVisible])
-        return;
-
-    if ([self listWasClicked])
-    {
-        [self setListWasClicked:NO];
-
-        // Wait until we get through the run loop and delay a little
-        // so the user can briefly see the clicked row get highlighted.
-        if ([self itemWasClicked])
-        {
-            [self setItemWasClicked:NO];
-            [CPTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(closeListAfterItemClick) userInfo:nil repeats:NO];
-            return;
-        }
-    }
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:_CPPopUpListWillDismissNotification object:self];
-    [_panel close];
-    [[CPNotificationCenter defaultCenter] postNotificationName:_CPPopUpListDidDismissNotification object:self];
-}
-
-/*!
-    Close the list after an item was clicked.
-*/
-- (void)closeListAfterItemClick
-{
-    [self close];
-    [[CPNotificationCenter defaultCenter] postNotificationName:_CPPopUpListItemWasClickedNotification object:self];
-}
-
-/*!
-    Returns the desired row height for the table view.
-    Subclasses should override this if they want something other than the default.
-*/
-- (int)rowHeightForTableView:(CPTableView)aTableView
-{
-    return [aTableView rowHeight];
-}
-
-/*!
-    Returns a value to display for a single row in the list. Subclasses should override
-    this if the table data needs to be converted or formatted in some way to be displayed.
-    If there are no search results, an empty string is returned.
-    If subclasses use a data representation other than CPStrings, they must override
-    this method and return the appropriate data when there are no search results.
-
-    If the table uses a custom data view, this method should return a value suitable
-    for sending to the setObjectValue: method of the data view.
-
-    @param  aValue  Table data for the given row
-    @param  aRow    The row being displayed
-    @return         A value to be displayed in the list
-*/
-- (id)displayValueForObjectValue:(id)aValue row:(int)aRow
-{
-    return aValue || @"";
-}
-
-/*!
-    Returns a single-line string for use in an autocomplete field. Subclasses should override
-    this if the row data is not convertable to a simple string, and return the data as a single-line string.
-
-    @param  aValue  Table data to be converted to a string
-    @param  aRow    The row whose data is being converted
-    @return         A value to be displayed in the autocomplete field
-*/
-- (CPString)stringValueForObjectValue:(id)aValue row:(int)aRow
-{
-    return String(aValue);
-}
-
 - (void)tableViewClickAction:(id)sender
 {
     [self close];
@@ -615,7 +738,7 @@ var ListColumnIdentifier = @"1";
 @end
 
 
-var _CPPopUpListFieldKey        = @"_CPPopUpListDelegateKey",
+var _CPPopUpListDataSourceKey   = @"_CPPopUpListDataSourceKey",
     _CPPopUpListListWidthKey    = @"_CPPopUpListListWidthKey",
     _CPPopUpListListPanelKey    = @"_CPPopUpListListPanelKey",
     _CPPopUpListScrollViewKey   = @"_CPPopUpListScrollViewKey",
@@ -632,7 +755,7 @@ var _CPPopUpListFieldKey        = @"_CPPopUpListDelegateKey",
         _listWasClicked = NO;
         _itemWasClicked = NO;
 
-        _delegate = [aCoder decodeObjectForKey:_CPPopUpListDelegateKey];
+        _dataSource = [aCoder decodeObjectForKey:_CPPopUpListDataSourceKey];
         _listWidth = [aCoder decodeIntForKey:_CPPopUpListListWidthKey];
         _panel = [aCoder decodeObjectForKey:_CPPopUpListListPanelKey];
         _scrollView = [aCoder decodeObjectForKey:_CPPopUpListScrollViewKey];
@@ -648,7 +771,7 @@ var _CPPopUpListFieldKey        = @"_CPPopUpListDelegateKey",
 {
     [super encodeWithCoder:aCoder];
 
-    [aCoder encodeObject:_delegate forKey:_CPPopUpListDelegateKey];
+    [aCoder encodeObject:_dataSource forKey:_CPPopUpListDataSourceKey];
     [aCoder encodeObject:_listWidth forKey:_CPPopUpListListWidthKey];
     [aCoder encodeObject:_panel forKey:_CPPopUpListListPanelKey];
     [aCoder encodeObject:_scrollView forKey:_CPPopUpListScrollViewKey];
@@ -661,12 +784,12 @@ var _CPPopUpListFieldKey        = @"_CPPopUpListDelegateKey",
 
 - (int)numberOfRowsInTableView:(id)aTableView
 {
-    return MAX([_delegate numberOfItems], 1);
+    return MAX([_dataSource numberOfItemsInList:self], 1);
 }
 
 - (id)tableView:(id)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRow
 {
-    return [self displayValueForObjectValue:[_delegate objectValueForItemAtIndex:aRow] row:aRow];
+    return [_dataSource list:self displayValueForObjectValue:[_dataSource list:self objectValueForItemAtIndex:aRow]];
 }
 
 @end

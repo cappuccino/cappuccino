@@ -526,7 +526,7 @@ var CPControlBlackColor = [CPColor blackColor];
     // Cocoa raises an invalid parameter assertion and returns if you pass nil.
     if (aString === nil || aString === undefined)
     {
-        CPLog.warn("nil sent to CPControl -setStringValue");
+        CPLog.warn("nil or undefined sent to CPControl -setStringValue");
         return;
     }
 
@@ -536,10 +536,10 @@ var CPControlBlackColor = [CPColor blackColor];
     {
         value = nil;
 
-        if ([_formatter getObjectValue:AT_REF(value) forString:aString errorDescription:nil] === NO)
+        if (![_formatter getObjectValue:AT_REF(value) forString:aString errorDescription:nil])
         {
             // If the given string is non-empty and doesn't work, Cocoa tries an empty string.
-            if (!aString || [_formatter getObjectValue:AT_REF(value) forString:@"" errorDescription:nil] === NO)
+            if (!aString || ![_formatter getObjectValue:AT_REF(value) forString:@"" errorDescription:nil])
                 value = undefined;  // Means the value is invalid
         }
     }

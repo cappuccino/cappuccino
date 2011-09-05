@@ -389,12 +389,12 @@ var CPComboBoxTextSubview = @"text",
     _listDelegate = aDelegate;
 
     [defaultCenter addObserver:self
-                      selector:@selector(listWillPopUp:)
+                      selector:@selector(comboBoxWillPopUp:)
                           name:_CPPopUpListWillPopUpNotification
                         object:_listDelegate];
 
     [defaultCenter addObserver:self
-                      selector:@selector(listWillDismiss:)
+                      selector:@selector(comboBoxWillDismiss:)
                           name:_CPPopUpListWillDismissNotification
                         object:_listDelegate];
 
@@ -467,7 +467,7 @@ var CPComboBoxTextSubview = @"text",
 - (void)popUpList
 {
     if (!_listDelegate)
-        [self setListDelegate:[[_CPPopUpList alloc] initWithDelegate:self]];
+        [self setListDelegate:[[_CPPopUpList alloc] initWithDataSource:self]];
 
     [self selectMatchingItem];
 
@@ -519,24 +519,6 @@ var CPComboBoxTextSubview = @"text",
     [self _reverseSetBinding];
 
     return YES;
-}
-
-/*!
-    The receiver receives this notification when the list is about to be pop up.
-    @ignore
-*/
-- (void)listWillPopUp:(CPNotification)aNotification
-{
-    [self comboBoxWillPopUp];
-}
-
-/*!
-    The receiver receives this notification when the list is about to be dismissed.
-    @ignore
-*/
-- (void)listWillDismiss:(CPNotification)aNotification
-{
-    [self comboBoxWillDismiss];
 }
 
 /*!
@@ -731,7 +713,10 @@ var CPComboBoxTextSubview = @"text",
     [super textDidChange:aNotification];
 }
 
-/*! @ignore */
+/*!
+    Override of CPView -performKeyEquivalent
+    @ignore
+*/
 - (BOOL)performKeyEquivalent:(CPEvent)anEvent
 {
     if ([[self window] firstResponder] === self)
@@ -741,17 +726,9 @@ var CPComboBoxTextSubview = @"text",
         switch (key)
         {
             case CPDownArrowFunctionKey:
-                if ([self listIsVisible])
-                    [_listDelegate selectNextItem];
-                else
-                    [self popUpList];
-
-                return YES;
-
-            case CPUpArrowFunctionKey:
-                if ([self listIsVisible])
+                if (![self listIsVisible])
                 {
-                    [_listDelegate selectPreviousItem];
+                    [self popUpList];
                     return YES;
                 }
                 break;
@@ -763,44 +740,12 @@ var CPComboBoxTextSubview = @"text",
                     // in the list, revert to the most recent valid value.
                     if (_forceSelection && ([self _inputElement].value !== _selectedStringValue))
                         [self setStringValue:_selectedStringValue];
-
-                    [_listDelegate close];
-                    return YES;
-                }
-                break;
-
-            case CPPageUpFunctionKey:
-                if ([self listIsVisible])
-                {
-                    [_listDelegate scrollPageUp];
-                    return YES;
-                }
-                break;
-
-            case CPPageDownFunctionKey:
-                if ([self listIsVisible])
-                {
-                    [_listDelegate scrollPageDown];
-                    return YES;
-                }
-                break;
-
-            case CPHomeFunctionKey:
-                if ([self listIsVisible])
-                {
-                    [_listDelegate scrollToTop];
-                    return YES;
-                }
-                break;
-
-            case CPEndFunctionKey:
-                if ([self listIsVisible])
-                {
-                    [_listDelegate scrollToBottom];
-                    return YES;
                 }
                 break;
         }
+
+        if ([_listDelegate performKeyEquivalent:anEvent])
+            return YES;
     }
 
     return [super performKeyEquivalent:anEvent];
@@ -817,18 +762,15 @@ var CPComboBoxTextSubview = @"text",
         If the list or popup button is clicked, we lose focus. The list will refuse first responder,
         and we refuse to resign. But we still have to manually restore the focus to the input element.
     */
-    if ([_listDelegate listWasClicked] || buttonCausedResign)
-    {
-        /*
-            If an item was not clicked (probably the scrollbar), clear the click flag so that future
-            clicks outside the list will allow it to close. It isn't so great doing that here, but
-            the sequence of events is such that it has to be done here.
-        */
-        if ([_listDelegate listWasClicked] && ![_listDelegate itemWasClicked])
-            [_listDelegate setListWasClicked:NO];
+    var shouldResign = !buttonCausedResign && [_listDelegate controllingViewShouldResign];
 
+    if (!shouldResign)
+    {
 #if PLATFORM(DOM)
-        [self _inputElement].focus();
+        // In FireFox this needs to be done in setTimeout, otherwise there is no caret
+        // We have to save the input element now, when we lose focus it will change.
+        var element = [self _inputElement];
+        window.setTimeout(function() { element.focus(); }, 0);
 #endif
 
         return NO;
@@ -917,14 +859,6 @@ var CPComboBoxTextSubview = @"text",
     CPLog.warn("-[%s %s] should not be called when usesDataSource is set to %s", [self className], cmd, flag ? "YES" : "NO");
 }
 
-- (id)objectValueForItemAtIndex:(int)index
-{
-    if (_usesDataSource)
-        return [_dataSource comboBox:self objectValueForItemAtIndex:index];
-    else
-        return _items[index];
-}
-
 /*!
     Select the item that matches the current value of the combobox.
     @ignore
@@ -971,7 +905,6 @@ var CPComboBoxTextSubview = @"text",
 - (CGRect)borderFrame
 {
     var inset = [self borderInset],
-        buttonSize = [self currentValueForThemeAttribute:@"popup-button-size"],
         frame = [self bounds];
 
     frame.origin.x += inset.left;
@@ -1022,13 +955,13 @@ var CPComboBoxTextSubview = @"text",
 }
 
 /*! @ignore */
-- (void)comboBoxWillPopUp
+- (void)comboBoxWillPopUp:(CPNotification)aNotification
 {
     [[CPNotificationCenter defaultCenter] postNotificationName:CPComboBoxWillPopUpNotification object:self];
 }
 
 /*! @ignore */
-- (void)comboBoxWillDismiss
+- (void)comboBoxWillDismiss:(CPNotification)aNotification
 {
     [[CPNotificationCenter defaultCenter] postNotificationName:CPComboBoxWillDismissNotification object:self];
 }
@@ -1044,6 +977,38 @@ var CPComboBoxTextSubview = @"text",
         return [_dataSource comboBox:self completedString:uncompletedString];
     else
         return nil;
+}
+
+@end
+
+@implementation CPComboBox (_CPPopUpListDataSource)
+
+- (int)numberOfItemsInList:(_CPPopUpList)aList
+{
+    return [self numberOfItems];
+}
+
+- (int)numberOfVisibleItemsInList:(_CPPopUpList)aList
+{
+    return [self numberOfVisibleItems];
+}
+
+- (id)list:(_CPPopUpList)aList objectValueForItemAtIndex:(int)index
+{
+    if (_usesDataSource)
+        return [_dataSource comboBox:self objectValueForItemAtIndex:index];
+    else
+        return _items[index];
+}
+
+- (id)list:(_CPPopUpList)aList displayValueForObjectValue:(id)aValue
+{
+    return aValue || @"";
+}
+
+- (CPString)list:(_CPPopUpList)aList stringValueForObjectValue:(id)aValue
+{
+   return String(aValue);
 }
 
 @end

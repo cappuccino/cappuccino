@@ -54,6 +54,7 @@
 @implementation AppController : CPObject
 {
     @outlet CPWindow    theWindow;
+    CPWindow            testWindow;
     CPString            employee @accessors;
     Companies           companies @accessors;
     CPArrayController   companiesController;
@@ -81,18 +82,17 @@
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
-    theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(30, 50, 500, 400) styleMask:CPTitledWindowMask | CPResizableWindowMask];
+    testWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(30, 50, 500, 400) styleMask:CPTitledWindowMask | CPResizableWindowMask];
 
-    var contentView = [theWindow contentView],
+    var contentView = [testWindow contentView],
         companiesScrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(30, 30, 200, 100)],
         companiesTable = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
         employeesScrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(250, 30, 200, 200)],
         employeesTable = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 200, 200)];
 
-    [theWindow setTitle:@"CPComboBox (from code)"];
+    [testWindow setTitle:@"CPComboBox (from code)"];
 
     var column = [[CPTableColumn alloc] initWithIdentifier:@"name"];
-
     [column setResizingMask:CPTableColumnAutoresizingMask];
     [companiesTable addTableColumn:column];
     [companiesTable setAllowsMultipleSelection:YES];
@@ -107,7 +107,6 @@
     [contentView addSubview:companiesScrollView];
 
     column = [[CPTableColumn alloc] initWithIdentifier:@"name"];
-
     [column setResizingMask:CPTableColumnAutoresizingMask];
     [employeesTable addTableColumn:column];
     [employeesTable setAllowsMultipleSelection:YES];
@@ -130,11 +129,11 @@
     [contentView addSubview:textfield];
 
     var center = [CPNotificationCenter defaultCenter];
-
     [center addObserver:self selector:@selector(comboNote:) name:CPComboBoxSelectionDidChangeNotification object:combo];
     [center addObserver:self selector:@selector(comboNote:) name:CPComboBoxSelectionIsChangingNotification object:combo];
     [center addObserver:self selector:@selector(comboNote:) name:CPComboBoxWillDismissNotification object:combo];
     [center addObserver:self selector:@selector(comboNote:) name:CPComboBoxWillPopUpNotification object:combo];
+    [center addObserver:self selector:@selector(comboNote:) name:CPControlTextDidEndEditingNotification object:combo];
 
     nextCheckboxY = 166;
     [self makeCheckBoxWithTitle:@"Enabled" defaultState:CPOnState];
@@ -153,7 +152,6 @@
     [employeesController bind:@"contentArray" toObject:companiesController withKeyPath:@"selection.employees" options:nil];
 
     var employeeController = [CPObjectController new];
-
     [employeeController bind:@"content" toObject:employeesController withKeyPath:@"selection.self" options:nil];
 
     [[companiesTable tableColumnWithIdentifier:@"name"] bind:@"value" toObject:companiesController withKeyPath:@"arrangedObjects.name" options:nil];
@@ -169,8 +167,8 @@
     [employeesController addObserver:self forKeyPath:@"arrangedObjects" options:0 context:@"employees.arrangedObjects"];
     [combo addObserver:self forKeyPath:@"value" options:0 context:@"combo.value"];
 
-    [theWindow setInitialFirstResponder:companiesTable];
-    [theWindow orderFront:self];
+    [testWindow setInitialFirstResponder:combo];
+    [testWindow makeKeyAndOrderFront:self];
 }
 
 - (void)makeCheckBoxWithTitle:(CPString)aTitle defaultState:(BOOL)aState
@@ -180,7 +178,7 @@
     [checkbox setState:aState];
     [checkbox setTarget:self];
     [checkbox setAction:@selector(setComboState:)];
-    [[theWindow contentView] addSubview:checkbox];
+    [[testWindow contentView] addSubview:checkbox];
 
     nextCheckboxY += 25;
 }
