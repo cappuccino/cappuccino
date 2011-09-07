@@ -324,11 +324,21 @@
 */
 - (void)_selectionDidChange
 {
+    [self _selectionDidChangeNotify:YES];
+}
+
+/*!
+    @ignore
+*/
+- (void)_selectionDidChangeNotify:(BOOL)notify
+{
     if (_selection === undefined || _selection === nil)
         _selection = [[CPControllerSelectionProxy alloc] initWithController:self];
 
     [_selection controllerDidChange];
-    [self didChangeValueForKey:@"selection"];
+
+    if (notify)
+        [self didChangeValueForKey:@"selection"];
 }
 
 /*!
@@ -666,21 +676,21 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
     var count = [theValues count];
 
     if (!count)
-        value = CPNoSelectionMarker;
+        return CPNoSelectionMarker;
     else if (count === 1)
         value = [theValues objectAtIndex:0];
     else
     {
         if ([_controller alwaysUsesMultipleValuesMarker])
-            value = CPMultipleValuesMarker;
+            return CPMultipleValuesMarker;
         else
         {
             value = [theValues objectAtIndex:0];
 
-            for (var i = 0, count= [theValues count]; i < count && value != CPMultipleValuesMarker; i++)
+            for (var i = 0, count = [theValues count]; i < count; i++)
             {
                 if (![value isEqual:[theValues objectAtIndex:i]])
-                    value = CPMultipleValuesMarker;
+                    return CPMultipleValuesMarker;
             }
         }
     }
@@ -693,8 +703,21 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 
 - (id)valueForKeyPath:(CPString)theKeyPath
 {
-    var values = [[_controller selectedObjects] valueForKeyPath:theKeyPath];
-    value = [self _controllerMarkerForValues:values];
+    // If valueForKeyPath fails because of an undefined key, return CPNotApplicableMarker
+    var value;
+
+    try
+    {
+        var values = [[_controller selectedObjects] valueForKeyPath:theKeyPath];
+        value = [self _controllerMarkerForValues:values];
+    }
+    catch (ex)
+    {
+        if ([ex name] === CPUndefinedKeyException)
+            value = CPNotApplicableMarker;
+        else
+            throw ex;
+    }
 
     [_cachedValues setObject:value forKey:theKeyPath];
 
