@@ -564,8 +564,9 @@
 - (BOOL)setSelectionIndexes:(CPIndexSet)indexes
 {
     [self _selectionWillChange]
-    [self __setSelectionIndexes:indexes];
+    var r = [self __setSelectionIndexes:indexes];
     [self _selectionDidChange];
+    return r;
 }
 
 /*
@@ -574,7 +575,7 @@
 */
 - (BOOL)__setSelectionIndex:(int)theIndex
 {
-    [self __setSelectionIndexes:[CPIndexSet indexSetWithIndex:theIndex]];
+    return [self __setSelectionIndexes:[CPIndexSet indexSetWithIndex:theIndex]];
 }
 
 /*
@@ -646,10 +647,11 @@
     [self willChangeValueForKey:@"selectionIndexes"];
     [self _selectionWillChange];
 
-    [self __setSelectedObjects:objects];
+    var r = [self __setSelectedObjects:objects];
 
     [self didChangeValueForKey:@"selectionIndexes"];
     [self _selectionDidChange];
+    return r;
 }
 
 /*
