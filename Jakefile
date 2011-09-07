@@ -160,6 +160,10 @@ function generateDocs(/* boolean */ noFrame)
         rm_rf($DOCUMENTATION_BUILD);
         mv("debug.txt", FILE.join("Documentation", "debug.txt"));
         mv("Documentation", $DOCUMENTATION_BUILD);
+
+        // There is a bug in doxygen 1.7.x preventing loading correctly the custom CSS
+        // So let's do it manually
+        cp(FILE.join(documentationDir, "doxygen.css"), FILE.join($DOCUMENTATION_BUILD, "html", "doxygen.css"));
     }
 }
 
