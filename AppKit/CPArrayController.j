@@ -583,28 +583,38 @@
 */
 - (BOOL)__setSelectionIndexes:(CPIndexSet)indexes
 {
-    if (!indexes)
-        indexes = [CPIndexSet indexSet];
+    var newIndexes = indexes;
 
-    if (![indexes count])
+    if (!newIndexes)
+        newIndexes = [CPIndexSet indexSet];
+
+    if (![newIndexes count])
     {
         if (_avoidsEmptySelection && [[self arrangedObjects] count])
-            indexes = [CPIndexSet indexSetWithIndex:0];
+            newIndexes = [CPIndexSet indexSetWithIndex:0];
     }
     else
     {
         var objectsCount = [[self arrangedObjects] count];
+
+        // Don't trash the input - the caller might depend on it or we might have been
+        // given _selectionIndexes as the input in which case the equality test below
+        // would always succeed despite our change below.
+        newIndexes = [newIndexes copy];
+
         // Remove out of bounds indexes.
-        [indexes removeIndexesInRange:CPMakeRange(objectsCount, [indexes lastIndex] + 1)];
+        [newIndexes removeIndexesInRange:CPMakeRange(objectsCount, [newIndexes lastIndex] + 1)];
         // When avoiding empty selection and the deleted selection was at the bottom, select the last item.
-        if (![indexes count] && _avoidsEmptySelection && objectsCount)
-            indexes = [CPIndexSet indexSetWithIndex:objectsCount - 1];
+        if (![newIndexes count] && _avoidsEmptySelection && objectsCount)
+            newIndexes = [CPIndexSet indexSetWithIndex:objectsCount - 1];
     }
 
-    if ([_selectionIndexes isEqualToIndexSet:indexes])
+    if ([_selectionIndexes isEqualToIndexSet:newIndexes])
         return NO;
 
-    _selectionIndexes = [indexes copy];
+    // If we haven't already created our own index instance, make sure to copy it here so that
+    // the copy the user sent in is decoupled from our internal copy.
+    _selectionIndexes = indexes === newIndexes ? [indexes copy] : newIndexes;
 
     // Push back the new selection to the model for selectionIndexes if we have one.
     // There won't be an infinite loop because of the equality check above.
