@@ -488,6 +488,9 @@
 
     [companiesController setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
 
+    //for (var i = 0; i < [observations count]; i++)
+    //    CPLog.error(observations[i].context);
+
     // There should be exactly one observation of each kind, and they should be in the right
     // order.
     [self assert:5 equals:[observations count]];
@@ -558,6 +561,18 @@
     [ac setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
     [ac remove:nil];
     [self assert:[1, 2, 1] equals:[ac arrangedObjects] message:"only one copy of 1 removed + the right copy should be removed"];
+}
+
+- (void)testSetOutOfBoundsSelectedIndexes
+{
+    var ac = [CPArrayController new],
+        contentArray = [1, 2, 3],
+        indexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 4)];
+
+    [ac setContent:contentArray];
+    [ac setSelectionIndexes:indexes];
+    [self assert:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 3)] equals:[ac selectionIndexes]];
+    [self assert:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 4)] equals:indexes];
 }
 
 - (void)observeValueForKeyPath:keyPath
