@@ -259,7 +259,7 @@ var concat = Array.prototype.concat,
     if (aRange.location < 0 || CPMaxRange(aRange) > self.length)
         [CPException raise:CPRangeException reason:_cmd + " aRange out of bounds"];
 
-    if (otherRange.location < 0 || CPMaxRange(otherRange) > anArray.length)
+    if (otherRange && (otherRange.location < 0 || CPMaxRange(otherRange) > anArray.length))
         [CPException raise:CPRangeException reason:_cmd + " otherRange out of bounds"];
 
     if (otherRange && (otherRange.location !== 0 || otherRange.length !== [anArray count]))
