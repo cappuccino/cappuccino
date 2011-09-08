@@ -149,6 +149,7 @@ a {
 a:hover {
     text-decoration: none;
     color: #62B9ED;
+    text-shadow: none;
 }
 
 a.qindex {
@@ -487,6 +488,7 @@ table.memberdecls {
 .memitem {
     padding: 0;
     margin-top: .5em;
+    margin-bottom: 10px;
 }
 
 .memname {
@@ -516,7 +518,7 @@ table.memberdecls {
         -webkit-border-top-right-radius: 3px;
         -webkit-border-top-left-radius: 3px;
         background-color: #E2E2E2;
-
+        padding-left: 3px;
 }
 
 .memdoc > p {
@@ -540,7 +542,7 @@ table.memberdecls {
         -webkit-border-bottom-left-radius: 3px;
         -webkit-border-bottom-right-radius: 3px;
         -webkit-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.15);
-        padding: .5em .5em 0;
+        padding: .8em .5em 0;
 }
 
 .memdoc dl dd td {
@@ -825,19 +827,20 @@ table.fieldtable {
 .navpath li.navelem a:hover
 {
     color:#6985BC;
+    text-shadow: none;
 }
 
 .navpath li.footer
 {
-        list-style-type:none;
-        float:right;
-        padding-left:10px;
-        padding-right:15px;
-        background-image:none;
-        background-repeat:no-repeat;
-        background-position:right;
-        color:#374E7C;
-        font-size: 8pt;
+    list-style-type:none;
+    float:right;
+    padding-left:10px;
+    padding-right:15px;
+    background-image:none;
+    background-repeat:no-repeat;
+    background-position:right;
+    color:#374E7C;
+    font-size: 8pt;
 }
 
 
@@ -848,11 +851,17 @@ div.summary
     padding-right: 5px;
     width: 50%;
     text-align: right;
+    margin-left: 10px;
+    margin-top: 22px;
+    margin-right: 10px;
+    color: #419DE0;
 }
 
 div.summary a
 {
     white-space: nowrap;
+    margin-left: 3px;
+    margin-right: 3px;
 }
 
 div.ingroups
@@ -862,6 +871,7 @@ div.ingroups
     padding-left: 0px;
     width: 50%;
     text-align: left;
+    margin-top: 2px;
 }
 
 div.ingroups a
@@ -878,11 +888,12 @@ div.header
 
 div.headertitle
 {
-    padding: 5px 5px 5px 7px;
+    padding: 10px 5px 10px 20px;
     background: -moz-linear-gradient(90deg, from(#333), to(#444));
     background: -webkit-gradient(linear, left top, left bottom, from(#444), to(#333));
     color: white;
     text-shadow: -1px -1px black;
+    min-height: 36px;
 }
 
 div.headertitle h1 {
@@ -950,6 +961,7 @@ dl.bug
 {
     border: 0px none;
     max-height: 55px;
+    padding-left: 5px;
 }
 
 #projectname
@@ -984,6 +996,8 @@ dl.bug
     color: white;
     font-weight: bold;
     text-shadow: -1px -1px black;
+    /*background: -moz-linear-gradient(90deg, from(#B0B0B0), to(#E8E8E8));*/
+    /*background: -webkit-gradient(linear, left top, left bottom, from(#84DBFF), to(#62B9ED));*/
 }
 
 .image
@@ -1060,20 +1074,20 @@ dl.citelist dd {
 
 /* ADDITIONS */
 .tabs, .tabs2, .tabs3 {
-    background: -moz-linear-gradient(90deg, from(#CCC), to(whiteSmoke));
-    background: -webkit-gradient(linear, left top, left bottom, from(whiteSmoke), to(#CCC));
+    background: -moz-linear-gradient(90deg, from(#eee), to(#fff));
+    background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee)); 
     border-bottom: 1px solid #ccc;
     width: 100%;
     z-index: 101;
     font-size: 100%;
 }
 
-.tabs2 {
-    font-size: 90%;
+.tabs a, .tabs2 a{
+    text-align: center;
 }
 
-.tabs3 {
-    font-size: 75%;
+.tabs2 {
+    font-size: 90%;
 }
 
 .tablist {
@@ -1107,23 +1121,43 @@ dl.citelist dd {
     background: inherit;
     text-shadow: 0px 1px 1px rgba(0, 0, 0, 1.0);
     text-decoration: none;
+    text-shadow: none;
+    color: gray;
+}
 
+.tabs3 {
+    font-size: 75%;
+    max-height: 20px;
+    line-height: 0px;
+}
+
+.tabs3 li {
+    padding: 0px;
+    margin: 0px;
+    line-height: 20px;
 }
 
 .tabs3 .tablist a {
     padding: 0 10px;
+    height: 20px;
+    padding-top: 0px;
+    margin-top: 0px;
 }
 
-
 .tablist li.current a {
-    background: -moz-linear-gradient(90deg, from(whiteSmoke), to(#CCC));
-    background: -webkit-gradient(linear, left top, left bottom, from(#CCC), to(whiteSmoke));
+    background: -moz-linear-gradient(90deg, from(#fff), to(#eee));
+    background: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#fff)); 
     color: #444;
     text-shadow: 0px 1px 1px #f2f2f2;
 }
 
+.tabs2 li{
+     padding: 0px;
+    margin: 0px;
+    line-height: 30px;
+}
 
-//////
+
 #nav-tree .children_ul {
     margin:0;
     padding:4px;
@@ -1199,7 +1233,7 @@ dl.citelist dd {
   font-size:14px;
   overflow:auto;
   padding-right: 0px !important;
-  margin-right: -3px !important;
+  margin-right: -5px !important;
   background: #E8EAEE !important;
 }
 
@@ -1227,12 +1261,12 @@ dl.citelist dd {
 }
 
 .ui-resizable-e {
-  background: none !important;
+  background: #CCC !important;
   cursor:e-resize;
   height:100%;
   right:0;
   top:0;
-  width:3px !important;
+  width: 1px !important;
 }
 
 .ui-resizable-handle {
@@ -1240,15 +1274,8 @@ dl.citelist dd {
   font-size:0.1px;
   position:absolute;
   z-index:1;
-  background: none !important;
 }
 
 #nav-tree-contents {
   margin: 6px 0px 0px 0px;
-}
-
-#nav-tree {
-  /*background-image:url('nav_h.png');*/
-  background-repeat:repeat-x;
-  background-color: #F9FAFC;
 }
