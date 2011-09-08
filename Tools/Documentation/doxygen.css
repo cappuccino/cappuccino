@@ -1200,6 +1200,7 @@ dl.citelist dd {
   overflow:auto;
   padding-right: 0px !important;
   margin-right: -3px !important;
+  background: #E8EAEE !important;
 }
 
 #doc-content {
