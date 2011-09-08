@@ -585,22 +585,26 @@ dl.reflist dt {
 }
 
 .params, .retval, .exception, .tparams {
-        border-spacing: 6px 2px;
+    border-spacing: 6px 2px;
 }
 
 .params .paramname, .retval .paramname {
-        font-weight: bold;
-        vertical-align: top;
+    font-weight: bold;
+    vertical-align: top;
 }
 
 .params .paramtype {
-        font-style: italic;
-        vertical-align: top;
+    font-style: italic;
+    vertical-align: top;
+}
+
+.memdoc .params td {
+    padding-left: 10px;
 }
 
 .params .paramdir {
-        font-family: "courier new",courier,monospace;
-        vertical-align: top;
+    font-family: "courier new",courier,monospace;
+    vertical-align: top;
 }
 
 
