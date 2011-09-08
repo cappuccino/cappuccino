@@ -131,8 +131,8 @@
 
     _contentObject = aContent;
 
-    [self didChangeValueForKey:@"contentObject"];
     [self _selectionDidChange];
+    [self didChangeValueForKey:@"contentObject"];
 }
 
 /*!

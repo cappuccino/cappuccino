@@ -228,10 +228,10 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     id              _targetObject;
     Class           _nativeClass;
     CPDictionary    _changesForKey;
+    CPDictionary    _nestingForKey;
     Object          _observersForKey;
     int             _observersForKeyLength;
     CPSet           _replacedKeys;
-    CPSet           _suppressedNotifications;
 }
 
 + (id)proxyForObject:(CPObject)anObject
@@ -248,12 +248,12 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 {
     if (self = [super init])
     {
-        _targetObject            = aTarget;
-        _nativeClass             = [aTarget class];
-        _observersForKey         = {};
-        _changesForKey           = {};
-        _observersForKeyLength   = 0;
-        _suppressedNotifications = [CPSet set];
+        _targetObject       = aTarget;
+        _nativeClass        = [aTarget class];
+        _observersForKey    = {};
+        _changesForKey      = {};
+        _nestingForKey      = {};
+        _observersForKeyLength = 0;
 
         [self _replaceClass];
         aTarget[KVOProxyKey] = self;
@@ -631,12 +631,12 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 {
     // Fire change events for the dependent keys
     var dependentKeysForClass = _nativeClass[DependentKeysKey],
-        dependentKeys = [dependentKeysForClass[theKeyPath] allObjects],
-        isBeforeFlag = !![theChanges objectForKey:CPKeyValueChangeNotificationIsPriorKey];
+        dependantKeys = [dependentKeysForClass[theKeyPath] allObjects];
 
-    for (var i = 0; i < [dependentKeys count]; i++)
+    var isBeforeFlag = !![theChanges objectForKey:CPKeyValueChangeNotificationIsPriorKey];
+    for (var i = 0; i < [dependantKeys count]; i++)
     {
-        var dependantKey = [dependentKeys objectAtIndex:i];
+        var dependantKey = [dependantKeys objectAtIndex:i];
         [self _sendNotificationsForKey:dependantKey changeOptions:theChanges isBefore:isBeforeFlag];
     }
 }
@@ -717,6 +717,18 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
     if (isBefore)
     {
+        if (changes)
+        {
+            // "willChange:X" nesting.
+            var level = _nestingForKey[aKey];
+            if (!level)
+                [CPException raise:CPInternalInconsistencyException reason:@"_changesForKey without _nestingForKey"];
+            _nestingForKey[aKey] = level + 1;
+            // Only notify on the first willChange..., silently note any following nested calls.
+            return;
+        }
+        _nestingForKey[aKey] = 1;
+
         changes = changeOptions;
 
         var indexes = [changes objectForKey:CPKeyValueChangeIndexesKey],
@@ -774,8 +786,18 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     }
     else
     {
-        if (!changes)
+        var level = _nestingForKey[aKey];
+        if (!changes || !level)
             [CPException raise:@"CPKeyValueObservingException" reason:@"'didChange...' message called without prior call of 'willChange...'"];
+
+        _nestingForKey[aKey] = level - 1;
+        if (level - 1 > 0)
+        {
+            // willChange... was called multiple times. Only fire observation notifications when
+            // didChange... has been called an equal number of times.
+            return;
+        }
+        delete _nestingForKey[aKey];
 
         [changes removeObjectForKey:CPKeyValueChangeNotificationIsPriorKey];
 
@@ -814,6 +836,8 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
             [changes setObject:newValue forKey:CPKeyValueChangeNewKey];
         }
+
+        delete _changesForKey[aKey];
     }
 
     var observers = [_observersForKey[aKey] allValues],
@@ -844,21 +868,10 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     {
         var keyPath = dependentKeyPaths[index];
 
-        if (![_suppressedNotifications containsObject:keyPath])
-            [self _sendNotificationsForKey:keyPath
-                             changeOptions:isBefore ? [changeOptions copy] : _changesForKey[keyPath]
-                                  isBefore:isBefore];
+        [self _sendNotificationsForKey:keyPath
+                         changeOptions:isBefore ? [changeOptions copy] : _changesForKey[keyPath]
+                              isBefore:isBefore];
     }
-}
-
-- (void)suppressNotificationsForKeyPath:(CPString)keyPath
-{
-    [_suppressedNotifications addObject:keyPath];
-}
-
-- (void)unsuppressNotificationsForKeyPath:(CPString)keyPath
-{
-    [_suppressedNotifications removeObject:keyPath];
 }
 
 @end

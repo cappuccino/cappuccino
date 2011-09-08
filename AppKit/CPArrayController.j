@@ -27,7 +27,6 @@
 @import "CPObjectController.j"
 @import "CPKeyValueBinding.j"
 
-
 /*!
 
 @class CPArrayController
@@ -285,7 +284,8 @@
 
     if (value === nil)
         value = [];
-    else if (![value isKindOfClass:[CPArray class]])
+
+    if (![value isKindOfClass:[CPArray class]])
         value = [value];
 
     var oldSelectedObjects = nil,
@@ -340,20 +340,20 @@
 }
 
 /*!
+    @ignore
+*/
+- (void)_setContentSet:(id)aSet
+{
+    [self setContent:[aSet allObjects]];
+}
+
+/*!
     Returns the content array of the controller.
     @return id the content array of the receiver
 */
 - (id)contentArray
 {
     return [self content];
-}
-
-/*!
-    @ignore
-*/
-- (void)_setContentSet:(id)aSet
-{
-    [self setContent:[aSet allObjects]];
 }
 
 /*!
@@ -564,13 +564,9 @@
 - (BOOL)setSelectionIndexes:(CPIndexSet)indexes
 {
     [self _selectionWillChange]
-
-    // When explicitly setting the selection, ignore avoidsEmptySelection
-    var changed = [self __setSelectionIndexes:indexes obeyAvoidsEmptySelection:NO];
-
-    [self _selectionDidChangeNotify:NO];
-
-    return changed;
+    var r = [self __setSelectionIndexes:indexes];
+    [self _selectionDidChange];
+    return r;
 }
 
 /*
@@ -579,7 +575,7 @@
 */
 - (BOOL)__setSelectionIndex:(int)theIndex
 {
-    return [self __setSelectionIndexes:[CPIndexSet indexSetWithIndex:theIndex] obeyAvoidsEmptySelection:YES];
+    return [self __setSelectionIndexes:[CPIndexSet indexSetWithIndex:theIndex]];
 }
 
 /*
@@ -588,37 +584,38 @@
 */
 - (BOOL)__setSelectionIndexes:(CPIndexSet)indexes
 {
-    [self __setSelectionIndexes:indexes  obeyAvoidsEmptySelection:YES];
-}
+    var newIndexes = indexes;
 
-/*
-    Like setSelectionIndexes but don't fire any change notifications.
-    @ignore
-*/
-- (BOOL)__setSelectionIndexes:(CPIndexSet)indexes obeyAvoidsEmptySelection:(BOOL)obeyAvoidsEmptySelection
-{
-    if (!indexes)
-        indexes = [CPIndexSet indexSet];
+    if (!newIndexes)
+        newIndexes = [CPIndexSet indexSet];
 
-    if (![indexes count])
+    if (![newIndexes count])
     {
-        if (obeyAvoidsEmptySelection && _avoidsEmptySelection && [[self arrangedObjects] count])
-            indexes = [CPIndexSet indexSetWithIndex:0];
+        if (_avoidsEmptySelection && [[self arrangedObjects] count])
+            newIndexes = [CPIndexSet indexSetWithIndex:0];
     }
     else
     {
         var objectsCount = [[self arrangedObjects] count];
+
+        // Don't trash the input - the caller might depend on it or we might have been
+        // given _selectionIndexes as the input in which case the equality test below
+        // would always succeed despite our change below.
+        newIndexes = [newIndexes copy];
+
         // Remove out of bounds indexes.
-        [indexes removeIndexesInRange:CPMakeRange(objectsCount, [indexes lastIndex] + 1)];
+        [newIndexes removeIndexesInRange:CPMakeRange(objectsCount, [newIndexes lastIndex] + 1)];
         // When avoiding empty selection and the deleted selection was at the bottom, select the last item.
-        if (![indexes count] && _avoidsEmptySelection && objectsCount)
-            indexes = [CPIndexSet indexSetWithIndex:objectsCount - 1];
+        if (![newIndexes count] && _avoidsEmptySelection && objectsCount)
+            newIndexes = [CPIndexSet indexSetWithIndex:objectsCount - 1];
     }
 
-    if ([_selectionIndexes isEqualToIndexSet:indexes])
+    if ([_selectionIndexes isEqualToIndexSet:newIndexes])
         return NO;
 
-    _selectionIndexes = [indexes copy];
+    // If we haven't already created our own index instance, make sure to copy it here so that
+    // the copy the user sent in is decoupled from our internal copy.
+    _selectionIndexes = indexes === newIndexes ? [indexes copy] : newIndexes;
 
     // Push back the new selection to the model for selectionIndexes if we have one.
     // There won't be an infinite loop because of the equality check above.
@@ -650,10 +647,11 @@
     [self willChangeValueForKey:@"selectionIndexes"];
     [self _selectionWillChange];
 
-    [self __setSelectedObjects:objects obeyAvoidsEmptySelection:NO];
+    var r = [self __setSelectedObjects:objects];
 
     [self didChangeValueForKey:@"selectionIndexes"];
-    [self _selectionDidChangeNotify:NO];
+    [self _selectionDidChange];
+    return r;
 }
 
 /*
@@ -661,15 +659,6 @@
     @ignore
 */
 - (BOOL)__setSelectedObjects:(CPArray)objects
-{
-    [self __setSelectedObjects:objects obeyAvoidsEmptySelection:YES];
-}
-
-/*
-    Like setSelectedObjects but don't fire any change notifications.
-    @ignore
-*/
-- (BOOL)__setSelectedObjects:(CPArray)objects obeyAvoidsEmptySelection:(BOOL)obeyAvoidsEmptySelection
 {
     var set = [CPIndexSet indexSet],
         count = [objects count],
@@ -683,7 +672,7 @@
             [set addIndex:index];
     }
 
-    [self __setSelectionIndexes:set obeyAvoidsEmptySelection:obeyAvoidsEmptySelection];
+    [self __setSelectionIndexes:set];
     return YES;
 }
 
@@ -752,13 +741,21 @@
     }
 
     [self willChangeValueForKey:@"content"];
-    [self _willModifyContent];
+
+    /*
+    If the content array is bound then our addObject: message below will cause the observed
+    array to change. The binding will call setContent:_contentObject on this array
+    controller to let it know about the change. We want to ignore that message since we
+    A) already have the right _contentObject and B) properly update _arrangedObjects
+    by hand below.
+    */
+    _disableSetContent = YES;
     [_contentObject addObject:object];
 
     // Allow handlesContentAsCompoundValue reverse sets to trigger.
     [[CPBinder getBinding:@"contentArray" forObject:self] _contentArrayDidChange];
 
-    [self _didModifyContent];
+    _disableSetContent = NO;
 
     if (willClearPredicate)
     {
@@ -779,15 +776,14 @@
             [_selectionIndexes shiftIndexesStartingAtIndex:pos by:1];
     }
     /*
-        else if (_filterPredicate !== nil)
-        ...
-        Implies _filterPredicate && ![_filterPredicate evaluateWithObject:object], so the new object does
-        not appear in arrangedObjects and we do not have to update at all.
+    else if (_filterPredicate !== nil)
+    ...
+    // Implies _filterPredicate && ![_filterPredicate evaluateWithObject:object], so the new object does
+    // not appear in arrangedObjects and we do not have to update at all.
     */
 
     // This will also send notificaitons for arrangedObjects.
     [self didChangeValueForKey:@"content"];
-
     if (willClearPredicate)
         [self didChangeValueForKey:@"filterPredicate"];
 }
@@ -813,7 +809,10 @@
 
     [self willChangeValueForKey:@"content"];
 
-    [self _willModifyContent];
+    /*
+    See _disableSetContent explanation in addObject:.
+    */
+    _disableSetContent = YES;
 
     // The atArrangedObjectIndex: part of this method's name only refers to where the
     // object goes in arrangedObjects, not in the content array. So use addObject:,
@@ -822,7 +821,7 @@
     // Allow handlesContentAsCompoundValue reverse sets to trigger.
     [[CPBinder getBinding:@"contentArray" forObject:self] _contentArrayDidChange];
 
-    [self _didModifyContent];
+    _disableSetContent = NO;
 
     if (willClearPredicate)
         [self __setFilterPredicate:nil];
@@ -840,7 +839,6 @@
         [self __setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
 
     [self didChangeValueForKey:@"content"];
-
     if (willClearPredicate)
         [self didChangeValueForKey:@"filterPredicate"];
 }
@@ -853,13 +851,15 @@
 - (void)removeObject:(id)object
 {
     [self willChangeValueForKey:@"content"];
-    [self _willModifyContent];
+
+    // See _disableSetContent explanation in addObject:.
+    _disableSetContent = YES;
 
     [_contentObject removeObject:object];
     // Allow handlesContentAsCompoundValue reverse sets to trigger.
     [[CPBinder getBinding:@"contentArray" forObject:self] _contentArrayDidChange];
 
-    [self _didModifyContent];
+    _disableSetContent = NO;
 
     if (_filterPredicate === nil || [_filterPredicate evaluateWithObject:object])
     {
@@ -911,15 +911,6 @@
 }
 
 /*!
-    Removes the object at the specified index in the controller's arranged objects from the content array.
-    @param int index - index of the object to remove.
-*/
-- (void)removeObjectAtArrangedObjectIndex:(int)index
-{
-    [self removeObjectsAtArrangedObjectIndexes:[CPIndexSet indexSetWithIndex:index]];
-}
-
-/*!
     Removes the objects at the specified indexes in the controller's arranged objects from the content array.
     @param CPIndexSet indexes - indexes of the objects to remove.
 */
@@ -927,20 +918,19 @@
 {
     [self willChangeValueForKey:@"content"];
 
+    /*
+    See _disableSetContent explanation in addObject:.
+    */
     _disableSetContent = YES;
 
     var arrangedObjects = [self arrangedObjects],
         index = [anIndexSet lastIndex],
         position = CPNotFound,
-        newSelectionIndexes = [_selectionIndexes copy],
-        proxy = [_CPKVOProxy proxyForObject:self];
+        newSelectionIndexes = [_selectionIndexes copy];
 
     while (index !== CPNotFound)
     {
         var object = [arrangedObjects objectAtIndex:index];
-
-        // Make sure arrangedObjects does not notify because of content change
-        [proxy suppressNotificationsForKeyPath:@"arrangedObjects"];
 
         // First try the simple case which should work if there are no sort descriptors.
         if ([_contentObject objectAtIndex:index] === object)
@@ -955,9 +945,6 @@
             contentIndex = [_contentObject indexOfObjectIdenticalTo:object];
             [_contentObject removeObjectAtIndex:contentIndex];
         }
-
-        // Now arrangedObjects can notify
-        [proxy unsuppressNotificationsForKeyPath:@"arrangedObjects"];
         [arrangedObjects removeObjectAtIndex:index];
 
         // Deselect this row if it was selected, and either way shift all selection indexes
@@ -967,7 +954,6 @@
 
         index = [anIndexSet indexLessThanIndex:index];
     }
-
     // Allow handlesContentAsCompoundValue reverse sets to trigger.
     [[CPBinder getBinding:@"contentArray" forObject:self] _contentArrayDidChange];
     _disableSetContent = NO;
@@ -1014,13 +1000,15 @@
 - (void)_removeObjects:(CPArray)objects
 {
     [self willChangeValueForKey:@"content"];
-    [self _willModifyContent];
+
+    // See _disableSetContent explanation in addObject:.
+    _disableSetContent = YES;
 
     [_contentObject removeObjectsInArray:objects];
     // Allow handlesContentAsCompoundValue reverse sets to trigger.
     [[CPBinder getBinding:@"contentArray" forObject:self] _contentArrayDidChange];
 
-    [self _didModifyContent];
+    _disableSetContent = NO;
 
     var arrangedObjects = [self arrangedObjects],
         position = [arrangedObjects indexOfObject:[objects objectAtIndex:0]];
@@ -1057,39 +1045,13 @@
     return [self isEditable];
 }
 
-// Internal
-- (void)_willModifyContent
-{
-    /*
-        If the content array is bound then our addObject: message below will cause the observed
-        array to change. The binding will call setContent:_contentObject on this array
-        controller to let it know about the change. We want to ignore that message since we
-        A) already have the right _contentObject and B) properly update _arrangedObjects
-        by hand below.
-    */
-    _disableSetContent = YES;
-
-    /*
-        When mutating arrangedObjects, we mutate the content first. But mutating the content
-        will trigger a notification that the arrangedObjects have changed, which we want to
-        suppress, since the arrangedObjects mutation will do the correct notification.
-    */
-    [[_CPKVOProxy proxyForObject:self] suppressNotificationsForKeyPath:@"arrangedObjects"];
-}
-
-- (void)_didModifyContent
-{
-    _disableSetContent = NO;
-    [[_CPKVOProxy proxyForObject:self] unsuppressNotificationsForKeyPath:@"arrangedObjects"];
-}
-
 @end
 
 @implementation CPArrayController (CPBinder)
 
 + (Class)_binderClassForBinding:(CPString)theBinding
 {
-    if (theBinding === @"content" || theBinding === @"contentArray")
+    if (theBinding == @"contentArray")
         return [_CPArrayControllerContentBinder class];
 
     return [super _binderClassForBinding:theBinding];
@@ -1104,7 +1066,7 @@
     var destination = [_info objectForKey:CPObservedObjectKey],
         keyPath = [_info objectForKey:CPObservedKeyPathKey],
         options = [_info objectForKey:CPOptionsKey],
-        isCompound = [self handlesContentAsCompoundValue] || keyPath.indexOf("@") !== -1;
+        isCompound = [self handlesContentAsCompoundValue];
 
     if (!isCompound)
     {

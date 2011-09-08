@@ -464,6 +464,45 @@
     [self assert:1 equals:[observations count] message:@"exactly 1 notification for insertObject x 2 (clearsFilterPredicate YES)"];
 }
 
+/**
+    Replicate the situation found in the Bindings manual test where one array controller's
+    contents depend on the selection of another.
+*/
+- (void)testObservationBetweenBoundControllers
+{
+    var companies = [Companies new],
+        companiesController = [CPArrayController new],
+        employeesController = [CPArrayController new];
+
+    [companiesController bind:@"contentArray" toObject:companies withKeyPath:@"items" options:nil];
+    [employeesController bind:@"contentArray" toObject:companiesController withKeyPath:@"selection.employees" options:nil];
+
+    [companiesController addObserver:self forKeyPath:@"selection" options:0 context:@"companies.selection"];
+    [companiesController addObserver:self forKeyPath:@"selectionIndexes" options:0 context:@"companies.selectionIndexes"];
+    [companiesController addObserver:self forKeyPath:@"arrangedObjects" options:0 context:@"companies.arrangedObjects"];
+    [employeesController addObserver:self forKeyPath:@"selectionIndexes" options:0 context:@"employees.selectionIndexes"];
+    [employeesController addObserver:self forKeyPath:@"selection" options:0 context:@"employees.selection"];
+    [employeesController addObserver:self forKeyPath:@"arrangedObjects" options:0 context:@"employees.arrangedObjects"];
+
+    observations = [];
+
+    [companiesController setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
+
+    //for (var i = 0; i < [observations count]; i++)
+    //    CPLog.error(observations[i].context);
+
+    // There should be exactly one observation of each kind, and they should be in the right
+    // order.
+    [self assert:5 equals:[observations count]];
+    [self assert:@"companies.selectionIndexes" equals:observations[0].context];
+    [self assert:@"employees.arrangedObjects" equals:observations[1].context];
+    [self assert:@"employees.selectionIndexes" equals:observations[2].context];
+    [self assert:@"employees.selection" equals:observations[3].context];
+    // This observation registers after the employees update because we are later in the
+    // observation queue than the binding.
+    [self assert:@"companies.selection" equals:observations[4].context];
+}
+
 - (void)testCompoundKeyPaths
 {
     var departmentNameField = [[CPTextField alloc] init];
@@ -524,6 +563,18 @@
     [self assert:[1, 2, 1] equals:[ac arrangedObjects] message:"only one copy of 1 removed + the right copy should be removed"];
 }
 
+- (void)testSetOutOfBoundsSelectedIndexes
+{
+    var ac = [CPArrayController new],
+        contentArray = [1, 2, 3],
+        indexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 4)];
+
+    [ac setContent:contentArray];
+    [ac setSelectionIndexes:indexes];
+    [self assert:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 3)] equals:[ac selectionIndexes]];
+    [self assert:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 4)] equals:indexes];
+}
+
 - (void)observeValueForKeyPath:keyPath
     ofObject:anActivity
     change:change
@@ -534,6 +585,7 @@
 
     [observations addObject:{
         keyPath: keyPath,
+        context: context,
         oldValue: [change valueForKey:CPKeyValueChangeOldKey],
         newValue: [change valueForKey:CPKeyValueChangeNewKey]
     }];
@@ -615,6 +667,27 @@
     if (self = [super init])
     {
         _name = theName;
+    }
+
+    return self;
+}
+
+@end
+
+@implementation Companies : CPObject
+{
+    CPMutableArray items @accessors;
+}
+
+- (id)init
+{
+    self = [super init];
+
+    if (self)
+    {
+        items = [CPMutableArray array];
+        [items addObject:[CPDictionary dictionaryWithObjectsAndKeys:@"Spacely Sprockets", @"name", [CPArray arrayWithObjects:@"Tom", @"Dick", @"Harry"], @"employees"]];
+        [items addObject:[CPDictionary dictionaryWithObjectsAndKeys:@"Cogswell Cogs", @"name", [CPArray arrayWithObjects:@"Jane", @"Mary", @"Vic"], @"employees"]];
     }
 
     return self;
