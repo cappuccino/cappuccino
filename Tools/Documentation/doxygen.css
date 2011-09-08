@@ -518,7 +518,7 @@ table.memberdecls {
         -webkit-border-top-right-radius: 3px;
         -webkit-border-top-left-radius: 3px;
         background-color: #E2E2E2;
-        padding-left: 3px;
+        padding-left: 9px;
 }
 
 .memdoc > p {
@@ -542,7 +542,7 @@ table.memberdecls {
         -webkit-border-bottom-left-radius: 3px;
         -webkit-border-bottom-right-radius: 3px;
         -webkit-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.15);
-        padding: .8em .5em 0;
+        padding: .8em 12px 0 12px;
 }
 
 .memdoc dl dd td {
