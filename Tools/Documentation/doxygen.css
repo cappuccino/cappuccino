@@ -796,7 +796,7 @@ table.fieldtable {
 .navpath ul
 {
     font-size: 11px;
-    background: -moz-linear-gradient(90deg, from(#CCC), to(whiteSmoke));
+    background: -moz-linear-gradient(-90deg, whiteSmoke, #CCC);
     background: -webkit-gradient(linear, left top, left bottom, from(whiteSmoke), to(#CCC));
     height:30px;
     line-height:30px;
@@ -893,7 +893,8 @@ div.header
 div.headertitle
 {
     padding: 10px 5px 10px 20px;
-    background: -moz-linear-gradient(90deg, from(#333), to(#444));
+    background: #333;
+    background: -moz-linear-gradient(-90deg, #444, #333);
     background: -webkit-gradient(linear, left top, left bottom, from(#444), to(#333));
     color: white;
     text-shadow: -1px -1px black;
@@ -995,13 +996,12 @@ dl.bug
     margin: 0px;
     width: 100%;
     border-bottom: 1px solid #CCC;
-    background: -moz-linear-gradient(90deg, from(#B0B0B0), to(#E8E8E8));
-    background: -webkit-gradient(linear, left top, left bottom, from(#E8E8E8), to(#B0B0B0));
     color: white;
     font-weight: bold;
     text-shadow: -1px -1px black;
-    /*background: -moz-linear-gradient(90deg, from(#B0B0B0), to(#E8E8E8));*/
-    /*background: -webkit-gradient(linear, left top, left bottom, from(#84DBFF), to(#62B9ED));*/
+    background: #485D77;
+    background: -moz-linear-gradient(-90deg, #485D77, #252D38);
+    background: -webkit-gradient(linear, left top, left bottom, from(#485D77), to(#252D38));
 }
 
 .image
@@ -1078,7 +1078,7 @@ dl.citelist dd {
 
 /* ADDITIONS */
 .tabs, .tabs2, .tabs3 {
-    background: -moz-linear-gradient(90deg, from(#eee), to(#fff));
+    background: -moz-linear-gradient(-90deg, #fff, #eee);
     background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee)); 
     border-bottom: 1px solid #ccc;
     width: 100%;
@@ -1149,7 +1149,7 @@ dl.citelist dd {
 }
 
 .tablist li.current a {
-    background: -moz-linear-gradient(90deg, from(#fff), to(#eee));
+    background: -moz-linear-gradient(-90deg, #eee, #fff);
     background: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#fff)); 
     color: #444;
     text-shadow: 0px 1px 1px #f2f2f2;
@@ -1184,7 +1184,7 @@ dl.citelist dd {
 }
 
 #nav-tree .selected {
-    background: -moz-linear-gradient(90deg, from(#308CD9), to(#62B9ED)) !important;
+    background: -moz-linear-gradient(-90deg, #62B9ED, #308CD9) !important;
     background: -webkit-gradient(linear, left top, left bottom, from(#62B9ED), to(#308CD9)) !important;
     border-top: 1px solid #308CD9;
     text-shadow: 0px 1px 1px rgba(0, 0, 0, 1.0);
