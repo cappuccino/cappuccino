@@ -1098,6 +1098,8 @@ dl.citelist dd {
   background: #E8EAEE;
   font-size:14px;
   overflow:auto;
+  padding-right: 0px !important;
+  margin-right: -3px !important;
 }
 
 #doc-content {
@@ -1120,15 +1122,16 @@ dl.citelist dd {
 
 .ui-resizable .ui-resizable-handle {
   display:block;
+  background-image: none !important;
 }
 
 .ui-resizable-e {
-  background:url("ftv2splitbar.png") repeat scroll right center transparent;
+  background: none !important;
   cursor:e-resize;
   height:100%;
   right:0;
   top:0;
-  width:6px;
+  width:3px !important;
 }
 
 .ui-resizable-handle {
@@ -1136,6 +1139,7 @@ dl.citelist dd {
   font-size:0.1px;
   position:absolute;
   z-index:1;
+  background: none !important;
 }
 
 #nav-tree-contents {
@@ -1143,7 +1147,7 @@ dl.citelist dd {
 }
 
 #nav-tree {
-  background-image:url('nav_h.png');
+  /*background-image:url('nav_h.png');*/
   background-repeat:repeat-x;
   background-color: #F9FAFC;
 }
