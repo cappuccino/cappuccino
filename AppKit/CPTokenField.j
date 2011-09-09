@@ -208,8 +208,14 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
         [objectValue removeObjectAtIndex:_selectedRange.location];
         
     //confirm with the delegate the token inclusion
-    if ([[self tokenField:self shouldAddObjects:[CPArray arrayWithObject:token] atIndex:index] count])
-        [objectValue insertObject:token atIndex:_selectedRange.location];
+    delegateApprovedObjects = [self tokenField:self shouldAddObjects:[CPArray arrayWithObject:token] atIndex:index];
+    if (delegateApprovedObjects)
+    {
+    for(var i = 0; i < [delegateApprovedObjects count]; i++)
+        {
+        [objectValue insertObject:[delegateApprovedObjects objectAtIndex:i] atIndex:_selectedRange.location + i];
+        }
+    }
         
     var location = _selectedRange.location;
     [self setObjectValue:objectValue];
