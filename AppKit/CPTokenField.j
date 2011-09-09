@@ -171,6 +171,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
 - (void)_autocompleteWithDOMEvent:(JSObject)DOMEvent
 {
+    var index = 0;
     if (!_cachedCompletions || ![self hasThemeState:CPThemeStateAutoCompleting])
         return;
 
@@ -205,8 +206,11 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     // Explicitly remove the last object because the array contains strings and removeObject uses isEqual to compare objects
     if (shouldRemoveLastObject)
         [objectValue removeObjectAtIndex:_selectedRange.location];
-
-    [objectValue insertObject:token atIndex:_selectedRange.location];
+        
+    //confirm with the delegate the token inclusion
+    if ([[self tokenField:self shouldAddObjects:[CPArray arrayWithObject:token] atIndex:index] count])
+        [objectValue insertObject:token atIndex:_selectedRange.location];
+        
     var location = _selectedRange.location;
     [self setObjectValue:objectValue];
     _selectedRange = CPMakeRange(location + 1, 0);
@@ -1153,7 +1157,19 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 // // return an array of represented objects you want to add.
 // // If you want to reject the add, return an empty array.
 // // returning nil will cause an error.
-// - (NSArray *)tokenField:(NSTokenField *)tokenField shouldAddObjects:(NSArray *)tokens atIndex:(NSUInteger)index;
+- (CPArray)tokenField:(CPTokenField )tokenField shouldAddObjects:(CPArray)tokens atIndex:(NSUInteger)index
+    {
+    if ([[self delegate] respondsToSelector:@selector(tokenField:shouldAddObjects:atIndex:)])
+    {
+        var approvedObjects  = [[self delegate] tokenField:tokenField shouldAddObjects:tokens atIndex:index];
+        if (approvedObjects !== nil)
+        {
+            return approvedObjects;
+        }
+    }
+
+    return tokens;
+    }
 //
 // // If you return nil or don't implement these delegate methods, we will assume
 // // editing string = display string = represented object
