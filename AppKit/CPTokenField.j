@@ -215,6 +215,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
         {
         [objectValue insertObject:[delegateApprovedObjects objectAtIndex:i] atIndex:_selectedRange.location + i];
         }
+    _selectedRange.location += [delegateApprovedObjects count];
     }
         
     var location = _selectedRange.location;
