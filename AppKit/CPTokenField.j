@@ -214,13 +214,17 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     for(var i = 0; i < [delegateApprovedObjects count]; i++)
         {
         [objectValue insertObject:[delegateApprovedObjects objectAtIndex:i] atIndex:_selectedRange.location + i];
-        }
-    _selectedRange.location += [delegateApprovedObjects count];
+        }  
     }
         
     var location = _selectedRange.location;
+    var delegateApprovedObjectsCount = [delegateApprovedObjects count];
     [self setObjectValue:objectValue];
-    _selectedRange = CPMakeRange(location + 1, 0);
+    //this part puts the cursor after the last token
+    if(delegateApprovedObjectsCount > 1)
+        _selectedRange = CPMakeRange(location + delegateApprovedObjectsCount - 1, 0); 
+    else
+        _selectedRange = CPMakeRange(location + 1, 0);
 
     [self _inputElement].value = @"";
     [self setNeedsLayout];
@@ -1148,6 +1152,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 // // If you return nil or do not implement this method, then representedObject is displayed as the string.
 - (CPString)tokenField:(CPTokenField)tokenField displayStringForRepresentedObject:(id)representedObject
 {
+
     if ([[self delegate] respondsToSelector:@selector(tokenField:displayStringForRepresentedObject:)])
     {
         var stringForRepresentedObject = [[self delegate] tokenField:tokenField displayStringForRepresentedObject:representedObject];
@@ -1164,7 +1169,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 // // return an array of represented objects you want to add.
 // // If you want to reject the add, return an empty array.
 // // returning nil will cause an error.
-- (CPArray)tokenField:(CPTokenField )tokenField shouldAddObjects:(CPArray)tokens atIndex:(NSUInteger)index
+- (CPArray)tokenField:(CPTokenField )tokenField shouldAddObjects:(CPArray)tokens atIndex:(int)index
     {
     if ([[self delegate] respondsToSelector:@selector(tokenField:shouldAddObjects:atIndex:)])
     {
