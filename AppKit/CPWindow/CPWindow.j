@@ -426,6 +426,7 @@ CPTexturedBackgroundWindowMask
 
         // Create a generic content view.
         [self setContentView:[[CPView alloc] initWithFrame:CGRectMakeZero()]];
+        [self setInitialFirstResponder:[self contentView]];
 
         _firstResponder = self;
 
@@ -950,6 +951,12 @@ CPTexturedBackgroundWindowMask
 
     var bounds = CGRectMake(0.0, 0.0, CGRectGetWidth(_frame), CGRectGetHeight(_frame));
 
+    // During init the initial first responder is set to the contentView
+    // if it hasn't changed in the mean time we need to update that reference
+    // to the new contentView
+    if ([self initialFirstResponder] === _contentView)
+        [self setInitialFirstResponder:aView];
+
     _contentView = aView;
     [_contentView setFrame:[self contentRectForFrameRect:bounds]];
 
@@ -1274,17 +1281,17 @@ CPTexturedBackgroundWindowMask
 
 - (BOOL)acceptsFirstResponder
 {
-    return YES;
+    return NO;
 }
 
-- (id)initialFirstResponder
+- (CPView)initialFirstResponder
 {
     return _initialFirstResponder;
 }
 
-- (void)setInitialFirstResponder:(id)aResponder
+- (void)setInitialFirstResponder:(CPView)aView
 {
-    _initialFirstResponder = aResponder;
+    _initialFirstResponder = aView;
 }
 
 /*!
@@ -2487,30 +2494,70 @@ CPTexturedBackgroundWindowMask
 
 - (void)selectNextKeyView:(id)sender
 {
+    if (_keyViewLoopIsDirty && [self autorecalculatesKeyViewLoop])
+        [self recalculateKeyViewLoop];
+
+    var nextValidKeyView = nil;
+
     if ([_firstResponder isKindOfClass:[CPView class]])
-        [self selectKeyViewFollowingView:_firstResponder];
+        nextValidKeyView = [_firstResponder nextValidKeyView];
+
+    if (!nextValidKeyView)
+    {
+        var initialFirstResponder = [self initialFirstResponder];
+
+        if ([initialFirstResponder acceptsFirstResponder])
+            nextValidKeyView = initialFirstResponder;
+        else
+            nextValidKeyView = [initialFirstResponder nextValidKeyView];
+    }
+
+    [self makeFirstResponder:nextValidKeyView];
 }
 
 - (void)selectPreviousKeyView:(id)sender
 {
+    if (_keyViewLoopIsDirty && [self autorecalculatesKeyViewLoop])
+        [self recalculateKeyViewLoop];
+
+    var previousValidKeyView = nil;
+
     if ([_firstResponder isKindOfClass:[CPView class]])
-        [self selectKeyViewPrecedingView:_firstResponder];
+        previousValidKeyView = [_firstResponder previousValidKeyView];
+
+    if (!previousValidKeyView)
+    {
+        var initialFirstResponder = [self initialFirstResponder];
+
+        if ([initialFirstResponder acceptsFirstResponder])
+            previousValidKeyView = initialFirstResponder;
+        else
+            previousValidKeyView = [initialFirstResponder previousValidKeyView];
+    }
+
+    [self makeFirstResponder:previousValidKeyView];
 }
 
 - (void)selectKeyViewFollowingView:(CPView)aView
 {
-    if (_keyViewLoopIsDirty)
+    if (_keyViewLoopIsDirty && [self autorecalculatesKeyViewLoop])
         [self recalculateKeyViewLoop];
 
-    [self makeFirstResponder:[aView nextValidKeyView]];
+    var nextValidKeyView = [aView nextValidKeyView];
+
+    if ([nextValidKeyView isKindOfClass:[CPView class]])
+        [self makeFirstResponder:nextValidKeyView];
 }
 
 - (void)selectKeyViewPrecedingView:(CPView)aView
 {
-    if (_keyViewLoopIsDirty)
+    if (_keyViewLoopIsDirty && [self autorecalculatesKeyViewLoop])
         [self recalculateKeyViewLoop];
 
-    [self makeFirstResponder:[aView previousValidKeyView]];
+    var previousValidKeyView = [aView previousValidKeyView];
+
+    if ([previousValidKeyView isKindOfClass:[CPView class]])
+        [self makeFirstResponder:previousValidKeyView];
 }
 
 /*!
@@ -2598,9 +2645,11 @@ CPTexturedBackgroundWindowMask
 
 var allViews = function(aWindow)
 {
-    var views = [[aWindow contentView] subviews],
-        index = 0;
+    var views = [CPArray arrayWithObject:[aWindow contentView]];
 
+    [views addObjectsFromArray:[[aWindow contentView] subviews]];
+
+    var index = 0;
     for (; index < views.length; ++index)
         views = views.concat([views[index] subviews]);
 
