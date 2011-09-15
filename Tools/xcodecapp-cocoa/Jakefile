@@ -22,9 +22,7 @@ task ("build", function()
         cp_r(FILE.join("build", "Release", "xcodecapp-cocoa.app"), supportPath);
         FILE.chmod(FILE.join(supportPath, "Contents", "MacOS", "xcodecapp-cocoa"), 0755);
 
-        if (FILE.exists(installPath))
-            OS.system(["rm", "-f", installPath]);
-        FILE.symlink(supportPath, installPath);
+        OS.system(["ln", "-sf", supportPath, installPath]);
     }
     else
     {
