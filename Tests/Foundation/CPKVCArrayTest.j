@@ -16,6 +16,29 @@ var COUNTER;
 
 - (void)_patchSelector:(SEL)theSelector
 {
+    var method_dtable = [[self object] class].method_dtable,
+        method_list = [[self object] class].method_list,
+        selectorsToRemove = [@selector(countOfValues), @selector(objectInValuesAtIndex),
+                                @selector(objectInValuesAtIndex:), @selector(valuesAtIndexes:),
+                                @selector(insertObject:inValuesAtIndex:), @selector(insertValues:atIndexes:),
+                                @selector(removeObjectFromValuesAtIndex:), @selector(removeValuesAtIndexes:),
+                                @selector(removeObjectFromValuesAtIndex:),
+                                @selector(replaceObjectInValuesAtIndex:withObject:),
+                                @selector(replaceValuesAtIndexes:withValues:)],
+        selectorIndex = [selectorsToRemove count];
+
+    while (selectorIndex--)
+    {
+        var selector = [selectorsToRemove objectAtIndex:selectorIndex],
+            implementation = method_dtable[selector];
+
+        if (!implementation)
+            continue;
+
+        delete method_dtable[selector]
+        [method_list removeObject:implementation];
+    }
+
     var method = class_getInstanceMethod([[self implementedObject] class], theSelector),
         implementation = method_getImplementation(method);
 
@@ -122,7 +145,7 @@ var COUNTER;
          message:@"insertValues:atIndexes: should have been called once for each object"];
 }
 
-- (void)testRemoveObjectAtIndexUsesRemoveKeyAtIndex
+- (void)testRemoveObjectAtIndexUsesRemoveObjectFromKeyAtIndex
 {
     [self _patchSelector:@selector(removeObjectFromValuesAtIndex:)];
 
@@ -132,7 +155,7 @@ var COUNTER;
     [self assert:1 equals:COUNTER message:@"removeObjectFromValuesAtIndex: should have been called once"];
 }
 
-- (void)testRemoveObjectAtIndexesUsesRemoveKeyAtIndex
+- (void)testRemoveObjectAtIndexesUsesRemoveObjectFromKeyAtIndex
 {
     [self _patchSelector:@selector(removeObjectFromValuesAtIndex:)];
 
@@ -142,7 +165,6 @@ var COUNTER;
     [self assert:[2, 3, 4, 5, 6, 7, 8, 9] equals:[[self object] values]];
     [self assert:2 equals:COUNTER message:@"removeValuesAtIndex: should have been called once for each object"];
 }
-
 - (void)testRemoveObjectsAtIndexesUsesRemoveKeyAtIndex
 {
     [self _patchSelector:@selector(removeValuesAtIndexes:)];
@@ -163,6 +185,66 @@ var COUNTER;
     [[[self object] mutableArrayValueForKey:@"values"] removeObjectsAtIndexes:indexes];
 
     [self assert:[0, 1, 2, 5, 6, 7, 8, 9] equals:[[self object] values]];
+    [self assert:1 equals:COUNTER message:@"removeValuesAtIndexes: should have been called once"];
+}
+
+- (void)testRemoveObjectUsesRemoveKeyAtIndex
+{
+    [self _patchSelector:@selector(removeObjectFromValuesAtIndex:)];
+
+    [[[self object] mutableArrayValueForKey:@"values"] removeObject:1];
+
+    [self assert:[0, 2, 3, 4, 5, 6, 7, 8, 9] equals:[[self object] values]];
+    [self assert:1 equals:COUNTER message:"removeObjectFromValuesAtIndex: should have been called once"]
+}
+
+- (void)testeRemoveObjectUsesRemoveKeyAtIndexes
+{
+    [self _patchSelector:@selector(removeValuesAtIndexes:)];
+
+    [[[self object] mutableArrayValueForKey:@"values"] removeObject:5];
+
+    [self assert:[0, 1, 2, 3, 4, 6, 7, 8, 9] equals:[[self object] values]];
+    [self assert:1 equals:COUNTER message:@"removeValuesAtIndexes: should have been called once"];
+}
+
+- (void)testRemoveObjectsInArrayUsesRemoveKeyAtIndex
+{
+    [self _patchSelector:@selector(removeObjectFromValuesAtIndex:)];
+
+    [[[self object] mutableArrayValueForKey:@"values"] removeObjectsInArray:[3, 6]];
+
+    [self assert:[0, 1, 2, 4, 5, 7, 8, 9] equals:[[self object] values]];
+    [self assert:2 equals:COUNTER message:"removeObjectFromValuesAtIndex: should have been called once"]
+}
+
+- (void)testRemoveObjectsInArrayUsesRemoveKeyAtIndexes
+{
+    [self _patchSelector:@selector(removeValuesAtIndexes:)];
+
+    [[[self object] mutableArrayValueForKey:@"values"] removeObjectsInArray:[0, 9]];
+
+    [self assert:[1, 2, 3, 4, 5, 6, 7, 8] equals:[[self object] values]];
+    [self assert:1 equals:COUNTER message:@"removeValuesAtIndexes: should have been called once"];
+}
+
+- (void)testRemoveLastObjectUsesRemoveKeyAtIndex
+{
+    [self _patchSelector:@selector(removeObjectFromValuesAtIndex:)];
+
+    [[[self object] mutableArrayValueForKey:@"values"] removeLastObject];
+
+    [self assert:[0, 1, 2, 3, 4, 5, 6, 7, 8] equals:[[self object] values]];
+    [self assert:1 equals:COUNTER message:"removeObjectFromValuesAtIndex: should have been called once"]
+}
+
+- (void)testRemoveLastObjectUsesRemoveKeyAtIndexes
+{
+    [self _patchSelector:@selector(removeValuesAtIndexes:)];
+
+    [[[self object] mutableArrayValueForKey:@"values"] removeLastObject];
+
+    [self assert:[0, 1, 2, 3, 4, 5, 6, 7, 8] equals:[[self object] values]];
     [self assert:1 equals:COUNTER message:@"removeValuesAtIndexes: should have been called once"];
 }
 

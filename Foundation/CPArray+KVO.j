@@ -303,6 +303,32 @@
     [self removeObject:anObject inRange:CPMakeRange(0, [self count])];
 }
 
+- (void)removeObjectsInArray:(CPArray)theObjects
+{
+    if (_removeMany)
+    {
+        var indexes = [CPIndexSet indexSet],
+            index = [theObjects count];
+
+        while (index--)
+            [indexes addIndex:[self indexOfObject:[theObjects objectAtIndex:index]]];
+
+        _removeMany(_proxyObject, _removeManySEL, indexes);
+    }
+    else if (_remove)
+    {
+        var index = [theObjects count];
+        while (index--)
+            _remove(_proxyObject, _removeSEL, [self indexOfObject:[theObjects objectAtIndex:index]]);
+    }
+    else
+    {
+        var target = [[self _representedObject] copy];
+        [target removeObjectsInArray:theObjects];
+        [self _setRepresentedObject:target];
+    }
+}
+
 - (void)removeObject:(id)theObject inRange:(CPRange)theRange
 {
     if (_remove)
@@ -326,13 +352,7 @@
 
 - (void)removeLastObject
 {
-    if (_remove)
-        return _remove(_proxyObject, _removeSEL, [self count] - 1);
-
-    var target = [[self _representedObject] copy];
-
-    [target removeLastObject];
-    [self _setRepresentedObject:target];
+    [self removeObjectsAtIndexes:[CPIndexSet indexSetWithIndex:[self count] - 1]];
 }
 
 - (void)removeObjectAtIndex:(unsigned)anIndex
