@@ -208,23 +208,24 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
         [objectValue removeObjectAtIndex:_selectedRange.location];
 
     // Give the delegate a chance to confirm, replace or add to the list of tokens being added.
-    delegateApprovedObjects = [self tokenField:self shouldAddObjects:[CPArray arrayWithObject:token] atIndex:index];
+    var delegateApprovedObjects = [self tokenField:self shouldAddObjects:[CPArray arrayWithObject:token] atIndex:index],
+        delegateApprovedObjectsCount = [delegateApprovedObjects count];
     if (delegateApprovedObjects)
     {
-        for (var i = 0; i < [delegateApprovedObjects count]; i++)
+        for (var i = 0; i < delegateApprovedObjectsCount; i++)
         {
             [objectValue insertObject:[delegateApprovedObjects objectAtIndex:i] atIndex:_selectedRange.location + i];
         }
     }
 
-    var location = _selectedRange.location,
-        delegateApprovedObjectsCount = [delegateApprovedObjects count];
+    // Put the cursor after the last inserted token.
+    var location = _selectedRange.location;
+
     [self setObjectValue:objectValue];
-    //this part puts the cursor after the last token
-    if (delegateApprovedObjectsCount > 1)
-        _selectedRange = CPMakeRange(location + delegateApprovedObjectsCount - 1, 0);
-    else
-        _selectedRange = CPMakeRange(location + 1, 0);
+
+    if (delegateApprovedObjectsCount)
+        location += delegateApprovedObjectsCount;
+    _selectedRange = CPMakeRange(location, 0);
 
     [self _inputElement].value = @"";
     [self setNeedsLayout];
@@ -1169,19 +1170,19 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 // // return an array of represented objects you want to add.
 // // If you want to reject the add, return an empty array.
 // // returning nil will cause an error.
-- (CPArray)tokenField:(CPTokenField )tokenField shouldAddObjects:(CPArray)tokens atIndex:(int)index
+- (CPArray)tokenField:(CPTokenField)tokenField shouldAddObjects:(CPArray)tokens atIndex:(int)index
+{
+    var  delegate = [self delegate];
+    if ([delegate respondsToSelector:@selector(tokenField:shouldAddObjects:atIndex:)])
     {
-    if ([[self delegate] respondsToSelector:@selector(tokenField:shouldAddObjects:atIndex:)])
-    {
-        var approvedObjects  = [[self delegate] tokenField:tokenField shouldAddObjects:tokens atIndex:index];
+        var approvedObjects = [delegate tokenField:tokenField shouldAddObjects:tokens atIndex:index];
         if (approvedObjects !== nil)
-        {
             return approvedObjects;
-        }
     }
 
     return tokens;
-    }
+}
+
 //
 // // If you return nil or don't implement these delegate methods, we will assume
 // // editing string = display string = represented object
