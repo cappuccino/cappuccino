@@ -206,23 +206,23 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     // Explicitly remove the last object because the array contains strings and removeObject uses isEqual to compare objects
     if (shouldRemoveLastObject)
         [objectValue removeObjectAtIndex:_selectedRange.location];
-        
-    //confirm with the delegate the token inclusion
+
+    // Give the delegate a chance to confirm, replace or add to the list of tokens being added.
     delegateApprovedObjects = [self tokenField:self shouldAddObjects:[CPArray arrayWithObject:token] atIndex:index];
     if (delegateApprovedObjects)
     {
-    for(var i = 0; i < [delegateApprovedObjects count]; i++)
+        for (var i = 0; i < [delegateApprovedObjects count]; i++)
         {
-        [objectValue insertObject:[delegateApprovedObjects objectAtIndex:i] atIndex:_selectedRange.location + i];
-        }  
+            [objectValue insertObject:[delegateApprovedObjects objectAtIndex:i] atIndex:_selectedRange.location + i];
+        }
     }
-        
-    var location = _selectedRange.location;
-    var delegateApprovedObjectsCount = [delegateApprovedObjects count];
+
+    var location = _selectedRange.location,
+        delegateApprovedObjectsCount = [delegateApprovedObjects count];
     [self setObjectValue:objectValue];
     //this part puts the cursor after the last token
-    if(delegateApprovedObjectsCount > 1)
-        _selectedRange = CPMakeRange(location + delegateApprovedObjectsCount - 1, 0); 
+    if (delegateApprovedObjectsCount > 1)
+        _selectedRange = CPMakeRange(location + delegateApprovedObjectsCount - 1, 0);
     else
         _selectedRange = CPMakeRange(location + 1, 0);
 
