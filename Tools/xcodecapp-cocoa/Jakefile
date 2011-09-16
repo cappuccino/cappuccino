@@ -1,10 +1,10 @@
 
 require("../../common.jake");
 
-var OS = require("os");
-var task = require("jake").task
-var stream = require("narwhal/term").stream;
-var applicationName = "xcodecapp-cocoa.app";
+var OS = require("os"),
+    task = require("jake").task,
+    stream = require("narwhal/term").stream,
+    applicationName = "xcodecapp-cocoa.app";
 
 task ("build", function()
 {
@@ -22,9 +22,7 @@ task ("build", function()
         cp_r(FILE.join("build", "Release", "xcodecapp-cocoa.app"), supportPath);
         FILE.chmod(FILE.join(supportPath, "Contents", "MacOS", "xcodecapp-cocoa"), 0755);
 
-        if (FILE.exists(installPath))
-            FILE.remove(installPath);
-        FILE.symlink(supportPath, installPath);
+        OS.system(["ln", "-sf", supportPath, installPath]);
     }
     else
     {
