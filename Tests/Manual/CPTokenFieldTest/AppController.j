@@ -15,6 +15,7 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     CPTokenField    tokenFieldD;
 
     CPArray         allPersons;
+    CPButton        manipulateTokenInsertionButton;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -52,6 +53,10 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     [tokenFieldB setTarget:self];
 
     [contentView addSubview:tokenFieldB];
+
+    manipulateTokenInsertionButton = [CPCheckBox checkBoxWithTitle:"Token transformations"];
+    [manipulateTokenInsertionButton setFrame:CGRectMake(525, 110, 200, 50)];
+    [contentView addSubview:manipulateTokenInsertionButton];
 
     var tokenFieldC = [[CPTokenField alloc] initWithFrame:CGRectMake(15, 170, 500, 30)],
         labelC = [[CPTextField alloc] initWithFrame:CGRectMake(15, 150, 500, 24)];
@@ -146,6 +151,25 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
 - (@action)tokenFieldAction:(id)sender
 {
     CPLog.info("tokenFieldAction: " + sender);
+}
+
+- (CPArray)tokenField:tokenField shouldAddObjects:tokens atIndex:index
+{
+    CPLog.info("tokenField: " + tokenField + " shouldAddObjects: " + tokens + " atIndex: " + index);
+
+    // Texas -> Utah, Michigan -> Michigan & Arkansas, Washington -> nil
+
+    if ([manipulateTokenInsertionButton intValue])
+    {
+        if (tokens[0] == "Texas")
+            return ["Utah"];
+        else if (tokens[0] == "Michigan")
+            return ["Michigan", "Arkansas"];
+        else if (tokens[0] == "Washington")
+            return [];
+    }
+
+    return tokens;
 }
 
 @end
