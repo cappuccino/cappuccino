@@ -171,7 +171,6 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
 - (void)_autocompleteWithDOMEvent:(JSObject)DOMEvent
 {
-    var index = 0;
     if (!_cachedCompletions || ![self hasThemeState:CPThemeStateAutoCompleting])
         return;
 
@@ -208,7 +207,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
         [objectValue removeObjectAtIndex:_selectedRange.location];
 
     // Give the delegate a chance to confirm, replace or add to the list of tokens being added.
-    var delegateApprovedObjects = [self tokenField:self shouldAddObjects:[CPArray arrayWithObject:token] atIndex:index],
+    var delegateApprovedObjects = [self tokenField:self shouldAddObjects:[CPArray arrayWithObject:token] atIndex:_selectedRange.location],
         delegateApprovedObjectsCount = [delegateApprovedObjects count];
     if (delegateApprovedObjects)
     {
@@ -1153,7 +1152,6 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 // // If you return nil or do not implement this method, then representedObject is displayed as the string.
 - (CPString)tokenField:(CPTokenField)tokenField displayStringForRepresentedObject:(id)representedObject
 {
-
     if ([[self delegate] respondsToSelector:@selector(tokenField:displayStringForRepresentedObject:)])
     {
         var stringForRepresentedObject = [[self delegate] tokenField:tokenField displayStringForRepresentedObject:representedObject];
