@@ -259,12 +259,12 @@ var PrimaryPlatformWindow   = NULL;
     return [CPPlatform isBrowser];
 }
 
-- (void)setTitle:(CPString)aTitle
+- (void)_setTitle:(CPString)aTitle window:(CPWindow)aWindow
 {
     _title = aTitle;
 
 #if PLATFORM(DOM)
-    if (_DOMWindow && _DOMWindow.document)
+    if (_DOMWindow && _DOMWindow.document && (aWindow === [CPApp mainWindow]))
         _DOMWindow.document.title = _title;
 #endif
 }
