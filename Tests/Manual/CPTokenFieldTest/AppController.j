@@ -15,6 +15,7 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     CPTokenField    tokenFieldD;
 
     CPArray         allPersons;
+    CPButton        manipulateTokenInsertionButton;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -22,28 +23,28 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
         contentView = [theWindow contentView],
 
-        tokenFieldA = [[CPTokenField alloc] initWithFrame:CGRectMake(15, 40, 500, 29)],
+        tokenFieldA = [[CPTokenField alloc] initWithFrame:CGRectMake(15, 40, 500, 30)],
         label = [[CPTextField alloc] initWithFrame:CGRectMake(15, 15, 500, 24)];
 
-    [label setStringValue:@"This token field has no auto suggestions and uses space to separate tokens."];
+    [label setStringValue:"This token field has no auto suggestions and uses space to separate tokens."];
     [contentView addSubview:label];
 
     [tokenFieldA setEditable:YES];
-    [tokenFieldA setPlaceholderString:@"Type in a token!"];
+    [tokenFieldA setPlaceholderString:"Type in a token!"];
 
     [tokenFieldA setTokenizingCharacterSet:[CPCharacterSet characterSetWithCharactersInString:@" "]];
 
     [contentView addSubview:tokenFieldA];
 
-    var tokenFieldB = [[CPTokenField alloc] initWithFrame:CGRectMake(15, 110, 500, 29)],
+    var tokenFieldB = [[CPTokenField alloc] initWithFrame:CGRectMake(15, 110, 500, 30)],
         labelB = [[CPTextField alloc] initWithFrame:CGRectMake(15, 80, 500, 24)];
 
-    [labelB setStringValue:@"This token field has no bezel, uses comma to separate tokens and has auto suggest."];
+    [labelB setStringValue:"This token field has no bezel, uses comma to separate tokens and has auto suggest."];
     [contentView addSubview:labelB];
 
     [tokenFieldB setEditable:YES];
     [tokenFieldB setBezeled:NO];
-    [tokenFieldB setPlaceholderString:@"Edit me!"];
+    [tokenFieldB setPlaceholderString:"Edit me!"];
 
     [tokenFieldB setObjectValue:["Missouri", "California"]];
     [tokenFieldB setDelegate:self];
@@ -53,14 +54,18 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
 
     [contentView addSubview:tokenFieldB];
 
-    var tokenFieldC = [[CPTokenField alloc] initWithFrame:CGRectMake(15, 170, 500, 29)],
+    manipulateTokenInsertionButton = [CPCheckBox checkBoxWithTitle:"Token transformations"];
+    [manipulateTokenInsertionButton setFrame:CGRectMake(525, 110, 200, 50)];
+    [contentView addSubview:manipulateTokenInsertionButton];
+
+    var tokenFieldC = [[CPTokenField alloc] initWithFrame:CGRectMake(15, 170, 500, 30)],
         labelC = [[CPTextField alloc] initWithFrame:CGRectMake(15, 150, 500, 24)];
 
-    [labelC setStringValue:@"This token field can't fit all its tokens."];
+    [labelC setStringValue:"This token field can't fit all its tokens."];
     [contentView addSubview:labelC];
 
     [tokenFieldC setEditable:YES];
-    [tokenFieldC setPlaceholderString:@"Edit me!"];
+    [tokenFieldC setPlaceholderString:"Edit me!"];
 
     [tokenFieldC setObjectValue:['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado']];
     [tokenFieldC setDelegate:self];
@@ -71,10 +76,10 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     [tokenFieldC setAction:@selector(tokenFieldAction:)];
     [tokenFieldC setTarget:self];
 
-    tokenFieldD = [[CPTokenField alloc] initWithFrame:CGRectMake(15, 230, 500, 29)],
+    tokenFieldD = [[CPTokenField alloc] initWithFrame:CGRectMake(15, 230, 500, 30)],
         labelD = [[CPTextField alloc] initWithFrame:CGRectMake(15, 210, 500, 24)];
 
-    [labelD setStringValue:@"This token field contains represented objects."];
+    [labelD setStringValue:"This token field contains represented objects."];
     [contentView addSubview:labelD];
 
     [tokenFieldD setEditable:YES];
@@ -93,7 +98,7 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     [contentView addSubview:tokenFieldD];
 
     var button = [[CPButton alloc] initWithFrame:CGRectMake(15, 270, 0, 0)];
-    [button setTitle:@"Get Object Values"];
+    [button setTitle:"Get Object Values"];
     [button sizeToFit];
     [button setTarget:self];
     [button setAction:@selector(getObjectValues:)];
@@ -146,6 +151,25 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
 - (@action)tokenFieldAction:(id)sender
 {
     CPLog.info("tokenFieldAction: " + sender);
+}
+
+- (CPArray)tokenField:tokenField shouldAddObjects:tokens atIndex:index
+{
+    CPLog.info("tokenField: " + tokenField + " shouldAddObjects: " + tokens + " atIndex: " + index);
+
+    // Texas -> Utah, Michigan -> Michigan & Arkansas, Washington -> nil
+
+    if ([manipulateTokenInsertionButton intValue])
+    {
+        if (tokens[0] == "Texas")
+            return ["Utah"];
+        else if (tokens[0] == "Michigan")
+            return ["Michigan", "Arkansas"];
+        else if (tokens[0] == "Washington")
+            return [];
+    }
+
+    return tokens;
 }
 
 @end

@@ -541,7 +541,8 @@ var ModifierKeyCodes = [
     // FIXME: cpSetFrame?
     _DOMWindow.document.write("<!DOCTYPE html><html lang='en'><head></head><body style='background-color:transparent;'></body></html>");
     _DOMWindow.document.close();
-    _DOMWindow.document.title = _title;
+    if (self != [CPPlatformWindow primaryPlatformWindow])
+        _DOMWindow.document.title = _title;
 
     if (![CPPlatform isBrowser])
     {

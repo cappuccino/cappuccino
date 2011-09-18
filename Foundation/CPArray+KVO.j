@@ -131,7 +131,7 @@
 
     _replaceManySEL = sel_getName(@"replace" + capitalizedKey + "AtIndexes:with" + capitalizedKey + ":");
     if ([_proxyObject respondsToSelector:_replaceManySEL])
-        _replace = [_proxyObject methodForSelector:_replaceManySEL];
+        _replaceMany = [_proxyObject methodForSelector:_replaceManySEL];
 
     _objectAtIndexSEL = sel_getName(@"objectIn" + capitalizedKey + "AtIndex:");
     if ([_proxyObject respondsToSelector:_objectAtIndexSEL])
@@ -233,10 +233,25 @@
 
 - (id)objectAtIndex:(unsigned)anIndex
 {
-    if (_objectAtIndex)
-        return _objectAtIndex(_proxyObject, _objectAtIndexSEL, anIndex);
+    return [[self objectsAtIndexes:[CPIndexSet indexSetWithIndex:anIndex]] firstObject];
+}
 
-    return [[self _representedObject] objectAtIndex:anIndex];
+- (CPArray)objectsAtIndexes:(CPIndexSet)theIndexes
+{
+    if (_objectsAtIndexes)
+        return _objectsAtIndexes(_proxyObject, _objectsAtIndexesSEL, theIndexes);
+    if (_objectAtIndex)
+    {
+        var index = CPNotFound,
+            objects = [];
+
+        while ((index = [theIndexes indexGreaterThanIndex:index]) !== CPNotFound)
+            objects.push(_objectAtIndex(_proxyObject, _objectAtIndexSEL, index));
+
+        return objects;
+    }
+
+    return [[self _representedObject] objectsAtIndexes:theIndexes];
 }
 
 - (void)addObject:(id)anObject
@@ -288,37 +303,111 @@
     [self removeObject:anObject inRange:CPMakeRange(0, [self count])];
 }
 
-- (void)removeLastObject
+- (void)removeObjectsInArray:(CPArray)theObjects
+{
+    if (_removeMany)
+    {
+        var indexes = [CPIndexSet indexSet],
+            index = [theObjects count];
+
+        while (index--)
+            [indexes addIndex:[self indexOfObject:[theObjects objectAtIndex:index]]];
+
+        _removeMany(_proxyObject, _removeManySEL, indexes);
+    }
+    else if (_remove)
+    {
+        var index = [theObjects count];
+        while (index--)
+            _remove(_proxyObject, _removeSEL, [self indexOfObject:[theObjects objectAtIndex:index]]);
+    }
+    else
+    {
+        var target = [[self _representedObject] copy];
+        [target removeObjectsInArray:theObjects];
+        [self _setRepresentedObject:target];
+    }
+}
+
+- (void)removeObject:(id)theObject inRange:(CPRange)theRange
 {
     if (_remove)
-        return _remove(_proxyObject, _removeSEL, [self count] - 1);
+        _remove(_proxyObject, _removeSEL, [self indexOfObject:theObject inRange:theRange]);
+    else if (_removeMany)
+    {
+        var index = [self indexOfObject:theObject inRange:theRange];
+        _removeMany(_proxyObject, _removeManySEL, [CPIndexSet indexSetWithIndex:index]);
+    }
+    else
+    {
+        var index;
 
-    var target = [[self _representedObject] copy];
+        while ((index = [self indexOfObject:theObject inRange:theRange]) !== CPNotFound)
+        {
+            [self removeObjectAtIndex:index];
+            theRange = CPIntersectionRange(CPMakeRange(index, length - index), theRange);
+        }
+    }
+}
 
-    [target removeLastObject];
-    [self _setRepresentedObject:target];
+- (void)removeLastObject
+{
+    [self removeObjectsAtIndexes:[CPIndexSet indexSetWithIndex:[self count] - 1]];
 }
 
 - (void)removeObjectAtIndex:(unsigned)anIndex
 {
-    if (_remove)
-        return _remove(_proxyObject, _removeSEL, anIndex);
+    [self removeObjectsAtIndexes:[CPIndexSet indexSetWithIndex:anIndex]];
+}
 
-    var target = [[self _representedObject] copy];
+- (void)removeObjectsAtIndexes:(CPIndexSet)theIndexes
+{
+    if (_removeMany)
+        _removeMany(_proxyObject, _removeManySEL, theIndexes);
+    else if (_remove)
+    {
+        var index = [theIndexes lastIndex];
 
-    [target removeObjectAtIndex:anIndex];
-    [self _setRepresentedObject:target];
+        while (index !== CPNotFound)
+        {
+            _remove(_proxyObject, _removeSEL, index)
+            index = [theIndexes indexLessThanIndex:index];
+        }
+    }
+    else
+    {
+        var target = [[self _representedObject] copy];
+        [target removeObjectsAtIndexes:theIndexes];
+        [self _setRepresentedObject:target];
+    }
 }
 
 - (void)replaceObjectAtIndex:(unsigned)anIndex withObject:(id)anObject
 {
-    if (_replace)
-        return _replace(_proxyObject, _replaceSEL, anIndex, anObject);
+    [self replaceObjectsAtIndexes:[CPIndexSet indexSetWithIndex:anIndex] withObjects:[anObject]]
+}
 
-    var target = [[self _representedObject] copy];
+- (void)replaceObjectsAtIndexes:(CPIndexSet)theIndexes withObjects:(CPArray)theObjects
+{
+    if (_replaceMany)
+        return _replaceMany(_proxyObject, _replaceManySEL, theIndexes, theObjects);
+    else if (_replace)
+    {
+        var i = 0,
+            index = [theIndexes firstIndex];
 
-    [target replaceObjectAtIndex:anIndex withObject:anObject];
-    [self _setRepresentedObject:target];
+        while (index !== CPNotFound)
+        {
+            _replace(_proxyObject, _replaceSEL, index, [theObjects objectAtIndex:i++]);
+            index = [theIndexes indexGreaterThanIndex:index];
+        }
+    }
+    else
+    {
+        var target = [[self _representedObject] copy];
+        [target replaceObjectsAtIndexes:theIndexes withObjects:theObjects];
+        [self _setRepresentedObject:target];
+    }
 }
 
 @end

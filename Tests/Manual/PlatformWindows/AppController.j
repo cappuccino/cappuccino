@@ -37,11 +37,8 @@
 
     platformWindow = [[CPPlatformWindow alloc] init];
 
-//    [platformWindow orderFront:self];//console.log(CPStringFromRect([theWindow contentRectForFrameRect:[theWindow frame]]));
+    //    [platformWindow orderFront:self];//console.log(CPStringFromRect([theWindow contentRectForFrameRect:[theWindow frame]]));
     [platformWindow setContentRect:[theWindow contentRectForFrameRect:[theWindow frame]]];
-
-    // [theWindow setTitle:@"My Custom Title"];
-    //[platformWindow orderFront:self];
 
     // seriously, this test file is dirty :)
     var slider = [[theWindow contentView] subviews][0];
@@ -49,32 +46,37 @@
     [slider setAction:@selector(randomTitle:)];
     [slider setContinuous:NO];
 
-window.setTimeout(function(){
-    [theWindow orderOut:self];
-    [theWindow setPlatformWindow:platformWindow];
-    [theWindow orderFront:self];
-    [theWindow setFullBridge:YES];
-    var button = [[theWindow contentView] subviews][2];
+    [theWindow setTitle:"Initial title (pop out pending)"];
+    window.setTimeout(function()
+    {
+        [theWindow orderOut:self];
+        [theWindow setPlatformWindow:platformWindow];
+        [theWindow orderFront:self];
+        [theWindow setFullBridge:YES];
+        var button = [[theWindow contentView] subviews][2];
 
-    [button setTarget:self];
-    [button setAction:@selector(close)];
+        [button setTarget:self];
+        [button setAction:@selector(close)];
+        [theWindow setTitle:"Title after pop out (red box pending)"];
 
-    window.setTimeout(function(){
-    var view = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)];
-    [view setBackgroundColor:[CPColor redColor]];
+        window.setTimeout(function()
+        {
+            var view = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)];
+            [view setBackgroundColor:[CPColor redColor]];
 
-    [[theWindow contentView] addSubview:view];},1000);
-
-    }, 1000);
-    //window.setTimeout(function() { [platformWindow orderOut:self]; [platformWindow orderFront:self]; }, 2000);
-
+            [[theWindow contentView] addSubview:view];
+            [theWindow setTitle:"Title in final stage"];
+        }, 1000);
+    }, 2000);
 }
 
 - (void)close
 {
     [[theWindow platformWindow] orderOut:self];
-    window.setTimeout(function(){
-    [[theWindow platformWindow] orderFront:self];}, 1000);
+    window.setTimeout(function()
+    {
+        [[theWindow platformWindow] orderFront:self];
+    }, 1000);
 }
 
 - (void)another:(id)aSender
@@ -84,7 +86,7 @@ window.setTimeout(function(){
 
 - (IBAction)randomTitle:(id)aSender
 {
-    [theWindow setTitle:@"Window random number " + Math.random(1000)]
+    [theWindow setTitle:@"Window random number " + Math.random(1000)];
 }
 
 @end
