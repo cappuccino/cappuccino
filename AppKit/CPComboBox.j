@@ -762,7 +762,7 @@ var CPComboBoxTextSubview = @"text",
         If the list or popup button is clicked, we lose focus. The list will refuse first responder,
         and we refuse to resign. But we still have to manually restore the focus to the input element.
     */
-    var shouldResign = !buttonCausedResign && [_listDelegate controllingViewShouldResign];
+    var shouldResign = !buttonCausedResign && (!_listDelegate || [_listDelegate controllingViewShouldResign]);
 
     if (!shouldResign)
     {
