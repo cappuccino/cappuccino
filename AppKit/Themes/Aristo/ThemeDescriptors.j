@@ -824,6 +824,7 @@ var themedButtonValues = nil,
 
         [@"text-color",         textDisabledColor,                  CPThemeStateBezeled | CPThemeStateDisabled],
         [@"text-color",         placeholderColor,                   CPTextFieldStatePlaceholder],
+        [@"text-color",         placeholderColor,                   CPTextFieldStatePlaceholder | CPThemeStateDisabled],
 
         [@"line-break-mode",    CPLineBreakByTruncatingTail,        CPThemeStateTableDataView],
         [@"vertical-alignment", CPCenterVerticalTextAlignment,      CPThemeStateTableDataView],
