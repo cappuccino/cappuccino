@@ -141,7 +141,7 @@
     [self makeCheckBoxWithTitle:@"Bold" defaultState:CPOffState];
     [self makeCheckBoxWithTitle:@"Completes" defaultState:CPOnState];
     [self makeCheckBoxWithTitle:@"Force selection" defaultState:CPOffState];
-    [self makeCheckBoxWithTitle:@"Vertical scroller" defaultState:CPOnState];
+    [self makeCheckBoxWithTitle:@"Vertical scrollbar" defaultState:CPOnState];
     [self makeCheckBoxWithTitle:@"Big item height" defaultState:CPOffState];
     [self makeCheckBoxWithTitle:@"More visible items" defaultState:CPOffState];
 
