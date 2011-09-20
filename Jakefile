@@ -59,7 +59,7 @@ task ("sudo-install", ["CommonJS"], function()
     if (OS.system(["sudo", "tusk", "install", "--force", $BUILD_CJS_OBJECTIVE_J, $BUILD_CJS_CAPPUCCINO]))
     {
         // Attempt a hackish work-around for sudo compiled with the --with-secure-path option
-        sudo("tusk install --force " + $BUILD_CJS_OBJECTIVE_J + " " + $BUILD_CJS_CAPPUCCINO)
+        sudo("tusk install --force " + $BUILD_CJS_OBJECTIVE_J + " " + $BUILD_CJS_CAPPUCCINO);
     }
 });
 
@@ -71,8 +71,36 @@ task ("install-symlinks", function()
 
 task ("install-debug-symlinks", function()
 {
-    SYSTEM.env["CONFIG"] = "Debug";
+    SYSTEM.env.CONFIG = "Debug";
     spawnJake("install-symlinks");
+});
+
+task ("clean-sprites", function()
+{
+    var f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "**/dataURLs.txt")),
+        paths = f.items();
+
+    f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "**/MHTML*.txt"));
+    paths = paths.concat(f.items());
+
+    paths.forEach(function(path)
+    {
+        FILE.remove(path);
+    });
+});
+
+task ("clobber-theme", function()
+{
+    var f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "**/Aristo.blend")),
+        paths = f.items();
+
+    f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "Aristo.build"));
+    paths = paths.concat(f.items());
+
+    paths.forEach(function(path)
+    {
+        rm_rf(path);
+    });
 });
 
 // Documentation
@@ -251,30 +279,30 @@ task ("demos", function()
         if (key)
             return this._plist.valueForKey(key);
         return this._plist;
-    }
+    };
 
     Demo.prototype.name = function()
     {
         return this.plist("CPBundleName");
-    }
+    };
 
     Demo.prototype.path = function()
     {
         return this._path;
-    }
+    };
 
     Demo.prototype.excluded = function()
     {
         return !!this.plist("CPDemoExcluded");
-    }
+    };
 
     Demo.prototype.toString = function()
     {
         return this.name();
-    }
+    };
 
     FILE.glob(FILE.join(demosDir, "demos", "**/Info.plist")).map(function(demoPath){
-        return new Demo(FILE.dirname(demoPath))
+        return new Demo(FILE.dirname(demoPath));
     }).filter(function(demo){
         return !demo.excluded();
     }).forEach(function(demo)
@@ -319,7 +347,7 @@ task("push-cappuccino", function() {
     pushPackage(
         $BUILD_CJS_CAPPUCCINO,
         "git@github.com:280north/cappuccino-package.git",
-        SYSTEM.env["PACKAGE_BRANCH"]
+        SYSTEM.env.PACKAGE_BRANCH
     );
 });
 
@@ -327,7 +355,7 @@ task("push-objective-j", function() {
     pushPackage(
         $BUILD_CJS_OBJECTIVE_J,
         "git@github.com:280north/objective-j-package.git",
-        SYSTEM.env["PACKAGE_BRANCH"]
+        SYSTEM.env.PACKAGE_BRANCH
     );
 });
 
@@ -365,7 +393,7 @@ function pushPackage(path, remote, branch)
 
     var pkg = JSON.parse(packagePath.join("package.json").read({ charset : "UTF-8" }));
 
-    stream.print("    Version:   " + colorize(pkg["version"], "purple"));
+    stream.print("    Version:   " + colorize(pkg.version, "purple"));
     stream.print("    Revision:  " + colorize(pkg["cappuccino-revision"], "purple"));
     stream.print("    Timestamp: " + colorize(pkg["cappuccino-timestamp"], "purple"));
 
