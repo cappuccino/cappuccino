@@ -187,7 +187,7 @@ var itemsContext                = "items",
     [_slicesHolder addSubview:_dropLineView];
 
     [self registerForDraggedTypes:[CPArray arrayWithObjects:CPRuleEditorItemPBoardType,nil]];
-    [_boundArrayOwner addObserver:self forKeyPath:_boundArrayKeyPath options:CPKeyValueObservingOptionOld|CPKeyValueObservingOptionNew context:boundArrayContext];
+    [_boundArrayOwner addObserver:self forKeyPath:_boundArrayKeyPath options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:boundArrayContext];
 }
 
 /*! @endcond */
@@ -408,7 +408,7 @@ var itemsContext                = "items",
             if (![stringsFilename hasSuffix:@".strings"])
                 stringsFilename = stringsFilename + @".strings";
             var path = [[CPBundle mainBundle] pathForResource:stringsFilename];
-            if (path !=nil)
+            if (path != nil)
                 [_standardLocalizer loadContentOfURL:[CPURL URLWithString:path]];
         }
     }
@@ -626,7 +626,7 @@ TODO: implement
     {
         var slice = _slices[count],
             rowIndex = [slice rowIndex],
-            contains = [indexes containsIndex:rowIndex];
+            contains = [indexes containsIndex:rowIndex],
             shouldSelect = (contains && !(extend && [slice _isSelected]));
 
         if (contains)
@@ -1153,8 +1153,8 @@ TODO: implement
     if (!_nestingModeDidChange)
         return _nestingMode;
 
-    var a = (_nestingMode == CPRuleEditorNestingModeCompound || _nestingMode == CPRuleEditorNestingModeSimple);
-    var b = ([self rowTypeForRow:0] == CPRuleEditorRowTypeCompound);
+    var a = (_nestingMode == CPRuleEditorNestingModeCompound || _nestingMode == CPRuleEditorNestingModeSimple),
+        b = ([self rowTypeForRow:0] == CPRuleEditorRowTypeCompound);
 
     if (a == b)
         return _nestingMode;
@@ -1241,10 +1241,10 @@ TODO: implement
 
     while (current_index != CPNotFound)
     {
-        var parentIndex = [self parentRowForRow:current_index];
+        var parentIndex = [self parentRowForRow:current_index],
+            subrowsIndexes = [self subrowIndexesForRow:parentIndex];
 
-        var subrowsIndexes = [self subrowIndexesForRow:parentIndex];
-        if ([subrowsIndexes count]==1)
+        if ([subrowsIndexes count] == 1)
         {
             if (parentIndex != -1)
                 return [CPIndexSet indexSetWithIndex:0];
@@ -1432,7 +1432,7 @@ TODO: implement
 
 - (void)_startObservingRowObjectsRecursively:(CPArray)rowObjects
 {
-    [_boundArrayOwner addObserver:self forKeyPath:_boundArrayKeyPath options:CPKeyValueObservingOptionOld|CPKeyValueObservingOptionNew context:boundArrayContext];
+    [_boundArrayOwner addObserver:self forKeyPath:_boundArrayKeyPath options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:boundArrayContext];
 
     var count = [rowObjects count];
 
@@ -1440,9 +1440,9 @@ TODO: implement
     {
         var rowObject = [rowObjects objectAtIndex:i];
 
-        [rowObject addObserver:self forKeyPath:_itemsKeyPath options:CPKeyValueObservingOptionOld|CPKeyValueObservingOptionNew context:itemsContext];
-        [rowObject addObserver:self forKeyPath:_valuesKeyPath options:CPKeyValueObservingOptionOld|CPKeyValueObservingOptionNew context:valuesContext];
-        [rowObject addObserver:self forKeyPath:_subrowsArrayKeyPath options:CPKeyValueObservingOptionOld|CPKeyValueObservingOptionNew context:subrowsContext];
+        [rowObject addObserver:self forKeyPath:_itemsKeyPath options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:itemsContext];
+        [rowObject addObserver:self forKeyPath:_valuesKeyPath options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:valuesContext];
+        [rowObject addObserver:self forKeyPath:_subrowsArrayKeyPath options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:subrowsContext];
 
         var subrows = [self _subrowObjectsOfObject:rowObject];
         if ([subrows count] > 0)
@@ -1604,13 +1604,14 @@ TODO: implement
             break;
     }
 
-    var replaceCount = (deltaCount == 0) ? maxCount : maxCount - minusCount;
-    var startIndex = parentCacheIndex + changeStartIndex + 1;
+    var replaceCount = (deltaCount == 0) ? maxCount : maxCount - minusCount,
+        startIndex = parentCacheIndex + changeStartIndex + 1;
 
     if (deltaCount <= 0)
     {
-        var removeIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(startIndex, replaceCount)];
-        var removeSlices = [_slices objectsAtIndexes:removeIndexes];
+        var removeIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(startIndex, replaceCount)],
+            removeSlices = [_slices objectsAtIndexes:removeIndexes];
+
         [removeSlices makeObjectsPerformSelector:@selector(removeFromSuperview)];
         [_slices removeObjectsAtIndexes:removeIndexes];
     }
@@ -1694,7 +1695,7 @@ TODO: implement
 
     var boundRows = [_boundArrayOwner valueForKey:_boundArrayKeyPath];
 
-    [_boundArrayOwner addObserver:self forKeyPath:_boundArrayKeyPath options:CPKeyValueObservingOptionOld|CPKeyValueObservingOptionNew context:boundArrayContext];
+    [_boundArrayOwner addObserver:self forKeyPath:_boundArrayKeyPath options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:boundArrayContext];
 
     if ([boundRows isKindOfClass:[CPArray class]] && [boundRows count] > 0)
         [_boundArrayOwner setValue:boundRows forKey:_boundArrayKeyPath];
@@ -1890,7 +1891,7 @@ TODO: implement
 {
     var current_index = [indexes firstIndex];
 
-    while (current_index !=CPNotFound)
+    while (current_index != CPNotFound)
     {
         var subindexes = [self subrowIndexesForRow:index];
         [self _updateSliceIndentationAtIndex:current_index toIndentation:indentation + 1 withIndexSet:subindexes];
@@ -2152,7 +2153,7 @@ TODO: implement
 - (CPDragOperation)draggingUpdated:(id <CPDraggingInfo>)sender
 {
     var point = [self convertPoint:[sender draggingLocation] fromView:nil],
-        y = point.y + _sliceHeight /2,
+        y = point.y + _sliceHeight / 2,
         indexOfDropLine =  FLOOR(y / _sliceHeight),
         numberOfRows = [self numberOfRows];
 
@@ -2198,11 +2199,10 @@ TODO: implement
         removeIndex;
 
     var rowObjects = [_rowCache valueForKey:@"rowObject"],
-        index = [_draggingRows lastIndex];
-
-    var parentRowIndex = [self parentRowForRow:index]; // first index of draggingrows
-    var parentRowObject = (parentRowIndex == -1) ? _boundArrayOwner : [[self _rowCacheForIndex:parentRowIndex] rowObject];
-    var insertIndex = _subviewIndexOfDropLine;
+        index = [_draggingRows lastIndex],
+        parentRowIndex = [self parentRowForRow:index], // first index of draggingrows
+        parentRowObject = (parentRowIndex == -1) ? _boundArrayOwner : [[self _rowCacheForIndex:parentRowIndex] rowObject],
+        insertIndex = _subviewIndexOfDropLine;
 
     while (index != CPNotFound)
     {
@@ -2570,9 +2570,9 @@ var dropSeparatorColor = [CPColor colorWithHexString:@"4886ca"];
 
 - (int)valueType
 {
-    var result = 0;
+    var result = 0,
+        isString = [self isKindOfClass:[CPString class]];
 
-    var isString = [self isKindOfClass:[CPString class]];
     if ( !isString )
     {
         var isView = [self isKindOfClass:[CPView class]];
