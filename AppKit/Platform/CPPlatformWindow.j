@@ -264,7 +264,8 @@ var PrimaryPlatformWindow   = NULL;
     _title = aTitle;
 
 #if PLATFORM(DOM)
-    if (_DOMWindow && _DOMWindow.document && (aWindow === [CPApp mainWindow]))
+    if (_DOMWindow && _DOMWindow.document
+        && (aWindow === [CPApp mainWindow] || [aWindow platformWindow] !== [CPPlatformWindow primaryPlatformWindow]))
         _DOMWindow.document.title = _title;
 #endif
 }
