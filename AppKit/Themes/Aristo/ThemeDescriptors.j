@@ -1625,7 +1625,8 @@ var themedButtonValues = nil,
             [@"bezel-color-down-button",    bezelDownDisabled,              CPThemeStateBordered | CPThemeStateDisabled],
             [@"bezel-color-up-button",      bezelUpHighlighted,             CPThemeStateBordered | CPThemeStateHighlighted],
             [@"bezel-color-down-button",    bezelDownHighlighted,           CPThemeStateBordered | CPThemeStateHighlighted],
-            [@"min-size",                   CGSizeMake(19.0, 25.0)]
+            [@"up-button-size",             CGSizeMake(19.0, 13.0)],
+            [@"down-button-size",           CGSizeMake(19.0, 12.0)]
         ];
 
     [self registerThemeValues:themeValues forView:stepper];
