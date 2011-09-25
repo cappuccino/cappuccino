@@ -25,7 +25,6 @@
 @import <AppKit/CPTextField.j>
 
 
-var CPStepperButtonsSize = CPSizeMake(19, 13);
 
 /*! CPStepper is an  implementation of Cocoa NSStepper.
 
@@ -87,14 +86,14 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
 
         [self setDoubleValue:0.0];
 
-        _buttonUp = [[CPButton alloc] initWithFrame:CPRectMake(aFrame.size.width - CPStepperButtonsSize.width, 0, CPStepperButtonsSize.width, CPStepperButtonsSize.height)];
+        _buttonUp = [[CPButton alloc] initWithFrame:CPRectMakeZero()];
         [_buttonUp setContinuous:YES];
         [_buttonUp setTarget:self];
         [_buttonUp setAction:@selector(_buttonDidClick:)];
         [_buttonUp setAutoresizingMask:CPViewNotSizable];
         [self addSubview:_buttonUp];
 
-        _buttonDown = [[CPButton alloc] initWithFrame:CPRectMake(aFrame.size.width - CPStepperButtonsSize.width, CPStepperButtonsSize.height, CPStepperButtonsSize.width, CPStepperButtonsSize.height - 1)];
+        _buttonDown = [[CPButton alloc] initWithFrame:CPRectMakeZero()];
         [_buttonDown setContinuous:YES];
         [_buttonDown setTarget:self];
         [_buttonDown setAction:@selector(_buttonDidClick:)];
@@ -121,19 +120,29 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
     [_buttonDown setEnabled:shouldEnabled];
 }
 
-/*! set the frame of the CPStepper and check if width is not smaller than theme min-size
-    @param aFrame the frame
-*/
+
 - (void)setFrame:(CGRect)aFrame
 {
-    if (aFrame.size.width >= CGRectGetWidth(aFrame))
-        [super setFrame:aFrame];
+    var upSize = [self valueForThemeAttribute:@"up-button-size"],
+        downSize = [self valueForThemeAttribute:@"down-button-size"],
+        minSize = CGSizeMake(upSize.width, upSize.height + downSize.height);
+    aFrame.size.width = Math.max(minSize.width, aFrame.size.width);
+    aFrame.size.height = Math.max(minSize.height, aFrame.size.height);
+    [super setFrame:aFrame];
 }
 
 /*! @ignore
 */
 - (void)layoutSubviews
 {
+    var aFrame = [self frame],
+        upSize = [self valueForThemeAttribute:@"up-button-size"],
+        downSize = [self valueForThemeAttribute:@"down-button-size"],
+        upFrame = CPRectMake(aFrame.size.width - upSize.width, 0, upSize.width, upSize.height),
+        downFrame = CPRectMake(aFrame.size.width - downSize.width, upSize.height, downSize.width, downSize.height);
+    [_buttonUp setFrame:upFrame];
+    [_buttonDown setFrame:downFrame];
+
     [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:CPThemeStateBordered] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
     [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:CPThemeStateBordered | CPThemeStateDisabled] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateDisabled];
     [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:CPThemeStateBordered | CPThemeStateHighlighted] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateHighlighted];
@@ -210,8 +219,8 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null]]
-                                       forKeys:[@"bezel-color-up-button", @"bezel-color-down-button"]];
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], CGSizeMakeZero(), CGSizeMakeZero()]
+                                       forKeys:[@"bezel-color-up-button", @"bezel-color-down-button", @"up-button-size", @"down-button-size"]];
 }
 
 @end
