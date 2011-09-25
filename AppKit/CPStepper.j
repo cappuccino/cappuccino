@@ -125,10 +125,12 @@
 {
     var upSize = [self valueForThemeAttribute:@"up-button-size"],
         downSize = [self valueForThemeAttribute:@"down-button-size"],
-        minSize = CGSizeMake(upSize.width, upSize.height + downSize.height);
-    aFrame.size.width = Math.max(minSize.width, aFrame.size.width);
-    aFrame.size.height = Math.max(minSize.height, aFrame.size.height);
-    [super setFrame:aFrame];
+        minSize = _CGSizeMake(upSize.width, upSize.height + downSize.height),
+        frame = _CGRectMakeCopy(aFrame);
+
+    frame.size.width = Math.max(minSize.width, frame.size.width);
+    frame.size.height = Math.max(minSize.height, frame.size.height);
+    [super setFrame:frame];
 }
 
 /*! @ignore
@@ -219,7 +221,7 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], CGSizeMakeZero(), CGSizeMakeZero()]
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], _CGSizeMakeZero(), _CGSizeMakeZero()]
                                        forKeys:[@"bezel-color-up-button", @"bezel-color-down-button", @"up-button-size", @"down-button-size"]];
 }
 
