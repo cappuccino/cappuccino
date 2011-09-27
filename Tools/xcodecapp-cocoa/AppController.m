@@ -31,9 +31,12 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 	}
 }
 
-
+@interface AppController ()
+@property (retain, nonatomic) NSMutableSet *workingItems;
+@end
 
 @implementation AppController
+@synthesize workingItems;
 
 #pragma mark -
 #pragma mark Initialization
@@ -103,6 +106,8 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
     [_statusItem setImage:_iconInactive];
     [_statusItem setHighlightMode:YES];
     [statusMenu setDelegate:self];
+    
+    [self setWorkingItems:[NSMutableSet set]];
 }
 
 - (void)initializeEventStreamWithPath:(NSString*)aPath
@@ -190,6 +195,11 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
         NSString        *splitedPath    = [NSString stringWithFormat:@"%@/%@", [[fullPath pathComponents] objectAtIndex:[[fullPath pathComponents] count] - 2], [fullPath lastPathComponent]];
         NSDictionary    *fileAttributes = [fm attributesOfItemAtPath:fullPath error:NULL];
 		NSDate          *fileModDate    = [fileAttributes objectForKey:NSFileModificationDate];
+        
+        if([workingItems containsObject:fullPath])
+            continue;
+        else
+            [workingItems addObject:fullPath];
 
         if(shouldIgnoreDate || [fileModDate compare:[self lastModificationDateForPath:path]] == NSOrderedDescending)
         {
@@ -263,9 +273,19 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
                         [errorList addObject:response];
                         [self updateErrorTable];
                     }
+                    
+                    NSString *errorMsg = @"Error during conversion.";
+                    [GrowlApplicationBridge notifyWithTitle:splitedPath
+                                                description:errorMsg
+                                           notificationName:@"DefaultNotifications"
+                                                   iconData:nil
+                                                   priority:0
+                                                   isSticky:NO
+                                               clickContext:nil];
                 }
             }
         }
+        [workingItems removeObject:fullPath];
 	}
     [self updateLastModificationDateForPath:path];
 }
@@ -499,7 +519,6 @@ void fsevents_callback(ConstFSEventStreamRef streamRef, void *userData, size_t n
 - (void)updateErrorTable
 {
     [errorsTable reloadData];
-    [errorsPanel orderFront:self];
     NSLog(@"update?");
 }
 
