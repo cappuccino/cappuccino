@@ -44,7 +44,8 @@ CPImageNameColorPanel               = @"CPImageNameColorPanel";
 CPImageNameColorPanelHighlighted    = @"CPImageNameColorPanelHighlighted";
 
 var imagesForNames = { },
-    AppKitImageForNames = { };
+    AppKitImageForNames = { },
+    ImageDescriptionFormat = "%s {\n   filename: \"%s\",\n   size: { width:%f, height:%f }\n}";
 
 AppKitImageForNames[CPImageNameColorPanel]              = CGSizeMake(26.0, 29.0);
 AppKitImageForNames[CPImageNameColorPanelHighlighted]   = CGSizeMake(26.0, 29.0);
@@ -322,6 +323,24 @@ function CPAppKitImage(aFilename, aSize)
 - (BOOL)isNinePartImage
 {
     return NO;
+}
+
+- (CPString)description
+{
+    var filename = [self filename],
+        size = [self size];
+
+    if (filename.indexOf("data:") === 0)
+    {
+        var index = filename.indexOf(",");
+
+        if (index > 0)
+            filename = [CPString stringWithFormat:@"%s,%s...%s", filename.substr(0, index), filename.substr(index + 1, 10), filename.substr(filename.length - 10)];
+        else
+            filename = "data:<unknown type>";
+    }
+
+    return [CPString stringWithFormat:ImageDescriptionFormat, [super description], filename, size.width, size.height];
 }
 
 /* @ignore */
