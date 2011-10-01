@@ -374,18 +374,21 @@ function CPDecimalCompare(leftOperand, rightOperand)
             return CPOrderedAscending;
     }
 
-    var s1 = leftOperand._exponent + leftOperand._mantissa.length,
+    // Before comparing number size check if zero (dont use CPDecimalIsZero as it is more computationally intensive)
+    var leftIsZero = (leftOperand._mantissa.length == 1 && leftOperand._mantissa[0] == 0),
+        rightIsZero = (rightOperand._mantissa.length == 1 && rightOperand._mantissa[0] == 0),
+        // Sign is the same, quick check size (length + exp)
+        s1 = leftOperand._exponent + leftOperand._mantissa.length,
         s2 = rightOperand._exponent + rightOperand._mantissa.length;
 
-    // Sign is the same, quick check size (length + exp)
-    if (s1 < s2)
+    if (leftIsZero || s1 < s2)
     {
         if (rightOperand._isNegative)
             return CPOrderedDescending;
         else
             return CPOrderedAscending;
     }
-    if (s1 > s2)
+    if (rightIsZero || s1 > s2)
     {
         if (rightOperand._isNegative)
             return CPOrderedAscending;
