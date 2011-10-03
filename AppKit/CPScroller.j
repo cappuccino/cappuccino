@@ -73,6 +73,8 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     CGPoint                 _trackingStartPoint;
 
     CPViewAnimation         _animationScroller;
+
+    BOOL                    _allowFadingOut @accessors(getter=allowFadingOut);
 }
 
 + (CPString)defaultThemeClass
@@ -113,7 +115,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
         [self setKnobProportion:1.0];
 
         _hitPart = CPScrollerNoPart;
-
+        _allowFadingOut = YES;
         _paramAnimFadeOut   = [CPDictionary dictionaryWithObjects:[self, CPViewAnimationFadeOutEffect]
                                                           forKeys:[CPViewAnimationTargetKey, CPViewAnimationEffectKey]];
 
@@ -606,12 +608,14 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 
 - (void)mouseEntered:(CPEvent)anEvent
 {
+    _allowFadingOut = NO;
     [self fadeIn];
     [self setThemeState:CPThemeStateSelected];
 }
 
 - (void)mouseExited:(CPEvent)anEvent
 {
+    _allowFadingOut = YES;
     [self fadeOut];
 }
 
@@ -654,6 +658,7 @@ var CPScrollerControlSizeKey = "CPScrollerControlSize",
 
         _hitPart = CPScrollerNoPart;
 
+        _allowFadingOut = YES;
         _paramAnimFadeOut   = [CPDictionary dictionaryWithObjects:[self, CPViewAnimationFadeOutEffect]
                                                           forKeys:[CPViewAnimationTargetKey, CPViewAnimationEffectKey]];
         _animationScroller = [[CPViewAnimation alloc] initWithDuration:0.2 animationCurve:CPAnimationEaseInOut];

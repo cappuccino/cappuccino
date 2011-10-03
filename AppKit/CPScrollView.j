@@ -987,8 +987,10 @@ var TIMER_INTERVAL                              = 0.2,
 
 - (void)_hideScrollers:(CPTimer)theTimer
 {
-    [_verticalScroller fadeOut];
-    [_horizontalScroller fadeOut];
+    if ([_verticalScroller allowFadingOut])
+        [_verticalScroller fadeOut];
+    if ([_horizontalScroller allowFadingOut])
+        [_horizontalScroller fadeOut];
     _timerScrollersHide = nil;
 }
 
