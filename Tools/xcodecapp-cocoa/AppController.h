@@ -21,69 +21,67 @@
 
 @interface AppController : NSObject <NSMenuDelegate>
 {
-    IBOutlet NSTextField            *labelStatus;
-    IBOutlet NSTextField            *labelPath;
-    IBOutlet NSTextField            *labelCurrentPath;
     IBOutlet NSButton               *buttonOpenXCode;
     IBOutlet NSButton               *buttonStart;
     IBOutlet NSButton               *buttonStop;
-    IBOutlet NSProgressIndicator    *spinner;
-    IBOutlet NSWindow               *mainWindow;
     IBOutlet NSMenu                 *statusMenu;
+    IBOutlet NSMenuItem             *menuItemOpenXCode;
     IBOutlet NSMenuItem             *menuItemStart;
     IBOutlet NSMenuItem             *menuItemStop;
-    IBOutlet NSMenuItem             *menuItemOpenXCode;
-    
     IBOutlet NSPanel                *errorsPanel;
+    IBOutlet NSProgressIndicator    *spinner;
     IBOutlet NSTableView            *errorsTable;
+    IBOutlet NSTextField            *labelCurrentPath;
+    IBOutlet NSTextField            *labelPath;
+    IBOutlet NSTextField            *labelStatus;
+    IBOutlet NSWindow               *mainWindow;
     
-    NSFileManager           *fm;
-    NSMutableArray          *modifiedXIBs;
-    NSMutableArray          *errorList;
-    NSMutableDictionary     *pathModificationDates;
-    NSDate                  *appStartedTimestamp;
-    NSNumber                *lastEventId;
-    NSURL                   *currentProjectURL;
-    NSString                *currentProjectName;
-    FSEventStreamRef        stream;
-    NSString                *XCodeSupportProjectName;
-    NSString                *XCodeTemplatePBXPath;
-    NSURL                   *XCodeSupportFolder;
-    NSURL                   *XCodeSupportProject;
-    NSURL                   *XCodeSupportProjectSources;
-    NSString                *XCodeSupportPBXPath;
-    NSString                *parserPath;
-    NSMutableArray          *ignoredFilePaths;
-    NSImage                 *_iconInactive;
-    NSImage                 *_iconActive;
-    NSStatusItem            *_statusItem;
-    NSString                *_profilePath;
-	PRHEmptyGrowlDelegate   *growlDelegateRef;
+    FSEventStreamRef                stream;
+    NSDate                          *appStartedTimestamp;
+    NSFileManager                   *fm;
+    NSImage                         *_iconActive;
+    NSImage                         *_iconInactive;
+    NSMutableArray                  *errorList;
+    NSMutableArray                  *ignoredFilePaths;
+    NSMutableArray                  *modifiedXIBs;
+    NSMutableDictionary             *pathModificationDates;
+    NSNumber                        *lastEventId;
+    NSStatusItem                    *_statusItem;
+    NSString                        *currentProjectName;
+    NSString                        *parserPath;
+    NSString                        *XCodeSupportPBXPath;
+    NSString                        *XCodeSupportProjectName;
+    NSString                        *XCodeTemplatePBXPath;
+    NSString                        *_profilePath;
+    NSURL                           *currentProjectURL;
+    NSURL                           *XCodeSupportFolder;
+    NSURL                           *XCodeSupportProject;
+    NSURL                           *XCodeSupportProjectSources;
+    PRHEmptyGrowlDelegate           *growlDelegateRef;
 }
 
-- (void)registerDefaults;
-- (void)initializeEventStreamWithPath:(NSString*)aPath;
-- (void)handleFileModification:(NSString*)path ignoreDate:(BOOL)shouldIgnoreDate;
-- (void)updateLastEventId:(uint64_t)eventId;
 - (BOOL)isObjJFile:(NSString*)path;
-- (BOOL)isXIBFile:(NSString *)path;
-- (NSURL*)shadowURLForSourceURL:(NSURL*)aSourceURL;
-- (BOOL)prepareXCodeSupportProject;
 - (BOOL)isPathMatchingIgnoredPaths:(NSString*)aPath;
-
-- (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag;
+- (BOOL)isXIBFile:(NSString *)path;
+- (BOOL)prepareXCodeSupportProject;
+- (BOOL)validateMenuItem:(NSMenuItem*)menuItem;
+- (NSURL*)shadowURLForSourceURL:(NSURL*)aSourceURL;
+- (void)handleFileModification:(NSString*)path ignoreDate:(BOOL)shouldIgnoreDate;
+- (void)initializeEventStreamWithPath:(NSString*)aPath;
+- (void)registerDefaults;
+- (void)updateErrorTable;
+- (void)updateLastEventId:(uint64_t)eventId;
 
 - (IBAction)chooseFolder:(id)aSender;
-- (IBAction)stopListener:(id)aSender;
-- (IBAction)openXCode:(id)aSender;
-- (BOOL)validateMenuItem:(NSMenuItem*)menuItem;
-
-- (void)updateErrorTable;
 - (IBAction)clearErrors:(id)sender;
-- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView;
-- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView;
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row;
+- (IBAction)openXCode:(id)aSender;
+- (IBAction)stopListener:(id)aSender;
+
+- (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag;
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(int)aRow;
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row;
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView;
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView;
 
 @end
 
