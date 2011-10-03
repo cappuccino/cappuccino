@@ -5,6 +5,9 @@
  * Created by Francisco Tolmasky.
  * Copyright 2008, 280 North, Inc.
  *
+ * Modified to match Lion style by Antoine Mercadal 2011
+ * <antoine.mercadal@archipelproject.org>
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -21,7 +24,7 @@
  */
 
 @import "CPControl.j"
-
+@import "CPViewAnimation.j"
 
 // CPScroller Constants
 CPScrollerNoPart            = 0;
@@ -68,6 +71,8 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     CPScrollerPart          _trackingPart;
     float                   _trackingFloatValue;
     CGPoint                 _trackingStartPoint;
+
+    CPViewAnimation         _animationScroller;
 }
 
 + (CPString)defaultThemeClass
@@ -78,8 +83,8 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 + (id)themeAttributes
 {
     return [CPDictionary dictionaryWithJSObject:{
-        @"scroller-width": 15.0,
-        @"knob-slot-color": [CPColor lightGrayColor],
+        @"scroller-width": 7.0,
+        @"knob-slot-color": [CPNull null],
         @"decrement-line-color": [CPNull null],
         @"increment-line-color": [CPNull null],
         @"knob-color": [CPColor grayColor],
@@ -87,7 +92,8 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
         @"increment-line-size":_CGSizeMakeZero(),
         @"track-inset":_CGInsetMakeZero(),
         @"knob-inset": _CGInsetMakeZero(),
-        @"minimum-knob-length":21.0
+        @"minimum-knob-length":21.0,
+        @"track-border-offset": 9.0,
     }]
 }
 
@@ -108,6 +114,13 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 
         _hitPart = CPScrollerNoPart;
 
+        _paramAnimFadeOut   = [CPDictionary dictionaryWithObjects:[self, CPViewAnimationFadeOutEffect]
+                                                          forKeys:[CPViewAnimationTargetKey, CPViewAnimationEffectKey]];
+
+        _animationScroller = [[CPViewAnimation alloc] initWithDuration:0.2 animationCurve:CPAnimationEaseInOut];
+        [_animationScroller setViewAnimations:[_paramAnimFadeOut]];
+        [_animationScroller setDelegate:self];
+        [self setAlphaValue:0.0];
         [self _calculateIsVertical];
     }
 
@@ -121,6 +134,14 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 + (float)scrollerWidth
 {
     return [[[CPScroller alloc] init] currentValueForThemeAttribute:@"scroller-width"];
+}
+
+/*!
+    Returns the CPScroller's offset.
+*/
++ (float)scrollerOffset
+{
+    return [[[CPScroller alloc] init] currentValueForThemeAttribute:@"track-border-offset"];
 }
 
 /*!
@@ -457,7 +478,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     }
 
     [CPApp setTarget:self selector:@selector(trackKnob:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
-    
+
     if (type === CPLeftMouseDragged)
         [self sendAction:[self action] to:[self target]];
 }
@@ -583,6 +604,33 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     }
 }
 
+- (void)mouseEntered:(CPEvent)anEvent
+{
+    [self fadeIn];
+    [self setThemeState:CPThemeStateSelected];
+}
+
+- (void)mouseExited:(CPEvent)anEvent
+{
+    [self fadeOut];
+}
+
+- (void)fadeIn
+{
+    [self setAlphaValue:1.0];
+}
+
+- (void)fadeOut
+{
+    [_animationScroller startAnimation];
+}
+
+- (void)animationDidEnd:(CPAnimation)animation
+{
+    [self unsetThemeState:CPThemeStateSelected];
+    [self setHidden:NO];
+}
+
 @end
 
 var CPScrollerControlSizeKey = "CPScrollerControlSize",
@@ -605,6 +653,13 @@ var CPScrollerControlSizeKey = "CPScrollerControlSize",
         _partRects = [];
 
         _hitPart = CPScrollerNoPart;
+
+        _paramAnimFadeOut   = [CPDictionary dictionaryWithObjects:[self, CPViewAnimationFadeOutEffect]
+                                                          forKeys:[CPViewAnimationTargetKey, CPViewAnimationEffectKey]];
+        _animationScroller = [[CPViewAnimation alloc] initWithDuration:0.2 animationCurve:CPAnimationEaseInOut];
+        [_animationScroller setViewAnimations:[_paramAnimFadeOut]];
+        [_animationScroller setDelegate:self];
+        [self setAlphaValue:0.0];
 
         [self _calculateIsVertical];
 

@@ -633,54 +633,59 @@ var themedButtonValues = nil,
 + (CPScroller)themedVerticalScroller
 {
     var scroller = [self makeVerticalScroller],
-        trackColor = PatternColor("scroller-vertical-track.png", 15.0, 1.0),
-        disabledTrackColor = PatternColor("scroller-vertical-track-disabled.png", 15.0, 1.0),
+        trackColor = PatternColor(
+            [
+                ["scroller-vertical-track-top.png", 7.0, 3.0],
+                ["scroller-vertical-track-center.png", 7.0, 1.0],
+                ["scroller-vertical-track-bottom.png", 7.0, 3.0]
+            ],
+            PatternIsVertical),
 
-        upArrowColor = PatternColor("scroller-up-arrow.png", 15.0, 24.0),
-        highlightedUpArrowColor = PatternColor("scroller-up-arrow-highlighted.png", 15.0, 24.0),
-        disabledUpArrowColor = PatternColor("scroller-up-arrow-disabled.png", 15.0, 24.0),
-
-        downArrowColor = PatternColor("scroller-down-arrow.png", 15.0, 24.0),
-        highlightedDownArrowColor = PatternColor("scroller-down-arrow-highlighted.png", 15.0, 24.0),
-        disabledDownArrowColor = PatternColor("scroller-down-arrow-disabled.png", 15.0, 24.0),
+        disabledTrackColor = PatternColor(
+            [
+                ["scroller-vertical-track-top.png", 7.0, 3.0],
+                ["scroller-vertical-track-center.png", 7.0, 1.0],
+                ["scroller-vertical-track-bottom.png", 7.0, 3.0]
+            ],
+            PatternIsVertical),
 
         knobColor = PatternColor(
             [
-                ["scroller-vertical-knob-top.png", 15.0, 10.0],
-                ["scroller-vertical-knob-center.png", 15.0, 1.0],
-                ["scroller-vertical-knob-bottom.png", 15.0, 10.0]
+                ["scroller-vertical-knob-top.png", 7.0, 3.0],
+                ["scroller-vertical-knob-center.png", 7.0, 1.0],
+                ["scroller-vertical-knob-bottom.png", 7.0, 3.0]
             ],
             PatternIsVertical),
 
         disabledKnobColor = PatternColor(
             [
-                ["scroller-vertical-knob-disabled-top.png", 15.0, 10.0],
-                ["scroller-vertical-knob-disabled-center.png", 15.0, 1.0],
-                ["scroller-vertical-knob-disabled-bottom.png", 15.0, 10.0]
+                ["scroller-vertical-knob-disabled-top.png", 7.0, 3.0],
+                ["scroller-vertical-knob-disabled-center.png", 7.0, 1.0],
+                ["scroller-vertical-knob-disabled-bottom.png", 7.0, 3.0]
             ],
             PatternIsVertical);
 
     themedVerticalScrollerValues =
         [
-            [@"minimum-knob-length",    21.0,                                   CPThemeStateVertical],
-            [@"knob-inset",             CGInsetMake(0.0, 0.0, 0.0, 0.0),        CPThemeStateVertical],
-            [@"track-inset",            CGInsetMake(-10.0, 0.0, -10.0, 0.0),    CPThemeStateVertical],
+            [@"minimum-knob-length",    21.0,                               CPThemeStateVertical],
+            [@"knob-inset",             CGInsetMake(2.0, 0.0, 0.0, 0.0),    CPThemeStateVertical],
+            [@"track-inset",            CGInsetMake(2.0, 0.0, 11.0, 0.0),   CPThemeStateVertical],
+            [@"track-border-offset",    9.0,                                CPThemeStateVertical],
 
             [@"knob-color",             knobColor,                  CPThemeStateVertical],
             [@"knob-color",             disabledKnobColor,          CPThemeStateVertical | CPThemeStateDisabled],
 
-            [@"knob-slot-color",        trackColor,                 CPThemeStateVertical],
-            [@"knob-slot-color",        disabledTrackColor,         CPThemeStateVertical | CPThemeStateDisabled],
+            [@"knob-slot-color",        [CPNull null],              CPThemeStateVertical],
+            [@"knob-slot-color",        [CPNull null],              CPThemeStateVertical | CPThemeStateDisabled],
 
-            [@"decrement-line-size",    CGSizeMake(15.0, 24.0),     CPThemeStateVertical],
-            [@"decrement-line-color",   upArrowColor,               CPThemeStateVertical],
-            [@"decrement-line-color",   highlightedUpArrowColor,    CPThemeStateVertical | CPThemeStateHighlighted],
-            [@"decrement-line-color",   disabledUpArrowColor,       CPThemeStateVertical | CPThemeStateDisabled],
+            [@"knob-slot-color",        trackColor,                 CPThemeStateVertical | CPThemeStateSelected],
+            [@"knob-slot-color",        disabledTrackColor,         CPThemeStateVertical | CPThemeStateDisabled | CPThemeStateSelected],
 
-            [@"increment-line-size",    CGSizeMake(15.0, 24.0),     CPThemeStateVertical],
-            [@"increment-line-color",   downArrowColor,             CPThemeStateVertical],
-            [@"increment-line-color",   highlightedDownArrowColor,  CPThemeStateVertical | CPThemeStateHighlighted],
-            [@"increment-line-color",   disabledDownArrowColor,     CPThemeStateVertical | CPThemeStateDisabled]
+            [@"decrement-line-size",    CPSizeMakeZero(),           CPThemeStateVertical],
+            [@"decrement-line-color",   [CPNull null],              CPThemeStateVertical],
+
+            [@"increment-line-size",    CPSizeMakeZero(),           CPThemeStateVertical],
+            [@"increment-line-color",   [CPNull null],              CPThemeStateVertical]
         ];
 
     [self registerThemeValues:themedVerticalScrollerValues forView:scroller];
@@ -701,54 +706,56 @@ var themedButtonValues = nil,
 + (CPScroller)themedHorizontalScroller
 {
     var scroller = [self makeHorizontalScroller],
-        trackColor = PatternColor("scroller-horizontal-track.png", 1.0, 15.0),
-        disabledTrackColor = PatternColor("scroller-horizontal-track-disabled.png", 1.0, 15.0),
+        trackColor = PatternColor(
+            [
+                ["scroller-horizontal-track-left.png", 3.0, 7.0],
+                ["scroller-horizontal-track-center.png", 1.0, 7.0],
+                ["scroller-horizontal-track-right.png", 3.0, 7.0]
+            ],
+            PatternIsHorizontal),
 
-        leftArrowColor = PatternColor("scroller-left-arrow.png", 24.0, 15.0),
-        highlightedLeftArrowColor = PatternColor("scroller-left-arrow-highlighted.png", 24.0, 15.0),
-        disabledLeftArrowColor = PatternColor("scroller-left-arrow-disabled.png", 24.0, 15.0),
-
-        rightArrowColor = PatternColor("scroller-right-arrow.png", 24.0, 15.0),
-        highlightedRightArrowColor = PatternColor("scroller-right-arrow-highlighted.png", 24.0, 15.0),
-        disabledRightArrowColor = PatternColor("scroller-right-arrow-disabled.png", 24.0, 15.0),
+        disabledTrackColor = PatternColor(
+            [
+                ["scroller-horizontal-track-left.png", 3.0, 7.0],
+                ["scroller-horizontal-track-center.png", 1.0, 7.0],
+                ["scroller-horizontal-track-right.png", 3.0, 7.0]
+            ],
+            PatternIsHorizontal),
 
         knobColor = PatternColor(
             [
-                ["scroller-horizontal-knob-left.png", 10.0, 15.0],
-                ["scroller-horizontal-knob-center.png", 1.0, 15.0],
-                ["scroller-horizontal-knob-right.png", 10.0, 15.0]
+                ["scroller-horizontal-knob-left.png", 3.0, 7.0],
+                ["scroller-horizontal-knob-center.png", 1.0, 7.0],
+                ["scroller-horizontal-knob-right.png", 3.0, 7.0]
             ],
             PatternIsHorizontal),
 
         disabledKnobColor = PatternColor(
             [
-                ["scroller-horizontal-knob-disabled-left.png", 10.0, 15.0],
-                ["scroller-horizontal-knob-disabled-center.png", 1.0, 15.0],
-                ["scroller-horizontal-knob-disabled-right.png", 10.0, 15.0]
+                ["scroller-horizontal-knob-disabled-left.png", 3.0, 7.0],
+                ["scroller-horizontal-knob-disabled-center.png", 1.0, 7.0],
+                ["scroller-horizontal-knob-disabled-right.png", 3.0, 7.0]
             ],
             PatternIsHorizontal);
 
     themedHorizontalScrollerValues =
         [
             [@"minimum-knob-length",    21.0],
-            [@"knob-inset",             CGInsetMake(0.0, 0.0, 0.0, 0.0)],
-            [@"track-inset",            CGInsetMake(0.0, -10.0, 0.0, -11.0)],
+            [@"knob-inset",             CGInsetMake(0.0, 0.0, 0.0, 2.0)],
+            [@"track-inset",            CGInsetMake(0.0, 11.0, 0.0, 2.0)],
+            [@"track-border-offset",    9.0],
 
             [@"knob-color",             knobColor],
-            [@"knob-color",             disabledKnobColor,          CPThemeStateDisabled],
+            [@"knob-color",             disabledKnobColor,      CPThemeStateDisabled],
 
-            [@"knob-slot-color",        trackColor],
-            [@"knob-slot-color",        disabledTrackColor,         CPThemeStateDisabled],
+            [@"knob-slot-color",        [CPNull null]],
+            [@"knob-slot-color",        [CPNull null],          CPThemeStateDisabled],
 
-            [@"decrement-line-size",    CGSizeMake(24.0, 15.0)],
-            [@"decrement-line-color",   leftArrowColor],
-            [@"decrement-line-color",   highlightedLeftArrowColor,  CPThemeStateHighlighted],
-            [@"decrement-line-color",   disabledLeftArrowColor,     CPThemeStateDisabled],
+            [@"knob-slot-color",        trackColor,             CPThemeStateSelected],
+            [@"knob-slot-color",        disabledTrackColor,     CPThemeStateDisabled | CPThemeStateSelected],
 
-            [@"increment-line-size",    CGSizeMake(24.0, 15.0)],
-            [@"increment-line-color",   rightArrowColor],
-            [@"increment-line-color",   highlightedRightArrowColor, CPThemeStateHighlighted],
-            [@"increment-line-color",   disabledRightArrowColor,    CPThemeStateDisabled]
+            [@"decrement-line-size",    CPSizeMakeZero()],
+            [@"increment-line-size",    CPSizeMakeZero()]
         ];
 
     [self registerThemeValues:themedHorizontalScrollerValues forView:scroller];

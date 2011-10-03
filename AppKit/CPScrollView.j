@@ -66,6 +66,8 @@ var TIMER_INTERVAL                              = 0.2,
     float           _horizontalPageScroll;
 
     CPBorderType    _borderType;
+
+    CPTimer         _timerScrollersHide;
 }
 
 + (CPString)defaultThemeClass
@@ -283,11 +285,6 @@ var TIMER_INTERVAL                              = 0.2,
             [_verticalScroller setHidden:YES];
             [_horizontalScroller setHidden:YES];
         }
-        else
-        {
-//            [_verticalScroller setEnabled:NO];
-//            [_horizontalScroller setEnabled:NO];
-        }
 
         [_contentView setFrame:[self _insetBounds]];
         [_headerClipView setFrame:_CGRectMakeZero()];
@@ -335,13 +332,6 @@ var TIMER_INTERVAL                              = 0.2,
     [_horizontalScroller setHidden:!shouldShowHorizontalScroller];
     [_horizontalScroller setEnabled:hasHorizontalScroll];
 
-    // We can thus appropriately account for them changing the content size.
-    if (shouldShowVerticalScroller)
-        contentFrame.size.width -= verticalScrollerWidth;
-
-    if (shouldShowHorizontalScroller)
-        contentFrame.size.height -= horizontalScrollerHeight;
-
     var scrollPoint = [_contentView bounds].origin,
         wasShowingVerticalScroller = ![_verticalScroller isHidden],
         wasShowingHorizontalScroller = ![_horizontalScroller isHidden];
@@ -355,7 +345,7 @@ var TIMER_INTERVAL                              = 0.2,
 
         [_verticalScroller setFloatValue:(difference.height <= 0.0) ? 0.0 : scrollPoint.y / difference.height];
         [_verticalScroller setKnobProportion:_CGRectGetHeight(contentFrame) / _CGRectGetHeight(documentFrame)];
-        [_verticalScroller setFrame:_CGRectMake(_CGRectGetMaxX(contentFrame), verticalScrollerY, verticalScrollerWidth, verticalScrollerHeight)];
+        [_verticalScroller setFrame:_CGRectMake(_CGRectGetMaxX(contentFrame) - [CPScroller scrollerOffset], verticalScrollerY, verticalScrollerWidth, verticalScrollerHeight)];
     }
     else if (wasShowingVerticalScroller)
     {
@@ -367,7 +357,7 @@ var TIMER_INTERVAL                              = 0.2,
     {
         [_horizontalScroller setFloatValue:(difference.width <= 0.0) ? 0.0 : scrollPoint.x / difference.width];
         [_horizontalScroller setKnobProportion:_CGRectGetWidth(contentFrame) / _CGRectGetWidth(documentFrame)];
-        [_horizontalScroller setFrame:_CGRectMake(_CGRectGetMinX(contentFrame), _CGRectGetMaxY(contentFrame), _CGRectGetWidth(contentFrame), horizontalScrollerHeight)];
+        [_horizontalScroller setFrame:_CGRectMake(_CGRectGetMinX(contentFrame), _CGRectGetMaxY(contentFrame) - [CPScroller scrollerOffset], _CGRectGetWidth(contentFrame), horizontalScrollerHeight)];
     }
     else if (wasShowingHorizontalScroller)
     {
@@ -983,7 +973,23 @@ var TIMER_INTERVAL                              = 0.2,
 */
 - (void)scrollWheel:(CPEvent)anEvent
 {
+    if (_timerScrollersHide)
+        [_timerScrollersHide invalidate];
+    if (![_verticalScroller isHidden])
+        [_verticalScroller fadeIn];
+    if (![_horizontalScroller isHidden])
+        [_horizontalScroller fadeIn];
+    if (![_horizontalScroller isHidden] || ![_verticalScroller isHidden])
+        _timerScrollersHide = [CPTimer scheduledTimerWithTimeInterval:1.2 target:self selector:@selector(_hideScrollers:) userInfo:nil repeats:NO];
+
     [self _respondToScrollWheelEventWithDeltaX:[anEvent deltaX] deltaY:[anEvent deltaY]];
+}
+
+- (void)_hideScrollers:(CPTimer)theTimer
+{
+    [_verticalScroller fadeOut];
+    [_horizontalScroller fadeOut];
+    _timerScrollersHide = nil;
 }
 
 - (void)_respondToScrollWheelEventWithDeltaX:(float)deltaX deltaY:(float)deltaY
