@@ -310,6 +310,15 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     [self _controlTextDidChange];
 }
 
+- (void)_updatePlaceholderState
+{
+    var objectValue = [self objectValue];
+    if ((!objectValue || [objectValue count] === 0) && ![self hasThemeState:CPThemeStateEditing])
+        [self setThemeState:CPTextFieldStatePlaceholder];
+    else
+        [self unsetThemeState:CPTextFieldStatePlaceholder];
+}
+
 // =============
 // = RESPONDER =
 // =============
