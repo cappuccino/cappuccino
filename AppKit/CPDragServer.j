@@ -261,10 +261,19 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
         {
             var contentView = [scrollView contentView],
                 bounds = [contentView bounds],
-                insetBounds = CGRectInset(bounds, 30, 30),
                 eventLocation = [contentView convertPoint:_draggingLocation fromView:nil],
                 deltaX = 0,
-                deltaY = 0;
+                deltaY = 0,
+                insetSize = 30;
+            
+            if ([contentView respondsToSelector:@selector(documentView)] &&
+                [[contentView documentView] respondsToSelector:@selector(rowHeight)])
+            {
+                // Adjust inset bounds based on CPTableView row height
+                insetSize = MAX(insetSize, [[contentView documentView] rowHeight]);
+            }
+            
+            var insetBounds = CGRectInset(bounds, insetSize, insetSize);
 
             if (!CGRectContainsPoint(insetBounds, eventLocation))
             {
