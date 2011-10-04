@@ -141,7 +141,7 @@ CPThemeStateScrollViewLegacy = CPThemeState("scroller-style-legacy");
 + (float)scrollerWidthForControlSize:(CPControlSize)aControlSize
 {
     // ?? a class method using self?
-    return nil//[self scrollerWidth];
+    return [self scrollerWidth];
 }
 
 
@@ -150,9 +150,7 @@ CPThemeStateScrollViewLegacy = CPThemeState("scroller-style-legacy");
 
 - (id)initWithFrame:(CGRect)aFrame
 {
-    self = [super initWithFrame:aFrame];
-
-    if (self)
+    if (self = [super initWithFrame:aFrame])
     {
         _controlSize = CPRegularControlSize;
         _partRects = [];
