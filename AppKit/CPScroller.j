@@ -83,6 +83,10 @@ CPThemeStateScrollViewLegacy = CPThemeState("scroller-style-legacy");
     int                     _style;
 }
 
+
+#pragma mark -
+#pragma mark Class methods
+
 + (CPString)defaultThemeClass
 {
     return "scroller";
@@ -105,8 +109,44 @@ CPThemeStateScrollViewLegacy = CPThemeState("scroller-style-legacy");
     }]
 }
 
++ (float)scrollerWidth
+{
+    return [CPScroller scrollerWidthInStyle:CPScrollerStyleLegacy];
+}
 
-// Calculating Layout
+/*!
+    Returns the CPScroller's width for a CPRegularControlSize.
+*/
++ (float)scrollerWidthInStyle:(int)aStyle
+{
+    var scroller = [[CPScroller alloc] init];
+
+    if (aStyle == CPScrollerStyleLegacy)
+        return [scroller valueForThemeAttribute:@"scroller-width" inState:CPThemeStateScrollViewLegacy];
+    return [scroller currentValueForThemeAttribute:@"scroller-width"];
+}
+
+/*!
+    Returns the CPScroller's overlay value.
+*/
++ (float)scrollerOverlay
+{
+    return [[[CPScroller alloc] init] currentValueForThemeAttribute:@"track-border-overlay"];
+}
+
+/*!
+    Returns the width of a CPScroller for the specified CPControlSize.
+    @param aControlSize the size of a controller to return the width for
+*/
++ (float)scrollerWidthForControlSize:(CPControlSize)aControlSize
+{
+    // ?? a class method using self?
+    return nil//[self scrollerWidth];
+}
+
+
+#pragma mark -
+#pragma mark Initialization
 
 - (id)initWithFrame:(CGRect)aFrame
 {
@@ -136,20 +176,22 @@ CPThemeStateScrollViewLegacy = CPThemeState("scroller-style-legacy");
     return self;
 }
 
-- (void)_adjustScrollerSize
+
+#pragma mark -
+#pragma mark Getters / Setters
+
+/*!
+    Returns the scroller's style
+*/
+- (void)style
 {
-    var frame = [self frame],
-        scrollerWidth = [self currentValueForThemeAttribute:@"scroller-width"];
-
-    if ([self isVertical] && CGRectGetWidth(frame) !== scrollerWidth)
-        frame.size.width = scrollerWidth;
-
-    if (![self isVertical] && CGRectGetHeight(frame) !== scrollerWidth)
-        frame.size.height = scrollerWidth;
-
-    [self setFrame:frame];
+    return _style
 }
 
+/*!
+    Set the scroller's control size
+    @param aStyle the scroller style: CPScrollerStyleLegacy or CPScrollerStyleOverlay
+*/
 - (void)setStyle:(id)aStyle
 {
     if (_style != nil && _style === aStyle)
@@ -171,41 +213,17 @@ CPThemeStateScrollViewLegacy = CPThemeState("scroller-style-legacy");
     [self _adjustScrollerSize];
 }
 
-// Determining CPScroller Size
-
-+ (float)scrollerWidth
+- (void)setObjectValue:(id)aValue
 {
-    return [CPScroller scrollerWidthInStyle:CPScrollerStyleLegacy];
+    [super setObjectValue:MIN(1.0, MAX(0.0, +aValue))];
 }
 
 /*!
-    Returns the CPScroller's width for a CPRegularControlSize.
+    Returns the scroller's control size
 */
-+ (float)scrollerWidthInStyle:(int)aStyle
+- (CPControlSize)controlSize
 {
-    var scroller = [[CPScroller alloc] init];
-
-    if (aStyle == CPScrollerStyleLegacy)
-        return [scroller valueForThemeAttribute:@"scroller-width" inState:CPThemeStateScrollViewLegacy];
-    return [scroller currentValueForThemeAttribute:@"scroller-width"];
-}
-
-/*!
-    Returns the CPScroller's offset.
-*/
-+ (float)scrollerOffset
-{
-    return [[[CPScroller alloc] init] currentValueForThemeAttribute:@"track-border-overlay"];
-}
-
-/*!
-    Returns the width of a CPScroller for the specified CPControlSize.
-    @param aControlSize the size of a controller to return the width for
-*/
-+ (float)scrollerWidthForControlSize:(CPControlSize)aControlSize
-{
-    // ?? a class method using self?
-    return nil//[self scrollerWidth];
+    return _controlSize;
 }
 
 /*!
@@ -224,18 +242,17 @@ CPThemeStateScrollViewLegacy = CPThemeState("scroller-style-legacy");
 }
 
 /*!
-    Returns the scroller's control size
+    Return's the knob's proportion
 */
-- (CPControlSize)controlSize
+- (float)knobProportion
 {
-    return _controlSize;
+    return _knobProportion;
 }
 
-- (void)setObjectValue:(id)aValue
-{
-    [super setObjectValue:MIN(1.0, MAX(0.0, +aValue))];
-}
-
+/*!
+    Set the knob's proportion
+    @param aProportion the desired proportion
+*/
 - (void)setKnobProportion:(float)aProportion
 {
     _knobProportion = MIN(1.0, MAX(0.0001, aProportion));
@@ -244,25 +261,28 @@ CPThemeStateScrollViewLegacy = CPThemeState("scroller-style-legacy");
     [self setNeedsLayout];
 }
 
-/*!
-    Return's the knob's proportion
-*/
-- (float)knobProportion
+
+#pragma mark -
+#pragma mark Privates
+
+/*! @ignore */
+- (void)_adjustScrollerSize
 {
-    return _knobProportion;
+    var frame = [self frame],
+        scrollerWidth = [self currentValueForThemeAttribute:@"scroller-width"];
+
+    if ([self isVertical] && CGRectGetWidth(frame) !== scrollerWidth)
+        frame.size.width = scrollerWidth;
+
+    if (![self isVertical] && CGRectGetHeight(frame) !== scrollerWidth)
+        frame.size.height = scrollerWidth;
+
+    [self setFrame:frame];
 }
 
-- (id)currentValueForThemeAttribute:(CPString)anAttributeName
-{
-    var themeState = _themeState;
 
-    if (NAMES_FOR_PARTS[_hitPart] + "-color" !== anAttributeName)
-        themeState &= ~CPThemeStateHighlighted;
-
-    return [self valueForThemeAttribute:anAttributeName inState:themeState];
-}
-
-// Calculating Layout
+#pragma mark -
+#pragma mark Utilities
 
 - (CGRect)rectForPart:(CPScrollerPart)aPart
 {
@@ -406,7 +426,29 @@ CPThemeStateScrollViewLegacy = CPThemeState("scroller-style-legacy");
     return _usableParts;
 }
 
-// Drawing the Parts
+/*!
+    Display the scroller
+*/
+- (void)fadeIn
+{
+    [self setAlphaValue:1.0];
+}
+
+/*!
+    Start the fade out anination
+*/
+- (void)fadeOut
+{
+    if ([self hasThemeState:CPThemeStateScrollViewLegacy])
+        return;
+
+    [_animationScroller startAnimation];
+}
+
+
+#pragma mark -
+#pragma mark  Drawing
+
 /*!
     Draws the specified arrow and sets the highlight.
     @param anArrow the arrow to draw
@@ -641,6 +683,20 @@ CPThemeStateScrollViewLegacy = CPThemeState("scroller-style-legacy");
     [self setNeedsLayout];
 }
 
+
+#pragma mark -
+#pragma mark Overrides
+
+- (id)currentValueForThemeAttribute:(CPString)anAttributeName
+{
+    var themeState = _themeState;
+
+    if (NAMES_FOR_PARTS[_hitPart] + "-color" !== anAttributeName)
+        themeState &= ~CPThemeStateHighlighted;
+
+    return [self valueForThemeAttribute:anAttributeName inState:themeState];
+}
+
 - (void)mouseDown:(CPEvent)anEvent
 {
     if (![self isEnabled])
@@ -672,18 +728,9 @@ CPThemeStateScrollViewLegacy = CPThemeState("scroller-style-legacy");
     [self fadeOut];
 }
 
-- (void)fadeIn
-{
-    [self setAlphaValue:1.0];
-}
 
-- (void)fadeOut
-{
-    if ([self hasThemeState:CPThemeStateScrollViewLegacy])
-        return;
-
-    [_animationScroller startAnimation];
-}
+#pragma mark -
+#pragma mark Delegates
 
 - (void)animationDidEnd:(CPAnimation)animation
 {

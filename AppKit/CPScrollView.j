@@ -605,7 +605,7 @@ var TIMER_INTERVAL                              = 0.2,
 
 
 #pragma mark -
-#pragma mark Utilities
+#pragma mark Privates
 
 /* @ignore */
 - (void)_updateScrollerStyle
@@ -619,6 +619,13 @@ var TIMER_INTERVAL                              = 0.2,
     {
         [_verticalScroller setStyle:_scrollerStyle];
         [_verticalScroller unsetThemeState:CPThemeStateSelected];
+    }
+
+    if (_scrollerStyle == CPScrollerStyleOverlay)
+    {
+        if (_timerScrollersHide)
+            [_timerScrollersHide invalidate];
+        _timerScrollersHide = [CPTimer scheduledTimerWithTimeInterval:1.2 target:self selector:@selector(_hideScrollers:) userInfo:nil repeats:NO];
     }
 
     [self reflectScrolledClipView:_contentView];
@@ -719,24 +726,30 @@ var TIMER_INTERVAL                              = 0.2,
         documentFrame = [[_contentView documentView] frame],
         contentBounds = [_contentView bounds];
 
+
     switch ([_verticalScroller hitPart])
     {
-        case CPScrollerDecrementLine:   contentBounds.origin.y -= _verticalLineScroll;
-                                        break;
+        case CPScrollerDecrementLine:
+            contentBounds.origin.y -= _verticalLineScroll;
+            break;
 
-        case CPScrollerIncrementLine:   contentBounds.origin.y += _verticalLineScroll;
-                                        break;
+        case CPScrollerIncrementLine:
+            contentBounds.origin.y += _verticalLineScroll;
+            break;
 
-        case CPScrollerDecrementPage:   contentBounds.origin.y -= _CGRectGetHeight(contentBounds) - _verticalPageScroll;
-                                        break;
+        case CPScrollerDecrementPage:
+            contentBounds.origin.y -= _CGRectGetHeight(contentBounds) - _verticalPageScroll;
+            break;
 
-        case CPScrollerIncrementPage:   contentBounds.origin.y += _CGRectGetHeight(contentBounds) - _verticalPageScroll;
-                                        break;
+        case CPScrollerIncrementPage:
+            contentBounds.origin.y += _CGRectGetHeight(contentBounds) - _verticalPageScroll;
+            break;
 
+        // We want integral bounds!
         case CPScrollerKnobSlot:
         case CPScrollerKnob:
-                                        // We want integral bounds!
-        default:                        contentBounds.origin.y = ROUND(value * (_CGRectGetHeight(documentFrame) - _CGRectGetHeight(contentBounds)));
+        default:
+            contentBounds.origin.y = ROUND(value * (_CGRectGetHeight(documentFrame) - _CGRectGetHeight(contentBounds)));
     }
 
     [self _sendDelegateMessages];
@@ -753,22 +766,27 @@ var TIMER_INTERVAL                              = 0.2,
 
     switch ([_horizontalScroller hitPart])
     {
-        case CPScrollerDecrementLine:   contentBounds.origin.x -= _horizontalLineScroll;
-                                        break;
+        case CPScrollerDecrementLine:
+            contentBounds.origin.x -= _horizontalLineScroll;
+            break;
 
-        case CPScrollerIncrementLine:   contentBounds.origin.x += _horizontalLineScroll;
-                                        break;
+        case CPScrollerIncrementLine:
+            contentBounds.origin.x += _horizontalLineScroll;
+            break;
 
-        case CPScrollerDecrementPage:   contentBounds.origin.x -= _CGRectGetWidth(contentBounds) - _horizontalPageScroll;
-                                        break;
+        case CPScrollerDecrementPage:
+            contentBounds.origin.x -= _CGRectGetWidth(contentBounds) - _horizontalPageScroll;
+            break;
 
-        case CPScrollerIncrementPage:   contentBounds.origin.x += _CGRectGetWidth(contentBounds) - _horizontalPageScroll;
-                                        break;
+        case CPScrollerIncrementPage:
+            contentBounds.origin.x += _CGRectGetWidth(contentBounds) - _horizontalPageScroll;
+            break;
 
+        // We want integral bounds!
         case CPScrollerKnobSlot:
         case CPScrollerKnob:
-                                        // We want integral bounds!
-        default:                        contentBounds.origin.x = ROUND(value * (_CGRectGetWidth(documentFrame) - _CGRectGetWidth(contentBounds)));
+        default:
+            contentBounds.origin.x = ROUND(value * (_CGRectGetWidth(documentFrame) - _CGRectGetWidth(contentBounds)));
     }
 
     [self _sendDelegateMessages];
@@ -843,6 +861,10 @@ var TIMER_INTERVAL                              = 0.2,
     if (_implementedDelegateMethods & CPScrollViewDelegate_scrollViewDidScroll_)
         [_delegate scrollViewDidScroll:self];
 }
+
+
+#pragma mark -
+#pragma mark Utilities
 
 /*!
     Lays out the scroll view's components.
@@ -925,7 +947,7 @@ var TIMER_INTERVAL                              = 0.2,
     [_horizontalScroller setHidden:!shouldShowHorizontalScroller];
     [_horizontalScroller setEnabled:hasHorizontalScroll];
 
-    var overlay = 0;
+    var overlay = [CPScroller scrollerOverlay];
     if (_scrollerStyle === CPScrollerStyleLegacy)
     {
         // We can thus appropriately account for them changing the content size.
@@ -934,10 +956,7 @@ var TIMER_INTERVAL                              = 0.2,
 
         if (shouldShowHorizontalScroller)
             contentFrame.size.height -= horizontalScrollerHeight;
-    }
-    else
-    {
-        overlay = [CPScroller scrollerOffset];
+        overlay = 0;
     }
 
     var scrollPoint = [_contentView bounds].origin,
@@ -1002,9 +1021,7 @@ var TIMER_INTERVAL                              = 0.2,
     _timerScrollersHide = [CPTimer scheduledTimerWithTimeInterval:1.2 target:self selector:@selector(_hideScrollers:) userInfo:nil repeats:NO];
 }
 
-/*
-    @ignore
-*/
+/* @ignore */
 - (void)resizeSubviewsWithOldSize:(CGSize)aSize
 {
     [self reflectScrolledClipView:_contentView];
