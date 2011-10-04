@@ -40,6 +40,7 @@ var TIMER_INTERVAL                              = 0.2,
     CPScrollViewDelegate_scrollViewDidScroll_   = 1 << 1;
 
 
+
 @implementation CPScrollView : CPView
 {
     CPClipView      _contentView;
@@ -68,6 +69,8 @@ var TIMER_INTERVAL                              = 0.2,
     CPBorderType    _borderType;
 
     CPTimer         _timerScrollersHide;
+
+    int             _scrollerStyle        @accessors(getter=scrollerStyle);
 }
 
 + (CPString)defaultThemeClass
@@ -108,6 +111,7 @@ var TIMER_INTERVAL                              = 0.2,
 
         [self setHasVerticalScroller:YES];
         [self setHasHorizontalScroller:YES];
+        [self setScrollerStyle:CPScrollerStyleOverlay];
 
         _delegate = nil;
         _scrollTimer = nil;
@@ -139,6 +143,38 @@ var TIMER_INTERVAL                              = 0.2,
     if ([_delegate respondsToSelector:@selector(scrollViewDidScroll:)])
         _implementedDelegateMethods |= CPScrollViewDelegate_scrollViewDidScroll_;
 }
+
+/*!
+    Set the scroller styles
+    - CPScrollerStyleLegacy: Standard scroller like prior 10.7
+    - CPScrollerStyleOverlay: scrollers like 10.7+
+*/
+- (void)setScrollerStyle:(int)aStyle
+{
+    if (_scrollerStyle == aStyle)
+        return;
+
+    _scrollerStyle = aStyle;
+
+    [self _updateScrollerStyle];
+}
+
+- (void)_updateScrollerStyle
+{
+    if (_hasHorizontalScroller)
+    {
+        [_horizontalScroller setStyle:_scrollerStyle];
+        [_horizontalScroller unsetThemeState:CPThemeStateSelected];
+    }
+    if (_hasVerticalScroller)
+    {
+        [_verticalScroller setStyle:_scrollerStyle];
+        [_verticalScroller unsetThemeState:CPThemeStateSelected];
+    }
+
+    [self reflectScrolledClipView:_contentView];
+}
+
 // Calculating Layout
 
 + (CGSize)contentSizeForFrameSize:(CGSize)frameSize hasHorizontalScroller:(BOOL)hFlag hasVerticalScroller:(BOOL)vFlag borderType:(CPBorderType)borderType
@@ -184,7 +220,6 @@ var TIMER_INTERVAL                              = 0.2,
             bounds = _CGRectInset(bounds, 2.0, 2.0);
             ++bounds.origin.y;
             --bounds.size.height;
-
             return bounds;
 
         case CPNoBorder:
@@ -332,6 +367,21 @@ var TIMER_INTERVAL                              = 0.2,
     [_horizontalScroller setHidden:!shouldShowHorizontalScroller];
     [_horizontalScroller setEnabled:hasHorizontalScroll];
 
+    var overlay = 0;
+    if (_scrollerStyle === CPScrollerStyleLegacy)
+    {
+        // We can thus appropriately account for them changing the content size.
+        if (shouldShowVerticalScroller)
+            contentFrame.size.width -= verticalScrollerWidth;
+
+        if (shouldShowHorizontalScroller)
+            contentFrame.size.height -= horizontalScrollerHeight;
+    }
+    else
+    {
+        overlay = [CPScroller scrollerOffset];
+    }
+
     var scrollPoint = [_contentView bounds].origin,
         wasShowingVerticalScroller = ![_verticalScroller isHidden],
         wasShowingHorizontalScroller = ![_horizontalScroller isHidden];
@@ -345,7 +395,7 @@ var TIMER_INTERVAL                              = 0.2,
 
         [_verticalScroller setFloatValue:(difference.height <= 0.0) ? 0.0 : scrollPoint.y / difference.height];
         [_verticalScroller setKnobProportion:_CGRectGetHeight(contentFrame) / _CGRectGetHeight(documentFrame)];
-        [_verticalScroller setFrame:_CGRectMake(_CGRectGetMaxX(contentFrame) - [CPScroller scrollerOffset], verticalScrollerY, verticalScrollerWidth, verticalScrollerHeight)];
+        [_verticalScroller setFrame:_CGRectMake(_CGRectGetMaxX(contentFrame) - overlay, verticalScrollerY, verticalScrollerWidth, verticalScrollerHeight)];
     }
     else if (wasShowingVerticalScroller)
     {
@@ -357,7 +407,7 @@ var TIMER_INTERVAL                              = 0.2,
     {
         [_horizontalScroller setFloatValue:(difference.width <= 0.0) ? 0.0 : scrollPoint.x / difference.width];
         [_horizontalScroller setKnobProportion:_CGRectGetWidth(contentFrame) / _CGRectGetWidth(documentFrame)];
-        [_horizontalScroller setFrame:_CGRectMake(_CGRectGetMinX(contentFrame), _CGRectGetMaxY(contentFrame) - [CPScroller scrollerOffset], _CGRectGetWidth(contentFrame), horizontalScrollerHeight)];
+        [_horizontalScroller setFrame:_CGRectMake(_CGRectGetMinX(contentFrame), _CGRectGetMaxY(contentFrame) - overlay, _CGRectGetWidth(contentFrame), horizontalScrollerHeight)];
     }
     else if (wasShowingHorizontalScroller)
     {
@@ -365,6 +415,8 @@ var TIMER_INTERVAL                              = 0.2,
         [_horizontalScroller setKnobProportion:1.0];
     }
 
+    console.log(contentFrame)
+    debugger;
     [_contentView setFrame:contentFrame];
     [_headerClipView setFrame:headerClipViewFrame];
     [[_headerClipView documentView] setNeedsDisplay:YES];
@@ -374,6 +426,24 @@ var TIMER_INTERVAL                              = 0.2,
     [[self bottomCornerView] setBackgroundColor:[self currentValueForThemeAttribute:@"bottom-corner-color"]];
 
     --_recursionCount;
+}
+
+/*!
+    Momentary display the scrollers
+*/
+- (void)flashScrollers
+{
+    if (_scrollerStyle == CPScrollerStyleLegacy)
+        return;
+
+    if (_hasHorizontalScroller)
+        [_horizontalScroller fadeIn];
+    if (_hasVerticalScroller)
+        [_verticalScroller fadeIn];
+
+    if (_timerScrollersHide)
+        [_timerScrollersHide invalidate]
+    _timerScrollersHide = [CPTimer scheduledTimerWithTimeInterval:1.2 target:self selector:@selector(_hideScrollers:) userInfo:nil repeats:NO];
 }
 
 // Managing Graphics Attributes
@@ -427,7 +497,7 @@ var TIMER_INTERVAL                              = 0.2,
 
     [self addSubview:_horizontalScroller];
 
-    [self reflectScrolledClipView:_contentView];
+    [self _updateScrollerStyle];
 }
 
 /*!
@@ -454,8 +524,8 @@ var TIMER_INTERVAL                              = 0.2,
     {
         var bounds = [self _insetBounds];
 
-        [self setHorizontalScroller:[[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, MAX(_CGRectGetWidth(bounds), [CPScroller scrollerWidth] + 1), [CPScroller scrollerWidth])]];
-        [[self horizontalScroller] setFrameSize:CGSizeMake(_CGRectGetWidth(bounds), [CPScroller scrollerWidth])];
+        [self setHorizontalScroller:[[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, MAX(_CGRectGetWidth(bounds), [CPScroller scrollerWidthInStyle:_scrollerStyle] + 1), [CPScroller scrollerWidthInStyle:_scrollerStyle])]];
+        [[self horizontalScroller] setFrameSize:CGSizeMake(_CGRectGetWidth(bounds), [CPScroller scrollerWidthInStyle:_scrollerStyle])];
     }
 
     [self reflectScrolledClipView:_contentView];
@@ -489,7 +559,7 @@ var TIMER_INTERVAL                              = 0.2,
 
     [self addSubview:_verticalScroller];
 
-    [self reflectScrolledClipView:_contentView];
+    [self _updateScrollerStyle];
 }
 
 /*!
@@ -517,8 +587,8 @@ var TIMER_INTERVAL                              = 0.2,
     {
         var bounds = [self _insetBounds];
 
-        [self setVerticalScroller:[[CPScroller alloc] initWithFrame:_CGRectMake(0.0, 0.0, [CPScroller scrollerWidth], MAX(_CGRectGetHeight(bounds), [CPScroller scrollerWidth] + 1))]];
-        [[self verticalScroller] setFrameSize:CGSizeMake([CPScroller scrollerWidth], _CGRectGetHeight(bounds))];
+        [self setVerticalScroller:[[CPScroller alloc] initWithFrame:_CGRectMake(0.0, 0.0, [CPScroller scrollerWidthInStyle:_scrollerStyle], MAX(_CGRectGetHeight(bounds), [CPScroller scrollerWidthInStyle:_scrollerStyle] + 1))]];
+        [[self verticalScroller] setFrameSize:CGSizeMake([CPScroller scrollerWidthInStyle:_scrollerStyle], _CGRectGetHeight(bounds))];
     }
 
     [self reflectScrolledClipView:_contentView];
@@ -627,8 +697,8 @@ var TIMER_INTERVAL                              = 0.2,
 
     bottomCornerFrame.origin.x = CGRectGetMinX(verticalFrame);
     bottomCornerFrame.origin.y = CGRectGetMaxY(verticalFrame);
-    bottomCornerFrame.size.width = [CPScroller scrollerWidth];
-    bottomCornerFrame.size.height = [CPScroller scrollerWidth];
+    bottomCornerFrame.size.width = [CPScroller scrollerWidthInStyle:_scrollerStyle];
+    bottomCornerFrame.size.height = [CPScroller scrollerWidthInStyle:_scrollerStyle];
 
     return bottomCornerFrame;
 }
@@ -1122,7 +1192,8 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
     CPScrollViewAutohidesScrollerKey    = @"CPScrollViewAutohidesScroller",
     CPScrollViewCornerViewKey           = @"CPScrollViewCornerViewKey",
     CPScrollViewBottomCornerViewKey     = @"CPScrollViewBottomCornerViewKey",
-    CPScrollViewBorderTypeKey           = @"CPScrollViewBorderTypeKey";
+    CPScrollViewBorderTypeKey           = @"CPScrollViewBorderTypeKey",
+    CPScrollViewScrollerStyleKey        = @"CPScrollViewScrollerStyleKey";
 
 @implementation CPScrollView (CPCoding)
 
@@ -1160,8 +1231,11 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
         _delegate = nil;
         _scrollTimer = nil;
         _implementedDelegateMethods = 0;
+
         // Due to the anything goes nature of decoding, our subviews may not exist yet, so layout at the end of the run loop when we're sure everything is in a correct state.
         [[CPRunLoop currentRunLoop] performSelector:@selector(_updateCornerAndHeaderView) target:self argument:_contentView order:0 modes:[CPDefaultRunLoopMode]];
+
+        [self setScrollerStyle:[aCoder decodeIntForKey:CPScrollViewScrollerStyleKey] || CPScrollerStyleOverlay];
     }
 
     return self;
@@ -1190,6 +1264,8 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
     [aCoder encodeObject:_bottomCornerView      forKey:CPScrollViewBottomCornerViewKey];
 
     [aCoder encodeInt:_borderType               forKey:CPScrollViewBorderTypeKey];
+
+    [aCoder encodeInt:_scrollerStyle            forKey:CPScrollViewScrollerStyleKey];
 }
 
 @end

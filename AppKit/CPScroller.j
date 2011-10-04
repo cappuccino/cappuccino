@@ -24,7 +24,6 @@
  */
 
 @import "CPControl.j"
-@import "CPViewAnimation.j"
 
 // CPScroller Constants
 CPScrollerNoPart            = 0;
@@ -57,6 +56,12 @@ NAMES_FOR_PARTS[CPScrollerKnobSlot]         = @"knob-slot";
 NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 
 
+CPScrollerStyleLegacy   = 1;
+CPScrollerStyleOverlay  = 2;
+
+CPThemeStateScrollViewLegacy = CPThemeState("scroller-style-legacy");
+
+
 @implementation CPScroller : CPControl
 {
     CPControlSize           _controlSize;
@@ -75,6 +80,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     CPViewAnimation         _animationScroller;
 
     BOOL                    _allowFadingOut @accessors(getter=allowFadingOut);
+    int                     _style;
 }
 
 + (CPString)defaultThemeClass
@@ -95,7 +101,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
         @"track-inset":_CGInsetMakeZero(),
         @"knob-inset": _CGInsetMakeZero(),
         @"minimum-knob-length":21.0,
-        @"track-border-offset": 9.0,
+        @"track-border-overlay": 9.0,
     }]
 }
 
@@ -116,6 +122,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 
         _hitPart = CPScrollerNoPart;
         _allowFadingOut = YES;
+        _style = CPScrollerStyleOverlay;
         _paramAnimFadeOut   = [CPDictionary dictionaryWithObjects:[self, CPViewAnimationFadeOutEffect]
                                                           forKeys:[CPViewAnimationTargetKey, CPViewAnimationEffectKey]];
 
@@ -129,13 +136,58 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     return self;
 }
 
+- (void)_adjustScrollerSize
+{
+    var frame = [self frame],
+        scrollerWidth = [self currentValueForThemeAttribute:@"scroller-width"];
+
+    if ([self isVertical] && CGRectGetWidth(frame) !== scrollerWidth)
+        frame.size.width = scrollerWidth;
+
+    if (![self isVertical] && CGRectGetHeight(frame) !== scrollerWidth)
+        frame.size.height = scrollerWidth;
+
+    [self setFrame:frame];
+}
+
+- (void)setStyle:(id)aStyle
+{
+    if (_style != nil && _style === aStyle)
+        return;
+
+    _style = aStyle;
+
+    if (_style === CPScrollerStyleLegacy)
+    {
+        [self fadeIn];
+        [self setThemeState:CPThemeStateScrollViewLegacy];
+    }
+    else
+    {
+        _allowFadingOut = YES;
+        [self unsetThemeState:CPThemeStateScrollViewLegacy];
+    }
+
+    [self _adjustScrollerSize];
+}
+
 // Determining CPScroller Size
+
++ (float)scrollerWidth
+{
+    return [CPScroller scrollerWidthInStyle:CPScrollerStyleLegacy];
+}
+
 /*!
     Returns the CPScroller's width for a CPRegularControlSize.
 */
-+ (float)scrollerWidth
++ (float)scrollerWidthInStyle:(int)aStyle
 {
-    return [[[CPScroller alloc] init] currentValueForThemeAttribute:@"scroller-width"];
+    var scroller = [[CPScroller alloc] init];
+
+    if (aStyle == CPScrollerStyleLegacy)
+        return [scroller valueForThemeAttribute:@"scroller-width" inState:CPThemeStateScrollViewLegacy];
+    return [scroller currentValueForThemeAttribute:@"scroller-width"];
 }
 
 /*!
@@ -143,7 +195,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 */
 + (float)scrollerOffset
 {
-    return [[[CPScroller alloc] init] currentValueForThemeAttribute:@"track-border-offset"];
+    return [[[CPScroller alloc] init] currentValueForThemeAttribute:@"track-border-overlay"];
 }
 
 /*!
@@ -152,7 +204,8 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 */
 + (float)scrollerWidthForControlSize:(CPControlSize)aControlSize
 {
-    return [self scrollerWidth];
+    // ?? a class method using self?
+    return nil//[self scrollerWidth];
 }
 
 /*!
@@ -626,6 +679,9 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 
 - (void)fadeOut
 {
+    if ([self hasThemeState:CPThemeStateScrollViewLegacy])
+        return;
+
     [_animationScroller startAnimation];
 }
 
@@ -637,8 +693,9 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 
 @end
 
-var CPScrollerControlSizeKey = "CPScrollerControlSize",
-    CPScrollerKnobProportionKey = "CPScrollerKnobProportion";
+var CPScrollerControlSizeKey = @"CPScrollerControlSize",
+    CPScrollerKnobProportionKey = @"CPScrollerKnobProportion",
+    CPScrollerStyleKey = @"CPScrollerStyleKey";
 
 @implementation CPScroller (CPCoding)
 
@@ -668,18 +725,7 @@ var CPScrollerControlSizeKey = "CPScrollerControlSize",
 
         [self _calculateIsVertical];
 
-        // Adjust the size of the scroller if the size from cib
-        // isn't equal to the scrollerWidth
-        var frame = [self frame],
-            scrollerWidth = [CPScroller scrollerWidth];
-
-        if ([self isVertical] && CGRectGetWidth(frame) !== scrollerWidth)
-            frame.size.width = scrollerWidth;
-
-        if (![self isVertical] && CGRectGetHeight(frame) !== scrollerWidth)
-            frame.size.height = scrollerWidth;
-
-        [self setFrame:frame];
+        [self setStyle:[aCoder decodeIntForKey:CPScrollerStyleKey]];
     }
 
     return self;
@@ -691,6 +737,7 @@ var CPScrollerControlSizeKey = "CPScrollerControlSize",
 
     [aCoder encodeInt:_controlSize forKey:CPScrollerControlSizeKey];
     [aCoder encodeFloat:_knobProportion forKey:CPScrollerKnobProportionKey];
+    [aCoder encodeInt:_style forKey:CPScrollerStyleKey];
 }
 
 @end
