@@ -175,7 +175,7 @@ var TIMER_INTERVAL                              = 0.2,
 
         [self setHasVerticalScroller:YES];
         [self setHasHorizontalScroller:YES];
-        _scrollerKnobStyle = CPScrollerKnobStyleDark;
+        _scrollerKnobStyle = CPScrollerKnobStyleDefault;
         [self setScrollerStyle:CPScrollerStyleOverlay];
 
         _delegate = nil;
@@ -1335,7 +1335,7 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
         [[CPRunLoop currentRunLoop] performSelector:@selector(_updateCornerAndHeaderView) target:self argument:_contentView order:0 modes:[CPDefaultRunLoopMode]];
 
         [self setScrollerStyle:[aCoder decodeIntForKey:CPScrollViewScrollerStyleKey] || CPScrollerStyleOverlay];
-        [self setScrollerKnobStyle:[aCoder decodeIntForKey:CPScrollViewScrollerKnobStyleKey] || CPScrollerKnobStyleDark];
+        [self setScrollerKnobStyle:[aCoder decodeIntForKey:CPScrollViewScrollerKnobStyleKey] || CPScrollerKnobStyleDefault];
     }
 
     return self;
