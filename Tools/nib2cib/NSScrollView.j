@@ -41,7 +41,7 @@
 
         [self addSubview:_bottomCornerView];
         [self setScrollerKnobStyle:[aCoder decodeObjectForKey:"NSScrollerKnobStyle"] || CPScrollerKnobStyleDefault];
-        CPLogPrint([self scrollerKnobStyle]);
+
         _hasVerticalScroller    = !!(flags & (1 << 4));
         _hasHorizontalScroller  = !!(flags & (1 << 5));
         _autohidesScrollers     = !!(flags & (1 << 9));
