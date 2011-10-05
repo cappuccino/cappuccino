@@ -635,17 +635,25 @@ var themedButtonValues = nil,
     var scroller = [self makeVerticalScroller],
         trackColor = PatternColor(
             [
-                ["scroller-vertical-track-top.png", 7.0, 3.0],
-                ["scroller-vertical-track-center.png", 7.0, 1.0],
-                ["scroller-vertical-track-bottom.png", 7.0, 3.0]
+                ["scroller-vertical-track-top.png", 9.0, 4.0],
+                ["scroller-vertical-track-center.png", 9.0, 1.0],
+                ["scroller-vertical-track-bottom.png", 9.0, 4.0]
             ],
             PatternIsVertical),
 
         trackColorLight = PatternColor(
             [
-                ["scroller-vertical-track-light-top.png", 7.0, 3.0],
-                ["scroller-vertical-track-light-center.png", 7.0, 1.0],
-                ["scroller-vertical-track-light-bottom.png", 7.0, 3.0]
+                ["scroller-vertical-track-light-top.png", 9.0, 4.0],
+                ["scroller-vertical-track-light-center.png", 9.0, 1.0],
+                ["scroller-vertical-track-light-bottom.png", 9.0, 4.0]
+            ],
+            PatternIsVertical),
+
+        trackColorDark = PatternColor(
+            [
+                ["scroller-vertical-track-dark-top.png", 9.0, 4.0],
+                ["scroller-vertical-track-dark-center.png", 9.0, 1.0],
+                ["scroller-vertical-track-dark-bottom.png", 9.0, 4.0]
             ],
             PatternIsVertical),
 
@@ -655,25 +663,25 @@ var themedButtonValues = nil,
 
         knobColor = PatternColor(
             [
-                ["scroller-vertical-knob-top.png", 7.0, 3.0],
-                ["scroller-vertical-knob-center.png", 7.0, 1.0],
-                ["scroller-vertical-knob-bottom.png", 7.0, 3.0]
+                ["scroller-vertical-knob-top.png", 9.0, 4.0],
+                ["scroller-vertical-knob-center.png", 9.0, 1.0],
+                ["scroller-vertical-knob-bottom.png", 9.0, 4.0]
             ],
             PatternIsVertical),
 
         knobColorLight = PatternColor(
             [
-                ["scroller-vertical-knob-light-top.png", 7.0, 3.0],
-                ["scroller-vertical-knob-light-center.png", 7.0, 1.0],
-                ["scroller-vertical-knob-light-bottom.png", 7.0, 3.0]
+                ["scroller-vertical-knob-light-top.png", 9.0, 4.0],
+                ["scroller-vertical-knob-light-center.png", 9.0, 1.0],
+                ["scroller-vertical-knob-light-bottom.png", 9.0, 4.0]
             ],
             PatternIsVertical),
 
         knobColorDark = PatternColor(
             [
-                ["scroller-vertical-knob-dark-top.png", 7.0, 3.0],
-                ["scroller-vertical-knob-dark-center.png", 7.0, 1.0],
-                ["scroller-vertical-knob-dark-bottom.png", 7.0, 3.0]
+                ["scroller-vertical-knob-dark-top.png", 9.0, 4.0],
+                ["scroller-vertical-knob-dark-center.png", 9.0, 1.0],
+                ["scroller-vertical-knob-dark-bottom.png", 9.0, 4.0]
             ],
             PatternIsVertical),
 
@@ -692,13 +700,14 @@ var themedButtonValues = nil,
             [@"minimum-knob-length",    21.0,                               CPThemeStateVertical],
 
             // Overlay
-            [@"scroller-width",         7.0,                                CPThemeStateVertical],
+            [@"scroller-width",         9.0,                                CPThemeStateVertical],
             [@"knob-inset",             CGInsetMake(2.0, 0.0, 0.0, 0.0),    CPThemeStateVertical],
             [@"track-inset",            CGInsetMake(2.0, 0.0, 11.0, 0.0),   CPThemeStateVertical],
-            [@"track-border-overlay",   10.0,                                CPThemeStateVertical],
+            [@"track-border-overlay",   12.0,                                CPThemeStateVertical],
             [@"knob-slot-color",        [CPNull null],                      CPThemeStateVertical],
             [@"knob-slot-color",        trackColor,                         CPThemeStateVertical | CPThemeStateSelected],
             [@"knob-slot-color",        trackColorLight,                    CPThemeStateVertical | CPThemeStateSelected | CPThemeStateScrollerKnobLight],
+            [@"knob-slot-color",        trackColorDark,                     CPThemeStateVertical | CPThemeStateSelected | CPThemeStateScrollerKnobDark],
             [@"knob-color",             knobColor,                          CPThemeStateVertical],
             [@"knob-color",             knobColorLight,                     CPThemeStateVertical | CPThemeStateScrollerKnobLight],
             [@"knob-color",             knobColorDark,                      CPThemeStateVertical | CPThemeStateScrollerKnobDark],
@@ -747,17 +756,25 @@ var themedButtonValues = nil,
     var scroller = [self makeHorizontalScroller],
         trackColor = PatternColor(
             [
-                ["scroller-horizontal-track-left.png", 3.0, 7.0],
-                ["scroller-horizontal-track-center.png", 1.0, 7.0],
-                ["scroller-horizontal-track-right.png", 3.0, 7.0]
+                ["scroller-horizontal-track-left.png", 4.0, 9.0],
+                ["scroller-horizontal-track-center.png", 1.0, 9.0],
+                ["scroller-horizontal-track-right.png", 4.0, 9.0]
             ],
             PatternIsHorizontal),
 
         trackColorLight = PatternColor(
             [
-                ["scroller-horizontal-track-light-left.png", 3.0, 7.0],
-                ["scroller-horizontal-track-light-center.png", 1.0, 7.0],
-                ["scroller-horizontal-track-light-right.png", 3.0, 7.0]
+                ["scroller-horizontal-track-light-left.png", 4.0, 9.0],
+                ["scroller-horizontal-track-light-center.png", 1.0, 9.0],
+                ["scroller-horizontal-track-light-right.png", 4.0, 9.0]
+            ],
+            PatternIsHorizontal),
+
+        trackColorDark = PatternColor(
+            [
+                ["scroller-horizontal-track-dark-left.png", 4.0, 9.0],
+                ["scroller-horizontal-track-dark-center.png", 1.0, 9.0],
+                ["scroller-horizontal-track-dark-right.png", 4.0, 9.0]
             ],
             PatternIsHorizontal),
 
@@ -767,25 +784,25 @@ var themedButtonValues = nil,
 
         knobColor = PatternColor(
             [
-                ["scroller-horizontal-knob-left.png", 3.0, 7.0],
-                ["scroller-horizontal-knob-center.png", 1.0, 7.0],
-                ["scroller-horizontal-knob-right.png", 3.0, 7.0]
+                ["scroller-horizontal-knob-left.png", 4.0, 9.0],
+                ["scroller-horizontal-knob-center.png", 1.0, 9.0],
+                ["scroller-horizontal-knob-right.png", 4.0, 9.0]
             ],
             PatternIsHorizontal),
 
         knobColorLight = PatternColor(
             [
-                ["scroller-horizontal-knob-light-left.png", 3.0, 7.0],
-                ["scroller-horizontal-knob-light-center.png", 1.0, 7.0],
-                ["scroller-horizontal-knob-light-right.png", 3.0, 7.0]
+                ["scroller-horizontal-knob-light-left.png", 4.0, 9.0],
+                ["scroller-horizontal-knob-light-center.png", 1.0, 9.0],
+                ["scroller-horizontal-knob-light-right.png", 4.0, 9.0]
             ],
             PatternIsHorizontal),
 
         knobColorDark = PatternColor(
             [
-                ["scroller-horizontal-knob-dark-left.png", 3.0, 7.0],
-                ["scroller-horizontal-knob-dark-center.png", 1.0, 7.0],
-                ["scroller-horizontal-knob-dark-right.png", 3.0, 7.0]
+                ["scroller-horizontal-knob-dark-left.png", 4.0, 9.0],
+                ["scroller-horizontal-knob-dark-center.png", 1.0, 9.0],
+                ["scroller-horizontal-knob-dark-right.png", 4.0, 9.0]
             ],
             PatternIsHorizontal),
 
@@ -802,12 +819,15 @@ var themedButtonValues = nil,
             // Common
             [@"minimum-knob-length",    21.0],
 
+            // Overlay
+            [@"scroller-width",         9.0],
             [@"knob-inset",             CGInsetMake(0.0, 0.0, 0.0, 2.0)],
             [@"track-inset",            CGInsetMake(0.0, 11.0, 0.0, 2.0)],
-            [@"track-border-overlay",   10.0],
+            [@"track-border-overlay",   12.0],
             [@"knob-slot-color",        [CPNull null]],
             [@"knob-slot-color",        trackColor,                         CPThemeStateSelected],
             [@"knob-slot-color",        trackColorLight,                    CPThemeStateSelected | CPThemeStateScrollerKnobLight],
+            [@"knob-slot-color",        trackColorDark,                     CPThemeStateSelected | CPThemeStateScrollerKnobDark],
             [@"knob-color",             knobColor],
             [@"knob-color",             knobColorLight,                     CPThemeStateScrollerKnobLight],
             [@"knob-color",             knobColorDark,                      CPThemeStateScrollerKnobDark],
