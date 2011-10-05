@@ -166,6 +166,9 @@
 
     [tableColumn bind:@"value" toObject:arrayController withKeyPath:@"arrangedObjects.valueA" options:nil];
 
+    [self assertTrue:[[tableView infoForBinding:"content"] valueForKey:CPObservedObjectKey] === arrayController message:"when a column of a table is bound to an array controller a 'content' binding should automatically be made to the array controller"];
+    [self assertTrue:[[tableView infoForBinding:"selectionIndexes"] valueForKey:CPObservedObjectKey] === arrayController message:"when a column of a table is bound to an array controller a 'selectionIndexes' binding should automatically be made to the array controller"];
+
     // Reset these if they were read during initialization.
     for (var i = 0; i < [content count]; i++)
         [content[i] setAccesses:0];
