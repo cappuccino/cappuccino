@@ -736,7 +736,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
         return;
 
     _allowFadingOut = NO;
-    [self fadeIn];
+
     [self setThemeState:CPThemeStateSelected];
 }
 
