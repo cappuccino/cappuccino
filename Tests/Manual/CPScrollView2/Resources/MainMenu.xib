@@ -1500,7 +1500,7 @@
 						<string key="NSReuseIdentifierKey">_NS:3936</string>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="787816499">
-							<int key="NSCellFlags">68288064</int>
+							<int key="NSCellFlags">70385217</int>
 							<int key="NSCellFlags2">71304192</int>
 							<string key="NSContents">Bottom right</string>
 							<reference key="NSSupport" ref="1015123936"/>
@@ -1520,7 +1520,7 @@
 						<string key="NSReuseIdentifierKey">_NS:3936</string>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="353212964">
-							<int key="NSCellFlags">68288064</int>
+							<int key="NSCellFlags">70385217</int>
 							<int key="NSCellFlags2">71304192</int>
 							<string key="NSContents">Top right</string>
 							<reference key="NSSupport" ref="1015123936"/>
@@ -1540,7 +1540,7 @@
 						<string key="NSReuseIdentifierKey">_NS:3936</string>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="527596325">
-							<int key="NSCellFlags">68288064</int>
+							<int key="NSCellFlags">70385217</int>
 							<int key="NSCellFlags2">272630784</int>
 							<string key="NSContents">Bottom left</string>
 							<reference key="NSSupport" ref="1015123936"/>
@@ -1560,7 +1560,7 @@
 						<string key="NSReuseIdentifierKey">_NS:3936</string>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="46349315">
-							<int key="NSCellFlags">68288064</int>
+							<int key="NSCellFlags">70385217</int>
 							<int key="NSCellFlags2">272630784</int>
 							<string key="NSContents">Top left</string>
 							<reference key="NSSupport" ref="1015123936"/>
