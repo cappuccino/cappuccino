@@ -87,6 +87,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
     BOOL                    _allowFadingOut @accessors(getter=allowFadingOut);
     int                     _style;
+    CPTimer                 _timerFadeOut;
 }
 
 
@@ -282,6 +283,13 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
         frame.size.height = scrollerWidth;
 
     [self setFrame:frame];
+}
+
+/*! @ignore */
+- (void)_performFadeOut:(CPTimer)aTimer
+{
+    [self fadeOut];
+    _timerFadeOut = nil;
 }
 
 
@@ -721,6 +729,9 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
 - (void)mouseEntered:(CPEvent)anEvent
 {
+    if (_timerFadeOut)
+        [_timerFadeOut invalidate];
+
     _allowFadingOut = NO;
     [self fadeIn];
     [self setThemeState:CPThemeStateSelected];
@@ -729,7 +740,10 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 - (void)mouseExited:(CPEvent)anEvent
 {
     _allowFadingOut = YES;
-    [self fadeOut];
+
+    if (_timerFadeOut)
+        [_timerFadeOut invalidate];
+    _timerFadeOut = [CPTimer scheduledTimerWithTimeInterval:1.2 target:self selector:@selector(_performFadeOut:) userInfo:nil repeats:NO];
 }
 
 
