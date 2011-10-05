@@ -641,15 +641,39 @@ var themedButtonValues = nil,
             ],
             PatternIsVertical),
 
-        trackColorLegacy = PatternColor("scroller-legacy-vertical-track-center.png", 14.0, 1.0),
-        incrementColorLegacy = PatternColor("scroller-legacy-vertical-track-bottom.png", 14.0, 11.0),
-        decrementColorLegacy = PatternColor("scroller-legacy-vertical-track-top.png", 14.0, 11.0),
+        trackColorLight = PatternColor(
+            [
+                ["scroller-vertical-track-light-top.png", 7.0, 3.0],
+                ["scroller-vertical-track-light-center.png", 7.0, 1.0],
+                ["scroller-vertical-track-light-bottom.png", 7.0, 3.0]
+            ],
+            PatternIsVertical),
+
+        trackColorLegacy        = PatternColor("scroller-legacy-vertical-track-center.png", 14.0, 1.0),
+        incrementColorLegacy    = PatternColor("scroller-legacy-vertical-track-bottom.png", 14.0, 11.0),
+        decrementColorLegacy    = PatternColor("scroller-legacy-vertical-track-top.png", 14.0, 11.0),
 
         knobColor = PatternColor(
             [
                 ["scroller-vertical-knob-top.png", 7.0, 3.0],
                 ["scroller-vertical-knob-center.png", 7.0, 1.0],
                 ["scroller-vertical-knob-bottom.png", 7.0, 3.0]
+            ],
+            PatternIsVertical),
+
+        knobColorLight = PatternColor(
+            [
+                ["scroller-vertical-knob-light-top.png", 7.0, 3.0],
+                ["scroller-vertical-knob-light-center.png", 7.0, 1.0],
+                ["scroller-vertical-knob-light-bottom.png", 7.0, 3.0]
+            ],
+            PatternIsVertical),
+
+        knobColorDark = PatternColor(
+            [
+                ["scroller-vertical-knob-dark-top.png", 7.0, 3.0],
+                ["scroller-vertical-knob-dark-center.png", 7.0, 1.0],
+                ["scroller-vertical-knob-dark-bottom.png", 7.0, 3.0]
             ],
             PatternIsVertical),
 
@@ -674,7 +698,10 @@ var themedButtonValues = nil,
             [@"track-border-overlay",   10.0,                                CPThemeStateVertical],
             [@"knob-slot-color",        [CPNull null],                      CPThemeStateVertical],
             [@"knob-slot-color",        trackColor,                         CPThemeStateVertical | CPThemeStateSelected],
+            [@"knob-slot-color",        trackColorLight,                    CPThemeStateVertical | CPThemeStateSelected | CPThemeStateScrollerKnobLight],
             [@"knob-color",             knobColor,                          CPThemeStateVertical],
+            [@"knob-color",             knobColorLight,                     CPThemeStateVertical | CPThemeStateScrollerKnobLight],
+            [@"knob-color",             knobColorDark,                      CPThemeStateVertical | CPThemeStateScrollerKnobDark],
             [@"increment-line-color",   [CPNull null],                      CPThemeStateVertical],
             [@"decrement-line-color",   [CPNull null],                      CPThemeStateVertical],
             [@"decrement-line-size",    CPSizeMakeZero(),                   CPThemeStateVertical],
@@ -687,7 +714,13 @@ var themedButtonValues = nil,
             [@"track-border-overlay",   0.0,                                CPThemeStateVertical | CPThemeStateScrollViewLegacy],
             [@"knob-slot-color",        trackColorLegacy,                   CPThemeStateVertical | CPThemeStateScrollViewLegacy],
             [@"knob-slot-color",        trackColorLegacy,                   CPThemeStateVertical | CPThemeStateScrollViewLegacy | CPThemeStateSelected],
+            [@"knob-slot-color",        trackColorLegacy,                   CPThemeStateVertical | CPThemeStateScrollViewLegacy | CPThemeStateSelected | CPThemeStateScrollerKnobLight],
+            [@"knob-slot-color",        trackColorLegacy,                   CPThemeStateVertical | CPThemeStateScrollViewLegacy | CPThemeStateSelected | CPThemeStateScrollerKnobDark],
+            [@"knob-slot-color",        trackColorLegacy,                   CPThemeStateVertical | CPThemeStateScrollViewLegacy | CPThemeStateScrollerKnobDark],
+            [@"knob-slot-color",        trackColorLegacy,                   CPThemeStateVertical | CPThemeStateScrollViewLegacy | CPThemeStateScrollerKnobLight],
             [@"knob-color",             knobColorLegacy,                    CPThemeStateVertical | CPThemeStateScrollViewLegacy],
+            [@"knob-color",             knobColorLegacy,                    CPThemeStateVertical | CPThemeStateScrollViewLegacy | CPThemeStateScrollerKnobLight],
+            [@"knob-color",             knobColorLegacy,                    CPThemeStateVertical | CPThemeStateScrollViewLegacy | CPThemeStateScrollerKnobDark],
             [@"increment-line-color",   incrementColorLegacy,               CPThemeStateVertical | CPThemeStateScrollViewLegacy],
             [@"decrement-line-color",   decrementColorLegacy,               CPThemeStateVertical | CPThemeStateScrollViewLegacy],
             [@"decrement-line-size",    CPSizeMake(14.0, 11.0),             CPThemeStateVertical | CPThemeStateScrollViewLegacy],
@@ -719,6 +752,15 @@ var themedButtonValues = nil,
                 ["scroller-horizontal-track-right.png", 3.0, 7.0]
             ],
             PatternIsHorizontal),
+
+        trackColorLight = PatternColor(
+            [
+                ["scroller-horizontal-track-light-left.png", 3.0, 7.0],
+                ["scroller-horizontal-track-light-center.png", 1.0, 7.0],
+                ["scroller-horizontal-track-light-right.png", 3.0, 7.0]
+            ],
+            PatternIsHorizontal),
+
         trackColorLegacy = PatternColor("scroller-legacy-horizontal-track-center.png", 1.0, 14.0),
         incrementColorLegacy = PatternColor("scroller-legacy-horizontal-track-right.png", 11.0, 14.0),
         decrementColorLegacy = PatternColor("scroller-legacy-horizontal-track-left.png", 11.0, 14.0),
@@ -728,6 +770,22 @@ var themedButtonValues = nil,
                 ["scroller-horizontal-knob-left.png", 3.0, 7.0],
                 ["scroller-horizontal-knob-center.png", 1.0, 7.0],
                 ["scroller-horizontal-knob-right.png", 3.0, 7.0]
+            ],
+            PatternIsHorizontal),
+
+        knobColorLight = PatternColor(
+            [
+                ["scroller-horizontal-knob-light-left.png", 3.0, 7.0],
+                ["scroller-horizontal-knob-light-center.png", 1.0, 7.0],
+                ["scroller-horizontal-knob-light-right.png", 3.0, 7.0]
+            ],
+            PatternIsHorizontal),
+
+        knobColorDark = PatternColor(
+            [
+                ["scroller-horizontal-knob-dark-left.png", 3.0, 7.0],
+                ["scroller-horizontal-knob-dark-center.png", 1.0, 7.0],
+                ["scroller-horizontal-knob-dark-right.png", 3.0, 7.0]
             ],
             PatternIsHorizontal),
 
@@ -749,7 +807,10 @@ var themedButtonValues = nil,
             [@"track-border-overlay",   10.0],
             [@"knob-slot-color",        [CPNull null]],
             [@"knob-slot-color",        trackColor,                         CPThemeStateSelected],
+            [@"knob-slot-color",        trackColorLight,                    CPThemeStateSelected | CPThemeStateScrollerKnobLight],
             [@"knob-color",             knobColor],
+            [@"knob-color",             knobColorLight,                     CPThemeStateScrollerKnobLight],
+            [@"knob-color",             knobColorDark,                      CPThemeStateScrollerKnobDark],
             [@"decrement-line-size",    CPSizeMakeZero()],
             [@"increment-line-size",    CPSizeMakeZero()],
 
@@ -760,7 +821,11 @@ var themedButtonValues = nil,
             [@"track-border-overlay",   0.0,                                CPThemeStateScrollViewLegacy],
             [@"knob-slot-color",        trackColorLegacy,                   CPThemeStateScrollViewLegacy],
             [@"knob-slot-color",        trackColorLegacy,                   CPThemeStateScrollViewLegacy | CPThemeStateSelected],
+            [@"knob-slot-color",        trackColorLegacy,                   CPThemeStateScrollViewLegacy | CPThemeStateScrollerKnobLight],
+            [@"knob-slot-color",        trackColorLegacy,                   CPThemeStateScrollViewLegacy | CPThemeStateScrollerKnobDark],
             [@"knob-color",             knobColorLegacy,                    CPThemeStateScrollViewLegacy],
+            [@"knob-color",             knobColorLegacy,                    CPThemeStateScrollViewLegacy | CPThemeStateScrollerKnobLight],
+            [@"knob-color",             knobColorLegacy,                    CPThemeStateScrollViewLegacy | CPThemeStateScrollerKnobDark],
             [@"increment-line-color",   incrementColorLegacy,               CPThemeStateScrollViewLegacy],
             [@"decrement-line-color",   decrementColorLegacy,               CPThemeStateScrollViewLegacy],
             [@"decrement-line-size",    CPSizeMake(11.0, 14.0),             CPThemeStateScrollViewLegacy],
@@ -1755,31 +1820,33 @@ var themedButtonValues = nil,
     return button;
 }
 
-+ (CPScroller)themedVerticalScroller
-{
-    var scroller = [AristoThemeDescriptor makeVerticalScroller],
-        overrides =
-        [
-            [@"knob-color", nil, CPThemeStateVertical | CPThemeStateDisabled]
-        ];
+// We need an artwork for the legacy scroller here.
+// For the moment I just deactivate it to avoid 404 with HUD theme
+// + (CPScroller)themedVerticalScroller
+// {
+//     var scroller = [AristoThemeDescriptor makeVerticalScroller],
+//         overrides =
+//         [
+//             [@"knob-color", nil, CPThemeStateVertical | CPThemeStateDisabled]
+//         ];
+//
+//     [self registerThemeValues:[self defaultThemeOverridesAddedTo:overrides] forView:scroller inherit:themedVerticalScrollerValues];
+//
+//     return scroller;
+// }
 
-    [self registerThemeValues:[self defaultThemeOverridesAddedTo:overrides] forView:scroller inherit:themedVerticalScrollerValues];
-
-    return scroller;
-}
-
-+ (CPScroller)themedHorizontalScroller
-{
-    var scroller = [AristoThemeDescriptor makeHorizontalScroller],
-        overrides =
-        [
-            [@"knob-color", nil, CPThemeStateDisabled]
-        ];
-
-    [self registerThemeValues:[self defaultThemeOverridesAddedTo:overrides] forView:scroller inherit:themedHorizontalScrollerValues];
-
-    return scroller;
-}
+// + (CPScroller)themedHorizontalScroller
+// {
+//     var scroller = [AristoThemeDescriptor makeHorizontalScroller],
+//         overrides =
+//         [
+//             [@"knob-color", nil, CPThemeStateDisabled]
+//         ];
+//
+//     [self registerThemeValues:[self defaultThemeOverridesAddedTo:overrides] forView:scroller inherit:themedHorizontalScrollerValues];
+//
+//     return scroller;
+// }
 
 + (CPSlider)themedHorizontalSlider
 {

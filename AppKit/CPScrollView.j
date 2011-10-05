@@ -75,6 +75,7 @@ var TIMER_INTERVAL                              = 0.2,
     CPTimer         _timerScrollersHide;
 
     int             _scrollerStyle;
+    int             _scrollerKnobStyle;
 }
 
 
@@ -174,6 +175,7 @@ var TIMER_INTERVAL                              = 0.2,
 
         [self setHasVerticalScroller:YES];
         [self setHasHorizontalScroller:YES];
+        _scrollerKnobStyle = CPScrollerKnobStyleDark;
         [self setScrollerStyle:CPScrollerStyleOverlay];
 
         _delegate = nil;
@@ -229,12 +231,27 @@ var TIMER_INTERVAL                              = 0.2,
 */
 - (void)setScrollerStyle:(int)aStyle
 {
-    if (_scrollerStyle == aStyle)
+    if (_scrollerStyle === aStyle)
         return;
 
     _scrollerStyle = aStyle;
 
     [self _updateScrollerStyle];
+}
+
+- (int)scrollerKnobStyle
+{
+    return _scrollerKnobStyle;
+}
+
+- (void)setScrollerKnobStyle:(int)newScrollerKnobStyle
+{
+     if (_scrollerKnobStyle === newScrollerKnobStyle)
+        return;
+
+    _scrollerKnobStyle = newScrollerKnobStyle;
+
+   [self _updateScrollerStyle];
 }
 
 /*!
@@ -614,11 +631,39 @@ var TIMER_INTERVAL                              = 0.2,
     {
         [_horizontalScroller setStyle:_scrollerStyle];
         [_horizontalScroller unsetThemeState:CPThemeStateSelected];
+        switch (_scrollerKnobStyle)
+        {
+            case CPScrollerKnobStyleLight:
+                [_horizontalScroller unsetThemeState:CPThemeStateScrollerKnobDark];
+                [_horizontalScroller setThemeState:CPThemeStateScrollerKnobLight];
+                break;
+            case CPScrollerKnobStyleDark:
+                [_horizontalScroller unsetThemeState:CPThemeStateScrollerKnobLight];
+                [_horizontalScroller setThemeState:CPThemeStateScrollerKnobDark];
+                break;
+            default:
+                [_horizontalScroller unsetThemeState:CPThemeStateScrollerKnobLight];
+                [_horizontalScroller unsetThemeState:CPThemeStateScrollerKnobDark];
+        }
     }
     if (_hasVerticalScroller)
     {
         [_verticalScroller setStyle:_scrollerStyle];
         [_verticalScroller unsetThemeState:CPThemeStateSelected];
+        switch (_scrollerKnobStyle)
+        {
+            case CPScrollerKnobStyleLight:
+                [_verticalScroller unsetThemeState:CPThemeStateScrollerKnobDark];
+                [_verticalScroller setThemeState:CPThemeStateScrollerKnobLight];
+                break;
+            case CPScrollerKnobStyleDark:
+                [_verticalScroller unsetThemeState:CPThemeStateScrollerKnobLight];
+                [_verticalScroller setThemeState:CPThemeStateScrollerKnobDark];
+                break;
+            default:
+                [_verticalScroller unsetThemeState:CPThemeStateScrollerKnobLight];
+                [_verticalScroller unsetThemeState:CPThemeStateScrollerKnobDark];
+        }
     }
 
     if (_scrollerStyle == CPScrollerStyleOverlay)
@@ -1246,7 +1291,8 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
     CPScrollViewCornerViewKey           = @"CPScrollViewCornerViewKey",
     CPScrollViewBottomCornerViewKey     = @"CPScrollViewBottomCornerViewKey",
     CPScrollViewBorderTypeKey           = @"CPScrollViewBorderTypeKey",
-    CPScrollViewScrollerStyleKey        = @"CPScrollViewScrollerStyleKey";
+    CPScrollViewScrollerStyleKey        = @"CPScrollViewScrollerStyleKey",
+    CPScrollViewScrollerKnobStyleKey    = @"CPScrollViewScrollerKnobStyleKey";
 
 @implementation CPScrollView (CPCoding)
 
@@ -1289,6 +1335,7 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
         [[CPRunLoop currentRunLoop] performSelector:@selector(_updateCornerAndHeaderView) target:self argument:_contentView order:0 modes:[CPDefaultRunLoopMode]];
 
         [self setScrollerStyle:[aCoder decodeIntForKey:CPScrollViewScrollerStyleKey] || CPScrollerStyleOverlay];
+        [self setScrollerKnobStyle:[aCoder decodeIntForKey:CPScrollViewScrollerKnobStyleKey] || CPScrollerKnobStyleDark];
     }
 
     return self;
@@ -1319,6 +1366,7 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
     [aCoder encodeInt:_borderType               forKey:CPScrollViewBorderTypeKey];
 
     [aCoder encodeInt:_scrollerStyle            forKey:CPScrollViewScrollerStyleKey];
+    [aCoder encodeInt:_scrollerKnobStyle        forKey:CPScrollViewScrollerKnobStyleKey];
 }
 
 @end

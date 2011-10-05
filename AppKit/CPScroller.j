@@ -56,10 +56,16 @@ NAMES_FOR_PARTS[CPScrollerKnobSlot]         = @"knob-slot";
 NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 
 
-CPScrollerStyleLegacy   = 1;
-CPScrollerStyleOverlay  = 2;
+CPScrollerStyleLegacy   = 0;
+CPScrollerStyleOverlay  = 1;
 
-CPThemeStateScrollViewLegacy = CPThemeState("scroller-style-legacy");
+CPScrollerKnobStyleDefault  = 0;
+CPScrollerKnobStyleDark     = 1;
+CPScrollerKnobStyleLight    = 2;
+
+CPThemeStateScrollViewLegacy    = CPThemeState("scroller-style-legacy");
+CPThemeStateScrollerKnobLight   = CPThemeState("scroller-knob-light");
+CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
 
 @implementation CPScroller : CPControl
@@ -99,7 +105,7 @@ CPThemeStateScrollViewLegacy = CPThemeState("scroller-style-legacy");
         @"knob-slot-color": [CPNull null],
         @"decrement-line-color": [CPNull null],
         @"increment-line-color": [CPNull null],
-        @"knob-color": [CPColor grayColor],
+        @"knob-color": [CPNull null],
         @"decrement-line-size":_CGSizeMakeZero(),
         @"increment-line-size":_CGSizeMakeZero(),
         @"track-inset":_CGInsetMakeZero(),
