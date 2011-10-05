@@ -732,6 +732,9 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
     if (_timerFadeOut)
         [_timerFadeOut invalidate];
 
+    if (![self isEnabled])
+        return;
+
     _allowFadingOut = NO;
     [self fadeIn];
     [self setThemeState:CPThemeStateSelected];
@@ -739,6 +742,12 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
 - (void)mouseExited:(CPEvent)anEvent
 {
+    if ([self isHidden])
+        return;
+
+    if (![self isEnabled])
+        return;
+
     _allowFadingOut = YES;
 
     if (_timerFadeOut)
