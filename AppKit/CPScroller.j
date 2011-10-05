@@ -88,6 +88,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
     BOOL                    _allowFadingOut @accessors(getter=allowFadingOut);
     int                     _style;
     CPTimer                 _timerFadeOut;
+    BOOL                    _isMouseOver;
 }
 
 
@@ -167,6 +168,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
         _hitPart = CPScrollerNoPart;
         _allowFadingOut = YES;
+        _isMouseOver = NO;
         _style = CPScrollerStyleOverlay;
         _paramAnimFadeOut   = [CPDictionary dictionaryWithObjects:[self, CPViewAnimationFadeOutEffect]
                                                           forKeys:[CPViewAnimationTargetKey, CPViewAnimationEffectKey]];
@@ -316,6 +318,9 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
     // The ordering of these tests is important.  We check the knob and
     // page rects first since they may overlap with the arrows.
 
+    if (![self hasThemeState:CPThemeStateSelected])
+        return CPScrollerNoPart;
+
     if (CGRectContainsPoint([self rectForPart:CPScrollerKnob], aPoint))
         return CPScrollerKnob;
 
@@ -443,6 +448,12 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 */
 - (void)fadeIn
 {
+    if (_isMouseOver)
+        [self setThemeState:CPThemeStateSelected];
+
+    if (_timerFadeOut)
+        [_timerFadeOut invalidate];
+
     [self setAlphaValue:1.0];
 }
 
@@ -736,20 +747,18 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
         return;
 
     _allowFadingOut = NO;
-
-    [self setThemeState:CPThemeStateSelected];
+    _isMouseOver = YES;
+    if ([self alphaValue] > 0)
+        [self setThemeState:CPThemeStateSelected];
 }
 
 - (void)mouseExited:(CPEvent)anEvent
 {
-    if ([self isHidden])
-        return;
-
-    if (![self isEnabled])
+    if ([self isHidden] || ![self isEnabled] || !_isMouseOver)
         return;
 
     _allowFadingOut = YES;
-
+    _isMouseOver = NO;
     if (_timerFadeOut)
         [_timerFadeOut invalidate];
     _timerFadeOut = [CPTimer scheduledTimerWithTimeInterval:1.2 target:self selector:@selector(_performFadeOut:) userInfo:nil repeats:NO];
@@ -762,7 +771,6 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 - (void)animationDidEnd:(CPAnimation)animation
 {
     [self unsetThemeState:CPThemeStateSelected];
-    [self setHidden:NO];
 }
 
 @end
@@ -790,6 +798,7 @@ var CPScrollerControlSizeKey = @"CPScrollerControlSize",
         _hitPart = CPScrollerNoPart;
 
         _allowFadingOut = YES;
+        _isMouseOver = NO;
         _paramAnimFadeOut   = [CPDictionary dictionaryWithObjects:[self, CPViewAnimationFadeOutEffect]
                                                           forKeys:[CPViewAnimationTargetKey, CPViewAnimationEffectKey]];
         _animationScroller = [[CPViewAnimation alloc] initWithDuration:0.2 animationCurve:CPAnimationEaseInOut];
