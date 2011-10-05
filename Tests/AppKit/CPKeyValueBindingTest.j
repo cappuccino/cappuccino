@@ -44,7 +44,6 @@
 
 - (void)testBindOptions
 {
-
     var bindTesterA = [BindingTestWithBool new],
         bindTesterB = [BindingTestWithBool new];
 
@@ -180,9 +179,9 @@
     [self assert:'objectValue' equals:testView.lastKey];
 
     // Test that CPTableColumn is optimized to only read one value per row.
-    [self assert:0 equals:[content[2] accesses] message:"row 2 used "+[content[2] accesses]+" accesses but was never prepared"];
-    [self assert:1 equals:[content[0] accesses] message:"row 0 used "+[content[0] accesses]+" accesses to prepare"];
-    [self assert:1 equals:[content[1] accesses] message:"row 1 used "+[content[1] accesses]+" accesses to prepare"];
+    [self assert:0 equals:[content[2] accesses] message:"row 2 used " + [content[2] accesses] + " accesses but was never prepared"];
+    [self assert:1 equals:[content[0] accesses] message:"row 0 used " + [content[0] accesses] + " accesses to prepare"];
+    [self assert:1 equals:[content[1] accesses] message:"row 1 used " + [content[1] accesses] + " accesses to prepare"];
 
     // Try the case where a key path is not used.
     content = ["plain", "old", "space crystals"];
@@ -246,7 +245,7 @@
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)changes context:(id)aContext
 {
-    CPLog(@"here: "+aKeyPath+" value: "+[anObject valueForKey:aKeyPath]);
+    CPLog(@"here: " + aKeyPath + " value: " + [anObject valueForKey:aKeyPath]);
 }
 
 - (void)testSuppressNotification
