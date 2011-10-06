@@ -448,7 +448,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 */
 - (void)fadeIn
 {
-    if (_isMouseOver)
+    if (_isMouseOver && _knobProportion != 1.0)
         [self setThemeState:CPThemeStateSelected];
 
     if (_timerFadeOut)
@@ -751,7 +751,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
     _allowFadingOut = NO;
     _isMouseOver = YES;
 
-    if ([self alphaValue] > 0)
+    if ([self alphaValue] > 0 && _knobProportion != 1.0)
         [self setThemeState:CPThemeStateSelected];
 }
 
