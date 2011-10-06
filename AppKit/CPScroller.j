@@ -170,11 +170,11 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
         _allowFadingOut = YES;
         _isMouseOver = NO;
         _style = CPScrollerStyleOverlay;
-        _paramAnimFadeOut   = [CPDictionary dictionaryWithObjects:[self, CPViewAnimationFadeOutEffect]
+        var paramAnimFadeOut   = [CPDictionary dictionaryWithObjects:[self, CPViewAnimationFadeOutEffect]
                                                           forKeys:[CPViewAnimationTargetKey, CPViewAnimationEffectKey]];
 
         _animationScroller = [[CPViewAnimation alloc] initWithDuration:0.2 animationCurve:CPAnimationEaseInOut];
-        [_animationScroller setViewAnimations:[_paramAnimFadeOut]];
+        [_animationScroller setViewAnimations:[paramAnimFadeOut]];
         [_animationScroller setDelegate:self];
         [self setAlphaValue:0.0];
         [self _calculateIsVertical];
@@ -740,6 +740,8 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
 - (void)mouseEntered:(CPEvent)anEvent
 {
+    [super mouseEntered:anEvent];
+
     if (_timerFadeOut)
         [_timerFadeOut invalidate];
 
@@ -748,17 +750,21 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
     _allowFadingOut = NO;
     _isMouseOver = YES;
+
     if ([self alphaValue] > 0)
         [self setThemeState:CPThemeStateSelected];
 }
 
 - (void)mouseExited:(CPEvent)anEvent
 {
+    [super mouseExited:anEvent];
+
     if ([self isHidden] || ![self isEnabled] || !_isMouseOver)
         return;
 
     _allowFadingOut = YES;
     _isMouseOver = NO;
+
     if (_timerFadeOut)
         [_timerFadeOut invalidate];
     _timerFadeOut = [CPTimer scheduledTimerWithTimeInterval:1.2 target:self selector:@selector(_performFadeOut:) userInfo:nil repeats:NO];
@@ -799,10 +805,10 @@ var CPScrollerControlSizeKey = @"CPScrollerControlSize",
 
         _allowFadingOut = YES;
         _isMouseOver = NO;
-        _paramAnimFadeOut   = [CPDictionary dictionaryWithObjects:[self, CPViewAnimationFadeOutEffect]
+        var paramAnimFadeOut   = [CPDictionary dictionaryWithObjects:[self, CPViewAnimationFadeOutEffect]
                                                           forKeys:[CPViewAnimationTargetKey, CPViewAnimationEffectKey]];
         _animationScroller = [[CPViewAnimation alloc] initWithDuration:0.2 animationCurve:CPAnimationEaseInOut];
-        [_animationScroller setViewAnimations:[_paramAnimFadeOut]];
+        [_animationScroller setViewAnimations:[paramAnimFadeOut]];
         [_animationScroller setDelegate:self];
         [self setAlphaValue:0.0];
 
