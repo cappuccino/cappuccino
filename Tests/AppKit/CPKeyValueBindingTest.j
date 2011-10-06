@@ -16,7 +16,9 @@
 
 @implementation CPKeyValueBindingTest : OJTestCase
 {
-    id      FOO;
+    id                  FOO;
+
+    CPArrayController   arrayController @accessors;
 }
 
 - (void)testExposingBindings
@@ -166,9 +168,6 @@
 
     [tableColumn bind:@"value" toObject:arrayController withKeyPath:@"arrangedObjects.valueA" options:nil];
 
-    [self assertTrue:[[tableView infoForBinding:"content"] valueForKey:CPObservedObjectKey] === arrayController message:"when a column of a table is bound to an array controller a 'content' binding should automatically be made to the array controller"];
-    [self assertTrue:[[tableView infoForBinding:"selectionIndexes"] valueForKey:CPObservedObjectKey] === arrayController message:"when a column of a table is bound to an array controller a 'selectionIndexes' binding should automatically be made to the array controller"];
-
     // Reset these if they were read during initialization.
     for (var i = 0; i < [content count]; i++)
         [content[i] setAccesses:0];
@@ -194,6 +193,30 @@
     [tableColumn _prepareDataView:testView forRow:1];
     [self assert:'old' equals:testView.lastValue];
     [self assert:'objectValue' equals:testView.lastKey];
+}
+
+- (void)testTableColumnAutomaticBindings
+{
+    var tableView = [CPTableView new],
+        tableColumn = [[CPTableColumn alloc] initWithIdentifier:"A Column"];
+    arrayController = [CPArrayController new];
+
+    [tableView addTableColumn:tableColumn];
+
+    [tableColumn bind:@"value" toObject:arrayController withKeyPath:@"arrangedObjects.valueA" options:nil];
+
+    [self assertTrue:[[tableView infoForBinding:"content"] valueForKey:CPObservedObjectKey] === arrayController message:"when a column of a table is bound to an array controller a 'content' binding should automatically be made to the array controller"];
+    [self assertTrue:[[tableView infoForBinding:"selectionIndexes"] valueForKey:CPObservedObjectKey] === arrayController message:"when a column of a table is bound to an array controller a 'selectionIndexes' binding should automatically be made to the array controller"];
+
+    // This should also work if the AC is referenced through a compound path.
+    tableView = [CPTableView new];
+    tableColumn = [[CPTableColumn alloc] initWithIdentifier:"A Column"];
+    [tableView addTableColumn:tableColumn];
+
+    [tableColumn bind:@"value" toObject:self withKeyPath:@"arrayController.arrangedObjects.valueA" options:nil];
+
+    [self assertTrue:[[tableView infoForBinding:"content"] valueForKey:CPObservedObjectKey] === arrayController message:"automatic 'content' binding should work even with compound keypath for column binding"];
+    [self assertTrue:[[tableView infoForBinding:"selectionIndexes"] valueForKey:CPObservedObjectKey] === arrayController message:"automatic 'selectionIndexes' binding should work even with compound keypath for column binding"];
 }
 
 - (void)testTextField
