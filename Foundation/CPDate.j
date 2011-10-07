@@ -232,3 +232,175 @@ var CPDateTimeKey = @"CPDateTimeKey";
 @end
 
 Date.prototype.isa = CPDate;
+
+/**
+ * Date.parse with progressive enhancement for ISO 8601 <https://github.com/csnover/js-iso8601>
+ * © 2011 Colin Snover <http://zetafleet.com>
+ * Released under MIT license.
+ */
+(function (Date, undefined) {
+    var origParse = Date.parse, numericKeys = [ 1, 4, 5, 6, 7, 10, 11 ];
+    Date.parse = function (date) {
+        var timestamp, struct, minutesOffset = 0;
+
+        // ES5 §15.9.4.2 states that the string should attempt to be parsed as a Date Time String Format string
+        // before falling back to any implementation-specific date parsing, so that’s what we do, even if native
+        // implementations could be faster
+        //              1 YYYY                2 MM       3 DD           4 HH    5 mm       6 ss        7 msec        8 Z 9 ±    10 tzHH    11 tzmm
+        if ((struct = /^(\d{4,5}|[+\-]\d{6})(?:-(\d{2})(?:-(\d{2}))?)?(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{3}))?)?(?:(Z)|([+\-])(\d{2})(?::(\d{2}))?)?)?$/.exec(date))) {
+            // avoid NaN timestamps caused by “undefined” values being passed to Date.UTC
+            for (var i = 0, k; (k = numericKeys[i]); ++i) {
+                struct[k] = +struct[k] || 0;
+            }
+
+            // allow undefined days and months
+            struct[2] = (+struct[2] || 1) - 1;
+            struct[3] = +struct[3] || 1;
+
+            if (struct[8] !== 'Z' && struct[9] !== undefined) {
+                minutesOffset = struct[10] * 60 + struct[11];
+
+                if (struct[9] === '+') {
+                    minutesOffset = 0 - minutesOffset;
+                }
+            }
+
+            timestamp = Date.UTC(struct[1], struct[2], struct[3], struct[4], struct[5] + minutesOffset, struct[6], struct[7]);
+        }
+        else {
+            timestamp = origParse ? origParse(date) : NaN;
+        }
+
+        return timestamp;
+    };
+}(Date));
+
+
+@implementation CPDate(ISO8601)
+
++ (id)dateWithISO8601String:(CPString)aString
+{
+    var ts = Date.parse(aString);
+    if (!ts || isNaN(ts)) return nil;
+    return [self dateWithTimeIntervalSince1970:ts / 1000];
+}
+
+- (CPString)ISO8601String
+{
+    function pad(n){ return n < 10 ? '0'+n : n; }
+    var d = self;
+    return d.getUTCFullYear() + '-'
+          +  pad(d.getUTCMonth() + 1) + '-'
+          +  pad(d.getUTCDate()) + 'T'
+          +  pad(d.getUTCHours()) + ':'
+          +  pad(d.getUTCMinutes()) + ':'
+          +  pad(d.getUTCSeconds()) + 'Z';
+}
+
+@end
+
+@implementation CPDate(Accessors)
+
+- (int)year
+{
+    return self.getFullYear();
+}
+
+- (int)yearUTC
+{
+    return self.getUTCFullYear();
+}
+
+- (int)month
+{
+    return self.getMonth() + 1;
+}
+
+- (int)monthUTC
+{
+    return self.getUTCMonth() + 1;
+}
+
+- (int)day
+{
+    return self.getDate();
+}
+
+- (int)dayUTC
+{
+    return self.getUTCDate();
+}
+
+- (int)hour
+{
+    return self.getHours();
+}
+
+- (int)hourUTC
+{
+    return self.getUTCHours();
+}
+
+- (int)minute
+{
+    return self.getMinutes();
+}
+
+- (int)minuteUTC
+{
+    return self.getUTCMinutes();
+}
+
+
+- (int)second
+{
+    return self.getSeconds();
+}
+
+- (int)secondUTC
+{
+    return self.getUTCSeconds();
+}
+
+
+@end
+
+@implementation CPDate(Constructors)
+
++ (id)dateWithYear:(int)year month:(int)month day:(int)day
+{
+    return new Date(year, month - 1, day);
+}
+
++ (id)dateWithHour:(int)hour minute:(int)minute second:(int)second
+{
+    return new Date(0, 0, 0, hour, minute, second, 0);
+}
+
++ (id)dateWithYear:(int)year month:(int)month day:(int)day
+              hour:(int)hour minute:(int)minute second:(int)second
+{
+    return new Date(year, month - 1, day, hour, minute, second, 0);
+}
+
++ (id)dateUTCWithYear:(int)year month:(int)month day:(int)day
+{
+    var ts = Date.UTC(year, month - 1, day);
+    return [self dateWithTimeIntervalSince1970:ts / 1000];
+}
+
++ (id)dateUTCWithHour:(int)hour minute:(int)minute second:(int)second
+{
+    var ts = Date.UTC(0, 0, 0, hour, minute, second, 0);
+    return [self dateWithTimeIntervalSince1970:ts / 1000];
+}
+
++ (id)dateUTCWithYear:(int)year month:(int)month day:(int)day
+                 hour:(int)hour minute:(int)minute second:(int)second
+{
+    var ts = Date.UTC(year, month - 1, day, hour, minute, second, 0);
+    return [self dateWithTimeIntervalSince1970:ts / 1000];
+}
+
+
+@end
