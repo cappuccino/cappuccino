@@ -26,9 +26,10 @@
 
 
 
-/*! CPStepper is an  implementation of Cocoa NSStepper.
+/*!
+    CPStepper is an implementation of Cocoa NSStepper.
 
-    This control display a two part button that can be used to increase or decrease a value with a given interval.
+    This control displays a two part button that can be used to increase or decrease a value with a given interval.
 */
 @implementation CPStepper: CPControl
 {
@@ -44,7 +45,8 @@
 #pragma mark -
 #pragma mark Initialization
 
-/*! Initializes a CPStepper with given values
+/*!
+    Initializes a CPStepper with given values.
     @param aValue the initial value of the CPStepper
     @param minValue the minimal acceptable value of the stepper
     @param maxValue the maximal acceptable value of the stepper
@@ -52,7 +54,7 @@
 */
 + (CPStepper)stepperWithInitialValue:(float)aValue minValue:(float)aMinValue maxValue:(float)aMaxValue
 {
-    var stepper = [[CPStepper alloc] initWithFrame:CPRectMake(0, 0, 19, 25)];
+    var stepper = [[CPStepper alloc] initWithFrame:_CGRectMake(0, 0, 19, 25)];
     [stepper setDoubleValue:aValue];
     [stepper setMinValue:aMinValue];
     [stepper setMaxValue:aMaxValue];
@@ -60,10 +62,12 @@
     return stepper;
 }
 
-/*! Initializes a CPStepper with default values:
+/*!
+    Initializes a CPStepper with default values:
         - minValue = 0.0
         - maxValue = 59.0
         - value = 0.0
+
     @return Initialized CPStepper
 */
 + (CPStepper)stepper
@@ -71,7 +75,8 @@
     return [CPStepper stepperWithInitialValue:0.0 minValue:0.0 maxValue:59.0];
 }
 
-/*! Initializes the CPStepper
+/*!
+    Initializes a CPStepper.
     @param aFrame the frame of the control
     @return initialized CPStepper
 */
@@ -86,14 +91,14 @@
 
         [self setDoubleValue:0.0];
 
-        _buttonUp = [[CPButton alloc] initWithFrame:CPRectMakeZero()];
+        _buttonUp = [[CPButton alloc] initWithFrame:_CGRectMakeZero()];
         [_buttonUp setContinuous:YES];
         [_buttonUp setTarget:self];
         [_buttonUp setAction:@selector(_buttonDidClick:)];
         [_buttonUp setAutoresizingMask:CPViewNotSizable];
         [self addSubview:_buttonUp];
 
-        _buttonDown = [[CPButton alloc] initWithFrame:CPRectMakeZero()];
+        _buttonDown = [[CPButton alloc] initWithFrame:_CGRectMakeZero()];
         [_buttonDown setContinuous:YES];
         [_buttonDown setTarget:self];
         [_buttonDown setAction:@selector(_buttonDidClick:)];
@@ -109,7 +114,8 @@
 #pragma mark -
 #pragma mark Superclass overrides
 
-/*! set if the CPStepper is enabled or not
+/*!
+    Set if the CPStepper is enabled or not.
     @param shouldEnabled BOOL that define if stepper is enabled or not.
 */
 - (void)setEnabled:(BOOL)shouldEnabled
@@ -125,21 +131,22 @@
 {
     var upSize = [self valueForThemeAttribute:@"up-button-size"],
         downSize = [self valueForThemeAttribute:@"down-button-size"],
-        minSize = CGSizeMake(upSize.width, upSize.height + downSize.height);
-    aFrame.size.width = Math.max(minSize.width, aFrame.size.width);
-    aFrame.size.height = Math.max(minSize.height, aFrame.size.height);
-    [super setFrame:aFrame];
+        minSize = _CGSizeMake(upSize.width, upSize.height + downSize.height),
+        frame = _CGRectMakeCopy(aFrame);
+
+    frame.size.width = Math.max(minSize.width, frame.size.width);
+    frame.size.height = Math.max(minSize.height, frame.size.height);
+    [super setFrame:frame];
 }
 
-/*! @ignore
-*/
+/*! @ignore */
 - (void)layoutSubviews
 {
     var aFrame = [self frame],
         upSize = [self valueForThemeAttribute:@"up-button-size"],
         downSize = [self valueForThemeAttribute:@"down-button-size"],
-        upFrame = CPRectMake(aFrame.size.width - upSize.width, 0, upSize.width, upSize.height),
-        downFrame = CPRectMake(aFrame.size.width - downSize.width, upSize.height, downSize.width, downSize.height);
+        upFrame = _CGRectMake(aFrame.size.width - upSize.width, 0, upSize.width, upSize.height),
+        downFrame = _CGRectMake(aFrame.size.width - downSize.width, upSize.height, downSize.width, downSize.height);
     [_buttonUp setFrame:upFrame];
     [_buttonDown setFrame:downFrame];
 
@@ -151,7 +158,8 @@
     [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered | CPThemeStateHighlighted] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateHighlighted];
 }
 
-/*! set if CPStepper should autorepeat
+/*!
+    Set if CPStepper should autorepeat.
     @param shouldAutoRepeat if YES, the first mouse down does one increment (decrement) and, after each delay of 0.5 seconds
 */
 - (void)setAutorepeat:(BOOL)shouldAutoRepeat
@@ -160,7 +168,8 @@
     [_buttonDown setContinuous:shouldAutoRepeat];
 }
 
-/*! set the current value of the stepper
+/*!
+    Set the current value of the stepper.
     @param aValue a float containing the value
 */
 - (void)setDoubleValue:(float)aValue
@@ -176,8 +185,7 @@
 #pragma mark -
 #pragma mark Actions
 
-/*! @ignore
-*/
+/*! @ignore */
 - (IBAction)_buttonDidClick:(id)aSender
 {
     if (![self isEnabled])
@@ -192,7 +200,8 @@
         [self sendAction:_action to:_target];
 }
 
-/*! @perform a programatic click on up button
+/*!
+    Perform a programatic click on up button.
     @param aSender sender of the action
 */
 - (IBAction)performClickUp:(id)aSender
@@ -200,7 +209,8 @@
     [_buttonUp performClick:aSender];
 }
 
-/*! @perform a programatic click on down button
+/*!
+    Perform a programatic click on down button.
     @param aSender sender of the action
 */
 - (IBAction)performClickDown:(id)aSender
@@ -219,7 +229,7 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], CGSizeMakeZero(), CGSizeMakeZero()]
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], _CGSizeMakeZero(), _CGSizeMakeZero()]
                                        forKeys:[@"bezel-color-up-button", @"bezel-color-down-button", @"up-button-size", @"down-button-size"]];
 }
 

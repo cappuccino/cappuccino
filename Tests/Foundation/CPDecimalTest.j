@@ -339,6 +339,16 @@
     dcm = CPDecimalMakeWithString(@"-1e100");
     c = CPDecimalCompare(dcm1,dcm);
     [self assert:CPOrderedDescending equals:c message:"CPDecimalCompare() Tc4: should be descending"];
+
+    dcm1 = CPDecimalMakeWithString(@"0.0");
+    dcm = CPDecimalMakeWithString(@"0.5");
+    c = CPDecimalCompare(dcm1,dcm);
+    [self assert:CPOrderedAscending equals:c message:"CPDecimalCompare() Tc4: should be descending"];
+
+    dcm1 = CPDecimalMakeWithString(@"0.0");
+    dcm = CPDecimalMakeWithString(@"-0.5");
+    c = CPDecimalCompare(dcm1,dcm);
+    [self assert:CPOrderedDescending equals:c message:"CPDecimalCompare() Tc4: should be descending"];
 }
 
 - (void)testCompact

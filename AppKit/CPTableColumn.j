@@ -594,7 +594,22 @@ CPTableColumnUserResizingMask   = 1 << 1;
     [super bind:aBinding toObject:anObject withKeyPath:aKeyPath options:options];
 
     if (![aBinding isEqual:@"someListOfExceptedBindings(notAcceptedBindings)"])
-        [[self tableView] _establishBindingsIfUnbound:anObject];
+    {
+        // Bind the table to the array controller this column is bound to.
+        // Note that anObject might not be the array controller. E.g. the keypath could be something like
+        // somePathTo.anArrayController.arrangedObjects.aKey. Cocoa doesn't support this but it is consistent
+        // and it makes sense.
+        var acIndex = aKeyPath.lastIndexOf("arrangedObjects."),
+            arrayController = anObject;
+
+        if (acIndex > 1)
+        {
+            var firstPart = aKeyPath.substring(0, acIndex - 1);
+            arrayController = [anObject valueForKeyPath:firstPart];
+        }
+
+        [[self tableView] _establishBindingsIfUnbound:arrayController];
+    }
 }
 
 /*!
