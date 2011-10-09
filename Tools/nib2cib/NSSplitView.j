@@ -31,6 +31,8 @@
     {
         _isVertical = [aCoder decodeBoolForKey:@"NSIsVertical"];
         _isPaneSplitter = [aCoder decodeIntForKey:@"NSDividerStyle"] == 3 ? YES : NO;
+
+        _autosaveName = [aCoder decodeObjectForKey:@"NSAutosaveName"];
     }
 
     return self;

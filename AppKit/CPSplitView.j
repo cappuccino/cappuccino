@@ -60,6 +60,10 @@ var CPSplitViewHorizontalImage = nil,
     CPString    _dividerImagePath;
     int         _drawingDivider;
 
+    CPString    _autosaveName;
+    BOOL        _shouldAutosave;
+    BOOL        _needsRestoreFromAutosave;
+
     BOOL        _needsResizeSubviews;
 
     CPArray     _buttonBars;
@@ -97,6 +101,8 @@ var CPSplitViewHorizontalImage = nil,
 
         _DOMDividerElements = [];
         _buttonBars = [];
+
+        _shouldAutosave = YES;
 
         [self _setVertical:YES];
     }
@@ -657,9 +663,19 @@ var CPSplitViewHorizontalImage = nil,
 
 - (void)setFrameSize:(CGSize)aSize
 {
-    [self _adjustSubviewsWithCalculatedSize];
+    if (_needsRestoreFromAutosave)
+        _shouldAutosave = NO;
+    else
+        [self _adjustSubviewsWithCalculatedSize];
 
     [super setFrameSize:aSize];
+
+    if (_needsRestoreFromAutosave)
+    {
+        _needsRestoreFromAutosave = NO;
+        [self _restoreFromAutosave];
+        _shouldAutosave = YES;
+    }
 
     [self setNeedsDisplay:YES];
 }
@@ -831,6 +847,7 @@ The sum of the views and the sum of the dividers should be equal to the size of 
     @param CPButtonBar - The supplied button bar.
     @param unsigned int - The divider index the button bar will be assigned to.
 */
+// FIXME Should be renamed to setButtonBar:ofDividerAtIndex:.
 - (void)setButtonBar:(CPButtonBar)aButtonBar forDividerAtIndex:(unsigned)dividerIndex
 {
     if (!aButtonBar)
@@ -867,7 +884,91 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 
 - (void)_postNotificationDidResize
 {
+    [self _autosave];
     [[CPNotificationCenter defaultCenter] postNotificationName:CPSplitViewDidResizeSubviewsNotification object:self];
+}
+
+/*!
+    Set the name under which the split view divider positions is automatically saved to CPUserDefaults.
+
+    @param autosaveName the name to save under or nil to not save
+*/
+- (void)setAutosaveName:(CPString)autosaveName
+{
+    if (_autosaveName == autosaveName)
+        return;
+    _autosaveName = autosaveName;
+}
+
+/*!
+    Get the name under which the split view divider position is automatically saved to CPUserDefaults.
+
+    @return the name to save under or nil if no auto save is active
+*/
+- (CPString)autosaveName
+{
+    return _autosaveName;
+}
+
+/*!
+    @ignore
+*/
+- (void)_autosave
+{
+    if (!_shouldAutosave)
+        return;
+
+    var userDefaults = [CPUserDefaults standardUserDefaults],
+        autosaveName = [self _framesKeyForAutosaveName:[self autosaveName]],
+        count = [_subviews count],
+        positions = [CPMutableArray new];
+
+    for (var i = 0; i < count; i++)
+    {
+        var frame = [_subviews[i] frame];
+        [positions addObject:CPStringFromRect(frame)];
+    }
+
+    [userDefaults setObject:positions forKey:autosaveName];
+}
+
+/*!
+    @ignore
+*/
+- (void)_restoreFromAutosave
+{
+    if (!_autosaveName)
+        return;
+
+    var autosaveName = [self _framesKeyForAutosaveName:[self autosaveName]],
+        userDefaults = [CPUserDefaults standardUserDefaults],
+        frames = [userDefaults objectForKey:autosaveName];
+
+    if (frames)
+    {
+        var dividerThickness = [self dividerThickness],
+            position = 0;
+
+        _shouldAutosave = NO;
+        for (var i = 0, count = [frames count] - 1; i < count; i++)
+        {
+            var frame = CPRectFromString(frames[i]);
+            position += frame.size[_sizeComponent];
+
+            [self setPosition:position ofDividerAtIndex:i];
+
+            position += dividerThickness;
+        }
+        _shouldAutosave = YES;
+    }
+}
+
+/*!
+    @ignore
+*/
+- (CPString)_framesKeyForAutosaveName:(CPString)theAutosaveName
+{
+    return @"CPSplitView Subview Frames " + theAutosaveName;
 }
 
 @end
@@ -875,7 +976,8 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
     CPSplitViewIsVerticalKey        = "CPSplitViewIsVerticalKey",
     CPSplitViewIsPaneSplitterKey    = "CPSplitViewIsPaneSplitterKey",
-    CPSplitViewButtonBarsKey        = "CPSplitViewButtonBarsKey";
+    CPSplitViewButtonBarsKey        = "CPSplitViewButtonBarsKey",
+    CPSplitViewAutosaveNameKey      = "CPSplitViewAutosaveNameKey";
 
 @implementation CPSplitView (CPCoding)
 
@@ -890,6 +992,7 @@ var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
     if (self)
     {
         _currentDivider = CPNotFound;
+        _shouldAutosave = YES;
 
         _DOMDividerElements = [];
 
@@ -899,6 +1002,13 @@ var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
 
         _isPaneSplitter = [aCoder decodeBoolForKey:CPSplitViewIsPaneSplitterKey];
         [self _setVertical:[aCoder decodeBoolForKey:CPSplitViewIsVerticalKey]];
+
+        [self setAutosaveName:[aCoder decodeObjectForKey:CPSplitViewAutosaveNameKey]];
+
+        // We have to wait until we know our frame size before restoring, or the frame resize later will throw
+        // away the restored size.
+        if (_autosaveName)
+            _needsRestoreFromAutosave = YES;
     }
 
     return self;
@@ -919,6 +1029,8 @@ var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
 
     [aCoder encodeBool:_isVertical forKey:CPSplitViewIsVerticalKey];
     [aCoder encodeBool:_isPaneSplitter forKey:CPSplitViewIsPaneSplitterKey];
+
+    [aCoder encodeObject:_autosaveName forKey:CPSplitViewAutosaveNameKey];
 }
 
 @end
