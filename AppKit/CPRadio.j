@@ -150,6 +150,14 @@ CPRadioImageOffset = 4.0;
         [_radioGroup _setSelectedRadio:self];
 }
 
+- (void)sendAction:(SEL)anAction to:(id)anObject
+{
+    [super sendAction:anAction to:anObject];
+
+    if (_radioGroup)
+        [CPApp sendAction:[_radioGroup action] to:[_radioGroup target] from:_radioGroup];
+}
+
 @end
 
 var CPRadioRadioGroupKey    = @"CPRadioRadioGroupKey";
@@ -220,8 +228,6 @@ var CPRadioRadioGroupKey    = @"CPRadioRadioGroupKey";
 
     [_selectedRadio setState:CPOffState];
     _selectedRadio = aRadio;
-
-    [CPApp sendAction:_action to:_target from:self];
 }
 
 - (CPRadio)selectedRadio
