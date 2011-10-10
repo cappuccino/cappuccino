@@ -55,6 +55,8 @@ CPLogRegister(CPLogConsole);
     [radio1 setFrameSize:CGSizeMake([radio1 frameSize].width, radioHeight)];
     [radio2 setFrameSize:CGSizeMake([radio2 frameSize].width, radioHeight)];
 
+    [[radio1 radioGroup] setTarget:self];
+    [[radio1 radioGroup] setAction:@selector(radioGroupClicked:)];
     [multiCheckbox setState:CPMixedState];
 }
 
@@ -98,6 +100,19 @@ CPLogRegister(CPLogConsole);
 {
     var previousCount = [clickCount integerValue];
     [clickCount setIntegerValue:(previousCount + 1)];
+}
+
+- (IBAction)switchSelectedRadio:(id)aSender
+{
+    if ([radio2 state] == CPOffState)
+        [radio2 setState:CPOnState];
+    else
+        [radio1 setState:CPOnState];
+}
+
+- (IBAction)radioGroupClicked:(id)aSender
+{
+    CPLog.info("Radio group action sent!");
 }
 
 @end
