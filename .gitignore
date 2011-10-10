@@ -9,3 +9,4 @@ WebSite
 *.xcodeproj/*.perspectivev3
 xcuserdata/
 !*.xcodeproj/project.pbxproj
+*.xCodeSupport/
