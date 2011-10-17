@@ -289,7 +289,7 @@ fi
 
 if [ ! "$install_test" ]; then
     echo "================================================================================"
-    echo "Would you like to install test OJTest package?"
+    echo "Would you like to install test OJTest package (this will also install the pre-build packages)?"
     if prompt; then
       install_test="yes"
     fi
@@ -310,10 +310,6 @@ if [ "$install_capp" ]; then
     extra_packages="objective-j cappuccino"
 fi
 
-if [ "$install_test" ]; then
-    extra_packages="${extra_packages} https://github.com/280north/ojtest/zipball/latest"
-fi
-
 echo "Installing necessary packages..."
 
 if ! tusk update; then
@@ -328,6 +324,11 @@ tusk $tusk_install_command browserjs jake shrinksafe
 echo "Installing extra packages..."
 tusk $tusk_install_command $extra_packages
 
+
+if [ "$install_test" ]; then
+    echo "Installing OJTest from GitHub"
+    NARWHAL_ENGINE=rhino tusk install https://www.github.com/cappuccino/OJTest/zipball/latest
+fi
 
 if [ `uname` = "Darwin" ]; then
     echo "================================================================================"
