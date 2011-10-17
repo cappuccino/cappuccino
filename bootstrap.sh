@@ -279,7 +279,8 @@ fi
 if [ ! "$install_capp" ]; then
     echo "================================================================================"
     echo "Would you like to install the pre-built Objective-J and Cappuccino packages?"
-    echo "If you intend to build Cappuccino yourself this is not neccessary."
+    echo "If you intend to build Cappuccino yourself this is not neccessary. If you want to use "
+    echo "the master of Cappuccino, say NO, and when bootstrap will be finished, run \"jake install\""
     if prompt; then
       install_capp="yes"
     fi
@@ -320,7 +321,13 @@ if ! tusk update; then
     exit 1
 fi
 
-tusk $tusk_install_command browserjs jake shrinksafe $extra_packages
+
+tusk $tusk_install_command browserjs jake shrinksafe
+
+
+echo "Installing extra packages..."
+tusk $tusk_install_command $extra_packages
+
 
 if [ `uname` = "Darwin" ]; then
     echo "================================================================================"
