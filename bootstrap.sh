@@ -280,16 +280,19 @@ if [ ! "$install_capp" ]; then
     echo "================================================================================"
     echo "Would you like to install the pre-built Objective-J and Cappuccino packages?"
     echo "If you intend to build Cappuccino yourself this is not neccessary. To use "
-    echo "the checked out branch of Cappuccino say NO, and when bootstrap is finished run \"jake install\"."
+    echo "the checked out branch of Cappuccino say NO, and when bootstrap is finished "
+    echo "run \"jake install\"."
     if prompt; then
       install_capp="yes"
     fi
 fi
 
-
 if [ ! "$install_test" ]; then
     echo "================================================================================"
-    echo "Would you like to install test OJTest package (this will also install the pre-build packages)?"
+    echo "Would you like to install the OJTest package?"
+    if [ ! "$install_capp" ]; then
+        echo "This will also install the Objective-J and Cappuccino packages."
+    fi
     if prompt; then
       install_test="yes"
     fi
@@ -326,7 +329,7 @@ tusk $tusk_install_command $extra_packages
 
 
 if [ "$install_test" ]; then
-    echo "Installing OJTest from GitHub"
+    echo "Installing OJTest from GitHub..."
     NARWHAL_ENGINE=rhino tusk install https://www.github.com/cappuccino/OJTest/zipball/latest
 fi
 
