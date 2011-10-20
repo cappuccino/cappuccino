@@ -1984,7 +1984,7 @@ NOT YET IMPLEMENTED
     // so we should size the last resized to fit
 
     // find the last visisble column
-    while (count-- && [_tableColumns[count] isHidden]) ;
+    while (count-- && [_tableColumns[count] isHidden]);
 
     // find the max x, but subtract a single pixel since the spacing isn't applicable here.
     var delta = superviewWidth - _CGRectGetMaxX([self rectOfColumn:count]) - ([self intercellSpacing].width || 1),
