@@ -33,7 +33,6 @@ var CLS_CLASS           = 0x1,
 #define GETMETA(aClass) (ISMETA(aClass) ? aClass : aClass.isa)
 #define ISINITIALIZED(aClass) GETINFO(GETMETA(aClass), CLS_INITIALIZED)
 
-
 // MAXIMUM_RECURSION_CHECKS
 // If defined, objj_msgSend will check for recursion deeper than MAXIMUM_RECURSION_DEPTH and
 // throw an error if found. While crude, this can be helpful when your JavaScript debugger
