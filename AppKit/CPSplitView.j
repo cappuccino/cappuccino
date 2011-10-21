@@ -20,6 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "../Foundation/Foundation.h"
+
 @import "CPButtonBar.j"
 @import "CPImage.j"
 @import "CPView.j"
@@ -603,7 +605,15 @@ var CPSplitViewHorizontalImage = nil,
 {
     // not sure where this should override other positions?
     if ([_delegate respondsToSelector:@selector(splitView:constrainSplitPosition:ofSubviewAt:)])
-        position = [_delegate splitView:self constrainSplitPosition:position ofSubviewAt:dividerIndex];
+    {
+        var proposedPosition = [_delegate splitView:self constrainSplitPosition:position ofSubviewAt:dividerIndex];
+
+        // Silently ignore bad positions which could result from odd delegate responses. We don't want these
+        // bad results to go into the system and cause havoc with frame sizes as the split view tries to resize
+        // its subviews.
+        if (_IS_NUMERIC(proposedPosition))
+            position = proposedPosition;
+    }
 
     var proposedMax = [self maxPossiblePositionOfDividerAtIndex:dividerIndex],
         proposedMin = [self minPossiblePositionOfDividerAtIndex:dividerIndex],
@@ -611,10 +621,18 @@ var CPSplitViewHorizontalImage = nil,
         actualMin = proposedMin;
 
     if ([_delegate respondsToSelector:@selector(splitView:constrainMinCoordinate:ofSubviewAt:)])
-        actualMin = [_delegate splitView:self constrainMinCoordinate:proposedMin ofSubviewAt:dividerIndex];
+    {
+        var proposedActualMin = [_delegate splitView:self constrainMinCoordinate:proposedMin ofSubviewAt:dividerIndex];
+        if (_IS_NUMERIC(proposedActualMin))
+            actualMin = proposedActualMin;
+    }
 
     if ([_delegate respondsToSelector:@selector(splitView:constrainMaxCoordinate:ofSubviewAt:)])
-        actualMax = [_delegate splitView:self constrainMaxCoordinate:proposedMax ofSubviewAt:dividerIndex];
+    {
+        var proposedActualMax = [_delegate splitView:self constrainMaxCoordinate:proposedMax ofSubviewAt:dividerIndex];
+        if (_IS_NUMERIC(proposedActualMax))
+            actualMax = proposedActualMax;
+    }
 
     var viewA = _subviews[dividerIndex],
         realPosition = MAX(MIN(position, actualMax), actualMin);
