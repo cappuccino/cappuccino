@@ -292,10 +292,10 @@ var includeURLs = NULL;
 
 StaticResource.includeURLs = function()
 {
-    if (includeURLs)
+    if (includeURLs !== NULL)
         return includeURLs;
 
-    var includeURLs = [];
+    includeURLs = [];
 
     if (!global.OBJJ_INCLUDE_PATHS && !global.OBJJ_INCLUDE_URLS)
         includeURLs = ["Frameworks", "Frameworks/Debug"];
