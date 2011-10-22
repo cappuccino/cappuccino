@@ -679,7 +679,7 @@ var CPSplitViewHorizontalImage = nil,
     preSize = frameB.size[_sizeComponent];
     frameB.size[_sizeComponent] = frameB.origin[_originComponent] + frameB.size[_sizeComponent] - realPosition - [self dividerThickness];
     if (preSize !== 0 && frameB.size[_sizeComponent] === 0)
-        _preCollapsePosition = preSize;
+        _preCollapsePosition = frameB.origin[_originComponent];
     frameB.origin[_originComponent] = realPosition + [self dividerThickness];
     [_subviews[dividerIndex + 1] setFrame:frameB];
 
