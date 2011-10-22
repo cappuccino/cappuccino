@@ -635,12 +635,19 @@ var CPSplitViewHorizontalImage = nil,
     }
 
     var viewA = _subviews[dividerIndex],
+        viewB = _subviews[dividerIndex + 1],
         realPosition = MAX(MIN(position, actualMax), actualMin);
 
-    if (position <  proposedMin + (actualMin - proposedMin) / 2)
+    // Is this position past the halfway point to collapse?
+    if (position < proposedMin + (actualMin - proposedMin) / 2)
         if ([_delegate respondsToSelector:@selector(splitView:canCollapseSubview:)])
             if ([_delegate splitView:self canCollapseSubview:viewA])
                 realPosition = proposedMin;
+    // We can also collapse to the right.
+    if (position > proposedMax - (proposedMax - actualMax) / 2)
+        if ([_delegate respondsToSelector:@selector(splitView:canCollapseSubview:)])
+            if ([_delegate splitView:self canCollapseSubview:viewB])
+                realPosition = proposedMax;
 
     return realPosition;
 }
