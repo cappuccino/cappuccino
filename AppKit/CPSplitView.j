@@ -560,19 +560,33 @@ var CPSplitViewHorizontalImage = nil,
         // If we are currently tracking, keep the resize cursor active even outside of hit areas.
         if (_currentDivider === i || (_currentDivider == CPNotFound && [self cursorAtPoint:point hitDividerAtIndex:i]))
         {
-            var frame = [_subviews[i] frame],
-                size = frame.size[_sizeComponent],
-                startPosition = frame.origin[_originComponent] + size,
+            var frameA = [_subviews[i] frame],
+                sizeA = frameA.size[_sizeComponent],
+                startPosition = frameA.origin[_originComponent] + sizeA,
+                frameB = [_subviews[i + 1] frame],
+                sizeB = frameB.size[_sizeComponent],
                 canShrink = [self _realPositionForPosition:startPosition - 1 ofDividerAtIndex:i] < startPosition,
                 canGrow = [self _realPositionForPosition:startPosition + 1 ofDividerAtIndex:i] > startPosition,
                 cursor = [CPCursor arrowCursor];
 
-            if (size === 0)
+            if (sizeA === 0)
                 canGrow = YES; // Subview is collapsed.
             else if (!canShrink &&
                 [_delegate respondsToSelector:@selector(splitView:canCollapseSubview:)] &&
                 [_delegate splitView:self canCollapseSubview:_subviews[i]])
                 canShrink = YES; // Subview is collapsible.
+
+            if (sizeB === 0)
+            {
+                // Right/lower subview is collapsed.
+                canGrow = NO;
+                // It's safe to assume it can always be uncollapsed.
+                canShrink = YES;
+            }
+            else if (!canGrow &&
+                [_delegate respondsToSelector:@selector(splitView:canCollapseSubview:)] &&
+                [_delegate splitView:self canCollapseSubview:_subviews[i + 1]])
+                canGrow = YES; // Right/lower subview is collapsible.
 
             if (_isVertical && canShrink && canGrow)
                 cursor = [CPCursor resizeLeftRightCursor];
