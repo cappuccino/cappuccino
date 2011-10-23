@@ -26,12 +26,37 @@
 @import "CPImage.j"
 @import "CPView.j"
 
+#define SPLIT_VIEW_MAYBE_POST_WILL_RESIZE() \
+    if (_suppressResizeNotificationsMask & DidPostWillResizeNotification == 0) \
+    { \
+        [self _postNotificationWillResize]; \
+        _suppressResizeNotificationsMask |= DidPostWillResizeNotification; \
+    }
+
+#define SPLIT_VIEW_MAYBE_POST_DID_RESIZE() \
+    if (_suppressResizeNotificationsMask & ShouldSuppressResizeNotifications != 0) \
+        _suppressResizeNotificationsMask |= DidSuppressResizeNotification; \
+    else \
+        [self _postNotificationDidResize];
+
+#define SPLIT_VIEW_DID_SUPPRESS_RESIZE_NOTIFICATION() \
+    (_suppressResizeNotificationsMask & DidSuppressResizeNotification != 0)
+
+#define SPLIT_VIEW_SUPPRESS_RESIZE_NOTIFICATIONS(n) \
+    if (n) \
+        _suppressResizeNotificationsMask |= ShouldSuppressResizeNotifications; \
+    else \
+        _suppressResizeNotificationsMask = 0;
 
 CPSplitViewDidResizeSubviewsNotification = @"CPSplitViewDidResizeSubviewsNotification";
 CPSplitViewWillResizeSubviewsNotification = @"CPSplitViewWillResizeSubviewsNotification";
 
 var CPSplitViewHorizontalImage = nil,
-    CPSplitViewVerticalImage = nil;
+    CPSplitViewVerticalImage = nil,
+
+    ShouldSuppressResizeNotifications   = 1,
+    DidPostWillResizeNotification       = 1 << 1,
+    DidSuppressResizeNotification       = 1 << 2;
 
 /*!
     @ingroup appkit
@@ -67,6 +92,7 @@ var CPSplitViewHorizontalImage = nil,
     BOOL        _needsRestoreFromAutosave;
 
     BOOL        _needsResizeSubviews;
+    int         _suppressResizeNotificationsMask;
 
     CPArray     _buttonBars;
 }
@@ -659,6 +685,7 @@ var CPSplitViewHorizontalImage = nil,
 */
 - (void)setPosition:(float)position ofDividerAtIndex:(int)dividerIndex
 {
+    SPLIT_VIEW_SUPPRESS_RESIZE_NOTIFICATIONS(YES);
     [self _adjustSubviewsWithCalculatedSize];
 
     var realPosition = [self _realPositionForPosition:position ofDividerAtIndex:dividerIndex];
@@ -674,16 +701,31 @@ var CPSplitViewHorizontalImage = nil,
     frameA.size[_sizeComponent] = realPosition - frameA.origin[_originComponent];
     if (preSize !== 0 && frameA.size[_sizeComponent] === 0)
         _preCollapsePosition = preSize;
-    [_subviews[dividerIndex] setFrame:frameA];
+    if (preSize !== frameA.size[_sizeComponent])
+    {
+        SPLIT_VIEW_MAYBE_POST_WILL_RESIZE();
+        [_subviews[dividerIndex] setFrame:frameA];
+        SPLIT_VIEW_MAYBE_POST_DID_RESIZE();
+    }
 
     preSize = frameB.size[_sizeComponent];
+    var preOrigin = frameB.origin[_sizeComponent];
     frameB.size[_sizeComponent] = frameB.origin[_originComponent] + frameB.size[_sizeComponent] - realPosition - [self dividerThickness];
     if (preSize !== 0 && frameB.size[_sizeComponent] === 0)
         _preCollapsePosition = frameB.origin[_originComponent];
     frameB.origin[_originComponent] = realPosition + [self dividerThickness];
-    [_subviews[dividerIndex + 1] setFrame:frameB];
+    if (preSize !== frameB.size[_originComponent] || preOrigin != frameB.origin[_originComponent])
+    {
+        SPLIT_VIEW_MAYBE_POST_WILL_RESIZE();
+        [_subviews[dividerIndex + 1] setFrame:frameB];
+        SPLIT_VIEW_MAYBE_POST_DID_RESIZE();
+    }
 
     [self setNeedsDisplay:YES];
+
+    if (SPLIT_VIEW_DID_SUPPRESS_RESIZE_NOTIFICATION())
+        [self _postNotificationDidResize];
+    SPLIT_VIEW_SUPPRESS_RESIZE_NOTIFICATIONS(NO);
 }
 
 - (void)setFrameSize:(CGSize)aSize
@@ -713,6 +755,7 @@ var CPSplitViewHorizontalImage = nil,
         return;
     }
 
+    SPLIT_VIEW_MAYBE_POST_WILL_RESIZE();
     [self _postNotificationWillResize];
 
     var index = 0,
@@ -771,9 +814,10 @@ var CPSplitViewHorizontalImage = nil,
         bounds.origin[_originComponent] += viewFrame.size[_sizeComponent] + dividerThickness;
 
         [view setFrame:viewFrame];
+
     }
 
-    [self _postNotificationDidResize];
+    SPLIT_VIEW_MAYBE_POST_DID_RESIZE();
 }
 
 /*!
