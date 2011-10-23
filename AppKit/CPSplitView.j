@@ -27,23 +27,23 @@
 @import "CPView.j"
 
 #define SPLIT_VIEW_MAYBE_POST_WILL_RESIZE() \
-    if (_suppressResizeNotificationsMask & DidPostWillResizeNotification == 0) \
+    if ((_suppressResizeNotificationsMask & DidPostWillResizeNotification) === 0) \
     { \
         [self _postNotificationWillResize]; \
         _suppressResizeNotificationsMask |= DidPostWillResizeNotification; \
     }
 
 #define SPLIT_VIEW_MAYBE_POST_DID_RESIZE() \
-    if (_suppressResizeNotificationsMask & ShouldSuppressResizeNotifications != 0) \
+    if ((_suppressResizeNotificationsMask & ShouldSuppressResizeNotifications) !== 0) \
         _suppressResizeNotificationsMask |= DidSuppressResizeNotification; \
     else \
         [self _postNotificationDidResize];
 
 #define SPLIT_VIEW_DID_SUPPRESS_RESIZE_NOTIFICATION() \
-    (_suppressResizeNotificationsMask & DidSuppressResizeNotification != 0)
+    ((_suppressResizeNotificationsMask & DidSuppressResizeNotification) !== 0)
 
-#define SPLIT_VIEW_SUPPRESS_RESIZE_NOTIFICATIONS(n) \
-    if (n) \
+#define SPLIT_VIEW_SUPPRESS_RESIZE_NOTIFICATIONS(shouldSuppress) \
+    if (shouldSuppress) \
         _suppressResizeNotificationsMask |= ShouldSuppressResizeNotifications; \
     else \
         _suppressResizeNotificationsMask = 0;
@@ -125,6 +125,7 @@ var CPSplitViewHorizontalImage = nil,
 {
     if (self = [super initWithFrame:aFrame])
     {
+        _suppressResizeNotificationsMask = 0;
         _currentDivider = CPNotFound;
 
         _DOMDividerElements = [];
@@ -446,7 +447,6 @@ var CPSplitViewHorizontalImage = nil,
         {
             _currentDivider = CPNotFound;
             [self _updateResizeCursor:anEvent];
-            [self _postNotificationDidResize];
         }
 
         return;
@@ -709,12 +709,12 @@ var CPSplitViewHorizontalImage = nil,
     }
 
     preSize = frameB.size[_sizeComponent];
-    var preOrigin = frameB.origin[_sizeComponent];
+    var preOrigin = frameB.origin[_originComponent];
     frameB.size[_sizeComponent] = frameB.origin[_originComponent] + frameB.size[_sizeComponent] - realPosition - [self dividerThickness];
     if (preSize !== 0 && frameB.size[_sizeComponent] === 0)
         _preCollapsePosition = frameB.origin[_originComponent];
     frameB.origin[_originComponent] = realPosition + [self dividerThickness];
-    if (preSize !== frameB.size[_originComponent] || preOrigin != frameB.origin[_originComponent])
+    if (preSize !== frameB.size[_sizeComponent] || preOrigin !== frameB.origin[_originComponent])
     {
         SPLIT_VIEW_MAYBE_POST_WILL_RESIZE();
         [_subviews[dividerIndex + 1] setFrame:frameB];
