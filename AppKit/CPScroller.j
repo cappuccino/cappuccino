@@ -5,6 +5,9 @@
  * Created by Francisco Tolmasky.
  * Copyright 2008, 280 North, Inc.
  *
+ * Modified to match Lion style by Antoine Mercadal 2011
+ * <antoine.mercadal@archipelproject.org>
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -21,7 +24,6 @@
  */
 
 @import "CPControl.j"
-
 
 // CPScroller Constants
 CPScrollerNoPart            = 0;
@@ -54,6 +56,18 @@ NAMES_FOR_PARTS[CPScrollerKnobSlot]         = @"knob-slot";
 NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 
 
+CPScrollerStyleLegacy   = 0;
+CPScrollerStyleOverlay  = 1;
+
+CPScrollerKnobStyleDefault  = 0;
+CPScrollerKnobStyleDark     = 1;
+CPScrollerKnobStyleLight    = 2;
+
+CPThemeStateScrollViewLegacy    = CPThemeState("scroller-style-legacy");
+CPThemeStateScrollerKnobLight   = CPThemeState("scroller-knob-light");
+CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
+
+
 @implementation CPScroller : CPControl
 {
     CPControlSize           _controlSize;
@@ -68,7 +82,18 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     CPScrollerPart          _trackingPart;
     float                   _trackingFloatValue;
     CGPoint                 _trackingStartPoint;
+
+    CPViewAnimation         _animationScroller;
+
+    BOOL                    _allowFadingOut @accessors(getter=allowFadingOut);
+    int                     _style;
+    CPTimer                 _timerFadeOut;
+    BOOL                    _isMouseOver;
 }
+
+
+#pragma mark -
+#pragma mark Class methods
 
 + (CPString)defaultThemeClass
 {
@@ -78,49 +103,43 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 + (id)themeAttributes
 {
     return [CPDictionary dictionaryWithJSObject:{
-        @"scroller-width": 15.0,
-        @"knob-slot-color": [CPColor lightGrayColor],
+        @"scroller-width": 7.0,
+        @"knob-slot-color": [CPNull null],
         @"decrement-line-color": [CPNull null],
         @"increment-line-color": [CPNull null],
-        @"knob-color": [CPColor grayColor],
+        @"knob-color": [CPNull null],
         @"decrement-line-size":_CGSizeMakeZero(),
         @"increment-line-size":_CGSizeMakeZero(),
         @"track-inset":_CGInsetMakeZero(),
         @"knob-inset": _CGInsetMakeZero(),
-        @"minimum-knob-length":21.0
+        @"minimum-knob-length":21.0,
+        @"track-border-overlay": 9.0,
     }]
 }
 
-
-// Calculating Layout
-
-- (id)initWithFrame:(CGRect)aFrame
++ (float)scrollerWidth
 {
-    self = [super initWithFrame:aFrame];
-
-    if (self)
-    {
-        _controlSize = CPRegularControlSize;
-        _partRects = [];
-
-        [self setFloatValue:0.0];
-        [self setKnobProportion:1.0];
-
-        _hitPart = CPScrollerNoPart;
-
-        [self _calculateIsVertical];
-    }
-
-    return self;
+    return [CPScroller scrollerWidthInStyle:CPScrollerStyleLegacy];
 }
 
-// Determining CPScroller Size
 /*!
     Returns the CPScroller's width for a CPRegularControlSize.
 */
-+ (float)scrollerWidth
++ (float)scrollerWidthInStyle:(int)aStyle
 {
-    return [[[CPScroller alloc] init] currentValueForThemeAttribute:@"scroller-width"];
+    var scroller = [[CPScroller alloc] init];
+
+    if (aStyle == CPScrollerStyleLegacy)
+        return [scroller valueForThemeAttribute:@"scroller-width" inState:CPThemeStateScrollViewLegacy];
+    return [scroller currentValueForThemeAttribute:@"scroller-width"];
+}
+
+/*!
+    Returns the CPScroller's overlay value.
+*/
++ (float)scrollerOverlay
+{
+    return [[[CPScroller alloc] init] currentValueForThemeAttribute:@"track-border-overlay"];
 }
 
 /*!
@@ -129,7 +148,89 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 */
 + (float)scrollerWidthForControlSize:(CPControlSize)aControlSize
 {
+    // ?? a class method using self?
     return [self scrollerWidth];
+}
+
+
+#pragma mark -
+#pragma mark Initialization
+
+- (id)initWithFrame:(CGRect)aFrame
+{
+    if (self = [super initWithFrame:aFrame])
+    {
+        _controlSize = CPRegularControlSize;
+        _partRects = [];
+
+        [self setFloatValue:0.0];
+        [self setKnobProportion:1.0];
+
+        _hitPart = CPScrollerNoPart;
+        _allowFadingOut = YES;
+        _isMouseOver = NO;
+        _style = CPScrollerStyleOverlay;
+        var paramAnimFadeOut   = [CPDictionary dictionaryWithObjects:[self, CPViewAnimationFadeOutEffect]
+                                                          forKeys:[CPViewAnimationTargetKey, CPViewAnimationEffectKey]];
+
+        _animationScroller = [[CPViewAnimation alloc] initWithDuration:0.2 animationCurve:CPAnimationEaseInOut];
+        [_animationScroller setViewAnimations:[paramAnimFadeOut]];
+        [_animationScroller setDelegate:self];
+        [self setAlphaValue:0.0];
+        [self _calculateIsVertical];
+    }
+
+    return self;
+}
+
+
+#pragma mark -
+#pragma mark Getters / Setters
+
+/*!
+    Returns the scroller's style
+*/
+- (void)style
+{
+    return _style
+}
+
+/*!
+    Set the scroller's control size
+    @param aStyle the scroller style: CPScrollerStyleLegacy or CPScrollerStyleOverlay
+*/
+- (void)setStyle:(id)aStyle
+{
+    if (_style != nil && _style === aStyle)
+        return;
+
+    _style = aStyle;
+
+    if (_style === CPScrollerStyleLegacy)
+    {
+        [self fadeIn];
+        [self setThemeState:CPThemeStateScrollViewLegacy];
+    }
+    else
+    {
+        _allowFadingOut = YES;
+        [self unsetThemeState:CPThemeStateScrollViewLegacy];
+    }
+
+    [self _adjustScrollerSize];
+}
+
+- (void)setObjectValue:(id)aValue
+{
+    [super setObjectValue:MIN(1.0, MAX(0.0, +aValue))];
+}
+
+/*!
+    Returns the scroller's control size
+*/
+- (CPControlSize)controlSize
+{
+    return _controlSize;
 }
 
 /*!
@@ -148,18 +249,17 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 }
 
 /*!
-    Returns the scroller's control size
+    Return's the knob's proportion
 */
-- (CPControlSize)controlSize
+- (float)knobProportion
 {
-    return _controlSize;
+    return _knobProportion;
 }
 
-- (void)setObjectValue:(id)aValue
-{
-    [super setObjectValue:MIN(1.0, MAX(0.0, +aValue))];
-}
-
+/*!
+    Set the knob's proportion
+    @param aProportion the desired proportion
+*/
 - (void)setKnobProportion:(float)aProportion
 {
     _knobProportion = MIN(1.0, MAX(0.0001, aProportion));
@@ -168,25 +268,35 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     [self setNeedsLayout];
 }
 
-/*!
-    Return's the knob's proportion
-*/
-- (float)knobProportion
+
+#pragma mark -
+#pragma mark Privates
+
+/*! @ignore */
+- (void)_adjustScrollerSize
 {
-    return _knobProportion;
+    var frame = [self frame],
+        scrollerWidth = [self currentValueForThemeAttribute:@"scroller-width"];
+
+    if ([self isVertical] && CGRectGetWidth(frame) !== scrollerWidth)
+        frame.size.width = scrollerWidth;
+
+    if (![self isVertical] && CGRectGetHeight(frame) !== scrollerWidth)
+        frame.size.height = scrollerWidth;
+
+    [self setFrame:frame];
 }
 
-- (id)currentValueForThemeAttribute:(CPString)anAttributeName
+/*! @ignore */
+- (void)_performFadeOut:(CPTimer)aTimer
 {
-    var themeState = _themeState;
-
-    if (NAMES_FOR_PARTS[_hitPart] + "-color" !== anAttributeName)
-        themeState &= ~CPThemeStateHighlighted;
-
-    return [self valueForThemeAttribute:anAttributeName inState:themeState];
+    [self fadeOut];
+    _timerFadeOut = nil;
 }
 
-// Calculating Layout
+
+#pragma mark -
+#pragma mark Utilities
 
 - (CGRect)rectForPart:(CPScrollerPart)aPart
 {
@@ -207,6 +317,9 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 
     // The ordering of these tests is important.  We check the knob and
     // page rects first since they may overlap with the arrows.
+
+    if (![self hasThemeState:CPThemeStateSelected])
+        return CPScrollerNoPart;
 
     if (CGRectContainsPoint([self rectForPart:CPScrollerKnob], aPoint))
         return CPScrollerKnob;
@@ -330,7 +443,35 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     return _usableParts;
 }
 
-// Drawing the Parts
+/*!
+    Display the scroller
+*/
+- (void)fadeIn
+{
+    if (_isMouseOver && _knobProportion != 1.0)
+        [self setThemeState:CPThemeStateSelected];
+
+    if (_timerFadeOut)
+        [_timerFadeOut invalidate];
+
+    [self setAlphaValue:1.0];
+}
+
+/*!
+    Start the fade out anination
+*/
+- (void)fadeOut
+{
+    if ([self hasThemeState:CPThemeStateScrollViewLegacy])
+        return;
+
+    [_animationScroller startAnimation];
+}
+
+
+#pragma mark -
+#pragma mark  Drawing
+
 /*!
     Draws the specified arrow and sets the highlight.
     @param anArrow the arrow to draw
@@ -457,7 +598,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     }
 
     [CPApp setTarget:self selector:@selector(trackKnob:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
-    
+
     if (type === CPLeftMouseDragged)
         [self sendAction:[self action] to:[self target]];
 }
@@ -565,6 +706,20 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     [self setNeedsLayout];
 }
 
+
+#pragma mark -
+#pragma mark Overrides
+
+- (id)currentValueForThemeAttribute:(CPString)anAttributeName
+{
+    var themeState = _themeState;
+
+    if (NAMES_FOR_PARTS[_hitPart] + "-color" !== anAttributeName)
+        themeState &= ~CPThemeStateHighlighted;
+
+    return [self valueForThemeAttribute:anAttributeName inState:themeState];
+}
+
 - (void)mouseDown:(CPEvent)anEvent
 {
     if (![self isEnabled])
@@ -583,10 +738,52 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     }
 }
 
+- (void)mouseEntered:(CPEvent)anEvent
+{
+    [super mouseEntered:anEvent];
+
+    if (_timerFadeOut)
+        [_timerFadeOut invalidate];
+
+    if (![self isEnabled])
+        return;
+
+    _allowFadingOut = NO;
+    _isMouseOver = YES;
+
+    if ([self alphaValue] > 0 && _knobProportion != 1.0)
+        [self setThemeState:CPThemeStateSelected];
+}
+
+- (void)mouseExited:(CPEvent)anEvent
+{
+    [super mouseExited:anEvent];
+
+    if ([self isHidden] || ![self isEnabled] || !_isMouseOver)
+        return;
+
+    _allowFadingOut = YES;
+    _isMouseOver = NO;
+
+    if (_timerFadeOut)
+        [_timerFadeOut invalidate];
+    _timerFadeOut = [CPTimer scheduledTimerWithTimeInterval:1.2 target:self selector:@selector(_performFadeOut:) userInfo:nil repeats:NO];
+}
+
+
+#pragma mark -
+#pragma mark Delegates
+
+- (void)animationDidEnd:(CPAnimation)animation
+{
+    [self unsetThemeState:CPThemeStateSelected];
+}
+
 @end
 
-var CPScrollerControlSizeKey = "CPScrollerControlSize",
-    CPScrollerKnobProportionKey = "CPScrollerKnobProportion";
+var CPScrollerControlSizeKey = @"CPScrollerControlSize",
+    CPScrollerKnobProportionKey = @"CPScrollerKnobProportion",
+    CPScrollerStyleKey = @"CPScrollerStyleKey";
 
 @implementation CPScroller (CPCoding)
 
@@ -606,20 +803,18 @@ var CPScrollerControlSizeKey = "CPScrollerControlSize",
 
         _hitPart = CPScrollerNoPart;
 
+        _allowFadingOut = YES;
+        _isMouseOver = NO;
+        var paramAnimFadeOut   = [CPDictionary dictionaryWithObjects:[self, CPViewAnimationFadeOutEffect]
+                                                          forKeys:[CPViewAnimationTargetKey, CPViewAnimationEffectKey]];
+        _animationScroller = [[CPViewAnimation alloc] initWithDuration:0.2 animationCurve:CPAnimationEaseInOut];
+        [_animationScroller setViewAnimations:[paramAnimFadeOut]];
+        [_animationScroller setDelegate:self];
+        [self setAlphaValue:0.0];
+
         [self _calculateIsVertical];
 
-        // Adjust the size of the scroller if the size from cib
-        // isn't equal to the scrollerWidth
-        var frame = [self frame],
-            scrollerWidth = [CPScroller scrollerWidth];
-
-        if ([self isVertical] && CGRectGetWidth(frame) !== scrollerWidth)
-            frame.size.width = scrollerWidth;
-
-        if (![self isVertical] && CGRectGetHeight(frame) !== scrollerWidth)
-            frame.size.height = scrollerWidth;
-
-        [self setFrame:frame];
+        [self setStyle:[aCoder decodeIntForKey:CPScrollerStyleKey]];
     }
 
     return self;
@@ -631,6 +826,7 @@ var CPScrollerControlSizeKey = "CPScrollerControlSize",
 
     [aCoder encodeInt:_controlSize forKey:CPScrollerControlSizeKey];
     [aCoder encodeFloat:_knobProportion forKey:CPScrollerKnobProportionKey];
+    [aCoder encodeInt:_style forKey:CPScrollerStyleKey];
 }
 
 @end
