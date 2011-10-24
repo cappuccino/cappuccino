@@ -8,7 +8,6 @@
  * Modified to match Lion style by Antoine Mercadal 2011
  * <antoine.mercadal@archipelproject.org>
  *
- *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -191,7 +190,7 @@ var TIMER_INTERVAL                              = 0.2,
 #pragma mark Getters / Setters
 
 /*!
-    The delegate of the scrol view
+    The delegate of the scroll view
 */
 - (id)delegate
 {
@@ -226,7 +225,7 @@ var TIMER_INTERVAL                              = 0.2,
 
 /*!
     Set the scroller styles
-    - CPScrollerStyleLegacy: Standard scroller like prior 10.7
+    - CPScrollerStyleLegacy: Standard scrollers like Windows or Mac OS X prior to 10.7
     - CPScrollerStyleOverlay: scrollers like 10.7+
 */
 - (void)setScrollerStyle:(int)aStyle
@@ -410,7 +409,7 @@ var TIMER_INTERVAL                              = 0.2,
 }
 
 /*!
-    Return's the scroll view's vertical scroller
+    Returns the scroll view's vertical scroller
 */
 - (CPScroller)verticalScroller
 {
@@ -449,10 +448,11 @@ var TIMER_INTERVAL                              = 0.2,
 }
 
 /*!
-    Specifies whether the scroll view has can have
-    a vertical scroller. It allocates it if necessary.
-    @param hasVerticalScroller \c YES allows
-    the scroll view to display a vertical scroller
+    Specifies whether the scroll view can have a vertical scroller.
+    It allocates it if necessary.
+
+    @param hasVerticalScroller \c YES allows the scroll view to
+    display a vertical scroller
 */
 - (void)setHasVerticalScroller:(BOOL)shouldHaveVerticalScroller
 {
