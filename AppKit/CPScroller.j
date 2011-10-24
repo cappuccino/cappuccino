@@ -56,12 +56,12 @@ NAMES_FOR_PARTS[CPScrollerKnobSlot]         = @"knob-slot";
 NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 
 
-CPScrollerStyleLegacy   = 0;
-CPScrollerStyleOverlay  = 1;
+CPScrollerStyleLegacy           = 0;
+CPScrollerStyleOverlay          = 1;
 
-CPScrollerKnobStyleDefault  = 0;
-CPScrollerKnobStyleDark     = 1;
-CPScrollerKnobStyleLight    = 2;
+CPScrollerKnobStyleDefault      = 0;
+CPScrollerKnobStyleDark         = 1;
+CPScrollerKnobStyleLight        = 2;
 
 CPThemeStateScrollViewLegacy    = CPThemeState("scroller-style-legacy");
 CPThemeStateScrollerKnobLight   = CPThemeState("scroller-knob-light");
@@ -119,7 +119,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
 + (float)scrollerWidth
 {
-    return [CPScroller scrollerWidthInStyle:CPScrollerStyleLegacy];
+    return [self scrollerWidthInStyle:CPScrollerStyleLegacy];
 }
 
 /*!
@@ -127,7 +127,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 */
 + (float)scrollerWidthInStyle:(int)aStyle
 {
-    var scroller = [[CPScroller alloc] init];
+    var scroller = [[self alloc] init];
 
     if (aStyle == CPScrollerStyleLegacy)
         return [scroller valueForThemeAttribute:@"scroller-width" inState:CPThemeStateScrollViewLegacy];
@@ -139,7 +139,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 */
 + (float)scrollerOverlay
 {
-    return [[[CPScroller alloc] init] currentValueForThemeAttribute:@"track-border-overlay"];
+    return [[[self alloc] init] currentValueForThemeAttribute:@"track-border-overlay"];
 }
 
 /*!
@@ -148,7 +148,6 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 */
 + (float)scrollerWidthForControlSize:(CPControlSize)aControlSize
 {
-    // ?? a class method using self?
     return [self scrollerWidth];
 }
 
