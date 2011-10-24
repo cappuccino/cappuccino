@@ -40,9 +40,11 @@
 
 var TIMER_INTERVAL                              = 0.2,
     CPScrollViewDelegate_scrollViewWillScroll_  = 1 << 0,
-    CPScrollViewDelegate_scrollViewDidScroll_   = 1 << 1;
+    CPScrollViewDelegate_scrollViewDidScroll_   = 1 << 1,
 
+    CPScrollViewFadeOutTime                     = 1.3,
 
+    CPScrollViewScrollerStyleDefault            = CPScrollerStyleLegacy;
 
 @implementation CPScrollView : CPView
 {
@@ -145,6 +147,15 @@ var TIMER_INTERVAL                              = 0.2,
     }
 }
 
++ (void)setScrollerStyleDefault:(int)aStyle
+{
+    CPScrollViewScrollerStyleDefault = aStyle;
+}
+
+- (int)scrollerStyleDefault
+{
+    return CPScrollViewScrollerStyleDefault;
+}
 
 #pragma mark -
 #pragma mark Initialization
@@ -175,7 +186,7 @@ var TIMER_INTERVAL                              = 0.2,
         [self setHasVerticalScroller:YES];
         [self setHasHorizontalScroller:YES];
         _scrollerKnobStyle = CPScrollerKnobStyleDefault;
-        [self setScrollerStyle:CPScrollerStyleOverlay];
+        [self setScrollerStyle:CPScrollViewScrollerStyleDefault];
 
         _delegate = nil;
         _scrollTimer = nil;
@@ -670,7 +681,7 @@ var TIMER_INTERVAL                              = 0.2,
     {
         if (_timerScrollersHide)
             [_timerScrollersHide invalidate];
-        _timerScrollersHide = [CPTimer scheduledTimerWithTimeInterval:1.2 target:self selector:@selector(_hideScrollers:) userInfo:nil repeats:NO];
+        _timerScrollersHide = [CPTimer scheduledTimerWithTimeInterval:CPScrollViewFadeOutTime target:self selector:@selector(_hideScrollers:) userInfo:nil repeats:NO];
     }
 
     [self reflectScrolledClipView:_contentView];
@@ -1063,7 +1074,7 @@ var TIMER_INTERVAL                              = 0.2,
 
     if (_timerScrollersHide)
         [_timerScrollersHide invalidate]
-    _timerScrollersHide = [CPTimer scheduledTimerWithTimeInterval:1.2 target:self selector:@selector(_hideScrollers:) userInfo:nil repeats:NO];
+    _timerScrollersHide = [CPTimer scheduledTimerWithTimeInterval:CPScrollViewFadeOutTime target:self selector:@selector(_hideScrollers:) userInfo:nil repeats:NO];
 }
 
 /* @ignore */
@@ -1209,7 +1220,7 @@ var TIMER_INTERVAL                              = 0.2,
     if (![_horizontalScroller isHidden])
         [_horizontalScroller fadeIn];
     if (![_horizontalScroller isHidden] || ![_verticalScroller isHidden])
-        _timerScrollersHide = [CPTimer scheduledTimerWithTimeInterval:1.2 target:self selector:@selector(_hideScrollers:) userInfo:nil repeats:NO];
+        _timerScrollersHide = [CPTimer scheduledTimerWithTimeInterval:CPScrollViewFadeOutTime target:self selector:@selector(_hideScrollers:) userInfo:nil repeats:NO];
 
     [self _respondToScrollWheelEventWithDeltaX:[anEvent deltaX] deltaY:[anEvent deltaY]];
 }
@@ -1334,7 +1345,7 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
         // Due to the anything goes nature of decoding, our subviews may not exist yet, so layout at the end of the run loop when we're sure everything is in a correct state.
         [[CPRunLoop currentRunLoop] performSelector:@selector(_updateCornerAndHeaderView) target:self argument:_contentView order:0 modes:[CPDefaultRunLoopMode]];
 
-        [self setScrollerStyle:[aCoder decodeIntForKey:CPScrollViewScrollerStyleKey] || CPScrollerStyleOverlay];
+        [self setScrollerStyle:[aCoder decodeIntForKey:CPScrollViewScrollerStyleKey] || CPScrollViewScrollerStyleDefault];
         [self setScrollerKnobStyle:[aCoder decodeIntForKey:CPScrollViewScrollerKnobStyleKey] || CPScrollerKnobStyleDefault];
     }
 
