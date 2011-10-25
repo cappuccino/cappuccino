@@ -92,9 +92,9 @@
 */
 - (IBAction)changeSystemWideScrollerStyle:(id)aSender
 {
-    if ([CPScrollView currentDefaultScrollerStyle] == CPScrollerStyleOverlay)
-        [CPScrollView setCurrentDefaultScrollerStyle:CPScrollerStyleLegacy];
+    if ([CPScrollView globalScrollerStyle] == CPScrollerStyleOverlay)
+        [CPScrollView setGlobalScrollerStyle:CPScrollerStyleLegacy];
     else
-        [CPScrollView setCurrentDefaultScrollerStyle:CPScrollerStyleOverlay];
+        [CPScrollView setGlobalScrollerStyle:CPScrollerStyleOverlay];
 }
 @end
