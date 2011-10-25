@@ -25,8 +25,9 @@
 
     [contentView setBackgroundColor:[CPColor colorWithHexString:@"f3f3f3"]];
     [contentView setAutoresizingMask:CPViewWidthSizable];
-    // [scrollView setAutohidesScrollers:YES];
+
     [scrollView setDocumentView:contentView];
+    [contentView2 setAutoresizingMask:CPViewWidthSizable];
     [scrollView2 setDocumentView:contentView2];
 }
 
@@ -92,9 +93,9 @@
 */
 - (IBAction)changeSystemWideScrollerStyle:(id)aSender
 {
-    if ([CPScrollView currentDefaultScrollerStyle] == CPScrollerStyleOverlay)
-        [CPScrollView setCurrentDefaultScrollerStyle:CPScrollerStyleLegacy];
+    if ([CPScrollView globalScrollerStyle] == CPScrollerStyleOverlay)
+        [CPScrollView setGlobalScrollerStyle:CPScrollerStyleLegacy];
     else
-        [CPScrollView setCurrentDefaultScrollerStyle:CPScrollerStyleOverlay];
+        [CPScrollView setGlobalScrollerStyle:CPScrollerStyleOverlay];
 }
 @end
