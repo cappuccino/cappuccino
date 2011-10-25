@@ -1053,13 +1053,20 @@ var TIMER_INTERVAL                              = 0.2,
 */
 - (void)flashScrollers
 {
-    if (_scrollerStyle == CPScrollerStyleLegacy)
+    if (_scrollerStyle === CPScrollerStyleLegacy)
         return;
 
     if (_hasHorizontalScroller)
+    {
+        [_horizontalScroller setHidden:NO];
         [_horizontalScroller fadeIn];
+    }
+
     if (_hasVerticalScroller)
+    {
+        [_verticalScroller setHidden:NO];
         [_verticalScroller fadeIn];
+    }
 
     if (_timerScrollersHide)
         [_timerScrollersHide invalidate]
