@@ -31,6 +31,41 @@
 @import "CPScroller.j"
 @import "CPView.j"
 
+
+/*! @ignore */
+var _isSystemUsingOverlayScrollers = function()
+{
+#if PLATFORM(DOM)
+  var inner = document.createElement('p'),
+      outer = document.createElement('div');
+
+  inner.style.width = "100%";
+  inner.style.height = "200px";
+
+  outer.style.position = "absolute";
+  outer.style.top = "0px";
+  outer.style.left = "0px";
+  outer.style.visibility = "hidden";
+  outer.style.width = "200px";
+  outer.style.height = "150px";
+  outer.style.overflow = "hidden";
+  outer.appendChild (inner);
+
+  document.body.appendChild (outer);
+  var w1 = inner.offsetWidth;
+  outer.style.overflow = 'scroll';
+  var w2 = inner.offsetWidth;
+  if (w1 == w2)
+    w2 = outer.clientWidth;
+
+  document.body.removeChild (outer);
+
+  return (w1 - w2 == 0);
+#else
+  return NO;
+#endif
+}
+
 /*!
     @ingroup appkit
     @class CPScrollView
@@ -89,7 +124,12 @@ var CPScrollerStyleDefault = CPScrollerStyleOverlay,
 
 + (void)initialize
 {
-    CPScrollerStyleDefault = [[CPBundle bundleForClass:CPScrollView] objectForInfoDictionaryKey:@"CPScrollersDefaultStyle"];
+    var defaultValue = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPScrollersDefaultStyle"];
+
+    if (defaultValue == nil || defaultValue == -1)
+        CPScrollerStyleDefault = _isSystemUsingOverlayScrollers() ? CPScrollerStyleOverlay : CPScrollerStyleLegacy
+    else
+        CPScrollerStyleDefault = defaultValue;
 }
 
 + (CPString)defaultThemeClass
