@@ -67,7 +67,6 @@ CPThemeStateScrollViewLegacy    = CPThemeState("scroller-style-legacy");
 CPThemeStateScrollerKnobLight   = CPThemeState("scroller-knob-light");
 CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
-
 @implementation CPScroller : CPControl
 {
     CPControlSize           _controlSize;

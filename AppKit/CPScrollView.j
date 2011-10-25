@@ -23,11 +23,47 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/CPNotificationCenter.j>
+
 @import "CPBox.j"
 @import "CPClipView.j"
 @import "CPScroller.j"
 @import "CPView.j"
 
+
+/*! @ignore */
+var _isSystemUsingOverlayScrollers = function()
+{
+#if PLATFORM(DOM)
+  var inner = document.createElement('p'),
+      outer = document.createElement('div');
+
+  inner.style.width = "100%";
+  inner.style.height = "200px";
+
+  outer.style.position = "absolute";
+  outer.style.top = "0px";
+  outer.style.left = "0px";
+  outer.style.visibility = "hidden";
+  outer.style.width = "200px";
+  outer.style.height = "150px";
+  outer.style.overflow = "hidden";
+  outer.appendChild (inner);
+
+  document.body.appendChild (outer);
+  var w1 = inner.offsetWidth;
+  outer.style.overflow = 'scroll';
+  var w2 = inner.offsetWidth;
+  if (w1 == w2)
+    w2 = outer.clientWidth;
+
+  document.body.removeChild (outer);
+
+  return (w1 - w2 == 0);
+#else
+  return NO;
+#endif
+}
 
 /*!
     @ingroup appkit
@@ -42,9 +78,11 @@ var TIMER_INTERVAL                              = 0.2,
     CPScrollViewDelegate_scrollViewWillScroll_  = 1 << 0,
     CPScrollViewDelegate_scrollViewDidScroll_   = 1 << 1,
 
-    CPScrollViewFadeOutTime                     = 1.3,
+    CPScrollViewFadeOutTime                     = 1.3;
 
-    CPScrollViewScrollerStyleDefault            = CPScrollerStyleLegacy;
+var CPScrollerStyleDefault = CPScrollerStyleOverlay,
+    CPScrollerStyleDefaultChangeNotification = @"CPScrollerStyleDefaultChangeNotification";
+
 
 @implementation CPScrollView : CPView
 {
@@ -82,6 +120,16 @@ var TIMER_INTERVAL                              = 0.2,
 
 #pragma mark -
 #pragma mark Class methods
+
++ (void)initialize
+{
+    var defaultValue = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPScrollersDefaultStyle"];
+
+    if (defaultValue == nil || defaultValue == -1)
+        CPScrollerStyleDefault = _isSystemUsingOverlayScrollers() ? CPScrollerStyleOverlay : CPScrollerStyleLegacy
+    else
+        CPScrollerStyleDefault = defaultValue;
+}
 
 + (CPString)defaultThemeClass
 {
@@ -147,15 +195,22 @@ var TIMER_INTERVAL                              = 0.2,
     }
 }
 
-+ (void)setScrollerStyleDefault:(int)aStyle
+/*! Get the current system wide default for scrollers style
+*/
++ (int)currentDefaultScrollerStyle
 {
-    CPScrollViewScrollerStyleDefault = aStyle;
+    return CPScrollerStyleDefault;
 }
 
-- (int)scrollerStyleDefault
+/*! Set the current system wide default for scrollers style
+    @param aStyle the scroller style you want to use as default
+*/
++ (int)setCurrentDefaultScrollerStyle:(int)aStyle
 {
-    return CPScrollViewScrollerStyleDefault;
+    CPScrollerStyleDefault = aStyle;
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPScrollerStyleDefaultChangeNotification object:nil];
 }
+
 
 #pragma mark -
 #pragma mark Initialization
@@ -186,11 +241,16 @@ var TIMER_INTERVAL                              = 0.2,
         [self setHasVerticalScroller:YES];
         [self setHasHorizontalScroller:YES];
         _scrollerKnobStyle = CPScrollerKnobStyleDefault;
-        [self setScrollerStyle:CPScrollViewScrollerStyleDefault];
+        [self setScrollerStyle:CPScrollerStyleDefault];
 
         _delegate = nil;
         _scrollTimer = nil;
         _implementedDelegateMethods = 0;
+
+        [[CPNotificationCenter defaultCenter] addObserver:self
+                                 selector:@selector(_didReceiveDefaultStyleChange:)
+                                     name:CPScrollerStyleDefaultChangeNotification
+                                   object:nil];
     }
 
     return self;
@@ -918,6 +978,13 @@ var TIMER_INTERVAL                              = 0.2,
         [_delegate scrollViewDidScroll:self];
 }
 
+/*! @ignore*/
+- (void)_didReceiveDefaultStyleChange:(CPNotification)aNotification
+{
+    [self setScrollerStyle:CPScrollerStyleDefault];
+}
+
+
 
 #pragma mark -
 #pragma mark Utilities
@@ -1064,13 +1131,20 @@ var TIMER_INTERVAL                              = 0.2,
 */
 - (void)flashScrollers
 {
-    if (_scrollerStyle == CPScrollerStyleLegacy)
+    if (_scrollerStyle === CPScrollerStyleLegacy)
         return;
 
     if (_hasHorizontalScroller)
+    {
+        [_horizontalScroller setHidden:NO];
         [_horizontalScroller fadeIn];
+    }
+
     if (_hasVerticalScroller)
+    {
+        [_verticalScroller setHidden:NO];
         [_verticalScroller fadeIn];
+    }
 
     if (_timerScrollersHide)
         [_timerScrollersHide invalidate]
@@ -1345,8 +1419,13 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
         // Due to the anything goes nature of decoding, our subviews may not exist yet, so layout at the end of the run loop when we're sure everything is in a correct state.
         [[CPRunLoop currentRunLoop] performSelector:@selector(_updateCornerAndHeaderView) target:self argument:_contentView order:0 modes:[CPDefaultRunLoopMode]];
 
-        [self setScrollerStyle:[aCoder decodeIntForKey:CPScrollViewScrollerStyleKey] || CPScrollViewScrollerStyleDefault];
+        [self setScrollerStyle:[aCoder decodeIntForKey:CPScrollViewScrollerStyleKey] || CPScrollerStyleDefault];
         [self setScrollerKnobStyle:[aCoder decodeIntForKey:CPScrollViewScrollerKnobStyleKey] || CPScrollerKnobStyleDefault];
+
+        [[CPNotificationCenter defaultCenter] addObserver:self
+                                 selector:@selector(_didReceiveDefaultStyleChange:)
+                                     name:CPScrollerStyleDefaultChangeNotification
+                                   object:nil];
     }
 
     return self;
