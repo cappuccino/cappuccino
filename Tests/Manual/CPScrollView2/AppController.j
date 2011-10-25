@@ -14,6 +14,9 @@
     CPWindow                theWindow; //this "outlet" is connected automatically by the Cib
     @outlet CPScrollView    scrollView;
     @outlet CPView          contentView;
+
+    @outlet CPScrollView    scrollView2;
+    @outlet CPView          contentView2;
 }
 
 - (void)awakeFromCib
@@ -24,6 +27,7 @@
     [contentView setAutoresizingMask:CPViewWidthSizable];
     // [scrollView setAutohidesScrollers:YES];
     [scrollView setDocumentView:contentView];
+    [scrollView2 setDocumentView:contentView2];
 }
 
 - (IBAction)change:(id)aSender
@@ -82,4 +86,15 @@
     [scrollView flashScrollers];
 }
 
+
+/*! documentation
+    @param aSender the sender of the action
+*/
+- (IBAction)changeSystemWideScrollerStyle:(id)aSender
+{
+    if ([CPScrollView currentDefaultScrollerStyle] == CPScrollerStyleOverlay)
+        [CPScrollView setCurrentDefaultScrollerStyle:CPScrollerStyleLegacy];
+    else
+        [CPScrollView setCurrentDefaultScrollerStyle:CPScrollerStyleOverlay];
+}
 @end
