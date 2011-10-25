@@ -10,5 +10,7 @@
 	<string>AppKit</string>
 	<key>CPBundlePackageType</key>
 	<string>FMWK</string>
+	<key>CPScrollersDefaultStyle</key>
+	<integer>0</integer>
 </dict>
 </plist>

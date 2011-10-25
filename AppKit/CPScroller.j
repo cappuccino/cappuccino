@@ -67,7 +67,6 @@ CPThemeStateScrollViewLegacy    = CPThemeState("scroller-style-legacy");
 CPThemeStateScrollerKnobLight   = CPThemeState("scroller-knob-light");
 CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
-
 @implementation CPScroller : CPControl
 {
     CPControlSize           _controlSize;
@@ -148,7 +147,6 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 */
 + (float)scrollerWidthForControlSize:(CPControlSize)aControlSize
 {
-    // ?? a class method using self?
     return [self scrollerWidth];
 }
 
