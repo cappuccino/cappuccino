@@ -81,6 +81,7 @@
 @import "WebView.j"
 @import "NSSortDescriptor.j"
 @import "NSPopover.j"
+@import "NSProgressIndicator.j"
 
 
 function CP_NSMapClassName(aClassName)
