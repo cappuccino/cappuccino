@@ -6,5 +6,7 @@
 	<string>6.0</string>
     <key>CPBundlePackageType</key>
     <string>FMWK</string>
+    <key>CPBundleVersion</key>
+    <string>1.0</string>
 </dict>
 </plist>
