@@ -1,0 +1,6 @@
+#!/bin/sh
+
+mv "$1"/Framework.j "$1/__project.name__.j"
+mv "$1"/FrameworkClass.j "$1/__project.name__Class.j"
+sed -e 's/__filename__/__project.name__.j/' -i '' "$1/__project.name__.j"
+sed -e 's/__filename__/__project.name__Class.j/' -i '' "$1/__project.name__Class.j"
