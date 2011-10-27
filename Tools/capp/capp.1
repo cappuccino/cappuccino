@@ -88,6 +88,20 @@ or
 This is a handy shortcut for
 .Sy --symlink --build.
 .El
+.Ss Postinstall scripts
+After copying the chosen template, replacing placeholders, and installing the frameworks,
+if
+.Nm
+finds a file named "postinstall", it will be executed using
+.Sy sh.
+The script receives a single parameter which is the directory of the generated project.
+Scripts should reference files in the project relative to that directory.
+.Pp
+After executing the
+.Sy postinstall
+script,
+.Nm
+deletes it from the generated project.
 .\"-----------------------------------------------------------------------------------------
 .Sh CONFIGURING
 .\"-----------------------------------------------------------------------------------------
