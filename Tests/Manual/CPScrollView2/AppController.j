@@ -82,7 +82,17 @@
 
 - (IBAction)makeSmallDocView:(id)aSender
 {
-    [contentView setFrameSize:CPSizeMake(30, 30)];
+    [contentView setFrameSize:CPSizeMake(200, 200)];
+}
+
+- (IBAction)makeNarrowDocView:(id)aSender
+{
+    [contentView setFrameSize:CPSizeMake(200, 1000)];
+}
+
+- (IBAction)makeShortDocView:(id)aSender
+{
+    [contentView setFrameSize:CPSizeMake(1000, 200)];
 }
 
 - (IBAction)flash:(id)aSender
@@ -101,4 +111,5 @@
     else
         [CPScrollView setGlobalScrollerStyle:CPScrollerStyleOverlay];
 }
+
 @end

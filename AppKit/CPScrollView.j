@@ -1132,6 +1132,10 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
 
         var verticalScrollerHeight = _CGRectGetMaxY(contentFrame) - verticalScrollerY;
 
+        // Make a gap at the bottom of the vertical scroller so that the horizontal and vertical can't overlap.
+        if (_scrollerStyle === CPScrollerStyleOverlay && hasHorizontalScroll)
+            verticalScrollerHeight -= horizontalScrollerHeight;
+
         [_verticalScroller setFloatValue:(difference.height <= 0.0) ? 0.0 : scrollPoint.y / difference.height];
         [_verticalScroller setKnobProportion:_CGRectGetHeight(contentFrame) / _CGRectGetHeight(documentFrame)];
         [_verticalScroller setFrame:_CGRectMake(_CGRectGetMaxX(contentFrame) - overlay, verticalScrollerY, verticalScrollerWidth, verticalScrollerHeight)];
@@ -1144,9 +1148,14 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
 
     if (shouldShowHorizontalScroller)
     {
+        var horizontalScrollerWidth = _CGRectGetWidth(contentFrame);
+        // Make a gap at the bottom of the vertical scroller so that the horizontal and vertical can't overlap.
+        if (_scrollerStyle === CPScrollerStyleOverlay && hasVerticalScroll)
+            horizontalScrollerWidth -= verticalScrollerWidth;
+
         [_horizontalScroller setFloatValue:(difference.width <= 0.0) ? 0.0 : scrollPoint.x / difference.width];
         [_horizontalScroller setKnobProportion:_CGRectGetWidth(contentFrame) / _CGRectGetWidth(documentFrame)];
-        [_horizontalScroller setFrame:_CGRectMake(_CGRectGetMinX(contentFrame), _CGRectGetMaxY(contentFrame) - overlay, _CGRectGetWidth(contentFrame), horizontalScrollerHeight)];
+        [_horizontalScroller setFrame:_CGRectMake(_CGRectGetMinX(contentFrame), _CGRectGetMaxY(contentFrame) - overlay, horizontalScrollerWidth, horizontalScrollerHeight)];
     }
     else if (wasShowingHorizontalScroller)
     {
