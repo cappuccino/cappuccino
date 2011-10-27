@@ -1090,14 +1090,16 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
     // Now we have to account for the shown scrollers affecting the deltas.
     if (shouldShowVerticalScroller)
     {
-        difference.width += verticalScrollerWidth;
+        if (_scrollerStyle === CPScrollerStyleLegacy)
+            difference.width += verticalScrollerWidth;
         hasHorizontalScroll = difference.width > 0.0;
         shouldShowHorizontalScroller = _hasHorizontalScroller && (!_autohidesScrollers || hasHorizontalScroll);
     }
 
     if (shouldShowHorizontalScroller)
     {
-        difference.height += horizontalScrollerHeight;
+        if (_scrollerStyle === CPScrollerStyleLegacy)
+            difference.height += horizontalScrollerHeight;
         hasVerticalScroll = difference.height > 0.0;
         shouldShowVerticalScroller = _hasVerticalScroller && (!_autohidesScrollers || hasVerticalScroll);
     }
