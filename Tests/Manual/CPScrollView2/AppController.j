@@ -17,13 +17,16 @@
 
     @outlet CPScrollView    scrollView2;
     @outlet CPView          contentView2;
+
+    CPColor lightBackground;
 }
 
 - (void)awakeFromCib
 {
     [theWindow setFullPlatformWindow:YES];
 
-    [contentView setBackgroundColor:[CPColor colorWithHexString:@"f3f3f3"]];
+    lightBackground = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle mainBundle] pathForResource:@"photo.jpg"]]];
+    [contentView setBackgroundColor:lightBackground];
     [contentView setAutoresizingMask:CPViewWidthSizable];
 
     [scrollView setDocumentView:contentView];
@@ -43,7 +46,7 @@
 {
     var style = [aSender title];
 
-    switch(style)
+    switch (style)
     {
         case "Default":
             [scrollView setScrollerKnobStyle:CPScrollerKnobStyleDefault];
@@ -61,10 +64,10 @@
 {
     var style = [aSender title];
 
-    switch(style)
+    switch (style)
     {
         case "Light":
-            [[scrollView documentView] setBackgroundColor:[CPColor colorWithHexString:@"f3f3f3"]];
+            [[scrollView documentView] setBackgroundColor:lightBackground];
             break;
         case "Dark":
             [[scrollView documentView] setBackgroundColor:[CPColor colorWithHexString:@"333"]];
