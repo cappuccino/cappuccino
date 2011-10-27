@@ -777,7 +777,10 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
         if (_timerScrollersHide)
             [_timerScrollersHide invalidate];
         _timerScrollersHide = [CPTimer scheduledTimerWithTimeInterval:CPScrollViewFadeOutTime target:self selector:@selector(_hideScrollers:) userInfo:nil repeats:NO];
+        [[self bottomCornerView] setHidden:YES];
     }
+    else
+        [[self bottomCornerView] setHidden:NO];
 
     [self reflectScrolledClipView:_contentView];
 }
@@ -1156,8 +1159,11 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
     [[_headerClipView documentView] setNeedsDisplay:YES];
     [_cornerView setFrame:[self _cornerViewFrame]];
 
-    [[self bottomCornerView] setFrame:[self _bottomCornerViewFrame]];
-    [[self bottomCornerView] setBackgroundColor:[self currentValueForThemeAttribute:@"bottom-corner-color"]];
+    if (_scrollerStyle === CPScrollerStyleLegacy)
+    {
+        [[self bottomCornerView] setFrame:[self _bottomCornerViewFrame]];
+        [[self bottomCornerView] setBackgroundColor:[self currentValueForThemeAttribute:@"bottom-corner-color"]];
+    }
 
     --_recursionCount;
 }
