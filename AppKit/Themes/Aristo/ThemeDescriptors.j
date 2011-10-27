@@ -691,7 +691,7 @@ var themedButtonValues = nil,
                 ["scroller-legacy-vertical-knob-center.png", 14.0, 1.0],
                 ["scroller-legacy-vertical-knob-bottom.png", 14.0, 3.0]
             ],
-            PatternIsVertical),
+            PatternIsVertical);
 
 
     themedVerticalScrollerValues =
@@ -1739,7 +1739,7 @@ var themedButtonValues = nil,
 {
     var ruleEditor = [[CPRuleEditor alloc] initWithFrame:CGRectMake(0, 0, 400, 300)];
 
-    var backgroundColors = [[CPColor whiteColor], [CPColor colorWithRed:235/255 green:239/255 blue:252/255 alpha:1]],
+    var backgroundColors = [[CPColor whiteColor], [CPColor colorWithRed:235 / 255 green:239 / 255 blue:252 / 255 alpha:1]],
         selectedActiveRowColor = [CPColor colorWithHexString:@"5f83b9"],
         selectedInactiveRowColor = [CPColor colorWithWhite:0.83 alpha:1],
         sliceTopBorderColor = [CPColor colorWithWhite:0.9 alpha:1],
