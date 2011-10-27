@@ -80,8 +80,8 @@ var TIMER_INTERVAL                              = 0.2,
 
     CPScrollViewFadeOutTime                     = 1.3;
 
-var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
-    CPScrollerStyleGlobalChangeNotification = @"CPScrollerStyleGlobalChangeNotification";
+var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
+    CPScrollerStyleGlobalChangeNotification     = @"CPScrollerStyleGlobalChangeNotification";
 
 
 @implementation CPScrollView : CPView
@@ -196,7 +196,7 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 }
 
 /*!
-    Get the current system wide value for scrollers style
+    Get the system wide scroller style.
 */
 + (int)globalScrollerStyle
 {
@@ -204,8 +204,9 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 }
 
 /*!
-    Set the current system wide value for scrollers style
-    @param aStyle the scroller style you want to use as default (CPScrollerStyleLegacy or CPScrollerStyleOverlay)
+    Set the system wide scroller style.
+
+    @param aStyle the scroller style to set all scroller views to use (CPScrollerStyleLegacy or CPScrollerStyleOverlay)
 */
 + (int)setGlobalScrollerStyle:(int)aStyle
 {
@@ -297,9 +298,10 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 }
 
 /*!
-    Set the scroller styles
+    Set the scroller style.
+
     - CPScrollerStyleLegacy: Standard scrollers like Windows or Mac OS X prior to 10.7
-    - CPScrollerStyleOverlay: scrollers like 10.7+
+    - CPScrollerStyleOverlay: scrollers like those in Mac OS X 10.7+
 */
 - (void)setScrollerStyle:(int)aStyle
 {
@@ -311,11 +313,31 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
     [self _updateScrollerStyle];
 }
 
+/*!
+    Returns the style of the scroller knob, the bit which moves when scrolling, of the receiver.
+
+    Valid values are:
+    <pre>
+        CPScrollerKnobStyleLight
+        CPScrollerKnobStyleDark
+        CPScrollerKnobStyleDefault
+    </pre>
+*/
 - (int)scrollerKnobStyle
 {
     return _scrollerKnobStyle;
 }
 
+/*!
+    Sets the style of the scroller knob, the bit which moves when scrolling.
+
+    Valid values are:
+    <pre>
+        CPScrollerKnobStyleLight
+        CPScrollerKnobStyleDark
+        CPScrollerKnobStyleDefault
+    </pre>
+*/
 - (void)setScrollerKnobStyle:(int)newScrollerKnobStyle
 {
      if (_scrollerKnobStyle === newScrollerKnobStyle)
@@ -335,7 +357,8 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 }
 
 /*!
-    Sets the content view that clips the document
+    Sets the content view that clips the document.
+
     @param aContentView the content view
 */
 - (void)setContentView:(CPClipView)aContentView
@@ -360,7 +383,6 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
     [self reflectScrolledClipView:_contentView];
 }
 
-
 /*!
     Returns the size of the scroll view's content view.
 */
@@ -379,6 +401,7 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 
 /*!
     Sets the view that is scrolled for the user.
+
     @param aView the view that will be scrolled
 */
 - (void)setDocumentView:(CPView)aView
@@ -400,6 +423,7 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 
 /*!
     Sets the type of border to be drawn around the view.
+
     Valid types are:
     <pre>
     CPNoBorder
@@ -420,7 +444,7 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 
 
 /*!
-    Returns the scroll view's horizontal scroller
+    Returns the scroll view's horizontal scroller.
 */
 - (CPScroller)horizontalScroller
 {
@@ -429,6 +453,7 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 
 /*!
     Sets the scroll view's horizontal scroller.
+
     @param aScroller the horizontal scroller for the scroll view
 */
 - (void)setHorizontalScroller:(CPScroller)aScroller
@@ -460,6 +485,7 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 
 /*!
     Specifies whether the scroll view can have a horizontal scroller.
+
     @param hasHorizontalScroller \c YES lets the scroll view
     allocate a horizontal scroller if necessary.
 */
@@ -482,7 +508,7 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 }
 
 /*!
-    Returns the scroll view's vertical scroller
+    Returns the scroll view's vertical scroller.
 */
 - (CPScroller)verticalScroller
 {
@@ -491,6 +517,7 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 
 /*!
     Sets the scroll view's vertical scroller.
+
     @param aScroller the vertical scroller
 */
 - (void)setVerticalScroller:(CPScroller)aScroller
@@ -546,8 +573,7 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 }
 
 /*!
-    Returns \c YES if the scroll view hides its scroll
-    bars when not necessary.
+    Returns \c YES if the scroll view hides its scroll bars when not necessary.
 */
 - (BOOL)autohidesScrollers
 {
@@ -556,6 +582,7 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 
 /*!
     Sets whether the scroll view hides its scroll bars when not needed.
+
     @param autohidesScrollers \c YES causes the scroll bars
     to be hidden when not needed.
 */
@@ -590,7 +617,7 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 }
 
 /*!
-    Returns how much the document moves when scrolled
+    Returns how much the document moves when scrolled.
 */
 - (float)lineScroll
 {
@@ -599,6 +626,7 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 
 /*!
     Sets how much the document moves when scrolled. Sets the vertical and horizontal scroll.
+
     @param aLineScroll the amount to move the document when scrolled
 */
 - (void)setLineScroll:(float)aLineScroll
@@ -617,6 +645,7 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 
 /*!
     Sets how much the document moves when scrolled horizontally.
+
     @param aLineScroll the amount to move horizontally when scrolled.
 */
 - (void)setHorizontalLineScroll:(float)aLineScroll
@@ -634,6 +663,7 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 
 /*!
     Sets how much the document moves when scrolled vertically.
+
     @param aLineScroll the new amount to move vertically when scrolled.
 */
 - (void)setVerticalLineScroll:(float)aLineScroll
@@ -651,6 +681,7 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 
 /*!
     Sets the horizontal and vertical page scroll amount.
+
     @param aPageScroll the new horizontal and vertical page scroll amount
 */
 - (void)setPageScroll:(float)aPageScroll
@@ -669,6 +700,7 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 
 /*!
     Sets the horizontal page scroll amount.
+
     @param aPageScroll the new horizontal page scroll amount
 */
 - (void)setHorizontalPageScroll:(float)aPageScroll
@@ -686,6 +718,7 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 
 /*!
     Sets the vertical page scroll amount.
+
     @param aPageScroll the new vertical page scroll amount
 */
 - (void)setVerticalPageScroll:(float)aPageScroll
@@ -1004,6 +1037,7 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 
 /*!
     Resizes the scroll view to contain the specified clip view.
+
     @param aClipView the clip view to resize to
 */
 - (void)reflectScrolledClipView:(CPClipView)aClipView
@@ -1129,7 +1163,7 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 }
 
 /*!
-    Momentary display the scrollers
+    Momentarily display the scrollers if the scroller style is CPScrollerStyleOverlay.
 */
 - (void)flashScrollers
 {
@@ -1285,6 +1319,7 @@ var CPScrollerStyleGlobal = CPScrollerStyleOverlay,
 
 /*!
     Handles a scroll wheel event from the user.
+
     @param anEvent the scroll wheel event
 */
 - (void)scrollWheel:(CPEvent)anEvent
