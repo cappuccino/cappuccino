@@ -124,7 +124,7 @@ fi
 install_directory=""
 tmp_zip="/tmp/narwhal.zip"
 
-github_user="280north"
+github_user="cappuccino"
 github_ref="master"
 tusk_install_command="install"
 
@@ -149,7 +149,7 @@ usage: ./bootstrap.sh [OPTIONS]
     --directory [DIR]:      Use a directory other than /usr/local/narwhal.
     --clone:                Do "git clone git://" instead of downloading zips.
     --clone-http:           Do "git clone http://" instead of downloading zips.
-    --github-user [USER]:   Use another github user (default: 280north).
+    --github-user [USER]:   Use another github user (default: cappuccino).
     --github-ref [REF]:     Use another git ref (default: master).
     --install-capp:         Install "objective-j" and "cappuccino" packages.
     --install-test:         Install "ojtest" package.
