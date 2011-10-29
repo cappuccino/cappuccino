@@ -77,7 +77,7 @@ ensurePackageUpToDate("browserjs",      "0.1.1");
 ensurePackageUpToDate("shrinksafe",     "0.2");
 ensurePackageUpToDate("narwhal",        "0.3.1", {
     noupdate : true,
-    message : "Update Narwhal by re-running bootstrap.sh, or pulling the latest from git (see: http://github.com/280north/narwhal)."
+    message : "Update Narwhal by re-running bootstrap.sh, or pulling the latest from git (see: http://github.com/cappuccino/narwhal)."
 });
 ensurePackageUpToDate("narwhal-jsc",    "0.3", {
     optional : true,
