@@ -271,6 +271,7 @@ var CPWindowActionMessageKeys = [
     BOOL                                _isAnimating;
     BOOL                                _hasShadow;
     BOOL                                _isMovableByWindowBackground;
+    BOOL                                _isMovable;
     unsigned                            _shadowStyle;
     BOOL                                _showsResizeIndicator;
 
@@ -404,6 +405,7 @@ CPTexturedBackgroundWindowMask
         _registeredDraggedTypesArray = [];
         _isSheet = NO;
         _acceptsMouseMovedEvents = YES;
+        _isMovable = YES;
 
         // Set up our window number.
         _windowNumber = [CPApp._windows count];
@@ -1436,6 +1438,23 @@ CPTexturedBackgroundWindowMask
 - (BOOL)isMovableByWindowBackground
 {
     return _isMovableByWindowBackground;
+}
+
+/*!
+    Sets whether the window can be moved.
+    @param shouldBeMovable \c YES makes the window movable.
+*/
+- (void)setMovable:(BOOL)shouldBeMovable
+{
+    _isMovable = shouldBeMovable;
+}
+
+/*!
+    Returns \c YES if the window can be moved.
+*/
+- (void)isMovable
+{
+    return _isMovable;
 }
 
 /*!
