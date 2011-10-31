@@ -12,6 +12,8 @@
 @implementation AppController : CPObject
 {
     CPWindow aWindow;
+    CPCheckBox backgroundMovableCB;
+    CPCheckBox movableCB;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -20,21 +22,19 @@
         contentView = [theWindow contentView];
 
 
-    var button = [CPButton buttonWithTitle:@"Set movable by background"];
+    backgroundMovableCB = [CPCheckBox checkBoxWithTitle:@"Movable by background"];
 
-    [button setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin | CPViewMinYMargin | CPViewMaxYMargin];
-    [button setFrameOrigin:CPPointMake(10, 10)];
-    [button setTarget:self];
-    [button setAction:@selector(swicthMovableByBackground:)]
-    [contentView addSubview:button];
+    [backgroundMovableCB setFrameOrigin:CPPointMake(10, 10)];
+    [backgroundMovableCB setTarget:self];
+    [backgroundMovableCB setAction:@selector(setMovableByBackground:)]
+    [contentView addSubview:backgroundMovableCB];
 
+    movableCB = [CPCheckBox checkBoxWithTitle:@"Movable"];
 
-    var button2 = [CPButton buttonWithTitle:@"Switch movable"];
-
-    [button2 setFrameOrigin:CPPointMake(200, 10)];
-    [button2 setTarget:self];
-    [button2 setAction:@selector(swicthMovable:)]
-    [contentView addSubview:button2];
+    [movableCB setFrameOrigin:CPPointMake(200, 10)];
+    [movableCB setTarget:self];
+    [movableCB setAction:@selector(setMovable:)]
+    [contentView addSubview:movableCB];
 
     [theWindow orderFront:self];
 
@@ -42,17 +42,21 @@
     [aWindow setTitle:@"Move me!"];
     [aWindow center];
     [aWindow makeKeyAndOrderFront:self];
+
+    [backgroundMovableCB setState:[aWindow isMovableByWindowBackground]];
+    [movableCB setState:[aWindow isMovable]];
+    [backgroundMovableCB setEnabled:[aWindow isMovable]];
 }
 
-
-- (IBAction)swicthMovableByBackground:(id)aSender
+- (IBAction)setMovableByBackground:(id)aSender
 {
-    [aWindow setMovableByWindowBackground:![aWindow isMovableByWindowBackground]];
+    [aWindow setMovableByWindowBackground:[aSender state] === CPOnState];
 }
 
-- (IBAction)swicthMovable:(id)aSender
+- (IBAction)setMovable:(id)aSender
 {
-    [aWindow setMovable:![aWindow isMovable]];
+    [aWindow setMovable:[aSender state] === CPOnState];
+    [backgroundMovableCB setEnabled:[aWindow isMovable]];
 }
 
 
