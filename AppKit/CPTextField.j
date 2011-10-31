@@ -574,11 +574,17 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 #if PLATFORM(DOM)
 
     var element = [self _inputElement],
+        newValue = element.value,
         error = @"";
+
+    if (newValue !== _stringValue)
+    {
+        [self _setStringValue:newValue];
+    }
 
     // If there is a formatter, always give it a chance to reject the resignation,
     // even if the value has not changed.
-    if ([self _valueIsValid:element.value] === NO)
+    if ([self _valueIsValid:newValue] === NO)
     {
         [self setThemeState:CPThemeStateEditing];
         element.focus();
@@ -774,6 +780,13 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)insertNewline:(id)sender
 {
+    var newValue = [self _inputElement].value;
+
+    if (newValue !== _stringValue)
+    {
+        [self _setStringValue:newValue];
+    }
+
     if ([self _valueIsValid:_stringValue])
     {
         // If _isEditing == YES then the target action can also be called via
