@@ -30,6 +30,9 @@ CPClosableOnBlurWindowMask  = 1 << 4;
 CPPopoverAppearanceMinimal  = 0;
 CPPopoverAppearanceHUD      = 1;
 
+var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
+    _CPAttachedWindow_didAttachedWindowClose_       = 1 << 1;
+
 
 /*!
     @ignore
@@ -48,6 +51,7 @@ CPPopoverAppearanceHUD      = 1;
     BOOL            _shouldPerformAnimation;
     CPButton        _closeButton;
     float           _animationDuration;
+    CPInteger       _implementedDelegateMethods;
 }
 
 /*!
@@ -151,6 +155,21 @@ CPPopoverAppearanceHUD      = 1;
         return;
 
     [_windowView setAppearance:anAppearance];
+}
+
+- (void)setDelegate:(id)aDelegate
+{
+    if (_delegate == aDelegate)
+        return;
+
+    _delegate = aDelegate;
+    _implementedDelegateMethods = 0;
+
+    if ([_delegate respondsToSelector:@selector(attachedWindowShouldClose:)])
+        _implementedDelegateMethods |= _CPAttachedWindow_attachedWindowShouldClose_;
+
+    if ([_delegate respondsToSelector:@selector(didAttachedWindowClose:)])
+        _implementedDelegateMethods |= _CPAttachedWindow_didAttachedWindowClose_;
 }
 
 #pragma mark -
@@ -408,7 +427,7 @@ CPPopoverAppearanceHUD      = 1;
 {
     if (_closeOnBlur && !_isClosed)
     {
-        if (!_delegate || ([_delegate respondsToSelector:@selector(attachedWindowShouldClose:)]
+        if (!_delegate || ((_implementedDelegateMethods & _CPAttachedWindow_attachedWindowShouldClose_)
             && [_delegate attachedWindowShouldClose:self]))
         [self close];
     }
@@ -494,7 +513,7 @@ CPPopoverAppearanceHUD      = 1;
 
     _shouldPerformAnimation = _animates;
 
-    if (_delegate && [_delegate respondsToSelector:@selector(didAttachedWindowClose:)])
+    if (_implementedDelegateMethods & _CPAttachedWindow_didAttachedWindowClose_)
         [_delegate didAttachedWindowClose:self];
 }
 
