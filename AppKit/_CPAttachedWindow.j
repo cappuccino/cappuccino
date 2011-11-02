@@ -408,14 +408,9 @@ CPPopoverAppearanceHUD      = 1;
 {
     if (_closeOnBlur && !_isClosed)
     {
-        // set a close flag to avoid infinite loop
-        _isClosed = YES;
-
-        if (_delegate && [_delegate respondsToSelector:@selector(didAttachedWindowShouldClose:)])
-            if ([_delegate didAttachedWindowShouldClose:self])
-                [self close];
-        else
-            [self close];
+        if (!_delegate || ([_delegate respondsToSelector:@selector(didAttachedWindowShouldClose:)]
+            && [_delegate didAttachedWindowShouldClose:self]))
+        [self close];
     }
 }
 
@@ -480,6 +475,9 @@ CPPopoverAppearanceHUD      = 1;
 */
 - (void)close
 {
+    // set a close flag to avoid infinite loop
+    _isClosed = YES;
+
     if (_animates && typeof(_DOMElement.style.WebkitTransform) != "undefined")
     {
         _DOMElement.style.opacity = 0;
