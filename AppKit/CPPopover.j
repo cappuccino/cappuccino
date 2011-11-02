@@ -274,7 +274,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 #pragma mark Delegates
 
 /*! @ignore */
-- (BOOL)didAttachedWindowShouldClose:(_CPAttachedWindow)anAttachedWindow
+- (BOOL)attachedWindowShouldClose:(_CPAttachedWindow)anAttachedWindow
 {
     [self close];
 

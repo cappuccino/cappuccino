@@ -408,8 +408,8 @@ CPPopoverAppearanceHUD      = 1;
 {
     if (_closeOnBlur && !_isClosed)
     {
-        if (!_delegate || ([_delegate respondsToSelector:@selector(didAttachedWindowShouldClose:)]
-            && [_delegate didAttachedWindowShouldClose:self]))
+        if (!_delegate || ([_delegate respondsToSelector:@selector(attachedWindowShouldClose:)]
+            && [_delegate attachedWindowShouldClose:self]))
         [self close];
     }
 }
