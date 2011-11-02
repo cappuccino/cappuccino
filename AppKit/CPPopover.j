@@ -221,6 +221,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 
     [_attachedWindow setAppearance:_appearance];
     [_attachedWindow setAnimates:_animates];
+    [_attachedWindow setDelegate:self];
     [_attachedWindow setMovableByWindowBackground:NO];
     [_attachedWindow setFrame:[_attachedWindow frameRectForContentRect:[[_contentViewController view] frame]]];
     [_attachedWindow setContentView:[_contentViewController view]];
@@ -266,6 +267,20 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 - (IBAction)performClose:(id)aSender
 {
     [self close];
+}
+
+
+#pragma mark -
+#pragma mark Delegates
+
+/*! @ignore */
+- (BOOL)didAttachedWindowShouldClose:(_CPAttachedWindow)anAttachedWindow
+{
+    [self close];
+
+    // we return NO, because we want the CPPopover to compute
+    // if the attached can be close in order to send delegate messages
+    return NO;
 }
 
 @end

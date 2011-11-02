@@ -410,10 +410,12 @@ CPPopoverAppearanceHUD      = 1;
     {
         // set a close flag to avoid infinite loop
         _isClosed = YES;
-        [self close];
 
-        if (_delegate && [_delegate respondsToSelector:@selector(didAttachedWindowClose:)])
-            [_delegate didAttachedWindowClose:self];
+        if (_delegate && [_delegate respondsToSelector:@selector(didAttachedWindowShouldClose:)])
+            if ([_delegate didAttachedWindowShouldClose:self])
+                [self close];
+        else
+            [self close];
     }
 }
 
