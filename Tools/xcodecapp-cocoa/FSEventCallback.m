@@ -35,12 +35,20 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     {
         NSString *path = [(NSArray *)eventPaths objectAtIndex:i];
         
-        if (!(eventFlags[i] & kFSEventStreamEventFlagItemIsFile)
+        //              /!\ IMPORTANT /!\
+        //
+        // This is a test. Maybe these values where present as
+        // private API in 10.6, and maybe not
+        // If not, we will drop support for 10.6
+
+        // kFSEventStreamEventFlagItemIsFile = 0x00010000
+        if (!(eventFlags[i] & 0x00010000)
             || [xcc isPathMatchingIgnoredPaths:path]
             || (![xcc isXIBFile:path] && ![xcc isObjJFile:path] && ![xcc isXCCIgnoreFile:path]))
             continue;
         
-        if (eventFlags[i] & kFSEventStreamEventFlagItemRemoved)
+        // kFSEventStreamEventFlagItemRemoved = 0x00000200
+        if (eventFlags[i] & 0x00000200)
         {
             [xcc handleFileRemoval:path];
         }
