@@ -30,6 +30,9 @@ CPClosableOnBlurWindowMask  = 1 << 4;
 CPPopoverAppearanceMinimal  = 0;
 CPPopoverAppearanceHUD      = 1;
 
+var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
+    _CPAttachedWindow_attachedWindowDidClose_       = 1 << 1;
+
 
 /*!
     @ignore
@@ -48,6 +51,7 @@ CPPopoverAppearanceHUD      = 1;
     BOOL            _shouldPerformAnimation;
     CPButton        _closeButton;
     float           _animationDuration;
+    CPInteger       _implementedDelegateMethods;
 }
 
 /*!
@@ -151,6 +155,21 @@ CPPopoverAppearanceHUD      = 1;
         return;
 
     [_windowView setAppearance:anAppearance];
+}
+
+- (void)setDelegate:(id)aDelegate
+{
+    if (_delegate == aDelegate)
+        return;
+
+    _delegate = aDelegate;
+    _implementedDelegateMethods = 0;
+
+    if ([_delegate respondsToSelector:@selector(attachedWindowShouldClose:)])
+        _implementedDelegateMethods |= _CPAttachedWindow_attachedWindowShouldClose_;
+
+    if ([_delegate respondsToSelector:@selector(attachedWindowDidClose:)])
+        _implementedDelegateMethods |= _CPAttachedWindow_attachedWindowDidClose_;
 }
 
 #pragma mark -
@@ -408,12 +427,9 @@ CPPopoverAppearanceHUD      = 1;
 {
     if (_closeOnBlur && !_isClosed)
     {
-        // set a close flag to avoid infinite loop
-        _isClosed = YES;
+        if (!_delegate || ((_implementedDelegateMethods & _CPAttachedWindow_attachedWindowShouldClose_)
+            && [_delegate attachedWindowShouldClose:self]))
         [self close];
-
-        if (_delegate && [_delegate respondsToSelector:@selector(didAttachedWindowClose:)])
-            [_delegate didAttachedWindowClose:self];
     }
 }
 
@@ -478,6 +494,9 @@ CPPopoverAppearanceHUD      = 1;
 */
 - (void)close
 {
+    // set a close flag to avoid infinite loop
+    _isClosed = YES;
+
     if (_animates && typeof(_DOMElement.style.WebkitTransform) != "undefined")
     {
         _DOMElement.style.opacity = 0;
@@ -494,8 +513,8 @@ CPPopoverAppearanceHUD      = 1;
 
     _shouldPerformAnimation = _animates;
 
-    if (_delegate && [_delegate respondsToSelector:@selector(didAttachedWindowClose:)])
-        [_delegate didAttachedWindowClose:self];
+    if (_implementedDelegateMethods & _CPAttachedWindow_attachedWindowDidClose_)
+        [_delegate attachedWindowDidClose:self];
 }
 
 @end
