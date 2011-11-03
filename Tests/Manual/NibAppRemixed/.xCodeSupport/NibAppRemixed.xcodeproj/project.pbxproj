@@ -134,9 +134,10 @@
 		9EEC448A135749D200615446 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastUpgradeCheck = 0420;
 				ORGANIZATIONNAME = "280 North, Inc.";
 			};
-			buildConfigurationList = 9EEC448D135749D200615446 /* Build configuration list for PBXProject "Another" */;
+			buildConfigurationList = 9EEC448D135749D200615446 /* Build configuration list for PBXProject "NibAppRemixed" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -323,7 +324,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		9EEC448D135749D200615446 /* Build configuration list for PBXProject "Another" */ = {
+		9EEC448D135749D200615446 /* Build configuration list for PBXProject "NibAppRemixed" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				9EEC44C3135749D300615446 /* Debug */,
@@ -339,6 +340,7 @@
 				9EEC44C7135749D300615446 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		9EEC44C8135749D300615446 /* Build configuration list for PBXNativeTarget "AnotherTests" */ = {
 			isa = XCConfigurationList;
@@ -347,6 +349,7 @@
 				9EEC44CA135749D300615446 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

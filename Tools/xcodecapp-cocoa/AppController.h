@@ -17,67 +17,42 @@
  */
 
 #import <Cocoa/Cocoa.h>
+#import <CoreServices/CoreServices.h>
 #import "PRHEmptyGrowlDelegate.h"
+#import "TNXCodeCapp.h"
 
 @interface AppController : NSObject <NSMenuDelegate>
 {
-    IBOutlet NSButton               *buttonOpenXCode;
-    IBOutlet NSButton               *buttonStart;
-    IBOutlet NSButton               *buttonStop;
     IBOutlet NSMenu                 *statusMenu;
     IBOutlet NSMenuItem             *menuItemOpenXCode;
     IBOutlet NSMenuItem             *menuItemStart;
     IBOutlet NSMenuItem             *menuItemStop;
+    IBOutlet NSMenuItem             *menuItemProjectName;
     IBOutlet NSPanel                *errorsPanel;
-    IBOutlet NSProgressIndicator    *spinner;
     IBOutlet NSTableView            *errorsTable;
-    IBOutlet NSTextField            *labelCurrentPath;
-    IBOutlet NSTextField            *labelPath;
-    IBOutlet NSTextField            *labelStatus;
-    IBOutlet NSWindow               *mainWindow;
+    IBOutlet NSWindow               *helpWindow;
+    IBOutlet NSTextView             *helpTextView;
+    IBOutlet NSTextField            *labelVersion;
     
-    FSEventStreamRef                stream;
-    NSDate                          *appStartedTimestamp;
-    NSFileManager                   *fm;
+    TNXCodeCapp                     *_xcc;
     NSImage                         *_iconActive;
     NSImage                         *_iconInactive;
-    NSMutableArray                  *errorList;
-    NSMutableArray                  *ignoredFilePaths;
-    NSMutableArray                  *modifiedXIBs;
-    NSMutableDictionary             *pathModificationDates;
-    NSNumber                        *lastEventId;
+    NSImage                         *_iconWorking;
     NSStatusItem                    *_statusItem;
-    NSString                        *currentProjectName;
-    NSString                        *parserPath;
-    NSString                        *XCodeSupportPBXPath;
-    NSString                        *XCodeSupportProjectName;
-    NSString                        *XCodeTemplatePBXPath;
-    NSString                        *_profilePath;
-    NSURL                           *currentProjectURL;
-    NSURL                           *XCodeSupportFolder;
-    NSURL                           *XCodeSupportProject;
-    NSURL                           *XCodeSupportProjectSources;
     PRHEmptyGrowlDelegate           *growlDelegateRef;
 }
 
-- (BOOL)isObjJFile:(NSString*)path;
-- (BOOL)isPathMatchingIgnoredPaths:(NSString*)aPath;
-- (BOOL)isXIBFile:(NSString *)path;
-- (BOOL)prepareXCodeSupportProject;
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem;
-- (NSURL*)shadowURLForSourceURL:(NSURL*)aSourceURL;
-- (void)handleFileModification:(NSString*)path ignoreDate:(BOOL)shouldIgnoreDate;
-- (void)initializeEventStreamWithPath:(NSString*)aPath;
 - (void)registerDefaults;
 - (void)updateErrorTable;
-- (void)updateLastEventId:(uint64_t)eventId;
+- (void)growlWithTitle:(NSString *)aTitle message:(NSString *)aMessage;
 
 - (IBAction)chooseFolder:(id)aSender;
 - (IBAction)clearErrors:(id)sender;
 - (IBAction)openXCode:(id)aSender;
 - (IBAction)stopListener:(id)aSender;
+- (IBAction)openHelp:(id)aSender;
 
-- (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag;
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(int)aRow;
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row;
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView;

@@ -1,0 +1,137 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1138\cocoasubrtf230
+{\fonttbl\f0\fnil\fcharset0 LucidaGrande;\f1\fswiss\fcharset0 Helvetica;\f2\fmodern\fcharset0 Courier;
+}
+{\colortbl;\red255\green255\blue255;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww19580\viewh15960\viewkind0
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\b\fs36 \cf0 xCodeCapp Help
+\b0 \
+\
+
+\b\fs24 What it xCodeCapp\
+
+\b0\fs36 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qj
+
+\fs24 \cf0 xCodeCapp-Cocoa is an utility tool that helps you to greatly improve your Cappuccino development workflow. One of the main stunning thing about Cappuccino is the ability to use Apple's xCode IDE to create your interfaces for web application. But Cappuccino can't read XIB (ones produced by xCode) directly and you have to run the tool nib2cib manually at each change of your interface. Moreover you cannot link Outlets and Actions directly.\
+Well, now all of this is possible, thanks to xCodeCapp-Cocoa. This tool is a port of another one written in Objective-J but much more faster and much more integrated. XCodeCapp-Cocoa will silently listen the directory tree of your Cappuccino project using Mac OS X FSEvent API \'97 no dirty polling \'97 and will convert your XIB files into CIB (ones that can be read by Cappuccino) at each change. It will also listen for your Objective-J files, and will convert them into hidden .h files in order to allow you to use Outlets and Actions from xCode as soon as you edit your code.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf0 \
+\
+
+\b Video
+\b0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qj
+\cf0 You can have a look on the video on this website to understand how it works: {\field{\*\fldinst{HYPERLINK "http://antoinemercadal.fr/xcodecappcocoa/"}}{\fldrslt http://antoinemercadal.fr/xcodecappcocoa/}}\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf0 \
+\
+
+\b Quick start
+\b0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qj
+\cf0 xCodeCapp is very easy to use and require nearly no user interaction. First of all you need to launch it (which seems to be OK). It will display a menu bar icon at the top right of your screen. By clicking on the icon, you will see a menu:\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\qc
+
+\f1 \cf0 {{\NeXTGraphic 1.PNG \width4700 \height4180
+}¬}
+\f0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qj
+\cf0 First, you need to choose your Cappuccino project. To do so, click on "Start Listening". A folder chooser will appear. Navigate to the root project folder.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\qc
+
+\f1 \cf0 {{\NeXTGraphic 2.PNG \width12060 \height8360
+}¬}\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\qc
+
+\f0 \cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+\cf0 \
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\qj
+\cf0 You can choose either the folder itself, of you can enter the folder and select nothing. xCodeCapp will start to import your project. It will create a hidden folder in the root project directory named ".xCodeSupport". This folder contains mirrored files built by xCodeCapp. You should never go and modify anything into this folder. You should also ignore it if your project is in a SCM (git, subversion, etc.)\
+\
+Now, when you edit a Objective-J file and when you save, you will see a Growl notification indicating that the conversion is done. The same happens when you edit a XIB file, xCodeCapp will automatically use nib2cib to convert the XIB into a CIB.\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+\cf0 \
+\
+
+\b Play with XIBs\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\qj
+
+\b0 \cf0 xCodeCapp mirrors your .j files into .h files in the .xCodeSupport folder. This allows to use Interface Builder to really link your outlets and actions with your code. When you create a new outlet in your Cappuccino classes and after saving, and so, after conversion by xCodeCapp, you will be able to see the outlet in interface builder. But to able to that, you need to launch the xCode support project.\
+To do so, click on the xCodeCapp icon, and select "Open xCode".\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\qc
+
+\f1 \cf0 {{\NeXTGraphic 3.PNG \width4600 \height4140
+}¬}\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\qc
+
+\f0 \cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qj
+\cf0 The xCode project will open. You can now play with interface builder.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf0 \
+\
+
+\b Ignoring files and folder\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qj
+
+\b0 \cf0 xCodeCapp is able to ignore some files and/or folders. By default, it will ignore "Frameworks", ".git", ".svn", ".xCodeSupport" and "Build" directory. To add some path you can create a file in the root project directory (where is stored .xCodeSupport) named ".xcodecapp-ignore". The syntax is pretty straightforward:\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf0 \
+
+\f2 Build*\
+Libraries/Cappuccino*\
+Libraries/StropheCappuccino*\
+Libraries/*/Build/*\
+Categories*\
+.xCodeSupport*\
+Modules/*
+\f0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qj
+\cf0 You can use wildcard token "*" to say "everything". For example, "
+\f2 Libraries/*/Build/*
+\f0 " will ignore all files in "Build" folders located anywhere in "Libraries".\
+You must put only one ignore directive per line.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf0 \
+\
+
+\b Help\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qj
+
+\b0 \cf0 This help message will only open at first launch. To consult it later, select "Open Help" in the xCodeCapp menu. You can also post any question to the Cappuccino mailing list ({\field{\*\fldinst{HYPERLINK "http://objectivej@googlegroups.com"}}{\fldrslt objectivej@googlegroups.com}}) or join us in our IRC channel ({\field{\*\fldinst{HYPERLINK "irc://irc.freenode.org/#cappuccino"}}{\fldrslt irc://irc.freenode.org/#cappuccino}}).\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\b \cf0 Credits
+\fs28 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qj
+
+\b0\fs24 \cf0 xCodeCapp was originally made by Francisco Tolmasky.\
+The Cocoa port is made by Antoine Mercadal.\
+This tool was built for the needs of Archipel Project and it's obviously open source and released under GPL v3.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf0 \
+}

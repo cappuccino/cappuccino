@@ -19,6 +19,10 @@
 		027D999F13696A7000D3DB13 /* AppController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E01A91E0DE9EED20008BB35 /* AppController.m */; };
 		027D99A113696A7000D3DB13 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		027D99A213696A7000D3DB13 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E01A8DD0DE51A7C0008BB35 /* CoreServices.framework */; };
+		027FE49A1462C6CF00B1AB92 /* help.rtfd in Resources */ = {isa = PBXBuildFile; fileRef = 027FE4991462C6CF00B1AB92 /* help.rtfd */; };
+		027FE49D1462D74C00B1AB92 /* TNXCodeCapp.m in Sources */ = {isa = PBXBuildFile; fileRef = 027FE49C1462D74C00B1AB92 /* TNXCodeCapp.m */; };
+		027FE4BA1462F64E00B1AB92 /* xcodecapp-cocoa-icon-working.png in Resources */ = {isa = PBXBuildFile; fileRef = 027FE4B91462F64E00B1AB92 /* xcodecapp-cocoa-icon-working.png */; };
+		027FE4BD1462F7EB00B1AB92 /* FSEventCallback.m in Sources */ = {isa = PBXBuildFile; fileRef = 027FE4BC1462F7EB00B1AB92 /* FSEventCallback.m */; };
 		02998CEB1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict in Resources */ = {isa = PBXBuildFile; fileRef = 02998CEA1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict */; };
 		02998CF71369C339006C73DB /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02998CF61369C339006C73DB /* Growl.framework */; };
 		02998CF91369C38A006C73DB /* Growl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02998CF61369C339006C73DB /* Growl.framework */; };
@@ -47,6 +51,12 @@
 		026F3B6413866E7D00EE5B83 /* xcodecapp-cocoa-icon-active.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "xcodecapp-cocoa-icon-active.png"; sourceTree = "<group>"; };
 		027D9989136969DD00D3DB13 /* xcodecapp-cocoa.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "xcodecapp-cocoa.pch"; sourceTree = "<group>"; };
 		027D99A613696A7000D3DB13 /* xcodecapp-cocoa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "xcodecapp-cocoa.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		027FE4991462C6CF00B1AB92 /* help.rtfd */ = {isa = PBXFileReference; lastKnownFileType = wrapper.rtfd; path = help.rtfd; sourceTree = "<group>"; };
+		027FE49B1462D74C00B1AB92 /* TNXCodeCapp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TNXCodeCapp.h; sourceTree = "<group>"; };
+		027FE49C1462D74C00B1AB92 /* TNXCodeCapp.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TNXCodeCapp.m; sourceTree = "<group>"; };
+		027FE4B91462F64E00B1AB92 /* xcodecapp-cocoa-icon-working.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "xcodecapp-cocoa-icon-working.png"; sourceTree = "<group>"; };
+		027FE4BB1462F7D600B1AB92 /* FSEventCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FSEventCallback.h; sourceTree = "<group>"; };
+		027FE4BC1462F7EB00B1AB92 /* FSEventCallback.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FSEventCallback.m; sourceTree = "<group>"; };
 		02998CEA1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "Growl Registration Ticket.growlRegDict"; sourceTree = "<group>"; };
 		02998CF61369C339006C73DB /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Growl.framework; sourceTree = "<group>"; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -85,6 +95,10 @@
 				651DAE1D13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.m */,
 				8E01A91D0DE9EED20008BB35 /* AppController.h */,
 				8E01A91E0DE9EED20008BB35 /* AppController.m */,
+				027FE49B1462D74C00B1AB92 /* TNXCodeCapp.h */,
+				027FE49C1462D74C00B1AB92 /* TNXCodeCapp.m */,
+				027FE4BB1462F7D600B1AB92 /* FSEventCallback.h */,
+				027FE4BC1462F7EB00B1AB92 /* FSEventCallback.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -140,6 +154,8 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				027FE4B91462F64E00B1AB92 /* xcodecapp-cocoa-icon-working.png */,
+				027FE4991462C6CF00B1AB92 /* help.rtfd */,
 				026F3B6413866E7D00EE5B83 /* xcodecapp-cocoa-icon-active.png */,
 				026F3B6113866B0B00EE5B83 /* xcodecapp-cocoa-icon-inactive.png */,
 				024A041113699D6800DCBE4D /* parser.j */,
@@ -221,6 +237,8 @@
 				02998CEB1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict in Resources */,
 				026F3B6213866B0B00EE5B83 /* xcodecapp-cocoa-icon-inactive.png in Resources */,
 				026F3B6513866E7D00EE5B83 /* xcodecapp-cocoa-icon-active.png in Resources */,
+				027FE49A1462C6CF00B1AB92 /* help.rtfd in Resources */,
+				027FE4BA1462F64E00B1AB92 /* xcodecapp-cocoa-icon-working.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -234,6 +252,8 @@
 				027D999E13696A7000D3DB13 /* main.m in Sources */,
 				027D999F13696A7000D3DB13 /* AppController.m in Sources */,
 				651DAE1F13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.m in Sources */,
+				027FE49D1462D74C00B1AB92 /* TNXCodeCapp.m in Sources */,
+				027FE4BD1462F7EB00B1AB92 /* FSEventCallback.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
