@@ -100,6 +100,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     FSEventStreamContext context = {0, appPointer, NULL, NULL, NULL};
     NSTimeInterval latency = 2.0;
     
+    free(stream);
     stream = FSEventStreamCreate(NULL, &fsevents_callback, &context, (CFArrayRef) pathsToWatch,
                                  [lastEventId unsignedLongLongValue], (CFAbsoluteTime) latency, kFSEventStreamCreateFlagUseCFTypes | kFSEventStreamCreateFlagNoDefer | 0x00000010 );
     
@@ -188,12 +189,12 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     
     NSLog(@"Starting to parse file modification %@", fullPath);
     
-    NSArray *arguments;
-    NSString *successMsg;
-    NSNumber *status;
-    NSString *response;
-    NSString *errorTitle;
-    NSString *errorMsg;
+    NSArray *arguments = nil;
+    NSString *successMsg = nil;
+    NSString *response = nil;
+    NSString *errorTitle = nil;
+    NSString *errorMsg = nil;
+    NSNumber *status = [NSNumber numberWithInt:0];
     NSString *splitedPath = [NSString stringWithFormat:@"%@/%@", [[fullPath pathComponents] objectAtIndex:[[fullPath pathComponents] count] - 2], [fullPath lastPathComponent]];
     NSString *shadowPath = [[self shadowURLForSourceURL:[NSURL URLWithString:[fullPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]] path];
     
@@ -222,7 +223,6 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
             [self computeIgnoredPaths];
             successMsg = @"Ignored files list updated";
             arguments = nil;
-            status = [NSNumber numberWithInt:0];
         }
         
         //Run the task and get the response if needed
@@ -245,11 +245,12 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         }
         else if (![status intValue] == 0)
         {
-            [errorList addObject:response];
+            if (response)
+                [errorList addObject:response];
             
             errorTitle = [NSString stringWithFormat:@"ERROR: %@", splitedPath];
             errorMsg = [NSString stringWithFormat:@"Error was: %@.\n\n You may want to check in error list.", response];
-            [delegate performSelector:@selector(growlWithTitle:message:) withObject:splitedPath withObject:errorMsg];
+            [delegate performSelector:@selector(growlWithTitle:message:) withObject:errorTitle withObject:errorMsg];
         }
         
         [[NSNotificationCenter defaultCenter] postNotificationName:XCCConversionStopNotification object:self];
@@ -362,21 +363,8 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         [NSThread detachNewThreadSelector:@selector(populateXCodeProject:)toTarget:self withObject:nil];
         return NO;
     }
-    else
-    {
-        NSArray *subdirs = [fm subpathsAtPath:[currentProjectURL path]];
-        for (NSString *p in subdirs)
-        {
-            NSString *path = [NSString stringWithFormat:@"%@/%@", [currentProjectURL path], p];
-            NSString *shadow = [[self shadowURLForSourceURL:[NSURL URLWithString:path]] path];
-            if ([self isObjJFile:path] && ![fm fileExistsAtPath:shadow] && ![[path lastPathComponent] isEqualToString:@"main.j"])
-            {
-                NSLog(@"File %@ seems to be new. Computing it.", path);
-                [self handleFileModification:path notify:YES];
-            }
-        }
-        return YES;
-    }
+
+    return YES;
 }
 
 /*!
@@ -404,6 +392,9 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
  */
 - (NSURL*)shadowURLForSourceURL:(NSURL*)aSourceURL
 {
+    if (!aSourceURL)
+        [NSException raise:NSInvalidArgumentException format:@"shadowURLForSourceURL: aSource URL must not be null"];
+
     NSMutableString *flattenedPath = [NSMutableString stringWithString:[aSourceURL path]];
     NSLog(@"Flattened path is : %@", flattenedPath);
     [flattenedPath replaceOccurrencesOfString:@"/"

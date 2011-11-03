@@ -35,18 +35,15 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     {
         NSString *path = [(NSArray *)eventPaths objectAtIndex:i];
         
-        if (!(eventFlags[i] & 0x00010000)
+        if (!(eventFlags[i] & kFSEventStreamEventFlagItemIsFile)
             || [xcc isPathMatchingIgnoredPaths:path]
             || (![xcc isXIBFile:path] && ![xcc isObjJFile:path] && ![xcc isXCCIgnoreFile:path]))
             continue;
         
-        // 0x00000200 should be  kFSEventStreamEventFlagItemRemoved but for some reason
-        // xCode mark this as not recognized.
-        if (eventFlags[i] & 0x00000200)
+        if (eventFlags[i] & kFSEventStreamEventFlagItemRemoved)
         {
             [xcc handleFileRemoval:path];
         }
-        
         else
         {
             NSLog(@"this file has been modified or created");
