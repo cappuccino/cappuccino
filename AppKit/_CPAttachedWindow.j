@@ -31,7 +31,7 @@ CPPopoverAppearanceMinimal  = 0;
 CPPopoverAppearanceHUD      = 1;
 
 var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
-    _CPAttachedWindow_didAttachedWindowClose_       = 1 << 1;
+    _CPAttachedWindow_attachedWindowDidClose_       = 1 << 1;
 
 
 /*!
@@ -168,8 +168,8 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
     if ([_delegate respondsToSelector:@selector(attachedWindowShouldClose:)])
         _implementedDelegateMethods |= _CPAttachedWindow_attachedWindowShouldClose_;
 
-    if ([_delegate respondsToSelector:@selector(didAttachedWindowClose:)])
-        _implementedDelegateMethods |= _CPAttachedWindow_didAttachedWindowClose_;
+    if ([_delegate respondsToSelector:@selector(attachedWindowDidClose:)])
+        _implementedDelegateMethods |= _CPAttachedWindow_attachedWindowDidClose_;
 }
 
 #pragma mark -
@@ -513,8 +513,8 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 
     _shouldPerformAnimation = _animates;
 
-    if (_implementedDelegateMethods & _CPAttachedWindow_didAttachedWindowClose_)
-        [_delegate didAttachedWindowClose:self];
+    if (_implementedDelegateMethods & _CPAttachedWindow_attachedWindowDidClose_)
+        [_delegate attachedWindowDidClose:self];
 }
 
 @end
