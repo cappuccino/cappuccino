@@ -436,8 +436,10 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     
     [ignoredFilePaths addObject:@"*.git*"];
     [ignoredFilePaths addObject:@"*.svn*"];
+    [ignoredFilePaths addObject:@"*.hg*"];
     [ignoredFilePaths addObject:@"*Frameworks*"];
     [ignoredFilePaths addObject:@"*.xCodeSupport*"];
+    [ignoredFilePaths addObject:@"*Build*"];
     
     NSLog(@"ignored file paths are: %@", ignoredFilePaths);
 }
