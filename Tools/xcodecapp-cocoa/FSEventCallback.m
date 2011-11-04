@@ -18,6 +18,7 @@
 
 #import "AppController.h"
 #import "FSEventCallback.h"
+#import "macros.h"
 
 
 /*!
@@ -45,12 +46,35 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
                 || [xcc isPathMatchingIgnoredPaths:path]
                 || (![xcc isXIBFile:path] && ![xcc isObjJFile:path] && ![xcc isXCCIgnoreFile:path]))
                 continue;
-            
+
             // kFSEventStreamEventFlagItemRemoved = 0x00000200
             if (eventFlags[i] & 0x00000200)
+            {
+                DLog(@"event type: kFSEventStreamEventFlagItemRemoved for path %@", path);
                 [xcc handleFileRemoval:path];
-            else
+            }
+
+            // kFSEventStreamEventFlagItemCreated = 0x00000200
+            if (eventFlags[i] & 0x00000100)
+            {
+                DLog(@"event type: kFSEventStreamEventFlagItemCreated for path %@", path);
                 [xcc handleFileModification:path notify:YES];
+            }
+
+            // kFSEventStreamEventFlagItemRenamed = 0x00000800
+            if (eventFlags[i] & 0x00000800)
+            {
+                if (![[NSFileManager defaultManager] fileExistsAtPath:path])
+                {
+                    DLog(@"event type: kFSEventStreamEventFlagItemRenamed for path %@ (removed origin)", path);
+                    [xcc handleFileRemoval:path];
+                }
+                else
+                {
+                    DLog(@"event type: kFSEventStreamEventFlagItemRenamed for path %@ (added destination)", path);
+                    [xcc handleFileModification:path notify:YES];
+                }
+            }
         }
         else
         {
