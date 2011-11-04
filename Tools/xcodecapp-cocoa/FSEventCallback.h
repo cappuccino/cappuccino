@@ -21,7 +21,6 @@
 
 #import "TNXCodeCapp.h"
 #import <Cocoa/Cocoa.h>
-#import "defines.h"
 
 void fsevents_callback(ConstFSEventStreamRef, void*, size_t, void*, const FSEventStreamEventFlags*, const FSEventStreamEventId*);
 

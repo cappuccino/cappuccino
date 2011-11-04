@@ -2,13 +2,13 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="8.00">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">11C74</string>
-		<string key="IBDocument.InterfaceBuilderVersion">1938</string>
-		<string key="IBDocument.AppKitVersion">1138.23</string>
-		<string key="IBDocument.HIToolboxVersion">567.00</string>
+		<string key="IBDocument.SystemVersion">10K549</string>
+		<string key="IBDocument.InterfaceBuilderVersion">1923</string>
+		<string key="IBDocument.AppKitVersion">1038.36</string>
+		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">1938</string>
+			<string key="NS.object.0">1923</string>
 		</object>
 		<array key="IBDocument.IntegratedClassDependencies">
 			<string>NSScroller</string>
@@ -54,7 +54,6 @@
 				<string key="NSWindowTitle">About</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
-				<nil key="NSUserInterfaceItemIdentifier"/>
 				<object class="NSView" key="NSWindowView" id="524832152">
 					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
@@ -113,9 +112,8 @@ bgphcGFyYWppdGFAYXBhcmFqaXRhLmNvbQ</string>
 					<string key="NSFrameSize">{375, 153}</string>
 					<reference key="NSNextKeyView" ref="135374801"/>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {2560, 1418}}</string>
-				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
-				<bool key="NSWindowIsRestorable">YES</bool>
+				<string key="NSScreenRect">{{0, 0}, {1600, 1178}}</string>
+				<string key="NSMaxSize">{1e+13, 1e+13}</string>
 			</object>
 			<object class="NSMenu" id="293792969">
 				<string key="NSTitle"/>
@@ -204,7 +202,6 @@ bgphcGFyYWppdGFAYXBhcmFqaXRhLmNvbQ</string>
 				<string key="NSWindowTitle">Errors and Warnings</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
-				<nil key="NSUserInterfaceItemIdentifier"/>
 				<object class="NSView" key="NSWindowView" id="166068453">
 					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
@@ -299,7 +296,6 @@ bgphcGFyYWppdGFAYXBhcmFqaXRhLmNvbQ</string>
 											<int key="NSDraggingSourceMaskForNonLocal">0</int>
 											<bool key="NSAllowsTypeSelect">YES</bool>
 											<int key="NSTableViewDraggingDestinationStyle">0</int>
-											<int key="NSTableViewGroupRowStyle">1</int>
 										</object>
 									</array>
 									<string key="NSFrame">{{1, 1}, {512, 249}}</string>
@@ -334,7 +330,7 @@ bgphcGFyYWppdGFAYXBhcmFqaXRhLmNvbQ</string>
 							<string key="NSFrame">{{-1, 35}, {514, 251}}</string>
 							<reference key="NSSuperview" ref="166068453"/>
 							<reference key="NSNextKeyView" ref="493529786"/>
-							<int key="NSsFlags">133682</int>
+							<int key="NSsFlags">562</int>
 							<reference key="NSVScroller" ref="185808728"/>
 							<reference key="NSHScroller" ref="169310253"/>
 							<reference key="NSContentView" ref="493529786"/>
@@ -389,9 +385,8 @@ bgphcGFyYWppdGFAYXBhcmFqaXRhLmNvbQ</string>
 					<string key="NSFrameSize">{512, 285}</string>
 					<reference key="NSNextKeyView" ref="351336909"/>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {2560, 1418}}</string>
-				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
-				<bool key="NSWindowIsRestorable">YES</bool>
+				<string key="NSScreenRect">{{0, 0}, {1600, 1178}}</string>
+				<string key="NSMaxSize">{1e+13, 1e+13}</string>
 			</object>
 			<object class="NSWindowTemplate" id="180699084">
 				<int key="NSWindowStyleMask">15</int>
@@ -401,7 +396,6 @@ bgphcGFyYWppdGFAYXBhcmFqaXRhLmNvbQ</string>
 				<string key="NSWindowTitle">Help</string>
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>
-				<nil key="NSUserInterfaceItemIdentifier"/>
 				<object class="NSView" key="NSWindowView" id="516282358">
 					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
@@ -417,7 +411,7 @@ bgphcGFyYWppdGFAYXBhcmFqaXRhLmNvbQ</string>
 										<object class="NSTextView" id="690414145">
 											<reference key="NSNextResponder" ref="599960028"/>
 											<int key="NSvFlags">2322</int>
-											<string key="NSFrameSize">{716, 14}</string>
+											<string key="NSFrameSize">{701, 14}</string>
 											<reference key="NSSuperview" ref="599960028"/>
 											<reference key="NSWindow"/>
 											<reference key="NSNextKeyView" ref="56491000"/>
@@ -436,7 +430,7 @@ bgphcGFyYWppdGFAYXBhcmFqaXRhLmNvbQ</string>
 													<nil key="NSDelegate"/>
 												</object>
 												<reference key="NSTextView" ref="690414145"/>
-												<double key="NSWidth">716</double>
+												<double key="NSWidth">701</double>
 												<int key="NSTCFlags">1</int>
 											</object>
 											<object class="NSTextViewSharedData" key="NSSharedData">
@@ -471,16 +465,14 @@ bgphcGFyYWppdGFAYXBhcmFqaXRhLmNvbQ</string>
 													<integer value="1" key="NSUnderline"/>
 												</dictionary>
 												<nil key="NSDefaultParagraphStyle"/>
-												<nil key="NSTextFinder"/>
-												<int key="NSPreferredTextFinderStyle">1</int>
 											</object>
 											<int key="NSTVFlags">6</int>
-											<string key="NSMaxSize">{716, 10000000}</string>
+											<string key="NSMaxSize">{716, 1e+07}</string>
 											<string key="NSMinize">{238, 0}</string>
 											<nil key="NSDelegate"/>
 										</object>
 									</array>
-									<string key="NSFrame">{{1, 1}, {716, 571}}</string>
+									<string key="NSFrame">{{1, 1}, {701, 571}}</string>
 									<reference key="NSSuperview" ref="1007710927"/>
 									<reference key="NSWindow"/>
 									<reference key="NSNextKeyView" ref="690414145"/>
@@ -542,7 +534,7 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 							<reference key="NSSuperview" ref="516282358"/>
 							<reference key="NSWindow"/>
 							<reference key="NSNextKeyView" ref="568058546"/>
-							<int key="NSsFlags">133138</int>
+							<int key="NSsFlags">18</int>
 							<reference key="NSVScroller" ref="56491000"/>
 							<reference key="NSHScroller" ref="568058546"/>
 							<reference key="NSContentView" ref="599960028"/>
@@ -553,9 +545,8 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 					<reference key="NSWindow"/>
 					<reference key="NSNextKeyView" ref="1007710927"/>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {2560, 1418}}</string>
-				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
-				<bool key="NSWindowIsRestorable">YES</bool>
+				<string key="NSScreenRect">{{0, 0}, {1600, 1178}}</string>
+				<string key="NSMaxSize">{1e+13, 1e+13}</string>
 			</object>
 		</array>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
@@ -1041,6 +1032,94 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 				<object class="IBPartialClassDescription">
 					<string key="className">AppController</string>
 					<string key="superclassName">NSObject</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="chooseFolder:">id</string>
+						<string key="clearErrors:">id</string>
+						<string key="openAbout:">id</string>
+						<string key="openErrors:">id</string>
+						<string key="openHelp:">id</string>
+						<string key="openXCode:">id</string>
+						<string key="stopListener:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="chooseFolder:">
+							<string key="name">chooseFolder:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="clearErrors:">
+							<string key="name">clearErrors:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openAbout:">
+							<string key="name">openAbout:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openErrors:">
+							<string key="name">openErrors:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openHelp:">
+							<string key="name">openHelp:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openXCode:">
+							<string key="name">openXCode:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="stopListener:">
+							<string key="name">stopListener:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="aboutWindow">NSPanel</string>
+						<string key="errorsPanel">NSPanel</string>
+						<string key="errorsTable">NSTableView</string>
+						<string key="helpTextView">NSTextView</string>
+						<string key="helpWindow">NSWindow</string>
+						<string key="labelVersion">NSTextField</string>
+						<string key="menuItemOpenXCode">NSMenuItem</string>
+						<string key="menuItemStartStop">NSMenuItem</string>
+						<string key="statusMenu">NSMenu</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="aboutWindow">
+							<string key="name">aboutWindow</string>
+							<string key="candidateClassName">NSPanel</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="errorsPanel">
+							<string key="name">errorsPanel</string>
+							<string key="candidateClassName">NSPanel</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="errorsTable">
+							<string key="name">errorsTable</string>
+							<string key="candidateClassName">NSTableView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="helpTextView">
+							<string key="name">helpTextView</string>
+							<string key="candidateClassName">NSTextView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="helpWindow">
+							<string key="name">helpWindow</string>
+							<string key="candidateClassName">NSWindow</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="labelVersion">
+							<string key="name">labelVersion</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="menuItemOpenXCode">
+							<string key="name">menuItemOpenXCode</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="menuItemStartStop">
+							<string key="name">menuItemStartStop</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="statusMenu">
+							<string key="name">statusMenu</string>
+							<string key="candidateClassName">NSMenu</string>
+						</object>
+					</dictionary>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/AppController.h</string>

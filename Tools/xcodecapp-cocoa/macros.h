@@ -10,7 +10,7 @@
 #define xcodecapp_cocoa_macros_h
 
 #if DEBUG
-#   define DLog(fmt, ...) NSLog((fmt), ##__VA_ARGS__);
+#   define DLog(fmt, ...) NSLog((fmt), ##__VA_ARGS__)
 #else
 #   define DLog(...)
 #endif

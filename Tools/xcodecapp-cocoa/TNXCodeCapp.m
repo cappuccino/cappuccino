@@ -32,6 +32,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 @synthesize XCodeSupportProject;
 @synthesize currentProjectURL;
 @synthesize currentProjectName;
+@synthesize supportsFileBasedListening;
 
 /*!
  Initialize the AppController
@@ -48,6 +49,18 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         parserPath = [[NSBundle mainBundle] pathForResource:@"parser" ofType:@"j"];
         lastEventId = [[NSUserDefaults standardUserDefaults] objectForKey:@"lastEventId"];
         appStartedTimestamp = [NSDate date];
+        
+        SInt32 versionMajor = 0;
+        SInt32 versionMinor = 0;
+        Gestalt(gestaltSystemVersionMajor, &versionMajor);
+        Gestalt(gestaltSystemVersionMinor, &versionMinor);
+        
+        supportsFileBasedListening = versionMajor >= 10 && versionMinor >= 7;
+        
+        if (supportsFileBasedListening)
+            DLog(@"using 10.7+ mode listening (clean)");
+        else
+            DLog(@"using 10.6 mode listening (dirty)");
         
         if([fm fileExistsAtPath:[@"~/.bash_profile" stringByExpandingTildeInPath]])
             profilePath = [@"source ~/.bash_profile" stringByExpandingTildeInPath];
@@ -99,13 +112,25 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     void *appPointer = (void *)self;
     FSEventStreamContext context = {0, appPointer, NULL, NULL, NULL};
     NSTimeInterval latency = 2.0;
+    FSEventStreamCreateFlags flags = 0;
     
-    free(stream);
-
-    DLog(@"Initializing the FSEventStream at file level (clean)");
+    if (stream != NULL)
+        free(stream);
+    
+    if (supportsFileBasedListening)
+    {
+        DLog(@"Initializing the FSEventStream at file level (clean)");
+        flags = kFSEventStreamCreateFlagUseCFTypes | kFSEventStreamCreateFlagNoDefer | 0x00000010;
+    }
+    else
+    {
+        NSLog(@"Initializing the FSEventStream at folder level (dirty)");
+        flags = kFSEventStreamCreateFlagUseCFTypes;
+    }
+    
     stream = FSEventStreamCreate(NULL, &fsevents_callback, &context, (CFArrayRef) pathsToWatch,
-                                 [lastEventId unsignedLongLongValue], (CFAbsoluteTime) latency, kFSEventStreamCreateFlagUseCFTypes | kFSEventStreamCreateFlagNoDefer | 0x00000010 );
-
+                                 [lastEventId unsignedLongLongValue], (CFAbsoluteTime) latency, flags);
+    
     FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
     FSEventStreamStart(stream);
 }
@@ -214,13 +239,13 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         else if ([self isObjJFile:fullPath])
         {
             arguments = [NSArray arrayWithObjects: @"-c", [NSString stringWithFormat:@"(%@; objj '%@' '%@' '%@';) 2>&1", profilePath, parserPath, fullPath, shadowPath],@"",nil];
-            successTitle = @"Objective-J source parsed";
+            successTitle = @"Objective-J source processed";
             successMsg = splitPath;
         }
         else if ([self isXCCIgnoreFile:fullPath])
         {
             [self computeIgnoredPaths];
-            successTitle = @".xcodecapp-ignore parsed";
+            successTitle = @".xcodecapp-ignore processed";
             successMsg = @"Ignored files list updated";
             arguments = nil;
         }
@@ -507,50 +532,36 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 @end
 
 
-#if (ACTIVATE_DATE_BASED_MODE == 1)
 @implementation TNXCodeCapp (SnowLeopard)
 
-- (void)initializeEventStreamWithPath:(NSString*)aPath
-{
-    NSArray *pathsToWatch = [NSArray arrayWithObject:aPath];
-    void *appPointer = (void *)self;
-    FSEventStreamContext context = {0, appPointer, NULL, NULL, NULL};
-    NSTimeInterval latency = 2.0;
-    free(stream);
-    NSLog(@"Initializing the FSEventStream at folder level (dirty)");
-    stream = FSEventStreamCreate(NULL, &fsevents_callback, &context, (CFArrayRef) pathsToWatch,
-                                 [lastEventId unsignedLongLongValue], (CFAbsoluteTime) latency, kFSEventStreamCreateFlagUseCFTypes);
-
-    FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
-    FSEventStreamStart(stream);
-}
-
-- (void)updateLastModificationDateForPath:(NSString *)path
+- (void)updateLastModificationDate:(NSDate *)date forPath:(NSString *)path
 {
     if (!pathModificationDates)
     {
         pathModificationDates = [[[NSUserDefaults standardUserDefaults] dictionaryForKey:@"pathModificationDates"] mutableCopy];
+        
         if (!pathModificationDates)
             pathModificationDates = [NSMutableDictionary new];
     }
 
-    [pathModificationDates setObject:[NSDate date] forKey:path];
+    [pathModificationDates setObject:[date retain] forKey:path];
     [[NSUserDefaults standardUserDefaults] setObject:pathModificationDates forKey:@"pathModificationDates"];
 }
 
-- (NSDate*)lastModificationDateForPath:(NSString *)path
+- (NSDate *)lastModificationDateForPath:(NSString *)path
 {
     if (!pathModificationDates)
     {
         pathModificationDates = [[[NSUserDefaults standardUserDefaults] dictionaryForKey:@"pathModificationDates"] mutableCopy];
+        
         if (!pathModificationDates)
             pathModificationDates = [NSMutableDictionary new];
     }
 
-    if([pathModificationDates valueForKey:path] != nil)
+    if ([pathModificationDates valueForKey:path] != nil)
         return [pathModificationDates valueForKey:path];
     else
         return appStartedTimestamp;
 }
+
 @end
-#endif

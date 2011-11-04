@@ -28,7 +28,6 @@
 		02998CF91369C38A006C73DB /* Growl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02998CF61369C339006C73DB /* Growl.framework */; };
 		651DAE1F13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 651DAE1D13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.m */; };
 		E12AA96014637828006F55D6 /* macros.h in Sources */ = {isa = PBXBuildFile; fileRef = E12AA95F14637828006F55D6 /* macros.h */; };
-		E19F99611463B99500569A7E /* defines.h in Sources */ = {isa = PBXBuildFile; fileRef = E19F99601463B99500569A7E /* defines.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -61,7 +60,6 @@
 		027FE4BC1462F7EB00B1AB92 /* FSEventCallback.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FSEventCallback.m; sourceTree = "<group>"; };
 		02998CEA1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "Growl Registration Ticket.growlRegDict"; sourceTree = "<group>"; };
 		02998CF61369C339006C73DB /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Growl.framework; sourceTree = "<group>"; };
-		02D00BD514635F9B0071080E /* defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = defines.h; sourceTree = "<group>"; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
@@ -74,9 +72,8 @@
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8E01A8DD0DE51A7C0008BB35 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
 		8E01A91D0DE9EED20008BB35 /* AppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppController.h; sourceTree = "<group>"; };
-		8E01A91E0DE9EED20008BB35 /* AppController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppController.m; sourceTree = "<group>"; };
+		8E01A91E0DE9EED20008BB35 /* AppController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = AppController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		E12AA95F14637828006F55D6 /* macros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.objj.h; path = macros.h; sourceTree = "<group>"; };
-		E19F99601463B99500569A7E /* defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.objj.h; path = defines.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,7 +101,6 @@
 				027FE49C1462D74C00B1AB92 /* TNXCodeCapp.m */,
 				027FE4BB1462F7D600B1AB92 /* FSEventCallback.h */,
 				027FE4BC1462F7EB00B1AB92 /* FSEventCallback.m */,
-				02D00BD514635F9B0071080E /* defines.h */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -151,7 +147,6 @@
 		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				E19F99601463B99500569A7E /* defines.h */,
 				027D9989136969DD00D3DB13 /* xcodecapp-cocoa.pch */,
 				29B97316FDCFA39411CA2CEA /* main.m */,
 				E12AA95F14637828006F55D6 /* macros.h */,
@@ -266,7 +261,6 @@
 				027FE49D1462D74C00B1AB92 /* TNXCodeCapp.m in Sources */,
 				027FE4BD1462F7EB00B1AB92 /* FSEventCallback.m in Sources */,
 				E12AA96014637828006F55D6 /* macros.h in Sources */,
-				E19F99611463B99500569A7E /* defines.h in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

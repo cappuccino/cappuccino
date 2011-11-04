@@ -19,7 +19,6 @@
 #import <Foundation/Foundation.h>
 #import "PRHEmptyGrowlDelegate.h"
 #import "FSEventCallback.h"
-#import "defines.h"
 
 extern NSString * const XCCDidPopulateProjectNotification;
 extern NSString * const XCCConversionStartNotification;
@@ -47,10 +46,8 @@ extern NSString * const XCCListeningStartNotification;
     PRHEmptyGrowlDelegate           *growlDelegateRef;
     NSObject                        *delegate;
     NSDate                          *appStartedTimestamp;
-
-#if (ACTIVATE_DATE_BASED_MODE == 1)
     NSMutableDictionary             *pathModificationDates;
-#endif
+    BOOL                            supportsFileBasedListening;
 }
 
 @property (retain) NSObject* delegate;
@@ -58,6 +55,7 @@ extern NSString * const XCCListeningStartNotification;
 @property (retain) NSURL* XCodeSupportProject;
 @property (retain) NSURL* currentProjectURL;
 @property (retain) NSString* currentProjectName;
+@property BOOL supportsFileBasedListening;
 
 - (BOOL)isObjJFile:(NSString*)path;
 - (void)computeIgnoredPaths;
@@ -77,13 +75,10 @@ extern NSString * const XCCListeningStartNotification;
 
 @end
 
-
-#if (ACTIVATE_DATE_BASED_MODE == 1)
 @interface TNXCodeCapp (SnowLeopard)
 
-- (void)updateLastModificationDateForPath:(NSString *)path;
+- (void)updateLastModificationDate:(NSDate *)date forPath:(NSString *)path;
 - (NSDate*)lastModificationDateForPath:(NSString *)path;
 
 @end
-#endif
 

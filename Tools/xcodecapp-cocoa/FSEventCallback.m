@@ -16,9 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#import "AppController.h"
 #import "FSEventCallback.h"
 
-#if (ACTIVATE_DATE_BASED_MODE == 0)
 
 /*!
  This is the FSEvent callback for 10.7
@@ -29,75 +29,53 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
                        void *eventPaths,
                        const FSEventStreamEventFlags eventFlags[],
                        const FSEventStreamEventId eventIds[])
-{
+{    
     TNXCodeCapp *xcc = (TNXCodeCapp *)userData;
+    BOOL useFileBasedListening = [xcc supportsFileBasedListening];
     size_t i;
     
     for (i = 0; i < numEvents; i++)
     {
         NSString *path = [(NSArray *)eventPaths objectAtIndex:i];
 
-        // kFSEventStreamEventFlagItemIsFile = 0x00010000
-        if (!(eventFlags[i] & 0x00010000)
-            || [xcc isPathMatchingIgnoredPaths:path]
-            || (![xcc isXIBFile:path] && ![xcc isObjJFile:path] && ![xcc isXCCIgnoreFile:path]))
-            continue;
-        
-        // kFSEventStreamEventFlagItemRemoved = 0x00000200
-        if (eventFlags[i] & 0x00000200)
-            [xcc handleFileRemoval:path];
+        if (useFileBasedListening)
+        {
+            // kFSEventStreamEventFlagItemIsFile = 0x00010000
+            if (!(eventFlags[i] & 0x00010000)
+                || [xcc isPathMatchingIgnoredPaths:path]
+                || (![xcc isXIBFile:path] && ![xcc isObjJFile:path] && ![xcc isXCCIgnoreFile:path]))
+                continue;
+            
+            // kFSEventStreamEventFlagItemRemoved = 0x00000200
+            if (eventFlags[i] & 0x00000200)
+                [xcc handleFileRemoval:path];
+            else
+                [xcc handleFileModification:path notify:YES];
+        }
         else
-            [xcc handleFileModification:path notify:YES];
+        {
+            NSArray *subpaths = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:NULL];
+            
+            for (NSString *subpath in subpaths)
+            {                
+                NSString *fullPath = [NSString stringWithFormat:@"%@%@", path, subpath];
 
+                if ([xcc isPathMatchingIgnoredPaths:fullPath]
+                    || (![xcc isXIBFile:fullPath] && ![xcc isObjJFile:fullPath] && ![xcc isXCCIgnoreFile:fullPath]))
+                    continue;
+
+                NSDate *lastModifiedDate = [xcc lastModificationDateForPath:subpath];
+                NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:fullPath error:nil];
+                NSDate *fileModDate = [fileAttributes objectForKey:NSFileModificationDate];
+                
+                if ([fileModDate compare:lastModifiedDate] == NSOrderedDescending)
+                {
+                    [xcc updateLastModificationDate:fileModDate forPath:subpath];
+                    [xcc handleFileModification:fullPath notify:YES];
+                }
+            }
+        }
+        
         [xcc updateLastEventId:eventIds[i]];
     }
 }
-
-
-#else
-
-/*!
- This is the FSEvent callback for 10.6
- */
-void fsevents_callback(ConstFSEventStreamRef streamRef,
-                       void *userData,
-                       size_t numEvents,
-                       void *eventPaths,
-                       const FSEventStreamEventFlags eventFlags[],
-                       const FSEventStreamEventId eventIds[])
-{
-    TNXCodeCapp *xcc = (TNXCodeCapp *)userData;
-    size_t i;
-
-    for(i = 0; i < numEvents; i++)
-    {
-        NSString *path = [(NSArray *)eventPaths objectAtIndex:i];
-
-        // TEST on 10.7
-        // BOOL isDir;
-        // [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir];
-        // if (!isDir)
-        //    continue;
-        // END TEST
-
-        NSArray *subpaths = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:NULL];
-
-        for(NSString *currentPath in subpaths)
-        {
-            [xcc updateLastModificationDateForPath:currentPath];
-
-            currentPath = [NSString stringWithFormat:@"%@/%@", path, currentPath];
-
-            NSDate *lastModifiedDate = [xcc lastModificationDateForPath:currentPath];
-            NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:currentPath error:nil];
-            NSDate *fileModDate = [fileAttributes objectForKey:NSFileModificationDate];
-
-            if([fileModDate compare:lastModifiedDate] == NSOrderedDescending)
-                [xcc handleFileModification:currentPath notify:YES];
-
-            [xcc updateLastEventId:eventIds[i]];
-        }
-    }
-}
-
-#endif

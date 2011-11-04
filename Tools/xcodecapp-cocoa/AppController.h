@@ -33,13 +33,18 @@
     IBOutlet NSTextView             *helpTextView;
     IBOutlet NSTextField            *labelVersion;
     
-    TNXCodeCapp                     *_xcc;
+    TNXCodeCapp                     *xcc;
     NSImage                         *_iconActive;
     NSImage                         *_iconInactive;
     NSImage                         *_iconWorking;
     NSStatusItem                    *_statusItem;
     PRHEmptyGrowlDelegate           *growlDelegateRef;
 }
+
+@property BOOL supportsFileModeListening;
+@property (assign) TNXCodeCapp *xcc;
+
++ (AppController *)sharedAppController;
 
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem;
 - (void)registerDefaults;

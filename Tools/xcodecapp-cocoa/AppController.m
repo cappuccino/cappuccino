@@ -17,12 +17,24 @@
  */
 
 
+#import <AppKit/NSApplication.h>
+
 #import "AppController.h"
-#include "defines.h"
 #include "macros.h"
 
 
+AppController *SharedAppControllerInstance = nil;
+
+
 @implementation AppController
+
+@synthesize supportsFileModeListening;
+@synthesize xcc;
+
++ (AppController *)sharedAppController
+{
+    return SharedAppControllerInstance;
+}
 
 #pragma mark -
 #pragma mark Initialization
@@ -32,12 +44,8 @@
  */
 - (void)awakeFromNib
 {
-    #if ACTIVATE_DATE_BASED_MODE
-        DLog(@"using 10.6 mode listening (dirty)");
-    #else
-        DLog(@"using 10.7+ mode listening (clean)");
-    #endif
-
+    SharedAppControllerInstance = self;
+    
     if (!growlDelegateRef)
         growlDelegateRef = [[[PRHEmptyGrowlDelegate alloc] init] autorelease];
     
@@ -68,17 +76,17 @@
         [self openHelp:self];
     }
     
-    _xcc = [[TNXCodeCapp alloc] init];
-    [_xcc setDelegate:self];
+    xcc = [[TNXCodeCapp alloc] init];
+    [xcc setDelegate:self];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(XCodeCappConversionDidStart:) name:XCCConversionStartNotification object:_xcc];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(XCodeCappConversionDidStop:) name:XCCConversionStopNotification object:_xcc];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(XCodeCappPopulateProject:) name:XCCDidPopulateProjectNotification object:_xcc];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(XCodeCappListeningDidStart:) name:XCCListeningStartNotification object:_xcc];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(XCodeCappConversionDidStart:) name:XCCConversionStartNotification object:xcc];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(XCodeCappConversionDidStop:) name:XCCConversionStopNotification object:xcc];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(XCodeCappPopulateProject:) name:XCCDidPopulateProjectNotification object:xcc];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(XCodeCappListeningDidStart:) name:XCCListeningStartNotification object:xcc];
     
     [helpTextView setTextContainerInset:NSSizeFromCGSize(CGSizeMake(10.0, 10.0))];
     
-    [_xcc start];
+    [xcc start];
 }
 
 
@@ -107,7 +115,7 @@
  */
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)app
 {
-    [_xcc clear];
+    [xcc clear];
     
     return NSTerminateNow;
 }
@@ -146,10 +154,10 @@
 - (void)XCodeCappListeningDidStart:(NSNotification *)aNotification
 {
     [_statusItem setImage:_iconActive];
-    [menuItemStartStop setTitle:[NSString stringWithFormat:@"Stop Listening to “%@”", [_xcc currentProjectName]]];
+    [menuItemStartStop setTitle:[NSString stringWithFormat:@"Stop Listening to “%@”", [xcc currentProjectName]]];
     [menuItemStartStop setAction:@selector(stopListener:)];
 
-    [self growlWithTitle:@"Listening to project" message:[[_xcc currentProjectURL] path]];
+    [self growlWithTitle:@"Listening to project" message:[[xcc currentProjectURL] path]];
 }
 
 
@@ -195,7 +203,7 @@
     if ([openPanel runModal] != NSFileHandlingPanelOKButton)
         return;
     
-    [_xcc listenProjectAtPath:[NSString stringWithFormat:@"%@/", [[[openPanel URLs] objectAtIndex:0] path]]];
+    [xcc listenProjectAtPath:[NSString stringWithFormat:@"%@/", [[[openPanel URLs] objectAtIndex:0] path]]];
 }
 
 /*!
@@ -204,7 +212,7 @@
  */
 - (IBAction)stopListener:(id)aSender
 {
-    [_xcc clear];
+    [xcc clear];
     
     [_statusItem setImage:_iconInactive];
     [menuItemStartStop setTitle:@"Listen to Project…"];
@@ -219,11 +227,11 @@
  */
 - (IBAction)openXCode:(id)aSender
 {
-    if (![_xcc currentProjectURL])
+    if (![xcc currentProjectURL])
         return;
     
-    DLog(@"Opening Xcode project at URL: '%@'", [[_xcc XCodeSupportProject] path]);
-    system([[NSString stringWithFormat:@"open \"%@\"", [[_xcc XCodeSupportProject] path]] UTF8String]);
+    DLog(@"Opening Xcode project at URL: '%@'", [[xcc XCodeSupportProject] path]);
+    system([[NSString stringWithFormat:@"open \"%@\"", [[xcc XCodeSupportProject] path]] UTF8String]);
 }
 
 /*!
@@ -252,7 +260,7 @@
  */
 - (IBAction)clearErrors:(id)sender
 {
-    [[_xcc errorList] removeAllObjects];
+    [[xcc errorList] removeAllObjects];
     [errorsTable reloadData];
 }
 
@@ -294,25 +302,25 @@
 - (BOOL)validateMenuItem:(NSMenuItem *)aMenuItem
 {
     if (aMenuItem == menuItemOpenXCode)
-        return !![_xcc currentProjectURL];
+        return !![xcc currentProjectURL];
     
     return YES;
 }
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
-    return [[_xcc errorList] count];
+    return [[xcc errorList] count];
 }
 
 - (id)tableView:(NSTableView*)aTableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {
-    return [[_xcc errorList] objectAtIndex:row];
+    return [[xcc errorList] objectAtIndex:row];
 }
 
 - (void)tableViewColumnDidResize:(NSNotification *)tableView
 {
     [errorsTable noteHeightOfRowsWithIndexesChanged:
-     [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [[_xcc errorList] count])]];
+     [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [[xcc errorList] count])]];
 }
 
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(int)aRow
@@ -322,7 +330,7 @@
     float width = [tabCol width];
     NSRect r = NSMakeRect(0,0,width,1000.0);
     NSCell *cell = [tabCol dataCellForRow:aRow];
-    NSString *content = [[_xcc errorList] objectAtIndex:aRow];
+    NSString *content = [[xcc errorList] objectAtIndex:aRow];
     [cell setObjectValue:content];
     float height = [cell cellSizeForBounds:r].height;
     
