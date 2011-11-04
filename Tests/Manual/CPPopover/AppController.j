@@ -84,7 +84,7 @@
 - (IBAction)open:(id)sender
 {
     var g;
-    switch([buttonGravity title])
+    switch ([buttonGravity title])
     {
         case "Automatic":
             g = nil;
@@ -104,7 +104,7 @@
     }
 
     var a;
-    switch([buttonStyle title])
+    switch ([buttonStyle title])
     {
         case "Minimal":
             a = CPPopoverAppearanceMinimal;
@@ -115,7 +115,7 @@
     }
 
     var p = [[CPPopover alloc] init],
-        viewC = [[CPViewController alloc] init];
+        viewC = [[CPViewController alloc] init],
         view = [[CPView alloc] initWithFrame:CPRectMake(0.0, 0.0, 320, 300)],
         label = [CPTextField labelWithTitle:[buttonGravity title]];
 
@@ -136,8 +136,8 @@
     [p setDelegate:self];
     [p showRelativeToRect:nil ofView:sender preferredEdge:g];
     CPLog.info("content size -  w:" + [p contentSize].width + " h:" + [p contentSize].width);
-    CPLog.info("positionning rect - x: " + [p positionningRect].origin.x + " y: " + [p positionningRect].origin.x
-                    + " w:" + [p positionningRect].size.width + " h:" + [p positionningRect].size.width);
+    CPLog.info("positioning rect - x: " + [p positioningRect].origin.x + " y: " + [p positioningRect].origin.x
+                    + " w:" + [p positioningRect].size.width + " h:" + [p positioningRect].size.width);
 }
 
 

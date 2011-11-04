@@ -39,7 +39,7 @@ CPPopoverBehaviorSemitransient      = 2;
 var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     CPPopoverDelegate_popover_didShow_      = 1 << 1,
     CPPopoverDelegate_popover_shouldClose_  = 1 << 2,
-    CPPopoverDelegate_popover_willClose_   = 1 << 3,
+    CPPopoverDelegate_popover_willClose_    = 1 << 3,
     CPPopoverDelegate_popover_didClose_     = 1 << 4;
 
 
@@ -73,7 +73,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 
 
 #pragma mark -
-#pragma mark INitialization
+#pragma mark Initialization
 
 /*!
     Initialize the CPPopover witn default values
@@ -221,6 +221,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 
     [_attachedWindow setAppearance:_appearance];
     [_attachedWindow setAnimates:_animates];
+    [_attachedWindow setDelegate:self];
     [_attachedWindow setMovableByWindowBackground:NO];
     [_attachedWindow setFrame:[_attachedWindow frameRectForContentRect:[[_contentViewController view] frame]]];
     [_attachedWindow setContentView:[_contentViewController view]];
@@ -268,8 +269,28 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     [self close];
 }
 
+
+#pragma mark -
+#pragma mark Delegates
+
+/*! @ignore */
+- (BOOL)attachedWindowShouldClose:(_CPAttachedWindow)anAttachedWindow
+{
+    [self close];
+
+    // we return NO, because we want the CPPopover to compute
+    // if the attached can be close in order to send delegate messages
+    return NO;
+}
+
 @end
 
+var CPPopoverNeedsComputeKey = @"CPPopoverNeedsComputeKey",
+    CPPopoverAppearanceKey = @"CPPopoverAppearanceKey",
+    CPPopoverAnimatesKey = @"CPPopoverAnimatesKey",
+    CPPopoverContentViewControllerKey = @"CPPopoverContentViewControllerKey",
+    CPPopoverDelegateKey = @"CPPopoverDelegateKey",
+    CPPopoverBehaviorKey = @"CPPopoverBehaviorKey";
 
 @implementation CPPopover (CPCoding)
 
@@ -279,12 +300,12 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 
     if (self)
     {
-        _needsCompute = [aCoder decodeIntForKey:@"_needsCompute"];
-        _appearance = [aCoder decodeIntForKey:@"_appearance"];
-        _animates = [aCoder decodeBoolForKey:@"_animates"];
-        _contentViewController = [aCoder decodeObjectForKey:@"_contentViewController"];
-        [self setDelegate:[aCoder decodeObjectForKey:@"_delegate"]];
-        [self setBehaviour:[aCoder decodeIntForKey:@"_behavior"]];
+        _needsCompute = [aCoder decodeIntForKey:CPPopoverNeedsComputeKey];
+        _appearance = [aCoder decodeIntForKey:CPPopoverAppearanceKey];
+        _animates = [aCoder decodeBoolForKey:CPPopoverAnimatesKey];
+        _contentViewController = [aCoder decodeObjectForKey:CPPopoverContentViewControllerKey];
+        [self setDelegate:[aCoder decodeObjectForKey:CPPopoverDelegateKey]];
+        [self setBehaviour:[aCoder decodeIntForKey:CPPopoverBehaviorKey]];
     }
     return self;
 }
@@ -293,12 +314,12 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 {
     [super encodeWithCoder:aCoder];
 
-    [aCoder encodeInt:_behavior forKey:@"_behavior"];
-    [aCoder encodeInt:_appearance forKey:@"_appearance"];
-    [aCoder encodeBool:_needsCompute forKey:@"_needsCompute"];
-    [aCoder encodeObject:_contentViewController forKey:@"_contentViewController"];
-    [aCoder encodeObject:_delegate forKey:@"_delegate"];
-    [aCoder encodeObject:_animates forKey:@"_animates"];
+    [aCoder encodeBool:_needsCompute forKey:CPPopoverNeedsComputeKey];
+    [aCoder encodeInt:_appearance forKey:CPPopoverAppearanceKey];
+    [aCoder encodeObject:_animates forKey:CPPopoverAnimatesKey];
+    [aCoder encodeObject:_contentViewController forKey:CPPopoverContentViewControllerKey];
+    [aCoder encodeObject:_delegate forKey:CPPopoverDelegateKey];
+    [aCoder encodeInt:_behavior forKey:CPPopoverBehaviorKey];
 }
 
 @end
