@@ -103,7 +103,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 
     @return CPRect represeting the frame of the popover
 */
-- (CPRect)positionningRect
+- (CPRect)positioningRect
 {
     if (!_attachedWindow || ![_attachedWindow isVisible])
         return nil;
@@ -113,7 +113,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 /*! Sets the frame of the popover
     @param aRect the desired frame
 */
-- (void)setPositionningRect:(CPRect)aRect
+- (void)setPositioningRect:(CPRect)aRect
 {
     if (!_attachedWindow || ![_attachedWindow isVisible])
         return;
@@ -196,14 +196,14 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 }
 
 #pragma mark -
-#pragma mark Positionning
+#pragma mark Positioning
 
 /*!
     Show the popover
 
     @param positioningRect if set, the popover will be positionned to a random rect relative to the window
     @param positioningView if set, the popover will be positioned relative to this view
-    @param preferredEdge: CPRectEdge representing the prefered positionning.
+    @param preferredEdge: CPRectEdge representing the preferred positioning.
 */
 - (void)showRelativeToRect:(CPRect)positioningRect ofView:(CPView)positioningView preferredEdge:(CPRectEdge)preferredEdge
 {
@@ -231,7 +231,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     else if (positioningView)
         [_attachedWindow positionRelativeToView:positioningView preferredEdge:preferredEdge];
     else
-        [CPException raise:CPInvalidArgumentException reason:@"you must set positioningRect or positioningView"];
+        [CPException raise:CPInvalidArgumentException reason:@"a value must be passed for positioningRect or positioningView"];
 
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_didShow_)
         [_delegate popoverDidShow:self];
