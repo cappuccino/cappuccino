@@ -509,6 +509,11 @@ NOT YET IMPLEMENTED
     _objectValues = { };
     _cachedRowHeights = [];
 
+    // Otherwise, if we have a row marked as group with a
+    // index greater than the new number or rows
+    // it keeps the the graphical group style.
+    [_groupRows removeAllIndexes];
+
     // This updates the size too.
     [self noteNumberOfRowsChanged];
 
