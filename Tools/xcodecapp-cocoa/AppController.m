@@ -30,6 +30,12 @@
  */
 - (void)awakeFromNib
 {
+#if (ACTIVATE_DATE_BASED_MODE == 1)
+    NSLog(@"XCC is working using the 10.6 mode (dirty)");
+#else
+    NSLog(@"XCC is working using the 10.7+ mode (clean)");
+#endif
+
     if (!growlDelegateRef)
         growlDelegateRef = [[[PRHEmptyGrowlDelegate alloc] init] autorelease];
     
@@ -219,6 +225,7 @@
 - (void)updateErrorTable
 {
     [errorsTable reloadData];
+    [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
     [errorsPanel orderFront:self];
 }
 
@@ -241,6 +248,7 @@
     [helpTextView readRTFDFromFile:[[NSBundle mainBundle] pathForResource:@"help" ofType:@"rtfd"]];
     
     [helpWindow center];
+    [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
     [helpWindow makeKeyAndOrderFront:aSender];
 }
 

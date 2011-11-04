@@ -19,6 +19,7 @@
 #import <Foundation/Foundation.h>
 #import "PRHEmptyGrowlDelegate.h"
 #import "FSEventCallback.h"
+#import "defines.h"
 
 extern NSString * const XCCDidPopulateProjectNotification;
 extern NSString * const XCCConversionStartNotification;
@@ -45,6 +46,11 @@ extern NSString * const XCCListeningStartNotification;
     NSURL                           *XCodeSupportProjectSources;
     PRHEmptyGrowlDelegate           *growlDelegateRef;
     NSObject                        *delegate;
+    NSDate                          *appStartedTimestamp;
+
+#if (ACTIVATE_DATE_BASED_MODE == 1)
+    NSMutableDictionary             *pathModificationDates;
+#endif
 }
 
 @property (retain) NSObject* delegate;
@@ -69,5 +75,15 @@ extern NSString * const XCCListeningStartNotification;
 - (void)clear;
 - (void)start;
 
+@end
+
+
+#if (ACTIVATE_DATE_BASED_MODE == 1)
+@interface TNXCodeCapp (SnowLeopard)
+
+- (void)updateLastModificationDateForPath:(NSString *)path;
+- (NSDate*)lastModificationDateForPath:(NSString *)path;
 
 @end
+#endif
+

@@ -18,8 +18,10 @@
 
 #import "FSEventCallback.h"
 
+#if (ACTIVATE_DATE_BASED_MODE == 0)
+
 /*!
- This is the FSEvent callback
+ This is the FSEvent callback for 10.7
  */
 void fsevents_callback(ConstFSEventStreamRef streamRef,
                        void *userData,
@@ -34,12 +36,6 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     for(i = 0; i < numEvents; i++)
     {
         NSString *path = [(NSArray *)eventPaths objectAtIndex:i];
-        
-        //              /!\ IMPORTANT /!\
-        //
-        // This is a test. Maybe these values where present as
-        // private API in 10.6, and maybe not
-        // If not, we will drop support for 10.6
 
         // kFSEventStreamEventFlagItemIsFile = 0x00010000
         if (!(eventFlags[i] & 0x00010000)
@@ -49,14 +45,59 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
         
         // kFSEventStreamEventFlagItemRemoved = 0x00000200
         if (eventFlags[i] & 0x00000200)
-        {
             [xcc handleFileRemoval:path];
-        }
         else
-        {
-            NSLog(@"this file has been modified or created");
             [xcc handleFileModification:path notify:YES];
-        }
+
         [xcc updateLastEventId:eventIds[i]];
     }
 }
+
+
+#else
+
+/*!
+ This is the FSEvent callback for 10.6
+ */
+void fsevents_callback(ConstFSEventStreamRef streamRef,
+                       void *userData,
+                       size_t numEvents,
+                       void *eventPaths,
+                       const FSEventStreamEventFlags eventFlags[],
+                       const FSEventStreamEventId eventIds[])
+{
+    TNXCodeCapp *xcc = (TNXCodeCapp *)userData;
+    size_t i;
+
+    for(i = 0; i < numEvents; i++)
+    {
+        NSString *path = [(NSArray *)eventPaths objectAtIndex:i];
+
+        // TEST on 10.7
+        // BOOL isDir;
+        // [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir];
+        // if (!isDir)
+        //    continue;
+        // END TEST
+
+        NSArray *subpaths = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:NULL];
+
+        for(NSString *currentPath in subpaths)
+        {
+            [xcc updateLastModificationDateForPath:currentPath];
+
+            currentPath = [NSString stringWithFormat:@"%@/%@", path, currentPath];
+
+            NSDate *lastModifiedDate = [xcc lastModificationDateForPath:currentPath];
+            NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:currentPath error:nil];
+            NSDate *fileModDate = [fileAttributes objectForKey:NSFileModificationDate];
+
+            if([fileModDate compare:lastModifiedDate] == NSOrderedDescending)
+                [xcc handleFileModification:currentPath notify:YES];
+
+            [xcc updateLastEventId:eventIds[i]];
+        }
+    }
+}
+
+#endif

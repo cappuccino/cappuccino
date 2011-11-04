@@ -46,6 +46,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         ignoredFilePaths = [NSMutableArray new];
         parserPath = [[NSBundle mainBundle] pathForResource:@"parser" ofType:@"j"];
         lastEventId = [[NSUserDefaults standardUserDefaults] objectForKey:@"lastEventId"];
+        appStartedTimestamp = [NSDate date];
         
         if([fm fileExistsAtPath:[@"~/.bash_profile" stringByExpandingTildeInPath]])
             profilePath = [@"source ~/.bash_profile" stringByExpandingTildeInPath];
@@ -101,9 +102,11 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     NSTimeInterval latency = 2.0;
     
     free(stream);
+
+    NSLog(@"Initializing the FSEventStream at file level (clean)");
     stream = FSEventStreamCreate(NULL, &fsevents_callback, &context, (CFArrayRef) pathsToWatch,
                                  [lastEventId unsignedLongLongValue], (CFAbsoluteTime) latency, kFSEventStreamCreateFlagUseCFTypes | kFSEventStreamCreateFlagNoDefer | 0x00000010 );
-    
+
     FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
     FSEventStreamStart(stream);
 }
@@ -506,3 +509,52 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 }
 
 @end
+
+
+#if (ACTIVATE_DATE_BASED_MODE == 1)
+@implementation TNXCodeCapp (SnowLeopard)
+
+- (void)initializeEventStreamWithPath:(NSString*)aPath
+{
+    NSArray *pathsToWatch = [NSArray arrayWithObject:aPath];
+    void *appPointer = (void *)self;
+    FSEventStreamContext context = {0, appPointer, NULL, NULL, NULL};
+    NSTimeInterval latency = 2.0;
+    free(stream);
+    NSLog(@"Initializing the FSEventStream at folder level (dirty)");
+    stream = FSEventStreamCreate(NULL, &fsevents_callback, &context, (CFArrayRef) pathsToWatch,
+                                 [lastEventId unsignedLongLongValue], (CFAbsoluteTime) latency, kFSEventStreamCreateFlagUseCFTypes);
+
+    FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+    FSEventStreamStart(stream);
+}
+
+- (void)updateLastModificationDateForPath:(NSString *)path
+{
+    if (!pathModificationDates)
+    {
+        pathModificationDates = [[[NSUserDefaults standardUserDefaults] dictionaryForKey:@"pathModificationDates"] mutableCopy];
+        if (!pathModificationDates)
+            pathModificationDates = [NSMutableDictionary new];
+    }
+
+    [pathModificationDates setObject:[NSDate date] forKey:path];
+    [[NSUserDefaults standardUserDefaults] setObject:pathModificationDates forKey:@"pathModificationDates"];
+}
+
+- (NSDate*)lastModificationDateForPath:(NSString *)path
+{
+    if (!pathModificationDates)
+    {
+        pathModificationDates = [[[NSUserDefaults standardUserDefaults] dictionaryForKey:@"pathModificationDates"] mutableCopy];
+        if (!pathModificationDates)
+            pathModificationDates = [NSMutableDictionary new];
+    }
+
+    if([pathModificationDates valueForKey:path] != nil)
+        return [pathModificationDates valueForKey:path];
+    else
+        return appStartedTimestamp;
+}
+@end
+#endif
