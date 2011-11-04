@@ -17,6 +17,7 @@
  */
 
 #import "TNXCodeCapp.h"
+#include "macros.h"
 
 NSString * const XCCDidPopulateProjectNotification = @"XCCDidPopulateProjectNotification";
 NSString * const XCCConversionStartNotification = @"XCCConversionStartNotification";
@@ -43,9 +44,10 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     {
         errorList = [NSMutableArray arrayWithCapacity:10];
         fm = [NSFileManager defaultManager];
-        ignoredFilePaths = [NSMutableArray new];
+        ignoredFilePaths = [NSMutableSet new];
         parserPath = [[NSBundle mainBundle] pathForResource:@"parser" ofType:@"j"];
         lastEventId = [[NSUserDefaults standardUserDefaults] objectForKey:@"lastEventId"];
+        appStartedTimestamp = [NSDate date];
         
         if([fm fileExistsAtPath:[@"~/.bash_profile" stringByExpandingTildeInPath]])
             profilePath = [@"source ~/.bash_profile" stringByExpandingTildeInPath];
@@ -57,11 +59,11 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
             profilePath = [@"source ~/.zshrc" stringByExpandingTildeInPath];
         else
         {
-            NSAlert *alert = [NSAlert alertWithMessageText:@"Cannot find any valid profile file"
-                                             defaultButton:@"Ok"
+            NSAlert *alert = [NSAlert alertWithMessageText:@"Cannot find any valid profile file."
+                                             defaultButton:@"OK"
                                            alternateButton:nil
                                                otherButton:nil
-                                 informativeTextWithFormat:@"We have checked for ~/.bash_profile, ~/.profile, ~/.bashrc and ~/.zshrc without luck.\n\nYou need to have on of this file to tell XCodeCapp-cocoa where is located nib2cib. Now we gonna try to without sourcing one this file and it may fail.\n\nIf you notice any error or weird behaviour, please look at Mac OS' Console.app for log message and open a ticket."];
+                                 informativeTextWithFormat:@"Neither ~/.bash_profile, ~/.profile, ~/.bashrc nor ~/.zshrc can be found.\n\nWithout this XcodeCapp-cocoa cannot locate nib2cib.\n\nIf you notice any errors or strange behaviour, please look at the system log for messages and open a ticket."];
             [alert runModal];
             profilePath = @"";
         }
@@ -73,13 +75,11 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 - (void)start
 {        
     NSString *lastOpenedPath = [[NSUserDefaults standardUserDefaults] objectForKey:@"LastOpenedPath"];
+    
     if (lastOpenedPath)
     {
         if ([fm fileExistsAtPath:lastOpenedPath])
-        {
-            NSString *message = [NSString stringWithFormat:@"Resuming project %@", [lastOpenedPath lastPathComponent], nil];
-            
-            [delegate performSelector:@selector(growlWithTitle:message:) withObject:@"Resume project" withObject:message];
+        {            
             [self listenProjectAtPath:[NSString stringWithFormat:@"%@/", lastOpenedPath]];
         }
         else
@@ -101,9 +101,11 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     NSTimeInterval latency = 2.0;
     
     free(stream);
+
+    DLog(@"Initializing the FSEventStream at file level (clean)");
     stream = FSEventStreamCreate(NULL, &fsevents_callback, &context, (CFArrayRef) pathsToWatch,
                                  [lastEventId unsignedLongLongValue], (CFAbsoluteTime) latency, kFSEventStreamCreateFlagUseCFTypes | kFSEventStreamCreateFlagNoDefer | 0x00000010 );
-    
+
     FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
     FSEventStreamStart(stream);
 }
@@ -187,19 +189,17 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     if ([self isPathMatchingIgnoredPaths:fullPath] || ![fm fileExistsAtPath:fullPath])
         return;
     
-    NSLog(@"Starting to parse file modification %@", fullPath);
+    DLog(@"Parsing modified file: %@", fullPath);
     
     NSArray *arguments = nil;
+    NSString *successTitle = nil;
     NSString *successMsg = nil;
     NSString *response = nil;
-    NSString *errorTitle = nil;
-    NSString *errorMsg = nil;
     NSNumber *status = [NSNumber numberWithInt:0];
-    NSString *splitedPath = [NSString stringWithFormat:@"%@/%@", [[fullPath pathComponents] objectAtIndex:[[fullPath pathComponents] count] - 2], [fullPath lastPathComponent]];
+    NSString *splitPath = [fullPath substringFromIndex:[[currentProjectURL path] length] + 1];
     NSString *shadowPath = [[self shadowURLForSourceURL:[NSURL URLWithString:[fullPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]] path];
     
-    NSLog(@"Shadow path is: %@", shadowPath);
-    
+    DLog(@"Shadow path: %@", shadowPath);
     
     if ([self isXIBFile:fullPath] || [self isObjJFile:fullPath] || [self isXCCIgnoreFile:fullPath])
     {
@@ -207,56 +207,52 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         
         if ([self isXIBFile:fullPath])
         {
-            NSLog(@"File is XIB file");
             arguments = [NSArray arrayWithObjects: @"-c", [NSString stringWithFormat:@"(%@; nib2cib '%@';) 2>&1", profilePath, fullPath],@"",nil];
-            successMsg = @"The XIB file has been converted";
+            successTitle = @"XIB converted";
+            successMsg = splitPath;
         }
         else if ([self isObjJFile:fullPath])
         {
-            NSLog(@"File is J file");
             arguments = [NSArray arrayWithObjects: @"-c", [NSString stringWithFormat:@"(%@; objj '%@' '%@' '%@';) 2>&1", profilePath, parserPath, fullPath, shadowPath],@"",nil];
-            successMsg = @"The Objective-J file has been converted";
+            successTitle = @"Objective-J source parsed";
+            successMsg = splitPath;
         }
         else if ([self isXCCIgnoreFile:fullPath])
         {
-            NSLog(@"File is .xcodecapp-ignore");
             [self computeIgnoredPaths];
+            successTitle = @".xcodecapp-ignore parsed";
             successMsg = @"Ignored files list updated";
             arguments = nil;
         }
         
-        //Run the task and get the response if needed
+        // Run the task and get the response if needed
         if (arguments)
         {
-            NSLog(@"Running task...");
+            DLog(@"Running task...");
             NSArray *statusInfo = [self runTask:arguments];
             
             status = [statusInfo objectAtIndex:0];
             response = [statusInfo objectAtIndex:1];
             
-            NSLog(@"Task result is   : %@", status);
-            NSLog(@"Task response is : %@", response);                
+            DLog(@"Task result/response: %@/%@", status, response);
         }
         
         
         if ([status intValue] == 0 && shouldNotify)
         {
-            [delegate performSelector:@selector(growlWithTitle:message:) withObject:splitedPath withObject:successMsg];
+            [delegate performSelector:@selector(growlWithTitle:message:) withObject:successTitle withObject:successMsg];
         }
         else if (![status intValue] == 0)
         {
             if (response)
                 [errorList addObject:response];
             
-            errorTitle = [NSString stringWithFormat:@"ERROR: %@", splitedPath];
-            errorMsg = [NSString stringWithFormat:@"Error was: %@.\n\n You may want to check in error list.", response];
-            [delegate performSelector:@selector(growlWithTitle:message:) withObject:errorTitle withObject:errorMsg];
+            [delegate performSelector:@selector(growlWithTitle:message:) withObject:@"Error processing file" withObject:splitPath];
         }
         
         [[NSNotificationCenter defaultCenter] postNotificationName:XCCConversionStopNotification object:self];
+        DLog(@"Processed: %@", fullPath);
     }
-    
-    NSLog(@"Computing done for file %@", fullPath);
 }
 
 /*!
@@ -275,7 +271,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     {
         NSString *shadowPath = [[self shadowURLForSourceURL:[NSURL URLWithString:[fullPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]] path];
         [fm removeItemAtPath:shadowPath error:nil];
-        NSLog(@"Removing shadow file %@", shadowPath);
+        DLog(@"Removing shadow file: %@", shadowPath);
     }
     else if ([self isXCCIgnoreFile:fullPath])
     {
@@ -339,10 +335,10 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         NSLog(@"Xcode support folder created at: %@", [XCodeSupportProject path]);
         [fm createDirectoryAtPath:[XCodeSupportProject path] withIntermediateDirectories:YES attributes:nil error:nil];
         
-        NSLog(@"Copying project.pbxproj from %@ to %@", XCodeTemplatePBXPath, [XCodeSupportProject path]);
+        DLog(@"Copying project.pbxproj from %@ to %@", XCodeTemplatePBXPath, [XCodeSupportProject path]);
         [fm copyItemAtPath:XCodeTemplatePBXPath toPath:XCodeSupportPBXPath error:nil];
         
-        NSLog(@"Reading the content of the project.pbxproj");
+        DLog(@"Reading the content of the project.pbxproj");
         NSMutableString *PBXContent = [NSMutableString stringWithContentsOfFile:XCodeSupportPBXPath encoding:NSUTF8StringEncoding error:nil];
         [PBXContent replaceOccurrencesOfString:@"${CappuccinoProjectName}"
                                     withString:currentProjectName
@@ -354,11 +350,10 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
                                          range:NSMakeRange(0, [PBXContent length])];
         
         [PBXContent writeToFile:XCodeSupportPBXPath atomically:YES encoding:NSUTF8StringEncoding error:nil];
-        NSLog(@"PBX file adapted to the project");
+        DLog(@"PBX file adapted to the project");
         
-        NSLog(@"Creating source folder");
+        DLog(@"Creating source folder");
         [fm createDirectoryAtPath:[XCodeSupportProjectSources path] withIntermediateDirectories:YES attributes:nil error:nil];
-        
         
         [NSThread detachNewThreadSelector:@selector(populateXCodeProject:)toTarget:self withObject:nil];
         return NO;
@@ -374,10 +369,11 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
  */
 - (void)populateXCodeProject:(id)arguments
 {
-    [delegate performSelector:@selector(growlWithTitle:message:) withObject:[[currentProjectURL path] lastPathComponent] withObject:@"Loading of project..."];
+    [delegate performSelector:@selector(growlWithTitle:message:) withObject:@"Loading project" withObject:[currentProjectURL path]];
     
     [self handleFileModification:[NSString stringWithFormat:@"%@", [currentProjectURL path]] notify:NO];
     NSArray *subdirs = [fm subpathsAtPath:[currentProjectURL path]];
+    
     for (NSString *p in subdirs)
         [self handleFileModification:[NSString stringWithFormat:@"%@/%@", [currentProjectURL path], p] notify:NO];
     
@@ -396,12 +392,12 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         [NSException raise:NSInvalidArgumentException format:@"shadowURLForSourceURL: aSource URL must not be null"];
 
     NSMutableString *flattenedPath = [NSMutableString stringWithString:[aSourceURL path]];
-    NSLog(@"Flattened path is : %@", flattenedPath);
     [flattenedPath replaceOccurrencesOfString:@"/"
                                    withString:@"_"
                                       options:NSCaseInsensitiveSearch
                                         range:NSMakeRange(0, [[aSourceURL path] length])];
     
+    DLog(@"Flattened path: %@", flattenedPath);
     NSString *basename  = [NSString stringWithFormat:@"%@.h", [[flattenedPath stringByDeletingPathExtension] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
     
     return [NSURL URLWithString:basename relativeToURL:XCodeSupportProjectSources];
@@ -414,15 +410,18 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 - (void)computeIgnoredPaths
 {
     NSString *ignorePath = [NSString stringWithFormat:@"%@/.xcodecapp-ignore", [currentProjectURL path]];
+    [ignoredFilePaths removeAllObjects];
     
     if ([fm fileExistsAtPath:ignorePath])
     {
         NSString *ignoreFileContent = [NSString stringWithContentsOfFile:ignorePath encoding:NSUTF8StringEncoding error:nil];
-        ignoredFilePaths = [NSMutableArray arrayWithArray:[ignoreFileContent componentsSeparatedByString:@"\n"]];
-    }
-    else
-    {
-        [ignoredFilePaths removeAllObjects];
+        NSArray *ignoredPatterns = [ignoreFileContent componentsSeparatedByString:@"\n"];
+        
+        for (NSString *pattern in ignoredPatterns)
+        {
+            if ([pattern length])
+                [ignoredFilePaths addObject:pattern];
+        }
     }
     
     [ignoredFilePaths addObject:@"*.git*"];
@@ -432,7 +431,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     [ignoredFilePaths addObject:@"*.xCodeSupport*"];
     [ignoredFilePaths addObject:@"*Build*"];
     
-    NSLog(@"ignored file paths are: %@", ignoredFilePaths);
+    NSLog(@"Ignoring file paths: %@", ignoredFilePaths);
 }
 
 /*!
@@ -506,3 +505,52 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 }
 
 @end
+
+
+#if (ACTIVATE_DATE_BASED_MODE == 1)
+@implementation TNXCodeCapp (SnowLeopard)
+
+- (void)initializeEventStreamWithPath:(NSString*)aPath
+{
+    NSArray *pathsToWatch = [NSArray arrayWithObject:aPath];
+    void *appPointer = (void *)self;
+    FSEventStreamContext context = {0, appPointer, NULL, NULL, NULL};
+    NSTimeInterval latency = 2.0;
+    free(stream);
+    NSLog(@"Initializing the FSEventStream at folder level (dirty)");
+    stream = FSEventStreamCreate(NULL, &fsevents_callback, &context, (CFArrayRef) pathsToWatch,
+                                 [lastEventId unsignedLongLongValue], (CFAbsoluteTime) latency, kFSEventStreamCreateFlagUseCFTypes);
+
+    FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+    FSEventStreamStart(stream);
+}
+
+- (void)updateLastModificationDateForPath:(NSString *)path
+{
+    if (!pathModificationDates)
+    {
+        pathModificationDates = [[[NSUserDefaults standardUserDefaults] dictionaryForKey:@"pathModificationDates"] mutableCopy];
+        if (!pathModificationDates)
+            pathModificationDates = [NSMutableDictionary new];
+    }
+
+    [pathModificationDates setObject:[NSDate date] forKey:path];
+    [[NSUserDefaults standardUserDefaults] setObject:pathModificationDates forKey:@"pathModificationDates"];
+}
+
+- (NSDate*)lastModificationDateForPath:(NSString *)path
+{
+    if (!pathModificationDates)
+    {
+        pathModificationDates = [[[NSUserDefaults standardUserDefaults] dictionaryForKey:@"pathModificationDates"] mutableCopy];
+        if (!pathModificationDates)
+            pathModificationDates = [NSMutableDictionary new];
+    }
+
+    if([pathModificationDates valueForKey:path] != nil)
+        return [pathModificationDates valueForKey:path];
+    else
+        return appStartedTimestamp;
+}
+@end
+#endif

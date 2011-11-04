@@ -25,11 +25,10 @@
 {
     IBOutlet NSMenu                 *statusMenu;
     IBOutlet NSMenuItem             *menuItemOpenXCode;
-    IBOutlet NSMenuItem             *menuItemStart;
-    IBOutlet NSMenuItem             *menuItemStop;
-    IBOutlet NSMenuItem             *menuItemProjectName;
+    IBOutlet NSMenuItem             *menuItemStartStop;
     IBOutlet NSPanel                *errorsPanel;
     IBOutlet NSTableView            *errorsTable;
+    IBOutlet NSPanel                *aboutWindow;
     IBOutlet NSWindow               *helpWindow;
     IBOutlet NSTextView             *helpTextView;
     IBOutlet NSTextField            *labelVersion;
@@ -46,12 +45,15 @@
 - (void)registerDefaults;
 - (void)updateErrorTable;
 - (void)growlWithTitle:(NSString *)aTitle message:(NSString *)aMessage;
+- (void)openCenteredWindow:(NSWindow *)aWindow;
 
 - (IBAction)chooseFolder:(id)aSender;
+- (IBAction)openErrors:(id)sender;
 - (IBAction)clearErrors:(id)sender;
 - (IBAction)openXCode:(id)aSender;
 - (IBAction)stopListener:(id)aSender;
 - (IBAction)openHelp:(id)aSender;
+- (IBAction)openAbout:(id)aSender;
 
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(int)aRow;
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row;

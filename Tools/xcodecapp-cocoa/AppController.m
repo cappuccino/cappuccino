@@ -18,6 +18,8 @@
 
 
 #import "AppController.h"
+#include "defines.h"
+#include "macros.h"
 
 
 @implementation AppController
@@ -30,6 +32,12 @@
  */
 - (void)awakeFromNib
 {
+    #if ACTIVATE_DATE_BASED_MODE
+        DLog(@"using 10.6 mode listening (dirty)");
+    #else
+        DLog(@"using 10.7+ mode listening (clean)");
+    #endif
+
     if (!growlDelegateRef)
         growlDelegateRef = [[[PRHEmptyGrowlDelegate alloc] init] autorelease];
     
@@ -67,6 +75,8 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(XCodeCappConversionDidStop:) name:XCCConversionStopNotification object:_xcc];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(XCodeCappPopulateProject:) name:XCCDidPopulateProjectNotification object:_xcc];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(XCodeCappListeningDidStart:) name:XCCListeningStartNotification object:_xcc];
+    
+    [helpTextView setTextContainerInset:NSSizeFromCGSize(CGSizeMake(10.0, 10.0))];
     
     [_xcc start];
 }
@@ -126,9 +136,7 @@
  */
 - (void)XCodeCappPopulateProject:(NSNotification *)aNotification
 {
-    [self growlWithTitle:[[[[aNotification userInfo] objectForKey:@"URL"] path] lastPathComponent]
-                 message:@"Your project has been loaded successfully!"];
-    
+    [self growlWithTitle:@"Project loaded" message:[[[aNotification userInfo] objectForKey:@"URL"] path]];
 }
 
 /*!
@@ -138,7 +146,10 @@
 - (void)XCodeCappListeningDidStart:(NSNotification *)aNotification
 {
     [_statusItem setImage:_iconActive];
-    [menuItemProjectName setTitle:[NSString stringWithFormat:@"Current project: %@", [_xcc currentProjectName]]];
+    [menuItemStartStop setTitle:[NSString stringWithFormat:@"Stop Listening to “%@”", [_xcc currentProjectName]]];
+    [menuItemStartStop setAction:@selector(stopListener:)];
+
+    [self growlWithTitle:@"Listening to project" message:[[_xcc currentProjectURL] path]];
 }
 
 
@@ -172,11 +183,13 @@
  */
 - (IBAction)chooseFolder:(id)aSender
 {
+    [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+
     NSOpenPanel *openPanel = [NSOpenPanel openPanel];
     
     [openPanel setCanChooseDirectories:YES];
     [openPanel setCanCreateDirectories:YES];
-    [openPanel setPrompt:@"Choose Cappuccino project"];
+    [openPanel setTitle:@"Choose Cappuccino Project"];
     [openPanel setCanChooseFiles:NO];
     
     if ([openPanel runModal] != NSFileHandlingPanelOKButton)
@@ -194,7 +207,8 @@
     [_xcc clear];
     
     [_statusItem setImage:_iconInactive];
-    [menuItemProjectName setTitle:@"No project selected"];
+    [menuItemStartStop setTitle:@"Listen to Project…"];
+    [menuItemStartStop setAction:@selector(chooseFolder:)];
     
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"LastOpenedPath"];
 }
@@ -208,7 +222,7 @@
     if (![_xcc currentProjectURL])
         return;
     
-    NSLog(@"Open Xcode project at URL : '%@'", [[_xcc XCodeSupportProject] path]);
+    DLog(@"Opening Xcode project at URL: '%@'", [[_xcc XCodeSupportProject] path]);
     system([[NSString stringWithFormat:@"open \"%@\"", [[_xcc XCodeSupportProject] path]] UTF8String]);
 }
 
@@ -219,7 +233,17 @@
 - (void)updateErrorTable
 {
     [errorsTable reloadData];
+    [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
     [errorsPanel orderFront:self];
+}
+
+/*!
+ Open the errors window
+ @param aSender the sender of the action
+ */
+- (IBAction)openErrors:(id)aSender
+{
+    [self openCenteredWindow:errorsPanel];
 }
 
 /*!
@@ -240,8 +264,27 @@
 {
     [helpTextView readRTFDFromFile:[[NSBundle mainBundle] pathForResource:@"help" ofType:@"rtfd"]];
     
-    [helpWindow center];
-    [helpWindow makeKeyAndOrderFront:aSender];
+    [self openCenteredWindow:helpWindow];
+}
+
+/*!
+ Open the about window
+ @param aSender the sender of the action
+ */
+- (IBAction)openAbout:(id)aSender
+{
+    [self openCenteredWindow:aboutWindow];
+}
+
+/*!
+ Open a centered window.
+*/
+- (void)openCenteredWindow:(NSWindow *)aWindow
+{
+    [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+    
+    [aWindow center];
+    [aWindow makeKeyAndOrderFront:nil];
 }
 
 
@@ -250,9 +293,7 @@
 
 - (BOOL)validateMenuItem:(NSMenuItem *)aMenuItem
 {
-    if (aMenuItem == menuItemStart)
-        return ![_xcc currentProjectURL];
-    if ((aMenuItem == menuItemStop) || (aMenuItem == menuItemOpenXCode))
+    if (aMenuItem == menuItemOpenXCode)
         return !![_xcc currentProjectURL];
     
     return YES;
