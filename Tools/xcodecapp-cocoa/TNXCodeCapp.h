@@ -75,10 +75,13 @@ extern NSString * const XCCListeningStartNotification;
 
 @end
 
+
 @interface TNXCodeCapp (SnowLeopard)
 
 - (void)updateLastModificationDate:(NSDate *)date forPath:(NSString *)path;
 - (NSDate*)lastModificationDateForPath:(NSString *)path;
+- (NSString *)unshadowURLForString:(NSString *)aString;
+- (void)tidyShadowedFiles:(NSString*)basePath;
 
 @end
 

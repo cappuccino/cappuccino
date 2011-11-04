@@ -56,7 +56,9 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         Gestalt(gestaltSystemVersionMinor, &versionMinor);
         
         supportsFileBasedListening = versionMajor >= 10 && versionMinor >= 7;
-        
+        // Uncomment to test under 10.7
+        // supportsFileBasedListening = NO;
+
         if (supportsFileBasedListening)
             DLog(@"using 10.7+ mode listening (clean)");
         else
@@ -544,7 +546,11 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
             pathModificationDates = [NSMutableDictionary new];
     }
 
-    [pathModificationDates setObject:[date retain] forKey:path];
+    if (date)
+        [pathModificationDates setObject:[date retain] forKey:path];
+    else
+        [pathModificationDates removeObjectForKey:path];
+
     [[NSUserDefaults standardUserDefaults] setObject:pathModificationDates forKey:@"pathModificationDates"];
 }
 
@@ -562,6 +568,40 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         return [pathModificationDates valueForKey:path];
     else
         return appStartedTimestamp;
+}
+
+- (NSString *)unshadowURLForString:(NSString *)aString
+{
+    NSMutableString * unshadowedPath = [NSMutableString stringWithString:aString];
+
+    [unshadowedPath replaceOccurrencesOfString:@"_"
+                             withString:@"/"
+                                options:NSCaseInsensitiveSearch
+                                  range:NSMakeRange(0, [unshadowedPath length])];
+
+    [unshadowedPath replaceOccurrencesOfString:@".h"
+                                    withString:@".j"
+                                       options:NSCaseInsensitiveSearch
+                                         range:NSMakeRange(0, [unshadowedPath length])];
+
+    return [NSString stringWithString:unshadowedPath];
+}
+
+- (void)tidyShadowedFiles:(NSString*)basePath
+{
+    NSArray *subpaths = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[XCodeSupportProjectSources path] error:NULL];
+
+    for (NSString *subpath in subpaths)
+    {
+        NSString *unshadowed = [self unshadowURLForString:subpath];
+        NSString *shadowFullPath = [NSString stringWithFormat:@"%@/%@", [XCodeSupportProjectSources path], subpath];
+        if (![fm fileExistsAtPath:unshadowed])
+        {
+            DLog(@"cleaning shadow file: %@", subpath);
+            [fm removeItemAtPath:shadowFullPath error:nil];
+            [self updateLastModificationDate:nil forPath:unshadowed];
+        }
+    }
 }
 
 @end

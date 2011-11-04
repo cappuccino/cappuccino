@@ -36,7 +36,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     
     for (i = 0; i < numEvents; i++)
     {
-        NSString *path = [(NSArray *)eventPaths objectAtIndex:i];
+        NSString *path = [[(NSArray *)eventPaths objectAtIndex:i] stringByStandardizingPath];
 
         if (useFileBasedListening)
         {
@@ -55,27 +55,35 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
         else
         {
             NSArray *subpaths = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:NULL];
-            
+
+            // Uncomment to test under 10.7
+            // BOOL isDir;
+            // [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir];
+            // if (!isDir)
+            //    continue;
+
+            [xcc tidyShadowedFiles:path];
+
             for (NSString *subpath in subpaths)
-            {                
-                NSString *fullPath = [NSString stringWithFormat:@"%@%@", path, subpath];
+            {
+                NSString *fullPath = [[NSString stringWithFormat:@"%@/%@", path, subpath] stringByStandardizingPath];
 
                 if ([xcc isPathMatchingIgnoredPaths:fullPath]
                     || (![xcc isXIBFile:fullPath] && ![xcc isObjJFile:fullPath] && ![xcc isXCCIgnoreFile:fullPath]))
                     continue;
 
-                NSDate *lastModifiedDate = [xcc lastModificationDateForPath:subpath];
+                NSDate *lastModifiedDate = [xcc lastModificationDateForPath:fullPath];
                 NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:fullPath error:nil];
                 NSDate *fileModDate = [fileAttributes objectForKey:NSFileModificationDate];
-                
+
                 if ([fileModDate compare:lastModifiedDate] == NSOrderedDescending)
                 {
-                    [xcc updateLastModificationDate:fileModDate forPath:subpath];
+                    [xcc updateLastModificationDate:fileModDate forPath:fullPath];
                     [xcc handleFileModification:fullPath notify:YES];
                 }
             }
         }
-        
+
         [xcc updateLastEventId:eventIds[i]];
     }
 }
