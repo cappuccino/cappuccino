@@ -27,7 +27,6 @@
 		02998CF71369C339006C73DB /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02998CF61369C339006C73DB /* Growl.framework */; };
 		02998CF91369C38A006C73DB /* Growl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02998CF61369C339006C73DB /* Growl.framework */; };
 		651DAE1F13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 651DAE1D13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.m */; };
-		E12AA96014637828006F55D6 /* macros.h in Sources */ = {isa = PBXBuildFile; fileRef = E12AA95F14637828006F55D6 /* macros.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -260,7 +259,6 @@
 				651DAE1F13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.m in Sources */,
 				027FE49D1462D74C00B1AB92 /* TNXCodeCapp.m in Sources */,
 				027FE4BD1462F7EB00B1AB92 /* FSEventCallback.m in Sources */,
-				E12AA96014637828006F55D6 /* macros.h in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
