@@ -230,7 +230,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     else if (positioningView)
         [_attachedWindow positionRelativeToView:positioningView preferredEdge:preferredEdge];
     else
-        [CPException raise:CPInvalidArgumentException reason:@"you must set positioningRect or positioningRect"];
+        [CPException raise:CPInvalidArgumentException reason:@"you must set positioningRect or positioningView"];
 
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_didShow_)
         [_delegate popoverDidShow:self];
