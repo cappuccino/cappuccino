@@ -38,9 +38,19 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     for (i = 0; i < numEvents; i++)
     {
         NSString *path = [[(NSArray *)eventPaths objectAtIndex:i] stringByStandardizingPath];
+        BOOL isDir = NO;
+
+        [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir];
 
         if (useFileBasedListening)
         {
+            // kFSEventStreamEventFlagItemIsFile = 0x00010000
+            // kFSEventStreamEventFlagItemRemoved = 0x00000200
+            if (eventFlags[i] & 0x00010000 && eventFlags[i] & 0x00000200)
+            {
+                [xcc tidyShadowedFiles:path];
+            }
+
             // kFSEventStreamEventFlagItemIsFile = 0x00010000
             if (!(eventFlags[i] & 0x00010000)
                 || [xcc isPathMatchingIgnoredPaths:path]
@@ -55,9 +65,17 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
             }
 
             // kFSEventStreamEventFlagItemCreated = 0x00000200
-            if (eventFlags[i] & 0x00000100)
+            // kFSEventStreamEventFlagItemModified = 0x00001000
+            if (eventFlags[i] & 0x00000100 || eventFlags[i] & 0x00001000)
             {
-                DLog(@"event type: kFSEventStreamEventFlagItemCreated for path %@", path);
+                DLog(@"event type: kFSEventStreamEventFlagItemCreated or kFSEventStreamEventFlagItemModified for path %@", path);
+                [xcc handleFileModification:path notify:YES];
+            }
+
+            // kFSEventStreamEventFlagItemInodeMetaMod = 0x00000400
+            if (eventFlags[i] & 0x00000400 && [xcc reactToInodeModification])
+            {
+                DLog(@"event type: kFSEventStreamEventFlagItemInodeMetaMod for path %@", path);
                 [xcc handleFileModification:path notify:YES];
             }
 
@@ -80,11 +98,10 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
         {
             NSArray *subpaths = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:NULL];
 
-            // Uncomment to test under 10.7
-            // BOOL isDir;
-            // [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir];
-            // if (!isDir)
-            //    continue;
+            // If for some reasons the path is not a directory,
+            // we don't want to deal with it in this mode.
+            if (!isDir)
+                continue;
 
             [xcc tidyShadowedFiles:path];
 

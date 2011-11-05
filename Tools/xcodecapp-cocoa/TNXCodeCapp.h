@@ -33,6 +33,7 @@ extern NSString * const XCCListeningStartNotification;
     NSMutableArray                  *errorList;
     NSMutableSet                    *ignoredFilePaths;
     NSNumber                        *lastEventId;
+    NSString                        *currentAPIMode;
     NSString                        *currentProjectName;
     NSString                        *parserPath;
     NSString                        *XCodeSupportPBXPath;
@@ -48,6 +49,10 @@ extern NSString * const XCCListeningStartNotification;
     NSDate                          *appStartedTimestamp;
     NSMutableDictionary             *pathModificationDates;
     BOOL                            supportsFileBasedListening;
+    BOOL                            reactToInodeModification;
+    BOOL                            isListening;
+    BOOL                            isUsingFileLevelAPI;
+    BOOL                            supportFileLevelAPI;
 }
 
 @property (retain) NSObject* delegate;
@@ -55,7 +60,12 @@ extern NSString * const XCCListeningStartNotification;
 @property (retain) NSURL* XCodeSupportProject;
 @property (retain) NSURL* currentProjectURL;
 @property (retain) NSString* currentProjectName;
+@property (retain) NSString* currentAPIMode;
 @property BOOL supportsFileBasedListening;
+@property BOOL reactToInodeModification;
+@property BOOL isListening;
+@property BOOL supportFileLevelAPI;
+@property BOOL isUsingFileLevelAPI;
 
 - (BOOL)isObjJFile:(NSString*)path;
 - (void)computeIgnoredPaths;
@@ -64,6 +74,7 @@ extern NSString * const XCCListeningStartNotification;
 - (BOOL)isXCCIgnoreFile:(NSString *)path;
 - (BOOL)prepareXCodeSupportProject;
 - (NSURL*)shadowURLForSourceURL:(NSURL*)aSourceURL;
+- (NSURL*)sourceURLForShadowName:(NSString *)aString;
 - (void)handleFileModification:(NSString*)fullPath notify:(BOOL)shouldNotify;
 - (void)handleFileRemoval:(NSString*)fullPath;
 - (void)initializeEventStreamWithPath:(NSString*)aPath;
@@ -72,6 +83,8 @@ extern NSString * const XCCListeningStartNotification;
 - (void)listenProjectAtPath:(NSString *)path;
 - (void)clear;
 - (void)start;
+- (void)configure;
+- (void)tidyShadowedFiles:(NSString*)basePath;
 
 @end
 
@@ -80,8 +93,6 @@ extern NSString * const XCCListeningStartNotification;
 
 - (void)updateLastModificationDate:(NSDate *)date forPath:(NSString *)path;
 - (NSDate*)lastModificationDateForPath:(NSString *)path;
-- (NSString *)unshadowURLForString:(NSString *)aString;
-- (void)tidyShadowedFiles:(NSString*)basePath;
 
 @end
 

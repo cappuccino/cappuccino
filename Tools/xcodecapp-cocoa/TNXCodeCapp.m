@@ -33,6 +33,14 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 @synthesize currentProjectURL;
 @synthesize currentProjectName;
 @synthesize supportsFileBasedListening;
+@synthesize reactToInodeModification;
+@synthesize currentAPIMode;
+@synthesize isListening;
+@synthesize supportFileLevelAPI;
+@synthesize isUsingFileLevelAPI;
+
+#pragma mark -
+#pragma mark Initialization
 
 /*!
  Initialize the AppController
@@ -50,20 +58,20 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         lastEventId = [[NSUserDefaults standardUserDefaults] objectForKey:@"lastEventId"];
         appStartedTimestamp = [NSDate date];
         
+        [self setIsListening:NO];
+        [self setIsUsingFileLevelAPI:NO];
+
         SInt32 versionMajor = 0;
         SInt32 versionMinor = 0;
         Gestalt(gestaltSystemVersionMajor, &versionMajor);
         Gestalt(gestaltSystemVersionMinor, &versionMinor);
         
-        supportsFileBasedListening = versionMajor >= 10 && versionMinor >= 7;
-        // Uncomment to test under 10.7
-        // supportsFileBasedListening = NO;
-
-        if (supportsFileBasedListening)
-            DLog(@"using 10.7+ mode listening (clean)");
-        else
-            DLog(@"using 10.6 mode listening (dirty)");
+        [self setSupportFileLevelAPI:versionMajor >= 10 && versionMinor >= 7];
+        // Uncomment to simulate 10.6 mode
+        //[self setSupportFileLevelAPI:NO];
         
+        [self configure];
+
         if([fm fileExistsAtPath:[@"~/.bash_profile" stringByExpandingTildeInPath]])
             profilePath = [@"source ~/.bash_profile" stringByExpandingTildeInPath];
         else if([fm fileExistsAtPath:[@"~/.profile" stringByExpandingTildeInPath]])
@@ -89,6 +97,9 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 
 - (void)start
 {        
+    if (![[NSUserDefaults standardUserDefaults] boolForKey:@"XCCReopenLastProject"])
+        return;
+
     NSString *lastOpenedPath = [[NSUserDefaults standardUserDefaults] objectForKey:@"LastOpenedPath"];
     
     if (lastOpenedPath)
@@ -135,7 +146,12 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     
     FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
     FSEventStreamStart(stream);
+    [self setIsListening:YES];
 }
+
+
+#pragma mark -
+#pragma mark Utilities
 
 /*!
  Stop listening the FSEvent stream if active
@@ -148,6 +164,8 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         FSEventStreamInvalidate(stream);
         stream = nil;
     }
+
+    [self setIsListening:NO];
 }
 
 /*!
@@ -161,9 +179,46 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     [self stopEventStream];
 }
 
+/*!
+ Choose the API mode according to default
+ */
+- (void)configure
+{
+    if (![self supportFileLevelAPI])
+    {
+        DLog(@"System doesn't support file level API");
+        [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithInt:2] forKey:@"XCCAPIMode"];
+    }
 
-#pragma mark -
-#pragma mark Utilities
+    switch ([[NSUserDefaults standardUserDefaults] integerForKey:@"XCCAPIMode"])
+    {
+        case 0:
+            supportsFileBasedListening = [self supportFileLevelAPI] ? YES : NO;
+            break;
+        case 1:
+            supportsFileBasedListening = YES;
+            break;
+        case 2:
+            supportsFileBasedListening = NO;
+            break;
+    }
+
+    if (supportsFileBasedListening)
+    {
+        DLog(@"using 10.7+ mode listening (clean)");
+
+        [self setCurrentAPIMode:@"File level (Lion)"];
+        [self setIsUsingFileLevelAPI:YES];
+        reactToInodeModification = [[NSUserDefaults standardUserDefaults] boolForKey:@"XCCReactMode"];
+    }
+    else
+    {
+        DLog(@"using 10.6 mode listening (dirty)");
+        reactToInodeModification = NO;
+        [self setCurrentAPIMode:@"Folder level (Snow Leopard)"];
+        [self setIsUsingFileLevelAPI:NO];
+    }
+}
 
 /*!
  Update the last event ID. We use a method because
@@ -398,12 +453,16 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 {
     [delegate performSelector:@selector(growlWithTitle:message:) withObject:@"Loading project" withObject:[currentProjectURL path]];
     
-    [self handleFileModification:[NSString stringWithFormat:@"%@", [currentProjectURL path]] notify:NO];
-    NSArray *subdirs = [fm subpathsAtPath:[currentProjectURL path]];
+    //[self handleFileModification:[NSString stringWithFormat:@"%@", [currentProjectURL path]] notify:NO];
+    NSArray *subdpaths = [fm subpathsAtPath:[currentProjectURL path]];
     
-    for (NSString *p in subdirs)
-        [self handleFileModification:[NSString stringWithFormat:@"%@/%@", [currentProjectURL path], p] notify:NO];
-    
+    for (NSString *p in subdpaths)
+    {
+        NSString *filePath = [NSString stringWithFormat:@"%@/%@", [currentProjectURL path], p];
+        DLog(@"Original import of %@", filePath);
+        [self handleFileModification:filePath notify:NO];
+    }
+
     NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:currentProjectURL, @"URL", nil];
     [[NSNotificationCenter defaultCenter] postNotificationName:XCCDidPopulateProjectNotification object:self userInfo:info];
 }
@@ -413,12 +472,17 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
  @param aSourceURL the origin path
  @return NSURL representing the shadow path
  */
-- (NSURL*)shadowURLForSourceURL:(NSURL*)aSourceURL
+- (NSURL *)shadowURLForSourceURL:(NSURL*)aSourceURL
 {
     if (!aSourceURL)
         [NSException raise:NSInvalidArgumentException format:@"shadowURLForSourceURL: aSource URL must not be null"];
 
     NSMutableString *flattenedPath = [NSMutableString stringWithString:[aSourceURL path]];
+    [flattenedPath replaceOccurrencesOfString:@"_"
+                                   withString:@"-OLDUNDERSCORE-"
+                                      options:NSCaseInsensitiveSearch
+                                        range:NSMakeRange(0, [[aSourceURL path] length])];
+
     [flattenedPath replaceOccurrencesOfString:@"/"
                                    withString:@"_"
                                       options:NSCaseInsensitiveSearch
@@ -430,6 +494,29 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     return [NSURL URLWithString:basename relativeToURL:XCodeSupportProjectSources];
 }
 
+- (NSURL *)sourceURLForShadowName:(NSString *)aString
+{
+    NSMutableString * unshadowedPath = [NSMutableString stringWithString:aString];
+
+    [unshadowedPath replaceOccurrencesOfString:@"_"
+                                    withString:@"/"
+                                       options:NSCaseInsensitiveSearch
+                                         range:NSMakeRange(0, [unshadowedPath length])];
+
+    [unshadowedPath replaceOccurrencesOfString:@"-OLDUNDERSCORE-"
+                                   withString:@"_"
+                                      options:NSCaseInsensitiveSearch
+                                        range:NSMakeRange(0, [unshadowedPath length])];
+
+    [unshadowedPath replaceOccurrencesOfString:@".h"
+                                    withString:@".j"
+                                       options:NSCaseInsensitiveSearch
+                                         range:NSMakeRange(0, [unshadowedPath length])];
+
+    return [NSURL URLWithString:[NSString stringWithString:unshadowedPath]];
+}
+
+
 /*!
  Compute the ignored paths according to any existing
  .xcodecapp-ignore file
@@ -438,12 +525,12 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 {
     NSString *ignorePath = [NSString stringWithFormat:@"%@/.xcodecapp-ignore", [currentProjectURL path]];
     [ignoredFilePaths removeAllObjects];
-    
+
     if ([fm fileExistsAtPath:ignorePath])
     {
         NSString *ignoreFileContent = [NSString stringWithContentsOfFile:ignorePath encoding:NSUTF8StringEncoding error:nil];
         NSArray *ignoredPatterns = [ignoreFileContent componentsSeparatedByString:@"\n"];
-        
+
         for (NSString *pattern in ignoredPatterns)
         {
             if ([pattern length])
@@ -531,6 +618,28 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     [[NSUserDefaults standardUserDefaults] setObject:[currentProjectURL path] forKey:@"LastOpenedPath"];
 }
 
+/*!
+ Clean the support folder according to files present in given path
+ @param basePath the path of the folder to check
+ */
+- (void)tidyShadowedFiles:(NSString*)basePath
+{
+    NSArray *subpaths = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[XCodeSupportProjectSources path] error:NULL];
+
+    for (NSString *subpath in subpaths)
+    {
+        NSString *unshadowed = [[self sourceURLForShadowName:subpath] path];
+        NSString *shadowFullPath = [NSString stringWithFormat:@"%@/%@", [XCodeSupportProjectSources path], subpath];
+        if (![fm fileExistsAtPath:unshadowed])
+        {
+            DLog(@"cleaning shadow file: %@", subpath);
+            [fm removeItemAtPath:shadowFullPath error:nil];
+            if (![self supportFileLevelAPI] && [self respondsToSelector:@selector(updateLastModificationDate:forPath:)])
+                [self performSelector:@selector(updateLastModificationDate:forPath:) withObject:nil withObject:unshadowed];
+        }
+    }
+}
+
 @end
 
 
@@ -568,40 +677,6 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         return [pathModificationDates valueForKey:path];
     else
         return appStartedTimestamp;
-}
-
-- (NSString *)unshadowURLForString:(NSString *)aString
-{
-    NSMutableString * unshadowedPath = [NSMutableString stringWithString:aString];
-
-    [unshadowedPath replaceOccurrencesOfString:@"_"
-                             withString:@"/"
-                                options:NSCaseInsensitiveSearch
-                                  range:NSMakeRange(0, [unshadowedPath length])];
-
-    [unshadowedPath replaceOccurrencesOfString:@".h"
-                                    withString:@".j"
-                                       options:NSCaseInsensitiveSearch
-                                         range:NSMakeRange(0, [unshadowedPath length])];
-
-    return [NSString stringWithString:unshadowedPath];
-}
-
-- (void)tidyShadowedFiles:(NSString*)basePath
-{
-    NSArray *subpaths = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[XCodeSupportProjectSources path] error:NULL];
-
-    for (NSString *subpath in subpaths)
-    {
-        NSString *unshadowed = [self unshadowURLForString:subpath];
-        NSString *shadowFullPath = [NSString stringWithFormat:@"%@/%@", [XCodeSupportProjectSources path], subpath];
-        if (![fm fileExistsAtPath:unshadowed])
-        {
-            DLog(@"cleaning shadow file: %@", subpath);
-            [fm removeItemAtPath:shadowFullPath error:nil];
-            [self updateLastModificationDate:nil forPath:unshadowed];
-        }
-    }
 }
 
 @end

@@ -75,8 +75,7 @@ AppController *SharedAppControllerInstance = nil;
         [[NSUserDefaults standardUserDefaults] setValue:[NSNumber numberWithInt:0] forKey:@"FirstLaunch"];
         [self openHelp:self];
     }
-    
-    xcc = [[TNXCodeCapp alloc] init];
+
     [xcc setDelegate:self];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(XCodeCappConversionDidStart:) name:XCCConversionStartNotification object:xcc];
@@ -101,6 +100,9 @@ AppController *SharedAppControllerInstance = nil;
     
     [appDefaults setObject:streamEventIdSinceNow forKey:@"lastEventId"];
     [appDefaults setObject:[NSNumber numberWithInt:1] forKey:@"FirstLaunch"];
+    [appDefaults setObject:[NSNumber numberWithInt:0] forKey:@"XCCAPIMode"];
+    [appDefaults setObject:[NSNumber numberWithInt:1] forKey:@"XCCReactMode"];
+    [appDefaults setObject:[NSNumber numberWithInt:1] forKey:@"XCCReopenLastProject"];
     
     [defaults registerDefaults:appDefaults];
 }
@@ -184,6 +186,18 @@ AppController *SharedAppControllerInstance = nil;
 
 #pragma mark -
 #pragma mark Actions
+
+/*!
+ Save preferences
+ @param aSender the sender of the action
+ */
+- (IBAction)updatePreferences:(id)aSender
+{
+    [preferencesController save:aSender];
+    NSLog(@"Preferences change notified");
+
+    [xcc configure];
+}
 
 /*!
  Open the folder chooser and eventually start to listen
@@ -282,6 +296,15 @@ AppController *SharedAppControllerInstance = nil;
 - (IBAction)openAbout:(id)aSender
 {
     [self openCenteredWindow:aboutWindow];
+}
+
+/*!
+ Open the preferences window
+ @param aSender the sender of the action
+ */
+- (IBAction)openPreferences:(id)aSender
+{
+    [self openCenteredWindow:preferencesWindow];
 }
 
 /*!

@@ -23,22 +23,26 @@
 
 @interface AppController : NSObject <NSMenuDelegate>
 {
-    IBOutlet NSMenu                 *statusMenu;
-    IBOutlet NSMenuItem             *menuItemOpenXCode;
-    IBOutlet NSMenuItem             *menuItemStartStop;
-    IBOutlet NSPanel                *errorsPanel;
-    IBOutlet NSTableView            *errorsTable;
-    IBOutlet NSPanel                *aboutWindow;
-    IBOutlet NSWindow               *helpWindow;
-    IBOutlet NSTextView             *helpTextView;
-    IBOutlet NSTextField            *labelVersion;
-    
-    TNXCodeCapp                     *xcc;
-    NSImage                         *_iconActive;
-    NSImage                         *_iconInactive;
-    NSImage                         *_iconWorking;
-    NSStatusItem                    *_statusItem;
-    PRHEmptyGrowlDelegate           *growlDelegateRef;
+    IBOutlet NSMenu                     *statusMenu;
+    IBOutlet NSMenuItem                 *menuItemOpenXCode;
+    IBOutlet NSMenuItem                 *menuItemStartStop;
+    IBOutlet NSPanel                    *errorsPanel;
+    IBOutlet NSTableView                *errorsTable;
+    IBOutlet NSPanel                    *aboutWindow;
+    IBOutlet NSWindow                   *helpWindow;
+    IBOutlet NSTextView                 *helpTextView;
+    IBOutlet NSTextField                *labelVersion;
+    IBOutlet NSPopUpButton              *buttonPreferencesAPIMode;
+    IBOutlet NSButton                   *checkBoxPreferencesReactMode;
+    IBOutlet NSUserDefaultsController   *preferencesController;
+    IBOutlet TNXCodeCapp                *xcc;
+    IBOutlet NSWindow                   *preferencesWindow;
+
+    NSImage                             *_iconActive;
+    NSImage                             *_iconInactive;
+    NSImage                             *_iconWorking;
+    NSStatusItem                        *_statusItem;
+    PRHEmptyGrowlDelegate               *growlDelegateRef;
 }
 
 @property BOOL supportsFileModeListening;
@@ -59,6 +63,7 @@
 - (IBAction)stopListener:(id)aSender;
 - (IBAction)openHelp:(id)aSender;
 - (IBAction)openAbout:(id)aSender;
+- (IBAction)updatePreferences:(id)aSender;
 
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(int)aRow;
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row;
