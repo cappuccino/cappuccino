@@ -1,6 +1,6 @@
 /*
- * This file is a part of program xcodecapp-cocoa
- * Copyright (C) 2011  Antoine Mercadal (primalmotion@archipelproject.org)
+ * This file is a part of program XcodeCapp
+ * Copyright (C) 2011  Antoine Mercadal (<primalmotion@archipelproject.org>)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,9 +57,9 @@ AppController *SharedAppControllerInstance = nil;
 
     [self registerDefaults];
     
-    _iconInactive = [[NSImage alloc] initWithContentsOfFile:[bundle pathForResource:@"xcodecapp-cocoa-icon-inactive" ofType:@"png"]];
-    _iconActive = [[NSImage alloc] initWithContentsOfFile:[bundle pathForResource:@"xcodecapp-cocoa-icon-active" ofType:@"png"]];
-    _iconWorking = [[NSImage alloc] initWithContentsOfFile:[bundle pathForResource:@"xcodecapp-cocoa-icon-working" ofType:@"png"]];
+    _iconInactive = [[NSImage alloc] initWithContentsOfFile:[bundle pathForResource:@"xcodecapp-icon-inactive" ofType:@"png"]];
+    _iconActive = [[NSImage alloc] initWithContentsOfFile:[bundle pathForResource:@"xcodecapp-icon-active" ofType:@"png"]];
+    _iconWorking = [[NSImage alloc] initWithContentsOfFile:[bundle pathForResource:@"xcodecapp-icon-working" ofType:@"png"]];
     [_iconActive setSize:NSMakeSize(14.0, 16.0)];
     [_iconInactive setSize:NSMakeSize(14.0, 16.0)];
     [_iconWorking setSize:NSMakeSize(14.0, 16.0)];
