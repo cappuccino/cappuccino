@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		024A040B13698E7800DCBE4D /* project.pbxproj in Resources */ = {isa = PBXBuildFile; fileRef = 024A040A13698E7700DCBE4D /* project.pbxproj */; };
 		024A041413699DD400DCBE4D /* parser.j in Resources */ = {isa = PBXBuildFile; fileRef = 024A041113699D6800DCBE4D /* parser.j */; };
 		026F3B6213866B0B00EE5B83 /* xcodecapp-icon-inactive.png in Resources */ = {isa = PBXBuildFile; fileRef = 026F3B6113866B0B00EE5B83 /* xcodecapp-icon-inactive.png */; };
 		026F3B6513866E7D00EE5B83 /* xcodecapp-icon-active.png in Resources */ = {isa = PBXBuildFile; fileRef = 026F3B6413866E7D00EE5B83 /* xcodecapp-icon-active.png */; };
@@ -42,7 +41,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		024A040A13698E7700DCBE4D /* project.pbxproj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.pbxproject; path = project.pbxproj; sourceTree = "<group>"; };
 		024A041113699D6800DCBE4D /* parser.j */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.objj; path = parser.j; sourceTree = "<group>"; };
 		026F3B6113866B0B00EE5B83 /* xcodecapp-icon-inactive.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "xcodecapp-icon-inactive.png"; sourceTree = "<group>"; };
 		026F3B6413866E7D00EE5B83 /* xcodecapp-icon-active.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "xcodecapp-icon-active.png"; sourceTree = "<group>"; };
@@ -159,7 +157,6 @@
 				026F3B6413866E7D00EE5B83 /* xcodecapp-icon-active.png */,
 				026F3B6113866B0B00EE5B83 /* xcodecapp-icon-inactive.png */,
 				024A041113699D6800DCBE4D /* parser.j */,
-				024A040A13698E7700DCBE4D /* project.pbxproj */,
 				8D1107310486CEB800E47090 /* Info.plist */,
 				0289AC9314668CAF003CD975 /* XcodeCapp.icns */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
@@ -233,7 +230,6 @@
 				027D999B13696A7000D3DB13 /* MainMenu.nib in Resources */,
 				027D999C13696A7000D3DB13 /* InfoPlist.strings in Resources */,
 				024A041413699DD400DCBE4D /* parser.j in Resources */,
-				024A040B13698E7800DCBE4D /* project.pbxproj in Resources */,
 				02998CEB1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict in Resources */,
 				026F3B6213866B0B00EE5B83 /* xcodecapp-icon-inactive.png in Resources */,
 				026F3B6513866E7D00EE5B83 /* xcodecapp-icon-active.png in Resources */,
