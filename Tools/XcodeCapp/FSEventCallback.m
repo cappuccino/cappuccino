@@ -39,7 +39,6 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     {
         NSString *path = [[(NSArray *)eventPaths objectAtIndex:i] stringByStandardizingPath];
         BOOL isDir = NO;
-        NSLog(@"-------%@", path);
 
         [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir];
 
