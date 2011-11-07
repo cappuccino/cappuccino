@@ -161,6 +161,7 @@ github_path="$github_user/cappuccino-base"
 install_cappuccino="yes"
 
 sed "s/\[\[ CAPPUCCINO_VERSION \]\]/$github_ref/" <<EOT
+
                   _______ ____  ___  __ __________(_)__  ___
                  / __/ _ \`/ _ \/ _ \/ // / __/ __/ / _ \/ _ \\
                  \__/\_,_/ .__/ .__/\_,_/\__/\__/_/_//_/\___/
@@ -292,7 +293,7 @@ install_directory="$(dirname -- "$(dirname -- "$(which narwhal)")")"
 
 if [ `uname` = "Darwin" ]; then
     echo "================================================================================"
-    echo "Would you like to build the JavaScriptCore engine for Narwhal?"
+    echo "Would you like to build the JavaScriptCore engine?"
     echo "This is optional but will make building and running Cappuccino and Objective-J "
     echo "much faster."
     if prompt "yes"; then
@@ -305,7 +306,7 @@ if [ `uname` = "Darwin" ]; then
             # read
         elif ! [ "$NARWHAL_ENGINE_SAVED" = "jsc" ]; then
             echo "================================================================================"
-            echo "Rhino is the default Narwhal engine, should we change the default to JavaScriptCore for you?"
+            echo "Rhino is the default engine. Should we change the default to JavaScriptCore for you?"
             echo "This can by overridden by setting the NARWHAL_ENGINE environment variable to \"jsc\" or \"rhino\"."
             ask_append_shell_config "export NARWHAL_ENGINE=jsc"
         fi
