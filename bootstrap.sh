@@ -83,7 +83,7 @@ function check_and_exit () {
 
 function check_install_environment () {
     # make sure dependencies are installed and on the $PATH
-    CAPP_BUILD_DEPS=(java gcc unzip)
+    CAPP_BUILD_DEPS=(java unzip)
 
     for dep in ${CAPP_BUILD_DEPS[@]}; do
         which "$dep" &> /dev/null
