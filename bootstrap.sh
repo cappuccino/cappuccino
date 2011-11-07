@@ -157,6 +157,34 @@ done
 github_project="$github_user-cappuccino-base"
 github_path="$github_user/cappuccino-base"
 
+# The purpose of bootstrap is to install Cappuccino.
+install_cappuccino="yes"
+
+sed "s/\[\[ CAPPUCCINO_VERSION \]\]/$github_ref/" <<EOT
+                  _______ ____  ___  __ __________(_)__  ___
+                 / __/ _ \`/ _ \/ _ \/ // / __/ __/ / _ \/ _ \\
+                 \__/\_,_/ .__/ .__/\_,_/\__/\__/_/_//_/\___/
+                        /_/  /_/
+
+                            Welcome to Cappuccino!
+
+==============================================================================
+
+                                Version [[ CAPPUCCINO_VERSION ]]
+
+
+                             http://cappuccino.org
+                    http://github.com/cappuccino/cappuccino
+                       irc://irc.freenode.org#cappuccino
+
+This script will install the Cappuccino environment for you. Continue?
+EOT
+
+if ! prompt "yes"; then
+    install_cappuccino="no"
+    exit 0
+fi
+
 unset NARWHAL_ENGINE
 unset SEA
 unset SEALVL
@@ -181,9 +209,6 @@ else
     ask_remove_dir "/usr/local/share/narwhal"
     ask_remove_dir "/usr/local/narwhal"
 fi
-
-# The purpose of bootstrap is to install Cappuccino so don't confirm.
-install_cappuccino="yes"
 
 if [ "$install_cappuccino" ]; then
     if [ ! "$install_directory" ]; then
