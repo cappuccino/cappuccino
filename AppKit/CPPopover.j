@@ -213,7 +213,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     if (!_contentViewController)
          [CPException raise:CPInternalInconsistencyException reason:@"contentViewController must not be nil"];
 
-    if (_needsCompute)
+    if (_needsCompute || !_attachedWindow)
     {
         var styleMask = (_behavior == CPPopoverBehaviorTransient) ? CPClosableOnBlurWindowMask : nil;
         _attachedWindow = [[_CPAttachedWindow alloc] initWithContentRect:CPRectMakeZero() styleMask:styleMask];
