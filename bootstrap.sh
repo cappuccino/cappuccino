@@ -185,6 +185,7 @@ if ! prompt "yes"; then
     exit 0
 fi
 
+NARWHAL_ENGINE_SAVED="$NARWHAL_ENGINE"
 unset NARWHAL_ENGINE
 unset SEA
 unset SEALVL
@@ -302,7 +303,7 @@ if [ `uname` = "Darwin" ]; then
             echo "WARNING: building narwhal-jsc failed. Hit enter to continue."
             echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
             # read
-        elif ! [ "$NARWHAL_ENGINE" = "jsc" ]; then
+        elif ! [ "$NARWHAL_ENGINE_SAVED" = "jsc" ]; then
             echo "================================================================================"
             echo "Rhino is the default Narwhal engine, should we change the default to JavaScriptCore for you?"
             echo "This can by overridden by setting the NARWHAL_ENGINE environment variable to \"jsc\" or \"rhino\"."
