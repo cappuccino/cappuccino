@@ -133,7 +133,8 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     if (supportsFileBasedListening)
     {
         DLog(@"Initializing the FSEventStream at file level (clean)");
-        flags = kFSEventStreamCreateFlagUseCFTypes | kFSEventStreamCreateFlagNoDefer | 0x00000010;
+        // kFSEventStreamCreateFlagNoDefer
+        flags = kFSEventStreamCreateFlagUseCFTypes | 0x00000010;
     }
     else
     {
