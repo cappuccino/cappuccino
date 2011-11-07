@@ -39,16 +39,19 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     {
         NSString *path = [[(NSArray *)eventPaths objectAtIndex:i] stringByStandardizingPath];
         BOOL isDir = NO;
+        NSLog(@"-------%@", path);
 
         [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir];
 
         if (useFileBasedListening)
         {
+            BOOL hasBeenProcessed = NO;
             // kFSEventStreamEventFlagItemIsFile = 0x00010000
             // kFSEventStreamEventFlagItemRemoved = 0x00000200
             if (eventFlags[i] & 0x00010000 && eventFlags[i] & 0x00000200)
             {
                 [xcc tidyShadowedFiles:path];
+                hasBeenProcessed = YES;
             }
 
             // kFSEventStreamEventFlagItemIsFile = 0x00010000
@@ -62,6 +65,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
             {
                 DLog(@"event type: kFSEventStreamEventFlagItemRemoved for path %@", path);
                 [xcc handleFileRemoval:path];
+                hasBeenProcessed = YES;
             }
 
             // kFSEventStreamEventFlagItemCreated = 0x00000200
@@ -70,13 +74,15 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
             {
                 DLog(@"event type: kFSEventStreamEventFlagItemCreated or kFSEventStreamEventFlagItemModified for path %@", path);
                 [xcc handleFileModification:path notify:YES];
+                hasBeenProcessed = YES;
             }
 
             // kFSEventStreamEventFlagItemInodeMetaMod = 0x00000400
-            if (eventFlags[i] & 0x00000400 && [xcc reactToInodeModification])
+            if ([xcc reactToInodeModification] && eventFlags[i] & 0x00000400)
             {
                 DLog(@"event type: kFSEventStreamEventFlagItemInodeMetaMod for path %@", path);
                 [xcc handleFileModification:path notify:YES];
+                hasBeenProcessed = YES;
             }
 
             // kFSEventStreamEventFlagItemRenamed = 0x00000800
@@ -92,6 +98,14 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
                     DLog(@"event type: kFSEventStreamEventFlagItemRenamed for path %@ (added destination)", path);
                     [xcc handleFileModification:path notify:YES];
                 }
+                hasBeenProcessed = YES;
+            }
+
+            // Well it seems to be an unknown event, let's just process it.
+            if (!hasBeenProcessed)
+            {
+                DLog(@"event type: Unknown for path %@ (no big deal, we process it)", path);
+                [xcc handleFileModification:path notify:YES];
             }
         }
         else
