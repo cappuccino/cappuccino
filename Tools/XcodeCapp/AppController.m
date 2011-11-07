@@ -88,6 +88,21 @@ AppController *SharedAppControllerInstance = nil;
     [xcc start];
 }
 
+/*!
+ Checks if aplication should show the debug window
+ */
+- (void)applicationDidFinishLaunching:(NSNotification *)notif
+{
+    CGEventRef event = CGEventCreate(NULL);
+    CGEventFlags modifiers = CGEventGetFlags(event);
+    CFRelease(event);
+
+    if (modifiers & kCGEventFlagMaskAlternate)
+    {
+        [statusMenu addItem:[NSMenuItem separatorItem]];
+        [statusMenu addItem:menuDebug];
+    }
+}
 
 /*!
  Register the application defaults
@@ -304,7 +319,7 @@ AppController *SharedAppControllerInstance = nil;
  */
 - (IBAction)openPreferences:(id)aSender
 {
-    [self openCenteredWindow:preferencesWindow];
+    [self openCenteredWindow:windowDebug];
 }
 
 /*!

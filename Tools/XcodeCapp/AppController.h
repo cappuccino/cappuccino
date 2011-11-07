@@ -36,7 +36,8 @@
     IBOutlet NSButton                   *checkBoxPreferencesReactMode;
     IBOutlet NSUserDefaultsController   *preferencesController;
     IBOutlet TNXCodeCapp                *xcc;
-    IBOutlet NSWindow                   *preferencesWindow;
+    IBOutlet NSWindow                   *windowDebug;
+    IBOutlet NSMenuItem                 *menuDebug;
 
     NSImage                             *_iconActive;
     NSImage                             *_iconInactive;
