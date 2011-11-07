@@ -340,7 +340,7 @@ if [ `uname` = "Darwin" ]; then
     if prompt "yes"; then
         tusk $tusk_install_command narwhal-jsc
 
-        if ! (cd "$install_directory/packages/narwhal-jsc" && make webkit); then
+        if ! (cd "$install_directory/packages/narwhal-jsc/deps/libedit-20100424-3.0" && autoreconf -if && cd ../../ && make webkit); then
             rm -rf "$install_directory/packages/narwhal-jsc"
             echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
             echo "WARNING: building narwhal-jsc failed. Hit enter to continue."
