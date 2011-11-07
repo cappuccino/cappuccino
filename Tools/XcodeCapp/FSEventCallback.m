@@ -34,9 +34,11 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     TNXCodeCapp *xcc = (TNXCodeCapp *)userData;
     BOOL useFileBasedListening = [xcc supportsFileBasedListening];
     size_t i;
-    
+
     for (i = 0; i < numEvents; i++)
     {
+        [xcc updateLastEventId:eventIds[i]];
+
         NSString *path = [[(NSArray *)eventPaths objectAtIndex:i] stringByStandardizingPath];
         BOOL isDir = NO;
 
@@ -137,7 +139,5 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
                 }
             }
         }
-
-        [xcc updateLastEventId:eventIds[i]];
     }
 }
