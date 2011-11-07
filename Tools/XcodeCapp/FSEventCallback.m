@@ -40,19 +40,15 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
         [xcc updateLastEventId:eventIds[i]];
 
         NSString *path = [[(NSArray *)eventPaths objectAtIndex:i] stringByStandardizingPath];
-        BOOL isDir = NO;
-
-        [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir];
 
         if (useFileBasedListening)
         {
-            BOOL hasBeenProcessed = NO;
             // kFSEventStreamEventFlagItemIsFile = 0x00010000
             // kFSEventStreamEventFlagItemRemoved = 0x00000200
             if (eventFlags[i] & 0x00010000 && eventFlags[i] & 0x00000200)
             {
                 [xcc tidyShadowedFiles:path];
-                hasBeenProcessed = YES;
+                continue;
             }
 
             // kFSEventStreamEventFlagItemIsFile = 0x00010000
@@ -62,32 +58,42 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
                 continue;
 
             // kFSEventStreamEventFlagItemRemoved = 0x00000200
-            if (eventFlags[i] & 0x00000200)
+            else if (eventFlags[i] & 0x00000200)
             {
                 DLog(@"event type: kFSEventStreamEventFlagItemRemoved for path %@", path);
                 [xcc handleFileRemoval:path];
-                hasBeenProcessed = YES;
             }
 
             // kFSEventStreamEventFlagItemCreated = 0x00000200
             // kFSEventStreamEventFlagItemModified = 0x00001000
-            if (eventFlags[i] & 0x00000100 || eventFlags[i] & 0x00001000)
+            else if (eventFlags[i] & 0x00000100 || eventFlags[i] & 0x00001000)
             {
                 DLog(@"event type: kFSEventStreamEventFlagItemCreated or kFSEventStreamEventFlagItemModified for path %@", path);
                 [xcc handleFileModification:path notify:YES];
-                hasBeenProcessed = YES;
+            }
+
+            // kFSEventStreamEventFlagItemFinderInfoMod = 0x00002000
+            // kFSEventStreamEventFlagItemChangeOwner = 0x00004000
+            // kFSEventStreamEventFlagItemXattrMod = 0x00008000
+            else if ([xcc reactToInodeModification] && 
+                    (eventFlags[i] & 0x00004000
+                     || eventFlags[i] & 0x00002000
+                     || eventFlags[i] & 0x00008000))
+            {
+                DLog(@"event type: kFSEventStreamEventFlagItemChangeOwner for path %@", path);
+                [xcc handleFileModification:path notify:YES];
             }
 
             // kFSEventStreamEventFlagItemInodeMetaMod = 0x00000400
-            if ([xcc reactToInodeModification] && eventFlags[i] & 0x00000400)
+            else if ([xcc reactToInodeModification] && 
+                (eventFlags[i] & 0x00000400))
             {
                 DLog(@"event type: kFSEventStreamEventFlagItemInodeMetaMod for path %@", path);
                 [xcc handleFileModification:path notify:YES];
-                hasBeenProcessed = YES;
             }
 
             // kFSEventStreamEventFlagItemRenamed = 0x00000800
-            if (eventFlags[i] & 0x00000800)
+            else if (eventFlags[i] & 0x00000800)
             {
                 if (![[NSFileManager defaultManager] fileExistsAtPath:path])
                 {
@@ -99,24 +105,18 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
                     DLog(@"event type: kFSEventStreamEventFlagItemRenamed for path %@ (added destination)", path);
                     [xcc handleFileModification:path notify:YES];
                 }
-                hasBeenProcessed = YES;
-            }
-
-            // Well it seems to be an unknown event, let's just process it.
-            if (!hasBeenProcessed)
-            {
-                DLog(@"event type: Unknown for path %@ (no big deal, we process it)", path);
-                [xcc handleFileModification:path notify:YES];
             }
         }
         else
         {
-            NSArray *subpaths = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:NULL];
-
             // If for some reasons the path is not a directory,
-            // we don't want to deal with it in this mode.
+            // we don't want to deal with it in this mode.            
+            BOOL isDir = NO;
+            [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir];
             if (!isDir)
                 continue;
+
+            NSArray *subpaths = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:NULL];
 
             [xcc tidyShadowedFiles:path];
 
