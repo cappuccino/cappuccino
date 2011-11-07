@@ -81,9 +81,9 @@ function check_and_exit () {
     fi
 }
 
-function check_build_environment () {
+function check_install_environment () {
     # make sure dependencies are installed and on the $PATH
-    CAPP_BUILD_DEPS=(java gcc unzip)
+    CAPP_BUILD_DEPS=(java unzip)
 
     for dep in ${CAPP_BUILD_DEPS[@]}; do
         which "$dep" &> /dev/null
@@ -113,7 +113,19 @@ function check_build_environment () {
     fi
 }
 
-check_build_environment
+function check_build_environment () {
+    CAPP_BUILD_DEPS=(gcc)
+
+    for dep in ${CAPP_BUILD_DEPS[@]}; do
+        which "$dep" &> /dev/null
+        if [ ! "$?" = "0" ]; then
+            echo "Error: $dep is required to build Cappuccino components. Please install $dep and re-run bootstrap.sh."
+            exit 1
+        fi
+    done
+}
+
+check_install_environment
 
 if [ -w "/usr/local" ]; then
     default_directory="/usr/local/narwhal"
@@ -297,6 +309,8 @@ if [ `uname` = "Darwin" ]; then
     echo "This is optional but will make building and running Cappuccino and Objective-J "
     echo "much faster."
     if prompt "yes"; then
+        check_build_environment
+
         # The narwhal-jsc package is already installed within the base kit.
         if ! (cd "$install_directory/packages/narwhal-jsc" && make webkit); then
             rm -rf "$install_directory/packages/narwhal-jsc"
