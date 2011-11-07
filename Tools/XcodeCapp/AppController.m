@@ -99,8 +99,7 @@ AppController *SharedAppControllerInstance = nil;
 
     if (modifiers & kCGEventFlagMaskAlternate)
     {
-        [statusMenu addItem:[NSMenuItem separatorItem]];
-        [statusMenu addItem:menuDebug];
+        [statusMenu insertItem:menuDebug atIndex:6];
     }
 }
 
