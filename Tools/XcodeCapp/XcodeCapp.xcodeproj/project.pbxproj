@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		022BCEA71468632000B72910 /* project.pbxproj.sample in Resources */ = {isa = PBXBuildFile; fileRef = 022BCEA61468632000B72910 /* project.pbxproj.sample */; };
 		024A041413699DD400DCBE4D /* parser.j in Resources */ = {isa = PBXBuildFile; fileRef = 024A041113699D6800DCBE4D /* parser.j */; };
 		026F3B6213866B0B00EE5B83 /* xcodecapp-icon-inactive.png in Resources */ = {isa = PBXBuildFile; fileRef = 026F3B6113866B0B00EE5B83 /* xcodecapp-icon-inactive.png */; };
 		026F3B6513866E7D00EE5B83 /* xcodecapp-icon-active.png in Resources */ = {isa = PBXBuildFile; fileRef = 026F3B6413866E7D00EE5B83 /* xcodecapp-icon-active.png */; };
@@ -41,6 +42,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		022BCEA61468632000B72910 /* project.pbxproj.sample */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = project.pbxproj.sample; sourceTree = "<group>"; };
 		024A041113699D6800DCBE4D /* parser.j */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.objj; path = parser.j; sourceTree = "<group>"; };
 		026F3B6113866B0B00EE5B83 /* xcodecapp-icon-inactive.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "xcodecapp-icon-inactive.png"; sourceTree = "<group>"; };
 		026F3B6413866E7D00EE5B83 /* xcodecapp-icon-active.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "xcodecapp-icon-active.png"; sourceTree = "<group>"; };
@@ -152,6 +154,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				022BCEA61468632000B72910 /* project.pbxproj.sample */,
 				027FE4B91462F64E00B1AB92 /* xcodecapp-icon-working.png */,
 				027FE4991462C6CF00B1AB92 /* help.rtfd */,
 				026F3B6413866E7D00EE5B83 /* xcodecapp-icon-active.png */,
@@ -236,6 +239,7 @@
 				027FE49A1462C6CF00B1AB92 /* help.rtfd in Resources */,
 				027FE4BA1462F64E00B1AB92 /* xcodecapp-icon-working.png in Resources */,
 				0289AC9414668CAF003CD975 /* XcodeCapp.icns in Resources */,
+				022BCEA71468632000B72910 /* project.pbxproj.sample in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

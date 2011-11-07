@@ -403,7 +403,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 - (BOOL)prepareXCodeSupportProject
 {
     XCodeSupportProjectName    = [NSString stringWithFormat:@"%@.xcodeproj/", currentProjectName];
-    XCodeTemplatePBXPath       = [[NSBundle mainBundle] pathForResource:@"project" ofType:@"pbxproj"];
+    XCodeTemplatePBXPath       = [[NSBundle mainBundle] pathForResource:@"project.pbxproj" ofType:@"sample"];
     XCodeSupportFolder         = [NSURL URLWithString:@".xCodeSupport/" relativeToURL:currentProjectURL];
     XCodeSupportProject        = [NSURL URLWithString:XCodeSupportProjectName relativeToURL:XCodeSupportFolder];
     XCodeSupportProjectSources = [NSURL URLWithString:@"Sources/" relativeToURL:XCodeSupportFolder];
@@ -478,16 +478,22 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         [NSException raise:NSInvalidArgumentException format:@"shadowURLForSourceURL: aSource URL must not be null"];
 
     NSMutableString *flattenedPath = [NSMutableString stringWithString:[aSourceURL path]];
-    [flattenedPath replaceOccurrencesOfString:@"_"
+    NSMutableString *fileName = [NSMutableString stringWithString:[flattenedPath lastPathComponent]];
+    [fileName replaceOccurrencesOfString:@"_"
                                    withString:@"-OLDUNDERSCORE-"
                                       options:NSCaseInsensitiveSearch
-                                        range:NSMakeRange(0, [[aSourceURL path] length])];
+                                        range:NSMakeRange(0, [fileName length])];
+
+    [flattenedPath replaceOccurrencesOfString:[flattenedPath lastPathComponent]
+                                   withString:fileName
+                                      options:NSCaseInsensitiveSearch
+                                        range:NSMakeRange(0, [flattenedPath length])];
 
     [flattenedPath replaceOccurrencesOfString:@"/"
                                    withString:@"_"
                                       options:NSCaseInsensitiveSearch
-                                        range:NSMakeRange(0, [[aSourceURL path] length])];
-    
+                                        range:NSMakeRange(0, [flattenedPath length])];
+
     DLog(@"Flattened path: %@", flattenedPath);
     NSString *basename  = [NSString stringWithFormat:@"%@.h", [[flattenedPath stringByDeletingPathExtension] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
     
