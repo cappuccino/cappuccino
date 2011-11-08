@@ -445,8 +445,6 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         
         DLog(@"Creating source folder");
         [fm createDirectoryAtPath:[XCodeSupportProjectSources path] withIntermediateDirectories:YES attributes:nil error:nil];
-        
-        [NSThread detachNewThreadSelector:@selector(populateXCodeProject:)toTarget:self withObject:nil];
         return NO;
     }
 
@@ -457,23 +455,40 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
  Initialize the creation of the .xCodeSupport project. This
  Operation is threaded
  @param arguments Thread arguments (not used)
+ @param shouldNotify is YES, XCCDidPopulateProjectNotification will be send
  */
-- (void)populateXCodeProject:(id)arguments
+- (void)populateXCodeProject:(NSNumber *)shouldNotify
 {
-    [delegate performSelector:@selector(growlWithTitle:message:) withObject:@"Loading project" withObject:[currentProjectURL path]];
-    
-    //[self handleFileModification:[NSString stringWithFormat:@"%@", [currentProjectURL path]] notify:NO];
+    if ([shouldNotify boolValue])
+        [delegate performSelector:@selector(growlWithTitle:message:) withObject:@"Loading project" withObject:[currentProjectURL path]];
+
     NSArray *subdpaths = [fm subpathsAtPath:[currentProjectURL path]];
     
     for (NSString *p in subdpaths)
     {
         NSString *filePath = [NSString stringWithFormat:@"%@/%@", [currentProjectURL path], p];
-        DLog(@"Original import of %@", filePath);
-        [self handleFileModification:filePath notify:NO];
+
+        BOOL isDir = NO;
+        [fm fileExistsAtPath:filePath isDirectory:&isDir];
+
+        if (isDir 
+            || (![self isXIBFile:filePath] && ![self isObjJFile:filePath]))
+            continue;
+
+        NSURL *eventualShadow = [self shadowURLForSourceURL:[NSURL URLWithString:filePath]];
+
+        if (![fm fileExistsAtPath:[eventualShadow path]])
+        {
+            DLog(@"Computing missing shadow file for %@", filePath);
+            [self handleFileModification:filePath notify:NO];
+        }
     }
 
-    NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:currentProjectURL, @"URL", nil];
-    [[NSNotificationCenter defaultCenter] postNotificationName:XCCDidPopulateProjectNotification object:self userInfo:info];
+    if ([shouldNotify boolValue])
+    {
+        NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:currentProjectURL, @"URL", nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:XCCDidPopulateProjectNotification object:self userInfo:info];
+    }
 }
 
 /*!
@@ -617,7 +632,9 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     [self computeIgnoredPaths];
     
     BOOL isProjectReady = [self prepareXCodeSupportProject];
-    
+
+    [NSThread detachNewThreadSelector:@selector(populateXCodeProject:) toTarget:self withObject:[NSNumber numberWithBool:!isProjectReady]];
+
     [self initializeEventStreamWithPath:[currentProjectURL path]];
     
     NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:path, @"path", [NSNumber numberWithInt:(isProjectReady) ? 1 : 0], @"ready", nil];
