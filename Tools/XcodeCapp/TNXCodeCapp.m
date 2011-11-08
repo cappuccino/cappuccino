@@ -68,7 +68,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         
         [self setSupportFileLevelAPI:versionMajor >= 10 && versionMinor >= 7];
         // Uncomment to simulate 10.6 mode
-        //[self setSupportFileLevelAPI:NO];
+        [self setSupportFileLevelAPI:NO];
         
         [self configure];
 
