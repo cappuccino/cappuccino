@@ -47,7 +47,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
             if (flags & kFSEventStreamEventFlagItemIsFile && 
                 flags & kFSEventStreamEventFlagItemRemoved)
             {
-                [xcc tidyShadowedFiles:path];
+                [xcc tidyShadowedFiles];
                 continue;
             }
 
@@ -111,7 +111,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
             if (!isDir)
                 continue;
 
-            [xcc tidyShadowedFiles:path];
+            [xcc tidyShadowedFiles];
 
             NSArray *subpaths = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:NULL];
 

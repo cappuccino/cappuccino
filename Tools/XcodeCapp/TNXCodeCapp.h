@@ -84,7 +84,7 @@ extern NSString * const XCCListeningStartNotification;
 - (void)clear;
 - (void)start;
 - (void)configure;
-- (void)tidyShadowedFiles:(NSString*)basePath;
+- (void)tidyShadowedFiles;
 
 @end
 

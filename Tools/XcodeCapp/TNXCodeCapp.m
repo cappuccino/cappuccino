@@ -628,9 +628,8 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 
 /*!
  Clean the support folder according to files present in given path
- @param basePath the path of the folder to check
  */
-- (void)tidyShadowedFiles:(NSString*)basePath
+- (void)tidyShadowedFiles
 {
     NSArray *subpaths = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[XCodeSupportProjectSources path] error:NULL];
 
