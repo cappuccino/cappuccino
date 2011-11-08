@@ -471,7 +471,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         BOOL isDir = NO;
         [fm fileExistsAtPath:filePath isDirectory:&isDir];
 
-        if (isDir 
+        if (isDir
             || (![self isXIBFile:filePath] && ![self isObjJFile:filePath]))
             continue;
 
