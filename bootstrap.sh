@@ -314,8 +314,17 @@ if [ `uname` = "Darwin" ]; then
         check_build_environment
 
         # The narwhal-jsc package is already installed within the base kit.
-        # The autoreconf command improves compatibility with MacPorts.
-        if ! (cd "$install_directory/packages/narwhal-jsc/deps/libedit-20100424-3.0" && autoreconf -if && cd ../../ && make webkit); then
+
+        # This autoreconf command improves compatibility with MacPorts, but only works with autoconf 2.65+.
+        needed_autoconf_major=2
+        needed_autoconf_minor=65
+        if $(autoconf --version | head -1 | python -c "import sys, re; major, minor=re.search(r'(\d+)\.(\d+)', sys.stdin.read()).groups(); sys.exit((int(major) < $needed_autoconf_major or int(minor) < $needed_autoconf_minor) and 1)"); then
+            # Don't bother checking the return code of this operation. Even if it fails, it's still
+            # worthwhile to continue and attempt the full build.
+            (cd "$install_directory/packages/narwhal-jsc/deps/libedit-20100424-3.0" && autoreconf -if)
+        fi
+
+        if ! (cd "$install_directory/packages/narwhal-jsc/" && make webkit); then
             rm -rf "$install_directory/packages/narwhal-jsc"
             echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
             echo "WARNING: building narwhal-jsc failed. Hit enter to continue."
