@@ -30,14 +30,16 @@ function which () {
 }
 
 function ask_remove_dir () {
-    dir="$1"
-    if [ -d "$dir" ]; then
+    a_longish_dir_name="$1"
+    if [ -d "$a_longish_dir_name" ]; then
         echo "================================================================================"
-        echo "Found an existing Cappuccino installation, $dir. Remove it automatically now?"
-        echo "WARNING: the ENTIRE directory, $dir, will be removed (i.e. 'rm -rf $dir')."
-        echo "Be sure this is correct. Custom modifications and installed packages WILL BE DELETED."
+        echo "Found an existing Cappuccino installation: $a_longish_dir_name. Remove it "
+        echo "automatically now? "
+        echo "WARNING: the ENTIRE directory, $a_longish_dir_name, will be removed (i.e. "
+        echo "'rm -rf $a_longish_dir_name'). Be sure this is correct. Custom modifications and "
+        echo "installed packages WILL BE DELETED."
         if prompt "no"; then
-            rm -rf "$dir"
+            rm -rf "$a_longish_dir_name"
         fi
     fi
 }
@@ -174,16 +176,16 @@ install_cappuccino="yes"
 
 sed "s/\[\[ CAPPUCCINO_VERSION \]\]/$github_ref/" <<EOT
 
-                  _______ ____  ___  __ __________(_)__  ___
-                 / __/ _ \`/ _ \/ _ \/ // / __/ __/ / _ \/ _ \\
-                 \__/\_,_/ .__/ .__/\_,_/\__/\__/_/_//_/\___/
-                        /_/  /_/
+                   _______ ____  ___  __ __________(_)__  ___
+                  / __/ _ \`/ _ \/ _ \/ // / __/ __/ / _ \/ _ \\
+                  \__/\_,_/ .__/ .__/\_,_/\__/\__/_/_//_/\___/
+                         /_/  /_/
 
-                            Welcome to Cappuccino!
+                             Welcome to Cappuccino!
 
-==============================================================================
+================================================================================
 
-                                Version [[ CAPPUCCINO_VERSION ]]
+                                 Version [[ CAPPUCCINO_VERSION ]]
 
 
                              http://cappuccino.org
@@ -227,7 +229,7 @@ fi
 if [ "$install_cappuccino" ]; then
     if [ ! "$install_directory" ]; then
         echo "================================================================================"
-        echo "To use the default location, \"$default_directory\", just hit enter/return, or enter another path:"
+        echo "Enter an installation path, or hit enter/return to use \"$default_directory\":"
         if [ "$noprompt" ]; then
             input=""
         else
@@ -244,7 +246,7 @@ if [ "$install_cappuccino" ]; then
     install_directory="$(cd "$(dirname "$install_directory")" && echo "$(pwd)/$(basename "$install_directory")")"
 
     if [ ! -d "$(dirname "$install_directory")" ]; then
-        echo "Error: parent directory of $install_directory does not exist"
+        echo "Error: parent directory of $install_directory does not exist."
         exit 1
     fi
 
@@ -291,7 +293,8 @@ if [ "$install_cappuccino" ]; then
 fi
 
 if ! which "narwhal" > /dev/null; then
-    echo "Problem installing Narwhal. To install Narwhal manually follow the instructions at http://narwhaljs.org/"
+    echo "Problem installing Narwhal. To install Narwhal manually follow the "
+    echo "instructions at http://narwhaljs.org/."
     exit 1
 fi
 
@@ -305,13 +308,13 @@ install_directory="$(dirname -- "$(dirname -- "$(which narwhal)")")"
 
 if [ `uname` = "Darwin" ]; then
     echo "================================================================================"
-    echo "Would you like to build the JavaScriptCore engine?"
-    echo "This is optional but will make building and running Cappuccino and Objective-J "
-    echo "much faster."
+    echo "Would you like to build the JavaScriptCore engine? This is optional but will "
+    echo "make building and running Cappuccino and Objective-J much faster."
     if prompt "yes"; then
         check_build_environment
 
         # The narwhal-jsc package is already installed within the base kit.
+        # The autoreconf command improves compatibility with MacPorts.
         if ! (cd "$install_directory/packages/narwhal-jsc/deps/libedit-20100424-3.0" && autoreconf -if && cd ../../ && make webkit); then
             rm -rf "$install_directory/packages/narwhal-jsc"
             echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
@@ -320,8 +323,9 @@ if [ `uname` = "Darwin" ]; then
             # read
         elif ! [ "$NARWHAL_ENGINE_SAVED" = "jsc" ]; then
             echo "================================================================================"
-            echo "Rhino is the default engine. Should we change the default to JavaScriptCore for you?"
-            echo "This can by overridden by setting the NARWHAL_ENGINE environment variable to \"jsc\" or \"rhino\"."
+            echo "Rhino is the default engine. Should we change the default to JavaScriptCore for "
+            echo "you? This can by overridden by setting the NARWHAL_ENGINE environment variable "
+            echo "to \"jsc\" or \"rhino\"."
             ask_append_shell_config "export NARWHAL_ENGINE=jsc"
         fi
     fi
@@ -330,12 +334,14 @@ fi
 export PATH="$PATH_SAVED"
 if ! which "narwhal" > /dev/null; then
     echo "================================================================================"
-    echo "You must add Cappuccino's \"bin\" directory to your PATH environment variable. Do this automatically now?"
+    echo "You must add Cappuccino's \"bin\" directory to your PATH environment variable. "
+    echo "Do this automatically now?"
 
     export_path_string="export PATH=\"$install_directory/bin:\$PATH\""
 
     if ! ask_append_shell_config "$export_path_string"; then
-        echo "Add \"$install_directory/bin\" to your PATH environment variable in your shell configuration file (e.x. .profile, .bashrc, .bash_profile)."
+        echo "Add \"$install_directory/bin\" to your PATH environment variable in your shell "
+        echo "configuration file (e.x. .profile, .bashrc, .bash_profile)."
         echo "For example:"
         echo "    $export_path_string"
     fi
@@ -344,18 +350,21 @@ fi
 if [ "$CAPP_BUILD" ]; then
     if [ -d "$CAPP_BUILD" ]; then
         echo "================================================================================"
-        echo "An existing \$CAPP_BUILD directory at \"$CAPP_BUILD\" exists. The previous build may be incompatible. Remove it automatically now?"
+        echo "An existing \$CAPP_BUILD directory at \"$CAPP_BUILD\" exists. The previous "
+        echo "build may be incompatible. Remove it automatically now?"
         if prompt "no"; then
             rm -rf "$CAPP_BUILD"
         fi
     fi
 else
     echo "================================================================================"
-    echo "Before building Cappuccino we recommend you set the \$CAPP_BUILD environment variable to a path where you wish to build Cappuccino."
-    echo "This can be automatically set to the default value of \"$PWD/Build\", or you can set \$CAPP_BUILD yourself."
+    echo "Before building Cappuccino we recommend you set the \$CAPP_BUILD environment "
+    echo "variable to a path where you wish to build Cappuccino. This can be automatically"
+    echo "set to the default value of \"$PWD/Build\", or you can set \$CAPP_BUILD yourself."
     ask_append_shell_config "export CAPP_BUILD=\"$PWD/Build\""
 fi
 
 echo "================================================================================"
 echo "Bootstrapping of Cappuccino and other required tools is complete."
-echo "NOTE: any changes made to the shell configuration files won't take place until you restart the shell."
+echo "NOTE: any changes made to the shell configuration files won't take place until "
+echo "you restart the shell."
