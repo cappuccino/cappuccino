@@ -549,12 +549,12 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         }
     }
     
-    [ignoredFilePaths addObject:@"*.git*"];
-    [ignoredFilePaths addObject:@"*.svn*"];
-    [ignoredFilePaths addObject:@"*.hg*"];
-    [ignoredFilePaths addObject:@"*Frameworks*"];
-    [ignoredFilePaths addObject:@"*.xCodeSupport*"];
-    [ignoredFilePaths addObject:@"*Build*"];
+    [ignoredFilePaths addObject:@"*/.git/*"];
+    [ignoredFilePaths addObject:@"*/.svn/*"];
+    [ignoredFilePaths addObject:@"*/.hg/*"];
+    [ignoredFilePaths addObject:@"*/Frameworks/*"];
+    [ignoredFilePaths addObject:@"*/.xCodeSupport/*"];
+    [ignoredFilePaths addObject:@"*/Build/*"];
     
     NSLog(@"Ignoring file paths: %@", ignoredFilePaths);
 }
@@ -566,39 +566,36 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
  */
 - (BOOL)isPathMatchingIgnoredPaths:(NSString*)aPath
 {
-    BOOL isMatching = NO;
-    
     for (NSString *ignoredPath in ignoredFilePaths)
     {
-        if ([ignoredPath isEqual:@""])
+        if ([ignoredPath length] == 0)
             continue;
         
         NSMutableString *regexp = [NSMutableString stringWithFormat:@"%@/%@", [currentProjectURL path], ignoredPath];
         [regexp replaceOccurrencesOfString:@"/"
                                 withString:@"\\/"
-                                   options:NSCaseInsensitiveSearch
+                                   options:0
                                      range:NSMakeRange(0, [regexp length])];
         
         [regexp replaceOccurrencesOfString:@"."
                                 withString:@"\\."
-                                   options:NSCaseInsensitiveSearch
+                                   options:0
                                      range:NSMakeRange(0, [regexp length])];
         
         [regexp replaceOccurrencesOfString:@"*"
                                 withString:@".*"
-                                   options:NSCaseInsensitiveSearch
+                                   options:0
                                      range:NSMakeRange(0, [regexp length])];
         
         NSPredicate *regextest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", regexp];
+        
         if ([regextest evaluateWithObject:aPath])
         {
-            isMatching = YES;
-            
-            break;
+            return YES;
         }
     }
     
-    return isMatching;
+    return NO;
 }
 
 /*!
