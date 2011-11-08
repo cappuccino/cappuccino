@@ -121,20 +121,21 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
  */
 - (void)initializeEventStreamWithPath:(NSString*)aPath
 {
+    if ([self isListening])
+        return;
+        
+    [self stopEventStream];
+
     NSArray *pathsToWatch = [NSArray arrayWithObject:aPath];
     void *appPointer = (void *)self;
     FSEventStreamContext context = {0, appPointer, NULL, NULL, NULL};
-    NSTimeInterval latency = 2.0;
+    CFTimeInterval latency = 2.0;
     FSEventStreamCreateFlags flags = 0;
-    
-    if (stream != NULL)
-        free(stream);
-    
+        
     if (supportsFileBasedListening)
     {
         DLog(@"Initializing the FSEventStream at file level (clean)");
-        // kFSEventStreamCreateFlagNoDefer
-        flags = kFSEventStreamCreateFlagUseCFTypes | 0x00000010;
+        flags = kFSEventStreamCreateFlagUseCFTypes | kFSEventStreamCreateFlagNoDefer | kFSEventStreamCreateFlagFileEvents;
     }
     else
     {
@@ -143,7 +144,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     }
     
     stream = FSEventStreamCreate(NULL, &fsevents_callback, &context, (CFArrayRef) pathsToWatch,
-                                 [lastEventId unsignedLongLongValue], (CFAbsoluteTime) latency, flags);
+                                 [lastEventId unsignedLongLongValue], latency, flags);
     
     FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
     FSEventStreamStart(stream);
@@ -162,8 +163,10 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     if (stream)
     {
         FSEventStreamStop(stream);
+        FSEventStreamUnscheduleFromRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
         FSEventStreamInvalidate(stream);
-        stream = nil;
+        FSEventStreamRelease(stream);
+        stream = NULL;
     }
 
     [self setIsListening:NO];
@@ -174,6 +177,13 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
  */
 - (void)clear
 {
+    if (lastEventId && [lastEventId longLongValue] != 0)
+    {
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        [defaults setObject:lastEventId forKey:@"lastEventId"];
+        [defaults synchronize];
+    }
+
     currentProjectURL = nil;
     currentProjectName = nil;
     [ignoredFilePaths removeAllObjects];
@@ -229,8 +239,6 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 - (void)updateLastEventId:(uint64_t)eventId
 {
     lastEventId = [NSNumber numberWithUnsignedLongLong:eventId];
-    [[NSUserDefaults standardUserDefaults] setObject:lastEventId forKey:@"lastEventId"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 /*!
@@ -479,20 +487,16 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         [NSException raise:NSInvalidArgumentException format:@"shadowURLForSourceURL: aSource URL must not be null"];
 
     NSMutableString *flattenedPath = [NSMutableString stringWithString:[aSourceURL path]];
-    NSMutableString *fileName = [NSMutableString stringWithString:[flattenedPath lastPathComponent]];
-    [fileName replaceOccurrencesOfString:@"_"
-                                   withString:@"-OLDUNDERSCORE-"
-                                      options:NSCaseInsensitiveSearch
-                                        range:NSMakeRange(0, [fileName length])];
-
-    [flattenedPath replaceOccurrencesOfString:[flattenedPath lastPathComponent]
-                                   withString:fileName
-                                      options:NSCaseInsensitiveSearch
+    
+    // Replace "_" with a substring that is unlikely to be in a filename
+    [flattenedPath replaceOccurrencesOfString:@"_"
+                                   withString:@"≤‹°∞°›≥"
+                                      options:0
                                         range:NSMakeRange(0, [flattenedPath length])];
 
     [flattenedPath replaceOccurrencesOfString:@"/"
                                    withString:@"_"
-                                      options:NSCaseInsensitiveSearch
+                                      options:0
                                         range:NSMakeRange(0, [flattenedPath length])];
 
     DLog(@"Flattened path: %@", flattenedPath);
@@ -507,17 +511,17 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 
     [unshadowedPath replaceOccurrencesOfString:@"_"
                                     withString:@"/"
-                                       options:NSCaseInsensitiveSearch
+                                       options:0
                                          range:NSMakeRange(0, [unshadowedPath length])];
 
-    [unshadowedPath replaceOccurrencesOfString:@"-OLDUNDERSCORE-"
+    [unshadowedPath replaceOccurrencesOfString:@"≤‹°∞°›≥"
                                    withString:@"_"
-                                      options:NSCaseInsensitiveSearch
+                                      options:0
                                         range:NSMakeRange(0, [unshadowedPath length])];
 
     [unshadowedPath replaceOccurrencesOfString:@".h"
                                     withString:@".j"
-                                       options:NSCaseInsensitiveSearch
+                                       options:0
                                          range:NSMakeRange(0, [unshadowedPath length])];
 
     return [NSURL URLWithString:[NSString stringWithString:unshadowedPath]];
@@ -637,10 +641,12 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     {
         NSString *unshadowed = [[self sourceURLForShadowName:subpath] path];
         NSString *shadowFullPath = [NSString stringWithFormat:@"%@/%@", [XCodeSupportProjectSources path], subpath];
+        
         if (![fm fileExistsAtPath:unshadowed])
         {
             DLog(@"cleaning shadow file: %@", subpath);
             [fm removeItemAtPath:shadowFullPath error:nil];
+            
             if (![self supportFileLevelAPI] && [self respondsToSelector:@selector(updateLastModificationDate:forPath:)])
                 [self performSelector:@selector(updateLastModificationDate:forPath:) withObject:nil withObject:unshadowed];
         }

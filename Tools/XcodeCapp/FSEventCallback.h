@@ -22,6 +22,19 @@
 #import "TNXCodeCapp.h"
 #import <Cocoa/Cocoa.h>
 
+#if MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_6
+#   define kFSEventStreamCreateFlagFileEvents       0x00000010
+#   define kFSEventStreamEventFlagItemIsFile        0x00010000
+#   define kFSEventStreamEventFlagItemRemoved       0x00000200
+#   define kFSEventStreamEventFlagItemCreated       0x00000200
+#   define kFSEventStreamEventFlagItemModified      0x00001000
+#   define kFSEventStreamEventFlagItemInodeMetaMod  0x00000400
+#   define kFSEventStreamEventFlagItemRenamed       0x00000800
+#   define kFSEventStreamEventFlagItemFinderInfoMod 0x00002000
+#   define kFSEventStreamEventFlagItemChangeOwner   0x00004000
+#   define kFSEventStreamEventFlagItemXattrMod      0x00008000
+#endif
+
 void fsevents_callback(ConstFSEventStreamRef, void*, size_t, void*, const FSEventStreamEventFlags*, const FSEventStreamEventId*);
 
 #endif
