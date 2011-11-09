@@ -110,7 +110,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 */
 - (id)initWithContentRect:(CGRect)aFrame
 {
-    self = [self initWithContentRect:aFrame styleMask:nil]
+    self = [self initWithContentRect:aFrame styleMask:nil];
     return self;
 }
 
@@ -254,7 +254,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 
     // CPMinXEdge
     originLeft.x -= CPRectGetWidth([self frame]);
-    originLeft.y += (aRect.size.height / 2.0) - (CPRectGetHeight([self frame]) / 2.0)
+    originLeft.y += (aRect.size.height / 2.0) - (CPRectGetHeight([self frame]) / 2.0);
 
     // CPMaxYEdge
     originBottom.x += aRect.size.width / 2.0 - CPRectGetWidth([self frame]) / 2.0;
@@ -381,7 +381,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 */
 - (void)positionRelativeToRect:(CPRect)aRect
 {
-    [self positionRelativeToRect:aRect preferredEdge:nil]
+    [self positionRelativeToRect:aRect preferredEdge:nil];
 }
 
 /*!
@@ -470,16 +470,18 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
         _DOMElement.style.opacity = 0;
         _DOMElement.style.WebkitTransform = "scale(0)";
         _DOMElement.style.WebkitTransformOrigin = tranformOrigin;
-        window.setTimeout(function(){
+        window.setTimeout(function()
+        {
             _DOMElement.style.height = _frame.size.height + @"px";
             _DOMElement.style.width = _frame.size.width + @"px";
             _DOMElement.style.opacity = 1;
             _DOMElement.style.WebkitTransform = "scale(1.1)";
-            var transitionEndFunction = function(){
+            var transitionEndFunction = function()
+            {
                 _DOMElement.style.WebkitTransform = "scale(1)";
                 _DOMElement.removeEventListener("webkitTransitionEnd", transitionEndFunction, YES);
             };
-            _DOMElement.addEventListener("webkitTransitionEnd", transitionEndFunction, YES)
+            _DOMElement.addEventListener("webkitTransitionEnd", transitionEndFunction, YES);
         },0);
     }
 
