@@ -1,4 +1,3 @@
-
 /*
  * CPTextField.j
  * AppKit
@@ -29,7 +28,7 @@
 @import "_CPImageAndTextView.j"
 
 
-CPTextFieldSquareBezel          = 0;    /*! A textfield bezel with a squared corners. */
+CPTextFieldSquareBezel          = 0;    /*! A textfield bezel with squared corners. */
 CPTextFieldRoundedBezel         = 1;    /*! A textfield bezel with rounded corners. */
 
 CPTextFieldDidFocusNotification = @"CPTextFieldDidFocusNotification";
@@ -1023,7 +1022,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     However, since you don't know how tall it needs to be if you change the font, sizeToFit will still be
     useful for making the textfield an appropriate height.
 */
-
 - (void)sizeToFit
 {
     [self setFrameSize:[self _minimumFrameSize]];
