@@ -112,8 +112,8 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
         @"track-inset":_CGInsetMakeZero(),
         @"knob-inset": _CGInsetMakeZero(),
         @"minimum-knob-length":21.0,
-        @"track-border-overlay": 9.0,
-    }]
+        @"track-border-overlay": 9.0
+    }];
 }
 
 + (float)scrollerWidth
@@ -190,7 +190,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 */
 - (void)style
 {
-    return _style
+    return _style;
 }
 
 /*!
