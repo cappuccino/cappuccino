@@ -86,7 +86,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
         [self setPullsDown:shouldPullDown];
 
-        var options = CPKeyValueObservingOptionNew |CPKeyValueObservingOptionOld;/* |CPKeyValueObservingOptionInitial;*/
+        var options = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld; // | CPKeyValueObservingOptionInitial;
         [self addObserver:self forKeyPath:@"menu.items" options:options context:nil];
         [self addObserver:self forKeyPath:@"_firstItem.changeCount" options:options context:nil];
         [self addObserver:self forKeyPath:@"selectedItem.changeCount" options:options context:nil];
@@ -193,6 +193,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 - (void)removeAllItems
 {
     [[self menu] removeAllItems];
+    [self synchronizeTitleAndSelectedItem];
 }
 
 /*!

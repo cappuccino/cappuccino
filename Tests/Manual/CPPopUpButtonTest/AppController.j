@@ -11,6 +11,8 @@
 
 @implementation AppController : CPObject
 {
+    CPPopUpButton popUpButton;
+    CPPopUpButton popUpButton2;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -18,8 +20,8 @@
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
         contentView = [theWindow contentView];
 
-    var popUpButton = [[CPPopUpButton alloc] initWithFrame:CGRectMakeZero()],
-        popUpButton2 = [[CPPopUpButton alloc] initWithFrame:CGRectMakeZero()];
+    popUpButton = [[CPPopUpButton alloc] initWithFrame:CGRectMakeZero()];
+    popUpButton2 = [[CPPopUpButton alloc] initWithFrame:CGRectMakeZero()];
 
     for (var i = 0; i < 5; i++)
     {
@@ -43,7 +45,7 @@
     [popUpButton2 setCenter:CGPointMake([contentView center].x + 25.0, [contentView center].y)];
     [contentView addSubview:popUpButton2];
 
-    var textField = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 29.0)];
+    var textField = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 29.0)],
         frameOrigin = [popUpButton frameOrigin];
 
     [textField setEditable:YES];
@@ -52,6 +54,15 @@
     [textField setValue:CPCenterTextAlignment forThemeAttribute:@"alignment"];
     [textField bind:@"value" toObject:popUpButton withKeyPath:@"selectedTag" options:0];
     [contentView addSubview:textField];
+
+    var button = [CPButton buttonWithTitle:@"Remove Items"],
+        frame = [textField frame];
+
+    [button setCenter:CGPointMake([contentView center].x, 0)];
+    [button setFrameOrigin:CGPointMake(CGRectGetMinX([button frame]), CGRectGetMaxY(frame) + 15)];
+    [button setTarget:self];
+    [button setAction:@selector(removeItems:)];
+    [contentView addSubview:button];
 
     [popUpButton bind:@"selectedTag" toObject:textField withKeyPath:@"value" options:0]
     [popUpButton2 bind:@"selectedTag" toObject:popUpButton withKeyPath:@"selectedTag" options:0];
@@ -62,6 +73,13 @@
     [popUpButton2 _setSelectedTag:2];
 
     [theWindow orderFront:self];
+}
+
+- (@action)removeItems:(id)sender
+{
+    [popUpButton2 removeAllItems];
+    [popUpButton removeAllItems];
+    CPLog("objectValue = %d", [popUpButton objectValue]);
 }
 
 @end
