@@ -100,16 +100,16 @@ function resolveFlags(args)
     for (; index < count; ++index)
     {
         var argument = args[index];
-        
+
         if (argument === "-o")
         {
             if (++index < count)
                 outputFilePaths.push(args[index]);
         }
-        
+
         else if (argument.indexOf("-D") === 0)
-            gccFlags.push(argument)
-            
+            gccFlags.push(argument);
+
         else if (argument.indexOf("-U") === 0)
             gccFlags.push(argument);
 
@@ -124,13 +124,13 @@ function resolveFlags(args)
 
         else if (argument.indexOf("-E") === 0)
             objjcFlags &= ~ObjectiveJ.Preprocessor.Flags.Preprocess;
-            
+
         else if (argument.indexOf("-S") === 0)
             objjcFlags &= ~ObjectiveJ.Preprocessor.Flags.CheckSyntax;
-            
+
         else if (argument.indexOf("-g") === 0)
             objjcFlags |= ObjectiveJ.Preprocessor.Flags.IncludeDebugSymbols;
-            
+
         else if (argument.indexOf("-O") === 0)
             objjcFlags |= ObjectiveJ.Preprocessor.Flags.Compress;
 
@@ -149,7 +149,7 @@ exports.compile = function(aFilePath, flags)
     var resolvedFlags = resolveFlags(flags);
 
     return compileWithResolvedFlags(aFilePath, resolvedFlags.objjcFlags, resolvedFlags.gccFlags);
-}
+};
 
 exports.main = function(args)
 {
@@ -167,7 +167,7 @@ exports.main = function(args)
 
         FILE.write(outputFilePaths[index], compileWithResolvedFlags(filePath, objjcFlags, gccFlags), { charset: "UTF-8" });
     });
-}
+};
 
 if (require.main == module.id)
     exports.main(system.args);
