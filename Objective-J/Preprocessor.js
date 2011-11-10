@@ -910,7 +910,7 @@ Preprocessor.prototype.preprocess = function(tokens, /*StringBuffer*/ aStringBuf
             // If it's not a parenthesis, we know we have a non-supported function declaration, so fix it:
             else
             {
-                CONCAT(buffer, token + "= function");
+                CONCAT(buffer, token + " = function");
 
 #if FIREBUG
                 var functionName = token;
