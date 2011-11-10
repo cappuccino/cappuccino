@@ -371,8 +371,8 @@ CPCriticalAlertStyle        = 2;
     [_informativeLabel setAlignment:[self currentValueForThemeAttribute:@"informative-text-alignment"]];
     [_informativeLabel setLineBreakMode:CPLineBreakByWordWrapping];
 
-    informativeLabelWidth = CGRectGetWidth([[_window contentView] frame]) - inset.left - inset.right,
-    informativeLabelOriginY = [_messageLabel frameOrigin].y + [_messageLabel frameSize].height + defaultElementsMargin,
+    informativeLabelWidth = CGRectGetWidth([[_window contentView] frame]) - inset.left - inset.right;
+    informativeLabelOriginY = [_messageLabel frameOrigin].y + [_messageLabel frameSize].height + defaultElementsMargin;
     informativeLabelTextSize = [[_informativeLabel stringValue] sizeWithFont:[_informativeLabel font] inWidth:informativeLabelWidth];
 
     [_informativeLabel setFrame:CGRectMake(inset.left, informativeLabelOriginY, informativeLabelTextSize.width, informativeLabelTextSize.height + sizeWithFontCorrection)];
