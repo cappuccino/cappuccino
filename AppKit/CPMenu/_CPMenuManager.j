@@ -1,8 +1,8 @@
 @import <Foundation/CPObject.j>
 
 
-_CPMenuManagerScrollingStateUp      = -1,
-_CPMenuManagerScrollingStateDown    = 1,
+_CPMenuManagerScrollingStateUp      = -1;
+_CPMenuManagerScrollingStateDown    = 1;
 _CPMenuManagerScrollingStateNone    = 0;
 
 var STICKY_TIME_INTERVAL            = 500,

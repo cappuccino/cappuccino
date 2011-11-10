@@ -571,10 +571,12 @@ var _CPEventPeriodicEventPeriod         = 0,
     if (_modifierFlags & (CPCommandKeyMask | CPControlKeyMask))
         return YES;
 
-    // Cocoa does not consider space, backspace, or escape a key equivalent
-    // if the first responder is a text field (presumably a subclass of NSText).
+    // Cocoa allows almost any key as a key equivalent unless the first responder is a
+    // text field (presumably a subclass of NSText.)
     var firstResponderIsText = [[_window firstResponder] isKindOfClass:[CPTextField class]];
 
+    // Some keys are accepted as key equivalents even if the first responder is a text
+    // field.
     for (var i = 0; i < characterCount; i++)
     {
         var c = _characters.charAt(i);
@@ -583,18 +585,13 @@ var _CPEventPeriodicEventPeriod         = 0,
             c === CPEnterCharacter ||
             c === CPNewlineCharacter ||
             c === CPCarriageReturnCharacter ||
-            c === CPEscapeFunctionKey ||
-            (!firstResponderIsText &&
-                (c === CPSpaceFunctionKey ||
-                 c === CPDeleteCharacter ||
-                 c === CPBackspaceCharacter)))
+            c === CPEscapeFunctionKey)
         {
             return YES;
         }
     }
 
-    // FIXME: More cases?
-    return NO;
+    return !firstResponderIsText;
 }
 
 /*!

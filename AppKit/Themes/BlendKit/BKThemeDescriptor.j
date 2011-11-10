@@ -341,8 +341,7 @@ function BKLabelFromIdentifier(anIdentifier)
 }
 
 
-
-PatternIsVertical = YES,
+PatternIsVertical = YES;
 PatternIsHorizontal = NO;
 
 /*

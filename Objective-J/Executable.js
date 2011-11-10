@@ -56,12 +56,12 @@ exports.Executable = Executable;
 Executable.prototype.path = function()
 {
     return this.URL().path();
-}
+};
 
 Executable.prototype.URL = function()
 {
     return this._URL;
-}
+};
 
 DISPLAY_NAME(Executable.prototype.URL);
 
@@ -76,7 +76,7 @@ Executable.prototype.functionParameters = function()
 #endif
 
     return functionParameters;
-}
+};
 
 DISPLAY_NAME(Executable.prototype.functionParameters);
 
@@ -89,7 +89,7 @@ Executable.prototype.functionArguments = function()
 #endif
 
     return functionArguments;
-}
+};
 
 DISPLAY_NAME(Executable.prototype.functionArguments);
 
@@ -97,22 +97,22 @@ DISPLAY_NAME(Executable.prototype.functionArguments);
 Executable.setCommonJSParameters = function()
 {
     this._commonJSParameters = Array.prototype.slice.call(arguments);
-}
+};
 
 Executable.commonJSParameters = function()
 {
     return this._commonJSParameters || [];
-}
+};
 
 Executable.setCommonJSArguments = function()
 {
     this._commonJSArguments = Array.prototype.slice.call(arguments);
-}
+};
 
 Executable.commonJSArguments = function()
 {
     return this._commonJSArguments || [];
-}
+};
 
 Executable.prototype.toMarkedString = function()
 {
@@ -127,7 +127,7 @@ Executable.prototype.toMarkedString = function()
     var code = this.code();
 
     return markedString + MARKER_TEXT + ";" + code.length + ";" + code;
-}
+};
 #endif
 
 Executable.prototype.execute = function()
@@ -145,14 +145,14 @@ Executable.prototype.execute = function()
     CONTEXT_BUNDLE = oldContextBundle;
 
     return result;
-}
+};
 
 DISPLAY_NAME(Executable.prototype.execute);
 
 Executable.prototype.code = function()
 {
     return this._code;
-}
+};
 
 DISPLAY_NAME(Executable.prototype.code);
 

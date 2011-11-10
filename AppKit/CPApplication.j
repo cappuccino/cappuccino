@@ -338,7 +338,7 @@ CPRunContinuesResponse  = -1002;
     Copyright - Human readable copyright information.
     </pre>
 
-    If you choose not the include any of the above keys, they will default 
+    If you choose not the include any of the above keys, they will default
     to the following respective keys in your info.plist file.
 
     <pre>
@@ -1003,7 +1003,7 @@ CPRunContinuesResponse  = -1002;
 }
 
 /*!
-    Sets the arguments of your application. 
+    Sets the arguments of your application.
     That is, set the slash seperated values of an array as the window location hash.
 
     For example if you pass an array:
@@ -1340,8 +1340,8 @@ var _CPAppBootstrapperActions = nil;
     [editMenu addItem:undoMenuItem];
     [editMenu addItem:redoMenuItem];
 
-    [editMenu addItem:[[CPMenuItem alloc] initWithTitle:@"Cut" action:@selector(cut:) keyEquivalent:@"x"]],
-    [editMenu addItem:[[CPMenuItem alloc] initWithTitle:@"Copy" action:@selector(copy:) keyEquivalent:@"c"]],
+    [editMenu addItem:[[CPMenuItem alloc] initWithTitle:@"Cut" action:@selector(cut:) keyEquivalent:@"x"]];
+    [editMenu addItem:[[CPMenuItem alloc] initWithTitle:@"Copy" action:@selector(copy:) keyEquivalent:@"c"]];
     [editMenu addItem:[[CPMenuItem alloc] initWithTitle:@"Paste" action:@selector(paste:) keyEquivalent:@"v"]];
 
     [editMenuItem setSubmenu:editMenu];

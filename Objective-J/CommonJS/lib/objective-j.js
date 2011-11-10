@@ -9,7 +9,7 @@ if (system.engine === "rhino")
     window.__parent__ = null;
     window.__proto__ = global;
 }
- 
+
 // setup OBJJ_HOME, OBJJ_INCLUDE_PATHS, etc
 window.OBJJ_HOME = exports.OBJJ_HOME = FILE.resolve(module.path, "..");
 
@@ -146,7 +146,7 @@ exports.repl = function()
 
         require("browser/timeout").serviceTimeouts();
     }
-}
+};
 
 // creates a narwhal factory function in the objj module scope
 exports.make_narwhal_factory = function(path)
@@ -157,7 +157,7 @@ exports.make_narwhal_factory = function(path)
         Executable.setCommonJSArguments(require, exports, module, system, print, window);
         Executable.fileImporterForURL(FILE.dirname(path))(path, YES);
     }
-}
+};
 
 } // end "with"
 

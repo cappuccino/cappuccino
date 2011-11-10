@@ -200,7 +200,7 @@
         if (isPopup)
         {
             itemArray = [[templateView itemArray] valueForKey:@"title"];
-            itemsCount = [itemArray count],
+            itemsCount = [itemArray count];
             menuIndex = 0;
         }
 

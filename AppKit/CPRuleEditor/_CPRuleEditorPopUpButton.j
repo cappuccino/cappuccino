@@ -16,12 +16,12 @@ var GRADIENT_NORMAL,
 {
     if (CPBrowserIsEngine(CPWebKitBrowserEngine))
     {
-        GRADIENT_NORMAL = "-webkit-gradient(linear, left top, left bottom, from(rgb(252, 252, 252)), to(rgb(223, 223, 223)))",
+        GRADIENT_NORMAL = "-webkit-gradient(linear, left top, left bottom, from(rgb(252, 252, 252)), to(rgb(223, 223, 223)))";
         GRADIENT_HIGHLIGHTED = "-webkit-gradient(linear, left top, left bottom, from(rgb(223, 223, 223)), to(rgb(252, 252, 252)))";
     }
     else if (CPBrowserIsEngine(CPGeckoBrowserEngine))
     {
-        GRADIENT_NORMAL = "-moz-linear-gradient(top,  rgb(252, 252, 252),  rgb(223, 223, 223))",
+        GRADIENT_NORMAL = "-moz-linear-gradient(top,  rgb(252, 252, 252),  rgb(223, 223, 223))";
         GRADIENT_HIGHLIGHTED = "-moz-linear-gradient(top,  rgb(223, 223, 223),  rgb(252, 252, 252))";
     }
 }
@@ -35,7 +35,7 @@ var GRADIENT_NORMAL,
         style.border = "1px solid rgb(189, 189, 189)";
         style.filter = IE_FILTER;
 
-        [self setTextColor:[CPColor colorWithWhite:101/255 alpha:1]];
+        [self setTextColor:[CPColor colorWithWhite:101 / 255 alpha:1]];
         [self setBordered:NO];
      }
 

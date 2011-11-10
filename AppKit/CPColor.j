@@ -60,7 +60,7 @@ var cachedBlackColor,
 /*!
     Orientation to use with \c CPColorPattern for vertical patterns.
 */
-CPColorPatternIsVertical = YES,
+CPColorPatternIsVertical = YES;
 
 /*!
     Orientation to use with \c CPColorPattern for horizontal patterns.
