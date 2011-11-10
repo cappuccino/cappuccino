@@ -60,7 +60,6 @@
         [contentView addSubview:button];
     }
 
-
     var label = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
     [label setStringValue:@"Press the appropriate key on the keyboard for each button and verify that it reacts."];
     [label setFont:[CPFont boldSystemFontOfSize:14.0]];
@@ -86,7 +85,7 @@
         ["down arrow", CPDownArrowFunctionKey],
         ["home", CPHomeFunctionKey],
         ["end", CPEndFunctionKey]
-        ];
+    ];
 
     for (var i = 0, buttonsWide = 6, yOffset = 0; i < functionKeysToTest.length; i++)
     {
@@ -101,6 +100,15 @@
 
         [contentView addSubview:button];
     }
+
+    var label2 = [[CPTextField alloc] initWithFrame:CGRectMake(10, 140 + yOffset + 24, 100, 24)];
+    [label2 setStringValue:@"If a text field is the first responder, some key equivalents are ignored."];
+    [label2 sizeToFit];
+    [contentView addSubview:label2];
+
+    var textField = [CPTextField textFieldWithStringValue:"" placeholder:"" width:100];
+    [textField setFrameOrigin:CGPointMake(10, CGRectGetMaxY([label2 frame]) + 10)];
+    [contentView addSubview:textField];
 
     [theWindow orderFront:self];
 }
