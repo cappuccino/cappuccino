@@ -153,19 +153,54 @@ exports.compile = function(aFilePath, flags)
 
 exports.main = function(args)
 {
-    // TODO: args parser
-    args.shift();
+    var shouldPrintOutput = false;
 
-    var resolved = resolveFlags(args),
+    var argv = args.slice(1);
+
+    while(argv.length)
+    {
+        if (argv[0] === '--')
+        {
+            argv.shift();
+            break;
+        }
+
+        if (argv[0] === "-p" || argv[0] === "--print")
+        {
+            shouldPrintOutput = YES;
+            argv.shift();
+            continue;
+        }
+
+        if (argv[0] === "--help" || argv[0].substr(0, 1) == '-')
+        {
+            print("Usage: " + args[0] + " [options] [--] file...");
+            print("  -p, --print    print the output directly to stdout");
+            print("  --help         print this help");
+            return;
+        }
+
+        // Current argument doesn't begin with - so it's not an argument but the
+        // first filename.
+        // TODO Full GNU getopt parsing which doesn't stop on the first non-argument.
+        break;
+    }
+
+    var resolved = resolveFlags(argv),
         outputFilePaths = resolved.outputFilePaths,
         objjcFlags = resolved.objjcFlags,
         gccFlags = resolved.gccFlags;
 
     resolved.filePaths.forEach(function(filePath, index)
     {
-        print("Statically Compiling " + filePath);
+        if (!shouldPrintOutput)
+            print("Statically Compiling " + filePath);
+        var output = compileWithResolvedFlags(filePath, objjcFlags, gccFlags);
 
-        FILE.write(outputFilePaths[index], compileWithResolvedFlags(filePath, objjcFlags, gccFlags), { charset: "UTF-8" });
+        if (shouldPrintOutput)
+            print(output);
+        else
+            FILE.write(outputFilePaths[index], output, { charset: "UTF-8" });
     });
 };
 
