@@ -250,7 +250,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 
     // CPMaxXEdge
     originRight.x += aRect.size.width;
-    originRight.y += (aRect.size.height / 2.0) - (CPRectGetHeight([self frame]) / 2.0)
+    originRight.y += (aRect.size.height / 2.0) - (CPRectGetHeight([self frame]) / 2.0);
 
     // CPMinXEdge
     originLeft.x -= CPRectGetWidth([self frame]);

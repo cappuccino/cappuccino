@@ -64,7 +64,7 @@
 
 - (id)initWithFrame:(CGRect)aFrame
 {
-    self = [super initWithFrame:aFrame]
+    self = [super initWithFrame:aFrame];
 
     if (self)
         [self _init];
