@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		9EEC4498135749D200615446 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EEC4497135749D200615446 /* Cocoa.framework */; };
 		9EEC44B5135749D300615446 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EEC4497135749D200615446 /* Cocoa.framework */; };
-		9EEC44CC13574A0B00615446 /* NibAppRemixed in Resources */ = {isa = PBXBuildFile; fileRef = 9EEC44CB13574A0B00615446 /* NibAppRemixed */; };
+		9EEC44CC13574A0B00615446 /* ${CappuccinoProjectName} in Resources */ = {isa = PBXBuildFile; fileRef = 9EEC44CB13574A0B00615446 /* ${CappuccinoProjectName} */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,7 +29,7 @@
 		9EEC449B135749D300615446 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		9EEC449C135749D300615446 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		9EEC44B4135749D300615446 /* AnotherTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AnotherTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
-		9EEC44CB13574A0B00615446 /* NibAppRemixed */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NibAppRemixed; path = ../../NibAppRemixed; sourceTree = "<group>"; };
+		9EEC44CB13574A0B00615446 /* ${CappuccinoProjectName} */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ${CappuccinoProjectName}; path = ${CappuccinoProjectRelativePath}; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,7 +55,7 @@
 		9EEC4488135749D200615446 = {
 			isa = PBXGroup;
 			children = (
-				9EEC44CB13574A0B00615446 /* NibAppRemixed */,
+				9EEC44CB13574A0B00615446 /* ${CappuccinoProjectName} */,
 				9EEC4496135749D200615446 /* Frameworks */,
 				9EEC4494135749D200615446 /* Products */,
 			);
@@ -134,10 +134,9 @@
 		9EEC448A135749D200615446 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0420;
 				ORGANIZATIONNAME = "280 North, Inc.";
 			};
-			buildConfigurationList = 9EEC448D135749D200615446 /* Build configuration list for PBXProject "NibAppRemixed" */;
+			buildConfigurationList = 9EEC448D135749D200615446 /* Build configuration list for PBXProject "Another" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -160,7 +159,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9EEC44CC13574A0B00615446 /* NibAppRemixed in Resources */,
+				9EEC44CC13574A0B00615446 /* ${CappuccinoProjectName} in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -324,7 +323,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		9EEC448D135749D200615446 /* Build configuration list for PBXProject "NibAppRemixed" */ = {
+		9EEC448D135749D200615446 /* Build configuration list for PBXProject "Another" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				9EEC44C3135749D300615446 /* Debug */,
@@ -340,7 +339,6 @@
 				9EEC44C7135749D300615446 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
 		};
 		9EEC44C8135749D300615446 /* Build configuration list for PBXNativeTarget "AnotherTests" */ = {
 			isa = XCConfigurationList;
@@ -349,7 +347,6 @@
 				9EEC44CA135749D300615446 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
