@@ -31,12 +31,14 @@ function compressor(code) {
     return winner;
 }
 
-function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags)
+function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags, asPlainJavascript)
 {
     var shouldObjjPreprocess = objjcFlags & ObjectiveJ.Preprocessor.Flags.Preprocess,
         shouldCheckSyntax = objjcFlags & ObjectiveJ.Preprocessor.Flags.CheckSyntax,
         shouldCompress = objjcFlags & ObjectiveJ.Preprocessor.Flags.Compress,
-        fileContents = "";
+        fileContents = "",
+        executable,
+        code;
 
     if (OS.popen("which gcc").stdout.read().length === 0)
         fileContents = FILE.read(aFilePath, { charset:"UTF-8" });
@@ -58,7 +60,7 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags)
     // FIXME: should calculate relative path, etc.
     try
     {
-        var executable = ObjectiveJ.preprocess(fileContents, FILE.basename(aFilePath), objjcFlags);
+        executable = ObjectiveJ.preprocess(fileContents, FILE.basename(aFilePath), objjcFlags);
     }
     catch (anException)
     {print(anException);
@@ -76,14 +78,14 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags)
 
     if (shouldCompress)
     {
-        var code = executable.code();
+        code = executable.code();
         code = compressor("function(){" + code + "}");
         // more robust function wrapper stripping
         code = code.replace(/^\s*function\s*\(\s*\)\s*{|}\s*;?\s*$/g, "");
         executable.setCode(code);
     }
 
-    return executable.toMarkedString();
+    return asPlainJavascript ? executable.code() : executable.toMarkedString();
 }
 
 function resolveFlags(args)
@@ -153,7 +155,8 @@ exports.compile = function(aFilePath, flags)
 
 exports.main = function(args)
 {
-    var shouldPrintOutput = false;
+    var shouldPrintOutput = false,
+        asPlainJavascript = false;
 
     var argv = args.slice(1);
 
@@ -172,10 +175,18 @@ exports.main = function(args)
             continue;
         }
 
+        if (argv[0] === "--unmarked")
+        {
+            asPlainJavascript = true;
+            argv.shift();
+            continue;
+        }
+
         if (argv[0] === "--help" || argv[0].substr(0, 1) == '-')
         {
             print("Usage: " + args[0] + " [options] [--] file...");
             print("  -p, --print    print the output directly to stdout");
+            print("  --unmarked     don't tag the output with @STATIC header");
             print("  --help         print this help");
             return;
         }
@@ -195,7 +206,7 @@ exports.main = function(args)
     {
         if (!shouldPrintOutput)
             print("Statically Compiling " + filePath);
-        var output = compileWithResolvedFlags(filePath, objjcFlags, gccFlags);
+        var output = compileWithResolvedFlags(filePath, objjcFlags, gccFlags, asPlainJavascript);
 
         if (shouldPrintOutput)
             print(output);
