@@ -537,7 +537,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
                                        options:0
                                          range:NSMakeRange(0, [unshadowedPath length])];
 
-    return [NSURL URLWithString:[NSString stringWithString:unshadowedPath]];
+    return [NSURL fileURLWithPath:[NSString stringWithString:unshadowedPath]];
 }
 
 
@@ -663,7 +663,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     {
         NSString *unshadowed = [[self sourceURLForShadowName:subpath] path];
         NSString *shadowFullPath = [NSString stringWithFormat:@"%@/%@", [XCodeSupportProjectSources path], subpath];
-        
+
         if (![fm fileExistsAtPath:unshadowed])
         {
             DLog(@"cleaning shadow file: %@", subpath);
