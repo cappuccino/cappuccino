@@ -282,9 +282,9 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 
     if ([self isPathMatchingIgnoredPaths:fullPath] || ![fm fileExistsAtPath:fullPath])
         return;
-    
+
     DLog(@"Parsing modified file: %@", fullPath);
-    
+
     NSArray *arguments = nil;
     NSString *successTitle = nil;
     NSString *successMsg = nil;
@@ -583,29 +583,24 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     {
         if ([ignoredPath length] == 0)
             continue;
-        
-        NSMutableString *regexp = [NSMutableString stringWithFormat:@"%@/%@", [currentProjectURL path], ignoredPath];
 
-        [regexp replaceOccurrencesOfString:@"/*/"
-                                withString:@"/*"
-                                   options:0
-                                     range:NSMakeRange(0, [regexp length])];
+        NSMutableString *regexp = [ignoredPath mutableCopy];
 
         [regexp replaceOccurrencesOfString:@"/"
                                 withString:@"\\/"
                                    options:0
                                      range:NSMakeRange(0, [regexp length])];
-        
+
         [regexp replaceOccurrencesOfString:@"."
                                 withString:@"\\."
                                    options:0
                                      range:NSMakeRange(0, [regexp length])];
-        
+
         [regexp replaceOccurrencesOfString:@"*"
                                 withString:@".*"
                                    options:0
                                      range:NSMakeRange(0, [regexp length])];
-        
+
         [regexp replaceOccurrencesOfString:@" "
                                 withString:@"\\ "
                                    options:0
@@ -614,11 +609,9 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         NSPredicate *regextest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", regexp];
 
         if ([regextest evaluateWithObject:aPath])
-        {
             return YES;
-        }
     }
-    
+
     return NO;
 }
 

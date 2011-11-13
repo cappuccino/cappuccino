@@ -43,7 +43,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
         NSString *path = [[(NSArray *)eventPaths objectAtIndex:i] stringByStandardizingPath];
 
         if (useFileBasedListening)
-        {            
+        {
             if (flags & kFSEventStreamEventFlagItemIsFile && 
                 flags & kFSEventStreamEventFlagItemRemoved)
             {
