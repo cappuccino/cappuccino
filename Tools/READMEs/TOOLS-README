@@ -6,29 +6,29 @@ This package includes syntax highlighting modes for both SubEthaEdit, Coda, Text
 
 + SubEthaEdit
 
-	- NOTE: SubEthaEdit now has built-in support for Objective-J, but the copy included here is probably more up to date.
-	- Unarchive Tools/Editors/Objective-J.mode.zip
-	- Double click the generated Objective-J.mode file
+    - NOTE: SubEthaEdit now has built-in support for Objective-J, but the copy included here is probably more up to date.
+    - Unarchive Tools/Editors/Objective-J.mode.zip
+    - Double click the generated Objective-J.mode file
 
 + Coda
 
-	- NOTE: Coda now has built-in support for Objective-J, but the copy included here is probably more up to date.
-	- Unarchive Tools/Editors/Objective-J.mode.zip
-	- Place the generated Objective-J.mode file in ~/Library/Application Support/Coda/Modes
+    - NOTE: Coda now has built-in support for Objective-J, but the copy included here is probably more up to date.
+    - Unarchive Tools/Editors/Objective-J.mode.zip
+    - Place the generated Objective-J.mode file in ~/Library/Application Support/Coda/Modes
 
 + TextMate (Thanks to Michael Sheets for providing us with this!)
 
-	- NOTE: TextMate now has built-in support for Objective-J, but the copy included here is probably more up to date.
-	- Unarchive Tools/Editors/JavaScript Objective-J.tmbundle.zip
-	- Double click the generated "JavaScript Objective-J.tmbundle" file
+    - NOTE: TextMate now has built-in support for Objective-J, but the copy included here is probably more up to date.
+    - Unarchive Tools/Editors/JavaScript Objective-J.tmbundle.zip
+    - Double click the generated "JavaScript Objective-J.tmbundle" file
 
 + Vim (Thanks to Shawn MacIntyre for providing us with this!)
 
-	- Place Tools/Editors/objj.vim in ~/.vim/syntax/
-	- in ~/.vimrc, add:
-	
-		syntax on
-		au BufNewFile,BufRead *.j setf objj
+    - Place Tools/Editors/objj.vim in ~/.vim/syntax/
+    - in ~/.vimrc, add:
+
+        syntax on
+        au BufNewFile,BufRead *.j setf objj
 
 
 Put the file in objj.vim in ~/.vim/syntax/
@@ -66,8 +66,17 @@ objjc is a static pre-interpreter for Objective-J. It will take Objective-J file
 capp is a simple tool for creating Objective-J applications.
 
     capp COMMAND [OPTIONS]
-    
+
     cap gen PROJECT_PATH [-t TEMPLATE_NAME] [-l] [-f] to create new projects
-    
+
     capp config name value to configure capp with your information (such as user.name, user.email, etc.)
-    
+
+***********************************************************************
+* Scripts/dump_theme.j
+***********************************************************************
+
+dump_theme.j prints a formatted dump of a Cappuccino theme.
+
+    dump_theme.j [--no-color] [NAME | THEME_BLEND_PATH]
+
+For more information, copy Scripts/dump_theme.1 to /usr/local/share/man/man1 and then enter 'man dump_theme' in a terminal.
