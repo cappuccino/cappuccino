@@ -277,6 +277,9 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
  */
 - (void)handleFileModification:(NSString*)fullPath notify:(BOOL)shouldNotify
 {
+    if (![self isXIBFile:fullPath] && ![self isObjJFile:fullPath] && ![self isXCCIgnoreFile:fullPath])
+        return;
+
     if ([self isPathMatchingIgnoredPaths:fullPath] || ![fm fileExistsAtPath:fullPath])
         return;
     
@@ -292,58 +295,54 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     
     DLog(@"Shadow path: %@", shadowPath);
     
-    if ([self isXIBFile:fullPath] || [self isObjJFile:fullPath] || [self isXCCIgnoreFile:fullPath])
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCConversionStartNotification object:self];
+
+    if ([self isXIBFile:fullPath])
     {
-        [[NSNotificationCenter defaultCenter] postNotificationName:XCCConversionStartNotification object:self];
-        
-        if ([self isXIBFile:fullPath])
-        {
-            arguments = [NSArray arrayWithObjects: @"-c", [NSString stringWithFormat:@"(%@; nib2cib '%@';) 2>&1", profilePath, fullPath],@"",nil];
-            successTitle = @"XIB converted";
-            successMsg = splitPath;
-        }
-        else if ([self isObjJFile:fullPath])
-        {
-            arguments = [NSArray arrayWithObjects: @"-c", [NSString stringWithFormat:@"(%@; objj '%@' '%@' '%@';) 2>&1", profilePath, parserPath, fullPath, shadowPath],@"",nil];
-            successTitle = @"Objective-J source processed";
-            successMsg = splitPath;
-        }
-        else if ([self isXCCIgnoreFile:fullPath])
-        {
-            [self computeIgnoredPaths];
-            successTitle = @".xcodecapp-ignore processed";
-            successMsg = @"Ignored files list updated";
-            arguments = nil;
-        }
-        
-        // Run the task and get the response if needed
-        if (arguments)
-        {
-            DLog(@"Running task...");
-            NSArray *statusInfo = [self runTask:arguments];
-            
-            status = [statusInfo objectAtIndex:0];
-            response = [statusInfo objectAtIndex:1];
-            
-            DLog(@"Task result/response: %@/%@", status, response);
-        }
-        
-        
-        if ([status intValue] == 0 && shouldNotify)
-        {
-            [delegate performSelector:@selector(growlWithTitle:message:) withObject:successTitle withObject:successMsg];
-        }
-        else if (![status intValue] == 0)
-        {
-            if (response)
-                [errorList addObject:response];
-            
-            [delegate performSelector:@selector(growlWithTitle:message:) withObject:@"Error processing file" withObject:splitPath];
-        }
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:XCCConversionStopNotification object:self];
-        DLog(@"Processed: %@", fullPath);
+        arguments = [NSArray arrayWithObjects: @"-c", [NSString stringWithFormat:@"(%@; nib2cib '%@';) 2>&1", profilePath, fullPath],@"",nil];
+        successTitle = @"XIB converted";
+        successMsg = splitPath;
     }
+    else if ([self isObjJFile:fullPath])
+    {
+        arguments = [NSArray arrayWithObjects: @"-c", [NSString stringWithFormat:@"(%@; objj '%@' '%@' '%@';) 2>&1", profilePath, parserPath, fullPath, shadowPath],@"",nil];
+        successTitle = @"Objective-J source processed";
+        successMsg = splitPath;
+    }
+    else if ([self isXCCIgnoreFile:fullPath])
+    {
+        [self computeIgnoredPaths];
+        successTitle = @".xcodecapp-ignore processed";
+        successMsg = @"Ignored files list updated";
+        arguments = nil;
+    }
+
+    // Run the task and get the response if needed
+    if (arguments)
+    {
+        DLog(@"Running task...");
+        NSArray *statusInfo = [self runTask:arguments];
+        
+        status = [statusInfo objectAtIndex:0];
+        response = [statusInfo objectAtIndex:1];
+        
+        DLog(@"Task result/response: %@/%@", status, response);
+    }
+
+    if ([status intValue] == 0 && shouldNotify)
+    {
+        [delegate performSelector:@selector(growlWithTitle:message:) withObject:successTitle withObject:successMsg];
+    }
+    else if (![status intValue] == 0)
+    {
+        if (response)
+            [errorList addObject:response];
+        
+        [delegate performSelector:@selector(growlWithTitle:message:) withObject:@"Error processing file" withObject:splitPath];
+    }
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCConversionStopNotification object:self];
+    DLog(@"Processed: %@", fullPath);
 }
 
 /*!
@@ -443,7 +442,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         [PBXContent writeToFile:XCodeSupportPBXPath atomically:YES encoding:NSUTF8StringEncoding error:nil];
         DLog(@"PBX file adapted to the project");
         
-        DLog(@"Creating source folder");
+        DLog(@"Creating source folder %@", [XCodeSupportProjectSources path]);
         [fm createDirectoryAtPath:[XCodeSupportProjectSources path] withIntermediateDirectories:YES attributes:nil error:nil];
         return NO;
     }
@@ -471,11 +470,10 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         BOOL isDir = NO;
         [fm fileExistsAtPath:filePath isDirectory:&isDir];
 
-        if (isDir
-            || (![self isXIBFile:filePath] && ![self isObjJFile:filePath]))
+        if (isDir || (![self isXIBFile:filePath] && ![self isObjJFile:filePath]))
             continue;
 
-        NSURL *eventualShadow = [self shadowURLForSourceURL:[NSURL URLWithString:filePath]];
+        NSURL *eventualShadow = [self shadowURLForSourceURL:[NSURL fileURLWithPath:filePath]];
 
         if (![fm fileExistsAtPath:[eventualShadow path]])
         {
@@ -587,6 +585,12 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
             continue;
         
         NSMutableString *regexp = [NSMutableString stringWithFormat:@"%@/%@", [currentProjectURL path], ignoredPath];
+
+        [regexp replaceOccurrencesOfString:@"/*/"
+                                withString:@"/*"
+                                   options:0
+                                     range:NSMakeRange(0, [regexp length])];
+
         [regexp replaceOccurrencesOfString:@"/"
                                 withString:@"\\/"
                                    options:0
@@ -602,8 +606,13 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
                                    options:0
                                      range:NSMakeRange(0, [regexp length])];
         
+        [regexp replaceOccurrencesOfString:@" "
+                                withString:@"\\ "
+                                   options:0
+                                     range:NSMakeRange(0, [regexp length])];
+
         NSPredicate *regextest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", regexp];
-        
+
         if ([regextest evaluateWithObject:aPath])
         {
             return YES;
@@ -621,8 +630,8 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 {
     NSMutableString *tempName = [NSMutableString stringWithString:[path lastPathComponent]];
     
-    currentProjectURL = [NSURL URLWithString:path];
-    
+    currentProjectURL = [NSURL fileURLWithPath:path];
+
     [tempName replaceOccurrencesOfString:@" "
                               withString:@"_"
                                  options:NSCaseInsensitiveSearch
