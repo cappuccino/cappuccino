@@ -26,7 +26,7 @@ This package includes syntax highlighting modes for both SubEthaEdit, Coda, Text
 
 	- Place Tools/Editors/objj.vim in ~/.vim/syntax/
 	- in ~/.vimrc, add:
-	
+
 		syntax on
 		au BufNewFile,BufRead *.j setf objj
 
@@ -57,7 +57,7 @@ objj is a command line Objective-J interpreter and interactive console.
 * objjc
 **********************************************************************
 
-objjc is a static pre-interpreter for Objective-J. It will take Objective-J files and essentially convert them to JavaScript. However, for complex interaction between files, you will probably want to use steam (see below).
+objjc is a static pre-interpreter for Objective-J. It will take Objective-J files and essentially convert them to JavaScript.
 
 ***********************************************************************
 * capp
@@ -66,8 +66,7 @@ objjc is a static pre-interpreter for Objective-J. It will take Objective-J file
 capp is a simple tool for creating Objective-J applications.
 
     capp COMMAND [OPTIONS]
-    
+
     cap gen PROJECT_PATH [-t TEMPLATE_NAME] [-l] [-f] to create new projects
-    
+
     capp config name value to configure capp with your information (such as user.name, user.email, etc.)
-    
