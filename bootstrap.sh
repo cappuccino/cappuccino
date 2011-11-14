@@ -139,7 +139,7 @@ install_directory=""
 tmp_zip="/tmp/cappuccino.zip"
 
 github_user="cappuccino"
-github_ref="0.9.2"
+github_ref="0.9.5"
 
 noprompt=""
 install_capp=""
