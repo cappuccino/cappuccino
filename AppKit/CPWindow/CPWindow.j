@@ -793,6 +793,10 @@ CPTexturedBackgroundWindowMask
 - (void)setFrameOrigin:(CGPoint)anOrigin
 {
     [self _setClippedFrame:_CGRectMake(anOrigin.x, anOrigin.y, _CGRectGetWidth(_frame), _CGRectGetHeight(_frame)) display:YES animate:NO];
+
+    // reposition sheet       
+    if ([self attachedSheet])
+        [self _setAttachedSheetFrameOrigin];
 }
 
 /*!
@@ -1487,6 +1491,25 @@ CPTexturedBackgroundWindowMask
 {
     var type = [anEvent type],
         point = [anEvent locationInWindow];
+
+    // If a sheet is attached events get filtered here.
+    // It is not clear what events should be passed to the view, perhaps all?
+    // CPLeftMouseDown is needed for window moving and resizing to work.
+    // CPMouseMoved is needed for rollover effects on title bar buttons.
+    if ([self attachedSheet])
+    {
+        switch (type)
+        {
+            case CPLeftMouseDown:
+                [_windowView mouseDown:anEvent];
+                break;
+            case CPMouseMoved:
+                [_windowView mouseMoved:anEvent];
+                break;
+        }
+        
+        return;
+    }
 
     switch (type)
     {
@@ -2264,7 +2287,9 @@ CPTexturedBackgroundWindowMask
         endFrame = CGRectMake(originx, originy, sheetFrame.size.width, sheetFrame.size.height);
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillBeginSheetNotification object:self];
-    [CPApp runModalForWindow:aSheet];
+    
+    // old behavior; in Cocoa, sheets are not modal by default
+    //[CPApp runModalForWindow:aSheet];
 
     [aSheet orderFront:self];
     [aSheet setFrame:startFrame display:YES animate:NO];

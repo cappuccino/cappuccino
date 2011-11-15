@@ -140,7 +140,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
         var newSize = CGSizeMake(CGRectGetWidth(_resizeFrame) + location.x - CGRectGetMinX(_resizeFrame), CGRectGetHeight(_resizeFrame) + location.y - CGRectGetMinY(_resizeFrame));
 
         if (theWindow._isSheet && theWindow._parentView && (theWindow._frame.size.width !== newSize.width))
-        [theWindow._parentView _setAttachedSheetFrameOrigin];
+            [theWindow._parentView _setAttachedSheetFrameOrigin];
 
         [theWindow setFrameSize:newSize];
     }
@@ -198,7 +198,6 @@ var _CPWindowViewResizeIndicatorImage = nil;
             location = [theWindow convertBaseToGlobal:[anEvent locationInWindow]],
             origin = [self _pointWithinScreenFrame:CGPointMake(_CGRectGetMinX(frame) + (location.x - _mouseDraggedPoint.x),
                                                                _CGRectGetMinY(frame) + (location.y - _mouseDraggedPoint.y))];
-
         [theWindow setFrameOrigin:origin];
 
         _mouseDraggedPoint = [self _pointWithinScreenFrame:location];
@@ -206,6 +205,17 @@ var _CPWindowViewResizeIndicatorImage = nil;
 
     [CPApp setTarget:self selector:@selector(trackMoveWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
 }
+
+- (void)setFrameSize:(CGSize)newSize
+{
+    [super setFrameSize:newSize];
+ 
+    // reposition sheet if the parent window resizes or moves
+    var theWindow = [self window];
+       
+    if ([theWindow attachedSheet])
+        [theWindow _setAttachedSheetFrameOrigin];
+}	
 
 - (void)setShowsResizeIndicator:(BOOL)shouldShowResizeIndicator
 {
