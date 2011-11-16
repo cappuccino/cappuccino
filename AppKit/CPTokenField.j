@@ -184,7 +184,8 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
         token = [self _inputElement].value;
 
     // Make sure the user typed an actual token to prevent the previous token from being emptied
-    // If the input area is empty, we want to fallback to the normal behavior, resigning first responder or select the next or previous key view
+    // If the input area is empty, we want to fallback to the normal behavior, resigning first
+    // responder or selecting the next or previous key view.
     if (!token || token === @"")
     {
         if (DOMEvent && DOMEvent.keyCode === CPTabKeyCode)
@@ -198,7 +199,6 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
             [[self window] makeFirstResponder:nil];
         return;
     }
-
 
     var objectValue = [self objectValue];
 
@@ -608,14 +608,16 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 {
 }
 
-
 // ========
 // = VIEW =
 // ========
 - (void)viewDidMoveToWindow
 {
     [[[self window] contentView] addSubview:_autocompleteContainer];
+
+#if PLATFORM(DOM)
     _autocompleteContainer._DOMElement.style.zIndex = 1000; // Anything else doesn't seem to work
+#endif
 }
 
 - (void)removeFromSuperview
