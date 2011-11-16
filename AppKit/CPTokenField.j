@@ -270,8 +270,13 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     var indexOfToken = [[self _tokens] indexOfObject:token],
         objectValue = [self objectValue];
 
-    // If the token was selected, deselect it for selection preservation.
-    [self _deselectToken:token];
+    // If the selection was to the right of the deleted token, move it to the left. If the deleted token was
+    // selected, deselect it.
+    if (indexOfToken < _selectedRange.location)
+        _selectedRange.location--;
+    else
+        [self _deselectToken:token];
+
     // Preserve selection.
     var selection = CPCopyRange(_selectedRange);
     [objectValue removeObjectAtIndex:indexOfToken];
