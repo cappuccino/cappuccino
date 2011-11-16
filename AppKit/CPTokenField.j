@@ -172,19 +172,19 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
 - (void)_autocompleteWithDOMEvent:(JSObject)DOMEvent
 {
-    if (!_cachedCompletions || ![self hasThemeState:CPThemeStateAutoCompleting])
+    if (![self _inputElement].value && (!_cachedCompletions || ![self hasThemeState:CPThemeStateAutoCompleting]))
         return;
 
     [self _hideCompletions];
 
-    var token = _cachedCompletions[[_autocompleteView selectedRow]],
+    var token = _cachedCompletions ? _cachedCompletions[[_autocompleteView selectedRow]] : nil,
         shouldRemoveLastObject = token !== @"" && [self _inputElement].value !== @"";
 
     if (!token)
         token = [self _inputElement].value;
 
     // Make sure the user typed an actual token to prevent the previous token from being emptied
-    // If the input area is empty, we want to fallback to the normal behavior, resigning first
+    // If the input area is empty, we want to fall back to the normal behavior, resigning first
     // responder or selecting the next or previous key view.
     if (!token || token === @"")
     {
