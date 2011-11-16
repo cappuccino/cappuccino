@@ -97,7 +97,6 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 {
     if (self = [super initWithFrame:frame])
     {
-        _selectedRange = CPMakeRange(0, 0);
         _completionDelay = [CPTokenField defaultCompletionDelay];
         _tokenizingCharacterSet = [[self class] defaultTokenizingCharacterSet];
         [self setBezeled:YES];
@@ -114,6 +113,8 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
 - (void)_init
 {
+    _selectedRange = CPMakeRange(0, 0);
+
     var frame = [self frame];
 
     _tokenScrollView = [[CPScrollView alloc] initWithFrame:CGRectMakeZero()];
