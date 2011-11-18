@@ -95,6 +95,23 @@ function CGContextAddCurveToPoint(aContext, cp1x, cp1y, cp2x, cp2y, x, y)
     _CGContextAddCurveToPointCanvas(aContext, cp1x, cp1y, cp2x, cp2y, x, y);
 }
 
+function CGContextAddLines(aContext, points, count)
+{
+    // implementation mirrors that of CGPathAddLines()
+    var i = 1;
+
+    if (count === NULL)
+        var count = points.length;
+
+    if (count < 2)
+        return;
+
+    _CGContextMoveToPointCanvas(aContext, points[0].x, points[0].y);
+
+    for (; i < count; ++i)
+        _CGContextAddLineToPointCanvas(aContext, points[i].x, points[i].y);
+}
+
 function CGContextAddLineToPoint(aContext, x, y)
 {
     _CGContextAddLineToPointCanvas(aContext, x, y);
@@ -133,6 +150,11 @@ function CGContextAddPath(aContext, aPath)
                                                     break;
         }
     }
+}
+
+function CGContextAddQuadCurveToPoint(aContext, cpx, cpy, x, y)
+{
+    _CGContextAddQuadCurveToPointCanvas(aContext, cpx, cpy, x, y);
 }
 
 function CGContextAddRect(aContext, aRect)
