@@ -103,7 +103,7 @@ function CGContextAddLines(aContext, points, count)
     if (count === NULL)
         var count = points.length;
 
-    if (count < 2)
+    if (count < 1)
         return;
 
     _CGContextMoveToPointCanvas(aContext, points[0].x, points[0].y);

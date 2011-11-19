@@ -144,7 +144,7 @@ function CGPathAddLines(aPath, aTransform, points, count)
     if (count === NULL)
         var count = points.length;
 
-    if (!aPath || count < 2)
+    if (!aPath || count < 1)
         return;
 
     CGPathMoveToPoint(aPath, aTransform, points[0].x, points[0].y);
