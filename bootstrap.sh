@@ -33,8 +33,8 @@ function ask_remove_dir () {
     a_longish_dir_name="$1"
     if [ -d "$a_longish_dir_name" ]; then
         echo "================================================================================"
-        echo "Found an existing Cappuccino installation: $a_longish_dir_name. Remove it "
-        echo "automatically now? "
+        echo "There is an an existing Cappuccino installation at $a_longish_dir_name."
+        echo "Should we remove it now?"
         echo "WARNING: the ENTIRE directory, $a_longish_dir_name, will be removed (i.e. "
         echo "'rm -rf $a_longish_dir_name'). Be sure this is correct. Custom modifications and "
         echo "installed packages WILL BE DELETED."
@@ -252,7 +252,7 @@ if [ "$install_cappuccino" ]; then
 
     if [ -d "$install_directory" ]; then
         echo "================================================================================"
-        echo "Directory exists at $install_directory. Delete it?"
+        echo "A directory already exists at $install_directory. Should we remove it now?"
         if prompt "no"; then
             rm -rf "$install_directory"
         else
@@ -301,7 +301,7 @@ fi
 install_directory="$(dirname -- "$(dirname -- "$(which narwhal)")")"
 
 #echo "================================================================================"
-#echo "Using Cappuccino base installation at \"$install_directory\". Is this correct?"
+#echo "Using the Cappuccino base installation at \"$install_directory\". Is this correct?"
 #if ! prompt "yes"; then
 #    exit 1
 #fi
@@ -332,8 +332,8 @@ if [ `uname` = "Darwin" ]; then
             # read
         elif ! [ "$NARWHAL_ENGINE_SAVED" = "jsc" ]; then
             echo "================================================================================"
-            echo "Rhino is the default engine. Should we change the default to JavaScriptCore for "
-            echo "you? This can by overridden by setting the NARWHAL_ENGINE environment variable "
+            echo "Rhino is currently the default JavaScript engine. Should we change the default to JavaScriptCore"
+            echo "for you? This can by overridden by setting the NARWHAL_ENGINE environment variable "
             echo "to \"jsc\" or \"rhino\"."
             ask_append_shell_config "export NARWHAL_ENGINE=jsc"
         fi
@@ -343,8 +343,8 @@ fi
 export PATH="$PATH_SAVED"
 if ! which "narwhal" > /dev/null; then
     echo "================================================================================"
-    echo "You must add Cappuccino's \"bin\" directory to your PATH environment variable. "
-    echo "Do this automatically now?"
+    echo "Cappuccino's \"bin\" directory must be in your PATH environment variable."
+    echo "Should we do this for you?"
 
     export_path_string="export PATH=\"$install_directory/bin:\$PATH\""
 
@@ -359,8 +359,8 @@ fi
 if [ "$CAPP_BUILD" ]; then
     if [ -d "$CAPP_BUILD" ]; then
         echo "================================================================================"
-        echo "An existing \$CAPP_BUILD directory at \"$CAPP_BUILD\" exists. The previous "
-        echo "build may be incompatible. Remove it automatically now?"
+        echo "A \$CAPP_BUILD directory already exists at \"$CAPP_BUILD\". The previous "
+        echo "build may be incompatible. Should we remove it now?"
         if prompt "no"; then
             rm -rf "$CAPP_BUILD"
         fi
