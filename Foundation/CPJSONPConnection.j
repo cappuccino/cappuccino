@@ -90,7 +90,7 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
 {
     try
     {
-        CPJSONPConnectionCallbacks["callback"+[self UID]] = function(data)
+        CPJSONPConnectionCallbacks["callback" + [self UID]] = function(data)
         {
             if ([_delegate respondsToSelector:@selector(connection:didReceiveData:)])
                 [_delegate connection:self didReceiveData:data];
@@ -109,11 +109,11 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
         if (_callbackParameter)
         {
             source += (source.indexOf('?') < 0) ? "?" : "&";
-            source += _callbackParameter+"=CPJSONPConnectionCallbacks.callback"+[self UID];
+            source += _callbackParameter + "=CPJSONPConnectionCallbacks.callback" + [self UID];
         }
         else if (source.indexOf(CPJSONPCallbackReplacementString) >= 0)
         {
-            source = [source stringByReplacingOccurrencesOfString:CPJSONPCallbackReplacementString withString:"CPJSONPConnectionCallbacks.callback"+[self UID]];
+            source = [source stringByReplacingOccurrencesOfString:CPJSONPCallbackReplacementString withString:"CPJSONPConnectionCallbacks.callback" + [self UID]];
         }
         else
             return;
