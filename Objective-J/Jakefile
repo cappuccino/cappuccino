@@ -106,7 +106,7 @@ function environmentFlags()
 
     return environments.map(function(anEnvironment) {
         return "-D" + anEnvironment.toUpperCase();
-    }).concat("-DENVIRONMENTS=" + JSON.stringify(environments));
+    }).concat("-DENVIRONMENTS=" + OS.enquote(JSON.stringify(environments)));
 }
 
 var SHRINKSAFE = require("minify/shrinksafe");
