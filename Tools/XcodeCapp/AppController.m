@@ -360,7 +360,7 @@ AppController *SharedAppControllerInstance = nil;
      [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [[xcc errorList] count])]];
 }
 
-- (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(int)aRow
+- (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)aRow
 {
     // Get column you want - first in this case:
     NSTableColumn *tabCol = [[tableView tableColumns] objectAtIndex:0];
