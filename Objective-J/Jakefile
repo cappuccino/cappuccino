@@ -119,7 +119,7 @@ function gcc(inputFilePath, outputFilePath, flags, compress)
     stream.print("Building... \0green(" + outputFilePath +"\0)");
 
     // GCC preprocess the file.
-    var cmd = ["gcc", "-E", "-x", "c", "-P"].concat(flags, inputFilePath);
+    var cmd = ["gcc", "-E", "-x", "c", "-P"].concat(flags, inputFilePath).join(" ");
     var gcc = OS.popen(cmd, { charset:"UTF-8" });
 
     var contents = FILE.read("header.txt", { charset : "UTF-8" });
