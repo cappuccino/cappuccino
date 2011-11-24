@@ -21,7 +21,7 @@
 #import "PRHEmptyGrowlDelegate.h"
 #import "TNXCodeCapp.h"
 
-@interface AppController : NSObject <NSMenuDelegate>
+@interface AppController : NSObject <NSMenuDelegate, NSTableViewDataSource, NSTableViewDelegate>
 {
     IBOutlet NSMenu                     *statusMenu;
     IBOutlet NSMenuItem                 *menuItemOpenXCode;
@@ -65,11 +65,6 @@
 - (IBAction)openHelp:(id)aSender;
 - (IBAction)openAbout:(id)aSender;
 - (IBAction)updatePreferences:(id)aSender;
-
-- (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(int)aRow;
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row;
-- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView;
-- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView;
 
 @end
 
