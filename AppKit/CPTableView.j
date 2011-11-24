@@ -509,6 +509,11 @@ NOT YET IMPLEMENTED
     _objectValues = { };
     _cachedRowHeights = [];
 
+    // Otherwise, if we have a row marked as group with a
+    // index greater than the new number or rows
+    // it keeps the the graphical group style.
+    [_groupRows removeAllIndexes];
+
     // This updates the size too.
     [self noteNumberOfRowsChanged];
 
@@ -1984,7 +1989,7 @@ NOT YET IMPLEMENTED
     // so we should size the last resized to fit
 
     // find the last visisble column
-    while (count-- && [_tableColumns[count] isHidden]) ;
+    while (count-- && [_tableColumns[count] isHidden]);
 
     // find the max x, but subtract a single pixel since the spacing isn't applicable here.
     var delta = superviewWidth - _CGRectGetMaxX([self rectOfColumn:count]) - ([self intercellSpacing].width || 1),

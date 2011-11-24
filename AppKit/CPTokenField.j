@@ -97,7 +97,6 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 {
     if (self = [super initWithFrame:frame])
     {
-        _selectedRange = CPMakeRange(0, 0);
         _completionDelay = [CPTokenField defaultCompletionDelay];
         _tokenizingCharacterSet = [[self class] defaultTokenizingCharacterSet];
         [self setBezeled:YES];
@@ -114,6 +113,8 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
 - (void)_init
 {
+    _selectedRange = CPMakeRange(0, 0);
+
     var frame = [self frame];
 
     _tokenScrollView = [[CPScrollView alloc] initWithFrame:CGRectMakeZero()];
@@ -171,19 +172,20 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
 - (void)_autocompleteWithDOMEvent:(JSObject)DOMEvent
 {
-    if (!_cachedCompletions || ![self hasThemeState:CPThemeStateAutoCompleting])
+    if (![self _inputElement].value && (!_cachedCompletions || ![self hasThemeState:CPThemeStateAutoCompleting]))
         return;
 
     [self _hideCompletions];
 
-    var token = _cachedCompletions[[_autocompleteView selectedRow]],
+    var token = _cachedCompletions ? _cachedCompletions[[_autocompleteView selectedRow]] : nil,
         shouldRemoveLastObject = token !== @"" && [self _inputElement].value !== @"";
 
     if (!token)
         token = [self _inputElement].value;
 
     // Make sure the user typed an actual token to prevent the previous token from being emptied
-    // If the input area is empty, we want to fallback to the normal behavior, resigning first responder or select the next or previous key view
+    // If the input area is empty, we want to fall back to the normal behavior, resigning first
+    // responder or selecting the next or previous key view.
     if (!token || token === @"")
     {
         if (DOMEvent && DOMEvent.keyCode === CPTabKeyCode)
@@ -197,7 +199,6 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
             [[self window] makeFirstResponder:nil];
         return;
     }
-
 
     var objectValue = [self objectValue];
 
@@ -269,8 +270,13 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     var indexOfToken = [[self _tokens] indexOfObject:token],
         objectValue = [self objectValue];
 
-    // If the token was selected, deselect it for selection preservation.
-    [self _deselectToken:token];
+    // If the selection was to the right of the deleted token, move it to the left. If the deleted token was
+    // selected, deselect it.
+    if (indexOfToken < _selectedRange.location)
+        _selectedRange.location--;
+    else
+        [self _deselectToken:token];
+
     // Preserve selection.
     var selection = CPCopyRange(_selectedRange);
     [objectValue removeObjectAtIndex:indexOfToken];
@@ -308,6 +314,14 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     _selectedRange = CPMakeRange(collapsedSelection, 0);
 
     [self _controlTextDidChange];
+}
+
+- (void)_updatePlaceholderState
+{
+    if (([[self _tokens] count] === 0) && ![self hasThemeState:CPThemeStateEditing])
+        [self setThemeState:CPTextFieldStatePlaceholder];
+    else
+        [self unsetThemeState:CPTextFieldStatePlaceholder];
 }
 
 // =============
@@ -594,14 +608,16 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 {
 }
 
-
 // ========
 // = VIEW =
 // ========
 - (void)viewDidMoveToWindow
 {
     [[[self window] contentView] addSubview:_autocompleteContainer];
+
+#if PLATFORM(DOM)
     _autocompleteContainer._DOMElement.style.zIndex = 1000; // Anything else doesn't seem to work
+#endif
 }
 
 - (void)removeFromSuperview

@@ -618,13 +618,31 @@ var StandardUserDefaults;
 
 @end
 
+var CPUserDefaultsLocalStoreTestKey = "9961800812587769-Cappuccino-Storage-Test";
+
 @implementation CPUserDefaultsLocalStore : CPUserDefaultsStore
 {
 }
 
 + (BOOL)supportsLocalStorage
 {
-    return !!window.localStorage;
+    if (!window.localStorage)
+        return NO;
+
+    try
+    {
+        // Just because localStorage exists does not mean it works. In particular it might be disabled
+        // as it is when Safari's private browsing mode is active.
+        localStorage.setItem(CPUserDefaultsLocalStoreTestKey, "1");
+        if (localStorage.getItem(CPUserDefaultsLocalStoreTestKey) != "1")
+            return NO;
+        localStorage.removeItem(CPUserDefaultsLocalStoreTestKey);
+    }
+    catch (e)
+    {
+        return NO;
+    }
+    return YES;
 }
 
 - (id)init
@@ -649,7 +667,14 @@ var StandardUserDefaults;
 
 - (void)setData:(CPData)aData
 {
-    localStorage.setItem(_domain, encodeURIComponent([aData rawString]));
+    try
+    {
+        localStorage.setItem(_domain, encodeURIComponent([aData rawString]));
+    }
+    catch (e)
+    {
+        CPLog.warn("Unable to write to local storage: " + e);
+    }
 }
 
 @end

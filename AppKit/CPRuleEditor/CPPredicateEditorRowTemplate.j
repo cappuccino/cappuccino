@@ -20,17 +20,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-CPUndefinedAttributeType     = 0,
-CPInteger16AttributeType     = 100,
-CPInteger32AttributeType     = 200,
-CPInteger64AttributeType     = 300,
-CPDecimalAttributeType       = 400,
-CPDoubleAttributeType        = 500,
-CPFloatAttributeType         = 600,
-CPStringAttributeType        = 700,
-CPBooleanAttributeType       = 800,
-CPDateAttributeType          = 900,
-CPBinaryDataAttributeType    = 1000,
+CPUndefinedAttributeType     = 0;
+CPInteger16AttributeType     = 100;
+CPInteger32AttributeType     = 200;
+CPInteger64AttributeType     = 300;
+CPDecimalAttributeType       = 400;
+CPDoubleAttributeType        = 500;
+CPFloatAttributeType         = 600;
+CPStringAttributeType        = 700;
+CPBooleanAttributeType       = 800;
+CPDateAttributeType          = 900;
+CPBinaryDataAttributeType    = 1000;
 CPTransformableAttributeType = 1800;
 
 @implementation CPPredicateEditorRowTemplate : CPObject

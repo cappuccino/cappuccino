@@ -30,14 +30,16 @@ function which () {
 }
 
 function ask_remove_dir () {
-    dir="$1"
-    if [ -d "$dir" ]; then
+    a_longish_dir_name="$1"
+    if [ -d "$a_longish_dir_name" ]; then
         echo "================================================================================"
-        echo "Found an existing Narwhal/Cappuccino installation, $dir. Remove it automatically now?"
-        echo "WARNING: the ENTIRE directory, $dir, will be removed (i.e. 'rm -rf $dir')."
-        echo "Be sure this is correct. Custom modifications and installed packages WILL BE DELETED."
+        echo "There is an an existing Cappuccino installation at $a_longish_dir_name."
+        echo "Should we remove it now?"
+        echo "WARNING: the ENTIRE directory, $a_longish_dir_name, will be removed (i.e. "
+        echo "'rm -rf $a_longish_dir_name'). Be sure this is correct. Custom modifications and "
+        echo "installed packages WILL BE DELETED."
         if prompt "no"; then
-            rm -rf "$dir"
+            rm -rf "$a_longish_dir_name"
         fi
     fi
 }
@@ -76,14 +78,14 @@ function ask_append_shell_config () {
 
 function check_and_exit () {
     if [ ! "$?" = "0" ]; then
-        echo "Error: problem running boostrap.sh. Exiting."
+        echo "Error: problem running bootstrap.sh. Exiting."
         exit 1
     fi
 }
 
-function check_build_environment () {
+function check_install_environment () {
     # make sure dependencies are installed and on the $PATH
-    CAPP_BUILD_DEPS=(java gcc unzip)
+    CAPP_BUILD_DEPS=(java unzip)
 
     for dep in ${CAPP_BUILD_DEPS[@]}; do
         which "$dep" &> /dev/null
@@ -113,7 +115,19 @@ function check_build_environment () {
     fi
 }
 
-check_build_environment
+function check_build_environment () {
+    CAPP_BUILD_DEPS=(gcc)
+
+    for dep in ${CAPP_BUILD_DEPS[@]}; do
+        which "$dep" &> /dev/null
+        if [ ! "$?" = "0" ]; then
+            echo "Error: $dep is required to build Cappuccino components. Please install $dep and re-run bootstrap.sh."
+            exit 1
+        fi
+    done
+}
+
+check_install_environment
 
 if [ -w "/usr/local" ]; then
     default_directory="/usr/local/narwhal"
@@ -122,47 +136,71 @@ else
 fi
 
 install_directory=""
-tmp_zip="/tmp/narwhal.zip"
+tmp_zip="/tmp/cappuccino.zip"
 
-github_user="280north"
-github_ref="master"
-tusk_install_command="install"
+github_user="cappuccino"
+github_ref="0.9.5"
 
 noprompt=""
 install_capp=""
+install_method="zip"
 
 while [ $# -gt 0 ]; do
     case "$1" in
         --noprompt)     noprompt="yes";;
         --directory)    install_directory="$2"; shift;;
-        --clone)        tusk_install_command="clone";;
-        --clone-http)   tusk_install_command="clone --http";;
+        --clone)        install_method="clone";;
+        --clone-http)   install_method="clone --http";;
         --github-user)  github_user="$2"; shift;;
         --github-ref)   github_ref="$2"; shift;;
-        --install-capp) install_capp="yes";;
-        --install-test) install_test="yes";;
-        --install)      install_capp="yes"; install_test="yes";;
         *)              cat >&2 <<-EOT
 usage: ./bootstrap.sh [OPTIONS]
 
     --noprompt:             Don't prompt, use relatively safe defaults.
-    --directory [DIR]:      Use a directory other than /usr/local/narwhal.
+    --directory [DIR]:      Use a directory other than $default_directory.
     --clone:                Do "git clone git://" instead of downloading zips.
     --clone-http:           Do "git clone http://" instead of downloading zips.
-    --github-user [USER]:   Use another github user (default: 280north).
-    --github-ref [REF]:     Use another git ref (default: master).
-    --install-capp:         Install "objective-j" and "cappuccino" packages.
-    --install-test:         Install "ojtest" package.
-    --install               Install all packages.
+    --github-user [USER]:   Github user (default: $github_user).
+    --github-ref [REF]:     Use another git ref (default: $github_ref).
 EOT
                         exit 1;;
     esac
     shift
 done
 
-github_project="$github_user-narwhal"
-github_path=$(echo "$github_project" | tr '-' '/')
+github_project="$github_user-cappuccino-base"
+github_path="$github_user/cappuccino-base"
 
+# The purpose of bootstrap is to install Cappuccino.
+install_cappuccino="yes"
+
+sed "s/\[\[ CAPPUCCINO_VERSION \]\]/$github_ref/" <<EOT
+
+                   _______ ____  ___  __ __________(_)__  ___
+                  / __/ _ \`/ _ \/ _ \/ // / __/ __/ / _ \/ _ \\
+                  \__/\_,_/ .__/ .__/\_,_/\__/\__/_/_//_/\___/
+                         /_/  /_/
+
+                             Welcome to Cappuccino!
+
+================================================================================
+
+                                 Version [[ CAPPUCCINO_VERSION ]]
+
+
+                             http://cappuccino.org
+                    http://github.com/cappuccino/cappuccino
+                       irc://irc.freenode.org#cappuccino
+
+This script will install the Cappuccino environment for you. Continue?
+EOT
+
+if ! prompt "yes"; then
+    install_cappuccino="no"
+    exit 0
+fi
+
+NARWHAL_ENGINE_SAVED="$NARWHAL_ENGINE"
 unset NARWHAL_ENGINE
 unset SEA
 unset SEALVL
@@ -188,19 +226,10 @@ else
     ask_remove_dir "/usr/local/narwhal"
 fi
 
-install_narwhal=""
-if ! which "narwhal" > /dev/null; then
-    echo "================================================================================"
-    echo "Narwhal JavaScript platform is required. Install it automatically now?"
-    if prompt "yes"; then
-        install_narwhal="yes"
-    fi
-fi
-
-if [ "$install_narwhal" ]; then
+if [ "$install_cappuccino" ]; then
     if [ ! "$install_directory" ]; then
         echo "================================================================================"
-        echo "To use the default location, \"$default_directory\", just hit enter/return, or enter another path:"
+        echo "Enter an installation path, or hit enter/return to use \"$default_directory\":"
         if [ "$noprompt" ]; then
             input=""
         else
@@ -217,13 +246,13 @@ if [ "$install_narwhal" ]; then
     install_directory="$(cd "$(dirname "$install_directory")" && echo "$(pwd)/$(basename "$install_directory")")"
 
     if [ ! -d "$(dirname "$install_directory")" ]; then
-        echo "Error: parent directory of $install_directory does not exist"
+        echo "Error: parent directory of $install_directory does not exist."
         exit 1
     fi
 
     if [ -d "$install_directory" ]; then
         echo "================================================================================"
-        echo "Directory exists at $install_directory. Delete it?"
+        echo "A directory already exists at $install_directory. Should we remove it now?"
         if prompt "no"; then
             rm -rf "$install_directory"
         else
@@ -231,24 +260,24 @@ if [ "$install_narwhal" ]; then
         fi
     fi
 
-    if [ "$(echo $tusk_install_command | cut -c-5)" = "clone" ]; then
-        if [ "$(echo $tusk_install_command | cut -c7-)" = "--http" ]; then
+    if [ "$(echo $install_method | cut -c-5)" = "clone" ]; then
+        if [ "$(echo $install_method | cut -c7-)" = "--http" ]; then
             git_protocol="http"
         else
             git_protocol="git"
         fi
         git_repo="$git_protocol://github.com/$github_path.git"
-        echo "Cloning Narwhal from \"$git_repo\"..."
+        echo "Cloning Cappuccino base from \"$git_repo\"..."
         git clone "$git_repo" "$install_directory"
         (cd "$install_directory" && git checkout "origin/$github_ref")
     else
         zip_ball="http://github.com/$github_path/zipball/$github_ref"
 
-        echo "Downloading Narwhal from \"$zip_ball\"..."
+        echo "Downloading Cappuccino base from \"$zip_ball\"..."
         $(which curl &> /dev/null && echo curl -L -o || echo wget --no-check-certificate -O) "$tmp_zip" "$zip_ball"
         check_and_exit
 
-        echo "Installing Narwhal..."
+        echo "Installing Cappuccino base..."
         unzip "$tmp_zip" -d "$install_directory"
         check_and_exit
         rm "$tmp_zip"
@@ -264,81 +293,48 @@ if [ "$install_narwhal" ]; then
 fi
 
 if ! which "narwhal" > /dev/null; then
-    echo "Problem installing Narwhal. To install Narwhal manually follow the instructions at http://narwhaljs.org/"
+    echo "Problem installing Narwhal. To install Narwhal manually follow the "
+    echo "instructions at http://narwhaljs.org/."
     exit 1
 fi
 
 install_directory="$(dirname -- "$(dirname -- "$(which narwhal)")")"
 
-echo "================================================================================"
-echo "Using Narwhal installation at \"$install_directory\". Is this correct?"
-if ! prompt "yes"; then
-    exit 1
-fi
-
-if [ ! "$install_capp" ]; then
-    echo "================================================================================"
-    echo "Would you like to install the pre-built Objective-J and Cappuccino packages?"
-    echo "If you intend to build Cappuccino yourself this is not neccessary."
-    if prompt; then
-      install_capp="yes"
-    fi
-fi
-
-
-if [ ! "$install_test" ]; then
-    echo "================================================================================"
-    echo "Would you like to install test OJTest package?"
-    if prompt; then
-      install_test="yes"
-    fi
-fi
-
-# Make sure tusk can access GitHub's HTTPS URLs.
-NARWHAL_ENGINE=rhino js -e "javax.net.ssl.SSLContext.getDefault()" &> /dev/null
-if [ ! "$?" = "0" ]; then
-    echo "Installing packages from GitHub requires SSL support in Java."
-    if [ "$(uname)" = "Linux" ]; then
-        echo "Try installing the libbcprov-java package, if it exists for your Linux distro."
-    fi
-    exit 1
-fi
-
-extra_packages=""
-if [ "$install_capp" ]; then
-    extra_packages="objective-j cappuccino"
-fi
-
-if [ "$install_test" ]; then
-    extra_packages="${extra_packages} https://github.com/280north/ojtest/zipball/latest"
-fi
-
-echo "Installing necessary packages..."
-
-if ! tusk update; then
-    echo "Error: unable to update tusk catalog. Check that you have sufficient permissions."
-    exit 1
-fi
-
-tusk $tusk_install_command browserjs jake shrinksafe $extra_packages
+#echo "================================================================================"
+#echo "Using the Cappuccino base installation at \"$install_directory\". Is this correct?"
+#if ! prompt "yes"; then
+#    exit 1
+#fi
 
 if [ `uname` = "Darwin" ]; then
     echo "================================================================================"
-    echo "Would you like to install the JavaScriptCore engine for Narwhal?"
-    echo "This is optional but will make building and running Objective-J much faster."
+    echo "Would you like to build the JavaScriptCore engine? This is optional but will "
+    echo "make building and running Cappuccino and Objective-J much faster."
     if prompt "yes"; then
-        tusk $tusk_install_command narwhal-jsc
+        check_build_environment
 
-        if ! (cd "$install_directory/packages/narwhal-jsc" && make webkit); then
+        # The narwhal-jsc package is already installed within the base kit.
+
+        # This autoreconf command improves compatibility with MacPorts, but only works with autoconf 2.65+.
+        needed_autoconf_major=2
+        needed_autoconf_minor=65
+        if $(autoconf --version | head -1 | python -c "import sys, re; major, minor=re.search(r'(\d+)\.(\d+)', sys.stdin.read()).groups(); sys.exit((int(major) < $needed_autoconf_major or int(minor) < $needed_autoconf_minor) and 1)"); then
+            # Don't bother checking the return code of this operation. Even if it fails, it's still
+            # worthwhile to continue and attempt the full build.
+            (cd "$install_directory/packages/narwhal-jsc/deps/libedit-20100424-3.0" && autoreconf -if)
+        fi
+
+        if ! (cd "$install_directory/packages/narwhal-jsc/" && make webkit); then
             rm -rf "$install_directory/packages/narwhal-jsc"
             echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
             echo "WARNING: building narwhal-jsc failed. Hit enter to continue."
             echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
             # read
-        elif ! [ "$NARWHAL_ENGINE" = "jsc" ]; then
+        elif ! [ "$NARWHAL_ENGINE_SAVED" = "jsc" ]; then
             echo "================================================================================"
-            echo "Rhino is the default Narwhal engine, should we change the default to JavaScriptCore for you?"
-            echo "This can by overridden by setting the NARWHAL_ENGINE environment variable to \"jsc\" or \"rhino\"."
+            echo "Rhino is currently the default JavaScript engine. Should we change the default to JavaScriptCore"
+            echo "for you? This can by overridden by setting the NARWHAL_ENGINE environment variable "
+            echo "to \"jsc\" or \"rhino\"."
             ask_append_shell_config "export NARWHAL_ENGINE=jsc"
         fi
     fi
@@ -347,12 +343,14 @@ fi
 export PATH="$PATH_SAVED"
 if ! which "narwhal" > /dev/null; then
     echo "================================================================================"
-    echo "You must add Narwhal's \"bin\" directory to your PATH environment variable. Do this automatically now?"
+    echo "Cappuccino's \"bin\" directory must be in your PATH environment variable."
+    echo "Should we do this for you?"
 
     export_path_string="export PATH=\"$install_directory/bin:\$PATH\""
 
     if ! ask_append_shell_config "$export_path_string"; then
-        echo "Add \"$install_directory/bin\" to your PATH environment variable in your shell configuration file (e.x. .profile, .bashrc, .bash_profile)."
+        echo "Add \"$install_directory/bin\" to your PATH environment variable in your shell "
+        echo "configuration file (e.x. .profile, .bashrc, .bash_profile)."
         echo "For example:"
         echo "    $export_path_string"
     fi
@@ -361,18 +359,21 @@ fi
 if [ "$CAPP_BUILD" ]; then
     if [ -d "$CAPP_BUILD" ]; then
         echo "================================================================================"
-        echo "An existing \$CAPP_BUILD directory at \"$CAPP_BUILD\" exists. The previous build may be incompatible. Remove it automatically now?"
+        echo "A \$CAPP_BUILD directory already exists at \"$CAPP_BUILD\". The previous "
+        echo "build may be incompatible. Should we remove it now?"
         if prompt "no"; then
             rm -rf "$CAPP_BUILD"
         fi
     fi
 else
     echo "================================================================================"
-    echo "Before building Cappuccino we recommend you set the \$CAPP_BUILD environment variable to a path where you wish to build Cappuccino."
-    echo "This can be automatically set to the default value of \"$PWD/Build\", or you can set \$CAPP_BUILD yourself."
+    echo "Before building Cappuccino we recommend you set the \$CAPP_BUILD environment "
+    echo "variable to a path where you wish to build Cappuccino. This can be automatically"
+    echo "set to the default value of \"$PWD/Build\", or you can set \$CAPP_BUILD yourself."
     ask_append_shell_config "export CAPP_BUILD=\"$PWD/Build\""
 fi
 
 echo "================================================================================"
-echo "Bootstrapping of Narwhal and other required tools is complete."
-echo "NOTE: any changes made to the shell configuration files won't take place until you restart the shell."
+echo "Bootstrapping of Cappuccino and other required tools is complete."
+echo "NOTE: any changes made to the shell configuration files won't take place until "
+echo "you restart the shell."

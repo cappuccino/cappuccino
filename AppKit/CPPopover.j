@@ -39,7 +39,7 @@ CPPopoverBehaviorSemitransient      = 2;
 var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     CPPopoverDelegate_popover_didShow_      = 1 << 1,
     CPPopoverDelegate_popover_shouldClose_  = 1 << 2,
-    CPPopoverDelegate_popover_willClose_   = 1 << 3,
+    CPPopoverDelegate_popover_willClose_    = 1 << 3,
     CPPopoverDelegate_popover_didClose_     = 1 << 4;
 
 
@@ -73,7 +73,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 
 
 #pragma mark -
-#pragma mark INitialization
+#pragma mark Initialization
 
 /*!
     Initialize the CPPopover witn default values
@@ -103,7 +103,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 
     @return CPRect represeting the frame of the popover
 */
-- (CPRect)positionningRect
+- (CPRect)positioningRect
 {
     if (!_attachedWindow || ![_attachedWindow isVisible])
         return nil;
@@ -113,7 +113,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 /*! Sets the frame of the popover
     @param aRect the desired frame
 */
-- (void)setPositionningRect:(CPRect)aRect
+- (void)setPositioningRect:(CPRect)aRect
 {
     if (!_attachedWindow || ![_attachedWindow isVisible])
         return;
@@ -196,14 +196,14 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 }
 
 #pragma mark -
-#pragma mark Positionning
+#pragma mark Positioning
 
 /*!
     Show the popover
 
     @param positioningRect if set, the popover will be positionned to a random rect relative to the window
     @param positioningView if set, the popover will be positioned relative to this view
-    @param preferredEdge: CPRectEdge representing the prefered positionning.
+    @param preferredEdge: CPRectEdge representing the preferred positioning.
 */
 - (void)showRelativeToRect:(CPRect)positioningRect ofView:(CPView)positioningView preferredEdge:(CPRectEdge)preferredEdge
 {
@@ -213,7 +213,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     if (!_contentViewController)
          [CPException raise:CPInternalInconsistencyException reason:@"contentViewController must not be nil"];
 
-    if (_needsCompute)
+    if (_needsCompute || !_attachedWindow)
     {
         var styleMask = (_behavior == CPPopoverBehaviorTransient) ? CPClosableOnBlurWindowMask : nil;
         _attachedWindow = [[_CPAttachedWindow alloc] initWithContentRect:CPRectMakeZero() styleMask:styleMask];
@@ -221,6 +221,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 
     [_attachedWindow setAppearance:_appearance];
     [_attachedWindow setAnimates:_animates];
+    [_attachedWindow setDelegate:self];
     [_attachedWindow setMovableByWindowBackground:NO];
     [_attachedWindow setFrame:[_attachedWindow frameRectForContentRect:[[_contentViewController view] frame]]];
     [_attachedWindow setContentView:[_contentViewController view]];
@@ -230,7 +231,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     else if (positioningView)
         [_attachedWindow positionRelativeToView:positioningView preferredEdge:preferredEdge];
     else
-        [CPException raise:CPInvalidArgumentException reason:@"you must set positioningRect or positioningRect"];
+        [CPException raise:CPInvalidArgumentException reason:@"a value must be passed for positioningRect or positioningView"];
 
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_didShow_)
         [_delegate popoverDidShow:self];
@@ -268,8 +269,28 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     [self close];
 }
 
+
+#pragma mark -
+#pragma mark Delegates
+
+/*! @ignore */
+- (BOOL)attachedWindowShouldClose:(_CPAttachedWindow)anAttachedWindow
+{
+    [self close];
+
+    // we return NO, because we want the CPPopover to compute
+    // if the attached can be close in order to send delegate messages
+    return NO;
+}
+
 @end
 
+var CPPopoverNeedsComputeKey = @"CPPopoverNeedsComputeKey",
+    CPPopoverAppearanceKey = @"CPPopoverAppearanceKey",
+    CPPopoverAnimatesKey = @"CPPopoverAnimatesKey",
+    CPPopoverContentViewControllerKey = @"CPPopoverContentViewControllerKey",
+    CPPopoverDelegateKey = @"CPPopoverDelegateKey",
+    CPPopoverBehaviorKey = @"CPPopoverBehaviorKey";
 
 @implementation CPPopover (CPCoding)
 
@@ -279,12 +300,12 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 
     if (self)
     {
-        _needsCompute = [aCoder decodeIntForKey:@"_needsCompute"];
-        _appearance = [aCoder decodeIntForKey:@"_appearance"];
-        _animates = [aCoder decodeBoolForKey:@"_animates"];
-        _contentViewController = [aCoder decodeObjectForKey:@"_contentViewController"];
-        [self setDelegate:[aCoder decodeObjectForKey:@"_delegate"]];
-        [self setBehaviour:[aCoder decodeIntForKey:@"_behavior"]];
+        _needsCompute = [aCoder decodeIntForKey:CPPopoverNeedsComputeKey];
+        _appearance = [aCoder decodeIntForKey:CPPopoverAppearanceKey];
+        _animates = [aCoder decodeBoolForKey:CPPopoverAnimatesKey];
+        _contentViewController = [aCoder decodeObjectForKey:CPPopoverContentViewControllerKey];
+        [self setDelegate:[aCoder decodeObjectForKey:CPPopoverDelegateKey]];
+        [self setBehaviour:[aCoder decodeIntForKey:CPPopoverBehaviorKey]];
     }
     return self;
 }
@@ -293,12 +314,12 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 {
     [super encodeWithCoder:aCoder];
 
-    [aCoder encodeInt:_behavior forKey:@"_behavior"];
-    [aCoder encodeInt:_appearance forKey:@"_appearance"];
-    [aCoder encodeBool:_needsCompute forKey:@"_needsCompute"];
-    [aCoder encodeObject:_contentViewController forKey:@"_contentViewController"];
-    [aCoder encodeObject:_delegate forKey:@"_delegate"];
-    [aCoder encodeObject:_animates forKey:@"_animates"];
+    [aCoder encodeBool:_needsCompute forKey:CPPopoverNeedsComputeKey];
+    [aCoder encodeInt:_appearance forKey:CPPopoverAppearanceKey];
+    [aCoder encodeObject:_animates forKey:CPPopoverAnimatesKey];
+    [aCoder encodeObject:_contentViewController forKey:CPPopoverContentViewControllerKey];
+    [aCoder encodeObject:_delegate forKey:CPPopoverDelegateKey];
+    [aCoder encodeInt:_behavior forKey:CPPopoverBehaviorKey];
 }
 
 @end

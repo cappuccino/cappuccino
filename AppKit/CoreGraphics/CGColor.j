@@ -108,7 +108,7 @@ function CGColorCreateCopy(aColor)
 */
 function CGColorCreateGenericGray(gray, alpha)
 {
-    return CGColorCreate(CGColorSpaceCreateDeviceRGB(), [gray,gray,gray, alpha]);
+    return CGColorCreate(CGColorSpaceCreateDeviceRGB(), [gray, gray, gray, alpha]);
 }
 
 /*!
@@ -137,7 +137,7 @@ function CGColorCreateGenericRGB(red, green, blue, alpha)
 */
 function CGColorCreateGenericCMYK(cyan, magenta, yellow, black, alpha)
 {
-    return CGColorCreate(CGColorSpaceCreateDeviceCMYK(), 
+    return CGColorCreate(CGColorSpaceCreateDeviceCMYK(),
                          [cyan, magenta, yellow, black, alpha]);
 }
 
@@ -150,7 +150,8 @@ function CGColorCreateGenericCMYK(cyan, magenta, yellow, black, alpha)
 */
 function CGColorCreateCopyWithAlpha(aColor, anAlpha)
 {
-    if ( !aColor ) return aColor; // Avoid error null pointer in next line
+    if (!aColor)
+        return aColor; // Avoid error null pointer in next line
 
     var components = aColor.components.slice();
 

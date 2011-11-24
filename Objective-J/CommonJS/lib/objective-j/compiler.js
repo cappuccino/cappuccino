@@ -31,12 +31,14 @@ function compressor(code) {
     return winner;
 }
 
-function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags)
+function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags, asPlainJavascript)
 {
     var shouldObjjPreprocess = objjcFlags & ObjectiveJ.Preprocessor.Flags.Preprocess,
         shouldCheckSyntax = objjcFlags & ObjectiveJ.Preprocessor.Flags.CheckSyntax,
         shouldCompress = objjcFlags & ObjectiveJ.Preprocessor.Flags.Compress,
-        fileContents = "";
+        fileContents = "",
+        executable,
+        code;
 
     if (OS.popen("which gcc").stdout.read().length === 0)
         fileContents = FILE.read(aFilePath, { charset:"UTF-8" });
@@ -58,7 +60,7 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags)
     // FIXME: should calculate relative path, etc.
     try
     {
-        var executable = ObjectiveJ.preprocess(fileContents, FILE.basename(aFilePath), objjcFlags);
+        executable = ObjectiveJ.preprocess(fileContents, FILE.basename(aFilePath), objjcFlags);
     }
     catch (anException)
     {print(anException);
@@ -76,14 +78,14 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags)
 
     if (shouldCompress)
     {
-        var code = executable.code();
+        code = executable.code();
         code = compressor("function(){" + code + "}");
         // more robust function wrapper stripping
         code = code.replace(/^\s*function\s*\(\s*\)\s*{|}\s*;?\s*$/g, "");
         executable.setCode(code);
     }
 
-    return executable.toMarkedString();
+    return asPlainJavascript ? executable.code() : executable.toMarkedString();
 }
 
 function resolveFlags(args)
@@ -100,16 +102,16 @@ function resolveFlags(args)
     for (; index < count; ++index)
     {
         var argument = args[index];
-        
+
         if (argument === "-o")
         {
             if (++index < count)
                 outputFilePaths.push(args[index]);
         }
-        
+
         else if (argument.indexOf("-D") === 0)
-            gccFlags.push(argument)
-            
+            gccFlags.push(argument);
+
         else if (argument.indexOf("-U") === 0)
             gccFlags.push(argument);
 
@@ -124,13 +126,13 @@ function resolveFlags(args)
 
         else if (argument.indexOf("-E") === 0)
             objjcFlags &= ~ObjectiveJ.Preprocessor.Flags.Preprocess;
-            
+
         else if (argument.indexOf("-S") === 0)
             objjcFlags &= ~ObjectiveJ.Preprocessor.Flags.CheckSyntax;
-            
+
         else if (argument.indexOf("-g") === 0)
             objjcFlags |= ObjectiveJ.Preprocessor.Flags.IncludeDebugSymbols;
-            
+
         else if (argument.indexOf("-O") === 0)
             objjcFlags |= ObjectiveJ.Preprocessor.Flags.Compress;
 
@@ -149,25 +151,69 @@ exports.compile = function(aFilePath, flags)
     var resolvedFlags = resolveFlags(flags);
 
     return compileWithResolvedFlags(aFilePath, resolvedFlags.objjcFlags, resolvedFlags.gccFlags);
-}
+};
 
 exports.main = function(args)
 {
-    // TODO: args parser
-    args.shift();
+    var shouldPrintOutput = false,
+        asPlainJavascript = false;
 
-    var resolved = resolveFlags(args),
+    var argv = args.slice(1);
+
+    while(argv.length)
+    {
+        if (argv[0] === '--')
+        {
+            argv.shift();
+            break;
+        }
+
+        if (argv[0] === "-p" || argv[0] === "--print")
+        {
+            shouldPrintOutput = YES;
+            argv.shift();
+            continue;
+        }
+
+        if (argv[0] === "--unmarked")
+        {
+            asPlainJavascript = true;
+            argv.shift();
+            continue;
+        }
+
+        if (argv[0] === "--help" || argv[0].substr(0, 1) == '-')
+        {
+            print("Usage: " + args[0] + " [options] [--] file...");
+            print("  -p, --print    print the output directly to stdout");
+            print("  --unmarked     don't tag the output with @STATIC header");
+            print("  --help         print this help");
+            return;
+        }
+
+        // Current argument doesn't begin with - so it's not an argument but the
+        // first filename.
+        // TODO Full GNU getopt parsing which doesn't stop on the first non-argument.
+        break;
+    }
+
+    var resolved = resolveFlags(argv),
         outputFilePaths = resolved.outputFilePaths,
         objjcFlags = resolved.objjcFlags,
         gccFlags = resolved.gccFlags;
 
     resolved.filePaths.forEach(function(filePath, index)
     {
-        print("Statically Compiling " + filePath);
+        if (!shouldPrintOutput)
+            print("Statically Compiling " + filePath);
+        var output = compileWithResolvedFlags(filePath, objjcFlags, gccFlags, asPlainJavascript);
 
-        FILE.write(outputFilePaths[index], compileWithResolvedFlags(filePath, objjcFlags, gccFlags), { charset: "UTF-8" });
+        if (shouldPrintOutput)
+            print(output);
+        else
+            FILE.write(outputFilePaths[index], output, { charset: "UTF-8" });
     });
-}
+};
 
 if (require.main == module.id)
     exports.main(system.args);

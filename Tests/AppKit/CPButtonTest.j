@@ -147,4 +147,36 @@
     [self assertFalse:[button hasThemeAttribute:@"foobar"] message:[button className] + " should not have theme attribute \"" + firstKey + "\""];
 }
 
+- (void)testRadioAction
+{
+    var radioGroup = [CPRadioGroup new],
+        radioButton1 = [[CPRadio alloc] initWithFrame:CGRectMakeZero() radioGroup:radioGroup],
+        radioButton2 = [[CPRadio alloc] initWithFrame:CGRectMakeZero() radioGroup:radioGroup];
+
+    wasClicked = NO;
+    [radioButton2 setTarget:self];
+    [radioButton2 setAction:@selector(clickMe:)];
+
+    [radioButton2 setState:CPOnState];
+    [radioButton1 setState:CPOnState];
+    [self assertFalse:wasClicked message:@"a programmatic selection of a radio button should not fire the action"];
+
+    [radioButton2 performClick:self];
+    [self assertTrue:wasClicked message:@"a user click on a radio button should fire the action"]
+
+    // The same goes for the action of the radio group.
+    [radioButton2 setTarget:nil];
+
+    wasClicked = NO;
+    [radioGroup setTarget:self];
+    [radioGroup setAction:@selector(clickMe:)];
+
+    [radioButton1 setState:CPOnState];
+    [radioButton2 setState:CPOnState];
+    [self assertFalse:wasClicked message:@"a programmatic selection of a radio button should not fire the group action"];
+
+    [radioButton1 performClick:self];
+    [self assertTrue:wasClicked message:@"a user click on a radio button should fire the group action"];
+}
+
 @end

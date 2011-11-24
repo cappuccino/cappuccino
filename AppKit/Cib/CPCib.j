@@ -34,9 +34,9 @@
 @import "_CPCibWindowTemplate.j"
 
 
-CPCibOwner              = @"CPCibOwner",
-CPCibTopLevelObjects    = @"CPCibTopLevelObjects",
-CPCibReplacementClasses = @"CPCibReplacementClasses",
+CPCibOwner              = @"CPCibOwner";
+CPCibTopLevelObjects    = @"CPCibTopLevelObjects";
+CPCibReplacementClasses = @"CPCibReplacementClasses";
 CPCibExternalObjects    = @"CPCibExternalObjects";
 
 var CPCibObjectDataKey  = @"CPCibObjectDataKey";

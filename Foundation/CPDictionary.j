@@ -176,7 +176,7 @@
                 for (; i < count; i++)
                 {
                     var thisValue = value[i];
-                    
+
                     if (thisValue === null)
                     {
                         newValue.push([CPNull null]);
@@ -364,7 +364,7 @@
 
     for (; index < count; ++index)
     {
-        thisKey = _keys[index],
+        thisKey = _keys[index];
         thisValue = _buckets[thisKey];
         if (thisValue.isa && anObject && anObject.isa && [thisValue respondsToSelector:@selector(isEqual:)] && [thisValue isEqual:anObject])
             matchingKeys.push(thisKey);

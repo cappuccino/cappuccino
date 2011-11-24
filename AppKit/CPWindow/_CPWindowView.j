@@ -111,7 +111,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
             return [self trackResizeWithEvent:anEvent];
     }
 
-    if ([theWindow isMovableByWindowBackground])
+    if ([theWindow isMovable] && [theWindow isMovableByWindowBackground])
         [self trackMoveWithEvent:anEvent];
 
     else
@@ -174,6 +174,9 @@ var _CPWindowViewResizeIndicatorImage = nil;
 
 - (void)trackMoveWithEvent:(CPEvent)anEvent
 {
+    if (![[self window] isMovable])
+        return;
+
     var type = [anEvent type];
 
     if (type === CPLeftMouseUp)

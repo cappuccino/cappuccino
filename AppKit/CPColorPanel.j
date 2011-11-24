@@ -51,7 +51,7 @@ CPWheelColorPickerMode = 1;
 */
 CPSliderColorPickerMode = 2;
 
-CPColorPickerViewWidth  = 265,
+CPColorPickerViewWidth  = 265;
 CPColorPickerViewHeight = 370;
 
 /*!

@@ -16,7 +16,9 @@
 
 @implementation CPKeyValueBindingTest : OJTestCase
 {
-    id      FOO;
+    id                  FOO;
+
+    CPArrayController   arrayController @accessors;
 }
 
 - (void)testExposingBindings
@@ -44,7 +46,6 @@
 
 - (void)testBindOptions
 {
-
     var bindTesterA = [BindingTestWithBool new],
         bindTesterB = [BindingTestWithBool new];
 
@@ -180,9 +181,9 @@
     [self assert:'objectValue' equals:testView.lastKey];
 
     // Test that CPTableColumn is optimized to only read one value per row.
-    [self assert:0 equals:[content[2] accesses] message:"row 2 used "+[content[2] accesses]+" accesses but was never prepared"];
-    [self assert:1 equals:[content[0] accesses] message:"row 0 used "+[content[0] accesses]+" accesses to prepare"];
-    [self assert:1 equals:[content[1] accesses] message:"row 1 used "+[content[1] accesses]+" accesses to prepare"];
+    [self assert:0 equals:[content[2] accesses] message:"row 2 used " + [content[2] accesses] + " accesses but was never prepared"];
+    [self assert:1 equals:[content[0] accesses] message:"row 0 used " + [content[0] accesses] + " accesses to prepare"];
+    [self assert:1 equals:[content[1] accesses] message:"row 1 used " + [content[1] accesses] + " accesses to prepare"];
 
     // Try the case where a key path is not used.
     content = ["plain", "old", "space crystals"];
@@ -192,6 +193,30 @@
     [tableColumn _prepareDataView:testView forRow:1];
     [self assert:'old' equals:testView.lastValue];
     [self assert:'objectValue' equals:testView.lastKey];
+}
+
+- (void)testTableColumnAutomaticBindings
+{
+    var tableView = [CPTableView new],
+        tableColumn = [[CPTableColumn alloc] initWithIdentifier:"A Column"];
+    arrayController = [CPArrayController new];
+
+    [tableView addTableColumn:tableColumn];
+
+    [tableColumn bind:@"value" toObject:arrayController withKeyPath:@"arrangedObjects.valueA" options:nil];
+
+    [self assertTrue:[[tableView infoForBinding:"content"] valueForKey:CPObservedObjectKey] === arrayController message:"when a column of a table is bound to an array controller a 'content' binding should automatically be made to the array controller"];
+    [self assertTrue:[[tableView infoForBinding:"selectionIndexes"] valueForKey:CPObservedObjectKey] === arrayController message:"when a column of a table is bound to an array controller a 'selectionIndexes' binding should automatically be made to the array controller"];
+
+    // This should also work if the AC is referenced through a compound path.
+    tableView = [CPTableView new];
+    tableColumn = [[CPTableColumn alloc] initWithIdentifier:"A Column"];
+    [tableView addTableColumn:tableColumn];
+
+    [tableColumn bind:@"value" toObject:self withKeyPath:@"arrayController.arrangedObjects.valueA" options:nil];
+
+    [self assertTrue:[[tableView infoForBinding:"content"] valueForKey:CPObservedObjectKey] === arrayController message:"automatic 'content' binding should work even with compound keypath for column binding"];
+    [self assertTrue:[[tableView infoForBinding:"selectionIndexes"] valueForKey:CPObservedObjectKey] === arrayController message:"automatic 'selectionIndexes' binding should work even with compound keypath for column binding"];
 }
 
 - (void)testTextField
@@ -246,7 +271,7 @@
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)changes context:(id)aContext
 {
-    CPLog(@"here: "+aKeyPath+" value: "+[anObject valueForKey:aKeyPath]);
+    CPLog(@"here: " + aKeyPath + " value: " + [anObject valueForKey:aKeyPath]);
 }
 
 - (void)testSuppressNotification

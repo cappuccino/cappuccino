@@ -20,7 +20,8 @@ System Requirements
 To run Cappuccino applications, all you need is a web browser that understands
 JavaScript.
 
-To build Cappuccino itself, please read more here: [Getting and Building the Source](http://wiki.github.com/280north/cappuccino/getting-and-building-the-source>).
+To build Cappuccino itself, please read below. More information is available
+here: [Getting and Building the Source](http://wiki.github.com/cappuccino/cappuccino/getting-and-building-the-source>).
 
 If you're using Windows, you'll also need [Cygwin](http://www.cygwin.com/).
 
@@ -30,27 +31,26 @@ and contribute your work back to the Cappuccino community, you'll want to
 
 Getting Started
 ---------------
-These instructions are for building a development copy of Cappuccino. If you'd
-just like to get started using Cappuccino for your web apps, you should
-instead download a pre-compiled copy of Cappuccino from:
+To get started, download and install the current release version of Cappuccino:
 
-  <http://cappuccino.org/download/>
+    $ curl https://raw.github.com/cappuccino/cappuccino/v0.9.5/bootstrap.sh >/tmp/cappuccino_bootstrap.sh && sh /tmp/cappuccino_bootstrap.sh
 
+If you'd just like to get started using Cappuccino for your web apps, you are done.
+
+The rest of these instructions are for building a development copy of Cappuccino.
 To build Cappuccino from source, check out the most recent stable version from GitHub:
 
-    $ git clone git://github.com/280north/cappuccino.git (git)
+    $ git clone git://github.com/cappuccino/cappuccino.git (git)
 
 or download the zipball of the most recent source code:
 
-  <http://github.com/280north/cappuccino/zipball/master> (zip)
+  <http://github.com/cappuccino/cappuccino/zipball/master> (zip)
 
-If this is your first build and your system does not have narwhal and jake
-installed, run the bootstrap script to install it and all of its dependencies:
+Then, simply type `jake` from within the root of the Cappuccino directory. If you
+get an error like `jake: command not found`, you forgot to run the bootstrap script
+as described above.
 
-    $ ./bootstrap.sh
-
-Then, simply type `jake` from within the root of the Cappuccino directory.
-This will build a "release" copy of the frameworks. Typing `jake debug` will
+Jake will build a "release" copy of the frameworks. Typing `jake debug` will
 build a debug version.
 
 `jake install` will build Cappuccino and associated tools and install them for general use.
@@ -67,7 +67,7 @@ If you need help with Cappuccino, you can get help from the following sources:
 
   - [FAQ](http://cappuccino.org/discuss/faq.php)
   - [Documentation](http://cappuccino.org/learn/)
-  - [Wiki](http://github.com/280north/cappuccino/wikis)
+  - [Wiki](http://github.com/cappuccino/cappuccino/wikis)
   - Mailing Lists:
     - [Objective-J](http://groups.google.com/group/objectivej)
     - [Objective-J Developers](http://groups.google.com/group/objectivej-dev)
@@ -75,7 +75,7 @@ If you need help with Cappuccino, you can get help from the following sources:
 
 If you discover any bugs, please file a ticket at:
 
-  <http://github.com/280north/cappuccino/issues>
+  <http://github.com/cappuccino/cappuccino/issues>
 
 License
 -------

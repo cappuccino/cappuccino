@@ -352,8 +352,12 @@ var _CPMenuBarVisible               = NO,
     while (count--)
         [_items[count] setMenu:nil];
 
-    _items = [CPMutableArray array];
     _highlightedIndex = CPNotFound;
+
+    // Because we are changing _items directly, be sure to notify KVO
+    [self willChangeValueForKey:@"items"];
+    _items = [CPMutableArray array];
+    [self didChangeValueForKey:@"items"];
 }
 
 /*!

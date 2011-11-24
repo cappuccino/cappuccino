@@ -708,7 +708,8 @@ var ModifierKeyCodes = [
                             var characters;
 
                             // Handle key codes for which String.fromCharCode won't work.
-                            if (aDOMEvent.which === 0 || aDOMEvent.charCode === 0)
+                            // Refs #1036: In Internet Explorer, both 'which' and 'charCode' are undefined for special keys.
+                            if (aDOMEvent.which === 0 || aDOMEvent.charCode === 0 || (aDOMEvent.which === undefined && aDOMEvent.charCode === undefined))
                                 characters = KeyCodesToUnicodeMap[_keyCode];
 
                             if (!characters)

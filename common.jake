@@ -133,7 +133,7 @@ global.$BUILD_CJS_CAPPUCCINO_FRAMEWORKS = FILE.join($BUILD_CJS_CAPPUCCINO, "Fram
 
 global.CLEAN = require("jake/clean").CLEAN;
 global.CLOBBER = require("jake/clean").CLOBBER;
-global.CLEAN.include(global.$BUILD_DIR);
+global.CLEAN.include(FILE.join(global.$BUILD_DIR, "*.build"));
 global.CLOBBER.include(global.$BUILD_DIR);
 
 global.$HOME_DIR        = FILE.absolute(FILE.dirname(module.path));

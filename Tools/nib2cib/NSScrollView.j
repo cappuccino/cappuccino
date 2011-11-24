@@ -41,6 +41,11 @@
 
         [self addSubview:_bottomCornerView];
 
+        var knobStyle = 0;
+        try { knobStyle = [aCoder decodeObjectForKey:"NSScrollerKnobStyle"]; } catch (e){}
+
+        [self setScrollerKnobStyle:knobStyle];
+
         _hasVerticalScroller    = !!(flags & (1 << 4));
         _hasHorizontalScroller  = !!(flags & (1 << 5));
         _autohidesScrollers     = !!(flags & (1 << 9));

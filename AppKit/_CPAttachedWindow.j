@@ -30,6 +30,9 @@ CPClosableOnBlurWindowMask  = 1 << 4;
 CPPopoverAppearanceMinimal  = 0;
 CPPopoverAppearanceHUD      = 1;
 
+var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
+    _CPAttachedWindow_attachedWindowDidClose_       = 1 << 1;
+
 
 /*!
     @ignore
@@ -48,6 +51,7 @@ CPPopoverAppearanceHUD      = 1;
     BOOL            _shouldPerformAnimation;
     CPButton        _closeButton;
     float           _animationDuration;
+    CPInteger       _implementedDelegateMethods;
 }
 
 /*!
@@ -106,7 +110,7 @@ CPPopoverAppearanceHUD      = 1;
 */
 - (id)initWithContentRect:(CGRect)aFrame
 {
-    self = [self initWithContentRect:aFrame styleMask:nil]
+    self = [self initWithContentRect:aFrame styleMask:nil];
     return self;
 }
 
@@ -151,6 +155,21 @@ CPPopoverAppearanceHUD      = 1;
         return;
 
     [_windowView setAppearance:anAppearance];
+}
+
+- (void)setDelegate:(id)aDelegate
+{
+    if (_delegate == aDelegate)
+        return;
+
+    _delegate = aDelegate;
+    _implementedDelegateMethods = 0;
+
+    if ([_delegate respondsToSelector:@selector(attachedWindowShouldClose:)])
+        _implementedDelegateMethods |= _CPAttachedWindow_attachedWindowShouldClose_;
+
+    if ([_delegate respondsToSelector:@selector(attachedWindowDidClose:)])
+        _implementedDelegateMethods |= _CPAttachedWindow_attachedWindowDidClose_;
 }
 
 #pragma mark -
@@ -231,11 +250,11 @@ CPPopoverAppearanceHUD      = 1;
 
     // CPMaxXEdge
     originRight.x += aRect.size.width;
-    originRight.y += (aRect.size.height / 2.0) - (CPRectGetHeight([self frame]) / 2.0)
+    originRight.y += (aRect.size.height / 2.0) - (CPRectGetHeight([self frame]) / 2.0);
 
     // CPMinXEdge
     originLeft.x -= CPRectGetWidth([self frame]);
-    originLeft.y += (aRect.size.height / 2.0) - (CPRectGetHeight([self frame]) / 2.0)
+    originLeft.y += (aRect.size.height / 2.0) - (CPRectGetHeight([self frame]) / 2.0);
 
     // CPMaxYEdge
     originBottom.x += aRect.size.width / 2.0 - CPRectGetWidth([self frame]) / 2.0;
@@ -362,7 +381,7 @@ CPPopoverAppearanceHUD      = 1;
 */
 - (void)positionRelativeToRect:(CPRect)aRect
 {
-    [self positionRelativeToRect:aRect preferredEdge:nil]
+    [self positionRelativeToRect:aRect preferredEdge:nil];
 }
 
 /*!
@@ -408,12 +427,9 @@ CPPopoverAppearanceHUD      = 1;
 {
     if (_closeOnBlur && !_isClosed)
     {
-        // set a close flag to avoid infinite loop
-        _isClosed = YES;
+        if (!_delegate || ((_implementedDelegateMethods & _CPAttachedWindow_attachedWindowShouldClose_)
+            && [_delegate attachedWindowShouldClose:self]))
         [self close];
-
-        if (_delegate && [_delegate respondsToSelector:@selector(didAttachedWindowClose:)])
-            [_delegate didAttachedWindowClose:self];
     }
 }
 
@@ -454,16 +470,18 @@ CPPopoverAppearanceHUD      = 1;
         _DOMElement.style.opacity = 0;
         _DOMElement.style.WebkitTransform = "scale(0)";
         _DOMElement.style.WebkitTransformOrigin = tranformOrigin;
-        window.setTimeout(function(){
+        window.setTimeout(function()
+        {
             _DOMElement.style.height = _frame.size.height + @"px";
             _DOMElement.style.width = _frame.size.width + @"px";
             _DOMElement.style.opacity = 1;
             _DOMElement.style.WebkitTransform = "scale(1.1)";
-            var transitionEndFunction = function(){
+            var transitionEndFunction = function()
+            {
                 _DOMElement.style.WebkitTransform = "scale(1)";
                 _DOMElement.removeEventListener("webkitTransitionEnd", transitionEndFunction, YES);
             };
-            _DOMElement.addEventListener("webkitTransitionEnd", transitionEndFunction, YES)
+            _DOMElement.addEventListener("webkitTransitionEnd", transitionEndFunction, YES);
         },0);
     }
 
@@ -478,6 +496,9 @@ CPPopoverAppearanceHUD      = 1;
 */
 - (void)close
 {
+    // set a close flag to avoid infinite loop
+    _isClosed = YES;
+
     if (_animates && typeof(_DOMElement.style.WebkitTransform) != "undefined")
     {
         _DOMElement.style.opacity = 0;
@@ -494,8 +515,8 @@ CPPopoverAppearanceHUD      = 1;
 
     _shouldPerformAnimation = _animates;
 
-    if (_delegate && [_delegate respondsToSelector:@selector(didAttachedWindowClose:)])
-        [_delegate didAttachedWindowClose:self];
+    if (_implementedDelegateMethods & _CPAttachedWindow_attachedWindowDidClose_)
+        [_delegate attachedWindowDidClose:self];
 }
 
 @end
