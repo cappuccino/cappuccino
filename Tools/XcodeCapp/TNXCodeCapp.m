@@ -470,7 +470,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         BOOL isDir = NO;
         [fm fileExistsAtPath:filePath isDirectory:&isDir];
 
-        if (isDir || (![self isXIBFile:filePath] && ![self isObjJFile:filePath]))
+        if (isDir || ![self isObjJFile:filePath] || [self isPathMatchingIgnoredPaths:filePath])
             continue;
 
         NSURL *eventualShadow = [self shadowURLForSourceURL:[NSURL fileURLWithPath:filePath]];
@@ -579,6 +579,9 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
  */
 - (BOOL)isPathMatchingIgnoredPaths:(NSString*)aPath
 {
+    if ([ignoredFilePaths count] == 0)
+        return NO;
+
     for (NSString *ignoredPath in ignoredFilePaths)
     {
         if ([ignoredPath length] == 0)
