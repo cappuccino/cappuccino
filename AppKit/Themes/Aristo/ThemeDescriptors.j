@@ -1766,6 +1766,24 @@ var themedButtonValues = nil,
     return ruleEditor;
 }
 
++ (_CPToolTipWindowView)themedTooltip
+{
+    var toolTipView = [[_CPToolTipWindowView alloc] initWithFrame:CPRectMakeZero() styleMask:_CPToolTipWindowMask],
+
+        themeValues =
+        [
+            [@"stroke-color",       [CPColor colorWithHexString:@"E3E3E3"]],
+            [@"stroke-width",       1.0],
+            [@"border-radius",      2.0],
+            [@"background-color",   [CPColor colorWithHexString:@"FFFFCA"]],
+            [@"color",              [CPColor blackColor]]
+        ];
+
+    [self registerThemeValues:themeValues forView:toolTipView];
+
+    return toolTipView;
+}
+
 @end
 
 @implementation AristoHUDThemeDescriptor : BKThemeDescriptor

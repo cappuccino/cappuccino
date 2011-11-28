@@ -27,14 +27,30 @@
 {
     BOOL            _mouseDownPressed   @accessors(getter=isMouseDownPressed, setter=setMouseDownPressed:);
     unsigned        _gravity            @accessors(property=gravity);
-
-    CPColor         _backgroundColor;
-    CPColor         _strokeColor;
 }
 
 
 #pragma mark -
 #pragma mark Class methods
+
++ (CPString)defaultThemeClass
+{
+    return @"tooltip";
+}
+
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[[CPColor colorWithHexString:@"E3E3E3"],
+                                                [CPColor colorWithHexString:@"FFFFCA"],
+                                                2.0,
+                                                1.0,
+                                                [CPColor blackColor]]
+                                       forKeys:[@"stroke-color",
+                                                @"background-color",
+                                                @"border-radius",
+                                                @"stroke-width",
+                                                @"color"]];
+}
 
 /*! compute the contentView frame from a given window frame
     @param aFrameRect the window frame
@@ -68,21 +84,6 @@
 
 
 #pragma mark -
-#pragma mark Initialization
-
-- (id)initWithFrame:(CPRect)aFrame styleMask:(unsigned)aStyleMask
-{
-    if (self = [super initWithFrame:aFrame styleMask:aStyleMask])
-    {
-        _strokeColor = [CPColor colorWithHexString:@"E3E3E3"];
-        _backgroundColor = [CPColor colorWithHexString:@"FFFFCA"];
-    }
-
-    return self;
-}
-
-
-#pragma mark -
 #pragma mark drawing
 
 - (void)drawRect:(CGRect)aRect
@@ -90,11 +91,13 @@
     [super drawRect:aRect];
 
     var context = [[CPGraphicsContext currentContext] graphicsPort],
-        radius = 2,
-        strokeWidth = 1;
+        radius = [self currentValueForThemeAttribute:@"border-radius"],
+        strokeWidth = [self currentValueForThemeAttribute:@"stroke-width"],
+        strokeColor = [self currentValueForThemeAttribute:@"stroke-color"],
+        bgColor = [self currentValueForThemeAttribute:@"background-color"];
 
-    CGContextSetStrokeColor(context, _strokeColor);
-    CGContextSetFillColor(context, _backgroundColor);
+    CGContextSetStrokeColor(context, strokeColor);
+    CGContextSetFillColor(context, bgColor);
     CGContextSetLineWidth(context, strokeWidth);
     CGContextBeginPath(context);
 
