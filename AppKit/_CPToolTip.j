@@ -134,7 +134,7 @@ var _CPToolTipHeight = 24.0,
         [_content setFrameOrigin:CPPointMake(0.0, 0.0)];
         [_content setFrameSize:textFrameSize];
         [_content setTextShadowOffset:CGSizeMake(0.0, 1.0)];
-        [_content setTextColor:[CPColor blackColor]];
+        [_content setTextColor:[[[CPTheme defaultTheme] attributeWithName:@"color" forClass:_CPToolTipWindowView] value]];
 
         [[self contentView] addSubview:_content];
 

@@ -44,13 +44,6 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 
         if (useFileBasedListening)
         {
-            if (flags & kFSEventStreamEventFlagItemIsFile && 
-                flags & kFSEventStreamEventFlagItemRemoved)
-            {
-                [xcc tidyShadowedFiles];
-                continue;
-            }
-
             if (!(flags & kFSEventStreamEventFlagItemIsFile) || 
                 [xcc isPathMatchingIgnoredPaths:path]        ||
                 (![xcc isXIBFile:path] && ![xcc isObjJFile:path] && ![xcc isXCCIgnoreFile:path]))
@@ -58,19 +51,29 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
                 continue;
             }
 
-            else if (flags & kFSEventStreamEventFlagItemRemoved)
+            if (flags & kFSEventStreamEventFlagItemIsFile &&
+                flags & kFSEventStreamEventFlagItemRemoved)
+            {
+                if ([xcc isObjJFile:path])
+                {
+                    [xcc tidyShadowedFiles];
+                    continue;
+                }
+            }
+
+            if (flags & kFSEventStreamEventFlagItemRemoved)
             {
                 DLog(@"event type: kFSEventStreamEventFlagItemRemoved for path %@", path);
                 [xcc handleFileRemoval:path];
             }
 
-            else if (flags & kFSEventStreamEventFlagItemCreated || 
+            if (flags & kFSEventStreamEventFlagItemCreated ||
                      flags & kFSEventStreamEventFlagItemModified)
             {
                 DLog(@"event type: kFSEventStreamEventFlagItemCreated or kFSEventStreamEventFlagItemModified for path %@", path);
                 [xcc handleFileModification:path notify:YES];
             }
-            
+
             else if ([xcc reactToInodeModification] && 
                      (flags & kFSEventStreamEventFlagItemFinderInfoMod ||
                       flags & kFSEventStreamEventFlagItemXattrMod      ||
@@ -79,14 +82,14 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
                 DLog(@"event type: %@ for path %@", flags, path);
                 [xcc handleFileModification:path notify:YES];
             }
-            
+
             else if ([xcc reactToInodeModification] && 
                      flags & kFSEventStreamEventFlagItemInodeMetaMod)
             {
                 DLog(@"event type: kFSEventStreamEventFlagItemInodeMetaMod for path %@", path);
                 [xcc handleFileModification:path notify:YES];
             }
- 
+
             else if (flags & kFSEventStreamEventFlagItemRenamed)
             {
                 if (![[NSFileManager defaultManager] fileExistsAtPath:path])
