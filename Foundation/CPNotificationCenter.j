@@ -281,9 +281,9 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
         object = [aNotification object],
         observers = nil;
 
-    if (object != nil && (observers = [[_objectObservers objectForKey:[object UID]] copy]))
+    if (object != nil && (currentObservers = [_objectObservers objectForKey:[object UID]]))
     {
-        var currentObservers = observers,
+        var observers = [currentObservers copy],
             count = observers.length;
 
         while (count--)
@@ -298,14 +298,14 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
     }
 
     // Now do the same for the nil object observers...
-    observers = [[_objectObservers objectForKey:[[CPNull null] UID]] copy];
+    currentObservers = [_objectObservers objectForKey:[[CPNull null] UID]];
 
-    if (!observers)
+    if (!currentObservers)
         return;
 
     var observerRemovalCount = _observerRemovalCount,
-        count = observers.length,
-        currentObservers = observers;
+        observers = [currentObservers copy],
+        count = observers.length;
 
     while (count--)
     {
