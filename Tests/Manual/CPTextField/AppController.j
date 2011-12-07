@@ -35,6 +35,23 @@
 
     [contentView addSubview:textField];
 
+    var shadowLabel = [CPTextField labelWithTitle:@"This text should have a shadow."],
+        championOfLightLabel = [CPTextField labelWithTitle:@"This text should have no shadow."];
+
+    [shadowLabel setTextColor:[CPColor blackColor]];
+    [shadowLabel setTextShadowOffset:CGSizeMake(0, 1)];
+    [shadowLabel setTextShadowColor:[CPColor colorWithCSSString:@"rgba(0, 0, 0, 0.5)"]];
+
+    [championOfLightLabel setTextColor:[CPColor blackColor]];
+    [championOfLightLabel setTextShadowOffset:CGSizeMake(0, 1)];
+    [championOfLightLabel setTextShadowColor:[CPColor clearColor]];
+
+    [shadowLabel setFrame:CGRectMake(15, CGRectGetMaxY([textField frame]) + 10, 300, 18)];
+    [championOfLightLabel setFrame:CGRectMake(15, CGRectGetMaxY([shadowLabel frame]) + 2, 300, 18)];
+
+    [contentView addSubview:shadowLabel];
+    [contentView addSubview:championOfLightLabel];
+
     [theWindow orderFront:self];
 
     aWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(150, 300, 400, 150) styleMask:CPTitledWindowMask | CPClosableWindowMask | CPDocModalWindowMask];

@@ -390,7 +390,10 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     var textStyle = hasDOMTextElement ? _DOMTextElement.style : nil;
 
     // Create or destroy the DOM Text Shadow element as necessary.
-    var needsDOMTextShadowElement = hasDOMTextElement && !!_textShadowColor,
+    // If _textShadowColor's alphaComponent is 0, don't bother drawing anything (issue #1412).
+    // This improves performance as we get rid of an invisible element, and makes IE <9.0 capable
+    // of correctly 'rendering' shadows with [CPColor clearColor].
+    var needsDOMTextShadowElement = hasDOMTextElement && [_textShadowColor alphaComponent] > 0.0,
         hasDOMTextShadowElement = !!_DOMTextShadowElement;
 
     if (needsDOMTextShadowElement !== hasDOMTextShadowElement)

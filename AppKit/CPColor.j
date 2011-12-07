@@ -480,7 +480,9 @@ function CPColorWithImages()
         parts[3] ? parseFloat(parts[3], 10) : 1.0
     ];
 
-    _cssString = aString;
+    // We can't reuse aString as _cssString because the browser might not support the `rgba` syntax, and aString might
+    // use it (issue #1413.)
+    [self _initCSSStringFromComponents];
 
     return self;
 }
@@ -494,16 +496,21 @@ function CPColorWithImages()
     {
         _components = components;
 
-        var hasAlpha = CPFeatureIsCompatible(CPCSSRGBAFeature) && _components[3] != 1.0;
-
-        _cssString = (hasAlpha ? "rgba(" : "rgb(") +
-            parseInt(_components[0] * 255.0) + ", " +
-            parseInt(_components[1] * 255.0) + ", " +
-            parseInt(_components[2] * 255.0) +
-            (hasAlpha ?  (", " + _components[3]) : "") + ")";
+        [self _initCSSStringFromComponents];
     }
 
     return self;
+}
+
+- (void)_initCSSStringFromComponents
+{
+    var hasAlpha = CPFeatureIsCompatible(CPCSSRGBAFeature) && _components[3] != 1.0;
+
+    _cssString = (hasAlpha ? "rgba(" : "rgb(") +
+        parseInt(_components[0] * 255.0) + ", " +
+        parseInt(_components[1] * 255.0) + ", " +
+        parseInt(_components[2] * 255.0) +
+        (hasAlpha ?  (", " + _components[3]) : "") + ")";
 }
 
 /* @ignore */
