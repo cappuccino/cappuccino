@@ -1751,11 +1751,14 @@ TODO: implement
 
 - (void)_reconfigureSubviewsAnimate:(BOOL)animate
 {
-    [self _updateSliceRows];
-
     var viewAnimations = [CPMutableArray array],
         added_slices = [CPMutableArray array],
         count = [_slices count];
+
+    [self _updateSliceRows];
+        
+    if ([[self superview] isKindOfClass:[CPClipView class]])
+        [self setFrameSize:CGSizeMake(CGRectGetWidth([self frame]), count * _sliceHeight)];
 
     for (var i = 0; i < count; i++)
     {
