@@ -181,7 +181,7 @@ var directoryOp = function(cmd)
     var targetPath = cmd[cmd.length - 1];
 
     if (FILE.isDirectory(targetPath))
-        sudo(["rm", "-rf", targetPath])
+        sudo(["rm", "-rf", targetPath]);
 
     sudo(cmd);
 };
@@ -199,7 +199,7 @@ var describeTask = function(application, task, description)
     {
         stream.print("   " + line);
     });
-}
+};
 
 var colorPrint = function(message, color)
 {
@@ -214,4 +214,4 @@ var colorPrint = function(message, color)
         message = "\0bold(" + message + "\0)";
 
     stream.print(message);
-}
+};
