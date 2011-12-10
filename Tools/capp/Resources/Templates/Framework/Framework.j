@@ -21,4 +21,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+/*
+    USAGE
+
+    Put an @import of every source file in your framework here. Users of the framework
+    can then simply import this file instead of having to know what the individual
+    source filenames are.
+*/
+
 @import "__project.nameasidentifier__Class.j"
