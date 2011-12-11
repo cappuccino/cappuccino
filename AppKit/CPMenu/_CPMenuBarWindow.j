@@ -257,7 +257,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
         items = [_menu itemArray],
         count = items.length;
 
-    for (index = 0; index < count; ++index)
+    for (var index = 0; index < count; ++index)
     {
         var item = items[index],
             menuItemView = [item _menuItemView];
