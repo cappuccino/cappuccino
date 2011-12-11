@@ -776,6 +776,16 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
             [[self selectedItem] setState:CPOffState];
 }
 
+- (void)_reverseSetBinding
+{
+    var binderClass = [[self class] _binderClassForBinding:CPSelectedIndexBinding],
+        theBinding = [binderClass getBinding:CPSelectedIndexBinding forObject:self];
+
+    [theBinding reverseSetValueFor:@"objectValue"];
+
+    [super _reverseSetBinding];
+}
+
 @end
 
 var DEPRECATED_CPPopUpButtonMenuKey             = @"CPPopUpButtonMenuKey",
