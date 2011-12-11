@@ -521,7 +521,8 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
     [self checkSpaceForParts];
 
     var index = 0,
-        count = PARTS_ARRANGEMENT.length;
+        count = PARTS_ARRANGEMENT.length,
+        view;
 
     for (; index < count; ++index)
     {

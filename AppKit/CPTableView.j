@@ -1791,7 +1791,7 @@ NOT YET IMPLEMENTED
 {
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_)
     {
-            return idx = [_cachedRowHeights indexOfObject:aPoint
+            return [_cachedRowHeights indexOfObject:aPoint
                                             inSortedRange:nil
                                                   options:0
                                           usingComparator:function(aPoint, rowCache)
