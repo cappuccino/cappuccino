@@ -901,6 +901,12 @@ var _CPBrowserResizeControlBackgroundImage = nil;
     [_browser _column:_index clickedRow:[selectedIndexes count] === 1 ? [selectedIndexes firstIndex] : -1];
 }
 
+- (void)tableViewSelectionDidChange:(CPNotification)aNotification
+{
+    var selectedIndexes = [[aNotification object] selectedRowIndexes];
+    [_browser selectRowIndexes:selectedIndexes inColumn:_index];
+}
+
 - (id)childAtIndex:(unsigned)index
 {
     return [_delegate browser:_browser child:index ofItem:_item];
