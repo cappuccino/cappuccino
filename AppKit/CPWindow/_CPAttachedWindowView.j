@@ -90,7 +90,6 @@
         _arrowOffsetY = 0.0;
 
         // @TODO: make this themable
-        _useGlowingEffect = YES;
         _appearance = CPPopoverAppearanceMinimal;
         _cursorSize = CPSizeMake(15, 10);
     }

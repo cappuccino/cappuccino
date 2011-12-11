@@ -147,7 +147,6 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
         _retargedChildIndex = nil;
         _shouldRetargetChildIndex = NO;
-        _startHoverTime = nil;
 
         [self setIndentationPerLevel:16.0];
         [self setIndentationMarkerFollowsDataView:YES];

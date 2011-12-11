@@ -518,7 +518,8 @@ var concat = Array.prototype.concat,
                     reason:"makeObjectsPerformSelector:withObjects: 'aSelector' can't be nil"];
 
     var index = 0,
-        count = [self count];
+        count = [self count],
+        argumentsArray;
 
     if ([objects count])
     {

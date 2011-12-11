@@ -159,7 +159,8 @@ var concat = Array.prototype.concat,
         _CPRaiseInvalidArgumentException(self, _cmd, 'attempt to pass a nil selector');
 
     var index = 0,
-        count = self.length;
+        count = self.length,
+        argumentsArray;
 
     if ([objects count])
     {

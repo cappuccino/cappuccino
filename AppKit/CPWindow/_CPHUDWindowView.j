@@ -105,7 +105,7 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
 
     if ([[[self window] toolbar] isVisible])
     {
-        toolbarHeight = CGRectGetHeight([[self toolbarView] frame]);
+        var toolbarHeight = CGRectGetHeight([[self toolbarView] frame]);
 
         frameRect.origin.y -= toolbarHeight;
         frameRect.size.height += toolbarHeight;
