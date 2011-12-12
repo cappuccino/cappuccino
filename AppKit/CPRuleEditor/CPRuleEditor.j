@@ -171,7 +171,7 @@ var itemsContext                = "items",
 - (void)_initRuleEditorShared
 {
     _rowCache = [[CPMutableArray alloc] init];
-    _rowClass = [RowObject class];
+    _rowClass = [_CPRuleEditorRowObject class];
     _isKeyDown = NO;
     _subviewIndexOfDropLine = CPNotFound;
     _lastRow = 0;
@@ -921,7 +921,7 @@ TODO: implement
 - (void)setRowClass:(Class)rowClass
 {
     if (rowClass == [CPMutableDictionary class])
-        rowClass = [RowObject class];
+        rowClass = [_CPRuleEditorRowObject class];
 
     _rowClass = rowClass;
 }
@@ -1686,7 +1686,7 @@ TODO: implement
 
 - (void)unbind:(id)object
 {
-    _rowClass = [RowObject class];
+    _rowClass = [_CPRuleEditorRowObject class];
     [super unbind:object];
 }
 
@@ -2455,7 +2455,7 @@ var CriteriaKey         = @"criteria",
     DisplayValuesKey    = @"displayValues",
     RowTypeKey          = @"rowType";
 
-@implementation RowObject : CPObject
+@implementation _CPRuleEditorRowObject : CPObject
 {
     CPArray     subrows @accessors;
     CPArray     criteria @accessors;
@@ -2465,7 +2465,7 @@ var CriteriaKey         = @"criteria",
 
 - (id)copy
 {
-    var copy = [[RowObject alloc] init];
+    var copy = [[_CPRuleEditorRowObject alloc] init];
     [copy setSubrows:[[CPArray alloc] initWithArray:subrows copyItems:YES]];
     [copy setCriteria:[[CPArray alloc] initWithArray:criteria copyItems:YES]];
     [copy setDisplayValues:[[CPArray alloc] initWithArray:displayValues copyItems:YES]];
@@ -2476,7 +2476,7 @@ var CriteriaKey         = @"criteria",
 
 - (CPString)description
 {
-    return "<RowObject>\nsubrows = " + [subrows description] + "\ncriteria = " + [criteria description] + "\ndisplayValues = " + [displayValues description];
+    return "<" + [self className] + ">\nsubrows = " + [subrows description] + "\ncriteria = " + [criteria description] + "\ndisplayValues = " + [displayValues description];
 }
 
 - (id)initWithCoder:(id)coder
