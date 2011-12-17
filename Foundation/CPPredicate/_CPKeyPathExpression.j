@@ -1,5 +1,5 @@
 /*
- * CPExpression_keypath.j
+ * _CPKeyPathExpression.j
  *
  * Portions based on NSExpression_keypath.m in Cocotron (http://www.cocotron.org/)
  * Copyright (c) 2006-2007 Christopher J. W. Lloyd
@@ -23,11 +23,11 @@
  */
 
 @import "CPExpression.j"
-@import "CPExpression_function.j"
+@import "_CPFunctionExpression.j"
 @import "CPKeyValueCoding.j"
 @import "CPString.j"
 
-@implementation CPExpression_keypath : CPExpression_function
+@implementation _CPKeyPathExpression : _CPFunctionExpression
 {
 }
 
@@ -78,7 +78,7 @@
 
 @end
 
-@implementation CPExpression_constant (KeyPath)
+@implementation _CPConstantValueExpression (KeyPath)
 
 - (CPString)keyPath
 {

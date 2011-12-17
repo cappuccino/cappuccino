@@ -1,5 +1,5 @@
 /*
- * CPExpression_aggregate.j
+ * _CPAggregateExpression.j
  *
  * Created by cacaodev.
  * Copyright 2010.
@@ -23,7 +23,7 @@
 @import "CPExpression.j"
 @import "CPString.j"
 
-@implementation CPExpression_aggregate : CPExpression
+@implementation _CPAggregateExpression : CPExpression
 {
     CPArray _aggregate;
 }
@@ -98,7 +98,7 @@
 
 var CPCollectionKey = @"CPCollection";
 
-@implementation CPExpression_aggregate (CPCoding)
+@implementation _CPAggregateExpression (CPCoding)
 
 - (id)initWithCoder:(CPCoder)coder
 {

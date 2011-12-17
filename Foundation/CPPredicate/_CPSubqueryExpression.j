@@ -1,5 +1,5 @@
 /*
- * CPExpression_subquery.j
+ * _CPSubqueryExpression.j
  *
  * Created by cacaodev.
  * Copyright 2010.
@@ -24,7 +24,7 @@
 @import "CPExpression.j"
 @import "CPPredicate.j"
 
-@implementation CPExpression_subquery : CPExpression
+@implementation _CPSubqueryExpression : CPExpression
 {
     CPExpression _collection;
     CPExpression _variableExpression;
@@ -86,7 +86,7 @@
 
 - (id)copy
 {
-    return [[CPExpression_subquery alloc] initWithExpression:[_collection copy] usingIteratorExpression:[_variableExpression copy] predicate:[_subpredicate copy]];
+    return [[_CPSubqueryExpression alloc] initWithExpression:[_collection copy] usingIteratorExpression:[_variableExpression copy] predicate:[_subpredicate copy]];
 }
 
 - (CPPredicate)predicate
@@ -120,7 +120,7 @@ var CPExpressionKey     = @"CPExpression",
     CPSubpredicateKey   = @"CPSubpredicate",
     CPVariableKey       = @"CPVariable";
 
-@implementation CPExpression_subquery (CPCoding)
+@implementation _CPSubqueryExpression (CPCoding)
 
 - (id)initWithCoder:(CPCoder)coder
 {

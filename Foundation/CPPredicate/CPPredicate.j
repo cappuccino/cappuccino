@@ -748,7 +748,7 @@ function(newValue)\
         if (![self scanString:@")" intoString:NULL])
             CPRaiseParseError(self, @"expression");
 
-        return [[CPExpression_subquery alloc] initWithExpression:collection usingIteratorExpression:variableExpression predicate:subpredicate];
+        return [[_CPSubqueryExpression alloc] initWithExpression:collection usingIteratorExpression:variableExpression predicate:subpredicate];
     }
 
     if ([self scanString:@"FUNCTION" intoString:NULL])
@@ -788,7 +788,7 @@ function(newValue)\
                 expressionType = [right expressionType];
 
             if (expressionType == CPKeyPathExpressionType)
-                left = [[CPExpression_keypath alloc] initWithOperand:left andKeyPath:[right keyPath]];
+                left = [[_CPKeyPathExpression alloc] initWithOperand:left andKeyPath:[right keyPath]];
             else if (expressionType == CPVariableExpressionType)
                 left = [CPExpression expressionForFunction:left selectorName:@"valueForKey:" arguments:[right]];
             else

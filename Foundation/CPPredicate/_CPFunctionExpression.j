@@ -1,5 +1,5 @@
 /*
- * CPExpression_function.j
+ * _CPFunctionExpression.j
  *
  * Created by cacaodev.
  * Copyright 2010.
@@ -26,7 +26,7 @@
 @import "CPExpression.j"
 @import "CPString.j"
 
-@implementation CPExpression_function : CPExpression
+@implementation _CPFunctionExpression : CPExpression
 {
     CPExpression    _operand;
     SEL             _selector;
@@ -159,7 +159,7 @@ var CPSelectorNameKey   = @"CPSelectorName",
     CPOperandKey        = @"CPOperand",
     CPExpressionTypeKey = @"CPExpressionType";
 
-@implementation CPExpression_function (CPCoding)
+@implementation _CPFunctionExpression (CPCoding)
 
 - (id)initWithCoder:(CPCoder)coder
 {

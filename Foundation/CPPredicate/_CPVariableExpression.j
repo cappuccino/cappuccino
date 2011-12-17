@@ -1,5 +1,5 @@
 /*
- * CPExpression_variable.j
+ * _CPVariableExpression.j
  *
  * Portions based on NSExpression_variable.m in Cocotron (http://www.cocotron.org/)
  * Copyright (c) 2006-2007 Christopher J. W. Lloyd
@@ -27,7 +27,7 @@
 @import "CPExpression.j"
 @import "CPString.j"
 
-@implementation CPExpression_variable :  CPExpression
+@implementation _CPVariableExpression :  CPExpression
 {
     CPString _variable;
 }
@@ -87,7 +87,7 @@
 
 var CPVariableKey = @"CPVariable";
 
-@implementation CPExpression_variable (CPCoding)
+@implementation _CPVariableExpression (CPCoding)
 
 - (id)initWithCoder:(CPCoder)coder
 {
