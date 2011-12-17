@@ -150,7 +150,8 @@ var itemsContext                = "items",
         _editable = YES;
         _allowsEmptyCompoundRows = NO;
         _disallowEmpty = NO;
-
+        
+        [self setFormattingStringsFilename:nil];
         [self setCriteriaKeyPath:@"criteria"];
         [self setSubrowsKeyPath:@"subrows"];
         [self setRowTypeKeyPath:@"rowType"];
