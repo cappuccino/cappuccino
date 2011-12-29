@@ -398,7 +398,6 @@ var itemsContext                = "items",
 */
 - (void)setFormattingStringsFilename:(CPString)stringsFilename
 {
-    // Can we set _stringsFilename to nil in cocoa ?
     if (_standardLocalizer == nil)
         _standardLocalizer = [_CPRuleEditorLocalizer new];
 
@@ -442,7 +441,6 @@ var itemsContext                = "items",
 */
 - (void)setCriteria:(CPArray)criteria andDisplayValues:(CPArray)values forRowAtIndex:(int)rowIndex
 {
-// TODO: reload from the delegate if criteria is an empty array.
     if (criteria == nil || values == nil)
         [CPException raise:CPInvalidArgumentException reason:_cmd + @". criteria and values parameters must not be nil."];
 
@@ -588,7 +586,7 @@ TODO: implement
         {
             [indexes addIndex:i];
             objectsCount --;
-            // [buffer removeObjectAtIndex:indexInSubrows];
+
             if ([self rowTypeForRow:i] == CPRuleEditorRowTypeCompound)
                 i += [[self subrowIndexesForRow:i] count];
         }
@@ -1045,7 +1043,6 @@ TODO: implement
     [_currentAnimation setDelegate:self];
 }
 
-// TODO: delegate methods are implemented by the delegate. How do you document them in doxygen without implementing them here ? @fn not working ?
 /*!
     @name Delegate Methods
 */
@@ -1120,10 +1117,6 @@ TODO: implement
 {
     var view = [[_CPRuleEditorViewSliceDropSeparator alloc] initWithFrame:CGRectMake(0,-10, [self frame].size.width, 2)];
     [view setAutoresizingMask:CPViewWidthSizable];
-#if PLATFORM(DOM)
-    if (CPBrowserIsEngine(CPWebKitBrowserEngine))
-        view._DOMElement.style.webkitTransition = "opacity 300ms ease-in";
-#endif
     return view;
 }
 
@@ -1667,7 +1660,7 @@ TODO: implement
     }
 }
 
-- (void)bind:(CPString)aBinding toObject:(id)observableController withKeyPath:aKeyPath options:options
+- (void)bind:(CPString)aBinding toObject:(id)observableController withKeyPath:(CPString)aKeyPath options:(CPDictionary)options
 {
   if ([aBinding isEqualToString:@"rows"])
   {
@@ -2318,7 +2311,6 @@ TODO: implement
     var action = [self action],
         target = [self target];
 
-CPLogConsole(_cmd);
     [self sendAction:action to:target];
 }
 

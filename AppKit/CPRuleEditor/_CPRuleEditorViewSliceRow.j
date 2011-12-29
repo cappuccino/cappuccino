@@ -308,7 +308,6 @@ var CONTROL_HEIGHT = 16.,
 
 - (void)layoutSubviews
 {
-    // CPLogConsole(_cmd);
     [self _relayoutSubviewsWidthChanged:YES];
 }
 

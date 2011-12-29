@@ -275,12 +275,12 @@
         if ((_nestingMode == CPRuleEditorNestingModeSimple || _nestingMode == CPRuleEditorNestingModeCompound)
             && [predicate isKindOfClass:[CPComparisonPredicate class]])
             predicate = [[CPCompoundPredicate alloc] initWithType:[self _compoundPredicateTypeForRootRows] subpredicates:[CPArray arrayWithObject:predicate]];
-        //TODO: handle CPRuleEditorNestingModeList and CPCompoundPredicate
+
         var row = [self _rowObjectFromPredicate:predicate];
         if (row != nil)
             [_boundArrayOwner setValue:[CPArray arrayWithObject:row] forKey:_boundArrayKeyPath];
     }
-    // TODO: handle predicate == nil => remove all rows.
+
     [self setAnimation:animation];
 }
 
@@ -535,7 +535,7 @@ var CPPredicateTemplatesKey = @"CPPredicateTemplates";
 @implementation CPPredicateEditorValueBinder : CPBinder
 {
 }
-// temporary fix. See https://github.com/cacaodev/cappuccino/commits/CPKeyValueBinding for CPbinder fix.
+
 - (void)setValueFor:(CPString)aBinding
 {
     var destination = [_info objectForKey:CPObservedObjectKey],

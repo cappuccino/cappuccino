@@ -91,7 +91,6 @@
 {
     if ([copiedTemplateContainer count] == 0)
     {
-        CPLogConsole("COPYING TEMPLATE");
         var copy = [[tree template] copy];
         [copiedTemplateContainer addObject:copy];
         [templateViews addObjectsFromArray:[copy templateViews]];
