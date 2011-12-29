@@ -3,6 +3,7 @@
 @implementation CPPredicateTest : OJTestCase
 {
     CPDictionary dict;
+    CPArray simpleArray;
 }
 
 - (id)init
@@ -26,6 +27,8 @@
 
         d = [CPDictionary dictionaryWithObjects:objects forKeys:keys];
         [dict setObject:d forKey:@"Record2"];
+        
+        simpleArray = [CPArray arrayWithObjects:@"a", @"b", @"ac", @"bc"];
 
     }
     return self;
@@ -434,6 +437,16 @@
     pred1 = [CPPredicate predicateWithFormat:@"$x CONTAINS 'a'"];
     pred2 = [CPPredicate predicateWithFormat:@"$x CONTAINS 'a'"];
     [self assert:pred1 equals:pred2];
+}
+
+- (void)testProxyArrayFiltering
+{
+    var proxyArray = [self mutableArrayValueForKey:@"simpleArray"],
+        predicate = [CPPredicate predicateWithFormat:@"SELF CONTAINS 'a'"];
+    
+    var filtered = [proxyArray filteredArrayUsingPredicate:predicate];
+    
+    [self assertTrue:([filtered count] == 2) message:@"Count should be 2 and is " + [filtered count]];
 }
 
 @end

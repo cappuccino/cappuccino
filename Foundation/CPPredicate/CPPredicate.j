@@ -210,7 +210,7 @@
 
     for (; i < count; i++)
     {
-        var object = self[i];
+        var object = [self objectAtIndex:i];
         if ([predicate evaluateWithObject:object])
             result.push(object);
     }
@@ -224,7 +224,7 @@
 
     while (count--)
     {
-        if (![predicate evaluateWithObject:self[count]])
+        if (![predicate evaluateWithObject:[self objectAtIndex:count]])
             splice(count, 1);
     }
 }
