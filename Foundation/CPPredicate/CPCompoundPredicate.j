@@ -154,7 +154,7 @@ var CPCompoundPredicateType;
         i = 0;
 
     if (count == 0)
-        return @"TRUPREDICATE";
+        return @"TRUEPREDICATE";
 
     for (; i < count; i++)
     {
@@ -226,6 +226,17 @@ var CPCompoundPredicateType;
     }
 
     return result;
+}
+
+- (BOOL)isEqual:(id)anObject
+{
+    if (self === anObject)
+        return YES;
+
+    if (object.isa !== self.isa || _type !== [anObject compoundPredicateType] || ![_predicates isEqualToArray:[anObject subpredicates]])
+        return NO;
+
+    return YES;
 }
 
 @end

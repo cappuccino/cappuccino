@@ -176,6 +176,17 @@
     return self;
 }
 
+- (BOOL)isEqual:(id)anObject
+{
+    if (self === anObject)
+        return YES;
+
+    if (self.isa !== anObject.isa || _value !== [anObject evaluateObject:nil])
+        return NO;
+
+    return YES;
+}
+
 - (BOOL)evaluateObject:(id)object
 {
     return _value;
@@ -199,7 +210,7 @@
 
     for (; i < count; i++)
     {
-        var object = self[i];
+        var object = [self objectAtIndex:i];
         if ([predicate evaluateWithObject:object])
             result.push(object);
     }
@@ -213,7 +224,7 @@
 
     while (count--)
     {
-        if (![predicate evaluateWithObject:self[count]])
+        if (![predicate evaluateWithObject:[self objectAtIndex:count]])
             splice(count, 1);
     }
 }
@@ -737,7 +748,7 @@ function(newValue)\
         if (![self scanString:@")" intoString:NULL])
             CPRaiseParseError(self, @"expression");
 
-        return [[CPExpression_subquery alloc] initWithExpression:collection usingIteratorExpression:variableExpression predicate:subpredicate];
+        return [[_CPSubqueryExpression alloc] initWithExpression:collection usingIteratorExpression:variableExpression predicate:subpredicate];
     }
 
     if ([self scanString:@"FUNCTION" intoString:NULL])
@@ -777,7 +788,7 @@ function(newValue)\
                 expressionType = [right expressionType];
 
             if (expressionType == CPKeyPathExpressionType)
-                left = [[CPExpression_keypath alloc] initWithOperand:left andKeyPath:[right keyPath]];
+                left = [[_CPKeyPathExpression alloc] initWithOperand:left andKeyPath:[right keyPath]];
             else if (expressionType == CPVariableExpressionType)
                 left = [CPExpression expressionForFunction:left selectorName:@"valueForKey:" arguments:[right]];
             else

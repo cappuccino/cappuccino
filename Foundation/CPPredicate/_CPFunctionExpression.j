@@ -1,5 +1,5 @@
 /*
- * CPExpression_function.j
+ * _CPFunctionExpression.j
  *
  * Created by cacaodev.
  * Copyright 2010.
@@ -26,7 +26,7 @@
 @import "CPExpression.j"
 @import "CPString.j"
 
-@implementation CPExpression_function : CPExpression
+@implementation _CPFunctionExpression : CPExpression
 {
     CPExpression    _operand;
     SEL             _selector;
@@ -69,10 +69,10 @@
 
 - (BOOL)isEqual:(id)object
 {
-    if (self == object)
+    if (self === object)
         return YES;
 
-    if (object.isa != self.isa || [object expressionType] != [self expressionType] || ![[object _function] isEqualToString:[self _function]] || ![[object operand] isEqual:[self operand]] || ![[object arguments] isEqualToArray:[self arguments]])
+    if (object.isa !== self.isa || ![[object _function] isEqual:_selector] || ![[object operand] isEqual:_operand] || ![[object arguments] isEqualToArray:_arguments])
         return NO;
 
     return YES;
@@ -159,7 +159,7 @@ var CPSelectorNameKey   = @"CPSelectorName",
     CPOperandKey        = @"CPOperand",
     CPExpressionTypeKey = @"CPExpressionType";
 
-@implementation CPExpression_function (CPCoding)
+@implementation _CPFunctionExpression (CPCoding)
 
 - (id)initWithCoder:(CPCoder)coder
 {
