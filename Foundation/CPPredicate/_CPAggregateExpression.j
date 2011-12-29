@@ -1,5 +1,5 @@
 /*
- * CPExpression_aggregate.j
+ * _CPAggregateExpression.j
  *
  * Created by cacaodev.
  * Copyright 2010.
@@ -23,7 +23,7 @@
 @import "CPExpression.j"
 @import "CPString.j"
 
-@implementation CPExpression_aggregate : CPExpression
+@implementation _CPAggregateExpression : CPExpression
 {
     CPArray _aggregate;
 }
@@ -39,10 +39,10 @@
 
 - (BOOL)isEqual:(id)object
 {
-    if (self == object)
+    if (self === object)
         return YES;
 
-    if (object.isa != self.isa || [object expressionType] != [self expressionType] || ![[object collection] isEqual:[self collection]])
+    if (object.isa !== self.isa || ![[object collection] isEqual:_aggregate])
         return NO;
 
     return YES;
@@ -98,7 +98,7 @@
 
 var CPCollectionKey = @"CPCollection";
 
-@implementation CPExpression_aggregate (CPCoding)
+@implementation _CPAggregateExpression (CPCoding)
 
 - (id)initWithCoder:(CPCoder)coder
 {

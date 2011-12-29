@@ -1,5 +1,5 @@
 /*
- * CPExpression_self.j
+ * _CPSelfExpression.j
  *
  * Created by cacaodev.
  * Copyright 2010.
@@ -25,14 +25,14 @@
 
 var evaluatedObject = nil;
 
-@implementation CPExpression_self : CPExpression
+@implementation _CPSelfExpression : CPExpression
 {
 }
 
 + (id)evaluatedObject
 {
     if (evaluatedObject == nil)
-        evaluatedObject = [CPExpression_self new];
+        evaluatedObject = [_CPSelfExpression new];
 
     return evaluatedObject;
 }
@@ -46,7 +46,7 @@ var evaluatedObject = nil;
 
 - (id)initWithCoder:(CPCoder)coder
 {
-    return [CPExpression_self evaluatedObject];
+    return [_CPSelfExpression evaluatedObject];
 }
 
 - (void)encodeWithCoder:(CPCoder)coder

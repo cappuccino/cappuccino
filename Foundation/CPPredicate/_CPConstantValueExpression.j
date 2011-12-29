@@ -1,5 +1,5 @@
 /*
- * CPExpression_constant.j
+ * _CPConstantValueExpression.j
  *
  * Portions based on NSExpression_constant.m in Cocotron (http://www.cocotron.org/)
  * Copyright (c) 2006-2007 Christopher J. W. Lloyd
@@ -25,7 +25,7 @@
 @import "CPDictionary.j"
 @import "CPExpression.j"
 
-@implementation CPExpression_constant : CPExpression
+@implementation _CPConstantValueExpression : CPExpression
 {
     id _value;
 }
@@ -45,7 +45,7 @@
     if (self === object)
         return YES;
 
-    if (object.isa != self.isa || [object expressionType] != [self expressionType] || ![[object constantValue] isEqual:[self constantValue]])
+    if (object.isa !== self.isa || ![[object constantValue] isEqual:_value])
         return NO;
 
     return YES;
@@ -73,7 +73,7 @@
 
 var CPConstantValueKey = @"CPConstantValue";
 
-@implementation CPExpression_constant (CPCoding)
+@implementation _CPConstantValueExpression (CPCoding)
 
 - (id)initWithCoder:(CPCoder)coder
 {
