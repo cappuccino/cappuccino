@@ -554,7 +554,7 @@
     var arrayController = [[CPArrayController alloc] init];
     [arrayController bind:@"contentArray" toObject:self withKeyPath:@"_contentArray" options:nil];
     [arrayController setFilterPredicate:[CPPredicate predicateWithFormat:@"department.name BEGINSWITH 'Capp'"]];
-    
+
     var arrangedCount = [[arrayController arrangedObjects] count];
     [self assertTrue:(arrangedCount == 2) message:@"Count should be 2 and is " + arrangedCount];
 }
