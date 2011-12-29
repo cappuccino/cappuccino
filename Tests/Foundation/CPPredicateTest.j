@@ -82,16 +82,16 @@
 
 - (void)testSetExpressionEvaluation
 {
-    var left = [CPExpression expressionForConstantValue:[CPSet setWithObjects:@"a",@"b",@"c"]],
-        right = [CPExpression expressionForConstantValue:[CPArray arrayWithObjects:@"a",@"b",@"d"]];
+    var left = [CPExpression expressionForConstantValue:[CPSet setWithObjects:@"a", @"b", @"c"]],
+        right = [CPExpression expressionForConstantValue:[CPArray arrayWithObjects:@"a", @"b", @"d"]];
 
     var expression = [CPExpression expressionForIntersectSet:left with:right],
         eval = [expression expressionValueWithObject:nil context:nil];
-    [self assertTrue:[eval isEqualToSet:[CPSet setWithObjects:@"a",@"b"]] message:"Result should be {(a, b)}, is " + eval];
+    [self assertTrue:[eval isEqualToSet:[CPSet setWithObjects:@"a", @"b"]] message:"Result should be {(a, b)}, is " + eval];
 
     expression = [CPExpression expressionForUnionSet:left with:right];
     eval = [expression expressionValueWithObject:nil context:nil];
-    [self assertTrue:[eval isEqualToSet:[CPSet setWithObjects:@"a",@"b",@"c",@"d"]] message:"Result should be {(a, b, c, d)}, is " + eval];
+    [self assertTrue:[eval isEqualToSet:[CPSet setWithObjects:@"a", @"b", @"c", @"d"]] message:"Result should be {(a, b, c, d)}, is " + eval];
 
     expression = [CPExpression expressionForMinusSet:left with:right];
     eval = [expression expressionValueWithObject:nil context:nil];
@@ -100,15 +100,15 @@
 
 - (void)testFunctionExpressionEvaluation
 {
-// Built-in function
-    var args = [[CPExpression expressionForConstantValue:1], [CPExpression expressionForConstantValue:2], [CPExpression expressionForConstantValue:3]];
-    var function_exp = [CPExpression expressionForFunction:"sum:" arguments:args],
+    // Built-in function
+    var args = [[CPExpression expressionForConstantValue:1], [CPExpression expressionForConstantValue:2], [CPExpression expressionForConstantValue:3]],
+        function_exp = [CPExpression expressionForFunction:"sum:" arguments:args],
         pred = [[CPComparisonPredicate alloc] initWithLeftExpression:function_exp rightExpression:[CPExpression expressionForConstantValue:6] modifier:CPDirectPredicateModifier type:CPEqualToPredicateOperatorType options:0];
 
     [self assertTrue:[pred evaluateWithObject:nil] message:[pred description] + " should be true"];
 
-// Custom function
-    var operand = [CPExpression expressionForConstantValue:@"text"];,
+    // Custom function
+    var operand = [CPExpression expressionForConstantValue:@"text"],
         arg = [CPExpression expressionForConstantValue:2];
     function_exp = [CPExpression expressionForFunction:operand selectorName:@"substringFromIndex:" arguments:[arg]];
     pred = [[CPComparisonPredicate alloc] initWithLeftExpression:function_exp rightExpression:[CPExpression expressionForConstantValue:@"xt"] modifier:CPDirectPredicateModifier type:CPEqualToPredicateOperatorType options:0];
