@@ -105,7 +105,7 @@ CPMinusSetExpressionType        = 9;
 */
 + (CPExpression)expressionForConstantValue:(id)value
 {
-    return [[CPExpression_constant alloc] initWithValue:value];
+    return [[_CPConstantValueExpression alloc] initWithValue:value];
 }
 
 /*!
@@ -114,7 +114,7 @@ CPMinusSetExpressionType        = 9;
 */
 + (CPExpression)expressionForEvaluatedObject
 {
-    return [CPExpression_self evaluatedObject];
+    return [_CPSelfExpression evaluatedObject];
 }
 
 /*!
@@ -124,7 +124,7 @@ CPMinusSetExpressionType        = 9;
 */
 + (CPExpression)expressionForVariable:(CPString)string
 {
-    return [[CPExpression_variable alloc] initWithVariable:string];
+    return [[_CPVariableExpression alloc] initWithVariable:string];
 }
 
 /*!
@@ -134,7 +134,7 @@ CPMinusSetExpressionType        = 9;
 */
 + (CPExpression)expressionForKeyPath:(CPString)keyPath
 {
-    return [[CPExpression_keypath alloc] initWithKeyPath:keyPath];
+    return [[_CPKeyPathExpression alloc] initWithKeyPath:keyPath];
 }
 
 /*!
@@ -144,7 +144,7 @@ CPMinusSetExpressionType        = 9;
 */
 + (CPExpression)expressionForAggregate:(CPArray)collection
 {
-    return [[CPExpression_aggregate alloc] initWithAggregate:collection];
+    return [[_CPAggregateExpression alloc] initWithAggregate:collection];
 }
 
 /*!
@@ -155,7 +155,7 @@ CPMinusSetExpressionType        = 9;
 */
 + (CPExpression)expressionForUnionSet:(CPExpression)left with:(CPExpression)right
 {
-    return [[CPExpression_set alloc] initWithType:CPUnionSetExpressionType left:left right:right];
+    return [[_CPSetExpression alloc] initWithType:CPUnionSetExpressionType left:left right:right];
 }
 
 /*!
@@ -166,7 +166,7 @@ CPMinusSetExpressionType        = 9;
 */
 + (CPExpression)expressionForIntersectSet:(CPExpression)left with:(CPExpression)right
 {
-    return [[CPExpression_set alloc] initWithType:CPIntersectSetExpressionType left:left right:right];
+    return [[_CPSetExpression alloc] initWithType:CPIntersectSetExpressionType left:left right:right];
 }
 
 /*!
@@ -177,7 +177,7 @@ CPMinusSetExpressionType        = 9;
 */
 + (CPExpression)expressionForMinusSet:(CPExpression)left with:(CPExpression)right
 {
-    return [[CPExpression_set alloc] initWithType:CPMinusSetExpressionType left:left right:right];
+    return [[_CPSetExpression alloc] initWithType:CPMinusSetExpressionType left:left right:right];
 }
 
 // Creating an Expression for a Function
@@ -230,7 +230,7 @@ CPMinusSetExpressionType        = 9;
 */
 + (CPExpression)expressionForFunction:(CPString)function_name arguments:(CPArray)parameters
 {
-    return [[CPExpression_function alloc] initWithSelector:CPSelectorFromString(function_name) arguments:parameters];
+    return [[_CPFunctionExpression alloc] initWithSelector:CPSelectorFromString(function_name) arguments:parameters];
 }
 
 /*!
@@ -244,7 +244,7 @@ CPMinusSetExpressionType        = 9;
 */
 + (CPExpression)expressionForFunction:(CPExpression)target selectorName:(CPString)selectorName arguments:(CPArray)parameters
 {
-    return [[CPExpression_function alloc] initWithTarget:target selector:CPSelectorFromString(selectorName) arguments:parameters];
+    return [[_CPFunctionExpression alloc] initWithTarget:target selector:CPSelectorFromString(selectorName) arguments:parameters];
 }
 
 /*!
@@ -256,7 +256,7 @@ CPMinusSetExpressionType        = 9;
 */
 + (CPExpression)expressionForSubquery:(CPExpression)expression usingIteratorVariable:(CPString)variable predicate:(CPPredicate)predicate
 {
-    return [[CPExpression_subquery alloc] initWithExpression:expression usingIteratorVariable:variable predicate:predicate];
+    return [[_CPSubqueryExpression alloc] initWithExpression:expression usingIteratorVariable:variable predicate:predicate];
 }
 
 // Getting Information About an Expression
@@ -387,11 +387,11 @@ CPMinusSetExpressionType        = 9;
 
 @end
 
-@import "CPExpression_constant.j"
-@import "CPExpression_self.j"
-@import "CPExpression_variable.j"
-@import "CPExpression_keypath.j"
-@import "CPExpression_function.j"
-@import "CPExpression_aggregate.j"
-@import "CPExpression_set.j"
-@import "CPExpression_subquery.j"
+@import "_CPConstantValueExpression.j"
+@import "_CPSelfExpression.j"
+@import "_CPVariableExpression.j"
+@import "_CPKeyPathExpression.j"
+@import "_CPFunctionExpression.j"
+@import "_CPAggregateExpression.j"
+@import "_CPSetExpression.j"
+@import "_CPSubqueryExpression.j"

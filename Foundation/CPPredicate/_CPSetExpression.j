@@ -1,5 +1,5 @@
 /*
- * CPExpression_set.j
+ * _CPSetExpression.j
  *
  * Created by cacaodev.
  * Copyright 2010.
@@ -23,7 +23,7 @@
 @import "CPExpression.j"
 @import "CPSet.j"
 
-@implementation CPExpression_set : CPExpression
+@implementation _CPSetExpression : CPExpression
 {
     CPExpression _left;
     CPExpression _right;
@@ -44,10 +44,10 @@
 
 - (BOOL)isEqual:(id)object
 {
-    if (self == object)
+    if (self === object)
         return YES;
 
-    if (object.isa != self.isa || [object expressionType] != [self expressionType] || ![[object leftExpression] isEqual:[self leftExpression]] || ![[object rightExpression] isEqual:[self rightExpression]])
+    if (object.isa !== self.isa || ![[object leftExpression] isEqual:_left] || ![[object rightExpression] isEqual:_right])
         return NO;
 
     return YES;
@@ -121,7 +121,7 @@ var CPLeftExpressionKey     = @"CPLeftExpression",
     CPRightExpressionKey    = @"CPRightExpression",
     CPExpressionType        = @"CPExpressionType";
 
-@implementation CPExpression_set (CPCoding)
+@implementation _CPSetExpression (CPCoding)
 
 - (id)initWithCoder:(CPCoder)coder
 {

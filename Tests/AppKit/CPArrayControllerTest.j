@@ -547,6 +547,18 @@
     [self assertTrue:[[arrayController arrangedObjects] count] > 0];
 }
 
+- (void)testArrangedObjectsWithPredicateFilteringAfterContentArrayBinding
+{
+    _contentArray = [self makeTestArray];
+
+    var arrayController = [[CPArrayController alloc] init];
+    [arrayController bind:@"contentArray" toObject:self withKeyPath:@"_contentArray" options:nil];
+    [arrayController setFilterPredicate:[CPPredicate predicateWithFormat:@"department.name BEGINSWITH 'Capp'"]];
+
+    var arrangedCount = [[arrayController arrangedObjects] count];
+    [self assertTrue:(arrangedCount == 2) message:@"Count should be 2 and is " + arrangedCount];
+}
+
 /**
     In a table with arranged contents like [1, 1, 2, 1], selecting the second '1' and removing it
     should result in [1, 2, 1] - not [2]. E.g. we don't use removeObject:1 but only remove the
