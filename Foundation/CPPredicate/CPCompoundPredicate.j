@@ -233,7 +233,7 @@ var CPCompoundPredicateType;
     if (self === anObject)
         return YES;
 
-    if (object.isa !== self.isa || _type !== [anObject compoundPredicateType] || ![_predicates isEqualToArray:[anObject subpredicates]])
+    if (anObject.isa !== self.isa || _type !== [anObject compoundPredicateType] || ![_predicates isEqualToArray:[anObject subpredicates]])
         return NO;
 
     return YES;

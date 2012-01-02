@@ -434,6 +434,10 @@
     pred1 = [CPPredicate predicateWithFormat:@"$x CONTAINS 'a'"];
     pred2 = [CPPredicate predicateWithFormat:@"$x CONTAINS 'a'"];
     [self assert:pred1 equals:pred2];
+
+    pred1 = [CPPredicate predicateWithFormat:@"a = 'a' AND b = 'b'"];
+    pred2 = [CPPredicate predicateWithFormat:@"a = 'a' AND b = 'b'"];
+    [self assert:pred1 equals:pred2];
 }
 
 - (void)testProxyArrayFiltering
