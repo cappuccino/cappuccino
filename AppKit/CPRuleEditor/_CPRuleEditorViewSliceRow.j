@@ -418,7 +418,7 @@ var CONTROL_HEIGHT = 16.,
 
 - (float)_rowButtonsRightHorizontalPadding
 {
-    return 10.;
+    return ([[_ruleEditor superview] isKindOfClass:[CPClipView class]]) ? 18. : 10.;
 }
 
 - (void)_setRowTypeToAddFromPlusButton:(int)type
