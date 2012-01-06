@@ -411,7 +411,7 @@
 var selectorCompare = function selectorCompare(object1, object2, selector)
 {
     return [object1 performSelector:selector withObject:object2];
-}
+};
 
 // sort using sort descriptors
 var compareObjectsUsingDescriptors= function compareObjectsUsingDescriptors(lhs, rhs, descriptors)
@@ -424,4 +424,4 @@ var compareObjectsUsingDescriptors= function compareObjectsUsingDescriptors(lhs,
         result = [descriptors[i++] compareObject:lhs withObject:rhs];
 
     return result;
-}
+};

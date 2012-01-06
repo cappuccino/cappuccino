@@ -683,7 +683,7 @@ NOT YET IMPLEMENTED
 */
 - (void)setRowHeight:(unsigned)aRowHeight
 {
-    aRowHeight = +aRowHeight;
+    aRowHeight = aRowHeight;
 
     if (_rowHeight === aRowHeight)
         return;
@@ -954,8 +954,8 @@ NOT YET IMPLEMENTED
 */
 - (void)_moveColumn:(unsigned)fromIndex toColumn:(unsigned)toIndex
 {
-    fromIndex = +fromIndex;
-    toIndex = +toIndex;
+    fromIndex = fromIndex;
+    toIndex = toIndex;
 
     if (fromIndex === toIndex)
         return;
@@ -1562,7 +1562,7 @@ NOT YET IMPLEMENTED
 */
 - (CGRect)rectOfColumn:(CPInteger)aColumnIndex
 {
-    aColumnIndex = +aColumnIndex;
+    aColumnIndex = aColumnIndex;
 
     if (aColumnIndex < 0 || aColumnIndex >= NUMBER_OF_COLUMNS())
         return _CGRectMakeZero();
@@ -4939,15 +4939,17 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
     isBlinking = YES;
 
-    var showCallback = function() {
+    var showCallback = function()
+    {
         objj_msgSend(self, "setHidden:", NO)
         isBlinking = NO;
-    }
+    };
 
-    var hideCallback = function() {
+    var hideCallback = function()
+    {
         objj_msgSend(self, "setHidden:", YES)
         isBlinking = YES;
-    }
+    };
 
     objj_msgSend(self, "setHidden:", YES);
     [CPTimer scheduledTimerWithTimeInterval:0.1 callback:showCallback repeats:NO];

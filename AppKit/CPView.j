@@ -2799,7 +2799,7 @@ var _CPViewFullScreenModeStateMake = function(aView)
     var superview = aView._superview;
 
     return { autoresizingMask:aView._autoresizingMask, frame:CGRectMakeCopy(aView._frame), index:(superview ? [superview._subviews indexOfObjectIdenticalTo:aView] : 0), superview:superview };
-}
+};
 
 var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
 {
@@ -2896,4 +2896,4 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
     }*/
 
     return transform;
-}
+};

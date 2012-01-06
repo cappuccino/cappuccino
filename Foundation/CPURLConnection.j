@@ -190,7 +190,7 @@ var CPURLConnectionDelegate = nil;
     {
         _HTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES);
 
-        _HTTPRequest.onreadystatechange = function() { [self _readyStateDidChange]; }
+        _HTTPRequest.onreadystatechange = function() { [self _readyStateDidChange]; };
 
         var fields = [_request allHTTPHeaderFields],
             key = nil,

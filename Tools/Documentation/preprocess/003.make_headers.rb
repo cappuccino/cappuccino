@@ -91,7 +91,6 @@ def writeAccessors(className, ivars, sourceFile, interfaceFile)
     return if accessorsMatches.length == 0
 
     accessorsSource = ""
-    accessorsInterface = ""
 
     # Create a CPSynthesizedAccessor category for the class with synthesized
     # accessor methods for each @accessors declaration.

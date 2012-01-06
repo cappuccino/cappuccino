@@ -666,7 +666,7 @@ var numberOfOnes = function(aNumber)
     cachedNumberOfOnes[slot] = count;
 
     return count;
-}
+};
 
 numberOfOnes.displayName = "numberOfOnes";
 

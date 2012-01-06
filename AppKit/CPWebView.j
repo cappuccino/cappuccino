@@ -199,7 +199,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
             _ignoreLoadEnd = NO;
 
         [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-    }
+    };
 
     if (_iframe.addEventListener)
         _iframe.addEventListener("load", _loadCallback, false);
@@ -830,7 +830,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 - (@action)reload:(id)sender
 {
     // If we're displaying pure HTML, redisplay it.
-    if(!_url && (_html !== nil))
+    if (!_url && (_html !== nil))
         [self loadHTMLString:_html];
     else
         [self _loadMainFrameURL];

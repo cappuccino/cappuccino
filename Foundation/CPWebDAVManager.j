@@ -50,7 +50,7 @@ var setURLResourceValuesForKeysFromProperties = function(aURL, keys, properties)
         [aURL setResourceValue:displayName forKey:CPURLNameKey];
         [aURL setResourceValue:displayName forKey:CPURLLocalizedNameKey];
     }
-}
+};
 
 CPWebDAVManagerCollectionResourceType       = 1;
 CPWebDAVManagerNonCollectionResourceType    = 0;
@@ -99,7 +99,7 @@ CPWebDAVManagerNonCollectionResourceType    = 0;
         }
 
         return contents;
-    }
+    };
 
     if (!aBlock)
         return makeContents(aURL, [self PROPFIND:aURL properties:properties depth:1 block:nil]);
@@ -190,7 +190,7 @@ var XMLDocumentFromString = function(anXMLString)
     }
 
     return new DOMParser().parseFromString(anXMLString,"text/xml");
-}
+};
 
 var parsePROPFINDResponse = function(anXMLString)
 {
@@ -233,9 +233,9 @@ var parsePROPFINDResponse = function(anXMLString)
     }
 
     return propertiesForURLs;
-}
+};
 
 var mapURLsAndProperties = function(/*CPDictionary*/ properties, /*CPURL*/ ignoredURL)
 {
 
-}
+};

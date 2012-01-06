@@ -1120,13 +1120,14 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         if (_dragHoverTimer)
             [_dragHoverTimer invalidate];
 
-        var autoExpandCallBack = function(){
+        var autoExpandCallBack = function()
+        {
             if (_dropItem)
             {
                 [_dropOperationFeedbackView blink];
                 [CPTimer scheduledTimerWithTimeInterval:.3 callback:objj_msgSend(self, "expandItem:", _dropItem) repeats:NO];
             }
-        }
+        };
 
         _dragHoverTimer = [CPTimer scheduledTimerWithTimeInterval:.8 callback:autoExpandCallBack repeats:NO];
     }
@@ -1467,7 +1468,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     // Check for the key events manually, as opposed to waiting for CPWindow to sent the actual action message
     // in _processKeyboardUIKey:, because we might not want to handle the arrow events.
 
-    if (character !== CPRightArrowFunctionKey && character !== CPLeftArrowFunctionKey) 
+    if (character !== CPRightArrowFunctionKey && character !== CPLeftArrowFunctionKey)
         return [super keyDown:anEvent];
 
     var rows = [self selectedRowIndexes],
@@ -1481,7 +1482,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     for (; i < c; i++)
         items.push([self itemAtRow:indexes[i]]);
-   
+
 
     if (character === CPRightArrowFunctionKey)
     {
@@ -1491,7 +1492,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     else if (character === CPLeftArrowFunctionKey)
     {
         for (var i = 0; i < c; i++)
-            [self collapseItem:items[i]]; 
+            [self collapseItem:items[i]];
     }
 
     [super keyDown:anEvent];
@@ -1535,7 +1536,7 @@ var _reloadItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anItem)
         itemInfo.isExpandable = [dataSource outlineView:anOutlineView isItemExpandable:newItem];
         itemInfo.isExpanded = itemInfo.isExpandable && itemInfo.isExpanded;
     }
-}
+};
 
 // FIX ME: We're using with() here because Safari fails if we use anOutlineView._itemInfosForItems or whatever...
 var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anItem,  /*BOOL*/ isIntermediate)
@@ -1640,7 +1641,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
         }
     }//end of with
     return descendants;
-}
+};
 
 @implementation _CPOutlineViewTableViewDataSource : CPObject
 {
@@ -1984,7 +1985,8 @@ var CPOutlineViewIndentationPerLevelKey = @"CPOutlineViewIndentationPerLevelKey"
 @end
 
 
-var colorForDisclosureTriangle = function(isSelected, isHighlighted) {
+var colorForDisclosureTriangle = function(isSelected, isHighlighted)
+{
     return isSelected
         ? (isHighlighted
             ? [CPColor colorWithCalibratedWhite:0.9 alpha: 1.0]
@@ -1992,4 +1994,4 @@ var colorForDisclosureTriangle = function(isSelected, isHighlighted) {
         : (isHighlighted
             ? [CPColor colorWithCalibratedWhite:0.4 alpha: 1.0]
             : [CPColor colorWithCalibratedWhite:0.5 alpha: 1.0]);
-}
+};
