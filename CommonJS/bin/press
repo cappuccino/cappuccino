@@ -371,8 +371,7 @@ function pngcrushDirectory(directory) {
     var pngs = directoryPath.glob("**/*.png");
 
     system.stderr.print("Running pngcrush on " + pngs.length + " pngs:");
-    pngs.forEach(function(dst) {
-        var dstPath = directoryPath.join(dst);
+    pngs.forEach(function(dstPath) {
         var tmpPath = FILE.path(dstPath+".tmp");
 
         var p = OS.popen(["pngcrush", "-rem", "alla", "-reduce", /*"-brute",*/ dstPath, tmpPath]);
