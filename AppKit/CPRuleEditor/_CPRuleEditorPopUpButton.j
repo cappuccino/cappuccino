@@ -40,24 +40,33 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
     CPInteger radius;
 }
 
+- (void)_sharedInit
+{
+    [self setBordered:NO];
+
+    var style = _DOMElement.style;
+    style.border = "1px solid " + BORDER_COLOR;
+    style[GRADIENT_PROPERTY] = GRADIENT_NORMAL;   
+}
+
 - (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
-    {
-        [self setTextColor:[CPColor colorWithWhite:101 / 255 alpha:1]];
-        [self setBordered:NO];
+        [self _sharedInit];
 
-        var style = _DOMElement.style;
-        style.border = "1px solid " + BORDER_COLOR;
-        style[GRADIENT_PROPERTY] = GRADIENT_NORMAL;
-     }
+    return self;
+}
 
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+    [self _sharedInit];
+    
     return self;
 }
 
 - (id)hitTest:(CPPoint)point
 {
-    var slice = [self superview];
     if (!CPRectContainsPoint([self frame], point) || ![self sliceIsEditable])
         return nil;
 
@@ -66,7 +75,8 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
 
 - (BOOL)sliceIsEditable
 {
-    return [[self superview] isEditable];
+    var superview = [self superview];
+    return ![superview isKindOfClass:[_CPRuleEditorViewSlice]] || [superview isEditable];
 }
 
 - (BOOL)trackMouse:(CPEvent)theEvent
@@ -126,23 +136,28 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
     CPInteger radius;
 }
 
+- (void)_sharedInit
+{
+    [self setBordered:NO];
+
+    var style = _DOMElement.style;
+    style.border = "1px solid " + BORDER_COLOR;
+    style[GRADIENT_PROPERTY] = GRADIENT_NORMAL;
+}
+
 - (id)initWithFrame:(CGRect)aFrame
 {
-    self = [super initWithFrame:aFrame];
-    if (self)
-    {
-        [self setFont:[CPFont boldFontWithName:@"Apple Symbol" size:12.0]];
-        [self setTextColor:[CPColor colorWithWhite:150/255 alpha:1]];
-        [self setAlignment:CPCenterTextAlignment];
-        [self setAutoresizingMask:CPViewMinXMargin];
-        [self setImagePosition:CPImageOnly];
-        [self setBordered:NO];
+    if (self = [super initWithFrame:aFrame])
+        [self _sharedInit];
 
-        var style = _DOMElement.style;
-        style.border = "1px solid " + BORDER_COLOR;
-        style[GRADIENT_PROPERTY] = GRADIENT_NORMAL;
-    }
+    return self;
+}
 
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+    [self _sharedInit];
+    
     return self;
 }
 

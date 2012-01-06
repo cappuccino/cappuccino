@@ -54,26 +54,36 @@ var CONTROL_HEIGHT = 16.,
     [center addObserver:self selector:@selector(_textDidChange:) name:CPControlTextDidChangeNotification object:nil];
 }
 
-- (CPButton)_createAddRowButton
+- (CPButton)_createRowButton
 {
     var button = [[_CPRuleEditorButton alloc] initWithFrame:CGRectMakeZero()];
-    [button setImage:[_ruleEditor _addImage]];
+    [button setFont:[CPFont boldFontWithName:@"Apple Symbol" size:12.0]];
+    [button setTextColor:[CPColor colorWithWhite:150/255 alpha:1]];
+    [button setAlignment:CPCenterTextAlignment];
+    [button setAutoresizingMask:CPViewMinXMargin];
+    [button setImagePosition:CPImageOnly];
+    
+    return button;
+}
 
+- (CPButton)_createAddRowButton
+{
+    var button = [self _createRowButton];
+    
+    [button setImage:[_ruleEditor _addImage]];
     [button setAction:@selector(_addOption:)];
     [button setTarget:self];
-    [button setAutoresizingMask:CPViewMinXMargin];
 
     return button;
 }
 
 - (CPButton)_createDeleteRowButton
 {
-    var button = [[_CPRuleEditorButton alloc] initWithFrame:CGRectMakeZero()];
-    [button setImage:[_ruleEditor _removeImage]];
+    var button = [self _createRowButton];
 
+    [button setImage:[_ruleEditor _removeImage]];
     [button setAction:@selector(_deleteOption:)];
     [button setTarget:self];
-    [button setAutoresizingMask:CPViewMinXMargin];
 
     return button;
 }
@@ -93,6 +103,7 @@ var CONTROL_HEIGHT = 16.,
         rect = CGRectMake(0, 0, (width - width % 40) + 80, CONTROL_HEIGHT);
 
     var popup = [[_CPRuleEditorPopUpButton alloc] initWithFrame:rect];
+    [popup setTextColor:[CPColor colorWithWhite:101 / 255 alpha:1]];
     [popup setValue:font forThemeAttribute:@"font"];
 
     var count = [itemsArray count];
