@@ -143,7 +143,7 @@ var _CPFontDetectFontAvailable = function(font)
         if (_CPFontDetectCompareFonts(_CPFontDetectReferenceFonts[i], font))
             return true;
     return false;
-}
+};
 
 var _CPFontDetectCache = {};
 
@@ -165,7 +165,7 @@ var _CPFontDetectCompareFonts = function(fontA, fontB)
         bHeight = _CPFontDetectSpan.offsetHeight;
 
     return (a.w != bWidth || a.h != bHeight);
-}
+};
 
 // Test the candidate fonts pairwise until we find two that are different. Otherwise return the first.
 var _CPFontDetectPickTwoDifferentFonts = function(candidates)
@@ -175,6 +175,6 @@ var _CPFontDetectPickTwoDifferentFonts = function(candidates)
             if (_CPFontDetectCompareFonts(candidates[i], candidates[j]))
                 return [candidates[i], candidates[j]];
     return [candidates[0]];
-}
+};
 
 [CPFontManager setFontManagerFactory:[CPFontManager class]];

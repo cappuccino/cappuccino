@@ -968,7 +968,7 @@ function(newValue)\
 var CPRaiseParseError = function CPRaiseParseError(aScanner, target)
 {
     [CPException raise:CPInvalidArgumentException reason:@"unable to parse " + target + " at index " + [aScanner scanLocation]];
-}
+};
 
 @import "CPCompoundPredicate.j"
 @import "CPComparisonPredicate.j"

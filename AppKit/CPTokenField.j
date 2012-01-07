@@ -660,7 +660,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
             CPTokenFieldInputDidBlur = YES;
 
             return true;
-        }
+        };
 
         CPTokenFieldKeyDownFunction = function(aDOMEvent)
         {
@@ -814,7 +814,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
             }
 
             return true;
-        }
+        };
 
         CPTokenFieldKeyPressFunction = function(aDOMEvent)
         {
@@ -844,7 +844,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
             // Force immediate layout in case word wrapping is now necessary.
             [owner setNeedsLayout];
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-        }
+        };
 
         CPTokenFieldKeyUpFunction = function()
         {
@@ -857,14 +857,14 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
             [self setNeedsLayout];
 
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-        }
+        };
 
         CPTokenFieldHandleBlur = function(anEvent)
         {
             CPTokenFieldInputOwner = nil;
 
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-        }
+        };
 
         if (document.attachEvent)
         {
@@ -1026,7 +1026,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
         offset.x += width + spaceBetweenTokens.width;
 
         return r;
-    }
+    };
 
     var placeEditor = function(useRemainingWidth)
     {
@@ -1053,7 +1053,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
         // When editing, always scroll to the cursor.
         if (_selectedRange.length == 0)
             [[_tokenScrollView documentView] scrollRectToVisible:inputFrame];
-    }
+    };
 
     for (var i = 0, count = [tokens count]; i < count; i++)
     {

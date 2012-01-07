@@ -21,15 +21,15 @@ ObjectiveJRuntimeAnalyzer = function(rootPath)
     _OBJJ.Executable.prototype.path = function() {
         var url = this.URL();
         return url ? url.absoluteURL().path() : null;
-    }
+    };
     _OBJJ.FileDependency.prototype.path = function() {
         var url = this.URL();
         return url ? url.path() : null;
-    }
+    };
     this.context.global.CFBundle.prototype.executablePath = function() {
         var url = this.executableURL();
         return url ? url.absoluteURL().path() : null;
-    }
+    };
 
     this.require("cappuccino/objj-flatten-additions");
 
@@ -42,16 +42,16 @@ ObjectiveJRuntimeAnalyzer = function(rootPath)
         var path = new CFURL(aURL, this.rootURL).absoluteURL().path();
         requestedURLs[path] = true;
         return _lookupCachedRequest.apply(null, arguments);
-    }
-}
+    };
+};
 
 ObjectiveJRuntimeAnalyzer.prototype.setIncludePaths = function(includePaths) {
     this.context.global.OBJJ_INCLUDE_PATHS = includePaths;
-}
+};
 
 ObjectiveJRuntimeAnalyzer.prototype.setEnvironments = function(environments) {
     this.context.global.CFBundle.environments = function() { return environments; };
-}
+};
 
 ObjectiveJRuntimeAnalyzer.prototype.makeAbsoluteURL = function(/*CFURL|String*/ aURL)
 {
@@ -59,7 +59,7 @@ ObjectiveJRuntimeAnalyzer.prototype.makeAbsoluteURL = function(/*CFURL|String*/ 
         return aURL;
 
     return new this.context.global.CFURL(aURL, this.mainBundleURL);
-}
+};
 
 ObjectiveJRuntimeAnalyzer.prototype.initializeGlobalRecorder = function()
 {
@@ -103,7 +103,8 @@ ObjectiveJRuntimeAnalyzer.prototype.initializeGlobalRecorder = function()
 
     var _OBJJ = this.require("objective-j");
     var _fileExecuterForURL = _OBJJ.Executable.fileExecuterForURL;
-    _OBJJ.Executable.fileExecuterForURL = function(/*CFURL*/ referenceURL) {
+    _OBJJ.Executable.fileExecuterForURL = function(/*CFURL*/ referenceURL)
+    {
         referenceURL = self.makeAbsoluteURL(referenceURL);
         var referencePath = referenceURL.absoluteURL().path()
         var fileExecutor = _fileExecuterForURL.apply(this, arguments);
@@ -130,8 +131,8 @@ ObjectiveJRuntimeAnalyzer.prototype.initializeGlobalRecorder = function()
 
             currentFile = evaluatingPaths.pop();
         };
-    }
-}
+    };
+};
 
 ObjectiveJRuntimeAnalyzer.prototype.load = function(path)
 {
@@ -142,13 +143,13 @@ ObjectiveJRuntimeAnalyzer.prototype.load = function(path)
             });
         })+")"
     )(path);
-}
+};
 
 ObjectiveJRuntimeAnalyzer.prototype.finishLoading = function(path)
 {
     // run the "event loop"
     this.require('browser/timeout').serviceTimeouts();
-}
+};
 
 ObjectiveJRuntimeAnalyzer.prototype.mapGlobalsToFiles = function()
 {
@@ -164,7 +165,7 @@ ObjectiveJRuntimeAnalyzer.prototype.mapGlobalsToFiles = function()
             (globals[globalName] = globals[globalName] || []).push(fileName);
     }
     return globals;
-}
+};
 
 ObjectiveJRuntimeAnalyzer.prototype.mapFilesToGlobals = function()
 {
@@ -177,7 +178,7 @@ ObjectiveJRuntimeAnalyzer.prototype.mapFilesToGlobals = function()
             files[fileName][globalName] = true;
     }
     return files;
-}
+};
 
 // this method resolves library imports and merges their recorded globals with the canonical
 // file object for each file
@@ -197,7 +198,7 @@ ObjectiveJRuntimeAnalyzer.prototype.mergeLibraryImports = function()
             delete this.files[relativePath];
         }
     }
-}
+};
 
 // returns an executable for the import path, or null if none exists
 ObjectiveJRuntimeAnalyzer.prototype.executableForImport = function(path, isLocal)
@@ -213,7 +214,7 @@ ObjectiveJRuntimeAnalyzer.prototype.executableForImport = function(path, isLocal
     });
 
     return fileExecutable;
-}
+};
 
 /*
     param context includes
@@ -313,7 +314,7 @@ ObjectiveJRuntimeAnalyzer.prototype.traverseDependencies = function(executable, 
     context.referencedFiles[path] = referencedFiles;
 
     return context;
-}
+};
 
 ObjectiveJRuntimeAnalyzer.prototype.checkImported = function(context, path, importedFiles) {
     for (var importedFile in importedFiles)
@@ -330,7 +331,7 @@ ObjectiveJRuntimeAnalyzer.prototype.checkImported = function(context, path, impo
                 CPLog.error("Missing imported file: " + importedFile);
         }
     }
-}
+};
 
 ObjectiveJRuntimeAnalyzer.prototype.checkReferenced = function(context, path, referencedFiles) {
     for (var referencedFile in referencedFiles)
@@ -347,16 +348,17 @@ ObjectiveJRuntimeAnalyzer.prototype.checkReferenced = function(context, path, re
                 CPLog.error("Missing referenced file: " + referencedFile);
         }
     }
-}
+};
 
 ObjectiveJRuntimeAnalyzer.prototype.fileExecutables = function() {
     var _OBJJ = this.require("objective-j");
     return _OBJJ.FileExecutablesForPaths;
-}
+};
 
 // returns a unique list of tokens for a piece of code.
 // ideally this should return identifiers only
-function uniqueTokens(code) {
+function uniqueTokens(code)
+{
     // FIXME: this breaks for indentifiers containing "$" since it's considered a distinct token by the lexer
     var lexer = new OBJJ.Lexer(code, null);
 
@@ -374,7 +376,8 @@ function uniqueTokens(code) {
         globalsToFiles (in):        map from tokens to files which define those tokens
         referencedFiles (out):      map of required files (to map of tokens defined in that file)
 */
-function markFilesReferencedByTokens(tokens, globalsToFiles, referencedFiles) {
+function markFilesReferencedByTokens(tokens, globalsToFiles, referencedFiles)
+{
     tokens.forEach(function(token) {
         if (globalsToFiles.hasOwnProperty(token))
         {
@@ -427,14 +430,14 @@ function addMockBrowserEnvironment(scope)
     if (!scope.Element)
         scope.Element = function() {
             this.style = {}
-        }
+        };
 
     if (!scope.document)
         scope.document = {
             createElement : function() {
                 return new scope.Element();
             }
-        }
+        };
 }
 
 // does a shallow copy of an object. if onlyList is true, it sets each property to "true" instead of the actual value

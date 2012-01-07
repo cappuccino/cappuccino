@@ -1568,7 +1568,7 @@ var _CPEventFromNativeMouseEvent = function(aNativeEvent, anEventType, aPoint, m
     aNativeEvent._eventNumber = anEventNumber;
     aNativeEvent._clickCount = aClickCount;
     aNativeEvent._pressure = aPressure;
-    if((anEventType == CPLeftMouseDragged) || (anEventType == CPRightMouseDragged) || (anEventType == CPMouseMoved))
+    if ((anEventType == CPLeftMouseDragged) || (anEventType == CPRightMouseDragged) || (anEventType == CPMouseMoved))
     {
         aNativeEvent._deltaX = aPoint.x - aMouseDragStart.x;
         aNativeEvent._deltaY = aPoint.y - aMouseDragStart.y;
@@ -1581,7 +1581,7 @@ var _CPEventFromNativeMouseEvent = function(aNativeEvent, anEventType, aPoint, m
 
 
     return aNativeEvent;
-}
+};
 
 var CLICK_SPACE_DELTA   = 5.0,
     CLICK_TIME_DELTA    = (typeof document != "undefined" && document.addEventListener) ? 350.0 : 1000.0;
@@ -1596,7 +1596,7 @@ var CPDOMEventGetClickCount = function(aComparisonEvent, aTimestamp, aLocation)
     return (aTimestamp - [aComparisonEvent timestamp] < CLICK_TIME_DELTA &&
         ABS(comparisonLocation.x - aLocation.x) < CLICK_SPACE_DELTA &&
         ABS(comparisonLocation.y - aLocation.y) < CLICK_SPACE_DELTA) ? [aComparisonEvent clickCount] + 1 : 1;
-}
+};
 
 var CPDOMEventStop = function(aDOMEvent, aPlatformWindow)
 {
@@ -1616,7 +1616,7 @@ var CPDOMEventStop = function(aDOMEvent, aPlatformWindow)
         aPlatformWindow._DOMFocusElement.focus();
         aPlatformWindow._DOMFocusElement.blur();
     }
-}
+};
 
 function CPWindowObjectList()
 {

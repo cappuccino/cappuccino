@@ -1166,12 +1166,12 @@ CPRunContinuesResponse  = -1002;
 var _CPModalSessionMake = function(aWindow, aStopCode)
 {
     return { _window:aWindow, _state:CPRunContinuesResponse , _previous:nil };
-}
+};
 
 var _CPEventListenerMake = function(anEventMask, aCallback)
 {
     return { _mask:anEventMask, _callback:aCallback };
-}
+};
 
 // Make this a global for use in CPPlatformWindow+DOM.j.
 _CPRunModalLoop = function(anEvent)
@@ -1183,7 +1183,7 @@ _CPRunModalLoop = function(anEvent)
 
     if (theWindow == modalSession._window || [theWindow worksWhenModal])
         [theWindow sendEvent:anEvent];
-}
+};
 
 /*!
     Starts the GUI and Cappuccino frameworks. This function should be

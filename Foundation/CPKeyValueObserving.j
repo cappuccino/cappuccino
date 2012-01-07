@@ -214,7 +214,7 @@ var _changeKindForSetMutationKind = function(mutationKind)
         case CPKeyValueIntersectSetMutation:    return CPKeyValueChangeRemoval;
         case CPKeyValueSetSetMutation:          return CPKeyValueChangeReplacement;
     }
-}
+};
 
 var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
     DependentKeysKey    = "$KVODEPENDENT",
@@ -1139,7 +1139,7 @@ var _CPKVOInfoMake = function _CPKVOInfoMake(anObserver, theOptions, aContext, a
         context: aContext,
         forwarder: aForwarder
     };
-}
+};
 
 @import "CPArray+KVO.j"
 @import "CPSet+KVO.j"

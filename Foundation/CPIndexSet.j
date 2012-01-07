@@ -890,7 +890,7 @@ var positionOfIndex = function(ranges, anIndex)
    }
 
    return CPNotFound;
-}
+};
 
 var assumedPositionOfIndex = function(ranges, anIndex)
 {
@@ -935,7 +935,7 @@ var assumedPositionOfIndex = function(ranges, anIndex)
     }
 
    return CPNotFound;
-}
+};
 
 /*
 new old method
