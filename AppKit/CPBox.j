@@ -75,7 +75,7 @@ CPBelowBottom = 6;
     var box = [[self alloc] initWithFrame:CGRectMakeZero()],
         enclosingView = [aView superview];
 
-	[box setAutoresizingMask:[aView autoresizingMask]];
+    [box setAutoresizingMask:[aView autoresizingMask]];
     [box setFrameFromContentFrame:[aView frame]];
 
     [enclosingView replaceSubview:aView with:box];

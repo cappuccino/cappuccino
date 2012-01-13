@@ -257,7 +257,7 @@ var _CPTimerBridgeTimer = function(codeOrFunction, aDelay, shouldRepeat, functio
     CPTimersForTimeoutIDs[timeoutID] = [CPTimer scheduledTimerWithTimeInterval:aDelay / 1000 callback:theFunction repeats:shouldRepeat];
 
     return timeoutID;
-}
+};
 
 // Avoid "TypeError: Result of expression 'window' [undefined] is not an object" when running unit tests.
 // We can't use a regular PLATFORM(DOM) check because that platform constant is not defined in Foundation.
@@ -266,7 +266,7 @@ if (typeof(window) !== 'undefined')
     window.setTimeout = function(codeOrFunction, aDelay)
     {
         return _CPTimerBridgeTimer(codeOrFunction, aDelay, NO, Array.prototype.slice.apply(arguments, [2]));
-    }
+    };
 
     window.clearTimeout = function(aTimeoutID)
     {
@@ -276,15 +276,15 @@ if (typeof(window) !== 'undefined')
             [timer invalidate];
 
         CPTimersForTimeoutIDs[aTimeoutID] = nil;
-    }
+    };
 
     window.setInterval = function(codeOrFunction, aDelay, functionArgs)
     {
         return _CPTimerBridgeTimer(codeOrFunction, aDelay, YES, Array.prototype.slice.apply(arguments, [2]));
-    }
+    };
 
     window.clearInterval = function(aTimeoutID)
     {
         window.clearTimeout(aTimeoutID);
-    }
+    };
 }

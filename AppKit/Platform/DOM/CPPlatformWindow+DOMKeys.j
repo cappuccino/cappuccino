@@ -229,4 +229,4 @@ CPKeyCodes.isCharacterKey = function(keyCode)
         default:
             return false;
     }
-}
+};

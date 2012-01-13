@@ -2673,7 +2673,7 @@ var allViews = function(aWindow)
         views = views.concat([views[index] subviews]);
 
     return views;
-}
+};
 
 var keyViewComparator = function(lhs, rhs, context)
 {
@@ -2704,7 +2704,7 @@ var keyViewComparator = function(lhs, rhs, context)
         return CPOrderedSame;
 
     return CPOrderedDescending;
-}
+};
 
 @implementation CPWindow (MenuBar)
 
@@ -2928,7 +2928,7 @@ var keyViewComparator = function(lhs, rhs, context)
 var interpolate = function(fromValue, toValue, progress)
 {
     return fromValue + (toValue - fromValue) * progress;
-}
+};
 
 /* @ignore */
 @implementation _CPWindowFrameAnimation : CPAnimation

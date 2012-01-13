@@ -426,7 +426,7 @@ var resolveMultipleValues = function resolveMultipleValues(/*CPString*/key, /*CP
     }
 
     return !operation;
-}
+};
 
 var invokeAction = function invokeAction(/*CPString*/targetKey, /*CPString*/argumentKey, /*CPDictionary*/bindings)
 {
@@ -463,7 +463,7 @@ var invokeAction = function invokeAction(/*CPString*/targetKey, /*CPString*/argu
     }
 
     [invocation invoke];
-}
+};
 
 // Keys in options dictionary
 
@@ -518,4 +518,4 @@ CPValueTransformerBindingOption                     = @"CPValueTransformer";
 CPIsControllerMarker = function(/*id*/anObject)
 {
     return anObject === CPMultipleValuesMarker || anObject === CPNoSelectionMarker || anObject === CPNotApplicableMarker || anObject === CPNullMarker;
-}
+};

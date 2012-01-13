@@ -541,4 +541,4 @@ var _CPKeyedUnarchiverDecodeObjectAtIndex = function(self, anIndex)
         object = [object JSObject];
 
     return object;
-}
+};

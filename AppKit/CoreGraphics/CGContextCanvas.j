@@ -358,7 +358,7 @@ if (CPFeatureIsCompatible(CPJavaScriptCanvasTransformFeature))
 CGContextConcatCTM = function(aContext, anAffineTransform)
 {
     aContext.transform(anAffineTransform.a, anAffineTransform.b, anAffineTransform.c, anAffineTransform.d, anAffineTransform.tx, anAffineTransform.ty);
-}
+};
 
 }
 else
@@ -428,7 +428,7 @@ CGContextConcatCTM = function(aContext, anAffineTransform)
         CGContextScaleCTM(aContext, sx, sy);
     if (a2 != 0.0)
         CGContextRotateCTM(aContext, a2);
-}
+};
 
 }
 

@@ -87,4 +87,4 @@ FILE.listPaths = function(aPath)
         paths[count] = FILE.join(aPath, paths[count]);
 
     return paths;
-}
+};

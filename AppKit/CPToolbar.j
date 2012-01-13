@@ -515,7 +515,7 @@ var TOOLBAR_TOP_MARGIN          = 5.0,
 var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 {
     return { index:anIndex, view:aView, label:aLabel, minWidth:aMinWidth };
-}
+};
 
 /* @ignore */
 @implementation _CPToolbarView : CPView
@@ -876,7 +876,7 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
         return CPOrderedAscending;
 
     return CPOrderedDescending;
-}
+};
 
 var TOP_MARGIN      = 5.0,
     LABEL_MARGIN    = 2.0;

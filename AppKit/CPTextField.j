@@ -202,14 +202,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             CPTextFieldInputDidBlur = YES;
 
             return true;
-        }
+        };
 
         CPTextFieldHandleBlur = function(anEvent)
         {
             CPTextFieldInputOwner = nil;
 
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-        }
+        };
 
         //FIXME make this not onblur
         CPTextFieldDOMInputElement.onblur = CPTextFieldBlurFunction;
@@ -1433,7 +1433,7 @@ var secureStringForString = function(aString)
         return "";
 
     return Array(aString.length + 1).join(CPSecureTextFieldCharacter);
-}
+};
 
 
 var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
