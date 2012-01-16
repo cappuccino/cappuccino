@@ -352,6 +352,7 @@ CPBelowBottom = 6;
             [_titleView setAutoresizingMask:CPViewMinYMargin];
             break;
     }
+
     [self sizeToFit];
     [self setNeedsDisplay:YES];
 }
@@ -360,6 +361,9 @@ CPBelowBottom = 6;
 {
     var contentFrame = [_contentView frame],
         offset = [self _titleHeightOffset];
+
+    if (!contentFrame)
+        return;
 
     [_contentView setAutoresizingMask:CPViewNotSizable];
     [self setFrameSize:CGSizeMake(contentFrame.size.width + _contentMargin.width * 2,
