@@ -9,10 +9,9 @@
 
 @import "CPSet.j"
 
-
 @implementation CPMutableSet : CPSet
 
-/*
+/*!
     Returns an initialized set with a given initial capacity.
     @param aCapacity, only present for compatability
 */
@@ -21,7 +20,7 @@
     return [self init];
 }
 
-/*
+/*!
     Creates and returns a set with a given initial capacity.
     @param aCapacity, only present for compatability
 */
@@ -30,7 +29,10 @@
     return [[self alloc] initWithCapacity:aCapacity];
 }
 
-- (void)filterUsingPredicate:(CPPredicate)aPredicate
+/*!
+    Returns a set filtered using a given predicate.
+    @prarm aPredicate a CPPredicate object used to filter the objects in the set.
+*/- (void)filterUsingPredicate:(CPPredicate)aPredicate
 {
     var object,
         objectEnumerator = [self objectEnumerator];
@@ -40,11 +42,19 @@
             [self removeObject:object];
 }
 
+/*!
+    Removes an object from the set.
+    @param anObject the object to remove from the set. If the object is not in the set, the method will not modify the set.
+*/
 - (void)removeObject:(id)anObject
 {
     _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
+/*!
+    Removes an array of objects from the set.
+    @param anArray an array of object to remove from the set.
+*/
 - (void)removeObjectsInArray:(CPArray)anArray
 {
     var index = 0,
@@ -54,6 +64,9 @@
         [self removeObject:[anArray objectAtIndex:index]];
 }
 
+/*!
+    Removes all the objects from the set.
+*/
 - (void)removeAllObjects
 {
     var object,
@@ -63,7 +76,7 @@
         [self removeObject:object];
 }
 
-/*
+/*!
     Adds to the receiver each object contained in a given array that is not already a member.
     @param array An array of objects to add to the receiver.
 */
@@ -75,7 +88,7 @@
         [self addObject:objects[count]];
 }
 
-/*
+/*!
     Adds to the receiver each object contained in another given set
     @param set The set of objects to add to the receiver.
 */
@@ -88,7 +101,7 @@
         [self addObject:object];
 }
 
-/*
+/*!
     Removes from the receiver each object contained in another given set that is present in the receiver.
     @param set The set of objects to remove from the receiver.
 */
@@ -101,7 +114,7 @@
         [self removeObject:object];
 }
 
-/*
+/*!
     Removes from the receiver each object that isn't a member of another given set.
     @param set The set with which to perform the intersection.
 */
@@ -121,7 +134,7 @@
         [self removeObject:objectsToRemove[count]];
 }
 
-/*
+/*!
     Empties the receiver, then adds to the receiver each object contained in another given set.
     @param set The set whose members replace the receiver's content.
 */

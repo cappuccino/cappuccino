@@ -29,6 +29,13 @@
 @import "CPNumber.j"
 @import "CPObject.j"
 
+/*!
+     @class CPMutableSet
+     @ingroup Foundation
+
+     CPSet is a data structure for storing an an unordered collection of unique objects.
+     Sets have O(1) insertion/lookup/deletion time complexity.
+*/
 
 @implementation CPSet : CPObject
 {
@@ -42,7 +49,7 @@
     return [super alloc];
 }
 
-/*
+/*!
     Creates and returns an empty set.
 */
 + (id)set
@@ -50,7 +57,7 @@
     return [[self alloc] init];
 }
 
-/*
+/*!
     Creates and returns a set containing a uniqued collection of those objects contained in a given array.
     @param anArray array containing the objects to add to the new set. If the same object appears more than once objects, it is added only once to the returned set.
 */
@@ -59,7 +66,7 @@
     return [[self alloc] initWithArray:anArray];
 }
 
-/*
+/*!
     Creates and returns a set that contains a single given object.
     @param anObject The object to add to the new set.
 */
@@ -68,7 +75,7 @@
     return [[self alloc] initWithObjects:anObject];
 }
 
-/*
+/*!
     Creates and returns a set containing a specified number of objects from a given array of objects.
     @param objects A array of objects to add to the new set. If the same object appears more than once objects, it is added only once to the returned set.
     @param count The number of objects from objects to add to the new set.
@@ -78,7 +85,7 @@
     return [[self alloc] initWithObjects:objects count:count];
 }
 
-/*
+/*!
     Creates and returns a set containing the objects in a given argument list.
     @param anObject The first object to add to the new set.
     @param ... A comma-separated list of objects, ending with nil, to add to the new set. If the same object appears more than once objects, it is added only once to the returned set.
@@ -93,7 +100,7 @@
     return objj_msgSend.apply(this, argumentsArray);
 }
 
-/*
+/*!
     Creates and returns a set containing the objects from another set.
     @param aSet A set containing the objects to add to the new set.
 */
@@ -102,30 +109,42 @@
     return [[self alloc] initWithSet:set];
 }
 
+/*!
+    Creates and returns a set by adding anObject.
+    @param anObject to add to the new set.
+*/
 - (id)setByAddingObject:(id)anObject
 {
     return [[self class] setWithArray:[[self allObjects] arrayByAddingObject:anObject]];
 }
 
+/*!
+    Creates and returns a set by adding the objects from another set.
+    @param aSet to add objects to add to the new set.
+*/
 - (id)setByAddingObjectsFromSet:(CPSet)aSet
 {
     return [self setByAddingObjectsFromArray:[aSet allObjects]];
 }
 
+/*!
+    Creates and returns a set by adding the objects from an array.
+    @param anArray with objects to add to a new set.
+*/
 - (id)setByAddingObjectsFromArray:(CPArray)anArray
 {
     return [[self class] setWithArray:[[self allObjects] arrayByAddingObjectsFromArray:anArray]];
 }
 
-/*
-    Basic initializer, returns an empty set
+/*!
+    Basic initializer, returns an empty set.
 */
 - (id)init
 {
     return [self initWithObjects:nil count:0];
 }
 
-/*
+/*!
     Initializes a newly allocated set with the objects that are contained in a given array.
     @param array An array of objects to add to the new set. If the same object appears more than once in array, it is represented only once in the returned set.
 */
@@ -134,7 +153,7 @@
     return [self initWithObjects:anArray count:[anArray count]];
 }
 
-/*
+/*!
     Initializes a newly allocated set with members taken from the specified list of objects.
     @param anObject The first object to add to the new set.
     @param ... A comma-separated list of objects, ending with nil, to add to the new set. If the same object appears more than once in the list, it is represented only once in the returned set.
@@ -151,6 +170,11 @@
     return [self initWithObjects:Array.prototype.slice.call(arguments, 2, index) count:index - 2];
 }
 
+/*!
+    Creates and returns a set containing the objects from an array.
+    @param anArray An array containing the objects to add to the new set.
+    @param aCount the number of objects in anArray. 
+*/
 - (id)initWithObjects:(CPArray)objects count:(CPUInteger)aCount
 {
     if (self === _CPSharedPlaceholderSet)
@@ -159,16 +183,19 @@
     return [super init];
 }
 
-/*
+/*!
     Initializes a newly allocated set and adds to it objects from another given set.
+    @param aSet a set containing objects to add to the new set.
 */
 - (id)initWithSet:(CPSet)aSet
 {
     return [self initWithArray:[aSet allObjects]];
 }
 
-/*
+/*!
     Initializes a newly allocated set and adds to it members of another given set. Only included for compatability.
+    @param aSet a set of objects to add to the new set.
+    @param shouldCopyItems a boolean value. If YES the objects would be copied, if NO the objects will not be copied.
 */
 - (id)initWithSet:(CPSet)aSet copyItems:(BOOL)shouldCopyItems
 {
@@ -178,7 +205,7 @@
     return [self initWithSet:aSet];
 }
 
-/*
+/*!
     Returns the number of members in the receiver.
 */
 - (CPUInteger)count
@@ -186,7 +213,7 @@
     _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
-/*
+/*!
     Returns an array containing the receiver’s members, or an empty array if the receiver has no members.
 */
 - (CPArray)allObjects
@@ -201,7 +228,7 @@
     return objects;
 }
 
-/*
+/*!
     Returns one of the objects in the receiver, or nil if the receiver contains no objects.
 */
 - (id)anyObject
@@ -209,7 +236,7 @@
     return [[self objectEnumerator] nextObject];
 }
 
-/*
+/*!
     Returns a Boolean value that indicates whether a given object is present in the receiver.
     @param anObject The object for which to test membership of the receiver.
 */
@@ -218,7 +245,11 @@
     return [self member:anObject] !== nil;
 }
 
-- (void)filteredSetUsingPredicate:(CPPredicate)aPredicate
+/*!
+    Returns a set filtered using a given predicate.
+    @prarm aPredicate a CPPredicate object used to filter the objects in the set.
+*/
+- (CPSet)filteredSetUsingPredicate:(CPPredicate)aPredicate
 {
     var objects = [],
         object,
@@ -231,7 +262,7 @@
     return [[[self class] alloc] initWithArray:objects];
 }
 
-/*
+/*!
     Sends to each object in the receiver a message specified by a given selector.
     @param aSelector A selector that specifies the message to send to the members of the receiver. The method must not take any arguments. It should not have the side effect of modifying the receiver. This value must not be NULL.
 */
@@ -240,7 +271,7 @@
     [self makeObjectsPerformSelector:aSelector withObjects:nil];
 }
 
-/*
+/*!
     Sends to each object in the receiver a message specified by a given selector.
     @param aSelector A selector that specifies the message to send to the receiver's members. The method must take a single argument of type id. The method should not, as a side effect, modify the receiver. The value must not be NULL.
     @param anObject The object to pass as an argument to the method specified by aSelector.
@@ -250,7 +281,7 @@
     [self makeObjectsPerformSelector:aSelector withObjects:[anObject]];
 }
 
-/*
+/*!
     Sends to each object in the receiver a message specified by a given selector.
     @param aSelector A selector that specifies the message to send to the receiver's members. The method must take a single argument of type id. The method should not, as a side effect, modify the receiver. The value must not be NULL.
     @param objects The objects to pass as an argument to the method specified by aSelector.
@@ -268,7 +299,7 @@
     }
 }
 
-/*
+/*!
     Determines whether the receiver contains an object equal to a given object, and returns that object if it is present.
     @param anObject The object for which to test for membership of the receiver.
 */
@@ -277,11 +308,18 @@
     _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
+/*!
+    Returns an object enumerator (CPEnumerator) for the receiver.
+*/
 - (CPEnumerator)objectEnumerator
 {
     _CPRaiseInvalidAbstractInvocation(self, _cmd);
 }
 
+/*!
+    Enumberates over the objects in a set using a given function.
+    @param aFunction a callback for each itteration, should be of the format: function(anObject).
+*/
 - (void)enumerateObjectsUsingBlock:(Function)aFunction
 {
     var object,
@@ -306,7 +344,7 @@
     return [[[self class] alloc] initWithArray:objects];
 }
 
-/*
+/*!
     Returns a Boolean value that indicates whether every object in the receiver is also present in another given set.
     @param set The set with which to compare the receiver.
 */
@@ -322,7 +360,7 @@
     return YES;
 }
 
-/*
+/*!
     Returns a Boolean value that indicates whether at least one object in the receiver is also present in another given set.
     @param set The set with which to compare the receiver.
 */
@@ -342,7 +380,7 @@
     return NO;
 }
 
-/*
+/*!
     Compares the receiver to another set.
     @param set The set with which to compare the receiver.
 */
@@ -351,6 +389,10 @@
     return [self isEqual:aSet];
 }
 
+/*!
+    Returns YES if BOTH sets are a subset of the other.
+    @param aSet a set of objects
+*/
 - (BOOL)isEqual:(CPSet)aSet
 {
     // If both are subsets of each other, they are equal
