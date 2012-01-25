@@ -842,6 +842,24 @@ BundleTask.prototype.defineSourceTasks = function()
             var relativePath = aFilename.substring(basePathLength ? basePathLength + 1 : basePathLength),
                 compiledEnvironmentSource = FILE.join(sourcesPath, relativePath);
 
+            // if not top level, check for existence of jakefile
+            var pathdir = FILE.split(relativePath);
+            if (pathdir.length > 1) {
+                var jakefiles = ["jakefile", /*"Jakefile",*/ "jakefile.js", /*"Jakefile.js",*/ "jakefile.j", /*"Jakefile
+.j"*/];
+                var found = false;
+                for (var i=0; i < jakefiles.length; i++) {
+                    var templist = new Jake.FileList(pathdir[0]+"/"+pathdir[1]+"/**/"+jakefiles[i]);
+                    if (templist.length > 0) {
+                        TERM.stream.print("Ignoring [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)");
+                        found = true;
+                    }
+                }
+                if (found) {
+                    return;
+                }
+            }
+
             filedir (compiledEnvironmentSource, [aFilename], function()
             {
                 var compile
