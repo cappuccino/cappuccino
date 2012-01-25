@@ -95,7 +95,7 @@ CPButtonImageOffset   = 3.0;
 
     CPString            _title;
     CPString            _alternateTitle;
-    CPString			_displayTitle;
+    CPString            _displayTitle;
 
     CPInteger           _showsStateBy;
     CPInteger           _highlightsBy;
