@@ -497,33 +497,33 @@ CPButtonImageOffset   = 3.0;
 
 - (BOOL)startTrackingAt:(CGPoint)aPoint
 {
-	if (_highlightsBy !== CPToggleButton)
-	    [self highlight:YES];
+    if (_highlightsBy !== CPToggleButton)
+        [self highlight:YES];
     
     if (_highlightsBy === CPMomentaryChangeButton && [self alternateTitle])
-		_displayTitle = [self alternateTitle];
+	    _displayTitle = [self alternateTitle];
 
     return [super startTrackingAt:aPoint];
 }
 
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
-	[self invalidateTimers];
+    [self invalidateTimers];
 
     if (mouseIsUp && CGRectContainsPoint([self bounds], aPoint))
-    	[self setNextState];
+        [self setNextState];
 
     if (_highlightsBy === CPOnOffButton && [self state] !== CPOffState)
-    	mouseIsUp = false;
+        mouseIsUp = false;
 
     if (_highlightsBy === CPToggleButton)
-    	if ([self state] === CPOnState && [self alternateTitle])
-			_displayTitle = [self alternateTitle];
-		else
-			_displayTitle = [self title];
+        if ([self state] === CPOnState && [self alternateTitle])
+            _displayTitle = [self alternateTitle];
+        else
+            _displayTitle = [self title];
 	
-	if (_highlightsBy === CPMomentaryChangeButton)
-		_displayTitle = [self title];
+    if (_highlightsBy === CPMomentaryChangeButton)
+        _displayTitle = [self title];
 
     [super stopTracking:lastPoint at:aPoint mouseIsUp:mouseIsUp];
 }
@@ -659,7 +659,7 @@ CPButtonImageOffset   = 3.0;
 
     if ([self title] && _displayTitle === "")
     {
-    	_displayTitle = [self title];
+        _displayTitle = [self title];
     }
 
     if (contentView)
