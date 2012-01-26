@@ -472,6 +472,7 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
         [_tabs setFont:_font];
 
         _items = [aCoder decodeObjectForKey:CPTabViewItemsKey];
+        [_items makeObjectsPerformSelector:@selector(_setTabView:) withObject:self];
 
         [self _updateItems];
         [self _repositionTabs];
