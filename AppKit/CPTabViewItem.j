@@ -132,7 +132,13 @@ CPPressedTab    = 2;
 */
 - (void)setView:(CPView)aView
 {
+    if (_view == aView)
+        return;
+
     _view = aView;
+
+    if ([_tabView selectedTabViewItem] == self)
+        [_tabView _setContentViewForItem:self];
 }
 
 /*!
