@@ -431,8 +431,12 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 - (void)_setSelectedIndex:(CPNumber)index
 {
     _selectedIndex = index;
+    [self _setContentViewForItem:[_items objectAtIndex:_selectedIndex]];
+}
 
-    [_box setContentView:[[_items objectAtIndex:_selectedIndex] view]];
+- (void)_setContentViewForItem:(CPTabViewItem)anItem
+{
+    [_box setContentView:[anItem view]];    
 }
 
 - (void)_updateItems
