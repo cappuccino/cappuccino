@@ -40,23 +40,23 @@
 
     @par Delegate Methods
 
-    @delegate -(void)collectionViewDidChangeSelection:(CPCollectionView)collectionView;
+    @delegate - (void)collectionViewDidChangeSelection:(CPCollectionView)collectionView;
     Called when the selection in the collection view has changed.
     @param collectionView the collection view who's selection changed
 
-    @delegate -(void)collectionView:(CPCollectionView)collectionView didDoubleClickOnItemAtIndex:(int)index;
+    @delegate - (void)collectionView:(CPCollectionView)collectionView didDoubleClickOnItemAtIndex:(int)index;
     Called when the user double-clicks on an item in the collection view.
     @param collectionView the collection view that received the double-click
     @param index the index of the item that received the double-click
 
-    @delegate -(CPData)collectionView:(CPCollectionView)collectionView dataForItemsAtIndexes:(CPIndexSet)indices forType:(CPString)aType;
+    @delegate - (CPData)collectionView:(CPCollectionView)collectionView dataForItemsAtIndexes:(CPIndexSet)indices forType:(CPString)aType;
     Invoked to obtain data for a set of indices.
     @param collectionView the collection view to obtain data for
     @param indices the indices to return data for
     @param aType the data type
     @return a data object containing the index items
 
-    @delegate -(CPArray)collectionView:(CPCollectionView)collectionView dragTypesForItemsAtIndexes:(CPIndexSet)indices;
+    @delegate - (CPArray)collectionView:(CPCollectionView)collectionView dragTypesForItemsAtIndexes:(CPIndexSet)indices;
     Invoked to obtain the data types supported by the specified indices for placement on the pasteboard.
     @param collectionView the collection view the items reside in
     @param indices the indices to obtain drag types
