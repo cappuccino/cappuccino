@@ -26,20 +26,44 @@
 
 - (void)testSplitViewResize
 {
-    var dividerThickness = [splitView dividerThickness];
-
     [self assert:50 equals:[viewA frameSize].height];
-    [self assert:(50 - dividerThickness) equals:[viewB frameSize].height];
+    [self assert:49 equals:[viewB frameSize].height];
 
     [splitView setPosition:40 ofDividerAtIndex:0];
 
     [self assert:40 equals:[viewA frameSize].height];
-    [self assert:(60 - dividerThickness) equals:[viewB frameSize].height];
+    [self assert:59 equals:[viewB frameSize].height];
 
     [splitView setFrame:CGRectMake(0, 0, 200, 200)];
     // The extra size should be distributed proportionally to the original sizes of the subviews.
     [self assert:80 equals:[viewA frameSize].height];
-    [self assert:(120 - dividerThickness) equals:[viewB frameSize].height];
+    [self assert:119 equals:[viewB frameSize].height];
+
+    // It should work for shrinking as well.
+    [splitView setFrame:CGRectMake(0, 0, 200, 100)];
+    [self assert:40 equals:[viewA frameSize].height];
+    [self assert:59 equals:[viewB frameSize].height];
+
+    // And for multiple areas.
+    var viewC = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 200, 50)];
+    [splitView addSubview:viewC];
+    // Force an immediate adjustment of subview sizes.
+    [splitView viewWillDraw];
+    [self assert:26 equals:[viewA frameSize].height message:"adding viewC shrinks viewA"];
+    [self assert:39 equals:[viewB frameSize].height message:"adding viewC shrinks viewB"];
+    [self assert:33 equals:[viewC frameSize].height message:"new viewC is fit into remaining space"];
+
+    // Grow with 3 areas.
+    [splitView setFrame:CGRectMake(0, 0, 200, 200)];
+    [self assert:53 equals:[viewA frameSize].height];
+    [self assert:79 equals:[viewB frameSize].height];
+    [self assert:66 equals:[viewC frameSize].height];
+
+    // Shrink with 3 areas.
+    [splitView setFrame:CGRectMake(0, 0, 200, 100)];
+    [self assert:26 equals:[viewA frameSize].height];
+    [self assert:39 equals:[viewB frameSize].height];
+    [self assert:33 equals:[viewC frameSize].height];
 }
 
 - (void)testSplitView_shouldAdjustSizeOfSubview_
@@ -54,14 +78,33 @@
     [self assert:50 equals:[viewA frameSize].height];
     [self assert:(150 - dividerThickness) equals:[viewB frameSize].height];
 
+    // Should work just as well with three views.
     var viewC = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 200, 50)];
     [splitView addSubview:viewC];
-    [splitView setPosition:66 ofDividerAtIndex:0];
-    [splitView setPosition:(132 + dividerThickness) ofDividerAtIndex:1];
+    [splitView setPosition:50 ofDividerAtIndex:0];
+    [splitView setPosition:100 ofDividerAtIndex:1];
 
-    [self assert:66 equals:[viewA frameSize].height];
-    [self assert:66 equals:[viewB frameSize].height];
-    [self assert:66 equals:[viewC frameSize].height];
+    [self assert:50 equals:[viewA frameSize].height];
+    [self assert:49 equals:[viewB frameSize].height];
+    [self assert:99 equals:[viewC frameSize].height];
+
+    // Shrink
+    [splitView setFrame:CGRectMake(0, 0, 200, 100)];
+    [self assert:50 equals:[viewA frameSize].height];
+    [self assert:16 equals:[viewB frameSize].height];
+    [self assert:32 equals:[viewC frameSize].height];
+
+    // Crush fixed
+    [splitView setFrame:CGRectMake(0, 0, 200, 40)];
+    [self assert:38 equals:[viewA frameSize].height message:"fixed size area should be forced to fit"];
+    [self assert:0 equals:[viewB frameSize].height];
+    [self assert:0 equals:[viewC frameSize].height];
+
+    // Regrow
+    [splitView setFrame:CGRectMake(0, 0, 200, 100)];
+    [self assert:38 equals:[viewA frameSize].height];
+    [self assert:30 equals:[viewB frameSize].height];
+    [self assert:30 equals:[viewC frameSize].height];
 }
 
 - (void)testAutosave
