@@ -785,12 +785,16 @@ var CPSplitViewHorizontalImage = nil,
         nonSizableSpace = 0,
         lastSizableIndex = -1,
         totalSizablePanes = 0,
-        isVertical = [self isVertical];
+        isVertical = [self isVertical],
+        isSizableMap = {},
+        delegateRespondsToShouldAdjust = [_delegate respondsToSelector:@selector(splitView:shouldAdjustSizeOfSubview:)];
 
     for (index = 0; index < count; ++index)
     {
         var view = _subviews[index],
-            isSizable = isVertical ? [view autoresizingMask] & CPViewWidthSizable : [view autoresizingMask] & CPViewHeightSizable;
+            isSizable = !delegateRespondsToShouldAdjust || [_delegate splitView:self shouldAdjustSizeOfSubview:view];
+
+        isSizableMap[index] = isSizable;
 
         if (isSizable)
         {
@@ -812,7 +816,7 @@ var CPSplitViewHorizontalImage = nil,
     {
         var view = _subviews[index],
             viewFrame = CGRectMakeCopy(bounds),
-            isSizable = isVertical ? [view autoresizingMask] & CPViewWidthSizable : [view autoresizingMask] & CPViewHeightSizable;
+            isSizable = isSizableMap[index];
 
         if (index + 1 === count)
             viewFrame.size[_sizeComponent] = bounds.size[_sizeComponent] - viewFrame.origin[_originComponent];
@@ -832,7 +836,6 @@ var CPSplitViewHorizontalImage = nil,
         bounds.origin[_originComponent] += viewFrame.size[_sizeComponent] + dividerThickness;
 
         [view setFrame:viewFrame];
-
     }
 
     SPLIT_VIEW_MAYBE_POST_DID_RESIZE();

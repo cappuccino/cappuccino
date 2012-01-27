@@ -42,6 +42,28 @@
     [self assert:(120 - dividerThickness) equals:[viewB frameSize].height];
 }
 
+- (void)testSplitView_shouldAdjustSizeOfSubview_
+{
+    var dividerThickness = [splitView dividerThickness],
+        delegate = [CPSplitViewDontResizeTopView new];
+
+    [splitView setDelegate:delegate];
+    [splitView setFrame:CGRectMake(0, 0, 200, 200)];
+
+    // All the extra height should have gone to the bottom view.
+    [self assert:50 equals:[viewA frameSize].height];
+    [self assert:(150 - dividerThickness) equals:[viewB frameSize].height];
+
+    var viewC = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 200, 50)];
+    [splitView addSubview:viewC];
+    [splitView setPosition:66 ofDividerAtIndex:0];
+    [splitView setPosition:(132 + dividerThickness) ofDividerAtIndex:1];
+
+    [self assert:66 equals:[viewA frameSize].height];
+    [self assert:66 equals:[viewB frameSize].height];
+    [self assert:66 equals:[viewC frameSize].height];
+}
+
 - (void)testAutosave
 {
     // Verify that the split view does not attempt to auto save without an auto save name.
@@ -55,6 +77,17 @@
 
 @end
 
+@implementation CPSplitViewDontResizeTopView : CPObject
+{
+}
+
+- (BOOL)splitView:(CPSplitView)splitView shouldAdjustSizeOfSubview:(CPView)subview
+{
+    var subviews = [splitView subviews];
+    return (subview !== [subviews firstObject]);
+}
+
+@end
 /*!
     This store always fails.
 */
