@@ -1002,7 +1002,7 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 */
 - (void)_autosave
 {
-    if (!_shouldAutosave)
+    if (!_shouldAutosave || !autosaveName)
         return;
 
     var userDefaults = [CPUserDefaults standardUserDefaults],
@@ -1068,6 +1068,8 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 */
 - (CPString)_framesKeyForAutosaveName:(CPString)theAutosaveName
 {
+    if (!theAutosaveName)
+        return nil;
     return @"CPSplitView Subview Frames " + theAutosaveName;
 }
 
@@ -1076,6 +1078,8 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 */
 - (CPString)_precollapseKeyForAutosaveName:(CPString)theAutosaveName
 {
+    if (!theAutosaveName)
+        return nil;
     return @"CPSplitView Subview Precollapse Positions " + theAutosaveName;
 }
 
