@@ -12,6 +12,16 @@
 @implementation AppController : CPObject
 {
     CPWindow    theWindow; //this "outlet" is connected automatically by the Cib
+    @outlet     CPTabView nibTabView;
+}
+
+- (IBAction)changeView:(id)sender
+{
+    var item = [nibTabView selectedTabViewItem],
+        view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+
+    [view setBackgroundColor:[CPColor redColor]];
+    [item setView:view];
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification

@@ -278,7 +278,10 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 */
 - (CPTabViewItem)selectedTabViewItem
 {
-    return [_items objectAtIndex:_selectedIndex];
+    if (_selectedIndex != CPNotFound)
+        return [_items objectAtIndex:_selectedIndex];
+        
+    return nil;
 }
 
 // Modifying the font
@@ -428,8 +431,12 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 - (void)_setSelectedIndex:(CPNumber)index
 {
     _selectedIndex = index;
+    [self _setContentViewForItem:[_items objectAtIndex:_selectedIndex]];
+}
 
-    [_box setContentView:[[_items objectAtIndex:_selectedIndex] view]];
+- (void)_setContentViewForItem:(CPTabViewItem)anItem
+{
+    [_box setContentView:[anItem view]];    
 }
 
 - (void)_updateItems
@@ -469,16 +476,16 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
         [_tabs setFont:_font];
 
         _items = [aCoder decodeObjectForKey:CPTabViewItemsKey];
+        [_items makeObjectsPerformSelector:@selector(_setTabView:) withObject:self];
 
         [self _updateItems];
         [self _repositionTabs];
+        
+        [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
 
         var selected = [aCoder decodeObjectForKey:CPTabViewSelectedItemKey];
-
         if (selected)
             [self selectTabViewItem:selected];
-
-        [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
 
         [self setTabViewType:[aCoder decodeIntForKey:CPTabViewTypeKey]];
     }
@@ -491,7 +498,10 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
     [super encodeWithCoder:aCoder];
 
     [aCoder encodeObject:_items forKey:CPTabViewItemsKey];
-    [aCoder encodeObject:[self selectedTabViewItem] forKey:CPTabViewSelectedItemKey];
+    
+    var selected = [self selectedTabViewItem];
+    if (selected)
+        [aCoder encodeObject:selected forKey:CPTabViewSelectedItemKey];
 
     [aCoder encodeInt:_type forKey:CPTabViewTypeKey];
     [aCoder encodeObject:_font forKey:CPTabViewFontKey];
