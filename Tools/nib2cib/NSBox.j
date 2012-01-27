@@ -40,6 +40,9 @@
         _borderWidth   = [aCoder decodeFloatForKey:@"NSBorderWidth2"] || 1.0;
 
         _contentMargin = [aCoder decodeSizeForKey:@"NSOffsets"];
+
+        _title         = [[aCoder decodeObjectForKey:@"NSTitleCell"] objectValue] || @"";
+        _titlePosition = [aCoder decodeObjectForKey:@"NSTitlePosition"] || CPAtTop;
     }
 
     return self;

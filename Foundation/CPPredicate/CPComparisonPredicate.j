@@ -587,4 +587,4 @@ String.prototype.escapeForRegExp = function()
     }
 
     return result;
-}
+};

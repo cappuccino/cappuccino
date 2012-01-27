@@ -849,6 +849,6 @@ String.prototype.stripDiacritics = function()
     }
 
     return output;
-}
+};
 
 String.prototype.isa = CPString;

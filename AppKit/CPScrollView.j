@@ -63,7 +63,7 @@ var _isSystemUsingOverlayScrollers = function()
 #else
   return NO;
 #endif
-}
+};
 
 /*!
     @ingroup appkit

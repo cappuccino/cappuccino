@@ -281,7 +281,7 @@ function CPAppKitImage(aFilename, aSize)
                 [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
             }
             [self _derefFromImage];
-        }
+        };
 
     _image.onerror = function ()
         {
@@ -293,7 +293,7 @@ function CPAppKitImage(aFilename, aSize)
                 [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
             }
             [self _derefFromImage];
-        }
+        };
 
     _image.onabort = function ()
         {
@@ -305,7 +305,7 @@ function CPAppKitImage(aFilename, aSize)
                 [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
             }
             [self _derefFromImage];
-        }
+        };
 
     _image.src = _filename;
 

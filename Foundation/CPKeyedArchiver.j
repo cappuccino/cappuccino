@@ -597,4 +597,4 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
     }
 
     return [CPDictionary dictionaryWithObject:UID forKey:_CPKeyedArchiverUIDKey];
-}
+};

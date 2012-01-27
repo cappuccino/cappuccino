@@ -16,9 +16,9 @@ CPViewAnimationFadeOutEffect    = "CPViewAnimationFadeOutEffect";
 
 @implementation CPViewAnimationTransition : CPAnimation
 {
-	CPArray    _viewAnimations;
-	Function   endListener;
-	BOOL       _isAnimating;
+    CPArray    _viewAnimations;
+    Function   endListener;
+    BOOL       _isAnimating;
 }
 
 // INSTANCE METHODS
@@ -57,14 +57,14 @@ CPViewAnimationFadeOutEffect    = "CPViewAnimationFadeOutEffect";
     var count = [_viewAnimations count];
     for (var i = 0; i < count; i++)
     {
-    	var animation = [_viewAnimations objectAtIndex:i],
+        var animation = [_viewAnimations objectAtIndex:i],
             target = [animation objectForKey:CPViewAnimationTargetKey];
 
         [self _updateAnimationCurve:[self animationCurve] forView:target];
         [self _updateAnimationDuration:[self duration] forView:target];
     }
 
-	endListener = function(event){[self _animationDidEnd:_viewAnimations]};
+    endListener = function(event){[self _animationDidEnd:_viewAnimations]};
 }
 
 - (void)_updateTransitionPropertiesForView:(CPView)target
@@ -136,17 +136,17 @@ CPViewAnimationFadeOutEffect    = "CPViewAnimationFadeOutEffect";
 
         if (effect = [animation objectForKey:CPViewAnimationEffectKey])
         {
-        	var opacity;
-        	switch (effect)
-        	{
-        		case CPViewAnimationFadeInEffect:  opacity = 1;
-        		                                   break;
-        		case CPViewAnimationFadeOutEffect: opacity = 0;
-        		                                   break;
-        		default : opacity = 1;
-        	}
+            var opacity;
+            switch (effect)
+            {
+                case CPViewAnimationFadeInEffect:  opacity = 1;
+                                                   break;
+                case CPViewAnimationFadeOutEffect: opacity = 0;
+                                                   break;
+                default : opacity = 1;
+            }
 
-        	[target setAlphaValue:opacity];
+            [target setAlphaValue:opacity];
         }
 
         [target setFrame:endFrame];
@@ -208,7 +208,7 @@ CPViewAnimationFadeOutEffect    = "CPViewAnimationFadeOutEffect";
         this.counter = null;
         _isAnimating = NO;
 
-        while(count--)
+        while (count--)
         {
             var target = [viewAnimations[count] objectForKey:CPViewAnimationTargetKey];
             target._DOMElement.style.removeProperty("-webkit-transition");

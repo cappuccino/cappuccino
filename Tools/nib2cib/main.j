@@ -583,7 +583,7 @@ function readTheme(name, path)
 
     // By default when we try to load the bundle it will use the CommonJS environment,
     // but we want the Browser environment. So we override mostEligibleEnvironment().
-    themeBundle.mostEligibleEnvironment = function() { return "Browser"; }
+    themeBundle.mostEligibleEnvironment = function() { return "Browser"; };
     themeBundle.load();
 
     var keyedThemes = themeBundle.valueForInfoDictionaryKey("CPKeyedThemes");

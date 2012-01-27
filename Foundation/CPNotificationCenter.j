@@ -171,7 +171,7 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
 {
     [self._unnamedRegistry postNotification:aNotification];
     [[self._namedRegistries objectForKey:[aNotification name]] postNotification:aNotification];
-}
+};
 
 /*
     Mapping of Notification Name to listening object/selector.
