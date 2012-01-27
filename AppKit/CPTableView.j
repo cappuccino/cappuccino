@@ -683,7 +683,8 @@ NOT YET IMPLEMENTED
 */
 - (void)setRowHeight:(unsigned)aRowHeight
 {
-    aRowHeight = aRowHeight;
+    // Accept row heights such as "0".
+    aRowHeight = +aRowHeight;
 
     if (_rowHeight === aRowHeight)
         return;
@@ -954,8 +955,9 @@ NOT YET IMPLEMENTED
 */
 - (void)_moveColumn:(unsigned)fromIndex toColumn:(unsigned)toIndex
 {
-    fromIndex = fromIndex;
-    toIndex = toIndex;
+    // Convert parameters such as "0" to 0.
+    fromIndex = +fromIndex;
+    toIndex = +toIndex;
 
     if (fromIndex === toIndex)
         return;
@@ -1562,7 +1564,8 @@ NOT YET IMPLEMENTED
 */
 - (CGRect)rectOfColumn:(CPInteger)aColumnIndex
 {
-    aColumnIndex = aColumnIndex;
+    // Convert e.g. "0" to 0.
+    aColumnIndex = +aColumnIndex;
 
     if (aColumnIndex < 0 || aColumnIndex >= NUMBER_OF_COLUMNS())
         return _CGRectMakeZero();
