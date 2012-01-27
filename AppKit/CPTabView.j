@@ -280,7 +280,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 {
     if (_selectedIndex != CPNotFound)
         return [_items objectAtIndex:_selectedIndex];
-        
+
     return nil;
 }
 
@@ -436,7 +436,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 
 - (void)_setContentViewForItem:(CPTabViewItem)anItem
 {
-    [_box setContentView:[anItem view]];    
+    [_box setContentView:[anItem view]];
 }
 
 - (void)_updateItems
@@ -480,7 +480,7 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 
         [self _updateItems];
         [self _repositionTabs];
-        
+
         [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
 
         var selected = [aCoder decodeObjectForKey:CPTabViewSelectedItemKey];
@@ -498,7 +498,7 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
     [super encodeWithCoder:aCoder];
 
     [aCoder encodeObject:_items forKey:CPTabViewItemsKey];
-    
+
     var selected = [self selectedTabViewItem];
     if (selected)
         [aCoder encodeObject:selected forKey:CPTabViewSelectedItemKey];
