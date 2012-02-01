@@ -177,7 +177,7 @@ var _CPFonts                        = {},
 */
 + (CPFont)boldFontWithName:(CPString)aName size:(float)aSize italic:(BOOL)italic
 {
-    return _CPCachedFont(aName, aSize, NO, NO) || [[CPFont alloc] _initWithName:aName size:aSize bold:YES italic:italic];
+    return _CPCachedFont(aName, aSize, YES, italic) || [[CPFont alloc] _initWithName:aName size:aSize bold:YES italic:italic];
 }
 
 /*!
