@@ -201,10 +201,30 @@
     [arrayController setPreservesSelection:NO];
 
     [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(1, 2)]];
-    [arrayController removeObjects:[arrayController selectedObjects]]
+    [arrayController removeObjects:[arrayController selectedObjects]];
 
     [self assert:[CPIndexSet indexSet] equals:[arrayController selectionIndexes]
          message:@"selection should be empty if arraycontroller doesn't avoid empty selection"];
+}
+
+- (void)testRemoveObjectWithAvoidingEmptySelection
+{
+    var arrayController = [self arrayController];
+    [arrayController setAvoidsEmptySelection:YES];
+
+    [arrayController setSelectionIndex:2];
+    [arrayController removeObjectsAtArrangedObjectIndexes:[CPIndexSet indexSetWithIndex:2]];
+
+    [self assertTrue:([[arrayController selectionIndexes] count] > 0) message:@"Selection should not empty when arraycontroller avoids empty selection"];
+
+    [arrayController setContent:[self contentArray]];
+    [arrayController setSelectionIndex:2];
+    [arrayController removeObjects:[arrayController selectedObjects]];
+
+    [self assertTrue:([[arrayController selectionIndexes] count] > 0) message:@"Selection should not empty when arraycontroller avoids empty selection"];
+
+// This will fail, currently we select the first index instead of an adjacent index.
+//  [self assertTrue:([arrayController selectionIndex] == 1) message:@"The selected index should be 1, was " + [arrayController selectionIndex]];
 }
 
 - (void)testRemoveObjectsWithPreservesSelection_SimpleArray
@@ -285,6 +305,26 @@
     [arrayController setContent:newContent];
 
     [self assert:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)] equals:[arrayController selectionIndexes] message:@"last object cannot be selected"];
+}
+
+- (void)testSelectingEmptyIndexesExplicitlyWithAvoidsEmptySelection
+{
+    var arrayController = [self arrayController];
+    [arrayController setAvoidsEmptySelection:YES];
+
+    [arrayController setSelectionIndex:0];
+    [arrayController setSelectionIndexes:[CPIndexSet indexSet]];
+    [self assertTrue:([[arrayController selectionIndexes] count] == 0) message:@"Selection should be empty when unselecting explicitly, even with avoidsEmptySelection"];
+}
+
+- (void)testSelectingEmptyObjectsExplicitlyWithAvoidsEmptySelection
+{
+    var arrayController = [self arrayController];
+    [arrayController setAvoidsEmptySelection:YES];
+
+    [arrayController setSelectionIndex:0];
+    [arrayController setSelectedObjects:[CPArray array]];
+    [self assertTrue:([[arrayController selectionIndexes] count] == 0) message:@"Selection should be empty when unselecting explicitly, even with avoidsEmptySelection"];
 }
 
 - (void)testContentBinding
