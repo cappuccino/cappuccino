@@ -817,6 +817,8 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
     }
 
     [self reflectScrolledClipView:_contentView];
+    [documentHeaderView setNeedsLayout];
+    [documentHeaderView setNeedsDisplay:YES];
 }
 
 /* @ignore */
