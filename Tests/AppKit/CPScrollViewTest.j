@@ -176,11 +176,10 @@
 
 - (void)testSetContentView
 {
-    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)];
-    var documentView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 400.0)];
-
-    var replacementContentView = [[CPClipView alloc] initWithFrame:[scrollView _insetBounds]];
-    var replacementDocumentView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 400.0)];
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)],
+        documentView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 400.0)],
+        replacementContentView = [[CPClipView alloc] initWithFrame:[scrollView _insetBounds]],
+        replacementDocumentView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 400.0)];
 
     [replacementContentView setDocumentView:replacementDocumentView];
 
