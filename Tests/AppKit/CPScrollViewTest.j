@@ -4,6 +4,21 @@
 {
 }
 
+/*!
+    Test that scroll views don't generate bad layouts when very small.
+*/
+- (void)testZeroSize
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMakeZero()],
+        documentView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+    [scrollView setAutohidesScrollers:NO];
+    [scrollView setDocumentView:documentView];
+    [scrollView setScrollerStyle:CPScrollerStyleLegacy];
+    // If the layout operation leads to setKnobProportion:0/0 this will crash.
+    [[scrollView horizontalScroller] layoutSubviews];
+    [[scrollView verticalScroller] layoutSubviews];
+}
+
 - (void)testBothScrollersVisible
 {
     var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)];
@@ -200,3 +215,4 @@
 }
 
 @end
+
