@@ -142,7 +142,7 @@ var _CPFonts                        = {},
 */
 + (CPFont)fontWithName:(CPString)aName size:(float)aSize
 {
-    return _CPCachedFont(aName, aSize, NO, NO) || [[CPFont alloc] _initWithName:aName size:aSize bold:NO italic:NO];
+    return [CPFont fontWithName:aName size:aSize bold:NO italic:NO];
 }
 
 /*!
@@ -154,7 +154,7 @@ var _CPFonts                        = {},
 */
 + (CPFont)fontWithName:(CPString)aName size:(float)aSize italic:(BOOL)italic
 {
-    return _CPCachedFont(aName, aSize, NO, NO) || [[CPFont alloc] _initWithName:aName size:aSize bold:NO italic:italic];
+    return [CPFont fontWithName:aName size:aSize bold:NO italic:italic];
 }
 
 /*!
@@ -165,7 +165,7 @@ var _CPFonts                        = {},
 */
 + (CPFont)boldFontWithName:(CPString)aName size:(float)aSize
 {
-    return _CPCachedFont(aName, aSize, YES, NO) || [[CPFont alloc] _initWithName:aName size:aSize bold:YES italic:NO];
+    return [CPFont fontWithName:aName size:aSize bold:YES italic:NO];
 }
 
 /*!
@@ -177,7 +177,7 @@ var _CPFonts                        = {},
 */
 + (CPFont)boldFontWithName:(CPString)aName size:(float)aSize italic:(BOOL)italic
 {
-    return _CPCachedFont(aName, aSize, NO, NO) || [[CPFont alloc] _initWithName:aName size:aSize bold:YES italic:italic];
+    return [CPFont fontWithName:aName size:aSize bold:YES italic:italic];
 }
 
 /*!
@@ -187,7 +187,7 @@ var _CPFonts                        = {},
 */
 + (CPFont)systemFontOfSize:(CPSize)aSize
 {
-    return _CPCachedFont(_CPFontSystemFontFace, aSize, NO, NO) || [[CPFont alloc] _initWithName:_CPFontSystemFontFace size:aSize bold:NO italic:NO];
+    return [CPFont fontWithName:_CPFontSystemFontFace size:aSize bold:NO italic:NO];
 }
 
 /*!
@@ -197,15 +197,15 @@ var _CPFonts                        = {},
 */
 + (CPFont)boldSystemFontOfSize:(CPSize)aSize
 {
-    return _CPCachedFont(_CPFontSystemFontFace, aSize, YES, NO) || [[CPFont alloc] _initWithName:_CPFontSystemFontFace size:aSize bold:YES italic:NO];
+    return [CPFont fontWithName:_CPFontSystemFontFace size:aSize bold:YES italic:NO];
 }
 
 /*  FIXME Font Descriptor
     @ignore
 */
-- (id)_initWithName:(CPString)aName size:(float)aSize bold:(BOOL)isBold
++ (CPFont)fontWithName:(CPString)aName size:(float)aSize bold:(BOOL)bold italic:(BOOL)italic
 {
-    return [self _initWithName:aName size:aSize bold:isBold italic:NO];
+    return _CPCachedFont(aName, aSize, bold, italic) || [[CPFont alloc] _initWithName:aName size:aSize bold:bold italic:italic];
 }
 
 - (id)_initWithName:(CPString)aName size:(float)aSize bold:(BOOL)isBold italic:(BOOL)isItalic
