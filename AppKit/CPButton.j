@@ -657,7 +657,7 @@ CPButtonImageOffset   = 3.0;
                                              positioned:CPWindowAbove
                         relativeToEphemeralSubviewNamed:@"bezel-view"];
 
-    if ([self title] && _displayTitle === "")
+    if (( _highlightsBy == undefined && _displayTitle !== [self title]) || ([self title] && _displayTitle === ""))
     {
         _displayTitle = [self title];
     }
