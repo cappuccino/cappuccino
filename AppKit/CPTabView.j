@@ -67,7 +67,6 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     if (self = [super initWithFrame:aFrame])
     {
         _items = [CPArray array];
-        _selectedIndex = CPNotFound;
 
         [self _init];
         [self setTabViewType:CPTopTabsBezelBorder];
@@ -78,6 +77,8 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 
 - (void)_init
 {
+    _selectedIndex = CPNotFound;
+
     _tabs = [[CPSegmentedControl alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
     [_tabs setHitTests:NO];
 
