@@ -275,8 +275,6 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 */
 - (void)selectTabViewItemAtIndex:(unsigned)anIndex
 {
-    var aTabViewItem = [_items objectAtIndex:anIndex];
-
     if (anIndex === _selectedIndex)
         return;
 
