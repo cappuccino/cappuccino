@@ -61,6 +61,7 @@
 @import "NSSegmentedControl.j"
 @import "NSSlider.j"
 @import "NSSplitView.j"
+@import "NSStepper.j"
 @import "NSTableColumn.j"
 @import "NSTableHeaderView.j"
 @import "NSTableView.j"
