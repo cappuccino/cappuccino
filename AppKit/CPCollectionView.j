@@ -967,14 +967,15 @@ var CPCollectionViewMinItemSizeKey              = @"CPCollectionViewMinItemSizeK
 {
     [super awakeFromCib];
 
-    if (CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()) || CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
+    var prototypeView = [_itemPrototype view];
+    if (prototypeView && (CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()) || CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero())))
     {
         var item = _itemPrototype;
 
         if (CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()))
-            _minItemSize = [[item view] frameSize];
+            _minItemSize = [prototypeView frameSize];
         else if (CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
-            _maxItemSize = [[item view] frameSize];
+            _maxItemSize = [prototypeView frameSize];
     }
 }
 
