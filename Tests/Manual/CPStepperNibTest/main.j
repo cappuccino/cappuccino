@@ -1,9 +1,9 @@
 /*
  * AppController.j
- * TableCibTest
+ * CPStepperNibTest
  *
- * Created by Francisco Tolmasky on July 5, 2009.
- * Copyright 2009, 280 North, Inc. All rights reserved.
+ * Created by You on February 7, 2012.
+ * Copyright 2012, Your Company All rights reserved.
  */
 
 @import <Foundation/Foundation.j>

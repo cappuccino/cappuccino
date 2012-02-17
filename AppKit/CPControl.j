@@ -385,10 +385,7 @@ var CPControlBlackColor = [CPColor blackColor];
 
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
-	if ( mouseIsUp )
-		[self highlight:NO];
-	else
-		[self highlight:YES];
+    [self highlight:NO];
 }
 
 - (void)mouseDown:(CPEvent)anEvent
