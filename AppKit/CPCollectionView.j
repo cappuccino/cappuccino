@@ -340,6 +340,8 @@
 */
 - (void)setSelectionIndexes:(CPIndexSet)anIndexSet
 {
+    if (!anIndexSet)
+        anIndexSet = [CPIndexSet indexSet];
     if (!_isSelectable || [_selectionIndexes isEqual:anIndexSet])
         return;
 
