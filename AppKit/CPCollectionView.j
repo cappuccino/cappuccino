@@ -475,7 +475,7 @@
     }
 
     var superview = [self superview],
-        proposedHeight =  y + itemSize.height + _verticalMargin;
+        proposedHeight = y + itemSize.height + _verticalMargin;
 
     if ([superview isKindOfClass:[CPClipView class]])
     {
@@ -561,6 +561,8 @@
 */
 - (void)setMinItemSize:(CGSize)aSize
 {
+    if (aSize === nil || aSize === undefined)
+        [CPException raise:CPInvalidArgumentException reason:"Invalid value provided for minimum size"];
     if (CGSizeEqualToSize(_minItemSize, aSize))
         return;
 
