@@ -340,19 +340,19 @@
 */
 - (void)setSelectionIndexes:(CPIndexSet)anIndexSet
 {
-    if ([_selectionIndexes isEqual:anIndexSet] || !_isSelectable)
+    if (!_isSelectable || [_selectionIndexes isEqual:anIndexSet])
         return;
 
     var index = CPNotFound;
 
-    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound)
+    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) !== CPNotFound)
         [_items[index] setSelected:NO];
 
     _selectionIndexes = anIndexSet;
 
     var index = CPNotFound;
 
-    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound)
+    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) !== CPNotFound)
         [_items[index] setSelected:YES];
 
     var binderClass = [[self class] _binderClassForBinding:@"selectionIndexes"];
