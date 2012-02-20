@@ -96,7 +96,7 @@ var SharedMenuManager = nil;
 
     // Close Menu Event.
     if (type === CPAppKitDefined)
-        return [self completeTracking]
+        return [self completeTracking];
 
     [CPApp setTarget:self selector:@selector(trackEvent:) forNextEventMatchingMask:CPPeriodicMask | CPMouseMovedMask | CPLeftMouseDraggedMask | CPLeftMouseUpMask | CPAppKitDefinedMask untilDate:nil inMode:nil dequeue:YES];
 

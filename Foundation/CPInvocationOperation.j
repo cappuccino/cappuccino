@@ -19,32 +19,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <Foundation/CPObject.j>
-@import <Foundation/CPInvocation.j>
+@import "CPInvocation.j"
+@import "CPObject.j"
 @import "CPOperation.j"
 
 
-/*! 
+/*!
     @class CPInvocationOperation
     @brief Represents an operation using an invocation that can be run in an CPOperationQueue
 */
-@implementation CPInvocationOperation : CPOperation 
+@implementation CPInvocationOperation : CPOperation
 {
     CPInvocation _invocation;
 }
 
 
-- (void)main 
+- (void)main
 {
-    if (_invocation) 
+    if (_invocation)
     {
         [_invocation invoke];
     }
 }
 
-- (id)init 
+- (id)init
 {
-    if (self = [super init]) 
+    if (self = [super init])
     {
         _invocation = nil;
     }
@@ -55,13 +55,13 @@
     Returns a CPInvocationOperation object initialized with the specified invocation object.
     @param inv the invocation
 */
-- (id)initWithInvocation:(CPInvocation)inv 
+- (id)initWithInvocation:(CPInvocation)inv
 {
-    if (self = [self init]) 
+    if (self = [self init])
     {
         _invocation = inv;
     }
-    
+
     return self;
 }
 
@@ -71,20 +71,20 @@
     @param sel the selector that should be called on the target
     @param arg the arguments
 */
-- (id)initWithTarget:(id)target selector:(SEL)sel object:(id)arg 
+- (id)initWithTarget:(id)target selector:(SEL)sel object:(id)arg
 {
     var inv = [[CPInvocation alloc] initWithMethodSignature:nil];
     [inv setTarget:target];
     [inv setSelector:sel];
     [inv setArgument:arg atIndex:2];
-    
+
     return [self initWithInvocation:inv];
 }
 
 /*!
     Returns the receiver’s invocation object.
 */
-- (CPInvocation)invocation 
+- (CPInvocation)invocation
 {
     return _invocation;
 }
@@ -92,16 +92,14 @@
 /*!
     Returns the result of the invocation or method.
 */
-- (id)result 
+- (id)result
 {
-    if ([self isFinished] && _invocation) 
+    if ([self isFinished] && _invocation)
     {
         return [_invocation returnValue];
     }
-    
+
     return nil;
 }
-
-
 
 @end

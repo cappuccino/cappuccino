@@ -36,6 +36,8 @@
             _bounds.size.height = 23;
             _frame.size.height = 23;
         }
+        
+        _drawsColumnLines = YES;
     }
     
     return self;

@@ -39,9 +39,11 @@
 
     // Not having a selector is a fatal error.
     if (!selector)
+    {
         [CPException
             raise:CPInvalidArgumentException
            reason:@"-[" + [self className] + ' ' + _cmd + @"] selector "  + selectorName + @" does not exist."];
+    }
 
     // If the destination doesn't respond to this selector, warn but don't die.
     if (_destination && ![_destination respondsToSelector:selector])
@@ -58,7 +60,7 @@
     else
         [CPException
             raise:CPInvalidArgumentException
-           reason:@"-[" + [self className] + ' ' + _cmd + @"] " + [_source description] + " does not respond to setAction:"];
+           reason:@"-[" + [self className] + ' ' + _cmd + @"] " + [_source description] + @" does not respond to setAction:"];
 
     // Not being able to set the target is a fatal error.
     if ([_source respondsToSelector:@selector(setTarget:)])
@@ -67,10 +69,14 @@
     else
         [CPException
             raise:CPInvalidArgumentException
-           reason:@"-[" + [self className] + ' ' + _cmd + @"] " + [_source description] + " does not respond to setTarget:"];
+           reason:@"-[" + [self className] + ' ' + _cmd + @"] " + [_source description] + @" does not respond to setTarget:"];
 }
 
 @end
 
-@implementation _CPCibControlConnector : CPCibControlConnector { } @end
+@implementation _CPCibControlConnector : CPCibControlConnector
+{
+}
+
+@end
 

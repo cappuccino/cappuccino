@@ -67,7 +67,7 @@
 // FIXME: This should be moved to the runtime?
 - (void)forward:(SEL)aSelector :(marg_list)args
 {
-    [CPObject methodForSelector:_cmd](self, _cmd, aSelector, args);
+    return [CPObject methodForSelector:_cmd](self, _cmd, aSelector, args);
 }
 
 - (unsigned)hash
@@ -133,7 +133,7 @@
    return [invocation returnValue];
 }
 
--(BOOL)isMemberOfClass:(Class)aClass
+- (BOOL)isMemberOfClass:(Class)aClass
 {
     var signature = [self methodSignatureForSelector:_cmd],
         invocation = [CPInvocation invocationWithMethodSignature:signature];

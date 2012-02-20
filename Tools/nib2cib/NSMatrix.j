@@ -4,6 +4,11 @@
 
 @import "NSView.j"
 
+
+var NSMatrixRadioModeMask = 0x40000000,
+    NSMatrixDrawsBackgroundMask = 0x01000000;
+
+
 @implementation NSMatrix : CPObject
 {
 }
@@ -11,41 +16,37 @@
 - (id)initWithCoder:(CPCoder)aCoder
 {
     var view = [[CPView alloc] NS_initWithCoder:aCoder];
-    
-    [view setBackgroundColor:[aCoder decodeObjectForKey:@"NSBackgroundColor"]];
 
     var numberOfRows = [aCoder decodeIntForKey:@"NSNumRows"],
         numberOfColumns = [aCoder decodeIntForKey:@"NSNumCols"],
         cellSize = [aCoder decodeSizeForKey:@"NSCellSize"],
         intercellSpacing = [aCoder decodeSizeForKey:@"NSIntercellSpacing"],
-        cellBackgroundColor = [aCoder decodeObjectForKey:@"NSCellBackgroundColor"],
-        //cellClassName = [aCoder decodeObjectForKey:@"NSCellClass"];alert("6");
         flags = [aCoder decodeIntForKey:@"NSMatrixFlags"],
+        isRadioMode = flags & NSMatrixRadioModeMask,
+        drawsBackground = flags & NSMatrixDrawsBackgroundMask,
+        backgroundColor = [aCoder decodeObjectForKey:@"NSBackgroundColor"],
         cells = [aCoder decodeObjectForKey:@"NSCells"],
         selectedCell = [aCoder decodeObjectForKey:@"NSSelectedCell"];
 
-    if (/*(cellClassName === @"NSButtonCell") &&*/ (flags & 0x40000000))
+    if (isRadioMode)
     {
-        var radioGroup = [CPRadioGroup new];
+        var radioGroup = [CPRadioGroup new],
             frame = CGRectMake(0.0, 0.0, cellSize.width, cellSize.height);
-            rowIndex = 0;
 
-        for (; rowIndex < numberOfRows; ++rowIndex)
+        for (var rowIndex = 0; rowIndex < numberOfRows; ++rowIndex)
         {
-            var columnIndex = 0;
-
             frame.origin.x = 0;
 
-            for (; columnIndex < numberOfColumns; ++columnIndex)
+            for (var columnIndex = 0; columnIndex < numberOfColumns; ++columnIndex)
             {
                 var cell = cells[rowIndex * numberOfColumns + columnIndex],
                     cellView = [[CPRadio alloc] initWithFrame:frame radioGroup:radioGroup];
 
                 [cellView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
                 [cellView setTitle:[cell title]];
-                [cellView setBackgroundColor:cellBackgroundColor];
+                [cellView setBackgroundColor:[CPColor clearColor]];  // the IB default
                 [cellView setObjectValue:[cell objectValue]];
-                
+
                 [view addSubview:cellView];
 
                 NIB_CONNECTION_EQUIVALENCY_TABLE[[cell UID]] = cellView;
@@ -56,7 +57,10 @@
             frame.origin.y = CGRectGetMaxY(frame) + intercellSpacing.height;
         }
 
-        NIB_CONNECTION_EQUIVALENCY_TABLE[self] = view;
+        if (drawsBackground)
+            [view setBackgroundColor:backgroundColor];
+
+        NIB_CONNECTION_EQUIVALENCY_TABLE[[self UID]] = view;
     }
 
     return view;

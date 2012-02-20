@@ -28,7 +28,7 @@ var _CPFonts                = {},
 #define _CPCreateCSSString(aName, aSize, isBold) (isBold ? @"bold " : @"") + ROUND(aSize) + @"px " + ((aName === _CPFontSystemFontFace) ? aName : (@"\"" + aName.replace(_CPWrapRegExp, '", "') + @"\", " + _CPFontSystemFontFace))
 #define _CPCachedFont(aName, aSize, isBold) _CPFonts[_CPCreateCSSString(aName, aSize, isBold)]
 
-/*! 
+/*!
     @ingroup appkit
     @class CPFont
 
@@ -38,9 +38,20 @@ var _CPFonts                = {},
 {
     CPString    _name;
     float       _size;
+    float       _ascender;
+    float       _descender;
+    float       _lineHeight;
     BOOL        _isBold;
-    
+
     CPString    _cssString;
+}
+
++ (void)initialize
+{
+    var systemFont = [[CPBundle bundleForClass:[CPView class]] objectForInfoDictionaryKey:"CPSystemFontFace"];
+
+    if (systemFont)
+        _CPFontSystemFontFace = systemFont;
 }
 
 /*!
@@ -89,25 +100,64 @@ var _CPFonts                = {},
     @ignore
 */
 - (id)_initWithName:(CPString)aName size:(float)aSize bold:(BOOL)isBold
-{   
+{
     self = [super init];
-    
+
     if (self)
     {
         _name = aName;
         _size = aSize;
+        _ascender = 0;
+        _descender = 0;
+        _lineHeight = 0;
         _isBold = isBold;
-        
+
         _cssString = _CPCreateCSSString(_name, _size, _isBold);
-        
+
         _CPFonts[_cssString] = self;
     }
-    
+
     return self;
 }
 
 /*!
-    Returns the font size (in points)
+    Returns the distance of the longest ascender's top y-coordinate from the baseline (in CSS px)
+*/
+- (float)ascender
+{
+    if (!_ascender)
+        [self _getMetrics];
+
+    return _ascender;
+}
+
+/*!
+    Returns the bottom y coordinate (in CSS px), offset from the baseline, of the receiver's longest descender.
+    Thus, if the longest descender extends 2 points below the baseline, descender will return –2.
+*/
+- (float)descender
+{
+    if (!_descender)
+        [self _getMetrics];
+
+    return _descender;
+}
+
+/*!
+    Returns the default line height.
+
+    NOTE: This was moved from NSFont to NSLayoutManager in Cocoa, but since there is no CPLayoutManager, it has been kept here.
+*/
+- (float)defaultLineHeightForFont
+{
+    if (!_lineHeight)
+        [self _getMetrics];
+
+    return _lineHeight;
+}
+
+/*!
+    Returns the font size (in CSS px)
 */
 - (float)size
 {
@@ -138,6 +188,15 @@ var _CPFonts                = {},
 - (CPString)description
 {
     return [CPString stringWithFormat:@"%@ %@ %f pt.", [super description], [self familyName], [self size]];
+}
+
+- (void)_getMetrics
+{
+    var metrics = [CPString metricsOfFont:self];
+
+    _ascender = [metrics objectForKey:@"ascender"];
+    _descender = [metrics objectForKey:@"descender"];
+    _lineHeight = [metrics objectForKey:@"lineHeight"];
 }
 
 @end

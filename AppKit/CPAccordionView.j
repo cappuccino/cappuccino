@@ -30,7 +30,12 @@
 
 #import "CoreGraphics/CGGeometry.h"
 
-
+/*!
+  @ingroup appkit
+  @class CPAccordionViewItem
+  
+  <p>A CPAccordionViewItem represents a single section of a CPAccordionView.</p>
+*/  
 @implementation CPAccordionViewItem : CPObject
 {
     CPString    _identifier @accessors(property=identifier);
@@ -43,6 +48,10 @@
     return [self initWithIdentifier:@""];
 }
 
+/*!
+  Initializes a new CPAccordionViewItem with the specified identifier. This identifier may
+  then be used in subsequent methods to provide abstract introspection of the CPAccordionView.
+*/
 - (id)initWithIdentifier:(CPString)anIdentifier
 {
     self = [super init];
@@ -55,6 +64,25 @@
 
 @end
 
+/*!
+  @ingroup appkit
+  @class CPAccordionView
+  
+  <p>CPAccordionView provides a container for CPAccordionViewItem objects and manages layout state
+  for all sublayout items.</p>
+  
+  <strong>Example</strong><br />
+  <pre>
+var myAccordionView = [[CPAccordionView alloc] initWithFrame:CGRectMakeZero()];
+var firstItem = [[CPAccordionViewItem alloc] initWithIdentifier:@"firstSection"]];
+[firstItem setView:[[CPView alloc] initWithFrame:CGRectMakeZero()]];
+var secondItem = [[CPAccordionViewItem alloc] initWithIdentifier:@"secondSection"]];
+[secondItem setView:[[CPView alloc] initWithFrame:CGRectMakeZero()]];
+[myAccordionView addItem:firstItem];
+[myAccordionView addItem:secondItem];
+[myAccordionView setAutoresizingMask: CPViewWidthSizable | CPViewHeightSizable];
+  </pre>
+*/
 @implementation CPAccordionView : CPView
 {
     CPInteger       _dirtyItemIndex;
@@ -64,7 +92,10 @@
     CPMutableArray  _itemViews;
     CPIndexSet      _expandedItemIndexes;
 }
-
+/*!
+    Initializes the receiver for usage with the specified bounding rectangle
+    @return the initialized view
+*/
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
@@ -95,7 +126,11 @@
 {
     return _items;
 }
-
+/*!
+  Append a CPAccordionViewItem to the receiver. Note that the CPAccordionViewItem must contain
+  a valid CPView derived component or a TypeError will be generated when the contents of the
+  ViewItem are disclosed.
+*/
 - (void)addItem:(CPAccordionViewItem)anItem
 {
     [self insertItem:anItem atIndex:_items.length];

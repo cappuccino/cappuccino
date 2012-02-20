@@ -235,6 +235,11 @@ CFBundle.prototype.isLoading = function()
     return this._loadStatus & CFBundleLoading;
 }
 
+CFBundle.prototype.isLoaded = function()
+{
+    return this._loadStatus & CFBundleLoaded;
+}
+
 DISPLAY_NAME(CFBundle.prototype.isLoading);
 
 CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
@@ -339,7 +344,7 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
         if ((typeof CPApp === "undefined" || !CPApp || !CPApp._finishedLaunching) &&
              typeof OBJJ_PROGRESS_CALLBACK === "function" && CPApplicationSizeInBytes)
         {
-            OBJJ_PROGRESS_CALLBACK(MAX(MIN(1.0, CFTotalBytesLoaded / CPApplicationSizeInBytes), 0.0), CPApplicationSizeInBytes, aBundle.path())
+            OBJJ_PROGRESS_CALLBACK(MAX(MIN(1.0, CFTotalBytesLoaded / CPApplicationSizeInBytes), 0.0), CPApplicationSizeInBytes, aBundle.bundlePath())
         }
 
         if (aBundle._loadStatus === CFBundleLoading)
@@ -635,9 +640,9 @@ function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString, /*String*/ 
 
                 if (CFBundleSupportedSpriteType === CFBundleMHTMLUncachedSpriteType)
                 {
-                    var exclamationIndex = URLString.indexOf("!"),
-                        firstPart = URLString.substring(0, exclamationIndex),
-                        lastPart = URLString.substring(exclamationIndex);
+                    var exclamationIndex = mappedURLString.indexOf("!"),
+                        firstPart = mappedURLString.substring(0, exclamationIndex),
+                        lastPart = mappedURLString.substring(exclamationIndex);
 
                     mappedURLString = firstPart + "?" + CFCacheBuster + lastPart;
                 }

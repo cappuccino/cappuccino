@@ -43,7 +43,7 @@ CPOrderedSame           =  0;
 */
 CPOrderedDescending     =  1;
 
-/*! 
+/*!
     @class CPSortDescriptor
     @ingroup foundation
     @brief Holds attributes necessary to describe how to sort a set of objects.
@@ -85,20 +85,20 @@ CPOrderedDescending     =  1;
     Initializes the sort descriptor
     @param aKey the property key path to sort
     @param isAscending the sort order
-    @param aSelector this method gets called to compare objects. The method will take one argument 
+    @param aSelector this method gets called to compare objects. The method will take one argument
     (the object to compare against itself, and must return a CPComparisonResult.
 */
 - (id)initWithKey:(CPString)aKey ascending:(BOOL)isAscending selector:(SEL)aSelector
 {
     self = [super init];
-    
+
     if (self)
     {
         _key = aKey;
         _ascending = isAscending;
         _selector = aSelector;
     }
-    
+
     return self;
 }
 
@@ -146,6 +146,33 @@ CPOrderedDescending     =  1;
 - (id)reversedSortDescriptor
 {
     return [[[self class] alloc] initWithKey:_key ascending:!_ascending selector:_selector];
+}
+
+@end
+
+var CPSortDescriptorKeyKey          = @"CPSortDescriptorKeyKey", // Don't you just love naming schemes ;)
+    CPSortDescriptorAscendingKey    = @"CPSortDescriptorAscendingKey",
+    CPSortDescriptorSelectorKey     = @"CPSortDescriptorSelectorKey";
+
+@implementation CPSortDescriptor (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    if (self = [super init])
+    {
+        _key = [aCoder decodeObjectForKey:CPSortDescriptorKeyKey];
+        _ascending = [aCoder decodeBoolForKey:CPSortDescriptorAscendingKey];
+        _selector = CPSelectorFromString([aCoder decodeObjectForKey:CPSortDescriptorSelectorKey]);
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:_key forKey:CPSortDescriptorKeyKey];
+    [aCoder encodeBool:_ascending forKey:CPSortDescriptorAscendingKey];
+    [aCoder encodeObject:CPStringFromSelector(_selector) forKey:CPSortDescriptorSelectorKey];
 }
 
 @end

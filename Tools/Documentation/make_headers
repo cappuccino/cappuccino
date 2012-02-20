@@ -1,7 +1,5 @@
 #! /usr/bin/env ruby
 
-@outputFiles = []
-
 def makeHeaderFileFrom(fileName)
   # Grab the entire file (text)
   data = File.new(fileName).read
@@ -9,6 +7,7 @@ def makeHeaderFileFrom(fileName)
   # Extract out all the "implementation" lines.  Note, there may be
   # more than on in a given .j file.
   m = data.scan(/.*?(@implementation.*?\{.*?\})/m)
+
   if m.length > 0
     for i in 0...m.length
       line = m[i][0]
@@ -18,6 +17,7 @@ def makeHeaderFileFrom(fileName)
       
         # Extract the class name
         m2 = line.scan(/.*?@implementation(.*?):.*/m)
+
         if !m2.nil? && !m2[0].nil?
           className = m2[0][0].strip()
         
@@ -27,20 +27,14 @@ def makeHeaderFileFrom(fileName)
           f = File.new(newFileName, "w")
           f.write(newLine + "\n@end")
           f.close()
-          
-          @outputFiles.push(newFileName)
         end
       end
     end
   end
 end
 
+fileList = Dir['AppKit.doc/**/*.j'] + Dir['Foundation.doc/**/*.j']
 
-fileList = Dir['AppKit/**/*.j'] + Dir['Foundation/**/*.j']
 for fileName in fileList
   makeHeaderFileFrom(fileName)
-end
-
-for fileName in @outputFiles
-  File.delete(fileName)
 end

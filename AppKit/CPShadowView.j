@@ -35,12 +35,12 @@ CPHeavyShadow   = 1;
 
 var CPShadowViewLightBackgroundColor    = nil,
     CPShadowViewHeavyBackgroundColor    = nil;
-    
+
 var LIGHT_LEFT_INSET    = 3.0,
     LIGHT_RIGHT_INSET   = 3.0,
     LIGHT_TOP_INSET     = 3.0,
     LIGHT_BOTTOM_INSET  = 5.0,
-    
+
     HEAVY_LEFT_INSET    = 7.0,
     HEAVY_RIGHT_INSET   = 7.0,
     HEAVY_TOP_INSET     = 5.0,
@@ -61,51 +61,76 @@ var LIGHT_LEFT_INSET    = 3.0,
         return;
 
     var bundle = [CPBundle bundleForClass:[self class]];
-    
+
     CPShadowViewLightBackgroundColor = [CPColor colorWithPatternImage:[[CPNinePartImage alloc] initWithImageSlices:
         [
             [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPShadowView/CPShadowViewLightTopLeft.png"] size:CGSizeMake(9.0, 9.0)],
             [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPShadowView/CPShadowViewLightTop.png"] size:CGSizeMake(1.0, 9.0)],
             [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPShadowView/CPShadowViewLightTopRight.png"] size:CGSizeMake(9.0, 9.0)],
-            
+
             [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPShadowView/CPShadowViewLightLeft.png"] size:CGSizeMake(9.0, 1.0)],
             nil,
             [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPShadowView/CPShadowViewLightRight.png"] size:CGSizeMake(9.0, 1.0)],
-            
+
             [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPShadowView/CPShadowViewLightBottomLeft.png"] size:CGSizeMake(9.0, 9.0)],
             [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPShadowView/CPShadowViewLightBottom.png"] size:CGSizeMake(1.0, 9.0)],
             [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPShadowView/CPShadowViewLightBottomRight.png"] size:CGSizeMake(9.0, 9.0)]
         ]]];
-        
+
     CPShadowViewHeavyBackgroundColor = [CPColor colorWithPatternImage:[[CPNinePartImage alloc] initWithImageSlices:
         [
             [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPShadowView/CPShadowViewHeavyTopLeft.png"] size:CGSizeMake(17.0, 17.0)],
             [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPShadowView/CPShadowViewHeavyTop.png"] size:CGSizeMake(1.0, 17.0)],
             [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPShadowView/CPShadowViewHeavyTopRight.png"] size:CGSizeMake(17.0, 17.0)],
-            
+
             [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPShadowView/CPShadowViewHeavyLeft.png"] size:CGSizeMake(17.0, 1.0)],
             nil,
             [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPShadowView/CPShadowViewHeavyRight.png"] size:CGSizeMake(17.0, 1.0)],
-            
+
             [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPShadowView/CPShadowViewHeavyBottomLeft.png"] size:CGSizeMake(17.0, 17.0)],
             [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPShadowView/CPShadowViewHeavyBottom.png"] size:CGSizeMake(1.0, 17.0)],
             [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPShadowView/CPShadowViewHeavyBottomRight.png"] size:CGSizeMake(17.0, 17.0)]
         ]]];
 }
 
++ (id)shadowViewEnclosingView:(CPView)aView
+{
+    return [self shadowViewEnclosingView:aView withWeight:CPLightShadow];
+}
+
++ (id)shadowViewEnclosingView:(CPView)aView withWeight:(CPShadowWeight)aWeight
+{
+    var shadowView = [[CPShadowView alloc] initWithFrame:[aView frame]];
+    [shadowView setWeight:aWeight];
+
+    var size = [shadowView frame].size,
+        width = size.width - [shadowView leftInset] - [shadowView rightInset],
+        height = size.height - [shadowView topInset] - [shadowView bottomInset],
+        enclosingView = [aView superview];
+
+    [shadowView setHitTests:[aView hitTests]];
+    [shadowView setAutoresizingMask:[aView autoresizingMask]];
+    [aView removeFromSuperview];
+    [shadowView addSubview:aView];
+    [aView setFrame:CGRectMake([shadowView leftInset], [shadowView topInset], width, height)]
+    [enclosingView addSubview:shadowView];
+
+    return shadowView;
+}
+
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
-    
+
     if (self)
     {
         _weight = CPLightShadow;
-        
+
         [self setBackgroundColor:CPShadowViewLightBackgroundColor];
-        
+
         [self setHitTests:NO];
     }
-    
+
     return self;
 }
 
@@ -113,9 +138,9 @@ var LIGHT_LEFT_INSET    = 3.0,
 {
     if (_weight == aWeight)
         return;
-    
+
     _weight = aWeight;
-    
+
     if (_weight == CPLightShadow)
         [self setBackgroundColor:CPShadowViewLightBackgroundColor];
 
@@ -147,7 +172,7 @@ var LIGHT_LEFT_INSET    = 3.0,
 {
     if (_weight == CPLightShadow)
         return LIGHT_LEFT_INSET + LIGHT_RIGHT_INSET;
-    
+
     return HEAVY_LEFT_INSET + HEAVY_RIGHT_INSET;
 }
 
@@ -155,7 +180,7 @@ var LIGHT_LEFT_INSET    = 3.0,
 {
     if (_weight == CPLightShadow)
         return LIGHT_TOP_INSET + LIGHT_BOTTOM_INSET;
-    
+
     return HEAVY_TOP_INSET + HEAVY_BOTTOM_INSET;
 }
 

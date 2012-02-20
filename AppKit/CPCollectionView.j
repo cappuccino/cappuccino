@@ -312,8 +312,10 @@
     while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound)
         [_items[index] setSelected:YES];
 
+    [[CPKeyValueBinding getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectionIndexes"];
+
     if ([_delegate respondsToSelector:@selector(collectionViewDidChangeSelection:)])
-        [_delegate collectionViewDidChangeSelection:self]
+        [_delegate collectionViewDidChangeSelection:self];
 }
 
 /*!
@@ -591,8 +593,21 @@
         index = row * _numberOfColumns + column;
 
     if (index >= 0 && index < _items.length)
-        [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
+    {
+        if (_allowsMultipleSelection && ([anEvent modifierFlags] & CPCommandKeyMask || [anEvent modifierFlags] & CPShiftKeyMask))
+        {
+            var indexes = [_selectionIndexes copy];
 
+            if ([indexes containsIndex:index])
+                [indexes removeIndex:index];
+            else
+                [indexes addIndex:index];
+        }
+        else
+            indexes = [CPIndexSet indexSetWithIndex:index];
+
+        [self setSelectionIndexes:indexes];
+    }
     else if (_allowsEmptySelection)
         [self setSelectionIndexes:[CPIndexSet indexSet]];
 }
@@ -622,8 +637,6 @@
     var dragTypes = [_delegate collectionView:self dragTypesForItemsAtIndexes:_selectionIndexes];
 
     [[CPPasteboard pasteboardWithName:CPDragPboard] declareTypes:dragTypes owner:self];
-
-    var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
 
     if (!_itemForDragging)
         _itemForDragging = [self newItemForRepresentedObject:_content[[_selectionIndexes firstIndex]]];
@@ -727,6 +740,29 @@
 
 @implementation CPCollectionView (KeyboardInteraction)
 
+- (void)_modifySelectionWithNewIndex:(int)anIndex direction:(int)aDirection expand:(BOOL)shouldExpand
+{
+    anIndex = MIN(MAX(anIndex, 0), [[self items] count]-1);
+
+    if (_allowsMultipleSelection && shouldExpand)
+    {
+        var indexes = [_selectionIndexes copy],
+            bottomAnchor = [indexes firstIndex],
+            topAnchor = [indexes lastIndex];
+
+        // if the direction is backward (-1) check with the bottom anchor
+        if (aDirection === -1)
+            [indexes addIndexesInRange:CPMakeRange(anIndex, bottomAnchor - anIndex + 1)];
+        else
+            [indexes addIndexesInRange:CPMakeRange(topAnchor, anIndex -  topAnchor + 1)];
+    }
+    else
+        indexes = [CPIndexSet indexSetWithIndex:anIndex];
+
+    [self setSelectionIndexes:indexes];
+    [self _scrollToSelection];
+}
+
 - (void)_scrollToSelection
 {
     var frame = [self frameForItemsAtIndexes:[self selectionIndexes]];
@@ -741,26 +777,36 @@
     if (index === CPNotFound)
         index = [[self items] count];
 
-    index = MAX(index - 1, 0);
+    [self _modifySelectionWithNewIndex:index - 1 direction:-1 expand:NO];
+}
 
-    [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
-    [self _scrollToSelection];
+- (void)moveLeftAndModifySelection:(id)sender
+{
+    var index = [[self selectionIndexes] firstIndex];
+    if (index === CPNotFound)
+        index = [[self items] count];
+
+    [self _modifySelectionWithNewIndex:index - 1 direction:-1 expand:YES];
 }
 
 - (void)moveRight:(id)sender
 {
-    var index = MIN([[self selectionIndexes] firstIndex] + 1, [[self items] count]-1);
+    [self _modifySelectionWithNewIndex:[[self selectionIndexes] lastIndex] + 1 direction:1 expand:NO];
+}
 
-    [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
-    [self _scrollToSelection];
+- (void)moveRightAndModifySelection:(id)sender
+{
+    [self _modifySelectionWithNewIndex:[[self selectionIndexes] lastIndex] + 1 direction:1 expand:YES];
 }
 
 - (void)moveDown:(id)sender
 {
-    var index = MIN([[self selectionIndexes] firstIndex] + [self numberOfColumns], [[self items] count]-1);
+    [self _modifySelectionWithNewIndex:[[self selectionIndexes] lastIndex] + [self numberOfColumns] direction:1 expand:NO];
+}
 
-    [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
-    [self _scrollToSelection];
+- (void)moveDownAndModifySelection:(id)sender
+{
+    [self _modifySelectionWithNewIndex:[[self selectionIndexes] lastIndex] + [self numberOfColumns] direction:1 expand:YES];
 }
 
 - (void)moveUp:(id)sender
@@ -769,10 +815,16 @@
     if (index == CPNotFound)
         index = [[self items] count];
 
-    index = MAX(0, index - [self numberOfColumns]);
+    [self _modifySelectionWithNewIndex:index - [self numberOfColumns] direction:-1 expand:NO];
+}
 
-    [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
-    [self _scrollToSelection];
+- (void)moveUpAndModifySelection:(id)sender
+{
+    var index = [[self selectionIndexes] firstIndex];
+    if (index == CPNotFound)
+        index = [[self items] count];
+
+    [self _modifySelectionWithNewIndex:index - [self numberOfColumns] direction:-1 expand:YES];
 }
 
 - (void)deleteBackward:(id)sender
@@ -817,11 +869,13 @@
 
 @end
 
-var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
-    CPCollectionViewMaxItemSizeKey      = @"CPCollectionViewMaxItemSizeKey",
-    CPCollectionViewVerticalMarginKey   = @"CPCollectionViewVerticalMarginKey",
-    CPCollectionViewSelectableKey       = @"CPCollectionViewSelectableKey",
-    CPCollectionViewBackgroundColorsKey = @"CPCollectionViewBackgroundColorsKey";
+var CPCollectionViewMinItemSizeKey        = @"CPCollectionViewMinItemSizeKey",
+    CPCollectionViewMaxItemSizeKey        = @"CPCollectionViewMaxItemSizeKey",
+    CPCollectionViewVerticalMarginKey     = @"CPCollectionViewVerticalMarginKey",
+    CPCollectionViewMaxNumberOfRowsKey    = @"CPCollectionViewMaxNumberOfRowsKey",
+    CPCollectionViewMaxNumberOfColumnsKey = @"CPCollectionViewMaxNumberOfColumnsKey",
+    CPCollectionViewSelectableKey         = @"CPCollectionViewSelectableKey",
+    CPCollectionViewBackgroundColorsKey   = @"CPCollectionViewBackgroundColorsKey";
 
 
 @implementation CPCollectionView (CPCoding)
@@ -841,6 +895,9 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
 
         _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey] || CGSizeMakeZero();
         _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey] || CGSizeMakeZero();
+
+        _maxNumberOfRows = [aCoder decodeIntForKey:CPCollectionViewMaxNumberOfRowsKey] || 0;
+        _maxNumberOfColumns = [aCoder decodeIntForKey:CPCollectionViewMaxNumberOfColumnsKey] || 0;
 
         _verticalMargin = [aCoder decodeFloatForKey:CPCollectionViewVerticalMarginKey];
 
@@ -867,6 +924,9 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
 
     if (!CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
       [aCoder encodeSize:_maxItemSize forKey:CPCollectionViewMaxItemSizeKey];
+
+    [aCoder encodeInt:_maxNumberOfRows forKey:CPCollectionViewMaxNumberOfRowsKey];
+    [aCoder encodeInt:_maxNumberOfColumns forKey:CPCollectionViewMaxNumberOfColumnsKey];
 
     [aCoder encodeBool:_isSelectable forKey:CPCollectionViewSelectableKey];
 

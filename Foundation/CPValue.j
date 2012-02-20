@@ -20,11 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPObject.j"
 @import "CPCoder.j"
+@import "CPObject.j"
 
 
-/*! 
+/*!
     @class CPValue
     @ingroup foundation
     @brief A generic "value". Can be subclassed to hold specific data types.
@@ -54,10 +54,10 @@
 - (id)initWithJSObject:(JSObject)aJSObject
 {
     self = [super init];
-    
+
     if (self)
         _JSObject = aJSObject;
-    
+
     return self;
 }
 
@@ -83,7 +83,7 @@ var CPValueValueKey = @"CPValueValueKey";
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
         _JSObject = JSON.parse([aCoder decodeObjectForKey:CPValueValueKey]);
 

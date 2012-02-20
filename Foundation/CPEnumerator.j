@@ -22,15 +22,12 @@
 
 @import "CPObject.j"
 
-/*! 
-    
-*/
 
-/*! 
+/*!
     @class CPEnumerator
     @ingroup foundation
     @brief Defines an interface for enumerators.
-    
+
     CPEnumerator is a superclass (with useless method bodies)
     that defines an interface for subclasses to follow. The purpose of an
     enumerator is to be a convenient system for traversing over the elements

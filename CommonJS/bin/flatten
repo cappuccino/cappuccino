@@ -112,8 +112,18 @@ function main(args)
 
     print("Loading default theme.");
     flattener.require("objective-j").objj_eval("("+(function() {
-        var blend = [[CPThemeBlend alloc] initWithContentsOfURL:[[CPBundle bundleForClass:[CPApplication class]] pathForResource:[CPApplication defaultThemeName] + ".blend"]];
+    
+        var defaultThemeName = [CPApplication defaultThemeName],
+            bundle = nil;
+
+        if (defaultThemeName === @"Aristo")
+            bundle = [CPBundle bundleForClass:[CPApplication class]];
+        else
+            bundle = [CPBundle mainBundle];
+
+        var blend = [[CPThemeBlend alloc] initWithContentsOfURL:[bundle pathForResource:defaultThemeName + @".blend"]];
         [blend loadWithDelegate:nil];
+
     })+")")();
 
     var applicationJSs = flattener.buildApplicationJS();

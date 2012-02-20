@@ -19,15 +19,15 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
- 
-@import <Foundation/CPObject.j>
+
+@import "CPObject.j"
 
 
 CPJSONPConnectionCallbacks = {};
 
 CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
 
-/*! 
+/*!
     @ingroup foundation
     @brief Allows cross domain connections using JSONP protocol.
 
@@ -43,13 +43,13 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
 {
     CPURLRequest    _request;
     id              _delegate;
-    
+
     CPString        _callbackParameter;
     DOMElement      _scriptTag;
 }
 
 /*! @deprecated */
-+ (CPJSONPConnection)sendRequest:(CPURLRequest)aRequest callback:(CPString)callbackParameter delegate:(id)aDelegate 
++ (CPJSONPConnection)sendRequest:(CPURLRequest)aRequest callback:(CPString)callbackParameter delegate:(id)aDelegate
 {
     return [self connectionWithRequest:aRequest callback:callbackParameter delegate:aDelegate];
 }
@@ -59,7 +59,7 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
     return [[[self class] alloc] initWithRequest:aRequest callback:callbackParameter delegate:aDelegate startImmediately:YES];
 }
 
-- (id)initWithRequest:(CPURLRequest)aRequest callback:(CPString)aString delegate:(id)aDelegate 
+- (id)initWithRequest:(CPURLRequest)aRequest callback:(CPString)aString delegate:(id)aDelegate
 {
     return [self initWithRequest:aRequest callback:aString delegate:aDelegate startImmediately: NO];
 }
@@ -67,18 +67,18 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
 - (id)initWithRequest:(CPURLRequest)aRequest callback:(CPString)aString delegate:(id)aDelegate startImmediately:(BOOL)shouldStartImmediately
 {
     self = [super init];
-    
+
     _request = aRequest;
     _delegate = aDelegate;
-    
+
     _callbackParameter = aString;
-    
+
     if (!_callbackParameter && [[_request URL] absoluteString].indexOf(CPJSONPCallbackReplacementString) < 0)
          [CPException raise:CPInvalidArgumentException reason:@"JSONP source specified without callback parameter or CPJSONPCallbackReplacementString in URL."];
 
-    if(shouldStartImmediately)
+    if (shouldStartImmediately)
         [self start];
-        
+
     return self;
 }
 
@@ -93,9 +93,9 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
 
             if ([_delegate respondsToSelector:@selector(connectionDidFinishLoading:)])
                     [_delegate connectionDidFinishLoading:self];
-    
+
             [self removeScriptTag];
-    
+
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
         };
 
@@ -113,12 +113,12 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
         }
         else
             return;
-        
+
         _scriptTag = document.createElement("script");
         _scriptTag.setAttribute("type", "text/javascript");
         _scriptTag.setAttribute("charset", "utf-8");
         _scriptTag.setAttribute("src", source);
-        
+
         head.appendChild(_scriptTag);
     }
     catch (exception)
@@ -133,12 +133,12 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
 - (void)removeScriptTag
 {
     var head = document.getElementsByTagName("head").item(0);
-    
+
     if(_scriptTag && _scriptTag.parentNode == head)
         head.removeChild(_scriptTag);
 
-    CPJSONPConnectionCallbacks["callback"+[self UID]] = nil;
-    delete CPJSONPConnectionCallbacks["callback"+[self UID]];
+    CPJSONPConnectionCallbacks["callback" + [self UID]] = nil;
+    delete CPJSONPConnectionCallbacks["callback" + [self UID]];
 }
 
 - (void)cancel

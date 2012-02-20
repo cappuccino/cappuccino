@@ -17,7 +17,7 @@ function findCibClassDependencies(cibPath) {
     }
 
     // make sure CPApp is init'd
-    [CPApplication sharedApplication]
+    [CPApplication sharedApplication];
 
     try {
         var x = [cib pressInstantiate];
@@ -61,7 +61,7 @@ function findCibClassDependencies(cibPath) {
 
     var topLevelObjects = nil;//[anExternalNameTable objectForKey:CPCibTopLevelObjects];
 
-    [objectData instantiateWithOwner:owner topLevelObjects:topLevelObjects]
+    [objectData instantiateWithOwner:owner topLevelObjects:topLevelObjects];
     // [objectData establishConnectionsWithOwner:owner topLevelObjects:topLevelObjects];
     // [objectData awakeWithOwner:owner topLevelObjects:topLevelObjects];
 

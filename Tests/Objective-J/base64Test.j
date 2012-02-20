@@ -42,10 +42,16 @@ var base64TestStrings = [
     {
         var result = CFData.decodeBase64ToArray(base64TestStrings[i][1]),
             expected = base64TestStrings[i][0];
-            
+
         for (var j = 0; j < expected.length || j < result.length; j++)
             [self assert:result[j] equals:expected.charCodeAt(j)];
     }
+}
+
+- (void)test_CFData_encodeUtfString
+{
+    var utfTest = "\uF728"; // A common key equivalent.
+    [self assert:CFData.decodeBase64ToUtf16String(CFData.encodeBase64Utf16String(utfTest)) equals:utfTest];
 }
 
 @end

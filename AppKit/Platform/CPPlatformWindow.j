@@ -42,6 +42,8 @@ var PrimaryPlatformWindow   = NULL;
     DOMElement      _DOMBodyElement;
     DOMElement      _DOMFocusElement;
     DOMElement      _DOMEventGuard;
+    DOMElement      _DOMScrollingElement;
+    id              _hideDOMScrollingElementTimeout;
 
     CPArray         _windowLevels;
     CPDictionary    _windowLayers;
@@ -160,7 +162,9 @@ var PrimaryPlatformWindow   = NULL;
 
     _contentRect = _CGRectMakeCopy(aRect);
 
-    [self updateNativeContentRect];
+#if PLATFORM(DOM)
+     [self updateNativeContentRect];
+#endif
 }
 
 - (void)updateFromNativeContentRect

@@ -20,8 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPObject.j"
 @import "CPDictionary.j"
+@import "CPObject.j"
+
 
 /*!
     @class CPBundle
@@ -117,6 +118,16 @@ var CPBundlesForURLStrings = { };
     return className ? CPClassFromString(className) : Nil;
 }
 
+- (CPString)bundleIdentifier
+{
+    return [self objectForInfoDictionaryKey:@"CPBundleIdentifier"];
+}
+
+- (BOOL)isLoaded
+{
+    return _bundle.isLoaded();
+}
+
 - (CPString)pathForResource:(CPString)aFilename
 {
     return _bundle.pathForResource(aFilename);
@@ -131,8 +142,6 @@ var CPBundlesForURLStrings = { };
 {
     return _bundle.valueForInfoDictionaryKey(aKey);
 }
-
-//
 
 - (void)loadWithDelegate:(id)aDelegate
 {

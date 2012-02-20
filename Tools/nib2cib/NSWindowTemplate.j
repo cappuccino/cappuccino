@@ -29,6 +29,7 @@ var NSBorderlessWindowMask          = 0x00,
     NSMiniaturizableWindowMask      = 0x04,
     NSResizableWindowMask           = 0x08,
     NSUtilityWindowMask             = 0x10,
+    NSDocModalWindowMask            = 0x40,
     NSTexturedBackgroundWindowMask  = 0x100,
     NSHUDBackgroundWindowMask       = 0x2000;
 
@@ -70,6 +71,7 @@ var NSBorderlessWindowMask          = 0x00,
                                 (_windowStyleMask & NSMiniaturizableWindowMask ? CPMiniaturizableWindowMask : 0) |
                                 (_windowStyleMask & NSResizableWindowMask ? CPResizableWindowMask : 0) |
                                 (_windowStyleMask & NSTexturedBackgroundWindowMask ? NSTexturedBackgroundWindowMask : 0) |
+                                (_windowStyleMask & NSDocModalWindowMask ? CPDocModalWindowMask : 0) |
                                 (_windowStyleMask & NSHUDBackgroundWindowMask ? CPHUDBackgroundWindowMask : 0);
 
         _windowIsFullBridge = [aCoder decodeObjectForKey:"NSFrameAutosaveName"] === "CPBorderlessBridgeWindowMask";

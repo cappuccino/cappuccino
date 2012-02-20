@@ -96,7 +96,7 @@
 
         _prototypeView = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
         [_prototypeView setVerticalAlignment:CPCenterVerticalTextAlignment];
-        [_prototypeView setValue:[CPColor whiteColor] forThemeAttribute:"text-color" inState:CPThemeStateSelected];
+        [_prototypeView setValue:[CPColor whiteColor] forThemeAttribute:"text-color" inState:CPThemeStateSelectedDataView];
         [_prototypeView setLineBreakMode:CPLineBreakByTruncatingTail];
 
         _horizontalScrollView = [[CPScrollView alloc] initWithFrame:[self bounds]];
@@ -860,7 +860,7 @@ var _CPBrowserResizeControlBackgroundImage = nil;
 - (CPDragOperation)tableView:(CPTableView)aTableView validateDrop:(id)info proposedRow:(int)row proposedDropOperation:(CPTableViewDropOperation)operation
 {
     if ([_delegate respondsToSelector:@selector(browser:validateDrop:proposedRow:column:dropOperation:)])
-        [_delegate browser:_browser validateDrop:info proposedRow:row column:_index dropOperation:operation];
+        return [_delegate browser:_browser validateDrop:info proposedRow:row column:_index dropOperation:operation];
     else
         return CPDragOperationNone;
 }
@@ -923,7 +923,7 @@ var _CPBrowserResizeControlBackgroundImage = nil;
                                            positioned:CPWindowAbove
                       relativeToEphemeralSubviewNamed:nil];
 
-    var isHighlighted = [self themeState] & CPThemeStateSelected;
+    var isHighlighted = [self themeState] & CPThemeStateSelectedDataView;
     [imageView setImage: _isLeaf ? (isHighlighted ? _highlightedBranchImage : _branchImage) : nil];
     [imageView setImageScaling:CPScaleNone];
 }

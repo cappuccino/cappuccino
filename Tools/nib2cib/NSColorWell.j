@@ -35,7 +35,7 @@
     if (self)
     {
         [self setBordered:[aCoder decodeBoolForKey:"NSIsBordered"]];
-        [self setColor:[aCoder decodeBoolForKey:"NSColor"]];
+        [self setColor:[aCoder decodeObjectForKey:"NSColor"]];
     }
     
     return self;

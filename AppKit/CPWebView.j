@@ -50,23 +50,23 @@ CPWebViewScrollNative                           = 2;
 {
     CPScrollView    _scrollView;
     CPView          _frameView;
-    
+
     IFrame      _iframe;
     CPString    _mainFrameURL;
     CPArray     _backwardStack;
     CPArray     _forwardStack;
-    
+
     BOOL        _ignoreLoadStart;
     BOOL        _ignoreLoadEnd;
-    
+
     id          _downloadDelegate;
     id          _frameLoadDelegate;
     id          _policyDelegate;
     id          _resourceLoadDelegate;
     id          _UIDelegate;
-    
+
     CPWebScriptObject _wso;
-    
+
     CPString    _url;
     CPString    _html;
 
@@ -95,10 +95,10 @@ CPWebViewScrollNative                           = 2;
         _backwardStack  = [];
         _forwardStack   = [];
         _scrollMode     = CPWebViewScrollNative;
-        
+
         [self _initDOMWithFrame:aFrame];
     }
-    
+
     return self;
 }
 
@@ -106,52 +106,52 @@ CPWebViewScrollNative                           = 2;
 {
     _ignoreLoadStart = YES;
     _ignoreLoadEnd  = YES;
-    
+
     _iframe = document.createElement("iframe");
     _iframe.name = "iframe_" + Math.floor(Math.random()*10000);
     _iframe.style.width = "100%";
     _iframe.style.height = "100%";
     _iframe.style.borderWidth = "0px";
     _iframe.frameBorder = "0";
-    
+
     [self setDrawsBackground:YES];
-    
+
     _loadCallback = function() {
 	    // HACK: this block handles the case where we don't know about loads initiated by the user clicking a link
 	    if (!_ignoreLoadStart)
 	    {
 	        // post the start load notification
 	        [self _startedLoading];
-	        
+
 	        if (_mainFrameURL)
 	            [_backwardStack addObject:_mainFrameURL];
-	            
+
 	        // FIXME: this doesn't actually get the right URL for different domains. Not possible due to browser security restrictions.
             _mainFrameURL = _iframe.src;
             _mainFrameURL = _iframe.src;
-            
+
             // clear the forward
 	        [_forwardStack removeAllObjects];
 	    }
 	    else
             _ignoreLoadStart = NO;
-	    
+
 	    if (!_ignoreLoadEnd)
 	    {
             [self _finishedLoading];
 	    }
 	    else
 	        _ignoreLoadEnd = NO;
-        
+
         [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 	}
-	
+
 	if (_iframe.addEventListener)
 	    _iframe.addEventListener("load", _loadCallback, false);
 	else if (_iframe.attachEvent)
 		_iframe.attachEvent("onload", _loadCallback);
-	
-	
+
+
     _frameView = [[CPView alloc] initWithFrame:[self bounds]];
     [_frameView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
 
@@ -159,9 +159,9 @@ CPWebViewScrollNative                           = 2;
     [_scrollView setAutohidesScrollers:YES];
     [_scrollView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
     [_scrollView setDocumentView:_frameView];
-	
+
     _frameView._DOMElement.appendChild(_iframe);
-    
+
     [self _setScrollMode:_scrollMode];
 
     [self addSubview:_scrollView];
@@ -169,7 +169,7 @@ CPWebViewScrollNative                           = 2;
 
 
 - (void)setFrameSize:(CPSize)aSize
-{   
+{
     [super setFrameSize:aSize];
     [self _resizeWebFrame];
 }
@@ -211,7 +211,7 @@ CPWebViewScrollNative                           = 2;
         {
             var visibleRect = [_frameView visibleRect];
             [_frameView setFrameSize:CGSizeMake(CGRectGetMaxX(visibleRect), CGRectGetMaxY(visibleRect))];
-            
+
             // try to get the document size so we can correctly set the frame
             var win = null;
             try { win = [self DOMWindow]; } catch (e) {}
@@ -229,7 +229,7 @@ CPWebViewScrollNative                           = 2;
             else
             {
                 CPLog.warn("using default size 800*1600");
-            
+
                 [_frameView setFrameSize:CGSizeMake(800, 1600)];
             }
 
@@ -242,7 +242,7 @@ CPWebViewScrollNative                           = 2;
 {
     if (_scrollMode == aScrollMode)
         return;
-        
+
     [self _setScrollMode:aScrollMode];
 }
 
@@ -252,7 +252,7 @@ CPWebViewScrollNative                           = 2;
         _scrollMode = CPWebViewScrollNative;
     else
         _scrollMode = aScrollMode;
-        
+
     _ignoreLoadStart = YES;
     _ignoreLoadEnd  = YES;
 
@@ -263,16 +263,16 @@ CPWebViewScrollNative                           = 2;
     {
         [_scrollView setHasHorizontalScroller:YES];
         [_scrollView setHasVerticalScroller:YES];
-        
+
         _iframe.setAttribute("scrolling", "no");
     }
     else
     {
         [_scrollView setHasHorizontalScroller:NO];
         [_scrollView setHasVerticalScroller:NO];
-        
+
         _iframe.setAttribute("scrolling", "auto");
-        
+
         [_frameView setFrameSize:[_scrollView bounds].size];
     }
 
@@ -293,13 +293,13 @@ CPWebViewScrollNative                           = 2;
     [_frameView setFrameSize:[_scrollView contentSize]];
 
     [self _startedLoading];
-    
+
     _ignoreLoadStart = YES;
     _ignoreLoadEnd = NO;
-    
+
     _url = null;
     _html = aString;
-    
+
     [self _load];
 }
 
@@ -308,13 +308,13 @@ CPWebViewScrollNative                           = 2;
     [self _setScrollMode:CPWebViewScrollNative];
 
     [self _startedLoading];
-    
+
     _ignoreLoadStart = YES;
     _ignoreLoadEnd = NO;
-    
+
     _url = _mainFrameURL;
     _html = null;
-    
+
     [self _load];
 }
 
@@ -335,12 +335,13 @@ CPWebViewScrollNative                           = 2;
             _loadHTMLStringTimer = nil;
         }
 
-        // need to give the browser a chance to reset iframe, otherwise we'll be document.write()-ing the previous document 
+        // need to give the browser a chance to reset iframe, otherwise we'll be document.write()-ing the previous document
         _loadHTMLStringTimer = window.setTimeout(function()
         {
             var win = [self DOMWindow];
-            
-            win.document.write(_html);
+
+            if (win)
+                win.document.write(_html);
 
             window.setTimeout(_loadCallback, 1);
         }, 0);
@@ -372,7 +373,7 @@ CPWebViewScrollNative                           = 2;
 }
 
 - (void)setMainFrameURL:(CPString)URLString
-{    
+{
     if (_mainFrameURL)
         [_backwardStack addObject:_mainFrameURL];
     _mainFrameURL = URLString;
@@ -389,9 +390,9 @@ CPWebViewScrollNative                           = 2;
             [_forwardStack addObject:_mainFrameURL];
         _mainFrameURL = [_backwardStack lastObject];
         [_backwardStack removeLastObject];
-        
+
         [self _loadMainFrameURL];
-        
+
         return YES;
     }
     return NO;
@@ -405,9 +406,9 @@ CPWebViewScrollNative                           = 2;
             [_backwardStack addObject:_mainFrameURL];
         _mainFrameURL = [_forwardStack lastObject];
         [_forwardStack removeLastObject];
-        
+
         [self _loadMainFrameURL];
-        
+
         return YES;
     }
     return NO;
@@ -630,7 +631,7 @@ CPWebViewScrollNative                           = 2;
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
-    
+
     if (self)
     {
         // FIXME: encode/decode these?
@@ -638,14 +639,14 @@ CPWebViewScrollNative                           = 2;
         _backwardStack  = [];
         _forwardStack   = [];
         _scrollMode     = CPWebViewScrollNative;
-        
+
 #if PLATFORM(DOM)
         [self _initDOMWithFrame:[self frame]];
 #endif
 
         [self setBackgroundColor:[CPColor whiteColor]];
     }
-    
+
     return self;
 }
 

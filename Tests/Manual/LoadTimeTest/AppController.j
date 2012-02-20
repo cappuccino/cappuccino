@@ -48,7 +48,16 @@
         
         loadStdev = Math.sqrt(loadStdev / data.length);
         launchStdev = Math.sqrt(launchStdev / data.length);
-    
+
+        if (window.parent.BCOMM) {
+            window.parent.BCOMM.finishTest({
+                loadAvg : loadAvg,
+                launchAvg : launchAvg,
+                loadStdev : loadStdev,
+                launchStdev : launchStdev
+            });
+        }
+
         var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
             contentView = [theWindow contentView];
 

@@ -44,10 +44,10 @@
 - (id)initWithURL:(CPURL)aURL
 {
     self = [super init];
-    
+
     if (self)
         _URL = aURL;
-    
+
     return self;
 }
 
@@ -57,13 +57,13 @@
 }
 /*
 Creating a Response
-initWithURL:MIMEType:expectedContentLength:textEncodingName:  
+initWithURL:MIMEType:expectedContentLength:textEncodingName:
 Getting the Response Properties
-expectedContentLength  
-suggestedFilename  
-MIMEType  
-textEncodingName  
-URL  
+expectedContentLength
+suggestedFilename
+MIMEType
+textEncodingName
+URL
 */
 @end
 

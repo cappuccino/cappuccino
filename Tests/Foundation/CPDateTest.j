@@ -62,15 +62,46 @@
 
 - (void)testDescription
 {
-    // Unfortunately the result will be different depending on the testing machine's timezone.
+    // Unfortunately the result will be different depending on the testing machine's timezone, so
+    // this test turns out to be more complex than the code tested. We can't just reuse the
+    // original code as then we'd have exactly the same bugs.
     var date = [CPDate dateWithTimeIntervalSince1970: 1234567890],
+        expectedDay = 13,
         expectedHour = 23,
         expectedMinute = 31,
+        offsetPositive = date.getTimezoneOffset() >= 0,
         offsetHours = Math.floor(date.getTimezoneOffset() / 60),
         offsetMinutes = date.getTimezoneOffset() - offsetHours * 60,
-        expectedString = [CPString stringWithFormat:"2009-02-13 %02d:%02d:30 +%02d%02d", expectedHour-offsetHours, expectedMinute-offsetMinutes, offsetHours, offsetMinutes];
+        expectedString;
+    expectedHour -= offsetHours;
+    expectedMinute -= offsetMinutes;
+    if (expectedMinute < 0)
+    {
+        expectedMinute += 60;
+        expectedHour--;
+    }
+    else if (expectedMinute > 59)
+    {
+        expectedMinute -= 60;
+        expectedHour++;
+    }
+    if (expectedHour < 0)
+    {
+        expectedHour += 24;
+        expectedDay--;
+    }
+    else if (expectedHour > 23)
+    {
+        expectedHour -= 24;
+        expectedDay++;
+    }
 
-    [self assert:expectedString equals:[date description]];
+    if (offsetPositive)
+        expectedString = [CPString stringWithFormat:"2009-02-%02d %02d:%02d:30 +%02d%02d", expectedDay, expectedHour, expectedMinute, offsetHours, offsetMinutes];
+    else
+        expectedString = [CPString stringWithFormat:"2009-02-%02d %02d:%02d:30 -%02d%02d", expectedDay, expectedHour, expectedMinute, ABS(offsetHours), ABS(offsetMinutes)];
+
+    [self assert:expectedString equals: [date description]];
 }
 
 - (void)testCopy

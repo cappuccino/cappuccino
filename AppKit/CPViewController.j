@@ -162,8 +162,6 @@ var CPViewControllerCachedCibs;
 
         if ([cibOwner respondsToSelector:@selector(viewControllerDidLoadCib:)])
             [cibOwner viewControllerDidLoadCib:self];
-
-        [self viewDidLoad];
     }
 
     return _view;
@@ -189,7 +187,13 @@ var CPViewControllerCachedCibs;
 */
 - (void)setView:(CPView)aView
 {
+    var viewWasLoaded = !_view;
+
     _view = aView;
+
+    // Make sure the viewDidLoad method is called if the view is set directly
+    if (viewWasLoaded)
+        [self viewDidLoad];
 }
 
 @end

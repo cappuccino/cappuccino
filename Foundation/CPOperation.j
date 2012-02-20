@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <Foundation/CPObject.j>
+@import "CPObject.j"
 
 /*!
     Operations receive very low priority for execution.
@@ -57,13 +57,13 @@ CPOperationQueuePriorityHigh = 4;
 CPOperationQueuePriorityVeryHigh = 8;
 
 
-/*! 
+/*!
     @class CPOperation
     @brief Represents an operation that can be run in an CPOperationQueue
 
     It should be subclassed an the subclass should implement its own main method to do the actual work.
 */
-@implementation CPOperation : CPObject 
+@implementation CPOperation : CPObject
 {
     CPArray operations;
     BOOL _cancelled;
@@ -75,15 +75,14 @@ CPOperationQueuePriorityVeryHigh = 8;
     CPArray _dependencies;
 }
 
-
-- (void)main 
+- (void)main
 {
     // should be overridden in child class
 }
 
-- (id)init 
+- (id)init
 {
-    if (self = [super init]) 
+    if (self = [super init])
     {
         _cancelled = NO;
         _executing = NO;
@@ -98,15 +97,15 @@ CPOperationQueuePriorityVeryHigh = 8;
 /*!
     Starts the operation (runs the main method), sets all the status flags and runs the completion function if it's set
 */
-- (void)start 
+- (void)start
 {
-    if (!_cancelled) 
+    if (!_cancelled)
     {
         [self willChangeValueForKey:@"isExecuting"];
         _executing = YES;
         [self didChangeValueForKey:@"isExecuting"];
         [self main];
-        if (_completionFunction) 
+        if (_completionFunction)
         {
             _completionFunction();
         }
@@ -123,7 +122,7 @@ CPOperationQueuePriorityVeryHigh = 8;
     Indicates if this operation has been cancelled
     @return if this operation has been cancelled
 */
-- (BOOL)isCancelled 
+- (BOOL)isCancelled
 {
     return _cancelled;
 }
@@ -132,7 +131,7 @@ CPOperationQueuePriorityVeryHigh = 8;
     Indicates if this operation is currently executing
     @return if this operation is currently executing
 */
-- (BOOL)isExecuting 
+- (BOOL)isExecuting
 {
     return _executing;
 }
@@ -141,7 +140,7 @@ CPOperationQueuePriorityVeryHigh = 8;
     Indicates if this operation has finished running
     @return if this operation has finished running
 */
-- (BOOL)isFinished 
+- (BOOL)isFinished
 {
     return _finished;
 }
@@ -150,7 +149,7 @@ CPOperationQueuePriorityVeryHigh = 8;
     Just added for Cocoa compatibility
     @return always false
 */
-- (BOOL)isConcurrent 
+- (BOOL)isConcurrent
 {
     return NO;
 }
@@ -159,8 +158,8 @@ CPOperationQueuePriorityVeryHigh = 8;
     Indicates if this operation is ready to be executed. Takes the "isFinished" state of dependent operations into account
     @return if this operation is ready to run
 */
-- (BOOL)isReady 
-{    
+- (BOOL)isReady
+{
     return _ready;
 }
 
@@ -168,7 +167,7 @@ CPOperationQueuePriorityVeryHigh = 8;
     The JS function that should be run after the main method
     @return JS function
 */
-- (JSObject)completionFunction 
+- (JSObject)completionFunction
 {
     return _completionFunction;
 }
@@ -176,7 +175,7 @@ CPOperationQueuePriorityVeryHigh = 8;
 /*!
     Sets the JS function that should be run after the main method
 */
-- (void)setCompletionFunction:(JSObject)aJavaScriptFunction 
+- (void)setCompletionFunction:(JSObject)aJavaScriptFunction
 {
     _completionFunction = aJavaScriptFunction;
 }
@@ -185,7 +184,7 @@ CPOperationQueuePriorityVeryHigh = 8;
     Makes the receiver dependent on the completion of the specified operation.
     @param anOperation the operation that the receiver should depend on
 */
-- (void)addDependency:(CPOperation)anOperation 
+- (void)addDependency:(CPOperation)anOperation
 {
     [self willChangeValueForKey:@"dependencies"];
     [anOperation addObserver:self
@@ -201,12 +200,12 @@ CPOperationQueuePriorityVeryHigh = 8;
     Removes the receiver’s dependence on the specified operation.
     @param anOperation the operation that the receiver should no longer depend on
 */
-- (void)removeDependency:(CPOperation)anOperation 
+- (void)removeDependency:(CPOperation)anOperation
 {
     [self willChangeValueForKey:@"dependencies"];
     [_dependencies removeObject:anOperation];
     [anOperation removeObserver:self
-                     forKeyPath:@"isFinished"];                 
+                     forKeyPath:@"isFinished"];
     [self didChangeValueForKey:@"dependencies"];
     [self _updateIsReadyState];
 }
@@ -215,7 +214,7 @@ CPOperationQueuePriorityVeryHigh = 8;
     The operations that the receiver depends on
     @return array of operations
 */
-- (CPArray)dependencies 
+- (CPArray)dependencies
 {
     return _dependencies;
 }
@@ -223,14 +222,14 @@ CPOperationQueuePriorityVeryHigh = 8;
 /*!
     Just added for Cocoa compatibility, doesn't do anything
 */
-- (void)waitUntilFinished 
+- (void)waitUntilFinished
 {
 }
 
 /*!
     Advises the operation object that it should stop executing its task.
 */
-- (void)cancel 
+- (void)cancel
 {
     [self willChangeValueForKey:@"isCancelled"];
     _cancelled = YES;
@@ -241,7 +240,7 @@ CPOperationQueuePriorityVeryHigh = 8;
     Sets the priority of the operation when used in an operation queue.
     @param priority the priority
 */
-- (void)setQueuePriority:(int)priority 
+- (void)setQueuePriority:(int)priority
 {
     _queuePriority = priority;
 }
@@ -250,7 +249,7 @@ CPOperationQueuePriorityVeryHigh = 8;
     The priority of the operation when used in an operation queue.
     @return the priority
 */
-- (int)queuePriority 
+- (int)queuePriority
 {
     return _queuePriority;
 }
@@ -261,28 +260,28 @@ CPOperationQueuePriorityVeryHigh = 8;
                         change:(CPDictionary)change
                        context:(void)context
 {
-    if (keyPath == @"isFinished") 
+    if (keyPath == @"isFinished")
     {
         [self _updateIsReadyState];
     }
 }
 
-- (void)_updateIsReadyState 
+- (void)_updateIsReadyState
 {
     var newReady = YES;
-    if (_dependencies && [_dependencies count] > 0) 
+    if (_dependencies && [_dependencies count] > 0)
     {
         var i = 0;
-        for (i = 0; i < [_dependencies count]; i++) 
+        for (i = 0; i < [_dependencies count]; i++)
         {
-            if (![[_dependencies objectAtIndex:i] isFinished]) 
+            if (![[_dependencies objectAtIndex:i] isFinished])
             {
                 newReady = NO;
             }
         }
     }
-    
-    if (newReady != _ready) 
+
+    if (newReady != _ready)
     {
         [self willChangeValueForKey:@"isReady"];
         _ready = newReady;

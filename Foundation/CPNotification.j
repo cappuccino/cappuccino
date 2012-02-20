@@ -20,8 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPObject.j"
 @import "CPException.j"
+@import "CPObject.j"
 
 
 /*!
@@ -87,14 +87,14 @@
 - (id)initWithName:(CPString)aNotificationName object:(id)anObject userInfo:(CPDictionary)aUserInfo
 {
     self = [super init];
-    
+
     if (self)
     {
         _name = aNotificationName;
         _object = anObject;
         _userInfo = aUserInfo;
     }
-    
+
     return self;
 }
 

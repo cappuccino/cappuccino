@@ -150,7 +150,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
     var topLevelObjects = [anExternalNameTable objectForKey:CPCibTopLevelObjects];
 
-    [objectData instantiateWithOwner:owner topLevelObjects:topLevelObjects]
+    [objectData instantiateWithOwner:owner topLevelObjects:topLevelObjects];
     [objectData establishConnectionsWithOwner:owner topLevelObjects:topLevelObjects];
     [objectData awakeWithOwner:owner topLevelObjects:topLevelObjects];
 

@@ -20,8 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <Foundation/CPObject.j>
-@import <Foundation/CPString.j>
+@import "CPObject.j"
+@import "CPString.j"
 
 
 CPUserSessionUndeterminedStatus = 0;
@@ -36,7 +36,7 @@ var CPDefaultUserSessionManager = nil;
 @implementation CPUserSessionManager : CPObject
 {
     CPUserSessionStatus _status;
-    
+
     CPString            _userIdentifier;
 }
 
@@ -51,10 +51,10 @@ var CPDefaultUserSessionManager = nil;
 - (id)init
 {
     self = [super init];
-    
+
     if (self)
         _status = CPUserSessionUndeterminedStatus;
-    
+
     return self;
 }
 
@@ -67,9 +67,9 @@ var CPDefaultUserSessionManager = nil;
 {
     if (_status == aStatus)
         return;
-    
+
     _status = aStatus;
-    
+
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPUserSessionManagerStatusDidChangeNotification
                       object:self];
@@ -87,9 +87,9 @@ var CPDefaultUserSessionManager = nil;
 {
     if (_userIdentifier == anIdentifier)
         return;
-    
+
     _userIdentifier = anIdentifier;
-    
+
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPUserSessionManagerUserIdentifierDidChangeNotification
                       object:self];

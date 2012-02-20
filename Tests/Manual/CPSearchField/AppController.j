@@ -8,22 +8,28 @@
 @import <Foundation/Foundation.j>
 @import <AppKit/AppKit.j>
 
-var categories = ["firstName","lastName"];
+var categories = ["firstName","lastName"],
+    MenuItemPrefix = @"   ";
 
 @implementation AppController : CPObject
 {
-	var searchField;	
-	var table;
+	CPSearchField   searchField;	
+	CPTableView     table;
 	
-	var tableArray;
-	var filteredArray;
+	CPArray         tableArray;
+	CPArray         filteredArray;
 	
-	var searchCategoryIndex;
+	CPMenu          searchMenuTemplate;
+	
+	CPArray         searchCategoryIndexes;
+	CPInteger       searchCategoryIndex;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
 	searchCategoryIndex = 0;
+	searchCategoryIndexes = [CPArray arrayWithArray:[1, 2]];
+	
     var theWindow = [[CPWindow alloc] initWithContentRect:CPMakeRect(0,10,500,300) styleMask:CPTitledWindowMask|CPResizableWindowMask],
         contentView = [theWindow contentView];
     
@@ -37,43 +43,43 @@ var categories = ["firstName","lastName"];
     [searchField setTarget:self];
     [searchField setAction:@selector(updateFilter:)];
     [searchField setAutoresizingMask:CPViewWidthSizable];
-       
-    var template = [[CPMenu alloc] initWithTitle:@"Search Menu"];
+    
+    searchMenuTemplate = [searchField defaultSearchMenuTemplate];
                         
-    var item; 
-    item = [[CPMenuItem alloc] initWithTitle:@"Search by"
-                                       action:nil 
-                                keyEquivalent:@""];
-    [item setEnabled:NO];
-    [template addItem:item];
+    [searchMenuTemplate insertItemWithTitle:@"Search By"
+                                     action:nil 
+                              keyEquivalent:@""
+                                    atIndex:0];
 
-    item = [[CPMenuItem alloc] initWithTitle:@"First Name"
-                                       action:@selector(changeCategory:)
-                                keyEquivalent:@""];
+    var item = [[CPMenuItem alloc] initWithTitle:MenuItemPrefix + @"First Name"
+                                          action:@selector(changeCategory:)
+                                   keyEquivalent:@""];
+                                   
     [item setTarget:self];
     [item setTag:1];
-    [template addItem:item];
+    [item setState:CPOnState];
+    [searchMenuTemplate insertItem:item atIndex:1];
  
-    item = [[CPMenuItem alloc] initWithTitle:@"Last Name"
-                                       action:@selector(changeCategory:)
+    item = [[CPMenuItem alloc] initWithTitle:MenuItemPrefix + @"Last Name"
+                                      action:@selector(changeCategory:)
                                 keyEquivalent:@""];
     [item setTarget:self];
     [item setTag:2];
-    [template addItem:item];
- 
-  	item = [[CPMenuItem alloc] initWithTitle:@"Recent searches" action:NULL keyEquivalent:@""];
-    [item setTag:CPSearchFieldRecentsTitleMenuItemTag];
-    [template addItem:item];
+    [item setState:CPOffState];
+    [searchMenuTemplate insertItem:item atIndex:2];
+
+    [searchField setSearchMenuTemplate:searchMenuTemplate];
     
-    item = [[CPMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:@""];
-    [item setTag:CPSearchFieldRecentsMenuItemTag];
-    [template addItem:item];
+    var button = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
+    [button setBackgroundColor:[CPColor greenColor]];
+    [button setBordered:NO];
+    [searchField setSearchButton:button];
 
-    item = [[CPMenuItem alloc] initWithTitle:@"Clear recents" action:NULL keyEquivalent:@""];
-    [item setTag:CPSearchFieldClearRecentsMenuItemTag];
-    [template addItem:item];
-
-    [searchField setSearchMenuTemplate:template];
+    button = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
+    [button setBackgroundColor:[CPColor blueColor]];
+    [button setBordered:NO];
+    [searchField setCancelButton:button];
+    
     [searchFieldContainer addSubview:searchField];
     [contentView addSubview:searchFieldContainer];
     
@@ -122,16 +128,25 @@ var categories = ["firstName","lastName"];
 
 - (void)changeCategory:(CPMenuItem)menuItem
 {
-	[[[searchField menu] itemArray] makeObjectsPerformSelector:@selector(setState:) withObject:0];
-	[menuItem setState:1];
     searchCategoryIndex = [menuItem tag] - 1;
-    [searchField setPlaceholderString:[menuItem title]];
+    [searchField setPlaceholderString:[[menuItem title] substringFromIndex:[MenuItemPrefix length]]];
+	
+    [self _updateSearchMenuTemplate];
+}
+
+- (void)_updateSearchMenuTemplate
+{
+    for (var i = 0; i < searchCategoryIndexes.length; ++i)
+    	[[searchMenuTemplate itemAtIndex:i + 1] setState:CPOffState];
+    	
+	[[searchMenuTemplate itemAtIndex:searchCategoryIndex + 1] setState:CPOnState];
+    [searchField setSearchMenuTemplate:searchMenuTemplate];
 }
 
 - (void)updateFilter:(id)sender
 {
 	var searchString = [searchField stringValue];
-
+	
 	filteredArray = [self filteredArrayWithString:searchString];
 	[table reloadData];
 }

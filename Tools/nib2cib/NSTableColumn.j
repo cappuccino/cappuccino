@@ -34,26 +34,43 @@
     {
         _identifier = [aCoder decodeObjectForKey:@"NSIdentifier"];
 
-        //var dataViewCell = [aCoder decodeObjectForKey:@"NSDataCell"];
+        var dataViewCell = [aCoder decodeObjectForKey:@"NSDataCell"];
 
         _dataView = [[CPTextField alloc] initWithFrame:CPRectMakeZero()];
-        [_dataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateSelected];
+
+        var font = [dataViewCell font],
+            selectedFont = nil;
+
+        if (!font)
+            font = [CPFont systemFontOfSize:12.0];
+
+        var selectedFont = [CPFont boldFontWithName:[font familyName] size:[font size]];
+
+        [_dataView setFont:font];
+        [_dataView setValue:selectedFont forThemeAttribute:@"font" inState:CPThemeStateSelectedDataView];
+
+        [_dataView setLineBreakMode:CPLineBreakByTruncatingTail];  
+        [_dataView setValue:CPCenterVerticalTextAlignment forThemeAttribute:@"vertical-alignment"];
+        [_dataView setValue:CGInsetMake(0.0, 0.0, 0.0, 5.0) forThemeAttribute:@"content-inset"];
 
         var headerCell = [aCoder decodeObjectForKey:@"NSHeaderCell"],
             headerView = [[_CPTableColumnHeaderView alloc] initWithFrame:CPRectMakeZero()];
 
-        [_headerView setStringValue:[headerCell objectValue]];
-        [_headerView setFont:[headerCell font]];
-
-        [self setHeaderView:_headerView];
+        [headerView setStringValue:[headerCell objectValue]];
+        [self setHeaderView:headerView];
 
         _width = [aCoder decodeFloatForKey:@"NSWidth"];
         _minWidth = [aCoder decodeFloatForKey:@"NSMinWidth"];
         _maxWidth = [aCoder decodeFloatForKey:@"NSMaxWidth"];
 
-        _resizingMask  = [aCoder decodeBoolForKey:@"NSIsResizable"];
+        _resizingMask = [aCoder decodeIntForKey:@"NSResizingMask"];
+        _isHidden = [aCoder decodeBoolForKey:@"NSHidden"];
+
+        _isEditable = [aCoder decodeBoolForKey:@"NSIsEditable"];
+
+        _sortDescriptorPrototype = [aCoder decodeObjectForKey:@"NSSortDescriptorPrototype"];
     }
-    
+
     return self;
 }
 
