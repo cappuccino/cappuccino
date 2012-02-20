@@ -334,7 +334,7 @@ var CPWindowActionMessageKeys = [
     CPWindow                            _parentView;
     BOOL                                _isSheet;
 
-    _CPWindowFrameAnimation             _frameAnimation;
+    _CPWindowFrameAnimation             _frameAnimation @accessors;
 }
 
 /*
@@ -2207,19 +2207,23 @@ CPTexturedBackgroundWindowMask
     */
 }
 
-- (void)_setFrame:(CGRect)aFrame delegate:(id)delegate duration:(int)duration curve:(CPAnimationCurve)curve
+- (void)_setFrame:(CGRect)aFrame delegate:(id)delegate curve:(CPAnimationCurve)curve
 {
     [_frameAnimation stopAnimation];
     _frameAnimation = [[_CPWindowFrameAnimation alloc] initWithWindow:self targetFrame:aFrame];
     [_frameAnimation setDelegate:delegate];
     [_frameAnimation setAnimationCurve:curve];
-    [_frameAnimation setDuration:duration];
     [_frameAnimation startAnimation];
 }
 
 - (CPTimeInterval)animationResizeTime:(CGRect)newWindowFrame
 {
-    return CPWindowResizeTime;
+    var oldWindowframe = [self frame],
+        distx = CGRectGetMaxX(oldWindowframe) - CGRectGetMaxX(newWindowFrame),
+        disty = CGRectGetMaxY(oldWindowframe) - CGRectGetMaxY(newWindowFrame),
+        dist = SQRT(distx * distx + disty * disty);
+
+    return CPWindowResizeTime * dist / 150;
 }
 
 /* @ignore */
@@ -2249,19 +2253,20 @@ CPTexturedBackgroundWindowMask
 /* @ignore */
 - (void)_attachSheetWindow:(CPWindow)aSheet
 {
-    var sheetFrame = [aSheet frame],
+    var endFrame = CGRectMakeCopy([aSheet frame]),
         frame = [self frame],
-        sheetContent = [aSheet contentView];
+        contentFrame = [[self contentView] frame];
 
-    [self _setUpMasksForView:sheetContent];
+    [self _setUpMasksForView:[aSheet contentView]];
 
     aSheet._isSheet = YES;
     aSheet._parentView = self;
 
-    var originx = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width) / 2),
-        originy = frame.origin.y + [[self contentView] frame].origin.y,
-        startFrame = CGRectMake(originx, originy, sheetFrame.size.width, 0),
-        endFrame = CGRectMake(originx, originy, sheetFrame.size.width, sheetFrame.size.height);
+    endFrame.origin.x = CGRectGetMinX(frame) + FLOOR((CGRectGetWidth(frame) - CGRectGetWidth(endFrame)) / 2);
+    endFrame.origin.y = CGRectGetMinY(frame) + CGRectGetMinY(contentFrame);
+
+    var startFrame = CGRectMakeCopy(endFrame);
+    startFrame.size.height = 0;
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillBeginSheetNotification object:self];
     [CPApp runModalForWindow:aSheet];
@@ -2270,7 +2275,7 @@ CPTexturedBackgroundWindowMask
     [aSheet setFrame:startFrame display:YES animate:NO];
     _sheetContext["opened"] = YES;
 
-    [aSheet _setFrame:endFrame delegate:self duration:[self animationResizeTime:endFrame] curve:CPAnimationEaseOut];
+    [aSheet _setFrame:endFrame delegate:self curve:CPAnimationEaseOut];
 
     // Should run the main loop here until _isAnimating = FALSE
     [aSheet becomeKeyWindow];
@@ -2285,13 +2290,14 @@ CPTexturedBackgroundWindowMask
 
     endFrame.size.height = 0;
 
-    _sheetContext["frame"] = startFrame;
+    if (![[sheet _frameAnimation] isAnimating])
+        _sheetContext["frame"] = startFrame;
 
     var sheetContent = [sheet contentView];
     [self _setUpMasksForView:sheetContent];
 
     _sheetContext["opened"] = NO;
-    [sheet _setFrame:endFrame delegate:self duration:[self animationResizeTime:endFrame] curve:CPAnimationEaseIn];
+    [sheet _setFrame:endFrame delegate:self curve:CPAnimationEaseIn];
 }
 
 /* @ignore */
