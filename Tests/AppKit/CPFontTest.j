@@ -51,6 +51,39 @@
     [self assert:_customFont notEqual:nil];
 }
 
+- (void)testConstructorsIsBoldIsItalic
+{
+    [self testConstructor:@selector(fontWithName:size:) args:["Arial", 12] isBold:NO isItalic:NO];
+    [self testConstructor:@selector(boldFontWithName:size:) args:["Arial", 13] isBold:YES isItalic:NO];
+    [self testConstructor:@selector(fontWithName:size:italic:) args:["Arial", 14, YES] isBold:NO isItalic:YES];
+    [self testConstructor:@selector(boldFontWithName:size:italic:) args:["Arial", 15, NO] isBold:YES isItalic:NO];
+}
+
+- (void)testConstructor:(SEL)aSelector args:(CPArray)args isBold:(BOOL)bold isItalic:(BOOL)italic
+{
+    var inv = [CPInvocation invocationWithMethodSignature:nil];
+    [inv setTarget:CPFont];
+    [inv setSelector:aSelector];
+    [args enumerateObjectsUsingBlock:function(arg, idx)
+    {
+        [inv setArgument:arg atIndex:idx + 2];
+    }];
+    
+    [inv invoke];
+    var font = [inv returnValue];
+    
+    [self assertTrue:([font isBold] == bold) message: [font description] + " should be bold: " + bold];
+    [self assertTrue:([font isItalic] == italic) message: [font description] + " should be italic: " + italic];
+    
+    // get from cache
+    [inv invoke];
+    var cachedFont = [inv returnValue];
+    [self assert:cachedFont equals:font];
+    
+    [self assertTrue:([cachedFont isBold] == bold) message:" cached " + [cachedFont description] + " should be bold: " + bold];
+    [self assertTrue:([cachedFont isItalic] == italic) message:" cached " + [cachedFont description] + " should be italic: " + italic];
+}
+
 @end
 
 var _CPFontStripRegExp = new RegExp("(^\\s*[\"']?|[\"']?\\s*$)", "g");

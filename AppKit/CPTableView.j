@@ -1513,6 +1513,8 @@ NOT YET IMPLEMENTED
 
     if ([scrollView isKindOfClass:[CPScrollView class]] && [scrollView documentView] === self)
         [scrollView _updateCornerAndHeaderView];
+        
+    [self setNeedsLayout];
 }
 
 // Complexity:
@@ -3501,7 +3503,19 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     [super setNeedsDisplay:aFlag];
     [_tableDrawView setNeedsDisplay:aFlag];
+
+    [[self headerView] setNeedsDisplay:YES];
 }
+
+/*!
+    @ignore
+*/
+- (void)setNeedsLayout
+{
+    [super setNeedsLayout];
+    [[self headerView] setNeedsLayout];
+}
+
 
 /*!
     @ignore

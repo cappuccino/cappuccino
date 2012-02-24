@@ -84,7 +84,7 @@
 */
 - (void)testEditCell
 {
-    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0,0,200,150)
+    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0, 0, 200, 150)
                                                 styleMask:CPWindowNotSizable];
 
     [[theWindow contentView] addSubview:tableView];

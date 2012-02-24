@@ -8,11 +8,11 @@
 
 @import <Foundation/CPObject.j>
 
-
 @implementation AppController : CPObject
 {
     CPWindow    theWindow; //this "outlet" is connected automatically by the Cib
     @outlet     CPTabView nibTabView;
+    @outlet     CPTabView nibTabViewEmpty;
 }
 
 - (IBAction)changeView:(id)sender
@@ -24,19 +24,22 @@
     [item setView:view];
 }
 
-- (void)applicationDidFinishLaunching:(CPNotification)aNotification
-{
-    // This is called when the application is done loading.
-}
-
 - (void)awakeFromCib
 {
-    // This is called when the cib is done loading.
-    // You can implement this method on any object instantiated from a Cib.
-    // It's a useful hook for setting up current UI values, and other things. 
+    var item = [[CPTabViewItem alloc] initWithIdentifier:@"item"],
+        view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+        
+    [item setView:view];
+    [item setLabel:@"item"];
     
-    // In this case, we want the window from Cib to become our full browser window
+    [nibTabViewEmpty addTabViewItem:item];
+    
     [theWindow setFullBridge:YES];
+}
+
+- (void)tabView:(CPTabView)aTabView didSelectTabViewItem:(CPTabViewItem)tabViewItem
+{
+    CPLogConsole(_cmd + [tabViewItem label]);
 }
 
 @end

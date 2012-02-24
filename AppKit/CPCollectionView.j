@@ -340,19 +340,21 @@
 */
 - (void)setSelectionIndexes:(CPIndexSet)anIndexSet
 {
-    if ([_selectionIndexes isEqual:anIndexSet] || !_isSelectable)
+    if (!anIndexSet)
+        anIndexSet = [CPIndexSet indexSet];
+    if (!_isSelectable || [_selectionIndexes isEqual:anIndexSet])
         return;
 
     var index = CPNotFound;
 
-    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound)
+    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) !== CPNotFound)
         [_items[index] setSelected:NO];
 
     _selectionIndexes = anIndexSet;
 
     var index = CPNotFound;
 
-    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound)
+    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) !== CPNotFound)
         [_items[index] setSelected:YES];
 
     var binderClass = [[self class] _binderClassForBinding:@"selectionIndexes"];
@@ -473,7 +475,7 @@
     }
 
     var superview = [self superview],
-        proposedHeight =  y + itemSize.height + _verticalMargin;
+        proposedHeight = y + itemSize.height + _verticalMargin;
 
     if ([superview isKindOfClass:[CPClipView class]])
     {
@@ -559,6 +561,8 @@
 */
 - (void)setMinItemSize:(CGSize)aSize
 {
+    if (aSize === nil || aSize === undefined)
+        [CPException raise:CPInvalidArgumentException reason:"Invalid value provided for minimum size"];
     if (CGSizeEqualToSize(_minItemSize, aSize))
         return;
 
@@ -965,14 +969,15 @@ var CPCollectionViewMinItemSizeKey              = @"CPCollectionViewMinItemSizeK
 {
     [super awakeFromCib];
 
-    if (CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()) || CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
+    var prototypeView = [_itemPrototype view];
+    if (prototypeView && (CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()) || CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero())))
     {
         var item = _itemPrototype;
 
         if (CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()))
-            _minItemSize = [[item view] frameSize];
+            _minItemSize = [prototypeView frameSize];
         else if (CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
-            _maxItemSize = [[item view] frameSize];
+            _maxItemSize = [prototypeView frameSize];
     }
 }
 

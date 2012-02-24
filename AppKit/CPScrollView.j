@@ -817,6 +817,8 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
     }
 
     [self reflectScrolledClipView:_contentView];
+    [documentHeaderView setNeedsLayout];
+    [documentHeaderView setNeedsDisplay:YES];
 }
 
 /* @ignore */
@@ -1138,8 +1140,9 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
         if (_scrollerStyle === CPScrollerStyleOverlay && hasHorizontalScroll)
             verticalScrollerHeight -= horizontalScrollerHeight;
 
+        var documentHeight = _CGRectGetHeight(documentFrame);
         [_verticalScroller setFloatValue:(difference.height <= 0.0) ? 0.0 : scrollPoint.y / difference.height];
-        [_verticalScroller setKnobProportion:_CGRectGetHeight(contentFrame) / _CGRectGetHeight(documentFrame)];
+        [_verticalScroller setKnobProportion:documentHeight > 0 ? _CGRectGetHeight(contentFrame) / documentHeight : 1.0];
         [_verticalScroller setFrame:_CGRectMake(_CGRectGetMaxX(contentFrame) - overlay, verticalScrollerY, verticalScrollerWidth, verticalScrollerHeight)];
     }
     else if (wasShowingVerticalScroller)
@@ -1155,8 +1158,10 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
         if (_scrollerStyle === CPScrollerStyleOverlay && hasVerticalScroll)
             horizontalScrollerWidth -= verticalScrollerWidth;
 
+        var documentWidth = _CGRectGetWidth(documentFrame);
+
         [_horizontalScroller setFloatValue:(difference.width <= 0.0) ? 0.0 : scrollPoint.x / difference.width];
-        [_horizontalScroller setKnobProportion:_CGRectGetWidth(contentFrame) / _CGRectGetWidth(documentFrame)];
+        [_horizontalScroller setKnobProportion:documentWidth > 0 ? _CGRectGetWidth(contentFrame) / documentWidth : 1.0];
         [_horizontalScroller setFrame:_CGRectMake(_CGRectGetMinX(contentFrame), _CGRectGetMaxY(contentFrame) - overlay, horizontalScrollerWidth, horizontalScrollerHeight)];
     }
     else if (wasShowingHorizontalScroller)
