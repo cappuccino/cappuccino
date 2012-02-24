@@ -55,6 +55,8 @@
         _allowedItems               = [aCoder decodeObjectForKey:"NSToolbarIBAllowedItems"];
         _selectableItems            = [aCoder decodeObjectForKey:"NSToolbarIBSelectableItems"];
 
+        _sizeMode                   = [aCoder decodeObjectForKey:"NSToolbarSizeMode"] || CPToolbarSizeModeDefault;
+
         _delegate                   = [aCoder decodeObjectForKey:"NSToolbarDelegate"];
     }
 
