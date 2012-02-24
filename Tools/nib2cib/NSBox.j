@@ -42,7 +42,9 @@
         _contentMargin = [aCoder decodeSizeForKey:@"NSOffsets"];
 
         _title         = [[aCoder decodeObjectForKey:@"NSTitleCell"] objectValue] || @"";
-        _titlePosition = [aCoder decodeObjectForKey:@"NSTitlePosition"] || CPAtTop;
+        _titlePosition = [aCoder decodeObjectForKey:@"NSTitlePosition"];
+        if (_titlePosition === undefined)
+            _titlePosition = CPAtTop;
     }
 
     return self;
