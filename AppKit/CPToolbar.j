@@ -95,6 +95,7 @@ var TOOLBAR_REGULAR_HEIGHT              = 59.0,
     BOOL                    _showsBaselineSeparator;
     BOOL                    _allowsUserCustomization;
     BOOL                    _isVisible;
+    int                     _sizeMode @accessors(property=sizeMode);
 
     id                      _delegate;
 
@@ -107,8 +108,6 @@ var TOOLBAR_REGULAR_HEIGHT              = 59.0,
 
     CPArray                 _items;
     CPArray                 _itemsSortedByVisibilityPriority;
-
-    int                     _sizeMode @accessors(property=sizeMode);
 
     CPView                  _toolbarView;
     CPWindow                _window;
@@ -213,6 +212,16 @@ var TOOLBAR_REGULAR_HEIGHT              = 59.0,
     [_window _noteToolbarChanged];
 }
 
+- (void)setSizeMode:(CPToolbarSizeMode)aSize
+{
+    if (aSize === _sizeMode)
+        return;
+    _sizeMode = aSize;
+
+    [[self _toolbarView] setFrame:[self _toolbarViewFrame]];
+    [_window _noteToolbarChanged];
+}
+
 - (CPWindow)_window
 {
     return _window;
@@ -243,12 +252,17 @@ var TOOLBAR_REGULAR_HEIGHT              = 59.0,
 
 }
 
+- (CGRect)_toolbarViewFrame
+{
+    return CPRectMake(0.0, 0.0, 1200.0, _sizeMode != CPToolbarSizeModeSmall ? TOOLBAR_REGULAR_HEIGHT : TOOLBAR_SMALL_HEIGHT);
+}
+
 /* @ignore */
 - (CPView)_toolbarView
 {
     if (!_toolbarView)
     {
-        _toolbarView = [[_CPToolbarView alloc] initWithFrame:CPRectMake(0.0, 0.0, 1200.0, _sizeMode != CPToolbarSizeModeSmall ? TOOLBAR_REGULAR_HEIGHT : TOOLBAR_SMALL_HEIGHT)];
+        _toolbarView = [[_CPToolbarView alloc] initWithFrame:[self _toolbarViewFrame]];
 
         [_toolbarView setToolbar:self];
         [_toolbarView setAutoresizingMask:CPViewWidthSizable];
