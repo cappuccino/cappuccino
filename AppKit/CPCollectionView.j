@@ -722,10 +722,11 @@
 
 - (CPView)draggingViewForItemsAtIndexes:(CPIndexSet)indexes withEvent:(CPEvent)event offset:(CGPoint)dragImageOffset
 {
+    var idx = _content[[indexes firstIndex]];
     if (!_itemForDragging)
-        _itemForDragging = [self newItemForRepresentedObject:_content[0]];
+        _itemForDragging = [self newItemForRepresentedObject:idx];
     else
-        [_itemForDragging setRepresentedObject:_content[[indexes firstIndex]]];
+        [_itemForDragging setRepresentedObject:idx];
         
     return [_itemForDragging view];
 }
