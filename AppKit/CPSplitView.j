@@ -773,66 +773,97 @@ var CPSplitViewHorizontalImage = nil,
         return;
     }
 
+    var count = [_subviews count];
+
+    if (!count)
+        return;
+
     SPLIT_VIEW_MAYBE_POST_WILL_RESIZE();
     [self _postNotificationWillResize];
 
     var index = 0,
-        count = [_subviews count],
         bounds = [self bounds],
+        boundsSize = bounds.size[_sizeComponent],
         dividerThickness = [self dividerThickness],
         totalDividers = count - 1,
-        totalSizableSpace = 0,
-        nonSizableSpace = 0,
-        lastSizableIndex = -1,
+        oldFlexibleSpace = 0,
         totalSizablePanes = 0,
-        isVertical = [self isVertical];
+        isSizableMap = {},
+        viewSizes = [],
+        delegateRespondsToShouldAdjust = [_delegate respondsToSelector:@selector(splitView:shouldAdjustSizeOfSubview:)];
 
+    // What we want to do is to preserve non resizable sizes first, and then to preserve the ratio of size to available
+    // non fixed space for every other subview. E.g. assume fixed space was 20 pixels initially, view 1 was 20 and
+    // view 2 was 30 pixels, for a total of 70 pixels. Then the new total size becomes 140 pixels. Now we want the fixed
+    // space to still be 20 pixels, view 1 to be 48 pixels and view 2 to be 72 pixels. This way the relative size of
+    // view 1 to view 2 remains the same - view 1 was 66% of view 2 initially and after the resize view 1 is still
+    // 66% of view 2's size.
+    //
+    // For this calculation, we can consider the dividers themselves to also be fixed size areas - they should remain
+    // the same size before and after.
+
+    // How much flexible size do we have in pre-resize pixels?
     for (index = 0; index < count; ++index)
     {
         var view = _subviews[index],
-            isSizable = isVertical ? [view autoresizingMask] & CPViewWidthSizable : [view autoresizingMask] & CPViewHeightSizable;
+            isSizable = !delegateRespondsToShouldAdjust || [_delegate splitView:self shouldAdjustSizeOfSubview:view],
+            size = [view frame].size[_sizeComponent];
 
+        isSizableMap[index] = isSizable;
+
+        viewSizes.push(size);
         if (isSizable)
         {
-            totalSizableSpace += [view frame].size[_sizeComponent];
-            lastSizableIndex = index;
+            oldFlexibleSpace += size;
             totalSizablePanes++;
         }
     }
 
-    if (totalSizablePanes === count)
-        totalSizableSpace = 0;
+    // nonSizableSpace is the number of fixed pixels in pre-resize terms and the desired number post-resize.
+    var nonSizableSpace = oldSize[_sizeComponent] - oldFlexibleSpace,
+        newFlexibleSpace = boundsSize - nonSizableSpace,
+        remainingFixedPixelsToRemove = 0;
 
-    var nonSizableSpace = totalSizableSpace ? bounds.size[_sizeComponent] - totalSizableSpace : 0,
-        remainingFlexibleSpace = bounds.size[_sizeComponent] - oldSize[_sizeComponent],
-        oldDimension = (oldSize[_sizeComponent] - totalDividers * dividerThickness - nonSizableSpace),
-        ratio = oldDimension <= 0 ? 0 : (bounds.size[_sizeComponent] - totalDividers * dividerThickness - nonSizableSpace) / oldDimension;
+    if (newFlexibleSpace < 0)
+    {
+        remainingFixedPixelsToRemove = -newFlexibleSpace;
+        newFlexibleSpace = 0;
+    }
 
+    var remainingFixedPanes = count - totalSizablePanes;
     for (index = 0; index < count; ++index)
     {
         var view = _subviews[index],
             viewFrame = CGRectMakeCopy(bounds),
-            isSizable = isVertical ? [view autoresizingMask] & CPViewWidthSizable : [view autoresizingMask] & CPViewHeightSizable;
+            isSizable = isSizableMap[index],
+            targetSize = 0;
 
+        // The last area must take up exactly the remaining space, fixed or not.
         if (index + 1 === count)
-            viewFrame.size[_sizeComponent] = bounds.size[_sizeComponent] - viewFrame.origin[_originComponent];
-
-        else if (totalSizableSpace && isSizable && lastSizableIndex === index)
-            viewFrame.size[_sizeComponent] = MAX(0, ROUND([view frame].size[_sizeComponent] + remainingFlexibleSpace))
-
-        else if (isSizable || !totalSizableSpace)
+            targetSize = boundsSize - viewFrame.origin[_originComponent];
+        // Try to keep fixed size areas the same size.
+        else if (!isSizable)
         {
-            viewFrame.size[_sizeComponent] = MAX(0, ROUND(ratio * [view frame].size[_sizeComponent]));
-            remainingFlexibleSpace -= (viewFrame.size[_sizeComponent] - [view frame].size[_sizeComponent]);
+            var removedFixedPixels = MIN(remainingFixedPixelsToRemove / remainingFixedPanes, viewSizes[index]);
+            targetSize = viewSizes[index] - removedFixedPixels;
+            remainingFixedPixelsToRemove -= removedFixedPixels;
+            remainingFixedPanes--;
         }
+        // (new size / flexible size available) == (old size / old flexible size available)
+        else if (oldFlexibleSpace > 0)
+            targetSize = newFlexibleSpace * viewSizes[index] / oldFlexibleSpace;
+        // oldFlexibleSpace <= 0 so all flexible areas were crushed. When we get space, allocate it evenly.
+        // totalSizablePanes cannot be 0 since isSizable.
+        else
+            targetSize = newFlexibleSpace / totalSizablePanes;
 
-        else if (totalSizableSpace && !isSizable)
-            viewFrame.size[_sizeComponent] = [view frame].size[_sizeComponent];
+        targetSize = MAX(0, ROUND(targetSize));
 
-        bounds.origin[_originComponent] += viewFrame.size[_sizeComponent] + dividerThickness;
+        viewFrame.size[_sizeComponent] = targetSize;
 
         [view setFrame:viewFrame];
 
+        bounds.origin[_originComponent] += targetSize + dividerThickness;
     }
 
     SPLIT_VIEW_MAYBE_POST_DID_RESIZE();
@@ -1002,7 +1033,7 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 */
 - (void)_autosave
 {
-    if (!_shouldAutosave)
+    if (!_shouldAutosave || !autosaveName)
         return;
 
     var userDefaults = [CPUserDefaults standardUserDefaults],
@@ -1068,6 +1099,8 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 */
 - (CPString)_framesKeyForAutosaveName:(CPString)theAutosaveName
 {
+    if (!theAutosaveName)
+        return nil;
     return @"CPSplitView Subview Frames " + theAutosaveName;
 }
 
@@ -1076,6 +1109,8 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 */
 - (CPString)_precollapseKeyForAutosaveName:(CPString)theAutosaveName
 {
+    if (!theAutosaveName)
+        return nil;
     return @"CPSplitView Subview Precollapse Positions " + theAutosaveName;
 }
 

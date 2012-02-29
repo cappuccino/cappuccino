@@ -98,7 +98,7 @@ CPBelowBottom = 6;
         _borderWidth = 1.0;
         _contentMargin = CGSizeMake(0.0, 0.0);
 
-        _titlePosition = CPAtTop;
+        _titlePosition = CPNoTitle;
         _titleView = [CPTextField labelWithTitle:@""];
 
         _contentView = [[CPView alloc] initWithFrame:[self bounds]];
@@ -295,7 +295,10 @@ CPBelowBottom = 6;
 
 - (void)setFrameFromContentFrame:(CPRect)aRect
 {
-    [self setFrame:CGRectInset(aRect, -(_contentMargin.width + _borderWidth), -(_contentMargin.height + _borderWidth))];
+    var offset = [self _titleHeightOffset];
+
+    [self setFrame:CGRectInset(aRect, -(_contentMargin.width + _borderWidth), -(_contentMargin.height + offset[0] + _borderWidth))];
+
     [self setNeedsDisplay:YES];
 }
 
@@ -321,10 +324,10 @@ CPBelowBottom = 6;
 
 - (void)_manageTitlePositioning
 {
-    if (_titlePosition == CPNoTitle || !_title || _title == @"")
+    if (_titlePosition == CPNoTitle)
     {
-        [_titleView setStringValue:@""];
         [_titleView removeFromSuperview];
+        [self setNeedsDisplay:YES];
         return;
     }
 
@@ -338,7 +341,7 @@ CPBelowBottom = 6;
         case CPAboveTop:
         case CPBelowTop:
             [_titleView setFrameOrigin:CPPointMake(5.0, 0.0)];
-            [_titleView setAutoresizingMask:CPViewNotSizable ];
+            [_titleView setAutoresizingMask:CPViewNotSizable];
             break;
 
         case CPAboveBottom:
@@ -350,17 +353,42 @@ CPBelowBottom = 6;
             break;
     }
 
+    [self sizeToFit];
     [self setNeedsDisplay:YES];
 }
 
 - (void)sizeToFit
 {
-    var contentFrame = [_contentView frame];
+    var contentFrame = [_contentView frame],
+        offset = [self _titleHeightOffset];
 
+    if (!contentFrame)
+        return;
+
+    [_contentView setAutoresizingMask:CPViewNotSizable];
     [self setFrameSize:CGSizeMake(contentFrame.size.width + _contentMargin.width * 2,
-                                  contentFrame.size.height + _contentMargin.height * 2)];
+                                  contentFrame.size.height + _contentMargin.height * 2 + offset[0])];
+    [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
-    [_contentView setFrameOrigin:CGPointMake(_contentMargin.width, _contentMargin.height)];
+    [_contentView setFrameOrigin:CGPointMake(_contentMargin.width, _contentMargin.height + offset[1])];
+}
+
+- (float)_titleHeightOffset
+{
+    if (_titlePosition == CPNoTitle)
+        return [0.0, 0.0];
+
+    switch (_titlePosition)
+    {
+        case CPAtTop:
+            return [[_titleView frameSize].height, [_titleView frameSize].height];
+
+        case CPAtBottom:
+            return [[_titleView frameSize].height, 0.0];
+
+        default:
+            return [0.0, 0.0];
+    }
 }
 
 - (void)drawRect:(CPRect)rect
@@ -368,7 +396,7 @@ CPBelowBottom = 6;
     if (_borderType === CPNoBorder)
         return;
 
-    var bounds = [self bounds];
+    var bounds = CGRectMakeCopy([self bounds]);
 
     switch (_boxType)
     {
@@ -491,7 +519,7 @@ var CPBoxTypeKey          = @"CPBoxTypeKey",
 
         _contentMargin = [aCoder decodeSizeForKey:CPBoxContentMarginKey];
 
-        _title         = [aCoder decodeObjectForKey:CPBoxTitle] || @"";
+        _title         = [aCoder decodeObjectForKey:CPBoxTitle];
         _titlePosition = [aCoder decodeIntForKey:CPBoxTitlePosition];
         _titleView     = [aCoder decodeObjectForKey:CPBoxTitleView] || [CPTextField labelWithTitle:_title];
 

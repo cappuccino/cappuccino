@@ -683,7 +683,8 @@ NOT YET IMPLEMENTED
 */
 - (void)setRowHeight:(unsigned)aRowHeight
 {
-    aRowHeight = aRowHeight;
+    // Accept row heights such as "0".
+    aRowHeight = +aRowHeight;
 
     if (_rowHeight === aRowHeight)
         return;
@@ -954,8 +955,9 @@ NOT YET IMPLEMENTED
 */
 - (void)_moveColumn:(unsigned)fromIndex toColumn:(unsigned)toIndex
 {
-    fromIndex = fromIndex;
-    toIndex = toIndex;
+    // Convert parameters such as "0" to 0.
+    fromIndex = +fromIndex;
+    toIndex = +toIndex;
 
     if (fromIndex === toIndex)
         return;
@@ -1511,6 +1513,8 @@ NOT YET IMPLEMENTED
 
     if ([scrollView isKindOfClass:[CPScrollView class]] && [scrollView documentView] === self)
         [scrollView _updateCornerAndHeaderView];
+        
+    [self setNeedsLayout];
 }
 
 // Complexity:
@@ -1562,7 +1566,8 @@ NOT YET IMPLEMENTED
 */
 - (CGRect)rectOfColumn:(CPInteger)aColumnIndex
 {
-    aColumnIndex = aColumnIndex;
+    // Convert e.g. "0" to 0.
+    aColumnIndex = +aColumnIndex;
 
     if (aColumnIndex < 0 || aColumnIndex >= NUMBER_OF_COLUMNS())
         return _CGRectMakeZero();
@@ -3498,7 +3503,19 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     [super setNeedsDisplay:aFlag];
     [_tableDrawView setNeedsDisplay:aFlag];
+
+    [[self headerView] setNeedsDisplay:YES];
 }
+
+/*!
+    @ignore
+*/
+- (void)setNeedsLayout
+{
+    [super setNeedsLayout];
+    [[self headerView] setNeedsLayout];
+}
+
 
 /*!
     @ignore
