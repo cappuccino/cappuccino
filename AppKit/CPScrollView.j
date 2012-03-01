@@ -272,7 +272,19 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
 }
 
 /*!
-    Set the delegate of the scroll view
+    Sets the delegate of the scroll view.
+    Possible delegate methods to implement are listed below.
+
+Notifies the delegate when the scroll view is about to scroll.
+@code
+- (void)scrollViewWillScroll:(CPScrollView)aScrollView
+@endcode
+
+Notifies the delegate when the scroll view has finished scrolling.
+@code
+- (void)scrollViewDidScroll:(CPScrollView)aScrollView
+@endcode
+
 */
 - (void)setDelegate:(id)aDelegate
 {
