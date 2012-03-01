@@ -2500,9 +2500,7 @@ CPTexturedBackgroundWindowMask
 
     _autorecalculatesKeyViewLoop = shouldRecalculate;
 
-    if (_keyViewLoopIsDirty)
-        [self recalculateKeyViewLoop];
-    else if (_autorecalculatesKeyViewLoop)
+    if (_autorecalculatesKeyViewLoop)
         [self _dirtyKeyViewLoop];
 }
 
