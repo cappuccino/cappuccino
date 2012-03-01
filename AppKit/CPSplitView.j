@@ -883,12 +883,12 @@ Notifies the delegate when the subviews will be resized.
 - (void)splitViewWillResizeSubviews:(CPNotification)aNotification;
 @endcode
 
-Lets the delegate specify a different rect for which the user can drag the splitView divider.
+Allows the delegate to specify which of the CPSplitView's subviews should adjust if the window is resized.
 @code
 - (BOOL)splitView:(CPSplitView)aSplitView shouldAdjustSizeOfSubview:(CPView)aSubView
 @endcode
 
-Allows the delegate to specify which of the CPSplitView's subviews should adjust if the window is resized.
+Lets the delegate specify a different rect for which the user can drag the splitView divider.
 @code
 - (CGRect)splitView:(CPSplitView)aSplitView effectiveRect:(CGRect)aRect forDrawnRect:(CGRect)aDrawnRect ofDividerAtIndex:(int)aDividerIndex;
 @endcode
