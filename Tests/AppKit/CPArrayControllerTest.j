@@ -329,7 +329,7 @@
 
 - (void)testContentBinding
 {
-    [[self arrayController] bind:@"contentArray" toObject:self withKeyPath:@"contentArray" options:0];
+    [[self arrayController] bind:@"contentArray" toObject:self withKeyPath:@"contentArray" options:nil];
 
     [self assert:[[self arrayController] contentArray] equals:[self contentArray]];
 
