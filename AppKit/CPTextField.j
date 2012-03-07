@@ -1503,6 +1503,16 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 {
 }
 
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options
+{
+    [super _updatePlaceholdersWithOptions:options];
+
+    [self _setPlaceholder:@"Multiple Values" forMarker:CPMultipleValuesMarker isDefault:YES];
+    [self _setPlaceholder:@"No Selection" forMarker:CPNoSelectionMarker isDefault:YES];
+    [self _setPlaceholder:@"Not Applicable" forMarker:CPNotApplicableMarker isDefault:YES];
+    [self _setPlaceholder:@"" forMarker:CPNullMarker isDefault:YES];
+}
+
 - (void)setValueFor:(CPString)theBinding
 {
     var destination = [_info objectForKey:CPObservedObjectKey],
@@ -1513,28 +1523,13 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
     if (isPlaceholder)
     {
-        switch (newValue)
+        if (newValue === CPNotApplicableMarker && [options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
         {
-            case CPMultipleValuesMarker:
-                newValue = [options objectForKey:CPMultipleValuesPlaceholderBindingOption] || @"Multiple Values";
-                break;
-
-            case CPNoSelectionMarker:
-                newValue = [options objectForKey:CPNoSelectionPlaceholderBindingOption] || @"No Selection";
-                break;
-
-            case CPNotApplicableMarker:
-                if ([options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
-                    [CPException raise:CPGenericException
-                                reason:@"can't transform non applicable key on: "+_source+" value: "+newValue];
-
-                newValue = [options objectForKey:CPNotApplicablePlaceholderBindingOption] || @"Not Applicable";
-                break;
-
-            case CPNullMarker:
-                newValue = [options objectForKey:CPNullPlaceholderBindingOption] || @"";
-                break;
+           [CPException raise:CPGenericException
+                       reason:@"can't transform non applicable key on: " + _source + " value: " + newValue];
         }
+
+        newValue = [self _placeholderForMarker:newValue];
 
         [_source setPlaceholderString:newValue];
         [_source setObjectValue:nil];
