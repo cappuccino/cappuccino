@@ -627,6 +627,25 @@
     [self assert:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 4)] equals:indexes];
 }
 
+- (void)testBindToNoSelectionMarker
+{
+    var arrayController1 = [CPArrayController new],
+        arrayController2 = [CPArrayController new];
+
+    [arrayController2 setContent:[CPDictionary dictionaryWithObject:[1, 2, 3] forKey:@"x"]];
+
+    [arrayController1 bind:@"contentArray" toObject:arrayController2 withKeyPath:@"selection.x" options:nil];
+    // This used to cause a bug where the _CPKVCArray wrapping the selection proxy tried to call 'count' on
+    // CPNoSelectionMarker while attempting to copy itself.
+    [arrayController2 setSelectionIndexes:[CPIndexSet indexSet]];
+
+    [self assert:[] equals:[arrayController1 arrangedObjects] message:"arranged objects of an empty selection should be empty"];
+
+    // Make sure the regular case works.
+    [arrayController2 setSelectionIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 1)]];
+    [self assert:[1, 2, 3] equals:[arrayController1 arrangedObjects] message:"normal selection"];
+}
+
 - (void)observeValueForKeyPath:keyPath
     ofObject:anActivity
     change:change

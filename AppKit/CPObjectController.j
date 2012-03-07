@@ -678,7 +678,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
         {
             value = [theValues objectAtIndex:0];
 
-            for (var i = 0, count= [theValues count]; i < count && value != CPMultipleValuesMarker; i++)
+            for (var i = 0, count = [theValues count]; i < count && value != CPMultipleValuesMarker; i++)
             {
                 if (![value isEqual:[theValues objectAtIndex:i]])
                     value = CPMultipleValuesMarker;
