@@ -41,15 +41,7 @@ CPImageAlignBottomLeft  = 6;
 CPImageAlignBottomRight = 7;
 CPImageAlignRight       = 8;
 
-var CPImageViewShadowBackgroundColor = nil,
-    CPImageViewEmptyPlaceholderImage = nil;
-
-var LEFT_SHADOW_INSET       = 3.0,
-    RIGHT_SHADOW_INSET      = 3.0,
-    TOP_SHADOW_INSET        = 3.0,
-    BOTTOM_SHADOW_INSET     = 5.0,
-    VERTICAL_SHADOW_INSET   = TOP_SHADOW_INSET + BOTTOM_SHADOW_INSET,
-    HORIZONTAL_SHADOW_INSET = LEFT_SHADOW_INSET + RIGHT_SHADOW_INSET;
+var CPImageViewEmptyPlaceholderImage = nil;
 
 /*!
     @ingroup appkit
@@ -297,8 +289,8 @@ var LEFT_SHADOW_INSET       = 3.0,
         imageScaling = [self currentValueForThemeAttribute:@"image-scaling"],
         x = 0.0,
         y = 0.0,
-        insetWidth = (_hasShadow ? HORIZONTAL_SHADOW_INSET : 0.0),
-        insetHeight = (_hasShadow ? VERTICAL_SHADOW_INSET : 0.0),
+        insetWidth = (_hasShadow ? [_shadowView horizontalInset] : 0.0),
+        insetHeight = (_hasShadow ? [_shadowView verticalInset] : 0.0),
         boundsWidth = _CGRectGetWidth(bounds),
         boundsHeight = _CGRectGetHeight(bounds),
         width = boundsWidth - insetWidth,
@@ -406,7 +398,7 @@ var LEFT_SHADOW_INSET       = 3.0,
     _imageRect = _CGRectMake(x, y, width, height);
 
     if (_hasShadow)
-        [_shadowView setFrame:_CGRectMake(x - LEFT_SHADOW_INSET, y - TOP_SHADOW_INSET, width + insetWidth, height + insetHeight)];
+        [_shadowView setFrame:_CGRectMake(x - [_shadowView leftInset], y - [_shadowView topInset], width + insetWidth, height + insetHeight)];
 }
 
 - (void)mouseDown:(CPEvent)anEvent
