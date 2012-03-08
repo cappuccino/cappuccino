@@ -130,6 +130,9 @@ function resolveFlags(args)
         else if (argument.indexOf("-S") === 0)
             objjcFlags &= ~ObjectiveJ.Preprocessor.Flags.CheckSyntax;
 
+        else if (argument.indexOf("-T") === 0)
+            objjcFlags |= ObjectiveJ.Preprocessor.Flags.IncludeTypeSignatures;
+
         else if (argument.indexOf("-g") === 0)
             objjcFlags |= ObjectiveJ.Preprocessor.Flags.IncludeDebugSymbols;
 
