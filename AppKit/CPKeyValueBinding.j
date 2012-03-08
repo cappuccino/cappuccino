@@ -149,15 +149,40 @@ var CPBindingOperationAnd = 0,
     return self;
 }
 
-- (void)setValueFor:(CPString)aBinding
+- (void)setValueFor:(CPString)theBinding
 {
     var destination = [_info objectForKey:CPObservedObjectKey],
         keyPath = [_info objectForKey:CPObservedKeyPathKey],
         options = [_info objectForKey:CPOptionsKey],
-        newValue = [destination valueForKeyPath:keyPath];
+        newValue = [destination valueForKeyPath:keyPath],
+        isPlaceholder = CPIsControllerMarker(newValue);
 
-    newValue = [self transformValue:newValue withOptions:options];
-    [_source setValue:newValue forKey:aBinding];
+    if (isPlaceholder)
+    {
+        if (newValue === CPNotApplicableMarker && [options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
+        {
+           [CPException raise:CPGenericException
+                       reason:@"Can't transform non applicable key on: " + _source + " Key Path:" + keyPath + " value: " + newValue];
+        }
+
+        var value = [self _placeholderForMarker:newValue];
+        [self setPlaceholderValue:value withMarker:newValue forBinding:theBinding];
+    }
+    else
+    {
+        var value = [self transformValue:newValue withOptions:options];
+        [self setValue:value forBinding:theBinding];
+    }
+}
+
+- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
+{
+    [_source setValue:aValue forKey:aBinding];
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    [_source setValue:aValue forKey:aBinding];
 }
 
 - (void)reverseSetValueFor:(CPString)aBinding
