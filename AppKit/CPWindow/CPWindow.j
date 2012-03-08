@@ -455,6 +455,7 @@ CPTexturedBackgroundWindowMask
         if (aStyleMask & CPBorderlessBridgeWindowMask)
             [self setFullPlatformWindow:YES];
 
+        _autorecalculatesKeyViewLoop = NO;
         _defaultButtonEnabled = YES;
         _keyViewLoopIsDirty = YES;
 
