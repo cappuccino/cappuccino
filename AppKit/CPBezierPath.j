@@ -20,7 +20,6 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  * Copyright 2009 280 North, Inc.
-
  */
 
 @import <Foundation/CPObject.j>
@@ -276,7 +275,7 @@ var DefaultLineWidth = 1.0;
 /*!
     Append the contents of a CPBezierPath object.
 */
-- (void)appendBezierPath:(NSBezierPath *)other
+- (void)appendBezierPath:(CPBezierPath)other
 {
     CGPathAddPath(_path, nil, other._path);
 }
