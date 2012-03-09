@@ -47,7 +47,6 @@ var LIGHT_LEFT_INSET    = 3.0,
 /*!
     @ingroup appkit
 */
-
 @implementation CPShadowView : CPView
 {
     CPShadowWeight  _weight;
@@ -99,22 +98,22 @@ var LIGHT_LEFT_INSET    = 3.0,
 + (id)shadowViewEnclosingView:(CPView)aView withWeight:(CPShadowWeight)aWeight
 {
     var shadowView = [[self alloc] initWithFrame:[aView frame]];
-    
+
     if (shadowView)
     {
-	    [shadowView setWeight:aWeight];
-	
-	    var size = [shadowView frame].size,
-	        width = size.width - [shadowView leftInset] - [shadowView rightInset],
-	        height = size.height - [shadowView topInset] - [shadowView bottomInset],
-	        enclosingView = [aView superview];
-	
-	    [shadowView setHitTests:[aView hitTests]];
-	    [shadowView setAutoresizingMask:[aView autoresizingMask]];
-	    [aView removeFromSuperview];
-	    [shadowView addSubview:aView];
-	    [aView setFrame:CGRectMake([shadowView leftInset], [shadowView topInset], width, height)]
-	    [enclosingView addSubview:shadowView];
+        [shadowView setWeight:aWeight];
+
+        var size = [shadowView frame].size,
+            width = size.width - [shadowView leftInset] - [shadowView rightInset],
+            height = size.height - [shadowView topInset] - [shadowView bottomInset],
+            enclosingView = [aView superview];
+
+        [shadowView setHitTests:[aView hitTests]];
+        [shadowView setAutoresizingMask:[aView autoresizingMask]];
+        [aView removeFromSuperview];
+        [shadowView addSubview:aView];
+        [aView setFrame:CGRectMake([shadowView leftInset], [shadowView topInset], width, height)]
+        [enclosingView addSubview:shadowView];
     }
 
     return shadowView;
