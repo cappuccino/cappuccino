@@ -116,6 +116,78 @@
     [self assert:[theWindow firstResponder] equals:tableView message:"table view should be first responder after cell edit"];
 }
 
+/*!
+    Verify that all data appears as expected, using the right data views etc. This is a bit of a kitchen
+    sink test, verifying multiple behaviours of the table view.
+*/
+- (void)testLayout
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, 100.0, 100.0)],
+        tableColumn1 = [[CPTableColumn alloc] initWithIdentifier:@"Bar"];
+    [tableView addTableColumn:tableColumn1];
+    [scrollView setDocumentView:tableView];
+
+    [tableColumn setWidth:50.0];
+    [tableColumn1 setWidth:50.0];
+
+    var arrayController = [CPArrayController new],
+        contentArray = [];
+
+    for (var row = 0; row < 50; row++)
+    {
+        var column = row * 2;
+        contentArray.push([CPDictionary dictionaryWithObjects:["R" + row + "C0", "R" + row + "C1"] forKeys:["c1", "c2"]]);
+    }
+    [arrayController setContent:contentArray];
+
+    [tableColumn bind:CPValueBinding toObject:arrayController withKeyPath:@"arrangedObjects.c1" options:nil];
+    [tableColumn1 bind:CPValueBinding toObject:arrayController withKeyPath:@"arrangedObjects.c2" options:nil];
+
+    [tableColumn setDataView:[CustomTextView0 new]];
+    [tableColumn1 setDataView:[CustomTextView1 new]];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    [self assert:50 equals:[tableView numberOfRows] message:"tableView numberOfRows should reflect content array length"];
+
+    function AssertCorrectCellsVisible(startingRow)
+    {
+        var allViews = getAllViews(tableView);
+
+        // Sort views from left to right, top to bottom.
+        [allViews sortUsingFunction:keyViewComparator context:nil];
+
+        // We only care about the placement of data views - what else the table puts in there is up to it.
+        [allViews filterUsingPredicate:[CPPredicate predicateWithFormat:@"self.class.description beginswith %@", "CustomTextView"]];
+
+        for (var i = 0; i < [allViews count]; i++)
+        {
+            var view = allViews[i],
+                column = i % 2,
+                row = startingRow + Math.floor(i / 2); // Two columns per row.
+            //CPLog.error([view stringValue] + " frame: " + CPStringFromRect([tableView convertRect:[view frame] toView:nil]));
+            [self assert:("R" + row + "C" + column) equals:[view stringValue] message:"(" + row + ", " + column + ") string value"];
+            [self assert:"CustomTextView" + column equals:[[view class] description] message:"(" + row + ", " + column + ") data view"];
+        }
+
+        return allViews;
+    }
+
+    var allViews = AssertCorrectCellsVisible(0),
+        visibleHeight = [tableView visibleRect].size.height,
+        fullRowHeight = [tableView rowHeight] + [tableView intercellSpacing].height,
+        visibleRows = Math.ceil(visibleHeight / fullRowHeight);
+    [self assert:2 * visibleRows equals:[allViews count] message:"only as many data views as necessary should be present"];
+
+    // Now if we scroll down, new views should come in and others should go out.
+    var rowTwentyFiveAndAHalfY = Math.floor(25.5 * fullRowHeight);
+    [tableView scrollPoint:CGPointMake(0, rowTwentyFiveAndAHalfY)];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    AssertCorrectCellsVisible(25);
+    [self assert:2 * visibleRows  equals:[allViews count] message:"only as many data views as necessary should be present (2)"];
+}
+
 @end
 
 @implementation TestDataSource : CPObject
@@ -150,3 +222,51 @@
 }
 
 @end
+
+@implementation CustomTextView0 : CPTextField
+@end
+
+@implementation CustomTextView1 : CPTextField
+@end
+
+var getAllViews = function(aView)
+{
+    var views = [aView],
+        subviews = [aView subviews];
+
+    for (var i = 0, count = [subviews count]; i < count; i++)
+        views = views.concat(getAllViews(subviews[i]));
+
+    return views;
+};
+
+var keyViewComparator = function(lhs, rhs, context)
+{
+    var lhsBounds = [lhs convertRect:[lhs bounds] toView:nil],
+        rhsBounds = [rhs convertRect:[rhs bounds] toView:nil],
+        lhsY = CGRectGetMinY(lhsBounds),
+        rhsY = CGRectGetMinY(rhsBounds),
+        lhsX = CGRectGetMinX(lhsBounds),
+        rhsX = CGRectGetMinX(rhsBounds),
+        intersectsVertically = MIN(CGRectGetMaxY(lhsBounds), CGRectGetMaxY(rhsBounds)) - MAX(lhsY, rhsY);
+
+    // If two views are "on the same line" (intersect vertically), then rely on the x comparison.
+    if (intersectsVertically > 0)
+    {
+        if (lhsX < rhsX)
+            return CPOrderedAscending;
+
+        if (lhsX === rhsX)
+            return CPOrderedSame;
+
+        return CPOrderedDescending;
+    }
+
+    if (lhsY < rhsY)
+        return CPOrderedAscending;
+
+    if (lhsY === rhsY)
+        return CPOrderedSame;
+
+    return CPOrderedDescending;
+};
