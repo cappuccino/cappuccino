@@ -603,7 +603,7 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
                                         break;
 
             case PLIST_DATA:            object = new CFMutableData();
-                                        object.bytes = FIRST_CHILD(XMLNode) ? CFData.decodeBase64ToArray(TEXT_CONTENT(XMLNode), YES) : [];
+                                        object._bytes = FIRST_CHILD(XMLNode) ? CFData.decodeBase64ToArray(TEXT_CONTENT(XMLNode), YES) : [];
                                         break;
 
             default:                    throw new Error("*** " + NODE_NAME(XMLNode) + " tag not recognized in Plist.");
