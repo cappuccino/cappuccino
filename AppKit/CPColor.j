@@ -147,7 +147,7 @@ function CPColorWithImages()
 */
 + (CPColor)colorWithRed:(float)red green:(float)green blue:(float)blue alpha:(float)alpha
 {
-    return [[CPColor alloc] _initWithRGBA:[red, green, blue, alpha]];
+    return [[CPColor alloc] _initWithRGBA:[MAX(0.0, MIN(1.0, red)), MAX(0.0, MIN(1.0, green)), MAX(0.0, MIN(1.0, blue)), MAX(0.0, MIN(1.0, alpha))]];
 }
 
 /*!
