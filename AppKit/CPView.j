@@ -141,6 +141,7 @@ var CPViewFlags                     = { },
     BOOL                _postsFrameChangedNotifications;
     BOOL                _postsBoundsChangedNotifications;
     BOOL                _inhibitFrameAndBoundsChangedNotifications;
+    BOOL                _inLiveResize;
 
 #if PLATFORM(DOM)
     DOMElement          _DOMElement;
@@ -2126,6 +2127,43 @@ setBoundsOrigin:
 */
 - (void)reflectScrolledClipView:(CPClipView)aClipView
 {
+}
+
+/*!
+    Return yes if the receiver is in a live-resize operation.
+*/
+- (BOOL)inLiveResize
+{
+    return _inLiveResize;
+}
+
+/*!
+    Not implemented.
+
+    A view will be sent this message before a window begins a resize operation. The
+    receiver might choose to simplify its drawing operations during a live resize
+    for speed.
+
+    Subclasses should call super.
+*/
+- (void)viewWillStartLiveResize
+{
+    _inLiveResize = YES;
+}
+
+/*!
+    Not implemented.
+
+    A view will be sent this message after a window finishes a resize operation. The
+    receiver which simplified its drawing operations in viewWillStartLiveResize might
+    stop doing so now. Note the view might no longer be in a window, so use
+    [self setNeedsDisplay:YES] if a final non-simplified redraw is required.
+
+    Subclasses should call super.
+*/
+- (void)viewDidEndLiveResize
+{
+    _inLiveResize = NO;
 }
 
 @end
