@@ -87,9 +87,9 @@ CPTableViewSelectionHighlightStyleNone = -1;
 CPTableViewSelectionHighlightStyleRegular = 0;
 CPTableViewSelectionHighlightStyleSourceList = 1;
 
-CPTableViewGridNone                    = 0;
-CPTableViewSolidVerticalGridLineMask   = 1 << 0;
-CPTableViewSolidHorizontalGridLineMask = 1 << 1;
+CPTableViewGridNone                     = 0;
+CPTableViewSolidVerticalGridLineMask    = 1 << 0;
+CPTableViewSolidHorizontalGridLineMask  = 1 << 1;
 
 CPTableViewNoColumnAutoresizing = 0;
 CPTableViewUniformColumnAutoresizingStyle = 1; // FIX ME: This is FUBAR
@@ -1513,7 +1513,7 @@ NOT YET IMPLEMENTED
 
     if ([scrollView isKindOfClass:[CPScrollView class]] && [scrollView documentView] === self)
         [scrollView _updateCornerAndHeaderView];
-        
+
     [self setNeedsLayout];
 }
 
@@ -3723,7 +3723,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     {
         var topGroupLineColor = [CPColor colorWithCalibratedWhite:212.0 / 255.0 alpha:1.0],
             bottomGroupLineColor = [CPColor colorWithCalibratedWhite:185.0 / 255.0 alpha:1.0],
-            gradientGroupColor = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [212.0 / 255.0, 212.0 / 255.0, 212.0 / 255.0,1.0, 197.0 / 255.0, 197.0 / 255.0, 197.0 / 255.0,1.0], [0,1], 2);
+            gradientGroupColor = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [212.0 / 255.0, 212.0 / 255.0, 212.0 / 255.0, 1.0, 197.0 / 255.0, 197.0 / 255.0, 197.0 / 255.0, 1.0], [0, 1], 2);
     }
 
     while (count--)
@@ -3841,8 +3841,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     var gradientCache = [self selectionGradientColors],
         topLineColor = [CPColor colorWithHexString:"d3d3d3"],
         bottomLineColor = [CPColor colorWithHexString:"bebebd"],
-        gradientColor = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [220.0 / 255.0, 220.0 / 255.0, 220.0 / 255.0,1.0,
-                                                                                            199.0 / 255.0, 199.0 / 255.0, 199.0 / 255.0,1.0], [0,1], 2),
+        gradientColor = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [220.0 / 255.0, 220.0 / 255.0, 220.0 / 255.0, 1.0,
+                                                                                            199.0 / 255.0, 199.0 / 255.0, 199.0 / 255.0, 1.0], [0, 1], 2),
         drawGradient = YES;
 
     while (i--)
