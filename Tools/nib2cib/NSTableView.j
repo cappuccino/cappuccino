@@ -78,6 +78,8 @@
 
         _allowsColumnResizing = (flags & 0x40000000) ? YES : NO;
         _allowsColumnReordering = (flags & 0x80000000) ? YES : NO;
+
+        [self setBackgroundColor:[aCoder decodeObjectForKey:@"NSBackgroundColor"]];
     }
 
     return self;
