@@ -42,6 +42,7 @@
 @import "CPCollectionViewItem.j"
 @import "CPColor.j"
 @import "CPColorPanel.j"
+@import "CPColorSpace.j"
 @import "CPColorWell.j"
 @import "CPCompatibility.j"
 @import "CPControl.j"
