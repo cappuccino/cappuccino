@@ -15,6 +15,9 @@
     @outlet CustomDrawView  view2;
     @outlet CustomDrawView  view3;
     @outlet CustomDrawView  view4;
+
+    @outlet CustomDrawView  gradientView0;
+    @outlet CustomDrawView  gradientView1;
 }
 
 - (void)awakeFromCib
@@ -65,9 +68,33 @@
 
         innerRect = CPDrawColorTiledRects(bounds, bounds, sides, colors);
     }
+    else if (aView === gradientView0 || aView === gradientView1)
+    {
+        var bounds = [aView bounds],
+            locations,
+            colors;
 
-    CGContextSetFillColor(context, [CPColor colorWithHexString:@"E1EAFF"]);
-    CGContextFillRect(context, innerRect);
+        if (aView === gradientView0)
+        {
+            locations = [0.0, 0.25, 0.50, 0.75, 1.0];
+            colors = [[CPColor blackColor], [CPColor redColor], [CPColor greenColor], [CPColor blueColor], [CPColor whiteColor]];
+        }
+        else
+        {
+            locations = [0.0, 0.35, 0.66, 1.0];
+            var mainColor = [CPColor blackColor];
+            colors = [[mainColor colorWithAlphaComponent:0.0], mainColor, mainColor, [mainColor colorWithAlphaComponent:0.0]];
+        }
+
+        var gradient = [[CPGradient alloc] initWithColors:colors atLocations:locations colorSpace:[CPColorSpace sRGBColorSpace]];
+        [gradient drawInRect:bounds angle:0];
+    }
+
+    if (!(aView === gradientView0 || aView === gradientView1))
+    {
+        CGContextSetFillColor(context, [CPColor colorWithHexString:@"E1EAFF"]);
+        CGContextFillRect(context, innerRect);
+    }
 }
 
 @end
@@ -75,7 +102,7 @@
 
 @implementation CustomDrawView : CPView
 {
-    id _delegate @accessors(property=delegate);
+    @outlet id _delegate @accessors(property=delegate);
 }
 
 - (void)drawRect:(CGRect)dirtyRect
