@@ -31,6 +31,26 @@ CPGradientDrawsAfterEndingLocation      = kCGGradientDrawsAfterEndLocation;
     CGGradient _gradient;
 }
 
+- (id)initWithColors:(CPArray)someColors
+{
+    var count = [someColors count];
+
+    if (count < 2)
+        [CPException raise:CPInvalidArgumentException reason:@"at least 2 colors required"];
+
+    var distance = 1.0 / (count - 1),
+        locations = [CPMutableArray array],
+        location = 0.0;
+
+    for (var i = 0; i < count; i++)
+    {
+        [locations addObject:location];
+        location += distance;
+    }
+
+    return [self initWithColors:someColors atLocations:locations colorSpace:nil];
+}
+
 - (id)initWithColors:(CPArray)someColors atLocations:(CPArray)someLocations colorSpace:(CPColorSpace)aColorSpace
 {
     if (self = [super init])
