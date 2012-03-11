@@ -22,10 +22,6 @@
 
 - (void)awakeFromCib
 {
-    [view1 setDelegate:self];
-    [view2 setDelegate:self];
-    [view3 setDelegate:self];
-    [view4 setDelegate:self];
 }
 
 - (void)viewWillDraw:(CPView)aView dirtyRect:(CGRect)dirtyRect
