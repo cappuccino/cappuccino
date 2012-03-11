@@ -20,6 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+CPGradientDrawsBeforeStartingLocation   = kCGGradientDrawsBeforeStartLocation;
+CPGradientDrawsAfterEndingLocation      = kCGGradientDrawsAfterEndLocation;
+
 /*!
     A class for drawing linear and radial gradients with a convenient API.
 */
@@ -51,11 +54,20 @@
     var ctx = [[CPGraphicsContext currentContext] graphicsPort];
 
     CGContextSaveGState(ctx);
+    CGContextClipToRect(ctx, rect);
     CGContextAddRect(ctx, rect);
-    CGContextDrawLinearGradient(ctx, _gradient, rect.origin, CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect)), 0);
-    CGContextRestoreGState(ctx);
 
-    //[self drawFromPoint:rect.origin toPoint:CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect)) options:0];
+    [self drawFromPoint:rect.origin toPoint:CGPointMake(CGRectGetMaxX(rect), CGRectGetMinY(rect)) options:CPGradientDrawsBeforeStartingLocation | CPGradientDrawsAfterEndingLocation];
+    CGContextRestoreGState(ctx);
+}
+
+- (void)drawFromPoint:(NSPoint)startingPoint toPoint:(NSPoint)endingPoint options:(NSGradientDrawingOptions)options
+{
+    var ctx = [[CPGraphicsContext currentContext] graphicsPort];
+
+    // TODO kCGGradientDrawsBeforeStartLocation and kCGGradientDrawsAfterEndLocation are not actually supported
+    // by CGContextDrawLinearGradient yet.
+    CGContextDrawLinearGradient(ctx, _gradient, startingPoint, endingPoint, options);
 }
 
 @end
