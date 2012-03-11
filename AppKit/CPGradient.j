@@ -68,16 +68,43 @@ CPGradientDrawsAfterEndingLocation      = kCGGradientDrawsAfterEndLocation;
 
 - (void)drawInRect:(CGRect)rect angle:(float)angle
 {
-    if (angle !== 0)
-        [CPException raise:CPInvalidArgumentException reason:@"angle != 0 not yet implemented"];
-
     var ctx = [[CPGraphicsContext currentContext] graphicsPort];
 
     CGContextSaveGState(ctx);
     CGContextClipToRect(ctx, rect);
     CGContextAddRect(ctx, rect);
 
-    [self drawFromPoint:rect.origin toPoint:CGPointMake(CGRectGetMaxX(rect), CGRectGetMinY(rect)) options:CPGradientDrawsBeforeStartingLocation | CPGradientDrawsAfterEndingLocation];
+    var startPoint,
+        endPoint;
+
+    // Modulo of negative values doesn't work as expected in JS.
+    angle = ((angle % 360.0) + 360.0) % 360.0;
+
+    if (angle < 90.0)
+        startPoint = CGPointMake(CGRectGetMinX(rect), CGRectGetMinY(rect));
+    else if (angle < 180.0)
+        startPoint = CGPointMake(CGRectGetMaxX(rect), CGRectGetMinY(rect));
+    else if (angle < 270.0)
+        startPoint = CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect));
+    else
+        startPoint = CGPointMake(CGRectGetMinX(rect), CGRectGetMaxY(rect));
+
+    // A line segment comes out of the starting point at the given angle, with the first colour
+    // at the starting point and the last at the end. To do what drawInRect: is supposed to do
+    // we want the opposite corner of the starting corner to just reach the final colour stop.
+    // So when the angle isn't a right angle, the segment has to extend beyond the edge of the
+    // rectangle just far enough. This is hard to describe without a picture but if we place
+    // another line through the opposite corner at -90 degrees, it'll cross through our
+    // gradient segment just where it should end and form a right triangle with the right edge.
+    // of the rect. One leg of this triangle is how far the gradient line should stick out,
+    // and the length of that leg is (in the first quadrant) width * cos(a) + height * sin(a).
+    var radians = PI * angle / 180.0,
+        length = ABS(CGRectGetWidth(rect) * COS(radians)) + ABS(CGRectGetHeight(rect) * SIN(radians));
+
+    endPoint = CGPointMake(startPoint.x + length * COS(radians),
+                           startPoint.y + length * SIN(radians));
+
+    [self drawFromPoint:startPoint toPoint:endPoint options:CPGradientDrawsBeforeStartingLocation | CPGradientDrawsAfterEndingLocation];
     CGContextRestoreGState(ctx);
 }
 
