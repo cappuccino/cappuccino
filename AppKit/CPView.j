@@ -2716,7 +2716,8 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewThemeStateKey             = @"CPViewThemeStateKey",
     CPViewWindowKey                 = @"CPViewWindowKey",
     CPViewNextKeyViewKey            = @"CPViewNextKeyViewKey",
-    CPViewPreviousKeyViewKey        = @"CPViewPreviousKeyViewKey";
+    CPViewPreviousKeyViewKey        = @"CPViewPreviousKeyViewKey",
+    CPReuseIdentifierKey            = @"CPReuseIdentifierKey";
 
 @implementation CPView (CPCoding)
 
@@ -2749,7 +2750,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         _window = [aCoder decodeObjectForKey:CPViewWindowKey];
         _subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey] || [];
         _superview = [aCoder decodeObjectForKey:CPViewSuperviewKey];
-
+        _identifier = [aCoder decodeObjectForKey:CPReuseIdentifierKey];
         // FIXME: Should we encode/decode this?
         _registeredDraggedTypes = [CPSet set];
         _registeredDraggedTypesArray = [];
@@ -2890,6 +2891,9 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     for (var attributeName in _themeAttributes)
         if (_themeAttributes.hasOwnProperty(attributeName))
             CPThemeAttributeEncode(aCoder, _themeAttributes[attributeName]);
+    
+    if (_identifier)
+        [aCoder encodeObject:_identifier forKey:CPReuseIdentifierKey];
 }
 
 @end

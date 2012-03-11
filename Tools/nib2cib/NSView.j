@@ -72,6 +72,9 @@ var NSViewAutoresizingMask = 0x3F,
         _themeAttributes = {};
         _themeState = CPThemeStateNormal;
         [self _loadThemeAttributes];
+        
+        if ([aCoder containsValueForKey:@"NSReuseIdentifierKey"])
+            _identifier = [aCoder decodeObjectForKey:@"NSReuseIdentifierKey"];
     }
 
     return self;
