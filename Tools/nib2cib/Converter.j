@@ -46,6 +46,7 @@ ConverterConversionException = @"ConverterConversionException";
     NibFormat   format          @accessors(readonly);
     CPArray     themes          @accessors(readonly);
     CPArray     userNSClasses   @accessors;
+    BOOL        compileNib      @accessors;
 }
 
 + (Converter)sharedConverter
@@ -63,6 +64,7 @@ ConverterConversionException = @"ConverterConversionException";
         inputPath = aPath;
         format = nibFormat;
         themes = themeList;
+        compileNib = YES;
     }
 
     return self;
@@ -114,11 +116,18 @@ ConverterConversionException = @"ConverterConversionException";
 
     try
     {
-        // Compile xib or nib to make sure we have a non-new format nib.
-        temporaryNibFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.nib");
+        if (compileNib)
+        {
+            // Compile xib or nib to make sure we have a non-new format nib.
+            temporaryNibFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.nib");
 
-        if (OS.popen(["/usr/bin/ibtool", aFilePath, "--compile", temporaryNibFilePath]).wait() === 1)
-            [CPException raise:ConverterConversionException reason:@"Could not compile file: " + aFilePath];
+            if (OS.popen(["/usr/bin/ibtool", aFilePath, "--compile", temporaryNibFilePath]).wait() === 1)
+                [CPException raise:ConverterConversionException reason:@"Could not compile file: " + aFilePath];
+        }
+        else
+        {
+            temporaryNibFilePath = aFilePath;
+        }
 
         // Convert from binary plist to XML plist
         var temporaryPlistFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.plist");
