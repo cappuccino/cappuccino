@@ -31,7 +31,7 @@ var sRGBColorSpace = nil;
 }
 
 /*!
-    Return an object representing the standard sRGB colorspace.
+    Return an object representing the standard sRGB color space.
 */
 + (CPColorSpace)sRGBColorSpace
 {

@@ -37,10 +37,10 @@ CPGradientDrawsAfterEndingLocation      = kCGGradientDrawsAfterEndLocation;
     {
         var cgColors = [],
             count = [someColors count],
-            colorspace = CGColorSpaceCreateDeviceRGB;
+            colorSpace = [aColorSpace CGColorSpace] || CGColorSpaceCreateDeviceRGB;
         for (var i = 0; i < count; i++)
-            cgColors.push(CGColorCreate(colorspace, [someColors[i] components]));
-        _gradient = CGGradientCreateWithColors(aColorSpace, cgColors, someLocations);
+            cgColors.push(CGColorCreate(colorSpace, [someColors[i] components]));
+        _gradient = CGGradientCreateWithColors(colorSpace, cgColors, someLocations);
     }
 
     return self;
