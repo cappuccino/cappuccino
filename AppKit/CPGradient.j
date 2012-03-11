@@ -35,8 +35,8 @@
         var cgColors = [],
             count = [someColors count],
             colorspace = CGColorSpaceCreateDeviceRGB;
-        while (count--)
-            cgColors.push(CGColorCreate(colorspace, [someColors[count] components]));
+        for (var i = 0; i < count; i++)
+            cgColors.push(CGColorCreate(colorspace, [someColors[i] components]));
         _gradient = CGGradientCreateWithColors(aColorSpace, cgColors, someLocations);
     }
 
