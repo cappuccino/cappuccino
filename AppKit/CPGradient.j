@@ -94,10 +94,13 @@ CPGradientDrawsAfterEndingLocation      = kCGGradientDrawsAfterEndLocation;
     // we want the opposite corner of the starting corner to just reach the final colour stop.
     // So when the angle isn't a right angle, the segment has to extend beyond the edge of the
     // rectangle just far enough. This is hard to describe without a picture but if we place
-    // another line through the opposite corner at -90 degrees, it'll cross through our
-    // gradient segment just where it should end and form a right triangle with the right edge.
-    // of the rect. One leg of this triangle is how far the gradient line should stick out,
-    // and the length of that leg is (in the first quadrant) width * cos(a) + height * sin(a).
+    // another line through the opposite corner at -90 degrees, it'll help form some triangles
+    // from which we can derive this formula:
+    //
+    // length = cos(angle) * (rectWidth + rectHeight * tan(angle))
+    //
+    // This simplifies down to (in the first quadrant) rectWidth * cos(a) + rectHeight * sin(a).
+
     var radians = PI * angle / 180.0,
         length = ABS(_CGRectGetWidth(rect) * COS(radians)) + ABS(_CGRectGetHeight(rect) * SIN(radians));
 
