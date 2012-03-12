@@ -367,7 +367,7 @@ var CPArrayClass                                                            = Ni
 
     var objectClass = data.isa;
     if (objectClass === CPDataClass)
-        return data.bytes;
+        return data.bytes();
 
     return nil;
 }
