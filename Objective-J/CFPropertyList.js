@@ -159,7 +159,7 @@ CFPropertyListSerializers[CFPropertyList.FormatXML_v1_0] =
 
     "string":       function(/*String*/ aString)
                     {
-                        return "<string>" + encodeHTMLComponent(aString) + "</string>";;
+                        return "<string>" + encodeHTMLComponent(aString) + "</string>";
                     },
 
     "boolean" :     function(/*Boolean*/ aBoolean)
