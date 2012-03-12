@@ -19,9 +19,9 @@ var originalBase64Data = "YnBsaXN0MDDUAQIDBAUG6utYJHZlcnNpb25YJG9iamVjdHNZJGFyY2
 {
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
         contentView = [theWindow contentView];
-        
+
     [theWindow orderFront:self];
-    
+
     var path = [[CPBundle mainBundle] pathForResource:@"PropertyList.plist"],
         request = [CPURLRequest requestWithURL:path],
         connection = [CPURLConnection connectionWithRequest:request delegate:self];
@@ -40,7 +40,7 @@ var originalBase64Data = "YnBsaXN0MDDUAQIDBAUG6utYJHZlcnNpb25YJG9iamVjdHNZJGFyY2
     deserializedData = [CPPropertyListSerialization propertyListFromData:receivedData format:CPPropertyListXMLFormat_v1_0];
 
     document.write("This test checks the class and value of objects deserialized from a CPPropertyListXMLFormat_v1_0 file</br></br>");
-    
+
     [self testObjectForKey:@"Number" isKindOfClass:[CPNumber class]];
     [self testObjectForKey:@"Number" isEqual:12];
 
@@ -54,15 +54,15 @@ var originalBase64Data = "YnBsaXN0MDDUAQIDBAUG6utYJHZlcnNpb25YJG9iamVjdHNZJGFyY2
     [self testObjectForKey:@"Dict.Number" isKindOfClass:[CPNumber class]];
     [self testObjectForKey:@"Dict.Data" isKindOfClass:[CPData class]];
     [self testObjectForKey:@"Dict.Bool" isEqual:YES];
-    
+
     [self testObjectForKey:@"Array" isKindOfClass:[CPArray class]];
 
     // CPData -isEqual: is not implemented. Here we convert the CPData we get from CPPropertyListSerialization to base64 (using the CFData API) and compare with the original.
 
-    var dataObject = [deserializedData objectForKey:@"Data"];
-    var base64 = CFData.encodeBase64Array(dataObject.bytes());
-    var isvalue = (base64 == originalBase64Data);
-    
+    var dataObject = [deserializedData objectForKey:@"Data"],
+        base64 = CFData.encodeBase64Array(dataObject.bytes()),
+        isvalue = (base64 == originalBase64Data);
+
     if (isvalue)
         document.write(@"Key Data base64: TEST PASSED");
     else
@@ -78,7 +78,7 @@ var originalBase64Data = "YnBsaXN0MDDUAQIDBAUG6utYJHZlcnNpb25YJG9iamVjdHNZJGFyY2
         result = @"Key " + aKey + " class: TEST PASSED </br>";
     else
         result = @"Key " + aKey + "should be of class:" + aClass + " was: " + [value class] + "</br>";
-        
+
     document.write(result);
 }
 
@@ -90,7 +90,7 @@ var originalBase64Data = "YnBsaXN0MDDUAQIDBAUG6utYJHZlcnNpb25YJG9iamVjdHNZJGFyY2
         result = @"Key " + aKey + " value: TEST PASSED </br>";
     else
         result = @"Key " + aKey + "should be :" + aValue + " was: " + value  + "</br>";
-    
+
     document.write(result);
 }
 
