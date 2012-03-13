@@ -7,7 +7,7 @@
  */
 
 @import <Foundation/CPObject.j>
-
+@import "../CPTableView+Debug.j"
 
 @implementation AppController : CPObject
 {
@@ -36,7 +36,8 @@
 
     var data = [[CPData alloc] initWithRawString:dataString],
         theRows = [CPPropertyListSerialization propertyListFromData:data format:CPPropertyListXMLFormat_v1_0];
-
+    
+     [CPTableView profileViewLoading];
      [self setContent:theRows];
 }
 

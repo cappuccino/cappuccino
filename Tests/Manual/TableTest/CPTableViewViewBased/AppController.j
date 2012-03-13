@@ -7,6 +7,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import "../CPTableView+Debug.j"
 
 @implementation AppController : CPObject
 {
@@ -54,6 +55,8 @@
     [contentView addSubview:scrollView];
 
     [theWindow orderFront:self];
+    
+    [CPTableView profileViewLoading];
 }
 
 - (void)buildModel // For the editable view aka the slider
@@ -114,3 +117,4 @@
 }
 
 @end
+

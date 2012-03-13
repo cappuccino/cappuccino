@@ -7,6 +7,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import "../CPTableView+Debug.j"
 
 CPLogRegister(CPLogConsole);
 
@@ -29,6 +30,7 @@ CPLogRegister(CPLogConsole);
 
     // In this case, we want the window from Cib to become our full browser window
     [theWindow setFullBridge:YES];
+    [CPTableView profileViewLoading];
 }
 
 - (int)numberOfRowsInTableView:(CPTableView)tableView
