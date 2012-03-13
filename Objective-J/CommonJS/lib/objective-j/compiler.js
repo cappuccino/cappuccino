@@ -14,13 +14,16 @@ var compressors = {
     //,yui : { id : "minify/yuicompressor" }
     // ,cc  : { id : "minify/closure-compiler" }
 };
+
 var compressorStats = {};
-function compressor(code) {
+function compressor(code)
+{
     var winner, winnerName;
     compressorStats['original'] = (compressorStats['original'] || 0) + code.length;
-    for (var name in compressors) {
-        var compressor = require(compressors[name].id);
-        var result = compressor.compress(code, { charset : "UTF-8", useServer : true });
+    for (var name in compressors)
+    {
+        var aCompressor = require(compressors[name].id),
+            result = aCompressor.compress(code, { charset : "UTF-8", useServer : true });
         compressorStats[name] = (compressorStats[name] || 0) + result.length;
         if (!winner || result < winner.length) {
             winner = result;
