@@ -849,11 +849,17 @@ var CPViewFlags                     = { },
 
             if (_backgroundType === BackgroundVerticalThreePartImage)
             {
+                // Make sure to repeat the top and bottom pieces horizontally if they're not the exact width needed.
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], size.width, _DOMImageSizes[0].height);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], size.width, size.height - _DOMImageSizes[0].height - _DOMImageSizes[2].height);
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[2], size.width, _DOMImageSizes[2].height);
             }
             else if (_backgroundType === BackgroundHorizontalThreePartImage)
             {
+                // Make sure to repeat the left and right pieces vertically if they're not the exact height needed.
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], _DOMImageSizes[0].width, size.height);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], size.width - _DOMImageSizes[0].width - _DOMImageSizes[2].width, size.height);
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[2], _DOMImageSizes[2].width, size.height);
             }
             else if (_backgroundType === BackgroundNinePartImage)
             {
@@ -1540,7 +1546,10 @@ var CPViewFlags                     = { },
         }
         else if (_backgroundType == BackgroundVerticalThreePartImage)
         {
+            // Make sure to repeat the top and bottom pieces horizontally if they're not the exact width needed.
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], frameSize.width, _DOMImageSizes[0].height);
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], frameSize.width, frameSize.height - _DOMImageSizes[0].height - _DOMImageSizes[2].height);
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[2], frameSize.width, _DOMImageSizes[2].height);
 
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[0], NULL, 0.0, 0.0);
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[1], NULL, 0.0, _DOMImageSizes[0].height);
@@ -1548,7 +1557,10 @@ var CPViewFlags                     = { },
         }
         else if (_backgroundType == BackgroundHorizontalThreePartImage)
         {
+            // Make sure to repeat the left and right pieces vertically if they're not the exact height needed.
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], _DOMImageSizes[0].width, frameSize.height);
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], frameSize.width - _DOMImageSizes[0].width - _DOMImageSizes[2].width, frameSize.height);
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[2], _DOMImageSizes[2].width, frameSize.height);
 
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[0], NULL, 0.0, 0.0);
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[1], NULL, _DOMImageSizes[0].width, 0.0);
