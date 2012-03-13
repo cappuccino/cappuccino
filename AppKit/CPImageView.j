@@ -69,6 +69,14 @@ var CPImageViewEmptyPlaceholderImage = nil;
     CPImageViewEmptyPlaceholderImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"empty.png"]];
 }
 
++ (Class)_binderClassForBinding:(CPString)theBinding
+{
+    if (theBinding == CPValueURLBinding || theBinding == CPValuePathBinding)
+        return [CPImageViewValueBinder class];
+
+    return [super _binderClassForBinding:theBinding];
+}
+
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
@@ -445,6 +453,51 @@ var CPImageViewEmptyPlaceholderImage = nil;
     }
 
     return YES;
+}
+
+@end
+
+@implementation CPImageViewValueBinder : CPBinder
+{
+}
+
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options
+{
+    [self _setPlaceholder:nil forMarker:CPMultipleValuesMarker isDefault:YES];
+    [self _setPlaceholder:nil forMarker:CPNoSelectionMarker isDefault:YES];
+    [self _setPlaceholder:nil forMarker:CPNotApplicableMarker isDefault:YES];
+    [self _setPlaceholder:nil forMarker:CPNullMarker isDefault:YES];
+}
+
+- (void)setValueFor:(CPString)theBinding
+{
+    var destination = [_info objectForKey:CPObservedObjectKey],
+        keyPath = [_info objectForKey:CPObservedKeyPathKey],
+        options = [_info objectForKey:CPOptionsKey],
+        newValue = [destination valueForKeyPath:keyPath],
+        isPlaceholder = CPIsControllerMarker(newValue);
+
+    if (newValue == nil)
+        return;
+
+    if (isPlaceholder)
+    {
+        if (newValue === CPNotApplicableMarker && [options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
+        {
+           [CPException raise:CPGenericException
+                       reason:@"can't transform non applicable key on: " + _source + " value: " + newValue];
+        }
+
+        [_source setImage:nil];
+        [_source setBackgroundColor:[CPColor lightGrayColor]];
+    }
+    else
+    {
+        newValue = [self transformValue:newValue withOptions:options];
+
+        var image = [[CPImage alloc] initWithContentsOfFile:newValue];
+        [_source setImage:image];
+    }
 }
 
 @end
