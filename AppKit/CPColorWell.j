@@ -314,7 +314,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     {
         newValue = [self transformValue:newValue withOptions:options];
     }
-    
+
     [_source setColor:newValue];
 }
 
