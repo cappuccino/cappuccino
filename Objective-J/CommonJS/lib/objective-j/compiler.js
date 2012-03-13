@@ -159,7 +159,8 @@ exports.compile = function(aFilePath, flags)
 exports.main = function(args)
 {
     var shouldPrintOutput = false,
-        asPlainJavascript = false;
+        asPlainJavascript = false,
+        objjcFlags = 0;
 
     var argv = args.slice(1);
 
@@ -185,12 +186,22 @@ exports.main = function(args)
             continue;
         }
 
+        if (argv[0] === "-T" || argv[0] === "--incluceTypeSignatures")
+        {
+            objjcFlags |= ObjectiveJ.Preprocessor.Flags.IncludeTypeSignatures;
+            argv.shift();
+            continue;
+        }
+
         if (argv[0] === "--help" || argv[0].substr(0, 1) == '-')
         {
             print("Usage: " + args[0] + " [options] [--] file...");
-            print("  -p, --print    print the output directly to stdout");
-            print("  --unmarked     don't tag the output with @STATIC header");
-            print("  --help         print this help");
+            print("  -p, --print                    print the output directly to stdout");
+            print("  --unmarked                     don't tag the output with @STATIC header");
+            print("");
+            print("  -T, --includeTypeSignatures    include type signatures in the compiled output");
+            print("");
+            print("  --help                         print this help");
             return;
         }
 
@@ -202,9 +213,9 @@ exports.main = function(args)
 
     var resolved = resolveFlags(argv),
         outputFilePaths = resolved.outputFilePaths,
-        objjcFlags = resolved.objjcFlags,
         gccFlags = resolved.gccFlags;
 
+    objjcFlags |= resolved.objjcFlags;
     resolved.filePaths.forEach(function(filePath, index)
     {
         if (!shouldPrintOutput)
