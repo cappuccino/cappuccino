@@ -69,6 +69,13 @@ NS_CPToolbarItemIdentifierMap =
 
         [self setView:[aCoder decodeObjectForKey:@"NSToolbarItemView"]];
 
+        // A Cappuccino search field is 30 px normally while a Cocoa one is 22.
+        if ([_view isKindOfClass:CPSearchField] && _maxSize.height == 22.0)
+        {
+            _maxSize.height = [_view frameSize].height;
+            _minSize.height = _maxSize.height;
+        }
+
         [self setVisibilityPriority:[aCoder decodeIntForKey:@"NSToolbarItemVisibilityPriority"]];
         [self setAutovalidates:[aCoder decodeBoolForKey:"NSToolbarItemAutovalidates"]];
     }
