@@ -6,7 +6,7 @@
  * Copyright 2010, Your Company All rights reserved.
  */
 
-var categories = ["firstName","lastName"],
+var categories = ["firstName", "lastName"],
     MenuItemPrefix = @"   ";
 
 @implementation AppController : CPObject
@@ -26,7 +26,7 @@ var categories = ["firstName","lastName"],
     searchCategoryIndex = 0;
     searchCategoryIndexes = [CPArray arrayWithArray:[1, 2]];
 
-    searchField = [[CPSearchField alloc] initWithFrame:CPMakeRect(30,72,150,30)];
+    searchField = [[CPSearchField alloc] initWithFrame:CPMakeRect(30, 72, 150, 30)];
 
     [searchField setRecentsAutosaveName:"autosave"];
     [searchField setTarget:self];
@@ -73,7 +73,7 @@ var categories = ["firstName","lastName"],
 
     [self changeCategory:[[searchField menu] itemAtIndex:1]];
     [self updateFilter:searchField];
-    
+
     [searchField setDelegate:self];
 
     [theWindow center];
