@@ -690,7 +690,8 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 */
 - (CGRect)frameOfOutlineDisclosureControlAtRow:(CPInteger)aRow
 {
-    if (![self isExpandable:[self itemAtRow:aRow]])
+    var theItem = [self itemAtRow:aRow];
+    if (![self isExpandable:theItem] || (_implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldShowOutlineViewForItem_ && ![_outlineViewDelegate outlineView:self shouldShowOutlineViewForItem:theItem]))
         return _CGRectMakeZero();
 
     var dataViewFrame = [self _frameOfOutlineDataViewAtRow:aRow],
@@ -1285,7 +1286,12 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
             item = _itemsForRows[row],
             isExpandable = [self isExpandable:item];
 
-       if (!isExpandable)
+        if (!isExpandable)
+            continue;
+
+        var disclosureControlFrame = [self frameOfOutlineDisclosureControlAtRow:row];
+
+        if (_CGRectIsEmpty(disclosureControlFrame))
             continue;
 
         var control = [self _dequeueDisclosureControl];
@@ -1295,7 +1301,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         [control setState:[self isItemExpanded:item] ? CPOnState : CPOffState];
         var selector = [self isRowSelected:row] ? @"setThemeState:" : @"unsetThemeState:";
         [control performSelector:CPSelectorFromString(selector) withObject:CPThemeStateSelected];
-        [control setFrame:[self frameOfOutlineDisclosureControlAtRow:row]];
+        [control setFrame:disclosureControlFrame];
 
         [self addSubview:control];
     }
