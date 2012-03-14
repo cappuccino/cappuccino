@@ -136,7 +136,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         _selectionHighlightStyle = CPTableViewSelectionHighlightStyleSourceList;
 
         // The root item has weight "0", thus represents the weight solely of its descendants.
-        _rootItemInfo = { isExpanded:YES, isExpandable:NO, level:-1, row:-1, children:[], weight:0 };
+        _rootItemInfo = { isExpanded:YES, isExpandable:NO, shouldShowOutlineView:NO, level:-1, row:-1, children:[], weight:0 };
 
         _itemsForRows = [];
         _itemInfosForItems = { };
@@ -292,6 +292,19 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         return NO;
 
     return itemInfo.isExpandable;
+}
+
+- (BOOL)_shouldShowOutlineViewForItem:(id)anItem
+{
+    if (!anItem)
+        return YES;
+
+    var itemInfo = _itemInfosForItems[[anItem UID]];
+
+    if (!itemInfo)
+        return NO;
+
+    return itemInfo.shouldShowOutlineView;
 }
 
 /*!
@@ -691,7 +704,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 - (CGRect)frameOfOutlineDisclosureControlAtRow:(CPInteger)aRow
 {
     var theItem = [self itemAtRow:aRow];
-    if (![self isExpandable:theItem] || (_implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldShowOutlineViewForItem_ && ![_outlineViewDelegate outlineView:self shouldShowOutlineViewForItem:theItem]))
+    if (![self isExpandable:theItem] || ![self _shouldShowOutlineViewForItem:theItem])
         return _CGRectMakeZero();
 
     var dataViewFrame = [self _frameOfOutlineDataViewAtRow:aRow],
@@ -1541,6 +1554,7 @@ var _reloadItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anItem)
 
         itemInfo.isExpandable = [dataSource outlineView:anOutlineView isItemExpandable:newItem];
         itemInfo.isExpanded = itemInfo.isExpandable && itemInfo.isExpanded;
+        itemInfo.shouldShowOutlineView = !(_implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldShowOutlineViewForItem_) || [_outlineViewDelegate outlineView:self shouldShowOutlineViewForItem:newItem];
     }
 };
 
@@ -1566,6 +1580,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
                 return [];
 
             itemInfo.isExpandable = [dataSource outlineView:anOutlineView isItemExpandable:anItem];
+            itemInfo.shouldShowOutlineView = !(_implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldShowOutlineViewForItem_) || [_outlineViewDelegate outlineView:self shouldShowOutlineViewForItem:anItem];
 
             // If we were previously expanded, but now no longer expandable, "de-expand".
             // NOTE: we are *not* collapsing, thus no notification is posted.
@@ -1596,7 +1611,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
                 if (!childItemInfo)
                 {
-                    childItemInfo = { isExpanded:NO, isExpandable:NO, children:[], weight:1 };
+                    childItemInfo = { isExpanded:NO, isExpandable:NO, shouldShowOutlineView:YES, children:[], weight:1 };
                     itemInfosForItems[[childItem UID]] = childItemInfo;
                 }
 
