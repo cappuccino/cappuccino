@@ -239,6 +239,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     BOOL                _disableAutomaticResizing @accessors(property=disableAutomaticResizing);
     BOOL                _lastColumnShouldSnap;
     BOOL                _implementsCustomDrawRow;
+    BOOL                _contentBindingExpicitelySet;
 
     CPTableColumn       _draggedColumn;
     CPArray             _differedColumnDataToRemove;
@@ -305,6 +306,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _retargetedDropOperation = nil;
         _dragOperationDefaultMask = nil;
         _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleRegular;
+        _contentBindingExpicitelySet = NO;
 
         [self setBackgroundColor:[CPColor whiteColor]];
         [self _init];
@@ -344,6 +346,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _exposedRows = [CPIndexSet indexSet];
     _exposedColumns = [CPIndexSet indexSet];
     _cachedDataViews = { };
+
     _cachedRowHeights = [];
 
     _groupRows = [CPIndexSet indexSet];
@@ -2823,11 +2826,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             var dataView = [self _newDataViewForRow:row tableColumn:tableColumn];
 
             [dataView setFrame:[self frameOfDataViewAtColumn:columnIndex row:row]];
-            [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
 
-            // If the column uses content bindings, allow them to override the objectValueForTableColumn.
-            [tableColumn _prepareDataView:dataView forRow:row];
-
+            [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
             [view addSubview:dataView];
 
             row = [theDraggedRows indexGreaterThanIndex:row];
@@ -2868,7 +2868,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         dataViewFrame.origin.y = ( _CGRectGetMinY(dataViewFrame) - _CGRectGetMinY([self exposedRect]) ) + 23.0;
         [dataView setFrame:dataViewFrame];
 
-        [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
+        [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
         [dragView addSubview:dataView];
 
         row = [_exposedRows indexGreaterThanIndex:row];
@@ -3267,11 +3267,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                 isTextField = [dataView isKindOfClass:[CPTextField class]];
 
             [dataView setFrame:[self frameOfDataViewAtColumn:column row:row]];
-            [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
 
-            // This gives the table column an opportunity to apply its bindings.
-            // It will override the value set above if there is a binding.
-            [tableColumn _prepareDataView:dataView forRow:row];
+            [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
 
             if (isColumnSelected || [self isRowSelected:row])
                 [dataView setThemeState:CPThemeStateSelectedDataView];
@@ -3327,6 +3324,30 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             }
         }
     }
+}
+
+- (void)_setObjectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow forView:(CPView)aDataView
+{
+    if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_objectValueForTableColumn_row_)
+        [aDataView setObjectValue:[self _objectValueForTableColumn:aTableColumn row:aRow]];
+
+    // This gives the table column an opportunity to apply its bindings.
+    // It will override the value set above if there is a binding.
+
+    if (_contentBindingExpicitelySet)
+        [self _prepareContentBindedDataView:aDataView forRow:aRow];
+    else
+    // For both cell-based and view-based
+        [aTableColumn _prepareDataView:aDataView forRow:aRow];
+}
+
+- (void)_prepareContentBindedDataView:(CPView)dataView forRow:(CPInteger)aRow
+{
+    var binder = [CPTableContentBinder getBinding:@"content" forObject:self],
+        content = [binder content],
+        rowContent = [content objectAtIndex:aRow];
+
+    [dataView setObjectValue:rowContent];
 }
 
 /*!
@@ -4707,6 +4728,14 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 @implementation CPTableView (Bindings)
 
++ (id)_binderClassForBinding:(CPString)aBinding
+{
+    if (aBinding == @"content")
+        return [CPTableContentBinder class];
+
+    return [super _binderClassForBinding:aBinding];
+}
+
 /*!
     @ignore
 */
@@ -4724,7 +4753,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (void)_establishBindingsIfUnbound:(id)destination
 {
     if ([[self infoForBinding:@"content"] objectForKey:CPObservedObjectKey] !== destination)
-        [self bind:@"content" toObject:destination withKeyPath:@"arrangedObjects" options:nil];
+    {
+        [super bind:@"content" toObject:destination withKeyPath:@"arrangedObjects" options:nil];
+        _contentBindingExpicitelySet = NO;
+    }
 
     if ([[self infoForBinding:@"selectionIndexes"] objectForKey:CPObservedObjectKey] !== destination)
         [self bind:@"selectionIndexes" toObject:destination withKeyPath:@"selectionIndexes" options:nil];
@@ -4732,9 +4764,29 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     //[self bind:@"sortDescriptors" toObject:destination withKeyPath:@"sortDescriptors" options:nil];
 }
 
-- (void)setContent:(CPArray)content
+- (void)bind:(CPString)aBinding toObject:(id)anObject withKeyPath:(CPString)aKeyPath options:(CPDictionary)options
 {
-    [self reloadData];
+    [super bind:aBinding toObject:anObject withKeyPath:aKeyPath options:options];
+
+    if (aBinding == @"content")
+        _contentBindingExpicitelySet = YES;
+}
+
+@end
+
+@implementation CPTableContentBinder : CPBinder
+{
+    id _content @accessors(property=content);
+}
+
+- (void)setValueFor:(id)aBinding
+{
+    var destination = [_info objectForKey:CPObservedObjectKey],
+        keyPath = [_info objectForKey:CPObservedKeyPathKey];
+
+    _content = [destination valueForKey:keyPath];
+
+    [_source reloadData];
 }
 
 @end
