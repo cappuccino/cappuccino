@@ -2939,6 +2939,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         headerView = [tableColumn headerView],
         row = [_exposedRows firstIndex];
 
+    [dragView setFrame:bounds];
+
     while (row !== CPNotFound)
     {
         var dataView = [self _newDataViewForRow:row tableColumn:tableColumn],
@@ -2968,7 +2970,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     [dragView setBackgroundColor:[CPColor whiteColor]];
     [dragView setAlphaValue:0.7];
-    [dragView setFrame:bounds];
 
     return dragView;
 }
