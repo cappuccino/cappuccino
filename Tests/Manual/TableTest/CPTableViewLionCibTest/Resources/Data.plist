@@ -3,8 +3,6 @@
 <plist version="1.0">
 <array>
 	<dict>
-		<key>column1</key>
-		<dict>
 			<key>show</key>
 			<true/>
 			<key>image</key>
@@ -13,18 +11,10 @@
 			<string>person</string>
 			<key>name</key>
 			<string>Brad</string>
-		</dict>
-		<key>column2</key>
-		<dict>
-			<key>identifier</key>
-			<string>text</string>
 			<key>value</key>
-			<string>TEXTTEXT</string>
-		</dict>
+			<string>EDITABLE TEXT</string>
 	</dict>
 	<dict>
-		<key>column1</key>
-		<dict>
 			<key>show</key>
 			<true/>
 			<key>slider</key>
@@ -35,18 +25,10 @@
 			<string></string>
 			<key>name</key>
 			<string>Petrograd</string>
-		</dict>
-		<key>column2</key>
-		<dict>
-			<key>identifier</key>
-			<string>text</string>
 			<key>value</key>
-			<string>TEXTTEXT</string>
-		</dict>
+			<string>EDITABLE TEXT</string>
 	</dict>
 	<dict>
-		<key>column1</key>
-		<dict>
 			<key>show</key>
 			<true/>
 			<key>identifier</key>
@@ -55,18 +37,10 @@
 			<string>georges.jpg</string>
 			<key>name</key>
 			<string>Georges</string>
-		</dict>
-		<key>column2</key>
-		<dict>
-			<key>identifier</key>
-			<string>text</string>
 			<key>value</key>
-			<string>TEXTTEXT</string>
-		</dict>
+			<string>EDITABLE TEXT</string>
 	</dict>
 	<dict>
-		<key>column1</key>
-		<dict>
 			<key>show</key>
 			<true/>
 			<key>identifier</key>
@@ -75,18 +49,10 @@
 			<string></string>
 			<key>name</key>
 			<string>Brad</string>
-		</dict>
-		<key>column2</key>
-		<dict>
-			<key>identifier</key>
-			<string>text</string>
 			<key>value</key>
-			<string>TEXTTEXT</string>
-		</dict>
+			<string>EDITABLE TEXT</string>
 	</dict>
 	<dict>
-		<key>column1</key>
-		<dict>
 			<key>show</key>
 			<true/>
 			<key>identifier</key>
@@ -95,18 +61,10 @@
 			<string>john.jpg</string>
 			<key>name</key>
 			<string>John</string>
-		</dict>
-		<key>column2</key>
-		<dict>
-			<key>identifier</key>
-			<string>text</string>
 			<key>value</key>
-			<string>TEXTTEXT</string>
-		</dict>
+			<string>EDITABLE TEXT</string>
 	</dict>
 	<dict>
-		<key>column1</key>
-		<dict>
 			<key>show</key>
 			<true/>
 			<key>slider</key>
@@ -117,18 +75,10 @@
 			<string></string>
 			<key>name</key>
 			<string>Brad</string>
-		</dict>
-		<key>column2</key>
-		<dict>
-			<key>identifier</key>
-			<string>text</string>
 			<key>value</key>
-			<string>TEXTTEXT</string>
-		</dict>
+			<string>EDITABLE TEXT</string>
 	</dict>
 	<dict>
-		<key>column1</key>
-		<dict>
 			<key>show</key>
 			<true/>
 			<key>slider</key>
@@ -139,18 +89,10 @@
 			<string></string>
 			<key>name</key>
 			<string>Robert</string>
-		</dict>
-		<key>column2</key>
-		<dict>
-			<key>identifier</key>
-			<string>text</string>
 			<key>value</key>
-			<string>TEXTTEXT</string>
-		</dict>
+			<string>EDITABLE TEXT</string>
 	</dict>
 	<dict>
-		<key>column1</key>
-		<dict>
 			<key>show</key>
 			<true/>
 			<key>identifier</key>
@@ -159,18 +101,10 @@
 			<string></string>
 			<key>name</key>
 			<string>Albert</string>
-		</dict>
-		<key>column2</key>
-		<dict>
-			<key>identifier</key>
-			<string>text</string>
 			<key>value</key>
-			<string>TEXTTEXT</string>
-		</dict>
+			<string>EDITABLE TEXT</string>
 	</dict>
 	<dict>
-		<key>column1</key>
-		<dict>
 			<key>show</key>
 			<true/>
 			<key>identifier</key>
@@ -179,54 +113,30 @@
 			<string></string>
 			<key>name</key>
 			<string>Melissa</string>
-		</dict>
-		<key>column2</key>
-		<dict>
-			<key>identifier</key>
-			<string>text</string>
 			<key>value</key>
-			<string>TEXTTEXT</string>
-		</dict>
+			<string>EDITABLE TEXT</string>
 	</dict>
 	<dict>
-		<key>column1</key>
-		<dict>
 			<key>identifier</key>
 			<string>multiple</string>
 			<key>image</key>
 			<string>john.jpg</string>
 			<key>name</key>
 			<string>John</string>
-		</dict>
-		<key>column2</key>
-		<dict>
-			<key>identifier</key>
-			<string>text</string>
 			<key>value</key>
-			<string>TEXTTEXT</string>
-		</dict>
+			<string>EDITABLE TEXT</string>
 	</dict>
 	<dict>
-		<key>column1</key>
-		<dict>
 			<key>image</key>
 			<string>brad.jpg</string>
 			<key>identifier</key>
 			<string>person</string>
 			<key>name</key>
 			<string>Brad</string>
-		</dict>
-		<key>column2</key>
-		<dict>
-			<key>identifier</key>
-			<string>text</string>
 			<key>value</key>
-			<string>TEXTTEXT</string>
-		</dict>
+			<string>EDITABLE TEXT</string>
 	</dict>
 	<dict>
-		<key>column1</key>
-		<dict>
 			<key>slider</key>
 			<integer>5</integer>
 			<key>identifier</key>
@@ -235,72 +145,40 @@
 			<string></string>
 			<key>name</key>
 			<string>Petrograd</string>
-		</dict>
-		<key>column2</key>
-		<dict>
-			<key>identifier</key>
-			<string>text</string>
 			<key>value</key>
-			<string>TEXTTEXT</string>
-		</dict>
+			<string>EDITABLE TEXT</string>
 	</dict>
 	<dict>
-		<key>column1</key>
-		<dict>
 			<key>identifier</key>
 			<string>person</string>
 			<key>image</key>
 			<string>georges.jpg</string>
 			<key>name</key>
 			<string>Georges</string>
-		</dict>
-		<key>column2</key>
-		<dict>
-			<key>identifier</key>
-			<string>text</string>
 			<key>value</key>
-			<string>TEXTTEXT</string>
-		</dict>
+			<string>EDITABLE TEXT</string>
 	</dict>
 	<dict>
-		<key>column1</key>
-		<dict>
 			<key>identifier</key>
 			<string>multiple</string>
 			<key>image</key>
 			<string></string>
 			<key>name</key>
 			<string>Brad</string>
-		</dict>
-		<key>column2</key>
-		<dict>
-			<key>identifier</key>
-			<string>text</string>
 			<key>value</key>
-			<string>TEXTTEXT</string>
-		</dict>
+			<string>EDITABLE TEXT</string>
 	</dict>
 	<dict>
-		<key>column1</key>
-		<dict>
 			<key>identifier</key>
 			<string>person</string>
 			<key>image</key>
 			<string>john.jpg</string>
 			<key>name</key>
 			<string>John</string>
-		</dict>
-		<key>column2</key>
-		<dict>
-			<key>identifier</key>
-			<string>text</string>
 			<key>value</key>
-			<string>TEXTTEXT</string>
-		</dict>
+			<string>EDITABLE TEXT</string>
 	</dict>
 	<dict>
-		<key>column1</key>
-		<dict>
 			<key>slider</key>
 			<integer>15</integer>
 			<key>identifier</key>
@@ -309,86 +187,48 @@
 			<string></string>
 			<key>name</key>
 			<string>Brad</string>
-		</dict>
-		<key>column2</key>
-		<dict>
-			<key>identifier</key>
-			<string>text</string>
 			<key>value</key>
-			<string>TEXTTEXT</string>
-		</dict>
+			<string>EDITABLE TEXT</string>
 	</dict>
 	<dict>
-		<key>column1</key>
-		<dict>
 			<key>identifier</key>
 			<string>place</string>
 			<key>image</key>
 			<string></string>
 			<key>name</key>
 			<string>Robert</string>
-		</dict>
-		<key>column2</key>
-		<dict>
-			<key>identifier</key>
-			<string>text</string>
 			<key>value</key>
-			<string>TEXTTEXT</string>
-		</dict>
+			<string>EDITABLE TEXT</string>
 	</dict>
 	<dict>
-		<key>column1</key>
-		<dict>
 			<key>identifier</key>
 			<string>person</string>
 			<key>image</key>
 			<string></string>
 			<key>name</key>
 			<string>Albert</string>
-		</dict>
-		<key>column2</key>
-		<dict>
-			<key>identifier</key>
-			<string>text</string>
 			<key>value</key>
-			<string>TEXTTEXT</string>
-		</dict>
+			<string>EDITABLE TEXT</string>
 	</dict>
 	<dict>
-		<key>column1</key>
-		<dict>
 			<key>identifier</key>
 			<string>person</string>
 			<key>image</key>
 			<string></string>
 			<key>name</key>
 			<string>Melissa</string>
-		</dict>
-		<key>column2</key>
-		<dict>
-			<key>identifier</key>
-			<string>text</string>
 			<key>value</key>
-			<string>TEXTTEXT</string>
-		</dict>
+			<string>EDITABLE TEXT</string>
 	</dict>
 	<dict>
-		<key>column1</key>
-		<dict>
 			<key>identifier</key>
 			<string>multiple</string>
 			<key>image</key>
 			<string>john.jpg</string>
 			<key>name</key>
 			<string>John</string>
-		</dict>
-		<key>column2</key>
-		<dict>
-			<key>identifier</key>
-			<string>text</string>
 			<key>value</key>
-			<string>TEXTTEXT</string>
-		</dict>
+			<string>EDITABLE TEXT</string>
 	</dict>
 </array>
 </plist>
