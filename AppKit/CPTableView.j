@@ -240,7 +240,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     BOOL                _disableAutomaticResizing @accessors(property=disableAutomaticResizing);
     BOOL                _lastColumnShouldSnap;
     BOOL                _implementsCustomDrawRow;
-
+    BOOL                _isViewBased;
     CPTableColumn       _draggedColumn;
     CPArray             _differedColumnDataToRemove;
 }
@@ -2568,6 +2568,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if ([_delegate respondsToSelector:@selector(tableView:dataViewForTableColumn:row:)])
         _implementedDelegateMethods |= CPTableViewDelegate_tableView_dataViewForTableColumn_row_;
 
+    [self _updateIsViewBased];
+
     if ([_delegate respondsToSelector:@selector(tableView:didClickTableColumn:)])
         _implementedDelegateMethods |= CPTableViewDelegate_tableView_didClickTableColumn_;
 
@@ -3387,6 +3389,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
             _dataViewsForTableColumns[tableColumnUID][row] = dataView;
 
+            if (_isViewBased)
+                continue;
+
             if (isButton || (_editingCellIndex && _editingCellIndex.x === column && _editingCellIndex.y === row))
             {
                 if (isTextField)
@@ -3551,14 +3556,14 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 /*
     Returns a view with the specified identifier.
-    
+
     @param identifier The view identifier. Must not be nil.
     @param owner The owner of the CIB that may be loaded and instituted to create a new view with the particular identifier.
     @return A view for the row.
-    
+
     @discussion
     Typically identifier is associated with an external CIB and the table view will automatically instantiate the CIB with the provided owner. The owner of the CIB that may be loaded and instantiated to create a new view with the particular identifier is typically the table view’s delegate. The owner is useful in setting up outlets and target and actions from the view.
-    
+
     This method will typically be called by the delegate in tableView:dataViewForTableColumn:row:, but it can also be overridden to provide custom views for the identifier. This method may also return a reused view with the same identifier that was no longer available on screen.
 */
 - (id)makeViewWithIdentifier:(CPString)anIdentifier owner:(id)anOwner
@@ -3606,6 +3611,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     return nil;
 }
 
+- (void)_updateIsViewBased
+{
+     _isViewBased = (_implementedDelegateMethods & CPTableViewDelegate_tableView_dataViewForTableColumn_row_ || _archivedDataViews != nil);
+}
 /*!
     @ignore
 */
@@ -4335,7 +4344,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     }
 
     // Accept either tableView:setObjectValue:forTableColumn:row: delegate method, or a binding.
-    if (mouseIsUp
+    if (!_isViewBased && mouseIsUp
         && !_trackingPointMovedOutOfClickSlop
         && ([[CPApp currentEvent] clickCount] > 1)
         && ((_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_)
@@ -4973,7 +4982,10 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
         [self _init];
 
-        _archivedDataViews = [aCoder decodeObjectForKey:CPTableViewArchivedReusableViewsKey];
+        if ([aCoder containsValueForKey:CPTableViewArchivedReusableViewsKey])
+            _archivedDataViews = [aCoder decodeObjectForKey:CPTableViewArchivedReusableViewsKey];
+
+        [self _updateIsViewBased];
 
         [self viewWillMoveToSuperview:[self superview]];
 
