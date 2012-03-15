@@ -3431,7 +3431,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [aTableColumn setDataView:dataView];
     }
 
-
     return [aTableColumn _newDataViewForRow:aRow];
 }
 

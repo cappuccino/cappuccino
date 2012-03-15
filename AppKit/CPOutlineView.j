@@ -62,7 +62,7 @@ var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_              
     CPOutlineViewDelegate_outlineView_shouldReorderColumn_toColumn_                                 = 1 << 12,
     CPOutlineViewDelegate_outlineView_shouldSelectItem_                                             = 1 << 13,
     CPOutlineViewDelegate_outlineView_shouldSelectTableColumn_                                      = 1 << 14,
-    CPOutlineViewDelegate_outlineView_shouldShowOutlineViewForItem_                                 = 1 << 15,
+    CPOutlineViewDelegate_outlineView_shouldShowOutlineDisclosureControlForItem_                    = 1 << 15,
     CPOutlineViewDelegate_outlineView_shouldShowViewExpansionForTableColumn_item_                   = 1 << 16,
     CPOutlineViewDelegate_outlineView_shouldTrackView_forTableColumn_item_                          = 1 << 17,
     CPOutlineViewDelegate_outlineView_shouldTypeSelectForEvent_withCurrentSearchString_             = 1 << 18,
@@ -136,7 +136,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         _selectionHighlightStyle = CPTableViewSelectionHighlightStyleSourceList;
 
         // The root item has weight "0", thus represents the weight solely of its descendants.
-        _rootItemInfo = { isExpanded:YES, isExpandable:NO, shouldShowOutlineView:NO, level:-1, row:-1, children:[], weight:0 };
+        _rootItemInfo = { isExpanded:YES, isExpandable:NO, shouldShowOutlineDisclosureControl:NO, level:-1, row:-1, children:[], weight:0 };
 
         _itemsForRows = [];
         _itemInfosForItems = { };
@@ -294,7 +294,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     return itemInfo.isExpandable;
 }
 
-- (BOOL)_shouldShowOutlineViewForItem:(id)anItem
+- (BOOL)_shouldShowOutlineDisclosureControlForItem:(id)anItem
 {
     if (!anItem)
         return YES;
@@ -302,9 +302,9 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     var itemInfo = _itemInfosForItems[[anItem UID]];
 
     if (!itemInfo)
-        return NO;
+        return YES;
 
-    return itemInfo.shouldShowOutlineView;
+    return itemInfo.shouldShowOutlineDisclosureControl;
 }
 
 /*!
@@ -704,7 +704,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 - (CGRect)frameOfOutlineDisclosureControlAtRow:(CPInteger)aRow
 {
     var theItem = [self itemAtRow:aRow];
-    if (![self isExpandable:theItem] || ![self _shouldShowOutlineViewForItem:theItem])
+    if (![self isExpandable:theItem] || ![self _shouldShowOutlineDisclosureControlForItem:theItem])
         return _CGRectMakeZero();
 
     var dataViewFrame = [self _frameOfOutlineDataViewAtRow:aRow],
@@ -884,7 +884,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
             CPOutlineViewDelegate_outlineView_shouldReorderColumn_toColumn_                      , @selector(outlineView:shouldReorderColumn:toColumn:),
             CPOutlineViewDelegate_outlineView_shouldSelectItem_                                  , @selector(outlineView:shouldSelectItem:),
             CPOutlineViewDelegate_outlineView_shouldSelectTableColumn_                           , @selector(outlineView:shouldSelectTableColumn:),
-            CPOutlineViewDelegate_outlineView_shouldShowOutlineViewForItem_                      , @selector(outlineView:shouldShowOutlineViewForItem:),
+            CPOutlineViewDelegate_outlineView_shouldShowOutlineDisclosureControlForItem_         , @selector(outlineView:shouldShowOutlineDisclosureControlForItem:),
             CPOutlineViewDelegate_outlineView_shouldShowViewExpansionForTableColumn_item_        , @selector(outlineView:shouldShowViewExpansionForTableColumn:item:),
             CPOutlineViewDelegate_outlineView_shouldTrackView_forTableColumn_item_               , @selector(outlineView:shouldTrackView:forTableColumn:item:),
             CPOutlineViewDelegate_outlineView_shouldTypeSelectForEvent_withCurrentSearchString_  , @selector(outlineView:shouldTypeSelectForEvent:withCurrentSearchString:),
@@ -1554,7 +1554,7 @@ var _reloadItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anItem)
 
         itemInfo.isExpandable = [dataSource outlineView:anOutlineView isItemExpandable:newItem];
         itemInfo.isExpanded = itemInfo.isExpandable && itemInfo.isExpanded;
-        itemInfo.shouldShowOutlineView = !(_implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldShowOutlineViewForItem_) || [_outlineViewDelegate outlineView:self shouldShowOutlineViewForItem:newItem];
+        itemInfo.shouldShowOutlineDisclosureControl = !(_implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldShowOutlineDisclosureControlForItem_) || [_outlineViewDelegate outlineView:self shouldShowOutlineDisclosureControlForItem:newItem];
     }
 };
 
@@ -1580,7 +1580,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
                 return [];
 
             itemInfo.isExpandable = [dataSource outlineView:anOutlineView isItemExpandable:anItem];
-            itemInfo.shouldShowOutlineView = !(_implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldShowOutlineViewForItem_) || [_outlineViewDelegate outlineView:self shouldShowOutlineViewForItem:anItem];
+            itemInfo.shouldShowOutlineDisclosureControl = !(_implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldShowOutlineDisclosureControlForItem_) || [_outlineViewDelegate outlineView:self shouldShowOutlineDisclosureControlForItem:anItem];
 
             // If we were previously expanded, but now no longer expandable, "de-expand".
             // NOTE: we are *not* collapsing, thus no notification is posted.
@@ -1611,7 +1611,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
                 if (!childItemInfo)
                 {
-                    childItemInfo = { isExpanded:NO, isExpandable:NO, shouldShowOutlineView:YES, children:[], weight:1 };
+                    childItemInfo = { isExpanded:NO, isExpandable:NO, shouldShowOutlineDisclosureControl:YES, children:[], weight:1 };
                     itemInfosForItems[[childItem UID]] = childItemInfo;
                 }
 
@@ -1814,9 +1814,9 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     var dataView = nil;
 
     if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_))
-            dataView = [_outlineView._outlineViewDelegate outlineView:_outlineView
-                                           dataViewForTableColumn:theTableColumn
-                                                             item:[_outlineView itemAtRow:theRow]];
+        dataView = [_outlineView._outlineViewDelegate outlineView:_outlineView
+                                       dataViewForTableColumn:theTableColumn
+                                                         item:[_outlineView itemAtRow:theRow]];
 
     if (!dataView)
         dataView = [theTableColumn dataViewForRow:theRow];
