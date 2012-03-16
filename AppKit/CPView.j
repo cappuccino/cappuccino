@@ -291,6 +291,7 @@ var CPViewFlags                     = { },
 
         CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, _CGRectGetMinX(aFrame), _CGRectGetMinY(aFrame));
         CPDOMDisplayServerSetStyleSize(_DOMElement, width, height);
+        _DOMElement.className = [self className];
 
         _DOMImageParts = [];
         _DOMImageSizes = [];
