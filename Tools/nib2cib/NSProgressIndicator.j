@@ -48,7 +48,14 @@ var NSProgressIndicatorSpinningFlag = 1 << 12;
 
         // Readjust the height of the control to the correct size.
         var currentFrameSize = [self frameSize];
-        currentFrameSize.height = 15.0;
+        if (_style == CPProgressIndicatorSpinningStyle)
+        {
+            currentFrameSize.height = 64.0;
+            currentFrameSize.width = 64.0;
+        }
+        else
+            currentFrameSize.height = 15.0;
+
         [self setFrameSize:currentFrameSize];
 
         // update graphics
