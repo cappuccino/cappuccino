@@ -160,7 +160,7 @@ var CPViewControllerCachedCibs;
         if (!cib)
         {
             // if the cib isn't cached yet : fetch it and cache it
-            cib = [[CPCib alloc] initWithContentsOfURL:[_cibBundle pathForResource:_cibName + @".cib"]];
+            cib = [[CPCib alloc] initWithCibNamed:_cibName bundle:_cibBundle];
             [CPViewControllerCachedCibs setObject:cib forKey:_cibName];
         }
 
