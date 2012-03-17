@@ -483,6 +483,28 @@
     return description;
 }
 
+- (void)enumerateIndexesUsingBlock:(Function /*(int idx, @ref BOOL) */)aFunction
+{
+    if (!_count)
+        return;
+
+    var index = 0,
+        stop = NO;
+
+    for (var i = 0, count = _ranges.length; i < count; i++)
+    {
+        var range = _ranges[i],
+            maximum = CPMaxRange(range);
+
+        for (var j = range.location; j < maximum; j++)
+        {
+            aFunction(j, AT_REF(stop));
+            if (stop)
+                return;
+        }
+    }
+}
+
 @end
 
 @implementation CPIndexSet(CPMutableIndexSet)

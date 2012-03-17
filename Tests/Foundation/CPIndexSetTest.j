@@ -413,6 +413,36 @@ function descriptionWithoutEntity(aString)
     [self assertTrue:[_set isEqualToIndexSet:_set]];
 }
 
+- (void)testEnumerateIndexesUsingBlock_
+{
+    var set0 = [CPIndexSet indexSet],
+        set1 = [CPMutableIndexSet indexSet],
+        set2 = [CPMutableIndexSet indexSet];
+
+    [set1 addIndexesInRange:CPMakeRange(3, 2)];
+
+    [set2 addIndexesInRange:CPMakeRange(3, 2)];
+    [set2 addIndexesInRange:CPMakeRange(0, 1)];
+
+    var visitedIndexes = [],
+        aBlock;
+
+    aBlock = function(idx)
+    {
+        visitedIndexes.push(idx);
+    };
+
+    [set0 enumerateIndexesUsingBlock:aBlock];
+    [self assert:0 equals:[visitedIndexes count] message:"enumerate empty set"];
+
+    [set1 enumerateIndexesUsingBlock:aBlock];
+    [self assert:[3, 4] equals:visitedIndexes message:"enumerate " + [set1 description]];
+
+    visitedIndexes = [];
+    [set2 enumerateIndexesUsingBlock:aBlock];
+    [self assert:[0, 3, 4] equals:visitedIndexes message:"enumerate " + [set2 description]];
+}
+
 - (void)tearDown
 {
     _set = nil;
