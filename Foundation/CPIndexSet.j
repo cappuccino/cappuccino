@@ -492,6 +492,13 @@
 {
     if (!_count)
         return;
+    [self enumerateIndexesInRange:CPMakeRange(0, CPMaxRange(_ranges[_ranges.length - 1])) options:options usingBlock:aFunction];
+}
+
+- (void)enumerateIndexesInRange:(CPRange)enumerationRange options:(CPEnumerationOptions)options usingBlock:(Function /*(int idx, @ref BOOL stop)*/)aFunction
+{
+    if (!_count || CPEmptyRange(enumerationRange))
+        return;
 
     var shouldStop = NO,
         index,
@@ -534,9 +541,12 @@
 
         for (; rangeIndex !== rangeStop; rangeIndex += rangeIncrement)
         {
-            aFunction(rangeIndex, AT_REF(shouldStop));
-            if (shouldStop)
-                return;
+            if (CPLocationInRange(rangeIndex, enumerationRange))
+            {
+                aFunction(rangeIndex, AT_REF(shouldStop));
+                if (shouldStop)
+                    return;
+            }
         }
     }
 }

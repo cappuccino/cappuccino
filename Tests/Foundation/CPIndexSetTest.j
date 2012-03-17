@@ -483,9 +483,44 @@ function descriptionWithoutEntity(aString)
     visitedIndexes = [];
     [set2 enumerateIndexesWithOptions:CPEnumerationReverse usingBlock:aBlock];
     [self assert:[4, 3, 0] equals:visitedIndexes message:"reverse enumerate " + [set2 description]];
-
 }
 
+- (void)testEnumerateIndexesInRange_options_usingBlock_
+{
+    var set0 = [CPIndexSet indexSet],
+        set1 = [CPMutableIndexSet indexSet],
+        set2 = [CPMutableIndexSet indexSet];
+
+    [set1 addIndexesInRange:CPMakeRange(3, 2)];
+
+    [set2 addIndexesInRange:CPMakeRange(3, 2)];
+    [set2 addIndexesInRange:CPMakeRange(0, 1)];
+
+    var visitedIndexes = [],
+        aBlock;
+
+    aBlock = function(idx)
+    {
+        visitedIndexes.push(idx);
+    };
+
+    visitedIndexes = [];
+    [set0 enumerateIndexesInRange:CPMakeRange(0, 4) options:CPEnumerationReverse usingBlock:aBlock];
+    [self assert:[] equals:visitedIndexes message:"reverse enumerate in range empty set"];
+
+    visitedIndexes = [];
+    [set1 enumerateIndexesInRange:CPMakeRange(0, 5) options:CPEnumerationReverse usingBlock:aBlock];
+    [self assert:[4, 3] equals:visitedIndexes message:"reverse enumerate in range " + [set1 description]];
+
+    visitedIndexes = [];
+    [set1 enumerateIndexesInRange:CPMakeRange(0, 4) options:CPEnumerationReverse usingBlock:aBlock];
+    [self assert:[3] equals:visitedIndexes message:"reverse enumerate in range " + [set1 description]];
+
+    visitedIndexes = [];
+    [set2 addIndexesInRange:CPMakeRange(7, 2)];
+    [set2 enumerateIndexesInRange:CPMakeRange(2, 4) options:CPEnumerationReverse usingBlock:aBlock];
+    [self assert:[4, 3] equals:visitedIndexes message:"reverse enumerate " + [set2 description]];
+}
 
 - (void)tearDown
 {
