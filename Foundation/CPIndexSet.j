@@ -483,27 +483,64 @@
     return description;
 }
 
-- (void)enumerateIndexesUsingBlock:(Function /*(int idx, @ref BOOL) */)aFunction
+- (void)enumerateIndexesUsingBlock:(Function /*(int idx, @ref BOOL stop) */)aFunction
+{
+    [self enumerateIndexesWithOptions:CPEnumerationNormal usingBlock:aFunction];
+}
+
+- (void)enumerateIndexesWithOptions:(CPEnumerationOptions)options usingBlock:(Function /*(int idx, @ref BOOL stop)*/)aFunction
 {
     if (!_count)
         return;
 
-    var index = 0,
-        stop = NO;
+    var shouldStop = NO,
+        index,
+        stop,
+        increment;
 
-    for (var i = 0, count = _ranges.length; i < count; i++)
+    if (options & CPEnumerationReverse)
     {
-        var range = _ranges[i],
-            maximum = CPMaxRange(range);
+        index = _ranges.length - 1,
+        stop = -1,
+        increment = -1;
+    }
+    else
+    {
+        index = 0;
+        stop = _ranges.length;
+        increment = 1;
+    }
 
-        for (var j = range.location; j < maximum; j++)
+    for (; index !== stop; index += increment)
+    {
+        var range = _ranges[index];
+
+        var rangeIndex,
+            rangeStop,
+            rangeIncrement;
+
+        if (options & CPEnumerationReverse)
         {
-            aFunction(j, AT_REF(stop));
-            if (stop)
+            rangeIndex = CPMaxRange(range) - 1;
+            rangeStop = range.location - 1;
+            rangeIncrement = -1;
+        }
+        else
+        {
+            rangeIndex = range.location;
+            rangeStop = CPMaxRange(range);
+            rangeIncrement = 1;
+        }
+
+        for (; rangeIndex !== rangeStop; rangeIndex += rangeIncrement)
+        {
+            aFunction(rangeIndex, AT_REF(shouldStop));
+            if (shouldStop)
                 return;
         }
     }
 }
+
 
 @end
 

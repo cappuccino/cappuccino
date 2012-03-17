@@ -433,7 +433,7 @@ function descriptionWithoutEntity(aString)
     };
 
     [set0 enumerateIndexesUsingBlock:aBlock];
-    [self assert:0 equals:[visitedIndexes count] message:"enumerate empty set"];
+    [self assert:[] equals:visitedIndexes message:"enumerate empty set"];
 
     [set1 enumerateIndexesUsingBlock:aBlock];
     [self assert:[3, 4] equals:visitedIndexes message:"enumerate " + [set1 description]];
@@ -442,6 +442,50 @@ function descriptionWithoutEntity(aString)
     [set2 enumerateIndexesUsingBlock:aBlock];
     [self assert:[0, 3, 4] equals:visitedIndexes message:"enumerate " + [set2 description]];
 }
+
+- (void)testEnumerateIndexesWithOptions_usingBlock_
+{
+    var set0 = [CPIndexSet indexSet],
+        set1 = [CPMutableIndexSet indexSet],
+        set2 = [CPMutableIndexSet indexSet];
+
+    [set1 addIndexesInRange:CPMakeRange(3, 2)];
+
+    [set2 addIndexesInRange:CPMakeRange(3, 2)];
+    [set2 addIndexesInRange:CPMakeRange(0, 1)];
+
+    var visitedIndexes = [],
+        aBlock;
+
+    aBlock = function(idx)
+    {
+        visitedIndexes.push(idx);
+    };
+
+    [set0 enumerateIndexesWithOptions:CPEnumerationNormal usingBlock:aBlock];
+    [self assert:[] equals:visitedIndexes message:"enumerate empty set"];
+
+    [set1 enumerateIndexesWithOptions:CPEnumerationNormal usingBlock:aBlock];
+    [self assert:[3, 4] equals:visitedIndexes message:"enumerate " + [set1 description]];
+
+    visitedIndexes = [];
+    [set2 enumerateIndexesWithOptions:CPEnumerationNormal usingBlock:aBlock];
+    [self assert:[0, 3, 4] equals:visitedIndexes message:"enumerate " + [set2 description]];
+
+    visitedIndexes = [];
+    [set0 enumerateIndexesWithOptions:CPEnumerationReverse usingBlock:aBlock];
+    [self assert:[] equals:visitedIndexes message:"reverse enumerate empty set"];
+
+    visitedIndexes = [];
+    [set1 enumerateIndexesWithOptions:CPEnumerationReverse usingBlock:aBlock];
+    [self assert:[4, 3] equals:visitedIndexes message:"reverse enumerate " + [set1 description]];
+
+    visitedIndexes = [];
+    [set2 enumerateIndexesWithOptions:CPEnumerationReverse usingBlock:aBlock];
+    [self assert:[4, 3, 0] equals:visitedIndexes message:"reverse enumerate " + [set2 description]];
+
+}
+
 
 - (void)tearDown
 {
