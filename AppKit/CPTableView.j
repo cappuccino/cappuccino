@@ -235,6 +235,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPDragOperation     _dragOperationDefaultMask;
     int                 _retargetedDropRow;
     CPDragOperation     _retargetedDropOperation;
+    CPArray             _draggingViews;
 
     BOOL                _disableAutomaticResizing @accessors(property=disableAutomaticResizing);
     BOOL                _lastColumnShouldSnap;
@@ -357,6 +358,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self addSubview:_tableDrawView];
 
     _draggedColumn = nil;
+    _draggingViews = [CPArray array];
 
 /*      //gradients for the source list when CPTableView is NOT first responder or the window is NOT key
     // FIX ME: we need to actually implement this.
@@ -2833,7 +2835,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             [tableColumn _prepareDataView:dataView forRow:row];
 
             [view addSubview:dataView];
-
+            [_draggingViews addObject:dataView];
+            
             row = [theDraggedRows indexGreaterThanIndex:row];
         }
     }
@@ -2874,6 +2877,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
         [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
         [dragView addSubview:dataView];
+        [_draggingViews addObject:dataView];
 
         row = [_exposedRows indexGreaterThanIndex:row];
     }
@@ -4248,6 +4252,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     _retargetedDropRow = nil;
     _draggedRowIndexes = [CPIndexSet indexSet];
     [_dropOperationFeedbackView removeFromSuperview];
+    [self _enqueueDraggingViews];
 }
 
 /*
@@ -4434,6 +4439,16 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     [self _draggingEnded];
     [self draggedImage:aView endedAt:aLocation operation:anOperation];
+}
+
+- (void)_enqueueDraggingViews
+{
+    [_draggingViews enumerateObjectsUsingBlock:function(dataView, idx)
+    {
+        [self _enqueueReusableDataView:dataView];
+    }];
+    
+    [_draggingViews removeAllObjects];
 }
 
 /*!

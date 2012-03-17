@@ -486,6 +486,8 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     [self stopTrackingTableColumn:_activeColumn at:aLocation];
 
     [self setNeedsDisplay:YES];
+    
+    [_tableView _enqueueDraggingViews];
 }
 
 - (BOOL)shouldResizeTableColumn:(int)aColumnIndex at:(CGPoint)aPoint
