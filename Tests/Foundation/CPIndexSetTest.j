@@ -3,7 +3,6 @@
 function descriptionWithoutEntity(aString)
 {
     var descriptionWithEntity = [aString description];
-//print(descriptionWithEntity);
     return descriptionWithEntity.substr(descriptionWithEntity.indexOf('>') + 1);
 }
 
@@ -239,17 +238,17 @@ function descriptionWithoutEntity(aString)
 
 - (void)testInitWithIndexSet
 {
-    var set1 = [[CPIndexSet alloc] initWithIndexesInRange:CPMakeRange(0, 7)];
-    var set = [[CPIndexSet alloc] initWithIndexSet:set1];
+    var set1 = [[CPIndexSet alloc] initWithIndexesInRange:CPMakeRange(0, 7)],
+        set = [[CPIndexSet alloc] initWithIndexSet:set1];
     [self assertNotNull:set];
     [self testIndexSet:set containsRange:CPMakeRange(0, 7)];
 }
 
 - (void)testIsEqualToIndexSet
 {
-    var set1 = [CPIndexSet indexSetWithIndex:7];
-    var set2 = [CPIndexSet indexSetWithIndex:7];
-    var set3 = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(7, 2)];
+    var set1 = [CPIndexSet indexSetWithIndex:7],
+        set2 = [CPIndexSet indexSetWithIndex:7],
+        set3 = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(7, 2)];
 
     [self assertFalse:[set1 isEqualToIndexSet:nil]];
     [self assertTrue:[set1 isEqualToIndexSet:set2]];
@@ -259,9 +258,9 @@ function descriptionWithoutEntity(aString)
 
 - (void)testIsEqual
 {
-    var set1 = [CPIndexSet indexSetWithIndex:7];
-    var set2 = [CPIndexSet indexSetWithIndex:7];
-    var set3 = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(7, 2)];
+    var set1 = [CPIndexSet indexSetWithIndex:7],
+        set2 = [CPIndexSet indexSetWithIndex:7],
+        set3 = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(7, 2)];
 
     [self assertFalse:[set1 isEqual:nil]];
     [self assertFalse:[set1 isEqual:7]];
@@ -272,8 +271,8 @@ function descriptionWithoutEntity(aString)
 
 - (void)testCount
 {
-    var set = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(7, 2)];
-    var set2 = [CPIndexSet indexSetWithIndex:7];
+    var set = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(7, 2)],
+        set2 = [CPIndexSet indexSetWithIndex:7];
 
     [self assert:[set2 count] equals:1];
     [self assert:[set count] equals:2];
