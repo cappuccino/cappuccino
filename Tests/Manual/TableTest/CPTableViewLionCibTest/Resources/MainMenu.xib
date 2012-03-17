@@ -432,6 +432,14 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
+						<string key="label">contentController</string>
+						<reference key="source" ref="635946545"/>
+						<reference key="destination" ref="911121263"/>
+					</object>
+					<int key="connectionID">607</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
 						<string key="label">delegate</string>
 						<reference key="source" ref="270585779"/>
 						<reference key="destination" ref="635946545"/>
@@ -734,15 +742,15 @@
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSTextField" id="63016519">
 									<reference key="NSNextResponder" ref="628715400"/>
-									<int key="NSvFlags">266</int>
-									<string key="NSFrame">{{13, 23}, {457, 56}}</string>
+									<int key="NSvFlags">258</int>
+									<string key="NSFrame">{{12, 21}, {457, 36}}</string>
 									<reference key="NSSuperview" ref="628715400"/>
 									<reference key="NSNextKeyView" ref="68315013"/>
 									<string key="NSReuseIdentifierKey">_NS:20</string>
 									<string key="NSAntiCompressionPriority">{250, 750}</string>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSTextFieldCell" key="NSCell" id="469161236">
-										<int key="NSCellFlags">337641473</int>
+										<int key="NSCellFlags">341835777</int>
 										<int key="NSCellFlags2">272629760</int>
 										<string key="NSContents">Table View Cell</string>
 										<object class="NSFont" key="NSSupport">
@@ -752,12 +760,16 @@
 										</object>
 										<string key="NSCellIdentifier">_NS:20</string>
 										<reference key="NSControlView" ref="63016519"/>
-										<reference key="NSBackgroundColor" ref="614187381"/>
+										<bool key="NSDrawsBackground">YES</bool>
+										<object class="NSColor" key="NSBackgroundColor">
+											<int key="NSColorSpace">3</int>
+											<bytes key="NSWhite">MC45NTQ3MDAxMDA4AA</bytes>
+										</object>
 										<reference key="NSTextColor" ref="537790828"/>
 									</object>
 								</object>
 							</object>
-							<string key="NSFrame">{{238, 1}, {482, 89}}</string>
+							<string key="NSFrame">{{238, 1}, {482, 78}}</string>
 							<reference key="NSNextKeyView" ref="63016519"/>
 							<string key="NSReuseIdentifierKey">_NS:9</string>
 						</object>
@@ -1384,7 +1396,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">606</int>
+			<int key="maxID">607</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1428,11 +1440,13 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>contentController</string>
 							<string>tableView</string>
 							<string>textField</string>
 						</object>
 						<object class="NSArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSArrayController</string>
 							<string>NSTableView</string>
 							<string>NSTextField</string>
 						</object>
@@ -1441,11 +1455,16 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>contentController</string>
 							<string>tableView</string>
 							<string>textField</string>
 						</object>
 						<object class="NSArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<object class="IBToOneOutletInfo">
+								<string key="name">contentController</string>
+								<string key="candidateClassName">NSArrayController</string>
+							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">tableView</string>
 								<string key="candidateClassName">NSTableView</string>

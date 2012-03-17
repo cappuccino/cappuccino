@@ -18,6 +18,7 @@ var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
     CPWindow    theWindow; //this "outlet" is connected automatically by the Cib
     @outlet CPTableView tableView;
     @outlet CPTextField textField;
+    @outlet CPArrayController contentController;
     
     CPArray content @accessors;
 }
@@ -93,12 +94,16 @@ var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
 - (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id)info row:(int)row dropOperation:(CPTableViewDropOperation)operation
 {
     var pboard = [info draggingPasteboard],
-        sourceIndexes = [pboard dataForType:TABLE_DRAG_TYPE];
-
-        [content moveIndexes:sourceIndexes toIndex:row];
-        [aTableView reloadData];
+        sourceIndexes = [pboard dataForType:TABLE_DRAG_TYPE],
+        firstObject = [content objectAtIndex:[sourceIndexes firstIndex]];
         
-        var selectIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(row , 1)];
+        [content moveIndexes:sourceIndexes toIndex:row];
+        [contentController rearrangeObjects];
+        
+        // Select the rows we just moved.
+        var destinationRange = CPMakeRange([content indexOfObject:firstObject], [sourceIndexes count]);
+        
+        var selectIndexes = [CPIndexSet indexSetWithIndexesInRange:destinationRange];
         [aTableView selectRowIndexes:selectIndexes byExtendingSelection:NO];
     
     return YES;

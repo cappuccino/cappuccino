@@ -33,20 +33,21 @@ CPOutlineViewItemWillExpandNotification         = @"CPOutlineViewItemWillExpandN
 CPOutlineViewSelectionDidChangeNotification     = @"CPOutlineViewSelectionDidChangeNotification";
 CPOutlineViewSelectionIsChangingNotification    = @"CPOutlineViewSelectionIsChangingNotification";
 
-var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_                       = 1 << 1,
-    CPOutlineViewDataSource_outlineView_shouldDeferDisplayingChildrenOfItem_                        = 1 << 2,
+var CPOutlineViewDataSource_outlineView_objectValue_forTableColumn_byItem_                          = 1 << 1,
+    CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_                       = 1 << 2,
+    CPOutlineViewDataSource_outlineView_shouldDeferDisplayingChildrenOfItem_                        = 1 << 3,
 
-    CPOutlineViewDataSource_outlineView_acceptDrop_item_childIndex_                                 = 1 << 3,
-    CPOutlineViewDataSource_outlineView_validateDrop_proposedItem_proposedChildIndex_               = 1 << 4,
-    CPOutlineViewDataSource_outlineView_validateDrop_proposedRow_proposedDropOperation_             = 1 << 5,
-    CPOutlineViewDataSource_outlineView_namesOfPromisedFilesDroppedAtDestination_forDraggedItems_   = 1 << 6,
+    CPOutlineViewDataSource_outlineView_acceptDrop_item_childIndex_                                 = 1 << 4,
+    CPOutlineViewDataSource_outlineView_validateDrop_proposedItem_proposedChildIndex_               = 1 << 5,
+    CPOutlineViewDataSource_outlineView_validateDrop_proposedRow_proposedDropOperation_             = 1 << 6,
+    CPOutlineViewDataSource_outlineView_namesOfPromisedFilesDroppedAtDestination_forDraggedItems_   = 1 << 7,
 
-    CPOutlineViewDataSource_outlineView_itemForPersistentObject_                                    = 1 << 7,
-    CPOutlineViewDataSource_outlineView_persistentObjectForItem_                                    = 1 << 8,
+    CPOutlineViewDataSource_outlineView_itemForPersistentObject_                                    = 1 << 8,
+    CPOutlineViewDataSource_outlineView_persistentObjectForItem_                                    = 1 << 9,
 
-    CPOutlineViewDataSource_outlineView_writeItems_toPasteboard_                                    = 1 << 9,
+    CPOutlineViewDataSource_outlineView_writeItems_toPasteboard_                                    = 1 << 10,
 
-    CPOutlineViewDataSource_outlineView_sortDescriptorsDidChange_                                   = 1 << 10;
+    CPOutlineViewDataSource_outlineView_sortDescriptorsDidChange_                                   = 1 << 11;
 
 var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_                                  = 1 << 1,
     CPOutlineViewDelegate_outlineView_didClickTableColumn_                                          = 1 << 2,
@@ -227,12 +228,15 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     if (![aDataSource respondsToSelector:@selector(outlineView:numberOfChildrenOfItem:)])
         [CPException raise:CPInternalInconsistencyException reason:"Data source must implement 'outlineView:numberOfChildrenOfItem:'"];
-
+/*
     if (![aDataSource respondsToSelector:@selector(outlineView:objectValueForTableColumn:byItem:)])
         [CPException raise:CPInternalInconsistencyException reason:"Data source must implement 'outlineView:objectValueForTableColumn:byItem:'"];
-
+*/
     _outlineViewDataSource = aDataSource;
     _implementedOutlineViewDataSourceMethods = 0;
+
+    if ([_outlineViewDataSource respondsToSelector:@selector(outlineView:objectValue:forTableColumn:byItem:)])
+        _implementedOutlineViewDataSourceMethods |= CPOutlineViewDataSource_outlineView_objectValue_forTableColumn_byItem_;
 
     if ([_outlineViewDataSource respondsToSelector:@selector(outlineView:setObjectValue:forTableColumn:byItem:)])
         _implementedOutlineViewDataSourceMethods |= CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_;
@@ -1531,6 +1535,16 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     [super keyDown:anEvent];
 }
 
+- (BOOL)_dataSourceRespondsToObjectValueForTableColumn
+{
+    return _implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_objectValue_forTableColumn_byItem_;
+}
+
+- (BOOL)_delegateRespondsToDataViewForTableColumn
+{
+    return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_;
+}
+
 @end
 
 // FIX ME: We're using with() here because Safari fails if we use anOutlineView._itemInfosForItems or whatever...
@@ -1807,21 +1821,6 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     }
 }
 
-- (CPView)_dataViewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
-{
-    var view = nil;
-    if (_implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_)
-    {
-        view = [_delegate outlineView:_outlineView
-                                           dataViewForTableColumn:aTableColumn
-                                                             item:[self itemAtRow:theRow]];
-        if (view == nil)
-            [CPException raise:CPInternalInconsistencyException reason:"The view returned by -outlineView:dataViewForTableColumn:item: should not be nil"];
-    }
-    
-    return view;
-}
-
 @end
 
 @implementation _CPOutlineViewTableViewDelegate : CPObject
@@ -1888,6 +1887,17 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     {
         var item = [_outlineView itemAtRow:aRow];
         return [_outlineView._outlineViewDelegate outlineView:_outlineView menuForTableColumn:aTableColumn item:item]
+    }
+
+    return nil;
+}
+
+- (CPView)tableView:(CPTableView)aTableView dataViewForTableColumn:(CPTableColumn)aTableColumn row:(int)aRow
+{
+    if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_))
+    {
+        var item = [_outlineView itemAtRow:aRow];
+        return [_outlineView._outlineViewDelegate outlineView:_outlineView dataViewForTableColumn:aTableColumn item:item]
     }
 
     return nil;

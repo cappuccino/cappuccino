@@ -3130,6 +3130,16 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     return _sortDescriptors;
 }
 
+- (BOOL)_dataSourceRespondsToObjectValueForTableColumn
+{
+    return _implementedDataSourceMethods & CPTableViewDataSource_tableView_objectValueForTableColumn_row_;
+}
+
+- (BOOL)_delegateRespondsToDataViewForTableColumn
+{
+    return _implementedDelegateMethods & CPTableViewDelegate_tableView_dataViewForTableColumn_row_;
+}
+
 /*!
     @ignore
 */
@@ -3149,12 +3159,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // tableView:objectValueForTableColumn:row: is optional if content bindings are in place.
     if (objectValue === undefined)
     {
-        if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_objectValueForTableColumn_row_)
+        if ([self _dataSourceRespondsToObjectValueForTableColumn])
         {
             objectValue = [_dataSource tableView:self objectValueForTableColumn:aTableColumn row:aRowIndex];
             tableColumnObjectValues[aRowIndex] = objectValue;
         }
-        else if (!(_implementedDataSourceMethods & CPTableViewDelegate_tableView_dataViewForTableColumn_row_) && ![self infoForBinding:@"content"])
+        else if (![self _delegateRespondsToDataViewForTableColumn] && ![self infoForBinding:@"content"])
         {
             CPLogConsole(@"no content binding established and data source " + [_dataSource description] + " does not implement tableView:objectValueForTableColumn:row: or tableView:dataViewForTableColumn:row:");
         }
@@ -3538,7 +3548,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (CPView)_dataViewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
 {
     var view = nil;
-    if (_implementedDelegateMethods & CPTableViewDelegate_tableView_dataViewForTableColumn_row_)
+    if ([self _delegateRespondsToDataViewForTableColumn])
     {
         view = [_delegate tableView:self dataViewForTableColumn:aTableColumn row:aRow];
         if (view == nil)
@@ -3614,14 +3624,14 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (!cib)
         return nil;
 
-    var objects = [];
-    var load = [cib instantiateCibWithOwner:anOwner topLevelObjects:objects];
+    var objects = [],
+        load = [cib instantiateCibWithOwner:anOwner topLevelObjects:objects];
 
     if (!load)
         return nil;
 
     var count = objects.length;
-    while(count--)
+    while (count--)
     {
         var o = objects[count];
         if ([o isKindOfClass:[CPView class]])
