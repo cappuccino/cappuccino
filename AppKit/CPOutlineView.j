@@ -1911,9 +1911,10 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
     CGContextBeginPath(context);
 
-    CGContextTranslateCTM(context, _CGRectGetWidth(bounds) / 2.0, _CGRectGetHeight(bounds) / 2.0);
+    var centre = _CGPointMake(FLOOR(_CGRectGetWidth(bounds) / 2.0), FLOOR(_CGRectGetHeight(bounds) / 2.0));
+    CGContextTranslateCTM(context, centre.x, centre.y);
     CGContextRotateCTM(context, _angle);
-    CGContextTranslateCTM(context, -_CGRectGetWidth(bounds) / 2.0, -_CGRectGetHeight(bounds) / 2.0);
+    CGContextTranslateCTM(context, -centre.x, -centre.y);
 
     // Center, but crisp.
     CGContextTranslateCTM(context, FLOOR((_CGRectGetWidth(bounds) - 9.0) / 2.0), FLOOR((_CGRectGetHeight(bounds) - 8.0) / 2.0));
@@ -1928,7 +1929,6 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
         colorForDisclosureTriangle([self hasThemeState:CPThemeStateSelected],
             [self hasThemeState:CPThemeStateHighlighted]));
     CGContextFillPath(context);
-
 
     CGContextBeginPath(context);
     CGContextMoveToPoint(context, 0.0, 0.0);
