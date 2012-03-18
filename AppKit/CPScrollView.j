@@ -30,6 +30,8 @@
 @import "CPScroller.j"
 @import "CPView.j"
 
+#define SHOULD_SHOW_CORNER_VIEW() (_scrollerStyle === CPScrollerStyleLegacy && _verticalScroller && ![_verticalScroller isHidden])
+
 
 /*! @ignore */
 var _isSystemUsingOverlayScrollers = function()
@@ -825,7 +827,10 @@ Notifies the delegate when the scroll view has finished scrolling.
         _cornerView = documentCornerView;
 
         if (_cornerView)
+        {
+            [_cornerView setHidden:!SHOULD_SHOW_CORNER_VIEW()];
             [self addSubview:_cornerView];
+        }
     }
 
     [self reflectScrolledClipView:_contentView];
@@ -865,7 +870,8 @@ Notifies the delegate when the scroll view has finished scrolling.
     var frame = [self _insetBounds];
 
     frame.size.height = _CGRectGetHeight([headerView frame]);
-    frame.size.width -= _CGRectGetWidth([self _cornerViewFrame]);
+    if (SHOULD_SHOW_CORNER_VIEW())
+        frame.size.width -= _CGRectGetWidth([self _cornerViewFrame]);
 
     return frame;
 }
@@ -1183,9 +1189,15 @@ Notifies the delegate when the scroll view has finished scrolling.
     }
 
     [_contentView setFrame:contentFrame];
-    [_headerClipView setFrame:headerClipViewFrame];
+    [_headerClipView setFrame:[self _headerClipViewFrame]];
     [[_headerClipView documentView] setNeedsDisplay:YES];
-    [_cornerView setFrame:[self _cornerViewFrame]];
+    if (SHOULD_SHOW_CORNER_VIEW())
+    {
+        [_cornerView setFrame:[self _cornerViewFrame]];
+        [_cornerView setHidden:NO];
+    }
+    else
+        [_cornerView setHidden:YES];
 
     if (_scrollerStyle === CPScrollerStyleLegacy)
     {
