@@ -1268,37 +1268,24 @@ Notifies the delegate when the scroll view has finished scrolling.
     var minX = _CGRectGetMinX(aRect),
         maxX = _CGRectGetMaxX(aRect),
         minY = _CGRectGetMinY(aRect),
-        maxY = _CGRectGetMaxY(aRect);
+        maxY = _CGRectGetMaxY(aRect),
+        y = minY + 0.5;
 
-    CGContextBeginPath(context);
+    // Slightly darker line on top.
     CGContextSetStrokeColor(context, [CPColor colorWithWhite:142.0 / 255.0 alpha:1.0]);
-
-    var y = minY + 0.5;
-
+    CGContextBeginPath(context);
     CGContextMoveToPoint(context, minX, y);
-    CGContextAddLineToPoint(context, minX + 1.0, y);
-    CGContextStrokePath(context);
-
-    CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0 / 255.0 alpha:1.0]);
-    CGContextMoveToPoint(context, minX + 1.0, y);
-    CGContextAddLineToPoint(context, maxX - 1.0, y);
-    CGContextStrokePath(context);
-
-    CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:142.0 / 255.0 alpha:1.0]);
-    CGContextMoveToPoint(context, maxX - 1.0, y);
     CGContextAddLineToPoint(context, maxX, y);
     CGContextStrokePath(context);
 
-    CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:190.0 / 255.0 alpha:1.0]);
+    // The rest of the border.
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0 / 255.0 alpha:1.0]);
 
     var x = maxX - 0.5;
 
+    CGContextBeginPath(context);
     CGContextMoveToPoint(context, x, minY + 1.0);
     CGContextAddLineToPoint(context, x, maxY);
-
     CGContextMoveToPoint(context, x - 0.5, maxY - 0.5);
     CGContextAddLineToPoint(context, minX, maxY - 0.5);
 
