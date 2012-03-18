@@ -643,7 +643,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         columnMaxX = _CGRectGetMaxX(columnToStroke);
 
         CGContextMoveToPoint(context, FLOOR(columnMaxX) - 0.5, ROUND(_CGRectGetMinY(columnToStroke)));
-        CGContextAddLineToPoint(context, FLOOR(columnMaxX) - 0.5, ROUND(_CGRectGetMaxY(columnToStroke)));
+        CGContextAddLineToPoint(context, FLOOR(columnMaxX) - 0.5, ROUND(_CGRectGetMaxY(columnToStroke)) - 1.0);
     }
     CGContextClosePath(context);
     CGContextStrokePath(context);
