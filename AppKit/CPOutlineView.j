@@ -1942,7 +1942,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     if (_angle === 0.0)
         CGContextAddLineToPoint(context, 9.0, 0.0);
 
-    CGContextSetStrokeColor(context, [CPColor colorWithCalibratedWhite:1.0 alpha: 0.8]);
+    CGContextSetStrokeColor(context, [CPColor colorWithCalibratedWhite:1.0 alpha: 0.7]);
     CGContextStrokePath(context);
 }
 
