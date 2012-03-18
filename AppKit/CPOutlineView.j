@@ -1907,20 +1907,22 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 - (void)drawRect:(CGRect)aRect
 {
     var bounds = [self bounds],
-        context = [[CPGraphicsContext currentContext] graphicsPort];
+        context = [[CPGraphicsContext currentContext] graphicsPort],
+        width = _CGRectGetWidth(bounds),
+        height = _CGRectGetHeight(bounds);
 
     CGContextBeginPath(context);
 
     if (_angle)
     {
-        var centre = _CGPointMake(FLOOR(_CGRectGetWidth(bounds) / 2.0), FLOOR(_CGRectGetHeight(bounds) / 2.0));
+        var centre = _CGPointMake(FLOOR(width / 2.0), FLOOR(height / 2.0));
         CGContextTranslateCTM(context, centre.x, centre.y);
         CGContextRotateCTM(context, _angle);
         CGContextTranslateCTM(context, -centre.x, -centre.y);
     }
 
     // Center, but crisp.
-    CGContextTranslateCTM(context, FLOOR((_CGRectGetWidth(bounds) - 9.0) / 2.0), FLOOR((_CGRectGetHeight(bounds) - 8.0) / 2.0));
+    CGContextTranslateCTM(context, FLOOR((width - 9.0) / 2.0), FLOOR((height - 8.0) / 2.0));
 
     CGContextMoveToPoint(context, 0.0, 0.0);
     CGContextAddLineToPoint(context, 9.0, 0.0);
@@ -1936,13 +1938,9 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     CGContextBeginPath(context);
     CGContextMoveToPoint(context, 0.0, 0.0);
 
+    CGContextAddLineToPoint(context, 4.5, 8.0);
     if (_angle === 0.0)
-    {
-        CGContextAddLineToPoint(context, 4.5, 8.0);
         CGContextAddLineToPoint(context, 9.0, 0.0);
-    }
-    else
-        CGContextAddLineToPoint(context, 4.5, 8.0);
 
     CGContextSetStrokeColor(context, [CPColor colorWithCalibratedWhite:1.0 alpha: 0.8]);
     CGContextStrokePath(context);
