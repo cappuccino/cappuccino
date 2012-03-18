@@ -6,6 +6,7 @@
     CPTableColumn   tableColumn;
 
     BOOL            doubleActionReceived;
+    int             selectionIsChangingNotificationsReceived;
     int             selectionDidChangeNotificationsReceived;
 }
 
@@ -51,20 +52,28 @@
     [tableView setDataSource:dataSource];
 
 
+    selectionIsChangingNotificationsReceived = 0;
     selectionDidChangeNotificationsReceived = 0;
+    [[CPNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(selectionIsChanging:)
+                                                 name:CPTableViewSelectionIsChangingNotification
+                                               object:tableView];
+
     [[CPNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(selectionDidChange:)
                                                  name:CPTableViewSelectionDidChangeNotification
                                                object:tableView];
 
     [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:2] byExtendingSelection:NO];
-    [self assert:selectionDidChangeNotificationsReceived equals:1 message:"CPTableViewSelectionDidChangeNotification expected when selecting rows"];
+    [self assert:0 equals:selectionIsChangingNotificationsReceived message:"no isChanging notifications when programmatically selecting rows"];
+    [self assert:1 equals:selectionDidChangeNotificationsReceived message:"didChange notifications when selecting rows"];
 
     // If we remove the last row, the selection should change and we should be notified.
     [[dataSource tableEntries] removeObjectAtIndex:2];
     [tableView reloadData];
 
-    [self assert:selectionDidChangeNotificationsReceived equals:2  message:"CPTableViewSelectionDidChangeNotification when selected rows go away"];
+    [self assert:0 equals:selectionIsChangingNotificationsReceived message:"no isChanging notifications when selected rows disappear"];
+    [self assert:2 equals:selectionDidChangeNotificationsReceived message:"didChange notifications when selected rows disappear"];
 
     [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
     [self assert:selectionDidChangeNotificationsReceived equals:3 message:"CPTableViewSelectionDidChangeNotification expected when selecting rows"];
@@ -72,6 +81,26 @@
     [tableView reloadData];
 
     [self assert:selectionDidChangeNotificationsReceived equals:3 message:"no CPTableViewSelectionDidChangeNotification expected when removing a row which does not change the selection"];
+
+    // Reset everything.
+    [dataSource setTableEntries:["A", "B", "C"]];
+    [tableView reloadData];
+    [tableView deselectAll];
+    selectionIsChangingNotificationsReceived = 0;
+    selectionDidChangeNotificationsReceived = 0;
+    [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
+    [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:2] byExtendingSelection:NO];
+    [self assert:2 equals:selectionDidChangeNotificationsReceived message:"notification for select row 0, 2"];
+
+    selectionIsChangingNotificationsReceived = 0;
+    selectionDidChangeNotificationsReceived = 0;
+    [tableView deselectAll];
+    [self assert:selectionDidChangeNotificationsReceived equals:2 message:"notification for deselect all"];
+}
+
+- (void)selectionIsChanging:(CPNotification)aNotification
+{
+    selectionIsChangingNotificationsReceived++;
 }
 
 - (void)selectionDidChange:(CPNotification)aNotification

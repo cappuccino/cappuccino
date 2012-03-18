@@ -836,14 +836,11 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
                           name:CPOutlineViewSelectionIsChangingNotification
                         object:self];
 
-
-
         if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewItemWillExpand:)])
             [defaultCenter
                 removeObserver:_outlineViewDelegate
                           name:CPOutlineViewItemWillExpandNotification
                         object:self];
-
 
         if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewItemDidExpand:)])
             [defaultCenter
@@ -851,13 +848,11 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
                           name:CPOutlineViewItemDidExpandNotification
                         object:self];
 
-
         if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewItemWillCollapse:)])
             [defaultCenter
                 removeObserver:_outlineViewDelegate
                           name:CPOutlineViewItemWillCollapseNotification
                         object:self];
-
 
         if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewItemDidCollapse:)])
             [defaultCenter
@@ -934,7 +929,6 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
             selector:@selector(outlineViewSelectionIsChanging:)
             name:CPOutlineViewSelectionIsChangingNotification
             object:self];
-
 
     if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewItemWillExpand:)])
         [defaultCenter

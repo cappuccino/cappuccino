@@ -3989,7 +3989,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     var row = [self rowAtPoint:aPoint];
 
-    //if the user clicks outside a row then deselect everything
+    // If the user clicks outside a row then deselect everything.
     if (row < 0 && _allowsEmptySelection)
         [self selectRowIndexes:[CPIndexSet indexSet] byExtendingSelection:NO];
 
