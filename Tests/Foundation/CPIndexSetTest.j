@@ -522,6 +522,27 @@ function descriptionWithoutEntity(aString)
     [self assert:[4, 3] equals:visitedIndexes message:"reverse enumerate " + [set2 description]];
 }
 
+- (void)testEnumerateIndexesAndStop
+{
+    var set0 = [CPMutableIndexSet indexSet];
+
+    [set0 addIndexesInRange:CPMakeRange(3, 2)];
+    [set0 addIndexesInRange:CPMakeRange(0, 1)];
+
+    var visitedIndexes = [],
+        aBlock;
+
+    aBlock = function(idx, /* ref */ stop)
+    {
+        visitedIndexes.push(idx);
+        if (visitedIndexes.length >= 2)
+            stop(YES); // AT_DEREF(stop, YES) - FIXME Replace with proper @ref @deref when in ObjJ.
+    }
+
+    [set0 enumerateIndexesUsingBlock:aBlock];
+    [self assert:[0, 3] equals:visitedIndexes message:"enumeration should stop after 2 results"];
+}
+
 - (void)tearDown
 {
     _set = nil;
