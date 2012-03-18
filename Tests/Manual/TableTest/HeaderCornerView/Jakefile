@@ -1,9 +1,9 @@
 /*
  * Jakefile
- * HeaderView-CornerView
+ * Header-CornerView
  *
- * Created by aparajita on May 18, 2011.
- * Copyright 2011, Victory-Heart Productions All rights reserved.
+ * Created by Alexander Ljungberg on March 18, 2012.
+ * Copyright 2012, SlevenBits Ltd. All rights reserved.
  */
 
 var ENV = require("system").env,
@@ -15,21 +15,22 @@ var ENV = require("system").env,
     configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
     OS = require("os");
 
-app ("HeaderViewCornerView", function(task)
+app ("HeaderCornerView", function(task)
 {
-    task.setBuildIntermediatesPath(FILE.join("Build", "HeaderViewCornerView.build", configuration));
+    task.setBuildIntermediatesPath(FILE.join("Build", "HeaderCornerView.build", configuration));
     task.setBuildPath(FILE.join("Build", configuration));
 
-    task.setProductName("HeaderView-CornerView");
-    task.setIdentifier("com.aparajita.HeaderViewCornerView");
+    task.setProductName("Header-CornerView");
+    task.setIdentifier("com.yourcompany.HeaderCornerView");
     task.setVersion("1.0");
-    task.setAuthor("Victory-Heart Productions");
+    task.setAuthor("SlevenBits Ltd.");
     task.setEmail("feedback @nospam@ yourcompany.com");
-    task.setSummary("HeaderView-CornerView");
+    task.setSummary("Header-CornerView");
     task.setSources((new FileList("**/*.j")).exclude(FILE.join("Build", "**")));
     task.setResources(new FileList("Resources/**"));
     task.setIndexFilePath("index.html");
     task.setInfoPlistPath("Info.plist");
+    task.setNib2CibFlags("-R Resources/");
 
     if (configuration === "Debug")
         task.setCompilerFlags("-DDEBUG -g");
@@ -37,7 +38,7 @@ app ("HeaderViewCornerView", function(task)
         task.setCompilerFlags("-O");
 });
 
-task ("default", ["HeaderViewCornerView"], function()
+task ("default", ["HeaderCornerView"], function()
 {
     printResults(configuration);
 });
@@ -58,36 +59,36 @@ task ("release", function()
 
 task ("run", ["debug"], function()
 {
-    OS.system(["open", FILE.join("Build", "Debug", "HeaderViewCornerView", "index.html")]);
+    OS.system(["open", FILE.join("Build", "Debug", "HeaderCornerView", "index.html")]);
 });
 
 task ("run-release", ["release"], function()
 {
-    OS.system(["open", FILE.join("Build", "Release", "HeaderViewCornerView", "index.html")]);
+    OS.system(["open", FILE.join("Build", "Release", "HeaderCornerView", "index.html")]);
 });
 
 task ("deploy", ["release"], function()
 {
-    FILE.mkdirs(FILE.join("Build", "Deployment", "HeaderViewCornerView"));
-    OS.system(["press", "-f", FILE.join("Build", "Release", "HeaderViewCornerView"), FILE.join("Build", "Deployment", "HeaderViewCornerView")]);
+    FILE.mkdirs(FILE.join("Build", "Deployment", "HeaderCornerView"));
+    OS.system(["press", "-f", FILE.join("Build", "Release", "HeaderCornerView"), FILE.join("Build", "Deployment", "HeaderCornerView")]);
     printResults("Deployment")
 });
 
 task ("desktop", ["release"], function()
 {
-    FILE.mkdirs(FILE.join("Build", "Desktop", "HeaderViewCornerView"));
-    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", "HeaderViewCornerView"), FILE.join("Build", "Desktop", "HeaderViewCornerView", "HeaderViewCornerView.app"));
+    FILE.mkdirs(FILE.join("Build", "Desktop", "HeaderCornerView"));
+    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", "HeaderCornerView"), FILE.join("Build", "Desktop", "HeaderCornerView", "HeaderCornerView.app"));
     printResults("Desktop")
 });
 
 task ("run-desktop", ["desktop"], function()
 {
-    OS.system([FILE.join("Build", "Desktop", "HeaderViewCornerView", "HeaderViewCornerView.app", "Contents", "MacOS", "NativeHost"), "-i"]);
+    OS.system([FILE.join("Build", "Desktop", "HeaderCornerView", "HeaderCornerView.app", "Contents", "MacOS", "NativeHost"), "-i"]);
 });
 
 function printResults(configuration)
 {
     print("----------------------------");
-    print(configuration+" app built at path: "+FILE.join("Build", configuration, "HeaderViewCornerView"));
+    print(configuration+" app built at path: "+FILE.join("Build", configuration, "HeaderCornerView"));
     print("----------------------------");
 }
