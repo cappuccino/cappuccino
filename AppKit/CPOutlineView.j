@@ -1911,10 +1911,13 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
     CGContextBeginPath(context);
 
-    var centre = _CGPointMake(FLOOR(_CGRectGetWidth(bounds) / 2.0), FLOOR(_CGRectGetHeight(bounds) / 2.0));
-    CGContextTranslateCTM(context, centre.x, centre.y);
-    CGContextRotateCTM(context, _angle);
-    CGContextTranslateCTM(context, -centre.x, -centre.y);
+    if (_angle)
+    {
+        var centre = _CGPointMake(FLOOR(_CGRectGetWidth(bounds) / 2.0), FLOOR(_CGRectGetHeight(bounds) / 2.0));
+        CGContextTranslateCTM(context, centre.x, centre.y);
+        CGContextRotateCTM(context, _angle);
+        CGContextTranslateCTM(context, -centre.x, -centre.y);
+    }
 
     // Center, but crisp.
     CGContextTranslateCTM(context, FLOOR((_CGRectGetWidth(bounds) - 9.0) / 2.0), FLOOR((_CGRectGetHeight(bounds) - 8.0) / 2.0));
@@ -1938,7 +1941,6 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
         CGContextAddLineToPoint(context, 4.5, 8.0);
         CGContextAddLineToPoint(context, 9.0, 0.0);
     }
-
     else
         CGContextAddLineToPoint(context, 4.5, 8.0);
 
