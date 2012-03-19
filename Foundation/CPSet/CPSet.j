@@ -173,7 +173,7 @@
 /*!
     Creates and returns a set containing the objects from an array.
     @param anArray An array containing the objects to add to the new set.
-    @param aCount the number of objects in anArray. 
+    @param aCount the number of objects in anArray.
 */
 - (id)initWithObjects:(CPArray)objects count:(CPUInteger)aCount
 {
@@ -381,12 +381,13 @@
 }
 
 /*!
-    Returns an array of the set’s content sorted as specified by a given array of sort descriptors.
-    @param sortDescriptors An array of NSSortDescriptor objects.
+    Returns an array of the set's content sorted as specified by a given array of sort descriptors.
+
+    @param sortDescriptors an array of CPSortDescriptor objects.
 */
-- (CPArray)sortedArrayUsingDescriptors:(CPArray)aSortDescriptors
+- (CPArray)sortedArrayUsingDescriptors:(CPArray)someSortDescriptors
 {
-    return [[self allObjects] sortedArrayUsingDescriptors:aSortDescriptors];
+    return [[self allObjects] sortedArrayUsingDescriptors:someSortDescriptors];
 }
 
 /*!
