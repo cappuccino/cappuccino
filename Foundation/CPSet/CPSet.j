@@ -381,6 +381,15 @@
 }
 
 /*!
+    Returns an array of the set’s content sorted as specified by a given array of sort descriptors.
+    @param sortDescriptors An array of NSSortDescriptor objects.
+*/
+- (CPArray)sortedArrayUsingDescriptors:(CPArray)aSortDescriptors
+{
+    return [[self allObjects] sortedArrayUsingDescriptors:aSortDescriptors];
+}
+
+/*!
     Compares the receiver to another set.
     @param set The set with which to compare the receiver.
 */
