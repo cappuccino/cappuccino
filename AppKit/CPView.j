@@ -292,6 +292,9 @@ var CPViewFlags                     = { },
         CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, _CGRectGetMinX(aFrame), _CGRectGetMinY(aFrame));
         CPDOMDisplayServerSetStyleSize(_DOMElement, width, height);
 
+        if (typeof(appkit_tag_dom_elements) !== "undefined" && !!appkit_tag_dom_elements)
+            _DOMElement.setAttribute("data-cappuccino-view", [self className]);
+
         _DOMImageParts = [];
         _DOMImageSizes = [];
 #endif
