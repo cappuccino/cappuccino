@@ -2598,7 +2598,8 @@ setBoundsOrigin:
 
 /*!
     Registers theme values encoded in an array at runtime. The format of the data in the array
-    is the same as that used by ThemeDescriptors.j. For more information see the comments
+    is the same as that used by ThemeDescriptors.j, with the exception that you need to use
+    CPColorWithImages() in place of PatternColor(). For more information see the comments
     at the top of ThemeDescriptors.j.
 
     @param themeValues array of theme values
@@ -2621,7 +2622,8 @@ setBoundsOrigin:
 
 /*!
     Registers theme values encoded in an array at runtime. The format of the data in the array
-    is the same as that used by ThemeDescriptors.j. The values in \c inheritedValues are
+    is the same as that used by ThemeDescriptors.j, with the exception that you need to use
+    CPColorWithImages() in place of PatternColor(). The values in \c inheritedValues are
     registered first, then those in \c themeValues override/augment the inherited values.
     For more information see the comments at the top of ThemeDescriptors.j.
 
