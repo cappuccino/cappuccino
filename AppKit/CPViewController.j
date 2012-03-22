@@ -66,6 +66,7 @@ var CPViewControllerCachedCibs;
 {
     CPView          _view @accessors(property=view);
     BOOL            _isLoading;
+    BOOL            _isLazy;
 
     id              _representedObject @accessors(property=representedObject);
     CPString        _title @accessors(property=title);
@@ -124,6 +125,7 @@ var CPViewControllerCachedCibs;
         _cibExternalNameTable = anExternalNameTable || [CPDictionary dictionaryWithObject:self forKey:CPCibOwner];
 
         _isLoading = NO;
+        _isLazy = NO;
     }
 
     return self;
@@ -199,6 +201,11 @@ var CPViewControllerCachedCibs;
         _isLoading = NO;
         [self viewDidLoad];
     }
+    else if (_isLazy)
+    {
+        _isLazy = NO;
+        [self viewDidLoad];
+    }
 
     return _view;
 }
@@ -260,6 +267,7 @@ var CPViewControllerViewKey     = @"CPViewControllerViewKey",
         _cibBundle = bundlePath ? [CPBundle bundleWithPath:bundlePath] : [CPBundle mainBundle];
 
         _cibExternalNameTable = [CPDictionary dictionaryWithObject:self forKey:CPCibOwner];
+        _isLazy = YES;
     }
 
     return self;
