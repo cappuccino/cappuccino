@@ -545,6 +545,31 @@ var concat = Array.prototype.concat,
         aFunction([self objectAtIndex:index], index);
 }
 
+- (void)enumerateObjectsWithOptions:(CPEnumerationOptions)options usingBlock:(Function /*(id anObject, int idx, @ref BOOL stop)*/)aFunction
+{
+    var shouldStop = NO;
+
+    if (options & CPEnumerationReverse)
+    {
+        var index = [self count] - 1,
+            stop = -1,
+            increment = -1;
+    }
+    else
+    {
+        var index = 0,
+            stop = [self count],
+            increment = 1;
+    }
+
+    for (; index !== stop; index += increment)
+    {
+        aFunction([self objectAtIndex:index], index, AT_REF(shouldStop));
+        if (shouldStop)
+            return;
+    }
+}
+
 // Comparing arrays
 /*!
     Returns the first object found in the receiver (starting at index 0) which is present in the

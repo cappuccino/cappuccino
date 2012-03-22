@@ -3050,7 +3050,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     return _sortDescriptors;
 }
 
-
 /*!
     @ignore
 */
