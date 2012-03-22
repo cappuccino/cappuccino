@@ -139,8 +139,8 @@ var CPViewControllerCachedCibs;
     implementation for programmatic views is to create a plain view. You can
     invoke super to utilize this view.
 
-    If you use Interface Builder to create your views, you initialize the view
-    using the initWithCibName:bundle: method then you must not override this
+    If you use Interface Builder to create your views, and you initialize the view
+    using the initWithCibName:bundle: method, then you MUST NOT override this
     method. The consequences risk shattering the space-time continuum.
 
     Note: The cib loading system is currently synchronous.
@@ -208,9 +208,9 @@ var CPViewControllerCachedCibs;
     This method is called after the view controller has loaded its associated views into memory.
 
     This method is called regardless of whether the views were stored in a nib
-    file or created programmatically in the loadView method. This method is
-    most commonly used to perform additional initialization steps on views
-    that are loaded from cib files.
+    file or created programmatically in the loadView method, but NOT when setView
+    is invoked. This method is most commonly used to perform additional initialization
+    steps on views that are loaded from cib files.
 */
 - (void)viewDidLoad
 {
@@ -228,13 +228,7 @@ var CPViewControllerCachedCibs;
 */
 - (void)setView:(CPView)aView
 {
-    var viewWasLoaded = !_view;
-
     _view = aView;
-
-    // Make sure the viewDidLoad method is called if the view is set directly
-    if (!_isLoading && viewWasLoaded)
-        [self viewDidLoad];
 }
 
 @end
