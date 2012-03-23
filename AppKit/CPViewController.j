@@ -138,12 +138,12 @@ var CPViewControllerCachedCibs;
 
     If you create your views manually, you must override this method and use
     it to create your view and assign it to the view property. The default
-    implementation for programmatic views is to create a plain view. You can
-    invoke super to utilize this view.
+    implementation for programmatic views is to create a plain, zero width & height
+    view. You can invoke super to utilize this view.
 
-    If you use Interface Builder to create your views, and you initialize the view
-    using the initWithCibName:bundle: method, then you MUST NOT override this
-    method. The consequences risk shattering the space-time continuum.
+    If you use Interface Builder to create your views, and you initialize the
+    controller using the initWithCibName:bundle: methods, then you MUST NOT override
+    this method. The consequences risk shattering the space-time continuum.
 
     Note: The cib loading system is currently synchronous.
 */
@@ -152,17 +152,22 @@ var CPViewControllerCachedCibs;
     if (_view)
         return;
 
-    // check if a cib is already cached for the current _cibName
-    var cib = [CPViewControllerCachedCibs objectForKey:_cibName];
-
-    if (!cib)
+    if (_cibName)
     {
-        // if the cib isn't cached yet : fetch it and cache it
-        cib = [[CPCib alloc] initWithContentsOfURL:[_cibBundle pathForResource:_cibName + @".cib"]];
-        [CPViewControllerCachedCibs setObject:cib forKey:_cibName];
-    }
+        // check if a cib is already cached for the current _cibName
+        var cib = [CPViewControllerCachedCibs objectForKey:_cibName];
 
-    [cib instantiateCibWithExternalNameTable:_cibExternalNameTable];
+        if (!cib)
+        {
+            // if the cib isn't cached yet : fetch it and cache it
+            cib = [[CPCib alloc] initWithContentsOfURL:[_cibBundle pathForResource:_cibName + @".cib"]];
+            [CPViewControllerCachedCibs setObject:cib forKey:_cibName];
+        }
+
+        [cib instantiateCibWithExternalNameTable:_cibExternalNameTable];
+    }
+    else
+        _view = [CPView new];
 }
 
 /*!
