@@ -95,7 +95,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 */
 + (id)attachedWindowWithSize:(CGSize)aSize forView:(CPView)aView styleMask:(int)aMask
 {
-    var attachedWindow = [[_CPAttachedWindow alloc] initWithContentRect:CPRectMake(0.0, 0.0, aSize.width, aSize.height) styleMask:aMask];
+    var attachedWindow = [[_CPAttachedWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, aSize.width, aSize.height) styleMask:aMask];
 
     [attachedWindow attachToView:aView];
 
@@ -201,7 +201,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
         [_targetView removeObserver:self forKeyPath:@"frame"];
         [_windowView hideCursor];
         [self setLevel:CPNormalWindowLevel];
-        [_closeButton setFrameOrigin:CPPointMake(1.0, 1.0)];
+        [_closeButton setFrameOrigin:CGPointMake(1.0, 1.0)];
         [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidMoveNotification object:self];
     }
 }
@@ -210,7 +210,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 #pragma mark -
 #pragma mark Utilities
 
-- (CPPoint)computeOrigin:(CPView)aView preferredEdge:(int)anEdge
+- (CGPoint)computeOrigin:(CPView)aView preferredEdge:(int)anEdge
 {
     var frameView = [aView frame],
         currentView = aView,
@@ -237,32 +237,32 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
         origin.y -= offsetPoint.y;
     }
 
-    return [self computeOriginFromRect:CPRectMake(origin.x, origin.y, CPRectGetWidth(frameView), CPRectGetHeight(frameView)) preferredEdge:anEdge];
+    return [self computeOriginFromRect:CGRectMake(origin.x, origin.y, CGRectGetWidth(frameView), CGRectGetHeight(frameView)) preferredEdge:anEdge];
 }
 
-- (CPPoint)computeOriginFromRect:(CPRect)aRect preferredEdge:(int)anEdge
+- (CGPoint)computeOriginFromRect:(CGRect)aRect preferredEdge:(int)anEdge
 {
     var nativeRect      = [[[CPApp mainWindow] platformWindow] nativeContentRect],
-        originLeft      = CPPointCreateCopy(aRect.origin),
-        originRight     = CPPointCreateCopy(aRect.origin),
-        originTop       = CPPointCreateCopy(aRect.origin),
-        originBottom    = CPPointCreateCopy(aRect.origin);
+        originLeft      = CGPointCreateCopy(aRect.origin),
+        originRight     = CGPointCreateCopy(aRect.origin),
+        originTop       = CGPointCreateCopy(aRect.origin),
+        originBottom    = CGPointCreateCopy(aRect.origin);
 
     // CPMaxXEdge
     originRight.x += aRect.size.width;
-    originRight.y += (aRect.size.height / 2.0) - (CPRectGetHeight([self frame]) / 2.0);
+    originRight.y += (aRect.size.height / 2.0) - (CGRectGetHeight([self frame]) / 2.0);
 
     // CPMinXEdge
-    originLeft.x -= CPRectGetWidth([self frame]);
-    originLeft.y += (aRect.size.height / 2.0) - (CPRectGetHeight([self frame]) / 2.0);
+    originLeft.x -= CGRectGetWidth([self frame]);
+    originLeft.y += (aRect.size.height / 2.0) - (CGRectGetHeight([self frame]) / 2.0);
 
     // CPMaxYEdge
-    originBottom.x += aRect.size.width / 2.0 - CPRectGetWidth([self frame]) / 2.0;
+    originBottom.x += aRect.size.width / 2.0 - CGRectGetWidth([self frame]) / 2.0;
     originBottom.y += aRect.size.height;
 
     // CPMinYEdge
-    originTop.x += aRect.size.width / 2.0 - CPRectGetWidth([self frame]) / 2.0;
-    originTop.y -= CPRectGetHeight([self frame]);
+    originTop.x += aRect.size.width / 2.0 - CGRectGetWidth([self frame]) / 2.0;
+    originTop.y -= CGRectGetHeight([self frame]);
 
     var requestedEdge = (anEdge !== nil) ? anEdge : CPMaxXEdge,
         requestedOrigin;
@@ -300,20 +300,20 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
             [_windowView setArrowOffsetX:o.x];
             o.x = 0;
         }
-        if (o.x + CPRectGetWidth([self frame]) > nativeRect.size.width)
+        if (o.x + CGRectGetWidth([self frame]) > nativeRect.size.width)
         {
-            [_windowView setArrowOffsetX:(o.x + CPRectGetWidth([self frame]) - nativeRect.size.width)];
-            o.x = nativeRect.size.width - CPRectGetWidth([self frame]);
+            [_windowView setArrowOffsetX:(o.x + CGRectGetWidth([self frame]) - nativeRect.size.width)];
+            o.x = nativeRect.size.width - CGRectGetWidth([self frame]);
         }
         if (o.y < 0)
         {
             [_windowView setArrowOffsetY:o.y];
             o.y = 0;
         }
-        if (o.y + CPRectGetHeight([self frame]) > nativeRect.size.height)
+        if (o.y + CGRectGetHeight([self frame]) > nativeRect.size.height)
         {
-            [_windowView setArrowOffsetY:(CPRectGetHeight([self frame]) + o.y - nativeRect.size.height)];
-            o.y = nativeRect.size.height - CPRectGetHeight([self frame]);
+            [_windowView setArrowOffsetY:(CGRectGetHeight([self frame]) + o.y - nativeRect.size.height)];
+            o.y = nativeRect.size.height - CGRectGetHeight([self frame]);
         }
 
         switch (g)
@@ -366,7 +366,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
     [self setFrameOrigin:point];
     [_windowView showCursor];
     [self setLevel:CPStatusWindowLevel];
-    [_closeButton setFrameOrigin:CPPointMake(1.0, 1.0)];
+    [_closeButton setFrameOrigin:CGPointMake(1.0, 1.0)];
     [_windowView setNeedsDisplay:YES];
     [self makeKeyAndOrderFront:nil];
 
@@ -379,7 +379,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 
     @param aPoint the point where the _CPAttachedWindow will be attached
 */
-- (void)positionRelativeToRect:(CPRect)aRect
+- (void)positionRelativeToRect:(CGRect)aRect
 {
     [self positionRelativeToRect:aRect preferredEdge:nil];
 }
@@ -390,14 +390,14 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
     @param aPoint the point where the _CPAttachedWindow will be attached
     @param anEdge the prefered edge
 */
-- (void)positionRelativeToRect:(CPRect)aRect preferredEdge:(int)anEdge
+- (void)positionRelativeToRect:(CGRect)aRect preferredEdge:(int)anEdge
 {
     var point = [self computeOriginFromRect:aRect preferredEdge:anEdge];
 
     [self setFrameOrigin:point];
     [_windowView showCursor];
     [self setLevel:CPStatusWindowLevel];
-    [_closeButton setFrameOrigin:CPPointMake(1.0, 1.0)];
+    [_closeButton setFrameOrigin:CGPointMake(1.0, 1.0)];
     [_windowView setNeedsDisplay:YES];
     [self makeKeyAndOrderFront:nil];
 }
