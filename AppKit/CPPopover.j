@@ -35,6 +35,8 @@ CPPopoverBehaviorApplicationDefined = 0;
 CPPopoverBehaviorTransient          = 1;
 CPPopoverBehaviorSemitransient      = 2;
 
+CPPopoverAnimationStyleLion = 0;
+CPPopoverAnimationStyleIOS  = 1;
 
 var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     CPPopoverDelegate_popover_didShow_      = 1 << 1,
@@ -50,11 +52,14 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     view relative to another one.
 
     Delegate can implement:
-        – popoverShouldClose:(CPPopover)aPopOver
-        – popoverWillShow:(CPPopover)aPopOver
-        – popoverDidShow:(CPPopover)aPopOver
-        – popoverWillClose:(CPPopover)aPopOver
-        – popoverDidClose:(CPPopover)aPopOver
+
+    @code
+    – popoverShouldClose:(CPPopover)aPopOver
+    – popoverWillShow:(CPPopover)aPopOver
+    – popoverDidShow:(CPPopover)aPopOver
+    – popoverWillClose:(CPPopover)aPopOver
+    – popoverDidClose:(CPPopover)aPopOver
+    @endcode
 */
 @implementation CPPopover : CPResponder
 {
@@ -62,6 +67,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     @outlet id                  _delegate               @accessors(getter=delegate);
 
     BOOL                        _animates               @accessors(property=animates);
+    int                         _animationStyle         @accessors(property=animationStyle);
     BOOL                        _shown                  @accessors(getter=shown);
     int                         _appearance             @accessors(property=appearance);
     int                         _behavior               @accessors(getter=behavior);
@@ -85,6 +91,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     if (self = [super init])
     {
         _animates       = YES;
+        _animationStyle = CPPopoverAnimationStyleLion;
         _appearance     = CPPopoverAppearanceMinimal;
         _behavior       = CPPopoverBehaviorApplicationDefined;
         _needsCompute   = YES;
@@ -101,9 +108,9 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 /*!
     Returns the current rect of the popover
 
-    @return CPRect represeting the frame of the popover
+    @return CGRect representing the frame of the popover
 */
-- (CPRect)positioningRect
+- (CGRect)positioningRect
 {
     if (!_attachedWindow || ![_attachedWindow isVisible])
         return nil;
@@ -113,7 +120,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 /*! Sets the frame of the popover
     @param aRect the desired frame
 */
-- (void)setPositioningRect:(CPRect)aRect
+- (void)setPositioningRect:(CGRect)aRect
 {
     if (!_attachedWindow || ![_attachedWindow isVisible])
         return;
@@ -123,9 +130,9 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 /*!
     Returns the size of the popover's view
 
-    @return CPSize represeting the size of the popover's view
+    @return CGSize representing the size of the popover's view
 */
-- (CPRect)contentSize
+- (CGSize)contentSize
 {
     if (!_attachedWindow || ![_attachedWindow isVisible])
         return nil;
@@ -145,7 +152,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 /*!
     Indicates if CPPopover is visible
 
-    @returns YES if visible
+    @returns \c YES if visible
 */
 - (BOOL)shown
 {
@@ -155,11 +162,12 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 }
 
 /*!
-    Set the behaviour of the CPPopover. It can be
-        - CPPopoverBehaviorTransient: the popover will be close if another control outside the popover become the responder
-        - CPPopoverBehaviorApplicationDefined: (DEFAULT) the application is responsible for closing the popover
+Set the behaviour of the CPPopover. It can be:
 
-    @param aBehaviour the desired behaviour
+- \c CPPopoverBehaviorTransient: the popover will be close if another control outside the popover become the responder
+- \c CPPopoverBehaviorApplicationDefined: (DEFAULT) the application is responsible for closing the popover
+
+@param aBehaviour the desired behaviour
 */
 - (void)setBehaviour:(int)aBehaviour
 {
@@ -203,9 +211,9 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 
     @param positioningRect if set, the popover will be positionned to a random rect relative to the window
     @param positioningView if set, the popover will be positioned relative to this view
-    @param preferredEdge: CPRectEdge representing the preferred positioning.
+    @param preferredEdge: \c CPRectEdge representing the preferred positioning.
 */
-- (void)showRelativeToRect:(CPRect)positioningRect ofView:(CPView)positioningView preferredEdge:(CPRectEdge)preferredEdge
+- (void)showRelativeToRect:(CGRect)positioningRect ofView:(CPView)positioningView preferredEdge:(CPRectEdge)preferredEdge
 {
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_willShow_)
         [_delegate popoverWillShow:self];
@@ -216,11 +224,12 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     if (_needsCompute || !_attachedWindow)
     {
         var styleMask = (_behavior == CPPopoverBehaviorTransient) ? CPClosableOnBlurWindowMask : nil;
-        _attachedWindow = [[_CPAttachedWindow alloc] initWithContentRect:CPRectMakeZero() styleMask:styleMask];
+        _attachedWindow = [[_CPAttachedWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:styleMask];
     }
 
     [_attachedWindow setAppearance:_appearance];
     [_attachedWindow setAnimates:_animates];
+    [_attachedWindow setAnimationStyle:_animationStyle];
     [_attachedWindow setDelegate:self];
     [_attachedWindow setMovableByWindowBackground:NO];
     [_attachedWindow setFrame:[_attachedWindow frameRectForContentRect:[[_contentViewController view] frame]]];

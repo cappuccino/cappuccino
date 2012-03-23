@@ -43,6 +43,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 @implementation _CPAttachedWindow : CPWindow
 {
     BOOL            _animates           @accessors(property=animates);
+    int             _animationStyle     @accessors(property=animationStyle);
     id              _targetView         @accessors(property=targetView);
     int             _appearance         @accessors(getter=appearance);
 
@@ -126,7 +127,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
     if (self = [super initWithContentRect:aFrame styleMask:aStyleMask])
     {
         _animates                   = YES;
-        _animates                   = YES;
+        _animationStyle             = CPPopoverAnimationStyleLion;
         _animationDuration          = 150;
         _closeOnBlur                = (aStyleMask & CPClosableOnBlurWindowMask);
         _isClosed                   = NO;
@@ -136,9 +137,9 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
         [self setMovableByWindowBackground:YES];
         [self setHasShadow:NO];
 
-        _DOMElement.style.WebkitBackfaceVisibility = "hidden";
-        _DOMElement.style.WebkitTransitionProperty = "-webkit-transform, opacity";
-        _DOMElement.style.WebkitTransitionDuration = _animationDuration + "ms";
+        _DOMElement.style.webkitBackfaceVisibility = "hidden";
+        _DOMElement.style.webkitTransitionProperty = "-webkit-transform, opacity";
+        _DOMElement.style.webkitTransitionDuration = _animationDuration + "ms";
 
         [_windowView setNeedsDisplay:YES];
     }
@@ -151,7 +152,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 
 - (void)setAppearance:(int)anAppearance
 {
-    if (_appearance == anAppearance)
+    if (_appearance === anAppearance)
         return;
 
     [_windowView setAppearance:anAppearance];
@@ -159,7 +160,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 
 - (void)setDelegate:(id)aDelegate
 {
-    if (_delegate == aDelegate)
+    if (_delegate === aDelegate)
         return;
 
     _delegate = aDelegate;
@@ -375,7 +376,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 }
 
 /*!
-    Position the _CPAttachedWindow to a random point
+    Position the _CPAttachedWindow to a given point
 
     @param aPoint the point where the _CPAttachedWindow will be attached
 */
@@ -385,7 +386,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 }
 
 /*!
-    Position the _CPAttachedWindow to a random point
+    Position the _CPAttachedWindow to a given point
 
     @param aPoint the point where the _CPAttachedWindow will be attached
     @param anEdge the prefered edge
@@ -442,47 +443,63 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 {
     [super orderFront:aSender];
 
-    var tranformOrigin = "50% 100%";
+    var transformOrigin = "50% 100%";
 
-    switch ([_windowView preferredEdge])
+    if (_animationStyle === CPPopoverAnimationStyleLion)
     {
-        case CPMaxYEdge:
-            var posX = 50 + (([_windowView arrowOffsetX] * 100) / _frame.size.width);
-            tranformOrigin = posX + "% 0%"; // 50 0
-            break;
-        case CPMinYEdge:
-            var posX = 50 + (([_windowView arrowOffsetX] * 100) / _frame.size.width);
-            tranformOrigin = posX + "% 100%"; // 50 100
-            break;
-        case CPMinXEdge:
-            var posY = 50 + (([_windowView arrowOffsetY] * 100) / _frame.size.height);
-            tranformOrigin = "100% " + posY + "%"; // 100 50
-            break;
-        case CPMaxXEdge:
-            var posY = 50 + (([_windowView arrowOffsetY] * 100) / _frame.size.height);
-            tranformOrigin = "0% "+ posY + "%"; // 0 50
-            break;
+        switch ([_windowView preferredEdge])
+        {
+            case CPMaxYEdge:
+                var posX = 50 + (([_windowView arrowOffsetX] * 100) / _frame.size.width);
+                transformOrigin = posX + "% 0%"; // 50 0
+                break;
+            case CPMinYEdge:
+                var posX = 50 + (([_windowView arrowOffsetX] * 100) / _frame.size.width);
+                transformOrigin = posX + "% 100%"; // 50 100
+                break;
+            case CPMinXEdge:
+                var posY = 50 + (([_windowView arrowOffsetY] * 100) / _frame.size.height);
+                transformOrigin = "100% " + posY + "%"; // 100 50
+                break;
+            case CPMaxXEdge:
+                var posY = 50 + (([_windowView arrowOffsetY] * 100) / _frame.size.height);
+                transformOrigin = "0% "+ posY + "%"; // 0 50
+                break;
+        }
     }
 
     // @TODO: implement for FF
-    if (_animates && _shouldPerformAnimation && typeof(_DOMElement.style.WebkitTransform) != "undefined")
+    if (_animates && _shouldPerformAnimation && typeof(_DOMElement.style.webkitTransform) != "undefined")
     {
         _DOMElement.style.opacity = 0;
-        _DOMElement.style.WebkitTransform = "scale(0)";
-        _DOMElement.style.WebkitTransformOrigin = tranformOrigin;
+
+        if (_animationStyle === CPPopoverAnimationStyleLion)
+        {
+            _DOMElement.style.webkitTransform = "scale(0)";
+            _DOMElement.style.webkitTransformOrigin = transformOrigin;
+        }
+
         window.setTimeout(function()
         {
+            _DOMElement.style.opacity = 1;
             _DOMElement.style.height = _frame.size.height + @"px";
             _DOMElement.style.width = _frame.size.width + @"px";
-            _DOMElement.style.opacity = 1;
-            _DOMElement.style.WebkitTransform = "scale(1.1)";
-            var transitionEndFunction = function()
+
+            if (_animationStyle === CPPopoverAnimationStyleLion)
             {
-                _DOMElement.style.WebkitTransform = "scale(1)";
-                _DOMElement.removeEventListener("webkitTransitionEnd", transitionEndFunction, YES);
-            };
-            _DOMElement.addEventListener("webkitTransitionEnd", transitionEndFunction, YES);
-        },0);
+                _DOMElement.style.webkitTransform = "scale(1.1)";
+                _DOMElement.style.webkitTransitionDuration = "250ms";
+                _DOMElement.style.webkitTransitionTimingFunction = "ease-out";
+
+                var transitionEndFunction = function()
+                {
+                    _DOMElement.style.webkitTransform = "scale(1)";
+                    _DOMElement.removeEventListener("webkitTransitionEnd", transitionEndFunction, YES);
+                };
+
+                _DOMElement.addEventListener("webkitTransitionEnd", transitionEndFunction, YES);
+            }
+        }, 0);
     }
 
     [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_attachedWindowDidMove:) name:CPWindowDidMoveNotification object:self];
@@ -492,20 +509,25 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 }
 
 /*!
-    Close the windo with animation
+    Close the window with animation
 */
 - (void)close
 {
     // set a close flag to avoid infinite loop
     _isClosed = YES;
 
-    if (_animates && typeof(_DOMElement.style.WebkitTransform) != "undefined")
+    if (_animates && typeof(_DOMElement.style.webkitTransform) != "undefined")
     {
         _DOMElement.style.opacity = 0;
-        var transitionEndFunction = function(){
-                [super close];
+        _DOMElement.style.webkitTransitionDuration = "250ms";
+        _DOMElement.style.webkitTransitionTimingFunction = "linear";
+
+        var transitionEndFunction = function()
+        {
+            [super close];
             _DOMElement.removeEventListener("webkitTransitionEnd", transitionEndFunction, YES);
         };
+
         _DOMElement.addEventListener("webkitTransitionEnd", transitionEndFunction, YES);
     }
     else

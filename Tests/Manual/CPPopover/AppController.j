@@ -73,7 +73,12 @@
     [buttonAnimation addItemWithTitle:"No animation"];
     [contentView addSubview:buttonAnimation];
 
-    buttonBehaviour = [[CPPopUpButton alloc] initWithFrame:CPRectMake(430, 10, 130, 24)];
+    buttonAnimationStyle = [[CPPopUpButton alloc] initWithFrame:CPRectMake(430, 10, 130, 24)];
+    [buttonAnimationStyle addItemWithTitle:"Lion"];
+    [buttonAnimationStyle addItemWithTitle:"iOS"];
+    [contentView addSubview:buttonAnimationStyle];
+
+    buttonBehaviour = [[CPPopUpButton alloc] initWithFrame:CPRectMake(570, 10, 130, 24)];
     [buttonBehaviour addItemWithTitle:"Transient"];
     [buttonBehaviour addItemWithTitle:"Not managed"];
     [contentView addSubview:buttonBehaviour];
@@ -121,17 +126,18 @@
 
     [label setFont:[CPFont boldSystemFontOfSize:30.0]];
     [label setFrameOrigin:CPPointMake(0, 70)];
-    [label setValue:(a == CPPopoverAppearanceHUD) ? [CPColor colorWithHexString:@"333"] : [CPColor colorWithHexString:@"fff"] forThemeAttribute:@"text-shadow-color"];
+    [label setValue:(a === CPPopoverAppearanceHUD) ? [CPColor colorWithHexString:@"333"] : [CPColor colorWithHexString:@"fff"] forThemeAttribute:@"text-shadow-color"];
     [label setValue:CGSizeMake(0.0, 1.0) forThemeAttribute:@"text-shadow-offset"];
-    [label setTextColor:(a == CPPopoverAppearanceHUD) ? [CPColor whiteColor] : [CPColor colorWithHexString:@"444"]];
+    [label setTextColor:(a === CPPopoverAppearanceHUD) ? [CPColor whiteColor] : [CPColor colorWithHexString:@"444"]];
     [label setFrameSize:CPSizeMake([view frame].size.width, 50)];
     [label setAlignment:CPCenterTextAlignment];
     [view addSubview:label];
 
     [viewC setView:view];
     [p setContentViewController:viewC];
-    [p setAnimates:([buttonAnimation title] == @"With animation")];
-    [p setBehaviour:([buttonBehaviour title] == @"Transient") ? CPPopoverBehaviorTransient : CPPopoverBehaviorApplicationDefined];
+    [p setAnimates:([buttonAnimation title] === @"With animation")];
+    [p setAnimationStyle:[buttonAnimationStyle title] === @"Lion" ? CPPopoverAnimationStyleLion : CPPopoverAnimationStyleIOS];
+    [p setBehaviour:([buttonBehaviour title] === @"Transient") ? CPPopoverBehaviorTransient : CPPopoverBehaviorApplicationDefined];
     [p setAppearance:a];
     [p setDelegate:self];
     [p showRelativeToRect:nil ofView:sender preferredEdge:g];
