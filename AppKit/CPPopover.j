@@ -67,7 +67,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     @outlet id                  _delegate               @accessors(getter=delegate);
 
     BOOL                        _animates               @accessors(property=animates);
-    int                         _animationStyle         @accessors(property=animationStyle);
+    int                         _animationStyle;
     BOOL                        _shown                  @accessors(getter=shown);
     int                         _appearance             @accessors(property=appearance);
     int                         _behavior               @accessors(getter=behavior);
@@ -176,6 +176,27 @@ Set the behaviour of the CPPopover. It can be:
 
     _behavior = aBehaviour;
     _needsCompute = YES;
+}
+
+/*!
+    Returns the current animation style.
+*/
+- (int)animationStyle
+{
+    return _animationStyle;
+}
+
+/*!
+Set the animation style of the CPPopover. It can be:
+
+- \c CPPopoverAnimationStyleLion: (DEFAULT) the popover will zoom open and fade out when closing
+- \c CPPopoverAnimationStyleIOS: the popover appears instantly when opening and fades out when closing
+
+@param style the desired animation style
+*/
+- (void)setAnimationStyle:(int)style
+{
+    _animationStyle = style;
 }
 
 
