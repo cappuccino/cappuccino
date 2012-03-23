@@ -511,7 +511,21 @@
     [self assert:input1[0] equals:[output valueForKey:"0"] message:@"output[0]"];
     [self assert:input1[1] equals:[output valueForKey:"1"] message:@"output[0]"];
     [self assert:input1[2] equals:[output valueForKey:"2"] message:@"output[0]"];
+
+    stoppingFunction = function(anObject, idx, stop)
+    {
+        [output setValue:anObject forKey:"" + idx];
+        if ([output count] > 1)
+            stop(YES); // AT_DEREF(stop, YES) - FIXME Replace with proper @ref @deref when in ObjJ.
+    }
+    output = [CPMutableDictionary dictionary];
+
+    [input1 enumerateObjectsUsingBlock:stoppingFunction];
+    [self assert:2 equals:[output count] message:@"output when enumerating input1 and stopping after 2"];
+    [self assert:input1[0] equals:[output valueForKey:"0"] message:@"output[0]"];
+    [self assert:input1[1] equals:[output valueForKey:"1"] message:@"output[0]"];
 }
+
 
 @end
 
