@@ -12,39 +12,72 @@
 
 @implementation AppController : CPObject
 {
-    CPPopUpButton buttonGravity;
+    CPPopUpButton buttonEdge;
     CPPopUpButton buttonStyle;
     CPPopUpButton buttonAnimation;
     CPPopUpButton buttonBehaviour;
+    CPPopover     popover;
+    CPTextField   appearanceLabel;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
-        contentView = [theWindow contentView];
+        contentView = [theWindow contentView],
+        contentViewSize = [contentView frameSize];
 
     var button = [CPButton buttonWithTitle:@"click"];
     [button setTarget:self];
     [button setAction:@selector(open:)];
-    [button setFrameOrigin:CPPointMake(10, 60)];
+    [button setFrameOrigin:CGPointMake(1, 1)];
     [contentView addSubview:button];
 
     button = [CPButton buttonWithTitle:@"click"];
     [button setTarget:self];
     [button setAction:@selector(open:)];
-    [button setFrameOrigin:CPPointMake( [contentView frameSize].width - 50, 60)];
+    [button setFrameOrigin:CGPointMake(1, 100)];
     [contentView addSubview:button];
 
     button = [CPButton buttonWithTitle:@"click"];
     [button setTarget:self];
     [button setAction:@selector(open:)];
-    [button setFrameOrigin:CPPointMake( [contentView frameSize].width - 50, [contentView frameSize].height - 50)];
+    [button setAutoresizingMask:CPViewMinXMargin]
+    [button setFrameOrigin:CGPointMake(contentViewSize.width - CGRectGetWidth([button frame]) - 1, 1)];
     [contentView addSubview:button];
 
     button = [CPButton buttonWithTitle:@"click"];
     [button setTarget:self];
     [button setAction:@selector(open:)];
-    [button setFrameOrigin:CPPointMake( 10, [contentView frameSize].height - 50)];
+    [button setAutoresizingMask:CPViewMinXMargin]
+    [button setFrameOrigin:CGPointMake(contentViewSize.width - CGRectGetWidth([button frame]) - 1, 100)];
+    [contentView addSubview:button];
+
+    button = [CPButton buttonWithTitle:@"click"];
+    [button setTarget:self];
+    [button setAction:@selector(open:)];
+    [button setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin]
+    [button setFrameOrigin:CGPointMake(contentViewSize.width - CGRectGetWidth([button frame])- 1, contentViewSize.height - CGRectGetHeight([button frame]) - 1)];
+    [contentView addSubview:button];
+
+    button = [CPButton buttonWithTitle:@"click"];
+    [button setTarget:self];
+    [button setAction:@selector(open:)];
+    [button setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin]
+    [button setFrameOrigin:CGPointMake(contentViewSize.width - CGRectGetWidth([button frame])- 1, contentViewSize.height - 100)];
+    [contentView addSubview:button];
+
+    button = [CPButton buttonWithTitle:@"click"];
+    [button setTarget:self];
+    [button setAction:@selector(open:)];
+    [button setAutoresizingMask:CPViewMaxXMargin | CPViewMinYMargin]
+    [button setFrameOrigin:CGPointMake(1, contentViewSize.height - CGRectGetHeight([button frame]) - 1)];
+    [contentView addSubview:button];
+
+    button = [CPButton buttonWithTitle:@"click"];
+    [button setTarget:self];
+    [button setAction:@selector(open:)];
+    [button setAutoresizingMask:CPViewMaxXMargin | CPViewMinYMargin]
+    [button setFrameOrigin:CGPointMake(1, contentViewSize.height - 100)];
     [contentView addSubview:button];
 
     button = [CPButton buttonWithTitle:@"click"];
@@ -55,30 +88,30 @@
     [contentView addSubview:button];
 
 
-    buttonGravity = [[CPPopUpButton alloc] initWithFrame:CPRectMake(10, 10, 130, 24)];
-    [buttonGravity addItemWithTitle:"Automatic"];
-    [buttonGravity addItemWithTitle:"Bottom"];
-    [buttonGravity addItemWithTitle:"Top"];
-    [buttonGravity addItemWithTitle:"Right"];
-    [buttonGravity addItemWithTitle:"Left"];
-    [contentView addSubview:buttonGravity];
+    buttonEdge = [[CPPopUpButton alloc] initWithFrame:CGRectMake(150, 10, 130, 24)];
+    [buttonEdge addItemWithTitle:"Automatic"];
+    [buttonEdge addItemWithTitle:"Bottom"];
+    [buttonEdge addItemWithTitle:"Top"];
+    [buttonEdge addItemWithTitle:"Right"];
+    [buttonEdge addItemWithTitle:"Left"];
+    [contentView addSubview:buttonEdge];
 
-    buttonStyle = [[CPPopUpButton alloc] initWithFrame:CPRectMake(150, 10, 130, 24)];
+    buttonStyle = [[CPPopUpButton alloc] initWithFrame:CGRectMake(290, 10, 130, 24)];
     [buttonStyle addItemWithTitle:"Minimal"];
     [buttonStyle addItemWithTitle:"HUD"];
     [contentView addSubview:buttonStyle];
 
-    buttonAnimation = [[CPPopUpButton alloc] initWithFrame:CPRectMake(290, 10, 130, 24)];
+    buttonAnimation = [[CPPopUpButton alloc] initWithFrame:CGRectMake(430, 10, 130, 24)];
     [buttonAnimation addItemWithTitle:"With animation"];
     [buttonAnimation addItemWithTitle:"No animation"];
     [contentView addSubview:buttonAnimation];
 
-    buttonAnimationStyle = [[CPPopUpButton alloc] initWithFrame:CPRectMake(430, 10, 130, 24)];
+    buttonAnimationStyle = [[CPPopUpButton alloc] initWithFrame:CGRectMake(570, 10, 130, 24)];
     [buttonAnimationStyle addItemWithTitle:"Lion"];
     [buttonAnimationStyle addItemWithTitle:"iOS"];
     [contentView addSubview:buttonAnimationStyle];
 
-    buttonBehaviour = [[CPPopUpButton alloc] initWithFrame:CPRectMake(570, 10, 130, 24)];
+    buttonBehaviour = [[CPPopUpButton alloc] initWithFrame:CGRectMake(710, 10, 130, 24)];
     [buttonBehaviour addItemWithTitle:"Transient"];
     [buttonBehaviour addItemWithTitle:"Not managed"];
     [contentView addSubview:buttonBehaviour];
@@ -88,64 +121,81 @@
 
 - (IBAction)open:(id)sender
 {
-    var g;
-    switch ([buttonGravity title])
+    var edge;
+
+    switch ([buttonEdge title])
     {
         case "Automatic":
-            g = nil;
+            edge = nil;
             break;
         case "Bottom":
-            g = CPMaxYEdge;
+            edge = CPMaxYEdge;
             break;
         case "Top":
-            g = CPMinYEdge;
+            edge = CPMinYEdge;
             break;
         case "Left":
-            g = CPMinXEdge;
+            edge = CPMinXEdge;
             break;
         case "Right":
-            g = CPMaxXEdge;
+            edge = CPMaxXEdge;
             break;
     }
 
-    var a;
+    var appearance;
+
     switch ([buttonStyle title])
     {
         case "Minimal":
-            a = CPPopoverAppearanceMinimal;
+            appearance = CPPopoverAppearanceMinimal;
             break;
         case "HUD":
-            a = CPPopoverAppearanceHUD;
+            appearance = CPPopoverAppearanceHUD;
             break;
     }
 
-    var p = [[CPPopover alloc] init],
-        viewC = [[CPViewController alloc] init],
-        view = [[CPView alloc] initWithFrame:CPRectMake(0.0, 0.0, 320, 300)],
-        label = [CPTextField labelWithTitle:[buttonGravity title]];
+    var pop = [self popoverWithAppearance:appearance];
 
-    [label setFont:[CPFont boldSystemFontOfSize:30.0]];
-    [label setFrameOrigin:CPPointMake(0, 70)];
-    [label setValue:(a === CPPopoverAppearanceHUD) ? [CPColor colorWithHexString:@"333"] : [CPColor colorWithHexString:@"fff"] forThemeAttribute:@"text-shadow-color"];
-    [label setValue:CGSizeMake(0.0, 1.0) forThemeAttribute:@"text-shadow-offset"];
-    [label setTextColor:(a === CPPopoverAppearanceHUD) ? [CPColor whiteColor] : [CPColor colorWithHexString:@"444"]];
-    [label setFrameSize:CPSizeMake([view frame].size.width, 50)];
-    [label setAlignment:CPCenterTextAlignment];
-    [view addSubview:label];
+    [pop showRelativeToRect:nil ofView:sender preferredEdge:edge];
 
-    [viewC setView:view];
-    [p setContentViewController:viewC];
-    [p setAnimates:([buttonAnimation title] === @"With animation")];
-    [p setAnimationStyle:[buttonAnimationStyle title] === @"Lion" ? CPPopoverAnimationStyleLion : CPPopoverAnimationStyleIOS];
-    [p setBehaviour:([buttonBehaviour title] === @"Transient") ? CPPopoverBehaviorTransient : CPPopoverBehaviorApplicationDefined];
-    [p setAppearance:a];
-    [p setDelegate:self];
-    [p showRelativeToRect:nil ofView:sender preferredEdge:g];
-    CPLog.info("content size -  w:" + [p contentSize].width + " h:" + [p contentSize].width);
-    CPLog.info("positioning rect - x: " + [p positioningRect].origin.x + " y: " + [p positioningRect].origin.x
-                    + " w:" + [p positioningRect].size.width + " h:" + [p positioningRect].size.width);
+    CPLog.info("content size -  w:" + [pop contentSize].width + " h:" + [pop contentSize].width);
+    CPLog.info("positioning rect - x: " + [pop positioningRect].origin.x + " y: " + [pop positioningRect].origin.x
+                    + " w:" + [pop positioningRect].size.width + " h:" + [pop positioningRect].size.width);
 }
 
+- (CPPopover)popoverWithAppearance:(int)appearance
+{
+    if (popover)
+    {
+        [appearanceLabel setStringValue:[buttonEdge title]];
+        return popover;
+    }
+
+    popover = [CPPopover new];
+
+    var controller = [[CPViewController alloc] init],
+        view = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 320, 300)];
+
+    appearanceLabel = [CPTextField labelWithTitle:[buttonEdge title]];
+    [appearanceLabel setFont:[CPFont boldSystemFontOfSize:30.0]];
+    [appearanceLabel setFrameOrigin:CGPointMake(0, 70)];
+    [appearanceLabel setValue:(appearance === CPPopoverAppearanceHUD) ? [CPColor colorWithHexString:@"333"] : [CPColor colorWithHexString:@"fff"] forThemeAttribute:@"text-shadow-color"];
+    [appearanceLabel setValue:CGSizeMake(0.0, 1.0) forThemeAttribute:@"text-shadow-offset"];
+    [appearanceLabel setTextColor:(appearance === CPPopoverAppearanceHUD) ? [CPColor whiteColor] : [CPColor colorWithHexString:@"444"]];
+    [appearanceLabel setFrameSize:CPSizeMake([view frame].size.width, 50)];
+    [appearanceLabel setAlignment:CPCenterTextAlignment];
+    [view addSubview:appearanceLabel];
+
+    [controller setView:view];
+    [popover setContentViewController:controller];
+    [popover setAnimates:([buttonAnimation title] === @"With animation")];
+    [popover setAnimationStyle:[buttonAnimationStyle title] === @"Lion" ? CPPopoverAnimationStyleLion : CPPopoverAnimationStyleIOS];
+    [popover setBehaviour:([buttonBehaviour title] === @"Transient") ? CPPopoverBehaviorTransient : CPPopoverBehaviorApplicationDefined];
+    [popover setAppearance:appearance];
+    [popover setDelegate:self];
+
+    return popover;
+}
 
 #pragma mark -
 #pragma mark CPPopover Delegate

@@ -49,9 +49,9 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 
     BOOL            _closeOnBlur;
     BOOL            _isClosed;
+    BOOL            _browserAnimates;
     BOOL            _shouldPerformAnimation;
     CPButton        _closeButton;
-    float           _animationDuration;
     CPInteger       _implementedDelegateMethods;
 }
 
@@ -128,18 +128,16 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
     {
         _animates                   = YES;
         _animationStyle             = CPPopoverAnimationStyleLion;
-        _animationDuration          = 150;
         _closeOnBlur                = (aStyleMask & CPClosableOnBlurWindowMask);
         _isClosed                   = NO;
+        _browserAnimates            = [self browserSupportsAnimation];
         _shouldPerformAnimation     = _animates;
 
         [self setLevel:CPStatusWindowLevel];
         [self setMovableByWindowBackground:YES];
         [self setHasShadow:NO];
 
-        _DOMElement.style.webkitBackfaceVisibility = "hidden";
-        _DOMElement.style.webkitTransitionProperty = "-webkit-transform, opacity";
-        _DOMElement.style.webkitTransitionDuration = _animationDuration + "ms";
+        [self setCSS3Property:@"TransitionProperty" value:@"-webkit-transform, opacity"];
 
         [_windowView setNeedsDisplay:YES];
     }
@@ -247,23 +245,24 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
         originLeft      = CGPointCreateCopy(aRect.origin),
         originRight     = CGPointCreateCopy(aRect.origin),
         originTop       = CGPointCreateCopy(aRect.origin),
-        originBottom    = CGPointCreateCopy(aRect.origin);
+        originBottom    = CGPointCreateCopy(aRect.origin),
+        frameSize       = [self frame].size;
 
     // CPMaxXEdge
     originRight.x += aRect.size.width;
-    originRight.y += (aRect.size.height / 2.0) - (CGRectGetHeight([self frame]) / 2.0);
+    originRight.y += (aRect.size.height / 2.0) - (frameSize.height / 2.0);
 
     // CPMinXEdge
-    originLeft.x -= CGRectGetWidth([self frame]);
-    originLeft.y += (aRect.size.height / 2.0) - (CGRectGetHeight([self frame]) / 2.0);
+    originLeft.x -= frameSize.width;
+    originLeft.y += (aRect.size.height / 2.0) - (frameSize.height / 2.0);
 
     // CPMaxYEdge
-    originBottom.x += aRect.size.width / 2.0 - CGRectGetWidth([self frame]) / 2.0;
+    originBottom.x += aRect.size.width / 2.0 - frameSize.width / 2.0;
     originBottom.y += aRect.size.height;
 
     // CPMinYEdge
-    originTop.x += aRect.size.width / 2.0 - CGRectGetWidth([self frame]) / 2.0;
-    originTop.y -= CGRectGetHeight([self frame]);
+    originTop.x += aRect.size.width / 2.0 - frameSize.width / 2.0;
+    originTop.y -= frameSize.height;
 
     var requestedEdge = (anEdge !== nil) ? anEdge : CPMaxXEdge,
         requestedOrigin;
@@ -301,20 +300,20 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
             [_windowView setArrowOffsetX:o.x];
             o.x = 0;
         }
-        if (o.x + CGRectGetWidth([self frame]) > nativeRect.size.width)
+        if (o.x + frameSize.width > nativeRect.size.width)
         {
-            [_windowView setArrowOffsetX:(o.x + CGRectGetWidth([self frame]) - nativeRect.size.width)];
-            o.x = nativeRect.size.width - CGRectGetWidth([self frame]);
+            [_windowView setArrowOffsetX:(o.x + frameSize.width - nativeRect.size.width)];
+            o.x = nativeRect.size.width - frameSize.width;
         }
         if (o.y < 0)
         {
             [_windowView setArrowOffsetY:o.y];
             o.y = 0;
         }
-        if (o.y + CGRectGetHeight([self frame]) > nativeRect.size.height)
+        if (o.y + frameSize.height > nativeRect.size.height)
         {
-            [_windowView setArrowOffsetY:(CGRectGetHeight([self frame]) + o.y - nativeRect.size.height)];
-            o.y = nativeRect.size.height - CGRectGetHeight([self frame]);
+            [_windowView setArrowOffsetY:(frameSize.height + o.y - nativeRect.size.height)];
+            o.y = nativeRect.size.height - frameSize.height;
         }
 
         switch (g)
@@ -324,7 +323,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
                     return o;
                 break;
             case CPMinXEdge:
-                if ((o.x + _frame.size.width) <= aRect.origin.x)
+                if ((o.x + frameSize.width) <= aRect.origin.x)
                     return o;
                 break;
             case CPMaxYEdge:
@@ -332,7 +331,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
                     return o;
                 break;
             case CPMinYEdge:
-                if ((o.y + _frame.size.height) <= aRect.origin.y)
+                if ((o.y + frameSize.height) <= aRect.origin.y)
                     return o;
                 break;
         }
@@ -403,6 +402,27 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
     [self makeKeyAndOrderFront:nil];
 }
 
+/*! @ignore */
+- (void)setCSS3Property:(CPString)property value:(CPString)value
+{
+    _DOMElement.style['webkit' + property] = value;
+
+    // Support other browsers here eventually
+}
+
+/*! @ignore */
+- (BOOL)browserSupportsAnimation
+{
+    return typeof(_DOMElement.style.webkitTransition) !== "undefined";
+
+    /*
+        No others browsers supported yet.
+
+           typeof(_DOMElement.style.MozTransition) !== "undefined" ||
+           typeof(_DOMElement.style.MsTransition) !== "undefined" ||
+           typeof(_DOMElement.style.OTransition) !== "undefined";
+    */
+}
 
 #pragma mark -
 #pragma mark Actions
@@ -443,63 +463,65 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 {
     [super orderFront:aSender];
 
-    var transformOrigin = "50% 100%";
-
-    if (_animationStyle === CPPopoverAnimationStyleLion)
+    if (_animates && _browserAnimates && _shouldPerformAnimation)
     {
-        switch ([_windowView preferredEdge])
-        {
-            case CPMaxYEdge:
-                var posX = 50 + (([_windowView arrowOffsetX] * 100) / _frame.size.width);
-                transformOrigin = posX + "% 0%"; // 50 0
-                break;
-            case CPMinYEdge:
-                var posX = 50 + (([_windowView arrowOffsetX] * 100) / _frame.size.width);
-                transformOrigin = posX + "% 100%"; // 50 100
-                break;
-            case CPMinXEdge:
-                var posY = 50 + (([_windowView arrowOffsetY] * 100) / _frame.size.height);
-                transformOrigin = "100% " + posY + "%"; // 100 50
-                break;
-            case CPMaxXEdge:
-                var posY = 50 + (([_windowView arrowOffsetY] * 100) / _frame.size.height);
-                transformOrigin = "0% "+ posY + "%"; // 0 50
-                break;
-        }
-    }
-
-    // @TODO: implement for FF
-    if (_animates && _shouldPerformAnimation && typeof(_DOMElement.style.webkitTransform) != "undefined")
-    {
-        _DOMElement.style.opacity = 0;
-
         if (_animationStyle === CPPopoverAnimationStyleLion)
         {
-            _DOMElement.style.webkitTransform = "scale(0)";
-            _DOMElement.style.webkitTransformOrigin = transformOrigin;
-        }
+            var transformOrigin = "50% 100%",
+                frame = [self frame],
+                preferredEdge = [_windowView preferredEdge],
+                posX;
 
-        window.setTimeout(function()
-        {
-            _DOMElement.style.opacity = 1;
-            _DOMElement.style.height = _frame.size.height + @"px";
-            _DOMElement.style.width = _frame.size.width + @"px";
-
-            if (_animationStyle === CPPopoverAnimationStyleLion)
+            switch (preferredEdge)
             {
-                _DOMElement.style.webkitTransform = "scale(1.1)";
-                _DOMElement.style.webkitTransitionDuration = "250ms";
-                _DOMElement.style.webkitTransitionTimingFunction = "ease-out";
+                case CPMaxYEdge:
+                case CPMinYEdge:
+                    posX = 50 + (([_windowView arrowOffsetX] * 100) / frame.size.width);
+                    transformOrigin = posX + "% " + (preferredEdge === CPMaxYEdge ? "0%" : "100%");
+                    break;
 
-                var transitionEndFunction = function()
-                {
-                    _DOMElement.style.webkitTransform = "scale(1)";
-                    _DOMElement.removeEventListener("webkitTransitionEnd", transitionEndFunction, YES);
-                };
-
-                _DOMElement.addEventListener("webkitTransitionEnd", transitionEndFunction, YES);
+                case CPMinXEdge:
+                case CPMaxXEdge:
+                    posY = 50 + (([_windowView arrowOffsetY] * 100) / frame.size.height);
+                    transformOrigin = (preferredEdge === CPMaxXEdge ? "0% " : "100% ") + posY + "%"; // 100 50
+                    break;
             }
-        }, 0);
+
+            // This is the initial transform
+            [self setCSS3Property:@"Transform" value:@"scale(0)"];
+            [self setCSS3Property:@"TransformOrigin" value:transformOrigin];
+            [self setCSS3Property:@"TransitionDuration" value:"0"];
+
+            window.setTimeout(function()
+            {
+                if (_animationStyle === CPPopoverAnimationStyleLion)
+                {
+                    // We are watching opacity, so this triggers the next transition
+                    _DOMElement.style.opacity = 1;
+                    _DOMElement.style.height = frame.size.height + @"px";
+                    _DOMElement.style.width = frame.size.width + @"px";
+
+                    // Set up the pop-out transition
+                    [self setCSS3Property:@"Transform" value:@"scale(1.1)"];
+                    [self setCSS3Property:@"TransitionDuration" value:@"200ms"];
+                    [self setCSS3Property:@"TransitionTimingFunction" value:@"ease-in"];
+
+                    var transitionEndFunction = function()
+                    {
+                        _DOMElement.removeEventListener("webkitTransitionEnd", transitionEndFunction, YES);
+
+                        // Now set up the pop-in to normal size transition
+                        [self setCSS3Property:@"Transform" value:@"scale(1)"];
+                        [self setCSS3Property:@"TransitionDuration" value:@"50ms"];
+                        [self setCSS3Property:@"TransitionTimingFunction" value:@"linear"];
+                    };
+
+                    _DOMElement.addEventListener("webkitTransitionEnd", transitionEndFunction, YES);
+                }
+            }, 0);
+        }
+        else
+            _DOMElement.style.opacity = 1;
     }
 
     [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_attachedWindowDidMove:) name:CPWindowDidMoveNotification object:self];
@@ -516,11 +538,10 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
     // set a close flag to avoid infinite loop
     _isClosed = YES;
 
-    if (_animates && typeof(_DOMElement.style.webkitTransform) != "undefined")
+    if (_animates && _browserAnimates)
     {
+        [self setCSS3Property:@"Transition" value:@"opacity 250ms linear"];
         _DOMElement.style.opacity = 0;
-        _DOMElement.style.webkitTransitionDuration = "250ms";
-        _DOMElement.style.webkitTransitionTimingFunction = "linear";
 
         var transitionEndFunction = function()
         {
