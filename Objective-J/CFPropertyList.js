@@ -297,6 +297,7 @@ var XML_XML                 = "xml",
     PLIST_DICTIONARY        = "dict",
     PLIST_ARRAY             = "array",
     PLIST_STRING            = "string",
+    PLIST_DATE              = "date",
     PLIST_BOOLEAN_TRUE      = "true",
     PLIST_BOOLEAN_FALSE     = "false",
     PLIST_NUMBER_REAL       = "real",
@@ -595,6 +596,10 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
                                         else
                                             object = decodeHTMLComponent(FIRST_CHILD(XMLNode) ? TEXT_CONTENT(XMLNode) : "");
 
+                                        break;
+                                        
+            case PLIST_DATE:            var timestamp = Date.parseISO8601(TEXT_CONTENT(XMLNode));
+                                        object = isNaN(timestamp) ? new Date() : new Date(timestamp);
                                         break;
 
             case PLIST_BOOLEAN_TRUE:    object = YES;
