@@ -2,7 +2,7 @@
  * AppController.j
  * CPPopUpButtonTest
  *
- * Created by You on December 8, 2010.
+ * Created by Klaas Pieter Annema on December 8, 2010.
  * Copyright 2010, Your Company All rights reserved.
  */
 
@@ -52,7 +52,7 @@
     [textField setBezeled:YES];
     [textField setCenter:CGPointMake([contentView center].x, [contentView center].y + 40.0)];
     [textField setValue:CPCenterTextAlignment forThemeAttribute:@"alignment"];
-    [textField bind:@"value" toObject:popUpButton withKeyPath:@"selectedTag" options:0];
+    [textField bind:@"value" toObject:popUpButton withKeyPath:@"selectedTag" options:nil];
     [contentView addSubview:textField];
 
     var button = [CPButton buttonWithTitle:@"Remove Items"],
@@ -64,8 +64,8 @@
     [button setAction:@selector(removeItems:)];
     [contentView addSubview:button];
 
-    [popUpButton bind:@"selectedTag" toObject:textField withKeyPath:@"value" options:0]
-    [popUpButton2 bind:@"selectedTag" toObject:popUpButton withKeyPath:@"selectedTag" options:0];
+    [popUpButton bind:@"selectedTag" toObject:textField withKeyPath:@"value" options:nil]
+    [popUpButton2 bind:@"selectedTag" toObject:popUpButton withKeyPath:@"selectedTag" options:nil];
 
     // Change the selected tag of the second popup doesn't reverse set it,
     // see the discussion for pull request 1018 for more details about the problem.
