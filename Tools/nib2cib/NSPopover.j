@@ -30,12 +30,11 @@
     self = [super NS_initWithCoder:aCoder];
 
     if (self)
-    {   
-        _needsCompute   = YES;
-        _shown          = NO;
-        _behavior       = [aCoder decodeIntForKey:@"NSBehavior"];
-        _appearance     = [aCoder decodeIntForKey:@"NSAppearance"];
-        _animates       = [aCoder decodeBoolForKey:@"NSAnimates"];
+    {
+        _needsNewAttachedWindow = YES;
+        _behavior   = [aCoder decodeIntForKey:@"NSBehavior"];
+        _appearance = [aCoder decodeIntForKey:@"NSAppearance"];
+        _animates   = [aCoder decodeBoolForKey:@"NSAnimates"];
     }
 
     return self;

@@ -992,7 +992,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     _disclosureControlData = nil;
     _disclosureControlQueue = [];
 
-    // fIXME: really?
+    // FIXME: really?
     [self reloadData];
 }
 

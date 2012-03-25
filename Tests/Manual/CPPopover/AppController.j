@@ -106,12 +106,7 @@
     [buttonAnimation addItemWithTitle:"No animation"];
     [contentView addSubview:buttonAnimation];
 
-    buttonAnimationStyle = [[CPPopUpButton alloc] initWithFrame:CGRectMake(570, 10, 130, 24)];
-    [buttonAnimationStyle addItemWithTitle:"Lion"];
-    [buttonAnimationStyle addItemWithTitle:"iOS"];
-    [contentView addSubview:buttonAnimationStyle];
-
-    buttonBehaviour = [[CPPopUpButton alloc] initWithFrame:CGRectMake(710, 10, 130, 24)];
+    buttonBehaviour = [[CPPopUpButton alloc] initWithFrame:CGRectMake(570, 10, 130, 24)];
     [buttonBehaviour addItemWithTitle:"Transient"];
     [buttonBehaviour addItemWithTitle:"Not managed"];
     [contentView addSubview:buttonBehaviour];
@@ -165,34 +160,32 @@
 
 - (CPPopover)popoverWithAppearance:(int)appearance
 {
-    if (popover)
+    if (!popover || [buttonBehaviour title] === @"Not managed")
     {
-        [appearanceLabel setStringValue:[buttonEdge title]];
-        return popover;
+        popover = [CPPopover new];
+
+        var controller = [[CPViewController alloc] init],
+            view = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 320, 300)];
+
+        appearanceLabel = [CPTextField labelWithTitle:[buttonEdge title]];
+        [appearanceLabel setFont:[CPFont boldSystemFontOfSize:30.0]];
+        [appearanceLabel setFrameOrigin:CGPointMake(0, 70)];
+        [appearanceLabel setValue:CGSizeMake(0.0, 1.0) forThemeAttribute:@"text-shadow-offset"];
+        [appearanceLabel setFrameSize:CPSizeMake([view frame].size.width, 50)];
+        [appearanceLabel setAlignment:CPCenterTextAlignment];
+        [view addSubview:appearanceLabel];
+
+        [controller setView:view];
+        [popover setContentViewController:controller];
+        [popover setDelegate:self];
     }
 
-    popover = [CPPopover new];
-
-    var controller = [[CPViewController alloc] init],
-        view = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 320, 300)];
-
-    appearanceLabel = [CPTextField labelWithTitle:[buttonEdge title]];
-    [appearanceLabel setFont:[CPFont boldSystemFontOfSize:30.0]];
-    [appearanceLabel setFrameOrigin:CGPointMake(0, 70)];
-    [appearanceLabel setValue:(appearance === CPPopoverAppearanceHUD) ? [CPColor colorWithHexString:@"333"] : [CPColor colorWithHexString:@"fff"] forThemeAttribute:@"text-shadow-color"];
-    [appearanceLabel setValue:CGSizeMake(0.0, 1.0) forThemeAttribute:@"text-shadow-offset"];
     [appearanceLabel setTextColor:(appearance === CPPopoverAppearanceHUD) ? [CPColor whiteColor] : [CPColor colorWithHexString:@"444"]];
-    [appearanceLabel setFrameSize:CPSizeMake([view frame].size.width, 50)];
-    [appearanceLabel setAlignment:CPCenterTextAlignment];
-    [view addSubview:appearanceLabel];
-
-    [controller setView:view];
-    [popover setContentViewController:controller];
+    [appearanceLabel setValue:(appearance === CPPopoverAppearanceHUD) ? [CPColor colorWithHexString:@"333"] : [CPColor colorWithHexString:@"fff"] forThemeAttribute:@"text-shadow-color"];
+    [appearanceLabel setStringValue:[buttonEdge title]];
     [popover setAnimates:([buttonAnimation title] === @"With animation")];
-    [popover setAnimationStyle:[buttonAnimationStyle title] === @"Lion" ? CPPopoverAnimationStyleLion : CPPopoverAnimationStyleIOS];
     [popover setBehaviour:([buttonBehaviour title] === @"Transient") ? CPPopoverBehaviorTransient : CPPopoverBehaviorApplicationDefined];
     [popover setAppearance:appearance];
-    [popover setDelegate:self];
 
     return popover;
 }
@@ -212,6 +205,7 @@
 
 - (void)popoverWillClose:(CPPopover)aPopover
 {
+
     CPLog.info("popover " + aPopover + " will close");
 }
 
