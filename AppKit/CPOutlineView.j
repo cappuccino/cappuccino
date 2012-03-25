@@ -80,6 +80,8 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     CPOutlineViewCoalesceSelectionNotificationStateOn   = 1,
     CPOutlineViewCoalesceSelectionNotificationStateDid  = 2;
 
+#define SELECTION_SHOULD_CHANGE(anOutlineView) (!((anOutlineView)._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_selectionShouldChangeInOutlineView_) || [(anOutlineView)._outlineViewDelegate selectionShouldChangeInOutlineView:(anOutlineView)])
+
 #define SHOULD_SELECT_ITEM(anOutlineView, anItem) (!((anOutlineView)._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldSelectItem_) || [(anOutlineView)._outlineViewDelegate outlineView:(anOutlineView) shouldSelectItem:(anItem)])
 
 /*!
@@ -1512,7 +1514,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
             if (![self isItemExpanded:theItem])
             {
                 var parent = [self parentForItem:theItem],
-                    shouldSelect = parent && SHOULD_SELECT_ITEM(self, parent);
+                    shouldSelect = parent && SELECTION_SHOULD_CHANGE(self) && SHOULD_SELECT_ITEM(self, parent);
                 if (shouldSelect)
                 {
                     var rowIndex = [self rowForItem:parent];
@@ -1841,6 +1843,11 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 - (BOOL)tableView:(CPTableView)theTableView shouldSelectRow:(int)theRow
 {
     return SHOULD_SELECT_ITEM(_outlineView, [_outlineView itemAtRow:theRow]);
+}
+
+- (BOOL)selectionShouldChangeInTableView:(CPTableView)theTableView
+{
+    return SELECTION_SHOULD_CHANGE(_outlineView);
 }
 
 - (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)aColumn row:(int)aRow
