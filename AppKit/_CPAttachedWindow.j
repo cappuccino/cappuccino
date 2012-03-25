@@ -38,33 +38,32 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
     @ignore
 
     This is a simple attached window like the one that pops up
-    when you double click on a meeting in iCal
+    when you double click on a meeting in iCal.
 */
 @implementation _CPAttachedWindow : CPWindow
 {
     BOOL            _animates           @accessors(property=animates);
-    int             _animationStyle     @accessors(property=animationStyle);
     id              _targetView         @accessors(property=targetView);
     int             _appearance         @accessors(getter=appearance);
 
     BOOL            _closeOnBlur;
-    BOOL            _isClosed;
+    BOOL            _isClosing;
     BOOL            _browserAnimates;
     BOOL            _shouldPerformAnimation;
     CPButton        _closeButton;
     CPInteger       _implementedDelegateMethods;
 }
 
-/*!
-    override default windowView class loader
-
-    @param aStyleMask the window mask
-    @return the windowView class
-*/
 
 #pragma mark -
 #pragma mark Class methods
 
+/*!
+    Overrides the default windowView class loader.
+
+    @param aStyleMask the window mask
+    @return the windowView class
+*/
 + (Class)_windowViewClassForStyleMask:(unsigned)aStyleMask
 {
     return _CPAttachedWindowView;
@@ -75,7 +74,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 #pragma mark Initialization
 
 /*!
-    Create and init a _CPAttachedWindow with given size of and view
+    Create and init a _CPAttachedWindow with the given size and view.
 
     @param aSize the size of the attached window
     @param aView the target view
@@ -87,12 +86,12 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 }
 
 /*!
-    Create and init a _CPAttachedWindow with given size of and view
+    Create and init a _CPAttachedWindow with given the size, view and style mask.
 
     @param aSize the size of the attached window
     @param aView the target view
-    @return ready to use _CPAttachedWindow
     @param styleMask the window style mask  (combine CPClosableWindowMask and CPClosableOnBlurWindowMask)
+    @return ready to use _CPAttachedWindow
 */
 + (id)attachedWindowWithSize:(CGSize)aSize forView:(CPView)aView styleMask:(int)aMask
 {
@@ -104,7 +103,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 }
 
 /*!
-    Create and init a _CPAttachedWindow with given frame
+    Create and init a _CPAttachedWindow with given the given frame.
 
     @param aFrame the frame of the attached window
     @return ready to use _CPAttachedWindow
@@ -116,7 +115,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 }
 
 /*!
-    Create and init a _CPAttachedWindow with given frame
+    Create and init a _CPAttachedWindow with the given frame and style mask.
 
     @param aFrame the frame of the attached window
     @param styleMask the window style mask  (combine CPClosableWindowMask and CPClosableOnBlurWindowMask)
@@ -127,11 +126,10 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
     if (self = [super initWithContentRect:aFrame styleMask:aStyleMask])
     {
         _animates                   = YES;
-        _animationStyle             = CPPopoverAnimationStyleLion;
         _closeOnBlur                = (aStyleMask & CPClosableOnBlurWindowMask);
-        _isClosed                   = NO;
+        _isClosing                  = NO;
         _browserAnimates            = [self browserSupportsAnimation];
-        _shouldPerformAnimation     = _animates;
+        _shouldPerformAnimation     = YES;
 
         [self setLevel:CPStatusWindowLevel];
         [self setMovableByWindowBackground:YES];
@@ -175,14 +173,13 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 #pragma mark Observer
 
 /*!
-    Update the _CPAttachedWindow frame if a resize event is observed
-
+    Update the _CPAttachedWindow frame if a resize event is observed.
 */
 - (void)observeValueForKeyPath:(CPString)aPath ofObject:(id)anObject change:(CPDictionary)theChange context:(void)aContext
 {
     if ([aPath isEqual:@"frame"])
     {
-        // @TODO: not recompute everything, just compute the move offset
+        // TODO: don't recompute everything, just compute the move offset
         var g = [_windowView preferredEdge];
 
         [self positionRelativeToView:_targetView preferredEdge:g];
@@ -216,8 +213,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
         origin = [aView frameOrigin],
         lastView;
 
-    // if somebody succeed to use the conversion function of CPView
-    // to get this working, please do.
+    // FIXME: make this work with the conversion function of CPView
     while (currentView = [currentView superview])
     {
         origin.x += [currentView frameOrigin].x;
@@ -375,7 +371,8 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 }
 
 /*!
-    Position the _CPAttachedWindow to a given point
+    Position the _CPAttachedWindow relative to a given rect,
+    automatically calculating the edge.
 
     @param aPoint the point where the _CPAttachedWindow will be attached
 */
@@ -385,7 +382,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 }
 
 /*!
-    Position the _CPAttachedWindow to a given point
+    Position the _CPAttachedWindow relative to a given rect's edge.
 
     @param aPoint the point where the _CPAttachedWindow will be attached
     @param anEdge the prefered edge
@@ -442,11 +439,12 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 #pragma mark Overrides
 
 /*!
-    Called when the window is loowing focus and close the window if CPClosableOnBlurWindowMask is setted
+    Called when the window is losing focus.
+    Close the window if CPClosableOnBlurWindowMask is set.
 */
 - (void)resignMainWindow
 {
-    if (_closeOnBlur && !_isClosed)
+    if (_closeOnBlur && !_isClosing)
     {
         if (!_delegate || ((_implementedDelegateMethods & _CPAttachedWindow_attachedWindowShouldClose_)
             && [_delegate attachedWindowShouldClose:self]))
@@ -455,7 +453,8 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 }
 
 /*!
-    Order front the window as usual and add listener for CPWindowDidMoveNotification
+    When the window appears, show animation if necessary.
+    Also take this opportunity to keep track of window moves.
 
     @param sender the sender of the action
 */
@@ -465,98 +464,101 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 
     if (_animates && _browserAnimates && _shouldPerformAnimation)
     {
-        if (_animationStyle === CPPopoverAnimationStyleLion)
+        var transformOrigin = "50% 100%",
+            frame = [self frame],
+            preferredEdge = [_windowView preferredEdge],
+            posX;
+
+        switch (preferredEdge)
         {
-            var transformOrigin = "50% 100%",
-                frame = [self frame],
-                preferredEdge = [_windowView preferredEdge],
-                posX;
+            case CPMaxYEdge:
+            case CPMinYEdge:
+                posX = 50 + (([_windowView arrowOffsetX] * 100) / frame.size.width);
+                transformOrigin = posX + "% " + (preferredEdge === CPMaxYEdge ? "0%" : "100%");
+                break;
 
-            switch (preferredEdge)
-            {
-                case CPMaxYEdge:
-                case CPMinYEdge:
-                    posX = 50 + (([_windowView arrowOffsetX] * 100) / frame.size.width);
-                    transformOrigin = posX + "% " + (preferredEdge === CPMaxYEdge ? "0%" : "100%");
-                    break;
-
-                case CPMinXEdge:
-                case CPMaxXEdge:
-                    posY = 50 + (([_windowView arrowOffsetY] * 100) / frame.size.height);
-                    transformOrigin = (preferredEdge === CPMaxXEdge ? "0% " : "100% ") + posY + "%"; // 100 50
-                    break;
-            }
-
-            // This is the initial transform
-            [self setCSS3Property:@"Transform" value:@"scale(0)"];
-            [self setCSS3Property:@"TransformOrigin" value:transformOrigin];
-            [self setCSS3Property:@"TransitionDuration" value:"0"];
-
-            window.setTimeout(function()
-            {
-                if (_animationStyle === CPPopoverAnimationStyleLion)
-                {
-                    // We are watching opacity, so this triggers the next transition
-                    _DOMElement.style.opacity = 1;
-                    _DOMElement.style.height = frame.size.height + @"px";
-                    _DOMElement.style.width = frame.size.width + @"px";
-
-                    // Set up the pop-out transition
-                    [self setCSS3Property:@"Transform" value:@"scale(1.1)"];
-                    [self setCSS3Property:@"TransitionDuration" value:@"200ms"];
-                    [self setCSS3Property:@"TransitionTimingFunction" value:@"ease-in"];
-
-                    var transitionEndFunction = function()
-                    {
-                        _DOMElement.removeEventListener("webkitTransitionEnd", transitionEndFunction, YES);
-
-                        // Now set up the pop-in to normal size transition
-                        [self setCSS3Property:@"Transform" value:@"scale(1)"];
-                        [self setCSS3Property:@"TransitionDuration" value:@"50ms"];
-                        [self setCSS3Property:@"TransitionTimingFunction" value:@"linear"];
-                    };
-
-                    _DOMElement.addEventListener("webkitTransitionEnd", transitionEndFunction, YES);
-                }
-            }, 0);
+            case CPMinXEdge:
+            case CPMaxXEdge:
+                posY = 50 + (([_windowView arrowOffsetY] * 100) / frame.size.height);
+                transformOrigin = (preferredEdge === CPMaxXEdge ? "0% " : "100% ") + posY + "%";
+                break;
         }
-        else
+
+        // This is the initial transform. We start scaled to zero and watch for opacity changes.
+        [self setCSS3Property:@"Transform" value:@"scale(0)"];
+        [self setCSS3Property:@"TransformOrigin" value:transformOrigin];
+        [self setCSS3Property:@"Transition" value:"opacity 0 linear"];
+
+        window.setTimeout(function()
+        {
+            // We are watching opacity, so this triggers the next transition
             _DOMElement.style.opacity = 1;
+            _DOMElement.style.height = frame.size.height + @"px";
+            _DOMElement.style.width = frame.size.width + @"px";
+
+            // Set up the pop-out transition
+            [self setCSS3Property:@"Transform" value:@"scale(1.1)"];
+            [self setCSS3Property:@"Transition" value:@"-webkit-transform 200ms ease-in"];
+
+            var transitionEndFunction = function()
+            {
+                _DOMElement.removeEventListener("webkitTransitionEnd", transitionEndFunction, YES);
+
+                // Now set up the pop-in to normal size transition.
+                // Because we are watching the -webkit-transform, it will occur now.
+                [self setCSS3Property:@"Transform" value:@"scale(1)"];
+                [self setCSS3Property:@"Transition" value:@"-webkit-transform 50ms linear"];
+            };
+
+            _DOMElement.addEventListener("webkitTransitionEnd", transitionEndFunction, YES);
+        }, 0);
+    }
+    else
+    {
+        [self setCSS3Property:@"Transition" value:@""];
+        _DOMElement.style.opacity = 1;
     }
 
     [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_attachedWindowDidMove:) name:CPWindowDidMoveNotification object:self];
 
     _shouldPerformAnimation = NO;
-    _isClosed = NO;
+    _isClosing = NO;
 }
 
 /*!
-    Close the window with animation
+    Animate window closing.
 */
 - (void)close
 {
-    // set a close flag to avoid infinite loop
-    _isClosed = YES;
+    // set a flag to avoid an infinite loop in resignMainWindow
+    _isClosing = YES;
 
     if (_animates && _browserAnimates)
     {
+        // Tell the element to fade out when the opacity changes
         [self setCSS3Property:@"Transition" value:@"opacity 250ms linear"];
         _DOMElement.style.opacity = 0;
 
         var transitionEndFunction = function()
         {
-            [super close];
             _DOMElement.removeEventListener("webkitTransitionEnd", transitionEndFunction, YES);
+            [self _close];
         };
 
         _DOMElement.addEventListener("webkitTransitionEnd", transitionEndFunction, YES);
     }
     else
-        [super close];
+    {
+        [self _close];
+    }
+}
 
+- (void)_close
+{
+    [super close];
     [_targetView removeObserver:self forKeyPath:@"frame"];
 
-    _shouldPerformAnimation = _animates;
+    _shouldPerformAnimation = YES;
 
     if (_implementedDelegateMethods & _CPAttachedWindow_attachedWindowDidClose_)
         [_delegate attachedWindowDidClose:self];
