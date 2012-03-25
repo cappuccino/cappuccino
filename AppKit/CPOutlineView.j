@@ -80,6 +80,8 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     CPOutlineViewCoalesceSelectionNotificationStateOn   = 1,
     CPOutlineViewCoalesceSelectionNotificationStateDid  = 2;
 
+#define SHOULD_SELECT_ITEM(anOutlineView, anItem) (!((anOutlineView)._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldSelectItem_) || [(anOutlineView)._outlineViewDelegate outlineView:(anOutlineView) shouldSelectItem:(anItem)])
+
 /*!
     @ingroup appkit
     @class CPOutlineView
@@ -1472,7 +1474,6 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
                     userInfo:[CPDictionary dictionaryWithObject:item forKey:"CPObject"]];
 }
 
-
 - (void)keyDown:(CPEvent)anEvent
 {
     var character = [anEvent charactersIgnoringModifiers],
@@ -1496,7 +1497,6 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     for (; i < c; i++)
         items.push([self itemAtRow:indexes[i]]);
 
-
     if (character === CPRightArrowFunctionKey)
     {
         for (var i = 0; i < c; i++)
@@ -1504,12 +1504,32 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     }
     else if (character === CPLeftArrowFunctionKey)
     {
+        // When a single, collapsed item is selected and the left arrow key is pressed, the parent
+        // should be selected if possible.
+        if (c == 1)
+        {
+            var theItem = items[0];
+            if (![self isItemExpanded:theItem])
+            {
+                var parent = [self parentForItem:theItem],
+                    shouldSelect = parent && SHOULD_SELECT_ITEM(self, parent);
+                if (shouldSelect)
+                {
+                    var rowIndex = [self rowForItem:parent];
+                    [self selectRowIndexes:[CPIndexSet indexSetWithIndex:rowIndex] byExtendingSelection:NO];
+                    [self scrollRowToVisible:rowIndex];
+                    return;
+                }
+            }
+        }
+
         for (var i = 0; i < c; i++)
             [self collapseItem:items[i]];
     }
 
     [super keyDown:anEvent];
 }
+
 @end
 
 // FIX ME: We're using with() here because Safari fails if we use anOutlineView._itemInfosForItems or whatever...
@@ -1820,10 +1840,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
 - (BOOL)tableView:(CPTableView)theTableView shouldSelectRow:(int)theRow
 {
-    if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldSelectItem_))
-        return [_outlineView._outlineViewDelegate outlineView:_outlineView shouldSelectItem:[_outlineView itemAtRow:theRow]];
-
-    return YES;
+    return SHOULD_SELECT_ITEM(_outlineView, [_outlineView itemAtRow:theRow]);
 }
 
 - (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)aColumn row:(int)aRow
