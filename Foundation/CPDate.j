@@ -233,10 +233,11 @@ var CPDateTimeKey = @"CPDateTimeKey";
 
 // Based on 'Universal JavaScript Date.parse for ISO 8601' available at https://github.com/csnover/js-iso8601.
 var numericKeys = [1, 4, 5, 6, 7, 10, 11];
+
 Date.parseISO8601 = function (date)
 {
     var timestamp, struct, minutesOffset = 0;
-    
+
     // First, check for native parsing.
     timestamp = Date.parse(date);
 
