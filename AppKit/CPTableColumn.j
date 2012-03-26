@@ -680,6 +680,8 @@ CPTableColumnUserResizingMask   = 1 << 1;
             keyPath = [bindingInfo objectForKey:CPObservedKeyPathKey],
             dotIndex = keyPath.lastIndexOf(".");
 
+        newValue = [binding reverseTransformValue:newValue withOptions:[bindingInfo objectForKey:CPOptionsKey]];
+
         if (dotIndex === CPNotFound)
             [[destination valueForKeyPath:keyPath] replaceObjectAtIndex:aRow withObject:newValue];
         else
