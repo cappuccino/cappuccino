@@ -255,7 +255,7 @@ var STICKY_TIME_INTERVAL            = 500,
                     3. The current item has a submenu with a custom action.
                 */
                 if (_mouseWasDragged ||
-                    [activeMenuContainer isKindOfClass:_CPMenuBarWindow] ||
+                    [activeMenuContainer isMenuBar] ||
                     [activeItem action] !== @selector(submenuAction:))
                 {
                     [trackingMenu cancelTracking];
@@ -273,7 +273,7 @@ var STICKY_TIME_INTERVAL            = 500,
     }
 
     // If the item has a submenu, show it.
-    if ([activeItem hasSubmenu])// && [activeItem action] === @selector(submenuAction:))
+    if ([activeItem hasSubmenu]) // && [activeItem action] === @selector(submenuAction:))
     {
         var activeItemRect = [activeMenuContainer rectForItemAtIndex:activeItemIndex],
             newMenuOrigin;
@@ -427,7 +427,7 @@ var STICKY_TIME_INTERVAL            = 500,
             break;
 
         // If this menu is already being shown, unhighlight and return.
-        if (menu === newMenu)//&& [menu supermenu] === baseMenu)
+        if (menu === newMenu) //&& [menu supermenu] === baseMenu)
             return [newMenu _highlightItemAtIndex:CPNotFound];
 
         [menuContainer orderOut:self];
