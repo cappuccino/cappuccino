@@ -369,6 +369,9 @@ var CPViewFlags                     = { },
 /* @ignore */
 - (void)_insertSubview:(CPView)aSubview atIndex:(int)anIndex
 {
+    if (aSubview === self)
+        [CPException raise:CPInvalidArgumentException reason:"can't add a view as a subview of itself"];
+
     // We will have to adjust the z-index of all views starting at this index.
     var count = _subviews.length;
 
