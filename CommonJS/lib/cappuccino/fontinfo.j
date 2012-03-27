@@ -9,4 +9,4 @@ exports.fontinfo = function(name, size)
         return JSON.parse(p.stdout.read());
     else
         return null;
-}
+};

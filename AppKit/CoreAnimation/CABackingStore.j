@@ -29,7 +29,7 @@
 function CABackingStoreGetContext(aBackingStore)
 {
     return aBackingStore.context;
-}
+};
 
 if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
 {
@@ -42,7 +42,7 @@ CABackingStoreCreate = function()
 
     // FIXME: Consolidate drawImage to support this.
     return { context:DOMElement.getContext("2d"), buffer:DOMElement, _image:DOMElement };
-}
+};
 
 CABackingStoreSetSize = function(aBackingStore, aSize)
 {
@@ -52,7 +52,8 @@ CABackingStoreSetSize = function(aBackingStore, aSize)
     buffer.height = aSize.height;
     buffer.style.width = PIXEL(aSize.width);
     buffer.style.height = PIXEL(aSize.height);
-}
+};
+
 }
 else
 {
@@ -64,10 +65,10 @@ CABackingStoreCreate = function()
     context.buffer = "";
 
     return { context:context };
-}
+};
 
 CABackingStoreSetSize = function(aBackingStore, aSize)
 {
-}
+};
 
 }

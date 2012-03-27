@@ -12,7 +12,13 @@
 @import "AppController.j"
 
 
+function formatter(aString, aLevel, aTitle)
+{
+    return aString;
+}
+
 function main(args, namedArgs)
 {
+    CPLogRegister(CPLogConsole, null, formatter);
     CPApplicationMain(args, namedArgs);
 }

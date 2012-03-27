@@ -3,7 +3,6 @@
 function descriptionWithoutEntity(aString)
 {
     var descriptionWithEntity = [aString description];
-//print(descriptionWithEntity);
     return descriptionWithEntity.substr(descriptionWithEntity.indexOf('>') + 1);
 }
 
@@ -239,17 +238,17 @@ function descriptionWithoutEntity(aString)
 
 - (void)testInitWithIndexSet
 {
-    var set1 = [[CPIndexSet alloc] initWithIndexesInRange:CPMakeRange(0, 7)];
-    var set = [[CPIndexSet alloc] initWithIndexSet:set1];
+    var set1 = [[CPIndexSet alloc] initWithIndexesInRange:CPMakeRange(0, 7)],
+        set = [[CPIndexSet alloc] initWithIndexSet:set1];
     [self assertNotNull:set];
     [self testIndexSet:set containsRange:CPMakeRange(0, 7)];
 }
 
 - (void)testIsEqualToIndexSet
 {
-    var set1 = [CPIndexSet indexSetWithIndex:7];
-    var set2 = [CPIndexSet indexSetWithIndex:7];
-    var set3 = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(7, 2)];
+    var set1 = [CPIndexSet indexSetWithIndex:7],
+        set2 = [CPIndexSet indexSetWithIndex:7],
+        set3 = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(7, 2)];
 
     [self assertFalse:[set1 isEqualToIndexSet:nil]];
     [self assertTrue:[set1 isEqualToIndexSet:set2]];
@@ -259,9 +258,9 @@ function descriptionWithoutEntity(aString)
 
 - (void)testIsEqual
 {
-    var set1 = [CPIndexSet indexSetWithIndex:7];
-    var set2 = [CPIndexSet indexSetWithIndex:7];
-    var set3 = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(7, 2)];
+    var set1 = [CPIndexSet indexSetWithIndex:7],
+        set2 = [CPIndexSet indexSetWithIndex:7],
+        set3 = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(7, 2)];
 
     [self assertFalse:[set1 isEqual:nil]];
     [self assertFalse:[set1 isEqual:7]];
@@ -272,8 +271,8 @@ function descriptionWithoutEntity(aString)
 
 - (void)testCount
 {
-    var set = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(7, 2)];
-    var set2 = [CPIndexSet indexSetWithIndex:7];
+    var set = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(7, 2)],
+        set2 = [CPIndexSet indexSetWithIndex:7];
 
     [self assert:[set2 count] equals:1];
     [self assert:[set count] equals:2];
@@ -412,6 +411,136 @@ function descriptionWithoutEntity(aString)
     [self assertFalse:[_set isEqualToIndexSet:differentSet]];
     [self assertTrue:[_set isEqualToIndexSet:equalSet]];
     [self assertTrue:[_set isEqualToIndexSet:_set]];
+}
+
+- (void)testEnumerateIndexesUsingBlock_
+{
+    var set0 = [CPIndexSet indexSet],
+        set1 = [CPMutableIndexSet indexSet],
+        set2 = [CPMutableIndexSet indexSet];
+
+    [set1 addIndexesInRange:CPMakeRange(3, 2)];
+
+    [set2 addIndexesInRange:CPMakeRange(3, 2)];
+    [set2 addIndexesInRange:CPMakeRange(0, 1)];
+
+    var visitedIndexes = [],
+        aBlock;
+
+    aBlock = function(idx)
+    {
+        visitedIndexes.push(idx);
+    };
+
+    [set0 enumerateIndexesUsingBlock:aBlock];
+    [self assert:[] equals:visitedIndexes message:"enumerate empty set"];
+
+    [set1 enumerateIndexesUsingBlock:aBlock];
+    [self assert:[3, 4] equals:visitedIndexes message:"enumerate " + [set1 description]];
+
+    visitedIndexes = [];
+    [set2 enumerateIndexesUsingBlock:aBlock];
+    [self assert:[0, 3, 4] equals:visitedIndexes message:"enumerate " + [set2 description]];
+}
+
+- (void)testEnumerateIndexesWithOptions_usingBlock_
+{
+    var set0 = [CPIndexSet indexSet],
+        set1 = [CPMutableIndexSet indexSet],
+        set2 = [CPMutableIndexSet indexSet];
+
+    [set1 addIndexesInRange:CPMakeRange(3, 2)];
+
+    [set2 addIndexesInRange:CPMakeRange(3, 2)];
+    [set2 addIndexesInRange:CPMakeRange(0, 1)];
+
+    var visitedIndexes = [],
+        aBlock;
+
+    aBlock = function(idx)
+    {
+        visitedIndexes.push(idx);
+    };
+
+    [set0 enumerateIndexesWithOptions:CPEnumerationNormal usingBlock:aBlock];
+    [self assert:[] equals:visitedIndexes message:"enumerate empty set"];
+
+    [set1 enumerateIndexesWithOptions:CPEnumerationNormal usingBlock:aBlock];
+    [self assert:[3, 4] equals:visitedIndexes message:"enumerate " + [set1 description]];
+
+    visitedIndexes = [];
+    [set2 enumerateIndexesWithOptions:CPEnumerationNormal usingBlock:aBlock];
+    [self assert:[0, 3, 4] equals:visitedIndexes message:"enumerate " + [set2 description]];
+
+    visitedIndexes = [];
+    [set0 enumerateIndexesWithOptions:CPEnumerationReverse usingBlock:aBlock];
+    [self assert:[] equals:visitedIndexes message:"reverse enumerate empty set"];
+
+    visitedIndexes = [];
+    [set1 enumerateIndexesWithOptions:CPEnumerationReverse usingBlock:aBlock];
+    [self assert:[4, 3] equals:visitedIndexes message:"reverse enumerate " + [set1 description]];
+
+    visitedIndexes = [];
+    [set2 enumerateIndexesWithOptions:CPEnumerationReverse usingBlock:aBlock];
+    [self assert:[4, 3, 0] equals:visitedIndexes message:"reverse enumerate " + [set2 description]];
+}
+
+- (void)testEnumerateIndexesInRange_options_usingBlock_
+{
+    var set0 = [CPIndexSet indexSet],
+        set1 = [CPMutableIndexSet indexSet],
+        set2 = [CPMutableIndexSet indexSet];
+
+    [set1 addIndexesInRange:CPMakeRange(3, 2)];
+
+    [set2 addIndexesInRange:CPMakeRange(3, 2)];
+    [set2 addIndexesInRange:CPMakeRange(0, 1)];
+
+    var visitedIndexes = [],
+        aBlock;
+
+    aBlock = function(idx)
+    {
+        visitedIndexes.push(idx);
+    };
+
+    visitedIndexes = [];
+    [set0 enumerateIndexesInRange:CPMakeRange(0, 4) options:CPEnumerationReverse usingBlock:aBlock];
+    [self assert:[] equals:visitedIndexes message:"reverse enumerate in range empty set"];
+
+    visitedIndexes = [];
+    [set1 enumerateIndexesInRange:CPMakeRange(0, 5) options:CPEnumerationReverse usingBlock:aBlock];
+    [self assert:[4, 3] equals:visitedIndexes message:"reverse enumerate in range " + [set1 description]];
+
+    visitedIndexes = [];
+    [set1 enumerateIndexesInRange:CPMakeRange(0, 4) options:CPEnumerationReverse usingBlock:aBlock];
+    [self assert:[3] equals:visitedIndexes message:"reverse enumerate in range " + [set1 description]];
+
+    visitedIndexes = [];
+    [set2 addIndexesInRange:CPMakeRange(7, 2)];
+    [set2 enumerateIndexesInRange:CPMakeRange(2, 4) options:CPEnumerationReverse usingBlock:aBlock];
+    [self assert:[4, 3] equals:visitedIndexes message:"reverse enumerate " + [set2 description]];
+}
+
+- (void)testEnumerateIndexesAndStop
+{
+    var set0 = [CPMutableIndexSet indexSet];
+
+    [set0 addIndexesInRange:CPMakeRange(3, 2)];
+    [set0 addIndexesInRange:CPMakeRange(0, 1)];
+
+    var visitedIndexes = [],
+        aBlock;
+
+    aBlock = function(idx, /* ref */ stop)
+    {
+        visitedIndexes.push(idx);
+        if (visitedIndexes.length >= 2)
+            stop(YES); // AT_DEREF(stop, YES) - FIXME Replace with proper @ref @deref when in ObjJ.
+    }
+
+    [set0 enumerateIndexesUsingBlock:aBlock];
+    [self assert:[0, 3] equals:visitedIndexes message:"enumeration should stop after 2 results"];
 }
 
 - (void)tearDown

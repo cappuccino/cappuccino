@@ -239,7 +239,7 @@ DISPLAY_NAME(CFBundle.prototype.isLoading);
 
 CFBundle.prototype.isLoaded = function()
 {
-    return this._loadStatus & CFBundleLoaded;
+    return !!(this._loadStatus & CFBundleLoaded);
 }
 
 DISPLAY_NAME(CFBundle.prototype.isLoaded);

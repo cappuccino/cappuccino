@@ -30,40 +30,42 @@
 @import "CPScroller.j"
 @import "CPView.j"
 
+#define SHOULD_SHOW_CORNER_VIEW() (_scrollerStyle === CPScrollerStyleLegacy && _verticalScroller && ![_verticalScroller isHidden])
+
 
 /*! @ignore */
 var _isSystemUsingOverlayScrollers = function()
 {
 #if PLATFORM(DOM)
-  var inner = document.createElement('p'),
-      outer = document.createElement('div');
+    var inner = document.createElement('p'),
+        outer = document.createElement('div');
 
-  inner.style.width = "100%";
-  inner.style.height = "200px";
+    inner.style.width = "100%";
+    inner.style.height = "200px";
 
-  outer.style.position = "absolute";
-  outer.style.top = "0px";
-  outer.style.left = "0px";
-  outer.style.visibility = "hidden";
-  outer.style.width = "200px";
-  outer.style.height = "150px";
-  outer.style.overflow = "hidden";
-  outer.appendChild (inner);
+    outer.style.position = "absolute";
+    outer.style.top = "0px";
+    outer.style.left = "0px";
+    outer.style.visibility = "hidden";
+    outer.style.width = "200px";
+    outer.style.height = "150px";
+    outer.style.overflow = "hidden";
+    outer.appendChild (inner);
 
-  document.body.appendChild (outer);
-  var w1 = inner.offsetWidth;
-  outer.style.overflow = 'scroll';
-  var w2 = inner.offsetWidth;
-  if (w1 == w2)
-    w2 = outer.clientWidth;
+    document.body.appendChild (outer);
+    var w1 = inner.offsetWidth;
+    outer.style.overflow = 'scroll';
+    var w2 = inner.offsetWidth;
+    if (w1 == w2)
+        w2 = outer.clientWidth;
 
-  document.body.removeChild (outer);
+    document.body.removeChild (outer);
 
-  return (w1 - w2 == 0);
+    return (w1 - w2 == 0);
 #else
-  return NO;
+    return NO;
 #endif
-}
+};
 
 /*!
     @ingroup appkit
@@ -272,7 +274,19 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
 }
 
 /*!
-    Set the delegate of the scroll view
+    Sets the delegate of the scroll view.
+    Possible delegate methods to implement are listed below.
+
+Notifies the delegate when the scroll view is about to scroll.
+@code
+- (void)scrollViewWillScroll:(CPScrollView)aScrollView
+@endcode
+
+Notifies the delegate when the scroll view has finished scrolling.
+@code
+- (void)scrollViewDidScroll:(CPScrollView)aScrollView
+@endcode
+
 */
 - (void)setDelegate:(id)aDelegate
 {
@@ -813,10 +827,15 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
         _cornerView = documentCornerView;
 
         if (_cornerView)
+        {
+            [_cornerView setHidden:!SHOULD_SHOW_CORNER_VIEW()];
             [self addSubview:_cornerView];
+        }
     }
 
     [self reflectScrolledClipView:_contentView];
+    [documentHeaderView setNeedsLayout];
+    [documentHeaderView setNeedsDisplay:YES];
 }
 
 /* @ignore */
@@ -851,7 +870,8 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
     var frame = [self _insetBounds];
 
     frame.size.height = _CGRectGetHeight([headerView frame]);
-    frame.size.width -= _CGRectGetWidth([self _cornerViewFrame]);
+    if (SHOULD_SHOW_CORNER_VIEW())
+        frame.size.width -= _CGRectGetWidth([self _cornerViewFrame]);
 
     return frame;
 }
@@ -1138,8 +1158,9 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
         if (_scrollerStyle === CPScrollerStyleOverlay && hasHorizontalScroll)
             verticalScrollerHeight -= horizontalScrollerHeight;
 
+        var documentHeight = _CGRectGetHeight(documentFrame);
         [_verticalScroller setFloatValue:(difference.height <= 0.0) ? 0.0 : scrollPoint.y / difference.height];
-        [_verticalScroller setKnobProportion:_CGRectGetHeight(contentFrame) / _CGRectGetHeight(documentFrame)];
+        [_verticalScroller setKnobProportion:documentHeight > 0 ? _CGRectGetHeight(contentFrame) / documentHeight : 1.0];
         [_verticalScroller setFrame:_CGRectMake(_CGRectGetMaxX(contentFrame) - overlay, verticalScrollerY, verticalScrollerWidth, verticalScrollerHeight)];
     }
     else if (wasShowingVerticalScroller)
@@ -1155,8 +1176,10 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
         if (_scrollerStyle === CPScrollerStyleOverlay && hasVerticalScroll)
             horizontalScrollerWidth -= verticalScrollerWidth;
 
+        var documentWidth = _CGRectGetWidth(documentFrame);
+
         [_horizontalScroller setFloatValue:(difference.width <= 0.0) ? 0.0 : scrollPoint.x / difference.width];
-        [_horizontalScroller setKnobProportion:_CGRectGetWidth(contentFrame) / _CGRectGetWidth(documentFrame)];
+        [_horizontalScroller setKnobProportion:documentWidth > 0 ? _CGRectGetWidth(contentFrame) / documentWidth : 1.0];
         [_horizontalScroller setFrame:_CGRectMake(_CGRectGetMinX(contentFrame), _CGRectGetMaxY(contentFrame) - overlay, horizontalScrollerWidth, horizontalScrollerHeight)];
     }
     else if (wasShowingHorizontalScroller)
@@ -1166,9 +1189,15 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
     }
 
     [_contentView setFrame:contentFrame];
-    [_headerClipView setFrame:headerClipViewFrame];
+    [_headerClipView setFrame:[self _headerClipViewFrame]];
     [[_headerClipView documentView] setNeedsDisplay:YES];
-    [_cornerView setFrame:[self _cornerViewFrame]];
+    if (SHOULD_SHOW_CORNER_VIEW())
+    {
+        [_cornerView setFrame:[self _cornerViewFrame]];
+        [_cornerView setHidden:NO];
+    }
+    else
+        [_cornerView setHidden:YES];
 
     if (_scrollerStyle === CPScrollerStyleLegacy)
     {
@@ -1248,70 +1277,67 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
 
 - (void)_drawGrayBezelInContext:(CGContext)context bounds:(CGRect)aRect
 {
-    CGContextBeginPath(context);
+    var minX = _CGRectGetMinX(aRect),
+        maxX = _CGRectGetMaxX(aRect),
+        minY = _CGRectGetMinY(aRect),
+        maxY = _CGRectGetMaxY(aRect),
+        y = minY + 0.5;
+
+    // Slightly darker line on top.
     CGContextSetStrokeColor(context, [CPColor colorWithWhite:142.0 / 255.0 alpha:1.0]);
-
-    var y = _CGRectGetMinY(aRect) + 0.5;
-
-    CGContextMoveToPoint(context, _CGRectGetMinX(aRect), y);
-    CGContextAddLineToPoint(context, _CGRectGetMinX(aRect) + 1.0, y);
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(context, minX, y);
+    CGContextAddLineToPoint(context, maxX, y);
     CGContextStrokePath(context);
 
-    CGContextBeginPath(context);
+    // The rest of the border.
     CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0 / 255.0 alpha:1.0]);
-    CGContextMoveToPoint(context, _CGRectGetMinX(aRect) + 1.0, y);
-    CGContextAddLineToPoint(context, _CGRectGetMaxX(aRect) - 1.0, y);
-    CGContextStrokePath(context);
+
+    var x = maxX - 0.5;
 
     CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:142.0 / 255.0 alpha:1.0]);
-    CGContextMoveToPoint(context, _CGRectGetMaxX(aRect) - 1.0, y);
-    CGContextAddLineToPoint(context, _CGRectGetMaxX(aRect), y);
-    CGContextStrokePath(context);
+    CGContextMoveToPoint(context, x, minY + 1.0);
+    CGContextAddLineToPoint(context, x, maxY);
+    CGContextMoveToPoint(context, x - 0.5, maxY - 0.5);
+    CGContextAddLineToPoint(context, minX, maxY - 0.5);
 
-    CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:190.0 / 255.0 alpha:1.0]);
+    x = minX + 0.5;
 
-    var x = _CGRectGetMaxX(aRect) - 0.5;
-
-    CGContextMoveToPoint(context, x, _CGRectGetMinY(aRect) + 1.0);
-    CGContextAddLineToPoint(context, x, _CGRectGetMaxY(aRect));
-
-    CGContextMoveToPoint(context, x - 0.5, _CGRectGetMaxY(aRect) - 0.5);
-    CGContextAddLineToPoint(context, _CGRectGetMinX(aRect), _CGRectGetMaxY(aRect) - 0.5);
-
-    x = _CGRectGetMinX(aRect) + 0.5;
-
-    CGContextMoveToPoint(context, x, _CGRectGetMaxY(aRect));
-    CGContextAddLineToPoint(context, x, _CGRectGetMinY(aRect) + 1.0);
+    CGContextMoveToPoint(context, x, maxY);
+    CGContextAddLineToPoint(context, x, minY + 1.0);
 
     CGContextStrokePath(context);
 }
 
 - (void)_drawGrooveInContext:(CGContext)context bounds:(CGRect)aRect
 {
+    var minX = _CGRectGetMinX(aRect),
+        maxX = _CGRectGetMaxX(aRect),
+        minY = _CGRectGetMinY(aRect),
+        maxY = _CGRectGetMaxY(aRect);
+
     CGContextBeginPath(context);
     CGContextSetStrokeColor(context, [CPColor colorWithWhite:159.0 / 255.0 alpha:1.0]);
 
-    var y = _CGRectGetMinY(aRect) + 0.5;
+    var y = minY + 0.5;
 
-    CGContextMoveToPoint(context, _CGRectGetMinX(aRect), y);
-    CGContextAddLineToPoint(context, _CGRectGetMaxX(aRect), y);
+    CGContextMoveToPoint(context, minX, y);
+    CGContextAddLineToPoint(context, maxX, y);
 
-    var x = _CGRectGetMaxX(aRect) - 1.5;
+    var x = maxX - 1.5;
 
-    CGContextMoveToPoint(context, x, _CGRectGetMinY(aRect) + 2.0);
-    CGContextAddLineToPoint(context, x, _CGRectGetMaxY(aRect) - 1.0);
+    CGContextMoveToPoint(context, x, minY + 2.0);
+    CGContextAddLineToPoint(context, x, maxY - 1.0);
 
-    y = _CGRectGetMaxY(aRect) - 1.5;
+    y = maxY - 1.5;
 
-    CGContextMoveToPoint(context, _CGRectGetMaxX(aRect) - 1.0, y);
-    CGContextAddLineToPoint(context, _CGRectGetMinX(aRect) + 2.0, y);
+    CGContextMoveToPoint(context, maxX - 1.0, y);
+    CGContextAddLineToPoint(context, minX + 2.0, y);
 
-    x = _CGRectGetMinX(aRect) + 0.5;
+    x = minX + 0.5;
 
-    CGContextMoveToPoint(context, x, _CGRectGetMaxY(aRect));
-    CGContextAddLineToPoint(context, x, _CGRectGetMinY(aRect));
+    CGContextMoveToPoint(context, x, maxY);
+    CGContextAddLineToPoint(context, x, minY);
 
     CGContextStrokePath(context);
 
@@ -1327,10 +1353,10 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
     CGContextBeginPath(context);
     CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0 / 255.0 alpha:1.0]);
 
-    y = _CGRectGetMinY(aRect) + 2.5;
+    y = minY + 2.5;
 
-    CGContextMoveToPoint(context, _CGRectGetMinX(aRect) + 2.0, y);
-    CGContextAddLineToPoint(context, _CGRectGetMaxX(aRect) - 2.0, y);
+    CGContextMoveToPoint(context, minX + 2.0, y);
+    CGContextAddLineToPoint(context, maxX - 2.0, y);
     CGContextStrokePath(context);
 }
 

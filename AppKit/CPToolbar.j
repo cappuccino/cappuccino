@@ -50,8 +50,16 @@ CPToolbarDisplayModeIconOnly            = 2;
 */
 CPToolbarDisplayModeLabelOnly           = 3;
 
+
+CPToolbarSizeModeDefault                = 0;
+CPToolbarSizeModeRegular                = 1;
+CPToolbarSizeModeSmall                  = 2;
+
 var CPToolbarsByIdentifier              = nil,
     CPToolbarConfigurationsByIdentifier = nil;
+
+var TOOLBAR_REGULAR_HEIGHT              = 59.0,
+    TOOLBAR_SMALL_HEIGHT                = 46.0;
 
 /*!
     @ingroup appkit
@@ -87,6 +95,7 @@ var CPToolbarsByIdentifier              = nil,
     BOOL                    _showsBaselineSeparator;
     BOOL                    _allowsUserCustomization;
     BOOL                    _isVisible;
+    int                     _sizeMode @accessors(property=sizeMode);
 
     id                      _delegate;
 
@@ -148,6 +157,7 @@ var CPToolbarsByIdentifier              = nil,
 
         _identifier = anIdentifier;
         _isVisible = YES;
+        _sizeMode = CPToolbarSizeModeDefault;
 
         [CPToolbar _addToolbar:self forIdentifier:_identifier];
     }
@@ -202,6 +212,16 @@ var CPToolbarsByIdentifier              = nil,
     [_window _noteToolbarChanged];
 }
 
+- (void)setSizeMode:(CPToolbarSizeMode)aSize
+{
+    if (aSize === _sizeMode)
+        return;
+    _sizeMode = aSize;
+
+    [[self _toolbarView] setFrame:[self _toolbarViewFrame]];
+    [_window _noteToolbarChanged];
+}
+
 - (CPWindow)_window
 {
     return _window;
@@ -232,12 +252,17 @@ var CPToolbarsByIdentifier              = nil,
 
 }
 
+- (CGRect)_toolbarViewFrame
+{
+    return CPRectMake(0.0, 0.0, 1200.0, _sizeMode != CPToolbarSizeModeSmall ? TOOLBAR_REGULAR_HEIGHT : TOOLBAR_SMALL_HEIGHT);
+}
+
 /* @ignore */
 - (CPView)_toolbarView
 {
     if (!_toolbarView)
     {
-        _toolbarView = [[_CPToolbarView alloc] initWithFrame:CPRectMake(0.0, 0.0, 1200.0, 59.0)];
+        _toolbarView = [[_CPToolbarView alloc] initWithFrame:[self _toolbarViewFrame]];
 
         [_toolbarView setToolbar:self];
         [_toolbarView setAutoresizingMask:CPViewWidthSizable];
@@ -427,7 +452,8 @@ var CPToolbarIdentifierKey              = @"CPToolbarIdentifierKey",
     CPToolbarIdentifiedItemsKey         = @"CPToolbarIdentifiedItemsKey",
     CPToolbarDefaultItemsKey            = @"CPToolbarDefaultItemsKey",
     CPToolbarAllowedItemsKey            = @"CPToolbarAllowedItemsKey",
-    CPToolbarSelectableItemsKey         = @"CPToolbarSelectableItemsKey";
+    CPToolbarSelectableItemsKey         = @"CPToolbarSelectableItemsKey",
+    CPToolbarSizeModeKey                = @"CPToolbarSizeModeKey";
 
 @implementation CPToolbar (CPCoding)
 
@@ -446,6 +472,7 @@ var CPToolbarIdentifierKey              = @"CPToolbarIdentifierKey",
         _showsBaselineSeparator = [aCoder decodeBoolForKey:CPToolbarShowsBaselineSeparatorKey];
         _allowsUserCustomization = [aCoder decodeBoolForKey:CPToolbarAllowsUserCustomizationKey];
         _isVisible = [aCoder decodeBoolForKey:CPToolbarIsVisibleKey];
+        _sizeMode = [aCoder decodeIntForKey:CPToolbarSizeModeKey];
 
         _identifiedItems = [aCoder decodeObjectForKey:CPToolbarIdentifiedItemsKey];
         _defaultItems = [aCoder decodeObjectForKey:CPToolbarDefaultItemsKey];
@@ -492,6 +519,7 @@ var CPToolbarIdentifierKey              = @"CPToolbarIdentifierKey",
     [aCoder encodeBool:_showsBaselineSeparator forKey:CPToolbarShowsBaselineSeparatorKey];
     [aCoder encodeBool:_allowsUserCustomization forKey:CPToolbarAllowsUserCustomizationKey];
     [aCoder encodeBool:_isVisible forKey:CPToolbarIsVisibleKey];
+    [aCoder encodeInt:_sizeMode forKey:CPToolbarSizeModeKey]
 
     [aCoder encodeObject:_identifiedItems forKey:CPToolbarIdentifiedItemsKey];
     [aCoder encodeObject:_defaultItems forKey:CPToolbarDefaultItemsKey];
@@ -515,7 +543,7 @@ var TOOLBAR_TOP_MARGIN          = 5.0,
 var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 {
     return { index:anIndex, view:aView, label:aLabel, minWidth:aMinWidth };
-}
+};
 
 /* @ignore */
 @implementation _CPToolbarView : CPView
@@ -547,7 +575,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
     var bundle = [CPBundle bundleForClass:self];
 
-    _CPToolbarViewExtraItemsImage = [[CPImage alloc] initWithContentsOfFile: [bundle pathForResource:"_CPToolbarView/_CPToolbarViewExtraItemsImage.png"] size: CPSizeMake(10.0, 15.0)];
+    _CPToolbarViewExtraItemsImage = [[CPImage alloc] initWithContentsOfFile: [bundle pathForResource:"_CPToolbarView/_CPToolbarViewExtraItemsImage.png"] size:CPSizeMake(10.0, 15.0)];
 
     _CPToolbarViewExtraItemsAlternateImage = [[CPImage alloc] initWithContentsOfFile: [bundle pathForResource:"_CPToolbarView/_CPToolbarViewExtraItemsAlternateImage.png"] size:CGSizeMake(10.0, 15.0)];
 }
@@ -876,7 +904,7 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
         return CPOrderedAscending;
 
     return CPOrderedDescending;
-}
+};
 
 var TOP_MARGIN      = 5.0,
     LABEL_MARGIN    = 2.0;

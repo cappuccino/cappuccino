@@ -43,6 +43,9 @@ def makeHeaderFileFrom(fileName)
     source = sourceFile.read
     sourceFile.close()
 
+    # Add a @ before @implementation within comments so they are not considered as code
+    source.gsub!(/(\/\*.*?\*\/)/m)  {|text| $1.gsub(/^(\s*)@implementation /, "\\1@@implementation ")}
+
     # If an implementation does not have an ivar block or an empty ivar block,
     # add one with a dummy ivar so that doxygen will parse the file correctly.
     source.gsub!(/^\s*(@implementation \s*\w+(?:\s*:\s*\w+)?)\n(\s*[^{])/, "\\1\n{\n#{DUMMY_IVAR}\n}\n\\2")
@@ -83,6 +86,16 @@ def makeHeaderFileFrom(fileName)
     end
 
     sourceFile.close()
+
+    sourceFile = File.new(fileName, "r")
+    source = sourceFile.read
+    sourceFile.close()
+
+    # Restore @implementation within comments
+    sourceFile = File.new(fileName, "w")
+    source.gsub!(/(\/\*.*?\*\/)/m)  {|text| $1.gsub(/^(\s*)@@implementation /, "\\1@implementation ")}
+    sourceFile.write(source)
+    sourceFile.close()
 end
 
 def writeAccessors(className, ivars, sourceFile, interfaceFile)
@@ -91,7 +104,6 @@ def writeAccessors(className, ivars, sourceFile, interfaceFile)
     return if accessorsMatches.length == 0
 
     accessorsSource = ""
-    accessorsInterface = ""
 
     # Create a CPSynthesizedAccessor category for the class with synthesized
     # accessor methods for each @accessors declaration.

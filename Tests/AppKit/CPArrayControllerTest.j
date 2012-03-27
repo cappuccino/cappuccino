@@ -201,10 +201,30 @@
     [arrayController setPreservesSelection:NO];
 
     [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(1, 2)]];
-    [arrayController removeObjects:[arrayController selectedObjects]]
+    [arrayController removeObjects:[arrayController selectedObjects]];
 
     [self assert:[CPIndexSet indexSet] equals:[arrayController selectionIndexes]
          message:@"selection should be empty if arraycontroller doesn't avoid empty selection"];
+}
+
+- (void)testRemoveObjectWithAvoidingEmptySelection
+{
+    var arrayController = [self arrayController];
+    [arrayController setAvoidsEmptySelection:YES];
+
+    [arrayController setSelectionIndex:2];
+    [arrayController removeObjectsAtArrangedObjectIndexes:[CPIndexSet indexSetWithIndex:2]];
+
+    [self assertTrue:([[arrayController selectionIndexes] count] > 0) message:@"Selection should not empty when arraycontroller avoids empty selection"];
+
+    [arrayController setContent:[self contentArray]];
+    [arrayController setSelectionIndex:2];
+    [arrayController removeObjects:[arrayController selectedObjects]];
+
+    [self assertTrue:([[arrayController selectionIndexes] count] > 0) message:@"Selection should not empty when arraycontroller avoids empty selection"];
+
+// This will fail, currently we select the first index instead of an adjacent index.
+//  [self assertTrue:([arrayController selectionIndex] == 1) message:@"The selected index should be 1, was " + [arrayController selectionIndex]];
 }
 
 - (void)testRemoveObjectsWithPreservesSelection_SimpleArray
@@ -287,9 +307,29 @@
     [self assert:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)] equals:[arrayController selectionIndexes] message:@"last object cannot be selected"];
 }
 
+- (void)testSelectingEmptyIndexesExplicitlyWithAvoidsEmptySelection
+{
+    var arrayController = [self arrayController];
+    [arrayController setAvoidsEmptySelection:YES];
+
+    [arrayController setSelectionIndex:0];
+    [arrayController setSelectionIndexes:[CPIndexSet indexSet]];
+    [self assertTrue:([[arrayController selectionIndexes] count] == 0) message:@"Selection should be empty when unselecting explicitly, even with avoidsEmptySelection"];
+}
+
+- (void)testSelectingEmptyObjectsExplicitlyWithAvoidsEmptySelection
+{
+    var arrayController = [self arrayController];
+    [arrayController setAvoidsEmptySelection:YES];
+
+    [arrayController setSelectionIndex:0];
+    [arrayController setSelectedObjects:[CPArray array]];
+    [self assertTrue:([[arrayController selectionIndexes] count] == 0) message:@"Selection should be empty when unselecting explicitly, even with avoidsEmptySelection"];
+}
+
 - (void)testContentBinding
 {
-    [[self arrayController] bind:@"contentArray" toObject:self withKeyPath:@"contentArray" options:0];
+    [[self arrayController] bind:@"contentArray" toObject:self withKeyPath:@"contentArray" options:nil];
 
     [self assert:[[self arrayController] contentArray] equals:[self contentArray]];
 
@@ -547,6 +587,18 @@
     [self assertTrue:[[arrayController arrangedObjects] count] > 0];
 }
 
+- (void)testArrangedObjectsWithPredicateFilteringAfterContentArrayBinding
+{
+    _contentArray = [self makeTestArray];
+
+    var arrayController = [[CPArrayController alloc] init];
+    [arrayController bind:@"contentArray" toObject:self withKeyPath:@"_contentArray" options:nil];
+    [arrayController setFilterPredicate:[CPPredicate predicateWithFormat:@"department.name BEGINSWITH 'Capp'"]];
+
+    var arrangedCount = [[arrayController arrangedObjects] count];
+    [self assertTrue:(arrangedCount == 2) message:@"Count should be 2 and is " + arrangedCount];
+}
+
 /**
     In a table with arranged contents like [1, 1, 2, 1], selecting the second '1' and removing it
     should result in [1, 2, 1] - not [2]. E.g. we don't use removeObject:1 but only remove the
@@ -573,6 +625,25 @@
     [ac setSelectionIndexes:indexes];
     [self assert:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 3)] equals:[ac selectionIndexes]];
     [self assert:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 4)] equals:indexes];
+}
+
+- (void)testBindToNoSelectionMarker
+{
+    var arrayController1 = [CPArrayController new],
+        arrayController2 = [CPArrayController new];
+
+    [arrayController2 setContent:[CPDictionary dictionaryWithObject:[1, 2, 3] forKey:@"x"]];
+
+    [arrayController1 bind:@"contentArray" toObject:arrayController2 withKeyPath:@"selection.x" options:nil];
+    // This used to cause a bug where the _CPKVCArray wrapping the selection proxy tried to call 'count' on
+    // CPNoSelectionMarker while attempting to copy itself.
+    [arrayController2 setSelectionIndexes:[CPIndexSet indexSet]];
+
+    [self assert:[] equals:[arrayController1 arrangedObjects] message:"arranged objects of an empty selection should be empty"];
+
+    // Make sure the regular case works.
+    [arrayController2 setSelectionIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 1)]];
+    [self assert:[1, 2, 3] equals:[arrayController1 arrangedObjects] message:"normal selection"];
 }
 
 - (void)observeValueForKeyPath:keyPath

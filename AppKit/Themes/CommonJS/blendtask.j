@@ -26,7 +26,7 @@ BlendTask.prototype.__proto__ = BundleTask.prototype;
 BlendTask.prototype.packageType = function()
 {
     return "BLND";
-}
+};
 
 BlendTask.prototype.infoPlist = function()
 {
@@ -35,28 +35,28 @@ BlendTask.prototype.infoPlist = function()
     infoPlist.setValueForKey("CPKeyedThemes", require("narwhal/util").unique(this._keyedThemes));
 
     return infoPlist;
-}
+};
 
 BlendTask.prototype.themeDescriptors = function()
 {
     return this._themeDescriptors;
-}
+};
 
 BlendTask.prototype.setThemeDescriptors = function(/*Array | FileList*/ themeDescriptors)
 {
     this._themeDescriptors = themeDescriptors;
-}
+};
 
 BlendTask.prototype.defineTasks = function()
 {
     this.defineThemeDescriptorTasks();
 
     BundleTask.prototype.defineTasks.apply(this, arguments);
-}
+};
 
 BlendTask.prototype.defineSourceTasks = function()
 {
-}
+};
 
 BlendTask.prototype.defineThemeDescriptorTasks = function()
 {
@@ -106,7 +106,7 @@ BlendTask.prototype.defineThemeDescriptorTasks = function()
             });
         });
     }, this);
-}
+};
 
 function cibDataFromTopLevelObjects(objects)
 {
@@ -232,4 +232,4 @@ exports.blend = function(aName, aFunction)
 {
     // No .apply necessary because the parameters aren't variable.
     return BlendTask.defineTask(aName, aFunction);
-}
+};

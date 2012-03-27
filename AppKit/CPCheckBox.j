@@ -100,6 +100,16 @@ CPCheckBoxImageOffset = 4.0;
 {
 }
 
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options
+{
+    [super _updatePlaceholdersWithOptions:options];
+
+    [self _setPlaceholder:CPMixedState forMarker:CPMultipleValuesMarker isDefault:YES];
+    [self _setPlaceholder:CPOffState forMarker:CPNoSelectionMarker isDefault:YES];
+    [self _setPlaceholder:CPOffState forMarker:CPNotApplicableMarker isDefault:YES];
+    [self _setPlaceholder:CPOffState forMarker:CPNullMarker isDefault:YES];
+}
+
 - (void)setValueFor:(CPString)theBinding
 {
     var destination = [_info objectForKey:CPObservedObjectKey],
@@ -110,23 +120,13 @@ CPCheckBoxImageOffset = 4.0;
 
     if (isPlaceholder)
     {
-        switch (newValue)
+        if (newValue === CPNotApplicableMarker && [options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
         {
-            case CPMultipleValuesMarker:
-                newValue = CPMixedState;
-                break;
-
-            case CPNoSelectionMarker:
-                newValue = CPOffState;
-                break;
-
-            case CPNotApplicableMarker:
-                if ([options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
-                    [CPException raise:CPGenericException reason:@"can't transform non applicable key on: "+_source+" value: "+newValue];
-
-                newValue = CPOffState;
-                break;
+           [CPException raise:CPGenericException
+                       reason:@"can't transform non applicable key on: " + _source + " value: " + newValue];
         }
+
+        newValue = [self _placeholderForMarker:newValue];
 
         if (newValue === CPMixedState)
         {
@@ -140,6 +140,8 @@ CPCheckBoxImageOffset = 4.0;
             [_source setAllowsMixedState:NO];
         }
     }
+    else
+        newValue = [self transformValue:newValue withOptions:options];
 
     [_source setState:newValue];
 }

@@ -477,7 +477,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
         _doubleValue                = [aCoder decodeObjectForKey:@"_doubleValue"];
         _controlSize                = [aCoder decodeObjectForKey:@"_controlSize"];
         _isIndeterminate            = [aCoder decodeObjectForKey:@"_isIndeterminate"];
-        _style                      = [aCoder decodeObjectForKey:@"_style"];
+        _style                      = [aCoder decodeIntForKey:@"_style"];
         _isAnimating                = [aCoder decodeObjectForKey:@"_isAnimating"];
         _isDisplayedWhenStoppedSet  = [aCoder decodeObjectForKey:@"_isDisplayedWhenStoppedSet"];
         _isDisplayedWhenStopped     = [aCoder decodeObjectForKey:@"_isDisplayedWhenStopped"];
@@ -495,7 +495,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     [aCoder encodeObject:_doubleValue forKey:@"_doubleValue"];
     [aCoder encodeObject:_controlSize forKey:@"_controlSize"];
     [aCoder encodeObject:_isIndeterminate forKey:@"_isIndeterminate"];
-    [aCoder encodeObject:_style forKey:@"_style"];
+    [aCoder encodeInt:_style forKey:@"_style"];
     [aCoder encodeObject:_isAnimating forKey:@"_isAnimating"];
     [aCoder encodeObject:_isDisplayedWhenStoppedSet forKey:@"_isDisplayedWhenStoppedSet"];
     [aCoder encodeObject:_isDisplayedWhenStopped forKey:@"_isDisplayedWhenStopped"];

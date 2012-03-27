@@ -125,13 +125,12 @@ var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemp
 
 - (id)_cibInstantiate
 {
-    var windowClass = CPClassFromString([self windowClass]);
+    var windowClass = CPClassFromString([self windowClass]),
+        theWindow = [[windowClass alloc] initWithContentRect:_windowRect styleMask:_windowStyleMask];
 
 /*    if (!windowClass)
         [NSException raise:NSInvalidArgumentException format:@"Unable to locate NSWindow class %@, using NSWindow",_windowClass];
         class=[NSWindow class];*/
-
-    var theWindow = [[windowClass alloc] initWithContentRect:_windowRect styleMask:_windowStyleMask];
 
     if (_minSize)
         [theWindow setMinSize:_minSize];

@@ -318,7 +318,6 @@ var CPComparisonPredicateModifier,
     return _right;
 }
 
-
 - (CPString)predicateFormat
 {
     var modifier;
@@ -396,6 +395,17 @@ var CPComparisonPredicateModifier,
         return [CPComparisonPredicate predicateWithLeftExpression:left rightExpression:right modifier:_modifier type:_type options:_options];
     else
         return [CPComparisonPredicate predicateWithLeftExpression:left rightExpression:right customSelector:_customSelector];
+}
+
+- (BOOL)isEqual:(id)anObject
+{
+    if (self === anObject)
+        return YES;
+
+    if (anObject.isa !== self.isa || _modifier !== [anObject comparisonPredicateModifier] || _type !== [anObject predicateOperatorType] || _options !== [anObject options] || _customSelector !== [anObject customSelector] || ![_left isEqual:[anObject leftExpression]] || ![_right isEqual:[anObject rightExpression]])
+        return NO;
+
+    return YES;
 }
 
 - (BOOL)_evaluateValue:lhs rightValue:rhs
@@ -577,4 +587,4 @@ String.prototype.escapeForRegExp = function()
     }
 
     return result;
-}
+};

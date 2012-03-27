@@ -46,6 +46,22 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     CPView  _wellView;
 }
 
++ (Class)_binderClassForBinding:(CPString)theBinding
+{
+    if (theBinding == CPValueBinding)
+        return [CPColorWellValueBinder class];
+
+    return [super _binderClassForBinding:theBinding];
+}
+
+- (void)_reverseSetBinding
+{
+    var binderClass = [[self class] _binderClassForBinding:CPValueBinding],
+        theBinding = [binderClass getBinding:CPValueBinding forObject:self];
+
+    [theBinding reverseSetValueFor:@"color"];
+}
+
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
@@ -258,6 +274,48 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 
     [colorPanel setColor:_color];
     [colorPanel orderFront:self];
+}
+
+@end
+
+@implementation CPColorWellValueBinder : CPBinder
+{
+}
+
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options
+{
+    var placeholderColor = [CPColor blueColor];
+
+    [self _setPlaceholder:placeholderColor forMarker:CPMultipleValuesMarker isDefault:YES];
+    [self _setPlaceholder:placeholderColor forMarker:CPNoSelectionMarker isDefault:YES];
+    [self _setPlaceholder:placeholderColor forMarker:CPNotApplicableMarker isDefault:YES];
+    [self _setPlaceholder:placeholderColor forMarker:CPNullMarker isDefault:YES];
+}
+
+- (void)setValueFor:(CPString)theBinding
+{
+    var destination = [_info objectForKey:CPObservedObjectKey],
+        keyPath = [_info objectForKey:CPObservedKeyPathKey],
+        options = [_info objectForKey:CPOptionsKey],
+        newValue = [destination valueForKeyPath:keyPath],
+        isPlaceholder = CPIsControllerMarker(newValue);
+
+    if (isPlaceholder)
+    {
+        if (newValue === CPNotApplicableMarker && [options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
+        {
+           [CPException raise:CPGenericException
+                       reason:@"can't transform non applicable key on: " + _source + " value: " + newValue];
+        }
+
+        newValue = [self _placeholderForMarker:newValue];
+    }
+    else
+    {
+        newValue = [self transformValue:newValue withOptions:options];
+    }
+
+    [_source setColor:newValue];
 }
 
 @end

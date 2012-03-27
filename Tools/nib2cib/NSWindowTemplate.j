@@ -31,7 +31,9 @@ var NSBorderlessWindowMask          = 0x00,
     NSUtilityWindowMask             = 0x10,
     NSDocModalWindowMask            = 0x40,
     NSTexturedBackgroundWindowMask  = 0x100,
-    NSHUDBackgroundWindowMask       = 0x2000;
+    NSHUDBackgroundWindowMask       = 0x2000,
+
+    NSAutorecalculatesKeyViewLoopWTFlag = 0x800;
 
 @implementation _CPCibWindowTemplate (NSCoding)
 
@@ -50,6 +52,7 @@ var NSBorderlessWindowMask          = 0x00,
         _screenRect = [aCoder decodeRectForKey:@"NSScreenRect"]; // screen created on
         _viewClass = [aCoder decodeObjectForKey:@"NSViewClass"]; // references the toolbar if present (anything else?)
         _wtFlags = [aCoder decodeIntForKey:@"NSWTFlags"];
+        _windowAutorecalculatesKeyViewLoop = !!(_wtFlags & NSAutorecalculatesKeyViewLoopWTFlag);
         _windowBacking = [aCoder decodeIntForKey:@"NSWindowBacking"];
 
         // Convert NSWindows to CPWindows.

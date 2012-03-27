@@ -249,7 +249,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 /*!
     @ignore
 */
-- (int)selectedTag
+- (int)_selectedTag
 {
     return [[self selectedItem] tag];
 }

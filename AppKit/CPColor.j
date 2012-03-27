@@ -133,7 +133,7 @@ function CPColorWithImages()
 }
 
 /*!
-    Creates a color in the RGB color space, with an alpha value.
+    Creates a color in the RGB colorspace, with an alpha value.
     Each component should be between the range of 0.0 to 1.0. For
     the alpha component, a value of 1.0 is opaque, and 0.0 means
     completely transparent.
@@ -147,13 +147,13 @@ function CPColorWithImages()
 */
 + (CPColor)colorWithRed:(float)red green:(float)green blue:(float)blue alpha:(float)alpha
 {
-    return [[CPColor alloc] _initWithRGBA:[red, green, blue, alpha]];
+    return [[CPColor alloc] _initWithRGBA:[MAX(0.0, MIN(1.0, red)), MAX(0.0, MIN(1.0, green)), MAX(0.0, MIN(1.0, blue)), MAX(0.0, MIN(1.0, alpha))]];
 }
 
 /*!
     @deprecated in favor of colorWithRed:green:blue:alpha:
 
-    Creates a color in the RGB color space, with an alpha value.
+    Creates a color in the RGB colorspace, with an alpha value.
     Each component should be between the range of 0.0 to 1.0. For
     the alpha component, a value of 1.0 is opaque, and 0.0 means
     completely transparent.
@@ -228,12 +228,12 @@ function CPColorWithImages()
 
     switch (FLOOR(hue / 60))
     {
-        case 0: return [CPColor colorWithCalibratedRed: b green: t blue: p alpha: alpha];
-        case 1: return [CPColor colorWithCalibratedRed: q green: b blue: p alpha: alpha];
-        case 2: return [CPColor colorWithCalibratedRed: p green: b blue: t alpha: alpha];
-        case 3: return [CPColor colorWithCalibratedRed: p green: q blue: b alpha: alpha];
-        case 4: return [CPColor colorWithCalibratedRed: t green: p blue: b alpha: alpha];
-        case 5: return [CPColor colorWithCalibratedRed: b green: p blue: q alpha: alpha];
+        case 0: return [CPColor colorWithCalibratedRed:b green:t blue:p alpha:alpha];
+        case 1: return [CPColor colorWithCalibratedRed:q green:b blue:p alpha:alpha];
+        case 2: return [CPColor colorWithCalibratedRed:p green:b blue:t alpha:alpha];
+        case 3: return [CPColor colorWithCalibratedRed:p green:q blue:b alpha:alpha];
+        case 4: return [CPColor colorWithCalibratedRed:t green:p blue:b alpha:alpha];
+        case 5: return [CPColor colorWithCalibratedRed:b green:p blue:q alpha:alpha];
     }
 }
 
@@ -251,6 +251,17 @@ function CPColorWithImages()
 {
     var rgba = hexToRGB(hex);
     return rgba ? [[CPColor alloc] _initWithRGBA: rgba] : null;
+}
+
+/*!
+    Creates a color in the sRGB colorspace with the given components and alpha values.
+    Values below 0.0 are treated as 0.0 and values above 1.0 are treated as 1.0.
+*/
++ (CPColor)colorWithSRGBRed:(float)red green:(float)green blue:(float)blue alpha:(float)alpha
+{
+    // TODO If Cappuccino is ported to a colorspace aware platform, this color should be in
+    // sRGBColorSpace.
+    return [self colorWithRed:red green:green blue:blue alpha:alpha];
 }
 
 /*!

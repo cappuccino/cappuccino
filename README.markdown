@@ -33,7 +33,7 @@ Getting Started
 ---------------
 To get started, download and install the current release version of Cappuccino:
 
-    $ curl https://raw.github.com/cappuccino/cappuccino/v0.9.5/bootstrap.sh >/tmp/cappuccino_bootstrap.sh && sh /tmp/cappuccino_bootstrap.sh
+    $ curl https://raw.github.com/cappuccino/cappuccino/v0.9.6-RC1/bootstrap.sh >/tmp/cappuccino_bootstrap.sh && bash /tmp/cappuccino_bootstrap.sh
 
 If you'd just like to get started using Cappuccino for your web apps, you are done.
 

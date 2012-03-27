@@ -41,6 +41,7 @@ var CPBindingOperationAnd = 0,
     id              _source;
 
     JSObject        _suppressedNotifications;
+    JSObject        _placeholderForMarker;
 }
 
 + (void)exposeBinding:(CPString)aBinding forClass:(Class)aClass
@@ -125,9 +126,12 @@ var CPBindingOperationAnd = 0,
         _source = aSource;
         _info   = [CPDictionary dictionaryWithObjects:[aDestination, aKeyPath] forKeys:[CPObservedObjectKey, CPObservedKeyPathKey]];
         _suppressedNotifications = {};
+        _placeholderForMarker = {};
 
         if (options)
             [_info setObject:options forKey:CPOptionsKey];
+
+        [self _updatePlaceholdersWithOptions:options];
 
         [aDestination addObserver:self forKeyPath:aKeyPath options:CPKeyValueObservingOptionNew context:aBinding];
 
@@ -204,14 +208,13 @@ var CPBindingOperationAnd = 0,
     if (valueTransformer)
         aValue = [valueTransformer transformedValue:aValue];
 
-
     if (aValue === undefined || aValue === nil || aValue === [CPNull null])
         aValue = [options objectForKey:CPNullPlaceholderBindingOption] || nil;
 
     return aValue;
 }
 
-- (id)reverseTransformValue:(id)aValue withOptions: (CPDictionary)options
+- (id)reverseTransformValue:(id)aValue withOptions:(CPDictionary)options
 {
     var valueTransformerName = [options objectForKey:CPValueTransformerNameBindingOption],
         valueTransformer;
@@ -269,6 +272,42 @@ var CPBindingOperationAnd = 0,
         return;
 
     delete objectSuppressions[aKeyPath];
+}
+
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options
+{
+    var count = [CPBinderPlaceholderMarkers count];
+
+    while (count--)
+    {
+        var marker = CPBinderPlaceholderMarkers[count],
+            optionName = CPBinderPlaceholderOptions[count],
+            isExplicit = [options containsKey:optionName],
+            placeholder = isExplicit ? [options objectForKey:optionName] : nil;
+        [self _setPlaceholder:placeholder forMarker:marker isDefault:!isExplicit];
+    }
+}
+
+- (void)_placeholderForMarker:aMarker
+{
+    var placeholder = _placeholderForMarker[aMarker];
+    if (placeholder)
+        return placeholder['value'];
+    return nil;
+}
+
+- (void)_setPlaceholder:(id)aPlaceholder forMarker:(id)aMarker isDefault:(BOOL)isDefault
+{
+    if (isDefault)
+    {
+        var existingPlaceholder = _placeholderForMarker[aMarker];
+
+        // Don't overwrite an explicitly set placeholder with a default.
+        if (existingPlaceholder && !existingPlaceholder['isDefault'])
+            return;
+    }
+
+    _placeholderForMarker[aMarker] = { 'isDefault': isDefault, 'value': aPlaceholder };
 }
 
 @end
@@ -426,7 +465,7 @@ var resolveMultipleValues = function resolveMultipleValues(/*CPString*/key, /*CP
     }
 
     return !operation;
-}
+};
 
 var invokeAction = function invokeAction(/*CPString*/targetKey, /*CPString*/argumentKey, /*CPDictionary*/bindings)
 {
@@ -463,7 +502,7 @@ var invokeAction = function invokeAction(/*CPString*/targetKey, /*CPString*/argu
     }
 
     [invocation invoke];
-}
+};
 
 // Keys in options dictionary
 
@@ -518,4 +557,8 @@ CPValueTransformerBindingOption                     = @"CPValueTransformer";
 CPIsControllerMarker = function(/*id*/anObject)
 {
     return anObject === CPMultipleValuesMarker || anObject === CPNoSelectionMarker || anObject === CPNotApplicableMarker || anObject === CPNullMarker;
-}
+};
+
+var CPBinderPlaceholderMarkers = [CPMultipleValuesMarker, CPNoSelectionMarker, CPNotApplicableMarker, CPNullMarker],
+    CPBinderPlaceholderOptions = [CPMultipleValuesPlaceholderBindingOption, CPNoSelectionPlaceholderBindingOption, CPNotApplicablePlaceholderBindingOption, CPNullPlaceholderBindingOption];
+

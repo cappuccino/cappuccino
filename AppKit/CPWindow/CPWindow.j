@@ -455,6 +455,7 @@ CPTexturedBackgroundWindowMask
         if (aStyleMask & CPBorderlessBridgeWindowMask)
             [self setFullPlatformWindow:YES];
 
+        _autorecalculatesKeyViewLoop = NO;
         _defaultButtonEnabled = YES;
         _keyViewLoopIsDirty = YES;
 
@@ -515,6 +516,10 @@ CPTexturedBackgroundWindowMask
 - (void)awakeFromCib
 {
     _keyViewLoopIsDirty = ![self _hasKeyViewLoop];
+    // If no key view loop has been specified by hand, and we are not intending to auto recalculate,
+    // set up a default key view loop.
+    if (_keyViewLoopIsDirty && ![self autorecalculatesKeyViewLoop])
+        [self recalculateKeyViewLoop];
 }
 
 - (void)_setWindowView:(CPView)aWindowView
@@ -2500,9 +2505,7 @@ CPTexturedBackgroundWindowMask
 
     _autorecalculatesKeyViewLoop = shouldRecalculate;
 
-    if (_keyViewLoopIsDirty)
-        [self recalculateKeyViewLoop];
-    else if (_autorecalculatesKeyViewLoop)
+    if (_autorecalculatesKeyViewLoop)
         [self _dirtyKeyViewLoop];
 }
 
@@ -2673,7 +2676,7 @@ var allViews = function(aWindow)
         views = views.concat([views[index] subviews]);
 
     return views;
-}
+};
 
 var keyViewComparator = function(lhs, rhs, context)
 {
@@ -2704,7 +2707,7 @@ var keyViewComparator = function(lhs, rhs, context)
         return CPOrderedSame;
 
     return CPOrderedDescending;
-}
+};
 
 @implementation CPWindow (MenuBar)
 
@@ -2928,7 +2931,7 @@ var keyViewComparator = function(lhs, rhs, context)
 var interpolate = function(fromValue, toValue, progress)
 {
     return fromValue + (toValue - fromValue) * progress;
-}
+};
 
 /* @ignore */
 @implementation _CPWindowFrameAnimation : CPAnimation

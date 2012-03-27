@@ -46,7 +46,7 @@
 
     reloadContentCount = [collectionView reloadContentCallCount];
     [collectionView setContent:content];
-    [self assert:reloadContentCount+1 equals:[collectionView reloadContentCallCount] message:@"first call to setContent should have called reloadContent once"];
+    [self assert:reloadContentCount + 1 equals:[collectionView reloadContentCallCount] message:@"first call to setContent should have called reloadContent once"];
 
     [content removeObjectAtIndex:0];
     [self assertTrue:[collectionView content] === content message:@"collection view content should be as assigned"];
@@ -54,7 +54,7 @@
     // make sure we call reloadContent even when the content hasn't changed for key-value binding compatibility
     reloadContentCount = [collectionView reloadContentCallCount];
     [collectionView setContent:content];
-    [self assert:[collectionView reloadContentCallCount] equals:reloadContentCount+1 message:@"subsequent calls to setContent should have called reloadContent once"];
+    [self assert:[collectionView reloadContentCallCount] equals:reloadContentCount + 1 message:@"subsequent calls to setContent should have called reloadContent once"];
 }
 
 - (void)testCallCollectionViewDidChangeSelectionDelegateMethod
@@ -84,6 +84,14 @@
     _globalResults = nil;
     [_collectionView setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
     [self assert:"selection changed: 1" equals:_globalResults];
+}
+
+- (void)testSelectionIndexes
+{
+    [_collectionView setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
+    [self assert:[CPIndexSet indexSetWithIndex:0] equals:[_collectionView selectionIndexes]];
+    [_collectionView setSelectionIndexes:nil];
+    [self assert:[CPIndexSet indexSet] equals:[_collectionView selectionIndexes]];
 }
 
 @end

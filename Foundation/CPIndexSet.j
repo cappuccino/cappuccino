@@ -483,6 +483,75 @@
     return description;
 }
 
+- (void)enumerateIndexesUsingBlock:(Function /*(int idx, @ref BOOL stop) */)aFunction
+{
+    [self enumerateIndexesWithOptions:CPEnumerationNormal usingBlock:aFunction];
+}
+
+- (void)enumerateIndexesWithOptions:(CPEnumerationOptions)options usingBlock:(Function /*(int idx, @ref BOOL stop)*/)aFunction
+{
+    if (!_count)
+        return;
+    [self enumerateIndexesInRange:CPMakeRange(0, _CPMaxRange(_ranges[_ranges.length - 1])) options:options usingBlock:aFunction];
+}
+
+- (void)enumerateIndexesInRange:(CPRange)enumerationRange options:(CPEnumerationOptions)options usingBlock:(Function /*(int idx, @ref BOOL stop)*/)aFunction
+{
+    if (!_count || CPEmptyRange(enumerationRange))
+        return;
+
+    var shouldStop = NO,
+        index,
+        stop,
+        increment;
+
+    if (options & CPEnumerationReverse)
+    {
+        index = _ranges.length - 1,
+        stop = -1,
+        increment = -1;
+    }
+    else
+    {
+        index = 0;
+        stop = _ranges.length;
+        increment = 1;
+    }
+
+    for (; index !== stop; index += increment)
+    {
+        var range = _ranges[index];
+
+        var rangeIndex,
+            rangeStop,
+            rangeIncrement;
+
+        if (options & CPEnumerationReverse)
+        {
+            rangeIndex = _CPMaxRange(range) - 1;
+            rangeStop = range.location - 1;
+            rangeIncrement = -1;
+        }
+        else
+        {
+            rangeIndex = range.location;
+            rangeStop = _CPMaxRange(range);
+            rangeIncrement = 1;
+        }
+
+        for (; rangeIndex !== rangeStop; rangeIndex += rangeIncrement)
+        {
+            if (CPLocationInRange(rangeIndex, enumerationRange))
+            {
+                aFunction(rangeIndex, AT_REF(shouldStop));
+                if (shouldStop)
+                    return;
+            }
+        }
+    }
+}
+
+
 @end
 
 @implementation CPIndexSet(CPMutableIndexSet)
@@ -537,7 +606,7 @@
     if (lhsRangeIndexCEIL === lhsRangeIndex && lhsRangeIndexCEIL < rangeCount)
         aRange = CPUnionRange(aRange, _ranges[lhsRangeIndexCEIL]);
 
-    var rhsRangeIndex = assumedPositionOfIndex(_ranges, CPMaxRange(aRange)),
+    var rhsRangeIndex = assumedPositionOfIndex(_ranges, _CPMaxRange(aRange)),
         rhsRangeIndexFLOOR = FLOOR(rhsRangeIndex);
 
     if (rhsRangeIndexFLOOR === rhsRangeIndex && rhsRangeIndexFLOOR >= 0)
@@ -640,8 +709,8 @@
         // If these ranges don't start in the same place, we have to cull it.
         if (aRange.location !== existingRange.location)
         {
-            var maxRange = CPMaxRange(aRange),
-                existingMaxRange = CPMaxRange(existingRange);
+            var maxRange = _CPMaxRange(aRange),
+                existingMaxRange = _CPMaxRange(existingRange);
 
             existingRange.length = aRange.location - existingRange.location;
 
@@ -661,14 +730,14 @@
         }
     }
 
-    var rhsRangeIndex = assumedPositionOfIndex(_ranges, CPMaxRange(aRange) - 1),
+    var rhsRangeIndex = assumedPositionOfIndex(_ranges, _CPMaxRange(aRange) - 1),
         rhsRangeIndexFLOOR = FLOOR(rhsRangeIndex);
 
     if (rhsRangeIndex === rhsRangeIndexFLOOR && rhsRangeIndexFLOOR >= 0)
     {
-        var maxRange = CPMaxRange(aRange),
+        var maxRange = _CPMaxRange(aRange),
             existingRange = _ranges[rhsRangeIndexFLOOR],
-            existingMaxRange = CPMaxRange(existingRange);
+            existingMaxRange = _CPMaxRange(existingRange);
 
         if (maxRange !== existingMaxRange)
         {
@@ -714,7 +783,7 @@
     for (; i >= 0; --i)
     {
         var range = _ranges[i],
-            maximum = CPMaxRange(range);
+            maximum = _CPMaxRange(range);
 
         if (anIndex >= maximum)
             break;
@@ -734,7 +803,7 @@
             // If it's negative, it needs to be added properly later.
             else if (shifted.location < 0)
             {
-                shifted.length = CPMaxRange(shifted);
+                shifted.length = _CPMaxRange(shifted);
                 shifted.location = 0;
             }
 
@@ -745,8 +814,8 @@
         // Shift the range, and normalize it if the result is negative.
         if ((range.location += aDelta) < 0)
         {
-            _count -= range.length - CPMaxRange(range);
-            range.length = CPMaxRange(range);
+            _count -= range.length - _CPMaxRange(range);
+            range.length = _CPMaxRange(range);
             range.location = 0;
         }
     }
@@ -766,7 +835,7 @@
 
         if ((j = i + 1) < count)
         {
-            [_ranges removeObjectsInRange:CPMakeRange(j, count - j)];
+            [_ranges removeObjectsInRange:_CPMakeRange(j, count - j)];
 
             for (j = 0, count = shifts.length; j < count; ++j)
                 [self addIndexesInRange:shifts[j]];
@@ -882,7 +951,7 @@ var positionOfIndex = function(ranges, anIndex)
         if (anIndex < range.location)
             high = middle - 1;
 
-        else if (anIndex >= CPMaxRange(range))
+        else if (anIndex >= _CPMaxRange(range))
             low = middle + 1;
 
         else
@@ -890,7 +959,7 @@ var positionOfIndex = function(ranges, anIndex)
    }
 
    return CPNotFound;
-}
+};
 
 var assumedPositionOfIndex = function(ranges, anIndex)
 {
@@ -910,7 +979,7 @@ var assumedPositionOfIndex = function(ranges, anIndex)
 
         if (position === positionFLOOR)
         {
-            if (positionFLOOR - 1 >= 0 && anIndex < CPMaxRange(ranges[positionFLOOR - 1]))
+            if (positionFLOOR - 1 >= 0 && anIndex < _CPMaxRange(ranges[positionFLOOR - 1]))
                 high = middle - 1;
 
             else if (positionFLOOR < count && anIndex >= ranges[positionFLOOR].location)
@@ -926,7 +995,7 @@ var assumedPositionOfIndex = function(ranges, anIndex)
             if (anIndex < range.location)
                 high = middle - 1;
 
-            else if (anIndex >= CPMaxRange(range))
+            else if (anIndex >= _CPMaxRange(range))
                 low = middle + 1;
 
             else
@@ -935,7 +1004,7 @@ var assumedPositionOfIndex = function(ranges, anIndex)
     }
 
    return CPNotFound;
-}
+};
 
 /*
 new old method

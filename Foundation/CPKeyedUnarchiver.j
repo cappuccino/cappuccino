@@ -367,7 +367,7 @@ var CPArrayClass                                                            = Ni
 
     var objectClass = data.isa;
     if (objectClass === CPDataClass)
-        return data.bytes;
+        return data.bytes();
 
     return nil;
 }
@@ -541,4 +541,4 @@ var _CPKeyedUnarchiverDecodeObjectAtIndex = function(self, anIndex)
         object = [object JSObject];
 
     return object;
-}
+};

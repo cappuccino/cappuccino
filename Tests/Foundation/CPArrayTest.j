@@ -1,4 +1,3 @@
-
 @import <Foundation/Foundation.j>
 
 
@@ -493,6 +492,40 @@
     for (; index < count; ++index)
         [self assert:[tests[index][0] componentsJoinedByString:tests[index][1]] equals:tests[index][2]];
 }
+
+- (void)testEnumateObjectsUsingBlock_
+{
+    var input0 = [],
+        input1 = [1, 3, "b"],
+        output = [CPMutableDictionary dictionary],
+        outputFunction = function(anObject, idx)
+        {
+            [output setValue:anObject forKey:"" + idx];
+        };
+
+    [input0 enumerateObjectsUsingBlock:outputFunction];
+    [self assert:0 equals:[output count] message:@"output when enumerating empty array"];
+
+    [input1 enumerateObjectsUsingBlock:outputFunction];
+    [self assert:3 equals:[output count] message:@"output when enumerating input1"];
+    [self assert:input1[0] equals:[output valueForKey:"0"] message:@"output[0]"];
+    [self assert:input1[1] equals:[output valueForKey:"1"] message:@"output[0]"];
+    [self assert:input1[2] equals:[output valueForKey:"2"] message:@"output[0]"];
+
+    stoppingFunction = function(anObject, idx, stop)
+    {
+        [output setValue:anObject forKey:"" + idx];
+        if ([output count] > 1)
+            stop(YES); // AT_DEREF(stop, YES) - FIXME Replace with proper @ref @deref when in ObjJ.
+    }
+    output = [CPMutableDictionary dictionary];
+
+    [input1 enumerateObjectsUsingBlock:stoppingFunction];
+    [self assert:2 equals:[output count] message:@"output when enumerating input1 and stopping after 2"];
+    [self assert:input1[0] equals:[output valueForKey:"0"] message:@"output[0]"];
+    [self assert:input1[1] equals:[output valueForKey:"1"] message:@"output[0]"];
+}
+
 
 @end
 

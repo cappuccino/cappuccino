@@ -145,7 +145,7 @@
             return CPOrderedDescending;
         else
             return CPOrderedAscending;
-    }
+    };
 
     return [_rangeEntries indexOfObject:anIndex inSortedRange:nil options:0 usingComparator:sortFunction];
 }
@@ -814,17 +814,17 @@ var isEqual = function isEqual(a, b)
         return YES;
 
     return NO;
-}
+};
 
 var makeRangeEntry = function makeRangeEntry(/*CPRange*/aRange, /*CPDictionary*/attributes)
 {
     return {range:aRange, attributes:[attributes copy]};
-}
+};
 
 var copyRangeEntry = function copyRangeEntry(/*RangeEntry*/aRangeEntry)
 {
     return makeRangeEntry(CPCopyRange(aRangeEntry.range), [aRangeEntry.attributes copy]);
-}
+};
 
 var splitRangeEntry = function splitRangeEntryAtIndex(/*RangeEntry*/aRangeEntry, /*unsigned*/anIndex)
 {
@@ -837,4 +837,4 @@ var splitRangeEntry = function splitRangeEntryAtIndex(/*RangeEntry*/aRangeEntry,
     newRangeEntry.attributes = [newRangeEntry.attributes copy];
 
     return [aRangeEntry, newRangeEntry];
-}
+};

@@ -141,6 +141,7 @@ var CPViewFlags                     = { },
     BOOL                _postsFrameChangedNotifications;
     BOOL                _postsBoundsChangedNotifications;
     BOOL                _inhibitFrameAndBoundsChangedNotifications;
+    BOOL                _inLiveResize;
 
 #if PLATFORM(DOM)
     DOMElement          _DOMElement;
@@ -291,6 +292,9 @@ var CPViewFlags                     = { },
         CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, _CGRectGetMinX(aFrame), _CGRectGetMinY(aFrame));
         CPDOMDisplayServerSetStyleSize(_DOMElement, width, height);
 
+        if (typeof(appkit_tag_dom_elements) !== "undefined" && !!appkit_tag_dom_elements)
+            _DOMElement.setAttribute("data-cappuccino-view", [self className]);
+
         _DOMImageParts = [];
         _DOMImageSizes = [];
 #endif
@@ -365,6 +369,9 @@ var CPViewFlags                     = { },
 /* @ignore */
 - (void)_insertSubview:(CPView)aSubview atIndex:(int)anIndex
 {
+    if (aSubview === self)
+        [CPException raise:CPInvalidArgumentException reason:"can't add a view as a subview of itself"];
+
     // We will have to adjust the z-index of all views starting at this index.
     var count = _subviews.length;
 
@@ -848,11 +855,17 @@ var CPViewFlags                     = { },
 
             if (_backgroundType === BackgroundVerticalThreePartImage)
             {
+                // Make sure to repeat the top and bottom pieces horizontally if they're not the exact width needed.
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], size.width, _DOMImageSizes[0].height);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], size.width, size.height - _DOMImageSizes[0].height - _DOMImageSizes[2].height);
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[2], size.width, _DOMImageSizes[2].height);
             }
             else if (_backgroundType === BackgroundHorizontalThreePartImage)
             {
+                // Make sure to repeat the left and right pieces vertically if they're not the exact height needed.
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], _DOMImageSizes[0].width, size.height);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], size.width - _DOMImageSizes[0].width - _DOMImageSizes[2].width, size.height);
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[2], _DOMImageSizes[2].width, size.height);
             }
             else if (_backgroundType === BackgroundNinePartImage)
             {
@@ -1539,7 +1552,10 @@ var CPViewFlags                     = { },
         }
         else if (_backgroundType == BackgroundVerticalThreePartImage)
         {
+            // Make sure to repeat the top and bottom pieces horizontally if they're not the exact width needed.
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], frameSize.width, _DOMImageSizes[0].height);
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], frameSize.width, frameSize.height - _DOMImageSizes[0].height - _DOMImageSizes[2].height);
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[2], frameSize.width, _DOMImageSizes[2].height);
 
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[0], NULL, 0.0, 0.0);
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[1], NULL, 0.0, _DOMImageSizes[0].height);
@@ -1547,7 +1563,10 @@ var CPViewFlags                     = { },
         }
         else if (_backgroundType == BackgroundHorizontalThreePartImage)
         {
+            // Make sure to repeat the left and right pieces vertically if they're not the exact height needed.
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], _DOMImageSizes[0].width, frameSize.height);
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], frameSize.width - _DOMImageSizes[0].width - _DOMImageSizes[2].width, frameSize.height);
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[2], _DOMImageSizes[2].width, frameSize.height);
 
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[0], NULL, 0.0, 0.0);
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[1], NULL, _DOMImageSizes[0].width, 0.0);
@@ -2128,6 +2147,43 @@ setBoundsOrigin:
 {
 }
 
+/*!
+    Return yes if the receiver is in a live-resize operation.
+*/
+- (BOOL)inLiveResize
+{
+    return _inLiveResize;
+}
+
+/*!
+    Not implemented.
+
+    A view will be sent this message before a window begins a resize operation. The
+    receiver might choose to simplify its drawing operations during a live resize
+    for speed.
+
+    Subclasses should call super.
+*/
+- (void)viewWillStartLiveResize
+{
+    _inLiveResize = YES;
+}
+
+/*!
+    Not implemented.
+
+    A view will be sent this message after a window finishes a resize operation. The
+    receiver which simplified its drawing operations in viewWillStartLiveResize might
+    stop doing so now. Note the view might no longer be in a window, so use
+    [self setNeedsDisplay:YES] if a final non-simplified redraw is required.
+
+    Subclasses should call super.
+*/
+- (void)viewDidEndLiveResize
+{
+    _inLiveResize = NO;
+}
+
 @end
 
 @implementation CPView (KeyView)
@@ -2543,6 +2599,50 @@ setBoundsOrigin:
     return (_themeAttributes && _themeAttributes[aName] !== undefined);
 }
 
+/*!
+    Registers theme values encoded in an array at runtime. The format of the data in the array
+    is the same as that used by ThemeDescriptors.j, with the exception that you need to use
+    CPColorWithImages() in place of PatternColor(). For more information see the comments
+    at the top of ThemeDescriptors.j.
+
+    @param themeValues array of theme values
+*/
+- (void)registerThemeValues:(CPArray)themeValues
+{
+    for (var i = 0; i < themeValues.length; ++i)
+    {
+        var attributeValueState = themeValues[i],
+            attribute = attributeValueState[0],
+            value = attributeValueState[1],
+            state = attributeValueState[2];
+
+        if (state)
+            [self setValue:value forThemeAttribute:attribute inState:state];
+        else
+            [self setValue:value forThemeAttribute:attribute];
+    }
+}
+
+/*!
+    Registers theme values encoded in an array at runtime. The format of the data in the array
+    is the same as that used by ThemeDescriptors.j, with the exception that you need to use
+    CPColorWithImages() in place of PatternColor(). The values in \c inheritedValues are
+    registered first, then those in \c themeValues override/augment the inherited values.
+    For more information see the comments at the top of ThemeDescriptors.j.
+
+    @param themeValues array of base theme values
+    @param inheritedValues array of overridden/additional theme values
+*/
+- (void)registerThemeValues:(CPArray)themeValues inherit:(CPArray)inheritedValues
+{
+    // Register inherited values first, then override those with the subtheme values.
+    if (inheritedValues)
+        [self registerThemeValues:inheritedValues];
+
+    if (themeValues)
+        [self registerThemeValues:themeValues];
+}
+
 - (CPView)createEphemeralSubviewNamed:(CPString)aViewName
 {
     return nil;
@@ -2799,7 +2899,7 @@ var _CPViewFullScreenModeStateMake = function(aView)
     var superview = aView._superview;
 
     return { autoresizingMask:aView._autoresizingMask, frame:CGRectMakeCopy(aView._frame), index:(superview ? [superview._subviews indexOfObjectIdenticalTo:aView] : 0), superview:superview };
-}
+};
 
 var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
 {
@@ -2896,4 +2996,4 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
     }*/
 
     return transform;
-}
+};

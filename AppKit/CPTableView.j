@@ -87,9 +87,9 @@ CPTableViewSelectionHighlightStyleNone = -1;
 CPTableViewSelectionHighlightStyleRegular = 0;
 CPTableViewSelectionHighlightStyleSourceList = 1;
 
-CPTableViewGridNone                    = 0;
-CPTableViewSolidVerticalGridLineMask   = 1 << 0;
-CPTableViewSolidHorizontalGridLineMask = 1 << 1;
+CPTableViewGridNone                     = 0;
+CPTableViewSolidVerticalGridLineMask    = 1 << 0;
+CPTableViewSolidHorizontalGridLineMask  = 1 << 1;
 
 CPTableViewNoColumnAutoresizing = 0;
 CPTableViewUniformColumnAutoresizingStyle = 1; // FIX ME: This is FUBAR
@@ -679,6 +679,7 @@ NOT YET IMPLEMENTED
 */
 - (void)setRowHeight:(unsigned)aRowHeight
 {
+    // Accept row heights such as "0".
     aRowHeight = +aRowHeight;
 
     if (_rowHeight === aRowHeight)
@@ -950,6 +951,7 @@ NOT YET IMPLEMENTED
 */
 - (void)_moveColumn:(unsigned)fromIndex toColumn:(unsigned)toIndex
 {
+    // Convert parameters such as "0" to 0.
     fromIndex = +fromIndex;
     toIndex = +toIndex;
 
@@ -1507,6 +1509,8 @@ NOT YET IMPLEMENTED
 
     if ([scrollView isKindOfClass:[CPScrollView class]] && [scrollView documentView] === self)
         [scrollView _updateCornerAndHeaderView];
+
+    [self setNeedsLayout];
 }
 
 // Complexity:
@@ -1558,6 +1562,7 @@ NOT YET IMPLEMENTED
 */
 - (CGRect)rectOfColumn:(CPInteger)aColumnIndex
 {
+    // Convert e.g. "0" to 0.
     aColumnIndex = +aColumnIndex;
 
     if (aColumnIndex < 0 || aColumnIndex >= NUMBER_OF_COLUMNS())
@@ -3041,7 +3046,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     return _sortDescriptors;
 }
 
-
 /*!
     @ignore
 */
@@ -3422,7 +3426,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [aTableColumn setDataView:dataView];
     }
 
-
     return [aTableColumn _newDataViewForRow:aRow];
 }
 
@@ -3494,7 +3497,19 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     [super setNeedsDisplay:aFlag];
     [_tableDrawView setNeedsDisplay:aFlag];
+
+    [[self headerView] setNeedsDisplay:YES];
 }
+
+/*!
+    @ignore
+*/
+- (void)setNeedsLayout
+{
+    [super setNeedsLayout];
+    [[self headerView] setNeedsLayout];
+}
+
 
 /*!
     @ignore
@@ -3703,7 +3718,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     {
         var topGroupLineColor = [CPColor colorWithCalibratedWhite:212.0 / 255.0 alpha:1.0],
             bottomGroupLineColor = [CPColor colorWithCalibratedWhite:185.0 / 255.0 alpha:1.0],
-            gradientGroupColor = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [212.0 / 255.0, 212.0 / 255.0, 212.0 / 255.0,1.0, 197.0 / 255.0, 197.0 / 255.0, 197.0 / 255.0,1.0], [0,1], 2);
+            gradientGroupColor = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [212.0 / 255.0, 212.0 / 255.0, 212.0 / 255.0, 1.0, 197.0 / 255.0, 197.0 / 255.0, 197.0 / 255.0, 1.0], [0, 1], 2);
     }
 
     while (count--)
@@ -3821,8 +3836,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     var gradientCache = [self selectionGradientColors],
         topLineColor = [CPColor colorWithHexString:"d3d3d3"],
         bottomLineColor = [CPColor colorWithHexString:"bebebd"],
-        gradientColor = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [220.0 / 255.0, 220.0 / 255.0, 220.0 / 255.0,1.0,
-                                                                                            199.0 / 255.0, 199.0 / 255.0, 199.0 / 255.0,1.0], [0,1], 2),
+        gradientColor = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [220.0 / 255.0, 220.0 / 255.0, 220.0 / 255.0, 1.0,
+                                                                                            199.0 / 255.0, 199.0 / 255.0, 199.0 / 255.0, 1.0], [0, 1], 2),
         drawGradient = YES;
 
     while (i--)
@@ -3970,7 +3985,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     var row = [self rowAtPoint:aPoint];
 
-    //if the user clicks outside a row then deselect everything
+    // If the user clicks outside a row then deselect everything.
     if (row < 0 && _allowsEmptySelection)
         [self selectRowIndexes:[CPIndexSet indexSet] byExtendingSelection:NO];
 
@@ -4635,19 +4650,19 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         while (![_delegate tableView:self shouldSelectRow:i] && (i < [self numberOfRows] || i > 0))
             shouldGoUpward ? i-- : i++; //check to see if the row can be selected if it can't be then see if the next row can be selected
 
-        //if the index still can be selected after the loop then just return
-         if (![_delegate tableView:self shouldSelectRow:i])
-             return;
+        // If the index still can be selected after the loop then just return.
+        if (![_delegate tableView:self shouldSelectRow:i])
+            return;
     }
 
-    // if we go upward and see that this row is already selected we should deselect the row below
-    if ([selectedIndexes containsIndex:i] && extend)
+    // If we go upward and see that this row is already selected we should deselect the row below.
+    if (extend && [selectedIndexes containsIndex:i])
     {
-        // the row we're on is the last to be selected
+        // The row we're on is the last to be selected.
         var differedLastSelectedRow = i;
 
         // no remove the one before/after it
-        shouldGoUpward ? i++  : i--;
+        shouldGoUpward ? i++ : i--;
 
         [selectedIndexes removeIndex:i];
 
@@ -4659,7 +4674,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         if ([selectedIndexes containsIndex:i])
         {
             i = shouldGoUpward ? [selectedIndexes firstIndex] -1 : [selectedIndexes lastIndex] + 1;
-            i = MIN(MAX(i,0), [self numberOfRows] - 1);
+            i = MIN(MAX(i, 0), [self numberOfRows] - 1);
         }
 
         [selectedIndexes addIndex:i];
@@ -4935,15 +4950,17 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
     isBlinking = YES;
 
-    var showCallback = function() {
+    var showCallback = function()
+    {
         objj_msgSend(self, "setHidden:", NO)
         isBlinking = NO;
-    }
+    };
 
-    var hideCallback = function() {
+    var hideCallback = function()
+    {
         objj_msgSend(self, "setHidden:", YES)
         isBlinking = YES;
-    }
+    };
 
     objj_msgSend(self, "setHidden:", YES);
     [CPTimer scheduledTimerWithTimeInterval:0.1 callback:showCallback repeats:NO];

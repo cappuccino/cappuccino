@@ -26,18 +26,18 @@ var accessIVARS = YES;
 
 @implementation KVCTestClass : CPObject
 {
-    id          _privatePropertyWithoutAccessors;
-    id          publicPropertyWithoutAccessors;
-    id          _isPrivateBoolPropertyWithoutAccessors;
-    id          isPublicBoolPropertyWithoutAccessors;
+    id _privatePropertyWithoutAccessors;
+    id publicPropertyWithoutAccessors;
+    id _isPrivateBoolPropertyWithoutAccessors;
+    id isPublicBoolPropertyWithoutAccessors;
 
     //use triple underscore to avoid direct access to instance variables
-    id          ___propertyWithPublicGetAccessor            @accessors(getter=getPropertyWithPublicGetAccessor);
-    id          ___propertyWithPublicAccessor               @accessors(getter=propertyWithPublicAccessor, setter=setPropertyWithPublicAccessor:);
-    id          ___propertyWithPublicBoolAccessor           @accessors(getter=isPropertyWithPublicBoolAccessor);
-    id          ___propertyWithPrivateGetAccessor           @accessors(getter=_getPropertyWithPrivateGetAccessor);
-    id          ___propertyWithPrivateAccessor              @accessors(getter=_propertyWithPrivateAccessor, setter=_setPropertyWithPrivateAccessor:);
-    id          ___propertyWithPrivateBoolAccessor          @accessors(getter=_isPropertyWithPrivateBoolAccessor);
+    id ___propertyWithPublicGetAccessor            @accessors(getter=getPropertyWithPublicGetAccessor);
+    id ___propertyWithPublicAccessor               @accessors(getter=propertyWithPublicAccessor, setter=setPropertyWithPublicAccessor:);
+    id ___propertyWithPublicBoolAccessor           @accessors(getter=isPropertyWithPublicBoolAccessor);
+    id ___propertyWithPrivateGetAccessor           @accessors(getter=_getPropertyWithPrivateGetAccessor);
+    id ___propertyWithPrivateAccessor              @accessors(getter=_propertyWithPrivateAccessor, setter=_setPropertyWithPrivateAccessor:);
+    id ___propertyWithPrivateBoolAccessor          @accessors(getter=_isPropertyWithPrivateBoolAccessor);
 }
 
 + (BOOL)accessInstanceVariablesDirectly
@@ -52,7 +52,7 @@ var accessIVARS = YES;
 
 - (id)init
 {
-    if(self = [super init])
+    if (self = [super init])
     {
         _privatePropertyWithoutAccessors = "_privatePropertyWithoutAccessors";
         publicPropertyWithoutAccessors = "publicPropertyWithoutAccessors";
@@ -213,8 +213,8 @@ var accessIVARS = YES;
                     "privateBoolPropertyWithoutAccessors","publicBoolPropertyWithoutAccessors",
                     "propertyWithPublicGetAccessor", "propertyWithPublicAccessor","propertyWithPublicBoolAccessor",
                     "propertyWithPrivateGetAccessor", "propertyWithPrivateAccessor", "propertyWithPrivateBoolAccessor"
-                    ];
-    var dictForKeys = [kvcTestObject dictionaryWithValuesForKeys: allKeys];
+                    ],
+        dictForKeys = [kvcTestObject dictionaryWithValuesForKeys: allKeys];
 
     [self assert: [allKeys count] equals: [dictForKeys count]];
 }
@@ -226,10 +226,13 @@ var accessIVARS = YES;
                     "privateBoolPropertyWithoutAccessors","publicBoolPropertyWithoutAccessors",
                     "propertyWithPublicGetAccessor", "propertyWithPublicAccessor","propertyWithPublicBoolAccessor",
                     "propertyWithPrivateGetAccessor", "propertyWithPrivateAccessor", "propertyWithPrivateBoolAccessor"
-                    ];
-    var dictForKeys = [kvcTestObject dictionaryWithValuesForKeys: allKeys];
-    var key, value, keyEnumerator = [dictForKeys keyEnumerator];
-    while(key = [keyEnumerator nextObject])
+                    ],
+        dictForKeys = [kvcTestObject dictionaryWithValuesForKeys: allKeys],
+        key,
+        value,
+        keyEnumerator = [dictForKeys keyEnumerator];
+
+    while (key = [keyEnumerator nextObject])
     {
         value = [dictForKeys objectForKey: key];
         [self assert: [kvcTestObject valueForKey: key] same: value];
@@ -343,25 +346,25 @@ var accessIVARS = YES;
 {
     [KVCTestClass setAccessInstanceVariablesDirectly: YES];
 
-    var value = @"aValue";
-    var allKeys = [ "privatePropertyWithoutAccessors","publicPropertyWithoutAccessors",
+    var value = @"aValue",
+        allKeys = [ "privatePropertyWithoutAccessors","publicPropertyWithoutAccessors",
                     "privateBoolPropertyWithoutAccessors","publicBoolPropertyWithoutAccessors",
                     "propertyWithPublicAccessor","propertyWithPrivateAccessor"
-                    ];
-    var allValues = [value,value,value,value,value,value];
-    var dictForKeys = [CPDictionary dictionaryWithObjects: allValues forKeys: allKeys];
+                    ],
+        allValues = [value, value, value, value, value, value],
+        dictForKeys = [CPDictionary dictionaryWithObjects: allValues forKeys: allKeys];
     [self assertNoThrow:function(){[kvcTestObject setValuesForKeysWithDictionary: dictForKeys];}];
 }
 
 - (void)testIfSetValuesForKeysWithDictionaryDoesThrowUndefinedKeyExceptionBecauseOfProhibitedDirectInstanceVariableAccess
 {
-    var value = @"aValue";
-    var allKeys = [ "privatePropertyWithoutAccessors","publicPropertyWithoutAccessors",
+    var value = @"aValue",
+        allKeys = [ "privatePropertyWithoutAccessors","publicPropertyWithoutAccessors",
                     "privateBoolPropertyWithoutAccessors","publicBoolPropertyWithoutAccessors",
                     "propertyWithPublicAccessor","propertyWithPrivateAccessor"
-                    ];
-    var allValues = [value,value,value,value,value,value];
-    var dictForKeys = [CPDictionary dictionaryWithObjects: allValues forKeys: allKeys];
+                    ],
+        allValues = [value, value, value, value, value, value],
+        dictForKeys = [CPDictionary dictionaryWithObjects: allValues forKeys: allKeys];
     [self assertThrows:function(){[kvcTestObject setValuesForKeysWithDictionary: dictForKeys];}];
 }
 
@@ -369,17 +372,19 @@ var accessIVARS = YES;
 {
     [KVCTestClass setAccessInstanceVariablesDirectly: YES];
 
-    var value = @"aValue";
-    var allKeys = [ "privatePropertyWithoutAccessors","publicPropertyWithoutAccessors",
+    var value = @"aValue",
+        allKeys = [ "privatePropertyWithoutAccessors","publicPropertyWithoutAccessors",
                     "privateBoolPropertyWithoutAccessors","publicBoolPropertyWithoutAccessors",
                     "propertyWithPublicAccessor","propertyWithPrivateAccessor"
-                    ];
-    var allValues = [value,value,value,value,value,value];
-    var dictForKeys = [CPDictionary dictionaryWithObjects: allValues forKeys: allKeys];
+                    ],
+        allValues = [value, value, value, value, value, value],
+        dictForKeys = [CPDictionary dictionaryWithObjects: allValues forKeys: allKeys];
     [kvcTestObject setValuesForKeysWithDictionary: dictForKeys];
 
-    var key, aValue, keyEnumerator = [dictForKeys keyEnumerator];
-    while(key = [keyEnumerator nextObject])
+    var key,
+        aValue,
+        keyEnumerator = [dictForKeys keyEnumerator];
+    while (key = [keyEnumerator nextObject])
     {
         aValue = [dictForKeys objectForKey: key];
         [self assert: [kvcTestObject valueForKey: key] same: aValue];
@@ -406,10 +411,13 @@ var accessIVARS = YES;
     var allKeys = [ "privatePropertyWithoutAccessors","publicPropertyWithoutAccessors",
                     "privateBoolPropertyWithoutAccessors","publicBoolPropertyWithoutAccessors",
                     "propertyWithPublicAccessor", "propertyWithPrivateAccessor"
-                    ];
-    var dictForKeys = [kvcTestObject dictionaryWithValuesForKeys: allKeys];
-    var key, value, keyEnumerator = [dictForKeys keyEnumerator];
-    while(key = [keyEnumerator nextObject])
+                    ],
+        dictForKeys = [kvcTestObject dictionaryWithValuesForKeys: allKeys],
+        key,
+        value,
+        keyEnumerator = [dictForKeys keyEnumerator];
+
+    while (key = [keyEnumerator nextObject])
     {
         value = [dictForKeys objectForKey: key];
         [self assert: [CPNull null] same:value ];
@@ -420,13 +428,13 @@ var accessIVARS = YES;
 {
     [KVCTestClass setAccessInstanceVariablesDirectly: YES];
 
-    var value = [CPNull null];
-    var allKeys = [ "privatePropertyWithoutAccessors","publicPropertyWithoutAccessors",
+    var value = [CPNull null],
+        allKeys = [ "privatePropertyWithoutAccessors","publicPropertyWithoutAccessors",
                     "privateBoolPropertyWithoutAccessors","publicBoolPropertyWithoutAccessors",
                     "propertyWithPublicAccessor","propertyWithPrivateAccessor"
-                    ];
-    var allValues = [value,value,value,value,value,value];
-    var dictForKeys = [CPDictionary dictionaryWithObjects: allValues forKeys: allKeys];
+                    ],
+        allValues = [value,value,value,value,value,value],
+        dictForKeys = [CPDictionary dictionaryWithObjects: allValues forKeys: allKeys];
     [kvcTestObject setValuesForKeysWithDictionary: dictForKeys];
 
     [self assertNull: [kvcTestObject valueForKey: "privatePropertyWithoutAccessors"]];
