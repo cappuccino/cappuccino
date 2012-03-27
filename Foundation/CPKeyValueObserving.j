@@ -69,6 +69,16 @@
     [self[KVOProxyKey] _removeObserver:anObserver forKeyPath:aPath];
 }
 
+/*!
+    Whether -willChangeValueForKey/-didChangeValueForKey should automatically be invoked when the
+    setter of the given key is used. The default is YES. If you override this method to return NO
+    for some key, you will need to call -willChangeValueForKey/-didChangeValueForKey manually to
+    be KVO compliant.
+
+    The default implementation of this method will check if the receiving class implements
+    `+ (BOOL)automaticallyNotifiesObserversOf<aKey>` and return the response of that method if it
+    exists.
+*/
 + (BOOL)automaticallyNotifiesObserversForKey:(CPString)aKey
 {
     var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substring(1),
