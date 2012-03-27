@@ -71,6 +71,12 @@
 
 + (BOOL)automaticallyNotifiesObserversForKey:(CPString)aKey
 {
+    var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substring(1),
+        selector = "automaticallyNotifiesObserversOf" + capitalizedKey;
+
+    if ([[self class] respondsToSelector:selector])
+        return objj_msgSend([self class], selector);
+
     return YES;
 }
 

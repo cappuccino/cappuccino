@@ -193,11 +193,37 @@
          notSame:class_getInstanceMethod([object class], removeSelector)];
 }
 
+- (void)testAutomaticallyNotifiesObserversOf
+{
+    var test = [ObservingTester new];
+
+    [test addObserver:self forKeyPath:@"cheese" options:0 context:nil];
+    [test addObserver:self forKeyPath:@"astronaut" options:0 context:nil];
+
+    // Cheese shouldn't have been affected.
+    [test setCheese:@"changed cheese"];
+    [self assert:@"cheese" equals:_lastKeyPath]
+    [self assert:test equals:_lastObject];
+
+    // Cheese shouldn't have been affected.
+    [test setAstronaut:@"Armstrong"];
+    // Nothing should have been observed because we don't automatically notify
+    // and we didn't call will/didChange.
+    [self assert:@"cheese" equals:_lastKeyPath message:"no observation when automatically notifies is off"];
+    [self assert:test equals:_lastObject];
+}
+
 @end
 
 @implementation ObservingTester : CPObject
 {
     id cheese;
+    id astronaut @accessors;
+}
+
++ (BOOL)automaticallyNotifiesObserversOfAstronaut
+{
+    return NO;
 }
 
 + (id)testerWithCheese:(id)aCheese
