@@ -74,4 +74,28 @@
     [self assert:CPOnState equals:[control objectValue] message:"content 1 is on"];
 }
 
+- (void)testTransformValueBinding
+{
+    var control = [[CPCheckBox alloc] initWithFrame:CGRectMakeZero()];
+
+    content = [
+        [CPDictionary dictionaryWithObject:YES forKey:@"state"],
+        [CPDictionary dictionaryWithObject:NO forKey:@"state"]
+    ];
+    arrayController = [[CPArrayController alloc] initWithContent:content];
+
+    // First test defaults.
+    [control bind:CPValueBinding toObject:arrayController withKeyPath:@"selection.state" options:[CPDictionary dictionaryWithObject:@"CPNegateBoolean" forKey:CPValueTransformerNameBindingOption]];
+
+    [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
+    [self assert:CPOffState equals:[control objectValue] message:"content[0] is negated"]
+    [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndex:1]];
+    [self assert:CPOnState equals:[control objectValue] message:"content[1] is negated"]
+
+    [control performClick:nil];
+    [self assert:CPOffState equals:[control objectValue] message:"value was changed"]
+    [self assert:YES equals:[content[1] valueForKey:@"state"] message:"content[1] was negated after change"]
+}
+
 @end
+

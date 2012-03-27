@@ -140,6 +140,8 @@ CPCheckBoxImageOffset = 4.0;
             [_source setAllowsMixedState:NO];
         }
     }
+    else
+        newValue = [self transformValue:newValue withOptions:options];
 
     [_source setState:newValue];
 }
