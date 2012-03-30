@@ -2793,7 +2793,7 @@ var keyViewComparator = function(lhs, rhs, context)
 - (CGPoint)convertBaseToPlatformWindow:(CGPoint)aPoint
 {
     if ([self _sharesChromeWithPlatformWindow])
-        return aPoint;
+        return _CGPointMakeCopy(aPoint);
 
     var origin = [self frame].origin;
 
@@ -2801,12 +2801,12 @@ var keyViewComparator = function(lhs, rhs, context)
 }
 
 /*!
-    Converts aPoint from the parent platform window coordinate system to the windows coordinate system.
+    Converts aPoint from the parent platform window coordinate system to the window's coordinate system.
 */
 - (CGPoint)convertPlatformWindowToBase:(CGPoint)aPoint
 {
     if ([self _sharesChromeWithPlatformWindow])
-        return aPoint;
+        return _CGPointMakeCopy(aPoint);
 
     var origin = [self frame].origin;
 
