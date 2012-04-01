@@ -25,7 +25,11 @@
 #define ALIGN_STROKE(point)  (FLOOR(point) === (point) ? (point) + halfStrokeWidth : (point))
 #define ALIGN_COORD(point)   (FLOOR(point))
 
-var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10);
+var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10),
+    _CPAttachedWindowViewRadius = 5.0,
+    _CPAttachedWindowViewStrokeWidth = 1.0,
+    _CPAttachedWindowViewShadowSize = CGSizeMake(0, 6),
+    _CPAttachedWindowViewShadowBlur = 15.0;
 
 /*!
     @ignore
@@ -34,13 +38,12 @@ var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10);
 */
 @implementation _CPAttachedWindowView : _CPWindowView
 {
-    BOOL            _mouseDownPressed           @accessors(getter=isMouseDownPressed, setter=setMouseDownPressed:);
-    float           _arrowOffsetX               @accessors(property=arrowOffsetX);
-    float           _arrowOffsetY               @accessors(property=arrowOffsetY);
-    int             _appearance                 @accessors(property=appearance);
-    unsigned        _preferredEdge              @accessors(property=preferredEdge);
+    float       _arrowOffsetX   @accessors(property=arrowOffsetX);
+    float       _arrowOffsetY   @accessors(property=arrowOffsetY);
+    int         _appearance     @accessors(property=appearance);
+    unsigned    _preferredEdge  @accessors(property=preferredEdge);
 
-    CGSize          _cursorSize;
+    CGSize      _cursorSize;
 }
 
 /*!
@@ -91,8 +94,6 @@ var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10);
     {
         _arrowOffsetX = 0.0;
         _arrowOffsetY = 0.0;
-
-        // @TODO: make this themable
         _appearance = CPPopoverAppearanceMinimal;
         _cursorSize = CGSizeMakeCopy(_CPAttachedWindowViewDefaultCursorSize);
     }
@@ -116,7 +117,6 @@ var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10);
 {
     _cursorSize = CGSizeMakeCopy(_CPAttachedWindowViewDefaultCursorSize);
     [self setNeedsDisplay:YES];
-    _mouseDownPressed = NO;
 }
 
 /*!
@@ -127,28 +127,41 @@ var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10);
     [super drawRect:aRect];
 
     var context = [[CPGraphicsContext currentContext] graphicsPort],
-        radius = 5,
+        radius = _CPAttachedWindowViewRadius,
         arrowWidth = _cursorSize.width,
         arrowHeight = _cursorSize.height,
-        strokeWidth = 1,
+        strokeWidth = _CPAttachedWindowViewStrokeWidth,
         halfStrokeWidth = strokeWidth / 2.0,
         strokeColor,
         shadowColor = [[CPColor blackColor] colorWithAlphaComponent:.2],
-        shadowSize = CGSizeMake(0, 6),
-        shadowBlur = 15,
+        shadowSize = _CPAttachedWindowViewShadowSize,
+        shadowBlur = _CPAttachedWindowViewShadowBlur,
         gradient,
         frame = [self bounds];
 
     if (_appearance == CPPopoverAppearanceMinimal)
     {
-        gradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [(254.0 / 255), (254.0 / 255), (254.0 / 255), 0.93,
-                                                                                        (231.0 / 255), (231.0 / 255), (231.0 / 255), 0.93], [0,1], 2);
+        gradient = CGGradientCreateWithColorComponents(
+                        CGColorSpaceCreateDeviceRGB(),
+                        [
+                            (254.0 / 255), (254.0 / 255), (254.0 / 255), 0.93,
+                            (231.0 / 255), (231.0 / 255), (231.0 / 255), 0.93
+                        ],
+                        [0, 1],
+                        2
+                    );
         strokeColor = [CPColor colorWithHexString:@"B8B8B8"];
     }
     else
     {
-        gradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [(38.0 / 255), (38.0 / 255), (38.0 / 255), 0.93,
-                                                                                        (18.0 / 255), (18.0 / 255), (18.0 / 255), 0.93], [0,1], 2);
+        gradient = CGGradientCreateWithColorComponents(
+                        CGColorSpaceCreateDeviceRGB(),
+                        [
+                            (38.0 / 255), (38.0 / 255), (38.0 / 255), 0.93,
+                            (18.0 / 255), (18.0 / 255), (18.0 / 255), 0.93
+                        ],
+                        [0, 1],
+                        2);
         strokeColor = [CPColor colorWithHexString:@"222222"];
     }
 
@@ -367,22 +380,8 @@ var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10);
     }
 
     CGContextClosePath(context);
-
-    //Draw it
     CGContextStrokePath(context);
     CGContextFillPath(context);
-}
-
-- (void)mouseDown:(CPEvent)anEvent
-{
-    _mouseDownPressed = YES;
-    [super mouseDown:anEvent];
-}
-
-- (void)mouseUp:(CPEvent)anEvent
-{
-    _mouseDownPressed = NO;
-    [super mouseUp:anEvent];
 }
 
 @end
