@@ -462,7 +462,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
         if (_flags & _CPImageAndTextViewFontChangedFlag)
         {
-            var fontStyle = [_font ? _font : [CPFont systemFontOfSize:12.0] cssString];
+            var fontStyle = [(_font ? _font : [CPFont systemFontOfSize:12.0]) cssString];
             textStyle.font = fontStyle;
 
             if (shadowStyle)

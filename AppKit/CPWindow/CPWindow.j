@@ -2020,7 +2020,7 @@ CPTexturedBackgroundWindowMask
 */
 - (BOOL)isMainWindow
 {
-    return [CPApp mainWindow] == self;
+    return [CPApp mainWindow] === self;
 }
 
 /*!
