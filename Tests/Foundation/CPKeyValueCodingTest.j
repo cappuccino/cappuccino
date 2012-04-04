@@ -232,7 +232,7 @@ var accessIVARS = YES;
         value,
         keyEnumerator = [dictForKeys keyEnumerator];
 
-    while (key = [keyEnumerator nextObject])
+    while ((key = [keyEnumerator nextObject]) !== nil)
     {
         value = [dictForKeys objectForKey: key];
         [self assert: [kvcTestObject valueForKey: key] same: value];
@@ -384,7 +384,8 @@ var accessIVARS = YES;
     var key,
         aValue,
         keyEnumerator = [dictForKeys keyEnumerator];
-    while (key = [keyEnumerator nextObject])
+
+    while ((key = [keyEnumerator nextObject]) !== nil)
     {
         aValue = [dictForKeys objectForKey: key];
         [self assert: [kvcTestObject valueForKey: key] same: aValue];
@@ -417,7 +418,7 @@ var accessIVARS = YES;
         value,
         keyEnumerator = [dictForKeys keyEnumerator];
 
-    while (key = [keyEnumerator nextObject])
+    while ((key = [keyEnumerator nextObject]) !== nil)
     {
         value = [dictForKeys objectForKey: key];
         [self assert: [CPNull null] same:value ];

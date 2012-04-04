@@ -241,7 +241,7 @@ var CPCharacterSetInvertedKey = @"CPCharacterSetInvertedKey";
     var enu = [_ranges objectEnumerator],
         range;
 
-    while (range = [enu nextObject])
+    while ((range = [enu nextObject]) !== nil)
     {
         if (CPLocationInRange(c, range))
             return !_inverted;

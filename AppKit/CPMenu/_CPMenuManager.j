@@ -473,7 +473,7 @@ var STICKY_TIME_INTERVAL            = 500,
         var iter = [selectorNames objectEnumerator],
             obj;
 
-        while (obj = [iter nextObject])
+        while ((obj = [iter nextObject]) !== nil)
         {
             var aSelector = CPSelectorFromString(obj);
 
@@ -504,7 +504,7 @@ var STICKY_TIME_INTERVAL            = 500,
     var iter = [[menu itemArray] objectEnumerator],
         obj;
 
-    while (obj = [iter nextObject])
+    while ((obj = [iter nextObject]) !== nil)
     {
         if ([obj isHidden] || ![obj isEnabled])
             continue;

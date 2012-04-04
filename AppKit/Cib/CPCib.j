@@ -137,7 +137,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
         var key = nil,
             keyEnumerator = [replacementClasses keyEnumerator];
 
-        while (key = [keyEnumerator nextObject])
+        while ((key = [keyEnumerator nextObject]) !== nil)
             [unarchiver setClass:[replacementClasses objectForKey:key] forClassName:key];
     }
 

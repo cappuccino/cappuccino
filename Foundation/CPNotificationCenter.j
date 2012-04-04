@@ -103,7 +103,7 @@ var CPNotificationDefaultCenter = nil;
     var name = nil,
         names = [_namedRegistries keyEnumerator];
 
-    while (name = [names nextObject])
+    while ((name = [names nextObject]) !== nil)
         [[_namedRegistries objectForKey:name] removeObserver:anObserver object:nil];
 
     [_unnamedRegistry removeObserver:anObserver object:nil];
@@ -122,7 +122,7 @@ var CPNotificationDefaultCenter = nil;
         var name = nil,
             names = [_namedRegistries keyEnumerator];
 
-        while (name = [names nextObject])
+        while ((name = [names nextObject]) !== nil)
             [[_namedRegistries objectForKey:name] removeObserver:anObserver object:anObject];
 
         [_unnamedRegistry removeObserver:anObserver object:anObject];
@@ -225,7 +225,7 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
             keys = [_objectObservers keyEnumerator];
 
         // Iterate through every set of observers
-        while (key = [keys nextObject])
+        while ((key = [keys nextObject]) !== nil)
         {
             var observers = [_objectObservers objectForKey:key],
                 observer = nil,

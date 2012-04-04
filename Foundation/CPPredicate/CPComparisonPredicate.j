@@ -512,9 +512,10 @@ var CPComparisonPredicateModifier,
             result = (_modifier == CPAllPredicateModifier),
             value;
 
-        while (value = [e nextObject])
+        while ((value = [e nextObject]) !== nil)
         {
             var eval = [self _evaluateValue:value rightValue:rightValue];
+
             if (eval != result)
                 return eval;
         }

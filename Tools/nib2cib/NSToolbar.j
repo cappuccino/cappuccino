@@ -45,7 +45,7 @@
 
         // Some of the item identifiers will be changed when loaded by NSToolbarItem, so we must change
         // the map to correspond.
-        while (key = [keyEnumerator nextObject])
+        while ((key = [keyEnumerator nextObject]) !== nil)
         {
             var transformedKey = NS_CPToolbarItemIdentifierMap[key] || key;
             [_identifiedItems setObject:[nsIdentifiedItems objectForKey:key] forKey:transformedKey];
