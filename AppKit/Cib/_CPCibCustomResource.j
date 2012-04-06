@@ -94,21 +94,30 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
             else if (_resourceName == "CPRemoveTemplate")
                 return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPButtonBar class]] pathForResource:@"minus_button.png"] size:CGSizeMake(11, 4)];
 
-            var bundleClass = _properties.valueForKey(@"bundleClass"),
-                bundle = nil;
-
-            if (bundleClass)
-            {
-                bundleClass = CPClassFromString(bundleClass);
-
-                if (bundleClass)
-                    bundle = [CPBundle bundleForClass:bundleClass];
-            }
-
-            return [[CPImage alloc] initWithContentsOfFile:[(bundle || [aCoder bundle]) pathForResource:_resourceName] size:_properties.valueForKey(@"size")];
+            return [self imageFromBundle:[aCoder bundle]];
         }
 
     return self;
+}
+
+- (CPImage)imageFromBundle:(CPBundle)aBundle
+{
+    if (!aBundle)
+    {
+        var bundleClass = _properties.valueForKey(@"bundleClass");
+
+        if (bundleClass)
+        {
+            bundleClass = CPClassFromString(bundleClass);
+
+            if (bundleClass)
+                aBundle = [CPBundle bundleForClass:bundleClass];
+        }
+        else
+            aBundle = [CPBundle mainBundle];
+    }
+
+    return [[CPImage alloc] initWithContentsOfFile:[aBundle pathForResource:_resourceName] size:_properties.valueForKey(@"size")];
 }
 
 @end
@@ -143,6 +152,13 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
 - (id)delegate
 {
     return nil;
+}
+
+- (CPString)description
+{
+    var image = [self imageFromBundle:nil];
+
+    return [image description];
 }
 
 @end
