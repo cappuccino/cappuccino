@@ -2,7 +2,7 @@
  * ThemeDescriptors.j
  * __project.name__
  *
- * Created by __user.name__ on __project.date__.
+ * Created by __user.name__ on __project.date__
  * Copyright __project.year__, __organization.name__. All rights reserved.
  */
 
