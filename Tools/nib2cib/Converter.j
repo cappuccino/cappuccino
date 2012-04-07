@@ -116,13 +116,13 @@ ConverterConversionException = @"ConverterConversionException";
     try
     {
         // Compile xib or nib to make sure we have a non-new format nib.
-        temporaryNibFilePath = FILE.join("/var/tmp", FILE.basename(aFilePath) + ".tmp.nib");
+        temporaryNibFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.nib");
 
         if (OS.popen(["/usr/bin/ibtool", aFilePath, "--compile", temporaryNibFilePath]).wait() === 1)
             [CPException raise:ConverterConversionException reason:@"Could not compile file: " + aFilePath];
 
         // Convert from binary plist to XML plist
-        var temporaryPlistFilePath = FILE.join("/var/tmp", FILE.basename(aFilePath) + ".tmp.plist");
+        var temporaryPlistFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.plist");
 
         if (OS.popen(["/usr/bin/plutil", "-convert", "xml1", temporaryNibFilePath, "-o", temporaryPlistFilePath]).wait() === 1)
             [CPException raise:ConverterConversionException reason:@"Could not convert to xml plist for file: " + aFilePath];
