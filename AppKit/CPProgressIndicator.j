@@ -88,9 +88,9 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     CPProgressIndicatorSpinningStyleColors = [];
 
     CPProgressIndicatorSpinningStyleColors[CPMiniControlSize]       = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:
-        [bundle pathForResource:@"CPProgressIndicator/CPProgressIndicatorSpinningStyleRegular.gif"] size:CGSizeMake(64.0, 64.0)]];
+        [bundle pathForResource:@"CPProgressIndicator/CPProgressIndicatorSpinningStyleMini.gif"] size:CGSizeMake(16.0, 16.0)]];
     CPProgressIndicatorSpinningStyleColors[CPSmallControlSize]      = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:
-        [bundle pathForResource:@"CPProgressIndicator/CPProgressIndicatorSpinningStyleRegular.gif"] size:CGSizeMake(64.0, 64.0)]];
+        [bundle pathForResource:@"CPProgressIndicator/CPProgressIndicatorSpinningStyleSmall.gif"] size:CGSizeMake(32.0, 32.0)]];
     CPProgressIndicatorSpinningStyleColors[CPRegularControlSize]    = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:
         [bundle pathForResource:@"CPProgressIndicator/CPProgressIndicatorSpinningStyleRegular.gif"] size:CGSizeMake(64.0, 64.0)]];
 
