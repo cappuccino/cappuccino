@@ -235,4 +235,30 @@
     [self assertSet:set onlyHasObjects:["horizon", "surfer", "7"]];
 }
 
+- (void)testKVCSetOperators
+{
+    var one = [CPSet setWithArray:[@"one", @"two", @"three"]],
+        two = [CPSet setWithArray:[1, 2, 3, 4, 8, 0]];
+
+    [self assert:[one valueForKey:"@count"] equals:3];
+    [self assert:[two valueForKey:"@count"] equals:6];
+    [self assert:[two valueForKeyPath:"@sum.intValue"] equals:18];
+    [self assert:[two valueForKeyPath:"@avg.doubleValue"] equals:3.0];
+    [self assert:[one valueForKeyPath:"@max.description"] equals:@"two"];
+    [self assert:[two valueForKeyPath:"@max.intValue"] equals:8];
+    [self assert:[one valueForKeyPath:"@min.description"] equals:@"one"];
+    [self assert:[two valueForKeyPath:"@min.intValue"] equals:0];
+
+    var b = [CPSet set];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Tom", 27] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 31] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Harry", 47] forKeys:[@"name", @"age"]]];
+    [self assert:[b valueForKeyPath:@"@sum.age"] equals:105];
+    [self assert:[b valueForKeyPath:@"@avg.age"] equals:35];
+    [self assert:[b valueForKeyPath:@"@min.age"] equals:27];
+    [self assert:[b valueForKeyPath:@"@max.age"] equals:47];
+    [self assert:[b valueForKeyPath:@"@min.name"] equals:@"Dick"];
+    [self assert:[b valueForKeyPath:@"@max.name"] equals:@"Tom"];
+}
+
 @end

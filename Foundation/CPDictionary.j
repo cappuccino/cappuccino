@@ -50,7 +50,7 @@
 {
     var key = [_keyEnumerator nextObject];
 
-    if (!key)
+    if (key === nil)
         return nil;
 
     return [_dictionary objectForKey:key];

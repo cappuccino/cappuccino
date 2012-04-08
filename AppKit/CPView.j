@@ -534,7 +534,7 @@ var CPViewFlags                     = { },
     var addedSubview = nil,
         addedSubviewEnumerator = [addedSubviews objectEnumerator];
 
-    while (addedSubview = [addedSubviewEnumerator nextObject])
+    while ((addedSubview = [addedSubviewEnumerator nextObject]) !== nil)
         [self addSubview:addedSubview];
 
     // If the order is fine, no need to reorder.

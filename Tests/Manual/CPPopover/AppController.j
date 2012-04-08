@@ -12,12 +12,15 @@
 
 @implementation AppController : CPObject
 {
-    CPPopUpButton buttonEdge;
-    CPPopUpButton buttonStyle;
-    CPPopUpButton buttonAnimation;
-    CPPopUpButton buttonBehaviour;
-    CPPopover     popover;
-    CPTextField   appearanceLabel;
+    CPPopUpButton       buttonEdge;
+    CPPopUpButton       buttonStyle;
+    CPPopUpButton       buttonAnimation;
+    CPPopUpButton       buttonBehaviour;
+    CPButton            lastButton;
+    int                 lastPreferredEdge;
+    @outlet CPPopover   popover;
+    @outlet CPPopover   windowPopover;
+    @outlet CPWindow    popoverWindow;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -41,52 +44,59 @@
     button = [CPButton buttonWithTitle:@"click"];
     [button setTarget:self];
     [button setAction:@selector(open:)];
-    [button setAutoresizingMask:CPViewMinXMargin]
+    [button setAutoresizingMask:CPViewMinXMargin];
     [button setFrameOrigin:CGPointMake(contentViewSize.width - CGRectGetWidth([button frame]) - 1, 1)];
     [contentView addSubview:button];
 
     button = [CPButton buttonWithTitle:@"click"];
     [button setTarget:self];
     [button setAction:@selector(open:)];
-    [button setAutoresizingMask:CPViewMinXMargin]
+    [button setAutoresizingMask:CPViewMinXMargin];
     [button setFrameOrigin:CGPointMake(contentViewSize.width - CGRectGetWidth([button frame]) - 1, 100)];
     [contentView addSubview:button];
 
     button = [CPButton buttonWithTitle:@"click"];
     [button setTarget:self];
     [button setAction:@selector(open:)];
-    [button setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin]
+    [button setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
     [button setFrameOrigin:CGPointMake(contentViewSize.width - CGRectGetWidth([button frame])- 1, contentViewSize.height - CGRectGetHeight([button frame]) - 1)];
     [contentView addSubview:button];
 
     button = [CPButton buttonWithTitle:@"click"];
     [button setTarget:self];
     [button setAction:@selector(open:)];
-    [button setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin]
+    [button setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
     [button setFrameOrigin:CGPointMake(contentViewSize.width - CGRectGetWidth([button frame])- 1, contentViewSize.height - 100)];
     [contentView addSubview:button];
 
     button = [CPButton buttonWithTitle:@"click"];
     [button setTarget:self];
     [button setAction:@selector(open:)];
-    [button setAutoresizingMask:CPViewMaxXMargin | CPViewMinYMargin]
+    [button setAutoresizingMask:CPViewMaxXMargin | CPViewMinYMargin];
     [button setFrameOrigin:CGPointMake(1, contentViewSize.height - CGRectGetHeight([button frame]) - 1)];
     [contentView addSubview:button];
 
     button = [CPButton buttonWithTitle:@"click"];
     [button setTarget:self];
     [button setAction:@selector(open:)];
-    [button setAutoresizingMask:CPViewMaxXMargin | CPViewMinYMargin]
+    [button setAutoresizingMask:CPViewMaxXMargin | CPViewMinYMargin];
     [button setFrameOrigin:CGPointMake(1, contentViewSize.height - 100)];
     [contentView addSubview:button];
 
     button = [CPButton buttonWithTitle:@"click"];
     [button setTarget:self];
     [button setAction:@selector(open:)];
-    [button setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin | CPViewMinYMargin | CPViewMaxYMargin]
+    [button setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin | CPViewMinYMargin | CPViewMaxYMargin];
     [button setCenter:[contentView center]];
     [contentView addSubview:button];
 
+    button = [CPButton buttonWithTitle:@"Open window"];
+    [button setTarget:self];
+    [button setAction:@selector(openWindow:)];
+    [button setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin];
+    [button setCenter:[contentView center]];
+    [button setFrameOrigin:CGPointMake(CGRectGetMinX([button frame]), 70)];
+    [contentView addSubview:button];
 
     buttonEdge = [[CPPopUpButton alloc] initWithFrame:CGRectMake(150, 10, 130, 24)];
     [buttonEdge addItemWithTitle:"Automatic"];
@@ -114,30 +124,29 @@
     [theWindow orderFront:self];
 }
 
-- (IBAction)open:(id)sender
+- (int)popoverEdge
 {
-    var edge;
-
     switch ([buttonEdge title])
     {
         case "Automatic":
-            edge = nil;
-            break;
+            return nil;
         case "Bottom":
-            edge = CPMaxYEdge;
-            break;
+            return CPMaxYEdge;
         case "Top":
-            edge = CPMinYEdge;
-            break;
+            return CPMinYEdge;
         case "Left":
-            edge = CPMinXEdge;
-            break;
+            return CPMinXEdge;
         case "Right":
-            edge = CPMaxXEdge;
-            break;
+            return CPMaxXEdge;
+        default:
+            return nil;
     }
+}
 
-    var appearance;
+- (IBAction)open:(id)sender
+{
+    var edge = [self popoverEdge],
+        appearance;
 
     switch ([buttonStyle title])
     {
@@ -149,45 +158,36 @@
             break;
     }
 
-    var pop = [self popoverWithAppearance:appearance];
-
-    [pop showRelativeToRect:nil ofView:sender preferredEdge:edge];
-
-    CPLog.info("content size -  w:" + [pop contentSize].width + " h:" + [pop contentSize].width);
-    CPLog.info("positioning rect - x: " + [pop positioningRect].origin.x + " y: " + [pop positioningRect].origin.x
-                    + " w:" + [pop positioningRect].size.width + " h:" + [pop positioningRect].size.width);
+    [self initPopover:popover withAppearance:appearance];
+    lastButton = sender;
+    lastPreferredEdge = edge;
+    [popover showRelativeToRect:nil ofView:sender preferredEdge:edge];
 }
 
-- (CPPopover)popoverWithAppearance:(int)appearance
+- (void)openWindow:(id)sender
 {
-    if (!popover || [buttonBehaviour title] === @"Not managed")
-    {
-        popover = [CPPopover new];
+    [popoverWindow orderFront:nil];
+}
 
-        var controller = [[CPViewController alloc] init],
-            view = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 320, 300)];
+- (IBAction)openWindowPopover:(id)sender
+{
+    [windowPopover showRelativeToRect:nil ofView:sender preferredEdge:[self popoverEdge]];
+}
 
-        appearanceLabel = [CPTextField labelWithTitle:[buttonEdge title]];
-        [appearanceLabel setFont:[CPFont boldSystemFontOfSize:30.0]];
-        [appearanceLabel setFrameOrigin:CGPointMake(0, 70)];
-        [appearanceLabel setValue:CGSizeMake(0.0, 1.0) forThemeAttribute:@"text-shadow-offset"];
-        [appearanceLabel setFrameSize:CPSizeMake([view frame].size.width, 50)];
-        [appearanceLabel setAlignment:CPCenterTextAlignment];
-        [view addSubview:appearanceLabel];
+- (IBAction)movePopover:(id)sender
+{
+    if (++lastPreferredEdge > CPMaxYEdge)
+        lastPreferredEdge = CPMinXEdge;
 
-        [controller setView:view];
-        [popover setContentViewController:controller];
-        [popover setDelegate:self];
-    }
+    [popover showRelativeToRect:CGRectMakeZero() ofView:lastButton preferredEdge:lastPreferredEdge];
+}
 
-    [appearanceLabel setTextColor:(appearance === CPPopoverAppearanceHUD) ? [CPColor whiteColor] : [CPColor colorWithHexString:@"444"]];
-    [appearanceLabel setValue:(appearance === CPPopoverAppearanceHUD) ? [CPColor colorWithHexString:@"333"] : [CPColor colorWithHexString:@"fff"] forThemeAttribute:@"text-shadow-color"];
-    [appearanceLabel setStringValue:[buttonEdge title]];
-    [popover setAnimates:([buttonAnimation title] === @"With animation")];
-    [popover setBehaviour:([buttonBehaviour title] === @"Transient") ? CPPopoverBehaviorTransient : CPPopoverBehaviorApplicationDefined];
-    [popover setAppearance:appearance];
-
-    return popover;
+- (void)initPopover:(CPPopover)aPopover withAppearance:(int)appearance
+{
+    [aPopover setDelegate:self];
+    [aPopover setAnimates:([buttonAnimation title] === @"With animation")];
+    [aPopover setBehaviour:([buttonBehaviour title] === @"Transient") ? CPPopoverBehaviorTransient : CPPopoverBehaviorApplicationDefined];
+    [aPopover setAppearance:appearance];
 }
 
 #pragma mark -
@@ -201,6 +201,12 @@
 - (void)popoverDidShow:(CPPopover)aPopover
 {
     CPLog.info("popover " + aPopover + " did show");
+}
+
+- (BOOL)popoverShouldClose:(CPPopover)aPopover
+{
+    CPLog.info("popover " + aPopover + " should close");
+    return YES;
 }
 
 - (void)popoverWillClose:(CPPopover)aPopover

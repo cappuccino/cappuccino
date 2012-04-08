@@ -255,7 +255,7 @@ var CPThemesByName          = { },
         attributeNames = [attributes keyEnumerator],
         objectThemeClass = [anObject themeClass];
 
-    while (attributeName = [attributeNames nextObject])
+    while ((attributeName = [attributeNames nextObject]) !== nil)
         [self _recordAttribute:[attributes objectForKey:attributeName] forClass:objectThemeClass];
 }
 

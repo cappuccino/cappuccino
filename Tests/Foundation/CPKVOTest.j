@@ -382,23 +382,6 @@
     [self assertTrue: _sawObservation message:"Never recieved an observation"];
 }
 
-- (void)testKVCArrayOperators
-{
-    var one = [1, 1, 1, 1, 1, 1, 1, 1],
-        two = [1, 2, 3, 4, 8, 0];
-
-    [self assert:[one valueForKey:"@count"] equals:8];
-    [self assert:[one valueForKeyPath:"@sum.intValue"] equals:8];
-    [self assert:[two valueForKeyPath:"@avg.intValue"] equals:3];
-    [self assert:[two valueForKeyPath:"@max.intValue"] equals:8];
-    [self assert:[two valueForKeyPath:"@min.intValue"] equals:0];
-
-    var a = [A new];
-    [a setValue:one forKey:"b"];
-    [self assert:[a valueForKeyPath:"b.@count"] equals:8];
-    [self assert:[a valueForKeyPath:"b.@sum.intValue"] equals:8];
-}
-
 - (void)testPerformance
 {
     bob = [PersonTester new];

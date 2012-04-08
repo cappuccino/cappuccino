@@ -189,7 +189,7 @@ function config(/*va_args*/)
         var key = nil,
             keyEnumerator = [configuration storedKeyEnumerator];
 
-        while (key = [keyEnumerator nextObject])
+        while ((key = [keyEnumerator nextObject]) !== nil)
             print(key + '=' + [configuration valueForKey:key]);
     }
     else if (action === "get")

@@ -106,7 +106,7 @@
     var object = nil,
         objectEnumerator = [_visibleWindows objectEnumerator];
 
-    while (object = [objectEnumerator nextObject])
+    while ((object = [objectEnumerator nextObject]) !== nil)
         [_replacementObjects[[object UID]] makeKeyAndOrderFront:self];
 }
 

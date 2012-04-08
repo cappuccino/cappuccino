@@ -2689,7 +2689,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         oldMainSortDescriptor = [[self sortDescriptors] objectAtIndex: 0];
 
     // Remove every main descriptor equivalents (normally only one)
-    while ((descriptor = [e nextObject]) != nil)
+    while ((descriptor = [e nextObject]) !== nil)
     {
         if ([[descriptor key] isEqual: [newMainSortDescriptor key]])
             [outdatedDescriptors addObject:descriptor];

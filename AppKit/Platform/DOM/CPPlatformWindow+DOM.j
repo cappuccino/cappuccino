@@ -1625,7 +1625,7 @@ function CPWindowObjectList()
         platformWindow = nil,
         windowObjects = [];
 
-    while (platformWindow = [platformWindowEnumerator nextObject])
+    while ((platformWindow = [platformWindowEnumerator nextObject]) !== nil)
     {
         var levels = platformWindow._windowLevels,
             layers = platformWindow._windowLayers,

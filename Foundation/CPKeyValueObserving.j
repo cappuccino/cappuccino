@@ -664,7 +664,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
     var forwarder = nil;
 
-    if (aPath.indexOf('.') != CPNotFound)
+    if (aPath.indexOf('.') !== CPNotFound && aPath.charAt(0) !== '@')
         forwarder = [[_CPKVOForwardingObserver alloc] initWithKeyPath:aPath object:_targetObject observer:anObserver options:options context:aContext];
     else
         [self _replaceModifiersForKey:aPath];
@@ -1092,7 +1092,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
     var dotIndex = aKeyPath.indexOf('.');
 
-    if (dotIndex == CPNotFound)
+    if (dotIndex === CPNotFound)
         [CPException raise:CPInvalidArgumentException reason:"Created _CPKVOForwardingObserver without compound key path: "+aKeyPath];
 
     _firstPart = aKeyPath.substring(0, dotIndex);

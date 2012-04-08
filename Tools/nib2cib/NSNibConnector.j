@@ -133,7 +133,7 @@ var NSTransformers = [CPSet setWithObjects:
             keyEnumerator = [NSOptions keyEnumerator],
             key;
 
-        while (key = [keyEnumerator nextObject])
+        while ((key = [keyEnumerator nextObject]) !== nil)
         {
             var CPKey = @"CP" + key.substring(2),
                 NSValue = [NSOptions objectForKey:key];

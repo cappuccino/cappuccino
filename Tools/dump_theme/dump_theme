@@ -1,0 +1,429 @@
+#!/usr/bin/env objj
+
+@import <Foundation/Foundation.j>
+@import <AppKit/AppKit.j>
+@import <BlendKit/BlendKit.j>
+
+var FILE = require("file"),
+    OS = require("os"),
+
+    DefaultTheme = "Aristo",
+    BuildTypes = ["Debug", "Release"],
+
+    FILE = require("file"),
+    OS = require("os"),
+    SYS = require("system"),
+    FileList = require("jake").FileList,
+    stream = require("narwhal/term").stream,
+    Parser = require("narwhal/args").Parser,
+    options = null,
+
+    ImageDescriptionFormat = "<%s> {\n   filename: \"%s\",\n   size: { width:%f, height:%f }\n}",
+
+    DumpThemeException = @"DumpThemeException";
+
+
+function main(args)
+{
+    try
+    {
+        var dumper = [ThemeDumper new];
+        [dumper dumpWithArgs:args];
+    }
+    catch (e)
+    {
+        if ([e isKindOfClass:CPException])
+            colorPrint("red", [e reason]);
+
+        OS.exit(1);
+    }
+}
+
+@implementation ThemeDumper : CPObject
+{
+    JSObject    parser;
+    int         mark;
+}
+
+- (id)init
+{
+    if (self = [super init])
+    {
+        parser = new Parser();
+
+        // Skip the static data header
+        mark = @"@STATIC;".length;
+    }
+
+    return self;
+}
+
+- (void)dumpWithArgs:(CPArray)args
+{
+    [self parseArgs:args];
+
+    var themeName = options.args[0] || "",
+        themeDir = "";
+
+    if (themeName && (themeName.lastIndexOf(".blend") === (themeName.length - ".blend".length)))
+    {
+        themeDir = FILE.canonical(FILE.dirname(themeName));
+        themeName = FILE.basename(themeName, FILE.extension(themeName));
+    }
+
+    themeName = themeName || [self getAppKitDefaultThemeName];
+
+    if (!themeName)
+        [CPException raise:DumpThemeException reason:@"Could not determine the theme name."];
+
+    colorPrint("purple", "Theme name: " + themeName);
+
+    var theme = [self loadTheme:themeName fromDirectory:themeDir];
+
+    if (!theme)
+        [CPException raise:DumpThemeException reason:@"Could not load the theme \"" + themeName + @"\""];
+
+    [self dump:theme];
+}
+
+- (void)parseArgs:(CPArray)args
+{
+    parser.usage("[--no-color] [NAME_OR_BLEND_PATH]");
+
+    parser.option("--no-color", "colorize")
+        .set(false)
+        .def(true)
+        .help("Colorize the output. Should only be used when dumping to the terminal.");
+
+    parser.helpful();
+
+    options = parser.parse(args, null, null, true);
+
+    if (options.args.length > 1)
+    {
+        parser.printUsage(options);
+        OS.exit(0);
+    }
+}
+
+- (void)dump:(CPTheme)theme
+{
+    var classNames = [theme classNames];
+
+    classNames.sort();
+
+    for (var i = 0; i < classNames.length; ++i)
+    {
+        var className = classNames[i],
+            attributes = [theme attributeNamesForClass:className];
+
+        colorPrint("green", "---------------------------\n" + className + "\n---------------------------");
+        attributes.sort();
+
+        for (var attributeIndex = 0; attributeIndex < attributes.length; ++attributeIndex)
+        {
+            var attributeName = attributes[attributeIndex],
+                values = [[theme attributeWithName:attributeName forClass:className] values],
+                states = [values allKeys];
+
+            colorPrint("violet", attributeName);
+            states.sort();
+
+            for (var stateIndex = 0; stateIndex < states.length; ++stateIndex)
+            {
+                var state = states[stateIndex],
+                    value = [theme valueForAttributeWithName:attributeName inState:state forClass:className],
+                    description = [self descriptionForValue:value].replace(/^/mg, "      ");
+
+                colorPrint("cyan", "   " + CPThemeStateName(state));
+                stream.print(description + "\n");
+            }
+        }
+
+        stream.print("");
+    }
+}
+
+- (CPString)descriptionForValue:(id)aValue
+{
+    var description = @"";
+
+    if (!aValue)
+        return @"<null>";
+
+    if (!aValue.isa)
+    {
+        if (typeof(aValue) === "object")
+        {
+            if (aValue.hasOwnProperty("width") && aValue.hasOwnProperty("height"))
+                description = [CPString stringWithFormat:@"CGSize: { width:%f, height:%f }", aValue.width, aValue.height];
+            else if (aValue.hasOwnProperty("x") && aValue.hasOwnProperty("y"))
+                description = [CPString stringWithFormat:@"CGPoint: { x:%f, y:%f }", aValue.x, aValue.y];
+            else if (aValue.hasOwnProperty("origin") && aValue.hasOwnProperty("size"))
+                description = [CPString stringWithFormat:@"CGRect: { x:%f, y:%f }, { width:%f, height:%f }", aValue.origin.x, aValue.origin.y, aValue.size.width, aValue.size.height];
+            else if (aValue.hasOwnProperty("top") && aValue.hasOwnProperty("right") && aValue.hasOwnProperty("bottom") && aValue.hasOwnProperty("left"))
+                description = [CPString stringWithFormat:@"CGInset: { top:%f, right:%f, bottom:%f, left:%f }", aValue.top, aValue.right, aValue.bottom, aValue.left];
+            else
+            {
+                description = "Object\n{\n";
+
+                for (var property in aValue)
+                {
+                    if (aValue.hasOwnProperty(property))
+                        description += "   " + property + ":" + aValue[property] + "\n";
+                }
+
+                description += "}";
+            }
+        }
+        else
+            description = "Unknown object";
+    }
+    else
+        description = [aValue description];
+
+    return description;
+}
+
+// Returns undefined if $CAPP_BUILD is not defined, false if path cannot be found in $CAPP_BUILD
+- (id)findResourceInCappBuild:(CPString)path isDirectory:(BOOL)isDirectory callback:(SEL)callback
+{
+    var cappBuild = SYS.env["CAPP_BUILD"];
+
+    if (!cappBuild)
+        return undefined;
+
+    cappBuild = FILE.canonical(cappBuild);
+
+    if (FILE.isDirectory(cappBuild))
+    {
+        var result = null;
+
+        for (var i = 0; i < BuildTypes.length && !result; ++i)
+        {
+            var findPath = FILE.join(cappBuild, BuildTypes[i], path);
+
+            if ((isDirectory && FILE.isDirectory(findPath)) || (!isDirectory && FILE.exists(findPath)))
+                result = [self performSelector:callback withObject:findPath];
+        }
+
+        return result;
+    }
+    else
+        return false;
+}
+
+- (CPString)findResourceInInstalledFrameworks:(CPString)path isDirectory:(BOOL)isDirectory callback:(SEL)callback
+{
+    // NOTE: It's safe to use '/' directly in the path, we're guaranteed to be on a Mac
+    var frameworks = FILE.canonical(FILE.join(SYS.prefix, "packages/cappuccino/Frameworks")),
+        result = null,
+        findPath = FILE.join(frameworks, "Debug", path);
+
+    if ((isDirectory && FILE.isDirectory(findPath)) || (!isDirectory && FILE.exists(findPath)))
+        result = [self performSelector:callback withObject:findPath];
+
+    if (!result)
+    {
+        findPath = FILE.join(frameworks, path);
+
+        if ((isDirectory && FILE.isDirectory(findPath)) || (!isDirectory && FILE.exists(findPath)))
+            result = [self performSelector:callback withObject:findPath];
+    }
+
+    return result;
+}
+
+- (CPString)getAppKitDefaultThemeName
+{
+    var callback = @selector(themeNameFromPropertyListAtPath:),
+        themeName = [self findResourceInCappBuild:@"AppKit/Info.plist" isDirectory:NO callback:callback];
+
+    if (!themeName)
+        themeName = [self findResourceInInstalledFrameworks:@"AppKit/Info.plist" isDirectory:NO callback:callback];
+
+    return themeName || DefaultTheme;
+}
+
+- (CPString)themeNameFromPropertyListAtPath:(CPString)path
+{
+    if (!FILE.isReadable(path))
+        return nil;
+
+    var themeName = nil,
+        plist = CFPropertyList.readPropertyListFromFile(path);
+
+    if (plist)
+        themeName = plist.valueForKey("CPDefaultTheme");
+
+    return themeName;
+}
+
+- (CPTheme)loadTheme:(CPString)themeName fromDirectory:(CPString)themeDir
+{
+    if (/^.+\.blend$/.test(themeName))
+        themeName = themeName.substr(0, themeName.length - ".blend".length);
+
+    var blendName = themeName + ".blend",
+        themePath = "";
+
+    if (themeDir)
+    {
+        themePath = FILE.join(FILE.canonical(themeDir), blendName);
+
+        if (!FILE.isDirectory(themePath))
+            themePath = themeDir = null;
+    }
+
+    if (!themeDir)
+    {
+        var callback = @selector(returnPath:);
+
+        themePath = [self findResourceInCappBuild:blendName isDirectory:YES callback:callback];
+
+        if (!themePath)
+            themePath = [self findResourceInInstalledFrameworks:@"AppKit/Resources/" + blendName isDirectory:YES callback:callback];
+
+        // Last resort, try the cwd
+        if (!themePath)
+        {
+            var path = FILE.canonical(blendName);
+
+            if (FILE.isDirectory(path))
+                themePath = path;
+        }
+    }
+
+    if (!themePath)
+        [CPException raise:DumpThemeException reason:@"Cannot find the theme \"" + themeName + '"'];
+
+    return [self readTheme:themeName atPath:themePath];
+}
+
+- (CPString)returnPath:(CPString)path
+{
+    return path;
+}
+
+- (CPTheme)readTheme:(CPString)themeName atPath:(CPString)themePath
+{
+    var keyedTheme = null,
+        staticData = FILE.read(FILE.join(themePath, "Browser.Environment", FILE.basename(themePath) + ".sj"));
+
+    if (!staticData)
+        [CPException raise:DumpThemeException reason:@"Could not find the theme file: " + themePath];
+
+    try
+    {
+        keyedTheme = [self readStaticResource:themeName + @".keyedtheme" fromData:staticData];
+
+        if (!keyedTheme)
+            [CPException raise:DumpThemeException reason:@"Could not find the keyed theme data in the theme at: " + themePath];
+    }
+    catch (ex)
+    {
+        if (![ex isKindOfClass:CPException])
+            [CPException raise:DumpThemeException reason:@"Could not read the theme at: " + themePath];
+    }
+
+    keyedTheme = CFPropertyList.propertyListFromString(keyedTheme);
+
+    var data = [CPData dataWithPlistObject:keyedTheme],
+        theme = [CPKeyedUnarchiver unarchiveObjectWithData:data];
+
+    if (!theme)
+        [CPException raise:DumpThemeException reason:@"Could not unarchive the theme at: " + themePath];
+
+    colorPrint("purple", "Loaded theme: " + themePath + "\n");
+
+    return theme;
+}
+
+- (JSObject)readStaticResource:(CPString)name fromData:(CPString)staticData
+{
+    name = @"Resources/" + name;
+
+    // After the header is the version
+    var version = [self readFloatItemFromData:staticData];
+
+    while (true)
+    {
+        var resourceName = [self readStringItemFromData:staticData];
+
+        mark += 2;  // skip "t;"
+
+        var resourceLength = [self readIntItemFromData:staticData];
+
+        if (resourceName == name)
+            return [self readDataItemFromData:staticData length:resourceLength];
+
+        mark += resourceLength;
+
+        if (staticData.substr(mark, 2) == "e;")
+            return null;
+    }
+}
+
+- (int)readIntItemFromData:(CPString)staticData
+{
+    var endPos = [self endOfItemInData:staticData],
+        value = parseInt(staticData.substring(mark, endPos), 10);
+
+    mark = endPos + 1;
+
+    return value;
+}
+
+- (float)readFloatItemFromData:(CPString)staticData
+{
+    var endPos = [self endOfItemInData:staticData],
+        value = parseFloat(staticData.substring(mark, endPos));
+
+    mark = endPos + 1;
+
+    return value;
+}
+
+- (CPString)readStringItemFromData:(CPString)staticData
+{
+    if (staticData.substr(mark, 2) !== "p;")
+        [CPException raise:DumpThemeException reason:@"Expected string item, found '" + staticData.substr(mark, 2) + @"'"];
+
+    mark += 2;  // skip "p;"
+
+    var length = [self readIntItemFromData:staticData],
+        value = staticData.substr(mark, length);
+
+    mark += length;
+
+    return value;
+}
+
+- (int)endOfItemInData:(CPString)staticData
+{
+    var endPos = staticData.indexOf(";", mark);
+
+    if (endPos < 0)
+        [CPException raise:DumpThemeException reason:@"Could not find item terminator"];
+
+    return endPos;
+}
+
+- (CPString)readDataItemFromData:staticData length:(int)dataLength
+{
+    var data = staticData.substr(mark, dataLength);
+
+    mark += dataLength;
+
+    return data;
+}
+
+@end
+
+function colorPrint(color, message)
+{
+    if (options.colorize)
+        stream.print("\0bold(\0" + color + "(" + message + "\0)\0)");
+    else
+        stream.print(message);
+}

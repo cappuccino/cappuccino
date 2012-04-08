@@ -31,7 +31,6 @@
 
     if (self)
     {
-        _needsNewAttachedWindow = YES;
         _behavior   = [aCoder decodeIntForKey:@"NSBehavior"];
         _appearance = [aCoder decodeIntForKey:@"NSAppearance"];
         _animates   = [aCoder decodeBoolForKey:@"NSAnimates"];
