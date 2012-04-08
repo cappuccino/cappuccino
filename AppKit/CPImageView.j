@@ -71,7 +71,7 @@ var CPImageViewEmptyPlaceholderImage = nil;
 
 + (Class)_binderClassForBinding:(CPString)theBinding
 {
-    if (theBinding == CPValueURLBinding || theBinding == CPValuePathBinding)
+    if (theBinding == CPValueBinding || theBinding == CPValueURLBinding || theBinding == CPValuePathBinding)
         return [CPImageViewValueBinder class];
 
     return [super _binderClassForBinding:theBinding];
@@ -489,14 +489,15 @@ var CPImageViewEmptyPlaceholderImage = nil;
         }
 
         [_source setImage:nil];
-        [_source setBackgroundColor:[CPColor lightGrayColor]];
     }
     else
     {
         newValue = [self transformValue:newValue withOptions:options];
-
-        var image = [[CPImage alloc] initWithContentsOfFile:newValue];
-        [_source setImage:image];
+        
+        if (theBinding != CPValueBinding)
+            newValue = [[CPImage alloc] initWithContentsOfFile:newValue];
+        
+        [_source setImage:newValue];
     }
 }
 

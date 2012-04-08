@@ -23,7 +23,7 @@
         request = [CPURLRequest requestWithURL:path],
         connection = [CPURLConnection connectionWithRequest:request delegate:self];
 
-    [theWindow setFullBridge:YES];
+    [theWindow setFullPlatformWindow:YES];
 }
 
 - (void)connection:(CPURLConnection)connection didReceiveData:(CPString)dataString
@@ -34,7 +34,13 @@
     var data = [[CPData alloc] initWithRawString:dataString],
         theRows = [CPPropertyListSerialization propertyListFromData:data format:CPPropertyListXMLFormat_v1_0];
 
-     [self setContent:theRows];
+// Add a CPImage to the model to test CPValueBinding.
+    var path = [[CPBundle mainBundle] pathForResource:@"value.jpg"],
+        image = [[CPImage alloc] initWithContentsOfFile:path],
+        dict = [CPDictionary dictionaryWithObject:image forKey:@"image"];
+    [theRows addObject:dict];
+
+    [self setContent:theRows];
 }
 
 @end
