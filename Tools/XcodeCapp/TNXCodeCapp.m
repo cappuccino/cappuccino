@@ -153,6 +153,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         {
             NSString *subDirectoryPath = [aPath stringByAppendingPathComponent:node];
             NSString *symlinkDestination = [fm destinationOfSymbolicLinkAtPath:subDirectoryPath error:nil];
+
             if (symlinkDestination)
             {
                 [pathsToWatch addObject:subDirectoryPath];
