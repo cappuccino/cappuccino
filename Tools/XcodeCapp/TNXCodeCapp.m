@@ -144,18 +144,15 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     }
     
     // add symlinked directories
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSError *error;
-    
-    NSArray *fileList = [fileManager contentsOfDirectoryAtPath:aPath error:&error];
+    NSArray *fileList = [fm contentsOfDirectoryAtPath:aPath error:nil];
     
     for (NSString *node in fileList)
     {
-        NSDictionary *attributes = [fileManager attributesOfItemAtPath:aPath error:&error];
+        NSDictionary *attributes = [fm attributesOfItemAtPath:aPath error:nil];
         if ([[attributes objectForKey:@"NSFileType"] isEqualTo:NSFileTypeDirectory])
         {
             NSString *subDirectoryPath = [aPath stringByAppendingPathComponent:node];
-            NSString *symlinkDestination = [fileManager destinationOfSymbolicLinkAtPath:subDirectoryPath error:&error];
+            NSString *symlinkDestination = [fm destinationOfSymbolicLinkAtPath:subDirectoryPath error:nil];
             if (symlinkDestination)
             {
                 [pathsToWatch addObject:subDirectoryPath];
