@@ -540,7 +540,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
         // Select the text if the textfield became first responder through keyboard interaction
         if (!_willBecomeFirstResponderByClick)
-            [self selectText:self];
+            [self _selectText:self immediately:YES];
 
         _willBecomeFirstResponderByClick = NO;
 
@@ -1071,24 +1071,36 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 */
 - (void)selectText:(id)sender
 {
-    // FIXME Should this really make the text field the first responder?
+    [self _selectText:sender immediately:NO];
+}
 
+- (void)_selectText:(id)sender immediately:(BOOL)immediately
+{
+    // Selecting the text in a field makes it the first responder
     if (([self isEditable] || [self isSelectable]))
     {
+        var wind = [self window];
+
 #if PLATFORM(DOM)
         var element = [self _inputElement];
 
-        if ([[self window] firstResponder] === self)
-            window.setTimeout(function() { element.select(); }, 0);
-        else if ([self window] !== nil && [[self window] makeFirstResponder:self])
-            window.setTimeout(function() {[self selectText:sender];}, 0);
+        if ([wind firstResponder] === self)
+        {
+            if (immediately)
+                element.select();
+            else
+                window.setTimeout(function() { element.select(); }, 0);
+        }
+        else if (wind !== nil && [wind makeFirstResponder:self])
+            [self _selectText:sender immediately:immediately];
 #else
         // Even if we can't actually select the text we need to preserve the first
         // responder side effect.
-        if ([self window] !== nil && [[self window] firstResponder] !== self)
-            [[self window] makeFirstResponder:self];
+        if (wind !== nil && [wind firstResponder] !== self)
+            [wind makeFirstResponder:self];
 #endif
     }
+
 }
 
 - (void)copy:(id)sender
