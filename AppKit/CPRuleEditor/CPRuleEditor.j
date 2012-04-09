@@ -140,7 +140,7 @@ var itemsContext                = "items",
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
-    if (self != nil)
+    if (self !== nil)
     {
         _slices = [[CPMutableArray alloc] init];
 
@@ -187,7 +187,7 @@ var itemsContext                = "items",
     [_slicesHolder addSubview:_dropLineView];
 
     [self registerForDraggedTypes:[CPArray arrayWithObjects:CPRuleEditorItemPBoardType,nil]];
-    [_boundArrayOwner addObserver:self forKeyPath:_boundArrayKeyPath options:CPKeyValueObservingOptionOld|CPKeyValueObservingOptionNew context:boundArrayContext];
+    [_boundArrayOwner addObserver:self forKeyPath:_boundArrayKeyPath options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:boundArrayContext];
 }
 
 /*! @endcond */
@@ -244,7 +244,7 @@ var itemsContext                = "items",
 */
 - (void)setEditable:(BOOL)editable
 {
-    if (editable == _editable)
+    if (editable === _editable)
         return;
 
     _editable = editable;
@@ -274,7 +274,7 @@ var itemsContext                = "items",
 */
 - (void)setNestingMode:(CPRuleEditorNestingMode)mode
 {
-    if (mode != _nestingMode)
+    if (mode !== _nestingMode)
     {
         _nestingMode = mode;
         if ([self numberOfRows] > 0)
@@ -341,7 +341,7 @@ var itemsContext                = "items",
 */
 - (void)setRowHeight:(float)height
 {
-    if (height == _sliceHeight)
+    if (height === _sliceHeight)
         return;
 
     _sliceHeight = MAX([self _minimumFrameHeight], height);
@@ -396,10 +396,10 @@ var itemsContext                = "items",
 - (void)setFormattingStringsFilename:(CPString)stringsFilename
 {
     // Can we set _stringsFilename to nil in cocoa ?
-    if (_standardLocalizer == nil)
+    if (_standardLocalizer === nil)
         _standardLocalizer = [_CPRuleEditorLocalizer new];
 
-    if (_stringsFilename != stringsFilename)
+    if (_stringsFilename !== stringsFilename)
     {
         _stringsFilename = stringsFilename;
 
@@ -408,7 +408,7 @@ var itemsContext                = "items",
             if (![stringsFilename hasSuffix:@".strings"])
                 stringsFilename = stringsFilename + @".strings";
             var path = [[CPBundle mainBundle] pathForResource:stringsFilename];
-            if (path !=nil)
+            if (path !== nil)
                 [_standardLocalizer loadContentOfURL:[CPURL URLWithString:path]];
         }
     }
@@ -440,7 +440,7 @@ var itemsContext                = "items",
 - (void)setCriteria:(CPArray)criteria andDisplayValues:(CPArray)values forRowAtIndex:(int)rowIndex
 {
 // TODO: reload from the delegate if criteria is an empty array.
-    if (criteria == nil || values == nil)
+    if (criteria === nil || values === nil)
         [CPException raise:CPInvalidArgumentException reason:_cmd + @". criteria and values parameters must not be nil."];
 
     if (rowIndex < 0 || rowIndex >= [self numberOfRows])
@@ -510,12 +510,12 @@ var itemsContext                = "items",
 
     for (var current_index = 0; current_index < rowIndex; current_index++)
     {
-        if ([self rowTypeForRow:current_index] == CPRuleEditorRowTypeCompound)
+        if ([self rowTypeForRow:current_index] === CPRuleEditorRowTypeCompound)
         {
             var candidate = [[self _rowCacheForIndex:current_index] rowObject],
                 subObjects = [[self _subrowObjectsOfObject:candidate] _representedObject];
 
-            if ([subObjects indexOfObjectIdenticalTo:targetObject] != CPNotFound)
+            if ([subObjects indexOfObjectIdenticalTo:targetObject] !== CPNotFound)
                 return current_index;
         }
     }
@@ -566,7 +566,8 @@ TODO: implement
 - (CPIndexSet)subrowIndexesForRow:(int)rowIndex
 {
     var object;
-    if (rowIndex == -1)
+
+    if (rowIndex === -1)
         object = _boundArrayOwner;
     else
         object = [[self _rowCacheForIndex:rowIndex] rowObject];
@@ -581,16 +582,16 @@ TODO: implement
         var candidate = [[self _rowCacheForIndex:i] rowObject],
             indexInSubrows = [[subobjects _representedObject] indexOfObjectIdenticalTo:candidate];
 
-        if (indexInSubrows != CPNotFound)
+        if (indexInSubrows !== CPNotFound)
         {
             [indexes addIndex:i];
             objectsCount --;
             // [buffer removeObjectAtIndex:indexInSubrows];
-            if ([self rowTypeForRow:i] == CPRuleEditorRowTypeCompound)
+            if ([self rowTypeForRow:i] === CPRuleEditorRowTypeCompound)
                 i += [[self subrowIndexesForRow:i] count];
         }
 
-        if (objectsCount == 0)
+        if (objectsCount === 0)
             break;
     }
 
@@ -626,12 +627,12 @@ TODO: implement
     {
         var slice = _slices[count],
             rowIndex = [slice rowIndex],
-            contains = [indexes containsIndex:rowIndex];
+            contains = [indexes containsIndex:rowIndex],
             shouldSelect = (contains && !(extend && [slice _isSelected]));
 
         if (contains)
             [slice _setSelected:shouldSelect];
-        [slice _setLastSelected:(rowIndex == lastSelected)];
+        [slice _setLastSelected:(rowIndex === lastSelected)];
         [slice setNeedsDisplay:YES];
     }
 }
@@ -673,7 +674,7 @@ TODO: implement
             break;
         default:
             [CPException raise:CPInvalidArgumentException reason:@"Not supported CPRuleEditorNestingMode " + nestingMode];
-        // Compound mode: parentRowIndex=(lastRowType == CPRuleEditorRowTypeCompound)?lastRow :[self parentRowForRow:lastRow]; break;
+        // Compound mode: parentRowIndex=(lastRowType === CPRuleEditorRowTypeCompound)?lastRow :[self parentRowForRow:lastRow]; break;
     }
 
     [self insertRowAtIndex:numberOfRows withType:rowtype asSubrowOfRow:parentRowIndex animate:YES];
@@ -695,7 +696,7 @@ TODO: implement
 */
     var newObject = [self _insertNewRowAtIndex:rowIndex ofType:rowType withParentRow:parentRow];
 
-    if (rowType == CPRuleEditorRowTypeCompound && !_allowsEmptyCompoundRows)
+    if (rowType === CPRuleEditorRowTypeCompound && !_allowsEmptyCompoundRows)
     {
         var subrow = [self _insertNewRowAtIndex:(rowIndex + 1) ofType:CPRuleEditorRowTypeSimple withParentRow:rowIndex];
     }
@@ -726,7 +727,7 @@ TODO: implement
 */
 - (void)removeRowsAtIndexes:(CPIndexSet)rowIndexes includeSubrows:(BOOL)includeSubrows
 {
-    if ([rowIndexes count] == 0)
+    if ([rowIndexes count] === 0)
         return;
 
     if ([rowIndexes lastIndex] >= [self numberOfRows])
@@ -737,7 +738,7 @@ TODO: implement
         childsIndexes = [CPMutableIndexSet indexSet],
         subrows;
 
-    if (parentRowIndex == -1)
+    if (parentRowIndex === -1)
         subrows = [self _rootRowsArray];
     else
     {
@@ -745,15 +746,15 @@ TODO: implement
         subrows = [self _subrowObjectsOfObject:parentRowObject];
     }
 
-    while (current_index != CPNotFound)
+    while (current_index !== CPNotFound)
     {
         var rowObject = [[self _rowCacheForIndex:current_index] rowObject],
             relativeChildIndex = [[subrows _representedObject] indexOfObjectIdenticalTo:rowObject];
 
-        if (relativeChildIndex != CPNotFound)
+        if (relativeChildIndex !== CPNotFound)
             [childsIndexes addIndex:relativeChildIndex];
 
-        if (includeSubrows && [self rowTypeForRow:current_index] == CPRuleEditorRowTypeCompound)
+        if (includeSubrows && [self rowTypeForRow:current_index] === CPRuleEditorRowTypeCompound)
         {
             var more_childs = [self subrowIndexesForRow:current_index];
             [self removeRowsAtIndexes:more_childs includeSubrows:includeSubrows];
@@ -813,20 +814,20 @@ TODO: implement
             [predicateParts addEntriesFromDictionary:predpart];
     }
 
-    if ([self rowTypeForRow:aRow] == CPRuleEditorRowTypeCompound)
+    if ([self rowTypeForRow:aRow] === CPRuleEditorRowTypeCompound)
     {
         var compoundPredicate,
             subpredicates = [CPMutableArray array],
             subrowsIndexes = [self subrowIndexesForRow:aRow];
 
-        if ([subrowsIndexes count] == 0)
+        if ([subrowsIndexes count] === 0)
             return nil;
 
         var current_index = [subrowsIndexes firstIndex];
-        while (current_index != CPNotFound)
+        while (current_index !== CPNotFound)
         {
             var subpredicate = [self predicateForRow:current_index];
-            if (subpredicate != nil)
+            if (subpredicate !== nil)
                 [subpredicates addObject:subpredicate];
 
             current_index = [subrowsIndexes indexGreaterThanIndex:current_index];
@@ -834,7 +835,7 @@ TODO: implement
 
         var compoundType = [predicateParts objectForKey:CPRuleEditorPredicateCompoundType];
 
-        if ([subpredicates count] == 0)
+        if ([subpredicates count] === 0)
             return nil;
         else
         {
@@ -862,16 +863,33 @@ TODO: implement
         modifier = [predicateParts objectForKey:CPRuleEditorPredicateComparisonModifier],
         selector = CPSelectorFromString([predicateParts objectForKey:CPRuleEditorPredicateCustomSelector]);
 
-    if (lhs == nil){ CPLogConsole(@"missing left expression in predicate parts dictionary"); return NULL;}
-    if (rhs == nil){ CPLogConsole(@"missing right expression in predicate parts dictionary"); return NULL;}
-    if (selector == nil && operator == nil){ CPLogConsole(@"missing operator and selector in predicate parts dictionary"); return NULL;}
+    if (lhs === nil)
+    {
+        CPLogConsole(@"missing left expression in predicate parts dictionary");
+        return NULL;
+    }
 
-    if (modifier == nil) CPLogConsole(@"missing modifier in predicate parts dictionary. Setting default: CPDirectPredicateModifier");
-    if (options == nil)  CPLogConsole(@"missing options in predicate parts dictionary. Setting default: CPCaseInsensitivePredicateOption");
+    if (rhs === nil)
+    {
+        CPLogConsole(@"missing right expression in predicate parts dictionary");
+        return NULL;
+    }
+
+    if (selector === nil && operator === nil)
+    {
+        CPLogConsole(@"missing operator and selector in predicate parts dictionary");
+        return NULL;
+    }
+
+    if (modifier === nil)
+        CPLogConsole(@"missing modifier in predicate parts dictionary. Setting default: CPDirectPredicateModifier");
+
+    if (options === nil)
+        CPLogConsole(@"missing options in predicate parts dictionary. Setting default: CPCaseInsensitivePredicateOption");
 
     try
     {
-        if (selector != nil)
+        if (selector !== nil)
             predicate = [CPComparisonPredicate
                          predicateWithLeftExpression:lhs
                          rightExpression:rhs
@@ -918,7 +936,7 @@ TODO: implement
 */
 - (void)setRowClass:(Class)rowClass
 {
-    if (rowClass == [CPMutableDictionary class])
+    if (rowClass === [CPMutableDictionary class])
         rowClass = [RowObject class];
 
     _rowClass = rowClass;
@@ -1095,7 +1113,7 @@ TODO: implement
 
 - (void)keyDown:(CPEvent)event
 {
-    if (!_suppressKeyDownHandling && [self _applicableNestingMode] == CPRuleEditorNestingModeCompound && !_isKeyDown && ([event modifierFlags] & CPAlternateKeyMask))
+    if (!_suppressKeyDownHandling && [self _applicableNestingMode] === CPRuleEditorNestingModeCompound && !_isKeyDown && ([event modifierFlags] & CPAlternateKeyMask))
     {
         [_slices makeObjectsPerformSelector:@selector(_configurePlusButtonByRowType:) withObject:CPRuleEditorRowTypeCompound];
     }
@@ -1130,7 +1148,7 @@ TODO: implement
 
 - (BOOL)_wantsRowAnimations
 {
-    return (_currentAnimation != nil);
+    return (_currentAnimation !== nil);
 }
 
 - (void)_updateButtonVisibilities
@@ -1153,10 +1171,10 @@ TODO: implement
     if (!_nestingModeDidChange)
         return _nestingMode;
 
-    var a = (_nestingMode == CPRuleEditorNestingModeCompound || _nestingMode == CPRuleEditorNestingModeSimple);
-    var b = ([self rowTypeForRow:0] == CPRuleEditorRowTypeCompound);
+    var a = (_nestingMode === CPRuleEditorNestingModeCompound || _nestingMode === CPRuleEditorNestingModeSimple),
+        b = ([self rowTypeForRow:0] === CPRuleEditorRowTypeCompound);
 
-    if (a == b)
+    if (a === b)
         return _nestingMode;
 
     return a ? CPRuleEditorNestingModeList : CPRuleEditorNestingModeSimple;
@@ -1164,7 +1182,7 @@ TODO: implement
 
 - (BOOL)_shouldHideAddButtonForSlice:(id)slice
 {
-    return (!_editable || [self _applicableNestingMode] == CPRuleEditorNestingModeSingle);
+    return (!_editable || [self _applicableNestingMode] === CPRuleEditorNestingModeSingle);
 }
 
 - (BOOL)_shouldHideSubtractButtonForSlice:(id)slice
@@ -1184,9 +1202,9 @@ TODO: implement
     switch (nestingMode)
     {
         case CPRuleEditorNestingModeCompound:
-        case CPRuleEditorNestingModeSimple: shouldHide = ([subrowsIndexes count] == 1 && !_allowsEmptyCompoundRows) || parentIndex == -1;
+        case CPRuleEditorNestingModeSimple: shouldHide = ([subrowsIndexes count] === 1 && !_allowsEmptyCompoundRows) || parentIndex === -1;
                 break;
-        case CPRuleEditorNestingModeList: shouldHide = ([self numberOfRows] == 1);
+        case CPRuleEditorNestingModeList: shouldHide = ([self numberOfRows] === 1);
                 break;
         case CPRuleEditorNestingModeSingle: shouldHide = YES;
                 break;
@@ -1220,7 +1238,7 @@ TODO: implement
 
 - (int)_rowIndexForRowObject:(id)rowobject
 {
-    if (rowobject == _boundArrayOwner)
+    if (rowobject === _boundArrayOwner)
         return -1;
 
     return [[self _searchCacheForRowObject:rowobject] rowIndex]; // Pas bon car le rowIndex du row cache n'est pas synchro avec la position dans _rowCache.
@@ -1239,14 +1257,14 @@ TODO: implement
     var childlessParents = [CPIndexSet indexSet],
         current_index = [indexes firstIndex];
 
-    while (current_index != CPNotFound)
+    while (current_index !== CPNotFound)
     {
-        var parentIndex = [self parentRowForRow:current_index];
+        var parentIndex = [self parentRowForRow:current_index],
+            subrowsIndexes = [self subrowIndexesForRow:parentIndex];
 
-        var subrowsIndexes = [self subrowIndexesForRow:parentIndex];
-        if ([subrowsIndexes count]==1)
+        if ([subrowsIndexes count] === 1)
         {
-            if (parentIndex != -1)
+            if (parentIndex !== -1)
                 return [CPIndexSet indexSetWithIndex:0];
 
             var childlessGranPa = [self _childlessParentsIfSlicesWereDeletedAtIndexes:[CPIndexSet indexSetWithIndex:parentIndex]];
@@ -1265,7 +1283,7 @@ TODO: implement
     var subindexes = [indexes copy],
         current_index = [indexes firstIndex];
 
-    while (current_index != CPNotFound)
+    while (current_index !== CPNotFound)
     {
         var sub = [self subrowIndexesForRow:current_index];
         [subindexes addIndexes:[self _includeSubslicesForSlicesAtIndexes:sub]];
@@ -1301,7 +1319,7 @@ TODO: implement
         childrenCount = [self _queryNumberOfChildrenOfItem:parentItem withRowType:type],
         foundIndex = CPNotFound;
 
-    if (childrenCount == 0)
+    if (childrenCount === 0)
         return NO;
 
     var current_criterions = [CPMutableArray array],
@@ -1313,34 +1331,34 @@ TODO: implement
         var aCriteria = [self criteriaForRow:row],
             itemIndex = [items count];
 
-        if ([self rowTypeForRow:row] == type && itemIndex < [aCriteria count])
+        if ([self rowTypeForRow:row] === type && itemIndex < [aCriteria count])
         {
             var crit = [aCriteria objectAtIndex:itemIndex];
             [current_criterions addObject:crit];
         }
     }
 
-    while (foundIndex == CPNotFound)
+    while (foundIndex === CPNotFound)
     {
         var buffer = [CPMutableArray arrayWithArray:current_criterions],
             i;
         for (i = 0; i < childrenCount; i++)
         {
             var child =  [self _queryChild:i ofItem:parentItem withRowType:type];
-            if ([current_criterions indexOfObject:child] == CPNotFound)
+            if ([current_criterions indexOfObject:child] === CPNotFound)
             {
                 foundIndex = i;
                 break;
             }
         }
 
-        if (foundIndex == CPNotFound)
+        if (foundIndex === CPNotFound)
         {
             for (var k = 0; k < childrenCount; k++)
             {
                 var anobject = [self _queryChild:k ofItem:parentItem withRowType:type],
                     index = [buffer indexOfObject:anobject];
-                if (index != CPNotFound)
+                if (index !== CPNotFound)
                     [buffer removeObjectAtIndex:index];
             }
 
@@ -1392,7 +1410,7 @@ TODO: implement
     var rowIndexEvent = [slice rowIndex],
         rowTypeEvent = [self rowTypeForRow:rowIndexEvent];
 
-    var parentRowIndex = (rowTypeEvent == CPRuleEditorRowTypeCompound) ? rowIndexEvent:[self parentRowForRow:rowIndexEvent];
+    var parentRowIndex = (rowTypeEvent === CPRuleEditorRowTypeCompound) ? rowIndexEvent:[self parentRowForRow:rowIndexEvent];
 
     [self insertRowAtIndex:rowIndexEvent + 1 withType:type asSubrowOfRow:parentRowIndex animate:YES];
 
@@ -1414,7 +1432,7 @@ TODO: implement
     [row setValue:[CPMutableArray array] forKey:_subrowsArrayKeyPath];
 
     var subrowsObjects;
-    if (parentRowIndex == -1 || [self _applicableNestingMode] == CPRuleEditorNestingModeList)
+    if (parentRowIndex === -1 || [self _applicableNestingMode] === CPRuleEditorNestingModeList)
         subrowsObjects = [self _rootRowsArray];
     else
     {
@@ -1432,7 +1450,7 @@ TODO: implement
 
 - (void)_startObservingRowObjectsRecursively:(CPArray)rowObjects
 {
-    [_boundArrayOwner addObserver:self forKeyPath:_boundArrayKeyPath options:CPKeyValueObservingOptionOld|CPKeyValueObservingOptionNew context:boundArrayContext];
+    [_boundArrayOwner addObserver:self forKeyPath:_boundArrayKeyPath options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:boundArrayContext];
 
     var count = [rowObjects count];
 
@@ -1440,9 +1458,9 @@ TODO: implement
     {
         var rowObject = [rowObjects objectAtIndex:i];
 
-        [rowObject addObserver:self forKeyPath:_itemsKeyPath options:CPKeyValueObservingOptionOld|CPKeyValueObservingOptionNew context:itemsContext];
-        [rowObject addObserver:self forKeyPath:_valuesKeyPath options:CPKeyValueObservingOptionOld|CPKeyValueObservingOptionNew context:valuesContext];
-        [rowObject addObserver:self forKeyPath:_subrowsArrayKeyPath options:CPKeyValueObservingOptionOld|CPKeyValueObservingOptionNew context:subrowsContext];
+        [rowObject addObserver:self forKeyPath:_itemsKeyPath options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:itemsContext];
+        [rowObject addObserver:self forKeyPath:_valuesKeyPath options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:valuesContext];
+        [rowObject addObserver:self forKeyPath:_subrowsArrayKeyPath options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:subrowsContext];
 
         var subrows = [self _subrowObjectsOfObject:rowObject];
         if ([subrows count] > 0)
@@ -1478,21 +1496,21 @@ TODO: implement
         newRows,
         oldRows;
 
-    if (context == boundArrayContext || context == subrowsContext)
+    if (context === boundArrayContext || context === subrowsContext)
     {
-        if (changeKind == CPKeyValueChangeSetting)
+        if (changeKind === CPKeyValueChangeSetting)
         {
             newRows = changeNewValue;
             oldRows = changeOldValue;
 
         }
-        else if (changeKind == CPKeyValueChangeInsertion)
+        else if (changeKind === CPKeyValueChangeInsertion)
         {
             newRows = [self _subrowObjectsOfObject:object];
             oldRows = [CPArray arrayWithArray:newRows];
             [oldRows removeObjectsInArray:changeNewValue];
         }
-        else if (changeKind == CPKeyValueChangeRemoval)
+        else if (changeKind === CPKeyValueChangeRemoval)
         {
             newRows = [self _subrowObjectsOfObject:object];
             oldRows = [CPArray arrayWithArray:newRows];
@@ -1506,10 +1524,10 @@ TODO: implement
         [self _postRowCountChangedNotificationOfType:CPRuleEditorRowsDidChangeNotification indexes:[change objectForKey:CPKeyValueChangeIndexesKey]];
 
     }
-    else if (context == itemsContext)
+    else if (context === itemsContext)
     {
     }
-    else if (context == valuesContext)
+    else if (context === valuesContext)
     {
     }
 }
@@ -1571,7 +1589,7 @@ TODO: implement
 
     //var gindexes = [self _globalIndexesForSubrowIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0,oldRowCount)] ofParentObject:parentRowObject];
 
-    if (parentCacheIndex == -1)
+    if (parentCacheIndex === -1)
         parentCacheIndentation = -1;
     else
         parentCacheIndentation = [[self _rowCacheForIndex:parentCacheIndex] indentation];
@@ -1600,17 +1618,18 @@ TODO: implement
         var oldrow = [oldRows objectAtIndex:changeStartIndex],
             newrow = [newRows objectAtIndex:changeStartIndex];
 
-        if (newrow != oldrow)
+        if (newrow !== oldrow)
             break;
     }
 
-    var replaceCount = (deltaCount == 0) ? maxCount : maxCount - minusCount;
-    var startIndex = parentCacheIndex + changeStartIndex + 1;
+    var replaceCount = (deltaCount === 0) ? maxCount : maxCount - minusCount,
+        startIndex = parentCacheIndex + changeStartIndex + 1;
 
     if (deltaCount <= 0)
     {
-        var removeIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(startIndex, replaceCount)];
-        var removeSlices = [_slices objectsAtIndexes:removeIndexes];
+        var removeIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(startIndex, replaceCount)],
+            removeSlices = [_slices objectsAtIndexes:removeIndexes];
+
         [removeSlices makeObjectsPerformSelector:@selector(removeFromSuperview)];
         [_slices removeObjectsAtIndexes:removeIndexes];
     }
@@ -1659,7 +1678,7 @@ TODO: implement
 
 - (void)bind:(CPString)binding toObject:(id)observableController withKeyPath:(CPString)keyPath options:(CPDictionary)options
 {
-    if (keyPath == nil || [observableController valueForKey:keyPath] == nil)
+    if (keyPath === nil || [observableController valueForKey:keyPath] === nil)
     {
         [CPException raise:CPInvalidArgumentException reason:"Keypath or bound object cannot be nil"];
         return;
@@ -1686,7 +1705,7 @@ TODO: implement
 
 - (void)_setBoundDataSource:(id)datasource withKeyPath:(CPString)keyPath options:(CPDictionary)options
 {
-    if (_boundArrayOwner != nil)
+    if (_boundArrayOwner !== nil)
         [_boundArrayOwner removeObserver:self forKeyPath:_boundArrayKeyPath];
 
     _boundArrayKeyPath = keyPath;
@@ -1694,7 +1713,7 @@ TODO: implement
 
     var boundRows = [_boundArrayOwner valueForKey:_boundArrayKeyPath];
 
-    [_boundArrayOwner addObserver:self forKeyPath:_boundArrayKeyPath options:CPKeyValueObservingOptionOld|CPKeyValueObservingOptionNew context:boundArrayContext];
+    [_boundArrayOwner addObserver:self forKeyPath:_boundArrayKeyPath options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:boundArrayContext];
 
     if ([boundRows isKindOfClass:[CPArray class]] && [boundRows count] > 0)
         [_boundArrayOwner setValue:boundRows forKey:_boundArrayKeyPath];
@@ -1721,11 +1740,11 @@ TODO: implement
         subindexes = [self subrowIndexesForRow:-1],
         current_index = [subindexes firstIndex];
 
-    while (current_index != CPNotFound)
+    while (current_index !== CPNotFound)
     {
         var subpredicate = [self predicateForRow:current_index];
 
-        if (subpredicate != nil)
+        if (subpredicate !== nil)
             [subpredicates addObject:subpredicate];
 
         current_index = [subindexes indexGreaterThanIndex:current_index];
@@ -1764,7 +1783,7 @@ TODO: implement
             startRect = [aslice frame],
             startIndex = [aslice rowIndex] - 1;
 
-        if ([aslice superview] == nil)
+        if ([aslice superview] === nil)
         {
             startRect = CGRectMake(0, startIndex * _sliceHeight, CGRectGetWidth(startRect), _sliceHeight);
             [aslice _reconfigureSubviews];
@@ -1796,7 +1815,7 @@ TODO: implement
 
     _lastRow = [self numberOfRows] - 1;
 
-    if (_lastRow == -1)
+    if (_lastRow === -1)
         _nestingModeDidChange = NO;
 
     [self setNeedsDisplay:YES];
@@ -1890,7 +1909,7 @@ TODO: implement
 {
     var current_index = [indexes firstIndex];
 
-    while (current_index !=CPNotFound)
+    while (current_index !== CPNotFound)
     {
         var subindexes = [self subrowIndexesForRow:index];
         [self _updateSliceIndentationAtIndex:current_index toIndentation:indentation + 1 withIndexSet:subindexes];
@@ -1934,7 +1953,7 @@ TODO: implement
 
 - (void)_mouseUpOnSlice:(id)slice withEvent:(CPEvent)event
 {
-    if ([slice _rowType] != CPRuleEditorRowTypeSimple)
+    if ([slice _rowType] !== CPRuleEditorRowTypeSimple)
         return;
 
     var modifierFlags = [event modifierFlags],
@@ -2042,7 +2061,7 @@ TODO: implement
 {
     [self setNeedsDisplay:YES];
 
-    if (CGRectGetWidth([self frame]) != size.width)
+    if (CGRectGetWidth([self frame]) !== size.width)
         [_slices makeObjectsPerformSelector:@selector(setNeedsLayout)];
 
     [super setFrameSize:size];
@@ -2078,7 +2097,7 @@ TODO: implement
 
 - (BOOL)_dragShouldBeginFromMouseDown:(CPView)view
 {
-    return (([self nestingMode] == CPRuleEditorNestingModeList ||  [view rowIndex] != 0) && _editable && [view isKindOfClass:[_CPRuleEditorViewSliceRow class]] && _draggingRows == nil);
+    return (([self nestingMode] === CPRuleEditorNestingModeList ||  [view rowIndex] !== 0) && _editable && [view isKindOfClass:[_CPRuleEditorViewSliceRow class]] && _draggingRows === nil);
 }
 
 - (BOOL)_performDragForSlice:(id)slice withEvent:(CPEvent)event
@@ -2121,7 +2140,7 @@ TODO: implement
 
 - (CPDragOperation)draggingEntered:(id < CPDraggingInfo >)sender
 {
-    if ([sender draggingSource] == self)
+    if ([sender draggingSource] === self)
     {
         [self _clearDropLine];
         return CPDragOperationMove;
@@ -2140,7 +2159,7 @@ TODO: implement
 {
     [_dropLineView setAlphaValue:0];
 
-    if (_subviewIndexOfDropLine != CPNotFound && _subviewIndexOfDropLine < _lastRow)
+    if (_subviewIndexOfDropLine !== CPNotFound && _subviewIndexOfDropLine < _lastRow)
     {
         var previousBelowSlice = [_slices objectAtIndex:_subviewIndexOfDropLine];
         [previousBelowSlice setFrameOrigin:CGPointMake(0, [previousBelowSlice rowIndex] * _sliceHeight)];
@@ -2152,20 +2171,20 @@ TODO: implement
 - (CPDragOperation)draggingUpdated:(id <CPDraggingInfo>)sender
 {
     var point = [self convertPoint:[sender draggingLocation] fromView:nil],
-        y = point.y + _sliceHeight /2,
+        y = point.y + _sliceHeight / 2,
         indexOfDropLine =  FLOOR(y / _sliceHeight),
         numberOfRows = [self numberOfRows];
 
     if (indexOfDropLine < 0 || indexOfDropLine > numberOfRows || (indexOfDropLine >= [_draggingRows firstIndex] && indexOfDropLine <= [_draggingRows lastIndex] + 1))
     {
-        if (_subviewIndexOfDropLine != CPNotFound && indexOfDropLine != _subviewIndexOfDropLine)
+        if (_subviewIndexOfDropLine !== CPNotFound && indexOfDropLine !== _subviewIndexOfDropLine)
             [self _clearDropLine];
         return CPDragOperationNone;
     }
 
-    if (_subviewIndexOfDropLine != indexOfDropLine)
+    if (_subviewIndexOfDropLine !== indexOfDropLine)
     {
-        if (_subviewIndexOfDropLine != CPNotFound && _subviewIndexOfDropLine < numberOfRows)
+        if (_subviewIndexOfDropLine !== CPNotFound && _subviewIndexOfDropLine < numberOfRows)
         {
             var previousBelowSlice = [_slices objectAtIndex:_subviewIndexOfDropLine];
             [previousBelowSlice setFrameOrigin:CPMakePoint(0, [previousBelowSlice rowIndex] * _sliceHeight)];
@@ -2188,7 +2207,7 @@ TODO: implement
 
 - (BOOL)prepareForDragOperation:(id < CPDraggingInfo >)sender
 {
-    return (_subviewIndexOfDropLine != CPNotFound);
+    return (_subviewIndexOfDropLine !== CPNotFound);
 }
 
 - (BOOL)performDragOperation:(id < CPDraggingInfo >)info
@@ -2200,11 +2219,11 @@ TODO: implement
     var rowObjects = [_rowCache valueForKey:@"rowObject"],
         index = [_draggingRows lastIndex];
 
-    var parentRowIndex = [self parentRowForRow:index]; // first index of draggingrows
-    var parentRowObject = (parentRowIndex == -1) ? _boundArrayOwner : [[self _rowCacheForIndex:parentRowIndex] rowObject];
-    var insertIndex = _subviewIndexOfDropLine;
+    var parentRowIndex = [self parentRowForRow:index], // first index of draggingrows
+        parentRowObject = (parentRowIndex === -1) ? _boundArrayOwner : [[self _rowCacheForIndex:parentRowIndex] rowObject],
+        insertIndex = _subviewIndexOfDropLine;
 
-    while (index != CPNotFound)
+    while (index !== CPNotFound)
     {
         if (index >= insertIndex)
         {
@@ -2281,12 +2300,12 @@ TODO: implement
         current_index = [indexes firstIndex],
         numberOfChildrenOfPreviousBrother = 0;
 
-    while (current_index != CPNotFound)
+    while (current_index !== CPNotFound)
     {
         var globalChildIndex = current_index + parentRowIndex + 1 + numberOfChildrenOfPreviousBrother;
         [globalIndexes addIndex:globalChildIndex];
 
-        if ([self rowTypeForRow:globalChildIndex] == CPRuleEditorRowTypeCompound)
+        if ([self rowTypeForRow:globalChildIndex] === CPRuleEditorRowTypeCompound)
         {
             var rowObject = [[self _rowCacheForIndex:current_index] rowObject],
                 subrows = [self _subrowObjectsOfObject:rowObject];
@@ -2334,8 +2353,8 @@ TODO: implement
     var criteria = [self criteriaForRow:aRow];
     indexofCriterion = [criteria indexOfObject:criterion];
 
-    if (parentItem != nil
-        && indexofCriterion != CPNotFound
+    if (parentItem !== nil
+        && indexofCriterion !== CPNotFound
         && indexofCriterion < [criteria count] - 1)
     {
         var next = indexofCriterion + 1;
@@ -2351,10 +2370,10 @@ TODO: implement
         var availChild = aChild,
             availValue = value;
 
-        if ( criterion != aChild )
+        if (criterion !== aChild)
             availValue = [self _queryValueForItem:aChild inRow:aRow];
 
-        if ( !availValue )
+        if (!availValue)
             availValue = [self _queryValueForItem:availChild inRow:aRow];
 
         [availItems addObject:availChild];
@@ -2390,7 +2409,7 @@ var CPRuleEditorAlignmentGridWidthKey       = @"CPRuleEditorAlignmentGridWidth",
 - (id)initWithCoder:(CPCoder)coder
 {
     self = [super initWithCoder:coder];
-    if (self != nil)
+    if (self !== nil)
     {
         [self setFormattingStringsFilename:[coder decodeObjectForKey:CPRuleEditorStringsFilenameKey]];
         _alignmentGridWidth     = [coder decodeFloatForKey:CPRuleEditorAlignmentGridWidthKey];
@@ -2474,7 +2493,7 @@ var CriteriaKey         = @"criteria",
 - (id)initWithCoder:(id)coder
 {
     self = [super init];
-    if (self != nil)
+    if (self !== nil)
     {
         subrows = [coder decodeObjectForKey:SubrowsKey];
         criteria = [coder decodeObjectForKey:CriteriaKey];
@@ -2504,7 +2523,7 @@ var CriteriaKey         = @"criteria",
 
 - (CPString)description
 {
-    return [CPString stringWithFormat:@"<%d object:%d rowIndex:%d indentation:%d>",[self hash], [rowObject hash], rowIndex, indentation];
+    return [CPString stringWithFormat:@"<%d object:%d rowIndex:%d indentation:%d>", [self hash], [rowObject hash], rowIndex, indentation];
 }
 
 @end
@@ -2570,21 +2589,23 @@ var dropSeparatorColor = [CPColor colorWithHexString:@"4886ca"];
 
 - (int)valueType
 {
-    var result = 0;
+    var result = 0,
+        isString = [self isKindOfClass:CPString];
 
-    var isString = [self isKindOfClass:[CPString class]];
-    if ( !isString )
+    if (!isString)
     {
-        var isView = [self isKindOfClass:[CPView class]];
+        var isView = [self isKindOfClass:CPView];
         result = 1;
-        if ( !isView )
+
+        if (!isView)
         {
-            var ismenuItem = [self isKindOfClass:[CPMenuItem class]];
+            var ismenuItem = [self isKindOfClass:CPMenuItem];
             result = 2;
-            if ( !ismenuItem )
+
+            if (!ismenuItem)
             {
-                [CPException raise:CPGenericException reason:@"Unknown Type For " + self];
-                 result = -1;
+                [CPException raise:CPGenericException reason:@"Unknown type for " + self];
+                result = -1;
             }
         }
     }
