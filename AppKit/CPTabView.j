@@ -273,7 +273,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     Selects the item at the specified index.
     @param anIndex the index of the item to display.
 */
-- (void)selectTabViewItemAtIndex:(unsigned)anIndex
+- (BOOL)selectTabViewItemAtIndex:(unsigned)anIndex
 {
     if (anIndex === _selectedIndex)
         return;
@@ -281,7 +281,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     var aTabViewItem = [self tabViewItemAtIndex:anIndex];
 
     if ((_delegateSelectors & CPTabViewShouldSelectTabViewItemSelector) && ![_delegate tabView:self shouldSelectTabViewItem:aTabViewItem])
-        return;
+        return NO;
 
     if (_delegateSelectors & CPTabViewWillSelectTabViewItemSelector)
         [_delegate tabView:self willSelectTabViewItem:aTabViewItem];
@@ -291,6 +291,8 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 
     if (_delegateSelectors & CPTabViewDidSelectTabViewItemSelector)
         [_delegate tabView:self didSelectTabViewItem:aTabViewItem];
+
+    return YES;
 }
 
 /*!
@@ -431,11 +433,8 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 {
     var segmentIndex = [_tabs testSegment:[_tabs convertPoint:[anEvent locationInWindow] fromView:nil]];
 
-    if (segmentIndex != CPNotFound)
-    {
-        [self selectTabViewItemAtIndex:segmentIndex];
+    if (segmentIndex != CPNotFound && [self selectTabViewItemAtIndex:segmentIndex])
         [_tabs trackSegment:anEvent];
-    }
 }
 
 - (void)_repositionTabs
