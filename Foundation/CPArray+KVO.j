@@ -424,7 +424,7 @@
     if (aKey.indexOf("@") === 0)
     {
         if (aKey.indexOf(".") !== -1)
-            [CPException raise:CPInvalidArgumentException reason:"called valueForKey: on an array with a complex key ("+aKey+"). use valueForKeyPath:"];
+            [CPException raise:CPInvalidArgumentException reason:"called valueForKey: on an array with a complex key (" + aKey + "). use valueForKeyPath:"];
 
         if (aKey === "@count")
             return length;

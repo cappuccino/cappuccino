@@ -106,16 +106,34 @@ for (var i = 0; i < CPLogLevels.length; i++)
 
 var _CPFormatLogMessage = function(aString, aLevel, aTitle)
 {
-    var now = new Date();
-    aLevel = ( aLevel == null ? '' : ' [' + CPLogColorize(aLevel, aLevel) + ']' );
+    var now = new Date(),
+        titleAndLevel;
+
+    if (aLevel === null)
+        aLevel = "";
+    else
+    {
+        aLevel = aLevel || "info";
+        aLevel = "[" + CPLogColorize(aLevel, aLevel) + "]";
+    }
+
+    aTitle = aTitle || "";
+
+    if (aTitle && aLevel)
+        aTitle += " ";
+
+    titleAndLevel = aTitle + aLevel;
+
+    if (titleAndLevel)
+        titleAndLevel += ": ";
 
     if (typeof exports.sprintf == "function")
-        return exports.sprintf("%4d-%02d-%02d %02d:%02d:%02d.%03d %s%s: %s",
+        return exports.sprintf("%4d-%02d-%02d %02d:%02d:%02d.%03d %s%s",
             now.getFullYear(), now.getMonth() + 1, now.getDate(),
             now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds(),
-            aTitle, aLevel, aString);
+            titleAndLevel, aString);
     else
-        return now + " " + aTitle + aLevel + ": " + aString;
+        return now + " " + titleAndLevel + ": " + aString;
 }
 
 // Loggers:
@@ -125,16 +143,15 @@ GLOBAL(CPLogConsole) = function(aString, aLevel, aTitle, aFormatter)
 {
     if (typeof console != "undefined")
     {
-        var message = (aFormatter || _CPFormatLogMessage)(aString, aLevel, aTitle);
-
-        var logger = {
-            "fatal": "error",
-            "error": "error",
-            "warn": "warn",
-            "info": "info",
-            "debug": "debug",
-            "trace": "debug"
-        }[aLevel];
+        var message = (aFormatter || _CPFormatLogMessage)(aString, aLevel, aTitle),
+            logger = {
+                "fatal": "error",
+                "error": "error",
+                "warn": "warn",
+                "info": "info",
+                "debug": "debug",
+                "trace": "debug"
+            }[aLevel];
 
         if (logger && console[logger])
             console[logger](message);

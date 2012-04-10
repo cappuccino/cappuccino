@@ -516,6 +516,7 @@ CPTexturedBackgroundWindowMask
 - (void)awakeFromCib
 {
     _keyViewLoopIsDirty = ![self _hasKeyViewLoop];
+
     // If no key view loop has been specified by hand, and we are not intending to auto recalculate,
     // set up a default key view loop.
     if (_keyViewLoopIsDirty && ![self autorecalculatesKeyViewLoop])
@@ -1301,6 +1302,34 @@ CPTexturedBackgroundWindowMask
     _initialFirstResponder = aView;
 }
 
+- (void)_setupFirstResponder
+{
+    /*
+        If:
+
+        - The key loop is dirty
+        - The key loop does not auto-recalculate
+        - The first responder is the window
+        - The initial first responder is the content view
+
+        Then calculate the key view loop and set the first responder
+        to the first view in the loop, since we should
+        always have an initial first responder and a key loop by default.
+    */
+    if (_keyViewLoopIsDirty &&
+        !_autorecalculatesKeyViewLoop &&
+        _firstResponder === self &&
+        _initialFirstResponder === [self contentView])
+    {
+        [self recalculateKeyViewLoop];
+
+        // Make the first key view of the content view the first responder
+        var firstKeyView = [[self contentView] nextValidKeyView];
+
+        [self makeFirstResponder:firstKeyView];
+    }
+}
+
 /*!
     Attempts to make the \c aResponder the first responder. Before trying
     to make it the first responder, the receiver will ask the current first responder
@@ -1654,6 +1683,8 @@ CPTexturedBackgroundWindowMask
 
     if (_firstResponder !== self && [_firstResponder respondsToSelector:@selector(becomeKeyWindow)])
         [_firstResponder becomeKeyWindow];
+
+    [self _setupFirstResponder];
 
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPWindowDidBecomeKeyNotification
@@ -2489,10 +2520,7 @@ CPTexturedBackgroundWindowMask
 
     [views sortUsingFunction:keyViewComparator context:nil];
 
-    var index = 0,
-        count = [views count];
-
-    for (; index < count; ++index)
+    for (var index = 0, count = [views count]; index < count; ++index)
         [views[index] setNextKeyView:views[(index + 1) % count]];
 
     _keyViewLoopIsDirty = NO;
@@ -2671,8 +2699,7 @@ var allViews = function(aWindow)
 
     [views addObjectsFromArray:[[aWindow contentView] subviews]];
 
-    var index = 0;
-    for (; index < views.length; ++index)
+    for (var index = 0; index < views.length; ++index)
         views = views.concat([views[index] subviews]);
 
     return views;

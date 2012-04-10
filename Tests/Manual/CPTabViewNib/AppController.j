@@ -42,4 +42,9 @@
     CPLogConsole(_cmd + [tabViewItem label]);
 }
 
+- (void)tabView:(CPTabView)aTabView shouldSelectTabViewItem:(CPTabViewItem)tabViewItem
+{
+    return [tabViewItem identifier] != @"unselectable";
+}
+
 @end
