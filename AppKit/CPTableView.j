@@ -321,7 +321,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (void)_init
 {
-    _tableViewFlags = 0;
     _lastSelectedRow = -1;
 
     _selectedColumnIndexes = [CPIndexSet indexSet];
@@ -335,15 +334,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (!_alternatingRowBackgroundColors)
         _alternatingRowBackgroundColors = [[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"]];
 
-    _selectionHighlightColor = [CPColor colorWithHexString:@"5f83b9"];
-
     _tableColumnRanges = [];
     _dirtyTableColumnRangeIndex = 0;
     _numberOfHiddenColumns = 0;
 
     _objectValues = { };
     _dataViewsForTableColumns = { };
-    _dataViews =  [];
     _numberOfRows = 0;
     _exposedRows = [CPIndexSet indexSet];
     _exposedColumns = [CPIndexSet indexSet];
@@ -3696,7 +3692,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [_selectedColumnIndexes getIndexes:indexes maxCount:-1 inIndexRange:exposedRange];
     }
 
-    var count = count2 = [indexes count];
+    var count,
+        count2 = count == [indexes count];
 
     if (!count)
         return;
@@ -4852,9 +4849,8 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
     while (index != CPNotFound)
     {
-        var indexSet = (switchFlag) ? otherSet : self;
-
-        otherIndex = [indexSet indexGreaterThanOrEqualToIndex:index];
+        var indexSet = (switchFlag) ? otherSet : self,
+            otherIndex = [indexSet indexGreaterThanOrEqualToIndex:index];
 
         if (otherIndex == index)
         {
