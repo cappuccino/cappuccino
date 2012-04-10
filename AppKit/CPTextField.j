@@ -956,7 +956,12 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 #if PLATFORM(DOM)
 
     if (CPTextFieldInputOwner === self || [[self window] firstResponder] === self)
-        [self _inputElement].value = _stringValue;
+    {
+        var inputElement = [self _inputElement];
+
+        if (inputElement.value != _stringValue)
+            inputElement.value = _stringValue;
+    }
 
 #endif
 
