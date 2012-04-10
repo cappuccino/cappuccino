@@ -162,7 +162,7 @@ var CPBindingOperationAnd = 0,
         if (newValue === CPNotApplicableMarker && [options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
         {
            [CPException raise:CPGenericException
-                       reason:@"Can't transform non applicable key on: " + _source + " Key Path:" + keyPath + " value: " + newValue];
+                       reason:@"Cannot transform non-applicable key on: " + _source + " key path: " + keyPath + " value: " + newValue];
         }
 
         var value = [self _placeholderForMarker:newValue];
