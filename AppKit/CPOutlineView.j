@@ -151,7 +151,6 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
         _retargedChildIndex = nil;
         _shouldRetargetChildIndex = NO;
-        _startHoverTime = nil;
 
         [self setIndentationPerLevel:16.0];
         [self setIndentationMarkerFollowsDataView:YES];
@@ -1359,13 +1358,12 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 - (void)_toggleFromDisclosureControl:(CPControl)aControl
 {
     var controlFrame = [aControl frame],
-        item = [self itemAtRow:[self rowAtPoint:_CGPointMake(_CGRectGetMinX(controlFrame), _CGRectGetMidY(controlFrame))]];
+        item = [self itemAtRow:[self rowAtPoint:CGPointMake(CGRectGetMinX(controlFrame), CGRectGetMidY(controlFrame))]];
 
     if ([self isItemExpanded:item])
         [self collapseItem:item];
-
     else
-        [self expandItem:item];
+        [self expandItem:item expandChildren:([[CPApp currentEvent] modifierFlags] & CPAlternateKeyMask)];
 }
 
 /*!

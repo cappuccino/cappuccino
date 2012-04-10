@@ -40,7 +40,7 @@ filedir($BUILD_CJS_CAPP, ["capp"], function()
     make_objj_executable($BUILD_CJS_CAPP);
 });
 
-copyManPage("capp", 1);
+//copyManPage("capp", 1);
 
 task ("build", ["capp", $BUILD_CJS_CAPP]);
 

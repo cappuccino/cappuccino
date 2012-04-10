@@ -148,7 +148,7 @@ var SelectionColor                              = nil,
         [_submenuIndicatorView setFrame:submenuViewFrame];
     }
 
-    _minSize = CGSizeMake(x + HORIZONTAL_MARGIN, height);
+    var _minSize = CGSizeMake(x + HORIZONTAL_MARGIN, height);
 
     [self setAutoresizesSubviews:NO];
     [self setFrameSize:_minSize];
