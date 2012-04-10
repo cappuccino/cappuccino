@@ -1365,7 +1365,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         [self collapseItem:item];
 
     else
-        [self expandItem:item];
+        [self expandItem:item expandChildren:([[CPApp currentEvent] modifierFlags] & CPAlternateKeyMask)];
 }
 
 /*!
