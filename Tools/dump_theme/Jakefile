@@ -5,7 +5,6 @@ var FILE = require("file"),
     SYSTEM = require("system"),
     path = FILE.Path(FILE.join(SYSTEM.prefix, "bin", "dump_theme"));
 
-FILE.copy("dump_theme", path);
-path.chmod(0755);
-
+sudo(["cp", "-f", "dump_theme", path]);
+sudo(["chmod", "755", path]);
 copyManPage("dump_theme", 1);
