@@ -345,7 +345,8 @@
 {
     var rootRowsArray = [super _rootRowsArray],
         subpredicates = [CPMutableArray array],
-        count = count2 = [rootRowsArray count],
+        count,
+        count2 = count = [rootRowsArray count],
         predicate;
 
     while (count--)
