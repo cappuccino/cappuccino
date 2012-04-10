@@ -3693,7 +3693,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     }
 
     var count,
-        count2 = count == [indexes count];
+        count2 = count = [indexes count];
 
     if (!count)
         return;
