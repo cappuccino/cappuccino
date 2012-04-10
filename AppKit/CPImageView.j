@@ -71,7 +71,7 @@ var CPImageViewEmptyPlaceholderImage = nil;
 
 + (Class)_binderClassForBinding:(CPString)theBinding
 {
-    if (theBinding == CPValueBinding || theBinding == CPValueURLBinding || theBinding == CPValuePathBinding)
+    if (theBinding === CPValueBinding || theBinding === CPValueURLBinding || theBinding === CPValuePathBinding)
         return [CPImageViewValueBinder class];
 
     return [super _binderClassForBinding:theBinding];
@@ -469,36 +469,17 @@ var CPImageViewEmptyPlaceholderImage = nil;
     [self _setPlaceholder:nil forMarker:CPNullMarker isDefault:YES];
 }
 
-- (void)setValueFor:(CPString)theBinding
+- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
 {
-    var destination = [_info objectForKey:CPObservedObjectKey],
-        keyPath = [_info objectForKey:CPObservedKeyPathKey],
-        options = [_info objectForKey:CPOptionsKey],
-        newValue = [destination valueForKeyPath:keyPath],
-        isPlaceholder = CPIsControllerMarker(newValue);
+    [_source setImage:nil];
+}
 
-    if (newValue == nil)
-        return;
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    if (aBinding === CPValueURLBinding || aBinding === CPValuePathBinding)
+        aValue = [[CPImage alloc] initWithContentsOfFile:aValue];
 
-    if (isPlaceholder)
-    {
-        if (newValue === CPNotApplicableMarker && [options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
-        {
-           [CPException raise:CPGenericException
-                       reason:@"can't transform non applicable key on: " + _source + " value: " + newValue];
-        }
-
-        [_source setImage:nil];
-    }
-    else
-    {
-        newValue = [self transformValue:newValue withOptions:options];
-        
-        if (theBinding != CPValueBinding)
-            newValue = [[CPImage alloc] initWithContentsOfFile:newValue];
-        
-        [_source setImage:newValue];
-    }
+    [_source setImage:aValue];
 }
 
 @end
