@@ -84,7 +84,7 @@ CPWebDAVManagerNonCollectionResourceType    = 0;
             URLString = nil,
             URLStrings = [response keyEnumerator];
 
-        while (URLString = [URLStrings nextObject])
+        while ((URLString = [URLStrings nextObject]) !== nil)
         {
             var URL = [CPURL URLWithString:URLString],
                 properties = [response objectForKey:URLString];

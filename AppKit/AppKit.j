@@ -21,6 +21,7 @@
  */
 
 @import "CALayer.j"
+@import "CPAccordionView.j"
 @import "CPAlert.j"
 @import "CPAnimation.j"
 @import "CPApplication.j"
@@ -46,6 +47,7 @@
 @import "CPColorWell.j"
 @import "CPCompatibility.j"
 @import "CPControl.j"
+@import "CPController.j"
 @import "CPCookie.j"
 @import "CPCursor.j"
 @import "CPDocument.j"

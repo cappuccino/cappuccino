@@ -59,7 +59,7 @@
         collection  = [_aggregate objectEnumerator],
         exp;
 
-    while (exp = [collection nextObject])
+    while ((exp = [collection nextObject]) !== nil)
     {
         var eval = [exp expressionValueWithObject:object context:context];
         [eval_array addObject:eval];

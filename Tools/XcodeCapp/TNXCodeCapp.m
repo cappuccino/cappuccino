@@ -125,8 +125,8 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         return;
         
     [self stopEventStream];
-
-    NSArray *pathsToWatch = [NSArray arrayWithObject:aPath];
+    
+    NSMutableArray *pathsToWatch = [NSMutableArray arrayWithObject:aPath];
     void *appPointer = (void *)self;
     FSEventStreamContext context = {0, appPointer, NULL, NULL, NULL};
     CFTimeInterval latency = 2.0;
@@ -141,6 +141,24 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     {
         NSLog(@"Initializing the FSEventStream at folder level (dirty)");
         flags = kFSEventStreamCreateFlagUseCFTypes;
+    }
+    
+    // add symlinked directories
+    NSArray *fileList = [fm contentsOfDirectoryAtPath:aPath error:nil];
+    
+    for (NSString *node in fileList)
+    {
+        NSDictionary *attributes = [fm attributesOfItemAtPath:aPath error:nil];
+        if ([[attributes objectForKey:@"NSFileType"] isEqualTo:NSFileTypeDirectory])
+        {
+            NSString *subDirectoryPath = [aPath stringByAppendingPathComponent:node];
+            NSString *symlinkDestination = [fm destinationOfSymbolicLinkAtPath:subDirectoryPath error:nil];
+
+            if (symlinkDestination)
+            {
+                [pathsToWatch addObject:subDirectoryPath];
+            }
+        }
     }
     
     stream = FSEventStreamCreate(NULL, &fsevents_callback, &context, (CFArrayRef) pathsToWatch,

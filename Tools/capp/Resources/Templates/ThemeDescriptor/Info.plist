@@ -2,11 +2,11 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CPApplicationDelegateClass</key>
-	<string>BKShowcaseController</string>
-	<key>CPBundleName</key>
-	<string>__project.name__</string>
-	<key>CPPrincipalClass</key>
-	<string>CPApplication</string>
+    <key>CPApplicationDelegateClass</key>
+    <string>BKShowcaseController</string>
+    <key>CPBundleName</key>
+    <string>__project.name__</string>
+    <key>CPPrincipalClass</key>
+    <string>CPApplication</string>
 </dict>
 </plist>
