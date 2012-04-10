@@ -193,7 +193,10 @@ var CPBindingOperationAnd = 0,
         newValue = [_source valueForKeyPath:aBinding];
 
     newValue = [self reverseTransformValue:newValue withOptions:options];
+
+    [self suppressSpecificNotificationFromObject:destination keyPath:keyPath];
     [destination setValue:newValue forKeyPath:keyPath];
+    [self unsuppressSpecificNotificationFromObject:destination keyPath:keyPath];
 }
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)changes context:(id)context
@@ -468,7 +471,7 @@ var CPBindingOperationAnd = 0,
 
 @end
 
-var resolveMultipleValues = function resolveMultipleValues(/*CPString*/key, /*CPDictionary*/bindings, /*GSBindingOperationKind*/operation)
+var resolveMultipleValues = function(/*CPString*/key, /*CPDictionary*/bindings, /*GSBindingOperationKind*/operation)
 {
     var bindingName = key,
         theBinding,
@@ -492,7 +495,7 @@ var resolveMultipleValues = function resolveMultipleValues(/*CPString*/key, /*CP
     return !operation;
 };
 
-var invokeAction = function invokeAction(/*CPString*/targetKey, /*CPString*/argumentKey, /*CPDictionary*/bindings)
+var invokeAction = function(/*CPString*/targetKey, /*CPString*/argumentKey, /*CPDictionary*/bindings)
 {
     var theBinding = [bindings objectForKey:targetKey],
         infoDictionary = theBinding._info,

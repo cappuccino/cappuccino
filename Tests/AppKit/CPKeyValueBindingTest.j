@@ -297,6 +297,36 @@
     [self assert:@"octarine" equals:[control stringValue] message:@"binding update no longer suppressed"];
 }
 
+- (void)testReverseSetValueForDoesNotSetObjectValueOnSource
+{
+    var control = [[TextField alloc] init];
+    [control setStringValue:@"brown"];
+
+    var oc = [[CPObjectController alloc] initWithContent:[CPDictionary dictionaryWithObject:@"toto" forKey:@"foo"]];
+    [oc setAutomaticallyPreparesContent:YES];
+
+    [control bind:CPValueBinding toObject:oc withKeyPath:@"selection.foo" options:nil];
+
+    [control setObjectValueSetterCount:0];
+    // This will force a binding update -reverseSetValueFor:
+    [control sendAction:nil to:nil];
+
+    [self assert:0 equals:[control objectValueSetterCount] message:@"-setObjectValue should not be called"];
+}
+
+@end
+
+@implementation TextField : CPTextField
+{
+    CPInteger objectValueSetterCount @accessors;
+}
+
+- (void)setObjectValue:(id)aValue
+{
+    objectValueSetterCount++;
+    [super setObjectValue:aValue];
+}
+
 @end
 
 @implementation BindingTester : CPObject
