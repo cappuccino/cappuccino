@@ -1521,32 +1521,15 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
     [self _setPlaceholder:@"" forMarker:CPNullMarker isDefault:YES];
 }
 
-- (void)setValueFor:(CPString)theBinding
+- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
 {
-    var destination = [_info objectForKey:CPObservedObjectKey],
-        keyPath = [_info objectForKey:CPObservedKeyPathKey],
-        options = [_info objectForKey:CPOptionsKey],
-        newValue = [destination valueForKeyPath:keyPath],
-        isPlaceholder = CPIsControllerMarker(newValue);
+    [_source setPlaceholderString:aValue];
+    [_source setObjectValue:nil];
+}
 
-    if (isPlaceholder)
-    {
-        if (newValue === CPNotApplicableMarker && [options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
-        {
-           [CPException raise:CPGenericException
-                       reason:@"can't transform non applicable key on: " + _source + " value: " + newValue];
-        }
-
-        newValue = [self _placeholderForMarker:newValue];
-
-        [_source setPlaceholderString:newValue];
-        [_source setObjectValue:nil];
-    }
-    else
-    {
-        newValue = [self transformValue:newValue withOptions:options];
-        [_source setObjectValue:newValue];
-    }
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    [_source setObjectValue:aValue];
 }
 
 @end
