@@ -489,10 +489,7 @@ global.copyManPage = function(/*String*/ name, /*int*/ section)
         if (!FILE.isDirectory(manDir))
         {
             if (sudo(["mkdir", "-p", "-m", "0755", manDir]))
-            {
                 stream.print("\0red(Unable to create the man directory.\0)");
-                OS.exit(1);
-            }
         }
 
         if (sudo(["cp", "-f", pageFile, manDir]))
