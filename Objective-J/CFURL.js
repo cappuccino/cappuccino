@@ -122,10 +122,9 @@ function CFURLGetParts(/*CFURL*/ aURL)
     {
         var split = parts.path.split("/"),
             pathComponents = parts.pathComponents,
-            index = 0,
             count = split.length;
 
-        for (; index < count; ++index)
+        for (index = 0; index < count; ++index)
         {
             var component = split[index];
 
@@ -160,7 +159,7 @@ GLOBAL(CFURL) = function(/*CFURL|String*/ aURL, /*CFURL*/ aBaseURL)
     if (aURL instanceof CFURL)
     {
         if (!aBaseURL)
-            return aURL;
+            return new CFURL(aURL.absoluteString());
 
         var existingBaseURL = aURL.baseURL();
 
@@ -360,7 +359,7 @@ function standardizePathComponents(/*Array*/ pathComponents, /*BOOL*/ inPlace)
         var component = pathComponents[index];
 
         if (component === "")
-             continue;
+            continue;
 
         if (component === ".")
         {
@@ -563,6 +562,25 @@ CFURL.prototype.path = function()
 };
 
 DISPLAY_NAME(CFURL.prototype.path);
+
+CFURL.prototype.createCopyDeletingLastPathComponent = function()
+{
+    var parts = PARTS(this),
+        components = standardizePathComponents(parts.pathComponents, NO);
+
+    if (components.length > 0)
+        if (components.length > 1 || components[0] !== "/")
+            components.pop();
+
+    // pathFromPathComponents() returns an empty path for ["/"]
+    var isRoot = components.length === 1 && components[0] === "/";
+
+    parts.pathComponents = components;
+    parts.path = isRoot ? "/" : pathFromPathComponents(components, NO);
+    return new CFURL(URLStringFromParts(parts));
+};
+
+DISPLAY_NAME(CFURL.prototype.createCopyDeletingLastPathComponent);
 
 CFURL.prototype.pathComponents = function()
 {

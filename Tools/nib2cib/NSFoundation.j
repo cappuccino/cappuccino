@@ -26,6 +26,7 @@
 @import "NSExpression.j"
 @import "NSFormatter.j"
 @import "NSMutableString.j"
+@import "NSNull.j"
 @import "NSNumberFormatter.j"
 @import "NSSet.j"
 

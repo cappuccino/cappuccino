@@ -38,6 +38,7 @@
 @import "CPCibControlConnector.j"
 @import "CPCibLoading.j"
 @import "CPCibOutletConnector.j"
+@import "CPCibRuntimeAttributesConnector.j"
 @import "CPClipView.j"
 @import "CPCollectionView.j"
 @import "CPCollectionViewItem.j"

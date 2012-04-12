@@ -197,7 +197,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
 
     if ([theToolbar isVisible])
     {
-        toolbarHeight = CGRectGetHeight([[theToolbar _toolbarView] frame]);
+        var toolbarHeight = CGRectGetHeight([[theToolbar _toolbarView] frame]);
 
         frameRect.origin.y -= toolbarHeight;
         frameRect.size.height += toolbarHeight;
