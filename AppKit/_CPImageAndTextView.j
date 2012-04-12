@@ -100,7 +100,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
             [self setAlignment:CPCenterTextAlignment];
             [self setFont:[CPFont systemFontOfSize:12.0]];
             [self setImagePosition:CPNoImage];
-            [self setImageScaling:CPScaleNone];
+            [self setImageScaling:CPImageScaleNone];
         }
 
         _textSize = nil;
@@ -607,12 +607,12 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
             imageWidth = imageSize.width,
             imageHeight = imageSize.height;
 
-        if (_imageScaling === CPScaleToFit)
+        if (_imageScaling === CPImageScaleAxesIndependently)
         {
             imageWidth = size.width;
             imageHeight = size.height;
         }
-        else if (_imageScaling === CPScaleProportionally)
+        else if (_imageScaling === CPImageScaleProportionallyDown)
         {
             var scale = MIN(MIN(size.width, imageWidth) / imageWidth, MIN(size.height, imageHeight) / imageHeight);
 

@@ -32,8 +32,8 @@
         image = CPImageInBundle("280px-1730_Homann_Map_of_Scandinavia,_Norway,_Sweden,_Denmark,_Finland_and_the_Baltics_-_Geographicus_-_Scandinavia-homann-1730.jpg", CGSizeMake(280, 240)),
         imageViewShadow = [[CPImageView alloc] initWithFrame:CGRectMake(320.0, 50.0, 290.0, 250.0)];
 
-    [imageView setImageScaling:CPScaleNone];
-    [imageViewShadow setImageScaling:CPScaleNone];
+    [imageView setImageScaling:CPImageScaleNone];
+    [imageViewShadow setImageScaling:CPImageScaleNone];
 
     [imageView setImage:image];
     [imageViewShadow setImage:image];

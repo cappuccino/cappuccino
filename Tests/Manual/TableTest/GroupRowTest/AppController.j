@@ -29,7 +29,7 @@
     [tableView setDataSource:self];
 
     var iconView = [[CPImageView alloc] initWithFrame:CGRectMake(16,16,0,0)];
-    [iconView setImageScaling:CPScaleNone];
+    [iconView setImageScaling:CPImageScaleNone];
     var iconColumn = [[CPTableColumn alloc] initWithIdentifier:"icons"];
     [iconColumn setWidth:32.0];
     [iconColumn setMinWidth:32.0];
@@ -69,7 +69,7 @@
     [tableView setDataSource:self];
 
     var iconView = [[CPImageView alloc] initWithFrame:CGRectMake(16,16,0,0)];
-    [iconView setImageScaling:CPScaleNone];
+    [iconView setImageScaling:CPImageScaleNone];
     var iconColumn = [[CPTableColumn alloc] initWithIdentifier:"icons"];
     [iconColumn setWidth:32.0];
     [iconColumn setMinWidth:32.0];
