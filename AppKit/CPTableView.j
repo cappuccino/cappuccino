@@ -3369,6 +3369,14 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)_commitDataViewObjectValue:(id)sender
 {
+    /*
+        makeFirstResponder at the end of this method causes the dataview to resign.
+        If the dataview resigning triggers the action (as CPTextField does), we come right
+        back here and start an infinite loop. So we have to check this flag first.
+    */
+    if (_editingCellIndex === nil)
+        return;
+
     _editingCellIndex = nil;
 
     if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_)
