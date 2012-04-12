@@ -75,7 +75,7 @@
 											<string key="NSFrameSize">{430, 125}</string>
 											<reference key="NSSuperview" ref="144065459"/>
 											<reference key="NSWindow"/>
-											<reference key="NSNextKeyView" ref="205446087"/>
+											<reference key="NSNextKeyView" ref="974040110"/>
 											<string key="NSReuseIdentifierKey">_NS:13</string>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSTableHeaderView" key="NSHeaderView" id="994663149">
@@ -152,6 +152,7 @@
 													</object>
 													<int key="NSResizingMask">3</int>
 													<bool key="NSIsResizeable">YES</bool>
+													<bool key="NSIsEditable">YES</bool>
 													<reference key="NSTableView" ref="117414317"/>
 												</object>
 												<object class="NSTableColumn" id="516759045">
@@ -263,7 +264,7 @@
 							<string key="NSFrame">{{20, 198}, {381, 143}}</string>
 							<reference key="NSSuperview" ref="439893737"/>
 							<reference key="NSWindow"/>
-							<reference key="NSNextKeyView" ref="974040110"/>
+							<reference key="NSNextKeyView" ref="144065459"/>
 							<string key="NSReuseIdentifierKey">_NS:9</string>
 							<int key="NSsFlags">133810</int>
 							<reference key="NSVScroller" ref="205446087"/>
@@ -372,7 +373,6 @@
 							<string key="NSFrame">{{637, 48}, {149, 131}}</string>
 							<reference key="NSSuperview" ref="439893737"/>
 							<reference key="NSWindow"/>
-							<reference key="NSNextKeyView"/>
 							<string key="NSReuseIdentifierKey">_NS:9</string>
 							<string key="NSAntiCompressionPriority">{250, 750}</string>
 							<bool key="NSEnabled">YES</bool>
