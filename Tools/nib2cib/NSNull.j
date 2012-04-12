@@ -1,9 +1,9 @@
 /*
- * main.j
+ * NSNull.j
  * nib2cib
  *
- * Created by Francisco Tolmasky.
- * Copyright 2008, 280 North, Inc.
+ * Created by Aparajita Fishman.
+ * Copyright 2012 The Cappuccino Foundation.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,13 +18,20 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-*/
+ */
 
-@import "Nib2Cib.j"
+@import <Foundation/CPNull.j>
 
-function main(args)
+@implementation NSNull : CPNull
+
+- (id)initWithCoder:(CPCoder)aCoder
 {
-    var nib2cib = [[Nib2Cib alloc] initWithArgs:args];
-
-    [nib2cib run];
+    return [CPNull null];
 }
+
+- (Class)classForKeyedArchiver
+{
+    return [CPNull class];
+}
+
+@end
