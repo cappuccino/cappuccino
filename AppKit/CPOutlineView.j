@@ -228,14 +228,11 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     if (![aDataSource respondsToSelector:@selector(outlineView:numberOfChildrenOfItem:)])
         [CPException raise:CPInternalInconsistencyException reason:"Data source must implement 'outlineView:numberOfChildrenOfItem:'"];
-/*
-    if (![aDataSource respondsToSelector:@selector(outlineView:objectValueForTableColumn:byItem:)])
-        [CPException raise:CPInternalInconsistencyException reason:"Data source must implement 'outlineView:objectValueForTableColumn:byItem:'"];
-*/
+
     _outlineViewDataSource = aDataSource;
     _implementedOutlineViewDataSourceMethods = 0;
 
-    if ([_outlineViewDataSource respondsToSelector:@selector(outlineView:objectValue:forTableColumn:byItem:)])
+    if ([_outlineViewDataSource respondsToSelector:@selector(outlineView:objectValueForTableColumn:byItem:)])
         _implementedOutlineViewDataSourceMethods |= CPOutlineViewDataSource_outlineView_objectValue_forTableColumn_byItem_;
 
     if ([_outlineViewDataSource respondsToSelector:@selector(outlineView:setObjectValue:forTableColumn:byItem:)])
