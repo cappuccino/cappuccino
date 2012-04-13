@@ -586,6 +586,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     [ignoredFilePaths addObject:@"*/Frameworks/*"];
     [ignoredFilePaths addObject:@"*/.xCodeSupport/*"];
     [ignoredFilePaths addObject:@"*/Build/*"];
+    [ignoredFilePaths addObject:@"*/NS_*.j"];
     
     NSLog(@"Ignoring file paths: %@", ignoredFilePaths);
 }
