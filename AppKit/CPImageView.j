@@ -64,6 +64,14 @@ var CPImageViewEmptyPlaceholderImage = nil;
     CPImageViewEmptyPlaceholderImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"empty.png"]];
 }
 
++ (Class)_binderClassForBinding:(CPString)theBinding
+{
+    if (theBinding === CPValueBinding || theBinding === CPValueURLBinding || theBinding === CPValuePathBinding)
+        return [CPImageViewValueBinder class];
+
+    return [super _binderClassForBinding:theBinding];
+}
+
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
@@ -435,6 +443,33 @@ var CPImageViewEmptyPlaceholderImage = nil;
     }
 
     return YES;
+}
+
+@end
+
+@implementation CPImageViewValueBinder : CPBinder
+{
+}
+
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options
+{
+    [self _setPlaceholder:nil forMarker:CPMultipleValuesMarker isDefault:YES];
+    [self _setPlaceholder:nil forMarker:CPNoSelectionMarker isDefault:YES];
+    [self _setPlaceholder:nil forMarker:CPNotApplicableMarker isDefault:YES];
+    [self _setPlaceholder:nil forMarker:CPNullMarker isDefault:YES];
+}
+
+- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
+{
+    [_source setImage:nil];
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    if (aBinding === CPValueURLBinding || aBinding === CPValuePathBinding)
+        aValue = [[CPImage alloc] initWithContentsOfFile:aValue];
+
+    [_source setImage:aValue];
 }
 
 @end

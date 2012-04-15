@@ -555,6 +555,9 @@ CPSelectedIndexBinding  = @"selectedIndex";
 CPTextColorBinding      = @"textColor";
 CPToolTipBinding        = @"toolTip";
 CPValueBinding          = @"value";
+CPValueURLBinding       = @"valueURL";
+CPValuePathBinding      = @"valuePath";
+CPDataBinding           = @"data";
 
 //Binding options constants
 CPAllowsEditingMultipleValuesSelectionBindingOption = @"CPAllowsEditingMultipleValuesSelection";
