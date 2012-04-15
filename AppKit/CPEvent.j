@@ -179,7 +179,8 @@ CPDOMEventTouchCancel                   = "touchcancel";
 
 var _CPEventPeriodicEventPeriod         = 0,
     _CPEventPeriodicEventTimer          = nil,
-    _CPEventUpperCaseRegex              = new RegExp("[A-Z]");
+    _CPEventUpperCaseRegex              = new RegExp("[A-Z]"),
+    _CPEventStartupMilliseconds         = new Date().getTime();
 
 /*!
     @ingroup appkit
@@ -207,6 +208,14 @@ var _CPEventPeriodicEventPeriod         = 0,
     float               _deltaX;
     float               _deltaY;
     float               _deltaZ;
+}
+
+/*!
+    Returns the current time in fractional seconds since startup.
+*/
++ (CPTimeInterval)currentTimestamp
+{
+    return (new Date().getTime() - _CPEventStartupMilliseconds) / 1000;
 }
 
 /*!
@@ -389,7 +398,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /*!
-    Returns the time the event occurred.
+    Returns the time the event occurred in seconds since startup.
 */
 - (CPTimeInterval)timestamp
 {

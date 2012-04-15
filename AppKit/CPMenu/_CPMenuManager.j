@@ -5,7 +5,7 @@ _CPMenuManagerScrollingStateUp      = -1;
 _CPMenuManagerScrollingStateDown    = 1;
 _CPMenuManagerScrollingStateNone    = 0;
 
-var STICKY_TIME_INTERVAL            = 500,
+var STICKY_TIME_INTERVAL            = 0.5,
     SharedMenuManager               = nil;
 
 @implementation _CPMenuManager: CPObject
@@ -127,7 +127,7 @@ var STICKY_TIME_INTERVAL            = 500,
 
     if (_keyBuffer)
     {
-        if (([CPDate date] - _startTime) > (STICKY_TIME_INTERVAL + [activeMenu numberOfItems] / 2))
+        if (([anEvent timestamp] - _startTime) > (STICKY_TIME_INTERVAL + [activeMenu numberOfItems] / 2))
             [self selectNextItemBeginningWith:_keyBuffer inMenu:menu clearBuffer:YES];
 
         if (type === CPPeriodic)
@@ -245,7 +245,7 @@ var STICKY_TIME_INTERVAL            = 500,
 
                 3. The user clicks, drags and then releases. Tracking ends.
             */
-            if (_mouseWasDragged || [anEvent timestamp] - _startTime > STICKY_TIME_INTERVAL)
+            if (_mouseWasDragged || ([anEvent timestamp] - _startTime > STICKY_TIME_INTERVAL))
             {
                 /*
                     Close the menu if:
