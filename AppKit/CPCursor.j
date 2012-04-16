@@ -134,7 +134,12 @@ var currentCursor = nil,
     {
         var cssString;
         if (doesHaveImage)
-            cssString = @"url(" + [[CPBundle bundleForClass:self] resourcePath] + @"/CPCursor/" + cursorName + ".cur), " + aString;
+        {
+            if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
+                cssString = @"url(" + [[CPBundle bundleForClass:self] resourcePath] + @"CPCursor/" + cursorName + ".cur), " + aString;
+            else
+                cssString = @"url(" + [[CPBundle bundleForClass:self] pathForResource:@"CPCursor/" + cursorName + ".png"] + "), " + aString;
+        }
         else
             cssString = aString
         cursor = [[CPCursor alloc] initWithCSSString:cssString];
