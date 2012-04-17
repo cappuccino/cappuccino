@@ -28,6 +28,7 @@
 @import "CPCompoundPredicate.j"
 @import "CPData.j"
 @import "CPDate.j"
+@import "CPDateFormatter.j"
 @import "CPDecimal.j"
 @import "CPDecimalNumber.j"
 @import "CPDictionary.j"
