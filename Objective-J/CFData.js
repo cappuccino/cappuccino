@@ -67,9 +67,11 @@ CFData.prototype.rawString = function()
         else if (this._JSONObject)
             this._rawString = JSON.stringify(this._JSONObject);
 
-//        Ideally we would convert these bytes or base64 into a string.
-//        else if (this._bytes)
-//        else if (this._base64)
+        else if (this._bytes)
+            this._rawString = CFData.bytesToString(this._bytes);
+
+        else if (this._base64)
+            this._rawString = CFData.decodeBase64ToString(this._base64, true);
 
         else
             throw new Error("Can't convert data to string.");
@@ -80,11 +82,28 @@ CFData.prototype.rawString = function()
 
 CFData.prototype.bytes = function()
 {
+    if (this._bytes === NULL)
+    {
+        var bytes = CFData.stringToBytes(this.rawString());
+        this.setBytes(bytes);
+    }
+     
     return this._bytes;
 }
 
 CFData.prototype.base64 = function()
 {
+    if (this._base64 === NULL)
+    {
+        var base64;
+        if (this._bytes)
+            base64 = CFData.encodeBase64Array(this._bytes);
+        else
+            base64 = CFData.encodeBase64String(this.rawString());
+        
+        this.setBase64String(base64);
+    }
+    
     return this._base64;
 }
 
@@ -238,6 +257,14 @@ CFData.bytesToString = function(bytes)
     return String.fromCharCode.apply(NULL, bytes);
 }
 
+CFData.stringToBytes = function(input)
+{
+    var temp = [];
+    for (var i = 0; i < input.length; i++)
+        temp.push(input.charCodeAt(i));
+
+    return temp;
+}
 
 CFData.encodeBase64String = function(input)
 {
