@@ -28,11 +28,10 @@
     node.tree = aTree;
 
     var template = [aTree template],
-        uuid = [template UID];
+        uuid = [template UID],
+        cachedNode = templateTable[uuid];
 
-    var cachedNode = templateTable[uuid];
-
-    if (cachedNode == nil)
+    if (cachedNode === nil)
     {
         views = [CPMutableArray array];
         copiedContainer = [CPMutableArray array];
@@ -67,6 +66,7 @@
 - (BOOL)applyTemplate:(id)template withViews:(id)views forOriginalTemplate:(id)originalTemplate
 {
     var t = [tree template];
+
     if (t !== template)
     {
         [templateViews setArray:views];
@@ -75,6 +75,7 @@
     }
 
     var count = [children count];
+
     for (var i; i < count; i++)
         [children[i] applyTemplate:template withViews:views forOriginalTemplate:originalTemplate];
 }
@@ -89,7 +90,7 @@
 
 - (void)copyTemplateIfNecessary
 {
-    if ([copiedTemplateContainer count] == 0)
+    if ([copiedTemplateContainer count] === 0)
     {
         CPLogConsole("COPYING TEMPLATE");
         var copy = [[tree template] copy];
@@ -118,7 +119,8 @@
 - (id)displayValue
 {
     var title = [self title];
-    if (title != nil)
+
+    if (title !== nil)
         return title;
 
     return [self templateView];

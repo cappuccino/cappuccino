@@ -26,11 +26,6 @@
 @import "CPImage.j"
 @import "CPShadowView.j"
 
-
-CPScaleProportionally   = 0;
-CPScaleToFit            = 1;
-CPScaleNone             = 2;
-
 CPImageAlignCenter      = 0;
 CPImageAlignTop         = 1;
 CPImageAlignTopLeft     = 2;
@@ -67,6 +62,14 @@ var CPImageViewEmptyPlaceholderImage = nil;
     var bundle = [CPBundle bundleForClass:[CPView class]];
 
     CPImageViewEmptyPlaceholderImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"empty.png"]];
+}
+
++ (Class)_binderClassForBinding:(CPString)theBinding
+{
+    if (theBinding === CPValueBinding || theBinding === CPValueURLBinding || theBinding === CPValuePathBinding)
+        return [CPImageViewValueBinder class];
+
+    return [super _binderClassForBinding:theBinding];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -232,7 +235,7 @@ var CPImageViewEmptyPlaceholderImage = nil;
     [super setImageScaling:anImageScaling];
 
 #if PLATFORM(DOM)
-    if ([self currentValueForThemeAttribute:@"image-scaling"] === CPScaleToFit)
+    if ([self currentValueForThemeAttribute:@"image-scaling"] === CPImageScaleAxesIndependently)
     {
         CPDOMDisplayServerSetStyleLeftTop(_DOMImageElement, NULL, 0.0, 0.0);
     }
@@ -296,12 +299,12 @@ var CPImageViewEmptyPlaceholderImage = nil;
         width = boundsWidth - insetWidth,
         height = boundsHeight - insetHeight;
 
-    if (imageScaling === CPScaleToFit)
+    if (imageScaling === CPImageScaleAxesIndependently)
     {
-#if PLATFORM(DOM)
-        _DOMImageElement.width = ROUND(width);
-        _DOMImageElement.height = ROUND(height);
-#endif
+        #if PLATFORM(DOM)
+            _DOMImageElement.width = ROUND(width);
+            _DOMImageElement.height = ROUND(height);
+        #endif
     }
     else
     {
@@ -310,17 +313,19 @@ var CPImageViewEmptyPlaceholderImage = nil;
         if (size.width == -1 && size.height == -1)
             return;
 
-        if (imageScaling === CPScaleProportionally)
+        switch (imageScaling)
         {
-            // The max size it can be is size.width x size.height, so only
-            // only proportion otherwise.
-            if (width >= size.width && height >= size.height)
-            {
-                width = size.width;
-                height = size.height;
-            }
-            else
-            {
+            case CPImageScaleProportionallyDown:
+                if (width >= size.width && height >= size.height)
+                {
+                    width = size.width;
+                    height = size.height;
+                    break;
+                }
+
+                // intentionally fall through to the next case
+
+            case CPImageScaleProportionallyUpOrDown:
                 var imageRatio = size.width / size.height,
                     viewRatio = width / height;
 
@@ -328,26 +333,19 @@ var CPImageViewEmptyPlaceholderImage = nil;
                     width = height * imageRatio;
                 else
                     height = width / imageRatio;
-            }
+                break;
 
-#if PLATFORM(DOM)
+            case CPImageScaleAxesIndependently:
+            case CPImageScaleNone:
+                width = size.width;
+                height = size.height;
+                break;
+        }
+
+        #if PLATFORM(DOM)
             _DOMImageElement.width = ROUND(width);
             _DOMImageElement.height = ROUND(height);
-#endif
-        }
-        else
-        {
-            width = size.width;
-            height = size.height;
-        }
-
-        if (imageScaling == CPScaleNone)
-        {
-#if PLATFORM(DOM)
-            _DOMImageElement.width = ROUND(size.width);
-            _DOMImageElement.height = ROUND(size.height);
-#endif
-        }
+        #endif
 
         var x,
             y;
@@ -449,6 +447,33 @@ var CPImageViewEmptyPlaceholderImage = nil;
 
 @end
 
+@implementation CPImageViewValueBinder : CPBinder
+{
+}
+
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options
+{
+    [self _setPlaceholder:nil forMarker:CPMultipleValuesMarker isDefault:YES];
+    [self _setPlaceholder:nil forMarker:CPNoSelectionMarker isDefault:YES];
+    [self _setPlaceholder:nil forMarker:CPNotApplicableMarker isDefault:YES];
+    [self _setPlaceholder:nil forMarker:CPNullMarker isDefault:YES];
+}
+
+- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
+{
+    [_source setImage:nil];
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    if (aBinding === CPValueURLBinding || aBinding === CPValuePathBinding)
+        aValue = [[CPImage alloc] initWithContentsOfFile:aValue];
+
+    [_source setImage:aValue];
+}
+
+@end
+
 var CPImageViewImageKey          = @"CPImageViewImageKey",
     CPImageViewImageScalingKey   = @"CPImageViewImageScalingKey",
     CPImageViewImageAlignmentKey = @"CPImageViewImageAlignmentKey",
@@ -475,6 +500,9 @@ var CPImageViewImageKey          = @"CPImageViewImageKey",
         _DOMImageElement.setAttribute("draggable", "true");
         _DOMImageElement.style["-khtml-user-drag"] = "element";
     }
+
+    if (typeof(appkit_tag_dom_elements) !== "undefined" && !!appkit_tag_dom_elements)
+        _DOMImageElement.setAttribute("data-cappuccino-view", [self className]);
 #endif
 
     self = [super initWithCoder:aCoder];

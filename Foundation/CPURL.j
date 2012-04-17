@@ -122,8 +122,8 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
 
 - (CPArray)pathComponents
 {
-    var path = self.pathComponents();
-    return [path copy];
+    var components = self.pathComponents();
+    return [components copy];
 }
 
 // if absolute, returns the same as path
@@ -200,6 +200,13 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
 - (CPString)pathExtension
 {
     return self.pathExtension();
+}
+
+- (CPURL)URLByDeletingLastPathComponent
+{
+    var result = self.createCopyDeletingLastPathComponent();
+    result.isa = [self class];
+    return result;
 }
 
 - (CPURL)standardizedURL

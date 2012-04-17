@@ -21,6 +21,7 @@
  */
 
 @import "CALayer.j"
+@import "CPAccordionView.j"
 @import "CPAlert.j"
 @import "CPAnimation.j"
 @import "CPApplication.j"
@@ -37,6 +38,7 @@
 @import "CPCibControlConnector.j"
 @import "CPCibLoading.j"
 @import "CPCibOutletConnector.j"
+@import "CPCibRuntimeAttributesConnector.j"
 @import "CPClipView.j"
 @import "CPCollectionView.j"
 @import "CPCollectionViewItem.j"
@@ -46,6 +48,7 @@
 @import "CPColorWell.j"
 @import "CPCompatibility.j"
 @import "CPControl.j"
+@import "CPController.j"
 @import "CPCookie.j"
 @import "CPCursor.j"
 @import "CPDocument.j"

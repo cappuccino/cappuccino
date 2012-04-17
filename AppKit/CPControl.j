@@ -28,42 +28,48 @@
 @import "CPView.j"
 @import "CPKeyValueBinding.j"
 
-CPLeftTextAlignment             = 0;
-CPRightTextAlignment            = 1;
-CPCenterTextAlignment           = 2;
-CPJustifiedTextAlignment        = 3;
-CPNaturalTextAlignment          = 4;
+CPLeftTextAlignment      = 0;
+CPRightTextAlignment     = 1;
+CPCenterTextAlignment    = 2;
+CPJustifiedTextAlignment = 3;
+CPNaturalTextAlignment   = 4;
 
-CPRegularControlSize            = 0;
-CPSmallControlSize              = 1;
-CPMiniControlSize               = 2;
+CPRegularControlSize = 0;
+CPSmallControlSize   = 1;
+CPMiniControlSize    = 2;
 
-CPLineBreakByWordWrapping       = 0;
-CPLineBreakByCharWrapping       = 1;
-CPLineBreakByClipping           = 2;
-CPLineBreakByTruncatingHead     = 3;
-CPLineBreakByTruncatingTail     = 4;
-CPLineBreakByTruncatingMiddle   = 5;
+CPLineBreakByWordWrapping     = 0;
+CPLineBreakByCharWrapping     = 1;
+CPLineBreakByClipping         = 2;
+CPLineBreakByTruncatingHead   = 3;
+CPLineBreakByTruncatingTail   = 4;
+CPLineBreakByTruncatingMiddle = 5;
 
-CPTopVerticalTextAlignment      = 1;
-CPCenterVerticalTextAlignment   = 2;
-CPBottomVerticalTextAlignment   = 3;
+CPTopVerticalTextAlignment    = 1;
+CPCenterVerticalTextAlignment = 2;
+CPBottomVerticalTextAlignment = 3;
 
-CPScaleProportionally           = 0;
-CPScaleToFit                    = 1;
-CPScaleNone                     = 2;
+// Deprecated for use with images, use the CPImageScale constants
+CPScaleProportionally = 0;
+CPScaleToFit          = 1;
+CPScaleNone           = 2;
 
-CPNoImage                       = 0;
-CPImageOnly                     = 1;
-CPImageLeft                     = 2;
-CPImageRight                    = 3;
-CPImageBelow                    = 4;
-CPImageAbove                    = 5;
-CPImageOverlaps                 = 6;
+CPImageScaleProportionallyDown     = 0;
+CPImageScaleAxesIndependently      = 1;
+CPImageScaleNone                   = 2;
+CPImageScaleProportionallyUpOrDown = 3;
 
-CPOnState                       = 1;
-CPOffState                      = 0;
-CPMixedState                    = -1;
+CPNoImage       = 0;
+CPImageOnly     = 1;
+CPImageLeft     = 2;
+CPImageRight    = 3;
+CPImageBelow    = 4;
+CPImageAbove    = 5;
+CPImageOverlaps = 6;
+
+CPOnState    = 1;
+CPOffState   = 0;
+CPMixedState = -1;
 
 CPControlNormalBackgroundColor      = "CPControlNormalBackgroundColor";
 CPControlSelectedBackgroundColor    = "CPControlSelectedBackgroundColor";
@@ -784,9 +790,10 @@ var CPControlBlackColor = [CPColor blackColor];
     Sets the image scaling of the control.
 
     <pre>
-    CPScaleProportionally
-    CPScaleToFit
-    CPScaleNone
+    CPImageScaleProportionallyDown
+    CPImageScaleAxesIndependently
+    CPImageScaleNone
+    CPImageScaleProportionallyUpOrDown
     </pre>
 */
 - (void)setImageScaling:(CPImageScaling)scaling

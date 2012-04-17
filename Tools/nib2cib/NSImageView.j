@@ -83,13 +83,6 @@ NSImageFrameGrayBezel   = 2;
 NSImageFrameGroove      = 3;
 NSImageFrameButton      = 4;
 
-var NSImageScalingToCPImageScaling = {};
-
-NSImageScalingToCPImageScaling[NSImageScaleProportionallyDown]      = CPScaleProportionally;
-NSImageScalingToCPImageScaling[NSImageScaleAxesIndependently]       = CPScaleToFit;
-NSImageScalingToCPImageScaling[NSImageScaleNone]                    = CPScaleNone;
-NSImageScalingToCPImageScaling[NSImageScaleProportionallyUpOrDown]  = CPScaleProportionally;
-
 @implementation NSImageCell : NSCell
 {
     BOOL                _animates       @accessors;
@@ -106,7 +99,7 @@ NSImageScalingToCPImageScaling[NSImageScaleProportionallyUpOrDown]  = CPScalePro
     {
         _animates = [aCoder decodeBoolForKey:@"NSAnimates"];
         _imageAlignment = [aCoder decodeIntForKey:@"NSAlign"];
-        _imageScaling = NSImageScalingToCPImageScaling[[aCoder decodeIntForKey:@"NSScale"]];
+        _imageScaling = [aCoder decodeIntForKey:@"NSScale"];
         _frameStyle = [aCoder decodeIntForKey:@"NSStyle"];
     }
 
