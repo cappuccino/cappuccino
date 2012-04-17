@@ -2285,7 +2285,6 @@ NOT YET IMPLEMENTED
 /*!
     @ignore
 */
-/// debugging autosave
 - (void)_restoreFromAutosave
 {
     if (![self _autosaveEnabled])
