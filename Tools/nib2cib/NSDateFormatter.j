@@ -1,9 +1,9 @@
 /*
- * NSFoundation.j
+ * NSDateFormatter.j
  * nib2cib
  *
- * Created by Francisco Tolmasky.
- * Copyright 2008, 280 North, Inc.
+ * Created by Alexander Ljungberg.
+ * Copyright 2012, SlevenBits Ltd.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,13 +20,36 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "NSArray.j"
-@import "NSAttributedString.j"
-@import "NSDateFormatter.j"
-@import "NSDictionary.j"
-@import "NSExpression.j"
-@import "NSFormatter.j"
-@import "NSMutableString.j"
-@import "NSNull.j"
-@import "NSNumberFormatter.j"
-@import "NSSet.j"
+@import <Foundation/CPDateFormatter.j>
+
+@implementation CPDateFormatter (CPCoding)
+
+- (id)NS_initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+
+    if (self)
+    {
+        _dateStyle = CPDateFormatterShortStyle;
+    }
+
+    return self;
+}
+
+@end
+
+@implementation NSDateFormatter : CPDateFormatter
+{
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    return [self NS_initWithCoder:aCoder];
+}
+
+- (Class)classForKeyedArchiver
+{
+    return [CPDateFormatter class];
+}
+
+@end
