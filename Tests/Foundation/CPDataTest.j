@@ -66,4 +66,40 @@
     [self assertNull:[data plistObject]];
 }
 
+- (void)test_CPData_accessors
+{
+    var rawString = "cappuccino",
+        bytes = [99, 97, 112, 112, 117, 99, 99, 105, 110, 111],
+        base64 = "Y2FwcHVjY2lubw==";
+        
+    var data = [CPData dataWithBase64:base64];
+    [self assert:rawString equals:[data rawString]];
+    
+    data = [CPData dataWithBase64:base64];
+    [self assert:bytes equals:[data bytes]];
+
+    data = [CPData dataWithBase64:base64];
+    [self assert:base64 equals:[data base64]];
+
+
+    data = [CPData dataWithRawString:rawString];
+    [self assert:rawString equals:[data rawString]];
+    
+    data = [CPData dataWithRawString:rawString];
+    [self assert:bytes equals:[data bytes]];
+
+    data = [CPData dataWithRawString:rawString];
+    [self assert:base64 equals:[data base64]];
+
+
+    data = [CPData dataWithBytes:bytes];
+    [self assert:rawString equals:[data rawString]];
+    
+    data = [CPData dataWithBytes:bytes];
+    [self assert:bytes equals:[data bytes]];
+
+    data = [CPData dataWithBytes:bytes];
+    [self assert:base64 equals:[data base64]];
+}
+
 @end
