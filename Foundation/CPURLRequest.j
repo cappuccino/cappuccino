@@ -54,18 +54,13 @@
 }
 
 /*!
-    Initializes the request with a URL.
-    @param aURL the url to set
-    @return the initialized CPURLRequest
+	Perform some baseline initialization
+	@return a baseline initialized CPURLRequest
 */
-- (id)initWithURL:(CPURL)aURL
+
+- (id) init
 {
-    self = [super init];
-
-    if (self)
-    {
-        [self setURL:aURL];
-
+	if(self = [super init]) {
         _HTTPBody = @"";
         _HTTPMethod = @"GET";
         _HTTPHeaderFields = [CPDictionary dictionary];
@@ -73,6 +68,23 @@
         [self setValue:"Thu, 01 Jan 1970 00:00:00 GMT" forHTTPHeaderField:"If-Modified-Since"];
         [self setValue:"no-cache" forHTTPHeaderField:"Cache-Control"];
         [self setValue:"XMLHttpRequest" forHTTPHeaderField:"X-Requested-With"];
+		}
+
+	return self;
+}
+
+/*!
+    Initializes the request with a URL.
+    @param aURL the url to set
+    @return the initialized CPURLRequest
+*/
+- (id)initWithURL:(CPURL)aURL
+{
+    self = [self init];
+
+    if (self)
+    {
+        [self setURL:aURL];
     }
 
     return self;
