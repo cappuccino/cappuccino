@@ -8,6 +8,7 @@
     CPArray             _contentArray @accessors(property=contentArray);
 
     CPArray             observations;
+    int                 aCount @accessors;
 }
 
 - (CPArray)makeTestArray
@@ -287,6 +288,40 @@
     [arrayController removeObject:objectToRemove];
 
     [self assertFalse:[[arrayController arrangedObjects] containsObject:objectToRemove] message:@"removed objects should no longer appear in arrangedObjects"];
+}
+
+- (void)testRemove_
+{
+    var arrayController = [self arrayController],
+        objectToRemove = [[arrayController arrangedObjects] objectAtIndex:0];
+
+    [arrayController setSelectedObjects:[objectToRemove]];
+    [arrayController remove:nil];
+
+    [self assertFalse:[[arrayController arrangedObjects] containsObject:objectToRemove] message:@"removed objects should no longer appear in arrangedObjects"];
+}
+
+- (void)testRemoveObjectsAtArrangedObjectIndexes_
+{
+    var arrayController = [self arrayController];
+
+    [arrayController removeObjectsAtArrangedObjectIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(1, 2)]];
+
+    [self assert:1 equals:[[arrayController arrangedObjects] count] message:@"objects should be removed"];
+}
+
+- (void)testRemoveObjectsAtArrangedObjectIndexes_whenObservingCount
+{
+    var arrayController = [self arrayController];
+
+    [arrayController addObserver:self forKeyPath:@"arrangedObjects.name" options:0 context:nil];
+    [self bind:@"aCount" toObject:arrayController withKeyPath:@"arrangedObjects.@count" options:nil];
+
+    // This crashed in a previous version of Cappuccino due to an error in _CPObservableArray's removeObjectAtIndex.
+    [arrayController removeObjectsAtArrangedObjectIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(1, 2)]];
+
+    [self assert:1 equals:[[arrayController arrangedObjects] count] message:@"objects should be removed"];
+    [self assert:aCount equals:[[arrayController arrangedObjects] count] message:@"count should be updated"];
 }
 
 - (void)testSelectionWhenObjectsDisappear
