@@ -669,6 +669,13 @@
             indexes = [CPIndexSet indexSetWithIndex:index];
 
         [self setSelectionIndexes:indexes];
+
+        // TODO Is it allowable for collection view items to become the first responder? In that case they
+        // may have become that at this point by virtue of CPWindow's sendEvent: mouse down handling, and
+        // the following line will rudely snatch it away from them. For most cases though, clicking on an
+        // item should naturally make the collection view the first responder so that keyboard navigation
+        // is enabled.
+        [[self window] makeFirstResponder:self];
     }
     else if (_allowsEmptySelection)
         [self setSelectionIndexes:[CPIndexSet indexSet]];
