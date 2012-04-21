@@ -96,12 +96,12 @@ function CPRectIntegral(aRect)
 function CPRectIntersection(lhsRect, rhsRect)
 {
     var intersection = CPRectMake(
-        Math.max(CPRectGetMinX(lhsRect), CPRectGetMinX(rhsRect)),
-        Math.max(CPRectGetMinY(lhsRect), CPRectGetMinY(rhsRect)),
+        MAX(CPRectGetMinX(lhsRect), CPRectGetMinX(rhsRect)),
+        MAX(CPRectGetMinY(lhsRect), CPRectGetMinY(rhsRect)),
         0, 0);
 
-    intersection.size.width = Math.min(CPRectGetMaxX(lhsRect), CPRectGetMaxX(rhsRect)) - CPRectGetMinX(intersection);
-    intersection.size.height = Math.min(CPRectGetMaxY(lhsRect), CPRectGetMaxY(rhsRect)) - CPRectGetMinY(intersection);
+    intersection.size.width = MIN(CPRectGetMaxX(lhsRect), CPRectGetMaxX(rhsRect)) - CPRectGetMinX(intersection);
+    intersection.size.height = MIN(CPRectGetMaxY(lhsRect), CPRectGetMaxY(rhsRect)) - CPRectGetMinY(intersection);
 
     return CPRectIsEmpty(intersection) ? CPRectMakeZero() : intersection;
 }
@@ -179,10 +179,10 @@ function CPRectStandardize(aRect)
 */
 function CPRectUnion(lhsRect, rhsRect)
 {
-    var minX = Math.min(CPRectGetMinX(lhsRect), CPRectGetMinX(rhsRect)),
-        minY = Math.min(CPRectGetMinY(lhsRect), CPRectGetMinY(rhsRect)),
-        maxX = Math.max(CPRectGetMaxX(lhsRect), CPRectGetMaxX(rhsRect)),
-        maxY = Math.max(CPRectGetMaxY(lhsRect), CPRectGetMaxY(rhsRect));
+    var minX = MIN(CPRectGetMinX(lhsRect), CPRectGetMinX(rhsRect)),
+        minY = MIN(CPRectGetMinY(lhsRect), CPRectGetMinY(rhsRect)),
+        maxX = MAX(CPRectGetMaxX(lhsRect), CPRectGetMaxX(rhsRect)),
+        maxY = MAX(CPRectGetMaxY(lhsRect), CPRectGetMaxY(rhsRect));
 
     return CPRectMake(minX, minY, maxX - minX, maxY - minY);
 }

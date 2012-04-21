@@ -144,8 +144,8 @@
         minSize = _CGSizeMake(upSize.width, upSize.height + downSize.height),
         frame = _CGRectMakeCopy(aFrame);
 
-    frame.size.width = Math.max(minSize.width, frame.size.width);
-    frame.size.height = Math.max(minSize.height, frame.size.height);
+    frame.size.width = MAX(minSize.width, frame.size.width);
+    frame.size.height = MAX(minSize.height, frame.size.height);
     [super setFrame:frame];
 }
 
