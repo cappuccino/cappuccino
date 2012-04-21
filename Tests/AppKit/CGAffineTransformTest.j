@@ -131,8 +131,8 @@
       },
 
       "rotation" : {
-        testdata: CGAffineTransformConcat(CGAffineTransformMakeRotation(Math.PI),
-                                          CGAffineTransformMakeRotation(-Math.PI)),
+        testdata: CGAffineTransformConcat(CGAffineTransformMakeRotation(PI),
+                                          CGAffineTransformMakeRotation(-PI)),
         expdata: CGAffineTransformMakeIdentity()
       },
     };
@@ -234,8 +234,8 @@
       },
 
       "rotation" : {
-        testdata: CGAffineTransformConcat(CGAffineTransformMakeRotation(-Math.PI),
-                                          CGAffineTransformMakeRotation(Math.PI)),
+        testdata: CGAffineTransformConcat(CGAffineTransformMakeRotation(-PI),
+                                          CGAffineTransformMakeRotation(PI)),
       },
 
     };
@@ -262,12 +262,12 @@
       },
 
       "rotation" : {
-        testdata: CGAffineTransformMakeRotation(Math.PI),
+        testdata: CGAffineTransformMakeRotation(PI),
       },
 
       // TODO a two-pi rotation is actually identity
       "2PI rotation is NOT identity?" : {
-        testdata: CGAffineTransformMakeRotation(Math.PI * 2),
+        testdata: CGAffineTransformMakeRotation(PI * 2),
       },
 
     };
@@ -300,8 +300,8 @@
       },
 
       "rotation" : {
-        lhs: CGAffineTransformMakeRotation(Math.PI),
-        rhs: CGAffineTransformMakeRotation(Math.PI),
+        lhs: CGAffineTransformMakeRotation(PI),
+        rhs: CGAffineTransformMakeRotation(PI),
         expdata: YES
       },
 
@@ -373,22 +373,22 @@
       },
 
       "rotation - pi" : {
-        testdata: CGAffineTransformMakeRotation(Math.PI),
+        testdata: CGAffineTransformMakeRotation(PI),
         expdata: "{-1, 1.2246467991473532e-16, -1.2246467991473532e-16, -1, 0, 0}"
       },
 
       "rotation - 2pi" : {
-        testdata: CGAffineTransformMakeRotation(2 * Math.PI),
+        testdata: CGAffineTransformMakeRotation(2 * PI),
         expdata: "{1, -2.4492935982947064e-16, 2.4492935982947064e-16, 1, 0, 0}"
       },
 
       "rotation - 3pi" : {
-        testdata: CGAffineTransformMakeRotation(3 * Math.PI),
+        testdata: CGAffineTransformMakeRotation(3 * PI),
         expdata: "{-1, 3.6739403974420594e-16, -3.6739403974420594e-16, -1, 0, 0}"
       },
 
       "scale and translation and rotate" : {
-        testdata: CGAffineTransformRotate(CGAffineTransformTranslate(CGAffineTransformMakeScale(3,4),5,6),Math.PI),
+        testdata: CGAffineTransformRotate(CGAffineTransformTranslate(CGAffineTransformMakeScale(3,4),5,6),PI),
         expdata: "{-3, 4.898587196589413e-16, -3.6739403974420594e-16, -4, 15, 24}"
       },
     };
@@ -401,7 +401,7 @@
 
 - (void)testAffineTransformRotate
 {
-    var ang = Math.PI + 0.5 * Math.PI,
+    var ang = PI + 0.5 * PI,
         transform = CGAffineTransformMake( 1,2,3,4, 5,6 ),
         cos = COS(ang),
         sin = SIN(ang);
@@ -417,7 +417,7 @@
       },
 
       "rotation negation" : {
-        testdata: CGAffineTransformRotate(CGAffineTransformRotate(CGAffineTransformMakeScale(3,4),Math.PI),-Math.PI),
+        testdata: CGAffineTransformRotate(CGAffineTransformRotate(CGAffineTransformMakeScale(3,4),PI),-PI),
         expdata: CGAffineTransformMakeScale(3,4)
       }
     };
@@ -428,7 +428,7 @@
 
 - (void)testAffineTransformInvert
 {
-    var transform = CGAffineTransformRotate(CGAffineTransformTranslate(CGAffineTransformMakeScale(3,4),5,6),Math.PI),
+    var transform = CGAffineTransformRotate(CGAffineTransformTranslate(CGAffineTransformMakeScale(3,4),5,6),PI),
         determinant = 1 / (transform.a * transform.d - transform.b * transform.c),
         invertedtransform = CGAffineTransformMake(determinant * transform.d,
                                                   -determinant * transform.b,
@@ -451,8 +451,8 @@
       },
 
       "rotation" : {
-        testdata: CGAffineTransformMakeRotation(-Math.PI),
-        expdata: CGAffineTransformMakeRotation(Math.PI),
+        testdata: CGAffineTransformMakeRotation(-PI),
+        expdata: CGAffineTransformMakeRotation(PI),
       },
 
       "translation" : {
@@ -483,7 +483,7 @@
       },
 
       "rotation 90 degrees" : {
-        testdata: CGRectApplyAffineTransform(rect, CGAffineTransformMakeRotation(Math.PI/2)),
+        testdata: CGRectApplyAffineTransform(rect, CGAffineTransformMakeRotation(PI/2)),
         expdata: CGRectMake( -10,3.0000000000000004,6,5 )
       },
 
@@ -498,7 +498,7 @@
       },
 
       "rotate, translate and scale" : {
-        testdata: CGRectApplyAffineTransform(rect, CGAffineTransformRotate(CGAffineTransformTranslate(CGAffineTransformMakeScale(3,4),5,6),Math.PI)),
+        testdata: CGRectApplyAffineTransform(rect, CGAffineTransformRotate(CGAffineTransformTranslate(CGAffineTransformMakeScale(3,4),5,6),PI)),
         expdata: CGRectMake( -9.000000000000004, -16,
                              15.000000000000002, 24.000000000000004 )
       },

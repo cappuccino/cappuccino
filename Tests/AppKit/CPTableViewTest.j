@@ -193,7 +193,7 @@
         {
             var view = allViews[i],
                 column = i % 2,
-                row = startingRow + Math.floor(i / 2); // Two columns per row.
+                row = startingRow + FLOOR(i / 2); // Two columns per row.
             //CPLog.error([view stringValue] + " frame: " + CPStringFromRect([tableView convertRect:[view frame] toView:nil]));
             [self assert:("R" + row + "C" + column) equals:[view stringValue] message:"(" + row + ", " + column + ") string value"];
             [self assert:"CustomTextView" + column equals:[[view class] description] message:"(" + row + ", " + column + ") data view"];
@@ -205,11 +205,11 @@
     var allViews = AssertCorrectCellsVisible(0),
         visibleHeight = [tableView visibleRect].size.height,
         fullRowHeight = [tableView rowHeight] + [tableView intercellSpacing].height,
-        visibleRows = Math.ceil(visibleHeight / fullRowHeight);
+        visibleRows = CEIL(visibleHeight / fullRowHeight);
     [self assert:2 * visibleRows equals:[allViews count] message:"only as many data views as necessary should be present"];
 
     // Now if we scroll down, new views should come in and others should go out.
-    var rowTwentyFiveAndAHalfY = Math.floor(25.5 * fullRowHeight);
+    var rowTwentyFiveAndAHalfY = FLOOR(25.5 * fullRowHeight);
     [tableView scrollPoint:CGPointMake(0, rowTwentyFiveAndAHalfY)];
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 

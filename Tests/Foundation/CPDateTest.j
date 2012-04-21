@@ -85,7 +85,7 @@
         expectedMinute = 31,
         offset = -date.getTimezoneOffset(),
         offsetPositive = offset >= 0,
-        offsetHours = offsetPositive ? Math.floor(offset / 60) : Math.ceil(offset / 60),
+        offsetHours = offsetPositive ? FLOOR(offset / 60) : CEIL(offset / 60),
         offsetMinutes = offset - offsetHours * 60,
         expectedString;
     expectedHour += offsetHours;

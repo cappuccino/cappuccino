@@ -59,13 +59,13 @@
 
 - (void)changeBorderWidth:(id)sender
 {
-    [standardBox setBorderWidth:ROUND(Math.random() * 7)];
+    [standardBox setBorderWidth:ROUND(RAND() * 7)];
 }
 
 - (void)changeBorderColor:(id)sender
 {
     [customBox setBorderColor:[CPColor randomColor]];
-    [customBox setCornerRadius:ROUND(Math.random() * 10)];
+    [customBox setCornerRadius:ROUND(RAND() * 10)];
 }
 
 - (void)changeContentView:(id)sender
