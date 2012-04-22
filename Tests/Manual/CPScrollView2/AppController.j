@@ -51,9 +51,11 @@
         case "Default":
             [scrollView setScrollerKnobStyle:CPScrollerKnobStyleDefault];
             break;
+
         case "Dark":
             [scrollView setScrollerKnobStyle:CPScrollerKnobStyleDark];
             break;
+
         case "Light":
             [scrollView setScrollerKnobStyle:CPScrollerKnobStyleLight];
             break;
@@ -69,6 +71,7 @@
         case "Light":
             [[scrollView documentView] setBackgroundColor:lightBackground];
             break;
+
         case "Dark":
             [[scrollView documentView] setBackgroundColor:[CPColor colorWithHexString:@"333"]];
             break;

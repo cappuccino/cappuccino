@@ -1506,9 +1506,6 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
         _scrollTimer = nil;
         _implementedDelegateMethods = 0;
 
-        // Due to the anything goes nature of decoding, our subviews may not exist yet, so layout at the end of the run loop when we're sure everything is in a correct state.
-        [[CPRunLoop currentRunLoop] performSelector:@selector(_updateCornerAndHeaderView) target:self argument:_contentView order:0 modes:[CPDefaultRunLoopMode]];
-
         _scrollerStyle = [aCoder decodeIntForKey:CPScrollViewScrollerStyleKey] || CPScrollerStyleGlobal;
         _scrollerKnobStyle = [aCoder decodeIntForKey:CPScrollViewScrollerKnobStyleKey] || CPScrollerKnobStyleDefault;
 
@@ -1522,14 +1519,12 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
 }
 
 /*!
-    @ignore
-
-    Make sure the scroller style is updated. This can only be done after awakening.
+    Do final init that can only be done when we are sure all subviews have been initialized.
 */
-- (id)awakeAfterUsingCoder:(CPCoder)aCoder
+- (void)awakeFromCib
 {
     [self _updateScrollerStyle];
-    return self;
+    [self _updateCornerAndHeaderView];
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder
