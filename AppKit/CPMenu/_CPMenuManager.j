@@ -126,8 +126,8 @@ var STICKY_TIME_INTERVAL            = 0.5,
     }
 
     if (_keyBuffer)
-    {
-        if (([anEvent timestamp] - _startTime) > (STICKY_TIME_INTERVAL + [activeMenu numberOfItems] / 2))
+    {   // periodic events have a timestamp of 0 so use the currentTimestamp
+        if (([CPEvent currentTimestamp] - _startTime) > (STICKY_TIME_INTERVAL + [activeMenu numberOfItems] / 2))
             [self selectNextItemBeginningWith:_keyBuffer inMenu:menu clearBuffer:YES];
 
         if (type === CPPeriodic)
@@ -245,7 +245,7 @@ var STICKY_TIME_INTERVAL            = 0.5,
 
                 3. The user clicks, drags and then releases. Tracking ends.
             */
-            if (_mouseWasDragged || ([anEvent timestamp] - _startTime > STICKY_TIME_INTERVAL))
+            if (_mouseWasDragged || ([CPEvent currentTimestamp] - _startTime > STICKY_TIME_INTERVAL))
             {
                 /*
                     Close the menu if:
@@ -485,7 +485,7 @@ var STICKY_TIME_INTERVAL            = 0.5,
     {
         if (!_keyBuffer)
         {
-            _startTime = [CPDate date];
+            _startTime = [CPEvent currentTimestamp];
             _keyBuffer = character;
 
             [CPEvent stopPeriodicEvents];
@@ -522,7 +522,7 @@ var STICKY_TIME_INTERVAL            = 0.5,
         _keyBuffer = Nil;
     }
     else
-        _startTime = [CPDate date];
+        _startTime = [CPEvent currentTimestamp];
 }
 
 - (void)scrollToBeginningOfDocument:(CPMenu)menu
