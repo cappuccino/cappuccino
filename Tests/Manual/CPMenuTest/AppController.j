@@ -1,6 +1,6 @@
 /*
  * AppController.j
- * CPMenu
+ * CPMenuTest
  *
  * Created by Blair Duncan on April 23, 2012.
  * Copyright 2012, SGL Studio, BBDO Toronto All rights reserved.
