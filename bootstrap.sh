@@ -372,6 +372,18 @@ else
     ask_append_shell_config "export CAPP_BUILD=\"$PWD/Build\""
 fi
 
+if [ `uname` = "Darwin" ]; then
+    xcode_path=`xcode-select -print-path 2>/dev/null`
+    if ! [ "$xcode_path" ] || ! [ -d "$xcode_path" ]; then
+        echo "================================================================================"
+        echo "WARNING: Your Xcode path seems to be incorrect. This may prevent the nib2cib and"
+        echo "XcodeCapp utilities from working. Fix your Xcode installation using the"
+        echo "xcode-select utility."
+        echo "For example:"
+        echo "    sudo xcode-select -switch /Applications/Xcode.app/Contents/Developer"
+    fi
+fi
+
 echo "================================================================================"
 echo "Bootstrapping of Cappuccino and other required tools is complete."
 echo "NOTE: any changes made to the shell configuration files won't take place until "
