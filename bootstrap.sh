@@ -293,8 +293,7 @@ if [ "$install_cappuccino" ]; then
 fi
 
 if ! which "narwhal" > /dev/null; then
-    echo "Problem installing Narwhal. To install Narwhal manually follow the "
-    echo "instructions at http://narwhaljs.org/."
+    echo "Problem installing Cappuccino. Review any error messages above and try again."
     exit 1
 fi
 
@@ -371,6 +370,18 @@ else
     echo "variable to a path where you wish to build Cappuccino. This can be automatically"
     echo "set to the default value of \"$PWD/Build\", or you can set \$CAPP_BUILD yourself."
     ask_append_shell_config "export CAPP_BUILD=\"$PWD/Build\""
+fi
+
+if [ `uname` = "Darwin" ]; then
+    xcode_path=`xcode-select -print-path 2>/dev/null`
+    if ! [ "$xcode_path" ] || ! [ -d "$xcode_path" ]; then
+        echo "================================================================================"
+        echo "WARNING: Your Xcode path seems to be incorrect. This may prevent the nib2cib and"
+        echo "XcodeCapp utilities from working. Fix your Xcode installation using the"
+        echo "xcode-select utility."
+        echo "For example:"
+        echo "    sudo xcode-select -switch /Applications/Xcode.app/Contents/Developer"
+    fi
 fi
 
 echo "================================================================================"
