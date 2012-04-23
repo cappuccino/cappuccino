@@ -293,8 +293,7 @@ if [ "$install_cappuccino" ]; then
 fi
 
 if ! which "narwhal" > /dev/null; then
-    echo "Problem installing Narwhal. To install Narwhal manually follow the "
-    echo "instructions at http://narwhaljs.org/."
+    echo "Problem installing Cappuccino. Review any error messages above and try again."
     exit 1
 fi
 
