@@ -83,7 +83,7 @@
 
     if (self)
     {
-        _tokenStyle = [aCoder decodeObjectForKey:@"NSTokenStyle"] || 0;
+        _tokenStyle = [aCoder decodeIntForKey:@"NSTokenStyle"];
     }
 
     return self;

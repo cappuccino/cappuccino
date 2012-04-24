@@ -371,7 +371,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 
         [self setObjectClass:objectClass || [CPMutableDictionary class]];
         [self setEditable:[aCoder decodeBoolForKey:CPObjectControllerIsEditableKey]];
-        [self setAutomaticallyPreparesContent:[aCoder decodeBoolForKey:CPObjectControllerAutomaticallyPreparesContentKey] || NO];
+        [self setAutomaticallyPreparesContent:[aCoder decodeBoolForKey:CPObjectControllerAutomaticallyPreparesContentKey]];
         [self setContent:[aCoder decodeObjectForKey:CPObjectControllerContentKey]];
 
         _observedKeys = [[CPCountedSet alloc] init];

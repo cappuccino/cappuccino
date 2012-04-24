@@ -77,8 +77,8 @@ var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemp
         _windowTitle = [aCoder decodeObjectForKey:_CPCibWindowTemplateWindowTitleKey];
         _windowView = [aCoder decodeObjectForKey:_CPCibWindowTemplateWindowViewKey];
 
-        _windowAutorecalculatesKeyViewLoop = !![aCoder decodeObjectForKey:_CPCibWindowTemplateWindowAutorecalculatesKeyViewLoop];
-        _windowIsFullPlatformWindow = !![aCoder decodeObjectForKey:_CPCibWindowTemplateWindowIsFullPlatformWindowKey];
+        _windowAutorecalculatesKeyViewLoop = [aCoder decodeBoolForKey:_CPCibWindowTemplateWindowAutorecalculatesKeyViewLoop];
+        _windowIsFullPlatformWindow = [aCoder decodeBoolForKey:_CPCibWindowTemplateWindowIsFullPlatformWindowKey];
     }
 
     return self;

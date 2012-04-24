@@ -2761,7 +2761,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         _autoresizesSubviews = ![aCoder containsValueForKey:CPViewAutoresizesSubviewsKey] || [aCoder decodeBoolForKey:CPViewAutoresizesSubviewsKey];
 
-        _hitTests = ![aCoder containsValueForKey:CPViewHitTestsKey] || [aCoder decodeObjectForKey:CPViewHitTestsKey];
+        _hitTests = ![aCoder containsValueForKey:CPViewHitTestsKey] || [aCoder decodeBoolForKey:CPViewHitTestsKey];
 
         // DOM SETUP
 #if PLATFORM(DOM)
@@ -2781,10 +2781,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         }
 #endif
 
-        if ([aCoder containsValueForKey:CPViewIsHiddenKey])
-            [self setHidden:[aCoder decodeBoolForKey:CPViewIsHiddenKey]];
-        else
-            _isHidden = NO;
+        [self setHidden:[aCoder decodeBoolForKey:CPViewIsHiddenKey]];
 
         if ([aCoder containsValueForKey:CPViewOpacityKey])
             [self setAlphaValue:[aCoder decodeIntForKey:CPViewOpacityKey]];
@@ -2792,7 +2789,6 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
             _opacity = 1.0;
 
         [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
-
         [self setupViewFlags];
 
         _theme = [CPTheme defaultTheme];
