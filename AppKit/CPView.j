@@ -2707,6 +2707,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewBoundsKey                 = @"CPViewBoundsKey",
     CPViewFrameKey                  = @"CPViewFrameKey",
     CPViewHitTestsKey               = @"CPViewHitTestsKey",
+    CPViewToolTipKey                = @"CPViewToolTipKey",
     CPViewIsHiddenKey               = @"CPViewIsHiddenKey",
     CPViewOpacityKey                = @"CPViewOpacityKey",
     CPViewSubviewsKey               = @"CPViewSubviewsKey",
@@ -2762,6 +2763,10 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         _autoresizesSubviews = ![aCoder containsValueForKey:CPViewAutoresizesSubviewsKey] || [aCoder decodeBoolForKey:CPViewAutoresizesSubviewsKey];
 
         _hitTests = ![aCoder containsValueForKey:CPViewHitTestsKey] || [aCoder decodeBoolForKey:CPViewHitTestsKey];
+
+#if PLATFORM(DOM)
+        [self setToolTip:[aCoder decodeObjectForKey:CPViewToolTipKey]];
+#endif
 
         // DOM SETUP
 #if PLATFORM(DOM)
@@ -2869,6 +2874,9 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
     if (_isHidden)
         [aCoder encodeBool:_isHidden forKey:CPViewIsHiddenKey];
+
+    if (_toolTip)
+        [aCoder encodeObject:_toolTip forKey:CPViewToolTipKey];
 
     var nextKeyView = [self nextKeyView];
 
