@@ -24,6 +24,7 @@
 @import <AppKit/CPCibControlConnector.j>
 @import <AppKit/CPCibOutletConnector.j>
 @import <AppKit/CPCibRuntimeAttributesConnector.j>
+@import <AppKit/CPCibHelpConnector.j>
 
 NIB_CONNECTION_EQUIVALENCY_TABLE = {};
 
@@ -210,6 +211,38 @@ var NSTransformers = [CPSet setWithObjects:
 - (Class)classForKeyedArchiver
 {
     return [CPCibRuntimeAttributesConnector class];
+}
+
+@end
+
+@implementation CPCibHelpConnector (NSCoding)
+
+- (id)NS_initWithCoder:(CPCoder)aCoder
+{
+    self = [super NS_initWithCoder:aCoder];
+
+    if (self)
+    {
+        _destination = [aCoder decodeObjectForKey:@"NSDestination"];
+        _file = [aCoder decodeObjectForKey:@"NSFile"];
+        _marker = [aCoder decodeObjectForKey:@"NSMarker"];
+    }
+
+    return self;
+}
+
+@end
+
+@implementation NSIBHelpConnector : CPCibHelpConnector
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    return [self NS_initWithCoder:aCoder];
+}
+
+- (Class)classForKeyedArchiver
+{
+    return [CPCibHelpConnector class];
 }
 
 @end
