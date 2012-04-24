@@ -211,7 +211,8 @@ var STICKY_TIME_INTERVAL            = 0.5,
             _lastMouseOverMenuView = nil;
         }
 
-        [activeMenu _highlightItemAtIndex:activeItemIndex];
+        if (activeItemIndex != CPNotFound)
+            [activeMenu _highlightItemAtIndex:activeItemIndex];
 
         if (type === CPMouseMoved || type === CPLeftMouseDragged || type === CPLeftMouseDown || type === CPPeriodic)
         {
