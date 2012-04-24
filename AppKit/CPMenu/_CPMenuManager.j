@@ -161,7 +161,7 @@ var STICKY_TIME_INTERVAL            = 0.5,
 
     var mouseOverMenuView = [activeItem view];
 
-    if (type === CPScrollWheel ![activeMenuContainer isMenuBar])
+    if (type === CPScrollWheel && ![activeMenuContainer isMenuBar])
         [activeMenuContainer scrollByDelta:[anEvent deltaY]];
 
     if (type === CPPeriodic)
