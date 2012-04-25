@@ -2891,6 +2891,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         _hitTests = ![aCoder containsValueForKey:CPViewHitTestsKey] || [aCoder decodeBoolForKey:CPViewHitTestsKey];
 
+        [self setupToolTipHanlders];
         _toolTip = [aCoder decodeObjectForKey:CPViewToolTipKey];
         if (_toolTip)
             [self _installToolTipEventHandlers];
@@ -2922,7 +2923,6 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
         [self setupViewFlags];
-        [self setupToolTipHanlders];
 
         _theme = [CPTheme defaultTheme];
         _themeClass = [aCoder decodeObjectForKey:CPViewThemeClassKey];
