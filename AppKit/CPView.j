@@ -222,7 +222,7 @@ var CPCurrentToolTip,
     CachedNotificationCenter = [CPNotificationCenter defaultCenter];
 }
 
-- (void)setupViewFlags
+- (void)_setupViewFlags
 {
     var theClass = [self class],
         classUID = [theClass UID];
@@ -243,7 +243,7 @@ var CPCurrentToolTip,
     _viewClassFlags = CPViewFlags[classUID];
 }
 
-- (void)setupToolTipHanlders
+- (void)_setupToolTipHandlers
 {
     _toolTipInstalled = NO;
     _toolTipFunctionIn = function(e){[self _fireToolTip];}
@@ -316,8 +316,8 @@ var CPCurrentToolTip,
         _theme = [CPTheme defaultTheme];
         _themeState = CPThemeStateNormal;
 
-        [self setupToolTipHanlders];
-        [self setupViewFlags];
+        [self _setupToolTipHandlers];
+        [self _setupViewFlags];
 
         [self _loadThemeAttributes];
     }
@@ -2891,7 +2891,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         _hitTests = ![aCoder containsValueForKey:CPViewHitTestsKey] || [aCoder decodeBoolForKey:CPViewHitTestsKey];
 
-        [self setupToolTipHanlders];
+        [self _setupToolTipHandlers];
         _toolTip = [aCoder decodeObjectForKey:CPViewToolTipKey];
         if (_toolTip)
             [self _installToolTipEventHandlers];
@@ -2922,7 +2922,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
             _opacity = 1.0;
 
         [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
-        [self setupViewFlags];
+        [self _setupViewFlags];
 
         _theme = [CPTheme defaultTheme];
         _themeClass = [aCoder decodeObjectForKey:CPViewThemeClassKey];
