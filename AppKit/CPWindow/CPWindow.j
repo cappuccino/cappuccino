@@ -830,6 +830,10 @@ CPTexturedBackgroundWindowMask
 - (void)orderFront:(id)aSender
 {
 #if PLATFORM(DOM)
+	// -dw- if a sheet is clicked, the parent window should come up too
+	if ([self isSheet])
+		[_parentView orderFront:self];
+		
     [_platformWindow orderFront:self];
     [_platformWindow order:CPWindowAbove window:self relativeTo:nil];
 #endif
@@ -1511,12 +1515,18 @@ CPTexturedBackgroundWindowMask
     // It is not clear what events should be passed to the view, perhaps all?
     // CPLeftMouseDown is needed for window moving and resizing to work.
     // CPMouseMoved is needed for rollover effects on title bar buttons.
-    if ([self attachedSheet])
+    var sheet = [self attachedSheet];
+    if (sheet)
     {
         switch (type)
         {
             case CPLeftMouseDown:
                 [_windowView mouseDown:anEvent];
+                
+                // -dw- if the window is clicked, the sheet should come to front, and become key,
+                // and the window should be immediately behind
+                [self orderFront:self];
+                [sheet makeKeyAndOrderFront:self];
                 break;
             case CPMouseMoved:
                 [_windowView mouseMoved:anEvent];
