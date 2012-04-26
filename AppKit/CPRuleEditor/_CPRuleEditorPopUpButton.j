@@ -10,7 +10,7 @@ var GRADIENT_START_COLOR = "#fcfcfc",
 var GRADIENT_NORMAL,
     GRADIENT_HIGHLIGHTED,
     GRADIENT_PROPERTY;
- 
+
 if (CPBrowserIsEngine(CPWebKitBrowserEngine))
 {
     GRADIENT_NORMAL = "-webkit-gradient(linear, left top, left bottom, from(" + GRADIENT_START_COLOR + "), to(" + GRADIENT_END_COLOR + "))",
@@ -46,7 +46,7 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
 
     var style = _DOMElement.style;
     style.border = "1px solid " + BORDER_COLOR;
-    style[GRADIENT_PROPERTY] = GRADIENT_NORMAL;   
+    style[GRADIENT_PROPERTY] = GRADIENT_NORMAL;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -61,7 +61,7 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
 {
     self = [super initWithCoder:aCoder];
     [self _sharedInit];
-    
+
     return self;
 }
 
@@ -98,7 +98,7 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
 
 - (void)layoutSubviews
 {
-    radius = FLOOR(CGRectGetHeight([self bounds])/2);
+    radius = FLOOR(CGRectGetHeight([self bounds]) / 2);
     var style = _DOMElement.style,
         radiusCSS = radius + "px";
 
@@ -109,20 +109,19 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
 
 - (void)drawRect:(CGRect)aRect
 {
-    var bounds = [self bounds],
-        context = [[CPGraphicsContext currentContext] graphicsPort];
-
-    var arrow_width = FLOOR(CGRectGetHeight(bounds)/3.5);
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        bounds = [self bounds],
+        arrow_width = FLOOR(CGRectGetHeight(bounds) / 3.5);
 
     CGContextTranslateCTM(context, CGRectGetWidth(bounds) - radius - arrow_width, CGRectGetHeight(bounds) / 2);
 
     var arrowsPath = [CPBezierPath bezierPath];
     [arrowsPath moveToPoint:CGPointMake(0, 1)];
     [arrowsPath lineToPoint:CGPointMake(arrow_width, 1)];
-    [arrowsPath lineToPoint:CGPointMake(arrow_width/2, arrow_width + 1)];
+    [arrowsPath lineToPoint:CGPointMake(arrow_width / 2, arrow_width + 1)];
     [arrowsPath closePath];
 
-    CGContextSetFillColor(context, [CPColor colorWithWhite:101/255 alpha:1]);
+    CGContextSetFillColor(context, [CPColor colorWithWhite:101 / 255 alpha:1]);
     [arrowsPath fill];
 
     CGContextScaleCTM(context, 1 , -1);
@@ -157,13 +156,13 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
 {
     self = [super initWithCoder:aCoder];
     [self _sharedInit];
-    
+
     return self;
 }
 
 - (void)layoutSubviews
 {
-    radius = FLOOR(CGRectGetHeight([self bounds])/2);
+    radius = FLOOR(CGRectGetHeight([self bounds]) / 2);
 
     var style = _DOMElement.style,
         radiusCSS = radius + "px";

@@ -58,18 +58,18 @@ var CONTROL_HEIGHT = 16.,
 {
     var button = [[_CPRuleEditorButton alloc] initWithFrame:CGRectMakeZero()];
     [button setFont:[CPFont boldFontWithName:@"Apple Symbol" size:12.0]];
-    [button setTextColor:[CPColor colorWithWhite:150/255 alpha:1]];
+    [button setTextColor:[CPColor colorWithWhite:150 / 255 alpha:1]];
     [button setAlignment:CPCenterTextAlignment];
     [button setAutoresizingMask:CPViewMinXMargin];
     [button setImagePosition:CPImageOnly];
-    
+
     return button;
 }
 
 - (CPButton)_createAddRowButton
 {
     var button = [self _createRowButton];
-    
+
     [button setImage:[_ruleEditor _addImage]];
     [button setAction:@selector(_addOption:)];
     [button setTarget:self];
@@ -97,12 +97,13 @@ var CONTROL_HEIGHT = 16.,
 
 - (CPPopUpButton)_createPopUpButtonWithItems:(CPArray)itemsArray selectedItemIndex:(int)index
 {
-    var title = [[itemsArray objectAtIndex:index] title];
-    var font = [_ruleEditor font],
+    var title = [[itemsArray objectAtIndex:index] title],
+        font = [_ruleEditor font],
         width = [title sizeWithFont:font].width + 20,
-        rect = CGRectMake(0, 0, (width - width % 40) + 80, CONTROL_HEIGHT);
+        rect = CGRectMake(0, 0, (width - width % 40) + 80, CONTROL_HEIGHT),
 
-    var popup = [[_CPRuleEditorPopUpButton alloc] initWithFrame:rect];
+        popup = [[_CPRuleEditorPopUpButton alloc] initWithFrame:rect];
+
     [popup setTextColor:[CPColor colorWithWhite:101 / 255 alpha:1]];
     [popup setValue:font forThemeAttribute:@"font"];
 
@@ -122,13 +123,14 @@ var CONTROL_HEIGHT = 16.,
 
 - (_CPRuleEditorTextField)_createStaticTextFieldWithStringValue:(CPString )text
 {
-    text = [[_ruleEditor standardLocalizer] localizedStringForString:text];
+    var textField = [[_CPRuleEditorTextField alloc] initWithFrame:CPMakeRect(0, 0, 200, CONTROL_HEIGHT)],
+        refont = [_ruleEditor font],
+        font = [CPFont fontWithName:[refont familyName] size:[refont size] + 2],
 
-    var textField = [[_CPRuleEditorTextField alloc] initWithFrame:CPMakeRect(0, 0, 200, CONTROL_HEIGHT)];
-    var font = [_ruleEditor font];
-    font = [CPFont fontWithName:font._name size:font._size + 2];
+        localizedText = [[_ruleEditor standardLocalizer] localizedStringForString:text];
+
     [textField setValue:font forThemeAttribute:@"font"];
-    [textField setStringValue:text];
+    [textField setStringValue:localizedText];
     [textField sizeToFit];
 
     return textField;
@@ -193,9 +195,10 @@ var CONTROL_HEIGHT = 16.,
         parent,
         numberOfCriteria,
         numberOfChildren,
-        firstResponderIndex;
+        firstResponderIndex,
 
-    var ruleItems = [CPMutableArray array];
+        ruleItems = [CPMutableArray array],
+        responder = [[self window] firstResponder];
 
     [self _emptyRulePartSubviews];
 
@@ -203,7 +206,6 @@ var CONTROL_HEIGHT = 16.,
     numberOfCriteria = [criteria count];
 
     firstResponderIndex = numberOfCriteria - 1;
-    var responder = [[self window] firstResponder];
     if (responder)
         firstResponderIndex = [_ruleOptionViews indexOfObjectIdenticalTo:responder];
 
@@ -224,16 +226,16 @@ var CONTROL_HEIGHT = 16.,
         numberOfChildren = [childItems count];
         if (numberOfChildren > 1)
         {
-            var menuItems = [CPMutableArray arrayWithCapacity:numberOfChildren];
+            var menuItems = [CPMutableArray arrayWithCapacity:numberOfChildren],
+                selectedIndex = [childItems indexOfObject:criterion];
 
-            var selectedIndex = [childItems indexOfObject:criterion];
             if (selectedIndex == CPNotFound)
                 break;
 
             for (var j = 0; j < numberOfChildren; ++j)
             {
-                var childItem = [childItems objectAtIndex:j];
-                var childValue = [childValues objectAtIndex:j];
+                var childItem = [childItems objectAtIndex:j],
+                    childValue = [childValues objectAtIndex:j];
 
                 if ([childValue isKindOfClass:[CPMenuItem class]])
                 {
@@ -261,8 +263,8 @@ var CONTROL_HEIGHT = 16.,
         }
         else
         {
-            var value = [childValues objectAtIndex:0];
-            var type = [value valueType];
+            var value = [childValues objectAtIndex:0],
+                type = [value valueType];
 
             if (type === 0)
                 ruleView = [self _createStaticTextFieldWithStringValue:value];
@@ -329,11 +331,11 @@ var CONTROL_HEIGHT = 16.,
         leftButtonMinX,
         rowHeight = [_ruleEditor rowHeight],
         count = [_ruleOptionViews count],
-        sliceFrame = [self frame];
+        sliceFrame = [self frame],
 
-    var buttonFrame = CGRectMake(CGRectGetWidth(sliceFrame) - BUTTON_HEIGHT - [self _rowButtonsRightHorizontalPadding], ([_ruleEditor rowHeight] - BUTTON_HEIGHT)/2 - 2, BUTTON_HEIGHT, BUTTON_HEIGHT);
+        buttonFrame = CGRectMake(CGRectGetWidth(sliceFrame) - BUTTON_HEIGHT - [self _rowButtonsRightHorizontalPadding], ([_ruleEditor rowHeight] - BUTTON_HEIGHT) / 2 - 2, BUTTON_HEIGHT, BUTTON_HEIGHT);
+
     [_addButton setFrame:buttonFrame];
-
     buttonFrame.origin.x -= BUTTON_HEIGHT + [self _rowButtonsInterviewHorizontalPadding];
     [_subtractButton setFrame:buttonFrame];
 
@@ -349,7 +351,7 @@ var CONTROL_HEIGHT = 16.,
         var ruleOptionView = _ruleOptionViews[i],
             optionFrame = _ruleOptionFrames[i];
 
-        optionFrame.origin.y = (rowHeight - CGRectGetHeight(optionFrame))/2 - 2;
+        optionFrame.origin.y = (rowHeight - CGRectGetHeight(optionFrame)) / 2 - 2;
         if (widthChanged)
         {
             optionFrame.origin.x = optionViewOriginX;

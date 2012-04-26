@@ -193,12 +193,11 @@
             if ([[mergednode title] isEqualToString:[anode title]])
             {
                 var children1 = [mergednode children],
-                    children2 = [anode children];
+                    children2 = [anode children],
+                    children12 = [children1 arrayByAddingObjectsFromArray:children2],
+                    mergedChildren = [self _mergeTree:children12];
 
-                var children12 = [children1 arrayByAddingObjectsFromArray:children2];
-                var mergedChildren = [self _mergeTree:children12];
                 [mergednode setChildren:mergedChildren];
-
                 merged = YES;
             }
         }

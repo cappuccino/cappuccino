@@ -21,14 +21,14 @@
 {
     var views,
         copiedContainer;
-        
+
     var uuid = [[aTree template] UID],
         cachedNode = templateTable[uuid],
         node = [[_CPPredicateEditorRowNode alloc] init];
-        
+
     [node setTree:aTree];
 
-    if (cachedNode == nil)
+    if (!cachedNode)
     {
         views = [CPMutableArray array];
         copiedContainer = [CPMutableArray array];

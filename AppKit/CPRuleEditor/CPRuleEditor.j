@@ -50,9 +50,8 @@ CPRuleEditorNestingModeSimple   = 3;        // One compound row at the top with 
 CPRuleEditorRowTypeSimple       = 0;
 CPRuleEditorRowTypeCompound     = 1;
 
-var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType";
-
-var itemsContext                = "items",
+var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
+    itemsContext                = "items",
     valuesContext               = "values",
     subrowsContext              = "subrows_array",
     boundArrayContext           = "bound_array";
@@ -807,7 +806,7 @@ TODO: implement
     for (i = 0; i < count; i++)
     {
         var item = [items objectAtIndex:i],
-        //var displayValue = [self _queryValueForItem:item inRow:aRow];  A voir. On peut aussi prendre la valeur affichée dans le row cache.
+        //var displayValue = [self _queryValueForItem:item inRow:aRow]; Ask the delegate or get cached value ?.
             displayValue = [[self displayValuesForRow:aRow] objectAtIndex:i],
             predpart = [_ruleDelegate ruleEditor:self predicatePartsForCriterion:item withDisplayValue:displayValue inRow:aRow];
 
@@ -1410,18 +1409,16 @@ TODO: implement
 
     var rowIndexEvent = [slice rowIndex],
         rowTypeEvent = [self rowTypeForRow:rowIndexEvent],
-        insertIndex = rowIndexEvent + 1;
-
-    var parentRowIndex = (rowTypeEvent === CPRuleEditorRowTypeCompound) ? rowIndexEvent:[self parentRowForRow:rowIndexEvent];
+        insertIndex = rowIndexEvent + 1,
+        parentRowIndex = (rowTypeEvent === CPRuleEditorRowTypeCompound) ? rowIndexEvent:[self parentRowForRow:rowIndexEvent];
 
     [self insertRowAtIndex:insertIndex withType:type asSubrowOfRow:parentRowIndex animate:YES];
 }
 
 - (id)_insertNewRowAtIndex:(int)insertIndex ofType:(CPRuleEditorRowType)rowtype withParentRow:(int)parentRowIndex
 {
-    var row = [[[self rowClass] alloc] init];
-
-    var itemsandvalues = [self _getItemsAndValuesToAddForRow:insertIndex ofType:rowtype],
+    var row = [[[self rowClass] alloc] init],
+        itemsandvalues = [self _getItemsAndValuesToAddForRow:insertIndex ofType:rowtype],
         newitems = [itemsandvalues valueForKey:@"item"],
         newvalues = [itemsandvalues valueForKey:@"value"];
 
@@ -1538,10 +1535,9 @@ TODO: implement
     var criteria = [self criteriaForRow:aRow],
         displayValues = [self displayValuesForRow:aRow],
         rowType = [self rowTypeForRow:aRow],
-        anItem = toItem;
-        //fromItemIndex = [criteria indexOfObjectIdenticalTo:fromItem];
+        anItem = toItem,
 
-    var items = [criteria subarrayWithRange:CPMakeRange(0, fromItemIndex)],
+        items = [criteria subarrayWithRange:CPMakeRange(0, fromItemIndex)],
         values = [displayValues subarrayWithRange:CPMakeRange(0, fromItemIndex)];
 
     _lastRow = aRow;
@@ -1601,9 +1597,9 @@ TODO: implement
     {
         var newCacheGlobalIndex = (parentCacheIndex + 1) + newRowCacheIndex,
             obj = [newRows objectAtIndex:newRowCacheIndex],
-            newRowType = [obj valueForKey:_typeKeyPath];
+            newRowType = [obj valueForKey:_typeKeyPath],
+            cache = [[_CPRuleEditorCache alloc] init];
 
-        var cache = [[_CPRuleEditorCache alloc] init];
         [cache setRowObject:obj];
         [cache setRowIndex:newCacheGlobalIndex];
         [cache setIndentation:parentCacheIndentation + 1];
@@ -1689,8 +1685,9 @@ TODO: implement
     [_rowCache removeAllObjects];
     [_slices removeAllObjects];
 
-    var newRows = [CPArray array];
-    var oldRows = [self _rootRowsArray];
+    var newRows = [CPArray array],
+        oldRows = [self _rootRowsArray];
+
     [self _changedRowArray:newRows withOldRowArray:oldRows forParent:_boundArrayOwner];
   }
   else
@@ -1775,7 +1772,7 @@ TODO: implement
         count = [_slices count];
 
     [self _updateSliceRows];
-        
+
     if ([[self superview] isKindOfClass:[CPClipView class]])
         [self setFrameSize:CGSizeMake(CGRectGetWidth([self frame]), count * _sliceHeight)];
 
@@ -2313,9 +2310,9 @@ TODO: implement
         if ([self rowTypeForRow:globalChildIndex] === CPRuleEditorRowTypeCompound)
         {
             var rowObject = [[self _rowCacheForIndex:current_index] rowObject],
-                subrows = [self _subrowObjectsOfObject:rowObject];
+                subrows = [self _subrowObjectsOfObject:rowObject],
+                subIndexes = [self _globalIndexesForSubrowIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0,[subrows count])] ofParentObject:rowObject];
 
-            var subIndexes = [self _globalIndexesForSubrowIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0,[subrows count])] ofParentObject:rowObject];
             numberOfChildrenOfPreviousBrother = [subIndexes count];
         }
 
@@ -2370,8 +2367,8 @@ TODO: implement
 
     for (var i = 0; i < numOfChildren; ++i)
     {
-        var aChild = [self _queryChild:i ofItem:parentItem withRowType:type];
-        var availChild = aChild,
+        var aChild = [self _queryChild:i ofItem:parentItem withRowType:type],
+            availChild = aChild,
             availValue = value;
 
         if (criterion !== aChild)
