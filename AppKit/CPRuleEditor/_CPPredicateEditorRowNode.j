@@ -31,7 +31,7 @@
         uuid = [template UID],
         cachedNode = templateTable[uuid];
 
-    if (cachedNode === nil)
+    if (!cachedNode)
     {
         views = [CPMutableArray array];
         copiedContainer = [CPMutableArray array];
