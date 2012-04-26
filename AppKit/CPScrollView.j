@@ -1506,8 +1506,8 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
         _scrollTimer = nil;
         _implementedDelegateMethods = 0;
 
-        _scrollerStyle = [aCoder decodeIntForKey:CPScrollViewScrollerStyleKey] || CPScrollerStyleGlobal;
-        _scrollerKnobStyle = [aCoder decodeIntForKey:CPScrollViewScrollerKnobStyleKey] || CPScrollerKnobStyleDefault;
+        _scrollerStyle = [aCoder decodeObjectForKey:CPScrollViewScrollerStyleKey] || CPScrollerStyleGlobal;
+        _scrollerKnobStyle = [aCoder decodeObjectForKey:CPScrollViewScrollerKnobStyleKey] || CPScrollerKnobStyleDefault;
 
         [[CPNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(_didReceiveDefaultStyleChange:)

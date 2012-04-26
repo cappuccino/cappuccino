@@ -84,10 +84,10 @@
     {
         _recentsAutosaveName = [aCoder decodeObjectForKey:@"NSRecentsAutosaveName"];
         _maximumRecents = [aCoder decodeIntForKey:@"NSMaximumRecents"];
-        _sendsWholeSearchString = [aCoder decodeBoolForKey:@"NSSendsWholeSearchString"] ? YES : NO;
+        _sendsWholeSearchString = [aCoder decodeBoolForKey:@"NSSendsWholeSearchString"];
 
         // These bytes don't seem to be used for anything else but the send immediately flag
-        _sendsSearchStringImmediately = [aCoder decodeBytesForKey:@"NSSearchFieldFlags"] ? YES: NO;
+        _sendsSearchStringImmediately = [aCoder decodeBytesForKey:@"NSSearchFieldFlags"] ? YES : NO;
     }
 
     return self;

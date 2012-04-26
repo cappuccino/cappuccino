@@ -516,7 +516,7 @@ var CPImageViewImageKey          = @"CPImageViewImageKey",
         [self setHasShadow:[aCoder decodeBoolForKey:CPImageViewHasShadowKey]];
         [self setImageAlignment:[aCoder decodeIntForKey:CPImageViewImageAlignmentKey]];
 
-        if ([aCoder decodeBoolForKey:CPImageViewIsEditableKey] || NO)
+        if ([aCoder decodeBoolForKey:CPImageViewIsEditableKey])
             [self setEditable:YES];
 
         [self setNeedsLayout];

@@ -45,10 +45,7 @@ var NSViewAutoresizingMask = 0x3F,
 
     if (self)
     {
-        _tag = 0;
-
-        if ([aCoder containsValueForKey:@"NSTag"])
-            _tag = [aCoder decodeIntForKey:@"NSTag"];
+        _tag = [aCoder decodeIntForKey:@"NSTag"];
 
         _bounds = CGRectMake(0.0, 0.0, CGRectGetWidth(_frame), CGRectGetHeight(_frame));
 

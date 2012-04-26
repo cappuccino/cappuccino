@@ -1008,11 +1008,11 @@ var CPCollectionViewMinItemSizeKey              = @"CPCollectionViewMinItemSizeK
 
         _itemSize = CGSizeMakeZero();
 
-        _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey] || CGSizeMakeZero();
-        _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey] || CGSizeMakeZero();
+        _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey];
+        _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey];
 
-        _maxNumberOfRows = [aCoder decodeIntForKey:CPCollectionViewMaxNumberOfRowsKey] || 0;
-        _maxNumberOfColumns = [aCoder decodeIntForKey:CPCollectionViewMaxNumberOfColumnsKey] || 0;
+        _maxNumberOfRows = [aCoder decodeIntForKey:CPCollectionViewMaxNumberOfRowsKey];
+        _maxNumberOfColumns = [aCoder decodeIntForKey:CPCollectionViewMaxNumberOfColumnsKey];
 
         _verticalMargin = [aCoder decodeFloatForKey:CPCollectionViewVerticalMarginKey];
 

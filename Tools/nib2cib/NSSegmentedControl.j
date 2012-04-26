@@ -95,9 +95,13 @@
     if (self = [super initWithCoder:aCoder])
     {
         _segments           = [aCoder decodeObjectForKey:"NSSegmentImages"];
-        _selectedSegment    = [aCoder decodeIntForKey:"NSSelectedSegment"] || -1;
+        _selectedSegment    = [aCoder decodeObjectForKey:"NSSelectedSegment"];
+
+        if (_selectedSegment === nil)
+            _selectedSegment = -1;
+
         _segmentStyle       = [aCoder decodeIntForKey:"NSSegmentStyle"];
-        _trackingMode       = [aCoder decodeIntForKey:"NSTrackingMode"] || CPSegmentSwitchTrackingSelectOne;
+        _trackingMode       = [aCoder decodeIntForKey:"NSTrackingMode"];
 
         if (_trackingMode == CPSegmentSwitchTrackingSelectOne && _selectedSegment == -1)
             _selectedSegment = 0;
