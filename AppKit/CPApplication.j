@@ -1181,7 +1181,9 @@ _CPRunModalLoop = function(anEvent)
     var theWindow = [anEvent window],
         modalSession = CPApp._currentSession;
 
-    if (theWindow == modalSession._window || [theWindow worksWhenModal])
+    if (theWindow == modalSession._window || 
+        [theWindow worksWhenModal] ||
+        [theWindow attachedSheet] == modalSession._window)
         [theWindow sendEvent:anEvent];
 }
 

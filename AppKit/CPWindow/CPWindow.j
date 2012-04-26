@@ -2369,8 +2369,14 @@ CPTexturedBackgroundWindowMask
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillBeginSheetNotification object:self];
     
-    // old behavior; in Cocoa, sheets are not modal by default
-    //[CPApp runModalForWindow:aSheet];
+    // if sheet is attached to a modal window, the sheet runs 
+    // as if itself and the parent window are modal
+    aSheet._isModal = NO;
+    if ([CPApp modalWindow]===self)
+    {
+        [CPApp runModalForWindow:aSheet];
+        aSheet._isModal = YES;
+    }
 
     [aSheet orderFront:self];
     [aSheet setFrame:startFrame display:YES animate:NO];
@@ -2453,6 +2459,9 @@ CPTexturedBackgroundWindowMask
         
     _sheetContext = nil;
     sheet._parentView = nil;
+
+    if (sheet._isModal)
+        [CPApp stopModal];
 
     if (delegate != nil && endSelector != nil)
         objj_msgSend(delegate, endSelector, sheet, returnCode, contextInfo);
