@@ -100,25 +100,39 @@ CPCheckBoxImageOffset = 4.0;
 {
 }
 
-- (void)_updatePlaceholdersWithOptions:(CPDictionary)options
-{
-    [super _updatePlaceholdersWithOptions:options];
-
-    [self _setPlaceholder:CPMixedState forMarker:CPMultipleValuesMarker isDefault:YES];
-    [self _setPlaceholder:CPOffState forMarker:CPNoSelectionMarker isDefault:YES];
-    [self _setPlaceholder:CPOffState forMarker:CPNotApplicableMarker isDefault:YES];
-    [self _setPlaceholder:CPOffState forMarker:CPNullMarker isDefault:YES];
-}
-
-- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
-{
-    [_source setAllowsMixedState:(aValue === CPMixedState)];
-    [_source setState:aValue];
-}
-
 - (void)setValue:(id)aValue forBinding:(CPString)aBinding
 {
-    [_source setState:aValue];
+    var newValue = aValue;
+    if ( CPIsControllerMarker(aValue) || aValue === nil )
+    {
+        var options = [_info objectForKey:CPOptionsKey],
+            newValue = CPOffState;
+        if (aValue === CPMultipleValuesMarker)
+        {
+            if ([options containsKey:CPMultipleValuesPlaceholderBindingOption])
+                newValue = [_source setState:[options valueForKey:CPMultipleValuesPlaceholderBindingOption]];
+            else
+                newValue = CPMixedState;
+        }
+        else if (aValue === CPNoSelectionMarker)
+        {
+            if ([options containsKey:CPNoSelectionPlaceholderBindingOption]);
+                newVaue = [options valueForKey:CPNoSelectionPlaceholderBindingOption];
+         }
+         else if (aValue === CPNotApplicableMarker)
+         {
+             if ([options containsKey:CPNotApplicablePlaceholderBindingOption])
+                newValue = [options valueForKey:CPNotApplicablePlaceholderBindingOption];
+         }
+         else
+         {
+            if ([options containsKey:CPNullPlaceholderBindingOption])
+                newValue = [options valueForKey:CPNullPlaceholderBindingOption];
+         }
+     }
+
+     [_source setAllowsMixedState:(newValue === CPMixedState)];
+     [_source setState:newValue];
 }
 
 @end

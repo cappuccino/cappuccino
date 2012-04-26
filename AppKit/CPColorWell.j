@@ -282,42 +282,13 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 {
 }
 
-- (void)_updatePlaceholdersWithOptions:(CPDictionary)options
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
 {
-    var placeholderColor = [CPColor blueColor];
+    if (CPIsControllerMarker(aValue))
+        aValue = [CPColor blackColor];
 
-    [self _setPlaceholder:placeholderColor forMarker:CPMultipleValuesMarker isDefault:YES];
-    [self _setPlaceholder:placeholderColor forMarker:CPNoSelectionMarker isDefault:YES];
-    [self _setPlaceholder:placeholderColor forMarker:CPNotApplicableMarker isDefault:YES];
-    [self _setPlaceholder:placeholderColor forMarker:CPNullMarker isDefault:YES];
+    [_source setImage:aValue];
 }
-
-- (void)setValueFor:(CPString)theBinding
-{
-    var destination = [_info objectForKey:CPObservedObjectKey],
-        keyPath = [_info objectForKey:CPObservedKeyPathKey],
-        options = [_info objectForKey:CPOptionsKey],
-        newValue = [destination valueForKeyPath:keyPath],
-        isPlaceholder = CPIsControllerMarker(newValue);
-
-    if (isPlaceholder)
-    {
-        if (newValue === CPNotApplicableMarker && [options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
-        {
-           [CPException raise:CPGenericException
-                       reason:@"can't transform non applicable key on: " + _source + " value: " + newValue];
-        }
-
-        newValue = [self _placeholderForMarker:newValue];
-    }
-    else
-    {
-        newValue = [self transformValue:newValue withOptions:options];
-    }
-
-    [_source setColor:newValue];
-}
-
 @end
 
 var CPColorWellColorKey     = "CPColorWellColorKey",
