@@ -522,7 +522,7 @@ var concat = Array.prototype.concat,
 
     if ([objects count])
     {
-        argumentsArray = [[nil, aSelector] arrayByAddingObjectsFromArray:objects];
+        var argumentsArray = [[nil, aSelector] arrayByAddingObjectsFromArray:objects];
 
         for (; index < count; ++index)
         {
@@ -536,13 +536,46 @@ var concat = Array.prototype.concat,
             objj_msgSend([self objectAtIndex:index], aSelector);
 }
 
-- (void)enumerateObjectsUsingBlock:(Function)aFunction
+- (void)enumerateObjectsUsingBlock:(Function /*(id anObject, int idx, @ref BOOL stop)*/)aFunction
 {
+    // This could have been [self enumerateObjectsWithOptions:CPEnumerationNormal usingBlock:aFunction]
+    // but this method should be as fast as possible.
     var index = 0,
-        count = [self count];
+        count = [self count],
+        shouldStop = NO,
+        shouldStopRef = AT_REF(shouldStop);
 
     for (; index < count; ++index)
-        aFunction([self objectAtIndex:index], index);
+    {
+        aFunction([self objectAtIndex:index], index, shouldStopRef);
+        if (shouldStop)
+            return;
+    }
+}
+
+- (void)enumerateObjectsWithOptions:(CPEnumerationOptions)options usingBlock:(Function /*(id anObject, int idx, @ref BOOL stop)*/)aFunction
+{
+    var shouldStop = NO;
+
+    if (options & CPEnumerationReverse)
+    {
+        var index = [self count] - 1,
+            stop = -1,
+            increment = -1;
+    }
+    else
+    {
+        var index = 0,
+            stop = [self count],
+            increment = 1;
+    }
+
+    for (; index !== stop; index += increment)
+    {
+        aFunction([self objectAtIndex:index], index, AT_REF(shouldStop));
+        if (shouldStop)
+            return;
+    }
 }
 
 // Comparing arrays

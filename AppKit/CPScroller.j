@@ -23,6 +23,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "../Foundation/Foundation.h"
+
 @import "CPControl.j"
 
 // CPScroller Constants
@@ -260,6 +262,9 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 */
 - (void)setKnobProportion:(float)aProportion
 {
+    if (!_IS_NUMERIC(aProportion))
+        [CPException raise:CPInvalidArgumentException reason:"aProportion must be numeric"];
+
     _knobProportion = MIN(1.0, MAX(0.0001, aProportion));
 
     [self setNeedsDisplay:YES];
@@ -766,6 +771,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
     if (_timerFadeOut)
         [_timerFadeOut invalidate];
+
     _timerFadeOut = [CPTimer scheduledTimerWithTimeInterval:1.2 target:self selector:@selector(_performFadeOut:) userInfo:nil repeats:NO];
 }
 
@@ -791,10 +797,12 @@ var CPScrollerControlSizeKey = @"CPScrollerControlSize",
     if (self = [super initWithCoder:aCoder])
     {
         _controlSize = CPRegularControlSize;
+
         if ([aCoder containsValueForKey:CPScrollerControlSizeKey])
             _controlSize = [aCoder decodeIntForKey:CPScrollerControlSizeKey];
 
         _knobProportion = 1.0;
+
         if ([aCoder containsValueForKey:CPScrollerKnobProportionKey])
             _knobProportion = [aCoder decodeFloatForKey:CPScrollerKnobProportionKey];
 
@@ -804,8 +812,10 @@ var CPScrollerControlSizeKey = @"CPScrollerControlSize",
 
         _allowFadingOut = YES;
         _isMouseOver = NO;
-        var paramAnimFadeOut   = [CPDictionary dictionaryWithObjects:[self, CPViewAnimationFadeOutEffect]
-                                                          forKeys:[CPViewAnimationTargetKey, CPViewAnimationEffectKey]];
+
+        var paramAnimFadeOut = [CPDictionary dictionaryWithObjects:[self, CPViewAnimationFadeOutEffect]
+                                                           forKeys:[CPViewAnimationTargetKey, CPViewAnimationEffectKey]];
+
         _animationScroller = [[CPViewAnimation alloc] initWithDuration:0.2 animationCurve:CPAnimationEaseInOut];
         [_animationScroller setViewAnimations:[paramAnimFadeOut]];
         [_animationScroller setDelegate:self];

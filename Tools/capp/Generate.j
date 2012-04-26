@@ -166,7 +166,7 @@ function gen(/*va_args*/)
                     key = null,
                     keyEnumerator = [configuration keyEnumerator];
 
-                while (key = [keyEnumerator nextObject])
+                while ((key = [keyEnumerator nextObject]) !== nil)
                     contents = contents.replace(new RegExp("__" + RegExp.escape(key) + "__", 'g'), [configuration valueForKey:key]);
 
                 FILE.write(path, contents, { charset: "UTF-8"});

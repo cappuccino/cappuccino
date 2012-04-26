@@ -180,7 +180,7 @@ var CPUserDefaultsControllerSharedKey = "CPUserDefaultsControllerSharedKey";
     var keys = [_cachedValues allKeys],
         keysCount = [keys count];
 
-    while(keysCount--)
+    while (keysCount--)
     {
         var key = keys[keysCount];
         [self willChangeValueForKey:key];
@@ -194,7 +194,7 @@ var CPUserDefaultsControllerSharedKey = "CPUserDefaultsControllerSharedKey";
     var keys = [_cachedValues allKeys],
         keysCount = [keys count];
 
-    while(keysCount--)
+    while (keysCount--)
     {
         var key = keys[keysCount];
         [[_controller defaults] setObject:[_cachedValues objectForKey:key] forKey:key];
@@ -207,7 +207,7 @@ var CPUserDefaultsControllerSharedKey = "CPUserDefaultsControllerSharedKey";
         keys = [_cachedValues allKeys],
         keysCount = [keys count];
 
-    while(keysCount--)
+    while (keysCount--)
     {
         var key = keys[keysCount];
         [self willChangeValueForKey:key];
@@ -229,7 +229,7 @@ var CPUserDefaultsControllerSharedKey = "CPUserDefaultsControllerSharedKey";
         keys = [_cachedValues allKeys],
         keysCount = [keys count];
 
-    while(keysCount--)
+    while (keysCount--)
     {
         var key = keys[keysCount],
             value = [_cachedValues objectForKey:key],
@@ -250,7 +250,7 @@ var CPUserDefaultsControllerSharedKey = "CPUserDefaultsControllerSharedKey";
         keys = [_cachedValues allKeys],
         keysCount = [keys count];
 
-    while(keysCount--)
+    while (keysCount--)
     {
         var key = keys[keysCount],
             value = [_cachedValues objectForKey:key],

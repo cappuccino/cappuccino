@@ -1,9 +1,9 @@
 /*
  * main.j
- * __Product__
+ * __project.name__
  *
- * Created by __Me__ on __Date__.
- * Copyright 2008 __MyCompanyName__. All rights reserved.
+ * Created by __user.name__ on __project.date__
+ * Copyright __project.year__, __organization.name__. All rights reserved.
  */
 
 @import <Foundation/Foundation.j>

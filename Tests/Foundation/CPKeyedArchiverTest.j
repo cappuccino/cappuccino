@@ -12,7 +12,7 @@
 
     [original setAJsObject:{ 'top': 5 }];
 
-    var decoded = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:original]]
+    var decoded = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:original]];
 
     [self assert:5 equals:[decoded aJsObject].top message:"JS object encoded and decoded right"];
 }

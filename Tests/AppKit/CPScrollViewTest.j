@@ -4,6 +4,21 @@
 {
 }
 
+/*!
+    Test that scroll views don't generate bad layouts when very small.
+*/
+- (void)testZeroSize
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMakeZero()],
+        documentView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+    [scrollView setAutohidesScrollers:NO];
+    [scrollView setDocumentView:documentView];
+    [scrollView setScrollerStyle:CPScrollerStyleLegacy];
+    // If the layout operation leads to setKnobProportion:0/0 this will crash.
+    [[scrollView horizontalScroller] layoutSubviews];
+    [[scrollView verticalScroller] layoutSubviews];
+}
+
 - (void)testBothScrollersVisible
 {
     var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)];
@@ -176,11 +191,10 @@
 
 - (void)testSetContentView
 {
-    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)];
-    var documentView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 400.0)];
-
-    var replacementContentView = [[CPClipView alloc] initWithFrame:[scrollView _insetBounds]];
-    var replacementDocumentView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 400.0)];
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)],
+        documentView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 400.0)],
+        replacementContentView = [[CPClipView alloc] initWithFrame:[scrollView _insetBounds]],
+        replacementDocumentView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 400.0)];
 
     [replacementContentView setDocumentView:replacementDocumentView];
 
@@ -201,3 +215,4 @@
 }
 
 @end
+

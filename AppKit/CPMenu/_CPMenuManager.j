@@ -5,13 +5,13 @@ _CPMenuManagerScrollingStateUp      = -1;
 _CPMenuManagerScrollingStateDown    = 1;
 _CPMenuManagerScrollingStateNone    = 0;
 
-var STICKY_TIME_INTERVAL            = 500,
+var STICKY_TIME_INTERVAL            = 0.5,
     SharedMenuManager               = nil;
 
 @implementation _CPMenuManager: CPObject
 {
     CPTimeInterval      _startTime;
-    BOOL                _hasMouseGoneUpAfterStartedTracking;
+    BOOL                _mouseWasDragged;
     int                 _scrollingState;
     CGPoint             _lastGlobalLocation;
 
@@ -66,7 +66,7 @@ var STICKY_TIME_INTERVAL            = 500,
 
     CPApp._activeMenu = menu;
 
-    _startTime = [anEvent timestamp];//new Date();
+    _startTime = [anEvent timestamp];
     _scrollingState = _CPMenuManagerScrollingStateNone;
 
     _constraintRect = aRect;
@@ -91,7 +91,7 @@ var STICKY_TIME_INTERVAL            = 500,
             return [self trackMenuBarButtonEvent:anEvent];
     }
 
-    _hasMouseGoneUpAfterStartedTracking = NO;
+    _mouseWasDragged = NO;
 
     [self trackEvent:anEvent];
 }
@@ -127,7 +127,7 @@ var STICKY_TIME_INTERVAL            = 500,
 
     if (_keyBuffer)
     {
-        if (([CPDate date] - _startTime) > (STICKY_TIME_INTERVAL + [activeMenu numberOfItems] / 2))
+        if (([anEvent timestamp] - _startTime) > (STICKY_TIME_INTERVAL + [activeMenu numberOfItems] / 2))
             [self selectNextItemBeginningWith:_keyBuffer inMenu:menu clearBuffer:YES];
 
         if (type === CPPeriodic)
@@ -189,7 +189,7 @@ var STICKY_TIME_INTERVAL            = 500,
 
         var menuContainerWindow = activeMenuContainer;
 
-        if (![menuContainerWindow isKindOfClass:[CPWindow class]])
+        if (![menuContainerWindow isKindOfClass:CPWindow])
             menuContainerWindow = [menuContainerWindow window];
 
         [menuContainerWindow
@@ -215,6 +215,9 @@ var STICKY_TIME_INTERVAL            = 500,
 
         if (type === CPMouseMoved || type === CPLeftMouseDragged || type === CPLeftMouseDown || type === CPPeriodic)
         {
+            if (type === CPLeftMouseDragged)
+                _mouseWasDragged = YES;
+
             var oldScrollingState = _scrollingState;
 
             _scrollingState = [activeMenuContainer scrollingStateForPoint:globalLocation];
@@ -229,17 +232,35 @@ var STICKY_TIME_INTERVAL            = 500,
         }
         else if (type === CPLeftMouseUp || type === CPRightMouseUp)
         {
-            if (_hasMouseGoneUpAfterStartedTracking)
-            {
-                // Don't close the menu if the current item has a submenu
-                // and did not override it's default action
-                if ([activeItem action] === @selector(submenuAction:))
-                    return;
+            /*
+                There are a few possibilites:
 
-                [trackingMenu cancelTracking];
+                1. The user clicks and releases without dragging within the sticky time.
+                   This is considered a regular mouse click and not a drag. In this case
+                   we allow the user to track the menu by moving the mouse. The next
+                   mouse up will end tracking.
+
+                2. The user clicks and releases without dragging after the sticky time.
+                   This is considered a drag and release and tracking ends.
+
+                3. The user clicks, drags and then releases. Tracking ends.
+            */
+            if (_mouseWasDragged || ([anEvent timestamp] - _startTime > STICKY_TIME_INTERVAL))
+            {
+                /*
+                    Close the menu if:
+
+                    1. The mouse was dragged.
+                    2. The mouse is released in the menubar.
+                    3. The current item has a submenu with a custom action.
+                */
+                if (_mouseWasDragged ||
+                    [activeMenuContainer isMenuBar] ||
+                    [activeItem action] !== @selector(submenuAction:))
+                {
+                    [trackingMenu cancelTracking];
+                }
             }
-            else
-                _hasMouseGoneUpAfterStartedTracking = YES;
         }
     }
 
@@ -252,7 +273,7 @@ var STICKY_TIME_INTERVAL            = 500,
     }
 
     // If the item has a submenu, show it.
-    if ([activeItem hasSubmenu])// && [activeItem action] === @selector(submenuAction:))
+    if ([activeItem hasSubmenu]) // && [activeItem action] === @selector(submenuAction:))
     {
         var activeItemRect = [activeMenuContainer rectForItemAtIndex:activeItemIndex],
             newMenuOrigin;
@@ -406,7 +427,7 @@ var STICKY_TIME_INTERVAL            = 500,
             break;
 
         // If this menu is already being shown, unhighlight and return.
-        if (menu === newMenu)//&& [menu supermenu] === baseMenu)
+        if (menu === newMenu) //&& [menu supermenu] === baseMenu)
             return [newMenu _highlightItemAtIndex:CPNotFound];
 
         [menuContainer orderOut:self];
@@ -452,7 +473,7 @@ var STICKY_TIME_INTERVAL            = 500,
         var iter = [selectorNames objectEnumerator],
             obj;
 
-        while (obj = [iter nextObject])
+        while ((obj = [iter nextObject]) !== nil)
         {
             var aSelector = CPSelectorFromString(obj);
 
@@ -483,7 +504,7 @@ var STICKY_TIME_INTERVAL            = 500,
     var iter = [[menu itemArray] objectEnumerator],
         obj;
 
-    while (obj = [iter nextObject])
+    while ((obj = [iter nextObject]) !== nil)
     {
         if ([obj isHidden] || ![obj isEnabled])
             continue;

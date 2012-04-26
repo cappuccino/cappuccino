@@ -104,10 +104,10 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
 - (void)setFlashVars:(CPDictionary)aDictionary
 {
     var varString = @"",
-        enumerator = [aDictionary keyEnumerator];
+        enumerator = [aDictionary keyEnumerator],
+        key;
 
-    var key;
-    while (key = [enumerator nextObject])
+    while ((key = [enumerator nextObject]) !== nil)
         varString = [varString stringByAppendingFormat:@"&%@=%@", key, [aDictionary objectForKey:key]];
 
     if (!_params)
@@ -146,7 +146,7 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
         var enumerator = [_params keyEnumerator],
             key;
 
-        while (_DOMObjectElement && (key = [enumerator nextObject]))
+        while (_DOMObjectElement && (key = [enumerator nextObject]) !== nil)
         {
             var param = document.createElement(@"param");
             param.name = key;
@@ -178,7 +178,7 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
         paramEnumerator = [_params keyEnumerator],
         key;
 
-    while (key = [paramEnumerator nextObject])
+    while ((key = [paramEnumerator nextObject]) !== nil)
         paramString = [paramString stringByAppendingFormat:@"<param name='%@' value='%@' />", key, [_params objectForKey:key]];
 
     _DOMObjectElement = document.createElement(@"object");

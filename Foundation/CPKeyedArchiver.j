@@ -398,7 +398,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
         keys = [aDictionary keyEnumerator],
         references = [CPDictionary dictionary];
 
-    while (key = [keys nextObject])
+    while ((key = [keys nextObject]) !== nil)
         [references setObject:_CPKeyedArchiverEncodeObject(self, [aDictionary objectForKey:key], NO) forKey:key];
 
     [_plistObject setObject:references forKey:aKey];

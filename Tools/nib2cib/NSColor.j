@@ -53,7 +53,7 @@ var NSUnknownColorSpaceModel    = -1,
             var rgb         = [aCoder decodeBytesForKey:@"NSRGB"],
                 string      = CFData.bytesToString(rgb),
                 components  = [string componentsSeparatedByString:@" "],
-                values      = [0,0,0,1];
+                values      = [0, 0, 0, 1];
 
             for (var i = 0; i < components.length && i < 4; i++)
                 values[i] = [components[i] floatValue];
@@ -67,7 +67,7 @@ var NSUnknownColorSpaceModel    = -1,
             var bytes       = [aCoder decodeBytesForKey:@"NSWhite"],
                 string      = CFData.bytesToString(bytes),
                 components  = [string componentsSeparatedByString:@" "],
-                values      = [0,1];
+                values      = [0, 1];
 
             for (var i = 0; i < components.length && i < 2; i++)
                 values[i] = [components[i] floatValue];

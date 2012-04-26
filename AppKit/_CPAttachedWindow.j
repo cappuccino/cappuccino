@@ -38,32 +38,31 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
     @ignore
 
     This is a simple attached window like the one that pops up
-    when you double click on a meeting in iCal
+    when you double click on a meeting in iCal.
 */
 @implementation _CPAttachedWindow : CPWindow
 {
     BOOL            _animates           @accessors(property=animates);
     id              _targetView         @accessors(property=targetView);
     int             _appearance         @accessors(getter=appearance);
+    BOOL            _isClosing          @accessors(property=isClosing);
 
     BOOL            _closeOnBlur;
-    BOOL            _isClosed;
+    BOOL            _browserAnimates;
     BOOL            _shouldPerformAnimation;
-    CPButton        _closeButton;
-    float           _animationDuration;
     CPInteger       _implementedDelegateMethods;
 }
 
-/*!
-    override default windowView class loader
-
-    @param aStyleMask the window mask
-    @return the windowView class
-*/
 
 #pragma mark -
 #pragma mark Class methods
 
+/*!
+    Overrides the default windowView class loader.
+
+    @param aStyleMask the window mask
+    @return the windowView class
+*/
 + (Class)_windowViewClassForStyleMask:(unsigned)aStyleMask
 {
     return _CPAttachedWindowView;
@@ -74,7 +73,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 #pragma mark Initialization
 
 /*!
-    Create and init a _CPAttachedWindow with given size of and view
+    Create and init a _CPAttachedWindow with the given size and view.
 
     @param aSize the size of the attached window
     @param aView the target view
@@ -82,20 +81,20 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 */
 + (id)attachedWindowWithSize:(CGSize)aSize forView:(CPView)aView
 {
-    return [_CPAttachedWindow attachedWindowWithSize:aSize forView:aView styleMask:nil];
+    return [_CPAttachedWindow attachedWindowWithSize:aSize forView:aView styleMask:0];
 }
 
 /*!
-    Create and init a _CPAttachedWindow with given size of and view
+    Create and init a _CPAttachedWindow with given the size, view and style mask.
 
     @param aSize the size of the attached window
     @param aView the target view
-    @return ready to use _CPAttachedWindow
     @param styleMask the window style mask  (combine CPClosableWindowMask and CPClosableOnBlurWindowMask)
+    @return ready to use _CPAttachedWindow
 */
 + (id)attachedWindowWithSize:(CGSize)aSize forView:(CPView)aView styleMask:(int)aMask
 {
-    var attachedWindow = [[_CPAttachedWindow alloc] initWithContentRect:CPRectMake(0.0, 0.0, aSize.width, aSize.height) styleMask:aMask];
+    var attachedWindow = [[_CPAttachedWindow alloc] initWithContentRect:_CGRectMake(0.0, 0.0, aSize.width, aSize.height) styleMask:aMask];
 
     [attachedWindow attachToView:aView];
 
@@ -103,19 +102,19 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 }
 
 /*!
-    Create and init a _CPAttachedWindow with given frame
+    Create and init a _CPAttachedWindow with given the given frame.
 
     @param aFrame the frame of the attached window
     @return ready to use _CPAttachedWindow
 */
 - (id)initWithContentRect:(CGRect)aFrame
 {
-    self = [self initWithContentRect:aFrame styleMask:nil];
+    self = [self initWithContentRect:aFrame styleMask:0];
     return self;
 }
 
 /*!
-    Create and init a _CPAttachedWindow with given frame
+    Designated initializer. Create and init a _CPAttachedWindow with the given frame and style mask.
 
     @param aFrame the frame of the attached window
     @param styleMask the window style mask  (combine CPClosableWindowMask and CPClosableOnBlurWindowMask)
@@ -126,19 +125,16 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
     if (self = [super initWithContentRect:aFrame styleMask:aStyleMask])
     {
         _animates                   = YES;
-        _animates                   = YES;
-        _animationDuration          = 150;
         _closeOnBlur                = (aStyleMask & CPClosableOnBlurWindowMask);
-        _isClosed                   = NO;
-        _shouldPerformAnimation     = _animates;
+        _isClosing                  = NO;
+        _browserAnimates            = [self browserSupportsAnimation];
+        _shouldPerformAnimation     = YES;
 
         [self setLevel:CPStatusWindowLevel];
         [self setMovableByWindowBackground:YES];
         [self setHasShadow:NO];
 
-        _DOMElement.style.WebkitBackfaceVisibility = "hidden";
-        _DOMElement.style.WebkitTransitionProperty = "-webkit-transform, opacity";
-        _DOMElement.style.WebkitTransitionDuration = _animationDuration + "ms";
+        [self setCSS3Property:@"TransitionProperty" value:@"-webkit-transform, opacity"];
 
         [_windowView setNeedsDisplay:YES];
     }
@@ -151,15 +147,20 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 
 - (void)setAppearance:(int)anAppearance
 {
-    if (_appearance == anAppearance)
+    if (_appearance === anAppearance)
         return;
 
     [_windowView setAppearance:anAppearance];
 }
 
+- (void)setStyleMask:(unsigned)aStyleMask
+{
+    _closeOnBlur = (aStyleMask & CPClosableOnBlurWindowMask);
+}
+
 - (void)setDelegate:(id)aDelegate
 {
-    if (_delegate == aDelegate)
+    if (_delegate === aDelegate)
         return;
 
     _delegate = aDelegate;
@@ -176,33 +177,16 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 #pragma mark Observer
 
 /*!
-    Update the _CPAttachedWindow frame if a resize event is observed
-
+    Update the _CPAttachedWindow frame if a resize event is observed.
 */
 - (void)observeValueForKeyPath:(CPString)aPath ofObject:(id)anObject change:(CPDictionary)theChange context:(void)aContext
 {
     if ([aPath isEqual:@"frame"])
     {
-        // @TODO: not recompute everything, just compute the move offset
-        var g = [_windowView preferredEdge];
+        // TODO: don't recompute everything, just compute the move offset
+        var edge = [_windowView preferredEdge];
 
-        [self positionRelativeToView:_targetView preferredEdge:g];
-    }
-}
-
-
-#pragma mark -
-#pragma mark Notification handlers
-
-- (void)_attachedWindowDidMove:(CPNotification)aNotification
-{
-    if ([_windowView isMouseDownPressed])
-    {
-        [_targetView removeObserver:self forKeyPath:@"frame"];
-        [_windowView hideCursor];
-        [self setLevel:CPNormalWindowLevel];
-        [_closeButton setFrameOrigin:CPPointMake(1.0, 1.0)];
-        [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidMoveNotification object:self];
+        [self positionRelativeToRect:nil ofView:_targetView preferredEdge:edge];
     }
 }
 
@@ -210,59 +194,35 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 #pragma mark -
 #pragma mark Utilities
 
-- (CPPoint)computeOrigin:(CPView)aView preferredEdge:(int)anEdge
+- (CGPoint)computeOriginFromRect:(CGRect)aRect ofView:(CPView)positioningView preferredEdge:(int)anEdge
 {
-    var frameView = [aView frame],
-        currentView = aView,
-        origin = [aView frameOrigin],
-        lastView;
-
-    // if somebody succeed to use the conversion function of CPView
-    // to get this working, please do.
-    while (currentView = [currentView superview])
-    {
-        origin.x += [currentView frameOrigin].x;
-        origin.y += [currentView frameOrigin].y;
-        lastView = currentView;
-    }
-
-    origin.x += [[lastView window] frame].origin.x;
-    origin.y += [[lastView window] frame].origin.y;
-
-    // take care of the scrolling point
-    if ([aView enclosingScrollView])
-    {
-        var offsetPoint = [[[aView enclosingScrollView] contentView] boundsOrigin];
-        origin.x -= offsetPoint.x;
-        origin.y -= offsetPoint.y;
-    }
-
-    return [self computeOriginFromRect:CPRectMake(origin.x, origin.y, CPRectGetWidth(frameView), CPRectGetHeight(frameView)) preferredEdge:anEdge];
-}
-
-- (CPPoint)computeOriginFromRect:(CPRect)aRect preferredEdge:(int)anEdge
-{
-    var nativeRect      = [[[CPApp mainWindow] platformWindow] nativeContentRect],
-        originLeft      = CPPointCreateCopy(aRect.origin),
-        originRight     = CPPointCreateCopy(aRect.origin),
-        originTop       = CPPointCreateCopy(aRect.origin),
-        originBottom    = CPPointCreateCopy(aRect.origin);
+    var mainWindow      = [CPApp mainWindow],
+        platformWindow  = [mainWindow platformWindow],
+        nativeRect      = [platformWindow nativeContentRect],
+        baseOrigin      = [positioningView convertPointToBase:aRect.origin],
+        platformOrigin  = [mainWindow convertBaseToPlatformWindow:baseOrigin],
+        platformRect    = _CGRectMake(platformOrigin.x, platformOrigin.y, aRect.size.width, aRect.size.height),
+        originLeft      = _CGPointCreateCopy(platformOrigin),
+        originRight     = _CGPointCreateCopy(platformOrigin),
+        originTop       = _CGPointCreateCopy(platformOrigin),
+        originBottom    = _CGPointCreateCopy(platformOrigin),
+        frameSize       = [self frame].size;
 
     // CPMaxXEdge
-    originRight.x += aRect.size.width;
-    originRight.y += (aRect.size.height / 2.0) - (CPRectGetHeight([self frame]) / 2.0);
+    originRight.x += platformRect.size.width;
+    originRight.y += (platformRect.size.height / 2.0) - (frameSize.height / 2.0);
 
     // CPMinXEdge
-    originLeft.x -= CPRectGetWidth([self frame]);
-    originLeft.y += (aRect.size.height / 2.0) - (CPRectGetHeight([self frame]) / 2.0);
+    originLeft.x -= frameSize.width;
+    originLeft.y += (platformRect.size.height / 2.0) - (frameSize.height / 2.0);
 
     // CPMaxYEdge
-    originBottom.x += aRect.size.width / 2.0 - CPRectGetWidth([self frame]) / 2.0;
-    originBottom.y += aRect.size.height;
+    originBottom.x += platformRect.size.width / 2.0 - frameSize.width / 2.0;
+    originBottom.y += platformRect.size.height;
 
     // CPMinYEdge
-    originTop.x += aRect.size.width / 2.0 - CPRectGetWidth([self frame]) / 2.0;
-    originTop.y -= CPRectGetHeight([self frame]);
+    originTop.x += platformRect.size.width / 2.0 - frameSize.width / 2.0;
+    originTop.y -= frameSize.height;
 
     var requestedEdge = (anEdge !== nil) ? anEdge : CPMaxXEdge,
         requestedOrigin;
@@ -288,51 +248,57 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 
     for (var i = 0; i < origins.length; i++)
     {
-        var o = origins[i],
-            g = edges[i];
+        var origin = origins[i],
+            edge = edges[i];
 
         [_windowView setArrowOffsetX:0];
         [_windowView setArrowOffsetY:0];
-        [_windowView setPreferredEdge:g];
+        [_windowView setPreferredEdge:edge];
 
-        if (o.x < 0)
+        if (origin.x < 0)
         {
-            [_windowView setArrowOffsetX:o.x];
-            o.x = 0;
-        }
-        if (o.x + CPRectGetWidth([self frame]) > nativeRect.size.width)
-        {
-            [_windowView setArrowOffsetX:(o.x + CPRectGetWidth([self frame]) - nativeRect.size.width)];
-            o.x = nativeRect.size.width - CPRectGetWidth([self frame]);
-        }
-        if (o.y < 0)
-        {
-            [_windowView setArrowOffsetY:o.y];
-            o.y = 0;
-        }
-        if (o.y + CPRectGetHeight([self frame]) > nativeRect.size.height)
-        {
-            [_windowView setArrowOffsetY:(CPRectGetHeight([self frame]) + o.y - nativeRect.size.height)];
-            o.y = nativeRect.size.height - CPRectGetHeight([self frame]);
+            [_windowView setArrowOffsetX:origin.x];
+            origin.x = 0;
         }
 
-        switch (g)
+        if (origin.x + frameSize.width > nativeRect.size.width)
+        {
+            [_windowView setArrowOffsetX:(origin.x + frameSize.width - nativeRect.size.width)];
+            origin.x = nativeRect.size.width - frameSize.width;
+        }
+
+        if (origin.y < 0)
+        {
+            [_windowView setArrowOffsetY:origin.y];
+            origin.y = 0;
+        }
+
+        if (origin.y + frameSize.height > nativeRect.size.height)
+        {
+            [_windowView setArrowOffsetY:(frameSize.height + origin.y - nativeRect.size.height)];
+            origin.y = nativeRect.size.height - frameSize.height;
+        }
+
+        switch (edge)
         {
             case CPMaxXEdge:
-                if (o.x >= (aRect.origin.x + aRect.size.width))
-                    return o;
+                if (origin.x >= _CGRectGetMaxX(platformRect))
+                    return origin;
                 break;
+
             case CPMinXEdge:
-                if ((o.x + _frame.size.width) <= aRect.origin.x)
-                    return o;
+                if ((origin.x + frameSize.width) <= platformRect.origin.x)
+                    return origin;
                 break;
+
             case CPMaxYEdge:
-                if (o.y >= (aRect.origin.y + aRect.size.height))
-                    return o;
+                if (origin.y >= _CGRectGetMaxY(platformRect))
+                    return origin;
                 break;
+
             case CPMinYEdge:
-                if ((o.y + _frame.size.height) <= aRect.origin.y)
-                    return o;
+                if ((origin.y + frameSize.height) <= platformRect.origin.y)
+                    return origin;
                 break;
         }
     }
@@ -349,59 +315,58 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 */
 - (void)positionRelativeToView:(CPView)aView
 {
-    [self positionRelativeToView:aView preferredEdge:nil];
+    [self positionRelativeToRect:nil ofView:aView preferredEdge:nil];
 }
 
 /*!
-    Compute the frame needed to be placed to the given view
-    and position the attached window according to this view
+    Position the _CPAttachedWindow relative to a given rect's edge.
 
-    @param aView the view where _CPAttachedWindow must be attached
-    @param anEdge the preferd edge to use
-*/
-- (void)positionRelativeToView:(CPView)aView preferredEdge:(int)anEdge
-{
-    var point = [self computeOrigin:aView preferredEdge:anEdge];
-
-    [self setFrameOrigin:point];
-    [_windowView showCursor];
-    [self setLevel:CPStatusWindowLevel];
-    [_closeButton setFrameOrigin:CPPointMake(1.0, 1.0)];
-    [_windowView setNeedsDisplay:YES];
-    [self makeKeyAndOrderFront:nil];
-
-    _targetView = aView;
-    [_targetView addObserver:self forKeyPath:@"frame" options:nil context:nil];
-}
-
-/*!
-    Position the _CPAttachedWindow to a random point
-
-    @param aPoint the point where the _CPAttachedWindow will be attached
-*/
-- (void)positionRelativeToRect:(CPRect)aRect
-{
-    [self positionRelativeToRect:aRect preferredEdge:nil];
-}
-
-/*!
-    Position the _CPAttachedWindow to a random point
-
-    @param aPoint the point where the _CPAttachedWindow will be attached
+    @param aRect the rect relative to which the attached window will be positioned
+    @param positioningView the view to which the attached window is attached
     @param anEdge the prefered edge
 */
-- (void)positionRelativeToRect:(CPRect)aRect preferredEdge:(int)anEdge
+- (void)positionRelativeToRect:(CGRect)aRect ofView:(CPView)positioningView preferredEdge:(int)anEdge
 {
-    var point = [self computeOriginFromRect:aRect preferredEdge:anEdge];
+    if (!aRect || _CGRectIsEmpty(aRect))
+        aRect = [positioningView bounds];
+
+    var point = [self computeOriginFromRect:aRect ofView:positioningView preferredEdge:anEdge];
 
     [self setFrameOrigin:point];
     [_windowView showCursor];
     [self setLevel:CPStatusWindowLevel];
-    [_closeButton setFrameOrigin:CPPointMake(1.0, 1.0)];
     [_windowView setNeedsDisplay:YES];
     [self makeKeyAndOrderFront:nil];
+
+    if (positioningView !== _targetView)
+    {
+        [_targetView removeObserver:self forKeyPath:@"frame"];
+        _targetView = positioningView;
+        [_targetView addObserver:self forKeyPath:@"frame" options:0 context:nil];
+    }
 }
 
+/*! @ignore */
+- (void)setCSS3Property:(CPString)property value:(CPString)value
+{
+    _DOMElement.style['webkit' + property] = value;
+
+    // Support other browsers here eventually
+}
+
+/*! @ignore */
+- (BOOL)browserSupportsAnimation
+{
+    return typeof(_DOMElement.style.webkitTransition) !== "undefined";
+
+    /*
+        No others browsers supported yet.
+
+           typeof(_DOMElement.style.MozTransition) !== "undefined" ||
+           typeof(_DOMElement.style.MsTransition) !== "undefined" ||
+           typeof(_DOMElement.style.OTransition) !== "undefined";
+    */
+}
 
 #pragma mark -
 #pragma mark Actions
@@ -421,99 +386,133 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 #pragma mark Overrides
 
 /*!
-    Called when the window is loowing focus and close the window if CPClosableOnBlurWindowMask is setted
+    Called when the window is losing focus.
 */
 - (void)resignMainWindow
 {
-    if (_closeOnBlur && !_isClosed)
+    if (_closeOnBlur && !_isClosing)
     {
-        if (!_delegate || ((_implementedDelegateMethods & _CPAttachedWindow_attachedWindowShouldClose_)
-            && [_delegate attachedWindowShouldClose:self]))
-        [self close];
+        if (!_delegate ||
+            ((_implementedDelegateMethods & _CPAttachedWindow_attachedWindowShouldClose_) &&
+             [_delegate attachedWindowShouldClose:self]))
+        {
+            [self close];
+        }
     }
 }
 
 /*!
-    Order front the window as usual and add listener for CPWindowDidMoveNotification
+    When the window appears, show animation if necessary.
+    Also take this opportunity to keep track of window moves.
 
     @param sender the sender of the action
 */
 - (IBAction)orderFront:(is)aSender
 {
-    [super orderFront:aSender];
-
-    var tranformOrigin = "50% 100%";
-
-    switch ([_windowView preferredEdge])
+    if (![self isMainWindow])
     {
-        case CPMaxYEdge:
-            var posX = 50 + (([_windowView arrowOffsetX] * 100) / _frame.size.width);
-            tranformOrigin = posX + "% 0%"; // 50 0
-            break;
-        case CPMinYEdge:
-            var posX = 50 + (([_windowView arrowOffsetX] * 100) / _frame.size.width);
-            tranformOrigin = posX + "% 100%"; // 50 100
-            break;
-        case CPMinXEdge:
-            var posY = 50 + (([_windowView arrowOffsetY] * 100) / _frame.size.height);
-            tranformOrigin = "100% " + posY + "%"; // 100 50
-            break;
-        case CPMaxXEdge:
-            var posY = 50 + (([_windowView arrowOffsetY] * 100) / _frame.size.height);
-            tranformOrigin = "0% "+ posY + "%"; // 0 50
-            break;
-    }
+        [super orderFront:aSender];
 
-    // @TODO: implement for FF
-    if (_animates && _shouldPerformAnimation && typeof(_DOMElement.style.WebkitTransform) != "undefined")
-    {
-        _DOMElement.style.opacity = 0;
-        _DOMElement.style.WebkitTransform = "scale(0)";
-        _DOMElement.style.WebkitTransformOrigin = tranformOrigin;
-        window.setTimeout(function()
+        if (_animates && _browserAnimates && _shouldPerformAnimation)
         {
-            _DOMElement.style.height = _frame.size.height + @"px";
-            _DOMElement.style.width = _frame.size.width + @"px";
-            _DOMElement.style.opacity = 1;
-            _DOMElement.style.WebkitTransform = "scale(1.1)";
-            var transitionEndFunction = function()
-            {
-                _DOMElement.style.WebkitTransform = "scale(1)";
-                _DOMElement.removeEventListener("webkitTransitionEnd", transitionEndFunction, YES);
-            };
-            _DOMElement.addEventListener("webkitTransitionEnd", transitionEndFunction, YES);
-        },0);
-    }
+            var transformOrigin = "50% 100%",
+                frame = [self frame],
+                preferredEdge = [_windowView preferredEdge],
+                posX;
 
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_attachedWindowDidMove:) name:CPWindowDidMoveNotification object:self];
+            switch (preferredEdge)
+            {
+                case CPMaxYEdge:
+                case CPMinYEdge:
+                    posX = 50 + (([_windowView arrowOffsetX] * 100) / frame.size.width);
+                    transformOrigin = posX + "% " + (preferredEdge === CPMaxYEdge ? "0%" : "100%");
+                    break;
+
+                case CPMinXEdge:
+                case CPMaxXEdge:
+                    posY = 50 + (([_windowView arrowOffsetY] * 100) / frame.size.height);
+                    transformOrigin = (preferredEdge === CPMaxXEdge ? "0% " : "100% ") + posY + "%";
+                    break;
+            }
+
+            // This is the initial transform. We start scaled to zero and watch for opacity changes.
+            [self setCSS3Property:@"Transform" value:@"scale(0)"];
+            [self setCSS3Property:@"TransformOrigin" value:transformOrigin];
+            [self setCSS3Property:@"Transition" value:"opacity 0 linear"];
+
+            window.setTimeout(function()
+            {
+                // We are watching opacity, so this triggers the next transition
+                _DOMElement.style.opacity = 1;
+                _DOMElement.style.height = frame.size.height + @"px";
+                _DOMElement.style.width = frame.size.width + @"px";
+
+                // Set up the pop-out transition
+                [self setCSS3Property:@"Transform" value:@"scale(1.1)"];
+                [self setCSS3Property:@"Transition" value:@"-webkit-transform 200ms ease-in"];
+
+                var transitionEndFunction = function()
+                {
+                    _DOMElement.removeEventListener("webkitTransitionEnd", transitionEndFunction, YES);
+
+                    // Now set up the pop-in to normal size transition.
+                    // Because we are watching the -webkit-transform, it will occur now.
+                    [self setCSS3Property:@"Transform" value:@"scale(1)"];
+                    [self setCSS3Property:@"Transition" value:@"-webkit-transform 50ms linear"];
+                };
+
+                _DOMElement.addEventListener("webkitTransitionEnd", transitionEndFunction, YES);
+            }, 0);
+        }
+        else
+        {
+            [self setCSS3Property:@"Transition" value:@""];
+            _DOMElement.style.opacity = 1;
+        }
+    }
 
     _shouldPerformAnimation = NO;
-    _isClosed = NO;
+    _isClosing = NO;
 }
 
 /*!
-    Close the windo with animation
+    Animate window closing.
 */
 - (void)close
 {
-    // set a close flag to avoid infinite loop
-    _isClosed = YES;
+    if (![self isVisible])
+        return;
 
-    if (_animates && typeof(_DOMElement.style.WebkitTransform) != "undefined")
+    // set a flag to avoid an infinite loop in resignMainWindow
+    _isClosing = YES;
+
+    if (_animates && _browserAnimates)
     {
+        // Tell the element to fade out when the opacity changes
+        [self setCSS3Property:@"Transition" value:@"opacity 250ms linear"];
         _DOMElement.style.opacity = 0;
-        var transitionEndFunction = function(){
-                [super close];
+
+        var transitionEndFunction = function()
+        {
             _DOMElement.removeEventListener("webkitTransitionEnd", transitionEndFunction, YES);
+            [self _close];
         };
+
         _DOMElement.addEventListener("webkitTransitionEnd", transitionEndFunction, YES);
     }
     else
-        [super close];
+    {
+        [self _close];
+    }
+}
 
+- (void)_close
+{
+    [super close];
     [_targetView removeObserver:self forKeyPath:@"frame"];
 
-    _shouldPerformAnimation = _animates;
+    _shouldPerformAnimation = YES;
+    _isClosing = NO;
 
     if (_implementedDelegateMethods & _CPAttachedWindow_attachedWindowDidClose_)
         [_delegate attachedWindowDidClose:self];

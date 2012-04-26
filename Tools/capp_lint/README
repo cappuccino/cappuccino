@@ -1,0 +1,10 @@
+capp_lint is a formatting checker for Objective-J. It performs a number of checks that catch
+common formatting mistakes, as defined in the Cappuccino coding style guidelines:
+
+http://cappuccino.org/contribute/coding-style.php
+
+To install capp_lint and its man page, execute install.sh in Terminal. You must have sudo access
+to run the install script.
+
+To run capp_lint automatically as a git pre-commit hook, copy "pre-commit" to
+.git/hooks/ at the root level of a git repository.

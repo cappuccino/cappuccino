@@ -69,7 +69,7 @@
         _usesAlternatingRowBackgroundColors = (flags & 0x00800000) ? YES : NO;
         _alternatingRowBackgroundColors = [[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"]];
 
-        _selectionHighlightStyle = [aCoder decodeIntForKey:@"NSTableViewSelectionHighlightStyle"] || CPTableViewSelectionHighlightStyleRegular;
+        _selectionHighlightStyle = [aCoder decodeIntForKey:@"NSTableViewSelectionHighlightStyle"];
         _columnAutoResizingStyle = [aCoder decodeIntForKey:@"NSColumnAutoresizingStyle"];
 
         _allowsMultipleSelection = (flags & 0x08000000) ? YES : NO;
@@ -78,6 +78,8 @@
 
         _allowsColumnResizing = (flags & 0x40000000) ? YES : NO;
         _allowsColumnReordering = (flags & 0x80000000) ? YES : NO;
+
+        [self setBackgroundColor:[aCoder decodeObjectForKey:@"NSBackgroundColor"]];
     }
 
     return self;

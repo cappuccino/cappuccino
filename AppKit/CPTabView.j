@@ -1,3 +1,25 @@
+/*
+ * CPTabView.j
+ * AppKit
+ *
+ * Created by Derek Hammer.
+ * Copyright 2010, Derek Hammer.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
 @import "CPBox.j"
 @import "CPSegmentedControl.j"
 @import "CPTabViewItem.j"
@@ -45,7 +67,6 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     if (self = [super initWithFrame:aFrame])
     {
         _items = [CPArray array];
-        _selectedIndex = CPNotFound;
 
         [self _init];
         [self setTabViewType:CPTopTabsBezelBorder];
@@ -56,6 +77,8 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 
 - (void)_init
 {
+    _selectedIndex = CPNotFound;
+
     _tabs = [[CPSegmentedControl alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
     [_tabs setHitTests:NO];
 
@@ -250,17 +273,15 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     Selects the item at the specified index.
     @param anIndex the index of the item to display.
 */
-- (void)selectTabViewItemAtIndex:(unsigned)anIndex
+- (BOOL)selectTabViewItemAtIndex:(unsigned)anIndex
 {
-    var aTabViewItem = [_items objectAtIndex:anIndex];
-
     if (anIndex === _selectedIndex)
         return;
 
     var aTabViewItem = [self tabViewItemAtIndex:anIndex];
 
     if ((_delegateSelectors & CPTabViewShouldSelectTabViewItemSelector) && ![_delegate tabView:self shouldSelectTabViewItem:aTabViewItem])
-        return;
+        return NO;
 
     if (_delegateSelectors & CPTabViewWillSelectTabViewItemSelector)
         [_delegate tabView:self willSelectTabViewItem:aTabViewItem];
@@ -270,6 +291,8 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 
     if (_delegateSelectors & CPTabViewDidSelectTabViewItemSelector)
         [_delegate tabView:self didSelectTabViewItem:aTabViewItem];
+
+    return YES;
 }
 
 /*!
@@ -278,7 +301,10 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 */
 - (CPTabViewItem)selectedTabViewItem
 {
-    return [_items objectAtIndex:_selectedIndex];
+    if (_selectedIndex != CPNotFound)
+        return [_items objectAtIndex:_selectedIndex];
+
+    return nil;
 }
 
 // Modifying the font
@@ -407,11 +433,8 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 {
     var segmentIndex = [_tabs testSegment:[_tabs convertPoint:[anEvent locationInWindow] fromView:nil]];
 
-    if (segmentIndex != CPNotFound)
-    {
-        [self selectTabViewItemAtIndex:segmentIndex];
+    if (segmentIndex != CPNotFound && [self selectTabViewItemAtIndex:segmentIndex])
         [_tabs trackSegment:anEvent];
-    }
 }
 
 - (void)_repositionTabs
@@ -428,8 +451,12 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 - (void)_setSelectedIndex:(CPNumber)index
 {
     _selectedIndex = index;
+    [self _setContentViewForItem:[_items objectAtIndex:_selectedIndex]];
+}
 
-    [_box setContentView:[[_items objectAtIndex:_selectedIndex] view]];
+- (void)_setContentViewForItem:(CPTabViewItem)anItem
+{
+    [_box setContentView:[anItem view]];
 }
 
 - (void)_updateItems
@@ -469,16 +496,16 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
         [_tabs setFont:_font];
 
         _items = [aCoder decodeObjectForKey:CPTabViewItemsKey];
+        [_items makeObjectsPerformSelector:@selector(_setTabView:) withObject:self];
 
         [self _updateItems];
         [self _repositionTabs];
 
-        var selected = [aCoder decodeObjectForKey:CPTabViewSelectedItemKey];
+        [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
 
+        var selected = [aCoder decodeObjectForKey:CPTabViewSelectedItemKey];
         if (selected)
             [self selectTabViewItem:selected];
-
-        [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
 
         [self setTabViewType:[aCoder decodeIntForKey:CPTabViewTypeKey]];
     }
@@ -491,7 +518,10 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
     [super encodeWithCoder:aCoder];
 
     [aCoder encodeObject:_items forKey:CPTabViewItemsKey];
-    [aCoder encodeObject:[self selectedTabViewItem] forKey:CPTabViewSelectedItemKey];
+
+    var selected = [self selectedTabViewItem];
+    if (selected)
+        [aCoder encodeObject:selected forKey:CPTabViewSelectedItemKey];
 
     [aCoder encodeInt:_type forKey:CPTabViewTypeKey];
     [aCoder encodeObject:_font forKey:CPTabViewFontKey];

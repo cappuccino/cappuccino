@@ -66,6 +66,7 @@ var CPViewControllerCachedCibs;
 {
     CPView          _view @accessors(property=view);
     BOOL            _isLoading;
+    BOOL            _isLazy;
 
     id              _representedObject @accessors(property=representedObject);
     CPString        _title @accessors(property=title);
@@ -124,6 +125,7 @@ var CPViewControllerCachedCibs;
         _cibExternalNameTable = anExternalNameTable || [CPDictionary dictionaryWithObject:self forKey:CPCibOwner];
 
         _isLoading = NO;
+        _isLazy = NO;
     }
 
     return self;
@@ -136,12 +138,12 @@ var CPViewControllerCachedCibs;
 
     If you create your views manually, you must override this method and use
     it to create your view and assign it to the view property. The default
-    implementation for programmatic views is to create a plain view. You can
-    invoke super to utilize this view.
+    implementation for programmatic views is to create a plain, zero width & height
+    view. You can invoke super to utilize this view.
 
-    If you use Interface Builder to create your views, you initialize the view
-    using the initWithCibName:bundle: method then you must not override this
-    method. The consequences risk shattering the space-time continuum.
+    If you use Interface Builder to create your views, and you initialize the
+    controller using the initWithCibName:bundle: methods, then you MUST NOT override
+    this method. The consequences risk shattering the space-time continuum.
 
     Note: The cib loading system is currently synchronous.
 */
@@ -150,17 +152,22 @@ var CPViewControllerCachedCibs;
     if (_view)
         return;
 
-    // check if a cib is already cached for the current _cibName
-    var cib = [CPViewControllerCachedCibs objectForKey:_cibName];
-
-    if (!cib)
+    if (_cibName)
     {
-        // if the cib isn't cached yet : fetch it and cache it
-        cib = [[CPCib alloc] initWithContentsOfURL:[_cibBundle pathForResource:_cibName + @".cib"]];
-        [CPViewControllerCachedCibs setObject:cib forKey:_cibName];
-    }
+        // check if a cib is already cached for the current _cibName
+        var cib = [CPViewControllerCachedCibs objectForKey:_cibName];
 
-    [cib instantiateCibWithExternalNameTable:_cibExternalNameTable];
+        if (!cib)
+        {
+            // if the cib isn't cached yet : fetch it and cache it
+            cib = [[CPCib alloc] initWithCibNamed:_cibName bundle:_cibBundle];
+            [CPViewControllerCachedCibs setObject:cib forKey:_cibName];
+        }
+
+        [cib instantiateCibWithExternalNameTable:_cibExternalNameTable];
+    }
+    else
+        _view = [CPView new];
 }
 
 /*!
@@ -199,6 +206,11 @@ var CPViewControllerCachedCibs;
         _isLoading = NO;
         [self viewDidLoad];
     }
+    else if (_isLazy)
+    {
+        _isLazy = NO;
+        [self viewDidLoad];
+    }
 
     return _view;
 }
@@ -208,9 +220,9 @@ var CPViewControllerCachedCibs;
     This method is called after the view controller has loaded its associated views into memory.
 
     This method is called regardless of whether the views were stored in a nib
-    file or created programmatically in the loadView method. This method is
-    most commonly used to perform additional initialization steps on views
-    that are loaded from cib files.
+    file or created programmatically in the loadView method, but NOT when setView
+    is invoked. This method is most commonly used to perform additional initialization
+    steps on views that are loaded from cib files.
 */
 - (void)viewDidLoad
 {
@@ -228,13 +240,7 @@ var CPViewControllerCachedCibs;
 */
 - (void)setView:(CPView)aView
 {
-    var viewWasLoaded = !_view;
-
     _view = aView;
-
-    // Make sure the viewDidLoad method is called if the view is set directly
-    if (!_isLoading && viewWasLoaded)
-        [self viewDidLoad];
 }
 
 @end
@@ -266,6 +272,7 @@ var CPViewControllerViewKey     = @"CPViewControllerViewKey",
         _cibBundle = bundlePath ? [CPBundle bundleWithPath:bundlePath] : [CPBundle mainBundle];
 
         _cibExternalNameTable = [CPDictionary dictionaryWithObject:self forKey:CPCibOwner];
+        _isLazy = YES;
     }
 
     return self;

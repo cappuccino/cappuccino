@@ -77,7 +77,7 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
 - (CPString)stringFromNumber:(CPNumber)number
 {
     // TODO Add locale support.
-    switch(_numberStyle)
+    switch (_numberStyle)
     {
         case CPNumberFormatterDecimalStyle:
             UPDATE_NUMBER_HANDLER_IF_NECESSARY();
@@ -96,7 +96,7 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
             // TODO This is just a temporary solution. Should be generalised.
             // Add in thousands separators.
             if (perMillSymbol)
-                while(commaPosition < [preFraction length])
+                while (commaPosition < [preFraction length])
                 {
                     preFraction = [preFraction stringByReplacingCharactersInRange:CPMakeRange(commaPosition, 0) withString:perMillSymbol];
                     commaPosition += 4;

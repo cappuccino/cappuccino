@@ -86,4 +86,17 @@ var CPGraphicsContextCurrent = nil;
     return _graphicsPort;
 }
 
+/*!
+    (Not implemented. Always returns Cappuccino's default, `YES`.)
+
+    Return `isFlipped` of the receiver's focused view, unless no view is focused in which case the receiver's
+    `flipped` flag, as set by `graphicsContextWithGraphicsPort:flipped:`, is returned.
+
+    Note: Cappuccino is flipped by default.
+*/
+- (BOOL)isFlipped
+{
+    return YES;
+}
+
 @end

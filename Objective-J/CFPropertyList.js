@@ -159,7 +159,7 @@ CFPropertyListSerializers[CFPropertyList.FormatXML_v1_0] =
 
     "string":       function(/*String*/ aString)
                     {
-                        return "<string>" + encodeHTMLComponent(aString) + "</string>";;
+                        return "<string>" + encodeHTMLComponent(aString) + "</string>";
                     },
 
     "boolean" :     function(/*Boolean*/ aBoolean)
@@ -297,6 +297,7 @@ var XML_XML                 = "xml",
     PLIST_DICTIONARY        = "dict",
     PLIST_ARRAY             = "array",
     PLIST_STRING            = "string",
+    PLIST_DATE              = "date",
     PLIST_BOOLEAN_TRUE      = "true",
     PLIST_BOOLEAN_FALSE     = "false",
     PLIST_NUMBER_REAL       = "real",
@@ -596,6 +597,10 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
                                             object = decodeHTMLComponent(FIRST_CHILD(XMLNode) ? TEXT_CONTENT(XMLNode) : "");
 
                                         break;
+                                        
+            case PLIST_DATE:            var timestamp = Date.parseISO8601(TEXT_CONTENT(XMLNode));
+                                        object = isNaN(timestamp) ? new Date() : new Date(timestamp);
+                                        break;
 
             case PLIST_BOOLEAN_TRUE:    object = YES;
                                         break;
@@ -603,7 +608,8 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
                                         break;
 
             case PLIST_DATA:            object = new CFMutableData();
-                                        object.bytes = FIRST_CHILD(XMLNode) ? CFData.decodeBase64ToArray(TEXT_CONTENT(XMLNode), YES) : [];
+                                        var data_bytes = FIRST_CHILD(XMLNode) ? CFData.decodeBase64ToArray(TEXT_CONTENT(XMLNode), YES) : [];
+                                        object.setBytes(data_bytes);
                                         break;
 
             default:                    throw new Error("*** " + NODE_NAME(XMLNode) + " tag not recognized in Plist.");

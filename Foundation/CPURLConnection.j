@@ -106,7 +106,7 @@ var CPURLConnectionDelegate = nil;
             key = nil,
             keys = [fields keyEnumerator];
 
-        while (key = [keys nextObject])
+        while ((key = [keys nextObject]) !== nil)
             request.setRequestHeader(key, [fields objectForKey:key]);
 
         request.send([aRequest HTTPBody]);
@@ -196,7 +196,7 @@ var CPURLConnectionDelegate = nil;
             key = nil,
             keys = [fields keyEnumerator];
 
-        while (key = [keys nextObject])
+        while ((key = [keys nextObject]) !== nil)
             _HTTPRequest.setRequestHeader(key, [fields objectForKey:key]);
 
         _HTTPRequest.send([_request HTTPBody]);

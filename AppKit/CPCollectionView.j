@@ -40,23 +40,23 @@
 
     @par Delegate Methods
 
-    @delegate -(void)collectionViewDidChangeSelection:(CPCollectionView)collectionView;
+    @delegate - (void)collectionViewDidChangeSelection:(CPCollectionView)collectionView;
     Called when the selection in the collection view has changed.
     @param collectionView the collection view who's selection changed
 
-    @delegate -(void)collectionView:(CPCollectionView)collectionView didDoubleClickOnItemAtIndex:(int)index;
+    @delegate - (void)collectionView:(CPCollectionView)collectionView didDoubleClickOnItemAtIndex:(int)index;
     Called when the user double-clicks on an item in the collection view.
     @param collectionView the collection view that received the double-click
     @param index the index of the item that received the double-click
 
-    @delegate -(CPData)collectionView:(CPCollectionView)collectionView dataForItemsAtIndexes:(CPIndexSet)indices forType:(CPString)aType;
+    @delegate - (CPData)collectionView:(CPCollectionView)collectionView dataForItemsAtIndexes:(CPIndexSet)indices forType:(CPString)aType;
     Invoked to obtain data for a set of indices.
     @param collectionView the collection view to obtain data for
     @param indices the indices to return data for
     @param aType the data type
     @return a data object containing the index items
 
-    @delegate -(CPArray)collectionView:(CPCollectionView)collectionView dragTypesForItemsAtIndexes:(CPIndexSet)indices;
+    @delegate - (CPArray)collectionView:(CPCollectionView)collectionView dragTypesForItemsAtIndexes:(CPIndexSet)indices;
     Invoked to obtain the data types supported by the specified indices for placement on the pasteboard.
     @param collectionView the collection view the items reside in
     @param indices the indices to obtain drag types
@@ -340,19 +340,21 @@
 */
 - (void)setSelectionIndexes:(CPIndexSet)anIndexSet
 {
-    if ([_selectionIndexes isEqual:anIndexSet] || !_isSelectable)
+    if (!anIndexSet)
+        anIndexSet = [CPIndexSet indexSet];
+    if (!_isSelectable || [_selectionIndexes isEqual:anIndexSet])
         return;
 
     var index = CPNotFound;
 
-    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound)
+    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) !== CPNotFound)
         [_items[index] setSelected:NO];
 
     _selectionIndexes = anIndexSet;
 
     var index = CPNotFound;
 
-    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound)
+    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) !== CPNotFound)
         [_items[index] setSelected:YES];
 
     var binderClass = [[self class] _binderClassForBinding:@"selectionIndexes"];
@@ -473,7 +475,7 @@
     }
 
     var superview = [self superview],
-        proposedHeight =  y + itemSize.height + _verticalMargin;
+        proposedHeight = y + itemSize.height + _verticalMargin;
 
     if ([superview isKindOfClass:[CPClipView class]])
     {
@@ -559,6 +561,8 @@
 */
 - (void)setMinItemSize:(CGSize)aSize
 {
+    if (aSize === nil || aSize === undefined)
+        [CPException raise:CPInvalidArgumentException reason:"Invalid value provided for minimum size"];
     if (CGSizeEqualToSize(_minItemSize, aSize))
         return;
 
@@ -665,6 +669,13 @@
             indexes = [CPIndexSet indexSetWithIndex:index];
 
         [self setSelectionIndexes:indexes];
+
+        // TODO Is it allowable for collection view items to become the first responder? In that case they
+        // may have become that at this point by virtue of CPWindow's sendEvent: mouse down handling, and
+        // the following line will rudely snatch it away from them. For most cases though, clicking on an
+        // item should naturally make the collection view the first responder so that keyboard navigation
+        // is enabled.
+        [[self window] makeFirstResponder:self];
     }
     else if (_allowsEmptySelection)
         [self setSelectionIndexes:[CPIndexSet indexSet]];
@@ -965,14 +976,15 @@ var CPCollectionViewMinItemSizeKey              = @"CPCollectionViewMinItemSizeK
 {
     [super awakeFromCib];
 
-    if (CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()) || CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
+    var prototypeView = [_itemPrototype view];
+    if (prototypeView && (CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()) || CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero())))
     {
         var item = _itemPrototype;
 
         if (CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()))
-            _minItemSize = [[item view] frameSize];
+            _minItemSize = [prototypeView frameSize];
         else if (CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
-            _maxItemSize = [[item view] frameSize];
+            _maxItemSize = [prototypeView frameSize];
     }
 }
 
@@ -989,11 +1001,11 @@ var CPCollectionViewMinItemSizeKey              = @"CPCollectionViewMinItemSizeK
 
         _itemSize = CGSizeMakeZero();
 
-        _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey] || CGSizeMakeZero();
-        _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey] || CGSizeMakeZero();
+        _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey];
+        _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey];
 
-        _maxNumberOfRows = [aCoder decodeIntForKey:CPCollectionViewMaxNumberOfRowsKey] || 0;
-        _maxNumberOfColumns = [aCoder decodeIntForKey:CPCollectionViewMaxNumberOfColumnsKey] || 0;
+        _maxNumberOfRows = [aCoder decodeIntForKey:CPCollectionViewMaxNumberOfRowsKey];
+        _maxNumberOfColumns = [aCoder decodeIntForKey:CPCollectionViewMaxNumberOfColumnsKey];
 
         _verticalMargin = [aCoder decodeFloatForKey:CPCollectionViewVerticalMarginKey];
 

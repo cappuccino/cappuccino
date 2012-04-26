@@ -33,7 +33,14 @@ var _CPToolbarViewBackgroundColor = nil;
 + (CPColor)toolbarBackgroundColor
 {
     if (!_CPToolbarViewBackgroundColor)
-        _CPToolbarViewBackgroundColor = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[_CPBorderlessBridgeWindowView class]] pathForResource:@"_CPToolbarView/_CPToolbarViewBackground.png"] size:CGSizeMake(1.0, 59.0)]];
+    {
+        var bundle = [CPBundle bundleForClass:[_CPBorderlessBridgeWindowView class]];
+        _CPToolbarViewBackgroundColor = CPColorWithImages([
+                ["_CPToolbarView/toolbar-background-top.png", 1, 1, bundle],
+                ["_CPToolbarView/toolbar-background-center.png", 1, 57.0, bundle],
+                ["_CPToolbarView/toolbar-background-bottom.png", 1, 1, bundle],
+            ], CPColorPatternIsVertical);
+    }
 
     return _CPToolbarViewBackgroundColor;
 }

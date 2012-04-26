@@ -33,6 +33,23 @@
     [self assert:[CPObject version] equals:newVersion];
 }
 
+- (void)testMultipleArgumentPerformSelector
+{
+    var receiver = [[Receiver alloc] init];
+    
+    var value1 = "a",
+        value2 = "b",
+        value3 = "c",
+        value4 = "d",
+        selector = @selector(implements:multiple:argument:selector:);
+        
+    var returnValue = [receiver performSelector:selector withObjects:value1, value2, value3, value4];
+    
+    var expectedReturnValue = value1 + value2 + value3 + value4;
+    
+    [self assertTrue:expectedReturnValue === returnValue];
+}
+
 @end
 
 @implementation SuperReceiver : CPObject
@@ -58,5 +75,10 @@
 
 - (void)implementedInReceiverOnly
 {
+}
+
+- (id)implements:(id)a multiple:(id)b argument:(id)c selector:(id)d
+{
+    return a + b + c + d;
 }
 @end

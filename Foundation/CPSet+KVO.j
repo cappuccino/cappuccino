@@ -23,6 +23,7 @@
 @import "CPException.j"
 @import "CPObject.j"
 @import "CPSet.j"
+@import "_CPCollectionKVCOperators.j"
 
 @implementation CPObject (CPSetKVO)
 
@@ -218,7 +219,8 @@
     {
         var object,
             objectEnumerator = [objects objectEnumerator];
-        while (object = [objectEnumerator nextObject])
+
+        while ((object = [objectEnumerator nextObject]) !== nil)
             _add(_proxyObject, _addSEL, object);
     }
     else
@@ -237,7 +239,8 @@
     {
         var object,
             objectEnumerator = [aSet objectEnumerator];
-        while (object = [objectEnumerator nextObject])
+
+        while ((object = [objectEnumerator nextObject]) !== nil)
             _add(_proxyObject, _addSEL, object);
     }
     else
@@ -273,7 +276,8 @@
     {
         var object,
             objectEnumerator = [aSet objectEnumerator];
-        while (object = [objectEnumerator nextObject])
+
+        while ((object = [objectEnumerator nextObject]) !== nil)
             _remove(_proxyObject, _removeSEL, object);
     }
     else
@@ -295,7 +299,8 @@
     {
         var object,
             objectEnumerator = [objects objectEnumerator];
-        while (object = [objectEnumerator nextObject])
+
+        while ((object = [objectEnumerator nextObject]) !== nil)
             _remove(_proxyObject, _removeSEL, object);
     }
     else
@@ -317,7 +322,8 @@
     {
         var object,
             objectEnumerator = [[[self _representedObject] copy] objectEnumerator];
-        while (object = [objectEnumerator nextObject])
+
+        while ((object = [objectEnumerator nextObject]) !== nil)
             _remove(_proxyObject, _removeSEL, object);
     }
     else
@@ -381,7 +387,10 @@
 
 - (id)valueForKeyPath:(CPString)aKeyPath
 {
-    if (aKeyPath.indexOf("@") === 0)
+    if (!aKeyPath)
+        [self valueForUndefinedKey:@"<empty path>"];
+
+    if (aKeyPath.charAt(0) === "@")
     {
         var dotIndex = aKeyPath.indexOf("."),
             operator,
@@ -395,10 +404,7 @@
         else
             operator = aKeyPath.substring(1);
 
-        if (kvoOperators[operator])
-            return kvoOperators[operator](self, _cmd, parameter);
-
-        return nil;
+        return [_CPCollectionKVCOperator performOperation:operator withCollection:self propertyPath:parameter];
     }
     else
     {
@@ -406,12 +412,17 @@
             containedObject,
             containedObjectValue,
             containedObjectEnumerator = [self objectEnumerator];
-        while (containedObject = [containedObjectEnumerator nextObject])
+
+        while ((containedObject = [containedObjectEnumerator nextObject]) !== nil)
         {
             containedObjectValue = [containedObject valueForKeyPath:aKeyPath];
-            if (containedObjectValue)
-                [valuesForKeySet addObject:containedObjectValue];
+
+            if (containedObjectValue === nil || containedObjectValue === undefined)
+                containedObjectValue = [CPNull null];
+
+            [valuesForKeySet addObject:containedObjectValue];
         }
+
         return valuesForKeySet;
     }
 }
@@ -420,108 +431,9 @@
 {
     var containedObject,
         containedObjectEnumerator = [self objectEnumerator];
-    while (containedObject = [containedObjectEnumerator nextObject])
+
+    while ((containedObject = [containedObjectEnumerator nextObject]) !== nil)
         [containedObject setValue:aValue forKey:aKey];
-}
-
-@end
-
-var kvoOperators = [];
-
-// FIXME: this is not DRY because the implementation in CPArray+KVO is merely the same!
-// HACK: prevent these from becoming globals. workaround for obj-j "function foo(){}" behavior
-var avgOperator,
-    maxOperator,
-    minOperator,
-    countOperator,
-    sumOperator;
-
-kvoOperators["avg"] = function avgOperator(self, _cmd, param)
-{
-    //CPSet returns a CPSet - to obtain an array call allObjects
-    var objects = [[self valueForKeyPath:param] allObjects],
-        length = [objects count],
-        index = length,
-        average = 0.0;
-
-    if (!length)
-        return 0;
-
-    while (index--)
-        average += [objects[index] doubleValue];
-
-    return average / length;
-}
-
-kvoOperators["max"] = function maxOperator(self, _cmd, param)
-{
-    //CPSet returns a CPSet - to obtain an array call allObjects
-    var objects = [[self valueForKeyPath:param] allObjects],
-        index = [objects count] - 1,
-        max = [objects lastObject];
-
-    while (index--)
-    {
-        var item = objects[index];
-        if ([max compare:item] < 0)
-            max = item;
-    }
-
-    return max;
-}
-
-kvoOperators["min"] = function minOperator(self, _cmd, param)
-{
-    //CPSet returns a CPSet - to obtain an array call allObjects
-    var objects = [[self valueForKeyPath:param] allObjects],
-        index = [objects count] - 1,
-        min = [objects lastObject];
-
-    while (index--)
-    {
-        var item = objects[index];
-        if ([min compare:item] > 0)
-            min = item;
-    }
-
-    return min;
-}
-
-kvoOperators["count"] = function countOperator(self, _cmd, param)
-{
-    return [self count];
-}
-
-kvoOperators["sum"] = function sumOperator(self, _cmd, param)
-{
-    //CPSet returns a CPSet - to obtain an array call allObjects
-    var objects = [[self valueForKeyPath:param] allObjects],
-        index = [objects count],
-        sum = 0.0;
-
-    while (index--)
-        sum += [objects[index] doubleValue];
-
-    return sum;
-}
-
-
-@implementation CPSet (CPKeyValueObserving)
-
-- (void)addObserver:(id)observer forKeyPath:(CPString)aKeyPath options:(unsigned)options context:(id)context
-{
-    if ([isa instanceMethodForSelector:_cmd] === [CPSet instanceMethodForSelector:_cmd])
-        [CPException raise:CPInvalidArgumentException reason:"Unsupported method on CPSet"];
-    else
-        [super addObserver:observer forKeyPath:aKeyPath options:options context:context];
-}
-
-- (void)removeObserver:(id)observer forKeyPath:(CPString)aKeyPath
-{
-    if ([isa instanceMethodForSelector:_cmd] === [CPSet instanceMethodForSelector:_cmd])
-        [CPException raise:CPInvalidArgumentException reason:"Unsupported method on CPSet"];
-    else
-        [super removeObserver:observer forKeyPath:aKeyPath];
 }
 
 @end

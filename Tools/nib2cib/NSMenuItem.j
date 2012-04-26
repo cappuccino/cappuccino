@@ -34,7 +34,7 @@
 
     if (self)
     {
-        _isSeparator = [aCoder decodeObjectForKey:@"NSIsSeparator"] || NO;
+        _isSeparator = [aCoder decodeBoolForKey:@"NSIsSeparator"];
 
         _title = [aCoder decodeObjectForKey:"NSTitle"];
 

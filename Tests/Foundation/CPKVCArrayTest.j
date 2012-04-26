@@ -2,8 +2,9 @@ var COUNTER;
 
 @implementation CPKVCArrayTest : OJTestCase
 {
-    TestObject                          _object @accessors(property=object);
-    ImplementedTestObject               _implementedObject @accessors(property=implementedObject);
+    TestObject              _object @accessors(property=object);
+    ImplementedTestObject   _implementedObject @accessors(property=implementedObject);
+    CPArray                 _kvcArray @accessors(property=kvcArray);
 }
 
 - (void)setUp
@@ -298,11 +299,45 @@ var COUNTER;
          message:@"replaceObjectInValuesAtIndexes:withValues: should have been called once"];
 }
 
+- (void)testKVCArrayOperators
+{
+    var one = [1, 1, 1, 1, 1, 1, 1, 1],
+        two = [1, 2, 3, 4, 8, 0];
+
+    [self assert:[one valueForKey:"@count"] equals:8];
+    [self assert:[one valueForKeyPath:"@sum.intValue"] equals:8];
+    [self assert:[two valueForKeyPath:"@avg.intValue"] equals:3];
+    [self assert:[two valueForKeyPath:"@max.intValue"] equals:8];
+    [self assert:[two valueForKeyPath:"@min.intValue"] equals:0];
+
+    var a = [A new];
+    [a setValue:one forKey:"b"];
+    [self assert:[a valueForKeyPath:"b.@count"] equals:8];
+    [self assert:[a valueForKeyPath:"b.@sum.intValue"] equals:8];
+
+    var b = [];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Tom", 27] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Dick", 31] forKeys:[@"name", @"age"]]];
+    [b addObject:[CPDictionary dictionaryWithObjects:[@"Harry", 47] forKeys:[@"name", @"age"]]];
+    [self assert:[b valueForKeyPath:@"@sum.age"] equals:105];
+    [self assert:[b valueForKeyPath:@"@avg.age"] equals:35];
+    [self assert:[b valueForKeyPath:@"@min.age"] equals:27];
+    [self assert:[b valueForKeyPath:@"@max.age"] equals:47];
+    [self assert:[b valueForKeyPath:@"@min.name"] equals:@"Dick"];
+    [self assert:[b valueForKeyPath:@"@max.name"] equals:@"Tom"];
+}
+
+@end
+
+@implementation A : CPObject
+{
+    id  b;
+}
 @end
 
 @implementation TestObject : CPObject
 {
-    CPArray                     _values @accessors(property=values);
+    CPArray _values @accessors(property=values);
 }
 
 - (id)init

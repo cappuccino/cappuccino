@@ -377,7 +377,8 @@
 {
     var rootRowsArray = [super _rootRowsArray],
         subpredicates = [CPMutableArray array],
-        count = count2 = [rootRowsArray count],
+        count,
+        count2 = count = [rootRowsArray count],
         predicate;
 
     while (count--)
@@ -405,12 +406,13 @@
     if (rowType == CPRuleEditorRowTypeCompound)
     {
         var subrows = [rowItem valueForKey:_subrowsArrayKeyPath],
-        count = [subrows count];
+            count = [subrows count];
 
         for (var i = 0; i < count; i++)
         {
-            var subrow = [subrows objectAtIndex:i];
-            var predicate = [self _predicateFromRowItem:subrow];
+            var subrow = [subrows objectAtIndex:i],
+                predicate = [self _predicateFromRowItem:subrow];
+
             [subpredicates addObject:predicate];
         }
     }
@@ -514,9 +516,11 @@ var CPPredicateTemplatesKey = @"CPPredicateTemplates";
 - (id)initWithCoder:(id)aCoder
 {
     self = [super initWithCoder:aCoder];
+
     if (self != nil)
     {
         var nibTemplates = [aCoder decodeObjectForKey:CPPredicateTemplatesKey];
+
         if (nibTemplates != nil)
             [self setRowTemplates:nibTemplates];
     }

@@ -100,7 +100,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
             [self setAlignment:CPCenterTextAlignment];
             [self setFont:[CPFont systemFontOfSize:12.0]];
             [self setImagePosition:CPNoImage];
-            [self setImageScaling:CPScaleNone];
+            [self setImageScaling:CPImageScaleNone];
         }
 
         _textSize = nil;
@@ -288,6 +288,28 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     return _textShadowOffset;
 }
 
+- (CGRect)textFrame
+{
+    [self layoutIfNeeded];
+
+    var textFrame = CGRectMakeZero();
+
+    if (_DOMTextElement)
+    {
+        var textStyle = _DOMTextElement.style;
+
+        textFrame.origin.y = parseInt(textStyle.top.substr(0, textStyle.top.length - 2), 10),
+        textFrame.origin.x = parseInt(textStyle.left.substr(0, textStyle.left.length - 2), 10),
+        textFrame.size.width = parseInt(textStyle.width.substr(0, textStyle.width.length - 2), 10),
+        textFrame.size.height = parseInt(textStyle.height.substr(0, textStyle.height.length - 2), 10);
+
+        textFrame.size.width += _textShadowOffset.width;
+        textFrame.size.height += _textShadowOffset.height;
+    }
+
+    return textFrame;
+}
+
 - (void)setImage:(CPImage)anImage
 {
     if (_image == anImage)
@@ -462,7 +484,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
         if (_flags & _CPImageAndTextViewFontChangedFlag)
         {
-            var fontStyle = [_font ? _font : [CPFont systemFontOfSize:12.0] cssString];
+            var fontStyle = [(_font ? _font : [CPFont systemFontOfSize:12.0]) cssString];
             textStyle.font = fontStyle;
 
             if (shadowStyle)
@@ -585,12 +607,12 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
             imageWidth = imageSize.width,
             imageHeight = imageSize.height;
 
-        if (_imageScaling === CPScaleToFit)
+        if (_imageScaling === CPImageScaleAxesIndependently)
         {
             imageWidth = size.width;
             imageHeight = size.height;
         }
-        else if (_imageScaling === CPScaleProportionally)
+        else if (_imageScaling === CPImageScaleProportionallyDown)
         {
             var scale = MIN(MIN(size.width, imageWidth) / imageWidth, MIN(size.height, imageHeight) / imageHeight);
 

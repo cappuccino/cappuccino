@@ -52,7 +52,10 @@ function Asynchronous(/*Function*/ aFunction)
         if (asynchronousTimeoutCount > currentAsynchronousTimeoutCount)
             aFunction.apply(this, args);
         else
-            asynchronousFunctionQueue.push(function() { aFunction.apply(this, args) });
+            asynchronousFunctionQueue.push(function()
+            {
+                aFunction.apply(this, args);
+            });
     };
 }
 
@@ -77,7 +80,7 @@ if (window.ActiveXObject !== undefined)
             NativeRequest = function()
             {
                 return new ActiveXObject(MSXML_XMLHTTP);
-            }
+            };
 
             break;
         }
@@ -103,12 +106,15 @@ GLOBAL(CFHTTPRequest) = function()
     this._stateChangeHandler = function()
     {
         determineAndDispatchHTTPRequestEvents(self);
-    }
+    };
 
     this._nativeRequest.onreadystatechange = this._stateChangeHandler;
 
     if (CFHTTPRequest.AuthenticationDelegate !== nil)
-        this._eventDispatcher.addEventListener("HTTP403", function(){CFHTTPRequest.AuthenticationDelegate(self)});
+        this._eventDispatcher.addEventListener("HTTP403", function()
+            {
+                CFHTTPRequest.AuthenticationDelegate(self);
+            });
 }
 
 CFHTTPRequest.UninitializedState    = 0;
@@ -130,7 +136,7 @@ CFHTTPRequest.prototype.status = function()
     {
         return 0;
     }
-}
+};
 
 CFHTTPRequest.prototype.statusText = function()
 {
@@ -142,12 +148,12 @@ CFHTTPRequest.prototype.statusText = function()
     {
         return "";
     }
-}
+};
 
 CFHTTPRequest.prototype.readyState = function()
 {
     return this._nativeRequest.readyState;
-}
+};
 
 CFHTTPRequest.prototype.success = function()
 {
@@ -159,7 +165,7 @@ CFHTTPRequest.prototype.success = function()
     // file:// requests return with status 0, to know if they succeeded, we
     // need to know if there was any content.
     return status === 0 && this.responseText() && this.responseText().length;
-}
+};
 
 CFHTTPRequest.prototype.responseXML = function()
 {
@@ -169,7 +175,7 @@ CFHTTPRequest.prototype.responseXML = function()
         return responseXML;
 
     return parseXML(this.responseText());
-}
+};
 
 CFHTTPRequest.prototype.responsePropertyList = function()
 {
@@ -179,32 +185,32 @@ CFHTTPRequest.prototype.responsePropertyList = function()
         return CFPropertyList.propertyListFromXML(this.responseXML());
 
     return CFPropertyList.propertyListFromString(responseText);
-}
+};
 
 CFHTTPRequest.prototype.responseText = function()
 {
     return this._nativeRequest.responseText;
-}
+};
 
 CFHTTPRequest.prototype.setRequestHeader = function(/*String*/ aHeader, /*Object*/ aValue)
 {
     this._requestHeaders[aHeader] = aValue;
-}
+};
 
 CFHTTPRequest.prototype.getResponseHeader = function(/*String*/ aHeader)
 {
     return this._nativeRequest.getResponseHeader(aHeader);
-}
+};
 
 CFHTTPRequest.prototype.getAllResponseHeaders = function()
 {
     return this._nativeRequest.getAllResponseHeaders();
-}
+};
 
 CFHTTPRequest.prototype.overrideMimeType = function(/*String*/ aMimeType)
 {
     this._mimeType = aMimeType;
-}
+};
 
 CFHTTPRequest.prototype.open = function(/*String*/ aMethod, /*String*/ aURL, /*Boolean*/ isAsynchronous, /*String*/ aUser, /*String*/ aPassword)
 {
@@ -215,7 +221,7 @@ CFHTTPRequest.prototype.open = function(/*String*/ aMethod, /*String*/ aURL, /*B
     this._user = aUser;
     this._password = aPassword;
     return this._nativeRequest.open(aMethod, aURL, isAsynchronous, aUser, aPassword);
-}
+};
 
 CFHTTPRequest.prototype.send = function(/*Object*/ aBody)
 {
@@ -246,23 +252,23 @@ CFHTTPRequest.prototype.send = function(/*Object*/ aBody)
         // FIXME: Do something more complex, with 404's?
         this._eventDispatcher.dispatchEvent({ type:"failure", request:this });
     }
-}
+};
 
 CFHTTPRequest.prototype.abort = function()
 {
     this._isOpen = false;
     return this._nativeRequest.abort();
-}
+};
 
 CFHTTPRequest.prototype.addEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
 {
     this._eventDispatcher.addEventListener(anEventName, anEventListener);
-}
+};
 
 CFHTTPRequest.prototype.removeEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
 {
     this._eventDispatcher.removeEventListener(anEventName, anEventListener);
-}
+};
 
 function determineAndDispatchHTTPRequestEvents(/*CFHTTPRequest*/ aRequest)
 {

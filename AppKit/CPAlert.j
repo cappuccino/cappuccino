@@ -117,21 +117,21 @@ CPCriticalAlertStyle        = 2;
 */
 + (CPAlert)alertWithMessageText:(CPString)aMessage defaultButton:(CPString)defaultButtonTitle alternateButton:(CPString)alternateButtonTitle otherButton:(CPString)otherButtonTitle informativeTextWithFormat:(CPString)informativeText
 {
-    var alert = [[self alloc] init];
+    var newAlert = [[self alloc] init];
 
-    [alert setMessageText:aMessage];
-    [alert addButtonWithTitle:defaultButtonTitle];
+    [newAlert setMessageText:aMessage];
+    [newAlert addButtonWithTitle:defaultButtonTitle];
 
     if (alternateButtonTitle)
-        [alert addButtonWithTitle:alternateButtonTitle];
+        [newAlert addButtonWithTitle:alternateButtonTitle];
 
     if (otherButtonTitle)
-        [alert addButtonWithTitle:otherButtonTitle];
+        [newAlert addButtonWithTitle:otherButtonTitle];
 
     if (informativeText)
-        [alert setInformativeText:informativeText];
+        [newAlert setInformativeText:informativeText];
 
-    return alert;
+    return newAlert;
 }
 
 /*!
@@ -142,12 +142,12 @@ CPCriticalAlertStyle        = 2;
 */
 + (CPAlert)alertWithError:(CPString)anErrorMessage
 {
-    var alert = [[self alloc] init];
+    var newAlert = [[self alloc] init];
 
-    [alert setMessageText:anErrorMessage];
-    [alert setAlertStyle:CPCriticalAlertStyle];
+    [newAlert setMessageText:anErrorMessage];
+    [newAlert setAlertStyle:CPCriticalAlertStyle];
 
-    return alert;
+    return newAlert;
 }
 
 /*!

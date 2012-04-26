@@ -329,6 +329,18 @@ CPLog(@"Got some class: %@", inst);
     return objj_msgSend(self, aSelector, anObject, anotherObject);
 }
 
+/*!
+    Sends the specified message to the reciever, with any number of arguments.
+    @param aSelector the message to send
+    @param anObject... comma seperated objects to pass to the selector
+    @return the return value of the message
+*/
+- (id)performSelector:(SEL)aSelector withObjects:(id)anObject, ...
+{
+    var params = [self, aSelector].concat(Array.prototype.slice.apply(arguments, [3]));
+    return objj_msgSend.apply(this, params);
+}
+
 - (id)forwardingTargetForSelector:(SEL)aSelector
 {
     return nil;
