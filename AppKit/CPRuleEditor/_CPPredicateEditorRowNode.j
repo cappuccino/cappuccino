@@ -14,24 +14,21 @@
 
 + (id)rowNodeFromTree:(id)aTree
 {
-    var mapTable = {};
-    return [_CPPredicateEditorRowNode _rowNodeFromTree:aTree withTemplateTable:mapTable];
+    return [_CPPredicateEditorRowNode _rowNodeFromTree:aTree withTemplateTable:{}];
 }
 
 + (id)_rowNodeFromTree:(id)aTree withTemplateTable:(id)templateTable
 {
-    var node,
-        views,
+    var views,
         copiedContainer;
+        
+    var uuid = [[aTree template] UID],
+        cachedNode = templateTable[uuid],
+        node = [[_CPPredicateEditorRowNode alloc] init];
+        
+    [node setTree:aTree];
 
-    node = [[_CPPredicateEditorRowNode alloc] init];
-    node.tree = aTree;
-
-    var template = [aTree template],
-        uuid = [template UID],
-        cachedNode = templateTable[uuid];
-
-    if (cachedNode === nil)
+    if (cachedNode == nil)
     {
         views = [CPMutableArray array];
         copiedContainer = [CPMutableArray array];
@@ -43,8 +40,8 @@
         copiedContainer = [cachedNode copiedTemplateContainer];
     }
 
-    node.templateViews = views;
-    node.copiedTemplateContainer = copiedContainer;
+    [node setTemplateViews:views];
+    [node setCopiedTemplateContainer:copiedContainer];
 
     var nodeChildren = [CPMutableArray array],
         treeChildren = [aTree children],
@@ -65,7 +62,8 @@
 
 - (BOOL)applyTemplate:(id)template withViews:(id)views forOriginalTemplate:(id)originalTemplate
 {
-    var t = [tree template];
+    var t = [tree template],
+        count = [children count];
 
     if (t !== template)
     {
@@ -74,9 +72,7 @@
         [copiedTemplateContainer addObject:template];
     }
 
-    var count = [children count];
-
-    for (var i; i < count; i++)
+    for (var i = 0; i < count; i++)
         [children[i] applyTemplate:template withViews:views forOriginalTemplate:originalTemplate];
 }
 
