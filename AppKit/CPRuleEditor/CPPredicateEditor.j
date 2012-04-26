@@ -540,35 +540,14 @@ var CPPredicateTemplatesKey = @"CPPredicateTemplates";
 {
 }
 
-- (void)setValueFor:(CPString)aBinding
+- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
 {
-    var destination = [_info objectForKey:CPObservedObjectKey],
-        keyPath = [_info objectForKey:CPObservedKeyPathKey],
-        options = [_info objectForKey:CPOptionsKey],
-        newValue = [destination valueForKeyPath:keyPath];
-
-    var isMarker = CPIsControllerMarker(newValue);
-    if (isMarker)
-         newValue = [options objectForKey:newValue];
-
-    if (!isMarker || newValue == nil)
-        newValue = [self transformValue:newValue withOptions:options];
-
-    [_source _reflectPredicate:newValue];
+    [_source _reflectPredicate:nil];
 }
 
-- (void)reverseSetValueFor:(CPString)aBinding
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
 {
-    var destination = [_info objectForKey:CPObservedObjectKey],
-        keyPath = [_info objectForKey:CPObservedKeyPathKey],
-        options = [_info objectForKey:CPOptionsKey],
-        newValue = [_source valueForKeyPath:aBinding];
-
-    newValue = [self reverseTransformValue:newValue withOptions:options];
-
-    [destination removeObserver:self forKeyPath:keyPath];
-    [destination setValue:newValue forKeyPath:keyPath];
-    [destination addObserver:self forKeyPath:keyPath options:CPKeyValueObservingOptionNew context:aBinding];
+    [_source _reflectPredicate:aValue];
 }
 
 @end
