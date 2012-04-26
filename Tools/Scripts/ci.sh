@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 project_home="$(dirname "$PWD")"
 extras="$project_home/ci-extra.sh"
