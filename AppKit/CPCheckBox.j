@@ -103,32 +103,12 @@ CPCheckBoxImageOffset = 4.0;
 - (void)setValue:(id)aValue forBinding:(CPString)aBinding
 {
     var newValue = aValue;
-    if ( CPIsControllerMarker(aValue) || aValue === nil )
+    if ( CPIsControllerMarker(aValue) || aValue === nil || aValue === undefined || aValue === [CPNull null])
     {
-        var options = [_info objectForKey:CPOptionsKey],
-            newValue = CPOffState;
         if (aValue === CPMultipleValuesMarker)
-        {
-            if ([options containsKey:CPMultipleValuesPlaceholderBindingOption])
-                newValue = [_source setState:[options valueForKey:CPMultipleValuesPlaceholderBindingOption]];
-            else
-                newValue = CPMixedState;
-        }
-        else if (aValue === CPNoSelectionMarker)
-        {
-            if ([options containsKey:CPNoSelectionPlaceholderBindingOption]);
-                newVaue = [options valueForKey:CPNoSelectionPlaceholderBindingOption];
-         }
-         else if (aValue === CPNotApplicableMarker)
-         {
-             if ([options containsKey:CPNotApplicablePlaceholderBindingOption])
-                newValue = [options valueForKey:CPNotApplicablePlaceholderBindingOption];
-         }
-         else
-         {
-            if ([options containsKey:CPNullPlaceholderBindingOption])
-                newValue = [options valueForKey:CPNullPlaceholderBindingOption];
-         }
+            newValue = CPMixedState;
+        else
+            newValue = CPOffState;
      }
 
      [_source setAllowsMixedState:(newValue === CPMixedState)];

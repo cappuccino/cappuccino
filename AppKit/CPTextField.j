@@ -1511,43 +1511,35 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 {
 }
 
+- (void)_setOptions:options withBindingInfo:info
+{
+    if (![options containsKey:CPMultipleValuesPlaceholderBindingOption])
+        [options setObject:@"Multiple Values" forKey:CPMultipleValuesPlaceholderBindingOption];
+    if (![options containsKey:CPNoSelectionPlaceholderBindingOption])
+        [options setObject:@"No Selection" forKey:CPNoSelectionPlaceholderBindingOption];
+    if (![options containsKey:CPNotApplicablePlaceholderBindingOption])
+        [options setObject:@"Not Applicable" forKey:CPNotApplicablePlaceholderBindingOption];
+}
+
 - (void)setValue:(id)aValue forBinding:(CPString)aBinding
 {
-    var newValue = aValue;
-    if (CPIsControllerMarker(aValue) || aValue === undefined || aValue === nil || aValue === [CPNull null] || aValue === @"")
+    var newValue = aValue,
+        options;
+    if (CPIsControllerMarker(aValue))
     {
-        var options = [_info objectForKey:CPOptionsKey];
+        options = [_info objectForKey:CPOptionsKey];
+        newValue = nil;
         if (aValue === CPMultipleValuesMarker)
-        {
-            newValue = nil;
-            if ([options containsKey:CPMultipleValuesPlaceholderBindingOption])
-                [_source setPlaceholderString:[options valueForKey:CPMultipleValuesPlaceholderBindingOption]];
-            else
-                [_source setPlaceholderString:@"Multiple Values"];
-        }
+            [_source setPlaceholderString:[options objectForKey:CPMultipleValuesPlaceholderBindingOption]];
         else if (aValue === CPNoSelectionMarker)
-        {
-            newValue = nil;
-            if ([options containsKey:CPNoSelectionPlaceholderBindingOption])
-                [_source setPlaceholderString:[options valueForKey:CPNoSelectionPlaceholderBindingOption]];
-            else
-                [_source setPlaceholderString:@"No Selection"];
-        }
+            [_source setPlaceholderString:[options objectForKey:CPNoSelectionPlaceholderBindingOption]];
         else if (aValue === CPNotApplicableMarker)
-        {
-            newValue = nil;
-            if ([options containsKey:CPNotApplicablePlaceholderBindingOption])
-                [_source setPlaceholderString:[options valueForKey:CPNotApplicablePlaceholderBindingOption]];
-            else
-                [_source setPlaceholderString:@"Not Applicable"];
-        }
-        else
-        {
-            if ([options containsKey:CPNullPlaceholderBindingOption])
-                [_source setPlaceholderString:[options valueForKey:CPNullPlaceholderBindingOption]];
-            else
-                [_source setPlaceholderString:@""];
-        }
+            [_source setPlaceholderString:[options objectForKey:CPNotApplicablePlaceholderBindingOption]];
+    }
+    else if (aValue === undefined || aValue === nil || aValue === [CPNull null] || aValue === @"")
+    {
+        options = [_info objectForKey:CPOptionsKey];
+        [_source setPlaceholderString:[options objectForKey:CPNullPlaceholderBindingOption]];
     }
     [_source setObjectValue:newValue];
 }

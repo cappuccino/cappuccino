@@ -128,6 +128,10 @@ var CPBindingOperationAnd = 0,
 
         if (options)
             [_info setObject:options forKey:CPOptionsKey];
+        else
+            [_info setObject:[CPMutableDictionary dictionary] forKey:CPOptionsKey];
+
+        [self _setOptions:options withBindingInfo:_info];
 
         [aDestination addObserver:self forKeyPath:aKeyPath options:CPKeyValueObservingOptionNew context:aBinding];
 
@@ -288,6 +292,11 @@ var CPBindingOperationAnd = 0,
 
     delete objectSuppressions[aKeyPath];
 }
+
+- (void)_setOptions:options withBindingInfo:info
+{
+}
+
 @end
 
 @implementation CPObject (KeyValueBindingCreation)
