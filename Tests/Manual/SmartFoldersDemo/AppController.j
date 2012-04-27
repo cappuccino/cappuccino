@@ -309,11 +309,13 @@ var rootItems = [CPArray arrayWithObject:[CPDictionary dictionaryWithObjectsAndK
 // Resize the sheet if needed
 - (void)ruleEditorRowsDidChange:(CPNotification)notif
 {
+/*
     var frame = [predicateSheet frame],
         newHeight = [predicateEditor numberOfRows] * [predicateEditor rowHeight] + 103;
 
     frame.size.height = MAX([predicateSheet minSize].height, newHeight);
     [predicateSheet setFrame:frame display:[predicateSheet isSheet] animate:[predicateSheet isSheet]];
+*/
 }
 
 @end

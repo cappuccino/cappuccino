@@ -280,7 +280,7 @@ CPTransformableAttributeType = 1800;
 */
 - (CPArray)leftExpressions
 {
-    if (_templateType ==1 && !_leftIsWildcard)
+    if (_templateType == 1 && !_leftIsWildcard)
     {
         var view = [_views objectAtIndex:0];
         return [[view itemArray] valueForKey:@"representedObject"];

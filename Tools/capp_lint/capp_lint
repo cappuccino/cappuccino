@@ -254,7 +254,8 @@ class LintChecker(object):
     TEXT_ERROR_SINGLE_FILE_TEMPLATE = Template(u'$lineNum: $message.\n+$line\n')
     TEXT_ERROR_MULTI_FILE_TEMPLATE = Template(u'$filename:$lineNum: $message.\n+$line\n')
 
-    def __init__(self, basedir='', var_declarations=VAR_DECLARATIONS_SINGLE, verbose=False):
+    def __init__(self, view, basedir='', var_declarations=VAR_DECLARATIONS_SINGLE, verbose=False):
+        self.view = view
         self.basedir = unicode(basedir, 'utf-8')
         self.errors = []
         self.errorFiles = []
@@ -274,6 +275,14 @@ class LintChecker(object):
 
     def run_line_checks(self):
         for check in self.LINE_CHECKLIST:
+            option = check.get('option')
+
+            if option:
+                default = check.get('optionDefault', False)
+
+                if self.view and not self.view.settings().get(option, default):
+                    continue
+
             line = self.line
             lineFilter = check.get('filter')
 
@@ -973,7 +982,7 @@ if __name__ == '__main__':
         print usage.replace('%prog', os.path.basename(sys.argv[0]))
         sys.exit(0)
 
-    checker = LintChecker(basedir=basedir, var_declarations=LintChecker.VAR_DECLARATIONS.index(options.var_declarations), verbose=options.verbose)
+    checker = LintChecker(basedir=basedir, view=None, var_declarations=LintChecker.VAR_DECLARATIONS.index(options.var_declarations), verbose=options.verbose)
     pathsToCheck = []
 
     for filename in filenames:
