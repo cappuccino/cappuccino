@@ -1890,7 +1890,9 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
         return [_outlineView._outlineViewDelegate outlineView:_outlineView menuForTableColumn:aTableColumn item:item]
     }
 
-    return nil;
+    // We reimplement CPView menuForEvent: because we can't call it directly. CPTableView implements menuForEvent:
+    // to call this delegate method.
+    return [_outlineView menu] || [[_outlineView class] defaultMenu];
 }
 
 @end
