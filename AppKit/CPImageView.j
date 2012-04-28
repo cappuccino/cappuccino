@@ -66,7 +66,7 @@ var CPImageViewEmptyPlaceholderImage = nil;
 
 + (Class)_binderClassForBinding:(CPString)theBinding
 {
-    if (theBinding === CPValueBinding || theBinding === CPValueURLBinding || theBinding === CPValuePathBinding)
+    if (theBinding === CPValueBinding || theBinding === CPValueURLBinding || theBinding === CPValuePathBinding || theBinding === CPDataBinding)
         return [CPImageViewValueBinder class];
 
     return [super _binderClassForBinding:theBinding];
@@ -466,10 +466,16 @@ var CPImageViewEmptyPlaceholderImage = nil;
 
 - (void)setValue:(id)aValue forBinding:(CPString)aBinding
 {
-    if (aBinding === CPValueURLBinding || aBinding === CPValuePathBinding)
-        aValue = [[CPImage alloc] initWithContentsOfFile:aValue];
+    var image;
 
-    [_source setImage:aValue];
+    if (aBinding === CPDataBinding)
+        image = [[CPImage alloc] initWithData:aValue];
+    else if (aBinding === CPValueURLBinding || aBinding === CPValuePathBinding)
+        image = [[CPImage alloc] initWithContentsOfFile:aValue];
+    else if (aBinding === CPValueBinding)
+        image = aValue;
+
+    [_source setImage:image];
 }
 
 @end
