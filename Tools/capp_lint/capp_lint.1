@@ -1,0 +1,181 @@
+.Dd April 20, 2012
+.Os "Cappuccino"
+.Dt CAPP_LINT 1 "PRM"
+.\"-----------------------------------------------------------------------------------------
+.Sh NAME
+.\"-----------------------------------------------------------------------------------------
+.Nm capp_lint
+.Nd check formatting of Objective-J files
+.\"-----------------------------------------------------------------------------------------
+.Sh SYNOPSIS
+.\"-----------------------------------------------------------------------------------------
+.Nm
+.Op options
+.Op Ar
+.Nm
+.Op --version | -h | --help
+.\"-----------------------------------------------------------------------------------------
+.Sh "DESCRIPTION"
+.\"-----------------------------------------------------------------------------------------
+.Nm
+is a formatting checker for Objective-J. It performs a number of checks that catch
+common formatting mistakes, as defined in the Cappuccino coding style guidelines:
+.Pp
+http://cappuccino.org/contribute/coding-style.php
+.Pp
+.Nm
+operates on a list of files and/or directory. You may pass one or more paths (relative to the
+current working directory) as arguments to
+.Nm ,
+or if the first path is "-", the
+list of paths is taken from stdin, in which case everything after the "-" is ignored.
+.Pp
+If a path is a directory, the directory is recursively scanned for *.j files to check. Symbolic links
+are not followed.
+.Pp
+The following options are available:
+.Bl -tag -width 4n
+.It Fl b, \-basedir=BASEDIR
+The base directory relative to which filenames will be resolved. If not passed,
+it defaults to the current working directory.
+.It Fl d, \-var-declarations=[none|single|strict]
+Determines the policy in flagging consecutive var declarations. The choices are:
+.Bl -tag -indent -width 8n
+.It none
+No checking is done.
+.It single
+If two var blocks appear consecutively and one of them is
+a single variable, the second var block will be flagged.
+.It strict
+Any consecutive var declarations will be flagged.
+.El
+.Pp
+Given the following code:
+.Pp
+    var foo = "bar",
+        bar = "foo";
+
+    var bow = "foobar",
+        wow = "woof";
+.Pp
+The 
+.Ar none
+policy will obviously not flag this. The 
+.Ar single
+policy will not flag
+this because both blocks contain more than one declaration. The
+.Ar strict
+policy will flag this. Given the following code:
+.Pp
+    var foo = "bar",
+        bar = "foo";
+
+    var bow = "foobar";
+.Pp
+The 
+.Ar single
+policy will flag this because the second block is a single declaration.
+.It Fl f, \-format=[text|html]
+Determines the format of the error output. See the OUTPUT section below for more information
+on the different formats.
+.It Fl q, \-quiet
+Normally
+.Nm
+will print a list of the errors it finds. If this option is passed,
+the error list is suppressed. This option is mutually exclusive with the -v option.
+.It Fl v, \-verbose
+Displays each line as it is processed by
+.Nm
+with a line number, along with some information about syntactic information it finds.
+.It Fl \-version
+Displays the current version and exits.
+.It Fl h, \-help
+Shows a synopsis of usage and options and exits.
+.El
+.Ss Errors flagged
+The following formatting errors are flagged by
+.Nm :
+.Bl -bullet -width 0n
+.It
+Lines which contain one or more tabs.
+.It
+Lines which contain non-ASCII characters not within quoted strings.
+.It
+Lines which contain malformed UTF-8.
+.It
+Missing space between control statements and their opening parentheses.
+.It
+Trailing whitespace.
+.It
+Binary operators without surrounding space.
+.It
+Assignment operators without surrounding space.
+.It
+Comparison operators without surrounding space.
+.It
+Useless unary + operators.
+.It
+Extra or missing space in a method declaration.
+.It
+Superflous function names.
+.It
+Unterminated variable blocks.
+.It
+Consecutive var statements.
+.It
+Incorrect indentation in a var block.
+.It
+Missing statement separators in a var block.
+.It
+Inadvertent global variables in a var block.
+.It
+Unbalanced [, { or ( in a variable block.
+.It
+Opening braces on the same line as a statement.
+.It
+Code following a var block that is not outdented from the var block.
+.El
+.\"-----------------------------------------------------------------------------------------
+.Sh EXIT STATUS
+.\"-----------------------------------------------------------------------------------------
+.Nm
+exits with a return status of one if it finds any errors. If no errors are found,
+it exits with a return status of zero.
+.\"-----------------------------------------------------------------------------------------
+.Sh OUTPUT
+.\"-----------------------------------------------------------------------------------------
+For each error that
+.Nm
+finds, if the -q/--quiet option was not passed,
+.Nm
+will output an error like the following if the error format is text:
+.Pp
+Foo.j:482: assignment operator without surrounding spaces.
+.br
++    for (var i=0, count=[_observationProxies count]; i<count; i++)
+.br
+               ^        ^
+.Pp
+The filename (relative to the working directory), line number, and type of error are displayed
+first, followed by the offending line of source code. When possible and necessary (as in this example),
+the location of the errors is indicated below the source line. If only a single file was checked,
+the filename is suppressed.
+.Pp
+If the error format is html, the output is similar, but instead of using markers to indicate where
+the errors occurred, the character at that position is highlighted. In addition, clicking on the
+error opens TextMate to the file and line number of the error.
+.\"-----------------------------------------------------------------------------------------
+.Sh WHITESPACE
+.\"-----------------------------------------------------------------------------------------
+Cappuccino coding standards stipulate that there should be no trailing whitespace, and that tabs
+should consist of 4 spaces, not tab characters.
+.Nm
+will report trailing whitespace and hard tabs. You should fix those errors before paying attention
+to any other errors, as the presence of hard tabs may cause some false positives.
+.\"-----------------------------------------------------------------------------------------
+.Sh AUTHORS
+.\"-----------------------------------------------------------------------------------------
+.Pp
+Aparajita Fishman, Victory-Heart Productions
+.br
+aparajita@aparajita.com

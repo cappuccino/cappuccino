@@ -7,13 +7,13 @@
  */
 
 @import <AppKit/CPScrollView.j>
+@import "Predicatetransformer.j"
 
 @implementation AppController : CPObject
 {
-    CPWindow        window;
+    CPWindow             window;
     CPPredicateEditor    predicateEditor;
-    CPTextField     predicateField;
-
+    
     CPTableView     leftTable;
     CPTableView     rightTable;
     CPPopUpButton   rightExpressionsType;
@@ -25,6 +25,12 @@
     CPMutableArray  rightConstants;
 }
 
++ (void)initialize
+{
+    var transformer = [[PredicateTransformer alloc] init];
+    [CPValueTransformer setValueTransformer:transformer forName:@"PredicateTransformer"];   
+}
+
 - (void)awakeFromCib
 {
     operators = [CPMutableArray new];
@@ -33,30 +39,19 @@
 
     [templateBox setCornerRadius:10];
     [self updateAddTemplateButton];
-    
-    [predicateEditor setAction:@selector(predicateEditorAction:)];
-    [predicateEditor setTarget:self];
 
     [window setBackgroundColor:[CPColor colorWithHexString:@"f3f4f5"]];
     [window setFullBridge:YES];
 }
 
-- (IBAction)displayPredicate:(id)sender
-{
-    var pred = [CPPredicate predicateWithFormat:[sender stringValue]];
-    if (pred)
-        [predicateEditor setObjectValue:pred];
-}
-
 - (IBAction)predicateEditorAction:(id)sender
 {
-//    CPLogConsole(_cmd + [predicateEditor displayValuesForRow:1]);
-    [predicateField setStringValue:[[predicateEditor objectValue] predicateFormat]];
+    CPLogConsole(_cmd);
 }
 
 - (void)ruleEditorRowsDidChange:(CPNotification)notification
 {
-
+    CPLogConsole(_cmd);
 }
 
 // Templates maker

@@ -47,8 +47,8 @@ NS_CPToolbarItemIdentifierMap =
 
         _itemIdentifier = NS_CPToolbarItemIdentifierMap[NS_itemIdentifier] || NS_itemIdentifier;
 
-        _minSize = [aCoder decodeSizeForKey:@"NSToolbarItemMinSize"] || CGSizeMakeZero();
-        _maxSize = [aCoder decodeSizeForKey:@"NSToolbarItemMaxSize"] || CGSizeMakeZero();
+        _minSize = [aCoder decodeSizeForKey:@"NSToolbarItemMinSize"];
+        _maxSize = [aCoder decodeSizeForKey:@"NSToolbarItemMaxSize"];
 
         [self setLabel:[aCoder decodeObjectForKey:@"NSToolbarItemLabel"]];
         [self setPaletteLabel:[aCoder decodeObjectForKey:@"NSToolbarItemPaletteLabel"]];

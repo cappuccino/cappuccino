@@ -371,7 +371,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 
         [self setObjectClass:objectClass || [CPMutableDictionary class]];
         [self setEditable:[aCoder decodeBoolForKey:CPObjectControllerIsEditableKey]];
-        [self setAutomaticallyPreparesContent:[aCoder decodeBoolForKey:CPObjectControllerAutomaticallyPreparesContentKey] || NO];
+        [self setAutomaticallyPreparesContent:[aCoder decodeBoolForKey:CPObjectControllerAutomaticallyPreparesContentKey]];
         [self setContent:[aCoder decodeObjectForKey:CPObjectControllerContentKey]];
 
         _observedKeys = [[CPCountedSet alloc] init];
@@ -579,6 +579,8 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 
 - (void)removeObjectAtIndex:(unsigned)anIndex
 {
+    var currentObject = [self objectAtIndex:anIndex];
+
     for (var i = 0, count = [_observationProxies count]; i < count; i++)
     {
         var proxy = [_observationProxies objectAtIndex:i],
@@ -588,7 +590,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
         if (operator)
             [self willChangeValueForKey:keyPath];
 
-        [anObject removeObserver:proxy forKeyPath:keyPath];
+        [currentObject removeObserver:proxy forKeyPath:keyPath];
 
         if (operator)
             [self didChangeValueForKey:keyPath];
@@ -777,8 +779,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
     [proxy setNotifyObject:YES];
     [_observationProxies addObject:proxy];
 
-    // We keep are reference to the observed objects
-    // because the removeObserver: will be called after the selection changes
+    // We keep a reference to the observed objects because removeObserver: will be called after the selection changes.
     var observedObjects = [_controller selectedObjects];
     _observedObjectsByKeyPath[aKeyPath] = observedObjects;
     [observedObjects addObserver:proxy forKeyPath:aKeyPath options:options context:context];

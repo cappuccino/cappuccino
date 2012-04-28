@@ -242,13 +242,15 @@
     Sets the content of the collection view to the content in \c anArray.
     This array can be of any type, and each element will be passed to the \c -setRepresentedObject: method.
     It's the responsibility of your custom collection view item to interpret the object.
-    @param anArray the content array
+
+    If the new content array is smaller than the previous one, note that [receiver selectionIndexes] may
+    refer to out of range indices. \c selectionIndexes is not changed as a result of calling the
+    \c setContent: method.
+
+    @param anArray a content array
 */
 - (void)setContent:(CPArray)anArray
 {
-    // reset the _selectionIndexes
-    [self setSelectionIndexes:[CPIndexSet indexSet]];
-
     _content = anArray;
 
     [self reloadContent];
@@ -284,9 +286,11 @@
 
     if (!_isSelectable)
     {
-        var index = CPNotFound;
+        var index = CPNotFound,
+            itemCount = [_items count];
 
-        while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound)
+        // Be wary of invalid selection ranges since setContent: does not clear selection indexes.
+        while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound && index < itemCount)
             [_items[index] setSelected:NO];
     }
 }
@@ -345,9 +349,11 @@
     if (!_isSelectable || [_selectionIndexes isEqual:anIndexSet])
         return;
 
-    var index = CPNotFound;
+    var index = CPNotFound,
+        itemCount = [_items count];
 
-    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) !== CPNotFound)
+    // Be wary of invalid selection ranges since setContent: does not clear selection indexes.
+    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) !== CPNotFound && index < itemCount)
         [_items[index] setSelected:NO];
 
     _selectionIndexes = anIndexSet;
@@ -403,7 +409,8 @@
     }
 
     index = CPNotFound;
-    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound)
+    // Be wary of invalid selection ranges since setContent: does not clear selection indexes.
+    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound && index < count)
         [_items[index] setSelected:YES];
 
     [self tile];
@@ -669,6 +676,13 @@
             indexes = [CPIndexSet indexSetWithIndex:index];
 
         [self setSelectionIndexes:indexes];
+
+        // TODO Is it allowable for collection view items to become the first responder? In that case they
+        // may have become that at this point by virtue of CPWindow's sendEvent: mouse down handling, and
+        // the following line will rudely snatch it away from them. For most cases though, clicking on an
+        // item should naturally make the collection view the first responder so that keyboard navigation
+        // is enabled.
+        [[self window] makeFirstResponder:self];
     }
     else if (_allowsEmptySelection)
         [self setSelectionIndexes:[CPIndexSet indexSet]];
@@ -994,11 +1008,11 @@ var CPCollectionViewMinItemSizeKey              = @"CPCollectionViewMinItemSizeK
 
         _itemSize = CGSizeMakeZero();
 
-        _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey] || CGSizeMakeZero();
-        _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey] || CGSizeMakeZero();
+        _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey];
+        _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey];
 
-        _maxNumberOfRows = [aCoder decodeIntForKey:CPCollectionViewMaxNumberOfRowsKey] || 0;
-        _maxNumberOfColumns = [aCoder decodeIntForKey:CPCollectionViewMaxNumberOfColumnsKey] || 0;
+        _maxNumberOfRows = [aCoder decodeIntForKey:CPCollectionViewMaxNumberOfRowsKey];
+        _maxNumberOfColumns = [aCoder decodeIntForKey:CPCollectionViewMaxNumberOfColumnsKey];
 
         _verticalMargin = [aCoder decodeFloatForKey:CPCollectionViewVerticalMarginKey];
 

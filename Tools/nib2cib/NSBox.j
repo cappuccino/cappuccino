@@ -36,13 +36,14 @@
         _borderColor   = [aCoder decodeObjectForKey:@"NSBorderColor2"] || [CPColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.42];
         _fillColor     = [aCoder decodeObjectForKey:@"NSFillColor2"] || [CPColor clearColor];
 
-        _cornerRadius  = [aCoder decodeFloatForKey:@"NSCornerRadius2"] || 0.0;
+        _cornerRadius  = [aCoder decodeFloatForKey:@"NSCornerRadius2"];
         _borderWidth   = [aCoder decodeFloatForKey:@"NSBorderWidth2"] || 1.0;
 
         _contentMargin = [aCoder decodeSizeForKey:@"NSOffsets"];
 
         _title         = [[aCoder decodeObjectForKey:@"NSTitleCell"] objectValue] || @"";
         _titlePosition = [aCoder decodeObjectForKey:@"NSTitlePosition"];
+
         if (_titlePosition === undefined)
             _titlePosition = CPAtTop;
     }

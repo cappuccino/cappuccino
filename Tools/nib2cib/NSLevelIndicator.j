@@ -102,17 +102,17 @@
     {
         _objectValue        = [aCoder decodeDoubleForKey:@"NSValue"];
 
-        _minValue           = [aCoder decodeDoubleForKey:@"NSMinValue"] || 0;
+        _minValue           = [aCoder decodeDoubleForKey:@"NSMinValue"];
         _maxValue           = [aCoder decodeDoubleForKey:@"NSMaxValue"];
         _warningValue       = [aCoder decodeDoubleForKey:@"NSWarningValue"];
         _criticalValue      = [aCoder decodeDoubleForKey:@"NSCriticalValue"];
 
-        _levelIndicatorStyle = [aCoder decodeIntForKey:@"NSIndicatorStyle"] || 0;
+        _levelIndicatorStyle = [aCoder decodeIntForKey:@"NSIndicatorStyle"];
 
         // None of these are included in the XIB if the defaults are used.
-        _tickMarkPosition   = [aCoder decodeIntForKey:@"NSTickMarkPosition"] || 0;
-        _numberOfTickMarks  = [aCoder decodeIntForKey:@"NSNumberOfTickMarks"] || 0;
-        _numberOfTickMarks  = [aCoder decodeIntForKey:@"NSNumberOfMajorTickMarks"] || 0;
+        _tickMarkPosition   = [aCoder decodeIntForKey:@"NSTickMarkPosition"];
+        _numberOfTickMarks  = [aCoder decodeIntForKey:@"NSNumberOfTickMarks"];
+        _numberOfTickMarks  = [aCoder decodeIntForKey:@"NSNumberOfMajorTickMarks"];
     }
 
     return self;

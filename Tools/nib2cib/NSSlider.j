@@ -91,7 +91,7 @@
         _altIncrementValue  = [aCoder decodeDoubleForKey:@"NSAltIncValue"];
         _isVertical         = [aCoder decodeBoolForKey:@"NSVertical"];
 
-        _sliderType         = [aCoder decodeIntForKey:@"NSSliderType"] || 0;
+        _sliderType         = [aCoder decodeIntForKey:@"NSSliderType"];
     }
 
     return self;

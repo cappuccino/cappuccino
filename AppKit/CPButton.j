@@ -802,9 +802,7 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
 
         _title = [aCoder decodeObjectForKey:CPButtonTitleKey];
         _alternateTitle = [aCoder decodeObjectForKey:CPButtonAlternateTitleKey];
-
-        if ([aCoder containsValueForKey:CPButtonAllowsMixedStateKey])
-            _allowsMixedState = [aCoder decodeBoolForKey:CPButtonAllowsMixedStateKey];
+        _allowsMixedState = [aCoder decodeBoolForKey:CPButtonAllowsMixedStateKey];
 
         [self setImageDimsWhenDisabled:[aCoder decodeObjectForKey:CPButtonImageDimsWhenDisabledKey]];
 

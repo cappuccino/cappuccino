@@ -98,6 +98,10 @@ var CPViewFlags                     = { },
     CPViewHasCustomDrawRect         = 1 << 0,
     CPViewHasCustomLayoutSubviews   = 1 << 1;
 
+var CPCurrentToolTip,
+    CPCurrentToolTipTimer,
+    CPToolTipDelay = 1.0;
+
 /*!
     @ingroup appkit
     @class CPView
@@ -190,7 +194,10 @@ var CPViewFlags                     = { },
     unsigned            _viewClassFlags;
 
     // ToolTips
-    CPString            _toolTip    @accessors(property=toolTip);
+    CPString            _toolTip    @accessors(getter=toolTip);
+    Function            _toolTipFunctionIn;
+    Function            _toolTipFunctionOut;
+    BOOL                _toolTipInstalled;
 }
 
 /*
@@ -216,7 +223,7 @@ var CPViewFlags                     = { },
     CachedNotificationCenter = [CPNotificationCenter defaultCenter];
 }
 
-- (void)setupViewFlags
+- (void)_setupViewFlags
 {
     var theClass = [self class],
         classUID = [theClass UID];
@@ -235,6 +242,13 @@ var CPViewFlags                     = { },
     }
 
     _viewClassFlags = CPViewFlags[classUID];
+}
+
+- (void)_setupToolTipHandlers
+{
+    _toolTipInstalled = NO;
+    _toolTipFunctionIn = function(e){[self _fireToolTip];}
+    _toolTipFunctionOut = function(e){[self _invalidateToolTip];};
 }
 
 + (CPSet)keyPathsForValuesAffectingFrame
@@ -303,12 +317,125 @@ var CPViewFlags                     = { },
         _theme = [CPTheme defaultTheme];
         _themeState = CPThemeStateNormal;
 
-        [self setupViewFlags];
+        [self _setupToolTipHandlers];
+        [self _setupViewFlags];
 
         [self _loadThemeAttributes];
     }
 
     return self;
+}
+
+
+/*!
+    Sets the tooltip for the receiver.
+
+    @param aToolTip the tooltip
+*/
+- (void)setToolTip:(CPString)aToolTip
+{
+    if (_toolTip == aToolTip)
+        return;
+
+    _toolTip = aToolTip;
+
+    if (_toolTip)
+        [self _installToolTipEventHandlers];
+    else
+        [self _uninstallToolTipEventHandlers];
+}
+
+/*! @ignore
+
+    Install the handlers for the tooltip
+*/
+- (void)_installToolTipEventHandlers
+{
+    if (_toolTipInstalled)
+        return;
+
+    if (_DOMElement.addEventListener)
+    {
+        _DOMElement.addEventListener("mouseover", _toolTipFunctionIn, NO);
+        _DOMElement.addEventListener("keypress", _toolTipFunctionOut, NO);
+        _DOMElement.addEventListener("mouseout", _toolTipFunctionOut, NO);
+    }
+    else if (_DOMElement.attachEvent)
+    {
+        _DOMElement.attachEvent("onmouseover", _toolTipFunctionIn);
+        _DOMElement.attachEvent("onkeypress", _toolTipFunctionOut);
+        _DOMElement.attachEvent("onmouseout", _toolTipFunctionOut);
+    }
+    _toolTipInstalled = YES;
+}
+
+/*! @ignore
+
+    Uninstall the handlers for the tooltip
+*/
+- (void)_uninstallToolTipEventHandlers
+{
+    if (!_toolTipInstalled)
+        return;
+
+    if (_DOMElement.removeEventListener)
+    {
+        _DOMElement.removeEventListener("mouseover", _toolTipFunctionIn, NO);
+        _DOMElement.removeEventListener("keypress", _toolTipFunctionOut, NO);
+        _DOMElement.removeEventListener("mouseout", _toolTipFunctionOut, NO);
+    }
+    else if (_DOMElement.detachEvent)
+    {
+        _DOMElement.detachEvent("onmouseover", _toolTipFunctionIn);
+        _DOMElement.detachEvent("onkeypress", _toolTipFunctionOut);
+        _DOMElement.detachEvent("onmouseout", _toolTipFunctionOut);
+    }
+    _toolTipInstalled = NO;
+}
+
+/*! @ignore
+    Starts the tooltip timer.
+*/
+- (void)_fireToolTip
+{
+    if (CPCurrentToolTipTimer)
+    {
+        [CPCurrentToolTipTimer invalidate];
+        if (CPCurrentToolTip)
+            [CPCurrentToolTip close];
+        CPCurrentToolTip = nil;
+    }
+
+    if (_toolTip)
+        CPCurrentToolTipTimer = [CPTimer scheduledTimerWithTimeInterval:CPToolTipDelay target:self selector:@selector(_showToolTip:) userInfo:nil repeats:NO];
+}
+
+/*! @ignore
+    Stop the tooltip timer if any
+*/
+- (void)_invalidateToolTip
+{
+    if (CPCurrentToolTipTimer)
+    {
+        [CPCurrentToolTipTimer invalidate];
+        CPCurrentToolTipTimer = nil;
+    }
+
+    if (CPCurrentToolTip)
+    {
+        [CPCurrentToolTip close];
+        CPCurrentToolTip = nil;
+    }
+}
+
+/*! @ignore
+    Actually shows the tooltip if any
+*/
+- (void)_showToolTip:(CPTimer)aTimer
+{
+    if (CPCurrentToolTip)
+        [CPCurrentToolTip close];
+    CPCurrentToolTip = [_CPToolTip toolTipWithString:_toolTip];
 }
 
 /*!
@@ -2708,6 +2835,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewBoundsKey                 = @"CPViewBoundsKey",
     CPViewFrameKey                  = @"CPViewFrameKey",
     CPViewHitTestsKey               = @"CPViewHitTestsKey",
+    CPViewToolTipKey                = @"CPViewToolTipKey",
     CPViewIsHiddenKey               = @"CPViewIsHiddenKey",
     CPViewOpacityKey                = @"CPViewOpacityKey",
     CPViewSubviewsKey               = @"CPViewSubviewsKey",
@@ -2763,7 +2891,12 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         _autoresizesSubviews = ![aCoder containsValueForKey:CPViewAutoresizesSubviewsKey] || [aCoder decodeBoolForKey:CPViewAutoresizesSubviewsKey];
 
-        _hitTests = ![aCoder containsValueForKey:CPViewHitTestsKey] || [aCoder decodeObjectForKey:CPViewHitTestsKey];
+        _hitTests = ![aCoder containsValueForKey:CPViewHitTestsKey] || [aCoder decodeBoolForKey:CPViewHitTestsKey];
+
+        [self _setupToolTipHandlers];
+        _toolTip = [aCoder decodeObjectForKey:CPViewToolTipKey];
+        if (_toolTip)
+            [self _installToolTipEventHandlers];
 
         // DOM SETUP
 #if PLATFORM(DOM)
@@ -2783,10 +2916,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         }
 #endif
 
-        if ([aCoder containsValueForKey:CPViewIsHiddenKey])
-            [self setHidden:[aCoder decodeBoolForKey:CPViewIsHiddenKey]];
-        else
-            _isHidden = NO;
+        [self setHidden:[aCoder decodeBoolForKey:CPViewIsHiddenKey]];
 
         if ([aCoder containsValueForKey:CPViewOpacityKey])
             [self setAlphaValue:[aCoder decodeIntForKey:CPViewOpacityKey]];
@@ -2794,8 +2924,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
             _opacity = 1.0;
 
         [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
-
-        [self setupViewFlags];
+        [self _setupViewFlags];
 
         _theme = [CPTheme defaultTheme];
         _themeClass = [aCoder decodeObjectForKey:CPViewThemeClassKey];
@@ -2875,6 +3004,9 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
     if (_isHidden)
         [aCoder encodeBool:_isHidden forKey:CPViewIsHiddenKey];
+
+    if (_toolTip)
+        [aCoder encodeObject:_toolTip forKey:CPViewToolTipKey];
 
     var nextKeyView = [self nextKeyView];
 
@@ -3002,3 +3134,5 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
 
     return transform;
 };
+
+

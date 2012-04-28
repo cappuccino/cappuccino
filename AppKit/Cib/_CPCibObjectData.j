@@ -30,6 +30,7 @@
 @import "CPCibOutletConnector.j"
 @import "CPCibBindingConnector.j"
 @import "CPCibRuntimeAttributesConnector.j"
+@import "CPCibHelpConnector.j"
 
 
 @implementation _CPCibObjectData : CPObject

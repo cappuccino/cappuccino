@@ -50,9 +50,8 @@ CPRuleEditorNestingModeSimple   = 3;        // One compound row at the top with 
 CPRuleEditorRowTypeSimple       = 0;
 CPRuleEditorRowTypeCompound     = 1;
 
-var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType";
-
-var itemsContext                = "items",
+var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
+    itemsContext                = "items",
     valuesContext               = "values",
     subrowsContext              = "subrows_array",
     boundArrayContext           = "bound_array";
@@ -84,6 +83,7 @@ var itemsContext                = "items",
     BOOL             _disallowEmpty;
     BOOL             _delegateWantsValidation;
     BOOL             _editable;
+    BOOL             _sendAction;
 
     Class           _rowClass;
 
@@ -120,8 +120,8 @@ var itemsContext                = "items",
     BOOL            _isKeyDown;
     BOOL            _nestingModeDidChange;
 
-    id              _standardLocalizer @accessors(property=standardLocalizer);
-    id              _itemsAndValuesToAddForRowType;
+    _CPRuleEditorLocalizer _standardLocalizer @accessors(property=standardLocalizer);
+    CPDictionary           _itemsAndValuesToAddForRowType;
 }
 
 /*! @cond */
@@ -150,6 +150,7 @@ var itemsContext                = "items",
         _allowsEmptyCompoundRows = NO;
         _disallowEmpty = NO;
 
+        [self setFormattingStringsFilename:nil];
         [self setCriteriaKeyPath:@"criteria"];
         [self setSubrowsKeyPath:@"subrows"];
         [self setRowTypeKeyPath:@"rowType"];
@@ -170,13 +171,14 @@ var itemsContext                = "items",
 - (void)_initRuleEditorShared
 {
     _rowCache = [[CPMutableArray alloc] init];
-    _rowClass = [RowObject class];
+    _rowClass = [_CPRuleEditorRowObject class];
     _isKeyDown = NO;
     _subviewIndexOfDropLine = CPNotFound;
     _lastRow = 0;
     _delegateWantsValidation = YES;
     _suppressKeyDownHandling = NO;
     _nestingModeDidChange = NO;
+    _sendAction = YES;
     _itemsAndValuesToAddForRowType = {};
     var animation = [[CPViewAnimation alloc] initWithDuration:0.5 animationCurve:CPAnimationEaseInOut];
     [self setAnimation:animation];
@@ -395,7 +397,6 @@ var itemsContext                = "items",
 */
 - (void)setFormattingStringsFilename:(CPString)stringsFilename
 {
-    // Can we set _stringsFilename to nil in cocoa ?
     if (_standardLocalizer === nil)
         _standardLocalizer = [_CPRuleEditorLocalizer new];
 
@@ -439,7 +440,6 @@ var itemsContext                = "items",
 */
 - (void)setCriteria:(CPArray)criteria andDisplayValues:(CPArray)values forRowAtIndex:(int)rowIndex
 {
-// TODO: reload from the delegate if criteria is an empty array.
     if (criteria === nil || values === nil)
         [CPException raise:CPInvalidArgumentException reason:_cmd + @". criteria and values parameters must not be nil."];
 
@@ -586,7 +586,7 @@ TODO: implement
         {
             [indexes addIndex:i];
             objectsCount --;
-            // [buffer removeObjectAtIndex:indexInSubrows];
+
             if ([self rowTypeForRow:i] === CPRuleEditorRowTypeCompound)
                 i += [[self subrowIndexesForRow:i] count];
         }
@@ -806,7 +806,7 @@ TODO: implement
     for (i = 0; i < count; i++)
     {
         var item = [items objectAtIndex:i],
-        //var displayValue = [self _queryValueForItem:item inRow:aRow];  A voir. On peut aussi prendre la valeur affichée dans le row cache.
+        //var displayValue = [self _queryValueForItem:item inRow:aRow]; Ask the delegate or get cached value ?.
             displayValue = [[self displayValuesForRow:aRow] objectAtIndex:i],
             predpart = [_ruleDelegate ruleEditor:self predicatePartsForCriterion:item withDisplayValue:displayValue inRow:aRow];
 
@@ -937,7 +937,7 @@ TODO: implement
 - (void)setRowClass:(Class)rowClass
 {
     if (rowClass === [CPMutableDictionary class])
-        rowClass = [RowObject class];
+        rowClass = [_CPRuleEditorRowObject class];
 
     _rowClass = rowClass;
 }
@@ -1060,7 +1060,6 @@ TODO: implement
     [_currentAnimation setDelegate:self];
 }
 
-// TODO: delegate methods are implemented by the delegate. How do you document them in doxygen without implementing them here ? @fn not working ?
 /*!
     @name Delegate Methods
 */
@@ -1135,9 +1134,6 @@ TODO: implement
 {
     var view = [[_CPRuleEditorViewSliceDropSeparator alloc] initWithFrame:CGRectMake(0,-10, [self frame].size.width, 2)];
     [view setAutoresizingMask:CPViewWidthSizable];
-#if PLATFORM(DOM)
-    view._DOMElement.style.webkitTransition = "opacity 300ms ease-in";
-#endif
     return view;
 }
 
@@ -1305,7 +1301,11 @@ TODO: implement
     }
 
     [self removeRowsAtIndexes:rowindexes includeSubrows:YES];
-    [self _postRowCountChangedNotificationOfType:CPRuleEditorRowsDidChangeNotification indexes:rowindexes]; // indexes should include childs
+
+    [self _updatePredicate];
+    [self _sendRuleAction];
+    [self _postRuleOptionChangedNotification];
+    [self _postRowCountChangedNotificationOfType:CPRuleEditorRowsDidChangeNotification indexes:rowindexes];
 }
 
 - (CPArray)_rootRowsArray
@@ -1408,21 +1408,17 @@ TODO: implement
     // for CPRuleEditorNestingModeSimple only
 
     var rowIndexEvent = [slice rowIndex],
-        rowTypeEvent = [self rowTypeForRow:rowIndexEvent];
+        rowTypeEvent = [self rowTypeForRow:rowIndexEvent],
+        insertIndex = rowIndexEvent + 1,
+        parentRowIndex = (rowTypeEvent === CPRuleEditorRowTypeCompound) ? rowIndexEvent:[self parentRowForRow:rowIndexEvent];
 
-    var parentRowIndex = (rowTypeEvent === CPRuleEditorRowTypeCompound) ? rowIndexEvent:[self parentRowForRow:rowIndexEvent];
-
-    [self insertRowAtIndex:rowIndexEvent + 1 withType:type asSubrowOfRow:parentRowIndex animate:YES];
-
-    // [self _reconfigureSubviewsAnimate:YES];
-    // [self _updatePredicate];
+    [self insertRowAtIndex:insertIndex withType:type asSubrowOfRow:parentRowIndex animate:YES];
 }
 
 - (id)_insertNewRowAtIndex:(int)insertIndex ofType:(CPRuleEditorRowType)rowtype withParentRow:(int)parentRowIndex
 {
-    var row = [[[self rowClass] alloc] init];
-
-    var itemsandvalues = [self _getItemsAndValuesToAddForRow:insertIndex ofType:rowtype],
+    var row = [[[self rowClass] alloc] init],
+        itemsandvalues = [self _getItemsAndValuesToAddForRow:insertIndex ofType:rowtype],
         newitems = [itemsandvalues valueForKey:@"item"],
         newvalues = [itemsandvalues valueForKey:@"value"];
 
@@ -1442,6 +1438,11 @@ TODO: implement
 
     var relInsertIndex = insertIndex - parentRowIndex - 1;
     [subrowsObjects insertObject:row atIndex:relInsertIndex];
+
+    [self _updatePredicate];
+    [self _sendRuleAction];
+    [self _postRuleOptionChangedNotification];
+    [self _postRowCountChangedNotificationOfType:CPRuleEditorRowsDidChangeNotification indexes:[CPIndexSet indexSetWithIndex:insertIndex]];
 
     return row;
 }
@@ -1519,10 +1520,7 @@ TODO: implement
         }
 
         [self _changedRowArray:newRows withOldRowArray:oldRows forParent:object];
-
         [self _reconfigureSubviewsAnimate:[self _wantsRowAnimations]];
-        [self _postRowCountChangedNotificationOfType:CPRuleEditorRowsDidChangeNotification indexes:[change objectForKey:CPKeyValueChangeIndexesKey]];
-
     }
     else if (context === itemsContext)
     {
@@ -1537,10 +1535,9 @@ TODO: implement
     var criteria = [self criteriaForRow:aRow],
         displayValues = [self displayValuesForRow:aRow],
         rowType = [self rowTypeForRow:aRow],
-        anItem = toItem;
-        //fromItemIndex = [criteria indexOfObjectIdenticalTo:fromItem];
+        anItem = toItem,
 
-    var items = [criteria subarrayWithRange:CPMakeRange(0, fromItemIndex)],
+        items = [criteria subarrayWithRange:CPMakeRange(0, fromItemIndex)],
         values = [displayValues subarrayWithRange:CPMakeRange(0, fromItemIndex)];
 
     _lastRow = aRow;
@@ -1563,7 +1560,9 @@ TODO: implement
 
     var slice = [_slices objectAtIndex:aRow];
     [slice _reconfigureSubviews];
-    [self  _sendRuleAction];
+
+    [self _updatePredicate];
+    [self _sendRuleAction];
     [self _postRuleOptionChangedNotification];
 }
 
@@ -1598,9 +1597,9 @@ TODO: implement
     {
         var newCacheGlobalIndex = (parentCacheIndex + 1) + newRowCacheIndex,
             obj = [newRows objectAtIndex:newRowCacheIndex],
-            newRowType = [obj valueForKey:_typeKeyPath];
+            newRowType = [obj valueForKey:_typeKeyPath],
+            cache = [[_CPRuleEditorCache alloc] init];
 
-        var cache = [[_CPRuleEditorCache alloc] init];
         [cache setRowObject:obj];
         [cache setRowIndex:newCacheGlobalIndex];
         [cache setIndentation:parentCacheIndentation + 1];
@@ -1676,47 +1675,45 @@ TODO: implement
     }
 }
 
-- (void)bind:(CPString)binding toObject:(id)observableController withKeyPath:(CPString)keyPath options:(CPDictionary)options
+- (void)bind:(CPString)aBinding toObject:(id)observableController withKeyPath:(CPString)aKeyPath options:(CPDictionary)options
 {
-    if (keyPath === nil || [observableController valueForKey:keyPath] === nil)
-    {
-        [CPException raise:CPInvalidArgumentException reason:"Keypath or bound object cannot be nil"];
-        return;
-    }
+  if ([aBinding isEqualToString:@"rows"])
+  {
+    [self unbind:aBinding];
+    [self _setBoundDataSource:observableController withKeyPath:aKeyPath options:options];
 
-    if ([binding isEqualToString:@"rows"])
-    {
-        if ([observableController respondsToSelector:@selector(objectClass)])
-            _rowClass = [observableController objectClass];
+    [_rowCache removeAllObjects];
+    [_slices removeAllObjects];
 
-         [self _setBoundDataSource:observableController withKeyPath:keyPath options:options];
-    }
-    else if ([binding isEqualToString:CPValueBinding])
-        [super bind:binding toObject:observableController withKeyPath:keyPath options:options];
-    else
-        [CPException raise:CPInvalidArgumentException reason:"Keypath or bound object cannot be nil"];
+    var newRows = [CPArray array],
+        oldRows = [self _rootRowsArray];
+
+    [self _changedRowArray:newRows withOldRowArray:oldRows forParent:_boundArrayOwner];
+  }
+  else
+    [super bind:aBinding toObject:observableController withKeyPath:aKeyPath options:options];
 }
 
 - (void)unbind:(id)object
 {
-    _rowClass = [RowObject class];
+    _rowClass = [_CPRuleEditorRowObject class];
     [super unbind:object];
 }
 
 - (void)_setBoundDataSource:(id)datasource withKeyPath:(CPString)keyPath options:(CPDictionary)options
 {
-    if (_boundArrayOwner !== nil)
-        [_boundArrayOwner removeObserver:self forKeyPath:_boundArrayKeyPath];
+    if ([observableController respondsToSelector:@selector(objectClass)])
+        _rowClass = [observableController objectClass];
 
     _boundArrayKeyPath = keyPath;
     _boundArrayOwner = datasource;
 
-    var boundRows = [_boundArrayOwner valueForKey:_boundArrayKeyPath];
+    //var boundRows = [_boundArrayOwner valueForKey:_boundArrayKeyPath];
 
     [_boundArrayOwner addObserver:self forKeyPath:_boundArrayKeyPath options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:boundArrayContext];
 
-    if ([boundRows isKindOfClass:[CPArray class]] && [boundRows count] > 0)
-        [_boundArrayOwner setValue:boundRows forKey:_boundArrayKeyPath];
+    //if ([boundRows isKindOfClass:[CPArray class]] && [boundRows count] > 0)
+    //    [_boundArrayOwner setValue:boundRows forKey:_boundArrayKeyPath];
 }
 
 - (void)_setPredicate:(CPPredicate)predicate
@@ -1770,11 +1767,14 @@ TODO: implement
 
 - (void)_reconfigureSubviewsAnimate:(BOOL)animate
 {
-    [self _updateSliceRows];
-
     var viewAnimations = [CPMutableArray array],
         added_slices = [CPMutableArray array],
         count = [_slices count];
+
+    [self _updateSliceRows];
+
+    if ([[self superview] isKindOfClass:[CPClipView class]])
+        [self setFrameSize:CGSizeMake(CGRectGetWidth([self frame]), count * _sliceHeight)];
 
     for (var i = 0; i < count; i++)
     {
@@ -2256,6 +2256,11 @@ TODO: implement
 - (void)draggedView:(CPView)dragView endedAt:(CPPoint)aPoint operation:(CPDragOperation)operation
 {
     _draggingRows = nil;
+
+    [self _updatePredicate];
+    [self _sendRuleAction];
+    [self _postRuleOptionChangedNotification];
+    [self _postRowCountChangedNotificationOfType:CPRuleEditorRowsDidChangeNotification indexes:nil]; // FIXME
 }
 
 - (BOOL)wantsPeriodicDraggingUpdates
@@ -2279,16 +2284,13 @@ TODO: implement
 
 - (void)_postRuleOptionChangedNotification
 {
-    [self reloadPredicate];
-    [self _sendRuleAction];
     [[CPNotificationCenter defaultCenter] postNotificationName:CPRuleEditorRulesDidChangeNotification object:self];
 }
 
 - (void)_postRowCountChangedNotificationOfType:(CPString)notificationName indexes:indexes
 {
-    [self reloadPredicate];
-    [self _sendRuleAction];
-    [[CPNotificationCenter defaultCenter] postNotificationName:notificationName object:self userInfo:[CPDictionary dictionaryWithObject:indexes forKey:"indexes"]];
+    var userInfo = [CPDictionary dictionaryWithObject:indexes forKey:"indexes"];
+    [[CPNotificationCenter defaultCenter] postNotificationName:notificationName object:self userInfo:userInfo];
 }
 
 - (CPIndexSet)_globalIndexesForSubrowIndexes:(CPIndexSet)indexes ofParentObject:(id)parentRowObject
@@ -2308,9 +2310,9 @@ TODO: implement
         if ([self rowTypeForRow:globalChildIndex] === CPRuleEditorRowTypeCompound)
         {
             var rowObject = [[self _rowCacheForIndex:current_index] rowObject],
-                subrows = [self _subrowObjectsOfObject:rowObject];
+                subrows = [self _subrowObjectsOfObject:rowObject],
+                subIndexes = [self _globalIndexesForSubrowIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0,[subrows count])] ofParentObject:rowObject];
 
-            var subIndexes = [self _globalIndexesForSubrowIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0,[subrows count])] ofParentObject:rowObject];
             numberOfChildrenOfPreviousBrother = [subIndexes count];
         }
 
@@ -2325,8 +2327,7 @@ TODO: implement
     var action = [self action],
         target = [self target];
 
-    if (action && target)
-        [self sendAction:[self action] to:[self target]];
+    [self sendAction:action to:target];
 }
 
 - (BOOL)_sendsActionOnIncompleteTextChange
@@ -2366,8 +2367,8 @@ TODO: implement
 
     for (var i = 0; i < numOfChildren; ++i)
     {
-        var aChild = [self _queryChild:i ofItem:parentItem withRowType:type];
-        var availChild = aChild,
+        var aChild = [self _queryChild:i ofItem:parentItem withRowType:type],
+            availChild = aChild,
             availValue = value;
 
         if (criterion !== aChild)
@@ -2466,7 +2467,7 @@ var CriteriaKey         = @"criteria",
     DisplayValuesKey    = @"displayValues",
     RowTypeKey          = @"rowType";
 
-@implementation RowObject : CPObject
+@implementation _CPRuleEditorRowObject : CPObject
 {
     CPArray     subrows @accessors;
     CPArray     criteria @accessors;
@@ -2476,7 +2477,7 @@ var CriteriaKey         = @"criteria",
 
 - (id)copy
 {
-    var copy = [[RowObject alloc] init];
+    var copy = [[_CPRuleEditorRowObject alloc] init];
     [copy setSubrows:[[CPArray alloc] initWithArray:subrows copyItems:YES]];
     [copy setCriteria:[[CPArray alloc] initWithArray:criteria copyItems:YES]];
     [copy setDisplayValues:[[CPArray alloc] initWithArray:displayValues copyItems:YES]];
@@ -2487,7 +2488,7 @@ var CriteriaKey         = @"criteria",
 
 - (CPString)description
 {
-    return "<RowObject>\nsubrows = " + [subrows description] + "\ncriteria = " + [criteria description] + "\ndisplayValues = " + [displayValues description];
+    return "<" + [self className] + ">\nsubrows = " + [subrows description] + "\ncriteria = " + [criteria description] + "\ndisplayValues = " + [displayValues description];
 }
 
 - (id)initWithCoder:(id)coder

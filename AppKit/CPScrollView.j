@@ -751,35 +751,42 @@ Notifies the delegate when the scroll view has finished scrolling.
     {
         [_horizontalScroller setStyle:_scrollerStyle];
         [_horizontalScroller unsetThemeState:CPThemeStateSelected];
+
         switch (_scrollerKnobStyle)
         {
             case CPScrollerKnobStyleLight:
                 [_horizontalScroller unsetThemeState:CPThemeStateScrollerKnobDark];
                 [_horizontalScroller setThemeState:CPThemeStateScrollerKnobLight];
                 break;
+
             case CPScrollerKnobStyleDark:
                 [_horizontalScroller unsetThemeState:CPThemeStateScrollerKnobLight];
                 [_horizontalScroller setThemeState:CPThemeStateScrollerKnobDark];
                 break;
+
             default:
                 [_horizontalScroller unsetThemeState:CPThemeStateScrollerKnobLight];
                 [_horizontalScroller unsetThemeState:CPThemeStateScrollerKnobDark];
         }
     }
+
     if (_hasVerticalScroller)
     {
         [_verticalScroller setStyle:_scrollerStyle];
         [_verticalScroller unsetThemeState:CPThemeStateSelected];
+
         switch (_scrollerKnobStyle)
         {
             case CPScrollerKnobStyleLight:
                 [_verticalScroller unsetThemeState:CPThemeStateScrollerKnobDark];
                 [_verticalScroller setThemeState:CPThemeStateScrollerKnobLight];
                 break;
+
             case CPScrollerKnobStyleDark:
                 [_verticalScroller unsetThemeState:CPThemeStateScrollerKnobLight];
                 [_verticalScroller setThemeState:CPThemeStateScrollerKnobDark];
                 break;
+
             default:
                 [_verticalScroller unsetThemeState:CPThemeStateScrollerKnobLight];
                 [_verticalScroller unsetThemeState:CPThemeStateScrollerKnobDark];
@@ -790,6 +797,7 @@ Notifies the delegate when the scroll view has finished scrolling.
     {
         if (_timerScrollersHide)
             [_timerScrollersHide invalidate];
+
         _timerScrollersHide = [CPTimer scheduledTimerWithTimeInterval:CPScrollViewFadeOutTime target:self selector:@selector(_hideScrollers:) userInfo:nil repeats:NO];
         [[self bottomCornerView] setHidden:YES];
     }
@@ -870,6 +878,7 @@ Notifies the delegate when the scroll view has finished scrolling.
     var frame = [self _insetBounds];
 
     frame.size.height = _CGRectGetHeight([headerView frame]);
+
     if (SHOULD_SHOW_CORNER_VIEW())
         frame.size.width -= _CGRectGetWidth([self _cornerViewFrame]);
 
@@ -1230,6 +1239,7 @@ Notifies the delegate when the scroll view has finished scrolling.
 
     if (_timerScrollersHide)
         [_timerScrollersHide invalidate]
+
     _timerScrollersHide = [CPTimer scheduledTimerWithTimeInterval:CPScrollViewFadeOutTime target:self selector:@selector(_hideScrollers:) userInfo:nil repeats:NO];
 }
 
@@ -1496,19 +1506,25 @@ var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
         _scrollTimer = nil;
         _implementedDelegateMethods = 0;
 
-        // Due to the anything goes nature of decoding, our subviews may not exist yet, so layout at the end of the run loop when we're sure everything is in a correct state.
-        [[CPRunLoop currentRunLoop] performSelector:@selector(_updateCornerAndHeaderView) target:self argument:_contentView order:0 modes:[CPDefaultRunLoopMode]];
-
-        [self setScrollerStyle:[aCoder decodeIntForKey:CPScrollViewScrollerStyleKey] || CPScrollerStyleGlobal];
-        [self setScrollerKnobStyle:[aCoder decodeIntForKey:CPScrollViewScrollerKnobStyleKey] || CPScrollerKnobStyleDefault];
+        _scrollerStyle = [aCoder decodeObjectForKey:CPScrollViewScrollerStyleKey] || CPScrollerStyleGlobal;
+        _scrollerKnobStyle = [aCoder decodeObjectForKey:CPScrollViewScrollerKnobStyleKey] || CPScrollerKnobStyleDefault;
 
         [[CPNotificationCenter defaultCenter] addObserver:self
-                                 selector:@selector(_didReceiveDefaultStyleChange:)
-                                     name:CPScrollerStyleGlobalChangeNotification
-                                   object:nil];
+                                                 selector:@selector(_didReceiveDefaultStyleChange:)
+                                                     name:CPScrollerStyleGlobalChangeNotification
+                                                   object:nil];
     }
 
     return self;
+}
+
+/*!
+    Do final init that can only be done when we are sure all subviews have been initialized.
+*/
+- (void)awakeFromCib
+{
+    [self _updateScrollerStyle];
+    [self _updateCornerAndHeaderView];
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder

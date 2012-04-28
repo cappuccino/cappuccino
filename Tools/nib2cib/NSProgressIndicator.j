@@ -34,7 +34,7 @@ var NSProgressIndicatorSpinningFlag = 1 << 12;
     {
         var NS_flags    = [aCoder decodeIntForKey:@"NSpiFlags"];
 
-        _minValue       = [aCoder decodeDoubleForKey:@"NSMinValue"] || 0;
+        _minValue       = [aCoder decodeDoubleForKey:@"NSMinValue"];
         _maxValue       = [aCoder decodeDoubleForKey:@"NSMaxValue"];
 
         _style = (NS_flags & NSProgressIndicatorSpinningFlag) ? CPProgressIndicatorSpinningStyle : CPProgressIndicatorBarStyle;

@@ -84,8 +84,15 @@ var CPRuleEditorCustomControlClass = @"CPRuleEditorCustomControlClass";
 
     if (custom_control_class != nil)
     {
-        var custom_class = CPClassFromString(custom_control_class);
-        return [[custom_class alloc] initWithFrame:CGRectMake(0, 0, 100, 18)];
+        var control = [criterion objectForKey:("control_"+row)];
+        if (control == nil)
+        {
+            var custom_class = CPClassFromString(custom_control_class);
+            control = [[custom_class alloc] initWithFrame:CGRectMake(0, 0, 100, 18)];
+            [criterion setObject:control forKey:("control_"+row)];
+        }
+        
+        return control;        
     }
 
     return [criterion objectForKey:@"valeur"];
