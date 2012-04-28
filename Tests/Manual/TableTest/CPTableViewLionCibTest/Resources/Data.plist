@@ -6,7 +6,7 @@
 			<key>show</key>
 			<true/>
 			<key>image</key>
-			<string>brad.jpg</string>
+			<string>Resources/brad.jpg</string>
 			<key>identifier</key>
 			<string>person</string>
 			<key>name</key>
@@ -34,7 +34,7 @@
 			<key>identifier</key>
 			<string>person</string>
 			<key>image</key>
-			<string>georges.jpg</string>
+			<string>Resources/georges.jpg</string>
 			<key>name</key>
 			<string>Georges</string>
 			<key>value</key>
@@ -58,7 +58,7 @@
 			<key>identifier</key>
 			<string>person</string>
 			<key>image</key>
-			<string>john.jpg</string>
+			<string>Resources/john.jpg</string>
 			<key>name</key>
 			<string>John</string>
 			<key>value</key>
@@ -120,7 +120,7 @@
 			<key>identifier</key>
 			<string>multiple</string>
 			<key>image</key>
-			<string>john.jpg</string>
+			<string>Resources/john.jpg</string>
 			<key>name</key>
 			<string>John</string>
 			<key>value</key>
@@ -128,7 +128,7 @@
 	</dict>
 	<dict>
 			<key>image</key>
-			<string>brad.jpg</string>
+			<string>Resources/brad.jpg</string>
 			<key>identifier</key>
 			<string>person</string>
 			<key>name</key>
@@ -152,7 +152,7 @@
 			<key>identifier</key>
 			<string>person</string>
 			<key>image</key>
-			<string>georges.jpg</string>
+			<string>Resources/georges.jpg</string>
 			<key>name</key>
 			<string>Georges</string>
 			<key>value</key>
@@ -172,7 +172,7 @@
 			<key>identifier</key>
 			<string>person</string>
 			<key>image</key>
-			<string>john.jpg</string>
+			<string>Resources/john.jpg</string>
 			<key>name</key>
 			<string>John</string>
 			<key>value</key>
@@ -224,7 +224,7 @@
 			<key>identifier</key>
 			<string>multiple</string>
 			<key>image</key>
-			<string>john.jpg</string>
+			<string>Resources/john.jpg</string>
 			<key>name</key>
 			<string>John</string>
 			<key>value</key>

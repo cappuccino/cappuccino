@@ -24,7 +24,7 @@
     tableView = [[CPTableView alloc] initWithFrame:CGRectMakeZero()];
     [tableView setDataSource:self];
     [tableView setDelegate:self];
-    
+
     var columnA = [[CPTableColumn alloc] initWithIdentifier:"A"];
     [tableView addTableColumn:columnA];
     [[columnA headerView] setStringValue:"A"];
@@ -55,14 +55,14 @@
     [contentView addSubview:scrollView];
 
     [theWindow orderFront:self];
-    
+
     [CPTableView profileViewLoading];
 }
 
 - (void)buildModel // For the editable view aka the slider
 {
     content = [];
-    
+
     var count = 10000;
     while (count--)
         content.push({A:10,B:10,C:10,D:10,E:10});
@@ -70,10 +70,10 @@
 
 - (IBAction)sliderAction:(id)sender
 {
-    var row = [tableView rowForView:sender];
-    var column = [tableView columnForView:sender];
-    var identifier = [[[tableView tableColumns] objectAtIndex:column] identifier];
-    
+    var row = [tableView rowForView:sender],
+        column = [tableView columnForView:sender],
+        identifier = [[[tableView tableColumns] objectAtIndex:column] identifier];
+
     //CPLogConsole(_cmd + sender + " row = " + row + " column = " + column);
     content[row][identifier] = [sender value];
 }
@@ -87,11 +87,12 @@
 {
     var n = (aRow % 3),
         viewKind = "view_kind_" + n,
-        tableColumnId = [aTableColumn identifier];
-        
-    var view = [aTableView makeViewWithIdentifier:viewKind owner:self];
+        tableColumnId = [aTableColumn identifier],
+
+        view = [aTableView makeViewWithIdentifier:viewKind owner:self];
+
     if (view == nil)
-    {   
+    {
         if (n == 0)
             view = [[CPTableCellView alloc] initWithFrame:CGRectMakeZero()];
         else if (n == 1)
@@ -104,10 +105,10 @@
         }
         else
             view = [[CPLevelIndicator alloc] initWithFrame:CGRectMakeZero()];
-      
+
         [view setIdentifier:viewKind];
     }
-    
+
     if (n == 0)
         [view setObjectValue:("Column " + tableColumnId + " Row " + aRow)];
     else if (n == 1)

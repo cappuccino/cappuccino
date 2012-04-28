@@ -19,7 +19,7 @@ var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
     @outlet CPTableView tableView;
     @outlet CPTextField textField;
     @outlet CPArrayController contentController;
-    
+
     CPArray content @accessors;
 }
 
@@ -43,28 +43,17 @@ var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
     var data = [[CPData alloc] initWithRawString:dataString],
         theRows = [CPPropertyListSerialization propertyListFromData:data format:CPPropertyListXMLFormat_v1_0];
 
-     [self setContent:theRows];
+    [self setContent:theRows];
 }
 
 - (void)tableView:(CPTableView)aTableView dataViewForTableColumn:(CPTableColumn)aTableColumn row:(int)aRow
 {
     var identifier = [aTableColumn identifier];
+
     if (identifier != @"Description")
         identifier = [[content objectAtIndex:aRow] objectForKey:@"identifier"];
 
     var view = [aTableView makeViewWithIdentifier:identifier owner:self];
-
-    // this is equivalent of binding the valueURL binding of NSImageView in IB to view.objectValue.image
-    if (identifier == @"person")
-    {
-        var filename = [[content objectAtIndex:aRow] objectForKey:@"image"];
-        if (filename == nil || filename == @"")
-            filename = @"na.png";
-
-        var path = [[CPBundle mainBundle] pathForResource:filename],
-            image = [[CPImage alloc] initByReferencingFile:path size:CGSizeMake(100,133)];
-        [[view imageView] setImage:image];
-    }
 
     if (view == nil)
         view = [[CPTableCellView alloc] initWithFrame:CGRectMakeZero()];
@@ -96,16 +85,16 @@ var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
     var pboard = [info draggingPasteboard],
         sourceIndexes = [pboard dataForType:TABLE_DRAG_TYPE],
         firstObject = [content objectAtIndex:[sourceIndexes firstIndex]];
-        
-        [content moveIndexes:sourceIndexes toIndex:row];
-        [contentController rearrangeObjects];
-        
+
+    [content moveIndexes:sourceIndexes toIndex:row];
+    [contentController rearrangeObjects];
+
         // Select the rows we just moved.
-        var destinationRange = CPMakeRange([content indexOfObject:firstObject], [sourceIndexes count]);
-        
-        var selectIndexes = [CPIndexSet indexSetWithIndexesInRange:destinationRange];
-        [aTableView selectRowIndexes:selectIndexes byExtendingSelection:NO];
-    
+    var destinationRange = CPMakeRange([content indexOfObject:firstObject], [sourceIndexes count]),
+        selectIndexes = [CPIndexSet indexSetWithIndexesInRange:destinationRange];
+
+    [aTableView selectRowIndexes:selectIndexes byExtendingSelection:NO];
+
     return YES;
 }
 
@@ -138,9 +127,8 @@ var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
 {
     var aboveCount = 0,
         object,
-        removeIndex;
-
-    var index = [indexes lastIndex];
+        removeIndex,
+        index = [indexes lastIndex];
 
     while (index != CPNotFound)
     {
