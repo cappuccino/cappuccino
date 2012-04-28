@@ -159,6 +159,18 @@ function CPAppKitImage(aFilename, aSize)
 }
 
 /*!
+    Initializes the receiver with the specified data. The method loads the data into memory.
+    @param someData the CPData object representing the image
+    @return the initialized image
+*/
+- (id)initWithData:(CPData)someData
+{
+    var dataURL = "data:image;base64," + [someData base64];
+
+    return [self initWithContentsOfFile:dataURL];
+}
+
+/*!
     Returns the path of the file associated with this image.
 */
 - (CPString)filename
