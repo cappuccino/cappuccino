@@ -257,6 +257,20 @@ var CPWindowActionMessageKeys = [
     @param window the window to close
     @return \c YES allows the window to close. \c NO
     vetoes the close operation and leaves the window open.
+
+    @delegate -(BOOL)windowWillBeginSheet:(CPNotification)notification;
+    Sent from the notification center before sheet is visible on
+    the delegate's window.
+    @param notification contains information about the event
+
+    @delegate -(BOOL)windowDidEndSheet:(CPNotification)notification;
+    Sent from the notification center when an attached sheet on the
+    delegate's window has been animated out. Called before the
+    sheet's didEndSelector.
+    @param notification contains information about the event
+
+    @return \c YES allows the window to close. \c NO
+    vetoes the close operation and leaves the window open.
 */
 @implementation CPWindow : CPResponder
 {
