@@ -1224,6 +1224,8 @@ CPTexturedBackgroundWindowMask
     [defaultCenter removeObserver:_delegate name:CPWindowDidResignMainNotification object:self];
     [defaultCenter removeObserver:_delegate name:CPWindowDidMoveNotification object:self];
     [defaultCenter removeObserver:_delegate name:CPWindowDidResizeNotification object:self];
+    [defaultCenter removeObserver:_delegate name:CPWindowWillBeginSheetNotification object:self];
+    [defaultCenter removeObserver:_delegate name:CPWindowDidEndSheetNotification object:self];
 
     _delegate = aDelegate;
     _delegateRespondsToWindowWillReturnUndoManagerSelector = [_delegate respondsToSelector:@selector(windowWillReturnUndoManager:)];
@@ -1268,6 +1270,20 @@ CPTexturedBackgroundWindowMask
             addObserver:_delegate
                selector:@selector(windowDidResize:)
                    name:CPWindowDidResizeNotification
+                 object:self];
+
+    if ([_delegate respondsToSelector:@selector(windowWillBeginSheet:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(windowWillBeginSheet:)
+                   name:CPWindowWillBeginSheetNotification
+                 object:self];
+
+    if ([_delegate respondsToSelector:@selector(windowDidEndSheet:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(windowDidEndSheet:)
+                   name:CPWindowDidEndSheetNotification
                  object:self];
 }
 
@@ -2367,6 +2383,7 @@ CPTexturedBackgroundWindowMask
         startFrame = CGRectMake(originx, originy, sheetFrame.size.width, 0),
         endFrame = CGRectMake(originx, originy, sheetFrame.size.width, sheetFrame.size.height);
 
+    
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillBeginSheetNotification object:self];
     
     // if sheet is attached to a modal window, the sheet runs 
