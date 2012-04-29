@@ -933,21 +933,19 @@ CPRunContinuesResponse  = -1002;
         return;
     }
 
-    if ([aWindow attachedSheet])
-    {
-        [CPException raise:CPInternalInconsistencyException reason:@"The target window of beginSheet: already has a sheet"];
-        return;
-    }
-    
     if ([aWindow isSheet])
     {
         [CPException raise:CPInternalInconsistencyException reason:@"The target window of beginSheet: cannot be a sheet"];
         return;
     }
-    
-    
-    [aWindow orderFront:self];
-    [aSheet setPlatformWindow:[aWindow platformWindow]];
+        
+    // -dw- if a sheet is already visible, we skip this since it serves no purpose and causes
+    // orderOut: to be called on the sheet, which is not what we want.
+    if (![aWindow isVisible])
+    {
+        [aWindow orderFront:self];
+        [aSheet setPlatformWindow:[aWindow platformWindow]];
+    }
     [aWindow _attachSheet:aSheet modalDelegate:aModalDelegate didEndSelector:aDidEndSelector contextInfo:aContextInfo];
 }
 
@@ -976,7 +974,7 @@ CPRunContinuesResponse  = -1002;
         if (context != nil && context["sheet"] === sheet)
         {
             context["returnCode"] = returnCode;
-            [aWindow _detachSheetWindow];
+            [aWindow _endSheet];
             return;
         }
     }
