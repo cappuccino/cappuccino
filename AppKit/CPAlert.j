@@ -631,7 +631,10 @@ CPCriticalAlertStyle        = 2;
 - (@action)_takeReturnCodeFrom:(id)aSender
 {
     if ([_window isSheet])
+    {
         [CPApp endSheet:_window returnCode:[aSender tag]];
+        [_window orderOut:nil];
+    }
     else
     {
         [CPApp abortModal];
