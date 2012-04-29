@@ -265,7 +265,7 @@ var CPWindowActionMessageKeys = [
 
     @delegate -(BOOL)windowDidEndSheet:(CPNotification)notification;
     Sent from the notification center when an attached sheet on the
-    delegate's window has been animated out. Called before the
+    delegate's window has been animated out. Called after the
     sheet's didEndSelector.
     @param notification contains information about the event
 
@@ -347,6 +347,7 @@ var CPWindowActionMessageKeys = [
     CPDictionary                        _sheetContext;
     CPWindow                            _parentView;
     BOOL                                _isSheet;
+    CPDictionary                        _nextSheetContext;
 
     _CPWindowFrameAnimation             _frameAnimation;
 }
@@ -417,10 +418,14 @@ CPTexturedBackgroundWindowMask
         _isFullPlatformWindow = NO;
         _registeredDraggedTypes = [CPSet set];
         _registeredDraggedTypesArray = [];
-        _isSheet = NO;
         _acceptsMouseMovedEvents = YES;
         _isMovable = YES;
 
+        _isSheet = NO;
+        _sheetContext = nil;
+        _nextSheetContext = nil;
+        _parentView = nil;
+        
         // Set up our window number.
         _windowNumber = [CPApp._windows count];
         CPApp._windows[_windowNumber] = self;
@@ -844,10 +849,10 @@ CPTexturedBackgroundWindowMask
 - (void)orderFront:(id)aSender
 {
 #if PLATFORM(DOM)
-	// -dw- if a sheet is clicked, the parent window should come up too
-	if ([self isSheet])
-		[_parentView orderFront:self];
-		
+    // -dw- if a sheet is clicked, the parent window should come up too
+    if ([self isSheet])
+        [_parentView orderFront:self];
+
     [_platformWindow orderFront:self];
     [_platformWindow order:CPWindowAbove window:self relativeTo:nil];
 #endif
@@ -878,6 +883,15 @@ CPTexturedBackgroundWindowMask
 */
 - (void)orderOut:(id)aSender
 {
+    if ([self isSheet])
+    {
+        CPLog("%@ %@", [self class], _cmd);
+        
+        // -dw- as in Cocoa, orderOut: detaches the sheet and animates out
+        [self._parentView _detachSheetWindow];
+        return;
+    }
+    
 #if PLATFORM(DOM)
     if ([self _sharesChromeWithPlatformWindow])
         [_platformWindow orderOut:self];
@@ -2314,126 +2328,211 @@ CPTexturedBackgroundWindowMask
     [attachedSheet setFrame:sheetFrame display:YES animate:NO];
 }
 
-/* @ignore */
-- (void)_attachSheet:(CPWindow)aSheet modalDelegate:(id)aModalDelegate didEndSelector:(SEL)aDidEndSelector contextInfo:(id)aContextInfo
+/* @ignore 
+    Starting point for sheet session, called from CPApplication beginSheet:
+*/
+- (void)_attachSheet:(CPWindow)aSheet modalDelegate:(id)aModalDelegate 
+        didEndSelector:(SEL)aDidEndSelector contextInfo:(id)aContextInfo
 {
+    CPLog("%@ %@", [self class], _cmd);
+
+    // the willAnimateOut flag is used to handle a sheet that is orderedOut, but
+    // has not finished animating yet. In this case, we allow the sheet
+    // attachment, and run the sheet as soon as the animation completes.
+    if (_sheetContext && !_sheetContext["willAnimateOut"])
+    {
+        [CPException raise:CPInternalInconsistencyException 
+            reason:@"The target window of beginSheet: already has a sheet, did you forget orderOut: ?"];
+        return;
+    }
+
+    // it is possible to call beginSheet: multiple times while animating a sheet out, because
+    // we do not block in _detachSheetWindow
+    if (_sheetContext && _nextSheetContext)
+    {
+        [CPException raise:CPInternalInconsistencyException 
+            reason:@"The target window of beginSheet: already has another sheet queued for attachment"];
+        return;
+    }
+
     var sheetFrame = [aSheet frame];
+    var sheetContext = {"sheet":aSheet, "modalDelegate":aModalDelegate, "endSelector":aDidEndSelector, 
+        "contextInfo":aContextInfo, "frame":CGRectMakeCopy(sheetFrame), "returnCode":-1, 
+        "opened": NO };
 
-    _sheetContext = {"sheet":aSheet, "modalDelegate":aModalDelegate, "endSelector":aDidEndSelector, "contextInfo":aContextInfo, "frame":CGRectMakeCopy(sheetFrame), "returnCode":-1, "opened": NO};
-
-    [self _attachSheetWindow:aSheet];
+    if (_sheetContext)
+    {
+        // _nextSheetContext will animate in when the current context animates out
+        _nextSheetContext = sheetContext;
+    }
+    else
+    {
+        _sheetContext = sheetContext;
+        [self _attachSheetWindow];
+    }
 }
 
-/* @ignore */
-- (void)_attachSheetWindow:(CPWindow)sheet
+/* @ignore 
+    Called to animate the sheet in. The timer seems to solve a bug where sheets would
+    be partially animated under certain conditions.
+*/
+- (void)_attachSheetWindow
 {
-    // fixme: a run loop for the sheet animations should be created,
-    // that defers all other events until the animation is completed,
-    // the timer will assure that the animation timer fires on the
-    // special sheet runloop
+    CPLog("%@ %@", [self class], _cmd);
 
+    // it would be ideal to block here and spin an event loop, until attach is complete
     [CPTimer scheduledTimerWithTimeInterval:0.0 
         target:self 
-        selector:@selector(sheetShouldAnimateIn:)
-        userInfo:sheet
+        selector:@selector(_sheetShouldAnimateIn:)
+        userInfo:nil
         repeats:NO];
 }
 
-/* @ignore */
+/* @ignore 
+    Called to end the sheet. Note that orderOut: is needed to animate the sheet out, as in Cocoa.
+    The sheet isn't completely gone until _cleanupSheetWindow gets called.
+*/
+- (void)_endSheet
+{
+    CPLog("%@ %@", [self class], _cmd);
+
+    var sheet = _sheetContext["sheet"],
+        delegate = _sheetContext["modalDelegate"],
+        endSelector = _sheetContext["endSelector"];
+
+    if (delegate != nil && endSelector != nil)
+        objj_msgSend(delegate, endSelector, sheet, _sheetContext["returnCode"], _sheetContext["contextInfo"]);
+}
+
+/* @ignore 
+    Called to animate the sheet out. If called while animating in, schedules an animate 
+    out at completion
+*/
 - (void)_detachSheetWindow
 {
-    var sheet = [self attachedSheet];
- 
-    if (!sheet)
-        return;
+    CPLog("%@ %@", [self class], _cmd);
 
+    _sheetContext["willAnimateOut"] = YES;
+
+    // it would be ideal to block here and spin the event loop, until attach is complete
     [CPTimer scheduledTimerWithTimeInterval:0.0 
         target:self 
-        selector:@selector(sheetShouldAnimateOut:)
-        userInfo:sheet
+        selector:@selector(_sheetShouldAnimateOut:)
+        userInfo:nil
         repeats:NO];
+}
+
+/* @ignore
+    Called to cleanup sheet, when we are definitely done with it
+*/
+- (void)_cleanupSheetWindow
+{
+    CPLog("%@ %@", [self class], _cmd);
+
+    var sheet = _sheetContext["sheet"],
+        lastFrame = _sheetContext["frame"];
+
+    [sheet setFrame:lastFrame];
+    [self _restoreMasksForView:[sheet contentView]];
+
+    // if the parent window is modal, the sheet started its own modal session
+    if (sheet._isModal)
+        [CPApp stopModal];
+
+    _sheetContext = nil;
+    sheet._parentView = nil;
+    sheet._isSheet = NO;
+
+    [sheet orderOut:self];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidEndSheetNotification object:self];
+
+    if (_nextSheetContext)
+    {
+        _sheetContext = _nextSheetContext;
+        _nextSheetContext = nil;
+        [self _attachSheetWindow];
+    }
 }
 
 /* @ignore */
 - (void)animationDidEnd:(id)anim
 {
+    CPLog("%@ %@", [self class], _cmd);
+
     var sheet = _sheetContext["sheet"];
     if (anim._window != sheet)
         return;
 
-    [CPTimer scheduledTimerWithTimeInterval:0.1 
+    [CPTimer scheduledTimerWithTimeInterval:0.0 
         target:self 
-        selector:@selector(sheetAnimationDidEnd:)
-        userInfo:sheet
+        selector:@selector(_sheetAnimationDidEnd:)
+        userInfo:nil
         repeats:NO];
 }
 
-- (void)sheetShouldAnimateIn:(CPTimer)timer
+/* @ignore */
+- (void)_sheetShouldAnimateIn:(CPTimer)timer
 {
-    // can't open sheet while its open
-    if (_sheetContext["isOpening"])
+    CPLog("%@ %@", [self class], _cmd);
+
+    // can't open sheet while opening or closing animation is going on
+    if (_sheetContext["isOpening"] ||
+        _sheetContext["isClosing"])
         return;
-    
-    // can't open sheet while its closing
-    if (_sheetContext["isClosing"])
-    {
-        _sheetContext["shouldOpen"] = YES;
-        return;
-    }
 
-    var aSheet = [timer userInfo];
+    var sheet = _sheetContext["sheet"]
+        sheetFrame = [sheet frame],
+        frame = [self frame];
+        
+    [self _setUpMasksForView:[sheet contentView]];
 
-    var sheetFrame = [aSheet frame],
-        frame = [self frame],
-        sheetContent = [aSheet contentView];
-
-    [self _setUpMasksForView:sheetContent];
-
-    aSheet._isSheet = YES;
-    aSheet._parentView = self;
+    sheet._isSheet = YES;
+    sheet._parentView = self;
 
     var originx = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width) / 2),
         originy = frame.origin.y + [[self contentView] frame].origin.y,
         startFrame = CGRectMake(originx, originy, sheetFrame.size.width, 0),
         endFrame = CGRectMake(originx, originy, sheetFrame.size.width, sheetFrame.size.height);
 
-    
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillBeginSheetNotification object:self];
     
     // if sheet is attached to a modal window, the sheet runs 
     // as if itself and the parent window are modal
-    aSheet._isModal = NO;
+    sheet._isModal = NO;
     if ([CPApp modalWindow]===self)
     {
-        [CPApp runModalForWindow:aSheet];
-        aSheet._isModal = YES;
+        [CPApp runModalForWindow:sheet];
+        sheet._isModal = YES;
     }
 
-    [aSheet orderFront:self];
-    [aSheet setFrame:startFrame display:YES animate:NO];
+    [sheet orderFront:self];
+    [sheet setFrame:startFrame display:YES animate:NO];
+    
     _sheetContext["opened"] = YES;
     _sheetContext["shouldClose"] = NO;
     _sheetContext["isOpening"] = YES;
         
-    [aSheet _setFrame:endFrame delegate:self duration:[self animationResizeTime:endFrame] curve:CPAnimationEaseOut];
+    [sheet _setFrame:endFrame delegate:self duration:[self animationResizeTime:endFrame] curve:CPAnimationEaseOut];
 
-    // Should run the main loop here until _isAnimating = FALSE
     
     // NOTE: cocoa doesn't make window key until animation is done, but a
     // keypress while animating eventually gets to the window. Therefore,
     // there must be a runloop specifically designed for sheets?
-    [aSheet becomeKeyWindow];
+    [sheet becomeKeyWindow];
 }
 
-- (void)sheetShouldAnimateOut:(CPTimer)timer
+- (void)_sheetShouldAnimateOut:(CPTimer)timer
 {
-    var sheet = [timer userInfo],
+    CPLog("%@ %@", [self class], _cmd);
+
+    var sheet = _sheetContext["sheet"],
         startFrame = [sheet frame],
         endFrame = CGRectMakeCopy(startFrame);
 
     if (_sheetContext["isOpening"])
     {
-        // handle the case where we wanted to close the sheet while it's opening
+        // allow sheet to be closed while opening, it will close when animate in completes
         _sheetContext["shouldClose"] = YES;
         return;
     }
@@ -2441,61 +2540,46 @@ CPTexturedBackgroundWindowMask
     if (_sheetContext["isClosing"])
         return;
     
-    endFrame.size.height = 0;
-
-    var sheetContent = [sheet contentView];
-    [self _setUpMasksForView:sheetContent];
-    
     _sheetContext["opened"] = NO;
     _sheetContext["frame"] = startFrame;
     _sheetContext["isClosing"] = YES;
     
-    [sheet _setFrame:endFrame delegate:self duration:[self animationResizeTime:endFrame] curve:CPAnimationEaseIn];
+    // the parent window can be orderedOut to disable the sheet animate out, as in Cocoa
+    if ([self isVisible])
+    {
+        endFrame.size.height = 0;
+        [self _setUpMasksForView:[sheet contentView]];  
+        [sheet _setFrame:endFrame delegate:self duration:[self animationResizeTime:endFrame] curve:CPAnimationEaseIn];
+    }
+    else
+    {
+        [self _sheetAnimationDidEnd:nil];
+    }
 }
 
-- (void)sheetAnimationDidEnd:(CPTimer)timer
+- (void)_sheetAnimationDidEnd:(CPTimer)timer
 {
-    //CPLog("%@ %@", [self class], _cmd);
+    CPLog("%@ %@", [self class], _cmd);
 
-    var sheet = [timer userInfo];
+    var sheet = _sheetContext["sheet"];
     
     _sheetContext["isOpening"] = NO;
     _sheetContext["isClosing"] = NO;
     
-    var sheetContent = [sheet contentView];
-
     if (_sheetContext["opened"] === YES)
     {
-        [self _restoreMasksForView:sheetContent];
+        // sheet is open and completely visible
+        [self _restoreMasksForView:[sheet contentView]];
     
+        // we wanted to close the sheet while it animated in, do that now
         if (_sheetContext["shouldClose"] === YES)
             [self _detachSheetWindow];
-    
-        return;
     }
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidEndSheetNotification object:self];
-
-    [sheet orderOut:self];
-
-    var lastFrame = _sheetContext["frame"];
-    [sheet setFrame:lastFrame];
-
-    [self _restoreMasksForView:sheetContent];
-
-    var delegate = _sheetContext["modalDelegate"],
-        endSelector = _sheetContext["endSelector"],
-        returnCode = _sheetContext["returnCode"],
-        contextInfo = _sheetContext["contextInfo"];
-        
-    _sheetContext = nil;
-    sheet._parentView = nil;
-
-    if (sheet._isModal)
-        [CPApp stopModal];
-
-    if (delegate != nil && endSelector != nil)
-        objj_msgSend(delegate, endSelector, sheet, returnCode, contextInfo);
+    else
+    {
+        // sheet is closed and not visible
+        [self _cleanupSheetWindow];
+    }
 }
 
 - (void)_setUpMasksForView:(CPView)aView
