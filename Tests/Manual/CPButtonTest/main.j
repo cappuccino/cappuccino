@@ -2,8 +2,8 @@
  * AppController.j
  * CPButton
  *
- * Created by You on January 27, 2012.
- * Copyright 2012, Your Company All rights reserved.
+ * Created by Francisco Tolmasky on July 5, 2009.
+ * Copyright 2009, 280 North, Inc. All rights reserved.
  */
 
 @import <Foundation/Foundation.j>
