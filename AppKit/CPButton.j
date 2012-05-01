@@ -55,8 +55,8 @@ CPRadioButton           = 4; // Deprecated, use CPRadio instead.
 CPMomentaryChangeButton = 5;
 CPOnOffButton           = 6;
 CPMomentaryPushInButton = 7;
-CPMomentaryPushButton   = 0;
-CPMomentaryLight        = 7;
+CPMomentaryPushButton   = 0; // Deprecated, use CPMomentaryLightButton instead.
+CPMomentaryLight        = 7; // Deprecated, use CPMomentaryPushInButton instead.
 
 CPNoButtonMask              = 0;
 CPContentsButtonMask        = 1;
@@ -169,6 +169,10 @@ CPButtonImageOffset   = 3.0;
 - (void)_init
 {
     _controlSize = CPRegularControlSize;
+
+    // Set defaults
+    _highlightsBy = CPChangeBackgroundCellMask;
+    _showsStateBy = CPNoCellMask;
 
     _keyEquivalent = @"";
     _keyEquivalentModifierMask = 0;
@@ -414,7 +418,7 @@ CPButtonImageOffset   = 3.0;
                                         [self setShowsStateBy:CPNoCellMask];
                                         break;
 
-        case CPMomentaryChangeButton:   [self setHighlightsBy:CPContentsCellMask];
+        case CPMomentaryChangeButton:   [self setHighlightsBy:CPChangeGrayCellMask | CPContentsCellMask];
                                         [self setShowsStateBy:CPNoCellMask];
                                         break;
 
@@ -426,7 +430,7 @@ CPButtonImageOffset   = 3.0;
                                         [self setShowsStateBy:CPChangeBackgroundCellMask];
                                         break;
 
-        case CPToggleButton:            [self setHighlightsBy:CPPushInCellMask | CPContentsCellMask];
+        case CPToggleButton:            [self setHighlightsBy:CPPushInCellMask];
                                         [self setShowsStateBy:CPContentsCellMask];
                                         break;
 
@@ -494,20 +498,21 @@ CPButtonImageOffset   = 3.0;
 
 - (BOOL)startTrackingAt:(CGPoint)aPoint
 {
-    [self highlight:YES];
-
     return [super startTrackingAt:aPoint];
 }
 
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
-    [self highlight:NO];
     [self invalidateTimers];
-
-    [super stopTracking:lastPoint at:aPoint mouseIsUp:mouseIsUp];
 
     if (mouseIsUp && CGRectContainsPoint([self bounds], aPoint))
         [self setNextState];
+
+    // Keep highlight YES for CPOnState for CPOnOffButton
+    if (_highlightsBy == CPOnOffButton && [self state] != CPOffState)
+        mouseIsUp = NO;
+
+    [super stopTracking:lastPoint at:aPoint mouseIsUp:mouseIsUp];
 }
 
 - (void)invalidateTimers
@@ -637,11 +642,27 @@ CPButtonImageOffset   = 3.0;
 
     var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
                                              positioned:CPWindowAbove
-                        relativeToEphemeralSubviewNamed:@"bezel-view"];
+                        relativeToEphemeralSubviewNamed:@"bezel-view"],
+        displayTitle = _title;
+
+    if (_alternateTitle)
+    {
+        switch (_highlightsBy)
+        {
+            case CPToggleButton:
+                displayTitle = ([self state] == CPOnState) ? _alternateTitle : _title;
+                break;
+            case CPMomentaryChangeButton:
+            case CPPushOnPushOffButton:
+            case CPOnOffButton:
+                displayTitle = ([self hasThemeState:CPThemeStateHighlighted]) ? _alternateTitle : _title;
+            break;
+        }
+    }
 
     if (contentView)
     {
-        [contentView setText:([self hasThemeState:CPThemeStateHighlighted] && _alternateTitle) ? _alternateTitle : _title];
+        [contentView setText:displayTitle];
         [contentView setImage:[self currentValueForThemeAttribute:@"image"]];
         [contentView setImageOffset:[self currentValueForThemeAttribute:@"image-offset"]];
 

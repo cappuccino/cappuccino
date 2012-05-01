@@ -1,6 +1,6 @@
 /*
  * AppController.j
- * CPButtonImageTest
+ * CPButton
  *
  * Created by Aparajita Fishman on August 31, 2010.
  */
@@ -16,6 +16,10 @@ CPLogRegister(CPLogConsole);
 
     @outlet CPButton        button;
     @outlet CPButton        imageButton;
+    @outlet CPButton        pushInButton;
+    @outlet CPButton        pushOnOffButton;
+    @outlet CPButton        toggleButton;
+    @outlet CPButton        momentaryChangeButton;
     @outlet CPCheckBox      checkbox;
     @outlet CPCheckBox      multiCheckbox;
     @outlet CPRadio         radio1;
@@ -57,10 +61,20 @@ CPLogRegister(CPLogConsole);
 
     [[radio1 radioGroup] setTarget:self];
     [[radio1 radioGroup] setAction:@selector(radioGroupClicked:)];
+
     [multiCheckbox setState:CPMixedState];
+
+    [pushInButton setButtonType:CPMomentaryLightButton];
+    [pushOnOffButton setButtonType:CPPushOnPushOffButton];
+    [toggleButton setButtonType:CPToggleButton];
+    [momentaryChangeButton setButtonType:CPMomentaryChangeButton];
+
+    [pushInButton setAlternateTitle:@"Should Not See Me"];
+    [toggleButton setAlternateTitle:@"Alternate Title For Toggle"];
+    [momentaryChangeButton setAlternateTitle:@"Changed!"];
 }
 
-- (void)setImagePosition:(id)sender
+- (IBAction)setImagePosition:(id)sender
 {
     [self _setImagePosition:[sender indexOfSelectedItem]];
 }
