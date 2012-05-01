@@ -280,7 +280,7 @@ class LintChecker(object):
             if option:
                 default = check.get('optionDefault', False)
 
-                if not self.view.settings().get(option, default):
+                if self.view and not self.view.settings().get(option, default):
                     continue
 
             line = self.line
@@ -982,7 +982,7 @@ if __name__ == '__main__':
         print usage.replace('%prog', os.path.basename(sys.argv[0]))
         sys.exit(0)
 
-    checker = LintChecker(basedir=basedir, var_declarations=LintChecker.VAR_DECLARATIONS.index(options.var_declarations), verbose=options.verbose)
+    checker = LintChecker(basedir=basedir, view=None, var_declarations=LintChecker.VAR_DECLARATIONS.index(options.var_declarations), verbose=options.verbose)
     pathsToCheck = []
 
     for filename in filenames:

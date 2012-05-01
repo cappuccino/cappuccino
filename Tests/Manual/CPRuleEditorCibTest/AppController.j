@@ -46,7 +46,7 @@ var THEME_ATTRIBUTES = [@"slice-top-border-color", @"slice-bottom-border-color",
 
 - (void)ruleEditorAction:(id)sender
 {
-    [ruleEditor reloadPredicate];
+    CPLogConsole(_cmd);
     [predicateField setStringValue:[[ruleEditor predicate] predicateFormat]];
 }
 

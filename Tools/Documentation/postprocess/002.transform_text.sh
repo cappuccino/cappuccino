@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # NOTE: The working directory should be the main capp directory when this script is run
 #

@@ -242,13 +242,15 @@
     Sets the content of the collection view to the content in \c anArray.
     This array can be of any type, and each element will be passed to the \c -setRepresentedObject: method.
     It's the responsibility of your custom collection view item to interpret the object.
-    @param anArray the content array
+
+    If the new content array is smaller than the previous one, note that [receiver selectionIndexes] may
+    refer to out of range indices. \c selectionIndexes is not changed as a result of calling the
+    \c setContent: method.
+
+    @param anArray a content array
 */
 - (void)setContent:(CPArray)anArray
 {
-    // reset the _selectionIndexes
-    [self setSelectionIndexes:[CPIndexSet indexSet]];
-
     _content = anArray;
 
     [self reloadContent];
@@ -284,9 +286,11 @@
 
     if (!_isSelectable)
     {
-        var index = CPNotFound;
+        var index = CPNotFound,
+            itemCount = [_items count];
 
-        while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound)
+        // Be wary of invalid selection ranges since setContent: does not clear selection indexes.
+        while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound && index < itemCount)
             [_items[index] setSelected:NO];
     }
 }
@@ -345,9 +349,11 @@
     if (!_isSelectable || [_selectionIndexes isEqual:anIndexSet])
         return;
 
-    var index = CPNotFound;
+    var index = CPNotFound,
+        itemCount = [_items count];
 
-    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) !== CPNotFound)
+    // Be wary of invalid selection ranges since setContent: does not clear selection indexes.
+    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) !== CPNotFound && index < itemCount)
         [_items[index] setSelected:NO];
 
     _selectionIndexes = anIndexSet;
@@ -403,7 +409,8 @@
     }
 
     index = CPNotFound;
-    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound)
+    // Be wary of invalid selection ranges since setContent: does not clear selection indexes.
+    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound && index < count)
         [_items[index] setSelected:YES];
 
     [self tile];
