@@ -86,7 +86,7 @@
 
 - (IBAction)randomTitle:(id)aSender
 {
-    [theWindow setTitle:@"Window random number " + Math.random(1000)];
+    [theWindow setTitle:@"Window random number " + RAND(1000)];
 }
 
 @end
