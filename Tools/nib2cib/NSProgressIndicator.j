@@ -40,7 +40,14 @@ var NSProgressIndicatorSpinningFlag = 1 << 12;
         _style = (NS_flags & NSProgressIndicatorSpinningFlag) ? CPProgressIndicatorSpinningStyle : CPProgressIndicatorBarStyle;
         _isIndeterminate = (NS_flags & 2) ? YES : NO;
         _isDisplayedWhenStopped = (NS_flags & 8192) ? NO : YES;
-        _controlSize = CPRegularControlSize;
+        _controlSize = (NS_flags & 256) ? CPSmallControlSize : CPRegularControlSize;
+
+        if (_style === CPProgressIndicatorSpinningStyle)
+        {
+            // For whatever reason, our 'regular' size is larger than any Cocoa size, our 'small' size is Cocoa's regular and
+            // our 'mini' size is Cocoa's small.
+            _controlSize = _controlSize == CPRegularControlSize ? CPSmallControlSize : CPMiniControlSize;
+        }
 
         // There is a bug in Xcode. the currentValue is not stored.
         // Let's set it to 0.0 for now.
@@ -48,12 +55,7 @@ var NSProgressIndicatorSpinningFlag = 1 << 12;
 
         // Readjust the height of the control to the correct size.
         var currentFrameSize = [self frameSize];
-        if (_style == CPProgressIndicatorSpinningStyle)
-        {
-            currentFrameSize.height = 64.0;
-            currentFrameSize.width = 64.0;
-        }
-        else
+        if (_style !== CPProgressIndicatorSpinningStyle)
             currentFrameSize.height = 15.0;
 
         [self setFrameSize:currentFrameSize];
