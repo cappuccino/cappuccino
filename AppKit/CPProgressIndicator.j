@@ -71,8 +71,6 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 
     BOOL                        _isDisplayedWhenStoppedSet;
     BOOL                        _isDisplayedWhenStopped;
-
-    CPView                      _barView;
 }
 
 /*
@@ -410,27 +408,38 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     if (_style == CPProgressIndicatorSpinningStyle)
         return;
 
-    if (!_barView)
-    {
-        _barView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 0.0, 16.0)];
-        [self addSubview:_barView];
-    }
+    var barView = [self layoutEphemeralSubviewNamed:"bar-view"
+                                         positioned:CPWindowBelow
+                    relativeToEphemeralSubviewNamed:nil];
 
-    [_barView setBackgroundColor:_CPControlThreePartImagePattern(
+    [barView setBackgroundColor:_CPControlThreePartImagePattern(
         NO,
         CPProgressIndicatorStyleSizes,
         CPProgressIndicatorClassName,
         @"Bar",
         CPProgressIndicatorStyleIdentifiers[_style],
         _CPControlIdentifierForControlSize(_controlSize))];
+}
 
-    var width = CGRectGetWidth([self bounds]),
-        barWidth = width * ((_doubleValue - _minValue) / (_maxValue - _minValue));
+- (CPView)createEphemeralSubviewNamed:(CPString)aName
+{
+    return [[CPView alloc] initWithFrame:_CGRectMakeZero()];
+}
 
-    if (barWidth > 0.0 && barWidth < 4.0)
-        barWidth = 4.0;
+- (CGRect)rectForEphemeralSubviewNamed:(CPString)aViewName
+{
+    if (aViewName === @"bar-view" && _style !== CPProgressIndicatorSpinningStyle)
+    {
+        var width = CGRectGetWidth([self bounds]),
+            barWidth = width * ((_doubleValue - _minValue) / (_maxValue - _minValue));
 
-    [_barView setFrameSize:CGSizeMake(barWidth, 16.0)];
+        if (barWidth > 0.0 && barWidth < 4.0)
+            barWidth = 4.0;
+
+        return _CGRectMake(0, 0, barWidth, 16.0);
+    }
+
+    return nil;
 }
 
 /* @ignore */
@@ -440,9 +449,10 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     {
         if (_style == CPProgressIndicatorSpinningStyle)
         {
-            [_barView removeFromSuperview];
-
-            _barView = nil;
+            // This will cause the bar view to go away due to having a nil rect when _style == CPProgressIndicatorSpinningStyle.
+            [self layoutEphemeralSubviewNamed:"bar-view"
+                                   positioned:CPWindowBelow
+              relativeToEphemeralSubviewNamed:nil];
 
             [self setBackgroundColor:CPProgressIndicatorSpinningStyleColors[_controlSize]];
         }
@@ -490,15 +500,11 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    // Don't encode the subviews or background colour. They can be recreated based on the flags and if encoded cause hardcoded
+    // Don't encode the background colour. It can be recreated based on the flags and if encoded causes hardcoded
     // image paths in the cib while just wasting space.
-    // TODO Maybe just switch them for ephemeral views.
-    var subviews = [self subviews],
-        backgroundColor = [self backgroundColor];
-    [self setSubviews:[]];
+    var backgroundColor = [self backgroundColor];
     [self setBackgroundColor:nil];
     [super encodeWithCoder:aCoder];
-    [self setSubviews:subviews];
     [self setBackgroundColor:backgroundColor];
 
     [aCoder encodeObject:_minValue forKey:@"_minValue"];
