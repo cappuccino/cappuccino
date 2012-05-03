@@ -481,6 +481,8 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
         _isAnimating                = [aCoder decodeObjectForKey:@"_isAnimating"];
         _isDisplayedWhenStoppedSet  = [aCoder decodeObjectForKey:@"_isDisplayedWhenStoppedSet"];
         _isDisplayedWhenStopped     = [aCoder decodeObjectForKey:@"_isDisplayedWhenStopped"];
+
+        [self updateBackgroundColor];
     }
 
     return self;
@@ -488,7 +490,16 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
+    // Don't encode the subviews or background colour. They can be recreated based on the flags and if encoded cause hardcoded
+    // image paths in the cib while just wasting space.
+    // TODO Maybe just switch them for ephemeral views.
+    var subviews = [self subviews],
+        backgroundColor = [self backgroundColor];
+    [self setSubviews:[]];
+    [self setBackgroundColor:nil];
     [super encodeWithCoder:aCoder];
+    [self setSubviews:subviews];
+    [self setBackgroundColor:backgroundColor];
 
     [aCoder encodeObject:_minValue forKey:@"_minValue"];
     [aCoder encodeObject:_maxValue forKey:@"_maxValue"];
