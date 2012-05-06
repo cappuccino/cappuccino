@@ -208,8 +208,40 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
     [_titleField setFrame:CGRectMake(20.0, 3.0, width - 40.0, CGRectGetHeight([_titleField frame]))];
 
     var maxY = [self toolbarMaxY];
+    if ([_titleField isHidden])
+        maxY -= ([self toolbarOffset]).height;
 
-    [[theWindow contentView] setFrameOrigin:CGPointMake(0.0, maxY, width, CGRectGetHeight(bounds) - maxY)];
+    //[[theWindow contentView] setFrameOrigin:CGPointMake(0.0, maxY, width, CGRectGetHeight(bounds) - maxY)];
+    
+    var contentRect = CGRectMake(0.0, maxY, width, CGRectGetHeight(bounds) - maxY);
+
+    [[theWindow contentView] setFrame:contentRect];
+}
+
+- (void)_enableSheet:(BOOL)enable
+{
+    [super _enableSheet:enable];
+
+    // convert window to "sheet mode" and back again
+    [_closeButton setHidden:enable];
+    [_titleField setHidden:enable];
+
+    // resize the window
+    var window = [self window],
+        frame = [window frame];
+
+    var dy = ([self toolbarOffset]).height;
+    if (enable)
+        dy = -dy;
+    
+    var newHeight = CGRectGetMaxY(frame) + dy;
+    var newWidth = CGRectGetMaxX(frame);
+    frame.size.height += dy;
+
+    [self setFrameSize:CGSizeMake(newWidth, newHeight)];
+    [self tile];
+    [window setFrame:frame display:NO animate:NO];
+    [window setMovableByWindowBackground:!enable];
 }
 
 @end

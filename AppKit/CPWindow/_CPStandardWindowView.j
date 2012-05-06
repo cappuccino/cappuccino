@@ -147,8 +147,11 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
     return _CPStandardWindowViewTitleBackgroundColor;
 }
 
+
 + (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
+    CPLog("%@ %@: static", [self class], _cmd);
+
     var contentRect = CGRectMakeCopy(aFrameRect),
         titleBarHeight = [self titleBarHeight] + 1.0;
 
@@ -160,6 +163,8 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
 
 + (CGRect)frameRectForContentRect:(CGRect)aContentRect
 {
+    CPLog("%@ %@: static", [self class], _cmd);
+
     var frameRect = CGRectMakeCopy(aContentRect),
         titleBarHeight = [self titleBarHeight] + 1.0;
 
@@ -181,7 +186,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
 
     if ([theToolbar isVisible])
     {
-        toolbarHeight = CGRectGetHeight([[theToolbar _toolbarView] frame]);
+        var toolbarHeight = CGRectGetHeight([[theToolbar _toolbarView] frame]);
 
         contentRect.origin.y += toolbarHeight;
         contentRect.size.height -= toolbarHeight;
@@ -330,11 +335,13 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
 
     [_headView setFrameSize:CGSizeMake(width, [self toolbarMaxY])];
     [_dividerView setFrame:CGRectMake(0.0, CGRectGetMaxY([_headView frame]), width, 1.0)];
-
-    var dividerMaxY = CGRectGetMaxY([_dividerView frame]);
-
+    
+    var dividerMaxY = 0;
+    if (![_dividerView isHidden])
+        dividerMaxY = CGRectGetMaxY([_dividerView frame]);
+    
     [_bodyView setFrame:CGRectMake(0.0, dividerMaxY, width, CGRectGetHeight(bounds) - dividerMaxY)];
-
+    
     var leftOffset = 8;
 
     if (_closeButton)
@@ -344,7 +351,9 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
 
     [_titleField setFrame:CGRectMake(leftOffset, 5.0, width - leftOffset * 2.0, CGRectGetHeight([_titleField frame]))];
 
-    [[theWindow contentView] setFrameOrigin:CGPointMake(0.0, CGRectGetMaxY([_dividerView frame]))];
+    var contentRect = CGRectMake(0.0, dividerMaxY, width, CGRectGetHeight([_bodyView frame]));
+
+    [[theWindow contentView] setFrame:contentRect];    
 }
 /*
 - (void)setAnimatingToolbar:(BOOL)isAnimatingToolbar
@@ -401,10 +410,39 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-    if (CGRectContainsPoint([_headView frame], [self convertPoint:[anEvent locationInWindow] fromView:nil]))
-        return [self trackMoveWithEvent:anEvent];
+    if (![_headView isHidden])
+        if (CGRectContainsPoint([_headView frame], [self convertPoint:[anEvent locationInWindow] fromView:nil]))
+            return [self trackMoveWithEvent:anEvent];
 
     [super mouseDown:anEvent];
+}
+
+- (void)_enableSheet:(BOOL)enable
+{
+    [super _enableSheet:enable];
+    
+    // convert window to "sheet mode" and back again
+    [_headView setHidden:enable];
+    [_dividerView setHidden:enable];
+    [_closeButton setHidden:enable];
+    [_minimizeButton setHidden:enable];
+    [_titleField setHidden:enable];
+
+    // resize the window
+    var window = [self window],
+        frame = [window frame];
+
+    var dy = CGRectGetHeight([_headView frame]) + CGRectGetHeight([_dividerView frame]);
+    if (enable)
+        dy = -dy;
+    
+    var newHeight = CGRectGetMaxY(frame) + dy;
+    var newWidth = CGRectGetMaxX(frame);
+    frame.size.height += dy;
+
+    [self setFrameSize:CGSizeMake(newWidth, newHeight)];
+    [self tile];
+    [window setFrame:frame display:NO animate:NO];
 }
 
 @end

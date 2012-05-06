@@ -2395,7 +2395,7 @@ CPTexturedBackgroundWindowMask
 - (void)_endSheet
 {
     CPLog("%@ %@", [self class], _cmd);
-
+    
     var sheet = _sheetContext["sheet"],
         delegate = _sheetContext["modalDelegate"],
         endSelector = _sheetContext["endSelector"];
@@ -2444,6 +2444,8 @@ CPTexturedBackgroundWindowMask
     sheet._isSheet = NO;
 
     [sheet orderOut:self];
+
+    [sheet._windowView _enableSheet:NO];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidEndSheetNotification object:self];
 
