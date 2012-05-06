@@ -926,19 +926,21 @@ CPRunContinuesResponse  = -1002;
 */
 - (void)beginSheet:(CPWindow)aSheet modalForWindow:(CPWindow)aWindow modalDelegate:(id)aModalDelegate didEndSelector:(SEL)aDidEndSelector contextInfo:(id)aContextInfo
 {
-    var styleMask = [aSheet styleMask];
+    /*var styleMask = [aSheet styleMask];
     if (!(styleMask & CPDocModalWindowMask))
     {
         [CPException raise:CPInternalInconsistencyException reason:@"Currently only CPDocModalWindowMask style mask is supported for attached sheets"];
         return;
-    }
+    }*/
 
     if ([aWindow isSheet])
     {
         [CPException raise:CPInternalInconsistencyException reason:@"The target window of beginSheet: cannot be a sheet"];
         return;
     }
-        
+    
+    [aSheet._windowView _enableSheet:YES];
+    
     // -dw- if a sheet is already visible, we skip this since it serves no purpose and causes
     // orderOut: to be called on the sheet, which is not what we want.
     if (![aWindow isVisible])
