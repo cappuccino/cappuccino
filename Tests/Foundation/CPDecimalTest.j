@@ -549,6 +549,16 @@
     d2 = CPDecimalMakeWithString(@"-0.875");
     d3 = CPDecimalMakeWithString(@"0");
     [self assert:CPCalculationDivideByZero equals:CPDecimalDivide(d1,d2,d3,CPRoundUp) message:"CPDecimalDivide(): Tdp2: Should Loss of precision"];
+
+    d1 = CPDecimalMakeZero();
+    d2 = CPDecimalMakeWithString(@"220000");
+    d3 = CPDecimalMakeWithString(@"220");
+
+    [self assert:CPCalculationNoError equals:CPDecimalDivide(d1, d2, d3, CPRoundPlain) message:"CPDecimalDivide(): Td4: Should succeed"];
+    [self assert:3 equals:d1._exponent message:"CPDecimalDivide(): Td4: exponent"];
+    [self assert:[1] equals:d1._mantissa message:"CPDecimalDivide(): Td4: mantissa"];
+    [self assert:NO equals:d1._isNegative message:"CPDecimalDivide(): Td4: sign"];
+    [self assert:NO equals:d1._isNaN message:"CPDecimalDivide(): Td4: NaN is incorrectly set"];
 }
 
 - (void)testMultiply
