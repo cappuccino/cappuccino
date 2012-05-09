@@ -315,6 +315,17 @@
             throw e;
     }
 }
+
+- (void)testDivide2
+{
+    // https://github.com/cappuccino/cappuccino/issues/1529
+    var dcm1 = [CPDecimalNumber decimalNumberWithString:@"220000"],
+        dcm2 = [CPDecimalNumber decimalNumberWithString:@"220"],
+        res  = [dcm1 decimalNumberByDividingBy:dcm2];
+
+   [self assert:1000 equals:[res doubleValue] message:"220000/220 == 1000"];
+}
+
 - (void)testMutliply
 {
 
