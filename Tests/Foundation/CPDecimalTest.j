@@ -73,7 +73,7 @@
     // too large return NaN
     dcm = CPDecimalMakeWithString(@"111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
     [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() To1: number overflow handling. Should return NaN"];
-    dcm =CPDecimalMakeWithString(@"-1e1000");
+    dcm = CPDecimalMakeWithString(@"-1e1000");
     [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() To2: exponent overflow not caught. Should return NaN"];
     dcm = CPDecimalMakeWithString(@"-1e-2342");
     [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() To3: exponent underflow not caught. Should return NaN"];
@@ -103,7 +103,7 @@
     [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti11: catch of invalid number string. Should return NaN"];
     dcm = CPDecimalMakeWithString(@"-.1");
     [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti12: catch of invalid number string. Should return NaN"];
-    
+
     //test make with parts
     dcm = CPDecimalMakeWithParts(10127658,2);
     [self assert:2 equals:dcm._exponent message:"CPDecimalMakeWithParts() Tmp1: exponent"];
@@ -315,9 +315,9 @@
 
 - (void)testCompare
 {
-    var dcm1 = CPDecimalMakeWithString(@"75836");
-    var dcm = CPDecimalMakeWithString(@"75836");
-    var c = CPDecimalCompare(dcm1,dcm);
+    var dcm1 = CPDecimalMakeWithString(@"75836"),
+        dcm = CPDecimalMakeWithString(@"75836"),
+        c = CPDecimalCompare(dcm1,dcm);
     [self assert:CPOrderedSame equals:c message:"CPDecimalCompare() Tc1: should be same"];
 
     dcm1 = CPDecimalMakeWithString(@"75836");
@@ -449,9 +449,9 @@
 
 - (void)testSubtract
 {
-    var d1 = CPDecimalMakeZero();
-    var d2 = CPDecimalMakeWithString(@"0.875");
-    var d3 = CPDecimalMakeWithString(@"12.67");
+    var d1 = CPDecimalMakeZero(),
+        d2 = CPDecimalMakeWithString(@"0.875"),
+        d3 = CPDecimalMakeWithString(@"12.67");
     [self assert:CPCalculationNoError equals:CPDecimalSubtract(d1,d2,d3,CPRoundPlain) message:"CPDecimalSubtract(): Ts1: Should succeed"];
     [self assert:-3 equals:d1._exponent message:"CPDecimalSubtract(): Ts1: exponent"];
     [self assert:[1,1,7,9,5] equals:d1._mantissa message:"CPDecimalSubtract(): Ts1: mantissa"];
@@ -498,9 +498,9 @@
 
 - (void)testDivide
 {
-    var d1 = CPDecimalMakeZero();
-    var d2 = CPDecimalMakeWithString(@"55e12");
-    var d3 = CPDecimalMakeWithString(@"-5e20");
+    var d1 = CPDecimalMakeZero(),
+        d2 = CPDecimalMakeWithString(@"55e12"),
+        d3 = CPDecimalMakeWithString(@"-5e20");
     [self assert:CPCalculationNoError equals:CPDecimalDivide(d1,d2,d3,CPRoundPlain) message:"CPDecimalDivide(): Td1: Should succeed"];
     [self assert:-8 equals:d1._exponent message:"CPDecimalDivide(): Td1: exponent"];
     [self assert:[1,1] equals:d1._mantissa message:"CPDecimalDivide(): Td1: mantissa"];
@@ -553,9 +553,9 @@
 
 - (void)testMultiply
 {
-    var d1 = CPDecimalMakeZero();
-    var d2 = CPDecimalMakeWithString(@"12");
-    var d3 = CPDecimalMakeWithString(@"-1441231251321235231");
+    var d1 = CPDecimalMakeZero(),
+        d2 = CPDecimalMakeWithString(@"12"),
+        d3 = CPDecimalMakeWithString(@"-1441231251321235231");
     [self assert:CPCalculationNoError equals:CPDecimalMultiply(d1,d2,d3,CPRoundPlain) message:"CPDecimalMultiply(): Tm1: Should succeed"];
     [self assert:0 equals:d1._exponent message:"CPDecimalMultiply(): Tm1: exponent"];
     [self assert:[1,7,2,9,4,7,7,5,0,1,5,8,5,4,8,2,2,7,7,2] equals:d1._mantissa message:"CPDecimalMultiply(): Tm1: mantissa"];
@@ -610,9 +610,9 @@
 // Power is unsigned
 - (void)testPower
 {
-    var d1 = CPDecimalMakeZero();
-    var d2 = CPDecimalMakeWithString(@"123");
-    var d3 = 12;
+    var d1 = CPDecimalMakeZero(),
+        d2 = CPDecimalMakeWithString(@"123"),
+        d3 = 12;
     [self assert:CPCalculationNoError equals:CPDecimalPower(d1,d2,d3,CPRoundPlain) message:"CPDecimalPower(): Tp1: Should succeed"];
     [self assert:0 equals:d1._exponent message:"CPDecimalPower(): Tp1: exponent"];
     [self assert:[1,1,9,9,1,1,6,3,8,4,8,7,1,6,9,0,6,2,9,7,0,7,2,7,2,1] equals:d1._mantissa message:"CPDecimalPower(): Tp1: mantissa"];
@@ -634,9 +634,9 @@
 
 - (void)testPower10
 {
-    var d1 = CPDecimalMakeZero();
-    var d2 = CPDecimalMakeWithString(@"-0.875");
-    var d3 = 3;
+    var d1 = CPDecimalMakeZero(),
+        d2 = CPDecimalMakeWithString(@"-0.875"),
+        d3 = 3;
     [self assert:CPCalculationNoError equals:CPDecimalMultiplyByPowerOf10(d1,d2,d3,CPRoundPlain) message:"CPDecimalMultiplyByPowerOf10(): Tpp1: Should succeed"];
     [self assert:0 equals:d1._exponent message:"CPDecimalMultiplyByPowerOf10(): Tpp1: exponent"];
     [self assert:[8,7,5] equals:d1._mantissa message:"CPDecimalMultiplyByPowerOf10(): Tpp1: mantissa"];
