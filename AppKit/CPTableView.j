@@ -3991,6 +3991,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (BOOL)startTrackingAt:(CGPoint)aPoint
 {
+    if (![[self window] makeFirstResponder:self])
+        return NO;
+
     var row = [self rowAtPoint:aPoint];
 
     // If the user clicks outside a row then deselect everything.
@@ -4018,7 +4021,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (row >= 0 && !(_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_))
         [self _updateSelectionWithMouseAtRow:row];
 
-    [[self window] makeFirstResponder:self];
     return YES;
 }
 
@@ -4141,6 +4143,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
+    if ([[self window] firstResponder] !== self)
+        return;
+
     _isSelectingSession = NO;
 
     var CLICK_TIME_DELTA = 1000,
