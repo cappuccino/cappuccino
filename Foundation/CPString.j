@@ -706,14 +706,67 @@ var CPStringRegexSpecialCharacters = [
     Returns an the path components of this string. This
     method assumes that the string's content is a '/'
     separated file system path.
+    Multiple '/' separators between components are truncated to a single one.
 */
 - (CPArray)pathComponents
 {
+    if (length === 0) return [""];
+    if (self === "/") return ["/"];
     var result = split('/');
     if (result[0] === "")
         result[0] = "/";
-    if (result[result.length - 1] === "")
-        result.pop();
+    var index = result.length - 1;
+    if (index > 0)
+    {
+        if (result[index] === "")
+            result[index] = "/";
+        while (index--)
+        {
+            while (result[index] === "")
+            {
+                result.splice(index--, 1);
+            }
+        }
+    }
+    return result;
+}
+
+/*!
+    Returns a string built from the strings in a given array by
+    concatenating them with a path separator between each pair.
+    This method assumes that the string's content is a '/'
+    separated file system path.
+    Multiple '/' separators between components are truncated to a single one.
+*/
++ (CPString)pathWithComponents:(CPArray)components
+{
+    var size = components.length,
+        result = "",
+        i = -1,
+        firstRound = true,
+        firstIsSlash = false;
+
+    while (++i < size)
+    {
+        var component = components[i],
+            lenMinusOne = component.length - 1;
+        if (lenMinusOne >= 0 && (component !== "/" || firstRound))  // Skip "" and "/" (not first time)
+        {
+            if (lenMinusOne > 0 && component.indexOf("/",lenMinusOne) === lenMinusOne) // Ends with "/"
+                component = component.substring(0, lenMinusOne);
+            if (firstRound)
+            {
+                if (component === "/")
+                    firstIsSlash = true;
+                firstRound = false;
+            }
+            else if (!firstIsSlash)
+                result += "/";
+            else
+                firstIsSlash = false;
+            result += component;
+        }
+    }
     return result;
 }
 
@@ -737,33 +790,72 @@ var CPStringRegexSpecialCharacters = [
 */
 - (CPString)lastPathComponent
 {
-    var components = [self pathComponents];
-    return components[components.length - 1];
+    var components = [self pathComponents],
+        lastIndex = components.length - 1,
+        lastComponent = components[lastIndex];
+    return lastIndex > 0 && lastComponent === "/" ? components[lastIndex - 1] : lastComponent;
+}
+
+/*!
+    Returns a new string made by appending to the receiver a given string
+    This method assumes that the string's content is a '/'
+    separated file system path.
+    Multiple '/' separators between components are truncated to a single one.
+*/
+- (CPString)stringByAppendingPathComponent:(CPString)aString
+{
+    var components = [self pathComponents],
+        addComponents = aString && aString !== "/" ? [aString pathComponents] : [];
+    return [CPString pathWithComponents:components.concat(addComponents)];
+}
+
+/*!
+    Returns a new string made by appending to the receiver an extension separator followed by a given extension
+    This method assumes that the extension separator is a '.'
+    Extension can't include a '/' character, receiver can't be empty or be just a '/'. If so the
+    result will be the receiver itself.
+    Multiple '/' separators between components are truncated to a single one.
+*/
+- (CPString)stringByAppendingPathExtension:(CPString)ext
+{
+    if (ext.indexOf('/') >= 0 || length === 0 || self === "/")  // Can't handle these
+        return self;
+    var components = [self pathComponents],
+        last = components.length - 1;
+
+    if (last > 0 && components[last] === "/")
+        components.splice(last--, 1);
+
+    components[last] = components[last] + "." + ext;
+
+    return [CPString pathWithComponents:components];
 }
 
 /*!
     Deletes the last path component of a string.
     This method assumes that the string's content is a '/'
     separated file system path.
+    Multiple '/' separators between components are truncated to a single one.
 */
 - (CPString)stringByDeletingLastPathComponent
 {
-    var path = self,
-        start = length - 1;
+    if (length === 0) return "";
+    if (self === "/") return "/";
+    var components = [self pathComponents],
+        last = components.length - 1;
 
-    while (path.charAt(start) === '/')
-        start--;
+    if (components[last] === "/")
+        last--;
+    components.splice(last, components.length - last);
 
-    path = path.substr(0, path.lastIndexOf('/', start));
-
-    if (path === "" && charAt(0) === '/')
-        return '/';
-
-    return path;
+    return [CPString pathWithComponents:components];
 }
 
 /*!
     Deletes the extension of a string.
+    This method assumes that the string's content is a '/'
+    separated file system path.
+    Multiple '/' separators between components are truncated to a single one.
 */
 - (CPString)stringByDeletingPathExtension
 {
