@@ -257,8 +257,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null]]
-                                       forKeys:["alternating-row-colors", "grid-color", "highlighted-grid-color", "selection-color", "sourcelist-selection-color", "sort-image", "sort-image-reversed"]];
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null]]
+                                       forKeys:["alternating-row-colors", "grid-color", "highlighted-grid-color", "selection-color", "sourcelist-selection-color", "sort-image", "sort-image-reversed", "selection-radius"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -792,6 +792,26 @@ NOT YET IMPLEMENTED
 - (CPColor)selectionHighlightColor
 {
     return [self currentValueForThemeAttribute:@"selection-color"];
+}
+
+/*!
+    Sets the highlight radius for a row or column selection.
+
+    @param aRadius a int
+*/
+- (void)setSelectionHighlightRadius:(int)aRadius
+{
+    [self setValue:aRadius forThemeAttribute:"selection-radius"];
+
+    [self setNeedsDisplay:YES];
+}
+
+/*!
+    Returns the highlight radius for a row or column selection.
+*/
+- (int)selectionHighlightRadius
+{
+    return [self currentValueForThemeAttribute:@"selection-radius"];
 }
 
 /*!
@@ -3773,7 +3793,24 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             CGContextStrokePath(context);
         }
         else
-            CGContextAddRect(context, rowRect);
+        {
+            var radius = [self selectionHighlightRadius];
+            if (radius > 0)
+            {
+                var minX = CGRectGetMinX(rowRect),
+                    maxX = CGRectGetMaxX(rowRect),
+                    minY = CGRectGetMinY(rowRect),
+                    maxY = CGRectGetMaxY(rowRect);
+                
+                CGContextMoveToPoint(context, minX + radius, minY);
+                CGContextAddArcToPoint(context, maxX, minY, maxX, minY + radius, radius);
+                CGContextAddArcToPoint(context, maxX, maxY, maxX - radius, maxY, radius);
+                CGContextAddArcToPoint(context, minX, maxY, minX, maxY - radius, radius);
+                CGContextAddArcToPoint(context, minX, minY, minX + radius, minY, radius);
+            }
+            else
+                CGContextAddRect(context, rowRect);
+        }
     }
 
     CGContextClosePath(context);
