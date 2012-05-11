@@ -799,33 +799,20 @@ var concat = Array.prototype.concat,
 {
     var index = 0,
         count = [self count],
-        description = '(';
+        description = "(";
 
     for (; index < count; ++index)
     {
         if (index === 0)
-            description += '\n';
+            description += "\n\t";
 
-        var object = [self objectAtIndex:index],
-            desc = object;
-        if (object && typeof(object) === "object" && !object.isa)
-        {
-            desc = "JSObject\n{\n";
-            for (var property in object)
-            {
-                if (object.hasOwnProperty(property))
-                    desc += "   " + property + ":" + object[property] + "\n";
-            }
-            desc += "}";
-        }
-        var objectDescription = object && object.isa ? [object description] : String(desc);
-
-        description += "\t" + objectDescription.split('\n').join("\n\t");
+        var object = [self objectAtIndex:index];
+        description += CPDescriptionOfObject(object);
 
         if (index !== count - 1)
-            description += ", ";
-
-        description += '\n';
+            description += ",\n\t";
+        else
+            description += "\n";
     }
 
     return description + ')';

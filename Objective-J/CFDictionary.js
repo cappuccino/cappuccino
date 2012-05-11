@@ -135,7 +135,7 @@ DISPLAY_NAME(CFDictionary.prototype.valueForKey);
 
 CFDictionary.prototype.toString = function()
 {
-    var string = "{\n",
+    var string = "{\n\t",
         keys = this._keys,
         index = 0,
         count = this._count;
@@ -143,20 +143,9 @@ CFDictionary.prototype.toString = function()
     for (; index < count; ++index)
     {
         var key = keys[index],
-            value = this.valueForKey(key),
-            description = value;
-        if (value && typeof(value) === "object" && !value.isa)
-        {
-            description = "JSObject\n{\n";
-            for (var property in value)
-            {
-                if (value.hasOwnProperty(property))
-                    description += "   " + property + ":" + value[property] + "\n";
-            }
-            description += "}";
-        }
+            value = this.valueForKey(key);
 
-        string += "\t" + key + " = \"" + String(description).split('\n').join("\n\t") + "\"\n";
+        string += key + " = \"" + CPDescriptionOfObject(value).split('\n').join("\n\t") + "\"\n\t";
     }
 
     return string + "}";
