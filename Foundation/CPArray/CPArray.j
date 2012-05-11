@@ -807,7 +807,18 @@ var concat = Array.prototype.concat,
             description += '\n';
 
         var object = [self objectAtIndex:index],
-            objectDescription = object && object.isa ? [object description] : String(object);
+            desc = object;
+        if (object && typeof(object) === "object" && !object.isa)
+        {
+            desc = "JSObject\n{\n";
+            for (var property in object)
+            {
+                if (object.hasOwnProperty(property))
+                    desc += "   " + property + ":" + object[property] + "\n";
+            }
+            desc += "}";
+        }
+        var objectDescription = object && object.isa ? [object description] : String(desc);
 
         description += "\t" + objectDescription.split('\n').join("\n\t");
 

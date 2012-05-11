@@ -142,9 +142,21 @@ CFDictionary.prototype.toString = function()
 
     for (; index < count; ++index)
     {
-        var key = keys[index];
+        var key = keys[index],
+            value = this.valueForKey(key),
+            description = value;
+        if (value && typeof(value) === "object" && !value.isa)
+        {
+            description = "JSObject\n{\n";
+            for (var property in value)
+            {
+                if (value.hasOwnProperty(property))
+                    description += "   " + property + ":" + value[property] + "\n";
+            }
+            description += "}";
+        }
 
-        string += "\t" + key + " = \"" + String(this.valueForKey(key)).split('\n').join("\n\t") + "\"\n";
+        string += "\t" + key + " = \"" + String(description).split('\n').join("\n\t") + "\"\n";
     }
 
     return string + "}";
