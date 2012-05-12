@@ -222,7 +222,6 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
 {
     [super _enableSheet:enable];
 
-    // convert window to "sheet mode" and back again
     [_closeButton setHidden:enable];
     [_titleField setHidden:enable];
 

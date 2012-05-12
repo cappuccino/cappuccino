@@ -147,11 +147,8 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
     return _CPStandardWindowViewTitleBackgroundColor;
 }
 
-
 + (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
-    CPLog("%@ %@: static", [self class], _cmd);
-
     var contentRect = CGRectMakeCopy(aFrameRect),
         titleBarHeight = [self titleBarHeight] + 1.0;
 
@@ -163,8 +160,6 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
 
 + (CGRect)frameRectForContentRect:(CGRect)aContentRect
 {
-    CPLog("%@ %@: static", [self class], _cmd);
-
     var frameRect = CGRectMakeCopy(aContentRect),
         titleBarHeight = [self titleBarHeight] + 1.0;
 
@@ -421,12 +416,16 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
 {
     [super _enableSheet:enable];
     
-    // convert window to "sheet mode" and back again
     [_headView setHidden:enable];
     [_dividerView setHidden:enable];
     [_closeButton setHidden:enable];
     [_minimizeButton setHidden:enable];
     [_titleField setHidden:enable];
+
+    if (enable)
+        [_bodyView setBackgroundColor:[_CPDocModalWindowView bodyBackgroundColor]];
+    else
+        [_bodyView setBackgroundColor:[[self class] bodyBackgroundColor]];
 
     // resize the window
     var window = [self window],

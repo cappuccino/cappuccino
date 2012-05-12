@@ -926,13 +926,6 @@ CPRunContinuesResponse  = -1002;
 */
 - (void)beginSheet:(CPWindow)aSheet modalForWindow:(CPWindow)aWindow modalDelegate:(id)aModalDelegate didEndSelector:(SEL)aDidEndSelector contextInfo:(id)aContextInfo
 {
-    /*var styleMask = [aSheet styleMask];
-    if (!(styleMask & CPDocModalWindowMask))
-    {
-        [CPException raise:CPInternalInconsistencyException reason:@"Currently only CPDocModalWindowMask style mask is supported for attached sheets"];
-        return;
-    }*/
-
     if ([aWindow isSheet])
     {
         [CPException raise:CPInternalInconsistencyException reason:@"The target window of beginSheet: cannot be a sheet"];
