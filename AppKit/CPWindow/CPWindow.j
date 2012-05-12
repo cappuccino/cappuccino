@@ -265,8 +265,7 @@ var CPWindowActionMessageKeys = [
 
     @delegate -(BOOL)windowDidEndSheet:(CPNotification)notification;
     Sent from the notification center when an attached sheet on the
-    delegate's window has been animated out. Called after the
-    sheet's didEndSelector.
+    delegate's window has been animated out and is no longer visible.
     @param notification contains information about the event
 
     @return \c YES allows the window to close. \c NO
