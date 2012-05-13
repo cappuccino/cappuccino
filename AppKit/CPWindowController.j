@@ -336,25 +336,26 @@
     if (!_viewControllerContainerView && !aView)
         return;
 
-    var viewController = [self viewController],
+    var viewControllerView = [[self viewController] view],
         contentView = [[self window] contentView];
+
     if (aView)
     {
         [aView setFrame:[contentView frame]];
         [aView setAutoresizingMask:[contentView autoresizingMask]];
-        if (viewController)
+        if (viewControllerView)
         {
-            [[viewController view] removeFromSuperview];
-            [aView addSubview:[viewController view]];
+            [viewControllerView removeFromSuperview];
+            [aView addSubview:viewControllerView];
         }
         [[self window] setContentView:aView];
     }
-    else if (viewController)
+    else if (viewControllerView)
     {
-        [[viewController view] removeFromSuperview];
-        [[viewController view] setFrame:[contentView frame]];
-        [[viewController view] setAutoresizingMask:[contentView autoresizingMask]]
-        [[self window] setContentView:[viewController view]];
+        [viewControllerView removeFromSuperview];
+        [viewControllerView setFrame:[contentView frame]];
+        [viewControllerView setAutoresizingMask:[contentView autoresizingMask]]
+        [[self window] setContentView:viewControllerView];
     }
     else
     {
@@ -363,6 +364,7 @@
         [view setAutoresizingMask:[contentView autoresizingMask]];
         [[self window] setContentView:view]
     }
+
     _viewControllerContainerView = aView;
 }
 
@@ -378,6 +380,7 @@
 
     var containerView = [self viewControllerContainerView],
         newView = [aViewController view];
+
     if (containerView)
     {
         var oldView = [_viewController view];
@@ -409,6 +412,7 @@
         [view setAutoresizingMask:[contentView autoresizingMask]];
         [[self window] setContentView:view]
     }
+
     _viewController = aViewController;
 }
 
