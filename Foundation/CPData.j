@@ -69,7 +69,7 @@
 {
     var data = [[self alloc] init];
     data.setBytes(bytesArray);
-    
+
     return data;
 }
 
@@ -77,7 +77,7 @@
 {
     var data = [[self alloc] init];
     data.setBase64String(aString);
-    
+
     return data;
 }
 
