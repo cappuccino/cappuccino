@@ -136,17 +136,17 @@ DISPLAY_NAME(CFDictionary.prototype.valueForKey);
 CFDictionary.prototype.toString = function()
 {
     var string = "{\n",
-        keys = this._keys,
-        index = 0,
-        count = this._count;
-
+    keys = this._keys,
+    index = 0,
+    count = this._count;
+    
     for (; index < count; ++index)
     {
         var key = keys[index];
-
+        
         string += "\t" + key + " = \"" + String(this.valueForKey(key)).split('\n').join("\n\t") + "\"\n";
     }
-
+    
     return string + "}";
 };
 
