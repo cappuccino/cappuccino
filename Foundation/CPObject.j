@@ -543,9 +543,9 @@ function CPDescriptionOfObject(anObject)
     for (var property in anObject)
     {
         if (anObject.hasOwnProperty(property))
-            desc += "   " + property + ":" + CPDescriptionOfObject(anObject[property]) + "\n";
+            desc += "   " + property + ": " + CPDescriptionOfObject(anObject[property]) + "\n";
     }
     desc += "}";
-    
+
     return desc.split('\n').join("\n\t");
 }

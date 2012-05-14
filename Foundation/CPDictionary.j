@@ -576,7 +576,20 @@
 */
 - (CPString)description
 {
-    return self.toString();
+    var string = "{\n\t",
+        keys = _keys,
+        index = 0,
+        count = _count;
+
+    for (; index < count; ++index)
+    {
+        var key = keys[index],
+            value = valueForKey(key);
+
+        string += key + " = \"" + CPDescriptionOfObject(value).split('\n').join("\n\t") + "\"\n\t";
+    }
+
+    return string + "}";
 }
 
 - (BOOL)containsKey:(id)aKey
