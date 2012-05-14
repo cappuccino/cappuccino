@@ -529,3 +529,23 @@ CPLog(@"Got some class: %@", inst);
 }
 
 @end
+
+function CPDescriptionOfObject(anObject)
+{
+    if (anObject.isa)
+        return [anObject description];
+
+    if (typeof(anObject) !== "object")
+        return String(anObject);
+
+    desc = "JSObject\n{\n";
+
+    for (var property in anObject)
+    {
+        if (anObject.hasOwnProperty(property))
+            desc += "   " + property + ": " + CPDescriptionOfObject(anObject[property]) + "\n";
+    }
+    desc += "}";
+
+    return desc.split('\n').join("\n\t");
+}
