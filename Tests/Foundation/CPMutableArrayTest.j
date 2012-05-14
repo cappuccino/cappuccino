@@ -384,7 +384,7 @@
 
     [pretty sortUsingDescriptors:[[[CPSortDescriptor alloc] initWithKey:@"value" ascending:YES]]];
 
-    [self assert:"(\n\t0:a,\n\t1:b,\n\t2:c,\n\t3:d\n)" equals:[pretty description]]
+    [self assert:"(\n\t0:a,\n\t1:b,\n\t2:c,\n\t3:d\n)" equals:[pretty description]];
 }
 
 - (void)testThatCPArrayDoesSortUsingTwoDescriptors

@@ -538,7 +538,7 @@ function CPDescriptionOfObject(anObject)
     if (typeof(anObject) !== "object")
         return String(anObject);
 
-    desc = "JSObject\n{\n";
+    var desc = "JSObject\n{\n";
 
     for (var property in anObject)
     {

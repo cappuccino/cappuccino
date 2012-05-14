@@ -15,7 +15,7 @@
         "key3": {
             "another": "object"
         }
-    }
+    };
 
     string_dict = [[CPDictionary alloc] initWithObjects:[@"1", @"2", @"This is a String", @"This is a String"] forKeys:[@"key1", @"key2", @"key3", @"key4"]];
     json_dict = [CPDictionary dictionaryWithJSObject:json recursively:YES];

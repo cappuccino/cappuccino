@@ -815,7 +815,7 @@ var concat = Array.prototype.concat,
             description += "\n";
     }
 
-    return description + ')';
+    return description + ")";
 }
 
 // Collecting paths
