@@ -186,7 +186,7 @@
 {
     [aPopover setDelegate:self];
     [aPopover setAnimates:([buttonAnimation title] === @"With animation")];
-    [aPopover setBehaviour:([buttonBehaviour title] === @"Transient") ? CPPopoverBehaviorTransient : CPPopoverBehaviorApplicationDefined];
+    [aPopover setBehavior:([buttonBehaviour title] === @"Transient") ? CPPopoverBehaviorTransient : CPPopoverBehaviorApplicationDefined];
     [aPopover setAppearance:appearance];
 }
 
