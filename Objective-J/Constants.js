@@ -64,6 +64,7 @@ GLOBAL(SQRT)    = Math.sqrt;
 GLOBAL(E)       = Math.E;
 GLOBAL(LN2)     = Math.LN2;
 GLOBAL(LN10)    = Math.LN10;
+GLOBAL(LOG)     = Math.log;
 GLOBAL(LOG2E)   = Math.LOG2E;
 GLOBAL(LOG10E)  = Math.LOG10E;
 

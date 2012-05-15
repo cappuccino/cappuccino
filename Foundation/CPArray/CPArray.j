@@ -799,25 +799,23 @@ var concat = Array.prototype.concat,
 {
     var index = 0,
         count = [self count],
-        description = '(';
+        description = "(";
 
     for (; index < count; ++index)
     {
         if (index === 0)
-            description += '\n';
+            description += "\n\t";
 
-        var object = [self objectAtIndex:index],
-            objectDescription = object && object.isa ? [object description] : String(object);
-
-        description += "\t" + objectDescription.split('\n').join("\n\t");
+        var object = [self objectAtIndex:index];
+        description += CPDescriptionOfObject(object);
 
         if (index !== count - 1)
-            description += ", ";
-
-        description += '\n';
+            description += ",\n\t";
+        else
+            description += "\n";
     }
 
-    return description + ')';
+    return description + ")";
 }
 
 // Collecting paths

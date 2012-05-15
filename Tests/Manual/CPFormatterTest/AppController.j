@@ -17,7 +17,7 @@ var RecordData = [
 
 var randomFromTo = function(from, to)
 {
-    return Math.floor(Math.random() * (to - from + 1) + from);
+    return FLOOR(RAND() * (to - from + 1) + from);
 };
 
 @implementation AppController : CPObject
