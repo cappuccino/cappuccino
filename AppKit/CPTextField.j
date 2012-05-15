@@ -652,7 +652,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         var acceptInvalidValue = NO;
 
         if ([_delegate respondsToSelector:@selector(control:didFailToFormatString:errorDescription:)])
-            acceptInvalidValue = [_delegate control:self didFailToFormatString:[self _inputElement] errorDescription:error];
+            acceptInvalidValue = [_delegate control:self didFailToFormatString:aValue errorDescription:error];
 
         if (acceptInvalidValue === NO)
             return NO;

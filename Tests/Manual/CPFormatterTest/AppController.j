@@ -80,12 +80,12 @@ var randomFromTo = function(from, to)
 
 - (void)objectValue1:(id)sender
 {
-    CPLog.info("Date 1: %s", [[dateField1 objectValue] description]);
+    console.log("Date 1: %s", [[dateField1 objectValue] description]);
 }
 
 - (void)objectValue2:(id)sender
 {
-    CPLog.info("Date 2: %s", [[dateField2 objectValue] description]);
+    console.log("Date 2: %s", [[dateField2 objectValue] description]);
 }
 
 - (void)setNil:(id)sender
@@ -113,7 +113,7 @@ var randomFromTo = function(from, to)
 
 - (BOOL)control:(CPControl)aControl didFailToFormatString:(CPString)aString errorDescription:(CPString)anError
 {
-    CPLog.info("control:didFailToFormatString:%s errorDescription:%s", aString, anError);
+    console.log("control:didFailToFormatString:%s errorDescription:%s", aString, anError);
 
     if (anError)
     {
