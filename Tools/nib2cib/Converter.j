@@ -138,7 +138,7 @@ ConverterConversionException = @"ConverterConversionException";
         if (!FILE.isReadable(temporaryPlistFilePath))
             [CPException raise:ConverterConversionException reason:@"Unable to convert nib file."];
 
-        var plistContents = FILE.read(temporaryPlistFilePath, { charset:"UTF-8" });
+        var plistContents = FILE.read(temporaryPlistFilePath, { charset: "UTF-8" });
 
         // Minor NS keyed archive to CP keyed archive conversion.
         // Use Java directly because rhino's string.replace is *so slow*. 4 seconds vs. 1 millisecond.
@@ -151,7 +151,7 @@ ConverterConversionException = @"ConverterConversionException";
         plistContents = plistContents.replace(/<string>[\u0000-\u0008\u000B\u000C\u000E-\u001F]<\/string>/g, function(c)
         {
             CPLog.warn("Warning: converting character 0x" + c.charCodeAt(8).toString(16) + " to base64 representation");
-            return "<string type=\"base64\">"+CFData.encodeBase64String(c.charAt(8))+"</string>";
+            return "<string type=\"base64\">" + CFData.encodeBase64String(c.charAt(8)) + "</string>";
         });
     }
     finally

@@ -42,12 +42,12 @@
         launchAvg /= data.length;
         
         for (var i = 0; i < data.length; i++) {
-            loadStdev += Math.pow(data[i][0] - loadAvg, 2);
-            launchStdev += Math.pow(data[i][1] - launchAvg, 2);
+            loadStdev += POW(data[i][0] - loadAvg, 2);
+            launchStdev += POW(data[i][1] - launchAvg, 2);
         }
         
-        loadStdev = Math.sqrt(loadStdev / data.length);
-        launchStdev = Math.sqrt(launchStdev / data.length);
+        loadStdev = SQRT(loadStdev / data.length);
+        launchStdev = SQRT(launchStdev / data.length);
 
         if (window.parent.BCOMM) {
             window.parent.BCOMM.finishTest({
@@ -63,7 +63,7 @@
 
         var label = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
 
-        [label setStringValue:"load avg="+Math.round(loadAvg)+" (stdev="+Math.round(loadStdev)+"); launch avg="+Math.round(launchAvg)+" (stdev="+Math.round(launchStdev)+")"];
+        [label setStringValue:"load avg="+ROUND(loadAvg)+" (stdev="+ROUND(loadStdev)+"); launch avg="+ROUND(launchAvg)+" (stdev="+ROUND(launchStdev)+")"];
         [label setFont:[CPFont boldSystemFontOfSize:24.0]];
 
         [label sizeToFit];

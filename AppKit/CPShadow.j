@@ -61,7 +61,7 @@
         _blurRadius = aBlurRadius;
         _color = aColor;
 
-        _cssString = [_color cssString] + " " + Math.round(anOffset.width) + @"px " + Math.round(anOffset.height) + @"px " + Math.round(_blurRadius) + @"px";
+        _cssString = [_color cssString] + " " + ROUND(anOffset.width) + @"px " + ROUND(anOffset.height) + @"px " + ROUND(_blurRadius) + @"px";
     }
 
     return self;

@@ -17,7 +17,7 @@ var RecordData = [
 
 var randomFromTo = function(from, to)
 {
-    return Math.floor(Math.random() * (to - from + 1) + from);
+    return FLOOR(RAND() * (to - from + 1) + from);
 };
 
 @implementation AppController : CPObject
@@ -149,7 +149,7 @@ var randomFromTo = function(from, to)
     else
         result = nil;
 
-    console.log("stringForObjectValue:%s ==> %s", [anObject description], result);
+    CPLog.info("stringForObjectValue:%s ==> %s", [anObject description], result);
     return result;
 }
 
@@ -169,7 +169,7 @@ var randomFromTo = function(from, to)
 
     result = error === nil;
 
-    console.log("getObjectValue:forString:%s ==> %s", aString, result);
+    CPLog.info("getObjectValue:forString:%s ==> %s", aString, result);
     return result;
 }
 

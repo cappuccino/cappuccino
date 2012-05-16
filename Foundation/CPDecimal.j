@@ -765,7 +765,7 @@ function _SimpleDivide(result, leftOperand, rightOperand, roundingMode)
 
     n1._mantissa = [];
 
-    while ((k < leftOperand._mantissa.length) || (n1._mantissa.length
+    while ((used < leftOperand._mantissa.length) || (n1._mantissa.length
                                                     && !((n1._mantissa.length == 1) && (n1._mantissa[0] == 0))))
     {
         while (CPOrderedAscending == CPDecimalCompare(n1, rightOperand))

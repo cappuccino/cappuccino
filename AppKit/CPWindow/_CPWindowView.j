@@ -113,7 +113,6 @@ var _CPWindowViewResizeIndicatorImage = nil;
 
     if ([theWindow isMovable] && [theWindow isMovableByWindowBackground])
         [self trackMoveWithEvent:anEvent];
-
     else
         [super mouseDown:anEvent];
 }
@@ -140,7 +139,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
         var newSize = CGSizeMake(CGRectGetWidth(_resizeFrame) + location.x - CGRectGetMinX(_resizeFrame), CGRectGetHeight(_resizeFrame) + location.y - CGRectGetMinY(_resizeFrame));
 
         if (theWindow._isSheet && theWindow._parentView && (theWindow._frame.size.width !== newSize.width))
-        [theWindow._parentView _setAttachedSheetFrameOrigin];
+            [theWindow._parentView _setAttachedSheetFrameOrigin];
 
         [theWindow setFrameSize:newSize];
     }
@@ -184,13 +183,11 @@ var _CPWindowViewResizeIndicatorImage = nil;
         _cachedScreenFrame = nil;
         return;
     }
-
     else if (type === CPLeftMouseDown)
     {
         _mouseDraggedPoint = [[self window] convertBaseToGlobal:[anEvent locationInWindow]];
         _cachedScreenFrame = [[CPPlatformWindow primaryPlatformWindow] visibleFrame];
     }
-
     else if (type === CPLeftMouseDragged)
     {
         var theWindow = [self window],
