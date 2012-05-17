@@ -11,7 +11,7 @@
 
 - (CPNumber)sqrt:(CPNumber)operand
 {
-    return Math.sqrt(operand);
+    return SQRT(operand);
 }
 
 - (CPNumber)multiply:(CPNumber)firstOperand with:(CPNumber)secondOperand
