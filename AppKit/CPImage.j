@@ -165,7 +165,9 @@ function CPAppKitImage(aFilename, aSize)
 */
 - (id)initWithData:(CPData)someData
 {
-    var dataURL = "data:image;base64," + [someData base64];
+    var base64 = [someData base64],
+        type = [base64 hasPrefix:@"/9j/4AAQSkZJRgABAQEASABIAAD/"] ? @"jpg" : @"png",
+        dataURL = "data:image/" + type + ";base64," + base64;
 
     return [self initWithContentsOfFile:dataURL];
 }
@@ -176,6 +178,37 @@ function CPAppKitImage(aFilename, aSize)
 - (CPString)filename
 {
     return _filename;
+}
+
+/*!
+    Returns the data associated with this image.
+    @discussion Returns nil if the reciever was not initialized with -initWithData: and the browser does not support the canvas feature;
+*/
+- (CPData)data
+{
+#if PLATFORM(DOM)
+    var dataURL;
+
+    if ([_filename hasPrefix:@"data:image"])
+        dataURL = _filename;
+    else if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
+    {
+        var canvas = document.createElement("canvas"),
+            ctx = canvas.getContext("2d");
+
+        canvas.width = _image.width,
+        canvas.height = _image.height;
+
+        ctx.drawImage(_image, 0, 0);
+
+        dataURL = canvas.toDataURL("image/png");
+    }
+    else
+        return nil;
+
+    var base64 = dataURL.replace(/^data:image\/png;base64,/, "");
+    return [CPData dataWithBase64:base64];
+#endif
 }
 
 /*!
