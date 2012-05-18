@@ -296,7 +296,7 @@ Set the behavior of the CPPopover. It can be:
 /*! @ignore */
 - (BOOL)attachedWindowShouldClose:(_CPAttachedWindow)anAttachedWindow
 {
-    [self close];
+    [self performClose:self];
 
     // We return NO, because we want the CPPopover to determine
     // if the attached window can be closed and to give us a chance
