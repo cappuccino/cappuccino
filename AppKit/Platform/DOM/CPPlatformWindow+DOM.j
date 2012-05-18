@@ -192,7 +192,6 @@ var ModifierKeyCodes = [
     ],
     supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
-// this probably shouldn't be a global variable.  Feel free to put it somewhere appropriate.
 var resizeTimer = nil;
 
 @implementation CPPlatformWindow (DOM)
@@ -1094,7 +1093,7 @@ var resizeTimer = nil;
     resizeTimer = [CPTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(actualResizeEvent) userInfo:nil repeats:NO];
 }
 
--(void)actualResizeEvent
+- (void)actualResizeEvent
 {
     resizeTimer = nil;
 
