@@ -192,6 +192,9 @@ var ModifierKeyCodes = [
     ],
     supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
+// this probably shouldn't be a global variable.  Feel free to put it somewhere appropriate.
+var resizeTimer = nil;
+
 @implementation CPPlatformWindow (DOM)
 
 - (id)_init
@@ -1083,6 +1086,20 @@ var ModifierKeyCodes = [
 
 - (void)resizeEvent:(DOMEvent)aDOMEvent
 {
+    // This is a hack for the browser resize bug in safari.
+    // See bug ID: 1325
+    // https://github.com/cappuccino/cappuccino/issues/1325
+
+    if(resizeTimer);
+        [resizeTimer invalidate];
+
+    resizeTimer = [CPTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(actualResizeEvent) userInfo:nil repeats:NO];
+}
+
+-(void)actualResizeEvent
+{
+    resizeTimer = nil;
+
     // FIXME: This is not the right way to do this.
     // We should pay attention to mouse down and mouse up in conjunction with this.
     //window.liveResize = YES;
