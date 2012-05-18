@@ -143,7 +143,7 @@
     }
 }
 
-- (IBAction)open:(id)sender
+- (@action)open:(id)sender
 {
     var edge = [self popoverEdge],
         appearance;
@@ -169,17 +169,22 @@
     [popoverWindow orderFront:nil];
 }
 
-- (IBAction)openWindowPopover:(id)sender
+- (@action)openWindowPopover:(id)sender
 {
     [windowPopover showRelativeToRect:nil ofView:sender preferredEdge:[self popoverEdge]];
 }
 
-- (IBAction)movePopover:(id)sender
+- (@action)movePopover:(id)sender
 {
     if (++lastPreferredEdge > CPMaxYEdge)
         lastPreferredEdge = CPMinXEdge;
 
     [popover showRelativeToRect:CGRectMakeZero() ofView:lastButton preferredEdge:lastPreferredEdge];
+}
+
+- (@action)closePopover:(id)sender
+{
+    [popover close];
 }
 
 - (void)initPopover:(CPPopover)aPopover withAppearance:(int)appearance
