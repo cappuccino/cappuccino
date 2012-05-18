@@ -225,6 +225,52 @@
     [self assert:"ffffff" equals:[CPString stringWithHash:16777215]];
 }
 
+- (void)testStringByAppendingPathComponent
+{
+    var testStrings = [
+        ["/tmp/", "scratch.tiff", "/tmp/scratch.tiff"],
+        ["/tmp///", "scratch.tiff", "/tmp/scratch.tiff"],
+        ["/tmp///", "///scratch.tiff", "/tmp/scratch.tiff"],
+        ["/tmp", "scratch.tiff", "/tmp/scratch.tiff"],
+        ["/tmp///", "scratch.tiff", "/tmp/scratch.tiff"],
+        ["/tmp///", "///scratch.tiff", "/tmp/scratch.tiff"],
+        ["/", "scratch.tiff", "/scratch.tiff"],
+        ["", "scratch.tiff", "scratch.tiff"],
+        ["", "", ""],
+        ["", "/", ""],
+        ["/", "/", "/"],
+        ["/tmp", nil, "/tmp"],
+        ["/tmp", "/", "/tmp"],
+        ["/tmp/", "", "/tmp"]
+    ];
+
+    for (var i = 0; i < testStrings.length; i++)
+    {
+        var result = [testStrings[i][0] stringByAppendingPathComponent:testStrings[i][1]];
+        
+        [self assertTrue:result === testStrings[i][2] message:"Value <" + testStrings[i][0] + "> Adding <" + testStrings[i][1] + "> Expected <" + testStrings[i][2] + "> was <" + result + ">"];
+    }
+}
+
+- (void)testStringByAppendingPathExtension
+{
+    var testStrings = [
+        ["/tmp/scratch.old", "tiff", "/tmp/scratch.old.tiff"],
+        ["/tmp/scratch.", "tiff", "/tmp/scratch..tiff"],
+        ["/tmp///", "tiff", "/tmp.tiff"],
+        ["scratch", "tiff", "scratch.tiff"],
+        ["/", "tiff", "/"],
+        ["", "tiff", ""]
+    ];
+
+    for (var i = 0; i < testStrings.length; i++)
+    {
+        var result = [testStrings[i][0] stringByAppendingPathExtension:testStrings[i][1]];
+        
+        [self assertTrue:result === testStrings[i][2] message:"Value <" + testStrings[i][0] + "> Adding <" + testStrings[i][1] + "> Expected <" + testStrings[i][2] + "> was <" + result + ">"];
+    }
+}
+
 - (void)testStringByDeletingLastPathComponent
 {
     var testStrings = [
@@ -235,22 +281,58 @@
         ["/", "/"],
         ["scratch.tiff", ""],
         ["a/b/c/d//////",  "a/b/c"],
+        ["a/b/////////c/d//////",  "a/b/c"],
         ["a/b/././././c/d/./././", "a/b/././././c/d/./."],
         [@"a/b/././././d////", "a/b/./././."],
         [@"~/a", "~"],
         [@"~/a/", "~"],
-        [@"../../", ".."]
+        [@"../../", ".."],
+        [@"", ""]
     ];
 
     for (var i = 0; i < testStrings.length; i++)
-        [self assert:[testStrings[i][0] stringByDeletingLastPathComponent] equals:testStrings[i][1]];
+    {
+        var result = [testStrings[i][0] stringByDeletingLastPathComponent];
+        
+        [self assertTrue:result === testStrings[i][1] message:"Value <" + testStrings[i][0] + "> Expected <" + testStrings[i][1] + "> was <" + result + ">"];
+    }
+}
+
+- (void)testPathWithComponents
+{
+    var testStrings = [
+        [["tmp", "scratch"], "tmp/scratch"],
+        [["/", "tmp", "scratch"], "/tmp/scratch"],
+        [["/", "tmp", "/", "scratch"], "/tmp/scratch"],
+        [["/", "tmp", "scratch", "/"], "/tmp/scratch"],
+        [["/", "tmp", "scratch", ""], "/tmp/scratch"],
+        [["", "/tmp", "scratch", ""], "/tmp/scratch"],
+        [["", "tmp", "scratch", ""], "tmp/scratch"],
+        [["/"], "/"],
+        [["/", "/", "/"], "/"],
+        [["", "", ""], ""],
+        [[""], ""]
+    ];
+
+    for (var i = 0; i < testStrings.length; i++)
+    {
+        var result = [CPString pathWithComponents:testStrings[i][0]];
+
+        [self assertTrue:result === testStrings[i][1] message:"Value <" + testStrings[i][0] + "> Expected [" + testStrings[i][1] + "] was [" + result + "]"];
+    }
 }
 
 - (void)testPathComponents
 {
     var testStrings = [
         ["tmp/scratch", ["tmp", "scratch"]],
-        ["/tmp/scratch", ["/", "tmp", "scratch"]]
+        ["/tmp/scratch", ["/", "tmp", "scratch"]],
+        ["/tmp/scratch/", ["/", "tmp", "scratch", "/"]],
+        ["/tmp/", ["/", "tmp", "/"]],
+        ["/////tmp/////scratch///", ["/", "tmp", "scratch", "/"]],
+        ["scratch.tiff", ["scratch.tiff"]],
+        ["/", ["/"]],
+        ["", [""]]
     ];
 
     for (var i = 0; i < testStrings.length; i++)
@@ -268,7 +350,8 @@
         ["/tmp/scratch", "scratch"],
         ["/tmp/", "tmp"],
         ["scratch", "scratch"],
-        ["/", "/"]
+        ["/", "/"],
+        ["", ""]
     ];
 
     for (var i = 0; i < testStrings.length; i++)
