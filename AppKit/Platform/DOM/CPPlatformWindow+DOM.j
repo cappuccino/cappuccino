@@ -1090,9 +1090,7 @@ var resizeTimer = nil;
     // See bug ID: 1325
     // https://github.com/cappuccino/cappuccino/issues/1325
 
-    if(resizeTimer)
-        [resizeTimer invalidate];
-
+    [resizeTimer invalidate];
     resizeTimer = [CPTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(actualResizeEvent) userInfo:nil repeats:NO];
 }
 
