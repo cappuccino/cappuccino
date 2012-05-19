@@ -656,7 +656,7 @@ CPButtonImageOffset   = 3.0;
             case CPPushOnPushOffButton:
             case CPOnOffButton:
                 displayTitle = ([self hasThemeState:CPThemeStateHighlighted]) ? _alternateTitle : _title;
-            break;
+                break;
         }
     }
 
