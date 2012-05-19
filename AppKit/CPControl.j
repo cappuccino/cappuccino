@@ -875,9 +875,9 @@ var CPControlValueKey           = "CPControlValueKey",
     CPControlActionKey          = "CPControlActionKey",
     CPControlSendActionOnKey    = "CPControlSendActionOnKey",
 
-    CPControlSendsActionOnEndEditingKey = "CPControlSendsActionOnEndEditingKey";
+    CPControlSendsActionOnEndEditingKey = "CPControlSendsActionOnEndEditingKey",
 
-var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
+    __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
 
 @implementation CPControl (CPCoding)
 
