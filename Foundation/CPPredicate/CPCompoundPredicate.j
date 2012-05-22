@@ -170,7 +170,11 @@ var CPCompoundPredicateType;
 
     switch (_type)
     {
-        case CPNotPredicateType:    result += "NOT " + [args objectAtIndex:0];
+       case CPNotPredicateType:    result += "NOT (" +[args objectAtIndex:0];
+                                    var count = [args count];
+                                    for (var j = 1; j < count; j++)
+                                        result += " OR " + [args objectAtIndex:j];
+								    result+= ")";
                                     break;
 
         case CPAndPredicateType:    result += [args objectAtIndex:0];

@@ -19,6 +19,9 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
+ 
+@import "CPPredicateEditorFloatTextField.j"
+@import "CPPredicateEditorIntegerTextField.j"
 
 CPUndefinedAttributeType     = 0;
 CPInteger16AttributeType     = 100;
@@ -56,13 +59,13 @@ CPTransformableAttributeType = 1800;
 
     CPPredicateEditorRowTemplate is a concrete class, but it has five primitive methods which are called by CPPredicateEditor: -#templateViews, -#matchForPredicate:, -#setPredicate:, -#displayableSubpredicatesOfPredicate:, and -#predicateWithSubpredicates:. CPPredicateEditorRowTemplate implements all of them, but you can override them for custom templates. The primitive methods are used by an instance of CPPredicateEditor as follows.
 
-    First, an instance of CPPredicateEditor is created, and some row templates are set on itâ€”either through a nib file or programmatically. The first thing predicate editor does is ask each of the templates for their views, using templateViews.
+    First, an instance of CPPredicateEditor is created, and some row templates are set on itÑeither through a nib file or programmatically. The first thing predicate editor does is ask each of the templates for their views, using templateViews.
 
     After setting up the predicate editor, you typically send it a  CPPredicateEditor#setObjectValue: message to restore a saved predicate. CPPredicateEditor needs to determine which of its templates should display each predicate in the predicate tree. It does this by sending each of its row templates a matchForPredicate: message and choosing the one that returns the highest value.
 
     After finding the best match for a predicate, CPPredicateEditor copies that template to get fresh views, inserts them into the proper row, and then sets the predicate on the template using setPredicate:. Within that method, the CPPredicateEditorRowTemplate object must set its views' values to represent that predicate.
 
-    CPPredicateEditorRowTemplate next asks the template for the â€œdisplayable sub-predicatesâ€ of the predicate by sending a -#displayableSubpredicatesOfPredicate: message. If a template represents a predicate in its entirety, or if the predicate has no subpredicates, it can return nil for this.  Otherwise, it should return a list of predicates to be made into sub-rows of that template's row. The whole process repeats for each sub-predicate.
+    CPPredicateEditorRowTemplate next asks the template for the Òdisplayable sub-predicatesÓ of the predicate by sending a -#displayableSubpredicatesOfPredicate: message. If a template represents a predicate in its entirety, or if the predicate has no subpredicates, it can return nil for this.  Otherwise, it should return a list of predicates to be made into sub-rows of that template's row. The whole process repeats for each sub-predicate.
 
     At this point, the user sees the predicate that was saved.  If the user then makes some changes to the views of the templates, this causes CPPredicateEditor to recompute its predicate by asking each of the templates to return the predicate represented by the new view values, passing in the subpredicates represented by the sub-rows (an empty array if there are none, or nil if they aren't supported by that predicate type).
 */
@@ -72,13 +75,13 @@ CPTransformableAttributeType = 1800;
 */
 
 /*!
-    @brief Initializes and returns a â€œpop-up-pop-up-pop-upâ€-style row template.
+    @brief Initializes and returns a Òpop-up-pop-up-pop-upÓ-style row template.
     @param leftExpressions An array of CPExpression objects that represent the left hand side of a predicate.
     @param rightExpressions An array of CPExpression objects that represent the right hand side of a predicate.
     @param modifier A modifier for the predicate (see @c CPComparisonPredicateModifier for possible values).
     @param operators An array of CPNumber objects specifying the operator type (see @c CPPredicateOperatorType for possible values).
     @param options Options for the predicate (see @c CPComparisonPredicateOptions for possible values).
-    @return A row template of the â€œpop-up-pop-up-pop-upâ€-form, with the left and right popups representing the left and right expression arrays -#leftExpressions and -#rightExpressions, and the center popup representing the operators.
+    @return A row template of the Òpop-up-pop-up-pop-upÓ-form, with the left and right popups representing the left and right expression arrays -#leftExpressions and -#rightExpressions, and the center popup representing the operators.
 */
 - (id)initWithLeftExpressions:(CPArray)leftExpressions rightExpressions:(CPArray)rightExpressions modifier:(int)modifier operators:(CPArray)operators options:(int)options
 {
@@ -95,18 +98,22 @@ CPTransformableAttributeType = 1800;
 
         var leftView = [self _viewFromExpressions:leftExpressions],
             rightView = [self _viewFromExpressions:rightExpressions],
-            middleView = [self _viewFromOperatorTypes:operators];
-
-        _views = [[CPArray alloc] initWithObjects:leftView, middleView, rightView];
+            middleView = [self _viewFromOperatorTypes:operators],
+            optionsView = [self _viewFromOptions:options];
+		
+		if(!optionsView)
+	        _views = [[CPArray alloc] initWithObjects:leftView, middleView, rightView];
+	    else
+	        _views = [[CPArray alloc] initWithObjects:leftView, middleView, rightView, optionsView];
     }
 
     return self;
 }
 
 /*!
-    @brief Initializes and returns a â€œpop-up-pop-up-viewâ€-style row template.
+    @brief Initializes and returns a Òpop-up-pop-up-viewÓ-style row template.
     @param leftExpressions An array of CPExpression objects that represent the left hand side of a predicate.
-    @param attributeType An attribute type for the right hand side of a predicate. This value dictates the type of view created, and how the controlâ€™s object value is coerced before putting it into a predicate.
+    @param attributeType An attribute type for the right hand side of a predicate. This value dictates the type of view created, and how the controlÕs object value is coerced before putting it into a predicate.
     @param modifier A modifier for the predicate (see @c CPComparisonPredicateModifier for possible values).
     @param operators An array of CPNumber objects specifying the operator type (see @c CPPredicateOperatorType for possible values).
     @param options Options for the predicate (see CPComparisonPredicateOptions for possible values).
@@ -119,8 +126,9 @@ CPTransformableAttributeType = 1800;
     {
         var leftView = [self _viewFromExpressions:leftExpressions],
             middleView = [self _viewFromOperatorTypes:operators],
-            rightView = [self _viewFromAttributeType:attributeType];
-
+            rightView = [self _viewFromAttributeType:attributeType],
+            optionsView = [self _viewFromOptions:options];
+		
         _templateType = 1;
         _leftIsWildcard = NO;
         _rightIsWildcard = YES;
@@ -128,7 +136,11 @@ CPTransformableAttributeType = 1800;
         _rightAttributeType = attributeType;
         _predicateModifier = modifier;
         _predicateOptions = options;
-        _views = [[CPArray alloc] initWithObjects:leftView, middleView, rightView];
+
+		if(!optionsView)
+	        _views = [[CPArray alloc] initWithObjects:leftView, middleView, rightView];
+	    else
+	        _views = [[CPArray alloc] initWithObjects:leftView, middleView, rightView, optionsView];
     }
 
     return self;
@@ -171,7 +183,6 @@ CPTransformableAttributeType = 1800;
 */
 - (double)matchForPredicate:(CPPredicate)predicate
 {
-    // How exactly this value (float 0-1) is computed ?
     if ([self _templateType] == 2 && [predicate isKindOfClass:[CPCompoundPredicate class]])
     {
         if ([[self compoundTypes] containsObject:[predicate compoundPredicateType]])
@@ -185,7 +196,11 @@ CPTransformableAttributeType = 1800;
         if (![[self operators] containsObject:[predicate predicateOperatorType]])
             return 0;
 
-        if (!_rightIsWildcard && ![[self rightExpressions] containsObject:[predicate rightExpression]]) return 0;
+        if (!_rightIsWildcard && ![[self rightExpressions] containsObject:[predicate rightExpression]]) 
+        	return 0;
+        
+        if(([self options]&[predicate options])==0)
+        	return 0.5;
 
         return 1;
     }
@@ -239,7 +254,7 @@ CPTransformableAttributeType = 1800;
 }
 
 /*!
-    @brief Returns the predicate represented by the receiverâ€™s views' values and the given sub-predicates.
+    @brief Returns the predicate represented by the receiverÕs views' values and the given sub-predicates.
     @param subpredicates An array of predicates.
     @return The predicate represented by the values of the template's views and the given @a subpredicates. You can override this method to return the predicate represented by your custom views.
     @discussion This method is only called if -#matchForPredicate: returned a positive value for the receiver.
@@ -258,13 +273,18 @@ CPTransformableAttributeType = 1800;
     {
         var lhs = [self _leftExpression],
             rhs = [self _rightExpression],
-            operator = [[_views[1] selectedItem] representedObject];
+            operator = [[_views[1] selectedItem] representedObject],
+            options = 0;
+           
+        var optionsView=[self options]&&[_views count]>3?[_views objectAtIndex:3]:nil;
+        if(optionsView)
+    		options=[[optionsView selectedItem] representedObject];
 
         return [CPComparisonPredicate predicateWithLeftExpression:lhs
                                                   rightExpression:rhs
                                                          modifier:[self modifier]
                                                              type:operator
-                                                          options:[self options]];
+                                                          options:options];
     }
 
     return nil;
@@ -280,7 +300,7 @@ CPTransformableAttributeType = 1800;
 */
 - (CPArray)leftExpressions
 {
-    if (_templateType == 1 && !_leftIsWildcard)
+    if (_templateType ==1 && !_leftIsWildcard)
     {
         var view = [_views objectAtIndex:0];
         return [[view itemArray] valueForKey:@"representedObject"];
@@ -359,8 +379,8 @@ CPTransformableAttributeType = 1800;
 }
 
 /*!
-    @brief Returns the attribute type of the receiverâ€™s right expression.
-    @return The attribute type of the receiverâ€™s right expression.
+    @brief Returns the attribute type of the receiverÕs right expression.
+    @return The attribute type of the receiverÕs right expression.
 */
 - (CPAttributeType)rightExpressionAttributeType
 {
@@ -368,8 +388,8 @@ CPTransformableAttributeType = 1800;
 }
 
 /*!
-    @brief Returns the attribute type of the receiverâ€™s left expression.
-    @return The attribute type of the receiverâ€™s left expression.
+    @brief Returns the attribute type of the receiverÕs left expression.
+    @return The attribute type of the receiverÕs left expression.
 */
 - (CPAttributeType)leftExpressionAttributeType
 {
@@ -416,12 +436,17 @@ CPTransformableAttributeType = 1800;
 
 - (void)_setComparisonPredicate:(CPComparisonPredicate)predicate
 {
-    var left = [_views objectAtIndex:0],
+    var optionsView=nil,
+    	left = [_views objectAtIndex:0],
         middle = [_views objectAtIndex:1],
         right = [_views objectAtIndex:2],
         leftExpression = [predicate leftExpression],
         rightExpression = [predicate rightExpression],
-        operator = [predicate predicateOperatorType];
+        operator = [predicate predicateOperatorType],
+        options = [predicate predicateOptions];
+    
+    if([_views count]>3)
+    	optionsView=[_views objectAtIndex:3]
 
     if (_leftIsWildcard)
         [left setObjectValue:[leftExpression constantValue]];
@@ -441,6 +466,22 @@ CPTransformableAttributeType = 1800;
         var index = [right indexOfItemWithRepresentedObject:rightExpression];
         [right selectItemAtIndex:index];
     }
+    
+    if(optionsView&&[self _shouldSetOptionsForOperatorType:[predicate predicateOperatorType]])
+    {
+    	var valueIndex=[optionsView indexOfItemWithRepresentedObject:[CPNumber numberWithInt:options]];
+		[optionsView setSelectedIndex:valueIndex];
+    }
+}
+
+-(BOOL)_shouldSetOptionsForOperatorType:(CPInteger)opType
+{
+    return (opType==CPMatchesPredicateOperatorType
+               ||opType==CPLikePredicateOperatorType
+               ||opType== CPBeginsWithPredicateOperatorType
+               ||opType== CPEndsWithPredicateOperatorType
+               ||opType== CPInPredicateOperatorType
+               ||opType== CPContainsPredicateOperatorType);
 }
 
 - (CPExpression)_leftExpression
@@ -455,22 +496,44 @@ CPTransformableAttributeType = 1800;
 
 - (CPExpression)_expressionFromView:(CPView)aView forAttributeType:(CPAttributeType)attributeType
 {
-    if (attributeType == 0)
-        return [[aView selectedItem] representedObject];
-
-    var value;
-    if (attributeType >= CPInteger16AttributeType && attributeType <= CPFloatAttributeType)
-        value = [aView intValue];
-    else if (attributeType == CPBooleanAttributeType)
-        value = [aView state];
-    else
-        value = [aView stringValue];
+ 	switch(attributeType)
+	{
+		case CPUndefinedAttributeType :
+	        return [[aView selectedItem] representedObject];
+		case CPInteger16AttributeType :
+		case CPInteger32AttributeType :
+		case CPInteger64AttributeType :
+		case CPDecimalAttributeType :
+	        value = [aView intValue];
+	    break;
+		case CPDoubleAttributeType :
+		case CPFloatAttributeType :
+	        value = [aView doubleValue];
+	    break;
+		case CPStringAttributeType :
+	        value = [aView stringValue];
+	    break;
+		case CPBooleanAttributeType :
+	        value = [[aView selectedItem] representedObject];
+	    break;
+		case CPDateAttributeType :
+	        value = [aView objectValue];
+	    break;
+	    default :
+	    	if([aView respondsToSelector:@selector(objectValue)])
+		        value = [aView objectValue];
+		    else
+	    	if([aView respondsToSelector:@selector(stringValue)])
+		        value = [aView stringValue];
+		    else
+		    	return nil;
+	}
 
     return [CPExpression expressionForConstantValue:value];
 }
 
 - (int)_rowType
-{
+{	
     return (_templateType - 1);
 }
 
@@ -593,7 +656,7 @@ CPTransformableAttributeType = 1800;
 
         switch (type)
         {
-            case CPKeyPathExpressionType: title = [self _displayValueForKeyPath:[exp keyPath]];
+            case CPKeyPathExpressionType: title = [exp description];
                 break;
             case CPConstantValueExpressionType: title = [self _displayValueForConstantValue:[exp constantValue]];
                 break;
@@ -631,6 +694,43 @@ CPTransformableAttributeType = 1800;
     return popup;
 }
 
+- (CPPopUpButton)_viewFromOptions:(CPInteger)options
+{
+    if(!(options&(CPCaseInsensitivePredicateOption|CPDiacriticInsensitivePredicateOption)))
+    	return nil;
+	
+    var view = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0, 0, 50, 26)];
+
+    var item=[[CPMenuItem alloc] initWithTitle:"case sensitive" action:nil keyEquivalent:nil]; 
+    [item setRepresentedObject:[CPNumber numberWithInt:0]];
+    [view addItem:item];
+
+	if(options&CPCaseInsensitivePredicateOption)    
+	{
+	    item=[[CPMenuItem alloc] initWithTitle:"case insensitive" action:nil keyEquivalent:nil]; 
+	    [item setRepresentedObject:[CPNumber numberWithInt:CPCaseInsensitivePredicateOption]];
+	    [view addItem:item];
+	}
+
+	if(options&CPDiacriticInsensitivePredicateOption)    
+	{
+	    item=[[CPMenuItem alloc] initWithTitle:"diacritic insensitive" action:nil keyEquivalent:nil]; 
+	    [item setRepresentedObject:[CPNumber numberWithInt:CPDiacriticInsensitivePredicateOption]];
+	    [view addItem:item];
+	}
+	
+	if((options&CPCaseInsensitivePredicateOption)&&(options&CPDiacriticInsensitivePredicateOption))    
+	{
+	    item=[[CPMenuItem alloc] initWithTitle:"case + diacritic insensitive" action:nil keyEquivalent:nil]; 
+	    [item setRepresentedObject:[CPNumber numberWithInt:CPCaseInsensitivePredicateOption|CPDiacriticInsensitivePredicateOption]];
+	    [view addItem:item];
+	}
+
+    [view sizeToFit];
+    
+    return view;
+}
+
 - (CPView)_viewFromCompoundTypes:(CPArray)compoundTypes
 {
     var popup = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0, 0, 100, 18)],
@@ -655,22 +755,38 @@ CPTransformableAttributeType = 1800;
 {
     var view;
 
-    if (attributeType >= CPInteger16AttributeType && attributeType <= CPFloatAttributeType)
-    {
-        view = [self _textFieldWithFrame:CGRectMake(0, 0, 50, 26)];
-    }
-    else if (attributeType == CPStringAttributeType)
-    {
-        view = [self _textFieldWithFrame:CGRectMake(0, 0, 150, 26)];
-    }
-    else if (attributeType == CPBooleanAttributeType)
-    {
-        view = [[CPCheckBox alloc] initWithFrame:CGRectMake(0, 0, 50, 26)];
-    }
-    else if (attributeType == CPDateAttributeType)
-        view = [[CPDatePicker alloc] initWithFrame:CGRectMake(0, 0, 150, 26)];
-    else
-        return nil;
+	switch(attributeType)
+	{
+		case CPInteger16AttributeType :
+		case CPInteger32AttributeType :
+		case CPInteger64AttributeType :
+		case CPDecimalAttributeType :
+	        view = [self _integerTextFieldWithFrame:CGRectMake(0, 0, 50, 26)];
+	    break;
+		case CPDoubleAttributeType :
+		case CPFloatAttributeType :
+	        view = [self _floatTextFieldWithFrame:CGRectMake(0, 0, 50, 26)];
+	    break;
+		case CPStringAttributeType :
+	        view = [self _textFieldWithFrame:CGRectMake(0, 0, 150, 26)];
+	    break;
+		case CPBooleanAttributeType :
+	        view = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0, 0, 50, 26)];
+	
+	        var item=[[CPMenuItem alloc] initWithTitle:"true" action:nil keyEquivalent:nil]; 
+	        [item setRepresentedObject:[CPNumber numberWithBool:YES]];
+	        [view addItem:item];
+	
+	        item=[[CPMenuItem alloc] initWithTitle:"false" action:nil keyEquivalent:nil]; 
+	        [item setRepresentedObject:[CPNumber numberWithBool:NO]];
+	        [view addItem:item];
+	    break;
+		case CPDateAttributeType :
+	        view = [[CPDatePicker alloc] initWithFrame:CGRectMake(0, 0, 150, 26)];
+	    break;
+	    default :
+	    	return nil;
+	}
 
     [view setTag:attributeType];
 
@@ -689,15 +805,68 @@ CPTransformableAttributeType = 1800;
     return textField;
 }
 
-- (void)_setOptions:(unsigned int)options
+- (CPTextField)_integerTextFieldWithFrame:(CGRect)frame
 {
-    _predicateOptions = options;
+    var textField = [[CPPredicateEditorIntegerTextField alloc] initWithFrame:frame];
+    [textField setBezeled:YES];
+    [textField setBezelStyle:CPTextFieldSquareBezel];
+    [textField setBordered:YES];
+    [textField setEditable:YES];
+    [textField setFont:[CPFont systemFontOfSize:10]];
+
+    return textField;
 }
 
-- (void)_setModifier:(unsigned int)modifier
+- (CPTextField)_floatTextFieldWithFrame:(CGRect)frame
+{
+    var textField = [[CPPredicateEditorFloatTextField alloc] initWithFrame:frame];
+    [textField setBezeled:YES];
+    [textField setBezelStyle:CPTextFieldSquareBezel];
+    [textField setBordered:YES];
+    [textField setEditable:YES];
+    [textField setFont:[CPFont systemFontOfSize:10]];
+
+    return textField;
+}
+
+- (void)_setOptions:(unsigned int)options
+{
+	if(_predicateOptions == options)
+		return;
+	
+	if(_predicateOptions&&!options)
+		[_views removeObjectAtIndex:3];
+	else
+	if(!_predicateOptions&&options)
+	{
+		var view=[self _viewFromOptions:options];
+		if(!view)
+			return;
+		[_views addObject:view];
+	}
+		
+    _predicateOptions = options;
+    
+}
+
+-(void)_setModifier:(unsigned int)modifier
 {
     _predicateModifier = modifier;
 }
+
+-(CPArray)preProcessCriteria:(CPArray)criteria
+{
+	if(![self options]||[criteria count]<4)
+		return criteria;
+		
+	var operatorCriterion=[criteria objectAtIndex:1];
+	var optionsCriterion=[criteria objectAtIndex:3];
+	var opType=[[operatorCriterion displayValue] representedObject];
+	
+	[optionsCriterion setHidden:![self _shouldSetOptionsForOperatorType:opType]];
+	return criteria;
+}
+
 
 - (CPString)description
 {

@@ -2,8 +2,7 @@
  * CPRuleEditor.j
  * AppKit
  *
- * Created by cacaodev.
- * Copyright 2011, cacaodev.
+ * Created by JC Bordes [jcbordes at gmail dot com] Copyright 2012 JC Bordes
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,41 +19,28 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CPTextField.j>
-@import <AppKit/CPViewAnimation.j>
-@import <AppKit/CPView.j>
 @import <Foundation/CPPredicate.j>
 @import <Foundation/CPArray.j>
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPIndexSet.j>
+@import <AppKit/CPViewAnimation.j>
+@import <AppKit/CPView.j>
 
-@import "_CPRuleEditorViewSliceRow.j"
-@import "_CPRuleEditorLocalizer.j"
+@import "CPRuleEditorModel.j"
+@import "CPRuleEditorView.j"
+@import "CPRuleEditorCriterion.j"
 
-CPRuleEditorPredicateLeftExpression     = "CPRuleEditorPredicateLeftExpression";
-CPRuleEditorPredicateRightExpression    = "CPRuleEditorPredicateRightExpression";
-CPRuleEditorPredicateComparisonModifier = "CPRuleEditorPredicateComparisonModifier";
-CPRuleEditorPredicateOptions            = "CPRuleEditorPredicateOptions";
-CPRuleEditorPredicateOperatorType       = "CPRuleEditorPredicateOperatorType";
-CPRuleEditorPredicateCustomSelector     = "CPRuleEditorPredicateCustomSelector";
-CPRuleEditorPredicateCompoundType       = "CPRuleEditorPredicateCompoundType";
+CPRuleEditorPredicateLeftExpression     = @"CPRuleEditorPredicateLeftExpression";
+CPRuleEditorPredicateRightExpression    = @"CPRuleEditorPredicateRightExpression";
+CPRuleEditorPredicateComparisonModifier = @"CPRuleEditorPredicateComparisonModifier";
+CPRuleEditorPredicateOptions            = @"CPRuleEditorPredicateOptions";
+CPRuleEditorPredicateOperatorType       = @"CPRuleEditorPredicateOperatorType";
+CPRuleEditorPredicateCustomSelector     = @"CPRuleEditorPredicateCustomSelector";
+CPRuleEditorPredicateCompoundType       = @"CPRuleEditorPredicateCompoundType";
 
-CPRuleEditorRowsDidChangeNotification   = "CPRuleEditorRowsDidChangeNotification";
-CPRuleEditorRulesDidChangeNotification  = "CPRuleEditorRulesDidChangeNotification";
+CPRuleEditorRowsDidChangeNotification   = @"CPRuleEditorRowsDidChangeNotification";
 
-CPRuleEditorNestingModeSingle   = 0;        // Only a single row is allowed.  Plus/minus buttons will not be shown
-CPRuleEditorNestingModeList     = 1;        // Allows a single list, with no nesting and no compound rows
-CPRuleEditorNestingModeCompound = 2;        // Unlimited nesting and compound rows; this is the default
-CPRuleEditorNestingModeSimple   = 3;        // One compound row at the top with subrows beneath it, and no further nesting allowed
-
-CPRuleEditorRowTypeSimple       = 0;
-CPRuleEditorRowTypeCompound     = 1;
-
-var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
-    itemsContext                = "items",
-    valuesContext               = "values",
-    subrowsContext              = "subrows_array",
-    boundArrayContext           = "bound_array";
+CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType";
 
 /*!
     @ingroup appkit
@@ -78,50 +64,21 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 
 @implementation CPRuleEditor : CPControl
 {
-    BOOL             _suppressKeyDownHandling;
-    BOOL             _allowsEmptyCompoundRows;
-    BOOL             _disallowEmpty;
-    BOOL             _delegateWantsValidation;
-    BOOL             _editable;
-    BOOL             _sendAction;
+    CPRuleEditorModel   _model @accessors(readonly,property=model);
 
-    Class           _rowClass;
+    id              	_delegate @accessors(property=delegate);
+    CPPredicate     	_predicate @accessors(readonly,property=predicate);
 
-    CPIndexSet      _draggingRows;
-    CPInteger       _subviewIndexOfDropLine;
-    CPView          _dropLineView;
+    CPString        	_rowClass @accessors(property=rowClass);
+    CPString        	_rowTypeKeyPath @accessors(property=rowTypeKeyPath);
+    CPString        	_subrowsKeyPath @accessors(property=subrowsKeyPath);
+    CPString        	_criteriaKeyPath @accessors(property=criteriaKeyPath);
+    CPString        	_displayValuesKeyPath @accessors(property=displayValuesKeyPath);
 
-    CPMutableArray  _rowCache;
-    CPMutableArray  _slices;
-
-    CPPredicate     _predicate;
-
-    CPString        _itemsKeyPath;
-    CPString        _subrowsArrayKeyPath;
-    CPString        _typeKeyPath;
-    CPString        _valuesKeyPath;
-    CPString        _boundArrayKeyPath @accessors(property=boundArrayKeyPath);
-
-    CPView          _slicesHolder;
-    CPViewAnimation _currentAnimation;
-
-    CPInteger       _lastRow;
-    CPInteger       _nestingMode;
-
-    float           _alignmentGridWidth;
-    float           _sliceHeight;
-
-    id              _ruleDataSource;
-    id              _ruleDelegate;
-    id              _boundArrayOwner;
-
-    CPString        _stringsFilename;
-
-    BOOL            _isKeyDown;
-    BOOL            _nestingModeDidChange;
-
-    _CPRuleEditorLocalizer _standardLocalizer @accessors(property=standardLocalizer);
-    CPDictionary           _itemsAndValuesToAddForRowType;
+    CPString        	_stringsFilename;
+    id              	_standardLocalizer @accessors(property=standardLocalizer);
+    
+    CPRuleEditorView	_contentView;
 }
 
 /*! @cond */
@@ -139,57 +96,73 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 
 - (id)initWithFrame:(CGRect)frame
 {
-    self = [super initWithFrame:frame];
-    if (self !== nil)
-    {
-        _slices = [[CPMutableArray alloc] init];
-
-        _sliceHeight = 26.;
-        _nestingMode = CPRuleEditorNestingModeSimple; // 10.5 default is CPRuleEditorNestingModeCompound
-        _editable = YES;
-        _allowsEmptyCompoundRows = NO;
-        _disallowEmpty = NO;
-
-        [self setFormattingStringsFilename:nil];
-        [self setCriteriaKeyPath:@"criteria"];
-        [self setSubrowsKeyPath:@"subrows"];
-        [self setRowTypeKeyPath:@"rowType"];
-        [self setDisplayValuesKeyPath:@"displayValues"];
-        [self setBoundArrayKeyPath:@"boundArray"];
-
-        _slicesHolder = [[_CPRuleEditorViewSliceHolder alloc] initWithFrame:[self bounds]];
-        [self addSubview:_slicesHolder];
-
-        _boundArrayOwner = [[_CPRuleEditorViewUnboundRowHolder alloc] init];
-
-        [self _initRuleEditorShared];
-    }
-
+    self=[super initWithFrame:frame];
+    if(!self)
+    	return self;
+    
+    [self _build];
+    
     return self;
 }
 
-- (void)_initRuleEditorShared
+-(void)_build
 {
-    _rowCache = [[CPMutableArray alloc] init];
-    _rowClass = [_CPRuleEditorRowObject class];
-    _isKeyDown = NO;
-    _subviewIndexOfDropLine = CPNotFound;
-    _lastRow = 0;
-    _delegateWantsValidation = YES;
-    _suppressKeyDownHandling = NO;
-    _nestingModeDidChange = NO;
-    _sendAction = YES;
-    _itemsAndValuesToAddForRowType = {};
-    var animation = [[CPViewAnimation alloc] initWithDuration:0.5 animationCurve:CPAnimationEaseInOut];
-    [self setAnimation:animation];
-
-    [_slicesHolder setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-
-    _dropLineView =  [self _createSliceDropSeparator];
-    [_slicesHolder addSubview:_dropLineView];
+	_model=[[CPRuleEditorModel alloc] initWithNestingMode:CPRuleEditorNestingModeCompound];
+	[_model setCanRemoveAllRows:NO];
 
     [self registerForDraggedTypes:[CPArray arrayWithObjects:CPRuleEditorItemPBoardType,nil]];
-    [_boundArrayOwner addObserver:self forKeyPath:_boundArrayKeyPath options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:boundArrayContext];
+    
+    _contentView=[[CPRuleEditorView alloc] initWithFrame:[self bounds]];
+    [_contentView setAutoresizingMask:CPViewWidthSizable];
+	[self addSubview:_contentView];    
+
+    var notificationCenter=[CPNotificationCenter defaultCenter];
+
+    [notificationCenter addObserver:self selector:@selector(_contentFrameChanged:) name:CPViewFrameDidChangeNotification object:_contentView];
+
+	[notificationCenter addObserver:self selector:@selector(notifyRowAdded:) name:CPRuleEditorModelRowAdded object:_model];
+	[notificationCenter addObserver:self selector:@selector(notifyRowRemoved:) name:CPRuleEditorModelRowRemoved object:_model];
+	[notificationCenter addObserver:self selector:@selector(notifyRowModified:) name:CPRuleEditorModelRowModified object:_model];
+
+    [_contentView setDelegate:self];
+    [_contentView setModel:_model];
+}
+
+- (void)removeFromSuperview
+{
+	if([self superview])	
+		[[CPNotificationCenter defaultCenter] removeObserver:self];
+	[[CPNotificationCenter defaultCenter] removeObserver:self];
+}
+
+-(void)_contentFrameChanged:(CPNotification)notification
+{
+	var contentSize=[_contentView frameSize];
+	if(CGSizeEqualToSize(contentSize,[self frameSize]))
+		return;
+	
+    [_contentView setPostsFrameChangedNotifications:NO];
+	[self setFrameSize:contentSize];
+    [_contentView setPostsFrameChangedNotifications:YES];
+}
+
+-(void)viewDidMoveToSuperview
+{
+	[super viewDidMoveToSuperview];
+	var ua=window.navigator.userAgent;
+	var isChrome=ua.indexOf("Chrome")!=-1;
+	
+	if(isChrome&&[[self superview] isKindOfClass:CPClipView])
+	{
+	    [[self superview] setPostsBoundsChangedNotifications:YES];
+	    [[CPNotificationCenter defaultCenter] addObserver:self 
+	    	selector:@selector(_wasScrolled:) name:CPViewBoundsDidChangeNotification object:[self superview]];
+	}
+}
+
+-(void)_wasScrolled:(CPNotification)notification
+{
+	[_contentView forceRedrawForChromeBug];
 }
 
 /*! @endcond */
@@ -199,44 +172,46 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 */
 
 /*!
-    @brief Returns the receiverâ€™s delegate.
-    @return The receiverâ€™s delegate.
+    @brief Returns the receiverÕs delegate.
+    @return The receiverÕs delegate.
     @see setDelegate:
 */
+
 - (id)delegate
 {
-     return _ruleDelegate;
+     return _delegate;
 }
 
 /*!
-    @brief Sets the receiverâ€™s delegate.
+    @brief Sets the receiverÕs delegate.
     @param aDelegate The delegate for the receiver.
     @discussion CPRuleEditor requires a delegate that implements the required delegate methods to function.
     @see delegate
 */
 - (void)setDelegate:(id)aDelegate
 {
-    if (_ruleDelegate === aDelegate)
+    if(_delegate==aDelegate)
         return;
+    
+    if(aDelegate
+    	&&(	![aDelegate respondsToSelector:@selector(ruleEditor:numberOfChildrenForCriterion:withRowType:)]
+    		||![aDelegate respondsToSelector:@selector(ruleEditor:displayValueForCriterion:inRow:)]
+    		||![aDelegate respondsToSelector:@selector(ruleEditor:child:forCriterion:withRowType:)]	) )
+			[CPException raise:CPInvalidArgumentException reason:_cmd+@" : missing required delegate methods"];
 
-    var nc = [CPNotificationCenter defaultCenter];
-    if (_ruleDelegate)
-        [nc removeObserver:_ruleDelegate name:nil object:self];
-
-    _ruleDelegate = aDelegate;
-
-    if ([_ruleDelegate respondsToSelector:@selector(ruleEditorRowsDidChange:)])
-        [nc addObserver:_ruleDelegate selector:@selector(ruleEditorRowsDidChange:) name:CPRuleEditorRowsDidChangeNotification object:nil];
+    _delegate=aDelegate;
 }
+
 /*!
     @brief Returns a Boolean value that indicates whether the receiver is editable.
     @return @c YES if the receiver is editable, otherwise @c NO.
     @discussion The default is @c YES.
     @see setEditable:
 */
+
 - (BOOL)isEditable
 {
-    return _editable;
+    return [_contentView editable];
 }
 
 /*!
@@ -246,15 +221,7 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 */
 - (void)setEditable:(BOOL)editable
 {
-    if (editable === _editable)
-        return;
-
-    _editable = editable;
-
-    if (!_editable)
-        [self _deselectAll];
-
-    [_slices makeObjectsPerformSelector:@selector(setEditable:) withObject:_editable];
+	[_contentView setEditable:editable];
 }
 
 /*!
@@ -264,7 +231,7 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 */
 - (CPRuleEditorNestingMode)nestingMode
 {
-     return _nestingMode;
+     return [_model nestingMode];
 }
 
 /*!
@@ -274,14 +241,9 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
     @see nestingMode
     @note Currently CPRuleEditorNestingModeCompound is experimental.
 */
-- (void)setNestingMode:(CPRuleEditorNestingMode)mode
+- (void)setNestingMode:(CPRuleEditorNestingMode)nestingMode
 {
-    if (mode !== _nestingMode)
-    {
-        _nestingMode = mode;
-        if ([self numberOfRows] > 0)
-            _nestingModeDidChange = YES;
-    }
+	[_model setNestingMode:nestingMode];
 }
 
 /*!
@@ -291,7 +253,7 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 */
 - (BOOL)canRemoveAllRows
 {
-    return !_disallowEmpty;
+    return [_model canRemoveAllRows];
 }
 
 /*!
@@ -299,41 +261,20 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
     @param canRemove @c YES if all the rows can be removed, otherwise @c NO.
     @see canRemoveAllRows
 */
-- (void)setCanRemoveAllRows:(BOOL)canRemove
+- (void)setCanRemoveAllRows:(BOOL)canRemoveAllRows
 {
-    _disallowEmpty = !canRemove;
-    [self _updateButtonVisibilities];
+    [_model setCanRemoveAllRows:canRemoveAllRows];
 }
 
-/*!
-    @brief Returns a Boolean value that indicates whether compounds rows can be childless.
-    @return @c YES if compounds rows can be childless, otherwise @c NO.
-    @see setAllowsEmptyCompoundRows:
-*/
-- (BOOL)allowsEmptyCompoundRows
-{
-    return _allowsEmptyCompoundRows;
-}
-
-/*!
-    @brief Sets whether compounds rows can be childless.
-    @param allows @c YES if compounds rows can be childless, otherwise @c NO.
-    @see allowsEmptyCompoundRows
-*/
-- (void)setAllowsEmptyCompoundRows:(BOOL)allows
-{
-    _allowsEmptyCompoundRows = allows;
-    [self _updateButtonVisibilities];
-}
 
 /*!
     @brief Returns the row height for the receiver.
     @return The row height for the receiver.
     @see setRowHeight:
 */
-- (CPInteger)rowHeight
+- (CGFloat)rowHeight
 {
-    return _sliceHeight;
+	return [_contentView rowHeight];
 }
 
 /*!
@@ -341,13 +282,9 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
     @param height The row height for the receiver.
     @see rowHeight
 */
-- (void)setRowHeight:(float)height
+- (void)setRowHeight:(CGFloat)rowHeight
 {
-    if (height === _sliceHeight)
-        return;
-
-    _sliceHeight = MAX([self _minimumFrameHeight], height);
-    [self _reconfigureSubviewsAnimate:NO];
+	[_contentView setRowHeight:rowHeight];
 }
 
 /*!
@@ -397,10 +334,11 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 */
 - (void)setFormattingStringsFilename:(CPString)stringsFilename
 {
-    if (_standardLocalizer === nil)
-        _standardLocalizer = [_CPRuleEditorLocalizer new];
+    // Can we set _stringsFilename to nil in cocoa ?
+    if (_standardLocalizer == nil)
+        _standardLocalizer = [CPRuleEditorLocalizer new];
 
-    if (_stringsFilename !== stringsFilename)
+    if (_stringsFilename != stringsFilename)
     {
         _stringsFilename = stringsFilename;
 
@@ -409,7 +347,7 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
             if (![stringsFilename hasSuffix:@".strings"])
                 stringsFilename = stringsFilename + @".strings";
             var path = [[CPBundle mainBundle] pathForResource:stringsFilename];
-            if (path !== nil)
+            if (path !=nil)
                 [_standardLocalizer loadContentOfURL:[CPURL URLWithString:path]];
         }
     }
@@ -425,9 +363,6 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 */
 - (void)reloadCriteria
 {
-    var current_rows = [_boundArrayOwner valueForKey:_boundArrayKeyPath];
-    [self _stopObservingRowObjectsRecursively:current_rows];
-    [_boundArrayOwner setValue:[CPArray arrayWithArray:current_rows] forKey:_boundArrayKeyPath];
 }
 
 /*!
@@ -440,32 +375,47 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 */
 - (void)setCriteria:(CPArray)criteria andDisplayValues:(CPArray)values forRowAtIndex:(int)rowIndex
 {
-    if (criteria === nil || values === nil)
-        [CPException raise:CPInvalidArgumentException reason:_cmd + @". criteria and values parameters must not be nil."];
+	if(!criteria||!values)
+		return;
+	
+	var row=[_model rowAtIndex:rowIndex];
+	if(!row)
+		return;
 
-    if (rowIndex < 0 || rowIndex >= [self numberOfRows])
-        [CPException raise:CPRangeException reason:_cmd + @". rowIndex is out of bounds."];
+	var cCount=[criteria count];
+	if(!cCount)
+		[CPException raise:CPInternalInconsistencyException reason:_cmd+@" : invalid criterion array, must not be empty"];
+	
+	var items;
+	var value;
+	var criterion;
+	var vCount=[values count];
+	var res=[CPArray initWithCapacity:cCount];
 
-    var rowObject = [[self _rowCacheForIndex:rowIndex] rowObject];
-
-    [rowObject setValue:criteria forKey:_itemsKeyPath];
-    [rowObject setValue:values forKey:_valuesKeyPath];
-
-    [self reloadCriteria];
+	for(var i=0;i<cCount;i++)
+	{
+		items=[criteria objectAtIndex:i];
+		if(!items||![items isKindOfClass:CPArray])
+			[CPException raise:CPInternalInconsistencyException reason:_cmd+@" : invalid criteria : criteria must be an array of arrays"];
+		value=(i<vCount)?values[i]:nil;
+		criterion=[[CPRuleEditorCriterion alloc] initWithItems:items displayValue:value];
+		[res addObject:criterion];
+	}
+	
+	[row setCriteria:res];
 }
 
 /*!
     @brief Returns the currently chosen items for a given row.
-    @param row The index of a row in the receiver.
+    @param rowIndex The index of a row in the receiver.
     @return The currently chosen items for row @a row.
 */
-- (id)criteriaForRow:(int)row
+- (id)criteriaForRow:(int)rowIndex
 {
-    var rowcache = [self _rowCacheForIndex:row];
-    if (rowcache)
-        return [[rowcache rowObject] valueForKey:_itemsKeyPath];
-
-    return nil;
+	var row=[_model rowAtIndex:rowIndex];
+	if(!row)
+		return nil;
+	return [row criteriaItems];
 }
 
 /*!
@@ -478,13 +428,12 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
     @return The chosen values (strings, views, or menu items) for row row.
     @discussion The values returned are the same as those returned from the delegate method -#ruleEditor:displayValueForCriterion:inRow:
 */
-- (CPMutableArray)displayValuesForRow:(int)row
+- (CPMutableArray)displayValuesForRow:(int)rowIndex
 {
-    var rowcache = [self _rowCacheForIndex:row];
-    if (rowcache)
-        return [[rowcache rowObject] valueForKey:_valuesKeyPath];
-
-    return nil;
+	var row=[_model rowAtIndex:rowIndex];
+	if(!row)
+		return nil;
+	return [row criteriaDisplayValues];
 }
 
 /*!
@@ -493,7 +442,7 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 */
 - (int)numberOfRows
 {
-     return [_slices count];
+	return [_model flatRowsCount];
 }
 
 /*!
@@ -503,28 +452,13 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 */
 - (int)parentRowForRow:(int)rowIndex
 {
-    if (rowIndex < 0 || rowIndex >= [self numberOfRows])
-        [CPException raise:CPRangeException reason:_cmd+@" row " + rowIndex + " is out of range"];
-
-    var targetObject = [[self _rowCacheForIndex:rowIndex] rowObject];
-
-    for (var current_index = 0; current_index < rowIndex; current_index++)
-    {
-        if ([self rowTypeForRow:current_index] === CPRuleEditorRowTypeCompound)
-        {
-            var candidate = [[self _rowCacheForIndex:current_index] rowObject],
-                subObjects = [[self _subrowObjectsOfObject:candidate] _representedObject];
-
-            if ([subObjects indexOfObjectIdenticalTo:targetObject] !== CPNotFound)
-                return current_index;
-        }
-    }
-
-    return -1;
+	var row=[_model rowAtIndex:rowIndex];
+	if(!row)
+		return nil;
+	return [row parent];
 }
 
 /*
-TODO: implement
     Returns the index of the row containing a given value.
 
     displayValue The display value (string, view, or menu item) of an item in the receiver. This value must not be nil.
@@ -532,9 +466,12 @@ TODO: implement
     The index of the row containing displayValue, or CPNotFound.
 
     This method searches each row via objects equality for the given display value, which may be present as an alternative in a popup menu for that row.
+*/
 
 - (CPInteger)rowForDisplayValue:(id)displayValue
-*/
+{
+	return [_model rowWithDisplayValue:displayValue];
+}
 
 /*!
     @brief Returns the type of a given row.
@@ -544,17 +481,10 @@ TODO: implement
 */
 - (CPRuleEditorRowType)rowTypeForRow:(int)rowIndex
 {
-    if (rowIndex < 0 || rowIndex > [self numberOfRows])
-        [CPException raise:CPRangeException reason:_cmd+@"row " + rowIndex + " is out of range"];
-
-    var rowcache = [self _rowCacheForIndex:rowIndex];
-    if (rowcache)
-    {
-        var rowobject = [rowcache rowObject];
-        return [rowobject valueForKey:_typeKeyPath];
-    }
-
-    return CPNotFound;
+	var row=[_model rowAtIndex:rowIndex];
+	if(!row)
+		return nil;
+	return [row rowType];
 }
 
 /*!
@@ -565,46 +495,17 @@ TODO: implement
 */
 - (CPIndexSet)subrowIndexesForRow:(int)rowIndex
 {
-    var object;
-
-    if (rowIndex === -1)
-        object = _boundArrayOwner;
-    else
-        object = [[self _rowCacheForIndex:rowIndex] rowObject];
-
-    var subobjects = [self _subrowObjectsOfObject:object],
-        objectsCount = [subobjects count],
-        indexes = [CPMutableIndexSet indexSet],
-        count = [self numberOfRows];
-
-    for (var i = rowIndex + 1; i < count; i++)
-    {
-        var candidate = [[self _rowCacheForIndex:i] rowObject],
-            indexInSubrows = [[subobjects _representedObject] indexOfObjectIdenticalTo:candidate];
-
-        if (indexInSubrows !== CPNotFound)
-        {
-            [indexes addIndex:i];
-            objectsCount --;
-
-            if ([self rowTypeForRow:i] === CPRuleEditorRowTypeCompound)
-                i += [[self subrowIndexesForRow:i] count];
-        }
-
-        if (objectsCount === 0)
-            break;
-    }
-
-    return indexes;
+	return [_model immediateSubrowsIndexesOfRowAtIndex:rowIndex];
 }
 
 /*!
-    @brief Returns the indexes of the receiverâ€™s selected rows.
-    @return The indexes of the receiverâ€™s selected rows.
+    @brief Returns the indexes of the receiverÕs selected rows.
+    @return The indexes of the receiverÕs selected rows.
 */
 - (CPIndexSet)selectedRowIndexes
 {
-    return [self _selectedSliceIndices];
+	return nil;
+// Not implemented
 }
 
 /*!
@@ -614,27 +515,7 @@ TODO: implement
 */
 - (void)selectRowIndexes:(CPIndexSet)indexes byExtendingSelection:(BOOL)extend
 {
-    var count = [_slices count],
-        lastSelected = [indexes lastIndex];
-
-    if (lastSelected >= [self numberOfRows])
-        [CPException raise:CPRangeException reason:@"row indexes " + indexes + " are out of range"];
-
-    if (!extend)
-        [self _deselectAll];
-
-    while (count--)
-    {
-        var slice = _slices[count],
-            rowIndex = [slice rowIndex],
-            contains = [indexes containsIndex:rowIndex],
-            shouldSelect = (contains && !(extend && [slice _isSelected]));
-
-        if (contains)
-            [slice _setSelected:shouldSelect];
-        [slice _setLastSelected:(rowIndex === lastSelected)];
-        [slice setNeedsDisplay:YES];
-    }
+// Not implemented
 }
 
 /*!
@@ -648,36 +529,15 @@ TODO: implement
 */
 - (void)addRow:(id)sender
 {
-    var parentRowIndex = -1,
-        rowtype,
-        numberOfRows = [self numberOfRows],
-        hasRows = (numberOfRows > 0),
-        nestingMode = [self _applicableNestingMode];
+	var rowType=[_model defaultRowType];
+	var index=[_model lastRowIndex]+1;
+	var criteria=[self refreshCriteriaForNewRowOfType:rowType atIndex:index];
 
-    switch (nestingMode)
-    {
-        case CPRuleEditorNestingModeSimple:
-            rowtype = hasRows ? CPRuleEditorRowTypeSimple : CPRuleEditorRowTypeCompound;
-            if (hasRows)
-                parentRowIndex = 0;
-            break;
-        case CPRuleEditorNestingModeSingle:
-             if (hasRows)
-                return;
-        case CPRuleEditorNestingModeList:
-            rowtype = CPRuleEditorRowTypeSimple;
-            break;
-        case CPRuleEditorNestingModeCompound:
-            rowtype = CPRuleEditorRowTypeCompound;
-            if (hasRows)
-                parentRowIndex = 0;
-            break;
-        default:
-            [CPException raise:CPInvalidArgumentException reason:@"Not supported CPRuleEditorNestingMode " + nestingMode];
-        // Compound mode: parentRowIndex=(lastRowType === CPRuleEditorRowTypeCompound)?lastRow :[self parentRowForRow:lastRow]; break;
-    }
+	criteria=[self willInsertNewRowWithCriteria:criteria atIndex:index];
+	if(!criteria)
+		return;
 
-    [self insertRowAtIndex:numberOfRows withType:rowtype asSubrowOfRow:parentRowIndex animate:YES];
+	[_model addNewRowOfType:rowType criteria:criteria];
 }
 
 /*!
@@ -691,15 +551,13 @@ TODO: implement
 */
 - (void)insertRowAtIndex:(int)rowIndex withType:(unsigned int)rowType asSubrowOfRow:(int)parentRow animate:(BOOL)shouldAnimate
 {
-/*
-    TODO: raise exceptions if parentRow is greater than or equal to rowIndex, or if rowIndex would fall amongst the children of some other parent, or if the nesting mode forbids this configuration.
-*/
-    var newObject = [self _insertNewRowAtIndex:rowIndex ofType:rowType withParentRow:parentRow];
+	var criteria=[self refreshCriteriaForNewRowOfType:rowType atIndex:rowIndex];
 
-    if (rowType === CPRuleEditorRowTypeCompound && !_allowsEmptyCompoundRows)
-    {
-        var subrow = [self _insertNewRowAtIndex:(rowIndex + 1) ofType:CPRuleEditorRowTypeSimple withParentRow:rowIndex];
-    }
+	criteria=[self willInsertNewRowWithCriteria:criteria atIndex:rowIndex];
+	if(!criteria)
+		return;
+
+	[_model insertNewRowAtIndex:rowIndex ofType:rowType withParentRowIndex:parentRow criteria:criteria data:nil];
 }
 
 /*!
@@ -710,12 +568,7 @@ TODO: implement
 */
 - (void)removeRowAtIndex:(int)rowIndex
 {
-    //  TO DO : Any subrows of the deleted row are adopted by the parent of the deleted row, or are made root rows.
-
-    if (rowIndex < 0 || rowIndex >= [self numberOfRows])
-        [CPException raise:CPRangeException reason:@"row " + rowIndex + " is out of range"];
-
-    [self removeRowsAtIndexes:[CPIndexSet indexSetWithIndex:rowIndex] includeSubrows:NO];
+	[_model removeRowAtIndex:rowIndex includeSubrows:NO];
 }
 
 /*!
@@ -727,192 +580,7 @@ TODO: implement
 */
 - (void)removeRowsAtIndexes:(CPIndexSet)rowIndexes includeSubrows:(BOOL)includeSubrows
 {
-    if ([rowIndexes count] === 0)
-        return;
-
-    if ([rowIndexes lastIndex] >= [self numberOfRows])
-        [CPException raise:CPRangeException reason:@"rows indexes " + rowIndexes + " are out of range"];
-
-    var current_index = [rowIndexes firstIndex],
-        parentRowIndex = [self parentRowForRow:current_index],
-        childsIndexes = [CPMutableIndexSet indexSet],
-        subrows;
-
-    if (parentRowIndex === -1)
-        subrows = [self _rootRowsArray];
-    else
-    {
-        var parentRowObject = [[self _rowCacheForIndex:parentRowIndex] rowObject];
-        subrows = [self _subrowObjectsOfObject:parentRowObject];
-    }
-
-    while (current_index !== CPNotFound)
-    {
-        var rowObject = [[self _rowCacheForIndex:current_index] rowObject],
-            relativeChildIndex = [[subrows _representedObject] indexOfObjectIdenticalTo:rowObject];
-
-        if (relativeChildIndex !== CPNotFound)
-            [childsIndexes addIndex:relativeChildIndex];
-
-        if (includeSubrows && [self rowTypeForRow:current_index] === CPRuleEditorRowTypeCompound)
-        {
-            var more_childs = [self subrowIndexesForRow:current_index];
-            [self removeRowsAtIndexes:more_childs includeSubrows:includeSubrows];
-        }
-
-        current_index = [rowIndexes indexGreaterThanIndex:current_index];
-    }
-
-    [subrows removeObjectsAtIndexes:childsIndexes];
-}
-
-/*!
-    @name Working with Predicates
-*/
-
-/*!
-    @brief Returns the predicate for the receiver.
-    @return If the delegate implements -#ruleEditor:predicatePartsForCriterion:withDisplayValue:inRow:, the predicate for the receiver. If not, or if the delegate does not return enough parts to construct a full predicate, returns @c nil.
-    @see predicateForRow:
-*/
-- (CPPredicate)predicate
-{
-    return _predicate;
-}
-
-/*!
-    @brief Instructs the receiver to regenerate its predicate by invoking the corresponding delegate method.
-    @discussion You typically invoke this method because something has changed (for example, a view's value).
-*/
-- (void)reloadPredicate
-{
-    [self _updatePredicate];
-}
-
-/*!
-    @brief Returns the predicate for a given row.
-    @param aRow The index of a row in the receiver.
-    @return The predicate for the row at @a aRow.
-    @discussion You should rarely have a need to call this directly, but you can override this method in a subclass to perform specialized predicate handling for certain criteria or display values.
-*/
-- (CPPredicate)predicateForRow:(CPInteger)aRow
-{
-    var predicateParts = [CPDictionary dictionary],
-        items = [self criteriaForRow:aRow],
-        count = [items count],
-        predicate,
-        i;
-
-    for (i = 0; i < count; i++)
-    {
-        var item = [items objectAtIndex:i],
-        //var displayValue = [self _queryValueForItem:item inRow:aRow]; Ask the delegate or get cached value ?.
-            displayValue = [[self displayValuesForRow:aRow] objectAtIndex:i],
-            predpart = [_ruleDelegate ruleEditor:self predicatePartsForCriterion:item withDisplayValue:displayValue inRow:aRow];
-
-        if (predpart)
-            [predicateParts addEntriesFromDictionary:predpart];
-    }
-
-    if ([self rowTypeForRow:aRow] === CPRuleEditorRowTypeCompound)
-    {
-        var compoundPredicate,
-            subpredicates = [CPMutableArray array],
-            subrowsIndexes = [self subrowIndexesForRow:aRow];
-
-        if ([subrowsIndexes count] === 0)
-            return nil;
-
-        var current_index = [subrowsIndexes firstIndex];
-        while (current_index !== CPNotFound)
-        {
-            var subpredicate = [self predicateForRow:current_index];
-            if (subpredicate !== nil)
-                [subpredicates addObject:subpredicate];
-
-            current_index = [subrowsIndexes indexGreaterThanIndex:current_index];
-        }
-
-        var compoundType = [predicateParts objectForKey:CPRuleEditorPredicateCompoundType];
-
-        if ([subpredicates count] === 0)
-            return nil;
-        else
-        {
-            try
-            {
-                compoundPredicate = [[CPCompoundPredicate alloc ] initWithType:compoundType subpredicates:subpredicates];
-            }
-            catch(error)
-            {
-                CPLogConsole(@"Compound predicate error: [%@]\npredicateType:%i",[error description],compoundType);
-                compoundPredicate = nil;
-            }
-            finally
-            {
-                return compoundPredicate;
-            }
-
-        }
-    }
-
-    var lhs = [predicateParts objectForKey:CPRuleEditorPredicateLeftExpression],
-        rhs = [predicateParts objectForKey:CPRuleEditorPredicateRightExpression],
-        operator = [predicateParts objectForKey:CPRuleEditorPredicateOperatorType],
-        options  = [predicateParts objectForKey:CPRuleEditorPredicateOptions],
-        modifier = [predicateParts objectForKey:CPRuleEditorPredicateComparisonModifier],
-        selector = CPSelectorFromString([predicateParts objectForKey:CPRuleEditorPredicateCustomSelector]);
-
-    if (lhs === nil)
-    {
-        CPLogConsole(@"missing left expression in predicate parts dictionary");
-        return NULL;
-    }
-
-    if (rhs === nil)
-    {
-        CPLogConsole(@"missing right expression in predicate parts dictionary");
-        return NULL;
-    }
-
-    if (selector === nil && operator === nil)
-    {
-        CPLogConsole(@"missing operator and selector in predicate parts dictionary");
-        return NULL;
-    }
-
-    if (modifier === nil)
-        CPLogConsole(@"missing modifier in predicate parts dictionary. Setting default: CPDirectPredicateModifier");
-
-    if (options === nil)
-        CPLogConsole(@"missing options in predicate parts dictionary. Setting default: CPCaseInsensitivePredicateOption");
-
-    try
-    {
-        if (selector !== nil)
-            predicate = [CPComparisonPredicate
-                         predicateWithLeftExpression:lhs
-                         rightExpression:rhs
-                         customSelector:selector
-                         ];
-        else
-            predicate = [CPComparisonPredicate
-                         predicateWithLeftExpression:lhs
-                         rightExpression:rhs
-                         modifier:(modifier || CPDirectPredicateModifier)
-                         type:operator
-                         options:(options || CPCaseInsensitivePredicateOption)
-                         ];
-    }
-    catch(error)
-    {
-        CPLogConsole(@"Row predicate error: ["+[error description]+"] for row "+aRow);
-        predicate = nil;
-    }
-    finally
-    {
-        return predicate;
-    }
+	[_model removeRowsAtIndexes:rowIndex includeSubrows:includeSubrows];
 }
 
 /*!
@@ -920,38 +588,36 @@ TODO: implement
 */
 
 /*!
-    @brief Returns the class used to create a new row in the â€œrowsâ€ binding.
+    @brief Returns the class used to create a new row in the ÒrowsÓ binding.
     @return The class used to create a new row in the "rows" binding.
     @see setRowClass:
 */
 - (Class)rowClass
 {
-    return _rowClass;
+	return _rowClass;
 }
 
 /*!
-    @brief Sets the class to use to create a new row in the "rowsâ€ binding.
-    @param rowClass The class to use to create a new row in the "rowsâ€ binding.
+    @brief Sets the class to use to create a new row in the "rowsÓ binding.
+    @param rowClass The class to use to create a new row in the "rowsÓ binding.
     @see rowClass
 */
 - (void)setRowClass:(Class)rowClass
 {
-    if (rowClass === [CPMutableDictionary class])
-        rowClass = [_CPRuleEditorRowObject class];
-
-    _rowClass = rowClass;
+	if(_rowClass!==rowClass)
+		_rowClass=rowClass;
 }
 
 /*!
     @brief Returns the key path for the row type.
     @return The key path for the row type.
     @discussion The default value is @c @"rowType".
-    The key path is used to get the row type in the â€œrowsâ€ binding. The corresponding property should be a number that specifies an @c CPRuleEditorRowType value.
+    The key path is used to get the row type in the ÒrowsÓ binding. The corresponding property should be a number that specifies an @c CPRuleEditorRowType value.
     @see setRowTypeKeyPath:
 */
 - (CPString)rowTypeKeyPath
 {
-    return _typeKeyPath;
+    return _rowTypeKeyPath;
 }
 
 /*!
@@ -961,20 +627,20 @@ TODO: implement
 */
 - (void)setRowTypeKeyPath:(CPString)keyPath
 {
-    if (_typeKeyPath !== keyPath)
-        _typeKeyPath = keyPath;
+    if(_rowTypeKeyPath!==keyPath)
+       _rowTypeKeyPath=keyPath;
 }
 
 /*!
     @brief Returns the key path for the subrows.
     @return The key path for the subrows.
     @discussion The default value is @"subrows".
-    The key path is used to get the nested rows in the â€œrowsâ€ binding. The corresponding property should be an ordered to-many relationship containing additional bound row objects.
+    The key path is used to get the nested rows in the ÒrowsÓ binding. The corresponding property should be an ordered to-many relationship containing additional bound row objects.
     @see setSubrowsKeyPath:
 */
 - (CPString)subrowsKeyPath
 {
-    return _subrowsArrayKeyPath;
+    return _subrowsKeyPath;
 }
 
 /*!
@@ -984,8 +650,8 @@ TODO: implement
 */
 - (void)setSubrowsKeyPath:(CPString)keyPath
 {
-    if (_subrowsArrayKeyPath !== keyPath)
-        _subrowsArrayKeyPath = keyPath;
+    if(_subrowsKeyPath!==keyPath)
+        _subrowsKeyPath=keyPath;
 }
 
 /*!
@@ -997,7 +663,7 @@ TODO: implement
 */
 - (CPString)criteriaKeyPath
 {
-    return _itemsKeyPath;
+    return _criteriaKeyPath;
 }
 
 /*!
@@ -1007,8 +673,8 @@ TODO: implement
 */
 - (void)setCriteriaKeyPath:(CPString)keyPath
 {
-    if (_itemsKeyPath !== keyPath)
-        _itemsKeyPath = keyPath;
+    if(_criteriaKeyPath!==keyPath)
+        _criteriaKeyPath=keyPath;
 }
 
 /*!
@@ -1020,7 +686,7 @@ TODO: implement
 */
 - (CPString)displayValuesKeyPath
 {
-    return _valuesKeyPath;
+    return _displayValuesKeyPath;
 }
 
 /*!
@@ -1030,8 +696,8 @@ TODO: implement
 */
 - (void)setDisplayValuesKeyPath:(CPString)keyPath
 {
-    if (_valuesKeyPath !== keyPath)
-        _valuesKeyPath = keyPath;
+    if(_displayValuesKeyPath!==keyPath)
+        _displayValuesKeyPath=keyPath;
 }
 
 /*!
@@ -1045,7 +711,8 @@ TODO: implement
 */
 - (id)animation
 {
-    return _currentAnimation;
+//Not implemented	
+    return nil;
 }
 
 /*!
@@ -1056,8 +723,7 @@ TODO: implement
 */
 - (void)setAnimation:(CPViewAnimation)animation
 {
-    _currentAnimation = animation;
-    [_currentAnimation setDelegate:self];
+//Not implemented	
 }
 
 /*!
@@ -1105,1332 +771,487 @@ TODO: implement
 */
 
 /*! @cond */
-- (BOOL)acceptsFirstResponder
+
+
+#pragma mark Refresh criteria from delegate
+
+-(CPArray)refreshCriteriaForNewRowOfType:(CPInteger)rowType atIndex:rowIndex
 {
-    return YES;
+	return [self refreshCriteriaForRow:nil rowIndex:rowIndex rowType:rowType startingAtIndex:0 currentValueIndex:0 currentValue:nil];
 }
 
-- (void)keyDown:(CPEvent)event
+-(CPArray)refreshCriteriaForRow:(CPRuleEditorModelItem)aRow rowIndex:(CPInteger)rowIndex rowType:(CPInteger)rowType startingAtIndex:(CPInteger)index currentValueIndex:valueIndex currentValue:(id)currentValue
 {
-    if (!_suppressKeyDownHandling && [self _applicableNestingMode] === CPRuleEditorNestingModeCompound && !_isKeyDown && ([event modifierFlags] & CPAlternateKeyMask))
+	if(!aRow&&index>0)
+		[CPException raise:CPInternalInconsistencyException reason:_cmd+@" : startingIndex must be 0 when refreshing criteria from delegate when row is not yet created"];
+	if(aRow&&valueIndex<0)
+		[CPException raise:CPInternalInconsistencyException reason:_cmd+@" : parentValueIndex must be >= 0"];
+
+	var criteria;	
+	var currentCriterion=nil;
+	var currentCriterionItem=nil;
+	
+	if(aRow&&index>=0)
+	{
+		var criteria=[aRow criteria];
+		var count=[criteria count];
+		
+		for(var i=index;i<count;i++)
+			[criteria removeObjectAtIndex:index];
+
+		count=[criteria count];
+		if(count)
+		{
+			currentCriterion=criteria[count-1];
+			[currentCriterion setDisplayValue:currentValue];
+		}
+	}
+	else
+		criteria=[[CPMutableArray alloc] init];
+	
+	if(currentCriterion)
+	{
+		var items=[currentCriterion items]
+		var count=items?[items count]:0;
+		if(!count)
+			[CPException raise:CPInternalInconsistencyException reason:_cmd+@" : invalid internal criterion object"];
+		if(valueIndex>=count)
+			[CPException raise:CPInternalInconsistencyException reason:_cmd+@" : invalid internal criterion object"];
+		currentCriterionItem=items[valueIndex];
+		[currentCriterion setCurrentIndex:valueIndex];
+	}
+	
+	var newCriterion;
+	var criterionItem;
+	var criterionDisplayValue=nil;
+	var nb;
+	var first=YES;
+
+	while((nb=[_delegate ruleEditor:self numberOfChildrenForCriterion:currentCriterionItem withRowType:rowType])>0)
+	{
+		var items=[CPMutableArray arrayWithCapacity:nb];
+		for(var i=0;i<nb;i++)
+		{
+			criterionItem=[_delegate ruleEditor:self child:i forCriterion:currentCriterionItem withRowType:rowType];
+			if(!criterionItem)
+				[CPException raise:CPInternalInconsistencyException reason:_cmd+@" : delegate must return not null criterion children"];
+			[items addObject:criterionItem];
+		}
+		
+		if(currentCriterionItem==[items objectAtIndex:0])
+			[CPException raise:CPInternalInconsistencyException reason:_cmd+@" : infinite loop detected"];
+
+		if(first)
+		{
+			first=NO;
+			
+			var value;
+			for(var i=0;i<nb;i++)
+			{
+				criterionItem=[items objectAtIndex:i];
+				value=[_delegate ruleEditor:self displayValueForCriterion:criterionItem inRow:rowIndex];
+				
+				if([value isKindOfClass:CPMenuItem]&&[value isSeparatorItem])
+					continue;
+
+				if(![self rowForDisplayValue:value])
+				{
+					currentCriterionItem=criterionItem;
+					criterionDisplayValue=value;
+					break;
+				}
+			}
+			if(!criterionDisplayValue)
+			{
+				do
+				{
+					var useCeil=(new Date().getTime()%2)==0;
+					var rand=Math.random()*(nb-1);
+					var idx=useCeil?Math.ceil(rand):Math.floor(rand);
+					idx=Math.min(idx,nb-1);
+					currentCriterionItem=[items objectAtIndex:idx];
+					criterionDisplayValue=[_delegate ruleEditor:self displayValueForCriterion:currentCriterionItem inRow:rowIndex];
+				}
+				while([criterionDisplayValue isKindOfClass:CPMenuItem]&&[criterionDisplayValue isSeparatorItem]);
+			}
+		}
+		else
+		{
+			currentCriterionItem=[items objectAtIndex:0];
+			criterionDisplayValue=[_delegate ruleEditor:self displayValueForCriterion:currentCriterionItem inRow:rowIndex];
+		}
+		
+		[criteria addObject:[[CPRuleEditorCriterion alloc] initWithItems:items displayValue:criterionDisplayValue]];
+	}
+	return criteria;
+}
+
+#pragma mark Predicate management
+
+/*!
+    @name Working with Predicates
+*/
+
+/*!
+    @brief Returns the predicate for the receiver.
+    @return If the delegate implements -#ruleEditor:predicatePartsForCriterion:withDisplayValue:inRow:, the predicate for the receiver. If not, or if the delegate does not return enough parts to construct a full predicate, returns @c nil.
+    @see predicateForRow:
+*/
+- (CPPredicate)predicate
+{
+	if(_predicate)
+	    return _predicate;
+	[self reloadPredicate];
+	return _predicate;
+}
+
+/*!
+    @brief Instructs the receiver to regenerate its predicate by invoking the corresponding delegate method.
+    @discussion You typically invoke this method because something has changed (for example, a view's value).
+*/
+- (void)reloadPredicate
+{
+    var count=[_model rowsCount];
+    if(!count)
+    	return;
+
+	var row;
+	var subpredicate;    
+    var subpredicates=[CPMutableArray array];
+	var indexes=[self subrowIndexesForRow:-1];
+	var index=indexes?[indexes firstIndex]:CPNotFound;
+
+	while(index!=CPNotFound)
     {
-        [_slices makeObjectsPerformSelector:@selector(_configurePlusButtonByRowType:) withObject:CPRuleEditorRowTypeCompound];
+    	row=[_model rowAtIndex:index];
+    	subpredicate=[self predicateForRow:index];
+    	if(subpredicate)
+	    	[subpredicates addObject:subpredicate];
+    	index=[indexes indexGreaterThanIndex:index];
+    }
+    
+    if([subpredicates count]==1&&[[subpredicates objectAtIndex:0] isKindOfClass:CPCompoundPredicate])
+    {
+    	_predicate=[subpredicates objectAtIndex:0];
+    	return;
     }
 
-    _isKeyDown = YES;
+    _predicate=[[CPCompoundPredicate alloc] initWithType:CPAndPredicateType subpredicates:subpredicates];
 }
 
-- (void)keyUp:(CPEvent)event
+/*!
+    @brief Returns the predicate for a given row.
+    @param aRow The index of a row in the receiver.
+    @return The predicate for the row at @a aRow.
+    @discussion You should rarely have a need to call this directly, but you can override this method in a subclass to perform specialized predicate handling for certain criteria or display values.
+*/
+
+- (CPPredicate)predicateForRow:(CPInteger)aRowIndex
 {
-    if (!_suppressKeyDownHandling)
+	if(!_delegate||![_delegate respondsToSelector:@selector(ruleEditor:predicatePartsForCriterion:withDisplayValue:inRow:)])
+		return nil;
+		
+    var row=[_model rowAtIndex:aRowIndex];
+    if(!row)
+    	return nil;
+    	
+    var predicate;
+    var criteria=[row criteria];
+    var count=[criteria count];
+
+	var criterion;
+	var criterionItem;
+	var displayValue;
+	var predicateInfo;
+    var predicateParts=[CPDictionary dictionary];
+	
+    for(var i=0;i<count;i++)
     {
-        [_slices makeObjectsPerformSelector:@selector(_configurePlusButtonByRowType:) withObject:CPRuleEditorRowTypeSimple];
+        criterion=[criteria objectAtIndex:i];
+        criterionItem=[criterion currentItem];
+        if(!criterionItem)
+        	continue;
+        	
+        displayValue=[criterion displayValue];
+        predicateInfo=[_delegate ruleEditor:self predicatePartsForCriterion:criterionItem withDisplayValue:displayValue inRow:aRowIndex];
+        if(predicateInfo)
+            [predicateParts addEntriesFromDictionary:predicateInfo];
     }
 
-    _isKeyDown = NO;
-}
-
-- (_CPRuleEditorViewSliceDropSeparator)_createSliceDropSeparator
-{
-    var view = [[_CPRuleEditorViewSliceDropSeparator alloc] initWithFrame:CGRectMake(0,-10, [self frame].size.width, 2)];
-    [view setAutoresizingMask:CPViewWidthSizable];
-    return view;
-}
-
-- (BOOL)_suppressKeyDownHandling
-{
-    return _suppressKeyDownHandling;
-}
-
-- (BOOL)_wantsRowAnimations
-{
-    return (_currentAnimation !== nil);
-}
-
-- (void)_updateButtonVisibilities
-{
-    [_slices makeObjectsPerformSelector:@selector(_updateButtonVisibilities)];
-}
-
-- (float)_alignmentGridWidth
-{
-    return  _alignmentGridWidth;
-}
-
-- (float)_minimumFrameHeight
-{
-    return 26.;
-}
-
-- (CPRuleEditorNestingMode)_applicableNestingMode
-{
-    if (!_nestingModeDidChange)
-        return _nestingMode;
-
-    var a = (_nestingMode === CPRuleEditorNestingModeCompound || _nestingMode === CPRuleEditorNestingModeSimple),
-        b = ([self rowTypeForRow:0] === CPRuleEditorRowTypeCompound);
-
-    if (a === b)
-        return _nestingMode;
-
-    return a ? CPRuleEditorNestingModeList : CPRuleEditorNestingModeSimple;
-}
-
-- (BOOL)_shouldHideAddButtonForSlice:(id)slice
-{
-    return (!_editable || [self _applicableNestingMode] === CPRuleEditorNestingModeSingle);
-}
-
-- (BOOL)_shouldHideSubtractButtonForSlice:(id)slice
-{
-    if (!_editable)
-        return YES;
-
-    if (!_disallowEmpty)
-        return NO;
-
-    var shouldHide,
-        rowIndex = [slice rowIndex],
-        parentIndex = [self parentRowForRow:rowIndex],
-        subrowsIndexes = [self subrowIndexesForRow:parentIndex],
-        nestingMode = [self _applicableNestingMode];
-
-    switch (nestingMode)
+    if([row rowType]==CPRuleEditorRowTypeCompound)
     {
-        case CPRuleEditorNestingModeCompound:
-        case CPRuleEditorNestingModeSimple: shouldHide = ([subrowsIndexes count] === 1 && !_allowsEmptyCompoundRows) || parentIndex === -1;
-                break;
-        case CPRuleEditorNestingModeList: shouldHide = ([self numberOfRows] === 1);
-                break;
-        case CPRuleEditorNestingModeSingle: shouldHide = YES;
-                break;
-        default: shouldHide = NO;
+	    var compoundType=[predicateParts objectForKey:CPRuleEditorPredicateCompoundType];
+		return [self compoundPredicateForRow:row compoundType:compoundType];
     }
 
-    return shouldHide;
-}
+    var options=[predicateParts objectForKey:CPRuleEditorPredicateOptions];
+    var modifier=[predicateParts objectForKey:CPRuleEditorPredicateComparisonModifier];
+    var selector=CPSelectorFromString([predicateParts objectForKey:CPRuleEditorPredicateCustomSelector]);
 
-#pragma mark Rows management
-
-- (id)_rowCacheForIndex:(int)index
-{
-    return [_rowCache objectAtIndex:index];
-}
-
-- (id)_searchCacheForRowObject:(id)rowObject
-{
-    var count = [_rowCache count],
-        i;
-
-    for (i = 0; i < count; i++)
+    try
     {
-         var cache = _rowCache[i];
-         if ([cache rowObject] === rowObject)
-              return cache;
-    }
-
-    return nil;
-}
-
-- (int)_rowIndexForRowObject:(id)rowobject
-{
-    if (rowobject === _boundArrayOwner)
-        return -1;
-
-    return [[self _searchCacheForRowObject:rowobject] rowIndex]; // Pas bon car le rowIndex du row cache n'est pas synchro avec la position dans _rowCache.
-}
-
-- (CPMutableArray)_subrowObjectsOfObject:(id)object
-{
-    if (object === _boundArrayOwner)
-        return [self _rootRowsArray];
-
-    return [object mutableArrayValueForKey:_subrowsArrayKeyPath];
-}
-
-- (CPIndexSet)_childlessParentsIfSlicesWereDeletedAtIndexes:(id)indexes
-{
-    var childlessParents = [CPIndexSet indexSet],
-        current_index = [indexes firstIndex];
-
-    while (current_index !== CPNotFound)
-    {
-        var parentIndex = [self parentRowForRow:current_index],
-            subrowsIndexes = [self subrowIndexesForRow:parentIndex];
-
-        if ([subrowsIndexes count] === 1)
+        if(selector)
         {
-            if (parentIndex !== -1)
-                return [CPIndexSet indexSetWithIndex:0];
-
-            var childlessGranPa = [self _childlessParentsIfSlicesWereDeletedAtIndexes:[CPIndexSet indexSetWithIndex:parentIndex]];
-            [childlessParents addIndexes:childlessGranPa];
+            return [CPComparisonPredicate
+                         predicateWithLeftExpression:[predicateParts objectForKey:CPRuleEditorPredicateLeftExpression]
+                         rightExpression:[predicateParts objectForKey:CPRuleEditorPredicateRightExpression]
+                         customSelector:selector];
         }
-
-        current_index = [indexes indexGreaterThanIndex:current_index];
+        
+        return [CPComparisonPredicate
+                         predicateWithLeftExpression:[predicateParts objectForKey:CPRuleEditorPredicateLeftExpression]
+                         rightExpression:[predicateParts objectForKey:CPRuleEditorPredicateRightExpression]
+                         modifier:(modifier||CPDirectPredicateModifier)
+                         type:[predicateParts objectForKey:CPRuleEditorPredicateOperatorType]
+                         options:(options||CPCaseInsensitivePredicateOption)];
     }
-
-    return childlessParents;
-    // (id)-[RuleEditor _includeSubslicesForSlicesAtIndexes:]
-}
-
-- (CPIndexSet)_includeSubslicesForSlicesAtIndexes:(CPIndexSet)indexes
-{
-    var subindexes = [indexes copy],
-        current_index = [indexes firstIndex];
-
-    while (current_index !== CPNotFound)
+    catch(error)
     {
-        var sub = [self subrowIndexesForRow:current_index];
-        [subindexes addIndexes:[self _includeSubslicesForSlicesAtIndexes:sub]];
-        current_index = [indexes indexGreaterThanIndex:current_index];
+        CPLog.debug(@"predicate error: ["+[error description]+"] for row "+aRow);
+        return nil;
     }
-
-    return subindexes;
 }
 
-- (void)_deleteSlice:(id)slice
+-(CPPredicate)compoundPredicateForRow:(CPRuleEditorModelItem)row compoundType:(CPInteger)compoundType
 {
-    var rowindexes = [CPIndexSet indexSetWithIndex:[slice rowIndex]];
-
-    if (!_allowsEmptyCompoundRows)
+	if(!row)
+		return nil;
+		
+	var subrow;
+    var subpredicate;
+    var subpredicates=[CPMutableArray array];
+    
+    var count=[row subrowsCount];
+    for(var i=0;i<count;i++)
     {
-        var childlessIndexes = [self _childlessParentsIfSlicesWereDeletedAtIndexes:rowindexes];
-        if ([childlessIndexes count] > 0)
-            rowindexes = childlessIndexes;
+    	subrow=[row childAtIndex:i];
+    	subpredicate=[self predicateForRow:[_model indexOfRow:subrow]];
+    	if(!subpredicate)
+    		continue;
+    	[subpredicates addObject:subpredicate];
     }
 
-    [self removeRowsAtIndexes:rowindexes includeSubrows:YES];
+    if(![subpredicates count])
+        return nil;
 
-    [self _updatePredicate];
-    [self _sendRuleAction];
-    [self _postRuleOptionChangedNotification];
-    [self _postRowCountChangedNotificationOfType:CPRuleEditorRowsDidChangeNotification indexes:rowindexes];
-}
-
-- (CPArray)_rootRowsArray
-{
-    return [_boundArrayOwner mutableArrayValueForKey:_boundArrayKeyPath];
-}
-
-- (BOOL)_nextUnusedItems:({CPArray})items andValues:({CPArray})values forRow:(int)rowIndex forRowType:(unsigned int)type
-{
-    var parentItem = [items lastObject], // if empty items array, this is NULL aka the root item;
-        childrenCount = [self _queryNumberOfChildrenOfItem:parentItem withRowType:type],
-        foundIndex = CPNotFound;
-
-    if (childrenCount === 0)
-        return NO;
-
-    var current_criterions = [CPMutableArray array],
-        count = [self numberOfRows],
-        row;
-
-    for (row = 0; row < count; row++) // num of rows should be num of siblings of parentItem
+    try
     {
-        var aCriteria = [self criteriaForRow:row],
-            itemIndex = [items count];
-
-        if ([self rowTypeForRow:row] === type && itemIndex < [aCriteria count])
-        {
-            var crit = [aCriteria objectAtIndex:itemIndex];
-            [current_criterions addObject:crit];
-        }
+        return [[CPCompoundPredicate alloc] initWithType:compoundType subpredicates:subpredicates];
     }
-
-    while (foundIndex === CPNotFound)
+    catch(error)
     {
-        var buffer = [CPMutableArray arrayWithArray:current_criterions],
-            i;
-        for (i = 0; i < childrenCount; i++)
-        {
-            var child =  [self _queryChild:i ofItem:parentItem withRowType:type];
-            if ([current_criterions indexOfObject:child] === CPNotFound)
-            {
-                foundIndex = i;
-                break;
-            }
-        }
-
-        if (foundIndex === CPNotFound)
-        {
-            for (var k = 0; k < childrenCount; k++)
-            {
-                var anobject = [self _queryChild:k ofItem:parentItem withRowType:type],
-                    index = [buffer indexOfObject:anobject];
-                if (index !== CPNotFound)
-                    [buffer removeObjectAtIndex:index];
-            }
-
-            current_criterions = buffer;
-        }
-    }
-
-    var foundItem = [self _queryChild:foundIndex ofItem:parentItem withRowType:type],
-        foundValue = [self _queryValueForItem:foundItem inRow:rowIndex];
-
-    [items addObject:foundItem];
-    [values addObject:foundValue];
-
-    return YES;
-}
-
-- (CPMutableArray)_getItemsAndValuesToAddForRow:(int)rowIndex ofType:(CPRuleEditorRowType)type
-{
-    //var cachedItemsAndValues = _itemsAndValuesToAddForRowType[type];
-    //if (cachedItemsAndValues)
-    //    return cachedItemsAndValues;
-
-    var itemsAndValues = [CPMutableArray array],
-        items = [CPMutableArray array],
-        values = [CPMutableArray array],
-        unusedItems = YES;
-
-    while (unusedItems)
-        unusedItems = [self _nextUnusedItems:items andValues:values forRow:rowIndex forRowType:type];
-
-    var count = [items count];
-
-    for (var i = 0; i < count; i++)
-    {
-        var item = [items objectAtIndex:i],
-            value = [values objectAtIndex:i],
-            itemAndValue = [CPDictionary dictionaryWithObjects:[item,value] forKeys:["item","value"]];
-
-        [itemsAndValues addObject:itemAndValue];
-    }
-
-    return itemsAndValues;
-}
-
-- (void)_addOptionFromSlice:(id)slice ofRowType:(unsigned int)type
-{
-    // for CPRuleEditorNestingModeSimple only
-
-    var rowIndexEvent = [slice rowIndex],
-        rowTypeEvent = [self rowTypeForRow:rowIndexEvent],
-        insertIndex = rowIndexEvent + 1,
-        parentRowIndex = (rowTypeEvent === CPRuleEditorRowTypeCompound) ? rowIndexEvent:[self parentRowForRow:rowIndexEvent];
-
-    [self insertRowAtIndex:insertIndex withType:type asSubrowOfRow:parentRowIndex animate:YES];
-}
-
-- (id)_insertNewRowAtIndex:(int)insertIndex ofType:(CPRuleEditorRowType)rowtype withParentRow:(int)parentRowIndex
-{
-    var row = [[[self rowClass] alloc] init],
-        itemsandvalues = [self _getItemsAndValuesToAddForRow:insertIndex ofType:rowtype],
-        newitems = [itemsandvalues valueForKey:@"item"],
-        newvalues = [itemsandvalues valueForKey:@"value"];
-
-    [row setValue:newitems forKey:_itemsKeyPath];
-    [row setValue:newvalues forKey:_valuesKeyPath];
-    [row setValue:rowtype forKey:_typeKeyPath];
-    [row setValue:[CPMutableArray array] forKey:_subrowsArrayKeyPath];
-
-    var subrowsObjects;
-    if (parentRowIndex === -1 || [self _applicableNestingMode] === CPRuleEditorNestingModeList)
-        subrowsObjects = [self _rootRowsArray];
-    else
-    {
-        var parentRowObject = [[self _rowCacheForIndex:parentRowIndex] rowObject];
-        subrowsObjects = [self _subrowObjectsOfObject:parentRowObject];
-    }
-
-    var relInsertIndex = insertIndex - parentRowIndex - 1;
-    [subrowsObjects insertObject:row atIndex:relInsertIndex];
-
-    [self _updatePredicate];
-    [self _sendRuleAction];
-    [self _postRuleOptionChangedNotification];
-    [self _postRowCountChangedNotificationOfType:CPRuleEditorRowsDidChangeNotification indexes:[CPIndexSet indexSetWithIndex:insertIndex]];
-
-    return row;
-}
-
-#pragma mark Key value observing
-
-- (void)_startObservingRowObjectsRecursively:(CPArray)rowObjects
-{
-    [_boundArrayOwner addObserver:self forKeyPath:_boundArrayKeyPath options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:boundArrayContext];
-
-    var count = [rowObjects count];
-
-    for (var i = 0; i < count; i++)
-    {
-        var rowObject = [rowObjects objectAtIndex:i];
-
-        [rowObject addObserver:self forKeyPath:_itemsKeyPath options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:itemsContext];
-        [rowObject addObserver:self forKeyPath:_valuesKeyPath options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:valuesContext];
-        [rowObject addObserver:self forKeyPath:_subrowsArrayKeyPath options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:subrowsContext];
-
-        var subrows = [self _subrowObjectsOfObject:rowObject];
-        if ([subrows count] > 0)
-            [self _startObservingRowObjectsRecursively:subrows];
-    }
-    // ORIG IMPL : calls +keyPathsForValuesAffectingValueForKey: for all keys
-}
-
-- (void)_stopObservingRowObjectsRecursively:(CPArray)rowObjects
-{
-    [_boundArrayOwner removeObserver:self forKeyPath:_boundArrayKeyPath];
-
-    var count = [rowObjects count];
-
-    for (var i = 0; i < count; i++)
-    {
-        var rowObject = [rowObjects objectAtIndex:i];
-        [rowObject removeObserver:self forKeyPath:_itemsKeyPath];
-        [rowObject removeObserver:self forKeyPath:_valuesKeyPath];
-        [rowObject removeObserver:self forKeyPath:_subrowsArrayKeyPath];
-
-        var subrows = [rowObject valueForKey:_subrowsArrayKeyPath];
-        if ([subrows count] > 0)
-            [self _stopObservingRowObjectsRecursively:subrows];
+        CPLog.debug(@"predicate error"+[error description]);
+        return nil;
     }
 }
 
-- (void)observeValueForKeyPath:(CPString)keypath ofObject:(id)object change:(CPDictionary)change context:(void)context
-{
-    var changeKind = [change objectForKey:CPKeyValueChangeKindKey],
-        changeNewValue = [change objectForKey:CPKeyValueChangeNewKey],
-        changeOldValue = [change objectForKey:CPKeyValueChangeOldKey],
-        newRows,
-        oldRows;
-
-    if (context === boundArrayContext || context === subrowsContext)
-    {
-        if (changeKind === CPKeyValueChangeSetting)
-        {
-            newRows = changeNewValue;
-            oldRows = changeOldValue;
-
-        }
-        else if (changeKind === CPKeyValueChangeInsertion)
-        {
-            newRows = [self _subrowObjectsOfObject:object];
-            oldRows = [CPArray arrayWithArray:newRows];
-            [oldRows removeObjectsInArray:changeNewValue];
-        }
-        else if (changeKind === CPKeyValueChangeRemoval)
-        {
-            newRows = [self _subrowObjectsOfObject:object];
-            oldRows = [CPArray arrayWithArray:newRows];
-            var delIndexes = [change objectForKey:CPKeyValueChangeIndexesKey];
-            [oldRows insertObjects:delObjects atIndexes:changeOldValue];    // Pas sur que ce soit bon
-        }
-
-        [self _changedRowArray:newRows withOldRowArray:oldRows forParent:object];
-        [self _reconfigureSubviewsAnimate:[self _wantsRowAnimations]];
-    }
-    else if (context === itemsContext)
-    {
-    }
-    else if (context === valuesContext)
-    {
-    }
-}
-
-- (void)_changedItem:(id)fromItem toItem:(id)toItem inRow:(int)aRow atCriteriaIndex:(int)fromItemIndex
-{
-    var criteria = [self criteriaForRow:aRow],
-        displayValues = [self displayValuesForRow:aRow],
-        rowType = [self rowTypeForRow:aRow],
-        anItem = toItem,
-
-        items = [criteria subarrayWithRange:CPMakeRange(0, fromItemIndex)],
-        values = [displayValues subarrayWithRange:CPMakeRange(0, fromItemIndex)];
-
-    _lastRow = aRow;
-
-    while (YES)
-    {
-        [items addObject:anItem];
-        var value = [self _queryValueForItem:anItem inRow:aRow];
-        [values addObject:value];
-
-        if (![self _queryNumberOfChildrenOfItem:anItem withRowType:rowType])
-            break;
-
-        anItem = [self _queryChild:0 ofItem:anItem withRowType:rowType];
-    }
-
-    var object = [[self _rowCacheForIndex:aRow] rowObject];
-    [object setValue:items forKey:_itemsKeyPath];
-    [object setValue:values forKey:_valuesKeyPath];
-
-    var slice = [_slices objectAtIndex:aRow];
-    [slice _reconfigureSubviews];
-
-    [self _updatePredicate];
-    [self _sendRuleAction];
-    [self _postRuleOptionChangedNotification];
-}
-
-- (void)_changedRowArray:(CPArray)newRows withOldRowArray:(CPArray)oldRows forParent:(id)parentRowObject
-{
-    var newRowCount = [newRows count],
-        oldRowCount = [oldRows count],
-        deltaCount = newRowCount - oldRowCount,
-        minusCount = MIN(newRowCount, oldRowCount),
-        maxCount = MAX(newRowCount, oldRowCount),
-
-        insertCacheIndexes = [CPIndexSet indexSet],
-        newCaches = [CPArray array],
-
-        parentCacheIndentation,
-        parentCacheIndex = [self _rowIndexForRowObject:parentRowObject],
-
-        newRowCacheIndex = 0,
-        changeStartIndex = 0;
-
-    [self _stopObservingRowObjectsRecursively:oldRows];
-    [self _startObservingRowObjectsRecursively:newRows];
-
-    //var gindexes = [self _globalIndexesForSubrowIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0,oldRowCount)] ofParentObject:parentRowObject];
-
-    if (parentCacheIndex === -1)
-        parentCacheIndentation = -1;
-    else
-        parentCacheIndentation = [[self _rowCacheForIndex:parentCacheIndex] indentation];
-
-    for (; newRowCacheIndex < newRowCount; newRowCacheIndex++)
-    {
-        var newCacheGlobalIndex = (parentCacheIndex + 1) + newRowCacheIndex,
-            obj = [newRows objectAtIndex:newRowCacheIndex],
-            newRowType = [obj valueForKey:_typeKeyPath],
-            cache = [[_CPRuleEditorCache alloc] init];
-
-        [cache setRowObject:obj];
-        [cache setRowIndex:newCacheGlobalIndex];
-        [cache setIndentation:parentCacheIndentation + 1];
-
-        [insertCacheIndexes addIndex:newCacheGlobalIndex];
-        [newCaches addObject:cache];
-    }
-
-    //var lastCacheIndex = [self _rowIndexForRowObject:[oldRows lastObject]];
-    [_rowCache removeObjectsInRange:CPMakeRange(parentCacheIndex + 1, [oldRows count])];
-    [_rowCache insertObjects:newCaches atIndexes:insertCacheIndexes];
-
-    for (; changeStartIndex < minusCount; changeStartIndex++)
-    {
-        var oldrow = [oldRows objectAtIndex:changeStartIndex],
-            newrow = [newRows objectAtIndex:changeStartIndex];
-
-        if (newrow !== oldrow)
-            break;
-    }
-
-    var replaceCount = (deltaCount === 0) ? maxCount : maxCount - minusCount,
-        startIndex = parentCacheIndex + changeStartIndex + 1;
-
-    if (deltaCount <= 0)
-    {
-        var removeIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(startIndex, replaceCount)],
-            removeSlices = [_slices objectsAtIndexes:removeIndexes];
-
-        [removeSlices makeObjectsPerformSelector:@selector(removeFromSuperview)];
-        [_slices removeObjectsAtIndexes:removeIndexes];
-    }
-
-    if (deltaCount >= 0)
-    {
-        var newIndentation = parentCacheIndentation + 1,
-            newIndex = startIndex;
-
-        for (; newIndex < startIndex + replaceCount; newIndex++)
-        {
-            var newslice = [self _newSlice],
-                rowType = [self rowTypeForRow:newIndex];
-
-            [newslice setRowIndex:newIndex];
-            [newslice setIndentation:newIndentation];
-            [newslice _setRowType:rowType];
-            [newslice _configurePlusButtonByRowType:CPRuleEditorRowTypeSimple];
-
-            [_slices insertObject:newslice atIndex:newIndex];
-        }
-    }
-
-    var emptyArray = [CPArray array],
-        count = [oldRows count],
-        n;
-    for (n = 0; n < count; n++)
-    {
-        var oldRow = [oldRows objectAtIndex:n],
-            subOldRows = [self _subrowObjectsOfObject:oldRow];
-
-        if ([subOldRows count] > 0)
-            [self _changedRowArray:emptyArray withOldRowArray:subOldRows forParent:oldRow];
-    }
-
-    count = [newRows count];
-    for (n = 0; n < count; n++)
-    {
-        var newRow = [newRows objectAtIndex:n],
-            subnewRows = [self _subrowObjectsOfObject:newRow];
-
-        if ([subnewRows count] > 0)
-            [self _changedRowArray:subnewRows withOldRowArray:emptyArray forParent:newRow];
-    }
-}
-
-- (void)bind:(CPString)aBinding toObject:(id)observableController withKeyPath:(CPString)aKeyPath options:(CPDictionary)options
-{
-  if ([aBinding isEqualToString:@"rows"])
-  {
-    [self unbind:aBinding];
-    [self _setBoundDataSource:observableController withKeyPath:aKeyPath options:options];
-
-    [_rowCache removeAllObjects];
-    [_slices removeAllObjects];
-
-    var newRows = [CPArray array],
-        oldRows = [self _rootRowsArray];
-
-    [self _changedRowArray:newRows withOldRowArray:oldRows forParent:_boundArrayOwner];
-  }
-  else
-    [super bind:aBinding toObject:observableController withKeyPath:aKeyPath options:options];
-}
-
-- (void)unbind:(id)object
-{
-    _rowClass = [_CPRuleEditorRowObject class];
-    [super unbind:object];
-}
-
-- (void)_setBoundDataSource:(id)datasource withKeyPath:(CPString)keyPath options:(CPDictionary)options
-{
-    if ([observableController respondsToSelector:@selector(objectClass)])
-        _rowClass = [observableController objectClass];
-
-    _boundArrayKeyPath = keyPath;
-    _boundArrayOwner = datasource;
-
-    //var boundRows = [_boundArrayOwner valueForKey:_boundArrayKeyPath];
-
-    [_boundArrayOwner addObserver:self forKeyPath:_boundArrayKeyPath options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:boundArrayContext];
-
-    //if ([boundRows isKindOfClass:[CPArray class]] && [boundRows count] > 0)
-    //    [_boundArrayOwner setValue:boundRows forKey:_boundArrayKeyPath];
-}
-
-- (void)_setPredicate:(CPPredicate)predicate
-{
-    if (_predicate !== predicate)
-        _predicate = predicate;
-}
-
-- (void)_updatePredicate
-{
-    if (_delegateWantsValidation)
-    {
-        var selector = @selector(ruleEditor:predicatePartsForCriterion:withDisplayValue:inRow:);
-        if (![_ruleDelegate respondsToSelector:selector])
-            return;
-
-        _delegateWantsValidation = NO;
-    }
-
-    var subpredicates = [CPMutableArray array],
-        subindexes = [self subrowIndexesForRow:-1],
-        current_index = [subindexes firstIndex];
-
-    while (current_index !== CPNotFound)
-    {
-        var subpredicate = [self predicateForRow:current_index];
-
-        if (subpredicate !== nil)
-            [subpredicates addObject:subpredicate];
-
-        current_index = [subindexes indexGreaterThanIndex:current_index];
-    }
-
-    var new_predicate = [[CPCompoundPredicate alloc] initWithType:CPOrPredicateType subpredicates:subpredicates];
-
-    [self _setPredicate:new_predicate];
-}
-
-- (_CPRuleEditorViewSliceRow)_newSlice
-{
-    var sliceRect = CGRectMake(0, 0, CGRectGetWidth([self frame]), 0),
-        slice = [self _createNewSliceWithFrame:sliceRect ruleEditorView:self];
-
-    return slice;
-}
-
-- (_CPRuleEditorViewSliceRow)_createNewSliceWithFrame:(CGRect)frame ruleEditorView:(CPRuleEditor)editor
-{
-    return [[_CPRuleEditorViewSliceRow alloc] initWithFrame:frame ruleEditorView:editor];
-}
-
-- (void)_reconfigureSubviewsAnimate:(BOOL)animate
-{
-    var viewAnimations = [CPMutableArray array],
-        added_slices = [CPMutableArray array],
-        count = [_slices count];
-
-    [self _updateSliceRows];
-
-    if ([[self superview] isKindOfClass:[CPClipView class]])
-        [self setFrameSize:CGSizeMake(CGRectGetWidth([self frame]), count * _sliceHeight)];
-
-    for (var i = 0; i < count; i++)
-    {
-        var aslice = [_slices objectAtIndex:i],
-            targetRect = [aslice _animationTargetRect],
-            startRect = [aslice frame],
-            startIndex = [aslice rowIndex] - 1;
-
-        if ([aslice superview] === nil)
-        {
-            startRect = CGRectMake(0, startIndex * _sliceHeight, CGRectGetWidth(startRect), _sliceHeight);
-            [aslice _reconfigureSubviews];
-            [added_slices addObject:aslice];
-        }
-
-        if (animate)
-        {
-            var animation = [CPDictionary dictionary];
-            [animation setObject:aslice forKey:CPViewAnimationTargetKey];
-            [animation setObject:startRect forKey:CPViewAnimationStartFrameKey];
-            [animation setObject:targetRect forKey:CPViewAnimationEndFrameKey];
-
-            [viewAnimations insertObject:animation atIndex:0];
-        }
-        else
-            [aslice setFrame:targetRect];
-    }
-
-    var addcount = [added_slices count];
-    for (var i = 0; i < addcount; i++)
-        [_slicesHolder addSubview:added_slices[i] positioned:CPWindowBelow relativeTo:nil];
-
-    if (animate)
-    {
-        [_currentAnimation setViewAnimations:viewAnimations];
-        [_currentAnimation startAnimation];
-    }
-
-    _lastRow = [self numberOfRows] - 1;
-
-    if (_lastRow === -1)
-        _nestingModeDidChange = NO;
-
-    [self setNeedsDisplay:YES];
-    [_slices makeObjectsPerformSelector:@selector(_updateButtonVisibilities)];
-}
-
-- (void)animationDidEnd:(CPViewAnimation)animation
-{
-//  var nextSimple = [self _getItemsAndValuesToAddForRow:0 ofType:CPRuleEditorRowTypeSimple],
-//      nextCompound = [self _getItemsAndValuesToAddForRow:0 ofType:CPRuleEditorRowTypeCompound];
-
-//  _itemsAndValuesToAddForRowType = {CPRuleEditorRowTypeSimple:nextSimple, CPRuleEditorRowTypeCompound:nextCompound};
-}
-
-- (void)_updateSliceRows
-{
-    var width =  [self frame].size.width,
-        count = [_slices count];
-
-    for (var i = 0; i < count; i++)
-    {
-        var slice = [_slices objectAtIndex:i],
-            targetRect = CGRectMake(0, i * _sliceHeight, width, _sliceHeight);
-
-        [slice setRowIndex:i];
-        [slice _setAnimationTargetRect:targetRect];
-    }
-}
-
-- (CPArray)_backgroundColors
-{
-    return [self valueForThemeAttribute:@"alternating-row-colors"];
-}
-
-- (CPColor)_selectedRowColor
-{
-    return [self valueForThemeAttribute:@"selected-color"];
-}
-
-- (CPColor)_sliceTopBorderColor
-{
-    return [self valueForThemeAttribute:@"slice-top-border-color"];
-}
-
-- (CPColor)_sliceBottomBorderColor
-{
-    return [self valueForThemeAttribute:@"slice-bottom-border-color"];
-}
-
-- (CPColor)_sliceLastBottomBorderColor
-{
-    return [self valueForThemeAttribute:@"slice-last-bottom-border-color"];
-}
-
-- (CPFont)font
-{
-    return [self valueForThemeAttribute:@"font"];
-}
-
-- (CPImage)_addImage
-{
-    return [self valueForThemeAttribute:@"add-image"];
-}
-
-- (CPImage)_removeImage
-{
-    return [self valueForThemeAttribute:@"remove-image"];
-}
-
-- (CPString)_toolTipForAddCompoundRowButton
-{
-    return @"Add Compound row";
-}
-
-- (CPString)_toolTipForAddSimpleRowButton
-{
-    return @"Add row";
-}
-
-- (CPString)_toolTipForDeleteRowButton
-{
-    return @"Delete row";
-}
-
-- (void)_updateSliceIndentations
-{
-    [self _updateSliceIndentationAtIndex:0 toIndentation:0 withIndexSet:[self subrowIndexesForRow:0]];
-}
-
-- (void)_updateSliceIndentationAtIndex:(int)index toIndentation:(int)indentation withIndexSet:(id)indexes
-{
-    var current_index = [indexes firstIndex];
-
-    while (current_index !== CPNotFound)
-    {
-        var subindexes = [self subrowIndexesForRow:index];
-        [self _updateSliceIndentationAtIndex:current_index toIndentation:indentation + 1 withIndexSet:subindexes];
-        current_index = [indexes indexGreaterThanIndex:current_index];
-    }
-
-    [[_slices objectAtIndex:index] setIndentation:indentation];
-}
-
-- (CPArray)_selectedSlices
-{
-    var _selectedSlices = [CPMutableArray array],
-        count = [_slices count],
-        i;
-
-    for (i = 0; i < count; i++)
-    {
-        var slice = _slices[i];
-        if ([slice _isSelected])
-            [_selectedSlices addObject:slice];
-    }
-
-    return _selectedSlices;
-}
-
-- (int)_lastSelectedSliceIndex
-{
-    var lastIndex = -1,
-        count = [_slices count],
-        i;
-
-    for (i = 0; i < count; i++)
-    {
-         var slice = _slices[i];
-         if ([slice _isLastSelected])
-            return [slice rowIndex];
-    }
-
-    return CPNotFound;
-}
-
-- (void)_mouseUpOnSlice:(id)slice withEvent:(CPEvent)event
-{
-    if ([slice _rowType] !== CPRuleEditorRowTypeSimple)
-        return;
+#pragma mark Overridable methods
 
-    var modifierFlags = [event modifierFlags],
-        extend = (modifierFlags & CPCommandKeyMask) || (modifierFlags & CPShiftKeyMask),
-        rowIndexes = [CPIndexSet indexSetWithIndex:[slice rowIndex]];
-
-    [self selectRowIndexes:rowIndexes byExtendingSelection:extend];
-}
-
-- (void)_mouseDownOnSlice:(id)slice withEvent:(CPEvent)event
-{
-}
-
-- (void)_rightMouseDownOnSlice:(_CPRuleEditorViewSlice)slice withEvent:(CPEvent)event
-{
-}
-
-- (void)_performClickOnSlice:(id)slice withEvent:(CPEvent)event
-{
-}
-
-- (void)_setSuppressKeyDownHandling:(BOOL)flag
-{
-    _suppressKeyDownHandling = flag;
-}
-
-- (void)selectAll:(id)sender
-{
-    var count = [_slices count];
-
-    while (count--)
-    {
-        var slice = _slices[count];
-        [slice _setSelected:YES];
-        [slice setNeedsDisplay:YES];
-    }
-}
-
-- (void)_deselectAll
-{
-    var count = [_slices count];
-
-    while (count--)
-    {
-        var slice = _slices[count];
-        [slice _setSelected:NO];
-        [slice _setLastSelected:NO];
-        [slice setNeedsDisplay:YES];
-    }
-}
-
-- (int)_queryNumberOfChildrenOfItem:(id)item withRowType:(CPRuleEditorRowType)type
-{
-    return [_ruleDelegate ruleEditor:self numberOfChildrenForCriterion:item withRowType:type];
-}
-
-- (id)_queryChild:(int)childIndex ofItem:(id)item withRowType:(CPRuleEditorRowType)type
-{
-    return [_ruleDelegate ruleEditor:self child:childIndex forCriterion:item withRowType:type];
-}
-
-- (id)_queryValueForItem:(id)item inRow:(int)row
-{
-    return [_ruleDelegate ruleEditor:self displayValueForCriterion:item inRow:row];
-}
-
-- (int)_lastRow
-{
-    return _lastRow;
-}
-
-- (int)_countOfRowsStartingAtObject:(id)object
-{
-    var index = [self _rowIndexForRowObject:object];
-    return ([self numberOfRows] - index);
-}
-
-- (void)_setAlignmentGridWidth:(float)width
-{
-    _alignmentGridWidth = width;
-}
-
-- (BOOL)_validateItem:(id)item value:(id)value inRow:(int)row
-{
-    return [self _queryCanSelectItem:item displayValue:value inRow:row];
-}
-
-- (BOOL)_queryCanSelectItem:(id)item displayValue:(id)value inRow:(int)row
-{
-    return YES;
-}
-
-- (void)_windowChangedKeyState
-{
-    [self setNeedsDisplay:YES];
-}
-
-- (void)setNeedsDisplay:(BOOL)flag
-{
-    [_slices makeObjectsPerformSelector:@selector(setNeedsDisplay:) withObject:flag];
-    [super setNeedsDisplay:flag];
-}
-
-- (void)setFrameSize:(CPSize)size
-{
-    [self setNeedsDisplay:YES];
-
-    if (CGRectGetWidth([self frame]) !== size.width)
-        [_slices makeObjectsPerformSelector:@selector(setNeedsLayout)];
-
-    [super setFrameSize:size];
-}
-
-- (CPIndexSet)_selectedSliceIndices
-{
-    var selectedIndices = [CPMutableIndexSet indexSet],
-        count = [_slices count],
-        i;
-
-    for (i = 0; i < count; i++)
-    {
-        var slice = _slices[i];
-        if ([slice _isSelected])
-            [selectedIndices addIndex:[slice rowIndex]];
-    }
-
-    return selectedIndices;
-}
-
-- (void)mouseDragged:(CPEvent)event
-{
-    if (!_editable)
-        return;
-
-    var point = [self convertPoint:[event locationInWindow] fromView:nil],
-        view = [_slices objectAtIndex:FLOOR(point.y / _sliceHeight)];
-
-    if ([self _dragShouldBeginFromMouseDown:view])
-        [self _performDragForSlice:view withEvent:event];
-}
-
-- (BOOL)_dragShouldBeginFromMouseDown:(CPView)view
-{
-    return (([self nestingMode] === CPRuleEditorNestingModeList ||  [view rowIndex] !== 0) && _editable && [view isKindOfClass:[_CPRuleEditorViewSliceRow class]] && _draggingRows === nil);
-}
-
-- (BOOL)_performDragForSlice:(id)slice withEvent:(CPEvent)event
-{
-    var dragPoint,
-        mainRowIndex = [slice rowIndex],
-        draggingRows = [CPIndexSet indexSetWithIndex:mainRowIndex],
-        selected_indices = [self _selectedSliceIndices],
-        pasteboard = [CPPasteboard pasteboardWithName: CPDragPboard];
-
-    [pasteboard declareTypes:[CPArray arrayWithObjects: CPRuleEditorItemPBoardType, nil] owner: self];
-
-    if ([selected_indices containsIndex:mainRowIndex])
-        [draggingRows addIndexes:selected_indices];
-    _draggingRows = [self _includeSubslicesForSlicesAtIndexes:draggingRows];
-
-    var firstIndex = [_draggingRows firstIndex],
-        firstSlice = [_slices objectAtIndex:firstIndex],
-        dragview = [[CPView alloc] initWithFrame:[firstSlice frame]];
-
-#if PLATFORM(DOM)
-    var html = firstSlice._DOMElement.innerHTML;
-    dragview._DOMElement.innerHTML = [html copy];
-#endif
-    [dragview setBackgroundColor:[firstSlice backgroundColor]];
-    [dragview setAlphaValue:0.7];
-
-    dragPoint = CPMakePoint(0, firstIndex * _sliceHeight);
-
-    [self dragView:dragview
-                at:dragPoint
-            offset:CGSizeMake(0, _sliceHeight)
-             event:event
-        pasteboard:pasteboard
-            source:self
-         slideBack:YES];
-
-    return YES;
-}
-
-- (CPDragOperation)draggingEntered:(id < CPDraggingInfo >)sender
-{
-    if ([sender draggingSource] === self)
-    {
-        [self _clearDropLine];
-        return CPDragOperationMove;
-    }
-
-    return CPDragOperationNone;
-}
-
-- (void)draggingExited:(id)sender
-{
-    [self _clearDropLine];
-    [self setNeedsDisplay:YES];
-}
-
-- (void)_clearDropLine
-{
-    [_dropLineView setAlphaValue:0];
-
-    if (_subviewIndexOfDropLine !== CPNotFound && _subviewIndexOfDropLine < _lastRow)
-    {
-        var previousBelowSlice = [_slices objectAtIndex:_subviewIndexOfDropLine];
-        [previousBelowSlice setFrameOrigin:CGPointMake(0, [previousBelowSlice rowIndex] * _sliceHeight)];
-    }
-
-    _subviewIndexOfDropLine = CPNotFound;
-}
-
-- (CPDragOperation)draggingUpdated:(id <CPDraggingInfo>)sender
-{
-    var point = [self convertPoint:[sender draggingLocation] fromView:nil],
-        y = point.y + _sliceHeight / 2,
-        indexOfDropLine =  FLOOR(y / _sliceHeight),
-        numberOfRows = [self numberOfRows];
-
-    if (indexOfDropLine < 0 || indexOfDropLine > numberOfRows || (indexOfDropLine >= [_draggingRows firstIndex] && indexOfDropLine <= [_draggingRows lastIndex] + 1))
-    {
-        if (_subviewIndexOfDropLine !== CPNotFound && indexOfDropLine !== _subviewIndexOfDropLine)
-            [self _clearDropLine];
-        return CPDragOperationNone;
-    }
-
-    if (_subviewIndexOfDropLine !== indexOfDropLine)
-    {
-        if (_subviewIndexOfDropLine !== CPNotFound && _subviewIndexOfDropLine < numberOfRows)
-        {
-            var previousBelowSlice = [_slices objectAtIndex:_subviewIndexOfDropLine];
-            [previousBelowSlice setFrameOrigin:CPMakePoint(0, [previousBelowSlice rowIndex] * _sliceHeight)];
-        }
-
-        if (indexOfDropLine <= _lastRow && indexOfDropLine < numberOfRows)
-        {
-            var belowSlice = [_slices objectAtIndex:indexOfDropLine];
-            [belowSlice setFrameOrigin:CGPointMake(0, [belowSlice rowIndex] * _sliceHeight + 2)];
-        }
-
-        [_dropLineView setAlphaValue:1];
-        [_dropLineView setFrameOrigin:CGPointMake(CGRectGetMinX([_dropLineView frame]), indexOfDropLine * _sliceHeight)];
-
-        _subviewIndexOfDropLine = indexOfDropLine;
-    }
-
-    return CPDragOperationMove;
-}
-
-- (BOOL)prepareForDragOperation:(id < CPDraggingInfo >)sender
-{
-    return (_subviewIndexOfDropLine !== CPNotFound);
-}
-
-- (BOOL)performDragOperation:(id < CPDraggingInfo >)info
-{
-    var aboveInsertIndexCount = 0,
-        object,
-        removeIndex;
-
-    var rowObjects = [_rowCache valueForKey:@"rowObject"],
-        index = [_draggingRows lastIndex];
-
-    var parentRowIndex = [self parentRowForRow:index], // first index of draggingrows
-        parentRowObject = (parentRowIndex === -1) ? _boundArrayOwner : [[self _rowCacheForIndex:parentRowIndex] rowObject],
-        insertIndex = _subviewIndexOfDropLine;
-
-    while (index !== CPNotFound)
-    {
-        if (index >= insertIndex)
-        {
-            removeIndex = index + aboveInsertIndexCount;
-            aboveInsertIndexCount += 1;
-        }
-        else
-        {
-            removeIndex = index;
-            insertIndex -= 1;
-        }
-
-        object = [rowObjects objectAtIndex:removeIndex];
-        [self removeRowAtIndex:removeIndex];
-        [[self _subrowObjectsOfObject:parentRowObject] insertObject:object atIndex:insertIndex - parentRowIndex - 1];
-
-        index = [_draggingRows indexLessThanIndex:index];
-    }
-
-    [self _clearDropLine];
-    _draggingRows = nil;
-    return YES;
-}
-
-- (CPIndexSet)_draggingTypes
-{
-    return [CPIndexSet indexSetWithIndex:CPDragOperationMove];
-}
-
-- (void)draggedView:(CPView)dragView endedAt:(CPPoint)aPoint operation:(CPDragOperation)operation
-{
-    _draggingRows = nil;
-
-    [self _updatePredicate];
-    [self _sendRuleAction];
-    [self _postRuleOptionChangedNotification];
-    [self _postRowCountChangedNotificationOfType:CPRuleEditorRowsDidChangeNotification indexes:nil]; // FIXME
-}
-
-- (BOOL)wantsPeriodicDraggingUpdates
-{
-    return NO;
-}
-
-- (void)pasteboard:(CPPasteboard)pasteboard provideDataForType:(int)type
-{
-}
-
-- (void)_setWindow:(id)window
-{
-    [super _setWindow:window];
-}
-
-- (void)_windowUpdate:(id)sender
-{
-    [super _windowUpdate:sender];
-}
-
-- (void)_postRuleOptionChangedNotification
-{
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPRuleEditorRulesDidChangeNotification object:self];
-}
-
-- (void)_postRowCountChangedNotificationOfType:(CPString)notificationName indexes:indexes
+-(CPArray)willInsertNewRowWithCriteria:(CPArray)criteria atIndex:(CPInteger)index
 {
-    var userInfo = [CPDictionary dictionaryWithObject:indexes forKey:"indexes"];
-    [[CPNotificationCenter defaultCenter] postNotificationName:notificationName object:self userInfo:userInfo];
+	return criteria;
 }
 
-- (CPIndexSet)_globalIndexesForSubrowIndexes:(CPIndexSet)indexes ofParentObject:(id)parentRowObject
+-(void)didAddRow:(CPRuleEditorModelItem)row
 {
-    var _subrows = [self _subrowObjectsOfObject:parentRowObject],
-        parentRowIndex = [self _rowIndexForRowObject:parentRowObject],
-
-        globalIndexes = [CPMutableIndexSet indexSet],
-        current_index = [indexes firstIndex],
-        numberOfChildrenOfPreviousBrother = 0;
-
-    while (current_index !== CPNotFound)
-    {
-        var globalChildIndex = current_index + parentRowIndex + 1 + numberOfChildrenOfPreviousBrother;
-        [globalIndexes addIndex:globalChildIndex];
-
-        if ([self rowTypeForRow:globalChildIndex] === CPRuleEditorRowTypeCompound)
-        {
-            var rowObject = [[self _rowCacheForIndex:current_index] rowObject],
-                subrows = [self _subrowObjectsOfObject:rowObject],
-                subIndexes = [self _globalIndexesForSubrowIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0,[subrows count])] ofParentObject:rowObject];
-
-            numberOfChildrenOfPreviousBrother = [subIndexes count];
-        }
-
-        current_index = [indexes indexGreaterThanIndex:current_index];
-    }
-
-    return globalIndexes;
 }
 
-- (void)_sendRuleAction
+-(void)willModifyRow:(CPRuleEditorModelItem)row
 {
-    var action = [self action],
-        target = [self target];
-
-    [self sendAction:action to:target];
 }
 
-- (BOOL)_sendsActionOnIncompleteTextChange
+-(void)didModifyRow:(CPRuleEditorModelItem)row
 {
-    return YES;
 }
 
-- (void)_getAllAvailableItems:(id)items values:(id)values asChildrenOfItem:(id)parentItem inRow:(int)aRow
+-(void)didRemoveRow:(CPRuleEditorModelItem)row
 {
-    var type,
-        indexofCriterion,
-        numOfChildren;
-
-    var availItems = [CPMutableArray array],
-        availValues = [CPMutableArray array];
-
-    var criterion = nil,
-        value = nil;
-
-    _lastRow = aRow;
-    type = [self rowTypeForRow:aRow];
-    numOfChildren = [self _queryNumberOfChildrenOfItem:parentItem withRowType:type];
-
-    var criteria = [self criteriaForRow:aRow];
-    indexofCriterion = [criteria indexOfObject:criterion];
-
-    if (parentItem !== nil
-        && indexofCriterion !== CPNotFound
-        && indexofCriterion < [criteria count] - 1)
-    {
-        var next = indexofCriterion + 1;
-
-        criterion = [criteria objectAtIndex:next];
-        var values = [self displayValuesForRow:aRow];
-        value = [values objectAtIndex:next];
-    }
-
-    for (var i = 0; i < numOfChildren; ++i)
-    {
-        var aChild = [self _queryChild:i ofItem:parentItem withRowType:type],
-            availChild = aChild,
-            availValue = value;
-
-        if (criterion !== aChild)
-            availValue = [self _queryValueForItem:aChild inRow:aRow];
-
-        if (!availValue)
-            availValue = [self _queryValueForItem:availChild inRow:aRow];
-
-        [availItems addObject:availChild];
-        [availValues addObject:availValue];
-    }
-
-    [items addObjectsFromArray:availItems];
-    [values addObjectsFromArray:availValues];
 }
 
 @end
 
-var CPRuleEditorAlignmentGridWidthKey       = @"CPRuleEditorAlignmentGridWidth",
-    CPRuleEditorSliceHeightKey              = @"CPRuleEditorSliceHeight",
-    CPRuleEditorStringsFilenameKey          = @"CPRuleEditorStringsFilename",
-    CPRuleEditorEditableKey                 = @"CPRuleEditorEditable",
-    CPRuleEditorAllowsEmptyCompoundRowsKey  = @"CPRuleEditorAllowsEmptyCompoundRows",
-    CPRuleEditorDisallowEmptyKey            = @"CPRuleEditorDisallowEmpty",
-    CPRuleEditorNestingModeKey              = @"CPRuleEditorNestingMode",
-    CPRuleEditorRowTypeKeyPathKey           = @"CPRuleEditorRowTypeKeyPath",
-    CPRuleEditorItemsKeyPathKey             = @"CPRuleEditorItemsKeyPath",
-    CPRuleEditorValuesKeyPathKey            = @"CPRuleEditorValuesKeyPath",
-    CPRuleEditorSubrowsArrayKeyPathKey      = @"CPRuleEditorSubrowsArrayKeyPath",
-    CPRuleEditorBoundArrayKeyPathKey        = @"CPRuleEditorBoundArrayKeyPath",
-    CPRuleEditorRowClassKey                 = @"CPRuleEditorRowClass",
-    CPRuleEditorSlicesHolderKey             = @"CPRuleEditorSlicesHolder",
-    CPRuleEditorSlicesKey                   = @"CPRuleEditorSlices",
-    CPRuleEditorDelegateKey                 = @"CPRuleEditorDelegate",
-    CPRuleEditorBoundArrayOwnerKey          = @"CPRuleEditorBoundArrayOwner";
+@implementation CPRuleEditor(CPRuleEditorModelObserver)
+
+-(void)notifyRowAdded:(CPNotification)notification
+{
+	if(!notification)
+		[CPException raise:CPInternalInconsistencyException reason:_cmd+@" : null notification"];
+
+	var userInfo=[notification userInfo];
+	if(!userInfo)
+		[CPException raise:CPInternalInconsistencyException reason:_cmd+@" : notification userInfo is null"];
+	
+	var row=[userInfo valueForKey:@"row"];
+	if(!row)
+		[CPException raise:CPInternalInconsistencyException reason:_cmd+@" : notification userInfo is missing row"];
+
+	[self didAddRow:row];
+	[self notifyRowsDidChange:notification];
+}
+
+-(void)notifyRowRemoved:(CPNotification)notification
+{
+	if(!notification)
+		[CPException raise:CPInternalInconsistencyException reason:_cmd+@" : null notification"];
+
+	var userInfo=[notification userInfo];
+	if(!userInfo)
+		[CPException raise:CPInternalInconsistencyException reason:_cmd+@" : notification userInfo is null"];
+	
+	var row=[userInfo valueForKey:@"row"];
+	if(!row)
+		[CPException raise:CPInternalInconsistencyException reason:_cmd+@" : notification userInfo is missing row"];
+
+	[self didRemoveRow:row];
+	[self notifyRowsDidChange:notification];
+}
+
+-(void)notifyRowModified:(CPNotification)notification
+{
+	if(!notification)
+		[CPException raise:CPInternalInconsistencyException reason:_cmd+@" : null notification"];
+
+	var userInfo=[notification userInfo];
+	if(!userInfo)
+		[CPException raise:CPInternalInconsistencyException reason:_cmd+@" : notification userInfo is null"];
+	
+	var row=[userInfo valueForKey:@"row"];
+	if(!row)
+		[CPException raise:CPInternalInconsistencyException reason:_cmd+@" : notification userInfo is missing row"];
+
+	[self didModifyRow:row];
+	[self notifyRowsDidChange:notification];
+}
+
+-(void)notifyRowsDidChange:(CPNotification)notification
+{
+	[[CPNotificationCenter defaultCenter] postNotificationName:CPRuleEditorRowsDidChangeNotification object:self];
+	if(!_delegate||![_delegate respondsToSelector:@selector(ruleEditorRowsDidChange:)])
+		return;
+
+	var notif=[CPNotification notificationWithName:CPRuleEditorRowsDidChangeNotification object:self];
+	[_delegate ruleEditorRowsDidChange:notif];
+}
+
+@end
+
+@implementation CPRuleEditor(CPRuleEditorViewDelegate)
+
+-(CPString)localizedString:(CPString)text
+{
+	if(![self standardLocalizer])
+		return text;
+	var res=[[self standardLocalizer] localizedStringForString:text];
+	return res!=nil?res:text;
+}
+
+-(BOOL)canMoveRow:(CPRuleEditorModelItem)aRow afterRow:(CPRuleEditorModelItem)anotherRow
+{
+	if(aRow==anotherRow||[anotherRow hasAncestor:aRow])
+		return NO;
+	
+	if(![_model isRowRemoveable:aRow includeSubrows:YES])
+		return NO;
+	
+	if([anotherRow rowType]==CPRuleEditorRowTypeCompound)
+		return [_model allowNewRowInsertOfType:[aRow rowType] withParent:anotherRow];
+	else
+		return [_model allowNewRowInsertOfType:[aRow rowType] withParent:[anotherRow parent]];
+}
+
+-(void)moveRow:(CPRuleEditorModelItem)aRow afterRow:(CPRuleEditorModelItem)anotherRow
+{
+	if(![self canMoveRow:aRow afterRow:anotherRow])
+		return;
+		
+	var index=[_model indexOfRow:aRow];
+	var removedRow=[_model removeRowAtIndex:index includeSubrows:YES];
+	if(!removedRow)
+		return;
+
+	index=[_model indexOfRow:anotherRow]+1;
+	var parentIndex=[anotherRow rowType]==CPRuleEditorRowTypeCompound?index-1:[_model indexOfRow:[anotherRow parent]];
+	
+	[_model insertRow:removedRow atIndex:index withParentRowIndex:parentIndex];
+}
+
+-(void)insertNewRowOfType:(CPInteger)rowType afterRow:(CPRuleEditorModelItem)aRow
+{
+	if(!aRow)
+		return;
+
+	var index=[_model indexOfRow:aRow];
+	if(index==CPNotFound)
+		return;
+	
+	var originalRowType=[aRow rowType];
+	
+	if(originalRowType==CPRuleEditorRowTypeCompound)
+	{
+		rowType=[_model allowNewRowInsertOfType:rowType withParent:aRow]?rowType:CPRuleEditorRowTypeSimple;
+		[self insertRowAtIndex:index+1 withType:rowType asSubrowOfRow:index animate:YES];
+		return;
+	}
+	
+	var parent=[aRow parent];
+	var parentIndex=parent?[_model indexOfRow:parent]:-1;
+
+	index++;
+	
+	[self insertRowAtIndex:index withType:rowType asSubrowOfRow:parentIndex animate:YES];
+	
+}
+
+-(BOOL)isRowRemoveable:(CPRuleEditorModelItem)aRow
+{
+	return [_model isRowRemoveable:aRow includeSubrows:NO];
+}
+
+-(void)removeRow:(CPRuleEditorModelItem)aRow
+{
+	if(!aRow)
+		return;
+
+	var index=[_model indexOfRow:aRow];
+	if(index==CPNotFound)
+		return;
+		
+	[self removeRowAtIndex:index];
+}
+
+-(void)valueChanged:(id)value criterionIndex:(CPInteger)index valueIndex:valueIndex inRow:(CPRuleEditorModelItem)aRow
+{
+	if(!aRow)
+		return;
+	
+	var rowIndex=[_model indexOfRow:aRow];
+	if(rowIndex==CPNotFound)
+		return;
+		
+	var criteria=[self refreshCriteriaForRow:aRow rowIndex:rowIndex rowType:CPRuleEditorRowTypeSimple 
+		startingAtIndex:index+1 currentValueIndex:valueIndex currentValue:value];
+
+	[self willModifyRow:aRow];
+	[_model setCriteria:criteria forRow:aRow];	
+}
+
+-(id)criterionItemCopy:(id)item
+{
+	return [item copy];
+}
+
+@end
 
 @implementation CPRuleEditor (CPCoding)
+
+//TODO
 
 - (id)initWithCoder:(CPCoder)coder
 {
     self = [super initWithCoder:coder];
-    if (self !== nil)
+    if (self != nil)
     {
-        [self setFormattingStringsFilename:[coder decodeObjectForKey:CPRuleEditorStringsFilenameKey]];
-        _alignmentGridWidth     = [coder decodeFloatForKey:CPRuleEditorAlignmentGridWidthKey];
-        _sliceHeight            = [coder decodeDoubleForKey:CPRuleEditorSliceHeightKey];
-        _editable                = [coder decodeBoolForKey:CPRuleEditorEditableKey];
-        _allowsEmptyCompoundRows = [coder decodeBoolForKey:CPRuleEditorAllowsEmptyCompoundRowsKey];
-        _disallowEmpty           = [coder decodeBoolForKey:CPRuleEditorDisallowEmptyKey];
-        _nestingMode            = [coder decodeIntForKey:CPRuleEditorNestingModeKey];
-        _typeKeyPath            = [coder decodeObjectForKey:CPRuleEditorRowTypeKeyPathKey];
-        _itemsKeyPath           = [coder decodeObjectForKey:CPRuleEditorItemsKeyPathKey];
-        _valuesKeyPath          = [coder decodeObjectForKey:CPRuleEditorValuesKeyPathKey];
-        _subrowsArrayKeyPath    = [coder decodeObjectForKey:CPRuleEditorSubrowsArrayKeyPathKey];
-        _boundArrayKeyPath      = [coder decodeObjectForKey:CPRuleEditorBoundArrayKeyPathKey];
-
-        _slicesHolder = [[self subviews] objectAtIndex:0];
-        _boundArrayOwner = [coder decodeObjectForKey:CPRuleEditorBoundArrayOwnerKey];
-        _slices = [coder decodeObjectForKey:CPRuleEditorSlicesKey];
-        _ruleDelegate = [coder decodeObjectForKey:CPRuleEditorDelegateKey];
-
-        [self _initRuleEditorShared];
+    	[self _build];
     }
 
     return self;
@@ -2439,180 +1260,8 @@ var CPRuleEditorAlignmentGridWidthKey       = @"CPRuleEditorAlignmentGridWidth",
 - (void)encodeWithCoder:(id)coder
 {
     [super encodeWithCoder:coder];
-
-    [coder encodeBool:_editable forKey:CPRuleEditorEditableKey];
-    [coder encodeBool:_allowsEmptyCompoundRows forKey:CPRuleEditorAllowsEmptyCompoundRowsKey];
-    [coder encodeBool:_disallowEmpty forKey:CPRuleEditorDisallowEmptyKey];
-
-    [coder encodeFloat:_alignmentGridWidth forKey:CPRuleEditorAlignmentGridWidthKey];
-    [coder encodeDouble:_sliceHeight forKey:CPRuleEditorSliceHeightKey];
-    [coder encodeInt:_nestingMode forKey:CPRuleEditorNestingModeKey];
-
-    [coder encodeObject:_stringsFilename forKey:CPRuleEditorStringsFilenameKey];
-    [coder encodeObject:_typeKeyPath forKey:CPRuleEditorRowTypeKeyPathKey];
-    [coder encodeObject:_itemsKeyPath forKey:CPRuleEditorItemsKeyPathKey];
-    [coder encodeObject:_valuesKeyPath forKey:CPRuleEditorValuesKeyPathKey];
-    [coder encodeObject:_boundArrayKeyPath forKey:CPRuleEditorBoundArrayKeyPathKey];
-    [coder encodeObject:_subrowsArrayKeyPath forKey:CPRuleEditorSubrowsArrayKeyPathKey];
-
-    [coder encodeConditionalObject:_slicesHolder forKey:CPRuleEditorSlicesHolderKey];
-    [coder encodeObject:_slices forKey:CPRuleEditorSlicesKey];
-    [coder encodeObject:_boundArrayOwner forKey:CPRuleEditorBoundArrayOwnerKey];
 }
 
 @end
 
-var CriteriaKey         = @"criteria",
-    SubrowsKey          = @"subrows",
-    DisplayValuesKey    = @"displayValues",
-    RowTypeKey          = @"rowType";
-
-@implementation _CPRuleEditorRowObject : CPObject
-{
-    CPArray     subrows @accessors;
-    CPArray     criteria @accessors;
-    CPArray     displayValues @accessors;
-    CPInteger   rowType @accessors;
-}
-
-- (id)copy
-{
-    var copy = [[_CPRuleEditorRowObject alloc] init];
-    [copy setSubrows:[[CPArray alloc] initWithArray:subrows copyItems:YES]];
-    [copy setCriteria:[[CPArray alloc] initWithArray:criteria copyItems:YES]];
-    [copy setDisplayValues:[[CPArray alloc] initWithArray:displayValues copyItems:YES]];
-    [copy setRowType:rowType];
-
-    return copy;
-}
-
-- (CPString)description
-{
-    return "<" + [self className] + ">\nsubrows = " + [subrows description] + "\ncriteria = " + [criteria description] + "\ndisplayValues = " + [displayValues description];
-}
-
-- (id)initWithCoder:(id)coder
-{
-    self = [super init];
-    if (self !== nil)
-    {
-        subrows = [coder decodeObjectForKey:SubrowsKey];
-        criteria = [coder decodeObjectForKey:CriteriaKey];
-        displayValues = [coder decodeObjectForKey:DisplayValuesKey];
-        rowType = [coder decodeIntForKey:RowTypeKey];
-    }
-
-    return self;
-}
-
-- (void)encodeWithCoder:(id)coder
-{
-    [coder encodeObject:subrows forKey:SubrowsKey];
-    [coder encodeObject:criteria forKey:CriteriaKey];
-    [coder encodeObject:displayValues forKey:DisplayValuesKey];
-    [coder encodeInt:rowType forKey:RowTypeKey];
-}
-
-@end
-
-@implementation _CPRuleEditorCache : CPObject
-{
-    CPDictionary    rowObject   @accessors;
-    CPInteger       rowIndex    @accessors;
-    CPInteger       indentation @accessors;
-}
-
-- (CPString)description
-{
-    return [CPString stringWithFormat:@"<%d object:%d rowIndex:%d indentation:%d>", [self hash], [rowObject hash], rowIndex, indentation];
-}
-
-@end
-
-var CPBoundArrayKey = @"CPBoundArray";
-
-@implementation _CPRuleEditorViewUnboundRowHolder : CPObject
-{
-    CPArray boundArray;
-}
-
-- (id)init
-{
-    if (self = [super init])
-        boundArray = [[CPArray alloc] init];
-
-    return self;
-}
-
-- (id)initWithCoder:(id)coder
-{
-    if (self = [super init])
-        boundArray = [coder decodeObjectForKey:CPBoundArrayKey];
-
-    return self;
-}
-
-- (void)encodeWithCoder:(id)coder
-{
-    [coder encodeObject:boundArray forKey:CPBoundArrayKey];
-}
-
-@end
-
-@implementation _CPRuleEditorViewSliceHolder : CPView
-{
-}
-
-- (void)addSubview:(CPView)subview
-{
-    [self setNeedsDisplay:YES];
-    [super addSubview:subview];
-}
-
-@end
-
-var dropSeparatorColor = [CPColor colorWithHexString:@"4886ca"];
-
-@implementation _CPRuleEditorViewSliceDropSeparator : CPView
-{
-}
-
-- (void)drawRect:(CPRect)rect
-{
-    var context = [[CPGraphicsContext currentContext] graphicsPort];
-    CGContextSetFillColor(context, dropSeparatorColor);
-    CGContextFillRect(context, [self bounds]);
-}
-
-@end
-
-@implementation CPObject (CPRuleEditorSliceRow)
-
-- (int)valueType
-{
-    var result = 0,
-        isString = [self isKindOfClass:CPString];
-
-    if (!isString)
-    {
-        var isView = [self isKindOfClass:CPView];
-        result = 1;
-
-        if (!isView)
-        {
-            var ismenuItem = [self isKindOfClass:CPMenuItem];
-            result = 2;
-
-            if (!ismenuItem)
-            {
-                [CPException raise:CPGenericException reason:@"Unknown type for " + self];
-                result = -1;
-            }
-        }
-    }
-
-    return result;
-}
-
-@end
 /*! @endcond */
