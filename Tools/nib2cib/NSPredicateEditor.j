@@ -30,7 +30,7 @@
     
     if (self)
     {   
-        _allTemplates = [aCoder decodeObjectForKey:@"NSPredicateTemplates"];
+        _rowTemplates = [aCoder decodeObjectForKey:@"NSPredicateTemplates"];
     }
     
     return self;

@@ -22,9 +22,7 @@
 
 
 @import <AppKit/CPRuleEditor.j>
-@import <AppKit/CPTextField.j>
 
-@import "NSCell.j"
 @import "NSControl.j"
 
 @implementation CPRuleEditor (NSCoding)
@@ -32,28 +30,12 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [super NS_initWithCoder:aCoder];
-    
-    if (self)
-    {
-        _alignmentGridWidth     = [aCoder decodeFloatForKey:@"NSRuleEditorAlignmentGridWidth"];
-        _sliceHeight            = [aCoder decodeDoubleForKey:@"NSRuleEditorSliceHeight"];
-        _stringsFilename        = [aCoder decodeObjectForKey:@"NSRuleEditorStringsFileName"];
-        _editable                = [aCoder decodeBoolForKey:@"NSRuleEditorEditable"];
-        _allowsEmptyCompoundRows = [aCoder decodeBoolForKey:@"NSRuleEditorAllowsEmptyCompoundRows"];
-        _disallowEmpty           = [aCoder decodeBoolForKey:@"NSRuleEditorDisallowEmpty"];        
-        _nestingMode            = [aCoder decodeIntForKey:@"NSRuleEditorNestingMode"];
-        _typeKeyPath            = [aCoder decodeObjectForKey:@"NSRuleEditorRowTypeKeyPath"];
-        _itemsKeyPath           = [aCoder decodeObjectForKey:@"NSRuleEditorItemsKeyPath"];
-        _valuesKeyPath          = [aCoder decodeObjectForKey:@"NSRuleEditorValuesKeyPath"];
-        _subrowsArrayKeyPath    = [aCoder decodeObjectForKey:@"NSRuleEditorSubrowsArrayKeyPath"];
-        _boundArrayKeyPath      = [aCoder decodeObjectForKey:@"NSRuleEditorBoundArrayKeyPath"];
-        
-        //_slicesHolder = [aCoder decodeObjectForKey:@"NSRuleEditorViewSliceHolder"];
-        _boundArrayOwner        = [aCoder decodeObjectForKey:@"NSRuleEditorBoundArrayOwner"];
-        _slices                 = [aCoder decodeObjectForKey:@"NSRuleEditorSlices"];
-        _ruleDelegate           = [aCoder decodeObjectForKey:@"NSRuleEditorDelegate"];      
-    }
-    
+
+    if (!self)
+    	return nil;
+	
+	[[[self subviews] objectAtIndex:0] removeFromSuperview];
+
     return self;
 }
 
@@ -75,37 +57,18 @@
 
 @end
 
-@implementation _NSRuleEditorViewSliceHolder : _CPRuleEditorViewSliceHolder
+@implementation _NSRuleEditorViewSliceHolder : CPView
 {
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [self NS_initWithCoder:aCoder];
+	return [[CPView alloc] initWithFrame:CGRectMakeZero()];
 }
 
 - (Class)classForKeyedArchiver
 {
-    return [_CPRuleEditorViewSliceHolder class];
-}
-
-@end
-
-@implementation _NSRuleEditorViewUnboundRowHolder : _CPRuleEditorViewUnboundRowHolder
-{
-}
-
-- (id)initWithCoder:(CPCoder)aCoder
-{
-    if (self = [super init])
-        boundArray = [aCoder decodeObjectForKey:@"NSBoundArray"];
-    
-    return self;
-}
-
-- (Class)classForKeyedArchiver
-{
-    return [_CPRuleEditorViewUnboundRowHolder class];
+    return [CPView class];
 }
 
 @end
