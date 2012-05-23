@@ -176,6 +176,18 @@ class LintChecker(object):
             'type': ERROR_TYPE_ILLEGAL
         },
         {
+            'regex': re.compile(ur'^\s*(?:(?:else )?if|for|switch|while|with)\s*\((\s+)?.+?(\s+)?\)\s*(?:(?:\{|//.*|/\*.*\*/)\s*)?$'),
+            'error': 'space inside parentheses',
+            'showPositionForGroup': [1, 2],
+            'type': ERROR_TYPE_ILLEGAL
+        },
+        {
+            'regex': re.compile(ur'^\s*(?:(?:else )?if|for|switch|while|with)\s*\(.+\)\s*(?:[\w_]|\[).+(;)\s*(?://.*|/\*.*\*/\s*)?$'),
+            'error': 'dependent statements must be on their own line',
+            'showPositionForGroup': 1,
+            'type': ERROR_TYPE_ILLEGAL
+        },
+        {
             'regex': TRAILING_WHITESPACE_RE,
             'error': 'trailing whitespace',
             'showPositionForGroup': 1,
@@ -186,8 +198,8 @@ class LintChecker(object):
             'filter': {'regex': re.compile(ur'(^@import\b|^\s*' + METHOD_RE + '|^\s*[a-zA-Z_$]\w*:\s*\([a-zA-Z_$][\w<>]*\)\s*\w+|[a-zA-Z_$]\w*(\+\+|--)|([ -+*/%^&|<>!]=?|&&|\|\||<<|>>>|={1,3}|!==?)\s*[-+][\w(\[])'), 'pass': False},
 
             'preprocess': STD_IGNORES,
-            'regex':      re.compile(ur'(?<=[\w)\]"\']|([ ]))([-+*/%^]|&&?|\|\|?|<<|>>>?)(?=[\w({\["\']|(?(1)\b\b|[ ]))'),
-            'error':      'binary operator without surrounding spaces',
+            'regex': re.compile(ur'(?<=[\w)\]"\']|([ ]))([-+*/%^]|&&?|\|\|?|<<|>>>?)(?=[\w({\["\']|(?(1)\b\b|[ ]))'),
+            'error': 'binary operator without surrounding spaces',
             'showPositionForGroup': 2,
             'type': ERROR_TYPE_WARNING
         },
@@ -196,8 +208,8 @@ class LintChecker(object):
             'filter': {'regex': re.compile(ur'^(@import\b|\s*' + METHOD_RE + ')'), 'pass': False},
 
             'preprocess': STD_IGNORES,
-            'regex':      re.compile(ur'(?:[-*/%^&|<>!]=?|&&|\|\||<<|>>>|={1,3}|!==?)\s*(?<!\+)(\+)[\w(\[]'),
-            'error':      'useless unary + operator',
+            'regex': re.compile(ur'(?:[-*/%^&|<>!]=?|&&|\|\||<<|>>>|={1,3}|!==?)\s*(?<!\+)(\+)[\w(\[]'),
+            'error': 'useless unary + operator',
             'showPositionForGroup': 1,
             'type': ERROR_TYPE_WARNING
         },
@@ -206,8 +218,8 @@ class LintChecker(object):
             'filter': {'regex': re.compile(ur'^\s*(?:@outlet\s+)?[a-zA-Z_$]\w*\s+[a-zA-Z_$]\w*\s+@accessors\b'), 'pass': False},
 
             'preprocess': STD_IGNORES,
-            'regex':      re.compile(ur'(?<=[\w)\]"\']|([ ]))(=|[-+*/%^&|]=|<<=|>>>?=)(?=[\w({\["\']|(?(1)\b\b|[ ]))'),
-            'error':      'assignment operator without surrounding spaces',
+            'regex': re.compile(ur'(?<=[\w)\]"\']|([ ]))(=|[-+*/%^&|]=|<<=|>>>?=)(?=[\w({\["\']|(?(1)\b\b|[ ]))'),
+            'error': 'assignment operator without surrounding spaces',
             'showPositionForGroup': 2,
             'type': ERROR_TYPE_WARNING
         },
@@ -216,8 +228,8 @@ class LintChecker(object):
             'filter': {'regex': re.compile(ur'^(@import\b|@implementation\b|\s*' + METHOD_RE + ')'), 'pass': False},
 
             'preprocess': STD_IGNORES,
-            'regex':      re.compile(ur'(?<=[\w)\]"\']|([ ]))(===?|!==?|[<>]=?)(?=[\w({\["\']|(?(1)\b\b|[ ]))'),
-            'error':      'comparison operator without surrounding spaces',
+            'regex': re.compile(ur'(?<=[\w)\]"\']|([ ]))(===?|!==?|[<>]=?)(?=[\w({\["\']|(?(1)\b\b|[ ]))'),
+            'error': 'comparison operator without surrounding spaces',
             'showPositionForGroup': 2,
             'type': ERROR_TYPE_WARNING
         },
@@ -315,24 +327,32 @@ class LintChecker(object):
                 continue
 
             positions = []
-            group = check.get('showPositionForGroup')
+            groups = check.get('showPositionForGroup')
 
             if (check.get('id') == 'tabs'):
                 line = tabs2spaces(line, positions=positions)
-            elif group is not None:
+            elif groups is not None:
                 line = tabs2spaces(line)
 
-                for match in regex.finditer(line):
-                    if group > 0:
-                        positions.append(match.start(group))
-                    else:
-                        # group 0 means show the first non-empty match
-                        for i in range(1, len(match.groups()) + 1):
-                            if match.start(i) >= 0:
-                                positions.append(match.start(i))
-                                break
+                if not isinstance(groups, (list, tuple)):
+                    groups = (groups,)
 
-            self.error(check['error'], line=line, positions=positions, type=check['type'])
+                for match in regex.finditer(line):
+                    for group in groups:
+                        if group > 0:
+                            start = match.start(group)
+
+                            if start >= 0:
+                                positions.append(start)
+                        else:
+                            # group 0 means show the first non-empty match
+                            for i in range(1, len(match.groups()) + 1):
+                                if match.start(i) >= 0:
+                                    positions.append(match.start(i))
+                                    break
+
+            if positions:
+                self.error(check['error'], line=line, positions=positions, type=check['type'])
 
     def next_statement(self, expect_line=False, check_line=True):
         try:
