@@ -78,6 +78,19 @@ def relative_path(basedir, filename):
 
 
 class LintChecker(object):
+    """Examine Objective-J code statically and generate warnings for possible errors and deviations from the coding-style standard.
+
+    >>> LintChecker().lint_text('var b = 5+5;')
+    [{'positions': [9], 'filename': '<stdin>', 'lineNum': 1, 'message': 'binary operator without surrounding spaces', 'type': 2, 'line': u'var b = 5+5;'}]
+
+    >>> LintChecker().lint_text('''
+    ... if( 1 ) {
+    ...   var b=7;
+    ...       c = 8;
+    ... }
+    ... ''')
+    [{'positions': [2], 'filename': '<stdin>', 'lineNum': 2, 'message': 'missing space between control statement and parentheses', 'type': 2, 'line': u'if( 1 ) {'}, {'positions': [8], 'filename': '<stdin>', 'lineNum': 2, 'message': 'braces should be on their own line', 'type': 1, 'line': u'if( 1 ) {'}, {'positions': [3, 5], 'filename': '<stdin>', 'lineNum': 2, 'message': 'space inside parentheses', 'type': 1, 'line': u'if( 1 ) {'}, {'positions': [7], 'filename': '<stdin>', 'lineNum': 3, 'message': 'assignment operator without surrounding spaces', 'type': 2, 'line': u'  var b=7;'}, {'lineNum': 4, 'message': 'accidental global variable', 'type': 1, 'line': u'      c = 8;', 'filename': '<stdin>'}]
+    """
 
     VAR_BLOCK_START_RE = re.compile(ur'''(?x)
         (?P<indent>\s*)         # indent before a var keyword
