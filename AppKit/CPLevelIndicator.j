@@ -253,7 +253,7 @@ var _CPLevelIndicatorBezelColor = nil,
 
         var location = [self convertPoint:[anEvent locationInWindow] fromView:nil],
             bounds = [self bounds],
-            oldValue = [self doubleValue];
+            oldValue = [self doubleValue],
             newValue = oldValue;
 
         // Moving the mouse outside of the widget to the left sets it

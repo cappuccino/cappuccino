@@ -181,7 +181,7 @@ function CPDecimalMakeWithParts(mantissa, exponent)
     var m = [],
         isNegative = NO;
 
-    if (mantissa < 0 )
+    if (mantissa < 0)
     {
         isNegative = YES;
         mantissa = ABS(mantissa);
@@ -1400,9 +1400,8 @@ function CPDecimalRound(result, dcm, scale ,roundingMode)
 function CPDecimalCompact(dcm)
 {
     // if positive or zero exp leading zeros simply delete, trailing ones u need to increment exponent
-    if (!dcm || dcm._mantissa.length == 0 || CPDecimalIsNotANumber(dcm) )
+    if (!dcm || dcm._mantissa.length == 0 || CPDecimalIsNotANumber(dcm))
         return;
-
 
     if (CPDecimalIsZero(dcm))
     {
