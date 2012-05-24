@@ -224,10 +224,8 @@ CPRunContinuesResponse  = -1002;
     // We also want to set the default cursor on the body, so that buttons and things don't have an iBeam
     [[CPCursor arrowCursor] set];
 
-    var bundle = [CPBundle mainBundle];
-
-    var delegateClassName = [bundle objectForInfoDictionaryKey:@"CPApplicationDelegateClass"],
-        types = [bundle objectForInfoDictionaryKey:@"CPBundleDocumentTypes"];
+    var bundle = [CPBundle mainBundle],
+        delegateClassName = [bundle objectForInfoDictionaryKey:@"CPApplicationDelegateClass"];
 
     if (delegateClassName)
     {
@@ -244,6 +242,8 @@ CPRunContinuesResponse  = -1002;
     [defaultCenter
         postNotificationName:CPApplicationWillFinishLaunchingNotification
         object:self];
+
+    var types = [bundle objectForInfoDictionaryKey:@"CPBundleDocumentTypes"];
 
     if ([types count] > 0)
         _documentController = [CPDocumentController sharedDocumentController];
