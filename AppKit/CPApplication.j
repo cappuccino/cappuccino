@@ -227,9 +227,6 @@ CPRunContinuesResponse  = -1002;
     var bundle = [CPBundle mainBundle],
         types = [bundle objectForInfoDictionaryKey:@"CPBundleDocumentTypes"];
 
-    if ([types count] > 0)
-        _documentController = [CPDocumentController sharedDocumentController];
-
     var delegateClassName = [bundle objectForInfoDictionaryKey:@"CPApplicationDelegateClass"];
 
     if (delegateClassName)
@@ -237,10 +234,9 @@ CPRunContinuesResponse  = -1002;
         var delegateClass = objj_getClass(delegateClassName);
 
         if (delegateClass)
-            if ([_documentController class] == delegateClass)
-                [self setDelegate:_documentController];
-            else
-                [self setDelegate:[[delegateClass alloc] init]];
+        {
+            [self setDelegate:[[delegateClass alloc] init]];
+        }
     }
 
     var defaultCenter = [CPNotificationCenter defaultCenter];
@@ -248,6 +244,9 @@ CPRunContinuesResponse  = -1002;
     [defaultCenter
         postNotificationName:CPApplicationWillFinishLaunchingNotification
         object:self];
+
+    if ([types count] > 0)
+        _documentController = [CPDocumentController sharedDocumentController];
 
     var needsUntitled = !!_documentController,
         URLStrings = window.cpOpeningURLStrings && window.cpOpeningURLStrings(),
