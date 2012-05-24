@@ -36,7 +36,7 @@ import os
 import os.path
 import re
 import sys
-
+import unittest
 
 EXIT_CODE_SHOW_HTML = 205
 EXIT_CODE_SHOW_TOOLTIP = 206
@@ -150,6 +150,24 @@ class LintChecker(object):
     EMPTY_STRING_LITERAL_FUNCTION = lambda match: match.group(1) + (len(match.group(2)) * ' ') + match.group(1)
     EMPTY_SELF_STRING_LITERAL_FUNCTION = lambda self, match: match.group(1) + (len(match.group(2)) * ' ') + match.group(1)
 
+    def noncapturing(regex):
+        return ur'(?:%s)' % regex
+
+    def optional(regex):
+        return ur'(?:%s)?' % regex
+
+    DECIMAL_DIGIT_RE = ur'[0-9]'
+    NON_ZERO_DIGIT_RE = ur'[1-9]'
+    DECIMAL_DIGITS_RE = DECIMAL_DIGIT_RE + ur'+'
+    DECIMAL_DIGITS_OPT_RE = optional(DECIMAL_DIGIT_RE + ur'+')
+    EXPONENT_INDICATOR_RE = ur'[eE]'
+    SIGNED_INTEGER_RE = noncapturing(DECIMAL_DIGITS_RE) + ur'|' + noncapturing(ur'\+' + DECIMAL_DIGITS_RE) + ur'|' + noncapturing('-' + DECIMAL_DIGITS_RE)
+    DECIMAL_INTEGER_LITERAL_RE = ur'0|' + noncapturing(NON_ZERO_DIGIT_RE + DECIMAL_DIGIT_RE + ur'*')
+    EXPONENT_PART_RE = EXPONENT_INDICATOR_RE + noncapturing(SIGNED_INTEGER_RE)
+    EXPONENT_PART_OPT_RE = optional(EXPONENT_PART_RE)
+
+    DECIMAL_LITERAL_RE = re.compile(noncapturing(noncapturing(DECIMAL_INTEGER_LITERAL_RE) + ur'\.' + DECIMAL_DIGITS_OPT_RE + EXPONENT_PART_OPT_RE) + ur'|\.' + noncapturing(DECIMAL_DIGITS_RE + EXPONENT_PART_OPT_RE) + ur'|' + noncapturing(noncapturing(DECIMAL_INTEGER_LITERAL_RE) + EXPONENT_PART_OPT_RE))
+
     ERROR_TYPE_ILLEGAL = 1
     ERROR_TYPE_WARNING = 2
 
@@ -159,6 +177,14 @@ class LintChecker(object):
         {'regex': STRIP_LINE_COMMENT_RE, 'replace': ''},
         {'regex': STRING_LITERAL_RE, 'replace': EMPTY_STRING_LITERAL_FUNCTION},
         {'regex': RE_RE, 'replace': '/ /'},
+    )
+
+    # Convert exponential notation like 1.1e-6 to an arbitrary constant number so that the "e" notation doesn't
+    # need to be understood by the regular matchers. Obviously this is limited by the fact that we're regexing
+    # so this will probably catch some things which are not properly decimal literals (parts of strings or
+    # variable names for instance).
+    EXPONENTIAL_TO_SIMPLE = (
+        {'regex': DECIMAL_LITERAL_RE, 'replace': '42'},
     )
 
     LINE_CHECKLIST = (
@@ -210,7 +236,8 @@ class LintChecker(object):
             # Filter out @import statements, method declarations, method parameters, unary plus/minus/increment/decrement
             'filter': {'regex': re.compile(ur'(^@import\b|^\s*' + METHOD_RE + '|^\s*[a-zA-Z_$]\w*:\s*\([a-zA-Z_$][\w<>]*\)\s*\w+|[a-zA-Z_$]\w*(\+\+|--)|([ -+*/%^&|<>!]=?|&&|\|\||<<|>>>|={1,3}|!==?)\s*[-+][\w(\[])'), 'pass': False},
 
-            'preprocess': STD_IGNORES,
+            # Also convert literals like 1.5e+7 to 42 so that the - or + in there is ignored for purposes of this warning.
+            'preprocess': STD_IGNORES + EXPONENTIAL_TO_SIMPLE,
             'regex': re.compile(ur'(?<=[\w)\]"\']|([ ]))([-+*/%^]|&&?|\|\|?|<<|>>>?)(?=[\w({\["\']|(?(1)\b\b|[ ]))'),
             'error': 'binary operator without surrounding spaces',
             'showPositionForGroup': 2,
@@ -976,6 +1003,20 @@ class LintChecker(object):
 </html>
 """
         exit_show_html(html)
+
+
+class LintCheckerTest(unittest.TestCase):
+    def test_exponential_notation(self):
+        """Test that exponential notation such as 1.1e-6 doesn't cause a warning about missing whitespace."""
+
+        # This should not report "binary operator without surrounding spaces".
+        self.assertEquals(LintChecker().lint_text("a = 2.1e-6;"), [])
+        self.assertEquals(LintChecker().lint_text("a = 2.1e+6;"), [])
+        self.assertEquals(LintChecker().lint_text("a = 2e-0;"), [])
+        self.assertEquals(LintChecker().lint_text("a = 2e+0;"), [])
+
+        # But this should.
+        self.assertEquals(LintChecker().lint_text("a = 1.1e-6+2e2;"), [{'positions': [6], 'filename': '<stdin>', 'lineNum': 1, 'message': 'binary operator without surrounding spaces', 'type': 2, 'line': u'a = 1.1e-6+2e2;'}])
 
 
 if __name__ == '__main__':
