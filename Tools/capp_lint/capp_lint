@@ -357,7 +357,10 @@ class LintChecker(object):
     def next_statement(self, expect_line=False, check_line=True):
         try:
             while True:
-                raw_line = self.sourcefile.next()[:-1]  # strip EOL
+                raw_line = self.sourcefile.next()
+                # strip EOL
+                if raw_line[-1] == '\n':  # ... unless this is the last line which might not have a \n.
+                    raw_line = raw_line[:-1]
 
                 try:
                     self.line = unicode(raw_line, 'utf-8', 'strict')  # convert to Unicode
