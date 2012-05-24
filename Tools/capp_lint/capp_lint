@@ -141,6 +141,7 @@ class LintChecker(object):
     TRAILING_WHITESPACE_RE = re.compile(ur'^.*(\s+)$')
     STRIP_LINE_COMMENT_RE = re.compile(ur'(.*)\s*(?://.*|/\*.*\*/\s*)$')
     LINE_COMMENT_RE = re.compile(ur'\s*(?:/\*.*\*/\s*|//.*)$')
+    COMMENT_RE = re.compile(ur'/\*.*?\*/')
     BLOCK_COMMENT_START_RE = re.compile(ur'\s*/\*.*(?!\*/\s*)$')
     BLOCK_COMMENT_END_RE = re.compile(ur'.*?\*/')
     METHOD_RE = ur'[-+]\s*\([a-zA-Z_$]\w*\)\s*[a-zA-Z_$]\w*'
@@ -176,6 +177,7 @@ class LintChecker(object):
     STD_IGNORES = (
         {'regex': STRIP_LINE_COMMENT_RE, 'replace': ''},
         {'regex': STRING_LITERAL_RE, 'replace': EMPTY_STRING_LITERAL_FUNCTION},
+        {'regex': COMMENT_RE, 'replace': ''},
         {'regex': RE_RE, 'replace': '/ /'},
     )
 
@@ -1017,6 +1019,12 @@ class LintCheckerTest(unittest.TestCase):
 
         # But this should.
         self.assertEquals(LintChecker().lint_text("a = 1.1e-6+2e2;"), [{'positions': [6], 'filename': '<stdin>', 'lineNum': 1, 'message': 'binary operator without surrounding spaces', 'type': 2, 'line': u'a = 1.1e-6+2e2;'}])
+
+    def test_function_types(self):
+        """Test that function definitions like function(/*CPString*/key) don't cause warnings about surrounding spaces."""
+
+        # This should not report "binary operator without surrounding spaces".
+        self.assertEquals(LintChecker().lint_text("var resolveMultipleValues = function(/*CPString*/key, /*CPDictionary*/bindings, /*GSBindingOperationKind*/operation)"), [])
 
 
 if __name__ == '__main__':
