@@ -266,7 +266,7 @@ class LintChecker(object):
     TEXT_ERROR_SINGLE_FILE_TEMPLATE = Template(u'$lineNum: $message.\n+$line\n')
     TEXT_ERROR_MULTI_FILE_TEMPLATE = Template(u'$filename:$lineNum: $message.\n+$line\n')
 
-    def __init__(self, view, basedir='', var_declarations=VAR_DECLARATIONS_SINGLE, verbose=False):
+    def __init__(self, view=None, basedir='', var_declarations=VAR_DECLARATIONS_SINGLE, verbose=False):
         self.view = view
         self.basedir = unicode(basedir, 'utf-8')
         self.errors = []
@@ -747,7 +747,7 @@ class LintChecker(object):
                     print u'EOF\n'
                 pass
 
-    def lint_text(self, text, filename):
+    def lint_text(self, text, filename="<stdin>"):
         self.filename = filename
         self.filesToCheck = []
 
@@ -758,6 +758,8 @@ class LintChecker(object):
             if self.verbose:
                 print u'EOF\n'
             pass
+
+        return self.errors
 
     def count_files_checked(self):
         return len(self.filesToCheck)
