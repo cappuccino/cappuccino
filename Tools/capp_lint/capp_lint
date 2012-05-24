@@ -246,16 +246,6 @@ class LintChecker(object):
             'type': ERROR_TYPE_WARNING
         },
         {
-            # Filter out @import statements, method declarations
-            'filter': {'regex': re.compile(ur'^(@import\b|\s*' + METHOD_RE + ')'), 'pass': False},
-
-            'preprocess': STD_IGNORES,
-            'regex': re.compile(ur'(?:[-*/%^&|<>!]=?|&&|\|\||<<|>>>|={1,3}|!==?)\s*(?<!\+)(\+)[\w(\[]'),
-            'error': 'useless unary + operator',
-            'showPositionForGroup': 1,
-            'type': ERROR_TYPE_WARNING
-        },
-        {
             # Filter out possible = within @accessors
             'filter': {'regex': re.compile(ur'^\s*(?:@outlet\s+)?[a-zA-Z_$]\w*\s+[a-zA-Z_$]\w*\s+@accessors\b'), 'pass': False},
 
@@ -1025,6 +1015,12 @@ class LintCheckerTest(unittest.TestCase):
 
         # This should not report "binary operator without surrounding spaces".
         self.assertEquals(LintChecker().lint_text("var resolveMultipleValues = function(/*CPString*/key, /*CPDictionary*/bindings, /*GSBindingOperationKind*/operation)"), [])
+
+    def test_unary_plus(self):
+        """Test that = +<variable>, like in `x = +y;`, doesn't generate an error."""
+
+        # +<variable> converts number in a string to a number.
+        self.assertEquals(LintChecker().lint_text("var y = +x;"), [])
 
 
 if __name__ == '__main__':
