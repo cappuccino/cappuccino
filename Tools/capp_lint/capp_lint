@@ -309,6 +309,7 @@ class LintChecker(object):
                     continue
 
             line = self.line
+            originalLine = line
             lineFilter = check.get('filter')
 
             if lineFilter:
@@ -365,7 +366,7 @@ class LintChecker(object):
                                     break
 
             if positions:
-                self.error(check['error'], line=line, positions=positions, type=check['type'])
+                self.error(check['error'], line=originalLine, positions=positions, type=check['type'])
 
     def next_statement(self, expect_line=False, check_line=True):
         try:
