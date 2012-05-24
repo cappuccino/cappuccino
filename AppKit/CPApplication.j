@@ -219,7 +219,9 @@ CPRunContinuesResponse  = -1002;
     // At this point we clear the window.status to eliminate Safari's "Cancelled" error message
     // The message shouldn't be displayed, because only an XHR is cancelled, but it is a usability issue.
     // We do it here so that applications can change it in willFinish or didFinishLaunching
+#if PLATFORM(DOM)
     window.status = " ";
+#endif
 
     // We also want to set the default cursor on the body, so that buttons and things don't have an iBeam
     [[CPCursor arrowCursor] set];
