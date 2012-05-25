@@ -3782,7 +3782,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                     maxX = CGRectGetMaxX(rowRect),
                     minY = CGRectGetMinY(rowRect),
                     maxY = CGRectGetMaxY(rowRect);
-                
+
                 CGContextMoveToPoint(context, minX + radius, minY);
                 CGContextAddArcToPoint(context, maxX, minY, maxX, minY + radius, radius);
                 CGContextAddArcToPoint(context, maxX, maxY, maxX - radius, maxY, radius);
