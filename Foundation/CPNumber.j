@@ -316,8 +316,8 @@ FIXME: Do we need this?
 {
     if (self > aNumber)
         return CPOrderedDescending;
-    else if (self < aNumber) return
-        CPOrderedAscending;
+    else if (self < aNumber)
+        return CPOrderedAscending;
 
     return CPOrderedSame;
 }
