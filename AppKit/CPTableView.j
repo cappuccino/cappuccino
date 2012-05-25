@@ -795,26 +795,6 @@ NOT YET IMPLEMENTED
 }
 
 /*!
-    Sets the highlight radius for a row or column selection.
-
-    @param aRadius a int
-*/
-- (void)setSelectionHighlightRadius:(int)aRadius
-{
-    [self setValue:aRadius forThemeAttribute:"selection-radius"];
-
-    [self setNeedsDisplay:YES];
-}
-
-/*!
-    Returns the highlight radius for a row or column selection.
-*/
-- (int)selectionHighlightRadius
-{
-    return [self currentValueForThemeAttribute:@"selection-radius"];
-}
-
-/*!
 
     Sets the highlight gradient for a row or column selection
     This is specific to the
@@ -3794,7 +3774,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         }
         else
         {
-            var radius = [self selectionHighlightRadius];
+            var radius = [self currentValueForThemeAttribute:@"selection-radius"];
+
             if (radius > 0)
             {
                 var minX = CGRectGetMinX(rowRect),
