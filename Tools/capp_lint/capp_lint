@@ -77,6 +77,40 @@ def relative_path(basedir, filename):
     return filename
 
 
+def string_replacer(line):
+    """Take string literals like 'hello' and replace them with empty string literals, while respecting escaping."""
+
+    r = []
+    in_quote = None
+    escapes = 0
+    for i, c in enumerate(line):
+        if in_quote:
+            if not escapes and c == in_quote:
+                in_quote = None
+                r.append(c)
+                continue
+
+            # We're inside of a string literal. Ignore everything.
+        else:
+            if not escapes and (c == '"' or c == "'"):
+                in_quote = c
+                r.append(c)
+                continue
+
+            # Outside of a string literal, preserve everything.
+            r.append(c)
+
+        if c == '\\':
+            escapes = (escapes + 1) % 2
+        else:
+            escapes = 0
+
+    if in_quote:
+        # Unterminated string literal.
+        pass
+    return "".join(r)
+
+
 class LintChecker(object):
     """Examine Objective-J code statically and generate warnings for possible errors and deviations from the coding-style standard.
 
@@ -146,7 +180,6 @@ class LintChecker(object):
     BLOCK_COMMENT_END_RE = re.compile(ur'.*?\*/')
     METHOD_RE = ur'[-+]\s*\([a-zA-Z_$]\w*\)\s*[a-zA-Z_$]\w*'
     FUNCTION_RE = re.compile(ur'\s*function\s*(?P<name>[a-zA-Z_$]\w*)?\(.*\)\s*\{?')
-    STRING_LITERAL_RE = re.compile(ur'(?<!\\)(["\'])(.*?)(?<!\\)\1')
     RE_RE = re.compile(ur'(?<!\\)/.*?[^\\]/[gims]*')
     EMPTY_STRING_LITERAL_FUNCTION = lambda match: match.group(1) + (len(match.group(2)) * ' ') + match.group(1)
     EMPTY_SELF_STRING_LITERAL_FUNCTION = lambda self, match: match.group(1) + (len(match.group(2)) * ' ') + match.group(1)
@@ -176,7 +209,7 @@ class LintChecker(object):
     # with spaces so we don't get false matches within them
     STD_IGNORES = (
         {'regex': STRIP_LINE_COMMENT_RE, 'replace': ''},
-        {'regex': STRING_LITERAL_RE, 'replace': EMPTY_STRING_LITERAL_FUNCTION},
+        {'function': string_replacer},
         {'regex': COMMENT_RE, 'replace': ''},
         {'regex': RE_RE, 'replace': '/ /'},
     )
@@ -349,6 +382,11 @@ class LintChecker(object):
                     if regex:
                         line = regex.sub(processor.get('replace', ''), line)
 
+                    fnct = processor.get('function')
+
+                    if fnct:
+                        line = fnct(line)
+
             regex = check.get('regex')
 
             if not regex:
@@ -466,7 +504,7 @@ class LintChecker(object):
 
         # Remove all quoted strings from the expression so that we don't
         # count unmatched pairs inside the strings.
-        self.expression = self.STRING_LITERAL_RE.sub(self.EMPTY_SELF_STRING_LITERAL_FUNCTION, self.expression)
+        self.expression = string_replacer(self.expression)
 
         self.strip_comment()
         self.expression = self.expression.strip()
@@ -997,6 +1035,19 @@ class LintChecker(object):
         exit_show_html(html)
 
 
+class MiscTest(unittest.TestCase):
+    def test_string_replacer(self):
+        self.assertEquals(string_replacer("x = 'hello';"), "x = '';")
+        self.assertEquals(string_replacer("x = '\\' hello';"), "x = '';")
+        self.assertEquals(string_replacer("x = '\\\\';"), "x = '';")
+        self.assertEquals(string_replacer("""x = '"string in string"';"""), "x = '';")
+
+        self.assertEquals(string_replacer('x = "hello";'), 'x = "";')
+        self.assertEquals(string_replacer('x = "\\" hello";'), 'x = "";')
+        self.assertEquals(string_replacer('x = "\\\\";'), 'x = "";')
+        self.assertEquals(string_replacer('''x = "'";'''), 'x = "";')
+
+
 class LintCheckerTest(unittest.TestCase):
     def test_exponential_notation(self):
         """Test that exponential notation such as 1.1e-6 doesn't cause a warning about missing whitespace."""
@@ -1017,10 +1068,15 @@ class LintCheckerTest(unittest.TestCase):
         self.assertEquals(LintChecker().lint_text("var resolveMultipleValues = function(/*CPString*/key, /*CPDictionary*/bindings, /*GSBindingOperationKind*/operation)"), [])
 
     def test_unary_plus(self):
-        """Test that = +<variable>, like in `x = +y;`, doesn't generate an error."""
+        """Test that = +<variable>, like in `x = +y;`, doesn't cause a warning."""
 
         # +<variable> converts number in a string to a number.
         self.assertEquals(LintChecker().lint_text("var y = +x;"), [])
+
+    def test_string_escaping(self):
+        """Test that string literals are not parsed as syntax, even when they end with a double backslash."""
+
+        self.assertEquals(LintChecker().lint_text('var x = "(\\\\";'), [])
 
 
 if __name__ == '__main__':
