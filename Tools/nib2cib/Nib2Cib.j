@@ -40,7 +40,7 @@ var FILE = require("file"),
     DefaultTheme = "Aristo",
     BuildTypes = ["Debug", "Release"],
     DefaultFile = "MainMenu",
-    AllowedStoredOptionsRe = new RegExp("^(defaultTheme|auxThemes|verbosity|quiet|frameworks|format)$");
+    AllowedStoredOptionsRe = new RegExp("^(defaultTheme|auxThemes|verbosity|quiet|frameworks|format)$"),
     ArgsRe = /"[^\"]+"|'[^\']+'|\S+/g;
 
 
