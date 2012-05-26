@@ -127,6 +127,8 @@ var FILE = require("file"),
             if (systemFontSize)
                 [CPFont setSystemFontSize:parseFloat(systemFontSize, 10)];
         }
+        else
+            infoPlist = [CPDictionary dictionary];
 
         var themeList = [self getThemeList:options],
             themes = [self loadThemesFromList:themeList];
