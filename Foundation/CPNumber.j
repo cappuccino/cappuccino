@@ -222,7 +222,8 @@ FIXME: Do we need this?
 
 - (CPString)descriptionWithLocale:(CPDictionary)aDictionary
 {
-    if (!aDictionary) return toString();
+    if (!aDictionary)
+        return toString();
 
     throw new Error("descriptionWithLocale: NOT YET IMPLEMENTED");
 }
@@ -234,37 +235,43 @@ FIXME: Do we need this?
 
 - (double)doubleValue
 {
-    if (typeof self == "boolean") return self ? 1 : 0;
+    if (typeof self == "boolean")
+        return self ? 1 : 0;
     return self;
 }
 
 - (float)floatValue
 {
-    if (typeof self == "boolean") return self ? 1 : 0;
+    if (typeof self == "boolean")
+        return self ? 1 : 0;
     return self;
 }
 
 - (int)intValue
 {
-    if (typeof self == "boolean") return self ? 1 : 0;
+    if (typeof self == "boolean")
+        return self ? 1 : 0;
     return self;
 }
 
 - (long long)longLongValue
 {
-    if (typeof self == "boolean") return self ? 1 : 0;
+    if (typeof self == "boolean")
+        return self ? 1 : 0;
     return self;
 }
 
 - (long)longValue
 {
-    if (typeof self == "boolean") return self ? 1 : 0;
+    if (typeof self == "boolean")
+        return self ? 1 : 0;
     return self;
 }
 
 - (short)shortValue
 {
-    if (typeof self == "boolean") return self ? 1 : 0;
+    if (typeof self == "boolean")
+        return self ? 1 : 0;
     return self;
 }
 
@@ -280,7 +287,8 @@ FIXME: Do we need this?
 
 - (unsigned int)unsignedIntValue
 {
-    if (typeof self == "boolean") return self ? 1 : 0;
+    if (typeof self == "boolean")
+        return self ? 1 : 0;
     return self;
 }
 /*
@@ -292,20 +300,24 @@ FIXME: Do we need this?
 */
 - (unsigned long)unsignedLongValue
 {
-    if (typeof self == "boolean") return self ? 1 : 0;
+    if (typeof self == "boolean")
+        return self ? 1 : 0;
     return self;
 }
 
 - (unsigned short)unsignedShortValue
 {
-    if (typeof self == "boolean") return self ? 1 : 0;
+    if (typeof self == "boolean")
+        return self ? 1 : 0;
     return self;
 }
 
 - (CPComparisonResult)compare:(CPNumber)aNumber
 {
-    if (self > aNumber) return CPOrderedDescending;
-    else if (self < aNumber) return CPOrderedAscending;
+    if (self > aNumber)
+        return CPOrderedDescending;
+    else if (self < aNumber)
+        return CPOrderedAscending;
 
     return CPOrderedSame;
 }

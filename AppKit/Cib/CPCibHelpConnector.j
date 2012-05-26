@@ -25,8 +25,8 @@
 @implementation CPCibHelpConnector : CPCibConnector
 {
     id _destination;
-	id _file;
-	id _marker;
+    id _file;
+    id _marker;
 }
 
 - (id)initWithCoder:(CPCoder)aCoder

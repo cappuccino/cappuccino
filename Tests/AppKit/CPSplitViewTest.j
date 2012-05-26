@@ -111,11 +111,27 @@
 {
     // Verify that the split view does not attempt to auto save without an auto save name.
 
+    // This storage class will cause a crash if a save is attempted.
     [[CPUserDefaults standardUserDefaults] setPersistentStoreClass:CPUserDefaultsFailingStore forDomain:CPApplicationDomain reloadData:NO];
-
     [splitView setPosition:50 ofDividerAtIndex:0];
-
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    // Now test that it does work normally.
+    [[CPUserDefaults standardUserDefaults] setPersistentStoreClass:CPUserDefaultsTestStore forDomain:CPApplicationDomain reloadData:NO];
+    [splitView setAutosaveName:@"Charles"];
+    [splitView setPosition:25 ofDividerAtIndex:0];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    // Recreate the split view.
+    [self setUp];
+    [splitView setAutosaveName:@"Charles"];
+    // FIXME At the moment restore from autosave only happens if the split view is loaded from a
+    // coder. It seems like it should happen when initialising in code too, but some research of
+    // Cocoa's behaviour will need to be done first.
+    splitView._needsRestoreFromAutosave = YES;
+    // Trigger autosave restore.
+    [splitView setFrameSize:CGSizeMake(110, 100)];
+    [self assert:25 equals:[viewA frameSize].height message:@"divider position restored"];
 }
 
 @end
@@ -131,6 +147,7 @@
 }
 
 @end
+
 /*!
     This store always fails.
 */
@@ -149,3 +166,24 @@
 }
 
 @end
+
+/*!
+    This is a temporary store.
+*/
+@implementation CPUserDefaultsTestStore : CPUserDefaultsStore
+{
+    CPData _data;
+}
+
+- (CPData)data
+{
+    return _data;
+}
+
+- (void)setData:(CPData)aData
+{
+    _data = aData;
+}
+
+@end
+

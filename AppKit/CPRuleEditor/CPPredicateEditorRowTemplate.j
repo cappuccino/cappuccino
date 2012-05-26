@@ -185,7 +185,8 @@ CPTransformableAttributeType = 1800;
         if (![[self operators] containsObject:[predicate predicateOperatorType]])
             return 0;
 
-        if (!_rightIsWildcard && ![[self rightExpressions] containsObject:[predicate rightExpression]]) return 0;
+        if (!_rightIsWildcard && ![[self rightExpressions] containsObject:[predicate rightExpression]])
+            return 0;
 
         return 1;
     }
