@@ -17,10 +17,6 @@
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     // This is called when the application is done loading.
-    var sharedDocController = [CPDocumentController sharedDocumentController];
-    var docController = [[DocumentController alloc] init];
-    var cpAlert = [CPAlert alertWithMessageText:@"Is this the shared instance? " + (sharedDocController == docController) defaultButton:@"OK" alternateButton:nil otherButton:nil informativeTextWithFormat:nil];
-    [cpAlert beginSheetModalForWindow:[[CPApplication sharedApplication] mainWindow]];
 }
 
 - (void)applicationWillFinishLaunching:(CPNotification)aNotification

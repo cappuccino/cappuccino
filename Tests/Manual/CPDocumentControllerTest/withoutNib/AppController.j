@@ -12,20 +12,17 @@
 
 @implementation AppController : CPObject
 {
-    CPDocumentController subclassedCPDocumentController;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     // This is called when the application is done loading.
-    var cpAlert = [CPAlert alertWithMessageText:@"Is this the shared instance? " + ([CPDocumentController sharedDocumentController] == subclassedCPDocumentController) defaultButton:@"OK" alternateButton:nil otherButton:nil informativeTextWithFormat:nil];
-    [cpAlert beginSheetModalForWindow:[[CPApplication sharedApplication] mainWindow]];
 }
 
 - (void)applicationWillFinishLaunching:(CPNotification)aNotification
 {
     // instantiate a subclass of DocumentController
-    subclassedCPDocumentController = [[DocumentController alloc] init];
+    [[DocumentController alloc] init];
 }
 
 - (void)awakeFromCib

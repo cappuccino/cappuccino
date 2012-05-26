@@ -234,9 +234,7 @@ CPRunContinuesResponse  = -1002;
         var delegateClass = objj_getClass(delegateClassName);
 
         if (delegateClass)
-        {
             [self setDelegate:[[delegateClass alloc] init]];
-        }
     }
 
     var defaultCenter = [CPNotificationCenter defaultCenter];
