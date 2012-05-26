@@ -219,28 +219,22 @@ CPRunContinuesResponse  = -1002;
     // At this point we clear the window.status to eliminate Safari's "Cancelled" error message
     // The message shouldn't be displayed, because only an XHR is cancelled, but it is a usability issue.
     // We do it here so that applications can change it in willFinish or didFinishLaunching
+#if PLATFORM(DOM)
     window.status = " ";
+#endif
 
     // We also want to set the default cursor on the body, so that buttons and things don't have an iBeam
     [[CPCursor arrowCursor] set];
 
     var bundle = [CPBundle mainBundle],
-        types = [bundle objectForInfoDictionaryKey:@"CPBundleDocumentTypes"];
-
-    if ([types count] > 0)
-        _documentController = [CPDocumentController sharedDocumentController];
-
-    var delegateClassName = [bundle objectForInfoDictionaryKey:@"CPApplicationDelegateClass"];
+        delegateClassName = [bundle objectForInfoDictionaryKey:@"CPApplicationDelegateClass"];
 
     if (delegateClassName)
     {
         var delegateClass = objj_getClass(delegateClassName);
 
         if (delegateClass)
-            if ([_documentController class] == delegateClass)
-                [self setDelegate:_documentController];
-            else
-                [self setDelegate:[[delegateClass alloc] init]];
+            [self setDelegate:[[delegateClass alloc] init]];
     }
 
     var defaultCenter = [CPNotificationCenter defaultCenter];
@@ -248,6 +242,11 @@ CPRunContinuesResponse  = -1002;
     [defaultCenter
         postNotificationName:CPApplicationWillFinishLaunchingNotification
         object:self];
+
+    var types = [bundle objectForInfoDictionaryKey:@"CPBundleDocumentTypes"];
+
+    if ([types count] > 0)
+        _documentController = [CPDocumentController sharedDocumentController];
 
     var needsUntitled = !!_documentController,
         URLStrings = window.cpOpeningURLStrings && window.cpOpeningURLStrings(),
