@@ -40,7 +40,7 @@ var FILE = require("file"),
     DefaultTheme = "Aristo",
     BuildTypes = ["Debug", "Release"],
     DefaultFile = "MainMenu",
-    AllowedStoredOptionsRe = new RegExp("^(defaultTheme|auxThemes|verbosity|quiet|frameworks|format)$");
+    AllowedStoredOptionsRe = new RegExp("^(defaultTheme|auxThemes|verbosity|quiet|frameworks|format)$"),
     ArgsRe = /"[^\"]+"|'[^\']+'|\S+/g;
 
 
@@ -127,6 +127,8 @@ var FILE = require("file"),
             if (systemFontSize)
                 [CPFont setSystemFontSize:parseFloat(systemFontSize, 10)];
         }
+        else
+            infoPlist = [CPDictionary dictionary];
 
         var themeList = [self getThemeList:options],
             themes = [self loadThemesFromList:themeList];

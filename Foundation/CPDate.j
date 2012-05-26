@@ -245,7 +245,7 @@ Date.parseISO8601 = function (date)
 
     if (isNaN(timestamp) && (struct = /^(\d{4}|[+\-]\d{6})(?:-(\d{2})(?:-(\d{2}))?)?(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{3}))?)?(?:(Z)|([+\-])(\d{2})(?::(\d{2}))?)?)?$/.exec(date)))
     {
-        // avoid NaN timestamps caused by “undefined” values being passed to Date.UTC
+        // avoid NaN timestamps caused by "undefined" values being passed to Date.UTC
         for (var i = 0, k; (k = numericKeys[i]); ++i)
             struct[k] = +struct[k] || 0;
 
