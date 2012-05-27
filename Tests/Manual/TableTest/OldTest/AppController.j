@@ -72,6 +72,8 @@ tableTestDragType = @"CPTableViewTestDragType";
         if (i === 2)
             randomColumn = column;
     }
+    [tableView setAutosaveTableColumns:YES];
+    [tableView setAutosaveName:@"TableTest"];
 
     // we offset this scrollview to make sure all the coordinates are calculated correctly
     // bad things can happen when the tableview doesn't sit at (0,0)
