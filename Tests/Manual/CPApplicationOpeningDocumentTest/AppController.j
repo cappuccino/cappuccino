@@ -25,7 +25,7 @@
     // instantiate a subclass of DocumentController
     [[DocumentController alloc] init];
 
-    // opening CappDoc2 
+    // opening CappDoc2
     window.cpOpeningURLStrings = function()
     {
         return ["http://foo.com/bar.cappdoc2"];
