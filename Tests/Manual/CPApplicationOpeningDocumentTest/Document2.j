@@ -1,6 +1,6 @@
 @import <AppKit/CPDocument.j>
 
-@implementation Document : CPDocument
+@implementation Document2 : CPDocument
 {
 }
 
