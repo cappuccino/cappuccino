@@ -254,7 +254,7 @@ CPRunContinuesResponse  = -1002;
         count = [URLStrings count];
 
     for (; index < count; ++index)
-        needsUntitled = ![self _openURL:[CPURL URLWithString:URLStrings[index]]] || needsUntitled;
+        needsUntitled = ![self _openURL:[CPURL URLWithString:URLStrings[index]]] && needsUntitled;
 
     if (needsUntitled && [_delegate respondsToSelector:@selector(applicationShouldOpenUntitledFile:)])
         needsUntitled = [_delegate applicationShouldOpenUntitledFile:self];
