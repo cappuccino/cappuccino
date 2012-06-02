@@ -151,12 +151,8 @@ var CPURLConnectionDelegate = nil;
         var URL = [_request URL],
             scheme = [URL scheme];
 
-        // Browsers use "file:", Titanium uses "app:"
-        _isLocalFileConnection =    scheme === "file" ||
-                                    ((scheme === "http" || scheme === "https:") &&
-                                    window.location &&
-                                    (window.location.protocol === "file:" || window.location.protocol === "app:"));
-
+        // Browsers use "file:"
+        _isLocalFileConnection =    scheme === "file";
         _HTTPRequest = new CFHTTPRequest();
 
         if (shouldStartImmediately)
