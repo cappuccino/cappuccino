@@ -10,6 +10,16 @@
     [self assertTrue:[unixDate isEqualToDate:cocoaDate] message:[unixDate description] + " isEqualToDate: " + [cocoaDate description]];
 }
 
+- (void)testDistantPast
+{
+    [self assert:[CPDate dateWithTimeIntervalSinceReferenceDate:-63113817600.0] equals:[CPDate distantPast]];
+}
+
+- (void)testDistantFuture
+{
+    [self assert:[CPDate dateWithTimeIntervalSinceReferenceDate:63113990400.0] equals:[CPDate distantFuture]];
+}
+
 - (void)testDate
 {
     var before = new Date(),

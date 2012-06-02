@@ -64,12 +64,12 @@ var CPDateReferenceDate = new Date(Date.UTC(2001, 0, 1, 0, 0, 0, 0));
 
 + (id)distantPast
 {
-    return new Date(-10000, 1, 1, 0, 0, 0, 0);
+    return [CPDate dateWithTimeIntervalSinceReferenceDate:-63113817600.0];
 }
 
 + (id)distantFuture
 {
-    return new Date(10000, 1, 1, 0, 0, 0, 0);
+    return [CPDate dateWithTimeIntervalSinceReferenceDate:63113990400.0];
 }
 
 - (id)initWithTimeIntervalSinceNow:(CPTimeInterval)seconds
