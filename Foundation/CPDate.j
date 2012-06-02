@@ -30,8 +30,6 @@ var CPDateReferenceDate = new Date(Date.UTC(2001, 0, 1, 0, 0, 0, 0));
     @class CPDate
     @ingroup foundation
     @brief A representation of a single point in time.
-
-
 */
 @implementation CPDate : CPObject
 {

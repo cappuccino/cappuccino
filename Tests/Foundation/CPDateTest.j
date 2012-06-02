@@ -19,7 +19,7 @@
         past = [CPDate distantPast];
 
     [self assertTrue:(before <= middle) message:"before not less than middle"];
-    [self assertTrue:(middle <= after) message:"middle not less than after ("+middle+","+after+")"];
+    [self assertTrue:(middle <= after) message:"middle not less than after (" + middle + "," + after + ")"];
 
     [self assert:middle equals:[middle earlierDate:future] message:"earlierDate incorrect"];
     [self assert:middle equals:[middle laterDate:past] message:"laterDate incorrect"];
@@ -51,8 +51,8 @@
     var tests = [
             ["1970-01-01 00:00:00 +0000", 0],
             ["1970-01-01 00:01:00 +0000", 60],
-            ["1970-01-01 01:00:00 +0000", 60*60],
-            ["1970-01-02 00:00:00 +0000", 24*60*60],
+            ["1970-01-01 01:00:00 +0000", 60 * 60],
+            ["1970-01-02 00:00:00 +0000", 24 * 60 * 60],
             ["2009-11-17 17:52:04 +0000", 1258480324],
             ["2009-11-17 18:52:04 +0200", 1258476724],
         ];
@@ -67,11 +67,12 @@
 
 - (void)testInitWithTimeIntervalSinceReferenceDate_
 {
+    // Related issue #1556: "CPDateReferenceDate should be 'Jan 1 2001' instead of 'Feb 1 2001'".
     var referenceDate = [[CPDate alloc] initWithTimeIntervalSinceReferenceDate:0],
         referenceDatePlusOneHour = [[CPDate alloc] initWithTimeIntervalSinceReferenceDate:3600];
 
-    [self assert:[[CPDate alloc] initWithString:"2001-01-01 00:00:00 +0000"] equals:referenceDate message:@"reference date"];
-    [self assert:[[CPDate alloc] initWithString:"2001-01-01 01:00:00 +0000"] equals:referenceDatePlusOneHour message:@"reference date plus one hour"];
+    [self assert:[[CPDate alloc] initWithString:@"2001-01-01 00:00:00 +0000"] equals:referenceDate message:@"reference date"];
+    [self assert:[[CPDate alloc] initWithString:@"2001-01-01 01:00:00 +0000"] equals:referenceDatePlusOneHour message:@"reference date plus one hour"];
 }
 
 - (void)testEncoding
