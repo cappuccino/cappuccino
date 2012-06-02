@@ -49,13 +49,13 @@
 - (void)testInitWithString
 {
     var tests = [
-        ["1970-01-01 00:00:00 +0000", 0],
-        ["1970-01-01 00:01:00 +0000", 60],
-        ["1970-01-01 01:00:00 +0000", 60*60],
-        ["1970-01-02 00:00:00 +0000", 24*60*60],
-        ["2009-11-17 17:52:04 +0000", 1258480324],
-        ["2009-11-17 18:52:04 +0200", 1258476724],
-    ];
+            ["1970-01-01 00:00:00 +0000", 0],
+            ["1970-01-01 00:01:00 +0000", 60],
+            ["1970-01-01 01:00:00 +0000", 60*60],
+            ["1970-01-02 00:00:00 +0000", 24*60*60],
+            ["2009-11-17 17:52:04 +0000", 1258480324],
+            ["2009-11-17 18:52:04 +0200", 1258476724],
+        ];
 
     for (var i = 0; i < tests.length; i++)
     {
@@ -63,6 +63,15 @@
             correctSeconds = tests[i][1];
         [self assert:correctSeconds equals:[parsed timeIntervalSince1970]];
     }
+}
+
+- (void)testInitWithTimeIntervalSinceReferenceDate_
+{
+    var referenceDate = [[CPDate alloc] initWithTimeIntervalSinceReferenceDate:0],
+        referenceDatePlusOneHour = [[CPDate alloc] initWithTimeIntervalSinceReferenceDate:3600];
+
+    [self assert:[[CPDate alloc] initWithString:"2001-01-01 00:00:00 +0000"] equals:referenceDate message:@"reference date"];
+    [self assert:[[CPDate alloc] initWithString:"2001-01-01 01:00:00 +0000"] equals:referenceDatePlusOneHour message:@"reference date plus one hour"];
 }
 
 - (void)testEncoding
