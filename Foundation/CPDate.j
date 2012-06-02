@@ -167,7 +167,7 @@ var CPDateReferenceDate = new Date(Date.UTC(2001, 0, 1, 0, 0, 0, 0));
 
 - (CPComparisonResult)compare:(CPDate)anotherDate
 {
-    return (self > anotherDate) ?  CPOrderedDescending : ((self < anotherDate) ? CPOrderedAscending : CPOrderedSame);
+    return (self > anotherDate) ? CPOrderedDescending : ((self < anotherDate) ? CPOrderedAscending : CPOrderedSame);
 }
 
 - (CPDate)earlierDate:(CPDate)anotherDate
@@ -198,7 +198,7 @@ var CPDateReferenceDate = new Date(Date.UTC(2001, 0, 1, 0, 0, 0, 0));
 */
 - (CPString)description
 {
-    return [CPString stringWithFormat:@"%04d-%02d-%02d %02d:%02d:%02d %s", self.getFullYear(), self.getMonth()+1, self.getDate(), self.getHours(), self.getMinutes(), self.getSeconds(), [CPDate timezoneOffsetString:self.getTimezoneOffset()]];
+    return [CPString stringWithFormat:@"%04d-%02d-%02d %02d:%02d:%02d %s", self.getFullYear(), self.getMonth() + 1, self.getDate(), self.getHours(), self.getMinutes(), self.getSeconds(), [CPDate timezoneOffsetString:self.getTimezoneOffset()]];
 }
 
 - (id)copy
