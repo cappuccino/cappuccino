@@ -664,7 +664,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
         CPTokenFieldKeyDownFunction = function(aDOMEvent)
         {
-            aDOMEvent = aDOMEvent || window.event
+            aDOMEvent = aDOMEvent || window.event;
 
             CPTokenFieldTextDidChangeValue = [CPTokenFieldInputOwner stringValue];
 
@@ -1150,10 +1150,10 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
 @implementation CPTokenField (CPTokenFieldDelegate)
 
-// // Each element in the array should be an NSString or an array of NSStrings.
-// // substring is the partial string that is being completed.  tokenIndex is the index of the token being completed.
-// // selectedIndex allows you to return by reference an index specifying which of the completions should be selected initially.
-// // The default behavior is not to have any completions.
+// Each element in the array should be an NSString or an array of NSStrings.
+// substring is the partial string that is being completed.  tokenIndex is the index of the token being completed.
+// selectedIndex allows you to return by reference an index specifying which of the completions should be selected initially.
+// The default behavior is not to have any completions.
 - (CPArray)tokenField:(CPTokenField)tokenField completionsForSubstring:(CPString)substring indexOfToken:(int)tokenIndex indexOfSelectedItem:(int)selectedIndex
 {
     if ([[self delegate] respondsToSelector:@selector(tokenField:completionsForSubstring:indexOfToken:indexOfSelectedItem:)])
@@ -1164,8 +1164,8 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     return [];
 }
 
-// // Allows the delegate to provide a string to be displayed as a proxy for the given represented object.
-// // If you return nil or do not implement this method, then representedObject is displayed as the string.
+// Allows the delegate to provide a string to be displayed as a proxy for the given represented object.
+// If you return nil or do not implement this method, then representedObject is displayed as the string.
 - (CPString)tokenField:(CPTokenField)tokenField displayStringForRepresentedObject:(id)representedObject
 {
     if ([[self delegate] respondsToSelector:@selector(tokenField:displayStringForRepresentedObject:)])
@@ -1181,9 +1181,9 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 }
 
 //
-// // return an array of represented objects you want to add.
-// // If you want to reject the add, return an empty array.
-// // returning nil will cause an error.
+// return an array of represented objects you want to add.
+// If you want to reject the add, return an empty array.
+// returning nil will cause an error.
 - (CPArray)tokenField:(CPTokenField)tokenField shouldAddObjects:(CPArray)tokens atIndex:(int)index
 {
     var  delegate = [self delegate];
@@ -1198,23 +1198,23 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 }
 
 //
-// // If you return nil or don't implement these delegate methods, we will assume
-// // editing string = display string = represented object
+// If you return nil or don't implement these delegate methods, we will assume
+// editing string = display string = represented object
 // - (NSString *)tokenField:(NSTokenField *)tokenField editingStringForRepresentedObject:(id)representedObject;
 // - (id)tokenField:(NSTokenField *)tokenField representedObjectForEditingString: (NSString *)editingString;
 //
-// // We put the string on the pasteboard before calling this delegate method.
-// // By default, we write the NSStringPboardType as well as an array of NSStrings.
+// We put the string on the pasteboard before calling this delegate method.
+// By default, we write the NSStringPboardType as well as an array of NSStrings.
 // - (BOOL)tokenField:(NSTokenField *)tokenField writeRepresentedObjects:(NSArray *)objects toPasteboard:(NSPasteboard *)pboard;
 //
-// // Return an array of represented objects to add to the token field.
+// Return an array of represented objects to add to the token field.
 // - (NSArray *)tokenField:(NSTokenField *)tokenField readFromPasteboard:(NSPasteboard *)pboard;
 //
-// // By default the tokens have no menu.
+// By default the tokens have no menu.
 // - (NSMenu *)tokenField:(NSTokenField *)tokenField menuForRepresentedObject:(id)representedObject;
 // - (BOOL)tokenField:(NSTokenField *)tokenField hasMenuForRepresentedObject:(id)representedObject;
 //
-// // This method allows you to change the style for individual tokens as well as have mixed text and tokens.
+// This method allows you to change the style for individual tokens as well as have mixed text and tokens.
 // - (NSTokenStyle)tokenField:(NSTokenField *)tokenField styleForRepresentedObject:(id)representedObject;
 
 @end
