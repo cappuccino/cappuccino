@@ -164,7 +164,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 {
     var indexOfSelectedItem = 0;
 
-    _cachedCompletions = [self tokenField:self completionsForSubstring:[self _inputElement].value indexOfToken:0 indexOfSelectedItem:indexOfSelectedItem];
+    _cachedCompletions = [self _completionsForSubstring:[self _inputElement].value indexOfToken:0 indexOfSelectedItem:indexOfSelectedItem];
 
     [_autocompleteView selectRowIndexes:[CPIndexSet indexSetWithIndex:indexOfSelectedItem] byExtendingSelection:NO];
     [_autocompleteView reloadData];
@@ -208,7 +208,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
         [objectValue removeObjectAtIndex:_selectedRange.location];
 
     // Give the delegate a chance to confirm, replace or add to the list of tokens being added.
-    var delegateApprovedObjects = [self tokenField:self shouldAddObjects:[CPArray arrayWithObject:token] atIndex:_selectedRange.location],
+    var delegateApprovedObjects = [self _shouldAddObjects:[CPArray arrayWithObject:token] atIndex:_selectedRange.location],
         delegateApprovedObjectsCount = [delegateApprovedObjects count];
     if (delegateApprovedObjects)
     {
@@ -544,7 +544,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
         {
             // Do we have this token among the old ones?
             var tokenObject = aValue[i],
-                tokenValue = [self tokenField:self displayStringForRepresentedObject:tokenObject],
+                tokenValue = [self _displayStringForRepresentedObject:tokenObject],
                 newToken = nil;
 
             for (var j = 0, oldCount = [oldTokens count]; j < oldCount; j++)
@@ -1150,27 +1150,38 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
 @implementation CPTokenField (CPTokenFieldDelegate)
 
-// Each element in the array should be an NSString or an array of NSStrings.
-// substring is the partial string that is being completed.  tokenIndex is the index of the token being completed.
-// selectedIndex allows you to return by reference an index specifying which of the completions should be selected initially.
-// The default behavior is not to have any completions.
-- (CPArray)tokenField:(CPTokenField)tokenField completionsForSubstring:(CPString)substring indexOfToken:(int)tokenIndex indexOfSelectedItem:(int)selectedIndex
+/*!
+    Private API to get the delegate tokenField:completionsForSubstring:indexOfToken:indexOfSelectedItem: result.
+
+    The delegate method should return an array of strings matching the provided substring for autocompletion.
+    tokenIndex is the index of the token being completed. selectedIndex allows the selected autocompletion option
+    to be indicated by reference.
+
+    @ignore
+*/
+- (CPArray)_completionsForSubstring:(CPString)substring indexOfToken:(int)tokenIndex indexOfSelectedItem:(int)selectedIndex
 {
     if ([[self delegate] respondsToSelector:@selector(tokenField:completionsForSubstring:indexOfToken:indexOfSelectedItem:)])
     {
-        return [[self delegate] tokenField:tokenField completionsForSubstring:substring indexOfToken:tokenIndex indexOfSelectedItem:selectedIndex];
+        return [[self delegate] tokenField:self completionsForSubstring:substring indexOfToken:tokenIndex indexOfSelectedItem:selectedIndex];
     }
 
     return [];
 }
 
-// Allows the delegate to provide a string to be displayed as a proxy for the given represented object.
-// If you return nil or do not implement this method, then representedObject is displayed as the string.
-- (CPString)tokenField:(CPTokenField)tokenField displayStringForRepresentedObject:(id)representedObject
+/*!
+    Private API to get the delegate tokenField:displayStringForRepresentedObject: result.
+
+    The delegate method should return a string to be displayed for the given represtented object.
+    If this delegate method is not implemented, the representedObject is displayed as a string.
+
+    @ignore
+*/
+- (CPString)_displayStringForRepresentedObject:(id)representedObject
 {
     if ([[self delegate] respondsToSelector:@selector(tokenField:displayStringForRepresentedObject:)])
     {
-        var stringForRepresentedObject = [[self delegate] tokenField:tokenField displayStringForRepresentedObject:representedObject];
+        var stringForRepresentedObject = [[self delegate] tokenField:self displayStringForRepresentedObject:representedObject];
         if (stringForRepresentedObject !== nil)
         {
             return stringForRepresentedObject;
@@ -1180,16 +1191,21 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     return representedObject;
 }
 
-//
-// return an array of represented objects you want to add.
-// If you want to reject the add, return an empty array.
-// returning nil will cause an error.
-- (CPArray)tokenField:(CPTokenField)tokenField shouldAddObjects:(CPArray)tokens atIndex:(int)index
+/*!
+    Private API to get the delegate tokenField:shouldAddObjects:atIndex: result.
+
+    The delegate should return an array of represented objects which should be added based on the
+    suggested tokens to add and the insertion position specified by index. To add no tokens,
+    return an empty array. Returning nil is an error.
+
+    @ignore
+*/
+- (CPArray)_shouldAddObjects:(CPArray)tokens atIndex:(int)index
 {
     var  delegate = [self delegate];
     if ([delegate respondsToSelector:@selector(tokenField:shouldAddObjects:atIndex:)])
     {
-        var approvedObjects = [delegate tokenField:tokenField shouldAddObjects:tokens atIndex:index];
+        var approvedObjects = [delegate tokenField:self shouldAddObjects:tokens atIndex:index];
         if (approvedObjects !== nil)
             return approvedObjects;
     }
