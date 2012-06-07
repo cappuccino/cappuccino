@@ -24,14 +24,12 @@
 @import "CPString.j"
 @import "CPException.j"
 
-var CPDateReferenceDate = new Date(Date.UTC(2001, 1, 1, 0, 0, 0, 0));
+var CPDateReferenceDate = new Date(Date.UTC(2001, 0, 1, 0, 0, 0, 0));
 
 /*!
     @class CPDate
     @ingroup foundation
     @brief A representation of a single point in time.
-
-
 */
 @implementation CPDate : CPObject
 {
@@ -66,12 +64,12 @@ var CPDateReferenceDate = new Date(Date.UTC(2001, 1, 1, 0, 0, 0, 0));
 
 + (id)distantPast
 {
-    return new Date(-10000, 1, 1, 0, 0, 0, 0);
+    return [CPDate dateWithTimeIntervalSinceReferenceDate:-63113817600.0];
 }
 
 + (id)distantFuture
 {
-    return new Date(10000, 1, 1, 0, 0, 0, 0);
+    return [CPDate dateWithTimeIntervalSinceReferenceDate:63113990400.0];
 }
 
 - (id)initWithTimeIntervalSinceNow:(CPTimeInterval)seconds
@@ -169,7 +167,7 @@ var CPDateReferenceDate = new Date(Date.UTC(2001, 1, 1, 0, 0, 0, 0));
 
 - (CPComparisonResult)compare:(CPDate)anotherDate
 {
-    return (self > anotherDate) ?  CPOrderedDescending : ((self < anotherDate) ? CPOrderedAscending : CPOrderedSame);
+    return (self > anotherDate) ? CPOrderedDescending : ((self < anotherDate) ? CPOrderedAscending : CPOrderedSame);
 }
 
 - (CPDate)earlierDate:(CPDate)anotherDate
@@ -200,7 +198,7 @@ var CPDateReferenceDate = new Date(Date.UTC(2001, 1, 1, 0, 0, 0, 0));
 */
 - (CPString)description
 {
-    return [CPString stringWithFormat:@"%04d-%02d-%02d %02d:%02d:%02d %s", self.getFullYear(), self.getMonth()+1, self.getDate(), self.getHours(), self.getMinutes(), self.getSeconds(), [CPDate timezoneOffsetString:self.getTimezoneOffset()]];
+    return [CPString stringWithFormat:@"%04d-%02d-%02d %02d:%02d:%02d %s", self.getFullYear(), self.getMonth() + 1, self.getDate(), self.getHours(), self.getMinutes(), self.getSeconds(), [CPDate timezoneOffsetString:self.getTimezoneOffset()]];
 }
 
 - (id)copy

@@ -1262,7 +1262,7 @@ NOT YET IMPLEMENTED
 */
 - (int)selectedColumn
 {
-    [_selectedColumnIndexes lastIndex];
+    return [_selectedColumnIndexes lastIndex];
 }
 
 /*!
