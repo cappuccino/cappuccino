@@ -336,6 +336,7 @@
 {
     var i = [descriptors count],
         jsDescriptors = [];
+
     // Revert the order of the descriptors
     while (i--)
     {
@@ -377,12 +378,12 @@
 
 @end
 
-var selectorCompare = function selectorCompare(object1, object2, selector)
+var selectorCompare = function(object1, object2, selector)
 {
     return [object1 performSelector:selector withObject:object2];
 };
 
-var sortArrayUsingFunction = function sortArrayUsingFunction(array, aFunction, aContext)
+var sortArrayUsingFunction = function(array, aFunction, aContext)
 {
     var h,
         i,
@@ -411,6 +412,7 @@ var sortArrayUsingFunction = function sortArrayUsingFunction(array, aFunction, a
             {
                 A = array[j];
                 o = aFunction(A, B[i], aContext);
+
                 if (o >= 0)
                     array[k] = B[i++];
                 else
@@ -427,7 +429,7 @@ var sortArrayUsingFunction = function sortArrayUsingFunction(array, aFunction, a
 }
 
 // sort using sort descriptors
-var compareObjectsUsingDescriptors = function compareObjectsUsingDescriptors(lhs, rhs, descriptors)
+var compareObjectsUsingDescriptors = function(lhs, rhs, descriptors)
 {
     var result = CPOrderedSame,
         i = 0,
@@ -440,7 +442,7 @@ var compareObjectsUsingDescriptors = function compareObjectsUsingDescriptors(lhs
 };
 
 // Observe that the sort descriptors has the reversed order by the caller
-var sortArrayUsingJSDescriptors = function sortArrayUsingJSDescriptors(a, d)
+var sortArrayUsingJSDescriptors = function(a, d)
 {
     var h,
         i,
@@ -465,11 +467,13 @@ var sortArrayUsingJSDescriptors = function sortArrayUsingJSDescriptors(a, d)
 
     if (dl < 0)
         return;
+
     for (h = 1; h < n; h += h)
     {
         for (m = n - 1 - h; m >= 0; m -= h + h)
         {
             l = m - h + 1;
+
             if (l < 0)
                 l = 0;
 
@@ -480,44 +484,59 @@ var sortArrayUsingJSDescriptors = function sortArrayUsingJSDescriptors(a, d)
             {
                 A = a[j];
                 aUID = A._UID;
+
                 if (!aUID)
                     aUID = [A UID];
+
                 C1 = c[aUID];
+
                 if (!C1)
                 {
                     C1 = {};
                     cn = dl;
+
                     do
                     {
                         key = d[cn].k;
                         C1[key] = [A valueForKey:key];
                     } while (cn--)
+
                     c[aUID] = C1;
                 }
+
                 bUID = B[i]._UID;
+
                 if (!bUID)
                     bUID = [B[i] UID];
+
                 C2 = c[bUID];
+
                 if (!C2)
                 {
                     C2 = {};
                     cn = dl;
+
                     do
                     {
                         key = d[cn].k;
                         C2[key] = [B[i] valueForKey:key];
                     } while (cn--)
+
                     c[bUID] = C2;
                 }
+
                 cn = dl;
+
                 do
                 {
                     dd = d[cn];
                     key = dd.k;
                     o = objj_msgSend(C1[key], dd.s, C2[key]);
+
                     if (o && !dd.a)
                         o = -o;
                 } while (cn-- && o == CPOrderedSame)
+
                 if (o >= 0)
                     a[k] = B[i++];
                 else
