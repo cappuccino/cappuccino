@@ -340,7 +340,7 @@
     while (i--)
     {
         var d = [descriptors objectAtIndex:i];
-        [jsDescriptors addObject:{ "k": [d key], "a": [d ascending]}];
+        [jsDescriptors addObject:{ "k": [d key], "a": [d ascending], "s": [d selector]}];
     }
     sortArrayUsingJSDescriptors(self, jsDescriptors);
 }
@@ -460,7 +460,8 @@ var sortArrayUsingJSDescriptors = function sortArrayUsingJSDescriptors(a, d)
         cn,
         aUID,
         bUID,
-        key;
+        key,
+        dd;
 
     if (dl < 0)
         return;
@@ -511,9 +512,10 @@ var sortArrayUsingJSDescriptors = function sortArrayUsingJSDescriptors(a, d)
                 cn = dl;
                 do
                 {
-                    key = d[cn].k;
-                    o = [C1[key] compare:C2[key]];
-                    if (o && !d[cn].a)
+                    dd = d[cn];
+                    key = dd.k;
+                    o = objj_msgSend(C1[key], dd.s, C2[key]);
+                    if (o && !dd.a)
                         o = -o;
                 } while (cn-- && o == CPOrderedSame)
                 if (o >= 0)
