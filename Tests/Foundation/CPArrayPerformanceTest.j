@@ -25,14 +25,14 @@ var ELEMENTS = 100,
 {
     CPLog.warn("\nNUMERIC ALMOST SORTED");
     var a = [self makeUnsorted],
-        sorted = [self sortUsingMergeSort:a];
+        sorted = [self sort:a usingSortSelector:@selector(sortedArrayUsingDescriptors:) withObject:descriptors];
     [self checkAlmostSorted:sorted];
 }
 
 - (void)testAlmostSortedNumericUsingNativeSort
 {
     var a = [self makeUnsorted],
-        sorted = [self sortUsingNativeSort:a];
+        sorted = [self sort:a usingSortSelector:@selector(_native_sortedArrayUsingDescriptors:) withObject:descriptors];
     [self checkAlmostSorted:sorted];
 }
 
@@ -40,14 +40,14 @@ var ELEMENTS = 100,
 {
     CPLog.warn("\nNUMERIC RANDOM");
     var a = [self makeRandomNumeric],
-        sorted = [self sortUsingMergeSort:a];
+        sorted = [self sort:a usingSortSelector:@selector(sortedArrayUsingDescriptors:) withObject:descriptors];
     [self checkRandomSorted:sorted];
 }
 
 - (void)testRandomNumericUsingNativeSort
 {
     var a = [self makeRandomNumeric],
-        sorted = [self sortUsingNativeSort:a];
+        sorted = [self sort:a usingSortSelector:@selector(_native_sortedArrayUsingDescriptors:) withObject:descriptors];
     [self checkRandomSorted:sorted];
 }
 
@@ -55,39 +55,24 @@ var ELEMENTS = 100,
 {
     CPLog.warn("\nTEXT RANDOM");
     var a = [self makeRandomText],
-        sorted = [self sortUsingMergeSort:a];
+        sorted = [self sort:a usingSortSelector:@selector(sortedArrayUsingDescriptors:) withObject:descriptors];
     [self checkRandomSorted:sorted];
 }
 
 - (void)testRandomTextUsingNativeSort
 {
     var a = [self makeRandomText],
-        sorted = [self sortUsingNativeSort:a];
+        sorted = [self sort:a usingSortSelector:@selector(_native_sortedArrayUsingDescriptors:) withObject:descriptors];
     [self checkRandomSorted:sorted];
 }
 
-- (CPArray)sortUsingMergeSort:(CPArray)anArray
+- (CPArray)sort:(CPArray)anArray usingSortSelector:(SEL)aSelector withObject:(id)anObject
 {
     var sorted,
         start = (new Date).getTime();
 
     for (var i = 0; i < REPEATS; ++i)
-        sorted = [anArray sortedArrayUsingDescriptors:descriptors];
-
-    var end = (new Date).getTime();
-
-    CPLog.warn(_cmd + ": " + (end - start) + "ms");
-
-    return sorted;
-}
-
-- (void)sortUsingNativeSort:(CPArray)anArray
-{
-    var sorted,
-        start = (new Date).getTime();
-
-    for (var i = 0; i < REPEATS; ++i)
-        sorted = [anArray _native_sortedArrayUsingDescriptors:descriptors];
+        sorted = [anArray performSelector:aSelector withObject:anObject];
 
     var end = (new Date).getTime();
 
