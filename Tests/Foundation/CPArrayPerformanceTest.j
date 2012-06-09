@@ -11,7 +11,6 @@ var ELEMENTS = 100,
 @implementation CPArrayPerformanceTest : OJTestCase
 {
     CPArray descriptors;
-    CPString the_big_sort;
 }
 
 - (void)setUp
@@ -20,8 +19,6 @@ var ELEMENTS = 100,
             [CPSortDescriptor sortDescriptorWithKey:"a" ascending:NO],
             [CPSortDescriptor sortDescriptorWithKey:"b" ascending:YES]
         ];
-
-    the_big_sort = FILE.read(FILE.join(FILE.dirname(module.path), "the_big_sort.txt"), { charset:"UTF-8" });
 }
 
 - (void)testAlmostSortedNumericUsingMergeSort
@@ -136,7 +133,8 @@ var ELEMENTS = 100,
 
 - (CPArray)makeRandomText
 {
-    var words = the_big_sort.split(" ", ELEMENTS),
+    var the_big_sort = FILE.read(FILE.join(FILE.dirname(module.path), "the_big_sort.txt"), { charset:"UTF-8" }),
+        words = the_big_sort.split(" ", ELEMENTS),
         wordcount = words.length,
         array = [];
 
