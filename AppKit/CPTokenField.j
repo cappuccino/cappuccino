@@ -207,6 +207,9 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     if (shouldRemoveLastObject)
         [objectValue removeObjectAtIndex:_selectedRange.location];
 
+    // Convert typed text into a represented object.
+    token = [self _representedObjectForEditingString:token];
+
     // Give the delegate a chance to confirm, replace or add to the list of tokens being added.
     var delegateApprovedObjects = [self _shouldAddObjects:[CPArray arrayWithObject:token] atIndex:_selectedRange.location],
         delegateApprovedObjectsCount = [delegateApprovedObjects count];
@@ -1213,11 +1216,28 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     return tokens;
 }
 
+/*!
+    Private API to get the delegate tokenField:representedObjectForEditingString: result.
+
+    The delegate method should return a represented object for the provided string which
+    may have been typed by the user or selected from the completion menu. If the method is
+    not implemented, the string is assumed to be the represented object.
+
+    @ignore
+*/
+- (id)_representedObjectForEditingString:(CPString)aString
+{
+    var  delegate = [self delegate];
+    if ([delegate respondsToSelector:@selector(tokenField:representedObjectForEditingString:)])
+        return [delegate tokenField:self representedObjectForEditingString:aString];
+
+    return aString;
+}
+
 //
 // If you return nil or don't implement these delegate methods, we will assume
 // editing string = display string = represented object
 // - (NSString *)tokenField:(NSTokenField *)tokenField editingStringForRepresentedObject:(id)representedObject;
-// - (id)tokenField:(NSTokenField *)tokenField representedObjectForEditingString: (NSString *)editingString;
 //
 // We put the string on the pasteboard before calling this delegate method.
 // By default, we write the NSStringPboardType as well as an array of NSStrings.
