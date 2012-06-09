@@ -17,9 +17,9 @@ var ELEMENTS = 100,
 - (void)setUp
 {
     var descriptors = [
-        [CPSortDescriptor sortDescriptorWithKey:"a" ascending:NO],
-        [CPSortDescriptor sortDescriptorWithKey:"b" ascending:YES]
-    ];
+            [CPSortDescriptor sortDescriptorWithKey:"a" ascending:NO],
+            [CPSortDescriptor sortDescriptorWithKey:"b" ascending:YES]
+        ];
 
     the_big_sort = FILE.read(FILE.join(FILE.dirname(module.path), "the_big_sort.txt"), { charset:"UTF-8" });
 }
@@ -27,53 +27,52 @@ var ELEMENTS = 100,
 - (void)testAlmostSortedNumericUsingMergeSort
 {
     CPLog.warn("\nNUMERIC ALMOST SORTED");
-    var a = [self makeUnsorted];
-    var sorted = [self sortUsingMergeSort:a];
+    var a = [self makeUnsorted],
+        sorted = [self sortUsingMergeSort:a];
     [self checkAlmostSorted:sorted];
 }
 
 - (void)testAlmostSortedNumericUsingNativeSort
 {
-    var a = [self makeUnsorted];
-    var sorted = [self sortUsingNativeSort:a];
+    var a = [self makeUnsorted],
+        sorted = [self sortUsingNativeSort:a];
     [self checkAlmostSorted:sorted];
 }
 
 - (void)testRandomNumericUsingMergeSort
 {
     CPLog.warn("\nNUMERIC RANDOM");
-    var a = [self makeRandomNumeric];
-    var sorted = [self sortUsingMergeSort:a];
+    var a = [self makeRandomNumeric],
+        sorted = [self sortUsingMergeSort:a];
     [self checkRandomSorted:sorted];
 }
 
 - (void)testRandomNumericUsingNativeSort
 {
-    var a = [self makeRandomNumeric];
-    var sorted = [self sortUsingNativeSort:a];
+    var a = [self makeRandomNumeric],
+        sorted = [self sortUsingNativeSort:a];
     [self checkRandomSorted:sorted];
 }
 
 - (void)testRandomTextUsingMergeSort
 {
     CPLog.warn("\nTEXT RANDOM");
-    var a = [self makeRandomText];
-    var sorted = [self sortUsingMergeSort:a];
+    var a = [self makeRandomText],
+        sorted = [self sortUsingMergeSort:a];
     [self checkRandomSorted:sorted];
 }
 
 - (void)testRandomTextUsingNativeSort
 {
-    var a = [self makeRandomText];
-    var sorted = [self sortUsingNativeSort:a];
+    var a = [self makeRandomText],
+        sorted = [self sortUsingNativeSort:a];
     [self checkRandomSorted:sorted];
 }
 
 - (CPArray)sortUsingMergeSort:(CPArray)anArray
 {
-    var sorted;
-
-    var start = (new Date).getTime();
+    var sorted,
+        start = (new Date).getTime();
 
     for (var i = 0; i < REPEATS; ++i)
         sorted = [anArray sortedArrayUsingDescriptors:descriptors];
@@ -87,16 +86,15 @@ var ELEMENTS = 100,
 
 - (void)sortUsingNativeSort:(CPArray)anArray
 {
-    var sorted;
-
-    var start = (new Date).getTime();
+    var sorted,
+        start = (new Date).getTime();
 
     for (var i = 0; i < REPEATS; ++i)
         sorted = [anArray _native_sortedArrayUsingDescriptors:descriptors];
 
     var end = (new Date).getTime();
 
-    CPLog.warn(_cmd+": " + (end - start) + "ms");
+    CPLog.warn(_cmd + ": " + (end - start) + "ms");
 
     return sorted;
 }
@@ -125,7 +123,7 @@ var ELEMENTS = 100,
     for (var i = 0; i < ELEMENTS; i++)
     {
         var s = [Sortable new],
-            n1 = ROUND(RAND() * ELEMENTS);
+            n1 = ROUND(RAND() * ELEMENTS),
             n2 = ROUND(RAND() * ELEMENTS);
 
         [s setA:n1];
@@ -142,12 +140,12 @@ var ELEMENTS = 100,
         wordcount = words.length,
         array = [];
 
-    for (var i=0; i < wordcount-1; i++)
+    for (var i = 0; i < wordcount - 1; i++)
     {
         var s = [Sortable new];
 
         [s setA:words[i]];
-        [s setB:words[i+1]];
+        [s setB:words[i + 1]];
         array.push(s);
     }
 
@@ -157,9 +155,9 @@ var ELEMENTS = 100,
 - (void)checkAlmostSorted:(CPArray)sorted
 {
     // Verify it really got sorted.
-    for (var j=0; j < sorted.length; ++j)
+    for (var j = 0; j < sorted.length; ++j)
     {
-        var expectedA = 4-FLOOR(j * 5 / ELEMENTS);
+        var expectedA = 4 - FLOOR(j * 5 / ELEMENTS);
 
         if (sorted[j].a != expectedA)
             [self fail:"a out of order: " + expectedA + " != " + sorted[j].a];
@@ -173,14 +171,14 @@ var ELEMENTS = 100,
 
 - (void)checkRandomSorted:(CPArray)sorted
 {
-    // Verify it really got sorted.
-    for (var j=0; j < sorted.length - 1; ++j)
+    // Verify that it really got sorted.
+    for (var j = 0; j < sorted.length - 1; ++j)
     {
-        if ([sorted[j].a compare:sorted[j+1].a] == CPOrderedAscending)
-            [self fail:"a out of order: " + sorted[j].a + " > " + sorted[j+1].a];
+        if ([sorted[j].a compare:sorted[j + 1].a] == CPOrderedAscending)
+            [self fail:"a out of order: " + sorted[j].a + " > " + sorted[j + 1].a];
 
-        if ([sorted[j].a  compare:sorted[j+1].a] == CPOrderedSame && [sorted[j].b compare: sorted[j+1].b] == CPOrderedDescending)
-            [self fail:"b out of order: " + sorted[j].b + " < " + sorted[j+1].b];
+        if ([sorted[j].a  compare:sorted[j + 1].a] == CPOrderedSame && [sorted[j].b compare: sorted[j + 1].b] == CPOrderedDescending)
+            [self fail:"b out of order: " + sorted[j].b + " < " + sorted[j + 1].b];
     }
 }
 
