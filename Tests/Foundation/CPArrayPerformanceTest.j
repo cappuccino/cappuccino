@@ -66,6 +66,51 @@ var ELEMENTS = 100,
     [self checkRandomSorted:sorted];
 }
 
+- (void)testAlmostSortedNumericUsingMergeSelectorSort
+{
+    CPLog.warn("\nNUMERIC ALMOST SORTED (SELECTOR)");
+    var a = [self makeUnsorted],
+        sorted = [self sort:a usingSortSelector:@selector(sortedArrayUsingSelector:) withObject:@selector(compareAAscendingThenBDescending:)];
+    [self checkAlmostSorted:sorted];
+}
+
+- (void)testAlmostSortedNumericUsingNativeSelectorSort
+{
+    var a = [self makeUnsorted],
+        sorted = [self sort:a usingSortSelector:@selector(_native_sortedArrayUsingSelector:) withObject:@selector(compareAAscendingThenBDescending:)];
+    [self checkAlmostSorted:sorted];
+}
+
+- (void)testRandomNumericUsingMergeSelectorSort
+{
+    CPLog.warn("\nNUMERIC RANDOM (SELECTOR)");
+    var a = [self makeRandomNumeric],
+        sorted = [self sort:a usingSortSelector:@selector(sortedArrayUsingSelector:) withObject:@selector(compareAAscendingThenBDescending:)];
+    [self checkRandomSorted:sorted];
+}
+
+- (void)testRandomNumericUsingNativeSelectorSort
+{
+    var a = [self makeRandomNumeric],
+        sorted = [self sort:a usingSortSelector:@selector(_native_sortedArrayUsingSelector:) withObject:@selector(compareAAscendingThenBDescending:)];
+    [self checkRandomSorted:sorted];
+}
+
+- (void)testRandomTextUsingMergeSelectorSort
+{
+    CPLog.warn("\nTEXT RANDOM (SELECTOR)");
+    var a = [self makeRandomText],
+        sorted = [self sort:a usingSortSelector:@selector(sortedArrayUsingSelector:) withObject:@selector(compareAAscendingThenBDescending:)];
+    [self checkRandomSorted:sorted];
+}
+
+- (void)testRandomTextUsingNativeSelectorSort
+{
+    var a = [self makeRandomText],
+        sorted = [self sort:a usingSortSelector:@selector(_native_sortedArrayUsingSelector:) withObject:@selector(compareAAscendingThenBDescending:)];
+    [self checkRandomSorted:sorted];
+}
+
 - (CPArray)sort:(CPArray)anArray usingSortSelector:(SEL)aSelector withObject:(id)anObject
 {
     var sorted,
@@ -76,7 +121,7 @@ var ELEMENTS = 100,
 
     var end = (new Date).getTime();
 
-    CPLog.warn(_cmd + ": " + (end - start) + "ms");
+    CPLog.warn(aSelector + ": " + (end - start) + "ms");
 
     return sorted;
 }
@@ -195,12 +240,36 @@ var ELEMENTS = 100,
     });
 }
 
+- (CPArray)_native_sortedArrayUsingSelector:(SEL)aSelector
+{
+    var sorted = [self copy];
+
+    [sorted _native_sortUsingSelector:aSelector];
+
+    return sorted;
+}
+
+- (CPArray)_native_sortUsingSelector:(SEL)aSelector
+{
+    sort(function(lhs, rhs)
+    {
+        return [lhs performSelector:aSelector withObject:rhs];
+    });
+}
+
 @end
 
 @implementation Sortable : CPObject
 {
     int a @accessors;
     int b @accessors;
+}
+
+- (int)compareAAscendingThenBDescending:(Sortable)other
+{
+    var aResult = [a compare:other.a];
+
+    return aResult === CPOrderedSame ? [b compare:other.b] : -aResult;
 }
 
 @end
