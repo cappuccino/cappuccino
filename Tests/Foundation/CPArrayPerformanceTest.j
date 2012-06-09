@@ -233,7 +233,7 @@ var ELEMENTS = 100,
             result = CPOrderedSame;
 
         while (i < count)
-            if ((result = [descriptors[i++] compareObject:lhs withObject:rhs]) != CPOrderedSame)
+            if ((result = [descriptors[i++] compareObject:lhs withObject:rhs]) !== CPOrderedSame)
                 return result;
 
         return result;
