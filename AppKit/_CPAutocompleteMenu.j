@@ -25,6 +25,8 @@
 @import "CPTextField.j"
 @import "_CPMenuWindow.j"
 
+// TODO Make themable.
+var _CPAutocompleteMenuMaximumHeight = 307;
 
 /*!
     An "autocomplete" menu displayed by a text field.
@@ -33,6 +35,7 @@
 {
     CPTextField     textField @accessors;
     CPArray         contentArray @accessors;
+    float           widestItemWidth;
 
     CPWindow        _menuWindow;
     CPScrollView    scrollView;
@@ -73,7 +76,7 @@
         [tableView setAllowsMultipleSelection:NO];
         [tableView setHeaderView:nil];
         [tableView setCornerView:nil];
-        [tableView setRowHeight:30.0];
+        [tableView setRowHeight:24.0];
         [tableView setGridStyleMask:CPTableViewSolidHorizontalGridLineMask];
         [tableView setBackgroundColor:[CPColor clearColor]];
         [tableView setGridColor:[CPColor colorWithRed:242.0 / 255.0 green:243.0 / 255.0 blue:245.0 / 255.0 alpha:1.0]];
@@ -89,9 +92,19 @@
 */
 - (void)setContentArray:(CPArray)anArray
 {
-    contentArray = anArray;
+    if (contentArray === anArray || [contentArray isEqualToArray:anArray])
+        return;
+
+    contentArray = [anArray copy];
+
+    // Go away automatically if there are no suggestions.
+    if (![contentArray count])
+        [self _hideCompletions];
+
+    widestItemWidth = CPNotFound;
 
     [tableView reloadData];
+    [self layoutSubviews];
 }
 
 - (void)setIndexOfSelectedItem:(int)anIndex
@@ -126,21 +139,44 @@
     */
 
     var frame = [textField frame],
-        origin = frame.origin;
+        origin = frame.origin,
+        tableColumn = [[tableView tableColumns] firstObject];
 
     if ([textField respondsToSelector:@selector(_completionOrigin:)])
         origin = [textField _completionOrigin:self];
 
+    if (widestItemWidth === CPNotFound)
+    {
+        // This calculation could be slow for many items.
 
-    // Manually sizeToFit because CPTableView's sizeToFit doesn't work properly
+        var dataView = [tableColumn dataView],
+            fontNormal = [dataView valueForThemeAttribute:@"font" inState:CPThemeStateTableDataView],
+            fontSelected = [dataView valueForThemeAttribute:@"font" inState:CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
+            contentInsetNormal = [dataView valueForThemeAttribute:@"content-inset" inState:CPThemeStateTableDataView],
+            contentInsetSelected = [dataView valueForThemeAttribute:@"content-inset" inState:CPThemeStateTableDataView | CPThemeStateSelectedTableDataView];
+
+        var mergedString = contentArray.join("\n");
+
+        widestItemWidth = MAX([mergedString sizeWithFont:fontNormal].width + contentInsetNormal.left + contentInsetNormal.right, [mergedString sizeWithFont:fontSelected].width + contentInsetSelected.left + contentInsetSelected.right) + [tableView intercellSpacing].width + 2.0 + 5.0;  // 2.0 because we inset by 1.0 below, 5.0 mystery constant.
+        // TODO Track down why mystery constant is needed to allocate enough width. Scroll view insets?
+    }
+
     var frameOrigin = [textField convertPoint:origin toView:nil],
-        newFrame = CGRectMake(frameOrigin.x, frameOrigin.y, CPRectGetWidth([textField bounds]), 92.0);
+        screenSize = [[_menuWindow screen] visibleFrame].size,
+        availableWidth = screenSize.width - frameOrigin.x,
+        availableHeight = screenSize.height - frameOrigin.y,
+        width = MIN(widestItemWidth, availableWidth),
+        spacingHeight = [tableView intercellSpacing].height,
+        height = MIN(MIN(spacingHeight + [contentArray count] * ([tableView rowHeight] + spacingHeight), _CPAutocompleteMenuMaximumHeight), availableHeight),
+        newFrame = CGRectMake(frameOrigin.x, frameOrigin.y, width, height);
+
     newFrame = [_menuWindow frameRectForContentRect:newFrame];
     [_menuWindow setFrame:newFrame];
-    [scrollView setFrame:CGRectInset([[_menuWindow contentView] bounds], 1.0, 1.0)];
-    // Correctly size the tableview
-    // FIXME Horizontal scrolling will not work because we are not actually looking at the content to set the width for the table column
-    [[[tableView tableColumns] firstObject] setWidth:[[scrollView contentView] frame].size.width];
+
+    var scrollFrame = CGRectInset([[_menuWindow contentView] bounds], 1.0, 1.0);
+    [scrollView setFrame:scrollFrame];
+
+    [tableColumn setWidth:[[scrollView contentView] frame].size.width];
 }
 
 - (void)_showCompletions:(CPTimer)timer
@@ -148,6 +184,9 @@
     var indexOfSelectedItem = [self indexOfSelectedItem];
 
     [self setContentArray:[textField _completionsForSubstring:[textField _inputElement].value indexOfToken:0 indexOfSelectedItem:indexOfSelectedItem]];
+
+    if (![contentArray count])
+        return;
 
     // TODO Support indexOfSelectedItem. Always 0 right now.
     [self setIndexOfSelectedItem:indexOfSelectedItem];
