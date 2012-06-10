@@ -34,7 +34,7 @@
     CPTextField     textField @accessors;
     CPArray         contentArray @accessors;
 
-    CPView          contentView @accessors;
+    CPWindow        _menuWindow;
     CPScrollView    scrollView;
     CPTableView     tableView;
 
@@ -47,9 +47,15 @@
     {
         textField = aTextField;
 
-        contentView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+        _menuWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0, 0, 100, 100) styleMask:CPBorderlessWindowMask];
 
-        [contentView setBackgroundColor:[_CPMenuWindow backgroundColorForBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle]];
+        [_menuWindow setLevel:CPPopUpMenuWindowLevel];
+        [_menuWindow setHasShadow:YES];
+        [_menuWindow setShadowStyle:CPMenuWindowShadowStyle];
+        [_menuWindow setAcceptsMouseMovedEvents:NO];
+        [_menuWindow setBackgroundColor:[_CPMenuWindow backgroundColorForBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle]];
+
+        var contentView = [_menuWindow contentView];
 
         scrollView = [[CPScrollView alloc] initWithFrame:CGRectMakeZero()];
         [scrollView setAutohidesScrollers:YES];
@@ -107,11 +113,14 @@
 - (void)layoutSubviews
 {
     // TODO
-    // The autocompletion menu should be underneath the current token, it should at least be wide enough to fit the widest
-    // option but no wider than the width of the token field. It might stick out on the right side, so that if the token
-    // is small enough to fit on the right side the menu might extend a full token field width more into space on the right
-    // side. It should not stick out outside of the screen. The height should be the smallest possible to fit all options
-    // or at most ~307px (based on Cocoa). If the options don't fit horizontally they should be truncated with an ellipsis.
+    /*
+    The autocompletion menu should be underneath the word/text being autocompleted. It should at least be wide enough to
+    fit the widest
+    option but no wider than the width of the text field. It might stick out on the right side, so that if the edited text
+    is on the right of the text field the menu might extend a full text field width more into space on the right
+    side. It should not stick out outside of the screen. The height should be the smallest possible to fit all options
+    or at most ~307px (based on Cocoa). If the options don't fit horizontally they should be truncated with an ellipsis.
+    */
 
     var frame = [textField frame];
 
@@ -120,10 +129,10 @@
     [[[tableView tableColumns] firstObject] setWidth:[[scrollView contentView] frame].size.width];
 
     // Manually sizeToFit because CPTableView's sizeToFit doesn't work properly
-    var frameOrigin = [textField convertPoint:[textField bounds].origin toView:[contentView superview]],
+    var frameOrigin = [textField convertPoint:[textField bounds].origin toView:nil],
         newFrame = CGRectMake(frameOrigin.x, frameOrigin.y + frame.size.height, CPRectGetWidth([textField bounds]), 92.0);
-    [contentView setFrame:newFrame];
-    [scrollView setFrame:CGRectInset([contentView bounds], 1.0, 1.0)];
+    [_menuWindow setFrame:[_menuWindow frameRectForContentRect:newFrame]];
+    [scrollView setFrame:CGRectInset([[_menuWindow contentView] bounds], 1.0, 1.0)];
 }
 
 - (void)_showCompletions:(CPTimer)timer
@@ -136,7 +145,7 @@
     [self setIndexOfSelectedItem:indexOfSelectedItem];
 
     [textField setThemeState:CPThemeStateAutocompleting];
-    [contentView setHidden:NO];
+    [_menuWindow orderFront:self];
 
     [self layoutSubviews];
 }
@@ -161,7 +170,7 @@
     _showCompletionsTimer = nil;
 
     [textField unsetThemeState:CPThemeStateAutocompleting];
-    [contentView setHidden:YES];
+    [_menuWindow orderOut:self];
     [self layoutSubviews];
 }
 
@@ -201,7 +210,7 @@
     // make sure a mouse click in the tableview doesn't steal first responder state
     window.setTimeout(function()
     {
-        [[contentView window] makeFirstResponder:textField];
+        [[textField window] makeFirstResponder:textField];
     }, 2.0);
 }
 

@@ -63,7 +63,7 @@ var CPScrollDestinationNone             = 0,
 
     CPRange             _selectedRange;
 
-    _CPAutocompleteMenu _autocompleteMenu @accessors;
+    _CPAutocompleteMenu _autocompleteMenu;
 
     CPTimeInterval      _completionDelay;
 
@@ -119,8 +119,13 @@ var CPScrollDestinationNone             = 0,
     [_tokenScrollView setDocumentView:contentView];
 
     [self addSubview:_tokenScrollView];
+}
 
-    _autocompleteMenu = [[_CPAutocompleteMenu alloc] initWithTextField:self];
+- (_CPAutocompleteMenu)_autocompleteMenu
+{
+    if (!_autocompleteMenu)
+        _autocompleteMenu = [[_CPAutocompleteMenu alloc] initWithTextField:self];
+    return _autocompleteMenu;
 }
 
 - (void)_autocompleteWithDOMEvent:(JSObject)DOMEvent
@@ -352,8 +357,6 @@ var CPScrollDestinationNone             = 0,
 
 - (BOOL)resignFirstResponder
 {
-    CPLog("%@ resignFirstResponder", self);
-
     if (_preventResign)
         return NO;
 
@@ -564,25 +567,6 @@ var CPScrollDestinationNone             = 0,
 // so it cannot change our object value and break the tokenfield
 - (void)_setStringValue:(id)aValue
 {
-}
-
-// ========
-// = VIEW =
-// ========
-- (void)viewDidMoveToWindow
-{
-    // TODO Switch to a window.
-    [[[self window] contentView] addSubview:[_autocompleteMenu contentView]];
-
-#if PLATFORM(DOM)
-    [_autocompleteMenu contentView]._DOMElement.style.zIndex = 1000; // Anything else doesn't seem to work
-#endif
-}
-
-- (void)removeFromSuperview
-{
-    // TODO
-    [[_autocompleteMenu contentView] removeFromSuperview];
 }
 
 // =============
@@ -1014,11 +998,6 @@ var CPScrollDestinationNone             = 0,
     return [[_tokenScrollView documentView] scrollRectToVisible:[aToken frame]];
 }
 
-- (CPTableView)_autocompleteView
-{
-    return _autocompleteView;
-}
-
 @end
 
 @implementation CPTokenField (CPTokenFieldDelegate)
@@ -1125,7 +1104,7 @@ var CPScrollDestinationNone             = 0,
 
 - (void)_delayedShowCompletions
 {
-    [_autocompleteMenu _delayedShowCompletions];
+    [[self _autocompleteMenu] _delayedShowCompletions];
 }
 
 - (void)_hideCompletions
