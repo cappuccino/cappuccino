@@ -64,6 +64,7 @@ var CPScrollDestinationNone             = 0,
     CPRange             _selectedRange;
 
     _CPAutocompleteMenu _autocompleteMenu;
+    CGRect              _inputFrame;
 
     CPTimeInterval      _completionDelay;
 
@@ -924,16 +925,16 @@ var CPScrollDestinationNone             = 0,
                 textWidth = MAX(contentSize.width - offset.x - 1, textWidth);
         }
 
-        var inputFrame = fitAndFrame(textWidth, tokenHeight);
+        _inputFrame = fitAndFrame(textWidth, tokenHeight);
 
-        element.style.left = inputFrame.origin.x + "px";
-        element.style.top = inputFrame.origin.y + "px";
-        element.style.width = inputFrame.size.width + "px";
-        element.style.height = inputFrame.size.height + "px";
+        element.style.left = _inputFrame.origin.x + "px";
+        element.style.top = _inputFrame.origin.y + "px";
+        element.style.width = _inputFrame.size.width + "px";
+        element.style.height = _inputFrame.size.height + "px";
 
         // When editing, always scroll to the cursor.
         if (_selectedRange.length == 0)
-            [[_tokenScrollView documentView] scrollRectToVisible:inputFrame];
+            [[_tokenScrollView documentView] scrollRectToVisible:_inputFrame];
     };
 
     for (var i = 0, count = [tokens count]; i < count; i++)
@@ -964,6 +965,7 @@ var CPScrollDestinationNone             = 0,
     // so we can continue using our standard keyboard handling events.
     if (isEditing && _selectedRange.length)
     {
+        _inputFrame = nil;
         [self _inputElement].style.left = "-10000px";
         [self _inputElement].focus();
     }
@@ -1019,6 +1021,15 @@ var CPScrollDestinationNone             = 0,
     }
 
     return [];
+}
+
+/*!
+    Private API used by the _CPAutocompleteMenu to determine where to place the menu in local coordinates.
+*/
+- (CGPoint)_completionOrigin:(_CPAutocompleteMenu)anAutocompleteMenu
+{
+    var relativeFrame = _inputFrame ? [[_tokenScrollView documentView] convertRect:_inputFrame toView:self ] : [self bounds];
+    return CGPointMake(CGRectGetMinX(relativeFrame), CGRectGetMaxY(relativeFrame));
 }
 
 /*!

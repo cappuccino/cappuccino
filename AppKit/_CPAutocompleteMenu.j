@@ -114,25 +114,33 @@
 {
     // TODO
     /*
-    The autocompletion menu should be underneath the word/text being autocompleted. It should at least be wide enough to
-    fit the widest
-    option but no wider than the width of the text field. It might stick out on the right side, so that if the edited text
-    is on the right of the text field the menu might extend a full text field width more into space on the right
-    side. It should not stick out outside of the screen. The height should be the smallest possible to fit all options
-    or at most ~307px (based on Cocoa). If the options don't fit horizontally they should be truncated with an ellipsis.
+    The autocompletion menu should be underneath the word/text being
+    autocompleted. It should at least be wide enough to fit the widest option
+    but no wider than the width of the text field. It might stick out on the
+    right side, so that if the edited text is on the right of the text field
+    the menu might extend a full text field width more into space on the right
+    side. It should not stick out outside of the screen. The height should be
+    the smallest possible to fit all options or at most ~307px (based on
+    Cocoa). If the options don't fit horizontally they should be truncated
+    with an ellipsis.
     */
 
-    var frame = [textField frame];
+    var frame = [textField frame],
+        origin = frame.origin;
 
+    if ([textField respondsToSelector:@selector(_completionOrigin:)])
+        origin = [textField _completionOrigin:self];
+
+
+    // Manually sizeToFit because CPTableView's sizeToFit doesn't work properly
+    var frameOrigin = [textField convertPoint:origin toView:nil],
+        newFrame = CGRectMake(frameOrigin.x, frameOrigin.y, CPRectGetWidth([textField bounds]), 92.0);
+    newFrame = [_menuWindow frameRectForContentRect:newFrame];
+    [_menuWindow setFrame:newFrame];
+    [scrollView setFrame:CGRectInset([[_menuWindow contentView] bounds], 1.0, 1.0)];
     // Correctly size the tableview
     // FIXME Horizontal scrolling will not work because we are not actually looking at the content to set the width for the table column
     [[[tableView tableColumns] firstObject] setWidth:[[scrollView contentView] frame].size.width];
-
-    // Manually sizeToFit because CPTableView's sizeToFit doesn't work properly
-    var frameOrigin = [textField convertPoint:[textField bounds].origin toView:nil],
-        newFrame = CGRectMake(frameOrigin.x, frameOrigin.y + frame.size.height, CPRectGetWidth([textField bounds]), 92.0);
-    [_menuWindow setFrame:[_menuWindow frameRectForContentRect:newFrame]];
-    [scrollView setFrame:CGRectInset([[_menuWindow contentView] bounds], 1.0, 1.0)];
 }
 
 - (void)_showCompletions:(CPTimer)timer
