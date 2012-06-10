@@ -67,13 +67,9 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
     CPRange             _selectedRange;
 
-    CPView              _autocompleteContainer;
-    CPScrollView        _autocompleteScrollView;
-    CPTableView         _autocompleteView;
-    CPTimeInterval      _completionDelay;
-    CPTimer             _showCompletionsTimer;
+    _CPTokenFieldAutocompleteMenu _autocompleteMenu @accessors;
 
-    CPArray             _cachedCompletions;
+    CPTimeInterval      _completionDelay;
 
     CPCharacterSet      _tokenizingCharacterSet @accessors(property=tokenizingCharacterSet);
 
@@ -128,56 +124,17 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
     [self addSubview:_tokenScrollView];
 
-    _cachedCompletions = [];
-
-    _autocompleteContainer = [[CPView alloc] initWithFrame:CPRectMake(0.0, 0.0, frame.size.width, 92.0)];
-    [_autocompleteContainer setBackgroundColor:[_CPMenuWindow backgroundColorForBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle]];
-
-    _autocompleteScrollView = [[CPScrollView alloc] initWithFrame:CPRectMake(1.0, 1.0, frame.size.width - 2.0, 90.0)];
-    [_autocompleteScrollView setAutohidesScrollers:YES];
-    [_autocompleteScrollView setHasHorizontalScroller:NO];
-    [_autocompleteContainer addSubview:_autocompleteScrollView];
-
-    _autocompleteView = [[CPTableView alloc] initWithFrame:CPRectMakeZero()];
-
-    var tableColumn = [[CPTableColumn alloc] initWithIdentifier:CPTokenFieldTableColumnIdentifier];
-    [tableColumn setResizingMask:CPTableColumnAutoresizingMask];
-    [_autocompleteView addTableColumn:tableColumn];
-
-    [_autocompleteView setDataSource:self];
-    [_autocompleteView setDelegate:self];
-    [_autocompleteView setAllowsMultipleSelection:NO];
-    [_autocompleteView setHeaderView:nil];
-    [_autocompleteView setCornerView:nil];
-    [_autocompleteView setRowHeight:30.0];
-    [_autocompleteView setGridStyleMask:CPTableViewSolidHorizontalGridLineMask];
-    [_autocompleteView setBackgroundColor:[CPColor clearColor]];
-    [_autocompleteView setGridColor:[CPColor colorWithRed:242.0 / 255.0 green:243.0 / 255.0 blue:245.0 / 255.0 alpha:1.0]];
-
-    [_autocompleteScrollView setDocumentView:_autocompleteView];
-}
-
-// ===============
-// = CONVENIENCE =
-// ===============
-- (void)_retrieveCompletions
-{
-    var indexOfSelectedItem = 0;
-
-    _cachedCompletions = [self _completionsForSubstring:[self _inputElement].value indexOfToken:0 indexOfSelectedItem:indexOfSelectedItem];
-
-    [_autocompleteView selectRowIndexes:[CPIndexSet indexSetWithIndex:indexOfSelectedItem] byExtendingSelection:NO];
-    [_autocompleteView reloadData];
+    _autocompleteMenu = [[_CPTokenFieldAutocompleteMenu alloc] initWithTokenField:self];
 }
 
 - (void)_autocompleteWithDOMEvent:(JSObject)DOMEvent
 {
-    if (![self _inputElement].value && (!_cachedCompletions || ![self hasThemeState:CPThemeStateAutoCompleting]))
+    if (![self _inputElement].value && (![_autocompleteMenu contentArray] || ![self hasThemeState:CPThemeStateAutoCompleting]))
         return;
 
     [self _hideCompletions];
 
-    var token = _cachedCompletions ? _cachedCompletions[[_autocompleteView selectedRow]] : nil,
+    var token = [_autocompleteMenu selectedItem],
         shouldRemoveLastObject = token !== @"" && [self _inputElement].value !== @"";
 
     if (!token)
@@ -616,16 +573,16 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 // ========
 - (void)viewDidMoveToWindow
 {
-    [[[self window] contentView] addSubview:_autocompleteContainer];
+    [[[self window] contentView] addSubview:_autocompleteMenu];
 
 #if PLATFORM(DOM)
-    _autocompleteContainer._DOMElement.style.zIndex = 1000; // Anything else doesn't seem to work
+    _autocompleteMenu._DOMElement.style.zIndex = 1000; // Anything else doesn't seem to work
 #endif
 }
 
 - (void)removeFromSuperview
 {
-    [_autocompleteContainer removeFromSuperview];
+    [_autocompleteMenu removeFromSuperview];
 }
 
 // =============
@@ -671,29 +628,12 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
             CPTokenFieldTextDidChangeValue = [CPTokenFieldInputOwner stringValue];
 
-            // Update the selectedIndex if necessary
-            var index = [[CPTokenFieldInputOwner _autocompleteView] selectedRow];
-
             if (aDOMEvent.keyCode === CPUpArrowKeyCode)
-                index -= 1;
+                [[CPTokenFieldInputOwner _autocompleteMenu] selectPrevious];
             else if (aDOMEvent.keyCode === CPDownArrowKeyCode)
-                index += 1;
+                [[CPTokenFieldInputOwner _autocompleteMenu] selectNext];
 
-            if (index > [[CPTokenFieldInputOwner _autocompleteView] numberOfRows] - 1)
-                index = [[CPTokenFieldInputOwner _autocompleteView] numberOfRows] - 1;
-
-            if (index < 0)
-                index = 0;
-
-            [[CPTokenFieldInputOwner _autocompleteView] selectRowIndexes:[CPIndexSet indexSetWithIndex:index] byExtendingSelection:NO];
-
-            var autocompleteView = [CPTokenFieldInputOwner _autocompleteView],
-                clipView = [[autocompleteView enclosingScrollView] contentView],
-                rowRect = [autocompleteView rectOfRow:index],
-                owner = CPTokenFieldInputOwner;
-
-            if (rowRect && !CPRectContainsRect([clipView bounds], rowRect))
-                [clipView scrollToPoint:[autocompleteView rectOfRow:index].origin];
+            var owner = CPTokenFieldInputOwner;
 
             if (aDOMEvent.keyCode === CPReturnKeyCode || aDOMEvent.keyCode === CPTabKeyCode)
             {
@@ -924,37 +864,6 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     return 0.5;
 }
 
-// ===========================
-// = SHOW / HIDE COMPLETIONS =
-// ===========================
-- (void)_showCompletions:(CPTimer)timer
-{
-    [self _retrieveCompletions]
-    [self setThemeState:CPThemeStateAutoCompleting];
-
-    [self setNeedsLayout];
-}
-
-- (void)_delayedShowCompletions
-{
-    _showCompletionsTimer = [CPTimer scheduledTimerWithTimeInterval:[self completionDelay] target:self
-                                                           selector:@selector(_showCompletions:) userInfo:nil repeats:NO];
-}
-
-- (void)_cancelShowCompletions
-{
-    if ([_showCompletionsTimer isValid])
-        [_showCompletionsTimer invalidate];
-}
-
-- (void)_hideCompletions
-{
-    [self _cancelShowCompletions];
-
-    [self unsetThemeState:CPThemeStateAutoCompleting];
-    [self setNeedsLayout];
-}
-
 // ==========
 // = LAYOUT =
 // ==========
@@ -973,23 +882,13 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
     var frame = [self frame],
         contentView = [_tokenScrollView documentView],
-        tokens = [self _tokens];
+        tokens = [self _tokens],
+        shouldShowAutoComplete = [self hasThemeState:CPThemeStateAutoCompleting];
 
-    // Correctly size the tableview
-    // FIXME Horizontal scrolling will not work because we are not actually looking at the content to set the width for the table column
-    [[_autocompleteView tableColumnWithIdentifier:CPTokenFieldTableColumnIdentifier] setWidth:[[_autocompleteScrollView contentView] frame].size.width];
+    [_autocompleteMenu setHidden:!shouldShowAutoComplete];
 
-    if ([self hasThemeState:CPThemeStateAutoCompleting] && [_cachedCompletions count])
-    {
-        // Manually sizeToFit because CPTableView's sizeToFit doesn't work properly
-        [_autocompleteContainer setHidden:NO];
-        var frameOrigin = [self convertPoint:[self bounds].origin toView:[_autocompleteContainer superview]];
-        [_autocompleteContainer setFrameOrigin:CPPointMake(frameOrigin.x, frameOrigin.y + frame.size.height)];
-        [_autocompleteContainer setFrameSize:CPSizeMake(CPRectGetWidth([self bounds]), 92.0)];
-        [_autocompleteScrollView setFrameSize:CPSizeMake([_autocompleteContainer frame].size.width - 2.0, 90.0)];
-    }
-    else
-        [_autocompleteContainer setHidden:YES];
+    if (shouldShowAutoComplete)
+        [_autocompleteMenu setNeedsLayout];
 
     // Hack to make sure we are handling an array
     if (![tokens isKindOfClass:[CPArray class]])
@@ -1120,28 +1019,6 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     return [[_tokenScrollView documentView] scrollRectToVisible:[aToken frame]];
 }
 
-// ======================
-// = TABLEVIEW DATSOURCE / DELEGATE =
-// ======================
-- (int)numberOfRowsInTableView:(CPTableView)tableView
-{
-    return [_cachedCompletions count];
-}
-
-- (void)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(int)row
-{
-    return [_cachedCompletions objectAtIndex:row];
-}
-
-- (void)tableViewSelectionDidChange:(CPNotification)notification
-{
-    // make sure a mouse click in the tableview doesn't steal first responder state
-    window.setTimeout(function()
-    {
-        [[self window] makeFirstResponder:self];
-    }, 2.0);
-}
-
 - (CPTableView)_autocompleteView
 {
     return _autocompleteView;
@@ -1250,6 +1127,189 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 //
 // This method allows you to change the style for individual tokens as well as have mixed text and tokens.
 // - (NSTokenStyle)tokenField:(NSTokenField *)tokenField styleForRepresentedObject:(id)representedObject;
+
+- (void)_delayedShowCompletions
+{
+    [_autocompleteMenu _delayedShowCompletions];
+}
+
+- (void)_hideCompletions
+{
+    [_autocompleteMenu _hideCompletions];
+}
+
+@end
+
+@implementation _CPTokenFieldAutocompleteMenu : CPView
+{
+    CPTokenField    tokenField;
+    CPArray         contentArray @accessors;
+
+    CPScrollView    scrollView;
+    CPTableView     tableView;
+
+    CPTimer         _showCompletionsTimer;
+}
+
+- (id)initWithTokenField:(CPTokenField)aTokenField
+{
+    if (self = [super initWithFrame:CGRectMakeZero()])
+    {
+        tokenField = aTokenField;
+
+        [self setBackgroundColor:[_CPMenuWindow backgroundColorForBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle]];
+
+        scrollView = [[CPScrollView alloc] initWithFrame:CGRectMakeZero()];
+        [scrollView setAutohidesScrollers:YES];
+        [scrollView setHasHorizontalScroller:NO];
+        [self addSubview:scrollView];
+
+        tableView = [[CPTableView alloc] initWithFrame:CPRectMakeZero()];
+
+        var tableColumn = [[CPTableColumn alloc] initWithIdentifier:CPTokenFieldTableColumnIdentifier];
+        [tableColumn setResizingMask:CPTableColumnAutoresizingMask];
+        [tableView addTableColumn:tableColumn];
+
+        [tableView setDataSource:self];
+        [tableView setDelegate:self];
+        [tableView setAllowsMultipleSelection:NO];
+        [tableView setHeaderView:nil];
+        [tableView setCornerView:nil];
+        [tableView setRowHeight:30.0];
+        [tableView setGridStyleMask:CPTableViewSolidHorizontalGridLineMask];
+        [tableView setBackgroundColor:[CPColor clearColor]];
+        [tableView setGridColor:[CPColor colorWithRed:242.0 / 255.0 green:243.0 / 255.0 blue:245.0 / 255.0 alpha:1.0]];
+
+        [scrollView setDocumentView:tableView];
+    }
+
+    return self;
+}
+
+/*!
+    Set an array of strings to use as the available completions.
+*/
+- (void)setContentArray:(CPArray)anArray
+{
+    contentArray = anArray;
+
+    [tableView reloadData];
+}
+
+- (void)setIndexOfSelectedItem:(int)anIndex
+{
+    [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:anIndex] byExtendingSelection:NO];
+
+    var clipView = [scrollView contentView],
+        rowRect = [tableView rectOfRow:anIndex];
+
+    if (rowRect && !CPRectContainsRect([clipView bounds], rowRect))
+        [clipView scrollToPoint:rowRect.origin];
+}
+
+- (int)indexOfSelectedItem
+{
+    return [tableView selectedRow];
+}
+
+- (CPString)selectedItem
+{
+    return contentArray ? contentArray[[tableView selectedRow]] : nil;
+}
+
+- (void)layoutSubviews
+{
+    // TODO
+    // The autocompletion menu should be underneath the current token, it should at least be wide enough to fit the widest
+    // option but no wider than the width of the token field. It might stick out on the right side, so that if the token
+    // is small enough to fit on the right side the menu might extend a full token field width more into space on the right
+    // side. It should not stick out outside of the screen. The height should be the smallest possible to fit all options
+    // or at most ~307px (based on Cocoa). If the options don't fit horizontally they should be truncated with an ellipsis.
+
+    var frame = [tokenField frame];
+
+    // Correctly size the tableview
+    // FIXME Horizontal scrolling will not work because we are not actually looking at the content to set the width for the table column
+    [[tableView tableColumnWithIdentifier:CPTokenFieldTableColumnIdentifier] setWidth:[[scrollView contentView] frame].size.width];
+
+    // Manually sizeToFit because CPTableView's sizeToFit doesn't work properly
+    var frameOrigin = [tokenField convertPoint:[tokenField bounds].origin toView:[self superview]],
+        newFrame = CGRectMake(frameOrigin.x, frameOrigin.y + frame.size.height, CPRectGetWidth([tokenField bounds]), 92.0);
+    [self setFrame:newFrame];
+    [scrollView setFrame:CGRectInset([self bounds], 1.0, 1.0)];
+}
+
+- (void)_showCompletions:(CPTimer)timer
+{
+    var indexOfSelectedItem = [self indexOfSelectedItem];
+
+    [self setContentArray:[tokenField _completionsForSubstring:[tokenField _inputElement].value indexOfToken:0 indexOfSelectedItem:indexOfSelectedItem]];
+
+    // TODO Support indexOfSelectedItem. Always 0 right now.
+    [self setIndexOfSelectedItem:indexOfSelectedItem];
+
+    [tokenField setThemeState:CPThemeStateAutoCompleting];
+
+    [self setNeedsLayout];
+}
+
+- (void)_delayedShowCompletions
+{
+    _showCompletionsTimer = [CPTimer scheduledTimerWithTimeInterval:[tokenField completionDelay]
+                                                             target:self
+                                                           selector:@selector(_showCompletions:)
+                                                           userInfo:nil
+                                                            repeats:NO];
+}
+
+- (void)_hideCompletions
+{
+    [_showCompletionsTimer invalidate];
+    _showCompletionsTimer = nil;
+
+    [tokenField unsetThemeState:CPThemeStateAutoCompleting];
+    [self setNeedsLayout];
+}
+
+- (void)selectNext
+{
+    var index = [self indexOfSelectedItem] + 1;
+
+    if (index >= [contentArray count])
+        return;
+
+    [self setIndexOfSelectedItem:index];
+}
+
+- (void)selectPrevious
+{
+    var index = [self indexOfSelectedItem] - 1;
+
+    if (index < 0)
+        return;
+
+    [self setIndexOfSelectedItem:index];
+}
+
+- (int)numberOfRowsInTableView:(CPTableView)tableView
+{
+    return [contentArray count];
+}
+
+- (void)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(int)row
+{
+    return [contentArray objectAtIndex:row];
+}
+
+- (void)tableViewSelectionDidChange:(CPNotification)notification
+{
+    // FIXME
+    // make sure a mouse click in the tableview doesn't steal first responder state
+    window.setTimeout(function()
+    {
+        [[self window] makeFirstResponder:tokenField];
+    }, 2.0);
+}
 
 @end
 
