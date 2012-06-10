@@ -356,6 +356,8 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
 - (BOOL)resignFirstResponder
 {
+    CPLog("%@ resignFirstResponder", self);
+
     if (_preventResign)
         return NO;
 
@@ -1199,12 +1201,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 - (void)setIndexOfSelectedItem:(int)anIndex
 {
     [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:anIndex] byExtendingSelection:NO];
-
-    var clipView = [scrollView contentView],
-        rowRect = [tableView rectOfRow:anIndex];
-
-    if (rowRect && !CPRectContainsRect([clipView bounds], rowRect))
-        [clipView scrollToPoint:rowRect.origin];
+    [tableView scrollRowToVisible:anIndex];
 }
 
 - (int)indexOfSelectedItem
