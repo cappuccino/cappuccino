@@ -428,19 +428,6 @@ var sortArrayUsingFunction = function(array, aFunction, aContext)
     }
 }
 
-// sort using sort descriptors
-var compareObjectsUsingDescriptors = function(lhs, rhs, descriptors)
-{
-    var result = CPOrderedSame,
-        i = 0,
-        n = [descriptors count];
-
-    while (i < n && result === CPOrderedSame)
-        result = [descriptors[i++] compareObject:lhs withObject:rhs];
-
-    return result;
-};
-
 // Observe that the sort descriptors has the reversed order by the caller
 var sortArrayUsingJSDescriptors = function(a, d)
 {
