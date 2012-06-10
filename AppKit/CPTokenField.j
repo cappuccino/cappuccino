@@ -672,22 +672,22 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
             CPTokenFieldTextDidChangeValue = [CPTokenFieldInputOwner stringValue];
 
             // Update the selectedIndex if necessary
-            var index = [[CPTokenFieldInputOwner autocompleteView] selectedRow];
+            var index = [[CPTokenFieldInputOwner _autocompleteView] selectedRow];
 
             if (aDOMEvent.keyCode === CPUpArrowKeyCode)
                 index -= 1;
             else if (aDOMEvent.keyCode === CPDownArrowKeyCode)
                 index += 1;
 
-            if (index > [[CPTokenFieldInputOwner autocompleteView] numberOfRows] - 1)
-                index = [[CPTokenFieldInputOwner autocompleteView] numberOfRows] - 1;
+            if (index > [[CPTokenFieldInputOwner _autocompleteView] numberOfRows] - 1)
+                index = [[CPTokenFieldInputOwner _autocompleteView] numberOfRows] - 1;
 
             if (index < 0)
                 index = 0;
 
-            [[CPTokenFieldInputOwner autocompleteView] selectRowIndexes:[CPIndexSet indexSetWithIndex:index] byExtendingSelection:NO];
+            [[CPTokenFieldInputOwner _autocompleteView] selectRowIndexes:[CPIndexSet indexSetWithIndex:index] byExtendingSelection:NO];
 
-            var autocompleteView = [CPTokenFieldInputOwner autocompleteView],
+            var autocompleteView = [CPTokenFieldInputOwner _autocompleteView],
                 clipView = [[autocompleteView enclosingScrollView] contentView],
                 rowRect = [autocompleteView rectOfRow:index],
                 owner = CPTokenFieldInputOwner;
@@ -1099,14 +1099,15 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
         // Only carry out the scroll if the cursor isn't visible.
         if (!(isEditing && _selectedRange.length == 0))
         {
-
             var scrollToToken = _shouldScrollTo;
+
             if (scrollToToken === CPScrollDestinationLeft)
                 scrollToToken = tokens[_selectedRange.location]
             else if (scrollToToken === CPScrollDestinationRight)
                 scrollToToken = tokens[MAX(0, CPMaxRange(_selectedRange) - 1)];
             [self _scrollTokenViewToVisible:scrollToToken];
         }
+
         _shouldScrollTo = CPScrollDestinationNone;
     }
 }
@@ -1141,10 +1142,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     }, 2.0);
 }
 
-// =============
-// = ACCESSORS =
-// =============
-- (CPTableView)autocompleteView
+- (CPTableView)_autocompleteView
 {
     return _autocompleteView;
 }
