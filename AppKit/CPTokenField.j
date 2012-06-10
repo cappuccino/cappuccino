@@ -29,8 +29,7 @@
 @import "CPTextField.j"
 @import "CPTableView.j"
 @import "CPWindow.j"
-@import "_CPMenuWindow.j"
-
+@import "_CPAutocompleteMenu.j"
 
 #if PLATFORM(DOM)
 
@@ -53,10 +52,7 @@ var CPTokenFieldDOMInputElement = nil,
 
 #endif
 
-var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
-    CPTokenFieldTableColumnIdentifier   = @"CPTokenFieldTableColumnIdentifier",
-
-    CPScrollDestinationNone             = 0,
+var CPScrollDestinationNone             = 0,
     CPScrollDestinationLeft             = 1,
     CPScrollDestinationRight            = 2;
 
@@ -67,7 +63,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
     CPRange             _selectedRange;
 
-    _CPTokenFieldAutocompleteMenu _autocompleteMenu @accessors;
+    _CPAutocompleteMenu _autocompleteMenu @accessors;
 
     CPTimeInterval      _completionDelay;
 
@@ -124,12 +120,12 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
     [self addSubview:_tokenScrollView];
 
-    _autocompleteMenu = [[_CPTokenFieldAutocompleteMenu alloc] initWithTokenField:self];
+    _autocompleteMenu = [[_CPAutocompleteMenu alloc] initWithTextField:self];
 }
 
 - (void)_autocompleteWithDOMEvent:(JSObject)DOMEvent
 {
-    if (![self _inputElement].value && (![_autocompleteMenu contentArray] || ![self hasThemeState:CPThemeStateAutoCompleting]))
+    if (![self _inputElement].value && (![_autocompleteMenu contentArray] || ![self hasThemeState:CPThemeStateAutocompleting]))
         return;
 
     [self _hideCompletions];
@@ -575,16 +571,18 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 // ========
 - (void)viewDidMoveToWindow
 {
-    [[[self window] contentView] addSubview:_autocompleteMenu];
+    // TODO Switch to a window.
+    [[[self window] contentView] addSubview:[_autocompleteMenu contentView]];
 
 #if PLATFORM(DOM)
-    _autocompleteMenu._DOMElement.style.zIndex = 1000; // Anything else doesn't seem to work
+    [_autocompleteMenu contentView]._DOMElement.style.zIndex = 1000; // Anything else doesn't seem to work
 #endif
 }
 
 - (void)removeFromSuperview
 {
-    [_autocompleteMenu removeFromSuperview];
+    // TODO
+    [[_autocompleteMenu contentView] removeFromSuperview];
 }
 
 // =============
@@ -646,7 +644,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
                 aDOMEvent.cancelBubble = true;
 
                 // Only resign first responder if we weren't auto-completing
-                if (![CPTokenFieldInputOwner hasThemeState:CPThemeStateAutoCompleting])
+                if (![CPTokenFieldInputOwner hasThemeState:CPThemeStateAutocompleting])
                 {
                     if (aDOMEvent && aDOMEvent.keyCode === CPReturnKeyCode)
                     {
@@ -885,12 +883,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     var frame = [self frame],
         contentView = [_tokenScrollView documentView],
         tokens = [self _tokens],
-        shouldShowAutoComplete = [self hasThemeState:CPThemeStateAutoCompleting];
-
-    [_autocompleteMenu setHidden:!shouldShowAutoComplete];
-
-    if (shouldShowAutoComplete)
-        [_autocompleteMenu setNeedsLayout];
+        shouldShowAutoComplete = [self hasThemeState:CPThemeStateAutocompleting];
 
     // Hack to make sure we are handling an array
     if (![tokens isKindOfClass:[CPArray class]])
@@ -1138,174 +1131,6 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 - (void)_hideCompletions
 {
     [_autocompleteMenu _hideCompletions];
-}
-
-@end
-
-@implementation _CPTokenFieldAutocompleteMenu : CPView
-{
-    CPTokenField    tokenField;
-    CPArray         contentArray @accessors;
-
-    CPScrollView    scrollView;
-    CPTableView     tableView;
-
-    CPTimer         _showCompletionsTimer;
-}
-
-- (id)initWithTokenField:(CPTokenField)aTokenField
-{
-    if (self = [super initWithFrame:CGRectMakeZero()])
-    {
-        tokenField = aTokenField;
-
-        [self setBackgroundColor:[_CPMenuWindow backgroundColorForBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle]];
-
-        scrollView = [[CPScrollView alloc] initWithFrame:CGRectMakeZero()];
-        [scrollView setAutohidesScrollers:YES];
-        [scrollView setHasHorizontalScroller:NO];
-        [self addSubview:scrollView];
-
-        tableView = [[CPTableView alloc] initWithFrame:CPRectMakeZero()];
-
-        var tableColumn = [[CPTableColumn alloc] initWithIdentifier:CPTokenFieldTableColumnIdentifier];
-        [tableColumn setResizingMask:CPTableColumnAutoresizingMask];
-        [tableView addTableColumn:tableColumn];
-
-        [tableView setDataSource:self];
-        [tableView setDelegate:self];
-        [tableView setAllowsMultipleSelection:NO];
-        [tableView setHeaderView:nil];
-        [tableView setCornerView:nil];
-        [tableView setRowHeight:30.0];
-        [tableView setGridStyleMask:CPTableViewSolidHorizontalGridLineMask];
-        [tableView setBackgroundColor:[CPColor clearColor]];
-        [tableView setGridColor:[CPColor colorWithRed:242.0 / 255.0 green:243.0 / 255.0 blue:245.0 / 255.0 alpha:1.0]];
-
-        [scrollView setDocumentView:tableView];
-    }
-
-    return self;
-}
-
-/*!
-    Set an array of strings to use as the available completions.
-*/
-- (void)setContentArray:(CPArray)anArray
-{
-    contentArray = anArray;
-
-    [tableView reloadData];
-}
-
-- (void)setIndexOfSelectedItem:(int)anIndex
-{
-    [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:anIndex] byExtendingSelection:NO];
-    [tableView scrollRowToVisible:anIndex];
-}
-
-- (int)indexOfSelectedItem
-{
-    return [tableView selectedRow];
-}
-
-- (CPString)selectedItem
-{
-    return contentArray ? contentArray[[tableView selectedRow]] : nil;
-}
-
-- (void)layoutSubviews
-{
-    // TODO
-    // The autocompletion menu should be underneath the current token, it should at least be wide enough to fit the widest
-    // option but no wider than the width of the token field. It might stick out on the right side, so that if the token
-    // is small enough to fit on the right side the menu might extend a full token field width more into space on the right
-    // side. It should not stick out outside of the screen. The height should be the smallest possible to fit all options
-    // or at most ~307px (based on Cocoa). If the options don't fit horizontally they should be truncated with an ellipsis.
-
-    var frame = [tokenField frame];
-
-    // Correctly size the tableview
-    // FIXME Horizontal scrolling will not work because we are not actually looking at the content to set the width for the table column
-    [[tableView tableColumnWithIdentifier:CPTokenFieldTableColumnIdentifier] setWidth:[[scrollView contentView] frame].size.width];
-
-    // Manually sizeToFit because CPTableView's sizeToFit doesn't work properly
-    var frameOrigin = [tokenField convertPoint:[tokenField bounds].origin toView:[self superview]],
-        newFrame = CGRectMake(frameOrigin.x, frameOrigin.y + frame.size.height, CPRectGetWidth([tokenField bounds]), 92.0);
-    [self setFrame:newFrame];
-    [scrollView setFrame:CGRectInset([self bounds], 1.0, 1.0)];
-}
-
-- (void)_showCompletions:(CPTimer)timer
-{
-    var indexOfSelectedItem = [self indexOfSelectedItem];
-
-    [self setContentArray:[tokenField _completionsForSubstring:[tokenField _inputElement].value indexOfToken:0 indexOfSelectedItem:indexOfSelectedItem]];
-
-    // TODO Support indexOfSelectedItem. Always 0 right now.
-    [self setIndexOfSelectedItem:indexOfSelectedItem];
-
-    [tokenField setThemeState:CPThemeStateAutoCompleting];
-
-    [self setNeedsLayout];
-}
-
-- (void)_delayedShowCompletions
-{
-    _showCompletionsTimer = [CPTimer scheduledTimerWithTimeInterval:[tokenField completionDelay]
-                                                             target:self
-                                                           selector:@selector(_showCompletions:)
-                                                           userInfo:nil
-                                                            repeats:NO];
-}
-
-- (void)_hideCompletions
-{
-    [_showCompletionsTimer invalidate];
-    _showCompletionsTimer = nil;
-
-    [tokenField unsetThemeState:CPThemeStateAutoCompleting];
-    [self setNeedsLayout];
-}
-
-- (void)selectNext
-{
-    var index = [self indexOfSelectedItem] + 1;
-
-    if (index >= [contentArray count])
-        return;
-
-    [self setIndexOfSelectedItem:index];
-}
-
-- (void)selectPrevious
-{
-    var index = [self indexOfSelectedItem] - 1;
-
-    if (index < 0)
-        return;
-
-    [self setIndexOfSelectedItem:index];
-}
-
-- (int)numberOfRowsInTableView:(CPTableView)tableView
-{
-    return [contentArray count];
-}
-
-- (void)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(int)row
-{
-    return [contentArray objectAtIndex:row];
-}
-
-- (void)tableViewSelectionDidChange:(CPNotification)notification
-{
-    // FIXME
-    // make sure a mouse click in the tableview doesn't steal first responder state
-    window.setTimeout(function()
-    {
-        [[self window] makeFirstResponder:tokenField];
-    }, 2.0);
 }
 
 @end
