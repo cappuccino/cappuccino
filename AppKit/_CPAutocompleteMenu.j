@@ -25,8 +25,6 @@
 @import "CPTextField.j"
 @import "_CPMenuWindow.j"
 
-var CPTokenFieldTableColumnIdentifier   = @"CPTokenFieldTableColumnIdentifier";
-
 
 /*!
     An "autocomplete" menu displayed by a text field.
@@ -60,7 +58,7 @@ var CPTokenFieldTableColumnIdentifier   = @"CPTokenFieldTableColumnIdentifier";
 
         tableView = [[CPTableView alloc] initWithFrame:CPRectMakeZero()];
 
-        var tableColumn = [[CPTableColumn alloc] initWithIdentifier:CPTokenFieldTableColumnIdentifier];
+        var tableColumn = [CPTableColumn new];
         [tableColumn setResizingMask:CPTableColumnAutoresizingMask];
         [tableView addTableColumn:tableColumn];
 
@@ -119,7 +117,7 @@ var CPTokenFieldTableColumnIdentifier   = @"CPTokenFieldTableColumnIdentifier";
 
     // Correctly size the tableview
     // FIXME Horizontal scrolling will not work because we are not actually looking at the content to set the width for the table column
-    [[tableView tableColumnWithIdentifier:CPTokenFieldTableColumnIdentifier] setWidth:[[scrollView contentView] frame].size.width];
+    [[[tableView tableColumns] firstObject] setWidth:[[scrollView contentView] frame].size.width];
 
     // Manually sizeToFit because CPTableView's sizeToFit doesn't work properly
     var frameOrigin = [textField convertPoint:[textField bounds].origin toView:[contentView superview]],
