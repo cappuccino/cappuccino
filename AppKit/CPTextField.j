@@ -1511,25 +1511,37 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 {
 }
 
-- (void)_updatePlaceholdersWithOptions:(CPDictionary)options
+- (void)_setOptions:options withBindingInfo:info
 {
-    [super _updatePlaceholdersWithOptions:options];
-
-    [self _setPlaceholder:@"Multiple Values" forMarker:CPMultipleValuesMarker isDefault:YES];
-    [self _setPlaceholder:@"No Selection" forMarker:CPNoSelectionMarker isDefault:YES];
-    [self _setPlaceholder:@"Not Applicable" forMarker:CPNotApplicableMarker isDefault:YES];
-    [self _setPlaceholder:@"" forMarker:CPNullMarker isDefault:YES];
-}
-
-- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
-{
-    [_source setPlaceholderString:aValue];
-    [_source setObjectValue:nil];
+    if (![options containsKey:CPMultipleValuesPlaceholderBindingOption])
+        [options setObject:@"Multiple Values" forKey:CPMultipleValuesPlaceholderBindingOption];
+    if (![options containsKey:CPNoSelectionPlaceholderBindingOption])
+        [options setObject:@"No Selection" forKey:CPNoSelectionPlaceholderBindingOption];
+    if (![options containsKey:CPNotApplicablePlaceholderBindingOption])
+        [options setObject:@"Not Applicable" forKey:CPNotApplicablePlaceholderBindingOption];
 }
 
 - (void)setValue:(id)aValue forBinding:(CPString)aBinding
 {
-    [_source setObjectValue:aValue];
+    var newValue = aValue,
+        options;
+    if (CPIsControllerMarker(aValue))
+    {
+        options = [_info objectForKey:CPOptionsKey];
+        newValue = nil;
+        if (aValue === CPMultipleValuesMarker)
+            [_source setPlaceholderString:[options objectForKey:CPMultipleValuesPlaceholderBindingOption]];
+        else if (aValue === CPNoSelectionMarker)
+            [_source setPlaceholderString:[options objectForKey:CPNoSelectionPlaceholderBindingOption]];
+        else if (aValue === CPNotApplicableMarker)
+            [_source setPlaceholderString:[options objectForKey:CPNotApplicablePlaceholderBindingOption]];
+    }
+    else if (aValue === undefined || aValue === nil || aValue === [CPNull null] || aValue === @"")
+    {
+        options = [_info objectForKey:CPOptionsKey];
+        [_source setPlaceholderString:[options objectForKey:CPNullPlaceholderBindingOption]];
+    }
+    [_source setObjectValue:newValue];
 }
 
 @end

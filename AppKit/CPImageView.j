@@ -451,23 +451,13 @@ var CPImageViewEmptyPlaceholderImage = nil;
 {
 }
 
-- (void)_updatePlaceholdersWithOptions:(CPDictionary)options
-{
-    [self _setPlaceholder:nil forMarker:CPMultipleValuesMarker isDefault:YES];
-    [self _setPlaceholder:nil forMarker:CPNoSelectionMarker isDefault:YES];
-    [self _setPlaceholder:nil forMarker:CPNotApplicableMarker isDefault:YES];
-    [self _setPlaceholder:nil forMarker:CPNullMarker isDefault:YES];
-}
-
-- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
-{
-    [_source setImage:nil];
-}
-
 - (void)setValue:(id)aValue forBinding:(CPString)aBinding
 {
     if (aBinding === CPValueURLBinding || aBinding === CPValuePathBinding)
         aValue = [[CPImage alloc] initWithContentsOfFile:aValue];
+
+    if (CPIsControllerMarker(aValue))
+        aValue = nil;
 
     [_source setImage:aValue];
 }
