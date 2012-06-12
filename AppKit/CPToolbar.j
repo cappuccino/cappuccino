@@ -536,8 +536,7 @@ var _CPToolbarViewBackgroundColor = nil,
     _CPToolbarViewExtraItemsImage = nil,
     _CPToolbarViewExtraItemsAlternateImage = nil;
 
-var TOOLBAR_TOP_MARGIN          = 5.0,
-    TOOLBAR_ITEM_MARGIN         = 10.0,
+var TOOLBAR_ITEM_MARGIN         = 10.0,
     TOOLBAR_EXTRA_ITEMS_WIDTH   = 20.0;
 
 var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
@@ -754,14 +753,15 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     // Now that all the visible items are the correct width, give them their final frames.
     var index = 0,
         count = _visibleItems.length,
-        x = TOOLBAR_ITEM_MARGIN;
+        x = TOOLBAR_ITEM_MARGIN,
+        y = CEIL(([self frame].size.height - height) / 2.0);
 
     for (; index < count; ++index)
     {
         var view = [self viewForItem:_visibleItems[index]],
             viewWidth = CGRectGetWidth([view frame]);
 
-        [view setFrame:CGRectMake(x, 0.0, viewWidth, height)];
+        [view setFrame:CGRectMake(x, y, viewWidth, height)];
 
         x += viewWidth + TOOLBAR_ITEM_MARGIN;
     }
@@ -906,8 +906,7 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     return CPOrderedDescending;
 };
 
-var TOP_MARGIN      = 5.0,
-    LABEL_MARGIN    = 2.0;
+var LABEL_MARGIN    = 2.0;
 
 @implementation _CPToolbarItemView : CPControl
 {
@@ -1042,7 +1041,7 @@ var TOP_MARGIN      = 5.0,
 
     _labelSize = [_labelField frame].size;
 
-    _minSize = CGSizeMake(MAX(_labelSize.width, minSize.width), _labelSize.height + minSize.height + LABEL_MARGIN + TOP_MARGIN);
+    _minSize = CGSizeMake(MAX(_labelSize.width, minSize.width), _labelSize.height + minSize.height + LABEL_MARGIN);
     _maxSize = CGSizeMake(MAX(_labelSize.width, maxSize.width), 100000000.0);
 
     [_toolbar tile];
@@ -1062,18 +1061,20 @@ var TOP_MARGIN      = 5.0,
     if (identifier === CPToolbarSeparatorItemIdentifier)
         return [_view setFrame:CGRectMake(ROUND((width - 2.0) / 2.0), 0.0, 2.0, _CGRectGetHeight(bounds))];
 
+    // The view is centred in the available space above the label.
     var view = _view || _imageView,
         itemMaxSize = [_toolbarItem maxSize],
-        height = _CGRectGetHeight(bounds) - _labelSize.height - LABEL_MARGIN - TOP_MARGIN,
+        height = _CGRectGetHeight(bounds) - _labelSize.height,
         viewWidth = MIN(itemMaxSize.width, width),
         viewHeight =  MIN(itemMaxSize.height, height);
 
-    [view setFrame:CGRectMake(  ROUND((width - viewWidth) / 2.0),
-                                TOP_MARGIN + ROUND((height - viewHeight) / 2.0),
-                                viewWidth,
-                                viewHeight)];
+    [view setFrame:CGRectMake(ROUND((width - viewWidth) / 2.0),
+                              ROUND((height - viewHeight) / 2.0),
+                              viewWidth,
+                              viewHeight)];
 
-    [_labelField setFrameOrigin:CGPointMake(ROUND((width - _labelSize.width) / 2.0), TOP_MARGIN + height + LABEL_MARGIN)];
+    // Label is always drawn at the bottom of the view. So if the view is really tall but the icon is tiny, the icon is centred above the label but the label remains on the bottom.
+    [_labelField setFrameOrigin:CGPointMake(ROUND((width - _labelSize.width) / 2.0), _CGRectGetHeight(bounds) - _labelSize.height)];
 }
 
 - (void)mouseDown:(CPEvent)anEvent
