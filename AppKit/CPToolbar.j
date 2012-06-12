@@ -1048,12 +1048,14 @@ var LABEL_MARGIN    = 2.0;
 
     [self setEnabled:[_toolbarItem isEnabled]];
 
-    var iconOnly = [[_toolbarItem toolbar] displayMode] === CPToolbarDisplayModeIconOnly;
+    _labelSize = [_labelField frame].size;
+
+    var iconOnly = [[_toolbarItem toolbar] displayMode] === CPToolbarDisplayModeIconOnly,
+        labelOnly = [[_toolbarItem toolbar] displayMode] === CPToolbarDisplayModeLabelOnly;
     [_labelField setHidden:iconOnly];
+    [_view setHidden:labelOnly];
 
-    _labelSize = iconOnly ? CGSizeMakeZero(): [_labelField frame].size;
-
-    _minSize = CGSizeMake(MAX(_labelSize.width, minSize.width), _labelSize.height + minSize.height + LABEL_MARGIN);
+    _minSize = CGSizeMake(MAX(_labelSize.width, minSize.width), (labelOnly ? 0 : minSize.height) + (iconOnly ? 0 : _labelSize.height +LABEL_MARGIN));
     _maxSize = CGSizeMake(MAX(_labelSize.width, maxSize.width), 100000000.0);
 
     [_toolbar tile];
@@ -1076,7 +1078,8 @@ var LABEL_MARGIN    = 2.0;
     // The view is centred in the available space above the label.
     var view = _view || _imageView,
         itemMaxSize = [_toolbarItem maxSize],
-        height = _CGRectGetHeight(bounds) - _labelSize.height,
+        iconOnly = [[_toolbarItem toolbar] displayMode] === CPToolbarDisplayModeIconOnly,
+        height = _CGRectGetHeight(bounds) - (iconOnly ? 0 : _labelSize.height),
         viewWidth = MIN(itemMaxSize.width, width),
         viewHeight =  MIN(itemMaxSize.height, height);
 
@@ -1085,7 +1088,7 @@ var LABEL_MARGIN    = 2.0;
                               viewWidth,
                               viewHeight)];
 
-    // Label is always drawn at the bottom of the view. So if the view is really tall but the icon is tiny, the icon is centred above the label but the label remains on the bottom.
+    // Label is always drawn at the bottom of the view. So if the view is really tall but the icon is tiny, the icon is centred above the label while the label remains on the bottom.
     [_labelField setFrameOrigin:CGPointMake(ROUND((width - _labelSize.width) / 2.0), _CGRectGetHeight(bounds) - _labelSize.height)];
 }
 
