@@ -91,7 +91,7 @@ var TOOLBAR_REGULAR_HEIGHT              = 59.0,
 @implementation CPToolbar : CPObject
 {
     CPString                _identifier;
-    CPToolbarDisplayMode    _displayMode;
+    CPToolbarDisplayMode    _displayMode @accessors(property=displayMode);
     BOOL                    _showsBaselineSeparator;
     BOOL                    _allowsUserCustomization;
     BOOL                    _isVisible;
@@ -242,6 +242,15 @@ var TOOLBAR_REGULAR_HEIGHT              = 59.0,
         return;
 
     _delegate = aDelegate;
+
+    [self _reloadToolbarItems];
+}
+
+- (void)setDisplayMode:(CPToolbarDisplayMode)aDisplayMode
+{
+    if (_displayMode === aDisplayMode)
+        return;
+    _displayMode = aDisplayMode;
 
     [self _reloadToolbarItems];
 }
@@ -1039,7 +1048,10 @@ var LABEL_MARGIN    = 2.0;
 
     [self setEnabled:[_toolbarItem isEnabled]];
 
-    _labelSize = [_labelField frame].size;
+    var iconOnly = [[_toolbarItem toolbar] displayMode] === CPToolbarDisplayModeIconOnly;
+    [_labelField setHidden:iconOnly];
+
+    _labelSize = iconOnly ? CGSizeMakeZero(): [_labelField frame].size;
 
     _minSize = CGSizeMake(MAX(_labelSize.width, minSize.width), _labelSize.height + minSize.height + LABEL_MARGIN);
     _maxSize = CGSizeMake(MAX(_labelSize.width, maxSize.width), 100000000.0);
