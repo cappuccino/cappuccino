@@ -469,10 +469,13 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 }
 
 /*!
- Create the xCodeSupport/Sources folder if necessary.
+ Create the .xCodeSupport/Sources folder if necessary.
  */
-- (void)createXcodeSupportProjectSourcesDirIfNecessary {
-    if ([fm fileExistsAtPath:[XCodeSupportProjectSources path]]) return;
+- (void)createXcodeSupportProjectSourcesDirIfNecessary
+{
+    if ([fm fileExistsAtPath:[XCodeSupportProjectSources path]])
+        return;
+
     DLog(@"Creating source folder %@", [XCodeSupportProjectSources path]);
     [fm createDirectoryAtPath:[XCodeSupportProjectSources path] withIntermediateDirectories:YES attributes:nil error:nil];
 }
