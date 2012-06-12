@@ -66,9 +66,9 @@ CPNumericSearch         = 64;
 */
 CPDiacriticInsensitiveSearch = 128;
 
-var CPStringUIDs        = new CFMutableDictionary();
+var CPStringUIDs = new CFMutableDictionary(),
 
-var CPStringRegexSpecialCharacters = [
+    CPStringRegexSpecialCharacters = [
       '/', '.', '*', '+', '?', '|', '$', '^',
       '(', ')', '[', ']', '{', '}', '\\'
     ],
@@ -624,9 +624,9 @@ var CPStringRegexSpecialCharacters = [
         rhs = [rhs lowercaseString];
     }
 
-    for (; len < min; len++ )
+    for (; len < min; len++)
     {
-        if ( [lhs characterAtIndex:len] !== [rhs characterAtIndex:len] )
+        if ([lhs characterAtIndex:len] !== [rhs characterAtIndex:len])
             break;
     }
 
@@ -710,24 +710,31 @@ var CPStringRegexSpecialCharacters = [
 */
 - (CPArray)pathComponents
 {
-    if (length === 0) return [""];
-    if (self === "/") return ["/"];
+    if (length === 0)
+        return [""];
+
+    if (self === "/")
+        return ["/"];
+
     var result = split('/');
+
     if (result[0] === "")
         result[0] = "/";
+
     var index = result.length - 1;
+
     if (index > 0)
     {
         if (result[index] === "")
             result[index] = "/";
+
         while (index--)
         {
             while (result[index] === "")
-            {
                 result.splice(index--, 1);
-            }
         }
     }
+
     return result;
 }
 
@@ -750,10 +757,12 @@ var CPStringRegexSpecialCharacters = [
     {
         var component = components[i],
             lenMinusOne = component.length - 1;
+
         if (lenMinusOne >= 0 && (component !== "/" || firstRound))  // Skip "" and "/" (not first time)
         {
             if (lenMinusOne > 0 && component.indexOf("/",lenMinusOne) === lenMinusOne) // Ends with "/"
                 component = component.substring(0, lenMinusOne);
+
             if (firstRound)
             {
                 if (component === "/")
@@ -764,6 +773,7 @@ var CPStringRegexSpecialCharacters = [
                 result += "/";
             else
                 firstIsSlash = false;
+
             result += component;
         }
     }
@@ -793,6 +803,7 @@ var CPStringRegexSpecialCharacters = [
     var components = [self pathComponents],
         lastIndex = components.length - 1,
         lastComponent = components[lastIndex];
+
     return lastIndex > 0 && lastComponent === "/" ? components[lastIndex - 1] : lastComponent;
 }
 
@@ -806,6 +817,7 @@ var CPStringRegexSpecialCharacters = [
 {
     var components = [self pathComponents],
         addComponents = aString && aString !== "/" ? [aString pathComponents] : [];
+
     return [CPString pathWithComponents:components.concat(addComponents)];
 }
 
@@ -820,6 +832,7 @@ var CPStringRegexSpecialCharacters = [
 {
     if (ext.indexOf('/') >= 0 || length === 0 || self === "/")  // Can't handle these
         return self;
+
     var components = [self pathComponents],
         last = components.length - 1;
 
@@ -839,13 +852,17 @@ var CPStringRegexSpecialCharacters = [
 */
 - (CPString)stringByDeletingLastPathComponent
 {
-    if (length === 0) return "";
-    if (self === "/") return "/";
+    if (length === 0)
+        return "";
+    else if (self === "/")
+        return "/";
+
     var components = [self pathComponents],
         last = components.length - 1;
 
     if (components[last] === "/")
         last--;
+
     components.splice(last, components.length - last);
 
     return [CPString pathWithComponents:components];
@@ -860,10 +877,10 @@ var CPStringRegexSpecialCharacters = [
 - (CPString)stringByDeletingPathExtension
 {
     var extension = [self pathExtension];
+
     if (extension === "")
         return self;
-
-    if (lastIndexOf('.') < 1)
+    else if (lastIndexOf('.') < 1)
         return self;
 
     return substr(0, [self length] - (extension.length + 1));
@@ -876,6 +893,7 @@ var CPStringRegexSpecialCharacters = [
 }
 
 @end
+
 
 @implementation CPString (JSON)
 
@@ -916,12 +934,14 @@ var CPStringRegexSpecialCharacters = [
 
 @end
 
+
 var diacritics = [[192,198],[224,230],[231,231],[232,235],[236,239],[242,246],[249,252]], // Basic Latin ; Latin-1 Supplement.
     normalized = [65,97,99,101,105,111,117];
 
 String.prototype.stripDiacritics = function()
 {
     var output = "";
+
     for (var indexSource = 0; indexSource < this.length; indexSource++)
     {
         var code = this.charCodeAt(indexSource);

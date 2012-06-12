@@ -1065,7 +1065,7 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 */
 - (void)_autosave
 {
-    if (!_shouldAutosave || !autosaveName)
+    if (!_shouldAutosave || !_autosaveName)
         return;
 
     var userDefaults = [CPUserDefaults standardUserDefaults],

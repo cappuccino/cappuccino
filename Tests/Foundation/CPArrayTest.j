@@ -539,6 +539,20 @@
     [self assertTrue:d.indexOf("y: 6") !== -1 message:"Can't find 'y: 6' in description of array " + d];
 }
 
+- (void)testSortUsingDescriptorsWithDifferentSelectors
+{
+    var a = [CPDictionary dictionaryWithJSObject:{"a": "AB", "b": "ba"}],
+        b = [CPDictionary dictionaryWithJSObject:{"a": "aa", "b": "BB"}],
+        array = [a, b],
+        d1 = [[CPSortDescriptor sortDescriptorWithKey:@"a" ascending:YES selector:@selector(compare:)]],
+        d2 = [[CPSortDescriptor sortDescriptorWithKey:@"a" ascending:YES selector:@selector(caseInsensitiveCompare:)]],
+        s1 = [array sortedArrayUsingDescriptors:d1],
+        s2 = [array sortedArrayUsingDescriptors:d2];
+
+    [self assertTrue:s1[0] === a message:s1[0] + " is larger then " + a + " when sorting case sensitive"];
+    [self assertTrue:s2[1] === a message:s2[1] + " is larger then " + a + " when sorting case insensitive"];
+}
+
 @end
 
 @implementation AlwaysEqual : CPObject
