@@ -162,7 +162,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
     }
 
     var frameOrigin = [textField convertPoint:origin toView:nil],
-        screenSize = [[_menuWindow screen] visibleFrame].size,
+        screenSize = [([CPPlatform isBrowser] ? [_menuWindow platformWindow] : [_menuWindow screen]) visibleFrame].size,
         availableWidth = screenSize.width - frameOrigin.x,
         availableHeight = screenSize.height - frameOrigin.y,
         width = MIN(widestItemWidth, availableWidth),
