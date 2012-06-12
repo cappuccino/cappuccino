@@ -1088,12 +1088,15 @@ var resizeTimer = nil;
     // This is a hack for the browser resize bug in safari.
     // See bug ID: 1325
     // https://github.com/cappuccino/cappuccino/issues/1325
+    // Addendum by Antoine Mercadal : I also noticed that reszing is causing
+    // problem under latest Firefox 13.0. Let's just use this hack
+    // for all browser now.
 
     [resizeTimer invalidate];
-    resizeTimer = [CPTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(actualResizeEvent) userInfo:nil repeats:NO];
+    resizeTimer = [CPTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(_actualResizeEvent) userInfo:nil repeats:NO];
 }
 
-- (void)actualResizeEvent
+- (void)_actualResizeEvent
 {
     resizeTimer = nil;
 
