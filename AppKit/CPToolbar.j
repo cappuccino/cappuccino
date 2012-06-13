@@ -58,10 +58,6 @@ CPToolbarSizeModeSmall                  = 2;
 var CPToolbarsByIdentifier              = nil,
     CPToolbarConfigurationsByIdentifier = nil;
 
-var TOOLBAR_REGULAR_HEIGHT              = 59.0,
-    TOOLBAR_SMALL_HEIGHT                = 46.0,
-    TOOLBAR_MARGIN_HEIGHT               = 4.0;
-
 /*!
     @ingroup appkit
     @class CPToolbar
@@ -137,6 +133,19 @@ var TOOLBAR_REGULAR_HEIGHT              = 59.0,
     }
 
     [toolbarsSharingIdentifier addObject:toolbar];
+}
+
+/*
+    Temporary theme attributes until we've figured out which CPView these theme attributes should
+    belong to.
+    @ignore
+*/
++ (id)_themeAttributes
+{
+    // "regular-size-height" is used if no item has a non-zero min size and sizeMode == CPToolbarSizeModeRegular.
+    // "small-size-height" is used if no item has a non-zero min size and sizeMode == CPToolbarSizeModeSmall.
+    return [CPDictionary dictionaryWithObjects:[_CGInsetMake(4.0, 4.0, 4.0, TOOLBAR_ITEM_MARGIN), 59.0, 46.0]
+                                       forKeys:[@"content-inset", @"regular-size-height", @"small-size-height"]];
 }
 
 - (id)init
@@ -266,8 +275,18 @@ var TOOLBAR_REGULAR_HEIGHT              = 59.0,
 
 - (CGRect)_toolbarViewFrame
 {
-    var height = _desiredHeight || (_sizeMode != CPToolbarSizeModeSmall ? TOOLBAR_REGULAR_HEIGHT : TOOLBAR_SMALL_HEIGHT);
+    var height = _desiredHeight || (_sizeMode != CPToolbarSizeModeSmall ? [self _valueForThemeAttribute:@"regular-size-height"] : [self _valueForThemeAttribute:@"small-size-height"]);
     return CPRectMake(0.0, 0.0, 1200.0, height);
+}
+
+/*
+    Temporary theme attributes until we've figured out which CPView these theme attributes should
+    belong to.
+    @ignore
+*/
+- (id)_valueForThemeAttribute:(CPString)attributeName
+{
+    return [[[self class] _themeAttributes] valueForKey:attributeName];
 }
 
 /* @ignore */
@@ -708,7 +727,8 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     // We'll figure out the proper height for the toolbar depending on its items.
     // If nothing has a minimum size we'll use the standard toolbar size for the
     // sizeMode, indicated by a 0 _desiredHeight.
-    var newDesiredHeight = height ? height + 2 * TOOLBAR_MARGIN_HEIGHT : 0;
+    var contentInset = [_toolbar _valueForThemeAttribute:@"content-inset"],
+        newDesiredHeight = height ? height + contentInset.top + contentInset.bottom : 0;
 
     if (newDesiredHeight != _toolbar._desiredHeight)
     {
@@ -783,8 +803,9 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     // Now that all the visible items are the correct width, give them their final frames.
     var index = 0,
         count = _visibleItems.length,
-        x = TOOLBAR_ITEM_MARGIN,
-        y = CEIL(([self frame].size.height - height) / 2.0);
+        x = contentInset.left,
+        contentInset = [_toolbar _valueForThemeAttribute:@"content-inset"],
+        y = contentInset.top;
 
     for (; index < count; ++index)
     {
