@@ -16,6 +16,7 @@ CPLogRegister(CPLogConsole);
 
     @outlet CPButton        button;
     @outlet CPButton        imageButton;
+    @outlet CPButton        imageDisabledButton;
     @outlet CPCheckBox      checkbox;
     @outlet CPCheckBox      multiCheckbox;
     @outlet CPRadio         radio1;
@@ -32,6 +33,7 @@ CPLogRegister(CPLogConsole);
 {
     var path = [[CPBundle bundleForClass:[CPView class]] pathForResource:@"action_button.png"];
     [imageButton setImage:[[CPImage alloc] initWithContentsOfFile:path size:CGSizeMake(22.0, 14.0)]];
+    [imageDisabledButton setImage:[[CPImage alloc] initWithContentsOfFile:path size:CGSizeMake(22.0, 14.0)]];
 
     [self _setImagePosition:CPImageLeft];
     [positionMenu selectItemAtIndex:CPImageLeft];
@@ -40,7 +42,7 @@ CPLogRegister(CPLogConsole);
 
 - (void)_setupButtons
 {
-    buttons = [button, imageButton];
+    buttons = [button, imageButton, imageDisabledButton];
     checksAndRadios = [checkbox, multiCheckbox, radio1, radio2];
 
     var checkboxHeight = [checkbox frameSize].height,
