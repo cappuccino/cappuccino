@@ -195,13 +195,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
  */
 - (void)clear
 {
-    if (lastEventId && [lastEventId longLongValue] != 0)
-    {
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        [defaults setObject:lastEventId forKey:@"lastEventId"];
-        [defaults synchronize];
-    }
-
+    [self synchronizeLastEventId];
     currentProjectURL = nil;
     currentProjectName = nil;
     [ignoredFilePaths removeAllObjects];
@@ -257,6 +251,18 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 - (void)updateLastEventId:(uint64_t)eventId
 {
     lastEventId = [NSNumber numberWithUnsignedLongLong:eventId];
+}
+
+/*!
+ Synchronizes the last recorded event ID with the user defaults.
+ */
+- (void)synchronizeLastEventId {
+    if (lastEventId && [lastEventId longLongValue] != 0)
+    {
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        [defaults setObject:lastEventId forKey:@"lastEventId"];
+        [defaults synchronize];
+    }
 }
 
 /*!
