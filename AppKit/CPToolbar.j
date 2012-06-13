@@ -606,9 +606,9 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
     var bundle = [CPBundle bundleForClass:self];
 
-    _CPToolbarViewExtraItemsImage = [[CPImage alloc] initWithContentsOfFile: [bundle pathForResource:"_CPToolbarView/_CPToolbarViewExtraItemsImage.png"] size:CPSizeMake(10.0, 15.0)];
+    _CPToolbarViewExtraItemsImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"_CPToolbarView/_CPToolbarViewExtraItemsImage.png"] size:CPSizeMake(10.0, 15.0)];
 
-    _CPToolbarViewExtraItemsAlternateImage = [[CPImage alloc] initWithContentsOfFile: [bundle pathForResource:"_CPToolbarView/_CPToolbarViewExtraItemsAlternateImage.png"] size:CGSizeMake(10.0, 15.0)];
+    _CPToolbarViewExtraItemsAlternateImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"_CPToolbarView/_CPToolbarViewExtraItemsAlternateImage.png"] size:_CGSizeMake(10.0, 15.0)];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -622,7 +622,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
         _labelColor = [CPColor blackColor];
         _labelShadowColor = [CPColor colorWithWhite:1.0 alpha:0.75];
 
-        _additionalItemsButton = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 10.0, 15.0) pullsDown:YES];
+        _additionalItemsButton = [[CPPopUpButton alloc] initWithFrame:_CGRectMake(0.0, 0.0, 10.0, 15.0) pullsDown:YES];
         [_additionalItemsButton setBordered:NO];
 
         [_additionalItemsButton setImagePosition:CPImageOnly];
@@ -674,7 +674,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 {
     // We begin by recalculating the visible items.
     var items = [_toolbar items],
-        itemsWidth = CGRectGetWidth([self bounds]),
+        itemsWidth = _CGRectGetWidth([self bounds]),
         minWidth = _minWidth,
         // FIXME: This should be a CPSet.
         invisibleItemsSortedByPriority = [];
@@ -761,7 +761,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
         // static width (min==max). This handles the case where the user did setView:
         // with a view of a different size than minSize/maxSize
         else
-            [view setFrameSize:CGSizeMake(minSize.width, height)];
+            [view setFrameSize:_CGSizeMake(minSize.width, height)];
 
         [view setHidden:NO];
     }
@@ -796,7 +796,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
                 remainingSpace += proposedWidth - constrainedWidth;
             }
 
-            [view setFrameSize:CGSizeMake(constrainedWidth, height)];
+            [view setFrameSize:_CGSizeMake(constrainedWidth, height)];
         }
     }
 
@@ -810,9 +810,9 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     for (; index < count; ++index)
     {
         var view = [self viewForItem:_visibleItems[index]],
-            viewWidth = CGRectGetWidth([view frame]);
+            viewWidth = _CGRectGetWidth([view frame]);
 
-        [view setFrame:CGRectMake(x, y, viewWidth, height)];
+        [view setFrame:_CGRectMake(x, y, viewWidth, height)];
 
         x += viewWidth + TOOLBAR_ITEM_MARGIN;
     }
@@ -846,7 +846,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
     if (needsAdditionalItemsButton)
     {
-        [_additionalItemsButton setFrameOrigin:CGPointMake(itemsWidth + 5.0, (CGRectGetHeight([self bounds]) - CGRectGetHeight([_additionalItemsButton frame])) / 2.0)];
+        [_additionalItemsButton setFrameOrigin:_CGPointMake(itemsWidth + 5.0, (_CGRectGetHeight([self bounds]) - _CGRectGetHeight([_additionalItemsButton frame])) / 2.0)];
 
         [self addSubview:_additionalItemsButton];
 
@@ -984,12 +984,12 @@ var LABEL_MARGIN    = 2.0;
     {
         _toolbarItem = aToolbarItem;
 
-        _labelField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
+        _labelField = [[CPTextField alloc] initWithFrame:_CGRectMakeZero()];
 
         [_labelField setFont:[CPFont systemFontOfSize:11.0]];
         [_labelField setTextColor:[self FIXME_labelColor]];
         [_labelField setTextShadowColor:[self FIXME_labelShadowColor]];
-        [_labelField setTextShadowOffset:CGSizeMake(0.0, 1.0)];
+        [_labelField setTextShadowOffset:_CGSizeMake(0.0, 1.0)];
         [_labelField setAutoresizingMask:CPViewWidthSizable | CPViewMinXMargin];
 
         [self addSubview:_labelField];
@@ -1036,11 +1036,11 @@ var LABEL_MARGIN    = 2.0;
 
         if (identifier === CPToolbarSeparatorItemIdentifier)
         {
-            _view = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 2.0, 32.0)];
+            _view = [[CPView alloc] initWithFrame:_CGRectMake(0.0, 0.0, 2.0, 32.0)];
 
             // FIXME: Get rid of this old API!!!
             sizes = {};
-            sizes[@"CPToolbarItemSeparator"] = [CGSizeMake(2.0, 26.0), CGSizeMake(2.0, 1.0), CGSizeMake(2.0, 26.0)];
+            sizes[@"CPToolbarItemSeparator"] = [_CGSizeMake(2.0, 26.0), _CGSizeMake(2.0, 1.0), _CGSizeMake(2.0, 26.0)];
             [_view setBackgroundColor:_CPControlThreePartImagePattern(YES, sizes, @"CPToolbarItem", @"Separator")];
 
             [self addSubview:_view];
@@ -1097,8 +1097,8 @@ var LABEL_MARGIN    = 2.0;
     [_labelField setHidden:iconOnly];
     [_view setHidden:labelOnly];
 
-    _minSize = CGSizeMake(MAX(_labelSize.width, minSize.width), (labelOnly ? 0 : minSize.height) + (iconOnly ? 0 : _labelSize.height +LABEL_MARGIN));
-    _maxSize = CGSizeMake(MAX(_labelSize.width, maxSize.width), 100000000.0);
+    _minSize = _CGSizeMake(MAX(_labelSize.width, minSize.width), (labelOnly ? 0 : minSize.height) + (iconOnly ? 0 : _labelSize.height + LABEL_MARGIN));
+    _maxSize = _CGSizeMake(MAX(_labelSize.width, maxSize.width), 100000000.0);
 
     [_toolbar tile];
 }
@@ -1115,7 +1115,7 @@ var LABEL_MARGIN    = 2.0;
         width = _CGRectGetWidth(bounds);
 
     if (identifier === CPToolbarSeparatorItemIdentifier)
-        return [_view setFrame:CGRectMake(ROUND((width - 2.0) / 2.0), 0.0, 2.0, _CGRectGetHeight(bounds))];
+        return [_view setFrame:_CGRectMake(ROUND((width - 2.0) / 2.0), 0.0, 2.0, _CGRectGetHeight(bounds))];
 
     // The view is centred in the available space above the label.
     var view = _view || _imageView,
@@ -1125,13 +1125,13 @@ var LABEL_MARGIN    = 2.0;
         viewWidth = MIN(itemMaxSize.width, width),
         viewHeight =  MIN(itemMaxSize.height, height);
 
-    [view setFrame:CGRectMake(ROUND((width - viewWidth) / 2.0),
-                              ROUND((height - viewHeight) / 2.0),
-                              viewWidth,
-                              viewHeight)];
+    [view setFrame:_CGRectMake(ROUND((width - viewWidth) / 2.0),
+                               ROUND((height - viewHeight) / 2.0),
+                               viewWidth,
+                               viewHeight)];
 
     // Label is always drawn at the bottom of the view. So if the view is really tall but the icon is tiny, the icon is centred above the label while the label remains on the bottom.
-    [_labelField setFrameOrigin:CGPointMake(ROUND((width - _labelSize.width) / 2.0), _CGRectGetHeight(bounds) - _labelSize.height)];
+    [_labelField setFrameOrigin:_CGPointMake(ROUND((width - _labelSize.width) / 2.0), _CGRectGetHeight(bounds) - _labelSize.height)];
 }
 
 - (void)mouseDown:(CPEvent)anEvent
@@ -1194,7 +1194,7 @@ var LABEL_MARGIN    = 2.0;
         if (alternateImage)
             [_imageView setImage:alternateImage];
 
-        [_labelField setTextShadowOffset:CGSizeMakeZero()];
+        [_labelField setTextShadowOffset:_CGSizeMakeZero()];
     }
     else
     {
@@ -1203,7 +1203,7 @@ var LABEL_MARGIN    = 2.0;
         if (image)
             [_imageView setImage:image];
 
-        [_labelField setTextShadowOffset:CGSizeMake(0.0, 1.0)];
+        [_labelField setTextShadowOffset:_CGSizeMake(0.0, 1.0)];
     }
 
     [_labelField setTextShadowColor:[self FIXME_labelShadowColor]];
