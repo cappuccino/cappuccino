@@ -60,7 +60,7 @@ var CPToolbarsByIdentifier              = nil,
 
 var TOOLBAR_REGULAR_HEIGHT              = 59.0,
     TOOLBAR_SMALL_HEIGHT                = 46.0,
-    TOOLBAR_MARGIN_HEIGHT               = 7.0;
+    TOOLBAR_MARGIN_HEIGHT               = 4.0;
 
 /*!
     @ingroup appkit
@@ -708,7 +708,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     // We'll figure out the proper height for the toolbar depending on its items.
     // If nothing has a minimum size we'll use the standard toolbar size for the
     // sizeMode, indicated by a 0 _desiredHeight.
-    var newDesiredHeight = height ? height + TOOLBAR_MARGIN_HEIGHT : 0;
+    var newDesiredHeight = height ? height + 2 * TOOLBAR_MARGIN_HEIGHT : 0;
 
     if (newDesiredHeight != _toolbar._desiredHeight)
     {
