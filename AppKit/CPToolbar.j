@@ -59,7 +59,8 @@ var CPToolbarsByIdentifier              = nil,
     CPToolbarConfigurationsByIdentifier = nil;
 
 var TOOLBAR_REGULAR_HEIGHT              = 59.0,
-    TOOLBAR_SMALL_HEIGHT                = 46.0;
+    TOOLBAR_SMALL_HEIGHT                = 46.0,
+    TOOLBAR_MARGIN_HEIGHT               = 7.0;
 
 /*!
     @ingroup appkit
@@ -96,6 +97,7 @@ var TOOLBAR_REGULAR_HEIGHT              = 59.0,
     BOOL                    _allowsUserCustomization;
     BOOL                    _isVisible;
     int                     _sizeMode @accessors(property=sizeMode);
+    int                     _desiredHeight;
 
     id                      _delegate;
 
@@ -158,6 +160,7 @@ var TOOLBAR_REGULAR_HEIGHT              = 59.0,
         _identifier = anIdentifier;
         _isVisible = YES;
         _sizeMode = CPToolbarSizeModeDefault;
+        _desiredHeight = 0;
 
         [CPToolbar _addToolbar:self forIdentifier:_identifier];
     }
@@ -263,7 +266,8 @@ var TOOLBAR_REGULAR_HEIGHT              = 59.0,
 
 - (CGRect)_toolbarViewFrame
 {
-    return CPRectMake(0.0, 0.0, 1200.0, _sizeMode != CPToolbarSizeModeSmall ? TOOLBAR_REGULAR_HEIGHT : TOOLBAR_SMALL_HEIGHT);
+    var height = _desiredHeight || (_sizeMode != CPToolbarSizeModeSmall ? TOOLBAR_REGULAR_HEIGHT : TOOLBAR_SMALL_HEIGHT);
+    return CPRectMake(0.0, 0.0, 1200.0, height);
 }
 
 /* @ignore */
@@ -699,6 +703,23 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
         if (height < minSize.height)
             height = minSize.height;
+    }
+
+    // We'll figure out the proper height for the toolbar depending on its items.
+    // If nothing has a minimum size we'll use the standard toolbar size for the
+    // sizeMode, indicated by a 0 _desiredHeight.
+    var newDesiredHeight = height ? height + TOOLBAR_MARGIN_HEIGHT : 0;
+
+    if (newDesiredHeight != _toolbar._desiredHeight)
+    {
+        // FIXME Probably the toolbar view shouldn't be telling the toolbar which height it should be. Maybe refactor
+        // to just have the toolbar scan the toolbar items whenever the items change.
+        _toolbar._desiredHeight = newDesiredHeight;
+
+        [self setFrame:[_toolbar _toolbarViewFrame]];
+        [_toolbar._window _noteToolbarChanged];
+        // The above will cause tile to be called again.
+        return;
     }
 
     // Determine all the items that have flexible width.
