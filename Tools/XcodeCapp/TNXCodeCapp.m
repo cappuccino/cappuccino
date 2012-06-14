@@ -195,7 +195,8 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
  */
 - (void)clear
 {
-    [self synchronizeLastEventId];
+    [self updateUserDefaultsWithLastEventId];
+    [self synchronizeUserDefaultsWithDisk];
     currentProjectURL = nil;
     currentProjectName = nil;
     [ignoredFilePaths removeAllObjects];
@@ -254,15 +255,22 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 }
 
 /*!
- Synchronizes the last recorded event ID with the user defaults.
+ Updates the user defaults with the last recorded event Id.
  */
-- (void)synchronizeLastEventId {
+- (void)updateUserDefaultsWithLastEventId
+{
     if (lastEventId && [lastEventId longLongValue] != 0)
     {
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        [defaults setObject:lastEventId forKey:@"lastEventId"];
-        [defaults synchronize];
+        [[NSUserDefaults standardUserDefaults] setObject:lastEventId forKey:@"lastEventId"];
     }
+}
+
+/*!
+ Tells the standard user defaults to synchronize with disk.
+ */
+- (void)synchronizeUserDefaultsWithDisk
+{
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 /*!
