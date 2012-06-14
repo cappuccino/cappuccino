@@ -474,12 +474,24 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         [PBXContent writeToFile:XCodeSupportPBXPath atomically:YES encoding:NSUTF8StringEncoding error:nil];
         DLog(@"PBX file adapted to the project");
         
-        DLog(@"Creating source folder %@", [XCodeSupportProjectSources path]);
-        [fm createDirectoryAtPath:[XCodeSupportProjectSources path] withIntermediateDirectories:YES attributes:nil error:nil];
+        [self createXcodeSupportProjectSourcesDirIfNecessary];
         return NO;
     }
 
+    [self createXcodeSupportProjectSourcesDirIfNecessary];
     return YES;
+}
+
+/*!
+ Create the .xCodeSupport/Sources folder if necessary.
+ */
+- (void)createXcodeSupportProjectSourcesDirIfNecessary
+{
+    if ([fm fileExistsAtPath:[XCodeSupportProjectSources path]])
+        return;
+
+    DLog(@"Creating source folder %@", [XCodeSupportProjectSources path]);
+    [fm createDirectoryAtPath:[XCodeSupportProjectSources path] withIntermediateDirectories:YES attributes:nil error:nil];
 }
 
 /*!
