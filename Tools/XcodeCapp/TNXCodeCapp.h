@@ -80,6 +80,8 @@ extern NSString * const XCCListeningStartNotification;
 - (void)initializeEventStreamWithPath:(NSString*)aPath;
 - (void)stopEventStream;
 - (void)updateLastEventId:(uint64_t)eventId;
+- (void)updateUserDefaultsWithLastEventId;
+- (void)synchronizeUserDefaultsWithDisk;
 - (void)listenProjectAtPath:(NSString *)path;
 - (void)clear;
 - (void)start;
