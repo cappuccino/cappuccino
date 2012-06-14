@@ -38,8 +38,8 @@
     var path = [[CPBundle mainBundle] pathForResource:@"value.jpg"],
         image = [[CPImage alloc] initWithContentsOfFile:path],
         dict = [CPDictionary dictionaryWithObject:image forKey:@"image"];
-    [theRows addObject:dict];
 
+    [theRows insertObject:dict atIndex:1];
     [self setContent:theRows];
 }
 
