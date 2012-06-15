@@ -1133,24 +1133,25 @@ var CPScrollDestinationNone             = 0,
 
     The delegate method should return a represented object for the provided string which
     may have been typed by the user or selected from the completion menu. If the method is
-    not implemented, the string is assumed to be the represented object.
+    not implemented, or returns nil, the string is assumed to be the represented object.
 
     @ignore
 */
 - (id)_representedObjectForEditingString:(CPString)aString
 {
-    var  delegate = [self delegate];
+    var delegate = [self delegate];
     if ([delegate respondsToSelector:@selector(tokenField:representedObjectForEditingString:)])
-        return [delegate tokenField:self representedObjectForEditingString:aString];
+    {
+        var token = [delegate tokenField:self representedObjectForEditingString:aString];
+        if (token !== nil && token !== undefined)
+            return token;
+        // If nil was returned, assume the string is the represented object. The alternative would have been
+        // to not add anything to the object value array for a nil response.
+    }
 
     return aString;
 }
 
-//
-// If you return nil or don't implement these delegate methods, we will assume
-// editing string = display string = represented object
-// - (NSString *)tokenField:(NSTokenField *)tokenField editingStringForRepresentedObject:(id)representedObject;
-//
 // We put the string on the pasteboard before calling this delegate method.
 // By default, we write the NSStringPboardType as well as an array of NSStrings.
 // - (BOOL)tokenField:(NSTokenField *)tokenField writeRepresentedObjects:(NSArray *)objects toPasteboard:(NSPasteboard *)pboard;
