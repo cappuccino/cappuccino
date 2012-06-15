@@ -999,7 +999,7 @@ var CPScrollDestinationNone             = 0,
 
     for (var i = 0, count = [tokens count]; i < count; i++)
     {
-        if (isEditing && i == _CPMaxRange(_selectedRange))
+        if (isEditing && !_selectedRange.length && i == _CPMaxRange(_selectedRange))
             placeEditor(false);
 
         var tokenView = [tokens objectAtIndex:i];
@@ -1018,7 +1018,7 @@ var CPScrollDestinationNone             = 0,
         [tokenView setFrame:tokenFrame];
     }
 
-    if (isEditing && _CPMaxRange(_selectedRange) >= [tokens count])
+    if (isEditing && !_selectedRange.length && _CPMaxRange(_selectedRange) >= [tokens count])
         placeEditor(true);
 
     // Hide the editor if there are selected tokens, but still keep it active
