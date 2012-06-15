@@ -78,6 +78,11 @@ var CPScrollDestinationNone             = 0,
     return [CPCharacterSet characterSetWithCharactersInString:@","];
 }
 
++ (CPTimeInterval)defaultCompletionDelay
+{
+    return 0.5;
+}
+
 + (CPString)defaultThemeClass
 {
     return "tokenfield";
@@ -87,7 +92,7 @@ var CPScrollDestinationNone             = 0,
 {
     if (self = [super initWithFrame:frame])
     {
-        _completionDelay = [CPTokenField defaultCompletionDelay];
+        _completionDelay = [[self class] defaultCompletionDelay];
         _tokenizingCharacterSet = [[self class] defaultTokenizingCharacterSet];
         [self setBezeled:YES];
 
@@ -855,11 +860,6 @@ var CPScrollDestinationNone             = 0,
 - (NSTimeInterval)completionDelay
 {
     return _completionDelay;
-}
-
-+ (NSTimeInterval)defaultCompletionDelay
-{
-    return 0.5;
 }
 
 // ==========
