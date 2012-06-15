@@ -487,7 +487,7 @@ var CPScrollDestinationNone             = 0,
     if ([self _inputElement].value != @"")
     {
         var token = [self _representedObjectForEditingString:[self _inputElement].value];
-        [objectValue insertObject:[self _inputElement].value atIndex:_selectedRange.location];
+        [objectValue insertObject:token atIndex:_selectedRange.location];
     }
 
 #endif
