@@ -699,6 +699,14 @@ var CPScrollDestinationNone             = 0,
     }
     else
     {
+        // If you type something while tokens are selected, overwrite them.
+        if (_selectedRange.length)
+        {
+            [self _removeSelectedTokens:self];
+            // Make sure the editor is placed so it can capture the characters we're overwriting with.
+            [self layoutSubviews];
+        }
+
         // If we didn't handle it, allow _propagateCurrentDOMEvent the input field to receive
         // the new character.
 
