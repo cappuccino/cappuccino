@@ -634,94 +634,141 @@ var CPScrollDestinationNone             = 0,
 }
 #endif
 
-- (void)keyDown:(CPEvent)anEvent
+- (void)moveUp:(id)sender
 {
-    var character = [anEvent charactersIgnoringModifiers],
-        modifierFlags = [anEvent modifierFlags];
+    [[self _autocompleteMenu] selectPrevious];
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+}
 
-    // Check for the key events manually, as opposed to waiting for CPWindow to sent the actual action message
-    // in _processKeyboardUIKey:, because we might not want to handle the arrow events.
-    if (character === CPUpArrowFunctionKey)
-    {
-        [[CPTokenFieldInputOwner _autocompleteMenu] selectPrevious];
-    }
-    else if (character === CPDownArrowFunctionKey)
-    {
-        [[CPTokenFieldInputOwner _autocompleteMenu] selectNext];
-    }
-    else if (character === CPNewlineCharacter || character === CPCarriageReturnCharacter || character === CPTabCharacter || [_tokenizingCharacterSet characterIsMember:character])
-    {
-        // Only resign first responder if we weren't auto-completing
-        if (![self hasThemeState:CPThemeStateAutocompleting])
-        {
-            if (character === CPNewlineCharacter || character === CPCarriageReturnCharacter)
-            {
-                [self sendAction:[self action] to:[self target]];
-                [[self window] makeFirstResponder:nil];
-            }
-            else if (character === CPTabCharacter)
-            {
-                if (!(modifierFlags & CPShiftKeyMask))
-                    [[self window] selectNextKeyView:self];
-                else
-                    [[self window] selectPreviousKeyView:self];
-            }
-        }
+- (void)moveDown:(id)sender
+{
+    [[self _autocompleteMenu] selectNext];
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+}
 
+- (void)insertNewline:(id)sender
+{
+    if ([self hasThemeState:CPThemeStateAutocompleting])
+    {
+        [self _autocompleteWithEvent:[CPApp currentEvent]];
+    }
+    else
+    {
+        [self sendAction:[self action] to:[self target]];
+        [[self window] makeFirstResponder:nil];
+    }
+
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+}
+
+- (void)insertTab:(id)sender
+{
+    var anEvent = [CPApp currentEvent];
+    if ([self hasThemeState:CPThemeStateAutocompleting])
+    {
         [self _autocompleteWithEvent:anEvent];
-        [self setNeedsLayout];
     }
-    else if (character === CPEscapeFunctionKey)
+    else
     {
-        [self _hideCompletions];
-    }
-    else if (character === CPLeftArrowFunctionKey && _selectedRange.location > 0 && CPTokenFieldDOMInputElement.value == "")
-    {
-        // Move the cursor back one token if the input is empty and the left arrow key is pressed.
-        if (!(modifierFlags & CPShiftKeyMask))
-        {
-            if (_selectedRange.length)
-                // Simply collapse the range.
-                _selectedRange.length = 0;
-            else
-                _selectedRange.location--;
-        }
+        // Default to standard tabbing behaviour.
+        if (!([anEvent modifierFlags] & CPShiftKeyMask))
+            [[self window] selectNextKeyView:self];
         else
-        {
+            [[self window] selectPreviousKeyView:self];
+    }
+
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+}
+
+- (void)insertText:(CPString)characters
+{
+    if ([_tokenizingCharacterSet characterIsMember:[characters substringToIndex:1]])
+    {
+        [self _autocompleteWithEvent:[CPApp currentEvent]];
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+        return;
+    }
+
+    // If we didn't handle it, allow _propagateCurrentDOMEvent to remain YES so that the input field can receive
+    // the new character.
+}
+
+- (void)cancelOperation:(id)sender
+{
+    [self _hideCompletions];
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+}
+
+- (void)moveLeft:(id)sender
+{
+    // Left arrow
+    if (_selectedRange.location > 0 && CPTokenFieldDOMInputElement.value == "")
+    {
+        if (_selectedRange.length)
+            // Simply collapse the range.
+            _selectedRange.length = 0;
+        else
             _selectedRange.location--;
-            // When shift is depressed, select the next token backwards.
-            _selectedRange.length++;
-        }
-        _shouldScrollTo = CPScrollDestinationLeft;
         [self setNeedsLayout];
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+        _shouldScrollTo = CPScrollDestinationLeft;
     }
-    else if (character === CPRightArrowFunctionKey && _selectedRange.location < [[self _tokens] count] && CPTokenFieldDOMInputElement.value == "")
+}
+
+- (void)moveLeftAndModifySelection:(id)sender
+{
+    if (_selectedRange.location > 0 && CPTokenFieldDOMInputElement.value == "")
     {
-        if (!(modifierFlags & CPShiftKeyMask))
+        _selectedRange.location--;
+        // When shift is depressed, select the next token backwards.
+        _selectedRange.length++;
+        [self setNeedsLayout];
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+        _shouldScrollTo = CPScrollDestinationLeft;
+    }
+}
+
+- (void)moveRight:(id)sender
+{
+    // Right arrow
+    if (_selectedRange.location < [[self _tokens] count] && CPTokenFieldDOMInputElement.value == "")
+    {
+        if (_selectedRange.length)
         {
-            if (_selectedRange.length)
-            {
-                // Place the cursor at the end of the selection and collapse.
-                _selectedRange.location = CPMaxRange(_selectedRange);
-                _selectedRange.length = 0;
-            }
-            else
-            {
-                // Move the cursor forward one token if the input is empty and the right arrow key is pressed.
-                _selectedRange.location = MIN([[self _tokens] count], _selectedRange.location + _selectedRange.length + 1);
-            }
+            // Place the cursor at the end of the selection and collapse.
+            _selectedRange.location = CPMaxRange(_selectedRange);
+            _selectedRange.length = 0;
         }
         else
         {
-            // Leave the selection location in place but include the next token to the right.
-            _selectedRange.length++;
+            // Move the cursor forward one token if the input is empty and the right arrow key is pressed.
+            _selectedRange.location = MIN([[self _tokens] count], _selectedRange.location + _selectedRange.length + 1);
         }
-        _shouldScrollTo = CPScrollDestinationRight;
+
         [self setNeedsLayout];
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+        _shouldScrollTo = CPScrollDestinationRight;
     }
-    else if ((character === CPBackspaceCharacter || character === CPDeleteCharacter) && CPTokenFieldDOMInputElement.value == @"")
+}
+
+- (void)moveRightAndModifySelection:(id)sender
+{
+    if (CPMaxRange(_selectedRange) < [[self _tokens] count] && CPTokenFieldDOMInputElement.value == "")
     {
-        // Highlight the previous token if backspace was pressed in an empty input element
+        // Leave the selection location in place but include the next token to the right.
+        _selectedRange.length++;
+        [self setNeedsLayout];
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+        _shouldScrollTo = CPScrollDestinationRight;
+    }
+}
+
+- (void)deleteBackward:(id)sender
+{
+    // TODO Even if the editor isn't empty you should be able to delete the previous token by placing the cursor
+    // at the beginning of the editor.
+    if (CPTokenFieldDOMInputElement.value == @"")
+    {
         [self _hideCompletions];
 
         if (CPEmptyRange(_selectedRange))
@@ -734,8 +781,16 @@ var CPScrollDestinationNone             = 0,
         }
         else
             [self _removeSelectedTokens:nil];
+
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
     }
-    else if (character === CPDeleteFunctionKey && CPTokenFieldDOMInputElement.value == @"")
+}
+
+- (void)deleteForward:(id)sender
+{
+    // TODO Even if the editor isn't empty you should be able to delete the next token by placing the cursor
+    // at the end of the editor.
+    if (CPTokenFieldDOMInputElement.value == @"")
     {
         // Delete forward if nothing is selected, else delete all selected.
         [self _hideCompletions];
@@ -747,17 +802,16 @@ var CPScrollDestinationNone             = 0,
         }
         else
             [self _removeSelectedTokens:nil];
+
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
     }
-    else
-    {
-        // We didn't do anything special, so pass the event on to the input element.
-        // Allow the input element to receive the event.
-        if ([[self window] firstResponder] == self)
-        {
-            CPTokenFieldTextDidChangeValue = [self stringValue];
-            [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
-        }
-    }
+}
+
+- (void)keyDown:(CPEvent)anEvent
+{
+    CPTokenFieldTextDidChangeValue = [self stringValue];
+
+    [super keyDown:anEvent];
 }
 
 - (void)keyUp:(CPEvent)anEvent
