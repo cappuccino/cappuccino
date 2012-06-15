@@ -20,6 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#import "../Foundation/CPRange.h"
+
 @import <Foundation/CPCharacterSet.j>
 @import <Foundation/CPIndexSet.j>
 @import <Foundation/CPTimer.j>
@@ -108,7 +110,7 @@ var CPScrollDestinationNone             = 0,
 
 - (void)_init
 {
-    _selectedRange = CPMakeRange(0, 0);
+    _selectedRange = _CPMakeRange(0, 0);
 
     var frame = [self frame];
 
@@ -192,7 +194,7 @@ var CPScrollDestinationNone             = 0,
 
     if (delegateApprovedObjectsCount)
         location += delegateApprovedObjectsCount;
-    _selectedRange = CPMakeRange(location, 0);
+    _selectedRange = _CPMakeRange(location, 0);
 
     [self _inputElement].value = @"";
     [self setNeedsLayout];
@@ -212,12 +214,12 @@ var CPScrollDestinationNone             = 0,
     if (indexOfToken == CPNotFound)
     {
         if (!extend)
-            _selectedRange = CPMakeRange([[self _tokens] count], 0);
+            _selectedRange = _CPMakeRange([[self _tokens] count], 0);
     }
     else if (extend)
-        _selectedRange = CPUnionRange(_selectedRange, CPMakeRange(indexOfToken, 1));
+        _selectedRange = CPUnionRange(_selectedRange, _CPMakeRange(indexOfToken, 1));
     else
-        _selectedRange = CPMakeRange(indexOfToken, 1);
+        _selectedRange = _CPMakeRange(indexOfToken, 1);
 
     [self setNeedsLayout];
 }
@@ -227,7 +229,7 @@ var CPScrollDestinationNone             = 0,
     var indexOfToken = [[self _tokens] indexOfObject:token];
 
     if (CPLocationInRange(indexOfToken, _selectedRange))
-        _selectedRange = CPMakeRange(MAX(indexOfToken, _selectedRange.location), MIN(_selectedRange.length, indexOfToken - _selectedRange.location));
+        _selectedRange = _CPMakeRange(MAX(indexOfToken, _selectedRange.location), MIN(_selectedRange.length, indexOfToken - _selectedRange.location));
 
     [self setNeedsLayout];
 }
@@ -276,10 +278,11 @@ var CPScrollDestinationNone             = 0,
         [tokens removeObjectAtIndex:_selectedRange.location + i];
 
     var collapsedSelection = _selectedRange.location;
+
     [self setObjectValue:tokens];
     // setObjectValue moves the cursor to the end of the selection. We want it to stay
     // where the selected tokens were.
-    _selectedRange = CPMakeRange(collapsedSelection, 0);
+    _selectedRange = _CPMakeRange(collapsedSelection, 0);
 
     [self _controlTextDidChange];
 }
@@ -440,13 +443,14 @@ var CPScrollDestinationNone             = 0,
 
 - (void)mouseUpOnToken:(_CPTokenFieldToken)aToken withEvent:(CPEvent)anEvent
 {
-    if (_mouseDownEvent && CGPointEqualToPoint([_mouseDownEvent locationInWindow], [anEvent locationInWindow]))
+    if (_mouseDownEvent && _CGPointEqualToPoint([_mouseDownEvent locationInWindow], [anEvent locationInWindow]))
     {
         [self _selectToken:aToken byExtendingSelection:[anEvent modifierFlags] & CPShiftKeyMask];
         [[self window] makeFirstResponder:self];
         // Snap to the token if it's only half visible due to mouse wheel scrolling.
         _shouldScrollTo = aToken;
     }
+
     _preventResign = NO;
 }
 
@@ -500,12 +504,11 @@ var CPScrollDestinationNone             = 0,
     if (aValue === superValue || [aValue isEqualToArray:superValue])
         return;
 
-    var contentView = [_tokenScrollView documentView];
-
-    // Preserve as many existing tokens as possible to reduce redraw flickering.
-    var oldTokens = [self _tokens],
+    var contentView = [_tokenScrollView documentView],
+        oldTokens = [self _tokens],
         newTokens = [];
 
+    // Preserve as many existing tokens as possible to reduce redraw flickering.
     if (aValue !== nil)
     {
         for (var i = 0, count = [aValue count]; i < count; i++)
@@ -742,7 +745,7 @@ var CPScrollDestinationNone             = 0,
         if (_selectedRange.length)
         {
             // Place the cursor at the end of the selection and collapse.
-            _selectedRange.location = CPMaxRange(_selectedRange);
+            _selectedRange.location = _CPMaxRange(_selectedRange);
             _selectedRange.length = 0;
         }
         else
@@ -759,7 +762,7 @@ var CPScrollDestinationNone             = 0,
 
 - (void)moveRightAndModifySelection:(id)sender
 {
-    if (CPMaxRange(_selectedRange) < [[self _tokens] count] && CPTokenFieldDOMInputElement.value == "")
+    if (_CPMaxRange(_selectedRange) < [[self _tokens] count] && CPTokenFieldDOMInputElement.value == "")
     {
         // Leave the selection location in place but include the next token to the right.
         _selectedRange.length++;
@@ -889,7 +892,7 @@ var CPScrollDestinationNone             = 0,
         return;
 
     // Move each token into the right position.
-    var contentRect = CGRectMakeCopy([contentView bounds]),
+    var contentRect = _CGRectMakeCopy([contentView bounds]),
         contentOrigin = contentRect.origin,
         contentSize = contentRect.size,
         offset = CPPointMake(contentOrigin.x, contentOrigin.y),
@@ -900,11 +903,11 @@ var CPScrollDestinationNone             = 0,
     // Get the height of a typical token, or a token token if you will.
     [tokenToken sizeToFit];
 
-    var tokenHeight = CGRectGetHeight([tokenToken bounds]);
+    var tokenHeight = _CGRectGetHeight([tokenToken bounds]);
 
     var fitAndFrame = function(width, height)
     {
-        var r = CGRectMake(0, 0, width, height);
+        var r = _CGRectMake(0, 0, width, height);
 
         if (offset.x + width >= contentSize.width && offset.x > contentOrigin.x)
         {
@@ -916,8 +919,8 @@ var CPScrollDestinationNone             = 0,
         r.origin.y = offset.y;
 
         // Make sure the frame fits.
-        if (CGRectGetHeight([contentView bounds]) < offset.y + height)
-            [contentView setFrame:CGRectMake(0, 0, CGRectGetWidth([_tokenScrollView bounds]), offset.y + height)];
+        if (_CGRectGetHeight([contentView bounds]) < offset.y + height)
+            [contentView setFrame:_CGRectMake(0, 0, _CGRectGetWidth([_tokenScrollView bounds]), offset.y + height)];
 
         offset.x += width + spaceBetweenTokens.width;
 
@@ -953,7 +956,7 @@ var CPScrollDestinationNone             = 0,
 
     for (var i = 0, count = [tokens count]; i < count; i++)
     {
-        if (isEditing && i == CPMaxRange(_selectedRange))
+        if (isEditing && i == _CPMaxRange(_selectedRange))
             placeEditor(false);
 
         var tokenView = [tokens objectAtIndex:i];
@@ -972,7 +975,7 @@ var CPScrollDestinationNone             = 0,
         [tokenView setFrame:tokenFrame];
     }
 
-    if (isEditing && CPMaxRange(_selectedRange) >= [tokens count])
+    if (isEditing && _CPMaxRange(_selectedRange) >= [tokens count])
         placeEditor(true);
 
     // Hide the editor if there are selected tokens, but still keep it active
@@ -985,8 +988,8 @@ var CPScrollDestinationNone             = 0,
     }
 
     // Trim off any excess height downwards.
-    if (CGRectGetHeight([contentView bounds]) > offset.y + tokenHeight)
-        [contentView setFrame:CGRectMake(0, 0, CGRectGetWidth([_tokenScrollView bounds]), offset.y + tokenHeight)];
+    if (_CGRectGetHeight([contentView bounds]) > offset.y + tokenHeight)
+        [contentView setFrame:_CGRectMake(0, 0, _CGRectGetWidth([_tokenScrollView bounds]), offset.y + tokenHeight)];
 
     if (_shouldScrollTo !== CPScrollDestinationNone)
     {
@@ -998,7 +1001,7 @@ var CPScrollDestinationNone             = 0,
             if (scrollToToken === CPScrollDestinationLeft)
                 scrollToToken = tokens[_selectedRange.location]
             else if (scrollToToken === CPScrollDestinationRight)
-                scrollToToken = tokens[MAX(0, CPMaxRange(_selectedRange) - 1)];
+                scrollToToken = tokens[MAX(0, _CPMaxRange(_selectedRange) - 1)];
             [self _scrollTokenViewToVisible:scrollToToken];
         }
 
@@ -1043,7 +1046,7 @@ var CPScrollDestinationNone             = 0,
 - (CGPoint)_completionOrigin:(_CPAutocompleteMenu)anAutocompleteMenu
 {
     var relativeFrame = _inputFrame ? [[_tokenScrollView documentView] convertRect:_inputFrame toView:self ] : [self bounds];
-    return CGPointMake(CGRectGetMinX(relativeFrame), CGRectGetMaxY(relativeFrame));
+    return _CGPointMake(_CGRectGetMinX(relativeFrame), _CGRectGetMaxY(relativeFrame));
 }
 
 /*!
@@ -1188,7 +1191,7 @@ var CPScrollDestinationNone             = 0,
 
 - (CGSize)_minimumFrameSize
 {
-    var size = CGSizeMakeZero(),
+    var size = _CGSizeMakeZero(),
         minSize = [self currentValueForThemeAttribute:@"min-size"],
         contentInset = [self currentValueForThemeAttribute:@"content-inset"];
 
@@ -1216,7 +1219,7 @@ var CPScrollDestinationNone             = 0,
             buttonOffset = [_deleteButton currentValueForThemeAttribute:@"offset"],
             buttonSize = [_deleteButton currentValueForThemeAttribute:@"min-size"];
 
-        [_deleteButton setFrame:CPRectMake(CPRectGetMaxX(frame) - buttonOffset.x, CPRectGetMinY(frame) + buttonOffset.y, buttonSize.width, buttonSize.height)];
+        [_deleteButton setFrame:_CGRectMake(CPRectGetMaxX(frame) - buttonOffset.x, CPRectGetMinY(frame) + buttonOffset.y, buttonSize.width, buttonSize.height)];
     }
 }
 
@@ -1248,7 +1251,7 @@ var CPScrollDestinationNone             = 0,
 {
     var attributes = [CPButton themeAttributes];
 
-    [attributes setObject:CGPointMake(15, 5) forKey:@"offset"];
+    [attributes setObject:_CGPointMake(15, 5) forKey:@"offset"];
 
     return attributes;
 }
