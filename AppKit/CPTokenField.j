@@ -435,13 +435,13 @@ var CPScrollDestinationNone             = 0,
     _mouseDownEvent = nil;
 }
 
-- (void)mouseDownOnToken:(_CPTokenFieldToken)aToken withEvent:(CPEvent)anEvent
+- (void)_mouseDownOnToken:(_CPTokenFieldToken)aToken withEvent:(CPEvent)anEvent
 {
     _preventResign = YES;
     _mouseDownEvent = anEvent;
 }
 
-- (void)mouseUpOnToken:(_CPTokenFieldToken)aToken withEvent:(CPEvent)anEvent
+- (void)_mouseUpOnToken:(_CPTokenFieldToken)aToken withEvent:(CPEvent)anEvent
 {
     if (_mouseDownEvent && _CGPointEqualToPoint([_mouseDownEvent locationInWindow], [anEvent locationInWindow]))
     {
@@ -861,7 +861,7 @@ var CPScrollDestinationNone             = 0,
     _completionDelay = delay;
 }
 
-- (NSTimeInterval)completionDelay
+- (CPTimeInterval)completionDelay
 {
     return _completionDelay;
 }
@@ -1225,12 +1225,12 @@ var CPScrollDestinationNone             = 0,
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-    [_tokenField mouseDownOnToken:self withEvent:anEvent];
+    [_tokenField _mouseDownOnToken:self withEvent:anEvent];
 }
 
 - (void)mouseUp:(CPEvent)anEvent
 {
-    [_tokenField mouseUpOnToken:self withEvent:anEvent];
+    [_tokenField _mouseUpOnToken:self withEvent:anEvent];
 }
 
 - (void)_delete:(id)sender
