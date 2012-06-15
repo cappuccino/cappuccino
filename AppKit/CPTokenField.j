@@ -129,7 +129,7 @@ var CPScrollDestinationNone             = 0,
     return _autocompleteMenu;
 }
 
-- (void)_autocompleteWithDOMEvent:(JSObject)DOMEvent
+- (void)_autocompleteWithEvent:(CPEvent)anEvent
 {
     if (![self _inputElement].value && (![_autocompleteMenu contentArray] || ![self hasThemeState:CPThemeStateAutocompleting]))
         return;
@@ -147,9 +147,12 @@ var CPScrollDestinationNone             = 0,
     // responder or selecting the next or previous key view.
     if (!token || token === @"")
     {
-        if (DOMEvent && DOMEvent.keyCode === CPTabKeyCode)
+        var character = [anEvent charactersIgnoringModifiers],
+            modifierFlags = [anEvent modifierFlags];
+
+        if (character === CPTabCharacter)
         {
-            if (!DOMEvent.shiftKey)
+            if (!(modifierFlags & CPShiftKeyMask))
                 [[self window] selectNextKeyView:self];
             else
                 [[self window] selectPreviousKeyView:self];
@@ -197,7 +200,7 @@ var CPScrollDestinationNone             = 0,
 
 - (void)_autocomplete
 {
-    [self _autocompleteWithDOMEvent:nil];
+    [self _autocompleteWithEvent:nil];
 }
 
 - (void)_selectToken:(_CPTokenFieldToken)token byExtendingSelection:(BOOL)extend
@@ -607,143 +610,6 @@ var CPScrollDestinationNone             = 0,
             return true;
         };
 
-        CPTokenFieldKeyDownFunction = function(aDOMEvent)
-        {
-            aDOMEvent = aDOMEvent || window.event;
-
-            CPTokenFieldTextDidChangeValue = [CPTokenFieldInputOwner stringValue];
-
-            if (aDOMEvent.keyCode === CPUpArrowKeyCode)
-                [[CPTokenFieldInputOwner _autocompleteMenu] selectPrevious];
-            else if (aDOMEvent.keyCode === CPDownArrowKeyCode)
-                [[CPTokenFieldInputOwner _autocompleteMenu] selectNext];
-
-            var owner = CPTokenFieldInputOwner;
-
-            if (aDOMEvent.keyCode === CPReturnKeyCode || aDOMEvent.keyCode === CPTabKeyCode)
-            {
-                if (aDOMEvent.preventDefault)
-                    aDOMEvent.preventDefault();
-                if (aDOMEvent.stopPropagation)
-                    aDOMEvent.stopPropagation();
-                aDOMEvent.cancelBubble = true;
-
-                // Only resign first responder if we weren't auto-completing
-                if (![CPTokenFieldInputOwner hasThemeState:CPThemeStateAutocompleting])
-                {
-                    if (aDOMEvent && aDOMEvent.keyCode === CPReturnKeyCode)
-                    {
-                        [owner sendAction:[owner action] to:[owner target]];
-                        [[owner window] makeFirstResponder:nil];
-                    }
-                    else if (aDOMEvent && aDOMEvent.keyCode === CPTabKeyCode)
-                    {
-                        if (!aDOMEvent.shiftKey)
-                            [[owner window] selectNextKeyView:owner];
-                        else
-                            [[owner window] selectPreviousKeyView:owner];
-                    }
-                }
-
-                [owner _autocompleteWithDOMEvent:aDOMEvent];
-                [owner setNeedsLayout];
-            }
-            else if (aDOMEvent.keyCode === CPEscapeKeyCode)
-            {
-                [CPTokenFieldInputOwner _hideCompletions];
-            }
-            else if (aDOMEvent.keyCode === CPUpArrowKeyCode || aDOMEvent.keyCode === CPDownArrowKeyCode)
-            {
-                if (aDOMEvent.preventDefault)
-                    aDOMEvent.preventDefault();
-                if (aDOMEvent.stopPropagation)
-                    aDOMEvent.stopPropagation();
-                aDOMEvent.cancelBubble = true;
-            }
-            else if (aDOMEvent.keyCode == CPLeftArrowKeyCode && owner._selectedRange.location > 0 && CPTokenFieldDOMInputElement.value == "")
-            {
-                // Move the cursor back one token if the input is empty and the left arrow key is pressed.
-                if (!aDOMEvent.shiftKey)
-                {
-                    if (owner._selectedRange.length)
-                        // Simply collapse the range.
-                        owner._selectedRange.length = 0;
-                    else
-                        owner._selectedRange.location--;
-                }
-                else
-                {
-                    owner._selectedRange.location--;
-                    // When shift is depressed, select the next token backwards.
-                    owner._selectedRange.length++;
-                }
-                owner._shouldScrollTo = CPScrollDestinationLeft;
-                [owner setNeedsLayout];
-            }
-            else if (aDOMEvent.keyCode == CPRightArrowKeyCode && owner._selectedRange.location < [[owner _tokens] count] && CPTokenFieldDOMInputElement.value == "")
-            {
-                if (!aDOMEvent.shiftKey)
-                {
-                    if (owner._selectedRange.length)
-                    {
-                        // Place the cursor at the end of the selection and collapse.
-                        owner._selectedRange.location = CPMaxRange(owner._selectedRange);
-                        owner._selectedRange.length = 0;
-                    }
-                    else
-                    {
-                        // Move the cursor forward one token if the input is empty and the right arrow key is pressed.
-                        owner._selectedRange.location = MIN([[owner _tokens] count], owner._selectedRange.location + owner._selectedRange.length + 1);
-                    }
-                }
-                else
-                {
-                    // Leave the selection location in place but include the next token to the right.
-                    owner._selectedRange.length++;
-                }
-                owner._shouldScrollTo = CPScrollDestinationRight;
-                [owner setNeedsLayout];
-            }
-            else if (aDOMEvent.keyCode === CPDeleteKeyCode)
-            {
-                // Highlight the previous token if backspace was pressed in an empty input element or re-show the completions view
-                if (CPTokenFieldDOMInputElement.value == @"")
-                {
-                    [self _hideCompletions];
-
-                    if (CPEmptyRange(CPTokenFieldInputOwner._selectedRange))
-                    {
-                        if (CPTokenFieldInputOwner._selectedRange.location > 0)
-                        {
-                            var tokens = [CPTokenFieldInputOwner _tokens],
-                                tokenView = [tokens objectAtIndex:(CPTokenFieldInputOwner._selectedRange.location - 1)];
-                            [CPTokenFieldInputOwner _selectToken:tokenView byExtendingSelection:NO];
-                        }
-                    }
-                    else
-                        [CPTokenFieldInputOwner _removeSelectedTokens:nil];
-                }
-                else
-                    [CPTokenFieldInputOwner _delayedShowCompletions];
-            }
-            else if (aDOMEvent.keyCode === CPDeleteForwardKeyCode && CPTokenFieldDOMInputElement.value == @"")
-            {
-                // Delete forward if nothing is selected, else delete all selected.
-                [self _hideCompletions];
-
-                if (CPEmptyRange(CPTokenFieldInputOwner._selectedRange))
-                {
-                    var tokens = [CPTokenFieldInputOwner _tokens];
-                    if (CPTokenFieldInputOwner._selectedRange.location < [tokens count])
-                        [CPTokenFieldInputOwner _deleteToken:tokens[CPTokenFieldInputOwner._selectedRange.location]];
-                }
-                else
-                    [CPTokenFieldInputOwner _removeSelectedTokens:nil];
-            }
-
-            return true;
-        };
-
         CPTokenFieldKeyPressFunction = function(aDOMEvent)
         {
             aDOMEvent = aDOMEvent || window.event;
@@ -759,7 +625,7 @@ var CPScrollDestinationNone             = 0,
                     aDOMEvent.stopPropagation();
                 aDOMEvent.cancelBubble = true;
 
-                [owner _autocompleteWithDOMEvent:aDOMEvent];
+                [owner _autocompleteWithEvent:aDOMEvent];
                 [owner setNeedsLayout];
 
                 return true;
@@ -797,13 +663,11 @@ var CPScrollDestinationNone             = 0,
         if (document.attachEvent)
         {
             CPTokenFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyUp, CPTokenFieldKeyUpFunction);
-            CPTokenFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyDown, CPTokenFieldKeyDownFunction);
             CPTokenFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyPress, CPTokenFieldKeyPressFunction);
         }
         else
         {
             CPTokenFieldDOMInputElement.addEventListener(CPDOMEventKeyUp, CPTokenFieldKeyUpFunction, NO);
-            CPTokenFieldDOMInputElement.addEventListener(CPDOMEventKeyDown, CPTokenFieldKeyDownFunction, NO);
             CPTokenFieldDOMInputElement.addEventListener(CPDOMEventKeyPress, CPTokenFieldKeyPressFunction, NO);
         }
 
@@ -826,6 +690,135 @@ var CPScrollDestinationNone             = 0,
     return CPTokenFieldDOMInputElement;
 }
 #endif
+
+- (void)keyDown:(CPEvent)anEvent
+{
+    var character = [anEvent charactersIgnoringModifiers],
+        modifierFlags = [anEvent modifierFlags];
+
+    // Check for the key events manually, as opposed to waiting for CPWindow to sent the actual action message
+    // in _processKeyboardUIKey:, because we might not want to handle the arrow events.
+    if (character === CPUpArrowFunctionKey)
+    {
+        [[CPTokenFieldInputOwner _autocompleteMenu] selectPrevious];
+    }
+    else if (character === CPDownArrowFunctionKey)
+    {
+        [[CPTokenFieldInputOwner _autocompleteMenu] selectNext];
+    }
+    else if (character === CPNewlineCharacter || character === CPCarriageReturnCharacter || character === CPTabCharacter)
+    {
+        // Only resign first responder if we weren't auto-completing
+        if (![self hasThemeState:CPThemeStateAutocompleting])
+        {
+            if (character === CPNewlineCharacter || character === CPCarriageReturnCharacter)
+            {
+                [self sendAction:[self action] to:[self target]];
+                [[self window] makeFirstResponder:nil];
+            }
+            else if (character === CPTabCharacter)
+            {
+                if (!(modifierFlags & CPShiftKeyMask))
+                    [[self window] selectNextKeyView:self];
+                else
+                    [[self window] selectPreviousKeyView:self];
+            }
+        }
+
+        [self _autocompleteWithEvent:anEvent];
+        [self setNeedsLayout];
+    }
+    else if (character === CPEscapeFunctionKey)
+    {
+        [self _hideCompletions];
+    }
+    else if (character === CPLeftArrowFunctionKey && _selectedRange.location > 0 && CPTokenFieldDOMInputElement.value == "")
+    {
+        // Move the cursor back one token if the input is empty and the left arrow key is pressed.
+        if (!(modifierFlags & CPShiftKeyMask))
+        {
+            if (_selectedRange.length)
+                // Simply collapse the range.
+                _selectedRange.length = 0;
+            else
+                _selectedRange.location--;
+        }
+        else
+        {
+            _selectedRange.location--;
+            // When shift is depressed, select the next token backwards.
+            _selectedRange.length++;
+        }
+        _shouldScrollTo = CPScrollDestinationLeft;
+        [self setNeedsLayout];
+    }
+    else if (character === CPRightArrowFunctionKey && _selectedRange.location < [[self _tokens] count] && CPTokenFieldDOMInputElement.value == "")
+    {
+        if (!(modifierFlags & CPShiftKeyMask))
+        {
+            if (_selectedRange.length)
+            {
+                // Place the cursor at the end of the selection and collapse.
+                _selectedRange.location = CPMaxRange(_selectedRange);
+                _selectedRange.length = 0;
+            }
+            else
+            {
+                // Move the cursor forward one token if the input is empty and the right arrow key is pressed.
+                _selectedRange.location = MIN([[self _tokens] count], _selectedRange.location + _selectedRange.length + 1);
+            }
+        }
+        else
+        {
+            // Leave the selection location in place but include the next token to the right.
+            _selectedRange.length++;
+        }
+        _shouldScrollTo = CPScrollDestinationRight;
+        [self setNeedsLayout];
+    }
+    else if ((character === CPBackspaceCharacter || character === CPDeleteCharacter) && CPTokenFieldDOMInputElement.value == @"")
+    {
+        // Highlight the previous token if backspace was pressed in an empty input element
+        [self _hideCompletions];
+
+        if (CPEmptyRange(_selectedRange))
+        {
+            if (_selectedRange.location > 0)
+            {
+                var tokenView = [[self _tokens] objectAtIndex:(_selectedRange.location - 1)];
+                [self _selectToken:tokenView byExtendingSelection:NO];
+            }
+        }
+        else
+            [self _removeSelectedTokens:nil];
+    }
+    else if (character === CPDeleteFunctionKey && CPTokenFieldDOMInputElement.value == @"")
+    {
+        // Delete forward if nothing is selected, else delete all selected.
+        [self _hideCompletions];
+
+        if (CPEmptyRange(_selectedRange))
+        {
+            if (_selectedRange.location < [[self _tokens] count])
+                [self _deleteToken:[[self _tokens] objectAtIndex:[_selectedRange.location]]];
+        }
+        else
+            [self _removeSelectedTokens:nil];
+    }
+    else
+    {
+        // We didn't do anything special, so pass the event on to the input element.
+        // Allow the input element to receive the event.
+        if ([[self window] firstResponder] == self)
+        {
+            CPTokenFieldTextDidChangeValue = [CPTokenFieldInputOwner stringValue];
+            // TODO if changed
+            // [self _delayedShowCompletions];
+
+            [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
+        }
+    }
+}
 
 // - (void)setTokenStyle: (NSTokenStyle) style;
 // - (NSTokenStyle)tokenStyle;
