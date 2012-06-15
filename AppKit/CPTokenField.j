@@ -669,8 +669,6 @@ var CPScrollDestinationNone             = 0,
         [self sendAction:[self action] to:[self target]];
         [[self window] makeFirstResponder:nil];
     }
-
-    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
 }
 
 - (void)insertTab:(id)sender
@@ -688,27 +686,32 @@ var CPScrollDestinationNone             = 0,
         else
             [[self window] selectPreviousKeyView:self];
     }
-
-    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
 }
 
 - (void)insertText:(CPString)characters
 {
+    // Note that in Cocoa NStokenField uses a hidden input field not accessible to the user,
+    // so insertText: is called on that field instead. That seems rather silly since it makes
+    // it pretty much impossible to override insertText:. This version is better.
     if ([_tokenizingCharacterSet characterIsMember:[characters substringToIndex:1]])
     {
         [self _autocompleteWithEvent:[CPApp currentEvent]];
-        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
-        return;
     }
+    else
+    {
+        // If we didn't handle it, allow _propagateCurrentDOMEvent the input field to receive
+        // the new character.
 
-    // If we didn't handle it, allow _propagateCurrentDOMEvent to remain YES so that the input field can receive
-    // the new character.
+        // This method also allows a subclass to override insertText: to do nothing.
+        // Unfortunately calling super with some different characters won't work since
+        // the browser will see the original key event.
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
+    }
 }
 
 - (void)cancelOperation:(id)sender
 {
     [self _hideCompletions];
-    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
 }
 
 - (void)moveLeft:(id)sender
@@ -722,8 +725,12 @@ var CPScrollDestinationNone             = 0,
         else
             _selectedRange.location--;
         [self setNeedsLayout];
-        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
         _shouldScrollTo = CPScrollDestinationLeft;
+    }
+    else
+    {
+        // Allow cursor movement within the text field.
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
     }
 }
 
@@ -735,8 +742,12 @@ var CPScrollDestinationNone             = 0,
         // When shift is depressed, select the next token backwards.
         _selectedRange.length++;
         [self setNeedsLayout];
-        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
         _shouldScrollTo = CPScrollDestinationLeft;
+    }
+    else
+    {
+        // Allow cursor movement within the text field.
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
     }
 }
 
@@ -758,8 +769,12 @@ var CPScrollDestinationNone             = 0,
         }
 
         [self setNeedsLayout];
-        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
         _shouldScrollTo = CPScrollDestinationRight;
+    }
+    else
+    {
+        // Allow cursor movement within the text field.
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
     }
 }
 
@@ -770,8 +785,12 @@ var CPScrollDestinationNone             = 0,
         // Leave the selection location in place but include the next token to the right.
         _selectedRange.length++;
         [self setNeedsLayout];
-        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
         _shouldScrollTo = CPScrollDestinationRight;
+    }
+    else
+    {
+        // Allow selection to happen within the text field.
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
     }
 }
 
@@ -793,8 +812,11 @@ var CPScrollDestinationNone             = 0,
         }
         else
             [self _removeSelectedTokens:nil];
-
-        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+    }
+    else
+    {
+        // Allow deletion to happen within the text field.
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
     }
 }
 
@@ -814,8 +836,11 @@ var CPScrollDestinationNone             = 0,
         }
         else
             [self _removeSelectedTokens:nil];
-
-        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+    }
+    else
+    {
+        // Allow deletion to happen within the text field.
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
     }
 }
 
@@ -823,8 +848,15 @@ var CPScrollDestinationNone             = 0,
 {
     CPTokenFieldTextDidChangeValue = [self stringValue];
 
-    [super keyDown:anEvent];
-}
+    // By default, don't allow the HTML input field to receive the characters. We'll only
+    // allow that if we're not doing anything special with the characters and the editor
+    // is active.
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+
+    [self interpretKeyEvents:[anEvent]];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+}}
 
 - (void)keyUp:(CPEvent)anEvent
 {
