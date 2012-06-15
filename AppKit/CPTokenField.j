@@ -45,8 +45,7 @@ var CPTokenFieldDOMInputElement = nil,
     CPTokenFieldCachedDragFunction = nil,
     CPTokenFieldFocusInput = NO,
 
-    CPTokenFieldBlurFunction = nil,
-    CPTokenFieldKeyDownFunction = nil;
+    CPTokenFieldBlurFunction = nil;
 
 #endif
 
@@ -608,34 +607,12 @@ var CPScrollDestinationNone             = 0,
             return true;
         };
 
-        CPTokenFieldKeyUpFunction = function()
-        {
-            if ([CPTokenFieldInputOwner stringValue] !== CPTokenFieldTextDidChangeValue)
-            {
-                CPTokenFieldTextDidChangeValue = [CPTokenFieldInputOwner stringValue];
-                [CPTokenFieldInputOwner textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:CPTokenFieldInputOwner userInfo:nil]];
-            }
-
-            [self setNeedsLayout];
-
-            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-        };
-
         CPTokenFieldHandleBlur = function(anEvent)
         {
             CPTokenFieldInputOwner = nil;
 
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
         };
-
-        if (document.attachEvent)
-        {
-            CPTokenFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyUp, CPTokenFieldKeyUpFunction);
-        }
-        else
-        {
-            CPTokenFieldDOMInputElement.addEventListener(CPDOMEventKeyUp, CPTokenFieldKeyUpFunction, NO);
-        }
 
         //FIXME make this not onblur
         CPTokenFieldDOMInputElement.onblur = CPTokenFieldBlurFunction;
@@ -777,13 +754,20 @@ var CPScrollDestinationNone             = 0,
         // Allow the input element to receive the event.
         if ([[self window] firstResponder] == self)
         {
-            CPTokenFieldTextDidChangeValue = [CPTokenFieldInputOwner stringValue];
-            // TODO if changed
-            // [self _delayedShowCompletions];
-
+            CPTokenFieldTextDidChangeValue = [self stringValue];
             [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
         }
     }
+}
+
+- (void)keyUp:(CPEvent)anEvent
+{
+    if ([self stringValue] !== CPTokenFieldTextDidChangeValue)
+    {
+        [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
+    }
+
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 }
 
 - (void)textDidChange:(CPNotification)aNotification
