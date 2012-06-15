@@ -46,8 +46,6 @@ var CPTokenFieldDOMInputElement = nil,
     CPTokenFieldFocusInput = NO,
 
     CPTokenFieldBlurFunction = nil,
-    CPTokenFieldKeyUpFunction = nil,
-    CPTokenFieldKeyPressFunction = nil,
     CPTokenFieldKeyDownFunction = nil;
 
 #endif
@@ -610,36 +608,6 @@ var CPScrollDestinationNone             = 0,
             return true;
         };
 
-        CPTokenFieldKeyPressFunction = function(aDOMEvent)
-        {
-            aDOMEvent = aDOMEvent || window.event;
-
-            var character = String.fromCharCode(aDOMEvent.keyCode || aDOMEvent.which),
-                owner = CPTokenFieldInputOwner;
-
-            if ([[owner tokenizingCharacterSet] characterIsMember:character])
-            {
-                if (aDOMEvent.preventDefault)
-                    aDOMEvent.preventDefault();
-                if (aDOMEvent.stopPropagation)
-                    aDOMEvent.stopPropagation();
-                aDOMEvent.cancelBubble = true;
-
-                [owner _autocompleteWithEvent:aDOMEvent];
-                [owner setNeedsLayout];
-
-                return true;
-            }
-
-            [CPTokenFieldInputOwner _delayedShowCompletions];
-            // If there was a selection, collapse it now since we're typing in a new token.
-            owner._selectedRange.length = 0;
-
-            // Force immediate layout in case word wrapping is now necessary.
-            [owner setNeedsLayout];
-            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-        };
-
         CPTokenFieldKeyUpFunction = function()
         {
             if ([CPTokenFieldInputOwner stringValue] !== CPTokenFieldTextDidChangeValue)
@@ -663,12 +631,10 @@ var CPScrollDestinationNone             = 0,
         if (document.attachEvent)
         {
             CPTokenFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyUp, CPTokenFieldKeyUpFunction);
-            CPTokenFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyPress, CPTokenFieldKeyPressFunction);
         }
         else
         {
             CPTokenFieldDOMInputElement.addEventListener(CPDOMEventKeyUp, CPTokenFieldKeyUpFunction, NO);
-            CPTokenFieldDOMInputElement.addEventListener(CPDOMEventKeyPress, CPTokenFieldKeyPressFunction, NO);
         }
 
         //FIXME make this not onblur
@@ -706,7 +672,7 @@ var CPScrollDestinationNone             = 0,
     {
         [[CPTokenFieldInputOwner _autocompleteMenu] selectNext];
     }
-    else if (character === CPNewlineCharacter || character === CPCarriageReturnCharacter || character === CPTabCharacter)
+    else if (character === CPNewlineCharacter || character === CPCarriageReturnCharacter || character === CPTabCharacter || [_tokenizingCharacterSet characterIsMember:character])
     {
         // Only resign first responder if we weren't auto-completing
         if (![self hasThemeState:CPThemeStateAutocompleting])
@@ -818,6 +784,22 @@ var CPScrollDestinationNone             = 0,
             [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
         }
     }
+}
+
+- (void)textDidChange:(CPNotification)aNotification
+{
+    if ([aNotification object] !== self)
+        return;
+
+    [super textDidChange:aNotification];
+
+    // For future reference: in Cocoa, textDidChange: appears to call [self complete:].
+    [self _delayedShowCompletions];
+    // If there was a selection, collapse it now since we're typing in a new token.
+    _selectedRange.length = 0;
+
+    // Force immediate layout in case word wrapping is now necessary.
+    [self setNeedsLayout];
 }
 
 // - (void)setTokenStyle: (NSTokenStyle) style;
