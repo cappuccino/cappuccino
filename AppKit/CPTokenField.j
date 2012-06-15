@@ -245,7 +245,8 @@ var CPScrollDestinationNone             = 0,
         [self _deselectToken:token];
 
     // Preserve selection.
-    var selection = CPCopyRange(_selectedRange);
+    var selection = CPMakeRangeCopy(_selectedRange);
+
     [objectValue removeObjectAtIndex:indexOfToken];
     [self setObjectValue:objectValue];
     _selectedRange = selection;

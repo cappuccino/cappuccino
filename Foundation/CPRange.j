@@ -43,17 +43,6 @@ function CPMakeRange(location, length)
     @group CPRange
     @return CPRange the copy of the range
 */
-function CPCopyRange(aRange)
-{
-    return { location: aRange.location, length: aRange.length };
-}
-
-/*!
-    Makes a copy of a CPRange.
-    @param aRange the CPRange to copy
-    @group CPRange
-    @return CPRange the copy of the range
-*/
 function CPMakeRangeCopy(aRange)
 {
     return { location:aRange.location, length:aRange.length };
