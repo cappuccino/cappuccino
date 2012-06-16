@@ -856,10 +856,10 @@ var CPScrollDestinationNone             = 0,
 {
     CPTokenFieldTextDidChangeValue = [self stringValue];
 
-    // By default, don't allow the HTML input field to receive the characters. We'll only
-    // allow that if we're not doing anything special with the characters and the editor
-    // is active.
-    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+    // Leave the default _propagateCurrentDOMEvent setting in place. This might be YES or NO depending
+    // on if something that could be a browser shortcut was pressed or not, such as Cmd-R to reload.
+    // If it was NO we want to leave it at NO however and only enable it in insertText:. This is what
+    // allows a subclass to prevent characters from being inserted by overriding and not calling super.
 
     [self interpretKeyEvents:[anEvent]];
 
