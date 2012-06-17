@@ -1,5 +1,5 @@
 /*
- * _CPToolTipWindowView.j
+ * _CPAttachedWindow.j
  * AppKit
  *
  * Created by Antoine Mercadal

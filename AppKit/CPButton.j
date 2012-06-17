@@ -176,6 +176,8 @@ CPButtonImageOffset   = 3.0;
     // Continuous button defaults.
     _periodicInterval   = 0.05;
     _periodicDelay      = 0.5;
+
+    _imageDimsWhenDisabled = YES;
 }
 
 // Setting the state

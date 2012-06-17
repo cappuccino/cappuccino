@@ -195,13 +195,8 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
  */
 - (void)clear
 {
-    if (lastEventId && [lastEventId longLongValue] != 0)
-    {
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        [defaults setObject:lastEventId forKey:@"lastEventId"];
-        [defaults synchronize];
-    }
-
+    [self updateUserDefaultsWithLastEventId];
+    [self synchronizeUserDefaultsWithDisk];
     currentProjectURL = nil;
     currentProjectName = nil;
     [ignoredFilePaths removeAllObjects];
@@ -257,6 +252,25 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 - (void)updateLastEventId:(uint64_t)eventId
 {
     lastEventId = [NSNumber numberWithUnsignedLongLong:eventId];
+}
+
+/*!
+ Updates the user defaults with the last recorded event Id.
+ */
+- (void)updateUserDefaultsWithLastEventId
+{
+    if (lastEventId && [lastEventId longLongValue] != 0)
+    {
+        [[NSUserDefaults standardUserDefaults] setObject:lastEventId forKey:@"lastEventId"];
+    }
+}
+
+/*!
+ Tells the standard user defaults to synchronize with disk.
+ */
+- (void)synchronizeUserDefaultsWithDisk
+{
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 /*!
@@ -460,12 +474,24 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         [PBXContent writeToFile:XCodeSupportPBXPath atomically:YES encoding:NSUTF8StringEncoding error:nil];
         DLog(@"PBX file adapted to the project");
         
-        DLog(@"Creating source folder %@", [XCodeSupportProjectSources path]);
-        [fm createDirectoryAtPath:[XCodeSupportProjectSources path] withIntermediateDirectories:YES attributes:nil error:nil];
+        [self createXcodeSupportProjectSourcesDirIfNecessary];
         return NO;
     }
 
+    [self createXcodeSupportProjectSourcesDirIfNecessary];
     return YES;
+}
+
+/*!
+ Create the .xCodeSupport/Sources folder if necessary.
+ */
+- (void)createXcodeSupportProjectSourcesDirIfNecessary
+{
+    if ([fm fileExistsAtPath:[XCodeSupportProjectSources path]])
+        return;
+
+    DLog(@"Creating source folder %@", [XCodeSupportProjectSources path]);
+    [fm createDirectoryAtPath:[XCodeSupportProjectSources path] withIntermediateDirectories:YES attributes:nil error:nil];
 }
 
 /*!
