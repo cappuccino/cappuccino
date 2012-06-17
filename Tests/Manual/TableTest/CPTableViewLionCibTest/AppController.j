@@ -100,7 +100,7 @@ var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
 
 - (void)awakeFromCib
 {
-    // Called each time a cib is instatiated because we set the owner to self. Certainly a better idea to have a separate table view delegate if you need awakeFromCib to do some initialization in the AppController.
+    // Called each time a cib containing a CPTableCellView is instantiated because we set the owner to self. Certainly a better idea to have a separate table view delegate if you need awakeFromCib to do some initialization in the AppController.
     CPLogConsole(_cmd + textField);
 }
 
