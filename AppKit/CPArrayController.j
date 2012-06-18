@@ -584,7 +584,7 @@
 */
 - (BOOL)__setSelectionIndexes:(CPIndexSet)indexes
 {
-    [self __setSelectionIndexes:indexes avoidEmpty:_avoidsEmptySelection];
+    return [self __setSelectionIndexes:indexes avoidEmpty:_avoidsEmptySelection];
 }
 
 - (BOOL)__setSelectionIndexes:(CPIndexSet)indexes avoidEmpty:(BOOL)avoidEmpty
@@ -918,6 +918,15 @@
 - (void)remove:(id)sender
 {
     [self removeObjectsAtArrangedObjectIndexes:_selectionIndexes];
+}
+
+/*!
+    Removes the object at the specified index in the controller's arranged objects from the content array.
+    @param int index - index of the object to remove.
+*/
+- (void)removeObjectAtArrangedObjectIndex:(int)index
+{
+    [self removeObjectsAtArrangedObjectIndexes:[CPIndexSet indexSetWithIndex:index]];
 }
 
 /*!
