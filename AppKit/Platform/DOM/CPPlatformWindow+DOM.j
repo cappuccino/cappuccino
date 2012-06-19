@@ -192,6 +192,8 @@ var ModifierKeyCodes = [
     ],
     supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
+var resizeTimer = nil;
+
 @implementation CPPlatformWindow (DOM)
 
 - (id)_init
@@ -1083,6 +1085,21 @@ var ModifierKeyCodes = [
 
 - (void)resizeEvent:(DOMEvent)aDOMEvent
 {
+    // This is a hack for the browser resize bug in safari.
+    // See bug ID: 1325
+    // https://github.com/cappuccino/cappuccino/issues/1325
+    // Addendum by Antoine Mercadal : I also noticed that reszing is causing
+    // problem under latest Firefox 13.0. Let's just use this hack
+    // for all browser now.
+
+    [resizeTimer invalidate];
+    resizeTimer = [CPTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(_actualResizeEvent) userInfo:nil repeats:NO];
+}
+
+- (void)_actualResizeEvent
+{
+    resizeTimer = nil;
+
     // FIXME: This is not the right way to do this.
     // We should pay attention to mouse down and mouse up in conjunction with this.
     //window.liveResize = YES;

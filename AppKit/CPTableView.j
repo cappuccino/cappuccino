@@ -257,8 +257,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null]]
-                                       forKeys:["alternating-row-colors", "grid-color", "highlighted-grid-color", "selection-color", "sourcelist-selection-color", "sort-image", "sort-image-reversed"]];
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null]]
+                                       forKeys:["alternating-row-colors", "grid-color", "highlighted-grid-color", "selection-color", "sourcelist-selection-color", "sort-image", "sort-image-reversed", "selection-radius"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -1257,7 +1257,7 @@ NOT YET IMPLEMENTED
 */
 - (int)selectedColumn
 {
-    [_selectedColumnIndexes lastIndex];
+    return [_selectedColumnIndexes lastIndex];
 }
 
 /*!
@@ -3773,7 +3773,25 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             CGContextStrokePath(context);
         }
         else
-            CGContextAddRect(context, rowRect);
+        {
+            var radius = [self currentValueForThemeAttribute:@"selection-radius"];
+
+            if (radius > 0)
+            {
+                var minX = CGRectGetMinX(rowRect),
+                    maxX = CGRectGetMaxX(rowRect),
+                    minY = CGRectGetMinY(rowRect),
+                    maxY = CGRectGetMaxY(rowRect);
+
+                CGContextMoveToPoint(context, minX + radius, minY);
+                CGContextAddArcToPoint(context, maxX, minY, maxX, minY + radius, radius);
+                CGContextAddArcToPoint(context, maxX, maxY, maxX - radius, maxY, radius);
+                CGContextAddArcToPoint(context, minX, maxY, minX, maxY - radius, radius);
+                CGContextAddArcToPoint(context, minX, minY, minX + radius, minY, radius);
+            }
+            else
+                CGContextAddRect(context, rowRect);
+        }
     }
 
     CGContextClosePath(context);
@@ -3991,6 +4009,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (BOOL)startTrackingAt:(CGPoint)aPoint
 {
+    if (![[self window] makeFirstResponder:self])
+        return NO;
+
     var row = [self rowAtPoint:aPoint];
 
     // If the user clicks outside a row then deselect everything.
@@ -4018,7 +4039,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (row >= 0 && !(_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_))
         [self _updateSelectionWithMouseAtRow:row];
 
-    [[self window] makeFirstResponder:self];
     return YES;
 }
 
@@ -4141,6 +4161,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
+    if ([[self window] firstResponder] !== self)
+        return;
+
     _isSelectingSession = NO;
 
     var CLICK_TIME_DELTA = 1000,

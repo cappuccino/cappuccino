@@ -526,6 +526,32 @@
     [self assert:input1[1] equals:[output valueForKey:"1"] message:@"output[0]"];
 }
 
+- (void)testJSObjectDescription
+{
+    var array = [CGRectMake(1, 2, 3, 4), CGPointMake(5, 6)],
+        d = [array description];
+
+    [self assertTrue:d.indexOf("x: 1") !== -1 message:"Can't find 'x: 1' in description of array " + d];
+    [self assertTrue:d.indexOf("y: 2") !== -1 message:"Can't find 'y: 2' in description of array " + d];
+    [self assertTrue:d.indexOf("width: 3") !== -1 message:"Can't find 'width: 3' in description of array " + d];
+    [self assertTrue:d.indexOf("height: 4") !== -1 message:"Can't find 'height: 4' in description of array " + d];
+    [self assertTrue:d.indexOf("x: 5") !== -1 message:"Can't find 'x: 5' in description of array " + d];
+    [self assertTrue:d.indexOf("y: 6") !== -1 message:"Can't find 'y: 6' in description of array " + d];
+}
+
+- (void)testSortUsingDescriptorsWithDifferentSelectors
+{
+    var a = [CPDictionary dictionaryWithJSObject:{"a": "AB", "b": "ba"}],
+        b = [CPDictionary dictionaryWithJSObject:{"a": "aa", "b": "BB"}],
+        array = [a, b],
+        d1 = [[CPSortDescriptor sortDescriptorWithKey:@"a" ascending:YES selector:@selector(compare:)]],
+        d2 = [[CPSortDescriptor sortDescriptorWithKey:@"a" ascending:YES selector:@selector(caseInsensitiveCompare:)]],
+        s1 = [array sortedArrayUsingDescriptors:d1],
+        s2 = [array sortedArrayUsingDescriptors:d2];
+
+    [self assertTrue:s1[0] === a message:s1[0] + " is larger then " + a + " when sorting case sensitive"];
+    [self assertTrue:s2[1] === a message:s2[1] + " is larger then " + a + " when sorting case insensitive"];
+}
 
 @end
 

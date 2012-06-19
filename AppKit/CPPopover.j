@@ -151,19 +151,19 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 }
 
 /*!
-Set the behaviour of the CPPopover. It can be:
+Set the behavior of the CPPopover. It can be:
 
 - \c CPPopoverBehaviorTransient: the popover will close if another control outside the popover becomes the responder
 - \c CPPopoverBehaviorApplicationDefined: (DEFAULT) the application is responsible for closing the popover
 
-@param aBehaviour the desired behaviour
+@param aBehavior the desired behavior
 */
-- (void)setBehaviour:(int)aBehaviour
+- (void)setBehavior:(int)aBehavior
 {
-    if (_behavior == aBehaviour)
+    if (_behavior == aBehavior)
         return;
 
-    _behavior = aBehaviour;
+    _behavior = aBehavior;
     [_attachedWindow setStyleMask:[self styleMaskForBehavior]];
 }
 
@@ -296,7 +296,7 @@ Set the behaviour of the CPPopover. It can be:
 /*! @ignore */
 - (BOOL)attachedWindowShouldClose:(_CPAttachedWindow)anAttachedWindow
 {
-    [self close];
+    [self performClose:self];
 
     // We return NO, because we want the CPPopover to determine
     // if the attached window can be closed and to give us a chance
@@ -329,6 +329,17 @@ Set the behaviour of the CPPopover. It can be:
 
 @end
 
+@implementation CPPopover (Deprecated)
+
+- (void)setBehaviour:(int)aBehavior
+{
+    _CPReportLenientDeprecation(self, _cmd, @selector(setBehavior:));
+
+    [self setBehavior:aBehavior];
+}
+
+@end
+
 var CPPopoverNeedsNewAttachedWindowKey = @"CPPopoverNeedsNewAttachedWindowKey",
     CPPopoverAppearanceKey = @"CPPopoverAppearanceKey",
     CPPopoverAnimatesKey = @"CPPopoverAnimatesKey",
@@ -348,7 +359,7 @@ var CPPopoverNeedsNewAttachedWindowKey = @"CPPopoverNeedsNewAttachedWindowKey",
         _animates = [aCoder decodeBoolForKey:CPPopoverAnimatesKey];
         _contentViewController = [aCoder decodeObjectForKey:CPPopoverContentViewControllerKey];
         [self setDelegate:[aCoder decodeObjectForKey:CPPopoverDelegateKey]];
-        [self setBehaviour:[aCoder decodeIntForKey:CPPopoverBehaviorKey]];
+        [self setBehavior:[aCoder decodeIntForKey:CPPopoverBehaviorKey]];
     }
     return self;
 }

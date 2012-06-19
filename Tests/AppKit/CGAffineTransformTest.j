@@ -6,14 +6,14 @@
 - (void)testAffineTransformMake
 {
     [self compareTransform:CGAffineTransformMake(1, 2, 3, 4, 3.2, 5.4)
-                      with:{ a: 1, b: 2, c:3, d:4, tx:3.2, ty:5.4 }
+                      with:{ a: 1, b: 2, c: 3, d: 4, tx: 3.2, ty: 5.4 }
                    message:"transform make"];
 }
 
 - (void)testCGAffineTransformMakeIdentity
 {
     [self compareTransform:CGAffineTransformMakeIdentity()
-                      with:{ a: 1, b: 0, c:0, d:1, tx:0, ty:0 }
+                      with:{ a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0 }
                    message:"transform make identity"];
 }
 
@@ -26,12 +26,12 @@
         transform.tx = transform.ty = 0;
 
     [self compareTransform:t2
-                      with:CGAffineTransformMake( 1,2,3,4,3.2,5.4 )
+                      with:CGAffineTransformMake(1, 2, 3, 4, 3.2, 5.4)
                    message:"copy correctly made"];
 
     [self compareTransform:transform
-                      with:CGAffineTransformMake( 0, 0, 0, 0, 0, 0 )
-                   message:"original transform was changed"] ;
+                      with:CGAffineTransformMake(0, 0, 0, 0, 0, 0)
+                   message:"original transform was changed"];
 }
 
 - (void)testAffineTransformCreateCopy
@@ -44,46 +44,46 @@
         transform.tx = transform.ty = 0;
 
     [self compareTransform:t2
-                      with:CGAffineTransformMake( 1,2,3,4,3.2,5.4 )
+                      with:CGAffineTransformMake(1, 2, 3, 4, 3.2, 5.4)
                    message:"copy correctly made"];
 
     [self compareTransform:transform
-                      with:CGAffineTransformMake( 0, 0, 0, 0, 0, 0 )
+                      with:CGAffineTransformMake(0, 0, 0, 0, 0, 0)
                    message:"original transform was changed"] ;
 }
 
 - (void)testAffineTransformMakeScale
 {
-    [self compareTransform:CGAffineTransformMakeScale(3,4)
+    [self compareTransform:CGAffineTransformMakeScale(3, 4)
                       with:CGAffineTransformMake(3, 0, 0, 4, 0, 0)
                    message:"make scale"];
 }
 
 - (void)testAffineTransformMakeTranslation
 {
-    [self compareTransform:CGAffineTransformMakeTranslation(3,4)
-                      with:CGAffineTransformMake(1,0,0,1,3,4)
+    [self compareTransform:CGAffineTransformMakeTranslation(3, 4)
+                      with:CGAffineTransformMake(1, 0, 0, 1, 3, 4)
                    message:"make translation"];
 }
 
 - (void)testAffineTransformTranslate
 {
-    var transform = CGAffineTransformMakeTranslation(3,4);
+    var transform = CGAffineTransformMakeTranslation(3, 4);
 
-    [self compareTransform:CGAffineTransformTranslate(transform,-3,-4)
+    [self compareTransform:CGAffineTransformTranslate(transform, -3, -4)
                       with:CGAffineTransformMakeIdentity()
                    message:"translate to identity"];
 
-    [self compareTransform:CGAffineTransformTranslate(transform,0,0)
+    [self compareTransform:CGAffineTransformTranslate(transform, 0, 0)
                       with:transform
                    message:"zero translate"];
 }
 
 - (void)testAffineTransformScale
 {
-    var transform = CGAffineTransformMakeScale(3,4);
+    var transform = CGAffineTransformMakeScale(3, 4);
 
-    [self compareTransform:CGAffineTransformScale( transform, 1/3, 1/4)
+    [self compareTransform:CGAffineTransformScale(transform, 1 / 3, 1 / 4)
                       with:CGAffineTransformMakeIdentity()
                    message:"scale to identity"];
 
@@ -101,38 +101,38 @@
 {
     var testcases = {
       "identity concat" : {
-        testdata: CGAffineTransformConcat( CGAffineTransformMakeIdentity(),
-                                           CGAffineTransformMakeIdentity() ),
+        testdata: CGAffineTransformConcat(CGAffineTransformMakeIdentity(),
+                                          CGAffineTransformMakeIdentity()),
         expdata: CGAffineTransformMakeIdentity()
       },
 
       "translation" : {
-        testdata: CGAffineTransformConcat( CGAffineTransformMakeTranslation(3,4),
-                                           CGAffineTransformMakeTranslation(-3,-4) ),
+        testdata: CGAffineTransformConcat(CGAffineTransformMakeTranslation(3, 4),
+                                          CGAffineTransformMakeTranslation(-3, -4)),
         expdata: CGAffineTransformMakeIdentity()
       },
 
       "translation (reversed)" : {
-        testdata: CGAffineTransformConcat( CGAffineTransformMakeTranslation(-3,-4),
-                                            CGAffineTransformMakeTranslation(3,4) ),
+        testdata: CGAffineTransformConcat(CGAffineTransformMakeTranslation(-3, -4),
+                                          CGAffineTransformMakeTranslation(3, 4)),
         expdata: CGAffineTransformMakeIdentity()
       },
 
       "scale" : {
-        testdata: CGAffineTransformConcat(CGAffineTransformMakeScale(3,4),
-                                          CGAffineTransformMakeScale(1/3,1/4)),
+        testdata: CGAffineTransformConcat(CGAffineTransformMakeScale(3, 4),
+                                          CGAffineTransformMakeScale(1 / 3, 1 / 4)),
         expdata: CGAffineTransformMakeIdentity()
       },
 
       "scale (reversed)" : {
-        testdata: CGAffineTransformConcat(CGAffineTransformMakeScale(1/3,1/4),
-                                          CGAffineTransformMakeScale(3,4)),
+        testdata: CGAffineTransformConcat(CGAffineTransformMakeScale(1 / 3, 1 / 4),
+                                          CGAffineTransformMakeScale(3, 4)),
         expdata: CGAffineTransformMakeIdentity()
       },
 
       "rotation" : {
-        testdata: CGAffineTransformConcat(CGAffineTransformMakeRotation(Math.PI),
-                                          CGAffineTransformMakeRotation(-Math.PI)),
+        testdata: CGAffineTransformConcat(CGAffineTransformMakeRotation(PI),
+                                          CGAffineTransformMakeRotation(-PI)),
         expdata: CGAffineTransformMakeIdentity()
       },
     };
@@ -145,28 +145,28 @@
 {
     var testcases = {
       "translate to zero" : {
-        testdata: CGPointApplyAffineTransform( CGPointMake( 3, 4 ),
-                                               CGAffineTransformMakeTranslation(-3,-4)),
+        testdata: CGPointApplyAffineTransform(CGPointMake(3, 4),
+                                              CGAffineTransformMakeTranslation(-3, -4)),
         expdata: CGPointMakeZero()
       },
 
       "scale to 1,1" : {
-        testdata: CGPointApplyAffineTransform( CGPointMake( 3, 4 ),
-                                               CGAffineTransformMakeScale(1/3,1/4) ),
-        expdata: CGPointMake(1,1)
+        testdata: CGPointApplyAffineTransform(CGPointMake(3, 4),
+                                              CGAffineTransformMakeScale(1 / 3, 1 / 4)),
+        expdata: CGPointMake(1, 1)
       },
 
       "scale and translate to zero" : {
-        testdata: CGPointApplyAffineTransform( CGPointMake( 3, 4 ),
-                                               CGAffineTransformConcat(
-                                                     CGAffineTransformMakeScale(1/3,1/4),
-                                                     CGAffineTransformMakeTranslation(-1,-1))),
+        testdata: CGPointApplyAffineTransform(CGPointMake(3, 4),
+                                              CGAffineTransformConcat(
+                                                    CGAffineTransformMakeScale(1 / 3, 1 / 4),
+                                                    CGAffineTransformMakeTranslation(-1, -1))),
         expdata: CGPointMakeZero()
 
       },
     };
 
-    for ( var key in testcases )
+    for (var key in testcases)
         [self comparePoint:testcases[key].testdata with:testcases[key].expdata message:key];
 }
 
@@ -174,22 +174,22 @@
 {
     var testcases = {
       "translation on size should do nothing" : {
-        testdata: CGSizeApplyAffineTransform( CGSizeMake(3, 12),
-                                               CGAffineTransformMakeTranslation(-3,-4)),
+        testdata: CGSizeApplyAffineTransform(CGSizeMake(3, 12),
+                                             CGAffineTransformMakeTranslation(-3, -4)),
         expdata: CGSizeMake(3, 12)
       },
 
       "scale to 1,1" : {
-        testdata: CGSizeApplyAffineTransform( CGSizeMake( 3, 4 ),
-                                               CGAffineTransformMakeScale(1/3,1/4) ),
+        testdata: CGSizeApplyAffineTransform(CGSizeMake(3, 4),
+                                             CGAffineTransformMakeScale(1 / 3, 1 / 4) ),
         expdata: CGSizeMake(1, 1)
       },
 
       "scale and translate combined" : {
-        testdata: CGSizeApplyAffineTransform( CGSizeMake( 3, 4 ),
-                                               CGAffineTransformConcat(
-                                                     CGAffineTransformMakeScale(1/3,1/4),
-                                                     CGAffineTransformMakeTranslation(-1,-1))),
+        testdata: CGSizeApplyAffineTransform(CGSizeMake(3, 4),
+                                             CGAffineTransformConcat(
+                                                     CGAffineTransformMakeScale(1 / 3, 1 / 4),
+                                                     CGAffineTransformMakeTranslation(-1, -1))),
         expdata: CGSizeMake(1, 1)
 
       },
@@ -215,7 +215,7 @@
       },
 
       "one scale is identity" : {
-        testdata: CGAffineTransformMakeScale(1,1)
+        testdata: CGAffineTransformMakeScale(1, 1)
       },
 
       "identity concat'ed" : {
@@ -224,18 +224,18 @@
       },
 
       "translation" : {
-        testdata: CGAffineTransformConcat( CGAffineTransformMakeTranslation(3,4),
-                                           CGAffineTransformMakeTranslation(-3,-4) ),
+        testdata: CGAffineTransformConcat( CGAffineTransformMakeTranslation(3, 4),
+                                           CGAffineTransformMakeTranslation(-3, -4) ),
       },
 
       "scale" : {
-        testdata: CGAffineTransformConcat(CGAffineTransformMakeScale(3,4),
-                                          CGAffineTransformMakeScale(1/3,1/4)),
+        testdata: CGAffineTransformConcat(CGAffineTransformMakeScale(3, 4),
+                                          CGAffineTransformMakeScale(1 / 3, 1 / 4)),
       },
 
       "rotation" : {
-        testdata: CGAffineTransformConcat(CGAffineTransformMakeRotation(-Math.PI),
-                                          CGAffineTransformMakeRotation(Math.PI)),
+        testdata: CGAffineTransformConcat(CGAffineTransformMakeRotation(-PI),
+                                          CGAffineTransformMakeRotation(PI)),
       },
 
     };
@@ -250,11 +250,11 @@
 {
     var testcases = {
       "some random transform" : {
-        testdata: CGAffineTransformMake(1,1,1,1,1,1)
+        testdata: CGAffineTransformMake(1, 1, 1, 1, 1, 1)
       },
 
       "non-zero translation is not identity" : {
-        testdata: CGAffineTransformMakeTranslation(1,1)
+        testdata: CGAffineTransformMakeTranslation(1, 1)
       },
 
       "non-one scale is not identity" : {
@@ -262,12 +262,12 @@
       },
 
       "rotation" : {
-        testdata: CGAffineTransformMakeRotation(Math.PI),
+        testdata: CGAffineTransformMakeRotation(PI),
       },
 
       // TODO a two-pi rotation is actually identity
       "2PI rotation is NOT identity?" : {
-        testdata: CGAffineTransformMakeRotation(Math.PI * 2),
+        testdata: CGAffineTransformMakeRotation(PI * 2),
       },
 
     };
@@ -288,26 +288,26 @@
       },
 
       "translate" : {
-        lhs: CGAffineTransformMakeTranslation(1,1),
-        rhs: CGAffineTransformMakeTranslation(1,1),
+        lhs: CGAffineTransformMakeTranslation(1, 1),
+        rhs: CGAffineTransformMakeTranslation(1, 1),
         expdata: YES
       },
 
       "scale" : {
-        lhs: CGAffineTransformMakeScale(1,1),
-        rhs: CGAffineTransformMakeScale(1,1),
+        lhs: CGAffineTransformMakeScale(1, 1),
+        rhs: CGAffineTransformMakeScale(1, 1),
         expdata: YES
       },
 
       "rotation" : {
-        lhs: CGAffineTransformMakeRotation(Math.PI),
-        rhs: CGAffineTransformMakeRotation(Math.PI),
+        lhs: CGAffineTransformMakeRotation(PI),
+        rhs: CGAffineTransformMakeRotation(PI),
         expdata: YES
       },
 
       "translate and scale" : {
-        lhs: CGAffineTransformMakeScale(1,1),
-        rhs: CGAffineTransformMakeTranslation(1,1),
+        lhs: CGAffineTransformMakeScale(1, 1),
+        rhs: CGAffineTransformMakeTranslation(1, 1),
         expdata: NO
       },
     };
@@ -328,17 +328,17 @@
       },
 
       "scale" : {
-        testdata: CGAffineTransformMakeScale(3,4),
+        testdata: CGAffineTransformMakeScale(3, 4),
         expdata: " [[ 3, 0, 0 ], [ 0, 4, 0 ], [ 0, 0, 1]]"
       },
 
       "translation" : {
-        testdata: CGAffineTransformMakeTranslation(3,4),
+        testdata: CGAffineTransformMakeTranslation(3, 4),
         expdata: " [[ 1, 0, 0 ], [ 0, 1, 0 ], [ 3, 4, 1]]"
       },
 
       "scale and translation" : {
-        testdata: CGAffineTransformTranslate(CGAffineTransformMakeScale(3,4),5,6),
+        testdata: CGAffineTransformTranslate(CGAffineTransformMakeScale(3, 4), 5, 6),
         expdata: " [[ 3, 0, 0 ], [ 0, 4, 0 ], [ 15, 24, 1]]"
       },
     };
@@ -358,12 +358,12 @@
       },
 
       "scale" : {
-        testdata: CGAffineTransformMakeScale(3,4),
+        testdata: CGAffineTransformMakeScale(3, 4),
         expdata: "{3, 0, 0, 4, 0, 0}"
       },
 
       "translation" : {
-        testdata: CGAffineTransformMakeTranslation(3,4),
+        testdata: CGAffineTransformMakeTranslation(3, 4),
         expdata: "{1, 0, 0, 1, 3, 4}"
       },
 
@@ -373,22 +373,22 @@
       },
 
       "rotation - pi" : {
-        testdata: CGAffineTransformMakeRotation(Math.PI),
+        testdata: CGAffineTransformMakeRotation(PI),
         expdata: "{-1, 1.2246467991473532e-16, -1.2246467991473532e-16, -1, 0, 0}"
       },
 
       "rotation - 2pi" : {
-        testdata: CGAffineTransformMakeRotation(2 * Math.PI),
+        testdata: CGAffineTransformMakeRotation(2 * PI),
         expdata: "{1, -2.4492935982947064e-16, 2.4492935982947064e-16, 1, 0, 0}"
       },
 
       "rotation - 3pi" : {
-        testdata: CGAffineTransformMakeRotation(3 * Math.PI),
+        testdata: CGAffineTransformMakeRotation(3 * PI),
         expdata: "{-1, 3.6739403974420594e-16, -3.6739403974420594e-16, -1, 0, 0}"
       },
 
       "scale and translation and rotate" : {
-        testdata: CGAffineTransformRotate(CGAffineTransformTranslate(CGAffineTransformMakeScale(3,4),5,6),Math.PI),
+        testdata: CGAffineTransformRotate(CGAffineTransformTranslate(CGAffineTransformMakeScale(3, 4), 5, 6), PI),
         expdata: "{-3, 4.898587196589413e-16, -3.6739403974420594e-16, -4, 15, 24}"
       },
     };
@@ -401,8 +401,8 @@
 
 - (void)testAffineTransformRotate
 {
-    var ang = Math.PI + 0.5 * Math.PI,
-        transform = CGAffineTransformMake( 1,2,3,4, 5,6 ),
+    var ang = PI + 0.5 * PI,
+        transform = CGAffineTransformMake(1, 2, 3, 4, 5, 6),
         cos = COS(ang),
         sin = SIN(ang);
 
@@ -417,18 +417,18 @@
       },
 
       "rotation negation" : {
-        testdata: CGAffineTransformRotate(CGAffineTransformRotate(CGAffineTransformMakeScale(3,4),Math.PI),-Math.PI),
-        expdata: CGAffineTransformMakeScale(3,4)
+        testdata: CGAffineTransformRotate(CGAffineTransformRotate(CGAffineTransformMakeScale(3, 4), PI), -PI),
+        expdata: CGAffineTransformMakeScale(3, 4)
       }
     };
 
-    for ( var key in testcases )
+    for (var key in testcases)
         [self compareTransform:testcases[key].testdata with:testcases[key].expdata message:key];
 }
 
 - (void)testAffineTransformInvert
 {
-    var transform = CGAffineTransformRotate(CGAffineTransformTranslate(CGAffineTransformMakeScale(3,4),5,6),Math.PI),
+    var transform = CGAffineTransformRotate(CGAffineTransformTranslate(CGAffineTransformMakeScale(3, 4), 5, 6), PI),
         determinant = 1 / (transform.a * transform.d - transform.b * transform.c),
         invertedtransform = CGAffineTransformMake(determinant * transform.d,
                                                   -determinant * transform.b,
@@ -451,18 +451,18 @@
       },
 
       "rotation" : {
-        testdata: CGAffineTransformMakeRotation(-Math.PI),
-        expdata: CGAffineTransformMakeRotation(Math.PI),
+        testdata: CGAffineTransformMakeRotation(-PI),
+        expdata: CGAffineTransformMakeRotation(PI),
       },
 
       "translation" : {
-        testdata: CGAffineTransformMakeTranslation(4,5),
-        expdata: CGAffineTransformMakeTranslation(-4,-5)
+        testdata: CGAffineTransformMakeTranslation(4, 5),
+        expdata: CGAffineTransformMakeTranslation(-4, -5)
       },
 
       "scale" : {
-        testdata: CGAffineTransformMakeScale(3,4),
-        expdata: CGAffineTransformMakeScale(1/3,1/4)
+        testdata: CGAffineTransformMakeScale(3, 4),
+        expdata: CGAffineTransformMakeScale(1 / 3, 1 / 4)
       },
     };
 
@@ -483,28 +483,28 @@
       },
 
       "rotation 90 degrees" : {
-        testdata: CGRectApplyAffineTransform(rect, CGAffineTransformMakeRotation(Math.PI/2)),
-        expdata: CGRectMake( -10,3.0000000000000004,6,5 )
+        testdata: CGRectApplyAffineTransform(rect, CGAffineTransformMakeRotation(PI/2)),
+        expdata: CGRectMake(-10, 3.0000000000000004, 6, 5)
       },
 
       "translation" : {
-        testdata: CGRectApplyAffineTransform(rect, CGAffineTransformMakeTranslation(3,4)),
-        expdata: CGRectMake( 6,8,5,6 )
+        testdata: CGRectApplyAffineTransform(rect, CGAffineTransformMakeTranslation(3, 4)),
+        expdata: CGRectMake(6, 8, 5, 6)
       },
 
       "scale" : {
         testdata: CGRectApplyAffineTransform(rect, CGAffineTransformMakeScale(1,4)),
-        expdata: CGRectMake( 3,16,5,24 )
+        expdata: CGRectMake(3, 16, 5, 24)
       },
 
       "rotate, translate and scale" : {
-        testdata: CGRectApplyAffineTransform(rect, CGAffineTransformRotate(CGAffineTransformTranslate(CGAffineTransformMakeScale(3,4),5,6),Math.PI)),
-        expdata: CGRectMake( -9.000000000000004, -16,
-                             15.000000000000002, 24.000000000000004 )
+        testdata: CGRectApplyAffineTransform(rect, CGAffineTransformRotate(CGAffineTransformTranslate(CGAffineTransformMakeScale(3, 4),5,6), PI)),
+        expdata: CGRectMake(-9.000000000000004, -16,
+                            15.000000000000002, 24.000000000000004)
       },
     };
 
-    for ( var key in testcases )
+    for (var key in testcases)
         [self compareRect:testcases[key].testdata with:testcases[key].expdata message:key];
 }
 

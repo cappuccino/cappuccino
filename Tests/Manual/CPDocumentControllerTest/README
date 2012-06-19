@@ -1,0 +1,4 @@
+This test includes two tests for two ways to subclass CPDocumentController. 
+
+Please refer to the pull request and its discussion here. 
+https://github.com/cappuccino/cappuccino/pull/1551

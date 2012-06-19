@@ -196,6 +196,7 @@ var NSButtonIsBorderedMask = 0x00800000,
 
     _keyEquivalent = [cell keyEquivalent];
     _keyEquivalentModifierMask = [cell keyEquivalentModifierMask];
+    _imageDimsWhenDisabled = YES;
 
     _allowsMixedState = [cell allowsMixedState];
     [self setImage:[cell normalImage]];
