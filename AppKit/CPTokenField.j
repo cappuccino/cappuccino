@@ -852,6 +852,27 @@ var CPScrollDestinationNone             = 0,
     }
 }
 
+- (void)_selectText:(id)sender immediately:(BOOL)immediately
+{
+    // Override CPTextField's version. The correct behaviour is that the text currently being
+    // edited is turned into a token if possible, or left as plain selected text if not.
+    // Regardless of if there is on-going text entry, all existing tokens are also selected.
+    // At this point we don't support having tokens and text selected at the same time (or
+    // any situation where the cursor isn't within the text being edited) so we just finish
+    // editing and select all tokens.
+
+    if (([self isEditable] || [self isSelectable]))
+    {
+        [super _selectText:sender immediately:immediately];
+
+        // Finish any editing.
+        [self _autocomplete];
+        _selectedRange = _CPMakeRange(0, [[self _tokens] count]);
+
+        [self setNeedsLayout];
+    }
+}
+
 - (void)keyDown:(CPEvent)anEvent
 {
     CPTokenFieldTextDidChangeValue = [self stringValue];
