@@ -725,7 +725,7 @@ var CPScrollDestinationNone             = 0,
 - (void)moveLeft:(id)sender
 {
     // Left arrow
-    if (_selectedRange.location > 0 && CPTokenFieldDOMInputElement.value == "")
+    if ((_selectedRange.location > 0 || _selectedRange.length) && CPTokenFieldDOMInputElement.value == "")
     {
         if (_selectedRange.length)
             // Simply collapse the range.
@@ -762,7 +762,7 @@ var CPScrollDestinationNone             = 0,
 - (void)moveRight:(id)sender
 {
     // Right arrow
-    if (_selectedRange.location < [[self _tokens] count] && CPTokenFieldDOMInputElement.value == "")
+    if ((_selectedRange.location < [[self _tokens] count] || _selectedRange.length) && CPTokenFieldDOMInputElement.value == "")
     {
         if (_selectedRange.length)
         {
