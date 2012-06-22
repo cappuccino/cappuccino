@@ -1413,20 +1413,29 @@ NOT YET IMPLEMENTED
 {
     // FIX ME: Cocoa documentation says all this should be called in THIS method:
     // sets up the field editor, and sends selectWithFrame:inView:editor:delegate:start:length: and editWithFrame:inView:editor:delegate:event: to the field editor's NSCell object with the NSTableView as the text delegate.
+    if (_isViewBased)
+    {
+        var identifier = [_tableColumns[columnIndex] UID],
+            view = _dataViewsForTableColumns[identifier][rowIndex];
 
-    if (![self isRowSelected:rowIndex])
-        [[CPException exceptionWithName:@"Error" reason:@"Attempt to edit row="+rowIndex+" when not selected." userInfo:nil] raise];
+        [[self window] makeFirstResponder:view];
+    }
+    else
+    {
+        if (![self isRowSelected:rowIndex])
+            [[CPException exceptionWithName:@"Error" reason:@"Attempt to edit row="+rowIndex+" when not selected." userInfo:nil] raise];
 
-    [self scrollRowToVisible:rowIndex];
-    [self scrollColumnToVisible:columnIndex];
+        [self scrollRowToVisible:rowIndex];
+        [self scrollColumnToVisible:columnIndex];
 
-    // TODO Do something with flag.
+        // TODO Do something with flag.
 
-    _editingCellIndex = CGPointMake(columnIndex, rowIndex);
-    _editingCellIndex._shouldSelect = flag;
+        _editingCellIndex = CGPointMake(columnIndex, rowIndex);
+        _editingCellIndex._shouldSelect = flag;
 
-    [self reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:rowIndex]
-        columnIndexes:[CPIndexSet indexSetWithIndex:columnIndex]];
+        [self reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:rowIndex]
+            columnIndexes:[CPIndexSet indexSetWithIndex:columnIndex]];
+    }
 }
 
 /*!
