@@ -291,6 +291,11 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     // We only allow first responder status if the field is editable and enabled.
     if (!shouldBeEditable && [[self window] firstResponder] === self)
         [[self window] makeFirstResponder:nil];
+
+    if (shouldBeEditable)
+        [self setThemeState:CPThemeStateEditable];
+    else
+        [self unsetThemeState:CPThemeStateEditable];
 }
 
 /*!
