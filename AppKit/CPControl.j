@@ -535,7 +535,7 @@ var CPControlBlackColor = [CPColor blackColor];
     // Cocoa raises an invalid parameter assertion and returns if you pass nil.
     if (aString === nil || aString === undefined)
     {
-        CPLog.warn("nil sent to CPControl -setStringValue");
+        CPLog.warn("nil or undefined sent to CPControl -setStringValue");
         return;
     }
 

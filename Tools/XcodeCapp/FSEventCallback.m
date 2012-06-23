@@ -138,4 +138,6 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
             }
         }
     }
+
+    [xcc updateUserDefaultsWithLastEventId];
 }

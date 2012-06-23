@@ -137,10 +137,7 @@ var STICKY_TIME_INTERVAL            = 0.5,
     // Periodic events don't have a valid location.
     var globalLocation = type === CPPeriodic ? _lastGlobalLocation : [anEvent globalLocation];
 
-    // Remember this for the next periodic event.
-    _lastGlobalLocation = globalLocation;
-
-    if (!_lastGlobalLocation)
+    if (!globalLocation)
         return;
 
     // Find which menu window the mouse is currently on top of
@@ -152,6 +149,14 @@ var STICKY_TIME_INTERVAL            = 0.5,
         activeItemIndex = activeMenuContainer ? [activeMenuContainer itemIndexAtPoint:menuLocation] : CPNotFound,
         activeItem = activeItemIndex !== CPNotFound ? [activeMenu itemAtIndex:activeItemIndex] : nil;
 
+    // unhighlight when mouse is moved off the menu
+    if (_lastGlobalLocation && CGRectContainsPoint([activeMenuContainer globalFrame], _lastGlobalLocation)
+                            && !CGRectContainsPoint([activeMenuContainer globalFrame], globalLocation))
+        [activeMenu _highlightItemAtIndex:CPNotFound];
+
+    // Remember this for the next periodic event.
+    _lastGlobalLocation = globalLocation;
+
     // If the item isn't enabled its as if we clicked on nothing.
     if (![activeItem isEnabled] || [activeItem _isMenuBarButton])
     {
@@ -161,7 +166,7 @@ var STICKY_TIME_INTERVAL            = 0.5,
 
     var mouseOverMenuView = [activeItem view];
 
-    if (type === CPScrollWheel)
+    if (type === CPScrollWheel && ![activeMenuContainer isMenuBar])
         [activeMenuContainer scrollByDelta:[anEvent deltaY]];
 
     if (type === CPPeriodic)
@@ -211,7 +216,8 @@ var STICKY_TIME_INTERVAL            = 0.5,
             _lastMouseOverMenuView = nil;
         }
 
-        [activeMenu _highlightItemAtIndex:activeItemIndex];
+        if (activeItemIndex != CPNotFound)
+            [activeMenu _highlightItemAtIndex:activeItemIndex];
 
         if (type === CPMouseMoved || type === CPLeftMouseDragged || type === CPLeftMouseDown || type === CPPeriodic)
         {
@@ -485,7 +491,7 @@ var STICKY_TIME_INTERVAL            = 0.5,
     {
         if (!_keyBuffer)
         {
-            _startTime = [CPDate date];
+            _startTime = [anEvent timestamp];
             _keyBuffer = character;
 
             [CPEvent stopPeriodicEvents];
@@ -522,7 +528,7 @@ var STICKY_TIME_INTERVAL            = 0.5,
         _keyBuffer = Nil;
     }
     else
-        _startTime = [CPDate date];
+        _startTime = [CPEvent currentTimestamp];
 }
 
 - (void)scrollToBeginningOfDocument:(CPMenu)menu
@@ -666,8 +672,11 @@ var STICKY_TIME_INTERVAL            = 0.5,
     var index = menu._highlightedIndex - 1;
 
     if (index < 0)
+    {
+        if (index != CPNotFound)
+            [menu _highlightItemAtIndex:[menu numberOfItems] - 1];
         return;
-
+    }
     [menu _highlightItemAtIndex:index];
 
     var item = [menu highlightedItem];

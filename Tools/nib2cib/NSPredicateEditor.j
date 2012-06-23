@@ -27,12 +27,12 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [super NS_initWithCoder:aCoder];
-    
+
     if (self)
-    {   
+    {
         _allTemplates = [aCoder decodeObjectForKey:@"NSPredicateTemplates"];
     }
-    
+
     return self;
 }
 
@@ -59,7 +59,7 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
         _templateType = [aCoder decodeIntForKey:@"NSPredicateTemplateType"];
@@ -71,7 +71,7 @@
         _rightIsWildcard = [aCoder decodeBoolForKey:@"NSPredicateTemplateRightIsWildcard"];
         _views = [aCoder decodeObjectForKey:@"NSPredicateTemplateViews"];
     }
-    
+
     return self;
 }
 
