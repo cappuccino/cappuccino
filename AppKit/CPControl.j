@@ -391,7 +391,10 @@ var CPControlBlackColor = [CPColor blackColor];
 
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
-    [self highlight:NO];
+    if (mouseIsUp)
+        [self highlight:NO];
+    else
+        [self highlight:YES];
 }
 
 - (void)mouseDown:(CPEvent)anEvent
@@ -872,9 +875,9 @@ var CPControlValueKey           = "CPControlValueKey",
     CPControlActionKey          = "CPControlActionKey",
     CPControlSendActionOnKey    = "CPControlSendActionOnKey",
 
-    CPControlSendsActionOnEndEditingKey = "CPControlSendsActionOnEndEditingKey";
+    CPControlSendsActionOnEndEditingKey = "CPControlSendsActionOnEndEditingKey",
 
-var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
+    __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
 
 @implementation CPControl (CPCoding)
 
