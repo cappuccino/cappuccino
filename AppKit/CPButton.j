@@ -510,8 +510,9 @@ CPButtonImageOffset   = 3.0;
     if (mouseIsUp && CGRectContainsPoint([self bounds], aPoint))
         [self setNextState];
 
-    // Keep highlight YES for CPOnState for CPOnOffButton
-    if (_highlightsBy == CPOnOffButton && [self state] != CPOffState)
+    // Keep highlight YES for CPOnState for CPOnOffButton type
+    var maskCheck = CPPushInCellMask | CPChangeGrayCellMask;
+    if (_highlightsBy == maskCheck && [self state] != CPOffState)
         mouseIsUp = NO;
 
     [super stopTracking:lastPoint at:aPoint mouseIsUp:mouseIsUp];
