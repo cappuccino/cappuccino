@@ -24,6 +24,7 @@
 @import "CPGeometry.j"
 @import "CPMenu.j"
 @import "CPMenuItem.j"
+@import <AppKit/CPKeyValueBinding.j>
 
 
 var VISIBLE_MARGIN = 7.0;
@@ -246,22 +247,6 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     return _selectedIndex;
 }
 
-/*!
-    @ignore
-*/
-- (int)_selectedTag
-{
-    return [[self selectedItem] tag];
-}
-
-/*!
-    @ignore
-*/
-- (void)_setSelectedTag:(int)aTag
-{
-    [self selectItemWithTag:aTag];
-}
-
 // Setting the Current Selection
 /*!
     Selects the specified menu item.
@@ -313,6 +298,11 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
         [[self selectedItem] setState:CPOnState];
 
     [self synchronizeTitleAndSelectedItem];
+
+    var binder = [CPBinder getBinding:CPSelectedIndexBinding forObject:self];
+    [binder reverseSetValueFor:CPSelectedIndexBinding];
+    binder = [CPBinder getBinding:CPSelectedObjectBinding forObject:self];
+    [binder reverseSetValueFor:CPSelectedObjectBinding];
 }
 
 - (id)objectValue
@@ -784,6 +774,126 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     [theBinding reverseSetValueFor:@"objectValue"];
 
     [super _reverseSetBinding];
+}
+
+@end
+
+@implementation CPPopUpButton (BindingSupport)
+/*
+- (void)_setItemValues:(CPArray)values forKey:(CPString)key
+{
+    var i,
+        count = [values count];
+    
+    if (count != [self numberOfItems])
+    {
+        [self removeAllItems];
+        var count2 = count;
+        while (count2--)
+            [self addItemWithTitle:@""];
+    }
+    
+    if (!key)
+        return;
+    
+    while (count--)
+        [[self itemAtIndex:count] setValue:[values objectAtIndex:count] forKey:key];
+}
+*/
+- (CPUInteger)selectedIndex
+{
+    return [self indexOfSelectedItem];
+}
+
+- (void)setSelectedIndex:(CPUInteger)aValue
+{
+    [self selectItemAtIndex:aValue];
+}
+
+- (CPString)selectedValue
+{
+    return [self titleOfSelectedItem];
+}
+
+- (void)setSelectedValue:(CPString)aValue
+{
+    [self selectItemWithTitle:aValue];
+}
+
+- (id)selectedObject
+{
+    return [[self selectedItem] representedObject];
+}
+
+- (void)setSelectedObject:(id)aValue
+{
+    [self selectItemAtIndex:[self indexOfItemWithRepresentedObject:aValue]];
+}
+
+- (CPInteger)selectedTag
+{
+    return [[self selectedItem] tag];
+}
+
+- (void)setSelectedTag:(CPInteger)aValue
+{
+    [self selectItemWithTag:aValue];
+}
+
+- (CPArray)contentValues
+{
+    return [self valueForKeyPath:@"itemArray.title"];
+}
+
+- (void)setContentValues:(CPArray)aValue
+{
+    var count = [aValue count];
+
+    if (count != [self numberOfItems])
+    {
+        [self removeAllItems];
+        for (var i = 0; i < count; i++)
+            [self addItemWithTitle:[aValue objectAtIndex:i]];
+    }
+    else
+    {
+        for (var i = 0; i < count; i++)
+            [[self itemAtIndex:i] setTitle:[aValue objectAtIndex:i]];
+    }
+    [self synchronizeTitleAndSelectedItem];
+}
+
+- (CPArray)content
+{
+    return [self valueForKeyPath:@"itemArray.representedObject"];
+}
+
+- (void)setContent:(CPArray)aValue
+{
+    var count = [aValue count];
+
+    if (count != [self numberOfItems])
+    {
+        [self removeAllItems];
+        for (var i = 0; i < count; i++)
+        {
+            var item = [[CPMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:nil];
+            [item setRepresentedObject:[aValue objectAtIndex:i]];
+            [self addItem:item];
+        }
+    }
+    else
+    {
+        for (var i = 0; i < count; i++)
+            [[self itemAtIndex:i] setRepresentedObject:[aValue objectAtIndex:i]];
+    }
+
+    if (![self infoForBinding:CPContentValuesBinding])
+    {
+        var descriptions = [aValue valueForKey:@"description"];
+        for (var i = 0; i < count; i++)
+            [[self itemAtIndex:i] setTitle:[descriptions objectAtIndex:i]];
+    }
 }
 
 @end
