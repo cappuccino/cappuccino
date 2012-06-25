@@ -529,7 +529,12 @@ CPButtonImageOffset   = 3.0;
             [self highlight:YES];
     }
     else
-        [self highlight:NO];
+    {
+        if (_showsStateBy & (CPChangeGrayCellMask | CPChangeBackgroundCellMask))
+            [self highlight:[self state] != CPOffState];
+        else
+            [self highlight:NO];
+    }
     return startedTracking;
 }
 
