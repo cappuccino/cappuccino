@@ -34,18 +34,18 @@
     [contentView addSubview:label];
 
     var keysToTest = [
-        "a",
-        ";",
-        "-",
-        "=",
-        ",",
-        ".",
-        "/",
-        "`",
-        "'",
-        "[",
-        "\\",
-        "]"
+            "a",
+            ";",
+            "-",
+            "=",
+            ",",
+            ".",
+            "/",
+            "`",
+            "'",
+            "[",
+            "\\",
+            "]"
         ];
 
     for (var i = 0; i < keysToTest.length; i++)
@@ -69,23 +69,23 @@
     [contentView addSubview:label];
 
     var functionKeysToTest = [
-        ["backspace", CPBackspaceCharacter],
-        ["delete char", CPDeleteCharacter],
-        ["delete key", CPDeleteFunctionKey],
-        ["tab", CPTabCharacter],
-        ["carriage return", CPCarriageReturnCharacter],
-        ["newline", CPNewlineCharacter],
-        ["space", CPSpaceFunctionKey],
-        ["esc", CPEscapeFunctionKey],
-        ["pgup", CPPageUpFunctionKey],
-        ["pgdn", CPPageDownFunctionKey],
-        ["left arrow", CPLeftArrowFunctionKey],
-        ["up arrow", CPUpArrowFunctionKey],
-        ["right arrow", CPRightArrowFunctionKey],
-        ["down arrow", CPDownArrowFunctionKey],
-        ["home", CPHomeFunctionKey],
-        ["end", CPEndFunctionKey]
-    ];
+            ["backspace", CPBackspaceCharacter],
+            ["delete char", CPDeleteCharacter],
+            ["delete key", CPDeleteFunctionKey],
+            ["tab", CPTabCharacter],
+            ["carriage return", CPCarriageReturnCharacter],
+            ["newline", CPNewlineCharacter],
+            ["space", CPSpaceFunctionKey],
+            ["esc", CPEscapeFunctionKey],
+            ["pgup", CPPageUpFunctionKey],
+            ["pgdn", CPPageDownFunctionKey],
+            ["left arrow", CPLeftArrowFunctionKey],
+            ["up arrow", CPUpArrowFunctionKey],
+            ["right arrow", CPRightArrowFunctionKey],
+            ["down arrow", CPDownArrowFunctionKey],
+            ["home", CPHomeFunctionKey],
+            ["end", CPEndFunctionKey]
+        ];
 
     for (var i = 0, buttonsWide = 6, yOffset = 0; i < functionKeysToTest.length; i++)
     {
@@ -120,7 +120,7 @@
 
 @end
 
-@implementation TestButton :CPButton
+@implementation TestButton : CPButton
 {
 }
 
