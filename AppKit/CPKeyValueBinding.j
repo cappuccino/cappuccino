@@ -551,18 +551,32 @@ CPNotApplicableMarker   = @"CPNotApplicableMarker";
 CPNullMarker            = @"CPNullMarker";
 
 // Binding name constants
-CPAlignmentBinding      = @"alignment";
-CPEditableBinding       = @"editable";
-CPEnabledBinding        = @"enabled";
-CPFontBinding           = @"font";
-CPHiddenBinding         = @"hidden";
-CPSelectedIndexBinding  = @"selectedIndex";
-CPTextColorBinding      = @"textColor";
-CPToolTipBinding        = @"toolTip";
-CPValueBinding          = @"value";
-CPValueURLBinding       = @"valueURL";
-CPValuePathBinding      = @"valuePath";
-CPDataBinding           = @"data";
+CPAlignmentBinding                        = @"alignment";
+CPContentArrayBinding                     = @"contentArray";
+CPContentBinding                          = @"content";
+CPContentObjectBinding                    = @"contentObject";
+CPContentObjectsBinding                   = @"contentObjects";
+CPContentValuesBinding                    = @"contentValues";
+CPEnabledBinding                          = @"enabled";
+CPFontBinding                             = @"font";
+CPFontNameBinding                         = @"fontName";
+CPFontBoldBinding                         = @"fontBold";
+CPHiddenBinding                           = @"hidden";
+CPFilterPredicateBinding                  = @"filterPredicate";
+CPPredicateBinding                        = @"predicate";
+CPSelectedIndexBinding                    = @"selectedIndex";
+CPSelectedLabelBinding                    = @"selectedLabel";
+CPSelectedObjectBinding                   = @"selectedObject";
+CPSelectedObjectsBinding                  = @"selectedObjects";
+CPSelectedTagBinding                      = @"selectedTag";
+CPSelectedValueBinding                    = @"selectedValue";
+CPSelectedValuesBinding                   = @"selectedValues";
+CPSelectionIndexesBinding                 = @"selectionIndexes";
+CPTitleBinding                            = @"title";
+CPValueBinding                            = @"value";
+CPValueURLBinding                         = @"valueURL";
+CPValuePathBinding                        = @"valuePath";
+CPDataBinding                             = @"data";
 
 //Binding options constants
 CPAllowsEditingMultipleValuesSelectionBindingOption = @"CPAllowsEditingMultipleValuesSelection";
