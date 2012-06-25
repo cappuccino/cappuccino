@@ -404,6 +404,11 @@ CPButtonImageOffset   = 3.0;
     }
 }
 
+- (CPInteger)highlightsBy
+{
+    return _highlightsBy;
+}
+
 - (void)setButtonType:(CPButtonType)aButtonType
 {
     switch (aButtonType)
