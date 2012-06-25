@@ -179,7 +179,7 @@ CPButtonImageOffset   = 3.0;
     _periodicInterval   = 0.05;
     _periodicDelay      = 0.5;
 
-    _imageDimsWhenDisabled = YES;
+    [self setButtonType:CPMomentaryPushInButton];
 }
 
 // Setting the state

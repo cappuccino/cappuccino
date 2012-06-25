@@ -179,4 +179,13 @@
     [self assertTrue:wasClicked message:@"a user click on a radio button should fire the group action"];
 }
 
+- (void)testTypeMasks
+{
+    var button = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
+
+    // The default mask should be that of CPMomentaryPushInButton.
+    [self assert:CPPushInButtonMask | CPGrayButtonMask | CPBackgroundButtonMask equals:[button highlightsBy]];
+    [self assert:0 equals:[button showsStateBy]];
+}
+
 @end
