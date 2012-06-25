@@ -217,17 +217,13 @@ CPButtonImageOffset   = 3.0;
 {
     if (!anObjectValue || anObjectValue === @"" || ([anObjectValue intValue] === 0))
         anObjectValue = CPOffState;
-
     else if (![anObjectValue isKindOfClass:[CPNumber class]])
         anObjectValue = CPOnState;
-
     else if (anObjectValue >= CPOnState)
         anObjectValue = CPOnState
-
     else if (anObjectValue < CPOffState)
         if ([self allowsMixedState])
             anObjectValue = CPMixedState;
-
         else
             anObjectValue = CPOnState;
 
@@ -895,8 +891,18 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
         _alternateTitle = [aCoder decodeObjectForKey:CPButtonAlternateTitleKey];
         _allowsMixedState = [aCoder decodeBoolForKey:CPButtonAllowsMixedStateKey];
 
-        _highlightsBy = [aCoder decodeIntForKey:CPButtonHighlightsByKey];
-        _showsStateBy = [aCoder decodeIntForKey:CPButtonShowsStateByKey];
+        if ([aCoder containsValueForKey:CPButtonHighlightsByKey])
+        {
+            // If one exists, assume both do.
+            _highlightsBy = [aCoder decodeIntForKey:CPButtonHighlightsByKey];
+            _showsStateBy = [aCoder decodeIntForKey:CPButtonShowsStateByKey];
+        }
+        else
+        {
+            // Backwards compatibility: if this CPButton was encoded before coding of
+            // highlightsBy and showsStateBy were added, we should just use the
+            // default values from _init rather than overwriting with 0, 0.
+        }
 
         [self setImageDimsWhenDisabled:[aCoder decodeObjectForKey:CPButtonImageDimsWhenDisabledKey]];
 

@@ -186,6 +186,30 @@
     // The default mask should be that of CPMomentaryPushInButton.
     [self assert:CPPushInButtonMask | CPGrayButtonMask | CPBackgroundButtonMask equals:[button highlightsBy]];
     [self assert:0 equals:[button showsStateBy]];
+
+    [button setButtonType:CPPushOnPushOffButton];
+
+    [self assert:CPPushInCellMask | CPChangeGrayCellMask | CPChangeBackgroundCellMask equals:[button highlightsBy]];
+    [self assert:CPChangeBackgroundCellMask | CPChangeGrayCellMask equals:[button showsStateBy]];
+
+    // Test archiving.
+
+    var archived = [CPKeyedArchiver archivedDataWithRootObject:button],
+        unarchived = [CPKeyedUnarchiver unarchiveObjectWithData:archived];
+
+    [self assert:CPPushInCellMask | CPChangeGrayCellMask | CPChangeBackgroundCellMask equals:[button highlightsBy]];
+    [self assert:CPChangeBackgroundCellMask | CPChangeGrayCellMask equals:[button showsStateBy]];
+
+    // Make sure that if highlightsBy and showsStateBy were explicitly set to 0 and 0 (making the button basically
+    // not react to clicks), these settings are not replaced by the defaults when decoding.
+    [button setHighlightsBy:0];
+    [button setShowsStateBy:0];
+
+    archived = [CPKeyedArchiver archivedDataWithRootObject:button];
+    unarchived = [CPKeyedUnarchiver unarchiveObjectWithData:archived];
+
+    [self assert:0 equals:[button highlightsBy]];
+    [self assert:0 equals:[button showsStateBy]];
 }
 
 @end
