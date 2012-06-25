@@ -26,8 +26,12 @@ CPLogRegister(CPLogConsole);
     @outlet CPRadio         radio1;
     @outlet CPRadio         radio2;
     @outlet CPPopUpButton   positionMenu;
+    @outlet CPButton        monkeyButton;
+    @outlet CPCheckBox      monkeyCheckbox;
 
     @outlet CPTextField     clickCount;
+    @outlet CPTextField     monkeyLabel;
+    @outlet CPTextField     monkeyCheckboxLabel;
 
     CPArray buttons;
     CPArray checksAndRadios;
@@ -73,6 +77,18 @@ CPLogRegister(CPLogConsole);
     [pushInButton setAlternateTitle:@"Should Not See Me"];
     [toggleButton setAlternateTitle:@"Alternate Title For Toggle"];
     [momentaryChangeButton setAlternateTitle:@"Changed!"];
+
+    [monkeyButton setAlternateTitle:@"Alternate title"];
+    var path = [[CPBundle bundleForClass:[CPView class]] pathForResource:@"action_button.png"];
+    [monkeyButton setAlternateImage:[[CPImage alloc] initWithContentsOfFile:path size:CGSizeMake(22.0, 14.0)]]
+    [monkeyButton setHighlightsBy:CPNoCellMask];
+    [monkeyButton setShowsStateBy:CPNoCellMask];
+
+    [monkeyCheckbox setAlternateTitle:@"Alternate title"];
+    [monkeyCheckbox setHighlightsBy:CPNoCellMask];
+    [monkeyCheckbox setShowsStateBy:CPNoCellMask];
+
+    CPLog(@"%@", [monkeyButton alternateTitle]);
 }
 
 - (void)setImagePosition:(id)sender
@@ -128,6 +144,40 @@ CPLogRegister(CPLogConsole);
 - (IBAction)radioGroupClicked:(id)aSender
 {
     CPLog.info("Radio group action sent!");
+}
+
+- (IBAction)setMonkeyButtonHighlightedBy:(id)aSender
+{
+    if ([aSender state] == CPOnState)
+    {
+        [monkeyButton setHighlightsBy:[monkeyButton highlightsBy] | [aSender tag]];
+        [monkeyCheckbox setHighlightsBy:[monkeyCheckbox highlightsBy] | [aSender tag]];
+    }
+    else
+    {
+        [monkeyButton setHighlightsBy:[monkeyButton highlightsBy] ^ [aSender tag]];
+        [monkeyCheckbox setHighlightsBy:[monkeyCheckbox highlightsBy] ^ [aSender tag]];
+    }
+}
+
+- (IBAction)setMonkeyButtonShowsStateBy:(id)aSender
+{
+    if ([aSender state] == CPOnState)
+    {
+        [monkeyButton setShowsStateBy:[monkeyButton showsStateBy] | [aSender tag]];
+        [monkeyCheckbox setShowsStateBy:[monkeyCheckbox showsStateBy] | [aSender tag]];
+    }
+    else
+    {
+        [monkeyButton setShowsStateBy:[monkeyButton showsStateBy] ^ [aSender tag]];
+        [monkeyCheckbox setShowsStateBy:[monkeyCheckbox showsStateBy] ^ [aSender tag]];
+    }
+}
+
+- (IBAction)monkeyClick:(id)aSender
+{
+    [monkeyLabel setStringValue:[CPString stringWithFormat:@"State: %d", [monkeyButton state]]];
+    [monkeyCheckboxLabel setStringValue:[CPString stringWithFormat:@"State: %d", [monkeyCheckbox state]]];
 }
 
 @end
