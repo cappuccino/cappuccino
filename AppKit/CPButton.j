@@ -390,7 +390,7 @@ CPButtonImageOffset   = 3.0;
 - (void)setShowsStateBy:(CPInteger)aMask
 {
     // CPPushInCellMask cannot be set for showsStateBy.
-    aMask ^= CPPushInCellMask;
+    aMask &= ~CPPushInCellMask;
 
     if (_showsStateBy === aMask)
         return;
