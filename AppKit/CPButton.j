@@ -826,7 +826,49 @@ CPButtonImageOffset   = 3.0;
         return NO;
 
     [self performClick:nil];
+
     return YES;
+}
+
+/*!
+    Perform a click on the receiver.
+
+    @param sender - The sender object
+*/
+- (void)performClick:(id)sender
+{
+    // This is slightly different from [super performClick:] in that the highlight behaviour is dependent on
+    // highlightsBy and showsStateBy.
+    if (![self isEnabled])
+        return;
+
+    [self setState:[self nextState]];
+
+    var shouldHighlight = NO;
+
+    if (_highlightsBy & (CPPushInCellMask | CPChangeGrayCellMask))
+    {
+        if (_showsStateBy & (CPChangeGrayCellMask | CPChangeBackgroundCellMask))
+            shouldHighlight = [self state] == CPOffState;
+        else
+            shouldHighlight = YES;
+    }
+
+    [self highlight:shouldHighlight];
+
+    try
+    {
+        [self sendAction:[self action] to:[self target]];
+    }
+    catch (e)
+    {
+        throw e;
+    }
+    finally
+    {
+        if (shouldHighlight)
+            [CPTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(unhighlightButtonTimerDidFinish:) userInfo:nil repeats:NO];
+    }
 }
 
 @end
