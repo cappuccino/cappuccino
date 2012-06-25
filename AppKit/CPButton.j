@@ -376,6 +376,9 @@ CPButtonImageOffset   = 3.0;
 
 - (void)setShowsStateBy:(CPInteger)aMask
 {
+    // CPPushInCellMask cannot be set for showsStateBy.
+    aMask ^= CPPushInCellMask;
+
     if (_showsStateBy === aMask)
         return;
 
@@ -791,7 +794,9 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
     CPButtonKeyEquivalentKey            = @"CPButtonKeyEquivalentKey",
     CPButtonKeyEquivalentMaskKey        = @"CPButtonKeyEquivalentMaskKey",
     CPButtonPeriodicDelayKey            = @"CPButtonPeriodicDelayKey",
-    CPButtonPeriodicIntervalKey         = @"CPButtonPeriodicIntervalKey";
+    CPButtonPeriodicIntervalKey         = @"CPButtonPeriodicIntervalKey",
+    CPButtonHighlightsByKey             = @"CPButtonHighlightsByKey",
+    CPButtonShowsStateByKey             = @"CPButtonShowsStateByKey";
 
 @implementation CPButton (CPCoding)
 
@@ -810,6 +815,9 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
         _title = [aCoder decodeObjectForKey:CPButtonTitleKey];
         _alternateTitle = [aCoder decodeObjectForKey:CPButtonAlternateTitleKey];
         _allowsMixedState = [aCoder decodeBoolForKey:CPButtonAllowsMixedStateKey];
+
+        _highlightsBy = [aCoder decodeIntForKey:CPButtonHighlightsByKey];
+        _showsStateBy = [aCoder decodeIntForKey:CPButtonShowsStateByKey];
 
         [self setImageDimsWhenDisabled:[aCoder decodeObjectForKey:CPButtonImageDimsWhenDisabledKey]];
 
@@ -847,6 +855,9 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
     [aCoder encodeObject:_alternateTitle forKey:CPButtonAlternateTitleKey];
 
     [aCoder encodeBool:_allowsMixedState forKey:CPButtonAllowsMixedStateKey];
+
+    [aCoder encodeInt:_highlightsBy forKey:CPButtonHighlightsByKey];
+    [aCoder encodeInt:_showsStateBy forKey:CPButtonShowsStateByKey];
 
     [aCoder encodeBool:[self imageDimsWhenDisabled] forKey:CPButtonImageDimsWhenDisabledKey];
     [aCoder encodeInt:[self imagePosition] forKey:CPButtonImagePositionKey];
