@@ -181,6 +181,23 @@ var CPRadioRadioGroupKey    = @"CPRadioRadioGroupKey";
     [aCoder encodeObject:_radioGroup forKey:CPRadioRadioGroupKey];
 }
 
+- (CPImage)image
+{
+    return [self currentValueForThemeAttribute:@"image"];
+}
+
+- (CPImage)alternateImage
+{
+    return [self currentValueForThemeAttribute:@"image"];
+}
+
+- (BOOL)startTrackingAt:(CGPoint)aPoint
+{
+    var startedTraking = [super startTrackingAt:aPoint];
+    [self highlight:YES];
+    return startedTraking;
+}
+
 @end
 
 @implementation CPRadioGroup : CPObject

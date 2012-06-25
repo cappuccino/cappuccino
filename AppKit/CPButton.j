@@ -111,6 +111,8 @@ CPButtonImageOffset   = 3.0;
     CPTimer             _continuousTimer;
     float               _periodicDelay;
     float               _periodicInterval;
+
+    BOOL                _isTracking;
 }
 
 + (id)buttonWithTitle:(CPString)aTitle
@@ -233,15 +235,26 @@ CPButtonImageOffset   = 3.0;
 
     switch ([self objectValue])
     {
-        case CPMixedState:  [self unsetThemeState:CPThemeStateSelected];
-                            [self setThemeState:CPButtonStateMixed];
-                            break;
+        case CPMixedState:
+            [self unsetThemeState:CPThemeStateSelected];
+            [self setThemeState:CPButtonStateMixed];
+            if (_showsStateBy & (CPChangeGrayCellMask | CPChangeBackgroundCellMask))
+                [self setThemeState:CPThemeStateHighlighted];
+            else
+                [self unsetThemeState:CPThemeStateHighlighted];
+            break;
 
-        case CPOnState:     [self unsetThemeState:CPButtonStateMixed];
-                            [self setThemeState:CPThemeStateSelected];
-                            break;
+        case CPOnState:
+            [self unsetThemeState:CPButtonStateMixed];
+            [self setThemeState:CPThemeStateSelected];
+            if (_showsStateBy & (CPChangeGrayCellMask | CPChangeBackgroundCellMask))
+                [self setThemeState:CPThemeStateHighlighted];
+            else
+                [self unsetThemeState:CPThemeStateHighlighted];
+            break;
 
-        case CPOffState:    [self unsetThemeState:CPThemeStateSelected | CPButtonStateMixed];
+        case CPOffState:
+            [self unsetThemeState:CPThemeStateSelected | CPButtonStateMixed | CPThemeStateHighlighted];
     }
 }
 
@@ -376,10 +389,18 @@ CPButtonImageOffset   = 3.0;
 
 - (void)setShowsStateBy:(CPInteger)aMask
 {
+    // CPPushInCellMask cannot be set for showsStateBy.
+    aMask ^= CPPushInCellMask;
+
     if (_showsStateBy === aMask)
         return;
 
     _showsStateBy = aMask;
+
+    if (_showsStateBy & (CPChangeGrayCellMask | CPChangeBackgroundCellMask) && [self state] != CPOffState)
+        [self setThemeState:CPThemeStateHighlighted];
+    else
+        [self unsetThemeState:CPThemeStateHighlighted];
 
     [self setNeedsDisplay:YES];
     [self setNeedsLayout];
@@ -404,15 +425,20 @@ CPButtonImageOffset   = 3.0;
     }
 }
 
+- (CPInteger)highlightsBy
+{
+    return _highlightsBy;
+}
+
 - (void)setButtonType:(CPButtonType)aButtonType
 {
     switch (aButtonType)
     {
-        case CPMomentaryLightButton:    [self setHighlightsBy:CPChangeBackgroundCellMask];
+        case CPMomentaryLightButton:    [self setHighlightsBy:CPChangeGrayCellMask | CPChangeBackgroundCellMask];
                                         [self setShowsStateBy:CPNoCellMask];
                                         break;
 
-        case CPMomentaryPushInButton:   [self setHighlightsBy:CPPushInCellMask | CPChangeGrayCellMask];
+        case CPMomentaryPushInButton:   [self setHighlightsBy:CPPushInCellMask | CPChangeGrayCellMask | CPChangeBackgroundCellMask];
                                         [self setShowsStateBy:CPNoCellMask];
                                         break;
 
@@ -420,12 +446,12 @@ CPButtonImageOffset   = 3.0;
                                         [self setShowsStateBy:CPNoCellMask];
                                         break;
 
-        case CPPushOnPushOffButton:     [self setHighlightsBy:CPPushInCellMask | CPChangeGrayCellMask];
-                                        [self setShowsStateBy:CPChangeBackgroundCellMask];
+        case CPPushOnPushOffButton:     [self setHighlightsBy:CPPushInCellMask | CPChangeGrayCellMask | CPChangeBackgroundCellMask];
+                                        [self setShowsStateBy:CPChangeBackgroundCellMask | CPChangeGrayCellMask];
                                         break;
 
-        case CPOnOffButton:             [self setHighlightsBy:CPChangeBackgroundCellMask];
-                                        [self setShowsStateBy:CPChangeBackgroundCellMask];
+        case CPOnOffButton:             [self setHighlightsBy:CPChangeGrayCellMask | CPChangeBackgroundCellMask];
+                                        [self setShowsStateBy:CPChangeGrayCellMask | CPChangeBackgroundCellMask];
                                         break;
 
         case CPToggleButton:            [self setHighlightsBy:CPPushInCellMask | CPContentsCellMask];
@@ -496,20 +522,38 @@ CPButtonImageOffset   = 3.0;
 
 - (BOOL)startTrackingAt:(CGPoint)aPoint
 {
-    [self highlight:YES];
+    _isTracking = YES;
 
-    return [super startTrackingAt:aPoint];
+    var startedTracking = [super startTrackingAt:aPoint];
+    if (_highlightsBy & (CPPushInCellMask | CPChangeGrayCellMask))
+    {
+        if (_showsStateBy & (CPChangeGrayCellMask | CPChangeBackgroundCellMask))
+            [self highlight:[self state] == CPOffState];
+        else
+            [self highlight:YES];
+    }
+    else
+        [self highlight:NO];
+    return startedTracking;
 }
 
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
-    [self highlight:NO];
-    [self invalidateTimers];
-
-    [super stopTracking:lastPoint at:aPoint mouseIsUp:mouseIsUp];
+    _isTracking = NO;
 
     if (mouseIsUp && CGRectContainsPoint([self bounds], aPoint))
         [self setNextState];
+    else
+    {
+        if (_showsStateBy & (CPChangeGrayCellMask | CPChangeBackgroundCellMask))
+            [self highlight:[self state] != CPOffState];
+        else
+            [self highlight:NO];
+    }
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
+    [self invalidateTimers];
 }
 
 - (void)invalidateTimers
@@ -643,8 +687,50 @@ CPButtonImageOffset   = 3.0;
 
     if (contentView)
     {
-        [contentView setText:([self hasThemeState:CPThemeStateHighlighted] && _alternateTitle) ? _alternateTitle : _title];
-        [contentView setImage:[self currentValueForThemeAttribute:@"image"]];
+        var title = nil,
+            image = nil;
+        if (_isTracking)
+        {
+            if (_highlightsBy & CPContentsCellMask)
+            {
+                if (_showsStateBy & CPContentsCellMask)
+                {
+                    title = ([self state] == CPOffState && _alternateTitle) ? _alternateTitle : _title;
+                    image = ([self state] == CPOffState && [self alternateImage]) ? [self alternateImage] : [self image];
+                }
+                else
+                {
+                    title = [self alternateTitle];
+                    image = [self alternateImage];
+                }
+            }
+            else if (_showsStateBy & CPContentsCellMask)
+            {
+                title = ([self state] != CPOffState && _alternateTitle) ? _alternateTitle : _title;
+                image = ([self state] != CPOffState && [self alternateImage]) ? [self alternateImage] : [self image];
+            }
+            else
+            {
+                title = _title;
+                image = [self image];
+            }
+        }
+        else
+        {
+            if (_showsStateBy & CPContentsCellMask)
+            {
+                title = ([self state] != CPOffState && _alternateTitle) ? _alternateTitle : _title;
+                image = ([self state] != CPOffState && [self alternateImage]) ? [self alternateImage] : [self image];
+            }
+            else
+            {
+                title = _title;
+                image = [self image];
+            }
+        }
+
+        [contentView setText:title];
+        [contentView setImage:image];
         [contentView setImageOffset:[self currentValueForThemeAttribute:@"image-offset"]];
 
         [contentView setFont:[self currentValueForThemeAttribute:@"font"]];
@@ -786,7 +872,9 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
     CPButtonKeyEquivalentKey            = @"CPButtonKeyEquivalentKey",
     CPButtonKeyEquivalentMaskKey        = @"CPButtonKeyEquivalentMaskKey",
     CPButtonPeriodicDelayKey            = @"CPButtonPeriodicDelayKey",
-    CPButtonPeriodicIntervalKey         = @"CPButtonPeriodicIntervalKey";
+    CPButtonPeriodicIntervalKey         = @"CPButtonPeriodicIntervalKey",
+    CPButtonHighlightsByKey             = @"CPButtonHighlightsByKey",
+    CPButtonShowsStateByKey             = @"CPButtonShowsStateByKey";
 
 @implementation CPButton (CPCoding)
 
@@ -805,6 +893,9 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
         _title = [aCoder decodeObjectForKey:CPButtonTitleKey];
         _alternateTitle = [aCoder decodeObjectForKey:CPButtonAlternateTitleKey];
         _allowsMixedState = [aCoder decodeBoolForKey:CPButtonAllowsMixedStateKey];
+
+        _highlightsBy = [aCoder decodeIntForKey:CPButtonHighlightsByKey];
+        _showsStateBy = [aCoder decodeIntForKey:CPButtonShowsStateByKey];
 
         [self setImageDimsWhenDisabled:[aCoder decodeObjectForKey:CPButtonImageDimsWhenDisabledKey]];
 
@@ -842,6 +933,9 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
     [aCoder encodeObject:_alternateTitle forKey:CPButtonAlternateTitleKey];
 
     [aCoder encodeBool:_allowsMixedState forKey:CPButtonAllowsMixedStateKey];
+
+    [aCoder encodeInt:_highlightsBy forKey:CPButtonHighlightsByKey];
+    [aCoder encodeInt:_showsStateBy forKey:CPButtonShowsStateByKey];
 
     [aCoder encodeBool:[self imageDimsWhenDisabled] forKey:CPButtonImageDimsWhenDisabledKey];
     [aCoder encodeInt:[self imagePosition] forKey:CPButtonImagePositionKey];
