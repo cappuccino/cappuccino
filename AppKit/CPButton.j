@@ -689,6 +689,7 @@ CPButtonImageOffset   = 3.0;
     {
         var title = nil,
             image = nil;
+
         if (_isTracking)
         {
             if (_highlightsBy & CPContentsCellMask)

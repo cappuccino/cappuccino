@@ -53,8 +53,8 @@ var NSButtonIsBorderedMask = 0x00800000,
     NSButtonImageOverlapsPositionMask = 0x6C,
 
     // You cannot set neither highlightsBy nor showsStateBy in IB,
-    // buy you can set button type which implicitly sets the masks.
-    // Note, that you cannot set NSPushInCellMask for showsStateBy.
+    // but you can set button type which implicitly sets the masks.
+    // Note that you cannot set NSPushInCellMask for showsStateBy.
     NSHighlightsByPushInCellMask = 0x80000000,
     NSHighlightsByContentsCellMask = 0x08000000,
     NSHighlightsByChangeGrayCellMask =  0x04000000,

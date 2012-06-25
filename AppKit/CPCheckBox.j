@@ -106,9 +106,9 @@ CPCheckBoxImageOffset = 4.0;
 
 - (BOOL)startTrackingAt:(CGPoint)aPoint
 {
-    var startedTraking = [super startTrackingAt:aPoint];
+    var startedTracking = [super startTrackingAt:aPoint];
     [self highlight:YES];
-    return startedTraking;
+    return startedTracking;
 }
 
 @end
