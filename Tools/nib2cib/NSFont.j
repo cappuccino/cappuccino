@@ -54,6 +54,9 @@ var IBDefaultFontFace = @"Lucida Grande",
 
 + (void)initialize
 {
+    if (self !== [NSFont class])
+        return;
+
     CPLog.debug("NSFont: default IB font: %s %f", IBDefaultFontFace, IBDefaultFontSize);
 }
 

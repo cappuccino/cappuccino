@@ -54,7 +54,7 @@ var LIGHT_LEFT_INSET    = 3.0,
 
 + (void)initialize
 {
-    if (self != [CPShadowView class])
+    if (self !== [CPShadowView class])
         return;
 
     var bundle = [CPBundle bundleForClass:[self class]];

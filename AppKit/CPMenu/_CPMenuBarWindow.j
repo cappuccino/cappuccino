@@ -34,7 +34,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
 
 + (void)initialize
 {
-    if (self != [_CPMenuBarWindow class])
+    if (self !== [_CPMenuBarWindow class])
         return;
 
     var bundle = [CPBundle bundleForClass:self];

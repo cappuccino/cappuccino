@@ -114,7 +114,7 @@ var CPToolbarsByIdentifier              = nil,
 /* @ignore */
 + (void)initialize
 {
-    if (self != [CPToolbar class])
+    if (self !== [CPToolbar class])
         return;
 
     CPToolbarsByIdentifier = [CPDictionary dictionary];
