@@ -167,18 +167,20 @@ CPWindowAbove                   = 1;
 */
 CPWindowBelow                   = 2;
 
-CPWindowWillCloseNotification       = @"CPWindowWillCloseNotification";
-CPWindowDidBecomeMainNotification   = @"CPWindowDidBecomeMainNotification";
-CPWindowDidResignMainNotification   = @"CPWindowDidResignMainNotification";
-CPWindowDidBecomeKeyNotification    = @"CPWindowDidBecomeKeyNotification";
-CPWindowDidResignKeyNotification    = @"CPWindowDidResignKeyNotification";
-CPWindowDidResizeNotification       = @"CPWindowDidResizeNotification";
-CPWindowDidMoveNotification         = @"CPWindowDidMoveNotification";
-CPWindowWillBeginSheetNotification  = @"CPWindowWillBeginSheetNotification";
-CPWindowDidEndSheetNotification     = @"CPWindowDidEndSheetNotification";
-CPWindowDidMiniaturizeNotification  = @"CPWindowDidMiniaturizeNotification";
-CPWindowWillMiniaturizeNotification = @"CPWindowWillMiniaturizeNotification";
-CPWindowDidDeminiaturizeNotification = @"CPWindowDidDeminiaturizeNotification";
+CPWindowWillCloseNotification                   = @"CPWindowWillCloseNotification";
+CPWindowDidBecomeMainNotification               = @"CPWindowDidBecomeMainNotification";
+CPWindowDidResignMainNotification               = @"CPWindowDidResignMainNotification";
+CPWindowDidBecomeKeyNotification                = @"CPWindowDidBecomeKeyNotification";
+CPWindowDidResignKeyNotification                = @"CPWindowDidResignKeyNotification";
+CPWindowDidResizeNotification                   = @"CPWindowDidResizeNotification";
+CPWindowDidMoveNotification                     = @"CPWindowDidMoveNotification";
+CPWindowWillBeginSheetNotification              = @"CPWindowWillBeginSheetNotification";
+CPWindowDidEndSheetNotification                 = @"CPWindowDidEndSheetNotification";
+CPWindowDidMiniaturizeNotification              = @"CPWindowDidMiniaturizeNotification";
+CPWindowWillMiniaturizeNotification             = @"CPWindowWillMiniaturizeNotification";
+CPWindowDidDeminiaturizeNotification            = @"CPWindowDidDeminiaturizeNotification";
+
+_CPWindowDidChangeFirstResponderNotification    = @"_CPWindowDidChangeFirstResponderNotification";
 
 CPWindowShadowStyleStandard = 0;
 CPWindowShadowStyleMenu     = 1;
@@ -1361,6 +1363,8 @@ CPTexturedBackgroundWindowMask
     }
 
     _firstResponder = aResponder;
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:_CPWindowDidChangeFirstResponderNotification object:self];
 
     return YES;
 }
