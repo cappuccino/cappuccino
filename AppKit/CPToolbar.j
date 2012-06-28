@@ -316,7 +316,7 @@ var CPToolbarsByIdentifier              = nil,
 
     if ([_delegate respondsToSelector:@selector(toolbarDefaultItemIdentifiers:)])
     {
-        var itemIdentifiersFromDelegate = [[_delegate toolbarDefaultItemIdentifiers:self] mutableCopy];
+        var itemIdentifiersFromDelegate = [_delegate toolbarDefaultItemIdentifiers:self];
 
         // If we get items both from the Cib and from the delegate method, put the delegate items before the
         // Cib ones.
