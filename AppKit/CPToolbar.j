@@ -314,13 +314,17 @@ var CPToolbarsByIdentifier              = nil,
     // _defaultItems may have been loaded from Cib
     _itemIdentifiers = [_defaultItems valueForKey:@"itemIdentifier"] || [];
 
-    if (_delegate)
+    if ([_delegate respondsToSelector:@selector(toolbarDefaultItemIdentifiers:)])
     {
-        var itemIdentifiersFromDelegate = [[_delegate toolbarDefaultItemIdentifiers:self] mutableCopy];
+        var itemIdentifiersFromDelegate = [_delegate toolbarDefaultItemIdentifiers:self];
 
+        // If we get items both from the Cib and from the delegate method, put the delegate items before the
+        // Cib ones.
         if (itemIdentifiersFromDelegate)
-            _itemIdentifiers = [_itemIdentifiers arrayByAddingObjectsFromArray:itemIdentifiersFromDelegate];
+            _itemIdentifiers = [itemIdentifiersFromDelegate arrayByAddingObjectsFromArray:_itemIdentifiers];
     }
+    // If we didn't load from a cib and the delegate hasn't been set yet, we'll just work with an empty list
+    // at this point.
 
     var index = 0,
         count = [_itemIdentifiers count];
