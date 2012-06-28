@@ -21,7 +21,8 @@ BorderViewDefaultBorderColor = nil;
 
 + (void)initialize
 {
-    BorderViewDefaultBorderColor = [CPColor colorWithHexString:@"0000ff"];
+    if (self === [BorderView class])
+        BorderViewDefaultBorderColor = [CPColor colorWithHexString:@"0000ff"];
 }
 
 - (id)initWithFrame:(CGRect)aFrame

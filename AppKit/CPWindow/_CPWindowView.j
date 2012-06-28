@@ -45,7 +45,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
 
 + (void)initialize
 {
-    if (self != [_CPWindowView class])
+    if (self !== [_CPWindowView class])
         return;
 
     _CPWindowViewResizeIndicatorImage = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPWindow class]] pathForResource:@"_CPWindowView/_CPWindowViewResizeIndicator.png"] size:CGSizeMake(12.0, 12.0)];

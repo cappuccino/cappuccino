@@ -38,7 +38,7 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
 
 + (void)initialize
 {
-    if (self != [_CPHUDWindowView class])
+    if (self !== [_CPHUDWindowView class])
         return;
 
     var bundle = [CPBundle bundleForClass:self];

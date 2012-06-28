@@ -113,7 +113,7 @@ var CPSplitViewHorizontalImage = nil,
 */
 + (void)initialize
 {
-    if (self != [CPSplitView class])
+    if (self !== [CPSplitView class])
         return;
 
     var bundle = [CPBundle bundleForClass:self];

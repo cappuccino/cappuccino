@@ -153,7 +153,7 @@ var CPKeyBindingCache = {};
 
 + (void)initialize
 {
-    if ([self class] !== CPKeyBinding)
+    if (self !== [CPKeyBinding class])
         return;
 
     [self createKeyBindingsFromJSObject:CPStandardKeyBindings];

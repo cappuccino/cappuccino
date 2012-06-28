@@ -59,6 +59,9 @@ var CPImageViewEmptyPlaceholderImage = nil;
 
 + (void)initialize
 {
+    if (self !== [CPImageView class])
+        return;
+
     var bundle = [CPBundle bundleForClass:[CPView class]];
 
     CPImageViewEmptyPlaceholderImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"empty.png"]];

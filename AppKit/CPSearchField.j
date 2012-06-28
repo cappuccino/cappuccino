@@ -72,7 +72,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
 
 + (void)initialize
 {
-    if (self != [CPSearchField class])
+    if (self !== [CPSearchField class])
         return;
 
     var bundle = [CPBundle bundleForClass:self];
