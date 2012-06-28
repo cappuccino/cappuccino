@@ -343,7 +343,7 @@ var CPWindowActionMessageKeys = [
 */
 + (void)initialize
 {
-    if (self != [CPWindow class])
+    if (self !== [CPWindow class])
         return;
 
     var bundle = [CPBundle bundleForClass:[CPWindow class]];

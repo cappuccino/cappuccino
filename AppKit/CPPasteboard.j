@@ -73,7 +73,7 @@ var CPPasteboards = nil,
 */
 + (void)initialize
 {
-    if (self != [CPPasteboard class])
+    if (self !== [CPPasteboard class])
         return;
 
     [self setVersion:1.0];

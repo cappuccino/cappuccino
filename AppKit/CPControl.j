@@ -134,18 +134,18 @@ var CPControlBlackColor = [CPColor blackColor];
 
 + (void)initialize
 {
-    if (self === [CPControl class])
-    {
-        [self exposeBinding:@"value"];
-        [self exposeBinding:@"objectValue"];
-        [self exposeBinding:@"stringValue"];
-        [self exposeBinding:@"integerValue"];
-        [self exposeBinding:@"intValue"];
-        [self exposeBinding:@"doubleValue"];
-        [self exposeBinding:@"floatValue"];
+    if (self !== [CPControl class])
+        return;
 
-        [self exposeBinding:@"enabled"];
-    }
+    [self exposeBinding:@"value"];
+    [self exposeBinding:@"objectValue"];
+    [self exposeBinding:@"stringValue"];
+    [self exposeBinding:@"integerValue"];
+    [self exposeBinding:@"intValue"];
+    [self exposeBinding:@"doubleValue"];
+    [self exposeBinding:@"floatValue"];
+
+    [self exposeBinding:@"enabled"];
 }
 
 + (Class)_binderClassForBinding:(CPString)theBinding
