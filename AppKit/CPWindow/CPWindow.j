@@ -822,7 +822,7 @@ CPTexturedBackgroundWindowMask
 #endif
 
     if (_firstResponder === self || !_firstResponder)
-        [self makeFirstResponder:[self initialFirstResponder]];
+        [self makeFirstResponder:_initialFirstResponder];
 
     if (!CPApp._keyWindow)
         [self makeKeyWindow];
@@ -962,7 +962,7 @@ CPTexturedBackgroundWindowMask
     // During init the initial first responder is set to the contentView
     // if it hasn't changed in the mean time we need to update that reference
     // to the new contentView
-    if ([self initialFirstResponder] === _contentView)
+    if (_initialFirstResponder === _contentView)
         [self setInitialFirstResponder:aView];
 
     _contentView = aView;
@@ -1299,21 +1299,24 @@ CPTexturedBackgroundWindowMask
 
 - (void)setInitialFirstResponder:(CPView)aView
 {
+    // Before an initial first responder is set, be sure to calculate the key loop
+    [self _setupFirstResponder:aView];
+
     _initialFirstResponder = aView;
 }
 
-- (void)_setupFirstResponder
+- (void)_setupFirstResponder:(CPView)anInitialFirstResponder
 {
     /*
         If:
 
         - The key loop is dirty
         - The key loop does not auto-recalculate
-        - The first responder is the window
-        - The initial first responder is the content view
+        - No view within the window has become first responder
+        - No initial first responder has been set
 
         Then calculate the key view loop and set the first responder
-        to the first view in the loop, since we should
+        to the first view in the loop if no initial responder has been set, since we should
         always have an initial first responder and a key loop by default.
     */
     if (_keyViewLoopIsDirty &&
@@ -1323,10 +1326,15 @@ CPTexturedBackgroundWindowMask
     {
         [self recalculateKeyViewLoop];
 
-        // Make the first key view of the content view the first responder
-        var firstKeyView = [[self contentView] nextValidKeyView];
+        if (anInitialFirstResponder)
+            [self makeFirstResponder:anInitialFirstResponder];
+        else
+        {
+            // Make the first key view of the content view the first responder
+            var firstKeyView = [[self contentView] nextValidKeyView];
 
-        [self makeFirstResponder:firstKeyView];
+            [self makeFirstResponder:firstKeyView];
+        }
     }
 }
 
@@ -1684,7 +1692,7 @@ CPTexturedBackgroundWindowMask
     if (_firstResponder !== self && [_firstResponder respondsToSelector:@selector(becomeKeyWindow)])
         [_firstResponder becomeKeyWindow];
 
-    [self _setupFirstResponder];
+    [self _setupFirstResponder:nil];
 
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPWindowDidBecomeKeyNotification
@@ -2554,7 +2562,7 @@ CPTexturedBackgroundWindowMask
 
     if (!nextValidKeyView)
     {
-        var initialFirstResponder = [self initialFirstResponder];
+        var initialFirstResponder = _initialFirstResponder;
 
         if ([initialFirstResponder acceptsFirstResponder])
             nextValidKeyView = initialFirstResponder;
@@ -2577,7 +2585,7 @@ CPTexturedBackgroundWindowMask
 
     if (!previousValidKeyView)
     {
-        var initialFirstResponder = [self initialFirstResponder];
+        var initialFirstResponder = _initialFirstResponder;
 
         if ([initialFirstResponder acceptsFirstResponder])
             previousValidKeyView = initialFirstResponder;
@@ -2699,7 +2707,8 @@ var allViews = function(aWindow)
 
     [views addObjectsFromArray:[[aWindow contentView] subviews]];
 
-    for (var index = 0; index < views.length; ++index)
+    // Start from index 1 because index 0 is the contentView and its subviews have already been added
+    for (var index = 1; index < views.length; ++index)
         views = views.concat([views[index] subviews]);
 
     return views;
