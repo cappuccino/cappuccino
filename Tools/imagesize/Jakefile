@@ -21,7 +21,7 @@ task ("build", function()
     }
     else
     {
-        print("Building fontinfo requires Xcode.");
+        print("Building imagesize requires Xcode.");
     }
 });
 
