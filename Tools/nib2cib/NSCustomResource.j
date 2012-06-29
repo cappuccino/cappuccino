@@ -25,7 +25,8 @@
 
 @import <AppKit/_CPCibCustomResource.j>
 
-var FILE = require("file");
+var FILE = require("file"),
+    imageSize = require("cappuccino/imagesize").imagesize;
 
 @implementation _CPCibCustomResource (NSCoding)
 
@@ -73,8 +74,6 @@ var FILE = require("file");
 
 @end
 
-var ImageUtility = require("cappuccino/image-utility"),
-    imageSize = ImageUtility.sizeOfImageAtPath;
 
 @implementation NSCustomResource : _CPCibCustomResource
 {
