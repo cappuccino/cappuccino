@@ -112,6 +112,7 @@ var NSButtonIsBorderedMask = 0x00800000,
         }
 
         _themeClass = [[self class] defaultThemeClass];
+        alternateImage = nil;
     }
 
     NIB_CONNECTION_EQUIVALENCY_TABLE[[cell UID]] = self;
@@ -122,8 +123,7 @@ var NSButtonIsBorderedMask = 0x00800000,
     [self setBordered:[cell isBordered]];
     _bezelStyle = [cell bezelStyle];
 
-
-    // clean up:
+    // Map Cocoa bezel styles to Cappuccino bezel styles and adjust frame
     switch (_bezelStyle)
     {
         // implemented:
@@ -132,13 +132,16 @@ var NSButtonIsBorderedMask = 0x00800000,
             positionOffsetOriginX = 4;
             positionOffsetSizeWidth = -12;
             break;
+
         case CPTexturedRoundedBezelStyle:
             positionOffsetOriginY = 2;
             positionOffsetOriginX = -2;
             positionOffsetSizeWidth = 0;
             break;
+
         case CPHUDBezelStyle:
             break;
+
         // approximations:
         case CPRoundRectBezelStyle:
             positionOffsetOriginY = -3;
@@ -146,11 +149,13 @@ var NSButtonIsBorderedMask = 0x00800000,
             positionOffsetSizeWidth = 0;
             _bezelStyle = CPRoundedBezelStyle;
             break;
+
         case CPSmallSquareBezelStyle:
             positionOffsetOriginX = -2;
             positionOffsetSizeWidth = 0;
             _bezelStyle = CPTexturedRoundedBezelStyle;
             break;
+
         case CPThickSquareBezelStyle:
         case CPThickerSquareBezelStyle:
         case CPRegularSquareBezelStyle:
@@ -159,24 +164,28 @@ var NSButtonIsBorderedMask = 0x00800000,
             positionOffsetSizeWidth = -4;
             _bezelStyle = CPTexturedRoundedBezelStyle;
             break;
+
         case CPTexturedSquareBezelStyle:
             positionOffsetOriginY = 4;
             positionOffsetOriginX = -1;
             positionOffsetSizeWidth = -2;
             _bezelStyle = CPTexturedRoundedBezelStyle;
             break;
+
         case CPShadowlessSquareBezelStyle:
             positionOffsetOriginY = 5;
             positionOffsetOriginX = -2;
             positionOffsetSizeWidth = 0;
             _bezelStyle = CPTexturedRoundedBezelStyle;
             break;
+
         case CPRecessedBezelStyle:
             positionOffsetOriginY = -3;
             positionOffsetOriginX = -2;
             positionOffsetSizeWidth = 0;
             _bezelStyle = CPHUDBezelStyle;
             break;
+
         // unsupported
         case CPRoundedDisclosureBezelStyle:
         case CPHelpButtonBezelStyle:
@@ -185,6 +194,7 @@ var NSButtonIsBorderedMask = 0x00800000,
             CPLog.warn("NSButton [%s]: unsupported bezel style: %d", _title == null ? "<no title>" : '"' + _title + '"', _bezelStyle);
             _bezelStyle = CPHUDBezelStyle;
             break;
+
         // error:
         default:
             CPLog.warn("NSButton [%s]: unknown bezel style: %d", _title == null ? "<no title>" : '"' + _title + '"', _bezelStyle);
@@ -211,6 +221,7 @@ var NSButtonIsBorderedMask = 0x00800000,
 
     _allowsMixedState = [cell allowsMixedState];
     [self setImage:[cell normalImage]];
+    [self setAlternateImage:alternateImage];
     [self setImagePosition:[cell imagePosition]];
 
     [self setEnabled:[cell isEnabled]];
@@ -298,6 +309,7 @@ var NSButtonIsBorderedMask = 0x00800000,
             _imagePosition = CPNoImage;
 
         _highlightsBy = CPNoCellMask;
+
         if (buttonFlags & NSHighlightsByPushInCellMask)
             _highlightsBy |= CPPushInCellMask;
         if (buttonFlags & NSHighlightsByContentsCellMask)
@@ -308,6 +320,7 @@ var NSButtonIsBorderedMask = 0x00800000,
             _highlightsBy |= CPChangeBackgroundCellMask;
 
         _showsStateBy = CPNoCellMask;
+
         if (buttonFlags & NSShowsStateByContentsCellMask)
             _showsStateBy |= CPContentsCellMask;
         if (buttonFlags & NSShowsStateByChangeGrayCellMask)
