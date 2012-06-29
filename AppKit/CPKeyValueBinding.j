@@ -190,13 +190,18 @@ var CPBindingOperationAnd = 0,
     var destination = [_info objectForKey:CPObservedObjectKey],
         keyPath = [_info objectForKey:CPObservedKeyPathKey],
         options = [_info objectForKey:CPOptionsKey],
-        newValue = [_source valueForKeyPath:aBinding];
+        newValue = [self valueForBinding:aBinding];
 
     newValue = [self reverseTransformValue:newValue withOptions:options];
 
     [self suppressSpecificNotificationFromObject:destination keyPath:keyPath];
     [destination setValue:newValue forKeyPath:keyPath];
     [self unsuppressSpecificNotificationFromObject:destination keyPath:keyPath];
+}
+
+- (id)valueForBinding:(CPString)aBinding
+{
+    return [_source valueForKeyPath:aBinding];
 }
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)changes context:(id)context
