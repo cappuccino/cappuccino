@@ -151,7 +151,7 @@
 					AppKit,
 				);
 				PREBINDING = NO;
-				PRODUCT_NAME = image_size;
+				PRODUCT_NAME = imagesize;
 				SDKROOT = macosx10.5;
 				SYMROOT = "$(CAPP_BUILD)/Debug/CommonJS/cappuccino/bin";
 			};
@@ -175,7 +175,7 @@
 				OBJROOT = "$(CAPP_BUILD)";
 				ONLY_ACTIVE_ARCH = NO;
 				PREBINDING = NO;
-				PRODUCT_NAME = image_size;
+				PRODUCT_NAME = imagesize;
 				SDKROOT = macosx10.5;
 				SYMROOT = "$(CAPP_BUILD)/Release/CommonJS/cappuccino/bin";
 			};
