@@ -1028,13 +1028,28 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 
 - (void)_postNotificationWillResize
 {
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPSplitViewWillResizeSubviewsNotification object:self];
+    var userInfo = nil;
+
+    if (_currentDivider !== CPNotFound)
+        userInfo = [CPDictionary dictionaryWithObject:_currentDivider forKey:@"CPSplitViewDividerIndex"];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPSplitViewWillResizeSubviewsNotification
+                                                        object:self
+                                                      userInfo:userInfo];
 }
 
 - (void)_postNotificationDidResize
 {
     [self _autosave];
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPSplitViewDidResizeSubviewsNotification object:self];
+
+    var userInfo = nil;
+
+    if (_currentDivider !== CPNotFound)
+        userInfo = [CPDictionary dictionaryWithObject:_currentDivider forKey:@"CPSplitViewDividerIndex"];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPSplitViewDidResizeSubviewsNotification
+                                                        object:self
+                                                      userInfo:userInfo];
 }
 
 /*!
