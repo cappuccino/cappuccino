@@ -1,9 +1,9 @@
 /*
  * AppController.j
- * CPButton
+ * CPPopUpButtonBindings
  *
- * Created by Francisco Tolmasky on July 5, 2009.
- * Copyright 2009, 280 North, Inc. All rights reserved.
+ * Created by You on November 2, 2010.
+ * Copyright 2010, Your Company All rights reserved.
  */
 
 @import <Foundation/Foundation.j>

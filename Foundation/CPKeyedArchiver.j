@@ -125,7 +125,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 */
 + (void)initialize
 {
-    if (self != [CPKeyedArchiver class])
+    if (self !== [CPKeyedArchiver class])
         return;
 
     _CPKeyedArchiverStringClass = [CPString class];

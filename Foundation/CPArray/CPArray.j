@@ -345,11 +345,10 @@ var concat = Array.prototype.concat,
 
 /*!
     Returns the index of the first object in the receiver that passes a test in a given Javascript function.
-    @param predicate The function to apply to elements of the array. The function receives two arguments:
-                     object The element in the array.
-                     index  The index of the element in the array.
+    @param predicate The function to apply to objects of the array. The function should have the signature:
+    @code function(object, index) @endcode
     The predicate function should either return a Boolean value that indicates whether the object passed the test,
-    or nil to stop the search, which will return CPNotFound to the sender.
+    or nil to stop the search, which will return \c CPNotFound to the sender.
     @return The index of the first matching object, or \c CPNotFound if there is no matching object.
 */
 - (unsigned)indexOfObjectPassingTest:(Function)aPredicate
@@ -359,12 +358,10 @@ var concat = Array.prototype.concat,
 
 /*!
     Returns the index of the first object in the receiver that passes a test in a given Javascript function.
-    @param predicate The function to apply to elements of the array. The function receives two arguments:
-                     object  The element in the array.
-                     index   The index of the element in the array.
-                     context The object passed to the receiver in the aContext parameter.
+    @param predicate The function to apply to objects of the array. The function should have the signature:
+    @code function(object, index, context) @endcode
     The predicate function should either return a Boolean value that indicates whether the object passed the test,
-    or nil to stop the search, which will return CPNotFound to the sender.
+    or nil to stop the search, which will return \c CPNotFound to the sender.
     @param context An object that contains context information you want passed to the predicate function.
     @return The index of the first matching object, or \c CPNotFound if there is no matching object.
 */
@@ -377,9 +374,8 @@ var concat = Array.prototype.concat,
     Returns the index of the first object in the receiver that passes a test in a given Javascript function.
     @param options Specifies the direction in which the array is searched. Pass CPEnumerationNormal to search forwards
     or CPEnumerationReverse to search in reverse.
-    @param predicate The function to apply to elements of the array. The function receives two arguments:
-                     object The element in the array.
-                     index  The index of the element in the array.
+    @param predicate The function to apply to objects of the array. The function should have the signature:
+    @code function(object, index) @endcode
     The predicate function should either return a Boolean value that indicates whether the object passed the test,
     or nil to stop the search, which will return CPNotFound to the sender.
     @return The index of the first matching object, or \c CPNotFound if there is no matching object.
@@ -393,10 +389,8 @@ var concat = Array.prototype.concat,
     Returns the index of the first object in the receiver that passes a test in a given Javascript function.
     @param options Specifies the direction in which the array is searched. Pass CPEnumerationNormal to search forwards
     or CPEnumerationReverse to search in reverse.
-    @param predicate The function to apply to elements of the array. The function receives two arguments:
-                     object  The element in the array.
-                     index   The index of the element in the array.
-                     context The object passed to the receiver in the aContext parameter.
+    @param predicate The function to apply to objects of the array. The function should have the signature:
+    @code function(object, index, context) @endcode
     The predicate function should either return a Boolean value that indicates whether the object passed the test,
     or nil to stop the search, which will return CPNotFound to the sender.
     @param context An object that contains context information you want passed to the predicate function.

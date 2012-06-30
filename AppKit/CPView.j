@@ -893,7 +893,7 @@ var CPCurrentToolTip,
 }
 
 /*!
-    Returns the center of the receiver's frame to the provided point. The point is defined in the superview's coordinate system.
+    Returns the center of the receiver's frame in the superview's coordinate system.
     @return CGPoint the center point of the receiver's frame
 */
 - (CGPoint)center

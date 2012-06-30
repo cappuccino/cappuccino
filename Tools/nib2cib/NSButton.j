@@ -50,7 +50,18 @@ var NSButtonIsBorderedMask = 0x00800000,
     NSButtonImageRightPositionMask = 0x2C,
     NSButtonImageLeftPositionMask = 0x3C,
     NSButtonImageOnlyPositionMask = 0x44,
-    NSButtonImageOverlapsPositionMask = 0x6C;
+    NSButtonImageOverlapsPositionMask = 0x6C,
+
+    // You cannot set neither highlightsBy nor showsStateBy in IB,
+    // but you can set button type which implicitly sets the masks.
+    // Note that you cannot set NSPushInCellMask for showsStateBy.
+    NSHighlightsByPushInCellMask = 0x80000000,
+    NSHighlightsByContentsCellMask = 0x08000000,
+    NSHighlightsByChangeGrayCellMask =  0x04000000,
+    NSHighlightsByChangeBackgroundCellMask = 0x02000000,
+    NSShowsStateByContentsCellMask = 0x40000000,
+    NSShowsStateByChangeGrayCellMask = 0x20000000,
+    NSShowsStateByChangeBackgroundCellMask = 0x10000000;
 
 
 @implementation CPButton (NSCoding)
@@ -204,6 +215,9 @@ var NSButtonIsBorderedMask = 0x00800000,
 
     [self setEnabled:[cell isEnabled]];
 
+    _highlightsBy = [cell highlightsBy];
+    _showsStateBy = [cell showsStateBy];
+
     return self;
 }
 
@@ -234,6 +248,9 @@ var NSButtonIsBorderedMask = 0x00800000,
 
     BOOL        _allowsMixedState   @accessors(readonly, getter=allowsMixedState);
     BOOL        _imagePosition      @accessors(readonly, getter=imagePosition);
+
+    int         _highlightsBy       @accessors(readonly, getter=highlightsBy);
+    int         _showsStateBy       @accessors(readonly, getter=showsStateBy);
 
     CPString    _keyEquivalent      @accessors(readonly, getter=keyEquivalent);
     unsigned    _keyEquivalentModifierMask @accessors(readonly, getter=keyEquivalentModifierMask);
@@ -279,6 +296,24 @@ var NSButtonIsBorderedMask = 0x00800000,
             _imagePosition = CPImageAbove;
         else if ((position & NSButtonNoImagePositionMask) == NSButtonNoImagePositionMask)
             _imagePosition = CPNoImage;
+
+        _highlightsBy = CPNoCellMask;
+        if (buttonFlags & NSHighlightsByPushInCellMask)
+            _highlightsBy |= CPPushInCellMask;
+        if (buttonFlags & NSHighlightsByContentsCellMask)
+            _highlightsBy |= CPContentsCellMask;
+        if (buttonFlags & NSHighlightsByChangeGrayCellMask)
+            _highlightsBy |= CPChangeGrayCellMask;
+        if (buttonFlags & NSHighlightsByChangeBackgroundCellMask)
+            _highlightsBy |= CPChangeBackgroundCellMask;
+
+        _showsStateBy = CPNoCellMask;
+        if (buttonFlags & NSShowsStateByContentsCellMask)
+            _showsStateBy |= CPContentsCellMask;
+        if (buttonFlags & NSShowsStateByChangeGrayCellMask)
+            _showsStateBy |= CPChangeGrayCellMask;
+        if (buttonFlags & NSShowsStateByChangeBackgroundCellMask)
+            _showsStateBy |= CPChangeBackgroundCellMask;
 
         _keyEquivalent = [aCoder decodeObjectForKey:@"NSKeyEquivalent"];
         _keyEquivalentModifierMask = buttonFlags2 >> 8;

@@ -26,6 +26,9 @@
 
 + (void)initialize
 {
+    if (self !== [StringToURLTransformer class])
+        return;
+
     [CPValueTransformer setValueTransformer:[self new]
                                     forName:@"StringToURLTransformer"];
 }

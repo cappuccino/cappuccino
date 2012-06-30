@@ -22,10 +22,10 @@
 
 @import "CPButton.j"
 @import "CPGeometry.j"
+@import "CPKeyValueBinding.j"
 @import "CPMenu.j"
 @import "CPMenuItem.j"
 @import <AppKit/CPKeyValueBinding.j>
-
 
 var VISIBLE_MARGIN = 7.0;
 
@@ -768,10 +768,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 - (void)_reverseSetBinding
 {
-    var binderClass = [[self class] _binderClassForBinding:CPSelectedIndexBinding],
-        theBinding = [binderClass getBinding:CPSelectedIndexBinding forObject:self];
-
-    [theBinding reverseSetValueFor:@"objectValue"];
+    [_CPPopUpButtonSelectionBinder reverseSetValueForObject:self];
 
     [super _reverseSetBinding];
 }
@@ -779,73 +776,24 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 @end
 
 @implementation CPPopUpButton (BindingSupport)
-/*
-- (void)_setItemValues:(CPArray)values forKey:(CPString)key
+
++ (Class)_binderClassForBinding:(CPString)aBinding
 {
-    var i,
-        count = [values count];
-    
-    if (count != [self numberOfItems])
-    {
-        [self removeAllItems];
-        var count2 = count;
-        while (count2--)
-            [self addItemWithTitle:@""];
-    }
-    
-    if (!key)
-        return;
-    
-    while (count--)
-        [[self itemAtIndex:count] setValue:[values objectAtIndex:count] forKey:key];
-}
-*/
-- (CPUInteger)selectedIndex
-{
-    return [self indexOfSelectedItem];
+    if (aBinding == CPSelectedIndexBinding ||
+        aBinding == CPSelectedObjectBinding ||
+        aBinding == CPSelectedTagBinding ||
+        aBinding == CPSelectedValueBinding)
+    return [_CPPopUpButtonSelectionBinder class];
+
+    return [super _binderClassForBinding:aBinding];
 }
 
-- (void)setSelectedIndex:(CPUInteger)aValue
-{
-    [self selectItemAtIndex:aValue];
-}
-
-- (CPString)selectedValue
-{
-    return [self titleOfSelectedItem];
-}
-
-- (void)setSelectedValue:(CPString)aValue
-{
-    [self selectItemWithTitle:aValue];
-}
-
-- (id)selectedObject
-{
-    return [[self selectedItem] representedObject];
-}
-
-- (void)setSelectedObject:(id)aValue
-{
-    [self selectItemAtIndex:[self indexOfItemWithRepresentedObject:aValue]];
-}
-
-- (CPInteger)selectedTag
-{
-    return [[self selectedItem] tag];
-}
-
-- (void)setSelectedTag:(CPInteger)aValue
-{
-    [self selectItemWithTag:aValue];
-}
-
-- (CPArray)contentValues
+- (CPArray)_contentValues
 {
     return [self valueForKeyPath:@"itemArray.title"];
 }
 
-- (void)setContentValues:(CPArray)aValue
+- (void)_setContentValues:(CPArray)aValue
 {
     var count = [aValue count];
 
@@ -863,12 +811,12 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     [self synchronizeTitleAndSelectedItem];
 }
 
-- (CPArray)content
+- (CPArray)_content
 {
     return [self valueForKeyPath:@"itemArray.representedObject"];
 }
 
-- (void)setContent:(CPArray)aValue
+- (void)_setContent:(CPArray)aValue
 {
     var count = [aValue count];
 
@@ -890,10 +838,72 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
     if (![self infoForBinding:CPContentValuesBinding])
     {
-        var descriptions = [aValue valueForKey:@"description"];
         for (var i = 0; i < count; i++)
-            [[self itemAtIndex:i] setTitle:[descriptions objectAtIndex:i]];
+            [[self itemAtIndex:i] setTitle:[[aValue objectAtIndex:i] description]];
     }
+}
+
+@end
+
+var binderForObject = {},
+    selectionBindings = [CPSelectedIndexBinding, CPSelectedObjectBinding, CPSelectedTagBinding, CPSelectedValueBinding];
+
+@implementation _CPPopUpButtonSelectionBinder : CPBinder
+{
+    CPString _selectionBinding @accessors(property=binding);
+}
+
++ (void)reverseSetValueForObject:(id)aSource
+{
+    var uid = [aSource UID],
+        binder = binderForObject[uid];
+
+    if (binder == nil)
+    {
+        var count = selectionBindings.length;
+        while (count--)
+        {
+            var binding = selectionBindings[count];
+            binder = [self getBinding:binding forObject:aSource];
+            if (binder != nil)
+            {
+                binderForObject[uid] = binder;
+                [binder setBinding:binding];
+                break;
+            }
+        }
+    }
+
+    [binder reverseSetValueFor:[binder binding]];
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    if (aBinding == CPSelectedIndexBinding)
+        [_source selectItemAtIndex:aValue];
+    else if (aBinding == CPSelectedObjectBinding)
+        [_source selectItemAtIndex:[_source indexOfItemWithRepresentedObject:aValue]];
+    else if (aBinding == CPSelectedTagBinding)
+        [_source selectItemWithTag:aValue];
+    else if (aBinding == CPSelectedValueBinding)
+        [_source selectItemWithTitle:aValue];
+}
+
+- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
+{
+    [self setValue:aValue forBinding:aBinding];
+}
+
+- (id)valueForBinding:(CPString)aBinding
+{
+    if (aBinding == CPSelectedIndexBinding)
+        return [_source indexOfSelectedItem];
+    else if (aBinding == CPSelectedObjectBinding)
+        return [[_source selectedItem] representedObject];
+    else if (aBinding == CPSelectedTagBinding)
+        return  [[_source selectedItem] tag];
+    else if (aBinding == CPSelectedValueBinding)
+        return [_source titleOfSelectedItem];
 }
 
 @end

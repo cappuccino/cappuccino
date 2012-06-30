@@ -166,7 +166,7 @@ var CPRunLoopLastNativeRunLoop = 0;
 */
 + (void)initialize
 {
-    if (self != [CPRunLoop class])
+    if (self !== [CPRunLoop class])
         return;
 
     CPMainRunLoop = [[CPRunLoop alloc] init];

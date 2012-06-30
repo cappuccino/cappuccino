@@ -94,6 +94,23 @@ CPCheckBoxImageOffset = 4.0;
     [self takeStateFromKeyPath:aKeyPath ofObjects:objects];
 }
 
+- (CPImage)image
+{
+    return [self currentValueForThemeAttribute:@"image"];
+}
+
+- (CPImage)alternateImage
+{
+    return [self currentValueForThemeAttribute:@"image"];
+}
+
+- (BOOL)startTrackingAt:(CGPoint)aPoint
+{
+    var startedTracking = [super startTrackingAt:aPoint];
+    [self highlight:YES];
+    return startedTracking;
+}
+
 @end
 
 @implementation _CPCheckBoxValueBinder : CPBinder
