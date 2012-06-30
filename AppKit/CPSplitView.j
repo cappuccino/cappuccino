@@ -455,6 +455,7 @@ var CPSplitViewHorizontalImage = nil,
         if (_currentDivider != CPNotFound)
         {
             _currentDivider = CPNotFound;
+            [self _autosave];
             [self _updateResizeCursor:anEvent];
         }
 
@@ -481,19 +482,19 @@ var CPSplitViewHorizontalImage = nil,
                 {
                     var minPosition = [self minPossiblePositionOfDividerAtIndex:i],
                         maxPosition = [self maxPossiblePositionOfDividerAtIndex:i],
-                        _preCollapsePosition = [_preCollapsePositions objectForKey:"" + i] || 0;
+                        preCollapsePosition = [_preCollapsePositions objectForKey:"" + i] || 0;
 
                     if ([_delegate splitView:self canCollapseSubview:_subviews[i]] && [_delegate splitView:self shouldCollapseSubview:_subviews[i] forDoubleClickOnDividerAtIndex:i])
                     {
                         if ([self isSubviewCollapsed:_subviews[i]])
-                            [self setPosition:_preCollapsePosition ? _preCollapsePosition : (minPosition + (maxPosition - minPosition) / 2) ofDividerAtIndex:i];
+                            [self setPosition:preCollapsePosition ? preCollapsePosition : (minPosition + (maxPosition - minPosition) / 2) ofDividerAtIndex:i];
                         else
                             [self setPosition:minPosition ofDividerAtIndex:i];
                     }
                     else if ([_delegate splitView:self canCollapseSubview:_subviews[i + 1]] && [_delegate splitView:self shouldCollapseSubview:_subviews[i + 1] forDoubleClickOnDividerAtIndex:i])
                     {
                         if ([self isSubviewCollapsed:_subviews[i + 1]])
-                            [self setPosition:_preCollapsePosition ? _preCollapsePosition : (minPosition + (maxPosition - minPosition) / 2) ofDividerAtIndex:i];
+                            [self setPosition:preCollapsePosition ? preCollapsePosition : (minPosition + (maxPosition - minPosition) / 2) ofDividerAtIndex:i];
                         else
                             [self setPosition:maxPosition ofDividerAtIndex:i];
                     }
@@ -725,13 +726,13 @@ var CPSplitViewHorizontalImage = nil,
         frameA = [viewA frame],
         viewB = _subviews[dividerIndex + 1],
         frameB = [viewB frame],
-        _preCollapsePosition = 0,
+        preCollapsePosition = 0,
         preSize = frameA.size[_sizeComponent];
 
     frameA.size[_sizeComponent] = realPosition - frameA.origin[_originComponent];
 
     if (preSize !== 0 && frameA.size[_sizeComponent] === 0)
-        _preCollapsePosition = preSize;
+        preCollapsePosition = preSize;
 
     if (preSize !== frameA.size[_sizeComponent])
     {
@@ -746,7 +747,7 @@ var CPSplitViewHorizontalImage = nil,
     frameB.size[_sizeComponent] = frameB.origin[_originComponent] + frameB.size[_sizeComponent] - realPosition - [self dividerThickness];
 
     if (preSize !== 0 && frameB.size[_sizeComponent] === 0)
-        _preCollapsePosition = frameB.origin[_originComponent];
+        preCollapsePosition = frameB.origin[_originComponent];
 
     frameB.origin[_originComponent] = realPosition + [self dividerThickness];
 
@@ -757,8 +758,8 @@ var CPSplitViewHorizontalImage = nil,
         SPLIT_VIEW_MAYBE_POST_DID_RESIZE();
     }
 
-    if (_preCollapsePosition)
-        [_preCollapsePositions setObject:_preCollapsePosition forKey:"" + dividerIndex];
+    if (preCollapsePosition)
+        [_preCollapsePositions setObject:preCollapsePosition forKey:"" + dividerIndex];
 
     [self setNeedsDisplay:YES];
 
@@ -1040,8 +1041,6 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 
 - (void)_postNotificationDidResize
 {
-    [self _autosave];
-
     var userInfo = nil;
 
     if (_currentDivider !== CPNotFound)
