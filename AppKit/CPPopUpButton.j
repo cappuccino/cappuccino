@@ -298,11 +298,6 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
         [[self selectedItem] setState:CPOnState];
 
     [self synchronizeTitleAndSelectedItem];
-
-    var binder = [CPBinder getBinding:CPSelectedIndexBinding forObject:self];
-    [binder reverseSetValueFor:CPSelectedIndexBinding];
-    binder = [CPBinder getBinding:CPSelectedObjectBinding forObject:self];
-    [binder reverseSetValueFor:CPSelectedObjectBinding];
 }
 
 - (id)objectValue
