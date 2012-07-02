@@ -220,8 +220,6 @@ unset SEALVL
 
 PATH_SAVED="$PATH"
 
-check_build_environment
-
 if which "narwhal" > /dev/null; then
     narwhal_path="$(which narwhal)"
     # resolve symlinks
