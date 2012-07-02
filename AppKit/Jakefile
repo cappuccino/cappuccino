@@ -27,10 +27,16 @@ appKitTask = framework ("AppKit", function(appKitTask)
     appKitTask.setFlattensSources(true);
     appKitTask.setInfoPlistPath("Info.plist");
 
+    // Grab all the .h's and just include them in each file.
+    var INCLUDES = new FileList("**/*.h").map(function(aFilename)
+    {
+        return "--include \"" + aFilename + "\"";
+    }).join(" ");
+
     if ($CONFIGURATION === "Release")
-        appKitTask.setCompilerFlags("-O");
+        appKitTask.setCompilerFlags("-O " + INCLUDES);
     else
-        appKitTask.setCompilerFlags("-DDEBUG -g");
+        appKitTask.setCompilerFlags("-DDEBUG -g " + INCLUDES);
 });
 
 $BUILD_CJS_CAPPUCCINO_APPKIT = FILE.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "AppKit");

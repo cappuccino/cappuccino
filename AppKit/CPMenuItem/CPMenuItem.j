@@ -29,7 +29,27 @@
 @import "CPView.j"
 @import "_CPMenuItemView.j"
 
-/*! 
+
+var CPMenuItemStringRepresentationDictionary = [CPDictionary dictionary];
+[CPMenuItemStringRepresentationDictionary setObject:"\u238B" forKey:CPEscapeFunctionKey];
+[CPMenuItemStringRepresentationDictionary setObject:"\u21E5" forKey:CPTabCharacter];
+[CPMenuItemStringRepresentationDictionary setObject:"\u21E4" forKey:CPBackTabCharacter];
+[CPMenuItemStringRepresentationDictionary setObject:"\u2423" forKey:CPSpaceFunctionKey];
+[CPMenuItemStringRepresentationDictionary setObject:"\u23CE" forKey:CPCarriageReturnCharacter];
+[CPMenuItemStringRepresentationDictionary setObject:"\u232B" forKey:CPBackspaceCharacter];
+[CPMenuItemStringRepresentationDictionary setObject:"\u232B" forKey:CPDeleteFunctionKey];
+[CPMenuItemStringRepresentationDictionary setObject:"\u2326" forKey:CPDeleteCharacter];
+[CPMenuItemStringRepresentationDictionary setObject:"\u21F1" forKey:CPHomeFunctionKey];
+[CPMenuItemStringRepresentationDictionary setObject:"\u21F2" forKey:CPEndFunctionKey];
+[CPMenuItemStringRepresentationDictionary setObject:"\u21DE" forKey:CPPageUpFunctionKey];
+[CPMenuItemStringRepresentationDictionary setObject:"\u21DF" forKey:CPPageDownFunctionKey];
+[CPMenuItemStringRepresentationDictionary setObject:"\u2191" forKey:CPUpArrowFunctionKey];
+[CPMenuItemStringRepresentationDictionary setObject:"\u2193" forKey:CPDownArrowFunctionKey];
+[CPMenuItemStringRepresentationDictionary setObject:"\u2190" forKey:CPLeftArrowFunctionKey];
+[CPMenuItemStringRepresentationDictionary setObject:"\u2192" forKey:CPRightArrowFunctionKey];
+[CPMenuItemStringRepresentationDictionary setObject:"\u2327" forKey:CPClearDisplayFunctionKey];
+
+/*!
     @ingroup appkit
     @class CPMenuItem
 
@@ -43,39 +63,41 @@
 
     CPString        _title;
     //CPAttributedString  _attributedTitle;
-    
+
     CPFont          _font;
-                  
+
     id              _target;
     SEL             _action;
-                    
+
     BOOL            _isEnabled;
     BOOL            _isHidden;
-                    
+
     int             _tag;
     int             _state;
-                    
+
     CPImage         _image;
     CPImage         _alternateImage;
     CPImage         _onStateImage;
     CPImage         _offStateImage;
     CPImage         _mixedStateImage;
-                    
+
     CPMenu          _submenu;
     CPMenu          _menu;
-                    
+
     CPString        _keyEquivalent;
     unsigned        _keyEquivalentModifierMask;
-                    
+
     int             _mnemonicLocation;
-                    
+
     BOOL            _isAlternate;
     int             _indentationLevel;
-                    
+
     CPString        _toolTip;
     id              _representedObject;
     CPView          _view;
-    
+
+    int             _changeCount;
+
     _CPMenuItemView _menuItemView;
 }
 
@@ -94,19 +116,21 @@
 - (id)initWithTitle:(CPString)aTitle action:(SEL)anAction keyEquivalent:(CPString)aKeyEquivalent
 {
     self = [super init];
-    
+
     if (self)
     {
+        _changeCount = 0;
         _isSeparator = NO;
 
         _title = aTitle;
         _action = anAction;
-        
+
         _isEnabled = YES;
-        
+        _isHidden = NO;
+
         _tag = 0;
         _state = CPOffState;
-        
+
         _keyEquivalent = aKeyEquivalent || @"";
         _keyEquivalentModifierMask = CPPlatformActionKeyMask;
 
@@ -114,7 +138,7 @@
 
         _mnemonicLocation = CPNotFound;
     }
-    
+
     return self;
 }
 
@@ -125,13 +149,12 @@
 */
 - (void)setEnabled:(BOOL)isEnabled
 {
-    if ([_menu autoenablesItems])
+    if (_isEnabled === isEnabled)
         return;
 
-    _isEnabled = isEnabled;
+    _isEnabled = !!isEnabled;
 
     [_menuItemView setDirty];
-
     [_menu itemChanged:self];
 }
 
@@ -152,7 +175,7 @@
 {
     if (_isHidden == isHidden)
         return;
-    
+
     _isHidden = isHidden;
 
     [_menu itemChanged:self];
@@ -173,9 +196,9 @@
 {
     if (_isHidden)
         return YES;
-    
+
     var supermenu = [_menu supermenu];
-    
+
     if ([[supermenu itemAtIndex:[supermenu indexOfItemWithSubmenu:_menu]] isHiddenOrHasHiddenAncestor])
         return YES;
 
@@ -228,11 +251,11 @@
 
     if (_title == aTitle)
         return;
-    
+
     _title = aTitle;
-    
+
     [_menuItemView setDirty];
-    
+
     [_menu itemChanged:self];
 }
 
@@ -260,11 +283,11 @@
 {
     if (_font == aFont)
         return;
-        
+
     _font = aFont;
 
     [_menu itemChanged:self];
-    
+
     [_menuItemView setDirty];
 }
 
@@ -316,9 +339,9 @@ CPOffState
 {
     if (_state == aState)
         return;
-    
+
     _state = aState;
-    
+
     [_menu itemChanged:self];
 
     [_menuItemView setDirty];
@@ -346,11 +369,11 @@ CPOffState
 {
     if (_image == anImage)
         return;
-    
+
     _image = anImage;
 
     [_menuItemView setDirty];
-    
+
     [_menu itemChanged:self];
 }
 
@@ -388,7 +411,7 @@ CPOffState
 {
     if (_onStateImage == anImage)
         return;
-    
+
     _onStateImage = anImage;
     [_menu itemChanged:self];
 }
@@ -409,7 +432,7 @@ CPOffState
 {
     if (_offStateImage == anImage)
         return;
-    
+
     _offStateImage = anImage;
     [_menu itemChanged:self];
 }
@@ -430,7 +453,7 @@ CPOffState
 {
     if (_mixedStateImage == anImage)
         return;
-    
+
     _mixedStateImage = anImage;
     [_menu itemChanged:self];
 }
@@ -444,7 +467,7 @@ CPOffState
     return _mixedStateImage;
 }
 
-// Managing Subemenus
+// Managing Submenus
 /*!
     Sets the submenu for this item
     @param aMenu the submenu
@@ -458,13 +481,14 @@ CPOffState
 
     if (supermenu)
         [CPException raise:CPInvalidArgumentException
-		   reason: @"Can't add submenu \"" + [aMenu title] + "\" to item \"" + [self title] + "\", because it is already submenu of \"" + [[aMenu supermenu] title] + "\""];
+           reason: @"Can't add submenu \"" + [aMenu title] + "\" to item \"" + [self title] + "\", because it is already submenu of \"" + [[aMenu supermenu] title] + "\""];
 
     _submenu = aMenu;
 
     if (_submenu)
     {
         [_submenu setSupermenu:_menu];
+        [_submenu setTitle:[self title]]
 
         [self setTarget:_menu];
         [self setAction:@selector(submenuAction:)];
@@ -591,21 +615,25 @@ CPControlKeyMask
         return @"";
 
     var string = _keyEquivalent.toUpperCase(),
-        needsShift = _keyEquivalentModifierMask & CPShiftKeyMask || string === _keyEquivalent;
+        needsShift = _keyEquivalentModifierMask & CPShiftKeyMask ||
+                    (string === _keyEquivalent && _keyEquivalent.toLowerCase() !== _keyEquivalent.toUpperCase());
+
+    if ([CPMenuItemStringRepresentationDictionary objectForKey:string])
+        string = [CPMenuItemStringRepresentationDictionary objectForKey:string];
 
     if (CPBrowserIsOperatingSystem(CPMacOperatingSystem))
     {
         if (_keyEquivalentModifierMask & CPCommandKeyMask)
-            string = "⌘" + string;
+            string = "\u2318" + string;
 
         if (needsShift)
-            string = "⇧" + string;
+            string = "\u21E7" + string;
 
         if (_keyEquivalentModifierMask & CPAlternateKeyMask)
-            string = "⌥" + string;
+            string = "\u2325" + string;
 
         if (_keyEquivalentModifierMask & CPControlKeyMask)
-            string = "^" + string;
+            string = "\u2303" + string;
     }
     else
     {
@@ -642,20 +670,20 @@ CPControlKeyMask
 }
 
 /*!
-    Sets the title of the menu item and the mnemonic character. The mnemonic chracter should be preceded by an '&'.
+    Sets the title of the menu item and the mnemonic character. The mnemonic character should be preceded by an '&'.
     @param aTitle the title string with a denoted mnemonic
 */
 - (void)setTitleWithMnemonicLocation:(CPString)aTitle
 {
     var location = [aTitle rangeOfString:@"&"].location;
-    
+
     if (location == CPNotFound)
         [self setTitle:aTitle];
     else
     {
         [self setTitle:[aTitle substringToIndex:location] + [aTitle substringFromIndex:location + 1]];
         [self setMnemonicLocation:location];
-    }    
+    }
 }
 
 /*!
@@ -696,7 +724,7 @@ CPControlKeyMask
 {
     if (aLevel < 0)
         [CPException raise:CPInvalidArgumentException reason:"setIndentationLevel: argument must be greater than or equal to 0."];
-        
+
     _indentationLevel = MIN(15, aLevel);
 }
 
@@ -755,11 +783,11 @@ CPControlKeyMask
 {
     if (_view === aView)
         return;
-    
+
     _view = aView;
-    
+
     [_menuItemView setDirty];
-    
+
     [_menu itemChanged:self];
 }
 
@@ -781,7 +809,48 @@ CPControlKeyMask
     return [[self menu] highlightedItem] == self;
 }
 
-//
+#pragma mark CPObject Overrides
+
+/*!
+    Returns a copy of the item. The copy does not belong If the item has a submenu, it is NOT copied.
+*/
+- (id)copy
+{
+    var item = [[CPMenuItem alloc] init];
+
+    // No point in going through accessors and doing lots of unnecessary state checking/updating
+    item._isSeparator = _isSeparator;
+
+    [item setTitle:_title];
+    [item setFont:_font];
+    [item setTarget:_target];
+    [item setAction:_action];
+    [item setEnabled:_isEnabled];
+    [item setHidden:_isHidden]
+    [item setTag:_tag];
+    [item setState:_state];
+    [item setImage:_image];
+    [item setAlternateImage:_alternateImage];
+    [item setOnStateImage:_onStateImage];
+    [item setOffStateImage:_offStateImage];
+    [item setMixedStateImage:_mixedStateImage];
+    [item setKeyEquivalent:_keyEquivalent];
+    [item setKeyEquivalentModifierMask:_keyEquivalentModifierMask];
+    [item setMnemonicLocation:_mnemonicLocation];
+    [item setAlternate:_isAlternate];
+    [item setIndentationLevel:_indentationLevel];
+    [item setToolTip:_toolTip];
+    [item setRepresentedObject:_representedObject];
+
+    return item;
+}
+
+- (id)mutableCopy
+{
+    return [self copy];
+}
+
+#pragma mark Internal
 
 /*
     @ignore
@@ -790,7 +859,7 @@ CPControlKeyMask
 {
     if (!_menuItemView)
         _menuItemView = [[_CPMenuItemView alloc] initWithFrame:CGRectMakeZero() forMenuItem:self];
-    
+
     return _menuItemView;
 }
 
@@ -802,6 +871,11 @@ CPControlKeyMask
 - (BOOL)_isMenuBarButton
 {
     return ![self submenu] && [self menu] === [CPApp mainMenu];
+}
+
+- (CPString)description
+{
+    return [super description] + @" target: " + [self target] + @" action: " + CPStringFromSelector([self action]);
 }
 
 @end
@@ -844,50 +918,49 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
+        _changeCount = 0;
         _isSeparator = [aCoder containsValueForKey:CPMenuItemIsSeparatorKey] && [aCoder decodeBoolForKey:CPMenuItemIsSeparatorKey];
 
         _title = [aCoder decodeObjectForKey:CPMenuItemTitleKey];
-        
+
 //        _font;
-                  
+
         _target = [aCoder decodeObjectForKey:CPMenuItemTargetKey];
         _action = [aCoder decodeObjectForKey:CPMenuItemActionKey];
 
         _isEnabled = DEFAULT_VALUE(CPMenuItemIsEnabledKey, YES);
-        _isHidden = DEFAULT_VALUE(CPMenuItemIsHiddenKey, NO);
-        _tag = DEFAULT_VALUE(CPMenuItemTagKey, 0);
-        _state = DEFAULT_VALUE(CPMenuItemStateKey, CPOffState);
-//    int             _state;
+        _isHidden = [aCoder decodeBoolForKey:CPMenuItemIsHiddenKey];
+        _tag = [aCoder decodeIntForKey:CPMenuItemTagKey];
+        _state = [aCoder decodeIntForKey:CPMenuItemStateKey];
 
-        _image = DEFAULT_VALUE(CPMenuItemImageKey, nil);
-        _alternateImage = DEFAULT_VALUE(CPMenuItemAlternateImageKey, nil);
+        _image = [aCoder decodeObjectForKey:CPMenuItemImageKey];
+        _alternateImage = [aCoder decodeObjectForKey:CPMenuItemAlternateImageKey];
 //    CPImage         _onStateImage;
 //    CPImage         _offStateImage;
 //    CPImage         _mixedStateImage;
 
         // This order matters because setSubmenu: needs _menu to be around.
-        _menu = DEFAULT_VALUE(CPMenuItemMenuKey, nil);
-        [self setSubmenu:DEFAULT_VALUE(CPMenuItemSubmenuKey, nil)];
+        _menu = [aCoder decodeObjectForKey:CPMenuItemMenuKey];
+        [self setSubmenu:[aCoder decodeObjectForKey:CPMenuItemSubmenuKey]];
 
         _keyEquivalent = [aCoder decodeObjectForKey:CPMenuItemKeyEquivalentKey] || @"";
-        _keyEquivalentModifierMask = [aCoder decodeObjectForKey:CPMenuItemKeyEquivalentModifierMaskKey] || 0;
+        _keyEquivalentModifierMask = [aCoder decodeIntForKey:CPMenuItemKeyEquivalentModifierMaskKey];
 
 //    int             _mnemonicLocation;
 
 //    BOOL            _isAlternate;
 
-        // Default is 0.
-        [self setIndentationLevel:[aCoder decodeIntForKey:CPMenuItemIndentationLevelKey] || 0];
+        [self setIndentationLevel:[aCoder decodeIntForKey:CPMenuItemIndentationLevelKey]];
 
 //    CPString        _toolTip;
 
-        _representedObject = DEFAULT_VALUE(CPMenuItemRepresentedObjectKey, nil);
-        _view = DEFAULT_VALUE(CPMenuItemViewKey, nil);
+        _representedObject = [aCoder decodeObjectForKey:CPMenuItemRepresentedObjectKey];
+        _view = [aCoder decodeObjectForKey:CPMenuItemViewKey];
     }
-    
+
     return self;
 }
 
@@ -901,11 +974,11 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
         [aCoder encodeBool:_isSeparator forKey:CPMenuItemIsSeparatorKey];
 
     [aCoder encodeObject:_title forKey:CPMenuItemTitleKey];
-        
+
     [aCoder encodeObject:_target forKey:CPMenuItemTargetKey];
     [aCoder encodeObject:_action forKey:CPMenuItemActionKey];
 
-    ENCODE_IFNOT(CPMenuItemIsEnabledKey, _isEnabled, YES); 
+    ENCODE_IFNOT(CPMenuItemIsEnabledKey, _isEnabled, YES);
     ENCODE_IFNOT(CPMenuItemIsHiddenKey, _isHidden, NO);
 
     ENCODE_IFNOT(CPMenuItemTagKey, _tag, 0);
@@ -913,7 +986,7 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
 
     ENCODE_IFNOT(CPMenuItemImageKey, _image, nil);
     ENCODE_IFNOT(CPMenuItemAlternateImageKey, _alternateImage, nil);
-    
+
     ENCODE_IFNOT(CPMenuItemSubmenuKey, _submenu, nil);
     ENCODE_IFNOT(CPMenuItemMenuKey, _menu, nil);
 

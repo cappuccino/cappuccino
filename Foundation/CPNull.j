@@ -22,7 +22,6 @@
 
 @import "CPObject.j"
 
-
 var CPNullSharedNull = nil;
 
 /*!
@@ -44,6 +43,7 @@ var CPNullSharedNull = nil;
 
     return [super alloc];
 }*/
+
 /*!
     Returns the singleton instance of the CPNull
     object. While CPNull and \c nil should
@@ -55,6 +55,14 @@ var CPNullSharedNull = nil;
         CPNullSharedNull = [[CPNull alloc] init];
 
     return CPNullSharedNull;
+}
+
+- (BOOL)isEqual:(id)anObject
+{
+    if (self === anObject)
+        return YES;
+
+    return [anObject isKindOfClass:[CPNull class]];
 }
 
 /*!

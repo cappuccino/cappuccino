@@ -28,36 +28,39 @@
 @import "CPCibConnector.j"
 @import "CPCibControlConnector.j"
 @import "CPCibOutletConnector.j"
+@import "CPCibBindingConnector.j"
+@import "CPCibRuntimeAttributesConnector.j"
+@import "CPCibHelpConnector.j"
 
 
 @implementation _CPCibObjectData : CPObject
 {
     CPArray             _namesKeys;
     CPArray             _namesValues;
-    
+
     CPArray             _accessibilityConnectors;
     CPArray             _accessibilityOidsKeys;
     CPArray             _accessibilityOidsValues;
-    
+
     CPArray             _classesKeys;
     CPArray             _classesValues;
-    
+
     CPArray             _connections;
-    
+
     id                  _fontManager;
-    
+
     CPString            _framework;
-    
+
     int                 _nextOid;
-    
+
     CPArray             _objectsKeys;
     CPArray             _objectsValues;
-    
+
     CPArray             _oidKeys;
     CPArray             _oidValues;
-    
+
     _CPCibCustomObject  _fileOwner;
-    
+
     CPSet               _visibleWindows;
 
     JSObject            _replacementObjects;
@@ -105,7 +108,7 @@
     var object = nil,
         objectEnumerator = [_visibleWindows objectEnumerator];
 
-    while (object = [objectEnumerator nextObject])
+    while ((object = [objectEnumerator nextObject]) !== nil)
         [_replacementObjects[[object UID]] makeKeyAndOrderFront:self];
 }
 
@@ -113,28 +116,28 @@
 
 var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey",
     _CPCibObjectDataNamesValuesKey              = @"_CPCibObjectDataNamesValuesKey",
-    
+
     _CPCibObjectDataAccessibilityConnectorsKey  = @"_CPCibObjectDataAccessibilityConnectors",
     _CPCibObjectDataAccessibilityOidsKeysKey    = @"_CPCibObjectDataAccessibilityOidsKeys",
     _CPCibObjectDataAccessibilityOidsValuesKey  = @"_CPCibObjectDataAccessibilityOidsValues",
 
     _CPCibObjectDataClassesKeysKey              = @"_CPCibObjectDataClassesKeysKey",
     _CPCibObjectDataClassesValuesKey            = @"_CPCibObjectDataClassesValuesKey",
-    
+
     _CPCibObjectDataConnectionsKey              = @"_CPCibObjectDataConnectionsKey",
-    
+
     _CPCibObjectDataFontManagerKey              = @"_CPCibObjectDataFontManagerKey",
-    
+
     _CPCibObjectDataFrameworkKey                = @"_CPCibObjectDataFrameworkKey",
 
     _CPCibObjectDataNextOidKey                  = @"_CPCibObjectDataNextOidKey",
-    
+
     _CPCibObjectDataObjectsKeysKey              = @"_CPCibObjectDataObjectsKeysKey",
     _CPCibObjectDataObjectsValuesKey            = @"_CPCibObjectDataObjectsValuesKey",
-    
+
     _CPCibObjectDataOidKeysKey                  = @"_CPCibObjectDataOidKeysKey",
     _CPCibObjectDataOidValuesKey                = @"_CPCibObjectDataOidValuesKey",
-    
+
     _CPCibObjectDataFileOwnerKey                = @"_CPCibObjectDataFileOwnerKey",
     _CPCibObjectDataVisibleWindowsKey           = @"_CPCibObjectDataVisibleWindowsKey";
 
@@ -194,17 +197,17 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
     [aCoder encodeObject:_connections forKey:_CPCibObjectDataConnectionsKey];
 
     //id              _fontManager;
-    
+
     [aCoder encodeObject:_framework forKey:_CPCibObjectDataFrameworkKey];
 
     [aCoder encodeInt:_nextOid forKey:_CPCibObjectDataNextOidKey];
-    
+
     [aCoder encodeObject:_objectsKeys forKey:_CPCibObjectDataObjectsKeysKey];
     [aCoder encodeObject:_objectsValues forKey:_CPCibObjectDataObjectsValuesKey];
-    
+
     [aCoder encodeObject:_oidKeys forKey:_CPCibObjectDataOidKeysKey];
     [aCoder encodeObject:_oidValues forKey:_CPCibObjectDataOidValuesKey];
-    
+
     [aCoder encodeObject:_fileOwner forKey:_CPCibObjectDataFileOwnerKey];
 //    CPCustomObject  _fileOwner;
 
@@ -231,15 +234,15 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
             {
                 _replacementObjects[[object UID]] = instantiatedObject;
 
-                if ([instantiatedObject isKindOfClass:[CPView class]])
+                if ([instantiatedObject isKindOfClass:CPView])
                 {
                     var clipView = [instantiatedObject superview];
 
-                    if ([clipView isKindOfClass:[CPClipView class]])
+                    if ([clipView isKindOfClass:CPClipView])
                     {
                         var scrollView = [clipView superview];
 
-                        if ([scrollView isKindOfClass:[CPScrollView class]])
+                        if ([scrollView isKindOfClass:CPScrollView])
                             [scrollView setDocumentView:instantiatedObject];
                     }
                 }
@@ -256,11 +259,29 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
     _replacementObjects[[_fileOwner UID]] = anOwner;
 
     var index = 0,
-        count = _connections.length;
+        count = _connections.length,
+        runtimeAttributeConnectors = [],
+        connection = nil;
 
     for (; index < count; ++index)
     {
-        var connection = _connections[index];
+        connection = _connections[index];
+
+        if ([connection isKindOfClass:CPCibRuntimeAttributesConnector])
+            // Defer runtime attribute connections until after all other connections are made
+            runtimeAttributeConnectors.push(connection);
+        else
+        {
+            [connection replaceObjects:_replacementObjects];
+            [connection establishConnection];
+        }
+    }
+
+    count = runtimeAttributeConnectors.length;
+
+    for (index = 0; index < count; ++index)
+    {
+        connection = runtimeAttributeConnectors[index];
 
         [connection replaceObjects:_replacementObjects];
         [connection establishConnection];

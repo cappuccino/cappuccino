@@ -21,6 +21,7 @@
  */
 
 @import "CPArray.j"
+@import "CPDate.j"
 @import "CPObject.j"
 @import "CPString.j"
 
@@ -165,7 +166,7 @@ var CPRunLoopLastNativeRunLoop = 0;
 */
 + (void)initialize
 {
-    if (self != [CPRunLoop class])
+    if (self !== [CPRunLoop class])
         return;
 
     CPMainRunLoop = [[CPRunLoop alloc] init];

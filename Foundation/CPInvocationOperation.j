@@ -23,7 +23,6 @@
 @import "CPObject.j"
 @import "CPOperation.j"
 
-
 /*!
     @class CPInvocationOperation
     @brief Represents an operation using an invocation that can be run in an CPOperationQueue
@@ -66,7 +65,7 @@
 }
 
 /*!
-    Returns an NSInvocationOperation object initialized with the specified target and selector.
+    Returns a CPInvocationOperation object initialized with the specified target and selector.
     @param target the target
     @param sel the selector that should be called on the target
     @param arg the arguments

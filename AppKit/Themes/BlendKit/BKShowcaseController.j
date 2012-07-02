@@ -36,14 +36,17 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
 
     CPCollectionView    _themesCollectionView;
     CPCollectionView    _themedObjectsCollectionView;
+
+    CPWindow            theWindow;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     _themeDescriptorClasses = [BKThemeDescriptor allThemeDescriptorClasses];
 
-    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
-        toolbar = [[CPToolbar alloc] initWithIdentifier:@"Toolbar"];
+    theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask];
+
+    var toolbar = [[CPToolbar alloc] initWithIdentifier:@"Toolbar"];
 
     [toolbar setDelegate:self];
     [theWindow setToolbar:toolbar];
@@ -118,7 +121,7 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
 
     [_themesCollectionView setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
 
-    [theWindow setFullBridge:YES];
+    [theWindow setFullPlatformWindow:YES];
     [theWindow makeKeyAndOrderFront:self];
 }
 
@@ -134,7 +137,7 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
     [_themedObjectsCollectionView setMinItemSize:itemSize];
     [_themedObjectsCollectionView setMaxItemSize:itemSize];
 
-    [_themedObjectsCollectionView setContent:[themeDescriptorClass themedObjectTemplates]];
+    [_themedObjectsCollectionView setContent:[themeDescriptorClass themedShowcaseObjectTemplates]];
     [BKShowcaseCell setBackgroundColor:[themeDescriptorClass showcaseBackgroundColor]];
 }
 
@@ -180,7 +183,7 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
         [toolbarItem setMinSize:CGSizeMake(width + 20.0, 24.0)];
         [toolbarItem setMaxSize:CGSizeMake(width + 20.0, 24.0)];
     }
-    
+
     else if (anItemIdentifier === BKBackgroundColorToolbarItemIdentifier)
     {
         var popUpButton = [CPPopUpButton buttonWithTitle:@"Window Background"];
@@ -218,7 +221,7 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
 
         var button = [CPButton buttonWithTitle:title];
 
-        [button setDefaultButton:YES];
+        [theWindow setDefaultButton:button];
 
         [toolbarItem setView:button];
         [toolbarItem setLabel:@"Learn More"];
@@ -246,12 +249,12 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
 
 - (void)changeState:(id)aSender
 {
-    var themedObjectTemplates = [[self selectedThemeDescriptor] themedObjectTemplates],
-        count = [themedObjectTemplates count];
+    var themedShowcaseObjectTemplates = [[self selectedThemeDescriptor] themedShowcaseObjectTemplates],
+        count = [themedShowcaseObjectTemplates count];
 
     while (count--)
     {
-        var themedObject = [themedObjectTemplates[count] valueForKey:@"themedObject"];
+        var themedObject = [themedShowcaseObjectTemplates[count] valueForKey:@"themedObject"];
 
         if ([themedObject respondsToSelector:@selector(setEnabled:)])
             [themedObject setEnabled:[aSender title] === @"Enabled" ? YES : NO];
@@ -320,8 +323,8 @@ var SelectionColor = nil;
 
         [self addSubview:_label];
     }
-    
-    [_label setStringValue:[aThemeDescriptor themeName] + " (" + [[aThemeDescriptor themedObjectTemplates] count] + ")"];
+
+    [_label setStringValue:[aThemeDescriptor themeName] + " (" + [[aThemeDescriptor themedShowcaseObjectTemplates] count] + ")"];
 }
 
 - (void)setSelected:(BOOL)isSelected
@@ -383,7 +386,7 @@ var BKShowcaseCellBackgroundColorDidChangeNotification  = @"BKShowcaseCellBackgr
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
-    
+
     if (self)
         [[CPNotificationCenter defaultCenter]
             addObserver:self
@@ -419,7 +422,7 @@ var BKShowcaseCellBackgroundColorDidChangeNotification  = @"BKShowcaseCellBackgr
     [_label setStringValue:[anObject valueForKey:@"label"]];
     [_label sizeToFit];
 
-    [_label setFrame:CGRectMake(0.0, CGRectGetHeight([self bounds]) - CGRectGetHeight([_label frame]), 
+    [_label setFrame:CGRectMake(0.0, CGRectGetHeight([self bounds]) - CGRectGetHeight([_label frame]),
         CGRectGetWidth([self bounds]), CGRectGetHeight([_label frame]))];
 
     if (!_backgroundView)

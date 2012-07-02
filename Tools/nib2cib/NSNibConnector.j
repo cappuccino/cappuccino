@@ -23,6 +23,8 @@
 @import <AppKit/CPCibConnector.j>
 @import <AppKit/CPCibControlConnector.j>
 @import <AppKit/CPCibOutletConnector.j>
+@import <AppKit/CPCibRuntimeAttributesConnector.j>
+@import <AppKit/CPCibHelpConnector.j>
 
 NIB_CONNECTION_EQUIVALENCY_TABLE = {};
 
@@ -31,31 +33,32 @@ NIB_CONNECTION_EQUIVALENCY_TABLE = {};
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
         _source = [aCoder decodeObjectForKey:@"NSSource"];
         _destination = [aCoder decodeObjectForKey:@"NSDestination"];
         _label = [aCoder decodeObjectForKey:@"NSLabel"];
-        
+
         var sourceUID = [_source UID],
             destinationUID = [_destination UID];
 
         if (sourceUID in NIB_CONNECTION_EQUIVALENCY_TABLE)
         {
-            CPLog.trace("Swapped object: "+_source+" for object: "+NIB_CONNECTION_EQUIVALENCY_TABLE[sourceUID]);
+            CPLog.debug("NSNibConnector: swapped object: " + _source + " for object: " + NIB_CONNECTION_EQUIVALENCY_TABLE[sourceUID]);
             _source = NIB_CONNECTION_EQUIVALENCY_TABLE[sourceUID];
         }
 
         if (destinationUID in NIB_CONNECTION_EQUIVALENCY_TABLE)
         {
-            CPLog.trace("Swapped object: "+_destination+" for object: "+NIB_CONNECTION_EQUIVALENCY_TABLE[destinationUID]);
+            CPLog.debug("NSNibConnector: swapped object: " + _destination + " for object: " + NIB_CONNECTION_EQUIVALENCY_TABLE[destinationUID]);
             _destination = NIB_CONNECTION_EQUIVALENCY_TABLE[destinationUID];
         }
 
-        CPLog.debug(@"Connection: " + [_source description] + " " + [_destination description] + " " + _label);
+        if (_source && _destination)
+            CPLog.debug(@"NSNibConnector: connection: " + [_source description] + " " + [_destination description] + " " + _label);
     }
-    
+
     return self;
 }
 
@@ -105,6 +108,141 @@ NIB_CONNECTION_EQUIVALENCY_TABLE = {};
 - (Class)classForKeyedArchiver
 {
     return [CPCibOutletConnector class];
+}
+
+@end
+
+var NSTransformers = [CPSet setWithObjects:
+                        @"NSNegateBoolean",
+                        @"NSIsNil",
+                        @"NSIsNotNil",
+                        @"NSUnarchiveFromData",
+                        @"NSKeyedUnarchiveFromData"];
+
+@implementation CPCibBindingConnector (NSCoding)
+
+- (id)NS_initWithCoder:(CPCoder)aCoder
+{
+    self = [super NS_initWithCoder:aCoder];
+
+    if (self)
+    {
+        _binding = [aCoder decodeObjectForKey:@"NSBinding"];
+        _keyPath = [aCoder decodeObjectForKey:@"NSKeyPath"];
+
+        _options = [CPDictionary dictionary];
+
+        var NSOptions = [aCoder decodeObjectForKey:@"NSOptions"],
+            keyEnumerator = [NSOptions keyEnumerator],
+            key;
+
+        while ((key = [keyEnumerator nextObject]) !== nil)
+        {
+            var CPKey = @"CP" + key.substring(2),
+                NSValue = [NSOptions objectForKey:key];
+
+            if (CPKey === CPValueTransformerNameBindingOption && [NSTransformers containsObject:NSValue])
+                NSValue = @"CP" + NSValue.substring(2);
+
+            [_options setObject:NSValue forKey:CPKey];
+        }
+
+        CPLog.debug(@"NSNibConnector: binding connector: " + [_binding description] + " to: " + _destination + " " + [_keyPath description] + " " + [_options description]);
+    }
+
+    return self;
+}
+
+@end
+
+@implementation NSNibBindingConnector : CPCibBindingConnector
+{
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    return [self NS_initWithCoder:aCoder];
+}
+
+- (Class)classForKeyedArchiver
+{
+    return [CPCibBindingConnector class];
+}
+
+@end
+
+@implementation CPCibRuntimeAttributesConnector (NSCoding)
+
+- (id)NS_initWithCoder:(CPCoder)aCoder
+{
+    self = [super NS_initWithCoder:aCoder];
+
+    if (self)
+    {
+        _source = [aCoder decodeObjectForKey:@"NSObject"];
+        _keyPaths = [aCoder decodeObjectForKey:@"NSKeyPaths"];
+        _values = [aCoder decodeObjectForKey:@"NSValues"];
+
+        var count = [_keyPaths count];
+
+        CPLog.debug(@"NSNibConnector: runtime attributes connector: " + [_source description]);
+
+        while (count--)
+        {
+            var value = _values[count],
+                type = typeof(value) === "boolean" ? "BOOL" : [value className];
+
+            CPLog.debug(@"   %s (%s): %s", _keyPaths[count], type, value);
+        }
+    }
+
+    return self;
+}
+
+@end
+
+@implementation NSIBUserDefinedRuntimeAttributesConnector : CPCibRuntimeAttributesConnector
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    return [self NS_initWithCoder:aCoder];
+}
+
+- (Class)classForKeyedArchiver
+{
+    return [CPCibRuntimeAttributesConnector class];
+}
+
+@end
+
+@implementation CPCibHelpConnector (NSCoding)
+
+- (id)NS_initWithCoder:(CPCoder)aCoder
+{
+    self = [super NS_initWithCoder:aCoder];
+
+    if (self)
+    {
+        _destination = [aCoder decodeObjectForKey:@"NSDestination"];
+        _file = [aCoder decodeObjectForKey:@"NSFile"];
+        _marker = [aCoder decodeObjectForKey:@"NSMarker"];
+    }
+
+    return self;
+}
+
+@end
+
+@implementation NSIBHelpConnector : CPCibHelpConnector
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    return [self NS_initWithCoder:aCoder];
+}
+
+- (Class)classForKeyedArchiver
+{
+    return [CPCibHelpConnector class];
 }
 
 @end

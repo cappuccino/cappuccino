@@ -1,0 +1,51 @@
+NAME
+    fontinfo -- retrieve information about a font
+
+SYNOPSIS
+    fontinfo [-n] font [size [string]]
+
+DESCRIPTION
+    fontinfo is a tiny utility that returns information about a font.
+    The font name must be a full PostScript name, not a display name. So you would use something
+    like "LucidaGrande-Bold", not "Lucida Grande Bold". The size can be any floating point number
+    greater than zero. If no size is given, it defaults to 12.
+
+    If the -n option is passed, the output will not be terminated with a linefeed.
+
+    If the string argument is passed, its width in the given font is measured and returned.
+
+EXIT STATUS
+    fontinfo exits with a return status of zero if there are no errors.
+    fontinfo exits with a return status of 1 if any arguments are invalid, or a status of 2 if the font
+    cannot be found.
+
+OUTPUT
+    fontinfo outputs a stringified JSON object with the following structure:
+
+    {
+        familyName:<string>,
+        bold:<boolean>,
+        italic:<boolean>,
+        ascender:<float>,
+        descender:<float>,
+        line-height:<float>
+        width:<float>
+    }
+
+    If -n is not passed, the JSON is terminated with a linefeed. The fields of the object are as follows:
+
+    familyName: The display name of the font's family
+    bold:       Whether the font's stylistic traits are considered bold
+    italic:     Whether the font's stylistic traits are considered italic
+    ascender:   The offset from the baseline in points (not pixels!) of the longest ascender of the given font at
+                the given size.
+    descender:  The negative offset from the baseline in points (not pixels!)
+                of the longest descender of the given font at the given size.
+    lineHeight: The height in points (not pixels!) of the largest glyph in the given font at the given size.
+                Note that glyphs include diacritical marks that may appear above and below the largest ascender
+                and descender, so the line height will almost always be greater than ascender + descender.
+    width:      If a string is passed, the width in pixels of the string in the given font, otherwise zero
+
+AUTHORS
+    Aparajita Fishman, Victory-Heart Productions
+    http://www.aparajita.com

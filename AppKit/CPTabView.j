@@ -2,8 +2,8 @@
  * CPTabView.j
  * AppKit
  *
- * Created by Francisco Tolmasky.
- * Copyright 2008, 280 North, Inc.
+ * Created by Derek Hammer.
+ * Copyright 2010, Derek Hammer.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,206 +20,79 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPImageView.j"
+@import "CPBox.j"
+@import "CPSegmentedControl.j"
 @import "CPTabViewItem.j"
 @import "CPView.j"
 
-#include "CoreGraphics/CGGeometry.h"
-
-
-/*
-    Places tabs on top with a bezeled border.
-    @global
-    @group CPTabViewType
-*/
 CPTopTabsBezelBorder     = 0;
-//CPLeftTabsBezelBorder    = 1;
-//CPBottomTabsBezelBorder  = 2;
-//CPRightTabsBezelBorder   = 3;
-/*
-    Displays no tabs and has a bezeled border.
-    @global
-    @group CPTabViewType
-*/
-CPNoTabsBezelBorder      = 4;
-/*
-    Has no tabs and displays a line border.
-    @global
-    @group CPTabViewType
-*/
-CPNoTabsLineBorder       = 5;
-/*
-    Displays no tabs and no border.
-    @global
-    @group CPTabViewType
-*/
-CPNoTabsNoBorder         = 6;
+//CPLeftTabsBezelBorder  = 1;
+CPBottomTabsBezelBorder  = 2;
+//CPRightTabsBezelBorder = 3;
+CPNoTabsBezelBorder      = 4; //Displays no tabs and has a bezeled border.
+CPNoTabsLineBorder       = 5; //Has no tabs and displays a line border.
+CPNoTabsNoBorder         = 6; //Displays no tabs and no border.
 
-var CPTabViewBezelBorderLeftImage       = nil,
-    CPTabViewBackgroundCenterImage      = nil,
-    CPTabViewBezelBorderRightImage      = nil,
-    CPTabViewBezelBorderColor           = nil,
-    CPTabViewBezelBorderBackgroundColor = nil;
-
-var LEFT_INSET  = 7.0,
-    RIGHT_INSET = 7.0;
-    
 var CPTabViewDidSelectTabViewItemSelector           = 1,
     CPTabViewShouldSelectTabViewItemSelector        = 2,
     CPTabViewWillSelectTabViewItemSelector          = 4,
     CPTabViewDidChangeNumberOfTabViewItemsSelector  = 8;
 
-/*! 
+/*!
     @ingroup appkit
     @class CPTabView
 
-    This class represents a view that has multiple subviews (CPTabViewItem) presented as individual tabs.
-    Only one CPTabViewItem is shown at a time, and other CPTabViewItems can be made visible
-    (one at a time) by clicking on the CPTabViewItem's tab at the top of the tab view.
-    
-    THe currently selected CPTabViewItem is the view that is displayed.
+    A CPTabView object presents a tabbed interface where each page is one a
+    complete view hiearchy of its own. The user can navigate between various
+    pages by clicking on the tab headers.
 */
 @implementation CPTabView : CPView
 {
-    CPView          _labelsView;
-    CPView          _backgroundView;
-    CPView          _separatorView;
-    
-    CPView          _auxiliaryView;
-    CPView          _contentView;
-    
-    CPArray         _tabViewItems;
-    CPTabViewItem   _selectedTabViewItem;
+    CPArray             _items;
 
-    CPTabViewType   _tabViewType;
-    
-    id              _delegate;
-    unsigned        _delegateSelectors;
-}
+    CPSegmentedControl  _tabs;
+    CPBox               _box;
 
-/*
-    @ignore
-*/
-+ (void)initialize
-{
-    if (self != CPTabView)
-        return;
-    
-    var bundle = [CPBundle bundleForClass:self],
-        
-        emptyImage = [[CPImage alloc] initByReferencingFile:@"" size:CGSizeMake(7.0, 0.0)],
-        backgroundImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTabView/CPTabViewBezelBackgroundCenter.png"] size:CGSizeMake(1.0, 1.0)],
-        
-        bezelBorderLeftImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTabView/CPTabViewBezelBorderLeft.png"] size:CGSizeMake(7.0, 1.0)],
-        bezerBorderImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTabView/CPTabViewBezelBorder.png"] size:CGSizeMake(1.0, 1.0)],
-        bezelBorderRightImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTabView/CPTabViewBezelBorderRight.png"] size:CGSizeMake(7.0, 1.0)];
-    
-    CPTabViewBezelBorderBackgroundColor = [CPColor colorWithPatternImage:[[CPNinePartImage alloc] initWithImageSlices:
-        [
-            emptyImage, 
-            emptyImage, 
-            emptyImage,
+    CPNumber            _selectedIndex;
 
-            bezelBorderLeftImage,
-            backgroundImage,
-            bezelBorderRightImage,
+    CPTabViewType       _type;
+    CPFont              _font;
 
-            bezelBorderLeftImage,
-            bezerBorderImage,
-            bezelBorderRightImage
-        ]]];
-    
-    CPTabViewBezelBorderColor = [CPColor colorWithPatternImage:bezerBorderImage];
-}
-
-/*
-    @ignore
-*/
-+ (CPColor)bezelBorderColor
-{
-    return CPTabViewBezelBorderColor;
+    id                  _delegate;
+    unsigned            _delegateSelectors;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
 {
-    self = [super initWithFrame:aFrame];
-    
-    if (self)
+    if (self = [super initWithFrame:aFrame])
     {
-        _tabViewType = CPTopTabsBezelBorder;
-        _tabViewItems = [];
+        _items = [CPArray array];
+
+        [self _init];
+        [self setTabViewType:CPTopTabsBezelBorder];
     }
-    
+
     return self;
 }
 
-- (void)viewDidMoveToWindow
+- (void)_init
 {
-    if (_tabViewType != CPTopTabsBezelBorder || _labelsView)
-        return;
-        
-    [self _createBezelBorder];
-    [self layoutSubviews];
-}
+    _selectedIndex = CPNotFound;
 
-/* @ignore */
-- (void)_createBezelBorder
-{
-    var bounds = [self bounds];
-    
-    _labelsView = [[_CPTabLabelsView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), 0.0)];
+    _tabs = [[CPSegmentedControl alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+    [_tabs setHitTests:NO];
 
-    [_labelsView setTabView:self];
-    [_labelsView setAutoresizingMask:CPViewWidthSizable];
+    var height = [_tabs valueForThemeAttribute:@"default-height"];
+    [_tabs setFrameSize:CGSizeMake(0, height)];
 
-    [self addSubview:_labelsView];
+    _box = [[CPBox alloc] initWithFrame:[self  bounds]];
+    [self setBackgroundColor:[CPColor colorWithCalibratedWhite:0.95 alpha:1.0]];
 
-    _backgroundView = [[CPView alloc] initWithFrame:CGRectMakeZero()];        
-    
-    [_backgroundView setBackgroundColor:CPTabViewBezelBorderBackgroundColor];
+    [_box setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+    [_tabs setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin];
 
-    [_backgroundView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-    
-    [self addSubview:_backgroundView];
-    
-    _separatorView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
-
-    [_separatorView setBackgroundColor:[[self class] bezelBorderColor]];
-    [_separatorView setAutoresizingMask:CPViewWidthSizable | CPViewMaxYMargin];
-    
-    [self addSubview:_separatorView];
-}
-
-/*
-    Lays out the subviews
-    @ignore
-*/
-- (void)layoutSubviews
-{
-    if (_tabViewType == CPTopTabsBezelBorder)
-    {
-        var backgroundRect = [self bounds],
-            labelsViewHeight = [_CPTabLabelsView height];
-        
-        backgroundRect.origin.y += labelsViewHeight;
-        backgroundRect.size.height -= labelsViewHeight;
-        
-        [_backgroundView setFrame:backgroundRect];
-        
-        var auxiliaryViewHeight = 5.0;
-        
-        if (_auxiliaryView)
-        {
-            auxiliaryViewHeight = CGRectGetHeight([_auxiliaryView frame]);
-            
-            [_auxiliaryView setFrame:CGRectMake(LEFT_INSET, labelsViewHeight, CGRectGetWidth(backgroundRect) - LEFT_INSET - RIGHT_INSET, auxiliaryViewHeight)];
-        }
-        
-        [_separatorView setFrame:CGRectMake(LEFT_INSET, labelsViewHeight + auxiliaryViewHeight, CGRectGetWidth(backgroundRect) - LEFT_INSET - RIGHT_INSET, 1.0)];
-    }
-
-    // CPNoTabsNoBorder
-    [_contentView setFrame:[self contentRect]];
+    [self addSubview:_box];
+    [self addSubview:_tabs];
 }
 
 // Adding and Removing Tabs
@@ -229,28 +102,22 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 */
 - (void)addTabViewItem:(CPTabViewItem)aTabViewItem
 {
-    [self insertTabViewItem:aTabViewItem atIndex:[_tabViewItems count]];
+    [self insertTabViewItem:aTabViewItem atIndex:[_items count]];
 }
 
 /*!
-    Inserts a CPTabViewItem into the tab view
-    at the specified index.
+    Inserts a CPTabViewItem into the tab view at the specified index.
     @param aTabViewItem the item to insert
     @param anIndex the index for the item
 */
 - (void)insertTabViewItem:(CPTabViewItem)aTabViewItem atIndex:(unsigned)anIndex
 {
-    if (!_labelsView && _tabViewType == CPTopTabsBezelBorder)
-        [self _createBezelBorder];
-    
-    [_tabViewItems insertObject:aTabViewItem atIndex:anIndex];
-    
-    [_labelsView tabView:self didAddTabViewItem:aTabViewItem];
-    
+    [_items insertObject:aTabViewItem atIndex:anIndex];
+
+    [self _updateItems];
+    [self _repositionTabs];
+
     [aTabViewItem _setTabView:self];
-    
-    if ([_tabViewItems count] == 1)
-        [self selectFirstTabViewItem:self];
 
     if (_delegateSelectors & CPTabViewDidChangeNumberOfTabViewItemsSelector)
         [_delegate tabViewDidChangeNumberOfTabViewItems:self];
@@ -262,14 +129,21 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 */
 - (void)removeTabViewItem:(CPTabViewItem)aTabViewItem
 {
-    var index = [self indexOfTabViewItem:aTabViewItem];
+    var count = [_items count];
+    for (var i = 0; i < count; i++)
+    {
+        if ([_items objectAtIndex:i] === aTabViewItem)
+        {
+            [_items removeObjectAtIndex:i];
+            break;
+        }
+    }
 
-    [_tabViewItems removeObjectIdenticalTo:aTabViewItem];
-    
-    [_labelsView tabView:self didRemoveTabViewItemAtIndex:index];
-    
+    [self _updateItems];
+    [self _repositionTabs];
+
     [aTabViewItem _setTabView:nil];
-    
+
     if (_delegateSelectors & CPTabViewDidChangeNumberOfTabViewItemsSelector)
         [_delegate tabViewDidChangeNumberOfTabViewItems:self];
 }
@@ -278,50 +152,52 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 /*!
     Returns the index of the specified item
     @param aTabViewItem the item to find the index for
+    @return the index of aTabViewItem or CPNotFound
 */
 - (int)indexOfTabViewItem:(CPTabViewItem)aTabViewItem
 {
-    return [_tabViewItems indexOfObjectIdenticalTo:aTabViewItem];
+    return [_items indexOfObjectIdenticalTo:aTabViewItem];
 }
 
 /*!
     Returns the index of the CPTabViewItem with the specified identifier.
     @param anIdentifier the identifier of the item
+    @return the index of the tab view item identified by anIdentifier, or CPNotFound
 */
 - (int)indexOfTabViewItemWithIdentifier:(CPString)anIdentifier
 {
-    var index = 0,
-        count = [_tabViewItems count];
-        
-    for (; index < count; ++index)
-        if ([[_tabViewItems[index] identifier] isEqual:anIdentifier])
+    for (var index = [_items count]; index >= 0; index--)
+        if ([[_items[index] identifier] isEqual:anIdentifier])
             return index;
 
-    return index;
+    return CPNotFound;
 }
 
 /*!
     Returns the number of items in the tab view.
+    @return the number of tab view items in the receiver
 */
 - (unsigned)numberOfTabViewItems
 {
-    return [_tabViewItems count];
+    return [_items count];
 }
 
 /*!
     Returns the CPTabViewItem at the specified index.
+    @return a tab view item, or nil
 */
 - (CPTabViewItem)tabViewItemAtIndex:(unsigned)anIndex
 {
-    return _tabViewItems[anIndex];
+    return [_items objectAtIndex:anIndex];
 }
 
 /*!
     Returns the array of items that backs this tab view.
+    @return a copy of the array of items in the receiver
 */
 - (CPArray)tabViewItems
 {
-    return _tabViewItems;
+    return [_items copy]; // Copy?
 }
 
 // Selecting a Tab
@@ -331,10 +207,10 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 */
 - (void)selectFirstTabViewItem:(id)aSender
 {
-    var count = [_tabViewItems count];
-    
-    if (count)
-        [self selectTabViewItemAtIndex:0];
+    if ([_items count] === 0)
+        return; // throw?
+
+    [self selectTabViewItemAtIndex:0];
 }
 
 /*!
@@ -343,10 +219,10 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 */
 - (void)selectLastTabViewItem:(id)aSender
 {
-    var count = [_tabViewItems count];
-    
-    if (count)
-        [self selectTabViewItemAtIndex:count - 1];
+    if ([_items count] === 0)
+        return; // throw?
+
+    [self selectTabViewItemAtIndex:[_items count] - 1];
 }
 
 /*!
@@ -355,13 +231,16 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 */
 - (void)selectNextTabViewItem:(id)aSender
 {
-    if (!_selectedTabViewItem)
+    if (_selectedIndex === CPNotFound)
         return;
-    
-    var index = [self indexOfTabViewItem:_selectedTabViewItem],
-        count = [_tabViewItems count];
-    
-    [self selectTabViewItemAtIndex:index + 1 % count];
+
+    var nextIndex = _selectedIndex + 1;
+
+    if (nextIndex === [_items count])
+        // does nothing. According to spec at (http://developer.apple.com/mac/library/DOCUMENTATION/Cocoa/Reference/ApplicationKit/Classes/NSTabView_Class/Reference/Reference.html#//apple_ref/occ/instm/NSTabView/selectNextTabViewItem:)
+        return;
+
+    [self selectTabViewItemAtIndex:nextIndex];
 }
 
 /*!
@@ -370,13 +249,15 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 */
 - (void)selectPreviousTabViewItem:(id)aSender
 {
-    if (!_selectedTabViewItem)
+    if (_selectedIndex === CPNotFound)
         return;
-    
-    var index = [self indexOfTabViewItem:_selectedTabViewItem],
-        count = [_tabViewItems count];
-    
-    [self selectTabViewItemAtIndex:index == 0 ? count : index - 1];
+
+    var previousIndex = _selectedIndex - 1;
+
+    if (previousIndex < 0)
+        return; // does nothing. See above.
+
+    [self selectTabViewItemAtIndex:previousIndex];
 }
 
 /*!
@@ -385,119 +266,127 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 */
 - (void)selectTabViewItem:(CPTabViewItem)aTabViewItem
 {
-    if ((_delegateSelectors & CPTabViewShouldSelectTabViewItemSelector) && ![_delegate tabView:self shouldSelectTabViewItem:aTabViewItem])
-        return;
-        
-    if (_delegateSelectors & CPTabViewWillSelectTabViewItemSelector)
-        [_delegate tabView:self willSelectTabViewItem:aTabViewItem];
-
-    if (_selectedTabViewItem)
-    {
-        _selectedTabViewItem._tabState = CPBackgroundTab;
-        [_labelsView tabView:self didChangeStateOfTabViewItem:_selectedTabViewItem];
-        
-        [_contentView removeFromSuperview];
-        [_auxiliaryView removeFromSuperview];
-    }
-    _selectedTabViewItem = aTabViewItem;
-    
-    _selectedTabViewItem._tabState = CPSelectedTab;
-        
-    _contentView = [_selectedTabViewItem view];
-    [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-    
-    _auxiliaryView = [_selectedTabViewItem auxiliaryView];
-    [_auxiliaryView setAutoresizingMask:CPViewWidthSizable];
-    
-    [self addSubview:_contentView];
-
-    if (_auxiliaryView)
-        [self addSubview:_auxiliaryView];
-    
-    [_labelsView tabView:self didChangeStateOfTabViewItem:_selectedTabViewItem];
-    
-    [self layoutSubviews];
-    
-    if (_delegateSelectors & CPTabViewDidSelectTabViewItemSelector)
-        [_delegate tabView:self didSelectTabViewItem:aTabViewItem];
+    [self selectTabViewItemAtIndex:[self indexOfTabViewItem:aTabViewItem]];
 }
 
 /*!
     Selects the item at the specified index.
     @param anIndex the index of the item to display.
 */
-- (void)selectTabViewItemAtIndex:(unsigned)anIndex
+- (BOOL)selectTabViewItemAtIndex:(unsigned)anIndex
 {
-    [self selectTabViewItem:_tabViewItems[anIndex]];
+    if (anIndex === _selectedIndex)
+        return;
+
+    var aTabViewItem = [self tabViewItemAtIndex:anIndex];
+
+    if ((_delegateSelectors & CPTabViewShouldSelectTabViewItemSelector) && ![_delegate tabView:self shouldSelectTabViewItem:aTabViewItem])
+        return NO;
+
+    if (_delegateSelectors & CPTabViewWillSelectTabViewItemSelector)
+        [_delegate tabView:self willSelectTabViewItem:aTabViewItem];
+
+    [_tabs selectSegmentWithTag:anIndex];
+    [self _setSelectedIndex:anIndex];
+
+    if (_delegateSelectors & CPTabViewDidSelectTabViewItemSelector)
+        [_delegate tabView:self didSelectTabViewItem:aTabViewItem];
+
+    return YES;
 }
 
 /*!
     Returns the current item being displayed.
+    @return the tab view item currenly being displayed by the receiver
 */
 - (CPTabViewItem)selectedTabViewItem
 {
-    return _selectedTabViewItem;
+    if (_selectedIndex != CPNotFound)
+        return [_items objectAtIndex:_selectedIndex];
+
+    return nil;
 }
 
-// 
+// Modifying the font
+/*!
+    Returns the font for tab label text.
+    @return the font for tab label text
+*/
+- (CPFont)font
+{
+    return _font;
+}
+
+/*!
+    Sets the font for tab label text to font.
+    @param font the font the receiver should use for tab label text
+*/
+- (void)setFont:(CPFont)font
+{
+    if ([_font isEqual:font])
+        return;
+
+    _font = font;
+    [_tabs setFont:_font];
+}
+
+//
 /*!
     Sets the tab view type.
     @param aTabViewType the view type
 */
 - (void)setTabViewType:(CPTabViewType)aTabViewType
 {
-    if (_tabViewType == aTabViewType)
+    if (_type === aTabViewType)
         return;
-    
-    _tabViewType = aTabViewType;
-    
-    if (_tabViewType == CPNoTabsBezelBorder || _tabViewType == CPNoTabsLineBorder || _tabViewType == CPNoTabsNoBorder)
-        [_labelsView removeFromSuperview];
-    else if (![_labelsView superview])
-        [self addSubview:_labelsView];
-        
-    if (_tabViewType == CPNoTabsLineBorder || _tabViewType == CPNoTabsNoBorder)
-        [_backgroundView removeFromSuperview];
-    else if (![_backgroundView superview])
-        [self addSubview:_backgroundView];
-    
-    [self layoutSubviews];
+
+    _type = aTabViewType;
+
+    if (_type !== CPTopTabsBezelBorder && _type !== CPBottomTabsBezelBorder)
+    {
+        [_box setFrame:[self bounds]];
+        [_tabs removeFromSuperview];
+    }
+    else
+    {
+        var aFrame = [self frame],
+            segmentedHeight = CGRectGetHeight([_tabs frame]),
+            origin = _type === CPTopTabsBezelBorder ? segmentedHeight / 2 : 0;
+
+        [_box setFrame:CGRectMake(0, origin, CGRectGetWidth(aFrame),
+                                  CGRectGetHeight(aFrame) - segmentedHeight / 2)];
+
+        [self addSubview:_tabs];
+    }
+
+    switch (_type)
+    {
+        case CPTopTabsBezelBorder:
+        case CPBottomTabsBezelBorder:
+        case CPNoTabsBezelBorder:
+            [_box setBorderType:CPBezelBorder];
+            break;
+        case CPNoTabsLineBorder:
+            [_box setBorderType:CPLineBorder];
+            break;
+        case CPNoTabsNoBorder:
+            [_box setBorderType:CPNoBorder];
+            break;
+    }
 }
 
 /*!
     Returns the tab view type.
+    @return the tab view type of the receiver
 */
 - (CPTabViewType)tabViewType
 {
-    return _tabViewType;
-}
-
-// Determining the Size
-/*!
-    Returns the content rectangle.
-*/
-- (CGRect)contentRect
-{
-    var contentRect = CGRectMakeCopy([self bounds]);
-    
-    if (_tabViewType == CPTopTabsBezelBorder)
-    {
-        var labelsViewHeight = [_CPTabLabelsView height],
-            auxiliaryViewHeight = _auxiliaryView ? CGRectGetHeight([_auxiliaryView frame]) : 5.0,
-            separatorViewHeight = 1.0;
-
-        contentRect.origin.y += labelsViewHeight + auxiliaryViewHeight + separatorViewHeight;
-        contentRect.size.height -= labelsViewHeight + auxiliaryViewHeight + separatorViewHeight * 2.0; // 2 for the bottom border as well.
-        
-        contentRect.origin.x += LEFT_INSET;
-        contentRect.size.width -= LEFT_INSET + RIGHT_INSET;
-    }
-
-    return contentRect;
+    return _type;
 }
 
 /*!
     Returns the receiver's delegate.
+    @return the receiver's delegate
 */
 - (id)delegate
 {
@@ -512,9 +401,9 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 {
     if (_delegate == aDelegate)
         return;
-    
+
     _delegate = aDelegate;
-    
+
     _delegateSelectors = 0;
 
     if ([_delegate respondsToSelector:@selector(tabView:shouldSelectTabViewItem:)])
@@ -527,18 +416,64 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
         _delegateSelectors |= CPTabViewDidSelectTabViewItemSelector;
 
     if ([_delegate respondsToSelector:@selector(tabViewDidChangeNumberOfTabViewItems:)])
-        _delegateSelectors |= CPTabViewDidChangeNumberOfTabViewItemsSelector;    
+        _delegateSelectors |= CPTabViewDidChangeNumberOfTabViewItemsSelector;
 }
 
-//
+- (void)setBackgroundColor:(CPColor)aColor
+{
+    [_box setBackgroundColor:aColor];
+}
+
+- (CPColor)backgroundColor
+{
+    return [_box backgroundColor];
+}
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-    var location = [_labelsView convertPoint:[anEvent locationInWindow] fromView:nil],
-        tabViewItem = [_labelsView representedTabViewItemAtPoint:location];
-        
-    if (tabViewItem)
-        [self selectTabViewItem:tabViewItem];
+    var segmentIndex = [_tabs testSegment:[_tabs convertPoint:[anEvent locationInWindow] fromView:nil]];
+
+    if (segmentIndex != CPNotFound && [self selectTabViewItemAtIndex:segmentIndex])
+        [_tabs trackSegment:anEvent];
+}
+
+- (void)_repositionTabs
+{
+    var horizontalCenterOfSelf = CGRectGetWidth([self bounds]) / 2,
+        verticalCenterOfTabs = CGRectGetHeight([_tabs bounds]) / 2;
+
+    if (_type === CPBottomTabsBezelBorder)
+        [_tabs setCenter:CGPointMake(horizontalCenterOfSelf, CGRectGetHeight([self bounds]) - verticalCenterOfTabs)];
+    else
+        [_tabs setCenter:CGPointMake(horizontalCenterOfSelf, verticalCenterOfTabs)];
+}
+
+- (void)_setSelectedIndex:(CPNumber)index
+{
+    _selectedIndex = index;
+    [self _setContentViewForItem:[_items objectAtIndex:_selectedIndex]];
+}
+
+- (void)_setContentViewForItem:(CPTabViewItem)anItem
+{
+    [_box setContentView:[anItem view]];
+}
+
+- (void)_updateItems
+{
+    var count = [_items count];
+    [_tabs setSegmentCount:count];
+
+    for (var i = 0; i < count; i++)
+    {
+        [_tabs setLabel:[[_items objectAtIndex:i] label] forSegment:i];
+        [_tabs setTag:i forSegment:i];
+    }
+
+    if (_selectedIndex === CPNotFound)
+    {
+        [self selectFirstTabViewItem:self];
+    }
 }
 
 @end
@@ -546,6 +481,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 var CPTabViewItemsKey               = "CPTabViewItemsKey",
     CPTabViewSelectedItemKey        = "CPTabViewSelectedItemKey",
     CPTabViewTypeKey                = "CPTabViewTypeKey",
+    CPTabViewFontKey                = "CPTabViewFontKey",
     CPTabViewDelegateKey            = "CPTabViewDelegateKey";
 
 @implementation CPTabView (CPCoding)
@@ -554,21 +490,24 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 {
     if (self = [super initWithCoder:aCoder])
     {
-        _tabViewType    = [aCoder decodeIntForKey:CPTabViewTypeKey];
-        _tabViewItems   = [];
-        
-        // FIXME: this is somewhat hacky
-        [self _createBezelBorder];
-        
-        var items = [aCoder decodeObjectForKey:CPTabViewItemsKey];
-        for (var i = 0; items && i < items.length; i++)
-            [self insertTabViewItem:items[i] atIndex:i];
-    
+        [self _init];
+
+        _font = [aCoder decodeObjectForKey:CPTabViewFontKey];
+        [_tabs setFont:_font];
+
+        _items = [aCoder decodeObjectForKey:CPTabViewItemsKey];
+        [_items makeObjectsPerformSelector:@selector(_setTabView:) withObject:self];
+
+        [self _updateItems];
+        [self _repositionTabs];
+
+        [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
+
         var selected = [aCoder decodeObjectForKey:CPTabViewSelectedItemKey];
         if (selected)
             [self selectTabViewItem:selected];
-        
-        [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
+
+        [self setTabViewType:[aCoder decodeIntForKey:CPTabViewTypeKey]];
     }
 
     return self;
@@ -576,227 +515,18 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    var actualSubviews = _subviews;
-    _subviews = [];
     [super encodeWithCoder:aCoder];
-    _subviews = actualSubviews;
-    
-    [aCoder encodeObject:_tabViewItems forKey:CPTabViewItemsKey];;
-    [aCoder encodeObject:_selectedTabViewItem forKey:CPTabViewSelectedItemKey];
-    
-    [aCoder encodeInt:_tabViewType forKey:CPTabViewTypeKey];
-    
+
+    [aCoder encodeObject:_items forKey:CPTabViewItemsKey];
+
+    var selected = [self selectedTabViewItem];
+    if (selected)
+        [aCoder encodeObject:selected forKey:CPTabViewSelectedItemKey];
+
+    [aCoder encodeInt:_type forKey:CPTabViewTypeKey];
+    [aCoder encodeObject:_font forKey:CPTabViewFontKey];
+
     [aCoder encodeConditionalObject:_delegate forKey:CPTabViewDelegateKey];
-}
-
-@end
-
-
-var _CPTabLabelsViewBackgroundColor = nil,
-    _CPTabLabelsViewInsideMargin    = 10.0,
-    _CPTabLabelsViewOutsideMargin   = 15.0;
-
-/* @ignore */
-@implementation _CPTabLabelsView : CPView
-{
-    CPTabView       _tabView;
-    CPDictionary    _tabLabels;
-}
-
-+ (void)initialize
-{
-    if (self != [_CPTabLabelsView class])
-        return;
-
-    var bundle = [CPBundle bundleForClass:self];
-    
-    _CPTabLabelsViewBackgroundColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
-        [
-            [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTabView/_CPTabLabelsViewLeft.png"] size:CGSizeMake(12.0, 26.0)],
-            [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTabView/_CPTabLabelsViewCenter.png"] size:CGSizeMake(1.0, 26.0)],
-            [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTabView/_CPTabLabelsViewRight.png"] size:CGSizeMake(12.0, 26.0)]
-        ] isVertical:NO]];
-}
-
-+ (float)height
-{
-    return 26.0;
-}
-
-- (id)initWithFrame:(CGRect)aFrame
-{
-    self = [super initWithFrame:aFrame];
-    
-    if (self)
-    {
-        _tabLabels = [];
-        
-        [self setBackgroundColor:_CPTabLabelsViewBackgroundColor];
-
-        [self setFrameSize:CGSizeMake(CGRectGetWidth(aFrame), 26.0)];
-    }
-    
-    return self;
-}
-
-- (void)setTabView:(CPTabView)aTabView
-{
-    _tabView = aTabView;
-}
-
-- (CPTabView)tabView
-{
-    return _tabView;
-}
-
-- (void)tabView:(CPTabView)aTabView didAddTabViewItem:(CPTabViewItem)aTabViewItem
-{
-    var label = [[_CPTabLabel alloc] initWithFrame:CGRectMakeZero()];
-    
-    [label setTabViewItem:aTabViewItem];
-    
-    _tabLabels.push(label);
-    
-    [self addSubview:label];
-        
-    [self layoutSubviews];
-}
-
-- (void)tabView:(CPTabView)aTabView didRemoveTabViewItemAtIndex:(unsigned)index
-{
-    var label = _tabLabels[index];
-    
-    [_tabLabels removeObjectAtIndex:index];
-
-    [label removeFromSuperview];
-    
-    [self layoutSubviews];
-}
-
- -(void)tabView:(CPTabView)aTabView didChangeStateOfTabViewItem:(CPTabViewItem)aTabViewItem
- {
-    [_tabLabels[[aTabView indexOfTabViewItem:aTabViewItem]] setTabState:[aTabViewItem tabState]];
- }
-
-- (CPTabViewItem)representedTabViewItemAtPoint:(CGPoint)aPoint
-{
-    var index = 0,
-        count = _tabLabels.length;
-        
-    for (; index < count; ++index)
-    {
-        var label = _tabLabels[index];
-    
-        if (CGRectContainsPoint([label frame], aPoint))
-            return [label tabViewItem];
-    }
-
-    return nil;
-}
-
-- (void)layoutSubviews
-{
-    var index = 0,
-        count = _tabLabels.length,
-        width = (_CGRectGetWidth([self bounds]) - (count - 1) * _CPTabLabelsViewInsideMargin - 2 * _CPTabLabelsViewOutsideMargin) / count,
-        x = _CPTabLabelsViewOutsideMargin;
-    
-    for (; index < count; ++index)
-    {
-        var label = _tabLabels[index],
-            frame = _CGRectMake(x, 8.0, width, 18.0);
-        
-        [label setFrame:frame];
-        
-        x = _CGRectGetMaxX(frame) + _CPTabLabelsViewInsideMargin;
-    }
-}
-
-- (void)setFrameSize:(CGSize)aSize
-{
-    if (CGSizeEqualToSize([self frame].size, aSize))
-        return;
-    
-    [super setFrameSize:aSize];
-    
-    [self layoutSubviews];
-}
-
-@end
-
-var _CPTabLabelBackgroundColor          = nil,
-    _CPTabLabelSelectedBackgroundColor  = nil;
-
-/* @ignore */
-@implementation _CPTabLabel : CPView
-{
-    CPTabViewItem   _tabViewItem;
-    CPTextField     _labelField;
-}
-
-+ (void)initialize
-{
-    if (self != [_CPTabLabel class])
-        return;
-
-    var bundle = [CPBundle bundleForClass:self];
-    
-    _CPTabLabelBackgroundColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
-        [
-            [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTabView/_CPTabLabelBackgroundLeft.png"] size:CGSizeMake(6.0, 18.0)],
-            [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTabView/_CPTabLabelBackgroundCenter.png"] size:CGSizeMake(1.0, 18.0)],
-            [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTabView/_CPTabLabelBackgroundRight.png"] size:CGSizeMake(6.0, 18.0)]
-        ] isVertical:NO]];
-    
-    _CPTabLabelSelectedBackgroundColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
-        [
-            [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTabView/_CPTabLabelSelectedLeft.png"] size:CGSizeMake(3.0, 18.0)],
-            [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTabView/_CPTabLabelSelectedCenter.png"] size:CGSizeMake(1.0, 18.0)],
-            [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTabView/_CPTabLabelSelectedRight.png"] size:CGSizeMake(3.0, 18.0)]
-        ] isVertical:NO]];
-}
-
-- (id)initWithFrame:(CGRect)aFrame
-{
-    self = [super initWithFrame:aFrame];
-    
-    if (self)
-    {   
-        _labelField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
-        
-        [_labelField setAlignment:CPCenterTextAlignment];
-        [_labelField setFrame:CGRectMake(5.0, 0.0, CGRectGetWidth(aFrame) - 10.0, 20.0)];
-        [_labelField setAutoresizingMask:CPViewWidthSizable];
-        [_labelField setFont:[CPFont boldSystemFontOfSize:11.0]];
-        
-        [self addSubview:_labelField];
-        
-        [self setTabState:CPBackgroundTab];
-    }
-    
-    return self;
-}
-
-- (void)setTabState:(CPTabState)aTabState
-{
-    [self setBackgroundColor:aTabState == CPSelectedTab ? _CPTabLabelSelectedBackgroundColor : _CPTabLabelBackgroundColor];
-}
-
-- (void)setTabViewItem:(CPTabViewItem)aTabViewItem
-{
-    _tabViewItem = aTabViewItem;
-    
-    [self update];
-}
-
-- (CPTabViewItem)tabViewItem
-{
-    return _tabViewItem;
-}
-
-- (void)update
-{
-    [_labelField setStringValue:[_tabViewItem label]];
 }
 
 @end

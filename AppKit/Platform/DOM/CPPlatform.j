@@ -49,7 +49,7 @@ var screenNeedsInitialization   = NO,
         window.onunload = function()
         {
             [CPApp terminate:nil];
-        }
+        };
 }
 
 + (BOOL)isBrowser

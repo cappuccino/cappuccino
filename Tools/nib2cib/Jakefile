@@ -36,6 +36,8 @@ filedir($BUILD_CJS_NIB2CIB, ["nib2cib"], function()
     make_objj_executable($BUILD_CJS_NIB2CIB);
 });
 
+copyManPage("nib2cib", 1);
+
 task ("build", ["nib2cib", $BUILD_CJS_NIB2CIB]);
 
 CLOBBER.include($BUILD_CJS_NIB2CIB);

@@ -20,14 +20,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/CPIndexSet.j>
+
 @import "CPControl.j"
 @import "CPImage.j"
 @import "CPTableView.j"
+@import "CPTextField.j"
 @import "CPScrollView.j"
 
-/*! 
+/*!
     @ingroup appkit
-    @class CPBrowser    
+    @class CPBrowser
 */
 
 @implementation CPBrowser : CPControl
@@ -64,14 +67,14 @@
 
 + (CPImage)branchImage
 {
-    return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPBrowser class]] 
+    return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPBrowser class]]
                                                     pathForResource:"browser-leaf.png"]
                                               size:CGSizeMake(9,9)];
 }
 
 + (CPImage)highlightedBranchImage
 {
-    return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPBrowser class]] 
+    return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPBrowser class]]
                                                     pathForResource:"browser-leaf-highlighted.png"]
                                               size:CGSizeMake(9,9)];
 }
@@ -80,40 +83,45 @@
 {
     if (self = [super initWithFrame:aFrame])
     {
-        _rowHeight = 23.0;
-        _defaultColumnWidth = 140.0;
-        _minColumnWidth = 80.0;
-        _imageWidth = 23.0;
-        _leafWidth = 13.0;
-        _columnWidths = [];
-
-        _pathSeparator = "/";
-        _tableViews = [];
-        _tableDelegates = [];
-        _allowsMultipleSelection = YES;
-        _allowsEmptySelection = YES;
-        _tableViewClass = [_CPBrowserTableView class];
-
-        _prototypeView = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
-        [_prototypeView setVerticalAlignment:CPCenterVerticalTextAlignment];
-        [_prototypeView setValue:[CPColor whiteColor] forThemeAttribute:"text-color" inState:CPThemeStateSelectedDataView];
-        [_prototypeView setLineBreakMode:CPLineBreakByTruncatingTail];
-
-        _horizontalScrollView = [[CPScrollView alloc] initWithFrame:[self bounds]];
-
-        [_horizontalScrollView setHasVerticalScroller:NO];
-        [_horizontalScrollView setAutohidesScrollers:YES];
-        [_horizontalScrollView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
-        
-        _contentView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 0, CGRectGetHeight([self bounds]))];
-        [_contentView setAutoresizingMask:CPViewHeightSizable];
-        
-        [_horizontalScrollView setDocumentView:_contentView];
-
-        [self addSubview:_horizontalScrollView];
+        [self _init];
     }
 
     return self;
+}
+
+- (void)_init
+{
+    _rowHeight = 23.0;
+    _defaultColumnWidth = 140.0;
+    _minColumnWidth = 80.0;
+    _imageWidth = 23.0;
+    _leafWidth = 13.0;
+    _columnWidths = [];
+
+    _pathSeparator = "/";
+    _tableViews = [];
+    _tableDelegates = [];
+    _allowsMultipleSelection = YES;
+    _allowsEmptySelection = YES;
+    _tableViewClass = [_CPBrowserTableView class];
+
+    _prototypeView = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
+    [_prototypeView setVerticalAlignment:CPCenterVerticalTextAlignment];
+    [_prototypeView setValue:[CPColor whiteColor] forThemeAttribute:"text-color" inState:CPThemeStateSelectedDataView];
+    [_prototypeView setLineBreakMode:CPLineBreakByTruncatingTail];
+
+    _horizontalScrollView = [[CPScrollView alloc] initWithFrame:[self bounds]];
+
+    [_horizontalScrollView setHasVerticalScroller:NO];
+    [_horizontalScrollView setAutohidesScrollers:YES];
+    [_horizontalScrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+
+    _contentView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 0, CGRectGetHeight([self bounds]))];
+    [_contentView setAutoresizingMask:CPViewHeightSizable];
+
+    [_horizontalScrollView setDocumentView:_contentView];
+
+    [self addSubview:_horizontalScrollView];
 }
 
 - (void)setPrototypeView:(CPView)aPrototypeView
@@ -129,7 +137,7 @@
 }
 
 - (void)setDelegate:(id)anObject
-{    
+{
     _delegate = anObject;
     _delegateSupportsImages = [_delegate respondsToSelector:@selector(browser:imageValueForItem:)];
 
@@ -167,12 +175,10 @@
     if (columnIndex >= _tableViews.length)
         return;
 
-    var oldValue = _tableViews.length - 1;
+    var oldValue = _tableViews.length - 1,
+        indexPlusOne = columnIndex + 1; // unloads all later columns.
 
-    // unloads all later columns.
-    var indexPlusOne = columnIndex + 1;
-
-    [[_tableViews.slice(indexPlusOne) valueForKey:"enclosingScrollView"] 
+    [[_tableViews.slice(indexPlusOne) valueForKey:"enclosingScrollView"]
       makeObjectsPerformSelector:@selector(removeFromSuperview)];
 
     _tableViews = _tableViews.slice(0, indexPlusOne);
@@ -196,10 +202,10 @@
         selectionIndexes = [lastColumn selectedRowIndexes];
 
     if (lastIndex >= 0 && [selectionIndexes count] > 1)
-        [CPException raise:CPInvalidArgumentException 
+        [CPException raise:CPInvalidArgumentException
                     reason:"Can't add column, column "+lastIndex+" has invalid selection."];
 
-    var index = lastIndex+1,
+    var index = lastIndex + 1,
         item = index === 0 ? _rootItem : [_tableDelegates[lastIndex] childAtIndex:[selectionIndexes firstIndex]];
 
     if (index > 0 && item && [self isLeafItem:item])
@@ -231,7 +237,7 @@
     [table setAction:@selector(_tableViewClicked:)];
     [table setDoubleAction:@selector(_tableViewDoubleClicked:)];
     [table setDraggingDestinationFeedbackStyle:CPTableViewDraggingDestinationFeedbackStyleRegular];
-    
+
     var scrollView = [[_CPBrowserScrollView alloc] initWithFrame:CGRectMakeZero()];
     [scrollView _setBrowser:self];
     [scrollView setDocumentView:table];
@@ -252,7 +258,7 @@
         var column = [[CPTableColumn alloc] initWithIdentifier:@"Image"],
             view = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
 
-        [view setImageScaling:CPScaleProportionally];
+        [view setImageScaling:CPImageScaleProportionallyDown];
 
         [column setDataView:view];
         [column setResizingMask:CPTableColumnNoResizing];
@@ -272,10 +278,10 @@
 
     [view setBranchImage:[[self class] branchImage]];
     [view setHighlightedBranchImage:[[self class] highlightedBranchImage]];
-    
+
     [column setDataView:view];
     [column setResizingMask:CPTableColumnNoResizing];
-    
+
     [aTableView addTableColumn:column];
 }
 
@@ -298,7 +304,7 @@
             tableHeight = CGRectGetHeight([tableView bounds]);
 
         [[tableView tableColumnWithIdentifier:"Image"] setWidth:_imageWidth];
-        [[tableView tableColumnWithIdentifier:"Content"] setWidth:width - (_leafWidth + _delegateSupportsImages ? _imageWidth : 0) - scrollerWidth - scrollerWidth];
+        [[tableView tableColumnWithIdentifier:"Content"] setWidth:[self columnContentWidthForColumnWidth:width]];
         [[tableView tableColumnWithIdentifier:"Leaf"] setWidth:_leafWidth];
 
         [tableView setRowHeight:_rowHeight];
@@ -430,12 +436,14 @@
 
 - (float)columnContentWidthForColumnWidth:(float)aWidth
 {
-    return aWidth - (_leafWidth + _delegateSupportsImages ? _imageWidth : 0) - [CPScroller scrollerWidth];
+    var columnSpacing = [_tableViews[0] intercellSpacing].width;
+    return aWidth - (_leafWidth + columnSpacing + (_delegateSupportsImages ? _imageWidth + columnSpacing : 0)) - columnSpacing - [CPScroller scrollerWidth];
 }
 
 - (float)columnWidthForColumnContentWidth:(float)aWidth
 {
-    return aWidth + (_leafWidth + _delegateSupportsImages ? _imageWidth : 0) + [CPScroller scrollerWidth];
+    var columnSpacing = [_tableViews[0] intercellSpacing].width;
+    return aWidth + (_leafWidth + columnSpacing + (_delegateSupportsImages ? _imageWidth + columnSpacing: 0)) + columnSpacing + [CPScroller scrollerWidth];
 }
 
 - (void)setImageWidth:(float)aWidth
@@ -497,7 +505,7 @@
     [_contentView scrollRectToVisible:[[[self tableViewInColumn:columnIndex] enclosingScrollView] frame]];
 }
 
-– (void)scrollRowToVisible:(unsigned)rowIndex inColumn:(unsigned)columnIndex
+- (void)scrollRowToVisible:(unsigned)rowIndex inColumn:(unsigned)columnIndex
 {
     [self scrollColumnToVisible:columnIndex];
     [[self tableViewInColumn:columnIndex] scrollRowToVisible:rowIndex];
@@ -584,7 +592,7 @@
     if ([_delegate respondsToSelector:@selector(browser:selectionIndexesForProposedSelection:inColumn:)])
         indexSet = [_delegate browser:self selectionIndexesForProposedSelection:indexSet inColumn:column];
 
-    if ([_delegate respondsToSelector:@selector(browser:shouldSelectRowIndexes:inColumn:)] && 
+    if ([_delegate respondsToSelector:@selector(browser:shouldSelectRowIndexes:inColumn:)] &&
        ![_delegate browser:self shouldSelectRowIndexes:indexSet inColumn:column])
         return;
 
@@ -648,6 +656,53 @@
 }
 
 @end
+
+@implementation CPBrowser (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+
+    if (self)
+    {
+        [self _init];
+
+        _allowsEmptySelection = [aCoder decodeBoolForKey:@"CPBrowserAllowsEmptySelectionKey"];
+        _allowsMultipleSelection = [aCoder decodeBoolForKey:@"CPBrowserAllowsMultipleSelectionKey"];
+        _prototypeView = [aCoder decodeObjectForKey:@"CPBrowserPrototypeViewKey"];
+        _rowHeight = [aCoder decodeFloatForKey:@"CPBrowserRowHeightKey"];
+        _imageWidth = [aCoder decodeFloatForKey:@"CPBrowserImageWidthKey"];
+        _minColumnWidth = [aCoder decodeFloatForKey:@"CPBrowserMinColumnWidthKey"];
+        _columnWidths = [aCoder decodeObjectForKey:@"CPBrowserColumnWidthsKey"];
+
+        [self setDelegate:[aCoder decodeObjectForKey:@"CPBrowserDelegateKey"]];
+        [self setAutohidesScroller:[aCoder decodeBoolForKey:@"CPBrowserAutohidesScrollerKey"]];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    // Don't encode the subviews, they're transient and will be recreated from data.
+    var actualSubviews = _subviews;
+    _subviews = [];
+    [super encodeWithCoder:aCoder];
+    _subviews = actualSubviews;
+
+    [aCoder encodeBool:[self autohidesScroller] forKey:@"CPBrowserAutohidesScrollerKey"];
+    [aCoder encodeBool:_allowsEmptySelection forKey:@"CPBrowserAllowsEmptySelectionKey"];
+    [aCoder encodeBool:_allowsMultipleSelection forKey:@"CPBrowserAllowsMultipleSelectionKey"];
+    [aCoder encodeObject:_delegate forKey:@"CPBrowserDelegateKey"];
+    [aCoder encodeObject:_prototypeView forKey:@"CPBrowserPrototypeViewKey"];
+    [aCoder encodeFloat:_rowHeight forKey:@"CPBrowserRowHeightKey"];
+    [aCoder encodeFloat:_imageWidth forKey:@"CPBrowserImageWidthKey"];
+    [aCoder encodeFloat:_minColumnWidth forKey:@"CPBrowserMinColumnWidthKey"];
+    [aCoder encodeObject:_columnWidths forKey:@"CPBrowserColumnWidthsKey"];
+}
+
+@end
+
 
 var _CPBrowserResizeControlBackgroundImage = nil;
 
@@ -796,7 +851,7 @@ var _CPBrowserResizeControlBackgroundImage = nil;
 }
 
 - (void)moveLeft:(id)sender
-{    
+{
     var previousColumn = [_browser selectedColumn] - 1,
         selectedRow = [_browser selectedRowInColumn:previousColumn];
 
@@ -804,11 +859,13 @@ var _CPBrowserResizeControlBackgroundImage = nil;
 }
 
 - (void)moveRight:(id)sender
-{    
+{
     [_browser selectRow:0 inColumn:[_browser selectedColumn] + 1];
 }
 
 @end
+
+@import <Foundation/CPObject.j>
 
 @implementation _CPBrowserTableDelegate : CPObject
 {
@@ -842,6 +899,12 @@ var _CPBrowserResizeControlBackgroundImage = nil;
 {
     var selectedIndexes = [aTableView selectedRowIndexes];
     [_browser _column:_index clickedRow:[selectedIndexes count] === 1 ? [selectedIndexes firstIndex] : -1];
+}
+
+- (void)tableViewSelectionDidChange:(CPNotification)aNotification
+{
+    var selectedIndexes = [[aNotification object] selectedRowIndexes];
+    [_browser selectRowIndexes:selectedIndexes inColumn:_index];
 }
 
 - (id)childAtIndex:(unsigned)index
@@ -921,11 +984,11 @@ var _CPBrowserResizeControlBackgroundImage = nil;
 {
     var imageView = [self layoutEphemeralSubviewNamed:@"image-view"
                                            positioned:CPWindowAbove
-                      relativeToEphemeralSubviewNamed:nil];
+                      relativeToEphemeralSubviewNamed:nil],
+        isHighlighted = [self themeState] & CPThemeStateSelectedDataView;
 
-    var isHighlighted = [self themeState] & CPThemeStateSelectedDataView;
     [imageView setImage: _isLeaf ? (isHighlighted ? _highlightedBranchImage : _branchImage) : nil];
-    [imageView setImageScaling:CPScaleNone];
+    [imageView setImageScaling:CPImageScaleNone];
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder

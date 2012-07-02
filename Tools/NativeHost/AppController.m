@@ -176,6 +176,22 @@ NSString *SERVER_USER = nil;
     [server stop];
 }
 
+- (void)configureLocalStorage
+{
+    WebPreferences *webConfiguration = [WebPreferences standardPreferences];
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSString *cappBundleName = [mainBundle objectForInfoDictionaryKey:@"CPBundleName"];
+    NSString *applicationSupportFile = [@"~/Library/Application Support/" stringByExpandingTildeInPath];
+    NSString *savePath = [NSString pathWithComponents:[NSArray arrayWithObjects:applicationSupportFile, cappBundleName, @"LocalStorage", nil]];
+    
+    if ([webConfiguration respondsToSelector:@selector(setLocalStorageDatabasePath:)])
+        [webConfiguration setLocalStorageDatabasePath:savePath];
+    else
+        [webConfiguration _setLocalStorageDatabasePath:savePath];
+    
+    [webView setPreferences:webConfiguration];
+}
+
 - (void)awakeFromNib
 {
     webView = [[WebView alloc] init];
@@ -184,7 +200,9 @@ NSString *SERVER_USER = nil;
     [webView setFrameLoadDelegate:self];
     [webView setResourceLoadDelegate:self];
     [webView setPolicyDelegate:self];
-
+	
+	[self configureLocalStorage];
+	
     webViewWindow = [[NSWindow alloc] init];
 
     [webViewWindow setContentView:webView];

@@ -1,0 +1,35 @@
+CPLog Custom Message Formatters
+===============================
+
+You may now use a custom message formatter function with CPLog. To use a custom formatter, do the following:
+
+- Create a formatter function that receives 3 parameters:
+
+function myFormatter(aString, aLevel, aTitle)
+{
+    // return a string
+}
+
+- Pass the formatter function when you register your loggers:
+
+CPLogRegister(aProvider, aMaxLevel, aFormatter)
+CPLogRegisterRange(aProvider, aMinLevel, aMaxLevel, aFormatter)
+CPLogRegisterSingle(aProvider, aLevel, aFormatter)
+
+If you don't pass a formatter or pass null, the default CPLog formatter is used. You can change the formatter
+for a registered logger by calling one of the CPLogRegister functions again with the new formatter.
+
+Each provider/level pair can have its own formatter. So, for example, you can use one formatter for errors
+sent to CPLogPopup, a different formatter for other levels sent to CPLogPopup, and a totally different
+formatter for CPLogConsole.
+
+If you are writing a command line app and want to colorize all or part of a message according to the level,
+you can use:
+
+CPLogColorize(aString, aLevel)
+
+This function can safely be used within a browser environment, it just returns the string unmodified.
+This allows you to reuse the same formatting functions for both environments.
+
+For examples of usage in the browser, see main.j and AppController.j in the test app. For examples of usage
+in a command-line app, see test.j and run the file "execute_me".

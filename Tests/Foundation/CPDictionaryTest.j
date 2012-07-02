@@ -15,17 +15,17 @@
         "key3": {
             "another": "object"
         }
-    }
+    };
 
-    string_dict = [[CPDictionary alloc] initWithObjects:[@"1", @"2"] forKeys:[@"key1", @"key2"]];
+    string_dict = [[CPDictionary alloc] initWithObjects:[@"1", @"2", @"This is a String", @"This is a String"] forKeys:[@"key1", @"key2", @"key3", @"key4"]];
     json_dict = [CPDictionary dictionaryWithJSObject:json recursively:YES];
 }
 
 - (void)testInitWithDictionary
 {
-    var dict = [[CPDictionary alloc] initWithObjects:[@"1", @"2"] forKeys:[@"key1", @"key2"]];
+    var dict = [[CPDictionary alloc] initWithObjects:[@"1", @"2"] forKeys:[@"key1", @"key2"]],
+        new_dict = [[CPDictionary alloc] initWithDictionary:dict];
 
-    var new_dict = [[CPDictionary alloc] initWithDictionary:dict];
     [self assert:[new_dict objectForKey:@"key1"] equals:[dict objectForKey:@"key1"]];
     [self assert:[new_dict objectForKey:@"key2"] equals:[dict objectForKey:@"key2"]];
 
@@ -63,14 +63,13 @@
 
 - (void)testDictionaryWithJSObjectRecursiveWithNull
 {
-    var json_with_nulls = {
-        "key1": ['1', '2', '3'],
-        "key2": "This is a string",
-        "key3": null
-    }
- 
-    var dict = [CPDictionary dictionaryWithJSObject:json_with_nulls recursively:YES];
- 
+    var json_with_nulls =     {
+            "key1": ['1', '2', '3'],
+            "key2": "This is a string",
+            "key3": null
+        },
+        dict = [CPDictionary dictionaryWithJSObject:json_with_nulls recursively:YES];
+
     [self assert:3 equals:[dict count]];
     [self assert:[@"key1", @"key2", @"key3"] equals:[dict allKeys]];
     [self assert:[CPNull null] equals:[dict objectForKey:@"key3"]];
@@ -90,19 +89,19 @@
 
 - (void)testCount
 {
-    [self assert:[string_dict count] equals:2];
+    [self assert:[string_dict count] equals:4];
     [self assert:[json_dict count] equals:3];
 }
 
 - (void)testAllKeys
 {
-    [self assert:[string_dict allKeys] equals:[@"key2", @"key1"]];
+    [self assert:[string_dict allKeys] equals:[@"key4", @"key3", @"key2", @"key1"]];
     [self assert:[json_dict allKeys] equals:[@"key1", @"key2", @"key3"]];
 }
 
 - (void)testAllValues
 {
-    [self assert:[string_dict allValues] equals:[@"1", @"2"]];
+    [self assert:[string_dict allValues] equals:[@"1", @"2", @"This is a String",  @"This is a String"]];
     // Had to get object from key to get test passing
     [self assert:[json_dict allValues] equals:[[json_dict objectForKey:@"key3"], @"This is a string", ['1', '2', '3']]];
 }
@@ -111,6 +110,11 @@
 {
     [self assert:[string_dict objectForKey:@"key1"] equals:"1"];
     [self assert:[json_dict objectForKey:@"key1"] equals:['1', '2', '3']];
+}
+
+- (void)testAllKeysForObject
+{
+    [self assert:[string_dict allKeysForObject:@"This is a String"] equals:[@"key4", @"key3"]];
 }
 
 - (void)testKeyEnumerator
@@ -156,7 +160,7 @@
 {
     [string_dict removeObjectForKey:@"key1"];
     [json_dict removeObjectForKey:@"key1"];
-    [self assert:[string_dict count] equals:1];
+    [self assert:[string_dict count] equals:3];
     [self assert:[json_dict count] equals:2];
 }
 
@@ -164,7 +168,7 @@
 {
     [string_dict removeObjectsForKeys:[@"key1"]];
     [json_dict removeObjectsForKeys:[@"key1", @"key2"]];
-    [self assert:[string_dict count] equals:1];
+    [self assert:[string_dict count] equals:3];
     [self assert:[json_dict count] equals:1];
 }
 
@@ -178,10 +182,10 @@
 
 - (void)testAddEntriesFromDictionary
 {
-    var dict = [[CPDictionary alloc] initWithObjects:[@"1", @"2"] forKeys:[@"key4", @"key5"]];
+    var dict = [[CPDictionary alloc] initWithObjects:[@"1", @"2"] forKeys:[@"key5", @"key6"]];
     [string_dict addEntriesFromDictionary:dict]
     [json_dict addEntriesFromDictionary:dict]
-    [self assert:[string_dict count] equals:4];
+    [self assert:[string_dict count] equals:6];
     [self assert:[json_dict count] equals:5];
 }
 
@@ -200,6 +204,50 @@
         var dict = [[CPDictionary alloc] initWithObjects:[1, nil] forKeys:["1", "2"]];
         [self assertFalse:dict];
     }];
+}
+
+- (void)testKeysSortedByValueUsingSelector
+{
+    var numberDictionary = [CPDictionary dictionaryWithJSObject:{
+            key1: 5,
+            key2: 1,
+            key3: 4,
+            key4: 2,
+            key5: 3
+        }];
+
+    var expected = [@"key2", @"key4", @"key5", @"key3", @"key1"],
+        result = [numberDictionary keysSortedByValueUsingSelector:@selector(compare:)];
+
+    [self assert:expected equals:result];
+
+    var stringDictionary = [CPDictionary dictionaryWithJSObject:{
+            a: @"Z", b: @"y", c: @"X", d: @"W",
+            e: @"V", f: @"u", g: @"T", h: @"s",
+            i: @"R", j: @"q", k: @"P", l: @"o"
+        }];
+
+    expected = [@"l", @"k", @"j", @"i", @"h", @"g", @"f", @"e", @"d", @"c", @"b", @"a"];
+    result = [stringDictionary keysSortedByValueUsingSelector:@selector(caseInsensitiveCompare:)];
+
+    [self assert:expected equals:result];
+
+    expected = [@"k", @"i", @"g", @"e", @"d", @"c", @"a", @"l", @"j", @"h", @"f", @"b"];
+    result = [stringDictionary keysSortedByValueUsingSelector:@selector(compare:)];
+    [self assert:expected equals:result];
+}
+
+- (void)testJSObjectDescription
+{
+    var dict = [[CPDictionary alloc] initWithObjects:[CGRectMake(1, 2, 3, 4), CGPointMake(5, 6)] forKeys:[@"key1", @"key2"]],
+        d = [dict description];
+
+    [self assertTrue:d.indexOf("x: 1") !== -1 message:"Can't find 'x: 1' in description of dictionary " + d];
+    [self assertTrue:d.indexOf("y: 2") !== -1 message:"Can't find 'y: 2' in description of dictionary " + d];
+    [self assertTrue:d.indexOf("width: 3") !== -1 message:"Can't find 'width: 3' in description of dictionary " + d];
+    [self assertTrue:d.indexOf("height: 4") !== -1 message:"Can't find 'height: 4' in description of dictionary " + d];
+    [self assertTrue:d.indexOf("x: 5") !== -1 message:"Can't find 'x: 5' in description of dictionary " + d];
+    [self assertTrue:d.indexOf("y: 6") !== -1 message:"Can't find 'y: 6' in description of dictionary " + d];
 }
 
 @end

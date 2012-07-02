@@ -22,35 +22,61 @@
 
 @import <AppKit/CPFont.j>
 
+var OS = require("os"),
+    fontinfo = require("cappuccino/fontinfo").fontinfo;
+
+var IBDefaultFontFace = @"Lucida Grande",
+    IBDefaultFontSize = 13.0;
 
 @implementation CPFont (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    var isBold = NO,
-        fontName = [aCoder decodeObjectForKey:@"NSName"],
-        size = [aCoder decodeDoubleForKey:@"NSSize"];
+    var name = [aCoder decodeObjectForKey:@"NSName"],
+        size = [aCoder decodeDoubleForKey:@"NSSize"],
+        isBold = false,
+        isItalic = false,
+        info = fontinfo(name, size);
 
-    if ((fontName === "LucidaGrande" || fontName === "LucidaGrande-Bold") && size === 13)
+    if (info)
     {
-        CPLog.debug("Removing default IB font: <"+fontName+", "+size+"> for theme default font.");
-        return nil;
+        name = info.familyName;
+        isBold = info.bold;
+        isItalic = info.italic;
     }
 
-    // FIXME: Is this alwasy true?
-    if (fontName.indexOf("-Bold") === fontName.length - "-Bold".length)
-        isBold = YES;
-
-    if (fontName === "LucidaGrande" || fontName === "LucidaGrande-Bold")
-        fontName = "Arial";
-
-    return [self _initWithName:fontName size:size bold:isBold];
+    return [self _initWithName:name size:size bold:isBold italic:isItalic];
 }
 
 @end
 
 @implementation NSFont : CPFont
+
++ (void)initialize
 {
+    if (self !== [NSFont class])
+        return;
+
+    CPLog.debug("NSFont: default IB font: %s %f", IBDefaultFontFace, IBDefaultFontSize);
+}
+
++ (id)cibFontForNibFont:(CPFont)aFont
+{
+    var name = [aFont familyName];
+
+    if (name === IBDefaultFontFace)
+    {
+        var size = [aFont size],
+            bold = [aFont isBold],
+            italic = [aFont isItalic];
+
+        if (size === IBDefaultFontSize && !bold && !italic)
+            return nil;
+        else
+            return [[CPFont alloc] _initWithName:[CPFont systemFontFace] size:(size == IBDefaultFontSize ? CPFontDefaultSystemFontSize : size) bold:bold italic:italic];
+    }
+
+    return [aFont copy];
 }
 
 - (id)initWithCoder:(CPCoder)aCoder

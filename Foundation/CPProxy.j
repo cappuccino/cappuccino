@@ -22,8 +22,8 @@
 
 @import "CPException.j"
 @import "CPInvocation.j"
+@import "CPObject.j"
 @import "CPString.j"
-
 
 @implementation CPProxy
 {
@@ -67,7 +67,7 @@
 // FIXME: This should be moved to the runtime?
 - (void)forward:(SEL)aSelector :(marg_list)args
 {
-    [CPObject methodForSelector:_cmd](self, _cmd, aSelector, args);
+    return [CPObject methodForSelector:_cmd](self, _cmd, aSelector, args);
 }
 
 - (unsigned)hash

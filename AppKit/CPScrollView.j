@@ -5,6 +5,9 @@
  * Created by Francisco Tolmasky.
  * Copyright 2008, 280 North, Inc.
  *
+ * Modified to match Lion style by Antoine Mercadal 2011
+ * <antoine.mercadal@archipelproject.org>
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -20,12 +23,49 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPView.j"
+@import <Foundation/CPNotificationCenter.j>
+
+@import "CPBox.j"
 @import "CPClipView.j"
 @import "CPScroller.j"
+@import "CPView.j"
 
-#include "CoreGraphics/CGGeometry.h"
+#define SHOULD_SHOW_CORNER_VIEW() (_scrollerStyle === CPScrollerStyleLegacy && _verticalScroller && ![_verticalScroller isHidden])
 
+
+/*! @ignore */
+var _isSystemUsingOverlayScrollers = function()
+{
+#if PLATFORM(DOM)
+    var inner = document.createElement('p'),
+        outer = document.createElement('div');
+
+    inner.style.width = "100%";
+    inner.style.height = "200px";
+
+    outer.style.position = "absolute";
+    outer.style.top = "0px";
+    outer.style.left = "0px";
+    outer.style.visibility = "hidden";
+    outer.style.width = "200px";
+    outer.style.height = "150px";
+    outer.style.overflow = "hidden";
+    outer.appendChild (inner);
+
+    document.body.appendChild (outer);
+    var w1 = inner.offsetWidth;
+    outer.style.overflow = 'scroll';
+    var w2 = inner.offsetWidth;
+    if (w1 == w2)
+        w2 = outer.clientWidth;
+
+    document.body.removeChild (outer);
+
+    return (w1 - w2 == 0);
+#else
+    return NO;
+#endif
+};
 
 /*!
     @ingroup appkit
@@ -35,26 +75,153 @@
     places scroll bars on the side of the view to allow the user to scroll and see the entire
     contents of the view.
 */
+
+var TIMER_INTERVAL                              = 0.2,
+    CPScrollViewDelegate_scrollViewWillScroll_  = 1 << 0,
+    CPScrollViewDelegate_scrollViewDidScroll_   = 1 << 1,
+
+    CPScrollViewFadeOutTime                     = 1.3;
+
+var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
+    CPScrollerStyleGlobalChangeNotification     = @"CPScrollerStyleGlobalChangeNotification";
+
+
 @implementation CPScrollView : CPView
 {
-    CPClipView  _contentView;
-    CPClipView  _headerClipView;
-    CPView      _cornerView;
+    CPClipView      _contentView;
+    CPClipView      _headerClipView;
+    CPView          _cornerView;
+    CPView          _bottomCornerView;
 
-    BOOL        _hasVerticalScroller;
-    BOOL        _hasHorizontalScroller;
-    BOOL        _autohidesScrollers;
+    id              _delegate;
+    CPTimer         _scrollTimer;
 
-    CPScroller  _verticalScroller;
-    CPScroller  _horizontalScroller;
+    BOOL            _hasVerticalScroller;
+    BOOL            _hasHorizontalScroller;
+    BOOL            _autohidesScrollers;
 
-    int         _recursionCount;
+    CPScroller      _verticalScroller;
+    CPScroller      _horizontalScroller;
 
-    float       _verticalLineScroll;
-    float       _verticalPageScroll;
-    float       _horizontalLineScroll;
-    float       _horizontalPageScroll;
+    CPInteger       _recursionCount;
+    CPInteger       _implementedDelegateMethods;
+
+    float           _verticalLineScroll;
+    float           _verticalPageScroll;
+    float           _horizontalLineScroll;
+    float           _horizontalPageScroll;
+
+    CPBorderType    _borderType;
+
+    CPTimer         _timerScrollersHide;
+
+    int             _scrollerStyle;
+    int             _scrollerKnobStyle;
 }
+
+
+#pragma mark -
+#pragma mark Class methods
+
++ (void)initialize
+{
+    if (self !== [CPScrollView class])
+        return;
+
+    var globalValue = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPScrollersGlobalStyle"];
+
+    if (globalValue == nil || globalValue == -1)
+        CPScrollerStyleGlobal = _isSystemUsingOverlayScrollers() ? CPScrollerStyleOverlay : CPScrollerStyleLegacy
+    else
+        CPScrollerStyleGlobal = globalValue;
+}
+
++ (CPString)defaultThemeClass
+{
+    return @"scrollview"
+}
+
++ (CPDictionary)themeAttributes
+{
+    return [CPDictionary dictionaryWithJSObject:{
+        @"bottom-corner-color": [CPColor whiteColor],
+        @"border-color": [CPColor blackColor]
+    }];
+}
+
++ (CGSize)contentSizeForFrameSize:(CGSize)frameSize hasHorizontalScroller:(BOOL)hFlag hasVerticalScroller:(BOOL)vFlag borderType:(CPBorderType)borderType
+{
+    var bounds = [self _insetBounds:_CGRectMake(0.0, 0.0, frameSize.width, frameSize.height) borderType:borderType],
+        scrollerWidth = [CPScroller scrollerWidth];
+
+    if (hFlag)
+        bounds.size.height -= scrollerWidth;
+
+    if (vFlag)
+        bounds.size.width -= scrollerWidth;
+
+    return bounds.size;
+}
+
++ (CGSize)frameSizeForContentSize:(CGSize)contentSize hasHorizontalScroller:(BOOL)hFlag hasVerticalScroller:(BOOL)vFlag borderType:(CPBorderType)borderType
+{
+    var bounds = [self _insetBounds:_CGRectMake(0.0, 0.0, contentSize.width, contentSize.height) borderType:borderType],
+        widthInset = contentSize.width - bounds.size.width,
+        heightInset = contentSize.height - bounds.size.height,
+        frameSize = _CGSizeMake(contentSize.width + widthInset, contentSize.height + heightInset),
+        scrollerWidth = [CPScroller scrollerWidth];
+
+    if (hFlag)
+        frameSize.height -= scrollerWidth;
+
+    if (vFlag)
+        frameSize.width -= scrollerWidth;
+
+    return frameSize;
+}
+
++ (CGRect)_insetBounds:(CGRect)bounds borderType:(CPBorderType)borderType
+{
+    switch (borderType)
+    {
+        case CPLineBorder:
+        case CPBezelBorder:
+            return _CGRectInset(bounds, 1.0, 1.0);
+
+        case CPGrooveBorder:
+            bounds = _CGRectInset(bounds, 2.0, 2.0);
+            ++bounds.origin.y;
+            --bounds.size.height;
+            return bounds;
+
+        case CPNoBorder:
+        default:
+            return bounds;
+    }
+}
+
+/*!
+    Get the system wide scroller style.
+*/
++ (int)globalScrollerStyle
+{
+    return CPScrollerStyleGlobal;
+}
+
+/*!
+    Set the system wide scroller style.
+
+    @param aStyle the scroller style to set all scroller views to use (CPScrollerStyleLegacy or CPScrollerStyleOverlay)
+*/
++ (int)setGlobalScrollerStyle:(int)aStyle
+{
+    CPScrollerStyleGlobal = aStyle;
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPScrollerStyleGlobalChangeNotification object:nil];
+}
+
+
+#pragma mark -
+#pragma mark Initialization
 
 - (id)initWithFrame:(CGRect)aFrame
 {
@@ -68,45 +235,152 @@
         _horizontalLineScroll = 10.0;
         _horizontalPageScroll = 10.0;
 
-        _contentView = [[CPClipView alloc] initWithFrame:[self bounds]];
+        _borderType = CPNoBorder;
 
+        _contentView = [[CPClipView alloc] initWithFrame:[self _insetBounds]];
         [self addSubview:_contentView];
 
         _headerClipView = [[CPClipView alloc] init];
-
         [self addSubview:_headerClipView];
+
+        _bottomCornerView = [[CPView alloc] init];
+        [self addSubview:_bottomCornerView];
 
         [self setHasVerticalScroller:YES];
         [self setHasHorizontalScroller:YES];
+        _scrollerKnobStyle = CPScrollerKnobStyleDefault;
+        [self setScrollerStyle:CPScrollerStyleGlobal];
+
+        _delegate = nil;
+        _scrollTimer = nil;
+        _implementedDelegateMethods = 0;
+
+        [[CPNotificationCenter defaultCenter] addObserver:self
+                                 selector:@selector(_didReceiveDefaultStyleChange:)
+                                     name:CPScrollerStyleGlobalChangeNotification
+                                   object:nil];
     }
 
     return self;
 }
 
-// Determining component sizes
+
+#pragma mark -
+#pragma mark Getters / Setters
+
 /*!
-    Returns the size of the scroll view's content view.
+    The delegate of the scroll view
 */
-- (CGRect)contentSize
+- (id)delegate
 {
-    return [_contentView frame].size;
+    return _delegate;
 }
 
 /*!
-    Returns the view that is scrolled for the user.
+    Sets the delegate of the scroll view.
+    Possible delegate methods to implement are listed below.
+
+Notifies the delegate when the scroll view is about to scroll.
+@code
+- (void)scrollViewWillScroll:(CPScrollView)aScrollView
+@endcode
+
+Notifies the delegate when the scroll view has finished scrolling.
+@code
+- (void)scrollViewDidScroll:(CPScrollView)aScrollView
+@endcode
+
 */
-- (id)documentView
+- (void)setDelegate:(id)aDelegate
 {
-    return [_contentView documentView];
+    if (aDelegate === _delegate)
+        return;
+
+    _delegate = aDelegate;
+    _implementedDelegateMethods = 0;
+
+    if (_delegate === nil)
+        return;
+
+    if ([_delegate respondsToSelector:@selector(scrollViewWillScroll:)])
+        _implementedDelegateMethods |= CPScrollViewDelegate_scrollViewWillScroll_;
+
+    if ([_delegate respondsToSelector:@selector(scrollViewDidScroll:)])
+        _implementedDelegateMethods |= CPScrollViewDelegate_scrollViewDidScroll_;
+}
+
+- (int)scrollerStyle
+{
+    return _scrollerStyle;
 }
 
 /*!
-    Sets the content view that clips the document
+    Set the scroller style.
+
+    - CPScrollerStyleLegacy: Standard scrollers like Windows or Mac OS X prior to 10.7
+    - CPScrollerStyleOverlay: scrollers like those in Mac OS X 10.7+
+*/
+- (void)setScrollerStyle:(int)aStyle
+{
+    if (_scrollerStyle === aStyle)
+        return;
+
+    _scrollerStyle = aStyle;
+
+    [self _updateScrollerStyle];
+}
+
+/*!
+    Returns the style of the scroller knob, the bit which moves when scrolling, of the receiver.
+
+    Valid values are:
+    <pre>
+        CPScrollerKnobStyleLight
+        CPScrollerKnobStyleDark
+        CPScrollerKnobStyleDefault
+    </pre>
+*/
+- (int)scrollerKnobStyle
+{
+    return _scrollerKnobStyle;
+}
+
+/*!
+    Sets the style of the scroller knob, the bit which moves when scrolling.
+
+    Valid values are:
+    <pre>
+        CPScrollerKnobStyleLight
+        CPScrollerKnobStyleDark
+        CPScrollerKnobStyleDefault
+    </pre>
+*/
+- (void)setScrollerKnobStyle:(int)newScrollerKnobStyle
+{
+     if (_scrollerKnobStyle === newScrollerKnobStyle)
+        return;
+
+    _scrollerKnobStyle = newScrollerKnobStyle;
+
+   [self _updateScrollerStyle];
+}
+
+/*!
+    Returns the content view that clips the document.
+*/
+- (CPClipView)contentView
+{
+    return _contentView;
+}
+
+/*!
+    Sets the content view that clips the document.
+
     @param aContentView the content view
 */
 - (void)setContentView:(CPClipView)aContentView
 {
-    if (_contentView !== aContentView || !aContentView)
+    if (_contentView === aContentView || !aContentView)
         return;
 
     var documentView = [aContentView documentView];
@@ -127,15 +401,24 @@
 }
 
 /*!
-    Returns the content view that clips the document.
+    Returns the size of the scroll view's content view.
 */
-- (CPClipView)contentView
+- (CGSize)contentSize
 {
-    return _contentView;
+    return [_contentView frame].size;
+}
+
+/*!
+    Returns the view that is scrolled for the user.
+*/
+- (id)documentView
+{
+    return [_contentView documentView];
 }
 
 /*!
     Sets the view that is scrolled for the user.
+
     @param aView the view that will be scrolled
 */
 - (void)setDocumentView:(CPView)aView
@@ -148,131 +431,46 @@
 }
 
 /*!
-    Resizes the scroll view to contain the specified clip view.
-    @param aClipView the clip view to resize to
+    Returns the border type drawn around the view.
 */
-- (void)reflectScrolledClipView:(CPClipView)aClipView
+- (CPBorderType)borderType
 {
-    if(_contentView !== aClipView)
-        return;
-
-    if (_recursionCount > 5)
-        return;
-
-    ++_recursionCount;
-
-    var documentView = [self documentView];
-
-    if (!documentView)
-    {
-        if (_autohidesScrollers)
-        {
-            [_verticalScroller setHidden:YES];
-            [_horizontalScroller setHidden:YES];
-        }
-        else
-        {
-//            [_verticalScroller setEnabled:NO];
-//            [_horizontalScroller setEnabled:NO];
-        }
-
-        [_contentView setFrame:[self bounds]];
-        [_headerClipView setFrame:_CGRectMakeZero()];
-
-        --_recursionCount;
-
-        return;
-    }
-
-    var documentFrame = [documentView frame], // the size of the whole document
-        contentFrame = [self bounds], // assume it takes up the entire size of the scrollview (no scrollers)
-        headerClipViewFrame = [self _headerClipViewFrame],
-        headerClipViewHeight = _CGRectGetHeight(headerClipViewFrame);
-
-    contentFrame.origin.y += headerClipViewHeight;
-    contentFrame.size.height -= headerClipViewHeight;
-
-    var difference = _CGSizeMake(_CGRectGetWidth(documentFrame) - _CGRectGetWidth(contentFrame), _CGRectGetHeight(documentFrame) - _CGRectGetHeight(contentFrame)),
-        verticalScrollerWidth = _CGRectGetWidth([_verticalScroller frame]),
-        horizontalScrollerHeight = _CGRectGetHeight([_horizontalScroller frame]),
-        hasVerticalScroll = difference.height > 0.0,
-        hasHorizontalScroll = difference.width > 0.0,
-        shouldShowVerticalScroller = _hasVerticalScroller && (!_autohidesScrollers || hasVerticalScroll),
-        shouldShowHorizontalScroller = _hasHorizontalScroller && (!_autohidesScrollers || hasHorizontalScroll);
-
-    // Now we have to account for the shown scrollers affecting the deltas.
-    if (shouldShowVerticalScroller)
-    {
-        difference.width += verticalScrollerWidth;
-        hasHorizontalScroll = difference.width > 0.0;
-        shouldShowHorizontalScroller = _hasHorizontalScroller && (!_autohidesScrollers || hasHorizontalScroll);
-    }
-
-    if (shouldShowHorizontalScroller)
-    {
-        difference.height += horizontalScrollerHeight;
-        hasVerticalScroll = difference.height > 0.0;
-        shouldShowVerticalScroller = _hasVerticalScroller && (!_autohidesScrollers || hasVerticalScroll);
-    }
-
-    // We now definitively know which scrollers are shown or not, as well as whether they are showing scroll values.
-    [_verticalScroller setHidden:!shouldShowVerticalScroller];
-    [_verticalScroller setEnabled:hasVerticalScroll];
-
-    [_horizontalScroller setHidden:!shouldShowHorizontalScroller];
-    [_horizontalScroller setEnabled:hasHorizontalScroll];
-
-    // We can thus appropriately account for them changing the content size.
-    if (shouldShowVerticalScroller)
-        contentFrame.size.width -= verticalScrollerWidth;
-
-    if (shouldShowHorizontalScroller)
-        contentFrame.size.height -= horizontalScrollerHeight;
-
-    var scrollPoint = [_contentView bounds].origin,
-        wasShowingVerticalScroller = ![_verticalScroller isHidden],
-        wasShowingHorizontalScroller = ![_horizontalScroller isHidden];
-
-    if (shouldShowVerticalScroller)
-    {
-        var verticalScrollerY = MAX(_CGRectGetHeight([self _cornerViewFrame]), headerClipViewHeight),
-            verticalScrollerHeight = _CGRectGetHeight([self bounds]) - verticalScrollerY;
-
-        if (shouldShowHorizontalScroller)
-            verticalScrollerHeight -= horizontalScrollerHeight;
-
-        [_verticalScroller setFloatValue:(difference.height <= 0.0) ? 0.0 : scrollPoint.y / difference.height];
-        [_verticalScroller setKnobProportion:_CGRectGetHeight(contentFrame) / _CGRectGetHeight(documentFrame)];
-        [_verticalScroller setFrame:_CGRectMake(_CGRectGetMaxX(contentFrame), verticalScrollerY, verticalScrollerWidth, verticalScrollerHeight)];
-    }
-    else if (wasShowingVerticalScroller)
-    {
-        [_verticalScroller setFloatValue:0.0];
-        [_verticalScroller setKnobProportion:1.0];
-    }
-
-    if (shouldShowHorizontalScroller)
-    {
-        [_horizontalScroller setFloatValue:(difference.width <= 0.0) ? 0.0 : scrollPoint.x / difference.width];
-        [_horizontalScroller setKnobProportion:_CGRectGetWidth(contentFrame) / _CGRectGetWidth(documentFrame)];
-        [_horizontalScroller setFrame:_CGRectMake(0.0, _CGRectGetMaxY(contentFrame), _CGRectGetWidth(contentFrame), horizontalScrollerHeight)];
-    }
-    else if (wasShowingHorizontalScroller)
-    {
-        [_horizontalScroller setFloatValue:0.0];
-        [_horizontalScroller setKnobProportion:1.0];
-    }
-
-    [_contentView setFrame:contentFrame];
-    [_headerClipView setFrame:headerClipViewFrame];
-    [_cornerView setFrame:[self _cornerViewFrame]];
-
-    --_recursionCount;
+    return _borderType;
 }
 
-// Managing Scrollers
+/*!
+    Sets the type of border to be drawn around the view.
+
+    Valid types are:
+    <pre>
+    CPNoBorder
+    CPLineBorder
+    CPBezelBorder
+    CPGrooveBorder</pre>
+*/
+- (void)setBorderType:(CPBorderType)borderType
+{
+    if (_borderType == borderType)
+        return;
+
+    _borderType = borderType;
+
+    [self reflectScrolledClipView:_contentView];
+    [self setNeedsDisplay:YES];
+}
+
+
+/*!
+    Returns the scroll view's horizontal scroller.
+*/
+- (CPScroller)horizontalScroller
+{
+    return _horizontalScroller;
+}
+
 /*!
     Sets the scroll view's horizontal scroller.
+
     @param aScroller the horizontal scroller for the scroll view
 */
 - (void)setHorizontalScroller:(CPScroller)aScroller
@@ -291,19 +489,20 @@
 
     [self addSubview:_horizontalScroller];
 
-    [self reflectScrolledClipView:_contentView];
+    [self _updateScrollerStyle];
 }
 
 /*!
-    Returns the scroll view's horizontal scroller
+    Returns \c YES if the scroll view can have a horizontal scroller.
 */
-- (CPScroller)horizontalScroller
+- (BOOL)hasHorizontalScroller
 {
-    return _horizontalScroller;
+    return _hasHorizontalScroller;
 }
 
 /*!
     Specifies whether the scroll view can have a horizontal scroller.
+
     @param hasHorizontalScroller \c YES lets the scroll view
     allocate a horizontal scroller if necessary.
 */
@@ -316,23 +515,26 @@
 
     if (_hasHorizontalScroller && !_horizontalScroller)
     {
-        [self setHorizontalScroller:[[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, MAX(_CGRectGetWidth([self bounds]), [CPScroller scrollerWidth]+1), [CPScroller scrollerWidth])]];
-        [[self horizontalScroller] setFrameSize:CGSizeMake(_CGRectGetWidth([self bounds]), [CPScroller scrollerWidth])];
+        var bounds = [self _insetBounds];
+
+        [self setHorizontalScroller:[[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, MAX(_CGRectGetWidth(bounds), [CPScroller scrollerWidthInStyle:_scrollerStyle] + 1), [CPScroller scrollerWidthInStyle:_scrollerStyle])]];
+        [[self horizontalScroller] setFrameSize:CGSizeMake(_CGRectGetWidth(bounds), [CPScroller scrollerWidthInStyle:_scrollerStyle])];
     }
 
     [self reflectScrolledClipView:_contentView];
 }
 
 /*!
-    Returns \c YES if the scroll view can have a horizontal scroller.
+    Returns the scroll view's vertical scroller.
 */
-- (BOOL)hasHorizontalScroller
+- (CPScroller)verticalScroller
 {
-    return _hasHorizontalScroller;
+    return _verticalScroller;
 }
 
 /*!
     Sets the scroll view's vertical scroller.
+
     @param aScroller the vertical scroller
 */
 - (void)setVerticalScroller:(CPScroller)aScroller
@@ -351,37 +553,7 @@
 
     [self addSubview:_verticalScroller];
 
-    [self reflectScrolledClipView:_contentView];
-}
-
-/*!
-    Return's the scroll view's vertical scroller
-*/
-- (CPScroller)verticalScroller
-{
-    return _verticalScroller;
-}
-
-/*!
-    Specifies whether the scroll view has can have
-    a vertical scroller. It allocates it if necessary.
-    @param hasVerticalScroller \c YES allows
-    the scroll view to display a vertical scroller
-*/
-- (void)setHasVerticalScroller:(BOOL)shouldHaveVerticalScroller
-{
-    if (_hasVerticalScroller === shouldHaveVerticalScroller)
-        return;
-
-    _hasVerticalScroller = shouldHaveVerticalScroller;
-
-    if (_hasVerticalScroller && !_verticalScroller)
-    {
-        [self setVerticalScroller:[[CPScroller alloc] initWithFrame:_CGRectMake(0.0, 0.0, [CPScroller scrollerWidth], MAX(_CGRectGetHeight([self bounds]), [CPScroller scrollerWidth]+1))]];
-        [[self verticalScroller] setFrameSize:CGSizeMake([CPScroller scrollerWidth], _CGRectGetHeight([self bounds]))];
-    }
-
-    [self reflectScrolledClipView:_contentView];
+    [self _updateScrollerStyle];
 }
 
 /*!
@@ -393,7 +565,41 @@
 }
 
 /*!
-    Sets whether the scroll view hides its scoll bars when not needed.
+    Specifies whether the scroll view can have a vertical scroller.
+    It allocates it if necessary.
+
+    @param hasVerticalScroller \c YES allows the scroll view to
+    display a vertical scroller
+*/
+- (void)setHasVerticalScroller:(BOOL)shouldHaveVerticalScroller
+{
+    if (_hasVerticalScroller === shouldHaveVerticalScroller)
+        return;
+
+    _hasVerticalScroller = shouldHaveVerticalScroller;
+
+    if (_hasVerticalScroller && !_verticalScroller)
+    {
+        var bounds = [self _insetBounds];
+
+        [self setVerticalScroller:[[CPScroller alloc] initWithFrame:_CGRectMake(0.0, 0.0, [CPScroller scrollerWidthInStyle:_scrollerStyle], MAX(_CGRectGetHeight(bounds), [CPScroller scrollerWidthInStyle:_scrollerStyle] + 1))]];
+        [[self verticalScroller] setFrameSize:CGSizeMake([CPScroller scrollerWidthInStyle:_scrollerStyle], _CGRectGetHeight(bounds))];
+    }
+
+    [self reflectScrolledClipView:_contentView];
+}
+
+/*!
+    Returns \c YES if the scroll view hides its scroll bars when not necessary.
+*/
+- (BOOL)autohidesScrollers
+{
+    return _autohidesScrollers;
+}
+
+/*!
+    Sets whether the scroll view hides its scroll bars when not needed.
+
     @param autohidesScrollers \c YES causes the scroll bars
     to be hidden when not needed.
 */
@@ -407,15 +613,210 @@
     [self reflectScrolledClipView:_contentView];
 }
 
-/*!
-    Returns \c YES if the scroll view hides its scroll
-    bars when not necessary.
-*/
-- (BOOL)autohidesScrollers
+- (CPView)bottomCornerView
 {
-    return _autohidesScrollers;
+    return _bottomCornerView;
 }
 
+- (void)setBottomCornerView:(CPView)aBottomCornerView
+{
+    if (_bottomCornerView === aBottomCornerView)
+        return;
+
+    [_bottomCornerView removeFromSuperview];
+
+    [aBottomCornerView setFrame:[self _bottomCornerViewFrame]];
+    [self addSubview:aBottomCornerView];
+
+    _bottomCornerView = aBottomCornerView;
+
+    [self _updateCornerAndHeaderView];
+}
+
+/*!
+    Returns how much the document moves when scrolled.
+*/
+- (float)lineScroll
+{
+    return [self horizontalLineScroll];
+}
+
+/*!
+    Sets how much the document moves when scrolled. Sets the vertical and horizontal scroll.
+
+    @param aLineScroll the amount to move the document when scrolled
+*/
+- (void)setLineScroll:(float)aLineScroll
+{
+    [self setHorizontalLineScroll:aLineScroll];
+    [self setVerticalLineScroll:aLineScroll];
+}
+
+/*!
+    Returns how much the document moves horizontally when scrolled.
+*/
+- (float)horizontalLineScroll
+{
+    return _horizontalLineScroll;
+}
+
+/*!
+    Sets how much the document moves when scrolled horizontally.
+
+    @param aLineScroll the amount to move horizontally when scrolled.
+*/
+- (void)setHorizontalLineScroll:(float)aLineScroll
+{
+    _horizontalLineScroll = aLineScroll;
+}
+
+/*!
+    Returns how much the document moves vertically when scrolled.
+*/
+- (float)verticalLineScroll
+{
+    return _verticalLineScroll;
+}
+
+/*!
+    Sets how much the document moves when scrolled vertically.
+
+    @param aLineScroll the new amount to move vertically when scrolled.
+*/
+- (void)setVerticalLineScroll:(float)aLineScroll
+{
+    _verticalLineScroll = aLineScroll;
+}
+
+/*!
+    Returns the vertical and horizontal page scroll amount.
+*/
+- (float)pageScroll
+{
+    return [self horizontalPageScroll];
+}
+
+/*!
+    Sets the horizontal and vertical page scroll amount.
+
+    @param aPageScroll the new horizontal and vertical page scroll amount
+*/
+- (void)setPageScroll:(float)aPageScroll
+{
+    [self setHorizontalPageScroll:aPageScroll];
+    [self setVerticalPageScroll:aPageScroll];
+}
+
+/*!
+    Returns the horizontal page scroll amount.
+*/
+- (float)horizontalPageScroll
+{
+    return _horizontalPageScroll;
+}
+
+/*!
+    Sets the horizontal page scroll amount.
+
+    @param aPageScroll the new horizontal page scroll amount
+*/
+- (void)setHorizontalPageScroll:(float)aPageScroll
+{
+    _horizontalPageScroll = aPageScroll;
+}
+
+/*!
+    Returns the vertical page scroll amount.
+*/
+- (float)verticalPageScroll
+{
+    return _verticalPageScroll;
+}
+
+/*!
+    Sets the vertical page scroll amount.
+
+    @param aPageScroll the new vertical page scroll amount
+*/
+- (void)setVerticalPageScroll:(float)aPageScroll
+{
+    _verticalPageScroll = aPageScroll;
+}
+
+
+#pragma mark -
+#pragma mark Privates
+
+/* @ignore */
+- (void)_updateScrollerStyle
+{
+    if (_hasHorizontalScroller)
+    {
+        [_horizontalScroller setStyle:_scrollerStyle];
+        [_horizontalScroller unsetThemeState:CPThemeStateSelected];
+
+        switch (_scrollerKnobStyle)
+        {
+            case CPScrollerKnobStyleLight:
+                [_horizontalScroller unsetThemeState:CPThemeStateScrollerKnobDark];
+                [_horizontalScroller setThemeState:CPThemeStateScrollerKnobLight];
+                break;
+
+            case CPScrollerKnobStyleDark:
+                [_horizontalScroller unsetThemeState:CPThemeStateScrollerKnobLight];
+                [_horizontalScroller setThemeState:CPThemeStateScrollerKnobDark];
+                break;
+
+            default:
+                [_horizontalScroller unsetThemeState:CPThemeStateScrollerKnobLight];
+                [_horizontalScroller unsetThemeState:CPThemeStateScrollerKnobDark];
+        }
+    }
+
+    if (_hasVerticalScroller)
+    {
+        [_verticalScroller setStyle:_scrollerStyle];
+        [_verticalScroller unsetThemeState:CPThemeStateSelected];
+
+        switch (_scrollerKnobStyle)
+        {
+            case CPScrollerKnobStyleLight:
+                [_verticalScroller unsetThemeState:CPThemeStateScrollerKnobDark];
+                [_verticalScroller setThemeState:CPThemeStateScrollerKnobLight];
+                break;
+
+            case CPScrollerKnobStyleDark:
+                [_verticalScroller unsetThemeState:CPThemeStateScrollerKnobLight];
+                [_verticalScroller setThemeState:CPThemeStateScrollerKnobDark];
+                break;
+
+            default:
+                [_verticalScroller unsetThemeState:CPThemeStateScrollerKnobLight];
+                [_verticalScroller unsetThemeState:CPThemeStateScrollerKnobDark];
+        }
+    }
+
+    if (_scrollerStyle == CPScrollerStyleOverlay)
+    {
+        if (_timerScrollersHide)
+            [_timerScrollersHide invalidate];
+
+        _timerScrollersHide = [CPTimer scheduledTimerWithTimeInterval:CPScrollViewFadeOutTime target:self selector:@selector(_hideScrollers:) userInfo:nil repeats:NO];
+        [[self bottomCornerView] setHidden:YES];
+    }
+    else
+        [[self bottomCornerView] setHidden:NO];
+
+    [self reflectScrolledClipView:_contentView];
+}
+
+/* @ignore */
+- (CGRect)_insetBounds
+{
+    return [[self class] _insetBounds:[self bounds] borderType:_borderType];
+}
+
+/* @ignore */
 - (void)_updateCornerAndHeaderView
 {
     var documentView = [self documentView],
@@ -437,31 +838,39 @@
         _cornerView = documentCornerView;
 
         if (_cornerView)
+        {
+            [_cornerView setHidden:!SHOULD_SHOW_CORNER_VIEW()];
             [self addSubview:_cornerView];
+        }
     }
 
     [self reflectScrolledClipView:_contentView];
+    [documentHeaderView setNeedsLayout];
+    [documentHeaderView setNeedsDisplay:YES];
 }
 
+/* @ignore */
 - (CPView)_headerView
 {
     return [_headerClipView documentView];
 }
 
+/* @ignore */
 - (CGRect)_cornerViewFrame
 {
     if (!_cornerView)
         return _CGRectMakeZero();
 
-    var bounds = [self bounds],
+    var bounds = [self _insetBounds],
         frame = [_cornerView frame];
 
     frame.origin.x = _CGRectGetMaxX(bounds) - _CGRectGetWidth(frame);
-    frame.origin.y = 0;
+    frame.origin.y = _CGRectGetMinY(bounds);
 
     return frame;
 }
 
+/* @ignore */
 - (CGRect)_headerClipViewFrame
 {
     var headerView = [self _headerView];
@@ -469,12 +878,31 @@
     if (!headerView)
         return _CGRectMakeZero();
 
-    var frame = [self bounds];
+    var frame = [self _insetBounds];
 
     frame.size.height = _CGRectGetHeight([headerView frame]);
-    frame.size.width -= _CGRectGetWidth([self _cornerViewFrame]);
+
+    if (SHOULD_SHOW_CORNER_VIEW())
+        frame.size.width -= _CGRectGetWidth([self _cornerViewFrame]);
 
     return frame;
+}
+
+/* @ignore */
+- (CGRect)_bottomCornerViewFrame
+{
+    if ([[self horizontalScroller] isHidden] || [[self verticalScroller] isHidden])
+        return CGRectMakeZero();
+
+    var verticalFrame = [[self verticalScroller] frame],
+        bottomCornerFrame = CGRectMakeZero();
+
+    bottomCornerFrame.origin.x = CGRectGetMinX(verticalFrame);
+    bottomCornerFrame.origin.y = CGRectGetMaxY(verticalFrame);
+    bottomCornerFrame.size.width = [CPScroller scrollerWidthInStyle:_scrollerStyle];
+    bottomCornerFrame.size.height = [CPScroller scrollerWidthInStyle:_scrollerStyle];
+
+    return bottomCornerFrame;
 }
 
 /* @ignore */
@@ -484,25 +912,33 @@
         documentFrame = [[_contentView documentView] frame],
         contentBounds = [_contentView bounds];
 
+
     switch ([_verticalScroller hitPart])
     {
-        case CPScrollerDecrementLine:   contentBounds.origin.y -= _verticalLineScroll;
-                                        break;
+        case CPScrollerDecrementLine:
+            contentBounds.origin.y -= _verticalLineScroll;
+            break;
 
-        case CPScrollerIncrementLine:   contentBounds.origin.y += _verticalLineScroll;
-                                        break;
+        case CPScrollerIncrementLine:
+            contentBounds.origin.y += _verticalLineScroll;
+            break;
 
-        case CPScrollerDecrementPage:   contentBounds.origin.y -= _CGRectGetHeight(contentBounds) - _verticalPageScroll;
-                                        break;
+        case CPScrollerDecrementPage:
+            contentBounds.origin.y -= _CGRectGetHeight(contentBounds) - _verticalPageScroll;
+            break;
 
-        case CPScrollerIncrementPage:   contentBounds.origin.y += _CGRectGetHeight(contentBounds) - _verticalPageScroll;
-                                        break;
+        case CPScrollerIncrementPage:
+            contentBounds.origin.y += _CGRectGetHeight(contentBounds) - _verticalPageScroll;
+            break;
 
+        // We want integral bounds!
         case CPScrollerKnobSlot:
         case CPScrollerKnob:
-                                        // We want integral bounds!
-        default:                        contentBounds.origin.y = ROUND(value * (_CGRectGetHeight(documentFrame) - _CGRectGetHeight(contentBounds)));
+        default:
+            contentBounds.origin.y = ROUND(value * (_CGRectGetHeight(documentFrame) - _CGRectGetHeight(contentBounds)));
     }
+
+    [self _sendDelegateMessages];
 
     [_contentView scrollToPoint:contentBounds.origin];
 }
@@ -516,27 +952,112 @@
 
     switch ([_horizontalScroller hitPart])
     {
-        case CPScrollerDecrementLine:   contentBounds.origin.x -= _horizontalLineScroll;
-                                        break;
+        case CPScrollerDecrementLine:
+            contentBounds.origin.x -= _horizontalLineScroll;
+            break;
 
-        case CPScrollerIncrementLine:   contentBounds.origin.x += _horizontalLineScroll;
-                                        break;
+        case CPScrollerIncrementLine:
+            contentBounds.origin.x += _horizontalLineScroll;
+            break;
 
-        case CPScrollerDecrementPage:   contentBounds.origin.x -= _CGRectGetWidth(contentBounds) - _horizontalPageScroll;
-                                        break;
+        case CPScrollerDecrementPage:
+            contentBounds.origin.x -= _CGRectGetWidth(contentBounds) - _horizontalPageScroll;
+            break;
 
-        case CPScrollerIncrementPage:   contentBounds.origin.x += _CGRectGetWidth(contentBounds) - _horizontalPageScroll;
-                                        break;
+        case CPScrollerIncrementPage:
+            contentBounds.origin.x += _CGRectGetWidth(contentBounds) - _horizontalPageScroll;
+            break;
 
+        // We want integral bounds!
         case CPScrollerKnobSlot:
         case CPScrollerKnob:
-                                        // We want integral bounds!
-        default:                        contentBounds.origin.x = ROUND(value * (_CGRectGetWidth(documentFrame) - _CGRectGetWidth(contentBounds)));
+        default:
+            contentBounds.origin.x = ROUND(value * (_CGRectGetWidth(documentFrame) - _CGRectGetWidth(contentBounds)));
     }
+
+    [self _sendDelegateMessages];
 
     [_contentView scrollToPoint:contentBounds.origin];
     [_headerClipView scrollToPoint:CGPointMake(contentBounds.origin.x, 0.0)];
 }
+
+/* @ignore */
+- (void)_sendDelegateMessages
+{
+    if (_implementedDelegateMethods == 0)
+        return;
+
+    if (!_scrollTimer)
+    {
+        [self _scrollViewWillScroll];
+        _scrollTimer = [CPTimer scheduledTimerWithTimeInterval:TIMER_INTERVAL target:self selector:@selector(_scrollViewDidScroll) userInfo:nil repeats:YES];
+    }
+    else
+        [_scrollTimer setFireDate:[CPDate dateWithTimeIntervalSinceNow:TIMER_INTERVAL]];
+}
+
+/* @ignore */
+- (void)_hideScrollers:(CPTimer)theTimer
+{
+    if ([_verticalScroller allowFadingOut])
+        [_verticalScroller fadeOut];
+    if ([_horizontalScroller allowFadingOut])
+        [_horizontalScroller fadeOut];
+    _timerScrollersHide = nil;
+}
+
+/* @ignore */
+- (void)_respondToScrollWheelEventWithDeltaX:(float)deltaX deltaY:(float)deltaY
+{
+    var documentFrame = [[self documentView] frame],
+        contentBounds = [_contentView bounds],
+        contentFrame = [_contentView frame],
+        enclosingScrollView = [self enclosingScrollView];
+
+    // We want integral bounds!
+    contentBounds.origin.x = ROUND(contentBounds.origin.x + deltaX);
+    contentBounds.origin.y = ROUND(contentBounds.origin.y + deltaY);
+
+    var constrainedOrigin = [_contentView constrainScrollPoint:CGPointCreateCopy(contentBounds.origin)],
+        extraX = contentBounds.origin.x - constrainedOrigin.x,
+        extraY = contentBounds.origin.y - constrainedOrigin.y;
+
+    [self _sendDelegateMessages];
+
+    [_contentView scrollToPoint:constrainedOrigin];
+    [_headerClipView scrollToPoint:CGPointMake(constrainedOrigin.x, 0.0)];
+
+    if (extraX || extraY)
+        [enclosingScrollView _respondToScrollWheelEventWithDeltaX:extraX deltaY:extraY];
+}
+
+/* @ignore */
+- (void)_scrollViewWillScroll
+{
+    if (_implementedDelegateMethods & CPScrollViewDelegate_scrollViewWillScroll_)
+        [_delegate scrollViewWillScroll:self];
+}
+
+/* @ignore */
+- (void)_scrollViewDidScroll
+{
+    [_scrollTimer invalidate];
+    _scrollTimer = nil;
+
+    if (_implementedDelegateMethods & CPScrollViewDelegate_scrollViewDidScroll_)
+        [_delegate scrollViewDidScroll:self];
+}
+
+/*! @ignore*/
+- (void)_didReceiveDefaultStyleChange:(CPNotification)aNotification
+{
+    [self setScrollerStyle:CPScrollerStyleGlobal];
+}
+
+
+
+#pragma mark -
+#pragma mark Utilities
 
 /*!
     Lays out the scroll view's components.
@@ -549,168 +1070,354 @@
     // scroll: refl.
 }
 
-/*
-    @ignore
+/*!
+    Resizes the scroll view to contain the specified clip view.
+
+    @param aClipView the clip view to resize to
 */
--(void)resizeSubviewsWithOldSize:(CGSize)aSize
+- (void)reflectScrolledClipView:(CPClipView)aClipView
+{
+    if (_contentView !== aClipView)
+        return;
+
+    if (_recursionCount > 5)
+        return;
+
+    ++_recursionCount;
+
+    var documentView = [self documentView];
+
+    if (!documentView)
+    {
+        if (_autohidesScrollers)
+        {
+            [_verticalScroller setHidden:YES];
+            [_horizontalScroller setHidden:YES];
+        }
+
+        [_contentView setFrame:[self _insetBounds]];
+        [_headerClipView setFrame:_CGRectMakeZero()];
+
+        --_recursionCount;
+
+        return;
+    }
+
+    var documentFrame = [documentView frame], // the size of the whole document
+        contentFrame = [self _insetBounds], // assume it takes up the entire size of the scrollview (no scrollers)
+        headerClipViewFrame = [self _headerClipViewFrame],
+        headerClipViewHeight = _CGRectGetHeight(headerClipViewFrame);
+
+    contentFrame.origin.y += headerClipViewHeight;
+    contentFrame.size.height -= headerClipViewHeight;
+
+    var difference = _CGSizeMake(_CGRectGetWidth(documentFrame) - _CGRectGetWidth(contentFrame), _CGRectGetHeight(documentFrame) - _CGRectGetHeight(contentFrame)),
+        verticalScrollerWidth = _CGRectGetWidth([_verticalScroller frame]),
+        horizontalScrollerHeight = _CGRectGetHeight([_horizontalScroller frame]),
+        hasVerticalScroll = difference.height > 0.0,
+        hasHorizontalScroll = difference.width > 0.0,
+        shouldShowVerticalScroller = _hasVerticalScroller && (!_autohidesScrollers || hasVerticalScroll),
+        shouldShowHorizontalScroller = _hasHorizontalScroller && (!_autohidesScrollers || hasHorizontalScroll);
+
+    // Now we have to account for the shown scrollers affecting the deltas.
+    if (shouldShowVerticalScroller)
+    {
+        if (_scrollerStyle === CPScrollerStyleLegacy)
+            difference.width += verticalScrollerWidth;
+        hasHorizontalScroll = difference.width > 0.0;
+        shouldShowHorizontalScroller = _hasHorizontalScroller && (!_autohidesScrollers || hasHorizontalScroll);
+    }
+
+    if (shouldShowHorizontalScroller)
+    {
+        if (_scrollerStyle === CPScrollerStyleLegacy)
+            difference.height += horizontalScrollerHeight;
+        hasVerticalScroll = difference.height > 0.0;
+        shouldShowVerticalScroller = _hasVerticalScroller && (!_autohidesScrollers || hasVerticalScroll);
+    }
+
+    // We now definitively know which scrollers are shown or not, as well as whether they are showing scroll values.
+    [_verticalScroller setHidden:!shouldShowVerticalScroller];
+    [_verticalScroller setEnabled:hasVerticalScroll];
+
+    [_horizontalScroller setHidden:!shouldShowHorizontalScroller];
+    [_horizontalScroller setEnabled:hasHorizontalScroll];
+
+    var overlay = [CPScroller scrollerOverlay];
+    if (_scrollerStyle === CPScrollerStyleLegacy)
+    {
+        // We can thus appropriately account for them changing the content size.
+        if (shouldShowVerticalScroller)
+            contentFrame.size.width -= verticalScrollerWidth;
+
+        if (shouldShowHorizontalScroller)
+            contentFrame.size.height -= horizontalScrollerHeight;
+        overlay = 0;
+    }
+
+    var scrollPoint = [_contentView bounds].origin,
+        wasShowingVerticalScroller = ![_verticalScroller isHidden],
+        wasShowingHorizontalScroller = ![_horizontalScroller isHidden];
+
+    if (shouldShowVerticalScroller)
+    {
+        var verticalScrollerY =
+            MAX(_CGRectGetMinY(contentFrame), MAX(_CGRectGetMaxY([self _cornerViewFrame]), _CGRectGetMaxY(headerClipViewFrame)));
+
+        var verticalScrollerHeight = _CGRectGetMaxY(contentFrame) - verticalScrollerY;
+
+        // Make a gap at the bottom of the vertical scroller so that the horizontal and vertical can't overlap.
+        if (_scrollerStyle === CPScrollerStyleOverlay && hasHorizontalScroll)
+            verticalScrollerHeight -= horizontalScrollerHeight;
+
+        var documentHeight = _CGRectGetHeight(documentFrame);
+        [_verticalScroller setFloatValue:(difference.height <= 0.0) ? 0.0 : scrollPoint.y / difference.height];
+        [_verticalScroller setKnobProportion:documentHeight > 0 ? _CGRectGetHeight(contentFrame) / documentHeight : 1.0];
+        [_verticalScroller setFrame:_CGRectMake(_CGRectGetMaxX(contentFrame) - overlay, verticalScrollerY, verticalScrollerWidth, verticalScrollerHeight)];
+    }
+    else if (wasShowingVerticalScroller)
+    {
+        [_verticalScroller setFloatValue:0.0];
+        [_verticalScroller setKnobProportion:1.0];
+    }
+
+    if (shouldShowHorizontalScroller)
+    {
+        var horizontalScrollerWidth = _CGRectGetWidth(contentFrame);
+        // Make a gap at the bottom of the vertical scroller so that the horizontal and vertical can't overlap.
+        if (_scrollerStyle === CPScrollerStyleOverlay && hasVerticalScroll)
+            horizontalScrollerWidth -= verticalScrollerWidth;
+
+        var documentWidth = _CGRectGetWidth(documentFrame);
+
+        [_horizontalScroller setFloatValue:(difference.width <= 0.0) ? 0.0 : scrollPoint.x / difference.width];
+        [_horizontalScroller setKnobProportion:documentWidth > 0 ? _CGRectGetWidth(contentFrame) / documentWidth : 1.0];
+        [_horizontalScroller setFrame:_CGRectMake(_CGRectGetMinX(contentFrame), _CGRectGetMaxY(contentFrame) - overlay, horizontalScrollerWidth, horizontalScrollerHeight)];
+    }
+    else if (wasShowingHorizontalScroller)
+    {
+        [_horizontalScroller setFloatValue:0.0];
+        [_horizontalScroller setKnobProportion:1.0];
+    }
+
+    [_contentView setFrame:contentFrame];
+    [_headerClipView setFrame:[self _headerClipViewFrame]];
+    [[_headerClipView documentView] setNeedsDisplay:YES];
+    if (SHOULD_SHOW_CORNER_VIEW())
+    {
+        [_cornerView setFrame:[self _cornerViewFrame]];
+        [_cornerView setHidden:NO];
+    }
+    else
+        [_cornerView setHidden:YES];
+
+    if (_scrollerStyle === CPScrollerStyleLegacy)
+    {
+        [[self bottomCornerView] setFrame:[self _bottomCornerViewFrame]];
+        [[self bottomCornerView] setBackgroundColor:[self currentValueForThemeAttribute:@"bottom-corner-color"]];
+    }
+
+    --_recursionCount;
+}
+
+/*!
+    Momentarily display the scrollers if the scroller style is CPScrollerStyleOverlay.
+*/
+- (void)flashScrollers
+{
+    if (_scrollerStyle === CPScrollerStyleLegacy)
+        return;
+
+    if (_hasHorizontalScroller)
+    {
+        [_horizontalScroller setHidden:NO];
+        [_horizontalScroller fadeIn];
+    }
+
+    if (_hasVerticalScroller)
+    {
+        [_verticalScroller setHidden:NO];
+        [_verticalScroller fadeIn];
+    }
+
+    if (_timerScrollersHide)
+        [_timerScrollersHide invalidate]
+
+    _timerScrollersHide = [CPTimer scheduledTimerWithTimeInterval:CPScrollViewFadeOutTime target:self selector:@selector(_hideScrollers:) userInfo:nil repeats:NO];
+}
+
+/* @ignore */
+- (void)resizeSubviewsWithOldSize:(CGSize)aSize
 {
     [self reflectScrolledClipView:_contentView];
 }
 
-// Setting Scrolling Behavior
-/*!
-    Sets how much the document moves when scrolled. Sets the vertical and horizontal scroll.
-    @param aLineScroll the amount to move the document when scrolled
-*/
-- (void)setLineScroll:(float)aLineScroll
+
+#pragma mark -
+#pragma mark Overrides
+
+- (void)drawRect:(CPRect)aRect
 {
-    [self setHorizonalLineScroll:aLineScroll];
-    [self setVerticalLineScroll:aLineScroll];
+    [super drawRect:aRect];
+
+    if (_borderType == CPNoBorder)
+        return;
+
+    var strokeRect = [self bounds],
+        context = [[CPGraphicsContext currentContext] graphicsPort];
+
+    CGContextSetLineWidth(context, 1);
+
+    switch (_borderType)
+    {
+        case CPLineBorder:
+            CGContextSetStrokeColor(context, [self currentValueForThemeAttribute:@"border-color"]);
+            CGContextStrokeRect(context, _CGRectInset(strokeRect, 0.5, 0.5));
+            break;
+
+        case CPBezelBorder:
+            [self _drawGrayBezelInContext:context bounds:strokeRect];
+            break;
+
+        case CPGrooveBorder:
+            [self _drawGrooveInContext:context bounds:strokeRect];
+            break;
+
+        default:
+            break;
+    }
 }
 
-/*!
-    Returns how much the document moves when scrolled
-*/
-- (float)lineScroll
+- (void)_drawGrayBezelInContext:(CGContext)context bounds:(CGRect)aRect
 {
-    return [self horizontalLineScroll];
+    var minX = _CGRectGetMinX(aRect),
+        maxX = _CGRectGetMaxX(aRect),
+        minY = _CGRectGetMinY(aRect),
+        maxY = _CGRectGetMaxY(aRect),
+        y = minY + 0.5;
+
+    // Slightly darker line on top.
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:142.0 / 255.0 alpha:1.0]);
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(context, minX, y);
+    CGContextAddLineToPoint(context, maxX, y);
+    CGContextStrokePath(context);
+
+    // The rest of the border.
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0 / 255.0 alpha:1.0]);
+
+    var x = maxX - 0.5;
+
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(context, x, minY + 1.0);
+    CGContextAddLineToPoint(context, x, maxY);
+    CGContextMoveToPoint(context, x - 0.5, maxY - 0.5);
+    CGContextAddLineToPoint(context, minX, maxY - 0.5);
+
+    x = minX + 0.5;
+
+    CGContextMoveToPoint(context, x, maxY);
+    CGContextAddLineToPoint(context, x, minY + 1.0);
+
+    CGContextStrokePath(context);
 }
 
-/*!
-    Sets how much the document moves when scrolled horizontally.
-    @param aLineScroll the amount to move horizontally when scrolled.
-*/
-- (void)setHorizontalLineScroll:(float)aLineScroll
+- (void)_drawGrooveInContext:(CGContext)context bounds:(CGRect)aRect
 {
-    _horizontalLineScroll = aLineScroll;
-}
+    var minX = _CGRectGetMinX(aRect),
+        maxX = _CGRectGetMaxX(aRect),
+        minY = _CGRectGetMinY(aRect),
+        maxY = _CGRectGetMaxY(aRect);
 
-/*!
-    Returns how much the document moves horizontally when scrolled.
-*/
-- (float)horizontalLineScroll
-{
-    return _horizontalLineScroll;
-}
+    CGContextBeginPath(context);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:159.0 / 255.0 alpha:1.0]);
 
-/*!
-    Sets how much the document moves when scrolled vertically.
-    @param aLineScroll the new amount to move vertically when scrolled.
-*/
-- (void)setVerticalLineScroll:(float)aLineScroll
-{
-    _verticalLineScroll = aLineScroll;
-}
+    var y = minY + 0.5;
 
-/*!
-    Returns how much the document moves vertically when scrolled.
-*/
-- (float)verticalLineScroll
-{
-    return _verticalLineScroll;
-}
+    CGContextMoveToPoint(context, minX, y);
+    CGContextAddLineToPoint(context, maxX, y);
 
-/*!
-    Sets the horizontal and vertical page scroll amount.
-    @param aPageScroll the new horizontal and vertical page scroll amount
-*/
-- (void)setPageScroll:(float)aPageScroll
-{
-    [self setHorizontalPageScroll:aPageScroll];
-    [self setVerticalPageScroll:aPageScroll];
-}
+    var x = maxX - 1.5;
 
-/*!
-    Returns the vertical and horizontal page scroll amount.
-*/
-- (float)pageScroll
-{
-    return [self horizontalPageScroll];
-}
+    CGContextMoveToPoint(context, x, minY + 2.0);
+    CGContextAddLineToPoint(context, x, maxY - 1.0);
 
-/*!
-    Sets the horizontal page scroll amount.
-    @param aPageScroll the new horizontal page scroll amount
-*/
-- (void)setHorizontalPageScroll:(float)aPageScroll
-{
-    _horizontalPageScroll = aPageScroll;
-}
+    y = maxY - 1.5;
 
-/*!
-    Returns the horizontal page scroll amount.
-*/
-- (float)horizontalPageScroll
-{
-    return _horizontalPageScroll;
-}
+    CGContextMoveToPoint(context, maxX - 1.0, y);
+    CGContextAddLineToPoint(context, minX + 2.0, y);
 
-/*!
-    Sets the vertical page scroll amount.
-    @param aPageScroll the new vertcal page scroll amount
-*/
-- (void)setVerticalPageScroll:(float)aPageScroll
-{
-    _verticalPageScroll = aPageScroll;
-}
+    x = minX + 0.5;
 
-/*!
-    Returns the vertical page scroll amount.
-*/
-- (float)verticalPageScroll
-{
-    return _verticalPageScroll;
+    CGContextMoveToPoint(context, x, maxY);
+    CGContextAddLineToPoint(context, x, minY);
+
+    CGContextStrokePath(context);
+
+    CGContextBeginPath(context);
+    CGContextSetStrokeColor(context, [CPColor whiteColor]);
+
+    var rect = _CGRectOffset(aRect, 1.0, 1.0);
+
+    rect.size.width -= 1.0;
+    rect.size.height -= 1.0;
+    CGContextStrokeRect(context, _CGRectInset(rect, 0.5, 0.5));
+
+    CGContextBeginPath(context);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0 / 255.0 alpha:1.0]);
+
+    y = minY + 2.5;
+
+    CGContextMoveToPoint(context, minX + 2.0, y);
+    CGContextAddLineToPoint(context, maxX - 2.0, y);
+    CGContextStrokePath(context);
 }
 
 /*!
     Handles a scroll wheel event from the user.
+
     @param anEvent the scroll wheel event
 */
 - (void)scrollWheel:(CPEvent)anEvent
 {
-    [self _respondToScrollWheelEventWithDeltaX:[anEvent deltaX] * _horizontalLineScroll
-                                        deltaY:[anEvent deltaY] * _verticalLineScroll];
+    if (_timerScrollersHide)
+        [_timerScrollersHide invalidate];
+    if (![_verticalScroller isHidden])
+        [_verticalScroller fadeIn];
+    if (![_horizontalScroller isHidden])
+        [_horizontalScroller fadeIn];
+    if (![_horizontalScroller isHidden] || ![_verticalScroller isHidden])
+        _timerScrollersHide = [CPTimer scheduledTimerWithTimeInterval:CPScrollViewFadeOutTime target:self selector:@selector(_hideScrollers:) userInfo:nil repeats:NO];
+
+    [self _respondToScrollWheelEventWithDeltaX:[anEvent deltaX] deltaY:[anEvent deltaY]];
 }
 
-- (void)_respondToScrollWheelEventWithDeltaX:(float)deltaX deltaY:(float)deltaY
-{
-    var documentFrame = [[self documentView] frame],
-        contentBounds = [_contentView bounds],
-        contentFrame = [_contentView frame],
-        enclosingScrollView = [self enclosingScrollView],
-        extraX = 0,
-        extraY = 0;
-
-    // We want integral bounds!
-    contentBounds.origin.x = ROUND(contentBounds.origin.x + deltaX);
-    contentBounds.origin.y = ROUND(contentBounds.origin.y + deltaY);
-
-    var constrainedOrigin = [_contentView constrainScrollPoint:CGPointCreateCopy(contentBounds.origin)];
-    extraX = ((contentBounds.origin.x - constrainedOrigin.x) / _horizontalLineScroll) * [enclosingScrollView horizontalLineScroll];
-    extraY = ((contentBounds.origin.y - constrainedOrigin.y) / _verticalLineScroll) * [enclosingScrollView verticalLineScroll];
-
-    [_contentView scrollToPoint:constrainedOrigin];
-    [_headerClipView scrollToPoint:CGPointMake(constrainedOrigin.x, 0.0)];
-
-    if (extraX || extraY)
-        [enclosingScrollView _respondToScrollWheelEventWithDeltaX:extraX deltaY:extraY];
-}
-
-- (void)keyDown:(CPEvent)anEvent
-{
-    [self interpretKeyEvents:[anEvent]];
-}
-
-- (void)pageUp:(id)sender
+- (void)scrollPageUp:(id)sender
 {
     var contentBounds = [_contentView bounds];
     [self moveByOffset:CGSizeMake(0.0, -(_CGRectGetHeight(contentBounds) - _verticalPageScroll))];
 }
 
-- (void)pageDown:(id)sender
+- (void)scrollPageDown:(id)sender
 {
     var contentBounds = [_contentView bounds];
     [self moveByOffset:CGSizeMake(0.0, _CGRectGetHeight(contentBounds) - _verticalPageScroll)];
+}
+
+- (void)scrollToBeginningOfDocument:(id)sender
+{
+    [_contentView scrollToPoint:_CGPointMakeZero()];
+    [_headerClipView scrollToPoint:_CGPointMakeZero()];
+}
+
+- (void)scrollToEndOfDocument:(id)sender
+{
+    var contentBounds = [_contentView bounds],
+        documentFrame = [[self documentView] frame],
+        scrollPoint = _CGPointMake(0.0, _CGRectGetHeight(documentFrame) - _CGRectGetHeight(contentBounds));
+
+    [_contentView scrollToPoint:scrollPoint];
+    [_headerClipView scrollToPoint:_CGPointMakeZero()];
 }
 
 - (void)moveLeft:(id)sender
@@ -742,23 +1449,28 @@
     contentBounds.origin.y += aSize.height;
 
     [_contentView scrollToPoint:contentBounds.origin];
-    [_headerClipView scrollToPoint:CGPointMake(contentBounds.origin, 0)];
+    [_headerClipView scrollToPoint:CGPointMake(contentBounds.origin.x, 0)];
 }
 
 @end
 
-var CPScrollViewContentViewKey       = "CPScrollViewContentView",
-    CPScrollViewHeaderClipViewKey    = "CPScrollViewHeaderClipViewKey",
-    CPScrollViewVLineScrollKey       = "CPScrollViewVLineScroll",
-    CPScrollViewHLineScrollKey       = "CPScrollViewHLineScroll",
-    CPScrollViewVPageScrollKey       = "CPScrollViewVPageScroll",
-    CPScrollViewHPageScrollKey       = "CPScrollViewHPageScroll",
-    CPScrollViewHasVScrollerKey      = "CPScrollViewHasVScroller",
-    CPScrollViewHasHScrollerKey      = "CPScrollViewHasHScroller",
-    CPScrollViewVScrollerKey         = "CPScrollViewVScroller",
-    CPScrollViewHScrollerKey         = "CPScrollViewHScroller",
-    CPScrollViewAutohidesScrollerKey = "CPScrollViewAutohidesScroller",
-    CPScrollViewCornerViewKey        = "CPScrollViewCornerViewKey";
+
+var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
+    CPScrollViewHeaderClipViewKey       = @"CPScrollViewHeaderClipViewKey",
+    CPScrollViewVLineScrollKey          = @"CPScrollViewVLineScroll",
+    CPScrollViewHLineScrollKey          = @"CPScrollViewHLineScroll",
+    CPScrollViewVPageScrollKey          = @"CPScrollViewVPageScroll",
+    CPScrollViewHPageScrollKey          = @"CPScrollViewHPageScroll",
+    CPScrollViewHasVScrollerKey         = @"CPScrollViewHasVScroller",
+    CPScrollViewHasHScrollerKey         = @"CPScrollViewHasHScroller",
+    CPScrollViewVScrollerKey            = @"CPScrollViewVScroller",
+    CPScrollViewHScrollerKey            = @"CPScrollViewHScroller",
+    CPScrollViewAutohidesScrollerKey    = @"CPScrollViewAutohidesScroller",
+    CPScrollViewCornerViewKey           = @"CPScrollViewCornerViewKey",
+    CPScrollViewBottomCornerViewKey     = @"CPScrollViewBottomCornerViewKey",
+    CPScrollViewBorderTypeKey           = @"CPScrollViewBorderTypeKey",
+    CPScrollViewScrollerStyleKey        = @"CPScrollViewScrollerStyleKey",
+    CPScrollViewScrollerKnobStyleKey    = @"CPScrollViewScrollerKnobStyleKey";
 
 @implementation CPScrollView (CPCoding)
 
@@ -788,13 +1500,34 @@ var CPScrollViewContentViewKey       = "CPScrollViewContentView",
         _hasHorizontalScroller  = [aCoder decodeBoolForKey:CPScrollViewHasHScrollerKey];
         _autohidesScrollers     = [aCoder decodeBoolForKey:CPScrollViewAutohidesScrollerKey];
 
-        _cornerView             = [aCoder decodeObjectForKey:CPScrollViewCornerViewKey];
+        _borderType             = [aCoder decodeIntForKey:CPScrollViewBorderTypeKey];
 
-        // Do to the anything goes nature of decoding, our subviews may not exist yet, so layout at the end of the run loop when we're sure everything is in a correct state.
-        [[CPRunLoop currentRunLoop] performSelector:@selector(reflectScrolledClipView:) target:self argument:_contentView order:0 modes:[CPDefaultRunLoopMode]];
+        _cornerView             = [aCoder decodeObjectForKey:CPScrollViewCornerViewKey];
+        _bottomCornerView       = [aCoder decodeObjectForKey:CPScrollViewBottomCornerViewKey];
+
+        _delegate = nil;
+        _scrollTimer = nil;
+        _implementedDelegateMethods = 0;
+
+        _scrollerStyle = [aCoder decodeObjectForKey:CPScrollViewScrollerStyleKey] || CPScrollerStyleGlobal;
+        _scrollerKnobStyle = [aCoder decodeObjectForKey:CPScrollViewScrollerKnobStyleKey] || CPScrollerKnobStyleDefault;
+
+        [[CPNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(_didReceiveDefaultStyleChange:)
+                                                     name:CPScrollerStyleGlobalChangeNotification
+                                                   object:nil];
     }
 
     return self;
+}
+
+/*!
+    Do final init that can only be done when we are sure all subviews have been initialized.
+*/
+- (void)awakeFromCib
+{
+    [self _updateScrollerStyle];
+    [self _updateCornerAndHeaderView];
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder
@@ -817,6 +1550,12 @@ var CPScrollViewContentViewKey       = "CPScrollViewContentView",
     [aCoder encodeBool:_autohidesScrollers      forKey:CPScrollViewAutohidesScrollerKey];
 
     [aCoder encodeObject:_cornerView            forKey:CPScrollViewCornerViewKey];
+    [aCoder encodeObject:_bottomCornerView      forKey:CPScrollViewBottomCornerViewKey];
+
+    [aCoder encodeInt:_borderType               forKey:CPScrollViewBorderTypeKey];
+
+    [aCoder encodeInt:_scrollerStyle            forKey:CPScrollViewScrollerStyleKey];
+    [aCoder encodeInt:_scrollerKnobStyle        forKey:CPScrollViewScrollerKnobStyleKey];
 }
 
 @end

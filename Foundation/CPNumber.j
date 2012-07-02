@@ -23,16 +23,14 @@
 @import "CPObject.j"
 @import "CPObjJRuntime.j"
 
-
-var __placeholder   = new Number(),
-    CPNumberUIDs    = new CFMutableDictionary();
+var CPNumberUIDs    = new CFMutableDictionary();
 
 /*!
     @class CPNumber
     @ingroup foundation
     @brief A bridged object to native Javascript numbers.
 
-    This class primarily exists for source compatability. The JavaScript
+    This class primarily exists for source compatibility. The JavaScript
     \c Number type can be changed on the fly based on context,
     so there is no need to call any of these methods.
 
@@ -43,7 +41,9 @@ var __placeholder   = new Number(),
 
 + (id)alloc
 {
-    return __placeholder;
+    var result = new Number();
+    result.isa = [self class];
+    return result;
 }
 
 + (id)numberWithBool:(BOOL)aBoolean
@@ -222,7 +222,8 @@ FIXME: Do we need this?
 
 - (CPString)descriptionWithLocale:(CPDictionary)aDictionary
 {
-    if (!aDictionary) return toString();
+    if (!aDictionary)
+        return toString();
 
     throw new Error("descriptionWithLocale: NOT YET IMPLEMENTED");
 }
@@ -234,37 +235,43 @@ FIXME: Do we need this?
 
 - (double)doubleValue
 {
-    if (typeof self == "boolean") return self ? 1 : 0;
+    if (typeof self == "boolean")
+        return self ? 1 : 0;
     return self;
 }
 
 - (float)floatValue
 {
-    if (typeof self == "boolean") return self ? 1 : 0;
+    if (typeof self == "boolean")
+        return self ? 1 : 0;
     return self;
 }
 
 - (int)intValue
 {
-    if (typeof self == "boolean") return self ? 1 : 0;
+    if (typeof self == "boolean")
+        return self ? 1 : 0;
     return self;
 }
 
 - (long long)longLongValue
 {
-    if (typeof self == "boolean") return self ? 1 : 0;
+    if (typeof self == "boolean")
+        return self ? 1 : 0;
     return self;
 }
 
 - (long)longValue
 {
-    if (typeof self == "boolean") return self ? 1 : 0;
+    if (typeof self == "boolean")
+        return self ? 1 : 0;
     return self;
 }
 
 - (short)shortValue
 {
-    if (typeof self == "boolean") return self ? 1 : 0;
+    if (typeof self == "boolean")
+        return self ? 1 : 0;
     return self;
 }
 
@@ -280,7 +287,8 @@ FIXME: Do we need this?
 
 - (unsigned int)unsignedIntValue
 {
-    if (typeof self == "boolean") return self ? 1 : 0;
+    if (typeof self == "boolean")
+        return self ? 1 : 0;
     return self;
 }
 /*
@@ -292,20 +300,24 @@ FIXME: Do we need this?
 */
 - (unsigned long)unsignedLongValue
 {
-    if (typeof self == "boolean") return self ? 1 : 0;
+    if (typeof self == "boolean")
+        return self ? 1 : 0;
     return self;
 }
 
 - (unsigned short)unsignedShortValue
 {
-    if (typeof self == "boolean") return self ? 1 : 0;
+    if (typeof self == "boolean")
+        return self ? 1 : 0;
     return self;
 }
 
 - (CPComparisonResult)compare:(CPNumber)aNumber
 {
-    if (self > aNumber) return CPOrderedDescending;
-    else if (self < aNumber) return CPOrderedAscending;
+    if (self > aNumber)
+        return CPOrderedDescending;
+    else if (self < aNumber)
+        return CPOrderedAscending;
 
     return CPOrderedSame;
 }

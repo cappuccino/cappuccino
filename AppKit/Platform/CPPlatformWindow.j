@@ -22,9 +22,6 @@
 
 @import <Foundation/CPObject.j>
 
-#import "Platform.h"
-#import "../CoreGraphics/CGGeometry.h"
-
 
 var PrimaryPlatformWindow   = NULL;
 
@@ -35,6 +32,7 @@ var PrimaryPlatformWindow   = NULL;
     CPInteger       _level;
     BOOL            _hasShadow;
     unsigned        _shadowStyle;
+    CPString        _title;
 
 #if PLATFORM(DOM)
     DOMWindow       _DOMWindow;
@@ -42,12 +40,15 @@ var PrimaryPlatformWindow   = NULL;
     DOMElement      _DOMBodyElement;
     DOMElement      _DOMFocusElement;
     DOMElement      _DOMEventGuard;
+    DOMElement      _DOMScrollingElement;
+    id              _hideDOMScrollingElementTimeout;
 
     CPArray         _windowLevels;
     CPDictionary    _windowLayers;
 
     BOOL            _mouseIsDown;
     BOOL            _mouseDownIsRightClick;
+    CGPoint         _lastMouseEventLocation;
     CPWindow        _mouseDownWindow;
     CPTimeInterval  _lastMouseUp;
     CPTimeInterval  _lastMouseDown;
@@ -104,7 +105,7 @@ var PrimaryPlatformWindow   = NULL;
 #if PLATFORM(DOM)
         _windowLevels = [];
         _windowLayers = [CPDictionary dictionary];
-        
+
         _charCodes = {};
 #endif
     }
@@ -160,7 +161,9 @@ var PrimaryPlatformWindow   = NULL;
 
     _contentRect = _CGRectMakeCopy(aRect);
 
-    [self updateNativeContentRect];
+#if PLATFORM(DOM)
+     [self updateNativeContentRect];
+#endif
 }
 
 - (void)updateFromNativeContentRect
@@ -254,6 +257,22 @@ var PrimaryPlatformWindow   = NULL;
 - (BOOL)supportsFullPlatformWindows
 {
     return [CPPlatform isBrowser];
+}
+
+- (void)_setTitle:(CPString)aTitle window:(CPWindow)aWindow
+{
+    _title = aTitle;
+
+#if PLATFORM(DOM)
+    if (_DOMWindow && _DOMWindow.document
+        && (aWindow === [CPApp mainWindow] || [aWindow platformWindow] !== [CPPlatformWindow primaryPlatformWindow]))
+        _DOMWindow.document.title = _title;
+#endif
+}
+
+- (CPString)title
+{
+    return _title;
 }
 
 @end

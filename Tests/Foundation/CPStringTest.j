@@ -1,23 +1,24 @@
 @import <Foundation/CPString.j>
+@import <Foundation/CPCharacterSet.j>
 
 @implementation CPStringTest : OJTestCase
 
 
 - (void)testStringByReplacingOccurrencesOfStringWithString
 {
-    var expectedString = @"hello world. A new world!";
-    var dummyString = @"hello woold. A new woold!";
-    var actualString = [dummyString stringByReplacingOccurrencesOfString:@"woold" withString:@"world"];
-    [self assertTrue:(expectedString === actualString) 
+    var expectedString = @"hello world. A new world!",
+        dummyString = @"hello woold. A new woold!",
+        actualString = [dummyString stringByReplacingOccurrencesOfString:@"woold" withString:@"world"];
+
+    [self assertTrue:(expectedString === actualString)
              message:"stringByAppendingFormat: expected:" + expectedString + " actual:" + actualString];
-    
 }
 
 - (void)testStringByReplacingWithRegexCharacters
 {
     var stringToTest = "${foo} {foo}",
         result = [stringToTest stringByReplacingOccurrencesOfString:"${foo}" withString:"BAR"];
-    
+
     [self assert:result equals:"BAR {foo}"];
 }
 
@@ -27,8 +28,8 @@
         expectedString = "2 X 3 = 6",
         dummyString = @"",
         actualString = [dummyString stringByAppendingFormat:format, 2, 3, 6];
-        
-    [self assertTrue:(expectedString === actualString) 
+
+    [self assertTrue:(expectedString === actualString)
              message:"stringByAppendingFormat: expected:" + expectedString + " actual:" + actualString];
 }
 
@@ -46,7 +47,7 @@
     [self assert:"str" equals:str];
 }
 
-- (void) testInitWithFormat
+- (void)testInitWithFormat
 {
     // this could be really big
     var str = [[CPString alloc] initWithFormat:"%s", "str"];
@@ -56,7 +57,7 @@
     [self assert:"42" equals:str];
 
     str = [[CPString alloc] initWithFormat:"%f", 42.2];
-    [self assert:"42.2" equals:str];    
+    [self assert:"42.2" equals:str];
 }
 
 - (void)testStringWithFormat
@@ -69,7 +70,7 @@
     [self assert:"42" equals:str];
 
     str = [CPString stringWithFormat:"%f", 42.2];
-    [self assert:"42.2" equals:str];    
+    [self assert:"42.2" equals:str];
 }
 
 - (void)testLength
@@ -96,16 +97,16 @@
 
 - (void)testStringByPaddingToLength
 {
-    [self assert:"onebcd" 
-	      equals:["one" stringByPaddingToLength:6 
-			                         withString:"abcdefg"
-	                            startingAtIndex:1]];
+    [self assert:"onebcd"
+          equals:["one" stringByPaddingToLength:6
+                                     withString:"abcdefg"
+                                startingAtIndex:1]];
 }
 
 - (void)testComponentsSeparatedByString
 {
     [self assert:["arash", "francisco", "ross", "tom"]
-	  equals:["arash.francisco.ross.tom" componentsSeparatedByString:"."]];
+          equals:["arash.francisco.ross.tom" componentsSeparatedByString:"."]];
 }
 
 - (void)testSubstringFromIndex
@@ -127,6 +128,18 @@
     [self assert:"abcd" equals:["abcd" substringToIndex:4]];
     [self assert:"abc"  equals:["abcd" substringToIndex:3]];
     [self assert:""     equals:["abcd" substringToIndex:0]];
+
+    var sawException = false;
+    try
+    {
+        [@"abcd" substringToIndex:5];
+    }
+    catch (anException)
+    {
+        sawException = true;
+        [self assert:CPRangeException equals:[anException name]];
+    }
+    [self assertTrue:sawException message:"expected CPRangeException"];
 }
 
 - (void)testBoolValue
@@ -144,9 +157,10 @@
         ["  NO",    NO],
         ["  -N00",  NO],
         ["  00",    NO],
-        ["  -00",   NO]
+        ["  -00",   NO],
+        ["  -+001", NO],
     ];
-    
+
     for (var i = 0; i < testStrings.length; i++)
         [self assert:[testStrings[i][0] boolValue] equals:testStrings[i][1]];
 }
@@ -159,14 +173,14 @@
         ["Abcd", "Abcd", "Abcd"],
         ["A long string", "A longer string", "A long"]
     ];
-    
+
     var testStringsCaseless = [
         ["hElLo", "HeLiCoPtEr", "hEl"],
         ["tEsTeR", "TaSeR", "t"],
         ["aBcD", "AbCd", "aBcD"],
         ["a LoNg StRiNg", "A lOnGeR sTrInG", "a LoNg"]
     ];
-    
+
     for (var i = 0; i < testStringsCase.length; i++)
         [self assert: [testStringsCase[i][0] commonPrefixWithString:testStringsCase[i][1]]
               equals: testStringsCase[i][2]];
@@ -185,9 +199,9 @@
         [" monkey-Cow", " Monkey-cow"],
         ["tHe QuicK bRowN-Fox JumPed_Over +the LaZy%dog", "The Quick Brown-fox Jumped_over +the Lazy%dog"]
     ];
-    
+
     for (var i = 0; i < testStrings.length; i++)
-        [self assert:[testStrings[i][0] capitalizedString] equals:testStrings[i][1]];	
+        [self assert:[testStrings[i][0] capitalizedString] equals:testStrings[i][1]];
 }
 
 - (void)testUppercaseString
@@ -195,7 +209,7 @@
     var str = "This is a test";
     [self assert:[str uppercaseString] equals:"THIS IS A TEST"];
 }
- 
+
 - (void)testLowercaseString
 {
     var str = "This Is A TEST";
@@ -211,6 +225,52 @@
     [self assert:"ffffff" equals:[CPString stringWithHash:16777215]];
 }
 
+- (void)testStringByAppendingPathComponent
+{
+    var testStrings = [
+        ["/tmp/", "scratch.tiff", "/tmp/scratch.tiff"],
+        ["/tmp///", "scratch.tiff", "/tmp/scratch.tiff"],
+        ["/tmp///", "///scratch.tiff", "/tmp/scratch.tiff"],
+        ["/tmp", "scratch.tiff", "/tmp/scratch.tiff"],
+        ["/tmp///", "scratch.tiff", "/tmp/scratch.tiff"],
+        ["/tmp///", "///scratch.tiff", "/tmp/scratch.tiff"],
+        ["/", "scratch.tiff", "/scratch.tiff"],
+        ["", "scratch.tiff", "scratch.tiff"],
+        ["", "", ""],
+        ["", "/", ""],
+        ["/", "/", "/"],
+        ["/tmp", nil, "/tmp"],
+        ["/tmp", "/", "/tmp"],
+        ["/tmp/", "", "/tmp"]
+    ];
+
+    for (var i = 0; i < testStrings.length; i++)
+    {
+        var result = [testStrings[i][0] stringByAppendingPathComponent:testStrings[i][1]];
+        
+        [self assertTrue:result === testStrings[i][2] message:"Value <" + testStrings[i][0] + "> Adding <" + testStrings[i][1] + "> Expected <" + testStrings[i][2] + "> was <" + result + ">"];
+    }
+}
+
+- (void)testStringByAppendingPathExtension
+{
+    var testStrings = [
+        ["/tmp/scratch.old", "tiff", "/tmp/scratch.old.tiff"],
+        ["/tmp/scratch.", "tiff", "/tmp/scratch..tiff"],
+        ["/tmp///", "tiff", "/tmp.tiff"],
+        ["scratch", "tiff", "scratch.tiff"],
+        ["/", "tiff", "/"],
+        ["", "tiff", ""]
+    ];
+
+    for (var i = 0; i < testStrings.length; i++)
+    {
+        var result = [testStrings[i][0] stringByAppendingPathExtension:testStrings[i][1]];
+        
+        [self assertTrue:result === testStrings[i][2] message:"Value <" + testStrings[i][0] + "> Adding <" + testStrings[i][1] + "> Expected <" + testStrings[i][2] + "> was <" + result + ">"];
+    }
+}
+
 - (void)testStringByDeletingLastPathComponent
 {
     var testStrings = [
@@ -221,26 +281,64 @@
         ["/", "/"],
         ["scratch.tiff", ""],
         ["a/b/c/d//////",  "a/b/c"],
+        ["a/b/////////c/d//////",  "a/b/c"],
         ["a/b/././././c/d/./././", "a/b/././././c/d/./."],
         [@"a/b/././././d////", "a/b/./././."],
         [@"~/a", "~"],
         [@"~/a/", "~"],
-        [@"../../", ".."]
+        [@"../../", ".."],
+        [@"", ""]
     ];
 
     for (var i = 0; i < testStrings.length; i++)
-        [self assert:[testStrings[i][0] stringByDeletingLastPathComponent] equals:testStrings[i][1]];
+    {
+        var result = [testStrings[i][0] stringByDeletingLastPathComponent];
+        
+        [self assertTrue:result === testStrings[i][1] message:"Value <" + testStrings[i][0] + "> Expected <" + testStrings[i][1] + "> was <" + result + ">"];
+    }
+}
+
+- (void)testPathWithComponents
+{
+    var testStrings = [
+        [["tmp", "scratch"], "tmp/scratch"],
+        [["/", "tmp", "scratch"], "/tmp/scratch"],
+        [["/", "tmp", "/", "scratch"], "/tmp/scratch"],
+        [["/", "tmp", "scratch", "/"], "/tmp/scratch"],
+        [["/", "tmp", "scratch", ""], "/tmp/scratch"],
+        [["", "/tmp", "scratch", ""], "/tmp/scratch"],
+        [["", "tmp", "scratch", ""], "tmp/scratch"],
+        [["/"], "/"],
+        [["/", "/", "/"], "/"],
+        [["", "", ""], ""],
+        [[""], ""]
+    ];
+
+    for (var i = 0; i < testStrings.length; i++)
+    {
+        var result = [CPString pathWithComponents:testStrings[i][0]];
+
+        [self assertTrue:result === testStrings[i][1] message:"Value <" + testStrings[i][0] + "> Expected [" + testStrings[i][1] + "] was [" + result + "]"];
+    }
 }
 
 - (void)testPathComponents
 {
     var testStrings = [
         ["tmp/scratch", ["tmp", "scratch"]],
-        ["/tmp/scratch", ["/", "tmp", "scratch"]]
-    ]
-    
-    for (var i = 0; i < testStrings.length; i++) {
+        ["/tmp/scratch", ["/", "tmp", "scratch"]],
+        ["/tmp/scratch/", ["/", "tmp", "scratch", "/"]],
+        ["/tmp/", ["/", "tmp", "/"]],
+        ["/////tmp/////scratch///", ["/", "tmp", "scratch", "/"]],
+        ["scratch.tiff", ["scratch.tiff"]],
+        ["/", ["/"]],
+        ["", [""]]
+    ];
+
+    for (var i = 0; i < testStrings.length; i++)
+    {
         var result = [testStrings[i][0] pathComponents];
+
         [self assertTrue:[result isEqualToArray:testStrings[i][1]] message:"Expected [" + testStrings[i][1] + "] was [" + result + "]"];
     }
 }
@@ -252,9 +350,10 @@
         ["/tmp/scratch", "scratch"],
         ["/tmp/", "tmp"],
         ["scratch", "scratch"],
-        ["/", "/"]
+        ["/", "/"],
+        ["", ""]
     ];
-        
+
     for (var i = 0; i < testStrings.length; i++)
         [self assert:testStrings[i][1] equals:[testStrings[i][0] lastPathComponent]];
 }
@@ -268,7 +367,7 @@
         ["/tmp", ""],
         ["scratch", ""],
     ];
-        
+
     for (var i = 0; i < testStrings.length; i++)
         [self assert:testStrings[i][1] equals:[testStrings[i][0] pathExtension]];
 }
@@ -310,6 +409,121 @@
     [self assertFalse:["abc" hasSuffix:"b"]];
     [self assertFalse:["abc" hasSuffix:"cat"]];
     [self assertFalse:["abc" hasSuffix:""]];
+}
+
+- (void)testComponentsSeparatedByCharactersInSetEmptyString
+{
+    [self assert:[""]
+          equals:["" componentsSeparatedByCharactersInSet:[CPCharacterSet whitespaceCharacterSet]]];
+}
+
+- (void)testComponentsSeparatedByCharactersInSetStringWithoutCharactersFromSet
+{
+    [self assert:["Abradab"]
+          equals:["Abradab" componentsSeparatedByCharactersInSet:[CPCharacterSet whitespaceCharacterSet]]];
+}
+
+- (void)testComponentsSeparatedByCharactersInSet
+{
+    [self assert:["Baku", "baku", "to", "jest", "", "skład."]
+          equals:["Baku baku to jest  skład." componentsSeparatedByCharactersInSet:[CPCharacterSet whitespaceCharacterSet]]];
+}
+
+- (void)testComponentsSeparatedByCharactersInSetLeadingAndTrailingCharacterFromSet
+{
+    [self assert:["", "Test", ""]
+          equals:[" Test " componentsSeparatedByCharactersInSet:[CPCharacterSet whitespaceCharacterSet]]];
+}
+
+- (void)testComponentsSeparatedByCharactersExceptionRaiseOnNilSeparator
+{
+    try
+    {
+        [[CPString string] componentsSeparatedByCharactersInSet:nil];
+        [self assert:false];
+    }
+    catch (anException)
+    {
+        [self assert:[anException name] equals:CPInvalidArgumentException];
+        [self assert:[anException reason] equals:@"componentsSeparatedByCharactersInSet: the separator can't be 'nil'"];
+    }
+}
+
+- (void)testIsEqual
+{
+    var str = "s";
+    [self assert:str equals:[CPString stringWithString:str]];
+    [self assert:str equals:[str copy]];
+    [self assert:[str copy] equals:str];
+    [self assert:[str copy] equals:[str copy]];
+}
+
+- (void)testRangeOfString
+{
+    // Based on the Cocoa "String Programming Guide" example.
+    var searchString = @"age",
+        beginsTest = @"Agencies",
+        prefixRange = [beginsTest rangeOfString:searchString options:(CPCaseInsensitiveSearch)];
+
+    [self assert:0 equals:prefixRange.location message:@"forward search for age (location)"];
+    [self assert:3 equals:prefixRange.length message:@"forward search for age (length)"];
+
+    var endsTest = @"BRICOLAGE",
+        suffixRange = [endsTest rangeOfString:searchString options:(CPCaseInsensitiveSearch | CPBackwardsSearch)];
+
+    [self assert:6 equals:suffixRange.location message:@"backwards search for age (location)"];
+    [self assert:3 equals:suffixRange.length message:@"backwards search for age (length)"];
+}
+
+- (void)testRangeOfString_Anchored_Backwards
+{
+    var endsTest = @"AGEBRICOLAGE",
+        unAnchoredSuffixRange = [endsTest rangeOfString:@"LAG" options:(CPCaseInsensitiveSearch | CPBackwardsSearch)],
+        anchoredSuffixRange = [endsTest rangeOfString:@"LAG" options:(CPAnchoredSearch | CPCaseInsensitiveSearch | CPBackwardsSearch)];
+
+    [self assert:8 equals:unAnchoredSuffixRange.location message:"backwards search for LAG"];
+    [self assert:CPNotFound equals:anchoredSuffixRange.location message:"anchored backwards search for LAG"];
+
+    anchoredSuffixRange = [endsTest rangeOfString:@"AGE" options:(CPAnchoredSearch | CPCaseInsensitiveSearch | CPBackwardsSearch)];
+    [self assert:9 equals:anchoredSuffixRange.location message:"anchored backwards search for AGE"];
+
+    anchoredSuffixRange = [endsTest rangeOfString:endsTest options:(CPAnchoredSearch | CPCaseInsensitiveSearch | CPBackwardsSearch)];
+    [self assert:0 equals:anchoredSuffixRange.location message:"anchored backwards search for whole string (location)"];
+    [self assert:endsTest.length equals:anchoredSuffixRange.length message:"anchored backwards search for whole string (length)"];
+
+    anchoredSuffixRange = [endsTest rangeOfString:@"" options:(CPAnchoredSearch | CPCaseInsensitiveSearch | CPBackwardsSearch)];
+    [self assert:CPNotFound equals:anchoredSuffixRange.location message:"anchored backwards search for nothing (location)"];
+    [self assert:0 equals:anchoredSuffixRange.length message:"anchored backwards search for nothing (length)"];
+}
+
+- (void)testRangeOfString_options_range
+{
+    var testString = @"In another life you would have made a excellent criminal.",
+        hitRange;
+
+    hitRange = [testString rangeOfString:@"life" options:0 range:CPMakeRange(0, testString.length)];
+    [self assert:11 equals:hitRange.location message:@"search for 'life' in full range (location)"];
+    [self assert:4 equals:hitRange.length message:@"search for 'life' in full range (position)"];
+
+    hitRange = [testString rangeOfString:@"i" options:0 range:CPMakeRange(0, testString.length)];
+    [self assert:12 equals:hitRange.location message:@"search for 'i' in full range (location)"];
+    [self assert:1 equals:hitRange.length message:@"search for 'i' in full range (position)"];
+
+    hitRange = [testString rangeOfString:@"i" options:0 range:CPMakeRange(10, 20)];
+    [self assert:12 equals:hitRange.location message:@"search for 'i' in partial range (location)"];
+    [self assert:1 equals:hitRange.length message:@"search for 'i' in partial range (position)"];
+
+    var sawException = false;
+    try
+    {
+        hitRange = [testString rangeOfString:@"i" options:0 range:CPMakeRange(50, 60)];
+    }
+    catch (anException)
+    {
+        sawException = true;
+        [self assert:CPRangeException equals:[anException name]];
+    }
+    [self assertTrue:sawException message:"expected CPRangeException"];
 }
 
 @end

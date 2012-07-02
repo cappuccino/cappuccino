@@ -23,8 +23,9 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPString.j>
 
-@import <AppKit/CPImage.j>
-@import <AppKit/CPView.j>
+@import "CPImage.j"
+@import "CPView.j"
+
 
 CPToolbarItemVisibilityPriorityStandard = 0;
 CPToolbarItemVisibilityPriorityLow      = -1000;
@@ -39,7 +40,7 @@ CPToolbarShowFontsItemIdentifier        = @"CPToolbarShowFontsItem";
 CPToolbarCustomizeToolbarItemIdentifier = @"CPToolbarCustomizeToolbarItem";
 CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
 
-/*! 
+/*!
     @ingroup appkit
     @class CPToolbarItem
 
@@ -48,9 +49,9 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
 @implementation CPToolbarItem : CPObject
 {
     CPString    _itemIdentifier;
-    
+
     CPToolbar   _toolbar;
-    
+
     CPString    _label;
     CPString    _paletteLabel;
     CPString    _toolTip;
@@ -60,12 +61,12 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
     BOOL        _isEnabled;
     CPImage     _image;
     CPImage     _alternateImage;
-    
+
     CPView      _view;
-    
+
     CGSize      _minSize;
-    CGSize      _maxSize;    
-    
+    CGSize      _maxSize;
+
     int         _visibilityPriority;
 
     BOOL        _autovalidates;
@@ -85,21 +86,21 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
 - (id)initWithItemIdentifier:(CPString)anItemIdentifier
 {
     self = [super init];
-    
+
     if (self)
     {
         _itemIdentifier = anItemIdentifier;
-     
+
         _tag = 0;
         _isEnabled = YES;
-     
+
         _minSize = CGSizeMakeZero();
         _maxSize = CGSizeMakeZero();
-     
+
         _visibilityPriority = CPToolbarItemVisibilityPriorityStandard;
         _autovalidates = YES;
     }
-    
+
     return self;
 }
 
@@ -169,7 +170,7 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
 {
     if ([_view respondsToSelector:@selector(toolTip)])
         return [_view toolTip];
-    
+
     return _toolTip;
 }
 
@@ -181,7 +182,7 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
 {
     if ([_view respondsToSelector:@selector(setToolTip:)])
         [_view setToolTip:aToolTip];
-    
+
     _toolTip = aToolTip;
 }
 
@@ -192,7 +193,7 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
 {
     if ([_view respondsToSelector:@selector(tag)])
         return [_view tag];
-    
+
     return _tag;
 }
 
@@ -204,7 +205,7 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
 {
     if ([_view respondsToSelector:@selector(setTag:)])
         [_view setTag:aTag];
-    
+
     _tag = aTag;
 }
 
@@ -215,12 +216,12 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
 {
     if (_view)
         return [_view respondsToSelector:@selector(target)] ? [_view target] : nil;
-    
+
     return _target;
 }
 
 /*!
-    Sets the target of the action that is triggered when the user clicks this item. \c nil will cause 
+    Sets the target of the action that is triggered when the user clicks this item. \c nil will cause
     the action to be passed on to the first responder.
     @param aTarget the new target
 */
@@ -228,7 +229,7 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
 {
     if (!_view)
         _target = aTarget;
-    
+
     else if ([_view respondsToSelector:@selector(setTarget:)])
         [_view setTarget:aTarget];
 }
@@ -240,7 +241,7 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
 {
     if (_view)
         return [_view respondsToSelector:@selector(action)] ? [_view action] : nil;
-    
+
     return _action;
 }
 
@@ -264,7 +265,7 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
 {
     if ([_view respondsToSelector:@selector(isEnabled)])
         return [_view isEnabled];
-    
+
     return _isEnabled;
 }
 
@@ -276,7 +277,7 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
 {
     if ([_view respondsToSelector:@selector(setEnabled:)])
         [_view setEnabled:shouldBeEnabled];
-    
+
     _isEnabled = shouldBeEnabled;
 }
 
@@ -287,7 +288,7 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
 {
     if ([_view respondsToSelector:@selector(image)])
         return [_view image];
-        
+
     return _image;
 }
 
@@ -301,11 +302,11 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
         [_view setImage:anImage];
 
     _image = anImage;
-    
+
     if (!_image)
         return;
-    
-    if (_minSize.width === 0 && _minSize.height === 0 && 
+
+    if (_minSize.width === 0 && _minSize.height === 0 &&
         _maxSize.width === 0 && _maxSize.height === 0)
     {
         var imageSize = [_image size];
@@ -326,7 +327,7 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
 {
     if ([_view respondsToSelector:@selector(setAlternateImage:)])
         [_view setAlternateImage:anImage];
-    
+
     _alternateImage = anImage;
 }
 
@@ -337,7 +338,7 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
 {
     if ([_view respondsToSelector:@selector(alternateIamge)])
         return [_view alternateImage];
-    
+
     return _alternateImage;
 }
 
@@ -357,7 +358,7 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
 {
     if (_view == aView)
         return;
-    
+
     _view = aView;
 
     if (_view)
@@ -365,7 +366,7 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
         // Tags get forwarded.
         if (_tag !== 0 && [_view respondsToSelector:@selector(setTag:)])
             [_view setTag:_tag];
-        
+
         _target = nil;
         _action = nil;
     }
@@ -385,11 +386,11 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
 */
 - (void)setMinSize:(CGSize)aMinSize
 {
-    if(!aMinSize.height || !aMinSize.width)
+    if (!aMinSize.height || !aMinSize.width)
         return;
 
     _minSize = CGSizeMakeCopy(aMinSize);
-    
+
     // Try to provide some sanity: Make maxSize >= minSize
     _maxSize = CGSizeMake(MAX(_minSize.width, _maxSize.width), MAX(_minSize.height, _maxSize.height));
 }
@@ -408,11 +409,11 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
 */
 - (void)setMaxSize:(CGSize)aMaxSize
 {
-    if(!aMaxSize.height || !aMaxSize.width)
+    if (!aMaxSize.height || !aMaxSize.width)
         return;
-        
+
     _maxSize = CGSizeMakeCopy(aMaxSize);
-    
+
     // Try to provide some sanity: Make minSize <= maxSize
     _minSize = CGSizeMake(MIN(_minSize.width, _maxSize.width), MIN(_minSize.height, _maxSize.height));
 }
@@ -622,7 +623,7 @@ var CPToolbarItemItemIdentifierKey      = @"CPToolbarItemItemIdentifierKey",
         case CPToolbarCustomizeToolbarItemIdentifier:   return nil;
         case CPToolbarPrintItemIdentifier:              return nil;
     }
-    
+
     return nil;
 }
 

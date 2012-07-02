@@ -45,13 +45,13 @@ var CAMediaNamedTimingFunctions = nil;
     if (!CAMediaNamedTimingFunctions)
     {
         CAMediaNamedTimingFunctions = [CPDictionary dictionary];
-        
+
         [CAMediaNamedTimingFunctions setObject:[CAMediaTimingFunction functionWithControlPoints:0.0 :0.0 :1.0 :1.0] forKey:kCAMediaTimingFunctionLinear];
         [CAMediaNamedTimingFunctions setObject:[CAMediaTimingFunction functionWithControlPoints:0.42 :0.0 :1.0 :1.0] forKey:kCAMediaTimingFunctionEaseIn];
         [CAMediaNamedTimingFunctions setObject:[CAMediaTimingFunction functionWithControlPoints:0.0 :0.0 :0.58 :1.0] forKey:kCAMediaTimingFunctionEaseOut];
         [CAMediaNamedTimingFunctions setObject:[CAMediaTimingFunction functionWithControlPoints:0.42 :0.0 :0.58 :1.0] forKey:kCAMediaTimingFunctionEaseInEaseOut];
     }
-    
+
     return [CAMediaNamedTimingFunctions objectForKey:aName];
 }
 
@@ -63,7 +63,7 @@ var CAMediaNamedTimingFunctions = nil;
 - (id)initWithControlPoints:(float)c1x :(float)c1y :(float)c2x :(float)c2y
 {
     self = [super init];
-    
+
     if (self)
     {
         _c1x = c1x;
@@ -71,7 +71,7 @@ var CAMediaNamedTimingFunctions = nil;
         _c2x = c2x;
         _c2y = c2y;
     }
-    
+
     return self;
 }
 

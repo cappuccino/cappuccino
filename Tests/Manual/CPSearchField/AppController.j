@@ -1,146 +1,135 @@
 /*
  * AppController.j
+ * CPSearchField
  *
- * Created by __Me__ on __Date__.
- * Copyright 2008 __MyCompanyName__. All rights reserved.
+ * Created by cacaodev on November 27, 2010.
+ * Copyright 2010, Your Company All rights reserved.
  */
 
-@import <Foundation/Foundation.j>
-@import <AppKit/AppKit.j>
-
-var categories = ["firstName","lastName"];
+var categories = ["firstName", "lastName"],
+    MenuItemPrefix = @"   ";
 
 @implementation AppController : CPObject
 {
-	var searchField;	
-	var table;
-	
-	var tableArray;
-	var filteredArray;
-	
-	var searchCategoryIndex;
+    CPWindow      theWindow;
+    CPTextField   predicateField;
+
+    CPSearchField searchField;
+    CPMenu        searchMenuTemplate;
+
+    CPArray       searchCategoryIndexes;
+    CPInteger     searchCategoryIndex;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
-	searchCategoryIndex = 0;
-    var theWindow = [[CPWindow alloc] initWithContentRect:CPMakeRect(0,10,500,300) styleMask:CPTitledWindowMask|CPResizableWindowMask],
-        contentView = [theWindow contentView];
-    
-    var searchFieldContainer = [[CPView alloc] initWithFrame:CPMakeRect(10,10,220,50)];
-    [searchFieldContainer setBackgroundColor:[CPColor redColor]];
-    [searchFieldContainer setAutoresizingMask:CPViewWidthSizable];
-    
-    searchField = [[CPSearchField alloc] initWithFrame:CPMakeRect(10,10,200,30)];    
-   
+    searchCategoryIndex = 0;
+    searchCategoryIndexes = [CPArray arrayWithArray:[1, 2]];
+
+    searchField = [[CPSearchField alloc] initWithFrame:CPMakeRect(30, 72, 150, 30)];
+
     [searchField setRecentsAutosaveName:"autosave"];
     [searchField setTarget:self];
     [searchField setAction:@selector(updateFilter:)];
-    [searchField setAutoresizingMask:CPViewWidthSizable];
-       
-    var template = [[CPMenu alloc] initWithTitle:@"Search Menu"];
-                        
-    var item; 
-    item = [[CPMenuItem alloc] initWithTitle:@"Search by"
-                                       action:nil 
-                                keyEquivalent:@""];
-    [item setEnabled:NO];
-    [template addItem:item];
+    [searchField setAutoresizingMask:CPViewMaxXMargin | CPViewMaxYMargin];
 
-    item = [[CPMenuItem alloc] initWithTitle:@"First Name"
-                                       action:@selector(changeCategory:)
-                                keyEquivalent:@""];
+    searchMenuTemplate = [searchField defaultSearchMenuTemplate];
+
+    [searchMenuTemplate insertItemWithTitle:@"Search By"
+                                     action:nil
+                              keyEquivalent:@""
+                                    atIndex:0];
+
+    var item = [[CPMenuItem alloc] initWithTitle:MenuItemPrefix + @"First Name"
+                                          action:@selector(changeCategory:)
+                                   keyEquivalent:@""];
+
     [item setTarget:self];
     [item setTag:1];
-    [template addItem:item];
- 
-    item = [[CPMenuItem alloc] initWithTitle:@"Last Name"
-                                       action:@selector(changeCategory:)
+    [item setState:CPOnState];
+    [searchMenuTemplate insertItem:item atIndex:1];
+
+    item = [[CPMenuItem alloc] initWithTitle:MenuItemPrefix + @"Last Name"
+                                      action:@selector(changeCategory:)
                                 keyEquivalent:@""];
     [item setTarget:self];
     [item setTag:2];
-    [template addItem:item];
- 
-  	item = [[CPMenuItem alloc] initWithTitle:@"Recent searches" action:NULL keyEquivalent:@""];
-    [item setTag:CPSearchFieldRecentsTitleMenuItemTag];
-    [template addItem:item];
-    
-    item = [[CPMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:@""];
-    [item setTag:CPSearchFieldRecentsMenuItemTag];
-    [template addItem:item];
+    [item setState:CPOffState];
+    [searchMenuTemplate insertItem:item atIndex:2];
 
-    item = [[CPMenuItem alloc] initWithTitle:@"Clear recents" action:NULL keyEquivalent:@""];
-    [item setTag:CPSearchFieldClearRecentsMenuItemTag];
-    [template addItem:item];
+    [searchField setSearchMenuTemplate:searchMenuTemplate];
 
-    [searchField setSearchMenuTemplate:template];
-    [searchFieldContainer addSubview:searchField];
-    [contentView addSubview:searchFieldContainer];
-    
-    tableArray = [CPArray arrayWithObjects:
-                [CPDictionary dictionaryWithObjects:["Jimmy","McNulty",46] forKeys:["firstName","lastName","age"]],
-                [CPDictionary dictionaryWithObjects:["Kima","Greggs",41] forKeys:["firstName","lastName","age"]],
-                [CPDictionary dictionaryWithObjects:["Lester","Freamon",57] forKeys:["firstName","lastName","age"]],
-                [CPDictionary dictionaryWithObjects:["Kevin	","Russel",37] forKeys:["firstName","lastName","age"]],
-                [CPDictionary dictionaryWithObjects:["William","Moreland",53] forKeys:["firstName","lastName","age"]],
-                [CPDictionary dictionaryWithObjects:["Cedric","Daniels",47] forKeys:["firstName","lastName","age"]],
-                [CPDictionary dictionaryWithObjects:["Roland","Pryzbylewski",27] forKeys:["firstName","lastName","age"]],
-                [CPDictionary dictionaryWithObjects:["Omar","Little",29] forKeys:["firstName","lastName","age"]],
-                [CPDictionary dictionaryWithObjects:["Avon","Barkstale",49] forKeys:["firstName","lastName","age"]],
-                nil];
-	filteredArray = tableArray;
+    var button = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
+    [button setBackgroundColor:[CPColor greenColor]];
+    [button setBordered:NO];
+    [searchField setSearchButton:button];
 
- 	table = [[CPTableView alloc] initWithFrame:CPMakeRect(10,60,300,300)];
-	[table setUsesAlternatingRowBackgroundColors:YES];
-	var colone = [[CPTableColumn alloc] initWithIdentifier:@"firstName"];
-	[colone setWidth:150];	
-	[table addTableColumn:colone];
-	
-	var coltwo = [[CPTableColumn alloc] initWithIdentifier:@"lastName"];
-	[coltwo setWidth:150];	
-	[table addTableColumn:coltwo];
-	
-	[table setDataSource:self];	
-	[contentView addSubview:table];
-	
+    button = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
+    [button setBackgroundColor:[CPColor blueColor]];
+    [button setBordered:NO];
+    [searchField setCancelButton:button];
+
+    [[theWindow contentView] addSubview:searchField];
+
     [self changeCategory:[[searchField menu] itemAtIndex:1]];
-    [self updateFilter:nil];
-    
+    [self updateFilter:searchField];
+
+    [searchField setDelegate:self];
+
     [theWindow center];
-	[theWindow orderFront:self]; 
+    [theWindow orderFront:self];
 }
 
-- (int)numberOfRowsInTableView:(CPTableView)aTableView
+- (void)controlTextDidChange:(id)note
 {
-	return [filteredArray count];
+    CPLogConsole(_cmd);
 }
 
-- (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aTableColumn row:(int)rowIndex
+- (void)awakeFromCib
 {
-	return [filteredArray[rowIndex] objectForKey:[aTableColumn identifier]];
+    [theWindow setBackgroundColor:[CPColor colorWithHexString:@"f3f4f5"]];
+    [theWindow setFullBridge:YES];
+}
+
+- (IBAction)sendsWholeSearchString:(id)sender
+{
+    [searchField setSendsWholeSearchString:[sender state]];
+}
+
+- (IBAction)searchesImmediately:(id)sender
+{
+    [searchField setSendsSearchStringImmediately:[sender state]];
 }
 
 - (void)changeCategory:(CPMenuItem)menuItem
 {
-	[[[searchField menu] itemArray] makeObjectsPerformSelector:@selector(setState:) withObject:0];
-	[menuItem setState:1];
     searchCategoryIndex = [menuItem tag] - 1;
-    [searchField setPlaceholderString:[menuItem title]];
+    [searchField setPlaceholderString:[[menuItem title] substringFromIndex:[MenuItemPrefix length]]];
+
+    [self _updateSearchMenuTemplate];
+}
+
+- (void)_updateSearchMenuTemplate
+{
+    for (var i = 0; i < searchCategoryIndexes.length; ++i)
+        [[searchMenuTemplate itemAtIndex:i + 1] setState:CPOffState];
+
+    [[searchMenuTemplate itemAtIndex:searchCategoryIndex + 1] setState:CPOnState];
+    [searchField setSearchMenuTemplate:searchMenuTemplate];
 }
 
 - (void)updateFilter:(id)sender
 {
-	var searchString = [searchField stringValue];
-
-	filteredArray = [self filteredArrayWithString:searchString];
-	[table reloadData];
+    var searchString = [sender stringValue];
+    [self filteredArrayWithString:searchString];
 }
 
-- (CPArray)filteredArrayWithString:(CPString)string
+- (void)filteredArrayWithString:(CPString)value
 {
-	var keyPath = categories[searchCategoryIndex];
-	CPLogConsole("Filter the table here. Predicate would be *" + keyPath + " CONTAINS '" + string + "'*");
-	return tableArray;
+    var keyPath = categories[searchCategoryIndex],
+        predicate = [CPPredicate predicateWithFormat:@"%K CONTAINS %@", keyPath, value];
+
+    [predicateField setStringValue:[predicate predicateFormat]];
 }
 
 @end

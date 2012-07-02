@@ -22,26 +22,7 @@
 
 @import "CPObject.j"
 @import "CPObjJRuntime.j"
-
-
-/*!
-    The left operand is smaller than the right.
-    @global
-    @group CPComparisonResult
-*/
-CPOrderedAscending      = -1;
-/*!
-    The left and right operands are equal.
-    @global
-    @group CPComparisonResult
-*/
-CPOrderedSame           =  0;
-/*!
-    The left operand is greater than the right.
-    @global
-    @group CPComparisonResult
-*/
-CPOrderedDescending     =  1;
+@import "CPString.j"
 
 /*!
     @class CPSortDescriptor
@@ -130,7 +111,7 @@ CPOrderedDescending     =  1;
 // Using sort descriptors
 /*!
     Compares two objects.
-    @param lhsObject the left hand side object to compre
+    @param lhsObject the left hand side object to compare
     @param rhsObject the right hand side object to compare
     @return the comparison result
 */
@@ -146,6 +127,12 @@ CPOrderedDescending     =  1;
 - (id)reversedSortDescriptor
 {
     return [[[self class] alloc] initWithKey:_key ascending:!_ascending selector:_selector];
+}
+
+- (CPString)description
+{
+    return [CPString stringWithFormat:@"(%@, %@, %@)",
+        [self key], [self ascending] ? @"ascending": @"descending", CPStringFromSelector([self selector])];
 }
 
 @end

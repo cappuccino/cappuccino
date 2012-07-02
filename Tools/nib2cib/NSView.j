@@ -26,6 +26,10 @@
 @import <AppKit/CPView.j>
 
 
+var NSViewAutoresizingMask = 0x3F,
+    NSViewAutoresizesSubviewsMask = 1 << 8,
+    NSViewHiddenMask = 1 << 31;
+
 @implementation CPView (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
@@ -41,34 +45,32 @@
 
     if (self)
     {
-        _tag = -1;
-        
-        if([aCoder containsValueForKey:@"NSTag"])
-            _tag = [aCoder decodeIntForKey:@"NSTag"];
-        
+        _tag = [aCoder decodeIntForKey:@"NSTag"];
+
         _bounds = CGRectMake(0.0, 0.0, CGRectGetWidth(_frame), CGRectGetHeight(_frame));
-    
+
         _window = [aCoder decodeObjectForKey:@"NSWindow"];
         _superview = [aCoder decodeObjectForKey:@"NSSuperview"];
         _subviews = [aCoder decodeObjectForKey:@"NSSubviews"];
 
         if (!_subviews)
             _subviews = [];
-        
+
         var vFlags = [aCoder decodeIntForKey:@"NSvFlags"];
 
-        _autoresizingMask = vFlags & 0x3F;
-        _autoresizesSubviews = vFlags & (1 << 8);
-        
+        _autoresizingMask = vFlags & NSViewAutoresizingMask;
+        _autoresizesSubviews = vFlags & NSViewAutoresizesSubviewsMask;
+
         _hitTests = YES;
-        _isHidden = NO;//[aCoder decodeObjectForKey:CPViewIsHiddenKey];
+        _isHidden = vFlags & NSViewHiddenMask;
         _opacity = 1.0;//[aCoder decodeIntForKey:CPViewOpacityKey];
 
+        _themeClass = [self themeClass];
         _themeAttributes = {};
         _themeState = CPThemeStateNormal;
         [self _loadThemeAttributes];
     }
-    
+
     return self;
 }
 
@@ -80,8 +82,6 @@
 @end
 
 @implementation NSView : CPView
-{
-}
 
 - (id)initWithCoder:(CPCoder)aCoder
 {

@@ -18,9 +18,6 @@ CGEventRef headTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef e
     // It's dangerous to fail in this code: could disable mousedown system-wide. So just try catch it all.
     @try
     {
-        [DisabledWindows makeObjectsPerformSelector:@selector(stopIgnoringMouseEvents)];
-        [DisabledWindows removeAllObjects];
-
         if (type == kCGEventLeftMouseDown)
         {
             CGPoint location = CGEventGetLocation(event);
@@ -31,7 +28,8 @@ CGEventRef headTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef e
                 if ([window isKindOfClass:[WebWindow class]] && ![(WebWindow *)window hitTest:NSLocation])
                 {
                     [window setIgnoresMouseEvents:YES];
-
+					[window performSelector:@selector(setIgnoresMouseEvents:) withObject:NO afterDelay:1.0];
+					
                     [DisabledWindows addObject:window];
                 }
             }
@@ -54,6 +52,12 @@ CGEventRef headTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef e
 @end
 
 @implementation WebWindow
+
++ (void)enableAllWindows
+{
+    [DisabledWindows makeObjectsPerformSelector:@selector(stopIgnoringMouseEvents)];
+    [DisabledWindows removeAllObjects];
+}
 
 + (void)initialize
 {
@@ -117,8 +121,9 @@ CGEventRef headTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef e
 
         [self setBackgroundColor:[NSColor clearColor]];
         [self setOpaque:NO];
+        [self setIgnoresMouseEvents:NO];
         [self setReleasedWhenClosed:YES];
-		[super setHasShadow:NO];
+        [super setHasShadow:NO];
     }
 
     return self;

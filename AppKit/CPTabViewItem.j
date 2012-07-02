@@ -22,7 +22,7 @@
 
 @import <Foundation/CPObject.j>
 
-@import <AppKit/CPView.j>
+@import "CPView.j"
 
 
 /*
@@ -44,7 +44,7 @@ CPBackgroundTab = 1;
 */
 CPPressedTab    = 2;
 
-/*! 
+/*!
     @ingroup appkit
     @class CPTabViewItem
 
@@ -55,10 +55,10 @@ CPPressedTab    = 2;
 {
     id          _identifier;
     CPString    _label;
-    
+
     CPView      _view;
     CPView      _auxiliaryView;
-    
+
     CPTabView   _tabView;
 }
 
@@ -74,10 +74,10 @@ CPPressedTab    = 2;
 - (id)initWithIdentifier:(id)anIdentifier
 {
     self = [super init];
-    
+
     if (self)
         _identifier = anIdentifier;
-        
+
     return self;
 }
 
@@ -132,7 +132,13 @@ CPPressedTab    = 2;
 */
 - (void)setView:(CPView)aView
 {
+    if (_view == aView)
+        return;
+
     _view = aView;
+
+    if ([_tabView selectedTabViewItem] == self)
+        [_tabView _setContentViewForItem:self];
 }
 
 /*!
@@ -145,8 +151,8 @@ CPPressedTab    = 2;
 
 // Assigning an Auxiliary View
 /*!
-    Sets the tab's auxillary view.
-    @param anAuxillaryView the new auxillary view
+    Sets the tab's auxiliary view.
+    @param anAuxiliaryView the new auxiliary view
 */
 - (void)setAuxiliaryView:(CPView)anAuxiliaryView
 {
@@ -154,7 +160,7 @@ CPPressedTab    = 2;
 }
 
 /*!
-    Returns the tab's auxillary view
+    Returns the tab's auxiliary view
 */
 - (CPView)auxiliaryView
 {
@@ -191,16 +197,16 @@ var CPTabViewItemIdentifierKey  = "CPTabViewItemIdentifierKey",
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
         _identifier     = [aCoder decodeObjectForKey:CPTabViewItemIdentifierKey];
         _label          = [aCoder decodeObjectForKey:CPTabViewItemLabelKey];
-        
+
         _view           = [aCoder decodeObjectForKey:CPTabViewItemViewKey];
         _auxiliaryView  = [aCoder decodeObjectForKey:CPTabViewItemAuxViewKey];
     }
-    
+
     return self;
 }
 
@@ -208,7 +214,7 @@ var CPTabViewItemIdentifierKey  = "CPTabViewItemIdentifierKey",
 {
     [aCoder encodeObject:_identifier    forKey:CPTabViewItemIdentifierKey];
     [aCoder encodeObject:_label         forKey:CPTabViewItemLabelKey];
-    
+
     [aCoder encodeObject:_view          forKey:CPTabViewItemViewKey];
     [aCoder encodeObject:_auxiliaryView forKey:CPTabViewItemAuxViewKey];
 }

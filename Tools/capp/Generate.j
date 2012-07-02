@@ -4,11 +4,10 @@
 var OS = require("os"),
     SYSTEM = require("system"),
     FILE = require("file"),
-    OBJJ = require("objective-j");
+    OBJJ = require("objective-j"),
 
-var stream = require("term").stream;
-
-var parser = new (require("args").Parser)();
+    stream = require("narwhal/term").stream,
+    parser = new (require("narwhal/args").Parser)();
 
 parser.usage("DESTINATION_DIRECTORY");
 
@@ -50,7 +49,7 @@ parser.option("--force", "force")
 
 parser.option("--noconfig", "noconfig")
     .set(true)
-    .help("Selects a project template to use.");
+    .help("Use the default configuration, ignore your configuration.");
 
 parser.option("--list-templates", "listTemplates")
     .set(true)
@@ -63,35 +62,41 @@ parser.option("--list-frameworks", "listFrameworks")
 parser.helpful();
 
 // FIXME: better way to do this:
-var CAPP_HOME = require("packages").catalog["cappuccino"].directory;
-var templatesDirectory = FILE.join(CAPP_HOME, "lib", "capp", "Resources", "Templates");
+var CAPP_HOME = require("narwhal/packages").catalog["cappuccino"].directory,
+    templatesDirectory = FILE.join(CAPP_HOME, "lib", "capp", "Resources", "Templates");
 
 function gen(/*va_args*/)
 {
-    var args = ["capp gen"].concat(Array.prototype.slice.call(arguments));
-    var options = parser.parse(args, null, null, true);
+    var args = ["capp gen"].concat(Array.prototype.slice.call(arguments)),
+        options = parser.parse(args, null, null, true);
 
-    if (options.args.length > 1) {
+    if (options.args.length > 1)
+    {
         parser.printUsage(options);
         OS.exit(1);
     }
 
-    if (options.listTemplates) {
+    if (options.listTemplates)
+    {
         listTemplates();
         return;
     }
 
-    if (options.listFrameworks) {
+    if (options.listFrameworks)
+    {
         listFrameworks();
         return;
     }
 
     var destination = options.args[0];
 
-    if (!destination) {
+    if (!destination)
+    {
         if (options.justFrameworks)
             destination = ".";
-        else {
+
+        else
+        {
             parser.printUsage(options);
             OS.exit(1);
         }
@@ -100,9 +105,16 @@ function gen(/*va_args*/)
     var sourceTemplate = null;
 
     if (FILE.isAbsolute(options.template))
-        sourceTemplate = FILE.join(options.template);
+        sourceTemplate = options.template;
     else
         sourceTemplate = FILE.join(templatesDirectory, options.template);
+
+    if (!FILE.isDirectory(sourceTemplate))
+    {
+        stream.print(colorize("Error: ", "red") + "The template " + logPath(sourceTemplate) + " cannot be found. Available templates are:");
+        listTemplates();
+        OS.exit(1);
+    }
 
     var configFile = FILE.join(sourceTemplate, "template.config"),
         config = {};
@@ -111,12 +123,11 @@ function gen(/*va_args*/)
         config = JSON.parse(FILE.read(configFile, { charset:"UTF-8" }));
 
     var destinationProject = destination,
-        configuration = options.noconfig ? [Configuration defaultConfiguration] : [Configuration userConfiguration];
+        configuration = options.noconfig ? [Configuration defaultConfiguration] : [Configuration userConfiguration],
+        frameworks = options.frameworks;
 
-    var frameworks = options.frameworks;
-    if (!options.noFrameworks) {
+    if (!options.noFrameworks)
         frameworks.push("Objective-J", "Foundation", "AppKit");
-    }
 
     if (options.justFrameworks)
         createFrameworksInFile(frameworks, destinationProject, options.symlink, options.useCappBuild, options.force);
@@ -127,7 +138,6 @@ function gen(/*va_args*/)
         FILE.copyTree(sourceTemplate, destinationProject);
 
         var files = FILE.glob(FILE.join(destinationProject, "**", "*")),
-            index = 0,
             count = files.length,
             name = FILE.basename(destinationProject),
             orgIdentifier = [configuration valueForKey:@"organization.identifier"] || "";
@@ -136,7 +146,7 @@ function gen(/*va_args*/)
         [configuration setTemporaryValue:orgIdentifier + '.' +  toIdentifier(name) forKey:@"project.identifier"];
         [configuration setTemporaryValue:toIdentifier(name) forKey:@"project.nameasidentifier"];
 
-        for (; index < count; ++index)
+        for (var index = 0; index < count; ++index)
         {
             var path = files[index];
 
@@ -153,17 +163,17 @@ function gen(/*va_args*/)
             try
             {
                 var contents = FILE.read(path, { charset : "UTF-8" }),
-                    key = nil,
+                    key = null,
                     keyEnumerator = [configuration keyEnumerator];
 
-                while (key = [keyEnumerator nextObject])
+                while ((key = [keyEnumerator nextObject]) !== nil)
                     contents = contents.replace(new RegExp("__" + RegExp.escape(key) + "__", 'g'), [configuration valueForKey:key]);
 
                 FILE.write(path, contents, { charset: "UTF-8"});
             }
             catch (anException)
             {
-                stream.print("Copying and modifying " + path + " failed.");
+                warn("An error occurred (" + anException.toString() + ") while applying the " + (options.noconfig ? "default" : "user") + " configuration to: " + logPath(path));
             }
         }
 
@@ -174,10 +184,13 @@ function gen(/*va_args*/)
 
         createFrameworksInFile(frameworks, frameworkDestination, options.symlink, options.useCappBuild);
     }
-    else {
-        stream.print("Directory already exists");
-        OS.exit(1);
+
+    else
+    {
+        fail("The directory " + FILE.absolute(destinationProject) + " already exists.");
     }
+
+    executePostInstallScript(destinationProject);
 }
 
 function createFrameworksInFile(/*Array*/ frameworks, /*String*/ aFile, /*Boolean*/ symlink, /*Boolean*/ build, /*Boolean*/ force)
@@ -185,39 +198,43 @@ function createFrameworksInFile(/*Array*/ frameworks, /*String*/ aFile, /*Boolea
     var destination = FILE.path(FILE.absolute(aFile));
 
     if (!destination.isDirectory())
-        throw new Error("Can't create Frameworks. Directory does not exist: " + destination);
+        fail("Cannot create Frameworks. The directory does not exist: " + destination);
 
     var destinationFrameworks = destination.join("Frameworks"),
         destinationDebugFrameworks = destination.join("Frameworks", "Debug");
 
-    stream.print("Creating Frameworks directory in " + destinationFrameworks + ".");
+    stream.print("Creating Frameworks directory in " + logPath(destinationFrameworks) + "...");
 
     //destinationFrameworks.mkdirs(); // redundant
     destinationDebugFrameworks.mkdirs();
 
-    if (build) {
-        if (!(SYSTEM.env["CAPP_BUILD"] || SYSTEM.env["STEAM_BUILD"]))
-            throw "CAPP_BUILD or STEAM_BUILD must be defined";
+    if (build)
+    {
+        if (!(SYSTEM.env["CAPP_BUILD"]))
+            fail("$CAPP_BUILD must be defined to use the --build or -l option.");
 
-        var builtFrameworks = FILE.path(SYSTEM.env["CAPP_BUILD"] || SYSTEM.env["STEAM_BUILD"]);
-
-        var sourceFrameworks = builtFrameworks.join("Release"),
+        var builtFrameworks = FILE.path(SYSTEM.env["CAPP_BUILD"]),
+            sourceFrameworks = builtFrameworks.join("Release"),
             sourceDebugFrameworks = builtFrameworks.join("Debug");
 
-        frameworks.forEach(function(framework) {
+        frameworks.forEach(function(framework)
+        {
             installFramework(sourceFrameworks.join(framework), destinationFrameworks.join(framework), force, symlink);
             installFramework(sourceDebugFrameworks.join(framework), destinationDebugFrameworks.join(framework), force, symlink);
         });
     }
-    else {
+    else
+    {
         // Frameworks. Search frameworks paths
-        frameworks.forEach(function(framework) {
+        frameworks.forEach(function(framework)
+        {
             // Need a special case for Objective-J
-            if (framework === "Objective-J") {
+            if (framework === "Objective-J")
+            {
                 // Objective-J. Take from OBJJ_HOME.
-                var objjHome = FILE.path(OBJJ.OBJJ_HOME);
-                var objjPath = objjHome.join("Frameworks", "Objective-J");
-                var objjDebugPath = objjHome.join("Frameworks", "Debug", "Objective-J");
+                var objjHome = FILE.path(OBJJ.OBJJ_HOME),
+                    objjPath = objjHome.join("Frameworks", "Objective-J"),
+                    objjDebugPath = objjHome.join("Frameworks", "Debug", "Objective-J");
 
                 installFramework(objjPath, destinationFrameworks.join("Objective-J"), force, symlink);
                 installFramework(objjDebugPath, destinationDebugFrameworks.join("Objective-J"), force, symlink);
@@ -225,61 +242,77 @@ function createFrameworksInFile(/*Array*/ frameworks, /*String*/ aFile, /*Boolea
                 return;
             }
 
-            var found;
+            var found = false;
 
-            for (var i = 0, found = false; !found && i < OBJJ.objj_frameworks.length; i++) {
+            for (var i = 0; i < OBJJ.objj_frameworks.length; i++)
+            {
                 var sourceFramework = FILE.path(OBJJ.objj_frameworks[i]).join(framework);
-                if (FILE.isDirectory(sourceFramework)) {
+
+                if (FILE.isDirectory(sourceFramework))
+                {
                     installFramework(sourceFramework, destinationFrameworks.join(framework), force, symlink);
                     found = true;
+                    break;
                 }
             }
-            if (!found)
-                stream.print("\0yellow(Warning:\0) Couldn't find framework \0cyan(" + framework +"\0)");
 
-            for (var i = 0, found = false; !found && i < OBJJ.objj_debug_frameworks.length; i++) {
+            if (!found)
+                warn("Couldn't find the framework: " + logPath(framework));
+
+            for (var i = 0, found = false; i < OBJJ.objj_debug_frameworks.length; i++)
+            {
                 var sourceDebugFramework = FILE.path(OBJJ.objj_debug_frameworks[i]).join(framework);
-                if (FILE.isDirectory(sourceDebugFramework)) {
+
+                if (FILE.isDirectory(sourceDebugFramework))
+                {
                     installFramework(sourceDebugFramework, destinationDebugFrameworks.join(framework), force, symlink);
                     found = true;
+                    break;
                 }
             }
+
             if (!found)
-                stream.print("\0yellow(Warning:\0) Couldn't find debug framework \0cyan(" + framework +"\0)");
+                warn("Couldn't find the debug framework: " + logPath(framework));
         });
     }
 }
 
-function installFramework(source, dest, force, symlink) {
-    if (dest.exists()) {
-        if (force) {
+function installFramework(source, dest, force, symlink)
+{
+    if (dest.exists())
+    {
+        if (force)
             dest.rmtree();
-        } else {
-            stream.print("\0yellow(Warning:\0) " + dest + " already exists. Use --force to overwrite.");
+
+        else
+        {
+            warn(logPath(dest) + " already exists. Use --force to overwrite.");
             return;
         }
     }
-    if (source.exists()) {
-        stream.print((symlink ? "Symlinking " : "Copying ") + source + " to " + dest);
+
+    if (source.exists())
+    {
+        stream.print((symlink ? "Symlinking " : "Copying ") + logPath(source) + " ==> " + logPath(dest));
+
         if (symlink)
             FILE.symlink(source, dest);
         else
             FILE.copyTree(source, dest);
     }
     else
-        stream.print("\0yellow(Warning:\0) "+source+" doesn't exist.");
+        warn("Cannot find: " + logPath(source));
 }
 
 function toIdentifier(/*String*/ aString)
 {
     var identifier = "",
-        index = 0,
         count = aString.length,
         capitalize = NO,
         firstRegex = new RegExp("^[a-zA-Z_$]"),
         regex = new RegExp("^[a-zA-Z_$0-9]");
 
-    for (; index < count; ++index)
+    for (var index = 0; index < count; ++index)
     {
         var character = aString.charAt(index);
 
@@ -299,25 +332,71 @@ function toIdentifier(/*String*/ aString)
     return identifier;
 }
 
-function listTemplates() {
-    FILE.list(templatesDirectory).forEach(function(templateName) {
+function listTemplates()
+{
+    FILE.list(templatesDirectory).forEach(function(templateName)
+    {
         stream.print(templateName);
     });
 }
 
-function listFrameworks() {
+function listFrameworks()
+{
     stream.print("Frameworks:");
-    OBJJ.objj_frameworks.forEach(function(frameworksDirectory) {
+
+    OBJJ.objj_frameworks.forEach(function(frameworksDirectory)
+    {
         stream.print("  " + frameworksDirectory);
-        FILE.list(frameworksDirectory).forEach(function(templateName) {
+
+        FILE.list(frameworksDirectory).forEach(function(templateName)
+        {
             stream.print("    + " + templateName);
         });
     });
+
     stream.print("Frameworks (Debug):");
-    OBJJ.objj_debug_frameworks.forEach(function(frameworksDirectory) {
+
+    OBJJ.objj_debug_frameworks.forEach(function(frameworksDirectory)
+    {
         stream.print("  " + frameworksDirectory);
-        FILE.list(frameworksDirectory).forEach(function(frameworkName) {
+
+        FILE.list(frameworksDirectory).forEach(function(frameworkName)
+        {
             stream.print("    + " + frameworkName);
         });
     });
+}
+
+function executePostInstallScript(/*String*/ destinationProject)
+{
+    var path = FILE.join(destinationProject, "postinstall");
+
+    if (FILE.exists(path))
+    {
+        stream.print(colorize("Executing postinstall script...", "cyan"));
+
+        OS.system(["/bin/sh", path, destinationProject]);  // Use sh in case it isn't marked executable
+        FILE.remove(path);
+    }
+}
+
+function colorize(message, color)
+{
+    return "\0" + color + "(" + message + "\0)";
+}
+
+function logPath(path)
+{
+    return colorize(path, "cyan");
+}
+
+function warn(message)
+{
+    stream.print(colorize("Warning: ", "yellow") + message);
+}
+
+function fail(message)
+{
+    stream.print(colorize(message, "red"));
+    OS.exit(1);
 }

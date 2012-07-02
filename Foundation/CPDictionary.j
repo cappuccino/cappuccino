@@ -23,8 +23,8 @@
 @import "CPArray.j"
 @import "CPEnumerator.j"
 @import "CPException.j"
+@import "CPNull.j"
 @import "CPObject.j"
-
 
 /* @ignore */
 @implementation _CPDictionaryValueEnumerator : CPEnumerator
@@ -50,7 +50,7 @@
 {
     var key = [_keyEnumerator nextObject];
 
-    if (!key)
+    if (key === nil)
         return nil;
 
     return [_dictionary objectForKey:key];
@@ -84,7 +84,9 @@
 */
 + (id)alloc
 {
-    return new CFMutableDictionary();
+    var result = new CFMutableDictionary();
+    result.isa = [self class];
+    return result;
 }
 
 /*!
@@ -175,10 +177,17 @@
                 {
                     var thisValue = value[i];
 
-                    if (thisValue.constructor === Object)
-                        newValue.push([CPDictionary dictionaryWithJSObject:thisValue recursively:YES]);
+                    if (thisValue === null)
+                    {
+                        newValue.push([CPNull null]);
+                    }
                     else
-                        newValue.push(thisValue);
+                    {
+                        if (thisValue.constructor === Object)
+                            newValue.push([CPDictionary dictionaryWithJSObject:thisValue recursively:YES]);
+                        else
+                            newValue.push(thisValue);
+                    }
                 }
 
                 value = newValue;
@@ -338,6 +347,45 @@
 }
 
 /*!
+    Returns a new array containing the keys corresponding to all occurrences of a given object in the receiver.
+    @param anObject The value to look for in the receiver.
+    @return A new array containing the keys corresponding to all occurrences of anObject in the receiver. If no object matching anObject is found, returns an empty array.
+
+    Each object in the receiver is sent an isEqual: message to determine if it's equal to anObject.
+    If the check for isEqual fails a check is made to see if the two objects are the same object. This provides compatibility for JSObjects.
+*/
+- (CPArray)allKeysForObject:(id)anObject
+{
+    var count = _keys.length,
+        index = 0,
+        matchingKeys = [],
+        thisKey = nil,
+        thisValue = nil;
+
+    for (; index < count; ++index)
+    {
+        thisKey = _keys[index];
+        thisValue = _buckets[thisKey];
+        if (thisValue.isa && anObject && anObject.isa && [thisValue respondsToSelector:@selector(isEqual:)] && [thisValue isEqual:anObject])
+            matchingKeys.push(thisKey);
+        else if (thisValue === anObject)
+            matchingKeys.push(thisKey);
+    }
+
+    return matchingKeys;
+}
+
+- (CPArray)keysSortedByValueUsingSelector:(SEL)theSelector
+{
+    return [[self allKeys] sortedArrayUsingFunction:function(a, b) {
+        a = [self objectForKey:a];
+        b = [self objectForKey:b];
+
+        return [a performSelector:theSelector withObject:b];
+    }];
+}
+
+/*!
     Returns an enumerator that enumerates over all the dictionary's keys.
 */
 - (CPEnumerator)keyEnumerator
@@ -425,7 +473,7 @@
     @param aKey the key for the object's entry
     @return the object for the entry
 */
-- (id)objectForKey:(CPString)aKey
+- (id)objectForKey:(id)aKey
 {
     var object = _buckets[aKey];
 
@@ -528,7 +576,20 @@
 */
 - (CPString)description
 {
-    return self.toString();
+    var string = "{\n\t",
+        keys = _keys,
+        index = 0,
+        count = _count;
+
+    for (; index < count; ++index)
+    {
+        var key = keys[index],
+            value = valueForKey(key);
+
+        string += key + " = \"" + CPDescriptionOfObject(value).split('\n').join("\n\t") + "\"\n\t";
+    }
+
+    return string + "}";
 }
 
 - (BOOL)containsKey:(id)aKey
@@ -563,11 +624,11 @@
 
 /*!
     @class CPMutableDictionary
-    @ingroup compatability
+    @ingroup compatibility
 
     This class is just an empty subclass of CPDictionary.
     CPDictionary already implements mutable methods and
-    this class only exists for source compatability.
+    this class only exists for source compatibility.
 */
 @implementation CPMutableDictionary : CPDictionary
 

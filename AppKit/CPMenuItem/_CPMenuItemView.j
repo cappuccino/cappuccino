@@ -1,4 +1,6 @@
 
+@import <AppKit/CPControl.j>
+
 @import "_CPMenuItemSeparatorView.j"
 @import "_CPMenuItemStandardView.j"
 @import "_CPMenuItemMenuBarView.j"
@@ -9,10 +11,10 @@ var LEFT_MARGIN                 = 3.0,
     STATE_COLUMN_WIDTH          = 14.0,
     INDENTATION_WIDTH           = 17.0,
     VERTICAL_MARGIN             = 4.0;
-    
+
 var _CPMenuItemSelectionColor                   = nil,
     _CPMenuItemTextShadowColor                  = nil,
-    
+
     _CPMenuItemDefaultStateImages               = [],
     _CPMenuItemDefaultStateHighlightedImages    = [];
 
@@ -32,21 +34,20 @@ var _CPMenuItemSelectionColor                   = nil,
     BOOL                    _isDirty;
     BOOL                    _showsStateColumn;
 
-    CPImageView             _stateView;
     _CPImageAndTextView     _imageAndTextView;
     CPView                  _submenuView;
 }
 
 + (void)initialize
 {
-    if (self != [_CPMenuItemView class])
+    if (self !== [_CPMenuItemView class])
         return;
-    
+
     _CPMenuItemSelectionColor =  [CPColor colorWithCalibratedRed:95.0 / 255.0 green:131.0 / 255.0 blue:185.0 / 255.0 alpha:1.0];
-    _CPMenuItemTextShadowColor = [CPColor colorWithCalibratedRed:26.0 / 255.0 green: 73.0 / 255.0 blue:109.0 / 255.0 alpha:1.0]
-    
+    _CPMenuItemTextShadowColor = [CPColor colorWithCalibratedRed:26.0 / 255.0 green: 73.0 / 255.0 blue:109.0 / 255.0 alpha:1.0];
+
     var bundle = [CPBundle bundleForClass:self];
-    
+
     _CPMenuItemDefaultStateImages[CPOffState]               = nil;
     _CPMenuItemDefaultStateHighlightedImages[CPOffState]    = nil;
 
@@ -71,12 +72,12 @@ var _CPMenuItemSelectionColor                   = nil,
         _menuItem = aMenuItem;
         _showsStateColumn = YES;
         _isDirty = YES;
-        
+
         [self setAutoresizingMask:CPViewWidthSizable];
 
         [self synchronizeWithMenuItem];
     }
-    
+
     return self;
 }
 
@@ -110,7 +111,7 @@ var _CPMenuItemSelectionColor                   = nil,
             _view = menuItemView;
         }
     }
-    
+
     else if ([_menuItem menu] == [CPApp mainMenu])
     {
         if (![_view isKindOfClass:[_CPMenuItemMenuBarView class]])
@@ -128,7 +129,7 @@ var _CPMenuItemSelectionColor                   = nil,
             [_view removeFromSuperview];
             _view = [_CPMenuItemStandardView view];
         }
-        
+
         [_view setMenuItem:_menuItem];
     }
 
@@ -159,7 +160,7 @@ var _CPMenuItemSelectionColor                   = nil,
 {
     if (![_menuItem hasSubmenu])
         return NO;
-        
+
     return CGRectContainsPoint([_submenuView frame], [self convertPoint:[anEvent locationInWindow] fromView:nil]);
 }
 
@@ -190,7 +191,7 @@ var _CPMenuItemSelectionColor                   = nil,
 {
     if (_textColor == aColor)
         return;
-    
+
     _textColor = aColor;
 
     [_imageAndTextView setTextColor:[self textColor]];
@@ -206,7 +207,7 @@ var _CPMenuItemSelectionColor                   = nil,
 {
     if (_textShadowColor == aColor)
         return;
-    
+
     _textShadowColor = aColor;
 
     [_imageAndTextView setTextShadowColor:[self textShadowColor]];
@@ -231,23 +232,23 @@ var _CPMenuItemSelectionColor                   = nil,
         return;
 
     _color = aColor;
-    
+
     [self setNeedsDisplay:YES];
 }
 
 - (void)drawRect:(CGRect)aRect
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort];
-    
+
     CGContextBeginPath(context);
-    
+
     CGContextMoveToPoint(context, 1.0, 4.0);
     CGContextAddLineToPoint(context, 9.0, 4.0);
     CGContextAddLineToPoint(context, 5.0, 8.0);
     CGContextAddLineToPoint(context, 1.0, 4.0);
-    
+
     CGContextClosePath(context);
-    
+
     CGContextSetFillColor(context, _color);
     CGContextFillPath(context);
 }

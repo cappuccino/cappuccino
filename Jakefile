@@ -4,8 +4,9 @@ require("./common.jake");
 var FILE = require("file"),
     SYSTEM = require("system"),
     OS = require("os"),
+    UTIL = require("narwhal/util"),
     jake = require("jake"),
-    stream = require("term").stream;
+    stream = require("narwhal/term").stream;
 
 var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools"];
 
@@ -45,8 +46,8 @@ task ("install", ["CommonJS"], function()
     // FIXME: require("narwhal/tusk/install").install({}, $COMMONJS);
     // Doesn't work due to some weird this.print business.
     if (OS.system(["tusk", "install", "--force", $BUILD_CJS_OBJECTIVE_J, $BUILD_CJS_CAPPUCCINO])) {
-        stream.print("\0red(Installation failed, possibly because you do not have permissions.\0)");
-        stream.print("\0red(Try re-running using '\0yellow(jake sudo-install\0)'.\0)");
+        colorPrint("Installation failed, possibly because you do not have permissions.", "red");
+        colorPrint("Try re-running using '" + colorize("jake sudo-install", "yellow") + "'.", "red");
         OS.exit(1); //rake abort if ($? != 0)
     }
 });
@@ -58,28 +59,49 @@ task ("sudo-install", ["CommonJS"], function()
     if (OS.system(["sudo", "tusk", "install", "--force", $BUILD_CJS_OBJECTIVE_J, $BUILD_CJS_CAPPUCCINO]))
     {
         // Attempt a hackish work-around for sudo compiled with the --with-secure-path option
-        if (OS.system("sudo bash -c 'source " + getShellConfigFile() + "; tusk install --force " + $BUILD_CJS_OBJECTIVE_J + " " + $BUILD_CJS_CAPPUCCINO + "'"))
-            OS.exit(1); //rake abort if ($? != 0)
+        sudo("tusk install --force " + $BUILD_CJS_OBJECTIVE_J + " " + $BUILD_CJS_CAPPUCCINO);
     }
 });
 
-task ("install-symlinks",  function()
+task ("install-symlinks", function()
 {
     installSymlink($BUILD_CJS_OBJECTIVE_J);
     installSymlink($BUILD_CJS_CAPPUCCINO);
 });
 
-function installSymlink(sourcePath) {
-    var TUSK = require("narwhal/tusk");
-    var INSTALL = require("narwhal/tusk/commands/install");
+task ("install-debug-symlinks", function()
+{
+    SYSTEM.env.CONFIG = "Debug";
+    spawnJake("install-symlinks");
+});
 
-    var packageName = FILE.basename(sourcePath);
-    var packageDir = TUSK.getPackagesDirectory().join(packageName);
-    stream.print("Symlinking \0cyan(" + packageDir + "\0) to \0cyan(" + sourcePath + "\0)");
+task ("clean-sprites", function()
+{
+    var f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "**/dataURLs.txt")),
+        paths = f.items();
 
-    FILE.symlink(sourcePath, packageDir);
-    INSTALL.finishInstall(packageDir);
-}
+    f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "**/MHTML*.txt"));
+    paths = paths.concat(f.items());
+
+    paths.forEach(function(path)
+    {
+        FILE.remove(path);
+    });
+});
+
+task ("clobber-theme", function()
+{
+    var f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "**/Aristo.blend")),
+        paths = f.items();
+
+    f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "Aristo.build"));
+    paths = paths.concat(f.items());
+
+    paths.forEach(function(path)
+    {
+        rm_rf(path);
+    });
+});
 
 // Documentation
 
@@ -89,21 +111,89 @@ task ("docs", ["documentation"]);
 
 task ("documentation", function()
 {
-    if (executableExists("doxygen"))
-    {
-        if (OS.system(["ruby", FILE.join("Tools", "Documentation", "make_headers")]))
-            OS.exit(1); //rake abort if ($? != 0)
+    generateDocs(false);
+});
 
-        if (OS.system(["doxygen", FILE.join("Tools", "Documentation", "Cappuccino.doxygen")]))
-            OS.exit(1); //rake abort if ($? != 0)
+task ("docs-no-frame", ["documentation-no-frame"]);
+
+task ("documentation-no-frame", function()
+{
+    generateDocs(true);
+});
+
+function generateDocs(/* boolean */ noFrame)
+{
+    // try to find a doxygen executable in the PATH;
+    var doxygen = executableExists("doxygen");
+
+    // If the Doxygen application is installed on Mac OS X, use that
+    if (!doxygen && executableExists("mdfind"))
+    {
+        var p = OS.popen(["mdfind", "kMDItemContentType == 'com.apple.application-bundle' && kMDItemCFBundleIdentifier == 'org.doxygen'"]);
+        if (p.wait() === 0)
+        {
+            var doxygenApps = p.stdout.read().split("\n");
+            if (doxygenApps[0])
+                doxygen = FILE.join(doxygenApps[0], "Contents/Resources/doxygen");
+        }
+    }
+
+    if (!doxygen || !FILE.exists(doxygen))
+    {
+        colorPrint("Doxygen not installed, skipping documentation generation.", "yellow");
+        return;
+    }
+
+    colorPrint("Using " + doxygen + " for doxygen binary.", "green");
+    colorPrint("Pre-processing source files...", "green");
+
+    var documentationDir = FILE.canonical(FILE.join("Tools", "Documentation")),
+        processors = FILE.glob(FILE.join(documentationDir, "preprocess/*"));
+
+    for (var i = 0; i < processors.length; ++i)
+        if (OS.system([processors[i], documentationDir]))
+            return;
+
+    if (noFrame)
+    {
+        // Back up the default settings, turn off the treeview
+        if (OS.system(["sed", "-i", ".bak", "s/GENERATE_TREEVIEW.*=.*YES/GENERATE_TREEVIEW = NO/", FILE.join(documentationDir, "Cappuccino.doxygen")]))
+            return;
+    }
+    else if (FILE.exists(FILE.join(documentationDir, "Cappuccino.doxygen.bak")))
+        mv(FILE.join(documentationDir, "Cappuccino.doxygen.bak"), FILE.join(documentationDir, "Cappuccino.doxygen"));
+
+    var doxygenDidSucceed = !OS.system([doxygen, FILE.join(documentationDir, "Cappuccino.doxygen")]);
+
+    // Restore the original doxygen settings
+    if (FILE.exists(FILE.join(documentationDir, "Cappuccino.doxygen.bak")))
+        mv(FILE.join(documentationDir, "Cappuccino.doxygen.bak"), FILE.join(documentationDir, "Cappuccino.doxygen"));
+
+    colorPrint("Post-processing generated documentation...", "green");
+
+    processors = FILE.glob(FILE.join(documentationDir, "postprocess/*"));
+
+    for (var i = 0; i < processors.length; ++i)
+        if (OS.system([processors[i], documentationDir, FILE.join("Documentation", "html")]))
+        {
+            rm_rf("Documentation");
+            return;
+        }
+
+    if (doxygenDidSucceed)
+    {
+        if (!FILE.isDirectory($BUILD_DIR))
+            FILE.mkdirs($BUILD_DIR);
 
         rm_rf($DOCUMENTATION_BUILD);
         mv("debug.txt", FILE.join("Documentation", "debug.txt"));
         mv("Documentation", $DOCUMENTATION_BUILD);
+
+        // There is a bug in doxygen 1.7.x preventing loading correctly the custom CSS
+        // So let's do it manually
+        cp(FILE.join(documentationDir, "doxygen.css"), FILE.join($DOCUMENTATION_BUILD, "html", "doxygen.css"));
     }
-    else
-        print("doxygen not installed. skipping documentation generation.");
-});
+}
 
 // Downloads
 
@@ -189,30 +279,30 @@ task ("demos", function()
         if (key)
             return this._plist.valueForKey(key);
         return this._plist;
-    }
-    
+    };
+
     Demo.prototype.name = function()
     {
         return this.plist("CPBundleName");
-    }
-    
+    };
+
     Demo.prototype.path = function()
     {
         return this._path;
-    }
-    
+    };
+
     Demo.prototype.excluded = function()
     {
         return !!this.plist("CPDemoExcluded");
-    }
+    };
 
     Demo.prototype.toString = function()
     {
         return this.name();
-    }
-    
+    };
+
     FILE.glob(FILE.join(demosDir, "demos", "**/Info.plist")).map(function(demoPath){
-        return new Demo(FILE.dirname(demoPath))
+        return new Demo(FILE.dirname(demoPath));
     }).filter(function(demo){
         return !demo.excluded();
     }).forEach(function(demo)
@@ -224,21 +314,29 @@ task ("demos", function()
         var outputPath = demo.name().replace(/\s/g, "-")+".zip";
         OS.system("cd "+OS.enquote(FILE.dirname(demo.path()))+" && zip -ry -8 "+OS.enquote(outputPath)+" "+OS.enquote(FILE.basename(demo.path())));
 
-        // remove the frameworks 
+        // remove the frameworks
         rm_rf(FILE.join(demo.path(), "Frameworks"));
     });
 });
 
 // Testing
 
-task("test", ["CommonJS", "test-only"]);
+task("test", ["CommonJS", "test-only", "check-missing-imports"]);
 
 task("test-only", function()
 {
-    var tests = new FileList('Tests/**/*Test.j');
-    var cmd = ["ojtest"].concat(tests.items());
+    var tests = new FileList('Tests/**/*Test.j'),
+        cmd = ["ojtest"].concat(tests.items()),
+        code = OS.system(serializedENV() + " " + cmd.map(OS.enquote).join(" "));
 
-    var code = OS.system(serializedENV() + " " + cmd.map(OS.enquote).join(" "));
+    if (code !== 0)
+        OS.exit(code);
+});
+
+task("check-missing-imports", function()
+{
+    var code = OS.system(serializedENV() + " " + ["js", "Tests/DetectMissingImports.js"].map(OS.enquote).join(" "));
+
     if (code !== 0)
         OS.exit(code);
 });
@@ -249,7 +347,7 @@ task("push-cappuccino", function() {
     pushPackage(
         $BUILD_CJS_CAPPUCCINO,
         "git@github.com:280north/cappuccino-package.git",
-        SYSTEM.env["PACKAGE_BRANCH"]
+        SYSTEM.env.PACKAGE_BRANCH
     );
 });
 
@@ -257,7 +355,7 @@ task("push-objective-j", function() {
     pushPackage(
         $BUILD_CJS_OBJECTIVE_J,
         "git@github.com:280north/objective-j-package.git",
-        SYSTEM.env["PACKAGE_BRANCH"]
+        SYSTEM.env.PACKAGE_BRANCH
     );
 });
 
@@ -271,7 +369,7 @@ function pushPackage(path, remote, branch)
 
     var packagePath = pushPackagesPath.join(remote.replace(/[^\w]/g, "_"));
 
-    stream.print("Pushing \0blue(" + path + "\0) to "+branch+" of \0blue(" + remote + "\0)");
+    stream.print("Pushing " + colorize(path, "blue") + " to " + branch + " of " + colorize(remote, "blue"));
 
     if (packagePath.isDirectory())
         OS.system(buildCmd([["cd", packagePath], ["git", "fetch"]]));
@@ -295,9 +393,9 @@ function pushPackage(path, remote, branch)
 
     var pkg = JSON.parse(packagePath.join("package.json").read({ charset : "UTF-8" }));
 
-    stream.print("    Version:   \0purple(" + pkg["version"] + "\0)");
-    stream.print("    Revision:  \0purple(" + pkg["cappuccino-revision"] + "\0)");
-    stream.print("    Timestamp: \0purple(" + pkg["cappuccino-timestamp"] + "\0)");
+    stream.print("    Version:   " + colorize(pkg.version, "purple"));
+    stream.print("    Revision:  " + colorize(pkg["cappuccino-revision"], "purple"));
+    stream.print("    Timestamp: " + colorize(pkg["cappuccino-timestamp"], "purple"));
 
     var cmd = [
         ["cd", packagePath],
@@ -308,7 +406,7 @@ function pushPackage(path, remote, branch)
         cmd.push(["git", "tag", "rev-"+pkg["cappuccino-revision"].slice(0,6)]);
 
     OS.system(buildCmd(cmd));
-    
+
     if (OS.system(buildCmd([
         ["cd", packagePath],
         ["git", "push", "--tags", "origin", "HEAD:"+branch]
@@ -321,20 +419,4 @@ function buildCmd(arrayOfCommands)
     return arrayOfCommands.map(function(cmd) {
         return cmd.map(OS.enquote).join(" ");
     }).join(" && ");
-}
-
-function getShellConfigFile()
-{
-    var homeDir = SYSTEM.env["HOME"] + "/";
-    // use order outlined by http://hayne.net/MacDev/Notes/unixFAQ.html#shellStartup
-    var possibilities = [homeDir + ".bash_profile",
-                         homeDir + ".bash_login",
-                         homeDir + ".profile",
-                         homeDir + ".bashrc"];
-
-    for (var i = 0; i < possibilities.length; i++)
-    {
-        if (FILE.exists(possibilities[i]))
-            return possibilities[i];
-    }
 }

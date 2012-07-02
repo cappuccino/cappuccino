@@ -28,15 +28,16 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [super NS_initWithCoder:aCoder];
-    
+
     if (self)
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
-        
+
         [self setImageScaling:[cell imageScaling]];
+        [self setImageAlignment:[cell imageAlignment]];
         _isEditable = [cell isEditable];
     }
-    
+
     return self;
 }
 
@@ -82,33 +83,26 @@ NSImageFrameGrayBezel   = 2;
 NSImageFrameGroove      = 3;
 NSImageFrameButton      = 4;
 
-var NSImageScalingToCPImageScaling = {};
-
-NSImageScalingToCPImageScaling[NSImageScaleProportionallyDown]      = CPScaleProportionally;
-NSImageScalingToCPImageScaling[NSImageScaleAxesIndependently]       = CPScaleToFit;
-NSImageScalingToCPImageScaling[NSImageScaleNone]                    = CPScaleNone;
-NSImageScalingToCPImageScaling[NSImageScaleProportionallyUpOrDown]  = CPScaleProportionally;
-
 @implementation NSImageCell : NSCell
 {
-    BOOL                _animates       @accessors; 
-    NSImageAlignment    _imageAlignment @accessors;
+    BOOL                _animates       @accessors;
+    NSImageAlignment    _imageAlignment @accessors(readonly, getter=imageAlignment);
     NSImageScaling      _imageScaling   @accessors(readonly, getter=imageScaling);
     NSImageFrameStyle   _frameStyle     @accessors;
 }
 
-- (id)initWithCoder:(CPCoder)aCoder 
+- (id)initWithCoder:(CPCoder)aCoder
 {
-    self = [super initWithCoder:aCoder]; 
-    
+    self = [super initWithCoder:aCoder];
+
     if (self)
     {
-        _animates = [aCoder decodeBoolForKey:@"NSAnimates"]; 
-        _imageAlignment = [aCoder decodeIntForKey:@"NSAlign"]; 
-        _imageScaling = NSImageScalingToCPImageScaling[[aCoder decodeIntForKey:@"NSScale"]]; 
+        _animates = [aCoder decodeBoolForKey:@"NSAnimates"];
+        _imageAlignment = [aCoder decodeIntForKey:@"NSAlign"];
+        _imageScaling = [aCoder decodeIntForKey:@"NSScale"];
         _frameStyle = [aCoder decodeIntForKey:@"NSStyle"];
     }
-    
+
     return self;
 }
 

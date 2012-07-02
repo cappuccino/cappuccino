@@ -1,15 +1,47 @@
+/*
+ * CPObjectController.j
+ * AppKit
+ *
+ * Created by Ross Boucher.
+ * Copyright 2009, 280 North, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
 @import <Foundation/CPDictionary.j>
+@import <Foundation/CPCountedSet.j>
 
 @import "CPController.j"
 
+/*!
+    @class
 
+    CPObjectController is a bindings-compatible controller class.
+    Properties of the content object of an object of this class can be bound to user interface elements to change and access their values.
+
+    The content of an CPObjectController instance is an CPMutableDictionary object by default.
+    This allows a single CPObjectController instance to be used to manage several properties accessed by key value paths.
+    The default content object class can be changed by calling setObjectClass:, which a subclass must override.
+*/
 @implementation CPObjectController : CPController
 {
     id              _contentObject;
     id              _selection;
 
     Class           _objectClass;
+    CPString        _objectClassName;
 
     BOOL            _isEditable;
     BOOL            _automaticallyPreparesContent;
@@ -19,6 +51,9 @@
 
 + (id)initialize
 {
+    if (self !== [CPObjectController class])
+        return;
+
     [self exposeBinding:@"editable"];
     [self exposeBinding:@"contentObject"];
 }
@@ -51,25 +86,47 @@
     return [CPSet setWithObjects:"editable", "selection"];
 }
 
+/*!
+    @ignore
+*/
+- (id)init
+{
+    return [self initWithContent:nil];
+}
+
+/*!
+    Inits and returns a CPObjectController object with the given content.
+
+    @param id aContent - The object the controller will use.
+    @return id the CPObjectConroller instance.
+*/
 - (id)initWithContent:(id)aContent
 {
-    self = [super init];
-
-    if (self)
+    if (self = [super init])
     {
         [self setContent:aContent];
         [self setEditable:YES];
         [self setObjectClass:[CPMutableDictionary class]];
+
+        _observedKeys = [[CPCountedSet alloc] init];
     }
 
     return self;
 }
 
+/*!
+    Returns the controller's content object.
+    @return id - The content object of the controller.
+*/
 - (id)content
 {
     return _contentObject;
 }
 
+/*!
+    Sets the content object for the controller.
+    @param id aContent - The new content object for the controller.
+*/
 - (void)setContent:(id)aContent
 {
     [self willChangeValueForKey:@"contentObject"];
@@ -77,113 +134,197 @@
 
     _contentObject = aContent;
 
-    [self didChangeValueForKey:@"contentObject"];
     [self _selectionDidChange];
+    [self didChangeValueForKey:@"contentObject"];
 }
 
+/*!
+    @ignore
+*/
 - (void)_setContentObject:(id)aContent
 {
     [self setContent:aContent];
 }
 
+/*!
+    @ignore
+*/
 - (id)_contentObject
 {
     return [self content];
 }
 
+/*!
+    Sets whether the controller automatically creates and inserts new content objects automatically when loading from a cib file.
+    If you pass YES and the controller uses prepareContent to create the content object.
+    The default is NO.
+
+    @param BOOL shouldAutomaticallyPrepareContent - YES if the content should be prepared, otherwise NO.
+*/
 - (void)setAutomaticallyPreparesContent:(BOOL)shouldAutomaticallyPrepareContent
 {
     _automaticallyPreparesContent = shouldAutomaticallyPrepareContent;
 }
 
+/*!
+    Returns if the controller prepares the content automatically.
+    @return BOOL - YES if the content is prepared, otherwise NO.
+*/
 - (BOOL)automaticallyPreparesContent
 {
     return _automaticallyPreparesContent;
 }
 
+/*!
+    Overridden by a subclass that require control over the creation of new objects.
+*/
 - (void)prepareContent
 {
     [self setContent:[self newObject]];
 }
 
+/*!
+    Sets the object class when creating new objects.
+    @param Class - the class of new objects that will be created.
+*/
 - (void)setObjectClass:(Class)aClass
 {
     _objectClass = aClass;
 }
 
+/*!
+    Returns the class of what new objects will be when they are created.
+
+    @return Class - The class of new objects.
+*/
 - (Class)objectClass
 {
     return _objectClass;
 }
 
-- (id)newObject
+/*!
+    @ignore
+*/
+- (id)_defaultNewObject
 {
     return [[[self objectClass] alloc] init];
 }
 
+/*!
+    Creates and returns a new object of the appropriate class.
+    @return id - The object created.
+*/
+- (id)newObject
+{
+    return [self _defaultNewObject];
+}
+
+/*!
+    Sets the controller's content object.
+    @param id anObject - The object to set for the controller.
+*/
 - (void)addObject:(id)anObject
 {
     [self setContent:anObject];
 
-    [[CPKeyValueBinding getBinding:@"contentObject" forObject:self] reverseSetValueFor:@"contentObject"];
+    var binderClass = [[self class] _binderClassForBinding:@"contentObject"];
+    [[binderClass getBinding:@"contentObject" forObject:self] reverseSetValueFor:@"contentObject"];
 }
 
+/*!
+    Removes a given object from the controller.
+    @param id anObject - The object to remove from the receiver.
+*/
 - (void)removeObject:(id)anObject
 {
     if ([self content] === anObject)
         [self setContent:nil];
 
-    [[CPKeyValueBinding getBinding:@"contentObject" forObject:self] reverseSetValueFor:@"contentObject"];
+    var binderClass = [[self class] _binderClassForBinding:@"contentObject"];
+    [[binderClass getBinding:@"contentObject" forObject:self] reverseSetValueFor:@"contentObject"];
 }
 
+/*!
+    Creates and adds a sets the object as the controller's content.
+    @param id aSender - The sender of the message.
+*/
 - (void)add:(id)aSender
 {
     // FIXME: This should happen on the next run loop?
     [self addObject:[self newObject]];
 }
 
+/*!
+    @return BOOL - YES if you can added to the controller using add:
+*/
 - (BOOL)canAdd
 {
     return [self isEditable];
 }
 
+/*!
+    Removes the content object from the controller.
+    @param id aSender - The sender of the message.
+*/
 - (void)remove:(id)aSender
 {
     // FIXME: This should happen on the next run loop?
     [self removeObject:[self content]];
 }
 
+/*!
+    @return BOOL - Returns YES if you can remove the controller's content using remove:
+*/
 - (BOOL)canRemove
 {
     return [self isEditable] && [[self selectedObjects] count];
 }
 
+/*!
+    Sets whether the controller allows for the editing of the content.
+    @param BOOL shouldBeEditable - YES if the content should be editable, otherwise NO.
+*/
 - (void)setEditable:(BOOL)shouldBeEditable
 {
     _isEditable = shouldBeEditable;
 }
 
+/*!
+    @return BOOL - Returns YES if the content of the controller is editable, otherwise NO.
+*/
 - (BOOL)isEditable
 {
     return _isEditable;
 }
 
+/*!
+    @return CPArray - Returns an array of all objects to be affected by editing.
+*/
 - (CPArray)selectedObjects
 {
-    return [[_CPObservableArray alloc] initWithObjects:[_contentObject] count:1];
+    return [[_CPObservableArray alloc] initWithArray:[_contentObject]];
 }
 
+/*!
+    Returns a proxy object representing the controller's selection.
+*/
 - (id)selection
 {
     return _selection;
 }
 
+/*!
+    @ignore
+*/
 - (void)_selectionWillChange
 {
     [_selection controllerWillChange];
     [self willChangeValueForKey:@"selection"];
 }
 
+/*!
+    @ignore
+*/
 - (void)_selectionDidChange
 {
     if (_selection === undefined || _selection === nil)
@@ -193,6 +334,9 @@
     [self didChangeValueForKey:@"selection"];
 }
 
+/*!
+    @return id - Returns the keys which are being observed.
+*/
 - (id)observedKeys
 {
     return _observedKeys;
@@ -212,7 +356,8 @@
 
 @end
 
-var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerObjectClassNameKey",
+var CPObjectControllerContentKey                        = @"CPObjectControllerContentKey",
+    CPObjectControllerObjectClassNameKey                = @"CPObjectControllerObjectClassNameKey",
     CPObjectControllerIsEditableKey                     = @"CPObjectControllerIsEditableKey",
     CPObjectControllerAutomaticallyPreparesContentKey   = @"CPObjectControllerAutomaticallyPreparesContentKey";
 
@@ -227,11 +372,10 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
         var objectClassName = [aCoder decodeObjectForKey:CPObjectControllerObjectClassNameKey],
             objectClass = CPClassFromString(objectClassName);
 
-        // FIXME: Error if objectClass === nil
-
-        [self setObjectClass:objectClass];
+        [self setObjectClass:objectClass || [CPMutableDictionary class]];
         [self setEditable:[aCoder decodeBoolForKey:CPObjectControllerIsEditableKey]];
-        [self setAutomaticallyPreparesContent:[aCoder decodeBoolForKey:CPObjectControllerAutomaticallyPreparesContentKey] || NO];
+        [self setAutomaticallyPreparesContent:[aCoder decodeBoolForKey:CPObjectControllerAutomaticallyPreparesContentKey]];
+        [self setContent:[aCoder decodeObjectForKey:CPObjectControllerContentKey]];
 
         _observedKeys = [[CPCountedSet alloc] init];
     }
@@ -241,11 +385,21 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    [aCoder encodeObject:CPStringFromClass(objectClass) forKey:CPObjectControllerObjectClassNameKey];
-    [aCoder encodeObject:[self isEditable] forKey:CPObjectControllerIsEditableKey];
+    [aCoder encodeObject:[self content] forKey:CPObjectControllerContentKey];
 
-    if (![self automaticallyPreparesContent])
-        [aCoder encodeBOOL:YES forKey:CPObjectControllerAutomaticallyPreparesContentKey];
+    if (_objectClass)
+        [aCoder encodeObject:CPStringFromClass(_objectClass) forKey:CPObjectControllerObjectClassNameKey];
+    else if (_objectClassName)
+        [aCoder encodeObject:_objectClassName forKey:CPObjectControllerObjectClassNameKey];
+
+    [aCoder encodeBool:[self isEditable] forKey:CPObjectControllerIsEditableKey];
+    [aCoder encodeBool:[self automaticallyPreparesContent] forKey:CPObjectControllerAutomaticallyPreparesContentKey];
+}
+
+- (void)awakeFromCib
+{
+    if (![self content] && [self automaticallyPreparesContent])
+        [self prepareContent];
 }
 
 @end
@@ -264,7 +418,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 
 - (id)initWithKeyPath:(id)aKeyPath observer:(id)anObserver object:(id)anObject
 {
-    if (self=[super init])
+    if (self = [super init])
     {
         _keyPath  = aKeyPath;
         _observer = anObserver;
@@ -313,9 +467,9 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)change context:(id)context
 {
     if (_notifyObject)
-        [_object observeValueForKeyPath:_keyPath ofObject:_object change:change context:context];
+        [_object observeValueForKeyPath:aKeyPath ofObject:_object change:change context:context];
 
-    [_observer observeValueForKeyPath:_keyPath ofObject:_object change:change context:context];
+    [_observer observeValueForKeyPath:aKeyPath ofObject:_object change:change context:context];
 }
 
 - (CPString)description
@@ -325,7 +479,8 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 
 @end
 
-@implementation _CPObservableArray : CPMutableArray
+// FIXME: This should subclass CPMutableArray not _CPJavaScriptArray
+@implementation _CPObservableArray : _CPJavaScriptArray
 {
     CPArray     _observationProxies;
 }
@@ -346,30 +501,20 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 
 - (CPString)description
 {
-    return "<_CPObservableArray: "+[super description]+" >";
+    return "<_CPObservableArray: " + [super description] + " >";
 }
 
 - (id)initWithArray:(CPArray)anArray
 {
-    if (self = [super initWithArray:anArray])
-    {
-        _observationProxies = [];
-    }
+    self = [super initWithArray:anArray];
+
+    self.isa = [_CPObservableArray class];
+    self._observationProxies = [];
 
     return self;
 }
 
-- (id)initWithObjects:(CPArray)objects count:(unsigned)count
-{
-    if (self = [super initWithObjects:objects count:count])
-    {
-        _observationProxies = [];
-    }
-
-    return self;
-}
-
--(void)addObserver:(id)anObserver forKeyPath:(CPString)aKeyPath options:(CPKeyValueObservingOptions)options context:(id)context
+- (void)addObserver:(id)anObserver forKeyPath:(CPString)aKeyPath options:(CPKeyValueObservingOptions)options context:(id)context
 {
     if (aKeyPath.indexOf("@") === 0)
     {
@@ -381,7 +526,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
         [_observationProxies addObject:proxy];
 
         var dotIndex = aKeyPath.indexOf("."),
-            remaining = aKeyPath.substring(dotIndex+1),
+            remaining = aKeyPath.substring(dotIndex + 1),
             indexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self count])];
 
         [self addObserver:proxy toObjectsAtIndexes:indexes forKeyPath:remaining options:options context:context];
@@ -403,7 +548,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
         proxy = [_observationProxies objectAtIndex:index];
 
         var dotIndex = aKeyPath.indexOf("."),
-            remaining = aKeyPath.substring(dotIndex+1),
+            remaining = aKeyPath.substring(dotIndex + 1),
             indexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self count])];
 
         [self removeObserver:proxy fromObjectsAtIndexes:indexes forKeyPath:remaining];
@@ -417,7 +562,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 
 - (void)insertObject:(id)anObject atIndex:(unsigned)anIndex
 {
-    for (var i=0, count=[_observationProxies count]; i<count; i++)
+    for (var i = 0, count = [_observationProxies count]; i < count; i++)
     {
         var proxy = [_observationProxies objectAtIndex:i],
             keyPath = [proxy keyPath],
@@ -437,7 +582,9 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 
 - (void)removeObjectAtIndex:(unsigned)anIndex
 {
-    for (var i=0, count=[_observationProxies count]; i<count; i++)
+    var currentObject = [self objectAtIndex:anIndex];
+
+    for (var i = 0, count = [_observationProxies count]; i < count; i++)
     {
         var proxy = [_observationProxies objectAtIndex:i],
             keyPath = [proxy keyPath],
@@ -446,13 +593,18 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
         if (operator)
             [self willChangeValueForKey:keyPath];
 
-        [anObject removeObserver:proxy forKeyPath:keyPath];
+        [currentObject removeObserver:proxy forKeyPath:keyPath];
 
         if (operator)
             [self didChangeValueForKey:keyPath];
     }
 
-    [self removeObjectAtIndex:anIndex];
+    [super removeObjectAtIndex:anIndex];
+}
+
+- (_CPObservableArray)objectsAtIndexes:(CPIndexSet)theIndexes
+{
+    return [_CPObservableArray arrayWithArray:[super objectsAtIndexes:theIndexes]];
 }
 
 - (void)addObject:(id)anObject
@@ -469,7 +621,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 {
     var currentObject = [self objectAtIndex:anIndex];
 
-    for (var i=0, count=[_observationProxies count]; i<count; i++)
+    for (var i = 0, count = [_observationProxies count]; i < count; i++)
     {
         var proxy = [_observationProxies objectAtIndex:i],
             keyPath = [proxy keyPath],
@@ -485,18 +637,20 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
             [self didChangeValueForKey:keyPath];
     }
 
-    [self replaceObjectAtIndex:anIndex withObject:anObject];
+    [super replaceObjectAtIndex:anIndex withObject:anObject];
 }
 
 @end
 
 @implementation CPControllerSelectionProxy : CPObject
 {
-    id              _controller;
-    id              _keys;
+    id                  _controller;
+    id                  _keys;
 
-    CPDictionary    _cachedValues;
-    CPArray         _observationProxies;
+    CPDictionary        _cachedValues;
+    CPArray             _observationProxies;
+
+    Object              _observedObjectsByKeyPath;
 }
 
 - (id)initWithController:(id)aController
@@ -506,44 +660,78 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
         _cachedValues = [CPDictionary dictionary];
         _observationProxies = [CPArray array];
         _controller = aController;
+        _observedObjectsByKeyPath = {};
     }
 
     return self;
 }
 
-- (id)valueForKey:(CPString)aKey
+- (id)_controllerMarkerForValues:(CPArray)theValues
 {
-    var value = [_cachedValues objectForKey:aKey];
-
-    if (value !== undefined && value !== nil)
-        return value;
-
-    var allValues = [[_controller selectedObjects] valueForKeyPath:aKey],
-        count = [allValues count];
+    var count = [theValues count],
+        value;
 
     if (!count)
         value = CPNoSelectionMarker;
     else if (count === 1)
-        value = [allValues objectAtIndex:0];
+        value = [theValues objectAtIndex:0];
     else
     {
         if ([_controller alwaysUsesMultipleValuesMarker])
             value = CPMultipleValuesMarker;
         else
         {
-            value = [allValues objectAtIndex:0];
+            value = [theValues objectAtIndex:0];
 
-            for (var i=0, count=[allValues count]; i<count && value!=CPMultipleValuesMarker; i++)
+            for (var i = 0, count = [theValues count]; i < count && value != CPMultipleValuesMarker; i++)
             {
-                if (![value isEqual:[allValues objectAtIndex:i]])
+                if (![value isEqual:[theValues objectAtIndex:i]])
                     value = CPMultipleValuesMarker;
             }
         }
     }
 
-    [_cachedValues setValue:value forKey:aKey];
+    if (value === nil || value.isa && [value isEqual:[CPNull null]])
+        value = CPNullMarker;
 
     return value;
+}
+
+- (id)valueForKeyPath:(CPString)theKeyPath
+{
+    var values = [[_controller selectedObjects] valueForKeyPath:theKeyPath],
+        value = [self _controllerMarkerForValues:values];
+
+    [_cachedValues setObject:value forKey:theKeyPath];
+
+    return value;
+}
+
+- (id)valueForKey:(CPString)theKeyPath
+{
+    return [self valueForKeyPath:theKeyPath];
+}
+
+- (void)setValue:(id)theValue forKeyPath:(CPString)theKeyPath
+{
+    [[_controller selectedObjects] setValue:theValue forKeyPath:theKeyPath];
+    [_cachedValues removeObjectForKey:theKeyPath];
+
+    // Allow handlesContentAsCompoundValue to work, based on observation of Cocoa's
+    // NSArrayController - when handlesContentAsCompoundValue and setValue:forKey:@"selection.X"
+    // is called, the array controller causes the compound value to be rewritten if
+    // handlesContentAsCompoundValue == YES. Note that
+    // A) this doesn't use observation (observe: X is not visible in backtraces)
+    // B) it only happens through the selection proxy and not on arrangedObject.X, content.X
+    // or even selectedObjects.X.
+    // FIXME The main code for this should somehow be in CPArrayController and also work
+    // for table based row edits.
+    [[CPBinder getBinding:@"contentArray" forObject:_controller] _contentArrayDidChange];
+}
+
+- (void)setValue:(id)theValue forKey:(CPString)theKeyPath
+{
+    [self setValue:theKeyPath forKeyPath:theKeyPath];
 }
 
 - (unsigned)count
@@ -556,32 +744,27 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
     return [_cachedValues keyEnumerator];
 }
 
-- (void)setValue:(id)aValue forKey:(CPString)aKey
-{
-    [[_controller selectedObjects] setValue:aValue forKey:aKey];
-}
-
--(void)controllerWillChange
+- (void)controllerWillChange
 {
     _keys = [_cachedValues allKeys];
 
     if (!_keys)
         return;
 
-    for (var i=0, count=_keys.length; i<count; i++)
+    for (var i = 0, count = _keys.length; i < count; i++)
         [self willChangeValueForKey:_keys[i]];
 
     [_cachedValues removeAllObjects];
 }
 
--(void)controllerDidChange
+- (void)controllerDidChange
 {
     [_cachedValues removeAllObjects];
 
     if (!_keys)
         return;
 
-    for (var i=0, count=_keys.length; i<count; i++)
+    for (var i = 0, count = _keys.length; i < count; i++)
         [self didChangeValueForKey:_keys[i]];
 
    _keys = nil;
@@ -599,7 +782,10 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
     [proxy setNotifyObject:YES];
     [_observationProxies addObject:proxy];
 
-    [[_controller selectedObjects] addObserver:proxy forKeyPath:aKeyPath options:options context:context];
+    // We keep a reference to the observed objects because removeObserver: will be called after the selection changes.
+    var observedObjects = [_controller selectedObjects];
+    _observedObjectsByKeyPath[aKeyPath] = observedObjects;
+    [observedObjects addObserver:proxy forKeyPath:aKeyPath options:options context:context];
 }
 
 - (void)removeObserver:(id)anObject forKeyPath:(CPString)aKeyPath
@@ -607,8 +793,12 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
     var proxy = [[_CPObservationProxy alloc] initWithKeyPath:aKeyPath observer:anObject object:self],
         index = [_observationProxies indexOfObject:proxy];
 
-    [[_controller selectedObjects] removeObserver:[_observationProxies objectAtIndex:index] forKeyPath:aKeyPath];
+    var observedObjects = _observedObjectsByKeyPath[aKeyPath];
+    [observedObjects removeObserver:[_observationProxies objectAtIndex:index] forKeyPath:aKeyPath];
+
     [_observationProxies removeObjectAtIndex:index];
+
+    _observedObjects = nil;
 }
 
 @end

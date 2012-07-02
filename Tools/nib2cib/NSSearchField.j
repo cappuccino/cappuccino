@@ -33,11 +33,18 @@
     if (self)
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
-        
+
         [self setRecentsAutosaveName:[cell recentsAutosaveName]];
         [self setMaximumRecents:[cell maximumRecents]];
         [self setSendsWholeSearchString:[cell sendsWholeSearchString]];
         [self setSendsSearchStringImmediately:[cell sendsSearchStringImmediately]];
+
+        if ([self isBezeled])
+        {
+            // NSTextField.j makes the field +7.0 pixels tall. We want +8.0 to go to 30.
+            var frame = [self frame];
+            [self setFrameSize:CGSizeMake(frame.size.width, frame.size.height + 1.0)];
+        }
     }
 
     return self;
@@ -77,12 +84,12 @@
     {
         _recentsAutosaveName = [aCoder decodeObjectForKey:@"NSRecentsAutosaveName"];
         _maximumRecents = [aCoder decodeIntForKey:@"NSMaximumRecents"];
-        _sendsWholeSearchString = [aCoder decodeBoolForKey:@"NSSendsWholeSearchString"] ? YES : NO;
-    
-        // These bytes don't seem to be used for anything else but the send immediatly flag
-        _sendsSearchStringImmediately = [aCoder decodeBytesForKey:@"NSSearchFieldFlags"] ? YES: NO;
+        _sendsWholeSearchString = [aCoder decodeBoolForKey:@"NSSendsWholeSearchString"];
+
+        // These bytes don't seem to be used for anything else but the send immediately flag
+        _sendsSearchStringImmediately = [aCoder decodeBytesForKey:@"NSSearchFieldFlags"] ? YES : NO;
     }
-    
+
     return self;
 }
 

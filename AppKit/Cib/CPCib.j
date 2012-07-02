@@ -34,11 +34,11 @@
 @import "_CPCibWindowTemplate.j"
 
 
-CPCibOwner              = @"CPCibOwner",
-CPCibTopLevelObjects    = @"CPCibTopLevelObjects",
-CPCibReplacementClasses = @"CPCibReplacementClasses",
+CPCibOwner              = @"CPCibOwner";
+CPCibTopLevelObjects    = @"CPCibTopLevelObjects";
+CPCibReplacementClasses = @"CPCibReplacementClasses";
 CPCibExternalObjects    = @"CPCibExternalObjects";
-    
+
 var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
 /*!
@@ -87,7 +87,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 {
     if (![aName hasSuffix:@".cib"])
         aName = [aName stringByAppendingString:@".cib"];
-    
+
     // If aBundle is nil, use mainBundle, but ONLY for searching for the nib, not for resources later.
     self = [self initWithContentsOfURL:[aBundle || [CPBundle mainBundle] pathForResource:aName]];
 
@@ -137,7 +137,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
         var key = nil,
             keyEnumerator = [replacementClasses keyEnumerator];
 
-        while (key = [keyEnumerator nextObject])
+        while ((key = [keyEnumerator nextObject]) !== nil)
             [unarchiver setClass:[replacementClasses objectForKey:key] forClassName:key];
     }
 
@@ -150,7 +150,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
     var topLevelObjects = [anExternalNameTable objectForKey:CPCibTopLevelObjects];
 
-    [objectData instantiateWithOwner:owner topLevelObjects:topLevelObjects]
+    [objectData instantiateWithOwner:owner topLevelObjects:topLevelObjects];
     [objectData establishConnectionsWithOwner:owner topLevelObjects:topLevelObjects];
     [objectData awakeWithOwner:owner topLevelObjects:topLevelObjects];
 

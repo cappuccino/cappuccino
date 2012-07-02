@@ -20,9 +20,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPArray.j"
 @import "CPCoder.j"
+@import "CPData.j"
+@import "CPDictionary.j"
+@import "CPException.j"
+@import "CPKeyedArchiver.j"
 @import "CPNull.j"
-
+@import "CPNumber.j"
+@import "CPString.j"
 
 CPInvalidUnarchiveOperationException    = @"CPInvalidUnarchiveOperationException";
 
@@ -33,7 +39,7 @@ var _CPKeyedUnarchiverCannotDecodeObjectOfClassNameOriginalClassesSelector      
     _CPKeyedUnarchiverDidFinishSelector                                                 = 1 << 4,
     CPKeyedUnarchiverDelegate_unarchiver_cannotDecodeObjectOfClassName_originalClasses_ = 1 << 5;
 
-var _CPKeyedArchiverNullString                                              = "$null"
+var _CPKeyedArchiverNullString                                              = "$null",
 
     _CPKeyedArchiverUIDKey                                                  = "CP$UID",
 
@@ -83,7 +89,7 @@ var CPArrayClass                                                            = Ni
     @delegate -(id)unarchiver:(CPKeyedUnarchiver)unarchiver didDecodeObject:(id)object;
     Called when the unarchiver decodes an object.
     @param unarchiver the unarchiver doing the decoding
-    @param object the decoded objec
+    @param object the decoded object
     @return a substitute to use for the decoded object. This can be the same object argument provide,
     another object or \c nil.
 
@@ -235,7 +241,7 @@ var CPArrayClass                                                            = Ni
 */
 - (BOOL)decodeBoolForKey:(CPString)aKey
 {
-    return [self decodeObjectForKey:aKey];
+    return !![self decodeObjectForKey:aKey];
 }
 
 /*
@@ -245,7 +251,9 @@ var CPArrayClass                                                            = Ni
 */
 - (float)decodeFloatForKey:(CPString)aKey
 {
-    return [self decodeObjectForKey:aKey];
+    var f = [self decodeObjectForKey:aKey];
+
+    return f === nil ? 0.0 : f;
 }
 
 /*
@@ -255,7 +263,9 @@ var CPArrayClass                                                            = Ni
 */
 - (double)decodeDoubleForKey:(CPString)aKey
 {
-    return [self decodeObjectForKey:aKey];
+    var d = [self decodeObjectForKey:aKey];
+
+    return d === nil ? 0.0 : d;
 }
 
 /*
@@ -265,7 +275,9 @@ var CPArrayClass                                                            = Ni
 */
 - (int)decodeIntForKey:(CPString)aKey
 {
-    return [self decodeObjectForKey:aKey];
+    var i = [self decodeObjectForKey:aKey];
+
+    return i === nil ? 0 : i;
 }
 
 /*
@@ -278,9 +290,9 @@ var CPArrayClass                                                            = Ni
     var object = [self decodeObjectForKey:aKey];
 
     if (object)
-        return CPPointFromString(object);
+        return CGPointFromString(object);
     else
-        return CPPointMake(0.0, 0.0);
+        return CGPointMakeZero();
 }
 
 /*
@@ -293,9 +305,9 @@ var CPArrayClass                                                            = Ni
     var object = [self decodeObjectForKey:aKey];
 
     if (object)
-        return CPRectFromString(object);
+        return CGRectFromString(object);
     else
-        return CPRectMakeZero();
+        return CGRectMakeZero();
 }
 
 /*
@@ -308,9 +320,9 @@ var CPArrayClass                                                            = Ni
     var object = [self decodeObjectForKey:aKey];
 
     if (object)
-        return CPSizeFromString(object);
+        return CGSizeFromString(object);
     else
-        return CPSizeMake(0.0, 0.0);
+        return CGSizeMakeZero();
 }
 
 /*
@@ -329,7 +341,7 @@ var CPArrayClass                                                            = Ni
     else if (objectClass === CPNumberClass || objectClass === CPDataClass || objectClass === CPStringClass)
         return object;
 
-    else if (objectClass === CPArrayClass || objectClass === CPMutableArrayClass)
+    else if (objectClass === _CPJavaScriptArray)
     {
         var index = 0,
             count = object.length,
@@ -360,8 +372,9 @@ var CPArrayClass                                                            = Ni
         return nil;
 
     var objectClass = data.isa;
+
     if (objectClass === CPDataClass)
-        return data.bytes;
+        return data.bytes();
 
     return nil;
 }
@@ -435,71 +448,48 @@ var _CPKeyedUnarchiverDecodeObjectAtIndex = function(self, anIndex)
     var object = self._objects[anIndex];
 
     if (object)
+    {
         if (object === self._objects[0])
             return nil;
-        else
-            return object;
-
-    var object,
-        plistObject = self._plistObjects[anIndex],
-        plistObjectClass = plistObject.isa;
-
-    if (plistObjectClass === CPDictionaryClass || plistObjectClass === CPMutableDictionaryClass)
+        // Don't return immediately here. The _CPKeyedArchiverValueClass unwrapper code
+        // hasn't executed yet.
+    }
+    else
     {
-        var plistClass = self._plistObjects[plistObject.valueForKey(_CPKeyedArchiverClassKey).valueForKey(_CPKeyedArchiverUIDKey)],
-            className = plistClass.valueForKey(_CPKeyedArchiverClassNameKey),
-            classes = plistClass.valueForKey(_CPKeyedArchiverClassesKey),
-            theClass = [self classForClassName:className];
+        var plistObject = self._plistObjects[anIndex],
+            plistObjectClass = plistObject.isa;
 
-        if (!theClass)
-            theClass = CPClassFromString(className);
-
-        if (!theClass && (self._delegateSelectors & CPKeyedUnarchiverDelegate_unarchiver_cannotDecodeObjectOfClassName_originalClasses_))
-            theClass = [_delegate unarchiver:self cannotDecodeObjectOfClassName:className originalClasses:classes];
-
-        if (!theClass)
-            [CPException raise:CPInvalidUnarchiveOperationException reason:@"-[CPKeyedUnarchiver decodeObjectForKey:]: cannot decode object of class (" + className + @")"];
-
-        var savedPlistObject = self._plistObject;
-
-        self._plistObject = plistObject;
-
-        // Should we only call this on _CPCibClassSwapper? (currently the only class that makes use of this).
-        object = [theClass allocWithCoder:self];
-
-        // It is important to do this before calling initWithCoder so that decoding can be self referential (something = self).
-        self._objects[anIndex] = object;
-
-        var processedObject = [object initWithCoder:self];
-
-        self._plistObject = savedPlistObject;
-
-        if (processedObject !== object)
+        if (plistObjectClass === CPDictionaryClass || plistObjectClass === CPMutableDictionaryClass)
         {
-            if (self._delegateSelectors & _CPKeyedUnarchiverWillReplaceObjectWithObjectSelector)
-                [self._delegate unarchiver:self willReplaceObject:object withObject:processedObject];
+            var plistClass = self._plistObjects[plistObject.valueForKey(_CPKeyedArchiverClassKey).valueForKey(_CPKeyedArchiverUIDKey)],
+                className = plistClass.valueForKey(_CPKeyedArchiverClassNameKey),
+                classes = plistClass.valueForKey(_CPKeyedArchiverClassesKey),
+                theClass = [self classForClassName:className];
 
-            object = processedObject;
-            self._objects[anIndex] = processedObject;
-        }
+            if (!theClass)
+                theClass = CPClassFromString(className);
 
-        processedObject = [object awakeAfterUsingCoder:self];
+            if (!theClass && (self._delegateSelectors & CPKeyedUnarchiverDelegate_unarchiver_cannotDecodeObjectOfClassName_originalClasses_))
+                theClass = [_delegate unarchiver:self cannotDecodeObjectOfClassName:className originalClasses:classes];
 
-        if (processedObject !== object)
-        {
-            if (self._delegateSelectors & _CPKeyedUnarchiverWillReplaceObjectWithObjectSelector)
-                [self._delegate unarchiver:self willReplaceObject:object withObject:processedObject];
+            if (!theClass)
+                [CPException raise:CPInvalidUnarchiveOperationException reason:@"-[CPKeyedUnarchiver decodeObjectForKey:]: cannot decode object of class (" + className + @")"];
 
-            object = processedObject;
-            self._objects[anIndex] = processedObject;
-        }
+            var savedPlistObject = self._plistObject;
 
-        if (self._delegate)
-        {
-            if (self._delegateSelectors & _CPKeyedUnarchiverDidDecodeObjectSelector)
-                processedObject = [self._delegate unarchiver:self didDecodeObject:object];
+            self._plistObject = plistObject;
 
-            if (processedObject != object)
+            // Should we only call this on _CPCibClassSwapper? (currently the only class that makes use of this).
+            object = [theClass allocWithCoder:self];
+
+            // It is important to do this before calling initWithCoder so that decoding can be self referential (something = self).
+            self._objects[anIndex] = object;
+
+            var processedObject = [object initWithCoder:self];
+
+            self._plistObject = savedPlistObject;
+
+            if (processedObject !== object)
             {
                 if (self._delegateSelectors & _CPKeyedUnarchiverWillReplaceObjectWithObjectSelector)
                     [self._delegate unarchiver:self willReplaceObject:object withObject:processedObject];
@@ -507,22 +497,48 @@ var _CPKeyedUnarchiverDecodeObjectAtIndex = function(self, anIndex)
                 object = processedObject;
                 self._objects[anIndex] = processedObject;
             }
-        }
-    }
-    else
-    {
-        self._objects[anIndex] = object = plistObject;
 
-        if ([object class] === CPStringClass)
-        {
-            if (object === _CPKeyedArchiverNullString)
+            processedObject = [object awakeAfterUsingCoder:self];
+
+            if (processedObject !== object)
             {
-                self._objects[anIndex] = self._objects[0];
+                if (self._delegateSelectors & _CPKeyedUnarchiverWillReplaceObjectWithObjectSelector)
+                    [self._delegate unarchiver:self willReplaceObject:object withObject:processedObject];
 
-                return nil;
+                object = processedObject;
+                self._objects[anIndex] = processedObject;
             }
-            else
-                self._objects[anIndex] = object = plistObject;
+
+            if (self._delegate)
+            {
+                if (self._delegateSelectors & _CPKeyedUnarchiverDidDecodeObjectSelector)
+                    processedObject = [self._delegate unarchiver:self didDecodeObject:object];
+
+                if (processedObject && processedObject != object)
+                {
+                    if (self._delegateSelectors & _CPKeyedUnarchiverWillReplaceObjectWithObjectSelector)
+                        [self._delegate unarchiver:self willReplaceObject:object withObject:processedObject];
+
+                    object = processedObject;
+                    self._objects[anIndex] = processedObject;
+                }
+            }
+        }
+        else
+        {
+            self._objects[anIndex] = object = plistObject;
+
+            if ([object class] === CPStringClass)
+            {
+                if (object === _CPKeyedArchiverNullString)
+                {
+                    self._objects[anIndex] = self._objects[0];
+
+                    return nil;
+                }
+                else
+                    self._objects[anIndex] = object = plistObject;
+            }
         }
     }
 
@@ -532,4 +548,4 @@ var _CPKeyedUnarchiverDecodeObjectAtIndex = function(self, anIndex)
         object = [object JSObject];
 
     return object;
-}
+};

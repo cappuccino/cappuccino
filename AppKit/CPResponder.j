@@ -23,22 +23,23 @@
 @import <Foundation/CPObject.j>
 
 
-CPDeleteKeyCode     = 8;
-CPTabKeyCode        = 9;
-CPReturnKeyCode     = 13;
-CPEscapeKeyCode     = 27;
-CPSpaceKeyCode      = 32;
-CPPageUpKeyCode     = 33;
-CPPageDownKeyCode   = 34;
-CPLeftArrowKeyCode  = 37;
-CPUpArrowKeyCode    = 38;
-CPRightArrowKeyCode = 39;
-CPDownArrowKeyCode  = 40;
+CPDeleteKeyCode         = 8;
+CPTabKeyCode            = 9;
+CPReturnKeyCode         = 13;
+CPEscapeKeyCode         = 27;
+CPSpaceKeyCode          = 32;
+CPPageUpKeyCode         = 33;
+CPPageDownKeyCode       = 34;
+CPLeftArrowKeyCode      = 37;
+CPUpArrowKeyCode        = 38;
+CPRightArrowKeyCode     = 39;
+CPDownArrowKeyCode      = 40;
+CPDeleteForwardKeyCode  = 46;
 
 /*!
     @ingroup appkit
     @class CPResponder
-    
+
     Subclasses of CPResonder can be part of the responder chain.
 */
 @implementation CPResponder : CPObject
@@ -104,42 +105,24 @@ CPDownArrowKeyCode  = 40;
 
     for (; index < count; ++index)
     {
-        var event = events[index];
+        var event = events[index],
+            modifierFlags = [event modifierFlags],
+            character = [event charactersIgnoringModifiers],
+            selectorNames = [CPKeyBinding selectorsForKey:character modifierFlags:modifierFlags];
 
-        switch([event keyCode])
+        if (selectorNames)
         {
-            case CPPageUpKeyCode:       [self doCommandBySelector:@selector(pageUp:)];
-                                        break;
-            case CPPageDownKeyCode:     [self doCommandBySelector:@selector(pageDown:)];
-                                        break;
-            case CPLeftArrowKeyCode:    [self doCommandBySelector:@selector(moveLeft:)];
-                                        break;
-            case CPRightArrowKeyCode:   [self doCommandBySelector:@selector(moveRight:)];
-                                        break;
-            case CPUpArrowKeyCode:      [self doCommandBySelector:@selector(moveUp:)];
-                                        break;
-            case CPDownArrowKeyCode:    [self doCommandBySelector:@selector(moveDown:)];
-                                        break;
-            case CPDeleteKeyCode:       [self doCommandBySelector:@selector(deleteBackward:)];
-                                        break;
-            case CPReturnKeyCode:
-            case 3:                     [self doCommandBySelector:@selector(insertLineBreak:)];
-                                        break;
-            
-            case CPEscapeKeyCode:       [self doCommandBySelector:@selector(cancel:)];
-                                        break;
+            for (var s = 0, scount = selectorNames.length; s < scount; s++)
+            {
+                var selector = selectorNames[s];
+                if (!selector)
+                    continue;
 
-            case CPTabKeyCode:          var shift = [event modifierFlags] & CPShiftKeyMask;
-
-                                        if (!shift)
-                                            [self doCommandBySelector:@selector(insertTab:)];
-                                        else
-                                            [self doCommandBySelector:@selector(insertBackTab:)];
-
-                                        break;
-
-            default:                    [self insertText:[event characters]];
+                [self doCommandBySelector:CPSelectorFromString(selector)];
+            }
         }
+        else if (!(modifierFlags & (CPCommandKeyMask | CPControlKeyMask)) && [self respondsToSelector:@selector(insertText:)])
+            [self insertText:[event characters]];
     }
 }
 
@@ -239,11 +222,27 @@ CPDownArrowKeyCode  = 40;
     [_nextResponder performSelector:_cmd withObject:anEvent];
 }
 
-/*
-    FIXME This description is bad.
-    Based on \c anEvent, the receiver should simulate the event.
-    @param anEvent the event to simulate
-    @return \c YES if the event receiver simulated the  event
+/*!
+    Notifies the receiver that the user has pressed or released a modifier key (Shift, Control, and so on).
+    @param anEvent information about the key press
+*/
+- (void)flagsChanged:(CPEvent)anEvent
+{
+    [_nextResponder performSelector:_cmd withObject:anEvent];
+}
+
+/*!
+    Overridden by subclasses to handle a key equivalent.
+
+    If the character code or codes in \c anEvent match the receiver’s key equivalent,
+    the receiver should respond to the event and return \c YES. The default implementation
+    does nothing and returns \c NO.
+
+    You should extract the characters for a key equivalent using
+    \ref CPEvent::charactersIgnoringModifiers "[anEvent charactersIgnoringModifiers]".
+
+    @param anEvent An event object that represents the key equivalent pressed
+    @return \c YES if theEvent is a key equivalent that the receiver handled, \c NO if it is not a key equivalent that it should handle.
 */
 - (BOOL)performKeyEquivalent:(CPEvent)anEvent
 {
@@ -267,10 +266,6 @@ CPDownArrowKeyCode  = 40;
 - (void)insertNewline:(id)aSender
 {
     [[self nextResponder] insertNewline:aSender];
-}
-
-- (void)cancel:(id)sender
-{
 }
 
 - (void)insertTab:(id)sender
@@ -312,10 +307,10 @@ CPDownArrowKeyCode  = 40;
 */
 - (BOOL)tryToPerform:(SEL)aSelector with:(id)anObject
 {
-    if([self respondsToSelector:aSelector])
+    if ([self respondsToSelector:aSelector])
     {
         [self performSelector:aSelector withObject:anObject];
-        
+
         return YES;
     }
 
@@ -354,7 +349,8 @@ CPDownArrowKeyCode  = 40;
 
 @end
 
-var CPResponderNextResponderKey = @"CPResponderNextResponderKey";
+var CPResponderNextResponderKey = @"CPResponderNextResponderKey",
+    CPResponderMenuKey = @"CPResponderMenuKey";
 
 @implementation CPResponder (CPCoding)
 
@@ -366,10 +362,13 @@ var CPResponderNextResponderKey = @"CPResponderNextResponderKey";
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
-        _nextResponder = [aCoder decodeObjectForKey:CPResponderNextResponderKey];
-    
+    {
+        [self setNextResponder:[aCoder decodeObjectForKey:CPResponderNextResponderKey]];
+        [self setMenu:[aCoder decodeObjectForKey:CPResponderMenuKey]];
+    }
+
     return self;
 }
 
@@ -382,6 +381,8 @@ var CPResponderNextResponderKey = @"CPResponderNextResponderKey";
     // This will come out nil on the other side with decodeObjectForKey:
     if (_nextResponder !== nil)
         [aCoder encodeConditionalObject:_nextResponder forKey:CPResponderNextResponderKey];
+
+    [aCoder encodeObject:_menu forKey:CPResponderMenuKey];
 }
 
 @end

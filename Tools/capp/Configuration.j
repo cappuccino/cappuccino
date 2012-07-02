@@ -30,7 +30,7 @@ var DefaultDictionary       = nil,
     [DefaultDictionary setObject:@"feedback @nospam@ yourcompany.com" forKey:@"organization.email"];
     [DefaultDictionary setObject:@"http://yourcompany.com" forKey:@"organization.url"];
     [DefaultDictionary setObject:@"com.yourcompany" forKey:@"organization.identifier"];
-    
+
     var date = new Date(),
         months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -90,7 +90,7 @@ var DefaultDictionary       = nil,
 
     [set addObjectsFromArray:[temporaryDictionary allKeys]];
     [set addObjectsFromArray:[DefaultDictionary allKeys]];
-    
+
     return [set objectEnumerator];
 }
 
@@ -112,6 +112,11 @@ var DefaultDictionary       = nil,
     [dictionary setObject:aString forKey:aKey];
 }
 
+- (void)removeValueForKey:(CPString)aKey
+{
+    [dictionary removeObjectForKey:aKey];
+}
+
 - (void)setTemporaryValue:(CPString)aString forKey:(CPString)aKey
 {
     [temporaryDictionary setObject:aString forKey:aKey];
@@ -131,51 +136,80 @@ var DefaultDictionary       = nil,
 
 function config(/*va_args*/)
 {
-    var index = 0,
-        count = arguments.length,
-        key = NULL,
-        value = NULL,
-        shouldGet = NO,
-        shouldList = NO;
+    var count = arguments.length;
 
-    for (; index < count; ++index)
+    if (count === 0 || count > 2)
     {
-        var argument = arguments[index];
+        printUsage();
+        return;
+    }
 
-        switch (argument)
-        {
-            case "--get":   shouldGet = YES;
-                            break;
+    var argument = arguments[0],
+        key = nil,
+        value = nil,
+        action = nil,
+        valid = YES;
 
-            case "-l": 
-            case "--list":  shouldList = YES;
-                            break;
+    switch (argument)
+    {
+        case "--get":
+        case "--remove":    action = argument.substring(2);
 
-            default:        if (key === NULL)
-                                key = argument;
+                            if (count === 2)
+                                key = arguments[1];
                             else
-                                value = argument;
-        }
+                                valid = NO;
+                            break;
+
+        case "-l":
+        case "--list":      action = "list";
+                            valid = count === 1;
+                            break;
+
+
+        default:            action = "set";
+                            key = argument;
+
+                            if (count === 2)
+                                value = arguments[1];
+                            else
+                                valid = NO;
+    }
+
+    if (!valid)
+    {
+        printUsage();
+        return;
     }
 
     var configuration = [Configuration userConfiguration];
 
-    if (shouldList)
+    if (action === "list")
     {
         var key = nil,
             keyEnumerator = [configuration storedKeyEnumerator];
-    
-        while (key = [keyEnumerator nextObject])
+
+        while ((key = [keyEnumerator nextObject]) !== nil)
             print(key + '=' + [configuration valueForKey:key]);
     }
-    else if (shouldGet)
+    else if (action === "get")
     {
         var value = [configuration valueForKey:key];
-    
-        if (value)
+
+        if (value != nil)
             print(value);
     }
-    else if (key !== NULL && value !== NULL)
+    else if (action === "remove")
+    {
+        var value = [configuration valueForKey:key];
+
+        if (value != nil)
+        {
+            [configuration removeValueForKey:key];
+            [configuration save];
+        }
+    }
+    else if (key !== nil && value !== nil)
     {
         [configuration setValue:value forKey:key];
         [configuration save];

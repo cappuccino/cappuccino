@@ -20,13 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "CGGeometry.h"
-#include "CGAffineTransform.h"
-
-#define _function(inline) function inline { return _##inline; }
-
 @import "CGGeometry.j"
 
+
+#define _function(inline) function inline { return _##inline; }
 
 _function(CGAffineTransformMake(a, b, c, d, tx, ty))
 _function(CGAffineTransformMakeIdentity())
@@ -68,7 +65,7 @@ function CGAffineTransformMakeRotation(anAngle)
 {
     var sin = SIN(anAngle),
         cos = COS(anAngle);
-        
+
     return _CGAffineTransformMake(cos, sin, -sin, cos, 0.0, 0.0);
 }
 
@@ -136,7 +133,7 @@ function CGRectApplyAffineTransform(aRect, anAffineTransform)
         maxX = MAX(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x),
         minY = MIN(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y),
         maxY = MAX(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
-        
+
     return _CGRectMake(minX, minY, (maxX - minX), (maxY - minY));
 }
 

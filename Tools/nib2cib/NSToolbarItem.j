@@ -47,8 +47,8 @@ NS_CPToolbarItemIdentifierMap =
 
         _itemIdentifier = NS_CPToolbarItemIdentifierMap[NS_itemIdentifier] || NS_itemIdentifier;
 
-        _minSize = [aCoder decodeSizeForKey:@"NSToolbarItemMinSize"] || CGSizeMakeZero();
-        _maxSize = [aCoder decodeSizeForKey:@"NSToolbarItemMaxSize"] || CGSizeMakeZero();
+        _minSize = [aCoder decodeSizeForKey:@"NSToolbarItemMinSize"];
+        _maxSize = [aCoder decodeSizeForKey:@"NSToolbarItemMaxSize"];
 
         [self setLabel:[aCoder decodeObjectForKey:@"NSToolbarItemLabel"]];
         [self setPaletteLabel:[aCoder decodeObjectForKey:@"NSToolbarItemPaletteLabel"]];
@@ -59,9 +59,22 @@ NS_CPToolbarItemIdentifierMap =
         [self setAction:CPSelectorFromString([aCoder decodeObjectForKey:@"NSToolbarItemAction"])];
         [self setEnabled:[aCoder decodeBoolForKey:@"NSToolbarItemEnabled"]];
 
-        [self setImage:[aCoder decodeBoolForKey:@"NSToolbarItemImage"]];
+        [self setImage:[aCoder decodeObjectForKey:@"NSToolbarItemImage"]];
+
+        //FIXME: we shouldn't let toolbars have images which are too big at all
+        if (_maxSize.height > 0)
+            _maxSize.height = MIN(_maxSize.height, 32.0);
+        if (_minSize.height > 0)
+            _minSize.height = MIN(_minSize.height, 32.0);
 
         [self setView:[aCoder decodeObjectForKey:@"NSToolbarItemView"]];
+
+        // A Cappuccino search field is 30 px normally while a Cocoa one is 22.
+        if ([_view isKindOfClass:CPSearchField] && _maxSize.height == 22.0)
+        {
+            _maxSize.height = [_view frameSize].height;
+            _minSize.height = _maxSize.height;
+        }
 
         [self setVisibilityPriority:[aCoder decodeIntForKey:@"NSToolbarItemVisibilityPriority"]];
         [self setAutovalidates:[aCoder decodeBoolForKey:"NSToolbarItemAutovalidates"]];

@@ -2,22 +2,22 @@
 @import <AppKit/AppKit.j>
 
 function findCibClassDependencies(cibPath) {
-    var cib = [[CPCib alloc] initWithContentsOfURL:cibPath];
+    var cib = [[CPCib alloc] initWithContentsOfURL:cibPath],
+        dependencies = {},
+        CPClassFromStringOriginal = CPClassFromString;
 
-    var dependencies = {};
-
-    var CPClassFromStringOriginal = CPClassFromString;
-    CPClassFromString = function(aClassName) {
+    CPClassFromString = function(aClassName)
+    {
         var result = CPClassFromStringOriginal(aClassName);
 
         // print("CPClassFromString: " + Array.prototype.slice.call(arguments) + " => " + result);
         dependencies[aClassName] = true;
 
         return result;
-    }
+    };
 
     // make sure CPApp is init'd
-    [CPApplication sharedApplication]
+    [CPApplication sharedApplication];
 
     try {
         var x = [cib pressInstantiate];
@@ -29,6 +29,7 @@ function findCibClassDependencies(cibPath) {
 
     return Object.keys(dependencies);
 }
+
 // this is copied from CPCib's "instantiateCibWithExternalNameTable:"
 @implementation CPCib (Press)
 
@@ -48,7 +49,7 @@ function findCibClassDependencies(cibPath) {
         var key = nil,
             keyEnumerator = [replacementClasses keyEnumerator];
 
-        while (key = [keyEnumerator nextObject])
+        while ((key = [keyEnumerator nextObject]) !== nil)
             [unarchiver setClass:[replacementClasses objectForKey:key] forClassName:key];
     }
 
@@ -61,7 +62,7 @@ function findCibClassDependencies(cibPath) {
 
     var topLevelObjects = nil;//[anExternalNameTable objectForKey:CPCibTopLevelObjects];
 
-    [objectData instantiateWithOwner:owner topLevelObjects:topLevelObjects]
+    [objectData instantiateWithOwner:owner topLevelObjects:topLevelObjects];
     // [objectData establishConnectionsWithOwner:owner topLevelObjects:topLevelObjects];
     // [objectData awakeWithOwner:owner topLevelObjects:topLevelObjects];
 

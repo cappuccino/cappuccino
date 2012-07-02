@@ -27,17 +27,20 @@
 @import "CPWindow.j"
 @import "CPDocument.j"
 
-#include "Platform/Platform.h"
 
-
-/*! 
+/*!
     @ingroup appkit
     @class CPWindowController
 
-    An instance of a CPWindowController manages a CPWindow. It has methods
-    that get called when the window is loading, and after the window has loaded. In the
-    Model-View-Controller method of program design, the CPWindowController would be
-    considered the 'Controller' and the CPWindow the 'Model.'
+    An instance of a CPWindowController manages a CPWindow. Windows are typically loaded via a cib,
+    but they can also manage windows created in code. A CPWindowController can manage a window by 
+    itself or work with  AppKits's document-based architecture.
+
+    In a Document based app, a CPWindowController instance is created and managed by a CPDocument subclass.
+
+    If the CPWindowController is managing a CPWindow created in a cib the \c owner of the CPWindow is this controller.
+
+    @note When creating the window programatically (instead of a cib) you should override the \c loadWindow method.\c loadWindow is called the first time the window object is needed. @endnote
 */
 @implementation CPWindowController : CPResponder
 {
@@ -64,7 +67,7 @@
 /*!
     Initializes the controller with a window.
     @param aWindow the window to control
-    @return the initialzed window controller
+    @return the initialized window controller
 */
 - (id)initWithWindow:(CPWindow)aWindow
 {
@@ -84,7 +87,7 @@
 }
 
 /*!
-    Initializes the controller with a Capppuccino Interface Builder name.
+    Initializes the controller with a Cappuccino Interface Builder name.
     @param aWindowCibName the cib name of the window to control
     @return the initialized window controller
 */
@@ -126,14 +129,15 @@
 }
 
 /*!
-    Loads the window
+    Loads the window. This method should never be called directly. Instead call \c window which will in turn call windowWillLoad and windowDidLoad.
+    This method should be overwritten if you are creating the view programatically.
 */
 - (void)loadWindow
 {
     if (_window)
         return;
 
-    [[CPBundle bundleForClass:[_cibOwner class]] loadCibFile:[self windowCibPath] externalNameTable:[CPDictionary dictionaryWithObject:_cibOwner forKey:CPCibOwner]];
+    [[CPBundle mainBundle] loadCibFile:[self windowCibPath] externalNameTable:[CPDictionary dictionaryWithObject:_cibOwner forKey:CPCibOwner]];
 }
 
 /*!
@@ -160,7 +164,8 @@
 }
 
 /*!
-    Returns the window this object controls.
+    Returns the CPWindow the reciever controls.
+    This will cause \c loadWindow to be called if no window object exists yet.
 */
 - (CPWindow)window
 {
@@ -173,8 +178,8 @@
 
         if (_window === nil && [_cibOwner isKindOfClass:[CPDocument class]])
             [self setWindow:[_cibOwner valueForKey:@"window"]];
-        
-        if (!_window) 
+
+        if (!_window)
         {
             var reason = [CPString stringWithFormat:@"Window for %@ could not be loaded from Cib or no window specified. \
                                                         Override loadWindow to load the window manually.", self];
@@ -234,7 +239,7 @@
     {
         if (![self supportsMultipleDocuments])
             [self removeDocument:_document];
-        
+
         [defaultCenter removeObserver:self
                                  name:CPDocumentWillSaveNotification
                                object:_document];
@@ -278,6 +283,10 @@
         [self setViewController:viewController];
 
     [self synchronizeWindowTitleWithDocumentName];
+
+    // Change of document means toolbar items may no longer make sense.
+    // FIXME: DOCUMENT ARCHITECTURE Should we setToolbar: as well?
+    [[[self window] toolbar] validateVisibleItems];
 }
 
 - (void)setSupportsMultipleDocuments:(BOOL)shouldSupportMultipleDocuments
@@ -375,7 +384,7 @@
 }
 
 /*!
-    Returns the document in the controlled window.
+    Returns the CPDocument in the controlled window.
 */
 - (CPDocument)document
 {
@@ -383,7 +392,7 @@
 }
 
 /*!
-    Sets whether the document has unsaved changes. The window can use this as a hint to 
+    Sets whether the document has unsaved changes. The window can use this as a hint to
     @param isEdited \c YES means the document has unsaved changes.
 */
 - (void)setDocumentEdited:(BOOL)isEdited
@@ -424,7 +433,7 @@
     if (_windowCibPath)
         return _windowCibPath;
 
-    return [[CPBundle bundleForClass:[_cibOwner class]] pathForResource:_windowCibName + @".cib"];
+    return [[CPBundle mainBundle] pathForResource:_windowCibName + @".cib"];
 }
 
 // Setting and Getting Window Attributes

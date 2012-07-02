@@ -20,11 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPData.j"
 @import "CPObject.j"
 @import "CPRunLoop.j"
 @import "CPURLRequest.j"
 @import "CPURLResponse.j"
-
 
 var CPURLConnectionDelegate = nil;
 
@@ -106,7 +106,7 @@ var CPURLConnectionDelegate = nil;
             key = nil,
             keys = [fields keyEnumerator];
 
-        while (key = [keys nextObject])
+        while ((key = [keys nextObject]) !== nil)
             request.setRequestHeader(key, [fields objectForKey:key]);
 
         request.send([aRequest HTTPBody]);
@@ -190,13 +190,13 @@ var CPURLConnectionDelegate = nil;
     {
         _HTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES);
 
-        _HTTPRequest.onreadystatechange = function() { [self _readyStateDidChange]; }
+        _HTTPRequest.onreadystatechange = function() { [self _readyStateDidChange]; };
 
         var fields = [_request allHTTPHeaderFields],
             key = nil,
             keys = [fields keyEnumerator];
 
-        while (key = [keys nextObject])
+        while ((key = [keys nextObject]) !== nil)
             _HTTPRequest.setRequestHeader(key, [fields objectForKey:key]);
 
         _HTTPRequest.send([_request HTTPBody]);

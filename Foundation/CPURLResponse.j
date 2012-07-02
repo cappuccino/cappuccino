@@ -21,7 +21,7 @@
  */
 
 @import "CPObject.j"
-
+@import "CPURL.j"
 
 /*
     CPURL       _URL;
@@ -32,7 +32,7 @@
 /*!
     @class CPURLResponse
     @ingroup foundation
-    @brief Protocol agnostic information about a request to a specifc URL.
+    @brief Protocol agnostic information about a request to a specific URL.
 
     Contains protocol agnostic information about a request to a specific URL.
 */

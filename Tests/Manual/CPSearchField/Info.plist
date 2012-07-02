@@ -2,10 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CPApplicationDelegateClass</key>
-	<string>AppController</string>
+	<key>Main cib file base name</key>
+	<string>MainMenu.cib</string>
 	<key>CPBundleName</key>
-	<string>Hello World</string>
+	<string>CPSearchField</string>
 	<key>CPPrincipalClass</key>
 	<string>CPApplication</string>
 </dict>

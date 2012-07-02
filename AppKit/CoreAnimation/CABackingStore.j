@@ -29,7 +29,7 @@
 function CABackingStoreGetContext(aBackingStore)
 {
     return aBackingStore.context;
-}
+};
 
 if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
 {
@@ -37,22 +37,23 @@ if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
 CABackingStoreCreate = function()
 {
     var DOMElement = document.createElement("canvas");
-    
+
     DOMElement.style.position = "absolute";
-    
+
     // FIXME: Consolidate drawImage to support this.
     return { context:DOMElement.getContext("2d"), buffer:DOMElement, _image:DOMElement };
-}
+};
 
 CABackingStoreSetSize = function(aBackingStore, aSize)
 {
     var buffer = aBackingStore.buffer;
-    
+
     buffer.width = aSize.width;
     buffer.height = aSize.height;
     buffer.style.width = PIXEL(aSize.width);
     buffer.style.height = PIXEL(aSize.height);
-}
+};
+
 }
 else
 {
@@ -60,14 +61,14 @@ else
 CABackingStoreCreate = function()
 {
     var context = CGBitmapGraphicsContextCreate();
-    
+
     context.buffer = "";
-    
+
     return { context:context };
-}
+};
 
 CABackingStoreSetSize = function(aBackingStore, aSize)
 {
-}
+};
 
 }

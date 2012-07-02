@@ -31,7 +31,6 @@
 @import "CPCibLoading.j"
 @import "CPPlatform.j"
 
-#include "Platform/Platform.h"
 
 var CPMainCibFile               = @"CPMainCibFile",
     CPMainCibFileHumanFriendly  = @"Main cib file base name";
@@ -58,7 +57,7 @@ CPRunContinuesResponse  = -1002;
     @ingroup appkit
     @class CPApplication
 
-    CPApplication is THE way to start up the Cappucino framework for your application to use.
+    CPApplication is THE way to start up the Cappuccino framework for your application to use.
     Every GUI application has exactly one instance of CPApplication (or of a custom subclass of
     CPApplication). Your program's main() function can create that instance by calling the
     \c CPApplicationMain function. A simple example looks like this:
@@ -91,7 +90,6 @@ CPRunContinuesResponse  = -1002;
     CPWindow                _previousKeyWindow;
     CPWindow                _previousMainWindow;
 
-    CPMenu                  _mainMenu;
     CPDocumentController    _documentController;
 
     CPModalSession          _currentSession;
@@ -108,6 +106,8 @@ CPRunContinuesResponse  = -1002;
     CPImage                 _applicationIconImage;
 
     CPPanel                 _aboutPanel;
+
+    CPThemeBlend            _themeBlend @accessors(property=themeBlend);
 }
 
 /*!
@@ -219,28 +219,22 @@ CPRunContinuesResponse  = -1002;
     // At this point we clear the window.status to eliminate Safari's "Cancelled" error message
     // The message shouldn't be displayed, because only an XHR is cancelled, but it is a usability issue.
     // We do it here so that applications can change it in willFinish or didFinishLaunching
+#if PLATFORM(DOM)
     window.status = " ";
+#endif
 
     // We also want to set the default cursor on the body, so that buttons and things don't have an iBeam
     [[CPCursor arrowCursor] set];
 
     var bundle = [CPBundle mainBundle],
-        types = [bundle objectForInfoDictionaryKey:@"CPBundleDocumentTypes"];
-
-    if ([types count] > 0)
-        _documentController = [CPDocumentController sharedDocumentController];
-
-    var delegateClassName = [bundle objectForInfoDictionaryKey:@"CPApplicationDelegateClass"];
+        delegateClassName = [bundle objectForInfoDictionaryKey:@"CPApplicationDelegateClass"];
 
     if (delegateClassName)
     {
         var delegateClass = objj_getClass(delegateClassName);
 
         if (delegateClass)
-            if ([_documentController class] == delegateClass)
-                [self setDelegate:_documentController];
-            else
-                [self setDelegate:[[delegateClass alloc] init]];
+            [self setDelegate:[[delegateClass alloc] init]];
     }
 
     var defaultCenter = [CPNotificationCenter defaultCenter];
@@ -248,6 +242,11 @@ CPRunContinuesResponse  = -1002;
     [defaultCenter
         postNotificationName:CPApplicationWillFinishLaunchingNotification
         object:self];
+
+    var types = [bundle objectForInfoDictionaryKey:@"CPBundleDocumentTypes"];
+
+    if ([types count] > 0)
+        _documentController = [CPDocumentController sharedDocumentController];
 
     var needsUntitled = !!_documentController,
         URLStrings = window.cpOpeningURLStrings && window.cpOpeningURLStrings(),
@@ -292,11 +291,21 @@ CPRunContinuesResponse  = -1002;
     }
 }
 
+/*!
+    Sets the applications icon image. This image is used in the default "About" window.
+    By default this value is pulled from the CPApplicationIcon key in your info.plist file.
+
+    @param anImage - The image to set.
+*/
 - (void)setApplicationIconImage:(CPImage)anImage
 {
     _applicationIconImage = anImage;
 }
 
+/*!
+    Returns the application icon image. By default this is pulled from the CPApplicationIcon key of info.plist.
+    @return CPImage - Your application icon image.
+*/
 - (CPImage)applicationIconImage
 {
     if (_applicationIconImage)
@@ -309,11 +318,38 @@ CPRunContinuesResponse  = -1002;
     return _applicationIconImage;
 }
 
+/*!
+    Opens the standard about panel with no options.
+*/
 - (void)orderFrontStandardAboutPanel:(id)sender
 {
     [self orderFrontStandardAboutPanelWithOptions:nil];
 }
 
+/*!
+    Opens the standard about panel. This method takes a single argument \c options.
+    Options is a dictionary that can contain any of the following keys:
+    <pre>
+    ApplicationName - The name of your application.
+    ApplicationIcon - Application icon image.
+    Version - The full version of your application
+    ApplicationVersion - The shorter version number of your application.
+    Copyright - Human readable copyright information.
+    </pre>
+
+    If you choose not the include any of the above keys, they will default
+    to the following respective keys in your info.plist file.
+
+    <pre>
+    CPBundleName
+    CPApplicationIcon (through a call to -applicationIconImage, see documentation for that method for more details)
+    CPBundleVersion
+    CPBundleShortVersionString
+    CPHumanReadableCopyright
+    </pre>
+
+    @param options - A dictionary with the aboe listed keys. You can pass nil to default to your plist values.
+*/
 - (void)orderFrontStandardAboutPanelWithOptions:(CPDictionary)options
 {
     if (!_aboutPanel)
@@ -325,7 +361,9 @@ CPRunContinuesResponse  = -1002;
             applicationVersion = [options objectForKey:@"ApplicationVersion"] || [mainInfo objectForKey:@"CPBundleShortVersionString"],
             copyright = [options objectForKey:@"Copyright"] || [mainInfo objectForKey:@"CPHumanReadableCopyright"];
 
-        var aboutPanelController = [[CPWindowController alloc] initWithWindowCibName:@"AboutPanel"],
+        var aboutPanelPath = [[CPBundle bundleForClass:[CPWindowController class]] pathForResource:@"AboutPanel.cib"],
+            aboutPanelController = [CPWindowController alloc],
+            aboutPanelController = [aboutPanelController initWithWindowCibPath:aboutPanelPath owner:aboutPanelController],
             aboutPanel = [aboutPanelController window],
             contentView = [aboutPanel contentView],
             imageView = [contentView viewWithTag:1],
@@ -503,7 +541,8 @@ CPRunContinuesResponse  = -1002;
     var theWindow = aModalSession._window;
 
     [theWindow center];
-    [theWindow makeKeyAndOrderFront:self];
+    [theWindow makeKeyWindow];
+    [theWindow orderFront:self];
 
 //    [theWindow._bridge _obscureWindowsBelowModalWindow];
 
@@ -526,7 +565,7 @@ CPRunContinuesResponse  = -1002;
 - (BOOL)_handleKeyEquivalent:(CPEvent)anEvent
 {
     return  [[self keyWindow] performKeyEquivalent:anEvent] ||
-            [_mainMenu performKeyEquivalent:anEvent];
+            [[self mainMenu] performKeyEquivalent:anEvent];
 }
 
 /*!
@@ -570,6 +609,10 @@ CPRunContinuesResponse  = -1002;
     [[anEvent window] sendEvent:anEvent];
 }
 
+/*!
+    If the delegate responds to the given selector it will call the method on the delegate,
+    otherwise the method will be passed to CPResponder.
+*/
 - (void)doCommandBySelector:(SEL)aSelector
 {
     if ([_delegate respondsToSelector:aSelector])
@@ -615,7 +658,11 @@ CPRunContinuesResponse  = -1002;
 */
 - (CPArray)orderedWindows
 {
+#if PLATFORM(DOM)
     return CPWindowObjectList();
+#else
+    return [];
+#endif
 }
 
 - (void)hide:(id)aSender
@@ -629,7 +676,7 @@ CPRunContinuesResponse  = -1002;
 */
 - (CPMenu)mainMenu
 {
-    return _mainMenu;
+    return [self menu];
 }
 
 /*!
@@ -638,20 +685,29 @@ CPRunContinuesResponse  = -1002;
 */
 - (void)setMainMenu:(CPMenu)aMenu
 {
+    [self setMenu:aMenu];
+}
+
+- (void)setMenu:(CPMenu)aMenu
+{
     if ([aMenu _menuName] === "CPMainMenu")
     {
-        if (_mainMenu === aMenu)
+        if ([self menu] === aMenu)
             return;
 
-        _mainMenu = aMenu;
+        [super setMenu:aMenu];
 
         if ([CPPlatform supportsNativeMainMenu])
-            window.cpSetMainMenu(_mainMenu);
+            window.cpSetMainMenu([self menu]);
     }
     else
         [aMenu _setMenuName:@"CPMainMenu"];
 }
 
+/*!
+    Opens the shared color panel.
+    @param aSender
+*/
 - (void)orderFrontColorPanel:(id)aSender
 {
     [[CPColorPanel sharedColorPanel] orderFront:self];
@@ -675,7 +731,7 @@ CPRunContinuesResponse  = -1002;
     if ([super tryToPerform:anAction with:anObject])
         return YES;
 
-    if([_delegate respondsToSelector:anAction])
+    if ([_delegate respondsToSelector:anAction])
     {
         [_delegate performSelector:anAction withObject:anObject];
 
@@ -820,16 +876,38 @@ CPRunContinuesResponse  = -1002;
     return nil;
 }
 
+/*!
+    Fires a callback function when an event matching a given mask occurs.
+    @param aCallback - A js function to be fired.
+    @prarm aMask - An event mask for the next event.
+    @param anExpiration - The date for which this callback expires (not implemented).
+    @param inMode (not implemented).
+    @param shouldDequeue (not implemented).
+*/
 - (void)setCallback:(Function)aCallback forNextEventMatchingMask:(unsigned int)aMask untilDate:(CPDate)anExpiration inMode:(CPString)aMode dequeue:(BOOL)shouldDequeue
 {
     _eventListeners.push(_CPEventListenerMake(aMask, aCallback));
 }
 
-- (CPEvent)setTarget:(id)aTarget selector:(SEL)aSelector forNextEventMatchingMask:(unsigned int)aMask untilDate:(CPDate)anExpiration inMode:(CPString)aMode dequeue:(BOOL)shouldDequeue
+/*!
+    Assigns a target and action for the next event matching a given event mask.
+    The callback method called will be passed the CPEvent when it fires.
+
+    @param aTarget - The target object for the callback.
+    @param aSelector - The selector which should be called on the target object.
+    @param aMask - The mask for a given event which should trigger the callback.
+    @param anExpiration - The date for which the callback expires (not implemented).
+    @param aMode (not implemented).
+    @param shouldDequeue (not implemented).
+*/
+- (void)setTarget:(id)aTarget selector:(SEL)aSelector forNextEventMatchingMask:(unsigned int)aMask untilDate:(CPDate)anExpiration inMode:(CPString)aMode dequeue:(BOOL)shouldDequeue
 {
     _eventListeners.push(_CPEventListenerMake(aMask, function (anEvent) { objj_msgSend(aTarget, aSelector, anEvent); }));
 }
 
+/*!
+    Returns the last event recieved by your application.
+*/
 - (CPEvent)currentEvent
 {
     return _currentEvent;
@@ -855,17 +933,31 @@ CPRunContinuesResponse  = -1002;
     }
 
     [aWindow orderFront:self];
+    [aSheet setPlatformWindow:[aWindow platformWindow]];
     [aWindow _attachSheet:aSheet modalDelegate:aModalDelegate didEndSelector:aDidEndSelector contextInfo:aContextInfo];
 }
 
+/*!
+    Ends a sheet modal.
+    The following are predefined return codes:
+
+    <pre>
+    CPRunStoppedResponse
+    CPRunAbortedResponse
+    CPRunContinuesResponse
+    </pre>
+
+    @param sheet - The window object (sheet) to dismiss.
+    @param returnCode - The return code to send to the delegate. You can use one of the return codes above or a custom value that you define.
+*/
 - (void)endSheet:(CPWindow)sheet returnCode:(int)returnCode
 {
     var count = [_windows count];
 
     while (--count >= 0)
     {
-        var aWindow = [_windows objectAtIndex:count];
-        var context = aWindow._sheetContext;
+        var aWindow = [_windows objectAtIndex:count],
+            context = aWindow._sheetContext;
 
         if (context != nil && context["sheet"] === sheet)
         {
@@ -876,22 +968,58 @@ CPRunContinuesResponse  = -1002;
     }
 }
 
+/*!
+    Ends a sheet and sends the return code "0".
+    @param sheet - The CPWindow object (sheet) that should be dismissed.
+*/
 - (void)endSheet:(CPWindow)sheet
 {
+    // FIX ME: this is wrong: by Cocoa this should be: CPRunStoppedResponse.
    [self endSheet:sheet returnCode:0];
 }
 
+/*!
+    Returns and array of slash seperated arugments to your application.
+    These values are pulled from your window location hash.
+
+    For exampled if your application loaded:
+    <pre>
+    index.html#280north/cappuccino/issues
+    </pre>
+    The follow array would be returned:
+    <pre>
+    ["280north", "cappuccino", "issues"]
+    </pre>
+
+    @return CPArray - The array of arguments.
+*/
 - (CPArray)arguments
 {
-    if(_fullArgsString !== window.location.hash)
+    if (_fullArgsString !== window.location.hash)
         [self _reloadArguments];
 
     return _args;
 }
 
+/*!
+    Sets the arguments of your application.
+    That is, set the slash seperated values of an array as the window location hash.
+
+    For example if you pass an array:
+    <pre>
+    ["280north", "cappuccino", "issues"]
+    </pre>
+
+    The new window location would be
+    <pre>
+    index.html#280north/cappuccino/issues
+    </pre>
+
+    @param args - An array of arguments.
+*/
 - (void)setArguments:(CPArray)args
 {
-    if(!args || args.length == 0)
+    if (!args || args.length == 0)
     {
         _args = [];
         window.location.hash = @"#";
@@ -899,13 +1027,13 @@ CPRunContinuesResponse  = -1002;
         return;
     }
 
-    if([args class] != CPArray)
+    if (![args isKindOfClass:CPArray])
         args = [CPArray arrayWithObject:args];
 
     _args = args;
 
     var toEncode = [_args copy];
-    for(var i=0, count = toEncode.length; i<count; i++)
+    for (var i = 0, count = toEncode.length; i < count; i++)
         toEncode[i] = encodeURIComponent(toEncode[i]);
 
     var hash = [toEncode componentsJoinedByString:@"/"];
@@ -930,6 +1058,23 @@ CPRunContinuesResponse  = -1002;
         _args = [];
 }
 
+/*!
+    Returns a dictionary of the window location named arguments.
+    For example if your location was:
+    <pre>
+    index.html?owner=280north&repo=cappuccino&type=issues
+    </pre>
+
+    a CPDictionary with the keys:
+    <pre>
+    owner, repo, type
+    </pre>
+    and respective values:
+    <pre>
+    280north, cappuccino, issues
+    </pre>
+    Will be returned.
+*/
 - (CPDictionary)namedArguments
 {
     return _namedArgs;
@@ -1012,7 +1157,6 @@ CPRunContinuesResponse  = -1002;
 
 + (CPString)defaultThemeName
 {
-    // FIXME: don't hardcode
     return ([[CPBundle mainBundle] objectForInfoDictionaryKey:"CPDefaultTheme"] || @"Aristo");
 }
 
@@ -1021,14 +1165,15 @@ CPRunContinuesResponse  = -1002;
 var _CPModalSessionMake = function(aWindow, aStopCode)
 {
     return { _window:aWindow, _state:CPRunContinuesResponse , _previous:nil };
-}
+};
 
 var _CPEventListenerMake = function(anEventMask, aCallback)
 {
     return { _mask:anEventMask, _callback:aCallback };
-}
+};
 
-var _CPRunModalLoop = function(anEvent)
+// Make this a global for use in CPPlatformWindow+DOM.j.
+_CPRunModalLoop = function(anEvent)
 {
     [CPApp setCallback:_CPRunModalLoop forNextEventMatchingMask:CPAnyEventMask untilDate:nil inMode:0 dequeue:NO];
 
@@ -1037,7 +1182,7 @@ var _CPRunModalLoop = function(anEvent)
 
     if (theWindow == modalSession._window || [theWindow worksWhenModal])
         [theWindow sendEvent:anEvent];
-}
+};
 
 /*!
     Starts the GUI and Cappuccino frameworks. This function should be
@@ -1106,8 +1251,15 @@ var _CPAppBootstrapperActions = nil;
 
 + (BOOL)loadDefaultTheme
 {
-    var blend = [[CPThemeBlend alloc] initWithContentsOfURL:[[CPBundle bundleForClass:[CPApplication class]] pathForResource:[CPApplication defaultThemeName] + ".blend"]];
+    var defaultThemeName = [CPApplication defaultThemeName],
+        themeURL = nil;
 
+    if (defaultThemeName === @"Aristo")
+        themeURL = [[CPBundle bundleForClass:[CPApplication class]] pathForResource:defaultThemeName + @".blend"];
+    else
+        themeURL = [[CPBundle mainBundle] pathForResource:defaultThemeName + @".blend"];
+
+    var blend = [[CPThemeBlend alloc] initWithContentsOfURL:themeURL];
     [blend loadWithDelegate:self];
 
     return YES;
@@ -1115,6 +1267,7 @@ var _CPAppBootstrapperActions = nil;
 
 + (void)blendDidFinishLoading:(CPThemeBlend)aThemeBlend
 {
+    [[CPApplication sharedApplication] setThemeBlend:aThemeBlend];
     [CPTheme setDefaultTheme:[CPTheme themeNamed:[CPApplication defaultThemeName]]];
 
     [self performActions];
@@ -1186,8 +1339,8 @@ var _CPAppBootstrapperActions = nil;
     [editMenu addItem:undoMenuItem];
     [editMenu addItem:redoMenuItem];
 
-    [editMenu addItem:[[CPMenuItem alloc] initWithTitle:@"Cut" action:@selector(cut:) keyEquivalent:@"x"]],
-    [editMenu addItem:[[CPMenuItem alloc] initWithTitle:@"Copy" action:@selector(copy:) keyEquivalent:@"c"]],
+    [editMenu addItem:[[CPMenuItem alloc] initWithTitle:@"Cut" action:@selector(cut:) keyEquivalent:@"x"]];
+    [editMenu addItem:[[CPMenuItem alloc] initWithTitle:@"Copy" action:@selector(copy:) keyEquivalent:@"c"]];
     [editMenu addItem:[[CPMenuItem alloc] initWithTitle:@"Paste" action:@selector(paste:) keyEquivalent:@"v"]];
 
     [editMenuItem setSubmenu:editMenu];
@@ -1212,7 +1365,7 @@ var _CPAppBootstrapperActions = nil;
 
 + (void)reset
 {
-	_CPAppBootstrapperActions = nil;
+    _CPAppBootstrapperActions = nil;
 }
 
 @end

@@ -34,7 +34,7 @@ function StaticResource(/*CFURL*/ aURL, /*StaticResource*/ aParent, /*BOOL*/ isD
 StaticResource.rootResources = function()
 {
     return rootResources;
-}
+};
 
 exports.StaticResource = StaticResource;
 
@@ -78,42 +78,42 @@ StaticResource.prototype.resolve = function()
 
         new FileRequest(this.URL(), onsuccess, onfailure);
     }
-}
+};
 
 StaticResource.prototype.name = function()
 {
     return this._name;
-}
+};
 
 StaticResource.prototype.URL = function()
 {
     return this._URL;
-}
+};
 
 StaticResource.prototype.contents = function()
 {
     return this._contents;
-}
+};
 
 StaticResource.prototype.children = function()
 {
     return this._children;
-}
+};
 
 StaticResource.prototype.parent = function()
 {
     return this._parent;
-}
+};
 
 StaticResource.prototype.isResolved = function()
 {
     return this._isResolved;
-}
+};
 
 StaticResource.prototype.write = function(/*String*/ aString)
 {
     this._contents += aString;
-}
+};
 
 function rootResourceForAbsoluteURL(/*CFURL*/ anAbsoluteURL)
 {
@@ -141,7 +141,7 @@ StaticResource.resourceAtURL = function(/*CFURL|String*/ aURL, /*BOOL*/ resolveA
 
         if (hasOwnProperty.call(resource._children, name))
             resource = resource._children[name];
-        
+
         else if (resolveAsDirectoriesIfNecessary)
         {
             // We do this because on Windows the path may start with C: and be
@@ -156,24 +156,24 @@ StaticResource.resourceAtURL = function(/*CFURL|String*/ aURL, /*BOOL*/ resolveA
     }
 
     return resource;
-}
+};
 
 StaticResource.prototype.resourceAtURL = function(/*CFURL|String*/ aURL, /*BOOL*/ resolveAsDirectoriesIfNecessary)
 {
     return StaticResource.resourceAtURL(new CFURL(aURL, this.URL()), resolveAsDirectoriesIfNecessary);
-}
+};
 
 StaticResource.resolveResourceAtURL = function(/*CFURL|String*/ aURL, /*BOOL*/ isDirectory, /*Function*/ aCallback)
 {
     aURL = makeAbsoluteURL(aURL).absoluteURL();
 
     resolveResourceComponents(rootResourceForAbsoluteURL(aURL), isDirectory, aURL.pathComponents(), 0, aCallback);
-}
+};
 
 StaticResource.prototype.resolveResourceAtURL = function(/*CFURL|String*/ aURL, /*BOOL*/ isDirectory, /*Function*/ aCallback)
 {
     StaticResource.resolveResourceAtURL(new CFURL(aURL, this.URL()).absoluteURL(), isDirectory, aCallback);
-}
+};
 
 function resolveResourceComponents(/*StaticResource*/ aResource, /*BOOL*/ isDirectory, /*Array*/ components, /*Integer*/ index, /*Function*/ aCallback)
 {
@@ -237,32 +237,32 @@ function resolveResourceAtURLSearchingIncludeURLs(/*CFURL*/ aURL, /*Number*/ anI
 StaticResource.resolveResourceAtURLSearchingIncludeURLs = function(/*CFURL*/ aURL, /*Function*/ aCallback)
 {
     resolveResourceAtURLSearchingIncludeURLs(aURL, 0, aCallback);
-}
+};
 
 StaticResource.prototype.addEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
 {
     this._eventDispatcher.addEventListener(anEventName, anEventListener);
-}
+};
 
 StaticResource.prototype.removeEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
 {
     this._eventDispatcher.removeEventListener(anEventName, anEventListener);
-}
+};
 
 StaticResource.prototype.isNotFound = function()
 {
     return this._isNotFound;
-}
+};
 
 StaticResource.prototype.isFile = function()
 {
     return !this._isDirectory;
-}
+};
 
 StaticResource.prototype.isDirectory = function()
 {
     return this._isDirectory;
-}
+};
 
 StaticResource.prototype.toString = function(/*BOOL*/ includeNotFounds)
 {
@@ -286,20 +286,19 @@ StaticResource.prototype.toString = function(/*BOOL*/ includeNotFounds)
     }
 
     return string;
-}
+};
 
 var includeURLs = NULL;
 
 StaticResource.includeURLs = function()
 {
-    if (includeURLs)
+    if (includeURLs !== NULL)
         return includeURLs;
 
-    var includeURLs = [];
+    includeURLs = [];
 
     if (!global.OBJJ_INCLUDE_PATHS && !global.OBJJ_INCLUDE_URLS)
         includeURLs = ["Frameworks", "Frameworks/Debug"];
-
     else
         includeURLs = (global.OBJJ_INCLUDE_PATHS || []).concat(global.OBJJ_INCLUDE_URLS || []);
 
@@ -309,4 +308,4 @@ StaticResource.includeURLs = function()
         includeURLs[count] = new CFURL(includeURLs[count]).asDirectoryPathURL();
 
     return includeURLs;
-}
+};

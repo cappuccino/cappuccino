@@ -20,13 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "CPRange.h"
+
+@import "CPArray.j"
 @import "CPObject.j"
 @import "CPRange.j"
-
-
-#define _CPMaxRange(aRange) ((aRange).location + (aRange).length)
-#define _CPMakeRange(aLocation, aLength) { location:(aLocation), length:aLength }
-#define _CPMakeRangeCopy(aRange) { location:(aRange).location, length:(aRange).length }
 
 /*!
     @class CPIndexSet
@@ -130,6 +128,17 @@
     return self;
 }
 
+- (BOOL)isEqual:(id)anObject
+{
+    if (self === anObject)
+        return YES;
+
+    if (!anObject || ![anObject isKindOfClass:[CPIndexSet class]])
+        return NO;
+
+    return [self isEqualToIndexSet:anObject];
+}
+
 // Querying an Index Set
 /*!
     Compares the receiver with the provided index set.
@@ -148,7 +157,7 @@
     var rangesCount = _ranges.length,
         otherRanges = anIndexSet._ranges;
 
-    // If we have a discrepency in the number of ranges or the number of indexes,
+    // If we have a discrepancy in the number of ranges or the number of indexes,
     // simply return NO.
     if (rangesCount !== otherRanges.length || _count !== anIndexSet._count)
         return NO;
@@ -158,6 +167,13 @@
             return NO;
 
     return YES;
+}
+
+- (BOOL)isEqual:(id)anObject
+{
+    return  self === anObject ||
+            [anObject isKindOfClass:[self class]] &&
+            [self isEqualToIndexSet:anObject];
 }
 
 /*!
@@ -197,7 +213,7 @@
 }
 
 /*!
-    Returns \c YES if the receving index set contains all the indices in the argument.
+    Returns \c YES if the receiving index set contains all the indices in the argument.
     @param anIndexSet the set of indices to check for in the receiving index set
 */
 - (BOOL)containsIndexes:(CPIndexSet)anIndexSet
@@ -465,6 +481,75 @@
     return description;
 }
 
+- (void)enumerateIndexesUsingBlock:(Function /*(int idx, @ref BOOL stop) */)aFunction
+{
+    [self enumerateIndexesWithOptions:CPEnumerationNormal usingBlock:aFunction];
+}
+
+- (void)enumerateIndexesWithOptions:(CPEnumerationOptions)options usingBlock:(Function /*(int idx, @ref BOOL stop)*/)aFunction
+{
+    if (!_count)
+        return;
+    [self enumerateIndexesInRange:CPMakeRange(0, _CPMaxRange(_ranges[_ranges.length - 1])) options:options usingBlock:aFunction];
+}
+
+- (void)enumerateIndexesInRange:(CPRange)enumerationRange options:(CPEnumerationOptions)options usingBlock:(Function /*(int idx, @ref BOOL stop)*/)aFunction
+{
+    if (!_count || CPEmptyRange(enumerationRange))
+        return;
+
+    var shouldStop = NO,
+        index,
+        stop,
+        increment;
+
+    if (options & CPEnumerationReverse)
+    {
+        index = _ranges.length - 1,
+        stop = -1,
+        increment = -1;
+    }
+    else
+    {
+        index = 0;
+        stop = _ranges.length;
+        increment = 1;
+    }
+
+    for (; index !== stop; index += increment)
+    {
+        var range = _ranges[index];
+
+        var rangeIndex,
+            rangeStop,
+            rangeIncrement;
+
+        if (options & CPEnumerationReverse)
+        {
+            rangeIndex = _CPMaxRange(range) - 1;
+            rangeStop = range.location - 1;
+            rangeIncrement = -1;
+        }
+        else
+        {
+            rangeIndex = range.location;
+            rangeStop = _CPMaxRange(range);
+            rangeIncrement = 1;
+        }
+
+        for (; rangeIndex !== rangeStop; rangeIndex += rangeIncrement)
+        {
+            if (CPLocationInRange(rangeIndex, enumerationRange))
+            {
+                aFunction(rangeIndex, AT_REF(shouldStop));
+                if (shouldStop)
+                    return;
+            }
+        }
+    }
+}
+
+
 @end
 
 @implementation CPIndexSet(CPMutableIndexSet)
@@ -519,7 +604,7 @@
     if (lhsRangeIndexCEIL === lhsRangeIndex && lhsRangeIndexCEIL < rangeCount)
         aRange = CPUnionRange(aRange, _ranges[lhsRangeIndexCEIL]);
 
-    var rhsRangeIndex = assumedPositionOfIndex(_ranges, CPMaxRange(aRange)),
+    var rhsRangeIndex = assumedPositionOfIndex(_ranges, _CPMaxRange(aRange)),
         rhsRangeIndexFLOOR = FLOOR(rhsRangeIndex);
 
     if (rhsRangeIndexFLOOR === rhsRangeIndex && rhsRangeIndexFLOOR >= 0)
@@ -622,8 +707,8 @@
         // If these ranges don't start in the same place, we have to cull it.
         if (aRange.location !== existingRange.location)
         {
-            var maxRange = CPMaxRange(aRange),
-                existingMaxRange = CPMaxRange(existingRange);
+            var maxRange = _CPMaxRange(aRange),
+                existingMaxRange = _CPMaxRange(existingRange);
 
             existingRange.length = aRange.location - existingRange.location;
 
@@ -643,14 +728,14 @@
         }
     }
 
-    var rhsRangeIndex = assumedPositionOfIndex(_ranges, CPMaxRange(aRange) - 1),
+    var rhsRangeIndex = assumedPositionOfIndex(_ranges, _CPMaxRange(aRange) - 1),
         rhsRangeIndexFLOOR = FLOOR(rhsRangeIndex);
 
     if (rhsRangeIndex === rhsRangeIndexFLOOR && rhsRangeIndexFLOOR >= 0)
     {
-        var maxRange = CPMaxRange(aRange),
+        var maxRange = _CPMaxRange(aRange),
             existingRange = _ranges[rhsRangeIndexFLOOR],
-            existingMaxRange = CPMaxRange(existingRange);
+            existingMaxRange = _CPMaxRange(existingRange);
 
         if (maxRange !== existingMaxRange)
         {
@@ -696,14 +781,14 @@
     for (; i >= 0; --i)
     {
         var range = _ranges[i],
-            maximum = CPMaxRange(range);
+            maximum = _CPMaxRange(range);
 
-        if (anIndex > maximum)
+        if (anIndex >= maximum)
             break;
 
         // If our index is within our range, but not the first index,
         // then this range will be split.
-        if (anIndex > range.location && anIndex < maximum)
+        if (anIndex > range.location)
         {
             // Split the range into shift and unshifted.
             shifted = CPMakeRange(anIndex + aDelta, maximum - anIndex);
@@ -716,7 +801,7 @@
             // If it's negative, it needs to be added properly later.
             else if (shifted.location < 0)
             {
-                shifted.length = CPMaxRange(shifted);
+                shifted.length = _CPMaxRange(shifted);
                 shifted.location = 0;
             }
 
@@ -727,7 +812,8 @@
         // Shift the range, and normalize it if the result is negative.
         if ((range.location += aDelta) < 0)
         {
-            range.length = CPMaxRange(range);
+            _count -= range.length - _CPMaxRange(range);
+            range.length = _CPMaxRange(range);
             range.location = 0;
         }
     }
@@ -747,7 +833,7 @@
 
         if ((j = i + 1) < count)
         {
-            [_ranges removeObjectsInRange:CPMakeRange(j, count - j)];
+            [_ranges removeObjectsInRange:_CPMakeRange(j, count - j)];
 
             for (j = 0, count = shifts.length; j < count; ++j)
                 [self addIndexesInRange:shifts[j]];
@@ -817,7 +903,7 @@ var CPIndexSetCountKey              = @"CPIndexSetCountKey",
 /*!
     Creates a deep copy of the index set. The returned copy
     is mutable. The reason for the two copy methods is for
-    source compatability with GNUStep code.
+    source compatibility with GNUStep code.
     @return the index set copy
 */
 - (id)copy
@@ -828,7 +914,7 @@ var CPIndexSetCountKey              = @"CPIndexSetCountKey",
 /*!
     Creates a deep copy of the index set. The returned copy
     is mutable. The reason for the two copy methods is for
-    source compatability with GNUStep code.
+    source compatibility with GNUStep code.
     @return the index set copy
 */
 - (id)mutableCopy
@@ -840,11 +926,11 @@ var CPIndexSetCountKey              = @"CPIndexSetCountKey",
 
 /*!
     @class CPMutableIndexSet
-    @ingroup compatability
+    @ingroup compatibility
 
     This class is an empty of subclass of CPIndexSet.
     CPIndexSet already implements mutable methods, and
-    this class only exists for source compatability.
+    this class only exists for source compatibility.
 */
 @implementation CPMutableIndexSet : CPIndexSet
 
@@ -863,7 +949,7 @@ var positionOfIndex = function(ranges, anIndex)
         if (anIndex < range.location)
             high = middle - 1;
 
-        else if (anIndex >= CPMaxRange(range))
+        else if (anIndex >= _CPMaxRange(range))
             low = middle + 1;
 
         else
@@ -871,7 +957,7 @@ var positionOfIndex = function(ranges, anIndex)
    }
 
    return CPNotFound;
-}
+};
 
 var assumedPositionOfIndex = function(ranges, anIndex)
 {
@@ -891,7 +977,7 @@ var assumedPositionOfIndex = function(ranges, anIndex)
 
         if (position === positionFLOOR)
         {
-            if (positionFLOOR - 1 >= 0 && anIndex < CPMaxRange(ranges[positionFLOOR - 1]))
+            if (positionFLOOR - 1 >= 0 && anIndex < _CPMaxRange(ranges[positionFLOOR - 1]))
                 high = middle - 1;
 
             else if (positionFLOOR < count && anIndex >= ranges[positionFLOOR].location)
@@ -907,7 +993,7 @@ var assumedPositionOfIndex = function(ranges, anIndex)
             if (anIndex < range.location)
                 high = middle - 1;
 
-            else if (anIndex >= CPMaxRange(range))
+            else if (anIndex >= _CPMaxRange(range))
                 low = middle + 1;
 
             else
@@ -916,7 +1002,7 @@ var assumedPositionOfIndex = function(ranges, anIndex)
     }
 
    return CPNotFound;
-}
+};
 
 /*
 new old method

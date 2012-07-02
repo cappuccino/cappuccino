@@ -12,15 +12,15 @@
 - (id)initForReadingWithData:(CPData)data bundle:(CPBundle)aBundle awakenCustomResources:(BOOL)shouldAwakenCustomResources
 {
     self = [super initForReadingWithData:data];
-    
+
     if (self)
     {
         _bundle = aBundle;
         _awakenCustomResources = shouldAwakenCustomResources;
-        
+
         [self setDelegate:self];
     }
-    
+
     return self;
 }
 

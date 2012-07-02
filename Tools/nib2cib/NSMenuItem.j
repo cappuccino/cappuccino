@@ -31,10 +31,10 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
-        _isSeparator = [aCoder decodeObjectForKey:@"NSIsSeparator"] || NO;
+        _isSeparator = [aCoder decodeBoolForKey:@"NSIsSeparator"];
 
         _title = [aCoder decodeObjectForKey:"NSTitle"];
 
@@ -46,11 +46,11 @@
         _isEnabled = ![aCoder decodeBoolForKey:"NSIsDisabled"];
         _isHidden = [aCoder decodeBoolForKey:"NSIsHidden"];
 
-//      _tag = [aCoder decodeIntForKey:"NSTag"];
+        _tag = [aCoder decodeIntForKey:"NSTag"];
         _state = [aCoder decodeIntForKey:"NSState"];
 
-//      _image = [aCoder decodeObjectForKey:"NSImage"];
-//      _alternateImage = [aCoder decodeObjectForKey:""];
+         _image = [aCoder decodeObjectForKey:"NSImage"];
+     // _alternateImage = [aCoder decodeObjectForKey:""];
 //      _onStateImage = [aCoder decodeObjectForKey:"NSOnImage"];
 //      _offStateImage = [aCoder decodeObjectForKey:"NSOffImage"];
 //      _mixedStateImage = [aCoder decodeObjectForKey:"NSMixedImage"];
@@ -62,15 +62,15 @@
         _keyEquivalentModifierMask = CP_NSMapKeyMask([aCoder decodeObjectForKey:"NSKeyEquivModMask"]);
 
 //      _mnemonicLocation = [aCoder decodeObjectForKey:"NSMnemonicLoc"];
-        
+
 //      _isAlternate = [aCoder decodeBoolForKey:"NSIsAlternate"];
         _indentationLevel = [aCoder decodeIntForKey:"NSIndent"];
-        
+
 //      _toolTip;
 
-//      _representedObject = [aCoder decodeObjectForKey:CPMenuItemRepresentedObjectKey];
+        _representedObject = [aCoder decodeObjectForKey:"NSRepObject"];
     }
-    
+
     return self;
 }
 

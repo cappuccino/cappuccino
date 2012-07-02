@@ -22,9 +22,6 @@
 
 @import <AppKit/CPSlider.j>
 
-@import "NSSlider.j"
-
-
 @implementation CPSlider (CPCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
@@ -42,14 +39,15 @@
         _altIncrementValue  = [cell altIncrementValue];
 
         [self setSliderType:[cell sliderType]];
-        
+
         if ([self sliderType] === CPCircularSlider)
         {
             var frame = [self frame];
+
             [self setFrameSize:CGSizeMake(frame.size.width + 4.0, frame.size.height + 2.0)];
         }
     }
-    
+
     return self;
 }
 
@@ -83,19 +81,19 @@
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
-    
+
     if (self)
     {
         _objectValue        = [aCoder decodeDoubleForKey:@"NSValue"];
-        
+
         _minValue           = [aCoder decodeDoubleForKey:@"NSMinValue"];
         _maxValue           = [aCoder decodeDoubleForKey:@"NSMaxValue"];
         _altIncrementValue  = [aCoder decodeDoubleForKey:@"NSAltIncValue"];
         _isVertical         = [aCoder decodeBoolForKey:@"NSVertical"];
-        
-        _sliderType         = [aCoder decodeIntForKey:@"NSSliderType"] || 0;
+
+        _sliderType         = [aCoder decodeIntForKey:@"NSSliderType"];
     }
-    
+
     return self;
 }
 

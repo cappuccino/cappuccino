@@ -20,6 +20,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPArray.j"
+@import "CPDictionary.j"
+@import "CPObject.j"
+@import "CPString.j"
+@import "CPURL.j"
+@import "CPURLConnection.j"
+@import "CPURLRequest.j"
+
 var setURLResourceValuesForKeysFromProperties = function(aURL, keys, properties)
 {
     var resourceType = [properties objectForKey:@"resourcetype"];
@@ -42,7 +50,7 @@ var setURLResourceValuesForKeysFromProperties = function(aURL, keys, properties)
         [aURL setResourceValue:displayName forKey:CPURLNameKey];
         [aURL setResourceValue:displayName forKey:CPURLLocalizedNameKey];
     }
-}
+};
 
 CPWebDAVManagerCollectionResourceType       = 1;
 CPWebDAVManagerNonCollectionResourceType    = 0;
@@ -76,7 +84,7 @@ CPWebDAVManagerNonCollectionResourceType    = 0;
             URLString = nil,
             URLStrings = [response keyEnumerator];
 
-        while (URLString = [URLStrings nextObject])
+        while ((URLString = [URLStrings nextObject]) !== nil)
         {
             var URL = [CPURL URLWithString:URLString],
                 properties = [response objectForKey:URLString];
@@ -91,10 +99,10 @@ CPWebDAVManagerNonCollectionResourceType    = 0;
         }
 
         return contents;
-    }
+    };
 
     if (!aBlock)
-        return makeContents(aURL, response);
+        return makeContents(aURL, [self PROPFIND:aURL properties:properties depth:1 block:nil]);
 
     [self PROPFIND:aURL properties:properties depth:1 block:function(aURL, response)
     {
@@ -170,7 +178,7 @@ WebDAVPropertiesForURLKeys[CPURLIsDirectoryKey]     = @"resourcetype";
 //CPURLCustomIconKey                  = @"CPURLCustomIconKey";
 
 var XMLDocumentFromString = function(anXMLString)
-{//console.log(anXMLString);
+{
     if (typeof window["ActiveXObject"] !== "undefined")
     {
         var XMLDocument = new ActiveXObject("Microsoft.XMLDOM");
@@ -182,16 +190,15 @@ var XMLDocumentFromString = function(anXMLString)
     }
 
     return new DOMParser().parseFromString(anXMLString,"text/xml");
-}
+};
 
 var parsePROPFINDResponse = function(anXMLString)
 {
     var XMLDocument = XMLDocumentFromString(anXMLString),
         responses = XMLDocument.getElementsByTagNameNS("*", "response"),
         responseIndex = 0,
-        responseCount = responses.length;
-
-    var propertiesForURLs = [CPDictionary dictionary];
+        responseCount = responses.length,
+        propertiesForURLs = [CPDictionary dictionary];
 
     for (; responseIndex < responseCount; ++responseIndex)
     {
@@ -216,7 +223,6 @@ var parsePROPFINDResponse = function(anXMLString)
 
             if (nodeName === @"resourcetype")
                 [properties setObject:element.firstChild ? CPWebDAVManagerCollectionResourceType : CPWebDAVManagerNonCollectionResourceType forKey:nodeName];
-
             else
                 [properties setObject:element.firstChild.nodeValue forKey:nodeName];
         }
@@ -227,9 +233,9 @@ var parsePROPFINDResponse = function(anXMLString)
     }
 
     return propertiesForURLs;
-}
+};
 
 var mapURLsAndProperties = function(/*CPDictionary*/ properties, /*CPURL*/ ignoredURL)
 {
 
-}
+};

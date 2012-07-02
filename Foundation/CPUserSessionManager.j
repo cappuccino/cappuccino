@@ -20,9 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPNotificationCenter.j"
 @import "CPObject.j"
 @import "CPString.j"
-
 
 CPUserSessionUndeterminedStatus = 0;
 CPUserSessionLoggedInStatus     = 1;

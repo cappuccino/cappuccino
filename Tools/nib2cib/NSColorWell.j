@@ -31,13 +31,15 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [super NS_initWithCoder:aCoder];
-    
+
     if (self)
     {
-        [self setBordered:[aCoder decodeBoolForKey:"NSIsBordered"]];
-        [self setColor:[aCoder decodeBoolForKey:"NSColor"]];
+        // NSColorWell keeps its own enabled state, there is no cell enabled state
+        [self setEnabled:[aCoder decodeBoolForKey:@"NSEnabled"]];
+        [self setBordered:[aCoder decodeBoolForKey:@"NSIsBordered"]];
+        [self setColor:[aCoder decodeObjectForKey:@"NSColor"]];
     }
-    
+
     return self;
 }
 

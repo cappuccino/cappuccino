@@ -43,31 +43,36 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
     return [[self alloc] initWithClassName:@"CPImage" resourceName:aResourceName properties:[CPDictionary dictionaryWithObject:aSize forKey:@"size"]];
 }
 
++ (id)imageResourceWithName:(CPString)aResourceName size:(CGSize)aSize bundleClass:(CPString)aBundleClass
+{
+    return [[self alloc] initWithClassName:@"CPImage" resourceName:aResourceName properties:[CPDictionary dictionaryWithObjects:[aSize, aBundleClass] forKeys:[@"size", @"bundleClass"]]];
+}
+
 - (id)initWithClassName:(CPString)aClassName resourceName:(CPString)aResourceName properties:(CPDictionary)properties
 {
     self = [super init];
-    
+
     if (self)
     {
         _className = aClassName;
         _resourceName = aResourceName;
         _properties = properties;
     }
-    
+
     return self;
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
         _className = [aCoder decodeObjectForKey:_CPCibCustomResourceClassNameKey];
         _resourceName = [aCoder decodeObjectForKey:_CPCibCustomResourceResourceNameKey];
         _properties = [aCoder decodeObjectForKey:_CPCibCustomResourcePropertiesKey];
     }
-    
+
     return self;
 }
 
@@ -80,12 +85,39 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
 
 - (id)awakeAfterUsingCoder:(CPCoder)aCoder
 {
-    if ([aCoder respondsToSelector:@selector(bundle)] && 
+    if ([aCoder respondsToSelector:@selector(bundle)] &&
         (![aCoder respondsToSelector:@selector(awakenCustomResources)] || [aCoder awakenCustomResources]))
         if (_className === @"CPImage")
-            return [[CPImage alloc] initWithContentsOfFile:[[aCoder bundle] pathForResource:_resourceName] size:_properties.valueForKey(@"size")];
+        {
+            if (_resourceName == "CPAddTemplate")
+                return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPButtonBar class]] pathForResource:@"plus_button.png"] size:CGSizeMake(11, 12)];
+            else if (_resourceName == "CPRemoveTemplate")
+                return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPButtonBar class]] pathForResource:@"minus_button.png"] size:CGSizeMake(11, 4)];
+
+            return [self imageFromBundle:[aCoder bundle]];
+        }
 
     return self;
+}
+
+- (CPImage)imageFromBundle:(CPBundle)aBundle
+{
+    if (!aBundle)
+    {
+        var bundleClass = _properties.valueForKey(@"bundleClass");
+
+        if (bundleClass)
+        {
+            bundleClass = CPClassFromString(bundleClass);
+
+            if (bundleClass)
+                aBundle = [CPBundle bundleForClass:bundleClass];
+        }
+        else
+            aBundle = [CPBundle mainBundle];
+    }
+
+    return [[CPImage alloc] initWithContentsOfFile:[aBundle pathForResource:_resourceName] size:_properties.valueForKey(@"size")];
 }
 
 @end
@@ -110,6 +142,23 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
 - (BOOL)isNinePartImage
 {
     return NO;
+}
+
+- (unsigned)loadStatus
+{
+    return CPImageLoadStatusCompleted;
+}
+
+- (id)delegate
+{
+    return nil;
+}
+
+- (CPString)description
+{
+    var image = [self imageFromBundle:nil];
+
+    return [image description];
 }
 
 @end

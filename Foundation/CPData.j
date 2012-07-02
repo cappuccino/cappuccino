@@ -23,7 +23,6 @@
 @import "CPObject.j"
 @import "CPString.j"
 
-
 /*!
     @class CPData
     @ingroup foundation
@@ -36,7 +35,9 @@
 
 + (id)alloc
 {
-    return new CFMutableData();
+    var result = new CFMutableData();
+    result.isa = [self class];
+    return result;
 }
 
 + (CPData)data
@@ -62,6 +63,22 @@
 + (CPData)dataWithJSONObject:(Object)anObject
 {
     return [[self alloc] initWithJSONObject:anObject];
+}
+
++ (CPData)dataWithBytes:(CPArray)bytesArray
+{
+    var data = [[self alloc] init];
+    data.setBytes(bytesArray);
+
+    return data;
+}
+
++ (CPData)dataWithBase64:(CPString)aString
+{
+    var data = [[self alloc] init];
+    data.setBase64String(aString);
+
+    return data;
 }
 
 - (id)initWithRawString:(CPString)aString
@@ -117,6 +134,16 @@
 - (Object)JSONObject
 {
     return self.JSONObject();
+}
+
+- (CPArray)bytes
+{
+    return self.bytes();
+}
+
+- (CPString)base64
+{
+    return self.base64();
 }
 
 - (int)length

@@ -33,7 +33,14 @@ var _CPToolbarViewBackgroundColor = nil;
 + (CPColor)toolbarBackgroundColor
 {
     if (!_CPToolbarViewBackgroundColor)
-        _CPToolbarViewBackgroundColor = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[_CPBorderlessBridgeWindowView class]] pathForResource:@"_CPToolbarView/_CPToolbarViewBackground.png"] size:CGSizeMake(1.0, 59.0)]];
+    {
+        var bundle = [CPBundle bundleForClass:[_CPBorderlessBridgeWindowView class]];
+        _CPToolbarViewBackgroundColor = CPColorWithImages([
+                ["_CPToolbarView/toolbar-background-top.png", 1, 1, bundle],
+                ["_CPToolbarView/toolbar-background-center.png", 1, 57.0, bundle],
+                ["_CPToolbarView/toolbar-background-bottom.png", 1, 1, bundle],
+            ], CPColorPatternIsVertical);
+    }
 
     return _CPToolbarViewBackgroundColor;
 }
@@ -46,31 +53,31 @@ var _CPToolbarViewBackgroundColor = nil;
 - (void)tile
 {
     [super tile];
-    
+
     var theWindow = [self window],
         bounds = [self bounds];
-        
+
     [[theWindow contentView] setFrame:CGRectMake(0.0, [self toolbarMaxY], CGRectGetWidth(bounds), CGRectGetHeight(bounds) - [self toolbarMaxY])];
-    
+
     if (![[theWindow toolbar] isVisible])
     {
         [_toolbarBackgroundView removeFromSuperview];
-    
+
         _toolbarBackgroundView = nil;
-    
+
         return;
     }
-    
+
     if (!_toolbarBackgroundView)
     {
         _toolbarBackgroundView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
-    
+
         [_toolbarBackgroundView setBackgroundColor:[[self class] toolbarBackgroundColor]];
         [_toolbarBackgroundView setAutoresizingMask:CPViewWidthSizable];
-    
+
         [self addSubview:_toolbarBackgroundView positioned:CPWindowBelow relativeTo:nil];
     }
-            
+
     var frame = CGRectMakeZero(),
         toolbarOffset = [self toolbarOffset];
 

@@ -23,6 +23,7 @@
 @import "CPEvent.j"
 @import "CPPlatform.j"
 
+
 // Browser Engines
 CPUnknownBrowserEngine                  = 0;
 CPGeckoBrowserEngine                    = 1;
@@ -43,20 +44,20 @@ CPHTMLCanvasFeature                     = 1 << 6;
 CPHTMLContentEditableFeature            = 1 << 7;
 CPHTMLDragAndDropFeature                = 1 << 8;
 
-CPJavascriptInnerTextFeature            = 1 << 9;
-CPJavascriptTextContentFeature          = 1 << 10;
-CPJavascriptClipboardEventsFeature      = 1 << 11;
-CPJavascriptClipboardAccessFeature      = 1 << 12;
+CPJavaScriptInnerTextFeature            = 1 << 9;
+CPJavaScriptTextContentFeature          = 1 << 10;
+CPJavaScriptClipboardEventsFeature      = 1 << 11;
+CPJavaScriptClipboardAccessFeature      = 1 << 12;
 CPJavaScriptCanvasDrawFeature           = 1 << 13;
 CPJavaScriptCanvasTransformFeature      = 1 << 14;
 
 CPVMLFeature                            = 1 << 15;
 
-CPJavascriptRemedialKeySupport          = 1 << 16;
+CPJavaScriptRemedialKeySupport          = 1 << 16;
 CPJavaScriptShadowFeature               = 1 << 20;
 
 CPJavaScriptNegativeMouseWheelValues    = 1 << 22;
-CPJavaScriptMouseWheelValues_8_15       = 1 << 23
+CPJavaScriptMouseWheelValues_8_15       = 1 << 23;
 
 CPOpacityRequiresFilterFeature          = 1 << 24;
 
@@ -64,6 +65,7 @@ CPOpacityRequiresFilterFeature          = 1 << 24;
 CPInputTypeCanBeChangedFeature          = 1 << 25;
 CPHTML5DragAndDropSourceYOffBy1         = 1 << 26;
 
+CPSOPDisabledFromFileURLs               = 1 << 27;
 
 var USER_AGENT                          = "",
     PLATFORM_ENGINE                     = CPUnknownBrowserEngine,
@@ -77,23 +79,23 @@ if (typeof window !== "undefined" && typeof window.navigator !== "undefined")
     USER_AGENT = window.navigator.userAgent;
 
 // Opera
-if (window.opera)
+if (typeof window !== "undefined" && window.opera)
 {
     PLATFORM_ENGINE = CPOperaBrowserEngine;
-    
+
     PLATFORM_FEATURES |= CPJavaScriptCanvasDrawFeature;
 }
 
 // Internet Explorer
-else if (window.attachEvent) // Must follow Opera check.
+else if (typeof window !== "undefined" && window.attachEvent) // Must follow Opera check.
 {
     PLATFORM_ENGINE = CPInternetExplorerBrowserEngine;
-    
+
     // Features we can only be sure of with IE (no known independent tests)
     PLATFORM_FEATURES |= CPVMLFeature;
-    PLATFORM_FEATURES |= CPJavascriptRemedialKeySupport;
+    PLATFORM_FEATURES |= CPJavaScriptRemedialKeySupport;
     PLATFORM_FEATURES |= CPJavaScriptShadowFeature;
-    
+
     PLATFORM_FEATURES |= CPOpacityRequiresFilterFeature;
 
     PLATFORM_FEATURES &= ~CPInputTypeCanBeChangedFeature;
@@ -103,7 +105,7 @@ else if (window.attachEvent) // Must follow Opera check.
 else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
 {
     PLATFORM_ENGINE = CPWebKitBrowserEngine;
-    
+
     // Features we can only be sure of with WebKit (no known independent tests)
     PLATFORM_FEATURES |= CPCSSRGBAFeature;
     PLATFORM_FEATURES |= CPHTMLContentEditableFeature;
@@ -111,10 +113,10 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
     if (USER_AGENT.indexOf("Chrome") === -1)
         PLATFORM_FEATURES |= CPHTMLDragAndDropFeature;
 
-    PLATFORM_FEATURES |= CPJavascriptClipboardEventsFeature;
-    PLATFORM_FEATURES |= CPJavascriptClipboardAccessFeature;
+    PLATFORM_FEATURES |= CPJavaScriptClipboardEventsFeature;
+    PLATFORM_FEATURES |= CPJavaScriptClipboardAccessFeature;
     PLATFORM_FEATURES |= CPJavaScriptShadowFeature;
-    
+
     var versionStart = USER_AGENT.indexOf("AppleWebKit/") + "AppleWebKit/".length,
         versionEnd = USER_AGENT.indexOf(" ", versionStart),
         versionString = USER_AGENT.substring(versionStart, versionEnd),
@@ -122,16 +124,19 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
         majorVersion = parseInt(versionString.substring(0, versionDivision)),
         minorVersion = parseInt(versionString.substr(versionDivision + 1));
 
-    if((USER_AGENT.indexOf("Safari") !== CPNotFound && (majorVersion > 525 || (majorVersion === 525 && minorVersion > 14))) || USER_AGENT.indexOf("Chrome") !== CPNotFound)
-        PLATFORM_FEATURES |= CPJavascriptRemedialKeySupport;
+    if ((USER_AGENT.indexOf("Safari") !== CPNotFound && (majorVersion > 525 || (majorVersion === 525 && minorVersion > 14))) || USER_AGENT.indexOf("Chrome") !== CPNotFound)
+        PLATFORM_FEATURES |= CPJavaScriptRemedialKeySupport;
 
     // FIXME this is a terrible hack to get around this bug:
     // https://bugs.webkit.org/show_bug.cgi?id=21548
     if (![CPPlatform isBrowser])
-        PLATFORM_FEATURES |= CPJavascriptRemedialKeySupport;
+        PLATFORM_FEATURES |= CPJavaScriptRemedialKeySupport;
 
     if (majorVersion < 532 || (majorVersion === 532 && minorVersion < 6))
         PLATFORM_FEATURES |= CPHTML5DragAndDropSourceYOffBy1;
+
+    if (USER_AGENT.indexOf("Chrome") === CPNotFound)
+        PLATFORM_FEATURES |= CPSOPDisabledFromFileURLs;
 }
 
 // KHTML
@@ -144,12 +149,12 @@ else if (USER_AGENT.indexOf("KHTML") != -1) // Must follow WebKit check.
 else if (USER_AGENT.indexOf("Gecko") !== -1) // Must follow KHTML check.
 {
     PLATFORM_ENGINE = CPGeckoBrowserEngine;
-    
+
     PLATFORM_FEATURES |= CPJavaScriptCanvasDrawFeature;
-    
+
     var index = USER_AGENT.indexOf("Firefox"),
         version = (index === -1) ? 2.0 : parseFloat(USER_AGENT.substring(index + "Firefox".length + 1));
-    
+
     if (version >= 3.0)
         PLATFORM_FEATURES |= CPCSSRGBAFeature;
 
@@ -165,21 +170,21 @@ if (typeof document != "undefined")
     if (canvasElement && canvasElement.getContext)
     {
         PLATFORM_FEATURES |= CPHTMLCanvasFeature;
-    
+
         // Detect Canvas setTransform/transform support
         var context = document.createElement("canvas").getContext("2d");
-        
+
         if (context && context.setTransform && context.transform)
             PLATFORM_FEATURES |= CPJavaScriptCanvasTransformFeature;
     }
-    
+
     var DOMElement = document.createElement("div");
-    
+
     // Detect whether we have innerText or textContent (or neither)
     if (DOMElement.innerText != undefined)
-        PLATFORM_FEATURES |= CPJavascriptInnerTextFeature;
+        PLATFORM_FEATURES |= CPJavaScriptInnerTextFeature;
     else if (DOMElement.textContent != undefined)
-        PLATFORM_FEATURES |= CPJavascriptTextContentFeature;
+        PLATFORM_FEATURES |= CPJavaScriptTextContentFeature;
 }
 
 function CPFeatureIsCompatible(aFeature)

@@ -21,8 +21,7 @@
  */
 
 @import <Foundation/CPObject.j>
-
-#include "CoreGraphics/CGGeometry.h"
+@import "CPText.j"
 
 
 CPLeftMouseDown                         = 1;
@@ -41,7 +40,7 @@ CPAppKitDefined                         = 13;
 CPSystemDefined                         = 14;
 CPApplicationDefined                    = 15;
 CPPeriodic                              = 16;
-CPCursorUpdate                          = 17; 
+CPCursorUpdate                          = 17;
 CPScrollWheel                           = 22;
 CPOtherMouseDown                        = 25;
 CPOtherMouseUp                          = 26;
@@ -52,8 +51,7 @@ CPTouchStart                            = 28;
 CPTouchMove                             = 29;
 CPTouchEnd                              = 30;
 CPTouchCancel                           = 31;
-                                        
-                                        
+
 CPAlphaShiftKeyMask                     = 1 << 16;
 CPShiftKeyMask                          = 1 << 17;
 CPControlKeyMask                        = 1 << 18;
@@ -87,13 +85,89 @@ CPPeriodicMask                          = 1 << CPPeriodic;
 CPScrollWheelMask                       = 1 << CPScrollWheel;
 CPAnyEventMask                          = 0xffffffff;
 
-CPDOMEventDoubleClick                   = "dblclick",
-CPDOMEventMouseDown                     = "mousedown",
-CPDOMEventMouseUp                       = "mouseup",
-CPDOMEventMouseMoved                    = "mousemove",
-CPDOMEventMouseDragged                  = "mousedrag",
-CPDOMEventKeyUp                         = "keyup",
-CPDOMEventKeyDown                       = "keydown",
+CPUpArrowFunctionKey                    = "\uF700";
+CPDownArrowFunctionKey                  = "\uF701";
+CPLeftArrowFunctionKey                  = "\uF702";
+CPRightArrowFunctionKey                 = "\uF703";
+CPF1FunctionKey                         = "\uF704";
+CPF2FunctionKey                         = "\uF705";
+CPF3FunctionKey                         = "\uF706";
+CPF4FunctionKey                         = "\uF707";
+CPF5FunctionKey                         = "\uF708";
+CPF6FunctionKey                         = "\uF709";
+CPF7FunctionKey                         = "\uF70A";
+CPF8FunctionKey                         = "\uF70B";
+CPF9FunctionKey                         = "\uF70C";
+CPF10FunctionKey                        = "\uF70D";
+CPF11FunctionKey                        = "\uF70E";
+CPF12FunctionKey                        = "\uF70F";
+CPF13FunctionKey                        = "\uF710";
+CPF14FunctionKey                        = "\uF711";
+CPF15FunctionKey                        = "\uF712";
+CPF16FunctionKey                        = "\uF713";
+CPF17FunctionKey                        = "\uF714";
+CPF18FunctionKey                        = "\uF715";
+CPF19FunctionKey                        = "\uF716";
+CPF20FunctionKey                        = "\uF717";
+CPF21FunctionKey                        = "\uF718";
+CPF22FunctionKey                        = "\uF719";
+CPF23FunctionKey                        = "\uF71A";
+CPF24FunctionKey                        = "\uF71B";
+CPF25FunctionKey                        = "\uF71C";
+CPF26FunctionKey                        = "\uF71D";
+CPF27FunctionKey                        = "\uF71E";
+CPF28FunctionKey                        = "\uF71F";
+CPF29FunctionKey                        = "\uF720";
+CPF30FunctionKey                        = "\uF721";
+CPF31FunctionKey                        = "\uF722";
+CPF32FunctionKey                        = "\uF723";
+CPF33FunctionKey                        = "\uF724";
+CPF34FunctionKey                        = "\uF725";
+CPF35FunctionKey                        = "\uF726";
+CPInsertFunctionKey                     = "\uF727";
+CPDeleteFunctionKey                     = "\uF728";
+CPHomeFunctionKey                       = "\uF729";
+CPBeginFunctionKey                      = "\uF72A";
+CPEndFunctionKey                        = "\uF72B";
+CPPageUpFunctionKey                     = "\uF72C";
+CPPageDownFunctionKey                   = "\uF72D";
+CPPrintScreenFunctionKey                = "\uF72E";
+CPScrollLockFunctionKey                 = "\uF72F";
+CPPauseFunctionKey                      = "\uF730";
+CPSysReqFunctionKey                     = "\uF731";
+CPBreakFunctionKey                      = "\uF732";
+CPResetFunctionKey                      = "\uF733";
+CPStopFunctionKey                       = "\uF734";
+CPMenuFunctionKey                       = "\uF735";
+CPUserFunctionKey                       = "\uF736";
+CPSystemFunctionKey                     = "\uF737";
+CPPrintFunctionKey                      = "\uF738";
+CPClearLineFunctionKey                  = "\uF739";
+CPClearDisplayFunctionKey               = "\uF73A";
+CPInsertLineFunctionKey                 = "\uF73B";
+CPDeleteLineFunctionKey                 = "\uF73C";
+CPInsertCharFunctionKey                 = "\uF73D";
+CPDeleteCharFunctionKey                 = "\uF73E";
+CPPrevFunctionKey                       = "\uF73F";
+CPNextFunctionKey                       = "\uF740";
+CPSelectFunctionKey                     = "\uF741";
+CPExecuteFunctionKey                    = "\uF742";
+CPUndoFunctionKey                       = "\uF743";
+CPRedoFunctionKey                       = "\uF744";
+CPFindFunctionKey                       = "\uF745";
+CPHelpFunctionKey                       = "\uF746";
+CPModeSwitchFunctionKey                 = "\uF747";
+CPEscapeFunctionKey                     = "\u001B";
+CPSpaceFunctionKey                      = "\u0020";
+
+
+CPDOMEventDoubleClick                   = "dblclick";
+CPDOMEventMouseDown                     = "mousedown";
+CPDOMEventMouseUp                       = "mouseup";
+CPDOMEventMouseMoved                    = "mousemove";
+CPDOMEventMouseDragged                  = "mousedrag";
+CPDOMEventKeyUp                         = "keyup";
+CPDOMEventKeyDown                       = "keydown";
 CPDOMEventKeyPress                      = "keypress";
 CPDOMEventCopy                          = "copy";
 CPDOMEventPaste                         = "paste";
@@ -104,9 +178,11 @@ CPDOMEventTouchEnd                      = "touchend";
 CPDOMEventTouchCancel                   = "touchcancel";
 
 var _CPEventPeriodicEventPeriod         = 0,
-    _CPEventPeriodicEventTimer          = nil;
+    _CPEventPeriodicEventTimer          = nil,
+    _CPEventUpperCaseRegex              = new RegExp("[A-Z]"),
+    _CPEventStartupMilliseconds         = new Date().getTime();
 
-/*! 
+/*!
     @ingroup appkit
     @class CPEvent
     CPEvent encapsulates the details of a Cappuccino keyboard or mouse event.
@@ -135,7 +211,16 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /*!
+    Returns the current time in fractional seconds since startup.
+*/
++ (CPTimeInterval)currentTimestamp
+{
+    return (new Date().getTime() - _CPEventStartupMilliseconds) / 1000;
+}
+
+/*!
     Creates a new keyboard event.
+
     @param anEventType the event type. Must be one of CPKeyDown, CPKeyUp or CPFlagsChanged
     @param aPoint the location of the cursor in the window specified by \c aWindowNumber
     @param modifierFlags a bitwise combination of the modifiers specified in the CPEvent globals
@@ -155,12 +240,13 @@ var _CPEventPeriodicEventPeriod         = 0,
     characters:(CPString)characters charactersIgnoringModifiers:(CPString)unmodCharacters isARepeat:(BOOL)repeatKey keyCode:(unsigned short)code
 {
     return [[self alloc] _initKeyEventWithType:anEventType location:aPoint modifierFlags:modifierFlags
-        timestamp:aTimestamp windowNumber:aWindowNumber context:aGraphicsContext 
+        timestamp:aTimestamp windowNumber:aWindowNumber context:aGraphicsContext
         characters:characters charactersIgnoringModifiers:unmodCharacters isARepeat:repeatKey keyCode:code];
 }
 
 /*!
-    Creates a new mouse event
+    Creates a new mouse event.
+
     @param anEventType the event type
     @param aPoint the location of the cursor in the window specified by \c aWindowNumber
     @param modifierFlags a bitwise combination of the modifiers specified in the CPEvent globals
@@ -173,7 +259,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     @throws CPInternalInconsistencyException if an invalid event type is provided
     @return the new mouse event
 */
-+ (id)mouseEventWithType:(CPEventType)anEventType location:(CGPoint)aPoint modifierFlags:(unsigned)modifierFlags 
++ (id)mouseEventWithType:(CPEventType)anEventType location:(CGPoint)aPoint modifierFlags:(unsigned)modifierFlags
     timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
     eventNumber:(int)anEventNumber clickCount:(int)aClickCount pressure:(float)aPressure
 {
@@ -182,7 +268,8 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /*!
-    Creates a new custom event
+    Creates a new custom event.
+
     @param anEventType the event type. Must be one of CPAppKitDefined, CPSystemDefined, CPApplicationDefined or CPPeriodic
     @param aLocation the location of the cursor in the window specified by \c aWindowNumber
     @param modifierFlags a bitwise combination of the modifiers specified in the CPEvent globals
@@ -203,16 +290,28 @@ var _CPEventPeriodicEventPeriod         = 0,
         timestamp:aTimestamp windowNumber:aWindowNumber context:aGraphicsContext subtype:aSubtype data1:aData1 data2:aData2];
 }
 
+- (id)_initWithType:(CPEventType)anEventType
+{
+    if (self = [super init])
+    {
+        _type = anEventType;
+
+        // Make sure these are 0 rather than nil.
+        _deltaX = 0;
+        _deltaY = 0;
+        _deltaZ = 0;
+    }
+
+    return self;
+}
+
 /* @ignore */
-- (id)_initMouseEventWithType:(CPEventType)anEventType location:(CPPoint)aPoint modifierFlags:(unsigned)modifierFlags 
+- (id)_initMouseEventWithType:(CPEventType)anEventType location:(CPPoint)aPoint modifierFlags:(unsigned)modifierFlags
     timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
     eventNumber:(int)anEventNumber clickCount:(int)aClickCount pressure:(float)aPressure
 {
-    self = [super init];
-    
-    if (self)
+    if (self = [self _initWithType:anEventType])
     {
-        _type = anEventType;
         _location = CPPointCreateCopy(aPoint);
         _modifierFlags = modifierFlags;
         _timestamp = aTimestamp;
@@ -222,7 +321,7 @@ var _CPEventPeriodicEventPeriod         = 0,
         _pressure = aPressure;
         _window = [CPApp windowWithWindowNumber:aWindowNumber];
     }
-    
+
     return self;
 }
 
@@ -231,11 +330,8 @@ var _CPEventPeriodicEventPeriod         = 0,
     timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
     characters:(CPString)characters charactersIgnoringModifiers:(CPString)unmodCharacters isARepeat:(BOOL)isARepeat keyCode:(unsigned short)code
 {
-    self = [super init];
-    
-    if (self)
+    if (self = [self _initWithType:anEventType])
     {
-        _type = anEventType;
         _location = CPPointCreateCopy(aPoint);
         _modifierFlags = modifierFlags;
         _timestamp = aTimestamp;
@@ -246,7 +342,7 @@ var _CPEventPeriodicEventPeriod         = 0,
         _keyCode = code;
         _windowNumber = aWindowNumber;
     }
-    
+
     return self;
 }
 
@@ -255,11 +351,8 @@ var _CPEventPeriodicEventPeriod         = 0,
     timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
     subtype:(short)aSubtype data1:(int)aData1 data2:(int)aData2
 {
-    self = [super init];
-    
-    if (self)
+    if (self = [self _initWithType:anEventType])
     {
-        _type = anEventType;
         _location = CPPointCreateCopy(aPoint);
         _modifierFlags = modifierFlags;
         _timestamp = aTimestamp;
@@ -267,17 +360,17 @@ var _CPEventPeriodicEventPeriod         = 0,
         _subtype = aSubtype;
         _data1 = aData1;
         _data2 = aData2;
-    }   
+    }
 
     return self;
 }
 
 /*!
     Returns the location of the mouse (for mouse events).
-    If this is not a mouse event, it returns \c nil.
-    If \c window returns \c nil, then
-    the mouse coordinates will be based on the screen coordinates.
+    If the receiver is not a mouse event, it returns \c nil.
+    If \c window returns \c nil, then the mouse coordinates will be based on the screen coordinates.
     Otherwise, the coordinates are relative to the window's coordinates.
+
     @return the location of the mouse, or \c nil for non-mouse events.
 */
 - (CGPoint)locationInWindow
@@ -297,7 +390,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /*!
-    Returns event information as a bit mask
+    Returns event information as a bit mask.
 */
 - (unsigned)modifierFlags
 {
@@ -305,7 +398,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /*!
-    Returns the time the event occurred
+    Returns the time the event occurred in seconds since startup.
 */
 - (CPTimeInterval)timestamp
 {
@@ -321,7 +414,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /*!
-    Returns the event's associated window
+    Returns the event's associated window.
 */
 - (CPWindow)window
 {
@@ -352,7 +445,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /*!
-    Returns the number of clicks that caused this event. (mouse only)
+    Returns the number of clicks that caused this event (mouse only).
 */
 - (int)clickCount
 {
@@ -360,7 +453,8 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /*!
-    Returns the characters associated with this event (keyboard only)
+    Returns the characters associated with this event (keyboard only).
+
     @throws CPInternalInconsistencyException if this method is called on a non-key event
 */
 - (CPString)characters
@@ -370,6 +464,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 
 /*!
     Returns the character ignoring any modifiers (except shift).
+
     @throws CPInternalInconsistencyException if this method is called on a non-key event
 */
 - (CPString)charactersIgnoringModifiers
@@ -379,6 +474,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 
 /*!
     Returns \c YES if the keyboard event was caused by the key being held down.
+
     @throws CPInternalInconsistencyException if this method is called on a non-key event
 */
 - (BOOL)isARepeat
@@ -388,6 +484,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 
 /*!
     Returns the key's key code.
+
     @throws CPInternalInconsistencyException if this method is called on a non-key event
 */
 - (unsigned short)keyCode
@@ -420,7 +517,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _DOMEvent;
 }
 
-// Getting Scroll Wheel Event Infomration
+// Getting Scroll Wheel Event Information
 /*!
     Returns the change in the x-axis for a mouse event.
 */
@@ -445,37 +542,91 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _deltaZ;
 }
 
+- (BOOL)_triggersKeyEquivalent:(CPString)aKeyEquivalent withModifierMask:aKeyEquivalentModifierMask
+{
+    if (!aKeyEquivalent)
+        return NO;
+
+    if (_CPEventUpperCaseRegex.test(aKeyEquivalent))
+        aKeyEquivalentModifierMask |= CPShiftKeyMask;
+
+    // Windows and Linux don't have command keys, so just switch it to ctrl.
+    if (!CPBrowserIsOperatingSystem(CPMacOperatingSystem) && (aKeyEquivalentModifierMask & CPCommandKeyMask))
+    {
+        aKeyEquivalentModifierMask |= CPControlKeyMask;
+        aKeyEquivalentModifierMask &= ~CPCommandKeyMask;
+    }
+
+    if ((_modifierFlags & (CPShiftKeyMask | CPAlternateKeyMask | CPCommandKeyMask | CPControlKeyMask)) !== aKeyEquivalentModifierMask)
+        return NO;
+
+    // Treat \r and \n as the same key equivalent. See issue #710.
+    if (_characters === CPNewlineCharacter || _characters === CPCarriageReturnCharacter)
+        return CPNewlineCharacter === aKeyEquivalent || CPCarriageReturnCharacter === aKeyEquivalent;
+
+    return [_characters caseInsensitiveCompare:aKeyEquivalent] === CPOrderedSame;
+}
+
 - (BOOL)_couldBeKeyEquivalent
 {
-    // FIXME: More cases? Space?
-    return  _type === CPKeyDown &&
-            _modifierFlags & (CPCommandKeyMask | CPControlKeyMask) &&
-            [_characters length] > 0;
+    if (_type !== CPKeyDown)
+        return NO;
+
+    var characterCount = _characters.length;
+
+    if (!characterCount)
+        return NO;
+
+    if (_modifierFlags & (CPCommandKeyMask | CPControlKeyMask))
+        return YES;
+
+    // Cocoa allows almost any key as a key equivalent unless the first responder is a
+    // text field (presumably a subclass of NSText.)
+    var firstResponderIsText = [[_window firstResponder] isKindOfClass:[CPTextField class]];
+
+    // Some keys are accepted as key equivalents even if the first responder is a text
+    // field.
+    for (var i = 0; i < characterCount; i++)
+    {
+        var c = _characters.charAt(i);
+
+        if ((c >= CPUpArrowFunctionKey && c <= CPModeSwitchFunctionKey) ||
+            c === CPEnterCharacter ||
+            c === CPNewlineCharacter ||
+            c === CPCarriageReturnCharacter ||
+            c === CPEscapeFunctionKey)
+        {
+            return YES;
+        }
+    }
+
+    return !firstResponderIsText;
 }
 
 /*!
     Generates periodic events every \c aPeriod seconds.
+
     @param aDelay the number of seconds before the first event
     @param aPeriod the length of time in seconds between successive events
 */
 + (void)startPeriodicEventsAfterDelay:(CPTimeInterval)aDelay withPeriod:(CPTimeInterval)aPeriod
 {
     _CPEventPeriodicEventPeriod = aPeriod;
-    
+
     // FIXME: OH TIMERS!!!
     _CPEventPeriodicEventTimer = window.setTimeout(function() { _CPEventPeriodicEventTimer = window.setInterval(_CPEventFirePeriodEvent, aPeriod * 1000.0); }, aDelay * 1000.0);
 }
 
 /*!
-    Stops the periodic events from being generated
+    Stops the periodic events from being generated.
 */
 + (void)stopPeriodicEvents
 {
     if (_CPEventPeriodicEventTimer === nil)
         return;
-    
+
     window.clearTimeout(_CPEventPeriodicEventTimer);
-    
+
     _CPEventPeriodicEventTimer = nil;
 }
 
@@ -483,7 +634,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 
 function _CPEventFirePeriodEvent()
 {
-    [CPApp sendEvent:[CPEvent otherEventWithType:CPPeriodic location:_CGPointMakeZero() modifierFlags:0 timestamp:0 windowNumber:0 context:nil subtype:0 data1:0 data2:0]];
+    [CPApp sendEvent:[CPEvent otherEventWithType:CPPeriodic location:_CGPointMakeZero() modifierFlags:0 timestamp:[CPEvent currentTimestamp] windowNumber:0 context:nil subtype:0 data1:0 data2:0]];
 }
 
 var CPEventClass = [CPEvent class];
@@ -505,4 +656,3 @@ function _CPEventFromNativeMouseEvent(aNativeEvent, anEventType, aPoint, modifie
 
     return aNativeEvent;
 }
-

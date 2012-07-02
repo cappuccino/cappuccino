@@ -20,8 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPException.j"
 @import "CPObject.j"
-
+@import "CPRunLoop.j"
 
 CPJSONPConnectionCallbacks = {};
 
@@ -68,16 +69,19 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
 {
     self = [super init];
 
-    _request = aRequest;
-    _delegate = aDelegate;
+    if (self)
+    {
+        _request = aRequest;
+        _delegate = aDelegate;
 
-    _callbackParameter = aString;
+        _callbackParameter = aString;
 
-    if (!_callbackParameter && [[_request URL] absoluteString].indexOf(CPJSONPCallbackReplacementString) < 0)
-         [CPException raise:CPInvalidArgumentException reason:@"JSONP source specified without callback parameter or CPJSONPCallbackReplacementString in URL."];
+        if (!_callbackParameter && [[_request URL] absoluteString].indexOf(CPJSONPCallbackReplacementString) < 0)
+             [CPException raise:CPInvalidArgumentException reason:@"JSONP source specified without callback parameter or CPJSONPCallbackReplacementString in URL."];
 
-    if (shouldStartImmediately)
-        [self start];
+        if (shouldStartImmediately)
+            [self start];
+    }
 
     return self;
 }
@@ -86,7 +90,7 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
 {
     try
     {
-        CPJSONPConnectionCallbacks["callback"+[self UID]] = function(data)
+        CPJSONPConnectionCallbacks["callback" + [self UID]] = function(data)
         {
             if ([_delegate respondsToSelector:@selector(connection:didReceiveData:)])
                 [_delegate connection:self didReceiveData:data];
@@ -105,11 +109,11 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
         if (_callbackParameter)
         {
             source += (source.indexOf('?') < 0) ? "?" : "&";
-            source += _callbackParameter+"=CPJSONPConnectionCallbacks.callback"+[self UID];
+            source += _callbackParameter + "=CPJSONPConnectionCallbacks.callback" + [self UID];
         }
         else if (source.indexOf(CPJSONPCallbackReplacementString) >= 0)
         {
-            source = [source stringByReplacingOccurrencesOfString:CPJSONPCallbackReplacementString withString:"CPJSONPConnectionCallbacks.callback"+[self UID]];
+            source = [source stringByReplacingOccurrencesOfString:CPJSONPCallbackReplacementString withString:"CPJSONPConnectionCallbacks.callback" + [self UID]];
         }
         else
             return;
@@ -134,7 +138,7 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
 {
     var head = document.getElementsByTagName("head").item(0);
 
-    if(_scriptTag && _scriptTag.parentNode == head)
+    if (_scriptTag && _scriptTag.parentNode == head)
         head.removeChild(_scriptTag);
 
     CPJSONPConnectionCallbacks["callback" + [self UID]] = nil;

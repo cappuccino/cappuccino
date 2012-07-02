@@ -64,14 +64,14 @@ var _CPCibConnectorSourceKey        = @"_CPCibConnectorSourceKey",
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
         _source = [aCoder decodeObjectForKey:_CPCibConnectorSourceKey];
         _destination = [aCoder decodeObjectForKey:_CPCibConnectorDestinationKey];
         _label = [aCoder decodeObjectForKey:_CPCibConnectorLabelKey];
     }
-    
+
     return self;
 }
 

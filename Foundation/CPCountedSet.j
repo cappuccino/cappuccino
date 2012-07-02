@@ -20,8 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPObject.j"
 @import "CPSet.j"
-
 
 /*!
     @class CPCountedSet
@@ -29,7 +29,7 @@
     @brief An mutable collection which may contain a specific object
     numerous times.
 */
-@implementation CPCountedSet : CPMutableSet
+@implementation CPCountedSet : _CPConcreteMutableSet
 {
     Object  _counts;
 }

@@ -22,13 +22,14 @@
 
 @import "CPArray.j"
 @import "CPNull.j"
+@import "_CPCollectionKVCOperators.j"
 
 
 @implementation CPObject (CPArrayKVO)
 
 - (id)mutableArrayValueForKey:(id)aKey
 {
-	return [[_CPKVCArray alloc] initWithKey:aKey forProxyObject:self];
+    return [[_CPKVCArray alloc] initWithKey:aKey forProxyObject:self];
 }
 
 - (id)mutableArrayValueForKeyPath:(id)aKeyPath
@@ -41,12 +42,12 @@
     var firstPart = aKeyPath.substring(0, dotIndex),
         lastPart = aKeyPath.substring(dotIndex + 1);
 
-    return [[self valueForKeyPath:firstPart] valueForKeyPath:lastPart];
+    return [[self valueForKeyPath:firstPart] mutableArrayValueForKeyPath:lastPart];
 }
 
 @end
 
-@implementation _CPKVCArray : CPArray
+@implementation _CPKVCArray : CPMutableArray
 {
     id _proxyObject;
     id _key;
@@ -71,6 +72,9 @@
 
     SEL         _objectAtIndexSEL;
     Function    _objectAtIndex;
+
+    SEL         _objectsAtIndexesSEL;
+    Function    _objectsAtIndexes;
 
     SEL         _countSEL;
     Function    _count;
@@ -106,35 +110,39 @@
 
     var capitalizedKey = _key.charAt(0).toUpperCase() + _key.substring(1);
 
-    _insertSEL = sel_getName(@"insertObject:in"+capitalizedKey+"AtIndex:");
+    _insertSEL = sel_getName(@"insertObject:in" + capitalizedKey + "AtIndex:");
     if ([_proxyObject respondsToSelector:_insertSEL])
         _insert = [_proxyObject methodForSelector:_insertSEL];
 
-    _removeSEL = sel_getName(@"removeObjectFrom"+capitalizedKey+"AtIndex:");
+    _removeSEL = sel_getName(@"removeObjectFrom" + capitalizedKey + "AtIndex:");
     if ([_proxyObject respondsToSelector:_removeSEL])
         _remove = [_proxyObject methodForSelector:_removeSEL];
 
-    _replaceSEL = sel_getName(@"replaceObjectFrom"+capitalizedKey+"AtIndex:withObject:");
+    _replaceSEL = sel_getName(@"replaceObjectIn" + capitalizedKey + "AtIndex:withObject:");
     if ([_proxyObject respondsToSelector:_replaceSEL])
         _replace = [_proxyObject methodForSelector:_replaceSEL];
 
-    _insertManySEL = sel_getName(@"insertObjects:in"+capitalizedKey+"AtIndexes:");
+    _insertManySEL = sel_getName(@"insert" + capitalizedKey + ":atIndexes:");
     if ([_proxyObject respondsToSelector:_insertManySEL])
-        _insert = [_proxyObject methodForSelector:_insertManySEL];
+        _insertMany = [_proxyObject methodForSelector:_insertManySEL];
 
-    _removeManySEL = sel_getName(@"removeObjectsFrom"+capitalizedKey+"AtIndexes:");
+    _removeManySEL = sel_getName(@"remove" + capitalizedKey + "AtIndexes:");
     if ([_proxyObject respondsToSelector:_removeManySEL])
-        _remove = [_proxyObject methodForSelector:_removeManySEL];
+        _removeMany = [_proxyObject methodForSelector:_removeManySEL];
 
-    _replaceManySEL = sel_getName(@"replaceObjectsFrom"+capitalizedKey+"AtIndexes:withObjects:");
+    _replaceManySEL = sel_getName(@"replace" + capitalizedKey + "AtIndexes:with" + capitalizedKey + ":");
     if ([_proxyObject respondsToSelector:_replaceManySEL])
-        _replace = [_proxyObject methodForSelector:_replaceManySEL];
+        _replaceMany = [_proxyObject methodForSelector:_replaceManySEL];
 
-    _objectAtIndexSEL = sel_getName(@"objectIn"+capitalizedKey+"AtIndex:");
+    _objectAtIndexSEL = sel_getName(@"objectIn" + capitalizedKey + "AtIndex:");
     if ([_proxyObject respondsToSelector:_objectAtIndexSEL])
         _objectAtIndex = [_proxyObject methodForSelector:_objectAtIndexSEL];
 
-    _countSEL = sel_getName(@"countOf"+capitalizedKey);
+    _objectsAtIndexesSEL = sel_getName(_key + "AtIndexes:");
+    if ([_proxyObject respondsToSelector:_objectsAtIndexesSEL])
+        _objectsAtIndexes = [_proxyObject methodForSelector:_objectsAtIndexesSEL];
+
+    _countSEL = sel_getName(@"countOf" + capitalizedKey);
     if ([_proxyObject respondsToSelector:_countSEL])
         _count = [_proxyObject methodForSelector:_countSEL];
 
@@ -142,7 +150,7 @@
     if ([_proxyObject respondsToSelector:_accessSEL])
         _access = [_proxyObject methodForSelector:_accessSEL];
 
-    _setSEL = sel_getName(@"set"+capitalizedKey+":");
+    _setSEL = sel_getName(@"set" + capitalizedKey + ":");
     if ([_proxyObject respondsToSelector:_setSEL])
         _set = [_proxyObject methodForSelector:_setSEL];
 
@@ -226,21 +234,31 @@
 
 - (id)objectAtIndex:(unsigned)anIndex
 {
-    if (_objectAtIndex)
-        return _objectAtIndex(_proxyObject, _objectAtIndexSEL, anIndex);
+    return [[self objectsAtIndexes:[CPIndexSet indexSetWithIndex:anIndex]] firstObject];
+}
 
-    return [[self _representedObject] objectAtIndex:anIndex];
+- (CPArray)objectsAtIndexes:(CPIndexSet)theIndexes
+{
+    if (_objectsAtIndexes)
+        return _objectsAtIndexes(_proxyObject, _objectsAtIndexesSEL, theIndexes);
+
+    if (_objectAtIndex)
+    {
+        var index = CPNotFound,
+            objects = [];
+
+        while ((index = [theIndexes indexGreaterThanIndex:index]) !== CPNotFound)
+            objects.push(_objectAtIndex(_proxyObject, _objectAtIndexSEL, index));
+
+        return objects;
+    }
+
+    return [[self _representedObject] objectsAtIndexes:theIndexes];
 }
 
 - (void)addObject:(id)anObject
 {
-    if (_insert)
-        return _insert(_proxyObject, _insertSEL, anObject, [self count]);
-
-    var target = [[self _representedObject] copy];
-
-    [target addObject:anObject];
-    [self _setRepresentedObject:target];
+    [self insertObject:anObject atIndex:[self count]];
 }
 
 - (void)addObjectsFromArray:(CPArray)anArray
@@ -248,19 +266,38 @@
     var index = 0,
         count = [anArray count];
 
-    for (; index < count; ++index)
-        [self addObject:[anArray objectAtIndex:index]];
+    [self insertObjects:anArray atIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange([self count], count)]];
 }
 
 - (void)insertObject:(id)anObject atIndex:(unsigned)anIndex
 {
-    if (_insert)
-        return _insert(_proxyObject, _insertSEL, anObject, anIndex);
+    [self insertObjects:[anObject] atIndexes:[CPIndexSet indexSetWithIndex:anIndex]];
+}
 
-    var target = [[self _representedObject] copy];
+- (void)insertObjects:(CPArray)theObjects atIndexes:(CPIndexSet)theIndexes
+{
+    if (_insertMany)
+        _insertMany(_proxyObject, _insertManySEL, theObjects, theIndexes);
+    else if (_insert)
+    {
+        var indexesArray = [];
+        [theIndexes getIndexes:indexesArray maxCount:-1 inIndexRange:nil];
 
-    [target insertObject:anObject atIndex:anIndex];
-    [self _setRepresentedObject:target];
+        for (var index = 0; index < [indexesArray count]; index++)
+        {
+            var objectIndex = [indexesArray objectAtIndex:index],
+                object = [theObjects objectAtIndex:index];
+
+            _insert(_proxyObject, _insertSEL, object, objectIndex);
+        }
+    }
+    else
+    {
+        var target = [[self _representedObject] copy];
+
+        [target insertObjects:theObjects atIndexes:theIndexes];
+        [self _setRepresentedObject:target];
+    }
 }
 
 - (void)removeObject:(id)anObject
@@ -268,57 +305,131 @@
     [self removeObject:anObject inRange:CPMakeRange(0, [self count])];
 }
 
-- (void)removeLastObject
+- (void)removeObjectsInArray:(CPArray)theObjects
+{
+    if (_removeMany)
+    {
+        var indexes = [CPIndexSet indexSet],
+            index = [theObjects count];
+
+        while (index--)
+            [indexes addIndex:[self indexOfObject:[theObjects objectAtIndex:index]]];
+
+        _removeMany(_proxyObject, _removeManySEL, indexes);
+    }
+    else if (_remove)
+    {
+        var index = [theObjects count];
+        while (index--)
+            _remove(_proxyObject, _removeSEL, [self indexOfObject:[theObjects objectAtIndex:index]]);
+    }
+    else
+    {
+        var target = [[self _representedObject] copy];
+        [target removeObjectsInArray:theObjects];
+        [self _setRepresentedObject:target];
+    }
+}
+
+- (void)removeObject:(id)theObject inRange:(CPRange)theRange
 {
     if (_remove)
-        return _remove(_proxyObject, _removeSEL, [self count] - 1);
+        _remove(_proxyObject, _removeSEL, [self indexOfObject:theObject inRange:theRange]);
+    else if (_removeMany)
+    {
+        var index = [self indexOfObject:theObject inRange:theRange];
+        _removeMany(_proxyObject, _removeManySEL, [CPIndexSet indexSetWithIndex:index]);
+    }
+    else
+    {
+        var index;
 
-    var target = [[self _representedObject] copy];
+        while ((index = [self indexOfObject:theObject inRange:theRange]) !== CPNotFound)
+        {
+            [self removeObjectAtIndex:index];
+            theRange = CPIntersectionRange(CPMakeRange(index, length - index), theRange);
+        }
+    }
+}
 
-    [target removeLastObject];
-    [self _setRepresentedObject:target];
+- (void)removeLastObject
+{
+    [self removeObjectsAtIndexes:[CPIndexSet indexSetWithIndex:[self count] - 1]];
 }
 
 - (void)removeObjectAtIndex:(unsigned)anIndex
 {
-    if (_remove)
-        return _remove(_proxyObject, _removeSEL, anIndex);
+    [self removeObjectsAtIndexes:[CPIndexSet indexSetWithIndex:anIndex]];
+}
 
-    var target = [[self _representedObject] copy];
+- (void)removeObjectsAtIndexes:(CPIndexSet)theIndexes
+{
+    if (_removeMany)
+        _removeMany(_proxyObject, _removeManySEL, theIndexes);
+    else if (_remove)
+    {
+        var index = [theIndexes lastIndex];
 
-    [target removeObjectAtIndex:anIndex];
-    [self _setRepresentedObject:target];
+        while (index !== CPNotFound)
+        {
+            _remove(_proxyObject, _removeSEL, index)
+            index = [theIndexes indexLessThanIndex:index];
+        }
+    }
+    else
+    {
+        var target = [[self _representedObject] copy];
+        [target removeObjectsAtIndexes:theIndexes];
+        [self _setRepresentedObject:target];
+    }
 }
 
 - (void)replaceObjectAtIndex:(unsigned)anIndex withObject:(id)anObject
 {
-    if (_replace)
-        return _replace(_proxyObject, _replaceSEL, anIndex, anObject);
+    [self replaceObjectsAtIndexes:[CPIndexSet indexSetWithIndex:anIndex] withObjects:[anObject]]
+}
 
-    var target = [[self _representedObject] copy];
+- (void)replaceObjectsAtIndexes:(CPIndexSet)theIndexes withObjects:(CPArray)theObjects
+{
+    if (_replaceMany)
+        return _replaceMany(_proxyObject, _replaceManySEL, theIndexes, theObjects);
+    else if (_replace)
+    {
+        var i = 0,
+            index = [theIndexes firstIndex];
 
-    [target replaceObjectAtIndex:anIndex withObject:anObject];
-    [self _setRepresentedObject:target];
+        while (index !== CPNotFound)
+        {
+            _replace(_proxyObject, _replaceSEL, index, [theObjects objectAtIndex:i++]);
+            index = [theIndexes indexGreaterThanIndex:index];
+        }
+    }
+    else
+    {
+        var target = [[self _representedObject] copy];
+        [target replaceObjectsAtIndexes:theIndexes withObjects:theObjects];
+        [self _setRepresentedObject:target];
+    }
 }
 
 @end
 
 
-//KVC on CPArray objects act on each item of the array, rather than on the array itself
+// KVC on CPArray objects act on each item of the array, rather than on the array itself
 
-@implementation CPArray (KeyValueCoding)
+@implementation CPArray (CPKeyValueCoding)
 
 - (id)valueForKey:(CPString)aKey
 {
     if (aKey.indexOf("@") === 0)
     {
         if (aKey.indexOf(".") !== -1)
-            [CPException raise:CPInvalidArgumentException reason:"called valueForKey: on an array with a complex key ("+aKey+"). use valueForKeyPath:"];
+            [CPException raise:CPInvalidArgumentException reason:"called valueForKey: on an array with a complex key (" + aKey + "). use valueForKeyPath:"];
 
-        if (aKey == "@count")
+        if (aKey === "@count")
             return length;
 
-        return nil;
+        return [self valueForUndefinedKey:aKey];
     }
     else
     {
@@ -342,7 +453,10 @@
 
 - (id)valueForKeyPath:(CPString)aKeyPath
 {
-    if (aKeyPath.indexOf("@") === 0)
+    if (!aKeyPath)
+        [self valueForUndefinedKey:@"<empty path>"];
+
+    if (aKeyPath.charAt(0) === "@")
     {
         var dotIndex = aKeyPath.indexOf("."),
             operator,
@@ -356,10 +470,7 @@
         else
             operator = aKeyPath.substring(1);
 
-        if (kvoOperators[operator])
-            return kvoOperators[operator](self, _cmd, parameter);
-
-        return nil;
+        return [_CPCollectionKVCOperator performOperation:operator withCollection:self propertyPath:parameter];
     }
     else
     {
@@ -386,7 +497,7 @@
     var enumerator = [self objectEnumerator],
         object;
 
-    while (object = [enumerator nextObject])
+    while ((object = [enumerator nextObject]) !== nil)
         [object setValue:aValue forKey:aKey];
 }
 
@@ -395,81 +506,11 @@
     var enumerator = [self objectEnumerator],
         object;
 
-    while (object = [enumerator nextObject])
+    while ((object = [enumerator nextObject]) !== nil)
         [object setValue:aValue forKeyPath:aKeyPath];
 }
 
 @end
-
-var kvoOperators = [];
-
-// HACK: prevent these from becoming globals. workaround for obj-j "function foo(){}" behavior
-var avgOperator, maxOperator, minOperator, countOperator, sumOperator;
-
-kvoOperators["avg"] = function avgOperator(self, _cmd, param)
-{
-    var objects = [self valueForKeyPath:param],
-        length = [objects count],
-        index = length;
-        average = 0.0;
-
-    if (!length)
-        return 0;
-
-    while (index--)
-        average += [objects[index] doubleValue];
-
-    return average / length;
-}
-
-kvoOperators["max"] = function maxOperator(self, _cmd, param)
-{
-    var objects = [self valueForKeyPath:param],
-        index = [objects count] - 1,
-        max = [objects lastObject];
-
-    while (index--)
-    {
-        var item = objects[index];
-        if ([max compare:item] < 0)
-            max = item;
-    }
-
-    return max;
-}
-
-kvoOperators["min"] = function minOperator(self, _cmd, param)
-{
-    var objects = [self valueForKeyPath:param],
-        index = [objects count] - 1,
-        min = [objects lastObject];
-
-    while (index--)
-    {
-        var item = objects[index];
-        if ([min compare:item] > 0)
-            min = item;
-    }
-
-    return min;
-}
-
-kvoOperators["count"] = function countOperator(self, _cmd, param)
-{
-    return [self count];
-}
-
-kvoOperators["sum"] = function sumOperator(self, _cmd, param)
-{
-    var objects = [self valueForKeyPath:param],
-        index = [objects count],
-        sum = 0.0;
-
-    while (index--)
-        sum += [objects[index] doubleValue];
-
-    return sum;
-}
 
 @implementation CPArray (KeyValueObserving)
 
@@ -495,22 +536,6 @@ kvoOperators["sum"] = function sumOperator(self, _cmd, param)
 
         index = [indexes indexGreaterThanIndex:index];
     }
-}
-
-- (void)addObserver:(id)observer forKeyPath:(CPString)aKeyPath options:(unsigned)options context:(id)context
-{
-    if ([isa instanceMethodForSelector:_cmd] === [CPArray instanceMethodForSelector:_cmd])
-        [CPException raise:CPInvalidArgumentException reason:"Unsupported method on CPArray"];
-    else
-        [super addObserver:observer forKeyPath:aKeyPath options:options context:context];
-}
-
--(void)removeObserver:(id)observer forKeyPath:(CPString)aKeyPath
-{
-    if ([isa instanceMethodForSelector:_cmd] === [CPArray instanceMethodForSelector:_cmd])
-        [CPException raise:CPInvalidArgumentException reason:"Unsupported method on CPArray"];
-    else
-        [super removeObserver:observer forKeyPath:aKeyPath];
 }
 
 @end

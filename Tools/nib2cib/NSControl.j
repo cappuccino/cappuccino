@@ -31,27 +31,33 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [super NS_initWithCoder:aCoder];
-    
+
     if (self)
     {
-        [self sendActionOn:CPLeftMouseUpMask];
-        
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
-        
+
+        [self sendActionOn:CPLeftMouseUpMask];
+        [self setSendsActionOnEndEditing:[cell sendsActionOnEndEditing]];
+
         [self setObjectValue:[cell objectValue]];
-        
+
         [self setFont:[cell font]];
         [self setAlignment:[cell alignment]];
-        
-        [self setEnabled:[aCoder decodeObjectForKey:@"NSEnabled"]];
+
+        // Enabled state is derived from the NSEnabled flag or the control's cell.
+        // For example NSTableView uses the NSEnabled flag, but NSButton uses it's cell isEnabled state.
+        // We use the NSEnabled flag here and override the behavior in controls using different logic (NSButton).
+        [self setEnabled:[aCoder decodeBoolForKey:@"NSEnabled"]];
         [self setContinuous:[cell isContinuous]];
 
         [self setTarget:[aCoder decodeObjectForKey:@"NSTarget"]];
         [self setAction:[aCoder decodeObjectForKey:@"NSAction"]];
 
         [self setLineBreakMode:[cell lineBreakMode]];
+
+        [self setFormatter:[cell formatter]];
     }
-    
+
     return self;
 }
 

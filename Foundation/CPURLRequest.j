@@ -20,8 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPDictionary.j"
 @import "CPObject.j"
-
+@import "CPString.j"
+@import "CPURL.j"
 
 /*!
     @class CPURLRequest
@@ -52,7 +54,16 @@
 }
 
 /*!
-    Initializes the request with a URL.
+    Equal to `[receiver initWithURL:nil]`.
+*/
+- (id)init
+{
+    return [self initWithURL:nil];
+}
+
+/*!
+    Initializes the request with a URL. This is the designated initializer.
+
     @param aURL the url to set
     @return the initialized CPURLRequest
 */
@@ -129,7 +140,7 @@
 }
 
 /*!
-    Returns a dictionar of the http header fields
+    Returns a dictionary of the http header fields
 */
 - (CPDictionary)allHTTPHeaderFields
 {

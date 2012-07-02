@@ -1,8 +1,9 @@
 /*
- * main.j
+ * AppController.j
+ * CPSearchField
  *
- * Created by __Me__ on __Date__.
- * Copyright 2008 __MyCompanyName__. All rights reserved.
+ * Created by You on November 27, 2010.
+ * Copyright 2010, Your Company All rights reserved.
  */
 
 @import <Foundation/Foundation.j>

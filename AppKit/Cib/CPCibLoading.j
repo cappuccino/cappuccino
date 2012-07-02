@@ -76,7 +76,7 @@ var CPCibOwner = @"CPCibOwner";
     // Path is based solely on anOwner:
     var bundle = anOwner ? [CPBundle bundleForClass:[anOwner class]] : [CPBundle mainBundle],
         path = [bundle pathForResource:aName];
-    
+
     return [self loadCibFile:path externalNameTable:[CPDictionary dictionaryWithObject:anOwner forKey:CPCibOwner] loadDelegate:aDelegate];
 }
 

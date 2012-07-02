@@ -22,6 +22,7 @@
 
 @import <Foundation/CPArray.j>
 @import <Foundation/CPObjJRuntime.j>
+@import <Foundation/CPSet.j>
 
 @import "CGAffineTransform.j"
 @import "CGGeometry.j"
@@ -33,11 +34,6 @@
 @import "CPTheme.j"
 @import "_CPDisplayServer.j"
 
-
-#include "Platform/Platform.h"
-#include "CoreGraphics/CGAffineTransform.h"
-#include "CoreGraphics/CGGeometry.h"
-#include "Platform/DOM/CPDOMDisplayServer.h"
 
 /*
     @global
@@ -90,7 +86,7 @@ var CachedNotificationCenter    = nil,
 
 #if PLATFORM(DOM)
 var DOMElementPrototype         = nil,
-    
+
     BackgroundTrivialColor              = 0,
     BackgroundVerticalThreePartImage    = 1,
     BackgroundHorizontalThreePartImage  = 2,
@@ -102,7 +98,11 @@ var CPViewFlags                     = { },
     CPViewHasCustomDrawRect         = 1 << 0,
     CPViewHasCustomLayoutSubviews   = 1 << 1;
 
-/*! 
+var CPCurrentToolTip,
+    CPCurrentToolTipTimer,
+    CPToolTipDelay = 1.0;
+
+/*!
     @ingroup appkit
     @class CPView
 
@@ -122,37 +122,38 @@ var CPViewFlags                     = { },
 @implementation CPView : CPResponder
 {
     CPWindow            _window;
-    
+
     CPView              _superview;
     CPArray             _subviews;
-    
+
     CPGraphicsContext   _graphicsContext;
-    
+
     int                 _tag;
-    
+
     CGRect              _frame;
     CGRect              _bounds;
     CGAffineTransform   _boundsTransform;
     CGAffineTransform   _inverseBoundsTransform;
-    
+
     CPSet               _registeredDraggedTypes;
     CPArray             _registeredDraggedTypesArray;
-    
+
     BOOL                _isHidden;
     BOOL                _hitTests;
     BOOL                _clipsToBounds;
-    
+
     BOOL                _postsFrameChangedNotifications;
     BOOL                _postsBoundsChangedNotifications;
     BOOL                _inhibitFrameAndBoundsChangedNotifications;
-    
+    BOOL                _inLiveResize;
+
 #if PLATFORM(DOM)
     DOMElement          _DOMElement;
     DOMElement          _DOMContentsElement;
-    
+
     CPArray             _DOMImageParts;
     CPArray             _DOMImageSizes;
-    
+
     unsigned            _backgroundType;
 #endif
 
@@ -163,21 +164,22 @@ var CPViewFlags                     = { },
 
     BOOL                _autoresizesSubviews;
     unsigned            _autoresizingMask;
-    
+
     CALayer             _layer;
     BOOL                _wantsLayer;
-    
+
     // Full Screen State
     BOOL                _isInFullScreenMode;
-    
+
     _CPViewFullScreenModeState  _fullScreenModeState;
-    
+
     // Layout Support
     BOOL                _needsLayout;
     JSObject            _ephemeralSubviews;
-    
+
     // Theming Support
     CPTheme             _theme;
+    CPString            _themeClass;
     JSObject            _themeAttributes;
     unsigned            _themeState;
 
@@ -189,6 +191,12 @@ var CPViewFlags                     = { },
     CPView              _previousKeyView;
 
     unsigned            _viewClassFlags;
+
+    // ToolTips
+    CPString            _toolTip    @accessors(getter=toolTip);
+    Function            _toolTipFunctionIn;
+    Function            _toolTipFunctionOut;
+    BOOL                _toolTipInstalled;
 }
 
 /*
@@ -202,9 +210,9 @@ var CPViewFlags                     = { },
 
 #if PLATFORM(DOM)
     DOMElementPrototype =  document.createElement("div");
-    
+
     var style = DOMElementPrototype.style;
-    
+
     style.overflow = "hidden";
     style.position = "absolute";
     style.visibility = "visible";
@@ -214,7 +222,7 @@ var CPViewFlags                     = { },
     CachedNotificationCenter = [CPNotificationCenter defaultCenter];
 }
 
-- (void)setupViewFlags
+- (void)_setupViewFlags
 {
     var theClass = [self class],
         classUID = [theClass UID];
@@ -233,6 +241,13 @@ var CPViewFlags                     = { },
     }
 
     _viewClassFlags = CPViewFlags[classUID];
+}
+
+- (void)_setupToolTipHandlers
+{
+    _toolTipInstalled = NO;
+    _toolTipFunctionIn = function(e){[self _fireToolTip];}
+    _toolTipFunctionOut = function(e){[self _invalidateToolTip];};
 }
 
 + (CPSet)keyPathsForValuesAffectingFrame
@@ -262,12 +277,12 @@ var CPViewFlags                     = { },
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super init];
-    
+
     if (self)
     {
         var width = _CGRectGetWidth(aFrame),
             height = _CGRectGetHeight(aFrame);
-        
+
         _subviews = [];
         _registeredDraggedTypes = [CPSet set];
         _registeredDraggedTypesArray = [];
@@ -280,7 +295,7 @@ var CPViewFlags                     = { },
         _autoresizingMask = CPViewNotSizable;
         _autoresizesSubviews = YES;
         _clipsToBounds = YES;
-    
+
         _opacity = 1.0;
         _isHidden = NO;
         _hitTests = YES;
@@ -290,20 +305,136 @@ var CPViewFlags                     = { },
 
         CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, _CGRectGetMinX(aFrame), _CGRectGetMinY(aFrame));
         CPDOMDisplayServerSetStyleSize(_DOMElement, width, height);
-        
+
+        if (typeof(appkit_tag_dom_elements) !== "undefined" && !!appkit_tag_dom_elements)
+            _DOMElement.setAttribute("data-cappuccino-view", [self className]);
+
         _DOMImageParts = [];
         _DOMImageSizes = [];
 #endif
-        
+
         _theme = [CPTheme defaultTheme];
         _themeState = CPThemeStateNormal;
 
-        [self setupViewFlags];
+        [self _setupToolTipHandlers];
+        [self _setupViewFlags];
 
         [self _loadThemeAttributes];
     }
-    
+
     return self;
+}
+
+
+/*!
+    Sets the tooltip for the receiver.
+
+    @param aToolTip the tooltip
+*/
+- (void)setToolTip:(CPString)aToolTip
+{
+    if (_toolTip == aToolTip)
+        return;
+
+    _toolTip = aToolTip;
+
+    if (_toolTip)
+        [self _installToolTipEventHandlers];
+    else
+        [self _uninstallToolTipEventHandlers];
+}
+
+/*! @ignore
+
+    Install the handlers for the tooltip
+*/
+- (void)_installToolTipEventHandlers
+{
+    if (_toolTipInstalled)
+        return;
+
+    if (_DOMElement.addEventListener)
+    {
+        _DOMElement.addEventListener("mouseover", _toolTipFunctionIn, NO);
+        _DOMElement.addEventListener("keypress", _toolTipFunctionOut, NO);
+        _DOMElement.addEventListener("mouseout", _toolTipFunctionOut, NO);
+    }
+    else if (_DOMElement.attachEvent)
+    {
+        _DOMElement.attachEvent("onmouseover", _toolTipFunctionIn);
+        _DOMElement.attachEvent("onkeypress", _toolTipFunctionOut);
+        _DOMElement.attachEvent("onmouseout", _toolTipFunctionOut);
+    }
+    _toolTipInstalled = YES;
+}
+
+/*! @ignore
+
+    Uninstall the handlers for the tooltip
+*/
+- (void)_uninstallToolTipEventHandlers
+{
+    if (!_toolTipInstalled)
+        return;
+
+    if (_DOMElement.removeEventListener)
+    {
+        _DOMElement.removeEventListener("mouseover", _toolTipFunctionIn, NO);
+        _DOMElement.removeEventListener("keypress", _toolTipFunctionOut, NO);
+        _DOMElement.removeEventListener("mouseout", _toolTipFunctionOut, NO);
+    }
+    else if (_DOMElement.detachEvent)
+    {
+        _DOMElement.detachEvent("onmouseover", _toolTipFunctionIn);
+        _DOMElement.detachEvent("onkeypress", _toolTipFunctionOut);
+        _DOMElement.detachEvent("onmouseout", _toolTipFunctionOut);
+    }
+    _toolTipInstalled = NO;
+}
+
+/*! @ignore
+    Starts the tooltip timer.
+*/
+- (void)_fireToolTip
+{
+    if (CPCurrentToolTipTimer)
+    {
+        [CPCurrentToolTipTimer invalidate];
+        if (CPCurrentToolTip)
+            [CPCurrentToolTip close];
+        CPCurrentToolTip = nil;
+    }
+
+    if (_toolTip)
+        CPCurrentToolTipTimer = [CPTimer scheduledTimerWithTimeInterval:CPToolTipDelay target:self selector:@selector(_showToolTip:) userInfo:nil repeats:NO];
+}
+
+/*! @ignore
+    Stop the tooltip timer if any
+*/
+- (void)_invalidateToolTip
+{
+    if (CPCurrentToolTipTimer)
+    {
+        [CPCurrentToolTipTimer invalidate];
+        CPCurrentToolTipTimer = nil;
+    }
+
+    if (CPCurrentToolTip)
+    {
+        [CPCurrentToolTip close];
+        CPCurrentToolTip = nil;
+    }
+}
+
+/*! @ignore
+    Actually shows the tooltip if any
+*/
+- (void)_showToolTip:(CPTimer)aTimer
+{
+    if (CPCurrentToolTip)
+        [CPCurrentToolTip close];
+    CPCurrentToolTip = [_CPToolTip toolTipWithString:_toolTip];
 }
 
 /*!
@@ -350,21 +481,24 @@ var CPViewFlags                     = { },
 - (void)addSubview:(CPView)aSubview positioned:(CPWindowOrderingMode)anOrderingMode relativeTo:(CPView)anotherView
 {
     var index = anotherView ? [_subviews indexOfObjectIdenticalTo:anotherView] : CPNotFound;
-    
+
     // In other words, if no view, then either all the way at the bottom or all the way at the top.
     if (index === CPNotFound)
         index = (anOrderingMode === CPWindowAbove) ? [_subviews count] : 0;
-    
+
     // else, if we have a view, above if above.
     else if (anOrderingMode === CPWindowAbove)
         ++index;
-        
+
     [self _insertSubview:aSubview atIndex:index];
 }
 
 /* @ignore */
 - (void)_insertSubview:(CPView)aSubview atIndex:(int)anIndex
 {
+    if (aSubview === self)
+        [CPException raise:CPInvalidArgumentException reason:"can't add a view as a subview of itself"];
+
     // We will have to adjust the z-index of all views starting at this index.
     var count = _subviews.length;
 
@@ -375,20 +509,20 @@ var CPViewFlags                     = { },
     if (aSubview._superview == self)
     {
         var index = [_subviews indexOfObjectIdenticalTo:aSubview];
-        
+
         // FIXME: should this be anIndex >= count? (last one)
         if (index === anIndex || index === count - 1 && anIndex === count)
             return;
-        
+
         [_subviews removeObjectAtIndex:index];
-        
+
 #if PLATFORM(DOM)
         CPDOMDisplayServerRemoveChild(_DOMElement, aSubview._DOMElement);
 #endif
 
         if (anIndex > index)
             --anIndex;
-        
+
         //We've effectively made the subviews array shorter, so represent that.
         --count;
     }
@@ -397,16 +531,16 @@ var CPViewFlags                     = { },
         // Remove the view from its previous superview.
         [aSubview removeFromSuperview];
 
-        // Set the subview's window to our own. 
+        // Set the subview's window to our own.
         [aSubview _setWindow:_window];
 
         // Notify the subview that it will be moving.
         [aSubview viewWillMoveToSuperview:self];
-    
+
         // Set ourselves as the superview.
         aSubview._superview = self;
     }
-    
+
     if (anIndex === CPNotFound || anIndex >= count)
     {
         _subviews.push(aSubview);
@@ -419,16 +553,16 @@ var CPViewFlags                     = { },
     else
     {
         _subviews.splice(anIndex, 0, aSubview);
-    
+
 #if PLATFORM(DOM)
         // Attach the actual node.
         CPDOMDisplayServerInsertBefore(_DOMElement, aSubview._DOMElement, _subviews[anIndex + 1]._DOMElement);
 #endif
     }
-    
+
     [aSubview setNextResponder:self];
     [aSubview viewDidMoveToSuperview];
-    
+
     [self didAddSubview:aSubview];
 }
 
@@ -453,14 +587,14 @@ var CPViewFlags                     = { },
     [[self window] _dirtyKeyViewLoop];
 
     [_superview willRemoveSubview:self];
-    
+
     [_superview._subviews removeObject:self];
 
 #if PLATFORM(DOM)
         CPDOMDisplayServerRemoveChild(_superview._DOMElement, _DOMElement);
 #endif
     _superview = nil;
-    
+
     [self _setWindow:nil];
 }
 
@@ -473,11 +607,11 @@ var CPViewFlags                     = { },
 {
     if (aSubview._superview != self)
         return;
-    
+
     var index = [_subviews indexOfObjectIdenticalTo:aSubview];
-    
+
     [aSubview removeFromSuperview];
-    
+
     [self _insertSubview:aView atIndex:index];
 }
 
@@ -527,7 +661,7 @@ var CPViewFlags                     = { },
     var addedSubview = nil,
         addedSubviewEnumerator = [addedSubviews objectEnumerator];
 
-    while (addedSubview = [addedSubviewEnumerator nextObject])
+    while ((addedSubview = [addedSubviewEnumerator nextObject]) !== nil)
         [self addSubview:addedSubview];
 
     // If the order is fine, no need to reorder.
@@ -555,7 +689,7 @@ var CPViewFlags                     = { },
 {
     if (_window === aWindow)
         return;
-    
+
     [[self window] _dirtyKeyViewLoop];
 
     // Clear out first responder if we're the first responder and leaving.
@@ -579,7 +713,7 @@ var CPViewFlags                     = { },
 
     while (count--)
         [_subviews[count] _setWindow:aWindow];
-    
+
     [self viewDidMoveToWindow];
 
     [[self window] _dirtyKeyViewLoop];
@@ -592,13 +726,13 @@ var CPViewFlags                     = { },
 - (BOOL)isDescendantOf:(CPView)aView
 {
     var view = self;
-    
+
     do
     {
         if (view == aView)
             return YES;
     } while(view = [view superview])
-    
+
     return NO;
 }
 
@@ -649,20 +783,20 @@ var CPViewFlags                     = { },
 - (CPMenuItem)enclosingMenuItem
 {
     var view = self;
-    
+
     while (view && ![view isKindOfClass:[_CPMenuItemView class]])
         view = [view superview];
-    
+
     if (view)
         return view._menuItem;
-    
+
     return nil;
 /*    var view = self,
         enclosingMenuItem = _enclosingMenuItem;
-    
+
     while (!enclosingMenuItem && (view = view._enclosingMenuItem))
         view = [view superview];
-    
+
     return enclosingMenuItem;*/
 }
 
@@ -708,16 +842,16 @@ var CPViewFlags                     = { },
     Sets the frame size of the receiver to the dimensions and origin of the provided rectangle in the coordinate system
     of the superview. The method also posts an CPViewFrameDidChangeNotification to the notification
     center if the receiver is configured to do so. If the frame is the same as the current frame, the method simply
-    returns (and no notificaion is posted).
+    returns (and no notification is posted).
     @param aFrame the rectangle specifying the new origin and size  of the receiver
 */
 - (void)setFrame:(CGRect)aFrame
 {
     if (_CGRectEqualToRect(_frame, aFrame))
         return;
-        
+
     _inhibitFrameAndBoundsChangedNotifications = YES;
-    
+
     [self setFrameOrigin:aFrame.origin];
     [self setFrameSize:aFrame.size];
 
@@ -747,19 +881,19 @@ var CPViewFlags                     = { },
 }
 
 /*!
-    Moves the center of the receiver's frame to the provided point. The point is defined in the superview's coordinate system. 
-    The method posts a CPViewFrameDidChangeNotification to the default notification center if the receiver 
-    is configured to do so. If the specified origin is the same as the frame's current origin, the method will 
+    Moves the center of the receiver's frame to the provided point. The point is defined in the superview's coordinate system.
+    The method posts a CPViewFrameDidChangeNotification to the default notification center if the receiver
+    is configured to do so. If the specified origin is the same as the frame's current origin, the method will
     simply return (and no notification will be posted).
     @param aPoint the new origin point
 */
 - (void)setCenter:(CGPoint)aPoint
 {
-    [self setFrameOrigin:CGPointMake(aPoint.x - _frame.size.width / 2.0, aPoint.y - _frame.size.height / 2.0)]; 
+    [self setFrameOrigin:CGPointMake(aPoint.x - _frame.size.width / 2.0, aPoint.y - _frame.size.height / 2.0)];
 }
 
 /*!
-    Returns the center of the receiver's frame to the provided point. The point is defined in the superview's coordinate system. 
+    Returns the center of the receiver's frame in the superview's coordinate system.
     @return CGPoint the center point of the receiver's frame
 */
 - (CGPoint)center
@@ -768,16 +902,16 @@ var CPViewFlags                     = { },
 }
 
 /*!
-    Sets the receiver's frame origin to the provided point. The point is defined in the superview's coordinate system. 
-    The method posts a CPViewFrameDidChangeNotification to the default notification center if the receiver 
-    is configured to do so. If the specified origin is the same as the frame's current origin, the method will 
+    Sets the receiver's frame origin to the provided point. The point is defined in the superview's coordinate system.
+    The method posts a CPViewFrameDidChangeNotification to the default notification center if the receiver
+    is configured to do so. If the specified origin is the same as the frame's current origin, the method will
     simply return (and no notification will be posted).
     @param aPoint the new origin point
 */
 - (void)setFrameOrigin:(CGPoint)aPoint
 {
     var origin = _frame.origin;
-    
+
     if (!aPoint || _CGPointEqualToPoint(origin, aPoint))
         return;
 
@@ -803,7 +937,7 @@ var CPViewFlags                     = { },
 - (void)setFrameSize:(CGSize)aSize
 {
     var size = _frame.size;
-    
+
     if (!aSize || _CGSizeEqualToSize(size, aSize))
         return;
 
@@ -823,7 +957,7 @@ var CPViewFlags                     = { },
 
     if (_autoresizesSubviews)
         [self resizeSubviewsWithOldSize:oldSize];
-    
+
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 
@@ -848,11 +982,17 @@ var CPViewFlags                     = { },
 
             if (_backgroundType === BackgroundVerticalThreePartImage)
             {
+                // Make sure to repeat the top and bottom pieces horizontally if they're not the exact width needed.
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], size.width, _DOMImageSizes[0].height);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], size.width, size.height - _DOMImageSizes[0].height - _DOMImageSizes[2].height);
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[2], size.width, _DOMImageSizes[2].height);
             }
             else if (_backgroundType === BackgroundHorizontalThreePartImage)
             {
+                // Make sure to repeat the left and right pieces vertically if they're not the exact height needed.
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], _DOMImageSizes[0].width, size.height);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], size.width - _DOMImageSizes[0].width - _DOMImageSizes[2].width, size.height);
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[2], _DOMImageSizes[2].width, size.height);
             }
             else if (_backgroundType === BackgroundNinePartImage)
             {
@@ -874,7 +1014,7 @@ var CPViewFlags                     = { },
 }
 
 /*!
-    Sets the receiver's bounds. The bounds define the size and location of the receiver inside it's frame. Posts a 
+    Sets the receiver's bounds. The bounds define the size and location of the receiver inside it's frame. Posts a
     CPViewBoundsDidChangeNotification to the default notification center if the receiver is configured to do so.
     @param bounds the new bounds
 */
@@ -882,9 +1022,9 @@ var CPViewFlags                     = { },
 {
     if (_CGRectEqualToRect(_bounds, bounds))
         return;
-        
+
     _inhibitFrameAndBoundsChangedNotifications = YES;
-    
+
     [self setBoundsOrigin:bounds.origin];
     [self setBoundsSize:bounds.size];
 
@@ -922,13 +1062,13 @@ var CPViewFlags                     = { },
 - (void)setBoundsOrigin:(CGPoint)aPoint
 {
     var origin = _bounds.origin;
-    
+
     if (_CGPointEqualToPoint(origin, aPoint))
         return;
-        
+
     origin.x = aPoint.x;
     origin.y = aPoint.y;
-    
+
     if (origin.x != 0 || origin.y != 0)
     {
         _boundsTransform = _CGAffineTransformMakeTranslation(-origin.x, -origin.y);
@@ -939,19 +1079,19 @@ var CPViewFlags                     = { },
         _boundsTransform = nil;
         _inverseBoundsTransform = nil;
     }
-    
+
 #if PLATFORM(DOM)
     var index = _subviews.length;
-    
+
     while (index--)
     {
         var view = _subviews[index],
             origin = view._frame.origin;
-        
+
         CPDOMDisplayServerSetStyleLeftTop(view._DOMElement, _boundsTransform, origin.x, origin.y);
     }
 #endif
-    
+
     if (_postsBoundsChangedNotifications && !_inhibitFrameAndBoundsChangedNotifications)
         [CachedNotificationCenter postNotificationName:CPViewBoundsDidChangeNotification object:self];
 }
@@ -965,7 +1105,7 @@ var CPViewFlags                     = { },
 - (void)setBoundsSize:(CGSize)aSize
 {
     var size = _bounds.size;
-    
+
     if (_CGSizeEqualToSize(size, aSize))
         return;
 
@@ -974,22 +1114,22 @@ var CPViewFlags                     = { },
     if (!_CGSizeEqualToSize(size, frameSize))
     {
         var origin = _bounds.origin;
-        
+
         origin.x /= size.width / frameSize.width;
         origin.y /= size.height / frameSize.height;
     }
-    
+
     size.width = aSize.width;
     size.height = aSize.height;
-    
+
     if (!_CGSizeEqualToSize(size, frameSize))
     {
         var origin = _bounds.origin;
-        
+
         origin.x *= size.width / frameSize.width;
         origin.y *= size.height / frameSize.height;
     }
-    
+
     if (_postsBoundsChangedNotifications && !_inhibitFrameAndBoundsChangedNotifications)
         [CachedNotificationCenter postNotificationName:CPViewBoundsDidChangeNotification object:self];
 }
@@ -1002,8 +1142,8 @@ var CPViewFlags                     = { },
 - (void)resizeWithOldSuperviewSize:(CGSize)aSize
 {
     var mask = [self autoresizingMask];
-    
-    if(mask == CPViewNotSizable)
+
+    if (mask == CPViewNotSizable)
         return;
 
     var frame = _superview._frame,
@@ -1017,7 +1157,7 @@ var CPViewFlags                     = { },
         newFrame.origin.x += dX;
     if (mask & CPViewWidthSizable)
         newFrame.size.width += dX;
-    
+
     if (mask & CPViewMinYMargin)
         newFrame.origin.y += dY;
     if (mask & CPViewHeightSizable)
@@ -1033,7 +1173,7 @@ var CPViewFlags                     = { },
 - (void)resizeSubviewsWithOldSize:(CGSize)aSize
 {
     var count = _subviews.length;
-    
+
     while (count--)
         [_subviews[count] resizeWithOldSuperviewSize:aSize];
 }
@@ -1094,14 +1234,14 @@ var CPViewFlags                     = { },
 - (BOOL)enterFullScreenMode:(CPScreen)aScreen withOptions:(CPDictionary)options
 {
     _fullScreenModeState = _CPViewFullScreenModeStateMake(self);
-    
+
     var fullScreenWindow = [[CPWindow alloc] initWithContentRect:[[CPPlatformWindow primaryPlatformWindow] contentBounds] styleMask:CPBorderlessWindowMask];
-    
+
     [fullScreenWindow setLevel:CPScreenSaverWindowLevel];
     [fullScreenWindow setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-    
+
     var contentView = [fullScreenWindow contentView];
-    
+
     [contentView setBackgroundColor:[CPColor blackColor]];
     [contentView addSubview:self];
 
@@ -1109,11 +1249,11 @@ var CPViewFlags                     = { },
     [self setFrame:CGRectMakeCopy([contentView bounds])];
 
     [fullScreenWindow makeKeyAndOrderFront:self];
-    
+
     [fullScreenWindow makeFirstResponder:self];
-    
+
     _isInFullScreenMode = YES;
-    
+
     return YES;
 }
 
@@ -1139,7 +1279,7 @@ var CPViewFlags                     = { },
     [self setFrame:_fullScreenModeState.frame];
     [self setAutoresizingMask:_fullScreenModeState.autoresizingMask];
     [_fullScreenModeState.superview _insertSubview:self atIndex:_fullScreenModeState.index];
-    
+
     [[self window] orderOut:self];
 }
 
@@ -1159,7 +1299,7 @@ var CPViewFlags                     = { },
 {
     aFlag = !!aFlag;
 
-    if(_isHidden === aFlag)
+    if (_isHidden === aFlag)
         return;
 
 //  FIXME: Should we return to visibility?  This breaks in FireFox, Opera, and IE.
@@ -1175,17 +1315,41 @@ var CPViewFlags                     = { },
 
         if ([view isKindOfClass:[CPView class]])
         {
-            do 
+            do
             {
                if (self == view)
                {
                   [_window makeFirstResponder:[self nextValidKeyView]];
                   break;
-               }   
-            } 
+               }
+            }
             while (view = [view superview]);
         }
+
+        [self _notifyViewDidHide];
     }
+    else
+    {
+        [self _notifyViewDidUnhide];
+    }
+}
+
+- (void)_notifyViewDidHide
+{
+    [self viewDidHide];
+
+    var count = [_subviews count];
+    while (count--)
+        [_subviews[count] _notifyViewDidHide];
+}
+
+- (void)_notifyViewDidUnhide
+{
+    [self viewDidUnhide];
+
+    var count = [_subviews count];
+    while (count--)
+        [_subviews[count] _notifyViewDidUnhide];
 }
 
 /*!
@@ -1214,7 +1378,7 @@ var CPViewFlags                     = { },
 }
 
 /*!
-    Sets the opacity of the receiver. The value must be in the range of 0.0 to 1.0, where 0.0 is 
+    Sets the opacity of the receiver. The value must be in the range of 0.0 to 1.0, where 0.0 is
     completely transparent and 1.0 is completely opaque.
     @param anAlphaValue an alpha value ranging from 0.0 to 1.0.
 */
@@ -1222,11 +1386,11 @@ var CPViewFlags                     = { },
 {
     if (_opacity == anAlphaValue)
         return;
-    
+
     _opacity = anAlphaValue;
-    
+
 #if PLATFORM(DOM)
-    
+
     if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
     {
         if (anAlphaValue === 1.0)
@@ -1252,15 +1416,51 @@ var CPViewFlags                     = { },
 /*!
     Returns \c YES if the receiver is hidden, or one
     of it's ancestor views is hidden. \c NO, otherwise.
-*/   
+*/
 - (BOOL)isHiddenOrHasHiddenAncestor
 {
     var view = self;
-    
+
     while (view && ![view isHidden])
         view = [view superview];
-    
+
     return view !== nil;
+}
+
+/*!
+    Returns YES if the view is not hidden, has no hidden ancestor and doesn't belong to a hidden window.
+*/
+- (BOOL)_isVisible
+{
+    return ![self isHiddenOrHasHiddenAncestor] && [[self window] isVisible];
+}
+
+/*!
+    Called when the return value of isHiddenOrHasHiddenAncestor becomes YES,
+    e.g. when this view becomes hidden due to a setHidden:YES message to
+    itself or to one of its superviews.
+
+    Note: in the current implementation, viewDidHide may be called multiple
+    times if additional superviews are hidden, even if
+    isHiddenOrHasHiddenAncestor was already YES.
+*/
+- (void)viewDidHide
+{
+
+}
+
+/*!
+    Called when the return value of isHiddenOrHasHiddenAncestor becomes NO,
+    e.g. when this view stops being hidden due to a setHidden:NO message to
+    itself or to one of its superviews.
+
+    Note: in the current implementation, viewDidUnhide may be called multiple
+    times if additional superviews are unhidden, even if
+    isHiddenOrHasHiddenAncestor was already NO.
+*/
+- (void)viewDidUnhide
+{
+
 }
 
 /*!
@@ -1268,7 +1468,7 @@ var CPViewFlags                     = { },
     Returns \c YES by default.
     @return \c YES, if the view object accepts first mouse-down event. \c NO, otherwise.
 */
-//FIXME: should be NO by default? 
+//FIXME: should be NO by default?
 - (BOOL)acceptsFirstMouse:(CPEvent)anEvent
 {
     return YES;
@@ -1299,9 +1499,9 @@ var CPViewFlags                     = { },
 */
 - (CPView)hitTest:(CPPoint)aPoint
 {
-    if(_isHidden || !_hitTests || !CPRectContainsPoint(_frame, aPoint))
+    if (_isHidden || !_hitTests || !CPRectContainsPoint(_frame, aPoint))
         return nil;
-    
+
     var view = nil,
         i = _subviews.length,
         adjustedPoint = _CGPointMake(aPoint.x - _CGRectGetMinX(_frame), aPoint.y - _CGRectGetMinY(_frame));
@@ -1363,6 +1563,9 @@ var CPViewFlags                     = { },
 {
     if (_backgroundColor == aColor)
         return;
+
+    if (aColor == [CPNull null])
+        aColor = nil;
 
     _backgroundColor = aColor;
 
@@ -1464,7 +1667,7 @@ var CPViewFlags                     = { },
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[5], _DOMImageSizes[5].width, height);
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[7], width, _DOMImageSizes[7].height);
 
-            CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[0], NULL, 0.0, 0.0);            
+            CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[0], NULL, 0.0, 0.0);
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[1], NULL, _DOMImageSizes[0].width, 0.0);
             CPDOMDisplayServerSetStyleRightTop(_DOMImageParts[2], NULL, 0.0, 0.0);
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[3], NULL, 0.0, _DOMImageSizes[1].height);
@@ -1472,22 +1675,28 @@ var CPViewFlags                     = { },
             CPDOMDisplayServerSetStyleRightTop(_DOMImageParts[5], NULL, 0.0, _DOMImageSizes[1].height);
             CPDOMDisplayServerSetStyleLeftBottom(_DOMImageParts[6], NULL, 0.0, 0.0);
             CPDOMDisplayServerSetStyleLeftBottom(_DOMImageParts[7], NULL, _DOMImageSizes[6].width, 0.0);
-            CPDOMDisplayServerSetStyleRightBottom(_DOMImageParts[8], NULL, 0.0, 0.0);      
+            CPDOMDisplayServerSetStyleRightBottom(_DOMImageParts[8], NULL, 0.0, 0.0);
         }
         else if (_backgroundType == BackgroundVerticalThreePartImage)
-        {    
+        {
+            // Make sure to repeat the top and bottom pieces horizontally if they're not the exact width needed.
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], frameSize.width, _DOMImageSizes[0].height);
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], frameSize.width, frameSize.height - _DOMImageSizes[0].height - _DOMImageSizes[2].height);
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[2], frameSize.width, _DOMImageSizes[2].height);
 
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[0], NULL, 0.0, 0.0);
-            CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[1], NULL, 0.0, _DOMImageSizes[0].height);        
+            CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[1], NULL, 0.0, _DOMImageSizes[0].height);
             CPDOMDisplayServerSetStyleLeftBottom(_DOMImageParts[2], NULL, 0.0, 0.0);
         }
         else if (_backgroundType == BackgroundHorizontalThreePartImage)
         {
+            // Make sure to repeat the left and right pieces vertically if they're not the exact height needed.
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], _DOMImageSizes[0].width, frameSize.height);
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], frameSize.width - _DOMImageSizes[0].width - _DOMImageSizes[2].width, frameSize.height);
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[2], _DOMImageSizes[2].width, frameSize.height);
 
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[0], NULL, 0.0, 0.0);
-            CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[1], NULL, _DOMImageSizes[0].width, 0.0);        
+            CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[1], NULL, _DOMImageSizes[0].width, 0.0);
             CPDOMDisplayServerSetStyleRightTop(_DOMImageParts[2], NULL, 0.0, 0.0);
         }
     }
@@ -1515,6 +1724,16 @@ var CPViewFlags                     = { },
 }
 
 /*!
+    Converts the point from the base coordinate system to the receiver’s coordinate system.
+    @param aPoint A point specifying a location in the base coordinate system
+    @return The point converted to the receiver’s base coordinate system
+*/
+- (CGPoint)convertPointFromBase:(CGPoint)aPoint
+{
+    return CGPointApplyAffineTransform(aPoint, _CPViewGetTransform(nil, self));
+}
+
+/*!
     Converts \c aPoint from the receiver's coordinate space to the coordinate space of \c aView.
     @param aPoint the point to convert
     @param aView the coordinate space to which the point will be converted
@@ -1523,6 +1742,16 @@ var CPViewFlags                     = { },
 - (CGPoint)convertPoint:(CGPoint)aPoint toView:(CPView)aView
 {
     return CGPointApplyAffineTransform(aPoint, _CPViewGetTransform(self, aView));
+}
+
+/*!
+    Converts the point from the receiver’s coordinate system to the base coordinate system.
+    @param aPoint A point specifying a location in the coordinate system of the receiver
+    @return The point converted to the base coordinate system
+*/
+- (CGPoint)convertPointToBase:(CGPoint)aPoint
+{
+    return CGPointApplyAffineTransform(aPoint, _CPViewGetTransform(self, nil));
 }
 
 /*!
@@ -1559,6 +1788,16 @@ var CPViewFlags                     = { },
 }
 
 /*!
+    Converts the rectangle from the base coordinate system to the receiver’s coordinate system.
+    @param aRect A rectangle specifying a location in the base coordinate system
+    @return The rectangle converted to the receiver’s base coordinate system
+*/
+- (CGRect)convertRectFromBase:(CGRect)aRect
+{
+    return CGRectApplyAffineTransform(aRect, _CPViewGetTransform(nil, self));
+}
+
+/*!
     Converts \c aRect from the receiver's coordinate space to \c aView's coordinate space.
     @param aRect the rectangle to convert
     @param aView the coordinate space to which the rectangle will be converted
@@ -1567,6 +1806,16 @@ var CPViewFlags                     = { },
 - (CGRect)convertRect:(CGRect)aRect toView:(CPView)aView
 {
     return CGRectApplyAffineTransform(aRect, _CPViewGetTransform(self, aView));
+}
+
+/*!
+    Converts the rectangle from the receiver’s coordinate system to the base coordinate system.
+    @param aRect  A rectangle specifying a location in the coordinate system of the receiver
+    @return The rectangle converted to the base coordinate system
+*/
+- (CGRect)convertRectToBase:(CGRect)aRect
+{
+    return CGRectApplyAffineTransform(aRect, _CPViewGetTransform(self, nil));
 }
 
 /*!
@@ -1643,7 +1892,7 @@ setBoundsOrigin:
     @param aLocation the lower-left corner coordinate of \c anImage
     @param mouseOffset the distance from the \c -mouseDown: location and the current location
     @param anEvent the \c -mouseDown: that triggered the drag
-    @param aPastebaord the pasteboard that holds the drag data
+    @param aPasteboard the pasteboard that holds the drag data
     @param aSourceObject the drag operation controller
     @param slideBack Whether the image should 'slide back' if the drag is rejected
 */
@@ -1658,7 +1907,7 @@ setBoundsOrigin:
     @param aLocation the top-left corner coordinate of \c aView
     @param mouseOffset the distance from the \c -mouseDown: location and the current location
     @param anEvent the \c -mouseDown: that triggered the drag
-    @param aPastebaord the pasteboard that holds the drag data
+    @param aPasteboard the pasteboard that holds the drag data
     @param aSourceObject the drag operation controller
     @param slideBack Whether the view should 'slide back' if the drag is rejected
 */
@@ -1679,7 +1928,7 @@ setBoundsOrigin:
     var theWindow = [self window];
 
     [theWindow _noteUnregisteredDraggedTypes:_registeredDraggedTypes];
-    [_registeredDraggedTypes addObjectsFromArray:pasteboardTypes]
+    [_registeredDraggedTypes addObjectsFromArray:pasteboardTypes];
     [theWindow _noteRegisteredDraggedTypes:_registeredDraggedTypes];
 
     _registeredDraggedTypesArray = nil;
@@ -1783,20 +2032,25 @@ setBoundsOrigin:
 - (void)displayRect:(CPRect)aRect
 {
     [self viewWillDraw];
-    
+
     [self displayRectIgnoringOpacity:aRect inContext:nil];
-    
+
     _dirtyRect = NULL;
 }
 
 - (void)displayRectIgnoringOpacity:(CGRect)aRect inContext:(CPGraphicsContext)aGraphicsContext
 {
+    if ([self isHidden])
+        return;
+
+#if PLATFORM(DOM)
     [self lockFocus];
-    
+
     CGContextClearRect([[CPGraphicsContext currentContext] graphicsPort], aRect);
-    
+
     [self drawRect:aRect];
     [self unlockFocus];
+#endif
 }
 
 - (void)viewWillDraw
@@ -1811,18 +2065,18 @@ setBoundsOrigin:
     if (!_graphicsContext)
     {
         var graphicsPort = CGBitmapGraphicsContextCreate();
-        
+
         _DOMContentsElement = graphicsPort.DOMElement;
-        
+
         _DOMContentsElement.style.zIndex = -100;
 
         _DOMContentsElement.style.overflow = "hidden";
         _DOMContentsElement.style.position = "absolute";
         _DOMContentsElement.style.visibility = "visible";
-        
+
         _DOMContentsElement.width = ROUND(_CGRectGetWidth(_frame));
         _DOMContentsElement.height = ROUND(_CGRectGetHeight(_frame));
-        
+
         _DOMContentsElement.style.top = "0px";
         _DOMContentsElement.style.left = "0px";
         _DOMContentsElement.style.width = ROUND(_CGRectGetWidth(_frame)) + "px";
@@ -1833,9 +2087,9 @@ setBoundsOrigin:
 #endif
         _graphicsContext = [CPGraphicsContext graphicsContextWithGraphicsPort:graphicsPort flipped:YES];
     }
-    
+
     [CPGraphicsContext setCurrentContext:_graphicsContext];
-    
+
     CGContextSaveGState([_graphicsContext graphicsPort]);
 }
 
@@ -1845,7 +2099,7 @@ setBoundsOrigin:
 - (void)unlockFocus
 {
     CGContextRestoreGState([_graphicsContext graphicsPort]);
-    
+
     [CPGraphicsContext setCurrentContext:nil];
 }
 
@@ -1864,7 +2118,7 @@ setBoundsOrigin:
     if (_needsLayout)
     {
         _needsLayout = NO;
-    
+
         [self layoutSubviews];
     }
 }
@@ -1888,7 +2142,7 @@ setBoundsOrigin:
 {
     if (!_superview)
         return _bounds;
-    
+
     return CGRectIntersection([self convertRect:[_superview visibleRect] fromView:_superview], _bounds);
 }
 
@@ -1899,7 +2153,7 @@ setBoundsOrigin:
     var superview = _superview,
         clipViewClass = [CPClipView class];
 
-    while(superview && ![superview isKindOfClass:clipViewClass]) 
+    while (superview && ![superview isKindOfClass:clipViewClass])
         superview = superview._superview;
 
     return superview;
@@ -1912,10 +2166,10 @@ setBoundsOrigin:
 - (void)scrollPoint:(CGPoint)aPoint
 {
     var clipView = [self _enclosingClipView];
-    
+
     if (!clipView)
         return;
-    
+
     [clipView scrollToPoint:[self convertPoint:aPoint toView:clipView]];
 }
 
@@ -1927,35 +2181,35 @@ setBoundsOrigin:
 - (BOOL)scrollRectToVisible:(CGRect)aRect
 {
     var visibleRect = [self visibleRect];
-    
+
     // Make sure we have a rect that exists.
     aRect = CGRectIntersection(aRect, _bounds);
-    
+
     // If aRect is empty or is already visible then no scrolling required.
     if (_CGRectIsEmpty(aRect) || CGRectContainsRect(visibleRect, aRect))
         return NO;
 
     var enclosingClipView = [self _enclosingClipView];
-    
+
     // If we're not in a clip view, then there isn't much we can do.
     if (!enclosingClipView)
         return NO;
-    
+
     var scrollPoint = _CGPointMakeCopy(visibleRect.origin);
-            
+
     // One of the following has to be true since our current visible rect didn't contain aRect.
     if (_CGRectGetMinX(aRect) <= _CGRectGetMinX(visibleRect))
         scrollPoint.x = _CGRectGetMinX(aRect);
     else if (_CGRectGetMaxX(aRect) > _CGRectGetMaxX(visibleRect))
         scrollPoint.x += _CGRectGetMaxX(aRect) - _CGRectGetMaxX(visibleRect);
-    
+
     if (_CGRectGetMinY(aRect) <= _CGRectGetMinY(visibleRect))
         scrollPoint.y = CGRectGetMinY(aRect);
     else if (_CGRectGetMaxY(aRect) > _CGRectGetMaxY(visibleRect))
         scrollPoint.y += _CGRectGetMaxY(aRect) - _CGRectGetMaxY(visibleRect);
-    
+
     [enclosingClipView scrollToPoint:CGPointMake(scrollPoint.x, scrollPoint.y)];
-    
+
     return YES;
 }
 
@@ -1995,7 +2249,7 @@ setBoundsOrigin:
     var superview = _superview,
         scrollViewClass = [CPScrollView class];
 
-    while(superview && ![superview isKindOfClass:scrollViewClass]) 
+    while (superview && ![superview isKindOfClass:scrollViewClass])
         superview = superview._superview;
 
     return superview;
@@ -2003,7 +2257,7 @@ setBoundsOrigin:
 
 /*!
     Scrolls the clip view to a specified point
-    @param the clip view to scoll
+    @param the clip view to scroll
     @param the point to scroll to
 */
 - (void)scrollClipView:(CPClipView)aClipView toPoint:(CGPoint)aPoint
@@ -2020,10 +2274,61 @@ setBoundsOrigin:
 {
 }
 
+/*!
+    Return yes if the receiver is in a live-resize operation.
+*/
+- (BOOL)inLiveResize
+{
+    return _inLiveResize;
+}
+
+/*!
+    Not implemented.
+
+    A view will be sent this message before a window begins a resize operation. The
+    receiver might choose to simplify its drawing operations during a live resize
+    for speed.
+
+    Subclasses should call super.
+*/
+- (void)viewWillStartLiveResize
+{
+    _inLiveResize = YES;
+}
+
+/*!
+    Not implemented.
+
+    A view will be sent this message after a window finishes a resize operation. The
+    receiver which simplified its drawing operations in viewWillStartLiveResize might
+    stop doing so now. Note the view might no longer be in a window, so use
+    [self setNeedsDisplay:YES] if a final non-simplified redraw is required.
+
+    Subclasses should call super.
+*/
+- (void)viewDidEndLiveResize
+{
+    _inLiveResize = NO;
+}
+
 @end
 
 @implementation CPView (KeyView)
 
+/*!
+    Overridden by subclasses to handle a key equivalent.
+
+    If the receiver’s key equivalent is the same as the characters of the key-down event theEvent,
+    as returned by \ref CPEvent::charactersIgnoringModifiers "[anEvent charactersIgnoringModifiers]",
+    the receiver should take the appropriate action and return \c YES. Otherwise, it should return
+    the result of invoking super’s implementation. The default implementation of this method simply
+    passes the message down the view hierarchy (from superviews to subviews)
+    and returns \c NO if none of the receiver’s subviews responds \c YES.
+
+    @param anEvent An event object that represents the key equivalent pressed
+    @return \c YES if theEvent is a key equivalent that the receiver handled,
+            \c NO if it is not a key equivalent that it should handle.
+*/
 - (BOOL)performKeyEquivalent:(CPEvent)anEvent
 {
     var count = [_subviews count];
@@ -2048,10 +2353,17 @@ setBoundsOrigin:
 
 - (CPView)nextValidKeyView
 {
-    var result = [self nextKeyView];
+    var result = [self nextKeyView],
+        firstResult = result;
 
     while (result && ![result canBecomeKeyView])
+    {
         result = [result nextKeyView];
+
+        // Cycled.
+        if (result === firstResult)
+            return nil;
+    }
 
     return result;
 }
@@ -2063,23 +2375,38 @@ setBoundsOrigin:
 
 - (CPView)previousValidKeyView
 {
-    var result = [self previousKeyView];
+    var result = [self previousKeyView],
+        firstResult = result;
 
     while (result && ![result canBecomeKeyView])
+    {
         result = [result previousKeyView];
+
+        // Cycled.
+        if (result === firstResult)
+            return nil;
+    }
 
     return result;
 }
 
 - (void)_setPreviousKeyView:(CPView)previous
 {
-    _previousKeyView = previous;
+    if ([previous isEqual:self])
+        _previousKeyView = nil;
+    else
+        _previousKeyView = previous;
 }
 
 - (void)setNextKeyView:(CPView)next
 {
-    _nextKeyView = next;
-    [_nextKeyView _setPreviousKeyView:self];
+    if ([next isEqual:self])
+        _nextKeyView = nil;
+    else
+    {
+        _nextKeyView = next;
+        [_nextKeyView _setPreviousKeyView:self];
+    }
 }
 
 @end
@@ -2093,7 +2420,7 @@ setBoundsOrigin:
 {
     if (_layer == aLayer)
         return;
-    
+
     if (_layer)
     {
         _layer._owningView = nil;
@@ -2101,18 +2428,18 @@ setBoundsOrigin:
         _DOMElement.removeChild(_layer._DOMElement);
 #endif
     }
-    
+
     _layer = aLayer;
-    
+
     if (_layer)
     {
         var bounds = CGRectMakeCopy([self bounds]);
-        
+
         [_layer _setOwningView:self];
-        
+
 #if PLATFORM(DOM)
         _layer._DOMElement.style.zIndex = 100;
-        
+
         _DOMElement.appendChild(_layer._DOMElement);
 #endif
     }
@@ -2156,6 +2483,10 @@ setBoundsOrigin:
 
 - (BOOL)hasThemeState:(CPThemeState)aState
 {
+    // Because CPThemeStateNormal is defined as 0 we need to check for it explicitly here
+    if (aState === CPThemeStateNormal && _themeState === CPThemeStateNormal)
+        return YES;
+
     return !!(_themeState & ((typeof aState === "string") ? CPThemeState(aState) : aState));
 }
 
@@ -2191,9 +2522,27 @@ setBoundsOrigin:
 
 #pragma mark Theme Attributes
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return nil;
+}
+
+- (CPString)themeClass
+{
+    if (_themeClass)
+        return _themeClass;
+
+    return [[self class] defaultThemeClass];
+}
+
+- (void)setThemeClass:(CPString)theClass
+{
+    _themeClass = theClass;
+
+    [self _loadThemeAttributes];
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 + (CPDictionary)themeAttributes
@@ -2224,7 +2573,7 @@ setBoundsOrigin:
         }
 
         var attributeDictionary = [theClass themeAttributes];
-        
+
         if (!attributeDictionary)
             continue;
 
@@ -2254,17 +2603,17 @@ setBoundsOrigin:
         return;
 
     var theme = [self theme],
-        themeClass = [theClass themeClass];
+        themeClass = [self themeClass];
 
     _themeAttributes = {};
-    
+
     while (count--)
     {
         var attributeName = attributes[count--],
             attribute = [[_CPThemeAttribute alloc] initWithName:attributeName defaultValue:attributes[count]];
 
-        [attribute setParentAttribute:[theme _attributeWithName:attributeName forClass:themeClass]];
-        
+        [attribute setParentAttribute:[theme attributeWithName:attributeName forClass:themeClass]];
+
         _themeAttributes[attributeName] = attribute;
     }
 }
@@ -2273,9 +2622,9 @@ setBoundsOrigin:
 {
     if (_theme === aTheme)
         return;
-    
+
     _theme = aTheme;
-        
+
     [self viewDidChangeTheme];
 }
 
@@ -2290,11 +2639,11 @@ setBoundsOrigin:
         return;
 
     var theme = [self theme],
-        themeClass = [[self class] themeClass];
+        themeClass = [self themeClass];
 
     for (var attributeName in _themeAttributes)
         if (_themeAttributes.hasOwnProperty(attributeName))
-            [_themeAttributes[attributeName] setParentAttribute:[theme _attributeWithName:attributeName forClass:themeClass]];
+            [_themeAttributes[attributeName] setParentAttribute:[theme attributeWithName:attributeName forClass:themeClass]];
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
@@ -2372,6 +2721,55 @@ setBoundsOrigin:
     return [_themeAttributes[aName] valueForState:_themeState];
 }
 
+- (BOOL)hasThemeAttribute:(CPString)aName
+{
+    return (_themeAttributes && _themeAttributes[aName] !== undefined);
+}
+
+/*!
+    Registers theme values encoded in an array at runtime. The format of the data in the array
+    is the same as that used by ThemeDescriptors.j, with the exception that you need to use
+    CPColorWithImages() in place of PatternColor(). For more information see the comments
+    at the top of ThemeDescriptors.j.
+
+    @param themeValues array of theme values
+*/
+- (void)registerThemeValues:(CPArray)themeValues
+{
+    for (var i = 0; i < themeValues.length; ++i)
+    {
+        var attributeValueState = themeValues[i],
+            attribute = attributeValueState[0],
+            value = attributeValueState[1],
+            state = attributeValueState[2];
+
+        if (state)
+            [self setValue:value forThemeAttribute:attribute inState:state];
+        else
+            [self setValue:value forThemeAttribute:attribute];
+    }
+}
+
+/*!
+    Registers theme values encoded in an array at runtime. The format of the data in the array
+    is the same as that used by ThemeDescriptors.j, with the exception that you need to use
+    CPColorWithImages() in place of PatternColor(). The values in \c inheritedValues are
+    registered first, then those in \c themeValues override/augment the inherited values.
+    For more information see the comments at the top of ThemeDescriptors.j.
+
+    @param themeValues array of base theme values
+    @param inheritedValues array of overridden/additional theme values
+*/
+- (void)registerThemeValues:(CPArray)themeValues inherit:(CPArray)inheritedValues
+{
+    // Register inherited values first, then override those with the subtheme values.
+    if (inheritedValues)
+        [self registerThemeValues:inheritedValues];
+
+    if (themeValues)
+        [self registerThemeValues:themeValues];
+}
+
 - (CPView)createEphemeralSubviewNamed:(CPString)aViewName
 {
     return nil;
@@ -2382,7 +2780,7 @@ setBoundsOrigin:
     return _CGRectMakeZero();
 }
 
-- (CPView)layoutEphemeralSubviewNamed:(CPString)aViewName 
+- (CPView)layoutEphemeralSubviewNamed:(CPString)aViewName
                            positioned:(CPWindowOrderingMode)anOrderingMode
       relativeToEphemeralSubviewNamed:(CPString)relativeToViewName
 {
@@ -2394,7 +2792,7 @@ setBoundsOrigin:
 
     var frame = [self rectForEphemeralSubviewNamed:aViewName];
 
-    if (frame && !_CGRectIsEmpty(frame))
+    if (frame)
     {
         if (!_ephemeralSubviewsForNames[aViewName])
         {
@@ -2420,6 +2818,14 @@ setBoundsOrigin:
     return _ephemeralSubviewsForNames[aViewName];
 }
 
+- (CPView)ephemeralSubviewNamed:(CPString)aViewName
+{
+    if (!_ephemeralSubviewsForNames)
+        return nil;
+
+    return (_ephemeralSubviewsForNames[aViewName] || nil);
+}
+
 @end
 
 var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
@@ -2428,11 +2834,13 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewBoundsKey                 = @"CPViewBoundsKey",
     CPViewFrameKey                  = @"CPViewFrameKey",
     CPViewHitTestsKey               = @"CPViewHitTestsKey",
+    CPViewToolTipKey                = @"CPViewToolTipKey",
     CPViewIsHiddenKey               = @"CPViewIsHiddenKey",
     CPViewOpacityKey                = @"CPViewOpacityKey",
     CPViewSubviewsKey               = @"CPViewSubviewsKey",
     CPViewSuperviewKey              = @"CPViewSuperviewKey",
     CPViewTagKey                    = @"CPViewTagKey",
+    CPViewThemeClassKey             = @"CPViewThemeClassKey",
     CPViewThemeStateKey             = @"CPViewThemeStateKey",
     CPViewWindowKey                 = @"CPViewWindowKey",
     CPViewNextKeyViewKey            = @"CPViewNextKeyViewKey",
@@ -2447,9 +2855,9 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 */
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    // We create the DOMElement "early" because there is a chance that we 
-    // will decode our superview before we are done decoding, at which point 
-    // we have to have an element to place in the tree.  Perhaps there is 
+    // We create the DOMElement "early" because there is a chance that we
+    // will decode our superview before we are done decoding, at which point
+    // we have to have an element to place in the tree.  Perhaps there is
     // a more "elegant" way to do this...?
 #if PLATFORM(DOM)
     _DOMElement = DOMElementPrototype.cloneNode(false);
@@ -2460,25 +2868,34 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     _bounds = [aCoder decodeRectForKey:CPViewBoundsKey];
 
     self = [super initWithCoder:aCoder];
-    
+
     if (self)
     {
         // We have to manually check because it may be 0, so we can't use ||
         _tag = [aCoder containsValueForKey:CPViewTagKey] ? [aCoder decodeIntForKey:CPViewTagKey] : -1;
-        
+
         _window = [aCoder decodeObjectForKey:CPViewWindowKey];
         _subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey] || [];
         _superview = [aCoder decodeObjectForKey:CPViewSuperviewKey];
-        
+
         // FIXME: Should we encode/decode this?
         _registeredDraggedTypes = [CPSet set];
         _registeredDraggedTypesArray = [];
 
-        _autoresizingMask = [aCoder decodeIntForKey:CPViewAutoresizingMaskKey] || CPViewNotSizable;
+        // Other views (CPBox) might set an autoresizes mask on their subviews before it is actually decoded.
+        // We make sure we don't override the value by checking if it was already set.
+        if (_autoresizingMask === nil)
+            _autoresizingMask = [aCoder decodeIntForKey:CPViewAutoresizingMaskKey] || CPViewNotSizable;
+
         _autoresizesSubviews = ![aCoder containsValueForKey:CPViewAutoresizesSubviewsKey] || [aCoder decodeBoolForKey:CPViewAutoresizesSubviewsKey];
 
-        _hitTests = ![aCoder containsValueForKey:CPViewHitTestsKey] || [aCoder decodeObjectForKey:CPViewHitTestsKey];
-    
+        _hitTests = ![aCoder containsValueForKey:CPViewHitTestsKey] || [aCoder decodeBoolForKey:CPViewHitTestsKey];
+
+        [self _setupToolTipHandlers];
+        _toolTip = [aCoder decodeObjectForKey:CPViewToolTipKey];
+        if (_toolTip)
+            [self _installToolTipEventHandlers];
+
         // DOM SETUP
 #if PLATFORM(DOM)
         _DOMImageParts = [];
@@ -2486,10 +2903,10 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, _CGRectGetMinX(_frame), _CGRectGetMinY(_frame));
         CPDOMDisplayServerSetStyleSize(_DOMElement, _CGRectGetWidth(_frame), _CGRectGetHeight(_frame));
-        
+
         var index = 0,
             count = _subviews.length;
-    
+
         for (; index < count; ++index)
         {
             CPDOMDisplayServerAppendChild(_DOMElement, _subviews[index]._DOMElement);
@@ -2497,10 +2914,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         }
 #endif
 
-        if ([aCoder containsValueForKey:CPViewIsHiddenKey])
-            [self setHidden:[aCoder decodeBoolForKey:CPViewIsHiddenKey]];
-        else
-            _isHidden = NO;
+        [self setHidden:[aCoder decodeBoolForKey:CPViewIsHiddenKey]];
 
         if ([aCoder containsValueForKey:CPViewOpacityKey])
             [self setAlphaValue:[aCoder decodeIntForKey:CPViewOpacityKey]];
@@ -2508,15 +2922,15 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
             _opacity = 1.0;
 
         [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
-
-        [self setupViewFlags];
+        [self _setupViewFlags];
 
         _theme = [CPTheme defaultTheme];
+        _themeClass = [aCoder decodeObjectForKey:CPViewThemeClassKey];
         _themeState = CPThemeState([aCoder decodeIntForKey:CPViewThemeStateKey]);
         _themeAttributes = {};
 
         var theClass = [self class],
-            themeClass = [theClass themeClass],
+            themeClass = [self themeClass],
             attributes = [theClass _themeAttributes],
             count = attributes.length;
 
@@ -2541,7 +2955,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
-    
+
     if (_tag !== -1)
         [aCoder encodeInt:_tag forKey:CPViewTagKey];
 
@@ -2589,16 +3003,20 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     if (_isHidden)
         [aCoder encodeBool:_isHidden forKey:CPViewIsHiddenKey];
 
+    if (_toolTip)
+        [aCoder encodeObject:_toolTip forKey:CPViewToolTipKey];
+
     var nextKeyView = [self nextKeyView];
 
-    if (nextKeyView !== nil)
+    if (nextKeyView !== nil && ![nextKeyView isEqual:self])
         [aCoder encodeConditionalObject:nextKeyView forKey:CPViewNextKeyViewKey];
 
     var previousKeyView = [self previousKeyView];
 
-    if (previousKeyView !== nil)
+    if (previousKeyView !== nil && ![previousKeyView isEqual:self])
         [aCoder encodeConditionalObject:previousKeyView forKey:CPViewPreviousKeyViewKey];
 
+    [aCoder encodeObject:[self themeClass] forKey:CPViewThemeClassKey];
     [aCoder encodeInt:CPThemeStateName(_themeState) forKey:CPViewThemeStateKey];
 
     for (var attributeName in _themeAttributes)
@@ -2611,9 +3029,9 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 var _CPViewFullScreenModeStateMake = function(aView)
 {
     var superview = aView._superview;
-    
+
     return { autoresizingMask:aView._autoresizingMask, frame:CGRectMakeCopy(aView._frame), index:(superview ? [superview._subviews indexOfObjectIdenticalTo:aView] : 0), superview:superview };
-}
+};
 
 var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
 {
@@ -2621,93 +3039,95 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
         sameWindow = YES,
         fromWindow = nil,
         toWindow = nil;
-    
+
     if (fromView)
     {
         var view = fromView;
-        
+
         // FIXME: This doesn't handle the case when the outside views are equal.
-        // If we have a fromView, "climb up" the view tree until 
+        // If we have a fromView, "climb up" the view tree until
         // we hit the root node or we hit the toLayer.
         while (view && view != toView)
         {
             var frame = view._frame;
-            
+
             transform.tx += _CGRectGetMinX(frame);
             transform.ty += _CGRectGetMinY(frame);
-            
+
             if (view._boundsTransform)
             {
                 _CGAffineTransformConcatTo(transform, view._boundsTransform, transform);
             }
-            
+
             view = view._superview;
         }
-        
+
         // If we hit toView, then we're done.
         if (view === toView)
             return transform;
-        
+
         else if (fromView && toView)
         {
             fromWindow = [fromView window];
             toWindow = [toView window];
-            
+
             if (fromWindow && toWindow && fromWindow !== toWindow)
             {
                 sameWindow = NO;
-                
+
                 var frame = [fromWindow frame];
-                
+
                 transform.tx += _CGRectGetMinX(frame);
                 transform.ty += _CGRectGetMinY(frame);
             }
         }
     }
-    
+
     // FIXME: For now we can do things this way, but eventually we need to do them the "hard" way.
     var view = toView;
-    
+
     while (view)
     {
         var frame = view._frame;
-            
+
         transform.tx -= _CGRectGetMinX(frame);
         transform.ty -= _CGRectGetMinY(frame);
-        
+
         if (view._boundsTransform)
         {
             _CGAffineTransformConcatTo(transform, view._inverseBoundsTransform, transform);
         }
-        
+
         view = view._superview;
     }
-    
+
     if (!sameWindow)
     {
         var frame = [toWindow frame];
-            
+
         transform.tx -= _CGRectGetMinX(frame);
         transform.ty -= _CGRectGetMinY(frame);
     }
 /*    var views = [],
         view = toView;
-    
+
     while (view)
     {
         views.push(view);
         view = view._superview;
     }
-    
+
     var index = views.length;
-    
+
     while (index--)
     {
         var frame = views[index]._frame;
-            
+
         transform.tx -= _CGRectGetMinX(frame);
         transform.ty -= _CGRectGetMinY(frame);
     }*/
-    
+
     return transform;
-}
+};
+
+

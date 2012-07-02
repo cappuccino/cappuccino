@@ -16,7 +16,9 @@
 
 @implementation CPKeyValueBindingTest : OJTestCase
 {
-    id      FOO;
+    id                  FOO;
+
+    CPArrayController   arrayController @accessors;
 }
 
 - (void)testExposingBindings
@@ -39,12 +41,11 @@
 
     [binder setCheese:@"banana"];
 
-    [self assertTrue:[self valueForKey:@"FOO"]==="banana" message:"Bound value should have been updated to banana, was "+FOO];
+    [self assertTrue:[self valueForKey:@"FOO"] === "banana" message:"Bound value should have been updated to banana, was " + FOO];
 }
 
 - (void)testBindOptions
 {
-
     var bindTesterA = [BindingTestWithBool new],
         bindTesterB = [BindingTestWithBool new];
 
@@ -112,6 +113,10 @@
     [bindTesterA setStringValue:nil];
     [self assert:nil equals:[bindTesterA stringValue] message:"A value reset (placeholder)"];
     [self assert:@"placeholder" equals:[bindTesterB stringValue] message:"B value updated (placeholder)"];
+
+    [bindTesterA setStringValue:[CPNull null]];
+    [self assert:[CPNull null] equals:[bindTesterA stringValue] message:"A value reset (placeholder)"];
+    [self assert:@"placeholder" equals:[bindTesterB stringValue] message:"B value updated (placeholder)"];
 }
 
 - (void)testControl
@@ -164,35 +169,162 @@
     [tableColumn bind:@"value" toObject:arrayController withKeyPath:@"arrangedObjects.valueA" options:nil];
 
     // Reset these if they were read during initialization.
-    for(var i=0; i<[content count];i++)
+    for (var i = 0; i < [content count]; i++)
         [content[i] setAccesses:0];
     var testView = [DataViewTester new];
-    [tableColumn prepareDataView:testView forRow:0];
+    [tableColumn _prepareDataView:testView forRow:0];
     [self assert:'1' equals:testView.lastValue];
-    [self assert:'value' equals:testView.lastKey];
+    [self assert:'objectValue' equals:testView.lastKey];
 
-    [tableColumn prepareDataView:testView forRow:1];
+    [tableColumn _prepareDataView:testView forRow:1];
     [self assert:'3' equals:testView.lastValue];
-    [self assert:'value' equals:testView.lastKey];
+    [self assert:'objectValue' equals:testView.lastKey];
 
     // Test that CPTableColumn is optimized to only read one value per row.
-    [self assert:0 equals:[content[2] accesses] message:"row 2 used "+[content[2] accesses]+" accesses but was never prepared"];
-    [self assert:1 equals:[content[0] accesses] message:"row 0 used "+[content[0] accesses]+" accesses to prepare"];
-    [self assert:1 equals:[content[1] accesses] message:"row 1 used "+[content[1] accesses]+" accesses to prepare"];
+    [self assert:0 equals:[content[2] accesses] message:"row 2 used " + [content[2] accesses] + " accesses but was never prepared"];
+    [self assert:1 equals:[content[0] accesses] message:"row 0 used " + [content[0] accesses] + " accesses to prepare"];
+    [self assert:1 equals:[content[1] accesses] message:"row 1 used " + [content[1] accesses] + " accesses to prepare"];
 
     // Try the case where a key path is not used.
     content = ["plain", "old", "space crystals"];
     [tableColumn bind:@"value" toObject:arrayController withKeyPath:@"arrangedObjects" options:nil];
     [arrayController setContent:content];
 
-    [tableColumn prepareDataView:testView forRow:1];
+    [tableColumn _prepareDataView:testView forRow:1];
     [self assert:'old' equals:testView.lastValue];
-    [self assert:'value' equals:testView.lastKey];
+    [self assert:'objectValue' equals:testView.lastKey];
+}
+
+- (void)testTableColumnAutomaticBindings
+{
+    var tableView = [CPTableView new],
+        tableColumn = [[CPTableColumn alloc] initWithIdentifier:"A Column"];
+    arrayController = [CPArrayController new];
+
+    [tableView addTableColumn:tableColumn];
+
+    [tableColumn bind:@"value" toObject:arrayController withKeyPath:@"arrangedObjects.valueA" options:nil];
+
+    [self assertTrue:[[tableView infoForBinding:"content"] valueForKey:CPObservedObjectKey] === arrayController message:"when a column of a table is bound to an array controller a 'content' binding should automatically be made to the array controller"];
+    [self assertTrue:[[tableView infoForBinding:"selectionIndexes"] valueForKey:CPObservedObjectKey] === arrayController message:"when a column of a table is bound to an array controller a 'selectionIndexes' binding should automatically be made to the array controller"];
+
+    // This should also work if the AC is referenced through a compound path.
+    tableView = [CPTableView new];
+    tableColumn = [[CPTableColumn alloc] initWithIdentifier:"A Column"];
+    [tableView addTableColumn:tableColumn];
+
+    [tableColumn bind:@"value" toObject:self withKeyPath:@"arrayController.arrangedObjects.valueA" options:nil];
+
+    [self assertTrue:[[tableView infoForBinding:"content"] valueForKey:CPObservedObjectKey] === arrayController message:"automatic 'content' binding should work even with compound keypath for column binding"];
+    [self assertTrue:[[tableView infoForBinding:"selectionIndexes"] valueForKey:CPObservedObjectKey] === arrayController message:"automatic 'selectionIndexes' binding should work even with compound keypath for column binding"];
+}
+
+- (void)testTextField
+{
+    var textField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
+    [textField setPlaceholderString:@"cheese"];
+
+    // Establish a random binding.
+    [textField bind:@"hidden" toObject:self withKeyPath:@"FOO" options:nil];
+    [self assert:@"cheese" equals:[textField placeholderString] message:"placeholder should not be cleared when a binding is established"];
+
+    content = [
+        [BindingTester testerWithCheese:@"yellow"],
+        [BindingTester testerWithCheese:@"green"],
+    ];
+    arrayController = [[CPArrayController alloc] initWithContent:content];
+
+    [arrayController setSelectionIndex:0];
+
+    var options = [CPDictionary dictionaryWithJSObject:{CPMultipleValuesPlaceholderBindingOption:@"Multiple Values"}];
+    [textField bind:@"value" toObject:arrayController withKeyPath:@"selection.cheese" options:options];
+
+    [self assert:@"yellow" equals:[textField stringValue] message:@"text field string value should be 'yellow'"];
+
+    [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)]];
+
+    [self assert:@"" equals:[textField stringValue] message:@"text field string value should be cleared"];
+    [self assert:@"Multiple Values" equals:[textField placeholderString] message:@"text field placeholder should be 'Multiple Values'"];
+
+    [textField unbind:@"value"];
+    // Cocoa doesn't do this
+    // [self assert:@"cheese" equals:[textField placeholderString] message:@"text field placeholder should be reset"];
+
+    [textField bind:@"value" toObject:arrayController withKeyPath:@"selection.cheese" options:options];
+
+    [arrayController setSelectionIndex:0];
+    [self assert:@"yellow" equals:[textField stringValue] message:"text field string value should be 'yellow'"];
+
+    // Cocoa doesn't do this
+    // [self assert:@"cheese" equals:[textField placeholderString] message:"text field placeholder should be restored"];
+
+    textField = [[CPTextField alloc] init];
+    [textField bind:@"value" toObject:arrayController withKeyPath:@"selection.cheese" options:options];
+    [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)]];
+    [self assert:@"Multiple Values" equals:[textField placeholderString] message:@"text field placeholder should 'Multiple Values'"];
+
+    // Cocoa doesn't do this
+    // [arrayController setSelectionIndex:0];
+    // [self assert:@"" equals:[textField placeholderString] message:@"empty text field placeholder should be restored"];
+
 }
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)changes context:(id)aContext
 {
-    CPLog(@"here: "+aKeyPath+" value: "+[anObject valueForKey:aKeyPath]);
+    CPLog(@"here: " + aKeyPath + " value: " + [anObject valueForKey:aKeyPath]);
+}
+
+- (void)testSuppressNotification
+{
+    var control = [[CPTextField alloc] init],
+        anotherControl = [[CPTextField alloc] init];
+    [control setStringValue:@"brown"];
+    [control bind:CPValueBinding toObject:self withKeyPath:@"FOO" options:nil];
+    [self setValue:@"green" forKeyPath:@"FOO"];
+    [self assert:@"green" equals:[control stringValue] message:@"normal binding action"];
+
+    var binding = [CPBinder getBinding:CPValueBinding forObject:control];
+    [binding suppressSpecificNotificationFromObject:self keyPath:@"FOO"];
+    [self setValue:@"orange" forKeyPath:@"FOO"];
+    [self assert:@"green" equals:[control stringValue] message:@"binding update suppressed"];
+
+    [binding unsuppressSpecificNotificationFromObject:anotherControl keyPath:@"FOO"];
+    [self setValue:@"blue" forKeyPath:@"FOO"];
+    [self assert:@"green" equals:[control stringValue] message:@"binding update still suppressed"];
+
+    [binding unsuppressSpecificNotificationFromObject:self keyPath:@"FOO"];
+    [self setValue:@"octarine" forKeyPath:@"FOO"];
+    [self assert:@"octarine" equals:[control stringValue] message:@"binding update no longer suppressed"];
+}
+
+- (void)testReverseSetValueForDoesNotSetObjectValueOnSource
+{
+    var control = [[TextField alloc] init];
+    [control setStringValue:@"brown"];
+
+    var oc = [[CPObjectController alloc] initWithContent:[CPDictionary dictionaryWithObject:@"toto" forKey:@"foo"]];
+    [oc setAutomaticallyPreparesContent:YES];
+
+    [control bind:CPValueBinding toObject:oc withKeyPath:@"selection.foo" options:nil];
+
+    [control setObjectValueSetterCount:0];
+    // This will force a binding update -reverseSetValueFor:
+    [control sendAction:nil to:nil];
+
+    [self assert:0 equals:[control objectValueSetterCount] message:@"-setObjectValue should not be called"];
+}
+
+@end
+
+@implementation TextField : CPTextField
+{
+    CPInteger objectValueSetterCount @accessors;
+}
+
+- (void)setObjectValue:(id)aValue
+{
+    objectValueSetterCount++;
+    [super setObjectValue:aValue];
 }
 
 @end
@@ -200,6 +332,13 @@
 @implementation BindingTester : CPObject
 {
     id cheese;
+}
+
++ (id)testerWithCheese:(id)aCheese
+{
+    var tester = [[self alloc] init];
+    [tester setCheese:aCheese];
+    return tester;
 }
 
 - (void)setCheese:(id)aCheese
@@ -242,7 +381,7 @@
     CPNumber    accesses @accessors;
 }
 
-+ (AccessCounter) counterWithValueA:aValue valueB:anotherValue
++ (AccessCounter)counterWithValueA:aValue valueB:anotherValue
 {
     r = [self new];
     [r setValueA:aValue];

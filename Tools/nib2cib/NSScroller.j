@@ -31,7 +31,7 @@
     {
         //"NSsFlags"
         //"NSArrowsLoc"
-        
+
         _controlSize = CPRegularControlSize;
         //if ([aCoder containsValueForKey:CPScrollerControlSizeKey])
         //    _controlSize = [aCoder decodeIntForKey:CPScrollerControlSizeKey];
@@ -39,7 +39,7 @@
         _knobProportion = 1.0;
         if ([aCoder containsValueForKey:"NSPercent"])
             _knobProportion = [aCoder decodeFloatForKey:"NSPercent"];
-        
+
         _value = 0.0;
         // Cocoa uses NSCurValue instead of NSControl's NSContents
         if ([aCoder containsValueForKey:"NSCurValue"])

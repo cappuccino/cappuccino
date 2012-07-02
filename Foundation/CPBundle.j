@@ -21,8 +21,11 @@
  */
 
 @import "CPDictionary.j"
+@import "CPNotification.j"
+@import "CPNotificationCenter.j"
 @import "CPObject.j"
 
+CPBundleDidLoadNotification = @"CPBundleDidLoadNotification";
 
 /*!
     @class CPBundle
@@ -118,6 +121,16 @@ var CPBundlesForURLStrings = { };
     return className ? CPClassFromString(className) : Nil;
 }
 
+- (CPString)bundleIdentifier
+{
+    return [self objectForInfoDictionaryKey:@"CPBundleIdentifier"];
+}
+
+- (BOOL)isLoaded
+{
+    return _bundle.isLoaded();
+}
+
 - (CPString)pathForResource:(CPString)aFilename
 {
     return _bundle.pathForResource(aFilename);
@@ -133,8 +146,6 @@ var CPBundlesForURLStrings = { };
     return _bundle.valueForInfoDictionaryKey(aKey);
 }
 
-//
-
 - (void)loadWithDelegate:(id)aDelegate
 {
     _delegate = aDelegate;
@@ -142,6 +153,9 @@ var CPBundlesForURLStrings = { };
     _bundle.addEventListener("load", function()
     {
         [_delegate bundleDidFinishLoading:self];
+        // userInfo should contain a list of all classes loaded from this bundle. When writing this there
+        // seems to be no efficient way to get it though.
+        [[CPNotificationCenter defaultCenter] postNotificationName:CPBundleDidLoadNotification object:self userInfo:nil];
     });
 
     _bundle.addEventListener("error", function()

@@ -25,7 +25,8 @@
 
 @import <AppKit/_CPCibCustomResource.j>
 
-var FILE = require("file");
+var FILE = require("file"),
+    imageSize = require("cappuccino/imagesize").imagesize;
 
 @implementation _CPCibCustomResource (NSCoding)
 
@@ -40,16 +41,31 @@ var FILE = require("file");
 
         var size = CGSizeMakeZero();
 
-        if (![[aCoder resourcesPath] length])
-            CPLog.warn("*** WARNING: Resources found in nib, but no resources path specified with -R option.");
+        if (_resourceName == "NSSwitch")
+            return nil;
+        else if (_resourceName == "NSAddTemplate" || _resourceName == "NSRemoveTemplate")
+        {
+            // Defer resolving this path until runtime.
+            _resourceName = _resourceName.replace("NS", "CP");
+        }
+        else if (![[aCoder resourcesPath] length])
+        {
+            CPLog.warn("Resources found in nib, but no resources path specified with -R option.");
+        }
         else
         {
             var resourcePath = [aCoder resourcePathForName:_resourceName];
 
             if (!resourcePath)
-                CPLog.warn("*** WARNING: Resource named " + _resourceName + " not found in supplied resources path.");
+                CPLog.warn("Resource \"" + _resourceName + "\" not found in the resources path: " + [aCoder resourcesPath]);
             else
-                size = imageSize(FILE.join(FILE.cwd(), resourcePath));
+                size = imageSize(FILE.canonical(resourcePath)) || CGSizeMakeZero();
+
+            // Account for the fact that an extension may have been inferred.
+            if (resourcePath && FILE.extension(resourcePath) !== FILE.extension(_resourceName))
+                _resourceName += FILE.extension(resourcePath);
+
+            CPLog.debug("Image path: %s\nImage size: %dx%d", FILE.canonical(resourcePath), size.width, size.height);
         }
 
         _properties = [CPDictionary dictionaryWithObject:size forKey:@"size"];
@@ -60,8 +76,6 @@ var FILE = require("file");
 
 @end
 
-var ImageUtility = require("cappuccino/image-utility"),
-    imageSize = ImageUtility.sizeOfImageAtPath;
 
 @implementation NSCustomResource : _CPCibCustomResource
 {

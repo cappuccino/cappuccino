@@ -1,0 +1,166 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1138\cocoasubrtf320
+{\fonttbl\f0\fnil\fcharset0 LucidaGrande;\f1\fswiss\fcharset0 Helvetica;\f2\fmodern\fcharset0 Courier;
+}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww16380\viewh15560\viewkind0
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\b\fs36 \cf0 XcodeCapp Help
+\b0 \
+\
+
+\b\fs24 What is XcodeCapp?\
+
+\b0\fs36 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\fs24 \cf0 One of Cappuccino\'92s greatest features is the ability to use Xcode 4 to create the user interface for your web applications. Xcode creates .xib files which then must be converted by the command line utility 
+\b nib2cib
+\b0  to .cib files for use with Cappuccino. But beginning with Xcode 4, there is no way to directly create outlets and actions without editing Objective-C header files.\
+\
+XcodeCapp acts as a bridge between Xcode and Cappuccino. It performs two main functions:\
+\
+\'95 Reads your source files when they are modified and automatically creates outlets and actions in the .xib file.\
+\'95 Automatically converts .xib files to .cib files when the .xib file is modified.\
+\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\b \cf0 Using XcodeCapp
+\b0 \
+\
+XcodeCapp is very easy to use and requires very little user interaction. When you build Cappuccino with jake, it will create a symlink to the XcodeCapp application in your Applications folder. Launch XcodeCapp from there and the XcodeCapp icon will appear in your menu bar. Clicking on the icon will display the XcodeCapp menu:\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f1 \cf0 {{\NeXTGraphic menu1.png \width4220 \height3440
+}¬}\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0 \cf0 \
+\
+\
+If this is the first time you have run XcodeCapp, or if you were not listening to a project when XcodeCapp was last quit, you need to choose a Cappuccino project. Select "Listen to Project\'85\'94, and a folder chooser will appear. Navigate to the root folder of your project \'97 the one that contains index.html and Jakefile \'97 and click Open.\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+\cf0 \
+Once you select a project, XcodeCapp will import your project and create a hidden folder called \'93.XcodeSupport\'94 in the root project directory. This folder contains files built by XcodeCapp that it needs to perform its magic, so you should never directly modify those files. You will probably want to ignore this folder in your IDE and source code management system as well.\
+\
+After XcodeCapp has imported a project, it will listen to changes in the following files anywhere in the project:\
+\
+\'95 *.xib \'96 Interface Builder files\
+\'95 *.j - Objective-J source\
+\'95 .xcodecapp-ignore - specifies files XcodeCapp should ignore\
+\
+Any time these files are modified, XcodeCapp will process the files and show a Growl notification when the processing is done.\
+\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b \cf0 Declaring Outlets and Actions\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b0 \cf0 \
+The most important function XcodeCapp performs is to create outlets and actions for use with Interface Builder. You create outlets by prefixing them in your source files with 
+\b @outlet
+\b0  or 
+\b IBOutlet
+\b0 . For example, in the class below, there are seven outlets defined:\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f1 \cf0 {{\NeXTGraphic outlets.png \width10580 \height4580
+}¬}\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0 \cf0 \
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+\cf0 Similarly, you declare actions by declaring the return type of the method to be 
+\b @action
+\b0  or 
+\b IBAction
+\b0 . For example, the following method can serve as an action for a control:\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f1 \cf0 {{\NeXTGraphic action.png \width14180 \height2440
+}¬}\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0 \cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+\cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b \cf0 Editing XIBs\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\b0 \cf0 XcodeCapp creates an Xcode 4 project that allows you to edit your project\'92s xibs. To open the project, click on the XcodeCapp menu and select \'93Open Project in Xcode\'94.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f1 \cf0 {{\NeXTGraphic menu2.png \width5220 \height3480
+}¬}\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0 \cf0 \
+\
+Once the Xcode project is open, you can edit your xibs with the interface builder. All of the outlets and actions you declared in your source will be available in interface builder for connection to views. For example, the InfoPanelController shown above would have these outlets in interface builder:\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+\cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f1 \cf0 {{\NeXTGraphic outlets2.png \width8040 \height4160
+}¬}\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0 \cf0 \
+\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\b \cf0 Ignoring Files and Folders\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\b0 \cf0 To have XcodeCapp ignore files and folders, create a file in the root project directory named \'93.xcodecapp-ignore\'94, and enter one line for each pattern you would like to ignore. Patterns may use \'93*\'94 as a wildcard to match zero or more characters (it is 
+\b not
+\b0  a shell glob) and are matched against the 
+\b absolute
+\b0  path of the file or folder, so in most cases your patterns should begin with \'93*\'94. To safely match a folder name, the pattern should be 
+\f2 */<name>/*
+\f0 , where 
+\f2 name
+\f0  is the name of the folder.\
+\
+For example, to ignore the \'93Modules\'94 directory and the xib file \'93foo.xib\'94 in your project, enter these lines in .xcodecapp-ignore:\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f2 \cf0 */Modules/*\
+*/foo.xib
+\f0 \
+\
+Note that in addition to whatever patterns you specify (if any), XcodeCapp 
+\b always
+\b0  ignores the following patterns:\
+\
+
+\f2 */.git/*\
+*/.svn/*\
+*/.hg/*\
+*/Frameworks/*\
+*/.xCodeSupport/*\
+*/Build/*\
+*/NS_*.j\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\b \cf0 Credits
+\fs28 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\b0\fs24 \cf0 XcodeCapp was originally written by Francisco Tolmasky.\
+The Cocoa port was written by Antoine Mercadal with contributions from Aparajita Fishman.\
+XcodeCapp (Cocoa version, formerly known as XcodeCapp-cocoa) was originally built for the Archipel Project (archipelproject.org) and is now part of Cappuccino.}

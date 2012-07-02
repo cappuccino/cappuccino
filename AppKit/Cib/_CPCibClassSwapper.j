@@ -61,14 +61,14 @@ var _CPCibClassSwapperClassNameKey          = @"_CPCibClassSwapperClassNameKey",
 
         if (!object)
         {
-            CPLog.error("Unable to find class " + theClassName + " in cib file.");
+            CPLog.error("Unable to find class " + theClassName + " referenced in cib file.");
 
             object = [self allocObjectWithCoder:aCoder className:[aCoder decodeObjectForKey:_CPCibClassSwapperOriginalClassNameKey]];
         }
     }
 
     if (!object)
-        [CPException raise:CPInvalidArgumentException reason:@"Unable to find class " + theClassName + " in cib file."];
+        [CPException raise:CPInvalidArgumentException reason:@"Unable to find class " + theClassName + " referenced in cib file."];
 
     return object;
 }

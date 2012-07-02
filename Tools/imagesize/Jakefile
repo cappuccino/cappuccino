@@ -1,0 +1,40 @@
+
+require ("../../common.jake");
+
+var OS = require("os"),
+    task = require("jake").task;
+
+task ("build", function()
+{
+    if (executableExists("xcodebuild"))
+    {
+        var args = "-alltargets -configuration Release";
+
+        if (xcodebuildHasTenPointFiveSDK())
+            args = "-sdk macosx10.5 " + args;
+
+        else
+            args = "-sdk macosx " + args;
+
+        if (OS.system("xcodebuild " + args))
+            OS.exit(1);
+    }
+    else
+    {
+        print("Building imagesize requires Xcode.");
+    }
+});
+
+task ("clean", function()
+{
+    if (executableExists("xcodebuild") && OS.system("xcodebuild clean"))
+        OS.exit(1);
+});
+
+task ("clobber", function()
+{
+    if (executableExists("xcodebuild") && OS.system("xcodebuild clean"))
+        OS.exit(1);
+});
+
+task ("default", ["build"]);

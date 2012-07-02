@@ -20,11 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPArray.j"
 @import "CPDictionary.j"
+@import "CPException.j"
 @import "CPObject.j"
 @import "CPRange.j"
 @import "CPString.j"
-
 
 /*!
     @class CPAttributedString
@@ -32,7 +33,7 @@
     @brief A mutable character string with attributes.
 
     A character string with sets of attributes that apply to single or ranges of
-    characters. The attributes are containted within a CPDictionary class.
+    characters. The attributes are contained within a CPDictionary class.
     Attributes can be any name/value pair. The data type of the value is not
     restricted.
     This class is mutable.
@@ -48,7 +49,7 @@
     CPArray     _rangeEntries;
 }
 
-//Creating an NSAttributedString Object
+// Creating a CPAttributedString Object
 /*!
     Creates a new attributed string from a character string.
     @param aString is the string to initialise from.
@@ -144,9 +145,9 @@
             return CPOrderedDescending;
         else
             return CPOrderedAscending;
-    }
+    };
 
-    return [_rangeEntries indexOfObject:anIndex sortedByFunction:sortFunction];
+    return [_rangeEntries indexOfObject:anIndex inSortedRange:nil options:0 usingComparator:sortFunction];
 }
 
 //Retrieving Attribute Information
@@ -390,11 +391,11 @@
 */
 - (BOOL)isEqualToAttributedString:(CPAttributedString)aString
 {
-	if (!aString)
-		return NO;
+    if (!aString)
+        return NO;
 
-	if (_string != [aString string])
-		return NO;
+    if (_string != [aString string])
+        return NO;
 
     var myRange = CPMakeRange(),
         comparisonRange = CPMakeRange(),
@@ -424,13 +425,13 @@
 */
 - (BOOL)isEqual:(id)anObject
 {
-	if (anObject == self)
-		return YES;
+    if (anObject == self)
+        return YES;
 
-	if ([anObject isKindOfClass:[self class]])
-		return [self isEqualToAttributedString:anObject];
+    if ([anObject isKindOfClass:[self class]])
+        return [self isEqualToAttributedString:anObject];
 
-	return NO;
+    return NO;
 }
 
 //Extracting a Substring
@@ -505,8 +506,6 @@
 */
 - (void)replaceCharactersInRange:(CPRange)aRange withString:(CPString)aString
 {
-    [self beginEditing];
-
     if (!aString)
         aString = "";
 
@@ -532,10 +531,8 @@
 
     endingIndex = startingIndex + 1;
 
-    while(endingIndex < _rangeEntries.length)
-        _rangeEntries[endingIndex++].range.location+=additionalLength;
-
-    [self endEditing];
+    while (endingIndex < _rangeEntries.length)
+        _rangeEntries[endingIndex++].range.location += additionalLength;
 }
 
 /*!
@@ -561,8 +558,6 @@
 */
 - (void)setAttributes:(CPDictionary)aDictionary range:(CPRange)aRange
 {
-    [self beginEditing];
-
     var startingEntryIndex = [self _indexOfRangeEntryForIndex:aRange.location splitOnMaxIndex:YES],
         endingEntryIndex = [self _indexOfRangeEntryForIndex:CPMaxRange(aRange) splitOnMaxIndex:YES],
         current = startingEntryIndex;
@@ -575,8 +570,6 @@
 
     //necessary?
     [self _coalesceRangeEntriesFromIndex:startingEntryIndex toIndex:endingEntryIndex];
-
-    [self endEditing];
 }
 
 /*!
@@ -591,8 +584,6 @@
 */
 - (void)addAttributes:(CPDictionary)aDictionary range:(CPRange)aRange
 {
-    [self beginEditing];
-
     var startingEntryIndex = [self _indexOfRangeEntryForIndex:aRange.location splitOnMaxIndex:YES],
         endingEntryIndex = [self _indexOfRangeEntryForIndex:CPMaxRange(aRange) splitOnMaxIndex:YES],
         current = startingEntryIndex;
@@ -613,8 +604,6 @@
 
     //necessary?
     [self _coalesceRangeEntriesFromIndex:startingEntryIndex toIndex:endingEntryIndex];
-
-    [self endEditing];
 }
 
 /*!
@@ -642,8 +631,6 @@
 */
 - (void)removeAttribute:(CPString)anAttribute range:(CPRange)aRange
 {
-    [self beginEditing];
-
     var startingEntryIndex = [self _indexOfRangeEntryForIndex:aRange.location splitOnMaxIndex:YES],
         endingEntryIndex = [self _indexOfRangeEntryForIndex:CPMaxRange(aRange) splitOnMaxIndex:YES],
         current = startingEntryIndex;
@@ -656,8 +643,6 @@
 
     //necessary?
     [self _coalesceRangeEntriesFromIndex:startingEntryIndex toIndex:endingEntryIndex];
-
-    [self endEditing];
 }
 
 //Changing Characters and Attributes
@@ -682,8 +667,6 @@
 */
 - (void)insertAttributedString:(CPAttributedString)aString atIndex:(unsigned)anIndex
 {
-    [self beginEditing];
-
     if (anIndex < 0 || anIndex > [self length])
         [CPException raise:CPRangeException reason:"tried to insert attributed string at an invalid index: "+anIndex];
 
@@ -713,8 +696,6 @@
 
     //necessary?
     //[self _coalesceRangeEntriesFromIndex:startingEntryIndex toIndex:startingEntryIndex+rangeEntries.length];
-
-    [self endEditing];
 }
 
 /*!
@@ -727,12 +708,8 @@
 */
 - (void)replaceCharactersInRange:(CPRange)aRange withAttributedString:(CPAttributedString)aString
 {
-    [self beginEditing];
-
     [self deleteCharactersInRange:aRange];
     [self insertAttributedString:aString atIndex:aRange.location];
-
-    [self endEditing];
 }
 
 /*!
@@ -742,8 +719,6 @@
 */
 - (void)setAttributedString:(CPAttributedString)aString
 {
-    [self beginEditing];
-
     _string = aString._string;
     _rangeEntries = [];
 
@@ -752,8 +727,6 @@
 
     for (; i < count; i++)
         _rangeEntries.push(copyRangeEntry(aString._rangeEntries[i]));
-
-    [self endEditing];
 }
 
 //Private methods
@@ -822,11 +795,11 @@
 
 /*!
     @class CPMutableAttributedString
-    @ingroup compatability
+    @ingroup compatibility
 
     This class is just an empty subclass of CPAttributedString.
     CPAttributedString already implements mutable methods and
-    this class only exists for source compatability.
+    this class only exists for source compatibility.
 */
 @implementation CPMutableAttributedString : CPAttributedString
 
@@ -841,17 +814,17 @@ var isEqual = function isEqual(a, b)
         return YES;
 
     return NO;
-}
+};
 
 var makeRangeEntry = function makeRangeEntry(/*CPRange*/aRange, /*CPDictionary*/attributes)
 {
     return {range:aRange, attributes:[attributes copy]};
-}
+};
 
 var copyRangeEntry = function copyRangeEntry(/*RangeEntry*/aRangeEntry)
 {
-    return makeRangeEntry(CPCopyRange(aRangeEntry.range), [aRangeEntry.attributes copy]);
-}
+    return makeRangeEntry(CPMakeRangeCopy(aRangeEntry.range), [aRangeEntry.attributes copy]);
+};
 
 var splitRangeEntry = function splitRangeEntryAtIndex(/*RangeEntry*/aRangeEntry, /*unsigned*/anIndex)
 {
@@ -864,4 +837,4 @@ var splitRangeEntry = function splitRangeEntryAtIndex(/*RangeEntry*/aRangeEntry,
     newRangeEntry.attributes = [newRangeEntry.attributes copy];
 
     return [aRangeEntry, newRangeEntry];
-}
+};

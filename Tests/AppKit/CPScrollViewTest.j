@@ -4,6 +4,21 @@
 {
 }
 
+/*!
+    Test that scroll views don't generate bad layouts when very small.
+*/
+- (void)testZeroSize
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMakeZero()],
+        documentView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+    [scrollView setAutohidesScrollers:NO];
+    [scrollView setDocumentView:documentView];
+    [scrollView setScrollerStyle:CPScrollerStyleLegacy];
+    // If the layout operation leads to setKnobProportion:0/0 this will crash.
+    [[scrollView horizontalScroller] layoutSubviews];
+    [[scrollView verticalScroller] layoutSubviews];
+}
+
 - (void)testBothScrollersVisible
 {
     var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)];
@@ -174,4 +189,30 @@
     [self assert:[[scrollView verticalScroller] isEnabled] equals:NO];
 }
 
+- (void)testSetContentView
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)],
+        documentView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 400.0)],
+        replacementContentView = [[CPClipView alloc] initWithFrame:[scrollView _insetBounds]],
+        replacementDocumentView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 400.0)];
+
+    [replacementContentView setDocumentView:replacementDocumentView];
+
+    // Test the obvious condition that they aren't the same
+    [self assert:replacementContentView notEqual:[scrollView contentView] message:@"contentView somehow equals the replacement"];
+
+    // Test the obvious condition that the document view can be get/set
+    [scrollView setDocumentView:documentView];
+    [self assert:documentView equals:[scrollView documentView] message:@"documentView is not set as expected"];
+
+    // Change the content view
+    [scrollView setContentView:replacementContentView];
+
+    // Test that the content view has been replaced
+    [self assert:replacementContentView equals:[scrollView contentView] message:@"contentView was not replaced properly"];
+    // and that the document view has been replaced
+    [self assert:replacementDocumentView equals:[scrollView documentView] message:@"documentView was not replaced properly"];
+}
+
 @end
+
