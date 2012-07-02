@@ -118,6 +118,7 @@ var NSButtonIsBorderedMask = 0x00800000,
     NIB_CONNECTION_EQUIVALENCY_TABLE[[cell UID]] = self;
 
     _title = [cell title];
+    _alternateTitle = [cell alternateTitle];
     _controlSize = CPRegularControlSize;
 
     [self setBordered:[cell isBordered]];
@@ -254,6 +255,7 @@ var NSButtonIsBorderedMask = 0x00800000,
     int         _bezelStyle         @accessors(readonly, getter=bezelStyle);
 
     CPString    _title              @accessors(readonly, getter=title);
+    CPString    _alternateTitle     @accessors(readonly, getter=alternateTitle);
     CPImage     _normalImage        @accessors(readonly, getter=normalImage);
     CPImage     _alternateImage     @accessors(readonly, getter=alternateImage);
 
@@ -281,8 +283,9 @@ var NSButtonIsBorderedMask = 0x00800000,
         _isBordered = (buttonFlags & NSButtonIsBorderedMask) ? YES : NO;
         _bezelStyle = (buttonFlags2 & 0x7) | ((buttonFlags2 & 0x20) >> 2);
 
-        // NSContents for NSButton is actually the title
+        // NSContents/NSAlternateContents for NSButton is actually the title/alternate title
         _title = [aCoder decodeObjectForKey:@"NSContents"];
+        _alternateTitle = [aCoder decodeObjectForKey:@"NSAlternateContents"];
         // ... and _objectValue is _state
         _objectValue = [self state];
 
