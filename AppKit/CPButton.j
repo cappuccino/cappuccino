@@ -591,7 +591,7 @@ CPButtonImageOffset   = 3.0;
 - (CGRect)bezelRectForBounds:(CGRect)bounds
 {
     if (![self isBordered])
-        return _CGRectMakeZero();
+        return bounds;
 
     var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"];
 
