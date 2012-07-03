@@ -723,6 +723,10 @@ var CPSplitViewHorizontalImage = nil,
 */
 - (void)setPosition:(float)position ofDividerAtIndex:(int)dividerIndex
 {
+    // Any manual changes to the divider position should override anything we are restoring from
+    // autosave.
+    _needsRestoreFromAutosave = NO;
+
     SPLIT_VIEW_SUPPRESS_RESIZE_NOTIFICATIONS(YES);
     [self _adjustSubviewsWithCalculatedSize];
 
@@ -784,11 +788,7 @@ var CPSplitViewHorizontalImage = nil,
     [super setFrameSize:aSize];
 
     if (_needsRestoreFromAutosave)
-    {
-        _needsRestoreFromAutosave = NO;
-        [self _restoreFromAutosave];
         _shouldAutosave = YES;
-    }
 
     [self setNeedsDisplay:YES];
 }
@@ -1089,7 +1089,7 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 */
 - (void)_autosave
 {
-    if (!_shouldAutosave || !_autosaveName)
+    if (_needsRestoreFromAutosave || !_shouldAutosave || !_autosaveName)
         return;
 
     var userDefaults = [CPUserDefaults standardUserDefaults],
@@ -1108,6 +1108,22 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 
     [userDefaults setObject:positions forKey:autosaveName];
     [userDefaults setObject:preCollapseArray forKey:autosavePrecollapseName];
+}
+
+/*!
+    This is called sometime later after a split view has been restored from a Cib.
+    See notes in initWithCoder.
+
+    @ignore
+*/
+- (void)_restoreFromAutosaveIfNeeded
+{
+    if (_needsRestoreFromAutosave && !_CGSizeEqualToSize([self frameSize], _needsRestoreFromAutosave))
+    {
+        [self _restoreFromAutosave];
+    }
+
+    _needsRestoreFromAutosave = NO;
 }
 
 /*!
@@ -1191,6 +1207,35 @@ var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
 */
 - (id)initWithCoder:(CPCoder)aCoder
 {
+    // We need to restore this property before calling super's initWithCoder:.
+    _autosaveName = [aCoder decodeObjectForKey:CPSplitViewAutosaveNameKey];
+
+    /*
+
+    It is common for the main window of a Cappuccino app window to be resized to match the browser
+    window size at the end of the UI being loaded from a cib. But at decoding time (now) whatever
+    window size was originally saved will be in place, so if we try to restore the autosaved divider
+    positions now they might be constrained to the wrong positions due to the difference in frame size,
+    and in addition they might move later when the window is resized.
+
+    The workaround is to restore the position once now (so it's approximately correct during loading),
+    and then once more in the next runloop cycle when any `setFullPlatformWindow` calls are done.
+
+    (However if the frame size doesn't change before the next cycle, we should not restore the position
+    again because that would overwrite any changes the app developer might have made in user code.)
+
+    The other consideration is that any parent split views need to be restored before any child
+    subviews, otherwise the parent restore will also change the positioning of the child.
+
+    */
+    if (_autosaveName)
+    {
+        // Schedule /before/ [super initWithCoder:]. This way this instance's _restoreFromAutosaveIfNeeded
+        // will happen before that of any subviews loaded by [super initWithCoder:].
+        [[CPRunLoop currentRunLoop] performSelector:@selector(_restoreFromAutosaveIfNeeded) target:self argument:nil order:0 modes:[CPDefaultRunLoopMode]];
+        _needsRestoreFromAutosave = YES;
+    }
+
     self = [super initWithCoder:aCoder];
 
     if (self)
@@ -1210,12 +1255,13 @@ var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
         _isPaneSplitter = [aCoder decodeBoolForKey:CPSplitViewIsPaneSplitterKey];
         [self _setVertical:[aCoder decodeBoolForKey:CPSplitViewIsVerticalKey]];
 
-        [self setAutosaveName:[aCoder decodeObjectForKey:CPSplitViewAutosaveNameKey]];
-
-        // We have to wait until we know our frame size before restoring, or the frame resize later will throw
-        // away the restored size.
-        if (_autosaveName)
-            _needsRestoreFromAutosave = YES;
+        if (_needsRestoreFromAutosave)
+        {
+            [self _restoreFromAutosave];
+            // Remember the frame size we had at this point so that we can restore again if it changes
+            // before the next runloop cycle. See above notes.
+            _needsRestoreFromAutosave = [self frameSize];
+        }
     }
 
     return self;
