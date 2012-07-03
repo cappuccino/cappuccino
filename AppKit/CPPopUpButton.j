@@ -778,7 +778,11 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
         aBinding == CPSelectedObjectBinding ||
         aBinding == CPSelectedTagBinding ||
         aBinding == CPSelectedValueBinding)
-    return [_CPPopUpButtonSelectionBinder class];
+    {
+        var capitalizedBinding = aBinding.charAt(0).toUpperCase() + aBinding.substr(1);
+
+        return [CPClassFromString(@"_CPPopUpButton" + capitalizedBinding + "Binder") class];
+    }
 
     return [super _binderClassForBinding:aBinding];
 }
@@ -788,21 +792,52 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     return [self valueForKeyPath:@"itemArray.title"];
 }
 
+- (id)_valueOrNilIfCPNull:(id)aValue
+{
+    if (aValue === [CPNull null])
+        return nil;
+
+    return aValue;
+}
+
+- (id)_getNullPlaceholderFromOptions:(CPDictionary)someOptions
+{
+    var placeholder = [someOptions objectForKey:CPNullPlaceholderBindingOption] || @"";
+
+    if (placeholder === [CPNull null])
+        placeholder = @"";
+
+    return placeholder;
+}
+
 - (void)_setContentValues:(CPArray)aValue
 {
-    var count = [aValue count];
+    var infoDictionary = [self infoForBinding:CPContentValuesBinding],
+        options = [infoDictionary objectForKey:CPOptionsKey],
+        insertNullValue = [options objectForKey:CPInsertsNullPlaceholderBindingOption],
+        insertNull = [insertNullValue boolValue] ? 1 : 0,
+        nullPlaceHolderValue = [self _getNullPlaceholderFromOptions:options],
+        count = [aValue count];
 
-    if (count != [self numberOfItems])
+    if (count + insertNull != [self numberOfItems])
     {
         [self removeAllItems];
+
+        if (insertNull)
+            [self addItemWithTitle:nullPlaceHolderValue];
+
         for (var i = 0; i < count; i++)
-            [self addItemWithTitle:[aValue objectAtIndex:i]];
+            [self addItemWithTitle:[self _valueOrNilIfCPNull:[aValue objectAtIndex:i]]];
     }
     else
     {
+        if (insertNull)
+            [[self itemAtIndex:0] setTitle:nullPlaceHolderValue];
+
         for (var i = 0; i < count; i++)
-            [[self itemAtIndex:i] setTitle:[aValue objectAtIndex:i]];
+            [[self itemAtIndex:i + insertNull] setTitle:[self _valueOrNilIfCPNull:[aValue objectAtIndex:i]]];
     }
+
     [self synchronizeTitleAndSelectedItem];
 }
 
@@ -813,11 +848,22 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 - (void)_setContent:(CPArray)aValue
 {
-    var count = [aValue count];
+    var infoDictionary = [self infoForBinding:CPContentBinding],
+        options = [infoDictionary objectForKey:CPOptionsKey],
+        insertNullValue = [options objectForKey:CPInsertsNullPlaceholderBindingOption],
+        insertNull = [insertNullValue boolValue] ? 1 : 0,
+        count = [aValue count];
 
-    if (count != [self numberOfItems])
+    if (count + insertNull != [self numberOfItems])
     {
         [self removeAllItems];
+
+        if (insertNull)
+        {
+            var item = [[CPMenuItem alloc] initWithTitle:[self _getNullPlaceholderFromOptions:options] action:NULL keyEquivalent:nil];
+            [self addItem:item];
+        }
+
         for (var i = 0; i < count; i++)
         {
             var item = [[CPMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:nil];
@@ -828,13 +874,18 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     else
     {
         for (var i = 0; i < count; i++)
-            [[self itemAtIndex:i] setRepresentedObject:[aValue objectAtIndex:i]];
+        {
+            [[self itemAtIndex:i + insertNull] setRepresentedObject:[aValue objectAtIndex:i]];
+        }
     }
 
     if (![self infoForBinding:CPContentValuesBinding])
     {
+        if (insertNull)
+            [[self itemAtIndex:0] setTitle:[self _getNullPlaceholderFromOptions:options]];
+
         for (var i = 0; i < count; i++)
-            [[self itemAtIndex:i] setTitle:[[aValue objectAtIndex:i] description]];
+            [[self itemAtIndex:i + insertNull] setTitle:[[aValue objectAtIndex:i] description]];
     }
 }
 
@@ -872,33 +923,92 @@ var binderForObject = {},
     [binder reverseSetValueFor:[binder binding]];
 }
 
-- (void)setValue:(id)aValue forBinding:(CPString)aBinding
-{
-    if (aBinding == CPSelectedIndexBinding)
-        [_source selectItemAtIndex:aValue];
-    else if (aBinding == CPSelectedObjectBinding)
-        [_source selectItemAtIndex:[_source indexOfItemWithRepresentedObject:aValue]];
-    else if (aBinding == CPSelectedTagBinding)
-        [_source selectItemWithTag:aValue];
-    else if (aBinding == CPSelectedValueBinding)
-        [_source selectItemWithTitle:aValue];
-}
-
 - (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
 {
     [self setValue:aValue forBinding:aBinding];
 }
 
+@end
+
+@implementation _CPPopUpButtonSelectedIndexBinder : _CPPopUpButtonSelectionBinder
+{
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    [_source selectItemAtIndex:aValue];
+}
+
 - (id)valueForBinding:(CPString)aBinding
 {
-    if (aBinding == CPSelectedIndexBinding)
-        return [_source indexOfSelectedItem];
-    else if (aBinding == CPSelectedObjectBinding)
-        return [[_source selectedItem] representedObject];
-    else if (aBinding == CPSelectedTagBinding)
-        return  [[_source selectedItem] tag];
-    else if (aBinding == CPSelectedValueBinding)
-        return [_source titleOfSelectedItem];
+    return [_source indexOfSelectedItem];
+}
+
+@end
+
+@implementation _CPPopUpButtonSelectedObjectBinder : _CPPopUpButtonSelectionBinder
+{
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    var index = [_source indexOfItemWithRepresentedObject:aValue];
+
+    // If the content binding has the option CPNullPlaceholderBindingOption and the object to select is nil, select the first item (i.e., the placeholder).
+    // Other cases to consider:
+    // 1. no binding:
+    // 1.1 there's no item with a represented object matching the object to select.
+    // 1.2 the object to select is nil/CPNull
+    // 2. there's a binding:
+    // 2.1 there's a CPNullPlaceholderBindingOption:
+    // 2.1.1 there's no item with a represented object matching the object to select?
+    // 2.1.2 the object to select is nil/CPNull
+    // 2.2 there's no CPNullPlaceholderBindingOption:
+    // 2.2.1 there's no item with a represented object matching the object to select?
+    // 2.2.2 the object to select is nil/CPNull
+    // More cases? Behaviour that depends on array controller settings?
+
+    if ([[[[CPBinder infoForBinding:CPContentBinding forObject:_source] objectForKey:CPOptionsKey] objectForKey:CPInsertsNullPlaceholderBindingOption] boolValue] && index === CPNotFound)
+        index = 0;
+
+    [_source selectItemAtIndex:index];
+}
+
+- (id)valueForBinding:(CPString)aBinding
+{
+    return [[_source selectedItem] representedObject];
+}
+
+@end
+
+@implementation _CPPopUpButtonSelectedTagBinder : _CPPopUpButtonSelectionBinder
+{
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    [_source selectItemWithTag:aValue];
+}
+
+- (id)valueForBinding:(CPString)aBinding
+{
+    return [[_source selectedItem] tag];
+}
+
+@end
+
+@implementation _CPPopUpButtonSelectedValueBinder : _CPPopUpButtonSelectionBinder
+{
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    [_source selectItemWithTitle:aValue];
+}
+
+- (id)valueForBinding:(CPString)aBinding
+{
+    return [_source titleOfSelectedItem];
 }
 
 @end

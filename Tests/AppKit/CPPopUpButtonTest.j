@@ -1,10 +1,12 @@
 
+@import <AppKit/CPKeyValueBinding.j>
 @import <AppKit/CPPopUpButton.j>
 @import <AppKit/CPApplication.j>
 
 @implementation CPPopUpButtonTest : OJTestCase
 {
     CPPopUpButton button @accessors;
+    id objects @accessors;
 }
 
 - (void)setUp
@@ -200,6 +202,204 @@
     [self assert:0 equals:[[self button] indexOfItemWithTitle:@"one"]];
     [self assert:1 equals:[[self button] indexOfItemWithTitle:@"two"]];
     [self assert:2 equals:[[self button] indexOfItemWithTitle:@"three"]];
+}
+
+- (void)testSimpleStringBindingArrayController
+{
+    var arrayController = [[CPArrayController alloc] init],
+        objectController = [[CPObjectController alloc] init],
+        testObject = [CPMutableDictionary dictionary],
+        martin = @"Martin",
+        malte = @"Malte",
+        johan = @"Johan",
+        menuObjects = [martin, malte, johan];
+
+    [testObject setObject:@"I'm a testObject" forKey:@"Who am I"];
+    [arrayController setContent:menuObjects];
+    [objectController setContent:testObject];
+
+    [button bind:CPContentBinding toObject:arrayController withKeyPath:@"arrangedObjects" options:nil];
+    [button bind:CPSelectedObjectBinding toObject:objectController withKeyPath:@"selection.xxx" options:nil];
+
+    [[self button] selectItemWithTitle:@"Martin"];
+    [[self button] sendAction:@selector(actionTest:) to:self]; // This has to be done to trigger the reverse set of the binding
+    [self assert:martin equals:[testObject objectForKey:@"xxx"]];
+    [[self button] selectItemWithTitle:@"Malte"];
+    [[self button] sendAction:@selector(actionTest:) to:self];
+    [self assert:malte equals:[testObject objectForKey:@"xxx"]];
+    [[self button] selectItemWithTitle:@"Johan"];
+    [[self button] sendAction:@selector(actionTest:) to:self];
+    [self assert:johan equals:[testObject objectForKey:@"xxx"]];
+
+    [testObject setObject:martin forKey:@"xxx"];
+    [self assert:0 equals:[[self button] indexOfSelectedItem]];
+    [testObject setObject:malte forKey:@"xxx"];
+    [self assert:1 equals:[[self button] indexOfSelectedItem]];
+    [testObject setObject:johan forKey:@"xxx"];
+    [self assert:2 equals:[[self button] indexOfSelectedItem]];
+}
+
+- (void)testSimpleStringBindingNullPlaceholderOption
+{
+    var arrayController = [[CPArrayController alloc] init],
+        objectController = [[CPObjectController alloc] init],
+        testObject = [CPMutableDictionary dictionary],
+        martin = @"Martin",
+        malte = @"Malte",
+        johan = @"Johan",
+        menuObjects = [martin, malte, johan],
+        insertsNullPlaceholderOption = [CPDictionary dictionaryWithObjects:[YES, @"Null Placeholder"] forKeys:[CPInsertsNullPlaceholderBindingOption, CPNullPlaceholderBindingOption]];
+
+    [testObject setObject:@"I'm a testObject" forKey:@"Who am I"];
+    [arrayController setContent:menuObjects];
+    [objectController setContent:testObject];
+
+    [button bind:CPContentBinding toObject:arrayController withKeyPath:@"arrangedObjects" options:insertsNullPlaceholderOption];
+    [button bind:CPSelectedObjectBinding toObject:objectController withKeyPath:@"selection.xxx" options:insertsNullPlaceholderOption];
+
+    [[self button] selectItemWithTitle:@"Martin"];
+    [[self button] sendAction:@selector(actionTest:) to:self]; // This has to be done to trigger the reverse set of the binding
+    [self assert:martin equals:[testObject objectForKey:@"xxx"]];
+    [[self button] selectItemWithTitle:@"Malte"];
+    [[self button] sendAction:@selector(actionTest:) to:self];
+    [self assert:malte equals:[testObject objectForKey:@"xxx"]];
+    [[self button] selectItemWithTitle:@"Johan"];
+    [[self button] sendAction:@selector(actionTest:) to:self];
+    [self assert:johan equals:[testObject objectForKey:@"xxx"]];
+
+    [[self button] selectItemWithTitle:@"Null Placeholder"];
+    [[self button] sendAction:@selector(actionTest:) to:self];
+    [self assertNull:[testObject objectForKey:@"xxx"]];
+
+    [testObject setObject:martin forKey:@"xxx"];
+    [self assert:1 equals:[[self button] indexOfSelectedItem]];
+    [testObject setObject:malte forKey:@"xxx"];
+    [self assert:2 equals:[[self button] indexOfSelectedItem]];
+    [testObject setObject:johan forKey:@"xxx"];
+    [self assert:3 equals:[[self button] indexOfSelectedItem]];
+
+    [testObject removeObjectForKey:@"xxx"];
+    [self assert:0 equals:[[self button] indexOfSelectedItem]];
+}
+
+- (void)testSimpleObjectBindingArrayController
+{
+    var arrayController = [[CPArrayController alloc] init],
+        objectController = [[CPObjectController alloc] init],
+        testObject = [CPMutableDictionary dictionary],
+        martin = [CPDictionary dictionaryWithJSObject:{@"name": @"Martin"}],
+        malte = [CPDictionary dictionaryWithJSObject:{@"name": @"Malte"}],
+        johan = [CPDictionary dictionaryWithJSObject:{@"name": @"Johan"}],
+        menuObjects = [martin, malte, johan];
+
+    [testObject setObject:@"I'm a testObject" forKey:@"Who am I"];
+    [arrayController setContent:menuObjects];
+    [objectController setContent:testObject];
+
+    [button bind:CPContentBinding toObject:arrayController withKeyPath:@"arrangedObjects" options:nil];
+    [button bind:CPContentValuesBinding toObject:arrayController withKeyPath:@"arrangedObjects.name" options:nil];
+    [button bind:CPSelectedObjectBinding toObject:objectController withKeyPath:@"selection.xxx" options:nil];
+
+    [[self button] selectItemWithTitle:@"Martin"];
+    [[self button] sendAction:@selector(actionTest:) to:self]; // This has to be done to trigger the reverse set of the binding
+    [self assert:martin equals:[testObject objectForKey:@"xxx"]];
+    [[self button] selectItemWithTitle:@"Malte"];
+    [[self button] sendAction:@selector(actionTest:) to:self];
+    [self assert:malte equals:[testObject objectForKey:@"xxx"]];
+    [[self button] selectItemWithTitle:@"Johan"];
+    [[self button] sendAction:@selector(actionTest:) to:self];
+    [self assert:johan equals:[testObject objectForKey:@"xxx"]];
+
+    [testObject setObject:martin forKey:@"xxx"];
+    [self assert:0 equals:[[self button] indexOfSelectedItem]];
+    [testObject setObject:malte forKey:@"xxx"];
+    [self assert:1 equals:[[self button] indexOfSelectedItem]];
+    [testObject setObject:johan forKey:@"xxx"];
+    [self assert:2 equals:[[self button] indexOfSelectedItem]];
+}
+
+- (void)testObjectBindingNullPlaceholderOption
+{
+    var arrayController = [[CPArrayController alloc] init],
+        martin = [CPDictionary dictionaryWithJSObject:{@"name": @"Martin"}],
+        malte = [CPDictionary dictionaryWithJSObject:{@"name": @"Malte"}],
+        johan = [CPDictionary dictionaryWithJSObject:{@"name": @"Johan"}],
+        menuObjects = [martin, malte, johan],
+        insertsNullPlaceholderOption = [CPDictionary dictionaryWithObjects:[YES, @"Null Placeholder"] forKeys:[CPInsertsNullPlaceholderBindingOption, CPNullPlaceholderBindingOption]];
+
+    [arrayController setContent:menuObjects];
+    [button bind:CPContentBinding toObject:arrayController withKeyPath:@"arrangedObjects" options:insertsNullPlaceholderOption];
+    [button bind:CPContentValuesBinding toObject:arrayController withKeyPath:@"arrangedObjects.name" options:insertsNullPlaceholderOption];
+
+    [self assert:4 equals:[[self button] numberOfItems]];
+    [self assert:0 equals:[[self button] indexOfItemWithTitle:@"Null Placeholder"]];
+    [self assert:1 equals:[[self button] indexOfItemWithTitle:@"Martin"]];
+    [self assert:2 equals:[[self button] indexOfItemWithTitle:@"Malte"]];
+    [self assert:3 equals:[[self button] indexOfItemWithTitle:@"Johan"]];
+
+    [button unbind:CPContentValuesBinding];
+    [button unbind:CPContentBinding];
+    [button bind:CPContentValuesBinding toObject: arrayController withKeyPath:@"arrangedObjects.name" options:nil];
+    [button bind:CPContentBinding toObject:arrayController withKeyPath:@"arrangedObjects" options:nil];
+
+    [self assert:3 equals:[[self button] numberOfItems]];
+    [self assert:0 equals:[[self button] indexOfItemWithTitle:@"Martin"]];
+    [self assert:1 equals:[[self button] indexOfItemWithTitle:@"Malte"]];
+    [self assert:2 equals:[[self button] indexOfItemWithTitle:@"Johan"]];
+}
+
+- (void)testSelectedObjectBindingArrayController
+{
+    var arrayController = [[CPArrayController alloc] init],
+        objectController = [[CPObjectController alloc] init],
+        testObject = [CPMutableDictionary dictionary],
+        martin = [CPDictionary dictionaryWithJSObject:{@"name": @"Martin"}],
+        malte = [CPDictionary dictionaryWithJSObject:{@"name": @"Malte"}],
+        johan = [CPDictionary dictionaryWithJSObject:{@"name": @"Johan"}],
+        menuObjects = [martin, malte, johan],
+        insertsNullPlaceholderOption = [CPDictionary dictionaryWithObjects:[YES, @"Null Placeholder"] forKeys:[CPInsertsNullPlaceholderBindingOption, CPNullPlaceholderBindingOption]];
+
+    [testObject setObject:@"I'm a testObject" forKey:@"Who am I"];
+    [arrayController setContent:menuObjects];
+    [objectController setContent:testObject];
+
+    [button bind:CPContentBinding toObject:arrayController withKeyPath:@"arrangedObjects" options:insertsNullPlaceholderOption];
+    [button bind:CPContentValuesBinding toObject:arrayController withKeyPath:@"arrangedObjects.name" options:insertsNullPlaceholderOption];
+    [button bind:CPSelectedObjectBinding toObject:objectController withKeyPath:@"selection.xxx" options:nil];
+
+    [self assert:4 equals:[[self button] numberOfItems]];
+    [self assert:0 equals:[[self button] indexOfItemWithTitle:@"Null Placeholder"]];
+    [self assert:1 equals:[[self button] indexOfItemWithTitle:@"Martin"]];
+    [self assert:2 equals:[[self button] indexOfItemWithTitle:@"Malte"]];
+    [self assert:3 equals:[[self button] indexOfItemWithTitle:@"Johan"]];
+
+    [[self button] selectItemWithTitle:@"Martin"];
+    [[self button] sendAction:@selector(actionTest:) to:self]; // This has to be done to trigger the reverse set of the binding
+    [self assert:martin equals:[testObject objectForKey:@"xxx"]];
+    [[self button] selectItemWithTitle:@"Malte"];
+    [[self button] sendAction:@selector(actionTest:) to:self];
+    [self assert:malte equals:[testObject objectForKey:@"xxx"]];
+    [[self button] selectItemWithTitle:@"Johan"];
+    [[self button] sendAction:@selector(actionTest:) to:self];
+    [self assert:johan equals:[testObject objectForKey:@"xxx"]];
+
+    [[self button] selectItemWithTitle:@"Null Placeholder"];
+    [[self button] sendAction:@selector(actionTest:) to:self];
+    [self assertNull:[testObject objectForKey:@"xxx"]];
+
+    [testObject setObject:martin forKey:@"xxx"];
+    [self assert:1 equals:[[self button] indexOfSelectedItem]];
+    [testObject setObject:malte forKey:@"xxx"];
+    [self assert:2 equals:[[self button] indexOfSelectedItem]];
+    [testObject setObject:johan forKey:@"xxx"];
+    [self assert:3 equals:[[self button] indexOfSelectedItem]];
+
+    [testObject removeObjectForKey:@"xxx"];
+    [self assert:0 equals:[[self button] indexOfSelectedItem]];
+}
+
+- (void)actionTest:(id)sender
+{
 }
 
 @end
