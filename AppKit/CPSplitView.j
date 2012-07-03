@@ -452,6 +452,9 @@ var CPSplitViewHorizontalImage = nil,
 
     if (type == CPLeftMouseUp)
     {
+        // We disabled autosaving during tracking.
+        _shouldAutosave = YES;
+
         if (_currentDivider != CPNotFound)
         {
             _currentDivider = CPNotFound;
@@ -504,6 +507,8 @@ var CPSplitViewHorizontalImage = nil,
                     _currentDivider = i;
                     _initialOffset = startPosition - point[_originComponent];
 
+                    // Don't autosave during a resize. We'll wait until it's done.
+                    _shouldAutosave = NO;
                     [self _postNotificationWillResize];
                 }
             }
@@ -1049,6 +1054,11 @@ The sum of the views and the sum of the dividers should be equal to the size of 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPSplitViewDidResizeSubviewsNotification
                                                         object:self
                                                       userInfo:userInfo];
+
+
+    // TODO Cocoa always autosaves on "viewDidEndLiveResize". If Cappuccino adds support for this we
+    // should do the same.
+    [self _autosave];
 }
 
 /*!
@@ -1067,7 +1077,7 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 /*!
     Get the name under which the split view divider position is automatically saved to CPUserDefaults.
 
-    @return the name to save under or nil if no auto save is active
+    @return the name to save under or nil if no autosave is active
 */
 - (CPString)autosaveName
 {
