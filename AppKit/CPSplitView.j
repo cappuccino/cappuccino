@@ -89,7 +89,7 @@ var CPSplitViewHorizontalImage = nil,
 
     CPString        _autosaveName;
     BOOL            _shouldAutosave;
-    BOOL            _needsRestoreFromAutosave;
+    CGSize          _shouldRestoreFromAutosaveUnlessFrameSize;
 
     BOOL            _needsResizeSubviews;
     int             _suppressResizeNotificationsMask;
@@ -725,7 +725,7 @@ var CPSplitViewHorizontalImage = nil,
 {
     // Any manual changes to the divider position should override anything we are restoring from
     // autosave.
-    _needsRestoreFromAutosave = NO;
+    _shouldRestoreFromAutosaveUnlessFrameSize = nil;
 
     SPLIT_VIEW_SUPPRESS_RESIZE_NOTIFICATIONS(YES);
     [self _adjustSubviewsWithCalculatedSize];
@@ -780,14 +780,14 @@ var CPSplitViewHorizontalImage = nil,
 
 - (void)setFrameSize:(CGSize)aSize
 {
-    if (_needsRestoreFromAutosave)
+    if (_shouldRestoreFromAutosaveUnlessFrameSize)
         _shouldAutosave = NO;
     else
         [self _adjustSubviewsWithCalculatedSize];
 
     [super setFrameSize:aSize];
 
-    if (_needsRestoreFromAutosave)
+    if (_shouldRestoreFromAutosaveUnlessFrameSize)
         _shouldAutosave = YES;
 
     [self setNeedsDisplay:YES];
@@ -1089,7 +1089,7 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 */
 - (void)_autosave
 {
-    if (_needsRestoreFromAutosave || !_shouldAutosave || !_autosaveName)
+    if (_shouldRestoreFromAutosaveUnlessFrameSize || !_shouldAutosave || !_autosaveName)
         return;
 
     var userDefaults = [CPUserDefaults standardUserDefaults],
@@ -1118,12 +1118,12 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 */
 - (void)_restoreFromAutosaveIfNeeded
 {
-    if (_needsRestoreFromAutosave && !_CGSizeEqualToSize([self frameSize], _needsRestoreFromAutosave))
+    if (_shouldRestoreFromAutosaveUnlessFrameSize && !_CGSizeEqualToSize([self frameSize], _shouldRestoreFromAutosaveUnlessFrameSize))
     {
         [self _restoreFromAutosave];
     }
 
-    _needsRestoreFromAutosave = NO;
+    _shouldRestoreFromAutosaveUnlessFrameSize = nil;
 }
 
 /*!
@@ -1233,7 +1233,6 @@ var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
         // Schedule /before/ [super initWithCoder:]. This way this instance's _restoreFromAutosaveIfNeeded
         // will happen before that of any subviews loaded by [super initWithCoder:].
         [[CPRunLoop currentRunLoop] performSelector:@selector(_restoreFromAutosaveIfNeeded) target:self argument:nil order:0 modes:[CPDefaultRunLoopMode]];
-        _needsRestoreFromAutosave = YES;
     }
 
     self = [super initWithCoder:aCoder];
@@ -1255,12 +1254,12 @@ var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
         _isPaneSplitter = [aCoder decodeBoolForKey:CPSplitViewIsPaneSplitterKey];
         [self _setVertical:[aCoder decodeBoolForKey:CPSplitViewIsVerticalKey]];
 
-        if (_needsRestoreFromAutosave)
+        if (_autosaveName)
         {
             [self _restoreFromAutosave];
             // Remember the frame size we had at this point so that we can restore again if it changes
             // before the next runloop cycle. See above notes.
-            _needsRestoreFromAutosave = [self frameSize];
+            _shouldRestoreFromAutosaveUnlessFrameSize = [self frameSize];
         }
     }
 
