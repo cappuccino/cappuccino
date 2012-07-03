@@ -11,7 +11,11 @@
 
 @implementation AppController : CPObject
 {
-    CPWindow    theWindow; //this "outlet" is connected automatically by the Cib
+    CPWindow            theWindow; //this "outlet" is connected automatically by the Cib
+
+    @outlet CPSplitView splitViewA;
+    @outlet CPSplitView splitViewB;
+    @outlet CPSplitView splitViewC;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -33,6 +37,34 @@
 {
     var subviews = [splitView subviews];
     return (subview !== [subviews objectAtIndex:1]);
+}
+
+- (@action)deleteAutosave:(id)sender
+{
+    [splitViewA deleteAutosave];
+    [splitViewB deleteAutosave];
+    [splitViewC deleteAutosave];
+
+    [sender setTitle:@"Autosave deleted. Reload to see original positions."];
+    [sender setEnabled:NO];
+    [sender sizeToFit];
+}
+
+@end
+
+@implementation CPSplitView (Reset)
+
+- (void)deleteAutosave
+{
+    var userDefaults = [CPUserDefaults standardUserDefaults],
+        autosaveName = [self _framesKeyForAutosaveName:[self autosaveName]],
+        autosavePrecollapseName = [self _precollapseKeyForAutosaveName:[self autosaveName]];
+
+    [userDefaults setObject:nil forKey:autosaveName];
+    [userDefaults setObject:nil forKey:autosavePrecollapseName];
+
+    // Prevent a new autosave from being made.
+    [self setAutosaveName:nil];
 }
 
 @end
