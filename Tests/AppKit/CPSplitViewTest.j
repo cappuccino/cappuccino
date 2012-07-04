@@ -125,12 +125,12 @@
     // Recreate the split view.
     [self setUp];
     [splitView setAutosaveName:@"Charles"];
+
     // FIXME At the moment restore from autosave only happens if the split view is loaded from a
     // coder. It seems like it should happen when initialising in code too, but some research of
-    // Cocoa's behaviour will need to be done first.
-    splitView._needsRestoreFromAutosave = YES;
-    // Trigger autosave restore.
-    [splitView setFrameSize:CGSizeMake(110, 100)];
+    // Cocoa's behaviour will need to be done first. For now, trigger it by hand.
+    [splitView _restoreFromAutosave];
+
     [self assert:25 equals:[viewA frameSize].height message:@"divider position restored"];
 }
 
