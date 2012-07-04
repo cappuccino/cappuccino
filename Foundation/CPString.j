@@ -550,7 +550,7 @@ var CPStringUIDs = new CFMutableDictionary(),
 }
 
 /*!
-    Returns \c NO if the receiver ends
+    Returns \c YES if the receiver ends
     with the specified string. If \c aString
     is empty, the method will return \c NO.
 */
