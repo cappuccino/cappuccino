@@ -398,8 +398,38 @@
     [self assert:0 equals:[[self button] indexOfSelectedItem]];
 }
 
+- (void)testContentValuesWithValueTransformer
+{
+    var arrayController = [[CPArrayController alloc] init],
+        martin = [CPDictionary dictionaryWithJSObject:{@"name": @"Martin"}],
+        malte = [CPDictionary dictionaryWithJSObject:{@"name": @"Malte"}],
+        johan = [CPDictionary dictionaryWithJSObject:{@"name": @"Johan"}],
+        menuObjects = [martin, malte, johan];
+    
+    [arrayController setContent:menuObjects];
+
+    [button bind:CPContentBinding toObject:arrayController withKeyPath:@"arrangedObjects" options:nil];
+    var options = [CPDictionary dictionary];
+    [options setObject:[ContentValuesTransformer new] forKey:CPValueTransformerBindingOption];
+    [button bind:CPContentValuesBinding toObject:arrayController withKeyPath:@"arrangedObjects.name" options:options];
+
+    [self assert:@"Transformed-Malte" equals:[[[self button] itemAtIndex:1] title]];
+}
+
 - (void)actionTest:(id)sender
 {
+}
+
+@end
+
+
+@implementation ContentValuesTransformer : CPValueTransformer
+{
+}
+
+- (id)transformedValue:(id)aValue
+{
+    return "Transformed-" + aValue;
 }
 
 @end
