@@ -491,9 +491,9 @@ var concat = Array.prototype.concat,
     or nil to stop the search, which will return \c CPNotFound to the sender.
     @return A CPIndexSet of the matching object indexes.
 */
-- (CPIndexSet)indexesOfObjectPassingTest:(Function)aPredicate
+- (CPIndexSet)indexesOfObjectsPassingTest:(Function)aPredicate
 {
-    return [self indexesOfObjectWithOptions:CPEnumerationNormal passingTest:aPredicate context:undefined];
+    return [self indexesOfObjectsWithOptions:CPEnumerationNormal passingTest:aPredicate context:undefined];
 }
 
 /*!
@@ -505,9 +505,9 @@ var concat = Array.prototype.concat,
     @param context An object that contains context information you want passed to the predicate function.
     @return A CPIndexSet of the matching object indexes.
 */
-- (CPIndexSet)indexesOfObjectPassingTest:(Function)aPredicate context:(id)aContext
+- (CPIndexSet)indexesOfObjectsPassingTest:(Function)aPredicate context:(id)aContext
 {
-    return [self indexesOfObjectWithOptions:CPEnumerationNormal passingTest:aPredicate context:aContext];
+    return [self indexesOfObjectsWithOptions:CPEnumerationNormal passingTest:aPredicate context:aContext];
 }
 
 /*!
@@ -520,9 +520,9 @@ var concat = Array.prototype.concat,
     or nil to stop the search, which will return CPNotFound to the sender.
     @return A CPIndexSet of the matching object indexes.
 */
-- (CPIndexSet)indexesOfObjectWithOptions:(CPEnumerationOptions)options passingTest:(Function)aPredicate
+- (CPIndexSet)indexesOfObjectsWithOptions:(CPEnumerationOptions)options passingTest:(Function)aPredicate
 {
-    return [self indexesOfObjectWithOptions:options passingTest:aPredicate context:undefined];
+    return [self indexesOfObjectsWithOptions:options passingTest:aPredicate context:undefined];
 }
 
 /*!
@@ -536,7 +536,7 @@ var concat = Array.prototype.concat,
     @param context An object that contains context information you want passed to the predicate function.
     @return A CPIndexSet of the matching object indexes.
 */
-- (CPIndexSet)indexesOfObjectWithOptions:(CPEnumerationOptions)options passingTest:(Function)aPredicate context:(id)aContext
+- (CPIndexSet)indexesOfObjectsWithOptions:(CPEnumerationOptions)options passingTest:(Function)aPredicate context:(id)aContext
 {
     // We don't use an enumerator because they return nil to indicate end of enumeration,
     // but nil may actually be the value we are looking for, so we have to loop over the array.
