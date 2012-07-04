@@ -483,6 +483,85 @@ var concat = Array.prototype.concat,
     return CPNotFound;
 }
 
+/*!
+    Returns the indexes of the objects in the receiver that pass a test in a given Javascript function.
+    @param predicate The function to apply to objects of the array. The function should have the signature:
+    @code function(object, index) @endcode
+    The predicate function should either return a Boolean value that indicates whether the object passed the test,
+    or nil to stop the search, which will return \c CPNotFound to the sender.
+    @return A CPIndexSet of the matching object indexes.
+*/
+- (CPIndexSet)indexesOfObjectPassingTest:(Function)aPredicate
+{
+    return [self indexesOfObjectWithOptions:CPEnumerationNormal passingTest:aPredicate context:undefined];
+}
+
+/*!
+    Returns the indexes of the objects in the receiver that pass a test in a given Javascript function.
+    @param predicate The function to apply to objects of the array. The function should have the signature:
+    @code function(object, index, context) @endcode
+    The predicate function should either return a Boolean value that indicates whether the object passed the test,
+    or nil to stop the search, which will return \c CPNotFound to the sender.
+    @param context An object that contains context information you want passed to the predicate function.
+    @return A CPIndexSet of the matching object indexes.
+*/
+- (CPIndexSet)indexesOfObjectPassingTest:(Function)aPredicate context:(id)aContext
+{
+    return [self indexesOfObjectWithOptions:CPEnumerationNormal passingTest:aPredicate context:aContext];
+}
+
+/*!
+    Returns the indexes of the objects in the receiver that pass a test in a given Javascript function.
+    @param options Specifies the direction in which the array is searched. Pass CPEnumerationNormal to search forwards
+    or CPEnumerationReverse to search in reverse.
+    @param predicate The function to apply to objects of the array. The function should have the signature:
+    @code function(object, index) @endcode
+    The predicate function should either return a Boolean value that indicates whether the object passed the test,
+    or nil to stop the search, which will return CPNotFound to the sender.
+    @return A CPIndexSet of the matching object indexes.
+*/
+- (CPIndexSet)indexesOfObjectWithOptions:(CPEnumerationOptions)options passingTest:(Function)aPredicate
+{
+    return [self indexesOfObjectWithOptions:options passingTest:aPredicate context:undefined];
+}
+
+/*!
+    Returns the indexes of the objects in the receiver that pass a test in a given Javascript function.
+    @param options Specifies the direction in which the array is searched. Pass CPEnumerationNormal to search forwards
+    or CPEnumerationReverse to search in reverse.
+    @param predicate The function to apply to objects of the array. The function should have the signature:
+    @code function(object, index, context) @endcode
+    The predicate function should either return a Boolean value that indicates whether the object passed the test,
+    or nil to stop the search, which will return CPNotFound to the sender.
+    @param context An object that contains context information you want passed to the predicate function.
+    @return A CPIndexSet of the matching object indexes.
+*/
+- (CPIndexSet)indexesOfObjectWithOptions:(CPEnumerationOptions)options passingTest:(Function)aPredicate context:(id)aContext
+{
+    // We don't use an enumerator because they return nil to indicate end of enumeration,
+    // but nil may actually be the value we are looking for, so we have to loop over the array.
+    if (options & CPEnumerationReverse)
+    {
+        var index = [self count] - 1,
+            stop = -1,
+            increment = -1;
+    }
+    else
+    {
+        var index = 0,
+            stop = [self count],
+            increment = 1;
+    }
+
+    var indexes = [CPIndexSet indexSet];
+
+    for (; index !== stop; index += increment)
+        if (aPredicate([self objectAtIndex:index], index, aContext))
+            [indexes addIndex:index];
+
+    return indexes;
+}
+
 // Sending messages to elements
 /*!
     Sends each element in the array a message.
