@@ -351,7 +351,7 @@ var concat = Array.prototype.concat,
     or nil to stop the search, which will return \c CPNotFound to the sender.
     @return The index of the first matching object, or \c CPNotFound if there is no matching object.
 */
-- (unsigned)indexOfObjectPassingTest:(Function)aPredicate
+- (unsigned)indexOfObjectPassingTest:(Function /*(id anObject, int index)*/)aPredicate
 {
     return [self indexOfObjectWithOptions:CPEnumerationNormal passingTest:aPredicate context:undefined];
 }
@@ -365,7 +365,7 @@ var concat = Array.prototype.concat,
     @param context An object that contains context information you want passed to the predicate function.
     @return The index of the first matching object, or \c CPNotFound if there is no matching object.
 */
-- (unsigned)indexOfObjectPassingTest:(Function)aPredicate context:(id)aContext
+- (unsigned)indexOfObjectPassingTest:(Function /*(id anObject, int index, id context)*/)aPredicate context:(id)aContext
 {
     return [self indexOfObjectWithOptions:CPEnumerationNormal passingTest:aPredicate context:aContext];
 }
@@ -380,7 +380,7 @@ var concat = Array.prototype.concat,
     or nil to stop the search, which will return CPNotFound to the sender.
     @return The index of the first matching object, or \c CPNotFound if there is no matching object.
 */
-- (unsigned)indexOfObjectWithOptions:(CPEnumerationOptions)options passingTest:(Function)aPredicate
+- (unsigned)indexOfObjectWithOptions:(CPEnumerationOptions)options passingTest:(Function /*(id anObject, int index)*/)aPredicate
 {
     return [self indexOfObjectWithOptions:options passingTest:aPredicate context:undefined];
 }
@@ -396,7 +396,7 @@ var concat = Array.prototype.concat,
     @param context An object that contains context information you want passed to the predicate function.
     @return The index of the first matching object, or \c CPNotFound if there is no matching object.
 */
-- (unsigned)indexOfObjectWithOptions:(CPEnumerationOptions)options passingTest:(Function)aPredicate context:(id)aContext
+- (unsigned)indexOfObjectWithOptions:(CPEnumerationOptions)options passingTest:(Function /*(id anObject, int index, id context)*/)aPredicate context:(id)aContext
 {
     // We don't use an enumerator because they return nil to indicate end of enumeration,
     // but nil may actually be the value we are looking for, so we have to loop over the array.
@@ -491,7 +491,7 @@ var concat = Array.prototype.concat,
     or nil to stop the search, which will return \c CPNotFound to the sender.
     @return A CPIndexSet of the matching object indexes.
 */
-- (CPIndexSet)indexesOfObjectsPassingTest:(Function /*(id anObject, int idx)*/)aPredicate
+- (CPIndexSet)indexesOfObjectsPassingTest:(Function /*(id anObject, int index)*/)aPredicate
 {
     return [self indexesOfObjectsWithOptions:CPEnumerationNormal passingTest:aPredicate context:undefined];
 }
@@ -505,7 +505,7 @@ var concat = Array.prototype.concat,
     @param context An object that contains context information you want passed to the predicate function.
     @return A CPIndexSet of the matching object indexes.
 */
-- (CPIndexSet)indexesOfObjectsPassingTest:(Function /*(id anObject, int idx, id context)*/)aPredicate context:(id)aContext
+- (CPIndexSet)indexesOfObjectsPassingTest:(Function /*(id anObject, int index, id context)*/)aPredicate context:(id)aContext
 {
     return [self indexesOfObjectsWithOptions:CPEnumerationNormal passingTest:aPredicate context:aContext];
 }
@@ -520,7 +520,7 @@ var concat = Array.prototype.concat,
     or nil to stop the search, which will return CPNotFound to the sender.
     @return A CPIndexSet of the matching object indexes.
 */
-- (CPIndexSet)indexesOfObjectsWithOptions:(CPEnumerationOptions)options passingTest:(Function /*(id anObject, int idx)*/)aPredicate
+- (CPIndexSet)indexesOfObjectsWithOptions:(CPEnumerationOptions)options passingTest:(Function /*(id anObject, int index)*/)aPredicate
 {
     return [self indexesOfObjectsWithOptions:options passingTest:aPredicate context:undefined];
 }
@@ -536,7 +536,7 @@ var concat = Array.prototype.concat,
     @param context An object that contains context information you want passed to the predicate function.
     @return A CPIndexSet of the matching object indexes.
 */
-- (CPIndexSet)indexesOfObjectsWithOptions:(CPEnumerationOptions)options passingTest:(Function /*(id anObject, int idx, id context)*/)aPredicate context:(id)aContext
+- (CPIndexSet)indexesOfObjectsWithOptions:(CPEnumerationOptions)options passingTest:(Function /*(id anObject, int index, id context)*/)aPredicate context:(id)aContext
 {
     // We don't use an enumerator because they return nil to indicate end of enumeration,
     // but nil may actually be the value we are looking for, so we have to loop over the array.
@@ -609,7 +609,7 @@ var concat = Array.prototype.concat,
             objj_msgSend([self objectAtIndex:index], aSelector);
 }
 
-- (void)enumerateObjectsUsingBlock:(Function /*(id anObject, int idx, @ref BOOL stop)*/)aFunction
+- (void)enumerateObjectsUsingBlock:(Function /*(id anObject, int index, @ref BOOL stop)*/)aFunction
 {
     // This could have been [self enumerateObjectsWithOptions:CPEnumerationNormal usingBlock:aFunction]
     // but this method should be as fast as possible.
@@ -626,7 +626,7 @@ var concat = Array.prototype.concat,
     }
 }
 
-- (void)enumerateObjectsWithOptions:(CPEnumerationOptions)options usingBlock:(Function /*(id anObject, int idx, @ref BOOL stop)*/)aFunction
+- (void)enumerateObjectsWithOptions:(CPEnumerationOptions)options usingBlock:(Function /*(id anObject, int index, @ref BOOL stop)*/)aFunction
 {
     var shouldStop = NO;
 
