@@ -1556,7 +1556,7 @@ var themedButtonValues = nil,
         sortImage = PatternImage("tableview-headerview-ascending.png", 9.0, 8.0),
         sortImageReversed = PatternImage("tableview-headerview-descending.png", 9.0, 8.0),
         alternatingRowColors = [[CPColor whiteColor], [CPColor colorWithRed:245.0 / 255.0 green:249.0 / 255.0 blue:252.0 / 255.0 alpha:1.0]],
-        gridColor = [CPColor colorWithHexString:@"dce0e2"],
+        gridColor = [CPColor colorWithHexString:@"cccccc"],
         selectionColor = [CPColor colorWithHexString:@"5f83b9"],
         sourceListSelectionColor = [CPDictionary dictionaryWithObjects: [CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [98.0 / 255.0, 143.0 / 210.0, 209.0 / 255.0, 1.0, 46.0 / 255.0, 88.0 / 176.0, 208.0 / 255.0,1.0], [0,1], 2),
                                                                           [CPColor colorWithCalibratedRed:81.0 / 255.0 green:127.0 / 255.0 blue:200.0 / 255.0 alpha:1.0],
@@ -1749,17 +1749,17 @@ var themedButtonValues = nil,
         removeImage = PatternImage(@"rule-editor-remove.png", 8.0, 8.0);
 
     var ruleEditorThemedValues =
-    [
-        [@"alternating-row-colors",         backgroundColors],
-        [@"selected-color",                 selectedActiveRowColor, CPThemeStateNormal],
-        [@"selected-color",                 selectedInactiveRowColor, CPThemeStateDisabled],
-        [@"slice-top-border-color",         sliceTopBorderColor],
-        [@"slice-bottom-border-color",      sliceBottomBorderColor],
-        [@"slice-last-bottom-border-color", sliceLastBottomBorderColor],
-        [@"font",                           [CPFont systemFontOfSize:10.0]],
-        [@"add-image",                      addImage],
-        [@"remove-image",                   removeImage]
-    ];
+        [
+            [@"alternating-row-colors",         backgroundColors],
+            [@"selected-color",                 selectedActiveRowColor, CPThemeStateNormal],
+            [@"selected-color",                 selectedInactiveRowColor, CPThemeStateDisabled],
+            [@"slice-top-border-color",         sliceTopBorderColor],
+            [@"slice-bottom-border-color",      sliceBottomBorderColor],
+            [@"slice-last-bottom-border-color", sliceLastBottomBorderColor],
+            [@"font",                           [CPFont systemFontOfSize:10.0]],
+            [@"add-image",                      addImage],
+            [@"remove-image",                   removeImage]
+        ];
 
     [self registerThemeValues:ruleEditorThemedValues forView:ruleEditor];
 
