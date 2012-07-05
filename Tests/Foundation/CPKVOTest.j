@@ -290,7 +290,10 @@
 
     [a addObserver:self forKeyPath:"b.c.d.e.f" options:0 context:"testCrazyKeyPathChanges"];
 
-    [a setValue:[D new] forKeyPath:"b.c.d"];
+    var newD = [D new];
+    [newD setValue:[E new] forKeyPath:@"e"];
+    [newD setValue:[F new] forKeyPath:@"e.f"];
+    [a setValue:newD forKeyPath:"b.c.d"];
 
     [self assertTrue: _sawObservation message:"Never recieved an observation"];
 }
@@ -378,6 +381,22 @@
     [tester addObserver:self forKeyPath:@"tester.subviews" options:0 context:"testInsertIntoArrayPropertyIndirectly"];
 
     [tester.tester insertSubview:5 atIndex:4];
+
+    [self assertTrue: _sawObservation message:"Never recieved an observation"];
+}
+
+- (void)testChangeTopLevelObject
+{
+    var tester = [IndirectToManyTester new];
+
+    tester.tester = [ToManyTester new];
+
+    [tester.tester setValue:[1, 2, 3, 4] forKey:@"subviews"];
+    [tester addObserver:self forKeyPath:@"tester.subviews" options:0 context:"testChangeTopLevelObject"];
+
+    var newTesterTester = [ToManyTester new];
+    [newTesterTester setValue:[5, 6, 7, 8] forKey:@"subviews"];
+    [tester setValue:newTesterTester forKey:@"tester"];
 
     [self assertTrue: _sawObservation message:"Never recieved an observation"];
 }
@@ -537,21 +556,21 @@
             break;
 
         case "testThreePartKeyPart2":
-            [self assertTrue: aKeyPath == "teacher.car" message:"Keypath should be: teacher.car, was: "+aKeyPath];
-            [self assertTrue: newValue.year == "2000" message:"New value should be a car with year: 2000, was: "+[newValue description]];
+            [self assertTrue: aKeyPath == "teacher.car.year" message:"Keypath should be: teacher.car, was: "+aKeyPath];
+            [self assertTrue: newValue == "2000" message:"New value should be a car with year: 2000, was: "+[newValue description]];
             [self assertTrue: anObject == cs101 message: "anObject should be: "+[cs101 description]+", was: "+[anObject description]];
             break;
 
         case "testCrazyKeyPathChanges":
             [self assertTrue: [anObject class] == A message:"Should be observing an A class, was: "+[anObject class]];
-            [self assertTrue: [newValue class] == D message:"Changed class was a D class, got: "+[newValue class]];
-            [self assertTrue: aKeyPath == "b.c.d" message:"Expected keyPath b.c.d, got: "+aKeyPath];
+            [self assertTrue: [newValue class] == F message:"Changed class was a F class, got: "+[newValue class]];
+            [self assertTrue: aKeyPath == "b.c.d.e.f" message:"Expected keyPath b.c.d.e.f, got: "+aKeyPath];
             break;
 
         case "testCrazyKeyPathChanges2":
             [self assertTrue: [anObject class] == A message:"Should be observing an A class, was: "+[anObject class]];
             [self assertTrue: newValue == [CPNull null] message:"Expected null, got: "+newValue];
-            [self assertTrue: aKeyPath == "b.c" message:"Expected keyPath b.c, got: "+aKeyPath];
+            [self assertTrue: aKeyPath == "b.c.d.e.f" message:"Expected keyPath b.c.d.e.f, got: "+aKeyPath];
             break;
 
         case "testCrazyKeyPathChanges3":
@@ -613,6 +632,17 @@
 
             [self assert:aKeyPath equals:"tester.subviews"];
             [self assert:[anObject valueForKeyPath:aKeyPath] equals:[1, 2, 3, 4, 5]];
+
+            break;
+
+        case "testChangeTopLevelObject":
+            var type = [changes objectForKey:CPKeyValueChangeKindKey];
+            [self assertTrue: type == CPKeyValueChangeSetting message: "Should have been a set, was: "+type];
+
+            var oldValue = [changes objectForKey:CPKeyValueChangeOldKey],
+                newValue = [changes objectForKey:CPKeyValueChangeNewKey];
+            [self assert:oldValue equals:[1, 2, 3, 4]];
+            [self assert:newValue equals:[5, 6, 7, 8]];
 
             break;
 

@@ -1114,7 +1114,14 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 {
     if (aKeyPath === _firstPart)
     {
-        [_observer observeValueForKeyPath:_firstPart ofObject:_object change:changes context:_context];
+        var oldValue = [_value valueForKeyPath:_secondPart],
+            newValue = [_object valueForKeyPath:_firstPart+"."+_secondPart],
+            pathChanges = [CPDictionary dictionaryWithObjectsAndKeys:
+                            newValue ? newValue : [CPNull null],    CPKeyValueChangeNewKey,
+                            oldValue ? oldValue : [CPNull null],    CPKeyValueChangeOldKey,
+                            CPKeyValueChangeSetting,                CPKeyValueChangeKindKey];
+
+        [_observer observeValueForKeyPath:_firstPart+"."+_secondPart ofObject:_object change:pathChanges context:_context];
 
         //since a has changed, we should remove ourselves as an observer of the old a, and observe the new one
         if (_value)
