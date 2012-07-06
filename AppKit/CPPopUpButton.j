@@ -20,11 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPButton.j"
-@import "CPGeometry.j"
-@import "CPKeyValueBinding.j"
-@import "CPMenu.j"
-@import "CPMenuItem.j"
+@import <AppKit/CPButton.j>
+@import <AppKit/CPGeometry.j>
+@import <AppKit/CPKeyValueBinding.j>
+@import <AppKit/CPMenu.j>
+@import <AppKit/CPMenuItem.j>
 
 var VISIBLE_MARGIN = 7.0;
 
@@ -789,17 +789,23 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     return [super _binderClassForBinding:aBinding];
 }
 
-- (id)_valueOrNilIfCPNull:(id)aValue
-{
-    if (aValue === [CPNull null])
-        return nil;
+@end
 
-    return aValue;
+@implementation _CPPopUpButtonContentBinder : CPBinder
+{
 }
 
-- (id)_getNullPlaceholderFromOptions:(CPDictionary)someOptions
+- (CPInteger)_getInsertNullOffset
 {
-    var placeholder = [someOptions objectForKey:CPNullPlaceholderBindingOption] || @"";
+    var options = [_info objectForKey:CPOptionsKey];
+
+    return [options objectForKey:CPInsertsNullPlaceholderBindingOption] ? 1 : 0;
+}
+
+- (CPString)_getNullPlaceholder
+{
+    var options = [_info objectForKey:CPOptionsKey],
+        placeholder = [options objectForKey:CPNullPlaceholderBindingOption] || @"";
 
     if (placeholder === [CPNull null])
         placeholder = @"";
@@ -807,21 +813,16 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     return placeholder;
 }
 
-@end
-
-@implementation _CPPopUpButtonContentBinder : CPBinder
+- (id)transformValue:(CPArray)contentArray withOptions:(CPDictionary)options
 {
+    // Desactivate the full array transformation forced by super because we don't want this. We want individual transformations (see below).
+    return contentArray;
 }
 
-- (id)transformValue:(id)aValue withOptions:(CPDictionary)options
+- (void)setValue:(CPArray)contentArray forBinding:(CPString)aBinding
 {
-    CPLogConsole("Value Transformers are not supported yet for CP(Content|ContentObjects|ContentValues)Binding. Ignoring.");
-    return aValue;
-}
-
-- (void)setValue:(id)aValue forBinding:(CPString)aBinding
-{
-    [self _setContent:aValue];
+    [self _setContent:contentArray];
+    [self _setContentValuesIfNeeded:contentArray];
 }
 
 - (void)valueForBinding:(CPString)aBinding
@@ -831,25 +832,21 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 - (void)_setContent:(CPArray)aValue
 {
-    var options = [_info objectForKey:CPOptionsKey],
-        insertNullValue = [options objectForKey:CPInsertsNullPlaceholderBindingOption],
-        insertNull = [insertNullValue boolValue] ? 1 : 0,
-        count = [aValue count];
+    var count = [aValue count],
+        options = [_info objectForKey:CPOptionsKey],
+        offset = [self _getInsertNullOffset];
 
-    if (count + insertNull != [_source numberOfItems])
+    if (count + offset != [_source numberOfItems])
     {
         [_source removeAllItems];
 
-        if (insertNull)
-        {
-            var item = [[CPMenuItem alloc] initWithTitle:[_source _getNullPlaceholderFromOptions:options] action:NULL keyEquivalent:nil];
-            [_source addItem:item];
-        }
+        if (offset)
+            [_source addItemWithTitle:[self _getNullPlaceholder]];
 
         for (var i = 0; i < count; i++)
         {
             var item = [[CPMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:nil];
-            [item setRepresentedObject:[aValue objectAtIndex:i]];
+            [self _setValue:[aValue objectAtIndex:i] forItem:item withOptions:options];
             [_source addItem:item];
         }
     }
@@ -857,18 +854,35 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     {
         for (var i = 0; i < count; i++)
         {
-            [[_source itemAtIndex:i + insertNull] setRepresentedObject:[aValue objectAtIndex:i]];
+            [self _setValue:[aValue objectAtIndex:i] forItem:[_source itemAtIndex:i + offset] withOptions:options];
         }
     }
+}
+
+- (void)_setContentValuesIfNeeded:(CPArray)values
+{
+    var offset = [self _getInsertNullOffset];
 
     if (![_source infoForBinding:CPContentValuesBinding])
     {
-        if (insertNull)
-            [[_source itemAtIndex:0] setTitle:[_source _getNullPlaceholderFromOptions:options]];
+        if (offset)
+            [[_source itemAtIndex:0] setTitle:[self _getNullPlaceholder]];
 
+        var count = [values count];
         for (var i = 0; i < count; i++)
-            [[_source itemAtIndex:i + insertNull] setTitle:[[aValue objectAtIndex:i] description]];
+            [[_source itemAtIndex:i + offset] setTitle:[[values objectAtIndex:i] description]];
     }
+}
+
+- (void)_setValue:(id)aValue forItem:(CPMenuItem)aMenuItem withOptions:(CPDictionary)options
+{
+    var value = [self _transformValue:aValue withOptions:options];
+    [aMenuItem setRepresentedObject:value];
+}
+
+- (id)_transformValue:(id)aValue withOptions:(CPDictionary)options
+{
+    return [super transformValue:aValue withOptions:options];
 }
 
 - (CPArray)_content
@@ -878,54 +892,22 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 @end
 
-@implementation _CPPopUpButtonContentValuesBinder : CPBinder
+@implementation _CPPopUpButtonContentValuesBinder : _CPPopUpButtonContentBinder
 {
-}
-
-- (id)transformValue:(id)aValue withOptions:(CPDictionary)options
-{
-    CPLogConsole("Value Transformers are not supported yet for CP(Content|ContentObjects|ContentValues)Binding. Ignoring.");
-    return aValue;
 }
 
 - (void)setValue:(id)aValue forBinding:(CPString)aBinding
 {
-    [self _setContentValues:aValue];
+    [super _setContent:aValue];
 }
 
-- (void)valueForBinding:(CPString)aBinding
+- (void)_setValue:(id)aValue forItem:(CPMenuItem)aMenuItem withOptions:(CPDictionary)options
 {
-    return [self _content];
-}
+    if (aValue === [CPNull null])
+        aValue = nil;
 
-- (void)_setContentValues:(CPArray)aValue
-{
-    var options = [_info objectForKey:CPOptionsKey],
-        insertNullValue = [options objectForKey:CPInsertsNullPlaceholderBindingOption],
-        insertNull = [insertNullValue boolValue] ? 1 : 0,
-        nullPlaceHolderValue = [_source _getNullPlaceholderFromOptions:options],
-        count = [aValue count];
-
-    if (count + insertNull != [_source numberOfItems])
-    {
-        [_source removeAllItems];
-
-        if (insertNull)
-            [_source addItemWithTitle:nullPlaceHolderValue];
-
-        for (var i = 0; i < count; i++)
-            [_source addItemWithTitle:[_source _valueOrNilIfCPNull:[aValue objectAtIndex:i]]];
-    }
-    else
-    {
-        if (insertNull)
-            [[_source itemAtIndex:0] setTitle:nullPlaceHolderValue];
-
-        for (var i = 0; i < count; i++)
-            [[_source itemAtIndex:i + insertNull] setTitle:[_source _valueOrNilIfCPNull:[aValue objectAtIndex:i]]];
-    }
-
-    [_source synchronizeTitleAndSelectedItem];
+    var value = [self _transformValue:aValue withOptions:options];
+    [aMenuItem setTitle:value];
 }
 
 - (CPArray)_content
@@ -935,41 +917,42 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 @end
 
-var binderForObject = {},
-    selectionBindings = [CPSelectedIndexBinding, CPSelectedObjectBinding, CPSelectedTagBinding, CPSelectedValueBinding];
+var binderForObject = {};
 
 @implementation _CPPopUpButtonSelectionBinder : CPBinder
 {
-    CPString _selectionBinding @accessors(property=binding);
+    CPString _selectionBinding @accessors;
+}
+
+- (id)initWithBinding:(CPString)aBinding name:(CPString)aName to:(id)aDestination keyPath:(CPString)aKeyPath options:(CPDictionary)options from:(id)aSource
+{
+    self = [super initWithBinding:aBinding name:aName to:aDestination keyPath:aKeyPath options:options from:aSource];
+    if (self)
+    {
+        binderForObject[[aSource UID]] = self;
+        _selectionBinding = aName;
+    }
+
+    return self;
 }
 
 + (void)reverseSetValueForObject:(id)aSource
 {
-    var uid = [aSource UID],
-        binder = binderForObject[uid];
-
-    if (binder == nil)
-    {
-        var count = selectionBindings.length;
-        while (count--)
-        {
-            var binding = selectionBindings[count];
-            binder = [self getBinding:binding forObject:aSource];
-            if (binder != nil)
-            {
-                binderForObject[uid] = binder;
-                [binder setBinding:binding];
-                break;
-            }
-        }
-    }
-
-    [binder reverseSetValueFor:[binder binding]];
+    var binder = binderForObject[[aSource UID]];
+    [binder reverseSetValueFor:[binder _selectionBinding]];
 }
 
 - (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
 {
     [self setValue:aValue forBinding:aBinding];
+}
+
+- (CPInteger)_getInsertNullOffset
+{
+    var info = [CPBinder infoForBinding:CPContentBinding forObject:_source];
+    var options = [info objectForKey:CPOptionsKey];
+
+    return [options objectForKey:CPInsertsNullPlaceholderBindingOption] ? 1 : 0;
 }
 
 @end
@@ -980,12 +963,12 @@ var binderForObject = {},
 
 - (void)setValue:(id)aValue forBinding:(CPString)aBinding
 {
-    [_source selectItemAtIndex:aValue];
+    [_source selectItemAtIndex:aValue + [self _getInsertNullOffset]];
 }
 
 - (id)valueForBinding:(CPString)aBinding
 {
-    return [_source indexOfSelectedItem];
+    return [_source indexOfSelectedItem] - [self _getInsertNullOffset];
 }
 
 @end
@@ -996,7 +979,8 @@ var binderForObject = {},
 
 - (void)setValue:(id)aValue forBinding:(CPString)aBinding
 {
-    var index = [_source indexOfItemWithRepresentedObject:aValue];
+    var index = [_source indexOfItemWithRepresentedObject:aValue],
+        offset = [self _getInsertNullOffset];
 
     // If the content binding has the option CPNullPlaceholderBindingOption and the object to select is nil, select the first item (i.e., the placeholder).
     // Other cases to consider:
@@ -1012,7 +996,7 @@ var binderForObject = {},
     // 2.2.2 the object to select is nil/CPNull
     // More cases? Behaviour that depends on array controller settings?
 
-    if ([[[[CPBinder infoForBinding:CPContentBinding forObject:_source] objectForKey:CPOptionsKey] objectForKey:CPInsertsNullPlaceholderBindingOption] boolValue] && index === CPNotFound)
+    if (offset === 1 && index === CPNotFound)
         index = 0;
 
     [_source selectItemAtIndex:index];
