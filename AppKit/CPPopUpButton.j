@@ -25,7 +25,6 @@
 @import "CPKeyValueBinding.j"
 @import "CPMenu.j"
 @import "CPMenuItem.j"
-@import <AppKit/CPKeyValueBinding.j>
 
 var VISIBLE_MARGIN = 7.0;
 
@@ -777,7 +776,10 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     if (aBinding == CPSelectedIndexBinding ||
         aBinding == CPSelectedObjectBinding ||
         aBinding == CPSelectedTagBinding ||
-        aBinding == CPSelectedValueBinding)
+        aBinding == CPSelectedValueBinding ||
+        aBinding == CPContentBinding ||
+        aBinding == CPContentObjectsBinding ||
+        aBinding == CPContentValuesBinding)
     {
         var capitalizedBinding = aBinding.charAt(0).toUpperCase() + aBinding.substr(1);
 
@@ -785,11 +787,6 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     }
 
     return [super _binderClassForBinding:aBinding];
-}
-
-- (CPArray)_contentValues
-{
-    return [self valueForKeyPath:@"itemArray.title"];
 }
 
 - (id)_valueOrNilIfCPNull:(id)aValue
@@ -810,83 +807,130 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     return placeholder;
 }
 
-- (void)_setContentValues:(CPArray)aValue
+@end
+
+@implementation _CPPopUpButtonContentBinder : CPBinder
 {
-    var infoDictionary = [self infoForBinding:CPContentValuesBinding],
-        options = [infoDictionary objectForKey:CPOptionsKey],
-        insertNullValue = [options objectForKey:CPInsertsNullPlaceholderBindingOption],
-        insertNull = [insertNullValue boolValue] ? 1 : 0,
-        nullPlaceHolderValue = [self _getNullPlaceholderFromOptions:options],
-        count = [aValue count];
-
-    if (count + insertNull != [self numberOfItems])
-    {
-        [self removeAllItems];
-
-        if (insertNull)
-            [self addItemWithTitle:nullPlaceHolderValue];
-
-        for (var i = 0; i < count; i++)
-            [self addItemWithTitle:[self _valueOrNilIfCPNull:[aValue objectAtIndex:i]]];
-    }
-    else
-    {
-        if (insertNull)
-            [[self itemAtIndex:0] setTitle:nullPlaceHolderValue];
-
-        for (var i = 0; i < count; i++)
-            [[self itemAtIndex:i + insertNull] setTitle:[self _valueOrNilIfCPNull:[aValue objectAtIndex:i]]];
-    }
-
-    [self synchronizeTitleAndSelectedItem];
 }
 
-- (CPArray)_content
+- (id)transformValue:(id)aValue withOptions:(CPDictionary)options
 {
-    return [self valueForKeyPath:@"itemArray.representedObject"];
+    CPLogConsole("Value Transformers are not supported yet for CP(Content|ContentObjects|ContentValues)Binding. Ignoring.");
+    return aValue;
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    [self _setContent:aValue];
+}
+
+- (void)valueForBinding:(CPString)aBinding
+{
+    return [self _content];
 }
 
 - (void)_setContent:(CPArray)aValue
 {
-    var infoDictionary = [self infoForBinding:CPContentBinding],
-        options = [infoDictionary objectForKey:CPOptionsKey],
+    var options = [_info objectForKey:CPOptionsKey],
         insertNullValue = [options objectForKey:CPInsertsNullPlaceholderBindingOption],
         insertNull = [insertNullValue boolValue] ? 1 : 0,
         count = [aValue count];
 
-    if (count + insertNull != [self numberOfItems])
+    if (count + insertNull != [_source numberOfItems])
     {
-        [self removeAllItems];
+        [_source removeAllItems];
 
         if (insertNull)
         {
-            var item = [[CPMenuItem alloc] initWithTitle:[self _getNullPlaceholderFromOptions:options] action:NULL keyEquivalent:nil];
-            [self addItem:item];
+            var item = [[CPMenuItem alloc] initWithTitle:[_source _getNullPlaceholderFromOptions:options] action:NULL keyEquivalent:nil];
+            [_source addItem:item];
         }
 
         for (var i = 0; i < count; i++)
         {
             var item = [[CPMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:nil];
             [item setRepresentedObject:[aValue objectAtIndex:i]];
-            [self addItem:item];
+            [_source addItem:item];
         }
     }
     else
     {
         for (var i = 0; i < count; i++)
         {
-            [[self itemAtIndex:i + insertNull] setRepresentedObject:[aValue objectAtIndex:i]];
+            [[_source itemAtIndex:i + insertNull] setRepresentedObject:[aValue objectAtIndex:i]];
         }
     }
 
-    if (![self infoForBinding:CPContentValuesBinding])
+    if (![_source infoForBinding:CPContentValuesBinding])
     {
         if (insertNull)
-            [[self itemAtIndex:0] setTitle:[self _getNullPlaceholderFromOptions:options]];
+            [[_source itemAtIndex:0] setTitle:[_source _getNullPlaceholderFromOptions:options]];
 
         for (var i = 0; i < count; i++)
-            [[self itemAtIndex:i + insertNull] setTitle:[[aValue objectAtIndex:i] description]];
+            [[_source itemAtIndex:i + insertNull] setTitle:[[aValue objectAtIndex:i] description]];
     }
+}
+
+- (CPArray)_content
+{
+    return [_source valueForKeyPath:@"itemArray.representedObject"];
+}
+
+@end
+
+@implementation _CPPopUpButtonContentValuesBinder : CPBinder
+{
+}
+
+- (id)transformValue:(id)aValue withOptions:(CPDictionary)options
+{
+    CPLogConsole("Value Transformers are not supported yet for CP(Content|ContentObjects|ContentValues)Binding. Ignoring.");
+    return aValue;
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    [self _setContentValues:aValue];
+}
+
+- (void)valueForBinding:(CPString)aBinding
+{
+    return [self _content];
+}
+
+- (void)_setContentValues:(CPArray)aValue
+{
+    var options = [_info objectForKey:CPOptionsKey],
+        insertNullValue = [options objectForKey:CPInsertsNullPlaceholderBindingOption],
+        insertNull = [insertNullValue boolValue] ? 1 : 0,
+        nullPlaceHolderValue = [_source _getNullPlaceholderFromOptions:options],
+        count = [aValue count];
+
+    if (count + insertNull != [_source numberOfItems])
+    {
+        [_source removeAllItems];
+
+        if (insertNull)
+            [_source addItemWithTitle:nullPlaceHolderValue];
+
+        for (var i = 0; i < count; i++)
+            [_source addItemWithTitle:[_source _valueOrNilIfCPNull:[aValue objectAtIndex:i]]];
+    }
+    else
+    {
+        if (insertNull)
+            [[_source itemAtIndex:0] setTitle:nullPlaceHolderValue];
+
+        for (var i = 0; i < count; i++)
+            [[_source itemAtIndex:i + insertNull] setTitle:[_source _valueOrNilIfCPNull:[aValue objectAtIndex:i]]];
+    }
+
+    [_source synchronizeTitleAndSelectedItem];
+}
+
+- (CPArray)_content
+{
+    return [_source valueForKeyPath:@"itemArray.title"];
 }
 
 @end
