@@ -861,7 +861,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
         }
     }
 
-    if (![self infoForBinding:CPContentValuesBinding])
+    if (![_source infoForBinding:CPContentValuesBinding])
     {
         if (insertNull)
             [[_source itemAtIndex:0] setTitle:[_source _getNullPlaceholderFromOptions:options]];
