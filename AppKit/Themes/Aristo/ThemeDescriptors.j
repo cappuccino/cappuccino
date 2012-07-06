@@ -863,46 +863,46 @@ var themedButtonValues = nil,
 
         bezelColor = PatternColor(
             [
-                ["textfield-bezel-square-0.png", 3.0, 4.0],
-                ["textfield-bezel-square-1.png", 1.0, 4.0],
-                ["textfield-bezel-square-2.png", 3.0, 4.0],
-                ["textfield-bezel-square-3.png", 3.0, 1.0],
+                ["textfield-bezel-square-0.png", 6.0, 6.0],
+                ["textfield-bezel-square-1.png", 1.0, 6.0],
+                ["textfield-bezel-square-2.png", 6.0, 6.0],
+                ["textfield-bezel-square-3.png", 6.0, 1.0],
                 ["textfield-bezel-square-4.png", 1.0, 1.0],
-                ["textfield-bezel-square-5.png", 3.0, 1.0],
-                ["textfield-bezel-square-6.png", 3.0, 4.0],
-                ["textfield-bezel-square-7.png", 1.0, 4.0],
-                ["textfield-bezel-square-8.png", 3.0, 4.0]
+                ["textfield-bezel-square-5.png", 6.0, 1.0],
+                ["textfield-bezel-square-6.png", 6.0, 6.0],
+                ["textfield-bezel-square-7.png", 1.0, 6.0],
+                ["textfield-bezel-square-8.png", 6.0, 6.0]
             ]),
 
         bezelFocusedColor = PatternColor(
             [
-                ["textfield-bezel-square-focused-0.png", 7.0, 7.0],
-                ["textfield-bezel-square-focused-1.png", 1.0, 7.0],
-                ["textfield-bezel-square-focused-2.png", 7.0, 7.0],
-                ["textfield-bezel-square-focused-3.png", 7.0, 1.0],
+                ["textfield-bezel-square-focused-0.png", 6.0, 6.0],
+                ["textfield-bezel-square-focused-1.png", 1.0, 6.0],
+                ["textfield-bezel-square-focused-2.png", 6.0, 6.0],
+                ["textfield-bezel-square-focused-3.png", 6.0, 1.0],
                 ["textfield-bezel-square-focused-4.png", 1.0, 1.0],
-                ["textfield-bezel-square-focused-5.png", 7.0, 1.0],
-                ["textfield-bezel-square-focused-6.png", 7.0, 7.0],
-                ["textfield-bezel-square-focused-7.png", 1.0, 7.0],
-                ["textfield-bezel-square-focused-8.png", 7.0, 7.0]
+                ["textfield-bezel-square-focused-5.png", 6.0, 1.0],
+                ["textfield-bezel-square-focused-6.png", 6.0, 6.0],
+                ["textfield-bezel-square-focused-7.png", 1.0, 6.0],
+                ["textfield-bezel-square-focused-8.png", 6.0, 6.0]
             ]),
 
         bezelDisabledColor = PatternColor(
             [
-                ["textfield-bezel-square-disabled-0.png", 3.0, 4.0],
-                ["textfield-bezel-square-disabled-1.png", 1.0, 4.0],
-                ["textfield-bezel-square-disabled-2.png", 3.0, 4.0],
-                ["textfield-bezel-square-disabled-3.png", 3.0, 1.0],
+                ["textfield-bezel-square-disabled-0.png", 6.0, 6.0],
+                ["textfield-bezel-square-disabled-1.png", 1.0, 6.0],
+                ["textfield-bezel-square-disabled-2.png", 6.0, 6.0],
+                ["textfield-bezel-square-disabled-3.png", 6.0, 1.0],
                 ["textfield-bezel-square-disabled-4.png", 1.0, 1.0],
-                ["textfield-bezel-square-disabled-5.png", 3.0, 1.0],
-                ["textfield-bezel-square-disabled-6.png", 3.0, 4.0],
-                ["textfield-bezel-square-disabled-7.png", 1.0, 4.0],
-                ["textfield-bezel-square-disabled-8.png", 3.0, 4.0]
-            ]),
+                ["textfield-bezel-square-disabled-5.png", 6.0, 1.0],
+                ["textfield-bezel-square-disabled-6.png", 6.0, 6.0],
+                ["textfield-bezel-square-disabled-7.png", 1.0, 6.0],
+                ["textfield-bezel-square-disabled-8.png", 6.0, 6.0]
+            ]);
 
-        placeholderColor = [CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0];
-
-    // Global for reuse by CPTokenField.
+    // Global for reuse by subclasses
+    textDisabledColor = [CPColor colorWithCalibratedWhite:0.60 alpha:1.0];
+    placeholderColor = [CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0];
     themedTextFieldValues =
     [
         [@"vertical-alignment", CPTopVerticalTextAlignment,         CPThemeStateBezeled],
@@ -911,30 +911,35 @@ var themedButtonValues = nil,
         [@"bezel-color",        bezelDisabledColor,                 CPThemeStateBezeled | CPThemeStateDisabled],
         [@"font",               [CPFont systemFontOfSize:12.0],     CPThemeStateBezeled],
 
-        [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 8.0),    CPThemeStateBezeled],
-        [@"content-inset",      CGInsetMake(7.0, 7.0, 5.0, 8.0),    CPThemeStateBezeled | CPThemeStateEditing],
-        [@"bezel-inset",        CGInsetMake(3.0, 4.0, 3.0, 4.0),    CPThemeStateBezeled],
-        [@"bezel-inset",        CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled | CPThemeStateEditing],
+        // no border
+        [@"bezel-inset",        CGInsetMakeZero()],
+        [@"content-inset",      CGInsetMake(2.0, 2.0, 2.0, 2.0)],   // as defined in [CPTextField +themeAttributes]
 
+        // with border
+        [@"bezel-inset",        CGInsetMakeZero(),                  CPThemeStateBezeled],
+        [@"content-inset",      CGInsetMake(8.0, 7.0, 7.0, 8.0),    CPThemeStateBezeled],
+
+        [@"text-color",         textDisabledColor,                  CPThemeStateBezeled | CPThemeStateDisabled],
         [@"text-color",         placeholderColor,                   CPTextFieldStatePlaceholder],
+        [@"text-color",         placeholderColor,                   CPTextFieldStatePlaceholder | CPThemeStateDisabled],
 
         [@"line-break-mode",    CPLineBreakByTruncatingTail,        CPThemeStateTableDataView],
         [@"vertical-alignment", CPCenterVerticalTextAlignment,      CPThemeStateTableDataView],
-        [@"content-inset",      CGInsetMake(0.0, 0.0, 0.0, 5.0),    CPThemeStateTableDataView],
+        [@"content-inset",      CGInsetMake(3.0, 3.0, 3.0, 5.0),    CPThemeStateTableDataView],
 
         [@"text-color",         [CPColor colorWithCalibratedWhite:51.0 / 255.0 alpha:1.0], CPThemeStateTableDataView],
         [@"text-color",         [CPColor whiteColor],                CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
         [@"font",               [CPFont boldSystemFontOfSize:12.0],  CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
         [@"text-color",         [CPColor blackColor],                CPThemeStateTableDataView | CPThemeStateEditing],
-        [@"content-inset",      CGInsetMake(7.0, 7.0, 5.0, 8.0),     CPThemeStateTableDataView | CPThemeStateEditing],
+        [@"content-inset",      CGInsetMake(8.0, 8.0, 7.0, 5.0),     CPThemeStateTableDataView | CPThemeStateEditing],
         [@"font",               [CPFont systemFontOfSize:12.0],      CPThemeStateTableDataView | CPThemeStateEditing],
-        [@"bezel-inset",        CGInsetMake(-2.0, -2.0, -2.0, -2.0), CPThemeStateTableDataView | CPThemeStateEditing],
+        [@"bezel-inset",        CGInsetMake(-1.0, -1.0, -1.0, -1.0), CPThemeStateTableDataView | CPThemeStateEditing],
 
         [@"text-color",         [CPColor colorWithCalibratedWhite:125.0 / 255.0 alpha:1.0], CPThemeStateTableDataView | CPThemeStateGroupRow],
         [@"text-color",         [CPColor colorWithCalibratedWhite:1.0 alpha:1.0], CPThemeStateTableDataView | CPThemeStateGroupRow | CPThemeStateSelectedTableDataView],
         [@"text-shadow-color",  [CPColor whiteColor],                CPThemeStateTableDataView | CPThemeStateGroupRow],
         [@"text-shadow-offset",  CGSizeMake(0,1),                    CPThemeStateTableDataView | CPThemeStateGroupRow],
-        [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:0.0 alpha:0.6],                CPThemeStateTableDataView | CPThemeStateGroupRow | CPThemeStateSelectedTableDataView],
+        [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:0.0 alpha:0.6], CPThemeStateTableDataView | CPThemeStateGroupRow | CPThemeStateSelectedTableDataView],
         [@"font",               [CPFont boldSystemFontOfSize:12.0],  CPThemeStateTableDataView | CPThemeStateGroupRow]
     ];
 
@@ -954,35 +959,42 @@ var themedButtonValues = nil,
     var textfield = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 30.0)],
         bezelColor = PatternColor(
             [
-                ["textfield-bezel-rounded-left.png", 13.0, 22.0],
-                ["textfield-bezel-rounded-center.png", 1.0, 22.0],
-                ["textfield-bezel-rounded-right.png", 13.0, 22.0]
+                ["textfield-bezel-rounded-left.png", 15.0, 30.0],
+                ["textfield-bezel-rounded-center.png", 1.0, 30.0],
+                ["textfield-bezel-rounded-right.png", 15.0, 30.0]
             ],
             PatternIsHorizontal),
 
         bezelFocusedColor = PatternColor(
             [
-                ["textfield-bezel-rounded-focused-left.png", 17.0, 30.0],
+                ["textfield-bezel-rounded-focused-left.png", 15.0, 30.0],
                 ["textfield-bezel-rounded-focused-center.png", 1.0, 30.0],
-                ["textfield-bezel-rounded-focused-right.png", 17.0, 30.0]
+                ["textfield-bezel-rounded-focused-right.png", 15.0, 30.0]
             ],
             PatternIsHorizontal),
 
-        placeholderColor = [CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0];
+        bezelDisabledColor = PatternColor(
+            [
+                ["textfield-bezel-rounded-disabled-left.png", 15.0, 30.0],
+                ["textfield-bezel-rounded-disabled-center.png", 1.0, 30.0],
+                ["textfield-bezel-rounded-disabled-right.png", 15.0, 30.0]
+            ],
+            PatternIsHorizontal);
 
-    // Global for reuse by CPSearchField
+    // Global for reuse by subclasses
     themedRoundedTextFieldValues =
         [
-            [@"bezel-color",    bezelColor,                         CPTextFieldStateRounded | CPThemeStateBezeled],
-            [@"bezel-color",    bezelFocusedColor,                  CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
+            [@"bezel-color",    bezelColor,         CPTextFieldStateRounded | CPThemeStateBezeled],
+            [@"bezel-color",    bezelFocusedColor,  CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
+            [@"bezel-color",    bezelDisabledColor, CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateDisabled],
             [@"font",           [CPFont systemFontOfSize:12.0]],
 
-            [@"content-inset",  CGInsetMake(8.0, 14.0, 6.0, 14.0),  CPTextFieldStateRounded | CPThemeStateBezeled],
-            [@"content-inset",  CGInsetMake(7.0, 14.0, 6.0, 14.0),  CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
+            // The new bezel is one pixel shorter, so we add one extra empty pixel at the bottom
+            // for size compatibility with an earlier version.
+            [@"bezel-inset",    CGInsetMake(0.0, 0.0, 1.0, 0.0),    CPTextFieldStateRounded | CPThemeStateBezeled],
+            [@"content-inset",  CGInsetMake(8.0, 13.0, 7.0, 14.0),  CPTextFieldStateRounded | CPThemeStateBezeled],
 
-            [@"bezel-inset",    CGInsetMake(4.0, 4.0, 4.0, 4.0),    CPTextFieldStateRounded | CPThemeStateBezeled],
-            [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
-
+            [@"text-color",     textDisabledColor,      CPTextFieldStateRounded | CPThemeStateDisabled],
             [@"text-color",     placeholderColor,       CPTextFieldStateRounded | CPTextFieldStatePlaceholder],
 
             [@"min-size",       CGSizeMake(0.0, 30.0),  CPTextFieldStateRounded | CPThemeStateBezeled],
@@ -1015,11 +1027,20 @@ var themedButtonValues = nil,
 
         overrides =
         [
-            [@"content-inset", CGInsetMake(8.0, 0.0, 4.0, 0.0)],
-            // Placeholder is displayed as regular text, not tokens; requires a different inset.
-            [@"content-inset", CGInsetMake(9.0, 0.0, 5.0, 2.0), CPTextFieldStatePlaceholder],
-            [@"content-inset", CGInsetMake(6.0, 5.0, 5.0, 6.0), CPThemeStateBezeled],
-            [@"content-inset", CGInsetMake(9.0, 7.0, 6.0, 8.0), CPThemeStateBezeled | CPTextFieldStatePlaceholder],
+            [@"bezel-inset", CGInsetMakeZero()],
+            [@"editor-inset", CGInsetMake(2.0, 0.0, 0.0, 0.0)],
+
+            // Non-bezeled token field with tokens
+            [@"content-inset", CGInsetMake(5.0, 8.0, 4.0, 8.0)],
+
+            // Non-bezeled token field with no tokens
+            [@"content-inset", CGInsetMake(7.0, 8.0, 6.0, 8.0), CPTextFieldStatePlaceholder],
+
+            // Bezeled token field with tokens
+            [@"content-inset", CGInsetMake(6.0, 8.0, 2.0, 8.0), CPThemeStateBezeled],
+
+            // Bezeled token field with no tokens
+            [@"content-inset", CGInsetMake(8.0, 8.0, 7.0, 8.0), CPThemeStateBezeled | CPTextFieldStatePlaceholder]
         ];
 
     [self registerThemeValues:overrides forView:tokenfield inherit:themedTextFieldValues];
@@ -1047,6 +1068,14 @@ var themedButtonValues = nil,
             ],
             PatternIsHorizontal),
 
+        bezelColorDisabled = PatternColor(
+            [
+                ["token-left-disabled.png", 11.0, 19.0],
+                ["token-center-disabled.png", 1.0, 19.0],
+                ["token-right-disabled.png", 11.0, 19.0]
+            ],
+            PatternIsHorizontal),
+
         textColor = [CPColor colorWithRed:41.0 / 255.0 green:51.0 / 255.0 blue:64.0 / 255.0 alpha:1.0],
         textHighlightedColor = [CPColor whiteColor],
 
@@ -1054,18 +1083,19 @@ var themedButtonValues = nil,
         [
             [@"bezel-color",    bezelColor,                         CPThemeStateBezeled],
             [@"bezel-color",    bezelHighlightedColor,              CPThemeStateBezeled | CPThemeStateHighlighted],
+            [@"bezel-color",    bezelColorDisabled,                 CPThemeStateBezeled | CPThemeStateDisabled],
 
             [@"text-color",     textColor],
             [@"text-color",     textHighlightedColor,               CPThemeStateHighlighted],
 
-            [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled],
-            [@"content-inset",  CGInsetMake(1.0, 24.0, 2.0, 16.0),  CPThemeStateBezeled],
+            [@"bezel-inset",    CGInsetMakeZero(),                  CPThemeStateBezeled],
+            [@"content-inset",  CGInsetMake(1.0, 22.0, 3.0, 15.0),  CPThemeStateBezeled],
 
             // Minimum height == maximum height since tokens are fixed height.
             [@"min-size",       CGSizeMake(0.0, 19.0)],
             [@"max-size",       CGSizeMake(-1.0, 19.0)],
 
-            [@"vertical-alignment", CPCenterTextAlignment],
+            [@"vertical-alignment", CPCenterTextAlignment]
         ];
 
     [self registerThemeValues:themeValues forView:token];
@@ -1091,12 +1121,94 @@ var themedButtonValues = nil,
             [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBordered],
             [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBordered | CPThemeStateHighlighted],
 
-            [@"offset",         CGPointMake(18, 6),                 CPThemeStateBordered]
+            [@"offset",         CGPointMake(17, 6),                 CPThemeStateBordered]
         ];
 
     [self registerThemeValues:themeValues forView:button];
 
     return button;
+}
+
++ (CPComboBox)themedComboBox
+{
+    var combo = [[CPComboBox alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 29.0)],
+
+        bezelColor = PatternColor(
+            [
+                ["combobox-bezel-left.png", 6.0, 29.0],
+                ["combobox-bezel-center.png", 1.0, 29.0],
+                ["combobox-bezel-right.png", 24.0, 29.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelFocusedColor = PatternColor(
+            [
+                ["combobox-bezel-focused-left.png", 6.0, 29.0],
+                ["combobox-bezel-focused-center.png", 1.0, 29.0],
+                ["combobox-bezel-focused-right.png", 24.0, 29.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelDisabledColor = PatternColor(
+            [
+                ["combobox-bezel-disabled-left.png", 6.0, 29.0],
+                ["combobox-bezel-disabled-center.png", 1.0, 29.0],
+                ["combobox-bezel-disabled-right.png", 24.0, 29.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelNoBorderColor = PatternColor(
+            [
+                ["combobox-bezel-no-border-left.png", 6.0, 29.0],
+                ["combobox-bezel-no-border-center.png", 1.0, 29.0],
+                ["combobox-bezel-no-border-right.png", 24.0, 29.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelNoBorderFocusedColor = PatternColor(
+            [
+                ["combobox-bezel-no-border-focused-left.png", 6.0, 29.0],
+                ["combobox-bezel-no-border-focused-center.png", 1.0, 29.0],
+                ["combobox-bezel-no-border-focused-right.png", 24.0, 29.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelNoBorderDisabledColor = PatternColor(
+            [
+                ["combobox-bezel-no-border-disabled-left.png", 6.0, 29.0],
+                ["combobox-bezel-no-border-disabled-center.png", 1.0, 29.0],
+                ["combobox-bezel-no-border-disabled-right.png", 24.0, 29.0]
+            ],
+            PatternIsHorizontal),
+
+        overrides =
+        [
+            [@"bezel-color",        bezelColor,                     CPThemeStateBezeled | CPComboBoxStateButtonBordered],
+            [@"bezel-color",        bezelFocusedColor,              CPThemeStateBezeled | CPComboBoxStateButtonBordered | CPThemeStateEditing],
+            [@"bezel-color",        bezelDisabledColor,             CPThemeStateBezeled | CPComboBoxStateButtonBordered | CPThemeStateDisabled],
+
+            [@"bezel-color",        bezelNoBorderColor,             CPThemeStateBezeled],
+            [@"bezel-color",        bezelNoBorderFocusedColor,      CPThemeStateBezeled | CPThemeStateEditing],
+            [@"bezel-color",        bezelNoBorderDisabledColor,     CPThemeStateBezeled | CPThemeStateDisabled],
+
+            [@"border-inset",       CGInsetMake(3.0, 3.0, 3.0, 3.0),    CPThemeStateBezeled],
+
+            // The right border inset has to make room for the focus ring and popup button
+            [@"content-inset",      CGInsetMake(8.0, 27.0, 7.0, 8.0),    CPThemeStateBezeled | CPComboBoxStateButtonBordered],
+            [@"content-inset",      CGInsetMake(8.0, 24.0, 7.0, 8.0),    CPThemeStateBezeled],
+            [@"content-inset",      CGInsetMake(8.0, 24.0, 7.0, 8.0),    CPThemeStateBezeled | CPThemeStateEditing],
+
+            [@"popup-button-size",  CGSizeMake(21.0, 23.0), CPThemeStateBezeled | CPComboBoxStateButtonBordered],
+            [@"popup-button-size",  CGSizeMake(17.0, 23.0), CPThemeStateBezeled],
+
+            // Because combo box uses a three-part bezel, the height is fixed
+            [@"min-size",           CGSizeMake(0, 29.0)],
+            [@"max-size",           CGSizeMake(-1, 29.0)]
+        ];
+
+    [self registerThemeValues:overrides forView:combo inherit:themedTextFieldValues];
+
+    return combo;
 }
 
 + (CPRadioButton)themedRadioButton
