@@ -517,16 +517,16 @@
             }
             else
             {
-                [self assertFalse: prior message:@"there should be no value for the notification is prior key, that notification was already sent"];
-                [self assertTrue: newValue == "set_bob" message:@"newValue should be: set_bob was: "+newValue];
+                [self assertFalse:prior message:@"there should be no value for the notification is prior key, that notification was already sent"];
+                [self assertTrue:newValue == "set_bob" message:@"newValue should be: set_bob was: " + newValue];
             }
             break;
 
         case "testInitialObservationOption":
             if (!_sawInitialObservation)
             {
-                [self assertTrue: newValue == "paul" message:@"Expected old value to be: paul was: "+oldValue];
-                [self assertFalse: oldValue message:@"Should be no value for new change key on initial observation"];
+                [self assertTrue:newValue == "paul" message:@"Expected old value to be: paul was: " + oldValue];
+                [self assertFalse:oldValue message:@"Should be no value for new change key on initial observation"];
                 _sawInitialObservation = YES;
             }
             else
@@ -535,9 +535,9 @@
             break;
 
         case "testMultipartKey":
-            [self assertTrue: aKeyPath == "teacher.name" message:@"Keypath should be: teacher.name, was: "+aKeyPath];
-            [self assertTrue: newValue == "set_bob" message:@"New value should be: set_bob, was: "+newValue];
-            [self assertTrue: anObject == cs101 message:@"anObject should be: " + [cs101 description]+", was: " + [anObject description]];
+            [self assertTrue:aKeyPath == "teacher.name" message:@"Keypath should be: teacher.name, was: " + aKeyPath];
+            [self assertTrue:newValue == "set_bob" message:@"New value should be: set_bob, was: " + newValue];
+            [self assertTrue:anObject == cs101 message:@"anObject should be: " + [cs101 description] + ", was: " + [anObject description]];
             break;
 
         case "testRemoveMultipartKey":
@@ -549,33 +549,33 @@
             break;
 
         case "testThreePartKey":
-            [self assertTrue: aKeyPath == "teacher.car.model" message:@"Keypath should be: teacher.car.model, was: "+aKeyPath];
-            [self assertTrue: newValue == "ford focus" message:@"New value should be: ford focus, was: "+newValue];
-            [self assertTrue: anObject == cs101 message:@"anObject should be: " + [cs101 description]+", was: " + [anObject description]];
+            [self assertTrue:aKeyPath == "teacher.car.model" message:@"Keypath should be: teacher.car.model, was: " + aKeyPath];
+            [self assertTrue:newValue == "ford focus" message:@"New value should be: ford focus, was: "+newValue];
+            [self assertTrue:anObject == cs101 message:@"anObject should be: " + [cs101 description] + ", was: " + [anObject description]];
             break;
 
         case "testThreePartKeyPart2":
-            [self assertTrue: aKeyPath == "teacher.car.year" message:@"Keypath should be: teacher.car, was: "+aKeyPath];
-            [self assertTrue: newValue == "2000" message:@"New value should be a car with year: 2000, was: " + [newValue description]];
-            [self assertTrue: anObject == cs101 message:@"anObject should be: " + [cs101 description]+", was: " + [anObject description]];
+            [self assertTrue:aKeyPath == "teacher.car.year" message:@"Keypath should be: teacher.car.year, was: " + aKeyPath];
+            [self assertTrue:newValue == "2000" message:@"New value should be a car with year: 2000, was: " + [newValue description]];
+            [self assertTrue:anObject == cs101 message:@"anObject should be: " + [cs101 description] + ", was: " + [anObject description]];
             break;
 
         case "testCrazyKeyPathChanges":
-            [self assertTrue: [anObject class] == A message:@"Should be observing an A class, was: " + [anObject class]];
-            [self assertTrue: [newValue class] == F message:@"Changed class was a F class, got: " + [newValue class]];
-            [self assertTrue: aKeyPath == "b.c.d.e.f" message:@"Expected keyPath b.c.d.e.f, got: "+aKeyPath];
+            [self assertTrue:[anObject class] == A message:@"Should be observing an A class, was: " + [anObject class]];
+            [self assertTrue:[newValue class] == F message:@"Changed class was a F class, got: " + [newValue class]];
+            [self assertTrue:aKeyPath == "b.c.d.e.f" message:@"Expected keyPath b.c.d.e.f, got: " + aKeyPath];
             break;
 
         case "testCrazyKeyPathChanges2":
-            [self assertTrue: [anObject class] == A message:@"Should be observing an A class, was: " + [anObject class]];
-            [self assertTrue: newValue == [CPNull null] message:@"Expected null, got: "+newValue];
-            [self assertTrue: aKeyPath == "b.c.d.e.f" message:@"Expected keyPath b.c.d.e.f, got: "+aKeyPath];
+            [self assertTrue:[anObject class] == A message:@"Should be observing an A class, was: " + [anObject class]];
+            [self assertTrue:newValue == [CPNull null] message:@"Expected null, got: " + newValue];
+            [self assertTrue:aKeyPath == "b.c.d.e.f" message:@"Expected keyPath b.c.d.e.f, got: " + aKeyPath];
             break;
 
         case "testCrazyKeyPathChanges3":
-            [self assertTrue: [anObject class] == A message:@"Should be observing an A class, was: " + [anObject class]];
-            [self assertTrue: newValue == 7 message:@"Expected 7, got: "+newValue];
-            [self assertTrue: aKeyPath == "b.c.d.e.f" message:@"Expected keyPath b.c.d.e.f, got: "+aKeyPath];
+            [self assertTrue:[anObject class] == A message:@"Should be observing an A class, was: " + [anObject class]];
+            [self assertTrue:newValue == 7 message:@"Expected 7, got: " + newValue];
+            [self assertTrue:aKeyPath == "b.c.d.e.f" message:@"Expected keyPath b.c.d.e.f, got: " + aKeyPath];
             break;
 
         case "testDependentKeyObservation":
