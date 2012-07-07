@@ -7,11 +7,10 @@
  */
 
 @import <Foundation/CPObject.j>
+@import "../CPTrace.j"
 
 var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
     tracing = NO;
-
-@import "../CPTableView+Debug.j"
 
 @implementation AppController : CPObject
 {
@@ -21,11 +20,13 @@ var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
     @outlet CPArrayController contentController;
 
     CPArray content @accessors;
+    float   avgPerRow @accessors;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)note
 {
     content = [CPArray new];
+    avgPerRow = 0;
 
     var path = [[CPBundle mainBundle] pathForResource:@"Data.plist"],
         request = [CPURLRequest requestWithURL:path],
@@ -112,11 +113,24 @@ var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
 
 - (IBAction)trace:(id)sender
 {
-    if (tracing)
-        return;
+    if ([sender state] == CPOnState)
+    {
+        var tlr = 0;
+        var f = function(a,b,c,d,e,f,g)
+        {
+            var lr = [c[0] count];
+            if (d > 0)
+                tlr += lr;
+        
+            var avg = (ROUND(100 * e/tlr) / 100);
+            console.log(b + " " + lr + " rows in " + d + " ms ; avg/row = " + avg + " ms");
+            [self setAvgPerRow:avg];
+        }
 
-    [CPTableView profileViewLoading];
-    tracing = YES;
+        CPTrace(@"CPTableView", @"_loadDataViewsInRows:columns:", f);
+    }
+    else
+        CPTraceStop(@"CPTableView", @"_loadDataViewsInRows:columns:");
 }
 
 @end
