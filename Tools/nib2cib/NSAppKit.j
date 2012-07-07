@@ -31,6 +31,7 @@
 @import "NSColorWell.j"
 @import "NSCollectionView.j"
 @import "NSCollectionViewItem.j"
+@import "NSComboBox.j"
 @import "NSControl.j"
 @import "NSCustomObject.j"
 @import "NSCustomResource.j"

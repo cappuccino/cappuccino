@@ -64,6 +64,9 @@ var _CPLevelIndicatorBezelColor = nil,
 
 + (void)initialize
 {
+    if (self !== [CPLevelIndicator class])
+        return;
+
     var bundle = [CPBundle bundleForClass:CPLevelIndicator];
 
     _CPLevelIndicatorBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:

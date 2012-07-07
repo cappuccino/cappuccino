@@ -198,7 +198,6 @@
                         } context:13] same:1];
 }
 
-
 - (void)test_indexOfObjectWithOptions_passingTest
 {
     var array = [[[self class] arrayClass] arrayWithObjects:
@@ -355,6 +354,111 @@
                           usingComparator:numComparator]
           equals:2 message:"insertion index should not be off by one when applying a range"];
 
+}
+
+- (void)test_indexesOfObjectsPassingTest_
+{
+    var array = [[[self class] arrayClass] arrayWithObjects:
+            { name:@"Tom", age:7 },
+            { name:@"Dick", age:13 },
+            { name:@"Harry", age:27 },
+            { name:@"Zelda", age:7 }];
+
+    [self assert:[array indexesOfObjectsPassingTest:function() { return YES; }] equals:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 4)]];
+    [self assert:[array indexesOfObjectsPassingTest:function() { return NO; }] equals:[CPIndexSet indexSet]];
+    [self assert:[array indexesOfObjectsPassingTest:function() { return nil; }] equals:[CPIndexSet indexSet]];
+
+    [self assert:[array indexesOfObjectsPassingTest:function(anObject, anIndex)
+                        {
+                            return [anObject.name isEqual:@"Harry"];
+                        }] equals:[CPIndexSet indexSetWithIndex:2]];
+
+    var indexSet = [CPIndexSet indexSetWithIndex:0];
+    [indexSet addIndex:3];
+
+    [self assert:[array indexesOfObjectsPassingTest:function(anObject, anIndex)
+                        {
+                            return anObject.age === 7;
+                        }] equals:indexSet];
+
+    [self assert:[array indexesOfObjectsPassingTest:function(anObject, anIndex)
+                        {
+                            return [anObject.name isEqual:@"Horton"];
+                        }] equals:[CPIndexSet indexSet]];
+}
+
+- (void)test_indexesOfObjectsPassingTest_context_
+{
+    var array = [[[self class] arrayClass] arrayWithObjects:
+            { name:@"Tom", age:7 },
+            { name:@"Dick", age:13 },
+            { name:@"Harry", age:27 },
+            { name:@"Zelda", age:7 }];
+
+    [self assert:[array indexesOfObjectsPassingTest:function(anObject, anIndex, aContext)
+                        {
+                            return [anObject.name isEqual:aContext];
+                        } context:@"Harry"] equals:[CPIndexSet indexSetWithIndex:2]];
+
+    var indexSet = [CPIndexSet indexSetWithIndex:0];
+    [indexSet addIndex:3];
+
+    [self assert:[array indexesOfObjectsPassingTest:function(anObject, anIndex, aContext)
+                        {
+                            return anObject.age === aContext;
+                        } context:7] equals:indexSet];
+}
+
+- (void)test_indexesOfObjectsWithOptions_passingTest
+{
+    var array = [[[self class] arrayClass] arrayWithObjects:
+        { name:@"Tom", age:7 },
+        { name:@"Dick", age:13 },
+        { name:@"Harry", age:27 },
+        { name:@"Zelda", age:7 }],
+        namePredicate = function(anObject, anIndex)
+                        {
+                            return [anObject.name isEqual:@"Harry"];
+                        },
+        agePredicate =  function(anObject, anIndex)
+                        {
+                            return anObject.age === 7;
+                        };
+
+    [self assert:[array indexesOfObjectsWithOptions:CPEnumerationNormal passingTest:namePredicate] equals:[CPIndexSet indexSetWithIndex:2]];
+    [self assert:[array indexesOfObjectsWithOptions:CPEnumerationReverse passingTest:namePredicate] equals:[CPIndexSet indexSetWithIndex:2]];
+
+    var indexSet = [CPIndexSet indexSetWithIndex:0];
+    [indexSet addIndex:3];
+
+    [self assert:[array indexesOfObjectsWithOptions:CPEnumerationNormal passingTest:agePredicate] equals:indexSet];
+    [self assert:[array indexesOfObjectsWithOptions:CPEnumerationReverse passingTest:agePredicate] equals:indexSet];
+}
+
+- (void)test_indexesOfObjectsWithOptions_passingTest_context
+{
+    var array = [[[self class] arrayClass] arrayWithObjects:
+        { name:@"Tom", age:7 },
+        { name:@"Dick", age:13 },
+        { name:@"Harry", age:27 },
+        { name:@"Zelda", age:7 }],
+        namePredicate = function(anObject, anIndex, aContext)
+                        {
+                            return [anObject.name isEqual:aContext];
+                        },
+        agePredicate =  function(anObject, anIndex, aContext)
+                        {
+                            return anObject.age === aContext;
+                        };
+
+    [self assert:[array indexesOfObjectsWithOptions:CPEnumerationNormal passingTest:namePredicate context:@"Harry"] equals:[CPIndexSet indexSetWithIndex:2]];
+    [self assert:[array indexesOfObjectsWithOptions:CPEnumerationReverse passingTest:namePredicate context:@"Harry"] equals:[CPIndexSet indexSetWithIndex:2]];
+
+    var indexSet = [CPIndexSet indexSetWithIndex:0];
+    [indexSet addIndex:3];
+
+    [self assert:[array indexesOfObjectsWithOptions:CPEnumerationNormal passingTest:agePredicate context:7] equals:indexSet];
+    [self assert:[array indexesOfObjectsWithOptions:CPEnumerationReverse passingTest:agePredicate context:7] equals:indexSet];
 }
 
 - (void)test_isEqualToArray_

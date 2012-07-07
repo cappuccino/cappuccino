@@ -14,7 +14,6 @@
 /* Begin PBXFileReference section */
 		08FB7796FE84155DC02AAC07 /* fontinfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = fontinfo.m; sourceTree = "<group>"; };
 		08FB779EFE84155DC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		32A70AAB03705E1F00C91783 /* fontinfo_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fontinfo_Prefix.pch; sourceTree = "<group>"; };
 		E11C89CC1277CECE0012609B /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		E18587D81279B93100FB6A47 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		E1C392BB133D513B0092D7CA /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -47,7 +46,6 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				32A70AAB03705E1F00C91783 /* fontinfo_Prefix.pch */,
 				08FB7796FE84155DC02AAC07 /* fontinfo.m */,
 			);
 			name = Source;
@@ -142,8 +140,8 @@
 				CONFIGURATION_TEMP_DIR = "$(CAPP_BUILD)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = fontinfo_Prefix.pch;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_PREFIX_HEADER = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				OBJROOT = "$(CAPP_BUILD)";
@@ -171,6 +169,8 @@
 				DEPLOYMENT_POSTPROCESSING = NO;
 				DSTROOT = "/tmp/$(PROJECT_NAME).dst";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_PREFIX_HEADER = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INSTALL_PATH = "";

@@ -51,6 +51,9 @@
 
 + (id)initialize
 {
+    if (self !== [CPObjectController class])
+        return;
+
     [self exposeBinding:@"editable"];
     [self exposeBinding:@"contentObject"];
 }

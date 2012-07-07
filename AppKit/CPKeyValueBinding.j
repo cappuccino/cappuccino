@@ -558,6 +558,8 @@ CPValueBinding          = @"value";
 CPValueURLBinding       = @"valueURL";
 CPValuePathBinding      = @"valuePath";
 CPDataBinding           = @"data";
+CPContentBinding        = @"content";
+CPContentValuesBinding  = @"contentValues";
 
 //Binding options constants
 CPAllowsEditingMultipleValuesSelectionBindingOption = @"CPAllowsEditingMultipleValuesSelection";

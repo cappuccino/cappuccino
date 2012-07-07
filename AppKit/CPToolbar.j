@@ -114,7 +114,7 @@ var CPToolbarsByIdentifier              = nil,
 /* @ignore */
 + (void)initialize
 {
-    if (self != [CPToolbar class])
+    if (self !== [CPToolbar class])
         return;
 
     CPToolbarsByIdentifier = [CPDictionary dictionary];
@@ -241,7 +241,13 @@ var CPToolbarsByIdentifier              = nil,
 
 - (void)_setWindow:(CPWindow)aWindow
 {
+    if (_window)
+        [[CPNotificationCenter defaultCenter] removeObserver:self object:_window];
+
     _window = aWindow;
+
+    if (_window)
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_autovalidate) name:_CPWindowDidChangeFirstResponderNotification object:aWindow];
 }
 
 /*!
@@ -314,13 +320,17 @@ var CPToolbarsByIdentifier              = nil,
     // _defaultItems may have been loaded from Cib
     _itemIdentifiers = [_defaultItems valueForKey:@"itemIdentifier"] || [];
 
-    if (_delegate)
+    if ([_delegate respondsToSelector:@selector(toolbarDefaultItemIdentifiers:)])
     {
-        var itemIdentifiersFromDelegate = [[_delegate toolbarDefaultItemIdentifiers:self] mutableCopy];
+        var itemIdentifiersFromDelegate = [_delegate toolbarDefaultItemIdentifiers:self];
 
+        // If we get items both from the Cib and from the delegate method, put the delegate items before the
+        // Cib ones.
         if (itemIdentifiersFromDelegate)
-            _itemIdentifiers = [_itemIdentifiers arrayByAddingObjectsFromArray:itemIdentifiersFromDelegate];
+            _itemIdentifiers = [itemIdentifiersFromDelegate arrayByAddingObjectsFromArray:_itemIdentifiers];
     }
+    // If we didn't load from a cib and the delegate hasn't been set yet, we'll just work with an empty list
+    // at this point.
 
     var index = 0,
         count = [_itemIdentifiers count];
@@ -395,6 +405,19 @@ var CPToolbarsByIdentifier              = nil,
 
     while (count--)
         [toolbarItems[count] validate];
+}
+
+- (void)_autovalidate
+{
+    var toolbarItems = [self visibleItems],
+        count = [toolbarItems count];
+
+    while (count--)
+    {
+        var item = [toolbarItems objectAtIndex:count];
+        if ([item autovalidates])
+            [item validate];
+    }
 }
 
 /* @ignore */

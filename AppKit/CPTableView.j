@@ -728,7 +728,7 @@ NOT YET IMPLEMENTED
 
 - (void)setAlternatingRowBackgroundColors:(CPArray)alternatingRowBackgroundColors
 {
-    [self setValue:alternatingRowBackgroundColors forThemeAttribute:"alternating-row-colors"];
+    [self setValue:alternatingRowBackgroundColors forThemeAttribute:@"alternating-row-colors"];
 
     [self setNeedsDisplay:YES];
 }
@@ -786,7 +786,7 @@ NOT YET IMPLEMENTED
 */
 - (void)setSelectionHighlightColor:(CPColor)aColor
 {
-    [self setValue:aColor forThemeAttribute:"selection-color"];
+    [self setValue:aColor forThemeAttribute:@"selection-color"];
 
     [self setNeedsDisplay:YES];
 }
@@ -812,7 +812,7 @@ NOT YET IMPLEMENTED
 */
 - (void)setSelectionGradientColors:(CPDictionary)aDictionary
 {
-    [self setValue:aDictionary forThemeAttribute:"sourcelist-selection-color"];
+    [self setValue:aDictionary forThemeAttribute:@"sourcelist-selection-color"];
 
     [self setNeedsDisplay:YES];
 }
@@ -836,7 +836,7 @@ NOT YET IMPLEMENTED
 */
 - (void)setGridColor:(CPColor)aColor
 {
-    [self setValue:aColor forThemeAttribute:"grid-color"];
+    [self setValue:aColor forThemeAttribute:@"grid-color"];
 
     [self setNeedsDisplay:YES];
 }
@@ -2820,7 +2820,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (CPImage)_tableHeaderSortImage
 {
-    return [self currentValueForThemeAttribute:"sort-image"];
+    return [self currentValueForThemeAttribute:@"sort-image"];
 }
 
 /*!
@@ -2828,7 +2828,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (CPImage)_tableHeaderReverseSortImage
 {
-    return [self currentValueForThemeAttribute:"sort-image-reversed"];
+    return [self currentValueForThemeAttribute:@"sort-image-reversed"];
 }
 
 /*!
@@ -4057,7 +4057,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     }
 
     CGContextClosePath(context);
-    CGContextSetStrokeColor(context, [self currentValueForThemeAttribute:"highlighted-grid-color"]);
+    CGContextSetStrokeColor(context, [self currentValueForThemeAttribute:@"highlighted-grid-color"]);
     CGContextStrokePath(context);
 }
 

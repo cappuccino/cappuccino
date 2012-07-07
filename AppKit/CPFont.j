@@ -67,7 +67,7 @@ var _CPFonts                        = {},
     @code
 <key>CPSystemFontFace</key>
 <string>Lucida Grande</string>
-	@endcode
+    @endcode
 */
 @implementation CPFont : CPObject
 {
@@ -84,6 +84,9 @@ var _CPFonts                        = {},
 
 + (void)initialize
 {
+    if (self !== [CPFont class])
+        return;
+
     var systemFontFace = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPSystemFontFace"];
 
     if (!systemFontFace)

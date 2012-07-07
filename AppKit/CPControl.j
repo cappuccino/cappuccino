@@ -134,18 +134,18 @@ var CPControlBlackColor = [CPColor blackColor];
 
 + (void)initialize
 {
-    if (self === [CPControl class])
-    {
-        [self exposeBinding:@"value"];
-        [self exposeBinding:@"objectValue"];
-        [self exposeBinding:@"stringValue"];
-        [self exposeBinding:@"integerValue"];
-        [self exposeBinding:@"intValue"];
-        [self exposeBinding:@"doubleValue"];
-        [self exposeBinding:@"floatValue"];
+    if (self !== [CPControl class])
+        return;
 
-        [self exposeBinding:@"enabled"];
-    }
+    [self exposeBinding:@"value"];
+    [self exposeBinding:@"objectValue"];
+    [self exposeBinding:@"stringValue"];
+    [self exposeBinding:@"integerValue"];
+    [self exposeBinding:@"intValue"];
+    [self exposeBinding:@"doubleValue"];
+    [self exposeBinding:@"floatValue"];
+
+    [self exposeBinding:@"enabled"];
 }
 
 + (Class)_binderClassForBinding:(CPString)theBinding
@@ -391,7 +391,10 @@ var CPControlBlackColor = [CPColor blackColor];
 
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
-    [self highlight:NO];
+    if (mouseIsUp)
+        [self highlight:NO];
+    else
+        [self highlight:YES];
 }
 
 - (void)mouseDown:(CPEvent)anEvent
@@ -872,9 +875,9 @@ var CPControlValueKey           = "CPControlValueKey",
     CPControlActionKey          = "CPControlActionKey",
     CPControlSendActionOnKey    = "CPControlSendActionOnKey",
 
-    CPControlSendsActionOnEndEditingKey = "CPControlSendsActionOnEndEditingKey";
+    CPControlSendsActionOnEndEditingKey = "CPControlSendsActionOnEndEditingKey",
 
-var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
+    __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
 
 @implementation CPControl (CPCoding)
 
