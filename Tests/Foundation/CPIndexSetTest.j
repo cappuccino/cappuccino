@@ -543,6 +543,112 @@ function descriptionWithoutEntity(aString)
     [self assert:[0, 3] equals:visitedIndexes message:"enumeration should stop after 2 results"];
 }
 
+- (void)testIndexPassingTest
+{
+    var set0 = [CPMutableIndexSet indexSet],
+        index = [set0 indexPassingTest:function(anIndex)
+        {
+            return anIndex % 2 === 0;
+        }];
+    [self assertTrue:index === CPNotFound message:"must be equal to CPNotFound, was " + index];
+
+    [set0 addIndexesInRange:CPMakeRange(1, 10)];
+    index = [set0 indexPassingTest:function(anIndex)
+        {
+            return anIndex % 2 === 0;
+        }];
+    [self assertTrue:index === 2 message:"index must be equal to 2"];
+
+    index = [set0 indexPassingTest:function(anIndex)
+        {
+            return anIndex === 1000;
+        }];
+    [self assertTrue:index === CPNotFound message:"must be equal to CPNotFound, was " + index];
+}
+
+- (void)testIndexesPassingTest
+{
+    var set0 = [CPMutableIndexSet indexSet],
+        set1 = [CPMutableIndexSet indexSet],
+        indexes = [set0 indexesPassingTest:function(anIndex)
+        {
+            return anIndex % 2 === 0;
+        }];
+
+    [self assertTrue:[indexes isEqualToIndexSet:set1] message:"must be equal to " + [set1 description] + ", was " + [indexes description]];
+
+    [set0 addIndexesInRange:CPMakeRange(1, 10)];
+    [set1 addIndex:2];
+    [set1 addIndex:4];
+    [set1 addIndex:6];
+    [set1 addIndex:8];
+    [set1 addIndex:10];
+    indexes = [set0 indexesPassingTest:function(anIndex)
+        {
+            return anIndex % 2 === 0;
+        }];
+    [self assertTrue:[indexes isEqualToIndexSet:set1] message:"must be equal to " + [set1 description] + ", was " + [indexes description]];
+}
+
+- (void)testIndexPassingTest_options
+{
+    var set0 = [CPMutableIndexSet indexSetWithIndexesInRange:CPMakeRange(1, 10)],
+        index = [set0 indexWithOptions:CPEnumerationReverse
+                           passingTest:function(anIndex)
+        {
+            return anIndex % 2 === 0;
+        }];
+    [self assertTrue:index === 10 message:"index must be equal to 10"];
+}
+
+- (void)testIndexesPassingTest_options
+{
+    var set0 = [CPMutableIndexSet indexSetWithIndexesInRange:CPMakeRange(1, 5)],
+        set1 = [CPMutableIndexSet indexSet],
+        visitedIndexes = [],
+        indexes = [set0 indexesWithOptions:CPEnumerationReverse
+                               passingTest:function(anIndex)
+        {
+            visitedIndexes.push(anIndex);
+            return anIndex % 2 === 0;
+        }];
+    [set1 addIndex:2];
+    [set1 addIndex:4];
+
+    [self assertTrue:[indexes isEqualToIndexSet:set1] message:"must be equal to " + [set1 description] + ", was " + [indexes description]];
+    [self assert:[5, 4, 3, 2, 1] equals:visitedIndexes message:"enumeration should be done in reverse"];
+}
+
+- (void)testIndexPassingTest_options_range
+{
+    var set0 = [CPMutableIndexSet indexSetWithIndexesInRange:CPMakeRange(1, 10)],
+        index = [set0 indexInRange:CPMakeRange(3, 4)
+                           options:CPEnumerationReverse
+                       passingTest:function(anIndex)
+        {
+            return anIndex % 2 === 0;
+        }];
+    [self assertTrue:index === 6 message:"index must be equal to 6"];
+}
+
+- (void)testIndexesPassingTest_options_range
+{
+    var set0 = [CPMutableIndexSet indexSetWithIndexesInRange:CPMakeRange(1, 5)],
+        set1 = [CPMutableIndexSet indexSet],
+        visitedIndexes = [],
+        indexes = [set0 indexesInRange:CPMakeRange(3, 4)
+                               options:CPEnumerationReverse
+                           passingTest:function(anIndex)
+        {
+            visitedIndexes.push(anIndex);
+            return anIndex % 2 === 0;
+        }];
+    [set1 addIndex:4];
+
+    [self assertTrue:[indexes isEqualToIndexSet:set1] message:"must be equal to " + [set1 description] + ", was " + [indexes description]];
+    [self assert:[5, 4, 3] equals:visitedIndexes message:"enumeration should be done in reverse"];
+}
+
 - (void)tearDown
 {
     _set = nil;

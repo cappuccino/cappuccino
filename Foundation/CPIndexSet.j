@@ -549,6 +549,150 @@
     }
 }
 
+- (unsigned)indexPassingTest:(Function /*(int anIndex)*/)aPredicate
+{
+    return [self indexWithOptions:CPEnumerationNormal passingTest:aPredicate];
+}
+
+- (CPIndexSet)indexesPassingTest:(Function /*(int anIndex)*/)aPredicate
+{
+    return [self indexesWithOptions:CPEnumerationNormal passingTest:aPredicate];
+}
+
+- (unsigned)indexWithOptions:(CPEnumerationOptions)anOptions passingTest:(Function /*(int anIndex)*/)aPredicate
+{
+    if (!_count)
+        return CPNotFound;
+
+    return [self indexInRange:CPMakeRange(0, _CPMaxRange(_ranges[_ranges.length - 1])) options:anOptions passingTest:aPredicate];
+}
+
+- (CPIndexSet)indexesWithOptions:(CPEnumerationOptions)anOptions passingTest:(Function /*(int anIndex)*/)aPredicate
+{
+    if (!_count)
+        return [CPIndexSet indexSet];
+
+    return [self indexesInRange:CPMakeRange(0, _CPMaxRange(_ranges[_ranges.length - 1])) options:anOptions passingTest:aPredicate];
+}
+
+- (unsigned)indexInRange:(CPRange)aRange options:(CPEnumerationOptions)anOptions passingTest:(Function /*(int anIndex)*/)aPredicate
+{
+    if (!_count || CPEmptyRange(aRange))
+        return CPNotFound;
+
+    var shouldStop = NO,
+        index,
+        stop,
+        increment;
+
+    if (anOptions & CPEnumerationReverse)
+    {
+        index = _ranges.length - 1,
+        stop = -1,
+        increment = -1;
+    }
+    else
+    {
+        index = 0;
+        stop = _ranges.length;
+        increment = 1;
+    }
+
+    for (; index !== stop; index += increment)
+    {
+        var range = _ranges[index];
+
+        var rangeIndex,
+            rangeStop,
+            rangeIncrement;
+
+        if (anOptions & CPEnumerationReverse)
+        {
+            rangeIndex = _CPMaxRange(range) - 1;
+            rangeStop = range.location - 1;
+            rangeIncrement = -1;
+        }
+        else
+        {
+            rangeIndex = range.location;
+            rangeStop = _CPMaxRange(range);
+            rangeIncrement = 1;
+        }
+
+        for (; rangeIndex !== rangeStop; rangeIndex += rangeIncrement)
+        {
+            if (CPLocationInRange(rangeIndex, aRange))
+            {
+                if (aPredicate(rangeIndex, AT_REF(shouldStop)))
+                    return rangeIndex;
+
+                if (shouldStop)
+                    return CPNotFound;
+            }
+        }
+    }
+    return CPNotFound;
+}
+
+- (CPIndexSet)indexesInRange:(CPRange)aRange options:(CPEnumerationOptions)anOptions passingTest:(Function /*(int anIndex)*/)aPredicate
+{
+    if (!_count || CPEmptyRange(aRange))
+        return [CPIndexSet indexSet];
+
+    var shouldStop = NO,
+        index,
+        stop,
+        increment;
+
+    if (anOptions & CPEnumerationReverse)
+    {
+        index = _ranges.length - 1,
+        stop = -1,
+        increment = -1;
+    }
+    else
+    {
+        index = 0;
+        stop = _ranges.length;
+        increment = 1;
+    }
+
+    var indexesPassingTest = [CPMutableIndexSet indexSet];
+    for (; index !== stop; index += increment)
+    {
+        var range = _ranges[index];
+
+        var rangeIndex,
+            rangeStop,
+            rangeIncrement;
+
+        if (anOptions & CPEnumerationReverse)
+        {
+            rangeIndex = _CPMaxRange(range) - 1;
+            rangeStop = range.location - 1;
+            rangeIncrement = -1;
+        }
+        else
+        {
+            rangeIndex = range.location;
+            rangeStop = _CPMaxRange(range);
+            rangeIncrement = 1;
+        }
+
+        for (; rangeIndex !== rangeStop; rangeIndex += rangeIncrement)
+        {
+            if (CPLocationInRange(rangeIndex, aRange))
+            {
+                if (aPredicate(rangeIndex, AT_REF(shouldStop)))
+                    [indexesPassingTest addIndex:rangeIndex];
+
+                if (shouldStop)
+                    return indexesPassingTest;
+            }
+        }
+    }
+    return indexesPassingTest;
+}
 
 @end
 
