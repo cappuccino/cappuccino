@@ -52,10 +52,7 @@ _function(CPMakeRangeCopy(aRange))
     @group CPRange
     @return YES if the range is empty
 */
-function CPEmptyRange(aRange)
-{
-    return aRange.length === 0;
-}
+_function(CPEmptyRange(aRange))
 
 /*!
     Finds the range maximum. (\c location + length)
@@ -83,10 +80,7 @@ function CPEqualRanges(lhsRange, rhsRange)
     @group CPRange
     @return BOOL \c YES if \c aLocation is within the range
 */
-function CPLocationInRange(aLocation, aRange)
-{
-    return (aLocation >= aRange.location) && (aLocation < CPMaxRange(aRange));
-}
+_function(CPLocationInRange(aLocation, aRange))
 
 /*!
     Creates a new range with the minimum \c location and a \c length
