@@ -23,3 +23,5 @@
 #define _CPMaxRange(aRange) ((aRange).location + (aRange).length)
 #define _CPMakeRange(aLocation, aLength) { location:(aLocation), length:aLength }
 #define _CPMakeRangeCopy(aRange) { location:(aRange).location, length:(aRange).length }
+#define _CPEmptyRange(aRange) ((aRange).length === 0)
+#define _CPLocationInRange(aLocation, aRange) (((aLocation) >= (aRange).location) && ((aLocation) < _CPMaxRange(aRange)))

@@ -315,7 +315,7 @@
     var range = _ranges[rangeIndex];
 
     // Check if it's actually in this range.
-    if (CPLocationInRange(anIndex, range))
+    if (_CPLocationInRange(anIndex, range))
         return anIndex;
 
     // If not, it must be the first element of this range.
@@ -346,7 +346,7 @@
     var range = _ranges[rangeIndex];
 
     // Check if it's actually in this range.
-    if (CPLocationInRange(anIndex, range))
+    if (_CPLocationInRange(anIndex, range))
         return anIndex;
 
     // If not, it must be the first element of this range.
@@ -495,7 +495,7 @@
 
 - (void)enumerateIndexesInRange:(CPRange)enumerationRange options:(CPEnumerationOptions)options usingBlock:(Function /*(int idx, @ref BOOL stop)*/)aFunction
 {
-    if (!_count || CPEmptyRange(enumerationRange))
+    if (!_count || _CPEmptyRange(enumerationRange))
         return;
 
     var shouldStop = NO,
@@ -539,7 +539,7 @@
 
         for (; rangeIndex !== rangeStop; rangeIndex += rangeIncrement)
         {
-            if (CPLocationInRange(rangeIndex, enumerationRange))
+            if (_CPLocationInRange(rangeIndex, enumerationRange))
             {
                 aFunction(rangeIndex, AT_REF(shouldStop));
                 if (shouldStop)
@@ -564,7 +564,7 @@
     if (!_count)
         return CPNotFound;
 
-    return [self indexInRange:CPMakeRange(0, _CPMaxRange(_ranges[_ranges.length - 1])) options:anOptions passingTest:aPredicate];
+    return [self indexInRange:_CPMakeRange(0, _CPMaxRange(_ranges[_ranges.length - 1])) options:anOptions passingTest:aPredicate];
 }
 
 - (CPIndexSet)indexesWithOptions:(CPEnumerationOptions)anOptions passingTest:(Function /*(int anIndex)*/)aPredicate
@@ -572,12 +572,12 @@
     if (!_count)
         return [CPIndexSet indexSet];
 
-    return [self indexesInRange:CPMakeRange(0, _CPMaxRange(_ranges[_ranges.length - 1])) options:anOptions passingTest:aPredicate];
+    return [self indexesInRange:_CPMakeRange(0, _CPMaxRange(_ranges[_ranges.length - 1])) options:anOptions passingTest:aPredicate];
 }
 
 - (unsigned)indexInRange:(CPRange)aRange options:(CPEnumerationOptions)anOptions passingTest:(Function /*(int anIndex)*/)aPredicate
 {
-    if (!_count || CPEmptyRange(aRange))
+    if (!_count || _CPEmptyRange(aRange))
         return CPNotFound;
 
     var shouldStop = NO,
@@ -600,9 +600,8 @@
 
     for (; index !== stop; index += increment)
     {
-        var range = _ranges[index];
-
-        var rangeIndex,
+        var range = _ranges[index],
+            rangeIndex,
             rangeStop,
             rangeIncrement;
 
@@ -621,7 +620,7 @@
 
         for (; rangeIndex !== rangeStop; rangeIndex += rangeIncrement)
         {
-            if (CPLocationInRange(rangeIndex, aRange))
+            if (_CPLocationInRange(rangeIndex, aRange))
             {
                 if (aPredicate(rangeIndex, AT_REF(shouldStop)))
                     return rangeIndex;
@@ -636,7 +635,7 @@
 
 - (CPIndexSet)indexesInRange:(CPRange)aRange options:(CPEnumerationOptions)anOptions passingTest:(Function /*(int anIndex)*/)aPredicate
 {
-    if (!_count || CPEmptyRange(aRange))
+    if (!_count || _CPEmptyRange(aRange))
         return [CPIndexSet indexSet];
 
     var shouldStop = NO,
@@ -660,9 +659,8 @@
     var indexesPassingTest = [CPMutableIndexSet indexSet];
     for (; index !== stop; index += increment)
     {
-        var range = _ranges[index];
-
-        var rangeIndex,
+        var range = _ranges[index],
+            rangeIndex,
             rangeStop,
             rangeIncrement;
 
@@ -681,7 +679,7 @@
 
         for (; rangeIndex !== rangeStop; rangeIndex += rangeIncrement)
         {
-            if (CPLocationInRange(rangeIndex, aRange))
+            if (_CPLocationInRange(rangeIndex, aRange))
             {
                 if (aPredicate(rangeIndex, AT_REF(shouldStop)))
                     [indexesPassingTest addIndex:rangeIndex];
