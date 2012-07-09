@@ -54,6 +54,17 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     return [super _binderClassForBinding:theBinding];
 }
 
++ (CPString)defaultThemeClass
+{
+    return @"colorwell";
+}
+
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), [CPNull null], _CGInsetMake(3.0, 3.0, 3.0, 3.0), _CGInsetMakeZero(), [CPNull null]]
+                                       forKeys:[@"bezel-inset", @"bezel-color", @"content-inset", @"content-border-inset", @"content-border-color"]];
+}
+
 - (void)_reverseSetBinding
 {
     var binderClass = [[self class] _binderClassForBinding:CPValueBinding],
@@ -71,9 +82,6 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
         _active = NO;
         _bordered = YES;
         _color = [CPColor whiteColor];
-
-        [self drawBezelWithHighlight:NO];
-        [self drawWellInside:CGRectInset([self bounds], 3.0, 3.0)];
 
         [self _registerForNotifications];
     }
@@ -107,8 +115,6 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
         [self setThemeState:CPThemeStateBordered];
     else
         [self unsetThemeState:CPThemeStateBordered];
-
-    [self drawWellInside:CGRectInset([self bounds], 3.0, 3.0)];
 }
 
 /*!
@@ -139,7 +145,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 
     _color = aColor;
 
-    [self drawWellInside:CGRectInset([self bounds], 3.0, 3.0)];
+    [self setNeedsLayout];
 }
 
 /*!
@@ -202,12 +208,6 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     return _active;
 }
 
-// Drawing a Color Well
-
-- (void)drawBezelWithHighlight:(BOOL)shouldHighlight
-{
-}
-
 /*!
     Draws the colored area inside the color well without borders.
     @param aRect the location at which to draw
@@ -245,27 +245,11 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     [self deactivate];
 }
 
-- (void)mouseDown:(CPEvent)anEvent
+- (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
-    if (![self isEnabled])
-        return;
+    [self highlight:NO];
 
-    [self drawBezelWithHighlight:YES];
-}
-
-- (void)mouseDragged:(CPEvent)anEvent
-{
-    if (![self isEnabled])
-        return;
-
-    [self drawBezelWithHighlight:CGRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil])];
-}
-
-- (void)mouseUp:(CPEvent)anEvent
-{
-    [self drawBezelWithHighlight:NO];
-
-    if (!CGRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil]) || ![self isEnabled])
+    if (!mouseIsUp || !CGRectContainsPoint([self bounds], aPoint) || ![self isEnabled])
         return;
 
     [self activate:YES];
@@ -274,6 +258,27 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 
     [colorPanel setColor:_color];
     [colorPanel orderFront:self];
+}
+
+- (CGRect)contentRectForBounds:(CGRect)bounds
+{
+    var contentInset = [self currentValueForThemeAttribute:@"content-inset"];
+
+    if (_CGInsetIsEmpty(contentInset))
+        return bounds;
+
+    bounds = _CGRectMakeCopy(bounds);
+    bounds.origin.x += contentInset.left;
+    bounds.origin.y += contentInset.top;
+    bounds.size.width -= contentInset.left + contentInset.right;
+    bounds.size.height -= contentInset.top + contentInset.bottom;
+
+    return bounds;
+}
+
+- (void)layoutSubviews
+{
+    [self drawWellInside:[self contentRectForBounds:[self bounds]]];
 }
 
 @end
@@ -338,9 +343,6 @@ var CPColorWellColorKey     = "CPColorWellColorKey",
         _active = NO;
         [self setBordered:[aCoder decodeBoolForKey:CPColorWellBorderedKey]];
         _color = [aCoder decodeObjectForKey:CPColorWellColorKey];
-
-        [self drawBezelWithHighlight:NO];
-        [self drawWellInside:CGRectInset([self bounds], 3.0, 3.0)];
 
         [self _registerForNotifications];
     }
