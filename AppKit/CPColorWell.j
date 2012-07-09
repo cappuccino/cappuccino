@@ -99,24 +99,24 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 }
 
 /*!
+    Sets whether the color well is bordered.
+*/
+- (void)setBordered:(BOOL)shouldBeBordered
+{
+    if (shouldBeBordered)
+        [self setThemeState:CPThemeStateBordered];
+    else
+        [self unsetThemeState:CPThemeStateBordered];
+
+    [self drawWellInside:CGRectInset([self bounds], 3.0, 3.0)];
+}
+
+/*!
     Returns whether the color well is bordered
 */
 - (BOOL)isBordered
 {
-    return _bordered;
-}
-
-/*!
-    Sets the color well's current color.
-*/
-- (void)setBordered:(BOOL)bordered
-{
-    if (_bordered == bordered)
-        return;
-
-    _bordered = bordered;
-
-    [self drawWellInside:CGRectInset([self bounds], 3.0, 3.0)];
+    return [self hasThemeState:CPThemeStateBordered];
 }
 
 // Managing Color From Color Wells
@@ -336,7 +336,7 @@ var CPColorWellColorKey     = "CPColorWellColorKey",
     if (self)
     {
         _active = NO;
-        _bordered = [aCoder decodeBoolForKey:CPColorWellBorderedKey];
+        [self setBordered:[aCoder decodeBoolForKey:CPColorWellBorderedKey]];
         _color = [aCoder decodeObjectForKey:CPColorWellColorKey];
 
         [self drawBezelWithHighlight:NO];
@@ -366,7 +366,7 @@ var CPColorWellColorKey     = "CPColorWellColorKey",
     _subviews = actualSubviews;
 
     [aCoder encodeObject:_color forKey:CPColorWellColorKey];
-    [aCoder encodeObject:_bordered forKey:CPColorWellBorderedKey];
+    [aCoder encodeObject:[self isBordered] forKey:CPColorWellBorderedKey];
 }
 
 @end
