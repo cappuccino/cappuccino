@@ -1129,6 +1129,61 @@ var themedButtonValues = nil,
     return button;
 }
 
++ (CPColorWell)themedColorWell
+{
+    // The CPColorPanel CPColorWell depends on requires CPApp.
+    [CPApplication sharedApplication];
+
+    var colorWell = [[CPColorWell alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 24.0)],
+
+        bezelColor = PatternColor(
+            [
+                ["colorwell-bezel-left.png", 3.0, 24.0],
+                ["colorwell-bezel-center.png", 1.0, 24.0],
+                ["colorwell-bezel-right.png", 3.0, 24.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelHighlightedColor = PatternColor(
+            [
+                ["colorwell-bezel-highlighted-left.png", 3.0, 24.0],
+                ["colorwell-bezel-highlighted-center.png", 1.0, 24.0],
+                ["colorwell-bezel-highlighted-right.png", 3.0, 24.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelDisabledColor = PatternColor(
+            [
+                ["colorwell-bezel-disabled-left.png", 3.0, 24.0],
+                ["colorwell-bezel-disabled-center.png", 1.0, 24.0],
+                ["colorwell-bezel-disabled-right.png", 3.0, 24.0]
+            ],
+            PatternIsHorizontal),
+
+        contentBorderColor = PatternColor(
+            [
+                ["colorwell-content-border-left.png", 1.0, 15.0],
+                ["colorwell-content-border-center.png", 1.0, 15.0],
+                ["colorwell-content-border-right.png", 1.0, 15.0]
+            ],
+            PatternIsHorizontal),
+
+        themedColorWellValues = [
+                [@"bezel-color",            bezelColor,                         CPThemeStateBordered],
+                [@"content-inset",          CGInsetMake(5.0, 5.0, 5.0, 5.0),    CPThemeStateBordered],
+                [@"content-border-inset",   CGInsetMake(5.0, 5.0, 4.0, 5.0),    CPThemeStateBordered],
+                [@"content-border-color",   contentBorderColor,                 CPThemeStateBordered],
+
+                [@"bezel-color",            bezelHighlightedColor,              CPThemeStateBordered | CPThemeStateHighlighted],
+
+                [@"bezel-color",            bezelDisabledColor,                 CPThemeStateBordered | CPThemeStateDisabled],
+            ];
+
+    [self registerThemeValues:themedColorWellValues forView:colorWell];
+
+    return colorWell;
+}
+
 + (CPComboBox)themedComboBox
 {
     var combo = [[CPComboBox alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 29.0)],
