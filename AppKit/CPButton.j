@@ -576,35 +576,18 @@ CPButtonImageOffset   = 3.0;
 {
     var contentInset = [self currentValueForThemeAttribute:@"content-inset"];
 
-    if (_CGInsetIsEmpty(contentInset))
-        return bounds;
-
-    bounds = _CGRectMakeCopy(bounds);
-    bounds.origin.x += contentInset.left;
-    bounds.origin.y += contentInset.top;
-    bounds.size.width -= contentInset.left + contentInset.right;
-    bounds.size.height -= contentInset.top + contentInset.bottom;
-
-    return bounds;
+    return _CGRectInsetByInset(bounds, contentInset);
 }
 
 - (CGRect)bezelRectForBounds:(CGRect)bounds
 {
+    // Is this necessary? The theme itself can just change its inset to a zero inset when !CPThemeStateBordered.
     if (![self isBordered])
         return bounds;
 
     var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"];
 
-    if (_CGInsetIsEmpty(bezelInset))
-        return bounds;
-
-    bounds = _CGRectMakeCopy(bounds);
-    bounds.origin.x += bezelInset.left;
-    bounds.origin.y += bezelInset.top;
-    bounds.size.width -= bezelInset.left + bezelInset.right;
-    bounds.size.height -= bezelInset.top + bezelInset.bottom;
-
-    return bounds;
+    return _CGRectInsetByInset(bounds, bezelInset);
 }
 
 - (CGSize)_minimumFrameSize
