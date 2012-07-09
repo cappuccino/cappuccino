@@ -33,6 +33,14 @@ var DOMFixedWidthSpanElement    = nil,
 {
 }
 
++ (void)initialize
+{
+    if (self !== [CPPlatformString class])
+        return;
+
+    DefaultFont = [CPFont systemFontOfSize:CPFontCurrentSystemSize];
+}
+
 + (void)bootstrap
 {
     [self createDOMElements];
@@ -151,14 +159,6 @@ var DOMFixedWidthSpanElement    = nil,
 
 + (CGSize)sizeOfString:(CPString)aString withFont:(CPFont)aFont forWidth:(float)aWidth
 {
-    if (!aFont)
-    {
-        if (!DefaultFont)
-            DefaultFont = [CPFont systemFontOfSize:12.0];
-
-        aFont = DefaultFont;
-    }
-
     if (!DOMIFrameElement)
         [self createDOMElements];
 
@@ -172,7 +172,7 @@ var DOMFixedWidthSpanElement    = nil,
         span.style.width = ROUND(aWidth) + "px";
     }
 
-    span.style.font = [aFont cssString];
+    span.style.font = [(aFont || DefaultFont) cssString];
 
     if (CPFeatureIsCompatible(CPJavaScriptInnerTextFeature))
         span.innerText = aString;
@@ -184,18 +184,10 @@ var DOMFixedWidthSpanElement    = nil,
 
 + (CPDictionary)metricsOfFont:(CPFont)aFont
 {
-    if (!aFont)
-    {
-        if (!DefaultFont)
-            DefaultFont = [CPFont systemFontOfSize:12.0];
-
-        aFont = DefaultFont;
-    }
-
     if (!DOMMetricsDivElement)
         [self createDOMMetricsElements];
 
-    DOMMetricsDivElement.style.font = [aFont cssString];
+    DOMMetricsDivElement.style.font = [(aFont || DefaultFont) cssString];
 
     var baseline = DOMMetricsImgElement.offsetTop - DOMMetricsTextSpanElement.offsetTop + DOMMetricsImgElement.offsetHeight,
         descender = baseline - DOMMetricsTextSpanElement.offsetHeight,

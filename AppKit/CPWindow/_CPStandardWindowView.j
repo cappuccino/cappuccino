@@ -244,7 +244,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
 
         _titleField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
 
-        [_titleField setFont:[CPFont boldSystemFontOfSize:12.0]];
+        [_titleField setFont:[CPFont boldSystemFontOfSize:CPFontCurrentSystemSize]];
         [_titleField setAutoresizingMask:CPViewWidthSizable];
 
         // FIXME: Make this to CPLineBreakByTruncatingMiddle once it's implemented.
