@@ -140,7 +140,7 @@ var ListColumnIdentifier = @"1";
     [panel setTitle:@""];
     [panel setFloatingPanel:YES];
     [panel setBecomesKeyOnlyIfNeeded:YES];
-    [panel setLevel:CPStatusWindowLevel];
+    [panel setLevel:CPPopUpMenuWindowLevel];
     [panel setHasShadow:YES];
     [panel setShadowStyle:CPMenuWindowShadowStyle];
     [panel setDelegate:self];

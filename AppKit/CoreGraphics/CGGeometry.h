@@ -45,6 +45,19 @@
 #define _CGRectOffset(aRect, dX, dY) _CGRectMake(aRect.origin.x + dX, aRect.origin.y + dY, aRect.size.width, aRect.size.height)
 #define _CGRectInset(aRect, dX, dY) _CGRectMake(aRect.origin.x + dX, aRect.origin.y + dY, aRect.size.width - 2 * dX, aRect.size.height - 2 * dY)
 
+/*!
+    Slow:
+
+    var theInsetRect = _CGRectInsetByInset([self bounds], [self contentInset]);
+
+    Fast:
+
+    var aRect = [self bounds],
+        anInset = [self contentInset],
+        theInsetRect = _CGRectInsetByInset(aRect, anInset);
+*/
+#define _CGRectInsetByInset(aRect, anInset) _CGRectMake((aRect).origin.x + (anInset).left, (aRect).origin.y + (anInset).top, (aRect).size.width - (anInset).left - (anInset).right, (aRect).size.height - (anInset).top - (anInset).bottom)
+
 #define _CGRectGetHeight(aRect) (aRect.size.height)
 #define _CGRectGetMaxX(aRect) (aRect.origin.x + aRect.size.width)
 #define _CGRectGetMaxY(aRect) (aRect.origin.y + aRect.size.height)

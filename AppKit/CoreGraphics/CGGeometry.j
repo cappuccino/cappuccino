@@ -241,6 +241,14 @@ function CGRectUnion(lhsRect, rhsRect)
     return _CGRectMake(minX, minY, maxX - minX, maxY - minY);
 }
 
+/*!
+    Returns the specified rectangle inset by the given CGInset as a new rectangle.
+    @param aRect the rect to inset
+    @param anInset a CGInset to inset by
+    @return CGRect aRect inset by anInset
+*/
+_function(CGRectInsetByInset(aRect, anInset));
+
 function CGPointFromString(aString)
 {
     var comma = aString.indexOf(',');
