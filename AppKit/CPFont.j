@@ -384,7 +384,7 @@ following:
 
 - (id)copy
 {
-    return [[CPFont alloc] _initWithName:_name size:_size bold:_isBold italic:_isItalic isSystem:_isSystem];
+    return [[CPFont alloc] _initWithName:_name size:_size bold:_isBold italic:_isItalic system:_isSystem];
 }
 
 - (void)_getMetrics
