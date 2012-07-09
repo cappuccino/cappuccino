@@ -80,6 +80,7 @@ var FILE = require("file"),
         var options = [self parseOptionsFromArgs:commandLineArgs];
 
         [self setLogLevel:options.quiet ? -1 : options.verbosity];
+        [self checkPrerequisites];
 
         if (options.watch)
             [self watchWithOptions:options];
@@ -91,6 +92,15 @@ var FILE = require("file"),
         CPLog.fatal([self exceptionReason:anException]);
         OS.exit(1);
     }
+}
+
+- (void)checkPrerequisites
+{
+    var fontinfo = require("cappuccino/fontinfo").fontinfo,
+        info = fontinfo("LucidaGrande", 13);
+
+    if (!info)
+        [self failWithMessage:@"fontinfo does not appear to be installed"];
 }
 
 - (BOOL)convertWithOptions:(JSObject)options inputFile:(CPString)inputFile

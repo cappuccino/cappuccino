@@ -487,7 +487,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     var element = [self _inputElement],
         font = [self currentValueForThemeAttribute:@"font"],
-        lineHeight = ROUND([font defaultLineHeightForFont]);
+        lineHeight = [font defaultLineHeightForFont];
 
     element.value = _stringValue;
     element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
