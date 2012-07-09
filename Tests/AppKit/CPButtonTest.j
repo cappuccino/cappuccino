@@ -3,7 +3,7 @@
 @import <AppKit/CPApplication.j>
 @import <AppKit/CPText.j>
 
-[CPApplication sharedApplication]
+[CPApplication sharedApplication];
 
 @implementation CPButtonTest : OJTestCase
 {
