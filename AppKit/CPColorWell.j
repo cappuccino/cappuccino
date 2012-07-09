@@ -264,16 +264,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 {
     var contentInset = [self currentValueForThemeAttribute:@"content-inset"];
 
-    if (_CGInsetIsEmpty(contentInset))
-        return bounds;
-
-    bounds = _CGRectMakeCopy(bounds);
-    bounds.origin.x += contentInset.left;
-    bounds.origin.y += contentInset.top;
-    bounds.size.width -= contentInset.left + contentInset.right;
-    bounds.size.height -= contentInset.top + contentInset.bottom;
-
-    return bounds;
+    return _CGRectInsetByInset(bounds, contentInset);
 }
 
 - (void)layoutSubviews
