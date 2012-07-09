@@ -1313,27 +1313,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     var contentInset = [self currentValueForThemeAttribute:@"content-inset"];
 
-    bounds.origin.x += contentInset.left;
-    bounds.origin.y += contentInset.top;
-    bounds.size.width -= contentInset.left + contentInset.right;
-    bounds.size.height -= contentInset.top + contentInset.bottom;
-
-    return bounds;
+    return _CGRectInsetByInset(bounds, contentInset);
 }
 
 - (CGRect)bezelRectForBounds:(CGRect)bounds
 {
     var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"];
 
-    if (_CGInsetIsEmpty(bezelInset))
-        return bounds;
-
-    bounds.origin.x += bezelInset.left;
-    bounds.origin.y += bezelInset.top;
-    bounds.size.width -= bezelInset.left + bezelInset.right;
-    bounds.size.height -= bezelInset.top + bezelInset.bottom;
-
-    return bounds;
+    return _CGRectInsetByInset(bounds, bezelInset);
 }
 
 - (CGRect)rectForEphemeralSubviewNamed:(CPString)aName
