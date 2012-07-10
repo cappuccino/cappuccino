@@ -578,6 +578,14 @@ var ListColumnIdentifier = @"1";
                 return YES;
             }
             break;
+
+        case CPCarriageReturnCharacter:
+            if ([self isVisible])
+            {
+                [self closeListAfterItemClick];
+                return YES;
+            }
+            break;
     }
 
     return NO;

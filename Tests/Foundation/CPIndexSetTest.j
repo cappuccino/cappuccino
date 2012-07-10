@@ -550,6 +550,7 @@ function descriptionWithoutEntity(aString)
         {
             return anIndex % 2 === 0;
         }];
+
     [self assertTrue:index === CPNotFound message:"must be equal to CPNotFound, was " + index];
 
     [set0 addIndexesInRange:CPMakeRange(1, 10)];
@@ -557,12 +558,14 @@ function descriptionWithoutEntity(aString)
         {
             return anIndex % 2 === 0;
         }];
+
     [self assertTrue:index === 2 message:"index must be equal to 2"];
 
     index = [set0 indexPassingTest:function(anIndex)
         {
             return anIndex === 1000;
         }];
+
     [self assertTrue:index === CPNotFound message:"must be equal to CPNotFound, was " + index];
 }
 
@@ -587,6 +590,7 @@ function descriptionWithoutEntity(aString)
         {
             return anIndex % 2 === 0;
         }];
+
     [self assertTrue:[indexes isEqualToIndexSet:set1] message:"must be equal to " + [set1 description] + ", was " + [indexes description]];
 }
 
@@ -598,6 +602,7 @@ function descriptionWithoutEntity(aString)
         {
             return anIndex % 2 === 0;
         }];
+
     [self assertTrue:index === 10 message:"index must be equal to 10"];
 }
 
@@ -612,6 +617,7 @@ function descriptionWithoutEntity(aString)
             visitedIndexes.push(anIndex);
             return anIndex % 2 === 0;
         }];
+
     [set1 addIndex:2];
     [set1 addIndex:4];
 
@@ -628,6 +634,7 @@ function descriptionWithoutEntity(aString)
         {
             return anIndex % 2 === 0;
         }];
+
     [self assertTrue:index === 6 message:"index must be equal to 6"];
 }
 
@@ -643,6 +650,7 @@ function descriptionWithoutEntity(aString)
             visitedIndexes.push(anIndex);
             return anIndex % 2 === 0;
         }];
+
     [set1 addIndex:4];
 
     [self assertTrue:[indexes isEqualToIndexSet:set1] message:"must be equal to " + [set1 description] + ", was " + [indexes description]];

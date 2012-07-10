@@ -672,7 +672,6 @@ var CPComboBoxTextSubview = @"text",
 
     if (_completes)
     {
-        console.log("%d: %s", [theEvent keyCode], [theEvent _couldBeKeyEquivalent]);
         if (![theEvent _couldBeKeyEquivalent] && [theEvent characters].charAt(0) !== CPDeleteCharacter)
         {
             var value = [self _inputElement].value,

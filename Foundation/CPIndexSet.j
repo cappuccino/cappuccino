@@ -518,9 +518,8 @@
 
     for (; index !== stop; index += increment)
     {
-        var range = _ranges[index];
-
-        var rangeIndex,
+        var range = _ranges[index],
+            rangeIndex,
             rangeStop,
             rangeIncrement;
 
@@ -630,6 +629,7 @@
             }
         }
     }
+
     return CPNotFound;
 }
 
@@ -657,6 +657,7 @@
     }
 
     var indexesPassingTest = [CPMutableIndexSet indexSet];
+
     for (; index !== stop; index += increment)
     {
         var range = _ranges[index],
@@ -689,6 +690,7 @@
             }
         }
     }
+
     return indexesPassingTest;
 }
 
