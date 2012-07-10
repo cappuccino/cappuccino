@@ -28,8 +28,10 @@
 CPFontDefaultSystemFontFace = @"Arial, sans-serif";
 CPFontDefaultSystemFontSize = 12;
 
-// To create a font of a size that will always reflect the current
-// system font size, use this for the size argument.
+/*!
+    To create a font of a size that will dynamically reflect the current
+    system font size, use this for the size argument.
+*/
 CPFontCurrentSystemSize = -1;
 
 // For internal use only by this class and subclasses
@@ -43,7 +45,7 @@ var _CPFontCache                     = {},
     _CPFontStripRegExp               = new RegExp("(^\\s*[\"']?|[\"']?\\s*$)", "g");
 
 
-#define _CPRealFontSize(aSize)  (aSize === CPFontCurrentSystemSize ? _CPFontSystemFontSize : aSize)
+#define _CPRealFontSize(aSize)  (aSize <= 0 ? _CPFontSystemFontSize : aSize)
 #define _CPFontNormalizedNames(aName)  _CPFontNormalizedNameArray(aName).join(", ")
 #define _CPCachedFont(aName, aSize, isBold, isItalic)  _CPFontCache[_CPFontCreateCSSString(_CPFontNormalizedNames(aName), aSize, isBold, isItalic)]
 #define _CPUserFont(aName, aSize, isBold, isItalic)  _CPCachedFont(aName, aSize, isBold, isItalic) || [[CPFont alloc] _initWithName:aName size:aSize bold:isBold italic:isItalic system:NO]
@@ -202,67 +204,75 @@ following:
 /*!
     Returns a font with the specified name and size.
     @param aName the name of the font
-    @param aSize the size of the font (in px)
+    @param aSize the size of the font (in px). 0 or negative will create a font
+           in the current system font size.
     @return the requested font
 */
 + (CPFont)fontWithName:(CPString)aName size:(float)aSize
 {
-    return _CPUserFont(aName, aSize, NO, NO);
+    return _CPUserFont(aName, aSize <= 0 ? _CPFontSystemFontSize : aSize, NO, NO);
 }
 
 /*!
     Returns a font with the specified name, size and style.
     @param aName the name of the font
-    @param aSize the size of the font (in px)
+    @param aSize the size of the font (in px). 0 or negative will create a font
+           in the current system font size.
     @param italic whether the font should be italicized
     @return the requested font
 */
 + (CPFont)fontWithName:(CPString)aName size:(float)aSize italic:(BOOL)italic
 {
-    return _CPUserFont(aName, aSize, NO, italic);
+    return _CPUserFont(aName, aSize <= 0 ? _CPFontSystemFontSize : aSize, NO, italic);
 }
 
 /*!
     Returns a bold font with the specified name and size.
     @param aName the name of the font
-    @param aSize the size of the font (in px)
+    @param aSize the size of the font (in px). 0 or negative will create a font
+           in the current system font size.
     @return the requested bold font
 */
 + (CPFont)boldFontWithName:(CPString)aName size:(float)aSize
 {
-    return _CPUserFont(aName, aSize, YES, NO);
+    return _CPUserFont(aName, aSize <= 0 ? _CPFontSystemFontSize : aSize, YES, NO);
 }
 
 /*!
     Returns a bold font with the specified name, size and style.
     @param aName the name of the font
-    @param aSize the size of the font (in px)
+    @param aSize the size of the font (in px). 0 or negative will create a font
+           in the current system font size.
     @param italic whether the font should be italicized
     @return the requested font
 */
 + (CPFont)boldFontWithName:(CPString)aName size:(float)aSize italic:(BOOL)italic
 {
-    return _CPUserFont(aName, aSize, YES, italic);
+    return _CPUserFont(aName, aSize <= 0 ? _CPFontSystemFontSize : aSize, YES, italic);
 }
 
 /*!
     Returns the system font scaled to the specified size
-    @param aSize the size of the font (in px)
+    @param aSize the size of the font (in px). 0 creates a static font
+           in the current system font size. Negative creates a font
+           that dynamically tracks the current system font size.
     @return the requested system font
 */
 + (CPFont)systemFontOfSize:(CPSize)aSize
 {
-    return _CPSystemFont(aSize, NO);
+    return _CPSystemFont(aSize === 0 ? _CPFontSystemFontSize : aSize, NO);
 }
 
 /*!
     Returns the bold system font scaled to the specified size
-    @param aSize the size of the font (in px)
+    @param aSize the size of the font (in px). 0 creates a static font
+           in the current system font size. Negative creates a font
+           that dynamically tracks the current system font size.
     @return the requested bold system font
 */
 + (CPFont)boldSystemFontOfSize:(CPSize)aSize
 {
-    return _CPSystemFont(aSize, YES);
+    return _CPSystemFont(aSize === 0 ? _CPFontSystemFontSize : aSize, YES);
 }
 
 - (id)_initWithName:(CPString)aName size:(float)aSize bold:(BOOL)isBold italic:(BOOL)isItalic system:(BOOL)isSystem
@@ -369,7 +379,7 @@ following:
 
 - (BOOL)isSystemSize
 {
-    return _size === CPFontCurrentSystemSize;
+    return _size <= 0;
 }
 
 - (BOOL)isEqual:(id)anObject
