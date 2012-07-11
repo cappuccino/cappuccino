@@ -909,7 +909,8 @@ var themedButtonValues = nil,
         [@"bezel-color",        bezelColor,                         CPThemeStateBezeled],
         [@"bezel-color",        bezelFocusedColor,                  CPThemeStateBezeled | CPThemeStateEditing],
         [@"bezel-color",        bezelDisabledColor,                 CPThemeStateBezeled | CPThemeStateDisabled],
-        [@"font",               [CPFont systemFontOfSize:CPFontCurrentSystemSize],     CPThemeStateBezeled],
+
+        [@"font",               [CPFont systemFontOfSize:CPFontCurrentSystemSize], CPThemeStateBezeled],
 
         // no border
         [@"bezel-inset",        CGInsetMakeZero()],
@@ -929,10 +930,10 @@ var themedButtonValues = nil,
 
         [@"text-color",         [CPColor colorWithCalibratedWhite:51.0 / 255.0 alpha:1.0], CPThemeStateTableDataView],
         [@"text-color",         [CPColor whiteColor],                CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
-        [@"font",               [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize],  CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
+        [@"font",               [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize], CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
         [@"text-color",         [CPColor blackColor],                CPThemeStateTableDataView | CPThemeStateEditing],
         [@"content-inset",      CGInsetMake(8.0, 8.0, 7.0, 5.0),     CPThemeStateTableDataView | CPThemeStateEditing],
-        [@"font",               [CPFont systemFontOfSize:CPFontCurrentSystemSize],      CPThemeStateTableDataView | CPThemeStateEditing],
+        [@"font",               [CPFont systemFontOfSize:CPFontCurrentSystemSize], CPThemeStateTableDataView | CPThemeStateEditing],
         [@"bezel-inset",        CGInsetMake(-1.0, -1.0, -1.0, -1.0), CPThemeStateTableDataView | CPThemeStateEditing],
 
         [@"text-color",         [CPColor colorWithCalibratedWhite:125.0 / 255.0 alpha:1.0], CPThemeStateTableDataView | CPThemeStateGroupRow],
@@ -1280,7 +1281,6 @@ var themedButtonValues = nil,
         themeValues =
         [
             [@"alignment",      CPLeftTextAlignment,                CPThemeStateNormal],
-            [@"font",           [CPFont systemFontOfSize:CPFontCurrentSystemSize],     CPThemeStateNormal],
             [@"content-inset",  CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateNormal],
 
             [@"image",          imageNormal,                        CPThemeStateNormal],
@@ -1291,6 +1291,7 @@ var themedButtonValues = nil,
             [@"image",          imageSelectedDisabled,              CPThemeStateSelected | CPThemeStateDisabled],
             [@"image-offset",   CPRadioImageOffset],
 
+            [@"font",           [CPFont systemFontOfSize:CPFontCurrentSystemSize], CPThemeStateNormal],
             [@"text-color",     [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0],  CPThemeStateDisabled],
 
             [@"min-size",       CGSizeMake(0.0, 17.0)],
@@ -1316,7 +1317,6 @@ var themedButtonValues = nil,
         themeValues =
         [
             [@"alignment",      CPLeftTextAlignment,                CPThemeStateNormal],
-            [@"font",           [CPFont systemFontOfSize:CPFontCurrentSystemSize],     CPThemeStateNormal],
             [@"content-inset",  CGInsetMakeZero(),                  CPThemeStateNormal],
 
             [@"image",          imageNormal,                        CPThemeStateNormal],
@@ -1327,7 +1327,8 @@ var themedButtonValues = nil,
             [@"image",          imageSelectedDisabled,              CPThemeStateSelected | CPThemeStateDisabled],
             [@"image-offset",   CPCheckBoxImageOffset],
 
-            [@"text-color",     [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0],  CPThemeStateDisabled],
+            [@"font",           [CPFont systemFontOfSize:CPFontCurrentSystemSize], CPThemeStateNormal],
+            [@"text-color",     [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0], CPThemeStateDisabled],
 
             [@"min-size",       CGSizeMake(0.0, 17.0)],
             [@"max-size",       CGSizeMake(-1.0, -1.0)]
