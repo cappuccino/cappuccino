@@ -33,21 +33,20 @@ CPMakePoint = CGPointMake;
 CPMakeSize = CGSizeMake;
 CPMakeRect = CGRectMake;
 
+CPPointCreateCopy = CGPointMakeCopy;
+
+CPPointEqualToPoint = CGPointEqualToPoint;
+CPRectEqualToRect = CGRectEqualToRect;
+
+CPRectIsEmpty = CGRectIsEmpty;
+
+CPRectContainsRect = CGRectContainsRect;
+CPRectIntersection = CGRectIntersection;
+
 /*!
     @addtogroup appkit
     @{
 */
-
-/*!
-  Creates a copy of a specified point and returns the copy
-  @group CGPoint
-  @param the point to be copied
-  @return CGPoint the copy of the provided CGPoint
-  */
-function CPPointCreateCopy(aPoint)
-{
-    return { x: aPoint.x, y: aPoint.y };
-}
 
 /*!
   Makes a CGPoint object out of two numbers provided as arguments
@@ -84,26 +83,6 @@ function CPRectIntegral(aRect)
 {
     // FIXME!!!
     alert("CPRectIntegral unimplemented");
-}
-
-/*!
-    Returns the intersection of the two provided rectangles as a new rectangle
-    @group CGRect
-    @param lhsRect the first rectangle used for calculation
-    @param rhsRect the second rectangle used for calculation
-    @return CGRect the intersection of the two rectangles
-*/
-function CPRectIntersection(lhsRect, rhsRect)
-{
-    var intersection = CPRectMake(
-        MAX(CPRectGetMinX(lhsRect), CPRectGetMinX(rhsRect)),
-        MAX(CPRectGetMinY(lhsRect), CPRectGetMinY(rhsRect)),
-        0, 0);
-
-    intersection.size.width = MIN(CPRectGetMaxX(lhsRect), CPRectGetMaxX(rhsRect)) - CPRectGetMinX(intersection);
-    intersection.size.height = MIN(CPRectGetMaxY(lhsRect), CPRectGetMaxY(rhsRect)) - CPRectGetMinY(intersection);
-
-    return CPRectIsEmpty(intersection) ? CPRectMakeZero() : intersection;
 }
 
 /*!
@@ -227,45 +206,6 @@ function CPRectContainsPoint(aRect, aPoint)
 }
 
 /*!
-    Returns a \c BOOL indicating whether CGRect \c possibleOuter
-    contains CGRect \c possibleInner.
-    @group CGRect
-    @param possibleOuter the CGRect to test if \c possibleInner is inside of
-    @param possibleInner the CGRect to test if it fits inside \c possibleOuter.
-    @return BOOL \c YES if \c possibleInner fits inside \c possibleOuter.
-*/
-function CPRectContainsRect(possibleOuter, possibleInner)
-{
-    return CGRectContainsRect(possibleOuter, possibleInner);
-}
-
-/*!
-    Tests whether the two CGPoints are equal to each other by comparing their
-    \c x and \c y members.
-    @group @CGPoint
-    @param lhsPoint the first CGPoint to check
-    @param rhsPoint the second CGPoint to check
-    @return BOOL \c YES if the two points have the same x's, and the same y's.
-*/
-function CPPointEqualToPoint(lhsPoint, rhsPoint)
-{
-    return lhsPoint.x == rhsPoint.x && lhsPoint.y == rhsPoint.y;
-}
-
-/*!
-    Test whether the two CGRects have the same origin and size
-    @group CGRect
-    @param lhsRect the first CGRect to compare
-    @param rhsRect the second CGRect to compare
-    @return BOOL \c YES if the two rectangles have the same origin and size. \c NO, otherwise.
-*/
-function CPRectEqualToRect(lhsRect, rhsRect)
-{
-    return  CPPointEqualToPoint(lhsRect.origin, rhsRect.origin) &&
-            CPSizeEqualToSize(lhsRect.size, rhsRect.size);
-}
-
-/*!
     @group CGRect
     @param aRect a CGRect
     @return int
@@ -355,18 +295,6 @@ function CPRectGetWidth(aRect)
 function CPRectIntersectsRect(lhsRect, rhsRect)
 {
     return !CPRectIsEmpty(CPRectIntersection(lhsRect, rhsRect));
-}
-
-/*!
-    Returns \c YES if the CGRect has no area.
-    The test is performed by checking if the width and height are both zero.
-    @group CGRect
-    @param aRect the CGRect to test
-    @return BOOL \c YES if the CGRect has no area, and \c NO, otherwise.
-*/
-function CPRectIsEmpty(aRect)
-{
-    return aRect.size.width <= 0.0 || aRect.size.height <= 0.0;
 }
 
 /*!
