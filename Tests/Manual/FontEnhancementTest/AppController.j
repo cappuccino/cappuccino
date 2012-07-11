@@ -7,6 +7,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <AppKit/CPView.j>
 
 
 var fontLabelField = nil,
@@ -15,17 +16,13 @@ var fontLabelField = nil,
 
 @implementation AppController : CPObject
 {
-    CPWindow    theWindow; //this "outlet" is connected automatically by the Cib
-    CPTextField label1;
-    CPTextField fontLabel;
-    CPTableView theTableView;
-    CPRadio     radio1;
-    CPRadio     radio2;
-}
-
-- (void)applicationDidFinishLaunching:(CPNotification)aNotification
-{
-    // This is called when the application is done loading.
+    @outlet CPWindow    theWindow;
+    @outlet CPTextField systemFontLabel;
+    @outlet CPTextField label1;
+    @outlet CPTextField fontLabel;
+    @outlet CPTableView theTableView;
+    @outlet CPRadio     radio1;
+    @outlet CPRadio     radio2;
 }
 
 - (void)awakeFromCib
@@ -44,6 +41,9 @@ var fontLabelField = nil,
 
     [radio1 setFont:font];
     [radio2 setFont:font];
+
+    var systemFont = [CPString stringWithFormat:@"System font: %@ %d", [CPFont systemFontFace], [CPFont systemFontSize]];
+    [systemFontLabel setStringValue:systemFont];
 }
 
 - (int)numberOfRowsInTableView:(id)aTableView
