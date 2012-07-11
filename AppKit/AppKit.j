@@ -60,7 +60,6 @@
 @import "CPFlashView.j"
 @import "CPFont.j"
 @import "CPFontManager.j"
-@import "CPGeometry.j"
 @import "CPGradient.j"
 @import "CPGraphics.j"
 @import "CPImage.j"

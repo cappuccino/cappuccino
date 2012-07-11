@@ -36,6 +36,7 @@
 @import "CPException.j"
 @import "CPExpression.j"
 @import "CPFormatter.j"
+@import "CPGeometry.j"
 @import "CPIndexSet.j"
 @import "CPIndexPath.j"
 @import "CPInvocation.j"
