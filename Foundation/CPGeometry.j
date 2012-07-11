@@ -29,18 +29,88 @@ CPMaxXEdge = 2;
 CPMaxYEdge = 3;
 
 // FIXME: the rest!
+/*!
+    Makes a CGPoint object out of two numbers provided as arguments
+    @group CGPoint
+    @param x the x-coordinate of the CGPoint
+    @param y the y-coordinate of the CGPoint
+    @return CGPoint a CGPoint with an X and Y coordinate equal to the function arguments
+*/
 CPMakePoint = CGPointMake;
+
+/*!
+    Creates and returns a new CGSize object from the provided dimensions.
+    @group CGSize
+    @param width the width for the new CGSize
+    @param height the height for the new CGSize
+    @return CGSize the new CGSize
+*/
 CPMakeSize = CGSizeMake;
+
+/*!
+    Returns a CGRect made of the specified arguments
+    @group CGRect
+    @param x the x-coordinate of the rectangle's origin
+    @param y the y-coordinate of the rectangle's origin
+    @param width the width of the new rectangle
+    @param height the height of the new rectangle
+    @return CGRect the new rectangle
+*/
 CPMakeRect = CGRectMake;
 
+/*!
+    Creates a copy of a specified point and returns the copy
+    @group CGPoint
+    @param the point to be copied
+    @return CGPoint the copy of the provided CGPoint
+*/
 CPPointCreateCopy = CGPointMakeCopy;
 
+/*!
+    Tests whether the two CGPoints are equal to each other by comparing their
+    \c x and \c y members.
+    @group @CGPoint
+    @param lhsPoint the first CGPoint to check
+    @param rhsPoint the second CGPoint to check
+    @return BOOL \c YES if the two points have the same x's, and the same y's.
+*/
 CPPointEqualToPoint = CGPointEqualToPoint;
+
+/*!
+    Test whether the two CGRects have the same origin and size
+    @group CGRect
+    @param lhsRect the first CGRect to compare
+    @param rhsRect the second CGRect to compare
+    @return BOOL \c YES if the two rectangles have the same origin and size. \c NO, otherwise.
+*/
 CPRectEqualToRect = CGRectEqualToRect;
 
+/*!
+    Returns \c YES if the CGRect has no area.
+    The test is performed by checking if the width and height are both zero.
+    @group CGRect
+    @param aRect the CGRect to test
+    @return BOOL \c YES if the CGRect has no area, and \c NO, otherwise.
+*/
 CPRectIsEmpty = CGRectIsEmpty;
 
+/*!
+    Returns a \c BOOL indicating whether CGRect \c possibleOuter
+    contains CGRect \c possibleInner.
+    @group CGRect
+    @param possibleOuter the CGRect to test if \c possibleInner is inside of
+    @param possibleInner the CGRect to test if it fits inside \c possibleOuter.
+    @return BOOL \c YES if \c possibleInner fits inside \c possibleOuter.
+*/
 CPRectContainsRect = CGRectContainsRect;
+
+/*!
+    Returns the intersection of the two provided rectangles as a new rectangle
+    @group CGRect
+    @param lhsRect the first rectangle used for calculation
+    @param rhsRect the second rectangle used for calculation
+    @return CGRect the intersection of the two rectangles
+*/
 CPRectIntersection = CGRectIntersection;
 
 /*!
