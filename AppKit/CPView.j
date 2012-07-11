@@ -246,8 +246,8 @@ var CPCurrentToolTip,
 - (void)_setupToolTipHandlers
 {
     _toolTipInstalled = NO;
-    _toolTipFunctionIn = function(e){[self _fireToolTip];}
-    _toolTipFunctionOut = function(e){[self _invalidateToolTip];};
+    _toolTipFunctionIn = function(e) { [self _fireToolTip]; }
+    _toolTipFunctionOut = function(e) { [self _invalidateToolTip]; };
 }
 
 + (CPSet)keyPathsForValuesAffectingFrame
@@ -353,6 +353,7 @@ var CPCurrentToolTip,
     if (_toolTipInstalled)
         return;
 
+#if PLATFORM(DOM)
     if (_DOMElement.addEventListener)
     {
         _DOMElement.addEventListener("mouseover", _toolTipFunctionIn, NO);
@@ -365,6 +366,8 @@ var CPCurrentToolTip,
         _DOMElement.attachEvent("onkeypress", _toolTipFunctionOut);
         _DOMElement.attachEvent("onmouseout", _toolTipFunctionOut);
     }
+#endif
+
     _toolTipInstalled = YES;
 }
 
@@ -377,6 +380,7 @@ var CPCurrentToolTip,
     if (!_toolTipInstalled)
         return;
 
+#if PLATFORM(DOM)
     if (_DOMElement.removeEventListener)
     {
         _DOMElement.removeEventListener("mouseover", _toolTipFunctionIn, NO);
@@ -389,6 +393,8 @@ var CPCurrentToolTip,
         _DOMElement.detachEvent("onkeypress", _toolTipFunctionOut);
         _DOMElement.detachEvent("onmouseout", _toolTipFunctionOut);
     }
+#endif
+
     _toolTipInstalled = NO;
 }
 
@@ -400,8 +406,10 @@ var CPCurrentToolTip,
     if (CPCurrentToolTipTimer)
     {
         [CPCurrentToolTipTimer invalidate];
+
         if (CPCurrentToolTip)
             [CPCurrentToolTip close];
+
         CPCurrentToolTip = nil;
     }
 
@@ -434,6 +442,7 @@ var CPCurrentToolTip,
 {
     if (CPCurrentToolTip)
         [CPCurrentToolTip close];
+
     CPCurrentToolTip = [_CPToolTip toolTipWithString:_toolTip];
 }
 

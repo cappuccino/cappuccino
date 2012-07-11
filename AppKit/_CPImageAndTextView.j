@@ -680,9 +680,19 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
             {
                 if (_lineBreakMode === CPLineBreakByCharWrapping ||
                     _lineBreakMode === CPLineBreakByWordWrapping)
+                {
                     _textSize = [_text sizeWithFont:_font inWidth:textRectWidth];
+                }
                 else
+                {
                     _textSize = [_text sizeWithFont:_font];
+
+                    // Account for possible fractional pixels at right edge
+                    _textSize.width += 1;
+                }
+
+                // Account for possible fractional pixels at bottom edge
+                _textSize.height += 1;
             }
 
             if (_verticalAlignment === CPCenterVerticalTextAlignment)

@@ -1042,7 +1042,15 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         textSize = [text sizeWithFont:font inWidth:textSize.width];
     }
     else
+    {
         textSize = [text sizeWithFont:font];
+
+        // Account for possible fractional pixels at right edge
+        textSize.width += 1;
+    }
+
+    // Account for possible fractional pixels at bottom edge
+    textSize.height += 1;
 
     frameSize.height = textSize.height + contentInset.top + contentInset.bottom;
 
