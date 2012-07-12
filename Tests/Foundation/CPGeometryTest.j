@@ -59,14 +59,16 @@
 
 - (void)testCPPointCreateCopy
 {
-    var point = CGPointMake(1, 1);
-    [self assertTrue:CPPointEqualToPoint(CPPointCreateCopy(point),point)];
-    [self assertFalse:CPPointEqualToPoint(CPPointCreateCopy(point), CGPointMake(0,1))];
+    var point = CGPointMake(1, 1),
+        copiedPoint = CPPointCreateCopy(point);
+    [self assertTrue:CPPointEqualToPoint(point, copiedPoint)];
+    point.x = 10;
+    [self assertFalse:CPPointEqualToPoint(point, copiedPoint)];
 }
 
 - (void)testCPPointMake
 {
-    var testPoint = CPPointMake(1,2);
+    var testPoint = CPPointMake(1, 2);
     [self assert:1 equals:testPoint.x message:"point x coordinate failed"];
     [self assert:2 equals:testPoint.y message:"point y coordinate failed"];
 }
@@ -77,16 +79,19 @@
     [self assertTrue:CGRectEqualToRect(CGRectMake(10, 10, 80, 80), CPRectInset(testRect, 10, 10))];
 }
 
-- (void)testCPRectIntegral
-{
-    var rect = CGRectMake(0.1, 0.2, 10.3, 10.4);
-    [self assertTrue:CGRectEqualToRect(CGRectMake(0, 0, 11, 11), CPRectIntegral(rect))];
-}
+// - (void)testCPRectIntegral
+// {
+//     var rect = CGRectMake(0.1, 0.2, 10.3, 10.4);
+//     [self assertTrue:CGRectEqualToRect(CGRectMake(0, 0, 11, 11), CPRectIntegral(rect))];
+// }
 
 - (void)testCPRectCreateCopy
 {
-    var rect = CGRectMake(0, 0, 100, 100);
-    [self assertTrue:CGRectEqualToRect(rect, CPRectCreateCopy(rect))];
+    var rect = CGRectMake(0, 0, 100, 100),
+        copiedRect = CPRectCreateCopy(rect);
+    [self assertTrue:CGRectEqualToRect(rect, copiedRect)];
+    rect.origin.x = 10;
+    [self assertFalse:CGRectEqualToRect(rect, copiedRect)];
 }
 
 - (void)testCPRectMake
@@ -125,9 +130,12 @@
 
 - (void)testCPSizeCreateCopy
 {
-    var initialSize = CGSizeMake(100, 200);
-    [self assertTrue:CGSizeEqualToSize(initialSize, CPSizeCreateCopy(initialSize))];
-    [self assertFalse:CGSizeEqualToSize(CGSizeMake(100, 10), CPSizeCreateCopy(initialSize))];
+    var initialSize = CGSizeMake(100, 200),
+        copiedSize = CPSizeCreateCopy(initialSize);
+    [self assertTrue:CGSizeEqualToSize(initialSize, copiedSize)];
+    // [self assertFalse:CGSizeEqualToSize(CGSizeMake(100, 10), CPSizeCreateCopy(initialSize))];
+    initialSize.width = 10;
+    [self assertFalse:CGSizeEqualToSize(initialSize, copiedSize)];
 }
 
 - (void)testCPSizeMake

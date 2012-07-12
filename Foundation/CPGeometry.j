@@ -21,6 +21,11 @@
  */
 
 @import <AppKit/CoreGraphics/CGGeometry.j>
+       
+CPMinXEdge = 0;
+CPMinYEdge = 1;
+CPMaxXEdge = 2;
+CPMaxYEdge = 3;
 
 /*!
     Makes a CGPoint object out of two numbers provided as arguments
