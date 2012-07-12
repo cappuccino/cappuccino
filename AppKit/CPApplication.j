@@ -373,7 +373,7 @@ CPRunContinuesResponse  = -1002;
             standardPath = [[CPBundle bundleForClass:[self class]] pathForResource:@"standardApplicationIcon.png"];
 
         // FIXME move this into the CIB eventually
-        [applicationLabel setFont:[CPFont boldSystemFontOfSize:14.0]];
+        [applicationLabel setFont:[CPFont boldSystemFontOfSize:[CPFont systemFontSize] + 2]];
         [applicationLabel setAlignment:CPCenterTextAlignment];
         [versionLabel setAlignment:CPCenterTextAlignment];
         [copyrightLabel setAlignment:CPCenterTextAlignment];

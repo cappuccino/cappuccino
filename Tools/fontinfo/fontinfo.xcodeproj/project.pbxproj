@@ -86,6 +86,7 @@
 			buildPhases = (
 				E1D3CF6812AFEE3800CBB79E /* Sources */,
 				E1D3CF6912AFEE3800CBB79E /* Frameworks */,
+				E180EE6415AB52D500757AC7 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -119,6 +120,23 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		E180EE6415AB52D500757AC7 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "if [[ -d \"$CAPP_BUILD\"/Debug/CommonJS/cappuccino/bin ]]; then\n\tcp \"$SYMROOT/$CONFIGURATION/$PRODUCT_NAME\" \"$CAPP_BUILD\"/Debug/CommonJS/cappuccino/bin\nfi\n\nif [[ -d \"$CAPP_BUILD\"/Release/CommonJS/cappuccino/bin ]]; then\n\tcp \"$SYMROOT/$CONFIGURATION/$PRODUCT_NAME\" \"$CAPP_BUILD\"/Release/CommonJS/cappuccino/bin\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		E1D3CF6812AFEE3800CBB79E /* Sources */ = {
@@ -163,23 +181,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
-				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)";
-				CONFIGURATION_TEMP_DIR = "$(CAPP_BUILD)";
-				DEPLOYMENT_LOCATION = NO;
-				DEPLOYMENT_POSTPROCESSING = NO;
-				DSTROOT = "/tmp/$(PROJECT_NAME).dst";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_PRECOMPILE_PREFIX_HEADER = NO;
-				GCC_PREFIX_HEADER = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				INSTALL_PATH = "";
-				OBJROOT = "$(CAPP_BUILD)";
 				ONLY_ACTIVE_ARCH = NO;
-				PREBINDING = NO;
 				PRODUCT_NAME = fontinfo;
 				SDKROOT = macosx10.5;
-				SYMROOT = "$(CAPP_BUILD)/Release/CommonJS/cappuccino/bin";
 			};
 			name = Release;
 		};

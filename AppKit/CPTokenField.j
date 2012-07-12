@@ -341,7 +341,7 @@ var CPScrollDestinationNone             = 0,
     element.style.top = CGRectGetMinY(contentRect) + "px";
     element.style.left = (CGRectGetMinX(contentRect) - 1) + "px"; // <input> element effectively imposes a 1px left margin
     element.style.width = CGRectGetWidth(contentRect) + "px";
-    element.style.height = ROUND([font defaultLineHeightForFont]) + "px";
+    element.style.height = [font defaultLineHeightForFont] + "px";
 
     [_tokenScrollView documentView]._DOMElement.appendChild(element);
 
@@ -986,7 +986,7 @@ var CPScrollDestinationNone             = 0,
         isEditing = [[self window] firstResponder] == self,
         tokenToken = [_CPTokenFieldToken new],
         font = [self currentValueForThemeAttribute:@"font"],
-        lineHeight = ROUND([font defaultLineHeightForFont]),
+        lineHeight = [font defaultLineHeightForFont],
         editorInset = [self currentValueForThemeAttribute:@"editor-inset"];
 
     // Get the height of a typical token, or a token token if you will.
