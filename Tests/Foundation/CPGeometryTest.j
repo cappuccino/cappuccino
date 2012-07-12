@@ -79,11 +79,11 @@
     [self assertTrue:CGRectEqualToRect(CGRectMake(10, 10, 80, 80), CPRectInset(testRect, 10, 10))];
 }
 
-// - (void)testCPRectIntegral
-// {
-//     var rect = CGRectMake(0.1, 0.2, 10.3, 10.4);
-//     [self assertTrue:CGRectEqualToRect(CGRectMake(0, 0, 11, 11), CPRectIntegral(rect))];
-// }
+- (void)testCPRectIntegral
+{
+    var rect = CGRectMake(0.1, 0.2, 10.3, 10.4);
+    [self assertTrue:CGRectEqualToRect(CGRectMake(0, 0, 11, 11), CPRectIntegral(rect))];
+}
 
 - (void)testCPRectCreateCopy
 {
@@ -133,7 +133,6 @@
     var initialSize = CGSizeMake(100, 200),
         copiedSize = CPSizeCreateCopy(initialSize);
     [self assertTrue:CGSizeEqualToSize(initialSize, copiedSize)];
-    // [self assertFalse:CGSizeEqualToSize(CGSizeMake(100, 10), CPSizeCreateCopy(initialSize))];
     initialSize.width = 10;
     [self assertFalse:CGSizeEqualToSize(initialSize, copiedSize)];
 }
