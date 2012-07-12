@@ -7,7 +7,7 @@
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPString.j>
 
-var regex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)?");
+var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)?");
 
 @implementation _CPRuleEditorLocalizer : CPObject
 {
@@ -24,9 +24,10 @@ var regex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)?");
 
 - (void)reloadIfNeeded
 {
-    if (connection != nil) // Connection waiting
+    if (connection !== nil) // Connection waiting
     {
         connection = nil;
+
         var data = [CPURLConnection sendSynchronousRequest:request returningResponse:NULL];
         [self loadContent:[data rawString]];
     }
@@ -34,7 +35,7 @@ var regex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)?");
 
 - (void)connection:(CPURLConnection)aConnection didReceiveData:(CPString)rawString
 {
-    if (connection != nil && rawString != nil)
+    if (connection !== nil && rawString !== nil)
         [self loadContent:rawString];
 
     connection = nil;
@@ -49,10 +50,12 @@ var regex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)?");
     for (var i = 0 ; i < count ; i++)
     {
         var line = [lines objectAtIndex:i];
+
         if (line.length > 1)
         {
-            var match = regex.exec(line);
-            if (match.length >= 3)
+            var match = LocalizerStringsRegex.exec(line);
+
+            if (match && match.length >= 3)
                 [dict setObject:match[2] forKey:match[1]];
         }
     }
@@ -64,11 +67,12 @@ var regex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)?");
 {
     [self reloadIfNeeded];
 
-    if (_dictionary != nil && aString != nil)
+    if (_dictionary !== nil && aString !== nil)
     {
         var localized = [_dictionary objectForKey:aString];
-        if (localized != nil)
-                return localized;
+
+        if (localized !== nil)
+            return localized;
     }
 
     return aString;
