@@ -3395,7 +3395,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         If the dataview resigning triggers the action (as CPTextField does), we come right
         back here and start an infinite loop. So we have to check this flag first.
     */
-    if (_editingCellIndex === nil)
+    if ([sender isKindOfClass:[CPTextField class]] && _editingCellIndex === nil)
         return;
 
     _editingCellIndex = nil;
