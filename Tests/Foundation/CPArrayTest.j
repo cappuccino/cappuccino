@@ -657,6 +657,22 @@
     [self assertTrue:s2[1] === a message:s2[1] + " is larger then " + a + " when sorting case insensitive"];
 }
 
+- (void)testSortUsingDescriptorsWithKeyPath
+{
+    var a = [CPDictionary dictionaryWithJSObject:{"a": "AB", "b": "ba"}],
+        b = [CPDictionary dictionaryWithJSObject:{"a": "aa", "b": "BB"}],
+        A = [CPDictionary dictionaryWithJSObject:{"x": a}],
+        B = [CPDictionary dictionaryWithJSObject:{"x": b}],
+        array = [A, B],
+        d1 = [[CPSortDescriptor sortDescriptorWithKey:@"x.b" ascending:YES selector:@selector(compare:)]],
+        d2 = [[CPSortDescriptor sortDescriptorWithKey:@"x.b" ascending:NO selector:@selector(compare:)]],
+        s1 = [array sortedArrayUsingDescriptors:d1],
+        s2 = [array sortedArrayUsingDescriptors:d2];
+
+    [self assertTrue:s1[1] === A message:s1[1] + " is larger then " + A + " when sorting ascending"];
+    [self assertTrue:s2[0] === A message:s2[0] + " is larger then " + A + " when sorting descending"];
+}
+
 @end
 
 @implementation AlwaysEqual : CPObject
