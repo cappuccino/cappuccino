@@ -22,11 +22,6 @@
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
-    // This is called when the application is done loading.
-}
-
-- (void)awakeFromCib
-{
     rows = [CPArray new];
 
     var path = [[CPBundle mainBundle] pathForResource:@"rows.plist"],
@@ -34,6 +29,11 @@
         connection = [CPURLConnection connectionWithRequest:request delegate:self];
 
     [theWindow setFullBridge:YES];
+}
+
+- (void)awakeFromCib
+{
+    console.log(_cmd);
 }
 
 - (void)connection:(CPURLConnection)connection didReceiveData:(CPString)dataString
