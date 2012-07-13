@@ -34,8 +34,7 @@
 
     if (self)
     {
-        var cell = [aCoder decodeObjectForKey:@"NSCell"],
-            font = [cell font];
+        var cell = [aCoder decodeObjectForKey:@"NSCell"];
 
         [self sendActionOn:CPKeyUpMask | CPKeyDownMask];
 
@@ -71,7 +70,10 @@
         }
         else
         {
+            // Adjust frame for difference between layout->bounds rect in IB
             [self setFrame:CGRectInset(frame, 3.0, 0.0)];
+
+            // Hack to get baselines to align
             [self setFrameOrigin:CGPointMake(frame.origin.x, frame.origin.y - 1.0)];
         }
 
