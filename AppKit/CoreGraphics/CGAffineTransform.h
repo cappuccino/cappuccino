@@ -20,7 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "CGGeometry.h"
+#include "../../Foundation/_CGGeometry.h"
 
 #define _CGAffineTransformMake(a_, b_, c_, d_, tx_, ty_) { a:a_, b:b_, c:c_, d:d_, tx:tx_, ty:ty_ }
 #define _CGAffineTransformMakeIdentity() _CGAffineTransformMake(1.0, 0.0, 0.0, 1.0, 0.0, 0.0)

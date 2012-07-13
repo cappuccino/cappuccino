@@ -1,6 +1,6 @@
 /*
  * CGGeometry.h
- * AppKit
+ * Foundation
  *
  * Created by Francisco Tolmasky.
  * Copyright 2008, 280 North, Inc.
@@ -19,6 +19,12 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
+
+/*
+
+CGGeometry is not a part of Foundation. The reason _CGGeometry.h exists, and is in Foundation, is that CPGeometry and CGGeometry both use the same code so the shared basis needs to be in the lowest layer. If for some reason Cappuccino was ever reimplemented such that CPRect !== CGRect etc, this class could be removed and CPGeometry.j and CGGeometry.j updated with relevant functions without breaking any client code.
+
+*/
 
 #define _CGPointMake(x_, y_) { x:x_, y:y_ }
 #define _CGPointMakeCopy(aPoint) _CGPointMake(aPoint.x, aPoint.y)
@@ -44,6 +50,19 @@
 
 #define _CGRectOffset(aRect, dX, dY) _CGRectMake(aRect.origin.x + dX, aRect.origin.y + dY, aRect.size.width, aRect.size.height)
 #define _CGRectInset(aRect, dX, dY) _CGRectMake(aRect.origin.x + dX, aRect.origin.y + dY, aRect.size.width - 2 * dX, aRect.size.height - 2 * dY)
+
+/*!
+    Slow:
+
+    var theInsetRect = _CGRectInsetByInset([self bounds], [self contentInset]);
+
+    Fast:
+
+    var aRect = [self bounds],
+        anInset = [self contentInset],
+        theInsetRect = _CGRectInsetByInset(aRect, anInset);
+*/
+#define _CGRectInsetByInset(aRect, anInset) _CGRectMake((aRect).origin.x + (anInset).left, (aRect).origin.y + (anInset).top, (aRect).size.width - (anInset).left - (anInset).right, (aRect).size.height - (anInset).top - (anInset).bottom)
 
 #define _CGRectGetHeight(aRect) (aRect.size.height)
 #define _CGRectGetMaxX(aRect) (aRect.origin.x + aRect.size.width)

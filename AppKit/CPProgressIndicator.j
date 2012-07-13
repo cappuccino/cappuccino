@@ -78,7 +78,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 */
 + (void)initialize
 {
-    if (self != [CPProgressIndicator class])
+    if (self !== [CPProgressIndicator class])
         return;
 
     var bundle = [CPBundle bundleForClass:self];
@@ -120,11 +120,11 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 
     // Bar Style
     var prefixes = [
-        CPProgressIndicatorClassName + @"BezelBorder" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle],
-        CPProgressIndicatorClassName + @"Bar" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle],
-        CPProgressIndicatorClassName + @"BezelBorder" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorHUDBarStyle],
-        CPProgressIndicatorClassName + @"Bar" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorHUDBarStyle]
-    ];
+            CPProgressIndicatorClassName + @"BezelBorder" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle],
+            CPProgressIndicatorClassName + @"Bar" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle],
+            CPProgressIndicatorClassName + @"BezelBorder" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorHUDBarStyle],
+            CPProgressIndicatorClassName + @"Bar" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorHUDBarStyle]
+        ];
 
     for (var i = 0, count = prefixes.length; i < count; i++)
     {

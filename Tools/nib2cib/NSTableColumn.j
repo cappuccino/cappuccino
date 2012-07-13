@@ -51,7 +51,7 @@
                 selectedFont = nil;
 
             if (font)
-                font = [NSFont cibFontForNibFont:font];
+                font = [font cibFontForNibFont];
 
             if (!font)
                 font = [CPFont systemFontOfSize:[CPFont systemFontSize]];

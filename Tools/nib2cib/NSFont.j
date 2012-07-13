@@ -22,11 +22,11 @@
 
 @import <AppKit/CPFont.j>
 
+IBDefaultFontFace = @"Lucida Grande";
+IBDefaultFontSize = 13.0;
+
 var OS = require("os"),
     fontinfo = require("cappuccino/fontinfo").fontinfo;
-
-var IBDefaultFontFace = @"Lucida Grande",
-    IBDefaultFontSize = 13.0;
 
 @implementation CPFont (NSCoding)
 
@@ -45,7 +45,33 @@ var IBDefaultFontFace = @"Lucida Grande",
         isItalic = info.italic;
     }
 
-    return [self _initWithName:name size:size bold:isBold italic:isItalic];
+    // NOTE: We save the nib fonts as is, and determine system status later
+    var font = [self _initWithName:name
+                          size:size
+                          bold:isBold
+                        italic:isItalic
+                        system:NO];
+
+    CPLog.debug("NSFont: %s", [NSFont descriptorForFont:font]);
+
+    return font;
+}
+
+- (id)cibFontForNibFont
+{
+    if (_name === IBDefaultFontFace)
+    {
+        if (_size === IBDefaultFontSize && !_isBold && !_isItalic)
+            return nil;
+        else
+            return [[CPFont alloc] _initWithName:_CPFontSystemFacePlaceholder
+                                            size:_size == IBDefaultFontSize ? CPFontCurrentSystemSize : _size
+                                            bold:_isBold
+                                          italic:_isItalic
+                                          system:YES];
+    }
+
+    return self;
 }
 
 @end
@@ -54,26 +80,37 @@ var IBDefaultFontFace = @"Lucida Grande",
 
 + (void)initialize
 {
+    if (self !== [NSFont class])
+        return;
+
     CPLog.debug("NSFont: default IB font: %s %f", IBDefaultFontFace, IBDefaultFontSize);
 }
 
-+ (id)cibFontForNibFont:(CPFont)aFont
++ (CPString)descriptorForFont:(CPFont)aFont
 {
-    var name = [aFont familyName];
+    var styleAttributes = [];
 
-    if (name === IBDefaultFontFace)
+    if ([aFont isBold])
+        styleAttributes.push("bold");
+
+    if ([aFont isItalic])
+        styleAttributes.push("italic");
+
+    styleAttributes = styleAttributes.join(" ");
+
+    var systemAttributes = [];
+
+    if ([aFont isSystem])
     {
-        var size = [aFont size],
-            bold = [aFont isBold],
-            italic = [aFont isItalic];
+        systemAttributes.push("system face");
 
-        if (size === IBDefaultFontSize && !bold && !italic)
-            return nil;
-        else
-            return [[CPFont alloc] _initWithName:[CPFont systemFontFace] size:(size == IBDefaultFontSize ? CPFontDefaultSystemFontSize : size) bold:bold italic:italic];
+        if ([aFont size] === IBDefaultFontSize)
+            systemAttributes.push("system size");
     }
 
-    return [aFont copy];
+    systemAttributes = systemAttributes.join(", ");
+
+    return [CPString stringWithFormat:@"%s%s %d%s", [aFont familyName], styleAttributes ? " " + styleAttributes : "", [aFont size], systemAttributes ? " (" + systemAttributes + ")" : ""];
 }
 
 - (id)initWithCoder:(CPCoder)aCoder

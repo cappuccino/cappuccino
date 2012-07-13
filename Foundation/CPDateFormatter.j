@@ -99,12 +99,10 @@ CPDateFormatterFullStyle   = 4;
 
 - (BOOL)getObjectValue:(id)anObject forString:(CPString)aString errorDescription:(CPString)anError
 {
-    console.log("getObjectValue: forString:" + aString);
     // TODO Error handling.
     var value = [self dateFromString:aString];
     AT_DEREF(anObject, value);
 
-    console.log("got " + value);
     return YES;
 }
 

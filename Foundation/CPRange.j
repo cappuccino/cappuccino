@@ -20,6 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#define _function(inline) function inline { return _##inline; }
+
+#include "CPRange.h"
+
 /*!
     @addtogroup foundation
     @{
@@ -32,10 +36,7 @@
     @group CPRange
     @return CPRange the new range object
 */
-function CPMakeRange(location, length)
-{
-    return { location: location, length: length };
-}
+_function(CPMakeRange(location, length))
 
 /*!
     Makes a copy of a CPRange.
@@ -43,21 +44,7 @@ function CPMakeRange(location, length)
     @group CPRange
     @return CPRange the copy of the range
 */
-function CPCopyRange(aRange)
-{
-    return { location: aRange.location, length: aRange.length };
-}
-
-/*!
-    Makes a copy of a CPRange.
-    @param aRange the CPRange to copy
-    @group CPRange
-    @return CPRange the copy of the range
-*/
-function CPMakeRangeCopy(aRange)
-{
-    return { location:aRange.location, length:aRange.length };
-}
+_function(CPMakeRangeCopy(aRange))
 
 /*!
     Determines if a range is empty \c length is 0.
@@ -65,10 +52,7 @@ function CPMakeRangeCopy(aRange)
     @group CPRange
     @return YES if the range is empty
 */
-function CPEmptyRange(aRange)
-{
-    return aRange.length === 0;
-}
+_function(CPEmptyRange(aRange))
 
 /*!
     Finds the range maximum. (\c location + length)
@@ -76,10 +60,7 @@ function CPEmptyRange(aRange)
     @group CPRange
     @return int the range maximum
 */
-function CPMaxRange(aRange)
-{
-    return aRange.location + aRange.length;
-}
+_function(CPMaxRange(aRange))
 
 /*!
     Determines if two CPRanges are equal.
@@ -99,10 +80,7 @@ function CPEqualRanges(lhsRange, rhsRange)
     @group CPRange
     @return BOOL \c YES if \c aLocation is within the range
 */
-function CPLocationInRange(aLocation, aRange)
-{
-    return (aLocation >= aRange.location) && (aLocation < CPMaxRange(aRange));
-}
+_function(CPLocationInRange(aLocation, aRange))
 
 /*!
     Creates a new range with the minimum \c location and a \c length

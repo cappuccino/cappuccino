@@ -125,6 +125,9 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
 
 + (void)initialize
 {
+    if (self !== [CPScrollView class])
+        return;
+
     var globalValue = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPScrollersGlobalStyle"];
 
     if (globalValue == nil || globalValue == -1)

@@ -38,7 +38,7 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
 
 + (void)initialize
 {
-    if (self != [_CPHUDWindowView class])
+    if (self !== [_CPHUDWindowView class])
         return;
 
     var bundle = [CPBundle bundleForClass:self];
@@ -127,7 +127,7 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
         _titleField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
 
         [_titleField setHitTests:NO];
-        [_titleField setFont:[CPFont systemFontOfSize:11.0]];
+        [_titleField setFont:[CPFont systemFontOfSize:[CPFont systemFontSize] - 1]];
         [_titleField setTextColor:[CPColor whiteColor]];
         [_titleField setTextShadowColor:[CPColor blackColor]];
         [_titleField setTextShadowOffset:CGSizeMake(0.0, 1.0)];

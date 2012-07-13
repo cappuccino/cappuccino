@@ -106,7 +106,7 @@ task ("test-release", ["release"], function()
 });
 
 CLEAN.include(buildPath);
-CLOBBER.include(buildDir);
+CLOBBER.include(buildPath);
 
 task ("help", function()
 {

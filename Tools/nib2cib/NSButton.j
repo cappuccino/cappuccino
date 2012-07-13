@@ -50,7 +50,18 @@ var NSButtonIsBorderedMask = 0x00800000,
     NSButtonImageRightPositionMask = 0x2C,
     NSButtonImageLeftPositionMask = 0x3C,
     NSButtonImageOnlyPositionMask = 0x44,
-    NSButtonImageOverlapsPositionMask = 0x6C;
+    NSButtonImageOverlapsPositionMask = 0x6C,
+
+    // You cannot set neither highlightsBy nor showsStateBy in IB,
+    // but you can set button type which implicitly sets the masks.
+    // Note that you cannot set NSPushInCellMask for showsStateBy.
+    NSHighlightsByPushInCellMask = 0x80000000,
+    NSHighlightsByContentsCellMask = 0x08000000,
+    NSHighlightsByChangeGrayCellMask =  0x04000000,
+    NSHighlightsByChangeBackgroundCellMask = 0x02000000,
+    NSShowsStateByContentsCellMask = 0x40000000,
+    NSShowsStateByChangeGrayCellMask = 0x20000000,
+    NSShowsStateByChangeBackgroundCellMask = 0x10000000;
 
 
 @implementation CPButton (NSCoding)
@@ -101,18 +112,19 @@ var NSButtonIsBorderedMask = 0x00800000,
         }
 
         _themeClass = [[self class] defaultThemeClass];
+        alternateImage = nil;
     }
 
     NIB_CONNECTION_EQUIVALENCY_TABLE[[cell UID]] = self;
 
     _title = [cell title];
+    _alternateTitle = [cell alternateTitle];
     _controlSize = CPRegularControlSize;
 
     [self setBordered:[cell isBordered]];
     _bezelStyle = [cell bezelStyle];
 
-
-    // clean up:
+    // Map Cocoa bezel styles to Cappuccino bezel styles and adjust frame
     switch (_bezelStyle)
     {
         // implemented:
@@ -121,13 +133,16 @@ var NSButtonIsBorderedMask = 0x00800000,
             positionOffsetOriginX = 4;
             positionOffsetSizeWidth = -12;
             break;
+
         case CPTexturedRoundedBezelStyle:
             positionOffsetOriginY = 2;
             positionOffsetOriginX = -2;
             positionOffsetSizeWidth = 0;
             break;
+
         case CPHUDBezelStyle:
             break;
+
         // approximations:
         case CPRoundRectBezelStyle:
             positionOffsetOriginY = -3;
@@ -135,11 +150,13 @@ var NSButtonIsBorderedMask = 0x00800000,
             positionOffsetSizeWidth = 0;
             _bezelStyle = CPRoundedBezelStyle;
             break;
+
         case CPSmallSquareBezelStyle:
             positionOffsetOriginX = -2;
             positionOffsetSizeWidth = 0;
             _bezelStyle = CPTexturedRoundedBezelStyle;
             break;
+
         case CPThickSquareBezelStyle:
         case CPThickerSquareBezelStyle:
         case CPRegularSquareBezelStyle:
@@ -148,24 +165,28 @@ var NSButtonIsBorderedMask = 0x00800000,
             positionOffsetSizeWidth = -4;
             _bezelStyle = CPTexturedRoundedBezelStyle;
             break;
+
         case CPTexturedSquareBezelStyle:
             positionOffsetOriginY = 4;
             positionOffsetOriginX = -1;
             positionOffsetSizeWidth = -2;
             _bezelStyle = CPTexturedRoundedBezelStyle;
             break;
+
         case CPShadowlessSquareBezelStyle:
             positionOffsetOriginY = 5;
             positionOffsetOriginX = -2;
             positionOffsetSizeWidth = 0;
             _bezelStyle = CPTexturedRoundedBezelStyle;
             break;
+
         case CPRecessedBezelStyle:
             positionOffsetOriginY = -3;
             positionOffsetOriginX = -2;
             positionOffsetSizeWidth = 0;
             _bezelStyle = CPHUDBezelStyle;
             break;
+
         // unsupported
         case CPRoundedDisclosureBezelStyle:
         case CPHelpButtonBezelStyle:
@@ -174,6 +195,7 @@ var NSButtonIsBorderedMask = 0x00800000,
             CPLog.warn("NSButton [%s]: unsupported bezel style: %d", _title == null ? "<no title>" : '"' + _title + '"', _bezelStyle);
             _bezelStyle = CPHUDBezelStyle;
             break;
+
         // error:
         default:
             CPLog.warn("NSButton [%s]: unknown bezel style: %d", _title == null ? "<no title>" : '"' + _title + '"', _bezelStyle);
@@ -200,9 +222,13 @@ var NSButtonIsBorderedMask = 0x00800000,
 
     _allowsMixedState = [cell allowsMixedState];
     [self setImage:[cell normalImage]];
+    [self setAlternateImage:alternateImage];
     [self setImagePosition:[cell imagePosition]];
 
     [self setEnabled:[cell isEnabled]];
+
+    _highlightsBy = [cell highlightsBy];
+    _showsStateBy = [cell showsStateBy];
 
     return self;
 }
@@ -229,11 +255,15 @@ var NSButtonIsBorderedMask = 0x00800000,
     int         _bezelStyle         @accessors(readonly, getter=bezelStyle);
 
     CPString    _title              @accessors(readonly, getter=title);
+    CPString    _alternateTitle     @accessors(readonly, getter=alternateTitle);
     CPImage     _normalImage        @accessors(readonly, getter=normalImage);
     CPImage     _alternateImage     @accessors(readonly, getter=alternateImage);
 
     BOOL        _allowsMixedState   @accessors(readonly, getter=allowsMixedState);
     BOOL        _imagePosition      @accessors(readonly, getter=imagePosition);
+
+    int         _highlightsBy       @accessors(readonly, getter=highlightsBy);
+    int         _showsStateBy       @accessors(readonly, getter=showsStateBy);
 
     CPString    _keyEquivalent      @accessors(readonly, getter=keyEquivalent);
     unsigned    _keyEquivalentModifierMask @accessors(readonly, getter=keyEquivalentModifierMask);
@@ -253,8 +283,9 @@ var NSButtonIsBorderedMask = 0x00800000,
         _isBordered = (buttonFlags & NSButtonIsBorderedMask) ? YES : NO;
         _bezelStyle = (buttonFlags2 & 0x7) | ((buttonFlags2 & 0x20) >> 2);
 
-        // NSContents for NSButton is actually the title
+        // NSContents/NSAlternateContents for NSButton is actually the title/alternate title
         _title = [aCoder decodeObjectForKey:@"NSContents"];
+        _alternateTitle = [aCoder decodeObjectForKey:@"NSAlternateContents"];
         // ... and _objectValue is _state
         _objectValue = [self state];
 
@@ -279,6 +310,26 @@ var NSButtonIsBorderedMask = 0x00800000,
             _imagePosition = CPImageAbove;
         else if ((position & NSButtonNoImagePositionMask) == NSButtonNoImagePositionMask)
             _imagePosition = CPNoImage;
+
+        _highlightsBy = CPNoCellMask;
+
+        if (buttonFlags & NSHighlightsByPushInCellMask)
+            _highlightsBy |= CPPushInCellMask;
+        if (buttonFlags & NSHighlightsByContentsCellMask)
+            _highlightsBy |= CPContentsCellMask;
+        if (buttonFlags & NSHighlightsByChangeGrayCellMask)
+            _highlightsBy |= CPChangeGrayCellMask;
+        if (buttonFlags & NSHighlightsByChangeBackgroundCellMask)
+            _highlightsBy |= CPChangeBackgroundCellMask;
+
+        _showsStateBy = CPNoCellMask;
+
+        if (buttonFlags & NSShowsStateByContentsCellMask)
+            _showsStateBy |= CPContentsCellMask;
+        if (buttonFlags & NSShowsStateByChangeGrayCellMask)
+            _showsStateBy |= CPChangeGrayCellMask;
+        if (buttonFlags & NSShowsStateByChangeBackgroundCellMask)
+            _showsStateBy |= CPChangeBackgroundCellMask;
 
         _keyEquivalent = [aCoder decodeObjectForKey:@"NSKeyEquivalent"];
         _keyEquivalentModifierMask = buttonFlags2 >> 8;

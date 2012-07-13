@@ -254,7 +254,7 @@ CPRunContinuesResponse  = -1002;
         count = [URLStrings count];
 
     for (; index < count; ++index)
-        needsUntitled = ![self _openURL:[CPURL URLWithString:URLStrings[index]]] || needsUntitled;
+        needsUntitled = ![self _openURL:[CPURL URLWithString:URLStrings[index]]] && needsUntitled;
 
     if (needsUntitled && [_delegate respondsToSelector:@selector(applicationShouldOpenUntitledFile:)])
         needsUntitled = [_delegate applicationShouldOpenUntitledFile:self];
@@ -373,7 +373,7 @@ CPRunContinuesResponse  = -1002;
             standardPath = [[CPBundle bundleForClass:[self class]] pathForResource:@"standardApplicationIcon.png"];
 
         // FIXME move this into the CIB eventually
-        [applicationLabel setFont:[CPFont boldSystemFontOfSize:14.0]];
+        [applicationLabel setFont:[CPFont boldSystemFontOfSize:[CPFont systemFontSize] + 2]];
         [applicationLabel setAlignment:CPCenterTextAlignment];
         [versionLabel setAlignment:CPCenterTextAlignment];
         [copyrightLabel setAlignment:CPCenterTextAlignment];

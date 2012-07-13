@@ -78,8 +78,10 @@ var CPViewControllerCachedCibs;
 
 + (void)initialize
 {
-    if (self === CPViewController)
-        CPViewControllerCachedCibs = [CPDictionary dictionary];
+    if (self !== [CPViewController class])
+        return;
+
+    CPViewControllerCachedCibs = [CPDictionary dictionary];
 }
 
 /*!

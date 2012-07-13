@@ -68,20 +68,57 @@
     {
         [inv setArgument:arg atIndex:idx + 2];
     }];
-    
+
     [inv invoke];
     var font = [inv returnValue];
-    
+
     [self assertTrue:([font isBold] == bold) message: [font description] + " should be bold: " + bold];
     [self assertTrue:([font isItalic] == italic) message: [font description] + " should be italic: " + italic];
-    
+
     // get from cache
     [inv invoke];
     var cachedFont = [inv returnValue];
     [self assert:cachedFont equals:font];
-    
+
     [self assertTrue:([cachedFont isBold] == bold) message:" cached " + [cachedFont description] + " should be bold: " + bold];
     [self assertTrue:([cachedFont isItalic] == italic) message:" cached " + [cachedFont description] + " should be italic: " + italic];
+}
+
+- (void)testSizes
+{
+    var font = [CPFont fontWithName:@"Arial" size:0],
+        systemSize = [CPFont systemFontSize];
+
+    [self assertTrue:([font size] === systemSize) message:" font size should be system size (" + systemSize + ")"];
+
+    var sysfont1 = [CPFont systemFontOfSize:12];
+    [self assertTrue:([sysfont1 size] === 12) message:" font size should be 12"];
+
+    var sysfont2 = [CPFont systemFontOfSize:0];
+    [self assertTrue:([sysfont2 size] === systemSize) message:" font size should be system size (" + systemSize + ")"];
+
+    var sysfont3 = [CPFont systemFontOfSize:-1];
+    [self assertTrue:([sysfont3 size] === systemSize) message:" font size should be system size (" + systemSize + ")"];
+
+    var newSystemSize = 13;
+    [CPFont setSystemFontSize:newSystemSize];
+    [self assertTrue:([sysfont2 size] === systemSize) message:" font size should be old system size (" + systemSize + ")"];
+    [self assertTrue:([sysfont3 size] === newSystemSize) message:" font size should be new system size (" + newSystemSize + ")"];
+}
+
+- (void)testFaces
+{
+    var font = [CPFont fontWithName:@"Georgia" size:0],
+        systemFace = [CPFont systemFontFace];
+
+    [self assertTrue:([font familyName] === @"Georgia") message:" font face should be Georgia"];
+
+    var sysfont = [CPFont systemFontOfSize:12];
+    [self assertTrue:([sysfont familyName] === systemFace) message:" font face should be system face (" + systemFace + ")"];
+
+    var newSystemFace = @"Georgia";
+    [CPFont setSystemFontFace:newSystemFace];
+    [self assertTrue:([sysfont familyName] === newSystemFace) message:" font face should be new system face (" + newSystemFace + ")"];
 }
 
 @end

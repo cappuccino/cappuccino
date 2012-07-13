@@ -33,7 +33,7 @@
     @class CPWindowController
 
     An instance of a CPWindowController manages a CPWindow. Windows are typically loaded via a cib,
-    but they can also manage windows created in code. A CPWindowController can manage a window by 
+    but they can also manage windows created in code. A CPWindowController can manage a window by
     itself or work with  AppKits's document-based architecture.
 
     In a Document based app, a CPWindowController instance is created and managed by a CPDocument subclass.
@@ -333,6 +333,38 @@
 
 - (void)setViewControllerContainerView:(CPView)aView
 {
+    if (!_viewControllerContainerView && !aView)
+        return;
+
+    var viewControllerView = [[self viewController] view],
+        contentView = [[self window] contentView];
+
+    if (aView)
+    {
+        [aView setFrame:[contentView frame]];
+        [aView setAutoresizingMask:[contentView autoresizingMask]];
+        if (viewControllerView)
+        {
+            [viewControllerView removeFromSuperview];
+            [aView addSubview:viewControllerView];
+        }
+        [[self window] setContentView:aView];
+    }
+    else if (viewControllerView)
+    {
+        [viewControllerView removeFromSuperview];
+        [viewControllerView setFrame:[contentView frame]];
+        [viewControllerView setAutoresizingMask:[contentView autoresizingMask]]
+        [[self window] setContentView:viewControllerView];
+    }
+    else
+    {
+        var view = [[CPView alloc] init];
+        [view setFrame:[contentView frame]];
+        [view setAutoresizingMask:[contentView autoresizingMask]];
+        [[self window] setContentView:view]
+    }
+
     _viewControllerContainerView = aView;
 }
 
@@ -343,21 +375,45 @@
 
 - (void)setViewController:(CPViewController)aViewController
 {
-    var containerView = [self viewControllerContainerView] || [[self window] contentView],
-        view = [_viewController view],
-        frame = view ? [view frame] : [containerView bounds];
+    if (!_viewController && !aViewController)
+        return;
 
-    [view removeFromSuperview];
+    var containerView = [self viewControllerContainerView],
+        newView = [aViewController view];
+
+    if (containerView)
+    {
+        var oldView = [_viewController view];
+        if (oldView)
+        {
+            [newView setFrame:[oldView frame]];
+            [newView setAutoresizingMask:[oldView autoresizingMask]];
+        }
+
+        if (oldView && newView)
+            [containerView replaceSubview:oldView with:newView];
+        else if (oldView)
+            [oldView removeFromSuperview];
+        else if (newView)
+            [containerView addSubview:newView];
+    }
+    else if (newView)
+    {
+        var contentView = [[self window] contentView];
+        [newView setFrame:[contentView frame]];
+        [newView setAutoresizingMask:[contentView autoresizingMask]];
+        [[self window] setContentView:newView];
+    }
+    else
+    {
+        var view = [[CPView alloc] init],
+            contentView = [[self window] contentView];
+        [view setFrame:[contentView frame]];
+        [view setAutoresizingMask:[contentView autoresizingMask]];
+        [[self window] setContentView:view]
+    }
 
     _viewController = aViewController;
-
-    view = [_viewController view];
-
-    if (view)
-    {
-        [view setFrame:frame];
-        [containerView addSubview:view];
-    }
 }
 
 - (CPViewController)viewController

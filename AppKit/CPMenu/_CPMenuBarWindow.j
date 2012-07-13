@@ -34,12 +34,12 @@ var _CPMenuBarWindowBackgroundColor = nil,
 
 + (void)initialize
 {
-    if (self != [_CPMenuBarWindow class])
+    if (self !== [_CPMenuBarWindow class])
         return;
 
     var bundle = [CPBundle bundleForClass:self];
 
-    _CPMenuBarWindowFont = [CPFont boldSystemFontOfSize:12.0];
+    _CPMenuBarWindowFont = [CPFont boldSystemFontOfSize:[CPFont systemFontSize]];
 }
 
 + (CPFont)font
@@ -74,7 +74,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
 
         _titleField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
 
-        [_titleField setFont:[CPFont boldSystemFontOfSize:13.0]];
+        [_titleField setFont:[CPFont boldSystemFontOfSize:[CPFont systemFontSize] + 1]];
         [_titleField setAlignment:CPCenterTextAlignment];
         [_titleField setTextShadowOffset:CGSizeMake(0, 1)];
 
@@ -335,7 +335,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
 
 - (CPFont)font
 {
-    [CPFont systemFontOfSize:12.0];
+    [CPFont systemFontOfSize:[CPFont systemFontSize]];
 }
 
 - (void)tile

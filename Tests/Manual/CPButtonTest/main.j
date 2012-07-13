@@ -1,6 +1,6 @@
 /*
  * AppController.j
- * TableCibTest
+ * CPButton
  *
  * Created by Francisco Tolmasky on July 5, 2009.
  * Copyright 2009, 280 North, Inc. All rights reserved.

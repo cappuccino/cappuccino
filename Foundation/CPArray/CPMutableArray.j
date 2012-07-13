@@ -485,7 +485,7 @@ var sortArrayUsingJSDescriptors = function(a, d)
                     do
                     {
                         key = d[cn].k;
-                        C1[key] = [A valueForKey:key];
+                        C1[key] = [A valueForKeyPath:key];
                     } while (cn--)
 
                     c[aUID] = C1;
@@ -506,7 +506,7 @@ var sortArrayUsingJSDescriptors = function(a, d)
                     do
                     {
                         key = d[cn].k;
-                        C2[key] = [B[i] valueForKey:key];
+                        C2[key] = [B[i] valueForKeyPath:key];
                     } while (cn--)
 
                     c[bUID] = C2;

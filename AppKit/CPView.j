@@ -21,14 +21,14 @@
  */
 
 @import <Foundation/CPArray.j>
+@import <Foundation/CPGeometry.j>
 @import <Foundation/CPObjJRuntime.j>
 @import <Foundation/CPSet.j>
 
 @import "CGAffineTransform.j"
-@import "CGGeometry.j"
+
 
 @import "CPColor.j"
-@import "CPGeometry.j"
 @import "CPGraphicsContext.j"
 @import "CPResponder.j"
 @import "CPTheme.j"
@@ -246,8 +246,8 @@ var CPCurrentToolTip,
 - (void)_setupToolTipHandlers
 {
     _toolTipInstalled = NO;
-    _toolTipFunctionIn = function(e){[self _fireToolTip];}
-    _toolTipFunctionOut = function(e){[self _invalidateToolTip];};
+    _toolTipFunctionIn = function(e) { [self _fireToolTip]; }
+    _toolTipFunctionOut = function(e) { [self _invalidateToolTip]; };
 }
 
 + (CPSet)keyPathsForValuesAffectingFrame
@@ -353,6 +353,7 @@ var CPCurrentToolTip,
     if (_toolTipInstalled)
         return;
 
+#if PLATFORM(DOM)
     if (_DOMElement.addEventListener)
     {
         _DOMElement.addEventListener("mouseover", _toolTipFunctionIn, NO);
@@ -365,6 +366,8 @@ var CPCurrentToolTip,
         _DOMElement.attachEvent("onkeypress", _toolTipFunctionOut);
         _DOMElement.attachEvent("onmouseout", _toolTipFunctionOut);
     }
+#endif
+
     _toolTipInstalled = YES;
 }
 
@@ -377,6 +380,7 @@ var CPCurrentToolTip,
     if (!_toolTipInstalled)
         return;
 
+#if PLATFORM(DOM)
     if (_DOMElement.removeEventListener)
     {
         _DOMElement.removeEventListener("mouseover", _toolTipFunctionIn, NO);
@@ -389,6 +393,8 @@ var CPCurrentToolTip,
         _DOMElement.detachEvent("onkeypress", _toolTipFunctionOut);
         _DOMElement.detachEvent("onmouseout", _toolTipFunctionOut);
     }
+#endif
+
     _toolTipInstalled = NO;
 }
 
@@ -400,8 +406,10 @@ var CPCurrentToolTip,
     if (CPCurrentToolTipTimer)
     {
         [CPCurrentToolTipTimer invalidate];
+
         if (CPCurrentToolTip)
             [CPCurrentToolTip close];
+
         CPCurrentToolTip = nil;
     }
 
@@ -434,6 +442,7 @@ var CPCurrentToolTip,
 {
     if (CPCurrentToolTip)
         [CPCurrentToolTip close];
+
     CPCurrentToolTip = [_CPToolTip toolTipWithString:_toolTip];
 }
 
@@ -769,7 +778,7 @@ var CPCurrentToolTip,
 }
 
 /*!
-    Called when the receiver is about to be remove one of its subviews.
+    Called when the receiver is about to remove one of its subviews.
     @param aView the view that will be removed
 */
 - (void)willRemoveSubview:(CPView)aView
@@ -840,7 +849,7 @@ var CPCurrentToolTip,
 
 /*!
     Sets the frame size of the receiver to the dimensions and origin of the provided rectangle in the coordinate system
-    of the superview. The method also posts an CPViewFrameDidChangeNotification to the notification
+    of the superview. The method also posts a CPViewFrameDidChangeNotification to the notification
     center if the receiver is configured to do so. If the frame is the same as the current frame, the method simply
     returns (and no notification is posted).
     @param aFrame the rectangle specifying the new origin and size  of the receiver
@@ -893,7 +902,7 @@ var CPCurrentToolTip,
 }
 
 /*!
-    Returns the center of the receiver's frame to the provided point. The point is defined in the superview's coordinate system.
+    Returns the center of the receiver's frame in the superview's coordinate system.
     @return CGPoint the center point of the receiver's frame
 */
 - (CGPoint)center

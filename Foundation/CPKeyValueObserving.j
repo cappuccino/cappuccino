@@ -1093,7 +1093,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     var dotIndex = aKeyPath.indexOf('.');
 
     if (dotIndex === CPNotFound)
-        [CPException raise:CPInvalidArgumentException reason:"Created _CPKVOForwardingObserver without compound key path: "+aKeyPath];
+        [CPException raise:CPInvalidArgumentException reason:"Created _CPKVOForwardingObserver without compound key path: " + aKeyPath];
 
     _firstPart = aKeyPath.substring(0, dotIndex);
     _secondPart = aKeyPath.substring(dotIndex + 1);
@@ -1114,7 +1114,14 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 {
     if (aKeyPath === _firstPart)
     {
-        [_observer observeValueForKeyPath:_firstPart ofObject:_object change:changes context:_context];
+        var oldValue = [_value valueForKeyPath:_secondPart],
+            newValue = [_object valueForKeyPath:_firstPart + "." + _secondPart],
+            pathChanges = [CPDictionary dictionaryWithObjectsAndKeys:
+                            newValue ? newValue : [CPNull null],    CPKeyValueChangeNewKey,
+                            oldValue ? oldValue : [CPNull null],    CPKeyValueChangeOldKey,
+                            CPKeyValueChangeSetting,                CPKeyValueChangeKindKey];
+
+        [_observer observeValueForKeyPath:_firstPart + "." + _secondPart ofObject:_object change:pathChanges context:_context];
 
         //since a has changed, we should remove ourselves as an observer of the old a, and observe the new one
         if (_value)
@@ -1128,7 +1135,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     else
     {
         //a is the same, but a.b has changed -- nothing to do but forward this message along
-        [_observer observeValueForKeyPath:_firstPart+"."+aKeyPath ofObject:_object change:changes context:_context];
+        [_observer observeValueForKeyPath:_firstPart + "." + aKeyPath ofObject:_object change:changes context:_context];
     }
 }
 

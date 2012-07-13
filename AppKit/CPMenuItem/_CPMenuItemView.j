@@ -40,7 +40,7 @@ var _CPMenuItemSelectionColor                   = nil,
 
 + (void)initialize
 {
-    if (self != [_CPMenuItemView class])
+    if (self !== [_CPMenuItemView class])
         return;
 
     _CPMenuItemSelectionColor =  [CPColor colorWithCalibratedRed:95.0 / 255.0 green:131.0 / 255.0 blue:185.0 / 255.0 alpha:1.0];
@@ -176,7 +176,7 @@ var _CPMenuItemSelectionColor                   = nil,
 
 - (void)setFont:(CPFont)aFont
 {
-    if (_font === aFont)
+    if ([_font isEqual:aFont])
         return;
 
     _font = aFont;

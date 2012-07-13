@@ -44,10 +44,11 @@
 */
 - (id)initWithPickerMask:(int)aMask colorPanel:(CPColorPanel)aPanel
 {
-    self = [super init];
-
-    _panel = aPanel;
-    _mask  = aMask;
+    if (self = [super init])
+    {
+        _panel = aPanel;
+        _mask  = aMask;
+    }
 
     return self;
 }
@@ -76,7 +77,6 @@
 */
 - (void)setMode:(CPColorPanelMode)mode
 {
-    return;
 }
 
 /*!
@@ -85,7 +85,6 @@
 */
 - (void)setColor:(CPColor)aColor
 {
-    return;
 }
 
 @end
@@ -110,12 +109,12 @@
 
 - (id)initView
 {
-    aFrame = CPRectMake(0, 0, CPColorPickerViewWidth, CPColorPickerViewHeight);
+    var aFrame = _CGRectMake(0, 0, CPColorPickerViewWidth, CPColorPickerViewHeight);
 
     _pickerView = [[CPView alloc] initWithFrame:aFrame];
     [_pickerView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
-    _brightnessSlider = [[CPSlider alloc] initWithFrame:CGRectMake(0, (aFrame.size.height - 34), aFrame.size.width, 15)];
+    _brightnessSlider = [[CPSlider alloc] initWithFrame:_CGRectMake(0, (aFrame.size.height - 34), aFrame.size.width, 15)];
 
     [_brightnessSlider setValue:15.0 forThemeAttribute:@"track-width"];
     [_brightnessSlider setValue:[CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPColorPicker class]] pathForResource:@"brightness_bar.png"]]] forThemeAttribute:@"track-color"];
@@ -128,9 +127,9 @@
     [_brightnessSlider setAction:@selector(brightnessSliderDidChange:)];
     [_brightnessSlider setAutoresizingMask:CPViewWidthSizable | CPViewMinYMargin];
 
-    _hueSaturationView = [[__CPColorWheel alloc] initWithFrame: CPRectMake(0, 0, aFrame.size.width, aFrame.size.height - 38)];
-    [_hueSaturationView setDelegate: self];
-    [_hueSaturationView setAutoresizingMask: (CPViewWidthSizable | CPViewHeightSizable)];
+    _hueSaturationView = [[__CPColorWheel alloc] initWithFrame:_CGRectMake(0, 0, aFrame.size.width, aFrame.size.height - 38)];
+    [_hueSaturationView setDelegate:self];
+    [_hueSaturationView setAutoresizingMask:(CPViewWidthSizable | CPViewHeightSizable)];
 
     [_pickerView addSubview:_hueSaturationView];
     [_pickerView addSubview:_brightnessSlider];
@@ -225,46 +224,49 @@
 
 - (id)initWithFrame:(CPRect)aFrame
 {
-    self = [super initWithFrame:aFrame];
-
-    var path = [[CPBundle bundleForClass:CPColorPicker] pathForResource:@"wheel.png"];
-
-    _wheelImage = new Image();
-    _wheelImage.src = path;
-    _wheelImage.style.position = "absolute";
-
-    path = [[CPBundle bundleForClass:CPColorPicker] pathForResource:@"wheel_black.png"];
-
-    _blackWheelImage = new Image();
-    _blackWheelImage.src = path;
-    _blackWheelImage.style.opacity = "0";
-    _blackWheelImage.style.filter = "alpha(opacity=0)"
-    _blackWheelImage.style.position = "absolute";
-
+    if (self = [super initWithFrame:aFrame])
+    {
 #if PLATFORM(DOM)
-    _DOMElement.appendChild(_wheelImage);
-    _DOMElement.appendChild(_blackWheelImage);
+        var path = [[CPBundle bundleForClass:CPColorPicker] pathForResource:@"wheel.png"];
+
+        _wheelImage = new Image();
+        _wheelImage.src = path;
+        _wheelImage.style.position = "absolute";
+
+        path = [[CPBundle bundleForClass:CPColorPicker] pathForResource:@"wheel_black.png"];
+
+        _blackWheelImage = new Image();
+        _blackWheelImage.src = path;
+        _blackWheelImage.style.opacity = "0";
+        _blackWheelImage.style.filter = "alpha(opacity=0)"
+        _blackWheelImage.style.position = "absolute";
+
+        _DOMElement.appendChild(_wheelImage);
+        _DOMElement.appendChild(_blackWheelImage);
 #endif
 
-    [self setWheelSize:aFrame.size];
+        [self setWheelSize:aFrame.size];
 
-    _crosshair = [[CPView alloc] initWithFrame:CPRectMake(_radius - 2, _radius - 2, 4, 4)];
-    [_crosshair setBackgroundColor:[CPColor blackColor]];
+        _crosshair = [[CPView alloc] initWithFrame:CGRectMake(_radius - 2, _radius - 2, 4, 4)];
+        [_crosshair setBackgroundColor:[CPColor blackColor]];
 
-    var view = [[CPView alloc] initWithFrame:CGRectInset([_crosshair bounds], 1.0, 1.0)];
-    [view setBackgroundColor:[CPColor whiteColor]];
+        var view = [[CPView alloc] initWithFrame:CGRectInset([_crosshair bounds], 1.0, 1.0)];
+        [view setBackgroundColor:[CPColor whiteColor]];
 
-    [_crosshair addSubview:view];
+        [_crosshair addSubview:view];
 
-    [self addSubview:_crosshair];
+        [self addSubview:_crosshair];
+    }
 
     return self;
 }
 
 - (void)setWheelBrightness:(float)brightness
 {
+#if PLATFORM(DOM)
     _blackWheelImage.style.opacity = 1.0 - brightness;
     _blackWheelImage.style.filter = "alpha(opacity=" + (1.0 - brightness) * 100 + ")"
+#endif
 }
 
 - (void)setFrameSize:(CPSize)aSize
@@ -277,6 +279,7 @@
 {
     var min = MIN(aSize.width, aSize.height);
 
+#if PLATFORM(DOM)
     _blackWheelImage.style.width = min;
     _blackWheelImage.style.height = min;
     _blackWheelImage.width = min;
@@ -290,6 +293,7 @@
     _wheelImage.height = min;
     _wheelImage.style.top = (aSize.height - min) / 2.0 + "px";
     _wheelImage.style.left = (aSize.width - min) / 2.0 + "px";
+#endif
 
     _radius = min / 2.0;
 
