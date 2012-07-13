@@ -686,6 +686,7 @@ CPTransformableAttributeType = 1800;
     [textField setBordered:YES];
     [textField setEditable:YES];
     [textField setFont:[CPFont systemFontOfSize:10]];
+    [textField setSendsActionOnEndEditing:YES];
 
     return textField;
 }
