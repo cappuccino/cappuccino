@@ -711,7 +711,8 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         return _CGRectMakeZero();
 
     var dataViewFrame = [self _frameOfOutlineDataViewAtRow:aRow],
-        frame = _CGRectMake(_CGRectGetMinX(dataViewFrame) - 10, _CGRectGetMinY(dataViewFrame), 10, _CGRectGetHeight(dataViewFrame));
+        disclosureWidth = _CGRectGetWidth([_disclosureControlPrototype frame]),
+        frame = _CGRectMake(_CGRectGetMinX(dataViewFrame) - disclosureWidth, _CGRectGetMinY(dataViewFrame), disclosureWidth, _CGRectGetHeight(dataViewFrame));
 
     return frame;
 }
