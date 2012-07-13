@@ -22,6 +22,7 @@
 
 @import "_CPToolTip.j"
 @import "CALayer.j"
+@import "CGGeometry.j"
 @import "CPAccordionView.j"
 @import "CPAlert.j"
 @import "CPAnimation.j"

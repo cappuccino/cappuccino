@@ -1,6 +1,6 @@
 /*
  * CPGeometry.j
- * AppKit
+ * Foundation
  *
  * Created by Francisco Tolmasky.
  * Copyright 2008, 280 North, Inc.
@@ -20,7 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CoreGraphics/CGGeometry.j>
+@import "_CGGeometry.j"
        
 CPMinXEdge = 0;
 CPMinYEdge = 1;
