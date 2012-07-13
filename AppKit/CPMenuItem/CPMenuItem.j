@@ -281,7 +281,7 @@ var CPMenuItemStringRepresentationDictionary = [CPDictionary dictionary];
 */
 - (void)setFont:(CPFont)aFont
 {
-    if (_font == aFont)
+    if ([_font isEqual:aFont])
         return;
 
     _font = aFont;

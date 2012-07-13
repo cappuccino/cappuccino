@@ -486,12 +486,13 @@ CPTableColumnUserResizingMask   = 1 << 1;
 }
 
 /*!
-    If NO the tablecolumn will no longer be visible in the tableview
-    If YES the tablecolumn will be visible in the tableview.
+    If YES the tablecolumn will no longer be visible in the tableview.
+    If NO the tablecolumn will be visible in the tableview.
 */
 - (void)setHidden:(BOOL)shouldBeHidden
 {
     shouldBeHidden = !!shouldBeHidden
+
     if (_isHidden === shouldBeHidden)
         return;
 

@@ -492,7 +492,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     var element = [self _inputElement],
         font = [self currentValueForThemeAttribute:@"font"],
-        lineHeight = ROUND([font defaultLineHeightForFont]);
+        lineHeight = [font defaultLineHeightForFont];
 
     element.value = _stringValue;
     element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
@@ -1047,7 +1047,15 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         textSize = [text sizeWithFont:font inWidth:textSize.width];
     }
     else
+    {
         textSize = [text sizeWithFont:font];
+
+        // Account for possible fractional pixels at right edge
+        textSize.width += 1;
+    }
+
+    // Account for possible fractional pixels at bottom edge
+    textSize.height += 1;
 
     frameSize.height = textSize.height + contentInset.top + contentInset.bottom;
 
@@ -1318,27 +1326,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     var contentInset = [self currentValueForThemeAttribute:@"content-inset"];
 
-    bounds.origin.x += contentInset.left;
-    bounds.origin.y += contentInset.top;
-    bounds.size.width -= contentInset.left + contentInset.right;
-    bounds.size.height -= contentInset.top + contentInset.bottom;
-
-    return bounds;
+    return _CGRectInsetByInset(bounds, contentInset);
 }
 
 - (CGRect)bezelRectForBounds:(CGRect)bounds
 {
     var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"];
 
-    if (_CGInsetIsEmpty(bezelInset))
-        return bounds;
-
-    bounds.origin.x += bezelInset.left;
-    bounds.origin.y += bezelInset.top;
-    bounds.size.width -= bezelInset.left + bezelInset.right;
-    bounds.size.height -= bezelInset.top + bezelInset.bottom;
-
-    return bounds;
+    return _CGRectInsetByInset(bounds, bezelInset);
 }
 
 - (CGRect)rectForEphemeralSubviewNamed:(CPString)aName

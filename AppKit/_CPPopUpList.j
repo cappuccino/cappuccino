@@ -140,7 +140,7 @@ var ListColumnIdentifier = @"1";
     [panel setTitle:@""];
     [panel setFloatingPanel:YES];
     [panel setBecomesKeyOnlyIfNeeded:YES];
-    [panel setLevel:CPStatusWindowLevel];
+    [panel setLevel:CPPopUpMenuWindowLevel];
     [panel setHasShadow:YES];
     [panel setShadowStyle:CPMenuWindowShadowStyle];
     [panel setDelegate:self];
@@ -575,6 +575,14 @@ var ListColumnIdentifier = @"1";
             if ([self isVisible])
             {
                 [self scrollToBottom];
+                return YES;
+            }
+            break;
+
+        case CPCarriageReturnCharacter:
+            if ([self isVisible])
+            {
+                [self closeListAfterItemClick];
                 return YES;
             }
             break;

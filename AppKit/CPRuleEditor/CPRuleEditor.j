@@ -402,13 +402,16 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 
     if (_stringsFilename !== stringsFilename)
     {
-        _stringsFilename = stringsFilename;
+        // Convert an empty string to nil
+        _stringsFilename = stringsFilename || nil;
 
         if (stringsFilename !== nil)
         {
             if (![stringsFilename hasSuffix:@".strings"])
                 stringsFilename = stringsFilename + @".strings";
+
             var path = [[CPBundle mainBundle] pathForResource:stringsFilename];
+
             if (path !== nil)
                 [_standardLocalizer loadContentOfURL:[CPURL URLWithString:path]];
         }

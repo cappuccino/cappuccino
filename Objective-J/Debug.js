@@ -117,7 +117,7 @@ GLOBAL(objj_backtrace_decorator) = function(msgSend)
             // make sure to always pop
             objj_backtrace.pop();
         }
-    }
+    };
 }
 
 GLOBAL(objj_supress_exceptions_decorator) = function(msgSend)
@@ -135,7 +135,7 @@ GLOBAL(objj_supress_exceptions_decorator) = function(msgSend)
             // print the exception and backtrace
             CPLog.warn("Exception " + anException + " in " + objj_debug_message_format(aReceiver, aSelector));
         }
-    }
+    };
 }
 
 // type checking decorator
@@ -148,7 +148,7 @@ GLOBAL(objj_typecheck_decorator) = function(msgSend)
     return function(aReceiverOrSuper, aSelector)
     {
         var aReceiver = aReceiverOrSuper && (aReceiverOrSuper.receiver || aReceiverOrSuper);
-        
+
         if (!aReceiver)
             return msgSend.apply(NULL, arguments);
 
@@ -170,7 +170,7 @@ GLOBAL(objj_typecheck_decorator) = function(msgSend)
                 }
             }
         }
-        
+
         var result = msgSend.apply(NULL, arguments);
 
         try
@@ -189,14 +189,14 @@ GLOBAL(objj_typecheck_decorator) = function(msgSend)
         }
 
         return result;
-    }
+    };
 }
 
 // type checking logic:
 GLOBAL(objj_debug_typecheck) = function(expectedType, object)
 {
     var objjClass;
-    
+
     if (!expectedType)
     {
         return;
@@ -230,7 +230,7 @@ GLOBAL(objj_debug_typecheck) = function(expectedType, object)
     {
         return;
     }
-    
+
     var actualType;
     if (object === NULL)
         actualType = "null";

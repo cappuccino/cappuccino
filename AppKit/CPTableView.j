@@ -3370,7 +3370,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                 isTextField = [dataView isKindOfClass:[CPTextField class]];
 
             [dataView setFrame:[self frameOfDataViewAtColumn:column row:row]];
-            [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
 
             [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
 
