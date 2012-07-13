@@ -299,7 +299,7 @@
             var value = arguments[index];
 
             if (value === nil)
-                break;
+                continue;
 
             [self setObject:value forKey:arguments[index + 1]];
         }

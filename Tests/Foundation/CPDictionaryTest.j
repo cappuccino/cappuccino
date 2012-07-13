@@ -250,4 +250,13 @@
     [self assertTrue:d.indexOf("y: 6") !== -1 message:"Can't find 'y: 6' in description of dictionary " + d];
 }
 
+- (void)testInitWithObjectsAndKeys
+{
+    var dict = [[CPDictionary alloc] initWithObjectsAndKeys:@"Value1", @"Key1", nil, @"Key2", @"Value3", @"Key3"];
+
+    [self assert:2 equals:[dict count]];    
+    [self assert:@"Value1" equals:[dict objectForKey:@"Key1"]];
+    [self assert:nil equals:[dict objectForKey:@"Key2"]]; // No key/value pair
+    [self assert:@"Value3" equals:[dict objectForKey:@"Key3"]];
+}
 @end
