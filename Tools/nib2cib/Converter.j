@@ -93,6 +93,8 @@ ConverterConversionException = @"ConverterConversionException";
             CPLog.info("Auto-detected CocoaTouch Xib File");
     }
 
+    CPLog.info("Converting Xib file to plist...");
+
     var nibData = [self CPCompliantNibDataAtFilePath:inputPath];
 
     if (inferredFormat === NibFormatMac)
@@ -109,8 +111,6 @@ ConverterConversionException = @"ConverterConversionException";
 
 - (CPData)CPCompliantNibDataAtFilePath:(CPString)aFilePath
 {
-    CPLog.info("Converting Xib file to plist...");
-
     var temporaryNibFilePath = "",
         temporaryPlistFilePath = "";
 

@@ -21,6 +21,8 @@ var FILE = require("file");
                                                       themes:[sharedConverter themes]];
     [converter setCompileNib:NO];
 
+    CPLog.info("Converting NSTableCellView nib to plist...");
+
     var nibData = [converter CPCompliantNibDataAtFilePath:nibPath];
     _data = [converter convertedDataFromMacData:nibData resourcesPath:[sharedConverter resourcesPath]];
 
