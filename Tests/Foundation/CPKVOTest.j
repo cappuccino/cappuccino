@@ -14,11 +14,14 @@
     id      focus;
 
     CPInteger   observationCount;
+
+    CPInteger   testNestedNotificationsBobCount;
 }
 
 - (void)setUp
 {
     _sawObservation = NO;
+    testNestedNotificationsBobCount = 0;
 }
 
 - (void)testAddObserver
@@ -465,6 +468,44 @@
     [self assertTrue:newImp === oldImp];
 }
 
+- (void)testNestedNotifications
+{
+    var bob = [[PersonTester alloc] init];
+
+    [bob willChangeValueForKey:@"name"];
+    [self assertTrue:bob._willChangeMessageCounter[@"name"] === 1];
+    [bob didChangeValueForKey:@"name"];
+    [self assertTrue:!bob._willChangeMessageCounter[@"name"]];
+
+
+    [bob willChangeValueForKey:@"name"];
+    [self assertTrue:bob._willChangeMessageCounter[@"name"] === 1];
+    [bob willChangeValueForKey:@"phoneNumber"]
+    [self assertTrue:bob._willChangeMessageCounter[@"phoneNumber"] === 1];
+    [bob didChangeValueForKey:@"phoneNumber"];
+    [self assertTrue:!bob._willChangeMessageCounter[@"phoneNumber"]];
+    [bob didChangeValueForKey:@"name"];
+    [self assertTrue:!bob._willChangeMessageCounter[@"name"]];
+
+    [bob willChangeValueForKey:@"name"];
+    [self assertTrue:bob._willChangeMessageCounter[@"name"] === 1];
+    [bob addObserver:self forKeyPath:@"name" options:nil context:@"testNestedNotifications"];
+    [bob addObserver:self forKeyPath:@"phoneNumber" options:nil context:@"testNestedNotifications"];
+    [bob willChangeValueForKey:@"phoneNumber"];
+    [self assertTrue:!bob._willChangeMessageCounter[@"phoneNumber"]];
+    [bob didChangeValueForKey:@"phoneNumber"];
+    [self assertTrue:!bob._willChangeMessageCounter[@"phoneNumber"]];
+    [self assertTrue:testNestedNotificationsBobCount === 1];
+    [bob didChangeValueForKey:@"name"];
+    [self assertTrue:!bob._willChangeMessageCounter[@"name"]];
+
+    [bob willChangeValueForKey:@"name"];
+    [self assertTrue:!bob._willChangeMessageCounter[@"name"]];
+    [bob didChangeValueForKey:@"name"];
+    [self assertTrue:!bob._willChangeMessageCounter[@"name"]];
+    [self assertTrue:testNestedNotificationsBobCount === 2];
+}
+
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)changes context:(id)aContext
 {
     var oldValue = [changes objectForKey:CPKeyValueChangeOldKey],
@@ -667,6 +708,10 @@
             [self assert:aKeyPath equals:@"dictionaryKey"];
             [self assert:oldValue equals:@"Bob Jones"];
             [self assert:newValue equals:@"Jo Bob Ray"];
+            break;
+
+        case "testNestedNotifications":
+            testNestedNotificationsBobCount += 1;
             break;
 
         default:
