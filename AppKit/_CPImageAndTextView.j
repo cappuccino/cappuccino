@@ -744,7 +744,13 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     if ((_imagePosition !== CPImageOnly) && [_text length] > 0)
     {
         if (!_textSize)
-            _textSize = [_text sizeWithFont:_font || [CPFont systemFontOfSize:CPFontCurrentSystemSize]];
+        {
+            _textSize = [_text sizeWithFont:_font || [CPFont systemFontOfSize:0]];
+
+            // Account for fractional pixels
+            _textSize.width += 1;
+            _textSize.height += 1;
+        }
 
         if (!_image || _imagePosition === CPImageOverlaps)
         {
