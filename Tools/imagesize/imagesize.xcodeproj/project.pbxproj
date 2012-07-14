@@ -122,14 +122,14 @@
 /* Begin PBXShellScriptBuildPhase section */
 		E180EE7A15AB561300757AC7 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 8;
+			buildActionMask = 12;
 			files = (
 			);
 			inputPaths = (
 			);
 			outputPaths = (
 			);
-			runOnlyForDeploymentPostprocessing = 1;
+			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
 			shellScript = "if [[ -d \"$CAPP_BUILD\"/Debug/CommonJS/cappuccino/bin ]]; then\n\tcp \"$SYMROOT/$CONFIGURATION/$PRODUCT_NAME\" \"$CAPP_BUILD\"/Debug/CommonJS/cappuccino/bin\nfi\n\nif [[ -d \"$CAPP_BUILD\"/Release/CommonJS/cappuccino/bin ]]; then\n\tcp \"$SYMROOT/$CONFIGURATION/$PRODUCT_NAME\" \"$CAPP_BUILD\"/Release/CommonJS/cappuccino/bin\nfi\n";
 			showEnvVarsInLog = 0;

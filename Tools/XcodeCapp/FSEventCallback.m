@@ -79,7 +79,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
                       flags & kFSEventStreamEventFlagItemXattrMod      ||
                       flags & kFSEventStreamEventFlagItemChangeOwner))
             {
-                DLog(@"event type: %@ for path %@", flags, path);
+                DLog(@"event type: %u for path %@", flags, path);
                 [xcc handleFileModification:path notify:YES];
             }
 
