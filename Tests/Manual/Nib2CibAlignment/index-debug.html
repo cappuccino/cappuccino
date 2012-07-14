@@ -3,7 +3,7 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <!--
- index.html
+ index-debug.html
  test2
 
  Created by You on May 17, 2011.
@@ -20,13 +20,39 @@
         <link rel="apple-touch-icon" href="Resources/icon.png" />
         <link rel="apple-touch-startup-image" href="Resources/default.png" />
 
-        <title>test2</title>
+        <title>nib2cib alignment</title>
 
         <script type="text/javascript">
             OBJJ_MAIN_FILE = "main.j";
+            OBJJ_INCLUDE_PATHS = ["Frameworks/Debug", "Frameworks", "SomethingElse"];
         </script>
 
-        <script type="text/javascript" src="Frameworks/Objective-J/Objective-J.js" charset="UTF-8"></script>
+        <script type="text/javascript" src="Frameworks/Debug/Objective-J/Objective-J.js" charset="UTF-8"></script>
+
+        <script type="text/javascript">
+            objj_msgSend_reset();
+
+            // DEBUG OPTIONS:
+
+            // Uncomment to enable printing of backtraces on exceptions:
+            //objj_msgSend_decorate(objj_backtrace_decorator);
+
+            // Uncomment to supress exceptions that take place inside a message
+            //objj_msgSend_decorate(objj_supress_exceptions_decorator)
+
+            // Uncomment to enable runtime type checking:
+            //objj_msgSend_decorate(objj_typecheck_decorator);
+
+            // Uncomment (along with both above) to print backtraces on type check errors:
+            //objj_typecheck_prints_backtrace = true;
+
+            // Uncomment to disable the default logger (CPLogConsole if window.console exists, CPLogPopup otherwise):
+            //CPLogUnregister(CPLogDefault);
+
+            // Uncomment to enable a specific logger:
+            //CPLogRegister(CPLogConsole);
+            //CPLogRegister(CPLogPopup);
+        </script>
 
         <style type="text/css">
             body{margin:0; padding:0;}
