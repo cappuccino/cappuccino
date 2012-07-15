@@ -24,6 +24,19 @@
 
 @import "CPFont.j"
 
+CPItalicFontMask                    = 1 << 0;
+CPBoldFontMask                      = 1 << 1;
+CPUnboldFontMask                    = 1 << 2;
+CPNonStandardCharacterSetFontMask   = 1 << 3;
+CPNarrowFontMask                    = 1 << 4;
+CPExpandedFontMask                  = 1 << 5;
+CPCondensedFontMask                 = 1 << 6;
+CPSmallCapsFontMask                 = 1 << 7;
+CPPosterFontMask                    = 1 << 8;
+CPCompressedFontMask                = 1 << 9;
+CPFixedPitchFontMask                = 1 << 10;
+CPUnitalicFontMask                  = 1 << 24;
+
 
 var CPSharedFontManager     = nil,
     CPFontManagerFactory    = Nil;
@@ -33,15 +46,17 @@ var CPSharedFontManager     = nil,
 */
 @implementation CPFontManager : CPObject
 {
-    CPArray _availableFonts;
+    CPArray         _availableFonts;
 
-    id      _target @accessors(property=target);
-    SEL     _action @accessors(property=action);
+    id              _target @accessors(property=target);
+    SEL             _action @accessors(property=action);
 
-    id      _delegate @accessors(property=delegate);
+    id              _delegate @accessors(property=delegate);
 
-    CPFont  _selectedFont;
-    BOOL    _multiple @accessors;
+    CPFont          _selectedFont;
+    BOOL            _multiple @accessors;
+
+    CPDictionary    _activeChange;
 }
 
 // Getting the Shared Font Manager
@@ -131,6 +146,47 @@ var CPSharedFontManager     = nil,
 - (BOOL)isMultiple
 {
     return _isMultiple;
+}
+
+- (CPFont)convertFont:(CPFont)aFont
+{
+    if (!_activeChange)
+        return aFont;
+
+    var addTraits = [_activeChange valueForKey:@"addTraits"];
+
+    if (addTraits)
+        aFont = [self convertFont:aFont toHaveTrait:addTraits];
+
+    return aFont;
+}
+
+- (CPFont)convertFont:(CPFont)aFont toHaveTrait:(CPFontTraitMask)addTraits
+{
+    if (!aFont)
+        return nil;
+
+    var shouldBeBold = ([aFont isBold] || (addTraits & CPBoldFontMask)) && !(addTraits & CPUnboldFontMask),
+        shouldBeItalic = ([aFont isItalic] || (addTraits & CPItalicFontMask)) && !(addTraits & CPUnitalicFontMask),
+        shouldBeSize = [aFont size];
+
+    // XXX On the current platform there will always be a bold/italic version of each font, but still leave
+    // || aFont in here for future platforms.
+    aFont = [CPFont _fontWithName:[aFont familyName] size:shouldBeSize bold:shouldBeBold italic:shouldBeItalic] || aFont;
+
+    return aFont;
+}
+
+- (@action)addFontTrait:(id)sender
+{
+    _activeChange = [CPDictionary dictionaryWithObject:[sender tag] forKey:@"addTraits"];
+
+    [self sendAction];
+}
+
+- (BOOL)sendAction
+{
+    return [CPApp sendAction:_action to:_target from:self];
 }
 
 @end

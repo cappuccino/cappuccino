@@ -252,6 +252,14 @@ following:
 }
 
 /*!
+    Internal font getter like fontWithName:size:italic: with a bold selector.
+*/
++ (CPFont)_fontWithName:(CPString)aName size:(float)aSize bold:(BOOL)bold italic:(BOOL)italic
+{
+    return _CPUserFont(aName, aSize <= 0 ? _CPFontSystemFontSize : aSize, bold, italic);
+}
+
+/*!
     Returns the system font scaled to the specified size
     @param aSize the size of the font (in px). 0 creates a static font
            in the current system font size. Negative creates a font
