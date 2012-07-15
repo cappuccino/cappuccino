@@ -5314,13 +5314,13 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 - (void)setThemeState:(CPThemeState)aState
 {
     [super setThemeState:aState];
-    [self recursivelyPerformSelector:_cmd withObject:aState startingFrom:self];
+    [self recursivelyPerformSelector:@selector(setThemeState:) withObject:aState startingFrom:self];
 }
 
 - (void)unsetThemeState:(CPThemeState)aState
 {
     [super unsetThemeState:aState];
-    [self recursivelyPerformSelector:_cmd withObject:aState startingFrom:self];
+    [self recursivelyPerformSelector:@selector(unsetThemeState:) withObject:aState startingFrom:self];
 }
 
 - (void)recursivelyPerformSelector:(SEL)selector withObject:(id)anObject startingFrom:(id)aView
