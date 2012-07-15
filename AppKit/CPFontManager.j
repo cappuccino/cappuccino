@@ -34,6 +34,14 @@ var CPSharedFontManager     = nil,
 @implementation CPFontManager : CPObject
 {
     CPArray _availableFonts;
+
+    id      _target @accessors(property=target);
+    SEL     _action @accessors(property=action);
+
+    id      _delegate @accessors(property=delegate);
+
+    CPFont  _selectedFont;
+    BOOL    _multiple @accessors;
 }
 
 // Getting the Shared Font Manager
@@ -57,6 +65,16 @@ var CPSharedFontManager     = nil,
 + (void)setFontManagerFactory:(Class)aClass
 {
     CPFontManagerFactory = aClass;
+}
+
+- (id)init
+{
+    if (self = [super init])
+    {
+        _action = @selector(changeFont:);
+    }
+
+    return self;
 }
 
 /*!
@@ -95,6 +113,24 @@ var CPSharedFontManager     = nil,
 - (CPArray)fontWithNameIsAvailable:(CPString)aFontName
 {
     return _CPFontDetectFontAvailable(aFontName);
+}
+
+- (void)setSelectedFont:(CPFont)aFont isMultiple:(BOOL)aFlag
+{
+    _selectedFont = aFont;
+    _isMultiple = aFlag;
+
+    // TODO Notify CPFontPanel when it exists.
+}
+
+- (CPFont)selectedFont
+{
+    return _selectedFont;
+}
+
+- (BOOL)isMultiple
+{
+    return _isMultiple;
 }
 
 @end
