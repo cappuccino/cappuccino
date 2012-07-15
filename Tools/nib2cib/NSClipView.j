@@ -23,18 +23,21 @@
 @import <AppKit/CPClipView.j>
 
 
+var NSClipViewDrawBackgroundFlag = 0x04;
+
+
 @implementation CPClipView (CPCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     if (self = [super NS_initWithCoder:aCoder])
     {
-        _documentView = [aCoder decodeObjectForKey:"NSDocView"];
+        _documentView = [aCoder decodeObjectForKey:@"NSDocView"];
 
-        if ([aCoder containsValueForKey:"NSBGColor"])
-            [self setBackgroundColor:[aCoder decodeObjectForKey:"NSBGColor"]];
+        var flags = [aCoder decodeIntForKey:@"NScvFlags"];
 
-        //var flags = [aCoder decodeIntForKey:"NScvFlags"];
+        if ((flags & NSClipViewDrawBackgroundFlag) && [aCoder containsValueForKey:@"NSBGColor"])
+            [self setBackgroundColor:[aCoder decodeObjectForKey:@"NSBGColor"]];
     }
 
     return self;
