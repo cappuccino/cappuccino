@@ -206,6 +206,77 @@
     }];
 }
 
+- (void)testKeysOfEntriesPassingTest
+{
+    var numberDictionary = [CPDictionary dictionaryWithJSObject:{
+            key1: 5,
+            key2: 1,
+            key3: 4,
+            key4: 2,
+            key5: 3
+        }];
+
+    var expected = [@"key1", @"key3"],
+        result = [numberDictionary keysOfEntriesPassingTest:function(key, value, stop)
+        {
+            return value >= 4;
+        }];
+
+    [self assert:expected equals:result];
+
+    expected = [@"key3", @"key1"],
+    result = [numberDictionary keysOfEntriesWithOptions:CPEnumerationReverse passingTest:function(key, value, stop)
+        {
+            return value >= 4;
+        }];
+
+    [self assert:expected equals:result];
+
+    expected = [@"key3"],
+    result = [numberDictionary keysOfEntriesWithOptions:CPEnumerationReverse passingTest:function(key, value, stop)
+        {
+            if (value === 4)
+                stop(YES);
+
+            return value >= 4;
+        }];
+
+    [self assert:expected equals:result];
+
+    var stringDictionary = [CPDictionary dictionaryWithJSObject:{
+            a: @"Z", b: @"y", c: @"X", d: @"W",
+            e: @"V", f: @"u", g: @"T", h: @"s",
+            i: @"R", j: @"q", k: @"P", l: @"o"
+        }];
+
+    expected = [@"j", @"k", @"l"];
+    result = [stringDictionary keysOfEntriesPassingTest:function(key, value, stop)
+        {
+            return value.toLowerCase() <= @"q";
+        }];
+
+    [self assert:expected equals:result];
+
+    expected = [@"l", @"k", @"j"];
+    result = [stringDictionary keysOfEntriesWithOptions:CPEnumerationReverse passingTest:function(key, value, stop)
+        {
+            return value.toLowerCase() <= @"q";
+        }];
+
+    [self assert:expected equals:result];
+
+    expected = [@"j", @"k"];
+    result = [stringDictionary keysOfEntriesPassingTest:function(key, value, stop)
+        {
+            if (value === @"P")
+                stop(YES);
+
+            return value.toLowerCase() <= "q";
+        }];
+
+    [self assert:expected equals:result];
+}
+
 - (void)testKeysSortedByValueUsingSelector
 {
     var numberDictionary = [CPDictionary dictionaryWithJSObject:{
@@ -234,6 +305,46 @@
 
     expected = [@"k", @"i", @"g", @"e", @"d", @"c", @"a", @"l", @"j", @"h", @"f", @"b"];
     result = [stringDictionary keysSortedByValueUsingSelector:@selector(compare:)];
+    [self assert:expected equals:result];
+}
+
+- (void)testKeysSortedByValueUsingComparator
+{
+    var numberDictionary = [CPDictionary dictionaryWithJSObject:{
+            key1: 5,
+            key2: 1,
+            key3: 4,
+            key4: 2,
+            key5: 3
+        }];
+
+    var expected = [@"key2", @"key4", @"key5", @"key3", @"key1"],
+        result = [numberDictionary keysSortedByValueUsingComparator:function(obj1, obj2)
+        {
+            return obj1 < obj2 ? CPOrderedAscending : CPOrderedDescending;
+        }];
+
+    [self assert:expected equals:result];
+
+    var stringDictionary = [CPDictionary dictionaryWithJSObject:{
+            a: @"Z", b: @"y", c: @"X", d: @"W",
+            e: @"V", f: @"u", g: @"T", h: @"s",
+            i: @"R", j: @"q", k: @"P", l: @"o"
+        }];
+
+    expected = [@"l", @"k", @"j", @"i", @"h", @"g", @"f", @"e", @"d", @"c", @"b", @"a"];
+    result = [stringDictionary keysSortedByValueUsingComparator:function(obj1, obj2)
+        {
+            return obj1.toLowerCase() < obj2.toLowerCase() ? CPOrderedAscending : CPOrderedDescending;
+        }];
+
+    [self assert:expected equals:result];
+
+    expected = [@"k", @"i", @"g", @"e", @"d", @"c", @"a", @"l", @"j", @"h", @"f", @"b"];
+    result = [stringDictionary keysSortedByValueUsingComparator:function(obj1, obj2)
+        {
+            return obj1 < obj2 ? CPOrderedAscending : CPOrderedDescending;
+        }];
     [self assert:expected equals:result];
 }
 
