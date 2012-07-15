@@ -148,6 +148,18 @@ var CPSharedFontManager     = nil,
     return _isMultiple;
 }
 
+- (int)weightOfFont:(CPFont)aFont
+{
+    // TODO Weight 5 is a normal of book weight and 9 and above is bold, but it would be nice to be more
+    // precise than that.
+    return [aFont isBold] ? 9 : 5;
+}
+
+- (CPFontTraitMask)traitsOfFont:(CPFont)aFont
+{
+    return ([aFont isBold] ? CPBoldFontMask : 0) | ([aFont isItalic] ? CPItalicFontMask : 0);
+}
+
 - (CPFont)convertFont:(CPFont)aFont
 {
     if (!_activeChange)

@@ -37,6 +37,26 @@
     [self assertTrue:[fontManager isMultiple]];
 }
 
+- (void)testWeightOfFont_
+{
+    var fontManager = [CPFontManager sharedFontManager];
+
+    [self assert:[fontManager weightOfFont:fontA] equals:5 message:@"standard font weight"];
+
+    fontB = [CPFont boldFontWithName:@"Helvetica" size:12.0 italic:YES];
+    [self assert:[fontManager weightOfFont:fontB] equals:9 message:@"bold font weight"];
+
+}
+
+- (void)testTraitsOfFont_
+{
+    var fontManager = [CPFontManager sharedFontManager];
+    fontB = [CPFont boldFontWithName:@"Helvetica" size:12.0 italic:YES];
+
+    [self assert:[fontManager traitsOfFont:fontA] equals:0 message:@"fontA traits"];
+    [self assert:[fontManager traitsOfFont:fontB] equals:CPBoldFontMask | CPItalicFontMask message:@"fontB traits"];
+}
+
 - (void)testAddFontTrait_
 {
     var fontManager = [CPFontManager sharedFontManager];
