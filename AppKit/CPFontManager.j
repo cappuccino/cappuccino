@@ -189,6 +189,20 @@ var CPSharedFontManager     = nil,
     return aFont;
 }
 
+- (CPFont)convertFont:(CPFont)aFont toFace:(CPString)aTypeface
+{
+    if (!aFont)
+        return nil;
+
+    var shouldBeBold = [aFont isBold],
+        shouldBeItalic = [aFont isItalic],
+        shouldBeSize = [aFont size];
+
+    aFont = [CPFont _fontWithName:aTypeface size:shouldBeSize bold:shouldBeBold italic:shouldBeItalic] || aFont;
+
+    return aFont;
+}
+
 - (@action)addFontTrait:(id)sender
 {
     _activeChange = [CPDictionary dictionaryWithObject:[sender tag] forKey:@"addTraits"];

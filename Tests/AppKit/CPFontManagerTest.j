@@ -108,6 +108,18 @@
     [self assert:12.0 equals:[convertedFontB size] message:@"maintain size fontB with CPUnitalicFontMask"];
 }
 
+- (void)testConvertFont_toFace_
+{
+    fontB = [CPFont boldFontWithName:@"Helvetica" size:12.0 italic:YES];
+
+    convertedFontB = [[CPFontManager sharedFontManager] convertFont:fontB toFace:@"Arial"];
+
+    [self assertTrue:[convertedFontB isBold] message:@"maintain bold fontB"];
+    [self assertTrue:[convertedFontB isItalic] message:@"maintain italic fontB"];
+    [self assert:12.0 equals:[convertedFontB size] message:@"maintain size fontB"];
+    [self assert:@"Arial" equals:[convertedFontB familyName] message:@"change face fontB"];
+}
+
 - (@action)changeFont:(id)sender
 {
     convertedFontA = [sender convertFont:fontA];
