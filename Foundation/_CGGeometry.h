@@ -80,6 +80,7 @@ CGGeometry is not a part of Foundation. The reason _CGGeometry.h exists, and is 
 
 #define _CGInsetMake(_top, _right, _bottom, _left) { top:(_top), right:(_right), bottom:(_bottom), left:(_left)  }
 #define _CGInsetMakeCopy(anInset) _CGInsetMake(anInset.top, anInset.right, anInset.bottom, anInset.left)
+#define _CGInsetMakeInvertedCopy(anInset) _CGInsetMake(-anInset.top, -anInset.right, -anInset.bottom, -anInset.left)
 #define _CGInsetMakeZero() _CGInsetMake(0, 0, 0, 0)
 #define _CGInsetIsEmpty(anInset) ((anInset).top === 0 && (anInset).right === 0 && (anInset).bottom === 0 && (anInset).left === 0)
 #define _CGInsetEqualToInset(lhsInset, rhsInset) ((lhsInset).top === (rhsInset).top && (lhsInset).right === (rhsInset).right && (lhsInset).bottom === (rhsInset).bottom && (lhsInset).left === (rhsInset).left)

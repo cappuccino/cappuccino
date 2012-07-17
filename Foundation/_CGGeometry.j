@@ -72,6 +72,7 @@ _function(CGRectContainsPoint(aRect, aPoint))
 _function(CGInsetMake(top, right, bottom, left))
 _function(CGInsetMakeZero())
 _function(CGInsetMakeCopy(anInset))
+_function(CGInsetMakeInvertedCopy(anInset))
 _function(CGInsetIsEmpty(anInset))
 _function(CGInsetEqualToInset(lhsInset, rhsInset))
 
