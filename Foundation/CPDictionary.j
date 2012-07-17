@@ -654,6 +654,32 @@
     var value = [self objectForKey:aKey];
     return ((value !== nil) && (value !== undefined));
 }
+
+- (void)enumerateKeysAndObjectsUsingBlock:(Function /*(id aKey, id anObject, @ref BOOL stop)*/)aFunction
+{
+    var shouldStop = NO,
+        shouldStopRef = AT_REF(shouldStop);
+
+    for (var index = 0; index < _count; index++)
+    {
+        var key = _keys[index],
+            value = valueForKey(key);
+
+        aFunction(key, value, shouldStopRef);
+
+        if (shouldStop)
+            return;
+    }
+}
+
+- (void)enumerateKeysAndObjectsWithOptions:(CPEnumerationOptions)opts usingBlock:(Function /*(id aKey, id anObject, @ref BOOL stop)*/)aFunction
+{
+    // Ignore the options because neither option has an effect.
+    // CPEnumerationReverse has no effect on enumerating a CPDictionary because dictionary enumeration is not ordered.
+    // CPEnumerationConcurrent is not possible in a single threaded environment.
+    [self enumerateKeysAndObjectsUsingBlock:aFunction];
+}
+
 @end
 
 @implementation CPDictionary (CPCoding)
