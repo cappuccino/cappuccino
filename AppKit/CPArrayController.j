@@ -282,6 +282,8 @@
     if (_disableSetContent)
         return;
 
+    [super _selectionWillChange];
+
     if (value === nil)
         value = [];
 
@@ -329,6 +331,9 @@
 
     if (_clearsFilterPredicateOnInsertion)
         [self didChangeValueForKey:@"filterPredicate"];
+
+    [super _selectionDidChange];
+
 }
 
 /*!
