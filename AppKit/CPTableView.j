@@ -978,6 +978,13 @@ NOT YET IMPLEMENTED
         columnIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(fromIndex, toIndex)];
 
     [self reloadDataForRowIndexes:rowIndexes columnIndexes:columnIndexes];
+
+    // Notify even if programmatically moving a column as in Cocoa.
+    // TODO Only notify when a column drag operation ends, not each time a column reaches a new slot?
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPTableViewColumnDidMoveNotification
+                                                        object:self
+                                                      userInfo:[CPDictionary dictionaryWithObjects:[fromIndex, toIndex]
+                                                                                           forKeys:[@"CPOldColumn", @"CPNewColumn"]]];
 }
 
 /*!

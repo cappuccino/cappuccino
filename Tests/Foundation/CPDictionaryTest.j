@@ -348,6 +348,42 @@
     [self assert:expected equals:result];
 }
 
+- (void)testEnumerateKeysAndObjectsUsingBlock_
+{
+    var input0 = [CPDictionary dictionary],
+        input1 = [CPDictionary dictionaryWithJSObject:{a: 1, b: 3, c: "b"}],
+        output = [CPMutableDictionary dictionary],
+        outputFunction = function(aKey, anObject)
+        {
+            [output setValue:anObject forKey:aKey];
+        };
+
+    [input0 enumerateKeysAndObjectsUsingBlock:outputFunction];
+    [self assert:0 equals:[output count] message:@"output when enumerating empty dictionary"];
+
+    [input1 enumerateKeysAndObjectsUsingBlock:outputFunction];
+    [self assert:3 equals:[output count] message:@"output when enumerating input1"];
+    [self assert:input1 equals:output message:@"output should equal input"];
+
+    // Stop enumerating after two keys.
+    output = [CPMutableDictionary dictionary];
+    stoppingFunction = function(aKey, anObject, stop)
+    {
+        [output setValue:anObject forKey:aKey];
+        if ([output count] > 1)
+            stop(YES); // AT_DEREF(stop, YES) - FIXME Replace with proper @ref @deref when in ObjJ.
+    }
+
+    [input1 enumerateKeysAndObjectsUsingBlock:stoppingFunction];
+    [self assert:2 equals:[output count] message:@"output when enumerating input1 and stopping after 2"];
+
+    // CPEnumerationReverse shouldn't have any particular effect. Just check that it doesn't crash.
+    output = [CPMutableDictionary dictionary];
+    [input1 enumerateKeysAndObjectsWithOptions:CPEnumerationReverse usingBlock:outputFunction];
+    [self assert:3 equals:[output count] message:@"output when enumerating input1"];
+    [self assert:input1 equals:output message:@"output should equal input"];
+}
+
 - (void)testJSObjectDescription
 {
     var dict = [[CPDictionary alloc] initWithObjects:[CGRectMake(1, 2, 3, 4), CGPointMake(5, 6)] forKeys:[@"key1", @"key2"]],
