@@ -112,7 +112,7 @@ var CPControlBlackColor = [CPColor blackColor];
                                                 CPTopVerticalTextAlignment,
                                                 CPLineBreakByClipping,
                                                 [CPColor blackColor],
-                                                [CPFont systemFontOfSize:12.0],
+                                                [CPFont systemFontOfSize:CPFontCurrentSystemSize],
                                                 [CPNull null],
                                                 _CGSizeMakeZero(),
                                                 CPImageLeft,

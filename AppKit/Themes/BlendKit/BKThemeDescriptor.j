@@ -181,7 +181,7 @@ var ItemSizes               = { },
             if ([object isKindOfClass:[CPView class]])
             {
                 var size = [object frame].size,
-                    labelWidth = [[template valueForKey:@"label"] sizeWithFont:[CPFont boldSystemFontOfSize:12.0]].width + 20.0;
+                    labelWidth = [[template valueForKey:@"label"] sizeWithFont:[CPFont boldSystemFontOfSize:0]].width + 20.0;
 
                 if (size.width > itemSize.width)
                     itemSize.width = size.width;
