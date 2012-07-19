@@ -1186,7 +1186,11 @@ _CPRunModalLoop = function(anEvent)
     var theWindow = [anEvent window],
         modalSession = CPApp._currentSession;
 
-    if (theWindow == modalSession._window || [theWindow worksWhenModal])
+    // The special case for popovers here is not clear. In Cocoa the popover window does not respond YES to worksWhenModal,
+    // yet it works when there is a modal window. Maybe it starts its own modal session, but interaction with the original
+    // modal window seems to continue working as well. Regardless of correctness, this solution beats popovers not working
+    // at all from sheets.
+    if (theWindow == modalSession._window || [theWindow worksWhenModal] || ([theWindow isKindOfClass:_CPAttachedWindow] && [[theWindow targetView] window] === modalSession._window))
         [theWindow sendEvent:anEvent];
 };
 
