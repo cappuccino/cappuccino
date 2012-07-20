@@ -1,5 +1,7 @@
 @import <AppKit/AppKit.j>
 
+[CPApplication sharedApplication];
+
 @implementation CPTableViewTest : OJTestCase
 {
     CPTableView     tableView;
@@ -22,15 +24,24 @@
 {
     doubleActionReceived = NO;
 
+    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1024.0, 768.0)
+                                                styleMask:CPWindowNotSizable];
+    [[theWindow contentView] addSubview:tableView];
+
     [tableView setTarget:self];
     [tableView setDoubleAction:@selector(doubleAction:)];
 
     // CPEvent with 2 clickCount
-    var dblClk = [CPEvent mouseEventWithType:CPLeftMouseUp location:CGPointMake(50, 50) modifierFlags:0
-                          timestamp:0 windowNumber:0 context:nil eventNumber:0 clickCount:2 pressure:0];
+    var dblClkDown = [CPEvent mouseEventWithType:CPLeftMouseDown location:CGPointMake(50, 50) modifierFlags:0
+                          timestamp:0 windowNumber:[theWindow windowNumber] context:nil eventNumber:0 clickCount:2 pressure:0],
+        dblClkUp = [CPEvent mouseEventWithType:CPLeftMouseUp location:CGPointMake(50, 50) modifierFlags:0
+                          timestamp:0 windowNumber:[theWindow windowNumber] context:nil eventNumber:0 clickCount:2 pressure:0];
 
-    [[CPApplication sharedApplication] sendEvent:dblClk];
-    [tableView trackMouse:dblClk];
+    [[CPApplication sharedApplication] sendEvent:dblClkDown];
+    [tableView trackMouse:dblClkDown];
+
+    [[CPApplication sharedApplication] sendEvent:dblClkUp];
+    [tableView trackMouse:dblClkUp];
 
     [self assertTrue:doubleActionReceived];
 }
@@ -224,12 +235,12 @@
         contentBindingTable = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
         tableColumn = [[CPTableColumn alloc] initWithIdentifier:@"A"],
         delegate = [ContentBindingTableDelegate new];
-        
+
     [contentBindingTable addTableColumn:tableColumn];
-    [delegate setTester:self];                                          
+    [delegate setTester:self];
     [contentBindingTable setDelegate:delegate];
 
-    [delegate setTableEntries:[[@"A1", @"B1"], [@"A2", @"B2"], [@"A3", @"B3"]]];    
+    [delegate setTableEntries:[[@"A1", @"B1"], [@"A2", @"B2"], [@"A3", @"B3"]]];
     [contentBindingTable bind:@"content" toObject:delegate withKeyPath:@"tableEntries" options:nil];
 
     // The following should also work:
@@ -238,9 +249,9 @@
 
     [[theWindow contentView] addSubview:contentBindingTable];
     [theWindow makeFirstResponder:contentBindingTable];
-    
+
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-    
+
     // Set the model again with different values
     [delegate setTableEntries:[[@"C1", @"D1"], [@"C2", @"D2"], [@"C3", @"D3"]]];
     [contentBindingTable reloadData];

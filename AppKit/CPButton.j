@@ -29,20 +29,21 @@
 
 /* @group CPBezelStyle */
 
-CPRoundedBezelStyle             = 1;
-CPRegularSquareBezelStyle       = 2;
+                                       // IB style
+CPRoundedBezelStyle             = 1;   // Push
+CPRegularSquareBezelStyle       = 2;   // Bevel
 CPThickSquareBezelStyle         = 3;
 CPThickerSquareBezelStyle       = 4;
-CPDisclosureBezelStyle          = 5;
-CPShadowlessSquareBezelStyle    = 6;
-CPCircularBezelStyle            = 7;
-CPTexturedSquareBezelStyle      = 8;
-CPHelpButtonBezelStyle          = 9;
-CPSmallSquareBezelStyle         = 10;
-CPTexturedRoundedBezelStyle     = 11;
-CPRoundRectBezelStyle           = 12;
-CPRecessedBezelStyle            = 13;
-CPRoundedDisclosureBezelStyle   = 14;
+CPDisclosureBezelStyle          = 5;   // Disclosure triangle
+CPShadowlessSquareBezelStyle    = 6;   // Square
+CPCircularBezelStyle            = 7;   // Round
+CPTexturedSquareBezelStyle      = 8;   // Textured
+CPHelpButtonBezelStyle          = 9;   // Help
+CPSmallSquareBezelStyle         = 10;  // Gradient
+CPTexturedRoundedBezelStyle     = 11;  // Round Textured
+CPRoundRectBezelStyle           = 12;  // Round Rect
+CPRecessedBezelStyle            = 13;  // Recessed
+CPRoundedDisclosureBezelStyle   = 14;  // Disclosure
 CPHUDBezelStyle                 = -1;
 
 

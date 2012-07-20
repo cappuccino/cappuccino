@@ -31,12 +31,6 @@
 @import "NSControl.j"
 
 
-var _CPButtonBezelStyleHeights = {};
-
-_CPButtonBezelStyleHeights[CPRoundedBezelStyle] = 18;
-_CPButtonBezelStyleHeights[CPTexturedRoundedBezelStyle] = 20;
-_CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
-
 var NSButtonIsBorderedMask = 0x00800000,
     NSButtonAllowsMixedStateMask = 0x1000000,
 
@@ -124,67 +118,78 @@ var NSButtonIsBorderedMask = 0x00800000,
     [self setBordered:[cell isBordered]];
     _bezelStyle = [cell bezelStyle];
 
+    var fixedHeight;
+
     // Map Cocoa bezel styles to Cappuccino bezel styles and adjust frame
     switch (_bezelStyle)
     {
         // implemented:
-        case CPRoundedBezelStyle:
+        case CPRoundedBezelStyle:  // Push IB style
             positionOffsetOriginY = 6;
             positionOffsetOriginX = 4;
             positionOffsetSizeWidth = -12;
+            fixedHeight = YES;
             break;
 
-        case CPTexturedRoundedBezelStyle:
+        case CPTexturedRoundedBezelStyle:  // Round Textured IB style
             positionOffsetOriginY = 2;
             positionOffsetOriginX = -2;
             positionOffsetSizeWidth = 0;
+            fixedHeight = YES;
             break;
 
         case CPHUDBezelStyle:
+            fixedHeight = YES;
             break;
 
         // approximations:
-        case CPRoundRectBezelStyle:
+        case CPRoundRectBezelStyle:  // Round Rect IB style
             positionOffsetOriginY = -3;
             positionOffsetOriginX = -2;
             positionOffsetSizeWidth = 0;
             _bezelStyle = CPRoundedBezelStyle;
+            fixedHeight = YES;
             break;
 
-        case CPSmallSquareBezelStyle:
+        case CPSmallSquareBezelStyle:  // Gradient IB style
             positionOffsetOriginX = -2;
             positionOffsetSizeWidth = 0;
             _bezelStyle = CPTexturedRoundedBezelStyle;
+            fixedHeight = NO;
             break;
 
-        case CPThickSquareBezelStyle:
+        case CPThickSquareBezelStyle:  // Bevel IB style
         case CPThickerSquareBezelStyle:
         case CPRegularSquareBezelStyle:
             positionOffsetOriginY = 3;
             positionOffsetOriginX = 0;
             positionOffsetSizeWidth = -4;
             _bezelStyle = CPTexturedRoundedBezelStyle;
+            fixedHeight = NO;
             break;
 
-        case CPTexturedSquareBezelStyle:
+        case CPTexturedSquareBezelStyle:  // Textured IB style
             positionOffsetOriginY = 4;
             positionOffsetOriginX = -1;
             positionOffsetSizeWidth = -2;
             _bezelStyle = CPTexturedRoundedBezelStyle;
+            fixedHeight = NO;
             break;
 
-        case CPShadowlessSquareBezelStyle:
+        case CPShadowlessSquareBezelStyle:  // Square IB style
             positionOffsetOriginY = 5;
             positionOffsetOriginX = -2;
             positionOffsetSizeWidth = 0;
             _bezelStyle = CPTexturedRoundedBezelStyle;
+            fixedHeight = NO;
             break;
 
-        case CPRecessedBezelStyle:
+        case CPRecessedBezelStyle:  // Recessed IB style
             positionOffsetOriginY = -3;
             positionOffsetOriginX = -2;
             positionOffsetSizeWidth = 0;
             _bezelStyle = CPHUDBezelStyle;
+            fixedHeight = YES;
             break;
 
         // unsupported
@@ -194,26 +199,60 @@ var NSButtonIsBorderedMask = 0x00800000,
         case CPDisclosureBezelStyle:
             CPLog.warn("NSButton [%s]: unsupported bezel style: %d", _title == null ? "<no title>" : '"' + _title + '"', _bezelStyle);
             _bezelStyle = CPHUDBezelStyle;
+            fixedHeight = YES;
             break;
 
         // error:
         default:
             CPLog.warn("NSButton [%s]: unknown bezel style: %d", _title == null ? "<no title>" : '"' + _title + '"', _bezelStyle);
             _bezelStyle = CPHUDBezelStyle;
+            fixedHeight = YES;
     }
 
     if ([cell isBordered])
     {
-        CPLog.debug("NSButton [%s]: adjusting height from %d to %d", _title == null ? "<no title>" : '"' + _title + '"', _frame.size.height, CPButtonDefaultHeight);
-        _frame.size.height = CPButtonDefaultHeight;
+        /*
+            Try to figure out the intention of the theme in regards to fixed height buttons.
+
+            - If there is a min height and a max height and they are the same, the theme must
+              not support variable button heights. In that case all buttons are considered fixed height.
+            - If there is just a max height, use that for only for fixed height buttons.
+            - If there is no max height either, don't do any height adjustments.
+        */
+        var theme = [[Converter sharedConverter] themes][0],
+            minSize = [theme valueForAttributeWithName:@"min-size" forClass:[CPButton class]],
+            maxSize = [theme valueForAttributeWithName:@"max-size" forClass:[CPButton class]],
+            adjustHeight = NO;
+
+        if (minSize.height > 0 && maxSize.height > 0 && minSize.height === maxSize.height)
+        {
+            adjustHeight = YES;
+            fixedHeight = minSize.height === maxSize.height;
+        }
+        else if (minSize.height < 0 && maxSize.height > 0)
+            adjustHeight = fixedHeight;
+        else
+            adjustHeight = minSize.height > 0 || maxSize.height > 0;
+
+        if (adjustHeight)
+        {
+            var oldHeight = _frame.size.height;
+
+            if (minSize.height > 0)
+                _frame.size.height = _bounds.size.height = MAX(_frame.size.height, minSize.height);
+
+            if (maxSize.height > 0)
+                _frame.size.height = _bounds.size.height = MIN(_frame.size.height, maxSize.height);
+
+            if (_frame.size.height !== oldHeight)
+                CPLog.debug("NSButton [%s]: adjusted height from %d to %d", _title == null ? "<no title>" : '"' + _title + '"', oldHeight, _frame.size.height);
+        }
 
         // Reposition the buttons according to its particular offsets
         _frame.origin.x += positionOffsetOriginX;
         _frame.origin.y += positionOffsetOriginY;
         _frame.size.width += positionOffsetSizeWidth;
         _bounds.size.width += positionOffsetSizeWidth;
-
-        _bounds.size.height = CPButtonDefaultHeight;
     }
 
     _keyEquivalent = [cell keyEquivalent];
@@ -229,6 +268,8 @@ var NSButtonIsBorderedMask = 0x00800000,
 
     _highlightsBy = [cell highlightsBy];
     _showsStateBy = [cell showsStateBy];
+
+    [self setTag:[cell tag]];
 
     return self;
 }

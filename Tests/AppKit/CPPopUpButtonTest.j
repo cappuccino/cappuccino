@@ -49,8 +49,11 @@
 
     [[popUpButton menu] removeItemAtIndex:5];
 
-    [self assert:4 equals:[popUpButton indexOfSelectedItem]];
+    // Removing the selected item resets the selection to item 0.
+    [self assert:0 equals:[popUpButton indexOfSelectedItem]];
 
+    // Removing an item underneath the selected item moves the selection.
+    [popUpButton selectItemAtIndex:4];
     [[popUpButton menu] removeItemAtIndex:0];
 
     [self assert:3 equals:[popUpButton indexOfSelectedItem]];
@@ -201,5 +204,32 @@
     [self assert:1 equals:[[self button] indexOfItemWithTitle:@"two"]];
     [self assert:2 equals:[[self button] indexOfItemWithTitle:@"three"]];
 }
+
+- (void)testRemoveItemAtIndex_
+{
+    button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 28.0) pullsDown:NO];
+
+    [self assert:CPNotFound equals:[button indexOfSelectedItem] message:"no item selected in empty pop up"];
+
+    [button addItemWithTitle:@"one"];
+    [button addItemWithTitle:@"two"];
+    [button addItemWithTitle:@"three"];
+    [button addItemWithTitle:@"four"];
+
+    // Note this behaviour is different for pullsDown:YES.
+    [self assert:0 equals:[button indexOfSelectedItem] message:"first item selected after items added"];
+
+    [button selectItemAtIndex:3];
+
+    [self assert:3 equals:[button indexOfSelectedItem] message:"last item selected"];
+
+    [button removeItemAtIndex:3];
+    [self assert:0 equals:[button indexOfSelectedItem] message:"first item selected after selected item deleted"];
+
+    [button selectItemAtIndex:2];
+    [button removeItemAtIndex:1];
+    [self assert:1 equals:[button indexOfSelectedItem] message:"selection index reduced when a prior item is removed"];
+}
+
 
 @end

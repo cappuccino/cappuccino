@@ -978,6 +978,13 @@ NOT YET IMPLEMENTED
         columnIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(fromIndex, toIndex)];
 
     [self reloadDataForRowIndexes:rowIndexes columnIndexes:columnIndexes];
+
+    // Notify even if programmatically moving a column as in Cocoa.
+    // TODO Only notify when a column drag operation ends, not each time a column reaches a new slot?
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPTableViewColumnDidMoveNotification
+                                                        object:self
+                                                      userInfo:[CPDictionary dictionaryWithObjects:[fromIndex, toIndex]
+                                                                                           forKeys:[@"CPOldColumn", @"CPNewColumn"]]];
 }
 
 /*!
@@ -3395,7 +3402,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         If the dataview resigning triggers the action (as CPTextField does), we come right
         back here and start an infinite loop. So we have to check this flag first.
     */
-    if (_editingCellIndex === nil)
+    if ([sender respondsToSelector:@selector(sendsActionOnEndEditing)] && [sender sendsActionOnEndEditing] && _editingCellIndex === nil)
         return;
 
     _editingCellIndex = nil;
