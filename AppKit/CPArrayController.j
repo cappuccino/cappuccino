@@ -879,6 +879,9 @@
 
         [_arrangedObjects removeObjectAtIndex:pos];
         [_selectionIndexes shiftIndexesStartingAtIndex:pos by:-1];
+
+        // This will automatically handle the avoidsEmptySelection case.
+        [self __setSelectionIndexes:_selectionIndexes];
     }
 
     [self didChangeValueForKey:@"content"];
