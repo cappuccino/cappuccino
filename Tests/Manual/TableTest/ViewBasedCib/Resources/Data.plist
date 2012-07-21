@@ -34,9 +34,9 @@
 			<key>identifier</key>
 			<string>person</string>
 			<key>image</key>
-			<string>Resources/georges.jpg</string>
+			<string>Resources/george.jpg</string>
 			<key>name</key>
-			<string>Georges</string>
+			<string>George</string>
 			<key>value</key>
 			<string>EDITABLE TEXT</string>
 	</dict>
@@ -152,9 +152,9 @@
 			<key>identifier</key>
 			<string>person</string>
 			<key>image</key>
-			<string>Resources/georges.jpg</string>
+			<string>Resources/george.jpg</string>
 			<key>name</key>
-			<string>Georges</string>
+			<string>George</string>
 			<key>value</key>
 			<string>EDITABLE TEXT</string>
 	</dict>
