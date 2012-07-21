@@ -51,7 +51,7 @@ var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
 {
     var identifier = [aTableColumn identifier];
 
-    if (identifier != @"Description")
+    if (identifier == @"multiple")
         identifier = [[content objectAtIndex:aRow] objectForKey:@"identifier"];
 
     var view = [aTableView makeViewWithIdentifier:identifier owner:self];

@@ -4834,29 +4834,59 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [[CPNotificationCenter defaultCenter] removeObserver:self name:_CPWindowDidChangeFirstResponderNotification object:[self window]];
 }
 
+- (void)_resignFirstResponderIfNeededForView:(CPView)aDataView atRow:(int)row column:(int)column
+{
+    if (row == _editingRow && column == _editingColumn)
+    {
+        var aWindow = [self window],
+            responder = [aWindow firstResponder];
+
+        if ([responder isKindOfClass:[CPView class]] && [responder isDescendantOf:aDataView])
+        {
+           [self _stopObservingFirstResponder];
+           // FIXME: we end editing on a non-visible view. This may send its action, is that what we want ?
+           [aWindow makeFirstResponder:self];
+           [self _startObservingFirstResponder];
+        }
+    }
+}
+
 - (void)_firstResponderDidChange:(CPNotification)aNotification
 {
     var responder = [[self window] firstResponder];
 
     _editingRow = [self rowForView:responder];
     _editingColumn = [self columnForView:responder];
-}
-
-- (void)_resignFirstResponderIfNeededForView:(CPView)aDataView atRow:(int)row column:(int)col
-{
-    if (row == _editingRow && col == _editingColumn)
+    
+// The following has no effect due to issue #210 (CPTextField drawsbackground & textBackgroundColor)
+// Uncomment when fixed 
+/*
+    if (_editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && ![responder drawsBackground])
     {
-        var aWindow = [self window],
-            responder = [aWindow firstResponder];
-
-        if ([responder isDescendantOf:aDataView])
-        {
-           [self _stopObservingFirstResponder];
-           [aWindow makeFirstResponder:aWindow];
-           [self _startObservingFirstResponder];
-        }
+        [responder setTextFieldBackgroundColor:[CPColor whiteColor]];
+        [responder setDrawsBackground:YES];
+        [self _registerForEndEditingNote:responder];
     }
+*/
 }
+/*
+- (void)_registerForEndEditingNote:(CPView)aTextField
+{
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_textFieldEditingDidEnd:) name:CPControlTextDidEndEditingNotification object:aTextField];
+}
+
+- (void)_unregisterForEndEditingNote:(CPView)aTextField
+{
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPControlTextDidEndEditingNotification object:aTextField];
+}
+
+- (void)_textFieldEditingDidEnd:(CPNotification)aNote
+{
+    var textField = [aNote object];
+    [textField setDrawsBackground:NO];
+    [self _unregisterForEndEditingNote:textField];
+}
+*/
 /*!
     @ignore
 */
@@ -4885,7 +4915,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         if ([self _sendDelegateDeleteKeyPressed])
             return;
     }
-
+    
     [super keyDown:anEvent];
 }
 
