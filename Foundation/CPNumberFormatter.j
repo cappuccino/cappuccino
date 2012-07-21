@@ -96,11 +96,13 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
             // TODO This is just a temporary solution. Should be generalised.
             // Add in thousands separators.
             if (perMillSymbol)
-                while (commaPosition < [preFraction length])
+            {
+                for (var commaPosition = 3, prefLength = [preFraction length]; commaPosition < prefLength; commaPosition += 4)
                 {
-                    preFraction = [preFraction stringByReplacingCharactersInRange:CPMakeRange(commaPosition, 0) withString:perMillSymbol];
-                    commaPosition += 4;
+                    preFraction = [preFraction stringByReplacingCharactersInRange:CPMakeRange(prefLength - commaPosition, 0) withString:perMillSymbol];
+                    prefLength += 1;
                 }
+            }
 
             if (fraction)
                 return preFraction + "." + fraction;
