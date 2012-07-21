@@ -7,7 +7,7 @@
  */
 
 @import <Foundation/CPObject.j>
-@import "../CPTableView+Debug.j"
+@import "../CPTrace.j"
 
 @implementation AppController : CPObject
 {
@@ -54,9 +54,20 @@
     [scrollView setDocumentView:tableView];
     [contentView addSubview:scrollView];
 
-    [theWindow orderFront:self];
+    var tlr = 0;
+    var f = function(a,b,c,d,e,f,g)
+    {
+        var lr = [c[0] count];
+        if (d > 0)
+            tlr += lr;
+    
+        var avg = (ROUND(100 * e/tlr) / 100);
+        console.log(b + " " + lr + " rows in " + d + " ms ; avg/row = " + avg + " ms");
+    }
 
-    [CPTableView profileViewLoading];
+    CPTrace(@"CPTableView", @"_loadDataViewsInRows:columns:", f);
+
+    [theWindow orderFront:self];
 }
 
 - (void)buildModel // For the editable view aka the slider
