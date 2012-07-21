@@ -217,6 +217,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPDate              _startTrackingTimestamp;
     BOOL                _trackingPointMovedOutOfClickSlop;
     CGPoint             _editingCellIndex;
+    CPInteger           _editingRow;
+    CPInteger           _editingColumn;
 
     _CPTableDrawView    _tableDrawView;
 
@@ -359,6 +361,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     _draggedColumn = nil;
 
+    _editingRow = CPNotFound;
+    _editingColumn = CPNotFound;
+
 /*      //gradients for the source list when CPTableView is NOT first responder or the window is NOT key
     // FIX ME: we need to actually implement this.
     _sourceListInactiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [168.0/255.0,183.0/255.0,205.0/255.0,1.0,157.0/255.0,174.0/255.0,199.0/255.0,1.0], [0,1], 2);
@@ -369,6 +374,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if (!_sortDescriptors)
         _sortDescriptors = [];
+
+    [self _startObservingFirstResponder];
 }
 
 /*!
@@ -3320,6 +3327,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
             [dataViews replaceObjectAtIndex:row withObject:nil];
 
+            [self _resignFirstResponderIfNeededForView:dataView atRow:row column:column];
             [self _enqueueReusableDataView:dataView];
         }
     }
@@ -4803,6 +4811,52 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     return YES;
 }
 
+/*!
+    @ignore
+*/
+- (id)hitTest:(CGPoint)aPoint
+{
+    var hit = [super hitTest:aPoint];
+
+    if (!hit || ![hit isKindOfClass:[CPTextField class]] || [self isRowSelected:[self rowForView:hit]])
+        return hit;
+
+    return self;
+}
+
+- (void)_startObservingFirstResponder
+{
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_firstResponderDidChange:) name:_CPWindowDidChangeFirstResponderNotification object:[self window]];
+}
+
+- (void)_stopObservingFirstResponder
+{
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:_CPWindowDidChangeFirstResponderNotification object:[self window]];
+}
+
+- (void)_firstResponderDidChange:(CPNotification)aNotification
+{
+    var responder = [[self window] firstResponder];
+
+    _editingRow = [self rowForView:responder];
+    _editingColumn = [self columnForView:responder];
+}
+
+- (void)_resignFirstResponderIfNeededForView:(CPView)aDataView atRow:(int)row column:(int)col
+{
+    if (row == _editingRow && col == _editingColumn)
+    {
+        var aWindow = [self window],
+            responder = [aWindow firstResponder];
+
+        if ([responder isDescendantOf:aDataView])
+        {
+           [self _stopObservingFirstResponder];
+           [aWindow makeFirstResponder:aWindow];
+           [self _startObservingFirstResponder];
+        }
+    }
+}
 /*!
     @ignore
 */
