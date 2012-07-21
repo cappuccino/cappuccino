@@ -109,6 +109,7 @@
         [self setObjectClass:[CPMutableDictionary class]];
 
         _observedKeys = [[CPCountedSet alloc] init];
+        _selection = [[CPControllerSelectionProxy alloc] initWithController:self];
     }
 
     return self;
