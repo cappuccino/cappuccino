@@ -5417,4 +5417,9 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     }];
 }
 
+- (CPString)description
+{
+    return "<" + class_getName(isa) + " 0x" + [CPString stringWithHash:[self UID]] + " identifier=" + [self identifier] + ">";
+}
+
 @end
