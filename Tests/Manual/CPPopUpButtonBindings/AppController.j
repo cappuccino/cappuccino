@@ -7,7 +7,6 @@
  */
 
 @import <Foundation/CPObject.j>
-@import "CPPopUpButton.j"
 
 @implementation AppController : CPObject
 {
