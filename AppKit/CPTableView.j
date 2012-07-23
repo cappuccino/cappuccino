@@ -5390,6 +5390,27 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     CPImageView _imageView  @accessors(property=imageView);
 }
 
+- (id)initWithFrame:(CGRect)aRect
+{
+    self = [super initWithFrame:aRect];
+    [self _init];
+
+    return self;
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+    [self _init];
+
+    return self;
+}
+
+- (void)_init
+{
+    [self setAutoresizingMask:CPViewHeightSizable];
+}
+
 - (void)awakeFromCib
 {
     [self setThemeState:CPThemeStateTableDataView];
