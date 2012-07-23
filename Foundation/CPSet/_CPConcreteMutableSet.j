@@ -48,13 +48,21 @@ var hasOwnProperty = Object.prototype.hasOwnProperty;
 {
     var UID = [anObject UID];
 
-    if (!hasOwnProperty.call(_contents, UID))
-        return nil;
+    if (hasOwnProperty.call(_contents, UID))
+        return _contents[UID];
+    else
+    {
+        for (var objectUID in _contents)
+        {
+            if (!hasOwnProperty.call(_contents, objectUID))
+                continue;
 
-    var object = _contents[UID];
+            var object = _contents[objectUID];
 
-    if (object === anObject || [object isEqual:anObject])
-        return object;
+            if (object === anObject || [object isEqual:anObject])
+                return object;
+        }
+    }
 
     return nil;
 }
@@ -100,10 +108,12 @@ var hasOwnProperty = Object.prototype.hasOwnProperty;
 */
 - (void)removeObject:(id)anObject
 {
-    if (![self containsObject:anObject])
-        return;
+    var object = [self member:anObject];
 
-    delete _contents[[anObject UID]];
+    if (object === nil || object === undefined)
+        [CPException raise:CPInvalidArgumentException reason:@"attempt to remove nil or undefined"];
+
+    delete _contents[[object UID]];
     _count--;
 }
 
