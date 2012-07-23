@@ -878,6 +878,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
             [[_source itemAtIndex:0] setTitle:[self _getNullPlaceholder]];
 
         var count = [values count];
+
         for (var i = 0; i < count; i++)
             [[_source itemAtIndex:i + offset] setTitle:[[values objectAtIndex:i] description]];
     }
@@ -936,6 +937,7 @@ var binderForObject = {};
 - (id)initWithBinding:(CPString)aBinding name:(CPString)aName to:(id)aDestination keyPath:(CPString)aKeyPath options:(CPDictionary)options from:(id)aSource
 {
     self = [super initWithBinding:aBinding name:aName to:aDestination keyPath:aKeyPath options:options from:aSource];
+
     if (self)
     {
         binderForObject[[aSource UID]] = self;
@@ -958,8 +960,7 @@ var binderForObject = {};
 
 - (CPInteger)_getInsertNullOffset
 {
-    var info = [CPBinder infoForBinding:CPContentBinding forObject:_source];
-    var options = [info objectForKey:CPOptionsKey];
+    var options = [[CPBinder infoForBinding:CPContentBinding forObject:_source] objectForKey:CPOptionsKey];
 
     return [options objectForKey:CPInsertsNullPlaceholderBindingOption] ? 1 : 0;
 }
