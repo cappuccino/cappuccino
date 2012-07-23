@@ -1,7 +1,7 @@
 
 @import <AppKit/CPWindow.j>
 
-[CPApplication sharedApplication]
+[CPApplication sharedApplication];
 
 @implementation CPWindowTest : OJTestCase
 {

@@ -35,23 +35,23 @@
 
     if (self)
     {
-        _alignmentGridWidth     = [aCoder decodeFloatForKey:@"NSRuleEditorAlignmentGridWidth"];
-        _sliceHeight            = [aCoder decodeDoubleForKey:@"NSRuleEditorSliceHeight"];
-        _stringsFilename        = [aCoder decodeObjectForKey:@"NSRuleEditorStringsFileName"];
+        _alignmentGridWidth      = [aCoder decodeFloatForKey:@"NSRuleEditorAlignmentGridWidth"];
+        _sliceHeight             = [aCoder decodeDoubleForKey:@"NSRuleEditorSliceHeight"];
+        _stringsFilename         = [aCoder decodeObjectForKey:@"NSRuleEditorStringsFileName"];
         _editable                = [aCoder decodeBoolForKey:@"NSRuleEditorEditable"];
         _allowsEmptyCompoundRows = [aCoder decodeBoolForKey:@"NSRuleEditorAllowsEmptyCompoundRows"];
         _disallowEmpty           = [aCoder decodeBoolForKey:@"NSRuleEditorDisallowEmpty"];
-        _nestingMode            = [aCoder decodeIntForKey:@"NSRuleEditorNestingMode"];
-        _typeKeyPath            = [aCoder decodeObjectForKey:@"NSRuleEditorRowTypeKeyPath"];
-        _itemsKeyPath           = [aCoder decodeObjectForKey:@"NSRuleEditorItemsKeyPath"];
-        _valuesKeyPath          = [aCoder decodeObjectForKey:@"NSRuleEditorValuesKeyPath"];
-        _subrowsArrayKeyPath    = [aCoder decodeObjectForKey:@"NSRuleEditorSubrowsArrayKeyPath"];
-        _boundArrayKeyPath      = [aCoder decodeObjectForKey:@"NSRuleEditorBoundArrayKeyPath"];
+        _nestingMode             = [aCoder decodeIntForKey:@"NSRuleEditorNestingMode"];
+        _typeKeyPath             = [aCoder decodeObjectForKey:@"NSRuleEditorRowTypeKeyPath"];
+        _itemsKeyPath            = [aCoder decodeObjectForKey:@"NSRuleEditorItemsKeyPath"];
+        _valuesKeyPath           = [aCoder decodeObjectForKey:@"NSRuleEditorValuesKeyPath"];
+        _subrowsArrayKeyPath     = [aCoder decodeObjectForKey:@"NSRuleEditorSubrowsArrayKeyPath"];
+        _boundArrayKeyPath       = [aCoder decodeObjectForKey:@"NSRuleEditorBoundArrayKeyPath"];
 
-        //_slicesHolder = [aCoder decodeObjectForKey:@"NSRuleEditorViewSliceHolder"];
-        _boundArrayOwner        = [aCoder decodeObjectForKey:@"NSRuleEditorBoundArrayOwner"];
-        _slices                 = [aCoder decodeObjectForKey:@"NSRuleEditorSlices"];
-        _ruleDelegate           = [aCoder decodeObjectForKey:@"NSRuleEditorDelegate"];
+        //_slicesHolder          = [aCoder decodeObjectForKey:@"NSRuleEditorViewSliceHolder"];
+        _boundArrayOwner         = [aCoder decodeObjectForKey:@"NSRuleEditorBoundArrayOwner"];
+        _slices                  = [aCoder decodeObjectForKey:@"NSRuleEditorSlices"];
+        _ruleDelegate            = [aCoder decodeObjectForKey:@"NSRuleEditorDelegate"];
     }
 
     return self;

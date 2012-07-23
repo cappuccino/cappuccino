@@ -59,11 +59,7 @@
         _intercellSpacing = CGSizeMake([aCoder decodeFloatForKey:@"NSIntercellSpacingWidth"],
                                        [aCoder decodeFloatForKey:@"NSIntercellSpacingHeight"]);
 
-        var gridColor = [aCoder decodeObjectForKey:@"NSGridColor"];
-
-        if (![gridColor isEqual:[CPColor colorWithRed:127.0 / 255.0 green:127.0 / 255.0 blue:127.0 / 255.0 alpha:1.0]])
-            [self setValue:gridColor forThemeAttribute:@"grid-color"];
-
+        [self setValue:[aCoder decodeObjectForKey:@"NSGridColor"] forThemeAttribute:@"grid-color"];
         _gridStyleMask = [aCoder decodeIntForKey:@"NSGridStyleMask"];
 
         _usesAlternatingRowBackgroundColors = (flags & 0x00800000) ? YES : NO;

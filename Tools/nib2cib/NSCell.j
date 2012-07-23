@@ -49,6 +49,7 @@
     CPFont          _font                       @accessors(readonly, getter=font);
     int             _lineBreakMode              @accessors(readonly, getter=lineBreakMode);
     CPFormatter     _formatter                  @accessors(readonly, getter=formatter);
+    int             _tag                        @accessors(readonly, getter=tag);
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -81,6 +82,8 @@
         _font           = [aCoder decodeObjectForKey:@"NSSupport"];
 
         _formatter      = [aCoder decodeObjectForKey:@"NSFormatter"];
+
+        _tag            = [aCoder decodeIntForKey:@"NSTag"];
     }
 
     return self;

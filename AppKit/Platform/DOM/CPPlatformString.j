@@ -33,6 +33,14 @@ var DOMFixedWidthSpanElement    = nil,
 {
 }
 
++ (void)initialize
+{
+    if (self !== [CPPlatformString class])
+        return;
+
+    DefaultFont = [CPFont systemFontOfSize:CPFontCurrentSystemSize];
+}
+
 + (void)bootstrap
 {
     [self createDOMElements];
@@ -62,8 +70,7 @@ var DOMFixedWidthSpanElement    = nil,
     bodyElement.appendChild(DOMIFrameElement);
 
     DOMIFrameDocument = (DOMIFrameElement.contentDocument || DOMIFrameElement.contentWindow.document);
-    DOMIFrameDocument.write('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'+
-                            '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head></head><body></body></html>');
+    DOMIFrameDocument.write('<!DOCTYPE html><head></head><body></body></html>');
     DOMIFrameDocument.close();
 
     // IE needs this wide <div> to prevent unwanted text wrapping:
@@ -151,14 +158,6 @@ var DOMFixedWidthSpanElement    = nil,
 
 + (CGSize)sizeOfString:(CPString)aString withFont:(CPFont)aFont forWidth:(float)aWidth
 {
-    if (!aFont)
-    {
-        if (!DefaultFont)
-            DefaultFont = [CPFont systemFontOfSize:12.0];
-
-        aFont = DefaultFont;
-    }
-
     if (!DOMIFrameElement)
         [self createDOMElements];
 
@@ -172,7 +171,7 @@ var DOMFixedWidthSpanElement    = nil,
         span.style.width = ROUND(aWidth) + "px";
     }
 
-    span.style.font = [aFont cssString];
+    span.style.font = [(aFont || DefaultFont) cssString];
 
     if (CPFeatureIsCompatible(CPJavaScriptInnerTextFeature))
         span.innerText = aString;
@@ -184,18 +183,10 @@ var DOMFixedWidthSpanElement    = nil,
 
 + (CPDictionary)metricsOfFont:(CPFont)aFont
 {
-    if (!aFont)
-    {
-        if (!DefaultFont)
-            DefaultFont = [CPFont systemFontOfSize:12.0];
-
-        aFont = DefaultFont;
-    }
-
     if (!DOMMetricsDivElement)
         [self createDOMMetricsElements];
 
-    DOMMetricsDivElement.style.font = [aFont cssString];
+    DOMMetricsDivElement.style.font = [(aFont || DefaultFont) cssString];
 
     var baseline = DOMMetricsImgElement.offsetTop - DOMMetricsTextSpanElement.offsetTop + DOMMetricsImgElement.offsetHeight,
         descender = baseline - DOMMetricsTextSpanElement.offsetHeight,

@@ -20,11 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CPButton.j>
-@import <AppKit/CPGeometry.j>
-@import <AppKit/CPKeyValueBinding.j>
-@import <AppKit/CPMenu.j>
-@import <AppKit/CPMenuItem.j>
+@import <Foundation/CPGeometry.j>
+
+@import "CPButton.j"
+@import "CPKeyValueBinding.j"
+@import "CPMenu.j"
+@import "CPMenuItem.j"
 
 var VISIBLE_MARGIN = 7.0;
 
@@ -571,10 +572,18 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
             if ([indexes containsIndex:0] && [self pullsDown])
                 [self _firstItemDidChange];
 
-            // See whether the index has changed, despite the actual item not changing.
-            while ((index = [indexes indexGreaterThanIndex:index]) !== CPNotFound &&
-                    index <= indexOfSelectedItem)
-                --indexOfSelectedItem;
+            if (![self pullsDown] && [indexes containsIndex:indexOfSelectedItem])
+            {
+                // If the selected item is removed the first item becomes selected.
+                indexOfSelectedItem = 0;
+            }
+            else
+            {
+                // See whether the index has changed, despite the actual item not changing.
+                while ((index = [indexes indexGreaterThanIndex:index]) !== CPNotFound &&
+                        index <= indexOfSelectedItem)
+                    --indexOfSelectedItem;
+            }
 
             [self selectItemAtIndex:indexOfSelectedItem];
         }

@@ -29,20 +29,21 @@
 
 /* @group CPBezelStyle */
 
-CPRoundedBezelStyle             = 1;
-CPRegularSquareBezelStyle       = 2;
+                                       // IB style
+CPRoundedBezelStyle             = 1;   // Push
+CPRegularSquareBezelStyle       = 2;   // Bevel
 CPThickSquareBezelStyle         = 3;
 CPThickerSquareBezelStyle       = 4;
-CPDisclosureBezelStyle          = 5;
-CPShadowlessSquareBezelStyle    = 6;
-CPCircularBezelStyle            = 7;
-CPTexturedSquareBezelStyle      = 8;
-CPHelpButtonBezelStyle          = 9;
-CPSmallSquareBezelStyle         = 10;
-CPTexturedRoundedBezelStyle     = 11;
-CPRoundRectBezelStyle           = 12;
-CPRecessedBezelStyle            = 13;
-CPRoundedDisclosureBezelStyle   = 14;
+CPDisclosureBezelStyle          = 5;   // Disclosure triangle
+CPShadowlessSquareBezelStyle    = 6;   // Square
+CPCircularBezelStyle            = 7;   // Round
+CPTexturedSquareBezelStyle      = 8;   // Textured
+CPHelpButtonBezelStyle          = 9;   // Help
+CPSmallSquareBezelStyle         = 10;  // Gradient
+CPTexturedRoundedBezelStyle     = 11;  // Round Textured
+CPRoundRectBezelStyle           = 12;  // Round Rect
+CPRecessedBezelStyle            = 13;  // Recessed
+CPRoundedDisclosureBezelStyle   = 14;  // Disclosure
 CPHUDBezelStyle                 = -1;
 
 
@@ -576,35 +577,18 @@ CPButtonImageOffset   = 3.0;
 {
     var contentInset = [self currentValueForThemeAttribute:@"content-inset"];
 
-    if (_CGInsetIsEmpty(contentInset))
-        return bounds;
-
-    bounds = _CGRectMakeCopy(bounds);
-    bounds.origin.x += contentInset.left;
-    bounds.origin.y += contentInset.top;
-    bounds.size.width -= contentInset.left + contentInset.right;
-    bounds.size.height -= contentInset.top + contentInset.bottom;
-
-    return bounds;
+    return _CGRectInsetByInset(bounds, contentInset);
 }
 
 - (CGRect)bezelRectForBounds:(CGRect)bounds
 {
+    // Is this necessary? The theme itself can just change its inset to a zero inset when !CPThemeStateBordered.
     if (![self isBordered])
-        return _CGRectMakeZero();
+        return bounds;
 
     var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"];
 
-    if (_CGInsetIsEmpty(bezelInset))
-        return bounds;
-
-    bounds = _CGRectMakeCopy(bounds);
-    bounds.origin.x += bezelInset.left;
-    bounds.origin.y += bezelInset.top;
-    bounds.size.width -= bezelInset.left + bezelInset.right;
-    bounds.size.height -= bezelInset.top + bezelInset.bottom;
-
-    return bounds;
+    return _CGRectInsetByInset(bounds, bezelInset);
 }
 
 - (CGSize)_minimumFrameSize

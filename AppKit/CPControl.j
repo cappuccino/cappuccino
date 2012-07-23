@@ -112,7 +112,7 @@ var CPControlBlackColor = [CPColor blackColor];
                                                 CPTopVerticalTextAlignment,
                                                 CPLineBreakByClipping,
                                                 [CPColor blackColor],
-                                                [CPFont systemFontOfSize:12.0],
+                                                [CPFont systemFontOfSize:CPFontCurrentSystemSize],
                                                 [CPNull null],
                                                 _CGSizeMakeZero(),
                                                 CPImageLeft,
@@ -867,15 +867,14 @@ var CPControlBlackColor = [CPColor blackColor];
 
 @end
 
-var CPControlValueKey           = "CPControlValueKey",
-    CPControlControlStateKey    = @"CPControlControlStateKey",
-    CPControlIsEnabledKey       = "CPControlIsEnabledKey",
-
-    CPControlTargetKey          = "CPControlTargetKey",
-    CPControlActionKey          = "CPControlActionKey",
-    CPControlSendActionOnKey    = "CPControlSendActionOnKey",
-
-    CPControlSendsActionOnEndEditingKey = "CPControlSendsActionOnEndEditingKey",
+var CPControlValueKey                   = @"CPControlValueKey",
+    CPControlControlStateKey            = @"CPControlControlStateKey",
+    CPControlIsEnabledKey               = @"CPControlIsEnabledKey",
+    CPControlTargetKey                  = @"CPControlTargetKey",
+    CPControlActionKey                  = @"CPControlActionKey",
+    CPControlSendActionOnKey            = @"CPControlSendActionOnKey",
+    CPControlFormatterKey               = @"CPControlFormatterKey",
+    CPControlSendsActionOnEndEditingKey = @"CPControlSendsActionOnEndEditingKey",
 
     __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
 
@@ -900,6 +899,8 @@ var CPControlValueKey           = "CPControlValueKey",
 
         [self sendActionOn:[aCoder decodeIntForKey:CPControlSendActionOnKey]];
         [self setSendsActionOnEndEditing:[aCoder decodeBoolForKey:CPControlSendsActionOnEndEditingKey]];
+
+        [self setFormatter:[aCoder decodeObjectForKey:CPControlFormatterKey]];
     }
 
     return self;
@@ -929,6 +930,9 @@ var CPControlValueKey           = "CPControlValueKey",
         [aCoder encodeObject:_action forKey:CPControlActionKey];
 
     [aCoder encodeInt:_sendActionOn forKey:CPControlSendActionOnKey];
+
+    if (_formatter !== nil)
+        [aCoder encodeObject:_formatter forKey:CPControlFormatterKey];
 }
 
 @end

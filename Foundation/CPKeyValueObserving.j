@@ -31,26 +31,107 @@
 
 - (void)willChangeValueForKey:(CPString)aKey
 {
+    if (!aKey)
+        return;
+
+    if (!self[KVOProxyKey])
+    {
+        if (!self._willChangeMessageCounter)
+            self._willChangeMessageCounter = new Object();
+
+        if (!self._willChangeMessageCounter[aKey])
+            self._willChangeMessageCounter[aKey] = 1;
+        else
+            self._willChangeMessageCounter[aKey] += 1;
+    }
 }
 
 - (void)didChangeValueForKey:(CPString)aKey
 {
+    if (!aKey)
+        return;
+
+    if (!self[KVOProxyKey])
+    {
+        if (self._willChangeMessageCounter && self._willChangeMessageCounter[aKey])
+        {
+            self._willChangeMessageCounter[aKey] -= 1;
+
+            if (!self._willChangeMessageCounter[aKey])
+                delete self._willChangeMessageCounter[aKey];
+        }
+        else
+            [CPException raise:@"CPKeyValueObservingException" reason:@"'didChange...' message called without prior call of 'willChange...'"];
+    }
 }
 
 - (void)willChange:(CPKeyValueChange)aChange valuesAtIndexes:(CPIndexSet)indexes forKey:(CPString)aKey
 {
+    if (!aKey)
+        return;
+
+    if (!self[KVOProxyKey])
+    {
+        if (!self._willChangeMessageCounter)
+            self._willChangeMessageCounter = new Object();
+
+        if (!self._willChangeMessageCounter[aKey])
+            self._willChangeMessageCounter[aKey] = 1;
+        else
+            self._willChangeMessageCounter[aKey] += 1;
+    }
 }
 
 - (void)didChange:(CPKeyValueChange)aChange valuesAtIndexes:(CPIndexSet)indexes forKey:(CPString)aKey
 {
+    if (!aKey)
+        return;
+
+    if (!self[KVOProxyKey])
+    {
+        if (self._willChangeMessageCounter && self._willChangeMessageCounter[aKey])
+        {
+            self._willChangeMessageCounter[aKey] -= 1;
+
+            if (!self._willChangeMessageCounter[aKey])
+                delete self._willChangeMessageCounter[aKey];
+        }
+        else
+            [CPException raise:@"CPKeyValueObservingException" reason:@"'didChange...' message called without prior call of 'willChange...'"];
+    }
 }
 
 - (void)willChangeValueForKey:(CPString)aKey withSetMutation:(CPKeyValueSetMutationKind)aMutationKind usingObjects:(CPSet)objects
 {
+    if (!aKey)
+        return;
+
+    if (!self[KVOProxyKey])
+    {
+        if (!self._willChangeMessageCounter)
+            self._willChangeMessageCounter = new Object();
+
+        if (!self._willChangeMessageCounter[aKey])
+            self._willChangeMessageCounter[aKey] = 1;
+        else
+            self._willChangeMessageCounter[aKey] += 1;
+    }
 }
 
 - (void)didChangeValueForKey:(CPString)aKey withSetMutation:(CPKeyValueSetMutationKind)aMutationKind usingObjects:(CPSet)objects
 {
+    if (!self[KVOProxyKey])
+    {
+        if (self._willChangeMessageCounter && self._willChangeMessageCounter[aKey])
+        {
+            self._willChangeMessageCounter[aKey] -= 1;
+
+            if (!self._willChangeMessageCounter[aKey])
+                delete self._willChangeMessageCounter[aKey];
+        }
+        else
+            [CPException raise:@"CPKeyValueObservingException" reason:@"'didChange...' message called without prior call of 'willChange...'"];
+    }
 }
 
 - (void)addObserver:(id)anObserver forKeyPath:(CPString)aPath options:(unsigned)options context:(id)aContext
@@ -804,7 +885,20 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     {
         var level = _nestingForKey[aKey];
         if (!changes || !level)
-            [CPException raise:@"CPKeyValueObservingException" reason:@"'didChange...' message called without prior call of 'willChange...'"];
+        {
+            if (_targetObject._willChangeMessageCounter && _targetObject._willChangeMessageCounter[aKey])
+            {
+                // Close unobserved willChange for a given key.
+                _targetObject._willChangeMessageCounter[aKey] -= 1;
+
+                if (!_targetObject._willChangeMessageCounter[aKey])
+                    delete _targetObject._willChangeMessageCounter[aKey];
+
+                return;
+            }
+            else
+                [CPException raise:@"CPKeyValueObservingException" reason:@"'didChange...' message called without prior call of 'willChange...'"];
+        }
 
         _nestingForKey[aKey] = level - 1;
         if (level - 1 > 0)
@@ -1093,7 +1187,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     var dotIndex = aKeyPath.indexOf('.');
 
     if (dotIndex === CPNotFound)
-        [CPException raise:CPInvalidArgumentException reason:"Created _CPKVOForwardingObserver without compound key path: "+aKeyPath];
+        [CPException raise:CPInvalidArgumentException reason:"Created _CPKVOForwardingObserver without compound key path: " + aKeyPath];
 
     _firstPart = aKeyPath.substring(0, dotIndex);
     _secondPart = aKeyPath.substring(dotIndex + 1);
@@ -1114,7 +1208,14 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 {
     if (aKeyPath === _firstPart)
     {
-        [_observer observeValueForKeyPath:_firstPart ofObject:_object change:changes context:_context];
+        var oldValue = [_value valueForKeyPath:_secondPart],
+            newValue = [_object valueForKeyPath:_firstPart + "." + _secondPart],
+            pathChanges = [CPDictionary dictionaryWithObjectsAndKeys:
+                            newValue ? newValue : [CPNull null],    CPKeyValueChangeNewKey,
+                            oldValue ? oldValue : [CPNull null],    CPKeyValueChangeOldKey,
+                            CPKeyValueChangeSetting,                CPKeyValueChangeKindKey];
+
+        [_observer observeValueForKeyPath:_firstPart + "." + _secondPart ofObject:_object change:pathChanges context:_context];
 
         //since a has changed, we should remove ourselves as an observer of the old a, and observe the new one
         if (_value)
@@ -1128,7 +1229,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     else
     {
         //a is the same, but a.b has changed -- nothing to do but forward this message along
-        [_observer observeValueForKeyPath:_firstPart+"."+aKeyPath ofObject:_object change:changes context:_context];
+        [_observer observeValueForKeyPath:_firstPart + "." + aKeyPath ofObject:_object change:changes context:_context];
     }
 }
 

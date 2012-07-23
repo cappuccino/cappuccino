@@ -90,6 +90,11 @@ var CPScrollDestinationNone             = 0,
     return "tokenfield";
 }
 
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObject:_CGInsetMakeZero() forKey:@"editor-inset"];
+}
+
 - (id)initWithFrame:(CPRect)frame
 {
     if (self = [super initWithFrame:frame])
@@ -179,6 +184,7 @@ var CPScrollDestinationNone             = 0,
     // Give the delegate a chance to confirm, replace or add to the list of tokens being added.
     var delegateApprovedObjects = [self _shouldAddObjects:[CPArray arrayWithObject:token] atIndex:_selectedRange.location],
         delegateApprovedObjectsCount = [delegateApprovedObjects count];
+
     if (delegateApprovedObjects)
     {
         for (var i = 0; i < delegateApprovedObjectsCount; i++)
@@ -313,11 +319,12 @@ var CPScrollDestinationNone             = 0,
 #if PLATFORM(DOM)
 
     var string = [self stringValue],
-        element = [self _inputElement];
+        element = [self _inputElement],
+        font = [self currentValueForThemeAttribute:@"font"];
 
     element.value = nil;
     element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
-    element.style.font = [[self currentValueForThemeAttribute:@"font"] cssString];
+    element.style.font = [font cssString];
     element.style.zIndex = 1000;
 
     switch ([self alignment])
@@ -332,9 +339,9 @@ var CPScrollDestinationNone             = 0,
     var contentRect = [self contentRectForBounds:[self bounds]];
 
     element.style.top = CGRectGetMinY(contentRect) + "px";
-    element.style.left = (CGRectGetMinX(contentRect) - 1) + "px"; // why -1?
+    element.style.left = (CGRectGetMinX(contentRect) - 1) + "px"; // <input> element effectively imposes a 1px left margin
     element.style.width = CGRectGetWidth(contentRect) + "px";
-    element.style.height = CGRectGetHeight(contentRect) + "px";
+    element.style.height = [font defaultLineHeightForFont] + "px";
 
     [_tokenScrollView documentView]._DOMElement.appendChild(element);
 
@@ -472,6 +479,7 @@ var CPScrollDestinationNone             = 0,
 - (id)objectValue
 {
     var objectValue = [];
+
     for (var i = 0, count = [[self _tokens] count]; i < count; i++)
     {
         var token = [[self _tokens] objectAtIndex:i];
@@ -568,6 +576,20 @@ var CPScrollDestinationNone             = 0,
     _shouldScrollTo = CPScrollDestinationRight;
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
+}
+
+- (void)setEnabled:(BOOL)shouldBeEnabled
+{
+    [super setEnabled:shouldBeEnabled];
+
+    // Set the enabled state of the tokens
+    for (var i = 0, count = [[self _tokens] count]; i < count; i++)
+    {
+        var token = [[self _tokens] objectAtIndex:i];
+
+        if ([token respondsToSelector:@selector(setEnabled:)])
+            [token setEnabled:shouldBeEnabled];
+    }
 }
 
 - (void)sendAction:(SEL)anAction to:(id)anObject
@@ -962,7 +984,10 @@ var CPScrollDestinationNone             = 0,
         offset = CPPointMake(contentOrigin.x, contentOrigin.y),
         spaceBetweenTokens = CPSizeMake(2.0, 2.0),
         isEditing = [[self window] firstResponder] == self,
-        tokenToken = [_CPTokenFieldToken new];
+        tokenToken = [_CPTokenFieldToken new],
+        font = [self currentValueForThemeAttribute:@"font"],
+        lineHeight = [font defaultLineHeightForFont],
+        editorInset = [self currentValueForThemeAttribute:@"editor-inset"];
 
     // Get the height of a typical token, or a token token if you will.
     [tokenToken sizeToFit];
@@ -1001,15 +1026,17 @@ var CPScrollDestinationNone             = 0,
             // XXX The "X" here is used to estimate the space needed to fit the next character
             // without clipping. Since different fonts might have different sizes of "X" this
             // solution is not ideal, but it works.
-            textWidth = [(element.value || @"") + "X" sizeWithFont:[self font]].width;
+            textWidth = [(element.value || @"") + "X" sizeWithFont:font].width;
+
             if (useRemainingWidth)
                 textWidth = MAX(contentSize.width - offset.x - 1, textWidth);
         }
 
         _inputFrame = fitAndFrame(textWidth, tokenHeight);
+        _inputFrame.size.height = lineHeight;
 
-        element.style.left = _inputFrame.origin.x + "px";
-        element.style.top = _inputFrame.origin.y + "px";
+        element.style.left = (_inputFrame.origin.x + editorInset.left) + "px";
+        element.style.top = (_inputFrame.origin.y + editorInset.top) + "px";
         element.style.width = _inputFrame.size.width + "px";
         element.style.height = _inputFrame.size.height + "px";
 

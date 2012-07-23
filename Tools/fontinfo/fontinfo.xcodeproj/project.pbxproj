@@ -14,7 +14,6 @@
 /* Begin PBXFileReference section */
 		08FB7796FE84155DC02AAC07 /* fontinfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = fontinfo.m; sourceTree = "<group>"; };
 		08FB779EFE84155DC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		32A70AAB03705E1F00C91783 /* fontinfo_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fontinfo_Prefix.pch; sourceTree = "<group>"; };
 		E11C89CC1277CECE0012609B /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		E18587D81279B93100FB6A47 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		E1C392BB133D513B0092D7CA /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -47,7 +46,6 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				32A70AAB03705E1F00C91783 /* fontinfo_Prefix.pch */,
 				08FB7796FE84155DC02AAC07 /* fontinfo.m */,
 			);
 			name = Source;
@@ -88,6 +86,7 @@
 			buildPhases = (
 				E1D3CF6812AFEE3800CBB79E /* Sources */,
 				E1D3CF6912AFEE3800CBB79E /* Frameworks */,
+				E180EE6415AB52D500757AC7 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -122,6 +121,23 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		E180EE6415AB52D500757AC7 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "if [[ -d \"$CAPP_BUILD\"/Debug/CommonJS/cappuccino/bin ]]; then\n\tcp \"$SYMROOT/$CONFIGURATION/$PRODUCT_NAME\" \"$CAPP_BUILD\"/Debug/CommonJS/cappuccino/bin\nfi\n\nif [[ -d \"$CAPP_BUILD\"/Release/CommonJS/cappuccino/bin ]]; then\n\tcp \"$SYMROOT/$CONFIGURATION/$PRODUCT_NAME\" \"$CAPP_BUILD\"/Release/CommonJS/cappuccino/bin\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		E1D3CF6812AFEE3800CBB79E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -142,8 +158,8 @@
 				CONFIGURATION_TEMP_DIR = "$(CAPP_BUILD)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = fontinfo_Prefix.pch;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_PREFIX_HEADER = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				OBJROOT = "$(CAPP_BUILD)";
@@ -165,21 +181,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
-				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)";
-				CONFIGURATION_TEMP_DIR = "$(CAPP_BUILD)";
-				DEPLOYMENT_LOCATION = NO;
-				DEPLOYMENT_POSTPROCESSING = NO;
-				DSTROOT = "/tmp/$(PROJECT_NAME).dst";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				INSTALL_PATH = "";
-				OBJROOT = "$(CAPP_BUILD)";
 				ONLY_ACTIVE_ARCH = NO;
-				PREBINDING = NO;
 				PRODUCT_NAME = fontinfo;
 				SDKROOT = macosx10.5;
-				SYMROOT = "$(CAPP_BUILD)/Release/CommonJS/cappuccino/bin";
 			};
 			name = Release;
 		};

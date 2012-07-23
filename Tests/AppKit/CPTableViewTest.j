@@ -1,5 +1,7 @@
 @import <AppKit/AppKit.j>
 
+[CPApplication sharedApplication];
+
 @implementation CPTableViewTest : OJTestCase
 {
     CPTableView     tableView;
@@ -22,15 +24,24 @@
 {
     doubleActionReceived = NO;
 
+    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1024.0, 768.0)
+                                                styleMask:CPWindowNotSizable];
+    [[theWindow contentView] addSubview:tableView];
+
     [tableView setTarget:self];
     [tableView setDoubleAction:@selector(doubleAction:)];
 
     // CPEvent with 2 clickCount
-    var dblClk = [CPEvent mouseEventWithType:CPLeftMouseUp location:CGPointMake(50, 50) modifierFlags:0
-                          timestamp:0 windowNumber:0 context:nil eventNumber:0 clickCount:2 pressure:0];
+    var dblClkDown = [CPEvent mouseEventWithType:CPLeftMouseDown location:CGPointMake(50, 50) modifierFlags:0
+                          timestamp:0 windowNumber:[theWindow windowNumber] context:nil eventNumber:0 clickCount:2 pressure:0],
+        dblClkUp = [CPEvent mouseEventWithType:CPLeftMouseUp location:CGPointMake(50, 50) modifierFlags:0
+                          timestamp:0 windowNumber:[theWindow windowNumber] context:nil eventNumber:0 clickCount:2 pressure:0];
 
-    [[CPApplication sharedApplication] sendEvent:dblClk];
-    [tableView trackMouse:dblClk];
+    [[CPApplication sharedApplication] sendEvent:dblClkDown];
+    [tableView trackMouse:dblClkDown];
+
+    [[CPApplication sharedApplication] sendEvent:dblClkUp];
+    [tableView trackMouse:dblClkUp];
 
     [self assertTrue:doubleActionReceived];
 }
@@ -217,6 +228,35 @@
     [self assert:2 * visibleRows  equals:[allViews count] message:"only as many data views as necessary should be present (2)"];
 }
 
+- (void)testContentBinding
+{
+    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0, 0, 200, 150)
+                                                styleMask:CPWindowNotSizable],
+        contentBindingTable = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
+        tableColumn = [[CPTableColumn alloc] initWithIdentifier:@"A"],
+        delegate = [ContentBindingTableDelegate new];
+
+    [contentBindingTable addTableColumn:tableColumn];
+    [delegate setTester:self];
+    [contentBindingTable setDelegate:delegate];
+
+    [delegate setTableEntries:[[@"A1", @"B1"], [@"A2", @"B2"], [@"A3", @"B3"]]];
+    [contentBindingTable bind:@"content" toObject:delegate withKeyPath:@"tableEntries" options:nil];
+
+    // The following should also work:
+    //var ac = [[CPArrayController alloc] initWithContent:[delegate tableEntries]];
+    //[contentBindingTable bind:@"content" toObject:ac withKeyPath:@"arrangedObjects" options:nil];
+
+    [[theWindow contentView] addSubview:contentBindingTable];
+    [theWindow makeFirstResponder:contentBindingTable];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    // Set the model again with different values
+    [delegate setTableEntries:[[@"C1", @"D1"], [@"C2", @"D2"], [@"C3", @"D3"]]];
+    [contentBindingTable reloadData];
+}
+
 @end
 
 @implementation TestDataSource : CPObject
@@ -248,6 +288,21 @@
 - (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)aTableColumn row:(int)anRow
 {
     return YES;
+}
+
+@end
+
+@implementation ContentBindingTableDelegate : CPObject
+{
+    // For the purpose of this test, the delegate contains the model (!).
+    CPArray tableEntries @accessors;
+    CPTableViewTest tester @accessors;
+}
+
+- (void)tableView:(CPTableView)aTableView willDisplayView:(CPView)aView forTableColumn:(CPTableColumn)tableColumn row:(int)row
+{
+    // Make sure each view contains the full row in its objectValue
+    [tester assert:tableEntries[row] equals:[aView objectValue]];
 }
 
 @end

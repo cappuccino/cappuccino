@@ -1,0 +1,30 @@
+NAME
+    imagesize -- retrieve size information for an image
+
+SYNOPSIS
+    imagesize [-n] path
+
+DESCRIPTION
+    imagesize is a tiny utility that returns the size of an image.
+    The path may be either an absolute path or a path relative to the current directory.
+
+    If the -n option is passed, the output will not be terminated with a linefeed.
+
+EXIT STATUS
+    imagesize exits with a return status of zero if there are no errors.
+    imagesize exits with a return status of 1 if any arguments are invalid, or a status of 2 if the image
+    cannot be found or the file at the given path is not a valid image.
+
+OUTPUT
+    imagesize outputs a stringified JSON object with the following structure:
+
+    {
+        width:<int>,
+        height:<int>
+    }
+
+    If -n is not passed, the JSON is terminated with a linefeed. The fields of the object are as follows:
+
+AUTHORS
+    Aparajita Fishman, Victory-Heart Productions
+    http://www.aparajita.com
