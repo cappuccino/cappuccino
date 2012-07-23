@@ -3651,7 +3651,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     {
         var o = objects[count];
         if ([o isKindOfClass:[CPView class]])
+        {
+            [o setIdentifier:anIdentifier];
             return o;
+        }
     }
 
     return nil;
