@@ -408,7 +408,7 @@
         malte = [CPDictionary dictionaryWithJSObject:{@"name": @"Malte"}],
         johan = [CPDictionary dictionaryWithJSObject:{@"name": @"Johan"}],
         menuObjects = [martin, malte, johan];
-    
+
     [arrayController setContent:menuObjects];
 
     [button bind:CPContentBinding toObject:arrayController withKeyPath:@"arrangedObjects" options:nil];
@@ -417,6 +417,35 @@
     [button bind:CPContentValuesBinding toObject:arrayController withKeyPath:@"arrangedObjects.name" options:options];
 
     [self assert:@"Transformed-Malte" equals:[[[self button] itemAtIndex:1] title]];
+}
+
+- (void)testSelectedIndexBindingWithInsertsNullOption
+{
+    var arrayController = [[CPArrayController alloc] init],
+        testObject = [CPMutableDictionary dictionary],
+        martin = @"Martin",
+        malte = @"Malte",
+        johan = @"Johan",
+        menuObjects = [martin, malte, johan],
+        insertsNullPlaceholderOption = [CPDictionary dictionaryWithObjects:[YES, @"Null Placeholder"] forKeys:[CPInsertsNullPlaceholderBindingOption, CPNullPlaceholderBindingOption]];
+
+    [arrayController setContent:menuObjects];
+    [button bind:CPContentBinding toObject:arrayController withKeyPath:@"arrangedObjects" options:insertsNullPlaceholderOption];
+    [button bind:CPSelectedIndexBinding toObject:testObject withKeyPath:@"index" options:nil];
+
+    [[self button] selectItemWithTitle:@"Martin"];
+    [[self button] sendAction:@selector(actionTest:) to:self]; // This has to be done to trigger the reverse set of the binding
+    [self assert:0 equals:[testObject objectForKey:@"index"]];
+    [[self button] selectItemWithTitle:@"Malte"];
+    [[self button] sendAction:@selector(actionTest:) to:self];
+    [self assert:1 equals:[testObject objectForKey:@"index"]];
+    [[self button] selectItemWithTitle:@"Johan"];
+    [[self button] sendAction:@selector(actionTest:) to:self];
+    [self assert:2 equals:[testObject objectForKey:@"index"]];
+
+    [[self button] selectItemWithTitle:@"Null Placeholder"];
+    [[self button] sendAction:@selector(actionTest:) to:self];
+    [self assert:-1 equals:[testObject objectForKey:@"index"]];
 }
 
 - (void)actionTest:(id)sender
