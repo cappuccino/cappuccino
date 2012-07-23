@@ -162,7 +162,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
 - (BOOL)instantiateCibWithOwner:(id)anOwner topLevelObjects:(CPArray)topLevelObjects
 {
-    return [self instantiateCibWithExternalNameTable:[CPDictionary dictionaryWithObjectsAndKeys:anOwner, CPCibOwner, topLevelObjects, CPCibTopLevelObjects]];
+    return [self instantiateCibWithExternalNameTable:[CPDictionary dictionaryWithObjects:[anOwner, topLevelObjects] forKeys:[CPCibOwner, CPCibTopLevelObjects]]];
 }
 
 @end
