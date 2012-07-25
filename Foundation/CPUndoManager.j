@@ -35,6 +35,7 @@ var CPUndoManagerNormal     = 0,
 
 CPUndoManagerCheckpointNotification         = @"CPUndoManagerCheckpointNotification";
 CPUndoManagerDidOpenUndoGroupNotification   = @"CPUndoManagerDidOpenUndoGroupNotification";
+CPUndoManagerDidCloseUndoGroupNotification  = @"CPUndoManagerDidCloseUndoGroupNotification";
 CPUndoManagerDidRedoChangeNotification      = @"CPUndoManagerDidRedoChangeNotification";
 CPUndoManagerDidUndoChangeNotification      = @"CPUndoManagerDidUndoChangeNotification";
 CPUndoManagerWillCloseUndoGroupNotification = @"CPUndoManagerWillCloseUndoGroupNotification";
@@ -490,6 +491,10 @@ if (_currentGroup == nil)
 
         if (_levelsOfUndo > 0 && stack.length > _levelsOfUndo)
             stack.splice(0, 1);
+
+        [defaultCenter
+            postNotificationName:CPUndoManagerDidCloseUndoGroupNotification
+                          object:self];
     }
 
     // Nested Undo Grouping
