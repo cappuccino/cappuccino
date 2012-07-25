@@ -288,6 +288,9 @@ function descriptionWithoutEntity(aString)
 {
     [self assert:[_set lastIndex] equals:19];
     [self assert:[[CPIndexSet indexSet] lastIndex] equals:CPNotFound];
+
+    var singleIndexSet = [CPIndexSet indexSetWithIndex:3];
+    [self assert:3 equals:[singleIndexSet lastIndex]];
 }
 /*
 - (void)testAddSpeed
