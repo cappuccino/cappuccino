@@ -918,6 +918,7 @@ var themedButtonValues = nil,
         // with border
         [@"bezel-inset",        CGInsetMakeZero(),                  CPThemeStateBezeled],
         [@"content-inset",      CGInsetMake(8.0, 7.0, 7.0, 8.0),    CPThemeStateBezeled],
+        [@"content-inset",      CGInsetMake(8.0, 7.0, 7.0, 9.0),    CPThemeStateBezeled | CPThemeStateEditing],
 
         [@"text-color",         textDisabledColor,                  CPThemeStateBezeled | CPThemeStateDisabled],
         [@"text-color",         placeholderColor,                   CPTextFieldStatePlaceholder],
