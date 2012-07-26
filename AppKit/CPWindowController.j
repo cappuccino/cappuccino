@@ -181,8 +181,7 @@
 
         if (!_window)
         {
-            var reason = [CPString stringWithFormat:@"Window for %@ could not be loaded from Cib or no window specified. \
-                                                        Override loadWindow to load the window manually.", self];
+            var reason = [CPString stringWithFormat:@"Window for %@ could not be loaded from Cib or no window specified. Override loadWindow to load the window manually.", self];
 
             [CPException raise:CPInternalInconsistencyException reason:reason];
         }
@@ -336,18 +335,21 @@
     if (!_viewControllerContainerView && !aView)
         return;
 
-    var viewControllerView = [[self viewController] view],
+    var viewController = [self viewController],
+        viewControllerView = [viewController isViewLoaded] ? [viewController view] : nil,
         contentView = [[self window] contentView];
 
     if (aView)
     {
         [aView setFrame:[contentView frame]];
         [aView setAutoresizingMask:[contentView autoresizingMask]];
+
         if (viewControllerView)
         {
             [viewControllerView removeFromSuperview];
             [aView addSubview:viewControllerView];
         }
+
         [[self window] setContentView:aView];
     }
     else if (viewControllerView)
@@ -379,11 +381,12 @@
         return;
 
     var containerView = [self viewControllerContainerView],
-        newView = [aViewController view];
+        newView = [aViewController isViewLoaded] ? [aViewController view] : nil;
 
     if (containerView)
     {
-        var oldView = [_viewController view];
+        var oldView = [_viewController isViewLoaded] ? [_viewController view] : nil;
+
         if (oldView)
         {
             [newView setFrame:[oldView frame]];
@@ -408,6 +411,7 @@
     {
         var view = [[CPView alloc] init],
             contentView = [[self window] contentView];
+
         [view setFrame:[contentView frame]];
         [view setAutoresizingMask:[contentView autoresizingMask]];
         [[self window] setContentView:view]
