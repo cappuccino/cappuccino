@@ -1870,6 +1870,9 @@ NOT YET IMPLEMENTED
 */
 - (CPInteger)rowOrColumn:(BOOL)rowOrColumn forView:(CPView)aView
 {
+    if (![aView isKindOfClass:[CPView class]])
+        return -1;
+
     var cellView = aView,
         contentView = [[self window] contentView];
 
@@ -4821,10 +4824,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     var hit = [super hitTest:aPoint];
 
-    if (!hit || ![hit isKindOfClass:[CPTextField class]] || [self isRowSelected:[self rowForView:hit]])
-        return hit;
+    if ([[CPApp currentEvent] type] == CPLeftMouseDown && [hit acceptsFirstResponder] && ![self isRowSelected:[self rowForView:hit]])
+        return self;
 
-    return self;
+    return hit;
 }
 
 - (void)_startObservingFirstResponder
