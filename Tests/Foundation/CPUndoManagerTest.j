@@ -52,7 +52,6 @@
     // The default run loop undo grouping won't be closed until the next run loop cycle.
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
-    CPLog.error("receivedNotifications: %@", receivedNotifications);
     [self assert:CPUndoManagerDidCloseUndoGroupNotification equals:[receivedNotifications[0] name]];
 
     [[CPNotificationCenter defaultCenter] removeObserver:self];
