@@ -111,6 +111,16 @@ var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
     CPLogConsole(_cmd);
 }
 
+- (IBAction)_textFieldNotBezeledAction:(id)sender
+{
+    CPLogConsole(_cmd + " value=" + [sender stringValue]);
+}
+
+- (IBAction)_textFieldBezeledAction:(id)sender
+{
+    CPLogConsole(_cmd + " value=" + [sender stringValue]);
+}
+
 - (IBAction)trace:(id)sender
 {
     if ([sender state] == CPOnState)

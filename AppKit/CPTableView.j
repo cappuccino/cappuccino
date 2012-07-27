@@ -3652,11 +3652,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     var count = objects.length;
     while (count--)
     {
-        var o = objects[count];
-        if ([o isKindOfClass:[CPView class]])
+        var obj = objects[count];
+        if ([obj isKindOfClass:[CPView class]])
         {
-            [o setIdentifier:anIdentifier];
-            return o;
+            [obj setIdentifier:anIdentifier];
+            return obj;
         }
     }
 
@@ -4842,17 +4842,18 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 - (void)_resignFirstResponderIfNeededForView:(CPView)aDataView atRow:(int)row column:(int)column
 {
-    if (row == _editingRow && column == _editingColumn)
+    if (row === _editingRow && column === _editingColumn)
     {
-        var aWindow = [self window],
-            responder = [aWindow firstResponder];
+        var theWindow = [self window],
+            responder = [theWindow firstResponder];
 
         if ([responder isKindOfClass:[CPView class]] && [responder isDescendantOf:aDataView])
         {
-           [self _stopObservingFirstResponder];
-           // FIXME: we end editing on a non-visible view. This may send its action, is that what we want ?
-           [aWindow makeFirstResponder:self];
-           [self _startObservingFirstResponder];
+            var action = [self _disableActionIfExists:responder];
+            [theWindow makeFirstResponder:self];
+
+            if (action)
+                [responder setAction:action];
         }
     }
 }
@@ -4863,19 +4864,14 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     _editingRow = [self rowForView:responder];
     _editingColumn = [self columnForView:responder];
-    
-// The following has no effect due to issue #210 (CPTextField drawsbackground & textBackgroundColor)
-// Uncomment when fixed 
-/*
-    if (_editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && ![responder drawsBackground])
+
+    if (_editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && ![responder isBezeled])
     {
-        [responder setTextFieldBackgroundColor:[CPColor whiteColor]];
-        [responder setDrawsBackground:YES];
+        [responder setBezeled:YES];
         [self _registerForEndEditingNote:responder];
     }
-*/
 }
-/*
+
 - (void)_registerForEndEditingNote:(CPView)aTextField
 {
     [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_textFieldEditingDidEnd:) name:CPControlTextDidEndEditingNotification object:aTextField];
@@ -4888,11 +4884,27 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 - (void)_textFieldEditingDidEnd:(CPNotification)aNote
 {
+// FIXME: When you edit a text field and hit enter without any text mofification, the CPControlTextDidEndEditingNotification is NOT sent. This is a bug in CPTextField or CPControl according to cocoa.
     var textField = [aNote object];
-    [textField setDrawsBackground:NO];
+
     [self _unregisterForEndEditingNote:textField];
+    [textField setBezeled:NO];
+
+    var action = [self _disableActionIfExists:textField];
+    [textField resignFirstResponder];
+    [textField setAction:action];
 }
-*/
+
+- (SEL)_disableActionIfExists:(CPView)aView
+{
+// TODO: We disable action to prevent it from beeing sent twice when we resign the FR inside a textEndEditing notification. Check if this is due to a bug in CPTextField.
+    var action = nil;
+    if ([aView respondsToSelector:@selector(action)] && (action = [aView action]))
+        [aView setAction:nil];
+
+    return action;
+}
+
 /*!
     @ignore
 */
@@ -4921,7 +4933,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         if ([self _sendDelegateDeleteKeyPressed])
             return;
     }
-    
+
     [super keyDown:anEvent];
 }
 
