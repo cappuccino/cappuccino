@@ -98,6 +98,8 @@ CPTableViewReverseSequentialColumnAutoresizingStyle = 3;
 CPTableViewLastColumnOnlyAutoresizingStyle = 4;
 CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
+var CUSTOM_CIB_FAILDED_TO_LOAD = {};
+
 #define NUMBER_OF_COLUMNS() (_tableColumns.length)
 #define UPDATE_COLUMN_RANGES_IF_NECESSARY() if (_dirtyTableColumnRangeIndex !== CPNotFound) [self _recalculateTableColumnRanges];
 
@@ -3639,9 +3641,15 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (CPView)_unarchiveViewWithIdentifier:(CPString)anIdentifier owner:(id)anOwner
 {
     var cib = [_archivedDataViews objectForKey:anIdentifier];
+    
+    if (!cib && !CUSTOM_CIB_FAILDED_TO_LOAD[anIdentifier])
+        cib = [[CPCib alloc] initWithCibNamed:anIdentifier bundle:[CPBundle mainBundle]];
 
     if (!cib)
+    {
+        CUSTOM_CIB_FAILDED_TO_LOAD[anIdentifier] = YES;
         return nil;
+    }
 
     var objects = [],
         load = [cib instantiateCibWithOwner:anOwner topLevelObjects:objects];

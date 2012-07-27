@@ -7,6 +7,8 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <AppKit/CPGraphicsContext.j>
+
 @import "../CPTrace.j"
 
 var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
@@ -47,18 +49,29 @@ var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
     [self setContent:theRows];
 }
 
+- (CPView)makeOrangeView
+{
+    var view = [[CustomView alloc] initWithFrame:CGRectMakeZero()];
+    [view setIdentifier:@"Orange"];
+    
+    return view;
+}
+
 - (void)tableView:(CPTableView)aTableView dataViewForTableColumn:(CPTableColumn)aTableColumn row:(int)aRow
 {
     var identifier = [aTableColumn identifier];
-
     if (identifier == @"multiple")
         identifier = [[content objectAtIndex:aRow] objectForKey:@"identifier"];
-
+    
     var view = [aTableView makeViewWithIdentifier:identifier owner:self];
 
-    if (view == nil)
-        view = [[CPTableCellView alloc] initWithFrame:CGRectMakeZero()];
-
+    if (identifier == "Orange")
+    {
+        if (view == nil)
+            view = [self makeOrangeView];
+        [[view textField] setStringValue:aRow]; 
+    }
+    
     return view;
 }
 
@@ -141,6 +154,34 @@ var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
     }
     else
         CPTraceStop(@"CPTableView", @"_loadDataViewsInRows:columns:");
+}
+
+@end
+
+@implementation CustomView : CPView
+{
+    id objectValue @accessors;
+    CPTextField textField @accessors;
+}
+
+- (id)initWithFrame:(CGRect)aFrame
+{
+    self = [super initWithFrame:CGRectMake(0, 0, 50, 50)];
+    
+    textField = [[CPTextField alloc] initWithFrame:CGRectMake(5, 5, 40, 40)];
+    [textField setFont:[CPFont systemFontOfSize:30]];
+    [textField setAutoresizingMask:CPViewMinXMargin|CPViewMaxXMargin|CPViewMinYMargin|CPViewMaxYMargin];
+    [self addSubview:textField];
+    
+    return self;
+}
+
+- (void)drawRect:(CGRect)aRect
+{
+    [[CPColor orangeColor] set];
+    
+    var ctx = [[CPGraphicsContext currentContext] graphicsPort];
+    CGContextFillRect(ctx, aRect);
 }
 
 @end
