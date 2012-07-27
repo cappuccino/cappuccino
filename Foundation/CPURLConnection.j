@@ -101,16 +101,19 @@ var CPURLConnectionDelegate = nil;
         var request = new CFHTTPRequest();
 
         request.open([aRequest HTTPMethod], [[aRequest URL] absoluteString], NO);
-
+        
         var fields = [aRequest allHTTPHeaderFields],
             key = nil,
             keys = [fields keyEnumerator];
-
+        
         while ((key = [keys nextObject]) !== nil)
             request.setRequestHeader(key, [fields objectForKey:key]);
-
+        
         request.send([aRequest HTTPBody]);
-
+        
+        if (!request.success())
+            return nil;
+        
         return [CPData dataWithRawString:request.responseText()];
     }
     catch (anException)
