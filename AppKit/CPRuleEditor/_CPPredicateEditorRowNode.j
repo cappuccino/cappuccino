@@ -14,25 +14,21 @@
 
 + (id)rowNodeFromTree:(id)aTree
 {
-    var mapTable = {};
-    return [_CPPredicateEditorRowNode _rowNodeFromTree:aTree withTemplateTable:mapTable];
+    return [_CPPredicateEditorRowNode _rowNodeFromTree:aTree withTemplateTable:{}];
 }
 
 + (id)_rowNodeFromTree:(id)aTree withTemplateTable:(id)templateTable
 {
-    var node,
-        views,
+    var views,
         copiedContainer;
 
-    node = [[_CPPredicateEditorRowNode alloc] init];
-    node.tree = aTree;
+    var uuid = [[aTree template] UID],
+        cachedNode = templateTable[uuid],
+        node = [[_CPPredicateEditorRowNode alloc] init];
 
-    var template = [aTree template],
-        uuid = [template UID];
+    [node setTree:aTree];
 
-    var cachedNode = templateTable[uuid];
-
-    if (cachedNode == nil)
+    if (!cachedNode)
     {
         views = [CPMutableArray array];
         copiedContainer = [CPMutableArray array];
@@ -44,8 +40,8 @@
         copiedContainer = [cachedNode copiedTemplateContainer];
     }
 
-    node.templateViews = views;
-    node.copiedTemplateContainer = copiedContainer;
+    [node setTemplateViews:views];
+    [node setCopiedTemplateContainer:copiedContainer];
 
     var nodeChildren = [CPMutableArray array],
         treeChildren = [aTree children],
@@ -66,7 +62,9 @@
 
 - (BOOL)applyTemplate:(id)template withViews:(id)views forOriginalTemplate:(id)originalTemplate
 {
-    var t = [tree template];
+    var t = [tree template],
+        count = [children count];
+
     if (t !== template)
     {
         [templateViews setArray:views];
@@ -74,8 +72,7 @@
         [copiedTemplateContainer addObject:template];
     }
 
-    var count = [children count];
-    for (var i; i < count; i++)
+    for (var i = 0; i < count; i++)
         [children[i] applyTemplate:template withViews:views forOriginalTemplate:originalTemplate];
 }
 
@@ -89,9 +86,8 @@
 
 - (void)copyTemplateIfNecessary
 {
-    if ([copiedTemplateContainer count] == 0)
+    if ([copiedTemplateContainer count] === 0)
     {
-        CPLogConsole("COPYING TEMPLATE");
         var copy = [[tree template] copy];
         [copiedTemplateContainer addObject:copy];
         [templateViews addObjectsFromArray:[copy templateViews]];
@@ -118,7 +114,8 @@
 - (id)displayValue
 {
     var title = [self title];
-    if (title != nil)
+
+    if (title !== nil)
         return title;
 
     return [self templateView];

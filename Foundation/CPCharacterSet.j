@@ -241,7 +241,7 @@ var CPCharacterSetInvertedKey = @"CPCharacterSetInvertedKey";
     var enu = [_ranges objectEnumerator],
         range;
 
-    while (range = [enu nextObject])
+    while ((range = [enu nextObject]) !== nil)
     {
         if (CPLocationInRange(c, range))
             return !_inverted;
@@ -255,7 +255,7 @@ var CPCharacterSetInvertedKey = @"CPCharacterSetInvertedKey";
     // FIXME: range is undefined... don't know what's supposed to be going on here.
     // the highest Unicode plane we reach.
     // (There are 65536 code points in each plane.)
-    var maxPlane = Math.floor((range.start + range.length - 1) / 65536); // FIXME: should iterate _ranges
+    var maxPlane = FLOOR((range.start + range.length - 1) / 65536); // FIXME: should iterate _ranges
 
     return (plane <= maxPlane);
 }

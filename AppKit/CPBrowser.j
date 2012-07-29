@@ -258,7 +258,7 @@
         var column = [[CPTableColumn alloc] initWithIdentifier:@"Image"],
             view = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
 
-        [view setImageScaling:CPScaleProportionally];
+        [view setImageScaling:CPImageScaleProportionallyDown];
 
         [column setDataView:view];
         [column setResizingMask:CPTableColumnNoResizing];
@@ -901,6 +901,12 @@ var _CPBrowserResizeControlBackgroundImage = nil;
     [_browser _column:_index clickedRow:[selectedIndexes count] === 1 ? [selectedIndexes firstIndex] : -1];
 }
 
+- (void)tableViewSelectionDidChange:(CPNotification)aNotification
+{
+    var selectedIndexes = [[aNotification object] selectedRowIndexes];
+    [_browser selectRowIndexes:selectedIndexes inColumn:_index];
+}
+
 - (id)childAtIndex:(unsigned)index
 {
     return [_delegate browser:_browser child:index ofItem:_item];
@@ -982,7 +988,7 @@ var _CPBrowserResizeControlBackgroundImage = nil;
         isHighlighted = [self themeState] & CPThemeStateSelectedDataView;
 
     [imageView setImage: _isLeaf ? (isHighlighted ? _highlightedBranchImage : _branchImage) : nil];
-    [imageView setImageScaling:CPScaleNone];
+    [imageView setImageScaling:CPImageScaleNone];
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder

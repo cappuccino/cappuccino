@@ -71,8 +71,6 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 
     BOOL                        _isDisplayedWhenStoppedSet;
     BOOL                        _isDisplayedWhenStopped;
-
-    CPView                      _barView;
 }
 
 /*
@@ -80,7 +78,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 */
 + (void)initialize
 {
-    if (self != [CPProgressIndicator class])
+    if (self !== [CPProgressIndicator class])
         return;
 
     var bundle = [CPBundle bundleForClass:self];
@@ -88,9 +86,9 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     CPProgressIndicatorSpinningStyleColors = [];
 
     CPProgressIndicatorSpinningStyleColors[CPMiniControlSize]       = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:
-        [bundle pathForResource:@"CPProgressIndicator/CPProgressIndicatorSpinningStyleRegular.gif"] size:CGSizeMake(64.0, 64.0)]];
+        [bundle pathForResource:@"CPProgressIndicator/CPProgressIndicatorSpinningStyleMini.gif"] size:CGSizeMake(16.0, 16.0)]];
     CPProgressIndicatorSpinningStyleColors[CPSmallControlSize]      = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:
-        [bundle pathForResource:@"CPProgressIndicator/CPProgressIndicatorSpinningStyleRegular.gif"] size:CGSizeMake(64.0, 64.0)]];
+        [bundle pathForResource:@"CPProgressIndicator/CPProgressIndicatorSpinningStyleSmall.gif"] size:CGSizeMake(32.0, 32.0)]];
     CPProgressIndicatorSpinningStyleColors[CPRegularControlSize]    = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:
         [bundle pathForResource:@"CPProgressIndicator/CPProgressIndicatorSpinningStyleRegular.gif"] size:CGSizeMake(64.0, 64.0)]];
 
@@ -122,11 +120,11 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 
     // Bar Style
     var prefixes = [
-        CPProgressIndicatorClassName + @"BezelBorder" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle],
-        CPProgressIndicatorClassName + @"Bar" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle],
-        CPProgressIndicatorClassName + @"BezelBorder" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorHUDBarStyle],
-        CPProgressIndicatorClassName + @"Bar" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorHUDBarStyle]
-    ];
+            CPProgressIndicatorClassName + @"BezelBorder" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle],
+            CPProgressIndicatorClassName + @"Bar" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle],
+            CPProgressIndicatorClassName + @"BezelBorder" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorHUDBarStyle],
+            CPProgressIndicatorClassName + @"Bar" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorHUDBarStyle]
+        ];
 
     for (var i = 0, count = prefixes.length; i < count; i++)
     {
@@ -410,27 +408,38 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     if (_style == CPProgressIndicatorSpinningStyle)
         return;
 
-    if (!_barView)
-    {
-        _barView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 0.0, 16.0)];
-        [self addSubview:_barView];
-    }
+    var barView = [self layoutEphemeralSubviewNamed:"bar-view"
+                                         positioned:CPWindowBelow
+                    relativeToEphemeralSubviewNamed:nil];
 
-    [_barView setBackgroundColor:_CPControlThreePartImagePattern(
+    [barView setBackgroundColor:_CPControlThreePartImagePattern(
         NO,
         CPProgressIndicatorStyleSizes,
         CPProgressIndicatorClassName,
         @"Bar",
         CPProgressIndicatorStyleIdentifiers[_style],
         _CPControlIdentifierForControlSize(_controlSize))];
+}
 
-    var width = CGRectGetWidth([self bounds]),
-        barWidth = width * ((_doubleValue - _minValue) / (_maxValue - _minValue));
+- (CPView)createEphemeralSubviewNamed:(CPString)aName
+{
+    return [[CPView alloc] initWithFrame:_CGRectMakeZero()];
+}
 
-    if (barWidth > 0.0 && barWidth < 4.0)
-        barWidth = 4.0;
+- (CGRect)rectForEphemeralSubviewNamed:(CPString)aViewName
+{
+    if (aViewName === @"bar-view" && _style !== CPProgressIndicatorSpinningStyle)
+    {
+        var width = CGRectGetWidth([self bounds]),
+            barWidth = width * ((_doubleValue - _minValue) / (_maxValue - _minValue));
 
-    [_barView setFrameSize:CGSizeMake(barWidth, 16.0)];
+        if (barWidth > 0.0 && barWidth < 4.0)
+            barWidth = 4.0;
+
+        return _CGRectMake(0, 0, barWidth, 16.0);
+    }
+
+    return nil;
 }
 
 /* @ignore */
@@ -440,9 +449,10 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     {
         if (_style == CPProgressIndicatorSpinningStyle)
         {
-            [_barView removeFromSuperview];
-
-            _barView = nil;
+            // This will cause the bar view to go away due to having a nil rect when _style == CPProgressIndicatorSpinningStyle.
+            [self layoutEphemeralSubviewNamed:"bar-view"
+                                   positioned:CPWindowBelow
+              relativeToEphemeralSubviewNamed:nil];
 
             [self setBackgroundColor:CPProgressIndicatorSpinningStyleColors[_controlSize]];
         }
@@ -477,10 +487,12 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
         _doubleValue                = [aCoder decodeObjectForKey:@"_doubleValue"];
         _controlSize                = [aCoder decodeObjectForKey:@"_controlSize"];
         _isIndeterminate            = [aCoder decodeObjectForKey:@"_isIndeterminate"];
-        _style                      = [aCoder decodeObjectForKey:@"_style"];
+        _style                      = [aCoder decodeIntForKey:@"_style"];
         _isAnimating                = [aCoder decodeObjectForKey:@"_isAnimating"];
         _isDisplayedWhenStoppedSet  = [aCoder decodeObjectForKey:@"_isDisplayedWhenStoppedSet"];
         _isDisplayedWhenStopped     = [aCoder decodeObjectForKey:@"_isDisplayedWhenStopped"];
+
+        [self updateBackgroundColor];
     }
 
     return self;
@@ -488,14 +500,19 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
+    // Don't encode the background colour. It can be recreated based on the flags and if encoded causes hardcoded
+    // image paths in the cib while just wasting space.
+    var backgroundColor = [self backgroundColor];
+    [self setBackgroundColor:nil];
     [super encodeWithCoder:aCoder];
+    [self setBackgroundColor:backgroundColor];
 
     [aCoder encodeObject:_minValue forKey:@"_minValue"];
     [aCoder encodeObject:_maxValue forKey:@"_maxValue"];
     [aCoder encodeObject:_doubleValue forKey:@"_doubleValue"];
     [aCoder encodeObject:_controlSize forKey:@"_controlSize"];
     [aCoder encodeObject:_isIndeterminate forKey:@"_isIndeterminate"];
-    [aCoder encodeObject:_style forKey:@"_style"];
+    [aCoder encodeInt:_style forKey:@"_style"];
     [aCoder encodeObject:_isAnimating forKey:@"_isAnimating"];
     [aCoder encodeObject:_isDisplayedWhenStoppedSet forKey:@"_isDisplayedWhenStoppedSet"];
     [aCoder encodeObject:_isDisplayedWhenStopped forKey:@"_isDisplayedWhenStopped"];

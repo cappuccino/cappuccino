@@ -8,7 +8,7 @@ task ("build", function()
 {
     if (executableExists("xcodebuild"))
     {
-        var args = "-alltargets -configuration " + $CONFIGURATION;
+        var args = "-alltargets -configuration Release";
 
         if (xcodebuildHasTenPointFiveSDK())
             args = "-sdk macosx10.5 " + args;

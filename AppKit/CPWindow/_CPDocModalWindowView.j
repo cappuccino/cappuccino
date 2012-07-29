@@ -24,7 +24,7 @@ var _CPStandardWindowViewBodyBackgroundColor = nil;
     if (self)
     {
         var theClass = [self class],
-              bounds = [self bounds];
+            bounds = [self bounds];
 
        _bodyView = [[CPView alloc] initWithFrame:_CGRectMake(0.0, 0.0, _CGRectGetWidth(bounds), _CGRectGetHeight(bounds))];
 
@@ -56,7 +56,8 @@ var _CPStandardWindowViewBodyBackgroundColor = nil;
 
 - (void)_enableSheet:(BOOL)enable
 {
-	// do nothing, already a sheet
+    // do nothing, already a sheet
 }
 
 @end
+

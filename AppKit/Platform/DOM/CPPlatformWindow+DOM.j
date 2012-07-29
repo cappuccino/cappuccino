@@ -192,6 +192,8 @@ var ModifierKeyCodes = [
     ],
     supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
+var resizeTimer = nil;
+
 @implementation CPPlatformWindow (DOM)
 
 - (id)_init
@@ -661,7 +663,7 @@ var ModifierKeyCodes = [
 - (void)keyEvent:(DOMEvent)aDOMEvent
 {
     var event,
-        timestamp = aDOMEvent.timeStamp || new Date(),
+        timestamp = [CPEvent currentTimestamp],
         sourceElement = aDOMEvent.target || aDOMEvent.srcElement,
         windowNumber = [[CPApp keyWindow] windowNumber],
         modifierFlags = (aDOMEvent.shiftKey ? CPShiftKeyMask : 0) |
@@ -871,11 +873,11 @@ var ModifierKeyCodes = [
 {
     if ([self _validateCopyCutOrPasteEvent:aDOMEvent flags:CPPlatformActionKeyMask] && !_ignoreNativeCopyOrCutEvent)
     {
-        //we have to send out a fake copy or cut event so that we can force the copy/cut mechanisms to take place
+        // we have to send out a fake copy or cut event so that we can force the copy/cut mechanisms to take place
         var cut = aDOMEvent.type === "beforecut",
             keyCode = cut ? CPKeyCodes.X : CPKeyCodes.C,
             characters = cut ? "x" : "c",
-            timestamp = aDOMEvent.timeStamp ? aDOMEvent.timeStamp : new Date(),
+            timestamp = [CPEvent currentTimestamp],  // fake event, might as well use current timestamp
             windowNumber = [[CPApp keyWindow] windowNumber],
             modifierFlags = CPPlatformActionKeyMask;
 
@@ -1008,7 +1010,7 @@ var ModifierKeyCodes = [
     var deltaX = 0.0,
         deltaY = 0.0,
         windowNumber = 0,
-        timestamp = aDOMEvent.timeStamp ? aDOMEvent.timeStamp : new Date(),
+        timestamp = [CPEvent currentTimestamp],
         modifierFlags = (aDOMEvent.shiftKey ? CPShiftKeyMask : 0) |
                         (aDOMEvent.ctrlKey ? CPControlKeyMask : 0) |
                         (aDOMEvent.altKey ? CPAlternateKeyMask : 0) |
@@ -1083,6 +1085,21 @@ var ModifierKeyCodes = [
 
 - (void)resizeEvent:(DOMEvent)aDOMEvent
 {
+    // This is a hack for the browser resize bug in safari.
+    // See bug ID: 1325
+    // https://github.com/cappuccino/cappuccino/issues/1325
+    // Addendum by Antoine Mercadal : I also noticed that reszing is causing
+    // problem under latest Firefox 13.0. Let's just use this hack
+    // for all browser now.
+
+    [resizeTimer invalidate];
+    resizeTimer = [CPTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(_actualResizeEvent) userInfo:nil repeats:NO];
+}
+
+- (void)_actualResizeEvent
+{
+    resizeTimer = nil;
+
     // FIXME: This is not the right way to do this.
     // We should pay attention to mouse down and mouse up in conjunction with this.
     //window.liveResize = YES;
@@ -1135,7 +1152,7 @@ var ModifierKeyCodes = [
         newEvent.clientX = touch.clientX;
         newEvent.clientY = touch.clientY;
 
-        newEvent.timestamp = aDOMEvent.timestamp;
+        newEvent.timestamp = [CPEvent currentTimestamp];
         newEvent.target = aDOMEvent.target;
 
         newEvent.shiftKey = newEvent.ctrlKey = newEvent.altKey = newEvent.metaKey = false;
@@ -1179,7 +1196,7 @@ var ModifierKeyCodes = [
 
     var event,
         location = _CGPointMake(aDOMEvent.clientX, aDOMEvent.clientY),
-        timestamp = aDOMEvent.timeStamp ? aDOMEvent.timeStamp : new Date(),
+        timestamp = [CPEvent currentTimestamp],
         sourceElement = (aDOMEvent.target || aDOMEvent.srcElement),
         windowNumber = 0,
         modifierFlags = (aDOMEvent.shiftKey ? CPShiftKeyMask : 0) |
@@ -1568,7 +1585,7 @@ var _CPEventFromNativeMouseEvent = function(aNativeEvent, anEventType, aPoint, m
     aNativeEvent._eventNumber = anEventNumber;
     aNativeEvent._clickCount = aClickCount;
     aNativeEvent._pressure = aPressure;
-    if((anEventType == CPLeftMouseDragged) || (anEventType == CPRightMouseDragged) || (anEventType == CPMouseMoved))
+    if ((anEventType == CPLeftMouseDragged) || (anEventType == CPRightMouseDragged) || (anEventType == CPMouseMoved))
     {
         aNativeEvent._deltaX = aPoint.x - aMouseDragStart.x;
         aNativeEvent._deltaY = aPoint.y - aMouseDragStart.y;
@@ -1581,7 +1598,7 @@ var _CPEventFromNativeMouseEvent = function(aNativeEvent, anEventType, aPoint, m
 
 
     return aNativeEvent;
-}
+};
 
 var CLICK_SPACE_DELTA   = 5.0,
     CLICK_TIME_DELTA    = (typeof document != "undefined" && document.addEventListener) ? 350.0 : 1000.0;
@@ -1596,7 +1613,7 @@ var CPDOMEventGetClickCount = function(aComparisonEvent, aTimestamp, aLocation)
     return (aTimestamp - [aComparisonEvent timestamp] < CLICK_TIME_DELTA &&
         ABS(comparisonLocation.x - aLocation.x) < CLICK_SPACE_DELTA &&
         ABS(comparisonLocation.y - aLocation.y) < CLICK_SPACE_DELTA) ? [aComparisonEvent clickCount] + 1 : 1;
-}
+};
 
 var CPDOMEventStop = function(aDOMEvent, aPlatformWindow)
 {
@@ -1616,7 +1633,7 @@ var CPDOMEventStop = function(aDOMEvent, aPlatformWindow)
         aPlatformWindow._DOMFocusElement.focus();
         aPlatformWindow._DOMFocusElement.blur();
     }
-}
+};
 
 function CPWindowObjectList()
 {
@@ -1625,7 +1642,7 @@ function CPWindowObjectList()
         platformWindow = nil,
         windowObjects = [];
 
-    while (platformWindow = [platformWindowEnumerator nextObject])
+    while ((platformWindow = [platformWindowEnumerator nextObject]) !== nil)
     {
         var levels = platformWindow._windowLevels,
             layers = platformWindow._windowLayers,

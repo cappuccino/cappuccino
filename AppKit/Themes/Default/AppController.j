@@ -31,9 +31,8 @@
             [_CPCibCustomResource imageResourceWithName:"horizontal-track-center.png" size:CPSizeMake(1.0, 4.0)],
             [_CPCibCustomResource imageResourceWithName:"horizontal-track-right.png" size:CPSizeMake(2.0, 4.0)]
         ]
-        isVertical:NO]];
-
-    var horizontalSlider = [[CPSlider alloc] initWithFrame:CGRectMake(0.0, 0.0, 50.0, 24.0)];
+        isVertical:NO]],
+        horizontalSlider = [[CPSlider alloc] initWithFrame:CGRectMake(0.0, 0.0, 50.0, 24.0)];
 
     [horizontalSlider setTrackWidth:4.0];
     [horizontalSlider setHorizontalTrackColor:horizontalTrackColor];
@@ -55,9 +54,8 @@
             [_CPCibCustomResource imageResourceWithName:"vertical-track-center.png" size:CPSizeMake(4.0, 1.0)],
             [_CPCibCustomResource imageResourceWithName:"vertical-track-bottom.png" size:CPSizeMake(4.0, 2.0)]
         ]
-        isVertical:YES]];
-
-    var verticalSlider = [[CPSlider alloc] initWithFrame:CGRectMake(0.0, 0.0, 24.0, 50.0)];
+        isVertical:YES]],
+        verticalSlider = [[CPSlider alloc] initWithFrame:CGRectMake(0.0, 0.0, 24.0, 50.0)];
 
     [verticalSlider setTrackWidth:4];
     [verticalSlider setVerticalTrackColor:verticalTrackColor];
@@ -144,7 +142,7 @@
 
         [_label setAlignment:CPCenterTextAlignment];
         [_label setAutoresizingMask:CPViewMinYMargin | CPViewWidthSizable];
-        [_label setFont:[CPFont boldSystemFontOfSize:12.0]];
+        [_label setFont:[CPFont boldSystemFontOfSize:0]];
 
         [self addSubview:_label];
     }

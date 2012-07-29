@@ -53,7 +53,7 @@ var NSUnknownColorSpaceModel    = -1,
             var rgb         = [aCoder decodeBytesForKey:@"NSRGB"],
                 string      = CFData.bytesToString(rgb),
                 components  = [string componentsSeparatedByString:@" "],
-                values      = [0,0,0,1];
+                values      = [0, 0, 0, 1];
 
             for (var i = 0; i < components.length && i < 4; i++)
                 values[i] = [components[i] floatValue];
@@ -67,13 +67,14 @@ var NSUnknownColorSpaceModel    = -1,
             var bytes       = [aCoder decodeBytesForKey:@"NSWhite"],
                 string      = CFData.bytesToString(bytes),
                 components  = [string componentsSeparatedByString:@" "],
-                values      = [0,1];
+                values      = [0, 1];
 
             for (var i = 0; i < components.length && i < 2; i++)
                 values[i] = [components[i] floatValue];
 
             result = [CPColor colorWithCalibratedWhite:values[0] alpha:values[1]];
             break;
+
 /*
         case 5:
             var cmyk        = [aCoder decodeBytesForKey:@"NSCMYK"],
@@ -87,37 +88,37 @@ var NSUnknownColorSpaceModel    = -1,
             result = [CPColor colorWithDeviceCyan:values[0] magenta:values[1] yellow:values[2] black:values[3] alpha:values[4]];
             break;
 */
-        case 6:
+
+        case 6: // named color
             var catalogName = [aCoder decodeObjectForKey:@"NSCatalogName"],
                 colorName   = [aCoder decodeObjectForKey:@"NSColorName"],
-                color       = [aCoder decodeObjectForKey:@"NSColor"];
-
-            // We don't having color mappings implemented, so just use the cached NSColor
+                color       = [aCoder decodeObjectForKey:@"NSColor"],
+                result      = nil;
 
             if (catalogName === @"System")
             {
-                var //display = [NSDisplay currentDisplay],
-                    result = null;//[display colorWithName: colorName];
-
-                if (colorName === @"controlColor")
-                    result = nil;
-
-                else if (colorName === @"controlBackgroundColor")
-                    result = [CPColor whiteColor];
-
-                else if (!result)
+                switch (colorName)
                 {
-                    result = color;
-                    //[display _addSystemColor: result forName: colorName];
+                    case "controlColor":
+                        result = [CPColor colorWithCalibratedWhite:175.0 / 255.0 alpha:1.0];
+                        break;
+
+                    case "controlBackgroundColor":
+                        result = [CPColor whiteColor];
+                        break;
+
+                    case "gridColor":
+                        result = [CPColor colorWithCalibratedWhite:204.0 / 255.0 alpha:1.0];
+                        break;
+
+                    default:
+                        result = color;
                 }
             }
             else
-            {
-                result = null;//[CPColor colorWithCatalogName: catalogName colorName: colorName];
-                if (!result)
-                    result = color;
-            }
+                result = color;
             break;
+
         default:
             CPLog.warn(@"-[%@ %s] unknown color space %d", isa, _cmd, colorSpace);
             result  = [CPColor blackColor];

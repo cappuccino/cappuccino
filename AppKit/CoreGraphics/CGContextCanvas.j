@@ -323,7 +323,7 @@ function CGContextTranslateCTM(aContext, tx, ty)
 
 #define rotate_scale(a, b, c, d) \
         var sign = (a * d < 0.0 || b * c > 0.0) ? -1.0 : 1.0;\
-            a1 = (Math.atan2(sign * b, sign * a) + Math.atan2(-c, d)) / 2.0,\
+            a1 = (ATAN2(sign * b, sign * a) + ATAN2(-c, d)) / 2.0,\
             cos = COS(a1),\
             sin = SIN(a1);\
                \
@@ -358,7 +358,7 @@ if (CPFeatureIsCompatible(CPJavaScriptCanvasTransformFeature))
 CGContextConcatCTM = function(aContext, anAffineTransform)
 {
     aContext.transform(anAffineTransform.a, anAffineTransform.b, anAffineTransform.c, anAffineTransform.d, anAffineTransform.tx, anAffineTransform.ty);
-}
+};
 
 }
 else
@@ -428,7 +428,7 @@ CGContextConcatCTM = function(aContext, anAffineTransform)
         CGContextScaleCTM(aContext, sx, sy);
     if (a2 != 0.0)
         CGContextRotateCTM(aContext, a2);
-}
+};
 
 }
 

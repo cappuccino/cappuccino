@@ -5,8 +5,6 @@
     <key>Main cib file base name</key>
     <string>MainMenu.cib</string>
     <key>CPBundleName</key>
-    <string>CPButtonImageTest</string>
-    <key>CPPrincipalClass</key>
-    <string>CPApplication</string>
+    <string>CPButton</string>
 </dict>
 </plist>

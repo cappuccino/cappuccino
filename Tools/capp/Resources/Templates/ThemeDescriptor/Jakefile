@@ -2,29 +2,187 @@
  * Jakefile
  * __project.name__
  *
- * Created by __user.name__ on __project.date__.
- * Copyright __project.year__, __organization.name__ All rights reserved.
+ * Created by __user.name__ on __project.date__
+ * Copyright __project.year__, __organization.name__. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-var ENV = require("system").env,
+//===========================================================
+//  DO NOT REMOVE
+//===========================================================
+
+var SYS = require("system"),
+    ENV = SYS.env,
     FILE = require("file"),
-    task = require("jake").task,
-    FileList = require("jake").FileList,
+    OS = require("os");
+
+
+//===========================================================
+//  USER CONFIGURABLE VARIABLES
+//===========================================================
+
+/*
+    The directory in which the project will be built. By default
+    it is built in a "Build" directory within the project directory.
+    To use your $CAPP_BUILD directory, change the declaration to:
+
+    var buildDir = ENV["CAPP_BUILD"];
+*/
+var buildDir = "Build";
+
+
+//===========================================================
+//  AUTOMATICALLY GENERATED
+//
+//  Do not edit! (unless you know what you are doing)
+//===========================================================
+
+var stream = require("narwhal/term").stream,
+    JAKE = require("jake"),
+    task = JAKE.task,
+    FileList = JAKE.FileList,
+    CLEAN = require("jake/clean").CLEAN,
+    CLOBBER = require("jake/clean").CLOBBER,
     blend = require("cappuccino/jake").blend,
-    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug";
+    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
+    productName = "__project.nameasidentifier__",
+    debugBlendKitPath = FILE.join("Frameworks", "Debug", "BlendKit"),
+    releaseBlendKitPath = FILE.join("Frameworks", "BlendKit"),
+    buildPath = FILE.canonical(FILE.join(buildDir, productName + ".build"));
 
-
-blend ("__project.nameasidentifier__.blend", function(__project.nameasidentifier__Task)
+blend (productName + ".blend", function(themeBlendTask)
 {
-    __project.nameasidentifier__Task.setBuildIntermediatesPath(FILE.join("Build", "__project.nameasidentifier__.build", configuration))
-    __project.nameasidentifier__Task.setBuildPath(FILE.join("Build", configuration));
+    themeBlendTask.setBuildIntermediatesPath(FILE.join(buildPath, configuration))
+    themeBlendTask.setBuildPath(FILE.join(buildDir, configuration));
 
-    __project.nameasidentifier__Task.setThemeDescriptors(new FileList("ThemeDescriptors.j"));
-    __project.nameasidentifier__Task.setIdentifier("com.280n.__project.identifier__");
-    __project.nameasidentifier__Task.setResources(new FileList("Resources/*"));
+    themeBlendTask.setThemeDescriptors(new FileList("ThemeDescriptors.j"));
+    themeBlendTask.setIdentifier("__project.identifier__");
+    themeBlendTask.setResources(new FileList("Resources/*"));
 });
 
-task ("default", ["__project.nameasidentifier__.blend"]);
+task ("debug", function()
+{
+    ENV["CONFIGURATION"] = "Debug";
+    JAKE.subjake(["."], "build", ENV);
 
-task ("build", ["default"]);
+    symlinkBlendKit(debugBlendKitPath);
+});
 
+task ("release", function()
+{
+    ENV["CONFIGURATION"] = "Release";
+    JAKE.subjake(["."], "build", ENV);
+
+    symlinkBlendKit(releaseBlendKitPath);
+});
+
+task ("default", ["release"]);
+
+task ("build", [productName + ".blend"]);
+
+task ("all", ["debug", "release"]);
+
+task ("test", ["debug"], function()
+{
+    OS.system(["open", "index-debug.html"]);
+});
+
+task ("test-release", ["release"], function()
+{
+    OS.system(["open", "index.html"]);
+});
+
+CLEAN.include(buildPath);
+CLOBBER.include(buildPath);
+
+task ("help", function()
+{
+    var app = JAKE.application().name();
+
+    colorPrint("--------------------------------------------------------------------------", "bold+green");
+    colorPrint("__project.name__ - Theme Blend", "bold+green");
+    colorPrint("--------------------------------------------------------------------------", "bold+green");
+
+    describeTask(app, "debug", "Builds a debug version at " + FILE.join(buildDir, "Debug"));
+    describeTask(app, "release", "Builds a release version at " + FILE.join(buildDir, "Release"));
+    describeTask(app, "all", "Builds a debug and release version");
+    describeTask(app, "test", "Builds a debug version, symlinks to the installed BlendKit framework,\nand opens the theme showcase in the default browser");
+    describeTask(app, "test-release", "Builds a release version, symlinks to the installed BlendKit framework,\nand opens the theme showcase in the default browser");
+    describeTask(app, "clean", "Removes the intermediate build files");
+    describeTask(app, "clobber", "Removes the intermediate build files and the built theme");
+
+    colorPrint("--------------------------------------------------------------------------", "bold+green");
+});
+
+var describeTask = function(application, task, description)
+{
+    colorPrint("\n" + application + " " + task, "violet");
+    description.split("\n").forEach(function(line)
+    {
+        print("   " + line);
+    });
+}
+
+var symlinkBlendKit = function(destinationPath)
+{
+    if (FILE.exists(destinationPath))
+        return;
+
+    var blendKitPath = null,
+        path = FILE.join(SYS.prefix, "packages", "cappuccino", "Frameworks", "BlendKit");
+
+    if (FILE.isDirectory(path))
+        blendKitPath = path;
+
+    if (!blendKitPath)
+    {
+        cappBuild = ENV["CAPP_BUILD"];
+
+        if (cappBuild)
+        {
+            var buildTypes = ["Release", "Debug"];
+
+            for (var i = 0; i < buildTypes.length; ++i)
+            {
+                var path = FILE.join(cappBuild, buildTypes[i], "BlendKit");
+
+                if (FILE.isDirectory(path))
+                {
+                    blendKitPath = path;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (blendKitPath)
+        FILE.symlink(blendKitPath, destinationPath);
+}
+
+var colorPrint = function(message, color)
+{
+    var matches = color.match(/(bold(?: |\+))?(.+)/);
+
+    if (!matches)
+        return;
+
+    message = "\0" + matches[2] + "(" + message + "\0)";
+
+    if (matches[1])
+        message = "\0bold(" + message + "\0)";
+
+    stream.print(message);
+}

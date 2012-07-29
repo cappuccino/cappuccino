@@ -16,6 +16,29 @@
     [self assert:@"122,344.456" equals:formattedNumberString];
 }
 
+- (void)testSetGroupingSeparator_
+{
+    var numberFormatter = [CPNumberFormatter new];
+    [numberFormatter setNumberStyle:CPNumberFormatterDecimalStyle];
+
+    [self assert:@"1" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:1]]];
+    [self assert:@"12" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:12]]];
+    [self assert:@"123" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:123]]];
+    [self assert:@"1,234" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:1234]]];
+    [self assert:@"12,345" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:12345]]];
+    [self assert:@"123,456" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:123456]]];
+    [self assert:@"1,234,567" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:1234567]]];
+
+    [numberFormatter setGroupingSeparator:@" "];
+    [self assert:@"1" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:1]]];
+    [self assert:@"12" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:12]]];
+    [self assert:@"123" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:123]]];
+    [self assert:@"1 234" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:1234]]];
+    [self assert:@"12 345" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:12345]]];
+    [self assert:@"123 456" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:123456]]];
+    [self assert:@"1 234 567" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:1234567]]];
+}
+
 - (void)testRoundingMode
 {
     var numberFormatter = [[CPNumberFormatter alloc] init],

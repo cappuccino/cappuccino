@@ -34,6 +34,7 @@
 @implementation CPStepper: CPControl
 {
     BOOL        _valueWraps     @accessors(property=valueWraps);
+    BOOL        _autorepeat     @accessors(getter=autorepeat);
     int         _increment      @accessors(property=increment);
     int         _maxValue       @accessors(property=maxValue);
     int         _minValue       @accessors(property=minValue);
@@ -88,27 +89,36 @@
         _minValue       = 0.0;
         _increment      = 1.0;
         _valueWraps     = YES;
+        _autorepeat     = YES;
 
         [self setDoubleValue:0.0];
-
-        _buttonUp = [[CPButton alloc] initWithFrame:_CGRectMakeZero()];
-        [_buttonUp setContinuous:YES];
-        [_buttonUp setTarget:self];
-        [_buttonUp setAction:@selector(_buttonDidClick:)];
-        [_buttonUp setAutoresizingMask:CPViewNotSizable];
-        [self addSubview:_buttonUp];
-
-        _buttonDown = [[CPButton alloc] initWithFrame:_CGRectMakeZero()];
-        [_buttonDown setContinuous:YES];
-        [_buttonDown setTarget:self];
-        [_buttonDown setAction:@selector(_buttonDidClick:)];
-        [_buttonDown setAutoresizingMask:CPViewNotSizable];
-        [self addSubview:_buttonDown];
-
-        [self setNeedsLayout];
+        [self _init];
     }
 
     return self;
+}
+
+/*! @ignore */
+
+- (void)_init
+{
+    _buttonUp = [[CPButton alloc] initWithFrame:_CGRectMakeZero()];
+    [_buttonUp setContinuous:_autorepeat];
+    [_buttonUp setTarget:self];
+    [_buttonUp setAction:@selector(_buttonDidClick:)];
+    [_buttonUp setAutoresizingMask:CPViewNotSizable];
+    [self addSubview:_buttonUp];
+
+    _buttonDown = [[CPButton alloc] initWithFrame:_CGRectMakeZero()];
+    [_buttonDown setContinuous:_autorepeat];
+    [_buttonDown setTarget:self];
+    [_buttonDown setAction:@selector(_buttonDidClick:)];
+    [_buttonDown setAutoresizingMask:CPViewNotSizable];
+
+    [self setContinuous:_autorepeat];
+    [self addSubview:_buttonDown];
+
+    [self setNeedsLayout];
 }
 
 #pragma mark -
@@ -134,8 +144,8 @@
         minSize = _CGSizeMake(upSize.width, upSize.height + downSize.height),
         frame = _CGRectMakeCopy(aFrame);
 
-    frame.size.width = Math.max(minSize.width, frame.size.width);
-    frame.size.height = Math.max(minSize.height, frame.size.height);
+    frame.size.width = MAX(minSize.width, frame.size.width);
+    frame.size.height = MAX(minSize.height, frame.size.height);
     [super setFrame:frame];
 }
 
@@ -164,8 +174,13 @@
 */
 - (void)setAutorepeat:(BOOL)shouldAutoRepeat
 {
-    [_buttonUp setContinuous:shouldAutoRepeat];
-    [_buttonDown setContinuous:shouldAutoRepeat];
+    if (shouldAutoRepeat !== _autorepeat)
+    {
+        [_buttonUp setContinuous:shouldAutoRepeat];
+        [_buttonDown setContinuous:shouldAutoRepeat];
+    }
+
+    [self setContinuous:shouldAutoRepeat];
 }
 
 /*!
@@ -235,19 +250,27 @@
 
 @end
 
+var CPStepperMinValue   = @"CPStepperMinValue",
+    CPStepperMaxValue   = @"CPStepperMaxValue",
+    CPStepperValueWraps = @"CPStepperValueWraps",
+    CPStepperAutorepeat = @"CPStepperAutorepeat",
+    CPStepperIncrement  = @"CPStepperIncrement";
 
-@implementation CPStepper (CPCodingCompliance)
+@implementation CPStepper (CPCoding)
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
     if (self = [super initWithCoder:aCoder])
     {
-        _maxValue   = [aCoder decodeObjectForKey:@"_maxValue"];
-        _minValue   = [aCoder decodeObjectForKey:@"_minValue"];
-        _increment  = [aCoder decodeObjectForKey:@"_increment"];
-        _buttonUp   = [aCoder decodeObjectForKey:@"_buttonUp"];
-        _buttonDown = [aCoder decodeObjectForKey:@"_buttonDown"];
+        _increment  = [aCoder decodeIntForKey:CPStepperIncrement];
+        _minValue   = [aCoder decodeIntForKey:CPStepperMinValue];
+        _maxValue   = [aCoder decodeIntForKey:CPStepperMaxValue];
+        _valueWraps = [aCoder decodeBoolForKey:CPStepperValueWraps];
+        _autorepeat = [aCoder decodeBoolForKey:CPStepperAutorepeat];
+
+        [self _init];
     }
+
     return self;
 }
 
@@ -255,11 +278,16 @@
 {
     [super encodeWithCoder:aCoder];
 
-    [aCoder encodeObject:_maxValue forKey:@"_maxValue"];
-    [aCoder encodeObject:_minValue forKey:@"_minValue"];
-    [aCoder encodeObject:_increment forKey:@"_increment"];
-    [aCoder encodeObject:_buttonUp forKey:@"_buttonUp"];
-    [aCoder encodeObject:_buttonDown forKey:@"_buttonDown"];
+    [aCoder encodeInt:_increment forKey:CPStepperIncrement];
+
+    if (_minValue)
+        [aCoder encodeInt:_minValue forKey:CPStepperMinValue];
+    if (_maxValue)
+        [aCoder encodeInt:_maxValue forKey:CPStepperMaxValue];
+    if (_valueWraps)
+        [aCoder encodeBool:_valueWraps forKey:CPStepperValueWraps];
+    if (_autorepeat)
+        [aCoder encodeBool:_autorepeat forKey:CPStepperAutorepeat];
 }
 
 @end

@@ -22,6 +22,8 @@
 
 @import <AppKit/CPToolbar.j>
 
+// NS_CPToolbarItemIdentifierMap
+@import "NSToolbarItem.j"
 
 @implementation CPToolbar (NSCoding)
 
@@ -35,10 +37,25 @@
         _allowsUserCustomization    = [aCoder decodeBoolForKey:"NSToolbarAllowsUserCustomization"];
         _isVisible                  = [aCoder decodeBoolForKey:"NSToolbarPrefersToBeShown"];
 
-        _identifiedItems            = [aCoder decodeObjectForKey:"NSToolbarIBIdentifiedItems"];
+        _identifiedItems = [CPMutableDictionary dictionary];
+
+        var nsIdentifiedItems = [aCoder decodeObjectForKey:"NSToolbarIBIdentifiedItems"],
+            key = nil,
+            keyEnumerator = [nsIdentifiedItems keyEnumerator];
+
+        // Some of the item identifiers will be changed when loaded by NSToolbarItem, so we must change
+        // the map to correspond.
+        while ((key = [keyEnumerator nextObject]) !== nil)
+        {
+            var transformedKey = NS_CPToolbarItemIdentifierMap[key] || key;
+            [_identifiedItems setObject:[nsIdentifiedItems objectForKey:key] forKey:transformedKey];
+        }
+
         _defaultItems               = [aCoder decodeObjectForKey:"NSToolbarIBDefaultItems"];
         _allowedItems               = [aCoder decodeObjectForKey:"NSToolbarIBAllowedItems"];
         _selectableItems            = [aCoder decodeObjectForKey:"NSToolbarIBSelectableItems"];
+
+        _sizeMode                   = [aCoder decodeObjectForKey:"NSToolbarSizeMode"] || CPToolbarSizeModeDefault;
 
         _delegate                   = [aCoder decodeObjectForKey:"NSToolbarDelegate"];
     }

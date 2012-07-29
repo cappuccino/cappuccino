@@ -1,12 +1,34 @@
-var SYSTEM = require("system");
-var FILE = require("file");
-var OS = require("os");
-var UTIL = require("narwhal/util");
-var stream = require("narwhal/term").stream;
+/*
+ * command.jake
+ * toolchain
+ *
+ * Copyright 2012 The Cappuccino Foundation
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
-var requiresSudo = false;
+var SYSTEM = require("system"),
+    FILE = require("file"),
+    OS = require("os"),
+    UTIL = require("narwhal/util"),
+    stream = require("narwhal/term").stream,
 
-SYSTEM.args.slice(1).forEach(function(arg){
+    requiresSudo = false;
+
+SYSTEM.args.slice(1).forEach(function(arg)
+{
     if (arg === "sudo-install")
         requiresSudo = true;
 });
@@ -21,7 +43,7 @@ function ensurePackageUpToDate(packageName, requiredVersion, options)
         if (options.optional)
             return;
 
-        print("You are missing package \"" + packageName + "\", version " + requiredVersion + " or later. Please install using \"tusk install "+packageName+"\" and re-run jake");
+        print("You are missing package \"" + packageName + "\", version " + requiredVersion + " or later. Please install using \"tusk install "+ packageName +"\" and re-run jake");
         OS.exit(1);
     }
 
@@ -35,11 +57,12 @@ function ensurePackageUpToDate(packageName, requiredVersion, options)
     if (version && UTIL.compare(version, requiredVersion) !== -1)
         return;
 
-    print("Your copy of " + packageName + " is out of date (" + (version||["0"]).join(".") + " installed, " + requiredVersion.join(".") + " required).");
+    print("Your copy of " + packageName + " is out of date (" + (version || ["0"]).join(".") + " installed, " + requiredVersion.join(".") + " required).");
 
     if (!options.noupdate)
     {
         print("Update? Existing package will be overwritten. yes or no:");
+
         if (!SYSTEM.env["CAPP_AUTO_UPGRADE"] && system.stdin.readLine() !== "yes\n")
         {
             print("Jake aborted.");
@@ -51,7 +74,7 @@ function ensurePackageUpToDate(packageName, requiredVersion, options)
             if (OS.system(["sudo", "tusk", "install", "--force", packageName]))
             {
                 // Attempt a hackish work-around for sudo compiled with the --with-secure-path option
-                if (OS.system("sudo bash -c 'source " + getShellConfigFile() + "; tusk install --force "+packageName))
+                if (OS.system("sudo bash -c 'source " + getShellConfigFile() + "; tusk install --force "+ packageName))
                     OS.exit(1); //rake abort if ($? != 0)
             }
         }
@@ -110,7 +133,7 @@ if (!SYSTEM.env["CONFIG"])
     SYSTEM.env["CONFIG"] = "Release";
 
 global.ENV  = SYSTEM.env;
-global.ARGV = SYSTEM.args
+global.ARGV = SYSTEM.args;
 global.FILE = FILE;
 global.OS   = OS;
 
@@ -141,7 +164,8 @@ global.$LICENSE_FILE    = FILE.absolute(FILE.join(FILE.dirname(module.path), 'LI
 
 global.FIXME_fileDependency = function(destinationPath, sourcePath)
 {
-    file(destinationPath, [sourcePath], function(){
+    file(destinationPath, [sourcePath], function()
+    {
         FILE.touch(destinationPath);
     });
 };
@@ -185,22 +209,26 @@ serializedENV = function()
     var envNew = {};
 
     // add changed keys to the new ENV
-    Object.keys(SYSTEM.env).forEach(function(key) {
+    Object.keys(SYSTEM.env).forEach(function(key)
+    {
         if (SYSTEM.env[key] !== envInitial[key])
             envNew[key] = SYSTEM.env[key];
     });
 
     // pseudo-HACK: add NARWHALOPT with packages we should ensure are loaded
     var packages = additionalPackages();
-    if (packages.length) {
+
+    if (packages.length)
+    {
         envNew["NARWHALOPT"] = packages.map(function(p) { return "-p " + OS.enquote(p); }).join(" ");
         envNew["PATH"] = packages.map(function(p) { return FILE.join(p, "bin"); }).concat(SYSTEM.env["PATH"]).join(":");
     }
 
-    return Object.keys(envNew).map(function(key) {
+    return Object.keys(envNew).map(function(key)
+    {
         return key + "=" + OS.enquote(envNew[key]);
     }).join(" ");
-}
+};
 
 function getShellConfigFile()
 {
@@ -220,7 +248,8 @@ function getShellConfigFile()
 
 function reforkWithPackages()
 {
-    if (additionalPackages().length > 0) {
+    if (additionalPackages().length > 0)
+    {
         var cmd = serializedENV() + " " + system.args.map(OS.enquote).join(" ");
         //print("REFORKING: " + cmd);
         OS.exit(OS.system(cmd));
@@ -229,8 +258,10 @@ function reforkWithPackages()
 
 reforkWithPackages();
 
-function handleSetupEnvironmentError(e) {
-    if (String(e).indexOf("require error")==-1) {
+function handleSetupEnvironmentError(e)
+{
+    if (String(e).indexOf("require error") == -1)
+    {
         print("setupEnvironment warning: " + e);
         //throw e;
     }
@@ -238,9 +269,12 @@ function handleSetupEnvironmentError(e) {
 
 function setupEnvironment()
 {
-    try {
+    try
+    {
         require("objective-j").OBJJ_INCLUDE_PATHS.push(FILE.join($BUILD_CONFIGURATION_DIR, "CommonJS", "cappuccino", "Frameworks"));
-    } catch (e) {
+    }
+    catch (e)
+    {
         handleSetupEnvironmentError(e);
     }
 }
@@ -251,7 +285,7 @@ global.rm_rf = function(/*String*/ aFilename)
 {
     try { FILE.rmtree(aFilename); }
     catch (anException) { }
-}
+};
 
 global.cp_r = function(/*String*/ from, /*String*/ to)
 {
@@ -260,20 +294,29 @@ global.cp_r = function(/*String*/ from, /*String*/ to)
 
     if (FILE.isDirectory(from))
         FILE.copyTree(from, to);
-    else{try{
-        FILE.copy(from, to);}catch(e) { print(e + FILE.exists(from) + " " + FILE.exists(FILE.dirname(to))); }}
-}
+    else
+    {
+        try
+        {
+            FILE.copy(from, to);
+        }
+        catch (e)
+        {
+            print(e + FILE.exists(from) + " " + FILE.exists(FILE.dirname(to)));
+        }
+    }
+};
 
 global.cp = function(/*String*/ from, /*String*/ to)
 {
     FILE.copy(from, to);
 //    FILE.chmod(to, FILE.mod(from));
-}
+};
 
 global.mv = function(/*String*/ from, /*String*/ to)
 {
     FILE.move(from, to);
-}
+};
 
 global.subjake = function(/*Array<String>*/ directories, /*String*/ aTaskName)
 {
@@ -284,15 +327,16 @@ global.subjake = function(/*Array<String>*/ directories, /*String*/ aTaskName)
     {
         if (FILE.isDirectory(aDirectory) && FILE.isFile(FILE.join(aDirectory, "Jakefile")))
         {
-            var cmd = "cd " + OS.enquote(aDirectory) + " && " + serializedENV() + " " + OS.enquote(SYSTEM.args[0]) + " " + OS.enquote(aTaskName);
-            var returnCode = OS.system(cmd);
+            var cmd = "cd " + OS.enquote(aDirectory) + " && " + serializedENV() + " " + OS.enquote(SYSTEM.args[0]) + " " + OS.enquote(aTaskName),
+                returnCode = OS.system(cmd);
+
             if (returnCode)
                 OS.exit(returnCode);
         }
         else
             print("warning: subjake missing: " + aDirectory + " (this is not necessarily an error, " + aDirectory + " may be optional)");
     });
-}
+};
 
 global.executableExists = function(/*String*/ executableName)
 {
@@ -303,7 +347,7 @@ global.executableExists = function(/*String*/ executableName)
             return path;
     }
     return null;
-}
+};
 
 $OBJJ_TEMPLATE_EXECUTABLE = FILE.join($HOME_DIR, "Objective-J", "CommonJS", "objj-executable");
 
@@ -311,21 +355,23 @@ global.make_objj_executable = function(aPath)
 {
     cp($OBJJ_TEMPLATE_EXECUTABLE, aPath);
     FILE.chmod(aPath, 0755);
-}
+};
 
 global.symlink_executable = function(source)
 {
     relative = FILE.relative($ENVIRONMENT_NARWHAL_BIN_DIR, source);
     destination = FILE.join($ENVIRONMENT_NARWHAL_BIN_DIR, FILE.basename(source));
     FILE.symlink(relative, destination);
-}
+};
 
-global.getCappuccinoVersion = function() {
+global.getCappuccinoVersion = function()
+{
     var versionFile = FILE.path(module.path).dirname().join("version.json");
     return JSON.parse(versionFile.read({ charset : "UTF-8" })).version;
-}
+};
 
-global.setPackageMetadata = function(packagePath) {
+global.setPackageMetadata = function(packagePath)
+{
     var pkg = JSON.parse(FILE.read(packagePath, { charset : "UTF-8" }));
 
     var p = OS.popen(["git", "rev-parse", "--verify", "HEAD"]);
@@ -343,7 +389,7 @@ global.setPackageMetadata = function(packagePath) {
     stream.print("    Timestamp: \0purple(" + pkg["cappuccino-timestamp"] + "\0)");
 
     FILE.write(packagePath, JSON.stringify(pkg, null, 4), { charset : "UTF-8" });
-}
+};
 
 global.subtasks = function(subprojects, taskNames)
 {
@@ -358,7 +404,7 @@ global.subtasks = function(subprojects, taskNames)
             subjake(subprojects, aTaskName);
         });
     });
-}
+};
 
 global.installSymlink = function(sourcePath)
 {
@@ -396,21 +442,41 @@ global.installSymlink = function(sourcePath)
             FILE.symlink(relative, target);
         });
     }
-}
+};
 
 global.spawnJake = function(/*String*/ aTaskName)
 {
     if (OS.system(serializedENV() + " " + SYSTEM.args[0] + " " + aTaskName))
         OS.exit(1);//rake abort if ($? != 0)
-}
+};
 
-global.sudo = function(/*String*/ aTaskName)
+var normalizeCommand = function(/*Array or String*/ command)
 {
-    var cmd = "sudo bash -c 'source " + getShellConfigFile() + "; " + aTaskName + "'";
+    if (Array.isArray(command))
+        return command.map(function (arg)
+        {
+            return OS.enquote(arg);
+        }).join(" ");
+    else
+        return command;
+};
 
-    if (OS.system(cmd))
-        OS.exit(1); //rake abort if ($? != 0)
-}
+global.sudo = function(/*Array or String*/ command)
+{
+    // First try without sudo
+    command = normalizeCommand(command);
+
+    if (OS.system(command + " >/dev/null 2>&1"))
+        return OS.system("sudo -p '\nEnter your admin password: ' " + command);
+
+    return 0;
+};
+
+global.exec = function(/*Array or String*/ command, quiet)
+{
+    command = normalizeCommand(command) + (quiet === true ? " >/dev/null 2>&1" : "");
+    return OS.system(command);
+};
 
 global.copyManPage = function(/*String*/ name, /*int*/ section)
 {
@@ -420,54 +486,29 @@ global.copyManPage = function(/*String*/ name, /*int*/ section)
 
     if (!FILE.exists(manPagePath) || FILE.mtime(pageFile) > FILE.mtime(manPagePath))
     {
-        var sudo = ["sudo", "-p", "\nEnter your admin password: "],
-            useSudo = false,
-            success = true,
-            cmd;
-
         if (!FILE.isDirectory(manDir))
         {
-            cmd = ["mkdir", "-p", "-m", "0755", manDir];
-
-            if (FILE.isWritable(FILE.dirname(manDir)))
-                success = OS.system(cmd) === 0;
-            else
-            {
-                useSudo = true;
-                success = OS.system(sudo.concat(cmd)) === 0;
-            }
-
-            if (!success)
-            {
+            if (sudo(["mkdir", "-p", "-m", "0755", manDir]))
                 stream.print("\0red(Unable to create the man directory.\0)");
-                OS.exit(1);
-            }
         }
 
-        cmd = ["cp", "-f", pageFile, manDir];
-
-        if (FILE.isWritable(manDir))
-            success = OS.system(cmd) === 0;
-        else
-            success = OS.system(sudo.concat(cmd)) === 0;
-
-        if (!success)
+        if (sudo(["cp", "-f", pageFile, manDir]))
             stream.print("\0red(Unable to copy the man file.\0)");
     }
 }
 
 global.xcodebuildCanListSDKs = function()
 {
-    return OS.system("xcodebuild -showsdks > /dev/null 2>&1") == 0;
-}
+    return global.exec("xcodebuild -showsdks", true) === 0;
+};
 
 global.xcodebuildHasTenPointFiveSDK = function()
 {
     if (xcodebuildCanListSDKs())
-        return OS.system("xcodebuild -showsdks | grep 'macosx10.5' > /dev/null 2>&1") == 0;
+        return global.exec("xcodebuild -showsdks | grep 'macosx10.5'", true) === 0;
 
     return FILE.exists(FILE.join("/", "Developer", "SDKs", "MacOSX10.5.sdk"));
-}
+};
 
 global.colorize = function(/* String */ message, /* String */ color)
 {
@@ -482,12 +523,12 @@ global.colorize = function(/* String */ message, /* String */ color)
         message = "\0bold(" + message + "\0)";
 
     return message;
-}
+};
 
 global.colorPrint = function(/* String */ message, /* String */ color)
 {
     stream.print(colorize(message, color));
-}
+};
 
 
 // built in tasks

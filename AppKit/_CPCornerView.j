@@ -46,7 +46,7 @@
     CGContextSetStrokeColor(context, [self currentValueForThemeAttribute:@"divider-color"]);
 
     CGContextMoveToPoint(context, _CGRectGetMinX(aRect) + 0.5, ROUND(_CGRectGetMinY(aRect)));
-    CGContextAddLineToPoint(context, _CGRectGetMinX(aRect) + 0.5, ROUND(_CGRectGetMaxY(aRect)));
+    CGContextAddLineToPoint(context, _CGRectGetMinX(aRect) + 0.5, ROUND(_CGRectGetMaxY(aRect)) - 1.0);
 
     CGContextClosePath(context);
     CGContextStrokePath(context);

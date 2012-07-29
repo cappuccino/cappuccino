@@ -26,11 +26,6 @@
 @import "CPImage.j"
 @import "CPShadowView.j"
 
-
-CPScaleProportionally   = 0;
-CPScaleToFit            = 1;
-CPScaleNone             = 2;
-
 CPImageAlignCenter      = 0;
 CPImageAlignTop         = 1;
 CPImageAlignTopLeft     = 2;
@@ -41,15 +36,7 @@ CPImageAlignBottomLeft  = 6;
 CPImageAlignBottomRight = 7;
 CPImageAlignRight       = 8;
 
-var CPImageViewShadowBackgroundColor = nil,
-    CPImageViewEmptyPlaceholderImage = nil;
-
-var LEFT_SHADOW_INSET       = 3.0,
-    RIGHT_SHADOW_INSET      = 3.0,
-    TOP_SHADOW_INSET        = 3.0,
-    BOTTOM_SHADOW_INSET     = 5.0,
-    VERTICAL_SHADOW_INSET   = TOP_SHADOW_INSET + BOTTOM_SHADOW_INSET,
-    HORIZONTAL_SHADOW_INSET = LEFT_SHADOW_INSET + RIGHT_SHADOW_INSET;
+var CPImageViewEmptyPlaceholderImage = nil;
 
 /*!
     @ingroup appkit
@@ -72,9 +59,20 @@ var LEFT_SHADOW_INSET       = 3.0,
 
 + (void)initialize
 {
+    if (self !== [CPImageView class])
+        return;
+
     var bundle = [CPBundle bundleForClass:[CPView class]];
 
     CPImageViewEmptyPlaceholderImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"empty.png"]];
+}
+
++ (Class)_binderClassForBinding:(CPString)theBinding
+{
+    if (theBinding === CPValueBinding || theBinding === CPValueURLBinding || theBinding === CPValuePathBinding || theBinding === CPDataBinding)
+        return [CPImageViewValueBinder class];
+
+    return [super _binderClassForBinding:theBinding];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -240,7 +238,7 @@ var LEFT_SHADOW_INSET       = 3.0,
     [super setImageScaling:anImageScaling];
 
 #if PLATFORM(DOM)
-    if ([self currentValueForThemeAttribute:@"image-scaling"] === CPScaleToFit)
+    if ([self currentValueForThemeAttribute:@"image-scaling"] === CPImageScaleAxesIndependently)
     {
         CPDOMDisplayServerSetStyleLeftTop(_DOMImageElement, NULL, 0.0, 0.0);
     }
@@ -297,19 +295,19 @@ var LEFT_SHADOW_INSET       = 3.0,
         imageScaling = [self currentValueForThemeAttribute:@"image-scaling"],
         x = 0.0,
         y = 0.0,
-        insetWidth = (_hasShadow ? HORIZONTAL_SHADOW_INSET : 0.0),
-        insetHeight = (_hasShadow ? VERTICAL_SHADOW_INSET : 0.0),
+        insetWidth = (_hasShadow ? [_shadowView horizontalInset] : 0.0),
+        insetHeight = (_hasShadow ? [_shadowView verticalInset] : 0.0),
         boundsWidth = _CGRectGetWidth(bounds),
         boundsHeight = _CGRectGetHeight(bounds),
         width = boundsWidth - insetWidth,
         height = boundsHeight - insetHeight;
 
-    if (imageScaling === CPScaleToFit)
+    if (imageScaling === CPImageScaleAxesIndependently)
     {
-#if PLATFORM(DOM)
-        _DOMImageElement.width = ROUND(width);
-        _DOMImageElement.height = ROUND(height);
-#endif
+        #if PLATFORM(DOM)
+            _DOMImageElement.width = ROUND(width);
+            _DOMImageElement.height = ROUND(height);
+        #endif
     }
     else
     {
@@ -318,17 +316,19 @@ var LEFT_SHADOW_INSET       = 3.0,
         if (size.width == -1 && size.height == -1)
             return;
 
-        if (imageScaling === CPScaleProportionally)
+        switch (imageScaling)
         {
-            // The max size it can be is size.width x size.height, so only
-            // only proportion otherwise.
-            if (width >= size.width && height >= size.height)
-            {
-                width = size.width;
-                height = size.height;
-            }
-            else
-            {
+            case CPImageScaleProportionallyDown:
+                if (width >= size.width && height >= size.height)
+                {
+                    width = size.width;
+                    height = size.height;
+                    break;
+                }
+
+                // intentionally fall through to the next case
+
+            case CPImageScaleProportionallyUpOrDown:
                 var imageRatio = size.width / size.height,
                     viewRatio = width / height;
 
@@ -336,26 +336,19 @@ var LEFT_SHADOW_INSET       = 3.0,
                     width = height * imageRatio;
                 else
                     height = width / imageRatio;
-            }
+                break;
 
-#if PLATFORM(DOM)
+            case CPImageScaleAxesIndependently:
+            case CPImageScaleNone:
+                width = size.width;
+                height = size.height;
+                break;
+        }
+
+        #if PLATFORM(DOM)
             _DOMImageElement.width = ROUND(width);
             _DOMImageElement.height = ROUND(height);
-#endif
-        }
-        else
-        {
-            width = size.width;
-            height = size.height;
-        }
-
-        if (imageScaling == CPScaleNone)
-        {
-#if PLATFORM(DOM)
-            _DOMImageElement.width = ROUND(size.width);
-            _DOMImageElement.height = ROUND(size.height);
-#endif
-        }
+        #endif
 
         var x,
             y;
@@ -406,7 +399,7 @@ var LEFT_SHADOW_INSET       = 3.0,
     _imageRect = _CGRectMake(x, y, width, height);
 
     if (_hasShadow)
-        [_shadowView setFrame:_CGRectMake(x - LEFT_SHADOW_INSET, y - TOP_SHADOW_INSET, width + insetWidth, height + insetHeight)];
+        [_shadowView setFrame:_CGRectMake(x - [_shadowView leftInset], y - [_shadowView topInset], width + insetWidth, height + insetHeight)];
 }
 
 - (void)mouseDown:(CPEvent)anEvent
@@ -457,6 +450,39 @@ var LEFT_SHADOW_INSET       = 3.0,
 
 @end
 
+@implementation CPImageViewValueBinder : CPBinder
+{
+}
+
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options
+{
+    [self _setPlaceholder:nil forMarker:CPMultipleValuesMarker isDefault:YES];
+    [self _setPlaceholder:nil forMarker:CPNoSelectionMarker isDefault:YES];
+    [self _setPlaceholder:nil forMarker:CPNotApplicableMarker isDefault:YES];
+    [self _setPlaceholder:nil forMarker:CPNullMarker isDefault:YES];
+}
+
+- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
+{
+    [_source setImage:nil];
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    var image;
+
+    if (aBinding === CPDataBinding)
+        image = [[CPImage alloc] initWithData:aValue];
+    else if (aBinding === CPValueURLBinding || aBinding === CPValuePathBinding)
+        image = [[CPImage alloc] initWithContentsOfFile:aValue];
+    else if (aBinding === CPValueBinding)
+        image = aValue;
+
+    [_source setImage:image];
+}
+
+@end
+
 var CPImageViewImageKey          = @"CPImageViewImageKey",
     CPImageViewImageScalingKey   = @"CPImageViewImageScalingKey",
     CPImageViewImageAlignmentKey = @"CPImageViewImageAlignmentKey",
@@ -483,6 +509,9 @@ var CPImageViewImageKey          = @"CPImageViewImageKey",
         _DOMImageElement.setAttribute("draggable", "true");
         _DOMImageElement.style["-khtml-user-drag"] = "element";
     }
+
+    if (typeof(appkit_tag_dom_elements) !== "undefined" && !!appkit_tag_dom_elements)
+        _DOMImageElement.setAttribute("data-cappuccino-view", [self className]);
 #endif
 
     self = [super initWithCoder:aCoder];
@@ -496,7 +525,7 @@ var CPImageViewImageKey          = @"CPImageViewImageKey",
         [self setHasShadow:[aCoder decodeBoolForKey:CPImageViewHasShadowKey]];
         [self setImageAlignment:[aCoder decodeIntForKey:CPImageViewImageAlignmentKey]];
 
-        if ([aCoder decodeBoolForKey:CPImageViewIsEditableKey] || NO)
+        if ([aCoder decodeBoolForKey:CPImageViewIsEditableKey])
             [self setEditable:YES];
 
         [self setNeedsLayout];

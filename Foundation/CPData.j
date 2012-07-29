@@ -65,6 +65,22 @@
     return [[self alloc] initWithJSONObject:anObject];
 }
 
++ (CPData)dataWithBytes:(CPArray)bytesArray
+{
+    var data = [[self alloc] init];
+    data.setBytes(bytesArray);
+
+    return data;
+}
+
++ (CPData)dataWithBase64:(CPString)aString
+{
+    var data = [[self alloc] init];
+    data.setBase64String(aString);
+
+    return data;
+}
+
 - (id)initWithRawString:(CPString)aString
 {
     self = [super init];
@@ -118,6 +134,16 @@
 - (Object)JSONObject
 {
     return self.JSONObject();
+}
+
+- (CPArray)bytes
+{
+    return self.bytes();
+}
+
+- (CPString)base64
+{
+    return self.base64();
 }
 
 - (int)length

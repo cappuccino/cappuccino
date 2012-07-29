@@ -125,7 +125,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 */
 + (void)initialize
 {
-    if (self != [CPKeyedArchiver class])
+    if (self !== [CPKeyedArchiver class])
         return;
 
     _CPKeyedArchiverStringClass = [CPString class];
@@ -398,7 +398,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
         keys = [aDictionary keyEnumerator],
         references = [CPDictionary dictionary];
 
-    while (key = [keys nextObject])
+    while ((key = [keys nextObject]) !== nil)
         [references setObject:_CPKeyedArchiverEncodeObject(self, [aDictionary objectForKey:key], NO) forKey:key];
 
     [_plistObject setObject:references forKey:aKey];
@@ -597,4 +597,4 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
     }
 
     return [CPDictionary dictionaryWithObject:UID forKey:_CPKeyedArchiverUIDKey];
-}
+};

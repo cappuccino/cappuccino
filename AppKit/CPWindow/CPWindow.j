@@ -167,18 +167,20 @@ CPWindowAbove                   = 1;
 */
 CPWindowBelow                   = 2;
 
-CPWindowWillCloseNotification       = @"CPWindowWillCloseNotification";
-CPWindowDidBecomeMainNotification   = @"CPWindowDidBecomeMainNotification";
-CPWindowDidResignMainNotification   = @"CPWindowDidResignMainNotification";
-CPWindowDidBecomeKeyNotification    = @"CPWindowDidBecomeKeyNotification";
-CPWindowDidResignKeyNotification    = @"CPWindowDidResignKeyNotification";
-CPWindowDidResizeNotification       = @"CPWindowDidResizeNotification";
-CPWindowDidMoveNotification         = @"CPWindowDidMoveNotification";
-CPWindowWillBeginSheetNotification  = @"CPWindowWillBeginSheetNotification";
-CPWindowDidEndSheetNotification     = @"CPWindowDidEndSheetNotification";
-CPWindowDidMiniaturizeNotification  = @"CPWindowDidMiniaturizeNotification";
-CPWindowWillMiniaturizeNotification = @"CPWindowWillMiniaturizeNotification";
-CPWindowDidDeminiaturizeNotification = @"CPWindowDidDeminiaturizeNotification";
+CPWindowWillCloseNotification                   = @"CPWindowWillCloseNotification";
+CPWindowDidBecomeMainNotification               = @"CPWindowDidBecomeMainNotification";
+CPWindowDidResignMainNotification               = @"CPWindowDidResignMainNotification";
+CPWindowDidBecomeKeyNotification                = @"CPWindowDidBecomeKeyNotification";
+CPWindowDidResignKeyNotification                = @"CPWindowDidResignKeyNotification";
+CPWindowDidResizeNotification                   = @"CPWindowDidResizeNotification";
+CPWindowDidMoveNotification                     = @"CPWindowDidMoveNotification";
+CPWindowWillBeginSheetNotification              = @"CPWindowWillBeginSheetNotification";
+CPWindowDidEndSheetNotification                 = @"CPWindowDidEndSheetNotification";
+CPWindowDidMiniaturizeNotification              = @"CPWindowDidMiniaturizeNotification";
+CPWindowWillMiniaturizeNotification             = @"CPWindowWillMiniaturizeNotification";
+CPWindowDidDeminiaturizeNotification            = @"CPWindowDidDeminiaturizeNotification";
+
+_CPWindowDidChangeFirstResponderNotification    = @"_CPWindowDidChangeFirstResponderNotification";
 
 CPWindowShadowStyleStandard = 0;
 CPWindowShadowStyleMenu     = 1;
@@ -355,7 +357,7 @@ var CPWindowActionMessageKeys = [
 */
 + (void)initialize
 {
-    if (self != [CPWindow class])
+    if (self !== [CPWindow class])
         return;
 
     var bundle = [CPBundle bundleForClass:[CPWindow class]];
@@ -470,6 +472,7 @@ CPTexturedBackgroundWindowMask
         if (aStyleMask & CPBorderlessBridgeWindowMask)
             [self setFullPlatformWindow:YES];
 
+        _autorecalculatesKeyViewLoop = NO;
         _defaultButtonEnabled = YES;
         _keyViewLoopIsDirty = YES;
 
@@ -530,6 +533,11 @@ CPTexturedBackgroundWindowMask
 - (void)awakeFromCib
 {
     _keyViewLoopIsDirty = ![self _hasKeyViewLoop];
+
+    // If no key view loop has been specified by hand, and we are not intending to auto recalculate,
+    // set up a default key view loop.
+    if (_keyViewLoopIsDirty && ![self autorecalculatesKeyViewLoop])
+        [self recalculateKeyViewLoop];
 }
 
 - (void)_setWindowView:(CPView)aWindowView
@@ -853,7 +861,7 @@ CPTexturedBackgroundWindowMask
 #endif
 
     if (_firstResponder === self || !_firstResponder)
-        [self makeFirstResponder:[self initialFirstResponder]];
+        [self makeFirstResponder:_initialFirstResponder];
 
     if (!CPApp._keyWindow)
         [self makeKeyWindow];
@@ -1000,7 +1008,7 @@ CPTexturedBackgroundWindowMask
     // During init the initial first responder is set to the contentView
     // if it hasn't changed in the mean time we need to update that reference
     // to the new contentView
-    if ([self initialFirstResponder] === _contentView)
+    if (_initialFirstResponder === _contentView)
         [self setInitialFirstResponder:aView];
 
     _contentView = aView;
@@ -1353,7 +1361,43 @@ CPTexturedBackgroundWindowMask
 
 - (void)setInitialFirstResponder:(CPView)aView
 {
+    // Before an initial first responder is set, be sure to calculate the key loop
+    [self _setupFirstResponder:aView];
+
     _initialFirstResponder = aView;
+}
+
+- (void)_setupFirstResponder:(CPView)anInitialFirstResponder
+{
+    /*
+        If:
+
+        - The key loop is dirty
+        - The key loop does not auto-recalculate
+        - No view within the window has become first responder
+        - No initial first responder has been set
+
+        Then calculate the key view loop and set the first responder
+        to the first view in the loop if no initial responder has been set, since we should
+        always have an initial first responder and a key loop by default.
+    */
+    if (_keyViewLoopIsDirty &&
+        !_autorecalculatesKeyViewLoop &&
+        _firstResponder === self &&
+        _initialFirstResponder === [self contentView])
+    {
+        [self recalculateKeyViewLoop];
+
+        if (anInitialFirstResponder)
+            [self makeFirstResponder:anInitialFirstResponder];
+        else
+        {
+            // Make the first key view of the content view the first responder
+            var firstKeyView = [[self contentView] nextValidKeyView];
+
+            [self makeFirstResponder:firstKeyView];
+        }
+    }
 }
 
 /*!
@@ -1379,6 +1423,8 @@ CPTexturedBackgroundWindowMask
     }
 
     _firstResponder = aResponder;
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:_CPWindowDidChangeFirstResponderNotification object:self];
 
     return YES;
 }
@@ -1734,6 +1780,8 @@ CPTexturedBackgroundWindowMask
 
     if (_firstResponder !== self && [_firstResponder respondsToSelector:@selector(becomeKeyWindow)])
         [_firstResponder becomeKeyWindow];
+
+    [self _setupFirstResponder:nil];
 
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPWindowDidBecomeKeyNotification
@@ -2100,7 +2148,7 @@ CPTexturedBackgroundWindowMask
 */
 - (BOOL)isMainWindow
 {
-    return [CPApp mainWindow] == self;
+    return [CPApp mainWindow] === self;
 }
 
 /*!
@@ -2715,10 +2763,7 @@ CPTexturedBackgroundWindowMask
 
     [views sortUsingFunction:keyViewComparator context:nil];
 
-    var index = 0,
-        count = [views count];
-
-    for (; index < count; ++index)
+    for (var index = 0, count = [views count]; index < count; ++index)
         [views[index] setNextKeyView:views[(index + 1) % count]];
 
     _keyViewLoopIsDirty = NO;
@@ -2731,9 +2776,7 @@ CPTexturedBackgroundWindowMask
 
     _autorecalculatesKeyViewLoop = shouldRecalculate;
 
-    if (_keyViewLoopIsDirty)
-        [self recalculateKeyViewLoop];
-    else if (_autorecalculatesKeyViewLoop)
+    if (_autorecalculatesKeyViewLoop)
         [self _dirtyKeyViewLoop];
 }
 
@@ -2754,7 +2797,7 @@ CPTexturedBackgroundWindowMask
 
     if (!nextValidKeyView)
     {
-        var initialFirstResponder = [self initialFirstResponder];
+        var initialFirstResponder = _initialFirstResponder;
 
         if ([initialFirstResponder acceptsFirstResponder])
             nextValidKeyView = initialFirstResponder;
@@ -2777,7 +2820,7 @@ CPTexturedBackgroundWindowMask
 
     if (!previousValidKeyView)
     {
-        var initialFirstResponder = [self initialFirstResponder];
+        var initialFirstResponder = _initialFirstResponder;
 
         if ([initialFirstResponder acceptsFirstResponder])
             previousValidKeyView = initialFirstResponder;
@@ -2899,12 +2942,12 @@ var allViews = function(aWindow)
 
     [views addObjectsFromArray:[[aWindow contentView] subviews]];
 
-    var index = 0;
-    for (; index < views.length; ++index)
+    // Start from index 1 because index 0 is the contentView and its subviews have already been added
+    for (var index = 1; index < views.length; ++index)
         views = views.concat([views[index] subviews]);
 
     return views;
-}
+};
 
 var keyViewComparator = function(lhs, rhs, context)
 {
@@ -2935,7 +2978,7 @@ var keyViewComparator = function(lhs, rhs, context)
         return CPOrderedSame;
 
     return CPOrderedDescending;
-}
+};
 
 @implementation CPWindow (MenuBar)
 
@@ -3021,7 +3064,7 @@ var keyViewComparator = function(lhs, rhs, context)
 - (CGPoint)convertBaseToPlatformWindow:(CGPoint)aPoint
 {
     if ([self _sharesChromeWithPlatformWindow])
-        return aPoint;
+        return _CGPointMakeCopy(aPoint);
 
     var origin = [self frame].origin;
 
@@ -3029,12 +3072,12 @@ var keyViewComparator = function(lhs, rhs, context)
 }
 
 /*!
-    Converts aPoint from the parent platform window coordinate system to the windows coordinate system.
+    Converts aPoint from the parent platform window coordinate system to the window's coordinate system.
 */
 - (CGPoint)convertPlatformWindowToBase:(CGPoint)aPoint
 {
     if ([self _sharesChromeWithPlatformWindow])
-        return aPoint;
+        return _CGPointMakeCopy(aPoint);
 
     var origin = [self frame].origin;
 
@@ -3159,7 +3202,7 @@ var keyViewComparator = function(lhs, rhs, context)
 var interpolate = function(fromValue, toValue, progress)
 {
     return fromValue + (toValue - fromValue) * progress;
-}
+};
 
 /* @ignore */
 @implementation _CPWindowFrameAnimation : CPAnimation

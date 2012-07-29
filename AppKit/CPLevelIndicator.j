@@ -64,6 +64,9 @@ var _CPLevelIndicatorBezelColor = nil,
 
 + (void)initialize
 {
+    if (self !== [CPLevelIndicator class])
+        return;
+
     var bundle = [CPBundle bundleForClass:CPLevelIndicator];
 
     _CPLevelIndicatorBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
@@ -253,7 +256,7 @@ var _CPLevelIndicatorBezelColor = nil,
 
         var location = [self convertPoint:[anEvent locationInWindow] fromView:nil],
             bounds = [self bounds],
-            oldValue = [self doubleValue];
+            oldValue = [self doubleValue],
             newValue = oldValue;
 
         // Moving the mouse outside of the widget to the left sets it

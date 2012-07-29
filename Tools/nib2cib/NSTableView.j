@@ -59,17 +59,13 @@
         _intercellSpacing = CGSizeMake([aCoder decodeFloatForKey:@"NSIntercellSpacingWidth"],
                                        [aCoder decodeFloatForKey:@"NSIntercellSpacingHeight"]);
 
-        var gridColor = [aCoder decodeObjectForKey:@"NSGridColor"];
-
-        if (![gridColor isEqual:[CPColor colorWithRed:127.0 / 255.0 green:127.0 / 255.0 blue:127.0 / 255.0 alpha:1.0]])
-            [self setValue:gridColor forThemeAttribute:@"grid-color"];
-
+        [self setValue:[aCoder decodeObjectForKey:@"NSGridColor"] forThemeAttribute:@"grid-color"];
         _gridStyleMask = [aCoder decodeIntForKey:@"NSGridStyleMask"];
 
         _usesAlternatingRowBackgroundColors = (flags & 0x00800000) ? YES : NO;
         _alternatingRowBackgroundColors = [[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"]];
 
-        _selectionHighlightStyle = [aCoder decodeIntForKey:@"NSTableViewSelectionHighlightStyle"] || CPTableViewSelectionHighlightStyleRegular;
+        _selectionHighlightStyle = [aCoder decodeIntForKey:@"NSTableViewSelectionHighlightStyle"];
         _columnAutoResizingStyle = [aCoder decodeIntForKey:@"NSColumnAutoresizingStyle"];
 
         _allowsMultipleSelection = (flags & 0x08000000) ? YES : NO;
@@ -78,6 +74,8 @@
 
         _allowsColumnResizing = (flags & 0x40000000) ? YES : NO;
         _allowsColumnReordering = (flags & 0x80000000) ? YES : NO;
+
+        [self setBackgroundColor:[aCoder decodeObjectForKey:@"NSBackgroundColor"]];
     }
 
     return self;

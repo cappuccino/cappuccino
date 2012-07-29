@@ -125,8 +125,8 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         return;
         
     [self stopEventStream];
-
-    NSArray *pathsToWatch = [NSArray arrayWithObject:aPath];
+    
+    NSMutableArray *pathsToWatch = [NSMutableArray arrayWithObject:aPath];
     void *appPointer = (void *)self;
     FSEventStreamContext context = {0, appPointer, NULL, NULL, NULL};
     CFTimeInterval latency = 2.0;
@@ -141,6 +141,24 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     {
         NSLog(@"Initializing the FSEventStream at folder level (dirty)");
         flags = kFSEventStreamCreateFlagUseCFTypes;
+    }
+    
+    // add symlinked directories
+    NSArray *fileList = [fm contentsOfDirectoryAtPath:aPath error:nil];
+    
+    for (NSString *node in fileList)
+    {
+        NSDictionary *attributes = [fm attributesOfItemAtPath:aPath error:nil];
+        if ([[attributes objectForKey:@"NSFileType"] isEqualTo:NSFileTypeDirectory])
+        {
+            NSString *subDirectoryPath = [aPath stringByAppendingPathComponent:node];
+            NSString *symlinkDestination = [fm destinationOfSymbolicLinkAtPath:subDirectoryPath error:nil];
+
+            if (symlinkDestination)
+            {
+                [pathsToWatch addObject:subDirectoryPath];
+            }
+        }
     }
     
     stream = FSEventStreamCreate(NULL, &fsevents_callback, &context, (CFArrayRef) pathsToWatch,
@@ -177,13 +195,8 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
  */
 - (void)clear
 {
-    if (lastEventId && [lastEventId longLongValue] != 0)
-    {
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        [defaults setObject:lastEventId forKey:@"lastEventId"];
-        [defaults synchronize];
-    }
-
+    [self updateUserDefaultsWithLastEventId];
+    [self synchronizeUserDefaultsWithDisk];
     currentProjectURL = nil;
     currentProjectName = nil;
     [ignoredFilePaths removeAllObjects];
@@ -239,6 +252,25 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 - (void)updateLastEventId:(uint64_t)eventId
 {
     lastEventId = [NSNumber numberWithUnsignedLongLong:eventId];
+}
+
+/*!
+ Updates the user defaults with the last recorded event Id.
+ */
+- (void)updateUserDefaultsWithLastEventId
+{
+    if (lastEventId && [lastEventId longLongValue] != 0)
+    {
+        [[NSUserDefaults standardUserDefaults] setObject:lastEventId forKey:@"lastEventId"];
+    }
+}
+
+/*!
+ Tells the standard user defaults to synchronize with disk.
+ */
+- (void)synchronizeUserDefaultsWithDisk
+{
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 /*!
@@ -442,12 +474,24 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         [PBXContent writeToFile:XCodeSupportPBXPath atomically:YES encoding:NSUTF8StringEncoding error:nil];
         DLog(@"PBX file adapted to the project");
         
-        DLog(@"Creating source folder %@", [XCodeSupportProjectSources path]);
-        [fm createDirectoryAtPath:[XCodeSupportProjectSources path] withIntermediateDirectories:YES attributes:nil error:nil];
+        [self createXcodeSupportProjectSourcesDirIfNecessary];
         return NO;
     }
 
+    [self createXcodeSupportProjectSourcesDirIfNecessary];
     return YES;
+}
+
+/*!
+ Create the .xCodeSupport/Sources folder if necessary.
+ */
+- (void)createXcodeSupportProjectSourcesDirIfNecessary
+{
+    if ([fm fileExistsAtPath:[XCodeSupportProjectSources path]])
+        return;
+
+    DLog(@"Creating source folder %@", [XCodeSupportProjectSources path]);
+    [fm createDirectoryAtPath:[XCodeSupportProjectSources path] withIntermediateDirectories:YES attributes:nil error:nil];
 }
 
 /*!
@@ -470,7 +514,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         BOOL isDir = NO;
         [fm fileExistsAtPath:filePath isDirectory:&isDir];
 
-        if (isDir || (![self isXIBFile:filePath] && ![self isObjJFile:filePath]))
+        if (isDir || ![self isObjJFile:filePath] || [self isPathMatchingIgnoredPaths:filePath])
             continue;
 
         NSURL *eventualShadow = [self shadowURLForSourceURL:[NSURL fileURLWithPath:filePath]];
@@ -568,6 +612,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     [ignoredFilePaths addObject:@"*/Frameworks/*"];
     [ignoredFilePaths addObject:@"*/.xCodeSupport/*"];
     [ignoredFilePaths addObject:@"*/Build/*"];
+    [ignoredFilePaths addObject:@"*/NS_*.j"];
     
     NSLog(@"Ignoring file paths: %@", ignoredFilePaths);
 }
@@ -579,6 +624,9 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
  */
 - (BOOL)isPathMatchingIgnoredPaths:(NSString*)aPath
 {
+    if ([ignoredFilePaths count] == 0)
+        return NO;
+
     for (NSString *ignoredPath in ignoredFilePaths)
     {
         if ([ignoredPath length] == 0)

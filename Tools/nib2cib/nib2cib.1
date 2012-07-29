@@ -1,6 +1,7 @@
 .Dd April 3, 2011
 .Os "Cappuccino"
 .Dt NIB2CIB 1 "PRM"
+.nh
 .\"-----------------------------------------------------------------------------------------
 .Sh NAME
 .\"-----------------------------------------------------------------------------------------
@@ -154,8 +155,82 @@ options, one for each theme that you load.
 .Pp
 Themes are searched for in the Resources, $CAPP_BUILD/Debug and
 $CAPP_BUILD/Release directories.
+.Pp
+If you have a list of auxiliary themes in your Info.plist using the
+.Ar CPAuxiliaryThemes
+item,
+.Nm
+will load them automatically, you do not have to do anything special.
 .\"-----------------------------------------------------------------------------------------
-.Sh "COMMON OPTIONS"
+.Ss "Userland NS Classes"
+.\"-----------------------------------------------------------------------------------------
+Let's say you are working on a subclass of CPTextField called FormField. Obviously you will
+want to use FormFields in cibs. You would also like to have some reasonable defaults established
+for the view in Xcode, and perhaps override or ignore some CPTextField settings that do not apply to FormField.
+.Pp
+.Nm
+allows you to dynamically define NS classes and use them in Interface Builder. Here's how:
+.Bl -enum
+.It
+Indicate which classes will be used in Interface Builder by setting an
+.Ar NSClasses
+item in Info.plist:
+
+ <key>NSClasses</key>
+ <array>
+     <string>BorderView</string>
+ </array>
+.It
+For each class listed in
+.Ar NSClasses ,
+a corresponding NS_<class>.j file must be
+created. This file is structured exactly like a Cappuccino NS class, with one exception:
+
+ @implementation BorderView (NSCoding)
+
+ - (id)NS_initWithCoder:(CPCoder)aCoder
+ {
+     self = [super NS_initWithCoder:aCoder];
+
+     if (self)
+     {
+         // Do default initialization here
+     }
+
+     return self;
+ }
+
+ @end
+
+ @implementation NS_BorderView : BorderView
+
+ + (Class)classForKeyedArchiver
+ {
+     return [BorderView class];
+ }
+
+ - (id)initWithCoder:(CPCoder)aCoder
+ {
+     return [self NS_initWithCoder:aCoder];
+ }
+
+ @end
+
+The only difference between this file and a Cappuccino NS file is that
+.Sy classForKeyedArchiver
+is a class method instead of an instance method.
+.It
+If necessary, the main class'
+.Sy encodeWithCoder
+can be enhanced to do extra work to support
+.Sy nib2cib.
+.Pp
+By making your classes key-value coding compliant, you can use User Defined
+Runtime Attributes in Interface Builder to configure your custom views without
+any code.
+.El
+.\"-----------------------------------------------------------------------------------------
+.Sh "OPTIONS"
 .\"-----------------------------------------------------------------------------------------
 The following options are available in watch mode or single mode:
 .Bl -tag -width 4n
@@ -192,7 +267,7 @@ use this option, as
 uses the Info.plist in the application directory, which is inferred from
 the input file.
 .It Fl F
-Specify the path of a framework to load before converting. This is only useful if:
+Specify the name or path of a framework to load before converting. This is only useful if:
 .Bl -dash -width 0n -hang
 .It
 Your IB files use classes from the framework.
@@ -202,13 +277,33 @@ Those classes need to serialize/deserialize more data than their superclasses.
 Those classes implement encodeWithCoder: and initWithCoder:.
 .El
 .Pp
-This option may be used multiple times to load multiple frameworks.
+This option may be used multiple times to load multiple frameworks. If the argument
+contains a "/" character, it is considered to be a relative or absolute path and
+the framework is searched for at that location. Otherwise it is considered a framework
+name and is searched for in the following directories:
+.Bl -ohang -offset 4n
+.It $CAPP_BUILD/Debug
+.It $CAPP_BUILD/Release
+.It <App>/Frameworks/Debug
+.It <App>/Frameworks
+.It <narwhal>/packages/cappuccino/Frameworks/Debug
+.It <narwhal>/packages/cappuccino/Frameworks
+.El
 .It Fl \-quiet
 Tells
 .Nm
 to output nothing. This is useful if you are using
 .Nm
-in a shell script and are only interested in the return value.
+in a shell script and are only interested in the return value. Note that this
+option overrides the
+.Fl v
+option.
+.It Fl \-no-stored-options
+Tells
+.Nm
+not to read stored options. See
+.Sy Stored Options
+below for more information.
 .It Fl \-version
 Prints the current version of
 .Nm
@@ -220,6 +315,45 @@ Displays
 .Nm
 usage and options.
 .El
+.\"-----------------------------------------------------------------------------------------
+.Ss "Stored Options"
+.\"-----------------------------------------------------------------------------------------
+To make it easier to use nib2cib in an automated way, you can store command line options
+that will apply to converted xibs/nibs. To store command line options, you enter the
+options on a single line into a text file. For example, if you always want to set
+"MyTheme" as the default theme, you would create a text file with this line:
+.Pp
+.D1 --default-theme MyTheme
+.Pp
+If an option takes a parameter and the parameter contains spaces, it must be enclosed in
+single or double quotes. You may store options in the following three places, in increasing
+order of precedence:
+.Bl -ohang -offset 4n
+.It Em ~/.nib2cibconfig
+nib2cib options that apply to all nibs converted under your user account.
+.It Em <app>/nib2cib.conf
+nib2cib options that apply to all nibs in <app>/Resources.
+.It Em <app>/Resources/<xib-or-nib-basename>.conf
+nib2cib options that apply to a specific xib or nib. For example, if the xib
+is called MainMenu.xib, the stored options file would be MainMenu.conf.
+.El
+.Pp
+Each of these files is read in the order listed above, and if it exists, its options
+are merged with the previous file's options. Options in later files (more specific)
+override options in earlier files (more generic). After all of the stored options
+are merged, the command line options are merged in. Thus command line options always
+override stored options.
+.Pp
+Using stored options is especially useful if your xibs/nibs use custom themes or
+frameworks. By using stored options, you can avoid remembering (or forgetting!) to
+specify the theme or framework every time you invoke
+.Nm .
+.Pp
+To prevent
+.Nm
+from reading stored options, and thus only use command line options, use the
+.Fl \-no-stored-options
+option on the command line.
 .\"-----------------------------------------------------------------------------------------
 .Sh "RETURN VALUES"
 .\"-----------------------------------------------------------------------------------------

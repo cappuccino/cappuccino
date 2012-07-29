@@ -345,30 +345,27 @@ var concat = Array.prototype.concat,
 
 /*!
     Returns the index of the first object in the receiver that passes a test in a given Javascript function.
-    @param predicate The function to apply to elements of the array. The function receives two arguments:
-                     object The element in the array.
-                     index  The index of the element in the array.
+    @param predicate The function to apply to objects of the array. The function should have the signature:
+    @code function(object, index) @endcode
     The predicate function should either return a Boolean value that indicates whether the object passed the test,
-    or nil to stop the search, which will return CPNotFound to the sender.
+    or nil to stop the search, which will return \c CPNotFound to the sender.
     @return The index of the first matching object, or \c CPNotFound if there is no matching object.
 */
-- (unsigned)indexOfObjectPassingTest:(Function)aPredicate
+- (unsigned)indexOfObjectPassingTest:(Function /*(id anObject, int idx)*/)aPredicate
 {
     return [self indexOfObjectWithOptions:CPEnumerationNormal passingTest:aPredicate context:undefined];
 }
 
 /*!
     Returns the index of the first object in the receiver that passes a test in a given Javascript function.
-    @param predicate The function to apply to elements of the array. The function receives two arguments:
-                     object  The element in the array.
-                     index   The index of the element in the array.
-                     context The object passed to the receiver in the aContext parameter.
+    @param predicate The function to apply to objects of the array. The function should have the signature:
+    @code function(object, index, context) @endcode
     The predicate function should either return a Boolean value that indicates whether the object passed the test,
-    or nil to stop the search, which will return CPNotFound to the sender.
+    or nil to stop the search, which will return \c CPNotFound to the sender.
     @param context An object that contains context information you want passed to the predicate function.
     @return The index of the first matching object, or \c CPNotFound if there is no matching object.
 */
-- (unsigned)indexOfObjectPassingTest:(Function)aPredicate context:(id)aContext
+- (unsigned)indexOfObjectPassingTest:(Function /*(id anObject, int idx, id context)*/)aPredicate context:(id)aContext
 {
     return [self indexOfObjectWithOptions:CPEnumerationNormal passingTest:aPredicate context:aContext];
 }
@@ -377,14 +374,13 @@ var concat = Array.prototype.concat,
     Returns the index of the first object in the receiver that passes a test in a given Javascript function.
     @param options Specifies the direction in which the array is searched. Pass CPEnumerationNormal to search forwards
     or CPEnumerationReverse to search in reverse.
-    @param predicate The function to apply to elements of the array. The function receives two arguments:
-                     object The element in the array.
-                     index  The index of the element in the array.
+    @param predicate The function to apply to objects of the array. The function should have the signature:
+    @code function(object, index) @endcode
     The predicate function should either return a Boolean value that indicates whether the object passed the test,
     or nil to stop the search, which will return CPNotFound to the sender.
     @return The index of the first matching object, or \c CPNotFound if there is no matching object.
 */
-- (unsigned)indexOfObjectWithOptions:(CPEnumerationOptions)options passingTest:(Function)aPredicate
+- (unsigned)indexOfObjectWithOptions:(CPEnumerationOptions)options passingTest:(Function /*(id anObject, int idx)*/)aPredicate
 {
     return [self indexOfObjectWithOptions:options passingTest:aPredicate context:undefined];
 }
@@ -393,16 +389,14 @@ var concat = Array.prototype.concat,
     Returns the index of the first object in the receiver that passes a test in a given Javascript function.
     @param options Specifies the direction in which the array is searched. Pass CPEnumerationNormal to search forwards
     or CPEnumerationReverse to search in reverse.
-    @param predicate The function to apply to elements of the array. The function receives two arguments:
-                     object  The element in the array.
-                     index   The index of the element in the array.
-                     context The object passed to the receiver in the aContext parameter.
+    @param predicate The function to apply to objects of the array. The function should have the signature:
+    @code function(object, index, context) @endcode
     The predicate function should either return a Boolean value that indicates whether the object passed the test,
     or nil to stop the search, which will return CPNotFound to the sender.
     @param context An object that contains context information you want passed to the predicate function.
     @return The index of the first matching object, or \c CPNotFound if there is no matching object.
 */
-- (unsigned)indexOfObjectWithOptions:(CPEnumerationOptions)options passingTest:(Function)aPredicate context:(id)aContext
+- (unsigned)indexOfObjectWithOptions:(CPEnumerationOptions)options passingTest:(Function /*(id anObject, int idx, id context)*/)aPredicate context:(id)aContext
 {
     // We don't use an enumerator because they return nil to indicate end of enumeration,
     // but nil may actually be the value we are looking for, so we have to loop over the array.
@@ -489,6 +483,85 @@ var concat = Array.prototype.concat,
     return CPNotFound;
 }
 
+/*!
+    Returns the indexes of the objects in the receiver that pass a test in a given Javascript function.
+    @param predicate The function to apply to objects of the array. The function should have the signature:
+    @code function(object, index) @endcode
+    The predicate function should either return a Boolean value that indicates whether the object passed the test,
+    or nil to stop the search, which will return \c CPNotFound to the sender.
+    @return A CPIndexSet of the matching object indexes.
+*/
+- (CPIndexSet)indexesOfObjectsPassingTest:(Function /*(id anObject, int idx)*/)aPredicate
+{
+    return [self indexesOfObjectsWithOptions:CPEnumerationNormal passingTest:aPredicate context:undefined];
+}
+
+/*!
+    Returns the indexes of the objects in the receiver that pass a test in a given Javascript function.
+    @param predicate The function to apply to objects of the array. The function should have the signature:
+    @code function(object, index, context) @endcode
+    The predicate function should either return a Boolean value that indicates whether the object passed the test,
+    or nil to stop the search, which will return \c CPNotFound to the sender.
+    @param context An object that contains context information you want passed to the predicate function.
+    @return A CPIndexSet of the matching object indexes.
+*/
+- (CPIndexSet)indexesOfObjectsPassingTest:(Function /*(id anObject, int idx, id context)*/)aPredicate context:(id)aContext
+{
+    return [self indexesOfObjectsWithOptions:CPEnumerationNormal passingTest:aPredicate context:aContext];
+}
+
+/*!
+    Returns the indexes of the objects in the receiver that pass a test in a given Javascript function.
+    @param options Specifies the direction in which the array is searched. Pass CPEnumerationNormal to search forwards
+    or CPEnumerationReverse to search in reverse.
+    @param predicate The function to apply to objects of the array. The function should have the signature:
+    @code function(object, index) @endcode
+    The predicate function should either return a Boolean value that indicates whether the object passed the test,
+    or nil to stop the search, which will return CPNotFound to the sender.
+    @return A CPIndexSet of the matching object indexes.
+*/
+- (CPIndexSet)indexesOfObjectsWithOptions:(CPEnumerationOptions)options passingTest:(Function /*(id anObject, int idx)*/)aPredicate
+{
+    return [self indexesOfObjectsWithOptions:options passingTest:aPredicate context:undefined];
+}
+
+/*!
+    Returns the indexes of the objects in the receiver that pass a test in a given Javascript function.
+    @param options Specifies the direction in which the array is searched. Pass CPEnumerationNormal to search forwards
+    or CPEnumerationReverse to search in reverse.
+    @param predicate The function to apply to objects of the array. The function should have the signature:
+    @code function(object, index, context) @endcode
+    The predicate function should either return a Boolean value that indicates whether the object passed the test,
+    or nil to stop the search, which will return CPNotFound to the sender.
+    @param context An object that contains context information you want passed to the predicate function.
+    @return A CPIndexSet of the matching object indexes.
+*/
+- (CPIndexSet)indexesOfObjectsWithOptions:(CPEnumerationOptions)options passingTest:(Function /*(id anObject, int idx, id context)*/)aPredicate context:(id)aContext
+{
+    // We don't use an enumerator because they return nil to indicate end of enumeration,
+    // but nil may actually be the value we are looking for, so we have to loop over the array.
+    if (options & CPEnumerationReverse)
+    {
+        var index = [self count] - 1,
+            stop = -1,
+            increment = -1;
+    }
+    else
+    {
+        var index = 0,
+            stop = [self count],
+            increment = 1;
+    }
+
+    var indexes = [CPIndexSet indexSet];
+
+    for (; index !== stop; index += increment)
+        if (aPredicate([self objectAtIndex:index], index, aContext))
+            [indexes addIndex:index];
+
+    return indexes;
+}
+
 // Sending messages to elements
 /*!
     Sends each element in the array a message.
@@ -522,7 +595,7 @@ var concat = Array.prototype.concat,
 
     if ([objects count])
     {
-        argumentsArray = [[nil, aSelector] arrayByAddingObjectsFromArray:objects];
+        var argumentsArray = [[nil, aSelector] arrayByAddingObjectsFromArray:objects];
 
         for (; index < count; ++index)
         {
@@ -536,13 +609,46 @@ var concat = Array.prototype.concat,
             objj_msgSend([self objectAtIndex:index], aSelector);
 }
 
-- (void)enumerateObjectsUsingBlock:(Function)aFunction
+- (void)enumerateObjectsUsingBlock:(Function /*(id anObject, int idx, @ref BOOL stop)*/)aFunction
 {
+    // This could have been [self enumerateObjectsWithOptions:CPEnumerationNormal usingBlock:aFunction]
+    // but this method should be as fast as possible.
     var index = 0,
-        count = [self count];
+        count = [self count],
+        shouldStop = NO,
+        shouldStopRef = AT_REF(shouldStop);
 
     for (; index < count; ++index)
-        aFunction([self objectAtIndex:index], index);
+    {
+        aFunction([self objectAtIndex:index], index, shouldStopRef);
+        if (shouldStop)
+            return;
+    }
+}
+
+- (void)enumerateObjectsWithOptions:(CPEnumerationOptions)options usingBlock:(Function /*(id anObject, int idx, @ref BOOL stop)*/)aFunction
+{
+    var shouldStop = NO;
+
+    if (options & CPEnumerationReverse)
+    {
+        var index = [self count] - 1,
+            stop = -1,
+            increment = -1;
+    }
+    else
+    {
+        var index = 0,
+            stop = [self count],
+            increment = 1;
+    }
+
+    for (; index !== stop; index += increment)
+    {
+        aFunction([self objectAtIndex:index], index, AT_REF(shouldStop));
+        if (shouldStop)
+            return;
+    }
 }
 
 // Comparing arrays
@@ -766,25 +872,23 @@ var concat = Array.prototype.concat,
 {
     var index = 0,
         count = [self count],
-        description = '(';
+        description = "(";
 
     for (; index < count; ++index)
     {
         if (index === 0)
-            description += '\n';
+            description += "\n\t";
 
-        var object = [self objectAtIndex:index],
-            objectDescription = object && object.isa ? [object description] : String(object);
-
-        description += "\t" + objectDescription.split('\n').join("\n\t");
+        var object = [self objectAtIndex:index];
+        description += CPDescriptionOfObject(object);
 
         if (index !== count - 1)
-            description += ", ";
-
-        description += '\n';
+            description += ",\n\t";
+        else
+            description += "\n";
     }
 
-    return description + ')';
+    return description + ")";
 }
 
 // Collecting paths

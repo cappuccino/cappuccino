@@ -6,9 +6,5 @@
 	<string>MainMenu.cib</string>
 	<key>CPBundleName</key>
 	<string>FontEnhancementTest</string>
-    <key>CPSystemFontFace</key>
-    <string>Lucida Grande</string>
-    <key>CPSystemFontSize</key>
-    <string>12</string>
 </dict>
 </plist>

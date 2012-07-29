@@ -54,7 +54,16 @@
 }
 
 /*!
-    Initializes the request with a URL.
+    Equal to `[receiver initWithURL:nil]`.
+*/
+- (id)init
+{
+    return [self initWithURL:nil];
+}
+
+/*!
+    Initializes the request with a URL. This is the designated initializer.
+
     @param aURL the url to set
     @return the initialized CPURLRequest
 */

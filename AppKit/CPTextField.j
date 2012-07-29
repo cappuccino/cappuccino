@@ -202,14 +202,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             CPTextFieldInputDidBlur = YES;
 
             return true;
-        }
+        };
 
         CPTextFieldHandleBlur = function(anEvent)
         {
             CPTextFieldInputOwner = nil;
 
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-        }
+        };
 
         //FIXME make this not onblur
         CPTextFieldDOMInputElement.onblur = CPTextFieldBlurFunction;
@@ -486,10 +486,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 #if PLATFORM(DOM)
 
     var element = [self _inputElement],
-        font = [self currentValueForThemeAttribute:@"font"];
-
-    // generate the font metric
-    [font _getMetrics];
+        font = [self currentValueForThemeAttribute:@"font"],
+        lineHeight = [font defaultLineHeightForFont];
 
     element.value = _stringValue;
     element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
@@ -511,26 +509,26 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     switch (verticalAlign)
     {
         case CPTopVerticalTextAlignment:
-            var topPoint = (_CGRectGetMinY(contentRect) + 1) + "px"; // for the same reason we have a -1 for the left, we also have a + 1 here
+            var topPoint = _CGRectGetMinY(contentRect) + "px";
             break;
 
         case CPCenterVerticalTextAlignment:
-            var topPoint = (_CGRectGetMidY(contentRect) - (font._lineHeight / 2) + 1) + "px";
+            var topPoint = (_CGRectGetMidY(contentRect) - (lineHeight / 2)) + "px";
             break;
 
         case CPBottomVerticalTextAlignment:
-            var topPoint = (_CGRectGetMaxY(contentRect) - font._lineHeight) + "px";
+            var topPoint = (_CGRectGetMaxY(contentRect) - lineHeight) + "px";
             break;
 
         default:
-            var topPoint = (_CGRectGetMinY(contentRect) + 1) + "px";
+            var topPoint = _CGRectGetMinY(contentRect) + "px";
             break;
     }
 
     element.style.top = topPoint;
-    element.style.left = (_CGRectGetMinX(contentRect) - 1) + "px"; // why -1?
+    element.style.left = (_CGRectGetMinX(contentRect) - 1) + "px";  // -1 because input element seems to have 1px left inset
     element.style.width = _CGRectGetWidth(contentRect) + "px";
-    element.style.height = font._lineHeight + "px"; // private ivar for the line height of the DOM text at this particular size
+    element.style.height = lineHeight + "px";
 
     _DOMElement.appendChild(element);
 
@@ -540,7 +538,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
         // Select the text if the textfield became first responder through keyboard interaction
         if (!_willBecomeFirstResponderByClick)
-            [self selectText:self];
+            [self _selectText:self immediately:YES];
 
         _willBecomeFirstResponderByClick = NO;
 
@@ -630,15 +628,11 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 #endif
 
-    // post CPControlTextDidEndEditingNotification
-    if (_isEditing)
-    {
-        _isEditing = NO;
-        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
+    _isEditing = NO;
+    [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
 
-        if ([self sendsActionOnEndEditing])
-            [self sendAction:[self action] to:[self target]];
-    }
+    if ([self sendsActionOnEndEditing])
+        [self sendAction:[self action] to:[self target]];
 
     [self textDidBlur:[CPNotification notificationWithName:CPTextFieldDidBlurNotification object:self userInfo:nil]];
 
@@ -656,7 +650,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         var acceptInvalidValue = NO;
 
         if ([_delegate respondsToSelector:@selector(control:didFailToFormatString:errorDescription:)])
-            acceptInvalidValue = [_delegate control:self didFailToFormatString:[self _inputElement] errorDescription:error];
+            acceptInvalidValue = [_delegate control:self didFailToFormatString:aValue errorDescription:error];
 
         if (acceptInvalidValue === NO)
             return NO;
@@ -1048,7 +1042,15 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         textSize = [text sizeWithFont:font inWidth:textSize.width];
     }
     else
+    {
         textSize = [text sizeWithFont:font];
+
+        // Account for possible fractional pixels at right edge
+        textSize.width += 1;
+    }
+
+    // Account for possible fractional pixels at bottom edge
+    textSize.height += 1;
 
     frameSize.height = textSize.height + contentInset.top + contentInset.bottom;
 
@@ -1075,24 +1077,36 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 */
 - (void)selectText:(id)sender
 {
-    // FIXME Should this really make the text field the first responder?
+    [self _selectText:sender immediately:NO];
+}
 
+- (void)_selectText:(id)sender immediately:(BOOL)immediately
+{
+    // Selecting the text in a field makes it the first responder
     if (([self isEditable] || [self isSelectable]))
     {
+        var wind = [self window];
+
 #if PLATFORM(DOM)
         var element = [self _inputElement];
 
-        if ([[self window] firstResponder] === self)
-            window.setTimeout(function() { element.select(); }, 0);
-        else if ([self window] !== nil && [[self window] makeFirstResponder:self])
-            window.setTimeout(function() {[self selectText:sender];}, 0);
+        if ([wind firstResponder] === self)
+        {
+            if (immediately)
+                element.select();
+            else
+                window.setTimeout(function() { element.select(); }, 0);
+        }
+        else if (wind !== nil && [wind makeFirstResponder:self])
+            [self _selectText:sender immediately:immediately];
 #else
         // Even if we can't actually select the text we need to preserve the first
         // responder side effect.
-        if ([self window] !== nil && [[self window] firstResponder] !== self)
-            [[self window] makeFirstResponder:self];
+        if (wind !== nil && [wind firstResponder] !== self)
+            [wind makeFirstResponder:self];
 #endif
     }
+
 }
 
 - (void)copy:(id)sender
@@ -1307,30 +1321,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     var contentInset = [self currentValueForThemeAttribute:@"content-inset"];
 
-    if (!contentInset)
-        return bounds;
-
-    bounds.origin.x += contentInset.left;
-    bounds.origin.y += contentInset.top;
-    bounds.size.width -= contentInset.left + contentInset.right;
-    bounds.size.height -= contentInset.top + contentInset.bottom;
-
-    return bounds;
+    return _CGRectInsetByInset(bounds, contentInset);
 }
 
 - (CGRect)bezelRectForBounds:(CGRect)bounds
 {
     var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"];
 
-    if (_CGInsetIsEmpty(bezelInset))
-        return bounds;
-
-    bounds.origin.x += bezelInset.left;
-    bounds.origin.y += bezelInset.top;
-    bounds.size.width -= bezelInset.left + bezelInset.right;
-    bounds.size.height -= bezelInset.top + bezelInset.bottom;
-
-    return bounds;
+    return _CGRectInsetByInset(bounds, bezelInset);
 }
 
 - (CGRect)rectForEphemeralSubviewNamed:(CPString)aName
@@ -1357,7 +1355,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     else
     {
         var view = [[_CPImageAndTextView alloc] initWithFrame:_CGRectMakeZero()];
-        //[view setImagePosition:CPNoImage];
 
         [view setHitTests:NO];
 
@@ -1433,7 +1430,7 @@ var secureStringForString = function(aString)
         return "";
 
     return Array(aString.length + 1).join(CPSecureTextFieldCharacter);
-}
+};
 
 
 var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
@@ -1503,47 +1500,25 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 {
 }
 
-- (void)setValueFor:(CPString)theBinding
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options
 {
-    var destination = [_info objectForKey:CPObservedObjectKey],
-        keyPath = [_info objectForKey:CPObservedKeyPathKey],
-        options = [_info objectForKey:CPOptionsKey],
-        newValue = [destination valueForKeyPath:keyPath],
-        isPlaceholder = CPIsControllerMarker(newValue);
+    [super _updatePlaceholdersWithOptions:options];
 
-    if (isPlaceholder)
-    {
-        switch (newValue)
-        {
-            case CPMultipleValuesMarker:
-                newValue = [options objectForKey:CPMultipleValuesPlaceholderBindingOption] || @"Multiple Values";
-                break;
+    [self _setPlaceholder:@"Multiple Values" forMarker:CPMultipleValuesMarker isDefault:YES];
+    [self _setPlaceholder:@"No Selection" forMarker:CPNoSelectionMarker isDefault:YES];
+    [self _setPlaceholder:@"Not Applicable" forMarker:CPNotApplicableMarker isDefault:YES];
+    [self _setPlaceholder:@"" forMarker:CPNullMarker isDefault:YES];
+}
 
-            case CPNoSelectionMarker:
-                newValue = [options objectForKey:CPNoSelectionPlaceholderBindingOption] || @"No Selection";
-                break;
+- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
+{
+    [_source setPlaceholderString:aValue];
+    [_source setObjectValue:nil];
+}
 
-            case CPNotApplicableMarker:
-                if ([options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
-                    [CPException raise:CPGenericException
-                                reason:@"can't transform non applicable key on: "+_source+" value: "+newValue];
-
-                newValue = [options objectForKey:CPNotApplicablePlaceholderBindingOption] || @"Not Applicable";
-                break;
-
-            case CPNullMarker:
-                newValue = [options objectForKey:CPNullPlaceholderBindingOption] || @"";
-                break;
-        }
-
-        [_source setPlaceholderString:newValue];
-        [_source setObjectValue:nil];
-    }
-    else
-    {
-        newValue = [self transformValue:newValue withOptions:options];
-        [_source setObjectValue:newValue];
-    }
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    [_source setObjectValue:aValue];
 }
 
 @end

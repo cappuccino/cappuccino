@@ -8,25 +8,43 @@
 
 @import <Foundation/CPObject.j>
 
-
 @implementation AppController : CPObject
 {
     CPWindow    theWindow; //this "outlet" is connected automatically by the Cib
+    @outlet     CPTabView nibTabView;
+    @outlet     CPTabView nibTabViewEmpty;
 }
 
-- (void)applicationDidFinishLaunching:(CPNotification)aNotification
+- (IBAction)changeView:(id)sender
 {
-    // This is called when the application is done loading.
+    var item = [nibTabView selectedTabViewItem],
+        view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+
+    [view setBackgroundColor:[CPColor redColor]];
+    [item setView:view];
 }
 
 - (void)awakeFromCib
 {
-    // This is called when the cib is done loading.
-    // You can implement this method on any object instantiated from a Cib.
-    // It's a useful hook for setting up current UI values, and other things. 
+    var item = [[CPTabViewItem alloc] initWithIdentifier:@"item"],
+        view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+        
+    [item setView:view];
+    [item setLabel:@"item"];
     
-    // In this case, we want the window from Cib to become our full browser window
+    [nibTabViewEmpty addTabViewItem:item];
+    
     [theWindow setFullBridge:YES];
+}
+
+- (void)tabView:(CPTabView)aTabView didSelectTabViewItem:(CPTabViewItem)tabViewItem
+{
+    CPLogConsole(_cmd + [tabViewItem label]);
+}
+
+- (void)tabView:(CPTabView)aTabView shouldSelectTabViewItem:(CPTabViewItem)tabViewItem
+{
+    return [tabViewItem identifier] != @"unselectable";
 }
 
 @end

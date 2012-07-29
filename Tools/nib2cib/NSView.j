@@ -45,10 +45,7 @@ var NSViewAutoresizingMask = 0x3F,
 
     if (self)
     {
-        _tag = 0;
-
-        if ([aCoder containsValueForKey:@"NSTag"])
-            _tag = [aCoder decodeIntForKey:@"NSTag"];
+        _tag = [aCoder decodeIntForKey:@"NSTag"];
 
         _bounds = CGRectMake(0.0, 0.0, CGRectGetWidth(_frame), CGRectGetHeight(_frame));
 
@@ -68,6 +65,7 @@ var NSViewAutoresizingMask = 0x3F,
         _isHidden = vFlags & NSViewHiddenMask;
         _opacity = 1.0;//[aCoder decodeIntForKey:CPViewOpacityKey];
 
+        _themeClass = [self themeClass];
         _themeAttributes = {};
         _themeState = CPThemeStateNormal;
         [self _loadThemeAttributes];

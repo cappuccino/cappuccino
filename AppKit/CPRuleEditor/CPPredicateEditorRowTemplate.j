@@ -185,7 +185,8 @@ CPTransformableAttributeType = 1800;
         if (![[self operators] containsObject:[predicate predicateOperatorType]])
             return 0;
 
-        if (!_rightIsWildcard && ![[self rightExpressions] containsObject:[predicate rightExpression]]) return 0;
+        if (!_rightIsWildcard && ![[self rightExpressions] containsObject:[predicate rightExpression]])
+            return 0;
 
         return 1;
     }
@@ -280,7 +281,7 @@ CPTransformableAttributeType = 1800;
 */
 - (CPArray)leftExpressions
 {
-    if (_templateType ==1 && !_leftIsWildcard)
+    if (_templateType == 1 && !_leftIsWildcard)
     {
         var view = [_views objectAtIndex:0];
         return [[view itemArray] valueForKey:@"representedObject"];
@@ -685,6 +686,7 @@ CPTransformableAttributeType = 1800;
     [textField setBordered:YES];
     [textField setEditable:YES];
     [textField setFont:[CPFont systemFontOfSize:10]];
+    [textField setSendsActionOnEndEditing:YES];
 
     return textField;
 }

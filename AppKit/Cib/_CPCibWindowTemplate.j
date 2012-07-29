@@ -77,8 +77,8 @@ var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemp
         _windowTitle = [aCoder decodeObjectForKey:_CPCibWindowTemplateWindowTitleKey];
         _windowView = [aCoder decodeObjectForKey:_CPCibWindowTemplateWindowViewKey];
 
-        _windowAutorecalculatesKeyViewLoop = !![aCoder decodeObjectForKey:_CPCibWindowTemplateWindowAutorecalculatesKeyViewLoop];
-        _windowIsFullPlatformWindow = !![aCoder decodeObjectForKey:_CPCibWindowTemplateWindowIsFullPlatformWindowKey];
+        _windowAutorecalculatesKeyViewLoop = [aCoder decodeBoolForKey:_CPCibWindowTemplateWindowAutorecalculatesKeyViewLoop];
+        _windowIsFullPlatformWindow = [aCoder decodeBoolForKey:_CPCibWindowTemplateWindowIsFullPlatformWindowKey];
     }
 
     return self;
@@ -125,13 +125,12 @@ var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemp
 
 - (id)_cibInstantiate
 {
-    var windowClass = CPClassFromString([self windowClass]);
+    var windowClass = CPClassFromString([self windowClass]),
+        theWindow = [[windowClass alloc] initWithContentRect:_windowRect styleMask:_windowStyleMask];
 
 /*    if (!windowClass)
         [NSException raise:NSInvalidArgumentException format:@"Unable to locate NSWindow class %@, using NSWindow",_windowClass];
         class=[NSWindow class];*/
-
-    var theWindow = [[windowClass alloc] initWithContentRect:_windowRect styleMask:_windowStyleMask];
 
     if (_minSize)
         [theWindow setMinSize:_minSize];

@@ -80,7 +80,7 @@ var _CPMenuBarVisible               = NO,
 
 + (void)initialize
 {
-    if (self !== CPMenu)
+    if (self !== [CPMenu class])
         return;
 
     [[self class] setMenuBarAttributes:[CPDictionary dictionary]];
@@ -806,7 +806,7 @@ var _CPMenuBarVisible               = NO,
     [aMenu _menuWillOpen];
 
     if (!aFont)
-        aFont = [CPFont systemFontOfSize:12.0];
+        aFont = [CPFont systemFontOfSize:[CPFont systemFontSize]];
 
     var theWindow = [aView window],
         menuWindow = [_CPMenuWindow menuWindowWithMenu:aMenu font:aFont];

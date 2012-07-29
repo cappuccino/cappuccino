@@ -31,7 +31,7 @@ GLOBAL(CFData) = function()
 
     this._bytes = NULL;
     this._base64 = NULL;
-}
+};
 
 CFData.prototype.propertyList = function()
 {
@@ -39,7 +39,7 @@ CFData.prototype.propertyList = function()
         this._propertyList = CFPropertyList.propertyListFromString(this.rawString());
 
     return this._propertyList;
-}
+};
 
 CFData.prototype.JSONObject = function()
 {
@@ -55,7 +55,7 @@ CFData.prototype.JSONObject = function()
     }
 
     return this._JSONObject;
-}
+};
 
 CFData.prototype.rawString = function()
 {
@@ -67,31 +67,50 @@ CFData.prototype.rawString = function()
         else if (this._JSONObject)
             this._rawString = JSON.stringify(this._JSONObject);
 
-//        Ideally we would convert these bytes or base64 into a string.
-//        else if (this._bytes)
-//        else if (this._base64)
+        else if (this._bytes)
+            this._rawString = CFData.bytesToString(this._bytes);
+
+        else if (this._base64)
+            this._rawString = CFData.decodeBase64ToString(this._base64, true);
 
         else
             throw new Error("Can't convert data to string.");
     }
 
     return this._rawString;
-}
+};
 
 CFData.prototype.bytes = function()
 {
+    if (this._bytes === NULL)
+    {
+        var bytes = CFData.stringToBytes(this.rawString());
+        this.setBytes(bytes);
+    }
+
     return this._bytes;
-}
+};
 
 CFData.prototype.base64 = function()
 {
+    if (this._base64 === NULL)
+    {
+        var base64;
+        if (this._bytes)
+            base64 = CFData.encodeBase64Array(this._bytes);
+        else
+            base64 = CFData.encodeBase64String(this.rawString());
+
+        this.setBase64String(base64);
+    }
+
     return this._base64;
-}
+};
 
 GLOBAL(CFMutableData) = function()
 {
     CFData.call(this);
-}
+};
 
 CFMutableData.prototype = new CFData();
 
@@ -114,35 +133,35 @@ CFMutableData.prototype.setPropertyList = function(/*PropertyList*/ aPropertyLis
 
     this._propertyList = aPropertyList;
     this._propertyListFormat = aFormat;
-}
+};
 
 CFMutableData.prototype.setJSONObject = function(/*Object*/ anObject)
 {
     clearMutableData(this);
 
-    this._JSONObject = anObject
-}
+    this._JSONObject = anObject;
+};
 
 CFMutableData.prototype.setRawString = function(/*String*/ aString)
 {
     clearMutableData(this);
 
     this._rawString = aString;
-}
+};
 
 CFMutableData.prototype.setBytes = function(/*Array*/ bytes)
 {
     clearMutableData(this);
 
     this._bytes = bytes;
-}
+};
 
 CFMutableData.prototype.setBase64String = function(/*String*/ aBase64String)
 {
     clearMutableData(this);
 
     this._base64 = aBase64String;
-}
+};
 
 // Base64 encoding and decoding
 
@@ -182,7 +201,7 @@ CFData.decodeBase64ToArray = function(input, strip)
         return output.slice(0, -1 * pad);
 
     return output;
-}
+};
 
 CFData.encodeBase64Array = function(input)
 {
@@ -210,34 +229,42 @@ CFData.encodeBase64Array = function(input)
     // pad with "=" and revert array to previous state
     if (pad > 0)
     {
-        output[output.length-1] = "=";
+        output[output.length - 1] = "=";
         input.pop();
     }
     if (pad > 1)
     {
-        output[output.length-2] = "=";
+        output[output.length - 2] = "=";
         input.pop();
     }
 
     return output.join("");
-}
+};
 
 CFData.decodeBase64ToString = function(input, strip)
 {
     return CFData.bytesToString(CFData.decodeBase64ToArray(input, strip));
-}
+};
 
 CFData.decodeBase64ToUtf16String = function(input, strip)
 {
     return CFData.bytesToUtf16String(CFData.decodeBase64ToArray(input, strip));
-}
+};
 
 CFData.bytesToString = function(bytes)
 {
     // This is relatively efficient, I think:
     return String.fromCharCode.apply(NULL, bytes);
-}
+};
 
+CFData.stringToBytes = function(input)
+{
+    var temp = [];
+    for (var i = 0; i < input.length; i++)
+        temp.push(input.charCodeAt(i));
+
+    return temp;
+};
 
 CFData.encodeBase64String = function(input)
 {
@@ -246,18 +273,17 @@ CFData.encodeBase64String = function(input)
         temp.push(input.charCodeAt(i));
 
     return CFData.encodeBase64Array(temp);
-}
+};
 
 CFData.bytesToUtf16String = function(bytes)
 {
     // Strings are encoded with 16 bits per character.
     var temp = [];
-    for (var i = 0; i < bytes.length; i+=2)
-        temp.push(bytes[i+1] << 8 | bytes[i]);
+    for (var i = 0; i < bytes.length; i += 2)
+        temp.push(bytes[i + 1] << 8 | bytes[i]);
     // This is relatively efficient, I think:
     return String.fromCharCode.apply(NULL, temp);
-}
-
+};
 
 CFData.encodeBase64Utf16String = function(input)
 {
@@ -266,9 +292,9 @@ CFData.encodeBase64Utf16String = function(input)
     for (var i = 0; i < input.length; i++)
     {
         var c = input.charCodeAt(i);
-        temp.push(input.charCodeAt(i) & 0xFF);
-        temp.push((input.charCodeAt(i) & 0xFF00) >> 8);
+        temp.push(c & 0xFF);
+        temp.push((c & 0xFF00) >> 8);
     }
 
     return CFData.encodeBase64Array(temp);
-}
+};

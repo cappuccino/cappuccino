@@ -74,7 +74,7 @@
     if (!aMenu)
         return;
 
-    for(var i=0; i<[aMenu numberOfItems]; i++)
+    for (var i = 0; i < [aMenu numberOfItems]; i++)
     {
         var item = [aMenu itemAtIndex:i];
         [item setTarget:self];
@@ -88,24 +88,24 @@
 
     // Don't match anything.
     [menu performKeyEquivalent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPPlatformActionKeyMask
-        timestamp:nil windowNumber:nil context:nil
+        timestamp:0 windowNumber:0 context:nil
         characters:"b" charactersIgnoringModifiers:"b" isARepeat:NO keyCode:0]];
     [self assertFalse:escapeWasCalled || escapeNoModifierWasCalled || openDocumentWasCalled || undoWasCalled];
 
     [menu performKeyEquivalent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:0
-        timestamp:nil windowNumber:nil context:nil
+        timestamp:0 windowNumber:0 context:nil
         characters:"o" charactersIgnoringModifiers:"o" isARepeat:NO keyCode:0]];
     [self assertFalse:escapeWasCalled || escapeNoModifierWasCalled || openDocumentWasCalled || undoWasCalled];
 
     [menu performKeyEquivalent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPPlatformActionKeyMask
-        timestamp:nil windowNumber:nil context:nil
+        timestamp:0 windowNumber:0 context:nil
         characters:"o" charactersIgnoringModifiers:"o" isARepeat:NO keyCode:0]];
     [self assertFalse:escapeWasCalled || escapeNoModifierWasCalled || undoWasCalled];
     [self assertTrue:openDocumentWasCalled message:"expect openDocumentWasCalled"];
 
     openDocumentWasCalled = NO;
     [menu performKeyEquivalent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPPlatformActionKeyMask
-        timestamp:nil windowNumber:nil context:nil
+        timestamp:0 windowNumber:0 context:nil
         characters:CPUndoKeyEquivalent charactersIgnoringModifiers:CPUndoKeyEquivalent isARepeat:NO keyCode:0]];
     [self assertFalse:escapeWasCalled || escapeNoModifierWasCalled || openDocumentWasCalled];
     [self assertTrue:undoWasCalled];
@@ -116,7 +116,7 @@
     [self _retarget:menu];
 
     [menu performKeyEquivalent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:0
-        timestamp:nil windowNumber:nil context:nil
+        timestamp:0 windowNumber:0 context:nil
         characters:CPEscapeFunctionKey charactersIgnoringModifiers:CPEscapeFunctionKey isARepeat:NO keyCode:0]];
     [self assertFalse:escapeWasCalled || openDocumentWasCalled || undoWasCalled];
     [self assertTrue:escapeNoModifierWasCalled];
@@ -124,7 +124,7 @@
     escapeNoModifierWasCalled = NO;
 
     [menu performKeyEquivalent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPPlatformActionKeyMask
-        timestamp:nil windowNumber:nil context:nil
+        timestamp:0 windowNumber:0 context:nil
         characters:CPEscapeFunctionKey charactersIgnoringModifiers:CPEscapeFunctionKey isARepeat:NO keyCode:0]];
     [self assertFalse:escapeNoModifierWasCalled || openDocumentWasCalled || undoWasCalled];
     [self assertTrue:escapeWasCalled];
@@ -135,15 +135,15 @@
     [self _retarget:menu];
 
     [menu performKeyEquivalent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPPlatformActionKeyMask
-        timestamp:nil windowNumber:nil context:nil
+        timestamp:0 windowNumber:0 context:nil
         characters:@"s" charactersIgnoringModifiers:@"s" isARepeat:NO keyCode:0]];
     [self assertFalse:escapeWasCalled || escapeNoModifierWasCalled || openDocumentWasCalled || saveDocumentAsWasCalled || undoWasCalled];
     [self assertTrue:saveDocumentWasCalled message:"saveDocumentWasCalled"];
 
     saveDocumentWasCalled = NO;
 
-    [menu performKeyEquivalent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPPlatformActionKeyMask|CPShiftKeyMask
-        timestamp:nil windowNumber:nil context:nil
+    [menu performKeyEquivalent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPPlatformActionKeyMask | CPShiftKeyMask
+        timestamp:0 windowNumber:0 context:nil
         characters:@"s" charactersIgnoringModifiers:@"s" isARepeat:NO keyCode:0]];
     [self assertFalse:escapeWasCalled || escapeNoModifierWasCalled || openDocumentWasCalled || saveDocumentWasCalled || undoWasCalled];
     [self assertTrue:saveDocumentAsWasCalled message:"saveDocumentAsWasCalled"];

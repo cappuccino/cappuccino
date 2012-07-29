@@ -43,7 +43,33 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     BOOL    _bordered;
 
     CPColor _color;
-    CPView  _wellView;
+}
+
++ (Class)_binderClassForBinding:(CPString)theBinding
+{
+    if (theBinding == CPValueBinding)
+        return [CPColorWellValueBinder class];
+
+    return [super _binderClassForBinding:theBinding];
+}
+
++ (CPString)defaultThemeClass
+{
+    return @"colorwell";
+}
+
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), [CPNull null], _CGInsetMake(3.0, 3.0, 3.0, 3.0), _CGInsetMakeZero(), [CPNull null]]
+                                       forKeys:[@"bezel-inset", @"bezel-color", @"content-inset", @"content-border-inset", @"content-border-color"]];
+}
+
+- (void)_reverseSetBinding
+{
+    var binderClass = [[self class] _binderClassForBinding:CPValueBinding],
+        theBinding = [binderClass getBinding:CPValueBinding forObject:self];
+
+    [theBinding reverseSetValueFor:@"color"];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -53,11 +79,8 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     if (self)
     {
         _active = NO;
-        _bordered = YES;
         _color = [CPColor whiteColor];
-
-        [self drawBezelWithHighlight:NO];
-        [self drawWellInside:CGRectInset([self bounds], 3.0, 3.0)];
+        [self setBordered:YES];
 
         [self _registerForNotifications];
     }
@@ -83,24 +106,22 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 }
 
 /*!
+    Sets whether the color well is bordered.
+*/
+- (void)setBordered:(BOOL)shouldBeBordered
+{
+    if (shouldBeBordered)
+        [self setThemeState:CPThemeStateBordered];
+    else
+        [self unsetThemeState:CPThemeStateBordered];
+}
+
+/*!
     Returns whether the color well is bordered
 */
 - (BOOL)isBordered
 {
-    return _bordered;
-}
-
-/*!
-    Sets the color well's current color.
-*/
-- (void)setBordered:(BOOL)bordered
-{
-    if (_bordered == bordered)
-        return;
-
-    _bordered = bordered;
-
-    [self drawWellInside:CGRectInset([self bounds], 3.0, 3.0)];
+    return [self hasThemeState:CPThemeStateBordered];
 }
 
 // Managing Color From Color Wells
@@ -123,7 +144,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 
     _color = aColor;
 
-    [self drawWellInside:CGRectInset([self bounds], 3.0, 3.0)];
+    [self setNeedsLayout];
 }
 
 /*!
@@ -186,31 +207,6 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     return _active;
 }
 
-// Drawing a Color Well
-
-- (void)drawBezelWithHighlight:(BOOL)shouldHighlight
-{
-}
-
-/*!
-    Draws the colored area inside the color well without borders.
-    @param aRect the location at which to draw
-*/
-- (void)drawWellInside:(CGRect)aRect
-{
-    if (!_wellView)
-    {
-        _wellView = [[CPView alloc] initWithFrame:aRect];
-        [_wellView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-
-        [self addSubview:_wellView];
-    }
-    else
-        [_wellView setFrame:aRect];
-
-    [_wellView setBackgroundColor:_color];
-}
-
 - (void)colorPanelDidChangeColor:(CPNotification)aNotification
 {
     [self takeColorFrom:[aNotification object]];
@@ -229,27 +225,11 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     [self deactivate];
 }
 
-- (void)mouseDown:(CPEvent)anEvent
+- (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
-    if (![self isEnabled])
-        return;
+    [self highlight:NO];
 
-    [self drawBezelWithHighlight:YES];
-}
-
-- (void)mouseDragged:(CPEvent)anEvent
-{
-    if (![self isEnabled])
-        return;
-
-    [self drawBezelWithHighlight:CGRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil])];
-}
-
-- (void)mouseUp:(CPEvent)anEvent
-{
-    [self drawBezelWithHighlight:NO];
-
-    if (!CGRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil]) || ![self isEnabled])
+    if (!mouseIsUp || !CGRectContainsPoint([self bounds], aPoint) || ![self isEnabled])
         return;
 
     [self activate:YES];
@@ -258,6 +238,115 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 
     [colorPanel setColor:_color];
     [colorPanel orderFront:self];
+}
+
+- (CGRect)contentRectForBounds:(CGRect)bounds
+{
+    var contentInset = [self currentValueForThemeAttribute:@"content-inset"];
+
+    return _CGRectInsetByInset(bounds, contentInset);
+}
+
+- (CGRect)bezelRectForBounds:(CGRect)bounds
+{
+    var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"];
+
+    return _CGRectInsetByInset(bounds, bezelInset);
+}
+
+- (CGRect)contentBorderRectForBounds:(CGRect)bounds
+{
+    var contentBorderInset = [self currentValueForThemeAttribute:@"content-border-inset"];
+
+    return _CGRectInsetByInset(bounds, contentBorderInset);
+}
+
+- (CGRect)rectForEphemeralSubviewNamed:(CPString)aName
+{
+    switch (aName)
+    {
+        case "bezel-view":
+            return [self bezelRectForBounds:[self bounds]];
+        case "content-view":
+            return [self contentRectForBounds:[self bounds]];
+        case "content-border-view":
+            return [self contentBorderRectForBounds:[self bounds]];
+    }
+
+    return [super rectForEphemeralSubviewNamed:aName];
+}
+
+- (CPView)createEphemeralSubviewNamed:(CPString)aName
+{
+    var view = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
+
+    [view setHitTests:NO];
+
+    return view;
+}
+
+- (void)layoutSubviews
+{
+    var bezelView = [self layoutEphemeralSubviewNamed:@"bezel-view"
+                                           positioned:CPWindowBelow
+                      relativeToEphemeralSubviewNamed:@"content-view"];
+
+    [bezelView setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
+
+    var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
+                                             positioned:CPWindowAbove
+                        relativeToEphemeralSubviewNamed:@"bezel-view"];
+
+
+    [contentView setBackgroundColor:_color];
+
+    var contentBorderView = [self layoutEphemeralSubviewNamed:@"content-border-view"
+                                                   positioned:CPWindowAbove
+                              relativeToEphemeralSubviewNamed:@"content-view"];
+
+    [contentBorderView setBackgroundColor:[self currentValueForThemeAttribute:@"content-border-color"]];
+}
+
+@end
+
+@implementation CPColorWellValueBinder : CPBinder
+{
+}
+
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options
+{
+    var placeholderColor = [CPColor blueColor];
+
+    [self _setPlaceholder:placeholderColor forMarker:CPMultipleValuesMarker isDefault:YES];
+    [self _setPlaceholder:placeholderColor forMarker:CPNoSelectionMarker isDefault:YES];
+    [self _setPlaceholder:placeholderColor forMarker:CPNotApplicableMarker isDefault:YES];
+    [self _setPlaceholder:placeholderColor forMarker:CPNullMarker isDefault:YES];
+}
+
+- (void)setValueFor:(CPString)theBinding
+{
+    var destination = [_info objectForKey:CPObservedObjectKey],
+        keyPath = [_info objectForKey:CPObservedKeyPathKey],
+        options = [_info objectForKey:CPOptionsKey],
+        newValue = [destination valueForKeyPath:keyPath],
+        isPlaceholder = CPIsControllerMarker(newValue);
+
+    if (isPlaceholder)
+    {
+        if (newValue === CPNotApplicableMarker && [options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
+        {
+           [CPException raise:CPGenericException
+                       reason:@"can't transform non applicable key on: " + _source + " value: " + newValue];
+        }
+
+        newValue = [self _placeholderForMarker:newValue];
+    }
+    else
+    {
+        newValue = [self transformValue:newValue withOptions:options];
+    }
+
+    [_source setColor:newValue];
 }
 
 @end
@@ -278,11 +367,8 @@ var CPColorWellColorKey     = "CPColorWellColorKey",
     if (self)
     {
         _active = NO;
-        _bordered = [aCoder decodeBoolForKey:CPColorWellBorderedKey];
         _color = [aCoder decodeObjectForKey:CPColorWellColorKey];
-
-        [self drawBezelWithHighlight:NO];
-        [self drawWellInside:CGRectInset([self bounds], 3.0, 3.0)];
+        [self setBordered:[aCoder decodeBoolForKey:CPColorWellBorderedKey]];
 
         [self _registerForNotifications];
     }
@@ -296,19 +382,10 @@ var CPColorWellColorKey     = "CPColorWellColorKey",
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    // We do this in order to avoid encoding the _wellView, which
-    // should just automatically be created programmatically as needed.
-    var actualSubviews = _subviews;
-
-    _subviews = [_subviews copy];
-    [_subviews removeObjectIdenticalTo:_wellView];
-
     [super encodeWithCoder:aCoder];
 
-    _subviews = actualSubviews;
-
     [aCoder encodeObject:_color forKey:CPColorWellColorKey];
-    [aCoder encodeObject:_bordered forKey:CPColorWellBorderedKey];
+    [aCoder encodeObject:[self isBordered] forKey:CPColorWellBorderedKey];
 }
 
 @end

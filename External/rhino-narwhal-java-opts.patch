@@ -1,0 +1,12 @@
+diff -rupN a/engines/rhino/bin/narwhal-rhino b/engines/rhino/bin/narwhal-rhino
+--- a/engines/rhino/bin/narwhal-rhino	2011-11-16 11:01:40.000000000 +0000
++++ b/engines/rhino/bin/narwhal-rhino	2012-04-23 18:35:45.000000000 +0100
+@@ -22,7 +22,7 @@ fi
+ CLASSPATH=$NARWHAL_ENGINE_HOME/jars/jna.jar
+ BOOTCLASSPATH=$NARWHAL_ENGINE_HOME/jars/js.jar
+
+-JAVA_OPTS="-Dnarwhal.http_proxy=$http_proxy"
++JAVA_OPTS="-Dnarwhal.http_proxy=$http_proxy $JAVA_OPTS"
+
+ if [ -n "$NARWHAL_CLASSPATH" ]; then
+     CLASSPATH=$NARWHAL_CLASSPATH:$CLASSPATH

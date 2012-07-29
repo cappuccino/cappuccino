@@ -20,8 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/CPGeometry.j>
+
 @import "CPButton.j"
-@import "CPGeometry.j"
 @import "CPMenu.j"
 @import "CPMenuItem.j"
 
@@ -249,7 +250,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 /*!
     @ignore
 */
-- (int)selectedTag
+- (int)_selectedTag
 {
     return [[self selectedItem] tag];
 }
@@ -587,10 +588,18 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
             if ([indexes containsIndex:0] && [self pullsDown])
                 [self _firstItemDidChange];
 
-            // See whether the index has changed, despite the actual item not changing.
-            while ((index = [indexes indexGreaterThanIndex:index]) !== CPNotFound &&
-                    index <= indexOfSelectedItem)
-                --indexOfSelectedItem;
+            if (![self pullsDown] && [indexes containsIndex:indexOfSelectedItem])
+            {
+                // If the selected item is removed the first item becomes selected.
+                indexOfSelectedItem = 0;
+            }
+            else
+            {
+                // See whether the index has changed, despite the actual item not changing.
+                while ((index = [indexes indexGreaterThanIndex:index]) !== CPNotFound &&
+                        index <= indexOfSelectedItem)
+                    --indexOfSelectedItem;
+            }
 
             [self selectItemAtIndex:indexOfSelectedItem];
         }
@@ -774,6 +783,16 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     while (count-- > 1)
         if (value !== [objects[count] valueForKeyPath:aKeyPath])
             [[self selectedItem] setState:CPOffState];
+}
+
+- (void)_reverseSetBinding
+{
+    var binderClass = [[self class] _binderClassForBinding:CPSelectedIndexBinding],
+        theBinding = [binderClass getBinding:CPSelectedIndexBinding forObject:self];
+
+    [theBinding reverseSetValueFor:@"objectValue"];
+
+    [super _reverseSetBinding];
 }
 
 @end

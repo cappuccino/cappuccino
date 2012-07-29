@@ -281,7 +281,7 @@ var CPMenuItemStringRepresentationDictionary = [CPDictionary dictionary];
 */
 - (void)setFont:(CPFont)aFont
 {
-    if (_font == aFont)
+    if ([_font isEqual:aFont])
         return;
 
     _font = aFont;
@@ -932,34 +932,33 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
         _action = [aCoder decodeObjectForKey:CPMenuItemActionKey];
 
         _isEnabled = DEFAULT_VALUE(CPMenuItemIsEnabledKey, YES);
-        _isHidden = DEFAULT_VALUE(CPMenuItemIsHiddenKey, NO);
-        _tag = DEFAULT_VALUE(CPMenuItemTagKey, 0);
-        _state = DEFAULT_VALUE(CPMenuItemStateKey, CPOffState);
+        _isHidden = [aCoder decodeBoolForKey:CPMenuItemIsHiddenKey];
+        _tag = [aCoder decodeIntForKey:CPMenuItemTagKey];
+        _state = [aCoder decodeIntForKey:CPMenuItemStateKey];
 
-        _image = DEFAULT_VALUE(CPMenuItemImageKey, nil);
-        _alternateImage = DEFAULT_VALUE(CPMenuItemAlternateImageKey, nil);
+        _image = [aCoder decodeObjectForKey:CPMenuItemImageKey];
+        _alternateImage = [aCoder decodeObjectForKey:CPMenuItemAlternateImageKey];
 //    CPImage         _onStateImage;
 //    CPImage         _offStateImage;
 //    CPImage         _mixedStateImage;
 
         // This order matters because setSubmenu: needs _menu to be around.
-        _menu = DEFAULT_VALUE(CPMenuItemMenuKey, nil);
-        [self setSubmenu:DEFAULT_VALUE(CPMenuItemSubmenuKey, nil)];
+        _menu = [aCoder decodeObjectForKey:CPMenuItemMenuKey];
+        [self setSubmenu:[aCoder decodeObjectForKey:CPMenuItemSubmenuKey]];
 
         _keyEquivalent = [aCoder decodeObjectForKey:CPMenuItemKeyEquivalentKey] || @"";
-        _keyEquivalentModifierMask = [aCoder decodeObjectForKey:CPMenuItemKeyEquivalentModifierMaskKey] || 0;
+        _keyEquivalentModifierMask = [aCoder decodeIntForKey:CPMenuItemKeyEquivalentModifierMaskKey];
 
 //    int             _mnemonicLocation;
 
 //    BOOL            _isAlternate;
 
-        // Default is 0.
-        [self setIndentationLevel:[aCoder decodeIntForKey:CPMenuItemIndentationLevelKey] || 0];
+        [self setIndentationLevel:[aCoder decodeIntForKey:CPMenuItemIndentationLevelKey]];
 
 //    CPString        _toolTip;
 
-        _representedObject = DEFAULT_VALUE(CPMenuItemRepresentedObjectKey, nil);
-        _view = DEFAULT_VALUE(CPMenuItemViewKey, nil);
+        _representedObject = [aCoder decodeObjectForKey:CPMenuItemRepresentedObjectKey];
+        _view = [aCoder decodeObjectForKey:CPMenuItemViewKey];
     }
 
     return self;

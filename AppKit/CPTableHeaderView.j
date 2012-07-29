@@ -40,7 +40,7 @@
 + (id)themeAttributes
 {
     return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], CGInsetMakeZero(), [CPNull null], [CPNull null], [CPNull null], CGSizeMakeZero()]
-                                       forKeys:[@"background-color", @"text-alignment", @"text-inset", @"text-color", @"text-font", @"text-shadow-color", @"text-shadow-offset"]];
+                                       forKeys:[@"background-color", @"text-alignment", @"text-inset", @"text-color", @"font", @"text-shadow-color", @"text-shadow-offset"]];
 }
 
 - (void)initWithFrame:(CGRect)frame
@@ -74,7 +74,7 @@
 
     [_textField setFrame:_CGRectMake(inset.right, inset.top, bounds.size.width - inset.right - inset.left, bounds.size.height - inset.top - inset.bottom)];
     [_textField setTextColor:[self currentValueForThemeAttribute:@"text-color"]];
-    [_textField setFont:[self currentValueForThemeAttribute:@"text-font"]];
+    [_textField setFont:[self currentValueForThemeAttribute:@"font"]];
     [_textField setTextShadowColor:[self currentValueForThemeAttribute:@"text-shadow-color"]];
     [_textField setTextShadowOffset:[self currentValueForThemeAttribute:@"text-shadow-offset"]];
     [_textField setAlignment:[self currentValueForThemeAttribute:@"text-alignment"]];
@@ -102,7 +102,7 @@
 
 - (void)setFont:(CPFont)aFont
 {
-    [self setValue:aFont forThemeAttribute:"text-font"];
+    [self setValue:aFont forThemeAttribute:"font"];
 }
 
 - (void)_setIndicatorImage:(CPImage)anImage
@@ -643,7 +643,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         columnMaxX = _CGRectGetMaxX(columnToStroke);
 
         CGContextMoveToPoint(context, FLOOR(columnMaxX) - 0.5, ROUND(_CGRectGetMinY(columnToStroke)));
-        CGContextAddLineToPoint(context, FLOOR(columnMaxX) - 0.5, ROUND(_CGRectGetMaxY(columnToStroke)));
+        CGContextAddLineToPoint(context, FLOOR(columnMaxX) - 0.5, ROUND(_CGRectGetMaxY(columnToStroke)) - 1.0);
     }
     CGContextClosePath(context);
     CGContextStrokePath(context);

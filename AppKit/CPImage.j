@@ -21,12 +21,11 @@
  */
 
 @import <Foundation/CPBundle.j>
+@import <Foundation/CPGeometry.j>
 @import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPObject.j>
 @import <Foundation/CPRunLoop.j>
 @import <Foundation/CPString.j>
-
-@import "CPGeometry.j"
 
 
 CPImageLoadStatusInitialized    = 0;
@@ -159,11 +158,56 @@ function CPAppKitImage(aFilename, aSize)
 }
 
 /*!
+    Initializes the receiver with the specified data. The method loads the data into memory.
+    @param someData the CPData object representing the image
+    @return the initialized image
+*/
+- (id)initWithData:(CPData)someData
+{
+    var base64 = [someData base64],
+        type = [base64 hasPrefix:@"/9j/4AAQSkZJRgABAQEASABIAAD/"] ? @"jpg" : @"png",
+        dataURL = "data:image/" + type + ";base64," + base64;
+
+    return [self initWithContentsOfFile:dataURL];
+}
+
+/*!
     Returns the path of the file associated with this image.
 */
 - (CPString)filename
 {
     return _filename;
+}
+
+/*!
+    Returns the data associated with this image.
+    @discussion Returns nil if the reciever was not initialized with -initWithData: and the browser does not support the canvas feature;
+*/
+- (CPData)data
+{
+#if PLATFORM(DOM)
+    var dataURL;
+
+    if ([_filename hasPrefix:@"data:image"])
+        dataURL = _filename;
+    else if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
+    {
+        var canvas = document.createElement("canvas"),
+            ctx = canvas.getContext("2d");
+
+        canvas.width = _image.width,
+        canvas.height = _image.height;
+
+        ctx.drawImage(_image, 0, 0);
+
+        dataURL = canvas.toDataURL("image/png");
+    }
+    else
+        return nil;
+
+    var base64 = dataURL.replace(/^data:image\/png;base64,/, "");
+    return [CPData dataWithBase64:base64];
+#endif
 }
 
 /*!
@@ -281,7 +325,7 @@ function CPAppKitImage(aFilename, aSize)
                 [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
             }
             [self _derefFromImage];
-        }
+        };
 
     _image.onerror = function ()
         {
@@ -293,7 +337,7 @@ function CPAppKitImage(aFilename, aSize)
                 [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
             }
             [self _derefFromImage];
-        }
+        };
 
     _image.onabort = function ()
         {
@@ -305,7 +349,7 @@ function CPAppKitImage(aFilename, aSize)
                 [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
             }
             [self _derefFromImage];
-        }
+        };
 
     _image.src = _filename;
 

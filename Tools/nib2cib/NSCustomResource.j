@@ -25,7 +25,8 @@
 
 @import <AppKit/_CPCibCustomResource.j>
 
-var FILE = require("file");
+var FILE = require("file"),
+    imageSize = require("cappuccino/imagesize").imagesize;
 
 @implementation _CPCibCustomResource (NSCoding)
 
@@ -58,11 +59,13 @@ var FILE = require("file");
             if (!resourcePath)
                 CPLog.warn("Resource \"" + _resourceName + "\" not found in the resources path: " + [aCoder resourcesPath]);
             else
-                size = imageSize(FILE.canonical(resourcePath));
+                size = imageSize(FILE.canonical(resourcePath)) || CGSizeMakeZero();
 
             // Account for the fact that an extension may have been inferred.
             if (resourcePath && FILE.extension(resourcePath) !== FILE.extension(_resourceName))
                 _resourceName += FILE.extension(resourcePath);
+
+            CPLog.debug("   Path: %s\n   Size: %dx%d", FILE.canonical(resourcePath), size.width, size.height);
         }
 
         _properties = [CPDictionary dictionaryWithObject:size forKey:@"size"];
@@ -73,8 +76,6 @@ var FILE = require("file");
 
 @end
 
-var ImageUtility = require("cappuccino/image-utility"),
-    imageSize = ImageUtility.sizeOfImageAtPath;
 
 @implementation NSCustomResource : _CPCibCustomResource
 {

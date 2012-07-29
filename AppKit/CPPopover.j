@@ -35,7 +35,6 @@ CPPopoverBehaviorApplicationDefined = 0;
 CPPopoverBehaviorTransient          = 1;
 CPPopoverBehaviorSemitransient      = 2;
 
-
 var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     CPPopoverDelegate_popover_didShow_      = 1 << 1,
     CPPopoverDelegate_popover_shouldClose_  = 1 << 2,
@@ -50,11 +49,14 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     view relative to another one.
 
     Delegate can implement:
-        – popoverShouldClose:(CPPopover)aPopOver
-        – popoverWillShow:(CPPopover)aPopOver
-        – popoverDidShow:(CPPopover)aPopOver
-        – popoverWillClose:(CPPopover)aPopOver
-        – popoverDidClose:(CPPopover)aPopOver
+
+    @code
+    – popoverShouldClose:(CPPopover)aPopOver
+    – popoverWillShow:(CPPopover)aPopOver
+    – popoverDidShow:(CPPopover)aPopOver
+    – popoverWillClose:(CPPopover)aPopOver
+    – popoverDidClose:(CPPopover)aPopOver
+    @endcode
 */
 @implementation CPPopover : CPResponder
 {
@@ -62,11 +64,9 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     @outlet id                  _delegate               @accessors(getter=delegate);
 
     BOOL                        _animates               @accessors(property=animates);
-    BOOL                        _shown                  @accessors(getter=shown);
     int                         _appearance             @accessors(property=appearance);
     int                         _behavior               @accessors(getter=behavior);
 
-    BOOL                        _needsCompute;
     _CPAttachedWindow           _attachedWindow;
     int                         _implementedDelegateMethods;
 }
@@ -78,17 +78,15 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 /*!
     Initialize the CPPopover witn default values
 
-    @returns anInitialized CPPopover
+    @returns an initialized CPPopover
 */
 - (CPPopover)init
 {
     if (self = [super init])
     {
-        _animates       = YES;
-        _appearance     = CPPopoverAppearanceMinimal;
-        _behavior       = CPPopoverBehaviorApplicationDefined;
-        _needsCompute   = YES;
-        _shown          = NO;
+        _animates      = YES;
+        _appearance    = CPPopoverAppearanceMinimal;
+        _behavior      = CPPopoverBehaviorApplicationDefined;
     }
 
     return self;
@@ -101,21 +99,21 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 /*!
     Returns the current rect of the popover
 
-    @return CPRect represeting the frame of the popover
+    @return CGRect representing the frame of the popover
 */
-- (CPRect)positioningRect
+- (CGRect)positioningRect
 {
-    if (!_attachedWindow || ![_attachedWindow isVisible])
-        return nil;
+    if (![_attachedWindow isVisible])
+        return CGRectMakeZero();
     return [_attachedWindow frame];
 }
 
 /*! Sets the frame of the popover
     @param aRect the desired frame
 */
-- (void)setPositioningRect:(CPRect)aRect
+- (void)setPositioningRect:(CGRect)aRect
 {
-    if (!_attachedWindow || ![_attachedWindow isVisible])
+    if (![_attachedWindow isVisible])
         return;
     [_attachedWindow setFrame:aRect];
 }
@@ -123,12 +121,12 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 /*!
     Returns the size of the popover's view
 
-    @return CPSize represeting the size of the popover's view
+    @return CGSize representing the size of the popover's view
 */
-- (CPRect)contentSize
+- (CGSize)contentSize
 {
-    if (!_attachedWindow || ![_attachedWindow isVisible])
-        return nil;
+    if (![_attachedWindow isVisible])
+        return CGRectMakeZero();
     return [[_contentViewController view] frameSize];
 }
 
@@ -145,31 +143,29 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 /*!
     Indicates if CPPopover is visible
 
-    @returns YES if visible
+    @returns \c YES if visible
 */
-- (BOOL)shown
+- (BOOL)isShown
 {
-    if (!_attachedWindow)
-        return NO;
     return [_attachedWindow isVisible];
 }
 
 /*!
-    Set the behaviour of the CPPopover. It can be
-        - CPPopoverBehaviorTransient: the popover will be close if another control outside the popover become the responder
-        - CPPopoverBehaviorApplicationDefined: (DEFAULT) the application is responsible for closing the popover
+Set the behavior of the CPPopover. It can be:
 
-    @param aBehaviour the desired behaviour
+- \c CPPopoverBehaviorTransient: the popover will close if another control outside the popover becomes the responder
+- \c CPPopoverBehaviorApplicationDefined: (DEFAULT) the application is responsible for closing the popover
+
+@param aBehavior the desired behavior
 */
-- (void)setBehaviour:(int)aBehaviour
+- (void)setBehavior:(int)aBehavior
 {
-    if (_behavior == aBehaviour)
+    if (_behavior == aBehavior)
         return;
 
-    _behavior = aBehaviour;
-    _needsCompute = YES;
+    _behavior = aBehavior;
+    [_attachedWindow setStyleMask:[self styleMaskForBehavior]];
 }
-
 
 - (void)setDelegate:(id)aDelegate
 {
@@ -203,20 +199,31 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 
     @param positioningRect if set, the popover will be positionned to a random rect relative to the window
     @param positioningView if set, the popover will be positioned relative to this view
-    @param preferredEdge: CPRectEdge representing the preferred positioning.
+    @param preferredEdge: \c CPRectEdge representing the preferred positioning.
 */
-- (void)showRelativeToRect:(CPRect)positioningRect ofView:(CPView)positioningView preferredEdge:(CPRectEdge)preferredEdge
+- (void)showRelativeToRect:(CGRect)positioningRect ofView:(CPView)positioningView preferredEdge:(CPRectEdge)preferredEdge
 {
+    if (!positioningView)
+        [CPException raise:CPInvalidArgumentException reason:"positionView must not be nil"];
+
+    if (!_contentViewController)
+        [CPException raise:CPInternalInconsistencyException reason:@"contentViewController must not be nil"];
+
+    // If the popover is currently closing, do nothing. That is what Cocoa does.
+    if ([_attachedWindow isClosing])
+        return;
+
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_willShow_)
         [_delegate popoverWillShow:self];
 
-    if (!_contentViewController)
-         [CPException raise:CPInternalInconsistencyException reason:@"contentViewController must not be nil"];
-
-    if (_needsCompute || !_attachedWindow)
+    if (!_attachedWindow)
     {
-        var styleMask = (_behavior == CPPopoverBehaviorTransient) ? CPClosableOnBlurWindowMask : nil;
-        _attachedWindow = [[_CPAttachedWindow alloc] initWithContentRect:CPRectMakeZero() styleMask:styleMask];
+        _attachedWindow = [[_CPAttachedWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:[self styleMaskForBehavior]];
+
+        var parentWindow = [positioningView window];
+
+        if (![parentWindow isKindOfClass:_CPAttachedWindow])
+            [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(parentWindowWillClose:) name:CPWindowWillCloseNotification object:parentWindow];
     }
 
     [_attachedWindow setAppearance:_appearance];
@@ -225,16 +232,15 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     [_attachedWindow setMovableByWindowBackground:NO];
     [_attachedWindow setFrame:[_attachedWindow frameRectForContentRect:[[_contentViewController view] frame]]];
     [_attachedWindow setContentView:[_contentViewController view]];
-
-    if (positioningRect)
-        [_attachedWindow positionRelativeToRect:positioningRect preferredEdge:preferredEdge];
-    else if (positioningView)
-        [_attachedWindow positionRelativeToView:positioningView preferredEdge:preferredEdge];
-    else
-        [CPException raise:CPInvalidArgumentException reason:@"a value must be passed for positioningRect or positioningView"];
+    [_attachedWindow positionRelativeToRect:positioningRect ofView:positioningView preferredEdge:preferredEdge];
 
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_didShow_)
         [_delegate popoverDidShow:self];
+}
+
+- (unsigned)styleMaskForBehavior
+{
+    return (_behavior == CPPopoverBehaviorTransient) ? CPClosableOnBlurWindowMask : 0;
 }
 
 /*!
@@ -242,17 +248,24 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 */
 - (void)close
 {
-    if (_implementedDelegateMethods & CPPopoverDelegate_popover_shouldClose_)
-        if (![_delegate popoverShouldClose:self])
-            return;
+    [self _close];
+}
+
+/*!
+    Closes the popover
+*/
+- (void)_close
+{
+    if ([_attachedWindow isClosing] || ![self isShown])
+        return;
 
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_willClose_)
         [_delegate popoverWillClose:self];
 
     [_attachedWindow close];
 
-    if (_implementedDelegateMethods & CPPopoverDelegate_popover_didClose_)
-        [_delegate popoverDidClose:self];
+    // popoverDidClose will be sent from attachedWindowDidClose, since
+    // the attached window will close asynchronously when animating.
 }
 
 
@@ -262,11 +275,18 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 /*!
     Close the popover
 
-    @param aSender the sender of the action
+    @param sender the sender of the action
 */
-- (IBAction)performClose:(id)aSender
+- (IBAction)performClose:(id)sender
 {
-    [self close];
+    if ([_attachedWindow isClosing])
+        return;
+
+    if (_implementedDelegateMethods & CPPopoverDelegate_popover_shouldClose_)
+        if (![_delegate popoverShouldClose:self])
+            return;
+
+    [self _close];
 }
 
 
@@ -276,16 +296,51 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 /*! @ignore */
 - (BOOL)attachedWindowShouldClose:(_CPAttachedWindow)anAttachedWindow
 {
-    [self close];
+    [self performClose:self];
 
-    // we return NO, because we want the CPPopover to compute
-    // if the attached can be close in order to send delegate messages
+    // We return NO, because we want the CPPopover to determine
+    // if the attached window can be closed and to give us a chance
+    // to send delegate messages.
     return NO;
+}
+
+/*! @ignore */
+- (void)attachedWindowDidClose:(_CPAttachedWindow)anAttachedWindow
+{
+    if (_implementedDelegateMethods & CPPopoverDelegate_popover_didClose_)
+        [_delegate popoverDidClose:self];
+}
+
+
+#pragma mark -
+#pragma mark Notifications
+
+/*!
+    @ignore
+
+    This method is called only when a non-popover parent window
+    is closing. In that case popovers should order out.
+*/
+- (void)parentWindowWillClose:(CPNotification)aNotification
+{
+    [_attachedWindow orderOut:nil];
+    [self performClose:nil];
 }
 
 @end
 
-var CPPopoverNeedsComputeKey = @"CPPopoverNeedsComputeKey",
+@implementation CPPopover (Deprecated)
+
+- (void)setBehaviour:(int)aBehavior
+{
+    _CPReportLenientDeprecation(self, _cmd, @selector(setBehavior:));
+
+    [self setBehavior:aBehavior];
+}
+
+@end
+
+var CPPopoverNeedsNewAttachedWindowKey = @"CPPopoverNeedsNewAttachedWindowKey",
     CPPopoverAppearanceKey = @"CPPopoverAppearanceKey",
     CPPopoverAnimatesKey = @"CPPopoverAnimatesKey",
     CPPopoverContentViewControllerKey = @"CPPopoverContentViewControllerKey",
@@ -300,12 +355,11 @@ var CPPopoverNeedsComputeKey = @"CPPopoverNeedsComputeKey",
 
     if (self)
     {
-        _needsCompute = [aCoder decodeIntForKey:CPPopoverNeedsComputeKey];
         _appearance = [aCoder decodeIntForKey:CPPopoverAppearanceKey];
         _animates = [aCoder decodeBoolForKey:CPPopoverAnimatesKey];
         _contentViewController = [aCoder decodeObjectForKey:CPPopoverContentViewControllerKey];
         [self setDelegate:[aCoder decodeObjectForKey:CPPopoverDelegateKey]];
-        [self setBehaviour:[aCoder decodeIntForKey:CPPopoverBehaviorKey]];
+        [self setBehavior:[aCoder decodeIntForKey:CPPopoverBehaviorKey]];
     }
     return self;
 }
@@ -314,9 +368,8 @@ var CPPopoverNeedsComputeKey = @"CPPopoverNeedsComputeKey",
 {
     [super encodeWithCoder:aCoder];
 
-    [aCoder encodeBool:_needsCompute forKey:CPPopoverNeedsComputeKey];
     [aCoder encodeInt:_appearance forKey:CPPopoverAppearanceKey];
-    [aCoder encodeObject:_animates forKey:CPPopoverAnimatesKey];
+    [aCoder encodeBool:_animates forKey:CPPopoverAnimatesKey];
     [aCoder encodeObject:_contentViewController forKey:CPPopoverContentViewControllerKey];
     [aCoder encodeObject:_delegate forKey:CPPopoverDelegateKey];
     [aCoder encodeInt:_behavior forKey:CPPopoverBehaviorKey];

@@ -28,46 +28,85 @@
 CPFontDefaultSystemFontFace = @"Arial, sans-serif";
 CPFontDefaultSystemFontSize = 12;
 
-var _CPFonts                        = {},
-    _CPFontSystemFontFace           = CPFontDefaultSystemFontFace,
-    _CPFontSystemFontSize           = 12,
-    _CPFontFallbackFaces            = CPFontDefaultSystemFontFace.split(", "),
-    _CPFontStripRegExp              = new RegExp("(^\\s*[\"']?|[\"']?\\s*$)", "g");
+/*!
+    To create a font of a size that will dynamically reflect the current
+    system font size, use this for the size argument.
+*/
+CPFontCurrentSystemSize = -1;
+
+// For internal use only by this class and subclasses
+_CPFontSystemFacePlaceholder = "_CPFontSystemFacePlaceholder";
+
+var _CPFontCache                     = {},
+    _CPSystemFontCache               = {},
+    _CPFontSystemFontFace            = CPFontDefaultSystemFontFace,
+    _CPFontSystemFontSize            = 12,
+    _CPFontFallbackFaces             = CPFontDefaultSystemFontFace.split(", "),
+    _CPFontStripRegExp               = new RegExp("(^\\s*[\"']?|[\"']?\\s*$)", "g");
 
 
+#define _CPRealFontSize(aSize)  (aSize <= 0 ? _CPFontSystemFontSize : aSize)
 #define _CPFontNormalizedNames(aName)  _CPFontNormalizedNameArray(aName).join(", ")
-#define _CPCachedFont(aName, aSize, isBold, isItalic)  _CPFonts[_CPFontCreateCSSString(_CPFontNormalizedNames(aName), aSize, isBold, isItalic)]
+#define _CPCachedFont(aName, aSize, isBold, isItalic)  _CPFontCache[_CPFontCreateCSSString(_CPFontNormalizedNames(aName), aSize, isBold, isItalic)]
+#define _CPUserFont(aName, aSize, isBold, isItalic)  _CPCachedFont(aName, aSize, isBold, isItalic) || [[CPFont alloc] _initWithName:aName size:aSize bold:isBold italic:isItalic system:NO]
+
+#define _CPSystemFontCacheKey(aSize, isBold)  (String(aSize) + (isBold ? "b" : ""))
+#define _CPCachedSystemFont(aSize, isBold)  _CPSystemFontCache[_CPSystemFontCacheKey(aSize, isBold)]
+#define _CPSystemFont(aSize, isBold)  (_CPCachedSystemFont(aSize, isBold) || [[CPFont alloc] _initWithName:_CPFontSystemFacePlaceholder size:aSize bold:isBold italic:NO system:YES])
 
 /*!
-    @ingroup appkit
-    @class CPFont
+@ingroup appkit
+@class CPFont
 
-    The CPFont class allows control of the fonts used for displaying text anywhere on the screen.
-    The primary method for getting a particular font is through one of the class methods that take
-    a name and/or size as arguments, and return the appropriate CPFont.
+The CPFont class allows control of the fonts used for displaying text anywhere on the screen.
+The primary method for getting a particular font is through one of the class methods that take
+a name and/or size as arguments, and return the appropriate CPFont.
 
-    By default the system font face/size is Arial 12px, with a fallback to sans-serif. You may
-    configure this at runtime in two ways:
+### System fonts
+When you create a font using \c -systemFontOfSize: or \c -boldSystemFontOfSize:, a proxy font is
+created that always refers to the current system font face and size. By default the system
+font face/size is Arial 12px, with a fallback to sans-serif 12px. You may configure this at
+runtime in two ways:
 
-    - By sending [CPFont @link CPFont::setSystemFontFace: setSystemFontFace:@endlink] and/or [CPFont @link CPFont::setSystemFontSize: setSystemFontSize:@endlink].
-    - By configuring Info.plist for your application or for AppKit. You can set the font face
-      by adding a CPSystemFontFace string item to the Info.plist, and you can set the font size
-      by adding a CPSystemFontSize integer item to the Info.plist.
+- By sending [CPFont setSystemFontFace:<face>] and/or [CPFont setSystemFontSize:<size>].
+  Note that if you change the system font face or size during runtime, the next time
+  any view using a system font is redrawn, it will show the new font.
+- By configuring Info.plist for your application or for AppKit. You can set the font face
+  by adding a CPSystemFontFace string item to the Info.plist, and you can set the font size
+  by adding a CPSystemFontSize integer item to the Info.plist.
 
-    Note that in either case, you can specify a comma-delimited list of fonts as the font face.
-    The browser will use the first available font in the list. CPFont always ensures that Arial
-    and sans-serif are in the generated CSS string, so there is no need to add them to the end
-    of your font list.
+Note that in either case, you can specify a comma-delimited list of fonts as the font face.
+Do not quote enclose font faces that contain spaces, that is done automatically when a CSS
+representation of a font is requested.
 
-    If you are using nib2cib, you should use the second method (using Info.plist),
-    and be sure to run nib2cib again any time you modify the CPSystemFontFace or CPSystemFontSize items.
-    For example, you might add this to your application's Info.plist to set the system font to Lucida Grande,
-    with an automatic fallback to Arial or sans-serif:
+The browser will use the first available font in the list you supply. CPFont always ensures
+that Arial and sans-serif are in the CSS representation of a font as a fallback, so there is
+no need to add them to the end of your font list.
 
-    @code
+### nib2cib conversion
+Fonts are converted by nib2cib according to the following algorithm:
+
+- If the font family is Lucida Grande, then a system font will be created.
+- If the font is Lucida Grande 13 (plain), the "default" font will be used at runtime.
+  The default font is taken from the "font" theme attribute if one exists,
+  otherwise from the current system font face and size.
+- Lucida Grande of any size other than 13 will retain its size.
+- Fonts using any family other than Lucida Grande will be used as is, including the size.
+
+### Using custom web fonts
+The configurability of CPFont makes it easy to use a custom web font as the system font.
+For example, if you want to use the google font Asap as the system font, you would do the
+following:
+
+- Add a <link> to the <head> of index-debug.html and index.html:
+@code
+<link href='http://fonts.googleapis.com/css?family=Asap:400,700' rel='stylesheet' type='text/css'>
+@endcode
+- Specify Asap as the system font in Info.plist by adding the following item:
+@code
 <key>CPSystemFontFace</key>
-<string>Lucida Grande</string>
-	@endcode
+<string>Asap</string>
+@endcode
 */
 @implementation CPFont : CPObject
 {
@@ -78,19 +117,23 @@ var _CPFonts                        = {},
     float       _lineHeight;
     BOOL        _isBold         @accessors(readonly, getter=isBold);
     BOOL        _isItalic       @accessors(readonly, getter=isItalic);
+    BOOL        _isSystem       @accessors(readonly, getter=isSystem);
 
     CPString    _cssString;
 }
 
 + (void)initialize
 {
+    if (self !== [CPFont class])
+        return;
+
     var systemFontFace = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPSystemFontFace"];
 
     if (!systemFontFace)
         systemFontFace = [[CPBundle bundleForClass:[CPView class]] objectForInfoDictionaryKey:@"CPSystemFontFace"];
 
     if (systemFontFace)
-        [self setSystemFontFace:systemFontFace];
+        _CPFontSystemFontFace = _CPFontNormalizedNames(systemFontFace);
 
     var systemFontSize = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPSystemFontSize"];
 
@@ -114,7 +157,13 @@ var _CPFonts                        = {},
 */
 + (CPString)setSystemFontFace:(CPString)aFace
 {
-    _CPFontSystemFontFace = _CPFontNormalizedNames(aFace);
+    var normalizedFaces = _CPFontNormalizedNames(aFace);
+
+    if (normalizedFaces === _CPFontSystemFontFace)
+        return;
+
+    [self _invalidateSystemFontCache]
+    _CPFontSystemFontFace = aFace;
 }
 
 /*!
@@ -130,101 +179,136 @@ var _CPFonts                        = {},
 */
 + (float)setSystemFontSize:(float)size
 {
-    if (size > 0)
+    if (size > 0 && size !== _CPFontSystemFontSize)
+    {
+        [self _invalidateSystemFontCache];
         _CPFontSystemFontSize = size;
+    }
+}
+
++ (void)_invalidateSystemFontCache
+{
+    var systemSize = String(_CPFontSystemFontSize),
+        currentSize = String(CPFontCurrentSystemSize);
+
+    for (key in _CPSystemFontCache)
+    {
+        if (_CPSystemFontCache.hasOwnProperty(key) &&
+            (key.indexOf(systemSize) === 0 || key.indexOf(currentSize) === 0))
+        {
+            delete _CPSystemFontCache[key];
+        }
+    }
 }
 
 /*!
     Returns a font with the specified name and size.
     @param aName the name of the font
-    @param aSize the size of the font (in px)
+    @param aSize the size of the font (in px). 0 or negative will create a font
+           in the current system font size.
     @return the requested font
 */
 + (CPFont)fontWithName:(CPString)aName size:(float)aSize
 {
-    return _CPCachedFont(aName, aSize, NO, NO) || [[CPFont alloc] _initWithName:aName size:aSize bold:NO italic:NO];
+    return _CPUserFont(aName, aSize <= 0 ? _CPFontSystemFontSize : aSize, NO, NO);
 }
 
 /*!
     Returns a font with the specified name, size and style.
     @param aName the name of the font
-    @param aSize the size of the font (in px)
+    @param aSize the size of the font (in px). 0 or negative will create a font
+           in the current system font size.
     @param italic whether the font should be italicized
     @return the requested font
 */
 + (CPFont)fontWithName:(CPString)aName size:(float)aSize italic:(BOOL)italic
 {
-    return _CPCachedFont(aName, aSize, NO, NO) || [[CPFont alloc] _initWithName:aName size:aSize bold:NO italic:italic];
+    return _CPUserFont(aName, aSize <= 0 ? _CPFontSystemFontSize : aSize, NO, italic);
 }
 
 /*!
     Returns a bold font with the specified name and size.
     @param aName the name of the font
-    @param aSize the size of the font (in px)
+    @param aSize the size of the font (in px). 0 or negative will create a font
+           in the current system font size.
     @return the requested bold font
 */
 + (CPFont)boldFontWithName:(CPString)aName size:(float)aSize
 {
-    return _CPCachedFont(aName, aSize, YES, NO) || [[CPFont alloc] _initWithName:aName size:aSize bold:YES italic:NO];
+    return _CPUserFont(aName, aSize <= 0 ? _CPFontSystemFontSize : aSize, YES, NO);
 }
 
 /*!
     Returns a bold font with the specified name, size and style.
     @param aName the name of the font
-    @param aSize the size of the font (in px)
+    @param aSize the size of the font (in px). 0 or negative will create a font
+           in the current system font size.
     @param italic whether the font should be italicized
     @return the requested font
 */
 + (CPFont)boldFontWithName:(CPString)aName size:(float)aSize italic:(BOOL)italic
 {
-    return _CPCachedFont(aName, aSize, NO, NO) || [[CPFont alloc] _initWithName:aName size:aSize bold:YES italic:italic];
+    return _CPUserFont(aName, aSize <= 0 ? _CPFontSystemFontSize : aSize, YES, italic);
+}
+
+/*!
+    Internal font getter like fontWithName:size:italic: with a bold selector.
+*/
++ (CPFont)_fontWithName:(CPString)aName size:(float)aSize bold:(BOOL)bold italic:(BOOL)italic
+{
+    return _CPUserFont(aName, aSize <= 0 ? _CPFontSystemFontSize : aSize, bold, italic);
 }
 
 /*!
     Returns the system font scaled to the specified size
-    @param aSize the size of the font (in px)
+    @param aSize the size of the font (in px). 0 creates a static font
+           in the current system font size. Negative creates a font
+           that dynamically tracks the current system font size.
     @return the requested system font
 */
 + (CPFont)systemFontOfSize:(CPSize)aSize
 {
-    return _CPCachedFont(_CPFontSystemFontFace, aSize, NO, NO) || [[CPFont alloc] _initWithName:_CPFontSystemFontFace size:aSize bold:NO italic:NO];
+    return _CPSystemFont(aSize === 0 ? _CPFontSystemFontSize : aSize, NO);
 }
 
 /*!
     Returns the bold system font scaled to the specified size
-    @param aSize the size of the font (in px)
+    @param aSize the size of the font (in px). 0 creates a static font
+           in the current system font size. Negative creates a font
+           that dynamically tracks the current system font size.
     @return the requested bold system font
 */
 + (CPFont)boldSystemFontOfSize:(CPSize)aSize
 {
-    return _CPCachedFont(_CPFontSystemFontFace, aSize, YES, NO) || [[CPFont alloc] _initWithName:_CPFontSystemFontFace size:aSize bold:YES italic:NO];
+    return _CPSystemFont(aSize === 0 ? _CPFontSystemFontSize : aSize, YES);
 }
 
-/*  FIXME Font Descriptor
-    @ignore
-*/
-- (id)_initWithName:(CPString)aName size:(float)aSize bold:(BOOL)isBold
-{
-    return [self _initWithName:aName size:aSize bold:isBold italic:NO];
-}
-
-- (id)_initWithName:(CPString)aName size:(float)aSize bold:(BOOL)isBold italic:(BOOL)isItalic
+- (id)_initWithName:(CPString)aName size:(float)aSize bold:(BOOL)isBold italic:(BOOL)isItalic system:(BOOL)isSystem
 {
     self = [super init];
 
     if (self)
     {
-        _name = _CPFontNormalizedNames(aName);
         _size = aSize;
         _ascender = 0;
         _descender = 0;
         _lineHeight = 0;
         _isBold = isBold;
         _isItalic = isItalic;
+        _isSystem = isSystem;
 
-        _cssString = _CPFontCreateCSSString(_name, _size, _isBold, _isItalic);
-
-        _CPFonts[_cssString] = self;
+        if (isSystem)
+        {
+            _name = aName;
+            _cssString = _CPFontCreateCSSString(_CPFontSystemFontFace, _size, _isBold, _isItalic);
+            _CPSystemFontCache[_CPSystemFontCacheKey(_size, _isBold)] = self;
+        }
+        else
+        {
+            _name = _CPFontNormalizedNames(aName);
+            _cssString = _CPFontCreateCSSString(_name, _size, _isBold, _isItalic);
+            _CPFontCache[_cssString] = self;
+        }
     }
 
     return self;
@@ -235,10 +319,12 @@ var _CPFonts                        = {},
 */
 - (float)ascender
 {
-    if (!_ascender)
-        [self _getMetrics];
+    var font = _isSystem ? _CPSystemFont(_size, _isBold) : self;
 
-    return _ascender;
+    if (!font._ascender)
+        [font _getMetrics];
+
+    return font._ascender;
 }
 
 /*!
@@ -247,10 +333,12 @@ var _CPFonts                        = {},
 */
 - (float)descender
 {
-    if (!_descender)
-        [self _getMetrics];
+    var font = _isSystem ? _CPSystemFont(_size, _isBold) : self;
 
-    return _descender;
+    if (!font._descender)
+        [font _getMetrics];
+
+    return font._descender;
 }
 
 /*!
@@ -260,10 +348,12 @@ var _CPFonts                        = {},
 */
 - (float)defaultLineHeightForFont
 {
-    if (!_lineHeight)
-        [self _getMetrics];
+    var font = _isSystem ? _CPSystemFont(_size, _isBold) : self;
 
-    return _lineHeight;
+    if (!font._lineHeight)
+        [font _getMetrics];
+
+    return font._lineHeight;
 }
 
 /*!
@@ -271,7 +361,7 @@ var _CPFonts                        = {},
 */
 - (float)size
 {
-    return _size;
+    return _CPRealFontSize(_size);
 }
 
 /*!
@@ -279,7 +369,9 @@ var _CPFonts                        = {},
 */
 - (CPString)cssString
 {
-    return _cssString;
+    var font = _isSystem ? _CPSystemFont(_size, _isBold) : self;
+
+    return font._cssString;
 }
 
 /*!
@@ -287,7 +379,15 @@ var _CPFonts                        = {},
 */
 - (CPString)familyName
 {
+    if (_isSystem)
+        return _CPFontSystemFontFace;
+
     return _name;
+}
+
+- (BOOL)isSystemSize
+{
+    return _size <= 0;
 }
 
 - (BOOL)isEqual:(id)anObject
@@ -302,7 +402,7 @@ var _CPFonts                        = {},
 
 - (id)copy
 {
-    return [[CPFont alloc] _initWithName:_name size:_size bold:_isBold italic:_isItalic];
+    return [[CPFont alloc] _initWithName:_name size:_size bold:_isBold italic:_isItalic system:_isSystem];
 }
 
 - (void)_getMetrics
@@ -319,7 +419,8 @@ var _CPFonts                        = {},
 var CPFontNameKey     = @"CPFontNameKey",
     CPFontSizeKey     = @"CPFontSizeKey",
     CPFontIsBoldKey   = @"CPFontIsBoldKey",
-    CPFontIsItalicKey = @"CPFontIsItalicKey";
+    CPFontIsItalicKey = @"CPFontIsItalicKey",
+    CPFontIsSystemKey = @"CPFontIsSystemKey";
 
 @implementation CPFont (CPCoding)
 
@@ -333,9 +434,10 @@ var CPFontNameKey     = @"CPFontNameKey",
     var fontName = [aCoder decodeObjectForKey:CPFontNameKey],
         size = [aCoder decodeFloatForKey:CPFontSizeKey],
         isBold = [aCoder decodeBoolForKey:CPFontIsBoldKey],
-        isItalic = [aCoder decodeBoolForKey:CPFontIsItalicKey];
+        isItalic = [aCoder decodeBoolForKey:CPFontIsItalicKey],
+        isSystem = [aCoder decodeBoolForKey:CPFontIsSystemKey];
 
-    return [self _initWithName:fontName size:size bold:isBold italic:isItalic];
+    return [self _initWithName:fontName size:size bold:isBold italic:isItalic system:isSystem];
 }
 
 /*!
@@ -348,6 +450,7 @@ var CPFontNameKey     = @"CPFontNameKey",
     [aCoder encodeFloat:_size forKey:CPFontSizeKey];
     [aCoder encodeBool:_isBold forKey:CPFontIsBoldKey];
     [aCoder encodeBool:_isItalic forKey:CPFontIsItalicKey];
+    [aCoder encodeBool:_isSystem forKey:CPFontIsSystemKey];
 }
 
 @end
@@ -356,7 +459,7 @@ var CPFontNameKey     = @"CPFontNameKey",
 // aName must be normalized
 var _CPFontCreateCSSString = function(aName, aSize, isBold, isItalic)
 {
-    var properties = (isItalic ? "italic " : "") + (isBold ? "bold " : "") + aSize + "px ";
+    var properties = (isItalic ? "italic " : "") + (isBold ? "bold " : "") + _CPRealFontSize(aSize) + "px ";
 
     return properties + _CPFontConcatNameWithFallback(aName);
 };

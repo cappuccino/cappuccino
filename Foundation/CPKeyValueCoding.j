@@ -157,7 +157,7 @@ var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
 - (id)valueForUndefinedKey:(CPString)aKey
 {
     [[CPException exceptionWithName:CPUndefinedKeyException
-                            reason:[self description] + " is not key value coding-compliant for the key " + aKey
+                            reason:[self _objectDescription] + " is not key value coding-compliant for the key " + aKey
                           userInfo:[CPDictionary dictionaryWithObjects:[self, aKey] forKeys:[CPTargetObjectUserInfoKey, CPUnknownUserInfoKey]]] raise];
 }
 
@@ -235,7 +235,7 @@ var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
         key,
         keyEnumerator = [keyedValues keyEnumerator];
 
-    while (key = [keyEnumerator nextObject])
+    while ((key = [keyEnumerator nextObject]) !== nil)
     {
         value = [keyedValues objectForKey: key];
 
@@ -250,8 +250,13 @@ var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
 - (void)setValue:(id)aValue forUndefinedKey:(CPString)aKey
 {
     [[CPException exceptionWithName:CPUndefinedKeyException
-                            reason:[self description] + " is not key value coding-compliant for the key " + aKey
+                            reason:[self _objectDescription] + " is not key value coding-compliant for the key " + aKey
                           userInfo:[CPDictionary dictionaryWithObjects:[self, aKey] forKeys:[CPTargetObjectUserInfoKey, CPUnknownUserInfoKey]]] raise];
+}
+
+- (CPString)_objectDescription
+{
+    return "<" + [self className] + " 0x" + [CPString stringWithHash:[self UID]] + ">";
 }
 
 @end

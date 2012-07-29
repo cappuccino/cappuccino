@@ -219,28 +219,22 @@ CPRunContinuesResponse  = -1002;
     // At this point we clear the window.status to eliminate Safari's "Cancelled" error message
     // The message shouldn't be displayed, because only an XHR is cancelled, but it is a usability issue.
     // We do it here so that applications can change it in willFinish or didFinishLaunching
+#if PLATFORM(DOM)
     window.status = " ";
+#endif
 
     // We also want to set the default cursor on the body, so that buttons and things don't have an iBeam
     [[CPCursor arrowCursor] set];
 
     var bundle = [CPBundle mainBundle],
-        types = [bundle objectForInfoDictionaryKey:@"CPBundleDocumentTypes"];
-
-    if ([types count] > 0)
-        _documentController = [CPDocumentController sharedDocumentController];
-
-    var delegateClassName = [bundle objectForInfoDictionaryKey:@"CPApplicationDelegateClass"];
+        delegateClassName = [bundle objectForInfoDictionaryKey:@"CPApplicationDelegateClass"];
 
     if (delegateClassName)
     {
         var delegateClass = objj_getClass(delegateClassName);
 
         if (delegateClass)
-            if ([_documentController class] == delegateClass)
-                [self setDelegate:_documentController];
-            else
-                [self setDelegate:[[delegateClass alloc] init]];
+            [self setDelegate:[[delegateClass alloc] init]];
     }
 
     var defaultCenter = [CPNotificationCenter defaultCenter];
@@ -249,13 +243,18 @@ CPRunContinuesResponse  = -1002;
         postNotificationName:CPApplicationWillFinishLaunchingNotification
         object:self];
 
+    var types = [bundle objectForInfoDictionaryKey:@"CPBundleDocumentTypes"];
+
+    if ([types count] > 0)
+        _documentController = [CPDocumentController sharedDocumentController];
+
     var needsUntitled = !!_documentController,
         URLStrings = window.cpOpeningURLStrings && window.cpOpeningURLStrings(),
         index = 0,
         count = [URLStrings count];
 
     for (; index < count; ++index)
-        needsUntitled = ![self _openURL:[CPURL URLWithString:URLStrings[index]]] || needsUntitled;
+        needsUntitled = ![self _openURL:[CPURL URLWithString:URLStrings[index]]] && needsUntitled;
 
     if (needsUntitled && [_delegate respondsToSelector:@selector(applicationShouldOpenUntitledFile:)])
         needsUntitled = [_delegate applicationShouldOpenUntitledFile:self];
@@ -374,7 +373,7 @@ CPRunContinuesResponse  = -1002;
             standardPath = [[CPBundle bundleForClass:[self class]] pathForResource:@"standardApplicationIcon.png"];
 
         // FIXME move this into the CIB eventually
-        [applicationLabel setFont:[CPFont boldSystemFontOfSize:14.0]];
+        [applicationLabel setFont:[CPFont boldSystemFontOfSize:[CPFont systemFontSize] + 2]];
         [applicationLabel setAlignment:CPCenterTextAlignment];
         [versionLabel setAlignment:CPCenterTextAlignment];
         [copyrightLabel setAlignment:CPCenterTextAlignment];
@@ -577,27 +576,33 @@ CPRunContinuesResponse  = -1002;
 {
     _currentEvent = anEvent;
 
+#if PLATFORM(DOM)
     var willPropagate = [[[anEvent window] platformWindow] _willPropagateCurrentDOMEvent];
 
     // temporarily pretend we won't propagate the event. we'll restore the saved value later
     // we do this outside the if so that changes user code might make in _handleKeyEquiv. are preserved
     [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO];
+#endif
 
     // Check if this is a candidate for key equivalent...
     if ([anEvent _couldBeKeyEquivalent] && [self _handleKeyEquivalent:anEvent])
     {
+#if PLATFORM(DOM)
         var characters = [anEvent characters],
             modifierFlags = [anEvent modifierFlags];
 
         // Unconditionally propagate on these keys to solve browser copy paste bugs
         if ((characters == "c" || characters == "x" || characters == "v") && (modifierFlags & CPPlatformActionKeyMask))
             [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:YES];
+#endif
 
         return;
     }
 
+#if PLATFORM(DOM)
     // if we make it this far, then restore the original willPropagate value
     [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:willPropagate];
+#endif
 
     if (_eventListeners.length)
     {
@@ -1172,12 +1177,12 @@ CPRunContinuesResponse  = -1002;
 var _CPModalSessionMake = function(aWindow, aStopCode)
 {
     return { _window:aWindow, _state:CPRunContinuesResponse , _previous:nil };
-}
+};
 
 var _CPEventListenerMake = function(anEventMask, aCallback)
 {
     return { _mask:anEventMask, _callback:aCallback };
-}
+};
 
 // Make this a global for use in CPPlatformWindow+DOM.j.
 _CPRunModalLoop = function(anEvent)
@@ -1187,11 +1192,16 @@ _CPRunModalLoop = function(anEvent)
     var theWindow = [anEvent window],
         modalSession = CPApp._currentSession;
 
+    // The special case for popovers here is not clear. In Cocoa the popover window does not respond YES to worksWhenModal,
+    // yet it works when there is a modal window. Maybe it starts its own modal session, but interaction with the original
+    // modal window seems to continue working as well. Regardless of correctness, this solution beats popovers not working
+    // at all from sheets.
     if (theWindow == modalSession._window || 
-        [theWindow worksWhenModal] ||
-        [theWindow attachedSheet] == modalSession._window)
+        [theWindow worksWhenModal] || 
+        [theWindow attachedSheet] == modalSession._window || // -dw- allow modal parent of sheet to be repositioned
+        ([theWindow isKindOfClass:_CPAttachedWindow] && [[theWindow targetView] window] === modalSession._window))
         [theWindow sendEvent:anEvent];
-}
+};
 
 /*!
     Starts the GUI and Cappuccino frameworks. This function should be

@@ -163,7 +163,7 @@ var concat = Array.prototype.concat,
 
     if ([objects count])
     {
-        argumentsArray = [[nil, aSelector] arrayByAddingObjectsFromArray:objects];
+        var argumentsArray = [[nil, aSelector] arrayByAddingObjectsFromArray:objects];
 
         for (; index < count; ++index)
         {

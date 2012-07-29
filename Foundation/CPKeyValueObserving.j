@@ -31,26 +31,107 @@
 
 - (void)willChangeValueForKey:(CPString)aKey
 {
+    if (!aKey)
+        return;
+
+    if (!self[KVOProxyKey])
+    {
+        if (!self._willChangeMessageCounter)
+            self._willChangeMessageCounter = new Object();
+
+        if (!self._willChangeMessageCounter[aKey])
+            self._willChangeMessageCounter[aKey] = 1;
+        else
+            self._willChangeMessageCounter[aKey] += 1;
+    }
 }
 
 - (void)didChangeValueForKey:(CPString)aKey
 {
+    if (!aKey)
+        return;
+
+    if (!self[KVOProxyKey])
+    {
+        if (self._willChangeMessageCounter && self._willChangeMessageCounter[aKey])
+        {
+            self._willChangeMessageCounter[aKey] -= 1;
+
+            if (!self._willChangeMessageCounter[aKey])
+                delete self._willChangeMessageCounter[aKey];
+        }
+        else
+            [CPException raise:@"CPKeyValueObservingException" reason:@"'didChange...' message called without prior call of 'willChange...'"];
+    }
 }
 
 - (void)willChange:(CPKeyValueChange)aChange valuesAtIndexes:(CPIndexSet)indexes forKey:(CPString)aKey
 {
+    if (!aKey)
+        return;
+
+    if (!self[KVOProxyKey])
+    {
+        if (!self._willChangeMessageCounter)
+            self._willChangeMessageCounter = new Object();
+
+        if (!self._willChangeMessageCounter[aKey])
+            self._willChangeMessageCounter[aKey] = 1;
+        else
+            self._willChangeMessageCounter[aKey] += 1;
+    }
 }
 
 - (void)didChange:(CPKeyValueChange)aChange valuesAtIndexes:(CPIndexSet)indexes forKey:(CPString)aKey
 {
+    if (!aKey)
+        return;
+
+    if (!self[KVOProxyKey])
+    {
+        if (self._willChangeMessageCounter && self._willChangeMessageCounter[aKey])
+        {
+            self._willChangeMessageCounter[aKey] -= 1;
+
+            if (!self._willChangeMessageCounter[aKey])
+                delete self._willChangeMessageCounter[aKey];
+        }
+        else
+            [CPException raise:@"CPKeyValueObservingException" reason:@"'didChange...' message called without prior call of 'willChange...'"];
+    }
 }
 
 - (void)willChangeValueForKey:(CPString)aKey withSetMutation:(CPKeyValueSetMutationKind)aMutationKind usingObjects:(CPSet)objects
 {
+    if (!aKey)
+        return;
+
+    if (!self[KVOProxyKey])
+    {
+        if (!self._willChangeMessageCounter)
+            self._willChangeMessageCounter = new Object();
+
+        if (!self._willChangeMessageCounter[aKey])
+            self._willChangeMessageCounter[aKey] = 1;
+        else
+            self._willChangeMessageCounter[aKey] += 1;
+    }
 }
 
 - (void)didChangeValueForKey:(CPString)aKey withSetMutation:(CPKeyValueSetMutationKind)aMutationKind usingObjects:(CPSet)objects
 {
+    if (!self[KVOProxyKey])
+    {
+        if (self._willChangeMessageCounter && self._willChangeMessageCounter[aKey])
+        {
+            self._willChangeMessageCounter[aKey] -= 1;
+
+            if (!self._willChangeMessageCounter[aKey])
+                delete self._willChangeMessageCounter[aKey];
+        }
+        else
+            [CPException raise:@"CPKeyValueObservingException" reason:@"'didChange...' message called without prior call of 'willChange...'"];
+    }
 }
 
 - (void)addObserver:(id)anObserver forKeyPath:(CPString)aPath options:(unsigned)options context:(id)aContext
@@ -69,8 +150,24 @@
     [self[KVOProxyKey] _removeObserver:anObserver forKeyPath:aPath];
 }
 
+/*!
+    Whether -willChangeValueForKey/-didChangeValueForKey should automatically be invoked when the
+    setter of the given key is used. The default is YES. If you override this method to return NO
+    for some key, you will need to call -willChangeValueForKey/-didChangeValueForKey manually to
+    be KVO compliant.
+
+    The default implementation of this method will check if the receiving class implements
+    `+ (BOOL)automaticallyNotifiesObserversOf<aKey>` and return the response of that method if it
+    exists.
+*/
 + (BOOL)automaticallyNotifiesObserversForKey:(CPString)aKey
 {
+    var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substring(1),
+        selector = "automaticallyNotifiesObserversOf" + capitalizedKey;
+
+    if ([[self class] respondsToSelector:selector])
+        return objj_msgSend([self class], selector);
+
     return YES;
 }
 
@@ -214,7 +311,7 @@ var _changeKindForSetMutationKind = function(mutationKind)
         case CPKeyValueIntersectSetMutation:    return CPKeyValueChangeRemoval;
         case CPKeyValueSetSetMutation:          return CPKeyValueChangeReplacement;
     }
-}
+};
 
 var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
     DependentKeysKey    = "$KVODEPENDENT",
@@ -648,7 +745,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
     var forwarder = nil;
 
-    if (aPath.indexOf('.') != CPNotFound)
+    if (aPath.indexOf('.') !== CPNotFound && aPath.charAt(0) !== '@')
         forwarder = [[_CPKVOForwardingObserver alloc] initWithKeyPath:aPath object:_targetObject observer:anObserver options:options context:aContext];
     else
         [self _replaceModifiersForKey:aPath];
@@ -788,7 +885,20 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     {
         var level = _nestingForKey[aKey];
         if (!changes || !level)
-            [CPException raise:@"CPKeyValueObservingException" reason:@"'didChange...' message called without prior call of 'willChange...'"];
+        {
+            if (_targetObject._willChangeMessageCounter && _targetObject._willChangeMessageCounter[aKey])
+            {
+                // Close unobserved willChange for a given key.
+                _targetObject._willChangeMessageCounter[aKey] -= 1;
+
+                if (!_targetObject._willChangeMessageCounter[aKey])
+                    delete _targetObject._willChangeMessageCounter[aKey];
+
+                return;
+            }
+            else
+                [CPException raise:@"CPKeyValueObservingException" reason:@"'didChange...' message called without prior call of 'willChange...'"];
+        }
 
         _nestingForKey[aKey] = level - 1;
         if (level - 1 > 0)
@@ -1076,8 +1186,8 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
     var dotIndex = aKeyPath.indexOf('.');
 
-    if (dotIndex == CPNotFound)
-        [CPException raise:CPInvalidArgumentException reason:"Created _CPKVOForwardingObserver without compound key path: "+aKeyPath];
+    if (dotIndex === CPNotFound)
+        [CPException raise:CPInvalidArgumentException reason:"Created _CPKVOForwardingObserver without compound key path: " + aKeyPath];
 
     _firstPart = aKeyPath.substring(0, dotIndex);
     _secondPart = aKeyPath.substring(dotIndex + 1);
@@ -1098,7 +1208,14 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 {
     if (aKeyPath === _firstPart)
     {
-        [_observer observeValueForKeyPath:_firstPart ofObject:_object change:changes context:_context];
+        var oldValue = [_value valueForKeyPath:_secondPart],
+            newValue = [_object valueForKeyPath:_firstPart + "." + _secondPart],
+            pathChanges = [CPDictionary dictionaryWithObjectsAndKeys:
+                            newValue ? newValue : [CPNull null],    CPKeyValueChangeNewKey,
+                            oldValue ? oldValue : [CPNull null],    CPKeyValueChangeOldKey,
+                            CPKeyValueChangeSetting,                CPKeyValueChangeKindKey];
+
+        [_observer observeValueForKeyPath:_firstPart + "." + _secondPart ofObject:_object change:pathChanges context:_context];
 
         //since a has changed, we should remove ourselves as an observer of the old a, and observe the new one
         if (_value)
@@ -1112,7 +1229,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     else
     {
         //a is the same, but a.b has changed -- nothing to do but forward this message along
-        [_observer observeValueForKeyPath:_firstPart+"."+aKeyPath ofObject:_object change:changes context:_context];
+        [_observer observeValueForKeyPath:_firstPart + "." + aKeyPath ofObject:_object change:changes context:_context];
     }
 }
 
@@ -1139,7 +1256,7 @@ var _CPKVOInfoMake = function _CPKVOInfoMake(anObserver, theOptions, aContext, a
         context: aContext,
         forwarder: aForwarder
     };
-}
+};
 
 @import "CPArray+KVO.j"
 @import "CPSet+KVO.j"

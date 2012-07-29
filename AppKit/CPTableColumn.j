@@ -498,12 +498,13 @@ CPTableColumnUserResizingMask   = 1 << 1;
 }
 
 /*!
-    If NO the tablecolumn will no longer be visible in the tableview
-    If YES the tablecolumn will be visible in the tableview.
+    If YES the tablecolumn will no longer be visible in the tableview.
+    If NO the tablecolumn will be visible in the tableview.
 */
 - (void)setHidden:(BOOL)shouldBeHidden
 {
     shouldBeHidden = !!shouldBeHidden
+
     if (_isHidden === shouldBeHidden)
         return;
 
@@ -678,7 +679,10 @@ CPTableColumnUserResizingMask   = 1 << 1;
             bindingInfo = binding._info,
             destination = [bindingInfo objectForKey:CPObservedObjectKey],
             keyPath = [bindingInfo objectForKey:CPObservedKeyPathKey],
+            options = [bindingInfo objectForKey:CPOptionsKey],
             dotIndex = keyPath.lastIndexOf(".");
+
+        newValue = [binding reverseTransformValue:newValue withOptions:options];
 
         if (dotIndex === CPNotFound)
             [[destination valueForKeyPath:keyPath] replaceObjectAtIndex:aRow withObject:newValue];
@@ -695,11 +699,6 @@ CPTableColumnUserResizingMask   = 1 << 1;
         }
     }
 }
-
-//- (void)objectValue
-//{
-//    return nil;
-//}
 
 @end
 
@@ -734,7 +733,6 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
         [self setIdentifier:[aCoder decodeObjectForKey:CPTableColumnIdentifierKey]];
         [self setHeaderView:[aCoder decodeObjectForKey:CPTableColumnHeaderViewKey]];
         [self setDataView:[aCoder decodeObjectForKey:CPTableColumnDataViewKey]];
-        [self setHeaderView:[aCoder decodeObjectForKey:CPTableColumnHeaderViewKey]];
 
         _resizingMask  = [aCoder decodeIntForKey:CPTableColumnResizingMaskKey];
         _isHidden = [aCoder decodeBoolForKey:CPTableColumnIsHiddenKey];

@@ -197,7 +197,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
 
     if ([theToolbar isVisible])
     {
-        toolbarHeight = CGRectGetHeight([[theToolbar _toolbarView] frame]);
+        var toolbarHeight = CGRectGetHeight([[theToolbar _toolbarView] frame]);
 
         frameRect.origin.y -= toolbarHeight;
         frameRect.size.height += toolbarHeight;
@@ -244,7 +244,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
 
         _titleField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
 
-        [_titleField setFont:[CPFont boldSystemFontOfSize:12.0]];
+        [_titleField setFont:[CPFont boldSystemFontOfSize:CPFontCurrentSystemSize]];
         [_titleField setAutoresizingMask:CPViewWidthSizable];
 
         // FIXME: Make this to CPLineBreakByTruncatingMiddle once it's implemented.

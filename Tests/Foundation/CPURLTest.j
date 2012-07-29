@@ -103,6 +103,24 @@ var exampleProtocol = "http",
     [self assert:[url lastPathComponent] equals:examplePathRelative];
 }
 
+- (void)testDeleteComponent
+{
+    var url = [CPURL URLWithString:exampleFullPath];
+
+    url = [url URLByDeletingLastPathComponent];
+    [self assert:[url absoluteString] equals:examplePathBase.substring(0, examplePathBase.length - 1)];
+
+    url = [url URLByDeletingLastPathComponent];
+    [self assert:[url absoluteString] equals:@"/"];
+
+    url = [url URLByDeletingLastPathComponent];
+    [self assert:[url absoluteString] equals:@"/"];
+
+    url = [CPURL URLWithString:@"foo"];
+    url = [url URLByDeletingLastPathComponent];
+    [self assert:[url absoluteString] equals:@""];
+}
+
 - (void)testURLToString
 {
     [self assert:String([CPURL URLWithString:exampleURL]) equals:exampleURL];

@@ -61,6 +61,10 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
     if (self)
     {
         _data = [CPURLConnection sendSynchronousRequest:[CPURLRequest requestWithURL:aURL] returningResponse:nil];
+
+        if (!_data)
+            return nil;
+
         _awakenCustomResources = YES;
     }
 
@@ -137,7 +141,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
         var key = nil,
             keyEnumerator = [replacementClasses keyEnumerator];
 
-        while (key = [keyEnumerator nextObject])
+        while ((key = [keyEnumerator nextObject]) !== nil)
             [unarchiver setClass:[replacementClasses objectForKey:key] forClassName:key];
     }
 
@@ -162,7 +166,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
 - (BOOL)instantiateCibWithOwner:(id)anOwner topLevelObjects:(CPArray)topLevelObjects
 {
-    return [self instantiateCibWithExternalNameTable:[CPDictionary dictionaryWithObjectsAndKeys:anOwner, CPCibOwner, topLevelObjects, CPCibTopLevelObjects]];
+    return [self instantiateCibWithExternalNameTable:[CPDictionary dictionaryWithObjects:[anOwner, topLevelObjects] forKeys:[CPCibOwner, CPCibTopLevelObjects]]];
 }
 
 @end

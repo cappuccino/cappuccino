@@ -72,7 +72,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
 
 + (void)initialize
 {
-    if (self != [CPSearchField class])
+    if (self !== [CPSearchField class])
         return;
 
     var bundle = [CPBundle bundleForClass:self];
@@ -173,7 +173,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
         searchButtonImage = (_searchMenuTemplate === nil) ? CPSearchFieldSearchImage : CPSearchFieldFindImage;
 
     [button setBordered:NO];
-    [button setImageScaling:CPScaleToFit];
+    [button setImageScaling:CPImageScaleAxesIndependently];
     [button setImage:searchButtonImage];
     [button setAutoresizingMask:CPViewMaxXMargin];
 }
@@ -215,7 +215,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
 {
     var button = [self cancelButton];
     [button setBordered:NO];
-    [button setImageScaling:CPScaleToFit];
+    [button setImageScaling:CPImageScaleAxesIndependently];
     [button setImage:CPSearchFieldCancelImage];
     [button setAlternateImage:CPSearchFieldCancelPressedImage];
     [button setAutoresizingMask:CPViewMinXMargin];

@@ -1,6 +1,6 @@
 @import <Foundation/CPExpression.j>
 
-@implementation NSKeyPathExpression : CPExpression_keypath
+@implementation NSKeyPathExpression : _CPKeyPathExpression
 {
 }
 
@@ -11,12 +11,12 @@
 
 - (Class)classForKeyedArchiver
 {
-    return [CPExpression_keypath class];
+    return [_CPKeyPathExpression class];
 }
 
 @end
 
-@implementation CPKeyPathSpecifierExpression : CPExpression_constant
+@implementation _CPKeyPathSpecifierExpression : _CPConstantValueExpression
 {
 }
 
@@ -29,7 +29,7 @@
 
 @end
 
-@implementation NSKeyPathSpecifierExpression : CPKeyPathSpecifierExpression
+@implementation NSKeyPathSpecifierExpression : _CPKeyPathSpecifierExpression
 {
 }
 
@@ -40,22 +40,22 @@
 
 - (Class)classForKeyedArchiver
 {
-    return [CPExpression_constant class];
+    return [_CPConstantValueExpression class];
 }
 
 @end
 
-@implementation CPExpression_constant (NSCoding)
+@implementation _CPConstantValueExpression (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    var value = [aCoder decodeObjectForKey:@"NSConstantValue"];    
+    var value = [aCoder decodeObjectForKey:@"NSConstantValue"];
     return [self initWithValue:value];
 }
 
 @end
 
-@implementation NSConstantValueExpression : CPExpression_constant
+@implementation NSConstantValueExpression : _CPConstantValueExpression
 {
 }
 
@@ -66,26 +66,26 @@
 
 - (Class)classForKeyedArchiver
 {
-    return [CPExpression_constant class];
+    return [_CPConstantValueExpression class];
 }
 
 @end
 
-@implementation CPExpression_function (NSCoding)
+@implementation _CPFunctionExpression (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
-{   
+{
     var type = [aCoder decodeIntForKey:@"NSExpressionType"],
         operand = [aCoder decodeObjectForKey:@"NSOperand"],
         selector = CPSelectorFromString([aCoder decodeObjectForKey:@"NSSelectorName"]),
         args = [aCoder decodeObjectForKey:@"NSArguments"];
-    
+
     return [self initWithTarget:operand selector:selector arguments:args type:type];
 }
 
 @end
 
-@implementation NSFunctionExpression : CPExpression_function
+@implementation NSFunctionExpression : _CPFunctionExpression
 {
 }
 
@@ -96,25 +96,25 @@
 
 - (Class)classForKeyedArchiver
 {
-    return [CPExpression_function class];
+    return [_CPFunctionExpression class];
 }
 
 @end
 
-@implementation CPExpression_set (NSCoding)
+@implementation _CPSetExpression (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     var type = [aCoder decodeIntForKey:@"NSExpressionType"],
         left = [aCoder decodeObjectForKey:@"NSLeftExpression"],
         right = [aCoder decodeObjectForKey:@"NSRightExpression"];
-    
+
     return [self initWithType:type left:left right:right];
 }
 
 @end
 
-@implementation NSSetExpression : CPExpression_set
+@implementation NSSetExpression : _CPSetExpression
 {
 }
 
@@ -125,12 +125,12 @@
 
 - (Class)classForKeyedArchiver
 {
-    return [CPExpression_set class];
+    return [_CPSetExpression class];
 }
 
 @end
 
-@implementation NSSelfExpression : CPExpression_self
+@implementation NSSelfExpression : _CPSelfExpression
 {
 }
 
@@ -141,12 +141,12 @@
 
 - (Class)classForKeyedArchiver
 {
-    return [CPExpression_self class];
+    return [_CPSelfExpression class];
 }
 
 @end
 
-@implementation CPExpression_variable (NSCoding)
+@implementation _CPVariableExpression (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
@@ -156,7 +156,7 @@
 
 @end
 
-@implementation NSVariableExpression : CPExpression_variable
+@implementation NSVariableExpression : _CPVariableExpression
 {
 }
 
@@ -167,12 +167,12 @@
 
 - (Class)classForKeyedArchiver
 {
-    return [CPExpression_variable class];
+    return [_CPVariableExpression class];
 }
 
 @end
 
-@implementation CPExpression_aggregate (NSCoding)
+@implementation _CPAggregateExpression (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
@@ -182,7 +182,7 @@
 
 @end
 
-@implementation NSAggregateExpression : CPExpression_aggregate
+@implementation NSAggregateExpression : _CPAggregateExpression
 {
 }
 
@@ -193,7 +193,7 @@
 
 - (Class)classForKeyedArchiver
 {
-    return [CPExpression_aggregate class];
+    return [_CPAggregateExpression class];
 }
 
 @end

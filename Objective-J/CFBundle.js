@@ -65,7 +65,7 @@ CFBundle.environments = function()
 {
     // Passed in by GCC.
     return ENVIRONMENTS;
-}
+};
 
 DISPLAY_NAME(CFBundle.environments);
 
@@ -89,14 +89,14 @@ CFBundle.bundleContainingURL = function(/*CFURL|String*/ aURL)
     }
 
     return NULL;
-}
+};
 
 DISPLAY_NAME(CFBundle.bundleContainingURL);
 
 CFBundle.mainBundle = function()
 {
     return new CFBundle(mainBundleURL);
-}
+};
 
 DISPLAY_NAME(CFBundle.mainBundle);
 
@@ -109,21 +109,21 @@ function addClassToBundle(aClass, aBundle)
 CFBundle.bundleForClass = function(/*Class*/ aClass)
 {
     return CFBundlesForClasses[aClass.name] || CFBundle.mainBundle();
-}
+};
 
 DISPLAY_NAME(CFBundle.bundleForClass);
 
 CFBundle.prototype.bundleURL = function()
 {
     return this._bundleURL;
-}
+};
 
 DISPLAY_NAME(CFBundle.prototype.bundleURL);
 
 CFBundle.prototype.resourcesDirectoryURL = function()
 {
     return this._resourcesDirectoryURL;
-}
+};
 
 DISPLAY_NAME(CFBundle.prototype.resourcesDirectoryURL);
 
@@ -138,7 +138,7 @@ CFBundle.prototype.resourceURL = function(/*String*/ aResourceName, /*String*/ a
     var resourceURL = (new CFURL(aResourceName, this.resourcesDirectoryURL())).mappedURL();
 
     return resourceURL.absoluteURL();
-}
+};
 
 DISPLAY_NAME(CFBundle.prototype.resourceURL);
 
@@ -165,21 +165,21 @@ CFBundle.prototype.executableURL = function()
     }
 
     return this._executableURL;
-}
+};
 
 DISPLAY_NAME(CFBundle.prototype.executableURL);
 
 CFBundle.prototype.infoDictionary = function()
 {
     return this._infoDictionary;
-}
+};
 
 DISPLAY_NAME(CFBundle.prototype.infoDictionary);
 
 CFBundle.prototype.valueForInfoDictionaryKey = function(/*String*/ aKey)
 {
     return this._infoDictionary.valueForKey(aKey);
-}
+};
 
 DISPLAY_NAME(CFBundle.prototype.valueForInfoDictionaryKey);
 
@@ -194,14 +194,14 @@ CFBundle.prototype.hasSpritedImages = function()
             return YES;
 
     return NO;
-}
+};
 
 DISPLAY_NAME(CFBundle.prototype.hasSpritedImages);
 
 CFBundle.prototype.environments = function()
 {
     return this._infoDictionary.valueForKey("CPBundleEnvironments") || ["ObjJ"];
-}
+};
 
 DISPLAY_NAME(CFBundle.prototype.environments);
 
@@ -226,21 +226,21 @@ CFBundle.prototype.mostEligibleEnvironment = function(/*Array*/ environments)
     }
 
     return NULL;
-}
+};
 
 DISPLAY_NAME(CFBundle.prototype.mostEligibleEnvironment);
 
 CFBundle.prototype.isLoading = function()
 {
     return this._loadStatus & CFBundleLoading;
-}
+};
 
 DISPLAY_NAME(CFBundle.prototype.isLoading);
 
 CFBundle.prototype.isLoaded = function()
 {
-    return this._loadStatus & CFBundleLoaded;
-}
+    return !!(this._loadStatus & CFBundleLoaded);
+};
 
 DISPLAY_NAME(CFBundle.prototype.isLoaded);
 
@@ -299,7 +299,7 @@ CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
 
         new FileRequest(new CFURL("Info.plist", self.bundleURL()), onsuccess, onfailure);
     });
-}
+};
 
 DISPLAY_NAME(CFBundle.prototype.load);
 
@@ -346,7 +346,7 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
         if ((typeof CPApp === "undefined" || !CPApp || !CPApp._finishedLaunching) &&
              typeof OBJJ_PROGRESS_CALLBACK === "function" && CPApplicationSizeInBytes)
         {
-            OBJJ_PROGRESS_CALLBACK(MAX(MIN(1.0, CFTotalBytesLoaded / CPApplicationSizeInBytes), 0.0), CPApplicationSizeInBytes, aBundle.bundlePath())
+            OBJJ_PROGRESS_CALLBACK(MAX(MIN(1.0, CFTotalBytesLoaded / CPApplicationSizeInBytes), 0.0), CPApplicationSizeInBytes, aBundle.bundlePath());
         }
 
         if (aBundle._loadStatus === CFBundleLoading)
@@ -497,7 +497,7 @@ function CFBundleTestSpriteSupport(/*String*/ MHTMLPath, /*Function*/ aCallback)
         }
 
         CPApplicationSizeInBytes += size;
-    })
+    });
 
     CFBundleTestSpriteTypes([
         CFBundleDataURLSpriteType,
@@ -538,12 +538,12 @@ function CFBundleTestSpriteTypes(/*Array*/ spriteTypes)
         }
         else
             image.onerror();
-    }
+    };
 
     image.onerror = function()
     {
         CFBundleTestSpriteTypes(spriteTypes.slice(2));
-    }
+    };
 
     image.src = spriteTypes[1];
 }
@@ -669,36 +669,36 @@ function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString, /*String*/ 
 CFBundle.prototype.addEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
 {
     this._eventDispatcher.addEventListener(anEventName, anEventListener);
-}
+};
 
 DISPLAY_NAME(CFBundle.prototype.addEventListener);
 
 CFBundle.prototype.removeEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
 {
     this._eventDispatcher.removeEventListener(anEventName, anEventListener);
-}
+};
 
 DISPLAY_NAME(CFBundle.prototype.removeEventListener);
 
 CFBundle.prototype.onerror = function(/*Event*/ anEvent)
 {
     throw anEvent.error;
-}
+};
 
 DISPLAY_NAME(CFBundle.prototype.onerror);
 
 CFBundle.prototype.bundlePath = function()
 {
     return this._bundleURL.absoluteURL().path();
-}
+};
 
 CFBundle.prototype.path = function()
 {
     CPLog.warn("CFBundle.prototype.path is deprecated, use CFBundle.prototype.bundlePath instead.");
     return this.bundlePath.apply(this, arguments);
-}
+};
 
 CFBundle.prototype.pathForResource = function(aResource)
 {
     return this.resourceURL(aResource).absoluteString();
-}
+};

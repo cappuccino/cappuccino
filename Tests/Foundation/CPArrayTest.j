@@ -1,4 +1,3 @@
-
 @import <Foundation/Foundation.j>
 
 
@@ -199,7 +198,6 @@
                         } context:13] same:1];
 }
 
-
 - (void)test_indexOfObjectWithOptions_passingTest
 {
     var array = [[[self class] arrayClass] arrayWithObjects:
@@ -358,6 +356,111 @@
 
 }
 
+- (void)test_indexesOfObjectsPassingTest_
+{
+    var array = [[[self class] arrayClass] arrayWithObjects:
+            { name:@"Tom", age:7 },
+            { name:@"Dick", age:13 },
+            { name:@"Harry", age:27 },
+            { name:@"Zelda", age:7 }];
+
+    [self assert:[array indexesOfObjectsPassingTest:function() { return YES; }] equals:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 4)]];
+    [self assert:[array indexesOfObjectsPassingTest:function() { return NO; }] equals:[CPIndexSet indexSet]];
+    [self assert:[array indexesOfObjectsPassingTest:function() { return nil; }] equals:[CPIndexSet indexSet]];
+
+    [self assert:[array indexesOfObjectsPassingTest:function(anObject, anIndex)
+                        {
+                            return [anObject.name isEqual:@"Harry"];
+                        }] equals:[CPIndexSet indexSetWithIndex:2]];
+
+    var indexSet = [CPIndexSet indexSetWithIndex:0];
+    [indexSet addIndex:3];
+
+    [self assert:[array indexesOfObjectsPassingTest:function(anObject, anIndex)
+                        {
+                            return anObject.age === 7;
+                        }] equals:indexSet];
+
+    [self assert:[array indexesOfObjectsPassingTest:function(anObject, anIndex)
+                        {
+                            return [anObject.name isEqual:@"Horton"];
+                        }] equals:[CPIndexSet indexSet]];
+}
+
+- (void)test_indexesOfObjectsPassingTest_context_
+{
+    var array = [[[self class] arrayClass] arrayWithObjects:
+            { name:@"Tom", age:7 },
+            { name:@"Dick", age:13 },
+            { name:@"Harry", age:27 },
+            { name:@"Zelda", age:7 }];
+
+    [self assert:[array indexesOfObjectsPassingTest:function(anObject, anIndex, aContext)
+                        {
+                            return [anObject.name isEqual:aContext];
+                        } context:@"Harry"] equals:[CPIndexSet indexSetWithIndex:2]];
+
+    var indexSet = [CPIndexSet indexSetWithIndex:0];
+    [indexSet addIndex:3];
+
+    [self assert:[array indexesOfObjectsPassingTest:function(anObject, anIndex, aContext)
+                        {
+                            return anObject.age === aContext;
+                        } context:7] equals:indexSet];
+}
+
+- (void)test_indexesOfObjectsWithOptions_passingTest
+{
+    var array = [[[self class] arrayClass] arrayWithObjects:
+        { name:@"Tom", age:7 },
+        { name:@"Dick", age:13 },
+        { name:@"Harry", age:27 },
+        { name:@"Zelda", age:7 }],
+        namePredicate = function(anObject, anIndex)
+                        {
+                            return [anObject.name isEqual:@"Harry"];
+                        },
+        agePredicate =  function(anObject, anIndex)
+                        {
+                            return anObject.age === 7;
+                        };
+
+    [self assert:[array indexesOfObjectsWithOptions:CPEnumerationNormal passingTest:namePredicate] equals:[CPIndexSet indexSetWithIndex:2]];
+    [self assert:[array indexesOfObjectsWithOptions:CPEnumerationReverse passingTest:namePredicate] equals:[CPIndexSet indexSetWithIndex:2]];
+
+    var indexSet = [CPIndexSet indexSetWithIndex:0];
+    [indexSet addIndex:3];
+
+    [self assert:[array indexesOfObjectsWithOptions:CPEnumerationNormal passingTest:agePredicate] equals:indexSet];
+    [self assert:[array indexesOfObjectsWithOptions:CPEnumerationReverse passingTest:agePredicate] equals:indexSet];
+}
+
+- (void)test_indexesOfObjectsWithOptions_passingTest_context
+{
+    var array = [[[self class] arrayClass] arrayWithObjects:
+        { name:@"Tom", age:7 },
+        { name:@"Dick", age:13 },
+        { name:@"Harry", age:27 },
+        { name:@"Zelda", age:7 }],
+        namePredicate = function(anObject, anIndex, aContext)
+                        {
+                            return [anObject.name isEqual:aContext];
+                        },
+        agePredicate =  function(anObject, anIndex, aContext)
+                        {
+                            return anObject.age === aContext;
+                        };
+
+    [self assert:[array indexesOfObjectsWithOptions:CPEnumerationNormal passingTest:namePredicate context:@"Harry"] equals:[CPIndexSet indexSetWithIndex:2]];
+    [self assert:[array indexesOfObjectsWithOptions:CPEnumerationReverse passingTest:namePredicate context:@"Harry"] equals:[CPIndexSet indexSetWithIndex:2]];
+
+    var indexSet = [CPIndexSet indexSetWithIndex:0];
+    [indexSet addIndex:3];
+
+    [self assert:[array indexesOfObjectsWithOptions:CPEnumerationNormal passingTest:agePredicate context:7] equals:indexSet];
+    [self assert:[array indexesOfObjectsWithOptions:CPEnumerationReverse passingTest:agePredicate context:7] equals:indexSet];
+}
+
 - (void)test_isEqualToArray_
 {
     var arrayClass = [[self class] arrayClass],
@@ -492,6 +595,90 @@
 
     for (; index < count; ++index)
         [self assert:[tests[index][0] componentsJoinedByString:tests[index][1]] equals:tests[index][2]];
+}
+
+- (void)testEnumateObjectsUsingBlock_
+{
+    var input0 = [],
+        input1 = [1, 3, "b"],
+        output = [CPMutableDictionary dictionary],
+        outputFunction = function(anObject, idx)
+        {
+            [output setValue:anObject forKey:"" + idx];
+        };
+
+    [input0 enumerateObjectsUsingBlock:outputFunction];
+    [self assert:0 equals:[output count] message:@"output when enumerating empty array"];
+
+    [input1 enumerateObjectsUsingBlock:outputFunction];
+    [self assert:3 equals:[output count] message:@"output when enumerating input1"];
+    [self assert:input1[0] equals:[output valueForKey:"0"] message:@"output[0]"];
+    [self assert:input1[1] equals:[output valueForKey:"1"] message:@"output[0]"];
+    [self assert:input1[2] equals:[output valueForKey:"2"] message:@"output[0]"];
+
+    stoppingFunction = function(anObject, idx, stop)
+    {
+        [output setValue:anObject forKey:"" + idx];
+        if ([output count] > 1)
+            stop(YES); // AT_DEREF(stop, YES) - FIXME Replace with proper @ref @deref when in ObjJ.
+    }
+    output = [CPMutableDictionary dictionary];
+
+    [input1 enumerateObjectsUsingBlock:stoppingFunction];
+    [self assert:2 equals:[output count] message:@"output when enumerating input1 and stopping after 2"];
+    [self assert:input1[0] equals:[output valueForKey:"0"] message:@"output[0]"];
+    [self assert:input1[1] equals:[output valueForKey:"1"] message:@"output[0]"];
+}
+
+- (void)testJSObjectDescription
+{
+    var array = [CGRectMake(1, 2, 3, 4), CGPointMake(5, 6)],
+        d = [array description];
+
+    [self assertTrue:d.indexOf("x: 1") !== -1 message:"Can't find 'x: 1' in description of array " + d];
+    [self assertTrue:d.indexOf("y: 2") !== -1 message:"Can't find 'y: 2' in description of array " + d];
+    [self assertTrue:d.indexOf("width: 3") !== -1 message:"Can't find 'width: 3' in description of array " + d];
+    [self assertTrue:d.indexOf("height: 4") !== -1 message:"Can't find 'height: 4' in description of array " + d];
+    [self assertTrue:d.indexOf("x: 5") !== -1 message:"Can't find 'x: 5' in description of array " + d];
+    [self assertTrue:d.indexOf("y: 6") !== -1 message:"Can't find 'y: 6' in description of array " + d];
+}
+
+- (void)testSortUsingDescriptorsWithDifferentSelectors
+{
+    var a = [CPDictionary dictionaryWithJSObject:{"a": "AB", "b": "ba"}],
+        b = [CPDictionary dictionaryWithJSObject:{"a": "aa", "b": "BB"}],
+        array = [a, b],
+        d1 = [[CPSortDescriptor sortDescriptorWithKey:@"a" ascending:YES selector:@selector(compare:)]],
+        d2 = [[CPSortDescriptor sortDescriptorWithKey:@"a" ascending:YES selector:@selector(caseInsensitiveCompare:)]],
+        s1 = [array sortedArrayUsingDescriptors:d1],
+        s2 = [array sortedArrayUsingDescriptors:d2];
+
+    [self assertTrue:s1[0] === a message:s1[0] + " is larger then " + a + " when sorting case sensitive"];
+    [self assertTrue:s2[1] === a message:s2[1] + " is larger then " + a + " when sorting case insensitive"];
+}
+
+- (void)testSortUsingDescriptorsWithKeyPath
+{
+    var a = [CPDictionary dictionaryWithJSObject:{"a": "AB", "b": "ba"}],
+        b = [CPDictionary dictionaryWithJSObject:{"a": "aa", "b": "BB"}],
+        A = [CPDictionary dictionaryWithJSObject:{"x": a}],
+        B = [CPDictionary dictionaryWithJSObject:{"x": b}],
+        array = [A, B],
+        d1 = [[CPSortDescriptor sortDescriptorWithKey:@"x.b" ascending:YES selector:@selector(compare:)]],
+        d2 = [[CPSortDescriptor sortDescriptorWithKey:@"x.b" ascending:NO selector:@selector(compare:)]],
+        s1 = [array sortedArrayUsingDescriptors:d1],
+        s2 = [array sortedArrayUsingDescriptors:d2];
+
+    [self assertTrue:s1[1] === A message:s1[1] + " is larger then " + A + " when sorting ascending"];
+    [self assertTrue:s2[0] === A message:s2[0] + " is larger then " + A + " when sorting descending"];
+}
+
+- (void)testDisallowObservers
+{
+    var anArray = [CPArray arrayWithObject:0];
+
+    [self assertThrows:function() { [anArray addObserver:self forKeyPath:@"self" options:0 context:nil]; }];
+    [self assertThrows:function() { [anArray removeObserver:self forKeyPath:@"self"]; }];
 }
 
 @end

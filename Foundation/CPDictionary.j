@@ -25,6 +25,7 @@
 @import "CPException.j"
 @import "CPNull.j"
 @import "CPObject.j"
+#import "Ref.h"
 
 /* @ignore */
 @implementation _CPDictionaryValueEnumerator : CPEnumerator
@@ -50,7 +51,7 @@
 {
     var key = [_keyEnumerator nextObject];
 
-    if (!key)
+    if (key === nil)
         return nil;
 
     return [_dictionary objectForKey:key];
@@ -359,30 +360,86 @@
     var count = _keys.length,
         index = 0,
         matchingKeys = [],
-        thisKey = nil,
-        thisValue = nil;
+        key = nil,
+        value = nil;
 
     for (; index < count; ++index)
     {
-        thisKey = _keys[index];
-        thisValue = _buckets[thisKey];
-        if (thisValue.isa && anObject && anObject.isa && [thisValue respondsToSelector:@selector(isEqual:)] && [thisValue isEqual:anObject])
-            matchingKeys.push(thisKey);
-        else if (thisValue === anObject)
-            matchingKeys.push(thisKey);
+        key = _keys[index];
+        value = _buckets[key];
+
+        if (value.isa && anObject && anObject.isa && [value respondsToSelector:@selector(isEqual:)] && [value isEqual:anObject])
+            matchingKeys.push(key);
+        else if (value === anObject)
+            matchingKeys.push(key);
     }
 
     return matchingKeys;
 }
 
+- (CPArray)keysOfEntriesPassingTest:(Function /*(id key, id obj, @ref BOOL stop)*/)predicate
+{
+    return [self keysOfEntriesWithOptions:CPEnumerationNormal passingTest:predicate];
+}
+
+- (CPArray)keysOfEntriesWithOptions:(CPEnumerationOptions)options passingTest:(Function /*(id key, id obj, @ref BOOL stop)*/)predicate
+{
+    if (options & CPEnumerationReverse)
+    {
+        var index = [_keys count] - 1,
+            stop = -1,
+            increment = -1;
+    }
+    else
+    {
+        var index = 0,
+            stop = [_keys count],
+            increment = 1;
+    }
+
+    var matchingKeys = [],
+        key = nil,
+        value = nil,
+        shouldStop = NO,
+        stopRef = AT_REF(shouldStop);
+
+    for (; index !== stop; index += increment)
+    {
+        key = _keys[index];
+        value = _buckets[key];
+
+        if (predicate(key, value, stopRef))
+            matchingKeys.push(key);
+
+        if (shouldStop)
+            break;
+    }
+
+    return matchingKeys;
+}
+
+- (CPArray)keysSortedByValueUsingComparator:(Function /*(id obj1, id obj2)*/)comparator
+{
+    return [[self allKeys] sortedArrayUsingFunction:function(a, b)
+        {
+            a = [self objectForKey:a];
+            b = [self objectForKey:b];
+
+            return comparator(a, b);
+        }
+    ];
+}
+
 - (CPArray)keysSortedByValueUsingSelector:(SEL)theSelector
 {
-    return [[self allKeys] sortedArrayUsingFunction:function(a, b) {
-        a = [self objectForKey:a];
-        b = [self objectForKey:b];
+    return [[self allKeys] sortedArrayUsingFunction:function(a, b)
+        {
+            a = [self objectForKey:a];
+            b = [self objectForKey:b];
 
-        return [a performSelector:theSelector withObject:b];
-    }];
+            return [a performSelector:theSelector withObject:b];
+        }
+    ];
 }
 
 /*!
@@ -576,7 +633,20 @@
 */
 - (CPString)description
 {
-    return self.toString();
+    var string = "{\n\t",
+        keys = _keys,
+        index = 0,
+        count = _count;
+
+    for (; index < count; ++index)
+    {
+        var key = keys[index],
+            value = valueForKey(key);
+
+        string += key + " = \"" + CPDescriptionOfObject(value).split('\n').join("\n\t") + "\"\n\t";
+    }
+
+    return string + "}";
 }
 
 - (BOOL)containsKey:(id)aKey
@@ -584,6 +654,32 @@
     var value = [self objectForKey:aKey];
     return ((value !== nil) && (value !== undefined));
 }
+
+- (void)enumerateKeysAndObjectsUsingBlock:(Function /*(id aKey, id anObject, @ref BOOL stop)*/)aFunction
+{
+    var shouldStop = NO,
+        shouldStopRef = AT_REF(shouldStop);
+
+    for (var index = 0; index < _count; index++)
+    {
+        var key = _keys[index],
+            value = valueForKey(key);
+
+        aFunction(key, value, shouldStopRef);
+
+        if (shouldStop)
+            return;
+    }
+}
+
+- (void)enumerateKeysAndObjectsWithOptions:(CPEnumerationOptions)opts usingBlock:(Function /*(id aKey, id anObject, @ref BOOL stop)*/)aFunction
+{
+    // Ignore the options because neither option has an effect.
+    // CPEnumerationReverse has no effect on enumerating a CPDictionary because dictionary enumeration is not ordered.
+    // CPEnumerationConcurrent is not possible in a single threaded environment.
+    [self enumerateKeysAndObjectsUsingBlock:aFunction];
+}
+
 @end
 
 @implementation CPDictionary (CPCoding)

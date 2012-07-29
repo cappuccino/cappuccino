@@ -65,7 +65,7 @@ var STICKY_TIME_INTERVAL        = 500,
 
 + (void)initialize
 {
-    if (self != [_CPMenuWindow class])
+    if (self !== [_CPMenuWindow class])
         return;
 
     var bundle = [CPBundle bundleForClass:self];
@@ -110,8 +110,6 @@ var STICKY_TIME_INTERVAL        = 500,
         [_moreBelowView setFrameSize:[_CPMenuWindowMoreBelowImage size]];
 
         [contentView addSubview:_moreBelowView];
-
-        [self setShadowStyle:CPWindowShadowStyleMenu];
     }
 
     return self;

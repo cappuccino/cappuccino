@@ -94,54 +94,48 @@ CPCheckBoxImageOffset = 4.0;
     [self takeStateFromKeyPath:aKeyPath ofObjects:objects];
 }
 
+- (CPImage)image
+{
+    return [self currentValueForThemeAttribute:@"image"];
+}
+
+- (CPImage)alternateImage
+{
+    return [self currentValueForThemeAttribute:@"image"];
+}
+
+- (BOOL)startTrackingAt:(CGPoint)aPoint
+{
+    var startedTracking = [super startTrackingAt:aPoint];
+    [self highlight:YES];
+    return startedTracking;
+}
+
 @end
 
 @implementation _CPCheckBoxValueBinder : CPBinder
 {
 }
 
-- (void)setValueFor:(CPString)theBinding
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options
 {
-    var destination = [_info objectForKey:CPObservedObjectKey],
-        keyPath = [_info objectForKey:CPObservedKeyPathKey],
-        options = [_info objectForKey:CPOptionsKey],
-        newValue = [destination valueForKeyPath:keyPath],
-        isPlaceholder = CPIsControllerMarker(newValue);
+    [super _updatePlaceholdersWithOptions:options];
 
-    if (isPlaceholder)
-    {
-        switch (newValue)
-        {
-            case CPMultipleValuesMarker:
-                newValue = CPMixedState;
-                break;
+    [self _setPlaceholder:CPMixedState forMarker:CPMultipleValuesMarker isDefault:YES];
+    [self _setPlaceholder:CPOffState forMarker:CPNoSelectionMarker isDefault:YES];
+    [self _setPlaceholder:CPOffState forMarker:CPNotApplicableMarker isDefault:YES];
+    [self _setPlaceholder:CPOffState forMarker:CPNullMarker isDefault:YES];
+}
 
-            case CPNoSelectionMarker:
-                newValue = CPOffState;
-                break;
+- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
+{
+    [_source setAllowsMixedState:(aValue === CPMixedState)];
+    [_source setState:aValue];
+}
 
-            case CPNotApplicableMarker:
-                if ([options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
-                    [CPException raise:CPGenericException reason:@"can't transform non applicable key on: "+_source+" value: "+newValue];
-
-                newValue = CPOffState;
-                break;
-        }
-
-        if (newValue === CPMixedState)
-        {
-            [_source setAllowsMixedState:YES];
-        }
-        else
-        {
-            // Cocoa will always set allowsMixedState to NO
-            // This behavior will be fine for Cappuccino as well if we (like Cocoa)
-            // default the CPConditionallySetsEnabledBindingOption to YES
-            [_source setAllowsMixedState:NO];
-        }
-    }
-
-    [_source setState:newValue];
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    [_source setState:aValue];
 }
 
 @end

@@ -47,7 +47,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
 
 + (void)initialize
 {
-    if (self != [_CPWindowView class])
+    if (self !== [_CPWindowView class])
         return;
 
     _CPWindowViewResizeIndicatorImage = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPWindow class]] pathForResource:@"_CPWindowView/_CPWindowViewResizeIndicator.png"] size:CGSizeMake(12.0, 12.0)];
@@ -115,7 +115,6 @@ var _CPWindowViewResizeIndicatorImage = nil;
 
     if ([theWindow isMovable] && [theWindow isMovableByWindowBackground])
         [self trackMoveWithEvent:anEvent];
-
     else
         [super mouseDown:anEvent];
 }
@@ -186,13 +185,11 @@ var _CPWindowViewResizeIndicatorImage = nil;
         _cachedScreenFrame = nil;
         return;
     }
-
     else if (type === CPLeftMouseDown)
     {
         _mouseDraggedPoint = [[self window] convertBaseToGlobal:[anEvent locationInWindow]];
         _cachedScreenFrame = [[CPPlatformWindow primaryPlatformWindow] visibleFrame];
     }
-
     else if (type === CPLeftMouseDragged)
     {
         var theWindow = [self window],

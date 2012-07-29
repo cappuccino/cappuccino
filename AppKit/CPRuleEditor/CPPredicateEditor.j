@@ -82,6 +82,22 @@
 }
 
 /*! @cond */
++ (Class)_binderClassForBinding:(CPString)theBinding
+{
+    if (theBinding == CPValueBinding)
+        return [CPPredicateEditorValueBinder class];
+
+    return [super _binderClassForBinding:theBinding];
+}
+
+- (id)_replacementKeyPathForBinding:(CPString)aBinding
+{
+    if (aBinding == CPValueBinding)
+        return @"predicate";
+
+    return [super _replacementKeyPathForBinding:aBinding];
+}
+
 - (void)_initRuleEditorShared
 {
     [super _initRuleEditorShared];
@@ -157,28 +173,40 @@
     return trees;
 }
 
-- (id)_mergeTree:(id)tree
+- (CPMutableArray)_mergeTree:(CPArray)aTree
 {
-    var merged = [CPMutableArray array],
-        titles = [CPMutableArray array],
-        count = [tree count];
+    var mergedTree = [CPMutableArray array];
+    if (aTree == nil)
+        return mergedTree;
 
-    for (var i = 0; i < count; i++)
+    var icount = [aTree count];
+    for (var i = 0; i < icount; i++)
     {
-        var t = tree[i],
-            title = [CPString stringWithString:[t title]];
+        var anode = [aTree objectAtIndex:i],
+            jcount = [mergedTree count],
+            merged = NO;
 
-        if ([titles containsObject:title])
+        for (var j = 0; j < jcount; j++)
         {
-            CPLogConsole("CPPredicateEditor does not support templates merging yet. Ignoring duplicate template: " + [t description]);
-            continue;
+            var mergednode = [mergedTree objectAtIndex:j];
+
+            if ([[mergednode title] isEqualToString:[anode title]])
+            {
+                var children1 = [mergednode children],
+                    children2 = [anode children],
+                    children12 = [children1 arrayByAddingObjectsFromArray:children2],
+                    mergedChildren = [self _mergeTree:children12];
+
+                [mergednode setChildren:mergedChildren];
+                merged = YES;
+            }
         }
 
-        [merged addObject:t];
-        [titles addObject:title];
+        if (!merged)
+            [mergedTree addObject:anode];
     }
 
-    return merged;
+    return mergedTree;
 }
 
 - (id)_constructTreeForTemplate:(CPPredicateEditorRowTemplate)aTemplate
@@ -227,14 +255,19 @@
 
 - (void)setObjectValue:(id)objectValue
 {
-    if (![[objectValue predicateFormat] isEqualToString:[[super predicate] predicateFormat]]) // ??
+    var ov = [self objectValue];
+    if ((ov == nil) != (objectValue == nil) || ![ov isEqual:objectValue])
+    {
+        [self _setPredicate:objectValue];
         [self _reflectPredicate:objectValue];
+    }
 }
 
 - (void)_reflectPredicate:(id)predicate
 {
     var animation = _currentAnimation;
     _currentAnimation = nil;
+    _sendAction = NO;
 
     if (predicate != nil)
     {
@@ -311,9 +344,9 @@
             treeChild = [rootItems objectAtIndex:i];
 
             var currentView = [templateViews objectAtIndex:[treeChild indexIntoTemplate]],
-                menuItemIndex = [treeChild menuItemIndex];
+                title = [treeChild title];
 
-            if (menuItemIndex == -1 || [[treeChild title] isEqual:[currentView titleOfSelectedItem]])
+            if (title == nil || [title isEqual:[currentView titleOfSelectedItem]])
             {
                 var node = [_CPPredicateEditorRowNode rowNodeFromTree:treeChild];
                 [node applyTemplate:aTemplate withViews:templateViews forOriginalTemplate:originalTemplate];
@@ -336,16 +369,15 @@
 
 - (void)_updatePredicate
 {
-    [self willChangeValueForKey:@"objectValue"];
     [self _updatePredicateFromRows];
-    [self didChangeValueForKey:@"objectValue"];
 }
 
 - (void)_updatePredicateFromRows
 {
     var rootRowsArray = [super _rootRowsArray],
         subpredicates = [CPMutableArray array],
-        count = count2 = [rootRowsArray count],
+        count,
+        count2 = count = [rootRowsArray count],
         predicate;
 
     while (count--)
@@ -362,7 +394,7 @@
     else
         predicate = [[CPCompoundPredicate alloc] initWithType:[self _compoundPredicateTypeForRootRows] subpredicates:subpredicates];
 
-    [super _setPredicate:predicate];
+    [self _setPredicate:predicate];
 }
 
 - (id)_predicateFromRowItem:(id)rowItem
@@ -373,12 +405,13 @@
     if (rowType == CPRuleEditorRowTypeCompound)
     {
         var subrows = [rowItem valueForKey:_subrowsArrayKeyPath],
-        count = [subrows count];
+            count = [subrows count];
 
         for (var i = 0; i < count; i++)
         {
-            var subrow = [subrows objectAtIndex:i];
-            var predicate = [self _predicateFromRowItem:subrow];
+            var subrow = [subrows objectAtIndex:i],
+                predicate = [self _predicateFromRowItem:subrow];
+
             [subpredicates addObject:predicate];
         }
     }
@@ -414,7 +447,6 @@
 
 - (void)_sendRuleAction
 {
-    [self _updatePredicate];
     [super _sendRuleAction];
 }
 
@@ -483,9 +515,11 @@ var CPPredicateTemplatesKey = @"CPPredicateTemplates";
 - (id)initWithCoder:(id)aCoder
 {
     self = [super initWithCoder:aCoder];
+
     if (self != nil)
     {
         var nibTemplates = [aCoder decodeObjectForKey:CPPredicateTemplatesKey];
+
         if (nibTemplates != nil)
             [self setRowTemplates:nibTemplates];
     }
@@ -501,4 +535,19 @@ var CPPredicateTemplatesKey = @"CPPredicateTemplates";
 
 @end
 
+@implementation CPPredicateEditorValueBinder : CPBinder
+{
+}
+
+- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
+{
+    [_source _reflectPredicate:nil];
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    [_source _reflectPredicate:aValue];
+}
+
+@end
 /*! @endcond */

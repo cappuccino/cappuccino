@@ -122,6 +122,7 @@ ACTUAL_FRAME_RATE = 0;
 */
 - (void)setAnimationCurve:(CPAnimationCurve)anAnimationCurve
 {
+    var timingFunctionName;
     switch (anAnimationCurve)
     {
         case CPAnimationEaseInOut:  timingFunctionName = kCAMediaTimingFunctionEaseInEaseOut;
@@ -306,7 +307,7 @@ ACTUAL_FRAME_RATE = 0;
 
     if ([_delegate respondsToSelector:@selector(animation:valueForProgress:)])
         return [_delegate animation:self valueForProgress:t];
-    
+
     if (_animationCurve == CPAnimationLinear)
         return t;
 

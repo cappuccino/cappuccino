@@ -21,14 +21,14 @@
  */
 
 @import <Foundation/CPArray.j>
+@import <Foundation/CPGeometry.j>
 @import <Foundation/CPObjJRuntime.j>
 @import <Foundation/CPSet.j>
 
 @import "CGAffineTransform.j"
-@import "CGGeometry.j"
+
 
 @import "CPColor.j"
-@import "CPGeometry.j"
 @import "CPGraphicsContext.j"
 @import "CPResponder.j"
 @import "CPTheme.j"
@@ -98,6 +98,10 @@ var CPViewFlags                     = { },
     CPViewHasCustomDrawRect         = 1 << 0,
     CPViewHasCustomLayoutSubviews   = 1 << 1;
 
+var CPCurrentToolTip,
+    CPCurrentToolTipTimer,
+    CPToolTipDelay = 1.0;
+
 /*!
     @ingroup appkit
     @class CPView
@@ -141,6 +145,7 @@ var CPViewFlags                     = { },
     BOOL                _postsFrameChangedNotifications;
     BOOL                _postsBoundsChangedNotifications;
     BOOL                _inhibitFrameAndBoundsChangedNotifications;
+    BOOL                _inLiveResize;
 
 #if PLATFORM(DOM)
     DOMElement          _DOMElement;
@@ -188,7 +193,10 @@ var CPViewFlags                     = { },
     unsigned            _viewClassFlags;
 
     // ToolTips
-    CPString            _toolTip    @accessors(property=toolTip);
+    CPString            _toolTip    @accessors(getter=toolTip);
+    Function            _toolTipFunctionIn;
+    Function            _toolTipFunctionOut;
+    BOOL                _toolTipInstalled;
 }
 
 /*
@@ -214,7 +222,7 @@ var CPViewFlags                     = { },
     CachedNotificationCenter = [CPNotificationCenter defaultCenter];
 }
 
-- (void)setupViewFlags
+- (void)_setupViewFlags
 {
     var theClass = [self class],
         classUID = [theClass UID];
@@ -233,6 +241,13 @@ var CPViewFlags                     = { },
     }
 
     _viewClassFlags = CPViewFlags[classUID];
+}
+
+- (void)_setupToolTipHandlers
+{
+    _toolTipInstalled = NO;
+    _toolTipFunctionIn = function(e) { [self _fireToolTip]; }
+    _toolTipFunctionOut = function(e) { [self _invalidateToolTip]; };
 }
 
 + (CPSet)keyPathsForValuesAffectingFrame
@@ -291,6 +306,9 @@ var CPViewFlags                     = { },
         CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, _CGRectGetMinX(aFrame), _CGRectGetMinY(aFrame));
         CPDOMDisplayServerSetStyleSize(_DOMElement, width, height);
 
+        if (typeof(appkit_tag_dom_elements) !== "undefined" && !!appkit_tag_dom_elements)
+            _DOMElement.setAttribute("data-cappuccino-view", [self className]);
+
         _DOMImageParts = [];
         _DOMImageSizes = [];
 #endif
@@ -298,12 +316,134 @@ var CPViewFlags                     = { },
         _theme = [CPTheme defaultTheme];
         _themeState = CPThemeStateNormal;
 
-        [self setupViewFlags];
+        [self _setupToolTipHandlers];
+        [self _setupViewFlags];
 
         [self _loadThemeAttributes];
     }
 
     return self;
+}
+
+
+/*!
+    Sets the tooltip for the receiver.
+
+    @param aToolTip the tooltip
+*/
+- (void)setToolTip:(CPString)aToolTip
+{
+    if (_toolTip == aToolTip)
+        return;
+
+    _toolTip = aToolTip;
+
+    if (_toolTip)
+        [self _installToolTipEventHandlers];
+    else
+        [self _uninstallToolTipEventHandlers];
+}
+
+/*! @ignore
+
+    Install the handlers for the tooltip
+*/
+- (void)_installToolTipEventHandlers
+{
+    if (_toolTipInstalled)
+        return;
+
+#if PLATFORM(DOM)
+    if (_DOMElement.addEventListener)
+    {
+        _DOMElement.addEventListener("mouseover", _toolTipFunctionIn, NO);
+        _DOMElement.addEventListener("keypress", _toolTipFunctionOut, NO);
+        _DOMElement.addEventListener("mouseout", _toolTipFunctionOut, NO);
+    }
+    else if (_DOMElement.attachEvent)
+    {
+        _DOMElement.attachEvent("onmouseover", _toolTipFunctionIn);
+        _DOMElement.attachEvent("onkeypress", _toolTipFunctionOut);
+        _DOMElement.attachEvent("onmouseout", _toolTipFunctionOut);
+    }
+#endif
+
+    _toolTipInstalled = YES;
+}
+
+/*! @ignore
+
+    Uninstall the handlers for the tooltip
+*/
+- (void)_uninstallToolTipEventHandlers
+{
+    if (!_toolTipInstalled)
+        return;
+
+#if PLATFORM(DOM)
+    if (_DOMElement.removeEventListener)
+    {
+        _DOMElement.removeEventListener("mouseover", _toolTipFunctionIn, NO);
+        _DOMElement.removeEventListener("keypress", _toolTipFunctionOut, NO);
+        _DOMElement.removeEventListener("mouseout", _toolTipFunctionOut, NO);
+    }
+    else if (_DOMElement.detachEvent)
+    {
+        _DOMElement.detachEvent("onmouseover", _toolTipFunctionIn);
+        _DOMElement.detachEvent("onkeypress", _toolTipFunctionOut);
+        _DOMElement.detachEvent("onmouseout", _toolTipFunctionOut);
+    }
+#endif
+
+    _toolTipInstalled = NO;
+}
+
+/*! @ignore
+    Starts the tooltip timer.
+*/
+- (void)_fireToolTip
+{
+    if (CPCurrentToolTipTimer)
+    {
+        [CPCurrentToolTipTimer invalidate];
+
+        if (CPCurrentToolTip)
+            [CPCurrentToolTip close];
+
+        CPCurrentToolTip = nil;
+    }
+
+    if (_toolTip)
+        CPCurrentToolTipTimer = [CPTimer scheduledTimerWithTimeInterval:CPToolTipDelay target:self selector:@selector(_showToolTip:) userInfo:nil repeats:NO];
+}
+
+/*! @ignore
+    Stop the tooltip timer if any
+*/
+- (void)_invalidateToolTip
+{
+    if (CPCurrentToolTipTimer)
+    {
+        [CPCurrentToolTipTimer invalidate];
+        CPCurrentToolTipTimer = nil;
+    }
+
+    if (CPCurrentToolTip)
+    {
+        [CPCurrentToolTip close];
+        CPCurrentToolTip = nil;
+    }
+}
+
+/*! @ignore
+    Actually shows the tooltip if any
+*/
+- (void)_showToolTip:(CPTimer)aTimer
+{
+    if (CPCurrentToolTip)
+        [CPCurrentToolTip close];
+
+    CPCurrentToolTip = [_CPToolTip toolTipWithString:_toolTip];
 }
 
 /*!
@@ -365,6 +505,9 @@ var CPViewFlags                     = { },
 /* @ignore */
 - (void)_insertSubview:(CPView)aSubview atIndex:(int)anIndex
 {
+    if (aSubview === self)
+        [CPException raise:CPInvalidArgumentException reason:"can't add a view as a subview of itself"];
+
     // We will have to adjust the z-index of all views starting at this index.
     var count = _subviews.length;
 
@@ -527,7 +670,7 @@ var CPViewFlags                     = { },
     var addedSubview = nil,
         addedSubviewEnumerator = [addedSubviews objectEnumerator];
 
-    while (addedSubview = [addedSubviewEnumerator nextObject])
+    while ((addedSubview = [addedSubviewEnumerator nextObject]) !== nil)
         [self addSubview:addedSubview];
 
     // If the order is fine, no need to reorder.
@@ -635,7 +778,7 @@ var CPViewFlags                     = { },
 }
 
 /*!
-    Called when the receiver is about to be remove one of its subviews.
+    Called when the receiver is about to remove one of its subviews.
     @param aView the view that will be removed
 */
 - (void)willRemoveSubview:(CPView)aView
@@ -706,7 +849,7 @@ var CPViewFlags                     = { },
 
 /*!
     Sets the frame size of the receiver to the dimensions and origin of the provided rectangle in the coordinate system
-    of the superview. The method also posts an CPViewFrameDidChangeNotification to the notification
+    of the superview. The method also posts a CPViewFrameDidChangeNotification to the notification
     center if the receiver is configured to do so. If the frame is the same as the current frame, the method simply
     returns (and no notification is posted).
     @param aFrame the rectangle specifying the new origin and size  of the receiver
@@ -759,7 +902,7 @@ var CPViewFlags                     = { },
 }
 
 /*!
-    Returns the center of the receiver's frame to the provided point. The point is defined in the superview's coordinate system.
+    Returns the center of the receiver's frame in the superview's coordinate system.
     @return CGPoint the center point of the receiver's frame
 */
 - (CGPoint)center
@@ -848,11 +991,17 @@ var CPViewFlags                     = { },
 
             if (_backgroundType === BackgroundVerticalThreePartImage)
             {
+                // Make sure to repeat the top and bottom pieces horizontally if they're not the exact width needed.
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], size.width, _DOMImageSizes[0].height);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], size.width, size.height - _DOMImageSizes[0].height - _DOMImageSizes[2].height);
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[2], size.width, _DOMImageSizes[2].height);
             }
             else if (_backgroundType === BackgroundHorizontalThreePartImage)
             {
+                // Make sure to repeat the left and right pieces vertically if they're not the exact height needed.
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], _DOMImageSizes[0].width, size.height);
                 CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], size.width - _DOMImageSizes[0].width - _DOMImageSizes[2].width, size.height);
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[2], _DOMImageSizes[2].width, size.height);
             }
             else if (_backgroundType === BackgroundNinePartImage)
             {
@@ -1539,7 +1688,10 @@ var CPViewFlags                     = { },
         }
         else if (_backgroundType == BackgroundVerticalThreePartImage)
         {
+            // Make sure to repeat the top and bottom pieces horizontally if they're not the exact width needed.
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], frameSize.width, _DOMImageSizes[0].height);
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], frameSize.width, frameSize.height - _DOMImageSizes[0].height - _DOMImageSizes[2].height);
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[2], frameSize.width, _DOMImageSizes[2].height);
 
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[0], NULL, 0.0, 0.0);
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[1], NULL, 0.0, _DOMImageSizes[0].height);
@@ -1547,7 +1699,10 @@ var CPViewFlags                     = { },
         }
         else if (_backgroundType == BackgroundHorizontalThreePartImage)
         {
+            // Make sure to repeat the left and right pieces vertically if they're not the exact height needed.
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], _DOMImageSizes[0].width, frameSize.height);
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], frameSize.width - _DOMImageSizes[0].width - _DOMImageSizes[2].width, frameSize.height);
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[2], _DOMImageSizes[2].width, frameSize.height);
 
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[0], NULL, 0.0, 0.0);
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[1], NULL, _DOMImageSizes[0].width, 0.0);
@@ -2128,6 +2283,43 @@ setBoundsOrigin:
 {
 }
 
+/*!
+    Return yes if the receiver is in a live-resize operation.
+*/
+- (BOOL)inLiveResize
+{
+    return _inLiveResize;
+}
+
+/*!
+    Not implemented.
+
+    A view will be sent this message before a window begins a resize operation. The
+    receiver might choose to simplify its drawing operations during a live resize
+    for speed.
+
+    Subclasses should call super.
+*/
+- (void)viewWillStartLiveResize
+{
+    _inLiveResize = YES;
+}
+
+/*!
+    Not implemented.
+
+    A view will be sent this message after a window finishes a resize operation. The
+    receiver which simplified its drawing operations in viewWillStartLiveResize might
+    stop doing so now. Note the view might no longer be in a window, so use
+    [self setNeedsDisplay:YES] if a final non-simplified redraw is required.
+
+    Subclasses should call super.
+*/
+- (void)viewDidEndLiveResize
+{
+    _inLiveResize = NO;
+}
+
 @end
 
 @implementation CPView (KeyView)
@@ -2543,6 +2735,50 @@ setBoundsOrigin:
     return (_themeAttributes && _themeAttributes[aName] !== undefined);
 }
 
+/*!
+    Registers theme values encoded in an array at runtime. The format of the data in the array
+    is the same as that used by ThemeDescriptors.j, with the exception that you need to use
+    CPColorWithImages() in place of PatternColor(). For more information see the comments
+    at the top of ThemeDescriptors.j.
+
+    @param themeValues array of theme values
+*/
+- (void)registerThemeValues:(CPArray)themeValues
+{
+    for (var i = 0; i < themeValues.length; ++i)
+    {
+        var attributeValueState = themeValues[i],
+            attribute = attributeValueState[0],
+            value = attributeValueState[1],
+            state = attributeValueState[2];
+
+        if (state)
+            [self setValue:value forThemeAttribute:attribute inState:state];
+        else
+            [self setValue:value forThemeAttribute:attribute];
+    }
+}
+
+/*!
+    Registers theme values encoded in an array at runtime. The format of the data in the array
+    is the same as that used by ThemeDescriptors.j, with the exception that you need to use
+    CPColorWithImages() in place of PatternColor(). The values in \c inheritedValues are
+    registered first, then those in \c themeValues override/augment the inherited values.
+    For more information see the comments at the top of ThemeDescriptors.j.
+
+    @param themeValues array of base theme values
+    @param inheritedValues array of overridden/additional theme values
+*/
+- (void)registerThemeValues:(CPArray)themeValues inherit:(CPArray)inheritedValues
+{
+    // Register inherited values first, then override those with the subtheme values.
+    if (inheritedValues)
+        [self registerThemeValues:inheritedValues];
+
+    if (themeValues)
+        [self registerThemeValues:themeValues];
+}
+
 - (CPView)createEphemeralSubviewNamed:(CPString)aViewName
 {
     return nil;
@@ -2607,6 +2843,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewBoundsKey                 = @"CPViewBoundsKey",
     CPViewFrameKey                  = @"CPViewFrameKey",
     CPViewHitTestsKey               = @"CPViewHitTestsKey",
+    CPViewToolTipKey                = @"CPViewToolTipKey",
     CPViewIsHiddenKey               = @"CPViewIsHiddenKey",
     CPViewOpacityKey                = @"CPViewOpacityKey",
     CPViewSubviewsKey               = @"CPViewSubviewsKey",
@@ -2661,7 +2898,12 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         _autoresizesSubviews = ![aCoder containsValueForKey:CPViewAutoresizesSubviewsKey] || [aCoder decodeBoolForKey:CPViewAutoresizesSubviewsKey];
 
-        _hitTests = ![aCoder containsValueForKey:CPViewHitTestsKey] || [aCoder decodeObjectForKey:CPViewHitTestsKey];
+        _hitTests = ![aCoder containsValueForKey:CPViewHitTestsKey] || [aCoder decodeBoolForKey:CPViewHitTestsKey];
+
+        [self _setupToolTipHandlers];
+        _toolTip = [aCoder decodeObjectForKey:CPViewToolTipKey];
+        if (_toolTip)
+            [self _installToolTipEventHandlers];
 
         // DOM SETUP
 #if PLATFORM(DOM)
@@ -2681,10 +2923,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         }
 #endif
 
-        if ([aCoder containsValueForKey:CPViewIsHiddenKey])
-            [self setHidden:[aCoder decodeBoolForKey:CPViewIsHiddenKey]];
-        else
-            _isHidden = NO;
+        [self setHidden:[aCoder decodeBoolForKey:CPViewIsHiddenKey]];
 
         if ([aCoder containsValueForKey:CPViewOpacityKey])
             [self setAlphaValue:[aCoder decodeIntForKey:CPViewOpacityKey]];
@@ -2692,8 +2931,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
             _opacity = 1.0;
 
         [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
-
-        [self setupViewFlags];
+        [self _setupViewFlags];
 
         _theme = [CPTheme defaultTheme];
         _themeClass = [aCoder decodeObjectForKey:CPViewThemeClassKey];
@@ -2774,6 +3012,9 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     if (_isHidden)
         [aCoder encodeBool:_isHidden forKey:CPViewIsHiddenKey];
 
+    if (_toolTip)
+        [aCoder encodeObject:_toolTip forKey:CPViewToolTipKey];
+
     var nextKeyView = [self nextKeyView];
 
     if (nextKeyView !== nil && ![nextKeyView isEqual:self])
@@ -2799,7 +3040,7 @@ var _CPViewFullScreenModeStateMake = function(aView)
     var superview = aView._superview;
 
     return { autoresizingMask:aView._autoresizingMask, frame:CGRectMakeCopy(aView._frame), index:(superview ? [superview._subviews indexOfObjectIdenticalTo:aView] : 0), superview:superview };
-}
+};
 
 var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
 {
@@ -2896,4 +3137,6 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
     }*/
 
     return transform;
-}
+};
+
+

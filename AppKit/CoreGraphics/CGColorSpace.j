@@ -193,7 +193,7 @@ function CGColorSpaceRetain(aColorSpace)
 }
 
 // FIXME: We should refer to some default values.
-#define STANDARDIZE(components, index, minimum, maximum, multiplier)    \
+#define STANDARDIZE(components, index, minimum, maximum, multiplier) \
 { \
     if (index > components.length) \
     { \

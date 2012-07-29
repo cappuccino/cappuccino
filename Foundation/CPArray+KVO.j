@@ -22,6 +22,7 @@
 
 @import "CPArray.j"
 @import "CPNull.j"
+@import "_CPCollectionKVCOperators.j"
 
 
 @implementation CPObject (CPArrayKVO)
@@ -240,6 +241,7 @@
 {
     if (_objectsAtIndexes)
         return _objectsAtIndexes(_proxyObject, _objectsAtIndexesSEL, theIndexes);
+
     if (_objectAtIndex)
     {
         var index = CPNotFound,
@@ -413,21 +415,21 @@
 @end
 
 
-//KVC on CPArray objects act on each item of the array, rather than on the array itself
+// KVC on CPArray objects act on each item of the array, rather than on the array itself
 
-@implementation CPArray (KeyValueCoding)
+@implementation CPArray (CPKeyValueCoding)
 
 - (id)valueForKey:(CPString)aKey
 {
     if (aKey.indexOf("@") === 0)
     {
         if (aKey.indexOf(".") !== -1)
-            [CPException raise:CPInvalidArgumentException reason:"called valueForKey: on an array with a complex key ("+aKey+"). use valueForKeyPath:"];
+            [CPException raise:CPInvalidArgumentException reason:"called valueForKey: on an array with a complex key (" + aKey + "). use valueForKeyPath:"];
 
-        if (aKey == "@count")
+        if (aKey === "@count")
             return length;
 
-        return nil;
+        return [self valueForUndefinedKey:aKey];
     }
     else
     {
@@ -451,6 +453,9 @@
 
 - (id)valueForKeyPath:(CPString)aKeyPath
 {
+    if (!aKeyPath)
+        [self valueForUndefinedKey:@"<empty path>"];
+
     if (aKeyPath.charAt(0) === "@")
     {
         var dotIndex = aKeyPath.indexOf("."),
@@ -465,10 +470,7 @@
         else
             operator = aKeyPath.substring(1);
 
-        if (kvoOperators[operator])
-            return kvoOperators[operator](self, _cmd, parameter);
-
-        return nil;
+        return [_CPCollectionKVCOperator performOperation:operator withCollection:self propertyPath:parameter];
     }
     else
     {
@@ -495,7 +497,7 @@
     var enumerator = [self objectEnumerator],
         object;
 
-    while (object = [enumerator nextObject])
+    while ((object = [enumerator nextObject]) !== nil)
         [object setValue:aValue forKey:aKey];
 }
 
@@ -504,88 +506,39 @@
     var enumerator = [self objectEnumerator],
         object;
 
-    while (object = [enumerator nextObject])
+    while ((object = [enumerator nextObject]) !== nil)
         [object setValue:aValue forKeyPath:aKeyPath];
 }
 
 @end
 
-var kvoOperators = [];
-
-// HACK: prevent these from becoming globals. workaround for obj-j "function foo(){}" behavior
-var avgOperator,
-    maxOperator,
-    minOperator,
-    countOperator,
-    sumOperator;
-
-kvoOperators["avg"] = function avgOperator(self, _cmd, param)
-{
-    var objects = [self valueForKeyPath:param],
-        length = [objects count],
-        index = length,
-        average = 0.0;
-
-    if (!length)
-        return 0;
-
-    while (index--)
-        average += [objects[index] doubleValue];
-
-    return average / length;
-}
-
-kvoOperators["max"] = function maxOperator(self, _cmd, param)
-{
-    var objects = [self valueForKeyPath:param],
-        index = [objects count] - 1,
-        max = [objects lastObject];
-
-    while (index--)
-    {
-        var item = objects[index];
-        if ([max compare:item] < 0)
-            max = item;
-    }
-
-    return max;
-}
-
-kvoOperators["min"] = function minOperator(self, _cmd, param)
-{
-    var objects = [self valueForKeyPath:param],
-        index = [objects count] - 1,
-        min = [objects lastObject];
-
-    while (index--)
-    {
-        var item = objects[index];
-        if ([min compare:item] > 0)
-            min = item;
-    }
-
-    return min;
-}
-
-kvoOperators["count"] = function countOperator(self, _cmd, param)
-{
-    return [self count];
-}
-
-kvoOperators["sum"] = function sumOperator(self, _cmd, param)
-{
-    var objects = [self valueForKeyPath:param],
-        index = [objects count],
-        sum = 0.0;
-
-    while (index--)
-        sum += [objects[index] doubleValue];
-
-    return sum;
-}
-
 @implementation CPArray (KeyValueObserving)
 
+/*!
+ Raises an exception.
+
+ CPArray objects are not observable, so this method raises an exception when invoked on an CPArray object.
+ Instead of observing a array, observe the ordered to-many relationship for which the array is the collection of related objects.
+*/
+- (void)addObserver:(id)anObserver forKeyPath:(CPString)aKeyPath options:(CPKeyValueObservingOptions)anOptions context:(id)aContext
+{
+    [CPException raise:CPInvalidArgumentException reason:"[CPArray " + CPStringFromSelector(_cmd) + "] is not supported. Key path: " + aKeyPath];
+}
+
+/*!
+ Raises an exception.
+
+ CPArray objects are not observable, so this method raises an exception when invoked on an CPArray object.
+ Instead of observing a array, observe the ordered to-many relationship for which the array is the collection of related objects.
+*/
+- (void)removeObserver:(id)anObserver forKeyPath:(CPString)aKeyPath
+{
+    [CPException raise:CPInvalidArgumentException reason:"[CPArray " + CPStringFromSelector(_cmd) + "] is not supported. Key path: " + aKeyPath];
+}
+
+/*!
+ Registers an observer to receive key value observer notifications for the specified key-path relative to the objects at the indexes.
+*/
 - (void)addObserver:(id)anObserver toObjectsAtIndexes:(CPIndexSet)indexes forKeyPath:(CPString)aKeyPath options:(unsigned)options context:(id)context
 {
     var index = [indexes firstIndex];
@@ -598,6 +551,9 @@ kvoOperators["sum"] = function sumOperator(self, _cmd, param)
     }
 }
 
+/*!
+ Removes anObserver from all key value observer notifications associated with the specified keyPath relative to the array’s objects at indexes.
+*/
 - (void)removeObserver:(id)anObserver fromObjectsAtIndexes:(CPIndexSet)indexes forKeyPath:(CPString)aKeyPath
 {
     var index = [indexes firstIndex];
@@ -608,22 +564,6 @@ kvoOperators["sum"] = function sumOperator(self, _cmd, param)
 
         index = [indexes indexGreaterThanIndex:index];
     }
-}
-
-- (void)addObserver:(id)observer forKeyPath:(CPString)aKeyPath options:(unsigned)options context:(id)context
-{
-    if ([isa instanceMethodForSelector:_cmd] === [CPArray instanceMethodForSelector:_cmd])
-        [CPException raise:CPInvalidArgumentException reason:"Unsupported method on CPArray"];
-    else
-        [super addObserver:observer forKeyPath:aKeyPath options:options context:context];
-}
-
-- (void)removeObserver:(id)observer forKeyPath:(CPString)aKeyPath
-{
-    if ([isa instanceMethodForSelector:_cmd] === [CPArray instanceMethodForSelector:_cmd])
-        [CPException raise:CPInvalidArgumentException reason:"Unsupported method on CPArray"];
-    else
-        [super removeObserver:observer forKeyPath:aKeyPath];
 }
 
 @end

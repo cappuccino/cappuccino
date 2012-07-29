@@ -42,7 +42,13 @@ foundationTask = framework ("Foundation", function(foundationTask)
     foundationTask.setInfoPlistPath("Info.plist");
     foundationTask.setEnvironments(require("objective-j/jake/environment").ObjJ);
 
-    var INCLUDES = "--include \"../AppKit/Platform/Platform.h\" --include \"Ref.h\"";
+    // Grab all the .h's and just include them in each file.
+    var INCLUDES = new FileList("**/*.h").map(function(aFilename)
+    {
+        return "--include \"" + aFilename + "\"";
+    }).join(" ");
+
+    INCLUDES = "--include \"../AppKit/Platform/Platform.h\" " + INCLUDES;
 
     if ($CONFIGURATION === "Release")
         foundationTask.setCompilerFlags("-O " + INCLUDES);

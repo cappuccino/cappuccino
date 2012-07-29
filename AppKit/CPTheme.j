@@ -255,7 +255,7 @@ var CPThemesByName          = { },
         attributeNames = [attributes keyEnumerator],
         objectThemeClass = [anObject themeClass];
 
-    while (attributeName = [attributeNames nextObject])
+    while ((attributeName = [attributeNames nextObject]) !== nil)
         [self _recordAttribute:[attributes objectForKey:attributeName] forClass:objectThemeClass];
 }
 
@@ -418,6 +418,8 @@ CPThemeStateEditing         = CPThemeState("editing");
 CPThemeStateVertical        = CPThemeState("vertical");
 CPThemeStateDefault         = CPThemeState("default");
 CPThemeStateCircular        = CPThemeState("circular");
+CPThemeStateAutocompleting  = CPThemeState("autocompleting");
+
 
 @implementation _CPThemeAttribute : CPObject
 {
@@ -579,6 +581,7 @@ CPThemeStateCircular        = CPThemeState("circular");
         _cache = {};
 
         _name = [aCoder decodeObjectForKey:@"name"];
+        _defaultValue = [aCoder decodeObjectForKey:@"defaultValue"];
         _values = [CPDictionary dictionary];
 
         if ([aCoder containsValueForKey:@"value"])
@@ -611,6 +614,7 @@ CPThemeStateCircular        = CPThemeState("circular");
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeObject:_name forKey:@"name"];
+    [aCoder encodeObject:_defaultValue forKey:@"defaultValue"];
 
     var keys = [_values allKeys],
         count = keys.length;
@@ -666,7 +670,7 @@ var numberOfOnes = function(aNumber)
     cachedNumberOfOnes[slot] = count;
 
     return count;
-}
+};
 
 numberOfOnes.displayName = "numberOfOnes";
 

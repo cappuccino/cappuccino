@@ -29,6 +29,8 @@
 @import "CPCibControlConnector.j"
 @import "CPCibOutletConnector.j"
 @import "CPCibBindingConnector.j"
+@import "CPCibRuntimeAttributesConnector.j"
+@import "CPCibHelpConnector.j"
 
 
 @implementation _CPCibObjectData : CPObject
@@ -106,7 +108,7 @@
     var object = nil,
         objectEnumerator = [_visibleWindows objectEnumerator];
 
-    while (object = [objectEnumerator nextObject])
+    while ((object = [objectEnumerator nextObject]) !== nil)
         [_replacementObjects[[object UID]] makeKeyAndOrderFront:self];
 }
 
@@ -232,15 +234,15 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
             {
                 _replacementObjects[[object UID]] = instantiatedObject;
 
-                if ([instantiatedObject isKindOfClass:[CPView class]])
+                if ([instantiatedObject isKindOfClass:CPView])
                 {
                     var clipView = [instantiatedObject superview];
 
-                    if ([clipView isKindOfClass:[CPClipView class]])
+                    if ([clipView isKindOfClass:CPClipView])
                     {
                         var scrollView = [clipView superview];
 
-                        if ([scrollView isKindOfClass:[CPScrollView class]])
+                        if ([scrollView isKindOfClass:CPScrollView])
                             [scrollView setDocumentView:instantiatedObject];
                     }
                 }
@@ -257,11 +259,29 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
     _replacementObjects[[_fileOwner UID]] = anOwner;
 
     var index = 0,
-        count = _connections.length;
+        count = _connections.length,
+        runtimeAttributeConnectors = [],
+        connection = nil;
 
     for (; index < count; ++index)
     {
-        var connection = _connections[index];
+        connection = _connections[index];
+
+        if ([connection isKindOfClass:CPCibRuntimeAttributesConnector])
+            // Defer runtime attribute connections until after all other connections are made
+            runtimeAttributeConnectors.push(connection);
+        else
+        {
+            [connection replaceObjects:_replacementObjects];
+            [connection establishConnection];
+        }
+    }
+
+    count = runtimeAttributeConnectors.length;
+
+    for (index = 0; index < count; ++index)
+    {
+        connection = runtimeAttributeConnectors[index];
 
         [connection replaceObjects:_replacementObjects];
         [connection establishConnection];
