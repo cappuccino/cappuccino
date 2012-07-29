@@ -1,6 +1,4 @@
 
-@import "SheetWindow.j"
-
 @implementation SheetWindowController : CPWindowController
 {
 	@outlet CPButton _closeButton;
