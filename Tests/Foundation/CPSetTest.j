@@ -174,16 +174,28 @@
     [self assertTrue:[set containsObject:"foo"]];
     [set removeObject:"foo"];
     [self assertFalse:[set containsObject:"foo"]];
+
+    var dict1 = [CPDictionary dictionaryWithObject:self forKey:@"key"],
+        dict2 = [CPDictionary dictionaryWithObject:self forKey:@"key"],
+        set2 = [CPMutableSet new];
+
+    [set2 addObject:dict1];
+    [set2 removeObject:dict2];
+    [self assertTrue:[set2 count] === 0];
+
+    // Removing an object not in the set is not an error.
+    [set2 removeObject:dict2];
 }
 
 - (void)testRemoveZeroObject
 {
     var set = [CPSet new];
 
+    // In Objective-J this is equivalent to [set addObject:[CPNumber numberWithInt:0]];
     [set addObject:0];
-    [self assertTrue:[set containsObject:0]];
+    [self assertTrue:[set containsObject:0] message:@"adding 0 to a set should work"];
     [set removeObject:0];
-    [self assertFalse:[set containsObject:0]];
+    [self assertFalse:[set containsObject:0] message:@"removing 0 from a set should work"];
 }
 
 - (void)testAddNilObject
@@ -212,7 +224,7 @@
 
     [self assertThrows:function() { [set addObject:nil] }];
     [self assertFalse:[set containsObject:nil]];
-    [set removeObject:nil];
+    [self assertThrows:function() { [set removeObject:nil] }];
     [self assertFalse:[set containsObject:nil]];
 }
 
@@ -259,6 +271,16 @@
     [self assert:[b valueForKeyPath:@"@max.age"] equals:47];
     [self assert:[b valueForKeyPath:@"@min.name"] equals:@"Dick"];
     [self assert:[b valueForKeyPath:@"@max.name"] equals:@"Tom"];
+}
+
+- (void)testMember
+{
+    var dict1 = [CPDictionary dictionaryWithObject:self forKey:@"key"],
+        dict2 = [CPDictionary dictionaryWithObject:self forKey:@"key"],
+        set2 = [CPMutableSet new];
+
+    [set2 addObject:dict1];
+    [self assertTrue:[set2 member:dict2] === dict1];
 }
 
 @end

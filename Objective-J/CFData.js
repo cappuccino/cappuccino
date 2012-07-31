@@ -229,12 +229,12 @@ CFData.encodeBase64Array = function(input)
     // pad with "=" and revert array to previous state
     if (pad > 0)
     {
-        output[output.length-1] = "=";
+        output[output.length - 1] = "=";
         input.pop();
     }
     if (pad > 1)
     {
-        output[output.length-2] = "=";
+        output[output.length - 2] = "=";
         input.pop();
     }
 
@@ -279,12 +279,11 @@ CFData.bytesToUtf16String = function(bytes)
 {
     // Strings are encoded with 16 bits per character.
     var temp = [];
-    for (var i = 0; i < bytes.length; i+=2)
-        temp.push(bytes[i+1] << 8 | bytes[i]);
+    for (var i = 0; i < bytes.length; i += 2)
+        temp.push(bytes[i + 1] << 8 | bytes[i]);
     // This is relatively efficient, I think:
     return String.fromCharCode.apply(NULL, temp);
 };
-
 
 CFData.encodeBase64Utf16String = function(input)
 {
@@ -293,8 +292,8 @@ CFData.encodeBase64Utf16String = function(input)
     for (var i = 0; i < input.length; i++)
     {
         var c = input.charCodeAt(i);
-        temp.push(input.charCodeAt(i) & 0xFF);
-        temp.push((input.charCodeAt(i) & 0xFF00) >> 8);
+        temp.push(c & 0xFF);
+        temp.push((c & 0xFF00) >> 8);
     }
 
     return CFData.encodeBase64Array(temp);

@@ -673,6 +673,14 @@
     [self assertTrue:s2[0] === A message:s2[0] + " is larger then " + A + " when sorting descending"];
 }
 
+- (void)testDisallowObservers
+{
+    var anArray = [CPArray arrayWithObject:0];
+
+    [self assertThrows:function() { [anArray addObserver:self forKeyPath:@"self" options:0 context:nil]; }];
+    [self assertThrows:function() { [anArray removeObserver:self forKeyPath:@"self"]; }];
+}
+
 @end
 
 @implementation AlwaysEqual : CPObject

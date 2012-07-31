@@ -38,7 +38,7 @@ var _CPToolbarViewBackgroundColor = nil;
         _CPToolbarViewBackgroundColor = CPColorWithImages([
                 ["_CPToolbarView/toolbar-background-top.png", 1, 1, bundle],
                 ["_CPToolbarView/toolbar-background-center.png", 1, 57.0, bundle],
-                ["_CPToolbarView/toolbar-background-bottom.png", 1, 1, bundle],
+                ["_CPToolbarView/toolbar-background-bottom.png", 1, 1, bundle]
             ], CPColorPatternIsVertical);
     }
 
