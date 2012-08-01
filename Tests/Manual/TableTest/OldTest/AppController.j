@@ -299,20 +299,9 @@ tableTestDragType = @"CPTableViewTestDragType";
     [aTableView reloadData];
 }
 
-
-- (void)tableViewSelectionIsChanging:(CPNotification)aNotification
-{
-    //CPLog.debug(@"changing! %@", [aNotification description]);
-}
-
-- (void)tableViewSelectionDidChange:(CPNotification)aNotification
-{
-    //CPLog.debug(@"did change! %@", [aNotification description]);
-}
-
 - (BOOL)tableView:(CPTableView)aTableView shouldSelectRow:(int)rowIndex
 {
-    //CPLog.debug(@"tableView:shouldSelectRow");
+    CPLog.debug(@"tableView:shouldSelectRow");
     return true;
 }
 
@@ -324,18 +313,19 @@ tableTestDragType = @"CPTableViewTestDragType";
 
 - (void)tableViewSelectionDidChange:(id)notification
 {
-    //CPLogConsole(_cmd + [notification description]);
+    CPLogConsole(_cmd + [notification description]);
 }
 
 - (void)tableViewSelectionIsChanging:(id)notification
 {
-    //CPLogConsole(_cmd + [notification description]);
+    CPLogConsole(_cmd + [notification description]);
 }
 
 - (void)_tableViewColumnDidResize:(id)notification
 {
-    //CPLogConsole(_cmd + [notification description]);
+    CPLogConsole(_cmd + [notification description]);
 }
+
 - (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)tableColumn row:(int)row
 {
     if (aTableView === tableView3)
@@ -425,8 +415,8 @@ tableTestDragType = @"CPTableViewTestDragType";
         }
         else
         {
-            var destIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(row, [sourceIndexes count])];
-            var sourceObjects = [sourceDataSet objectsAtIndexes:sourceIndexes];
+            var destIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(row, [sourceIndexes count])],
+                sourceObjects = [sourceDataSet objectsAtIndexes:sourceIndexes];
 
             [destinationDataSet insertObjects:sourceObjects atIndexes:destIndexes];
             [destinationTable reloadData];
