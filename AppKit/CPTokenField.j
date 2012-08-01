@@ -1074,8 +1074,15 @@ var CPScrollDestinationNone             = 0,
     if (isEditing && _selectedRange.length)
     {
         _inputFrame = nil;
-        [self _inputElement].style.left = "-10000px";
-        [self _inputElement].focus();
+        var inputElement = [self _inputElement];
+        inputElement.style.display = "none";
+    }
+    else if (isEditing)
+    {
+        var inputElement = [self _inputElement];
+        inputElement.style.display = "block";
+        if (document.focusedElement !== inputElement)
+            inputElement.focus();
     }
 
     // Trim off any excess height downwards.
