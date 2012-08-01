@@ -1089,7 +1089,7 @@ var themedButtonValues = nil,
             [@"text-color",     textHighlightedColor,               CPThemeStateHighlighted],
 
             [@"bezel-inset",    CGInsetMakeZero(),                  CPThemeStateBezeled],
-            [@"content-inset",  CGInsetMake(1.0, 22.0, 3.0, 15.0),  CPThemeStateBezeled],
+            [@"content-inset",  CGInsetMake(2.0, 22.0, 2.0, 15.0),  CPThemeStateBezeled],
 
             // Minimum height == maximum height since tokens are fixed height.
             [@"min-size",       CGSizeMake(0.0, 19.0)],
