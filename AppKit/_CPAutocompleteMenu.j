@@ -65,7 +65,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
         [scrollView setHasHorizontalScroller:NO];
         [contentView addSubview:scrollView];
 
-        tableView = [[CPTableView alloc] initWithFrame:CPRectMakeZero()];
+        tableView = [[_CPNonFirstResponderTableView alloc] initWithFrame:CPRectMakeZero()];
 
         var tableColumn = [CPTableColumn new];
         [tableColumn setResizingMask:CPTableColumnAutoresizingMask];
@@ -251,14 +251,14 @@ var _CPAutocompleteMenuMaximumHeight = 307;
     return [contentArray objectAtIndex:row];
 }
 
-- (void)tableViewSelectionDidChange:(CPNotification)notification
+@end
+
+
+@implementation _CPNonFirstResponderTableView : CPTableView
+
+- (BOOL)acceptsFirstResponder
 {
-    // FIXME
-    // make sure a mouse click in the tableview doesn't steal first responder state
-    window.setTimeout(function()
-    {
-        [[textField window] makeFirstResponder:textField];
-    }, 2.0);
+    return NO;
 }
 
 @end
