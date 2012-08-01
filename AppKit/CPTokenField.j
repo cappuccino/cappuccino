@@ -1083,7 +1083,7 @@ var CPScrollDestinationNone             = 0,
     {
         var inputElement = [self _inputElement];
         inputElement.style.display = "block";
-        if (document.focusedElement !== inputElement)
+        if (document.activeElement !== inputElement)
             inputElement.focus();
     }
 
