@@ -1031,13 +1031,13 @@ var themedButtonValues = nil,
             [@"editor-inset", CGInsetMake(2.0, 0.0, 0.0, 0.0)],
 
             // Non-bezeled token field with tokens
-            [@"content-inset", CGInsetMake(5.0, 8.0, 4.0, 8.0)],
+            [@"content-inset", CGInsetMake(6.0, 8.0, 4.0, 8.0)],
 
             // Non-bezeled token field with no tokens
             [@"content-inset", CGInsetMake(7.0, 8.0, 6.0, 8.0), CPTextFieldStatePlaceholder],
 
             // Bezeled token field with tokens
-            [@"content-inset", CGInsetMake(6.0, 8.0, 2.0, 8.0), CPThemeStateBezeled],
+            [@"content-inset", CGInsetMake(6.0, 5.0, 4.0, 5.0), CPThemeStateBezeled],
 
             // Bezeled token field with no tokens
             [@"content-inset", CGInsetMake(8.0, 8.0, 7.0, 8.0), CPThemeStateBezeled | CPTextFieldStatePlaceholder]
