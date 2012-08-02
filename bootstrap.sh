@@ -127,8 +127,6 @@ function check_build_environment () {
     done
 }
 
-check_install_environment
-
 if [ -w "/usr/local" ]; then
     default_directory="/usr/local/narwhal"
 else
@@ -153,6 +151,7 @@ while [ $# -gt 0 ]; do
         --clone-http)   install_method="clone --http";;
         --github-user)  github_user="$2"; shift;;
         --github-ref)   github_ref="$2"; shift;;
+        --java-home)    JAVA_HOME="$2"; shift;;
         *)              cat >&2 <<-EOT
 usage: ./bootstrap.sh [OPTIONS]
 
@@ -162,11 +161,25 @@ usage: ./bootstrap.sh [OPTIONS]
     --clone-http:           Do "git clone http://" instead of downloading zips.
     --github-user [USER]:   Github user (default: $github_user).
     --github-ref [REF]:     Use another git ref (default: $github_ref).
+    --java-home [DIR]:      Use another Java Virtual Machine (default: /usr).
 EOT
                         exit 1;;
     esac
     shift
 done
+
+# set JAVA_HOME to system default if it is not set
+# JAVA_HOME can be set either in the user's environment or with --java-home
+if [ -z "$JAVA_HOME" ]; then
+    export JAVA_HOME=`dirname $(dirname $(which java))`
+else
+    # if JAVA_HOME is not system default, prepend path to java for the specified
+    # Java VM to ensure it is used instead of the system default
+    export PATH=$JAVA_HOME/bin:$PATH
+fi
+
+# after we process parameters since user can pass in the JVM location as a parameter
+check_install_environment
 
 github_project="$github_user-cappuccino-base"
 github_path="$github_user/cappuccino-base"
@@ -340,6 +353,14 @@ if [ `uname` = "Darwin" ]; then
 fi
 
 export PATH="$PATH_SAVED"
+
+if [ $(which java) != "$JAVA_HOME/bin/java" ]; then
+    conf_file=$install_directory/narwhal.conf
+    echo "" >> $conf_file
+    echo "# Use specified Java VM instead of system default" >> $conf_file
+    echo "JAVA_HOME=$JAVA_HOME" >> $conf_file
+fi
+
 if ! which "narwhal" > /dev/null; then
     echo "================================================================================"
     echo "Cappuccino's \"bin\" directory must be in your PATH environment variable."
