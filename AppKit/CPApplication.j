@@ -33,7 +33,8 @@
 
 
 var CPMainCibFile               = @"CPMainCibFile",
-    CPMainCibFileHumanFriendly  = @"Main cib file base name";
+    CPMainCibFileHumanFriendly  = @"Main cib file base name",
+    CPEventModifierFlags = 0;
 
 CPApp = nil;
 
@@ -575,6 +576,7 @@ CPRunContinuesResponse  = -1002;
 - (void)sendEvent:(CPEvent)anEvent
 {
     _currentEvent = anEvent;
+    CPEventModifierFlags = [anEvent modifierFlags];
 
 #if PLATFORM(DOM)
     var willPropagate = [[[anEvent window] platformWindow] _willPropagateCurrentDOMEvent];
@@ -1376,6 +1378,19 @@ var _CPAppBootstrapperActions = nil;
 + (void)reset
 {
     _CPAppBootstrapperActions = nil;
+}
+
+@end
+
+
+@implementation CPEvent (CPApplicationModifierFlags)
+
+/*!
+    Returns the currently pressed modifier flags.
+*/
++ (unsigned)modifierFlags
+{
+    return CPEventModifierFlags;
 }
 
 @end
