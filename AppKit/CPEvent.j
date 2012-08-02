@@ -204,6 +204,8 @@ var _CPEventPeriodicEventPeriod         = 0,
     BOOL                _isARepeat;
     unsigned            _keyCode;
     DOMEvent            _DOMEvent;
+    int                 _data1;
+    int                 _data2;
 
     float               _deltaX;
     float               _deltaY;
@@ -515,6 +517,16 @@ var _CPEventPeriodicEventPeriod         = 0,
 - (DOMEvent)_DOMEvent
 {
     return _DOMEvent;
+}
+
+- (int)data1
+{
+    return _data1;
+}
+
+- (int)data2
+{
+    return _data2;
 }
 
 // Getting Scroll Wheel Event Information
