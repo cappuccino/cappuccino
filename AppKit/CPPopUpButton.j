@@ -23,9 +23,9 @@
 @import <Foundation/CPGeometry.j>
 
 @import "CPButton.j"
+@import "CPKeyValueBinding.j"
 @import "CPMenu.j"
 @import "CPMenuItem.j"
-
 
 var VISIBLE_MARGIN = 7.0;
 
@@ -245,22 +245,6 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 - (int)indexOfSelectedItem
 {
     return _selectedIndex;
-}
-
-/*!
-    @ignore
-*/
-- (int)_selectedTag
-{
-    return [[self selectedItem] tag];
-}
-
-/*!
-    @ignore
-*/
-- (void)_setSelectedTag:(int)aTag
-{
-    [self selectItemWithTag:aTag];
 }
 
 // Setting the Current Selection
@@ -787,12 +771,282 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 - (void)_reverseSetBinding
 {
-    var binderClass = [[self class] _binderClassForBinding:CPSelectedIndexBinding],
-        theBinding = [binderClass getBinding:CPSelectedIndexBinding forObject:self];
-
-    [theBinding reverseSetValueFor:@"objectValue"];
+    [_CPPopUpButtonSelectionBinder reverseSetValueForObject:self];
 
     [super _reverseSetBinding];
+}
+
+@end
+
+@implementation CPPopUpButton (BindingSupport)
+
++ (Class)_binderClassForBinding:(CPString)aBinding
+{
+    if (aBinding == CPSelectedIndexBinding ||
+        aBinding == CPSelectedObjectBinding ||
+        aBinding == CPSelectedTagBinding ||
+        aBinding == CPSelectedValueBinding ||
+        aBinding == CPContentBinding ||
+        aBinding == CPContentObjectsBinding ||
+        aBinding == CPContentValuesBinding)
+    {
+        var capitalizedBinding = aBinding.charAt(0).toUpperCase() + aBinding.substr(1);
+
+        return [CPClassFromString(@"_CPPopUpButton" + capitalizedBinding + "Binder") class];
+    }
+
+    return [super _binderClassForBinding:aBinding];
+}
+
+@end
+
+@implementation _CPPopUpButtonContentBinder : CPBinder
+{
+}
+
+- (CPInteger)_getInsertNullOffset
+{
+    var options = [_info objectForKey:CPOptionsKey];
+
+    return [options objectForKey:CPInsertsNullPlaceholderBindingOption] ? 1 : 0;
+}
+
+- (CPString)_getNullPlaceholder
+{
+    var options = [_info objectForKey:CPOptionsKey],
+        placeholder = [options objectForKey:CPNullPlaceholderBindingOption] || @"";
+
+    if (placeholder === [CPNull null])
+        placeholder = @"";
+
+    return placeholder;
+}
+
+- (id)transformValue:(CPArray)contentArray withOptions:(CPDictionary)options
+{
+    // Desactivate the full array transformation forced by super because we don't want this. We want individual transformations (see below).
+    return contentArray;
+}
+
+- (void)setValue:(CPArray)contentArray forBinding:(CPString)aBinding
+{
+    [self _setContent:contentArray];
+    [self _setContentValuesIfNeeded:contentArray];
+}
+
+- (void)valueForBinding:(CPString)aBinding
+{
+    return [self _content];
+}
+
+- (void)_setContent:(CPArray)aValue
+{
+    var count = [aValue count],
+        options = [_info objectForKey:CPOptionsKey],
+        offset = [self _getInsertNullOffset];
+
+    if (count + offset != [_source numberOfItems])
+    {
+        [_source removeAllItems];
+
+        if (offset)
+            [_source addItemWithTitle:[self _getNullPlaceholder]];
+
+        for (var i = 0; i < count; i++)
+        {
+            var item = [[CPMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:nil];
+            [self _setValue:[aValue objectAtIndex:i] forItem:item withOptions:options];
+            [_source addItem:item];
+        }
+    }
+    else
+    {
+        for (var i = 0; i < count; i++)
+        {
+            [self _setValue:[aValue objectAtIndex:i] forItem:[_source itemAtIndex:i + offset] withOptions:options];
+        }
+    }
+}
+
+- (void)_setContentValuesIfNeeded:(CPArray)values
+{
+    var offset = [self _getInsertNullOffset];
+
+    if (![_source infoForBinding:CPContentValuesBinding])
+    {
+        if (offset)
+            [[_source itemAtIndex:0] setTitle:[self _getNullPlaceholder]];
+
+        var count = [values count];
+
+        for (var i = 0; i < count; i++)
+            [[_source itemAtIndex:i + offset] setTitle:[[values objectAtIndex:i] description]];
+    }
+}
+
+- (void)_setValue:(id)aValue forItem:(CPMenuItem)aMenuItem withOptions:(CPDictionary)options
+{
+    var value = [self _transformValue:aValue withOptions:options];
+    [aMenuItem setRepresentedObject:value];
+}
+
+- (id)_transformValue:(id)aValue withOptions:(CPDictionary)options
+{
+    return [super transformValue:aValue withOptions:options];
+}
+
+- (CPArray)_content
+{
+    return [_source valueForKeyPath:@"itemArray.representedObject"];
+}
+
+@end
+
+@implementation _CPPopUpButtonContentValuesBinder : _CPPopUpButtonContentBinder
+{
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    [super _setContent:aValue];
+}
+
+- (void)_setValue:(id)aValue forItem:(CPMenuItem)aMenuItem withOptions:(CPDictionary)options
+{
+    if (aValue === [CPNull null])
+        aValue = nil;
+
+    var value = [self _transformValue:aValue withOptions:options];
+    [aMenuItem setTitle:value];
+}
+
+- (CPArray)_content
+{
+    return [_source valueForKeyPath:@"itemArray.title"];
+}
+
+@end
+
+var binderForObject = {};
+
+@implementation _CPPopUpButtonSelectionBinder : CPBinder
+{
+    CPString _selectionBinding @accessors;
+}
+
+- (id)initWithBinding:(CPString)aBinding name:(CPString)aName to:(id)aDestination keyPath:(CPString)aKeyPath options:(CPDictionary)options from:(id)aSource
+{
+    self = [super initWithBinding:aBinding name:aName to:aDestination keyPath:aKeyPath options:options from:aSource];
+
+    if (self)
+    {
+        binderForObject[[aSource UID]] = self;
+        _selectionBinding = aName;
+    }
+
+    return self;
+}
+
++ (void)reverseSetValueForObject:(id)aSource
+{
+    var binder = binderForObject[[aSource UID]];
+    [binder reverseSetValueFor:[binder _selectionBinding]];
+}
+
+- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
+{
+    [self setValue:aValue forBinding:aBinding];
+}
+
+- (CPInteger)_getInsertNullOffset
+{
+    var options = [[CPBinder infoForBinding:CPContentBinding forObject:_source] objectForKey:CPOptionsKey];
+
+    return [options objectForKey:CPInsertsNullPlaceholderBindingOption] ? 1 : 0;
+}
+
+@end
+
+@implementation _CPPopUpButtonSelectedIndexBinder : _CPPopUpButtonSelectionBinder
+{
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    [_source selectItemAtIndex:aValue + [self _getInsertNullOffset]];
+}
+
+- (id)valueForBinding:(CPString)aBinding
+{
+    return [_source indexOfSelectedItem] - [self _getInsertNullOffset];
+}
+
+@end
+
+@implementation _CPPopUpButtonSelectedObjectBinder : _CPPopUpButtonSelectionBinder
+{
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    var index = [_source indexOfItemWithRepresentedObject:aValue],
+        offset = [self _getInsertNullOffset];
+
+    // If the content binding has the option CPNullPlaceholderBindingOption and the object to select is nil, select the first item (i.e., the placeholder).
+    // Other cases to consider:
+    // 1. no binding:
+    // 1.1 there's no item with a represented object matching the object to select.
+    // 1.2 the object to select is nil/CPNull
+    // 2. there's a binding:
+    // 2.1 there's a CPNullPlaceholderBindingOption:
+    // 2.1.1 there's no item with a represented object matching the object to select?
+    // 2.1.2 the object to select is nil/CPNull
+    // 2.2 there's no CPNullPlaceholderBindingOption:
+    // 2.2.1 there's no item with a represented object matching the object to select?
+    // 2.2.2 the object to select is nil/CPNull
+    // More cases? Behaviour that depends on array controller settings?
+
+    if (offset === 1 && index === CPNotFound)
+        index = 0;
+
+    [_source selectItemAtIndex:index];
+}
+
+- (id)valueForBinding:(CPString)aBinding
+{
+    return [[_source selectedItem] representedObject];
+}
+
+@end
+
+@implementation _CPPopUpButtonSelectedTagBinder : _CPPopUpButtonSelectionBinder
+{
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    [_source selectItemWithTag:aValue];
+}
+
+- (id)valueForBinding:(CPString)aBinding
+{
+    return [[_source selectedItem] tag];
+}
+
+@end
+
+@implementation _CPPopUpButtonSelectedValueBinder : _CPPopUpButtonSelectionBinder
+{
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    [_source selectItemWithTitle:aValue];
+}
+
+- (id)valueForBinding:(CPString)aBinding
+{
+    return [_source titleOfSelectedItem];
 }
 
 @end

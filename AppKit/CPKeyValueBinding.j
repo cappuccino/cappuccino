@@ -190,13 +190,18 @@ var CPBindingOperationAnd = 0,
     var destination = [_info objectForKey:CPObservedObjectKey],
         keyPath = [_info objectForKey:CPObservedKeyPathKey],
         options = [_info objectForKey:CPOptionsKey],
-        newValue = [_source valueForKeyPath:aBinding];
+        newValue = [self valueForBinding:aBinding];
 
     newValue = [self reverseTransformValue:newValue withOptions:options];
 
     [self suppressSpecificNotificationFromObject:destination keyPath:keyPath];
     [destination setValue:newValue forKeyPath:keyPath];
     [self unsuppressSpecificNotificationFromObject:destination keyPath:keyPath];
+}
+
+- (id)valueForBinding:(CPString)aBinding
+{
+    return [_source valueForKeyPath:aBinding];
 }
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)changes context:(id)context
@@ -546,20 +551,35 @@ CPNotApplicableMarker   = @"CPNotApplicableMarker";
 CPNullMarker            = @"CPNullMarker";
 
 // Binding name constants
-CPAlignmentBinding      = @"alignment";
-CPEditableBinding       = @"editable";
-CPEnabledBinding        = @"enabled";
-CPFontBinding           = @"font";
-CPHiddenBinding         = @"hidden";
-CPSelectedIndexBinding  = @"selectedIndex";
-CPTextColorBinding      = @"textColor";
-CPToolTipBinding        = @"toolTip";
-CPValueBinding          = @"value";
-CPValueURLBinding       = @"valueURL";
-CPValuePathBinding      = @"valuePath";
-CPDataBinding           = @"data";
-CPContentBinding        = @"content";
-CPContentValuesBinding  = @"contentValues";
+CPAlignmentBinding                        = @"alignment";
+CPContentArrayBinding                     = @"contentArray";
+CPContentBinding                          = @"content";
+CPContentObjectBinding                    = @"contentObject";
+CPContentObjectsBinding                   = @"contentObjects";
+CPContentValuesBinding                    = @"contentValues";
+CPEditableBinding                         = @"editable";
+CPEnabledBinding                          = @"enabled";
+CPFontBinding                             = @"font";
+CPFontNameBinding                         = @"fontName";
+CPFontBoldBinding                         = @"fontBold";
+CPHiddenBinding                           = @"hidden";
+CPFilterPredicateBinding                  = @"filterPredicate";
+CPPredicateBinding                        = @"predicate";
+CPSelectedIndexBinding                    = @"selectedIndex";
+CPSelectedLabelBinding                    = @"selectedLabel";
+CPSelectedObjectBinding                   = @"selectedObject";
+CPSelectedObjectsBinding                  = @"selectedObjects";
+CPSelectedTagBinding                      = @"selectedTag";
+CPSelectedValueBinding                    = @"selectedValue";
+CPSelectedValuesBinding                   = @"selectedValues";
+CPSelectionIndexesBinding                 = @"selectionIndexes";
+CPTextColorBinding                        = @"textColor";
+CPTitleBinding                            = @"title";
+CPToolTipBinding                          = @"toolTip";
+CPValueBinding                            = @"value";
+CPValueURLBinding                         = @"valueURL";
+CPValuePathBinding                        = @"valuePath";
+CPDataBinding                             = @"data";
 
 //Binding options constants
 CPAllowsEditingMultipleValuesSelectionBindingOption = @"CPAllowsEditingMultipleValuesSelection";
