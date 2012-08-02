@@ -4037,8 +4037,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (BOOL)startTrackingAt:(CGPoint)aPoint
 {
-    if (![[self window] makeFirstResponder:self])
-        return NO;
+    // Try to become the first responder, but if we can't, that's okay.
+    [[self window] makeFirstResponder:self];
 
     var row = [self rowAtPoint:aPoint];
 
@@ -4189,9 +4189,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
-    if ([[self window] firstResponder] !== self)
-        return;
-
     _isSelectingSession = NO;
 
     var CLICK_TIME_DELTA = 1000,

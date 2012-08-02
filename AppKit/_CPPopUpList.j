@@ -104,7 +104,7 @@ var ListColumnIdentifier = @"1";
         _tableView = [self makeTableView];
 
         // Start with a default size, we will resize it later
-        frame = CGRectMake(0, 0, 200, 200);
+        var frame = CGRectMake(0, 0, 200, 200);
 
         _tableColumn = [[CPTableColumn alloc] initWithIdentifier:ListColumnIdentifier];
         [_tableColumn setWidth:CGRectGetWidth(frame) - [CPScroller scrollerWidth]];
@@ -656,6 +656,7 @@ var ListColumnIdentifier = @"1";
     else
         return YES;
 }
+
 #pragma mark Internal Helpers
 
 /*! @ignore */

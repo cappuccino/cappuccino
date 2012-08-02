@@ -1008,8 +1008,9 @@ var CPScrollDestinationNone             = 0,
         r.origin.y = offset.y;
 
         // Make sure the frame fits.
-        if (_CGRectGetHeight([contentView bounds]) < offset.y + height)
-            [contentView setFrame:_CGRectMake(0, 0, _CGRectGetWidth([_tokenScrollView bounds]), offset.y + height)];
+        var scrollHeight = offset.y + tokenHeight + CEIL(spaceBetweenTokens.height / 2.0);
+        if (_CGRectGetHeight([contentView bounds]) < scrollHeight)
+            [contentView setFrameSize:_CGSizeMake(_CGRectGetWidth([_tokenScrollView bounds]), scrollHeight)];
 
         offset.x += width + spaceBetweenTokens.width;
 
@@ -1033,6 +1034,7 @@ var CPScrollDestinationNone             = 0,
         }
 
         _inputFrame = fitAndFrame(textWidth, tokenHeight);
+
         _inputFrame.size.height = lineHeight;
 
         element.style.left = (_inputFrame.origin.x + editorInset.left) + "px";
@@ -1042,7 +1044,7 @@ var CPScrollDestinationNone             = 0,
 
         // When editing, always scroll to the cursor.
         if (_selectedRange.length == 0)
-            [[_tokenScrollView documentView] scrollRectToVisible:_inputFrame];
+            [[_tokenScrollView documentView] scrollPoint:_CGPointMake(0, _inputFrame.origin.y)];
     };
 
     for (var i = 0, count = [tokens count]; i < count; i++)
@@ -1074,13 +1076,21 @@ var CPScrollDestinationNone             = 0,
     if (isEditing && _selectedRange.length)
     {
         _inputFrame = nil;
-        [self _inputElement].style.left = "-10000px";
-        [self _inputElement].focus();
+        var inputElement = [self _inputElement];
+        inputElement.style.display = "none";
+    }
+    else if (isEditing)
+    {
+        var inputElement = [self _inputElement];
+        inputElement.style.display = "block";
+        if (document.activeElement !== inputElement)
+            inputElement.focus();
     }
 
-    // Trim off any excess height downwards.
-    if (_CGRectGetHeight([contentView bounds]) > offset.y + tokenHeight)
-        [contentView setFrame:_CGRectMake(0, 0, _CGRectGetWidth([_tokenScrollView bounds]), offset.y + tokenHeight)];
+    // Trim off any excess height downwards (in case we shrank).
+    var scrollHeight = offset.y + tokenHeight + CEIL(spaceBetweenTokens.height / 2.0);
+    if (_CGRectGetHeight([contentView bounds]) > scrollHeight)
+        [contentView setFrameSize:_CGSizeMake(_CGRectGetWidth([_tokenScrollView bounds]), scrollHeight)];
 
     if (_shouldScrollTo !== CPScrollDestinationNone)
     {
@@ -1105,7 +1115,7 @@ var CPScrollDestinationNone             = 0,
     if (!aToken)
         return;
 
-    return [[_tokenScrollView documentView] scrollRectToVisible:[aToken frame]];
+    return [[_tokenScrollView documentView] scrollPoint:_CGPointMake(0, [aToken frameOrigin].y)];
 }
 
 @end
