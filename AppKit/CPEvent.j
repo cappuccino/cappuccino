@@ -642,6 +642,29 @@ var _CPEventPeriodicEventPeriod         = 0,
     _CPEventPeriodicEventTimer = nil;
 }
 
+- (CPString)description
+{
+    switch (_type)
+    {
+        case CPKeyDown:
+        case CPKeyUp:
+        case CPFlagsChanged:
+            return [CPString stringWithFormat:@"CPEvent: type=%d loc=%@ time=%.1f flags=0x%X win=%@ winNum=%d ctxt=%@ chars=\"%@\" unmodchars=\"%@\" repeat=%d keyCode=%d", _type, CPStringFromPoint(_location), _timestamp, _modifierFlags, _window, _windowNumber, _context, _characters, _charactersIgnoringModifiers, _isARepeat, _keyCode];
+        case CPLeftMouseDown:
+        case CPLeftMouseUp:
+        case CPRightMouseDown:
+        case CPRightMouseUp:
+        case CPMouseMoved:
+        case CPLeftMouseDragged:
+        case CPRightMouseDragged:
+        case CPMouseEntered:
+        case CPMouseExited:
+            return [CPString stringWithFormat:@"CPEvent: type=%d loc=%@ time=%.1f flags=0x%X win=%@ winNum=%d ctxt=%@ evNum=%d click=%d buttonNumber=%d pressure=%f", _type, CPStringFromPoint(_location), _timestamp, _modifierFlags, _window, _windowNumber, _context, _eventNumber, _clickCount, [self buttonNumber], _pressure];
+        default:
+            return [CPString stringWithFormat:@"CPEvent: type=%d loc=%@ time=%.1f flags=0x%X win=%@ winNum=%d ctxt=%@ subtype=%d data1=%d data2=%d", _type, CPStringFromPoint(_location), _timestamp, _modifierFlags, _window, _windowNumber, _context, _subtype, _data1, _data2];
+    }
+}
+
 @end
 
 function _CPEventFirePeriodEvent()
