@@ -59,6 +59,7 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
     CPString                        _perMillSymbol @accessors(property=perMillSymbol);
     CPString                        _groupingSeparator @accessors(property=groupingSeparator);
     CPNumberFormatterRoundingMode   _roundingMode @accessors(property=roundingMode);
+    CPUInteger                      _minimumFractionalDigits @accessors(property=minimumFractionalDigits);
     CPUInteger                      _maximumFractionalDigits @accessors(property=maximalFractionalDigits);
 
     CPDecimalNumberHandler         _numberHandler;
@@ -94,6 +95,9 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
                 fraction = parts.length > 1 ? parts[1] : "",
                 preFractionLength = [preFraction length],
                 commaPosition = 3;
+
+            while (fraction.length < _minimumFractionalDigits)
+                fraction += "0";
 
             // TODO This is just a temporary solution. Should be generalised.
             // Add in thousands separators.
@@ -146,6 +150,12 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
 - (void)setRoundingMode:(CPNumberFormatterRoundingMode)aRoundingMode
 {
     _roundingMode = aRoundingMode;
+    SET_NEEDS_NUMBER_HANDLER_UPDATE();
+}
+
+- (void)setMinimumFractionDigits:(CPUInteger)aNumber
+{
+    _minimumFractionalDigits = aNumber;
     SET_NEEDS_NUMBER_HANDLER_UPDATE();
 }
 

@@ -78,4 +78,15 @@
     [self assert:@"0.4" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"0.4467"]]];
 }
 
+- (void)testSetMinimumFractionDigits_
+{
+    var numberFormatter = [CPNumberFormatter new];
+    [numberFormatter setNumberStyle:CPNumberFormatterDecimalStyle];
+    [numberFormatter setMinimumFractionDigits:3];
+    [numberFormatter setMaximumFractionDigits:4];
+
+    [self assert:@"1.000" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"1"]]];
+    [self assert:@"1.100" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"1.1"]]];
+    [self assert:@"0.4467" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"0.4467"]]];
+}
 @end
