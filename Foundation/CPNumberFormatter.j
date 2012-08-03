@@ -78,13 +78,14 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
 
 - (CPString)stringFromNumber:(CPNumber)number
 {
+    var dcmn = [number isKindOfClass:CPDecimalNumber] ? number : [[CPDecimalNumber alloc] _initWithJSNumber:number];
+
     // TODO Add locale support.
     switch (_numberStyle)
     {
         case CPNumberFormatterDecimalStyle:
             UPDATE_NUMBER_HANDLER_IF_NECESSARY();
 
-            var dcmn = [CPDecimalNumber numberWithFloat:number];
             dcmn = [dcmn decimalNumberByRoundingAccordingToBehavior:_numberHandler];
 
             var output = [dcmn descriptionWithLocale:nil],

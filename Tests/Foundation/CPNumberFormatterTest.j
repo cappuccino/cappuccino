@@ -68,4 +68,14 @@
     [self assert:@"123.568" equals:formattedNumberString];
 }
 
+- (void)testStringFromDecimalNumber
+{
+    var numberFormatter = [CPNumberFormatter new];
+    [numberFormatter setNumberStyle:CPNumberFormatterDecimalStyle];
+    [numberFormatter setMaximumFractionDigits:1];
+
+    [self assert:@"1" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"1"]]];
+    [self assert:@"0.4" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"0.4467"]]];
+}
+
 @end
