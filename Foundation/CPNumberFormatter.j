@@ -27,7 +27,7 @@
 @import <Foundation/CPDecimalNumber.j>
 
 #define UPDATE_NUMBER_HANDLER_IF_NECESSARY() if (!_numberHandler) \
-    _numberHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:_roundingMode scale:_maximumFractionalDigits raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:YES];
+    _numberHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:_roundingMode scale:_maximumFractionDigits raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:YES];
 #define SET_NEEDS_NUMBER_HANDLER_UPDATE() _numberHandler = nil;
 
 CPNumberFormatterNoStyle            = 0;
@@ -59,8 +59,8 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
     CPString                        _perMillSymbol @accessors(property=perMillSymbol);
     CPString                        _groupingSeparator @accessors(property=groupingSeparator);
     CPNumberFormatterRoundingMode   _roundingMode @accessors(property=roundingMode);
-    CPUInteger                      _minimumFractionalDigits @accessors(property=minimumFractionalDigits);
-    CPUInteger                      _maximumFractionalDigits @accessors(property=maximalFractionalDigits);
+    CPUInteger                      _minimumFractionDigits @accessors(property=minimumFractionDigits);
+    CPUInteger                      _maximumFractionDigits @accessors(property=maximumFractionDigits);
 
     CPDecimalNumberHandler         _numberHandler;
 }
@@ -70,8 +70,8 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
     if (self = [super init])
     {
         _roundingMode = CPNumberFormatterRoundHalfUp;
-        _minimumFractionalDigits = 0;
-        _maximumFractionalDigits = 0;
+        _minimumFractionDigits = 0;
+        _maximumFractionDigits = 0;
         _groupingSeparator = @",";
     }
 
@@ -97,7 +97,7 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
                 preFractionLength = [preFraction length],
                 commaPosition = 3;
 
-            while (fraction.length < _minimumFractionalDigits)
+            while (fraction.length < _minimumFractionDigits)
                 fraction += "0";
 
             // TODO This is just a temporary solution. Should be generalised.
@@ -156,13 +156,13 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
 
 - (void)setMinimumFractionDigits:(CPUInteger)aNumber
 {
-    _minimumFractionalDigits = aNumber;
+    _minimumFractionDigits = aNumber;
     SET_NEEDS_NUMBER_HANDLER_UPDATE();
 }
 
 - (void)setMaximumFractionDigits:(CPUInteger)aNumber
 {
-    _maximumFractionalDigits = aNumber;
+    _maximumFractionDigits = aNumber;
     SET_NEEDS_NUMBER_HANDLER_UPDATE();
 }
 
