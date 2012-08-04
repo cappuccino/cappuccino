@@ -522,6 +522,10 @@
     [self assert:"123456789123456789123456789000000000000000" equals:[dcmn stringValue] message:"stringValue: - large number"];
     dcmn = [CPDecimalNumber decimalNumberWithString:@"82346.2341144"];
     [self assert:"82346.2341144" equals:[dcmn descriptionWithLocale:nil] message:"descriptionWithLocale: - large number"];
+    dcmn = [CPDecimalNumber decimalNumberWithString:@".125"];
+    [self assert:"0.125" equals:[dcmn descriptionWithLocale:nil] message:"stringValue: - no integral part number"];
+    dcmn = [CPDecimalNumber decimalNumberWithString:@"-.003"];
+    [self assert:"-0.003" equals:[dcmn descriptionWithLocale:nil] message:"stringValue: - no integral part negative number"];
 }
 
 - (void)testEncoding
