@@ -143,4 +143,20 @@
     [self assert:@"SEK0.02" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"0.015"]]];
 }
 
+- (void)testSetGeneratesDecimalNumbers_
+{
+    var numberFormatter = [CPNumberFormatter new];
+    [numberFormatter setNumberStyle:CPNumberFormatterDecimalStyle];
+
+    [self assertTrue:[numberFormatter generatesDecimalNumbers]];
+    var generated = [numberFormatter numberFromString:@"1.23456"];
+    [self assert:CPDecimalNumber equals:[generated class]];
+    [self assert:[CPDecimalNumber decimalNumberWithString:@"1.23456"] equals:generated];
+
+    [numberFormatter setGeneratesDecimalNumbers:NO];
+    generated = [numberFormatter numberFromString:@"1.23456"];
+    [self assertFalse:[generated isKindOfClass:CPDecimalNumber]];
+    [self assert:1.23456 equals:generated];
+}
+
 @end

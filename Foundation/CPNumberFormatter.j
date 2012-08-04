@@ -63,6 +63,7 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
     CPUInteger                      _maximumFractionDigits @accessors(property=maximumFractionDigits);
     CPString                        _currencyCode @accessors(property=currencyCode);
     CPString                        _currencySymbol @accessors(property=currencySymbol);
+    BOOL                            _generatesDecimalNumbers @accessors(property=generatesDecimalNumbers);
 
     // Note that we do not implement the 10.0 style number formatter, but the 10.4+ formatter. Therefore
     // we don't expose this through a `roundingBehavior` property.
@@ -77,6 +78,7 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
         _minimumFractionDigits = 0;
         _maximumFractionDigits = 0;
         _groupingSeparator = @",";
+        _generatesDecimalNumbers = YES;
 
         // FIXME Add locale support.
         _currencyCode = @"USD";
@@ -138,10 +140,12 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
     }
 }
 
-- (CPNumber)numberFromString:(CPString)string
+- (CPNumber)numberFromString:(CPString)aString
 {
-    // TODO
-    return parseFloat(string);
+    if (_generatesDecimalNumbers)
+        return [CPDecimalNumber decimalNumberWithString:aString];
+    else
+        return parseFloat(aString);
 }
 
 - (CPString)stringForObjectValue:(id)anObject
@@ -211,7 +215,8 @@ var CPNumberFormatterStyleKey                   = "CPNumberFormatterStyleKey",
     CPNumberFormatterRoundingModeKey            = @"CPNumberFormatterRoundingModeKey",
     CPNumberFormatterGroupingSeparatorKey       = @"CPNumberFormatterGroupingSeparatorKey",
     CPNumberFormatterCurrencyCodeKey            = @"CPNumberFormatterCurrencyCodeKey",
-    CPNumberFormatterCurrencySymbolKey          = @"CPNumberFormatterCurrencySymbolKey";
+    CPNumberFormatterCurrencySymbolKey          = @"CPNumberFormatterCurrencySymbolKey",
+    CPNumberFormatterGeneratesDecimalNumbers    = @"CPNumberFormatterGeneratesDecimalNumbers";
 
 @implementation CPNumberFormatter (CPCoding)
 
@@ -228,6 +233,7 @@ var CPNumberFormatterStyleKey                   = "CPNumberFormatterStyleKey",
         _groupingSeparator = [aCoder decodeObjectForKey:CPNumberFormatterGroupingSeparatorKey];
         _currencyCode = [aCoder decodeObjectForKey:CPNumberFormatterCurrencyCodeKey];
         _currencySymbol = [aCoder decodeObjectForKey:CPNumberFormatterCurrencySymbolKey];
+        _generatesDecimalNumbers = [aCoder decodeBoolForKey:CPNumberFormatterGeneratesDecimalNumbers];
     }
 
     return self;
@@ -244,6 +250,7 @@ var CPNumberFormatterStyleKey                   = "CPNumberFormatterStyleKey",
     [aCoder encodeObject:_groupingSeparator forKey:CPNumberFormatterGroupingSeparatorKey];
     [aCoder encodeObject:_currencyCode forKey:CPNumberFormatterCurrencyCodeKey];
     [aCoder encodeObject:_currencySymbol forKey:CPNumberFormatterCurrencySymbolKey];
+    [aCoder encodeBool:_generatesDecimalNumbers forKey:CPNumberFormatterGeneratesDecimalNumbers];
 }
 
 @end
