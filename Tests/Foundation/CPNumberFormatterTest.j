@@ -8,6 +8,7 @@
 {
     var numberFormatter = [[CPNumberFormatter alloc] init];
     [numberFormatter setNumberStyle:CPNumberFormatterDecimalStyle];
+    [numberFormatter setMaximumFractionDigits:3];
     var formattedNumberString = [numberFormatter stringFromNumber:[CPNumber numberWithInt:123]];
     [self assert:@"123" equals:formattedNumberString];
 
@@ -44,6 +45,7 @@
     var numberFormatter = [[CPNumberFormatter alloc] init],
         formattedNumberString;
     [numberFormatter setNumberStyle:CPNumberFormatterDecimalStyle];
+    [numberFormatter setMaximumFractionDigits:3];
 
     [numberFormatter setRoundingMode:CPNumberFormatterRoundUp];
     formattedNumberString = [numberFormatter stringFromNumber:[CPNumber numberWithFloat:123.5672]];

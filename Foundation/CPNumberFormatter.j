@@ -70,7 +70,8 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
     if (self = [super init])
     {
         _roundingMode = CPNumberFormatterRoundHalfUp;
-        _maximumFractionalDigits = 3;
+        _minimumFractionalDigits = 0;
+        _maximumFractionalDigits = 0;
         _groupingSeparator = @",";
     }
 
