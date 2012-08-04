@@ -130,7 +130,7 @@
 
 
     // misc
-    // decimalValue <- if it hasnt been working so far, your would know.
+    // decimalValue <- if it hasnt been working so far, you would know.
 
     dcmn = [CPDecimalNumber zero];
     dcm = [dcmn boolValue];
@@ -326,7 +326,7 @@
    [self assert:1000 equals:[res doubleValue] message:"220000/220 == 1000"];
 }
 
-- (void)testMutliply
+- (void)testMultiply
 {
 
     var dcmn1 = [CPDecimalNumber decimalNumberWithString:@"17"],
@@ -487,6 +487,11 @@
     [self assert:[1] equals:d1._mantissa message:"decimalNumberByRoundingAccordingToBehavior: - mantissa"];
     [self assert:NO equals:d1._isNegative message:"decimalNumberByRoundingAccordingToBehavior: - sign"];
     [self assert:NO equals:d1._isNaN message:"decimalNumberByRoundingAccordingToBehavior: - NaN is incorrectly set"];
+
+    h = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:CPRoundBankers scale:2 raiseOnExactness:NO raiseOnOverflow:YES raiseOnUnderflow:YES raiseOnDivideByZero:YES],
+
+    [self assert:@"0.02" equals:[[[CPDecimalNumber decimalNumberWithString:@"0.015"] decimalNumberByRoundingAccordingToBehavior:h] description]];
+    [self assert:@"0" equals:[[[CPDecimalNumber decimalNumberWithString:@"0.005"] decimalNumberByRoundingAccordingToBehavior:h] description]];
 }
 
 - (void)testCompare
