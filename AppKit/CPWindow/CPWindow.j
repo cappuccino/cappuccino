@@ -269,9 +269,6 @@ var CPWindowActionMessageKeys = [
     Sent from the notification center when an attached sheet on the
     delegate's window has been animated out and is no longer visible.
     @param notification contains information about the event
-
-    @return \c YES allows the window to close. \c NO
-    vetoes the close operation and leaves the window open.
 */
 @implementation CPWindow : CPResponder
 {
