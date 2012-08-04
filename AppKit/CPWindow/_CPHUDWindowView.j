@@ -211,8 +211,6 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
     if ([_titleField isHidden])
         maxY -= ([self toolbarOffset]).height;
 
-    //[[theWindow contentView] setFrameOrigin:CGPointMake(0.0, maxY, width, CGRectGetHeight(bounds) - maxY)];
-    
     var contentRect = CGRectMake(0.0, maxY, width, CGRectGetHeight(bounds) - maxY);
 
     [[theWindow contentView] setFrame:contentRect];
@@ -232,9 +230,10 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
     var dy = ([self toolbarOffset]).height;
     if (enable)
         dy = -dy;
-    
-    var newHeight = CGRectGetMaxY(frame) + dy;
-    var newWidth = CGRectGetMaxX(frame);
+
+    var newHeight = CGRectGetMaxY(frame) + dy,
+        newWidth = CGRectGetMaxX(frame);
+
     frame.size.height += dy;
 
     [self setFrameSize:CGSizeMake(newWidth, newHeight)];
