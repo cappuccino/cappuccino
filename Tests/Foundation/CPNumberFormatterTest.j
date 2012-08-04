@@ -91,4 +91,27 @@
     [self assert:@"1.100" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"1.1"]]];
     [self assert:@"0.4467" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"0.4467"]]];
 }
+
+- (void)testArchiving
+{
+    var numberFormatter = [CPNumberFormatter new],
+        archived,
+        unarchived;
+
+    [numberFormatter setNumberStyle:CPNumberFormatterDecimalStyle];
+    [numberFormatter setMinimumFractionDigits:2];
+    [numberFormatter setMaximumFractionDigits:3];
+    [numberFormatter setRoundingMode:CPNumberFormatterRoundHalfUp];
+    [numberFormatter setGroupingSeparator:@" "];
+
+    archived = [CPKeyedArchiver archivedDataWithRootObject:numberFormatter],
+    unarchived = [CPKeyedUnarchiver unarchiveObjectWithData:archived];
+
+    [self assert:CPNumberFormatterDecimalStyle equals:[unarchived numberStyle] message:@"numberStyle"];
+    [self assert:2 equals:[unarchived minimumFractionDigits] message:@"minimumFractionDigits"];
+    [self assert:3 equals:[unarchived maximumFractionDigits] message:@"maximumFractionDigits"];
+    [self assert:CPNumberFormatterRoundHalfUp equals:[unarchived roundingMode] message:@"roundingMode"];
+    [self assert:@" " equals:[unarchived groupingSeparator] message:@"groupingSeparator"];
+}
+
 @end
