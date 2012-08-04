@@ -101,7 +101,7 @@
     [numberFormatter setNumberStyle:CPNumberFormatterDecimalStyle];
     [numberFormatter setMinimumFractionDigits:2];
     [numberFormatter setMaximumFractionDigits:3];
-    [numberFormatter setRoundingMode:CPNumberFormatterRoundHalfUp];
+    [numberFormatter setRoundingMode:CPNumberFormatterRoundHalfDown];
     [numberFormatter setGroupingSeparator:@" "];
 
     archived = [CPKeyedArchiver archivedDataWithRootObject:numberFormatter],
@@ -110,8 +110,37 @@
     [self assert:CPNumberFormatterDecimalStyle equals:[unarchived numberStyle] message:@"numberStyle"];
     [self assert:2 equals:[unarchived minimumFractionDigits] message:@"minimumFractionDigits"];
     [self assert:3 equals:[unarchived maximumFractionDigits] message:@"maximumFractionDigits"];
-    [self assert:CPNumberFormatterRoundHalfUp equals:[unarchived roundingMode] message:@"roundingMode"];
+    [self assert:CPNumberFormatterRoundHalfDown equals:[unarchived roundingMode] message:@"roundingMode"];
     [self assert:@" " equals:[unarchived groupingSeparator] message:@"groupingSeparator"];
+}
+
+- (void)testCurrencyStyle
+{
+    var numberFormatter = [CPNumberFormatter new];
+    [numberFormatter setNumberStyle:CPNumberFormatterCurrencyStyle];
+    [numberFormatter setCurrencyCode:@"USD"];
+
+    [self assert:@"$1.00" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"1"]]];
+    [self assert:@"$12.00" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"12"]]];
+    [self assert:@"$12.10" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"12.1"]]];
+    [self assert:@"$12.10" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"12.10"]]];
+    [self assert:@"$0.10" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"0.1"]]];
+    [self assert:@"$0.10" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"0.10"]]];
+    [self assert:@"$0.00" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"0.005"]]];
+    [self assert:@"$0.02" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"0.015"]]];
+
+
+    [numberFormatter setCurrencyCode:@"SEK"];
+    [numberFormatter setCurrencySymbol:@""];
+
+    [self assert:@"SEK1.00" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"1"]]];
+    [self assert:@"SEK12.00" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"12"]]];
+    [self assert:@"SEK12.10" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"12.1"]]];
+    [self assert:@"SEK12.10" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"12.10"]]];
+    [self assert:@"SEK0.10" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"0.1"]]];
+    [self assert:@"SEK0.10" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"0.10"]]];
+    [self assert:@"SEK0.00" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"0.005"]]];
+    [self assert:@"SEK0.02" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"0.015"]]];
 }
 
 @end

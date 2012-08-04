@@ -61,6 +61,8 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
     CPNumberFormatterRoundingMode   _roundingMode @accessors(property=roundingMode);
     CPUInteger                      _minimumFractionDigits @accessors(property=minimumFractionDigits);
     CPUInteger                      _maximumFractionDigits @accessors(property=maximumFractionDigits);
+    CPString                        _currencyCode @accessors(property=currencyCode);
+    CPString                        _currencySymbol @accessors(property=currencySymbol);
 
     // Note that we do not implement the 10.0 style number formatter, but the 10.4+ formatter. Therefore
     // we don't expose this through a `roundingBehavior` property.
@@ -75,6 +77,10 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
         _minimumFractionDigits = 0;
         _maximumFractionDigits = 0;
         _groupingSeparator = @",";
+
+        // FIXME Add locale support.
+        _currencyCode = @"USD";
+        _currencySymbol = @"$";
     }
 
     return self;
@@ -87,6 +93,7 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
     // TODO Add locale support.
     switch (_numberStyle)
     {
+        case CPNumberFormatterCurrencyStyle:
         case CPNumberFormatterDecimalStyle:
             UPDATE_NUMBER_HANDLER_IF_NECESSARY();
 
@@ -113,10 +120,19 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
                 }
             }
 
+            var string = preFraction;
             if (fraction)
-                return preFraction + "." + fraction;
-            else
-                return preFraction;
+                string += "." + fraction;
+
+            if (_numberStyle === CPNumberFormatterCurrencyStyle)
+            {
+                if (_currencySymbol)
+                    string = _currencySymbol + string;
+                else
+                    string = _currencyCode + string;
+            }
+
+            return string;
         default:
             return [number description];
     }
@@ -150,6 +166,25 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
     return YES;
 }
 
+- (void)setNumberStyle:(CPNumberFormatterStyle)aStyle
+{
+    _numberStyle = aStyle;
+
+    switch (aStyle)
+    {
+        case CPNumberFormatterDecimalStyle:
+            _minimumFractionDigits = 0;
+            _maximumFractionDigits = 3;
+            SET_NEEDS_NUMBER_HANDLER_UPDATE();
+            break;
+        case CPNumberFormatterCurrencyStyle:
+            _minimumFractionDigits = 2;
+            _maximumFractionDigits = 2;
+            SET_NEEDS_NUMBER_HANDLER_UPDATE();
+            break;
+    }
+}
+
 - (void)setRoundingMode:(CPNumberFormatterRoundingMode)aRoundingMode
 {
     _roundingMode = aRoundingMode;
@@ -174,7 +209,9 @@ var CPNumberFormatterStyleKey                   = "CPNumberFormatterStyleKey",
     CPNumberFormatterMinimumFractionDigitsKey   = @"CPNumberFormatterMinimumFractionDigitsKey",
     CPNumberFormatterMaximumFractionDigitsKey   = @"CPNumberFormatterMaximumFractionDigitsKey",
     CPNumberFormatterRoundingModeKey            = @"CPNumberFormatterRoundingModeKey",
-    CPNumberFormatterGroupingSeparatorKey       = @"CPNumberFormatterGroupingSeparatorKey";
+    CPNumberFormatterGroupingSeparatorKey       = @"CPNumberFormatterGroupingSeparatorKey",
+    CPNumberFormatterCurrencyCodeKey            = @"CPNumberFormatterCurrencyCodeKey",
+    CPNumberFormatterCurrencySymbolKey          = @"CPNumberFormatterCurrencySymbolKey";
 
 @implementation CPNumberFormatter (CPCoding)
 
@@ -189,6 +226,8 @@ var CPNumberFormatterStyleKey                   = "CPNumberFormatterStyleKey",
         _maximumFractionDigits = [aCoder decodeIntForKey:CPNumberFormatterMaximumFractionDigitsKey];
         _roundingMode = [aCoder decodeIntForKey:CPNumberFormatterRoundingModeKey];
         _groupingSeparator = [aCoder decodeObjectForKey:CPNumberFormatterGroupingSeparatorKey];
+        _currencyCode = [aCoder decodeObjectForKey:CPNumberFormatterCurrencyCodeKey];
+        _currencySymbol = [aCoder decodeObjectForKey:CPNumberFormatterCurrencySymbolKey];
     }
 
     return self;
@@ -203,6 +242,8 @@ var CPNumberFormatterStyleKey                   = "CPNumberFormatterStyleKey",
     [aCoder encodeInt:_maximumFractionDigits forKey:CPNumberFormatterMaximumFractionDigitsKey];
     [aCoder encodeInt:_roundingMode forKey:CPNumberFormatterRoundingModeKey];
     [aCoder encodeObject:_groupingSeparator forKey:CPNumberFormatterGroupingSeparatorKey];
+    [aCoder encodeObject:_currencyCode forKey:CPNumberFormatterCurrencyCodeKey];
+    [aCoder encodeObject:_currencySymbol forKey:CPNumberFormatterCurrencySymbolKey];
 }
 
 @end
