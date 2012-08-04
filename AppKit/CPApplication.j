@@ -936,9 +936,9 @@ CPRunContinuesResponse  = -1002;
         [CPException raise:CPInternalInconsistencyException reason:@"The target window of beginSheet: cannot be a sheet"];
         return;
     }
-    
+
     [aSheet._windowView _enableSheet:YES];
-    
+
     // -dw- if a sheet is already visible, we skip this since it serves no purpose and causes
     // orderOut: to be called on the sheet, which is not what we want.
     if (![aWindow isVisible])
@@ -1196,8 +1196,8 @@ _CPRunModalLoop = function(anEvent)
     // yet it works when there is a modal window. Maybe it starts its own modal session, but interaction with the original
     // modal window seems to continue working as well. Regardless of correctness, this solution beats popovers not working
     // at all from sheets.
-    if (theWindow == modalSession._window || 
-        [theWindow worksWhenModal] || 
+    if (theWindow == modalSession._window ||
+        [theWindow worksWhenModal] ||
         [theWindow attachedSheet] == modalSession._window || // -dw- allow modal parent of sheet to be repositioned
         ([theWindow isKindOfClass:_CPAttachedWindow] && [[theWindow targetView] window] === modalSession._window))
         [theWindow sendEvent:anEvent];

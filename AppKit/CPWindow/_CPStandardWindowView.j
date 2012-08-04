@@ -330,13 +330,13 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
 
     [_headView setFrameSize:CGSizeMake(width, [self toolbarMaxY])];
     [_dividerView setFrame:CGRectMake(0.0, CGRectGetMaxY([_headView frame]), width, 1.0)];
-    
+
     var dividerMaxY = 0;
     if (![_dividerView isHidden])
         dividerMaxY = CGRectGetMaxY([_dividerView frame]);
-    
+
     [_bodyView setFrame:CGRectMake(0.0, dividerMaxY, width, CGRectGetHeight(bounds) - dividerMaxY)];
-    
+
     var leftOffset = 8;
 
     if (_closeButton)
@@ -348,7 +348,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
 
     var contentRect = CGRectMake(0.0, dividerMaxY, width, CGRectGetHeight([_bodyView frame]));
 
-    [[theWindow contentView] setFrame:contentRect];    
+    [[theWindow contentView] setFrame:contentRect];
 }
 /*
 - (void)setAnimatingToolbar:(BOOL)isAnimatingToolbar
@@ -415,7 +415,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
 - (void)_enableSheet:(BOOL)enable
 {
     [super _enableSheet:enable];
-    
+
     [_headView setHidden:enable];
     [_dividerView setHidden:enable];
     [_closeButton setHidden:enable];
@@ -434,9 +434,10 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
     var dy = CGRectGetHeight([_headView frame]) + CGRectGetHeight([_dividerView frame]);
     if (enable)
         dy = -dy;
-    
-    var newHeight = CGRectGetMaxY(frame) + dy;
-    var newWidth = CGRectGetMaxX(frame);
+
+    var newHeight = CGRectGetMaxY(frame) + dy,
+        newWidth = CGRectGetMaxX(frame);
+
     frame.size.height += dy;
 
     [self setFrameSize:CGSizeMake(newWidth, newHeight)];
