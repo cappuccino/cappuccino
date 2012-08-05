@@ -145,20 +145,14 @@
     dcmn = [[CPDecimalNumber alloc] initWithString:@"foo"];
     [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 2 overflow should return NaN"];
 
-    dcmn = [[CPDecimalNumber alloc] initWithString:@".123"];
+    dcmn = [[CPDecimalNumber alloc] initWithString:@"0123"];
     [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 3 overflow should return NaN"];
 
-    dcmn = [[CPDecimalNumber alloc] initWithString:@"-.123"];
+    dcmn = [[CPDecimalNumber alloc] initWithString:@"1e200"];
     [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 4 overflow should return NaN"];
 
-    dcmn = [[CPDecimalNumber alloc] initWithString:@"0123"];
-    [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 5 overflow should return NaN"];
-
-    dcmn = [[CPDecimalNumber alloc] initWithString:@"1e200"];
-    [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 6 overflow should return NaN"];
-
     dcmn = [[CPDecimalNumber alloc] initWithString:@"12312e-23421"];
-    [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 7 overflow should return NaN"];
+    [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 5 overflow should return NaN"];
 }
 
 - (void)testAdd
@@ -522,6 +516,10 @@
     [self assert:"123456789123456789123456789000000000000000" equals:[dcmn stringValue] message:"stringValue: - large number"];
     dcmn = [CPDecimalNumber decimalNumberWithString:@"82346.2341144"];
     [self assert:"82346.2341144" equals:[dcmn descriptionWithLocale:nil] message:"descriptionWithLocale: - large number"];
+    dcmn = [CPDecimalNumber decimalNumberWithString:@".125"];
+    [self assert:"0.125" equals:[dcmn descriptionWithLocale:nil] message:"stringValue: - no integral part number"];
+    dcmn = [CPDecimalNumber decimalNumberWithString:@"-.003"];
+    [self assert:"-0.003" equals:[dcmn descriptionWithLocale:nil] message:"stringValue: - no integral part negative number"];
 }
 
 - (void)testEncoding
