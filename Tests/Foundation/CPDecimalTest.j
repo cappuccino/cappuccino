@@ -99,10 +99,6 @@
     [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti9: catch of invalid number string. Should return NaN"];
     dcm = CPDecimalMakeWithString(@"-0001");
     [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti10: catch of invalid number string. Should return NaN"];
-    dcm = CPDecimalMakeWithString(@".123");
-    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti11: catch of invalid number string. Should return NaN"];
-    dcm = CPDecimalMakeWithString(@"-.1");
-    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti12: catch of invalid number string. Should return NaN"];
 
     //test make with parts
     dcm = CPDecimalMakeWithParts(10127658,2);

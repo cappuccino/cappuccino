@@ -145,20 +145,14 @@
     dcmn = [[CPDecimalNumber alloc] initWithString:@"foo"];
     [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 2 overflow should return NaN"];
 
-    dcmn = [[CPDecimalNumber alloc] initWithString:@".123"];
+    dcmn = [[CPDecimalNumber alloc] initWithString:@"0123"];
     [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 3 overflow should return NaN"];
 
-    dcmn = [[CPDecimalNumber alloc] initWithString:@"-.123"];
+    dcmn = [[CPDecimalNumber alloc] initWithString:@"1e200"];
     [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 4 overflow should return NaN"];
 
-    dcmn = [[CPDecimalNumber alloc] initWithString:@"0123"];
-    [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 5 overflow should return NaN"];
-
-    dcmn = [[CPDecimalNumber alloc] initWithString:@"1e200"];
-    [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 6 overflow should return NaN"];
-
     dcmn = [[CPDecimalNumber alloc] initWithString:@"12312e-23421"];
-    [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 7 overflow should return NaN"];
+    [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 5 overflow should return NaN"];
 }
 
 - (void)testAdd

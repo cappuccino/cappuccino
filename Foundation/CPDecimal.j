@@ -142,6 +142,9 @@ function CPDecimalMakeWithString(string, locale)
     {
         // input is too long, increase exponent and truncate
         exponent += inputlength - CPDecimalMaxDigits;
+    } else if (inputlength === 0)
+    {
+        return CPDecimalMakeNaN();
     }
 
     if (exponent > CPDecimalMaxExponent || exponent < CPDecimalMinExponent)
