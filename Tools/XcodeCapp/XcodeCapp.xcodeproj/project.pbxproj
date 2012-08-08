@@ -45,7 +45,7 @@
 
 /* Begin PBXFileReference section */
 		022BCEA61468632000B72910 /* project.pbxproj.sample */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = project.pbxproj.sample; sourceTree = "<group>"; };
-		024A041113699D6800DCBE4D /* parser.j */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.objj; path = parser.j; sourceTree = "<group>"; };
+		024A041113699D6800DCBE4D /* parser.j */ = {isa = PBXFileReference; explicitFileType = sourcecode.javascript; fileEncoding = 4; path = parser.j; sourceTree = "<group>"; };
 		026F3B6113866B0B00EE5B83 /* xcodecapp-icon-inactive.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "xcodecapp-icon-inactive.png"; sourceTree = "<group>"; };
 		026F3B6413866E7D00EE5B83 /* xcodecapp-icon-active.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "xcodecapp-icon-active.png"; sourceTree = "<group>"; };
 		027D9989136969DD00D3DB13 /* XcodeCapp.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XcodeCapp.pch; sourceTree = "<group>"; };
@@ -209,7 +209,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0420;
+				LastUpgradeCheck = 0440;
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "XcodeCapp" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -286,6 +286,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -307,6 +308,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -336,7 +338,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx10.6;
+				SDKROOT = macosx;
 			};
 			name = Debug;
 		};
@@ -352,7 +354,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx10.6;
+				SDKROOT = macosx;
 			};
 			name = Release;
 		};

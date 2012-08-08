@@ -392,6 +392,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     if ([self isObjJFile:fullPath])
     {
         NSString *shadowPath = [[self shadowURLForSourceURL:[NSURL URLWithString:[fullPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]] path];
+
         [fm removeItemAtPath:shadowPath error:nil];
         DLog(@"Removing shadow file: %@", shadowPath);
     }
@@ -557,7 +558,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
                                         range:NSMakeRange(0, [flattenedPath length])];
 
     DLog(@"Flattened path: %@", flattenedPath);
-    NSString *basename  = [NSString stringWithFormat:@"%@.h", [[flattenedPath stringByDeletingPathExtension] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+    NSString *basename  = [NSString stringWithFormat:@"%@.m", [[flattenedPath stringByDeletingPathExtension] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
     
     return [NSURL URLWithString:basename relativeToURL:XCodeSupportProjectSources];
 }
@@ -576,7 +577,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
                                       options:0
                                         range:NSMakeRange(0, [unshadowedPath length])];
 
-    [unshadowedPath replaceOccurrencesOfString:@".h"
+    [unshadowedPath replaceOccurrencesOfString:@".m"
                                     withString:@".j"
                                        options:0
                                          range:NSMakeRange(0, [unshadowedPath length])];

@@ -86,7 +86,7 @@ function main(args)
                         types[anIndex] = NSCompatibleClassName(aType, YES);
                 });
 
-                outlets.push("    " + types.join(" ") + " " + ivar_getName(anIvar) + ";");
+                outlets.push("@property (assign) " + types.join(" ") + " " + ivar_getName(anIvar) + ";");
             }
         });
 
@@ -107,11 +107,13 @@ function main(args)
         ObjectiveCSource +=
             "\n@interface " + class_getName(aClass) +
             (superClassName === "Nil" ? "" : (" : " + NSCompatibleClassName(superClassName))) +
-            "\n{\n" +
+            "\n\n" +
             outlets.join("\n") +
-            "\n}\n" +
+            "\n" +
             actions.join("\n") +
-            "\n@end";
+            "\n@end\n\n"+
+            "\n@implementation " + class_getName(aClass) +
+            "\n@end\n";
     });
 
     if (ObjectiveCSource.length)
