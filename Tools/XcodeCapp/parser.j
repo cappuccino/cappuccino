@@ -105,6 +105,8 @@ function main(args)
             superClassName = superClasses[className];
 
         ObjectiveCSource +=
+            "#import <Foundation/Foundation.h>\n" +
+            "#import <Cocoa/Cocoa.h>\n" +
             "\n@interface " + class_getName(aClass) +
             (superClassName === "Nil" ? "" : (" : " + NSCompatibleClassName(superClassName))) +
             "\n\n" +
