@@ -42,7 +42,6 @@ extern NSString * const XCCListeningStartNotification;
     NSString                        *profilePath;
     NSString                        *PBXModifierScriptPath;
     NSURL                           *currentProjectURL;
-    NSURL                           *XCodeSupportFolder;
     NSURL                           *XCodeSupportProject;
     NSURL                           *XCodeSupportProjectSources;
     PRHEmptyGrowlDelegate           *growlDelegateRef;

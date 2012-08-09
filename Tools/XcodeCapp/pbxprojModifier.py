@@ -1,47 +1,42 @@
 import sys, os
 from mod_pbxproj import XcodeProject
 
+XCODESUPPORTFOLDER = ".XcodeSupport"
 
-def add_file(PBXProjectFilePath, path):
+def add_file(project, shadowGroup, sourceGroup, shadowPath, sourcePath, projectBaseURL):
+    project.add_file(shadowPath, parent=shadowGroup)
+    project.add_file(sourcePath, parent=sourceGroup)
+    project.save()
 
-    project = XcodeProject.Load(PBXProjectFilePath)
-    shadowGroup = project.get_or_create_group('Shadows')
-
-    files = project.get_files_by_os_path("XcodeSupport/%s" % os.path.basename(path))
-    
-    if "main.m" in path:
-        sys.exit(0)
-    
-    if len(files) == 0:
-        project.add_file(path, parent=shadowGroup)
-        project.save()
-
-def remove_file(PBXProjectFilePath, path):
-    
-    project = XcodeProject.Load(PBXProjectFilePath)
-    shadowGroup = project.get_or_create_group('Shadows')
-    
-    files = project.get_files_by_os_path("XcodeSupport/%s" % os.path.basename(path))
-    
-    if "main.m" in path:
-        sys.exit(0)
-    
-    if len(files) == 1:
-        project.remove_file("XcodeSupport/%s" % os.path.basename(path), parent=shadowGroup)
-        project.save()
+def remove_file(project, shadowGroup, sourceGroup, shadowPath, sourcePath, projectBaseURL):
+    project.remove_file("%s/%s" % (XCODESUPPORTFOLDER, os.path.basename(shadowPath)), parent=shadowGroup)
+    project.remove_file(os.path.relpath(sourcePath, projectBaseURL), parent=sourceGroup)
+    project.save()
 
 
 if __name__ == '__main__':
 
     action              = sys.argv[1]
     PBXProjectFilePath  = sys.argv[2]
-    currentFilePath     = sys.argv[3]
+    shadowFilePath      = sys.argv[3]
+    sourceFilePath      = sys.argv[4]
+    projectBaseURL      = sys.argv[5]
     
-    if action == "add":
-        add_file(PBXProjectFilePath, currentFilePath)
-    elif action == "remove":
-        remove_file(PBXProjectFilePath, currentFilePath)
+    project = XcodeProject.Load(PBXProjectFilePath)
     
+    shadowGroup = project.get_or_create_group('Shadows')
+    sourceGroup = project.get_or_create_group('Sources')
+    
+    if "main.m" in shadowFilePath:
+        sys.exit(0)
+    
+    files = project.get_files_by_os_path("%s/%s" % (XCODESUPPORTFOLDER, os.path.basename(shadowFilePath)))
+
+    if action == "add" and len(files) == 0:
+        add_file(project, shadowGroup, sourceGroup, shadowFilePath, sourceFilePath, projectBaseURL)
+
+    elif action == "remove" and len(files) == 1:
+        remove_file(project, shadowGroup, sourceGroup, shadowFilePath, sourceFilePath, projectBaseURL)
     
     
 
