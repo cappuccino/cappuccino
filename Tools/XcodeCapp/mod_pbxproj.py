@@ -736,7 +736,8 @@ class XcodeProject(PBXDict):
 
     def remove_file(self, path, parent):
         files = self.get_files_by_os_path(path)
-        del self.objects[files[0].id]
+        for r in files:
+            del self.objects[r.id]
         self.modified = True
 
     def move_file(self, id, dest_grp=None):
