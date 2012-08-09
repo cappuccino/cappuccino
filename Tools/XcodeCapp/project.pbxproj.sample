@@ -37,7 +37,6 @@
 			children = (
 				9EEC44CB13574A0B00615446 /* CappuccinoRessource */,
 				9EEC4496135749D200615446 /* Frameworks */,
-				9EEC4494135749D200615446 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
