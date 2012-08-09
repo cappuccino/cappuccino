@@ -40,6 +40,7 @@ extern NSString * const XCCListeningStartNotification;
     NSString                        *XCodeSupportProjectName;
     NSString                        *XCodeTemplatePBXPath;
     NSString                        *profilePath;
+    NSString                        *PBXModifierScriptPath;
     NSURL                           *currentProjectURL;
     NSURL                           *XCodeSupportFolder;
     NSURL                           *XCodeSupportProject;
