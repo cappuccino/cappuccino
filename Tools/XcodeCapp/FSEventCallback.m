@@ -38,74 +38,48 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
     for (i = 0; i < numEvents; i++)
     {
         [xcc updateLastEventId:eventIds[i]];
+
         FSEventStreamEventFlags flags = eventFlags[i];
 
         NSString *path = [[(NSArray *)eventPaths objectAtIndex:i] stringByStandardizingPath];
 
         if (useFileBasedListening)
         {
-            if (!(flags & kFSEventStreamEventFlagItemIsFile) || 
-                [xcc isPathMatchingIgnoredPaths:path]        ||
-                (![xcc isXIBFile:path] && ![xcc isObjJFile:path] && ![xcc isXCCIgnoreFile:path]))
-            {
+            BOOL conditionIsFile        = flags & kFSEventStreamEventFlagItemIsFile;
+            BOOL conditionIsDirectory   = NO;
+            BOOL conditionIsIgnored     = [xcc isPathMatchingIgnoredPaths:path];
+            BOOL conditionIsValidFile   = [xcc isXIBFile:path] || [xcc isObjJFile:path] || [xcc isXCCIgnoreFile:path];
+            BOOL conditionPathExists    = [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&conditionIsDirectory];
+
+            if (conditionIsIgnored)
                 continue;
-            }
 
-            if (flags & kFSEventStreamEventFlagItemIsFile &&
-                flags & kFSEventStreamEventFlagItemRemoved)
-            {
-                if ([xcc isObjJFile:path])
-                {
-                    [xcc tidyShadowedFiles];
-                    continue;
-                }
-            }
+            if (conditionIsFile && !conditionIsValidFile)
+                continue;
 
-            if (flags & kFSEventStreamEventFlagItemRemoved)
+            // Events are not so reliable. For example, moving a folder to the trash is not
+            // a deletion. In order to simplify the code, we simply tidyUp the project when we receive
+            // an event.
+            [xcc tidyShadowedFiles];
+
+            if (conditionIsDirectory)
+                continue;
+
+            if (!conditionPathExists)
             {
-                DLog(@"event type: kFSEventStreamEventFlagItemRemoved for path %@", path);
+                DLog(@"File removed: %@", path);
                 [xcc handleFileRemoval:path];
             }
-
-            if (flags & kFSEventStreamEventFlagItemCreated ||
-                     flags & kFSEventStreamEventFlagItemModified)
+            else
             {
-                DLog(@"event type: kFSEventStreamEventFlagItemCreated or kFSEventStreamEventFlagItemModified for path %@", path);
+                DLog(@"File modified/added: %@", path);
                 [xcc handleFileModification:path notify:YES];
-            }
-
-            else if ([xcc reactToInodeModification] && 
-                     (flags & kFSEventStreamEventFlagItemFinderInfoMod ||
-                      flags & kFSEventStreamEventFlagItemXattrMod      ||
-                      flags & kFSEventStreamEventFlagItemChangeOwner))
-            {
-                DLog(@"event type: %u for path %@", flags, path);
-                [xcc handleFileModification:path notify:YES];
-            }
-
-            else if ([xcc reactToInodeModification] && 
-                     flags & kFSEventStreamEventFlagItemInodeMetaMod)
-            {
-                DLog(@"event type: kFSEventStreamEventFlagItemInodeMetaMod for path %@", path);
-                [xcc handleFileModification:path notify:YES];
-            }
-
-            else if (flags & kFSEventStreamEventFlagItemRenamed)
-            {
-                if (![[NSFileManager defaultManager] fileExistsAtPath:path])
-                {
-                    DLog(@"event type: kFSEventStreamEventFlagItemRenamed for path %@ (removed origin)", path);
-                    [xcc handleFileRemoval:path];
-                }
-                else
-                {
-                    DLog(@"event type: kFSEventStreamEventFlagItemRenamed for path %@ (added destination)", path);
-                    [xcc handleFileModification:path notify:YES];
-                }
             }
         }
         else
         {
+            // We should drop support for Snow Leopard soon.
+
             BOOL isDir = NO;
             [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir];
 
