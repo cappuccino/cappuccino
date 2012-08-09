@@ -24,7 +24,7 @@ if __name__ == '__main__':
     
     project = XcodeProject.Load(PBXProjectFilePath)
     
-    shadowGroup = project.get_or_create_group('Shadows')
+    shadowGroup = project.get_or_create_group('Classes')
     sourceGroup = project.get_or_create_group('Sources')
     
     if "main.m" in shadowFilePath:
