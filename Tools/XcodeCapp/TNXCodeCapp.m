@@ -421,22 +421,24 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     {
         NSString *shadowPath = [[self shadowURLForSourceURL:[NSURL URLWithString:[fullPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]] path];
 
-        NSArray *PBXArguments = [NSArray arrayWithObjects: @"-c",
-                        [NSString stringWithFormat:@"(%@; python %@ remove '%@' '%@' '%@' '%@') 2>&1",
-                         profilePath,
-                         PBXModifierScriptPath,
-                         XCodeSupportPBXPath,
-                         shadowPath,
-                         fullPath,
-                         [currentProjectURL path]],nil];
-
         DLog(@"Removing shadow file: %@", shadowPath);
         [fm removeItemAtPath:shadowPath error:nil];
 
         DLog(@"Removing PBX reference task...");
+        
+#if DEBUG
+        NSArray *PBXArguments = [NSArray arrayWithObjects: @"-c",
+                                 [NSString stringWithFormat:@"(%@; python %@ remove '%@' '%@' '%@' '%@') 2>&1",
+                                  profilePath,
+                                  PBXModifierScriptPath,
+                                  XCodeSupportPBXPath,
+                                  shadowPath,
+                                  fullPath,
+                                  [currentProjectURL path]],nil];
         NSArray *statusInfo = [self runTask:PBXArguments];
         NSNumber *status = [statusInfo objectAtIndex:0];
         NSString *response = [statusInfo objectAtIndex:1];
+#endif
         DLog(@"PBX Reference removal status/response: %@/%@", status, response);
     }
     else if ([self isXCCIgnoreFile:fullPath])
@@ -751,6 +753,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
             DLog(@"cleaning shadow file: %@", subpath);
             [fm removeItemAtPath:shadowFullPath error:nil];
 
+#if DEBUG
             NSArray *PBXArguments = [NSArray arrayWithObjects: @"-c",
                                      [NSString stringWithFormat:@"(%@; python %@ remove '%@' '%@' '%@' '%@') 2>&1",
                                       profilePath,
@@ -764,6 +767,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
             NSArray *statusInfo = [self runTask:PBXArguments];
             NSNumber *status = [statusInfo objectAtIndex:0];
             NSString *response = [statusInfo objectAtIndex:1];
+#endif
             DLog(@"PBX Reference cleaning status/response: %@/%@", status, response);
             
             if (![self supportFileLevelAPI] && [self respondsToSelector:@selector(updateLastModificationDate:forPath:)])
