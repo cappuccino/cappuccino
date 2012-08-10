@@ -25,8 +25,6 @@ var DOMFixedWidthSpanElement    = nil,
     DOMMetricsDivElement        = nil,
     DOMMetricsTextSpanElement   = nil,
     DOMMetricsImgElement        = nil,
-    DOMIFrameElement            = nil,
-    DOMIFrameDocument           = nil,
     DefaultFont                 = nil;
 
 @implementation CPPlatformString : CPBasePlatformString
@@ -48,50 +46,27 @@ var DOMFixedWidthSpanElement    = nil,
 
 + (void)createDOMElements
 {
-    var style;
+    var style,
+        bodyElement = [CPPlatform mainBodyElement];
 
-    DOMIFrameElement = document.createElement("iframe");
-    // necessary for Safari caching bug:
-    DOMIFrameElement.name = "iframe_" + FLOOR(RAND() * 10000);
-    DOMIFrameElement.className = "cpdontremove";
-
-    style = DOMIFrameElement.style;
-    style.position = "absolute";
-    style.left = "-100px";
-    style.top = "-100px";
-    style.width = "1px";
-    style.height = "1px";
-    style.borderWidth = "0px";
-    style.overflow = "hidden";
-    style.zIndex = 100000000000;
-
-    var bodyElement = [CPPlatform mainBodyElement];
-
-    bodyElement.appendChild(DOMIFrameElement);
-
-    DOMIFrameDocument = (DOMIFrameElement.contentDocument || DOMIFrameElement.contentWindow.document);
-    DOMIFrameDocument.write('<!DOCTYPE html><head></head><body></body></html>');
-    DOMIFrameDocument.close();
-
-    // IE needs this wide <div> to prevent unwanted text wrapping:
-    var DOMDivElement = DOMIFrameDocument.createElement("div");
-    DOMDivElement.style.position = "absolute";
-    DOMDivElement.style.width = "100000px";
-
-    DOMIFrameDocument.body.appendChild(DOMDivElement);
-
-    DOMFlexibleWidthSpanElement = DOMIFrameDocument.createElement("span");
+    DOMFlexibleWidthSpanElement = document.createElement("span");
+    DOMFlexibleWidthSpanElement.className = "cpdontremove";
     style = DOMFlexibleWidthSpanElement.style;
     style.position = "absolute";
+    style.left = "-100000px";
+    style.zIndex = -100000;
     style.visibility = "visible";
     style.padding = "0px";
     style.margin = "0px";
     style.whiteSpace = "pre";
 
-    DOMFixedWidthSpanElement = DOMIFrameDocument.createElement("span");
+    DOMFixedWidthSpanElement = document.createElement("span");
+    DOMFixedWidthSpanElement.className = "cpdontremove";
     style = DOMFixedWidthSpanElement.style;
     style.display = "block";
     style.position = "absolute";
+    style.left = "-100000px";
+    style.zIndex = -10000;
     style.visibility = "visible";
     style.padding = "0px";
     style.margin = "0px";
@@ -112,27 +87,31 @@ var DOMFixedWidthSpanElement    = nil,
         style.whiteSpace = "pre";
     }
 
-    DOMDivElement.appendChild(DOMFlexibleWidthSpanElement);
-    DOMDivElement.appendChild(DOMFixedWidthSpanElement);
+    bodyElement.appendChild(DOMFlexibleWidthSpanElement);
+    bodyElement.appendChild(DOMFixedWidthSpanElement);
 }
 
 + (void)createDOMMetricsElements
 {
-    if (!DOMIFrameElement)
-        [self createDOMElements];
+    var style,
+        bodyElement = [CPPlatform mainBodyElement];
 
-    var style;
-
-    DOMMetricsDivElement = DOMIFrameDocument.createElement("div");
+    DOMMetricsDivElement = document.createElement("div");
+    DOMMetricsDivElement.className = "cpdontremove";
     DOMMetricsDivElement.style.position = "absolute";
+    DOMMetricsDivElement.style.left = "-10000px";
+    DOMMetricsDivElement.style.zIndex = -10000;
     DOMMetricsDivElement.style.width = "100000px";
 
-    DOMIFrameDocument.body.appendChild(DOMMetricsDivElement);
+    bodyElement.appendChild(DOMMetricsDivElement);
 
-    DOMMetricsTextSpanElement = DOMIFrameDocument.createElement("span");
+    DOMMetricsTextSpanElement = document.createElement("span");
+    DOMMetricsTextSpanElement.className = "cpdontremove";
     DOMMetricsTextSpanElement.innerHTML = "x";
     style = DOMMetricsTextSpanElement.style;
     style.position = "absolute";
+    style.left = "-10000px";
+    style.zIndex = -10000;
     style.visibility = "visible";
     style.padding = "0px";
     style.margin = "0px";
@@ -140,25 +119,29 @@ var DOMFixedWidthSpanElement    = nil,
 
     var imgPath = [[CPBundle bundleForClass:[CPView class]] pathForResource:@"empty.png"];
 
-    DOMMetricsImgElement = DOMIFrameDocument.createElement("img");
+    DOMMetricsImgElement = document.createElement("img");
+    DOMMetricsImgElement.className = "cpdontremove";
     DOMMetricsImgElement.setAttribute("src", imgPath);
     DOMMetricsImgElement.setAttribute("width", "1");
     DOMMetricsImgElement.setAttribute("height", "1");
     DOMMetricsImgElement.setAttribute("alt", "");
     style = DOMMetricsImgElement.style;
+    style.position = "absolute";
+    style.left = "-10000px";
+    style.zIndex = -10000;
     style.visibility = "visible";
     style.padding = "0px";
     style.margin = "0px";
     style.border = "none";
     style.verticalAlign = "baseline";
 
-    DOMMetricsDivElement.appendChild(DOMMetricsTextSpanElement);
-    DOMMetricsDivElement.appendChild(DOMMetricsImgElement);
+    bodyElement.appendChild(DOMMetricsTextSpanElement);
+    bodyElement.appendChild(DOMMetricsImgElement);
 }
 
 + (CGSize)sizeOfString:(CPString)aString withFont:(CPFont)aFont forWidth:(float)aWidth
 {
-    if (!DOMIFrameElement)
+    if (!DOMFixedWidthSpanElement)
         [self createDOMElements];
 
     var span;
