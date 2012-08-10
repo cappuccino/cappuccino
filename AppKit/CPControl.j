@@ -516,7 +516,7 @@ var CPControlBlackColor = [CPColor blackColor];
 */
 - (CPString)stringValue
 {
-    if (_formatter && _value !== undefined && _value !== nil)
+    if (_formatter && _value !== undefined)
     {
         var formattedValue = [self hasThemeState:CPThemeStateEditing] ? [_formatter editingStringForObjectValue:_value] : [_formatter stringForObjectValue:_value];
 
