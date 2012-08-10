@@ -41,6 +41,8 @@ var _CPWindowViewResizeIndicatorImage = nil;
     CGPoint     _mouseDraggedPoint;
 
     CGRect      _cachedScreenFrame;
+
+    CPView      _sheetShadowView;
 }
 
 + (void)initialize
@@ -195,13 +197,23 @@ var _CPWindowViewResizeIndicatorImage = nil;
             location = [theWindow convertBaseToGlobal:[anEvent locationInWindow]],
             origin = [self _pointWithinScreenFrame:CGPointMake(_CGRectGetMinX(frame) + (location.x - _mouseDraggedPoint.x),
                                                                _CGRectGetMinY(frame) + (location.y - _mouseDraggedPoint.y))];
-
         [theWindow setFrameOrigin:origin];
 
         _mouseDraggedPoint = [self _pointWithinScreenFrame:location];
     }
 
     [CPApp setTarget:self selector:@selector(trackMoveWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
+}
+
+- (void)setFrameSize:(CGSize)newSize
+{
+    [super setFrameSize:newSize];
+
+    // reposition sheet if the parent window resizes or moves
+    var theWindow = [self window];
+
+    if ([theWindow attachedSheet])
+        [theWindow _setAttachedSheetFrameOrigin];
 }
 
 - (void)setShowsResizeIndicator:(BOOL)shouldShowResizeIndicator
@@ -365,6 +377,23 @@ var _CPWindowViewResizeIndicatorImage = nil;
         return;
 
     [self addSubview:_resizeIndicator];
+}
+
+- (void)_enableSheet:(BOOL)enable
+{
+    if (enable)
+    {
+        var bundle = [CPBundle bundleForClass:[CPWindow class]];
+        _sheetShadowView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth([self bounds]), 8)];
+        [_sheetShadowView setAutoresizingMask:CPViewWidthSizable];
+        [_sheetShadowView setBackgroundColor:[CPColor colorWithPatternImage:[[CPImage alloc]
+            initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowAttachedSheetShadow.png"] size:CGSizeMake(9,8)]]];
+        [self addSubview:_sheetShadowView];
+    }
+    else
+    {
+        [_sheetShadowView removeFromSuperview];
+    }
 }
 
 @end
