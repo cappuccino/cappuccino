@@ -384,10 +384,10 @@ var _CPWindowViewResizeIndicatorImage = nil;
     if (enable)
     {
         var bundle = [CPBundle bundleForClass:[CPWindow class]];
-        _sheetShadowView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth([self bounds]), 8)];
+        _sheetShadowView = [[CPView alloc] initWithFrame:_CGRectMake(0, 0, _CGRectGetWidth([self bounds]), 8)];
         [_sheetShadowView setAutoresizingMask:CPViewWidthSizable];
         [_sheetShadowView setBackgroundColor:[CPColor colorWithPatternImage:[[CPImage alloc]
-            initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowAttachedSheetShadow.png"] size:CGSizeMake(9,8)]]];
+            initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowAttachedSheetShadow.png"] size:_CGSizeMake(9, 8)]]];
         [self addSubview:_sheetShadowView];
     }
     else

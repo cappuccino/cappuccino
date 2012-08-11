@@ -779,9 +779,9 @@ CPTexturedBackgroundWindowMask
             {
                 // if the shadow would be taller/wider than the window height,
                 // make it the same as the window height. this allows views to
-                // become 0,0 with no shadow on them and makes the sheet
+                // become 0, 0 with no shadow on them and makes the sheet
                 // animation look nicer
-                var shadowSize = _CGSizeMake(size.width,size.height);
+                var shadowSize = _CGSizeMake(size.width, size.height);
 
                 if (size.width >= (SHADOW_MARGIN_LEFT + SHADOW_MARGIN_RIGHT))
                     shadowSize.width += SHADOW_MARGIN_LEFT + SHADOW_MARGIN_RIGHT;
@@ -2381,9 +2381,9 @@ CPTexturedBackgroundWindowMask
 
     var sheetFrame = [aSheet frame];
 
-    _sheetContext = {"sheet":aSheet, "modalDelegate":aModalDelegate, "endSelector":aDidEndSelector,
-        "contextInfo":aContextInfo, "frame":CGRectMakeCopy(sheetFrame), "returnCode":-1,
-        "opened": NO };
+    _sheetContext = {"sheet": aSheet, "modalDelegate": aModalDelegate, "endSelector": aDidEndSelector,
+        "contextInfo": aContextInfo, "frame": _CGRectMakeCopy(sheetFrame), "returnCode": -1,
+        "opened": NO};
 
     [self _attachSheetWindow];
 }
@@ -2413,9 +2413,9 @@ CPTexturedBackgroundWindowMask
     var delegate = _sheetContext["modalDelegate"],
         endSelector = _sheetContext["endSelector"];
 
-    // if the sheet has been ordered out, defer didEndSelector until after sheet animates out,
-    // this must be done since we cannot block an wait for the animation to complete
-    if (delegate != nil && endSelector != nil)
+    // If the sheet has been ordered out, defer didEndSelector until after sheet animates out.
+    // This must be done since we cannot block and wait for the animation to complete.
+    if (delegate && endSelector)
     {
         if (_sheetContext["isAttached"])
             objj_msgSend(delegate, endSelector, _sheetContext["sheet"], _sheetContext["returnCode"],

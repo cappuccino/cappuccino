@@ -36,7 +36,7 @@
 - (void)positionWindow
 {
     var keyWindow = [CPApp keyWindow],
-        origin = CPPointMake(40,40);
+        origin = CPPointMake(40, 40);
 
     if (keyWindow)
     {
@@ -67,39 +67,39 @@
     CPLog.warn("No action set on this %@", [sender class]);
 }
 
-- (void)addButtons:(CPWindow)window
+- (void)addButtons:(CPWindow)aWindow
 {
     var x = 10,
         unsetAction = @selector(unsetAction:);
 
-    _closeButton = [ [CPButton alloc] initWithFrame:CGRectMake(x,10,32,100)];
+    _closeButton = [[CPButton alloc] initWithFrame:CGRectMake(x, 10, 32, 100)];
     [_closeButton setTitle:@"Close"];
     [_closeButton setButtonType:CPMomentaryPushInButton];
     [_closeButton setBezelStyle:CPBezelBorder];
     [_closeButton sizeToFit];
     [_closeButton setTarget:self];
     [_closeButton setAction:unsetAction];
-    [[window contentView] addSubview:_closeButton positioned:CPWindowAbove relativeTo:nil];
+    [[aWindow contentView] addSubview:_closeButton positioned:CPWindowAbove relativeTo:nil];
     x += 10 + CGRectGetWidth([_closeButton frame]);
 
-    _altCloseButton = [ [CPButton alloc] initWithFrame:CGRectMake(x, 10,32,100)];
+    _altCloseButton = [[CPButton alloc] initWithFrame:CGRectMake(x, 10, 32, 100)];
     [_altCloseButton setTitle:@"Close Parent Too"];
     [_altCloseButton setButtonType:CPMomentaryPushInButton];
     [_altCloseButton setBezelStyle:CPBezelBorder];
     [_altCloseButton sizeToFit];
     [_altCloseButton setTarget:self];
     [_altCloseButton setAction:unsetAction];
-    [[window contentView] addSubview:_altCloseButton positioned:CPWindowAbove relativeTo:nil];
+    [[aWindow contentView] addSubview:_altCloseButton positioned:CPWindowAbove relativeTo:nil];
     x += 10 + CGRectGetWidth([_altCloseButton frame]);
 
-    _otherCloseButton = [ [CPButton alloc] initWithFrame:CGRectMake(x, 10,32,100)];
+    _otherCloseButton = [[CPButton alloc] initWithFrame:CGRectMake(x, 10, 32, 100)];
     [_otherCloseButton setTitle:@"Chain Sheets"];
     [_otherCloseButton setButtonType:CPMomentaryPushInButton];
     [_otherCloseButton setBezelStyle:CPBezelBorder];
     [_otherCloseButton sizeToFit];
     [_otherCloseButton setTarget:self];
     [_otherCloseButton setAction:unsetAction];
-    [[window contentView] addSubview:_otherCloseButton positioned:CPWindowAbove relativeTo:nil];
+    [[aWindow contentView] addSubview:_otherCloseButton positioned:CPWindowAbove relativeTo:nil];
 }
 
 - (SheetWindowController)initWithStyleMask:(int)styleMask debug:(int)debug
@@ -109,16 +109,16 @@
     if (styleMask < 0)
         return [self initWithWindowCibName:@"Window"];
 
-    var window = [ [CPWindow alloc] initWithContentRect:CGRectMake(0,0,400,300) styleMask:styleMask];
+    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0, 0, 400, 300) styleMask:styleMask];
 
     if (debug & 1)
-        [window setBackgroundColor:[CPColor colorWithCalibratedRed:1.0 green:0.0 blue:0.0 alpha:0.5]];
+        [theWindow setBackgroundColor:[CPColor colorWithCalibratedRed:1.0 green:0.0 blue:0.0 alpha:0.5]];
 
     if (debug & 2)
-        [[window contentView] setBackgroundColor:[CPColor colorWithCalibratedRed:0.0 green:0.0 blue:1.0 alpha:0.5]];
+        [[theWindow contentView] setBackgroundColor:[CPColor colorWithCalibratedRed:0.0 green:0.0 blue:1.0 alpha:0.5]];
 
-    if (self = [super initWithWindow:window])
-        [self addButtons:window];
+    if (self = [super initWithWindow:theWindow])
+        [self addButtons:theWindow];
 
     return self;
 }
@@ -126,11 +126,11 @@
 - (SheetWindowController)allocController
 {
     CPLog.debug("[%@ %@] groupClass=%@", [self class], _cmd,
-        [ [ [ [ [_windowTypeMatrix subviews] objectAtIndex:0] radioGroup] selectedRadio] tag]);
+        [[[[[_windowTypeMatrix subviews] objectAtIndex:0] radioGroup] selectedRadio] tag]);
 
     var type = 1;
     if (_windowTypeMatrix)
-        type = [ [ [ [ [_windowTypeMatrix subviews] objectAtIndex:0] radioGroup] selectedRadio] tag];
+        type = [[[[[_windowTypeMatrix subviews] objectAtIndex:0] radioGroup] selectedRadio] tag];
 
     var styleMask = 0;
     if ([_titledMaskButton state])
@@ -416,15 +416,15 @@
                                   otherButton:@"OtherButton"
                     informativeTextWithFormat:@"This informative text sentence shows text wrapping bug."];
 
-      [parentWindow setDelegate:self];
+    [parentWindow setDelegate:self];
     _parentWindow = parentWindow;
     _sheet = alert;
     _returnCode = -1;
 
     [alert beginSheetModalForWindow:parentWindow
-        modalDelegate:self
-        didEndSelector:@selector(didEndSheet:returnCode:contextInfo:)
-           contextInfo:parentWindow];
+                      modalDelegate:self
+                     didEndSelector:@selector(didEndSheet:returnCode:contextInfo:)
+                        contextInfo:parentWindow];
 }
 
 //

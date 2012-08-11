@@ -13,7 +13,7 @@
 
 - (void)awakeFromCib
 {
-    _sheetController = [ [SheetWindowController alloc] initWithWindowCibName:@"Window"];
+    _sheetController = [[SheetWindowController alloc] initWithWindowCibName:@"Window"];
     [self newDocument:self];
 }
 
