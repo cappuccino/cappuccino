@@ -259,6 +259,16 @@ var CPWindowActionMessageKeys = [
     @param window the window to close
     @return \c YES allows the window to close. \c NO
     vetoes the close operation and leaves the window open.
+
+    @delegate -(BOOL)windowWillBeginSheet:(CPNotification)notification;
+    Sent from the notification center before sheet is visible on
+    the delegate's window.
+    @param notification contains information about the event
+
+    @delegate -(BOOL)windowDidEndSheet:(CPNotification)notification;
+    Sent from the notification center when an attached sheet on the
+    delegate's window has been animated out and is no longer visible.
+    @param notification contains information about the event
 */
 @implementation CPWindow : CPResponder
 {
@@ -335,7 +345,6 @@ var CPWindowActionMessageKeys = [
     CPDictionary                        _sheetContext;
     CPWindow                            _parentView;
     BOOL                                _isSheet;
-
     _CPWindowFrameAnimation             _frameAnimation;
 }
 
@@ -405,9 +414,12 @@ CPTexturedBackgroundWindowMask
         _isFullPlatformWindow = NO;
         _registeredDraggedTypes = [CPSet set];
         _registeredDraggedTypesArray = [];
-        _isSheet = NO;
         _acceptsMouseMovedEvents = YES;
         _isMovable = YES;
+
+        _isSheet = NO;
+        _sheetContext = nil;
+        _parentView = nil;
 
         // Set up our window number.
         _windowNumber = [CPApp._windows count];
@@ -764,7 +776,21 @@ CPTexturedBackgroundWindowMask
             [_windowView setFrameSize:size];
 
             if (_hasShadow)
-                [_shadowView setFrameSize:_CGSizeMake(SHADOW_MARGIN_LEFT + size.width + SHADOW_MARGIN_RIGHT, SHADOW_MARGIN_BOTTOM + size.height + SHADOW_MARGIN_TOP + SHADOW_DISTANCE)];
+            {
+                // if the shadow would be taller/wider than the window height,
+                // make it the same as the window height. this allows views to
+                // become 0, 0 with no shadow on them and makes the sheet
+                // animation look nicer
+                var shadowSize = _CGSizeMake(size.width, size.height);
+
+                if (size.width >= (SHADOW_MARGIN_LEFT + SHADOW_MARGIN_RIGHT))
+                    shadowSize.width += SHADOW_MARGIN_LEFT + SHADOW_MARGIN_RIGHT;
+
+                if (size.height >= (SHADOW_MARGIN_BOTTOM + SHADOW_MARGIN_TOP + SHADOW_DISTANCE))
+                    shadowSize.height += SHADOW_MARGIN_BOTTOM + SHADOW_MARGIN_TOP + SHADOW_DISTANCE;
+
+                [_shadowView setFrameSize:shadowSize];
+            }
 
             if (!_isAnimating)
                 [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidResizeNotification object:self];
@@ -801,6 +827,10 @@ CPTexturedBackgroundWindowMask
 - (void)setFrameOrigin:(CGPoint)anOrigin
 {
     [self _setClippedFrame:_CGRectMake(anOrigin.x, anOrigin.y, _CGRectGetWidth(_frame), _CGRectGetHeight(_frame)) display:YES animate:NO];
+
+    // reposition sheet
+    if ([self attachedSheet])
+        [self _setAttachedSheetFrameOrigin];
 }
 
 /*!
@@ -819,6 +849,10 @@ CPTexturedBackgroundWindowMask
 - (void)orderFront:(id)aSender
 {
 #if PLATFORM(DOM)
+    // -dw- if a sheet is clicked, the parent window should come up too
+    if ([self isSheet])
+        [_parentView orderFront:self];
+
     [_platformWindow orderFront:self];
     [_platformWindow order:CPWindowAbove window:self relativeTo:nil];
 #endif
@@ -849,6 +883,13 @@ CPTexturedBackgroundWindowMask
 */
 - (void)orderOut:(id)aSender
 {
+    if ([self isSheet])
+    {
+        // -dw- as in Cocoa, orderOut: detaches the sheet and animates out
+        [self._parentView _detachSheetWindow];
+        return;
+    }
+
 #if PLATFORM(DOM)
     if ([self _sharesChromeWithPlatformWindow])
         [_platformWindow orderOut:self];
@@ -1209,6 +1250,8 @@ CPTexturedBackgroundWindowMask
     [defaultCenter removeObserver:_delegate name:CPWindowDidResignMainNotification object:self];
     [defaultCenter removeObserver:_delegate name:CPWindowDidMoveNotification object:self];
     [defaultCenter removeObserver:_delegate name:CPWindowDidResizeNotification object:self];
+    [defaultCenter removeObserver:_delegate name:CPWindowWillBeginSheetNotification object:self];
+    [defaultCenter removeObserver:_delegate name:CPWindowDidEndSheetNotification object:self];
 
     _delegate = aDelegate;
     _delegateRespondsToWindowWillReturnUndoManagerSelector = [_delegate respondsToSelector:@selector(windowWillReturnUndoManager:)];
@@ -1253,6 +1296,20 @@ CPTexturedBackgroundWindowMask
             addObserver:_delegate
                selector:@selector(windowDidResize:)
                    name:CPWindowDidResizeNotification
+                 object:self];
+
+    if ([_delegate respondsToSelector:@selector(windowWillBeginSheet:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(windowWillBeginSheet:)
+                   name:CPWindowWillBeginSheetNotification
+                 object:self];
+
+    if ([_delegate respondsToSelector:@selector(windowDidEndSheet:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(windowDidEndSheet:)
+                   name:CPWindowDidEndSheetNotification
                  object:self];
 }
 
@@ -1533,6 +1590,31 @@ CPTexturedBackgroundWindowMask
 {
     var type = [anEvent type],
         point = [anEvent locationInWindow];
+
+    // If a sheet is attached events get filtered here.
+    // It is not clear what events should be passed to the view, perhaps all?
+    // CPLeftMouseDown is needed for window moving and resizing to work.
+    // CPMouseMoved is needed for rollover effects on title bar buttons.
+    var sheet = [self attachedSheet];
+    if (sheet)
+    {
+        switch (type)
+        {
+            case CPLeftMouseDown:
+                [_windowView mouseDown:anEvent];
+
+                // -dw- if the window is clicked, the sheet should come to front, and become key,
+                // and the window should be immediately behind
+                [self orderFront:self];
+                [sheet makeKeyAndOrderFront:self];
+                break;
+            case CPMouseMoved:
+                [_windowView mouseMoved:anEvent];
+                break;
+        }
+
+        return;
+    }
 
     switch (type)
     {
@@ -2284,62 +2366,124 @@ CPTexturedBackgroundWindowMask
     [attachedSheet setFrame:sheetFrame display:YES animate:NO];
 }
 
-/* @ignore */
-- (void)_attachSheet:(CPWindow)aSheet modalDelegate:(id)aModalDelegate didEndSelector:(SEL)aDidEndSelector contextInfo:(id)aContextInfo
+/* @ignore
+    Starting point for sheet session, called from CPApplication beginSheet:
+*/
+- (void)_attachSheet:(CPWindow)aSheet modalDelegate:(id)aModalDelegate
+        didEndSelector:(SEL)aDidEndSelector contextInfo:(id)aContextInfo
 {
+    if (_sheetContext)
+    {
+        [CPException raise:CPInternalInconsistencyException
+            reason:@"The target window of beginSheet: already has a sheet, did you forget orderOut: ?"];
+        return;
+    }
+
     var sheetFrame = [aSheet frame];
 
-    _sheetContext = {"sheet":aSheet, "modalDelegate":aModalDelegate, "endSelector":aDidEndSelector, "contextInfo":aContextInfo, "frame":CGRectMakeCopy(sheetFrame), "returnCode":-1, "opened": NO};
+    _sheetContext = {"sheet": aSheet, "modalDelegate": aModalDelegate, "endSelector": aDidEndSelector,
+        "contextInfo": aContextInfo, "frame": _CGRectMakeCopy(sheetFrame), "returnCode": -1,
+        "opened": NO};
 
-    [self _attachSheetWindow:aSheet];
+    [self _attachSheetWindow];
 }
 
-/* @ignore */
-- (void)_attachSheetWindow:(CPWindow)aSheet
+/* @ignore
+    Called to animate the sheet in. The timer seems to solve a bug where sheets would
+    be partially animated under certain conditions.
+*/
+- (void)_attachSheetWindow
 {
-    var sheetFrame = [aSheet frame],
-        frame = [self frame],
-        sheetContent = [aSheet contentView];
+    _sheetContext["isAttached"] = YES;
 
-    [self _setUpMasksForView:sheetContent];
-
-    aSheet._isSheet = YES;
-    aSheet._parentView = self;
-
-    var originx = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width) / 2),
-        originy = frame.origin.y + [[self contentView] frame].origin.y,
-        startFrame = CGRectMake(originx, originy, sheetFrame.size.width, 0),
-        endFrame = CGRectMake(originx, originy, sheetFrame.size.width, sheetFrame.size.height);
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillBeginSheetNotification object:self];
-    [CPApp runModalForWindow:aSheet];
-
-    [aSheet orderFront:self];
-    [aSheet setFrame:startFrame display:YES animate:NO];
-    _sheetContext["opened"] = YES;
-
-    [aSheet _setFrame:endFrame delegate:self duration:[self animationResizeTime:endFrame] curve:CPAnimationEaseOut];
-
-    // Should run the main loop here until _isAnimating = FALSE
-    [aSheet becomeKeyWindow];
+    // it would be ideal to block here and spin an event loop, until attach is complete
+    [CPTimer scheduledTimerWithTimeInterval:0.0
+        target:self
+        selector:@selector(_sheetShouldAnimateIn:)
+        userInfo:nil
+        repeats:NO];
 }
 
-/* @ignore */
+/* @ignore
+    Called to end the sheet. Note that orderOut: is needed to animate the sheet out, as in Cocoa.
+    The sheet isn't completely gone until _cleanupSheetWindow gets called.
+*/
+- (void)_endSheet
+{
+    var delegate = _sheetContext["modalDelegate"],
+        endSelector = _sheetContext["endSelector"];
+
+    // If the sheet has been ordered out, defer didEndSelector until after sheet animates out.
+    // This must be done since we cannot block and wait for the animation to complete.
+    if (delegate && endSelector)
+    {
+        if (_sheetContext["isAttached"])
+            objj_msgSend(delegate, endSelector, _sheetContext["sheet"], _sheetContext["returnCode"],
+                _sheetContext["contextInfo"]);
+        else
+            _sheetContext["deferDidEndSelector"] = YES;
+    }
+}
+
+/* @ignore
+    Called to animate the sheet out. If called while animating in, schedules an animate
+    out at completion
+*/
 - (void)_detachSheetWindow
 {
-    var sheet = [self attachedSheet],
-        startFrame = [sheet frame],
-        endFrame = CGRectMakeCopy(startFrame);
+    _sheetContext["isAttached"] = NO;
 
-    endFrame.size.height = 0;
+    // it would be ideal to block here and spin the event loop, until attach is complete
+    [CPTimer scheduledTimerWithTimeInterval:0.0
+        target:self
+        selector:@selector(_sheetShouldAnimateOut:)
+        userInfo:nil
+        repeats:NO];
+}
 
-    _sheetContext["frame"] = startFrame;
+/* @ignore
+    Called to cleanup sheet, when we are definitely done with it
+*/
+- (void)_cleanupSheetWindow
+{
+    var sheet = _sheetContext["sheet"],
+        lastFrame = _sheetContext["frame"],
+        deferDidEnd = _sheetContext["deferDidEndSelector"];
 
-    var sheetContent = [sheet contentView];
-    [self _setUpMasksForView:sheetContent];
+    [sheet setFrame:lastFrame];
+    [self _restoreMasksForView:[sheet contentView]];
 
-    _sheetContext["opened"] = NO;
-    [sheet _setFrame:endFrame delegate:self duration:[self animationResizeTime:endFrame] curve:CPAnimationEaseIn];
+    // if the parent window is modal, the sheet started its own modal session
+    if (sheet._isModal)
+        [CPApp stopModal];
+
+    // restore the state of window before it was sheetified
+    [sheet._windowView _enableSheet:NO];
+
+    // close it
+    sheet._isSheet = NO;
+    [sheet orderOut:self];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidEndSheetNotification object:self];
+
+    if (deferDidEnd)
+    {
+        var delegate = _sheetContext["modalDelegate"],
+            selector = _sheetContext["endSelector"],
+            returnCode = _sheetContext["returnCode"],
+            contextInfo = _sheetContext["contextInfo"];
+
+        // context must be destroyed, since didEnd might want to attach another sheet
+        _sheetContext = nil;
+        sheet._parentView = nil;
+
+        objj_msgSend(delegate, selector, sheet, returnCode, contextInfo);
+    }
+    else
+    {
+        _sheetContext = nil;
+        sheet._parentView = nil;
+    }
 }
 
 /* @ignore */
@@ -2349,34 +2493,117 @@ CPTexturedBackgroundWindowMask
     if (anim._window != sheet)
         return;
 
-    var sheetContent = [sheet contentView];
+    [CPTimer scheduledTimerWithTimeInterval:0.0
+        target:self
+        selector:@selector(_sheetAnimationDidEnd:)
+        userInfo:nil
+        repeats:NO];
+}
 
-    if (_sheetContext["opened"] === YES)
+/* @ignore */
+- (void)_sheetShouldAnimateIn:(CPTimer)timer
+{
+    // can't open sheet while opening or closing animation is going on
+    if (_sheetContext["isOpening"] ||
+        _sheetContext["isClosing"])
+        return;
+
+    var sheet = _sheetContext["sheet"],
+        sheetFrame = [sheet frame],
+        frame = [self frame];
+
+    [self _setUpMasksForView:[sheet contentView]];
+
+    sheet._isSheet = YES;
+    sheet._parentView = self;
+
+    var originx = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width) / 2),
+        originy = frame.origin.y + [[self contentView] frame].origin.y,
+        startFrame = CGRectMake(originx, originy, sheetFrame.size.width, 0),
+        endFrame = CGRectMake(originx, originy, sheetFrame.size.width, sheetFrame.size.height);
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillBeginSheetNotification object:self];
+
+    // if sheet is attached to a modal window, the sheet runs
+    // as if itself and the parent window are modal
+    sheet._isModal = NO;
+    if ([CPApp modalWindow] === self)
     {
-        [self _restoreMasksForView:sheetContent];
+        [CPApp runModalForWindow:sheet];
+        sheet._isModal = YES;
+    }
+
+    [sheet orderFront:self];
+    [sheet setFrame:startFrame display:YES animate:NO];
+
+    _sheetContext["opened"] = YES;
+    _sheetContext["shouldClose"] = NO;
+    _sheetContext["isOpening"] = YES;
+
+    [sheet _setFrame:endFrame delegate:self duration:[self animationResizeTime:endFrame] curve:CPAnimationEaseOut];
+
+    // NOTE: cocoa doesn't make window key until animation is done, but a
+    // keypress while animating eventually gets to the window. Therefore,
+    // there must be a runloop specifically designed for sheets?
+    [sheet becomeKeyWindow];
+}
+
+/* @ignore */
+- (void)_sheetShouldAnimateOut:(CPTimer)timer
+{
+    var sheet = _sheetContext["sheet"],
+        startFrame = [sheet frame],
+        endFrame = CGRectMakeCopy(startFrame);
+
+    if (_sheetContext["isOpening"])
+    {
+        // allow sheet to be closed while opening, it will close when animate in completes
+        _sheetContext["shouldClose"] = YES;
         return;
     }
 
-    [CPApp stopModal];
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidEndSheetNotification object:self];
+    if (_sheetContext["isClosing"])
+        return;
 
-    [sheet orderOut:self];
+    _sheetContext["opened"] = NO;
+    _sheetContext["frame"] = startFrame;
+    _sheetContext["isClosing"] = YES;
 
-    var lastFrame = _sheetContext["frame"];
-    [sheet setFrame:lastFrame];
+    // the parent window can be orderedOut to disable the sheet animate out, as in Cocoa
+    if ([self isVisible])
+    {
+        endFrame.size.height = 0;
+        [self _setUpMasksForView:[sheet contentView]];
+        [sheet _setFrame:endFrame delegate:self duration:[self animationResizeTime:endFrame] curve:CPAnimationEaseIn];
+    }
+    else
+    {
+        [self _sheetAnimationDidEnd:nil];
+    }
+}
 
-    [self _restoreMasksForView:sheetContent];
+/* @ignore */
+- (void)_sheetAnimationDidEnd:(CPTimer)timer
+{
+    var sheet = _sheetContext["sheet"];
 
-    var delegate = _sheetContext["modalDelegate"],
-        endSelector = _sheetContext["endSelector"],
-        returnCode = _sheetContext["returnCode"],
-        contextInfo = _sheetContext["contextInfo"];
+    _sheetContext["isOpening"] = NO;
+    _sheetContext["isClosing"] = NO;
 
-    _sheetContext = nil;
-    sheet._parentView = nil;
+    if (_sheetContext["opened"] === YES)
+    {
+        // sheet is open and completely visible
+        [self _restoreMasksForView:[sheet contentView]];
 
-    if (delegate != nil && endSelector != nil)
-        objj_msgSend(delegate, endSelector, sheet, returnCode, contextInfo);
+        // we wanted to close the sheet while it animated in, do that now
+        if (_sheetContext["shouldClose"] === YES)
+            [self _detachSheetWindow];
+    }
+    else
+    {
+        // sheet is closed and not visible
+        [self _cleanupSheetWindow];
+    }
 }
 
 - (void)_setUpMasksForView:(CPView)aView

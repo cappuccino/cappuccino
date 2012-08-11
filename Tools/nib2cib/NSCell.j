@@ -78,12 +78,12 @@
         _controlSize    = (flags2 & 0xE0000) >> 17;
         _sendsActionOnEndEditing = (flags2 & 0x00400000) ? YES : NO;
 
+        _tag = [aCoder decodeIntForKey:@"NSTag"];
+
         _objectValue    = [aCoder decodeObjectForKey:@"NSContents"];
         _font           = [aCoder decodeObjectForKey:@"NSSupport"];
 
         _formatter      = [aCoder decodeObjectForKey:@"NSFormatter"];
-
-        _tag            = [aCoder decodeIntForKey:@"NSTag"];
     }
 
     return self;

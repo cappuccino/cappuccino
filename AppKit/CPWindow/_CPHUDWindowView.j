@@ -205,12 +205,41 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
         bounds = [self bounds],
         width = CGRectGetWidth(bounds);
 
-    [_titleField setFrame:CGRectMake(20.0, 3.0, width - 40.0, CGRectGetHeight([_titleField frame]))];
+    [_titleField setFrame:_CGRectMake(20.0, 3.0, width - 40.0, _CGRectGetHeight([_titleField frame]))];
 
     var maxY = [self toolbarMaxY];
+    if ([_titleField isHidden])
+        maxY -= ([self toolbarOffset]).height;
 
-    [[theWindow contentView] setFrameOrigin:CGPointMake(0.0, maxY, width, CGRectGetHeight(bounds) - maxY)];
+    var contentRect = _CGRectMake(0.0, maxY, width, _CGRectGetHeight(bounds) - maxY);
+
+    [[theWindow contentView] setFrame:contentRect];
+}
+
+- (void)_enableSheet:(BOOL)enable
+{
+    [super _enableSheet:enable];
+
+    [_closeButton setHidden:enable];
+    [_titleField setHidden:enable];
+
+    // resize the window
+    var theWindow = [self window],
+        frame = [theWindow frame],
+        dy = ([self toolbarOffset]).height;
+
+    if (enable)
+        dy = -dy;
+
+    var newHeight = _CGRectGetMaxY(frame) + dy,
+        newWidth = _CGRectGetMaxX(frame);
+
+    frame.size.height += dy;
+
+    [self setFrameSize:_CGSizeMake(newWidth, newHeight)];
+    [self tile];
+    [theWindow setFrame:frame display:NO animate:NO];
+    [theWindow setMovableByWindowBackground:!enable];
 }
 
 @end
-

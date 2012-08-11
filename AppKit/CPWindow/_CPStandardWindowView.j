@@ -326,14 +326,16 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
 
     var theWindow = [self window],
         bounds = [self bounds],
-        width = CGRectGetWidth(bounds);
+        width = _CGRectGetWidth(bounds);
 
-    [_headView setFrameSize:CGSizeMake(width, [self toolbarMaxY])];
-    [_dividerView setFrame:CGRectMake(0.0, CGRectGetMaxY([_headView frame]), width, 1.0)];
+    [_headView setFrameSize:_CGSizeMake(width, [self toolbarMaxY])];
+    [_dividerView setFrame:_CGRectMake(0.0, _CGRectGetMaxY([_headView frame]), width, 1.0)];
 
-    var dividerMaxY = CGRectGetMaxY([_dividerView frame]);
+    var dividerMaxY = 0;
+    if (![_dividerView isHidden])
+        dividerMaxY = _CGRectGetMaxY([_dividerView frame]);
 
-    [_bodyView setFrame:CGRectMake(0.0, dividerMaxY, width, CGRectGetHeight(bounds) - dividerMaxY)];
+    [_bodyView setFrame:_CGRectMake(0.0, dividerMaxY, width, _CGRectGetHeight(bounds) - dividerMaxY)];
 
     var leftOffset = 8;
 
@@ -342,10 +344,13 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
     if (_minimizeButton)
         leftOffset += 19.0;
 
-    [_titleField setFrame:CGRectMake(leftOffset, 5.0, width - leftOffset * 2.0, CGRectGetHeight([_titleField frame]))];
+    [_titleField setFrame:_CGRectMake(leftOffset, 5.0, width - leftOffset * 2.0, _CGRectGetHeight([_titleField frame]))];
 
-    [[theWindow contentView] setFrameOrigin:CGPointMake(0.0, CGRectGetMaxY([_dividerView frame]))];
+    var contentRect = _CGRectMake(0.0, dividerMaxY, width, _CGRectGetHeight([_bodyView frame]));
+
+    [[theWindow contentView] setFrame:contentRect];
 }
+
 /*
 - (void)setAnimatingToolbar:(BOOL)isAnimatingToolbar
 {
@@ -401,10 +406,44 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-    if (CGRectContainsPoint([_headView frame], [self convertPoint:[anEvent locationInWindow] fromView:nil]))
-        return [self trackMoveWithEvent:anEvent];
+    if (![_headView isHidden])
+        if (CGRectContainsPoint([_headView frame], [self convertPoint:[anEvent locationInWindow] fromView:nil]))
+            return [self trackMoveWithEvent:anEvent];
 
     [super mouseDown:anEvent];
+}
+
+- (void)_enableSheet:(BOOL)enable
+{
+    [super _enableSheet:enable];
+
+    [_headView setHidden:enable];
+    [_dividerView setHidden:enable];
+    [_closeButton setHidden:enable];
+    [_minimizeButton setHidden:enable];
+    [_titleField setHidden:enable];
+
+    if (enable)
+        [_bodyView setBackgroundColor:[_CPDocModalWindowView bodyBackgroundColor]];
+    else
+        [_bodyView setBackgroundColor:[[self class] bodyBackgroundColor]];
+
+    // resize the window
+    var theWindow = [self window],
+        frame = [theWindow frame];
+
+    var dy = _CGRectGetHeight([_headView frame]) + _CGRectGetHeight([_dividerView frame]);
+    if (enable)
+        dy = -dy;
+
+    var newHeight = _CGRectGetMaxY(frame) + dy,
+        newWidth = _CGRectGetMaxX(frame);
+
+    frame.size.height += dy;
+
+    [self setFrameSize:_CGSizeMake(newWidth, newHeight)];
+    [self tile];
+    [theWindow setFrame:frame display:NO animate:NO];
 }
 
 @end
