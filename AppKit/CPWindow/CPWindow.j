@@ -2545,7 +2545,7 @@ CPTexturedBackgroundWindowMask
     // NOTE: cocoa doesn't make window key until animation is done, but a
     // keypress while animating eventually gets to the window. Therefore,
     // there must be a runloop specifically designed for sheets?
-    [sheet becomeKeyWindow];
+    [sheet makeKeyWindow];
 }
 
 /* @ignore */
