@@ -419,7 +419,8 @@ CPThemeStateVertical        = CPThemeState("vertical");
 CPThemeStateDefault         = CPThemeState("default");
 CPThemeStateCircular        = CPThemeState("circular");
 CPThemeStateAutocompleting  = CPThemeState("autocompleting");
-
+CPThemeStateMainWindow      = CPThemeState("mainWindow");
+CPThemeStateKeyWindow       = CPThemeState("keyWindow");
 
 @implementation _CPThemeAttribute : CPObject
 {
