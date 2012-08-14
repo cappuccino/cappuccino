@@ -1605,7 +1605,6 @@ CPTexturedBackgroundWindowMask
 
                 // -dw- if the window is clicked, the sheet should come to front, and become key,
                 // and the window should be immediately behind
-                [self orderFront:self];
                 [sheet makeKeyAndOrderFront:self];
                 break;
             case CPMouseMoved:
