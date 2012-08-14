@@ -857,11 +857,11 @@ CPTexturedBackgroundWindowMask
     [_platformWindow order:CPWindowAbove window:self relativeTo:nil];
 #endif
 
-    if (_firstResponder === self || !_firstResponder)
-        [self makeFirstResponder:_initialFirstResponder];
-
     if (!CPApp._keyWindow)
         [self makeKeyWindow];
+
+    if ([self isKeyWindow] && (_firstResponder === self || !_firstResponder))
+        [self makeFirstResponder:_initialFirstResponder];
 
     if (!CPApp._mainWindow)
         [self makeMainWindow];
