@@ -509,7 +509,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     element.value = _stringValue;
     element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
-    element.style.font = [font cssString];
+    if (CPFeatureIsCompatible(CPInputSetFontOutsideOfDOM))
+        element.style.font = [font cssString];
     element.style.zIndex = 1000;
 
     switch ([self alignment])
@@ -544,11 +545,21 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
 
     element.style.top = topPoint;
-    element.style.left = (_CGRectGetMinX(contentRect) - 1) + "px";  // -1 because input element seems to have 1px left inset
+    var left = _CGRectGetMinX(contentRect);
+    // If the browser has a built in left padding, compensate for it. We need the input text to be exactly on top of the original text.
+    if (CPFeatureIsCompatible(CPInput1PxLeftPadding))
+        left -= 1;
+    element.style.left = left + "px";
     element.style.width = _CGRectGetWidth(contentRect) + "px";
-    element.style.height = lineHeight + "px";
+    element.style.height = ROUND(lineHeight) + "px";
+    element.style.lineHeight = ROUND(lineHeight) + "px";
+    element.style.verticalAlign = @"top";
 
     _DOMElement.appendChild(element);
+
+    // The font change above doesn't work for some browsers if the element isn't already .appendChild'ed.
+    if (!CPFeatureIsCompatible(CPInputSetFontOutsideOfDOM))
+        element.style.font = [font cssString];
 
     window.setTimeout(function()
     {

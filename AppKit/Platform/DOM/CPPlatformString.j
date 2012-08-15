@@ -135,8 +135,8 @@ var DOMFixedWidthSpanElement    = nil,
     style.border = "none";
     style.verticalAlign = "baseline";
 
-    bodyElement.appendChild(DOMMetricsTextSpanElement);
-    bodyElement.appendChild(DOMMetricsImgElement);
+    DOMMetricsDivElement.appendChild(DOMMetricsTextSpanElement);
+    DOMMetricsDivElement.appendChild(DOMMetricsImgElement);
 }
 
 + (CGSize)sizeOfString:(CPString)aString withFont:(CPFont)aFont forWidth:(float)aWidth

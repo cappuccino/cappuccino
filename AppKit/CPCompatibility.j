@@ -67,6 +67,12 @@ CPHTML5DragAndDropSourceYOffBy1         = 1 << 26;
 
 CPSOPDisabledFromFileURLs               = 1 << 27;
 
+// element.style.font can be set for an element not in the DOM.
+CPInputSetFontOutsideOfDOM              = 1 << 28;
+
+// Input elements have 1 px of extra padding on the left regardless of padding setting.
+CPInput1PxLeftPadding                   = 1 << 29;
+
 var USER_AGENT                          = "",
     PLATFORM_ENGINE                     = CPUnknownBrowserEngine,
     PLATFORM_FEATURES                   = 0;
@@ -74,6 +80,7 @@ var USER_AGENT                          = "",
 // default these features to true
 
 PLATFORM_FEATURES |= CPInputTypeCanBeChangedFeature;
+PLATFORM_FEATURES |= CPInputSetFontOutsideOfDOM;
 
 if (typeof window !== "undefined" && typeof window.navigator !== "undefined")
     USER_AGENT = window.navigator.userAgent;
@@ -99,6 +106,9 @@ else if (typeof window !== "undefined" && window.attachEvent) // Must follow Ope
     PLATFORM_FEATURES |= CPOpacityRequiresFilterFeature;
 
     PLATFORM_FEATURES &= ~CPInputTypeCanBeChangedFeature;
+
+    // Tested in Internet Explore 8 and 9.
+    PLATFORM_FEATURES &= ~CPInputSetFontOutsideOfDOM;
 }
 
 // WebKit
@@ -135,6 +145,10 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
     if (majorVersion < 532 || (majorVersion === 532 && minorVersion < 6))
         PLATFORM_FEATURES |= CPHTML5DragAndDropSourceYOffBy1;
 
+    // This is supposedly fixed in webkit r123603. Seems to work in Chrome 21 but not Safari 6.0.
+    if (majorVersion < 537)
+        PLATFORM_FEATURES |= CPInput1PxLeftPadding;
+
     if (USER_AGENT.indexOf("Chrome") === CPNotFound)
         PLATFORM_FEATURES |= CPSOPDisabledFromFileURLs;
 }
@@ -160,6 +174,9 @@ else if (USER_AGENT.indexOf("Gecko") !== -1) // Must follow KHTML check.
 
     if (version < 3.0)
         PLATFORM_FEATURES |= CPJavaScriptMouseWheelValues_8_15;
+
+    // Some day this might be fixed and should be version prefixed. No known fixed version yet.
+    PLATFORM_FEATURES |= CPInput1PxLeftPadding;
 }
 
 // Feature Specific Checks
