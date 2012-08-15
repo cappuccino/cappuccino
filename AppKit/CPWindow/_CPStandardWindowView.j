@@ -21,7 +21,7 @@
  */
 
 @import "CPTextField.j"
-@import "_CPWindowView.j"
+@import "_CPTitleableWindowView.j"
 
 
 var GRADIENT_HEIGHT = 41.0;
@@ -98,29 +98,42 @@ var _CPTexturedWindowHeadGradientColor  = nil,
 
 var _CPStandardWindowViewBodyBackgroundColor                = nil,
     _CPStandardWindowViewDividerBackgroundColor             = nil,
-    _CPStandardWindowViewTitleBackgroundColor               = nil,
     _CPStandardWindowViewCloseButtonImage                   = nil,
     _CPStandardWindowViewCloseButtonHighlightedImage        = nil,
     _CPStandardWindowViewCloseButtonUnsavedImage            = nil,
     _CPStandardWindowViewCloseButtonUnsavedHighlightedImage = nil,
     _CPStandardWindowViewMinimizeButtonImage                = nil,
-    _CPStandardWindowViewMinimizeButtonHighlightedImage     = nil;
+    _CPStandardWindowViewMinimizeButtonHighlightedImage     = nil,
+    _CPStandardWindowViewThemeValues                        = nil;
 
-var STANDARD_GRADIENT_HEIGHT                    = 41.0,
-    STANDARD_TITLEBAR_HEIGHT                    = 25.0;
+var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 
-@implementation _CPStandardWindowView : _CPWindowView
+@implementation _CPStandardWindowView : _CPTitleableWindowView
 {
     _CPTexturedWindowHeadView   _headView;
     CPView                      _dividerView;
     CPView                      _bodyView;
     CPView                      _toolbarView;
 
-    CPTextField                 _titleField;
     CPButton                    _closeButton;
     CPButton                    _minimizeButton;
 
     BOOL                        _isDocumentEdited;
+}
+
++ (void)initialize
+{
+    _CPStandardWindowViewThemeValues = [
+        [@"title-font",                 [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize]],
+        [@"title-text-color",           [CPColor colorWithWhite:22.0 / 255.0 alpha:0.75]],
+        [@"title-text-color",           [CPColor colorWithWhite:22.0 / 255.0 alpha:1], CPThemeStateKeyWindow],
+        [@"title-text-shadow-color",    [CPColor whiteColor]],
+        [@"title-text-shadow-offset",   CGSizeMake(0.0, 1.0)],
+        [@"title-alignment",            CPCenterTextAlignment],
+        // FIXME: Make this to CPLineBreakByTruncatingMiddle once it's implemented.
+        [@"title-line-break-mode",      CPLineBreakByTruncatingTail],
+        [@"title-vertical-alignment",   CPCenterVerticalTextAlignment]
+    ];
 }
 
 + (CPColor)bodyBackgroundColor
@@ -137,41 +150,6 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
         _CPStandardWindowViewDividerBackgroundColor = [CPColor colorWithCalibratedRed:125.0 / 255.0 green:125.0 / 255.0 blue:125.0 / 255.0 alpha:1.0];
 
     return _CPStandardWindowViewDividerBackgroundColor;
-}
-
-+ (CPColor)titleColor
-{
-    if (!_CPStandardWindowViewTitleBackgroundColor)
-        _CPStandardWindowViewTitleBackgroundColor = [CPColor colorWithCalibratedRed:44.0 / 255.0 green:44.0 / 255.0 blue:44.0 / 255.0 alpha:1.0];
-
-    return _CPStandardWindowViewTitleBackgroundColor;
-}
-
-+ (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
-{
-    var contentRect = CGRectMakeCopy(aFrameRect),
-        titleBarHeight = [self titleBarHeight] + 1.0;
-
-    contentRect.origin.y += titleBarHeight;
-    contentRect.size.height -= titleBarHeight;
-
-    return contentRect;
-}
-
-+ (CGRect)frameRectForContentRect:(CGRect)aContentRect
-{
-    var frameRect = CGRectMakeCopy(aContentRect),
-        titleBarHeight = [self titleBarHeight] + 1.0;
-
-    frameRect.origin.y -= titleBarHeight;
-    frameRect.size.height += titleBarHeight;
-
-    return frameRect;
-}
-
-+ (float)titleBarHeight
-{
-    return STANDARD_TITLEBAR_HEIGHT;
 }
 
 - (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
@@ -212,6 +190,9 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
 
     if (self)
     {
+        // Until windows become properly themable, just set these values here in the subclass.
+        [self registerThemeValues:_CPStandardWindowViewThemeValues];
+
         var theClass = [self class],
             bounds = [self bounds];
 
@@ -220,7 +201,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
         [_headView setAutoresizingMask:CPViewWidthSizable];;
         [_headView setHitTests:NO];
 
-        [self addSubview:_headView];
+        [self addSubview:_headView positioned:CPWindowBelow relativeTo:_titleField];
 
         _dividerView = [[CPView alloc] initWithFrame:CGRectMake(0.0, CGRectGetMaxY([_headView frame]), CGRectGetWidth(bounds), 1.0)];
 
@@ -242,24 +223,6 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
 
         [self setResizeIndicatorOffset:CGSizeMake(2.0, 2.0)];
 
-        _titleField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
-
-        [_titleField setFont:[CPFont boldSystemFontOfSize:CPFontCurrentSystemSize]];
-        [_titleField setAutoresizingMask:CPViewWidthSizable];
-
-        // FIXME: Make this to CPLineBreakByTruncatingMiddle once it's implemented.
-        [_titleField setLineBreakMode:CPLineBreakByTruncatingTail];
-        [_titleField setAlignment:CPCenterTextAlignment];
-        [_titleField setTextShadowColor:[CPColor whiteColor]];
-        [_titleField setTextShadowOffset:CGSizeMake(0.0, 1.0)];
-
-        [_titleField setStringValue:@"Untitled"];
-        [_titleField sizeToFit];
-        [_titleField setAutoresizingMask:CPViewWidthSizable];
-        [_titleField setStringValue:@""];
-
-        [self addSubview:_titleField];
-
         if (_styleMask & CPClosableWindowMask)
         {
             if (!_CPStandardWindowViewCloseButtonImage)
@@ -272,7 +235,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
                 _CPStandardWindowViewCloseButtonUnsavedHighlightedImage  = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/Standard/CPWindowStandardCloseButtonUnsavedHighlighted.png"] size:CGSizeMake(16.0, 16.0)];
             }
 
-            _closeButton = [[CPButton alloc] initWithFrame:CGRectMake(8.0, 7.0, 16.0, 16.0)];
+            _closeButton = [[CPButton alloc] initWithFrame:CGRectMake(8.0, 6.0, 16.0, 16.0)];
 
             [_closeButton setBordered:NO];
             [self _updateCloseButton];
@@ -331,9 +294,13 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
     [_headView setFrameSize:_CGSizeMake(width, [self toolbarMaxY])];
     [_dividerView setFrame:_CGRectMake(0.0, _CGRectGetMaxY([_headView frame]), width, 1.0)];
 
-    var dividerMaxY = 0;
+    var dividerMaxY = 0,
+        dividerMinY = 0;
     if (![_dividerView isHidden])
+    {
+        dividerMinY = _CGRectGetMinY([_dividerView frame]);
         dividerMaxY = _CGRectGetMaxY([_dividerView frame]);
+    }
 
     [_bodyView setFrame:_CGRectMake(0.0, dividerMaxY, width, _CGRectGetHeight(bounds) - dividerMaxY)];
 
@@ -344,7 +311,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
     if (_minimizeButton)
         leftOffset += 19.0;
 
-    [_titleField setFrame:_CGRectMake(leftOffset, 5.0, width - leftOffset * 2.0, _CGRectGetHeight([_titleField frame]))];
+    [_titleField setFrame:_CGRectMake(leftOffset, 0, width - leftOffset * 2.0, [[self class] titleBarHeight])];
 
     var contentRect = _CGRectMake(0.0, dividerMaxY, width, _CGRectGetHeight([_bodyView frame]));
 
@@ -397,11 +364,6 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
 {
     _isDocumentEdited = isEdited;
     [self _updateCloseButton];
-}
-
-- (void)setTitle:(CPString)aTitle
-{
-    [_titleField setStringValue:aTitle];
 }
 
 - (void)mouseDown:(CPEvent)anEvent
