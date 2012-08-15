@@ -52,6 +52,28 @@
     [contentView addSubview:shadowLabel];
     [contentView addSubview:championOfLightLabel];
 
+    var jumpLabel = [CPTextField labelWithTitle:@"The text of these text fields should not move when a field becomes the first responder."];
+
+    [jumpLabel sizeToFit];
+    [jumpLabel setFrameOrigin:CGPointMake(15, 150)];
+    [contentView addSubview:jumpLabel];
+
+    var y = CGRectGetMaxY([jumpLabel frame]) + 10;
+
+    for (var i = 0; i < 5; i++)
+    {
+        var size = 10 + 3 * i,
+            textField = [CPTextField textFieldWithStringValue:@"Size " + size placeholder:@"Size " + size width:200];
+
+        [textField setFont:[CPFont systemFontOfSize:size]];
+        [textField sizeToFit];
+        [textField setFrameOrigin:CGPointMake(15, y)];
+
+        y = CGRectGetMaxY([textField frame]) + 6;
+
+        [contentView addSubview:textField];
+    }
+
     [theWindow orderFront:self];
 
     aWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(150, 300, 400, 150) styleMask:CPTitledWindowMask | CPClosableWindowMask | CPDocModalWindowMask];
