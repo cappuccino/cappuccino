@@ -509,7 +509,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     element.value = _stringValue;
     element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
-    element.style.font = [font cssString];
+    if (CPFeatureIsCompatible(CPInputSetFontOutsideOfDOM))
+        element.style.font = [font cssString];
     element.style.zIndex = 1000;
 
     switch ([self alignment])
@@ -551,6 +552,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     element.style.verticalAlign = @"top";
 
     _DOMElement.appendChild(element);
+
+    // The font change above doesn't work for some browsers if the element isn't already .appendChild'ed.
+    if (!CPFeatureIsCompatible(CPInputSetFontOutsideOfDOM))
+        element.style.font = [font cssString];
 
     window.setTimeout(function()
     {

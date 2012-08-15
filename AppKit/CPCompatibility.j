@@ -67,6 +67,9 @@ CPHTML5DragAndDropSourceYOffBy1         = 1 << 26;
 
 CPSOPDisabledFromFileURLs               = 1 << 27;
 
+// element.style.font can be set for an element not in the DOM.
+CPInputSetFontOutsideOfDOM              = 1 << 28;
+
 var USER_AGENT                          = "",
     PLATFORM_ENGINE                     = CPUnknownBrowserEngine,
     PLATFORM_FEATURES                   = 0;
@@ -74,6 +77,7 @@ var USER_AGENT                          = "",
 // default these features to true
 
 PLATFORM_FEATURES |= CPInputTypeCanBeChangedFeature;
+PLATFORM_FEATURES |= CPInputSetFontOutsideOfDOM;
 
 if (typeof window !== "undefined" && typeof window.navigator !== "undefined")
     USER_AGENT = window.navigator.userAgent;
@@ -99,6 +103,9 @@ else if (typeof window !== "undefined" && window.attachEvent) // Must follow Ope
     PLATFORM_FEATURES |= CPOpacityRequiresFilterFeature;
 
     PLATFORM_FEATURES &= ~CPInputTypeCanBeChangedFeature;
+
+    // Tested in Internet Explore 8 and 9.
+    PLATFORM_FEATURES &= ~CPInputSetFontOutsideOfDOM;
 }
 
 // WebKit
