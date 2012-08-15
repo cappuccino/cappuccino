@@ -545,7 +545,11 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
 
     element.style.top = topPoint;
-    element.style.left = (_CGRectGetMinX(contentRect) - 1) + "px";  // -1 because input element seems to have 1px left inset
+    var left = _CGRectGetMinX(contentRect);
+    // If the browser has a built in left padding, compensate for it. We need the input text to be exactly on top of the original text.
+    if (CPFeatureIsCompatible(CPInput1PxLeftPadding))
+        left -= 1;
+    element.style.left = left + "px";
     element.style.width = _CGRectGetWidth(contentRect) + "px";
     element.style.height = ROUND(lineHeight) + "px";
     element.style.lineHeight = ROUND(lineHeight) + "px";
