@@ -98,7 +98,6 @@ var _CPTexturedWindowHeadGradientColor  = nil,
 
 var _CPStandardWindowViewBodyBackgroundColor                = nil,
     _CPStandardWindowViewDividerBackgroundColor             = nil,
-    _CPStandardWindowViewTitleBackgroundColor               = nil,
     _CPStandardWindowViewCloseButtonImage                   = nil,
     _CPStandardWindowViewCloseButtonHighlightedImage        = nil,
     _CPStandardWindowViewCloseButtonUnsavedImage            = nil,
@@ -236,7 +235,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
                 _CPStandardWindowViewCloseButtonUnsavedHighlightedImage  = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/Standard/CPWindowStandardCloseButtonUnsavedHighlighted.png"] size:CGSizeMake(16.0, 16.0)];
             }
 
-            _closeButton = [[CPButton alloc] initWithFrame:CGRectMake(8.0, 7.0, 16.0, 16.0)];
+            _closeButton = [[CPButton alloc] initWithFrame:CGRectMake(8.0, 6.0, 16.0, 16.0)];
 
             [_closeButton setBordered:NO];
             [self _updateCloseButton];
