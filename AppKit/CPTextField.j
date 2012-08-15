@@ -546,7 +546,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     element.style.top = topPoint;
     element.style.left = (_CGRectGetMinX(contentRect) - 1) + "px";  // -1 because input element seems to have 1px left inset
     element.style.width = _CGRectGetWidth(contentRect) + "px";
-    element.style.height = lineHeight + "px";
+    element.style.height = ROUND(lineHeight) + "px";
+    element.style.lineHeight = ROUND(lineHeight) + "px";
+    element.style.verticalAlign = @"top";
 
     _DOMElement.appendChild(element);
 

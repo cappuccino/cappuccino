@@ -432,13 +432,15 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         {
             _DOMTextShadowElement = document.createElement("div");
 
-            var shadowStyle = _DOMTextShadowElement.style;
+            var shadowStyle = _DOMTextShadowElement.style,
+                font = (_font || [CPFont systemFontOfSize:CPFontCurrentSystemSize]);
 
-            shadowStyle.font = [(_font || [CPFont systemFontOfSize:CPFontCurrentSystemSize]) cssString];
+            shadowStyle.font = [font cssString];
             shadowStyle.position = "absolute";
             shadowStyle.whiteSpace = textStyle.whiteSpace;
             shadowStyle.wordWrap = textStyle.wordWrap;
             shadowStyle.color = [_textShadowColor cssString];
+            shadowStyle.lineHeight = [font defaultLineHeightForFont] + "px";
 
             shadowStyle.zIndex = 150;
             shadowStyle.textOverflow = textStyle.textOverflow;
@@ -484,11 +486,16 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
         if (_flags & _CPImageAndTextViewFontChangedFlag)
         {
-            var fontStyle = [(_font || [CPFont systemFontOfSize:CPFontCurrentSystemSize]) cssString];
+            var font = (_font || [CPFont systemFontOfSize:CPFontCurrentSystemSize]),
+                fontStyle = [font cssString];
             textStyle.font = fontStyle;
+            textStyle.lineHeight = [font defaultLineHeightForFont] + "px";
 
             if (shadowStyle)
+            {
                 shadowStyle.font = fontStyle;
+                shadowStyle.lineHeight = [font defaultLineHeightForFont] + "px";
+            }
         }
 
         // Update the line break mode if necessary.
@@ -713,6 +720,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         textStyle.left = ROUND(textRectX) + "px";
         textStyle.width = MAX(CEIL(textRectWidth), 0) + "px";
         textStyle.height = MAX(CEIL(textRectHeight), 0) + "px";
+        textStyle.verticalAlign = @"top";
 
         if (shadowStyle)
         {
