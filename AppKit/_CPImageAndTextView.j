@@ -697,7 +697,8 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
             if (_verticalAlignment === CPCenterVerticalTextAlignment)
             {
-                textRectY = textRectY + (textRectHeight - _textSize.height) / 2.0;
+                // Since we added +1 px height above to show fractional pixels on the bottom, we have to remove that when calculating vertical centre.
+                textRectY = textRectY + (textRectHeight - _textSize.height + 1.0) / 2.0;
                 textRectHeight = _textSize.height;
             }
 
