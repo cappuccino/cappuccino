@@ -1779,6 +1779,8 @@ CPTexturedBackgroundWindowMask
 
     [self _setupFirstResponder:nil];
 
+    [_windowView noteKeyWindowStateChanged];
+
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPWindowDidBecomeKeyNotification
                       object:self];
@@ -1835,6 +1837,8 @@ CPTexturedBackgroundWindowMask
 
     if (CPApp._keyWindow === self)
         CPApp._keyWindow = nil;
+
+    [_windowView noteKeyWindowStateChanged];
 
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPWindowDidResignKeyNotification
@@ -2181,6 +2185,8 @@ CPTexturedBackgroundWindowMask
     [self _synchronizeMenuBarTitleWithWindowTitle];
     [self _synchronizeSaveMenuWithDocumentSaving];
 
+    [_windowView noteMainWindowStateChanged];
+
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPWindowDidBecomeMainNotification
                       object:self];
@@ -2197,6 +2203,8 @@ CPTexturedBackgroundWindowMask
 
     if (CPApp._mainWindow === self)
         CPApp._mainWindow = nil;
+
+    [_windowView noteMainWindowStateChanged];
 }
 
 - (void)_updateMainAndKeyWindows
