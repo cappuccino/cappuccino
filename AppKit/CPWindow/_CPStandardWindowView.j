@@ -21,7 +21,7 @@
  */
 
 @import "CPTextField.j"
-@import "_CPWindowView.j"
+@import "_CPTitleableWindowView.j"
 
 
 var GRADIENT_HEIGHT = 41.0;
@@ -107,17 +107,15 @@ var _CPStandardWindowViewBodyBackgroundColor                = nil,
     _CPStandardWindowViewMinimizeButtonHighlightedImage     = nil,
     _CPStandardWindowViewThemeValues                        = nil;
 
-var STANDARD_GRADIENT_HEIGHT                    = 41.0,
-    STANDARD_TITLEBAR_HEIGHT                    = 25.0;
+var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 
-@implementation _CPStandardWindowView : _CPWindowView
+@implementation _CPStandardWindowView : _CPTitleableWindowView
 {
     _CPTexturedWindowHeadView   _headView;
     CPView                      _dividerView;
     CPView                      _bodyView;
     CPView                      _toolbarView;
 
-    CPTextField                 _titleField;
     CPButton                    _closeButton;
     CPButton                    _minimizeButton;
 
@@ -153,33 +151,6 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
         _CPStandardWindowViewDividerBackgroundColor = [CPColor colorWithCalibratedRed:125.0 / 255.0 green:125.0 / 255.0 blue:125.0 / 255.0 alpha:1.0];
 
     return _CPStandardWindowViewDividerBackgroundColor;
-}
-
-+ (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
-{
-    var contentRect = CGRectMakeCopy(aFrameRect),
-        titleBarHeight = [self titleBarHeight] + 1.0;
-
-    contentRect.origin.y += titleBarHeight;
-    contentRect.size.height -= titleBarHeight;
-
-    return contentRect;
-}
-
-+ (CGRect)frameRectForContentRect:(CGRect)aContentRect
-{
-    var frameRect = CGRectMakeCopy(aContentRect),
-        titleBarHeight = [self titleBarHeight] + 1.0;
-
-    frameRect.origin.y -= titleBarHeight;
-    frameRect.size.height += titleBarHeight;
-
-    return frameRect;
-}
-
-+ (float)titleBarHeight
-{
-    return STANDARD_TITLEBAR_HEIGHT;
 }
 
 - (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
@@ -231,7 +202,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
         [_headView setAutoresizingMask:CPViewWidthSizable];;
         [_headView setHitTests:NO];
 
-        [self addSubview:_headView];
+        [self addSubview:_headView positioned:CPWindowBelow relativeTo:_titleField];
 
         _dividerView = [[CPView alloc] initWithFrame:CGRectMake(0.0, CGRectGetMaxY([_headView frame]), CGRectGetWidth(bounds), 1.0)];
 
@@ -252,19 +223,6 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
         [self addSubview:_bodyView];
 
         [self setResizeIndicatorOffset:CGSizeMake(2.0, 2.0)];
-
-        _titleField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
-
-        [_titleField setAutoresizingMask:CPViewWidthSizable];
-
-        [_titleField setStringValue:@"Untitled"];
-        [_titleField sizeToFit];
-        [_titleField setAutoresizingMask:CPViewWidthSizable];
-        [_titleField setStringValue:@""];
-
-        [self setNeedsLayout];
-
-        [self addSubview:_titleField];
 
         if (_styleMask & CPClosableWindowMask)
         {
@@ -354,10 +312,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
     if (_minimizeButton)
         leftOffset += 19.0;
 
-    [_titleField sizeToFit];
-    // The vertical alignment of the title is set by the theme, so just give it all available space. By default
-    // the title will vertically centre within.
-    [_titleField setFrame:_CGRectMake(leftOffset, 0, width - leftOffset * 2.0, dividerMinY)];
+    [_titleField setFrame:_CGRectMake(leftOffset, 0, width - leftOffset * 2.0, [[self class] titleBarHeight])];
 
     var contentRect = _CGRectMake(0.0, dividerMaxY, width, _CGRectGetHeight([_bodyView frame]));
 
@@ -412,11 +367,6 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
     [self _updateCloseButton];
 }
 
-- (void)setTitle:(CPString)aTitle
-{
-    [_titleField setStringValue:aTitle];
-}
-
 - (void)mouseDown:(CPEvent)anEvent
 {
     if (![_headView isHidden])
@@ -457,17 +407,6 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0,
     [self setFrameSize:_CGSizeMake(newWidth, newHeight)];
     [self tile];
     [theWindow setFrame:frame display:NO animate:NO];
-}
-
-- (void)layoutSubviews
-{
-    [_titleField setTextColor:[self currentValueForThemeAttribute:@"title-text-color"]];
-    [_titleField setFont:[self currentValueForThemeAttribute:@"title-font"]];
-    [_titleField setAlignment:[self currentValueForThemeAttribute:@"title-alignment"]];
-    [_titleField setVerticalAlignment:[self currentValueForThemeAttribute:@"title-vertical-alignment"]];
-    [_titleField setLineBreakMode:[self currentValueForThemeAttribute:@"title-line-break-mode"]];
-    [_titleField setTextShadowColor:[self currentValueForThemeAttribute:@"title-text-shadow-color"]];
-    [_titleField setTextShadowOffset:[self currentValueForThemeAttribute:@"title-text-shadow-offset"]];
 }
 
 @end
