@@ -81,6 +81,7 @@
 - (void)modalAction:(id)sender
 {
     [CPApp endSheet:aWindow returnCode:0];
+    [aWindow orderOut:sender];
 }
 
 - (void)textAction:(id)sender

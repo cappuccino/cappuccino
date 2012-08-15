@@ -857,11 +857,11 @@ CPTexturedBackgroundWindowMask
     [_platformWindow order:CPWindowAbove window:self relativeTo:nil];
 #endif
 
-    if (_firstResponder === self || !_firstResponder)
-        [self makeFirstResponder:_initialFirstResponder];
-
     if (!CPApp._keyWindow)
         [self makeKeyWindow];
+
+    if ([self isKeyWindow] && (_firstResponder === self || !_firstResponder))
+        [self makeFirstResponder:_initialFirstResponder];
 
     if (!CPApp._mainWindow)
         [self makeMainWindow];
@@ -1605,7 +1605,6 @@ CPTexturedBackgroundWindowMask
 
                 // -dw- if the window is clicked, the sheet should come to front, and become key,
                 // and the window should be immediately behind
-                [self orderFront:self];
                 [sheet makeKeyAndOrderFront:self];
                 break;
             case CPMouseMoved:
@@ -2545,7 +2544,7 @@ CPTexturedBackgroundWindowMask
     // NOTE: cocoa doesn't make window key until animation is done, but a
     // keypress while animating eventually gets to the window. Therefore,
     // there must be a runloop specifically designed for sheets?
-    [sheet becomeKeyWindow];
+    [sheet makeKeyWindow];
 }
 
 /* @ignore */

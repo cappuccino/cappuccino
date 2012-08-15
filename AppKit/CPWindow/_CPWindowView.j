@@ -63,6 +63,17 @@ var _CPWindowViewResizeIndicatorImage = nil;
     return CGRectMakeCopy(aContentRect);
 }
 
++ (CPString)defaultThemeClass
+{
+    return "window";
+}
+
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[[CPColor blackColor], [CPFont systemFontOfSize:CPFontCurrentSystemSize], [CPNull null], _CGSizeMakeZero(), CPCenterTextAlignment, CPLineBreakByTruncatingTail, CPTopVerticalTextAlignment]
+                                       forKeys:[@"title-text-color", @"title-font", @"title-text-shadow-color", @"title-text-shadow-offset", @"title-alignment", @"title-line-break-mode", @"title-vertical-alignment"]];
+}
+
 - (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
     return [[self class] contentRectForFrameRect:aFrameRect];
@@ -359,6 +370,23 @@ var _CPWindowViewResizeIndicatorImage = nil;
 
     [self tile];
 }
+
+- (void)noteKeyWindowStateChanged
+{
+    if ([[self window] isKeyWindow])
+        [self setThemeState:CPThemeStateKeyWindow];
+    else
+        [self unsetThemeState:CPThemeStateKeyWindow];
+}
+
+- (void)noteMainWindowStateChanged
+{
+    if ([[self window] isMainWindow])
+        [self setThemeState:CPThemeStateMainWindow];
+    else
+        [self unsetThemeState:CPThemeStateMainWindow];
+}
+
 /*
 - (void)setAnimatingToolbar:(BOOL)isAnimatingToolbar
 {

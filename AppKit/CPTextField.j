@@ -474,13 +474,31 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [[CPTextFieldInputOwner window] makeFirstResponder:nil];
 #endif
 
+    // As long as we are the first responder we need to monitor the key status of our window.
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_windowDidResignKey:) name:CPWindowDidResignKeyNotification object:[self window]];
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_windowDidBecomeKey:) name:CPWindowDidBecomeKeyNotification object:[self window]];
+
+    _isEditing = NO;
+
+    if ([[self window] isKeyWindow])
+        [self _becomeFirstKeyResponder];
+
+    return YES;
+}
+
+/*!
+    A text field can be the first responder without necessarily being the focus of keyboard input. For example, it might be the first responder of window A but window B is the main and key window. It's important we don't put a focused input field into a text field in a non key window, even if that field is the first responder, because the key window might also have a first responder text field which the user will expect to receive keyboard input.
+
+    Since a first responder but non-key window text field can't receive input it should not even look like an active text field (Cocoa has a "slightly active" text field look it uses when another window is the key window, but Cappuccino doesn't today.)
+*/
+- (void)_becomeFirstKeyResponder
+{
     [self setThemeState:CPThemeStateEditing];
 
     [self _updatePlaceholderState];
 
     [self setNeedsLayout];
 
-    _isEditing = NO;
     _stringValue = [self stringValue];
 
 #if PLATFORM(DOM)
@@ -559,14 +577,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [[self window] platformWindow]._DOMBodyElement.onselectstart = function () {};
     }
 #endif
-
-    return YES;
 }
 
 /* @ignore */
 - (BOOL)resignFirstResponder
 {
-    [self unsetThemeState:CPThemeStateEditing];
+    // When we are no longer the first responder we don't worry about the key status of our window anymore.
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidResignKeyNotification object:[self window]];
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidBecomeKeyNotification object:[self window]];
 
 #if PLATFORM(DOM)
 
@@ -583,12 +601,28 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     // even if the value has not changed.
     if ([self _valueIsValid:newValue] === NO)
     {
-        [self setThemeState:CPThemeStateEditing];
         element.focus();
         return NO;
     }
 
 #endif
+
+    [self _resignFirstKeyResponder];
+
+    _isEditing = NO;
+    [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
+
+    if ([self sendsActionOnEndEditing])
+        [self sendAction:[self action] to:[self target]];
+
+    [self textDidBlur:[CPNotification notificationWithName:CPTextFieldDidBlurNotification object:self userInfo:nil]];
+
+    return YES;
+}
+
+- (void)_resignFirstKeyResponder
+{
+    [self unsetThemeState:CPThemeStateEditing];
 
     // Cache the formatted string
     _stringValue = [self stringValue];
@@ -600,6 +634,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     [self setNeedsLayout];
 
 #if PLATFORM(DOM)
+
+    var element = [self _inputElement];
 
     CPTextFieldInputResigning = YES;
 
@@ -627,16 +663,18 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
 
 #endif
+}
 
-    _isEditing = NO;
-    [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
+- (void)_windowDidResignKey:(CPNotification)aNotification
+{
+    if (![[self window] isKeyWindow])
+        [self _resignFirstKeyResponder];
+}
 
-    if ([self sendsActionOnEndEditing])
-        [self sendAction:[self action] to:[self target]];
-
-    [self textDidBlur:[CPNotification notificationWithName:CPTextFieldDidBlurNotification object:self userInfo:nil]];
-
-    return YES;
+- (void)_windowDidBecomeKey:(CPNotification)aNotification
+{
+    if ([[self window] isKeyWindow] && [[self window] firstResponder] === self)
+        [self _becomeFirstKeyResponder];
 }
 
 - (BOOL)_valueIsValid:(CPString)aValue
