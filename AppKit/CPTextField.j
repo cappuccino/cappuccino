@@ -1202,7 +1202,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self copy:sender];
         [self deleteBackward:sender];
     }
-    else
+    // If we don't have an oninput listener, we won't detect the change made by the cut and need to fake a key up "soon".
+    else if (!CPFeatureIsCompatible(CPInputOnInputEventFeature))
         [CPTimer scheduledTimerWithTimeInterval:0.0 target:self selector:@selector(keyUp:) userInfo:nil repeats:NO];
 }
 
@@ -1224,7 +1225,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self setStringValue:newValue];
         [self setSelectedRange:CPMakeRange(selectedRange.location + pasteString.length, 0)];
     }
-    else
+    // If we don't have an oninput listener, we won't detect the change made by the cut and need to fake a key up "soon".
+    else if (!CPFeatureIsCompatible(CPInputOnInputEventFeature))
         [CPTimer scheduledTimerWithTimeInterval:0.0 target:self selector:@selector(keyUp:) userInfo:nil repeats:NO];
 }
 
