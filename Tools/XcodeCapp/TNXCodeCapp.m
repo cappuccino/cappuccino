@@ -491,7 +491,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     XCodeSupportProjectName    = [NSString stringWithFormat:@"%@.xcodeproj/", currentProjectName];
     XCodeTemplatePBXPath       = [[NSBundle mainBundle] pathForResource:@"project.pbxproj" ofType:@"sample"];
     XCodeSupportProject        = [NSURL URLWithString:XCodeSupportProjectName relativeToURL:currentProjectURL];
-    XCodeSupportProjectSources = [NSURL URLWithString:@".XcodeSupport/" relativeToURL:currentProjectURL];
+    XCodeSupportProjectSources = [NSURL URLWithString:@".xCodeSupport/" relativeToURL:currentProjectURL];
     XCodeSupportPBXPath        = [NSString stringWithFormat:@"%@/project.pbxproj", [XCodeSupportProject path]];
     PBXModifierScriptPath      = [[NSBundle mainBundle] pathForResource:@"pbxprojModifier" ofType:@"py"];
 
@@ -650,7 +650,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     [ignoredFilePaths addObject:@"*/.svn/*"];
     [ignoredFilePaths addObject:@"*/.hg/*"];
     [ignoredFilePaths addObject:@"*/Frameworks/*"];
-    [ignoredFilePaths addObject:@"*/.XcodeSupport/*"];
+    [ignoredFilePaths addObject:@"*/.xCodeSupport/*"];
     [ignoredFilePaths addObject:@"*/Build/*"];
     [ignoredFilePaths addObject:@"*/NS_*.j"];
     [ignoredFilePaths addObject:@"*main.j"];
