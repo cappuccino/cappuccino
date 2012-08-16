@@ -46,7 +46,8 @@ var CPTextFieldDOMInputElement = nil,
     CPTextFieldInputIsActive = NO,
     CPTextFieldCachedSelectStartFunction = nil,
     CPTextFieldCachedDragFunction = nil,
-    CPTextFieldBlurFunction = nil;
+    CPTextFieldBlurFunction = nil,
+    CPTextFieldInputFunction = nil;
 
 #endif
 
@@ -210,6 +211,25 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
         };
+
+        if (CPFeatureIsCompatible(CPInputOnInputEventFeature))
+        {
+            CPTextFieldInputFunction = function(anEvent)
+            {
+                if (!CPTextFieldInputOwner)
+                    return;
+
+                var cappEvent = [CPEvent keyEventWithType:CPKeyUp location:_CGPointMakeZero() modifierFlags:0
+                                                timestamp:[CPEvent currentTimestamp] windowNumber:[[CPApp keyWindow] windowNumber] context:nil
+                                               characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:nil];
+
+                [CPTextFieldInputOwner keyUp:cappEvent];
+
+                [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+            }
+
+            CPTextFieldDOMInputElement.oninput = CPTextFieldInputFunction;
+        }
 
         //FIXME make this not onblur
         CPTextFieldDOMInputElement.onblur = CPTextFieldBlurFunction;
