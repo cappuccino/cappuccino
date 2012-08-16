@@ -1,7 +1,7 @@
 import sys, os
 from mod_pbxproj import XcodeProject
 
-XCODESUPPORTFOLDER = ".XcodeSupport"
+XCODESUPPORTFOLDER = ".xCodeSupport"
 
 def add_file(project, shadowGroup, sourceGroup, shadowPath, sourcePath, projectBaseURL):
     project.add_file(shadowPath, parent=shadowGroup)
