@@ -46,7 +46,8 @@ var CPTextFieldDOMInputElement = nil,
     CPTextFieldInputIsActive = NO,
     CPTextFieldCachedSelectStartFunction = nil,
     CPTextFieldCachedDragFunction = nil,
-    CPTextFieldBlurFunction = nil;
+    CPTextFieldBlurFunction = nil,
+    CPTextFieldInputFunction = nil;
 
 #endif
 
@@ -210,6 +211,25 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
         };
+
+        if (CPFeatureIsCompatible(CPInputOnInputEventFeature))
+        {
+            CPTextFieldInputFunction = function(anEvent)
+            {
+                if (!CPTextFieldInputOwner)
+                    return;
+
+                var cappEvent = [CPEvent keyEventWithType:CPKeyUp location:_CGPointMakeZero() modifierFlags:0
+                                                timestamp:[CPEvent currentTimestamp] windowNumber:[[CPApp keyWindow] windowNumber] context:nil
+                                               characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:nil];
+
+                [CPTextFieldInputOwner keyUp:cappEvent];
+
+                [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+            }
+
+            CPTextFieldDOMInputElement.oninput = CPTextFieldInputFunction;
+        }
 
         //FIXME make this not onblur
         CPTextFieldDOMInputElement.onblur = CPTextFieldBlurFunction;
@@ -1182,7 +1202,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self copy:sender];
         [self deleteBackward:sender];
     }
-    else
+    // If we don't have an oninput listener, we won't detect the change made by the cut and need to fake a key up "soon".
+    else if (!CPFeatureIsCompatible(CPInputOnInputEventFeature))
         [CPTimer scheduledTimerWithTimeInterval:0.0 target:self selector:@selector(keyUp:) userInfo:nil repeats:NO];
 }
 
@@ -1204,7 +1225,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self setStringValue:newValue];
         [self setSelectedRange:CPMakeRange(selectedRange.location + pasteString.length, 0)];
     }
-    else
+    // If we don't have an oninput listener, we won't detect the change made by the cut and need to fake a key up "soon".
+    else if (!CPFeatureIsCompatible(CPInputOnInputEventFeature))
         [CPTimer scheduledTimerWithTimeInterval:0.0 target:self selector:@selector(keyUp:) userInfo:nil repeats:NO];
 }
 

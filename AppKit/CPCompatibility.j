@@ -72,6 +72,7 @@ CPInputSetFontOutsideOfDOM              = 1 << 28;
 
 // Input elements have 1 px of extra padding on the left regardless of padding setting.
 CPInput1PxLeftPadding                   = 1 << 29;
+CPInputOnInputEventFeature              = 1 << 30;
 
 var USER_AGENT                          = "",
     PLATFORM_ENGINE                     = CPUnknownBrowserEngine,
@@ -202,6 +203,16 @@ if (typeof document != "undefined")
         PLATFORM_FEATURES |= CPJavaScriptInnerTextFeature;
     else if (DOMElement.textContent != undefined)
         PLATFORM_FEATURES |= CPJavaScriptTextContentFeature;
+
+    var DOMInputElement = document.createElement("input");
+    if ("oninput" in DOMInputElement)
+        PLATFORM_FEATURES |= CPInputOnInputEventFeature;
+    else
+    {
+        DOMInputElement.setAttribute("oninput", "return;");
+        if (typeof DOMInputElement.oninput === "function")
+            PLATFORM_FEATURES |= CPInputOnInputEventFeature;
+    }
 }
 
 function CPFeatureIsCompatible(aFeature)
