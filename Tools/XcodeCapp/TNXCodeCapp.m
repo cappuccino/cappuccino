@@ -481,7 +481,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 
 
 /*!
- Check if .xCodeSupport needs to be initialized.
+ Check if .XcodeSupport needs to be initialized.
  If not needed, check that all J files are mirrored. If no,
  then launch conversion for missing mirrored h files
  @return YES or NO
@@ -523,7 +523,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 }
 
 /*!
- Create the .xCodeSupport/Sources folder if necessary.
+ Create the .XcodeSupport/Sources folder if necessary.
  */
 - (void)createXcodeSupportProjectSourcesDirIfNecessary
 {
@@ -535,7 +535,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 }
 
 /*!
- Initialize the creation of the .xCodeSupport project. This
+ Initialize the creation of the .XcodeSupport project. This
  Operation is threaded
  @param arguments Thread arguments (not used)
  @param shouldNotify is YES, XCCDidPopulateProjectNotification will be send
