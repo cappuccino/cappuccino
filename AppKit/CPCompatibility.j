@@ -207,7 +207,7 @@ if (typeof document != "undefined")
     var DOMInputElement = document.createElement("input");
     if ("oninput" in DOMInputElement)
         PLATFORM_FEATURES |= CPInputOnInputEventFeature;
-    else
+    else if (typeof DOMInputElement.setAttribute === "function")
     {
         DOMInputElement.setAttribute("oninput", "return;");
         if (typeof DOMInputElement.oninput === "function")
