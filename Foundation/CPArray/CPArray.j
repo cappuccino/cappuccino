@@ -872,7 +872,7 @@ var concat = Array.prototype.concat,
 {
     var index = 0,
         count = [self count],
-        description = "(";
+        description = "@[";
 
     for (; index < count; ++index)
     {
@@ -888,7 +888,7 @@ var concat = Array.prototype.concat,
             description += "\n";
     }
 
-    return description + ")";
+    return description + "]";
 }
 
 // Collecting paths
