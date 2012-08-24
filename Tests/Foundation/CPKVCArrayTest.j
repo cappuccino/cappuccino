@@ -400,7 +400,7 @@ var COUNTER;
 
 - (void)insertObject:(id)theObject inValuesAtIndex:(int)theIndex
 {
-    CPLog.warn(@"insertObject: %@ inValuesAtIndex: %@", theObject, theIndex);
+    // CPLog.warn(@"insertObject: %@ inValuesAtIndex: %@", theObject, theIndex);
 
     COUNTER += 1;
     [[self values] insertObject:theObject atIndex:theIndex];
@@ -416,7 +416,7 @@ var COUNTER;
 
 - (void)removeObjectFromValuesAtIndex:(int)theIndex
 {
-    CPLog.warn(@"removeObjectFromValuesAtIndex: %@", theIndex);
+    // CPLog.warn(@"removeObjectFromValuesAtIndex: %@", theIndex);
 
     COUNTER += 1;
     [[self values] removeObjectAtIndex:theIndex];
