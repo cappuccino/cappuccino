@@ -354,7 +354,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
             origin = _type === CPTopTabsBezelBorder ? segmentedHeight / 2 : 0;
 
         [_box setFrame:_CGRectMake(0, origin, _CGRectGetWidth(aFrame),
-                                  _CGRectGetHeight(aFrame) - segmentedHeight / 2)];
+                                   _CGRectGetHeight(aFrame) - segmentedHeight / 2)];
 
         [self addSubview:_tabs];
     }
@@ -451,10 +451,10 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 - (void)_setSelectedIndex:(CPNumber)index
 {
     _selectedIndex = index;
-    [self _setContentViewForItem:[_items objectAtIndex:_selectedIndex]];
+    [self _setContentViewFromItem:[_items objectAtIndex:_selectedIndex]];
 }
 
-- (void)_setContentViewForItem:(CPTabViewItem)anItem
+- (void)_setContentViewFromItem:(CPTabViewItem)anItem
 {
     [_box setContentView:[anItem view]];
 }
