@@ -79,11 +79,11 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 {
     _selectedIndex = CPNotFound;
 
-    _tabs = [[CPSegmentedControl alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+    _tabs = [[CPSegmentedControl alloc] initWithFrame:_CGRectMake(0, 0, 0, 0)];
     [_tabs setHitTests:NO];
 
     var height = [_tabs valueForThemeAttribute:@"default-height"];
-    [_tabs setFrameSize:CGSizeMake(0, height)];
+    [_tabs setFrameSize:_CGSizeMake(0, height)];
 
     _box = [[CPBox alloc] initWithFrame:[self  bounds]];
     [self setBackgroundColor:[CPColor colorWithCalibratedWhite:0.95 alpha:1.0]];
@@ -350,11 +350,11 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     else
     {
         var aFrame = [self frame],
-            segmentedHeight = CGRectGetHeight([_tabs frame]),
+            segmentedHeight = _CGRectGetHeight([_tabs frame]),
             origin = _type === CPTopTabsBezelBorder ? segmentedHeight / 2 : 0;
 
-        [_box setFrame:CGRectMake(0, origin, CGRectGetWidth(aFrame),
-                                  CGRectGetHeight(aFrame) - segmentedHeight / 2)];
+        [_box setFrame:_CGRectMake(0, origin, _CGRectGetWidth(aFrame),
+                                  _CGRectGetHeight(aFrame) - segmentedHeight / 2)];
 
         [self addSubview:_tabs];
     }
@@ -439,13 +439,13 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 
 - (void)_repositionTabs
 {
-    var horizontalCenterOfSelf = CGRectGetWidth([self bounds]) / 2,
-        verticalCenterOfTabs = CGRectGetHeight([_tabs bounds]) / 2;
+    var horizontalCenterOfSelf = _CGRectGetWidth([self bounds]) / 2,
+        verticalCenterOfTabs = _CGRectGetHeight([_tabs bounds]) / 2;
 
     if (_type === CPBottomTabsBezelBorder)
-        [_tabs setCenter:CGPointMake(horizontalCenterOfSelf, CGRectGetHeight([self bounds]) - verticalCenterOfTabs)];
+        [_tabs setCenter:_CGPointMake(horizontalCenterOfSelf, _CGRectGetHeight([self bounds]) - verticalCenterOfTabs)];
     else
-        [_tabs setCenter:CGPointMake(horizontalCenterOfSelf, verticalCenterOfTabs)];
+        [_tabs setCenter:_CGPointMake(horizontalCenterOfSelf, verticalCenterOfTabs)];
 }
 
 - (void)_setSelectedIndex:(CPNumber)index
@@ -471,9 +471,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     }
 
     if (_selectedIndex === CPNotFound)
-    {
         [self selectFirstTabViewItem:self];
-    }
 }
 
 @end
