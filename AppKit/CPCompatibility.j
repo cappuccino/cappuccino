@@ -74,9 +74,16 @@ CPInputSetFontOutsideOfDOM              = 1 << 28;
 CPInput1PxLeftPadding                   = 1 << 29;
 CPInputOnInputEventFeature              = 1 << 30;
 
+// When an absolutely positioned div (CPView) with an absolutely positioned canvas in it (CPView with drawRect:) moves things on top of the canvas
+// (subviews) don't redraw correctly. E.g. if you have a bunch of text fields in a CPBox in a sheet which animates in, some of the text fields might
+// not be visible because the CPBox has a canvas at the bottom and the box moved form offscreen to onscreen.
+// This bug is probably very related: https://bugs.webkit.org/show_bug.cgi?id=67203
+CPCanvasParentDrawErrorsOnMovementBug   = 1 << 0;
+
 var USER_AGENT                          = "",
     PLATFORM_ENGINE                     = CPUnknownBrowserEngine,
-    PLATFORM_FEATURES                   = 0;
+    PLATFORM_FEATURES                   = 0,
+    PLATFORM_BUGS                       = 0;
 
 // default these features to true
 
@@ -152,6 +159,10 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
 
     if (USER_AGENT.indexOf("Chrome") === CPNotFound)
         PLATFORM_FEATURES |= CPSOPDisabledFromFileURLs;
+
+    // Assume this bug was introduced around Safari 5.1/Chrome 16. This could probably be tighter.
+    if (majorVersion > 533)
+        PLATFORM_BUGS |= CPCanvasParentDrawErrorsOnMovementBug;
 }
 
 // KHTML
@@ -218,6 +229,11 @@ if (typeof document != "undefined")
 function CPFeatureIsCompatible(aFeature)
 {
     return PLATFORM_FEATURES & aFeature;
+}
+
+function CPPlatformHasBug(aBug)
+{
+    return PLATFORM_BUGS & aBug;
 }
 
 function CPBrowserIsEngine(anEngine)
