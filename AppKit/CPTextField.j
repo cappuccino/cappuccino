@@ -46,7 +46,8 @@ var CPTextFieldDOMInputElement = nil,
     CPTextFieldInputIsActive = NO,
     CPTextFieldCachedSelectStartFunction = nil,
     CPTextFieldCachedDragFunction = nil,
-    CPTextFieldBlurFunction = nil;
+    CPTextFieldBlurFunction = nil,
+    CPTextFieldInputFunction = nil;
 
 #endif
 
@@ -210,6 +211,25 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
         };
+
+        if (CPFeatureIsCompatible(CPInputOnInputEventFeature))
+        {
+            CPTextFieldInputFunction = function(anEvent)
+            {
+                if (!CPTextFieldInputOwner)
+                    return;
+
+                var cappEvent = [CPEvent keyEventWithType:CPKeyUp location:_CGPointMakeZero() modifierFlags:0
+                                                timestamp:[CPEvent currentTimestamp] windowNumber:[[CPApp keyWindow] windowNumber] context:nil
+                                               characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:nil];
+
+                [CPTextFieldInputOwner keyUp:cappEvent];
+
+                [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+            }
+
+            CPTextFieldDOMInputElement.oninput = CPTextFieldInputFunction;
+        }
 
         //FIXME make this not onblur
         CPTextFieldDOMInputElement.onblur = CPTextFieldBlurFunction;
@@ -474,13 +494,31 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [[CPTextFieldInputOwner window] makeFirstResponder:nil];
 #endif
 
+    // As long as we are the first responder we need to monitor the key status of our window.
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_windowDidResignKey:) name:CPWindowDidResignKeyNotification object:[self window]];
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_windowDidBecomeKey:) name:CPWindowDidBecomeKeyNotification object:[self window]];
+
+    _isEditing = NO;
+
+    if ([[self window] isKeyWindow])
+        [self _becomeFirstKeyResponder];
+
+    return YES;
+}
+
+/*!
+    A text field can be the first responder without necessarily being the focus of keyboard input. For example, it might be the first responder of window A but window B is the main and key window. It's important we don't put a focused input field into a text field in a non key window, even if that field is the first responder, because the key window might also have a first responder text field which the user will expect to receive keyboard input.
+
+    Since a first responder but non-key window text field can't receive input it should not even look like an active text field (Cocoa has a "slightly active" text field look it uses when another window is the key window, but Cappuccino doesn't today.)
+*/
+- (void)_becomeFirstKeyResponder
+{
     [self setThemeState:CPThemeStateEditing];
 
     [self _updatePlaceholderState];
 
     [self setNeedsLayout];
 
-    _isEditing = NO;
     _stringValue = [self stringValue];
 
 #if PLATFORM(DOM)
@@ -491,7 +529,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     element.value = _stringValue;
     element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
-    element.style.font = [font cssString];
+    if (CPFeatureIsCompatible(CPInputSetFontOutsideOfDOM))
+        element.style.font = [font cssString];
     element.style.zIndex = 1000;
 
     switch ([self alignment])
@@ -526,11 +565,21 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
 
     element.style.top = topPoint;
-    element.style.left = (_CGRectGetMinX(contentRect) - 1) + "px";  // -1 because input element seems to have 1px left inset
+    var left = _CGRectGetMinX(contentRect);
+    // If the browser has a built in left padding, compensate for it. We need the input text to be exactly on top of the original text.
+    if (CPFeatureIsCompatible(CPInput1PxLeftPadding))
+        left -= 1;
+    element.style.left = left + "px";
     element.style.width = _CGRectGetWidth(contentRect) + "px";
-    element.style.height = lineHeight + "px";
+    element.style.height = ROUND(lineHeight) + "px";
+    element.style.lineHeight = ROUND(lineHeight) + "px";
+    element.style.verticalAlign = @"top";
 
     _DOMElement.appendChild(element);
+
+    // The font change above doesn't work for some browsers if the element isn't already .appendChild'ed.
+    if (!CPFeatureIsCompatible(CPInputSetFontOutsideOfDOM))
+        element.style.font = [font cssString];
 
     window.setTimeout(function()
     {
@@ -559,14 +608,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [[self window] platformWindow]._DOMBodyElement.onselectstart = function () {};
     }
 #endif
-
-    return YES;
 }
 
 /* @ignore */
 - (BOOL)resignFirstResponder
 {
-    [self unsetThemeState:CPThemeStateEditing];
+    // When we are no longer the first responder we don't worry about the key status of our window anymore.
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidResignKeyNotification object:[self window]];
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidBecomeKeyNotification object:[self window]];
 
 #if PLATFORM(DOM)
 
@@ -583,12 +632,28 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     // even if the value has not changed.
     if ([self _valueIsValid:newValue] === NO)
     {
-        [self setThemeState:CPThemeStateEditing];
         element.focus();
         return NO;
     }
 
 #endif
+
+    [self _resignFirstKeyResponder];
+
+    _isEditing = NO;
+    [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
+
+    if ([self sendsActionOnEndEditing])
+        [self sendAction:[self action] to:[self target]];
+
+    [self textDidBlur:[CPNotification notificationWithName:CPTextFieldDidBlurNotification object:self userInfo:nil]];
+
+    return YES;
+}
+
+- (void)_resignFirstKeyResponder
+{
+    [self unsetThemeState:CPThemeStateEditing];
 
     // Cache the formatted string
     _stringValue = [self stringValue];
@@ -600,6 +665,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     [self setNeedsLayout];
 
 #if PLATFORM(DOM)
+
+    var element = [self _inputElement];
 
     CPTextFieldInputResigning = YES;
 
@@ -627,16 +694,18 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
 
 #endif
+}
 
-    _isEditing = NO;
-    [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
+- (void)_windowDidResignKey:(CPNotification)aNotification
+{
+    if (![[self window] isKeyWindow])
+        [self _resignFirstKeyResponder];
+}
 
-    if ([self sendsActionOnEndEditing])
-        [self sendAction:[self action] to:[self target]];
-
-    [self textDidBlur:[CPNotification notificationWithName:CPTextFieldDidBlurNotification object:self userInfo:nil]];
-
-    return YES;
+- (void)_windowDidBecomeKey:(CPNotification)aNotification
+{
+    if ([[self window] isKeyWindow] && [[self window] firstResponder] === self)
+        [self _becomeFirstKeyResponder];
 }
 
 - (BOOL)_valueIsValid:(CPString)aValue
@@ -1133,7 +1202,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self copy:sender];
         [self deleteBackward:sender];
     }
-    else
+    // If we don't have an oninput listener, we won't detect the change made by the cut and need to fake a key up "soon".
+    else if (!CPFeatureIsCompatible(CPInputOnInputEventFeature))
         [CPTimer scheduledTimerWithTimeInterval:0.0 target:self selector:@selector(keyUp:) userInfo:nil repeats:NO];
 }
 
@@ -1155,7 +1225,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [self setStringValue:newValue];
         [self setSelectedRange:CPMakeRange(selectedRange.location + pasteString.length, 0)];
     }
-    else
+    // If we don't have an oninput listener, we won't detect the change made by the cut and need to fake a key up "soon".
+    else if (!CPFeatureIsCompatible(CPInputOnInputEventFeature))
         [CPTimer scheduledTimerWithTimeInterval:0.0 target:self selector:@selector(keyUp:) userInfo:nil repeats:NO];
 }
 

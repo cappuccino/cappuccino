@@ -183,82 +183,415 @@
     [self assert:[CPNumber numberWithInt:2] equals:[_arrayController arrangedObjects][1]];
 }
 
-- (void)testRemoveObjectsWithoutAvoidingEmptySelection_SimpleArray
+
+
+- (void)_initTestRemoveObjects_SimpleArray
 {
-    [self initControllerWithSimpleArray];
-    [self _testRemoveObjectsWithoutAvoidingEmptySelection];
+    var array = [[CPMutableDictionary dictionaryWithObject:0 forKey:@"number"],
+                    [CPMutableDictionary dictionaryWithObject:1 forKey:@"number"],
+                    [CPMutableDictionary dictionaryWithObject:2 forKey:@"number"],
+                    [CPMutableDictionary dictionaryWithObject:3 forKey:@"number"],
+                    [CPMutableDictionary dictionaryWithObject:4 forKey:@"number"],
+                    [CPMutableDictionary dictionaryWithObject:5 forKey:@"number"],
+                    [CPMutableDictionary dictionaryWithObject:6 forKey:@"number"],
+                    [CPMutableDictionary dictionaryWithObject:7 forKey:@"number"],
+                    [CPMutableDictionary dictionaryWithObject:8 forKey:@"number"],
+                    [CPMutableDictionary dictionaryWithObject:9 forKey:@"number"]];
+    _arrayController = [[CPArrayController alloc] initWithContent:[array mutableCopy]];
 }
 
-- (void)testRemoveObjectsWithoutAvoidingEmptySelection_ContentBinding
+- (void)_initTestRemoveObjects_ContentBinding
 {
-    [self initControllerWithContentBinding];
-    [self _testRemoveObjectsWithoutAvoidingEmptySelection];
+    _contentArray = [[CPMutableDictionary dictionaryWithObject:0 forKey:@"number"],
+                        [CPMutableDictionary dictionaryWithObject:1 forKey:@"number"],
+                        [CPMutableDictionary dictionaryWithObject:2 forKey:@"number"],
+                        [CPMutableDictionary dictionaryWithObject:3 forKey:@"number"],
+                        [CPMutableDictionary dictionaryWithObject:4 forKey:@"number"],
+                        [CPMutableDictionary dictionaryWithObject:5 forKey:@"number"],
+                        [CPMutableDictionary dictionaryWithObject:6 forKey:@"number"],
+                        [CPMutableDictionary dictionaryWithObject:7 forKey:@"number"],
+                        [CPMutableDictionary dictionaryWithObject:8 forKey:@"number"],
+                        [CPMutableDictionary dictionaryWithObject:9 forKey:@"number"]];
+    _arrayController = [CPArrayController new];
+    [_arrayController bind:@"contentArray" toObject:self withKeyPath:@"itemsArray" options:nil];
 }
 
-- (void)_testRemoveObjectsWithoutAvoidingEmptySelection
+- (void)testRemoveObjects_OneSelectedObject_SimpleArray
 {
-    var arrayController = [self arrayController];
-    [arrayController setAvoidsEmptySelection:NO];
-    [arrayController setPreservesSelection:NO];
-
-    [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(1, 2)]];
-    [arrayController removeObjects:[arrayController selectedObjects]];
-
-    [self assert:[CPIndexSet indexSet] equals:[arrayController selectionIndexes]
-         message:@"selection should be empty if arraycontroller doesn't avoid empty selection"];
+    [self _initTestRemoveObjects_SimpleArray];
+    [self _testRemoveObjects_OneSelectedObject];
 }
 
-- (void)testRemoveObjectWithAvoidingEmptySelection
+- (void)testRemoveObjects_OneSelectedObject_ContentBinding
 {
-    var arrayController = [self arrayController];
-    [arrayController setAvoidsEmptySelection:YES];
-
-    [arrayController setSelectionIndex:2];
-    [arrayController removeObjectsAtArrangedObjectIndexes:[CPIndexSet indexSetWithIndex:2]];
-
-    [self assertTrue:([[arrayController selectionIndexes] count] > 0) message:@"Selection should not empty when arraycontroller avoids empty selection"];
-
-    [arrayController setContent:[self contentArray]];
-    [arrayController setSelectionIndex:2];
-    [arrayController removeObjects:[arrayController selectedObjects]];
-
-    [self assertTrue:([[arrayController selectionIndexes] count] > 0) message:@"Selection should not empty when arraycontroller avoids empty selection"];
-
-// This will fail, currently we select the first index instead of an adjacent index.
-//  [self assertTrue:([arrayController selectionIndex] == 1) message:@"The selected index should be 1, was " + [arrayController selectionIndex]];
+    [self _initTestRemoveObjects_ContentBinding];
+    [self _testRemoveObjects_OneSelectedObject];
 }
 
-- (void)testRemoveObjectsWithPreservesSelection_SimpleArray
+- (void)_testRemoveObjects_OneSelectedObject
 {
-    [self initControllerWithSimpleArray];
-    [self _testRemoveObjectsWithPreservesSelection];
+    [_arrayController setAvoidsEmptySelection:NO];
+    [_arrayController setPreservesSelection:NO];
+    [_arrayController setSelectionIndex:5];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:4];
+    [self assertTrue:[_arrayController selectionIndex] === 4];
+    [self assertTrue:[[[_arrayController selectedObjects] lastObject] objectForKey:@"number"] === 5];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:5];
+    [self assertTrue:[_arrayController selectionIndex] === 4];
+    [self assertTrue:[[[_arrayController selectedObjects] lastObject] objectForKey:@"number"] === 5];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:4];
+    [self assertTrue:[_arrayController selectionIndex] === CPNotFound];
 }
 
-- (void)testRemoveObjectsWithPreservesSelection_ContentBinding
+- (void)testRemoveObjects_OneSelectedObject_AvoidingEmptySelection_SimpleArray
 {
-    [self initControllerWithContentBinding];
-    [self _testRemoveObjectsWithPreservesSelection];
+    [self _initTestRemoveObjects_SimpleArray];
+    [self _testRemoveObjects_OneSelectedObject_AvoidingEmptySelection];
 }
 
-- (void)_testRemoveObjectsWithPreservesSelection
+- (void)testRemoveObjects_OneSelectedObject_AvoidingEmptySelection_ContentBinding
 {
-    var arrayController = [self arrayController];
-    [arrayController setPreservesSelection:YES];
+    [self _initTestRemoveObjects_ContentBinding];
+    [self _testRemoveObjects_OneSelectedObject_AvoidingEmptySelection];
+}
 
-    // Remove from middle
-    var selectionIndexes = [CPIndexSet indexSetWithIndex:1];
-    [arrayController setSelectionIndexes:selectionIndexes];
-    [arrayController removeObjects:[arrayController selectedObjects]];
-    [self assert:selectionIndexes equals:[arrayController selectionIndexes] message:@"selection should stay the same"];
+- (void)_testRemoveObjects_OneSelectedObject_AvoidingEmptySelection
+{
+    [_arrayController setAvoidsEmptySelection:YES];
+    [_arrayController setPreservesSelection:NO];
+    [_arrayController setSelectionIndex:5];
 
-    // Remove from end
-    [arrayController removeObjects:[[[arrayController content] objectAtIndex:1]]];
-    [self assert:[CPIndexSet indexSetWithIndex:0] equals:[arrayController selectionIndexes]
-         message:@"last object removed; selection should shift to first available index"];
+    [_arrayController removeObjectAtArrangedObjectIndex:4];
+    [self assertTrue:[_arrayController selectionIndex] === 4];
+    [self assertTrue:[[[_arrayController selectedObjects] lastObject] objectForKey:@"number"] === 5];
 
-    // Remove from all
-    [arrayController removeObjects:[[[arrayController content] objectAtIndex:0]]];
-    [self assert:[CPIndexSet indexSet] equals:[arrayController selectionIndexes] message:@"no objects left, selection should disappear"];
+    [_arrayController removeObjectAtArrangedObjectIndex:5];
+    [self assertTrue:[_arrayController selectionIndex] === 4];
+    [self assertTrue:[[[_arrayController selectedObjects] lastObject] objectForKey:@"number"] === 5];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:4];
+    [self assertTrue:[_arrayController selectionIndex] === 4 message:"" + [_arrayController selectionIndex]];
+    [self assertTrue:[[[_arrayController selectedObjects] lastObject] objectForKey:@"number"] === 7];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:4];
+    [_arrayController removeObjectAtArrangedObjectIndex:4];
+    [_arrayController removeObjectAtArrangedObjectIndex:4];
+    [self assertTrue:[_arrayController selectionIndex] === 3];
+    [self assertTrue:[[[_arrayController selectedObjects] lastObject] objectForKey:@"number"] === 3];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:0];
+    [_arrayController removeObjectAtArrangedObjectIndex:0];
+    [_arrayController removeObjectAtArrangedObjectIndex:0];
+    [self assertTrue:[_arrayController selectionIndex] === 0];
+    [self assertTrue:[[[_arrayController selectedObjects] lastObject] objectForKey:@"number"] === 3];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:0];
+    [self assertTrue:[_arrayController selectionIndex] === CPNotFound];
+}
+
+- (void)testRemoveObjects_OneSelectedObject_PreservesSelection_SimpleArray
+{
+    [self _initTestRemoveObjects_SimpleArray];
+    [self _testRemoveObjects_OneSelectedObject_PreservesSelection];
+}
+
+- (void)testRemoveObjects_OneSelectedObject_PreservesSelection_ContentBinding
+{
+    [self _initTestRemoveObjects_ContentBinding];
+    [self _testRemoveObjects_OneSelectedObject_PreservesSelection];
+}
+
+- (void)_testRemoveObjects_OneSelectedObject_PreservesSelection
+{
+    [_arrayController setAvoidsEmptySelection:NO];
+    [_arrayController setPreservesSelection:YES];
+    [_arrayController setSelectionIndex:5];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:4];
+    [self assertTrue:[_arrayController selectionIndex] === 4];
+    [self assertTrue:[[[_arrayController selectedObjects] lastObject] objectForKey:@"number"] === 5];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:5];
+    [self assertTrue:[_arrayController selectionIndex] === 4];
+    [self assertTrue:[[[_arrayController selectedObjects] lastObject] objectForKey:@"number"] === 5];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:4];
+    [self assertTrue:[_arrayController selectionIndex] === CPNotFound];
+}
+
+- (void)testRemoveObjects_OneSelectedObject_AvoidingEmptySelection_PreservesSelection_SimpleArray
+{
+    [self _initTestRemoveObjects_SimpleArray];
+    [self _testRemoveObjects_OneSelectedObject_AvoidingEmptySelection_PreservesSelection];
+}
+
+- (void)testRemoveObjects_OneSelectedObject_AvoidingEmptySelection_PreservesSelection_ContentBinding
+{
+    [self _initTestRemoveObjects_ContentBinding];
+    [self _testRemoveObjects_OneSelectedObject_AvoidingEmptySelection_PreservesSelection];
+}
+
+- (void)_testRemoveObjects_OneSelectedObject_AvoidingEmptySelection_PreservesSelection
+{
+    [_arrayController setAvoidsEmptySelection:YES];
+    [_arrayController setPreservesSelection:YES];
+    [_arrayController setSelectionIndex:5];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:4];
+    [self assertTrue:[_arrayController selectionIndex] === 4];
+    [self assertTrue:[[[_arrayController selectedObjects] lastObject] objectForKey:@"number"] === 5];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:5];
+    [self assertTrue:[_arrayController selectionIndex] === 4];
+    [self assertTrue:[[[_arrayController selectedObjects] lastObject] objectForKey:@"number"] === 5];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:4];
+    [self assertTrue:[_arrayController selectionIndex] === 4 message:"" + [_arrayController selectionIndex]];
+    [self assertTrue:[[[_arrayController selectedObjects] lastObject] objectForKey:@"number"] === 7];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:4];
+    [_arrayController removeObjectAtArrangedObjectIndex:4];
+    [_arrayController removeObjectAtArrangedObjectIndex:4];
+    [self assertTrue:[_arrayController selectionIndex] === 3];
+    [self assertTrue:[[[_arrayController selectedObjects] lastObject] objectForKey:@"number"] === 3];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:0];
+    [_arrayController removeObjectAtArrangedObjectIndex:0];
+    [_arrayController removeObjectAtArrangedObjectIndex:0];
+    [self assertTrue:[_arrayController selectionIndex] === 0];
+    [self assertTrue:[[[_arrayController selectedObjects] lastObject] objectForKey:@"number"] === 3];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:0];
+    [self assertTrue:[_arrayController selectionIndex] === CPNotFound];
+}
+
+- (void)testRemoveObjects_MultipleSelectedObjects_SimpleArray
+{
+    [self _initTestRemoveObjects_SimpleArray];
+    [self _testRemoveObjects_MultipleSelectedObjects];
+}
+
+- (void)testRemoveObjects_MultipleSelectedObjects_ContentBinding
+{
+    [self _initTestRemoveObjects_ContentBinding];
+    [self _testRemoveObjects_MultipleSelectedObjects];
+}
+
+- (void)_testRemoveObjects_MultipleSelectedObjects
+{
+    [_arrayController setAvoidsEmptySelection:NO];
+    [_arrayController setPreservesSelection:NO];
+    var indexes = [CPMutableIndexSet indexSet];
+    [indexes addIndex:2];
+    [indexes addIndex:4];
+    [indexes addIndex:6];
+    [indexes addIndex:8];
+    [_arrayController setSelectionIndexes:indexes];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:0];
+    var indexes1 = [CPMutableIndexSet indexSet];
+    [indexes1 addIndex:1];
+    [indexes1 addIndex:3];
+    [indexes1 addIndex:5];
+    [indexes1 addIndex:7];
+    [self assert:indexes1 equals:[_arrayController selectionIndexes]];
+    [self assert:[2, 4, 6, 8] equals:[[_arrayController selectedObjects] valueForKey:@"number"]];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:1];
+    indexes1 = [CPMutableIndexSet indexSet];
+    [indexes1 addIndex:2];
+    [indexes1 addIndex:4];
+    [indexes1 addIndex:6];
+    [self assert:indexes1 equals:[_arrayController selectionIndexes]];
+    [self assert:[4, 6, 8] equals:[[_arrayController selectedObjects] valueForKey:@"number"]];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:3];
+    indexes1 = [CPMutableIndexSet indexSet];
+    [indexes1 addIndex:2];
+    [indexes1 addIndex:3];
+    [indexes1 addIndex:5];
+    [self assert:indexes1 equals:[_arrayController selectionIndexes]];
+    [self assert:[4, 6, 8] equals:[[_arrayController selectedObjects] valueForKey:@"number"]];
+
+    var indexes2 = [CPMutableIndexSet indexSet];
+    [indexes2 addIndex:2];
+    [indexes2 addIndex:3];
+    [indexes2 addIndex:5];
+    [_arrayController removeObjectsAtArrangedObjectIndexes:indexes2];
+    [self assertTrue:[[_arrayController selectionIndexes] lastIndex] === CPNotFound];
+}
+
+- (void)testRemoveObjects_MultipleSelectedObjects_AvoidingEmptySelection_SimpleArray
+{
+    [self _initTestRemoveObjects_SimpleArray];
+    [self _testRemoveObjects_MultipleSelectedObjects_AvoidingEmptySelection];
+}/
+
+- (void)testRemoveObjects_MultipleSelectedObjects_AvoidingEmptySelection_ContentBinding
+{
+    [self _initTestRemoveObjects_ContentBinding];
+    [self _testRemoveObjects_MultipleSelectedObjects_AvoidingEmptySelection];
+}
+
+- (void)_testRemoveObjects_MultipleSelectedObjects_AvoidingEmptySelection
+{
+    [_arrayController setAvoidsEmptySelection:YES];
+    [_arrayController setPreservesSelection:NO];
+    var indexes = [CPMutableIndexSet indexSet];
+    [indexes addIndex:2];
+    [indexes addIndex:4];
+    [indexes addIndex:6];
+    [indexes addIndex:8];
+    [_arrayController setSelectionIndexes:indexes];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:0];
+    var indexes1 = [CPMutableIndexSet indexSet];
+    [indexes1 addIndex:1];
+    [indexes1 addIndex:3];
+    [indexes1 addIndex:5];
+    [indexes1 addIndex:7];
+    [self assert:indexes1 equals:[_arrayController selectionIndexes]];
+    [self assert:[2, 4, 6, 8] equals:[[_arrayController selectedObjects] valueForKey:@"number"]];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:1];
+    indexes1 = [CPMutableIndexSet indexSet];
+    [indexes1 addIndex:2];
+    [indexes1 addIndex:4];
+    [indexes1 addIndex:6];
+    [self assert:indexes1 equals:[_arrayController selectionIndexes]];
+    [self assert:[4, 6, 8] equals:[[_arrayController selectedObjects] valueForKey:@"number"]];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:3];
+    indexes1 = [CPMutableIndexSet indexSet];
+    [indexes1 addIndex:2];
+    [indexes1 addIndex:3];
+    [indexes1 addIndex:5];
+    [self assert:indexes1 equals:[_arrayController selectionIndexes]];
+    [self assert:[4, 6, 8] equals:[[_arrayController selectedObjects] valueForKey:@"number"]];
+
+    var indexes2 = [CPMutableIndexSet indexSet];
+    [indexes2 addIndex:2];
+    [indexes2 addIndex:3];
+    [indexes2 addIndex:5];
+    [_arrayController removeObjectsAtArrangedObjectIndexes:indexes2];
+    [self assertTrue:[[_arrayController selectionIndexes] lastIndex] === 2];
+    [self assert:[7] equals:[[_arrayController selectedObjects] valueForKey:@"number"]];
+}
+
+- (void)testRemoveObjects_MultipleSelectedObjects_PreservesSelection_SimpleArray
+{
+    [self _initTestRemoveObjects_SimpleArray];
+    [self _testRemoveObjects_MultipleSelectedObjects_PreservesSelection];
+}
+
+- (void)testRemoveObjects_MultipleSelectedObjects_PreservesSelection_ContentBinding
+{
+    [self _initTestRemoveObjects_ContentBinding];
+    [self _testRemoveObjects_MultipleSelectedObjects_PreservesSelection];
+}
+
+- (void)_testRemoveObjects_MultipleSelectedObjects_PreservesSelection
+{
+    [_arrayController setAvoidsEmptySelection:NO];
+    [_arrayController setPreservesSelection:YES];
+    var indexes = [CPMutableIndexSet indexSet];
+    [indexes addIndex:2];
+    [indexes addIndex:4];
+    [indexes addIndex:6];
+    [indexes addIndex:8];
+    [_arrayController setSelectionIndexes:indexes];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:0];
+    var indexes1 = [CPMutableIndexSet indexSet];
+    [indexes1 addIndex:1];
+    [indexes1 addIndex:3];
+    [indexes1 addIndex:5];
+    [indexes1 addIndex:7];
+    [self assert:indexes1 equals:[_arrayController selectionIndexes]];
+    [self assert:[2, 4, 6, 8] equals:[[_arrayController selectedObjects] valueForKey:@"number"]];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:1];
+    indexes1 = [CPMutableIndexSet indexSet];
+    [indexes1 addIndex:2];
+    [indexes1 addIndex:4];
+    [indexes1 addIndex:6];
+    [self assert:indexes1 equals:[_arrayController selectionIndexes]];
+    [self assert:[4, 6, 8] equals:[[_arrayController selectedObjects] valueForKey:@"number"]];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:3];
+    indexes1 = [CPMutableIndexSet indexSet];
+    [indexes1 addIndex:2];
+    [indexes1 addIndex:3];
+    [indexes1 addIndex:5];
+    [self assert:indexes1 equals:[_arrayController selectionIndexes]];
+    [self assert:[4, 6, 8] equals:[[_arrayController selectedObjects] valueForKey:@"number"]];
+
+    var indexes2 = [CPMutableIndexSet indexSet];
+    [indexes2 addIndex:2];
+    [indexes2 addIndex:3];
+    [indexes2 addIndex:5];
+    [_arrayController removeObjectsAtArrangedObjectIndexes:indexes2];
+    [self assertTrue:[[_arrayController selectionIndexes] lastIndex] === CPNotFound];
+}
+
+- (void)testRemoveObjects_MultipleSelectedObjects_AvoidingEmptySelection_PreservesSelection_SimpleArray
+{
+    [self _initTestRemoveObjects_SimpleArray];
+    [self _testRemoveObjects_MultipleSelectedObjects_AvoidingEmptySelection_PreservesSelection];
+}
+
+- (void)testRemoveObjects_MultipleSelectedObjects_AvoidingEmptySelection_PreservesSelection_ContentBinding
+{
+    [self _initTestRemoveObjects_ContentBinding];
+    [self _testRemoveObjects_MultipleSelectedObjects_AvoidingEmptySelection_PreservesSelection];
+}
+
+- (void)_testRemoveObjects_MultipleSelectedObjects_AvoidingEmptySelection_PreservesSelection
+{
+    [_arrayController setAvoidsEmptySelection:YES];
+    [_arrayController setPreservesSelection:YES];
+    var indexes = [CPMutableIndexSet indexSet];
+    [indexes addIndex:2];
+    [indexes addIndex:4];
+    [indexes addIndex:6];
+    [indexes addIndex:8];
+    [_arrayController setSelectionIndexes:indexes];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:0];
+    var indexes1 = [CPMutableIndexSet indexSet];
+    [indexes1 addIndex:1];
+    [indexes1 addIndex:3];
+    [indexes1 addIndex:5];
+    [indexes1 addIndex:7];
+    [self assert:indexes1 equals:[_arrayController selectionIndexes]];
+    [self assert:[2, 4, 6, 8] equals:[[_arrayController selectedObjects] valueForKey:@"number"]];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:1];
+    indexes1 = [CPMutableIndexSet indexSet];
+    [indexes1 addIndex:2];
+    [indexes1 addIndex:4];
+    [indexes1 addIndex:6];
+    [self assert:indexes1 equals:[_arrayController selectionIndexes]];
+    [self assert:[4, 6, 8] equals:[[_arrayController selectedObjects] valueForKey:@"number"]];
+
+    [_arrayController removeObjectAtArrangedObjectIndex:3];
+    indexes1 = [CPMutableIndexSet indexSet];
+    [indexes1 addIndex:2];
+    [indexes1 addIndex:3];
+    [indexes1 addIndex:5];
+    [self assert:indexes1 equals:[_arrayController selectionIndexes]];
+    [self assert:[4, 6, 8] equals:[[_arrayController selectedObjects] valueForKey:@"number"]];
+
+    var indexes2 = [CPMutableIndexSet indexSet];
+    [indexes2 addIndex:2];
+    [indexes2 addIndex:3];
+    [indexes2 addIndex:5];
+    [_arrayController removeObjectsAtArrangedObjectIndexes:indexes2];
+    [self assertTrue:[[_arrayController selectionIndexes] lastIndex] === 2];
+    [self assert:[7] equals:[[_arrayController selectedObjects] valueForKey:@"number"]];
 }
 
 - (void)testRemoveObjectsWithoutSelection

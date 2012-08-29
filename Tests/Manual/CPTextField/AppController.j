@@ -52,6 +52,37 @@
     [contentView addSubview:shadowLabel];
     [contentView addSubview:championOfLightLabel];
 
+    var jumpLabel = [CPTextField labelWithTitle:@"The text of these text fields should not move ('jump') when a field becomes the first responder. Labels on the right should replicate the input."];
+
+    [jumpLabel sizeToFit];
+    [jumpLabel setFrameOrigin:CGPointMake(15, 150)];
+    [contentView addSubview:jumpLabel];
+
+    var y = CGRectGetMaxY([jumpLabel frame]) + 10;
+
+    for (var i = 0; i < 5; i++)
+    {
+        var size = 10 + 3 * i,
+            textField = [CPTextField textFieldWithStringValue:@"Size " + size placeholder:@"Size " + size width:200],
+            echoField = [CPTextField labelWithTitle:""];
+
+        [textField setFont:[CPFont systemFontOfSize:size]];
+        [textField sizeToFit];
+        [textField setFrameOrigin:CGPointMake(15, y)];
+        textField.echoField = echoField;
+        [contentView addSubview:textField];
+
+        [echoField setFont:[CPFont systemFontOfSize:size]];
+        [echoField setStringValue:[textField stringValue]];
+        [echoField sizeToFit];
+        [echoField setFrameOrigin:CGPointMake(CGRectGetMaxX([textField frame]) + 15, CGRectGetMidY([textField frame]) - CGRectGetHeight([echoField frame]) / 2.0)];
+        [contentView addSubview:echoField];
+
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(textDidChange:) name:CPControlTextDidChangeNotification object:textField];
+
+        y = CGRectGetMaxY([textField frame]) + 6;
+    }
+
     [theWindow orderFront:self];
 
     aWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(150, 300, 400, 150) styleMask:CPTitledWindowMask | CPClosableWindowMask | CPDocModalWindowMask];
@@ -81,11 +112,20 @@
 - (void)modalAction:(id)sender
 {
     [CPApp endSheet:aWindow returnCode:0];
+    [aWindow orderOut:sender];
 }
 
 - (void)textAction:(id)sender
 {
     [sender setEditable:NO];
+}
+
+- (void)textDidChange:(CPNotification)aNotification
+{
+    var changedField = [aNotification object];
+
+    [changedField.echoField setStringValue:[changedField stringValue]];
+    [changedField.echoField sizeToFit];
 }
 
 @end

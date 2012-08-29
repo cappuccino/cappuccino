@@ -633,7 +633,7 @@
 */
 - (CPString)description
 {
-    var string = "{\n\t",
+    var string = "@{\n",
         keys = _keys,
         index = 0,
         count = _count;
@@ -643,7 +643,7 @@
         var key = keys[index],
             value = valueForKey(key);
 
-        string += key + " = \"" + CPDescriptionOfObject(value).split('\n').join("\n\t") + "\"\n\t";
+        string += "\t" + key + ": " + CPDescriptionOfObject(value).split('\n').join("\n\t") + ",\n";
     }
 
     return string + "}";

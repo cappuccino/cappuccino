@@ -41,6 +41,8 @@ var _CPWindowViewResizeIndicatorImage = nil;
     CGPoint     _mouseDraggedPoint;
 
     CGRect      _cachedScreenFrame;
+
+    CPView      _sheetShadowView;
 }
 
 + (void)initialize
@@ -59,6 +61,17 @@ var _CPWindowViewResizeIndicatorImage = nil;
 + (CGRect)frameRectForContentRect:(CGRect)aContentRect
 {
     return CGRectMakeCopy(aContentRect);
+}
+
++ (CPString)defaultThemeClass
+{
+    return "window";
+}
+
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[[CPColor blackColor], [CPFont systemFontOfSize:CPFontCurrentSystemSize], [CPNull null], _CGSizeMakeZero(), CPCenterTextAlignment, CPLineBreakByTruncatingTail, CPTopVerticalTextAlignment]
+                                       forKeys:[@"title-text-color", @"title-font", @"title-text-shadow-color", @"title-text-shadow-offset", @"title-alignment", @"title-line-break-mode", @"title-vertical-alignment"]];
 }
 
 - (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
@@ -195,13 +208,23 @@ var _CPWindowViewResizeIndicatorImage = nil;
             location = [theWindow convertBaseToGlobal:[anEvent locationInWindow]],
             origin = [self _pointWithinScreenFrame:CGPointMake(_CGRectGetMinX(frame) + (location.x - _mouseDraggedPoint.x),
                                                                _CGRectGetMinY(frame) + (location.y - _mouseDraggedPoint.y))];
-
         [theWindow setFrameOrigin:origin];
 
         _mouseDraggedPoint = [self _pointWithinScreenFrame:location];
     }
 
     [CPApp setTarget:self selector:@selector(trackMoveWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
+}
+
+- (void)setFrameSize:(CGSize)newSize
+{
+    [super setFrameSize:newSize];
+
+    // reposition sheet if the parent window resizes or moves
+    var theWindow = [self window];
+
+    if ([theWindow attachedSheet])
+        [theWindow _setAttachedSheetFrameOrigin];
 }
 
 - (void)setShowsResizeIndicator:(BOOL)shouldShowResizeIndicator
@@ -347,6 +370,23 @@ var _CPWindowViewResizeIndicatorImage = nil;
 
     [self tile];
 }
+
+- (void)noteKeyWindowStateChanged
+{
+    if ([[self window] isKeyWindow])
+        [self setThemeState:CPThemeStateKeyWindow];
+    else
+        [self unsetThemeState:CPThemeStateKeyWindow];
+}
+
+- (void)noteMainWindowStateChanged
+{
+    if ([[self window] isMainWindow])
+        [self setThemeState:CPThemeStateMainWindow];
+    else
+        [self unsetThemeState:CPThemeStateMainWindow];
+}
+
 /*
 - (void)setAnimatingToolbar:(BOOL)isAnimatingToolbar
 {
@@ -365,6 +405,23 @@ var _CPWindowViewResizeIndicatorImage = nil;
         return;
 
     [self addSubview:_resizeIndicator];
+}
+
+- (void)_enableSheet:(BOOL)enable
+{
+    if (enable)
+    {
+        var bundle = [CPBundle bundleForClass:[CPWindow class]];
+        _sheetShadowView = [[CPView alloc] initWithFrame:_CGRectMake(0, 0, _CGRectGetWidth([self bounds]), 8)];
+        [_sheetShadowView setAutoresizingMask:CPViewWidthSizable];
+        [_sheetShadowView setBackgroundColor:[CPColor colorWithPatternImage:[[CPImage alloc]
+            initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowAttachedSheetShadow.png"] size:_CGSizeMake(9, 8)]]];
+        [self addSubview:_sheetShadowView];
+    }
+    else
+    {
+        [_sheetShadowView removeFromSuperview];
+    }
 }
 
 @end

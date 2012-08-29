@@ -109,8 +109,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 */
 - (id)initWithContentRect:(CGRect)aFrame
 {
-    self = [self initWithContentRect:aFrame styleMask:0];
-    return self;
+    return [self initWithContentRect:aFrame styleMask:0];
 }
 
 /*!
@@ -196,7 +195,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 
 - (CGPoint)computeOriginFromRect:(CGRect)aRect ofView:(CPView)positioningView preferredEdge:(int)anEdge
 {
-    var mainWindow      = [CPApp mainWindow],
+    var mainWindow      = [positioningView window],
         platformWindow  = [mainWindow platformWindow],
         nativeRect      = [platformWindow nativeContentRect],
         baseOrigin      = [positioningView convertPointToBase:aRect.origin],

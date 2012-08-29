@@ -32,7 +32,7 @@
 
     [control setFormatter:numberFormatter];
     [control setStringValue:@"12.3456"];
-    [self assert:[CPNumber class] equals:[[control objectValue] class] message:@"object should be a number"];
+    [self assertTrue:[[control objectValue] isKindOfClass:CPNumber] message:@"object should be a number"];
     // Note that the control stores the value with a different precision than the maximum fraction
     // digits of the number formatter. It's a little surprising but this makes the implementation easier
     // and Cocoa does it too.

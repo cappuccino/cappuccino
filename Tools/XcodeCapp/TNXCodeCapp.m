@@ -318,6 +318,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     DLog(@"Parsing modified file: %@", fullPath);
 
     NSArray *arguments = nil;
+    NSArray *PBXArguments = nil;
     NSString *successTitle = nil;
     NSString *successMsg = nil;
     NSString *response = nil;
@@ -331,13 +332,31 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 
     if ([self isXIBFile:fullPath])
     {
-        arguments = [NSArray arrayWithObjects: @"-c", [NSString stringWithFormat:@"(%@; nib2cib '%@';) 2>&1", profilePath, fullPath],@"",nil];
+        arguments = [NSArray arrayWithObjects: @"-c",
+                        [NSString stringWithFormat:@"(%@; nib2cib '%@';) 2>&1", profilePath, fullPath],@"",nil];
+
         successTitle = @"XIB converted";
         successMsg = splitPath;
     }
     else if ([self isObjJFile:fullPath])
     {
-        arguments = [NSArray arrayWithObjects: @"-c", [NSString stringWithFormat:@"(%@; objj '%@' '%@' '%@';) 2>&1", profilePath, parserPath, fullPath, shadowPath],@"",nil];
+        arguments = [NSArray arrayWithObjects: @"-c",
+                     [NSString stringWithFormat:@"(%@; objj '%@' '%@' '%@';) 2>&1",
+                        profilePath,
+                        parserPath,
+                        fullPath,
+                        shadowPath],
+                        @"",nil];
+
+        PBXArguments = [NSArray arrayWithObjects: @"-c",
+                        [NSString stringWithFormat:@"(%@; python %@ add '%@' '%@' '%@' '%@') 2>&1",
+                         profilePath,
+                         PBXModifierScriptPath,
+                         XCodeSupportPBXPath,
+                         shadowPath,
+                         fullPath,
+                         [currentProjectURL path]],nil];
+
         successTitle = @"Objective-J source processed";
         successMsg = splitPath;
     }
@@ -352,13 +371,22 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     // Run the task and get the response if needed
     if (arguments)
     {
-        DLog(@"Running task...");
+        DLog(@"Running conversion task...");
         NSArray *statusInfo = [self runTask:arguments];
         
         status = [statusInfo objectAtIndex:0];
         response = [statusInfo objectAtIndex:1];
         
-        DLog(@"Task result/response: %@/%@", status, response);
+        DLog(@"Conversion task result/response: %@/%@", status, response);
+    }
+
+    if (PBXArguments)
+    {
+        DLog(@"Running update PBX task...");
+        NSArray *statusInfo = [self runTask:PBXArguments];
+        status = [statusInfo objectAtIndex:0];
+        response = [statusInfo objectAtIndex:1];
+        DLog(@"Update PBX Task result/response: %@/%@", status, response);
     }
 
     if ([status intValue] == 0 && shouldNotify)
@@ -392,8 +420,26 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     if ([self isObjJFile:fullPath])
     {
         NSString *shadowPath = [[self shadowURLForSourceURL:[NSURL URLWithString:[fullPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]] path];
-        [fm removeItemAtPath:shadowPath error:nil];
+
         DLog(@"Removing shadow file: %@", shadowPath);
+        [fm removeItemAtPath:shadowPath error:nil];
+
+        DLog(@"Removing PBX reference task...");
+        
+#if DEBUG
+        NSArray *PBXArguments = [NSArray arrayWithObjects: @"-c",
+                                 [NSString stringWithFormat:@"(%@; python %@ remove '%@' '%@' '%@' '%@') 2>&1",
+                                  profilePath,
+                                  PBXModifierScriptPath,
+                                  XCodeSupportPBXPath,
+                                  shadowPath,
+                                  fullPath,
+                                  [currentProjectURL path]],nil];
+        NSArray *statusInfo = [self runTask:PBXArguments];
+        NSNumber *status = [statusInfo objectAtIndex:0];
+        NSString *response = [statusInfo objectAtIndex:1];
+#endif
+        DLog(@"PBX Reference removal status/response: %@/%@", status, response);
     }
     else if ([self isXCCIgnoreFile:fullPath])
     {
@@ -435,7 +481,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 
 
 /*!
- Check if .xCodeSupport needs to be initialized.
+ Check if .XcodeSupport needs to be initialized.
  If not needed, check that all J files are mirrored. If no,
  then launch conversion for missing mirrored h files
  @return YES or NO
@@ -444,15 +490,17 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 {
     XCodeSupportProjectName    = [NSString stringWithFormat:@"%@.xcodeproj/", currentProjectName];
     XCodeTemplatePBXPath       = [[NSBundle mainBundle] pathForResource:@"project.pbxproj" ofType:@"sample"];
-    XCodeSupportFolder         = [NSURL URLWithString:@".xCodeSupport/" relativeToURL:currentProjectURL];
-    XCodeSupportProject        = [NSURL URLWithString:XCodeSupportProjectName relativeToURL:XCodeSupportFolder];
-    XCodeSupportProjectSources = [NSURL URLWithString:@"Sources/" relativeToURL:XCodeSupportFolder];
+    XCodeSupportProject        = [NSURL URLWithString:XCodeSupportProjectName relativeToURL:currentProjectURL];
+    XCodeSupportProjectSources = [NSURL URLWithString:@".XcodeSupport/" relativeToURL:currentProjectURL];
     XCodeSupportPBXPath        = [NSString stringWithFormat:@"%@/project.pbxproj", [XCodeSupportProject path]];
+    PBXModifierScriptPath      = [[NSBundle mainBundle] pathForResource:@"pbxprojModifier" ofType:@"py"];
+
     
-    //[fm removeItemAtURL:XCodeSupportFolder error:nil];
+    //[fm removeItemAtURL:XCodeSupportProjectSources error:nil];
+    //[fm removeItemAtURL:XCodeSupportProject error:nil];
     
     // create the template project if it doesn't exist
-    if (![fm fileExistsAtPath:[XCodeSupportFolder path]])
+    if (![fm fileExistsAtPath:[XCodeSupportProjectSources path]])
     {
         NSLog(@"Xcode support folder created at: %@", [XCodeSupportProject path]);
         [fm createDirectoryAtPath:[XCodeSupportProject path] withIntermediateDirectories:YES attributes:nil error:nil];
@@ -462,14 +510,6 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         
         DLog(@"Reading the content of the project.pbxproj");
         NSMutableString *PBXContent = [NSMutableString stringWithContentsOfFile:XCodeSupportPBXPath encoding:NSUTF8StringEncoding error:nil];
-        [PBXContent replaceOccurrencesOfString:@"${CappuccinoProjectName}"
-                                    withString:currentProjectName
-                                       options:NSCaseInsensitiveSearch
-                                         range:NSMakeRange(0, [PBXContent length])];
-        [PBXContent replaceOccurrencesOfString:@"${CappuccinoProjectRelativePath}"
-                                    withString:@".."
-                                       options:NSCaseInsensitiveSearch
-                                         range:NSMakeRange(0, [PBXContent length])];
         
         [PBXContent writeToFile:XCodeSupportPBXPath atomically:YES encoding:NSUTF8StringEncoding error:nil];
         DLog(@"PBX file adapted to the project");
@@ -483,7 +523,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 }
 
 /*!
- Create the .xCodeSupport/Sources folder if necessary.
+ Create the .XcodeSupport/Sources folder if necessary.
  */
 - (void)createXcodeSupportProjectSourcesDirIfNecessary
 {
@@ -495,7 +535,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 }
 
 /*!
- Initialize the creation of the .xCodeSupport project. This
+ Initialize the creation of the .XcodeSupport project. This
  Operation is threaded
  @param arguments Thread arguments (not used)
  @param shouldNotify is YES, XCCDidPopulateProjectNotification will be send
@@ -557,7 +597,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
                                         range:NSMakeRange(0, [flattenedPath length])];
 
     DLog(@"Flattened path: %@", flattenedPath);
-    NSString *basename  = [NSString stringWithFormat:@"%@.h", [[flattenedPath stringByDeletingPathExtension] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+    NSString *basename  = [NSString stringWithFormat:@"%@.m", [[flattenedPath stringByDeletingPathExtension] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
     
     return [NSURL URLWithString:basename relativeToURL:XCodeSupportProjectSources];
 }
@@ -576,7 +616,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
                                       options:0
                                         range:NSMakeRange(0, [unshadowedPath length])];
 
-    [unshadowedPath replaceOccurrencesOfString:@".h"
+    [unshadowedPath replaceOccurrencesOfString:@".m"
                                     withString:@".j"
                                        options:0
                                          range:NSMakeRange(0, [unshadowedPath length])];
@@ -610,9 +650,12 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     [ignoredFilePaths addObject:@"*/.svn/*"];
     [ignoredFilePaths addObject:@"*/.hg/*"];
     [ignoredFilePaths addObject:@"*/Frameworks/*"];
-    [ignoredFilePaths addObject:@"*/.xCodeSupport/*"];
+    [ignoredFilePaths addObject:@"*/.XcodeSupport/*"];
     [ignoredFilePaths addObject:@"*/Build/*"];
     [ignoredFilePaths addObject:@"*/NS_*.j"];
+    [ignoredFilePaths addObject:@"*main.j"];
+    [ignoredFilePaths addObject:@"*.xcodeproj/*"];
+    [ignoredFilePaths addObject:@"*.DS_Store"];
     
     NSLog(@"Ignoring file paths: %@", ignoredFilePaths);
 }
@@ -709,6 +752,23 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         {
             DLog(@"cleaning shadow file: %@", subpath);
             [fm removeItemAtPath:shadowFullPath error:nil];
+
+#if DEBUG
+            NSArray *PBXArguments = [NSArray arrayWithObjects: @"-c",
+                                     [NSString stringWithFormat:@"(%@; python %@ remove '%@' '%@' '%@' '%@') 2>&1",
+                                      profilePath,
+                                      PBXModifierScriptPath,
+                                      XCodeSupportPBXPath,
+                                      shadowFullPath,
+                                      unshadowed,
+                                      [currentProjectURL path]],nil];
+
+            DLog(@"Cleaning PBX reference task...");
+            NSArray *statusInfo = [self runTask:PBXArguments];
+            NSNumber *status = [statusInfo objectAtIndex:0];
+            NSString *response = [statusInfo objectAtIndex:1];
+#endif
+            DLog(@"PBX Reference cleaning status/response: %@/%@", status, response);
             
             if (![self supportFileLevelAPI] && [self respondsToSelector:@selector(updateLastModificationDate:forPath:)])
                 [self performSelector:@selector(updateLastModificationDate:forPath:) withObject:nil withObject:unshadowed];
