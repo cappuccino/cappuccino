@@ -38,6 +38,11 @@
         _valueWraps = [cell valueWraps];
         _autorepeat = [cell autorepeat];
         _objectValue = [cell objectValue];
+
+        // Convert Cocoa normal size to Cappuccino normal size.
+        _frame.origin.y += 2;
+        _frame.size.height -= 2;
+        _bounds.size.height -= 2;
     }
 
     return self;
