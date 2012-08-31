@@ -533,7 +533,11 @@ CPLog(@"Got some class: %@", inst);
 function CPDescriptionOfObject(anObject)
 {
     if (anObject.isa)
+    {
+        if ([anObject isKindOfClass:CPString])
+            return '@"' + [anObject description] + '"';
         return [anObject description];
+    }
 
     if (typeof(anObject) !== "object")
         return String(anObject);

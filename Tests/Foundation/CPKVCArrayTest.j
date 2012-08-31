@@ -15,7 +15,7 @@ var COUNTER;
     COUNTER = 0;
 }
 
-- (void)_patchSelector:(SEL)theSelector
+- (void)_patchSelector:(SEL)selectors, ...
 {
     var method_dtable = [[self object] class].method_dtable,
         method_list = [[self object] class].method_list,
@@ -40,10 +40,14 @@ var COUNTER;
         [method_list removeObject:implementation];
     }
 
-    var method = class_getInstanceMethod([[self implementedObject] class], theSelector),
-        implementation = method_getImplementation(method);
+    for (var i = 2; i < arguments.length; i++)
+    {
+        var theSelector = arguments[i],
+            method = class_getInstanceMethod([[self implementedObject] class], theSelector),
+            implementation = method_getImplementation(method);
 
-    class_addMethod([[self object] class], theSelector, implementation);
+        class_addMethod([[self object] class], theSelector, implementation);
+    }
 }
 
 - (void)testUsesCountOfKey
@@ -297,6 +301,20 @@ var COUNTER;
     [self assert:1
           equals:COUNTER
          message:@"replaceObjectInValuesAtIndexes:withValues: should have been called once"];
+}
+
+- (void)testSetArray
+{
+    [self _patchSelector:@selector(removeObjectFromValuesAtIndex:), @selector(insertObject:inValuesAtIndex:)];
+
+    // This should result in all 10 objects being removed from the values and the 2 new ones being inserted
+    // in a KVO compliant manner.
+    [[[self object] mutableArrayValueForKey:@"values"] setArray:[88, 99]];
+
+    [self assert:[88, 99] equals:[[self object] values]];
+    [self assert:12
+          equals:COUNTER
+         message:@"removeObjectFromValuesAtIndex: should have been called 10 times and insertObject:inValuesAtIndex: 2 times"];
 }
 
 - (void)testKVCArrayOperators

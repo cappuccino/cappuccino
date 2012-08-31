@@ -2881,13 +2881,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         row = [_exposedRows indexGreaterThanIndex:row];
     }
 
-    // Add the column header view
-    var headerFrame = [headerView frame];
-    headerFrame.origin = _CGPointMakeZero();
-
-    var columnHeaderView = [[_CPTableColumnHeaderView alloc] initWithFrame:headerFrame];
-    [columnHeaderView setStringValue:[headerView stringValue]];
-    [columnHeaderView setThemeState:[headerView themeState]];
+    // Add a copy of the header view.
+    var columnHeaderView = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:headerView]];
     [dragView addSubview:columnHeaderView];
 
     [dragView setBackgroundColor:[CPColor whiteColor]];

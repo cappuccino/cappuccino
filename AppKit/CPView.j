@@ -614,7 +614,7 @@ var CPCurrentToolTip,
 */
 - (void)replaceSubview:(CPView)aSubview with:(CPView)aView
 {
-    if (aSubview._superview != self)
+    if (aSubview._superview !== self)
         return;
 
     var index = [_subviews indexOfObjectIdenticalTo:aSubview];
@@ -2092,6 +2092,11 @@ setBoundsOrigin:
         _DOMContentsElement.style.height = ROUND(_CGRectGetHeight(_frame)) + "px";
 
 #if PLATFORM(DOM)
+        // The performance implications of this aren't clear, but without this subviews might not be redrawn when this
+        // view moves.
+        if (CPPlatformHasBug(CPCanvasParentDrawErrorsOnMovementBug))
+            _DOMElement.style.webkitTransform = 'translateX(0)';
+
         CPDOMDisplayServerAppendChild(_DOMElement, _DOMContentsElement);
 #endif
         _graphicsContext = [CPGraphicsContext graphicsContextWithGraphicsPort:graphicsPort flipped:YES];

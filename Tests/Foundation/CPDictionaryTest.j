@@ -395,6 +395,8 @@
     [self assertTrue:d.indexOf("height: 4") !== -1 message:"Can't find 'height: 4' in description of dictionary " + d];
     [self assertTrue:d.indexOf("x: 5") !== -1 message:"Can't find 'x: 5' in description of dictionary " + d];
     [self assertTrue:d.indexOf("y: 6") !== -1 message:"Can't find 'y: 6' in description of dictionary " + d];
+
+    [self assert:'@{\n\tkey1: @[\n\t\t@"1",\n\t\t@"2",\n\t\t@"3"\n\t],\n\tkey2: @"This is a string",\n\tkey3: @{\n\t\tanother: @"object",\n\t},\n}' equals:[json_dict description]];
 }
 
 @end
