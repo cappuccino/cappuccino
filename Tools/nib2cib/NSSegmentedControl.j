@@ -57,6 +57,8 @@
             [self tileWithChangedSegment:i];
         }
 
+        // Adjust for differences between Cocoa and Cappuccino widget framing.
+        frame.origin.x += 4;
         frame.size.width = originalWidth;
         [self setFrame:frame];
     }
