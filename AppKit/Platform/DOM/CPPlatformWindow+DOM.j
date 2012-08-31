@@ -1601,7 +1601,7 @@ var _CPEventFromNativeMouseEvent = function(aNativeEvent, anEventType, aPoint, m
 };
 
 var CLICK_SPACE_DELTA   = 5.0,
-    CLICK_TIME_DELTA    = (typeof document != "undefined" && document.addEventListener) ? 350.0 : 1000.0;
+    CLICK_TIME_DELTA    = (typeof document != "undefined" && document.addEventListener) ? 0.55 : 1.0;
 
 var CPDOMEventGetClickCount = function(aComparisonEvent, aTimestamp, aLocation)
 {
