@@ -1508,7 +1508,7 @@ var CPCurrentToolTip,
 */
 - (CPView)hitTest:(CPPoint)aPoint
 {
-    if (_isHidden || !_hitTests || !CPRectContainsPoint(_frame, aPoint))
+    if (_isHidden || !_hitTests || !_CGRectContainsPoint(_frame, aPoint))
         return nil;
 
     var view = nil,
