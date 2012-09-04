@@ -172,10 +172,10 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
         scrollerWidth = [CPScroller scrollerWidth];
 
     if (hFlag)
-        frameSize.height -= scrollerWidth;
+        frameSize.height += scrollerWidth;
 
     if (vFlag)
-        frameSize.width -= scrollerWidth;
+        frameSize.width += scrollerWidth;
 
     return frameSize;
 }
