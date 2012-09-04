@@ -29,6 +29,7 @@
 @import "CPTableColumn.j"
 @import "_CPCornerView.j"
 @import "CPScroller.j"
+@import "CPCompatibility.j"
 
 
 CPTableViewColumnDidMoveNotification        = @"CPTableViewColumnDidMoveNotification";
@@ -2644,7 +2645,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (_allowsColumnSelection)
     {
         [self _noteSelectionIsChanging];
-        if (modifierFlags & CPCommandKeyMask)
+        if (modifierFlags & CPPlatformActionKeyMask)
         {
             if ([self isColumnSelected:clickedColumn])
                 [self deselectColumn:clickedColumn];
