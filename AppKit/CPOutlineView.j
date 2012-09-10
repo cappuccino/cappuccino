@@ -468,9 +468,8 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     }
     itemInfo.isExpanded = NO;
 
-    // XXX Shouldn't the items reload before the notification is sent?
-    [self _noteItemDidCollapse:anItem];
     [self reloadItem:anItem reloadChildren:YES];
+    [self _noteItemDidCollapse:anItem];
 
     // Send selection notifications only after the items have loaded so that
     // the new selection is consistent with the actual rows for any observers.
