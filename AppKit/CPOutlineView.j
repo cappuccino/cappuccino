@@ -376,9 +376,8 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         var previousRowCount = [self numberOfRows];
 
         itemInfo.isExpanded = YES;
-        // XXX Shouldn't the items reload before the notification is sent?
-        [self _noteItemDidExpand:anItem];
         [self reloadItem:anItem reloadChildren:YES];
+        [self _noteItemDidExpand:anItem];
 
         // Shift selection indexes below so that the same items remain selected.
         var rowCountDelta = [self numberOfRows] - previousRowCount;
