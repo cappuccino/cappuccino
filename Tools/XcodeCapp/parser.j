@@ -107,6 +107,7 @@ function main(args)
         ObjectiveCSource +=
             "#import <Foundation/Foundation.h>\n" +
             "#import <Cocoa/Cocoa.h>\n" +
+            "#import \"xcc_general_include.h\"\n" +
             "\n@interface " + class_getName(aClass) +
             (superClassName === "Nil" ? "" : (" : " + NSCompatibleClassName(superClassName))) +
             "\n\n" +
