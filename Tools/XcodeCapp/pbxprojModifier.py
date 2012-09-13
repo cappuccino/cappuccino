@@ -8,6 +8,14 @@ def add_file(project, shadowGroup, sourceGroup, shadowPath, sourcePath, projectB
     project.add_file(sourcePath, parent=sourceGroup)
     project.save()
 
+def update_general_include(projectBaseURL):
+    f = open("%s/%s/xcc_general_include.h" % (projectBaseURL, XCODESUPPORTFOLDER), "w")
+    for file in os.listdir("%s/%s" % (projectBaseURL, XCODESUPPORTFOLDER)):
+        if file.endswith(".m"):
+            f.write("#include \"%s\"\n" % file)
+    f.close()
+
+
 def remove_file(project, shadowGroup, sourceGroup, shadowPath, sourcePath, projectBaseURL):
     project.remove_file("%s/%s" % (XCODESUPPORTFOLDER, os.path.basename(shadowPath)), parent=shadowGroup)
     project.remove_file(os.path.relpath(sourcePath, projectBaseURL), parent=sourceGroup)
@@ -38,6 +46,7 @@ if __name__ == '__main__':
     elif action == "remove" and len(files) == 1:
         remove_file(project, shadowGroup, sourceGroup, shadowFilePath, sourceFilePath, projectBaseURL)
     
+    update_general_include(projectBaseURL)
     
 
     
