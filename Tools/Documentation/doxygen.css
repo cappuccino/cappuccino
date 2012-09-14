@@ -188,9 +188,24 @@ dl.el {
     margin-left: -1cm;
 }
 
-.fragment {
-    font-family: Courier, monospace, fixed;
-    font-size: 105%;
+.fragment .line {
+    font-family: Consolas, Courier, monospace, fixed;
+    white-space: pre-wrap; /* css-3 */
+    white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
+    white-space: -pre-wrap; /* Opera 4-6 */
+    white-space: -o-pre-wrap; /* Opera 7 */
+    word-wrap: break-word; /* Internet Explorer 5.5+ */
+    font-size: 11px;
+    margin-bottom: 3px;
+}
+
+.fragment .lineno {
+    color: #d4d4d4;
+    margin-right: 10px;
+}
+
+.fragment .lineno a {
+    color: #d4d4d4;
 }
 
 pre.fragment {
@@ -443,7 +458,7 @@ table.memberdecls {
 }
 
 .memItemLeft, .memItemRight, .memTemplParams {
-    border-top: 1px solid #ccc;
+    border-top: 1px solid #f3f3f3;
 }
 
 .memItemLeft, .memTemplItemLeft {
@@ -813,7 +828,7 @@ table.fieldtable {
     float:left;
     padding-left:10px;
     padding-right: 15px;
-    background-image:url('bc_s.png');
+    padding-top: 0px;
     background-repeat:no-repeat;
     background-position:right;
     color:#374E7C;
@@ -1079,7 +1094,7 @@ dl.citelist dd {
 /* ADDITIONS */
 .tabs, .tabs2, .tabs3 {
     background: -moz-linear-gradient(-90deg, #fff, #eee);
-    background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee)); 
+    background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
     border-bottom: 1px solid #ccc;
     width: 100%;
     z-index: 101;
@@ -1150,7 +1165,7 @@ dl.citelist dd {
 
 .tablist li.current a {
     background: -moz-linear-gradient(-90deg, #eee, #fff);
-    background: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#fff)); 
+    background: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#fff));
     color: #444;
     text-shadow: 0px 1px 1px #f2f2f2;
 }
@@ -1282,4 +1297,24 @@ dl.citelist dd {
 
 #nav-tree-contents {
   margin: 6px 0px 0px 0px;
+}
+
+.memSeparator {
+    display: none;
+}
+
+.inherit_header td {
+    padding-top: 30px;
+    padding-bottom: 10px;
+    font: 13px normal "Lucida Grande", Helvetica, Arial, Geneva, sans-serif;
+    font-size: 14px;
+}
+
+#nav-sync {
+right: 5px;
+}
+#nav-sync img {
+    width: 16px;
+}
+
 }
