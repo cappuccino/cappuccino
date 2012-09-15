@@ -19,6 +19,7 @@
 #import "TNXCodeCapp.h"
 #include "macros.h"
 
+NSString * const XCCUnderscoreReplacement = @"DoNotPutThisStringInFileNameOrWorldWillDie";
 NSString * const XCCDidPopulateProjectNotification = @"XCCDidPopulateProjectNotification";
 NSString * const XCCConversionStartNotification = @"XCCConversionStartNotification";
 NSString * const XCCConversionStopNotification = @"XCCConversionStopNotification";
@@ -612,7 +613,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 
     // Replace "_" with a substring that is unlikely to be in a filename
     [flattenedPath replaceOccurrencesOfString:@"_"
-                                   withString:@"≤‹°∞°›≥"
+                                   withString:XCCUnderscoreReplacement
                                       options:0
                                         range:NSMakeRange(0, [flattenedPath length])];
 
@@ -657,7 +658,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
                                        options:0
                                          range:NSMakeRange(0, [unshadowedPath length])];
 
-    [unshadowedPath replaceOccurrencesOfString:@"≤‹°∞°›≥"
+    [unshadowedPath replaceOccurrencesOfString:XCCUnderscoreReplacement
                                     withString:@"_"
                                        options:0
                                          range:NSMakeRange(0, [unshadowedPath length])];
