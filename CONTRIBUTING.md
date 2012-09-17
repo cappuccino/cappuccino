@@ -35,23 +35,25 @@ Some things are difficult to unit test in a way that's worthwhile. For instance 
 
 Use spaces, not tabs. Tabs should only appear in files that require them for semantic meaning, like Makefiles (which there are currently none of). The indent size is 4 spaces.
 
-#### Right:
+##### Right:
 
     function main()
     {
         return 0;
     }
 
-#### Wrong:
+##### Wrong:
 
     function main()
     {
             return 0;
     }
 
+---
+
 A case label should be indented once from its switch statement. The case statement is indented out from the longest label.
 
-#### Right:
+##### Right:
 
     switch (condition)
     {
@@ -62,7 +64,7 @@ A case label should be indented once from its switch statement. The case stateme
         default:            i--;
     }
 
-#### Wrong:
+##### Wrong:
 
     switch (condition) {
         case fooCondition:
@@ -77,72 +79,81 @@ A case label should be indented once from its switch statement. The case stateme
 
 Do not place spaces around unary operators.
 
-
-#### Right:
+##### Right:
 
     i++
 
-#### Wrong:
+##### Wrong:
 
     i ++
 
+---
+
 Do place spaces around binary and ternary operators.
 
-#### Right:
+##### Right:
 
     y = m * x + b;
     f(a, b);
     c = a | b;
     return condition ? 1 : 0;
 
-#### Wrong:
+##### Wrong:
 
     y=m*x+b;
     f(a,b);
     c = a|b;
     return condition ? 1:0;
 
+---
+
 Place spaces between control statements and their parentheses.
 
-#### Right:
+##### Right:
 
     if (condition)
         doIt();
 
-#### Wrong:
+##### Wrong:
 
     if(condition)
         doIt();
 
+---
+
 Do not place spaces between a function and its parentheses, or between a parenthesis and its content.
 
-#### Right:
+##### Right:
 
     f(a, b);
 
-#### Wrong:
+##### Wrong:
 
     f (a, b);
     f( a, b );
 
+---
+
 Do not place spaces between the return type of an Objective-J method and the selector name. DO place spaces between the method type and the method return type.
 
-#### Right:
+##### Right:
 
     - (void)method;
 
-#### Wrong:
+##### Wrong:
 
     - (void) method;
     -(void)method;
 
+---
+
 Do not place spaces between Objective-J selectors and arguments.
 
-#### Right:
+##### Right:
 
     [myNumber addNumber:5]
 
-#### Wrong:
+##### Wrong:
 
     [myNumber addNumber: 5]
 
@@ -150,7 +161,7 @@ Do not place spaces between Objective-J selectors and arguments.
 
 Each statement should get its own line.
 
-#### Right:
+##### Right:
 
     var x,
         y;
@@ -159,7 +170,7 @@ Each statement should get its own line.
     if (condition)
         doIt();
 
-#### Wrong:
+##### Wrong:
 
     var x, y;
     x++; y++;
@@ -169,7 +180,7 @@ Each statement should get its own line.
 
 Every brace gets its own line, very simple to remember:
 
-#### Right:
+##### Right:
 
     int main()
     {
@@ -191,7 +202,7 @@ Every brace gets its own line, very simple to remember:
 
     @end
 
-#### Wrong:
+##### Wrong:
 
     int main() {
         ...
@@ -212,7 +223,7 @@ In JavaScript, the null object value should be written as null. In Objective-J, 
 
 Tests for `true/false`, `null/non-null`, and zero/non-zero should all be done without equality comparisons, except for cases when a value could be both 0 or `null` (or another "falsey" value). In this case, the comparison should be preceded by a comment explaining the distinction.
 
-#### Right:
+##### Right:
 
     if (condition)
         doIt();
@@ -227,7 +238,7 @@ Tests for `true/false`, `null/non-null`, and zero/non-zero should all be done wi
     if (object === null)
         return;
 
-#### Wrong:
+##### Wrong:
 
     if (condition == true)
         doIt();
@@ -241,37 +252,43 @@ Tests for `true/false`, `null/non-null`, and zero/non-zero should all be done wi
     if (object == null)
         return;
 
+---
+
 In Objective-J, instance variables are initialized to `nil` automatically. Don't add explicit initializations to `nil` or `NO` in an init method.
 
 ### Names
 
 Use CamelCase. Capitalize the first letter of a class. Lower-case the first letter of a variable or function name. Fully capitalize acronyms.
 
-#### Right:
+##### Right:
 
     @implementation Data : //...
     @implementation HTMLDocument : //...
 
-#### Wrong:
+##### Wrong:
 
     @implementation data : //...
     @implementation HtmlDocument : //...
 
+---
+
 Multiple var declarations should be collapsed with commas.
 
-#### Right:
+##### Right:
 
     var index = 0,
         count = 5;
 
-#### Wrong:
+##### Wrong:
 
     var index = 0;
     var count = 5;
 
+---
+
 Variable declarations should be created as needed, rather than up front ("hoisted").
 
-#### Right:
+##### Right:
 
     - (BOOL)doSomething:(id)aFoo
     {
@@ -287,7 +304,7 @@ Variable declarations should be created as needed, rather than up front ("hoiste
         }
     }
 
-#### Wrong:
+##### Wrong:
 
     - (BOOL)doSomething:(id)aFoo
     {
@@ -305,23 +322,27 @@ Variable declarations should be created as needed, rather than up front ("hoiste
         }
     }
 
+---
+
 Use full words, except in the rare case where an abbreviation would be more canonical and easier to understand.
 
-#### Right:
+##### Right:
 
     var characterSize,
         length,
         tabIndex; // more canonical
 
-#### Wrong:
+##### Wrong:
 
     var charSize,
         len,
         tabulationIndex; // bizarre
 
+---
+
 Prefix Objective-J instance variables with `_`, but only when writing code for the Cappuccino frameworks. User level (application) code should not prefix variables with `_`. This prevents conflicts between the two scopes.
 
-#### Right:
+##### Right:
 
     @implementation CPString
     {
@@ -329,7 +350,7 @@ Prefix Objective-J instance variables with `_`, but only when writing code for t
     }
     @end
 
-#### Wrong:
+##### Wrong:
 
     @implementation CPString
     {
@@ -337,65 +358,77 @@ Prefix Objective-J instance variables with `_`, but only when writing code for t
     }
     @end
 
+---
+
 Precede boolean values with words like "is" and "did".
 
-#### Right:
+##### Right:
 
     var isValid;
     var didSendData;
     - (BOOL)isEditable;
     - (BOOL)didReceiveResponse;
 
-#### Wrong:
+##### Wrong:
 
     var valid;
     var sentData;
     - (BOOL)editable;
     - (BOOL)receivedResponse;
 
+---
+
 Precede setters with the word "set". Use bare words for getters. Setter and getter names should match the names of the variables being set/gotten.
 
-#### Right:
+##### Right:
 
     - (void)setCount:(unsigned)aCount; // sets _count
     - (unsigned)count; // returns _count
 
-#### Wrong:
+##### Wrong:
 
     - (unsigned)getCount;
 
+---
+
 Use descriptive verbs in function names, and place desired types in comments.
 
-#### Right:
+##### Right:
 
     function convertToASCII(/*String*/ aString)
 
-#### Wrong:
+##### Wrong:
 
     function toASCII(str)
 
+---
+
 Use descriptive parameter names that are not abbreviated.
 
-#### Right:
+##### Right:
 
     - (void)convertString:(CPString)aString toFormat:(Format)aFormat;
     - (void)appendSubviews:(CPArray)subviews inOrder:(BOOL)shouldBeInOrder;
 
-#### Wrong:
+##### Wrong:
 
     - (void)convertString:(CPString)str toFormat:(Format)f;
     - (void)appendSubviews:(CPArray)s inOrder:(BOOL)flag;
 
+---
+
 Use descriptive parameter types, despite not being fully supported in JavaScript. At some point we will be adding optional static typing, and even until then this serves as a much better indicator of what the method expects. Of course, if the method can truly take any input or return any output, it is perfectly acceptable to use `id`, `CPObject`, or `var`.
 
-#### Right:
+##### Right:
 
     - (char)characterAtIndex:(unsigned)anIndex;
     - (void)insertObject:(id)anObject;
 
-#### Wrong:
+##### Wrong:
 
     - (String)characterAtIndex:(var)index;
+
+---
 
 Objective-J method names should follow the Cocoa naming guidelines — they should read like a phrase and each piece of the selector should start with a lowercase letter and use intercaps.
 
@@ -405,12 +438,12 @@ Enum members should user InterCaps with an initial capital letter.
 
 Macros that expand to function calls or other non-constant computation: these should be named like functions, and should have parentheses at the end, even if they take no arguments (with the exception of some special macros like ASSERT).
 
-#### Right:
+##### Right:
 
     #define StopButtonTitle() \
             CPLocalizedString(@"Stop", @"Stop button title")
 
-#### Wrong:
+##### Wrong:
 
     #define STOP_BUTTON_TITLE \
             CPLocalizedString(@"Stop", @"Stop button title")
@@ -420,15 +453,12 @@ Macros that expand to function calls or other non-constant computation: these sh
 
 ### import Statements
 
-Include external frameworks first.
+1. Include external frameworks first.
+2. Include Foundation classes before AppKit classes.
+3. Include files in alphabetical order.
+4. Use local imports whenever possible.
 
-Include Foundation classes before AppKit classes.
-
-Include files in alphabetical order.
-
-Use local imports whenever possible.
-
-#### Right:
+##### Right:
 
     // (Within AppKit)
     import <Foundation/CPObject.j>
@@ -437,7 +467,7 @@ Use local imports whenever possible.
     import "CPTabViewItem.j"
     import "CPTabView.j"
 
-#### Wrong:
+##### Wrong:
 
     // (Within AppKit)
     import "CPTabView.j"
