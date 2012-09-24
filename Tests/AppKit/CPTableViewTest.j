@@ -267,6 +267,41 @@
     [contentBindingTable reloadData];
 }
 
+- (void)testInitiallyHiddenColumns
+{
+    var table = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 400, 400)],
+        tableColumn1 = [[CPTableColumn alloc] initWithIdentifier:@"A"],
+        tableColumn2 = [[CPTableColumn alloc] initWithIdentifier:@"B"],
+        delegate = [ContentBindingTableDelegate new];
+  
+    [delegate setTester:self];
+    [table setDelegate:delegate];
+
+    [delegate setTableEntries:[[@"A1", @"B1"], [@"A2", @"B2"], [@"A3", @"B3"]]];
+    [table bind:@"content" toObject:delegate withKeyPath:@"tableEntries" options:nil];
+    
+    [[theWindow contentView] addSubview:table];
+    
+    [tableColumn1 setHidden:YES];
+    
+    [tableColumn1 setWidth:50.0];
+    [tableColumn2 setWidth:100.0];
+    
+    [table addTableColumn:tableColumn1];
+    [table addTableColumn:tableColumn2];
+    
+    [table reloadData];
+    
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+    
+    [self assertTrue:[table bounds].size.width > 100 && [table bounds].size.width < 200];
+    
+    [tableColumn1 setHidden:NO];
+    [tableColumn1 setWidth:100.0];
+    
+    [self assertTrue:[table bounds].size.width >= 200];
+}
+
 @end
 
 @implementation FirstResponderConfigurableTableView : CPTableView
