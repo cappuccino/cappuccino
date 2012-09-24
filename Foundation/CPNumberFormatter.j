@@ -90,6 +90,11 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
 
 - (CPString)stringFromNumber:(CPNumber)number
 {
+    if (_numberStyle == CPNumberFormatterPercentStyle)
+    {
+        number *= 100.0;
+    }
+  
     var dcmn = [number isKindOfClass:CPDecimalNumber] ? number : [[CPDecimalNumber alloc] _initWithJSNumber:number];
 
     // TODO Add locale support.
@@ -97,6 +102,7 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
     {
         case CPNumberFormatterCurrencyStyle:
         case CPNumberFormatterDecimalStyle:
+        case CPNumberFormatterPercentStyle:
             UPDATE_NUMBER_HANDLER_IF_NECESSARY();
 
             dcmn = [dcmn decimalNumberByRoundingAccordingToBehavior:_numberHandler];
@@ -132,6 +138,11 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
                     string = _currencySymbol + string;
                 else
                     string = _currencyCode + string;
+            }
+            
+            if (_numberStyle == CPNumberFormatterPercentStyle)
+            {
+                string += "%";
             }
 
             return string;
