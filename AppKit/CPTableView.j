@@ -3381,7 +3381,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             {
                 var row = rowArray[rowIndex],
                     dataView = dataViewsForTableColumn[row];
-    
+
                 [dataView setFrame:[self frameOfDataViewAtColumn:column row:row]];
             }
         }

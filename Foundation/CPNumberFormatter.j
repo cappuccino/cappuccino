@@ -94,7 +94,7 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
     {
         number *= 100.0;
     }
-  
+
     var dcmn = [number isKindOfClass:CPDecimalNumber] ? number : [[CPDecimalNumber alloc] _initWithJSNumber:number];
 
     // TODO Add locale support.
@@ -139,7 +139,7 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
                 else
                     string = _currencyCode + string;
             }
-            
+
             if (_numberStyle == CPNumberFormatterPercentStyle)
             {
                 string += "%";

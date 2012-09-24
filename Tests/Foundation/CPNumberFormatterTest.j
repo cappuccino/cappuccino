@@ -151,7 +151,7 @@
     [self assert:@"1%" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"0.01"]]];
     [self assert:@"100%" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"1.0"]]];
     [self assert:@"150%" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"1.5"]]];
-    
+
     [numberFormatter setMinimumFractionDigits:1];
     [numberFormatter setMaximumFractionDigits:1];
 
