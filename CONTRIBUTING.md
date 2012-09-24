@@ -31,6 +31,9 @@ Some things are difficult to unit test in a way that's worthwhile. For instance 
 
 ## Cappuccino Coding Style Guidelines
 
+### Trailing whitespace
+Leave no trailing spaces or tabs at the end of a line (`trailing whitespace`), even if the line is empty and in an otherwise indented block.
+
 ### Indentation
 
 Use spaces, not tabs. Tabs should only appear in files that require them for semantic meaning, like Makefiles (which there are currently none of). The indent size is 4 spaces.
