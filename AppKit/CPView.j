@@ -3072,6 +3072,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
         [self _setupToolTipHandlers];
         _toolTip = [aCoder decodeObjectForKey:CPViewToolTipKey];
+
         if (_toolTip)
             [self _installToolTipEventHandlers];
 
