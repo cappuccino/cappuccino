@@ -56,6 +56,11 @@
         [self setLineBreakMode:[cell lineBreakMode]];
 
         [self setFormatter:[cell formatter]];
+
+        // In IB, both cells and controls can have tags.
+        // If the control has a tag, that takes precedence.
+        if ([aCoder containsValueForKey:@"NSTag"])
+            [self setTag:[aCoder decodeIntForKey:@"NSTag"]];
     }
 
     return self;
