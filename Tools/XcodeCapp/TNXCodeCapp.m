@@ -19,6 +19,7 @@
 #import "TNXCodeCapp.h"
 #include "macros.h"
 
+NSString * const XCCUnderscoreReplacement = @"DoNotPutThisStringInFileNameOrWorldWillDie";
 NSString * const XCCDidPopulateProjectNotification = @"XCCDidPopulateProjectNotification";
 NSString * const XCCConversionStartNotification = @"XCCConversionStartNotification";
 NSString * const XCCConversionStopNotification = @"XCCConversionStopNotification";
@@ -39,8 +40,8 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 @synthesize supportFileLevelAPI;
 @synthesize isUsingFileLevelAPI;
 
-#pragma mark -
-#pragma mark Initialization
+
+#pragma mark - Initialization
 
 /*!
  Initialize the AppController
@@ -48,7 +49,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 - (id)init
 {
     self = [super init];
-    
+
     if (self)
     {
         errorList = [NSMutableArray arrayWithCapacity:10];
@@ -57,7 +58,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         parserPath = [[NSBundle mainBundle] pathForResource:@"parser" ofType:@"j"];
         lastEventId = [[NSUserDefaults standardUserDefaults] objectForKey:@"lastEventId"];
         appStartedTimestamp = [NSDate date];
-        
+
         [self setIsListening:NO];
         [self setIsUsingFileLevelAPI:NO];
 
@@ -65,11 +66,11 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         SInt32 versionMinor = 0;
         Gestalt(gestaltSystemVersionMajor, &versionMajor);
         Gestalt(gestaltSystemVersionMinor, &versionMinor);
-        
+
         [self setSupportFileLevelAPI:versionMajor >= 10 && versionMinor >= 7];
         // Uncomment to simulate 10.6 mode
         // [self setSupportFileLevelAPI:NO];
-        
+
         [self configure];
 
         if([fm fileExistsAtPath:[@"~/.bash_profile" stringByExpandingTildeInPath]])
@@ -91,21 +92,21 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
             profilePath = @"";
         }
     }
-    
+
     return self;
 }
 
 - (void)start
-{        
+{
     if (![[NSUserDefaults standardUserDefaults] boolForKey:@"XCCReopenLastProject"])
         return;
 
     NSString *lastOpenedPath = [[NSUserDefaults standardUserDefaults] objectForKey:@"LastOpenedPath"];
-    
+
     if (lastOpenedPath)
     {
         if ([fm fileExistsAtPath:lastOpenedPath])
-        {            
+        {
             [self listenProjectAtPath:[NSString stringWithFormat:@"%@/", lastOpenedPath]];
         }
         else
@@ -115,6 +116,135 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     }
 }
 
+
+#pragma mark - Project Management
+
+/*!
+ Check if .XcodeSupport needs to be initialized.
+ If not needed, check that all J files are mirrored. If no,
+ then launch conversion for missing mirrored h files
+ @return YES or NO
+ */
+- (BOOL)prepareXCodeSupportProject
+{
+    XCodeSupportProjectName    = [NSString stringWithFormat:@"%@.xcodeproj/", currentProjectName];
+    XCodeTemplatePBXPath       = [[NSBundle mainBundle] pathForResource:@"project.pbxproj" ofType:@"sample"];
+    XCodeSupportProject        = [NSURL URLWithString:XCodeSupportProjectName relativeToURL:currentProjectURL];
+    XCodeSupportProjectSources = [NSURL URLWithString:@".XcodeSupport/" relativeToURL:currentProjectURL];
+    XCodeSupportPBXPath        = [NSString stringWithFormat:@"%@/project.pbxproj", [XCodeSupportProject path]];
+    PBXModifierScriptPath      = [[NSBundle mainBundle] pathForResource:@"pbxprojModifier" ofType:@"py"];
+
+
+    //[fm removeItemAtURL:XCodeSupportProjectSources error:nil];
+    //[fm removeItemAtURL:XCodeSupportProject error:nil];
+
+    // create the template project if it doesn't exist
+    if (![fm fileExistsAtPath:[XCodeSupportProjectSources path]])
+    {
+        NSLog(@"prepareXCodeSupportProject: Xcode support folder created at: %@", [XCodeSupportProject path]);
+        [fm createDirectoryAtPath:[XCodeSupportProject path] withIntermediateDirectories:YES attributes:nil error:nil];
+
+        DLog(@"prepareXCodeSupportProject: Copying project.pbxproj from %@ to %@", XCodeTemplatePBXPath, [XCodeSupportProject path]);
+        [fm copyItemAtPath:XCodeTemplatePBXPath toPath:XCodeSupportPBXPath error:nil];
+
+        DLog(@"prepareXCodeSupportProject: Reading the content of the project.pbxproj");
+        NSMutableString *PBXContent = [NSMutableString stringWithContentsOfFile:XCodeSupportPBXPath encoding:NSUTF8StringEncoding error:nil];
+
+        [PBXContent writeToFile:XCodeSupportPBXPath atomically:YES encoding:NSUTF8StringEncoding error:nil];
+        DLog(@"prepareXCodeSupportProject: PBX file adapted to the project");
+
+        [self createXcodeSupportProjectSourcesDirIfNecessary];
+        return NO;
+    }
+
+    [self createXcodeSupportProjectSourcesDirIfNecessary];
+    return YES;
+}
+
+/*!
+ Create the .XcodeSupport/Sources folder if necessary.
+ */
+- (void)createXcodeSupportProjectSourcesDirIfNecessary
+{
+    if ([fm fileExistsAtPath:[XCodeSupportProjectSources path]])
+        return;
+
+    DLog(@"createXcodeSupportProjectSourcesDirIfNecessary: Creating source folder %@", [XCodeSupportProjectSources path]);
+    [fm createDirectoryAtPath:[XCodeSupportProjectSources path] withIntermediateDirectories:YES attributes:nil error:nil];
+}
+
+/*!
+ Initialize the creation of the .XcodeSupport project. This
+ Operation is threaded
+ @param arguments Thread arguments (not used)
+ @param shouldNotify is YES, XCCDidPopulateProjectNotification will be send
+ */
+- (void)populateXCodeProject:(NSNumber *)shouldNotify
+{
+    if ([shouldNotify boolValue])
+        [delegate performSelector:@selector(growlWithTitle:message:) withObject:@"Loading project" withObject:[currentProjectURL path]];
+
+    NSArray *subdpaths = [fm subpathsAtPath:[currentProjectURL path]];
+
+    for (NSString *p in subdpaths)
+    {
+        NSString *filePath = [NSString stringWithFormat:@"%@/%@", [currentProjectURL path], p];
+
+        BOOL isDir = NO;
+        [fm fileExistsAtPath:filePath isDirectory:&isDir];
+
+        if (isDir || ![self isObjJFile:filePath] || [self isPathMatchingIgnoredPaths:filePath])
+            continue;
+
+        NSURL *eventualShadow = [self shadowHeaderURLForSourceURL:[NSURL fileURLWithPath:filePath]];
+
+        if (![fm fileExistsAtPath:[eventualShadow path]])
+        {
+            DLog(@"populateXCodeProject: Computing missing shadow file for %@", filePath);
+            [self handleFileModification:filePath notify:NO];
+        }
+    }
+
+    if ([shouldNotify boolValue])
+    {
+        NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:currentProjectURL, @"URL", nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:XCCDidPopulateProjectNotification object:self userInfo:info];
+    }
+}
+
+/*!
+ Start all needed processes for listening to a given path
+ @param path The folder path to listen to
+ */
+- (void)listenProjectAtPath:(NSString *)path
+{
+    NSMutableString *tempName = [NSMutableString stringWithString:[path lastPathComponent]];
+
+    currentProjectURL = [NSURL fileURLWithPath:path];
+
+    [tempName replaceOccurrencesOfString:@" "
+                              withString:@"_"
+                                 options:NSCaseInsensitiveSearch
+                                   range:NSMakeRange(0, [tempName length])];
+    currentProjectName = [NSString stringWithString:tempName];
+
+    [self computeIgnoredPaths];
+
+    BOOL isProjectReady = [self prepareXCodeSupportProject];
+
+    [NSThread detachNewThreadSelector:@selector(populateXCodeProject:) toTarget:self withObject:[NSNumber numberWithBool:!isProjectReady]];
+
+    [self initializeEventStreamWithPath:[currentProjectURL path]];
+
+    NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:path, @"path", [NSNumber numberWithInt:(isProjectReady) ? 1 : 0], @"ready", nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:XCCListeningStartNotification object:self userInfo:info];
+
+    [[NSUserDefaults standardUserDefaults] setObject:[currentProjectURL path] forKey:@"LastOpenedPath"];
+}
+
+
+#pragma mark - Event Stream
+
 /*!
  Initializes the FSEvent stream
  @param aPath the path of the folder to listen
@@ -123,18 +253,18 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 {
     if ([self isListening])
         return;
-        
+
     [self stopEventStream];
-    
+
     NSMutableArray *pathsToWatch = [NSMutableArray arrayWithObject:aPath];
     void *appPointer = (void *)self;
     FSEventStreamContext context = {0, appPointer, NULL, NULL, NULL};
     CFTimeInterval latency = 2.0;
     FSEventStreamCreateFlags flags = 0;
-        
+
     if (supportsFileBasedListening)
     {
-        DLog(@"Initializing the FSEventStream at file level (clean)");
+        DLog(@"initializeEventStreamWithPath: Initializing the FSEventStream at file level (clean)");
         flags = kFSEventStreamCreateFlagUseCFTypes | kFSEventStreamCreateFlagNoDefer | kFSEventStreamCreateFlagFileEvents;
     }
     else
@@ -142,10 +272,10 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         NSLog(@"Initializing the FSEventStream at folder level (dirty)");
         flags = kFSEventStreamCreateFlagUseCFTypes;
     }
-    
+
     // add symlinked directories
     NSArray *fileList = [fm contentsOfDirectoryAtPath:aPath error:nil];
-    
+
     for (NSString *node in fileList)
     {
         NSDictionary *attributes = [fm attributesOfItemAtPath:aPath error:nil];
@@ -160,18 +290,14 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
             }
         }
     }
-    
+
     stream = FSEventStreamCreate(NULL, &fsevents_callback, &context, (CFArrayRef) pathsToWatch,
                                  [lastEventId unsignedLongLongValue], latency, flags);
-    
+
     FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
     FSEventStreamStart(stream);
     [self setIsListening:YES];
 }
-
-
-#pragma mark -
-#pragma mark Utilities
 
 /*!
  Stop listening the FSEvent stream if active
@@ -210,7 +336,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 {
     if (![self supportFileLevelAPI])
     {
-        DLog(@"System doesn't support file level API");
+        DLog(@"configure: System doesn't support file level API");
         [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithInt:2] forKey:@"XCCAPIMode"];
     }
 
@@ -229,7 +355,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 
     if (supportsFileBasedListening)
     {
-        DLog(@"using 10.7+ mode listening (clean)");
+        DLog(@"configure: using 10.7+ mode listening (clean)");
 
         [self setCurrentAPIMode:@"File level (Lion)"];
         [self setIsUsingFileLevelAPI:YES];
@@ -237,7 +363,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     }
     else
     {
-        DLog(@"using 10.6 mode listening (dirty)");
+        DLog(@"configure: using 10.6 mode listening (dirty)");
         reactToInodeModification = NO;
         [self setCurrentAPIMode:@"Folder level (Snow Leopard)"];
         [self setIsUsingFileLevelAPI:NO];
@@ -273,6 +399,9 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
+
+#pragma mark - Shell Helpers
+
 /*!
  Run a NSTask with the given arguments
  @param arguments NSArray containing the NSTask arguments
@@ -284,21 +413,24 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     NSData *stdOut;
     NSString *response;
     NSNumber *status;
-    
+
     task = [[NSTask alloc] init];
-    
+
     [task setLaunchPath: @"/bin/bash"];
     [task setArguments: arguments];
     [task setStandardOutput:[NSPipe pipe]];
     [task launch];
     [task waitUntilExit];
-    
+
     stdOut = [[[task standardOutput] fileHandleForReading] availableData];
     response = [[NSString alloc] initWithData:stdOut encoding:NSUTF8StringEncoding];
     status = [NSNumber numberWithInt:[task terminationStatus]];
-    
+
     return [NSArray arrayWithObjects:status, response, nil];
 }
+
+
+#pragma mark - Event Handlers
 
 /*!
  Handle a file modification. If it's a .J or XIB or NIB, it will
@@ -315,7 +447,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     if ([self isPathMatchingIgnoredPaths:fullPath] || ![fm fileExistsAtPath:fullPath])
         return;
 
-    DLog(@"Parsing modified file: %@", fullPath);
+    DLog(@"handleFileModification:notify: Parsing modified file: %@", fullPath);
 
     NSArray *arguments = nil;
     NSArray *PBXArguments = nil;
@@ -324,16 +456,19 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     NSString *response = nil;
     NSNumber *status = [NSNumber numberWithInt:0];
     NSString *splitPath = [fullPath substringFromIndex:[[currentProjectURL path] length] + 1];
-    NSString *shadowPath = [[self shadowURLForSourceURL:[NSURL URLWithString:[fullPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]] path];
-    
-    DLog(@"Shadow path: %@", shadowPath);
-    
+    NSURL *encodedURL = [NSURL URLWithString:[fullPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+    NSURL *shadowHeaderURL = [self shadowHeaderURLForSourceURL:encodedURL];
+    NSURL *shadowImplementationURL = [self shadowImplementationURLForSourceURL:encodedURL];
+
+    DLog(@"handleFileModification:notify: Shadow header path: %@", shadowHeaderURL);
+    DLog(@"handleFileModification:notify: Shadow implementation path: %@", shadowImplementationURL);
+
     [[NSNotificationCenter defaultCenter] postNotificationName:XCCConversionStartNotification object:self];
 
     if ([self isXIBFile:fullPath])
     {
         arguments = [NSArray arrayWithObjects: @"-c",
-                        [NSString stringWithFormat:@"(%@; nib2cib '%@';) 2>&1", profilePath, fullPath],@"",nil];
+                     [NSString stringWithFormat:@"(%@; nib2cib '%@';) 2>&1", profilePath, fullPath],@"",nil];
 
         successTitle = @"XIB converted";
         successMsg = splitPath;
@@ -341,19 +476,20 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     else if ([self isObjJFile:fullPath])
     {
         arguments = [NSArray arrayWithObjects: @"-c",
-                     [NSString stringWithFormat:@"(%@; objj '%@' '%@' '%@';) 2>&1",
-                        profilePath,
-                        parserPath,
-                        fullPath,
-                        shadowPath],
-                        @"",nil];
+                     [NSString stringWithFormat:@"(%@; objj '%@' '%@' '%@' '%@';) 2>&1",
+                      profilePath,
+                      parserPath,
+                      fullPath,
+                      [shadowHeaderURL path],
+                      [shadowImplementationURL path]],nil];
 
         PBXArguments = [NSArray arrayWithObjects: @"-c",
-                        [NSString stringWithFormat:@"(%@; python %@ add '%@' '%@' '%@' '%@') 2>&1",
+                        [NSString stringWithFormat:@"(%@; python %@ add '%@' '%@' '%@' '%@' '%@') 2>&1",
                          profilePath,
                          PBXModifierScriptPath,
                          XCodeSupportPBXPath,
-                         shadowPath,
+                         [shadowHeaderURL path],
+                         [shadowImplementationURL path],
                          fullPath,
                          [currentProjectURL path]],nil];
 
@@ -371,22 +507,22 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     // Run the task and get the response if needed
     if (arguments)
     {
-        DLog(@"Running conversion task...");
+        DLog(@"handleFileModification:notify: Running conversion task...");
         NSArray *statusInfo = [self runTask:arguments];
-        
+
         status = [statusInfo objectAtIndex:0];
         response = [statusInfo objectAtIndex:1];
-        
-        DLog(@"Conversion task result/response: %@/%@", status, response);
+
+        DLog(@"handleFileModification:notify: Conversion task result/response: %@/%@", status, response);
     }
 
     if (PBXArguments)
     {
-        DLog(@"Running update PBX task...");
+        DLog(@"handleFileModification:notify: Running update PBX task...");
         NSArray *statusInfo = [self runTask:PBXArguments];
         status = [statusInfo objectAtIndex:0];
         response = [statusInfo objectAtIndex:1];
-        DLog(@"Update PBX Task result/response: %@/%@", status, response);
+        DLog(@"handleFileModification:notify: Update PBX Task result/response: %@/%@", status, response);
     }
 
     if ([status intValue] == 0 && shouldNotify)
@@ -397,12 +533,12 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     {
         if (response)
             [errorList addObject:response];
-        
+
         [delegate performSelector:@selector(growlWithTitle:message:) withObject:@"Error processing file" withObject:splitPath];
     }
 
     [[NSNotificationCenter defaultCenter] postNotificationName:XCCConversionStopNotification object:self];
-    DLog(@"Processed: %@", fullPath);
+    DLog(@"handleFileModification:notify: Processed: %@", fullPath);
 }
 
 /*!
@@ -416,36 +552,17 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 {
     if ([self isPathMatchingIgnoredPaths:fullPath] || [fm fileExistsAtPath:fullPath])
         return;
-    
+
+    NSString *encodedPath = [fullPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+
     if ([self isObjJFile:fullPath])
-    {
-        NSString *shadowPath = [[self shadowURLForSourceURL:[NSURL URLWithString:[fullPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]] path];
-
-        DLog(@"Removing shadow file: %@", shadowPath);
-        [fm removeItemAtPath:shadowPath error:nil];
-
-        DLog(@"Removing PBX reference task...");
-        
-#if DEBUG
-        NSArray *PBXArguments = [NSArray arrayWithObjects: @"-c",
-                                 [NSString stringWithFormat:@"(%@; python %@ remove '%@' '%@' '%@' '%@') 2>&1",
-                                  profilePath,
-                                  PBXModifierScriptPath,
-                                  XCodeSupportPBXPath,
-                                  shadowPath,
-                                  fullPath,
-                                  [currentProjectURL path]],nil];
-        NSArray *statusInfo = [self runTask:PBXArguments];
-        NSNumber *status = [statusInfo objectAtIndex:0];
-        NSString *response = [statusInfo objectAtIndex:1];
-#endif
-        DLog(@"PBX Reference removal status/response: %@/%@", status, response);
-    }
+        [self cleanUpShadowsRelatedToSourceURL:[NSURL URLWithString:encodedPath]];
     else if ([self isXCCIgnoreFile:fullPath])
-    {
         [self computeIgnoredPaths];
-    }
 }
+
+
+#pragma mark - Source Files Management
 
 /*!
  Check if given full path is Objective-J file
@@ -480,114 +597,23 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 }
 
 
-/*!
- Check if .XcodeSupport needs to be initialized.
- If not needed, check that all J files are mirrored. If no,
- then launch conversion for missing mirrored h files
- @return YES or NO
- */
-- (BOOL)prepareXCodeSupportProject
-{
-    XCodeSupportProjectName    = [NSString stringWithFormat:@"%@.xcodeproj/", currentProjectName];
-    XCodeTemplatePBXPath       = [[NSBundle mainBundle] pathForResource:@"project.pbxproj" ofType:@"sample"];
-    XCodeSupportProject        = [NSURL URLWithString:XCodeSupportProjectName relativeToURL:currentProjectURL];
-    XCodeSupportProjectSources = [NSURL URLWithString:@".XcodeSupport/" relativeToURL:currentProjectURL];
-    XCodeSupportPBXPath        = [NSString stringWithFormat:@"%@/project.pbxproj", [XCodeSupportProject path]];
-    PBXModifierScriptPath      = [[NSBundle mainBundle] pathForResource:@"pbxprojModifier" ofType:@"py"];
-
-    
-    //[fm removeItemAtURL:XCodeSupportProjectSources error:nil];
-    //[fm removeItemAtURL:XCodeSupportProject error:nil];
-    
-    // create the template project if it doesn't exist
-    if (![fm fileExistsAtPath:[XCodeSupportProjectSources path]])
-    {
-        NSLog(@"Xcode support folder created at: %@", [XCodeSupportProject path]);
-        [fm createDirectoryAtPath:[XCodeSupportProject path] withIntermediateDirectories:YES attributes:nil error:nil];
-        
-        DLog(@"Copying project.pbxproj from %@ to %@", XCodeTemplatePBXPath, [XCodeSupportProject path]);
-        [fm copyItemAtPath:XCodeTemplatePBXPath toPath:XCodeSupportPBXPath error:nil];
-        
-        DLog(@"Reading the content of the project.pbxproj");
-        NSMutableString *PBXContent = [NSMutableString stringWithContentsOfFile:XCodeSupportPBXPath encoding:NSUTF8StringEncoding error:nil];
-        
-        [PBXContent writeToFile:XCodeSupportPBXPath atomically:YES encoding:NSUTF8StringEncoding error:nil];
-        DLog(@"PBX file adapted to the project");
-        
-        [self createXcodeSupportProjectSourcesDirIfNecessary];
-        return NO;
-    }
-
-    [self createXcodeSupportProjectSourcesDirIfNecessary];
-    return YES;
-}
+#pragma mark - Shadow Files Management
 
 /*!
- Create the .XcodeSupport/Sources folder if necessary.
- */
-- (void)createXcodeSupportProjectSourcesDirIfNecessary
-{
-    if ([fm fileExistsAtPath:[XCodeSupportProjectSources path]])
-        return;
-
-    DLog(@"Creating source folder %@", [XCodeSupportProjectSources path]);
-    [fm createDirectoryAtPath:[XCodeSupportProjectSources path] withIntermediateDirectories:YES attributes:nil error:nil];
-}
-
-/*!
- Initialize the creation of the .XcodeSupport project. This
- Operation is threaded
- @param arguments Thread arguments (not used)
- @param shouldNotify is YES, XCCDidPopulateProjectNotification will be send
- */
-- (void)populateXCodeProject:(NSNumber *)shouldNotify
-{
-    if ([shouldNotify boolValue])
-        [delegate performSelector:@selector(growlWithTitle:message:) withObject:@"Loading project" withObject:[currentProjectURL path]];
-
-    NSArray *subdpaths = [fm subpathsAtPath:[currentProjectURL path]];
-    
-    for (NSString *p in subdpaths)
-    {
-        NSString *filePath = [NSString stringWithFormat:@"%@/%@", [currentProjectURL path], p];
-
-        BOOL isDir = NO;
-        [fm fileExistsAtPath:filePath isDirectory:&isDir];
-
-        if (isDir || ![self isObjJFile:filePath] || [self isPathMatchingIgnoredPaths:filePath])
-            continue;
-
-        NSURL *eventualShadow = [self shadowURLForSourceURL:[NSURL fileURLWithPath:filePath]];
-
-        if (![fm fileExistsAtPath:[eventualShadow path]])
-        {
-            DLog(@"Computing missing shadow file for %@", filePath);
-            [self handleFileModification:filePath notify:NO];
-        }
-    }
-
-    if ([shouldNotify boolValue])
-    {
-        NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:currentProjectURL, @"URL", nil];
-        [[NSNotificationCenter defaultCenter] postNotificationName:XCCDidPopulateProjectNotification object:self userInfo:info];
-    }
-}
-
-/*!
- Compute the mirorred (shadow) name for a given path
+ Compute the mirorred (shadow) header file name for a given path
  @param aSourceURL the origin path
- @return NSURL representing the shadow path
+ @return NSURL representing the shadow URL for the header file
  */
-- (NSURL *)shadowURLForSourceURL:(NSURL*)aSourceURL
+- (NSURL *)shadowHeaderURLForSourceURL:(NSURL*)aSourceURL
 {
     if (!aSourceURL)
-        [NSException raise:NSInvalidArgumentException format:@"shadowURLForSourceURL: aSource URL must not be null"];
+        [NSException raise:NSInvalidArgumentException format:@"shadowHeaderURLForSourceURL: aSource URL must not be null"];
 
     NSMutableString *flattenedPath = [NSMutableString stringWithString:[aSourceURL path]];
-    
+
     // Replace "_" with a substring that is unlikely to be in a filename
     [flattenedPath replaceOccurrencesOfString:@"_"
-                                   withString:@"≤‹°∞°›≥"
+                                   withString:XCCUnderscoreReplacement
                                       options:0
                                         range:NSMakeRange(0, [flattenedPath length])];
 
@@ -596,12 +622,33 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
                                       options:0
                                         range:NSMakeRange(0, [flattenedPath length])];
 
-    DLog(@"Flattened path: %@", flattenedPath);
-    NSString *basename  = [NSString stringWithFormat:@"%@.m", [[flattenedPath stringByDeletingPathExtension] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
-    
+    DLog(@"shadowHeaderURLForSourceURL: Flattened path: %@", flattenedPath);
+    NSString *basename  = [NSString stringWithFormat:@"%@.h", [[flattenedPath stringByDeletingPathExtension] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+
     return [NSURL URLWithString:basename relativeToURL:XCodeSupportProjectSources];
 }
 
+/*!
+ Compute the mirorred (shadow) implementation file name for a given path
+ @param aSourceURL the origin path
+ @return NSURL representing the shadow URL for the implementation file
+ */
+- (NSURL *)shadowImplementationURLForSourceURL:(NSURL*)aSourceURL
+{
+    if (!aSourceURL)
+        [NSException raise:NSInvalidArgumentException format:@"shadowImplementationURLForSourceURL: aSource URL must not be null"];
+
+    NSURL *shadowHeaderURL = [self shadowHeaderURLForSourceURL:aSourceURL];
+    NSURL *shadowImplPath = [[shadowHeaderURL URLByDeletingPathExtension] URLByAppendingPathExtension:@"m"];
+
+    return shadowImplPath;
+}
+
+/*!
+ Compute the Cappuccino source file that is related to the given shadow header file URL
+ @param aString the origin path
+ @return NSURL representing the URL for the related Cappuccino source file
+ */
 - (NSURL *)sourceURLForShadowName:(NSString *)aString
 {
     NSMutableString * unshadowedPath = [NSMutableString stringWithString:aString];
@@ -611,12 +658,12 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
                                        options:0
                                          range:NSMakeRange(0, [unshadowedPath length])];
 
-    [unshadowedPath replaceOccurrencesOfString:@"≤‹°∞°›≥"
-                                   withString:@"_"
-                                      options:0
-                                        range:NSMakeRange(0, [unshadowedPath length])];
+    [unshadowedPath replaceOccurrencesOfString:XCCUnderscoreReplacement
+                                    withString:@"_"
+                                       options:0
+                                         range:NSMakeRange(0, [unshadowedPath length])];
 
-    [unshadowedPath replaceOccurrencesOfString:@".m"
+    [unshadowedPath replaceOccurrencesOfString:@".h"
                                     withString:@".j"
                                        options:0
                                          range:NSMakeRange(0, [unshadowedPath length])];
@@ -624,6 +671,64 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     return [NSURL fileURLWithPath:[NSString stringWithString:unshadowedPath]];
 }
 
+/*!
+ Clean up any shadow files and PBX entries related to given the Cappuccino source file URL
+ @param anURL the Cappuccino source file URL
+ */
+- (void)cleanUpShadowsRelatedToSourceURL:(NSURL *)anURL
+{
+    NSURL *shadowHeaderURL = [self shadowHeaderURLForSourceURL:anURL];
+    NSURL *shadowImplementationURL = [self shadowImplementationURLForSourceURL:anURL];
+
+    DLog(@"cleanUpShadowsRelatedToSourceURL: Removing shadow header file: %@", shadowHeaderURL);
+    [fm removeItemAtURL:shadowHeaderURL error:nil];
+
+    DLog(@"cleanUpShadowsRelatedToSourceURL: Removing shadow implementation file: %@", shadowImplementationURL);
+    [fm removeItemAtURL:shadowImplementationURL error:nil];
+
+    DLog(@"cleanUpShadowsRelatedToSourceURL:Removing PBX reference task...");
+    NSArray *PBXArguments = [NSArray arrayWithObjects: @"-c",
+                             [NSString stringWithFormat:@"(%@; python %@ remove '%@' '%@' '%@' '%@' '%@') 2>&1",
+                              profilePath,
+                              PBXModifierScriptPath,
+                              XCodeSupportPBXPath,
+                              [shadowHeaderURL path],
+                              [shadowImplementationURL path],
+                              [anURL path],
+                              [currentProjectURL path]],nil];
+
+    NSArray *statusInfo = [self runTask:PBXArguments];
+    NSNumber *status = [statusInfo objectAtIndex:0];
+    NSString *response = [statusInfo objectAtIndex:1];
+    DLog(@"cleanUpShadowsRelatedToSourceURL: PBX Reference removal status/response: %@/%@", status, response);
+}
+
+/*!
+ Clean the support folder according to files present in given path
+ */
+- (void)tidyShadowedFiles
+{
+    NSArray *subpaths = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[XCodeSupportProjectSources path] error:NULL];
+
+    for (NSString *subpath in subpaths)
+    {
+        if ([subpath pathExtension] != @".h" || [subpath lastPathComponent] == @"xcc_general_include.h")
+            continue;
+
+        NSURL *unshadowed = [self sourceURLForShadowName:subpath];
+
+        if (![fm fileExistsAtPath:[unshadowed path]])
+        {
+            [self cleanUpShadowsRelatedToSourceURL:unshadowed];
+
+            if (![self supportFileLevelAPI] && [self respondsToSelector:@selector(updateLastModificationDate:forPath:)])
+                [self performSelector:@selector(updateLastModificationDate:forPath:) withObject:nil withObject:unshadowed];
+        }
+    }
+}
+
+
+#pragma mark - XCC Ignore management
 
 /*!
  Compute the ignored paths according to any existing
@@ -645,7 +750,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
                 [ignoredFilePaths addObject:pattern];
         }
     }
-    
+
     [ignoredFilePaths addObject:@"*/.git/*"];
     [ignoredFilePaths addObject:@"*/.svn/*"];
     [ignoredFilePaths addObject:@"*/.hg/*"];
@@ -656,7 +761,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     [ignoredFilePaths addObject:@"*main.j"];
     [ignoredFilePaths addObject:@"*.xcodeproj/*"];
     [ignoredFilePaths addObject:@"*.DS_Store"];
-    
+
     NSLog(@"Ignoring file paths: %@", ignoredFilePaths);
 }
 
@@ -706,76 +811,6 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     return NO;
 }
 
-/*!
- Start all needed processes for listening to a given path
- @param path The folder path to listen to
- */
-- (void)listenProjectAtPath:(NSString *)path
-{
-    NSMutableString *tempName = [NSMutableString stringWithString:[path lastPathComponent]];
-    
-    currentProjectURL = [NSURL fileURLWithPath:path];
-
-    [tempName replaceOccurrencesOfString:@" "
-                              withString:@"_"
-                                 options:NSCaseInsensitiveSearch
-                                   range:NSMakeRange(0, [tempName length])];
-    currentProjectName = [NSString stringWithString:tempName];
-    
-    [self computeIgnoredPaths];
-    
-    BOOL isProjectReady = [self prepareXCodeSupportProject];
-
-    [NSThread detachNewThreadSelector:@selector(populateXCodeProject:) toTarget:self withObject:[NSNumber numberWithBool:!isProjectReady]];
-
-    [self initializeEventStreamWithPath:[currentProjectURL path]];
-    
-    NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:path, @"path", [NSNumber numberWithInt:(isProjectReady) ? 1 : 0], @"ready", nil];
-    [[NSNotificationCenter defaultCenter] postNotificationName:XCCListeningStartNotification object:self userInfo:info];
-    
-    [[NSUserDefaults standardUserDefaults] setObject:[currentProjectURL path] forKey:@"LastOpenedPath"];
-}
-
-/*!
- Clean the support folder according to files present in given path
- */
-- (void)tidyShadowedFiles
-{
-    NSArray *subpaths = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[XCodeSupportProjectSources path] error:NULL];
-
-    for (NSString *subpath in subpaths)
-    {
-        NSString *unshadowed = [[self sourceURLForShadowName:subpath] path];
-        NSString *shadowFullPath = [NSString stringWithFormat:@"%@/%@", [XCodeSupportProjectSources path], subpath];
-
-        if (![fm fileExistsAtPath:unshadowed])
-        {
-            DLog(@"cleaning shadow file: %@", subpath);
-            [fm removeItemAtPath:shadowFullPath error:nil];
-
-#if DEBUG
-            NSArray *PBXArguments = [NSArray arrayWithObjects: @"-c",
-                                     [NSString stringWithFormat:@"(%@; python %@ remove '%@' '%@' '%@' '%@') 2>&1",
-                                      profilePath,
-                                      PBXModifierScriptPath,
-                                      XCodeSupportPBXPath,
-                                      shadowFullPath,
-                                      unshadowed,
-                                      [currentProjectURL path]],nil];
-
-            DLog(@"Cleaning PBX reference task...");
-            NSArray *statusInfo = [self runTask:PBXArguments];
-            NSNumber *status = [statusInfo objectAtIndex:0];
-            NSString *response = [statusInfo objectAtIndex:1];
-#endif
-            DLog(@"PBX Reference cleaning status/response: %@/%@", status, response);
-            
-            if (![self supportFileLevelAPI] && [self respondsToSelector:@selector(updateLastModificationDate:forPath:)])
-                [self performSelector:@selector(updateLastModificationDate:forPath:) withObject:nil withObject:unshadowed];
-        }
-    }
-}
-
 @end
 
 
@@ -786,7 +821,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     if (!pathModificationDates)
     {
         pathModificationDates = [[[NSUserDefaults standardUserDefaults] dictionaryForKey:@"pathModificationDates"] mutableCopy];
-        
+
         if (!pathModificationDates)
             pathModificationDates = [NSMutableDictionary new];
     }
@@ -804,7 +839,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     if (!pathModificationDates)
     {
         pathModificationDates = [[[NSUserDefaults standardUserDefaults] dictionaryForKey:@"pathModificationDates"] mutableCopy];
-        
+
         if (!pathModificationDates)
             pathModificationDates = [NSMutableDictionary new];
     }
