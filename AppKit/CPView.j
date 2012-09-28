@@ -2359,13 +2359,11 @@ setBoundsOrigin:
 */
 - (BOOL)scrollRectToVisible:(CGRect)aRect
 {
-    var visibleRect = [self visibleRect];
-
     // Make sure we have a rect that exists.
     aRect = CGRectIntersection(aRect, _bounds);
 
-    // If aRect is empty or is already visible then no scrolling required.
-    if (_CGRectIsEmpty(aRect) || CGRectContainsRect(visibleRect, aRect))
+    // If aRect is empty no scrolling required.
+    if (CGRectIsEmpty(aRect))
         return NO;
 
     var enclosingClipView = [self _enclosingClipView];
@@ -2374,20 +2372,34 @@ setBoundsOrigin:
     if (!enclosingClipView)
         return NO;
 
-    var scrollPoint = _CGPointMakeCopy(visibleRect.origin);
+    var documentView = [enclosingClipView documentView];
+
+    // If the clip view doesn't have a document view, then there isn't much we can do.
+    if (!documentView)
+        return NO;
+
+    // Get the document view visible rect and convert aRect to the document view's coordinate system
+    var documentViewVisibleRect = [documentView visibleRect],
+        rectInDocumentView = [self convertRect:aRect toView:documentView];
+
+    // If already visible then no scrolling required.
+    if (CGRectContainsRect(documentViewVisibleRect, rectInDocumentView))
+        return NO;
+
+    var scrollPoint = CGPointMakeCopy(documentViewVisibleRect.origin);
 
     // One of the following has to be true since our current visible rect didn't contain aRect.
-    if (_CGRectGetMinX(aRect) <= _CGRectGetMinX(visibleRect))
-        scrollPoint.x = _CGRectGetMinX(aRect);
-    else if (_CGRectGetMaxX(aRect) > _CGRectGetMaxX(visibleRect))
-        scrollPoint.x += _CGRectGetMaxX(aRect) - _CGRectGetMaxX(visibleRect);
+    if (_CGRectGetMinX(rectInDocumentView) < _CGRectGetMinX(documentViewVisibleRect))
+        scrollPoint.x = _CGRectGetMinX(rectInDocumentView);
+    else if (_CGRectGetMaxX(rectInDocumentView) > _CGRectGetMaxX(documentViewVisibleRect))
+        scrollPoint.x += _CGRectGetMaxX(rectInDocumentView) - _CGRectGetMaxX(documentViewVisibleRect);
 
-    if (_CGRectGetMinY(aRect) <= _CGRectGetMinY(visibleRect))
-        scrollPoint.y = CGRectGetMinY(aRect);
-    else if (_CGRectGetMaxY(aRect) > _CGRectGetMaxY(visibleRect))
-        scrollPoint.y += _CGRectGetMaxY(aRect) - _CGRectGetMaxY(visibleRect);
+    if (_CGRectGetMinY(rectInDocumentView) < _CGRectGetMinY(documentViewVisibleRect))
+        scrollPoint.y = _CGRectGetMinY(rectInDocumentView);
+    else if (_CGRectGetMaxY(rectInDocumentView) > _CGRectGetMaxY(documentViewVisibleRect))
+        scrollPoint.y += _CGRectGetMaxY(rectInDocumentView) - _CGRectGetMaxY(documentViewVisibleRect);
 
-    [enclosingClipView scrollToPoint:CGPointMake(scrollPoint.x, scrollPoint.y)];
+    [enclosingClipView scrollToPoint:scrollPoint];
 
     return YES;
 }
