@@ -247,7 +247,7 @@ var CPToolbarsByIdentifier              = nil,
     _window = aWindow;
 
     if (_window)
-        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_autovalidate) name:_CPWindowDidChangeFirstResponderNotification object:aWindow];
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_autoValidateVisibleItems) name:_CPWindowDidChangeFirstResponderNotification object:aWindow];
 }
 
 /*!
@@ -400,14 +400,15 @@ var CPToolbarsByIdentifier              = nil,
 */
 - (void)validateVisibleItems
 {
-    var toolbarItems = [self visibleItems],
-        count = [toolbarItems count];
-
-    while (count--)
-        [toolbarItems[count] validate];
+    _validateVisibleItems:NO
 }
 
-- (void)_autovalidate
+- (void)_autoValidateVisibleItems
+{
+    _validateVisibleItems:YES
+}
+
+- (void)_validateVisibleItems:(BOOL)isAutovalidation
 {
     var toolbarItems = [self visibleItems],
         count = [toolbarItems count];
@@ -415,7 +416,7 @@ var CPToolbarsByIdentifier              = nil,
     while (count--)
     {
         var item = [toolbarItems objectAtIndex:count];
-        if ([item autovalidates])
+        if (!isAutovalidation || [item autovalidates])
             [item validate];
     }
 }
