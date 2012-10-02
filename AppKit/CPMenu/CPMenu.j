@@ -976,8 +976,7 @@ var _CPMenuBarVisible               = NO,
 
     for (; index < count; ++index)
     {
-        var item = _items[index],
-            modifierMask = [item keyEquivalentModifierMask];
+        var item = _items[index];
 
         if ([anEvent _triggersKeyEquivalent:[item keyEquivalent] withModifierMask:[item keyEquivalentModifierMask]])
         {
