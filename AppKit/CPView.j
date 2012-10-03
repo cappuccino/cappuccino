@@ -313,7 +313,7 @@ var CPCurrentToolTip,
         _DOMImageSizes = [];
 #endif
 
-        _theme = [CPTheme defaultTheme];
+        _theme = [CPTheme themeForView:self];
         _themeState = CPThemeStateNormal;
 
         [self _setupToolTipHandlers];
@@ -3104,7 +3104,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
         [self _setupViewFlags];
 
-        _theme = [CPTheme defaultTheme];
+        _theme = [CPTheme themeForView:self];
         _themeClass = [aCoder decodeObjectForKey:CPViewThemeClassKey];
         _themeState = CPThemeState([aCoder decodeIntForKey:CPViewThemeStateKey]);
         _themeAttributes = {};

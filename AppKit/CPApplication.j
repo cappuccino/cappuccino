@@ -108,7 +108,7 @@ CPRunContinuesResponse  = -1002;
 
     CPPanel                 _aboutPanel;
 
-    CPThemeBlend            _themeBlend @accessors(property=themeBlend);
+    CPArray                 _themeBlends @accessors(property=themeBlends);
 }
 
 /*!
@@ -142,6 +142,8 @@ CPRunContinuesResponse  = -1002;
         _windows = [];
 
         [_windows addObject:nil];
+
+        _themeBlends = [];
     }
 
     return self;
@@ -1169,6 +1171,16 @@ CPRunContinuesResponse  = -1002;
                                                       userInfo:nil];
 }
 
+- (CPThemeBlend)themeBlend
+{
+    return (_themeBlends.length > 0 ? _themeBlends[0] : nil);
+}
+
+- (void)setThemeBlend:(CPThemeBlend)aThemeBlend
+{
+    _themeBlends[0] = aThemeBlend;
+}
+
 + (CPString)defaultThemeName
 {
     return ([[CPBundle mainBundle] objectForInfoDictionaryKey:"CPDefaultTheme"] || @"Aristo");
@@ -1238,15 +1250,14 @@ function CPApplicationMain(args, namedArgs)
     [_CPAppBootstrapper performActions];
 }
 
-var _CPAppBootstrapperActions = nil;
+var _CPAppBootstrapperActions = nil,
+    _CPAppThemeURLsToLoad = [];
 
 @implementation _CPAppBootstrapper : CPObject
-{
-}
 
 + (CPArray)actions
 {
-    return [@selector(bootstrapPlatform), @selector(loadDefaultTheme), @selector(loadMainCibFile)];
+    return [@selector(bootstrapPlatform), @selector(loadThemes), @selector(loadMainCibFile)];
 }
 
 + (void)performActions
@@ -1270,17 +1281,30 @@ var _CPAppBootstrapperActions = nil;
     return [CPPlatform bootstrap];
 }
 
-+ (BOOL)loadDefaultTheme
++ (BOOL)loadThemes
 {
-    var defaultThemeName = [CPApplication defaultThemeName],
-        themeURL = nil;
+    _CPAppThemeURLsToLoad.push([CPApplication defaultThemeName]);
 
-    if (defaultThemeName === @"Aristo")
-        themeURL = [[CPBundle bundleForClass:[CPApplication class]] pathForResource:defaultThemeName + @".blend"];
+    var auxiliaryThemes = ([[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPAuxiliaryThemes"] || []);
+
+    _CPAppThemeURLsToLoad = _CPAppThemeURLsToLoad.concat(auxiliaryThemes);
+
+    [self loadNextTheme];
+
+    return YES;
+}
+
++ (BOOL)loadNextTheme
+{
+    var themeName = _CPAppThemeURLsToLoad.shift();
+
+    if (themeName === @"Aristo")
+        themeURL = [[CPBundle bundleForClass:[CPApplication class]] pathForResource:themeName + @".blend"];
     else
-        themeURL = [[CPBundle mainBundle] pathForResource:defaultThemeName + @".blend"];
+        themeURL = [[CPBundle mainBundle] pathForResource:themeName + @".blend"];
 
     var blend = [[CPThemeBlend alloc] initWithContentsOfURL:themeURL];
+
     [blend loadWithDelegate:self];
 
     return YES;
@@ -1288,10 +1312,17 @@ var _CPAppBootstrapperActions = nil;
 
 + (void)blendDidFinishLoading:(CPThemeBlend)aThemeBlend
 {
-    [[CPApplication sharedApplication] setThemeBlend:aThemeBlend];
-    [CPTheme setDefaultTheme:[CPTheme themeNamed:[CPApplication defaultThemeName]]];
+    var themeBlends = [CPApp themeBlends];
 
-    [self performActions];
+    [themeBlends addObject:aThemeBlend];
+
+    if ([themeBlends count] === 1)
+        [CPTheme setDefaultTheme:[CPTheme themeNamed:[CPApplication defaultThemeName]]];
+
+    if (_CPAppThemeURLsToLoad.length === 0)
+        [self performActions];
+    else
+        [self loadNextTheme];
 }
 
 + (BOOL)loadMainCibFile
