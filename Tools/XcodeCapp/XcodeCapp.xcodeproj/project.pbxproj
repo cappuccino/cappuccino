@@ -271,6 +271,7 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /usr/bin/perl;
 			shellScript = "#!/usr/bin/perl\n\nwhile (<>) {\n    s/\\s+$//;\n    print \"$_\\n\";\n}";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 

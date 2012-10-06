@@ -222,6 +222,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     SEL                 _doubleAction;
     CPInteger           _clickedRow;
+    CPInteger           _clickedColumn;
     unsigned            _columnAutoResizingStyle;
 
     int                 _lastTrackedRowIndex;
@@ -324,7 +325,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (void)_init
 {
-    _lastSelectedRow = -1;
+    _lastSelectedRow = _clickedColumn = _clickedRow = -1;
 
     _selectedColumnIndexes = [CPIndexSet indexSet];
     _selectedRowIndexes = [CPIndexSet indexSet];
@@ -542,8 +543,12 @@ NOT YET IMPLEMENTED
 }
 
 /*
-    * - clickedColumn
+    Returns the index of the the column the user clicked to trigger an action, or -1 if no column was clicked.
 */
+- (CPInteger)clickedColumn
+{
+    return _clickedColumn;
+}
 
 /*!
     Returns the index of the the row the user clicked to trigger an action, or -1 if no row was clicked.
@@ -3376,7 +3381,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             rowIndex = 0,
             rowsCount = rowArray.length;
 
-        if (dataViewsForTableColumn) {
+        if (dataViewsForTableColumn)
+        {
             for (; rowIndex < rowsCount; ++rowIndex)
             {
                 var row = rowArray[rowIndex],
@@ -4190,7 +4196,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     _isSelectingSession = NO;
 
     var CLICK_TIME_DELTA = 1000,
-        columnIndex,
+        columnIndex = -1,
         column,
         rowIndex,
         shouldEdit = YES;
@@ -4198,6 +4204,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_)
     {
         rowIndex = [self rowAtPoint:aPoint];
+
         if (rowIndex !== -1)
         {
             if ([_draggedRowIndexes count] > 0)
@@ -4219,12 +4226,15 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             || [self infoForBinding:@"content"]))
     {
         columnIndex = [self columnAtPoint:lastPoint];
+
         if (columnIndex !== -1)
         {
             column = _tableColumns[columnIndex];
+
             if ([column isEditable])
             {
                 rowIndex = [self rowAtPoint:aPoint];
+
                 if (rowIndex !== -1)
                 {
                     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldEditTableColumn_row_)
@@ -4244,6 +4254,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if ([[CPApp currentEvent] clickCount] === 2 && _doubleAction)
     {
         _clickedRow = [self rowAtPoint:aPoint];
+        _clickedColumn = [self columnAtPoint:lastPoint];
         [self sendAction:_doubleAction to:_target];
     }
 }
