@@ -400,12 +400,12 @@ var CPToolbarsByIdentifier              = nil,
 */
 - (void)validateVisibleItems
 {
-    _validateVisibleItems:NO
+    [self _validateVisibleItems:NO]
 }
 
 - (void)_autoValidateVisibleItems
 {
-    _validateVisibleItems:YES
+    [self _validateVisibleItems:YES]
 }
 
 - (void)_validateVisibleItems:(BOOL)isAutovalidation
