@@ -269,8 +269,6 @@ var NSButtonIsBorderedMask = 0x00800000,
     _highlightsBy = [cell highlightsBy];
     _showsStateBy = [cell showsStateBy];
 
-    [self setTag:[cell tag]];
-
     return self;
 }
 
