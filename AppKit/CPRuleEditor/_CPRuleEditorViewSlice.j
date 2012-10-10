@@ -45,7 +45,7 @@
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort],
         bounds = [self bounds],
-        maxX = CGRectGetWidth(bounds) - 2,
+        maxX = CGRectGetWidth(bounds),
         maxY = CGRectGetHeight(bounds);
 
 // Draw background
@@ -63,7 +63,7 @@
 
 // Draw Top Border
     CGContextBeginPath(context);
-    CGContextMoveToPoint(context, 1, 0);
+    CGContextMoveToPoint(context, 0, 0);
     CGContextAddLineToPoint(context, maxX, 0);
     CGContextClosePath(context);
     CGContextSetStrokeColor(context, [_ruleEditor _sliceTopBorderColor]);
@@ -71,8 +71,8 @@
 
 // Draw Bottom Border
     CGContextBeginPath(context);
-    CGContextMoveToPoint(context, 1, maxY - 0.5);
-    CGContextAddLineToPoint(context, maxX, maxY - 0.5);
+    CGContextMoveToPoint(context, 0, maxY);
+    CGContextAddLineToPoint(context, maxX, maxY);
     CGContextClosePath(context);
     var bottomColor = (_rowIndex == [_ruleEditor _lastRow]) ? [_ruleEditor _sliceLastBottomBorderColor] : [_ruleEditor _sliceBottomBorderColor];
     CGContextSetStrokeColor(context, bottomColor);
