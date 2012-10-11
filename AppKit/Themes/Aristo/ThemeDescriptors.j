@@ -1678,6 +1678,7 @@ var themedButtonValues = nil,
             [@"text-shadow-color",  [CPColor whiteColor]],
             [@"text-shadow-offset", CGSizeMake(0.0, 1.0)],
             [@"text-alignment",     CPLeftTextAlignment],
+            [@"line-break-mode",    CPLineBreakByTruncatingTail],
 
             [@"background-color",   pressed,            CPThemeStateHighlighted],
             [@"background-color",   highlighted,        CPThemeStateSelected],
