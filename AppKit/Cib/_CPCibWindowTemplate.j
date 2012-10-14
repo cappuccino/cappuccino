@@ -5,20 +5,6 @@
 @import "CPWindow.j"
 
 
-var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemplateMinSizeKey",
-    _CPCibWindowTemplateMaxSizeKey                          = @"_CPCibWindowTemplateMaxSizeKey",
-
-    _CPCibWindowTemplateViewClassKey                        = @"_CPCibWindowTemplateViewClassKey",
-    _CPCibWindowTemplateWindowClassKey                      = @"_CPCibWindowTemplateWindowClassKey",
-
-    _CPCibWindowTemplateWindowRectKey                       = @"_CPCibWindowTemplateWindowRectKey",
-    _CPCibWindowTemplateWindowStyleMaskKey                  = @"_CPCibWindowTempatStyleMaskKey",
-    _CPCibWindowTemplateWindowTitleKey                      = @"_CPCibWindowTemplateWindowTitleKey",
-    _CPCibWindowTemplateWindowViewKey                       = @"_CPCibWindowTemplateWindowViewKey",
-
-    _CPCibWindowTemplateWindowAutorecalculatesKeyViewLoop   = @"_CPCibWindowTemplateWindowAutorecalculatesKeyViewLoop",
-    _CPCibWindowTemplateWindowIsFullPlatformWindowKey       = @"_CPCibWindowTemplateWindowIsFullPlatformWindowKey";
-
 @implementation _CPCibWindowTemplate : CPObject
 {
     CGSize      _minSize;
@@ -56,6 +42,74 @@ var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemp
 
     return self;
 }
+
+- (CPString)customClassName
+{
+    return _windowClass;
+}
+
+- (void)setCustomClassName:(CPString)aClassName
+{
+    _windowClass = aClassName;
+}
+
+- (CPString)windowClass
+{
+    return _windowClass;
+}
+
+- (id)_cibInstantiate
+{
+    var windowClass = CPClassFromString([self windowClass]),
+        theWindow = [[windowClass alloc] initWithContentRect:_windowRect styleMask:_windowStyleMask];
+
+/*    if (!windowClass)
+        [NSException raise:NSInvalidArgumentException format:@"Unable to locate NSWindow class %@, using NSWindow",_windowClass];
+        class=[NSWindow class];*/
+
+    if (_minSize)
+        [theWindow setMinSize:_minSize];
+    if (_maxSize)
+        [theWindow setMaxSize:_maxSize];
+
+    //[result setHidesOnDeactivate:(_wtFlags&0x80000000)?YES:NO];
+    [theWindow setTitle:_windowTitle];
+
+    // FIXME: we can't autoresize yet...
+    [_windowView setAutoresizesSubviews:NO];
+
+    [theWindow setContentView:_windowView];
+
+    [_windowView setAutoresizesSubviews:YES];
+
+    if ([_viewClass isKindOfClass:[CPToolbar class]])
+    {
+       [theWindow setToolbar:_viewClass];
+    }
+
+    [theWindow setAutorecalculatesKeyViewLoop:_windowAutorecalculatesKeyViewLoop];
+    [theWindow setFullBridge:_windowIsFullPlatformWindow];
+
+    return theWindow;
+}
+
+@end
+
+var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemplateMinSizeKey",
+    _CPCibWindowTemplateMaxSizeKey                          = @"_CPCibWindowTemplateMaxSizeKey",
+
+    _CPCibWindowTemplateViewClassKey                        = @"_CPCibWindowTemplateViewClassKey",
+    _CPCibWindowTemplateWindowClassKey                      = @"_CPCibWindowTemplateWindowClassKey",
+
+    _CPCibWindowTemplateWindowRectKey                       = @"_CPCibWindowTemplateWindowRectKey",
+    _CPCibWindowTemplateWindowStyleMaskKey                  = @"_CPCibWindowTempatStyleMaskKey",
+    _CPCibWindowTemplateWindowTitleKey                      = @"_CPCibWindowTemplateWindowTitleKey",
+    _CPCibWindowTemplateWindowViewKey                       = @"_CPCibWindowTemplateWindowViewKey",
+
+    _CPCibWindowTemplateWindowAutorecalculatesKeyViewLoop   = @"_CPCibWindowTemplateWindowAutorecalculatesKeyViewLoop",
+    _CPCibWindowTemplateWindowIsFullPlatformWindowKey       = @"_CPCibWindowTemplateWindowIsFullPlatformWindowKey";
+
+@implementation _CPCibWindowTemplate (Coding)
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
@@ -107,55 +161,5 @@ var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemp
         [aCoder encodeObject:_windowIsFullPlatformWindow forKey:_CPCibWindowTemplateWindowIsFullPlatformWindowKey];
 }
 
-- (CPString)customClassName
-{
-    return _windowClass;
-}
-
-
-- (void)setCustomClassName:(CPString)aClassName
-{
-    _windowClass = aClassName;
-}
-
-- (CPString)windowClass
-{
-    return _windowClass;
-}
-
-- (id)_cibInstantiate
-{
-    var windowClass = CPClassFromString([self windowClass]),
-        theWindow = [[windowClass alloc] initWithContentRect:_windowRect styleMask:_windowStyleMask];
-
-/*    if (!windowClass)
-        [NSException raise:NSInvalidArgumentException format:@"Unable to locate NSWindow class %@, using NSWindow",_windowClass];
-        class=[NSWindow class];*/
-
-    if (_minSize)
-        [theWindow setMinSize:_minSize];
-    if (_maxSize)
-        [theWindow setMaxSize:_maxSize];
-
-    //[result setHidesOnDeactivate:(_wtFlags&0x80000000)?YES:NO];
-    [theWindow setTitle:_windowTitle];
-
-    // FIXME: we can't autoresize yet...
-    [_windowView setAutoresizesSubviews:NO];
-
-    [theWindow setContentView:_windowView];
-
-    [_windowView setAutoresizesSubviews:YES];
-
-    if ([_viewClass isKindOfClass:[CPToolbar class]])
-    {
-       [theWindow setToolbar:_viewClass];
-    }
-
-    [theWindow setAutorecalculatesKeyViewLoop:_windowAutorecalculatesKeyViewLoop];
-    [theWindow setFullBridge:_windowIsFullPlatformWindow];
-
-    return theWindow;
-}
-
 @end
+
