@@ -4794,10 +4794,14 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         _contentBindingExpicitelySet = NO;
     }
 
-    if ([[self infoForBinding:@"selectionIndexes"] objectForKey:CPObservedObjectKey] !== destination)
-        [self bind:@"selectionIndexes" toObject:destination withKeyPath:@"selectionIndexes" options:nil];
+    // If the content binding was set manually assume the user is taking manual control of establishing bindings.
+    if (!_contentBindingExpicitelySet)
+    {
+        if ([[self infoForBinding:@"selectionIndexes"] objectForKey:CPObservedObjectKey] !== destination)
+            [self bind:@"selectionIndexes" toObject:destination withKeyPath:@"selectionIndexes" options:nil];
 
-    //[self bind:@"sortDescriptors" toObject:destination withKeyPath:@"sortDescriptors" options:nil];
+        //[self bind:@"sortDescriptors" toObject:destination withKeyPath:@"sortDescriptors" options:nil];
+    }
 }
 
 - (void)bind:(CPString)aBinding toObject:(id)anObject withKeyPath:(CPString)aKeyPath options:(CPDictionary)options
