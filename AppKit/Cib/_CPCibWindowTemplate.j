@@ -4,15 +4,20 @@
 @import "CGGeometry.j"
 @import "CPWindow.j"
 
+CPWindowPositionFlexibleRight                = 1 << 19;
+CPWindowPositionFlexibleLeft                 = 1 << 20;
+CPWindowPositionFlexibleBottom               = 1 << 21;
+CPWindowPositionFlexibleTop                  = 1 << 22;
+
 
 @implementation _CPCibWindowTemplate : CPObject
 {
     CGSize      _minSize;
     CGSize      _maxSize;
-    //CGSize      _screenRect;
+    CGRect      _screenRect;
 
     id          _viewClass;
-    //unsigned  _wtFlags;
+    unsigned    _wtFlags;
     CPString    _windowClass;
     CGRect      _windowRect;
     unsigned    _windowStyleMask;
@@ -38,6 +43,8 @@
         _windowView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 200.0)];
 
         _windowIsFullPlatformWindow = NO;
+
+        _wtFlags = CPPositionProportionalHorizontal | CPPositionProportionalVertical;
     }
 
     return self;
@@ -90,6 +97,9 @@
     [theWindow setAutorecalculatesKeyViewLoop:_windowAutorecalculatesKeyViewLoop];
     [theWindow setFullBridge:_windowIsFullPlatformWindow];
 
+    theWindow._positioningMask = _wtFlags;
+    theWindow._positioningScreenRect = _screenRect;
+
     return theWindow;
 }
 
@@ -99,9 +109,11 @@ var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemp
     _CPCibWindowTemplateMaxSizeKey                          = @"_CPCibWindowTemplateMaxSizeKey",
 
     _CPCibWindowTemplateViewClassKey                        = @"_CPCibWindowTemplateViewClassKey",
+    _CPCibWindowTemplateWTFlagsKey                          = @"_CPCibWindowTemplateWTFlagsKey",
     _CPCibWindowTemplateWindowClassKey                      = @"_CPCibWindowTemplateWindowClassKey",
 
     _CPCibWindowTemplateWindowRectKey                       = @"_CPCibWindowTemplateWindowRectKey",
+    _CPCibWindowTemplateScreenRectKey                       = @"_CPCibWindowTemplateScreenRectKey",
     _CPCibWindowTemplateWindowStyleMaskKey                  = @"_CPCibWindowTempatStyleMaskKey",
     _CPCibWindowTemplateWindowTitleKey                      = @"_CPCibWindowTemplateWindowTitleKey",
     _CPCibWindowTemplateWindowViewKey                       = @"_CPCibWindowTemplateWindowViewKey",
@@ -125,7 +137,9 @@ var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemp
         _viewClass = [aCoder decodeObjectForKey:_CPCibWindowTemplateViewClassKey];
 
         _windowClass = [aCoder decodeObjectForKey:_CPCibWindowTemplateWindowClassKey];
+        _wtFlags = [aCoder decodeIntForKey:_CPCibWindowTemplateWTFlagsKey];
         _windowRect = [aCoder decodeRectForKey:_CPCibWindowTemplateWindowRectKey];
+        _screenRect = [aCoder decodeRectForKey:_CPCibWindowTemplateScreenRectKey];
         _windowStyleMask = [aCoder decodeIntForKey:_CPCibWindowTemplateWindowStyleMaskKey];
 
         _windowTitle = [aCoder decodeObjectForKey:_CPCibWindowTemplateWindowTitleKey];
@@ -148,7 +162,9 @@ var _CPCibWindowTemplateMinSizeKey                          = @"_CPCibWindowTemp
     [aCoder encodeObject:_viewClass forKey:_CPCibWindowTemplateViewClassKey];
 
     [aCoder encodeObject:_windowClass forKey:_CPCibWindowTemplateWindowClassKey];
+    [aCoder encodeInt:_wtFlags forKey:_CPCibWindowTemplateWTFlagsKey];
     [aCoder encodeRect:_windowRect forKey:_CPCibWindowTemplateWindowRectKey];
+    [aCoder encodeRect:_screenRect forKey:_CPCibWindowTemplateScreenRectKey];
     [aCoder encodeInt:_windowStyleMask forKey:_CPCibWindowTemplateWindowStyleMaskKey];
 
     [aCoder encodeObject:_windowTitle forKey:_CPCibWindowTemplateWindowTitleKey];
