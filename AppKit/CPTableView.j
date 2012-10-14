@@ -4800,7 +4800,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         if ([[self infoForBinding:@"selectionIndexes"] objectForKey:CPObservedObjectKey] !== destination)
             [self bind:@"selectionIndexes" toObject:destination withKeyPath:@"selectionIndexes" options:nil];
 
-        //[self bind:@"sortDescriptors" toObject:destination withKeyPath:@"sortDescriptors" options:nil];
+        if ([[self infoForBinding:@"sortDescriptors"] objectForKey:CPObservedObjectKey] !== destination)
+            [self bind:@"sortDescriptors" toObject:destination withKeyPath:@"sortDescriptors" options:nil];
     }
 }
 
