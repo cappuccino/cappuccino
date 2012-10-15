@@ -82,6 +82,7 @@ var NSMatrixRadioModeMask = 0x40000000,
                 [self setBackgroundColor:backgroundColor];
 
             self.isa = [CPView class];
+            NIB_CONNECTION_EQUIVALENCY_TABLE[[self UID]] = radioGroup;
         }
         else
         {
