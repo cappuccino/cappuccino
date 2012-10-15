@@ -118,6 +118,17 @@ function CGPathAddArc(aPath, aTransform, x, y, aRadius, aStartAngle, anEndAngle,
 
 function CGPathAddArcToPoint(aPath, aTransform, x1, y1, x2, y2, aRadius)
 {
+    var p1 = _CGPointMake(x1, y1),
+        p2 = _CGPointMake(x2, y2);
+
+    if (aTransform)
+    {
+        p1 = _CGPointApplyAffineTransform(p1, aTransform);
+        p2 = _CGPointApplyAffineTransform(p2, aTransform);
+    }
+
+    aPath.current = p2;
+    aPath.elements[aPath.count++] = { type:kCGPathElementAddArcToPoint, p1x:p1.x, p1y:p1.y, p2x:p2.x, p2y:p2.y, radius:aRadius };
 }
 
 function CGPathAddCurveToPoint(aPath, aTransform, cp1x, cp1y, cp2x, cp2y, x, y)
@@ -184,6 +195,12 @@ function CGPathAddPath(aPath, aTransform, anotherPath)
             case kCGPathElementAddArc:              CGPathAddArc(aPath, aTransform, element.x, element.y,
                                                                  element.radius, element.startAngle,
                                                                  element.endAngle, element.isClockwise);
+                                                    break;
+
+            case kCGPathElementAddArcToPoint:       CGPathAddArcToPoint(aPath, aTransform,
+                                                                        element.p1x, element.p1y,
+                                                                        element.p2x, element.p2y,
+                                                                        element.radius);
                                                     break;
 
             case kCGPathElementAddQuadCurveToPoint: CGPathAddQuadCurveToPoint(aPath, aTransform,

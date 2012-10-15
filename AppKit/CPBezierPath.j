@@ -272,6 +272,11 @@ var DefaultLineWidth = 1.0;
     CGPathAddPath(_path, nil, CGPathWithRoundedRectangleInRect(rect, xRadius, yRadius, YES, YES, YES, YES));
 }
 
+- (void)appendBezierPathWithArcFromPoint:(CGPoint)fromPoint toPoint:(CGPoint)toPoint radius:(float)radius
+{
+    CGPathAddArcToPoint(_path, null, fromPoint.x, fromPoint.y, toPoint.x, toPoint.y, radius);
+}
+
 /*!
     Append the contents of a CPBezierPath object.
 */
