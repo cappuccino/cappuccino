@@ -322,6 +322,16 @@ CPBelowBottom = 6;
     [self _manageTitlePositioning];
 }
 
+- (CPFont)titleFont
+{
+    return [_titleView font];
+}
+
+- (void)setTitleFont:(CPFont)aFont
+{
+    [_titleView setFont:aFont];
+}
+
 - (void)_manageTitlePositioning
 {
     if (_titlePosition == CPNoTitle)
