@@ -165,6 +165,19 @@ var DefaultLineWidth = 1.0;
     CGPathAddCurveToPoint(_path, nil, controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y, endPoint.x, endPoint.y);
 }
 
+- (CGRect)bounds
+{
+    // TODO: this should return this. The controlPointBounds is not a tight fit.
+    // return CGPathGetPathBoundingBox(_path);
+
+    return [self controlPointBounds];
+}
+
+- (CGRect)controlPointBounds
+{
+    return CGPathGetBoundingBox(_path);
+}
+
 /*!
     Create a line segment between the first and last points in the subpath, closing it.
 */
