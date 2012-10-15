@@ -142,7 +142,7 @@
 
         [_label setAlignment:CPCenterTextAlignment];
         [_label setAutoresizingMask:CPViewMinYMargin | CPViewWidthSizable];
-        [_label setFont:[CPFont boldSystemFontOfSize:12.0]];
+        [_label setFont:[CPFont boldSystemFontOfSize:0]];
 
         [self addSubview:_label];
     }

@@ -189,7 +189,7 @@ exports.main = function(args)
             continue;
         }
 
-        if (argv[0] === "-T" || argv[0] === "--incluceTypeSignatures")
+        if (argv[0] === "-T" || argv[0] === "--includeTypeSignatures")
         {
             objjcFlags |= ObjectiveJ.Preprocessor.Flags.IncludeTypeSignatures;
             argv.shift();

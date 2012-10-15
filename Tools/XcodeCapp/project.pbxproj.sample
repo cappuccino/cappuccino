@@ -8,19 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		9EEC4498135749D200615446 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EEC4497135749D200615446 /* Cocoa.framework */; };
-		9EEC44B5135749D300615446 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EEC4497135749D200615446 /* Cocoa.framework */; };
-		9EEC44CC13574A0B00615446 /* ${CappuccinoProjectName} in Resources */ = {isa = PBXBuildFile; fileRef = 9EEC44CB13574A0B00615446 /* ${CappuccinoProjectName} */; };
+		9EEC44CC13574A0B00615446 /* CappuccinoResources in Resources */ = {isa = PBXBuildFile; fileRef = 9EEC44CB13574A0B00615446 /* CappuccinoResources */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		9EEC44B6135749D300615446 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9EEC448A135749D200615446 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 9EEC4492135749D200615446;
-			remoteInfo = Another;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		9EEC4493135749D200615446 /* Another.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Another.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -28,8 +17,7 @@
 		9EEC449A135749D300615446 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		9EEC449B135749D300615446 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		9EEC449C135749D300615446 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		9EEC44B4135749D300615446 /* AnotherTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AnotherTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
-		9EEC44CB13574A0B00615446 /* ${CappuccinoProjectName} */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ${CappuccinoProjectName}; path = ${CappuccinoProjectRelativePath}; sourceTree = "<group>"; };
+		9EEC44CB13574A0B00615446 /* CappuccinoResources */ = {isa = PBXFileReference; lastKnownFileType = folder; name = CappuccinoResources; path = Resources; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,23 +29,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		9EEC44B0135749D300615446 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				9EEC44B5135749D300615446 /* Cocoa.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		9EEC4488135749D200615446 = {
 			isa = PBXGroup;
 			children = (
-				9EEC44CB13574A0B00615446 /* ${CappuccinoProjectName} */,
+				9EEC44CB13574A0B00615446 /* CappuccinoResources */,
 				9EEC4496135749D200615446 /* Frameworks */,
-				9EEC4494135749D200615446 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
@@ -65,7 +44,6 @@
 			isa = PBXGroup;
 			children = (
 				9EEC4493135749D200615446 /* Another.app */,
-				9EEC44B4135749D300615446 /* AnotherTests.octest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -109,34 +87,16 @@
 			productReference = 9EEC4493135749D200615446 /* Another.app */;
 			productType = "com.apple.product-type.application";
 		};
-		9EEC44B3135749D300615446 /* AnotherTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 9EEC44C8135749D300615446 /* Build configuration list for PBXNativeTarget "AnotherTests" */;
-			buildPhases = (
-				9EEC44AF135749D300615446 /* Sources */,
-				9EEC44B0135749D300615446 /* Frameworks */,
-				9EEC44B1135749D300615446 /* Resources */,
-				9EEC44B2135749D300615446 /* ShellScript */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				9EEC44B7135749D300615446 /* PBXTargetDependency */,
-			);
-			name = AnotherTests;
-			productName = AnotherTests;
-			productReference = 9EEC44B4135749D300615446 /* AnotherTests.octest */;
-			productType = "com.apple.product-type.bundle";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		9EEC448A135749D200615446 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastUpgradeCheck = 0440;
 				ORGANIZATIONNAME = "280 North, Inc.";
 			};
-			buildConfigurationList = 9EEC448D135749D200615446 /* Build configuration list for PBXProject "Another" */;
+			buildConfigurationList = 9EEC448D135749D200615446 /* Build configuration list for PBXProject "XCCSampleProj" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -149,7 +109,6 @@
 			projectRoot = "";
 			targets = (
 				9EEC4492135749D200615446 /* Another */,
-				9EEC44B3135749D300615446 /* AnotherTests */,
 			);
 		};
 /* End PBXProject section */
@@ -159,34 +118,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9EEC44CC13574A0B00615446 /* ${CappuccinoProjectName} in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		9EEC44B1135749D300615446 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
+				9EEC44CC13574A0B00615446 /* CappuccinoResources in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		9EEC44B2135749D300615446 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		9EEC448F135749D200615446 /* Sources */ = {
@@ -196,22 +132,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		9EEC44AF135749D300615446 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		9EEC44B7135749D300615446 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 9EEC4492135749D200615446 /* Another */;
-			targetProxy = 9EEC44B6135749D300615446 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		9EEC44C3135749D300615446 /* Debug */ = {
@@ -250,6 +171,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -265,6 +187,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -276,54 +199,10 @@
 			};
 			name = Release;
 		};
-		9EEC44C9135749D300615446 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Another.app/Contents/MacOS/Another";
-				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "AnotherTests/AnotherTests-Prefix.pch";
-				INFOPLIST_FILE = "AnotherTests/AnotherTests-Info.plist";
-				OTHER_LDFLAGS = (
-					"-framework",
-					SenTestingKit,
-				);
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUNDLE_LOADER)";
-				WRAPPER_EXTENSION = octest;
-			};
-			name = Debug;
-		};
-		9EEC44CA135749D300615446 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Another.app/Contents/MacOS/Another";
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "AnotherTests/AnotherTests-Prefix.pch";
-				INFOPLIST_FILE = "AnotherTests/AnotherTests-Info.plist";
-				OTHER_LDFLAGS = (
-					"-framework",
-					SenTestingKit,
-				);
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUNDLE_LOADER)";
-				WRAPPER_EXTENSION = octest;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		9EEC448D135749D200615446 /* Build configuration list for PBXProject "Another" */ = {
+		9EEC448D135749D200615446 /* Build configuration list for PBXProject "XCCSampleProj" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				9EEC44C3135749D300615446 /* Debug */,
@@ -339,14 +218,7 @@
 				9EEC44C7135749D300615446 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-		};
-		9EEC44C8135749D300615446 /* Build configuration list for PBXNativeTarget "AnotherTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				9EEC44C9135749D300615446 /* Debug */,
-				9EEC44CA135749D300615446 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

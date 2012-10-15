@@ -34,7 +34,7 @@
     var data = [[CPData alloc] initWithRawString:dataString],
         theRows = [CPPropertyListSerialization propertyListFromData:data format:CPPropertyListXMLFormat_v1_0];
 
-// Add a CPImage to the model to test CPValueBinding.
+    // Add a CPImage to the model to test CPValueBinding.
     var path = [[CPBundle mainBundle] pathForResource:@"value.jpg"],
         image = [[CPImage alloc] initWithContentsOfFile:path],
         dict = [CPDictionary dictionaryWithObject:image forKey:@"image"];

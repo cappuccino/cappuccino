@@ -21,18 +21,18 @@
  */
 
 @import "CPTextField.j"
+@import "_CPTitleableWindowView.j"
 
 var _CPHUDWindowViewBackgroundColor = nil,
+    _CPHUDWindowViewThemeValues     = nil,
 
     CPHUDCloseButtonImage           = nil;
 
 var HUD_TITLEBAR_HEIGHT             = 26.0;
 
-@implementation _CPHUDWindowView : _CPWindowView
+@implementation _CPHUDWindowView : _CPTitleableWindowView
 {
     CPView              _toolbarView;
-
-    CPTextField         _titleField;
     CPButton            _closeButton;
 }
 
@@ -60,28 +60,23 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
 
     _CPHUDWindowViewCloseImage        = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"HUDTheme/WindowClose.png"] size:CPSizeMake(18.0, 18.0)];
     _CPHUDWindowViewCloseActiveImage  = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"HUDTheme/WindowCloseActive.png"] size:CPSizeMake(18.0, 18.0)];
+
+    _CPHUDWindowViewThemeValues = [
+        [@"title-font",                 [CPFont systemFontOfSize:[CPFont systemFontSize] - 1]],
+        [@"title-text-color",           [CPColor colorWithWhite:255.0 / 255.0 alpha:0.75]],
+        [@"title-text-color",           [CPColor colorWithWhite:255.0 / 255.0 alpha:1], CPThemeStateKeyWindow],
+        [@"title-text-shadow-color",    [CPColor blackColor]],
+        [@"title-text-shadow-offset",   CGSizeMake(0.0, 1.0)],
+        [@"title-alignment",            CPCenterTextAlignment],
+        // FIXME: Make this to CPLineBreakByTruncatingMiddle once it's implemented.
+        [@"title-line-break-mode",      CPLineBreakByTruncatingTail],
+        [@"title-vertical-alignment",   CPCenterVerticalTextAlignment]
+    ];
 }
 
-+ (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
++ (int)titleBarHeight
 {
-    var contentRect = CGRectMakeCopy(aFrameRect),
-        titleBarHeight = HUD_TITLEBAR_HEIGHT;
-
-    contentRect.origin.y += titleBarHeight;
-    contentRect.size.height -= titleBarHeight;
-
-    return contentRect;
-}
-
-+ (CGRect)frameRectForContentRect:(CGRect)aContentRect
-{
-    var frameRect = CGRectMakeCopy(aContentRect),
-        titleBarHeight = HUD_TITLEBAR_HEIGHT;
-
-    frameRect.origin.y -= titleBarHeight;
-    frameRect.size.height += titleBarHeight;
-
-    return frameRect;
+    return HUD_TITLEBAR_HEIGHT;
 }
 
 - (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
@@ -120,37 +115,18 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
 
     if (self)
     {
+        // Until windows become properly themable, just set these values here in the subclass.
+        [self registerThemeValues:_CPHUDWindowViewThemeValues];
+
         var bounds = [self bounds];
 
         [self setBackgroundColor:_CPHUDWindowViewBackgroundColor];
-
-        _titleField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
-
-        [_titleField setHitTests:NO];
-        [_titleField setFont:[CPFont systemFontOfSize:[CPFont systemFontSize] - 1]];
-        [_titleField setTextColor:[CPColor whiteColor]];
-        [_titleField setTextShadowColor:[CPColor blackColor]];
-        [_titleField setTextShadowOffset:CGSizeMake(0.0, 1.0)];
-        [_titleField setAutoresizingMask:CPViewWidthSizable];
-
-        // FIXME: Make this to CPLineBreakByTruncatingMiddle once it's implemented.
-        [_titleField setLineBreakMode:CPLineBreakByTruncatingTail];
-        [_titleField setAlignment:CPCenterTextAlignment];
-
-        [_titleField setStringValue:@"Untitled"];
-        [_titleField sizeToFit];
-        [_titleField setAutoresizingMask:CPViewWidthSizable];
-        [_titleField setStringValue:@""];
-
-        [_titleField setFrame:CGRectMake(20.0, 3.0, CGRectGetWidth([self bounds]) - 40.0, CGRectGetHeight([_titleField frame]))];
-
-        [self addSubview:_titleField];
 
         if (_styleMask & CPClosableWindowMask)
         {
             var closeSize = [_CPHUDWindowViewCloseImage size];
 
-            _closeButton = [[CPButton alloc] initWithFrame:CGRectMake(8.0, 5.0, closeSize.width, closeSize.height)];
+            _closeButton = [[CPButton alloc] initWithFrame:CGRectMake(8.0, 4.0, closeSize.width, closeSize.height)];
 
             [_closeButton setBordered:NO];
 
@@ -161,6 +137,8 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
         }
 
         [self setResizeIndicatorOffset:CGSizeMake(5.0, 5.0)];
+
+        [self tile];
     }
 
     return self;
@@ -170,11 +148,6 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
 {
     [_closeButton setTarget:[self window]];
     [_closeButton setAction:@selector(performClose:)];
-}
-
-- (void)setTitle:(CPString)aTitle
-{
-    [_titleField setStringValue:aTitle];
 }
 
 - (_CPToolbarView)toolbarView
@@ -194,7 +167,7 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
 
 - (CGSize)toolbarOffset
 {
-    return CGSizeMake(0.0, HUD_TITLEBAR_HEIGHT);
+    return _CGSizeMake(0.0, [[self class] titleBarHeight]);
 }
 
 - (void)tile
@@ -203,14 +176,43 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
 
     var theWindow = [self window],
         bounds = [self bounds],
-        width = CGRectGetWidth(bounds);
+        width = _CGRectGetWidth(bounds);
 
-    [_titleField setFrame:CGRectMake(20.0, 3.0, width - 40.0, CGRectGetHeight([_titleField frame]))];
+    [_titleField setFrame:_CGRectMake(20.0, 0, width - 40.0, [self toolbarOffset].height)];
 
     var maxY = [self toolbarMaxY];
+    if ([_titleField isHidden])
+        maxY -= ([self toolbarOffset]).height;
 
-    [[theWindow contentView] setFrameOrigin:CGPointMake(0.0, maxY, width, CGRectGetHeight(bounds) - maxY)];
+    var contentRect = _CGRectMake(0.0, maxY, width, _CGRectGetHeight(bounds) - maxY);
+
+    [[theWindow contentView] setFrame:contentRect];
+}
+
+- (void)_enableSheet:(BOOL)enable
+{
+    [super _enableSheet:enable];
+
+    [_closeButton setHidden:enable];
+    [_titleField setHidden:enable];
+
+    // resize the window
+    var theWindow = [self window],
+        frame = [theWindow frame],
+        dy = ([self toolbarOffset]).height;
+
+    if (enable)
+        dy = -dy;
+
+    var newHeight = _CGRectGetMaxY(frame) + dy,
+        newWidth = _CGRectGetMaxX(frame);
+
+    frame.size.height += dy;
+
+    [self setFrameSize:_CGSizeMake(newWidth, newHeight)];
+    [self tile];
+    [theWindow setFrame:frame display:NO animate:NO];
+    [theWindow setMovableByWindowBackground:!enable];
 }
 
 @end
-

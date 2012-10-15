@@ -54,4 +54,10 @@ var _CPStandardWindowViewBodyBackgroundColor = nil;
     return aContentRect;
 }
 
+- (void)_enableSheet:(BOOL)enable
+{
+    // do nothing, already a sheet
+}
+
 @end
+

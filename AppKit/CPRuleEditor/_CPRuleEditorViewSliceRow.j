@@ -121,7 +121,7 @@ var CONTROL_HEIGHT = 16.,
     return [CPMenuItem separatorItem];
 }
 
-- (_CPRuleEditorTextField)_createStaticTextFieldWithStringValue:(CPString )text
+- (_CPRuleEditorTextField)_createStaticTextFieldWithStringValue:(CPString)text
 {
     var textField = [[_CPRuleEditorTextField alloc] initWithFrame:CPMakeRect(0, 0, 200, CONTROL_HEIGHT)],
         refont = [_ruleEditor font],
@@ -352,6 +352,15 @@ var CONTROL_HEIGHT = 16.,
             optionFrame = _ruleOptionFrames[i];
 
         optionFrame.origin.y = (rowHeight - CGRectGetHeight(optionFrame)) / 2 - 2;
+
+        // small positioning fix
+        if ([ruleOptionView isKindOfClass:CPTextField])
+        {
+            optionFrame.origin.y += 2;
+            [_ruleOptionViews[i] setValue:CGInsetMake(7, 7, 7, 8) forThemeAttribute:@"content-inset"];
+        }
+
+
         if (widthChanged)
         {
             optionFrame.origin.x = optionViewOriginX;

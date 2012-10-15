@@ -33,7 +33,8 @@
 
 
 var CPMainCibFile               = @"CPMainCibFile",
-    CPMainCibFileHumanFriendly  = @"Main cib file base name";
+    CPMainCibFileHumanFriendly  = @"Main cib file base name",
+    CPEventModifierFlags = 0;
 
 CPApp = nil;
 
@@ -575,6 +576,7 @@ CPRunContinuesResponse  = -1002;
 - (void)sendEvent:(CPEvent)anEvent
 {
     _currentEvent = anEvent;
+    CPEventModifierFlags = [anEvent modifierFlags];
 
 #if PLATFORM(DOM)
     var willPropagate = [[[anEvent window] platformWindow] _willPropagateCurrentDOMEvent];
@@ -931,15 +933,21 @@ CPRunContinuesResponse  = -1002;
 */
 - (void)beginSheet:(CPWindow)aSheet modalForWindow:(CPWindow)aWindow modalDelegate:(id)aModalDelegate didEndSelector:(SEL)aDidEndSelector contextInfo:(id)aContextInfo
 {
-    var styleMask = [aSheet styleMask];
-    if (!(styleMask & CPDocModalWindowMask))
+    if ([aWindow isSheet])
     {
-        [CPException raise:CPInternalInconsistencyException reason:@"Currently only CPDocModalWindowMask style mask is supported for attached sheets"];
+        [CPException raise:CPInternalInconsistencyException reason:@"The target window of beginSheet: cannot be a sheet"];
         return;
     }
 
-    [aWindow orderFront:self];
-    [aSheet setPlatformWindow:[aWindow platformWindow]];
+    [aSheet._windowView _enableSheet:YES];
+
+    // -dw- if a sheet is already visible, we skip this since it serves no purpose and causes
+    // orderOut: to be called on the sheet, which is not what we want.
+    if (![aWindow isVisible])
+    {
+        [aWindow orderFront:self];
+        [aSheet setPlatformWindow:[aWindow platformWindow]];
+    }
     [aWindow _attachSheet:aSheet modalDelegate:aModalDelegate didEndSelector:aDidEndSelector contextInfo:aContextInfo];
 }
 
@@ -968,7 +976,7 @@ CPRunContinuesResponse  = -1002;
         if (context != nil && context["sheet"] === sheet)
         {
             context["returnCode"] = returnCode;
-            [aWindow _detachSheetWindow];
+            [aWindow _endSheet];
             return;
         }
     }
@@ -1186,7 +1194,14 @@ _CPRunModalLoop = function(anEvent)
     var theWindow = [anEvent window],
         modalSession = CPApp._currentSession;
 
-    if (theWindow == modalSession._window || [theWindow worksWhenModal])
+    // The special case for popovers here is not clear. In Cocoa the popover window does not respond YES to worksWhenModal,
+    // yet it works when there is a modal window. Maybe it starts its own modal session, but interaction with the original
+    // modal window seems to continue working as well. Regardless of correctness, this solution beats popovers not working
+    // at all from sheets.
+    if (theWindow == modalSession._window ||
+        [theWindow worksWhenModal] ||
+        [theWindow attachedSheet] == modalSession._window || // -dw- allow modal parent of sheet to be repositioned
+        ([theWindow isKindOfClass:_CPAttachedWindow] && [[theWindow targetView] window] === modalSession._window))
         [theWindow sendEvent:anEvent];
 };
 
@@ -1372,6 +1387,19 @@ var _CPAppBootstrapperActions = nil;
 + (void)reset
 {
     _CPAppBootstrapperActions = nil;
+}
+
+@end
+
+
+@implementation CPEvent (CPApplicationModifierFlags)
+
+/*!
+    Returns the currently pressed modifier flags.
+*/
++ (unsigned)modifierFlags
+{
+    return CPEventModifierFlags;
 }
 
 @end

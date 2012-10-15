@@ -507,7 +507,7 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 - (int)parentRowForRow:(int)rowIndex
 {
     if (rowIndex < 0 || rowIndex >= [self numberOfRows])
-        [CPException raise:CPRangeException reason:_cmd+@" row " + rowIndex + " is out of range"];
+        [CPException raise:CPRangeException reason:_cmd + @" row " + rowIndex + " is out of range"];
 
     var targetObject = [[self _rowCacheForIndex:rowIndex] rowObject];
 
@@ -548,7 +548,7 @@ TODO: implement
 - (CPRuleEditorRowType)rowTypeForRow:(int)rowIndex
 {
     if (rowIndex < 0 || rowIndex > [self numberOfRows])
-        [CPException raise:CPRangeException reason:_cmd+@"row " + rowIndex + " is out of range"];
+        [CPException raise:CPRangeException reason:_cmd + @"row " + rowIndex + " is out of range"];
 
     var rowcache = [self _rowCacheForIndex:rowIndex];
     if (rowcache)
@@ -588,7 +588,7 @@ TODO: implement
         if (indexInSubrows !== CPNotFound)
         {
             [indexes addIndex:i];
-            objectsCount --;
+            objectsCount--;
 
             if ([self rowTypeForRow:i] === CPRuleEditorRowTypeCompound)
                 i += [[self subrowIndexesForRow:i] count];
@@ -848,7 +848,7 @@ TODO: implement
             }
             catch(error)
             {
-                CPLogConsole(@"Compound predicate error: [%@]\npredicateType:%i",[error description],compoundType);
+                CPLogConsole(@"Compound predicate error: [%@]\npredicateType:%i", [error description], compoundType);
                 compoundPredicate = nil;
             }
             finally
@@ -893,23 +893,21 @@ TODO: implement
     try
     {
         if (selector !== nil)
-            predicate = [CPComparisonPredicate
-                         predicateWithLeftExpression:lhs
-                         rightExpression:rhs
-                         customSelector:selector
+            predicate = [CPComparisonPredicate predicateWithLeftExpression:lhs
+                                                           rightExpression:rhs
+                                                            customSelector:selector
                          ];
         else
-            predicate = [CPComparisonPredicate
-                         predicateWithLeftExpression:lhs
-                         rightExpression:rhs
-                         modifier:(modifier || CPDirectPredicateModifier)
-                         type:operator
-                         options:(options || CPCaseInsensitivePredicateOption)
+            predicate = [CPComparisonPredicate predicateWithLeftExpression:lhs
+                                                           rightExpression:rhs
+                                                                  modifier:(modifier || CPDirectPredicateModifier)
+                                                                      type:operator
+                                                                   options:(options || CPCaseInsensitivePredicateOption)
                          ];
     }
     catch(error)
     {
-        CPLogConsole(@"Row predicate error: ["+[error description]+"] for row "+aRow);
+        CPLogConsole(@"Row predicate error: [" + [error description] + "] for row " + aRow);
         predicate = nil;
     }
     finally
@@ -1135,7 +1133,7 @@ TODO: implement
 
 - (_CPRuleEditorViewSliceDropSeparator)_createSliceDropSeparator
 {
-    var view = [[_CPRuleEditorViewSliceDropSeparator alloc] initWithFrame:CGRectMake(0,-10, [self frame].size.width, 2)];
+    var view = [[_CPRuleEditorViewSliceDropSeparator alloc] initWithFrame:CGRectMake(0, -10, [self frame].size.width, 2)];
     [view setAutoresizingMask:CPViewWidthSizable];
     return view;
 }
@@ -1316,7 +1314,7 @@ TODO: implement
     return [_boundArrayOwner mutableArrayValueForKey:_boundArrayKeyPath];
 }
 
-- (BOOL)_nextUnusedItems:({CPArray})items andValues:({CPArray})values forRow:(int)rowIndex forRowType:(unsigned int)type
+- (BOOL)_nextUnusedItems:(CPArray)items andValues:(CPArray)values forRow:(int)rowIndex forRowType:(unsigned int)type
 {
     var parentItem = [items lastObject], // if empty items array, this is NULL aka the root item;
         childrenCount = [self _queryNumberOfChildrenOfItem:parentItem withRowType:type],
@@ -1398,7 +1396,7 @@ TODO: implement
     {
         var item = [items objectAtIndex:i],
             value = [values objectAtIndex:i],
-            itemAndValue = [CPDictionary dictionaryWithObjects:[item,value] forKeys:["item","value"]];
+            itemAndValue = [CPDictionary dictionaryWithObjects:[item, value] forKeys:["item", "value"]];
 
         [itemsAndValues addObject:itemAndValue];
     }
@@ -2109,9 +2107,9 @@ TODO: implement
         mainRowIndex = [slice rowIndex],
         draggingRows = [CPIndexSet indexSetWithIndex:mainRowIndex],
         selected_indices = [self _selectedSliceIndices],
-        pasteboard = [CPPasteboard pasteboardWithName: CPDragPboard];
+        pasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];
 
-    [pasteboard declareTypes:[CPArray arrayWithObjects: CPRuleEditorItemPBoardType, nil] owner: self];
+    [pasteboard declareTypes:[CPArray arrayWithObjects:CPRuleEditorItemPBoardType, nil] owner: self];
 
     if ([selected_indices containsIndex:mainRowIndex])
         [draggingRows addIndexes:selected_indices];
@@ -2314,7 +2312,7 @@ TODO: implement
         {
             var rowObject = [[self _rowCacheForIndex:current_index] rowObject],
                 subrows = [self _subrowObjectsOfObject:rowObject],
-                subIndexes = [self _globalIndexesForSubrowIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0,[subrows count])] ofParentObject:rowObject];
+                subIndexes = [self _globalIndexesForSubrowIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [subrows count])] ofParentObject:rowObject];
 
             numberOfChildrenOfPreviousBrother = [subIndexes count];
         }
@@ -2416,17 +2414,17 @@ var CPRuleEditorAlignmentGridWidthKey       = @"CPRuleEditorAlignmentGridWidth",
     if (self !== nil)
     {
         [self setFormattingStringsFilename:[coder decodeObjectForKey:CPRuleEditorStringsFilenameKey]];
-        _alignmentGridWidth     = [coder decodeFloatForKey:CPRuleEditorAlignmentGridWidthKey];
-        _sliceHeight            = [coder decodeDoubleForKey:CPRuleEditorSliceHeightKey];
+        _alignmentGridWidth      = [coder decodeFloatForKey:CPRuleEditorAlignmentGridWidthKey];
+        _sliceHeight             = [coder decodeDoubleForKey:CPRuleEditorSliceHeightKey];
         _editable                = [coder decodeBoolForKey:CPRuleEditorEditableKey];
         _allowsEmptyCompoundRows = [coder decodeBoolForKey:CPRuleEditorAllowsEmptyCompoundRowsKey];
         _disallowEmpty           = [coder decodeBoolForKey:CPRuleEditorDisallowEmptyKey];
-        _nestingMode            = [coder decodeIntForKey:CPRuleEditorNestingModeKey];
-        _typeKeyPath            = [coder decodeObjectForKey:CPRuleEditorRowTypeKeyPathKey];
-        _itemsKeyPath           = [coder decodeObjectForKey:CPRuleEditorItemsKeyPathKey];
-        _valuesKeyPath          = [coder decodeObjectForKey:CPRuleEditorValuesKeyPathKey];
-        _subrowsArrayKeyPath    = [coder decodeObjectForKey:CPRuleEditorSubrowsArrayKeyPathKey];
-        _boundArrayKeyPath      = [coder decodeObjectForKey:CPRuleEditorBoundArrayKeyPathKey];
+        _nestingMode             = [coder decodeIntForKey:CPRuleEditorNestingModeKey];
+        _typeKeyPath             = [coder decodeObjectForKey:CPRuleEditorRowTypeKeyPathKey];
+        _itemsKeyPath            = [coder decodeObjectForKey:CPRuleEditorItemsKeyPathKey];
+        _valuesKeyPath           = [coder decodeObjectForKey:CPRuleEditorValuesKeyPathKey];
+        _subrowsArrayKeyPath     = [coder decodeObjectForKey:CPRuleEditorSubrowsArrayKeyPathKey];
+        _boundArrayKeyPath       = [coder decodeObjectForKey:CPRuleEditorBoundArrayKeyPathKey];
 
         _slicesHolder = [[self subviews] objectAtIndex:0];
         _boundArrayOwner = [coder decodeObjectForKey:CPRuleEditorBoundArrayOwnerKey];

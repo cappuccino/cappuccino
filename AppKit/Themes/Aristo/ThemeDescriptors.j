@@ -1033,13 +1033,13 @@ var themedButtonValues = nil,
             [@"editor-inset", CGInsetMake(2.0, 0.0, 0.0, 0.0)],
 
             // Non-bezeled token field with tokens
-            [@"content-inset", CGInsetMake(5.0, 8.0, 4.0, 8.0)],
+            [@"content-inset", CGInsetMake(6.0, 8.0, 4.0, 8.0)],
 
             // Non-bezeled token field with no tokens
             [@"content-inset", CGInsetMake(7.0, 8.0, 6.0, 8.0), CPTextFieldStatePlaceholder],
 
             // Bezeled token field with tokens
-            [@"content-inset", CGInsetMake(6.0, 8.0, 2.0, 8.0), CPThemeStateBezeled],
+            [@"content-inset", CGInsetMake(6.0, 5.0, 4.0, 5.0), CPThemeStateBezeled],
 
             // Bezeled token field with no tokens
             [@"content-inset", CGInsetMake(8.0, 8.0, 7.0, 8.0), CPThemeStateBezeled | CPTextFieldStatePlaceholder]
@@ -1091,7 +1091,7 @@ var themedButtonValues = nil,
             [@"text-color",     textHighlightedColor,               CPThemeStateHighlighted],
 
             [@"bezel-inset",    CGInsetMakeZero(),                  CPThemeStateBezeled],
-            [@"content-inset",  CGInsetMake(1.0, 22.0, 3.0, 15.0),  CPThemeStateBezeled],
+            [@"content-inset",  CGInsetMake(2.0, 22.0, 2.0, 15.0),  CPThemeStateBezeled],
 
             // Minimum height == maximum height since tokens are fixed height.
             [@"min-size",       CGSizeMake(0.0, 19.0)],
@@ -1680,6 +1680,7 @@ var themedButtonValues = nil,
             [@"text-shadow-color",  [CPColor whiteColor]],
             [@"text-shadow-offset", CGSizeMake(0.0, 1.0)],
             [@"text-alignment",     CPLeftTextAlignment],
+            [@"line-break-mode",    CPLineBreakByTruncatingTail],
 
             [@"background-color",   pressed,            CPThemeStateHighlighted],
             [@"background-color",   highlighted,        CPThemeStateSelected],

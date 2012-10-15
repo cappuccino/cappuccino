@@ -161,6 +161,17 @@
     [self assert:2 equals:[[outlineView selectedRowIndexes] count] message:"selections should remain"];
 }
 
+
+- (void)testExpandCollapseItemVisibility
+{
+    var delegate = [TestExpandCollapseVisibilityDelegate new];
+    [delegate setTester:self];
+    [outlineView setDelegate:delegate];
+
+    [outlineView collapseItem:".1"];
+    [outlineView expandItem:".1"];
+}
+
 /*!
     Test that the outline view archives properly.
 */
@@ -267,6 +278,53 @@
         if (expectedSelectedItems)
             [tester assert:expectedSelectedItems[i] equals:item message:"in notification selected row #" + i];
     }
+}
+
+@end
+
+@implementation TestExpandCollapseVisibilityDelegate : CPObject
+{
+    id      tester @accessors;
+}
+
+- (void)outlineViewItemWillCollapse:(CPNotification)aNotification
+{
+    var anOutlineView = [aNotification object],
+        visibleRows = [anOutlineView rowsInRect:[anOutlineView visibleRect]];
+
+    [tester assertTrue:[anOutlineView isItemExpanded:".1"]];
+    [tester assert:0 equals:visibleRows.location];
+    [tester assert:8 equals:visibleRows.length];
+}
+
+- (void)outlineViewItemDidCollapse:(CPNotification)aNotification
+{
+    var anOutlineView = [aNotification object],
+        visibleRows = [anOutlineView rowsInRect:[anOutlineView visibleRect]];
+
+    [tester assertFalse:[anOutlineView isItemExpanded:".1"]];
+    [tester assert:0 equals:visibleRows.location];
+    [tester assert:4 equals:visibleRows.length];
+}
+
+- (void)outlineViewItemWillExpand:(CPNotification)aNotification
+{
+    var anOutlineView = [aNotification object],
+        visibleRows = [anOutlineView rowsInRect:[anOutlineView visibleRect]];
+
+    [tester assertFalse:[anOutlineView isItemExpanded:".1"]];
+    [tester assert:0 equals:visibleRows.location];
+    [tester assert:4 equals:visibleRows.length];
+}
+
+- (void)outlineViewItemDidExpand:(CPNotification)aNotification
+{
+    var anOutlineView = [aNotification object],
+        visibleRows = [anOutlineView rowsInRect:[anOutlineView visibleRect]];
+
+    [tester assertTrue:[anOutlineView isItemExpanded:".1"]];
+    [tester assert:0 equals:visibleRows.location];
+    [tester assert:8 equals:visibleRows.length];
 }
 
 @end

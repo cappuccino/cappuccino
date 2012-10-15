@@ -4,6 +4,7 @@
 
 @implementation CPTableViewTest : OJTestCase
 {
+    CPWindow        theWindow;
     CPTableView     tableView;
     CPTableColumn   tableColumn;
 
@@ -15,18 +16,20 @@
 - (void)setUp
 {
     // setup a reasonable table
-    tableView = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+    theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1024.0, 768.0)
+                                            styleMask:CPWindowNotSizable];
+
+    tableView = [[FirstResponderConfigurableTableView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
     tableColumn = [[CPTableColumn alloc] initWithIdentifier:@"Foo"];
+    tableView.acceptsFirstResponder = YES;
     [tableView addTableColumn:tableColumn];
+
+    [[theWindow contentView] addSubview:tableView];
 }
 
 - (void)testDoubleAction
 {
     doubleActionReceived = NO;
-
-    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0.0, 0.0, 1024.0, 768.0)
-                                                styleMask:CPWindowNotSizable];
-    [[theWindow contentView] addSubview:tableView];
 
     [tableView setTarget:self];
     [tableView setDoubleAction:@selector(doubleAction:)];
@@ -36,6 +39,20 @@
                           timestamp:0 windowNumber:[theWindow windowNumber] context:nil eventNumber:0 clickCount:2 pressure:0],
         dblClkUp = [CPEvent mouseEventWithType:CPLeftMouseUp location:CGPointMake(50, 50) modifierFlags:0
                           timestamp:0 windowNumber:[theWindow windowNumber] context:nil eventNumber:0 clickCount:2 pressure:0];
+
+    [[CPApplication sharedApplication] sendEvent:dblClkDown];
+    [tableView trackMouse:dblClkDown];
+
+    [[CPApplication sharedApplication] sendEvent:dblClkUp];
+    [tableView trackMouse:dblClkUp];
+
+    [self assertTrue:doubleActionReceived];
+
+    // The event should also work even if the table is not the first responder.
+    tableView.acceptsFirstResponder = NO;
+    [theWindow makeFirstResponder:nil];
+
+    doubleActionReceived = NO;
 
     [[CPApplication sharedApplication] sendEvent:dblClkDown];
     [tableView trackMouse:dblClkDown];
@@ -124,11 +141,6 @@
 */
 - (void)testEditCell
 {
-    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0, 0, 200, 150)
-                                                styleMask:CPWindowNotSizable];
-
-    [[theWindow contentView] addSubview:tableView];
-
     var dataSource = [TestDataSource new];
 
     [dataSource setTableEntries:["A", "B", "C"]];
@@ -230,9 +242,7 @@
 
 - (void)testContentBinding
 {
-    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0, 0, 200, 150)
-                                                styleMask:CPWindowNotSizable],
-        contentBindingTable = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
+    var contentBindingTable = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
         tableColumn = [[CPTableColumn alloc] initWithIdentifier:@"A"],
         delegate = [ContentBindingTableDelegate new];
 
@@ -255,6 +265,53 @@
     // Set the model again with different values
     [delegate setTableEntries:[[@"C1", @"D1"], [@"C2", @"D2"], [@"C3", @"D3"]]];
     [contentBindingTable reloadData];
+}
+
+- (void)testInitiallyHiddenColumns
+{
+    var table = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 400, 400)],
+        tableColumn1 = [[CPTableColumn alloc] initWithIdentifier:@"A"],
+        tableColumn2 = [[CPTableColumn alloc] initWithIdentifier:@"B"],
+        delegate = [ContentBindingTableDelegate new];
+
+    [delegate setTester:self];
+    [table setDelegate:delegate];
+
+    [delegate setTableEntries:[[@"A1", @"B1"], [@"A2", @"B2"], [@"A3", @"B3"]]];
+    [table bind:@"content" toObject:delegate withKeyPath:@"tableEntries" options:nil];
+
+    [[theWindow contentView] addSubview:table];
+
+    [tableColumn1 setHidden:YES];
+
+    [tableColumn1 setWidth:50.0];
+    [tableColumn2 setWidth:100.0];
+
+    [table addTableColumn:tableColumn1];
+    [table addTableColumn:tableColumn2];
+
+    [table reloadData];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    [self assertTrue:[table bounds].size.width > 100 && [table bounds].size.width < 200];
+
+    [tableColumn1 setHidden:NO];
+    [tableColumn1 setWidth:100.0];
+
+    [self assertTrue:[table bounds].size.width >= 200];
+}
+
+@end
+
+@implementation FirstResponderConfigurableTableView : CPTableView
+{
+    BOOL acceptsFirstResponder;
+}
+
+- (BOOL)acceptsFirstResponder
+{
+    return acceptsFirstResponder;
 }
 
 @end

@@ -10,6 +10,7 @@ tableTestDragType = @"CPTableViewTestDragType";
     CPImage     iconImage;
     CPArray     dataSet1;
     CPArray     dataSet2;
+    CPArray     dataSet3;
 
     CPTableColumn randomColumn;
 }
@@ -28,9 +29,15 @@ tableTestDragType = @"CPTableViewTestDragType";
     }
 
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(50,50,700,500) styleMask:CPClosableWindowMask],
-        contentView = [theWindow contentView];
+        contentView = [theWindow contentView],
+        label = [CPTextField new];
 
-    tableView = [[CPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 400.0)];
+    [label setStringValue:@"This table refuses to become the first responder but can still be interacted with."];
+    [label sizeToFit];
+    [label setFrameOrigin:CGPointMake(200, 10)]
+    [contentView addSubview:label];
+
+    tableView = [[CUTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 400.0)];
 
     [tableView setAllowsMultipleSelection:YES];
     [tableView setAllowsColumnSelection:YES];
@@ -172,7 +179,6 @@ tableTestDragType = @"CPTableViewTestDragType";
 
 - (void)newWindow
 {
-
     var window2 = [[CPWindow alloc] initWithContentRect:CGRectMake(450, 50, 500, 400) styleMask:CPTitledWindowMask | CPResizableWindowMask];
 
     tableView2 = [[CPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 500.0, 500.0)];
@@ -185,7 +191,6 @@ tableTestDragType = @"CPTableViewTestDragType";
     [tableView2 setDraggingDestinationFeedbackStyle:CPTableViewDropAbove];
     [tableView2 setDelegate:self];
     [tableView2 setDataSource:self];
-
 
     var checkBox = [[CPCheckBox alloc] initWithFrame:CGRectMake(5,3,24,24)],
         checkBoxColumn = [[CPTableColumn alloc] initWithIdentifier:@"checkBox"];
@@ -299,20 +304,9 @@ tableTestDragType = @"CPTableViewTestDragType";
     [aTableView reloadData];
 }
 
-
-- (void)tableViewSelectionIsChanging:(CPNotification)aNotification
-{
-    //CPLog.debug(@"changing! %@", [aNotification description]);
-}
-
-- (void)tableViewSelectionDidChange:(CPNotification)aNotification
-{
-    //CPLog.debug(@"did change! %@", [aNotification description]);
-}
-
 - (BOOL)tableView:(CPTableView)aTableView shouldSelectRow:(int)rowIndex
 {
-    //CPLog.debug(@"tableView:shouldSelectRow");
+    CPLog.debug(@"tableView:shouldSelectRow");
     return true;
 }
 
@@ -324,18 +318,19 @@ tableTestDragType = @"CPTableViewTestDragType";
 
 - (void)tableViewSelectionDidChange:(id)notification
 {
-    //CPLogConsole(_cmd + [notification description]);
+    CPLogConsole(_cmd + [notification description]);
 }
 
 - (void)tableViewSelectionIsChanging:(id)notification
 {
-    //CPLogConsole(_cmd + [notification description]);
+    CPLogConsole(_cmd + [notification description]);
 }
 
 - (void)_tableViewColumnDidResize:(id)notification
 {
-    //CPLogConsole(_cmd + [notification description]);
+    CPLogConsole(_cmd + [notification description]);
 }
+
 - (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)tableColumn row:(int)row
 {
     if (aTableView === tableView3)
@@ -425,8 +420,8 @@ tableTestDragType = @"CPTableViewTestDragType";
         }
         else
         {
-            var destIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(row, [sourceIndexes count])];
-            var sourceObjects = [sourceDataSet objectsAtIndexes:sourceIndexes];
+            var destIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(row, [sourceIndexes count])],
+                sourceObjects = [sourceDataSet objectsAtIndexes:sourceIndexes];
 
             [destinationDataSet insertObjects:sourceObjects atIndexes:destIndexes];
             [destinationTable reloadData];
@@ -482,6 +477,19 @@ tableTestDragType = @"CPTableViewTestDragType";
 
         index = [indexes indexLessThanIndex:index];
     }
+}
+
+@end
+
+
+@implementation CUTableView : CPTableView
+{
+
+}
+
+- (BOOL)acceptsFirstResponder
+{
+    return NO;
 }
 
 @end

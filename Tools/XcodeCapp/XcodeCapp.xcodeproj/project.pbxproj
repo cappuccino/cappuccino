@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0218442515D32B5D00A782B8 /* pbxprojModifier.py in Resources */ = {isa = PBXBuildFile; fileRef = 0218442415D32B5D00A782B8 /* pbxprojModifier.py */; };
 		022BCEA71468632000B72910 /* project.pbxproj.sample in Resources */ = {isa = PBXBuildFile; fileRef = 022BCEA61468632000B72910 /* project.pbxproj.sample */; };
 		024A041413699DD400DCBE4D /* parser.j in Resources */ = {isa = PBXBuildFile; fileRef = 024A041113699D6800DCBE4D /* parser.j */; };
 		026F3B6213866B0B00EE5B83 /* xcodecapp-icon-inactive.png in Resources */ = {isa = PBXBuildFile; fileRef = 026F3B6113866B0B00EE5B83 /* xcodecapp-icon-inactive.png */; };
@@ -21,6 +22,7 @@
 		027FE4BA1462F64E00B1AB92 /* xcodecapp-icon-working.png in Resources */ = {isa = PBXBuildFile; fileRef = 027FE4B91462F64E00B1AB92 /* xcodecapp-icon-working.png */; };
 		027FE4BD1462F7EB00B1AB92 /* FSEventCallback.m in Sources */ = {isa = PBXBuildFile; fileRef = 027FE4BC1462F7EB00B1AB92 /* FSEventCallback.m */; };
 		0289AC9414668CAF003CD975 /* XcodeCapp.icns in Resources */ = {isa = PBXBuildFile; fileRef = 0289AC9314668CAF003CD975 /* XcodeCapp.icns */; };
+		0294F09315D345A500840547 /* mod_pbxproj.py in Resources */ = {isa = PBXBuildFile; fileRef = 0294F09215D345A500840547 /* mod_pbxproj.py */; };
 		02998CEB1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict in Resources */ = {isa = PBXBuildFile; fileRef = 02998CEA1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict */; };
 		02998CF71369C339006C73DB /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02998CF61369C339006C73DB /* Growl.framework */; };
 		02998CF91369C38A006C73DB /* Growl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02998CF61369C339006C73DB /* Growl.framework */; };
@@ -44,8 +46,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0218442415D32B5D00A782B8 /* pbxprojModifier.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = pbxprojModifier.py; sourceTree = "<group>"; };
 		022BCEA61468632000B72910 /* project.pbxproj.sample */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = project.pbxproj.sample; sourceTree = "<group>"; };
-		024A041113699D6800DCBE4D /* parser.j */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.objj; path = parser.j; sourceTree = "<group>"; };
+		024A041113699D6800DCBE4D /* parser.j */ = {isa = PBXFileReference; explicitFileType = sourcecode.javascript; fileEncoding = 4; path = parser.j; sourceTree = "<group>"; };
 		026F3B6113866B0B00EE5B83 /* xcodecapp-icon-inactive.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "xcodecapp-icon-inactive.png"; sourceTree = "<group>"; };
 		026F3B6413866E7D00EE5B83 /* xcodecapp-icon-active.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "xcodecapp-icon-active.png"; sourceTree = "<group>"; };
 		027D9989136969DD00D3DB13 /* XcodeCapp.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XcodeCapp.pch; sourceTree = "<group>"; };
@@ -56,6 +59,7 @@
 		027FE4BB1462F7D600B1AB92 /* FSEventCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FSEventCallback.h; sourceTree = "<group>"; };
 		027FE4BC1462F7EB00B1AB92 /* FSEventCallback.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FSEventCallback.m; sourceTree = "<group>"; };
 		0289AC9314668CAF003CD975 /* XcodeCapp.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = XcodeCapp.icns; sourceTree = "<group>"; };
+		0294F09215D345A500840547 /* mod_pbxproj.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = mod_pbxproj.py; sourceTree = "<group>"; };
 		02998CEA1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "Growl Registration Ticket.growlRegDict"; sourceTree = "<group>"; };
 		02998CF61369C339006C73DB /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Growl.framework; sourceTree = "<group>"; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -156,6 +160,8 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				0294F09215D345A500840547 /* mod_pbxproj.py */,
+				0218442415D32B5D00A782B8 /* pbxprojModifier.py */,
 				4E2D0D00154840B400475C01 /* help.rtfd */,
 				022BCEA61468632000B72910 /* project.pbxproj.sample */,
 				027FE4B91462F64E00B1AB92 /* xcodecapp-icon-working.png */,
@@ -188,6 +194,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 027D99A313696A7000D3DB13 /* Build configuration list for PBXNativeTarget "XcodeCapp" */;
 			buildPhases = (
+				024699001602C04A00F0AE43 /* ShellScript */,
 				027D999A13696A7000D3DB13 /* Resources */,
 				027D999D13696A7000D3DB13 /* Sources */,
 				02998CF81369C383006C73DB /* CopyFiles */,
@@ -209,7 +216,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0420;
+				LastUpgradeCheck = 0440;
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "XcodeCapp" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -242,10 +249,31 @@
 				0289AC9414668CAF003CD975 /* XcodeCapp.icns in Resources */,
 				022BCEA71468632000B72910 /* project.pbxproj.sample in Resources */,
 				4E2D0D01154840B400475C01 /* help.rtfd in Resources */,
+				0218442515D32B5D00A782B8 /* pbxprojModifier.py in Resources */,
+				0294F09315D345A500840547 /* mod_pbxproj.py in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		024699001602C04A00F0AE43 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/*.m",
+				"$(SRCROOT)/*.h",
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /usr/bin/perl;
+			shellScript = "#!/usr/bin/perl\n\nwhile (<>) {\n    s/\\s+$//;\n    print \"$_\\n\";\n}";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		027D999D13696A7000D3DB13 /* Sources */ = {
@@ -286,6 +314,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -307,6 +336,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -336,7 +366,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx10.6;
+				SDKROOT = macosx;
 			};
 			name = Debug;
 		};
@@ -352,7 +382,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx10.6;
+				SDKROOT = macosx;
 			};
 			name = Release;
 		};

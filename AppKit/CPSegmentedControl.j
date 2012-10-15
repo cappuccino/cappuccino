@@ -366,11 +366,14 @@ CPSegmentSwitchTrackingMomentary = 2;
     @param aSegment the segment to enable/disable
     @throws CPRangeException if \c aSegment is out of bounds
 */
-- (void)setEnabled:(BOOL)isEnabled forSegment:(unsigned)aSegment
+- (void)setEnabled:(BOOL)shouldBeEnabled forSegment:(unsigned)aSegment
 {
-    [_segments[aSegment] setEnabled:isEnabled];
+    if ([_segments[aSegment] enabled] === shouldBeEnabled)
+        return;
 
-    if (isEnabled)
+    [_segments[aSegment] setEnabled:shouldBeEnabled];
+
+    if (shouldBeEnabled)
         _themeStates[aSegment] &= ~CPThemeStateDisabled;
     else
         _themeStates[aSegment] |= CPThemeStateDisabled;

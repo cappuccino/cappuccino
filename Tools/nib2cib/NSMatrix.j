@@ -115,6 +115,7 @@ var NSMatrixRadioModeMask = 0x40000000,
         [self setAllowsMixedState:[aCell allowsMixedState]];
         [self setObjectValue:[aCell objectValue]];
         [self setEnabled:[aCell isEnabled]];
+        [self setTag:[aCell tag]];
     }
 
     return self;

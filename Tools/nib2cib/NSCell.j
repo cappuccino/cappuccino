@@ -49,6 +49,7 @@
     CPFont          _font                       @accessors(readonly, getter=font);
     int             _lineBreakMode              @accessors(readonly, getter=lineBreakMode);
     CPFormatter     _formatter                  @accessors(readonly, getter=formatter);
+    int             _tag                        @accessors(readonly, getter=tag);
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -76,6 +77,8 @@
         _lineBreakMode  = (flags2 & 0x0E00) >> 9;
         _controlSize    = (flags2 & 0xE0000) >> 17;
         _sendsActionOnEndEditing = (flags2 & 0x00400000) ? YES : NO;
+
+        _tag = [aCoder decodeIntForKey:@"NSTag"];
 
         _objectValue    = [aCoder decodeObjectForKey:@"NSContents"];
         _font           = [aCoder decodeObjectForKey:@"NSSupport"];

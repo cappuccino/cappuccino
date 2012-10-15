@@ -29,6 +29,7 @@
 @import "CPTableColumn.j"
 @import "_CPCornerView.j"
 @import "CPScroller.j"
+@import "CPCompatibility.j"
 
 
 CPTableViewColumnDidMoveNotification        = @"CPTableViewColumnDidMoveNotification";
@@ -226,6 +227,7 @@ var CUSTOM_CIB_FAILDED_TO_LOAD = {};
 
     SEL                 _doubleAction;
     CPInteger           _clickedRow;
+    CPInteger           _clickedColumn;
     unsigned            _columnAutoResizingStyle;
 
     int                 _lastTrackedRowIndex;
@@ -329,7 +331,7 @@ var CUSTOM_CIB_FAILDED_TO_LOAD = {};
 */
 - (void)_init
 {
-    _lastSelectedRow = -1;
+    _lastSelectedRow = _clickedColumn = _clickedRow = -1;
 
     _selectedColumnIndexes = [CPIndexSet indexSet];
     _selectedRowIndexes = [CPIndexSet indexSet];
@@ -552,8 +554,12 @@ NOT YET IMPLEMENTED
 }
 
 /*
-    * - clickedColumn
+    Returns the index of the the column the user clicked to trigger an action, or -1 if no column was clicked.
 */
+- (CPInteger)clickedColumn
+{
+    return _clickedColumn;
+}
 
 /*!
     Returns the index of the the row the user clicked to trigger an action, or -1 if no row was clicked.
@@ -989,6 +995,13 @@ NOT YET IMPLEMENTED
         columnIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(fromIndex, toIndex)];
 
     [self reloadDataForRowIndexes:rowIndexes columnIndexes:columnIndexes];
+
+    // Notify even if programmatically moving a column as in Cocoa.
+    // TODO Only notify when a column drag operation ends, not each time a column reaches a new slot?
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPTableViewColumnDidMoveNotification
+                                                        object:self
+                                                      userInfo:[CPDictionary dictionaryWithObjects:[fromIndex, toIndex]
+                                                                                           forKeys:[@"CPOldColumn", @"CPNewColumn"]]];
 }
 
 /*!
@@ -2741,7 +2754,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (_allowsColumnSelection)
     {
         [self _noteSelectionIsChanging];
-        if (modifierFlags & CPCommandKeyMask)
+        if (modifierFlags & CPPlatformActionKeyMask)
         {
             if ([self isColumnSelected:clickedColumn])
                 [self deselectColumn:clickedColumn];
@@ -2980,13 +2993,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         row = [_exposedRows indexGreaterThanIndex:row];
     }
 
-    // Add the column header view
-    var headerFrame = [headerView frame];
-    headerFrame.origin = _CGPointMakeZero();
-
-    var columnHeaderView = [[_CPTableColumnHeaderView alloc] initWithFrame:headerFrame];
-    [columnHeaderView setStringValue:[headerView stringValue]];
-    [columnHeaderView setThemeState:[headerView themeState]];
+    // Add a copy of the header view.
+    var columnHeaderView = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:headerView]];
     [dragView addSubview:columnHeaderView];
 
     [dragView setBackgroundColor:[CPColor whiteColor]];
@@ -3492,12 +3500,15 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             rowIndex = 0,
             rowsCount = rowArray.length;
 
-        for (; rowIndex < rowsCount; ++rowIndex)
+        if (dataViewsForTableColumn)
         {
-            var row = rowArray[rowIndex],
-                dataView = dataViewsForTableColumn[row];
+            for (; rowIndex < rowsCount; ++rowIndex)
+            {
+                var row = rowArray[rowIndex],
+                    dataView = dataViewsForTableColumn[row];
 
-            [dataView setFrame:[self frameOfDataViewAtColumn:column row:row]];
+                [dataView setFrame:[self frameOfDataViewAtColumn:column row:row]];
+            }
         }
     }
 }
@@ -4247,8 +4258,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (BOOL)startTrackingAt:(CGPoint)aPoint
 {
-    if (![[self window] makeFirstResponder:self])
-        return NO;
+    // Try to become the first responder, but if we can't, that's okay.
+    [[self window] makeFirstResponder:self];
 
     var row = [self rowAtPoint:aPoint];
 
@@ -4399,13 +4410,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
-    if ([[self window] firstResponder] !== self)
-        return;
-
     _isSelectingSession = NO;
 
     var CLICK_TIME_DELTA = 1000,
-        columnIndex,
+        columnIndex = -1,
         column,
         rowIndex,
         shouldEdit = YES;
@@ -4413,6 +4421,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_)
     {
         rowIndex = [self rowAtPoint:aPoint];
+
         if (rowIndex !== -1)
         {
             if ([_draggedRowIndexes count] > 0)
@@ -4434,12 +4443,15 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             || [self infoForBinding:@"content"]))
     {
         columnIndex = [self columnAtPoint:lastPoint];
+
         if (columnIndex !== -1)
         {
             column = _tableColumns[columnIndex];
+
             if ([column isEditable])
             {
                 rowIndex = [self rowAtPoint:aPoint];
+
                 if (rowIndex !== -1)
                 {
                     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldEditTableColumn_row_)
@@ -4459,6 +4471,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if ([[CPApp currentEvent] clickCount] === 2 && _doubleAction)
     {
         _clickedRow = [self rowAtPoint:aPoint];
+        _clickedColumn = [self columnAtPoint:lastPoint];
         [self sendAction:_doubleAction to:_target];
     }
 }
@@ -5086,10 +5099,15 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         _contentBindingExpicitelySet = NO;
     }
 
-    if ([[self infoForBinding:@"selectionIndexes"] objectForKey:CPObservedObjectKey] !== destination)
-        [self bind:@"selectionIndexes" toObject:destination withKeyPath:@"selectionIndexes" options:nil];
+    // If the content binding was set manually assume the user is taking manual control of establishing bindings.
+    if (!_contentBindingExpicitelySet)
+    {
+        if ([[self infoForBinding:@"selectionIndexes"] objectForKey:CPObservedObjectKey] !== destination)
+            [self bind:@"selectionIndexes" toObject:destination withKeyPath:@"selectionIndexes" options:nil];
 
-    //[self bind:@"sortDescriptors" toObject:destination withKeyPath:@"sortDescriptors" options:nil];
+        if ([[self infoForBinding:@"sortDescriptors"] objectForKey:CPObservedObjectKey] !== destination)
+            [self bind:@"sortDescriptors" toObject:destination withKeyPath:@"sortDescriptors" options:nil];
+    }
 }
 
 - (void)bind:(CPString)aBinding toObject:(id)anObject withKeyPath:(CPString)aKeyPath options:(CPDictionary)options

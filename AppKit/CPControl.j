@@ -112,7 +112,7 @@ var CPControlBlackColor = [CPColor blackColor];
                                                 CPTopVerticalTextAlignment,
                                                 CPLineBreakByClipping,
                                                 [CPColor blackColor],
-                                                [CPFont systemFontOfSize:12.0],
+                                                [CPFont systemFontOfSize:CPFontCurrentSystemSize],
                                                 [CPNull null],
                                                 _CGSizeMakeZero(),
                                                 CPImageLeft,
@@ -516,7 +516,7 @@ var CPControlBlackColor = [CPColor blackColor];
 */
 - (CPString)stringValue
 {
-    if (_formatter && _value !== undefined && _value !== nil)
+    if (_formatter && _value !== undefined)
     {
         var formattedValue = [self hasThemeState:CPThemeStateEditing] ? [_formatter editingStringForObjectValue:_value] : [_formatter stringForObjectValue:_value];
 

@@ -31,26 +31,107 @@
 
 - (void)willChangeValueForKey:(CPString)aKey
 {
+    if (!aKey)
+        return;
+
+    if (!self[KVOProxyKey])
+    {
+        if (!self._willChangeMessageCounter)
+            self._willChangeMessageCounter = new Object();
+
+        if (!self._willChangeMessageCounter[aKey])
+            self._willChangeMessageCounter[aKey] = 1;
+        else
+            self._willChangeMessageCounter[aKey] += 1;
+    }
 }
 
 - (void)didChangeValueForKey:(CPString)aKey
 {
+    if (!aKey)
+        return;
+
+    if (!self[KVOProxyKey])
+    {
+        if (self._willChangeMessageCounter && self._willChangeMessageCounter[aKey])
+        {
+            self._willChangeMessageCounter[aKey] -= 1;
+
+            if (!self._willChangeMessageCounter[aKey])
+                delete self._willChangeMessageCounter[aKey];
+        }
+        else
+            [CPException raise:@"CPKeyValueObservingException" reason:@"'didChange...' message called without prior call of 'willChange...'"];
+    }
 }
 
 - (void)willChange:(CPKeyValueChange)aChange valuesAtIndexes:(CPIndexSet)indexes forKey:(CPString)aKey
 {
+    if (!aKey)
+        return;
+
+    if (!self[KVOProxyKey])
+    {
+        if (!self._willChangeMessageCounter)
+            self._willChangeMessageCounter = new Object();
+
+        if (!self._willChangeMessageCounter[aKey])
+            self._willChangeMessageCounter[aKey] = 1;
+        else
+            self._willChangeMessageCounter[aKey] += 1;
+    }
 }
 
 - (void)didChange:(CPKeyValueChange)aChange valuesAtIndexes:(CPIndexSet)indexes forKey:(CPString)aKey
 {
+    if (!aKey)
+        return;
+
+    if (!self[KVOProxyKey])
+    {
+        if (self._willChangeMessageCounter && self._willChangeMessageCounter[aKey])
+        {
+            self._willChangeMessageCounter[aKey] -= 1;
+
+            if (!self._willChangeMessageCounter[aKey])
+                delete self._willChangeMessageCounter[aKey];
+        }
+        else
+            [CPException raise:@"CPKeyValueObservingException" reason:@"'didChange...' message called without prior call of 'willChange...'"];
+    }
 }
 
 - (void)willChangeValueForKey:(CPString)aKey withSetMutation:(CPKeyValueSetMutationKind)aMutationKind usingObjects:(CPSet)objects
 {
+    if (!aKey)
+        return;
+
+    if (!self[KVOProxyKey])
+    {
+        if (!self._willChangeMessageCounter)
+            self._willChangeMessageCounter = new Object();
+
+        if (!self._willChangeMessageCounter[aKey])
+            self._willChangeMessageCounter[aKey] = 1;
+        else
+            self._willChangeMessageCounter[aKey] += 1;
+    }
 }
 
 - (void)didChangeValueForKey:(CPString)aKey withSetMutation:(CPKeyValueSetMutationKind)aMutationKind usingObjects:(CPSet)objects
 {
+    if (!self[KVOProxyKey])
+    {
+        if (self._willChangeMessageCounter && self._willChangeMessageCounter[aKey])
+        {
+            self._willChangeMessageCounter[aKey] -= 1;
+
+            if (!self._willChangeMessageCounter[aKey])
+                delete self._willChangeMessageCounter[aKey];
+        }
+        else
+            [CPException raise:@"CPKeyValueObservingException" reason:@"'didChange...' message called without prior call of 'willChange...'"];
+    }
 }
 
 - (void)addObserver:(id)anObserver forKeyPath:(CPString)aPath options:(unsigned)options context:(id)aContext
@@ -804,7 +885,20 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     {
         var level = _nestingForKey[aKey];
         if (!changes || !level)
-            [CPException raise:@"CPKeyValueObservingException" reason:@"'didChange...' message called without prior call of 'willChange...'"];
+        {
+            if (_targetObject._willChangeMessageCounter && _targetObject._willChangeMessageCounter[aKey])
+            {
+                // Close unobserved willChange for a given key.
+                _targetObject._willChangeMessageCounter[aKey] -= 1;
+
+                if (!_targetObject._willChangeMessageCounter[aKey])
+                    delete _targetObject._willChangeMessageCounter[aKey];
+
+                return;
+            }
+            else
+                [CPException raise:@"CPKeyValueObservingException" reason:@"'didChange...' message called without prior call of 'willChange...'"];
+        }
 
         _nestingForKey[aKey] = level - 1;
         if (level - 1 > 0)

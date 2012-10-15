@@ -1174,6 +1174,10 @@ var LABEL_MARGIN    = 2.0;
 
 - (void)setEnabled:(BOOL)shouldBeEnabled
 {
+    // Tiling is very expensive so try to avoid it. The CPToolbarItem should already be careful to not notifying about its enabled state needlessly.
+    if ([self isEnabled] === shouldBeEnabled)
+        return;
+
     [super setEnabled:shouldBeEnabled];
 
     if (shouldBeEnabled)
