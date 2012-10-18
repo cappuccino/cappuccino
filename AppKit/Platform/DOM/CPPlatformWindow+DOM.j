@@ -119,8 +119,6 @@
 @import "CPPlatformWindow.j"
 @import "CPPlatformWindow+DOMKeys.j"
 
-@import "_CPToolTip.j"
-
 // List of all open native windows
 var PlatformWindows = [CPSet set];
 
