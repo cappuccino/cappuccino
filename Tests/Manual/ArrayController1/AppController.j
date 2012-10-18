@@ -26,11 +26,9 @@ CPLogRegister(CPLogConsole);
 
 - (void)awakeFromCib
 {
-    var contentView = [theWindow contentView];
+    var contentView = [theWindow contentView],
+        notWrongItem = [Item new];
 
-    //create our non ui objects
-
-    var notWrongItem = [Item new];
     [notWrongItem setRightOrWrong:"also right"];
     itemsArray = [[Item new], notWrongItem];
 
@@ -104,8 +102,7 @@ CPLogRegister(CPLogConsole);
 {
     // bind array controller to self's itemsArray
 
-    [arrayController bind:@"contentArray" toObject:self
-              withKeyPath:@"itemsArray" options:nil];
+    [arrayController bind:@"contentArray" toObject:self withKeyPath:@"itemsArray" options:nil];
 
     // bind the total field -- no options on this one
     [totalCountField bind:CPValueBinding toObject:arrayController
@@ -113,13 +110,14 @@ CPLogRegister(CPLogConsole);
 
     var bindingOptions = [CPDictionary dictionary];
     //[bindingOptions setObject:@"No Name" forKey:@"NSNullPlaceholder"];
-    [selectedNameField bind: @"value" toObject:arrayController
-              withKeyPath:@"selection.name" options:bindingOptions];
+    [selectedNameField bind:CPValueBinding toObject:arrayController
+                withKeyPath:@"selection.name" options:bindingOptions];
 
     // binding for "name" column
     var tableColumn = [tableView tableColumnWithIdentifier:@"name"],
-    bindingOptions = [CPDictionary dictionary];
-    [tableColumn bind:@"value" toObject: arrayController
+        bindingOptions = [CPDictionary dictionary];
+
+    [tableColumn bind:CPValueBinding toObject:arrayController
           withKeyPath:@"arrangedObjects.name" options:bindingOptions];
 
 
@@ -129,13 +127,13 @@ CPLogRegister(CPLogConsole);
     //[bindingOptions removeObjectForKey:@"NSNullPlaceholder"];
     //[bindingOptions setObject:YES
     //                 forKey:CPValidatesImmediatelyBindingOption];
-    [selectedPriceField bind:@"value" toObject: arrayController
+    [selectedPriceField bind:CPValueBinding toObject: arrayController
                  withKeyPath:@"selection.price" options:bindingOptions];
 
     // binding for "price" column
     tableColumn = [tableView tableColumnWithIdentifier:@"price"];
     bindingOptions = [CPDictionary dictionary];
-    [tableColumn bind:@"value" toObject: arrayController
+    [tableColumn bind:CPValueBinding toObject:arrayController
           withKeyPath:@"arrangedObjects.price" options:bindingOptions];
 
     tableColumn = [tableView tableColumnWithIdentifier:@"all right"];
