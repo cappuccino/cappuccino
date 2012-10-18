@@ -27,7 +27,10 @@
 _CPToolTipWindowMask = 1 << 27;
 
 var _CPToolTipHeight = 24.0,
-    _CPToolTipFontSize = 11.0;
+    _CPToolTipFontSize = 11.0,
+    _CPToolTipDelay = 1.0,
+    _CPToolTipCurrentToolTip,
+    _CPToolTipCurrentToolTipTimer;
 
 /*! @ingroup appkit
     This is a basic tooltip that behaves mostly like Cocoa ones.
@@ -40,6 +43,46 @@ var _CPToolTipHeight = 24.0,
 
 #pragma mark -
 #pragma mark Class Methods
+
+/*! @ignore
+    Invalidate any scheduled tooltips, or hide any visible one
+*/
++ (void)invalidateCurrentToolTipIfNeeded
+{
+    if (_CPToolTipCurrentToolTipTimer)
+    {
+        [_CPToolTipCurrentToolTipTimer invalidate];
+        _CPToolTipCurrentToolTipTimer = nil;
+    }
+
+    if (_CPToolTipCurrentToolTip)
+    {
+        [_CPToolTipCurrentToolTip close];
+        _CPToolTipCurrentToolTip = nil;
+    }
+}
+
+/*! @ignore
+    Schedule a tooltip for the given view
+    @param aView the view that might display the tooltip
+*/
++ (void)scheduleToolTipForView:(CPView)aView
+{
+    if (![aView toolTip] || ![[aView toolTip] length])
+        return;
+
+    [_CPToolTip invalidateCurrentToolTipIfNeeded];
+
+    var callbackFunction = function() {
+        [_CPToolTip invalidateCurrentToolTipIfNeeded];
+        _CPToolTipCurrentToolTip = [_CPToolTip toolTipWithString:[aView toolTip]];
+    };
+
+    _CPToolTipCurrentToolTipTimer = [CPTimer scheduledTimerWithTimeInterval:_CPToolTipDelay
+                                                                   callback:callbackFunction
+                                                                    repeats:NO];
+}
+
 
 /*! Returns an initialized _CPToolTip with the given text and attach it to given view.
     @param aString the content of the tooltip
