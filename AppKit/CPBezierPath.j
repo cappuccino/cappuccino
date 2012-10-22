@@ -306,4 +306,21 @@ var DefaultLineWidth = 1.0;
     _path = CGPathCreateMutable();
 }
 
+- (void)addClip
+{
+    var ctx = [[CPGraphicsContext currentContext] graphicsPort];
+
+    CGContextAddPath(ctx, _path);
+    CGContextClip(ctx);
+}
+
+- (void)setClip
+{
+    var ctx = [[CPGraphicsContext currentContext] graphicsPort];
+
+    CGContextBeginPath(ctx);
+    CGContextAddPath(ctx, _path);
+    CGContextClip(ctx);
+}
+
 @end
