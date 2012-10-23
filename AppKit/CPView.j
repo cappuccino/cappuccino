@@ -333,6 +333,9 @@ var CPViewFlags                     = { },
     if (_toolTip == aToolTip)
         return;
 
+    if (aToolTip && ![aToolTip isKindOfClass:CPString])
+        aToolTip = [aToolTip description];
+
     _toolTip = aToolTip;
 
     if (_toolTip)
