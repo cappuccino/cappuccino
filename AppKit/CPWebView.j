@@ -1032,6 +1032,11 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     var documentURL = [CPURL URLWithString:window.location.href];
     if ([documentURL isFileURL] && CPFeatureIsCompatible(CPSOPDisabledFromFileURLs))
         return YES;
+
+    // Relative URLs always pass the SOP.
+    if (![self scheme] && ![self host] && ![self port])
+        return YES;
+
     return ([documentURL scheme] == [self scheme] && [documentURL host] == [self host] && [documentURL port] == [self port]);
 }
 
