@@ -582,7 +582,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
         return nil;
 
     var keyPath = [_info objectForKey:CPObservedKeyPathKey],
-        dotIndex = keyPath.lastIndexOf(".");
+        dotIndex = keyPath.indexOf(".");
 
     if (dotIndex === CPNotFound)
         return nil;
