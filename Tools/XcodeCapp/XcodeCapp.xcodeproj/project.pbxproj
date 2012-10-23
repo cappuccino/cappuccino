@@ -194,6 +194,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 027D99A313696A7000D3DB13 /* Build configuration list for PBXNativeTarget "XcodeCapp" */;
 			buildPhases = (
+				024699001602C04A00F0AE43 /* ShellScript */,
 				027D999A13696A7000D3DB13 /* Resources */,
 				027D999D13696A7000D3DB13 /* Sources */,
 				02998CF81369C383006C73DB /* CopyFiles */,
@@ -254,6 +255,25 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		024699001602C04A00F0AE43 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/*.m",
+				"$(SRCROOT)/*.h",
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /usr/bin/perl;
+			shellScript = "#!/usr/bin/perl\n\nwhile (<>) {\n    s/\\s+$//;\n    print \"$_\\n\";\n}";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		027D999D13696A7000D3DB13 /* Sources */ = {

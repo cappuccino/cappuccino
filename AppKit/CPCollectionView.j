@@ -28,7 +28,7 @@
 
 @import "CPView.j"
 @import "CPCollectionViewItem.j"
-
+@import "CPCompatibility.j"
 
 /*!
     @ingroup appkit
@@ -647,9 +647,9 @@
 
     if (index >= 0 && index < _items.length)
     {
-        if (_allowsMultipleSelection && ([anEvent modifierFlags] & CPCommandKeyMask || [anEvent modifierFlags] & CPShiftKeyMask))
+        if (_allowsMultipleSelection && ([anEvent modifierFlags] & CPPlatformActionKeyMask || [anEvent modifierFlags] & CPShiftKeyMask))
         {
-            if ([anEvent modifierFlags] & CPCommandKeyMask)
+            if ([anEvent modifierFlags] & CPPlatformActionKeyMask)
             {
                 var indexes = [_selectionIndexes copy];
 
@@ -690,6 +690,10 @@
 
 - (void)mouseDragged:(CPEvent)anEvent
 {
+    // Don't crash if we never registered the intial click.
+    if (!_mouseDownEvent)
+        return;
+
     var locationInWindow = [anEvent locationInWindow],
         mouseDownLocationInWindow = [_mouseDownEvent locationInWindow];
 

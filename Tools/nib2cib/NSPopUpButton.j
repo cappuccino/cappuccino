@@ -36,10 +36,10 @@
         _menu = [cell menu];
 
         // adjust the frame
-        _frame.origin.x -= 3;
+        _frame.origin.x -= 4;
         _frame.origin.y -= 4;
-        _frame.size.width += 6;
-        _bounds.size.width += 6;
+        _frame.size.width += 7;
+        _bounds.size.width += 7;
 
         [self setPullsDown:[cell pullsDown]];
         _preferredEdge  = [cell preferredEdge];

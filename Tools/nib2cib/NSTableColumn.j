@@ -90,7 +90,8 @@
             headerView = [[_CPTableColumnHeaderView alloc] initWithFrame:CPRectMakeZero()];
 
         [headerView setStringValue:[headerCell objectValue]];
-        [headerView setValue:[dataViewCell alignment] forThemeAttribute:@"text-alignment"];
+        [headerView setFont:[headerCell font]];
+        [headerView setAlignment:[headerCell alignment]];
 
         [self setHeaderView:headerView];
 

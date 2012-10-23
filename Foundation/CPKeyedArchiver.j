@@ -176,8 +176,6 @@ var _CPKeyedArchiverStringClass                         = Nil,
 
         _replacementObjects = [CPDictionary dictionary];
 
-        _data = data;
-
         _plistObject = [CPDictionary dictionary];
         _plistObjects = [CPArray arrayWithObject:_CPKeyedArchiverNullString];
     }

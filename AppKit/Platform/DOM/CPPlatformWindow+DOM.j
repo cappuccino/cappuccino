@@ -113,13 +113,11 @@
 @import "CPEvent.j"
 @import "CPText.j"
 @import "CPCompatibility.j"
-
 @import "CPDOMWindowLayer.j"
 
 @import "CPPlatform.j"
 @import "CPPlatformWindow.j"
 @import "CPPlatformWindow+DOMKeys.j"
-
 
 // List of all open native windows
 var PlatformWindows = [CPSet set];
@@ -1242,6 +1240,10 @@ var resizeTimer = nil;
 
     else if (type === "mousedown")
     {
+        // If we receive a click event, then we invalidate any scheduled
+        // or visible tooltips
+        [_CPToolTip invalidateCurrentToolTipIfNeeded];
+
         var button = aDOMEvent.button;
         _mouseDownIsRightClick = button == 2 || (CPBrowserIsOperatingSystem(CPMacOperatingSystem) && button == 0 && modifierFlags & CPControlKeyMask);
 
@@ -1601,7 +1603,7 @@ var _CPEventFromNativeMouseEvent = function(aNativeEvent, anEventType, aPoint, m
 };
 
 var CLICK_SPACE_DELTA   = 5.0,
-    CLICK_TIME_DELTA    = (typeof document != "undefined" && document.addEventListener) ? 350.0 : 1000.0;
+    CLICK_TIME_DELTA    = (typeof document != "undefined" && document.addEventListener) ? 0.55 : 1.0;
 
 var CPDOMEventGetClickCount = function(aComparisonEvent, aTimestamp, aLocation)
 {

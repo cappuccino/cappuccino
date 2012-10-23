@@ -23,15 +23,20 @@
 @import <AppKit/_CPCibWindowTemplate.j>
 
 
-var NSBorderlessWindowMask          = 0x00,
-    NSTitledWindowMask              = 0x01,
-    NSClosableWindowMask            = 0x02,
-    NSMiniaturizableWindowMask      = 0x04,
-    NSResizableWindowMask           = 0x08,
-    NSUtilityWindowMask             = 0x10,
-    NSDocModalWindowMask            = 0x40,
-    NSTexturedBackgroundWindowMask  = 0x100,
-    NSHUDBackgroundWindowMask       = 0x2000,
+var NSBorderlessWindowMask              = 0x00,
+    NSTitledWindowMask                  = 0x01,
+    NSClosableWindowMask                = 0x02,
+    NSMiniaturizableWindowMask          = 0x04,
+    NSResizableWindowMask               = 0x08,
+    NSUtilityWindowMask                 = 0x10,
+    NSDocModalWindowMask                = 0x40,
+    NSTexturedBackgroundWindowMask      = 0x100,
+    NSHUDBackgroundWindowMask           = 0x2000,
+
+    NSPositionFlexibleRight             = 1 << 19,
+    NSPositionFlexibleLeft              = 1 << 20,
+    NSPositionFlexibleBottom            = 1 << 21,
+    NSPositionFlexibleTop               = 1 << 22,
 
     NSAutorecalculatesKeyViewLoopWTFlag = 0x800;
 

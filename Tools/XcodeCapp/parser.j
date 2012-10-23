@@ -26,7 +26,8 @@ var FILE = require("file");
 function main(args)
 {
     var fileURL = new CFURL(args[1]),
-        outputURL = new CFURL(args[2]),
+        outputHeaderURL = new CFURL(args[2]),
+        outputSourceURL = new CFURL(args[3]),
         source = FILE.read(fileURL, { charset: "UTF-8" }),
         flags = ObjectiveJ.Preprocessor.Flags.IncludeDebugSymbols |
                 ObjectiveJ.Preprocessor.Flags.IncludeTypeSignatures,
@@ -65,7 +66,8 @@ function main(args)
 
     eval(source);
 
-    var ObjectiveCSource = "";
+    var ObjectiveCSource = "",
+        ObjectiveCHeader = "";
 
     classes.forEach(function(aClass)
     {
@@ -104,22 +106,29 @@ function main(args)
         var className = class_getName(aClass),
             superClassName = superClasses[className];
 
-        ObjectiveCSource +=
+        ObjectiveCHeader +=
             "#import <Foundation/Foundation.h>\n" +
             "#import <Cocoa/Cocoa.h>\n" +
+            "#import \"xcc_general_include.h\"\n" +
             "\n@interface " + class_getName(aClass) +
             (superClassName === "Nil" ? "" : (" : " + NSCompatibleClassName(superClassName))) +
             "\n\n" +
             outlets.join("\n") +
             "\n" +
             actions.join("\n") +
-            "\n@end\n\n"+
+            "\n@end\n";
+
+        ObjectiveCSource +=
+            "#import \"" + outputHeaderURL.absoluteString().replace(/\\/g,'/').replace( /.*\//, '' ) + "\"" +
             "\n@implementation " + class_getName(aClass) +
             "\n@end\n";
     });
 
     if (ObjectiveCSource.length)
-        FILE.write(outputURL, ObjectiveCSource, { charset:"UTF-8" });
+        FILE.write(outputSourceURL, ObjectiveCSource, { charset:"UTF-8" });
+
+    if (ObjectiveCHeader.length)
+        FILE.write(outputHeaderURL, ObjectiveCHeader, { charset:"UTF-8" });
 }
 
 function NSCompatibleClassName(aClassName, asPointer)
@@ -127,10 +136,10 @@ function NSCompatibleClassName(aClassName, asPointer)
     if (aClassName === "var" || aClassName === "id")
         return "id";
 
-    var suffix = aClassName.substr(0, 2),
+    var prefix = aClassName.substr(0, 2),
         asterisk = asPointer ? "*" : "";
 
-    if (suffix !== "CP")
+    if (prefix !== "CP")
         return aClassName + asterisk;
 
     var NSClassName = "NS" + aClassName.substr(2);
@@ -138,9 +147,16 @@ function NSCompatibleClassName(aClassName, asPointer)
     if (NSClasses[NSClassName])
         return NSClassName + asterisk;
 
+    if (ReplacementClasses[aClassName])
+        return ReplacementClasses[aClassName] + asterisk;
+                    
     return aClassName + asterisk;
 }
 
+var ReplacementClasses = {
+    "CPWebView": "WebView"
+};
+                    
 var NSClasses = {
                     "NSAffineTransform" : YES,
                     "NSAppleEventDescriptor" : YES,

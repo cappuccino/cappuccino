@@ -48,6 +48,9 @@
             size = [self frameSize];
 
         [self setFrameSize:CGSizeMake(size.width, MIN(size.height, maxSize.height))];
+
+        // Adjust for differences between Cocoa and Cappuccino widget framing.
+        _frame.origin.x += 1;
     }
 
     return self;

@@ -25,7 +25,8 @@
 @import "CGContext.j"
 
 
-var CPGraphicsContextCurrent = nil;
+var CPGraphicsContextCurrent = nil,
+    CPGraphicsContextThreadStack = nil;
 
 /*!
     @ingroup appkit
@@ -50,6 +51,28 @@ var CPGraphicsContextCurrent = nil;
 + (void)setCurrentContext:(CPGraphicsContext)aGraphicsContext
 {
     CPGraphicsContextCurrent = aGraphicsContext;
+}
+
++ (void)saveGraphicsState
+{
+    if (!CPGraphicsContextCurrent)
+        return;
+
+    if (!CPGraphicsContextThreadStack)
+        CPGraphicsContextThreadStack = [CPMutableArray array];
+
+    [CPGraphicsContextThreadStack addObject:CPGraphicsContextCurrent];
+    [CPGraphicsContextCurrent saveGraphicsState];
+}
+
++ (void)restoreGraphicsState
+{
+    var lastContext = [CPGraphicsContextThreadStack lastObject];
+    if (lastContext)
+    {
+        [lastContext restoreGraphicsState];
+        [CPGraphicsContextThreadStack removeLastObject];
+    }
 }
 
 /*!
@@ -97,6 +120,16 @@ var CPGraphicsContextCurrent = nil;
 - (BOOL)isFlipped
 {
     return YES;
+}
+
+- (void)saveGraphicsState
+{
+    CGContextSaveGState(_graphicsPort);
+}
+
+- (void)restoreGraphicsState
+{
+    CGContextRestoreGState(_graphicsPort);
 }
 
 @end

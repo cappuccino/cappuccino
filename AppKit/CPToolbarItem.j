@@ -275,6 +275,9 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
 */
 - (void)setEnabled:(BOOL)shouldBeEnabled
 {
+    if (_isEnabled === shouldBeEnabled)
+        return;
+
     if ([_view respondsToSelector:@selector(setEnabled:)])
         [_view setEnabled:shouldBeEnabled];
 
@@ -457,26 +460,49 @@ CPToolbarItemVisibilityPriorityUser
     if (_view)
     {
         if ([target respondsToSelector:@selector(validateToolbarItem:)])
-            [self setEnabled:[target validateToolbarItem:self]];
+        {
+            var shouldBeEnabled = [target validateToolbarItem:self];
+            if (_isEnabled !== shouldBeEnabled)
+                [self setEnabled:shouldBeEnabled];
+        }
 
         return;
     }
 
     if (!action)
-        return [self setEnabled:NO];
+    {
+        if (_isEnabled)
+            return [self setEnabled:NO];
+        return;
+    }
 
     if (target && ![target respondsToSelector:action])
-        return [self setEnabled:NO];
+    {
+        if (_isEnabled)
+            return [self setEnabled:NO];
+        return;
+    }
 
     target = [CPApp targetForAction:action to:target from:self];
 
     if (!target)
-        return [self setEnabled:NO];
+    {
+        if (_isEnabled)
+            return [self setEnabled:NO];
+        return;
+    }
 
     if ([target respondsToSelector:@selector(validateToolbarItem:)])
-        [self setEnabled:[target validateToolbarItem:self]];
+    {
+        var shouldBeEnabled = [target validateToolbarItem:self];
+        if (_isEnabled !== shouldBeEnabled)
+            [self setEnabled:shouldBeEnabled];
+    }
     else
-        [self setEnabled:YES];
+    {
+        if (!_isEnabled)
+            [self setEnabled:YES];
+    }
 }
 
 - (BOOL)autovalidates
