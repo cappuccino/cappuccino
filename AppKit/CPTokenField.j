@@ -310,6 +310,8 @@ var CPScrollDestinationNone             = 0,
     if (CPTokenFieldInputOwner && [CPTokenFieldInputOwner window] !== [self window])
         [[CPTokenFieldInputOwner window] makeFirstResponder:nil];
 
+    [self scrollRectToVisible:[self bounds]];
+
     [self setThemeState:CPThemeStateEditing];
 
     [self _updatePlaceholderState];
@@ -343,16 +345,19 @@ var CPScrollDestinationNone             = 0,
     element.style.width = CGRectGetWidth(contentRect) + "px";
     element.style.height = [font defaultLineHeightForFont] + "px";
 
-    [_tokenScrollView documentView]._DOMElement.appendChild(element);
-
     window.setTimeout(function()
     {
-        element.focus();
-        CPTokenFieldInputOwner = self;
-    }, 0.0);
+        [_tokenScrollView documentView]._DOMElement.appendChild(element);
 
-    //post CPControlTextDidBeginEditingNotification
-    [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+        //post CPControlTextDidBeginEditingNotification
+        [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+
+        window.setTimeout(function()
+        {
+            element.focus();
+            CPTokenFieldInputOwner = self;
+        }, 0.0);
+    }, 0.0);
 
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 
