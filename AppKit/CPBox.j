@@ -332,6 +332,16 @@ CPBelowBottom = 6;
     [_titleView setFont:aFont];
 }
 
+/*!
+    Return the text field used to display the receiver's title.
+
+    This is the Cappuccino equivalent to the `titleCell` method.
+*/
+- (CPTextField)titleView
+{
+    return _titleView;
+}
+
 - (void)_manageTitlePositioning
 {
     if (_titlePosition == CPNoTitle)
