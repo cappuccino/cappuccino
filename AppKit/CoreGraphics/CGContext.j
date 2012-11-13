@@ -322,6 +322,16 @@ function CGContextClosePath(aContext)
 }
 
 /*!
+    Return YES if the current path in the given context is empty.
+    @param aContext the CGContext to examine
+    @return BOOL
+*/
+function CGContextIsPathEmpty(aContext)
+{
+    return (!aContext.path || CGPathIsEmpty(aContext.path));
+}
+
+/*!
     Moves the current location of aContext to the given x and y coordinates
     @param aContext the CGContext to move
     @param x the x location to move the context to

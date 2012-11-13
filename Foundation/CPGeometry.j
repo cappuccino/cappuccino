@@ -75,6 +75,18 @@ CPPointCreateCopy = CGPointMakeCopy;
 CPPointEqualToPoint = CGPointEqualToPoint;
 
 /*!
+    Tests whether the CGPoint is contained by the CGRect.
+    @group CGPoint
+    @param aPoint the CGPoint to check
+    @param aRect the CGRect to check
+    @return BOOL \c YES if the rect contains the point.
+*/
+CPPointInRect = function(aPoint, aRect)
+{
+    return CGRectContainsPoint(aRect, aPoint)
+};
+
+/*!
     Test whether the two CGRects have the same origin and size
     @group CGRect
     @param lhsRect the first CGRect to compare

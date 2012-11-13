@@ -118,6 +118,17 @@ function CGPathAddArc(aPath, aTransform, x, y, aRadius, aStartAngle, anEndAngle,
 
 function CGPathAddArcToPoint(aPath, aTransform, x1, y1, x2, y2, aRadius)
 {
+    var p1 = _CGPointMake(x1, y1),
+        p2 = _CGPointMake(x2, y2);
+
+    if (aTransform)
+    {
+        p1 = _CGPointApplyAffineTransform(p1, aTransform);
+        p2 = _CGPointApplyAffineTransform(p2, aTransform);
+    }
+
+    aPath.current = p2;
+    aPath.elements[aPath.count++] = { type:kCGPathElementAddArcToPoint, p1x:p1.x, p1y:p1.y, p2x:p2.x, p2y:p2.y, radius:aRadius };
 }
 
 function CGPathAddCurveToPoint(aPath, aTransform, cp1x, cp1y, cp2x, cp2y, x, y)
@@ -184,6 +195,12 @@ function CGPathAddPath(aPath, aTransform, anotherPath)
             case kCGPathElementAddArc:              CGPathAddArc(aPath, aTransform, element.x, element.y,
                                                                  element.radius, element.startAngle,
                                                                  element.endAngle, element.isClockwise);
+                                                    break;
+
+            case kCGPathElementAddArcToPoint:       CGPathAddArcToPoint(aPath, aTransform,
+                                                                        element.p1x, element.p1y,
+                                                                        element.p2x, element.p2y,
+                                                                        element.radius);
                                                     break;
 
             case kCGPathElementAddQuadCurveToPoint: CGPathAddQuadCurveToPoint(aPath, aTransform,
@@ -387,6 +404,108 @@ function CGPathGetCurrentPoint(aPath)
 function CGPathIsEmpty(aPath)
 {
     return !aPath || aPath.count == 0;
+}
+
+/*!
+    Calculate the smallest rectangle to contain both the path of the receiver and all control points.
+*/
+function CGPathGetBoundingBox(aPath)
+{
+    if (!aPath || !aPath.count)
+        return _CGRectMakeZero();
+
+    var ox = 0,
+        oy = 0,
+        rx = 0,
+        ry = 0,
+        movePoint = nil;
+
+    function addPoint(x, y)
+    {
+        ox = MIN(ox, x);
+        oy = MIN(oy, y);
+        rx = MAX(rx, x);
+        ry = MAX(ry, y);
+    }
+
+    for (var i = 0, count = aPath.count; i < count; ++i)
+    {
+        var element = aPath.elements[i];
+
+        // Just enclose all the control points. The curves must be inside of the control points.
+        // This won't work for CGPathGetPathBoundingBox.
+        switch (element.type)
+        {
+            case kCGPathElementAddLineToPoint:
+                if (movePoint)
+                {
+                    addPoint(movePoint.x, movePoint.y);
+                    movePoint = nil;
+                }
+
+                addPoint(element.x, element.y);
+                break;
+
+            case kCGPathElementAddCurveToPoint:
+                if (movePoint)
+                {
+                    addPoint(movePoint.x, movePoint.y);
+                    movePoint = nil;
+                }
+
+                addPoint(element.cp1x, element.cp1y);
+                addPoint(element.cp2x, element.cp2y);
+                addPoint(element.x, element.y);
+                break;
+
+            case kCGPathElementAddArc:
+                if (movePoint)
+                {
+                    addPoint(movePoint.x, movePoint.y);
+                    movePoint = nil;
+                }
+
+                addPoint(element.x, element.y);
+                break;
+
+            case kCGPathElementAddArcToPoint:
+                if (movePoint)
+                {
+                    addPoint(movePoint.x, movePoint.y);
+                    movePoint = nil;
+                }
+
+                addPoint(element.p1x, element.p1y);
+                addPoint(element.p2x, element.p2y);
+                break;
+
+            case kCGPathElementAddQuadCurveToPoint:
+                if (movePoint)
+                {
+                    addPoint(movePoint.x, movePoint.y);
+                    movePoint = nil;
+                }
+
+                addPoint(element.cpx, element.cpy);
+                addPoint(element.x, element.y);
+                break;
+
+            case kCGPathElementMoveToPoint:
+                movePoint = _CGPointMake(element.x, element.y);
+                break;
+
+            case kCGPathElementCloseSubpath:
+                if (movePoint)
+                {
+                    addPoint(movePoint.x, movePoint.y);
+                    movePoint = nil;
+                }
+
+                break;
+        }
+    }
+
+    return _CGRectMake(ox, oy, rx - ox, ry - oy);
 }
 
 /*!

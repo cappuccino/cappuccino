@@ -690,6 +690,10 @@
 
 - (void)mouseDragged:(CPEvent)anEvent
 {
+    // Don't crash if we never registered the intial click.
+    if (!_mouseDownEvent)
+        return;
+
     var locationInWindow = [anEvent locationInWindow],
         mouseDownLocationInWindow = [_mouseDownEvent locationInWindow];
 

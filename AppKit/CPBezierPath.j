@@ -165,6 +165,19 @@ var DefaultLineWidth = 1.0;
     CGPathAddCurveToPoint(_path, nil, controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y, endPoint.x, endPoint.y);
 }
 
+- (CGRect)bounds
+{
+    // TODO: this should return this. The controlPointBounds is not a tight fit.
+    // return CGPathGetPathBoundingBox(_path);
+
+    return [self controlPointBounds];
+}
+
+- (CGRect)controlPointBounds
+{
+    return CGPathGetBoundingBox(_path);
+}
+
 /*!
     Create a line segment between the first and last points in the subpath, closing it.
 */
@@ -272,6 +285,11 @@ var DefaultLineWidth = 1.0;
     CGPathAddPath(_path, nil, CGPathWithRoundedRectangleInRect(rect, xRadius, yRadius, YES, YES, YES, YES));
 }
 
+- (void)appendBezierPathWithArcFromPoint:(CGPoint)fromPoint toPoint:(CGPoint)toPoint radius:(float)radius
+{
+    CGPathAddArcToPoint(_path, null, fromPoint.x, fromPoint.y, toPoint.x, toPoint.y, radius);
+}
+
 /*!
     Append the contents of a CPBezierPath object.
 */
@@ -286,6 +304,23 @@ var DefaultLineWidth = 1.0;
 - (void)removeAllPoints
 {
     _path = CGPathCreateMutable();
+}
+
+- (void)addClip
+{
+    var ctx = [[CPGraphicsContext currentContext] graphicsPort];
+
+    CGContextAddPath(ctx, _path);
+    CGContextClip(ctx);
+}
+
+- (void)setClip
+{
+    var ctx = [[CPGraphicsContext currentContext] graphicsPort];
+
+    CGContextBeginPath(ctx);
+    CGContextAddPath(ctx, _path);
+    CGContextClip(ctx);
 }
 
 @end

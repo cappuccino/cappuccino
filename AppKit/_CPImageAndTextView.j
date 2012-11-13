@@ -292,7 +292,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 {
     [self layoutIfNeeded];
 
-    var textFrame = CGRectMakeZero();
+    var textFrame = _CGRectMakeZero();
 
     if (_DOMTextElement)
     {
@@ -681,38 +681,47 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
             textRectWidth = _CGRectGetWidth(textRect),
             textRectHeight = _CGRectGetHeight(textRect);
 
-        if (_verticalAlignment !== CPTopVerticalTextAlignment)
+        if (textRectWidth <= 0 || textRectHeight <= 0)
         {
-            if (!_textSize)
+            // Don't bother trying to position the text in an empty rect.
+            textRectWidth = 0;
+            textRectHeight = 0;
+        }
+        else
+        {
+            if (_verticalAlignment !== CPTopVerticalTextAlignment)
             {
-                if (_lineBreakMode === CPLineBreakByCharWrapping ||
-                    _lineBreakMode === CPLineBreakByWordWrapping)
+                if (!_textSize)
                 {
-                    _textSize = [_text sizeWithFont:_font inWidth:textRectWidth];
+                    if (_lineBreakMode === CPLineBreakByCharWrapping ||
+                        _lineBreakMode === CPLineBreakByWordWrapping)
+                    {
+                        _textSize = [_text sizeWithFont:_font inWidth:textRectWidth];
+                    }
+                    else
+                    {
+                        _textSize = [_text sizeWithFont:_font];
+
+                        // Account for possible fractional pixels at right edge
+                        _textSize.width += 1;
+                    }
+
+                    // Account for possible fractional pixels at bottom edge
+                    _textSize.height += 1;
                 }
-                else
+
+                if (_verticalAlignment === CPCenterVerticalTextAlignment)
                 {
-                    _textSize = [_text sizeWithFont:_font];
-
-                    // Account for possible fractional pixels at right edge
-                    _textSize.width += 1;
+                    // Since we added +1 px height above to show fractional pixels on the bottom, we have to remove that when calculating vertical centre.
+                    textRectY = textRectY + (textRectHeight - _textSize.height + 1.0) / 2.0;
+                    textRectHeight = _textSize.height;
                 }
 
-                // Account for possible fractional pixels at bottom edge
-                _textSize.height += 1;
-            }
-
-            if (_verticalAlignment === CPCenterVerticalTextAlignment)
-            {
-                // Since we added +1 px height above to show fractional pixels on the bottom, we have to remove that when calculating vertical centre.
-                textRectY = textRectY + (textRectHeight - _textSize.height + 1.0) / 2.0;
-                textRectHeight = _textSize.height;
-            }
-
-            else //if (_verticalAlignment === CPBottomVerticalTextAlignment)
-            {
-                textRectY = textRectY + textRectHeight - _textSize.height;
-                textRectHeight = _textSize.height;
+                else //if (_verticalAlignment === CPBottomVerticalTextAlignment)
+                {
+                    textRectY = textRectY + textRectHeight - _textSize.height;
+                    textRectHeight = _textSize.height;
+                }
             }
         }
 
@@ -740,7 +749,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
 - (void)sizeToFit
 {
-    var size = CGSizeMakeZero();
+    var size = _CGSizeMakeZero();
 
     if ((_imagePosition !== CPNoImage) && _image)
     {
@@ -779,6 +788,15 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     }
 
     [self setFrameSize:size];
+}
+
+- (void)setFrameSize:(CGSize)aSize
+{
+    // If we're applying line breaks the height of the text size might change as a result of the bounds changing.
+    if ((_lineBreakMode === CPLineBreakByCharWrapping || _lineBreakMode === CPLineBreakByWordWrapping) && aSize.width !== [self frameSize].width)
+        _textSize = nil;
+
+    [super setFrameSize:aSize];
 }
 
 @end

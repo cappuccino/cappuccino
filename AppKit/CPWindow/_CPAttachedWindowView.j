@@ -53,15 +53,20 @@ var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10),
 */
 - (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
-    var contentRect = CGRectMakeCopy(aFrameRect);
+    var contentRect = CGRectMakeCopy(aFrameRect),
+        modifierX = 16,
+        modifierY = 19;
 
     // @todo change border art and remove this pixel perfect adaptation
-    // return CGRectInset(contentRect, 20, 20);
+    //
+    // @comment: If we use this, each time we open the popover, the content
+    // view is reduced a little over and over
+    // return CGRectInset(contentRect, modifierX, modifierY);
 
-    contentRect.origin.x += 18;
-    contentRect.origin.y += 17;
-    contentRect.size.width -= 35;
-    contentRect.size.height -= 37;
+    contentRect.origin.x += modifierX;
+    contentRect.origin.y += modifierY;
+    contentRect.size.width -= modifierX * 2;
+    contentRect.size.height -= modifierY * 2;
 
     return contentRect;
 }
@@ -73,15 +78,21 @@ var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10),
 */
 + (CGRect)frameRectForContentRect:(CGRect)aContentRect
 {
-    var frameRect = CGRectMakeCopy(aContentRect);
+    var frameRect = CGRectMakeCopy(aContentRect),
+        modifierX = 16,
+        modifierY = 19;
 
     // @todo change border art and remove this pixel perfect adaptation
-    //return CGRectOffset(frameRect, 20, 20);
+    // @comment: If we use this, each time we open the popover, the content
+    //
+    // view is reduced a little over and over
+    // return CGRectOffset(frameRect, modifierX, modifierY);
 
-    frameRect.origin.x -= 18;
-    frameRect.origin.y -= 17;
-    frameRect.size.width += 35;
-    frameRect.size.height += 37;
+    frameRect.origin.x -= modifierX;
+    frameRect.origin.y -= modifierY;
+    frameRect.size.width += modifierX * 2;
+    frameRect.size.height += modifierY * 2;
+
     return frameRect;
 }
 

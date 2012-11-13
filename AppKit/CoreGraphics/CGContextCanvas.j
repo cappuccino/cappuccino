@@ -129,7 +129,7 @@ function CGContextAddPath(aContext, aPath)
                                                     break;
             case kCGPathElementAddArc:              _CGContextAddArcCanvas(aContext, element.x, element.y, element.radius, element.startAngle, element.endAngle, element.clockwise);
                                                     break;
-            case kCGPathElementAddArcTo:            //_CGContextAddArcToPointCanvas(aContext, element.cp1x, element.cp1.y, element.cp2.x, element.cp2y, element.radius);
+            case kCGPathElementAddArcToPoint:       _CGContextAddArcToPointCanvas(aContext, element.p1x, element.p1y, element.p2x, element.p2y, element.radius);
                                                     break;
         }
     }
