@@ -2,7 +2,9 @@
 @import <AppKit/CPCib.j>
 @import "Converter.j"
 
-var FILE = require("file");
+var FILE = require("file"),
+    OS = require("os"),
+    UUID = require("uuid");
 
 @implementation CPCib (NSCoding)
 
@@ -10,7 +12,7 @@ var FILE = require("file");
 {
     self = [super init];
 
-    var nibPath = @"/tmp/NSTableCellView.nib",
+    var nibPath = @"/tmp/" + UUID.uuid() + ".nib",
         data = [aCoder decodeObjectForKey:@"NSNibFileData"],
         sharedConverter = [Converter sharedConverter];
 
@@ -21,7 +23,7 @@ var FILE = require("file");
                                                       themes:[sharedConverter themes]];
     [converter setCompileNib:NO];
 
-    CPLog.info("Converting NSTableCellView nib to plist...");
+    CPLog.info("Converting sub nib to plist...");
 
     var nibData = [converter CPCompliantNibDataAtFilePath:nibPath];
     _data = [converter convertedDataFromMacData:nibData resourcesPath:[sharedConverter resourcesPath]];
