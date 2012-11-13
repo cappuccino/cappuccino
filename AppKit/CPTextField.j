@@ -613,10 +613,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 /* @ignore */
 - (BOOL)resignFirstResponder
 {
-    // When we are no longer the first responder we don't worry about the key status of our window anymore.
-    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidResignKeyNotification object:[self window]];
-    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidBecomeKeyNotification object:[self window]];
-
 #if PLATFORM(DOM)
 
     var element = [self _inputElement],
@@ -637,6 +633,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
 
 #endif
+
+    // When we are no longer the first responder we don't worry about the key status of our window anymore.
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidResignKeyNotification object:[self window]];
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidBecomeKeyNotification object:[self window]];
 
     [self _resignFirstKeyResponder];
 
