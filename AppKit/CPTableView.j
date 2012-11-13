@@ -1864,7 +1864,7 @@ NOT YET IMPLEMENTED
 */
 - (CPInteger)rowForView:(CPView)aView
 {
-    return [self rowOrColumn:YES forView:aView];
+    return [self rowNotColumn:YES forView:aView];
 }
 
 /*!
@@ -1877,13 +1877,13 @@ NOT YET IMPLEMENTED
 */
 - (CPInteger)columnForView:(CPView)aView
 {
-    return [self rowOrColumn:NO forView:aView];
+    return [self rowNotColumn:NO forView:aView];
 }
 
 /*!
     @ignore
 */
-- (CPInteger)rowOrColumn:(BOOL)rowOrColumn forView:(CPView)aView
+- (CPInteger)rowNotColumn:(BOOL)isRow forView:(CPView)aView
 {
     if (![aView isKindOfClass:[CPView class]])
         return -1;
@@ -1929,7 +1929,7 @@ NOT YET IMPLEMENTED
         {
             var row = exposedRows[rowcount];
             if (cellView == dataViewsInTableColumn[row])
-                return rowOrColumn ? row : column;
+                return isRow ? row : column;
         }
     }
 
@@ -3583,7 +3583,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if ([self _delegateRespondsToDataViewForTableColumn])
     {
         view = [_delegate tableView:self dataViewForTableColumn:aTableColumn row:aRow];
-        if (view == nil)
+        if (!view)
             [CPException raise:CPInternalInconsistencyException reason:"The view returned by -tableView:dataViewForTableColumn:row: should not be nil"];
     }
 
@@ -3597,17 +3597,17 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     var view = [self _dataViewForTableColumn:aTableColumn row:aRow];
 
-    if (view == nil)
+    if (!view)
     {
         var columnIdentifier = [aTableColumn identifier];
 
         // For Pre-Lion nibs, there is no automatic identifier for table column; use UID as identifier.
-        if (columnIdentifier == nil)
+        if (!columnIdentifier)
             columnIdentifier = [aTableColumn UID];
 
         view = [self makeViewWithIdentifier:columnIdentifier owner:_delegate];
 
-        if (view == nil)
+        if (!view)
             view = [aTableColumn _newDataView];
 
         [view setIdentifier:columnIdentifier];
@@ -3630,7 +3630,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (id)makeViewWithIdentifier:(CPString)anIdentifier owner:(id)anOwner
 {
-    if (anIdentifier == nil)
+    if (!anIdentifier)
         return nil;
 
     var view,
