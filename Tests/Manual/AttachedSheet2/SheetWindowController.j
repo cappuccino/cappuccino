@@ -126,11 +126,11 @@
 - (SheetWindowController)allocController
 {
     CPLog.debug("[%@ %@] groupClass=%@", [self class], _cmd,
-        [[[[[_windowTypeMatrix subviews] objectAtIndex:0] radioGroup] selectedRadio] tag]);
+        [[_windowTypeMatrix selectedRadio] tag]);
 
     var type = 1;
     if (_windowTypeMatrix)
-        type = [[[[[_windowTypeMatrix subviews] objectAtIndex:0] radioGroup] selectedRadio] tag];
+        type = [[_windowTypeMatrix selectedRadio] tag];
 
     var styleMask = 0;
     if ([_titledMaskButton state])
