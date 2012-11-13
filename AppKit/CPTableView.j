@@ -3640,7 +3640,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (reusableViews && reusableViews.length)
         view = reusableViews.pop();
 // Otherwise see if we have a view in the cib with this identifier
-    else
+    else if (_isViewBased)
         view = [self _unarchiveViewWithIdentifier:anIdentifier owner:anOwner];
 
     return view;
