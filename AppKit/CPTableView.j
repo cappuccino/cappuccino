@@ -3654,7 +3654,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     var cib = [_archivedDataViews objectForKey:anIdentifier];
     
     if (!cib && !_unavailable_custom_cibs[anIdentifier])
-        cib = [[CPCib alloc] initWithCibNamed:anIdentifier bundle:[CPBundle mainBundle]];
+    {
+        var bundle = anOwner ? [CPBundle bundleForClass:[anOwner class]] : [CPBundle mainBundle];
+        cib = [[CPCib alloc] initWithCibNamed:anIdentifier bundle:bundle];
+    }
 
     if (!cib)
     {
