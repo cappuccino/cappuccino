@@ -3340,8 +3340,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
             [dataViews replaceObjectAtIndex:row withObject:nil];
 
-            [self _resignFirstResponderIfNeededForView:dataView atRow:row column:column];
-            [self _enqueueReusableDataView:dataView];
+            if (row !== _editingRow || column !== _editingColumn)
+                [self _enqueueReusableDataView:dataView];
         }
     }
 }
@@ -4862,24 +4862,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (void)_stopObservingFirstResponder
 {
     [[CPNotificationCenter defaultCenter] removeObserver:self name:_CPWindowDidChangeFirstResponderNotification object:[self window]];
-}
-
-- (void)_resignFirstResponderIfNeededForView:(CPView)aDataView atRow:(int)row column:(int)column
-{
-    if (row === _editingRow && column === _editingColumn)
-    {
-        var theWindow = [self window],
-            responder = [theWindow firstResponder];
-
-        if ([responder isKindOfClass:[CPView class]] && [responder isDescendantOf:aDataView])
-        {
-            var action = [self _disableActionIfExists:responder];
-            [theWindow makeFirstResponder:self];
-
-            if (action)
-                [responder setAction:action];
-        }
-    }
 }
 
 - (void)_firstResponderDidChange:(CPNotification)aNotification
