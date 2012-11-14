@@ -527,14 +527,6 @@
 					<int key="connectionID">614</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">dataSource</string>
-						<reference key="source" ref="270585779"/>
-						<reference key="destination" ref="635946545"/>
-					</object>
-					<int key="connectionID">485</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">content: arrangedObjects</string>
 						<reference key="source" ref="270585779"/>
@@ -557,6 +549,14 @@
 						<reference key="destination" ref="316245540"/>
 					</object>
 					<int key="connectionID">661</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">dataSource</string>
+						<reference key="source" ref="270585779"/>
+						<reference key="destination" ref="316245540"/>
+					</object>
+					<int key="connectionID">698</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -668,23 +668,32 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: objectValue.name</string>
+						<string key="label">value: objectValue.image.name</string>
 						<reference key="source" ref="833748488"/>
 						<reference key="destination" ref="168286789"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="833748488"/>
 							<reference key="NSDestination" ref="168286789"/>
-							<string key="NSLabel">value: objectValue.name</string>
+							<string key="NSLabel">value: objectValue.image.name</string>
 							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">objectValue.name</string>
+							<string key="NSKeyPath">objectValue.image.name</string>
 							<object class="NSDictionary" key="NSOptions">
-								<string key="NS.key.0">NSValidatesImmediately</string>
-								<boolean value="YES" key="NS.object.0"/>
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSArray" key="dict.sortedKeys">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>NSAllowsEditingMultipleValuesSelection</string>
+									<string>NSRaisesForNotApplicableKeys</string>
+								</object>
+								<object class="NSArray" key="dict.values">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<boolean value="NO"/>
+									<boolean value="NO"/>
+								</object>
 							</object>
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<int key="connectionID">589</int>
+					<int key="connectionID">701</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
@@ -829,15 +838,15 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">valueURL: objectValue.image</string>
+						<string key="label">valueURL: objectValue.image.path</string>
 						<reference key="source" ref="838906353"/>
 						<reference key="destination" ref="168286789"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="838906353"/>
 							<reference key="NSDestination" ref="168286789"/>
-							<string key="NSLabel">valueURL: objectValue.image</string>
+							<string key="NSLabel">valueURL: objectValue.image.path</string>
 							<string key="NSBinding">valueURL</string>
-							<string key="NSKeyPath">objectValue.image</string>
+							<string key="NSKeyPath">objectValue.image.path</string>
 							<object class="NSDictionary" key="NSOptions">
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSArray" key="dict.sortedKeys">
@@ -856,7 +865,7 @@
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<int key="connectionID">611</int>
+					<int key="connectionID">697</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
@@ -1191,6 +1200,14 @@
 						<reference key="destination" ref="68315013"/>
 					</object>
 					<int key="connectionID">659</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">contentController</string>
+						<reference key="source" ref="316245540"/>
+						<reference key="destination" ref="911121263"/>
+					</object>
+					<int key="connectionID">694</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -1767,7 +1784,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">661</int>
+			<int key="maxID">701</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

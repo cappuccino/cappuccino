@@ -78,6 +78,21 @@ var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
     @outlet CPView personView;
     @outlet CPView placeView;
     @outlet CPArrayController contentController;
+    
+    CPArray images @accessors;
+}
+
+- (id)init
+{
+    self = [super init];
+    
+    images = [
+                [CPDictionary dictionaryWithObjectsAndKeys:@"Brad",  @"name", @"Resources/brad.jpg"  ,@"path"],
+                [CPDictionary dictionaryWithObjectsAndKeys:@"George",@"name", @"Resources/george.jpg",@"path"],
+                [CPDictionary dictionaryWithObjectsAndKeys:@"John",  @"name", @"Resources/john.jpg"  ,@"path"]
+             ];
+        
+    return self;
 }
 
 - (CPView)makeOrangeView
@@ -88,14 +103,18 @@ var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
     return view;
 }
 
+- (CPArray)content
+{
+    return [[CPApp delegate] content];
+}
+
 // DELEGATE METHODS FOR THE TABLE VIEW
 - (void)tableView:(CPTableView)aTableView dataViewForTableColumn:(CPTableColumn)aTableColumn row:(int)aRow
 {
-    var identifier = [aTableColumn identifier],
-        content = [[CPApp delegate] content];
+    var identifier = [aTableColumn identifier];
 
     if (identifier == @"multiple")
-        identifier = [[content objectAtIndex:aRow] objectForKey:@"identifier"];
+        identifier = [[[self content] objectAtIndex:aRow] objectForKey:@"identifier"];
 
     var view = [aTableView makeViewWithIdentifier:identifier owner:self];
 
@@ -129,7 +148,7 @@ var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
 
 - (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id)info row:(int)row dropOperation:(CPTableViewDropOperation)operation
 {
-    var content = [[CPApp delegate] content],
+    var content = [self content],
         pboard = [info draggingPasteboard],
         sourceIndexes = [pboard dataForType:TABLE_DRAG_TYPE],
         firstObject = [content objectAtIndex:[sourceIndexes firstIndex]];
