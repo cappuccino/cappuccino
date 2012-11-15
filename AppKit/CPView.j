@@ -98,9 +98,6 @@ var CPViewFlags                     = { },
     CPViewHasCustomDrawRect         = 1 << 0,
     CPViewHasCustomLayoutSubviews   = 1 << 1;
 
-var CPCurrentToolTip,
-    CPCurrentToolTipTimer,
-    CPToolTipDelay = 1.0;
 
 /*!
     @ingroup appkit
@@ -246,8 +243,8 @@ var CPCurrentToolTip,
 - (void)_setupToolTipHandlers
 {
     _toolTipInstalled = NO;
-    _toolTipFunctionIn = function(e) { [self _fireToolTip]; }
-    _toolTipFunctionOut = function(e) { [self _invalidateToolTip]; };
+    _toolTipFunctionIn = function(e) { [_CPToolTip scheduleToolTipForView:self]; }
+    _toolTipFunctionOut = function(e) { [_CPToolTip invalidateCurrentToolTipIfNeeded]; };
 }
 
 + (CPSet)keyPathsForValuesAffectingFrame
@@ -336,6 +333,9 @@ var CPCurrentToolTip,
     if (_toolTip == aToolTip)
         return;
 
+    if (aToolTip && ![aToolTip isKindOfClass:CPString])
+        aToolTip = [aToolTip description];
+
     _toolTip = aToolTip;
 
     if (_toolTip)
@@ -396,54 +396,6 @@ var CPCurrentToolTip,
 #endif
 
     _toolTipInstalled = NO;
-}
-
-/*! @ignore
-    Starts the tooltip timer.
-*/
-- (void)_fireToolTip
-{
-    if (CPCurrentToolTipTimer)
-    {
-        [CPCurrentToolTipTimer invalidate];
-
-        if (CPCurrentToolTip)
-            [CPCurrentToolTip close];
-
-        CPCurrentToolTip = nil;
-    }
-
-    if (_toolTip)
-        CPCurrentToolTipTimer = [CPTimer scheduledTimerWithTimeInterval:CPToolTipDelay target:self selector:@selector(_showToolTip:) userInfo:nil repeats:NO];
-}
-
-/*! @ignore
-    Stop the tooltip timer if any
-*/
-- (void)_invalidateToolTip
-{
-    if (CPCurrentToolTipTimer)
-    {
-        [CPCurrentToolTipTimer invalidate];
-        CPCurrentToolTipTimer = nil;
-    }
-
-    if (CPCurrentToolTip)
-    {
-        [CPCurrentToolTip close];
-        CPCurrentToolTip = nil;
-    }
-}
-
-/*! @ignore
-    Actually shows the tooltip if any
-*/
-- (void)_showToolTip:(CPTimer)aTimer
-{
-    if (CPCurrentToolTip)
-        [CPCurrentToolTip close];
-
-    CPCurrentToolTip = [_CPToolTip toolTipWithString:_toolTip];
 }
 
 /*!

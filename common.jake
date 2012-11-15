@@ -466,8 +466,18 @@ global.sudo = function(/*Array or String*/ command)
     // First try without sudo
     command = normalizeCommand(command);
 
-    if (OS.system(command + " >/dev/null 2>&1"))
+    var returnCode = OS.system(command + " >/dev/null 2>&1")
+
+    if (returnCode)
+    {
+        // if this is set, then disable the use of sudo.
+        // This is very usefull for CI scripts and stuff like that
+        if (SYSTEM.env["CAPP_NOSUDO"] == 1)
+            return returnCode;
+
         return OS.system("sudo -p '\nEnter your admin password: ' " + command);
+    }
+
 
     return 0;
 };

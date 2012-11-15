@@ -287,6 +287,9 @@ var CPWindowActionMessageKeys = [
     unsigned                            _shadowStyle;
     BOOL                                _showsResizeIndicator;
 
+    int                                 _positioningMask;
+    CGRect                              _positioningScreenRect;
+
     BOOL                                _isDocumentEdited;
     BOOL                                _isDocumentSaving;
 
@@ -535,6 +538,49 @@ CPTexturedBackgroundWindowMask
     // set up a default key view loop.
     if (_keyViewLoopIsDirty && ![self autorecalculatesKeyViewLoop])
         [self recalculateKeyViewLoop];
+
+    // At this time we know the final screen (or browser) size and can apply the positioning mask, if any, from the nib.
+    if (_positioningScreenRect)
+    {
+        var actualScreenRect = [CPPlatform isBrowser] ? [_platformWindow contentBounds] : [[self screen] visibleFrame],
+            frame = [self frame],
+            origin = frame.origin;
+
+        if (actualScreenRect)
+        {
+            if ((_positioningMask & CPWindowPositionFlexibleLeft) && (_positioningMask & CPWindowPositionFlexibleRight))
+            {
+                // Proportional Horizontal.
+                origin.x *= (actualScreenRect.size.width / _positioningScreenRect.size.width);
+            }
+            else if (_positioningMask & CPWindowPositionFlexibleLeft)
+            {
+                // Fixed from Right
+                origin.x += actualScreenRect.size.width - _positioningScreenRect.size.width;
+            }
+            else if (_positioningMask & CPWindowPositionFlexibleRight)
+            {
+                // Fixed from Left
+            }
+
+            if ((_positioningMask & CPWindowPositionFlexibleTop) && (_positioningMask & CPWindowPositionFlexibleBottom))
+            {
+                // Proportional Vertical.
+                origin.y *= (actualScreenRect.size.height / _positioningScreenRect.size.height);
+            }
+            else if (_positioningMask & CPWindowPositionFlexibleTop)
+            {
+                // Fixed from Bottom
+                origin.y += actualScreenRect.size.height - _positioningScreenRect.size.height;
+            }
+            else if (_positioningMask & CPWindowPositionFlexibleBottom)
+            {
+               // Fixed from Top
+            }
+
+            [self setFrameOrigin:origin];
+        }
+    }
 }
 
 - (void)_setWindowView:(CPView)aWindowView

@@ -1218,7 +1218,17 @@ function CPApplicationMain(args, namedArgs)
 #if PLATFORM(DOM)
     // hook to allow recorder, etc to manipulate things before starting AppKit
     if (window.parent !== window && typeof window.parent._childAppIsStarting === "function")
-        window.parent._childAppIsStarting(window);
+    {
+        try
+        {
+            window.parent._childAppIsStarting(window);
+        }
+        catch(err)
+        {
+            // This could happen if we're in an iframe without access to the parent frame.
+            CPLog.warn("Failed to call parent frame's _childAppIsStarting().");
+        }
+    }
 #endif
 
     var mainBundle = [CPBundle mainBundle],

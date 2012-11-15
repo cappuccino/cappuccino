@@ -215,7 +215,7 @@ function CGContextDrawPath(aContext, aMode)
                                                         COORD(start.x), ',', COORD(start.y), " ",
                                                         COORD(end.x), ',', COORD(end.y));
                                                     break;
-            case kCGPathElementAddArcTo:            break;
+            case kCGPathElementAddArcToPoint:       break;
         }
 
       // TODO: Following is broken for curves due to
