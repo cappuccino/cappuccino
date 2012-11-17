@@ -152,38 +152,6 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
     return _CPStandardWindowViewDividerBackgroundColor;
 }
 
-- (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
-{
-    var contentRect = [[self class] contentRectForFrameRect:aFrameRect],
-        theToolbar = [[self window] toolbar];
-
-    if ([theToolbar isVisible])
-    {
-        var toolbarHeight = CGRectGetHeight([[theToolbar _toolbarView] frame]);
-
-        contentRect.origin.y += toolbarHeight;
-        contentRect.size.height -= toolbarHeight;
-    }
-
-    return contentRect;
-}
-
-- (CGRect)frameRectForContentRect:(CGRect)aContentRect
-{
-    var frameRect = [[self class] frameRectForContentRect:aContentRect],
-        theToolbar = [[self window] toolbar];
-
-    if ([theToolbar isVisible])
-    {
-        var toolbarHeight = CGRectGetHeight([[theToolbar _toolbarView] frame]);
-
-        frameRect.origin.y -= toolbarHeight;
-        frameRect.size.height += toolbarHeight;
-    }
-
-    return frameRect;
-}
-
 - (id)initWithFrame:(CPRect)aFrame styleMask:(unsigned)aStyleMask
 {
     self = [super initWithFrame:aFrame styleMask:aStyleMask];
