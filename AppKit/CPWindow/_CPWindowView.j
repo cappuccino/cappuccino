@@ -76,12 +76,34 @@ var _CPWindowViewResizeIndicatorImage = nil;
 
 - (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
-    return [[self class] contentRectForFrameRect:aFrameRect];
+    var contentRect = [[self class] contentRectForFrameRect:aFrameRect],
+        theToolbar = [[self window] toolbar];
+
+    if ([theToolbar isVisible])
+    {
+        var toolbarHeight = CGRectGetHeight([[theToolbar _toolbarView] frame]);
+
+        contentRect.origin.y += toolbarHeight;
+        contentRect.size.height -= toolbarHeight;
+    }
+
+    return contentRect;
 }
 
 - (CGRect)frameRectForContentRect:(CGRect)aContentRect
 {
-    return [[self class] frameRectForContentRect:aContentRect];
+    var frameRect = [[self class] frameRectForContentRect:aContentRect],
+        theToolbar = [[self window] toolbar];
+
+    if ([theToolbar isVisible])
+    {
+        var toolbarHeight = CGRectGetHeight([[theToolbar _toolbarView] frame]);
+
+        frameRect.origin.y -= toolbarHeight;
+        frameRect.size.height += toolbarHeight;
+    }
+
+    return frameRect;
 }
 
 - (id)initWithFrame:(CPRect)aFrame styleMask:(unsigned)aStyleMask
