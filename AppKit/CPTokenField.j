@@ -307,9 +307,22 @@ var CPScrollDestinationNone             = 0,
 
 - (BOOL)becomeFirstResponder
 {
+#if PLATFORM(DOM)
     if (CPTokenFieldInputOwner && [CPTokenFieldInputOwner window] !== [self window])
         [[CPTokenFieldInputOwner window] makeFirstResponder:nil];
+#endif
 
+    // As long as we are the first responder we need to monitor the key status of our window.
+    [self _setObserveWindowKeyNotifications:YES];
+
+    if ([[self window] isKeyWindow])
+        [self _becomeFirstKeyResponder];
+
+    return YES;
+}
+
+- (void)_becomeFirstKeyResponder
+{
     [self setThemeState:CPThemeStateEditing];
 
     [self _updatePlaceholderState];
@@ -368,8 +381,6 @@ var CPScrollDestinationNone             = 0,
     }
 
 #endif
-
-    return YES;
 }
 
 - (BOOL)resignFirstResponder
@@ -377,9 +388,31 @@ var CPScrollDestinationNone             = 0,
     if (_preventResign)
         return NO;
 
+    [self _autocomplete];
+
+    // From CPTextField superclass.
+    [self _setObserveWindowKeyNotifications:NO];
+
+    [self _resignFirstKeyResponder];
+
+    if (_shouldNotifyTarget)
+    {
+        _shouldNotifyTarget = NO;
+        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
+
+        if ([self sendsActionOnEndEditing])
+            [self sendAction:[self action] to:[self target]];
+    }
+
+    return YES;
+}
+
+- (void)_resignFirstKeyResponder
+{
     [self unsetThemeState:CPThemeStateEditing];
 
-    [self _autocomplete];
+    [self _updatePlaceholderState];
+    [self setNeedsLayout];
 
 #if PLATFORM(DOM)
 
@@ -409,21 +442,6 @@ var CPScrollDestinationNone             = 0,
     }
 
 #endif
-
-    [self _updatePlaceholderState];
-
-    [self setNeedsLayout];
-
-    if (_shouldNotifyTarget)
-    {
-        _shouldNotifyTarget = NO;
-        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
-
-        if ([self sendsActionOnEndEditing])
-            [self sendAction:[self action] to:[self target]];
-    }
-
-    return YES;
 }
 
 - (void)mouseDown:(CPEvent)anEvent
