@@ -1007,6 +1007,9 @@ var CPScrollDestinationNone             = 0,
         lineHeight = [font defaultLineHeightForFont],
         editorInset = [self currentValueForThemeAttribute:@"editor-inset"];
 
+    // Put half a spacing above the tokens.
+    offset.y += CEIL(spaceBetweenTokens.height / 2.0);
+
     // Get the height of a typical token, or a token token if you will.
     [tokenToken sizeToFit];
 
@@ -1106,7 +1109,7 @@ var CPScrollDestinationNone             = 0,
     }
 
     // Trim off any excess height downwards (in case we shrank).
-    var scrollHeight = offset.y + tokenHeight + CEIL(spaceBetweenTokens.height / 2.0);
+    var scrollHeight = offset.y + tokenHeight;
     if (_CGRectGetHeight([contentView bounds]) > scrollHeight)
         [contentView setFrameSize:_CGSizeMake(_CGRectGetWidth([_tokenScrollView bounds]), scrollHeight)];
 
