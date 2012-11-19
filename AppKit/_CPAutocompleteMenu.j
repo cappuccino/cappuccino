@@ -161,7 +161,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
         // TODO Track down why mystery constant is needed to allocate enough width. Scroll view insets?
     }
 
-    var frameOrigin = [textField convertPoint:origin toView:nil],
+    var frameOrigin = [[textField window] convertBaseToGlobal:[textField convertPointToBase:origin]],
         screenSize = [([CPPlatform isBrowser] ? [_menuWindow platformWindow] : [_menuWindow screen]) visibleFrame].size,
         availableWidth = screenSize.width - frameOrigin.x,
         availableHeight = screenSize.height - frameOrigin.y,
