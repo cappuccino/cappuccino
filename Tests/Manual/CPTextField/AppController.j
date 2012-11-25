@@ -12,6 +12,7 @@
 @implementation AppController : CPObject
 {
     CPWindow    aWindow;
+    CPTextField bezelToggleField;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -83,6 +84,33 @@
         y = CGRectGetMaxY([textField frame]) + 6;
     }
 
+    label = [[CPTextField alloc] initWithFrame:CGRectMake(15, 420, 600, 30)];
+    [label setLineBreakMode:CPLineBreakByWordWrapping];
+    [label setStringValue:"This text field has been configured to show its text at a fixed location both with and without bezel."];
+    [contentView addSubview:label];
+
+    bezelToggleField = [CPTextField textFieldWithStringValue:"" placeholder:"Placeholder" width:200],
+
+    [bezelToggleField setEditable:YES];
+    [bezelToggleField setFrameOrigin:CGPointMake(15, 445)];
+    console.log("" + bezelToggleField._themeAttributes['content-inset']._parentAttribute._values);
+    console.log("" + bezelToggleField._themeAttributes['content-inset']._values);
+    [bezelToggleField setValue:[bezelToggleField valueForThemeAttribute:@"content-inset" inState:CPThemeStateBezeled] forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
+    console.log("" + bezelToggleField._themeAttributes['content-inset']._parentAttribute._values);
+    console.log("" + bezelToggleField._themeAttributes['content-inset']._values);
+
+    [contentView addSubview:bezelToggleField];
+
+    var bezelToggleButton = [CPButton buttonWithTitle:"Show Bezel"];
+
+    [bezelToggleButton setButtonType:CPPushOnPushOffButton];
+    [bezelToggleButton setAction:@selector(toggleBezel:)];
+    [bezelToggleButton setTarget:self];
+    [bezelToggleButton setState:CPOnState];
+    [bezelToggleButton sizeToFit];
+    [bezelToggleButton setFrameOrigin:CGPointMake(CGRectGetMaxX([bezelToggleField frame]) + 15, 448)];
+    [contentView addSubview:bezelToggleButton];
+
     [theWindow orderFront:self];
 
     aWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(150, 300, 400, 150) styleMask:CPTitledWindowMask | CPClosableWindowMask | CPDocModalWindowMask];
@@ -98,15 +126,18 @@
     [contentView addSubview:label];
 
     [textField setFrame:CGRectMake(15, CGRectGetMaxY([label frame]) + 10, 300, 30)];
-
     [textField setEditable:YES];
-
     [textField setTarget:self];
     [textField setAction:@selector(modalAction:)];
 
     [contentView addSubview:textField];
 
     [CPApp beginSheet:aWindow modalForWindow:theWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+}
+
+- (@action)toggleBezel:(id)sender
+{
+    [bezelToggleField setBezeled:([sender state] == CPOnState)];
 }
 
 - (void)modalAction:(id)sender
