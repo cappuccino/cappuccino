@@ -988,8 +988,7 @@ var CPScrollDestinationNone             = 0,
 
     var frame = [self frame],
         contentView = [_tokenScrollView documentView],
-        tokens = [self _tokens],
-        shouldShowAutoComplete = [self hasThemeState:CPThemeStateAutocompleting];
+        tokens = [self _tokens];
 
     // Hack to make sure we are handling an array
     if (![tokens isKindOfClass:[CPArray class]])
