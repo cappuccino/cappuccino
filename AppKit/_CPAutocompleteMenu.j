@@ -73,6 +73,8 @@ var _CPAutocompleteMenuMaximumHeight = 307;
 
         [tableView setDataSource:self];
         [tableView setDelegate:self];
+        [tableView setTarget:self];
+        [tableView setAction:@selector(complete:)];
         [tableView setAllowsMultipleSelection:NO];
         [tableView setHeaderView:nil];
         [tableView setCornerView:nil];
@@ -249,6 +251,11 @@ var _CPAutocompleteMenuMaximumHeight = 307;
 - (void)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(int)row
 {
     return [contentArray objectAtIndex:row];
+}
+
+- (@action)complete:(id)sender
+{
+    [textField _complete:self];
 }
 
 @end

@@ -138,6 +138,11 @@ var CPScrollDestinationNone             = 0,
     return _autocompleteMenu;
 }
 
+- (void)_complete:(_CPAutocompleteMenu)anAutocompleteMenu
+{
+    [self _autocompleteWithEvent:nil];
+}
+
 - (void)_autocompleteWithEvent:(CPEvent)anEvent
 {
     if (![self _inputElement].value && (![_autocompleteMenu contentArray] || ![self hasThemeState:CPThemeStateAutocompleting]))
@@ -647,10 +652,13 @@ var CPScrollDestinationNone             = 0,
             if (CPTokenFieldInputOwner && CPTokenFieldInputOwner._preventResign)
                 return false;
 
-            if (!CPTokenFieldInputResigning && !CPTokenFieldFocusInput)
+            if (!CPTokenFieldInputResigning && [[CPTokenFieldInputOwner window] isKeyWindow])
             {
-                [[CPTokenFieldInputOwner window] makeFirstResponder:nil];
-                return;
+                // If we lost focus somehow but we're not resigning and we're still in the key window, we'll need to take it back.
+                window.setTimeout(function()
+                {
+                    CPTokenFieldDOMInputElement.focus();
+                }, 0.0);
             }
 
             CPTokenFieldHandleBlur(anEvent, CPTokenFieldDOMInputElement);
@@ -988,8 +996,7 @@ var CPScrollDestinationNone             = 0,
 
     var frame = [self frame],
         contentView = [_tokenScrollView documentView],
-        tokens = [self _tokens],
-        shouldShowAutoComplete = [self hasThemeState:CPThemeStateAutocompleting];
+        tokens = [self _tokens];
 
     // Hack to make sure we are handling an array
     if (![tokens isKindOfClass:[CPArray class]])
