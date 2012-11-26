@@ -307,7 +307,7 @@ var CPBindingOperationAnd = 0,
     delete objectSuppressions[aKeyPath];
 }
 
-- (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPString)aBinding
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options
 {
     var count = [CPBinderPlaceholderMarkers count];
 
@@ -321,9 +321,9 @@ var CPBindingOperationAnd = 0,
     }
 }
 
-- (void)_updatePlaceholdersWithOptions:(CPDictionary)options
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPString)aBinding
 {
-    [self _updatePlaceholdersWithOptions:options forBinding:nil];
+    [self _updatePlaceholdersWithOptions:options];
 }
 
 - (void)_placeholderForMarker:aMarker
