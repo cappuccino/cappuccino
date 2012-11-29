@@ -481,4 +481,20 @@
         [[_parentWindow contentView] setBackgroundColor:_savedColor];
 }
 
+- (CPArray)tokenField:(CPTokenField)aTokenField completionsForSubstring:(CPString)substring indexOfToken:(int)tokenIndex indexOfSelectedItem:(int)selectedIndex
+{
+    var choices = ["aardvark", "baa", "caaing whale"],
+        r = [];
+
+    // Don't complete 'blank' - this would show all available matches which is excessive.
+    if (!substring)
+        return r;
+
+    for (var i = 0; i < choices.length; i++)
+        if (choices[i].toLowerCase().indexOf(substring.toLowerCase()) == 0)
+            r.push(choices[i]);
+
+    return r;
+}
+
 @end
