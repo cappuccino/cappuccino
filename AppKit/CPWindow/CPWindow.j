@@ -1673,11 +1673,29 @@ CPTexturedBackgroundWindowMask
                                             [self selectPreviousKeyView:self];
                                         else
                                             [self selectNextKeyView:self];
-
+#if PLATFORM(DOM)
+                                        // Make sure the browser doesn't try to do its own tab handling.
+                                        // This is important or the browser might blur the shared text field or token field input field,
+                                        // even that we just moved it to a new first responder.
+                                        [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO]
+#endif
                                         return;
                                     }
                                     else if ([anEvent charactersIgnoringModifiers] === CPBackTabCharacter)
-                                        return [self selectPreviousKeyView:self];
+                                    {
+                                        var didTabBack = [self selectPreviousKeyView:self];
+                                        if (didTabBack)
+                                        {
+#if PLATFORM(DOM)
+                                            // Make sure the browser doesn't try to do its own tab handling.
+                                            // This is important or the browser might blur the shared text field or token field input field,
+                                            // even that we just moved it to a new first responder.
+                                            [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO]
+#endif
+                                        }
+
+                                        return didTabBack;
+                                    }
 
                                     [[self firstResponder] keyDown:anEvent];
 
@@ -1838,7 +1856,9 @@ CPTexturedBackgroundWindowMask
 */
 - (BOOL)canBecomeKeyWindow
 {
-    return YES;
+    // In Cocoa only resizable or titled windows return YES here by default. But the main browser window in Cappuccino
+    // doesn't have these masks even that it's both titled and resizable, so we return YES when isFullPlatformWindow too.
+    return (_styleMask & CPResizableWindowMask) || (_styleMask & CPResizableWindowMask) || [self isFullPlatformWindow];
 }
 
 /*!

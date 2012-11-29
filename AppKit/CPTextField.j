@@ -490,13 +490,13 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (BOOL)becomeFirstResponder
 {
 #if PLATFORM(DOM)
+    // FIXME Why do we care about who's the first responder in a different window?
     if (CPTextFieldInputOwner && [CPTextFieldInputOwner window] !== [self window])
         [[CPTextFieldInputOwner window] makeFirstResponder:nil];
 #endif
 
     // As long as we are the first responder we need to monitor the key status of our window.
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_windowDidResignKey:) name:CPWindowDidResignKeyNotification object:[self window]];
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_windowDidBecomeKey:) name:CPWindowDidBecomeKeyNotification object:[self window]];
+    [self _setObserveWindowKeyNotifications:YES];
 
     _isEditing = NO;
 
@@ -635,8 +635,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 #endif
 
     // When we are no longer the first responder we don't worry about the key status of our window anymore.
-    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidResignKeyNotification object:[self window]];
-    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidBecomeKeyNotification object:[self window]];
+    [self _setObserveWindowKeyNotifications:NO];
 
     [self _resignFirstKeyResponder];
 
@@ -661,7 +660,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     _willBecomeFirstResponderByClick = NO;
 
     [self _updatePlaceholderState];
-
     [self setNeedsLayout];
 
 #if PLATFORM(DOM)
@@ -694,6 +692,20 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
 
 #endif
+}
+
+- (void)_setObserveWindowKeyNotifications:(BOOL)shouldObserve
+{
+    if (shouldObserve)
+    {
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_windowDidResignKey:) name:CPWindowDidResignKeyNotification object:[self window]];
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_windowDidBecomeKey:) name:CPWindowDidBecomeKeyNotification object:[self window]];
+    }
+    else
+    {
+        [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidResignKeyNotification object:[self window]];
+        [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidBecomeKeyNotification object:[self window]];
+    }
 }
 
 - (void)_windowDidResignKey:(CPNotification)aNotification
