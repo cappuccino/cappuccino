@@ -612,6 +612,14 @@ function CPColorWithImages()
 }
 
 /*!
+    Returns the receiver. This method is a placeholder that does nothing but may be implemented in the future.
+*/
+- (CPColor)colorUsingColorSpaceName:(id)aColorSpaceName
+{
+    return self;
+}
+
+/*!
     Returns an array with the HSB values for this color.
     The index values are ordered as:
 <pre>

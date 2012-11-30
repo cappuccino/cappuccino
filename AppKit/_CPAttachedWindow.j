@@ -31,7 +31,8 @@ CPPopoverAppearanceMinimal  = 0;
 CPPopoverAppearanceHUD      = 1;
 
 var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
-    _CPAttachedWindow_attachedWindowDidClose_       = 1 << 1;
+    _CPAttachedWindow_attachedWindowDidClose_       = 1 << 1,
+    _CPAttachedWindow_attachedWindowDidShow_        = 1 << 2;
 
 
 /*!
@@ -170,6 +171,9 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 
     if ([_delegate respondsToSelector:@selector(attachedWindowDidClose:)])
         _implementedDelegateMethods |= _CPAttachedWindow_attachedWindowDidClose_;
+
+    if ([_delegate respondsToSelector:@selector(attachedWindowDidShow:)])
+        _implementedDelegateMethods |= _CPAttachedWindow_attachedWindowDidShow_;
 }
 
 #pragma mark -
@@ -458,6 +462,15 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
                     // Because we are watching the -webkit-transform, it will occur now.
                     [self setCSS3Property:@"Transform" value:@"scale(1)"];
                     [self setCSS3Property:@"Transition" value:@"-webkit-transform 50ms linear"];
+
+                    var transitionCompleteFunction = function()
+                    {
+                        _DOMElement.removeEventListener("webkitTransitionEnd", transitionCompleteFunction, YES);
+                        if (_implementedDelegateMethods & _CPAttachedWindow_attachedWindowDidShow_)
+                             [_delegate attachedWindowDidShow:self];
+                    }
+
+                    _DOMElement.addEventListener("webkitTransitionEnd", transitionCompleteFunction, YES);
                 };
 
                 _DOMElement.addEventListener("webkitTransitionEnd", transitionEndFunction, YES);

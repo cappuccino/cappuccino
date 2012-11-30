@@ -69,11 +69,6 @@ CPLogRegister(CPLogConsole);
     [[radio1 radioGroup] setAction:@selector(radioGroupClicked:)];
     [multiCheckbox setState:CPMixedState];
 
-    [pushInButton setButtonType:CPMomentaryLightButton];
-    [pushOnOffButton setButtonType:CPPushOnPushOffButton];
-    [toggleButton setButtonType:CPToggleButton];
-    [momentaryChangeButton setButtonType:CPMomentaryChangeButton];
-
     [pushInButton setAlternateTitle:@"Should Not See Me"];
     [toggleButton setAlternateTitle:@"Alternate Title For Toggle"];
     [momentaryChangeButton setAlternateTitle:@"Changed!"];

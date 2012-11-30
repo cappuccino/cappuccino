@@ -138,6 +138,11 @@ var CPScrollDestinationNone             = 0,
     return _autocompleteMenu;
 }
 
+- (void)_complete:(_CPAutocompleteMenu)anAutocompleteMenu
+{
+    [self _autocompleteWithEvent:nil];
+}
+
 - (void)_autocompleteWithEvent:(CPEvent)anEvent
 {
     if (![self _inputElement].value && (![_autocompleteMenu contentArray] || ![self hasThemeState:CPThemeStateAutocompleting]))
@@ -307,11 +312,24 @@ var CPScrollDestinationNone             = 0,
 
 - (BOOL)becomeFirstResponder
 {
+#if PLATFORM(DOM)
     if (CPTokenFieldInputOwner && [CPTokenFieldInputOwner window] !== [self window])
         [[CPTokenFieldInputOwner window] makeFirstResponder:nil];
+#endif
+
+    // As long as we are the first responder we need to monitor the key status of our window.
+    [self _setObserveWindowKeyNotifications:YES];
 
     [self scrollRectToVisible:[self bounds]];
 
+    if ([[self window] isKeyWindow])
+        [self _becomeFirstKeyResponder];
+
+    return YES;
+}
+
+- (void)_becomeFirstKeyResponder
+{
     [self setThemeState:CPThemeStateEditing];
 
     [self _updatePlaceholderState];
@@ -373,8 +391,6 @@ var CPScrollDestinationNone             = 0,
     }
 
 #endif
-
-    return YES;
 }
 
 - (BOOL)resignFirstResponder
@@ -382,9 +398,31 @@ var CPScrollDestinationNone             = 0,
     if (_preventResign)
         return NO;
 
+    [self _autocomplete];
+
+    // From CPTextField superclass.
+    [self _setObserveWindowKeyNotifications:NO];
+
+    [self _resignFirstKeyResponder];
+
+    if (_shouldNotifyTarget)
+    {
+        _shouldNotifyTarget = NO;
+        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
+
+        if ([self sendsActionOnEndEditing])
+            [self sendAction:[self action] to:[self target]];
+    }
+
+    return YES;
+}
+
+- (void)_resignFirstKeyResponder
+{
     [self unsetThemeState:CPThemeStateEditing];
 
-    [self _autocomplete];
+    [self _updatePlaceholderState];
+    [self setNeedsLayout];
 
 #if PLATFORM(DOM)
 
@@ -414,21 +452,6 @@ var CPScrollDestinationNone             = 0,
     }
 
 #endif
-
-    [self _updatePlaceholderState];
-
-    [self setNeedsLayout];
-
-    if (_shouldNotifyTarget)
-    {
-        _shouldNotifyTarget = NO;
-        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
-
-        if ([self sendsActionOnEndEditing])
-            [self sendAction:[self action] to:[self target]];
-    }
-
-    return YES;
 }
 
 - (void)mouseDown:(CPEvent)anEvent
@@ -634,10 +657,13 @@ var CPScrollDestinationNone             = 0,
             if (CPTokenFieldInputOwner && CPTokenFieldInputOwner._preventResign)
                 return false;
 
-            if (!CPTokenFieldInputResigning && !CPTokenFieldFocusInput)
+            if (!CPTokenFieldInputResigning && [[CPTokenFieldInputOwner window] isKeyWindow])
             {
-                [[CPTokenFieldInputOwner window] makeFirstResponder:nil];
-                return;
+                // If we lost focus somehow but we're not resigning and we're still in the key window, we'll need to take it back.
+                window.setTimeout(function()
+                {
+                    CPTokenFieldDOMInputElement.focus();
+                }, 0.0);
             }
 
             CPTokenFieldHandleBlur(anEvent, CPTokenFieldDOMInputElement);
@@ -975,8 +1001,7 @@ var CPScrollDestinationNone             = 0,
 
     var frame = [self frame],
         contentView = [_tokenScrollView documentView],
-        tokens = [self _tokens],
-        shouldShowAutoComplete = [self hasThemeState:CPThemeStateAutocompleting];
+        tokens = [self _tokens];
 
     // Hack to make sure we are handling an array
     if (![tokens isKindOfClass:[CPArray class]])
@@ -993,6 +1018,9 @@ var CPScrollDestinationNone             = 0,
         font = [self currentValueForThemeAttribute:@"font"],
         lineHeight = [font defaultLineHeightForFont],
         editorInset = [self currentValueForThemeAttribute:@"editor-inset"];
+
+    // Put half a spacing above the tokens.
+    offset.y += CEIL(spaceBetweenTokens.height / 2.0);
 
     // Get the height of a typical token, or a token token if you will.
     [tokenToken sizeToFit];
@@ -1093,7 +1121,7 @@ var CPScrollDestinationNone             = 0,
     }
 
     // Trim off any excess height downwards (in case we shrank).
-    var scrollHeight = offset.y + tokenHeight + CEIL(spaceBetweenTokens.height / 2.0);
+    var scrollHeight = offset.y + tokenHeight;
     if (_CGRectGetHeight([contentView bounds]) > scrollHeight)
         [contentView setFrameSize:_CGSizeMake(_CGRectGetWidth([_tokenScrollView bounds]), scrollHeight)];
 

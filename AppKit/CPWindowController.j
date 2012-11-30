@@ -285,7 +285,7 @@
 
     // Change of document means toolbar items may no longer make sense.
     // FIXME: DOCUMENT ARCHITECTURE Should we setToolbar: as well?
-    [[[self window] toolbar] validateVisibleItems];
+    [[[self window] toolbar] _autoValidateVisibleItems];
 }
 
 - (void)setSupportsMultipleDocuments:(BOOL)shouldSupportMultipleDocuments

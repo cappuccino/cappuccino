@@ -501,7 +501,12 @@ var RECENT_SEARCH_PREFIX = @"   ";
     if (_CGRectContainsPoint([self searchButtonRectForBounds:[self bounds]], point))
     {
         if (_searchMenuTemplate == nil)
-            [self _sendAction:self];
+        {
+            if ([_searchButton target] && [_searchButton action])
+                [_searchButton mouseDown:anEvent];
+            else
+                [self _sendAction:self];
+        }
         else
            [self _showMenu];
     }

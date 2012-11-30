@@ -220,8 +220,8 @@ var NSButtonIsBorderedMask = 0x00800000,
             - If there is no max height either, don't do any height adjustments.
         */
         var theme = [[Converter sharedConverter] themes][0],
-            minSize = [theme valueForAttributeWithName:@"min-size" forClass:[CPButton class]],
-            maxSize = [theme valueForAttributeWithName:@"max-size" forClass:[CPButton class]],
+            minSize = [theme valueForAttributeWithName:@"min-size" forClass:[self class]],
+            maxSize = [theme valueForAttributeWithName:@"max-size" forClass:[self class]],
             adjustHeight = NO;
 
         if (minSize.height > 0 && maxSize.height > 0 && minSize.height === maxSize.height)
@@ -268,8 +268,6 @@ var NSButtonIsBorderedMask = 0x00800000,
 
     _highlightsBy = [cell highlightsBy];
     _showsStateBy = [cell showsStateBy];
-
-    [self setTag:[cell tag]];
 
     return self;
 }

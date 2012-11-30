@@ -287,6 +287,9 @@ var CPWindowActionMessageKeys = [
     unsigned                            _shadowStyle;
     BOOL                                _showsResizeIndicator;
 
+    int                                 _positioningMask;
+    CGRect                              _positioningScreenRect;
+
     BOOL                                _isDocumentEdited;
     BOOL                                _isDocumentSaving;
 
@@ -535,6 +538,49 @@ CPTexturedBackgroundWindowMask
     // set up a default key view loop.
     if (_keyViewLoopIsDirty && ![self autorecalculatesKeyViewLoop])
         [self recalculateKeyViewLoop];
+
+    // At this time we know the final screen (or browser) size and can apply the positioning mask, if any, from the nib.
+    if (_positioningScreenRect)
+    {
+        var actualScreenRect = [CPPlatform isBrowser] ? [_platformWindow contentBounds] : [[self screen] visibleFrame],
+            frame = [self frame],
+            origin = frame.origin;
+
+        if (actualScreenRect)
+        {
+            if ((_positioningMask & CPWindowPositionFlexibleLeft) && (_positioningMask & CPWindowPositionFlexibleRight))
+            {
+                // Proportional Horizontal.
+                origin.x *= (actualScreenRect.size.width / _positioningScreenRect.size.width);
+            }
+            else if (_positioningMask & CPWindowPositionFlexibleLeft)
+            {
+                // Fixed from Right
+                origin.x += actualScreenRect.size.width - _positioningScreenRect.size.width;
+            }
+            else if (_positioningMask & CPWindowPositionFlexibleRight)
+            {
+                // Fixed from Left
+            }
+
+            if ((_positioningMask & CPWindowPositionFlexibleTop) && (_positioningMask & CPWindowPositionFlexibleBottom))
+            {
+                // Proportional Vertical.
+                origin.y *= (actualScreenRect.size.height / _positioningScreenRect.size.height);
+            }
+            else if (_positioningMask & CPWindowPositionFlexibleTop)
+            {
+                // Fixed from Bottom
+                origin.y += actualScreenRect.size.height - _positioningScreenRect.size.height;
+            }
+            else if (_positioningMask & CPWindowPositionFlexibleBottom)
+            {
+               // Fixed from Top
+            }
+
+            [self setFrameOrigin:origin];
+        }
+    }
 }
 
 - (void)_setWindowView:(CPView)aWindowView
@@ -1627,11 +1673,29 @@ CPTexturedBackgroundWindowMask
                                             [self selectPreviousKeyView:self];
                                         else
                                             [self selectNextKeyView:self];
-
+#if PLATFORM(DOM)
+                                        // Make sure the browser doesn't try to do its own tab handling.
+                                        // This is important or the browser might blur the shared text field or token field input field,
+                                        // even that we just moved it to a new first responder.
+                                        [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO]
+#endif
                                         return;
                                     }
                                     else if ([anEvent charactersIgnoringModifiers] === CPBackTabCharacter)
-                                        return [self selectPreviousKeyView:self];
+                                    {
+                                        var didTabBack = [self selectPreviousKeyView:self];
+                                        if (didTabBack)
+                                        {
+#if PLATFORM(DOM)
+                                            // Make sure the browser doesn't try to do its own tab handling.
+                                            // This is important or the browser might blur the shared text field or token field input field,
+                                            // even that we just moved it to a new first responder.
+                                            [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO]
+#endif
+                                        }
+
+                                        return didTabBack;
+                                    }
 
                                     [[self firstResponder] keyDown:anEvent];
 
@@ -1792,7 +1856,9 @@ CPTexturedBackgroundWindowMask
 */
 - (BOOL)canBecomeKeyWindow
 {
-    return YES;
+    // In Cocoa only resizable or titled windows return YES here by default. But the main browser window in Cappuccino
+    // doesn't have these masks even that it's both titled and resizable, so we return YES when isFullPlatformWindow too.
+    return (_styleMask & CPResizableWindowMask) || (_styleMask & CPResizableWindowMask) || [self isFullPlatformWindow];
 }
 
 /*!

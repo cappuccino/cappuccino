@@ -234,7 +234,7 @@ Set the behavior of the CPPopover. It can be:
     [_attachedWindow setContentView:[_contentViewController view]];
     [_attachedWindow positionRelativeToRect:positioningRect ofView:positioningView preferredEdge:preferredEdge];
 
-    if (_implementedDelegateMethods & CPPopoverDelegate_popover_didShow_)
+    if (!_animates && _implementedDelegateMethods & CPPopoverDelegate_popover_didShow_)
         [_delegate popoverDidShow:self];
 }
 
@@ -309,6 +309,13 @@ Set the behavior of the CPPopover. It can be:
 {
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_didClose_)
         [_delegate popoverDidClose:self];
+}
+
+/*! @ignore */
+- (void)attachedWindowDidShow:(_CPAttachedWindow)anAttachedWindow
+{
+    if (_implementedDelegateMethods & CPPopoverDelegate_popover_didShow_)
+        [_delegate popoverDidShow:self];
 }
 
 

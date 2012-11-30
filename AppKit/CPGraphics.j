@@ -23,6 +23,16 @@
 @import "CPColor.j"
 @import "CPGraphicsContext.j"
 
+CPCalibratedWhiteColorSpace = @"CalibratedWhiteColorSpace";
+CPCalibratedBlackColorSpace = @"CalibratedBlackColorSpace";
+CPCalibratedRGBColorSpace   = @"CalibratedRGBColorSpace";
+CPDeviceWhiteColorSpace     = @"DeviceWhiteColorSpace";
+CPDeviceBlackColorSpace     = @"DeviceBlackColorSpace";
+CPDeviceRGBColorSpace       = @"DeviceRGBColorSpace";
+CPDeviceCMYKColorSpace      = @"DeviceCMYKColorSpace";
+CPNamedColorSpace           = @"NamedColorSpace";
+CPPatternColorSpace         = @"PatternColorSpace";
+CPCustomColorSpace          = @"CustomColorSpace";
 
 function CPDrawTiledRects(
    /* CGRect */ boundsRect,

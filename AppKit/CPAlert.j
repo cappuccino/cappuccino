@@ -595,6 +595,7 @@ CPCriticalAlertStyle        = 2;
     frame.size = [self currentValueForThemeAttribute:@"size"];
 
     _window = [[CPWindow alloc] initWithContentRect:frame styleMask:forceStyle || _defaultWindowStyle];
+    [_window setLevel:CPStatusWindowLevel];
 
     if (_title)
         [_window setTitle:_title];

@@ -136,10 +136,10 @@ function NSCompatibleClassName(aClassName, asPointer)
     if (aClassName === "var" || aClassName === "id")
         return "id";
 
-    var suffix = aClassName.substr(0, 2),
+    var prefix = aClassName.substr(0, 2),
         asterisk = asPointer ? "*" : "";
 
-    if (suffix !== "CP")
+    if (prefix !== "CP")
         return aClassName + asterisk;
 
     var NSClassName = "NS" + aClassName.substr(2);
@@ -147,9 +147,16 @@ function NSCompatibleClassName(aClassName, asPointer)
     if (NSClasses[NSClassName])
         return NSClassName + asterisk;
 
+    if (ReplacementClasses[aClassName])
+        return ReplacementClasses[aClassName] + asterisk;
+                    
     return aClassName + asterisk;
 }
 
+var ReplacementClasses = {
+    "CPWebView": "WebView"
+};
+                    
 var NSClasses = {
                     "NSAffineTransform" : YES,
                     "NSAppleEventDescriptor" : YES,

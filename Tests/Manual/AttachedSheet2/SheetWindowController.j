@@ -126,11 +126,11 @@
 - (SheetWindowController)allocController
 {
     CPLog.debug("[%@ %@] groupClass=%@", [self class], _cmd,
-        [[[[[_windowTypeMatrix subviews] objectAtIndex:0] radioGroup] selectedRadio] tag]);
+        [[_windowTypeMatrix selectedRadio] tag]);
 
     var type = 1;
     if (_windowTypeMatrix)
-        type = [[[[[_windowTypeMatrix subviews] objectAtIndex:0] radioGroup] selectedRadio] tag];
+        type = [[_windowTypeMatrix selectedRadio] tag];
 
     var styleMask = 0;
     if ([_titledMaskButton state])
@@ -479,6 +479,22 @@
 
     if ([[_parentWindow windowController] shadeWindow])
         [[_parentWindow contentView] setBackgroundColor:_savedColor];
+}
+
+- (CPArray)tokenField:(CPTokenField)aTokenField completionsForSubstring:(CPString)substring indexOfToken:(int)tokenIndex indexOfSelectedItem:(int)selectedIndex
+{
+    var choices = ["aardvark", "baa", "caaing whale"],
+        r = [];
+
+    // Don't complete 'blank' - this would show all available matches which is excessive.
+    if (!substring)
+        return r;
+
+    for (var i = 0; i < choices.length; i++)
+        if (choices[i].toLowerCase().indexOf(substring.toLowerCase()) == 0)
+            r.push(choices[i]);
+
+    return r;
 }
 
 @end
