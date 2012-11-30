@@ -206,13 +206,7 @@
         item = _cachedItems.pop();
 
     else
-    {
-        if (!_itemData)
-            if (_itemPrototype)
-                _itemData = [CPKeyedArchiver archivedDataWithRootObject:_itemPrototype];
-
-        item = [CPKeyedUnarchiver unarchiveObjectWithData:_itemData];
-    }
+        item = [_itemPrototype copy];
 
     [item setRepresentedObject:anObject];
     [[item view] setFrameSize:_itemSize];

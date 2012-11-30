@@ -29,6 +29,32 @@
 @implementation CPCollectionViewItem : CPViewController
 {
     BOOL    _isSelected;
+    CPData  _cachedArchive;
+}
+
+- (id)copy
+{
+    var cibName = [self cibName],
+        copy;
+    
+    if (cibName)
+    {
+        copy = [[[self class] alloc] initWithCibName:cibName bundle:[self cibBundle]];
+    }
+    else
+    {
+        if (!_cachedArchive)
+            _cachedArchive = [CPKeyedArchiver archivedDataWithRootObject:self];
+    
+        copy = [CPKeyedUnarchiver unarchiveObjectWithData:_cachedArchive];
+      
+      // copy connections
+    }
+    
+    [copy setRepresentedObject:[self representedObject]];
+    [copy setSelected:[self isSelected]];
+    
+    return copy;
 }
 
 // Setting the Represented Object
