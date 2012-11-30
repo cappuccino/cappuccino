@@ -99,9 +99,12 @@
     id                      _delegate;
 
     CPEvent                 _mouseDownEvent;
-    
+
     BOOL                    _needsMinMaxItemSizeUpdate;
     CGSize                  _storedFrameSize;
+
+    BOOL                    _uniformSubviewsResizing @accessors(property=uniformSubviewsResizing);
+    BOOL                    _lockResizing;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -110,28 +113,46 @@
 
     if (self)
     {
-        _items = [];
-        _content = [];
+        _maxNumberOfRows = 0;
+        _maxNumberOfColumns = 0;
 
-        _cachedItems = [];
-
-        _itemSize = CGSizeMakeZero();
         _minItemSize = CGSizeMakeZero();
         _maxItemSize = CGSizeMakeZero();
 
         [self setBackgroundColors:nil];
 
         _verticalMargin = 5.0;
-        _tileWidth = -1.0;
-
-        _selectionIndexes = [CPIndexSet indexSet];
-        _allowsEmptySelection = YES;
         _isSelectable = YES;
-        _needsMinMaxItemSizeUpdate = YES;
-        _storedFrameSize = CGSizeMakeZero();
+        _allowsEmptySelection = YES;
+
+        [self _init];
     }
 
     return self;
+}
+
+- (void)_init
+{
+        _content = [];
+
+        _items = [];
+        _cachedItems = [];
+
+        _numberOfColumns = CPNotFound;
+        _numberOfRows = CPNotFound;
+
+        _itemSize = CGSizeMakeZero();
+
+        _selectionIndexes = [CPIndexSet indexSet];
+
+        _storedFrameSize = CGSizeMakeZero();
+
+        _needsMinMaxItemSizeUpdate = YES;
+        _uniformSubviewsResizing = NO;
+        _lockResizing = NO;
+
+        [self setAutoresizesSubviews:NO];
+        [self setAutoresizingMask:0];
 }
 
 /*!
@@ -188,7 +209,7 @@
     _itemForDragging = nil;
     _itemPrototype = anItem;
 
-    [self reloadContent];
+    [self reloadContentCachingRemovedItems:NO];
 }
 
 /*!
@@ -377,8 +398,13 @@
     return [_selectionIndexes copy];
 }
 
-/* @ignore */
 - (void)reloadContent
+{
+    [self reloadContentCachingRemovedItems:YES];
+}
+
+/* @ignore */
+- (void)reloadContentCachingRemovedItems:(BOOL)shouldCache
 {
     // Remove current views
     var count = _items.length;
@@ -388,7 +414,8 @@
         [[_items[count] view] removeFromSuperview];
         [_items[count] setSelected:NO];
 
-        _cachedItems.push(_items[count]);
+        if (shouldCache)
+            _cachedItems.push(_items[count]);
     }
 
     _items = [];
@@ -412,7 +439,144 @@
     while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound && index < count)
         [_items[index] setSelected:YES];
 
+    [self tileIfNeeded:NO];
+}
+
+- (void)resizeSubviewsWithOldSize:(CPSize)oldBoundsSize
+{
+    // Desactivate subviews autoresizing
+}
+
+- (void)resizeWithOldSuperviewSize:(CPSize)oldBoundsSize
+{
+    if (_lockResizing)
+        return;
+
+    _lockResizing = YES;
+
     [self tile];
+
+    _lockResizing = NO;
+}
+
+- (void)tile
+{
+    [self tileIfNeeded:!_uniformSubviewsResizing];
+}
+
+- (void)tileIfNeeded:(BOOL)lazyFlag
+{
+    var frameSize = CGSizeMakeCopy([[self superview] frameSize]),
+        itemSize = CGSizeMakeZero(),
+        colsRowsCount = [];
+
+        oldNumberOfColumns = _numberOfColumns,
+        oldNumberOfRows = _numberOfRows,
+        oldItemSize = _itemSize,
+        storedFrameSize = _storedFrameSize;
+
+    [self _updateMinMaxItemSizeIfNeeded];
+
+    [self getFrameSize:frameSize itemSize:itemSize columnsRowsCount:colsRowsCount];
+
+    //CPLog.debug("frameSize="+CPStringFromSize(frameSize) + "itemSize="+CPStringFromSize(itemSize) + " ncols=" +  colsRowsCount[0] +" nrows="+ colsRowsCount[1]+" displayCount="+ colsRowsCount[2]);
+
+    _numberOfColumns = colsRowsCount[0];
+    _numberOfRows = colsRowsCount[1];
+    _itemSize = itemSize;
+    _storedFrameSize = frameSize;
+
+    [self setFrameSize:frameSize];
+
+    //CPLog.debug("OLD " + oldNumberOfColumns + " NEW " + _numberOfColumns);
+    if (!lazyFlag ||
+        _numberOfColumns !== oldNumberOfColumns ||
+        _numberOfRows !== oldNumberOfRows ||
+        !CGSizeEqualToSize(_itemSize, oldItemSize))
+
+        [self displayItems:_items frameSize:frameSize itemSize:_itemSize columns:_numberOfColumns rows:_numberOfRows count:colsRowsCount[2]];
+}
+
+- (void)getFrameSize:({CGSize})aSuperviewSize itemSize:({CGSize})anItemSize columnsRowsCount:({CPArray})colsRowsCount
+{
+    var width               = aSuperviewSize.width,
+        height              = aSuperviewSize.height,
+        itemSize            = CGSizeMakeCopy(_minItemSize),
+        maxItemSizeWidth    = _maxItemSize.width,
+        maxItemSizeHeight   = _maxItemSize.height,
+        itemsCount          = [_items count],
+        numberOfRows,
+        numberOfColumns;
+
+    numberOfColumns = FLOOR(width / itemSize.width);
+
+    if (maxItemSizeWidth == 0)
+        numberOfColumns = MIN(numberOfColumns, _maxNumberOfColumns);
+
+    if (_maxNumberOfColumns > 0)
+        numberOfColumns = MIN(MIN(_maxNumberOfColumns, itemsCount), numberOfColumns);
+
+    numberOfColumns = MAX(1.0, numberOfColumns);
+
+    itemSize.width = FLOOR(width / numberOfColumns);
+
+    if (maxItemSizeWidth > 0)
+    {
+        itemSize.width = MIN(maxItemSizeWidth, itemSize.width);
+
+        if (numberOfColumns == 1)
+            itemSize.width = MIN(maxItemSizeWidth, width);
+    }
+
+    numberOfRows = MAX(1.0 , MIN(CEIL(itemsCount / numberOfColumns), _maxNumberOfRows));
+
+    height = MAX(height, numberOfRows * (_minItemSize.height + _verticalMargin));
+
+    var itemSizeHeight = FLOOR(height / numberOfRows);
+
+    if (maxItemSizeHeight > 0)
+        itemSizeHeight = MIN(itemSizeHeight, maxItemSizeHeight);
+
+    anItemSize.height = MAX(_minItemSize.height, itemSizeHeight);
+    anItemSize.width = MAX(_minItemSize.width, itemSize.width);
+
+    aSuperviewSize.width = MAX(width, _minItemSize.width);
+    aSuperviewSize.height = height;
+    colsRowsCount[0] = numberOfColumns;
+    colsRowsCount[1] = numberOfRows;
+    colsRowsCount[2] = MIN(itemsCount, numberOfColumns * numberOfRows);
+}
+
+- (void)displayItems:(CPArray)displayItems frameSize:(CGSize)aFrameSize itemSize:(CGSize)anItemSize columns:(CPInteger)numberOfColumns rows:(CPInteger)numberOfRows count:(CPInteger)displayCount
+{
+//    CPLog.debug("DISPLAY ITEMS " + numberOfColumns + " " +  numberOfRows);
+
+    var horizontalMargin = _uniformSubviewsResizing ? FLOOR((aFrameSize.width - numberOfColumns * anItemSize.width) / (numberOfColumns + 1)) : 0;
+
+    var x = horizontalMargin,
+        y = -anItemSize.height;
+
+    [displayItems enumerateObjectsUsingBlock:function(item, idx, stop)
+    {
+        var view = [item view];
+
+        if (idx >= displayCount)
+        {
+            [view setFrameOrigin:CGPointMake(-anItemSize.width, -anItemSize.height)];
+            return;
+        }
+
+        if (idx % numberOfColumns == 0)
+        {
+            x = horizontalMargin;
+            y += _verticalMargin + anItemSize.height;
+        }
+
+        [view setFrameOrigin:CGPointMake(x, y)];
+        [view setFrameSize:anItemSize];
+
+        x += anItemSize.width + horizontalMargin;
+    }];
 }
 
 - (void)_updateMinMaxItemSizeIfNeeded
@@ -420,130 +584,24 @@
     if (!_needsMinMaxItemSizeUpdate)
         return;
 
-    var prototypeView = [_itemPrototype view];
-    
-    if (prototypeView)
+    var prototypeView;
+
+    if (_itemPrototype && (prototypeView = [_itemPrototype view]))
     {
-        if (CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()))
-            _minItemSize = [prototypeView frameSize];
-        
-        if (CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()) && !([prototypeView autoresizingMask] & CPViewWidthSizable))
-            _maxItemSize = [prototypeView frameSize];
+        if (_minItemSize.width == 0)
+            _minItemSize.width = [prototypeView frameSize].width;
+
+        if (_minItemSize.height == 0)
+            _minItemSize.height = [prototypeView frameSize].height;
+
+        if (_maxItemSize.height == 0 && !([prototypeView autoresizingMask] & CPViewHeightSizable))
+            _maxItemSize.height = [prototypeView frameSize].height;
+
+        if (_maxItemSize.width == 0 && !([prototypeView autoresizingMask] & CPViewWidthSizable))
+            _maxItemSize.width = [prototypeView frameSize].width;
+
+        _needsMinMaxItemSizeUpdate = NO;
     }
-    
-    _needsMinMaxItemSizeUpdate = NO;
-}
-
-/* @ignore */
-- (void)tile
-{
-    var width = CGRectGetWidth([self bounds]);
-
-    if (width == _tileWidth)
-        return;
-
-    [self _updateMinMaxItemSizeIfNeeded];
-
-    // We try to fit as many views per row as possible.  Any remaining space is then
-    // either proportioned out to the views (if their minSize != maxSize) or used as
-    // margin
-    var itemSize = CGSizeMakeCopy(_minItemSize);
-
-    var maxItemSizeWidth = _maxItemSize.width;
-    
-    _numberOfColumns = MAX(1.0, FLOOR(width / itemSize.width));
-
-    if (_maxNumberOfColumns > 0)
-        _numberOfColumns = MIN(_maxNumberOfColumns, _numberOfColumns);
-
-    var remaining = width - _numberOfColumns * itemSize.width,
-        itemsNeedSizeUpdate = NO;
-
-    if (remaining > 0 && itemSize.width < maxItemSizeWidth)
-        itemSize.width = MIN(maxItemSizeWidth, itemSize.width + FLOOR(remaining / _numberOfColumns));
-
-    // When we ONE column and a non-integral width, the FLOORing above can cause the item width to be smaller than the total width.
-    if (_maxNumberOfColumns == 1 && itemSize.width < maxItemSizeWidth && itemSize.width < width)
-        itemSize.width = MIN(maxItemSizeWidth, width);
-
-    if (!CGSizeEqualToSize(_itemSize, itemSize))
-    {
-        _itemSize = itemSize;
-        itemsNeedSizeUpdate = YES;
-    }
-
-    var index = 0,
-        count = _items.length;
-
-    if (_maxNumberOfColumns > 0 && _maxNumberOfRows > 0)
-        count = MIN(count, _maxNumberOfColumns * _maxNumberOfRows);
-
-    _numberOfRows = CEIL(count / _numberOfColumns);
-
-    _horizontalMargin = FLOOR((width - _numberOfColumns * itemSize.width) / (_numberOfColumns + 1));
-
-    var x = _horizontalMargin,
-        y = -itemSize.height;
-
-    for (; index < count; ++index)
-    {
-        if (index % _numberOfColumns == 0)
-        {
-            x = _horizontalMargin;
-            y += _verticalMargin + itemSize.height;
-        }
-
-        var view = [_items[index] view];
-
-        [view setFrameOrigin:CGPointMake(x, y)];
-
-        if (itemsNeedSizeUpdate)
-            [view setFrameSize:_itemSize];
-
-        x += itemSize.width + _horizontalMargin;
-    }
-
-    var superview = [self superview],
-        proposedHeight = y + itemSize.height + _verticalMargin;
-
-    if ([superview isKindOfClass:[CPClipView class]])
-    {
-        var superviewSize = [superview bounds].size;
-        if (proposedHeight != _storedFrameSize.height)
-        {
-            _tileWidth = CGRectGetWidth([self bounds]);
-            _storedFrameSize.height = proposedHeight;
-            [self setFrameSize:CGSizeMake(_tileWidth, proposedHeight)];
-        }
-    }
-
-    _tileWidth = -1.0;    
-}
-
-- (void)resizeWithOldSuperviewSize:(CGSize)aSize
-{   
-    var superviewSize = CGSizeMakeCopy([[self superview] bounds].size);
-    
-    if (superviewSize.width < _minItemSize.width || superviewSize.height < _storedFrameSize.height)
-    {
-        if (superviewSize.width > _minItemSize.width)
-        {
-            aSize.width = superviewSize.width;
-            [super setFrameSize:CGSizeMake(aSize.width, CGRectGetHeight([self frame]))];
-        }
-        
-        if (superviewSize.height > _storedFrameSize.height)
-        {
-            aSize.height = _storedFrameSize.height;
-            [super setFrameSize:CGSizeMake(CGRectGetWidth([self frame]), aSize.height)];
-        }
-        
-        [super resizeWithOldSuperviewSize:aSize];
-    }
-    else
-        [super setFrameSize:superviewSize];
-    
-    [self tile];
 }
 
 // Laying Out the Collection View
@@ -616,10 +674,14 @@
 {
     if (aSize === nil || aSize === undefined)
         [CPException raise:CPInvalidArgumentException reason:"Invalid value provided for minimum size"];
+
     if (CGSizeEqualToSize(_minItemSize, aSize))
         return;
 
     _minItemSize = CGSizeMakeCopy(aSize);
+
+    if (CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()))
+        _needsMinMaxItemSizeUpdate = YES;
 
     [self tile];
 }
@@ -642,6 +704,9 @@
         return;
 
     _maxItemSize = CGSizeMakeCopy(aSize);
+
+//    if (_maxItemSize.width == 0 || _maxItemSize.height == 0)
+//        _needsMinMaxItemSizeUpdate = YES;
 
     [self tile];
 }
@@ -1040,13 +1105,6 @@ var CPCollectionViewMinItemSizeKey              = @"CPCollectionViewMinItemSizeK
 
     if (self)
     {
-        _items = [];
-        _content = [];
-
-        _cachedItems = [];
-
-        _itemSize = CGSizeMakeZero();
-
         _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey];
         _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey];
 
@@ -1060,16 +1118,7 @@ var CPCollectionViewMinItemSizeKey              = @"CPCollectionViewMinItemSizeK
 
         [self setBackgroundColors:[aCoder decodeObjectForKey:CPCollectionViewBackgroundColorsKey]];
 
-        _tileWidth = -1.0;
-
-        _selectionIndexes = [CPIndexSet indexSet];
-
-        _allowsEmptySelection = YES;
-        _needsMinMaxItemSizeUpdate = YES;
-        _storedFrameSize = CGSizeMakeZero();
-        
-        [self setAutoresizesSubviews:NO];
-        [self setAutoresizingMask:0];
+        [self _init];
     }
 
     return self;

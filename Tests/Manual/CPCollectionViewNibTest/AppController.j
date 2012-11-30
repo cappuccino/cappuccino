@@ -7,40 +7,134 @@
  */
 
 @import <Foundation/CPObject.j>
-//@import "CPCollectionView.j"
+
+CPLogRegister(CPLogConsole);
 
 @implementation AppController : CPObject
 {
     CPWindow    theWindow; //this "outlet" is connected automatically by the Cib
-    
+    @outlet     CPCollectionView     collectionView @accessors;
+    @outlet     InternalProtoypeItem prototypeItemInternal;
+    @outlet     CPCollectionViewItem prototypeItemExternal;
+
     CPArray content @accessors;
 }
 
 - (id)init
 {
     self = [super init];
-    
-    content = ["A", "B", "C", "D", "E", "F"];
-    
+
+    content = [CPArray array];
+    for (var i = 0; i < 8; i++)
+        [content addObject:[CPDictionary dictionaryWithObject:(String.fromCharCode(65 +i)) forKey:@"value"]]
+
     return self;
 }
 
+
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
-    //[collectionView bind:"content" toObject:ac withKeyPath:@"arrangedObjects" options:nil];
-    
-
     // This is called when the application is done loading.
 }
 
 - (void)awakeFromCib
 {
-    // This is called when the cib is done loading.
-    // You can implement this method on any object instantiated from a Cib.
-    // It's a useful hook for setting up current UI values, and other things.
+    [self willChangeValueForKey:@"minItemWidth"];
+    [self willChangeValueForKey:@"minItemHeight"];
+    [collectionView setMinItemSize:CGSizeMake(100, 100)];
+    [self didChangeValueForKey:@"minItemWidth"];
+    [self didChangeValueForKey:@"minItemHeight"];
 
-    // In this case, we want the window from Cib to become our full browser window
+    [self willChangeValueForKey:@"maxItemWidth"];
+    [self willChangeValueForKey:@"maxItemHeight"];
+    [collectionView setMaxItemSize:CGSizeMake(200, 150)];
+    [self didChangeValueForKey:@"maxItemWidth"];
+    [self didChangeValueForKey:@"maxItemHeight"];
+
     //[theWindow setFullPlatformWindow:YES];
+}
+
+- (IBAction)setPrototypeItem:(id)sender
+{
+    var prototypeItem = [[sender selectedItem] tag] ? prototypeItemExternal : prototypeItemInternal;
+
+    [collectionView setItemPrototype:prototypeItem];
+}
+
+- (void)setMinItemWidth:(CPInteger)aWidth
+{
+    var size = CGSizeMakeCopy([collectionView minItemSize]);
+    size.width = aWidth;
+    [collectionView setMinItemSize:size];
+}
+
+- (CPInteger)minItemWidth
+{
+    return [collectionView minItemSize].width;
+}
+
+- (void)setMinItemHeight:(CPInteger)aHeight
+{
+    var size = CGSizeMakeCopy([collectionView minItemSize]);
+    size.height = aHeight;
+    [collectionView setMinItemSize:size];
+}
+
+- (CPInteger)minItemHeight
+{
+    return [collectionView minItemSize].height;
+}
+
+- (void)setMaxItemWidth:(CPInteger)aWidth
+{
+    var size = CGSizeMakeCopy([collectionView maxItemSize]);
+    size.width = aWidth;
+    [collectionView setMaxItemSize:size];
+}
+
+- (CPInteger)maxItemWidth
+{
+    return [collectionView maxItemSize].width;
+}
+
+- (void)setMaxItemHeight:(CPInteger)aHeight
+{
+    var size = CGSizeMakeCopy([collectionView maxItemSize]);
+    size.height = aHeight;
+    [collectionView setMaxItemSize:size];
+}
+
+- (CPInteger)maxItemHeight
+{
+    return [collectionView maxItemSize].height;
+}
+
+@end
+
+@implementation InternalProtoypeItem: CPCollectionViewItem
+{
+    @outlet CPTextField textField;
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+
+    textField = [aCoder decodeObjectForKey:@"TextField"];
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+    [aCoder encodeConditionalObject:textField forKey:@"TextField"];
+}
+
+- (void)setRepresentedObject:(id)anObject
+{
+    [super setRepresentedObject:anObject];
+    [textField setStringValue:[anObject objectForKey:@"value"]];
 }
 
 @end
@@ -54,7 +148,7 @@
 {
     if (!color)
         color = [CPColor randomColor];
-    
+
     var context = [[CPGraphicsContext currentContext] graphicsPort];
     CGContextSetFillColor(context, color);
     CGContextFillRect(context, aRect);

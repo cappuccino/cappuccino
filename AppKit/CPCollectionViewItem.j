@@ -22,7 +22,6 @@
 
 @import "CPViewController.j"
 
-
 /*!
     Represents an object inside a CPCollectionView.
 */
@@ -36,7 +35,7 @@
 {
     var cibName = [self cibName],
         copy;
-    
+
     if (cibName)
     {
         copy = [[[self class] alloc] initWithCibName:cibName bundle:[self cibBundle]];
@@ -45,15 +44,14 @@
     {
         if (!_cachedArchive)
             _cachedArchive = [CPKeyedArchiver archivedDataWithRootObject:self];
-    
+
         copy = [CPKeyedUnarchiver unarchiveObjectWithData:_cachedArchive];
-      
+
       // copy connections
     }
-    
-    [copy setRepresentedObject:[self representedObject]];
-    [copy setSelected:[self isSelected]];
-    
+
+    [copy setSelected:NO];
+
     return copy;
 }
 
