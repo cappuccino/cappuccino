@@ -131,7 +131,7 @@ var CPBindingOperationAnd = 0,
         if (options)
             [_info setObject:options forKey:CPOptionsKey];
 
-        [self _updatePlaceholdersWithOptions:options];
+        [self _updatePlaceholdersWithOptions:options forBinding:aName];
 
         [aDestination addObserver:self forKeyPath:aKeyPath options:CPKeyValueObservingOptionNew context:aBinding];
 
@@ -319,6 +319,11 @@ var CPBindingOperationAnd = 0,
             placeholder = isExplicit ? [options objectForKey:optionName] : nil;
         [self _setPlaceholder:placeholder forMarker:marker isDefault:!isExplicit];
     }
+}
+
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPString)aBinding
+{
+    [self _updatePlaceholdersWithOptions:options];
 }
 
 - (void)_placeholderForMarker:aMarker
@@ -564,6 +569,8 @@ CPFontNameBinding                         = @"fontName";
 CPFontBoldBinding                         = @"fontBold";
 CPHiddenBinding                           = @"hidden";
 CPFilterPredicateBinding                  = @"filterPredicate";
+CPMaxValueBinding                         = @"maxValue";
+CPMinValueBinding                         = @"minValue";
 CPPredicateBinding                        = @"predicate";
 CPSelectedIndexBinding                    = @"selectedIndex";
 CPSelectedLabelBinding                    = @"selectedLabel";

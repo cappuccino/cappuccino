@@ -76,6 +76,22 @@
     return [CPStepper stepperWithInitialValue:0.0 minValue:0.0 maxValue:59.0];
 }
 
++ (Class)_binderClassForBinding:(CPString)theBinding
+{
+    if (theBinding == CPValueBinding || theBinding == CPMinValueBinding || theBinding == CPMaxValueBinding)
+        return [_CPStepperValueBinder class];
+
+    return [super _binderClassForBinding:theBinding];
+}
+
+- (id)_replacementKeyPathForBinding:(CPString)aBinding
+{
+    if (aBinding == CPValueBinding)
+        return @"doubleValue";
+
+    return [super _replacementKeyPathForBinding:aBinding];
+}
+
 /*!
     Initializes a CPStepper.
     @param aFrame the frame of the control
@@ -211,8 +227,7 @@
     else
         [self setDoubleValue:([self doubleValue] - _increment)];
 
-    if (_target && _action && [_target respondsToSelector:_action])
-        [self sendAction:_action to:_target];
+    [self sendAction:[self action] to:[self target]];
 }
 
 /*!
@@ -246,6 +261,24 @@
 {
     return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], _CGSizeMakeZero(), _CGSizeMakeZero()]
                                        forKeys:[@"bezel-color-up-button", @"bezel-color-down-button", @"up-button-size", @"down-button-size"]];
+}
+
+@end
+
+@implementation _CPStepperValueBinder : CPBinder
+{
+}
+
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPString)aBinding
+{
+    var placeholder = (aBinding == CPMaxValueBinding) ? [_source maxValue] : [_source minValue];
+
+    [super _updatePlaceholdersWithOptions:options];
+
+    [self _setPlaceholder:placeholder forMarker:CPMultipleValuesMarker isDefault:YES];
+    [self _setPlaceholder:placeholder forMarker:CPNoSelectionMarker isDefault:YES];
+    [self _setPlaceholder:placeholder forMarker:CPNotApplicableMarker isDefault:YES];
+    [self _setPlaceholder:placeholder forMarker:CPNullMarker isDefault:YES];
 }
 
 @end
