@@ -99,6 +99,7 @@
     id                      _delegate;
 
     CPEvent                 _mouseDownEvent;
+    BOOL                    _needsMinMaxItemSizeUpdate;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -124,6 +125,7 @@
         _selectionIndexes = [CPIndexSet indexSet];
         _allowsEmptySelection = YES;
         _isSelectable = YES;
+        _needsMinMaxItemSizeUpdate = YES;
     }
 
     return self;
@@ -410,6 +412,25 @@
     [self tile];
 }
 
+- (void)_updateMinMaxItemSizeIfNeeded
+{
+    if (!_needsMinMaxItemSizeUpdate)
+        return;
+
+    var prototypeView = [_itemPrototype view];
+    
+    if (prototypeView)
+    {
+        if (CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()))
+            _minItemSize = [prototypeView frameSize];
+        
+        if (CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()) && !([prototypeView autoresizingMask] & CPViewWidthSizable))
+            _maxItemSize = [prototypeView frameSize];
+    }
+    
+    _needsMinMaxItemSizeUpdate = NO;
+}
+
 /* @ignore */
 - (void)tile
 {
@@ -417,6 +438,8 @@
 
     if (width == _tileWidth)
         return;
+
+    [self _updateMinMaxItemSizeIfNeeded];
 
     // We try to fit as many views per row as possible.  Any remaining space is then
     // either proportioned out to the views (if their minSize != maxSize) or used as
@@ -977,22 +1000,6 @@ var CPCollectionViewMinItemSizeKey              = @"CPCollectionViewMinItemSizeK
 
 @implementation CPCollectionView (CPCoding)
 
-- (void)awakeFromCib
-{
-    [super awakeFromCib];
-
-    var prototypeView = [_itemPrototype view];
-    if (prototypeView && (CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()) || CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero())))
-    {
-        var item = _itemPrototype;
-
-        if (CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()))
-            _minItemSize = [prototypeView frameSize];
-        else if (CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
-            _maxItemSize = [prototypeView frameSize];
-    }
-}
-
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
@@ -1024,6 +1031,8 @@ var CPCollectionViewMinItemSizeKey              = @"CPCollectionViewMinItemSizeK
         _selectionIndexes = [CPIndexSet indexSet];
 
         _allowsEmptySelection = YES;
+        _needsMinMaxItemSizeUpdate = YES;
+        [self setAutoresizesSubviews:NO];
     }
 
     return self;
