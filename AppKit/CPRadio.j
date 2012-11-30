@@ -152,10 +152,64 @@ CPRadioImageOffset = 4.0;
 
 - (void)sendAction:(SEL)anAction to:(id)anObject
 {
-    [super sendAction:anAction to:anObject];
+    var superview = [self superview];
+    if ([superview isKindOfClass:[CPMatrix class]])
+        [superview sendAction:anAction to:anObject];
+    else
+        [super sendAction:anAction to:anObject];
 
     if (_radioGroup)
         [CPApp sendAction:[_radioGroup action] to:[_radioGroup target] from:_radioGroup];
+}
+
+- (void)keyUp:(CPEvent)anEvent
+{
+    switch ([anEvent keyCode])
+    {
+        case CPDownArrowKeyCode:
+        case CPUpArrowKeyCode:
+            break;
+
+        default:
+            [super keyUp:anEvent];
+    }
+}
+
+- (void)keyUp:(CPEvent)anEvent
+{
+    switch ([anEvent keyCode])
+    {
+        case CPDownArrowKeyCode:
+            [self selectNextRadio];
+            break;
+
+        case CPUpArrowKeyCode:
+            [self selectPreviousRadio];
+            break;
+
+        default:
+            [super keyUp:anEvent];
+    }
+}
+
+- (void)selectNextRadio
+{
+    var superview = [self superview];
+
+    if (superview && [superview isKindOfClass:[CPMatrix class]])
+    {
+        [superview selectNextCell:self];
+    }
+}
+
+- (void)selectPreviousRadio
+{
+    var superview = [self superview];
+
+    if (superview && [superview isKindOfClass:[CPMatrix class]])
+    {
+        [superview selectPreviousCell:self];
+    }
 }
 
 @end

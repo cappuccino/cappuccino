@@ -189,6 +189,49 @@ var CPControlBlackColor = [CPColor blackColor];
     return self;
 }
 
+- (BOOL)acceptsFirstResponder
+{
+    return [CPApp fullKeyboardAccess];
+}
+
+- (BOOL)becomeFirstResponder
+{
+    [self setThemeState:CPThemeStateFocused];
+    [self scrollRectToVisible:[self bounds]];
+    [self setNeedsLayout];
+    return YES;
+}
+
+- (BOOL)resignFirstResponder
+{
+    [self unsetThemeState:CPThemeStateFocused];
+    [self setNeedsLayout];
+    return YES;
+}
+
+- (void)keyDown:(CPEvent)anEvent
+{
+    if ([anEvent keyCode] === CPSpaceKeyCode)
+    {
+        [self setThemeState:CPThemeStateHighlighted];
+        [self setNeedsLayout];
+    }
+    else
+        [super keyUp:anEvent];
+}
+
+- (void)keyUp:(CPEvent)anEvent
+{
+    if ([anEvent keyCode] === CPSpaceKeyCode)
+    {
+        [self unsetThemeState:CPThemeStateHighlighted];
+        [self setNeedsLayout];
+        [self performClick:nil];
+    }
+    else
+        [super keyUp:anEvent];
+}
+
 /*!
     Sets the receiver's target action.
 

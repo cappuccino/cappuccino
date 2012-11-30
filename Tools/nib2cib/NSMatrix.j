@@ -21,7 +21,7 @@
  */
 
 @import <Foundation/CPObject.j>
-@import <AppKit/CPView.j>
+@import <AppKit/CPMatrix.j>
 
 @import "NSView.j"
 
@@ -30,7 +30,7 @@ var NSMatrixRadioModeMask = 0x40000000,
     NSMatrixDrawsBackgroundMask = 0x01000000;
 
 
-@implementation NSMatrix : CPView
+@implementation NSMatrix : CPMatrix
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
@@ -81,8 +81,7 @@ var NSMatrixRadioModeMask = 0x40000000,
             if (drawsBackground)
                 [self setBackgroundColor:backgroundColor];
 
-            self.isa = [CPView class];
-            NIB_CONNECTION_EQUIVALENCY_TABLE[[self UID]] = radioGroup;
+            self.isa = [CPMatrix class];
         }
         else
         {

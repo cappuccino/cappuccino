@@ -421,6 +421,7 @@ CPThemeStateCircular        = CPThemeState("circular");
 CPThemeStateAutocompleting  = CPThemeState("autocompleting");
 CPThemeStateMainWindow      = CPThemeState("mainWindow");
 CPThemeStateKeyWindow       = CPThemeState("keyWindow");
+CPThemeStateFocused         = CPThemeState("focused");
 
 @implementation _CPThemeAttribute : CPObject
 {

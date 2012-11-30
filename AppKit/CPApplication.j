@@ -109,6 +109,8 @@ CPRunContinuesResponse  = -1002;
     CPPanel                 _aboutPanel;
 
     CPThemeBlend            _themeBlend @accessors(property=themeBlend);
+
+    BOOL                    _fullKeyboardAccess @accessors(property=fullKeyboardAccess);
 }
 
 /*!
@@ -1167,6 +1169,11 @@ CPRunContinuesResponse  = -1002;
     [[CPNotificationCenter defaultCenter] postNotificationName:CPApplicationDidResignActiveNotification
                                                         object:self
                                                       userInfo:nil];
+}
+
+- (BOOL)fullKeyboardAccess
+{
+    return _fullKeyboardAccess !== nil ? _fullKeyboardAccess : [[[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPFullKeyboardAccess"] uppercaseString] === @"YES";
 }
 
 + (CPString)defaultThemeName
