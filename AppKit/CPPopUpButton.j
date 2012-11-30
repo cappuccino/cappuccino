@@ -663,6 +663,28 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 //    [super observeValueForKeyPath:aKeyPath ofObject:anObject change:changes context:aContext];
 }
 
+- (void)keyUp:(CPEvent)anEvent
+{
+    if ([anEvent keyCode] === CPSpaceKeyCode)
+    {
+        var bounds = [self bounds];
+
+        CPApp._currentEvent = [CPEvent mouseEventWithType:CPLeftMouseDown
+                                                 location:[self convertPointToBase:CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds))]
+                                            modifierFlags:[anEvent modifierFlags]
+                                                timestamp:[anEvent timestamp]
+                                             windowNumber:[self window]
+                                                  context:nil
+                                              eventNumber:0
+                                               clickCount:1
+                                                 pressure:0];
+        [self mouseDown:CPApp._currentEvent];
+    }
+    else
+        [super keyUp:anEvent];
+}
+
+
 - (void)mouseDown:(CPEvent)anEvent
 {
     if (![self isEnabled] || ![self numberOfItems])

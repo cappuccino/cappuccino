@@ -68,6 +68,7 @@
 @import "CPImageView.j"
 @import "CPKeyBinding.j"
 @import "CPLevelIndicator.j"
+@import "CPMatrix.j"
 @import "CPMenu.j"
 @import "CPMenuItem.j"
 @import "CPOpenPanel.j"
