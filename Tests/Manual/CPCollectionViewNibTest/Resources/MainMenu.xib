@@ -228,7 +228,7 @@
 										<bool key="EncodedWithXMLCoder">YES</bool>
 										<object class="NSCollectionView" id="278182452">
 											<reference key="NSNextResponder" ref="45320667"/>
-											<int key="NSvFlags">319</int>
+											<int key="NSvFlags">256</int>
 											<string key="NSFrameSize">{320, 323}</string>
 											<reference key="NSSuperview" ref="45320667"/>
 											<reference key="NSWindow"/>

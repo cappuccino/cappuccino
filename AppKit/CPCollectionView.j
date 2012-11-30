@@ -995,6 +995,11 @@
     [self interpretKeyEvents:[anEvent]];
 }
 
+- (void)setAutoresizingMask:(int)aMask
+{
+    [super setAutoresizingMask:0];
+}
+
 @end
 
 @implementation CPCollectionView (Deprecated)
@@ -1064,6 +1069,7 @@ var CPCollectionViewMinItemSizeKey              = @"CPCollectionViewMinItemSizeK
         _storedFrameSize = CGSizeMakeZero();
         
         [self setAutoresizesSubviews:NO];
+        [self setAutoresizingMask:0];
     }
 
     return self;
