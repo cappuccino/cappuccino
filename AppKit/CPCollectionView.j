@@ -99,7 +99,9 @@
     id                      _delegate;
 
     CPEvent                 _mouseDownEvent;
+    
     BOOL                    _needsMinMaxItemSizeUpdate;
+    CGSize                  _storedFrameSize;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -126,6 +128,7 @@
         _allowsEmptySelection = YES;
         _isSelectable = YES;
         _needsMinMaxItemSizeUpdate = YES;
+        _storedFrameSize = CGSizeMakeZero();
     }
 
     return self;
@@ -446,6 +449,8 @@
     // margin
     var itemSize = CGSizeMakeCopy(_minItemSize);
 
+    var maxItemSizeWidth = _maxItemSize.width;
+    
     _numberOfColumns = MAX(1.0, FLOOR(width / itemSize.width));
 
     if (_maxNumberOfColumns > 0)
@@ -454,12 +459,12 @@
     var remaining = width - _numberOfColumns * itemSize.width,
         itemsNeedSizeUpdate = NO;
 
-    if (remaining > 0 && itemSize.width < _maxItemSize.width)
-        itemSize.width = MIN(_maxItemSize.width, itemSize.width + FLOOR(remaining / _numberOfColumns));
+    if (remaining > 0 && itemSize.width < maxItemSizeWidth)
+        itemSize.width = MIN(maxItemSizeWidth, itemSize.width + FLOOR(remaining / _numberOfColumns));
 
     // When we ONE column and a non-integral width, the FLOORing above can cause the item width to be smaller than the total width.
-    if (_maxNumberOfColumns == 1 && itemSize.width < _maxItemSize.width && itemSize.width < width)
-        itemSize.width = MIN(_maxItemSize.width, width);
+    if (_maxNumberOfColumns == 1 && itemSize.width < maxItemSizeWidth && itemSize.width < width)
+        itemSize.width = MIN(maxItemSizeWidth, width);
 
     if (!CGSizeEqualToSize(_itemSize, itemSize))
     {
@@ -504,16 +509,40 @@
     if ([superview isKindOfClass:[CPClipView class]])
     {
         var superviewSize = [superview bounds].size;
-        proposedHeight = MAX(superviewSize.height, proposedHeight);
+        if (proposedHeight != _storedFrameSize.height)
+        {
+            _tileWidth = CGRectGetWidth([self bounds]);
+            _storedFrameSize.height = proposedHeight;
+            [self setFrameSize:CGSizeMake(_tileWidth, proposedHeight)];
+        }
     }
 
-    _tileWidth = width;
-    [self setFrameSize:CGSizeMake(width, proposedHeight)];
-    _tileWidth = -1.0;
+    _tileWidth = -1.0;    
 }
 
-- (void)resizeSubviewsWithOldSize:(CGSize)aSize
-{
+- (void)resizeWithOldSuperviewSize:(CGSize)aSize
+{   
+    var superviewSize = CGSizeMakeCopy([[self superview] bounds].size);
+    
+    if (superviewSize.width < _minItemSize.width || superviewSize.height < _storedFrameSize.height)
+    {
+        if (superviewSize.width > _minItemSize.width)
+        {
+            aSize.width = superviewSize.width;
+            [super setFrameSize:CGSizeMake(aSize.width, CGRectGetHeight([self frame]))];
+        }
+        
+        if (superviewSize.height > _storedFrameSize.height)
+        {
+            aSize.height = _storedFrameSize.height;
+            [super setFrameSize:CGSizeMake(CGRectGetWidth([self frame]), aSize.height)];
+        }
+        
+        [super resizeWithOldSuperviewSize:aSize];
+    }
+    else
+        [super setFrameSize:superviewSize];
+    
     [self tile];
 }
 
@@ -633,7 +662,7 @@
     _backgroundColors = backgroundColors;
 
     if (!_backgroundColors)
-        _backgroundColors = [CPColor whiteColor];
+        _backgroundColors = [[CPColor whiteColor]];
 
     if ([_backgroundColors count] === 1)
         [self setBackgroundColor:_backgroundColors[0]];
@@ -1032,6 +1061,8 @@ var CPCollectionViewMinItemSizeKey              = @"CPCollectionViewMinItemSizeK
 
         _allowsEmptySelection = YES;
         _needsMinMaxItemSizeUpdate = YES;
+        _storedFrameSize = CGSizeMakeZero();
+        
         [self setAutoresizesSubviews:NO];
     }
 
