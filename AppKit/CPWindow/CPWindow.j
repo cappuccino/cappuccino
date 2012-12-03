@@ -1858,7 +1858,7 @@ CPTexturedBackgroundWindowMask
 {
     // In Cocoa only resizable or titled windows return YES here by default. But the main browser window in Cappuccino
     // doesn't have these masks even that it's both titled and resizable, so we return YES when isFullPlatformWindow too.
-    return (_styleMask & CPResizableWindowMask) || (_styleMask & CPResizableWindowMask) || [self isFullPlatformWindow];
+    return (_styleMask & CPTitledWindowMask) || (_styleMask & CPResizableWindowMask) || [self isFullPlatformWindow];
 }
 
 /*!
