@@ -250,8 +250,13 @@ CPRunContinuesResponse  = -1002;
         _documentController = [CPDocumentController sharedDocumentController];
 
     var needsUntitled = !!_documentController,
-        URLStrings = window.cpOpeningURLStrings && window.cpOpeningURLStrings(),
-        index = 0,
+        URLStrings = nil;
+
+#if PLATFORM(DOM)
+    URLStrings = window.cpOpeningURLStrings && window.cpOpeningURLStrings();
+#endif
+
+    var index = 0,
         count = [URLStrings count];
 
     for (; index < count; ++index)
@@ -1009,7 +1014,8 @@ CPRunContinuesResponse  = -1002;
 */
 - (CPArray)arguments
 {
-    if (_fullArgsString !== window.location.hash)
+    // FIXME This should probably not access the window object #if !PLATFORM(DOM), but the unit tests rely on it.
+    if (window && window.location && _fullArgsString !== window.location.hash)
         [self _reloadArguments];
 
     return _args;
@@ -1036,8 +1042,9 @@ CPRunContinuesResponse  = -1002;
     if (!args || args.length == 0)
     {
         _args = [];
+#if PLATFORM(DOM)
         window.location.hash = @"#";
-
+#endif
         return;
     }
 
@@ -1052,12 +1059,15 @@ CPRunContinuesResponse  = -1002;
 
     var hash = [toEncode componentsJoinedByString:@"/"];
 
+#if PLATFORM(DOM)
     window.location.hash = @"#" + hash;
+#endif
 }
 
 - (void)_reloadArguments
 {
-    _fullArgsString = window.location.hash;
+    // FIXME This should probably not access the window object #if !PLATFORM(DOM), but the unit tests rely on it.
+    _fullArgsString = (window && window.location) ? window.location.hash : "";
 
     if (_fullArgsString.length)
     {
