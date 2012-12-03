@@ -195,7 +195,7 @@ globalResults = [];
     [[CPNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(receiveNotification:)
                                                  name:CPApplicationWillTerminateNotification
-                                              object:nil];
+                                               object:nil];
 
     [app replyToApplicationShouldTerminate:CPTerminateNow];
     [self assert:CPApplicationWillTerminateNotification equals:[globalResults[0] name]];
@@ -223,8 +223,8 @@ globalResults = [];
 
 - (void)testTargetForAction
 {
-    var mainWin = [[TestMainWindow alloc] init];
-    var keyWin = [[TestKeyWindow alloc] init];
+    var mainWin = [[TestMainWindow alloc] init],
+        keyWin = [[TestKeyWindow alloc] init];
     mainWin._isVisible = YES;
     keyWin._isVisible = YES;
     [mainWin makeMainWindow];
@@ -252,6 +252,6 @@ globalResults = [];
 
     // when no target is given, targetForAction is called
     [self assert:app equals:[app targetForAction:@selector(someTestMethod:) to:nil from:nil]];
-
 }
+
 @end
