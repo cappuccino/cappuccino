@@ -203,6 +203,9 @@ var CPViewFlags                     = { },
     Function            _toolTipFunctionIn;
     Function            _toolTipFunctionOut;
     BOOL                _toolTipInstalled;
+
+    id                  _animator;
+    CPDictionary        _animationsDictionary;
 }
 
 /*
@@ -329,6 +332,9 @@ var CPViewFlags                     = { },
 
         _theme = [CPTheme defaultTheme];
         _themeState = CPThemeStateNormal;
+
+        _animator = nil;
+        _animationsDictionary = [CPDictionary dictionary];
 
         [self _setupToolTipHandlers];
         [self _setupViewFlags];

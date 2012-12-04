@@ -323,6 +323,18 @@ function CPBrowserStyleProperty(aProperty)
 
                 r = candidates[PLATFORM_STYLE_JS_PROPERTIES['transition']] || nil;
                 break;
+
+            case 'animationend':
+                var candidates = {
+                        'WebkitAnimation' : 'webkitAnimationEnd',
+                        'MozAnimation'    : 'animationend',
+                        'OAnimation'      : 'oAnimationEnd',
+                        'msAnimation'     : 'MSAnimationEnd',
+                        'animation'       : 'animationend'
+                    };
+
+                r = candidates[PLATFORM_STYLE_JS_PROPERTIES['animation']] || nil;
+                break;
             default:
                 var prefixes = ["Webkit", "Moz", "O", "ms"],
                     strippedProperty = aProperty.split('-').join(' '),
