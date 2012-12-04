@@ -5,4 +5,4 @@ before_install:
     - jdk_switcher use openjdk6
 install: ./bootstrap.sh --noprompt --directory ./narwhal
 script: jake test
-env: PATH=/home/travis/builds/ahankinson/cappuccino/narwhal/bin:$PATH CAPP_BUILD=/home/travis/builds/ahankinson/cappuccino/Build NARWHAL_ENGINE=rhino
+env: PATH=/home/travis/builds/cappuccino/cappuccino/narwhal/bin:$PATH CAPP_BUILD=/home/travis/builds/cappuccino/cappuccino/Build NARWHAL_ENGINE=rhino
