@@ -844,24 +844,36 @@
     var dragTypes = [_delegate collectionView:self dragTypesForItemsAtIndexes:_selectionIndexes];
 
     [[CPPasteboard pasteboardWithName:CPDragPboard] declareTypes:dragTypes owner:self];
-
-    if (!_itemForDragging)
-        _itemForDragging = [self newItemForRepresentedObject:_content[[_selectionIndexes firstIndex]]];
+    
+    var dragImageOffset = CGSizeMakeZero(),
+        view;
+        
+    if ([_delegate respondsToSelector:@selector(collectionView:draggingViewForItemsAtIndexes:withEvent:offset:)])
+        view = [_delegate collectionView:self draggingViewForItemsAtIndexes:_selectionIndexes withEvent:_mouseDownEvent offset:dragImageOffset];
     else
-        [_itemForDragging setRepresentedObject:_content[[_selectionIndexes firstIndex]]];
-
-    var view = [_itemForDragging view];
+        view = [self draggingViewForItemsAtIndexes:_selectionIndexes withEvent:_mouseDownEvent offset:dragImageOffset];
 
     [view setFrameSize:_itemSize];
     [view setAlphaValue:0.7];
 
     [self dragView:view
         at:[[_items[[_selectionIndexes firstIndex]] view] frame].origin
-        offset:CGSizeMakeZero()
+        offset:dragImageOffset
         event:_mouseDownEvent
         pasteboard:nil
         source:self
         slideBack:YES];
+}
+
+- (CPView)draggingViewForItemsAtIndexes:(CPIndexSet)indexes withEvent:(CPEvent)event offset:(CGPoint)dragImageOffset
+{
+    var idx = _content[[indexes firstIndex]];
+    if (!_itemForDragging)
+        _itemForDragging = [self newItemForRepresentedObject:idx];
+    else
+        [_itemForDragging setRepresentedObject:idx];
+        
+    return [_itemForDragging view];
 }
 
 /*!
