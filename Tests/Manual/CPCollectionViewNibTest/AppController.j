@@ -7,6 +7,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import "CPCollectionView.j"
 
 CPLogRegister(CPLogConsole);
 
@@ -16,19 +17,6 @@ CPLogRegister(CPLogConsole);
     @outlet     CPCollectionView     collectionView @accessors;
     @outlet     InternalProtoypeItem prototypeItemInternal;
     @outlet     CPCollectionViewItem prototypeItemExternal;
-
-    CPArray content @accessors;
-}
-
-- (id)init
-{
-    self = [super init];
-
-    content = [CPArray array];
-    for (var i = 0; i < 8; i++)
-        [content addObject:[CPDictionary dictionaryWithObject:(String.fromCharCode(65 +i)) forKey:@"value"]]
-
-    return self;
 }
 
 
@@ -135,6 +123,19 @@ CPLogRegister(CPLogConsole);
 {
     [super setRepresentedObject:anObject];
     [textField setStringValue:[anObject objectForKey:@"value"]];
+}
+
+@end
+
+var keyCode = 0;
+
+@implementation ArrayController : CPArrayController
+{
+}
+
+- (void)newObject
+{
+    return [CPDictionary dictionaryWithObject:(String.fromCharCode(65 + keyCode++)) forKey:@"value"];
 }
 
 @end

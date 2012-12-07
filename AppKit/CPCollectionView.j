@@ -26,9 +26,9 @@
 @import <Foundation/CPKeyedArchiver.j>
 @import <Foundation/CPKeyedUnarchiver.j>
 
-@import "CPView.j"
-@import "CPCollectionViewItem.j"
-@import "CPCompatibility.j"
+@import <AppKit/CPView.j>
+@import <AppKit/CPCollectionViewItem.j>
+@import <AppKit/CPCompatibility.j>
 
 /*!
     @ingroup appkit
@@ -742,6 +742,22 @@
 {
     return _backgroundColors;
 }
+
+- (void)bind:(CPString)binding toObject:(id)observableController withKeyPath:(CPString)keyPath options:(CPDictionary )options
+{
+    if (binding == CPContentBinding)
+        [observableController addObserver:self forKeyPath:keyPath options:CPKeyValueObservingOptionOld|CPKeyValueObservingOptionNew context:"content"];
+
+    [super bind:binding toObject:observableController withKeyPath:keyPath options:options];
+}
+
+- (void)observeValueForKeyPath:(CPString)keyPath ofObject:(id)object change:(CPDictionary)change context:(id)context
+{
+    var newObjects = [change objectForKey:CPKeyValueChangeNewKey];
+    var kind = [change objectForKey:CPKeyValueChangeKindKey];
+    CPLog.debug("kind " + kind + " " + [newObjects description]);
+}
+
 
 - (void)mouseUp:(CPEvent)anEvent
 {
