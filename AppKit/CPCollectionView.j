@@ -20,15 +20,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#import "../Foundation/Ref.h"
+
 @import <Foundation/CPArray.j>
 @import <Foundation/CPData.j>
 @import <Foundation/CPIndexSet.j>
 @import <Foundation/CPKeyedArchiver.j>
 @import <Foundation/CPKeyedUnarchiver.j>
 
-@import <AppKit/CPView.j>
-@import <AppKit/CPCollectionViewItem.j>
-@import <AppKit/CPCompatibility.j>
+@import "CPView.j"
+@import "CPCollectionViewItem.j"
+@import "CPCompatibility.j"
 
 /*!
     @ingroup appkit
@@ -466,38 +468,31 @@
 
 - (void)tileIfNeeded:(BOOL)lazyFlag
 {
-    var frameSize = CGSizeMakeCopy([[self superview] frameSize]),
-        itemSize = CGSizeMakeZero(),
-        colsRowsCount = [];
-
-        oldNumberOfColumns = _numberOfColumns,
-        oldNumberOfRows = _numberOfRows,
-        oldItemSize = _itemSize,
-        storedFrameSize = _storedFrameSize;
+    var frameSize           = [[self superview] frameSize],
+        count               = 0,
+        oldNumberOfColumns  = _numberOfColumns,
+        oldNumberOfRows     = _numberOfRows,
+        oldItemSize         = _itemSize,
+        storedFrameSize     = _storedFrameSize;
 
     [self _updateMinMaxItemSizeIfNeeded];
 
-    [self getFrameSize:frameSize itemSize:itemSize columnsRowsCount:colsRowsCount];
+    [self _computeGridWithSize:frameSize count:AT_REF(count)];
 
     //CPLog.debug("frameSize="+CPStringFromSize(frameSize) + "itemSize="+CPStringFromSize(itemSize) + " ncols=" +  colsRowsCount[0] +" nrows="+ colsRowsCount[1]+" displayCount="+ colsRowsCount[2]);
 
-    _numberOfColumns = colsRowsCount[0];
-    _numberOfRows = colsRowsCount[1];
-    _itemSize = itemSize;
-    _storedFrameSize = frameSize;
-
-    [self setFrameSize:frameSize];
+    [self setFrameSize:_storedFrameSize];
 
     //CPLog.debug("OLD " + oldNumberOfColumns + " NEW " + _numberOfColumns);
     if (!lazyFlag ||
         _numberOfColumns !== oldNumberOfColumns ||
-        _numberOfRows !== oldNumberOfRows ||
+        _numberOfRows    !== oldNumberOfRows ||
         !CGSizeEqualToSize(_itemSize, oldItemSize))
 
-        [self displayItems:_items frameSize:frameSize itemSize:_itemSize columns:_numberOfColumns rows:_numberOfRows count:colsRowsCount[2]];
+        [self displayItems:_items frameSize:_storedFrameSize itemSize:_itemSize columns:_numberOfColumns rows:_numberOfRows count:count];
 }
 
-- (void)getFrameSize:({CGSize})aSuperviewSize itemSize:({CGSize})anItemSize columnsRowsCount:({CPArray})colsRowsCount
+- (void)_computeGridWithSize:(CGSize)aSuperviewSize count:(Function)countRef
 {
     var width               = aSuperviewSize.width,
         height              = aSuperviewSize.height,
@@ -537,14 +532,11 @@
     if (maxItemSizeHeight > 0)
         itemSizeHeight = MIN(itemSizeHeight, maxItemSizeHeight);
 
-    anItemSize.height = MAX(_minItemSize.height, itemSizeHeight);
-    anItemSize.width = MAX(_minItemSize.width, itemSize.width);
-
-    aSuperviewSize.width = MAX(width, _minItemSize.width);
-    aSuperviewSize.height = height;
-    colsRowsCount[0] = numberOfColumns;
-    colsRowsCount[1] = numberOfRows;
-    colsRowsCount[2] = MIN(itemsCount, numberOfColumns * numberOfRows);
+    _itemSize        = CGSizeMake(MAX(_minItemSize.width, itemSize.width), MAX(_minItemSize.height, itemSizeHeight));
+    _storedFrameSize = CGSizeMake(MAX(width, _minItemSize.width), height);
+    _numberOfColumns = numberOfColumns;
+    _numberOfRows    = numberOfRows;
+    countRef(MIN(itemsCount, numberOfColumns * numberOfRows));
 }
 
 - (void)displayItems:(CPArray)displayItems frameSize:(CGSize)aFrameSize itemSize:(CGSize)anItemSize columns:(CPInteger)numberOfColumns rows:(CPInteger)numberOfRows count:(CPInteger)displayCount
@@ -743,22 +735,6 @@
     return _backgroundColors;
 }
 
-- (void)bind:(CPString)binding toObject:(id)observableController withKeyPath:(CPString)keyPath options:(CPDictionary )options
-{
-    if (binding == CPContentBinding)
-        [observableController addObserver:self forKeyPath:keyPath options:CPKeyValueObservingOptionOld|CPKeyValueObservingOptionNew context:"content"];
-
-    [super bind:binding toObject:observableController withKeyPath:keyPath options:options];
-}
-
-- (void)observeValueForKeyPath:(CPString)keyPath ofObject:(id)object change:(CPDictionary)change context:(id)context
-{
-    var newObjects = [change objectForKey:CPKeyValueChangeNewKey];
-    var kind = [change objectForKey:CPKeyValueChangeKindKey];
-    CPLog.debug("kind " + kind + " " + [newObjects description]);
-}
-
-
 - (void)mouseUp:(CPEvent)anEvent
 {
     if ([_selectionIndexes count] && [anEvent clickCount] == 2 && [_delegate respondsToSelector:@selector(collectionView:didDoubleClickOnItemAtIndex:)])
@@ -844,10 +820,10 @@
     var dragTypes = [_delegate collectionView:self dragTypesForItemsAtIndexes:_selectionIndexes];
 
     [[CPPasteboard pasteboardWithName:CPDragPboard] declareTypes:dragTypes owner:self];
-    
+
     var dragImageOffset = CGSizeMakeZero(),
         view;
-        
+
     if ([_delegate respondsToSelector:@selector(collectionView:draggingViewForItemsAtIndexes:withEvent:offset:)])
         view = [_delegate collectionView:self draggingViewForItemsAtIndexes:_selectionIndexes withEvent:_mouseDownEvent offset:dragImageOffset];
     else
@@ -872,7 +848,7 @@
         _itemForDragging = [self newItemForRepresentedObject:idx];
     else
         [_itemForDragging setRepresentedObject:idx];
-        
+
     return [_itemForDragging view];
 }
 

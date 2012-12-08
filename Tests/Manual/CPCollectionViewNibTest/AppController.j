@@ -7,7 +7,6 @@
  */
 
 @import <Foundation/CPObject.j>
-@import "CPCollectionView.j"
 
 CPLogRegister(CPLogConsole);
 
