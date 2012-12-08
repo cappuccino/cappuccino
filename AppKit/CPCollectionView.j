@@ -65,6 +65,8 @@
     @return an array of drag types (CPString)
 */
 
+var HORIZONTAL_MARGIN = 2;
+
 @implementation CPCollectionView : CPView
 {
     CPArray                 _content;
@@ -107,6 +109,11 @@
 
     BOOL                    _uniformSubviewsResizing @accessors(property=uniformSubviewsResizing);
     BOOL                    _lockResizing;
+
+    CPInteger               _currentDropIndex;
+    CPDragOperation         _currentDragOperation;
+
+    _CPCollectionViewDropIndicator _dropView;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -152,6 +159,10 @@
         _needsMinMaxItemSizeUpdate = YES;
         _uniformSubviewsResizing = NO;
         _lockResizing = NO;
+
+        _currentDropIndex      = -1;
+        _currentDragOperation  = CPDragOperationNone;
+        _dropView = nil;
 
         [self setAutoresizesSubviews:NO];
         [self setAutoresizingMask:0];
@@ -469,7 +480,7 @@
 - (void)tileIfNeeded:(BOOL)lazyFlag
 {
     var frameSize           = [[self superview] frameSize],
-        count               = 0,
+        count               = _items.length,
         oldNumberOfColumns  = _numberOfColumns,
         oldNumberOfRows     = _numberOfRows,
         oldItemSize         = _itemSize,
@@ -543,9 +554,9 @@
 {
 //    CPLog.debug("DISPLAY ITEMS " + numberOfColumns + " " +  numberOfRows);
 
-    var horizontalMargin = _uniformSubviewsResizing ? FLOOR((aFrameSize.width - numberOfColumns * anItemSize.width) / (numberOfColumns + 1)) : 0;
+    _horizontalMargin = _uniformSubviewsResizing ? FLOOR((aFrameSize.width - numberOfColumns * anItemSize.width) / (numberOfColumns + 1)) : HORIZONTAL_MARGIN;
 
-    var x = horizontalMargin,
+    var x = _horizontalMargin,
         y = -anItemSize.height;
 
     [displayItems enumerateObjectsUsingBlock:function(item, idx, stop)
@@ -560,14 +571,14 @@
 
         if (idx % numberOfColumns == 0)
         {
-            x = horizontalMargin;
+            x = _horizontalMargin;
             y += _verticalMargin + anItemSize.height;
         }
 
         [view setFrameOrigin:CGPointMake(x, y)];
         [view setFrameSize:anItemSize];
 
-        x += anItemSize.width + horizontalMargin;
+        x += anItemSize.width + _horizontalMargin;
     }];
 }
 
@@ -791,77 +802,6 @@
         [self setSelectionIndexes:[CPIndexSet indexSet]];
 }
 
-- (void)mouseDragged:(CPEvent)anEvent
-{
-    // Don't crash if we never registered the intial click.
-    if (!_mouseDownEvent)
-        return;
-
-    var locationInWindow = [anEvent locationInWindow],
-        mouseDownLocationInWindow = [_mouseDownEvent locationInWindow];
-
-    // FIXME: This is because Safari's drag hysteresis is 3px x 3px
-    if ((ABS(locationInWindow.x - mouseDownLocationInWindow.x) < 3) &&
-        (ABS(locationInWindow.y - mouseDownLocationInWindow.y) < 3))
-        return;
-
-    if (![_delegate respondsToSelector:@selector(collectionView:dragTypesForItemsAtIndexes:)])
-        return;
-
-    // If we don't have any selected items, we've clicked away, and thus the drag is meaningless.
-    if (![_selectionIndexes count])
-        return;
-
-    if ([_delegate respondsToSelector:@selector(collectionView:canDragItemsAtIndexes:withEvent:)] &&
-        ![_delegate collectionView:self canDragItemsAtIndexes:_selectionIndexes withEvent:_mouseDownEvent])
-        return;
-
-    // Set up the pasteboard
-    var dragTypes = [_delegate collectionView:self dragTypesForItemsAtIndexes:_selectionIndexes];
-
-    [[CPPasteboard pasteboardWithName:CPDragPboard] declareTypes:dragTypes owner:self];
-
-    var dragImageOffset = CGSizeMakeZero(),
-        view;
-
-    if ([_delegate respondsToSelector:@selector(collectionView:draggingViewForItemsAtIndexes:withEvent:offset:)])
-        view = [_delegate collectionView:self draggingViewForItemsAtIndexes:_selectionIndexes withEvent:_mouseDownEvent offset:dragImageOffset];
-    else
-        view = [self draggingViewForItemsAtIndexes:_selectionIndexes withEvent:_mouseDownEvent offset:dragImageOffset];
-
-    [view setFrameSize:_itemSize];
-    [view setAlphaValue:0.7];
-
-    [self dragView:view
-        at:[[_items[[_selectionIndexes firstIndex]] view] frame].origin
-        offset:dragImageOffset
-        event:_mouseDownEvent
-        pasteboard:nil
-        source:self
-        slideBack:YES];
-}
-
-- (CPView)draggingViewForItemsAtIndexes:(CPIndexSet)indexes withEvent:(CPEvent)event offset:(CGPoint)dragImageOffset
-{
-    var idx = _content[[indexes firstIndex]];
-    if (!_itemForDragging)
-        _itemForDragging = [self newItemForRepresentedObject:idx];
-    else
-        [_itemForDragging setRepresentedObject:idx];
-
-    return [_itemForDragging view];
-}
-
-/*!
-    Places the selected items on the specified pasteboard. The items are requested from the collection's delegate.
-    @param aPasteboard the pasteboard to put the items on
-    @param aType the format the pasteboard data
-*/
-- (void)pasteboard:(CPPasteboard)aPasteboard provideDataForType:(CPString)aType
-{
-    [aPasteboard setData:[_delegate collectionView:self dataForItemsAtIndexes:_selectionIndexes forType:aType] forType:aType];
-}
-
 // Cappuccino Additions
 
 /*!
@@ -878,6 +818,13 @@
 
     [self tile];
 }
+
+- (void)setUniformSubviewsResizing:(float)flag
+{
+    _uniformSubviewsResizing = flag;
+    [self tileIfNeeded:NO];
+}
+
 
 /*!
     Gets the collection view's current vertical spacing between elements.
@@ -921,10 +868,17 @@
 
 - (int)_indexAtPoint:(CGPoint)thePoint
 {
-    var row = FLOOR(thePoint.y / (_itemSize.height + _verticalMargin)),
-        column = FLOOR(thePoint.x / (_itemSize.width + _horizontalMargin));
+    var column = FLOOR(thePoint.x / (_itemSize.width + _horizontalMargin));
 
-    return row * _numberOfColumns + column;
+    if (column < _numberOfColumns)
+    {
+        var row = FLOOR(thePoint.y / (_itemSize.height + _verticalMargin));
+
+        if (row < _numberOfRows)
+            return (row * _numberOfColumns + column);
+    }
+
+    return CPNotFound;
 }
 
 - (CPCollectionViewItem)itemAtIndex:(unsigned)anIndex
@@ -951,6 +905,284 @@
         frame = CGRectUnion(frame, [self frameForItemAtIndex:indexArray[index]]);
 
     return frame;
+}
+
+@end
+
+@implementation CPCollectionView (DragAndDrop)
+/*
+    TODO: dropOperation is not supported yet. The visible drop operation is like CPCollectionViewDropBefore.
+*/
+
+/*!
+    Places the selected items on the specified pasteboard. The items are requested from the collection's delegate.
+    @param aPasteboard the pasteboard to put the items on
+    @param aType the format the pasteboard data
+*/
+- (void)pasteboard:(CPPasteboard)aPasteboard provideDataForType:(CPString)aType
+{
+    [aPasteboard setData:[_delegate collectionView:self dataForItemsAtIndexes:_selectionIndexes forType:aType] forType:aType];
+}
+
+- (void)mouseDragged:(CPEvent)anEvent
+{
+    // Don't crash if we never registered the intial click.
+    if (!_mouseDownEvent)
+        return;
+
+    // Create and position the drop indicator view.
+    if (!_dropView)
+        _dropView = [[_CPCollectionViewDropIndicator alloc] initWithFrame:CGRectMake(-8, -8, 0, 0)];
+
+    [_dropView setFrameSize:CGSizeMake(10, _itemSize.height + _verticalMargin)];
+    [self addSubview:_dropView];
+
+    var locationInWindow = [anEvent locationInWindow],
+        mouseDownLocationInWindow = [_mouseDownEvent locationInWindow];
+
+    // FIXME: This is because Safari's drag hysteresis is 3px x 3px
+    if ((ABS(locationInWindow.x - mouseDownLocationInWindow.x) < 3) &&
+        (ABS(locationInWindow.y - mouseDownLocationInWindow.y) < 3))
+        return;
+
+    if (![_delegate respondsToSelector:@selector(collectionView:dragTypesForItemsAtIndexes:)])
+        return;
+
+    // If we don't have any selected items, we've clicked away, and thus the drag is meaningless.
+    if (![_selectionIndexes count])
+        return;
+
+    if ([_delegate respondsToSelector:@selector(collectionView:canDragItemsAtIndexes:withEvent:)] &&
+        ![_delegate collectionView:self canDragItemsAtIndexes:_selectionIndexes withEvent:_mouseDownEvent])
+        return;
+
+    // Set up the pasteboard
+    var dragTypes = [_delegate collectionView:self dragTypesForItemsAtIndexes:_selectionIndexes];
+
+    [[CPPasteboard pasteboardWithName:CPDragPboard] declareTypes:dragTypes owner:self];
+
+    var dragImageOffset = CGSizeMakeZero(),
+        view = [self _draggingViewForItemsAtIndexes:_selectionIndexes withEvent:_mouseDownEvent offset:dragImageOffset];
+
+    [view setFrameSize:_itemSize];
+    [view setAlphaValue:0.7];
+
+    var dragLocation = [self convertPoint:locationInWindow fromView:nil],
+        dragPoint = CGPointMake(dragLocation.x - _itemSize.width / 2 , dragLocation.y - _itemSize.height / 2);
+
+    [self dragView:view
+        at:dragPoint
+        offset:dragImageOffset
+        event:_mouseDownEvent
+        pasteboard:nil
+        source:self
+        slideBack:YES];
+}
+
+- (CPView)_draggingViewForItemsAtIndexes:(CPIndexSet)indexes withEvent:(CPEvent)anEvent offset:(CGPoint)offset
+{
+    if ([_delegate respondsToSelector:@selector(collectionView:draggingViewForItemsAtIndexes:withEvent:offset:)])
+        return [_delegate collectionView:self draggingViewForItemsAtIndexes:indexes withEvent:anEvent offset:offset];
+
+    return [self draggingViewForItemsAtIndexes:indexes withEvent:anEvent offset:offset];
+}
+
+- (CPView)draggingViewForItemsAtIndexes:(CPIndexSet)indexes withEvent:(CPEvent)event offset:(CGPoint)dragImageOffset
+{
+    var idx = _content[[indexes firstIndex]];
+
+    if (!_itemForDragging)
+        _itemForDragging = [self newItemForRepresentedObject:idx];
+    else
+        [_itemForDragging setRepresentedObject:idx];
+
+    return [_itemForDragging view];
+}
+
+- (BOOL)_canDragItemsAtIndexes:(CPIndexSet)indexes withEvent:(CPEvent)anEvent
+{
+    if ([self respondsToSelector:@selector(collectionView:canDragItemsAtIndexes:withEvent:)])
+        return [_delegate collectionView:self canDragItemsAtIndexes:indexes withEvent:anEvent];
+
+  return YES;
+}
+
+- (CPDragOperation)draggingEntered:(id)draggingInfo
+{
+    var dropIndex = -1,
+        dropIndexRef = AT_REF(dropIndex);
+
+    var dragOp = [self _validateDragWithInfo:draggingInfo dropIndex:dropIndexRef dropOperation:1];
+
+    dropIndex = dropIndexRef();
+
+    [self _updateDragAndDropStateWithDraggingInfo:draggingInfo newDragOperation:dragOp newDropIndex:dropIndex newDropOperation:1];
+
+    return _currentDragOperation;
+}
+
+- (CPDragOperation)draggingUpdated:(id)draggingInfo
+{
+    if (![self _dropIndexDidChange:draggingInfo])
+        return _currentDragOperation;
+
+    var dropIndex,
+        dropIndexRef = AT_REF(dropIndex);
+
+    var dragOperation = [self _validateDragWithInfo:draggingInfo dropIndex:dropIndexRef dropOperation:1];
+
+    dropIndex = dropIndexRef();
+
+    [self _updateDragAndDropStateWithDraggingInfo:draggingInfo newDragOperation:dragOperation newDropIndex:dropIndex newDropOperation:1];
+
+    return dragOperation;
+}
+
+- (CPDragOperation)_validateDragWithInfo:(id)draggingInfo dropIndex:(Function)dropIndexRef dropOperation:(int)dropOperation
+{
+    var result = CPDragOperationMove,
+        dropIndex = [self _dropIndexForDraggingInfo:draggingInfo proposedDropOperation:dropOperation];
+
+    if ([_delegate respondsToSelector:@selector(collectionView:validateDrop:proposedIndex:dropOperation:)])
+    {
+        var dropIndexRef2 = AT_REF(dropIndex);
+
+        result = [_delegate collectionView:self validateDrop:draggingInfo proposedIndex:dropIndexRef2  dropOperation:dropOperation];
+
+        if (result !== CPDragOperationNone)
+        {
+            dropIndex = dropIndexRef2();
+        }
+    }
+
+    dropIndexRef(dropIndex);
+
+    return result;
+}
+
+- (void)draggingExited:(id)draggingInfo
+{
+    [self _updateDragAndDropStateWithDraggingInfo:draggingInfo newDragOperation:0 newDropIndex:-1 newDropOperation:1];
+}
+
+- (void)draggingEnded:(id)draggingInfo
+{
+    [self _updateDragAndDropStateWithDraggingInfo:draggingInfo newDragOperation:0 newDropIndex:-1 newDropOperation:1];
+}
+
+/*
+Not supported. Use -collectionView:dataForItemsAtIndexes:fortype:
+- (BOOL)_writeItemsAtIndexes:(CPIndexSet)indexes toPasteboard:(CPPasteboard)pboard
+{
+    if ([self respondsToSelector:@selector(collectionView:writeItemsAtIndexes:toPasteboard:)])
+        return [_delegate collectionView:self writeItemsAtIndexes:indexes toPasteboard:pboard];
+
+    return NO;
+}
+*/
+
+- (BOOL)performDragOperation:(id)draggingInfo
+{
+    var result = NO;
+
+    if (_currentDragOperation && _currentDropIndex !== -1)
+        result = [_delegate collectionView:self acceptDrop:draggingInfo index:_currentDropIndex dropOperation:1];
+
+    [self draggingEnded:draggingInfo]; // Is this correct ?
+
+    return result;
+}
+
+- (void)_updateDragAndDropStateWithDraggingInfo:(id)draggingInfo newDragOperation:(CPDragOperation)dragOperation newDropIndex:(CPInteger)dropIndex newDropOperation:(CPInteger)dropOperation
+{
+    _currentDropIndex = dropIndex;
+    _currentDragOperation = dragOperation;
+
+    var frameOrigin,
+        dropviewFrameWidth = CGRectGetWidth([_dropView frame]);
+
+    if (_currentDropIndex == -1 || _currentDragOperation == CPDragOperationNone)
+        frameOrigin = CGPointMake(-dropviewFrameWidth, 0);
+    else
+    {
+        var offset;
+
+        if ((_currentDropIndex % _numberOfColumns) !== 0 || _currentDropIndex == [_items count])
+        {
+            dropIndex = _currentDropIndex - 1;
+            offset = (_horizontalMargin - dropviewFrameWidth) / 2;
+        }
+        else
+        {
+            offset = - _itemSize.width - dropviewFrameWidth - (_horizontalMargin - dropviewFrameWidth) / 2;
+        }
+
+        var rect = [self frameForItemAtIndex:dropIndex];
+
+        frameOrigin = CGPointMake(CGRectGetMaxX(rect) + offset, rect.origin.y - _verticalMargin);
+    }
+
+    [_dropView setFrameOrigin:frameOrigin];
+}
+
+- (BOOL)_dropIndexDidChange:(id)draggingInfo
+{
+    var dropIndex = [self _dropIndexForDraggingInfo:draggingInfo proposedDropOperation:1];
+
+    if (dropIndex == CPNotFound)
+        dropIndex = [[self content] count];
+
+    return (_currentDropIndex !== dropIndex)
+}
+
+- (CPInteger)_dropIndexForDraggingInfo:(id)draggingInfo proposedDropOperation:(int)dropOperation
+{
+    var location = [self convertPoint:[draggingInfo draggingLocation] fromView:nil],
+        locationX = location.x + _itemSize.width / 2;
+
+    var column = MIN(FLOOR(locationX / (_itemSize.width + _horizontalMargin)), _numberOfColumns),
+        row = FLOOR(location.y / (_itemSize.height + _verticalMargin));
+
+    if (row >= _numberOfRows - 1)
+    {
+        if (row >= _numberOfRows)
+        {
+            row = _numberOfRows - 1;
+            column = _numberOfColumns;
+        }
+
+        return MIN((row * _numberOfColumns + column), [_items count]);
+    }
+
+    return (row * _numberOfColumns + column);
+}
+
+@end
+
+@implementation _CPCollectionViewDropIndicator : CPView
+{
+}
+
+- (void)drawRect:(CGRect)aRect
+{
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        width = CGRectGetWidth(aRect),
+        circleRect = CGRectMake(1, 1, width - 2, width - 2);
+
+    CGContextSetStrokeColor(context, [CPColor colorWithHexString:@"4886ca"]);
+    CGContextSetFillColor(context, [CPColor whiteColor]);
+    CGContextSetLineWidth(context, 3);
+
+    //draw white under the circle thing
+    CGContextFillRect(context, circleRect);
+    //draw the circle thing
+    CGContextStrokeEllipseInRect(context, circleRect);
+    //then draw the line
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(context, FLOOR(width / 2), CGRectGetMinY(aRect) + width);
+    CGContextAddLineToPoint(context, FLOOR(width / 2), CGRectGetHeight(aRect));
+    CGContextClosePath(context);
+    CGContextStrokePath(context);
 }
 
 @end

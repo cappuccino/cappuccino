@@ -43,6 +43,7 @@
 						<string key="NSFrame">{{44, 4}, {82, 13}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<reference key="NSWindow"/>
+						<reference key="NSNextKeyView"/>
 						<string key="NSReuseIdentifierKey">_NS:1535</string>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="589750618">
@@ -129,7 +130,7 @@
 				<reference key="NSSuperview"/>
 				<reference key="NSWindow"/>
 				<reference key="NSNextKeyView" ref="169792613"/>
-				<string key="NSClassName">RandomColorView</string>
+				<string key="NSClassName">ColorView</string>
 			</object>
 		</array>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
@@ -280,11 +281,11 @@
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
 				<object class="IBPartialClassDescription">
-					<string key="className">RandomColorView</string>
+					<string key="className">ColorView</string>
 					<string key="superclassName">NSView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/RandomColorView.h</string>
+						<string key="minorKey">./Classes/ColorView.h</string>
 					</object>
 				</object>
 			</array>

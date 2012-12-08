@@ -7,6 +7,7 @@
  */
 
 @import <Foundation/CPObject.j>
+//@import "CPCollectionView.j"
 
 CPLogRegister(CPLogConsole);
 
@@ -15,9 +16,9 @@ CPLogRegister(CPLogConsole);
     CPWindow    theWindow; //this "outlet" is connected automatically by the Cib
     @outlet     CPCollectionView     collectionView @accessors;
     @outlet     InternalProtoypeItem prototypeItemInternal;
-    @outlet     CPCollectionViewItem prototypeItemExternal;
+    @outlet     ExternalProtoypeItem prototypeItemExternal;
+    @outlet     CPTableView          tableView;
 }
-
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
@@ -38,6 +39,7 @@ CPLogRegister(CPLogConsole);
     [self didChangeValueForKey:@"maxItemWidth"];
     [self didChangeValueForKey:@"maxItemHeight"];
 
+    [collectionView registerForDraggedTypes:[@"DragType"]];
     //[theWindow setFullPlatformWindow:YES];
 }
 
@@ -96,6 +98,59 @@ CPLogRegister(CPLogConsole);
     return [collectionView maxItemSize].height;
 }
 
+/*
+    DELEGATE METHODS
+*/
+
+- (CPData)collectionView:(CPCollectionView)aCollectionView dataForItemsAtIndexes:(CPIndexSet)indices forType:(CPString)aType
+{
+    return indices;
+}
+
+- (CPView)collectionView:(CPCollectionView)aCollectionView draggingViewForItemsAtIndexes:(CPIndexSet)indexes withEvent:(CPEvent)event offset:(CGPoint)dragImageOffset
+{
+    return [aCollectionView draggingViewForItemsAtIndexes:indexes withEvent:event offset:dragImageOffset];
+}
+
+- (CPArray)collectionView:(CPCollectionView)aCollectionView dragTypesForItemsAtIndexes:(CPIndexSet)indices
+{
+    return [@"DragType"];
+}
+
+- (BOOL)collectionView:(CPCollectionView)aCollectionView canDragItemsAtIndexes:(CPIndexSet)indexes withEvent:(CPEvent)anEvent
+{
+    return YES;
+}
+/*
+- (BOOL)collectionView:(CPCollectionView)aCollectionView writeItemsAtIndexes:(CPIndexSet)indexes toPasteboard:(CPPasteboard)pboard
+{
+    return YES;
+}
+*/
+- (CPDragOperation)collectionView:(CPCollectionView)aCollectionView validateDrop:(id)draggingInfo proposedIndex:(Function)proposedIndexRef dropOperation:(CPInteger)collectionViewDropOperation
+{
+    var pboard = [draggingInfo draggingPasteboard],
+        dragIndex = [[pboard dataForType:@"DragType"] firstIndex],
+        proposedIndex = proposedIndexRef();
+
+    if (proposedIndex == dragIndex || proposedIndex == dragIndex + 1)
+        return CPDragOperationNone;
+
+    return CPDragOperationMove;
+}
+
+- (BOOL)collectionView:(CPCollectionView)aCollectionView acceptDrop:(id)draggingInfo index:(CPInteger)proposedIndex dropOperation:(CPInteger)collectionViewDropOperation
+{
+    var pboard = [draggingInfo draggingPasteboard],
+        dragIndexes = [pboard dataForType:@"DragType"];
+
+    [[aCollectionView content] moveIndexes:dragIndexes toIndex:proposedIndex];
+    [aCollectionView reloadContent];
+    [tableView reloadData];
+
+    return YES;
+}
+
 @end
 
 @implementation InternalProtoypeItem: CPCollectionViewItem
@@ -122,36 +177,88 @@ CPLogRegister(CPLogConsole);
 {
     [super setRepresentedObject:anObject];
     [textField setStringValue:[anObject objectForKey:@"value"]];
+    [[self view] setColor:[anObject objectForKey:@"color"]];
 }
 
 @end
 
-var keyCode = 0;
+@implementation ExternalProtoypeItem: CPCollectionViewItem
+{
+}
 
+- (void)setRepresentedObject:(id)anObject
+{
+    [super setRepresentedObject:anObject];
+    [[self view] setColor:[anObject objectForKey:@"color"]];
+}
+
+@end
+
+
+var keyCode = 0;
 @implementation ArrayController : CPArrayController
 {
 }
 
 - (void)newObject
 {
-    return [CPDictionary dictionaryWithObject:(String.fromCharCode(65 + keyCode++)) forKey:@"value"];
+    return [CPDictionary dictionaryWithObjectsAndKeys:(String.fromCharCode(65 + keyCode++)), @"value", [CPColor randomColor], @"color"];
 }
 
 @end
 
-@implementation RandomColorView : CPView
+@implementation ColorView : CPView
 {
-    CPColor color;
+    CPColor color @accessors;
+}
+
+- (void)setColor:(CPColor)aColor
+{
+    color = aColor;
+    [self setNeedsDisplay:YES];
 }
 
 - (void)drawRect:(CGRect)aRect
 {
     if (!color)
-        color = [CPColor randomColor];
+        color = [CPColor grayColor];
 
     var context = [[CPGraphicsContext currentContext] graphicsPort];
     CGContextSetFillColor(context, color);
     CGContextFillRect(context, aRect);
+}
+
+@end
+
+@implementation CPArray (MoveIndexes)
+
+- (void)moveIndexes:(CPIndexSet)indexes toIndex:(int)insertIndex
+{
+    var aboveCount = 0,
+        object,
+        removeIndex;
+
+    var index = [indexes lastIndex];
+
+    while (index != CPNotFound)
+    {
+        if (index >= insertIndex)
+        {
+            removeIndex = index + aboveCount;
+            aboveCount ++;
+        }
+        else
+        {
+            removeIndex = index;
+            insertIndex --;
+        }
+
+        object = [self objectAtIndex:removeIndex];
+        [self removeObjectAtIndex:removeIndex];
+        [self insertObject:object atIndex:insertIndex];
+
+        index = [indexes indexLessThanIndex:index];
+    }
 }
 
 @end
