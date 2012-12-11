@@ -570,6 +570,7 @@ var CPScrollDestinationNone             = 0,
                 [newToken setTokenField:self];
                 [newToken setRepresentedObject:tokenObject];
                 [newToken setStringValue:tokenValue];
+                [newToken setEditable:[self isEditable]];
                 [contentView addSubview:newToken];
             }
 
@@ -613,6 +614,13 @@ var CPScrollDestinationNone             = 0,
         if ([token respondsToSelector:@selector(setEnabled:)])
             [token setEnabled:shouldBeEnabled];
     }
+}
+
+- (void)setEditable:(BOOL)shouldBeEditable
+{
+    [super setEditable:shouldBeEditable];
+
+    [[self _tokens] makeObjectsPerformSelector:@selector(setEditable:) withObject:shouldBeEditable];
 }
 
 - (void)sendAction:(SEL)anAction to:(id)anObject
@@ -1284,6 +1292,11 @@ var CPScrollDestinationNone             = 0,
     return "tokenfield-token";
 }
 
+- (BOOL)acceptsFirstResponder
+{
+    return NO;
+}
+
 - (id)initWithFrame:(CPRect)frame
 {
     if (self = [super initWithFrame:frame])
@@ -1319,6 +1332,34 @@ var CPScrollDestinationNone             = 0,
     _representedObject = representedObject;
 }
 
+- (void)setEditable:(BOOL)shouldBeEditable
+{
+    [super setEditable:shouldBeEditable];
+    [self setNeedsLayout];
+}
+
+- (BOOL)setThemeState:(CPThemeState)aState
+{
+    var r = [super setThemeState:aState];
+
+    // Share hover state with the delete button.
+    if (r && aState === CPThemeStateHovered)
+        [_deleteButton setThemeState:aState];
+
+    return r;
+}
+
+- (BOOL)unsetThemeState:(CPThemeState)aState
+{
+    var r = [super unsetThemeState:aState];
+
+    // Share hover state with the delete button.
+    if (r && aState === CPThemeStateHovered)
+        [_deleteButton unsetThemeState:aState];
+
+    return r;
+}
+
 - (CGSize)_minimumFrameSize
 {
     var size = _CGSizeMakeZero(),
@@ -1344,6 +1385,7 @@ var CPScrollDestinationNone             = 0,
     {
         [_deleteButton setTarget:self];
         [_deleteButton setAction:@selector(_delete:)];
+        [_deleteButton setEnabled:[self isEditable]];
 
         var frame = [bezelView frame],
             buttonOffset = [_deleteButton currentValueForThemeAttribute:@"offset"],
@@ -1365,7 +1407,8 @@ var CPScrollDestinationNone             = 0,
 
 - (void)_delete:(id)sender
 {
-    [_tokenField _deleteToken:self];
+    if ([self isEditable])
+        [_tokenField _deleteToken:self];
 }
 
 @end
