@@ -1338,6 +1338,28 @@ var CPScrollDestinationNone             = 0,
     [self setNeedsLayout];
 }
 
+- (BOOL)setThemeState:(CPThemeState)aState
+{
+    var r = [super setThemeState:aState];
+
+    // Share hover state with the delete button.
+    if (r && aState === CPThemeStateHovered)
+        [_deleteButton setThemeState:aState];
+
+    return r;
+}
+
+- (BOOL)unsetThemeState:(CPThemeState)aState
+{
+    var r = [super unsetThemeState:aState];
+
+    // Share hover state with the delete button.
+    if (r && aState === CPThemeStateHovered)
+        [_deleteButton unsetThemeState:aState];
+
+    return r;
+}
+
 - (CGSize)_minimumFrameSize
 {
     var size = _CGSizeMakeZero(),
