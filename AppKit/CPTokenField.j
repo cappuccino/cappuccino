@@ -1284,6 +1284,11 @@ var CPScrollDestinationNone             = 0,
     return "tokenfield-token";
 }
 
+- (BOOL)acceptsFirstResponder
+{
+    return NO;
+}
+
 - (id)initWithFrame:(CPRect)frame
 {
     if (self = [super initWithFrame:frame])
