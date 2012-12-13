@@ -83,7 +83,8 @@ CPCanvasParentDrawErrorsOnMovementBug   = 1 << 0;
 var USER_AGENT                          = "",
     PLATFORM_ENGINE                     = CPUnknownBrowserEngine,
     PLATFORM_FEATURES                   = 0,
-    PLATFORM_BUGS                       = 0;
+    PLATFORM_BUGS                       = 0,
+    PLATFORM_STYLE_JS_PROPERTIES        = {};
 
 // default these features to true
 
@@ -272,4 +273,88 @@ else
 
     CPUndoKeyEquivalentModifierMask = CPControlKeyMask;
     CPRedoKeyEquivalentModifierMask = CPControlKeyMask;
+}
+
+/*!
+    Return the properly prefixed JS property for the given name. E.g. in a webkit browser,
+    CPBrowserStyleProperty('transition') -> WebkitTransition
+
+    While technically not a style property, style related event handler names are also supported.
+    CPBrowserStyleProperty('transitionend') -> 'webkitTransitionEnd'
+
+    CSS is only available in platform(dom), so don't rely too heavily on it.
+*/
+function CPBrowserStyleProperty(aProperty)
+{
+    var lowerProperty = aProperty.toLowerCase();
+
+    if (PLATFORM_STYLE_JS_PROPERTIES[lowerProperty] === undefined)
+    {
+        var r = nil;
+
+#if PLATFORM(DOM)
+        var testElement = document.createElement('div');
+
+        switch (lowerProperty)
+        {
+            case 'transitionend':
+                var candidates = {
+                        'WebkitTransition' : 'webkitTransitionEnd',
+                        'MozTransition'    : 'transitionend',
+                        'OTransition'      : 'oTransitionEnd',
+                        'msTransition'     : 'MSTransitionEnd',
+                        'transition'       : 'transitionend'
+                    };
+
+                r = candidates[PLATFORM_STYLE_JS_PROPERTIES['transition']] || nil;
+                break;
+            default:
+                var prefixes = ["Webkit", "Moz", "O", "ms"],
+                    capProperty = [aProperty capitalizedString];
+
+                for (var i = 0; i < prefixes.length; i++)
+                {
+                    if (prefixes[i] + capProperty in testElement.style)
+                    {
+                        r = prefixes[i] + capProperty;
+                        break;
+                    }
+                }
+
+                if (!r && lowerProperty in testElement.style)
+                    r = lowerProperty;
+
+                break;
+        }
+#endif
+
+        PLATFORM_STYLE_JS_PROPERTIES[lowerProperty] = r;
+    }
+
+    return PLATFORM_STYLE_JS_PROPERTIES[lowerProperty];
+}
+
+function CPBrowserCSSProperty(aProperty)
+{
+    var browserProperty = CPBrowserStyleProperty(aProperty);
+
+    if (!browserProperty)
+        return nil;
+
+    var prefixes = {
+            'Webkit': '-webkit-',
+            'Moz': '-moz-',
+            'O': '-o-',
+            'ms': '-ms-'
+        };
+
+    for (var prefix in prefixes)
+    {
+        if (browserProperty.substring(0, prefix.length) == prefix)
+        {
+            return prefixes[prefix] + browserProperty.substring(prefix.length).toLowerCase();
+        }
+    }
+
+    return browserProperty.toLowerCase();
 }
