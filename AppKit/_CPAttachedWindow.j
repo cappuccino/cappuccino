@@ -389,6 +389,14 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 #pragma mark Overrides
 
 /*!
+    Attached windows, such as pop overs, can usually become the key window.
+*/
+- (BOOL)canBecomeKeyWindow
+{
+    return YES;
+}
+
+/*!
     Called when the window is losing focus.
 */
 - (void)resignMainWindow
