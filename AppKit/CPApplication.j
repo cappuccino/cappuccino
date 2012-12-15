@@ -1047,9 +1047,9 @@ CPRunContinuesResponse  = -1002;
     if (!args || args.length == 0)
     {
         _args = [];
-#if PLATFORM(DOM)
-        window.location.hash = @"#";
-#endif
+        // Don't use if PLATFORM(DOM) here - the unit test fakes window.location so we should play along.
+        if (window && window.location)
+            window.location.hash = @"#";
         return;
     }
 
@@ -1064,9 +1064,9 @@ CPRunContinuesResponse  = -1002;
 
     var hash = [toEncode componentsJoinedByString:@"/"];
 
-#if PLATFORM(DOM)
-    window.location.hash = @"#" + hash;
-#endif
+    // Don't use if PLATFORM(DOM) here - the unit test fakes window.location so we should play along.
+    if (window && window.location)
+        window.location.hash = @"#" + hash;
 }
 
 - (void)_reloadArguments
