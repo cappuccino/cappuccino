@@ -20,6 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#import "../Foundation/CPRange.h"
+
 @import <Foundation/CPBundle.j>
 
 @import "CPCompatibility.j"
@@ -139,9 +141,7 @@ CPRunContinuesResponse  = -1002;
     {
         _eventListeners = [];
 
-        _windows = [];
-
-        [_windows addObject:nil];
+        _windows = [[CPNull null]];
     }
 
     return self;
@@ -655,6 +655,10 @@ CPRunContinuesResponse  = -1002;
 */
 - (CPWindow)windowWithWindowNumber:(int)aWindowNumber
 {
+    // Never allow _windows[0] to be returned - it's an internal CPNull placeholder.
+    if (!aWindowNumber)
+        return nil;
+
     return _windows[aWindowNumber];
 }
 
@@ -663,7 +667,8 @@ CPRunContinuesResponse  = -1002;
 */
 - (CPArray)windows
 {
-    return _windows;
+    // Return all windows, but not the CPNull placeholder in _windows[0].
+    return [_windows subarrayWithRange:_CPMakeRange(1, [_windows count] - 1)];
 }
 
 /*!
