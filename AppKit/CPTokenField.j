@@ -145,16 +145,16 @@ var CPScrollDestinationNone             = 0,
 
 - (void)_autocompleteWithEvent:(CPEvent)anEvent
 {
-    if (![self _inputElement].value && (![_autocompleteMenu contentArray] || ![self hasThemeState:CPThemeStateAutocompleting]))
+    if (![self _editorValue] && (![_autocompleteMenu contentArray] || ![self hasThemeState:CPThemeStateAutocompleting]))
         return;
 
     [self _hideCompletions];
 
     var token = [_autocompleteMenu selectedItem],
-        shouldRemoveLastObject = token !== @"" && [self _inputElement].value !== @"";
+        shouldRemoveLastObject = token !== @"" && [self _editorValue] !== @"";
 
     if (!token)
-        token = [self _inputElement].value;
+        token = [self _editorValue];
 
     // Make sure the user typed an actual token to prevent the previous token from being emptied
     // If the input area is empty, we want to fall back to the normal behavior, resigning first
@@ -515,9 +515,9 @@ var CPScrollDestinationNone             = 0,
 
 #if PLATFORM(DOM)
 
-    if ([self _inputElement].value != @"")
+    if ([self _editorValue])
     {
-        var token = [self _representedObjectForEditingString:[self _inputElement].value];
+        var token = [self _representedObjectForEditingString:[self _editorValue]];
         [objectValue insertObject:token atIndex:_selectedRange.location];
     }
 
@@ -694,6 +694,13 @@ var CPScrollDestinationNone             = 0,
 }
 #endif
 
+- (CPString)_editorValue
+{
+    if (![self hasThemeState:CPThemeStateEditing])
+        return @"";
+    return [self _inputElement].value;
+}
+
 - (void)moveUp:(id)sender
 {
     [[self _autocompleteMenu] selectPrevious];
@@ -773,7 +780,7 @@ var CPScrollDestinationNone             = 0,
 - (void)moveLeft:(id)sender
 {
     // Left arrow
-    if ((_selectedRange.location > 0 || _selectedRange.length) && CPTokenFieldDOMInputElement.value == "")
+    if ((_selectedRange.location > 0 || _selectedRange.length) && [self _editorValue] == "")
     {
         if (_selectedRange.length)
             // Simply collapse the range.
@@ -792,7 +799,7 @@ var CPScrollDestinationNone             = 0,
 
 - (void)moveLeftAndModifySelection:(id)sender
 {
-    if (_selectedRange.location > 0 && CPTokenFieldDOMInputElement.value == "")
+    if (_selectedRange.location > 0 && [self _editorValue] == "")
     {
         _selectedRange.location--;
         // When shift is depressed, select the next token backwards.
@@ -810,7 +817,7 @@ var CPScrollDestinationNone             = 0,
 - (void)moveRight:(id)sender
 {
     // Right arrow
-    if ((_selectedRange.location < [[self _tokens] count] || _selectedRange.length) && CPTokenFieldDOMInputElement.value == "")
+    if ((_selectedRange.location < [[self _tokens] count] || _selectedRange.length) && [self _editorValue] == "")
     {
         if (_selectedRange.length)
         {
@@ -836,7 +843,7 @@ var CPScrollDestinationNone             = 0,
 
 - (void)moveRightAndModifySelection:(id)sender
 {
-    if (_CPMaxRange(_selectedRange) < [[self _tokens] count] && CPTokenFieldDOMInputElement.value == "")
+    if (_CPMaxRange(_selectedRange) < [[self _tokens] count] && [self _editorValue] == "")
     {
         // Leave the selection location in place but include the next token to the right.
         _selectedRange.length++;
@@ -854,7 +861,7 @@ var CPScrollDestinationNone             = 0,
 {
     // TODO Even if the editor isn't empty you should be able to delete the previous token by placing the cursor
     // at the beginning of the editor.
-    if (CPTokenFieldDOMInputElement.value == @"")
+    if ([self _editorValue] == @"")
     {
         [self _hideCompletions];
 
@@ -880,7 +887,7 @@ var CPScrollDestinationNone             = 0,
 {
     // TODO Even if the editor isn't empty you should be able to delete the next token by placing the cursor
     // at the end of the editor.
-    if (CPTokenFieldDOMInputElement.value == @"")
+    if ([self _editorValue] == @"")
     {
         // Delete forward if nothing is selected, else delete all selected.
         [self _hideCompletions];
