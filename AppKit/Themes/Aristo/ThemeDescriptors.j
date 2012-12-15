@@ -1089,7 +1089,7 @@ var themedButtonValues = nil,
             [@"text-color",     textHighlightedColor,               CPThemeStateHighlighted],
 
             [@"bezel-inset",    CGInsetMakeZero(),                  CPThemeStateBezeled],
-            [@"content-inset",  CGInsetMake(2.0, 22.0, 2.0, 15.0),  CPThemeStateBezeled],
+            [@"content-inset",  CGInsetMake(2.0, 20.0, 2.0, 20.0),  CPThemeStateBezeled],
 
             // Minimum height == maximum height since tokens are fixed height.
             [@"min-size",       CGSizeMake(0.0, 19.0)],
@@ -1112,16 +1112,17 @@ var themedButtonValues = nil,
 
         themeValues =
         [
-            [@"bezel-color",    bezelColor,                         CPThemeStateBordered],
-            [@"bezel-color",    bezelHighlightedColor,              CPThemeStateBordered | CPThemeStateHighlighted],
+            [@"bezel-color",    bezelColor,                             CPThemeStateBordered | CPThemeStateHovered],
+            [@"bezel-color",    [bezelColor colorWithAlphaComponent:0], CPThemeStateBordered | CPThemeStateDisabled],
+            [@"bezel-color",    bezelHighlightedColor,                  CPThemeStateBordered | CPThemeStateHighlighted],
 
             [@"min-size",       CGSizeMake(8.0, 8.0)],
             [@"max-size",       CGSizeMake(8.0, 8.0)],
 
-            [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBordered],
-            [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBordered | CPThemeStateHighlighted],
+            [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),        CPThemeStateBordered],
+            [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),        CPThemeStateBordered | CPThemeStateHighlighted],
 
-            [@"offset",         CGPointMake(17, 6),                 CPThemeStateBordered]
+            [@"offset",         CGPointMake(17, 6),                     CPThemeStateBordered]
         ];
 
     [self registerThemeValues:themeValues forView:button];
