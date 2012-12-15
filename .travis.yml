@@ -1,7 +1,7 @@
 language: node_js
 node_js:
     - 0.8
-before_install: 
+before_install:
     - jdk_switcher use openjdk6
 install: ./bootstrap.sh --noprompt --directory ./narwhal
 script: jake test
