@@ -43,6 +43,8 @@
 #include "CFBundle.js"
 #include "StaticResource.js"
 #include "Preprocessor.js"
+#include "Parser.js"
+#include "ObjJCompiler.js"
 #include "FileDependency.js"
 #include "Executable.js"
 #include "FileExecutable.js"

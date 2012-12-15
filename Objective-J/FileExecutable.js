@@ -41,13 +41,17 @@ function FileExecutable(/*CFURL|String*/ aURL)
     if (fileContents.match(/^@STATIC;/))
         executable = decompile(fileContents, aURL);
 
-    else if (extension === "j" || !extension)
-        executable = exports.preprocess(fileContents, aURL, Preprocessor.Flags.IncludeDebugSymbols);
-
+    else if (extension === "j" || !extension) {
+//		console.log("Compile: " + aURL);
+//		if (!aURL || aURL.toString().indexOf("Boplats/Office/Applications") === -1)
+//        	executable = exports.preprocess(fileContents, aURL, Preprocessor.Flags.IncludeDebugSymbols);
+//		else
+        	executable = exports.compileFileDependencies(fileContents, aURL, ObjJCompiler.Flags.IncludeDebugSymbols);
+	}
     else
         executable = new Executable(fileContents, [], aURL);
 
-    Executable.apply(this, [executable.code(), executable.fileDependencies(), aURL, executable._function]);
+    Executable.apply(this, [executable.code(), executable.fileDependencies(), aURL, executable._function, executable._compiler]);
 
     this._hasExecuted = NO;
 }

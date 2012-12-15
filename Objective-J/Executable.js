@@ -26,14 +26,16 @@ var ExecutableUnloadedFileDependencies  = 0,
     ExecutableLoadedFileDependencies    = 2,
     AnonymousExecutableCount            = 0;
 
-function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String*/ aURL, /*Function*/ aFunction)
+function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String*/ aURL, /*Function*/ aFunction, /*ObjJCompiler*/aCompiler)
 {
     if (arguments.length === 0)
         return this;
 
     this._code = aCode;
-    this._function = aFunction || NULL;
+    this._function = aFunction || null;
     this._URL = makeAbsoluteURL(aURL || new CFURL("(Anonymous" + (AnonymousExecutableCount++) + ")"));
+
+	this._compiler = aCompiler || null;
 
     this._fileDependencies = fileDependencies;
 
@@ -48,7 +50,8 @@ function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String
     if (this._function)
         return;
 
-    this.setCode(aCode);
+	if (!aCompiler)
+    	this.setCode(aCode);
 }
 
 exports.Executable = Executable;
@@ -135,6 +138,27 @@ Executable.prototype.execute = function()
 #if EXECUTION_LOGGING
     CPLog("EXECUTION: " + this.URL());
 #endif
+
+	if (this._compiler)
+	{
+	    var fileDependencies = this.fileDependencies(),
+	        index = 0,
+	        count = fileDependencies.length;
+
+	    for (; index < count; ++index)
+	    {
+	        var fileDependency = fileDependencies[index],
+            	isQuoted = fileDependency.isLocal(),
+	            URL = fileDependency.URL();
+
+			CPLog("Execute FileDependant: " + URL);
+			objj_executeFile(URL, isQuoted);
+	    }
+
+	    CPLog("Compile Pass 2: " + this.URL());
+		this.setCode(this._compiler.compilePass2());
+	}
+		
     var oldContextBundle = CONTEXT_BUNDLE;
 
     // FIXME: Should we have stored this?
