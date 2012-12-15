@@ -154,8 +154,8 @@ while [ $# -gt 0 ]; do
         --clone-http)   install_method="clone --http";;
         --github-user)  github_user="$2"; shift;;
         --github-ref)   github_ref="$2"; shift;;
-        -q | --quiet)   verbosity=$[verbosity - 1]; shift;;
-        -v | --verbose) verbosity=$[verbosity + 1]; shift;;
+        -q|--quiet)     verbosity=$[verbosity - 1];;
+        -v|--verbose)   verbosity=$[verbosity + 1];;
         *)              cat >&2 <<-EOT
 usage: ./bootstrap.sh [OPTIONS]
 
