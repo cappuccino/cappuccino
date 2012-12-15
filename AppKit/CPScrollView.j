@@ -213,7 +213,7 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
 
     @param aStyle the scroller style to set all scroller views to use (CPScrollerStyleLegacy or CPScrollerStyleOverlay)
 */
-+ (int)setGlobalScrollerStyle:(int)aStyle
++ (void)setGlobalScrollerStyle:(int)aStyle
 {
     CPScrollerStyleGlobal = aStyle;
     [[CPNotificationCenter defaultCenter] postNotificationName:CPScrollerStyleGlobalChangeNotification object:nil];
