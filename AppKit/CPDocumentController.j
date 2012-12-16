@@ -124,7 +124,7 @@ var CPSharedDocumentController = nil;
     @param anError not used
     @return the created document
 */
-- (CPDocument)makeUntitledDocumentOfType:(CPString)aType error:({CPError})anError
+- (CPDocument)makeUntitledDocumentOfType:(CPString)aType error:(/*{*/CPError/*}*/)anError
 {
     return [[[self documentClassForType:aType] alloc] initWithType:aType error:anError];
 }

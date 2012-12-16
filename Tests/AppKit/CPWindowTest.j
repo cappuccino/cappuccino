@@ -1,5 +1,6 @@
 
 @import <AppKit/CPWindow.j>
+@import <AppKit/_CPBorderlessWindowView.j>
 
 [CPApplication sharedApplication];
 

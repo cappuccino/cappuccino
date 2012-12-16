@@ -21,6 +21,7 @@
  */
 
 @import "CPTableView.j"
+@import "CPPanel.j"
 @import "_CPPopUpListDataSource.j"
 
 

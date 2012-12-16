@@ -484,6 +484,18 @@ GLOBAL(objj_registerClassPair) = function(/*Class*/ aClass)
 
 DISPLAY_NAME(objj_registerClassPair);
 
+GLOBAL(objj_resetRegisterClasses) = function()
+{
+    for (var key in REGISTERED_CLASSES)
+        delete global[key];
+
+    REGISTERED_CLASSES = {};
+
+    resetBundle();
+}
+
+DISPLAY_NAME(objj_resetRegisterClasses);
+
 // Instantiating Classes
 
 GLOBAL(class_createInstance) = function(/*Class*/ aClass)
@@ -573,6 +585,15 @@ DISPLAY_NAME(objj_lookUpClass);
 GLOBAL(objj_getClass) = function(/*String*/ aName)
 {
     var theClass = REGISTERED_CLASSES[aName];
+
+    /*if (!theClass)
+    {
+        for (var key in REGISTERED_CLASSES)
+        {
+            print("regClass: " + key + ", regClass.isa: " + REGISTERED_CLASSES[key].isa);
+        }
+        print("");
+    }*/
 
     if (!theClass)
     {

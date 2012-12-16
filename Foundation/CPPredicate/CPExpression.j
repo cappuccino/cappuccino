@@ -387,11 +387,11 @@ CPMinusSetExpressionType        = 9;
 
 @end
 
-@import "_CPConstantValueExpression.j"
-@import "_CPSelfExpression.j"
-@import "_CPVariableExpression.j"
-@import "_CPKeyPathExpression.j"
-@import "_CPFunctionExpression.j"
-@import "_CPAggregateExpression.j"
-@import "_CPSetExpression.j"
-@import "_CPSubqueryExpression.j"
+//@import "_CPConstantValueExpression.j"
+//@import "_CPSelfExpression.j"
+//@import "_CPVariableExpression.j"
+//@import "_CPKeyPathExpression.j"
+//@import "_CPFunctionExpression.j"
+//@import "_CPAggregateExpression.j"
+//@import "_CPSetExpression.j"
+//@import "_CPSubqueryExpression.j"

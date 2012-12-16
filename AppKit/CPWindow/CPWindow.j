@@ -29,6 +29,9 @@
 @import "CPPlatformWindow.j"
 @import "CPResponder.j"
 @import "CPScreen.j"
+#if PLATFORM(BROWSER)
+@import "CPPlatformWindow+DOM.j"
+#endif
 
 
 /*
@@ -3334,7 +3337,7 @@ CPPanelWindowShadowStyle    = 2;
 CPCustomWindowShadowStyle   = 3;
 
 
-@import "_CPWindowView.j"
+/*@import "_CPWindowView.j"
 @import "_CPStandardWindowView.j"
 @import "_CPDocModalWindowView.j"
 @import "_CPToolTipWindowView.j"
@@ -3343,4 +3346,4 @@ CPCustomWindowShadowStyle   = 3;
 @import "_CPBorderlessBridgeWindowView.j"
 @import "_CPAttachedWindowView.j"
 @import "CPDragServer.j"
-@import "CPView.j"
+@import "CPView.j"*/

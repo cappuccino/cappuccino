@@ -1,5 +1,6 @@
 @import <AppKit/CPApplication.j>
 @import <AppKit/CPWindow.j>
+@import <AppKit/_CPStandardWindowView.j>
 
 var globalResults = [];
 

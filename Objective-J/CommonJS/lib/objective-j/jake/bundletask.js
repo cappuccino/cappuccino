@@ -789,7 +789,13 @@ BundleTask.prototype.defineStaticTask = function()
 
             fileStream.write("e;");
             fileStream.close();
-        });
+
+           // Make sure all classes are removed and all FileExecutables are removed.
+            require("objective-j").Executable.resetCachedFileExecutableSearchers();
+            require("objective-j").StaticResource.resetRootResources();
+            require("objective-j").FileExecutable.resetFileExecutables();
+            objj_resetRegisterClasses();
+         });
 
         this.enhance([staticPath]);
     }, this);
@@ -797,7 +803,7 @@ BundleTask.prototype.defineStaticTask = function()
 
 BundleTask.prototype.defineSourceTasks = function()
 {
-    var sources = this.sources();
+   var sources = this.sources();
 
     if (!sources)
         return;
@@ -832,7 +838,18 @@ BundleTask.prototype.defineSourceTasks = function()
             environmentCompilerFlags = anEnvironment.compilerFlags().join(" ") + " " + compilerFlags,
             flattensSources = this.flattensSources(),
             basePath = directoryInCommon(environmentSources),
-            basePathLength = basePath.length;
+            basePathLength = basePath.length,
+            translateFilenameToPath = {},
+            otherwayTranslateFilenameToPath = {};
+
+        // Create a filename to filename path dictionary. (For example: CPArray.j -> CPArray/CPArray.j)
+        environmentSources.forEach(function(/*String*/ aFilename)
+        {
+            translateFilenameToPath[flattensSources ? FILE.basename(aFilename) : aFilename] = aFilename;
+            otherwayTranslateFilenameToPath[aFilename] = flattensSources ? FILE.basename(aFilename) : aFilename;
+        }, this);
+
+        var e = {};
 
         environmentSources.forEach(function(/*String*/ aFilename)
         {
@@ -853,8 +870,21 @@ BundleTask.prototype.defineSourceTasks = function()
                 }
                 else
                 {
+                    var translatedFilename = translateFilenameToPath[aFilename] ? translateFilenameToPath[aFilename] : aFilename,
+                        otherwayTranslatedFilename = otherwayTranslateFilenameToPath[aFilename] ? otherwayTranslateFilenameToPath[aFilename] : aFilename,
+                        theTranslatedFilename = otherwayTranslatedFilename ? otherwayTranslatedFilename : translatedFilename,
+                        absolutePath = FILE.absolute(theTranslatedFilename),
+                        basePath = absolutePath.substring(0, absolutePath.length - theTranslatedFilename.length);
+
+                    require("objective-j").setCurrentCompilerFlags(environmentCompilerFlags);
+                    require("objective-j").make_narwhal_factory(absolutePath, basePath, translateFilenameToPath)(require, e, module, system, print, window);
                     TERM.stream.write("Compiling [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)").flush();
-                    var compiled = require("objective-j/compiler").compile(aFilename, environmentCompilerFlags);
+
+                    var otherwayTranslatedFilename = otherwayTranslateFilenameToPath[aFilename] ? otherwayTranslateFilenameToPath[aFilename] : aFilename,
+                        translatedFilename = translateFilenameToPath[aFilename] ? translateFilenameToPath[aFilename] : aFilename,
+                        executer = new require("objective-j").FileExecutable(otherwayTranslatedFilename);
+
+                    var compiled = executer.toMarkedString();
                 }
 
                 TERM.stream.print(Array(Math.round(compiled.length / 1024) + 3).join("."));
@@ -863,11 +893,12 @@ BundleTask.prototype.defineSourceTasks = function()
 
             filedir (staticPath, [compiledEnvironmentSource]);
 
+
             replacedFiles.push(flattensSources ? FILE.basename(aFilename) : relativePath);
         }, this);
 
         this._replacedFiles[anEnvironment] = replacedFiles;
-    }, this);
+   }, this);
 }
 
 exports.BundleTask = BundleTask;

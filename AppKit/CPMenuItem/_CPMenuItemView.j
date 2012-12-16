@@ -1,5 +1,5 @@
 
-@import <AppKit/CPControl.j>
+@import "CPControl.j"
 
 @import "_CPMenuItemSeparatorView.j"
 @import "_CPMenuItemStandardView.j"

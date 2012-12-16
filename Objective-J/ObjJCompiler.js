@@ -27,7 +27,8 @@
 }*/
 
 //var FileDependency = {};   // Dummy declaration !!!!!!!      REMOVE!!!!!!!!
-var ObjJCompiler = { };
+var ObjJCompiler = { },
+    currentCompilerFlags = "";
 
 //(function(global, exports, module)
 //{
@@ -80,22 +81,36 @@ var ObjJCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ fla
     aString = aString.replace(/^#[^\n]+\n/, "\n");
     this._URL = new CFURL(aURL);
 	this._pass = pass;
-	// If this is pass one we should not save anything in buffers
+	// If this is pass one we should not save anything in javascript buffer
 	if (pass === 1)
 		this._jsBuffer = null;
 	else
 		this._jsBuffer = new StringBuffer();
     this._imBuffer = null;
     this._cmBuffer = null;
-	console.time("Parse - " + aURL);
+    var start = new Date().getTime();
+	//console.time("Parse - " + aURL);
     this._tokens = exports.Parser.parse(aString);
-	console.timeEnd("Parse - " + aURL);
+	var end = new Date().getTime();
+	var time = (end - start) / 1000;
+	//print("Parse: " + aURL + " in " + time + " seconds");
+	//console.timeEnd("Parse - " + aURL);
     this._dependencies = [];
     this._flags = flags | ObjJCompiler.Flags.IncludeDebugSymbols;
     this._classDefs = {};
-	console.time("Compile" + pass + " - " + aURL);
+    var start = new Date().getTime();
+//	console.time("Compile" + pass + " - " + aURL);
+	try {
     this.nodeDocument(this._tokens);
-	console.timeEnd("Compile" + pass + " - " + aURL);
+    }
+    catch (e) {
+    	print("Error: " + e + ", file content: " + aString);
+    	throw e;
+    }
+	var end = new Date().getTime();
+	var time = (end - start) / 1000;
+	//print("Compile pass 1: " + aURL + " in " + time + " seconds");
+//	console.timeEnd("Compile" + pass + " - " + aURL);
 //	console.log("JS: " + this._jsBuffer);
 }
 
@@ -103,13 +118,28 @@ ObjJCompiler.prototype.compilePass2 = function()
 {
 	this._pass = 2;
 	this._jsBuffer = new StringBuffer();
-	console.time("Compile" + this._pass + " - " + this._URL);
+	//print("Start Compile2: " + this._URL);
+    var start = new Date().getTime();
+//	console.time("Compile" + this._pass + " - " + this._URL);
     this.nodeDocument(this._tokens);
-	console.timeEnd("Compile" + this._pass + " - " + this._URL);
-	return this._jsBuffer;
+	var end = new Date().getTime();
+	var time = (end - start) / 1000;
+	//print("Compile pass 2: " + this._URL + " in " + time + " seconds");
+//	console.timeEnd("Compile" + this._pass + " - " + this._URL);
+	return this._jsBuffer.toString();
 }
 
 exports.ObjJCompiler = ObjJCompiler;
+
+exports.setCurrentCompilerFlags = function(/*String*/ compilerFlags)
+{
+    currentCompilerFlags = compilerFlags;
+}
+
+exports.currentCompilerFlags = function(/*String*/ compilerFlags)
+{
+    return currentCompilerFlags;
+}
 
 ObjJCompiler.Flags = { };
 
@@ -1228,7 +1258,8 @@ ObjJCompiler.prototype.nodeClassDeclationStatement = function(/*SyntaxNode*/ ast
 
 	var className = this.nodeIdentifier(children[2]),
 		superClassName = null,
-		classDef = null;
+		classDef = null,
+		isCategoryDeclaration = false;
 
 	this.nodeUnderline(children[3], false);
 
@@ -1251,6 +1282,7 @@ ObjJCompiler.prototype.nodeClassDeclationStatement = function(/*SyntaxNode*/ ast
 	}
 	else if (child && child.name === ObjJCompiler.AstNodeCategoryDeclaration)
 	{
+		isCategoryDeclaration = true;
 		this.nodeCategoryDeclaration(child);
 		offset++;
 
@@ -1264,6 +1296,15 @@ ObjJCompiler.prototype.nodeClassDeclationStatement = function(/*SyntaxNode*/ ast
         	CONCAT(saveJSBuffer, "if(!the_class) throw new SyntaxError(\"*** Could not find definition for class \\\"" + className + "\\\"\");\n");
         	CONCAT(saveJSBuffer, "var meta_class = the_class.isa;");
 		}
+	}
+	else
+	{
+		classDef = {"className": className, "superClassName": null, "ivars": {}, "methods": {}};
+
+		this._classDefs[className] = classDef;
+
+		if (saveJSBuffer)
+        	CONCAT(saveJSBuffer, "{var the_class = objj_allocateClassPair(Nil, \"" + className + "\"),\nmeta_class = the_class.isa;");
 	}
 
     this._currentSuperClass = "objj_getClass(\"" + className + "\").super_class";
@@ -1387,10 +1428,12 @@ ObjJCompiler.prototype.nodeClassDeclationStatement = function(/*SyntaxNode*/ ast
 	this.nodeEND(children[8 + offset]);
 	this.nodeEOS(children[9 + offset]);
 
-    // We must make a new class object for our class definition.
 	if (saveJSBuffer)
 	{
-    	CONCAT(saveJSBuffer, "objj_registerClassPair(the_class);\n");
+	    // We must make a new class object for our class definition.
+		if (!isCategoryDeclaration) {
+            CONCAT(saveJSBuffer, "objj_registerClassPair(the_class);\n");
+        }
 
     	if (IS_NOT_EMPTY(this._imBuffer))
     	{
@@ -1573,8 +1616,11 @@ ObjJCompiler.prototype.nodeAccessorsConfiguration = function(/*SyntaxNode*/ astN
         case ObjJCompiler.AstNodeIvarSetterName:
 			return {"setter": this.nodeIvarSetterName(child)};
         default:
-			this.nodeREADONLY(child);
-			return {"readonly": true};
+            // Here we accept anything the parser accepts: "readonly", "copy" or "readwrite"
+			this.nodeWORD(child);
+            var r = {};
+            r[child] = true;
+			return r;
     }
 }
 
@@ -1764,8 +1810,8 @@ ObjJCompiler.prototype.genericMethodDeclaration = function(/*SyntaxNode*/ astNod
 	}
 	this.nodeUnderline(children[4 + offset], false);
 	this.nodeOpenBrace(children[5 + offset]);
-	this._jsBuffer = buffer;	// Now write the FunctionBody to buffer
 	this.nodeUnderline(children[6 + offset], false);
+	this._jsBuffer = buffer;	// Now write the FunctionBody to buffer
 	this.nodeFunctionBody(children[7 + offset]);
 	this._jsBuffer = null;			// Turn back off again so nothing is written
 	this.nodeUnderline(children[8 + offset], false);
@@ -1873,7 +1919,8 @@ ObjJCompiler.prototype.nodeMethodType = function(/*SyntaxNode*/ astNode)
 	var children = astNode.children,
         child = children[2],
 		size = children.length,
-		methodTypes = [];
+		methodTypes = [],
+        offset = 3;
 
 	this.nodeOpenParenthesis(children[0]);
 	this.nodeUnderline(children[1], false);
@@ -1881,16 +1928,39 @@ ObjJCompiler.prototype.nodeMethodType = function(/*SyntaxNode*/ astNode)
 	if (child && child.name === ObjJCompiler.AstNodeACTION)
 		methodTypes.push(this.nodeACTION(child));
 	else
+    {
 		methodTypes.push(this.nodeIdentifierName(child));
+        if (children[4] === "<")
+        {
+            this.nodeUnderline(children[3], false);
+            this.nodeWORD(children[4]);     // "<"
+            this.nodeUnderline(children[5], false);
+            this.nodeIdentifierName(children[6]);
+            this.nodeUnderline(children[7], false);
+            this.nodeWORD(children[8]);      // ">"
+            offset += 6;
+        }
+    }
 
-	for (var i = 3; i + 1 < size - 2; i += 2)
+	for (var i = offset; i + 1 < size - 2; i += 2)
 	{
 		this.nodeUnderline(children[i], true);
         child = children[i + 1];
 		if (child && child.name === ObjJCompiler.AstNodeACTION)
 			methodTypes.push(this.nodeACTION(child));
 		else
+        {
 			methodTypes.push(this.nodeIdentifierName(child));
+            if (i + 7 < size && children[i + 3] === "<")
+            {
+                this.nodeUnderline(children[i++ + 2], false);
+                this.nodeWORD(children[i++ + 2]);      // "<"
+                this.nodeUnderline(children[i++ + 2], false);
+                this.nodeIdentifierName(children[i++ + 2]);
+                this.nodeUnderline(children[i++ + 2], false);
+                this.nodeWORD(children[i++ + 2]);       // ">"
+            }
+        }
 	}
 
 	this.nodeUnderline(children[size - 2], false);
@@ -2571,13 +2641,13 @@ ObjJCompiler.prototype.nodeArgumentList = function(/*SyntaxNode*/ astNode)
 		size = children.length;
 
 	this.nodeAssignmentExpression(children[0]);
-	this.nodeUnderline(children[1], false);
 
-	for (var i = 2; i + 2 < size; i += 3)
+	for (var i = 1; i + 3 < size; i += 4)
 	{
-		this.nodeCOMMA(children[i]);
-		this.nodeUnderline(children[i + 1], false);
-		this.nodeAssignmentExpression(children[i + 2]);
+		this.nodeUnderline(children[i], false);
+		this.nodeCOMMA(children[i + 1]);
+		this.nodeUnderline(children[i + 2], false);
+		this.nodeAssignmentExpression(children[i + 3]);
 	}
 }
 
@@ -3387,7 +3457,7 @@ ObjJCompiler.prototype.nodeRegularExpressionClass = function(/*SyntaxNode*/ astN
 		while (child && child.name === ObjJCompiler.AstNodeRegularExpressionClassChar)
 		{
 			regString += this.nodeRegularExpressionClassChar(children[offset++]);
-            child = children[++offset];
+            child = children[offset];
 		}
 
 		return regString + this.nodeWORD(child);
@@ -4013,11 +4083,6 @@ ObjJCompiler.prototype.nodeGETTER = function(/*SyntaxNode*/ astNode)
 }
 
 ObjJCompiler.prototype.nodeSETTER = function(/*SyntaxNode*/ astNode)
-{
-	return this.nodeWORD(astNode);
-}
-
-ObjJCompiler.prototype.nodeREADONLY = function(/*SyntaxNode*/ astNode)
 {
 	return this.nodeWORD(astNode);
 }

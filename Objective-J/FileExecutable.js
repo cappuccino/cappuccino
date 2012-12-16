@@ -22,7 +22,7 @@
 
 var FileExecutablesForURLStrings = { };
 
-function FileExecutable(/*CFURL|String*/ aURL)
+function FileExecutable(/*CFURL|String*/ aURL, /*Dictionary*/ aFilenameTranslateDictionary)
 {
     aURL = makeAbsoluteURL(aURL);
 
@@ -41,7 +41,7 @@ function FileExecutable(/*CFURL|String*/ aURL)
     if (fileContents.match(/^@STATIC;/))
         executable = decompile(fileContents, aURL);
 
-    else if (extension === "j" || !extension) {
+    else if ((extension === "j" || !extension) && !fileContents.match(/^{/)) {
 //		console.log("Compile: " + aURL);
 //		if (!aURL || aURL.toString().indexOf("Boplats/Office/Applications") === -1)
 //        	executable = exports.preprocess(fileContents, aURL, Preprocessor.Flags.IncludeDebugSymbols);
@@ -51,7 +51,7 @@ function FileExecutable(/*CFURL|String*/ aURL)
     else
         executable = new Executable(fileContents, [], aURL);
 
-    Executable.apply(this, [executable.code(), executable.fileDependencies(), aURL, executable._function, executable._compiler]);
+    Executable.apply(this, [executable.code(), executable.fileDependencies(), aURL, executable._function, executable._compiler, aFilenameTranslateDictionary]);
 
     this._hasExecuted = NO;
 }
@@ -73,6 +73,12 @@ FileExecutable.allFileExecutables = function()
     return fileExecutables;
 }
 #endif
+
+FileExecutable.resetFileExecutables = function()
+{
+    FileExecutablesForURLStrings = { };
+    FunctionCache = { };
+}
 
 FileExecutable.prototype.execute = function(/*BOOL*/ shouldForce)
 {

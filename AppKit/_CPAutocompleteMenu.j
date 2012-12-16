@@ -23,6 +23,7 @@
 @import <Foundation/CPObject.j>
 
 @import "CPTextField.j"
+@import "CPTableView.j"
 @import "_CPMenuWindow.j"
 
 // TODO Make themable.

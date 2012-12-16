@@ -989,5 +989,5 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
 
 @end
 
-@import "CPCheckBox.j"
-@import "CPRadio.j"
+//@import "CPCheckBox.j"
+//@import "CPRadio.j"

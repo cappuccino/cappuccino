@@ -21,7 +21,7 @@
  */
 
 @import <Foundation/CPObject.j>
-@import <Foundation/CPArray.j>
+@import <Foundation/_CPJavaScriptArray.j>
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPPropertyListSerialization.j>
 

@@ -20,13 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CPTextField.j>
-@import <AppKit/CPViewAnimation.j>
-@import <AppKit/CPView.j>
 @import <Foundation/CPPredicate.j>
-@import <Foundation/CPArray.j>
+@import <Foundation/_CPJavaScriptArray.j>
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPIndexSet.j>
+@import "CPTextField.j"
+@import "CPViewAnimation.j"
+@import "CPView.j"
 
 @import "_CPRuleEditorViewSliceRow.j"
 @import "_CPRuleEditorLocalizer.j"

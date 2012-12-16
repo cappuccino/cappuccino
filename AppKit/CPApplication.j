@@ -406,7 +406,7 @@ CPRunContinuesResponse  = -1002;
 }
 
 
-- (void)_documentController:(NSDocumentController *)docController didCloseAll:(BOOL)didCloseAll context:(Object)info
+- (void)_documentController:(CPDocumentController)docController didCloseAll:(BOOL)didCloseAll context:(Object)info
 {
     // callback method for terminate:
     if (didCloseAll)

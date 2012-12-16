@@ -655,8 +655,8 @@ var CPToolbarItemItemIdentifierKey      = @"CPToolbarItemItemIdentifierKey",
 
 @end
 
-@import "_CPToolbarFlexibleSpaceItem.j"
+/*@import "_CPToolbarFlexibleSpaceItem.j"
 @import "_CPToolbarShowColorsItem.j"
 @import "_CPToolbarSeparatorItem.j"
 @import "_CPToolbarSpaceItem.j"
-
+*/

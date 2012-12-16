@@ -12,13 +12,13 @@
 
 @implementation AppController (WebPolicyDelegate)
 
-- (void)webView:(WebView *)aWebView decidePolicyForNewWindowAction:(NSDictionary *)actionInformation request:(NSURLRequest *)aRequest newFrameName:(NSString *)aFrameName decisionListener:(id < WebPolicyDecisionListener >)aListener
+- (void)webView:(WebView *)aWebView decidePolicyForNewWindowAction:(NSDictionary *)actionInformation request:(NSURLRequest *)aRequest newFrameName:(NSString *)aFrameName decisionListener:(id /*< WebPolicyDecisionListener >*/)aListener
 {
     [[NSWorkspace sharedWorkspace] openURL:[actionInformation objectForKey:WebActionOriginalURLKey]];
     [aListener ignore];
 }
 
-- (void)webView:(WebView *)aWebView decidePolicyForNavigationAction:(NSDictionary *)aDictionary request:(NSURLRequest *)aRequest frame:(WebFrame *)aWebFrame decisionListener:(id <WebPolicyDecisionListener>)aDecisionListener
+- (void)webView:(WebView *)aWebView decidePolicyForNavigationAction:(NSDictionary *)aDictionary request:(NSURLRequest *)aRequest frame:(WebFrame *)aWebFrame decisionListener:(id /*<WebPolicyDecisionListener>*/)aDecisionListener
 {
     NSURL * requestURL = [aRequest URL];
 

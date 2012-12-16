@@ -50,5 +50,7 @@
             expected = [t2, t2];
 
         [self assertTrue:[templates isEqualToArray:expected] message:[CPString stringWithFormat:errorFormat, title, [expected description], [templates description]]];
-    }   
+    }
 }
+
+@end

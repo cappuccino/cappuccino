@@ -154,7 +154,7 @@ CPLog(@"Got some class: %@", inst);
 */
 + (Class)superclass
 {
-    return super_class;
+    return self.super_class;
 }
 
 /*!
@@ -484,7 +484,7 @@ CPLog(@"Got some class: %@", inst);
     if (typeof self._UID === "undefined")
         self._UID = objj_generateObjectUID();
 
-    return _UID + "";
+    return self._UID + "";
 }
 
 /*!

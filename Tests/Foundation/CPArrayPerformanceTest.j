@@ -1,6 +1,6 @@
 var FILE = require("file");
 
-@import <Foundation/CPArray.j>
+@import <Foundation/_CPJavaScriptArray.j>
 @import <Foundation/CPString.j>
 @import <Foundation/CPNumber.j>
 @import <Foundation/CPSortDescriptor.j>
