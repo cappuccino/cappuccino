@@ -20,7 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "_CPJavaScriptArray.j"
+@import "CPArray.j"
 @import "CPEnumerator.j"
 @import "CPException.j"
 @import "CPNull.j"
@@ -646,7 +646,7 @@
     for (; index < count; ++index)
     {
         var key = keys[index],
-            value = valueForKey(key);
+            value = self.valueForKey(key);
 
         string += "\t" + key + ": " + CPDescriptionOfObject(value).split('\n').join("\n\t") + ",\n";
     }
@@ -670,7 +670,7 @@
     for (var index = 0; index < count; index++)
     {
         var key = keys[index],
-            value = valueForKey(key);
+            value = self.valueForKey(key);
 
         aFunction(key, value, shouldStopRef);
 

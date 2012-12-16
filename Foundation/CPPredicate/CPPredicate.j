@@ -225,7 +225,7 @@
     while (count--)
     {
         if (![predicate evaluateWithObject:[self objectAtIndex:count]])
-            splice(count, 1);
+            self.splice(count, 1);
     }
 }
 

@@ -431,7 +431,7 @@
 
 - (void)testDependentKeysPaths
 {
-    var object = [[TestObject alloc] init];
+    var object = [[TestObject2 alloc] init];
 
     [object addObserver:self forKeyPath:@"key" options:0 context:@"testDependentKeysPaths"];
 
@@ -879,7 +879,7 @@
 }
 @end
 
-@implementation TestObject : CPObject
+@implementation TestObject2 : CPObject
 {
     CPString    key @accessors;
     CPString    affectingKey @accessors;

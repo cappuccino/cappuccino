@@ -22,9 +22,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "Bookmark.j"
+@import "Bookmark2.j"
 
-@implementation MyDocument : CPDocument
+@implementation MyDocument2 : CPDocument
 {
     CPString            name @accessors;
     CPString            collectionDescription @accessors;

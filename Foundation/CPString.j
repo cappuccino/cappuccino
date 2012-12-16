@@ -710,7 +710,7 @@ var CPStringUIDs = new CFMutableDictionary(),
 */
 - (CPArray)pathComponents
 {
-    if (length === 0)
+    if (self.length === 0)
         return [""];
 
     if (self === "/")

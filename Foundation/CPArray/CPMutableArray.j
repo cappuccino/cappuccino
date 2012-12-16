@@ -1,5 +1,5 @@
 
-@import "CPArray.j"
+@import "_CPArray.j"
 
 
 /*!

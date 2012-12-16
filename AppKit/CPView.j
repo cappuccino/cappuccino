@@ -20,7 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <Foundation/_CPJavaScriptArray.j>
+@import <Foundation/CPArray.j>
 @import <Foundation/CPGeometry.j>
 @import <Foundation/CPObjJRuntime.j>
 @import <Foundation/CPSet.j>

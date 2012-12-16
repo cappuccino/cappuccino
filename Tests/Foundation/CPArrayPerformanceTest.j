@@ -1,6 +1,6 @@
 var FILE = require("file");
 
-@import <Foundation/_CPJavaScriptArray.j>
+@import <Foundation/CPArray.j>
 @import <Foundation/CPString.j>
 @import <Foundation/CPNumber.j>
 @import <Foundation/CPSortDescriptor.j>
@@ -26,6 +26,7 @@ var ELEMENTS = 100,
     CPLog.warn("\nNUMERIC ALMOST SORTED");
     var a = [self makeUnsorted],
         sorted = [self sort:a usingSortSelector:@selector(sortedArrayUsingDescriptors:) withObject:descriptors];
+    print("a: " + (a == sorted ? "Yes" : "No"));
     [self checkAlmostSorted:sorted];
 }
 
@@ -227,7 +228,7 @@ var ELEMENTS = 100,
 {
     var count = [descriptors count];
 
-    sort(function(lhs, rhs)
+    self.sort(function(lhs, rhs)
     {
         var i = 0,
             result = CPOrderedSame;
@@ -251,7 +252,7 @@ var ELEMENTS = 100,
 
 - (CPArray)_native_sortUsingSelector:(SEL)aSelector
 {
-    sort(function(lhs, rhs)
+    self.sort(function(lhs, rhs)
     {
         return [lhs performSelector:aSelector withObject:rhs];
     });

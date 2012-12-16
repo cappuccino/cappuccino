@@ -20,7 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "_CPJavaScriptArray.j"
+@import "CPArray.j"
 @import "CPNull.j"
 @import "_CPCollectionKVCOperators.j"
 

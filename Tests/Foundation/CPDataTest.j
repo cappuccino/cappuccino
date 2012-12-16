@@ -1,4 +1,4 @@
-@import <Foundation/_CPJavaScriptArray.j>
+@import <Foundation/CPArray.j>
 @import <Foundation/CPData.j>
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPKeyedArchiver.j>

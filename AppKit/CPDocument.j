@@ -21,7 +21,7 @@
  */
 
 @import <Foundation/CPString.j>
-@import <Foundation/_CPJavaScriptArray.j>
+@import <Foundation/CPArray.j>
 
 @import "CPApplication.j"
 @import "CPResponder.j"

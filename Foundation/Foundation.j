@@ -75,8 +75,6 @@
 @import "CPValue.j"
 @import "CPValueTransformer.j"
 
-@import "_CPJavaScriptArray.j"
-
 /*! @mainpage
     Cappuccino is distributed under the @ref license "GNU LGPL".
 

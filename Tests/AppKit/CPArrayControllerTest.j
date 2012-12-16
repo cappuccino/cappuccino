@@ -1,5 +1,5 @@
 
-@import <Foundation/_CPJavaScriptArray.j>
+@import <Foundation/CPArray.j>
 @import <AppKit/CPArrayController.j>
 @import <AppKit/CPTextField.j>
 

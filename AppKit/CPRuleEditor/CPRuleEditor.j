@@ -21,7 +21,7 @@
  */
 
 @import <Foundation/CPPredicate.j>
-@import <Foundation/_CPJavaScriptArray.j>
+@import <Foundation/CPArray.j>
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPIndexSet.j>
 @import "CPTextField.j"

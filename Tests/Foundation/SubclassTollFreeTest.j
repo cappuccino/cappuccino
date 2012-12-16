@@ -2,14 +2,14 @@
 
 - (void)testThatSubclassTollFreeDoesAllowForSubclassingDictionary
 {
-    var target = [[MyDict alloc] init];
+    var target = [[MyDict2 alloc] init];
     [OJAssert assert:@"a" equals:[target newMessage]];
     [OJAssert assert:0 equals:[target count]];
 }
 
 - (void)testThatSubclassTollFreeDoesAllowForSubclassingString
 {
-    var target = [[MyString alloc] initWithString:@"adsf"];
+    var target = [[MyString2 alloc] initWithString:@"adsf"];
     [OJAssert assert:@"a" equals:[target newMessage]];
     [OJAssert assert:4 equals:[target length]];
 
@@ -20,42 +20,42 @@
 
 - (void)testThatSubclassTollFreeDoesAllowForSubclassingNumber
 {
-    var target = [[MyNum alloc] init];
+    var target = [[MyNum2 alloc] init];
     [OJAssert assert:@"a" equals:[target newMessage]];
     [OJAssert assertFalse:[target isEqualToNumber:5]];
 }
 
 - (void)testThatSubclassTollFreeDoesAllowForSubclassingException
 {
-    var target = [[MyException alloc] init];
+    var target = [[MyException2 alloc] init];
     [OJAssert assert:@"a" equals:[target newMessage]];
     // there are no internal properties to test here.. so no need to jimmyrig it.
 }
 
 - (void)testThatSubclassTollFreeDoesAllowForSubclassingArray
 {
-    var target = [[MyArray alloc] initWithObjects:@"a"];
+    var target = [[MyArray2 alloc] initWithObjects:@"a"];
     [OJAssert assert:@"a" equals:[target newMessage]];
     [OJAssert assert:1 equals:[target count]];
 }
 
 - (void)testThatSubclassTollFreeDoesAllowForSubclassingDate
 {
-    var target = [[MyDate alloc] init];
+    var target = [[MyDate2 alloc] init];
     [OJAssert assert:@"a" equals:[target newMessage]];
     [OJAssert assertTrue:[target timeIntervalSince1970] > 0];
 }
 
 - (void)testThatSubclassTollFreeDoesAllowForSubclassingData
 {
-    var target = [[MyData alloc] initWithRawString:@"b"];
+    var target = [[MyData2 alloc] initWithRawString:@"b"];
     [OJAssert assert:@"a" equals:[target newMessage]];
     [OJAssert assert:@"b" equals:[target rawString]];
 }
 
 - (void)testThatSubclassTollFreeDoesAllowForSubclassingURL
 {
-    var target = [[MyURL alloc] initWithString:@"http://www.google.com"];
+    var target = [[MyURL2 alloc] initWithString:@"http://www.google.com"];
     [OJAssert assert:@"a" equals:[target newMessage]];
     [OJAssert assert:@"http://www.google.com" equals:[target absoluteString]];
 }
@@ -65,7 +65,7 @@
 
 @import <Foundation/CPDictionary.j>
 
-@implementation MyDict : CPDictionary
+@implementation MyDict2 : CPDictionary
 
 - (id)newMessage
 {
@@ -74,7 +74,7 @@
 
 @end
 
-@implementation MyNum : CPNumber
+@implementation MyNum2 : CPNumber
 
 - (id)newMessage
 {
@@ -83,7 +83,7 @@
 
 @end
 
-@implementation MyString : CPString
+@implementation MyString2 : CPString
 
 - (id)newMessage
 {
@@ -92,7 +92,7 @@
 
 @end
 
-@implementation MyException : CPException
+@implementation MyException2 : CPException
 
 - (id)newMessage
 {
@@ -101,7 +101,7 @@
 
 @end
 
-@implementation MyArray : CPArray
+@implementation MyArray2 : CPArray
 {
     CPArray _storage;
 }
@@ -133,7 +133,7 @@
 
 @end
 
-@implementation MyDate : CPDate
+@implementation MyDate2 : CPDate
 
 - (id)newMessage
 {
@@ -142,7 +142,7 @@
 
 @end
 
-@implementation MyData : CPData
+@implementation MyData2 : CPData
 
 - (id)newMessage
 {
@@ -151,7 +151,7 @@
 
 @end
 
-@implementation MyURL : CPURL
+@implementation MyURL2 : CPURL
 
 - (id)newMessage
 {

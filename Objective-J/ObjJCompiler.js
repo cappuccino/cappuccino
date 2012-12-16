@@ -479,17 +479,31 @@ ObjJCompiler.prototype.nodeFunctionExpression = function(/*SyntaxNode*/ astNode)
 	this.assertNode(astNode, ObjJCompiler.AstNodeFunctionExpression);
 	var children = astNode.children,
         child = children[2],
-        offset = 0;
+        offset = 0,
+        saveJSBuffer = this._jsBuffer;
 
+    this._jsBuffer = null;
 	this.nodeFUNCTION(children[0]);
 	this.nodeUnderline(children[1], true);
+    var identifier = null;
     if (child && child.name === ObjJCompiler.AstNodeIdentifier)
     {
-        this.nodeIdentifier(child);
+        identifier = this.nodeIdentifier(child);
         offset++;
     }
 	this.nodeUnderline(children[2 + offset], false);
-	this.nodeWORD(children[3 + offset]);
+    if (saveJSBuffer)
+        if (identifier)
+        {
+            CONCAT(saveJSBuffer, identifier);
+            CONCAT(saveJSBuffer, " = function");
+        }
+        else
+        {
+            CONCAT(saveJSBuffer, "function");
+        }
+    this._jsBuffer = saveJSBuffer;
+	this.nodeOpenParenthesis(children[3 + offset]);
 	this.nodeUnderline(children[4 + offset], false);
 
     child = children[5 + offset];
@@ -500,7 +514,7 @@ ObjJCompiler.prototype.nodeFunctionExpression = function(/*SyntaxNode*/ astNode)
 		offset++;
 	}
 	this.nodeUnderline(children[5 + offset], false);
-	this.nodeWORD(children[6 + offset]);
+	this.nodeCloseParenthesis(children[6 + offset]);
 	this.nodeUnderline(children[7 + offset], false);
 	this.nodeOpenBrace(children[8 + offset]);
 	this.nodeUnderline(children[9 + offset], false);
