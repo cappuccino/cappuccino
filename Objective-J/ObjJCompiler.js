@@ -20,41 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-//function FileDependency(/*CFURL*/ aURL, /*BOOL*/ isLocal)
-/*{
-    this._URL = aURL;
-    this._isLocal = isLocal;
-}*/
-
-//var FileDependency = {};   // Dummy declaration !!!!!!!      REMOVE!!!!!!!!
 var ObjJCompiler = { },
     currentCompilerFlags = "";
-
-//(function(global, exports, module)
-//{
-
-/*    function IS_NOT_EMPTY(buffer) {return buffer.atoms.length !== 0;}
-    
-    function CONCAT(buffer, atom)
-    {
-        if (buffer)
-            buffer.atoms[buffer.atoms.length] = atom;
-    }
-*/
-/*function StringBuffer()
-{
-    this.atoms = [];
-}
-
-StringBuffer.prototype.toString = function()
-{
-    return this.atoms.join("");
-}*/
-
-//exports.compile = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags)
-/*{
-    return new ObjJCompiler(aString, aURL, flags);
-}*/
 
 exports.compileToExecutable = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags)
 {
@@ -71,11 +38,6 @@ exports.compileFileDependencies = function(/*String*/ aString, /*CFURL*/ aURL, /
     return new ObjJCompiler(aString, aURL, flags, 1).executable();
 }
 
-/*exports.eval = function(aString)
-{
-    return eval(exports.compile(aString).JSBuffer());
-}*/
-
 var ObjJCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags, /*unsigned*/ pass)
 {
     aString = aString.replace(/^#[^\n]+\n/, "\n");
@@ -88,18 +50,25 @@ var ObjJCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ fla
 		this._jsBuffer = new StringBuffer();
     this._imBuffer = null;
     this._cmBuffer = null;
-    var start = new Date().getTime();
-	//console.time("Parse - " + aURL);
+
+    //var start = new Date().getTime();
+#ifdef BROWSER
+	console.time("Parse - " + aURL);
+#endif
     this._tokens = exports.Parser.parse(aString);
-	var end = new Date().getTime();
-	var time = (end - start) / 1000;
+	//var end = new Date().getTime();
+	//var time = (end - start) / 1000;
 	//print("Parse: " + aURL + " in " + time + " seconds");
-	//console.timeEnd("Parse - " + aURL);
+#ifdef BROWSER
+	console.timeEnd("Parse - " + aURL);
+#endif
     this._dependencies = [];
     this._flags = flags | ObjJCompiler.Flags.IncludeDebugSymbols;
     this._classDefs = {};
-    var start = new Date().getTime();
-//	console.time("Compile" + pass + " - " + aURL);
+    //var start = new Date().getTime();
+#ifdef BROWSER
+	console.time("Compile pass " + pass + " - " + aURL);
+#endif
 	try {
     this.nodeDocument(this._tokens);
     }
@@ -107,10 +76,12 @@ var ObjJCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ fla
     	print("Error: " + e + ", file content: " + aString);
     	throw e;
     }
-	var end = new Date().getTime();
-	var time = (end - start) / 1000;
+	//var end = new Date().getTime();
+	//var time = (end - start) / 1000;
 	//print("Compile pass 1: " + aURL + " in " + time + " seconds");
-//	console.timeEnd("Compile" + pass + " - " + aURL);
+#ifdef BROWSER
+	console.timeEnd("Compile pass " + pass + " - " + aURL);
+#endif
 //	console.log("JS: " + this._jsBuffer);
 }
 
@@ -119,13 +90,17 @@ ObjJCompiler.prototype.compilePass2 = function()
 	this._pass = 2;
 	this._jsBuffer = new StringBuffer();
 	//print("Start Compile2: " + this._URL);
-    var start = new Date().getTime();
-//	console.time("Compile" + this._pass + " - " + this._URL);
+    //var start = new Date().getTime();
+#ifdef BROWSER
+    console.time("Compile pass 2" + this._pass + " - " + this._URL);
+#endif
     this.nodeDocument(this._tokens);
-	var end = new Date().getTime();
-	var time = (end - start) / 1000;
+	//var end = new Date().getTime();
+	//var time = (end - start) / 1000;
 	//print("Compile pass 2: " + this._URL + " in " + time + " seconds");
-//	console.timeEnd("Compile" + this._pass + " - " + this._URL);
+#ifdef BROWSER
+    console.timeEnd("Compile" + this._pass + " - " + this._URL);
+#endif
 	return this._jsBuffer.toString();
 }
 
@@ -361,6 +336,7 @@ ObjJCompiler.AstNodeFINALLY = "FINALLY";
 ObjJCompiler.AstNodeTRY = "TRY";
 ObjJCompiler.AstNodeWITH = "WITH";
 
+#if DEBUG
 ObjJCompiler.prototype.assertNode = function(/*SyntaxNode*/ astNode, /*String*/ astNodeName)
 {
 	if (!astNode || astNode.name !== astNodeName)
@@ -369,16 +345,21 @@ ObjJCompiler.prototype.assertNode = function(/*SyntaxNode*/ astNode, /*String*/ 
 		throw new SyntaxError(this.error_message("Expected node " + astNodeName + " but got " + (astNode ? astNode.name : astNode), astNode));
     }
 }
+#endif
 
 ObjJCompiler.prototype.nodeDocument = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeDocument);
+#endif
 	this.nodeStart(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeStart = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeStart);
+#endif
 	var children = astNode.children;
 
 	this.nodeUnderline(children[0], false);
@@ -393,7 +374,9 @@ ObjJCompiler.prototype.nodeStart = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeFunctionBody = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeFunctionBody);
+#endif
 	var children = astNode.children;
 
 	this.nodeUnderline(children[0], false);
@@ -408,7 +391,9 @@ ObjJCompiler.prototype.nodeFunctionBody = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeSourceElements = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeSourceElements);
+#endif
 	var children = astNode.children;
 
 	this.nodeSourceElement(children[0]);
@@ -422,7 +407,9 @@ ObjJCompiler.prototype.nodeSourceElements = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeSourceElement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeSourceElement);
+#endif
 	var child = astNode.children[0];
 
 	if (child && child.name === ObjJCompiler.AstNodeStatement)
@@ -439,7 +426,9 @@ ObjJCompiler.prototype.nodeFunctionDeclaration = function(/*SyntaxNode*/ astNode
     // Safari can't handle function declarations of the form function [name]([arguments]) { }
     // in evals.  It requires them to be in the form [name] = function([arguments]) { }.  So we
     // need format them like that.
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeFunctionDeclaration);
+#endif
 	var children = astNode.children,
         child = children[6],
         offset = 0,
@@ -476,7 +465,9 @@ ObjJCompiler.prototype.nodeFunctionDeclaration = function(/*SyntaxNode*/ astNode
 
 ObjJCompiler.prototype.nodeFunctionExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeFunctionExpression);
+#endif
 	var children = astNode.children,
         child = children[2],
         offset = 0,
@@ -525,7 +516,9 @@ ObjJCompiler.prototype.nodeFunctionExpression = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeFormalParameterList = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeFormalParameterList);
+#endif
 	var children = astNode.children;
 
 	this.nodeIdentifier(children[0]);
@@ -540,7 +533,9 @@ ObjJCompiler.prototype.nodeFormalParameterList = function(/*SyntaxNode*/ astNode
 
 ObjJCompiler.prototype.nodeStatementList = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeStatementList);
+#endif
 	var children = astNode.children;
 
 	this.nodeStatement(children[0]);
@@ -641,7 +636,9 @@ ObjJCompiler.prototype.nodeStatement = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeBlock = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeBlock);
+#endif
 	var children = astNode.children;
 
 	this.nodeOpenBrace(children[0]);
@@ -659,7 +656,9 @@ ObjJCompiler.prototype.nodeBlock = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeVariableStatement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeVariableStatement);
+#endif
 	var children = astNode.children;
 
 	this.nodeVAR(children[0]);
@@ -678,7 +677,9 @@ ObjJCompiler.prototype.nodeVariableStatement = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeVariableDeclaration = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeVariableDeclaration);
+#endif
 	var children = astNode.children,
 		identifier = this.nodeIdentifier(children[0]);
 
@@ -695,7 +696,9 @@ ObjJCompiler.prototype.nodeVariableDeclaration = function(/*SyntaxNode*/ astNode
 
 ObjJCompiler.prototype.nodeVariableDeclarationNoIn = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeVariableDeclarationNoIn);
+#endif
 	var children = astNode.children,
 		identifier = this.nodeIdentifier(children[0]);
 
@@ -712,7 +715,9 @@ ObjJCompiler.prototype.nodeVariableDeclarationNoIn = function(/*SyntaxNode*/ ast
 
 ObjJCompiler.prototype.nodeVariableDeclarationListNoIn = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeVariableDeclarationListNoIn);
+#endif
 	var children = astNode.children;
 
 	this.nodeVariableDeclarationNoIn(children[0]);
@@ -728,14 +733,18 @@ ObjJCompiler.prototype.nodeVariableDeclarationListNoIn = function(/*SyntaxNode*/
 
 ObjJCompiler.prototype.nodeEmptyStatement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeEmptyStatement);
+#endif
 
 	this.nodeWORD(astNode.children[0]);	// ";"
 }
 
 ObjJCompiler.prototype.nodeExpressionStatement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeExpressionStatement);
+#endif
 	var children = astNode.children;
 
 	this.nodeExpression(children[0]);
@@ -744,7 +753,9 @@ ObjJCompiler.prototype.nodeExpressionStatement = function(/*SyntaxNode*/ astNode
 
 ObjJCompiler.prototype.nodeIfStatement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeIfStatement);
+#endif
 	var children = astNode.children;
 
 	this.nodeIF(children[0]);
@@ -768,7 +779,9 @@ ObjJCompiler.prototype.nodeIfStatement = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeIterationStatement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeIterationStatement);
+#endif
 	var child = astNode.children[0],
         name = child ? child.name : null;
 
@@ -796,7 +809,9 @@ ObjJCompiler.prototype.nodeIterationStatement = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeDoWhileStatement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeDoWhileStatement);
+#endif
 	var children = astNode.children;
 
 	this.nodeDO(children[0]);
@@ -815,7 +830,9 @@ ObjJCompiler.prototype.nodeDoWhileStatement = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeWhileStatement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeWhileStatement);
+#endif
 	var children = astNode.children;
 
 	this.nodeWHILE(children[0]);
@@ -831,7 +848,9 @@ ObjJCompiler.prototype.nodeWhileStatement = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeForStatement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeForStatement);
+#endif
 	var children = astNode.children,
         child = children[4];
 
@@ -871,7 +890,9 @@ ObjJCompiler.prototype.nodeForStatement = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeForFirstExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeForFirstExpression);
+#endif
 	var children = astNode.children,
         child = children[0];
 
@@ -887,7 +908,9 @@ ObjJCompiler.prototype.nodeForFirstExpression = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeForInStatement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeForInStatement);
+#endif
 	var children = astNode.children;
 
 	this.nodeFOR(children[0]);
@@ -907,7 +930,9 @@ ObjJCompiler.prototype.nodeForInStatement = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeForInFirstExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeForInFirstExpression);
+#endif
 	var children = astNode.children,
         child = children[0];
 
@@ -923,7 +948,9 @@ ObjJCompiler.prototype.nodeForInFirstExpression = function(/*SyntaxNode*/ astNod
 
 ObjJCompiler.prototype.nodeEachStatement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeEachStatement);
+#endif
 	var children = astNode.children;
 
 	this.nodeEACH(children[0]);
@@ -943,7 +970,9 @@ ObjJCompiler.prototype.nodeEachStatement = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeContinueStatement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeContinueStatement);
+#endif
 	var children = astNode.children,
         child = children[2];
 
@@ -960,7 +989,9 @@ ObjJCompiler.prototype.nodeContinueStatement = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeBreakStatement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeBreakStatement);
+#endif
 	var children = astNode.children,
         child = children[2];
 
@@ -977,7 +1008,9 @@ ObjJCompiler.prototype.nodeBreakStatement = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeReturnStatement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeReturnStatement);
+#endif
 	var children = astNode.children,
         child = children[2];
 
@@ -994,7 +1027,9 @@ ObjJCompiler.prototype.nodeReturnStatement = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeWithStatement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeWithStatement);
+#endif
 	var children = astNode.children;
 
 	this.nodeWITH(children[0]);
@@ -1010,7 +1045,9 @@ ObjJCompiler.prototype.nodeWithStatement = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeSwitchStatement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeSwitchStatement);
+#endif
 	var children = astNode.children;
 
 	this.nodeSWITCH(children[0]);
@@ -1026,7 +1063,9 @@ ObjJCompiler.prototype.nodeSwitchStatement = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeCaseBlock = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeCaseBlock);
+#endif
 	var children = astNode.children,
         child = children[2];
 
@@ -1058,7 +1097,9 @@ ObjJCompiler.prototype.nodeCaseBlock = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeCaseClauses = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeCaseClauses);
+#endif
 	var children = astNode.children;
 
 	this.nodeCaseClause(children[0]);
@@ -1072,7 +1113,9 @@ ObjJCompiler.prototype.nodeCaseClauses = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeCaseClause = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeCaseClause);
+#endif
 	var children = astNode.children,
         child = children[5];
 
@@ -1090,7 +1133,9 @@ ObjJCompiler.prototype.nodeCaseClause = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeDefaultClause = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeDefaultClause);
+#endif
 	var children = astNode.children,
         child = children[3];
 
@@ -1106,7 +1151,9 @@ ObjJCompiler.prototype.nodeDefaultClause = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeLabelledStatement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeLabelledStatement);
+#endif
 	var children = astNode.children;
 
 	this.nodeIdentifier(children[0]);
@@ -1118,7 +1165,9 @@ ObjJCompiler.prototype.nodeLabelledStatement = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeThrowStatement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeThrowStatement);
+#endif
 	var children = astNode.children,
         child = children[2];
 
@@ -1135,7 +1184,9 @@ ObjJCompiler.prototype.nodeThrowStatement = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeTryStatement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeTryStatement);
+#endif
 	var children = astNode.children,
         child = children[4];
 
@@ -1158,7 +1209,9 @@ ObjJCompiler.prototype.nodeTryStatement = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeCatch = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeCatch);
+#endif
 	var children = astNode.children;
 
 	this.nodeCATCH(children[0]);
@@ -1174,7 +1227,9 @@ ObjJCompiler.prototype.nodeCatch = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeFinally = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeFinally);
+#endif
 	var children = astNode.children;
 
 	this.nodeFINALLY(children[0]);
@@ -1184,7 +1239,9 @@ ObjJCompiler.prototype.nodeFinally = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeDebuggerStatement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeDebuggerStatement);
+#endif
 	var children = astNode.children;
 
 	this.nodeDEBUGGER(children[0]);
@@ -1193,7 +1250,9 @@ ObjJCompiler.prototype.nodeDebuggerStatement = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeImportStatement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeImportStatement);
+#endif
 	var children = astNode.children,
         child = children[2],
         isQuoted = null,
@@ -1228,14 +1287,18 @@ ObjJCompiler.prototype.nodeImportStatement = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeLocalFilePath = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeLocalFilePath);
+#endif
 
 	return this.nodeStringLiteral(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeStandardFilePath = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeStandardFilePath);
+#endif
 	var children = astNode.children,
 		size = children.length,
         string = "";
@@ -1254,7 +1317,9 @@ ObjJCompiler.prototype.nodeStandardFilePath = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeClassDeclationStatement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeClassDeclarationStatement);
+#endif
 	var children = astNode.children,
         child = children[4],
 		offset = 0,
@@ -1480,7 +1545,9 @@ ObjJCompiler.prototype.nodeClassDeclationStatement = function(/*SyntaxNode*/ ast
 
 ObjJCompiler.prototype.nodeSuperclassDeclaration = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeSuperclassDeclaration);
+#endif
 	var children = astNode.children;
 
 	this.nodeCOLON(children[0]);
@@ -1490,7 +1557,9 @@ ObjJCompiler.prototype.nodeSuperclassDeclaration = function(/*SyntaxNode*/ astNo
 
 ObjJCompiler.prototype.nodeCategoryDeclaration = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeCategoryDeclaration);
+#endif
 	var children = astNode.children;
 
 	this.nodeOpenParenthesis(children[0]);
@@ -1502,7 +1571,9 @@ ObjJCompiler.prototype.nodeCategoryDeclaration = function(/*SyntaxNode*/ astNode
 
 ObjJCompiler.prototype.nodeCompoundIvarDeclaration = function(/*SyntaxNode*/ astNode, classDefIvars)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeCompoundIvarDeclaration);
+#endif
 	var children = astNode.children,
 		type = this.nodeIvarType(children[0]);
 
@@ -1534,7 +1605,9 @@ ObjJCompiler.prototype.nodeCompoundIvarDeclaration = function(/*SyntaxNode*/ ast
 
 ObjJCompiler.prototype.nodeIvarType = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeIvarType);
+#endif
 	var children = astNode.children,
 		type = "";
 
@@ -1557,7 +1630,9 @@ ObjJCompiler.prototype.nodeIvarType = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeIvarTypeElement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeIvarTypeElement);
+#endif
 	var children = astNode.children,
         child = children[0];
 
@@ -1569,7 +1644,9 @@ ObjJCompiler.prototype.nodeIvarTypeElement = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeIvarDeclaration = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeIvarDeclaration);
+#endif
 	var children = astNode.children,
         child = children[2],
         ivar = {};
@@ -1584,7 +1661,9 @@ ObjJCompiler.prototype.nodeIvarDeclaration = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeAccessors = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeAccessors);
+#endif
 	var children = astNode.children,
 		size = children.length,
 		accessors = {};
@@ -1617,7 +1696,9 @@ ObjJCompiler.prototype.nodeAccessors = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeAccessorsConfiguration = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeAccessorsConfiguration);
+#endif
 	var child = astNode.children[0],
         name = child ? child.name : null;
 
@@ -1640,7 +1721,9 @@ ObjJCompiler.prototype.nodeAccessorsConfiguration = function(/*SyntaxNode*/ astN
 
 ObjJCompiler.prototype.nodeIvarPropertyName = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeIvarPropertyName);
+#endif
 	var children = astNode.children;
 
 	this.nodePROPERTY(children[0]);
@@ -1652,7 +1735,9 @@ ObjJCompiler.prototype.nodeIvarPropertyName = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeIvarGetterName = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeIvarGetterName);
+#endif
 	var children = astNode.children;
 
 	this.nodeGETTER(children[0]);
@@ -1664,7 +1749,9 @@ ObjJCompiler.prototype.nodeIvarGetterName = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeIvarSetterName = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeIvarSetterName);
+#endif
 	var children = astNode.children;
 
 	this.nodeSETTER(children[0]);
@@ -1692,7 +1779,9 @@ ObjJCompiler.prototype.nodeIvarSetterName = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeClassBody = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeClassBody);
+#endif
 	var child = astNode.children[0];
 
     if (child && child.name === ObjJCompiler.AstNodeClassElements)
@@ -1701,7 +1790,9 @@ ObjJCompiler.prototype.nodeClassBody = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeClassElements = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeClassElements);
+#endif
 	var children = astNode.children;
 
 	this.nodeClassElement(children[0]);
@@ -1715,7 +1806,9 @@ ObjJCompiler.prototype.nodeClassElements = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeClassElement = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeClassElement);
+#endif
 	var child = astNode.children[0],
         name = child ? child.name : null;
 
@@ -1745,7 +1838,9 @@ ObjJCompiler.prototype.nodeClassElement = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeClassMethodDeclaration = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeClassMethodDeclaration);
+#endif
 	this.nodePLUS(astNode.children[0]);
     this._classMethod = true;
 	this.genericMethodDeclaration(astNode, this._cmBuffer);
@@ -1753,7 +1848,9 @@ ObjJCompiler.prototype.nodeClassMethodDeclaration = function(/*SyntaxNode*/ astN
 
 ObjJCompiler.prototype.nodeInstanceMethodDeclaration = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeInstanceMethodDeclaration);
+#endif
 	this.nodeMINUS(astNode.children[0]);
     this._classMethod = false;
 	this.genericMethodDeclaration(astNode, this._imBuffer);
@@ -1840,7 +1937,9 @@ ObjJCompiler.prototype.genericMethodDeclaration = function(/*SyntaxNode*/ astNod
 
 ObjJCompiler.prototype.nodeMethodSelector = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeMethodSelector);
+#endif
 	var children = astNode.children,
         child = children[0],
 		size = children.length;
@@ -1864,13 +1963,17 @@ ObjJCompiler.prototype.nodeMethodSelector = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeUnarySelector = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeUnarySelector);
+#endif
 	return this.nodeSelector(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeKeywordSelector = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeKeywordSelector);
+#endif
 	var children = astNode.children,
 		keywordDecl = this.nodeKeywordDeclarator(children[0]),
         typeAndIndentifier = {"type": keywordDecl.methodType, "identifier": keywordDecl.identifier},
@@ -1891,7 +1994,9 @@ ObjJCompiler.prototype.nodeKeywordSelector = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeKeywordDeclarator = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeKeywordDeclarator);
+#endif
 	var children = astNode.children,
         child = children[0],
 		offset = 0,
@@ -1923,13 +2028,17 @@ ObjJCompiler.prototype.nodeKeywordDeclarator = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeSelector = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeSelector);
+#endif
 	return this.nodeIdentifierName(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeMethodType = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeMethodType);
+#endif
 	var children = astNode.children,
         child = children[2],
 		size = children.length,
@@ -1984,13 +2093,17 @@ ObjJCompiler.prototype.nodeMethodType = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeACTION = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeACTION);
+#endif
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeExpression);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2007,7 +2120,9 @@ ObjJCompiler.prototype.nodeExpression = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeExpressionNoIn = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeExpressionNoIn);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2024,7 +2139,9 @@ ObjJCompiler.prototype.nodeExpressionNoIn = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeAssignmentExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeAssignmentExpression);
+#endif
 	var children = astNode.children,
         child = children[0];
 
@@ -2042,7 +2159,9 @@ ObjJCompiler.prototype.nodeAssignmentExpression = function(/*SyntaxNode*/ astNod
 
 ObjJCompiler.prototype.nodeAssignmentExpressionNoIn = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeAssignmentExpressionNoIn);
+#endif
 	var children = astNode.children,
         child = children[0];
 
@@ -2060,13 +2179,17 @@ ObjJCompiler.prototype.nodeAssignmentExpressionNoIn = function(/*SyntaxNode*/ as
 
 ObjJCompiler.prototype.nodeAssignmentOperator = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeAssignmentOperator);
+#endif
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeConditionalExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeConditionalExpression);
+#endif
 	var children = astNode.children,
         child = children[1];
 
@@ -2086,7 +2209,9 @@ ObjJCompiler.prototype.nodeConditionalExpression = function(/*SyntaxNode*/ astNo
 
 ObjJCompiler.prototype.nodeConditionalExpressionNoIn = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeConditionalExpressionNoIn);
+#endif
 	var children = astNode.children,
         child = children[1];
 
@@ -2106,7 +2231,9 @@ ObjJCompiler.prototype.nodeConditionalExpressionNoIn = function(/*SyntaxNode*/ a
 
 ObjJCompiler.prototype.nodeLogicalOrExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeLogicalOrExpression);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2123,7 +2250,9 @@ ObjJCompiler.prototype.nodeLogicalOrExpression = function(/*SyntaxNode*/ astNode
 
 ObjJCompiler.prototype.nodeLogicalOrExpressionNoIn = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeLogicalOrExpressionNoIn);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2140,7 +2269,9 @@ ObjJCompiler.prototype.nodeLogicalOrExpressionNoIn = function(/*SyntaxNode*/ ast
 
 ObjJCompiler.prototype.nodeLogicalAndExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeLogicalAndExpression);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2157,7 +2288,9 @@ ObjJCompiler.prototype.nodeLogicalAndExpression = function(/*SyntaxNode*/ astNod
 
 ObjJCompiler.prototype.nodeLogicalAndExpressionNoIn = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeLogicalAndExpressionNoIn);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2174,7 +2307,9 @@ ObjJCompiler.prototype.nodeLogicalAndExpressionNoIn = function(/*SyntaxNode*/ as
 
 ObjJCompiler.prototype.nodeBitwiseOrExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeBitwiseOrExpression);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2191,7 +2326,9 @@ ObjJCompiler.prototype.nodeBitwiseOrExpression = function(/*SyntaxNode*/ astNode
 
 ObjJCompiler.prototype.nodeBitwiseOrExpressionNoIn = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeBitwiseOrExpressionNoIn);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2208,7 +2345,9 @@ ObjJCompiler.prototype.nodeBitwiseOrExpressionNoIn = function(/*SyntaxNode*/ ast
 
 ObjJCompiler.prototype.nodeBitwiseXOrExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeBitwiseXOrExpression);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2225,7 +2364,9 @@ ObjJCompiler.prototype.nodeBitwiseXOrExpression = function(/*SyntaxNode*/ astNod
 
 ObjJCompiler.prototype.nodeBitwiseXOrExpressionNoIn = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeBitwiseXOrExpressionNoIn);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2242,7 +2383,9 @@ ObjJCompiler.prototype.nodeBitwiseXOrExpressionNoIn = function(/*SyntaxNode*/ as
 
 ObjJCompiler.prototype.nodeBitwiseAndExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeBitwiseAndExpression);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2259,7 +2402,9 @@ ObjJCompiler.prototype.nodeBitwiseAndExpression = function(/*SyntaxNode*/ astNod
 
 ObjJCompiler.prototype.nodeBitwiseAndExpressionNoIn = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeBitwiseAndExpressionNoIn);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2276,7 +2421,9 @@ ObjJCompiler.prototype.nodeBitwiseAndExpressionNoIn = function(/*SyntaxNode*/ as
 
 ObjJCompiler.prototype.nodeEqualityExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeEqualityExpression);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2293,7 +2440,9 @@ ObjJCompiler.prototype.nodeEqualityExpression = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeEqualityExpressionNoIn = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeEqualityExpressionNoIn);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2310,13 +2459,17 @@ ObjJCompiler.prototype.nodeEqualityExpressionNoIn = function(/*SyntaxNode*/ astN
 
 ObjJCompiler.prototype.nodeEqualityOperator = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeEqualityOperator);
+#endif
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeRelationalExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeRelationalExpression);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2333,7 +2486,9 @@ ObjJCompiler.prototype.nodeRelationalExpression = function(/*SyntaxNode*/ astNod
 
 ObjJCompiler.prototype.nodeRelationalOperator = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeRelationalOperator);
+#endif
 	var child = astNode.children[0],
         name = child ? child.name : null;
 
@@ -2352,7 +2507,9 @@ ObjJCompiler.prototype.nodeRelationalOperator = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeRelationalExpressionNoIn = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeRelationalExpressionNoIn);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2369,7 +2526,9 @@ ObjJCompiler.prototype.nodeRelationalExpressionNoIn = function(/*SyntaxNode*/ as
 
 ObjJCompiler.prototype.nodeRelationalOperatorNoIn = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeRelationalOperatorNoIn);
+#endif
 	var child = astNode.children[0],
         name = child ? child.name : null;
 
@@ -2385,7 +2544,9 @@ ObjJCompiler.prototype.nodeRelationalOperatorNoIn = function(/*SyntaxNode*/ astN
 
 ObjJCompiler.prototype.nodeShiftExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeShiftExpression);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2402,13 +2563,17 @@ ObjJCompiler.prototype.nodeShiftExpression = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeShiftOperator = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeShiftOperator);
+#endif
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeAdditiveExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeAdditiveExpression);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2425,13 +2590,17 @@ ObjJCompiler.prototype.nodeAdditiveExpression = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeAdditiveOperator = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeAdditiveOperator);
+#endif
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeMultiplicativeExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeMultiplicativeExpression);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2448,13 +2617,17 @@ ObjJCompiler.prototype.nodeMultiplicativeExpression = function(/*SyntaxNode*/ as
 
 ObjJCompiler.prototype.nodeMultiplicativeOperator = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeMultiplicativeOperator);
+#endif
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeUnaryExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeUnaryExpression);
+#endif
 	var children = astNode.children,
         child = astNode.children[0],
         name = child ? child.name : null;
@@ -2488,7 +2661,9 @@ ObjJCompiler.prototype.nodeUnaryExpression = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodePostfixExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodePostfixExpression);
+#endif
 	var children = astNode.children;
 
 	this.nodeLeftHandSideExpression(children[0]);
@@ -2502,7 +2677,9 @@ ObjJCompiler.prototype.nodePostfixExpression = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeLeftHandSideExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeLeftHandSideExpression);
+#endif
 	var child = astNode.children[0];
 
 	if (child && child.name === ObjJCompiler.AstNodeCallExpression)
@@ -2513,7 +2690,9 @@ ObjJCompiler.prototype.nodeLeftHandSideExpression = function(/*SyntaxNode*/ astN
 
 ObjJCompiler.prototype.nodeNewExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeNewExpression);
+#endif
 	var children = astNode.children,
 		child = children[0];
 
@@ -2529,7 +2708,9 @@ ObjJCompiler.prototype.nodeNewExpression = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeCallExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeCallExpression);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2562,7 +2743,9 @@ ObjJCompiler.prototype.nodeCallExpression = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeMemberExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeMemberExpression);
+#endif
 	var children = astNode.children,
 		size = children.length,
 		child = children[0],
@@ -2610,7 +2793,9 @@ ObjJCompiler.prototype.nodeMemberExpression = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeBracketedAccessor = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeBracketedAccessor);
+#endif
 	var children = astNode.children;
 
 	this.nodeOpenBracket(children[0]);
@@ -2622,7 +2807,9 @@ ObjJCompiler.prototype.nodeBracketedAccessor = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeDotAccessor = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeDotAccessor);
+#endif
 	var children = astNode.children;
 
 	this.nodeDOT(children[0]);
@@ -2632,7 +2819,9 @@ ObjJCompiler.prototype.nodeDotAccessor = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeArguments = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeArguments);
+#endif
 	var children = astNode.children,
         child  = children[2],
 		offset = 0;
@@ -2650,7 +2839,9 @@ ObjJCompiler.prototype.nodeArguments = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeArgumentList = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeArgumentList);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2667,7 +2858,9 @@ ObjJCompiler.prototype.nodeArgumentList = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodePrimaryExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodePrimaryExpression);
+#endif
 	var children = astNode.children,
 		child = children[0],
         name = child ? child.name : null;
@@ -2718,7 +2911,9 @@ ObjJCompiler.prototype.nodePrimaryExpression = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeMessageExpression = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeMessageExpression);
+#endif
 	var children = astNode.children,
 		child = children[2],
         saveJSBuffer = this._jsBuffer;
@@ -2773,7 +2968,9 @@ ObjJCompiler.prototype.nodeMessageExpression = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeSelectorCall = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeSelectorCall);
+#endif
 	var children = astNode.children,
 		size = children.length,
 		child = children[0],
@@ -2802,7 +2999,9 @@ ObjJCompiler.prototype.nodeSelectorCall = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeKeywordSelectorCall = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeKeywordSelectorCall);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2822,7 +3021,9 @@ ObjJCompiler.prototype.nodeKeywordSelectorCall = function(/*SyntaxNode*/ astNode
 
 ObjJCompiler.prototype.nodeKeywordCall = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeKeywordCall);
+#endif
 	var children = astNode.children,
         child = children[0],
 		offset = 0,
@@ -2845,7 +3046,9 @@ ObjJCompiler.prototype.nodeKeywordCall = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeArrayLiteral = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeArrayLiteral);
+#endif
 	var children = astNode.children;
 
 	this.nodeOpenBracket(children[0]);
@@ -2857,7 +3060,9 @@ ObjJCompiler.prototype.nodeArrayLiteral = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeElementList = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeElementList);
+#endif
 	var children = astNode.children,
 		offset = 0;
 
@@ -2884,7 +3089,9 @@ ObjJCompiler.prototype.nodeElementList = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeObjectLiteral = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeObjectLiteral);
+#endif
 	var children = astNode.children,
         child = children[2],
 		offset = 2;
@@ -2904,7 +3111,9 @@ ObjJCompiler.prototype.nodeObjectLiteral = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodePropertyNameAndValueList = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodePropertyNameAndValueList);
+#endif
 	var children = astNode.children,
 		size = children.length;
 
@@ -2921,7 +3130,9 @@ ObjJCompiler.prototype.nodePropertyNameAndValueList = function(/*SyntaxNode*/ as
 
 ObjJCompiler.prototype.nodePropertyAssignment = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodePropertyAssignment);
+#endif
 	var children = astNode.children,
 		child = children[4],
         name = child ? child.name : null;
@@ -2949,7 +3160,9 @@ ObjJCompiler.prototype.nodePropertyAssignment = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodePropertyGetter = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodePropertyGetter);
+#endif
 	var children = astNode.children,
 		child = children[4];
 
@@ -2970,7 +3183,9 @@ ObjJCompiler.prototype.nodePropertyGetter = function(/*SyntaxNode*/ astNode)
 
 function PropertySetter(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodePropertyGetter);
+#endif
 	var children = astNode.children,
 		child = children[4];
 
@@ -2993,7 +3208,9 @@ function PropertySetter(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodePropertyName = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodePropertyName);
+#endif
 	var child = astNode.children[0],
         name = child ? child.name : null;
 
@@ -3015,14 +3232,18 @@ ObjJCompiler.prototype.nodePropertyName = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodePropertySetParameterList = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodePropertySetParameterList);
+#endif
 
 	this.nodeIdentifier(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeLiteral = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeLiteral);
+#endif
 	var child = astNode.children[0],
         name = child ? child.name : null;
 
@@ -3053,7 +3274,9 @@ ObjJCompiler.prototype.nodeLiteral = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeSelectorLiteral = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeSelectorLiteral);
+#endif
 	var children = astNode.children,
         saveJSBuffer = this._jsBuffer,
         selectorBuffer = new StringBuffer();
@@ -3078,7 +3301,9 @@ ObjJCompiler.prototype.nodeSelectorLiteral = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeSelectorLiteralContents = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeSelectorLiteralContents);
+#endif
 	var children = astNode.children,
 		child = children[0];
 
@@ -3103,14 +3328,18 @@ ObjJCompiler.prototype.nodeSelectorLiteralContents = function(/*SyntaxNode*/ ast
 
 ObjJCompiler.prototype.nodeNullLiteral = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeNullLiteral);
+#endif
 
 	this.nodeNULL(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeBooleanLiteral = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeBooleanLiteral);
+#endif
 	var child = astNode.children[0];
 
 	if (child && child.name === ObjJCompiler.AstNodeTRUE)
@@ -3121,7 +3350,9 @@ ObjJCompiler.prototype.nodeBooleanLiteral = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeNumericLiteral = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeNumericLiteral);
+#endif
 	var child = astNode.children[0];
 
 	if (child && child.name === ObjJCompiler.AstNodeHexIntegerLiteral)
@@ -3132,7 +3363,9 @@ ObjJCompiler.prototype.nodeNumericLiteral = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeDecimalLiteral = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeDecimalLiteral);
+#endif
 	var children = astNode.children,
 		offset = 0,
 		number = "",
@@ -3162,7 +3395,9 @@ ObjJCompiler.prototype.nodeDecimalLiteral = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeDecimalIntegerLiteral = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeDecimalIntegerLiteral);
+#endif
 	var children = astNode.children,
 		offset = 1,
 		number = "";
@@ -3187,14 +3422,18 @@ ObjJCompiler.prototype.nodeDecimalIntegerLiteral = function(/*SyntaxNode*/ astNo
 
 ObjJCompiler.prototype.nodeDecimalDigit = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeDecimalDigit);
+#endif
 
 	return this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeExponentPart = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeExponentPart);
+#endif
 	var children = astNode.children;
 
 	return this.nodeWORD(children[0]) + this.nodeSignedInteger(children[1]);
@@ -3202,7 +3441,9 @@ ObjJCompiler.prototype.nodeExponentPart = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeSignedInteger = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeSignedInteger);
+#endif
 	var children = astNode.children,
 		offset = 1,
 		number = "",
@@ -3225,7 +3466,9 @@ ObjJCompiler.prototype.nodeSignedInteger = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeHexIntegerLiteral = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeHexIntegerLiteral);
+#endif
 	var children = astNode.children,
 		offset = 2,
 		hex = this.nodeWORD(children[0]);
@@ -3245,14 +3488,18 @@ ObjJCompiler.prototype.nodeHexIntegerLiteral = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeHexDigit = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeHexDigit);
+#endif
 
 	return this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeStringLiteral = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeStringLiteral);
+#endif
 	var children = astNode.children,
 		offset = 0,
 		string = "";
@@ -3289,7 +3536,9 @@ ObjJCompiler.prototype.nodeStringLiteral = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeDoubleStringCharacter = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeDoubleStringCharacter);
+#endif
 	var children = astNode.children,
 		child = children[0];
 
@@ -3303,7 +3552,9 @@ ObjJCompiler.prototype.nodeDoubleStringCharacter = function(/*SyntaxNode*/ astNo
 
 ObjJCompiler.prototype.nodeSingleStringCharacter = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeSingleStringCharacter);
+#endif
 	var children = astNode.children,
 		child = children[0];
 
@@ -3317,7 +3568,9 @@ ObjJCompiler.prototype.nodeSingleStringCharacter = function(/*SyntaxNode*/ astNo
 
 ObjJCompiler.prototype.nodeLineContinuation = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeLineContinuation);
+#endif
 	var children = astNode.children;
 
 	return this.nodeWORD(children[0]) + nodeLineTerminatorSequence(children[1]);
@@ -3325,7 +3578,9 @@ ObjJCompiler.prototype.nodeLineContinuation = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeEscapeSequence = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeEscapeSequence);
+#endif
 	var child = astNode.children[0],
         name = child ? child.name : null;
 
@@ -3344,7 +3599,9 @@ ObjJCompiler.prototype.nodeEscapeSequence = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeCharacterEscapeSequence = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeCharacterEscapeSequence);
+#endif
 	var child = astNode.children[0];
 
     if (child && child.name === ObjJCompiler.AstNodeSingleEscapeCharacter)
@@ -3355,21 +3612,27 @@ ObjJCompiler.prototype.nodeCharacterEscapeSequence = function(/*SyntaxNode*/ ast
 
 ObjJCompiler.prototype.nodeSingleEscapeCharacter = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeSingleEscapeCharacter);
+#endif
 
 	return this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeNonEscapeCharacter = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeNonEscapeCharacter);
+#endif
 
 	return this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeHexEscapeSequence = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeHexEscapeSequence);
+#endif
 	var children = astNode.children;
 
 	return children[0] + this.nodeHexDigit(children[1]) + nodeHexDigit(children[2]);
@@ -3377,7 +3640,9 @@ ObjJCompiler.prototype.nodeHexEscapeSequence = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeUnicodeEscapeSequence = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeUnicodeEscapeSequence);
+#endif
 	var children = astNode.children;
 
 	return this.nodeWORD(children[0]) + this.nodeHexDigit(children[1]) + this.nodeHexDigit(children[2]) + this.nodeHexDigit(children[3]) + this.nodeHexDigit(children[4]);
@@ -3385,7 +3650,9 @@ ObjJCompiler.prototype.nodeUnicodeEscapeSequence = function(/*SyntaxNode*/ astNo
 
 ObjJCompiler.prototype.nodeRegularExpressionLiteral = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeRegularExpressionLiteral);
+#endif
 	var children = astNode.children;
 
 	return this.nodeWORD(children[0]) + this.nodeRegularExpressionBody(children[1]) + this.nodeWORD(children[2]) + this.nodeRegularExpressionFlags(children[3]);
@@ -3393,7 +3660,9 @@ ObjJCompiler.prototype.nodeRegularExpressionLiteral = function(/*SyntaxNode*/ as
 
 ObjJCompiler.prototype.nodeRegularExpressionBody = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeRegularExpressionBody);
+#endif
 	var children = astNode.children,
 		regString = this.nodeRegularExpressionFirstChar(children[0]),
 		offset = 1,
@@ -3409,7 +3678,9 @@ ObjJCompiler.prototype.nodeRegularExpressionBody = function(/*SyntaxNode*/ astNo
 
 ObjJCompiler.prototype.nodeRegularExpressionFirstChar = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeRegularExpressionFirstChar);
+#endif
 	var child = astNode.children[0],
         name = child ? child.name : null;
 
@@ -3428,7 +3699,9 @@ ObjJCompiler.prototype.nodeRegularExpressionFirstChar = function(/*SyntaxNode*/ 
 
 ObjJCompiler.prototype.nodeRegularExpressionChar = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeRegularExpressionChar);
+#endif
 	var child = astNode.children[0],
         name = child ? child.name : null;
 
@@ -3447,7 +3720,9 @@ ObjJCompiler.prototype.nodeRegularExpressionChar = function(/*SyntaxNode*/ astNo
 
 ObjJCompiler.prototype.nodeRegularExpressionBackslashSequence = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeRegularExpressionBackslashSequence);
+#endif
 	var children = astNode.children;
 
 	return this.nodeWORD(children[0]) + this.nodeRegularExpressionNonTerminator(children[1]);
@@ -3455,14 +3730,18 @@ ObjJCompiler.prototype.nodeRegularExpressionBackslashSequence = function(/*Synta
 
 ObjJCompiler.prototype.nodeRegularExpressionNonTerminator = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeRegularExpressionNonTerminator);
+#endif
 
 	return this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeRegularExpressionClass = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeRegularExpressionClass);
+#endif
 	var children = astNode.children,
 		offset = 1,
 		regString = this.nodeWORD(children[0]),
@@ -3479,7 +3758,9 @@ ObjJCompiler.prototype.nodeRegularExpressionClass = function(/*SyntaxNode*/ astN
 
 ObjJCompiler.prototype.nodeRegularExpressionClassChar = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeRegularExpressionClassChar);
+#endif
 	var child = astNode.children[0];
 
 		if (child && child.name === ObjJCompiler.AstNodeRegularExpressionNonTerminator)
@@ -3490,7 +3771,9 @@ ObjJCompiler.prototype.nodeRegularExpressionClassChar = function(/*SyntaxNode*/ 
 
 ObjJCompiler.prototype.nodeRegularExpressionFlags = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeRegularExpressionFlags);
+#endif
 	var children = astNode.children,
 		offset = 0,
         regString = "",
@@ -3507,7 +3790,9 @@ ObjJCompiler.prototype.nodeRegularExpressionFlags = function(/*SyntaxNode*/ astN
 
 ObjJCompiler.prototype.nodeUnderline = function(/*SyntaxNode*/ astNode, /*boolean*/ mustHaveOneSpace)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeUnderline);
+#endif
 	var children = astNode.children,
 		size = children.length;
 		string = "";
@@ -3537,7 +3822,9 @@ ObjJCompiler.prototype.nodeUnderline = function(/*SyntaxNode*/ astNode, /*boolea
 
 ObjJCompiler.prototype.nodeUnderlineNoLineBreak = function(/*SyntaxNode*/ astNode, /*boolean*/ mustHaveOneSpace)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeUnderlineNoLineBreak);
+#endif
 	var children = astNode.children,
 		size = children.length;
 		string = "";
@@ -3567,28 +3854,36 @@ ObjJCompiler.prototype.nodeUnderlineNoLineBreak = function(/*SyntaxNode*/ astNod
 
 ObjJCompiler.prototype.nodeWhiteSpace = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeWhiteSpace);
+#endif
 
 	return this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeLineTerminator = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeLineTerminator);
+#endif
 
 	return this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeLineTerminatorSequence = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeLineTerminatorSequence);
+#endif
 
 	return this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeComment = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeComment);
+#endif
 	var child = astNode.children[0];
 
     if (child && child.name === ObjJCompiler.AstNodeMultiLineComment)
@@ -3599,7 +3894,9 @@ ObjJCompiler.prototype.nodeComment = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeMultiLineComment = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeMultiLineComment);
+#endif
 	var children = astNode.children,
 		size = children.length;
 		string = "";
@@ -3614,7 +3911,9 @@ ObjJCompiler.prototype.nodeMultiLineComment = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeSingleLineMultiLineComment = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeSingleLineMultiLineComment);
+#endif
 	var children = astNode.children,
 		size = children.length,
 		string = "";
@@ -3629,7 +3928,9 @@ ObjJCompiler.prototype.nodeSingleLineMultiLineComment = function(/*SyntaxNode*/ 
 
 ObjJCompiler.prototype.nodeSingleLineComment = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeSingleLineComment);
+#endif
 	var children = astNode.children,
 		size = children.length,
 		string = children[0];
@@ -3645,14 +3946,18 @@ ObjJCompiler.prototype.nodeSingleLineComment = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeSingleLineCommentChar = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeSingleLineCommentChar);
+#endif
 
 	return this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeEOS = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeEOS);
+#endif
 	var children = astNode.children,
         child = children[0];
 
@@ -3675,7 +3980,9 @@ ObjJCompiler.prototype.nodeEOS = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeSemicolonInsertionEOS = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeSemicolonInsertionEOS);
+#endif
 	var children = astNode.children,
         child = children[1];
 
@@ -3690,19 +3997,25 @@ ObjJCompiler.prototype.nodeSemicolonInsertionEOS = function(/*SyntaxNode*/ astNo
 
 ObjJCompiler.prototype.nodeEOF = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeEOF);
+#endif
 }
 
 ObjJCompiler.prototype.nodeIdentifier = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeIdentifier);
+#endif
 
 	return this.nodeIdentifierName(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeIdentifierName = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeIdentifierName);
+#endif
 	var children = astNode.children,
 		size = children.length,
 		string = this.nodeIdentifierStart(children[0]);
@@ -3717,7 +4030,9 @@ ObjJCompiler.prototype.nodeIdentifierName = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeIdentifierStart = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeIdentifierStart);
+#endif
 	var children = astNode.children,
 		child = children[0];
 
@@ -3731,7 +4046,9 @@ ObjJCompiler.prototype.nodeIdentifierStart = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeIdentifierPart = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeIdentifierPart);
+#endif
 	var child = astNode.children[0],
         name = child ? child.name : null;
 
@@ -3756,252 +4073,324 @@ ObjJCompiler.prototype.nodeIdentifierPart = function(/*SyntaxNode*/ astNode)
 
 ObjJCompiler.prototype.nodeZWNJ = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeZWNJ);
+#endif
 
 	return this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeZWJ = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeZWJ);
+#endif
 
 	return this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeUnicodeLetter = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeUnicodeLetter);
+#endif
 
 	return this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeUnicodeCombiningMark = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeUnicodeCombiningMark);
+#endif
 
 	return this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeUnicodeDigit = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeUnicodeDigit);
+#endif
 
 	return this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeUnicodeConnectorPunctuation = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeUnicodeConnectorPunctuation);
+#endif
 
 	return this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeFALSE = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeFALSE);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeTRUE = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeTRUE);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeNULL = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeNULL);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeBREAK = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeBREAK);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeCONTINUE = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeCONTINUE);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeDEBUGGER = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeDEBUGGER);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeIN = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeIN);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeINSTANCEOF = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeINSTANCEOF);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeDELETE = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeDELETE);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeFUNCTION = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeFUNCTION);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeNEW = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeNEW);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeTHIS = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeTHIS);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeTYPEOF = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeTYPEOF);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeVOID = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeVOID);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeIF = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeIF);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeELSE = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeELSE);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeDO = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeDO);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeWHILE = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeWHILE);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeFOR = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeFOR);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeVAR = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeVAR);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeRETURN = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeRETURN);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeCASE = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeCASE);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeDEFAULT = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeDEFAULT);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeSWITCH = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeSWITCH);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeTHROW = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeTHROW);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeCATCH = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeCATCH);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeFINALLY = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeFINALLY);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeTRY = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeTRY);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeWITH = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeWITH);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }
 
 ObjJCompiler.prototype.nodeSUPER = function(/*SyntaxNode*/ astNode)
 {
+#if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeSUPER);
+#endif
 
 	this.nodeWORD(astNode.children[0]);
 }

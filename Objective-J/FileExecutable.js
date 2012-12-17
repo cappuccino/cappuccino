@@ -41,13 +41,8 @@ function FileExecutable(/*CFURL|String*/ aURL, /*Dictionary*/ aFilenameTranslate
     if (fileContents.match(/^@STATIC;/))
         executable = decompile(fileContents, aURL);
 
-    else if ((extension === "j" || !extension) && !fileContents.match(/^{/)) {
-//		console.log("Compile: " + aURL);
-//		if (!aURL || aURL.toString().indexOf("Boplats/Office/Applications") === -1)
-//        	executable = exports.preprocess(fileContents, aURL, Preprocessor.Flags.IncludeDebugSymbols);
-//		else
-        	executable = exports.compileFileDependencies(fileContents, aURL, ObjJCompiler.Flags.IncludeDebugSymbols);
-	}
+    else if ((extension === "j" || !extension) && !fileContents.match(/^{/))
+        executable = exports.compileFileDependencies(fileContents, aURL, ObjJCompiler.Flags.IncludeDebugSymbols); // FIXME: Include correct flags
     else
         executable = new Executable(fileContents, [], aURL);
 
