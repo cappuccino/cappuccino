@@ -7,7 +7,7 @@
     this class only exists for source compatability.
 */
 
-@import "CPSet.j"
+@import "_CPSet.j"
 
 @implementation CPMutableSet : CPSet
 

@@ -29,6 +29,7 @@
 
 @import "Nib2CibKeyedUnarchiver.j"
 @import "Converter.j"
+@import "Converter+Mac.j"
 
 var FILE = require("file"),
     OS = require("os"),

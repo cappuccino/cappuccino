@@ -468,7 +468,7 @@ Executable.fileExecutableSearcherForURL = function(/*CFURL*/ referenceURL)
 {
     var referenceURLString = referenceURL.absoluteString(),
         cachedFileExecutableSearcher = cachedFileExecutableSearchers[referenceURLString],
-        aFilenameTranslateDictionary = this.filenameTranslateDictionary();
+        aFilenameTranslateDictionary = Executable.filenameTranslateDictionary ? Executable.filenameTranslateDictionary() : null;
         cachedSearchResults = { };
 
     if (!cachedFileExecutableSearcher)
