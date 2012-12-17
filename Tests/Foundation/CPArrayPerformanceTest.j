@@ -15,7 +15,7 @@ var ELEMENTS = 100,
 
 - (void)setUp
 {
-    var descriptors = [
+    descriptors = [
             [CPSortDescriptor sortDescriptorWithKey:"a" ascending:NO],
             [CPSortDescriptor sortDescriptorWithKey:"b" ascending:YES]
         ];
@@ -26,7 +26,6 @@ var ELEMENTS = 100,
     CPLog.warn("\nNUMERIC ALMOST SORTED");
     var a = [self makeUnsorted],
         sorted = [self sort:a usingSortSelector:@selector(sortedArrayUsingDescriptors:) withObject:descriptors];
-    print("a: " + (a == sorted ? "Yes" : "No"));
     [self checkAlmostSorted:sorted];
 }
 
