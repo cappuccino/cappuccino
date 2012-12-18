@@ -633,8 +633,8 @@ CPCriticalAlertStyle        = 2;
 {
     if ([_window isSheet])
     {
-        [CPApp endSheet:_window returnCode:[aSender tag]];
         [_window orderOut:nil];
+        [CPApp endSheet:_window returnCode:[aSender tag]];
     }
     else
     {
