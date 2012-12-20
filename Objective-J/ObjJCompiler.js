@@ -4666,6 +4666,8 @@ ObjJCompiler.prototype.createLocalVariable = function(/*Variable*/ variable)
 
 	if (currentClassMethods)
 	{
+        var lvarStack = currentClassMethods.lvarStack;
+        var lvars = lvarStack[lvarStack.length - 1];  // Get last
 
         var declaredVariable = lvars[variable.identifier];
 		if (declaredVariable)
