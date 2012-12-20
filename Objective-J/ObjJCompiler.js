@@ -382,10 +382,11 @@ ObjJCompiler.prototype.nodeStart = function(/*SyntaxNode*/ astNode)
 #if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeStart);
 #endif
-	var children = astNode.children;
+	var children = astNode.children,
+        lastUnderlineIndex = 1;
 
 	this.nodeUnderline(children[0], false);
-	var lastUnderlineIndex = 1;
+
 	if (children.length === 3)
 	{
 		this.nodeSourceElements(children[1]);
@@ -399,10 +400,11 @@ ObjJCompiler.prototype.nodeFunctionBody = function(/*SyntaxNode*/ astNode)
 #if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeFunctionBody);
 #endif
-	var children = astNode.children;
+	var children = astNode.children,
+        lastUnderlineIndex = 1;
 
 	this.nodeUnderline(children[0], false);
-	var lastUnderlineIndex = 1;
+
 	if (children.length === 3)
 	{
 		this.nodeSourceElements(children[1]);
@@ -454,7 +456,8 @@ ObjJCompiler.prototype.nodeFunctionDeclaration = function(/*SyntaxNode*/ astNode
 	var children = astNode.children,
         child = children[6],
         offset = 0,
-		saveJSBuffer = this._jsBuffer;
+		saveJSBuffer = this._jsBuffer,
+        parameterList;
 
 	this._jsBuffer = null;
 	this.nodeFUNCTION(children[0]);
@@ -470,9 +473,9 @@ ObjJCompiler.prototype.nodeFunctionDeclaration = function(/*SyntaxNode*/ astNode
 	this.nodeOpenParenthesis(children[4]);
 	this.nodeUnderline(children[5], false);
 
-	if (child && child.name ===ObjJCompiler.AstNodeFormalParameterList)
+	if (child && child.name === ObjJCompiler.AstNodeFormalParameterList)
 	{
-		this.nodeFormalParameterList(children[6]);
+		parameterList = this.nodeFormalParameterList(children[6]);
 		offset++;
 	}
 	this.nodeUnderline(children[6 + offset], false);
@@ -480,7 +483,16 @@ ObjJCompiler.prototype.nodeFunctionDeclaration = function(/*SyntaxNode*/ astNode
 	this.nodeUnderline(children[8 + offset], false);
 	this.nodeOpenBrace(children[9 + offset]);
 	this.nodeUnderline(children[10 + offset], false);
+    var currentClassMethods = this._currentMethod;
+
+    if (currentClassMethods)
+    {
+        // If we have a parameter list push those otherwise an empty dictionary
+        currentClassMethods.lvarStack.push(parameterList ? parameterList : {});
+    }
 	this.nodeFunctionBody(children[11 + offset]);
+    if (currentClassMethods)
+        currentClassMethods.lvarStack.pop();
 	this.nodeUnderline(children[12 + offset], false);
 	this.nodeCloseBrace(children[13 + offset]);
 }
@@ -493,7 +505,8 @@ ObjJCompiler.prototype.nodeFunctionExpression = function(/*SyntaxNode*/ astNode)
 	var children = astNode.children,
         child = children[2],
         offset = 0,
-        saveJSBuffer = this._jsBuffer;
+        saveJSBuffer = this._jsBuffer,
+        parameterList;
 
     this._jsBuffer = null;
 	this.nodeFUNCTION(children[0]);
@@ -523,7 +536,7 @@ ObjJCompiler.prototype.nodeFunctionExpression = function(/*SyntaxNode*/ astNode)
 
 	if (child && child.name ===ObjJCompiler.AstNodeFormalParameterList)
 	{
-		this.nodeFormalParameterList(child);
+		parameterList = this.nodeFormalParameterList(child);
 		offset++;
 	}
 	this.nodeUnderline(children[5 + offset], false);
@@ -531,7 +544,15 @@ ObjJCompiler.prototype.nodeFunctionExpression = function(/*SyntaxNode*/ astNode)
 	this.nodeUnderline(children[7 + offset], false);
 	this.nodeOpenBrace(children[8 + offset]);
 	this.nodeUnderline(children[9 + offset], false);
+    var currentClassMethods = this._currentMethod;
+
+    if (currentClassMethods)
+    {
+        currentClassMethods.lvarStack.push(parameterList ? parameterList : {});
+    }
 	this.nodeFunctionBody(children[10 + offset]);
+    if (currentClassMethods)
+        currentClassMethods.lvarStack.pop();
 	this.nodeUnderline(children[11 + offset], false);
 	this.nodeCloseBrace(children[12 + offset]);
 }
@@ -541,16 +562,23 @@ ObjJCompiler.prototype.nodeFormalParameterList = function(/*SyntaxNode*/ astNode
 #if DEBUG
 	this.assertNode(astNode, ObjJCompiler.AstNodeFormalParameterList);
 #endif
-	var children = astNode.children;
+	var children = astNode.children,
+        parameterList = {};
 
-	this.nodeIdentifier(children[0]);
+	var identifier = this.nodeIdentifier(children[0]);
+
+    parameterList[identifier] = {"identifier": identifier};
+
 	for (var i = 1; i + 3 < children.length; i += 4)
 	{
 		this.nodeUnderline(children[i], false);
-		this.nodeWORD(children[i + 1]);
+		this.nodeCOMMA(children[i + 1]);
 		this.nodeUnderline(children[i + 2], false);
-		this.nodeIdentifier(children[i + 3]);
+		identifier = this.nodeIdentifier(children[i + 3]);
+        parameterList[identifier] = {"identifier": identifier};
 	}
+
+    return parameterList;
 }
 
 ObjJCompiler.prototype.nodeStatementList = function(/*SyntaxNode*/ astNode)
@@ -1929,6 +1957,7 @@ ObjJCompiler.prototype.genericMethodDeclaration = function(/*SyntaxNode*/ astNod
 			// Method already declared. May be a warning?
 		}
 		currentClassMethods[methodSelector.selector] = methodSelector;
+        methodSelector.lvarStack = [{}];
 		this._currentMethod = methodSelector;
 	}
 
@@ -2905,10 +2934,14 @@ ObjJCompiler.prototype.nodePrimaryExpression = function(/*SyntaxNode*/ astNode)
 					ivar = this.getIvarForCurrentClass(identifier);
 
             	if (ivar)
+                {
 					if (lvar)
 						0 == 0; // Warning: Local declaration of 'identifier' hides instance variable
 					else
-                		CONCAT(saveJSBuffer, "self.");
+                    {
+                 		CONCAT(saveJSBuffer, "self.");
+                    }
+                }
 
             	CONCAT(saveJSBuffer, identifier);
 			}
