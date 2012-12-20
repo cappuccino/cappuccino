@@ -4637,19 +4637,27 @@ ObjJCompiler.prototype.getIvarForCurrentClass = function(/* String */ ivarName)
 
 ObjJCompiler.prototype.getLvarForCurrentMethod = function(/* String */ lvarName)
 {
-	var	currentMethod = this._currentMethod;
+    var currentClassMethods = this._currentMethod;
 
-	if (currentMethod)
-	{
-		var ivars = currentMethod.lvars;
-		if (ivars && ivars[lvarName])
-		{
-			return ivars[lvarName];
-		}
-		// TODO: check the parameters in the method declaration
-	}
+    if (currentClassMethods)
+    {
+        var lvarStack = currentClassMethods.lvarStack;
 
-	return null;
+        for (var i = lvarStack.length - 1; i >= 0; i--)
+        {
+            var lvars = lvarStack[i];
+
+            if (lvars && lvars[lvarName])
+            {
+                return lvars[lvarName];
+            }
+        }
+        // Check the parameters in the method declaration
+        if (currentClassMethods.parameters && currentClassMethods.parameters[lvarName])
+            return currentClassMethods.parameters[lvarName];
+    }
+
+    return null;
 }
 
 ObjJCompiler.prototype.createLocalVariable = function(/*Variable*/ variable)
@@ -4658,20 +4666,16 @@ ObjJCompiler.prototype.createLocalVariable = function(/*Variable*/ variable)
 
 	if (currentClassMethods)
 	{
-		var lvars = currentClassMethods.lvars;
 
-		if (!lvars)
-		{
-			lvars = {};
-			currentClassMethods.lvars = lvars;
-		}
-
-		if (lvars[variable.identifier])
+        var declaredVariable = lvars[variable.identifier];
+		if (declaredVariable)
 		{
 			// Local variable already declared! Maybe a warning?
 		}
-
-		lvars[variable.identifier] = variable;
+        else
+        {
+            lvars[variable.identifier] = variable;
+        }
 	}
 }
 
