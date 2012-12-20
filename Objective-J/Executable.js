@@ -151,22 +151,22 @@ Executable.prototype.execute = function()
     CPLog("EXECUTION: " + this.URL());
 #endif
 
-    var fileDependencies = this.fileDependencies(),
-        index = 0,
-        count = fileDependencies.length;
-
-    for (; index < count; ++index)
-    {
-        var fileDependency = fileDependencies[index],
-            isQuoted = fileDependency.isLocal(),
-            URL = fileDependency.URL();
-
-        this.fileExecuter()(URL, isQuoted);
-    }
-
 	if (this._compiler)
 	{
-		this.setCode(this._compiler.compilePass2());
+        var fileDependencies = this.fileDependencies(),
+            index = 0,
+            count = fileDependencies.length;
+
+        for (; index < count; ++index)
+        {
+            var fileDependency = fileDependencies[index],
+                isQuoted = fileDependency.isLocal(),
+                URL = fileDependency.URL();
+
+            this.fileExecuter()(URL, isQuoted);
+        }
+
+	    this.setCode(this._compiler.compilePass2());
         this._compiler = null;
 	}
 

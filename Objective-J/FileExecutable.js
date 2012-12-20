@@ -42,7 +42,14 @@ function FileExecutable(/*CFURL|String*/ aURL, /*Dictionary*/ aFilenameTranslate
         executable = decompile(fileContents, aURL);
 
     else if ((extension === "j" || !extension) && !fileContents.match(/^{/))
-        executable = exports.compileFileDependencies(fileContents, aURL, ObjJCompiler.Flags.IncludeDebugSymbols); // FIXME: Include correct flags
+    {
+        if (!exports.ObjJCompiler.usedVersion || exports.ObjJCompiler.usedVersion === "preprocessor")
+            executable = exports.preprocess(fileContents, aURL, Preprocessor.Flags.IncludeDebugSymbols);
+        else if (exports.ObjJCompiler.usedVersion === "objj_compiler2")
+            executable = exports.compileFileDependencies(fileContents, aURL, ObjJCompiler.Flags.IncludeDebugSymbols);
+        else
+            throw new Error("Compiler to use is set to " + exports.ObjJCompiler.usedVersion + " but we only support 'preprocessor' (old compiler) and 'objj_compiler2' (new compiler)");
+    }
     else
         executable = new Executable(fileContents, [], aURL);
 

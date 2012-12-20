@@ -109,6 +109,16 @@ ObjJCompiler.prototype.compilePass2 = function()
 
 exports.ObjJCompiler = ObjJCompiler;
 
+// This will set the compiler version to use.
+// These version works:
+// "preprocessor" -> Old Cappuccino compiler
+// "objj_compiler2" -> New Cappuccino compiler
+
+GLOBAL(ObjJCompilerSetUsedVersion) = function(version)
+{
+    ObjJCompiler.usedVersion = version;
+}
+
 exports.setCurrentCompilerFlags = function(/*String*/ compilerFlags)
 {
     currentCompilerFlags = compilerFlags;
