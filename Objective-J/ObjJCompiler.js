@@ -119,6 +119,11 @@ GLOBAL(ObjJCompilerSetUsedVersion) = function(version)
     ObjJCompiler.usedVersion = version;
 }
 
+ObjJCompiler.setCurrentUsedVersion = function(version)
+{
+    ObjJCompiler.usedVersion = version;
+}
+
 exports.setCurrentCompilerFlags = function(/*String*/ compilerFlags)
 {
     currentCompilerFlags = compilerFlags;

@@ -803,7 +803,9 @@ BundleTask.prototype.defineStaticTask = function()
 
 BundleTask.prototype.defineSourceTasks = function()
 {
-   var sources = this.sources();
+    // Use new compiler
+    require("objective-j").ObjJCompiler.setCurrentUsedVersion("objj_compiler2");
+    var sources = this.sources();
 
     if (!sources)
         return;
