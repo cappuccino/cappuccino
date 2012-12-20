@@ -25,6 +25,7 @@ var ObjJCompiler = { },
 
 exports.compileToExecutable = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags)
 {
+    ObjJCompiler.currentCompileFile = aURL;
     return new ObjJCompiler(aString, aURL, flags, 2).executable();
 }
 
@@ -35,6 +36,7 @@ exports.compileToIMBuffer = function(/*String*/ aString, /*CFURL*/ aURL, /*unsig
 
 exports.compileFileDependencies = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags)
 {
+    ObjJCompiler.currentCompileFile = aURL;
     return new ObjJCompiler(aString, aURL, flags, 1).executable();
 }
 
@@ -87,6 +89,7 @@ var ObjJCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ fla
 
 ObjJCompiler.prototype.compilePass2 = function()
 {
+    ObjJCompiler.currentCompileFile = this._URL;
 	this._pass = 2;
 	this._jsBuffer = new StringBuffer();
 	//print("Start Compile2: " + this._URL);

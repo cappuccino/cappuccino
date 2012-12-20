@@ -496,7 +496,10 @@ Executable.fileExecutableSearcherForURL = function(/*CFURL*/ referenceURL)
             function completed(/*StaticResource*/ aStaticResource)
             {
                 if (!aStaticResource)
-                        throw new Error("Could not load file at " + aURL);
+                {
+                    var compilingFileUrl = ObjJCompiler && ObjJCompiler.currentCompileFile ? ObjJCompiler.currentCompileFile : null;
+                    throw new Error("Could not load file at " + aURL + (compilingFileUrl ? " when compiling " + compilingFileUrl : " Martin"));
+                }
 
                 cachedFileExecutableSearchResults[cacheUID] = aStaticResource;
 
