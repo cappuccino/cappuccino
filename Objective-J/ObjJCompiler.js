@@ -42,7 +42,7 @@ exports.compileFileDependencies = function(/*String*/ aString, /*CFURL*/ aURL, /
 
 var ObjJCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags, /*unsigned*/ pass)
 {
-    aString = aString.replace(/^#[^\n]+\n/, "\n");
+    aString = aString.replace(/^\#.*/gm, "");
     this._URL = new CFURL(aURL);
 	this._pass = pass;
 	// If this is pass one we should not save anything in javascript buffer
@@ -72,10 +72,14 @@ var ObjJCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ fla
 	console.time("Compile pass " + pass + " - " + aURL);
 #endif
 	try {
-    this.nodeDocument(this._tokens);
+        this.nodeDocument(this._tokens);
     }
     catch (e) {
-    	print("Error: " + e + ", file content: " + aString);
+        #ifdef BROWSER
+            //console.log("Error: " + e + ", file content: " + aString);
+        #else
+            //print("Error: " + e + ", file content: " + aString);
+        #endif
     	throw e;
     }
 	//var end = new Date().getTime();
@@ -102,7 +106,7 @@ ObjJCompiler.prototype.compilePass2 = function()
 	//var time = (end - start) / 1000;
 	//print("Compile pass 2: " + this._URL + " in " + time + " seconds");
 #ifdef BROWSER
-    console.timeEnd("Compile" + this._pass + " - " + this._URL);
+    console.timeEnd("Compile pass 2" + this._pass + " - " + this._URL);
 #endif
 	return this._jsBuffer.toString();
 }
