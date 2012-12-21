@@ -187,7 +187,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
 {
     var indexOfSelectedItem = [self indexOfSelectedItem];
 
-    [self setContentArray:[textField _completionsForSubstring:[textField _inputElement].value indexOfToken:0 indexOfSelectedItem:indexOfSelectedItem]];
+    [self setContentArray:[textField _completionsForSubstring:[textField _editorValue] indexOfToken:0 indexOfSelectedItem:indexOfSelectedItem]];
 
     if (![contentArray count])
         return;
