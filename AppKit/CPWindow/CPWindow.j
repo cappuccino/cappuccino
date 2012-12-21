@@ -901,6 +901,8 @@ CPTexturedBackgroundWindowMask
 
     [_platformWindow orderFront:self];
     [_platformWindow order:CPWindowAbove window:self relativeTo:nil];
+#else
+    _isVisible = YES;
 #endif
 
     if (!CPApp._keyWindow)
@@ -946,6 +948,8 @@ CPTexturedBackgroundWindowMask
 
 #if PLATFORM(DOM)
     [_platformWindow order:CPWindowOut window:self relativeTo:nil];
+#else
+    _isVisible = NO;
 #endif
 
     [self _updateMainAndKeyWindows];

@@ -1,7 +1,7 @@
 @import <AppKit/CPApplication.j>
 @import <AppKit/CPWindow.j>
 
-globalResults = [];
+var globalResults = [];
 
 @implementation MyAppDelegate : CPObject
 {
@@ -75,6 +75,12 @@ globalResults = [];
     [aWindow setTitle:@"My Great Window"];
 
     globalResults = []
+}
+
+- (void)tearDown
+{
+    // This is the only way to clear the global window list between tests. You'd normally never do this.
+    CPApp = nil;
 }
 
 - (void)receiveNotification:(CPNotification)aNote
@@ -182,12 +188,12 @@ globalResults = [];
 
 - (void)testWindows
 {
-    [self assert:@"My Great Window" equals:[[[app windows] objectAtIndex:1] title]];
+    [self assert:[[aWindow title]] equals:[[app windows] valueForKey:@"title"]];
 }
 
 - (void)testWindowWithWindowNumber
 {
-    [self assert:@"My Great Window" equals:[[app windowWithWindowNumber:1] title]];
+    [self assert:@"My Great Window" equals:[[app windowWithWindowNumber:[aWindow windowNumber]] title]];
 }
 
 - (void)testReplyToApplicationShouldTerminate
