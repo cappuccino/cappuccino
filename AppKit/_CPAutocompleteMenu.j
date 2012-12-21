@@ -38,6 +38,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
     float           widestItemWidth;
 
     CPWindow        _menuWindow;
+    CPWindow        _parentWindow @accessors(property=parentWindow);
     CPScrollView    scrollView;
     CPTableView     tableView;
 
@@ -48,7 +49,8 @@ var _CPAutocompleteMenuMaximumHeight = 307;
 {
     if (self = [super init])
     {
-        textField = aTextField;
+        [self bind:@"parentWindow" toObject:self withKeyPath:@"textField.window" options:nil];
+        [self setTextField:aTextField];
 
         _menuWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0, 0, 100, 100) styleMask:CPBorderlessWindowMask];
 
@@ -256,6 +258,25 @@ var _CPAutocompleteMenuMaximumHeight = 307;
 - (@action)complete:(id)sender
 {
     [textField _complete:self];
+}
+
+- (void)setParentWindow:(CPWindow)aWindow
+{
+    if (aWindow === _parentWindow)
+        return;
+
+    if (_parentWindow)
+        [[CPNotificationCenter defaultCenter] removeObserver:self];
+
+    _parentWindow = aWindow;
+
+    if (_parentWindow)
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(parentWindowWillClose:) name:CPWindowWillCloseNotification object:_parentWindow];
+}
+
+- (void)parentWindowWillClose:(CPNotification)aNotification
+{
+    [self _hideCompletions];
 }
 
 @end
