@@ -706,7 +706,11 @@ var CPScrollDestinationNone             = 0,
 {
     if (![self hasThemeState:CPThemeStateEditing])
         return @"";
+#if PLATFORM(DOM)
     return [self _inputElement].value;
+#else
+    return @"";
+#endif
 }
 
 - (void)moveUp:(id)sender
