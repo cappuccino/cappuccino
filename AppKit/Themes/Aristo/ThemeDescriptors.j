@@ -1832,7 +1832,7 @@ var themedButtonValues = nil,
 
     [self registerThemeValues:themedAlertValues forView:alert];
 
-    return alert;
+    return [alert themeView];
 }
 
 + (CPStepper)themedStepper
@@ -2095,7 +2095,7 @@ var themedButtonValues = nil,
 
     [self registerThemeValues:hudSpecificValues forView:alert inherit:themedAlertValues];
 
-    return alert;
+    return [alert themeView];
 }
 
 @end

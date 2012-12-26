@@ -651,6 +651,9 @@ var CPViewFlags                     = { },
     if (_window === aWindow)
         return;
 
+    // Unlike in Cocoa you can observe the window of a view.
+    [self willChangeValueForKey:@"window"];
+
     [[self window] _dirtyKeyViewLoop];
 
     // Clear out first responder if we're the first responder and leaving.
@@ -678,6 +681,8 @@ var CPViewFlags                     = { },
     [self viewDidMoveToWindow];
 
     [[self window] _dirtyKeyViewLoop];
+
+    [self didChangeValueForKey:@"window"];
 }
 
 /*!
