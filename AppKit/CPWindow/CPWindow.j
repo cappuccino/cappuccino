@@ -189,7 +189,7 @@ CPWindowShadowStylePanel    = 2;
 CPWindowResizeStyleModern = 0;
 CPWindowResizeStyleLegacy = 1;
 CPWindowResizeStyle = CPWindowResizeStyleModern;
-CPWindowResizeSlop = 5;
+CPWindowResizeSlop = 3;
 
 var SHADOW_MARGIN_LEFT      = 20.0,
     SHADOW_MARGIN_RIGHT     = 19.0,
@@ -1817,6 +1817,8 @@ CPTexturedBackgroundWindowMask
             return [_leftMouseDownView performSelector:selector withObject:anEvent];
 
         case CPMouseMoved:
+            [_windowView setCursorForLocation:point resizing:NO];
+
             if (!_acceptsMouseMovedEvents)
                 return;
 
