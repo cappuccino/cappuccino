@@ -25,7 +25,8 @@ Cursor support by browser:
 
 var currentCursor = nil,
     cursorStack = [],
-    cursors = {};
+    cursors = {},
+    ieCursorMap = {};
 
 @implementation CPCursor : CPObject
 {
@@ -36,6 +37,20 @@ var currentCursor = nil,
     BOOL     _isSetOnMouseExited @accessors(readwrite, getter=isSetOnMouseExited, setter=setOnMouseExited:);
 }
 
++ (void)initialize
+{
+    if (self !== CPCursor)
+        return;
+
+    // IE < 9 does not support some CSS cursors, we map them to supported ones
+    ieCursorMap = {
+        "ew-resize":   "e-resize",
+        "ns-resize":   "n-resize",
+        "nesw-resize": "ne-resize",
+        "nwse-resize": "nw-resize"
+    };
+}
+
 - (id)initWithCSSString:(CPString)aString
 {
     if (self = [super init])
@@ -44,23 +59,30 @@ var currentCursor = nil,
     return self;
 }
 
-// hotspot is supported in CSS3 (but not IE).
-- (id)initWithImage:(CPImage)image hotSpot:(CPPoint)hotSpot
+/*!
+    Init a cursor with the given image and hotspot.
+    hotspot is supported in CSS3 (but not IE).
+*/
+- (id)initWithImage:(CPImage)image hotSpot:(CGPoint)hotSpot
 {
     _hotSpot = hotSpot;
     _image = image;
     return [self initWithCSSString:"url(" + [_image filename] + ")" + hotSpot.x + " " + hotSpot.y + ", auto"];
 }
 
-// foregroundColor and backgroundColor are ignored in Cocoa as well.  See http://developer.apple.com/library/mac/#documentation/Cocoa/Reference/ApplicationKit/Classes/NSCursor_Class/Reference/Reference.html
-- (id)initWithImage:(CPImage)image foregroundColorHint:(CPColor)foregroundColor backgroundColorHint:(CPColor)backgroundColor hotSpot:(CPPoint)aHotSpot
+/*!
+    Init a cursor with the given image and hotspot. This is provided
+    for compliance with Cocoa. Note that foregroundColor and backgroundColor are ignored
+    (as they are in Cocoa). See http://developer.apple.com/library/mac/#documentation/Cocoa/Reference/ApplicationKit/Classes/NSCursor_Class/Reference/Reference.html
+*/
+- (id)initWithImage:(CPImage)image foregroundColorHint:(CPColor)foregroundColor backgroundColorHint:(CPColor)backgroundColor hotSpot:(CGPoint)aHotSpot
 {
     return [self initWithImage:image hotSpot:hotSpot];
 }
 
 + (void)hide
 {
-    [self _setCursorCSS:"none"]; // Not supported in IE
+    [self _setCursorCSS:@"none"]; // Not supported in IE < 9
 }
 
 + (void)unhide
@@ -121,6 +143,7 @@ var currentCursor = nil,
 {
 #if PLATFORM(DOM)
     var platformWindows = [[CPPlatformWindow visiblePlatformWindows] allObjects];
+
     for (var i = 0, count = [platformWindows count]; i < count; i++)
         platformWindows[i]._DOMBodyElement.style.cursor = aString;
 #endif
@@ -130,22 +153,34 @@ var currentCursor = nil,
 + (CPCursor)_systemCursorWithName:(CPString)cursorName cssString:(CPString)aString hasImage:(BOOL)doesHaveImage
 {
     var cursor = cursors[cursorName];
-    if (typeof cursor === 'undefined')
+
+    if (typeof cursor === "undefined")
     {
         var cssString;
+
         if (doesHaveImage)
-            cssString = @"url(" + [[CPBundle bundleForClass:self] resourcePath] + @"/CPCursor/" + cursorName + ".cur), " + aString;
+            cssString = [CPString stringWithFormat:@"url(%@/CPCursor/%@.cur), %@", [[CPBundle bundleForClass:self] resourcePath], cursorName, aString];
         else
-            cssString = aString
+        {
+            // IE <= 8 does not support some cursors, map them to supported cursors
+            var ieLessThan9 = CPBrowserIsEngine(CPInternetExplorerBrowserEngine) && !CPFeatureIsCompatible(CPHTMLCanvasFeature);
+
+            if (ieLessThan9)
+                cssString = ieCursorMap[aString] || aString;
+            else
+                cssString = aString;
+        }
+
         cursor = [[CPCursor alloc] initWithCSSString:cssString];
         cursors[cursorName] = cursor;
     }
+
     return cursor;
 }
 
 + (CPCursor)arrowCursor
 {
-    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:"default" hasImage:NO];
+    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"default" hasImage:NO];
 }
 
 + (CPCursor)crosshairCursor
@@ -161,6 +196,36 @@ var currentCursor = nil,
 + (CPCursor)pointingHandCursor
 {
     return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"pointer" hasImage:NO];
+}
+
++ (CPCursor)resizeNorthwestCursor
+{
+    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"nw-resize" hasImage:NO];
+}
+
++ (CPCursor)resizeNorthwestSoutheastCursor
+{
+    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"nwse-resize" hasImage:NO];
+}
+
++ (CPCursor)resizeNortheastCursor
+{
+    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"ne-resize" hasImage:NO];
+}
+
++ (CPCursor)resizeNortheastSouthwestCursor
+{
+    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"nesw-resize" hasImage:NO];
+}
+
++ (CPCursor)resizeSouthwestCursor
+{
+    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"sw-resize" hasImage:NO];
+}
+
++ (CPCursor)resizeSoutheastCursor
+{
+    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"se-resize" hasImage:NO];
 }
 
 + (CPCursor)resizeDownCursor
@@ -188,9 +253,19 @@ var currentCursor = nil,
     return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"col-resize" hasImage:NO];
 }
 
++ (CPCursor)resizeEastWestCursor
+{
+    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"ew-resize" hasImage:NO];
+}
+
 + (CPCursor)resizeUpDownCursor
 {
     return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"row-resize" hasImage:NO];
+}
+
++ (CPCursor)resizeNorthSouthCursor
+{
+    return [CPCursor _systemCursorWithName:CPStringFromSelector(_cmd) cssString:@"ns-resize" hasImage:NO];
 }
 
 + (CPCursor)operationNotAllowedCursor
