@@ -1208,7 +1208,7 @@ var resizeTimer = nil;
         windowNumber = [_mouseDownWindow windowNumber];
     else
     {
-        var theWindow = [self hitTest:location];
+        var theWindow = [self _mouseHitTest:location];
 
         if ((aDOMEvent.type === CPDOMEventMouseDown) && theWindow)
             _mouseDownWindow = theWindow;
@@ -1486,7 +1486,17 @@ var resizeTimer = nil;
     return StopContextMenuDOMEventPropagation;
 }
 
+- (CPWindow)_mouseHitTest:(CPPoint)location
+{
+    return [self _hitTest:location withTest:@selector(_isValidMousePoint:)]
+}
+
 - (CPWindow)hitTest:(CPPoint)location
+{
+    return [self _hitTest:location withTest:@selector(containsPoint:)]
+}
+
+- (CPWindow)_hitTest:(CPPoint)location withTest:(SEL)aTest
 {
     if (self._only)
         return self._only;
@@ -1505,7 +1515,7 @@ var resizeTimer = nil;
         {
             var candidateWindow = windows[windowCount];
 
-            if (!candidateWindow._ignoresMouseEvents && [candidateWindow containsPoint:location])
+            if (!candidateWindow._ignoresMouseEvents && [candidateWindow performSelector:aTest withObject:location])
                 theWindow = candidateWindow;
         }
     }
