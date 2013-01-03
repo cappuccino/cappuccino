@@ -537,7 +537,7 @@
         [@"font",               [CPFont systemFontOfSize:12.0],     CPThemeStateBezeled],
 
         [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 8.0),    CPThemeStateBezeled],
-        [@"content-inset",      CGInsetMake(7.0, 7.0, 5.0, 8.0),    CPThemeStateBezeled | CPThemeStateEditing],
+        [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 8.0),    CPThemeStateBezeled | CPThemeStateEditing],
         [@"bezel-inset",        CGInsetMake(3.0, 4.0, 3.0, 4.0),    CPThemeStateBezeled],
         [@"bezel-inset",        CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled | CPThemeStateEditing],
 
@@ -603,7 +603,7 @@
             [@"font",           [CPFont systemFontOfSize:12.0]],
 
             [@"content-inset",  CGInsetMake(8.0, 14.0, 6.0, 14.0),  CPTextFieldStateRounded | CPThemeStateBezeled],
-            [@"content-inset",  CGInsetMake(7.0, 14.0, 6.0, 14.0),  CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
+            [@"content-inset",  CGInsetMake(8.0, 14.0, 6.0, 14.0),  CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
 
             [@"bezel-inset",    CGInsetMake(4.0, 4.0, 4.0, 4.0),    CPTextFieldStateRounded | CPThemeStateBezeled],
             [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
@@ -1207,6 +1207,7 @@
     [self registerThemeValues:themedButtonBarValues forView:buttonBar];
 
     return buttonBar;
+
 }
 
 + (_CPTableColumnHeaderView)makeColumnHeader
