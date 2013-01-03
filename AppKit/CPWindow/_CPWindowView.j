@@ -70,8 +70,8 @@ var _CPWindowViewResizeIndicatorImage = nil;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPColor blackColor], [CPFont systemFontOfSize:CPFontCurrentSystemSize], [CPNull null], _CGSizeMakeZero(), CPCenterTextAlignment, CPLineBreakByTruncatingTail, CPTopVerticalTextAlignment]
-                                       forKeys:[@"title-text-color", @"title-font", @"title-text-shadow-color", @"title-text-shadow-offset", @"title-alignment", @"title-line-break-mode", @"title-vertical-alignment"]];
+    return [CPDictionary dictionaryWithObjects:[[CPNull null],[CPNull null], [CPNull null], [CPNull null], [CPNull null] , [CPColor blackColor], [CPFont systemFontOfSize:CPFontCurrentSystemSize], [CPNull null], _CGSizeMakeZero(), CPCenterTextAlignment, CPLineBreakByTruncatingTail, CPTopVerticalTextAlignment]
+                                       forKeys:[@"close-image-origin",@"close-image-size",@"close-image", @"close-active-image", @"bezel-color",@"title-text-color", @"title-font", @"title-text-shadow-color", @"title-text-shadow-offset", @"title-alignment", @"title-line-break-mode", @"title-vertical-alignment"]];
 }
 
 - (CGRect)contentRectForFrameRect:(CGRect)aFrameRect

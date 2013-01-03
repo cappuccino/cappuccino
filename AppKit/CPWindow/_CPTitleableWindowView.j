@@ -102,6 +102,8 @@ var STANDARD_TITLEBAR_HEIGHT = 25.0;
 {
     [super layoutSubviews];
 
+    [self setBackgroundColor:[self valueForThemeAttribute:@"bezel-color"]];
+
     [_titleField setTextColor:[self currentValueForThemeAttribute:@"title-text-color"]];
     [_titleField setFont:[self currentValueForThemeAttribute:@"title-font"]];
     [_titleField setAlignment:[self currentValueForThemeAttribute:@"title-alignment"]];

@@ -621,7 +621,7 @@ var themedButtonValues = nil,
 
 + (CPScroller)makeVerticalScroller
 {
-    var scroller = [[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, 15.0, 170.0)];
+    var scroller = [[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, 9.0, 170.0)];
 
     [scroller setFloatValue:0.1];
     [scroller setKnobProportion:0.5];
@@ -742,7 +742,7 @@ var themedButtonValues = nil,
 
 + (CPScroller)makeHorizontalScroller
 {
-    var scroller = [[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, 170.0, 15.0)];
+    var scroller = [[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, 170.0, 9.0)];
 
     [scroller setFloatValue:0.1];
     [scroller setKnobProportion:0.5];
@@ -1453,7 +1453,7 @@ var themedButtonValues = nil,
             [@"line-break-mode",    CPLineBreakByTruncatingTail],
 
             [@"divider-thickness",  1.0],
-            [@"default-height",     24.0]
+            [@"default-height",     25.0]
         ];
 
     [self registerThemeValues:themedSegmentedControlValues forView:segmentedControl];

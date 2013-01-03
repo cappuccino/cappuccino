@@ -1186,7 +1186,7 @@ CPRunContinuesResponse  = -1002;
 
 + (CPString)defaultThemeName
 {
-    return ([[CPBundle mainBundle] objectForInfoDictionaryKey:"CPDefaultTheme"] || @"Aristo");
+    return ([[CPBundle mainBundle] objectForInfoDictionaryKey:"CPDefaultTheme"] || @"Aristo2");
 }
 
 @end
@@ -1300,7 +1300,7 @@ var _CPAppBootstrapperActions = nil;
     var defaultThemeName = [CPApplication defaultThemeName],
         themeURL = nil;
 
-    if (defaultThemeName === @"Aristo")
+    if (defaultThemeName === @"Aristo2")
         themeURL = [[CPBundle bundleForClass:[CPApplication class]] pathForResource:defaultThemeName + @".blend"];
     else
         themeURL = [[CPBundle mainBundle] pathForResource:defaultThemeName + @".blend"];
