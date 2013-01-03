@@ -13,7 +13,7 @@
 
 + (CPString)themeName
 {
-    return @"Aristo 2";
+    return @"Aristo2";
 }
 
 + (CPButton)makeButton
@@ -1331,55 +1331,55 @@
     return splitView;
 }
 
-+ (CPAlert)themedAlert
-{
-    var alert = [CPAlert new],
-        buttonOffset = 10.0,
-        defaultElementsMargin = 3.0,
-        errorIcon = PatternImage("alert-error.png", 53.0, 46.0),
-        helpIcon = PatternImage("alert-help.png", 24.0, 24.0),
-        helpIconPressed = PatternImage("alert-help-pressed.png", 24.0, 24.0),
-        helpLeftOffset = 15,
-        imageOffset = CGPointMake(15, 18),
-        informationIcon = PatternImage("alert-info.png", 53.0, 46.0),
-        informativeFont = [CPFont systemFontOfSize:CPFontCurrentSystemSize],
-        inset = CGInsetMake(15, 15, 15, 80),
-        messageFont = [CPFont boldSystemFontOfSize:CPFontDefaultSystemFontSize + 1],
-        size = CGSizeMake(400.0, 110.0),
-        suppressionButtonXOffset = 2.0,
-        suppressionButtonYOffset = 10.0,
-        suppressionButtonFont = [CPFont systemFontOfSize:CPFontCurrentSystemSize],
-        warningIcon = PatternImage("alert-warning.png", 53.0, 46.0);
-
-    themedAlertValues =
-    [
-        [@"button-offset",                      buttonOffset],
-        [@"content-inset",                      inset],
-        [@"default-elements-margin",            defaultElementsMargin],
-        [@"error-image",                        errorIcon],
-        [@"help-image",                         helpIcon],
-        [@"help-image-left-offset",             helpLeftOffset],
-        [@"help-image-pressed",                 helpIconPressed],
-        [@"image-offset",                       imageOffset],
-        [@"information-image",                  informationIcon],
-        [@"informative-text-alignment",         CPJustifiedTextAlignment],
-        [@"informative-text-color",             [CPColor blackColor]],
-        [@"informative-text-font",              informativeFont],
-        [@"message-text-alignment",             CPJustifiedTextAlignment],
-        [@"message-text-color",                 [CPColor blackColor]],
-        [@"message-text-font",                  messageFont],
-        [@"suppression-button-text-color",      [CPColor blackColor]],
-        [@"suppression-button-text-font",       suppressionButtonFont],
-        [@"size",                               size],
-        [@"suppression-button-x-offset",        suppressionButtonXOffset],
-        [@"suppression-button-y-offset",        suppressionButtonYOffset],
-        [@"warning-image",                      warningIcon]
-    ];
-
-    [self registerThemeValues:themedAlertValues forView:alert];
-
-    return [alert themeView];
-}
+// + (CPAlert)themedAlert
+// {
+//     var alert = [CPAlert new],
+//         buttonOffset = 10.0,
+//         defaultElementsMargin = 3.0,
+//         errorIcon = PatternImage("alert-error.png", 53.0, 46.0),
+//         helpIcon = PatternImage("alert-help.png", 24.0, 24.0),
+//         helpIconPressed = PatternImage("alert-help-pressed.png", 24.0, 24.0),
+//         helpLeftOffset = 15,
+//         imageOffset = CGPointMake(15, 18),
+//         informationIcon = PatternImage("alert-info.png", 53.0, 46.0),
+//         informativeFont = [CPFont systemFontOfSize:CPFontCurrentSystemSize],
+//         inset = CGInsetMake(15, 15, 15, 80),
+//         messageFont = [CPFont boldSystemFontOfSize:CPFontDefaultSystemFontSize + 1],
+//         size = CGSizeMake(400.0, 110.0),
+//         suppressionButtonXOffset = 2.0,
+//         suppressionButtonYOffset = 10.0,
+//         suppressionButtonFont = [CPFont systemFontOfSize:CPFontCurrentSystemSize],
+//         warningIcon = PatternImage("alert-warning.png", 53.0, 46.0);
+//
+//     themedAlertValues =
+//     [
+//         [@"button-offset",                      buttonOffset],
+//         [@"content-inset",                      inset],
+//         [@"default-elements-margin",            defaultElementsMargin],
+//         [@"error-image",                        errorIcon],
+//         [@"help-image",                         helpIcon],
+//         [@"help-image-left-offset",             helpLeftOffset],
+//         [@"help-image-pressed",                 helpIconPressed],
+//         [@"image-offset",                       imageOffset],
+//         [@"information-image",                  informationIcon],
+//         [@"informative-text-alignment",         CPJustifiedTextAlignment],
+//         [@"informative-text-color",             [CPColor blackColor]],
+//         [@"informative-text-font",              informativeFont],
+//         [@"message-text-alignment",             CPJustifiedTextAlignment],
+//         [@"message-text-color",                 [CPColor blackColor]],
+//         [@"message-text-font",                  messageFont],
+//         [@"suppression-button-text-color",      [CPColor blackColor]],
+//         [@"suppression-button-text-font",       suppressionButtonFont],
+//         [@"size",                               size],
+//         [@"suppression-button-x-offset",        suppressionButtonXOffset],
+//         [@"suppression-button-y-offset",        suppressionButtonYOffset],
+//         [@"warning-image",                      warningIcon]
+//     ];
+//
+//     [self registerThemeValues:themedAlertValues forView:alert];
+//
+//     return [alert themeView];
+// }
 
 + (CPStepper)themedStepper
 {
@@ -1813,21 +1813,21 @@
     return slider;
 }
 
-+ (CPAlert)themedAlert
-{
-    var alert = [CPAlert new],
-
-        hudSpecificValues =
-        [
-            [@"message-text-color",             [CPColor whiteColor]],
-            [@"informative-text-color",         [CPColor whiteColor]],
-            [@"suppression-button-text-color",  [CPColor whiteColor]],
-        ];
-
-    [self registerThemeValues:hudSpecificValues forView:alert inherit:themedAlertValues];
-
-    //return [alert themeView];
-}
+// + (CPAlert)themedAlert
+// {
+//     var alert = [CPAlert new],
+//
+//         hudSpecificValues =
+//         [
+//             [@"message-text-color",             [CPColor whiteColor]],
+//             [@"informative-text-color",         [CPColor whiteColor]],
+//             [@"suppression-button-text-color",  [CPColor whiteColor]],
+//         ];
+//
+//     [self registerThemeValues:hudSpecificValues forView:alert inherit:themedAlertValues];
+//
+//     //return [alert themeView];
+// }
 
 
 

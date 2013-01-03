@@ -91,10 +91,10 @@ task ("clean-sprites", function()
 
 task ("clobber-theme", function()
 {
-    var f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "**/Aristo.blend")),
+    var f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "**/Aristo2.blend")),
         paths = f.items();
 
-    f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "Aristo.build"));
+    f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "Aristo2.build"));
     paths = paths.concat(f.items());
 
     paths.forEach(function(path)

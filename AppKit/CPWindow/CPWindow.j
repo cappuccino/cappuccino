@@ -2944,7 +2944,7 @@ CPTexturedBackgroundWindowMask
 /*!
     Sets the default button for the window.
     This is equivalent to setting the the key equivalent of the button to "return".
-    Additionally this will turn your button blue (with the Aristo theme).
+    Additionally this will turn your button blue (with the Aristo2 theme).
     @param aButton - The button that should become default.
 */
 - (void)setDefaultButton:(CPButton)aButton
