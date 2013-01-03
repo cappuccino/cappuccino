@@ -1207,6 +1207,7 @@
     [self registerThemeValues:themedButtonBarValues forView:buttonBar];
 
     return buttonBar;
+
 }
 
 + (_CPTableColumnHeaderView)makeColumnHeader
