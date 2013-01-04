@@ -162,8 +162,8 @@ GLOBAL(class_addIvar) = function(/*Class*/ aClass, /*String*/ aName, /*String*/ 
 
         if (hasOwnProperty.call(accessors, "setter"))
         {
-            var source = copy ? (access + " = anObject;") :
-                                ("if (" + access + " !== anObject) " + access + " = objj_msgSend(anObject, \"copy\");");
+            var source = copy ? ("if (" + access + " !== anObject) " + access + " = objj_msgSend(anObject, \"copy\");") :
+                                (access + " = anObject;");
             var implementation = new Function("self", "_cmd", "anObject", source);
 
             class_addMethod(aClass, accessors["setter"], implementation, ["void", "id", "SEL", aType || "id"]);
