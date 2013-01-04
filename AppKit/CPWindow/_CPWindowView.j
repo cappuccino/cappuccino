@@ -390,6 +390,7 @@ var _CPWindowViewResizeIndicatorImage = nil,
             newY = _CGRectGetMinY(_resizeFrame),
             newWidth = _CGRectGetWidth(_resizeFrame),
             newHeight = _CGRectGetHeight(_resizeFrame),
+            platformFrame = [[theWindow platformWindow] usableContentFrame],
             minSize = [theWindow minSize],
             maxSize = [theWindow maxSize];
 
@@ -440,7 +441,10 @@ var _CPWindowViewResizeIndicatorImage = nil,
         if (theWindow._isSheet && theWindow._parentView && (frame.size.width !== newWidth))
             [theWindow._parentView _setAttachedSheetFrameOrigin];
 
-        [theWindow setFrame:_CGRectMake(newX, newY, newWidth, newHeight)];
+        // Constrain resize to fit within the platform window.
+        var newFrame = CGRectIntersection(_CGRectMake(newX, newY, newWidth, newHeight), platformFrame);
+
+        [theWindow setFrame:newFrame];
         [self setCursorForLocation:location resizing:YES];
     }
 
