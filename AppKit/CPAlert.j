@@ -560,7 +560,6 @@ var bottomHeight = 71;
         [_window setMovableByWindowBackground:YES];
     }
 
-
     _needsLayout = NO;
 }
 
