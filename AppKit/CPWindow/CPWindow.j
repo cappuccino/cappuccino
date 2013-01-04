@@ -78,6 +78,12 @@ CPBorderlessBridgeWindowMask    = 1 << 20;
 */
 CPHUDBackgroundWindowMask       = 1 << 21;
 
+/*!
+    @global
+    @class CPWindow
+*/
+_CPModalWindowMask              = 1 << 22;
+
 CPWindowNotSizable              = 0;
 CPWindowMinXMargin              = 1;
 CPWindowWidthSizable            = 2;
@@ -521,6 +527,9 @@ CPTexturedBackgroundWindowMask
 
     else if (aStyleMask & CPDocModalWindowMask)
         return _CPDocModalWindowView;
+
+    else if (aStyleMask & _CPModalWindowMask)
+        return _CPModalWindowView
 
     return _CPStandardWindowView;
 }
@@ -3342,5 +3351,6 @@ CPCustomWindowShadowStyle   = 3;
 @import "_CPBorderlessWindowView.j"
 @import "_CPBorderlessBridgeWindowView.j"
 @import "_CPAttachedWindowView.j"
+@import "_CPModalWindowView.j"
 @import "CPDragServer.j"
 @import "CPView.j"

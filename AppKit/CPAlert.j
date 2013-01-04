@@ -53,6 +53,8 @@ CPInformationalAlertStyle   = 1;
 */
 CPCriticalAlertStyle        = 2;
 
+var bottomHeight = 71;
+
 /*!
     @ingroup appkit
 
@@ -164,7 +166,7 @@ CPCriticalAlertStyle        = 2;
         _alertStyle         = CPWarningAlertStyle;
         _showHelp           = NO;
         _needsLayout        = YES;
-        _defaultWindowStyle = CPTitledWindowMask;
+        _defaultWindowStyle = _CPModalWindowMask;
         _themeView          = [_CPAlertThemeView new];
 
         _messageLabel       = [CPTextField labelWithTitle:@"Alert"];
@@ -450,6 +452,7 @@ CPCriticalAlertStyle        = 2;
         defaultElementsMargin = [_themeView currentValueForThemeAttribute:@"default-elements-margin"],
         panelSize = [[_window contentView] frame].size,
         buttonsOriginY,
+        theme = [self theme],
         offsetX;
 
     [aRepresentativeButton setTheme:[self theme]];
@@ -460,6 +463,10 @@ CPCriticalAlertStyle        = 2;
         panelSize.height = minimumSize.height;
 
     buttonsOriginY = panelSize.height - [aRepresentativeButton frameSize].height + buttonOffset;
+
+    if ([_window styleMask] & _CPModalWindowMask)
+        buttonsOriginY = panelSize.height - [aRepresentativeButton frameSize].height / 2 + buttonOffset;
+
     offsetX = panelSize.width - inset.right;
 
     for (var i = [_buttons count] - 1; i >= 0 ; i--)
@@ -475,6 +482,7 @@ CPCriticalAlertStyle        = 2;
         offsetX -= width;
         [button setFrame:CGRectMake(offsetX, buttonsOriginY, width, height)];
         offsetX -= 10;
+
     }
 
     if (_showHelp)
