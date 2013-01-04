@@ -467,7 +467,7 @@ var _CPWindowViewResizeIndicatorImage = nil,
     if ([CPMenu menuBarVisible])
         minPointY = [[CPApp mainMenu] menuBarHeight];
 
-    var restrictedPoint = CGPointMake(0, 0);
+    var restrictedPoint = _CGPointMake(0, 0);
 
     restrictedPoint.x = MIN(MAX(aPoint.x, -_frame.size.width + 4.0), _CGRectGetMaxX(visibleFrame) - 4.0);
     restrictedPoint.y = MIN(MAX(aPoint.y, minPointY), _CGRectGetMaxY(visibleFrame) - 8.0);
@@ -497,8 +497,8 @@ var _CPWindowViewResizeIndicatorImage = nil,
         var theWindow = [self window],
             frame = [theWindow frame],
             location = [theWindow convertBaseToGlobal:[anEvent locationInWindow]],
-            origin = [self _pointWithinScreenFrame:CGPointMake(_CGRectGetMinX(frame) + (location.x - _mouseDraggedPoint.x),
-                                                               _CGRectGetMinY(frame) + (location.y - _mouseDraggedPoint.y))];
+            origin = [self _pointWithinScreenFrame:_CGPointMake(_CGRectGetMinX(frame) + (location.x - _mouseDraggedPoint.x),
+                                                                _CGRectGetMinY(frame) + (location.y - _mouseDraggedPoint.y))];
         [theWindow setFrameOrigin:origin];
 
         _mouseDraggedPoint = [self _pointWithinScreenFrame:location];
@@ -547,7 +547,7 @@ var _CPWindowViewResizeIndicatorImage = nil,
 
 - (void)setResizeIndicatorOffset:(CGSize)anOffset
 {
-    if (CGSizeEqualToSize(_resizeIndicatorOffset, anOffset))
+    if (_CGSizeEqualToSize(_resizeIndicatorOffset, anOffset))
         return;
 
     _resizeIndicatorOffset = anOffset;
@@ -558,7 +558,7 @@ var _CPWindowViewResizeIndicatorImage = nil,
     var size = [_resizeIndicator frame].size,
         boundsSize = [self frame].size;
 
-    [_resizeIndicator setFrameOrigin:CGPointMake(boundsSize.width - size.width - anOffset.width, boundsSize.height - size.height - anOffset.height)];
+    [_resizeIndicator setFrameOrigin:_CGPointMake(boundsSize.width - size.width - anOffset.width, boundsSize.height - size.height - anOffset.height)];
 }
 
 - (CGSize)resizeIndicatorOffset
@@ -621,7 +621,7 @@ var _CPWindowViewResizeIndicatorImage = nil,
         var size = [_resizeIndicator frame].size,
             boundsSize = [self bounds].size;
 
-        [_resizeIndicator setFrameOrigin:CGPointMake(boundsSize.width - size.width - _resizeIndicatorOffset.width, boundsSize.height - size.height - _resizeIndicatorOffset.height)];
+        [_resizeIndicator setFrameOrigin:_CGPointMake(boundsSize.width - size.width - _resizeIndicatorOffset.width, boundsSize.height - size.height - _resizeIndicatorOffset.height)];
     }
 }
 
