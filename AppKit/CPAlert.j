@@ -554,6 +554,13 @@ var bottomHeight = 71;
     [_window setFrameSize:finalSize];
     [_window center];
 
+    if ([_window styleMask] & _CPModalWindowMask || [_window styleMask] & CPHUDBackgroundWindowMask)
+    {
+        [_window setMovable:YES];
+        [_window setMovableByWindowBackground:YES];
+    }
+
+
     _needsLayout = NO;
 }
 
