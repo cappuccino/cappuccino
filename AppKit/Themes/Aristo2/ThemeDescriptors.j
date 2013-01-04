@@ -8,6 +8,16 @@
 
 @import <BlendKit/BKThemeDescriptor.j>
 
+var themedButtonValues = nil,
+    themedTextFieldValues = nil,
+    themedVerticalScrollerValues = nil,
+    themedHorizontalScrollerValues = nil,
+    themedSegmentedControlValues = nil,
+    themedHorizontalSliderValues = nil,
+    themedVerticalSliderValues = nil,
+    themedCircularSliderValues = nil,
+    themedButtonBarValues = nil,
+    themedAlertValues = nil;
 
 @implementation Aristo2ThemeDescriptor : BKThemeDescriptor
 
@@ -636,11 +646,15 @@
 
 + (CPTokenField)themedTokenField
 {
-    var tokenfield = [[CPTokenField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 29.0)],
+    var tokenfield = [[CPTokenField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 29.0)];
 
         overrides =
         [
+
             [@"bezel-inset", CGInsetMakeZero()],
+            [@"bezel-inset", CGInsetMake(3.0, 4.0, 3.0, 4.0),    CPThemeStateBezeled],
+            [@"bezel-inset", CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled | CPThemeStateEditing],
+
             [@"editor-inset", CGInsetMake(3.0, 0.0, 0.0, 0.0)],
 
             // Non-bezeled token field with tokens
@@ -650,12 +664,11 @@
             [@"content-inset", CGInsetMake(7.0, 8.0, 6.0, 8.0), CPTextFieldStatePlaceholder],
 
             // Bezeled token field with tokens
-            [@"content-inset", CGInsetMake(5.0, 5.0, 4.0, 5.0), CPThemeStateBezeled],
+            [@"content-inset", CGInsetMake(5.0, 8.0, 4.0, 8.0), CPThemeStateBezeled],
 
             // Bezeled token field with no tokens
-            [@"content-inset", CGInsetMake(8.0, 8.0, 7.0, 8.0), CPThemeStateBezeled | CPTextFieldStatePlaceholder]
+            [@"content-inset", CGInsetMake(10.0, 8.0, 7.0, 8.0), CPThemeStateBezeled | CPTextFieldStatePlaceholder],
         ];
-
 
     [self registerThemeValues:overrides forView:tokenfield inherit:themedTextFieldValues];
 
