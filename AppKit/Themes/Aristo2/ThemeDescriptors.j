@@ -650,7 +650,6 @@ var themedButtonValues = nil,
 
         overrides =
         [
-
             [@"bezel-inset", CGInsetMakeZero()],
             [@"bezel-inset", CGInsetMake(3.0, 4.0, 3.0, 4.0),    CPThemeStateBezeled],
             [@"bezel-inset", CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled | CPThemeStateEditing],
