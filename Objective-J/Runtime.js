@@ -158,16 +158,23 @@ GLOBAL(class_addIvar) = function(/*Class*/ aClass, /*String*/ aName, /*String*/ 
     if (accessors)
     {
         var copy = accessors.copy || false;
-        var access = "self." + ivar;
+        var access = "self." + aName;
 
         if (hasOwnProperty.call(accessors, "setter"))
-            class_addMethod(aClass, accessors["setter"], new Function("self", "_cmd", "anObject", copy ?
-                access " = anObject;" :
-                "if (" + access + " !== anObject) " + access + " = objj_msgSend(anObject, \"copy\");");
+        {
+            var source = copy ? (access + " = anObject;") :
+                                ("if (" + access + " !== anObject) " + access + " = objj_msgSend(anObject, \"copy\");");
+            var implementation = new Function("self", "_cmd", "anObject", source);
+
+            class_addMethod(aClass, accessors["setter"], implementation, ["void", "id", "SEL", aType || "id"]);
+        }
 
         // Shouldn't we copy here too?
         if (hasOwnProperty.call(accessors, "getter"))
-            class_addMethod(aClass, accessors["getter"], new Function("self", "_cmd", "return " + access + ";");
+        {
+            var implemenation = new Function("self", "_cmd", "return " + access + ";");
+            class_addMethod(aClass, accessors["getter"], implementation, [aType || "id"]);
+        }
     }
 
     return YES;
@@ -234,7 +241,7 @@ GLOBAL(class_addMethod) = function(/*Class*/ aClass, /*SEL*/ aName, /*IMP*/ anIm
 
 DISPLAY_NAME(class_addMethod);
 
-// Deprecated. Use class_addMethods
+// Deprecated. Use class_addMethod
 GLOBAL(class_addMethods) = function(/*Class*/ aClass, /*Array*/ methods)
 {
     var index = 0,
