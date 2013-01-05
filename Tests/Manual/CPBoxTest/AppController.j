@@ -31,12 +31,12 @@
 
 - (IBAction)click:(id)sender
 {
-    [box1 setFrameFromContentFrame:CPRectMake(30, 30, 100, 100)];
+    [box1 setFrameFromContentFrame:CPRectMake(18, 81, 326, 133)];
 }
 
 - (IBAction)click2:(id)sender
 {
-    [box1 setFrameFromContentFrame:CPRectMake(30, 30, 300, 300)];
+    [box1 setFrameFromContentFrame:CPRectMake(18, 81, 300, 250)];
 }
 
 - (IBAction)change:(id)aSender
