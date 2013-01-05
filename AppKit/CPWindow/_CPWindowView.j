@@ -268,12 +268,15 @@ var _CPWindowViewResizeIndicatorImage = nil,
 */
 - (void)setCursorForLocation:(CGPoint)aPoint resizing:(BOOL)isResizing
 {
-    if (!(_styleMask & CPResizableWindowMask) ||
+    var theWindow = [self window];
+
+    if ([theWindow isFullPlatformWindow] ||
+        !(_styleMask & CPResizableWindowMask) ||
         (CPWindowResizeStyle !== CPWindowResizeStyleModern))
         return;
 
-    var theWindow = [self window],
-        resizeRegion = isResizing ? _resizeRegion : [self resizeRegionForPoint:[theWindow convertBaseToGlobal:aPoint]],
+    var globalPoint = [theWindow convertBaseToGlobal:aPoint],
+        resizeRegion = isResizing ? _resizeRegion : [self resizeRegionForPoint:globalPoint],
         minSize = nil,
         maxSize = nil,
         frameSize;
@@ -300,6 +303,8 @@ var _CPWindowViewResizeIndicatorImage = nil,
             if (minSize && (frameSize.height === minSize.height))
                 [[CPCursor resizeUpCursor] set];
             else if (maxSize && (frameSize.height === maxSize.height))
+                [[CPCursor resizeDownCursor] set];
+            else if ([CPMenu menuBarVisible] && (_CGRectGetMinY([theWindow frame]) <= [CPMenu menuBarHeight]))
                 [[CPCursor resizeDownCursor] set];
             else
                 [[CPCursor resizeNorthSouthCursor] set];

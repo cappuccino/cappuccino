@@ -1538,6 +1538,11 @@ CPTexturedBackgroundWindowMask
     _ignoresMouseEvents = shouldIgnoreMouseEvents;
 }
 
+- (void)_mouseExitedResizeRect
+{
+    [[CPCursor arrowCursor] set];
+}
+
 // Managing Titles
 
 /*!
@@ -3285,8 +3290,8 @@ var keyViewComparator = function(lhs, rhs, context)
 - (BOOL)_isValidMousePoint:(CGPoint)aPoint
 {
     // If we are using the new resizing mode, mouse events are valid
-    // outside the window's frame.
-    var mouseFrame = ((_styleMask & CPResizableWindowMask) && (CPWindowResizeStyle === CPWindowResizeStyleModern)) ? _CGRectInset(_frame, -CPWindowResizeSlop, -CPWindowResizeSlop) : _frame;
+    // outside the window's frame for non-full platform windows.
+    var mouseFrame = (!_isFullPlatformWindow && (_styleMask & CPResizableWindowMask) && (CPWindowResizeStyle === CPWindowResizeStyleModern)) ? _CGRectInset(_frame, -CPWindowResizeSlop, -CPWindowResizeSlop) : _frame;
 
     return CGRectContainsPoint(mouseFrame, aPoint);
 }
