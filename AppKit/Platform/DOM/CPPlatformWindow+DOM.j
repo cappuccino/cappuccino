@@ -1177,7 +1177,6 @@ var resizeTimer = nil;
 {
     var type = _overriddenEventType || aDOMEvent.type;
 
-
     // IE's event order is down, up, up, dblclick, so we have create these events artificially.
     if (type === @"dblclick")
     {
@@ -1308,6 +1307,7 @@ var resizeTimer = nil;
     // if there are any tracking event listeners then show the event guard so we don't lose events to iframes
     // TODO Actually check for tracking event listeners, not just any listener but _CPRunModalLoop.
     var hasTrackingEventListener = NO;
+
     for (var i = 0; i < CPApp._eventListeners.length; i++)
     {
         if (CPApp._eventListeners[i]._callback !== _CPRunModalLoop)
@@ -1316,6 +1316,7 @@ var resizeTimer = nil;
             break;
         }
     }
+
     _lastMouseEventLocation = location;
 
     _DOMEventGuard.style.display = hasTrackingEventListener ? "" : "none";
