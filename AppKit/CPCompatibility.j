@@ -310,11 +310,18 @@ function CPBrowserStyleProperty(aProperty)
                 break;
             default:
                 var prefixes = ["Webkit", "Moz", "O", "ms"],
-                    capProperty = [aProperty capitalizedString];
+                    strippedProperty = aProperty.split('-').join(' '),
+                    capProperty = [strippedProperty capitalizedString].split(' ').join('');
 
                 for (var i = 0; i < prefixes.length; i++)
                 {
-                    if (prefixes[i] + capProperty in testElement.style)
+                    // First check if the property is already valid without being formatted, otherwise try the capitalized property
+                    if (prefixes[i] + aProperty in testElement.style)
+                    {
+                        r = prefixes[i] + aProperty;
+                        break;
+                    }
+                    else if (prefixes[i] + capProperty in testElement.style)
                     {
                         r = prefixes[i] + capProperty;
                         break;
