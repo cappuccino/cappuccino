@@ -2232,8 +2232,9 @@ CPTexturedBackgroundWindowMask
     // Note that the Cocoa documentation says that this method returns YES if
     // the window is visible and has a title bar or a "resize mechanism". It turns
     // out a "resize mechanism" is not the same as having the resize mask set.
-    // In practice a window must have a title bar to become main.
-    return ([self isVisible] && (_styleMask & CPTitledWindowMask));
+    // In practice a window must have a title bar to become main, but we make
+    // an exception for a full platform window.
+    return ([self isVisible] && ((_styleMask & CPTitledWindowMask) || _isFullPlatformWindow));
 }
 
 /*!
