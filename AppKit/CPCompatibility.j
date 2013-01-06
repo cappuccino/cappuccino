@@ -348,20 +348,26 @@ function CPBrowserCSSProperty(aProperty)
     if (!browserProperty)
         return nil;
 
-    var prefixes = {
-            'Webkit': '-webkit-',
-            'Moz': '-moz-',
-            'O': '-o-',
-            'ms': '-ms-'
+    var parts = browserProperty.match(/[A-Z][a-z]+/g),
+        formattedBrowserProperty = browserProperty,
+        prefixes = {
+            'Webkit': '-webkit',
+            'Moz': '-moz',
+            'O': '-o',
+            'ms': '-ms'
         };
+
+    // If there were any capitalized words in the browserProperty, insert a "-" between each one
+    if (parts && parts.length > 0)
+        formattedBrowserProperty = parts.join("-");
 
     for (var prefix in prefixes)
     {
-        if (browserProperty.substring(0, prefix.length) == prefix)
+        if (formattedBrowserProperty.substring(0, prefix.length) == prefix)
         {
-            return prefixes[prefix] + browserProperty.substring(prefix.length).toLowerCase();
+            return prefixes[prefix] + formattedBrowserProperty.substring(prefix.length).toLowerCase();
         }
     }
 
-    return browserProperty.toLowerCase();
+    return formattedBrowserProperty.toLowerCase();
 }
