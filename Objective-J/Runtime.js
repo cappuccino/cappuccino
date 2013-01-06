@@ -140,7 +140,7 @@ GLOBAL(class_setSuperclass) = function(/*Class*/ aClass, /*Class*/ aSuperClass)
 
 DISPLAY_NAME(class_setSuperclass);
 
-GLOBAL(class_addIvar) = function(/*Class*/ aClass, /*String*/ aName, /*String*/ aType)
+GLOBAL(class_addIvar) = function(/*Class*/ aClass, /*String*/ aName, /*String*/ aType, /*Object*/ accessors)
 {
     var thePrototype = aClass.allocator.prototype;
 
@@ -155,11 +155,34 @@ GLOBAL(class_addIvar) = function(/*Class*/ aClass, /*String*/ aName, /*String*/ 
 
     thePrototype[aName] = NULL;
 
+    if (accessors)
+    {
+        var copy = accessors.copy || false;
+        var access = "self." + aName;
+
+        if (hasOwnProperty.call(accessors, "setter"))
+        {
+            var source = copy ? ("if (" + access + " !== anObject) " + access + " = objj_msgSend(anObject, \"copy\");") :
+                                (access + " = anObject;");
+            var implementation = new Function("self", "_cmd", "anObject", source);
+
+            class_addMethod(aClass, accessors["setter"], implementation, ["void", "id", "SEL", aType || "id"]);
+        }
+
+        // Shouldn't we copy here too?
+        if (hasOwnProperty.call(accessors, "getter"))
+        {
+            var implemenation = new Function("self", "_cmd", "return " + access + ";");
+            class_addMethod(aClass, accessors["getter"], implementation, [aType || "id"]);
+        }
+    }
+
     return YES;
 }
 
 DISPLAY_NAME(class_addIvar);
 
+// Deprecated. Use class_addIvar.
 GLOBAL(class_addIvars) = function(/*Class*/ aClass, /*Array*/ivars)
 {
     var index = 0,
@@ -218,6 +241,7 @@ GLOBAL(class_addMethod) = function(/*Class*/ aClass, /*SEL*/ aName, /*IMP*/ anIm
 
 DISPLAY_NAME(class_addMethod);
 
+// Deprecated. Use class_addMethod
 GLOBAL(class_addMethods) = function(/*Class*/ aClass, /*Array*/ methods)
 {
     var index = 0,
