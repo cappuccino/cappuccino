@@ -348,26 +348,32 @@ function CPBrowserCSSProperty(aProperty)
     if (!browserProperty)
         return nil;
 
-    var parts = browserProperty.match(/[A-Z][a-z]+/g),
-        formattedBrowserProperty = browserProperty,
-        prefixes = {
-            'Webkit': '-webkit',
-            'Moz': '-moz',
-            'O': '-o',
-            'ms': '-ms'
+    var prefixes = {
+            'Webkit': '-webkit-',
+            'Moz': '-moz-',
+            'O': '-o-',
+            'ms': '-ms-'
         };
-
-    // If there were any capitalized words in the browserProperty, insert a "-" between each one
-    if (parts && parts.length > 0)
-        formattedBrowserProperty = parts.join("-");
 
     for (var prefix in prefixes)
     {
-        if (formattedBrowserProperty.substring(0, prefix.length) == prefix)
+        if (browserProperty.substring(0, prefix.length) == prefix)
         {
-            return prefixes[prefix] + formattedBrowserProperty.substring(prefix.length).toLowerCase();
+            var browserPropertyWithoutPrefix = browserProperty.substring(prefix.length),
+                parts = browserPropertyWithoutPrefix.match(/[A-Z][a-z]+/g);
+
+            // If there were any capitalized words in the browserProperty, insert a "-" between each one
+            if (parts && parts.length > 0)
+                browserPropertyWithoutPrefix = parts.join("-");
+
+            return prefixes[prefix] + browserPropertyWithoutPrefix.toLowerCase();
         }
     }
 
-    return formattedBrowserProperty.toLowerCase();
+    var parts = browserProperty.match(/[A-Z][a-z]+/g);
+
+    if (parts && parts.length > 0)
+        browserProperty = parts.join("-");
+
+    return browserProperty.toLowerCase();
 }
