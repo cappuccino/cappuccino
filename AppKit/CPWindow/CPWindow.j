@@ -1865,9 +1865,16 @@ CPTexturedBackgroundWindowMask
 */
 - (BOOL)canBecomeKeyWindow
 {
-    // In Cocoa only resizable or titled windows return YES here by default. But the main browser window in Cappuccino
-    // doesn't have these masks even that it's both titled and resizable, so we return YES when isFullPlatformWindow too.
-    return (_styleMask & CPTitledWindowMask) || (_styleMask & CPResizableWindowMask) || [self isFullPlatformWindow];
+    /*
+        In Cocoa only titled windows return YES here by default. But the main browser
+        window in Cappuccino doesn't have a title bar even that it's both titled and
+        resizable, so we return YES when isFullPlatformWindow too.
+
+        Note that Cocoa will return NO for a non-titled, resizable window. The Cocoa documention
+        says it will return YES if there is a "resize bar", but in practice
+        that is not the same as the resizable mask.
+    */
+    return (_styleMask & CPTitledWindowMask) || [self isFullPlatformWindow];
 }
 
 /*!
@@ -2231,11 +2238,12 @@ CPTexturedBackgroundWindowMask
 */
 - (BOOL)canBecomeMainWindow
 {
-    // FIXME: Also check if we can resize and titlebar.
-    if ([self isVisible])
-        return YES;
-
-    return NO;
+    // Note that the Cocoa documentation says that this method returns YES if
+    // the window is visible and has a title bar or a "resize mechanism". It turns
+    // out a "resize mechanism" is not the same as having the resize mask set.
+    // In practice a window must have a title bar to become main, but we make
+    // an exception for a full platform window.
+    return ([self isVisible] && ((_styleMask & CPTitledWindowMask) || _isFullPlatformWindow));
 }
 
 /*!
