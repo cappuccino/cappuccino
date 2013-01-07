@@ -303,13 +303,9 @@ function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure)
 #if COMMONJS
     if (aURL.pathExtension() === "j")
     {
-        var FILE = require("file"),
-            FileList = require("jake").FileList,
-            aFilePath = aURL.toString().substring(5);
-
-        var OS = require("os"),
+        var aFilePath = aURL.toString().substring(5),
+            OS = require("os"),
             gccFlags = require("objective-j").currentCompilerFlags(),
-//            gcc = OS.popen("gcc -E -x c -P -DPLATFORM_COMMONJS " + INCLUDES + " " + OS.enquote(aFilePath), { charset:"UTF-8" }),
             gcc = OS.popen("gcc -E -x c -P " + (gccFlags ? gccFlags : "") + " " + OS.enquote(aFilePath), { charset:"UTF-8" }),
             chunk,
             fileContents = "";
