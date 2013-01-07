@@ -531,8 +531,6 @@ if (!exports.acorn) {
         ++tokPos;
       } else if (ch >= 5760 && nonASCIIwhitespace.test(String.fromCharCode(ch))) {
         ++tokPos;
-      } else if (ch === 35 && options.objj) {
-        skipLineComment(1);
       } else {
         break;
       }
@@ -697,6 +695,16 @@ if (!exports.acorn) {
     case 64: // '@'
       if (options.objj)
         return readToken_at(code);
+      return false;
+
+    case 35: // '#'
+      if (options.objj) {
+        var start = tokPos;
+        var ch = input.charCodeAt(++tokPos);
+        while (tokPos < inputLen && ch !== 10 && ch !== 13 && ch !== 8232 && ch !== 8329) // End of line
+          ch = input.charCodeAt(++tokPos);
+        return finishToken(_preprocess, input.slice(start, tokPos));
+      }
       return false;
 
     case 126: // '~'
@@ -1358,6 +1366,11 @@ if (!exports.acorn) {
 
       node.filename = parseStringNumRegExpLiteral();
       return finishNode(node, "ImportStatement");
+
+      // This is a Objective-J statement
+    case _preprocess:
+      next();
+      return finishNode(node, "PreprocessStatement");
 
       // If the statement does not start with a statement keyword or a
       // brace, it's an ExpressionStatement or LabeledStatement. We

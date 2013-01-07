@@ -728,5 +728,10 @@ ObjectExpression: function(node, st, c) {
         }
         c(prop.value, st, "Expression");
     }
+},
+PreprocessStatement: function(node, st, c) {
+    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
+    st.compiler.lastPos = node.start;
+    CONCAT(st.compiler.jsBuffer, "//");
 }
 });
