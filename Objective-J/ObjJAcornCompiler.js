@@ -91,9 +91,10 @@ var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*
     this.cmBuffer = null;
     this.warnings = [];
 
+    //console.log("Start Parse: " + aURL);
     var start = new Date().getTime();
 #ifdef BROWSER
-	console.time("Parse with Acorn - " + aURL);
+	//console.time("Parse with Acorn - " + aURL);
 #endif
     try {
         this.tokens = exports.acorn.parse(aString);
@@ -114,7 +115,7 @@ var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*
 	var time = (end - start) / 1000;
 	//print("Parse with Acorn: " + aURL + " in " + time + " seconds");
 #ifdef BROWSER
-	console.timeEnd("Parse with Acorn - " + aURL);
+	//console.timeEnd("Parse with Acorn - " + aURL);
 #endif
     this.dependencies = [];
     this.flags = flags | ObjJAcornCompiler.Flags.IncludeDebugSymbols;
@@ -122,7 +123,7 @@ var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*
     this.lastPos = 0;
     //var start = new Date().getTime();
 #ifdef BROWSER
-	console.time("Compile pass " + pass + " - " + aURL);
+	//console.time("Compile pass " + pass + " - " + aURL);
 #endif
 	try {
         compile(this.tokens, new Scope(null ,{ compiler: this }), pass === 2 ? pass2 : pass1);
@@ -139,7 +140,7 @@ var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*
 	//var time = (end - start) / 1000;
 	//print("Compile pass 1: " + aURL + " in " + time + " seconds");
 #ifdef BROWSER
-	console.timeEnd("Compile pass " + pass + " - " + aURL);
+	//console.timeEnd("Compile pass " + pass + " - " + aURL);
 #endif
 //	console.log("JS: " + this.jsBuffer);
 }
@@ -169,17 +170,17 @@ ObjJAcornCompiler.prototype.compilePass2 = function()
 	this.pass = 2;
 	this.jsBuffer = new StringBuffer();
     this.warnings = [];
-	//print("Start Compile2: " + this.URL);
+	//console.log("Start Compile2: " + this.URL);
     //var start = new Date().getTime();
 #ifdef BROWSER
-    console.time("Compile pass 2" + this.pass + " - " + this.URL);
+    //console.time("Compile pass 2" + this.pass + " - " + this.URL);
 #endif
     compile(this.tokens, new Scope(null ,{ compiler: this }), pass2);
 	//var end = new Date().getTime();
 	//var time = (end - start) / 1000;
 	//print("Compile pass 2: " + this.URL + " in " + time + " seconds");
 #ifdef BROWSER
-    console.timeEnd("Compile pass 2" + this.pass + " - " + this.URL);
+    //console.timeEnd("Compile pass 2" + this.pass + " - " + this.URL);
 #endif
     //print("Compiled: \n" + this.jsBuffer.toString());
 
