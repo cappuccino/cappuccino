@@ -43,12 +43,18 @@ function FileExecutable(/*CFURL|String*/ aURL, /*Dictionary*/ aFilenameTranslate
 
     else if ((extension === "j" || !extension) && !fileContents.match(/^{/))
     {
-        if (!exports.ObjJCompiler.usedVersion || exports.ObjJCompiler.usedVersion === "preprocessor")
-            executable = exports.preprocess(fileContents, aURL, Preprocessor.Flags.IncludeDebugSymbols);
+        var start = new Date().getTime();
+        if (!exports.ObjJCompiler.usedVersion || exports.ObjJCompiler.usedVersion === "acorn")
+            executable = exports.ObjJAcornCompiler.compileFileDependencies(fileContents, aURL, ObjJCompiler.Flags.IncludeDebugSymbols);
         else if (exports.ObjJCompiler.usedVersion === "objj_compiler2")
-            executable = exports.compileFileDependencies(fileContents, aURL, ObjJCompiler.Flags.IncludeDebugSymbols);
+            executable = exports.ObjJCompiler.compileFileDependencies(fileContents, aURL, ObjJCompiler.Flags.IncludeDebugSymbols);
+        else if (exports.ObjJCompiler.usedVersion === "preprocessor")
+            executable = exports.preprocess(fileContents, aURL, Preprocessor.Flags.IncludeDebugSymbols);
         else
-            throw new Error("Compiler to use is set to " + exports.ObjJCompiler.usedVersion + " but we only support 'preprocessor' (old compiler) and 'objj_compiler2' (new compiler)");
+            throw new Error("Compiler to use is set to " + exports.ObjJCompiler.usedVersion + " but we only support 'preprocessor' (old compiler), 'objj_compiler2' and 'acorn'");
+
+        var time = (new Date().getTime() - start) / 1000;
+        //print("Compile '" + (exports.ObjJCompiler.usedVersion || "preprocessor") + "' " + aURL + " in " + time + " seconds");
     }
     else
         executable = new Executable(fileContents, [], aURL);

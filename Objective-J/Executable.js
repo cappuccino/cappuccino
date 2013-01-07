@@ -497,7 +497,7 @@ Executable.fileExecutableSearcherForURL = function(/*CFURL*/ referenceURL)
             {
                 if (!aStaticResource)
                 {
-                    var compilingFileUrl = ObjJCompiler && ObjJCompiler.currentCompileFile ? ObjJCompiler.currentCompileFile : null;
+                    var compilingFileUrl = ObjJCompiler && ObjJCompiler.currentCompileFile ? ObjJCompiler.currentCompileFile : ObjJAcornCompiler ? ObjJAcornCompiler.currentCompileFile : null;
                     throw new Error("Could not load file at " + aURL + (compilingFileUrl ? " when compiling " + compilingFileUrl : ""));
                 }
 

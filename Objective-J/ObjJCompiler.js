@@ -20,25 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-var ObjJCompiler = { },
-    currentCompilerFlags = "";
-
-exports.compileToExecutable = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags)
-{
-    ObjJCompiler.currentCompileFile = aURL;
-    return new ObjJCompiler(aString, aURL, flags, 2).executable();
-}
-
-exports.compileToIMBuffer = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags)
-{
-    return new ObjJCompiler(aString, aURL, flags, 2).IMBuffer();
-}
-
-exports.compileFileDependencies = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags)
-{
-    ObjJCompiler.currentCompileFile = aURL;
-    return new ObjJCompiler(aString, aURL, flags, 1).executable();
-}
+var currentCompilerFlags = "";
 
 var ObjJCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags, /*unsigned*/ pass)
 {
@@ -91,6 +73,25 @@ var ObjJCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ fla
 //	console.log("JS: " + this._jsBuffer);
 }
 
+exports.ObjJCompiler = ObjJCompiler;
+
+exports.ObjJCompiler.compileToExecutable = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags)
+{
+    ObjJCompiler.currentCompileFile = aURL;
+    return new ObjJCompiler(aString, aURL, flags, 2).executable();
+}
+
+exports.ObjJCompiler.compileToIMBuffer = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags)
+{
+    return new ObjJCompiler(aString, aURL, flags, 2).IMBuffer();
+}
+
+exports.ObjJCompiler.compileFileDependencies = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags)
+{
+    ObjJCompiler.currentCompileFile = aURL;
+    return new ObjJCompiler(aString, aURL, flags, 1).executable();
+}
+
 ObjJCompiler.prototype.compilePass2 = function()
 {
     ObjJCompiler.currentCompileFile = this._URL;
@@ -111,12 +112,11 @@ ObjJCompiler.prototype.compilePass2 = function()
 	return this._jsBuffer.toString();
 }
 
-exports.ObjJCompiler = ObjJCompiler;
-
 // This will set the compiler version to use.
 // These version works:
 // "preprocessor" -> Old Cappuccino compiler
 // "objj_compiler2" -> New Cappuccino compiler
+// "acorn" -> New Cappuccino compiler with acorn parser
 
 GLOBAL(ObjJCompilerSetUsedVersion) = function(version)
 {
@@ -1400,7 +1400,7 @@ ObjJCompiler.prototype.nodeClassDeclationStatement = function(/*SyntaxNode*/ ast
 		if (this.getClassDef(className))
 			throw new SyntaxError(this.error_message("Duplicate class " + className, children[2]));
 		if (!this.getClassDef(superClassName))
-				throw new SyntaxError(this.error_message("Can't find superclass " + superClassName, child));
+			throw new SyntaxError(this.error_message("Can't find superclass " + superClassName, child));
 
 		classDef = {"className": className, "superClassName": superClassName, "ivars": {}, "methods": {}};
 
@@ -1540,7 +1540,7 @@ ObjJCompiler.prototype.nodeClassDeclationStatement = function(/*SyntaxNode*/ ast
             CONCAT(getterSetterBuffer, "\n@end");
             // Remove all @accessors or we will get a recursive loop in infinity
             var b = getterSetterBuffer.toString().replace(/@accessors(\(.*\))?/g, "");
-            var imBuffer = exports.compileToIMBuffer(b, "getter", this._flags);
+            var imBuffer = ObjJCompiler.compileToIMBuffer(b, "getter", this._flags);
 
             CONCAT(this._imBuffer, imBuffer);
         }
@@ -4704,4 +4704,3 @@ ObjJCompiler.prototype.error_message = function(errorMessage, astNode)
                                 (this._currentClass ? " Class: "+this._currentClass : "") +
                                 (this._currentSelector ? " Method: "+this._currentSelector : "") +">";
 }
-//})(window, ObjJCompiler, { exports: ObjJCompiler });
