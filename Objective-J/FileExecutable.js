@@ -40,22 +40,8 @@ function FileExecutable(/*CFURL|String*/ aURL, /*Dictionary*/ aFilenameTranslate
 
     if (fileContents.match(/^@STATIC;/))
         executable = decompile(fileContents, aURL);
-
     else if ((extension === "j" || !extension) && !fileContents.match(/^{/))
-    {
-        var start = new Date().getTime();
-        if (!exports.ObjJCompiler.usedVersion || exports.ObjJCompiler.usedVersion === "acorn")
-            executable = exports.ObjJAcornCompiler.compileFileDependencies(fileContents, aURL, ObjJCompiler.Flags.IncludeDebugSymbols);
-        else if (exports.ObjJCompiler.usedVersion === "objj_compiler2")
-            executable = exports.ObjJCompiler.compileFileDependencies(fileContents, aURL, ObjJCompiler.Flags.IncludeDebugSymbols);
-        else if (exports.ObjJCompiler.usedVersion === "preprocessor")
-            executable = exports.preprocess(fileContents, aURL, Preprocessor.Flags.IncludeDebugSymbols);
-        else
-            throw new Error("Compiler to use is set to " + exports.ObjJCompiler.usedVersion + " but we only support 'preprocessor' (old compiler), 'objj_compiler2' and 'acorn'");
-
-        var time = (new Date().getTime() - start) / 1000;
-        //print("Compile '" + (exports.ObjJCompiler.usedVersion || "preprocessor") + "' " + aURL + " in " + time + " seconds");
-    }
+        executable = exports.ObjJAcornCompiler.compileFileDependencies(fileContents, aURL, ObjJAcornCompiler.Flags.IncludeDebugSymbols);
     else
         executable = new Executable(fileContents, [], aURL);
 

@@ -197,6 +197,18 @@ ObjJAcornCompiler.prototype.compilePass2 = function()
 	return this.jsBuffer.toString();
 }
 
+var currentCompilerFlags = "";
+
+exports.setCurrentCompilerFlags = function(/*String*/ compilerFlags)
+{
+    currentCompilerFlags = compilerFlags;
+}
+
+exports.currentCompilerFlags = function(/*String*/ compilerFlags)
+{
+    return currentCompilerFlags;
+}
+
 ObjJAcornCompiler.Flags = { };
 
 ObjJAcornCompiler.Flags.IncludeDebugSymbols = 1 << 0;

@@ -43,8 +43,6 @@
 #include "CFBundle.js"
 #include "StaticResource.js"
 #include "Preprocessor.js"
-#include "Parser.js"
-#include "ObjJCompiler.js"
 #include "acorn.js"
 #include "acornwalk.js"
 #include "ObjJAcornCompiler.js"
