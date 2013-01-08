@@ -96,7 +96,7 @@ if (!exports.acorn) {
     // When `location` is on, you can pass this to record the source
     // file in every node's `loc` object.
     sourceFile: null,
-    // Turn on objj to allow objj systax
+    // Turn on objj to allow Objective-J syntax
     objj: true
   };
 
