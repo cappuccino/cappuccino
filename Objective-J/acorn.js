@@ -455,13 +455,18 @@ if (!exports.acorn) {
     return match ? match.index + match[0].length : input.length + 1;
   }
 
+  var line_loc_t = function() {
+    this.line = tokCurLine;
+    this.column = tokPos - tokLineStart;
+  }
+
   function curLineLoc() {
     while (tokLineStartNext <= tokPos) {
       ++tokCurLine;
       tokLineStart = tokLineStartNext;
       tokLineStartNext = nextLineStart();
     }
-    return {line: tokCurLine, column: tokPos - tokLineStart};
+    return new line_loc_t();
   }
 
   // Reset the token state. Used at the start of a parse.
@@ -828,15 +833,17 @@ if (!exports.acorn) {
 
   // Read a string value, interpreting backslash-escapes.
 
+  var rs_str = [];
+
   function readString(quote) {
     tokPos++;
-    var str = [];
+    rs_str.length = 0;
     for (;;) {
       if (tokPos >= inputLen) raise(tokStart, "Unterminated string constant");
       var ch = input.charCodeAt(tokPos);
       if (ch === quote) {
         ++tokPos;
-        return finishToken(_string, String.fromCharCode.apply(null, str));
+        return finishToken(_string, String.fromCharCode.apply(null, rs_str));
       }
       if (ch === 92) { // '\'
         ch = input.charCodeAt(++tokPos);
@@ -847,28 +854,28 @@ if (!exports.acorn) {
         ++tokPos;
         if (octal) {
           if (strict) raise(tokPos - 2, "Octal literal in strict mode");
-          str.push(parseInt(octal, 8));
+          rs_str.push(parseInt(octal, 8));
           tokPos += octal.length - 1;
         } else {
           switch (ch) {
-          case 110: str.push(10); break; // 'n' -> '\n'
-          case 114: str.push(13); break; // 'r' -> '\r'
-          case 120: str.push(readHexChar(2)); break; // 'x'
-          case 117: str.push(readHexChar(4)); break; // 'u'
-          case 85: str.push(readHexChar(8)); break; // 'U'
-          case 116: str.push(9); break; // 't' -> '\t'
-          case 98: str.push(8); break; // 'b' -> '\b'
-          case 118: str.push(11); break; // 'v' -> '\u000b'
-          case 102: str.push(12); break; // 'f' -> '\f'
-          case 48: str.push(0); break; // 0 -> '\0'
+          case 110: rs_str.push(10); break; // 'n' -> '\n'
+          case 114: rs_str.push(13); break; // 'r' -> '\r'
+          case 120: rs_str.push(readHexChar(2)); break; // 'x'
+          case 117: rs_str.push(readHexChar(4)); break; // 'u'
+          case 85: rs_str.push(readHexChar(8)); break; // 'U'
+          case 116: rs_str.push(9); break; // 't' -> '\t'
+          case 98: rs_str.push(8); break; // 'b' -> '\b'
+          case 118: rs_str.push(11); break; // 'v' -> '\u000b'
+          case 102: rs_str.push(12); break; // 'f' -> '\f'
+          case 48: rs_str.push(0); break; // 0 -> '\0'
           case 13: if (input.charCodeAt(tokPos) === 10) ++tokPos; // '\r\n'
           case 10: break; // ' \n'
-          default: str.push(ch); break;
+          default: rs_str.push(ch); break;
           }
         }
       } else {
         if (ch === 13 || ch === 10 || ch === 8232 || ch === 8329) raise(tokStart, "Unterminated string constant");
-        if (ch !== 92) str.push(ch); // '\'   // This 'if' seems useless as the same thing is checked above..... - Martin
+        if (ch !== 92) rs_str.push(ch); // '\'   // This 'if' seems useless as the same thing is checked above..... - Martin
         ++tokPos;
       }
     }
@@ -984,14 +991,26 @@ if (!exports.acorn) {
   // Start an AST node, attaching a start offset and optionally a
   // `commentsBefore` property to it.
 
+  var node_t = function(s) {
+    this.type = null;
+    this.start = tokStart;
+    this.end = null;
+  };
+
+  var node_loc_t = function(s) {
+    this.start = tokStartLoc;
+    this.end = null;
+    if (sourceFile !== null) this.source = sourceFile;
+  };
+
   function startNode() {
-    var node = {type: null, start: tokStart, end: null};
+    var node = new node_t();
     if (options.trackComments && tokCommentsBefore) {
       node.commentsBefore = tokCommentsBefore;
       tokCommentsBefore = null;
     }
     if (options.locations)
-      node.loc = {start: tokStartLoc, end: null, source: sourceFile};
+      node.loc = new node_loc_t();
     if (options.ranges)
       node.range = [tokStart, 0];
     return node;
@@ -1003,13 +1022,16 @@ if (!exports.acorn) {
   // already been parsed.
 
   function startNodeFrom(other) {
-    var node = {type: null, start: other.start};
+    var node = new node_t();
+    node.start = other.start;
     if (other.commentsBefore) {
       node.commentsBefore = other.commentsBefore;
       other.commentsBefore = null;
     }
-    if (options.locations)
-      node.loc = {start: other.loc.start, end: null, source: other.loc.source};
+    if (options.locations) {
+      node.loc = new node_loc_t();
+      node.loc.start = other.loc.start;
+    }
     if (options.ranges)
       node.range = [other.range[0], 0];
 
@@ -1764,6 +1786,7 @@ if (!exports.acorn) {
     case _null: case _true: case _false:
       var node = startNode();
       node.value = tokType.atomValue;
+      node.raw = tokType.keyword
       next();
       return finishNode(node, "Literal");
 
