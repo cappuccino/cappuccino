@@ -178,7 +178,8 @@ if (!exports.acorn) {
   var tokAfterImport;
 
   // This is the tokenizer's state for Objective-J. 'nodeMessageSendObjectExpression'
-  // is used to store the expression that is already parsed when 
+  // is used to store the expression that is already parsed when a subscript was
+  // not really a subscript
 
   var nodeMessageSendObjectExpression;
 
@@ -628,7 +629,7 @@ if (!exports.acorn) {
     if (next === 61) return finishOp(_bin6, input.charCodeAt(tokPos+2) === 61 ? 3 : 2);
     return finishOp(code === 61 ? _eq : _prefix, 1);
   }
-  
+
   function readToken_at(code) { // '@'
     var next = input.charCodeAt(++tokPos);
     if (next === 34 || next === 39)  // Read string if "'" or '"'
@@ -1512,7 +1513,7 @@ if (!exports.acorn) {
         if (tokType !== _colon) {
           selectors.push(parseIdent(true));
           if (first && tokType !== _colon) break;
-        } else 
+        } else
           selectors.push(null);
         expect(_colon, "Expected ':' in selector");
         var argument = {};
@@ -1539,7 +1540,7 @@ if (!exports.acorn) {
       element.body = parseBlock(true);
       inFunction = oldInFunc; labels = oldLabels;
       return finishNode(element, "MethodDeclarationStatement");
-    } else 
+    } else
       return parseStatement();
   }
 
