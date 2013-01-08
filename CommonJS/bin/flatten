@@ -116,7 +116,7 @@ function main(args)
         var defaultThemeName = [CPApplication defaultThemeName],
             bundle = nil;
 
-        if (defaultThemeName === @"Aristo2")
+        if (defaultThemeName === @"Aristo" || defaultThemeName === @"Aristo2")
             bundle = [CPBundle bundleForClass:[CPApplication class]];
         else
             bundle = [CPBundle mainBundle];

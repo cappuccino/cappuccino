@@ -132,7 +132,7 @@ function press(rootPath, outputPath, options) {
     var themeName = outputInfoPlist.valueForKey("CPDefaultTheme") || "Aristo2",
         themePath = nil;
 
-    if (themeName === "Aristo2")
+    if (themeName === "Aristo" || themeName === "Aristo2")
         themePath = FILE.join(outputPath, options.frameworks, "AppKit", "Resources", themeName+".blend");
     else
         themePath = FILE.join(outputPath, "Resources", themeName + ".blend");

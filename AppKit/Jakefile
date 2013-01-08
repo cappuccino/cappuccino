@@ -52,6 +52,9 @@ task ("Theme", [$BUILD_CJS_CAPPUCCINO_APPKIT], function()
 {
     subjake(["Themes"], "build");
 
+    cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), FILE.join($BUILD_PATH, 'Resources', 'Aristo.blend'));
+    cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), FILE.join($BUILD_CJS_CAPPUCCINO_APPKIT, "Resources", "Aristo.blend"));
+
     cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, 'Aristo2.blend'), FILE.join($BUILD_PATH, 'Resources', 'Aristo2.blend'));
     cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, 'Aristo2.blend'), FILE.join($BUILD_CJS_CAPPUCCINO_APPKIT, "Resources", "Aristo2.blend"));
 });
