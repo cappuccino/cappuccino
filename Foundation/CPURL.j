@@ -254,8 +254,8 @@ var CPURLURLStringKey   = @"CPURLURLStringKey",
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    [aCoder encodeObject:_baseURL forKey:CPURLBaseURLKey];
-    [aCoder encodeObject:_string forKey:CPURLURLStringKey];
+    [aCoder encodeObject:self._baseURL forKey:CPURLBaseURLKey];
+    [aCoder encodeObject:self._string forKey:CPURLURLStringKey];
 }
 
 @end
