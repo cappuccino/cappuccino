@@ -29,6 +29,9 @@
 @import "CPPlatformWindow.j"
 @import "CPResponder.j"
 @import "CPScreen.j"
+#if PLATFORM(BROWSER)
+@import "CPPlatformWindow+DOM.j"
+#endif
 
 
 /*
