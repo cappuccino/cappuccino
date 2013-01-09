@@ -87,36 +87,23 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         if([shellPath isEqualToString:@"/bin/bash"])
         {
             if([fm fileExistsAtPath:[@"~/.bash_profile" stringByExpandingTildeInPath]])
-            {
                 profilePath = [@"source ~/.bash_profile" stringByExpandingTildeInPath];
-            }
             else if([fm fileExistsAtPath:[@"~/.bashrc" stringByExpandingTildeInPath]])
-            {
                 profilePath = [@"source ~/.bashrc" stringByExpandingTildeInPath];
-            }
             else if([fm fileExistsAtPath:[@"~/.profile" stringByExpandingTildeInPath]])
-            {
                 profilePath = [@"source ~/.profile" stringByExpandingTildeInPath];
-            }
             else
-            {
                 profilePath = @"";
-            }
-
         }
         else if ([shellPath isEqualToString:@"/bin/zsh"])
+        {
             if([fm fileExistsAtPath:[@"~/.zshrc" stringByExpandingTildeInPath]])
-            {
                 profilePath = [@"source ~/.zshrc" stringByExpandingTildeInPath];
-            }
             else if([fm fileExistsAtPath:[@"~/.profile" stringByExpandingTildeInPath]])
-            {
                 profilePath = [@"source ~/.profile" stringByExpandingTildeInPath];
-            }
             else
-            {
                 profilePath = @"";
-            }
+        }
         else
         {
             NSAlert *alert = [NSAlert alertWithMessageText:@"Shell not recognized."
