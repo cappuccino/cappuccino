@@ -1331,6 +1331,8 @@ var themedButtonValues = nil,
     [splitView addSubview:leftView];
     [splitView addSubview:rightView];
 
+    var horizontalDividerColor = PatternImage("splitview-divider-horizontal.png", 5.0, 10.0),
+        verticalDividerColor = PatternImage("splitview-divider-vertical.png", 10.0, 5.0);
 
     [splitView setIsPaneSplitter:YES];
 
@@ -1338,7 +1340,9 @@ var themedButtonValues = nil,
         [
             [@"divider-thickness", 1.0],
             [@"pane-divider-thickness", 10.0],
-            [@"pane-divider-color", [CPColor colorWithRed:165.0 / 255.0 green:165.0 / 255.0 blue:165.0 / 255.0 alpha:1.0]]
+            [@"pane-divider-color", [CPColor colorWithRed:165.0 / 255.0 green:165.0 / 255.0 blue:165.0 / 255.0 alpha:1.0]],
+            [@"horizontal-divider-color", horizontalDividerColor],
+            [@"vertical-divider-color", verticalDividerColor]
         ];
 
     [self registerThemeValues:themedSplitViewValues forView:splitView];
