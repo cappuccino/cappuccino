@@ -192,14 +192,6 @@ CPWindowShadowStyleStandard = 0;
 CPWindowShadowStyleMenu     = 1;
 CPWindowShadowStylePanel    = 2;
 
-// var SHADOW_MARGIN_LEFT      = 20.0,
-//     SHADOW_MARGIN_RIGHT     = 19.0,
-//     SHADOW_MARGIN_TOP       = 10.0,
-//     SHADOW_MARGIN_BOTTOM    = 10.0,
-//     SHADOW_DISTANCE         = 5.0,
-//
-//     _CPWindowShadowColor    = nil;
-
 var CPWindowSaveImage       = nil,
     CPWindowSavingImage     = nil,
 
