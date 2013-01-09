@@ -17,7 +17,8 @@ var themedButtonValues = nil,
     themedVerticalSliderValues = nil,
     themedCircularSliderValues = nil,
     themedButtonBarValues = nil,
-    themedAlertValues = nil;
+    themedAlertValues = nil,
+    themedWindowViewValues = nil;
 
 @implementation Aristo2ThemeDescriptor : BKThemeDescriptor
 
@@ -1777,6 +1778,24 @@ var themedButtonValues = nil,
     return levelIndicator;
 }
 
++(_CPWindowView)themedWindowView
+{
+    var windowView = [[_CPWindowView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)],
+
+    sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
+    resizeIndicator = PatternImage(@"window-resize-indicator.png", 12, 12);
+
+    themedWindowViewValues =
+        [
+            [@"resize-indicator",               resizeIndicator],
+            [@"attached-sheet-shadow-color",    sheetShadow],
+            [@"size-indicator",                 CGSizeMake(12, 12)]
+        ];
+
+    [self registerThemeValues:themedWindowViewValues forView:windowView];
+
+    return windowView;
+}
 
 + (_CPHUDWindowView)themedHUDWindowView
 {
@@ -1817,7 +1836,7 @@ var themedButtonValues = nil,
                 [@"title-vertical-alignment",   CPCenterVerticalTextAlignment]
             ];
 
-    [self registerThemeValues:themeValues forView:HUDWindowView];
+    [self registerThemeValues:themeValues forView:HUDWindowView inherit:themedWindowViewValues];
 
     return HUDWindowView;
 }
@@ -1840,7 +1859,6 @@ var themedButtonValues = nil,
                 [@"solid-color", [CPColor colorWithHexString:@"858585"]]
                 //[@"solid-color", [CPColor clearColor]]
             ];
-
 
     [self registerThemeValues:themeValues forView:windowHeadView];
 
@@ -1871,6 +1889,9 @@ var themedButtonValues = nil,
         minimizeButtonImage =               PatternImage(@"window-standard-minimize-button",16,16),
         minimizeButtonImageHighlighted =    PatternImage(@"window-standard-minimize-button-highlighted",16,16),
 
+        sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
+        resizeIndicator = PatternImage(@"window-resize-indicator.png", 12, 12),
+
         themeValues =
             [
                 [@"title-font",                 [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize]],
@@ -1892,14 +1913,52 @@ var themedButtonValues = nil,
                 [@"close-image-button"                  ,closeButtonImage],
                 [@"close-image-highlighted-button"      ,closeButtonImageHighlighted],
                 [@"minimize-image-button"               ,minimizeButtonImage],
-                [@"minimize-image-highlighted-button"   ,minimizeButtonImageHighlighted]
+                [@"minimize-image-highlighted-button"   ,minimizeButtonImageHighlighted],
+
+                [@"resize-indicator",               resizeIndicator],
+                [@"attached-sheet-shadow-color",    sheetShadow],
+                [@"size-indicator",                 CGSizeMake(12, 12)]
             ];
 
-    [self registerThemeValues:themeValues forView:standardWindowView];
+    [self registerThemeValues:themeValues forView:standardWindowView inherit:themedWindowViewValues];
 
 
     return standardWindowView;
 }
+
+
++(_CPDocModalWindowView)themedDocModalWindowView
+{
+    var docModalWindowView = [[_CPDocModalWindowView alloc] initWithFrame:CGRectMake(0,0,200,300) styleMask:nil],
+
+        bezelColor = PatternColor(
+        [
+            [@"window-standard-top-left.png",5,5],
+            [@"window-standard-top-center.png",1,5],
+            [@"window-standard-top-right.png",5,5],
+            [@"window-standard-center-left.png",5,1],
+            [@"window-standard-center-center.png",1,1],
+            [@"window-standard-center-right.png",5,1],
+            [@"window-standard-bottom-left.png",5,5],
+            [@"window-standard-bottom-center.png",1,5],
+            [@"window-standard-bottom-right.png",5,5]
+        ]),
+
+        sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
+
+        themeValues =
+            [
+                [@"body-color",                     bezelColor],
+                [@"height-shadow",                  8],
+                [@"attached-sheet-shadow-color",    sheetShadow]
+            ];
+
+    [self registerThemeValues:themeValues forView:docModalWindowView inherit:themedWindowViewValues];
+
+    return docModalWindowView;
+}
+
+
 
 @end
 
