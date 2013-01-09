@@ -190,7 +190,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
         CPTextFieldBlurFunction = function(anEvent)
         {
-            if (CPTextFieldInputOwner && CPTextFieldInputOwner._DOMElement != CPTextFieldDOMInputElement.parentNode)
+            if (CPTextFieldInputOwner && CPTextFieldInputOwner._DOMElement !== CPTextFieldDOMInputElement.parentNode)
                 return;
 
             if (!CPTextFieldInputResigning)
@@ -494,12 +494,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 /* @ignore */
 - (BOOL)becomeFirstResponder
 {
-#if PLATFORM(DOM)
-    // FIXME Why do we care about who's the first responder in a different window?
-    if (CPTextFieldInputOwner && [CPTextFieldInputOwner window] !== [self window])
-        [[CPTextFieldInputOwner window] makeFirstResponder:nil];
-#endif
-
     // As long as we are the first responder we need to monitor the key status of our window.
     [self _setObserveWindowKeyNotifications:YES];
 
@@ -512,7 +506,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 /*!
-    A text field can be the first responder without necessarily being the focus of keyboard input. For example, it might be the first responder of window A but window B is the main and key window. It's important we don't put a focused input field into a text field in a non key window, even if that field is the first responder, because the key window might also have a first responder text field which the user will expect to receive keyboard input.
+    A text field can be the first responder without necessarily being the focus of keyboard input. For example, it might be the first responder of window A but window B is the main and key window. It's important we don't put a focused input field into a text field in a non-key window, even if that field is the first responder, because the key window might also have a first responder text field which the user will expect to receive keyboard input.
 
     Since a first responder but non-key window text field can't receive input it should not even look like an active text field (Cocoa has a "slightly active" text field look it uses when another window is the key window, but Cappuccino doesn't today.)
 */
@@ -534,8 +528,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     element.value = _stringValue;
     element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
+
     if (CPFeatureIsCompatible(CPInputSetFontOutsideOfDOM))
         element.style.font = [font cssString];
+
     element.style.zIndex = 1000;
 
     switch ([self alignment])
@@ -571,34 +567,23 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     element.style.top = topPoint;
     var left = _CGRectGetMinX(contentRect);
+
     // If the browser has a built in left padding, compensate for it. We need the input text to be exactly on top of the original text.
     if (CPFeatureIsCompatible(CPInput1PxLeftPadding))
         left -= 1;
+
     element.style.left = left + "px";
     element.style.width = _CGRectGetWidth(contentRect) + "px";
     element.style.height = ROUND(lineHeight) + "px";
     element.style.lineHeight = ROUND(lineHeight) + "px";
-    element.style.verticalAlign = @"top";
+    element.style.verticalAlign = "top";
+    element.style.cursor = "auto";
 
     _DOMElement.appendChild(element);
 
-    // The font change above doesn't work for some browsers if the element isn't already .appendChild'ed.
+    // The font change above doesn't work for some browsers if the element isn't already appendChild'ed.
     if (!CPFeatureIsCompatible(CPInputSetFontOutsideOfDOM))
         element.style.font = [font cssString];
-
-    window.setTimeout(function()
-    {
-        element.focus();
-
-        // Select the text if the textfield became first responder through keyboard interaction
-        if (!_willBecomeFirstResponderByClick)
-            [self _selectText:self immediately:YES];
-
-        _willBecomeFirstResponderByClick = NO;
-
-        [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
-        CPTextFieldInputOwner = self;
-    }, 0.0);
 
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 
@@ -612,6 +597,28 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [[self window] platformWindow]._DOMBodyElement.ondrag = function () {};
         [[self window] platformWindow]._DOMBodyElement.onselectstart = function () {};
     }
+
+    CPTextFieldInputOwner = self;
+
+    window.setTimeout(function()
+    {
+        /*
+            setTimeout handlers are not guaranteed to fire in the order they were initiated. This can cause a race condition when several windows with text fields are opened quickly, resulting in several instances of this timeout function being fired, perhaps out of order. So we have to check that by the time this function is fired, CPTextFieldInputOwner has not been changed to another text field in the meantime.
+        */
+        if (CPTextFieldInputOwner !== self)
+            return;
+
+        element.focus();
+
+        // Select the text if the textfield became first responder through keyboard interaction
+        if (!_willBecomeFirstResponderByClick)
+            [self _selectText:self immediately:YES];
+
+        _willBecomeFirstResponderByClick = NO;
+
+        [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
+    }, 0.0);
+
 #endif
 }
 
