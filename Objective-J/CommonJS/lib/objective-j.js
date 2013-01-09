@@ -94,7 +94,7 @@ exports.run = function(args)
         var arg0 = argv.shift();
         var mainFilePath = FILE.canonical(arg0);
 
-        exports.make_narwhal_factory(mainFilePath)(require, { }, module, system, print, window);
+        exports.make_narwhal_factory(mainFilePath)(require, { }, module, system, print);
 
         if (typeof main === "function")
             main([arg0].concat(argv));

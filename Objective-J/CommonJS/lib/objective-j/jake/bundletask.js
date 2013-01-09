@@ -880,7 +880,7 @@ BundleTask.prototype.defineSourceTasks = function()
                         basePath = absolutePath.substring(0, absolutePath.length - theTranslatedFilename.length);
 
                     require("objective-j").setCurrentCompilerFlags(environmentCompilerFlags);
-                    require("objective-j").make_narwhal_factory(absolutePath, basePath, translateFilenameToPath)(require, e, module, system, print, window);
+                    require("objective-j").make_narwhal_factory(absolutePath, basePath, translateFilenameToPath)(require, e, module, system, print);
                     TERM.stream.write("Compiling [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)").flush();
 
                     var otherwayTranslatedFilename = otherwayTranslateFilenameToPath[aFilename] ? otherwayTranslateFilenameToPath[aFilename] : aFilename,
