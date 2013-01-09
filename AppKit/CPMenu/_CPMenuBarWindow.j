@@ -2,7 +2,7 @@
 @import "_CPMenuWindow.j"
 
 
-var MENUBAR_HEIGHT          = 28.0,
+var MENUBAR_HEIGHT          = 30.0,
     MENUBAR_MARGIN          = 10.0,
     MENUBAR_LEFT_MARGIN     = 10.0,
     MENUBAR_RIGHT_MARGIN    = 10.0;

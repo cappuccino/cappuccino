@@ -33,13 +33,26 @@
         _boxType       = [aCoder decodeIntForKey:@"NSBoxType"];
         _borderType    = [aCoder decodeIntForKey:@"NSBorderType"];
 
-        _borderColor   = [aCoder decodeObjectForKey:@"NSBorderColor2"] || [CPColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.42];
-        _fillColor     = [aCoder decodeObjectForKey:@"NSFillColor2"] || [CPColor clearColor];
+        var borderColor = [aCoder decodeObjectForKey:@"NSBorderColor2"],
+            fillColor = [aCoder decodeObjectForKey:@"NSFillColor2"],
+            cornerRadius = [aCoder decodeFloatForKey:@"NSCornerRadius2"],
+            borderWidth = [aCoder decodeFloatForKey:@"NSBorderWidth2"],
+            contentMargin = [aCoder decodeSizeForKey:@"NSOffsets"];
 
-        _cornerRadius  = [aCoder decodeFloatForKey:@"NSCornerRadius2"];
-        _borderWidth   = [aCoder decodeFloatForKey:@"NSBorderWidth2"] || 1.0;
+        if (borderColor)
+            [self setBorderColor:borderColor];
 
-        _contentMargin = [aCoder decodeSizeForKey:@"NSOffsets"];
+        if (fillColor)
+            [self setFillColor:fillColor];
+
+        if (cornerRadius)
+            [self setCornerRadius:cornerRadius];
+
+        if (borderWidth)
+            [self setBorderWidth:borderWidth];
+
+        if (contentMargin)
+            [self setContentViewMargins:contentMargin];
 
         _title         = [[aCoder decodeObjectForKey:@"NSTitleCell"] objectValue] || @"";
         _titlePosition = [aCoder decodeObjectForKey:@"NSTitlePosition"];

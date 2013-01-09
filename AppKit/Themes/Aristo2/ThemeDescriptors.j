@@ -1683,6 +1683,41 @@ var themedButtonValues = nil,
     return modalWindowView;
 }
 
++ (CPBox)themedBox
+{
+    var box = [[CPBox alloc] initWithFrame:CGRectMake(0,0,100,100)];
+
+    var backgroundColor = PatternColor(
+        [
+            ["cpbox-background-1.png", 6.0, 6.0],
+            ["cpbox-background-2.png", 1.0, 6.0],
+            ["cpbox-background-3.png", 6.0, 6.0],
+            ["cpbox-background-4.png", 6.0, 1.0],
+            ["cpbox-background-5.png", 1.0, 1.0],
+            ["cpbox-background-6.png", 6.0, 1.0],
+            ["cpbox-background-7.png", 6.0, 6.0],
+            ["cpbox-background-8.png", 1.0, 6.0],
+            ["cpbox-background-9.png", 6.0, 6.0]
+        ]),
+
+        themeValues =
+        [
+            [@"background-color", [CPColor colorWithHexString:@"E4E4E4"]],
+            [@"border-width", 1.0],
+            [@"border-color", [CPColor colorWithHexString:@"B7B7B7"]],
+            [@"corner-radius", 3.0],
+            [@"inner-shadow-offset", CPSizeMakeZero()],
+            [@"inner-shadow-color", [CPColor blackColor]],
+            [@"inner-shadow-size", 6.0],
+            [@"content-margin", CPSizeMake(10.0, 10.0)]
+        ];
+
+    [self registerThemeValues:themeValues forView:box];
+
+    return box;
+}
+
+
 + (_CPHUDWindowView)themedHUDWindowView
 {
     var HUDWindowView = [[_CPHUDWindowView alloc] initWithFrame:CGRectMake(0,0,250,150) styleMask:CPHUDBackgroundWindowMask | CPClosableWindowMask];

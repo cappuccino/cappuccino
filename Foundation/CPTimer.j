@@ -245,13 +245,27 @@ var _CPTimerBridgeTimer = function(codeOrFunction, aDelay, shouldRepeat, functio
         theFunction = nil;
 
     if (typeof codeOrFunction === "string")
-        theFunction = function() { new Function(codeOrFunction)(); if (!shouldRepeat) CPTimersForTimeoutIDs[timeoutID] = nil; }
+    {
+        theFunction = function()
+        {
+            new Function(codeOrFunction)();
+
+            if (!shouldRepeat)
+                CPTimersForTimeoutIDs[timeoutID] = nil;
+        }
+    }
     else
     {
         if (!functionArgs)
             functionArgs = [];
 
-        theFunction = function() { codeOrFunction.apply(window, functionArgs); if (!shouldRepeat) CPTimersForTimeoutIDs[timeoutID] = nil; }
+        theFunction = function()
+        {
+            codeOrFunction.apply(window, functionArgs);
+
+            if (!shouldRepeat)
+                CPTimersForTimeoutIDs[timeoutID] = nil;
+        }
     }
 
     // A call such as setTimeout(f) is technically invalid but browsers seem to treat it as setTimeout(f, 0), so so will we.

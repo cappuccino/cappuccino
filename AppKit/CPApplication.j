@@ -1300,7 +1300,7 @@ var _CPAppBootstrapperActions = nil;
     var defaultThemeName = [CPApplication defaultThemeName],
         themeURL = nil;
 
-    if (defaultThemeName === @"Aristo2")
+    if (defaultThemeName === @"Aristo" || defaultThemeName === @"Aristo2")
         themeURL = [[CPBundle bundleForClass:[CPApplication class]] pathForResource:defaultThemeName + @".blend"];
     else
         themeURL = [[CPBundle mainBundle] pathForResource:defaultThemeName + @".blend"];
