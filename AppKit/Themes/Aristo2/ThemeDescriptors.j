@@ -1715,7 +1715,7 @@ var themedButtonValues = nil,
             [@"inner-shadow-offset", CPSizeMakeZero()],
             [@"inner-shadow-color", [CPColor blackColor]],
             [@"inner-shadow-size", 6.0],
-            [@"content-margin", CPSizeMake(10.0, 10.0)]
+            [@"content-margin", CPSizeMakeZero()]
         ];
 
     [self registerThemeValues:themeValues forView:box];
