@@ -791,9 +791,9 @@ BundleTask.prototype.defineStaticTask = function()
             fileStream.close();
 
            // Make sure all classes are removed and all FileExecutables are removed.
-            require("objective-j").Executable.resetCachedFileExecutableSearchers();
-            require("objective-j").StaticResource.resetRootResources();
-            require("objective-j").FileExecutable.resetFileExecutables();
+            ObjectiveJ.Executable.resetCachedFileExecutableSearchers();
+            ObjectiveJ.StaticResource.resetRootResources();
+            ObjectiveJ.FileExecutable.resetFileExecutables();
             objj_resetRegisterClasses();
          });
 
@@ -803,9 +803,6 @@ BundleTask.prototype.defineStaticTask = function()
 
 BundleTask.prototype.defineSourceTasks = function()
 {
-    // Use new compiler
-    //require("objective-j").ObjJCompiler.setCurrentUsedVersion("acorn");
-    //require("objective-j").ObjJCompiler.setCurrentUsedVersion("objj_compiler2");
     var sources = this.sources();
 
     if (!sources)
@@ -879,13 +876,13 @@ BundleTask.prototype.defineSourceTasks = function()
                         absolutePath = FILE.absolute(theTranslatedFilename),
                         basePath = absolutePath.substring(0, absolutePath.length - theTranslatedFilename.length);
 
-                    require("objective-j").setCurrentCompilerFlags(environmentCompilerFlags);
-                    require("objective-j").make_narwhal_factory(absolutePath, basePath, translateFilenameToPath)(require, e, module, system, print);
+                    ObjectiveJ.setCurrentCompilerFlags(environmentCompilerFlags);
+                    ObjectiveJ.make_narwhal_factory(absolutePath, basePath, translateFilenameToPath)(require, e, module, system, print);
                     TERM.stream.write("Compiling [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)").flush();
 
                     var otherwayTranslatedFilename = otherwayTranslateFilenameToPath[aFilename] ? otherwayTranslateFilenameToPath[aFilename] : aFilename,
                         translatedFilename = translateFilenameToPath[aFilename] ? translateFilenameToPath[aFilename] : aFilename,
-                        executer = new require("objective-j").FileExecutable(otherwayTranslatedFilename);
+                        executer = new ObjectiveJ.FileExecutable(otherwayTranslatedFilename);
 
                     var compiled = executer.toMarkedString();
                 }
