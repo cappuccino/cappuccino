@@ -292,7 +292,7 @@ CPLog(@"Got some class: %@", inst);
 
 + (CPString)description
 {
-    return class_getName(isa);
+    return class_getName(self.isa);
 }
 
 // Sending Messages
