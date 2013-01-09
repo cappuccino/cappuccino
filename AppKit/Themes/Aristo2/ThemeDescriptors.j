@@ -1332,6 +1332,8 @@ var themedButtonValues = nil,
     [splitView addSubview:leftView];
     [splitView addSubview:rightView];
 
+    var horizontalDividerColor = PatternImage("splitview-divider-horizontal.png", 5.0, 10.0),
+        verticalDividerColor = PatternImage("splitview-divider-vertical.png", 10.0, 5.0);
 
     [splitView setIsPaneSplitter:YES];
 
@@ -1339,7 +1341,9 @@ var themedButtonValues = nil,
         [
             [@"divider-thickness", 1.0],
             [@"pane-divider-thickness", 10.0],
-            [@"pane-divider-color", [CPColor colorWithRed:165.0 / 255.0 green:165.0 / 255.0 blue:165.0 / 255.0 alpha:1.0]]
+            [@"pane-divider-color", [CPColor colorWithRed:165.0 / 255.0 green:165.0 / 255.0 blue:165.0 / 255.0 alpha:1.0]],
+            [@"horizontal-divider-color", horizontalDividerColor],
+            [@"vertical-divider-color", verticalDividerColor]
         ];
 
     [self registerThemeValues:themedSplitViewValues forView:splitView];
@@ -1716,6 +1720,61 @@ var themedButtonValues = nil,
     [self registerThemeValues:themeValues forView:box];
 
     return box;
+}
+
++ (CPLevelIndicator)themedLevelIndicator
+{
+    var levelIndicator = [[CPLevelIndicator alloc] initWithFrame:CGRectMake(0,0,100,100)],
+
+        bezelColor = PatternColor(
+        [
+            [@"level-indicator-bezel-left.png", 3.0, 18.0],
+            [@"level-indicator-bezel-center.png", 1.0, 18.0],
+            [@"level-indicator-bezel-right.png", 3.0, 18.0]
+        ]),
+
+        emptyColor = PatternColor(
+        [
+            [@"level-indicator-segment-empty-left.png", 3.0, 17.0],
+            [@"level-indicator-segment-empty-center.png", 1.0, 17.0],
+            [@"level-indicator-segment-empty-right.png", 3.0, 17.0]
+        ]),
+
+        normalColor = PatternColor(
+        [
+            [@"level-indicator-segment-normal-left.png", 3.0, 17.0],
+            [@"level-indicator-segment-normal-center.png", 1.0, 17.0],
+            [@"level-indicator-segment-normal-right.png", 3.0, 17.0]
+        ]),
+
+        warningColor = PatternColor(
+        [
+            [@"level-indicator-segment-warning-left.png", 3.0, 17.0],
+            [@"level-indicator-segment-warning-center.png", 1.0, 17.0],
+            [@"level-indicator-segment-warning-right.png", 3.0, 17.0]
+        ]),
+
+        criticalColor = PatternColor(
+        [
+            [@"level-indicator-segment-critical-left.png", 3.0, 17.0],
+            [@"level-indicator-segment-critical-center.png", 1.0, 17.0],
+            [@"level-indicator-segment-critical-right.png", 3.0, 17.0]
+        ]);
+
+
+        themeValues =
+        [
+            [@"bezel-color",    bezelColor],
+            [@"color-empty",    emptyColor],
+            [@"color-normal",   normalColor],
+            [@"color-warning",  warningColor],
+            [@"color-critical", criticalColor],
+            [@"spacing",        1.0]
+        ];
+
+    [self registerThemeValues:themeValues forView:levelIndicator];
+
+    return levelIndicator;
 }
 
 
