@@ -123,9 +123,9 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
                                              defaultButton:@"OK"
                                            alternateButton:nil
                                                otherButton:nil
-                                 informativeTextWithFormat:@"You are running %@ as your shell, which is not supported. Please change your shell to either BASH or ZSH.",    shellPath];
+                                 informativeTextWithFormat:@"You are running %@ as your shell, which is not supported. Please change your shell to either BASH or ZSH.", shellPath];
             [alert runModal];
-            profilePath = @"";   
+            profilePath = @"";
         }
     }
 
