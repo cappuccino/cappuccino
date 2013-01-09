@@ -1822,6 +1822,85 @@ var themedButtonValues = nil,
     return HUDWindowView;
 }
 
++(_CPTexturedWindowHeadView)themedWindowHeadView
+{
+    var windowHeadView = [[_CPTexturedWindowHeadView alloc] initWithFrame:CGRectMake(0,0,120,32)],
+
+        bezelColor = PatternColor(
+        [
+            [@"window-standard-head-left.png", 5.0, 31.0],
+            [@"window-standard-head-center.png", 1.0, 31.0],
+            [@"window-standard-head-right.png", 5.0, 31.0]
+        ],  PatternIsHorizontal),
+
+        themeValues =
+            [
+                [@"gradient-height", 31.0],
+                [@"bezel-color", bezelColor],
+                [@"solid-color", [CPColor colorWithHexString:@"858585"]]
+                //[@"solid-color", [CPColor clearColor]]
+            ];
+
+
+    [self registerThemeValues:themeValues forView:windowHeadView];
+
+    return windowHeadView;
+}
+
++(_CPStandardWindowView)themedStandardWindowView
+{
+    var standardWindowView = [[_CPStandardWindowView alloc] initWithFrame:CGRectMake(0,0,200,300) styleMask:CPClosableWindowMask],
+
+        bezelColor = PatternColor(
+        [
+            [@"window-standard-top-left.png",5,5],
+            [@"window-standard-top-center.png",1,5],
+            [@"window-standard-top-right.png",5,5],
+            [@"window-standard-center-left.png",5,1],
+            [@"window-standard-center-center.png",1,1],
+            [@"window-standard-center-right.png",5,1],
+            [@"window-standard-bottom-left.png",5,5],
+            [@"window-standard-bottom-center.png",1,5],
+            [@"window-standard-bottom-right.png",5,5]
+        ]),
+
+        closeButtonImage =                  PatternImage(@"window-standard-close-button.png", 16, 16),
+        closeButtonImageHighlighted =       PatternImage(@"window-standard-button-highlighted.png",16,16),
+        unsavedButtonImage =                PatternImage(@"window-standard-button-unsaved.png",16,16),
+        unsavedButtonImageHighlighted =     PatternImage(@"window-standard-close-button-unsaved-highlighted.png",16,16),
+        minimizeButtonImage =               PatternImage(@"window-standard-minimize-button",16,16),
+        minimizeButtonImageHighlighted =    PatternImage(@"window-standard-minimize-button-highlighted",16,16),
+
+        themeValues =
+            [
+                [@"title-font",                 [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize]],
+                [@"title-text-color",           [CPColor colorWithWhite:22.0 / 255.0 alpha:0.75]],
+                [@"title-text-color",           [CPColor colorWithWhite:22.0 / 255.0 alpha:1], CPThemeStateKeyWindow],
+                [@"title-text-shadow-color",    [CPColor whiteColor]],
+                [@"title-text-shadow-offset",   CGSizeMake(0.0, 1.0)],
+                [@"title-alignment",            CPCenterTextAlignment],
+                // FIXME: Make this to CPLineBreakByTruncatingMiddle once it's implemented.
+                [@"title-line-break-mode",      CPLineBreakByTruncatingTail],
+                [@"title-vertical-alignment",   CPCenterVerticalTextAlignment],
+
+                [@"divider-color",              [CPColor colorWithHexString:@"858585"]],
+                [@"body-color",                 bezelColor],
+                [@"title-bar-height",           31],
+
+                [@"unsaved-image-button"                ,unsavedButtonImage],
+                [@"unsaved-image-highlighted-button"    ,unsavedButtonImageHighlighted],
+                [@"close-image-button"                  ,closeButtonImage],
+                [@"close-image-highlighted-button"      ,closeButtonImageHighlighted],
+                [@"minimize-image-button"               ,minimizeButtonImage],
+                [@"minimize-image-highlighted-button"   ,minimizeButtonImageHighlighted]
+            ];
+
+    [self registerThemeValues:themeValues forView:standardWindowView];
+
+
+    return standardWindowView;
+}
+
 @end
 
 
