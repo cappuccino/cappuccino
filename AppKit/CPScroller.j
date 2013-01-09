@@ -217,7 +217,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
         [self unsetThemeState:CPThemeStateScrollViewLegacy];
     }
 
-    [self _adjustScrollerSize];
+    //[self _adjustScrollerSize];
 }
 
 - (void)setObjectValue:(id)aValue
@@ -523,6 +523,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
 - (void)layoutSubviews
 {
+    [self _adjustScrollerSize];
     [self checkSpaceForParts];
 
     var index = 0,
