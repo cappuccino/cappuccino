@@ -1783,10 +1783,26 @@ var themedButtonValues = nil,
     var windowView = [[_CPWindowView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)],
 
     sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
-    resizeIndicator = PatternImage(@"window-resize-indicator.png", 12, 12);
+    resizeIndicator = PatternImage(@"window-resize-indicator.png", 12, 12),
+
+    shadowColor = PatternColor(
+        [
+            [@"window-shadow-0.png", 20.0, 19.0],
+            [@"window-shadow-1.png", 1.0, 19.0],
+            [@"window-shadow-2.png", 19.0, 19.0],
+            [@"window-shadow-3.png", 20.0, 1.0],
+            [@"window-shadow-4.png", 1.0, 1.0],
+            [@"window-shadow-5.png", 19.0, 1.0],
+            [@"window-shadow-6.png", 20.0, 18.0],
+            [@"window-shadow-7.png", 1.0, 18.0],
+            [@"window-shadow-8.png", 19.0, 18.0],
+        ]);
 
     themedWindowViewValues =
         [
+            [@"shadow-inset",                   CGInsetMake(10.0, 19.0, 10.0, 20.0)],
+            [@"shadow-distance",                5.0],
+            [@"window-shadow-color",            shadowColor],
             [@"resize-indicator",               resizeIndicator],
             [@"attached-sheet-shadow-color",    sheetShadow],
             [@"size-indicator",                 CGSizeMake(12, 12)]
