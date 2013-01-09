@@ -192,13 +192,13 @@ CPWindowShadowStyleStandard = 0;
 CPWindowShadowStyleMenu     = 1;
 CPWindowShadowStylePanel    = 2;
 
-var SHADOW_MARGIN_LEFT      = 20.0,
-    SHADOW_MARGIN_RIGHT     = 19.0,
-    SHADOW_MARGIN_TOP       = 10.0,
-    SHADOW_MARGIN_BOTTOM    = 10.0,
-    SHADOW_DISTANCE         = 5.0,
-
-    _CPWindowShadowColor    = nil;
+// var SHADOW_MARGIN_LEFT      = 20.0,
+//     SHADOW_MARGIN_RIGHT     = 19.0,
+//     SHADOW_MARGIN_TOP       = 10.0,
+//     SHADOW_MARGIN_BOTTOM    = 10.0,
+//     SHADOW_DISTANCE         = 5.0,
+//
+//     _CPWindowShadowColor    = nil;
 
 var CPWindowSaveImage       = nil,
     CPWindowSavingImage     = nil,
@@ -831,21 +831,7 @@ CPTexturedBackgroundWindowMask
             [_windowView setFrameSize:size];
 
             if (_hasShadow)
-            {
-                // if the shadow would be taller/wider than the window height,
-                // make it the same as the window height. this allows views to
-                // become 0, 0 with no shadow on them and makes the sheet
-                // animation look nicer
-                var shadowSize = _CGSizeMake(size.width, size.height);
-
-                if (size.width >= (SHADOW_MARGIN_LEFT + SHADOW_MARGIN_RIGHT))
-                    shadowSize.width += SHADOW_MARGIN_LEFT + SHADOW_MARGIN_RIGHT;
-
-                if (size.height >= (SHADOW_MARGIN_BOTTOM + SHADOW_MARGIN_TOP + SHADOW_DISTANCE))
-                    shadowSize.height += SHADOW_MARGIN_BOTTOM + SHADOW_MARGIN_TOP + SHADOW_DISTANCE;
-
-                [_shadowView setFrameSize:shadowSize];
-            }
+                [_shadowView setNeedsLayout];
 
             if (!_isAnimating)
                 [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidResizeNotification object:self];
@@ -1218,33 +1204,11 @@ CPTexturedBackgroundWindowMask
 
     if (_hasShadow && !_shadowView)
     {
-        var bounds = [_windowView bounds];
+         _shadowView = [[_CPShadowWindowView alloc] initWithFrame:CGRectMakeZero()];
 
-        _shadowView = [[CPView alloc] initWithFrame:CGRectMake(-SHADOW_MARGIN_LEFT, -SHADOW_MARGIN_TOP + SHADOW_DISTANCE,
-            SHADOW_MARGIN_LEFT + CGRectGetWidth(bounds) + SHADOW_MARGIN_RIGHT, SHADOW_MARGIN_TOP + CGRectGetHeight(bounds) + SHADOW_MARGIN_BOTTOM)];
-
-        if (!_CPWindowShadowColor)
-        {
-            var bundle = [CPBundle bundleForClass:[CPWindow class]];
-
-            _CPWindowShadowColor = [CPColor colorWithPatternImage:[[CPNinePartImage alloc] initWithImageSlices:
-                [
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow0.png"] size:CGSizeMake(20.0, 19.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow1.png"] size:CGSizeMake(1.0, 19.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow2.png"] size:CGSizeMake(19.0, 19.0)],
-
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow3.png"] size:CGSizeMake(20.0, 1.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow4.png"] size:CGSizeMake(1.0, 1.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow5.png"] size:CGSizeMake(19.0, 1.0)],
-
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow6.png"] size:CGSizeMake(20.0, 18.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow7.png"] size:CGSizeMake(1.0, 18.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow8.png"] size:CGSizeMake(19.0, 18.0)]
-                ]]];
-        }
-
-        [_shadowView setBackgroundColor:_CPWindowShadowColor];
+        [_shadowView setWindowView:_windowView];
         [_shadowView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+        [_shadowView setNeedsLayout];
 
 #if PLATFORM(DOM)
         CPDOMDisplayServerInsertBefore(_DOMElement, _shadowView._DOMElement, _windowView._DOMElement);
@@ -3360,5 +3324,6 @@ CPCustomWindowShadowStyle   = 3;
 @import "_CPBorderlessBridgeWindowView.j"
 @import "_CPAttachedWindowView.j"
 @import "_CPModalWindowView.j"
+@import "_CPShadowWindowView.j"
 @import "CPDragServer.j"
 @import "CPView.j"
