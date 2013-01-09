@@ -253,7 +253,7 @@ var themedButtonValues = nil,
 
 + (CPScroller)makeHorizontalScroller
 {
-    var scroller = [[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, 170.0, 15.0)];
+    var scroller = [[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, 273.0, 15.0)];
 
     [scroller setFloatValue:0.1];
     [scroller setKnobProportion:0.5];
@@ -265,10 +265,10 @@ var themedButtonValues = nil,
 
 + (CPScroller)makeVerticalScroller
 {
-    var scroller = [[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, 15.0, 170.0)];
+    var scroller = [[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, 15.0, 273.0)];
 
-    [scroller setFloatValue:0.1];
-    [scroller setKnobProportion:0.5];
+    [scroller setFloatValue:1];
+    [scroller setKnobProportion:0.1];
 
     [scroller setStyle:CPScrollerStyleLegacy];
 
@@ -280,9 +280,9 @@ var themedButtonValues = nil,
     var scroller = [self makeVerticalScroller],
         trackColor = PatternColor(
             [
-                ["scroller-vertical-track-top.png", 9.0, 4.0],
-                ["scroller-vertical-track-center.png", 9.0, 1.0],
-                ["scroller-vertical-track-bottom.png", 9.0, 4.0]
+                ["scroller-vertical-track-top.png", 7.0, 3.0],
+                ["scroller-vertical-track-center.png", 7.0, 1.0],
+                ["scroller-vertical-track-bottom.png", 7.0, 3.0]
             ],
             PatternIsVertical),
 
@@ -302,9 +302,9 @@ var themedButtonValues = nil,
             ],
             PatternIsVertical),
 
-        trackColorLegacy        = PatternColor("scroller-legacy-vertical-track-center.png", 14.0, 1.0),
-        incrementColorLegacy    = PatternColor("scroller-legacy-vertical-track-bottom.png", 14.0, 11.0),
-        decrementColorLegacy    = PatternColor("scroller-legacy-vertical-track-top.png", 14.0, 11.0),
+        trackColorLegacy        = PatternColor("scroller-legacy-vertical-track-center.png", 15.0, 1.0),
+        incrementColorLegacy    = PatternColor("scroller-legacy-vertical-track-bottom.png", 15.0, 14.0),
+        decrementColorLegacy    = PatternColor("scroller-legacy-vertical-track-top.png", 15.0, 14.0),
 
         knobColor = PatternColor(
             [
@@ -362,10 +362,10 @@ var themedButtonValues = nil,
             [@"increment-line-size",    CPSizeMakeZero(),                   CPThemeStateVertical],
 
             // Legacy
-            [@"scroller-width",         14.0,                               CPThemeStateVertical | CPThemeStateScrollViewLegacy],
+            [@"scroller-width",         15.0,                               CPThemeStateVertical | CPThemeStateScrollViewLegacy],
             [@"knob-inset",             CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateVertical | CPThemeStateScrollViewLegacy],
             [@"track-inset",            CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateVertical | CPThemeStateScrollViewLegacy],
-            [@"track-border-overlay",   0.0,                                CPThemeStateVertical | CPThemeStateScrollViewLegacy],
+            [@"track-border-overlay",   3.0,                                CPThemeStateVertical | CPThemeStateScrollViewLegacy],
             [@"knob-slot-color",        trackColorLegacy,                   CPThemeStateVertical | CPThemeStateScrollViewLegacy],
             [@"knob-slot-color",        trackColorLegacy,                   CPThemeStateVertical | CPThemeStateScrollViewLegacy | CPThemeStateSelected],
             [@"knob-slot-color",        trackColorLegacy,                   CPThemeStateVertical | CPThemeStateScrollViewLegacy | CPThemeStateSelected | CPThemeStateScrollerKnobLight],
@@ -377,8 +377,8 @@ var themedButtonValues = nil,
             [@"knob-color",             knobColorLegacy,                    CPThemeStateVertical | CPThemeStateScrollViewLegacy | CPThemeStateScrollerKnobDark],
             [@"increment-line-color",   incrementColorLegacy,               CPThemeStateVertical | CPThemeStateScrollViewLegacy],
             [@"decrement-line-color",   decrementColorLegacy,               CPThemeStateVertical | CPThemeStateScrollViewLegacy],
-            [@"decrement-line-size",    CPSizeMake(14.0, 11.0),             CPThemeStateVertical | CPThemeStateScrollViewLegacy],
-            [@"increment-line-size",    CPSizeMake(14.0, 11.0),             CPThemeStateVertical | CPThemeStateScrollViewLegacy]
+            [@"decrement-line-size",    CPSizeMake(15.0, 14.0),             CPThemeStateVertical | CPThemeStateScrollViewLegacy],
+            [@"increment-line-size",    CPSizeMake(15.0, 14.0),             CPThemeStateVertical | CPThemeStateScrollViewLegacy]
         ];
 
     [self registerThemeValues:themedVerticalScrollerValues forView:scroller];
@@ -391,9 +391,9 @@ var themedButtonValues = nil,
     var scroller = [self makeHorizontalScroller],
         trackColor = PatternColor(
             [
-                ["scroller-horizontal-track-left.png", 4.0, 9.0],
-                ["scroller-horizontal-track-center.png", 1.0, 9.0],
-                ["scroller-horizontal-track-right.png", 4.0, 9.0]
+                ["scroller-horizontal-track-left.png", 3.0, 7.0],
+                ["scroller-horizontal-track-center.png", 1.0, 7.0],
+                ["scroller-horizontal-track-right.png", 3.0, 7.0]
             ],
             PatternIsHorizontal),
 
@@ -413,9 +413,9 @@ var themedButtonValues = nil,
             ],
             PatternIsHorizontal),
 
-        trackColorLegacy = PatternColor("scroller-legacy-horizontal-track-center.png", 1.0, 14.0),
-        incrementColorLegacy = PatternColor("scroller-legacy-horizontal-track-right.png", 11.0, 14.0),
-        decrementColorLegacy = PatternColor("scroller-legacy-horizontal-track-left.png", 11.0, 14.0),
+        trackColorLegacy = PatternColor("scroller-legacy-horizontal-track-center.png", 1.0, 15.0),
+        incrementColorLegacy = PatternColor("scroller-legacy-horizontal-track-right.png", 14.0, 15.0),
+        decrementColorLegacy = PatternColor("scroller-legacy-horizontal-track-left.png", 14.0, 15.0),
 
         knobColor = PatternColor(
             [
@@ -470,10 +470,10 @@ var themedButtonValues = nil,
             [@"increment-line-size",    CPSizeMakeZero()],
 
             // Legacy
-            [@"scroller-width",         14.0,                               CPThemeStateScrollViewLegacy],
+            [@"scroller-width",         15.0,                               CPThemeStateScrollViewLegacy],
             [@"knob-inset",             CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateScrollViewLegacy],
             [@"track-inset",            CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateScrollViewLegacy],
-            [@"track-border-overlay",   0.0,                                CPThemeStateScrollViewLegacy],
+            [@"track-border-overlay",   3.0,                                CPThemeStateScrollViewLegacy],
             [@"knob-slot-color",        trackColorLegacy,                   CPThemeStateScrollViewLegacy],
             [@"knob-slot-color",        trackColorLegacy,                   CPThemeStateScrollViewLegacy | CPThemeStateSelected],
             [@"knob-slot-color",        trackColorLegacy,                   CPThemeStateScrollViewLegacy | CPThemeStateScrollerKnobLight],
@@ -483,8 +483,8 @@ var themedButtonValues = nil,
             [@"knob-color",             knobColorLegacy,                    CPThemeStateScrollViewLegacy | CPThemeStateScrollerKnobDark],
             [@"increment-line-color",   incrementColorLegacy,               CPThemeStateScrollViewLegacy],
             [@"decrement-line-color",   decrementColorLegacy,               CPThemeStateScrollViewLegacy],
-            [@"decrement-line-size",    CPSizeMake(11.0, 14.0),             CPThemeStateScrollViewLegacy],
-            [@"increment-line-size",    CPSizeMake(11.0, 14.0),             CPThemeStateScrollViewLegacy]
+            [@"decrement-line-size",    CPSizeMake(14.0, 15.0),             CPThemeStateScrollViewLegacy],
+            [@"increment-line-size",    CPSizeMake(14.0, 15.0),             CPThemeStateScrollViewLegacy]
         ];
 
     [self registerThemeValues:themedHorizontalScrollerValues forView:scroller];
@@ -549,7 +549,7 @@ var themedButtonValues = nil,
         [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 8.0),    CPThemeStateBezeled],
         [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 8.0),    CPThemeStateBezeled | CPThemeStateEditing],
         [@"bezel-inset",        CGInsetMake(3.0, 4.0, 3.0, 4.0),    CPThemeStateBezeled],
-        [@"bezel-inset",        CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled | CPThemeStateEditing],
+        [@"bezel-inset",        CGInsetMake(1.0, 1.0, 1.0, 1.0),    CPThemeStateBezeled | CPThemeStateEditing],
 
         [@"text-color",         placeholderColor,                   CPTextFieldStatePlaceholder],
 
@@ -586,20 +586,20 @@ var themedButtonValues = nil,
 
 + (CPTextField)themedRoundedTextField
 {
-    var textfield = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 30.0)],
+    var textfield = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 29.0)],
         bezelColor = PatternColor(
             [
-                ["textfield-bezel-rounded-left.png", 13.0, 22.0],
-                ["textfield-bezel-rounded-center.png", 1.0, 22.0],
-                ["textfield-bezel-rounded-right.png", 13.0, 22.0]
+                ["textfield-bezel-rounded-left.png", 8.0, 23.0],
+                ["textfield-bezel-rounded-center.png", 1.0, 23.0],
+                ["textfield-bezel-rounded-right.png", 8.0, 23.0]
             ],
             PatternIsHorizontal),
 
         bezelFocusedColor = PatternColor(
             [
-                ["textfield-bezel-rounded-focused-left.png", 17.0, 30.0],
-                ["textfield-bezel-rounded-focused-center.png", 1.0, 30.0],
-                ["textfield-bezel-rounded-focused-right.png", 17.0, 30.0]
+                ["textfield-bezel-rounded-focused-left.png", 12.0, 29.0],
+                ["textfield-bezel-rounded-focused-center.png", 1.0, 29.0],
+                ["textfield-bezel-rounded-focused-right.png", 12.0, 29.0]
             ],
             PatternIsHorizontal),
 
@@ -615,13 +615,13 @@ var themedButtonValues = nil,
             [@"content-inset",  CGInsetMake(8.0, 14.0, 6.0, 14.0),  CPTextFieldStateRounded | CPThemeStateBezeled],
             [@"content-inset",  CGInsetMake(8.0, 14.0, 6.0, 14.0),  CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
 
-            [@"bezel-inset",    CGInsetMake(4.0, 4.0, 4.0, 4.0),    CPTextFieldStateRounded | CPThemeStateBezeled],
-            [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
+            [@"bezel-inset",    CGInsetMake(4.0, 4.0, 2.0, 4.0),    CPTextFieldStateRounded | CPThemeStateBezeled],
+            [@"bezel-inset",    CGInsetMake(1.0, 1.0, 1.0, 1.0),    CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
 
             [@"text-color",     placeholderColor,       CPTextFieldStateRounded | CPTextFieldStatePlaceholder],
 
-            [@"min-size",       CGSizeMake(0.0, 30.0),  CPTextFieldStateRounded | CPThemeStateBezeled],
-            [@"max-size",       CGSizeMake(-1.0, 30.0), CPTextFieldStateRounded | CPThemeStateBezeled]
+            [@"min-size",       CGSizeMake(0.0, 29.0),  CPTextFieldStateRounded | CPThemeStateBezeled],
+            [@"max-size",       CGSizeMake(-1.0, 29.0), CPTextFieldStateRounded | CPThemeStateBezeled]
         ];
 
     [self registerThemeValues:themedRoundedTextFieldValues forView:textfield];
@@ -638,7 +638,7 @@ var themedButtonValues = nil,
 
 + (CPSearchField)themedSearchField
 {
-    var searchField = [[CPSearchField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 30.0)];
+    var searchField = [[CPSearchField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 29.0)];
 
     [self registerThemeValues:nil forView:searchField inherit:themedRoundedTextFieldValues];
     return searchField;
@@ -748,29 +748,29 @@ var themedButtonValues = nil,
 
 + (CPComboBox)themedComboBox
 {
-    var combo = [[CPComboBox alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 29.0)];
+    var combo = [[CPComboBox alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 31.0)];
 
     var bezelColor = PatternColor(
             [
-                ["combobox-bezel-left.png", 6.0, 29.0],
-                ["combobox-bezel-center.png", 1.0, 29.0],
-                ["combobox-bezel-right.png", 26.0, 29.0]
+                ["combobox-bezel-left.png", 4.0, 25.0],
+                ["combobox-bezel-center.png", 1.0, 25.0],
+                ["combobox-bezel-right.png", 24.0, 25.0]
             ],
             PatternIsHorizontal),
 
         bezelFocusedColor = PatternColor(
             [
-                ["combobox-bezel-focused-left.png", 6.0, 29.0],
-                ["combobox-bezel-focused-center.png", 1.0, 29.0],
-                ["combobox-bezel-focused-right.png", 26.0, 29.0]
+                ["combobox-bezel-focused-left.png", 9.0, 31.0],
+                ["combobox-bezel-focused-center.png", 1.0, 31.0],
+                ["combobox-bezel-focused-right.png", 27.0, 31.0]
             ],
             PatternIsHorizontal),
 
         bezelDisabledColor = PatternColor(
             [
-                ["combobox-bezel-disabled-left.png", 6.0, 29.0],
-                ["combobox-bezel-disabled-center.png", 1.0, 29.0],
-                ["combobox-bezel-disabled-right.png", 26.0, 29.0]
+                ["combobox-bezel-disabled-left.png", 4.0, 25.0],
+                ["combobox-bezel-disabled-center.png", 1.0, 25.0],
+                ["combobox-bezel-disabled-right.png", 24.0, 25.0]
             ],
             PatternIsHorizontal),
 
@@ -808,7 +808,9 @@ var themedButtonValues = nil,
             [@"bezel-color",        bezelNoBorderFocusedColor,      CPThemeStateBezeled | CPThemeStateEditing],
             [@"bezel-color",        bezelNoBorderDisabledColor,     CPThemeStateBezeled | CPThemeStateDisabled],
 
-            [@"border-inset",       CGInsetMake(3.0, 3.0, 3.0, 3.0),    CPThemeStateBezeled],
+            [@"border-inset",       CGInsetMake(3.0, 3.0, 3.0, 3.0), CPThemeStateBezeled],
+
+            [@"bezel-inset",        CGInsetMake(0.0, 1.0, 1.0, 1.0),    CPThemeStateBezeled | CPThemeStateEditing],
 
             // The right border inset has to make room for the focus ring and popup button
             [@"content-inset",      CGInsetMake(8.0, 26.0, 7.0, 8.0),    CPThemeStateBezeled | CPComboBoxStateButtonBordered],
@@ -833,12 +835,12 @@ var themedButtonValues = nil,
 {
     var button = [CPRadio radioWithTitle:@"Radio button"],
 
-        imageNormal = PatternImage("radio-image.png", 19.0, 19.0),
-        imageSelected = PatternImage("radio-image-selected.png", 19.0, 19.0),
-        imageSelectedHighlighted = PatternImage("radio-image-selected-highlighted.png", 19.0, 19.0),
-        imageSelectedDisabled = PatternImage("radio-image-selected-disabled.png", 19.0, 19.0),
-        imageDisabled = PatternImage("radio-image-disabled.png", 19.0, 19.0),
-        imageHighlighted = PatternImage("radio-image-highlighted.png", 19.0, 19.0),
+        imageNormal = PatternImage("radio-image.png", 21.0, 21.0),
+        imageSelected = PatternImage("radio-image-selected.png", 21.0, 21.0),
+        imageSelectedHighlighted = PatternImage("radio-image-selected-highlighted.png", 21.0, 21.0),
+        imageSelectedDisabled = PatternImage("radio-image-selected-disabled.png", 21.0, 21.0),
+        imageDisabled = PatternImage("radio-image-disabled.png", 21.0, 21.0),
+        imageHighlighted = PatternImage("radio-image-highlighted.png", 21.0, 21.0),
 
         themeValues =
         [
@@ -856,7 +858,7 @@ var themedButtonValues = nil,
 
             [@"text-color",     [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0],  CPThemeStateDisabled],
 
-            [@"min-size",       CGSizeMake(19.0, 19.0)],
+            [@"min-size",       CGSizeMake(21.0, 21.0)],
             [@"max-size",       CGSizeMake(-1.0, -1.0)]
         ];
 
@@ -869,12 +871,12 @@ var themedButtonValues = nil,
 {
     var button = [CPCheckBox checkBoxWithTitle:@"Checkbox"],
 
-        imageNormal = PatternImage("check-box-image.png", 19.0, 19.0),
-        imageSelected = PatternImage("check-box-image-selected.png", 19.0, 19.0),
-        imageSelectedHighlighted = PatternImage("check-box-image-selected-highlighted.png", 19.0, 19.0),
-        imageSelectedDisabled = PatternImage("check-box-image-selected-disabled.png", 19.0, 19.0),
-        imageDisabled = PatternImage("check-box-image-disabled.png", 19.0, 19.0),
-        imageHighlighted = PatternImage("check-box-image-highlighted.png", 19.0, 19.0),
+        imageNormal = PatternImage("check-box-image.png", 21.0, 21.0),
+        imageSelected = PatternImage("check-box-image-selected.png", 21.0, 21.0),
+        imageSelectedHighlighted = PatternImage("check-box-image-selected-highlighted.png", 21.0, 21.0),
+        imageSelectedDisabled = PatternImage("check-box-image-selected-disabled.png", 21.0, 21.0),
+        imageDisabled = PatternImage("check-box-image-disabled.png", 21.0, 21.0),
+        imageHighlighted = PatternImage("check-box-image-highlighted.png", 21.0, 21.0),
 
         themeValues =
         [
@@ -892,7 +894,7 @@ var themedButtonValues = nil,
 
             [@"text-color",     [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0],  CPThemeStateDisabled],
 
-            [@"min-size",       CGSizeMake(19.0, 19.0)],
+            [@"min-size",       CGSizeMake(21.0, 21.0)],
             [@"max-size",       CGSizeMake(-1.0, -1.0)]
         ];
 
@@ -910,9 +912,9 @@ var themedButtonValues = nil,
     [button setAllowsMixedState:YES];
     [button setState:CPMixedState];
 
-    var mixedHighlightedImage = PatternImage("check-box-image-mixed-highlighted.png", 19.0, 19.0),
-        mixedDisabledImage = PatternImage("check-box-image-mixed-disabled.png", 19.0, 19.0),
-        mixedImage = PatternImage("check-box-image-mixed.png", 19.0, 19.0),
+    var mixedHighlightedImage = PatternImage("check-box-image-mixed-highlighted.png", 21.0, 21.0),
+        mixedDisabledImage = PatternImage("check-box-image-mixed-disabled.png", 21.0, 21.0),
+        mixedImage = PatternImage("check-box-image-mixed.png", 21.0, 21.0),
 
         themeValues =
         [
@@ -1124,7 +1126,7 @@ var themedButtonValues = nil,
 
 + (CPSlider)makeCircularSlider
 {
-    var slider = [[CPSlider alloc] initWithFrame:CGRectMake(0.0, 0.0, 34.0, 34.0)];
+    var slider = [[CPSlider alloc] initWithFrame:CGRectMake(0.0, 0.0, 30.0, 30.0)];
 
     [slider setSliderType:CPCircularSlider];
 
@@ -1135,8 +1137,8 @@ var themedButtonValues = nil,
 {
     var slider = [self makeCircularSlider],
 
-        trackColor = PatternColor("slider-circular-bezel.png", 34.0, 34.0),
-        trackDisabledColor = PatternColor("slider-circular-disabled-bezel.png", 34.0, 34.0),
+        trackColor = PatternColor("slider-circular-bezel.png", 30.0, 30.0),
+        trackDisabledColor = PatternColor("slider-circular-disabled-bezel.png", 30.0, 30.0),
         knobColor = PatternColor("slider-circular-knob.png", 5.0, 5.0),
         knobDisabledColor = PatternColor("slider-circular-disabled-knob.png", 5.0, 5.0),
         knobHighlightedColor = knobColor;
