@@ -16,8 +16,8 @@ var _CPStandardWindowViewBodyBackgroundColor = nil;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPColor whiteColor], [CPNull null], 8]
-                                       forKeys:[ @"body-color", @"attached-sheet-shadow-color", @"height-shadow"]];
+    return [CPDictionary dictionaryWithObjects:[[CPColor whiteColor], 8]
+                                       forKeys:[ @"body-color", @"height-shadow"]];
 }
 
 + (CPColor)bodyBackgroundColor
