@@ -197,7 +197,7 @@ var _CPToolTipHeight = 24.0,
 - (void)showToolTip
 {
     var mousePosition = [[CPApp currentEvent] globalLocation],
-        nativeRect = [[[CPApp mainWindow] platformWindow] nativeContentRect];
+        nativeRect = [[CPPlatformWindow primaryPlatformWindow] nativeContentRect];
 
     mousePosition.y += 20;
 

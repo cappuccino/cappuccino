@@ -38,13 +38,6 @@
         [self setMaximumRecents:[cell maximumRecents]];
         [self setSendsWholeSearchString:[cell sendsWholeSearchString]];
         [self setSendsSearchStringImmediately:[cell sendsSearchStringImmediately]];
-
-        if ([self isBezeled])
-        {
-            // NSTextField.j makes the field +7.0 pixels tall. We want +8.0 to go to 30.
-            var frame = [self frame];
-            [self setFrameSize:CGSizeMake(frame.size.width, frame.size.height + 1.0)];
-        }
     }
 
     return self;
