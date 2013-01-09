@@ -180,6 +180,7 @@ var _CPStandardWindowViewBodyBackgroundColor                = nil,
         {
             _closeButton = [[CPButton alloc] initWithFrame:CGRectMake(8.0, 8.0, 16.0, 16.0)];
 
+            [_closeButton setButtonType:CPMomentaryChangeButton];
             [_closeButton setBordered:NO];
             [self _updateCloseButton];
 
