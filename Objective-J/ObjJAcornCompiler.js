@@ -692,7 +692,7 @@ MessageSendExpression: function(node, st, c) {
     st.compiler.lastPos = node.end;
 },
 Identifier: function(node, st, c) {
-    if (!st.secondMemberExpression)
+    if (st.currentMethodType() === "-" && !st.secondMemberExpression)
     {
         var identifier = node.name,
             lvar = st.getLvarForCurrentMethod(identifier),
