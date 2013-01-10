@@ -12,7 +12,7 @@
 + (id)plusButton
 {
     var button = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)],
-        image = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPButtonBar class]] pathForResource:@"plus_button.png"] size:CGSizeMake(11, 12)];
+        image = [[CPTheme defaultTheme] valueForAttributeWithName:@"button-image-plus" forClass:[CPButtonBar class]];
 
     [button setBordered:NO];
     [button setImage:image];
@@ -24,7 +24,7 @@
 + (id)minusButton
 {
     var button = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)],
-        image = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPButtonBar class]] pathForResource:@"minus_button.png"] size:CGSizeMake(11, 4)];
+        image = [[CPTheme defaultTheme] valueForAttributeWithName:@"button-image-minus" forClass:[CPButtonBar class]];
 
     [button setBordered:NO];
     [button setImage:image];
@@ -36,7 +36,7 @@
 + (id)actionPopupButton
 {
     var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)],
-        image = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPButtonBar class]] pathForResource:@"action_button.png"] size:CGSizeMake(22, 14)];
+        image = [[CPTheme defaultTheme] valueForAttributeWithName:@"button-image-action" forClass:[CPButtonBar class]];
 
     [button addItemWithTitle:nil];
     [[button lastItem] setImage:image];
@@ -55,8 +55,24 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[CGInsetMake(0.0, 0.0, 0.0, 0.0), CGSizeMakeZero(), [CPNull null], [CPNull null], [CPNull null], [CPNull null]]
-                                       forKeys:[@"resize-control-inset", @"resize-control-size", @"resize-control-color", @"bezel-color", @"button-bezel-color", @"button-text-color"]];
+    return [CPDictionary dictionaryWithObjects:[   CGInsetMake(0.0, 0.0, 0.0, 0.0),
+                                                   CGSizeMakeZero(),
+                                                   [CPNull null],
+                                                   [CPNull null],
+                                                   [CPNull null],
+                                                   [CPNull null],
+                                                   [CPNull null],
+                                                   [CPNull null],
+                                                   [CPNull null]]
+                                       forKeys:[   @"resize-control-inset",
+                                                   @"resize-control-size",
+                                                   @"resize-control-color",
+                                                   @"bezel-color",
+                                                   @"button-bezel-color",
+                                                   @"button-text-color",
+                                                   @"button-image-plus",
+                                                   @"button-image-minus",
+                                                   @"button-image-action"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame

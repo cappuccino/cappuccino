@@ -1217,7 +1217,11 @@ var themedButtonValues = nil,
                 ["buttonbar-button-bezel-disabled-center.png", 1.0, 25.0],
                 ["buttonbar-button-bezel-disabled-right.png", 2.0, 25.0]
             ],
-            PatternIsHorizontal);
+            PatternIsHorizontal),
+
+        buttonImagePlus = PatternImage("buttonbar-image-plus.png", 11.0, 12.0),
+        buttonImageMinus = PatternImage("buttonbar-image-minus.png", 11.0, 4.0),
+        buttonImageAction = PatternImage("buttonbar-image-action.png", 22.0, 14.0),
 
     themedButtonBarValues =
     [
@@ -1230,7 +1234,11 @@ var themedButtonValues = nil,
         [@"button-bezel-color",     buttonBezelColor],
         [@"button-bezel-color",     buttonBezelHighlightedColor,    CPThemeStateHighlighted],
         [@"button-bezel-color",     buttonBezelDisabledColor,       CPThemeStateDisabled],
-        [@"button-text-color",      [CPColor blackColor]]
+        [@"button-text-color",      [CPColor blackColor]],
+
+        [@"button-image-plus",      buttonImagePlus],
+        [@"button-image-minus",     buttonImageMinus],
+        [@"button-image-action",    buttonImageAction]
     ];
 
     [self registerThemeValues:themedButtonBarValues forView:buttonBar];
@@ -1310,6 +1318,7 @@ var themedButtonValues = nil,
 
         sortImage = PatternImage("tableview-headerview-ascending.png", 9.0, 8.0),
         sortImageReversed = PatternImage("tableview-headerview-descending.png", 9.0, 8.0),
+        imageGenericFile = PatternImage("tableview-image-generic-file.png", 64.0, 64.0),
         alternatingRowColors = [[CPColor whiteColor], [CPColor colorWithRed:245.0 / 255.0 green:249.0 / 255.0 blue:252.0 / 255.0 alpha:1.0]],
         gridColor = [CPColor colorWithHexString:@"dce0e2"],
         selectionColor = [CPColor colorWithHexString:@"5780d8"],
@@ -1328,6 +1337,7 @@ var themedButtonValues = nil,
             [@"sourcelist-selection-color", sourceListSelectionColor],
             [@"sort-image",                 sortImage],
             [@"sort-image-reversed",        sortImageReversed],
+            [@"image-generic-file",         imageGenericFile],
             [@"default-row-height",         25.0],
         ];
 

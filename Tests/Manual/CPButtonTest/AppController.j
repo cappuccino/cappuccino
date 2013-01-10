@@ -39,9 +39,8 @@ CPLogRegister(CPLogConsole);
 
 - (void)awakeFromCib
 {
-    var path = [[CPBundle bundleForClass:[CPView class]] pathForResource:@"action_button.png"];
-    [imageButton setImage:[[CPImage alloc] initWithContentsOfFile:path size:CGSizeMake(22.0, 14.0)]];
-    [imageDisabledButton setImage:[[CPImage alloc] initWithContentsOfFile:path size:CGSizeMake(22.0, 14.0)]];
+    [imageButton setImage:[[CPTheme defaultTheme] valueForAttributeWithName:@"button-image-action" forClass:[CPButtonBar class]]];
+    [imageDisabledButton setImage:[[CPTheme defaultTheme] valueForAttributeWithName:@"button-image-action" forClass:[CPButtonBar class]]];
 
     [self _setImagePosition:CPImageLeft];
     [positionMenu selectItemAtIndex:CPImageLeft];
