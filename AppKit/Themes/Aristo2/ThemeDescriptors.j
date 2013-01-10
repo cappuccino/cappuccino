@@ -2049,7 +2049,29 @@ var themedButtonValues = nil,
     return docModalWindowView;
 }
 
++(_CPToolbarView)themedToolbarView
+{
+    var toolbarView = [[_CPToolbarView alloc] initWithFrame:CGRectMakeZero()],
 
+        toolbarExtraItemsImage = PatternImage(@"toolbar-view-extra-items-image", 10, 15),
+        toolbarExtraItemsAlternateImage = PatternImage(@"toolbar-view-extra-items-alternate-image.png", 10, 15),
+
+        themeValues =
+        [
+            [@"extra-item-extra-image",                 toolbarExtraItemsImage],
+            [@"extra-item-extra-alternate-image",       toolbarExtraItemsAlternateImage],
+            [@"item-margin",                            10.0],
+            [@"extra-item-width",                       20.0],
+            [@"content-inset",                          CGInsetMake(4.0, 4.0, 4.0, 10)],
+            [@"regular-size-height",                    59.0],
+            [@"small-size-height",                      46.0]
+        ];
+
+
+    [self registerThemeValues:themeValues forView:toolbarView];
+
+    return toolbarView;
+}
 
 @end
 
