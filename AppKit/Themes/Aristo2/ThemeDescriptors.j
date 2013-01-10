@@ -1217,7 +1217,11 @@ var themedButtonValues = nil,
                 ["buttonbar-button-bezel-disabled-center.png", 1.0, 25.0],
                 ["buttonbar-button-bezel-disabled-right.png", 2.0, 25.0]
             ],
-            PatternIsHorizontal);
+            PatternIsHorizontal),
+
+        buttonImagePlus = PatternImage("buttonbar-image-plus.png", 11.0, 12.0),
+        buttonImageMinus = PatternImage("buttonbar-image-minus.png", 11.0, 4.0),
+        buttonImageAction = PatternImage("buttonbar-image-action.png", 22.0, 24.0),
 
     themedButtonBarValues =
     [
@@ -1230,7 +1234,11 @@ var themedButtonValues = nil,
         [@"button-bezel-color",     buttonBezelColor],
         [@"button-bezel-color",     buttonBezelHighlightedColor,    CPThemeStateHighlighted],
         [@"button-bezel-color",     buttonBezelDisabledColor,       CPThemeStateDisabled],
-        [@"button-text-color",      [CPColor blackColor]]
+        [@"button-text-color",      [CPColor blackColor]],
+
+        [@"button-image-plus",      buttonImagePlus],
+        [@"button-image-minus",     buttonImageMinus],
+        [@"button-image-action",    buttonImageAction]
     ];
 
     [self registerThemeValues:themedButtonBarValues forView:buttonBar];
