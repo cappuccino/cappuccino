@@ -1989,11 +1989,11 @@ var themedButtonValues = nil,
         ]),
 
         closeButtonImage =                  PatternImage(@"window-standard-close-button.png", 16, 16),
-        closeButtonImageHighlighted =       PatternImage(@"window-standard-button-highlighted.png",16,16),
-        unsavedButtonImage =                PatternImage(@"window-standard-button-unsaved.png",16,16),
-        unsavedButtonImageHighlighted =     PatternImage(@"window-standard-close-button-unsaved-highlighted.png",16,16),
-        minimizeButtonImage =               PatternImage(@"window-standard-minimize-button",16,16),
-        minimizeButtonImageHighlighted =    PatternImage(@"window-standard-minimize-button-highlighted",16,16),
+        closeButtonImageHighlighted =       PatternImage(@"window-standard-button-highlighted.png",16, 16),
+        unsavedButtonImage =                PatternImage(@"window-standard-button-unsaved.png",16, 16),
+        unsavedButtonImageHighlighted =     PatternImage(@"window-standard-close-button-unsaved-highlighted.png",16, 16),
+        minimizeButtonImage =               PatternImage(@"window-standard-minimize-button.png",16, 16),
+        minimizeButtonImageHighlighted =    PatternImage(@"window-standard-minimize-button-highlighted.png",16, 16),
 
         sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
         resizeIndicator = PatternImage(@"window-resize-indicator.png", 12, 12),
@@ -2068,11 +2068,32 @@ var themedButtonValues = nil,
     return docModalWindowView;
 }
 
++(_CPBorderlessBridgeWindowView)themedBordelessBridgeWindowView
+{
+    var bordelessBridgeWindowView = [[_CPBorderlessBridgeWindowView alloc] initWithFrame:CGRectMake(0,0,0,0)],
+
+        toolbarBackgroundColor = PatternColor(
+        [
+            [@"toolbar-background-top.png", 1.0, 1.0],
+            [@"toolbar-background-center.png", 1.0, 57.0],
+            [@"toolbar-background-bottom.png", 1.0, 1.0]
+        ],  PatternIsVertical)
+
+        themeValues =
+        [
+            [@"toolbar-background-color", toolbarBackgroundColor]
+        ];
+
+    [self registerThemeValues:themeValues forView:bordelessBridgeWindowView inherit:themedWindowViewValues];
+
+    return bordelessBridgeWindowView;
+}
+
 +(_CPToolbarView)themedToolbarView
 {
     var toolbarView = [[_CPToolbarView alloc] initWithFrame:CGRectMakeZero()],
 
-        toolbarExtraItemsImage = PatternImage(@"toolbar-view-extra-items-image", 10, 15),
+        toolbarExtraItemsImage = PatternImage(@"toolbar-view-extra-items-image.png", 10, 15),
         toolbarExtraItemsAlternateImage = PatternImage(@"toolbar-view-extra-items-alternate-image.png", 10, 15),
 
         themeValues =
