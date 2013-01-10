@@ -46,12 +46,43 @@ var CPTextFieldDOMInputElement = nil,
     CPTextFieldInputIsActive = NO,
     CPTextFieldCachedSelectStartFunction = nil,
     CPTextFieldCachedDragFunction = nil,
-    CPTextFieldBlurFunction = nil,
+    CPTextFieldBlurHandler = nil,
     CPTextFieldInputFunction = nil;
 
 #endif
 
 var CPSecureTextFieldCharacter = "\u2022";
+
+
+function CPTextFieldBlurFunction(anEvent, owner, domElement, inputElement, resigning, didBlurRef)
+{
+    if (owner && domElement != inputElement.parentNode)
+        return;
+
+    if (!resigning && [[owner window] isKeyWindow])
+    {
+        /*
+            Browsers blur text fields when a click occurs anywhere outside the text field. That is normal for browsers, but in Cocoa the key view retains focus unless the click target accepts first responder. So if we lost focus but were not told to resign and our window is still key, restore focus.
+        */
+        window.setTimeout(function()
+        {
+            inputElement.focus();
+        }, 0.0);
+    }
+
+    CPTextFieldHandleBlur(anEvent, AT_REF(owner));
+    AT_DEREF(didBlurRef, YES);
+
+    return true;
+}
+
+function CPTextFieldHandleBlur(anEvent, ownerRef)
+{
+    AT_DEREF(ownerRef, nil);
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+}
+
 
 @implementation CPString (CPTextFieldAdditions)
 
@@ -188,28 +219,15 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         CPTextFieldDOMInputElement.style.background = "transparent";
         CPTextFieldDOMInputElement.style.outline = "none";
 
-        CPTextFieldBlurFunction = function(anEvent)
+        CPTextFieldBlurHandler = function(anEvent)
         {
-            if (CPTextFieldInputOwner && CPTextFieldInputOwner._DOMElement !== CPTextFieldDOMInputElement.parentNode)
-                return;
-
-            if (!CPTextFieldInputResigning)
-            {
-                [[CPTextFieldInputOwner window] makeFirstResponder:nil];
-                return;
-            }
-
-            CPTextFieldHandleBlur(anEvent, CPTextFieldDOMInputElement);
-            CPTextFieldInputDidBlur = YES;
-
-            return true;
-        };
-
-        CPTextFieldHandleBlur = function(anEvent)
-        {
-            CPTextFieldInputOwner = nil;
-
-            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+            return CPTextFieldBlurFunction(
+                        anEvent,
+                        CPTextFieldInputOwner,
+                        CPTextFieldInputOwner._DOMElement,
+                        CPTextFieldDOMInputElement,
+                        CPTextFieldInputResigning,
+                        AT_REF(CPTextFieldInputDidBlur));
         };
 
         if (CPFeatureIsCompatible(CPInputOnInputEventFeature))
@@ -219,9 +237,16 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
                 if (!CPTextFieldInputOwner)
                     return;
 
-                var cappEvent = [CPEvent keyEventWithType:CPKeyUp location:_CGPointMakeZero() modifierFlags:0
-                                                timestamp:[CPEvent currentTimestamp] windowNumber:[[CPApp keyWindow] windowNumber] context:nil
-                                               characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:nil];
+                var cappEvent = [CPEvent keyEventWithType:CPKeyUp
+                                                 location:_CGPointMakeZero()
+                                            modifierFlags:0
+                                                timestamp:[CPEvent currentTimestamp]
+                                             windowNumber:[[CPApp keyWindow] windowNumber]
+                                                  context:nil
+                                               characters:nil
+                              charactersIgnoringModifiers:nil
+                                                isARepeat:NO
+                                                  keyCode:nil];
 
                 [CPTextFieldInputOwner keyUp:cappEvent];
 
@@ -231,8 +256,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             CPTextFieldDOMInputElement.oninput = CPTextFieldInputFunction;
         }
 
-        //FIXME make this not onblur
-        CPTextFieldDOMInputElement.onblur = CPTextFieldBlurFunction;
+        // FIXME make this not onblur
+        CPTextFieldDOMInputElement.onblur = CPTextFieldBlurHandler;
 
         CPTextFieldDOMStandardInputElement = CPTextFieldDOMInputElement;
     }
@@ -261,7 +286,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             CPTextFieldDOMPasswordInputElement.style.outline = "none";
             CPTextFieldDOMPasswordInputElement.type = "password";
 
-            CPTextFieldDOMPasswordInputElement.onblur = CPTextFieldBlurFunction;
+            CPTextFieldDOMPasswordInputElement.onblur = CPTextFieldBlurHandler;
         }
 
         CPTextFieldDOMInputElement = CPTextFieldDOMPasswordInputElement;
@@ -684,7 +709,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         element.blur();
 
     if (!CPTextFieldInputDidBlur)
-        CPTextFieldBlurFunction();
+        CPTextFieldBlurHandler();
 
     CPTextFieldInputDidBlur = NO;
     CPTextFieldInputResigning = NO;

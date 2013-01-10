@@ -32,13 +32,11 @@
     [[self contentView] addSubview:field];
 
     [sender setEnabled:NO];
-    [self makeFirstResponder:[[self contentView] viewWithTag:1]];
 }
 
 - (@action)recalc:(id)sender
 {
     [self recalculateKeyViewLoop];
-    [self makeFirstResponder:[[self contentView] viewWithTag:1]];
 }
 
 @end

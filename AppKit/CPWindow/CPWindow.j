@@ -1658,6 +1658,7 @@ CPTexturedBackgroundWindowMask
     // CPLeftMouseDown is needed for window moving and resizing to work.
     // CPMouseMoved is needed for rollover effects on title bar buttons.
     var sheet = [self attachedSheet];
+
     if (sheet)
     {
         switch (type)
@@ -1679,162 +1680,172 @@ CPTexturedBackgroundWindowMask
 
     switch (type)
     {
-        case CPFlagsChanged:        return [[self firstResponder] flagsChanged:anEvent];
+        case CPFlagsChanged:
+            return [[self firstResponder] flagsChanged:anEvent];
 
-        case CPKeyUp:               return [[self firstResponder] keyUp:anEvent];
+        case CPKeyUp:
+            return [[self firstResponder] keyUp:anEvent];
 
-        case CPKeyDown:             if ([anEvent charactersIgnoringModifiers] === CPTabCharacter)
-                                    {
-                                        if ([anEvent modifierFlags] & CPShiftKeyMask)
-                                            [self selectPreviousKeyView:self];
-                                        else
-                                            [self selectNextKeyView:self];
+        case CPKeyDown:
+            if ([anEvent charactersIgnoringModifiers] === CPTabCharacter)
+            {
+                if ([anEvent modifierFlags] & CPShiftKeyMask)
+                    [self selectPreviousKeyView:self];
+                else
+                    [self selectNextKeyView:self];
 #if PLATFORM(DOM)
-                                        // Make sure the browser doesn't try to do its own tab handling.
-                                        // This is important or the browser might blur the shared text field or token field input field,
-                                        // even that we just moved it to a new first responder.
-                                        [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO]
+                // Make sure the browser doesn't try to do its own tab handling.
+                // This is important or the browser might blur the shared text field or token field input field,
+                // even that we just moved it to a new first responder.
+                [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO]
 #endif
-                                        return;
-                                    }
-                                    else if ([anEvent charactersIgnoringModifiers] === CPBackTabCharacter)
-                                    {
-                                        var didTabBack = [self selectPreviousKeyView:self];
-                                        if (didTabBack)
-                                        {
+                return;
+            }
+            else if ([anEvent charactersIgnoringModifiers] === CPBackTabCharacter)
+            {
+                var didTabBack = [self selectPreviousKeyView:self];
+                if (didTabBack)
+                {
 #if PLATFORM(DOM)
-                                            // Make sure the browser doesn't try to do its own tab handling.
-                                            // This is important or the browser might blur the shared text field or token field input field,
-                                            // even that we just moved it to a new first responder.
-                                            [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO]
+                    // Make sure the browser doesn't try to do its own tab handling.
+                    // This is important or the browser might blur the shared text field or token field input field,
+                    // even that we just moved it to a new first responder.
+                    [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO]
 #endif
-                                        }
+                }
 
-                                        return didTabBack;
-                                    }
+                return didTabBack;
+            }
 
-                                    [[self firstResponder] keyDown:anEvent];
+            [[self firstResponder] keyDown:anEvent];
 
-                                    // Trigger the default button if needed
-                                    // FIXME: Is this only applicable in a sheet? See isse: #722.
-                                    if (![self disableKeyEquivalentForDefaultButton])
-                                    {
-                                        var defaultButton = [self defaultButton],
-                                            keyEquivalent = [defaultButton keyEquivalent],
-                                            modifierMask = [defaultButton keyEquivalentModifierMask];
+            // Trigger the default button if needed
+            // FIXME: Is this only applicable in a sheet? See isse: #722.
+            if (![self disableKeyEquivalentForDefaultButton])
+            {
+                var defaultButton = [self defaultButton],
+                    keyEquivalent = [defaultButton keyEquivalent],
+                    modifierMask = [defaultButton keyEquivalentModifierMask];
 
-                                        if ([anEvent _triggersKeyEquivalent:keyEquivalent withModifierMask:modifierMask])
-                                            [[self defaultButton] performClick:self];
-                                    }
+                if ([anEvent _triggersKeyEquivalent:keyEquivalent withModifierMask:modifierMask])
+                    [[self defaultButton] performClick:self];
+            }
 
-                                    return;
+            return;
 
-        case CPScrollWheel:         return [[_windowView hitTest:point] scrollWheel:anEvent];
+        case CPScrollWheel:
+            return [[_windowView hitTest:point] scrollWheel:anEvent];
 
         case CPLeftMouseUp:
-        case CPRightMouseUp:        var hitTestedView = _leftMouseDownView,
-                                        selector = type == CPRightMouseUp ? @selector(rightMouseUp:) : @selector(mouseUp:);
+        case CPRightMouseUp:
+            var hitTestedView = _leftMouseDownView,
+                selector = type == CPRightMouseUp ? @selector(rightMouseUp:) : @selector(mouseUp:);
 
-                                    if (!hitTestedView)
-                                        hitTestedView = [_windowView hitTest:point];
+            if (!hitTestedView)
+                hitTestedView = [_windowView hitTest:point];
 
-                                    [hitTestedView performSelector:selector withObject:anEvent];
+            [hitTestedView performSelector:selector withObject:anEvent];
 
-                                    _leftMouseDownView = nil;
+            _leftMouseDownView = nil;
 
-                                    return;
+            return;
+
         case CPLeftMouseDown:
-        case CPRightMouseDown:      _leftMouseDownView = [_windowView hitTest:point];
+        case CPRightMouseDown:
+            _leftMouseDownView = [_windowView hitTest:point];
 
-                                    if (_leftMouseDownView != _firstResponder && [_leftMouseDownView acceptsFirstResponder])
-                                        [self makeFirstResponder:_leftMouseDownView];
+            if (_leftMouseDownView != _firstResponder && [_leftMouseDownView acceptsFirstResponder])
+                [self makeFirstResponder:_leftMouseDownView];
 
-                                    [CPApp activateIgnoringOtherApps:YES];
+            [CPApp activateIgnoringOtherApps:YES];
 
-                                    var theWindow = [anEvent window],
-                                        selector = type == CPRightMouseDown ? @selector(rightMouseDown:) : @selector(mouseDown:);
+            var theWindow = [anEvent window],
+                selector = type == CPRightMouseDown ? @selector(rightMouseDown:) : @selector(mouseDown:);
 
-                                    if ([theWindow isKeyWindow] || [theWindow becomesKeyOnlyIfNeeded] && ![_leftMouseDownView needsPanelToBecomeKey])
-                                        return [_leftMouseDownView performSelector:selector withObject:anEvent];
-                                    else
-                                    {
-                                        // FIXME: delayed ordering?
-                                        [self makeKeyAndOrderFront:self];
+            if ([theWindow isKeyWindow] || [theWindow becomesKeyOnlyIfNeeded] && ![_leftMouseDownView needsPanelToBecomeKey])
+                return [_leftMouseDownView performSelector:selector withObject:anEvent];
+            else
+            {
+                // FIXME: delayed ordering?
+                [self makeKeyAndOrderFront:self];
 
-                                        if ([_leftMouseDownView acceptsFirstMouse:anEvent])
-                                            return [_leftMouseDownView performSelector:selector withObject:anEvent];
-                                    }
-                                    break;
+                if ([_leftMouseDownView acceptsFirstMouse:anEvent])
+                    return [_leftMouseDownView performSelector:selector withObject:anEvent];
+            }
+            break;
 
         case CPLeftMouseDragged:
-        case CPRightMouseDragged:   if (!_leftMouseDownView)
-                                        return [[_windowView hitTest:point] mouseDragged:anEvent];
+        case CPRightMouseDragged:
+            if (!_leftMouseDownView)
+                return [[_windowView hitTest:point] mouseDragged:anEvent];
 
-                                    var selector;
-                                    if (type == CPRightMouseDragged)
-                                    {
-                                        selector = @selector(rightMouseDragged:)
-                                        if (![_leftMouseDownView respondsToSelector:selector])
-                                            selector = nil;
-                                    }
+            var selector;
 
-                                    if (!selector)
-                                        selector = @selector(mouseDragged:)
+            if (type == CPRightMouseDragged)
+            {
+                selector = @selector(rightMouseDragged:)
+                if (![_leftMouseDownView respondsToSelector:selector])
+                    selector = nil;
+            }
 
-                                    return [_leftMouseDownView performSelector:selector withObject:anEvent];
+            if (!selector)
+                selector = @selector(mouseDragged:)
 
-        case CPMouseMoved:          if (!_acceptsMouseMovedEvents)
-                                        return;
+            return [_leftMouseDownView performSelector:selector withObject:anEvent];
 
-                                    if (!_mouseEnteredStack)
-                                        _mouseEnteredStack = [];
+        case CPMouseMoved:
+            if (!_acceptsMouseMovedEvents)
+                return;
 
-                                    var hitTestView = [_windowView hitTest:point];
+            if (!_mouseEnteredStack)
+                _mouseEnteredStack = [];
 
-                                    if ([_mouseEnteredStack count] && [_mouseEnteredStack lastObject] === hitTestView)
-                                        return [hitTestView mouseMoved:anEvent];
+            var hitTestView = [_windowView hitTest:point];
 
-                                    var view = hitTestView,
-                                        mouseEnteredStack = [];
+            if ([_mouseEnteredStack count] && [_mouseEnteredStack lastObject] === hitTestView)
+                return [hitTestView mouseMoved:anEvent];
 
-                                    while (view)
-                                    {
-                                        mouseEnteredStack.unshift(view);
+            var view = hitTestView,
+                mouseEnteredStack = [];
 
-                                        view = [view superview];
-                                    }
+            while (view)
+            {
+                mouseEnteredStack.unshift(view);
 
-                                    var deviation = MIN(_mouseEnteredStack.length, mouseEnteredStack.length);
+                view = [view superview];
+            }
 
-                                    while (deviation--)
-                                        if (_mouseEnteredStack[deviation] === mouseEnteredStack[deviation])
-                                            break;
+            var deviation = MIN(_mouseEnteredStack.length, mouseEnteredStack.length);
 
-                                    var index = deviation + 1,
-                                        count = _mouseEnteredStack.length;
+            while (deviation--)
+                if (_mouseEnteredStack[deviation] === mouseEnteredStack[deviation])
+                    break;
 
-                                    if (index < count)
-                                    {
-                                        var event = [CPEvent mouseEventWithType:CPMouseExited location:point modifierFlags:[anEvent modifierFlags] timestamp:[anEvent timestamp] windowNumber:_windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
+            var index = deviation + 1,
+                count = _mouseEnteredStack.length;
 
-                                        for (; index < count; ++index)
-                                            [_mouseEnteredStack[index] mouseExited:event];
-                                    }
+            if (index < count)
+            {
+                var event = [CPEvent mouseEventWithType:CPMouseExited location:point modifierFlags:[anEvent modifierFlags] timestamp:[anEvent timestamp] windowNumber:_windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
 
-                                    index = deviation + 1;
-                                    count = mouseEnteredStack.length;
+                for (; index < count; ++index)
+                    [_mouseEnteredStack[index] mouseExited:event];
+            }
 
-                                    if (index < count)
-                                    {
-                                        var event = [CPEvent mouseEventWithType:CPMouseEntered location:point modifierFlags:[anEvent modifierFlags] timestamp:[anEvent timestamp] windowNumber:_windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
+            index = deviation + 1;
+            count = mouseEnteredStack.length;
 
-                                        for (; index < count; ++index)
-                                            [mouseEnteredStack[index] mouseEntered:event];
-                                    }
+            if (index < count)
+            {
+                var event = [CPEvent mouseEventWithType:CPMouseEntered location:point modifierFlags:[anEvent modifierFlags] timestamp:[anEvent timestamp] windowNumber:_windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
 
-                                    _mouseEnteredStack = mouseEnteredStack;
+                for (; index < count; ++index)
+                    [mouseEnteredStack[index] mouseEntered:event];
+            }
 
-                                    [hitTestView mouseMoved:anEvent];
+            _mouseEnteredStack = mouseEnteredStack;
+
+            [hitTestView mouseMoved:anEvent];
     }
 }
 
