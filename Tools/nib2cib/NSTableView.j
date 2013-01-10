@@ -40,7 +40,13 @@
 
         // Convert xib default to cib default
         if (_rowHeight == 17)
-            _rowHeight = 23;
+        {
+            var theme = [[Converter sharedConverter] themes][0],
+                height = [theme valueForAttributeWithName:@"default-row-height" forClass:CPTableView];
+
+            _rowHeight = height;
+        }
+
 
         _headerView = [aCoder decodeObjectForKey:@"NSHeaderView"];
 
