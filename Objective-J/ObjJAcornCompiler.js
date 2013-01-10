@@ -79,6 +79,17 @@ Scope.prototype.currentMethodType = function()
     return this.methodType ? this.methodType : this.prev ? this.prev.currentMethodType() : null;
 }
 
+Scope.prototype.copyAddedSelfToIvarsToParent = function()
+{
+  if (this.prev && this.addedSelfToIvars) for (var key in this.addedSelfToIvars)
+  {
+    var addedSelfToIvar = this.addedSelfToIvars[key],
+        scopeAddedSelfToIvar = (this.prev.addedSelfToIvars || (this.prev.addedSelfToIvars = Object.create(null)))[key] || (this.prev.addedSelfToIvars[key] = []);
+
+    scopeAddedSelfToIvar.push.apply(scopeAddedSelfToIvar, addedSelfToIvar);   // Append at end in parent scope
+  }
+}
+
 var currentCompilerFlags = "";
 
 var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags, /*unsigned*/ pass)
@@ -359,6 +370,7 @@ Function: function(node, scope, c) {
     scope.compiler.lastPos = node.id.end;
   }
   c(node.body, inner, "ScopeBody");
+  inner.copyAddedSelfToIvarsToParent();
 },
 TryStatement: function(node, scope, c) {
   c(node.block, scope, "Statement");
@@ -366,14 +378,28 @@ TryStatement: function(node, scope, c) {
     var handler = node.handlers[i], inner = new Scope(scope);
     inner.vars[handler.param.name] = {type: "catch clause", node: handler.param};
     c(handler.body, inner, "ScopeBody");
+    inner.copyAddedSelfToIvarsToParent();
   }
   if (node.finalizer) c(node.finalizer, scope, "Statement");
 },
 VariableDeclaration: function(node, scope, c) {
   for (var i = 0; i < node.declarations.length; ++i) {
-    var decl = node.declarations[i];
-    scope.vars[decl.id.name] = {type: "var", node: decl.id};
+    var decl = node.declarations[i],
+        identifier = decl.id.name;
+    scope.vars[identifier] = {type: "var", node: decl.id};
     if (decl.init) c(decl.init, scope, "Expression");
+    if (scope.addedSelfToIvars) {
+      var addedSelfToIvar = scope.addedSelfToIvars[identifier];
+      if (addedSelfToIvar) {
+        var buffer = scope.compiler.jsBuffer.atoms;
+        for (var i = 0; i < addedSelfToIvar.length; i++) {
+          var dict = addedSelfToIvar[i];
+          buffer[dict.index] = "";
+          scope.compiler.addWarning(createMessage("Local declaration of '" + identifier + "' hides instance variable", dict.node, scope.compiler.source));
+        }
+        scope.addedSelfToIvars[identifier] = [];
+      }
+    }
   }
 },
 MemberExpression: function(node, st, c) {
@@ -711,6 +737,9 @@ Identifier: function(node, st, c) {
                     CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, nodeStart));
                     compiler.lastPos = nodeStart;
                 } while (compiler.source.substr(nodeStart++, 1) === "(")
+                // Save the index in where the "self." string is stored and the node.
+                // These will be used if we find a variable declaration that is hoisting this identifier.
+                ((st.addedSelfToIvars || (st.addedSelfToIvars = Object.create(null)))[identifier] || (st.addedSelfToIvars[identifier] = [])).push({node: node, index: compiler.jsBuffer.atoms.length});
                 CONCAT(compiler.jsBuffer, "self.");
             }
         }
