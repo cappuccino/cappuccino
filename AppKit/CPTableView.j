@@ -260,8 +260,26 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null],  25.0]
-                                       forKeys:["alternating-row-colors", "grid-color", "highlighted-grid-color", "selection-color", "sourcelist-selection-color", "sort-image", "sort-image-reversed", "selection-radius", "default-row-height"]];
+    return [CPDictionary dictionaryWithObjects:[[CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                25.0]
+                                       forKeys:[@"alternating-row-colors",
+                                                @"grid-color",
+                                                @"highlighted-grid-color",
+                                                @"selection-color",
+                                                @"sourcelist-selection-color",
+                                                @"sort-image",
+                                                @"sort-image-reversed",
+                                                @"selection-radius",
+                                                @"image-generic-file",
+                                                @"default-row-height"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -2803,7 +2821,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (CPImage)dragImageForRowsWithIndexes:(CPIndexSet)dragRows tableColumns:(CPArray)theTableColumns event:(CPEvent)dragEvent offset:(CGPoint)dragImageOffset
 {
-    return [[CPImage alloc] initWithContentsOfFile:@"Frameworks/AppKit/Resources/GenericFile.png" size:CGSizeMake(32,32)];
+    return [self valueForThemeAttribute:@"image-generic-file"];
 }
 
 /*!
