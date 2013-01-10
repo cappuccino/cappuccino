@@ -1778,6 +1778,50 @@ var themedButtonValues = nil,
     return levelIndicator;
 }
 
++ (CPShadowView)themedShadowView
+{
+    var shadowView = [[CPShadowView alloc] initWithFrame:CGRectMakeZero()],
+
+        lightColor = PatternColor(
+            [
+                [@"shadow-view-light-top-left.png", 9.0, 9.0],
+                [@"shadow-view-light-top.png", 1.0, 9.0],
+                [@"shadow-view-light-top-right.png", 9.0, 9.0],
+                [@"shadow-view-light-left.png", 9.0, 1.0],
+                nil,
+                [@"shadow-view-light-right.png", 9.0, 1.0],
+                [@"shadow-view-light-bottom-left.png", 9.0, 9.0],
+                [@"shadow-view-light-bottom.png", 1.0, 9.0],
+                [@"shadow-view-light-bottom-right.png", 9.0, 9.0]
+            ]),
+
+        heavyColor = PatternColor(
+            [
+                [@"shadow-view-heavy-top-left.png", 17.0, 17.0],
+                [@"shadow-view-heavy-top.png", 1.0, 17.0],
+                [@"shadow-view-heavy-top-right.png", 17.0, 17.0],
+                [@"shadow-view-heavy-left.png", 17.0, 1.0],
+                nil,
+                [@"shadow-view-heavy-right.png", 17.0, 1.0],
+                [@"shadow-view-heavy-bottom-left.png", 17.0, 17.0],
+                [@"shadow-view-heavy-bottom.png", 1.0, 17.0],
+                [@"shadow-view-heavy-bottom-right.png", 17.0, 17.0]
+            ]),
+
+        themedShadowViewValues =
+            [
+                [@"bezel-color",        lightColor,                         CPThemeStateShadowViewLight],
+                [@"bezel-color",        heavyColor,                         CPThemeStateShadowViewHeavy],
+
+                [@"content-inset",      CGInsetMake(3.0, 3.0, 5.0, 3.0),    CPThemeStateShadowViewLight],
+                [@"content-inset",      CGInsetMake(5.0, 7.0, 5.0, 7.0),    CPThemeStateShadowViewHeavy]
+            ];
+
+        [self registerThemeValues:themedShadowViewValues forView:shadowView];
+
+        return shadowView;
+}
+
 +(_CPWindowView)themedWindowView
 {
     var windowView = [[_CPWindowView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)],
