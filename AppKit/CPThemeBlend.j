@@ -33,7 +33,7 @@
 
 @implementation CPThemeBlend : CPObject
 {
-    CPBundle    _bundle;
+    CPBundle    _bundle @accessors(getter=bundle);
     CPArray     _themes;
     id          _loadDelegate;
 }
