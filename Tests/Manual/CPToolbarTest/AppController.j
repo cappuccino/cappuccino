@@ -40,7 +40,7 @@
         if (!hasIcon && hasTallItem)
             continue;
 
-        var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(x, y, 400, 20) styleMask:CPTitledWindowMask],
+        var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(x, y, 400, 20) styleMask:CPTitledWindowMask | CPResizableWindowMask],
             contentView = [theWindow contentView];
 
         [theWindow setTitle:"Toolbar (LBL: " + hasLabel + " ICN: " + hasIcon + " SMALL: " + isSmall + " TALLITEM: " + hasTallItem + ")"];

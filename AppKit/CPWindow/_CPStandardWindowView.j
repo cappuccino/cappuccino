@@ -300,13 +300,13 @@ var _CPStandardWindowViewBodyBackgroundColor                = nil,
     [self _updateCloseButton];
 }
 
-- (void)mouseDown:(CPEvent)anEvent
+- (BOOL)couldBeMoveEvent:(CPEvent)anEvent
 {
     if (![_headView isHidden])
         if (CGRectContainsPoint([_headView frame], [self convertPoint:[anEvent locationInWindow] fromView:nil]))
-            return [self trackMoveWithEvent:anEvent];
+            return YES;
 
-    [super mouseDown:anEvent];
+    return [super couldBeMoveEvent:anEvent];
 }
 
 - (void)_enableSheet:(BOOL)enable

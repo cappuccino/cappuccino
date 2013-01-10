@@ -86,6 +86,7 @@ CPRunContinuesResponse  = -1002;
     CPArray                 _eventListeners;
 
     CPEvent                 _currentEvent;
+    CPWindow                _lastMouseMoveWindow;
 
     CPArray                 _windows;
     CPWindow                _keyWindow;
@@ -583,12 +584,14 @@ CPRunContinuesResponse  = -1002;
     _currentEvent = anEvent;
     CPEventModifierFlags = [anEvent modifierFlags];
 
+    var theWindow = [anEvent window];
+
 #if PLATFORM(DOM)
-    var willPropagate = [[[anEvent window] platformWindow] _willPropagateCurrentDOMEvent];
+    var willPropagate = [[theWindow platformWindow] _willPropagateCurrentDOMEvent];
 
     // temporarily pretend we won't propagate the event. we'll restore the saved value later
     // we do this outside the if so that changes user code might make in _handleKeyEquiv. are preserved
-    [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO];
+    [[theWindow platformWindow] _propagateCurrentDOMEvent:NO];
 #endif
 
     // Check if this is a candidate for key equivalent...
@@ -600,7 +603,7 @@ CPRunContinuesResponse  = -1002;
 
         // Unconditionally propagate on these keys to solve browser copy paste bugs
         if ((characters == "c" || characters == "x" || characters == "v") && (modifierFlags & CPPlatformActionKeyMask))
-            [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:YES];
+            [[theWindow platformWindow] _propagateCurrentDOMEvent:YES];
 #endif
 
         return;
@@ -608,7 +611,7 @@ CPRunContinuesResponse  = -1002;
 
 #if PLATFORM(DOM)
     // if we make it this far, then restore the original willPropagate value
-    [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:willPropagate];
+    [[theWindow platformWindow] _propagateCurrentDOMEvent:willPropagate];
 #endif
 
     if (_eventListeners.length)
@@ -619,7 +622,16 @@ CPRunContinuesResponse  = -1002;
         return;
     }
 
-    [[anEvent window] sendEvent:anEvent];
+    if ([anEvent type] == CPMouseMoved)
+    {
+        if (theWindow !== _lastMouseMoveWindow)
+            [_lastMouseMoveWindow _mouseExitedResizeRect];
+
+        _lastMouseMoveWindow = theWindow;
+    }
+
+    if (theWindow)
+        [theWindow sendEvent:anEvent];
 }
 
 /*!
