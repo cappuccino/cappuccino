@@ -159,7 +159,11 @@ var currentCursor = nil,
         var cssString;
 
         if (doesHaveImage)
-            cssString = [CPString stringWithFormat:@"url(%@/CPCursor/%@.cur), %@", [[CPBundle bundleForClass:self] resourcePath], cursorName, aString];
+        {
+            var themeResourcePath = [[CPApp themeBlend]._bundle resourcePath];
+            cssString = [CPString stringWithFormat:@"url(%@/cursors/%@.cur), %@", themeResourcePath, cursorName, aString];
+        }
+
         else
         {
             // IE <= 8 does not support some cursors, map them to supported cursors
