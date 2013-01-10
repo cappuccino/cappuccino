@@ -2144,6 +2144,37 @@ var themedButtonValues = nil,
     return menuItemMenuBarView;
 }
 
++(_CPMenuItemStandardView)themedMenuItemStandardView
+{
+    var menuItemStandardView = [[_CPMenuItemStandardView alloc] initWithFrame:CGRectMakeZero()],
+
+        menuItemDefaultOnStateImage = PatternImage(@"menu-item-on-state.png", 14.0, 14.0),
+        menuItemDefaultOnStateHighlightedImage = PatternImage(@"menu-item-on-state-highlighted.png", 14.0, 14.0),
+
+        themeValues =
+        [
+            [@"submenu-indicator-color",                                    [CPColor grayColor]],
+            [@"menu-item-selection-color",                                  [CPColor colorWithHexString:@"5C85D8"]],
+            [@"menu-item-text-shadow-color",                                [CPColor colorWithCalibratedRed:26.0 / 255.0 green: 73.0 / 255.0 blue:109.0 / 255.0 alpha:1.0]],
+            [@"menu-item-default-off-state-image",                          nil],
+            [@"menu-item-default-off-state-highlighted-image",              nil],
+            [@"menu-item-default-on-state-image",                           menuItemDefaultOnStateImage],
+            [@"menu-item-default-on-state-highlighted-image",               menuItemDefaultOnStateHighlightedImage],
+            [@"menu-item-default-mixed-state-image",                        nil],
+            [@"menu-item-default-mixed-state-highlighted-image",            nil],
+            [@"left-margin",                                                3.0],
+            [@"right-margin",                                               17.0],
+            [@"state-column-width",                                         14.0],
+            [@"indentation-width",                                          17.0],
+            [@"vertical-margin",                                            4.0],
+            [@"right-columns-margin",                                       30.0]
+        ];
+
+    [self registerThemeValues:themeValues forView:menuItemStandardView];
+
+    return menuItemStandardView;
+}
+
 @end
 
 
