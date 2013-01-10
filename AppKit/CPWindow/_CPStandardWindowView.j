@@ -75,7 +75,7 @@
     [_gradientView setFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), gradientHeight)];
     [_gradientView setBackgroundColor:[self valueForThemeAttribute:@"bezel-color"]];
 
-    [_solidView setFrame:CGRectMake(0.0,gradientHeight ,CGRectGetWidth(bounds),  CGRectGetHeight(bounds) - gradientHeight)];
+    [_solidView setFrame:CGRectMake(0.0, gradientHeight ,CGRectGetWidth(bounds), CGRectGetHeight(bounds) - gradientHeight)];
     [_solidView setBackgroundColor:[self valueForThemeAttribute:@"solid-color"]];
 }
 
@@ -98,8 +98,6 @@ var _CPStandardWindowViewBodyBackgroundColor                = nil,
     _CPStandardWindowViewMinimizeButtonImage                = nil,
     _CPStandardWindowViewMinimizeButtonHighlightedImage     = nil,
     _CPStandardWindowViewThemeValues                        = nil;
-
-// var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 
 @implementation _CPStandardWindowView : _CPTitleableWindowView
 {
@@ -355,7 +353,7 @@ var _CPStandardWindowViewBodyBackgroundColor                = nil,
     [_minimizeButton setImage:[self valueForThemeAttribute:@"minimize-image-button"]];
     [_minimizeButton setAlternateImage:[self valueForThemeAttribute:@"minimize-image-highlighted-button"]];
 
-    [_headView setFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), [self valueForThemeAttribute:@"title-bar-height"])];
+    [_headView setFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), [self toolbarMaxY])];
 
     [_dividerView setFrame:CGRectMake(0.0, CGRectGetMaxY([_headView frame]), CGRectGetWidth(bounds), 1.0)];
     [_dividerView setBackgroundColor:[self valueForThemeAttribute:@"divider-color"]];
