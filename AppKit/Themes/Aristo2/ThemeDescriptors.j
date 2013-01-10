@@ -1835,9 +1835,28 @@ var themedButtonValues = nil,
         return shadowView;
 }
 
-+(_CPWindowView)themedWindowView
++ (CPBrowser)themedBrowser
 {
-    var windowView = [[_CPWindowView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)],
+    var browser = [[CPBrowser alloc] initWithFrame:CGRectMakeZero()],
+
+        imageResize = PatternImage(@"browser-image-resize-control.png", 15.0, 14.0),
+        imageLeaf = PatternImage(@"browser-image-leaf.png", 9.0, 9.0),
+        imageLeafPressed = PatternImage(@"browser-image-leaf-pressed.png", 9.0, 9.0),
+
+        themedBrowser = [
+            ["image-control-resize", imageResize],
+            ["image-control-leaf", imageLeaf],
+            ["image-control-leaf-pressed", imageLeafPressed]
+        ];
+
+    [self registerThemeValues:themedBrowser forView:browser];
+
+    return browser;
+}
+
++ (_CPWindowView)themedWindowView
+{
+    var windowView = [[_CPWindowView alloc] initWithFrame:CGRectMakeZero()],
 
     sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
     resizeIndicator = PatternImage(@"window-resize-indicator.png", 12, 12),
