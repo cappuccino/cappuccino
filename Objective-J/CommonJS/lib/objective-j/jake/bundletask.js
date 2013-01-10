@@ -861,7 +861,17 @@ BundleTask.prototype.defineSourceTasks = function()
 
             filedir (compiledEnvironmentSource, [aFilename], function()
             {
-                var compile
+                // This ugly fix to make Cappuccino compile with rhino can be removed when the compiler is not loading classes into the runtime
+                var rhinoUglyFix = false;
+                if (system.engine === "rhino")
+                {
+                    if (typeof document == "undefined") {
+                        document = { createElement: function(x) { return { innerText: ""}}};
+                        rhinoUglyFix = true;
+                    }
+                }
+
+                var compile;
                 // if this file doesn't exist or isn't a .j file, don't preprocess it.
                 if (FILE.extension(aFilename) !== ".j")
                 {
@@ -886,6 +896,9 @@ BundleTask.prototype.defineSourceTasks = function()
 
                     var compiled = executer.toMarkedString();
                 }
+
+                if (rhinoUglyFix)
+                    delete document;
 
                 TERM.stream.print(Array(Math.round(compiled.length / 1024) + 3).join("."));
                 FILE.write(compiledEnvironmentSource, compiled, { charset:"UTF-8" });

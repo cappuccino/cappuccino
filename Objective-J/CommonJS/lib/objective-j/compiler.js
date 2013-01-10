@@ -82,10 +82,23 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags, asPlainJavasc
             absolutePath = FILE.absolute(theTranslatedFilename),
             basePath = absolutePath.substring(0, absolutePath.length - theTranslatedFilename.length);
 
+        // This ugly fix to make Cappuccino compile with rhino can be removed when the compiler is not loading classes into the runtime
+        var rhinoUglyFix = false;
+        if (system.engine === "rhino")
+        {
+            if (typeof document == "undefined") {
+                document = { createElement: function(x) { return { innerText: ""}}};
+                rhinoUglyFix = true;
+            }
+        }
+
         ObjectiveJ.setCurrentCompilerFlags(objjcFlags);
         ObjectiveJ.make_narwhal_factory(absolutePath, basePath, translateFilenameToPath)(require, {}, module, system, print);
 
         executable = new ObjectiveJ.FileExecutable(FILE.basename(aFilePath));
+
+        if (rhinoUglyFix)
+            delete document;
     }
     catch (anException)
     {}
