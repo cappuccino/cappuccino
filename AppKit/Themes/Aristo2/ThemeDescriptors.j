@@ -1327,7 +1327,8 @@ var themedButtonValues = nil,
             [@"selection-color",            selectionColor],
             [@"sourcelist-selection-color", sourceListSelectionColor],
             [@"sort-image",                 sortImage],
-            [@"sort-image-reversed",        sortImageReversed]
+            [@"sort-image-reversed",        sortImageReversed],
+            [@"default-row-height",         25.0],
         ];
 
     [self registerThemeValues:themedTableViewValues forView:tableview];
