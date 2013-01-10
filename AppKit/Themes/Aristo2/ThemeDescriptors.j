@@ -1849,7 +1849,8 @@ var themedButtonValues = nil,
                 [@"title-text-shadow-offset",   CGSizeMake(0.0, 1.0)],
                 [@"title-alignment",            CPCenterTextAlignment],
                 [@"title-line-break-mode",      CPLineBreakByTruncatingTail],
-                [@"title-vertical-alignment",   CPCenterVerticalTextAlignment]
+                [@"title-vertical-alignment",   CPCenterVerticalTextAlignment],
+                [@"title-bar-height",           26],
             ];
 
     [self registerThemeValues:themeValues forView:HUDWindowView inherit:themedWindowViewValues];
@@ -1873,7 +1874,6 @@ var themedButtonValues = nil,
                 [@"gradient-height", 31.0],
                 [@"bezel-color", bezelColor],
                 [@"solid-color", [CPColor colorWithHexString:@"858585"]]
-                //[@"solid-color", [CPColor clearColor]]
             ];
 
     [self registerThemeValues:themeValues forView:windowHeadView];
@@ -1919,6 +1919,7 @@ var themedButtonValues = nil,
                 // FIXME: Make this to CPLineBreakByTruncatingMiddle once it's implemented.
                 [@"title-line-break-mode",      CPLineBreakByTruncatingTail],
                 [@"title-vertical-alignment",   CPCenterVerticalTextAlignment],
+                [@"title-bar-height",           31],
 
                 [@"divider-color",              [CPColor colorWithHexString:@"858585"]],
                 [@"body-color",                 bezelColor],
@@ -1930,6 +1931,9 @@ var themedButtonValues = nil,
                 [@"close-image-highlighted-button"      ,closeButtonImageHighlighted],
                 [@"minimize-image-button"               ,minimizeButtonImage],
                 [@"minimize-image-highlighted-button"   ,minimizeButtonImageHighlighted],
+
+                [@"close-image-size",                   CPSizeMake(16.0, 16.0)],
+                [@"close-image-origin",                 CPPointMake(8.0, 10.0)],
 
                 [@"resize-indicator",               resizeIndicator],
                 [@"attached-sheet-shadow-color",    sheetShadow],
