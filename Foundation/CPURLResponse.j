@@ -76,7 +76,7 @@ URL
 }
 
 /* @ignore */
-- (id)_setStatusCode:(int)aStatusCode
+- (void)_setStatusCode:(int)aStatusCode
 {
     _statusCode = aStatusCode;
 }
