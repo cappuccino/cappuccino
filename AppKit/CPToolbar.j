@@ -135,19 +135,6 @@ var CPToolbarsByIdentifier              = nil,
     [toolbarsSharingIdentifier addObject:toolbar];
 }
 
-// /*
-//     Temporary theme attributes until we've figured out which CPView these theme attributes should
-//     belong to.
-//     @ignore
-// */
-// + (id)_themeAttributes
-// {
-//     // "regular-size-height" is used if no item has a non-zero min size and sizeMode == CPToolbarSizeModeRegular.
-//     // "small-size-height" is used if no item has a non-zero min size and sizeMode == CPToolbarSizeModeSmall.
-//     return [CPDictionary dictionaryWithObjects:[_CGInsetMake(4.0, 4.0, 4.0, TOOLBAR_ITEM_MARGIN), 59.0, 46.0]
-//                                        forKeys:[@"content-inset", @"regular-size-height", @"small-size-height"]];
-// }
-
 - (id)init
 {
     return [self initWithIdentifier:@""];
@@ -284,16 +271,6 @@ var CPToolbarsByIdentifier              = nil,
     var height = _desiredHeight || (_sizeMode != CPToolbarSizeModeSmall ? [_toolbarView valueForThemeAttribute:@"regular-size-height"] : [_toolbarView valueForThemeAttribute:@"small-size-height"]);
     return CPRectMake(0.0, 0.0, 1200.0, height);
 }
-
-// /*
-//     Temporary theme attributes until we've figured out which CPView these theme attributes should
-//     belong to.
-//     @ignore
-// */
-// - (id)_valueForThemeAttribute:(CPString)attributeName
-// {
-//     return [[[self class] _themeAttributes] valueForKey:attributeName];
-// }
 
 /* @ignore */
 - (CPView)_toolbarView
@@ -592,9 +569,6 @@ var _CPToolbarViewBackgroundColor = nil,
     _CPToolbarViewExtraItemsImage = nil,
     _CPToolbarViewExtraItemsAlternateImage = nil;
 
-// var TOOLBAR_ITEM_MARGIN         = 10.0,
-//     TOOLBAR_EXTRA_ITEMS_WIDTH   = 20.0;
-
 var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 {
     return { index:anIndex, view:aView, label:aLabel, minWidth:aMinWidth };
@@ -622,19 +596,6 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
     BOOL                _FIXME_isHUD;
 }
-
-// + (void)initialize
-// {
-//     if (self !== [_CPToolbarView class])
-//         return;
-//
-//     var bundle = [CPBundle bundleForClass:self];
-//
-//     _CPToolbarViewExtraItemsImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"_CPToolbarView/_CPToolbarViewExtraItemsImage.png"] size:CPSizeMake(10.0, 15.0)];
-//
-//     _CPToolbarViewExtraItemsAlternateImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"_CPToolbarView/_CPToolbarViewExtraItemsAlternateImage.png"] size:_CGSizeMake(10.0, 15.0)];
-// }
-
 
 + (CPString)defaultThemeClass
 {
@@ -664,8 +625,6 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
         [_additionalItemsButton setImagePosition:CPImageOnly];
         [[_additionalItemsButton menu] setShowsStateColumn:NO];
         [[_additionalItemsButton menu] setAutoenablesItems:NO];
-
-        //[_additionalItemsButton setAlternateImage:_CPToolbarViewExtraItemsAlternateImage];
     }
 
     return self;
