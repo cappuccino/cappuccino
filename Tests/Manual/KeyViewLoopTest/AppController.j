@@ -28,7 +28,7 @@
 {
     var field = [CPTextField textFieldWithStringValue:@"" placeholder:@"" width:96];
 
-    [field setFrameOrigin:CGPointMake(43, 135)];
+    [field setFrameOrigin:CGPointMake(20, 120)];
     [[self contentView] addSubview:field];
 
     [sender setEnabled:NO];

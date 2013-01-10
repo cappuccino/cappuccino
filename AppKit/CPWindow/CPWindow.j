@@ -2853,7 +2853,7 @@ CPTexturedBackgroundWindowMask
 /*
     Recursively traverse an array of views (depth last) until we find one that has a next or previous key view set. Return nil if none can be found.
 
-    We don't use _allViews here because it is wasteful to enumerate the entire view hierarchy when we will probably find a key view at the top level.
+    We don't use _viewsSortedByPosition here because it is wasteful to enumerate the entire view hierarchy when we will probably find a key view at the top level.
 */
 - (BOOL)_hasKeyViewLoop:(CPArray)theViews
 {
@@ -2893,10 +2893,38 @@ CPTexturedBackgroundWindowMask
 
 - (CPArray)_viewsSortedByPosition
 {
-    var views = [self _allViews];
+    var views = [CPArray arrayWithObject:_contentView];
 
-    [views sortUsingFunction:keyViewComparator context:nil];
+    views = views.concat([self _subviewsSortedByPosition:[_contentView subviews]]);
+
     return views;
+}
+
+- (CPArray)_subviewsSortedByPosition:(CPArray)theSubviews
+{
+    /*
+        We first sort the subviews according to geometric order.
+        Then we go through each subview, and if it has subviews,
+        they are sorted and inserted after the superview. This
+        is done recursively.
+    */
+    theSubviews = [theSubviews copy];
+    [theSubviews sortUsingFunction:keyViewComparator context:nil];
+
+    var sortedViews = [];
+
+    for (var i = 0, count = [theSubviews count]; i < count; ++i)
+    {
+        var view = theSubviews[i],
+            subviews = [view subviews];
+
+        sortedViews.push(view);
+
+        if ([subviews count])
+            sortedViews = sortedViews.concat([self _subviewsSortedByPosition:subviews]);
+    }
+
+    return sortedViews;
 }
 
 - (void)_doRecalculateKeyViewLoop
@@ -3067,21 +3095,6 @@ CPTexturedBackgroundWindowMask
 - (void)disableKeyEquivalentForDefaultButtonCell
 {
     [self disableKeyEquivalentForDefaultButton];
-}
-
-- (CPArray)_allViews
-{
-    var contentView = [self contentView],
-        views = [CPArray arrayWithObject:contentView];
-
-    [views addObjectsFromArray:[contentView subviews]];
-
-    // Start from index 1 because index 0 is the contentView
-    // and its subviews have already been added
-    for (var index = 1; index < views.length; ++index)
-        views = views.concat([views[index] subviews]);
-
-    return views;
 }
 
 @end
