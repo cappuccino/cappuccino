@@ -2121,6 +2121,29 @@ var themedButtonValues = nil,
     return toolbarView;
 }
 
++(_CPMenuItemMenuBarView)themedMenuItemMenuBarView
+{
+    var menuItemMenuBarView = [[_CPMenuItemMenuBarView alloc] initWithFrame:CGRectMakeZero()],
+
+        selectionColor = PatternColor(@"menu-bar-window-background-selected.png", 1.0, 28.0),
+
+        themeValues =
+        [
+            [@"selection-color",                                        selectionColor],
+            [@"submenu-indicator-color",                                [CPColor grayColor]],
+            [@"menu-item-selection-color",                              [CPColor colorWithHexString:@"5C85D8"]],
+            [@"menu-item-text-shadow-color",                            [CPColor colorWithCalibratedRed:26.0 / 255.0 green: 73.0 / 255.0 blue:109.0 / 255.0 alpha:1.0]],
+            [@"horizontal-margin",                                      8.0],
+            [@"submenu-indicator-margin",                               3.0],
+            [@"vertical-margin",                                        4.0]
+
+        ];
+
+    [self registerThemeValues:themeValues forView:menuItemMenuBarView];
+
+    return menuItemMenuBarView;
+}
+
 @end
 
 
