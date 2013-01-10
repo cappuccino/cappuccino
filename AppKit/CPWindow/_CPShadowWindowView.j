@@ -21,6 +21,7 @@
  */
 
 @import "_CPWindowView.j"
+@import "CPView.j"
 
 @implementation _CPShadowWindowView : CPView
 {
@@ -35,15 +36,26 @@
     return self;
 }
 
++ (CPString)defaultThemeClass
+{
+    return @"shadow-window-view";
+}
+
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[]
+                                       forKeys:[]];
+}
+
 - (void)layoutSubviews
 {
     [super layoutSubviews];
 
-    var shadowInset = [_windowView valueForThemeAttribute:@"shadow-inset"],
-        bounds = [_windowView bounds],
-        size = [_windowView frameSize];
-
-    var shadowSize = _CGSizeMake(size.width, size.height);
+    var bounds = [_windowView bounds],
+        shadowDistance = [_windowView valueForThemeAttribute:@"shadow-distance"],
+        shadowInset = [_windowView valueForThemeAttribute:@"shadow-inset"],
+        size = [_windowView frameSize],
+        shadowSize = _CGSizeMake(size.width, size.height);
 
     // if the shadow would be taller/wider than the window height,
     // make it the same as the window height. this allows views to
@@ -54,13 +66,12 @@
     else
         shadowSize.width = shadowInset.left + CGRectGetWidth(bounds) + shadowInset.right;
 
-    if (size.height >= (shadowInset.bottom + shadowInset.top + [_windowView valueForThemeAttribute:@"shadow-distance"]))
-        shadowSize.height += shadowInset.bottom + shadowInset.top + [_windowView valueForThemeAttribute:@"shadow-distance"];
+    if (size.height >= (shadowInset.bottom + shadowInset.top + shadowDistance))
+        shadowSize.height += shadowInset.bottom + shadowInset.top + shadowDistance;
     else
         shadowSize.height = shadowInset.top + CGRectGetHeight(bounds) + shadowInset.bottom;
 
-    [self setFrame:CGRectMake(-shadowInset.left, -shadowInset.top + [_windowView valueForThemeAttribute:@"shadow-distance"], shadowSize.width, shadowSize.height)];
-
+    [self setFrame:CGRectMake(-shadowInset.left, -shadowInset.top + shadowDistance, shadowSize.width, shadowSize.height)];
     [self setBackgroundColor:[_windowView valueForThemeAttribute:@"window-shadow-color"]];
 }
 
