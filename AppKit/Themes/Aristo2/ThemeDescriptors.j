@@ -2093,8 +2093,13 @@ var themedButtonValues = nil,
 {
     var toolbarView = [[_CPToolbarView alloc] initWithFrame:CGRectMakeZero()],
 
-        toolbarExtraItemsImage = PatternImage(@"toolbar-view-extra-items-image.png", 10, 15),
-        toolbarExtraItemsAlternateImage = PatternImage(@"toolbar-view-extra-items-alternate-image.png", 10, 15),
+        toolbarExtraItemsImage = PatternImage(@"toolbar-view-extra-items-image.png", 10.0, 15.0),
+        toolbarExtraItemsAlternateImage = PatternImage(@"toolbar-view-extra-items-alternate-image.png", 10.0, 15.0),
+        toolbarSeparatorColor = PatternColor([
+                [@"toolbar-item-separator-0.png", 2.0, 26.0],
+                [@"toolbar-item-separator-1.png", 2.0, 1.0],
+                [@"toolbar-item-separator-2.png", 2.0, 26.0]
+            ], PatternIsVertical),
 
         themeValues =
         [
@@ -2104,7 +2109,9 @@ var themedButtonValues = nil,
             [@"extra-item-width",                       20.0],
             [@"content-inset",                          CGInsetMake(4.0, 4.0, 4.0, 10)],
             [@"regular-size-height",                    59.0],
-            [@"small-size-height",                      46.0]
+            [@"small-size-height",                      46.0],
+            [@"image-item-separator-color",             toolbarSeparatorColor],
+            [@"image-item-separator-size",              CGRectMake(0.0, 0.0, 2.0, 32.0)]
         ];
 
 
