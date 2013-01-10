@@ -24,7 +24,8 @@
 @import "CPView.j"
 
 
-var _CPWindowViewResizeRegionNone = -1,
+var _CPWindowViewCornerResizeRectWidth = 10,
+    _CPWindowViewResizeRegionNone = -1,
     _CPWindowViewResizeRegionTopLeft = 0,
     _CPWindowViewResizeRegionTop = 1,
     _CPWindowViewResizeRegionTopRight = 2,
@@ -711,7 +712,7 @@ var _CPWindowViewResizeRegionNone = -1,
 
     [_sheetShadowView setBackgroundColor:[self valueForThemeAttribute:@"attached-sheet-shadow-color"]];
 
-    if(_hasResizeIndicator)
+    if(_resizeIndicator)
     {
         var size = [self valueForThemeAttribute:@"size-indicator"],
             boundsSize = [self frame].size;
