@@ -604,8 +604,25 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[10.0, 20.0,[CPNull null], [CPNull null], _CGInsetMake(4.0, 4.0, 4.0, 10), 59.0, 46.0]
-                                       forKeys:[@"item-margin", @"extra-item-width", @"extra-item-extra-image", @"extra-item-extra-alternate-image", @"content-inset", @"regular-size-height", @"small-size-height"]];
+    return [CPDictionary dictionaryWithObjects:[10.0,
+                                                20.0,
+                                                [CPNull null],
+                                                [CPNull null],
+                                                _CGInsetMake(4.0, 4.0, 4.0, 10),
+                                                59.0,
+                                                46.0,
+                                                [CPNull null],
+                                                CGRectMake(0.0, 0.0, 2.0, 32.0)]
+                                       forKeys:[
+                                               @"item-margin",
+                                               @"extra-item-width",
+                                               @"extra-item-extra-image",
+                                               @"extra-item-extra-alternate-image",
+                                               @"content-inset",
+                                               @"regular-size-height",
+                                               @"small-size-height",
+                                               @"image-item-separator-color",
+                                               @"image-item-separator-size"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -1036,13 +1053,7 @@ var LABEL_MARGIN    = 2.0;
 
         if (identifier === CPToolbarSeparatorItemIdentifier)
         {
-            _view = [[CPView alloc] initWithFrame:_CGRectMake(0.0, 0.0, 2.0, 32.0)];
-
-            // FIXME: Get rid of this old API!!!
-            sizes = {};
-            sizes[@"CPToolbarItemSeparator"] = [_CGSizeMake(2.0, 26.0), _CGSizeMake(2.0, 1.0), _CGSizeMake(2.0, 26.0)];
-            [_view setBackgroundColor:_CPControlThreePartImagePattern(YES, sizes, @"CPToolbarItem", @"Separator")];
-
+            _view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
             [self addSubview:_view];
         }
 
@@ -1115,7 +1126,15 @@ var LABEL_MARGIN    = 2.0;
         width = _CGRectGetWidth(bounds);
 
     if (identifier === CPToolbarSeparatorItemIdentifier)
-        return [_view setFrame:_CGRectMake(ROUND((width - 2.0) / 2.0), 0.0, 2.0, _CGRectGetHeight(bounds))];
+    {
+        var itemSeparatorColor = [_toolbar valueForThemeAttribute:@"image-item-separator-color"],
+            itemSeparatorSize = [_toolbar valueForThemeAttribute:@"image-item-separator-size"];
+
+        [_view setFrame:_CGRectMake(ROUND((width - itemSeparatorSize.size.width) / 2.0), 0.0, itemSeparatorSize.size.width, _CGRectGetHeight(bounds))];
+        [_view setBackgroundColor:itemSeparatorColor];
+
+        return;
+    }
 
     // The view is centred in the available space above the label.
     var view = _view || _imageView,
