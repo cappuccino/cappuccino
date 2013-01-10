@@ -190,6 +190,7 @@ var _CPStandardWindowViewBodyBackgroundColor                = nil,
         if (_styleMask & CPMiniaturizableWindowMask && ![CPPlatform isBrowser])
         {
             _minimizeButton = [[CPButton alloc] initWithFrame:CGRectMake(27.0, 7.0, 16.0, 16.0)];
+            [_minimizeButton setButtonType:CPMomentaryChangeButton];
             [_minimizeButton setBordered:NO];
 
             [self addSubview:_minimizeButton];
@@ -280,6 +281,9 @@ var _CPStandardWindowViewBodyBackgroundColor                = nil,
 
 - (void)_updateCloseButton
 {
+    [_closeButton setFrameSize:[self valueForThemeAttribute:@"close-image-size"]];
+    [_closeButton setFrameOrigin:[self valueForThemeAttribute:@"close-image-origin"]];
+
     if (_isDocumentEdited)
     {
         [_closeButton setImage:[self valueForThemeAttribute:@"unsaved-image-button"]];
@@ -317,8 +321,9 @@ var _CPStandardWindowViewBodyBackgroundColor                = nil,
     [_minimizeButton setHidden:enable];
     [_titleField setHidden:enable];
 
+    // Alloc a new class to get a theme attribute
     if (enable)
-        [_bodyView setBackgroundColor:[_CPDocModalWindowView bodyBackgroundColor]];
+        [_bodyView setBackgroundColor:[[_CPDocModalWindowView new] valueForThemeAttribute:@"body-color"]];
     else
         [_bodyView setBackgroundColor:[self valueForThemeAttribute:@"body-color"]];
 
