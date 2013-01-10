@@ -1869,11 +1869,25 @@ var themedButtonValues = nil,
             [@"window-standard-head-right.png", 5.0, 31.0]
         ],  PatternIsHorizontal),
 
+        solidColor = PatternColor(
+            [
+                [@"window-standard-head-solid-top-left.png", 5.0, 1.0],
+                [@"window-standard-head-solid-top-center.png", 1.0, 1.0],
+                [@"window-standard-head-solid-top-right.png", 5.0, 1.0],
+                [@"window-standard-head-solid-center-left.png", 5.0, 1.0],
+                [@"window-standard-head-solid-center-center.png", 1.0, 1.0],
+                [@"window-standard-head-solid-center-right.png", 5.0, 1.0],
+                [@"window-standard-head-solid-bottom-left.png", 5.0, 1.0],
+                [@"window-standard-head-solid-bottom-center.png", 1.0, 1.0],
+                [@"window-standard-head-solid-bottom-right.png", 5.0, 1.0]
+            ]
+        ),
+
         themeValues =
             [
                 [@"gradient-height", 31.0],
                 [@"bezel-color", bezelColor],
-                [@"solid-color", [CPColor colorWithHexString:@"858585"]]
+                [@"solid-color", solidColor]
             ];
 
     [self registerThemeValues:themeValues forView:windowHeadView];
