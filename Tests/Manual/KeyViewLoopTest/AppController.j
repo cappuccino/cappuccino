@@ -11,12 +11,12 @@
 
 @implementation AppController : CPObject
 {
-    @outlet CPWindow customNoInitial;
+    @outlet CPWindow keyWindow;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
-    [customNoInitial makeKeyAndOrderFront:self];
+    [keyWindow makeKeyAndOrderFront:self];
 }
 
 @end

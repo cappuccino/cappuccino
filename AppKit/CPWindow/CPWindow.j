@@ -533,7 +533,8 @@ CPTexturedBackgroundWindowMask
 
 - (void)awakeFromCib
 {
-    // At this time we know the final screen (or browser) size and can apply the positioning mask, if any, from the nib.
+    // At this time we know the final screen (or browser) size
+    // and can apply the positioning mask, if any, from the nib.
     if (_positioningScreenRect)
     {
         var actualScreenRect = [CPPlatform isBrowser] ? [_platformWindow contentBounds] : [[self screen] visibleFrame],
@@ -574,6 +575,34 @@ CPTexturedBackgroundWindowMask
 
             [self setFrameOrigin:origin];
         }
+    }
+
+    /*
+        Calculate the key view loop if necessary. Note that Cocoa does not call recalculateKeyViewLoop when awaking a nib. If a key view loop was set in the cib, we have to chain it to the content view.
+    */
+    if ([self _hasKeyViewLoop:[_contentView subviews]])
+    {
+        var views = [self _viewsSortedByPosition],
+            count = [views count];
+
+        // The first view is the content view.
+        // Find the first subview that has a next key view.
+        for (var i = 1; i < count; ++i)
+        {
+            var view = views[i];
+
+            if ([view nextKeyView])
+            {
+                [_contentView setNextKeyView:view];
+                break;
+            }
+        }
+    }
+    else
+    {
+        // Cooca does NOT call the public method recalculateKeyViewLoop for nibs,
+        // but it does calculate the loop.
+        [self _doRecalculateKeyViewLoop];
     }
 }
 
@@ -1415,8 +1444,8 @@ CPTexturedBackgroundWindowMask
                 [self makeFirstResponder:_initialFirstResponder];
             else
             {
-                // Make the first valid key view of the content view the first responder
-                var view = [self _firstValidKeyView];
+                // Make the first valid key view the first responder
+                var view = [_contentView nextValidKeyView];
 
                 if (view)
                     [self makeFirstResponder:view];
@@ -1428,17 +1457,6 @@ CPTexturedBackgroundWindowMask
 
     if (_firstResponder)
         [self makeFirstResponder:_firstResponder];
-}
-
-- (CPView)_firstValidKeyView
-{
-    var views = [self _viewsSortedByPosition];
-
-    for (var index = 0, count = [views count]; index < count; ++index)
-        if ([views[index] canBecomeKeyView])
-            return views[index];
-
-    return nil;
 }
 
 /*!
@@ -1845,22 +1863,7 @@ CPTexturedBackgroundWindowMask
         // The first time a window is loaded, if it does not have a key view loop
         // established, calculate it now.
         if (![self _hasKeyViewLoop:[_contentView subviews]])
-        {
-            // Do this to be compliant with Cocoa docs, it just marks the loop as dirty
             [self recalculateKeyViewLoop];
-
-            /*
-                We have to calculate now. Otherwise, the following can happen for a window with autorecalculatesKeyViewLoop == NO:
-
-                - Window opens, recalculateKeyViewLoop marks loop dirty.
-                - Add a new text field, focus the field.
-                - Tab from the field. Because loop is dirty, it is recalculated,
-                  even though it shouldn't because autorecalculatesKeyViewLoop == NO.
-
-                By calculating the loop now, we ensure that the loop stays clean.
-            */
-            [self _doRecalculateKeyViewLoop];
-        }
     }
 
     [self _setupFirstResponder];
@@ -2850,7 +2853,7 @@ CPTexturedBackgroundWindowMask
 /*
     Recursively traverse an array of views (depth last) until we find one that has a next or previous key view set. Return nil if none can be found.
 
-    We don't use allViews here because it is wasteful to enumerate the entire view hierarchy when we will probably find a key view at the top level.
+    We don't use _allViews here because it is wasteful to enumerate the entire view hierarchy when we will probably find a key view at the top level.
 */
 - (BOOL)_hasKeyViewLoop:(CPArray)theViews
 {
@@ -2876,14 +2879,21 @@ CPTexturedBackgroundWindowMask
     return NO;
 }
 
+/*!
+    Recalculates the key view loop, based on geometric position.
+    Note that the Cocoa documentation says that this method only marks the loop
+    as dirty, the recalculation is not done until the next or previous key view
+    of the window is requested. In reality, Cocoa does recalculate the loop
+    when this method is called.
+*/
 - (void)recalculateKeyViewLoop
 {
-    _keyViewLoopIsDirty = YES;
+    [self _doRecalculateKeyViewLoop];
 }
 
 - (CPArray)_viewsSortedByPosition
 {
-    var views = allViews(self);
+    var views = [self _allViews];
 
     [views sortUsingFunction:keyViewComparator context:nil];
     return views;
@@ -3059,17 +3069,22 @@ CPTexturedBackgroundWindowMask
     [self disableKeyEquivalentForDefaultButton];
 }
 
-@end
-
-var allViews = function(aWindow)
+- (CPArray)_allViews
 {
-    var views = [[aWindow contentView] subviews];
+    var contentView = [self contentView],
+        views = [CPArray arrayWithObject:contentView];
 
-    for (var index = 0; index < views.length; ++index)
+    [views addObjectsFromArray:[contentView subviews]];
+
+    // Start from index 1 because index 0 is the contentView
+    // and its subviews have already been added
+    for (var index = 1; index < views.length; ++index)
         views = views.concat([views[index] subviews]);
 
     return views;
-};
+}
+
+@end
 
 var keyViewComparator = function(lhs, rhs, context)
 {
