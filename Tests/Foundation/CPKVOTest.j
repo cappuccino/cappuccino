@@ -65,7 +65,7 @@
 
 - (void)testDirectIVarObservation
 {
-    var bob = [[PersonTester alloc] init];
+    bob = [[PersonTester alloc] init];
 
     [bob addObserver:self forKeyPath:@"phoneNumber" options:nil context:@"testDirectIVarObservation"];
 
@@ -446,8 +446,9 @@
 
 - (void)testSettersReplacedOnce
 {
-    var bob = [[PersonTester alloc] init],
-        betty = [CPObject new];
+    var betty = [CPObject new];
+
+    bob = [[PersonTester alloc] init];
 
     [bob addObserver:self forKeyPath:@"name" options:nil context:@"testSettersReplacedOnce"];
 
@@ -470,7 +471,7 @@
 
 - (void)testNestedNotifications
 {
-    var bob = [[PersonTester alloc] init];
+    bob = [[PersonTester alloc] init];
 
     [bob willChangeValueForKey:@"name"];
     [self assertTrue:bob._willChangeMessageCounter[@"name"] === 1];

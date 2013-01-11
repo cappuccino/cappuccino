@@ -421,11 +421,11 @@ CPTexturedBackgroundWindowMask
 
         [self setLevel:CPNormalWindowLevel];
 
-        _minSize = CGSizeMake(0.0, 0.0);
-        _maxSize = CGSizeMake(1000000.0, 1000000.0);
+        _minSize = _CGSizeMake(0.0, 0.0);
+        _maxSize = _CGSizeMake(1000000.0, 1000000.0);
 
         // Create our border view which is the actual root of our view hierarchy.
-        _windowView = [[windowViewClass alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(_frame), CGRectGetHeight(_frame)) styleMask:aStyleMask];
+        _windowView = [[windowViewClass alloc] initWithFrame:_CGRectMake(0.0, 0.0, _CGRectGetWidth(_frame), _CGRectGetHeight(_frame)) styleMask:aStyleMask];
 
         [_windowView _setWindow:self];
         [_windowView setNextResponder:self];
@@ -433,7 +433,7 @@ CPTexturedBackgroundWindowMask
         [self setMovableByWindowBackground:aStyleMask & CPHUDBackgroundWindowMask];
 
         // Create a generic content view.
-        [self setContentView:[[CPView alloc] initWithFrame:CGRectMakeZero()]];
+        [self setContentView:[[CPView alloc] initWithFrame:_CGRectMakeZero()]];
         [self setInitialFirstResponder:[self contentView]];
 
         _firstResponder = self;
@@ -643,7 +643,7 @@ CPTexturedBackgroundWindowMask
         _fullPlatformWindowSession = _CPWindowFullPlatformWindowSessionMake(_windowView, [self contentRectForFrameRect:[self frame]], [self hasShadow], [self level]);
 
         var fullPlatformWindowViewClass = [[self class] _windowViewClassForFullPlatformWindowStyleMask:_styleMask],
-            windowView = [[fullPlatformWindowViewClass alloc] initWithFrame:CGRectMakeZero() styleMask:_styleMask];
+            windowView = [[fullPlatformWindowViewClass alloc] initWithFrame:_CGRectMakeZero() styleMask:_styleMask];
 
         [self _setWindowView:windowView];
 
@@ -1056,7 +1056,7 @@ CPTexturedBackgroundWindowMask
     if (_contentView)
         [_contentView removeFromSuperview];
 
-    var bounds = CGRectMake(0.0, 0.0, CGRectGetWidth(_frame), CGRectGetHeight(_frame));
+    var bounds = _CGRectMake(0.0, 0.0, _CGRectGetWidth(_frame), _CGRectGetHeight(_frame));
 
     // During init the initial first responder is set to the contentView
     // if it hasn't changed in the mean time we need to update that reference
@@ -1120,12 +1120,12 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setMinSize:(CGSize)aSize
 {
-    if (CGSizeEqualToSize(_minSize, aSize))
+    if (_CGSizeEqualToSize(_minSize, aSize))
         return;
 
-    _minSize = CGSizeCreateCopy(aSize);
+    _minSize = _CGSizeMakeCopy(aSize);
 
-    var size = CGSizeMakeCopy([self frame].size),
+    var size = _CGSizeMakeCopy([self frame].size),
         needsFrameChange = NO;
 
     if (size.width < _minSize.width)
@@ -1160,12 +1160,12 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setMaxSize:(CGSize)aSize
 {
-    if (CGSizeEqualToSize(_maxSize, aSize))
+    if (_CGSizeEqualToSize(_maxSize, aSize))
         return;
 
-    _maxSize = CGSizeCreateCopy(aSize);
+    _maxSize = _CGSizeMakeCopy(aSize);
 
-    var size = CGSizeMakeCopy([self frame].size),
+    var size = _CGSizeMakeCopy([self frame].size),
         needsFrameChange = NO;
 
     if (size.width > _maxSize.width)
@@ -1610,7 +1610,7 @@ CPTexturedBackgroundWindowMask
     var size = [self frame].size,
         containerSize = [CPPlatform isBrowser] ? [_platformWindow contentBounds].size : [[self screen] visibleFrame].size;
 
-    var origin = CGPointMake((containerSize.width - size.width) / 2.0, (containerSize.height - size.height) / 2.0);
+    var origin = _CGPointMake((containerSize.width - size.width) / 2.0, (containerSize.height - size.height) / 2.0);
 
     if (origin.x < 0.0)
         origin.x = 0.0;
@@ -2403,7 +2403,7 @@ CPTexturedBackgroundWindowMask
 
 - (void)_noteToolbarChanged
 {
-    var frame = CGRectMakeCopy([self frame]),
+    var frame = _CGRectMakeCopy([self frame]),
         newFrame;
 
     [_windowView noteToolbarChanged];
@@ -2412,7 +2412,7 @@ CPTexturedBackgroundWindowMask
         newFrame = [_platformWindow visibleFrame];
     else
     {
-        newFrame = CGRectMakeCopy([self frame]);
+        newFrame = _CGRectMakeCopy([self frame]);
 
         newFrame.origin = frame.origin;
     }
@@ -2447,10 +2447,10 @@ CPTexturedBackgroundWindowMask
     // Position the sheet above the contentRect.
     var attachedSheet = [self attachedSheet];
     var contentRect = [[self contentView] frame],
-        sheetFrame = CGRectMakeCopy([attachedSheet frame]);
+        sheetFrame = _CGRectMakeCopy([attachedSheet frame]);
 
-    sheetFrame.origin.y = CGRectGetMinY(_frame) + CGRectGetMinY(contentRect);
-    sheetFrame.origin.x = CGRectGetMinX(_frame) + FLOOR((CGRectGetWidth(_frame) - CGRectGetWidth(sheetFrame)) / 2.0);
+    sheetFrame.origin.y = _CGRectGetMinY(_frame) + _CGRectGetMinY(contentRect);
+    sheetFrame.origin.x = _CGRectGetMinX(_frame) + FLOOR((_CGRectGetWidth(_frame) - _CGRectGetWidth(sheetFrame)) / 2.0);
 
     [attachedSheet setFrame:sheetFrame display:YES animate:NO];
 }
@@ -2608,8 +2608,8 @@ CPTexturedBackgroundWindowMask
 
     var originx = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width) / 2),
         originy = frame.origin.y + [[self contentView] frame].origin.y,
-        startFrame = CGRectMake(originx, originy, sheetFrame.size.width, 0),
-        endFrame = CGRectMake(originx, originy, sheetFrame.size.width, sheetFrame.size.height);
+        startFrame = _CGRectMake(originx, originy, sheetFrame.size.width, 0),
+        endFrame = _CGRectMake(originx, originy, sheetFrame.size.width, sheetFrame.size.height);
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillBeginSheetNotification object:self];
 
@@ -2642,7 +2642,7 @@ CPTexturedBackgroundWindowMask
 {
     var sheet = _sheetContext["sheet"],
         startFrame = [sheet frame],
-        endFrame = CGRectMakeCopy(startFrame);
+        endFrame = _CGRectMakeCopy(startFrame);
 
     if (_sheetContext["isOpening"])
     {
@@ -2960,7 +2960,7 @@ CPTexturedBackgroundWindowMask
 /*!
     Sets the default button for the window.
     This is equivalent to setting the the key equivalent of the button to "return".
-    Additionally this will turn your button blue (with the Aristo2 theme).
+    Additionally this will turn your button blue (with the Aristo theme).
     @param aButton - The button that should become default.
 */
 - (void)setDefaultButton:(CPButton)aButton
@@ -3092,10 +3092,10 @@ var keyViewComparator = function(lhs, rhs, context)
         return;
 
     var frame = [_platformWindow contentBounds],
-        newFrame = CGRectMakeCopy(_frame),
-        dX = (CGRectGetWidth(frame) - aSize.width) /
+        newFrame = _CGRectMakeCopy(_frame),
+        dX = (_CGRectGetWidth(frame) - aSize.width) /
             (((_autoresizingMask & CPWindowMinXMargin) ? 1 : 0) + (_autoresizingMask & CPWindowWidthSizable ? 1 : 0) + (_autoresizingMask & CPWindowMaxXMargin ? 1 : 0)),
-        dY = (CGRectGetHeight(frame) - aSize.height) /
+        dY = (_CGRectGetHeight(frame) - aSize.height) /
             ((_autoresizingMask & CPWindowMinYMargin ? 1 : 0) + (_autoresizingMask & CPWindowHeightSizable ? 1 : 0) + (_autoresizingMask & CPWindowMaxYMargin ? 1 : 0));
 
     if (_autoresizingMask & CPWindowMinXMargin)
@@ -3242,7 +3242,7 @@ var keyViewComparator = function(lhs, rhs, context)
 
 - (BOOL)containsPoint:(CGPoint)aPoint
 {
-    return CGRectContainsPoint(_frame, aPoint);
+    return _CGRectContainsPoint(_frame, aPoint);
 }
 
 - (BOOL)_isValidMousePoint:(CGPoint)aPoint
@@ -3251,7 +3251,7 @@ var keyViewComparator = function(lhs, rhs, context)
     // outside the window's frame for non-full platform windows.
     var mouseFrame = (!_isFullPlatformWindow && (_styleMask & CPResizableWindowMask) && (CPWindowResizeStyle === CPWindowResizeStyleModern)) ? _CGRectInset(_frame, -CPWindowResizeSlop, -CPWindowResizeSlop) : _frame;
 
-    return CGRectContainsPoint(mouseFrame, aPoint);
+    return _CGRectContainsPoint(mouseFrame, aPoint);
 }
 
 @end
@@ -3315,8 +3315,8 @@ var interpolate = function(fromValue, toValue, progress)
     {
         _window = aWindow;
 
-        _targetFrame = CGRectMakeCopy(aTargetFrame);
-        _startFrame = CGRectMakeCopy([_window frame]);
+        _targetFrame = _CGRectMakeCopy(aTargetFrame);
+        _startFrame = _CGRectMakeCopy([_window frame]);
     }
 
     return self;
@@ -3338,10 +3338,11 @@ var interpolate = function(fromValue, toValue, progress)
     if (value == 1.0)
         _window._isAnimating = NO;
 
-    var newFrame = CGRectMake(interpolate(CGRectGetMinX(_startFrame), CGRectGetMinX(_targetFrame), value),
-                              interpolate(CGRectGetMinY(_startFrame), CGRectGetMinY(_targetFrame), value),
-                              interpolate(CGRectGetWidth(_startFrame), CGRectGetWidth(_targetFrame), value),
-                              interpolate(CGRectGetHeight(_startFrame), CGRectGetHeight(_targetFrame), value));
+    var newFrame = _CGRectMake(
+            interpolate(_CGRectGetMinX(_startFrame), _CGRectGetMinX(_targetFrame), value),
+            interpolate(_CGRectGetMinY(_startFrame), _CGRectGetMinY(_targetFrame), value),
+            interpolate(_CGRectGetWidth(_startFrame), _CGRectGetWidth(_targetFrame), value),
+            interpolate(_CGRectGetHeight(_startFrame), _CGRectGetHeight(_targetFrame), value));
 
     [_window setFrame:newFrame display:YES animate:NO];
 }

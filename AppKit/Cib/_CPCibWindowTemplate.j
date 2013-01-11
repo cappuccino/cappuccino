@@ -76,6 +76,7 @@ CPWindowPositionFlexibleTop                  = 1 << 22;
 
     if (_minSize)
         [theWindow setMinSize:_minSize];
+
     if (_maxSize)
         [theWindow setMaxSize:_maxSize];
 
