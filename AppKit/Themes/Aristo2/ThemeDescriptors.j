@@ -2217,7 +2217,7 @@ var themedButtonValues = nil,
             [@"menu-window-more-below-image",                       menuWindowMoreBelowImage],
             [@"menu-window-pop-up-background-style-color",          menuWindowPopUpBackgroundStyleColor],
             [@"menu-window-menu-bar-background-style-color",        menuWindowMenuBarBackgroundStyleColor],
-            [@"menu-window-margin-inset",                           CGInsetMake(5.0, 1.0, 1.0, 5.0)],
+            [@"menu-window-margin-inset",                           CGInsetMake(5.0, 1.0, 1.0, 1.0)],
             [@"menu-window-scroll-indicator-height",                16.0],
 
             [@"menu-bar-window-background-color",                   menuBarWindowBackgroundColor],
