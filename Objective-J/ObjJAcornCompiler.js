@@ -56,7 +56,7 @@ Scope.prototype.getIvarForCurrentClass = function(/* String */ ivarName)
     return null;
 }
 
-Scope.prototype.getLvarForCurrentMethod = function(/* String */ lvarName)
+Scope.prototype.getLvar = function(/* String */ lvarName)
 {
     if (this.vars)
     {
@@ -69,7 +69,7 @@ Scope.prototype.getLvarForCurrentMethod = function(/* String */ lvarName)
 
     // Stop at the method declaration
     if (prev && !this.methodtype)
-        return prev.getLvarForCurrentMethod(lvarName);
+        return prev.getLvar(lvarName);
 
     return null;
 }
@@ -102,11 +102,6 @@ var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*
     this.cmBuffer = null;
     this.warnings = [];
 
-    //console.log("Start Parse: " + aURL);
-    var start = new Date().getTime();
-#ifdef BROWSER
-	//console.time("Parse with Acorn - " + aURL);
-#endif
     try {
         this.tokens = exports.acorn.parse(aString);
     }
@@ -122,38 +117,12 @@ var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*
         }
         throw e;
     }
-	var end = new Date().getTime();
-	var time = (end - start) / 1000;
-	//print("Parse with Acorn: " + aURL + " in " + time + " seconds");
-#ifdef BROWSER
-	//console.timeEnd("Parse with Acorn - " + aURL);
-#endif
+
     this.dependencies = [];
     this.flags = flags | ObjJAcornCompiler.Flags.IncludeDebugSymbols;
     this.classDefs = Object.create(null);
     this.lastPos = 0;
-    //var start = new Date().getTime();
-#ifdef BROWSER
-	//console.time("Compile pass " + pass + " - " + aURL);
-#endif
-	try {
-        compile(this.tokens, new Scope(null ,{ compiler: this }), pass === 2 ? pass2 : pass1);
-    }
-    catch (e) {
-        #ifdef BROWSER
-            //console.log("Error: " + e + ", file content: " + aString);
-        #else
-            //print("Error: " + e + ", file content: " + aString);
-        #endif
-    	throw e;
-    }
-	//var end = new Date().getTime();
-	//var time = (end - start) / 1000;
-	//print("Compile pass 1: " + aURL + " in " + time + " seconds");
-#ifdef BROWSER
-	//console.timeEnd("Compile pass " + pass + " - " + aURL);
-#endif
-//	console.log("JS: " + this.jsBuffer);
+    compile(this.tokens, new Scope(null ,{ compiler: this }), pass === 2 ? pass2 : pass1);
 }
 
 exports.ObjJAcornCompiler = ObjJAcornCompiler;
@@ -181,19 +150,7 @@ ObjJAcornCompiler.prototype.compilePass2 = function()
 	this.pass = 2;
 	this.jsBuffer = new StringBuffer();
     this.warnings = [];
-	//console.log("Start Compile2: " + this.URL);
-    //var start = new Date().getTime();
-#ifdef BROWSER
-    //console.time("Compile pass 2" + this.pass + " - " + this.URL);
-#endif
     compile(this.tokens, new Scope(null ,{ compiler: this }), pass2);
-	//var end = new Date().getTime();
-	//var time = (end - start) / 1000;
-	//print("Compile pass 2: " + this.URL + " in " + time + " seconds");
-#ifdef BROWSER
-    //console.timeEnd("Compile pass 2" + this.pass + " - " + this.URL);
-#endif
-    //print("Compiled: \n" + this.jsBuffer.toString());
 
     for (var i = 0; i < this.warnings.length; i++)
     {
@@ -308,9 +265,8 @@ ObjJAcornCompiler.prototype.JSBuffer = function()
 
 ObjJAcornCompiler.prototype.prettifyMessage = function(/* Message */ aMessage, /* String */ messageType)
 {
-    var line = this.source.substring(aMessage.lineStart, aMessage.lineEnd);
-    var message = "\n" + line;
-    //print("e: " + e + ", e.lineStart: " + e.lineStart + ", e.lineEnd: " + e.lineEnd + ", e.column: " + e.column);
+    var line = this.source.substring(aMessage.lineStart, aMessage.lineEnd),
+        message = "\n" + line;
 
     message += (new Array(aMessage.column + 1)).join(" ");
     message += (new Array(Math.min(1, line.length) + 1)).join("^") + "\n";
@@ -329,6 +285,7 @@ ObjJAcornCompiler.prototype.error_message = function(errorMessage, astNode)
 function createMessage(/* String */ aMessage, /* SpiderMonkey AST node */ node, /* String */ code)
 {
     var message = exports.acorn.getLineInfo(code, node.start);
+
     message.message = aMessage;
 
     return message;
@@ -655,7 +612,7 @@ MethodDeclarationStatement: function(node, st, c) {
     CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.body.end));
 
     CONCAT(st.compiler.jsBuffer, "\n");
-    if (st.compiler.flags & ObjJAcornCompiler.Flags.IncludeDebugSymbols) //flags.IncludeTypeSignatures)
+    if (st.compiler.flags & ObjJAcornCompiler.Flags.IncludeDebugSymbols)
         CONCAT(st.compiler.jsBuffer, ","+JSON.stringify(types));
     CONCAT(st.compiler.jsBuffer, ")");
     st.compiler.jsBuffer = saveJSBuffer;
@@ -702,7 +659,7 @@ MessageSendExpression: function(node, st, c) {
         st.compiler.lastPos = argument.end;
     }
 
-    // TODO: Move this 'if' wtih body up inside the node.argument 'if'
+    // TODO: Move this 'if' with body up inside the node.argument 'if'
     if (node.parameters) for (var i = 0; i < node.parameters.length; ++i)
     {
         var parameter = node.parameters[i];
@@ -721,7 +678,7 @@ Identifier: function(node, st, c) {
     if (st.currentMethodType() === "-" && !st.secondMemberExpression)
     {
         var identifier = node.name,
-            lvar = st.getLvarForCurrentMethod(identifier),
+            lvar = st.getLvar(identifier),
             ivar = st.compiler.getIvarForClass(identifier, st);
 
         if (ivar)
