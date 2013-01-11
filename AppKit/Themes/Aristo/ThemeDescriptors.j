@@ -2788,7 +2788,7 @@ var themedButtonValues = nil,
 + (CPProgressIndicator)themedIndeterminateBarProgressIndicator
 {
     var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 75, 16)];
-    [progressBar setDoubleValue:30];
+    [progressBar setIndeterminate:YES];
 
     [self registerThemeValues:nil forView:progressBar inherit:themedIndeterminateProgressIndicator];
 
