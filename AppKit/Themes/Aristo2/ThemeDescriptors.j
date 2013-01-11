@@ -2180,6 +2180,12 @@ var themedButtonValues = nil,
 
         menuWindowMoreAboveImage = PatternImage(@"menu-window-more-above.png", 38.0, 18.0),
         menuWindowMoreBelowImage = PatternImage(@"menu-window-more-below.png", 38.0, 18.0),
+        generalIconNew = PatternImage(@"menu-general-icon-new.png", 16.0, 16.0),
+        generalIconNewHighlighted = PatternImage(@"menu-general-icon-new-highlighted.png", 16.0, 16.0),
+        generalIconOpen = PatternImage(@"menu-general-icon-open.png", 16.0, 16.0),
+        generalIconOpenHighlighted = PatternImage(@"menu-general-icon-open-highlighted.png", 16.0, 16.0),
+        generalIconSave = PatternImage(@"menu-general-icon-save.png", 16.0, 16.0),
+        generalIconSaveHighlighted = PatternImage(@"menu-general-icon-save-highlighted.png", 16.0, 16.0),
 
         menuWindowPopUpBackgroundStyleColor = PatternColor(
             [
@@ -2217,7 +2223,7 @@ var themedButtonValues = nil,
             [@"menu-window-more-below-image",                       menuWindowMoreBelowImage],
             [@"menu-window-pop-up-background-style-color",          menuWindowPopUpBackgroundStyleColor],
             [@"menu-window-menu-bar-background-style-color",        menuWindowMenuBarBackgroundStyleColor],
-            [@"menu-window-margin-inset",                           CGInsetMake(5.0, 1.0, 1.0, 1.0)],
+            [@"menu-window-margin-inset",                           CGInsetMake(5.0, 1.0, 5.0, 1.0)],
             [@"menu-window-scroll-indicator-height",                16.0],
 
             [@"menu-bar-window-background-color",                   menuBarWindowBackgroundColor],
@@ -2236,7 +2242,16 @@ var themedButtonValues = nil,
             [@"menu-bar-highlight-text-shadow-color",               [CPColor blackColor]],
             [@"menu-bar-height",                                    28.0],
             [@"menu-bar-icon-image",                                nil],
-            [@"menu-bar-icon-image-alpha-value",                    1.0]
+            [@"menu-bar-icon-image-alpha-value",                    1.0],
+
+            [@"menu-general-icon-new",                              generalIconNew],
+            [@"menu-general-icon-new",                              generalIconNewHighlighted, CPThemeStateHighlighted],
+
+            [@"menu-general-icon-save",                             generalIconSave],
+            [@"menu-general-icon-save",                             generalIconSaveHighlighted, CPThemeStateHighlighted],
+
+            [@"menu-general-icon-open",                             generalIconOpen],
+            [@"menu-general-icon-open",                             generalIconOpenHighlighted, CPThemeStateHighlighted]
         ];
 
 
