@@ -2200,15 +2200,15 @@ var themedButtonValues = nil,
 
     var bezelColor = PatternColor(
         [
-            ["window-popup-top-left.png", 10.0, 10.0],
-            ["window-popup-top-center.png", 1.0, 10.0],
-            ["window-popup-top-right.png", 10.0, 10.0],
-            ["window-popup-center-left.png", 10.0, 1.0],
+            ["window-popup-top-left.png", 16.0, 5.0],
+            ["window-popup-top-center.png", 1.0, 5.0],
+            ["window-popup-top-right.png", 16.0, 5.0],
+            ["window-popup-center-left.png", 16.0, 1.0],
             ["window-popup-center-center.png", 1.0, 1.0],
-            ["window-popup-center-right.png", 10.0, 1.0],
-            ["window-popup-bottom-left.png", 10.0, 71.0],
-            ["window-popup-bottom-center.png", 1.0, 71.0],
-            ["window-popup-bottom-right.png", 10.0, 71.0]
+            ["window-popup-center-right.png", 16.0, 1.0],
+            ["window-popup-bottom-left.png", 16.0, 56.0],
+            ["window-popup-bottom-center.png", 1.0, 56.0],
+            ["window-popup-bottom-right.png", 16.0, 56.0]
         ]),
 
         themeValues =
