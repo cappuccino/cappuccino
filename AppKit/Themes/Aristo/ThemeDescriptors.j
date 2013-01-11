@@ -2264,15 +2264,15 @@ var themedButtonValues = nil,
 
     var HUDBezelColor = PatternColor(
             [
-                ["HUD/window-bezel-top-left.png", 5.0, 5.0],
-                ["HUD/window-bezel-top-center.png", 1.0, 5.0],
-                ["HUD/window-bezel-top-right.png", 5.0, 5.0],
+                ["HUD/window-bezel-top-left.png", 5.0, 37.0],
+                ["HUD/window-bezel-top-center.png", 1.0, 37.0],
+                ["HUD/window-bezel-top-right.png", 5.0, 37.0],
                 ["HUD/window-bezel-center-left.png", 5.0, 1.0],
                 ["HUD/window-bezel-center-center.png", 1.0, 1.0],
                 ["HUD/window-bezel-center-right.png", 5.0, 1.0],
-                ["HUD/window-bezel-bottom-left.png", 5.0, 5.0],
-                ["HUD/window-bezel-bottom-center.png", 1.0, 5.0],
-                ["HUD/window-bezel-bottom-right.png", 5.0, 5.0]
+                ["HUD/window-bezel-bottom-left.png", 5.0, 2.0],
+                ["HUD/window-bezel-bottom-center.png", 1.0, 2.0],
+                ["HUD/window-bezel-bottom-right.png", 5.0, 2.0]
             ]),
 
         closeImage = PatternImage(@"HUD/window-close.png", 18.0, 18.0),
