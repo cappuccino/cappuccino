@@ -2345,15 +2345,15 @@ var themedButtonValues = nil,
 
         bezelColor = PatternColor(
         [
-            [@"window-standard-top-left.png",5,5],
-            [@"window-standard-top-center.png",1,5],
-            [@"window-standard-top-right.png",5,5],
-            [@"window-standard-center-left.png",5,1],
-            [@"window-standard-center-center.png",1,1],
-            [@"window-standard-center-right.png",5,1],
-            [@"window-standard-bottom-left.png",5,5],
-            [@"window-standard-bottom-center.png",1,5],
-            [@"window-standard-bottom-right.png",5,5]
+            [@"window-standard-top-left.png", 2.0, 1.0],
+            [@"window-standard-top-center.png", 1.0, 1.0],
+            [@"window-standard-top-right.png", 2.0, 1.0],
+            [@"window-standard-center-left.png", 2.0, 1.0],
+            [@"window-standard-center-center.png", 1.0, 1.0],
+            [@"window-standard-center-right.png", 2.0, 1.0],
+            [@"window-standard-bottom-left.png", 2.0, 2.0],
+            [@"window-standard-bottom-center.png", 1.0, 2.0],
+            [@"window-standard-bottom-right.png", 2.0, 2.0]
         ]),
 
         closeButtonImage =                  PatternImage(@"window-standard-close-button.png", 16, 16),
@@ -2409,15 +2409,15 @@ var themedButtonValues = nil,
 
         bezelColor = PatternColor(
         [
-            [@"window-standard-top-left.png",5,5],
-            [@"window-standard-top-center.png",1,5],
-            [@"window-standard-top-right.png",5,5],
-            [@"window-standard-center-left.png",5,1],
-            [@"window-standard-center-center.png",1,1],
-            [@"window-standard-center-right.png",5,1],
-            [@"window-standard-bottom-left.png",5,5],
-            [@"window-standard-bottom-center.png",1,5],
-            [@"window-standard-bottom-right.png",5,5]
+            [@"window-standard-top-left.png", 2.0, 1.0],
+            [@"window-standard-top-center.png", 1.0, 1.0],
+            [@"window-standard-top-right.png", 2.0, 1.0],
+            [@"window-standard-center-left.png", 2.0, 1.0],
+            [@"window-standard-center-center.png", 1.0, 1.0],
+            [@"window-standard-center-right.png", 2.0, 1.0],
+            [@"window-standard-bottom-left.png", 2.0, 2.0],
+            [@"window-standard-bottom-center.png", 1.0, 2.0],
+            [@"window-standard-bottom-right.png", 2.0, 2.0]
         ]),
 
         sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
