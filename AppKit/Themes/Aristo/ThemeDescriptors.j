@@ -2379,7 +2379,7 @@ var themedButtonValues = nil,
                 [@"title-vertical-alignment",   CPCenterVerticalTextAlignment],
                 [@"title-bar-height",           31],
 
-                [@"divider-color",              [CPColor colorWithHexString:@"858585"]],
+                [@"divider-color",              [CPColor colorWithHexString:@"979797"]],
                 [@"body-color",                 bezelColor],
                 [@"title-bar-height",           31],
 
