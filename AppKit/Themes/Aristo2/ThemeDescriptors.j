@@ -2074,8 +2074,8 @@ var themedButtonValues = nil,
 
         toolbarBackgroundColor = PatternColor(
         [
-            [@"toolbar-background-top.png", 1.0, 1.0],
-            [@"toolbar-background-center.png", 1.0, 57.0],
+            nil,
+            [@"toolbar-background-center.png", 1.0, 58.0],
             [@"toolbar-background-bottom.png", 1.0, 1.0]
         ],  PatternIsVertical)
 
@@ -2240,7 +2240,7 @@ var themedButtonValues = nil,
             [@"menu-bar-highlight-color",                           [CPColor colorWithCalibratedRed:94.0 / 255.0 green:130.0 / 255.0 blue:186.0 / 255.0 alpha:1.0]],
             [@"menu-bar-highlight-text-color",                      [CPColor whiteColor]],
             [@"menu-bar-highlight-text-shadow-color",               [CPColor blackColor]],
-            [@"menu-bar-height",                                    28.0],
+            [@"menu-bar-height",                                    30.0],
             [@"menu-bar-icon-image",                                nil],
             [@"menu-bar-icon-image-alpha-value",                    1.0],
 

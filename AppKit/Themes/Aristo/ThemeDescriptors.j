@@ -2508,6 +2508,124 @@ var themedButtonValues = nil,
     return menuItemMenuBarView;
 }
 
++ (_CPMenuItemStandardView)themedMenuItemStandardView
+{
+    var menuItemStandardView = [[_CPMenuItemStandardView alloc] initWithFrame:CGRectMakeZero()],
+
+        menuItemDefaultOnStateImage = PatternImage(@"menu-item-on-state.png", 14.0, 14.0),
+        menuItemDefaultOnStateHighlightedImage = PatternImage(@"menu-item-on-state-highlighted.png", 14.0, 14.0),
+
+        themeValues =
+        [
+            [@"submenu-indicator-color",                                    [CPColor grayColor]],
+            [@"menu-item-selection-color",                                  [CPColor colorWithHexString:@"5C85D8"]],
+            [@"menu-item-text-shadow-color",                                [CPColor colorWithCalibratedRed:26.0 / 255.0 green: 73.0 / 255.0 blue:109.0 / 255.0 alpha:1.0]],
+            [@"menu-item-default-off-state-image",                          nil],
+            [@"menu-item-default-off-state-highlighted-image",              nil],
+            [@"menu-item-default-on-state-image",                           menuItemDefaultOnStateImage],
+            [@"menu-item-default-on-state-highlighted-image",               menuItemDefaultOnStateHighlightedImage],
+            [@"menu-item-default-mixed-state-image",                        nil],
+            [@"menu-item-default-mixed-state-highlighted-image",            nil],
+            [@"left-margin",                                                3.0],
+            [@"right-margin",                                               17.0],
+            [@"state-column-width",                                         14.0],
+            [@"indentation-width",                                          17.0],
+            [@"vertical-margin",                                            4.0],
+            [@"right-columns-margin",                                       30.0]
+        ];
+
+    [self registerThemeValues:themeValues forView:menuItemStandardView];
+
+    return menuItemStandardView;
+}
+
++ (_CPMenuView)themedMenuView
+{
+    var menuView = [[_CPMenuView alloc] initWithFrame:CGRectMakeZero()],
+
+
+        menuWindowMoreAboveImage = PatternImage(@"menu-window-more-above.png", 38.0, 18.0),
+        menuWindowMoreBelowImage = PatternImage(@"menu-window-more-below.png", 38.0, 18.0),
+        generalIconNew = PatternImage(@"menu-general-icon-new.png", 16.0, 16.0),
+        generalIconNewHighlighted = PatternImage(@"menu-general-icon-new-highlighted.png", 16.0, 16.0),
+        generalIconOpen = PatternImage(@"menu-general-icon-open.png", 16.0, 16.0),
+        generalIconOpenHighlighted = PatternImage(@"menu-general-icon-open-highlighted.png", 16.0, 16.0),
+        generalIconSave = PatternImage(@"menu-general-icon-save.png", 16.0, 16.0),
+        generalIconSaveHighlighted = PatternImage(@"menu-general-icon-save-highlighted.png", 16.0, 16.0),
+
+        menuWindowPopUpBackgroundStyleColor = PatternColor(
+            [
+                [@"menu-window-rounded-0.png", 6.0, 6.0],
+                [@"menu-window-1.png", 1.0, 6.0],
+                [@"menu-window-rounded-2.png", 6.0, 6.0],
+                [@"menu-window-3.png", 6.0, 1.0],
+                [@"menu-window-4.png", 1.0, 1.0],
+                [@"menu-window-5.png", 6.0, 1.0],
+                [@"menu-window-rounded-6.png", 6.0, 6.0],
+                [@"menu-window-7.png", 1.0, 6.0],
+                [@"menu-window-rounded-8.png", 6.0, 6.0]
+            ]
+        ),
+
+        menuWindowMenuBarBackgroundStyleColor = PatternColor(
+            [
+                [@"menu-window-3.png", 6.0, 0.0],
+                [@"menu-window-4.png", 1.0, 0.0],
+                [@"menu-window-5.png", 6.0, 0.0],
+                [@"menu-window-3.png", 6.0, 1.0],
+                [@"menu-window-4.png", 1.0, 1.0],
+                [@"menu-window-5.png", 6.0, 1.0],
+                [@"menu-window-rounded-6.png", 6.0, 6.0],
+                [@"menu-window-7.png", 1.0, 6.0],
+                [@"menu-window-rounded-8.png", 6.0, 6.0]
+            ]
+        ),
+
+        menuBarWindowBackgroundColor = PatternColor(@"menu-bar-window-background.png", 1.0, 30.0),
+
+        themeValues =
+        [
+            [@"menu-window-more-above-image",                       menuWindowMoreAboveImage],
+            [@"menu-window-more-below-image",                       menuWindowMoreBelowImage],
+            [@"menu-window-pop-up-background-style-color",          menuWindowPopUpBackgroundStyleColor],
+            [@"menu-window-menu-bar-background-style-color",        menuWindowMenuBarBackgroundStyleColor],
+            [@"menu-window-margin-inset",                           CGInsetMake(5.0, 1.0, 5.0, 1.0)],
+            [@"menu-window-scroll-indicator-height",                16.0],
+
+            [@"menu-bar-window-background-color",                   menuBarWindowBackgroundColor],
+            [@"menu-bar-window-font",                               [CPFont boldSystemFontOfSize:[CPFont systemFontSize]]],
+            [@"menu-bar-window-height",                             30.0],
+            [@"menu-bar-window-margin",                             10.0],
+            [@"menu-bar-window-left-margin",                        10.0],
+            [@"menu-bar-window-right-margin",                       10.0],
+
+            [@"menu-bar-text-color",                                [CPColor colorWithRed:0.051 green:0.2 blue:0.275 alpha:1.0]],
+            [@"menu-bar-title-color",                               [CPColor colorWithRed:0.051 green:0.2 blue:0.275 alpha:1.0]],
+            [@"menu-bar-text-shadow-color",                         [CPColor whiteColor]],
+            [@"menu-bar-title-shadow-color",                        [CPColor whiteColor]],
+            [@"menu-bar-highlight-color",                           [CPColor colorWithCalibratedRed:94.0 / 255.0 green:130.0 / 255.0 blue:186.0 / 255.0 alpha:1.0]],
+            [@"menu-bar-highlight-text-color",                      [CPColor whiteColor]],
+            [@"menu-bar-highlight-text-shadow-color",               [CPColor blackColor]],
+            [@"menu-bar-height",                                    28.0],
+            [@"menu-bar-icon-image",                                nil],
+            [@"menu-bar-icon-image-alpha-value",                    1.0],
+
+            [@"menu-general-icon-new",                              generalIconNew],
+            [@"menu-general-icon-new",                              generalIconNewHighlighted, CPThemeStateHighlighted],
+
+            [@"menu-general-icon-save",                             generalIconSave],
+            [@"menu-general-icon-save",                             generalIconSaveHighlighted, CPThemeStateHighlighted],
+
+            [@"menu-general-icon-open",                             generalIconOpen],
+            [@"menu-general-icon-open",                             generalIconOpenHighlighted, CPThemeStateHighlighted]
+        ];
+
+
+    [self registerThemeValues:themeValues forView:menuView];
+
+    return menuView;
+}
+
 @end
 
 
