@@ -91,7 +91,6 @@ var globalResults = [];
 
 - (void)testRunModalForWindow
 {
-    var aWindow = [[CPWindow alloc] init];
     [app runModalForWindow:aWindow];
 
     [self assertTrue:[aWindow isKeyWindow] message:@"A window must be made key when it's run modally"];
