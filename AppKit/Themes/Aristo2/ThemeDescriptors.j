@@ -2335,31 +2335,31 @@ var themedButtonValues = nil,
     return button;
 }
 
-+ (CPScroller)themedVerticalScroller
-{
-    var scroller = [Aristo2ThemeDescriptor makeVerticalScroller],
-        overrides =
-        [
-            [@"knob-color", nil, CPThemeStateVertical | CPThemeStateDisabled]
-        ];
-
-    [self registerThemeValues:[self defaultThemeOverridesAddedTo:overrides] forView:scroller inherit:themedVerticalScrollerValues];
-
-    return scroller;
-}
-
-+ (CPScroller)themedHorizontalScroller
-{
-    var scroller = [Aristo2ThemeDescriptor makeHorizontalScroller],
-        overrides =
-        [
-            [@"knob-color", nil, CPThemeStateDisabled]
-        ];
-
-    [self registerThemeValues:[self defaultThemeOverridesAddedTo:overrides] forView:scroller inherit:themedHorizontalScrollerValues];
-
-    return scroller;
-}
+// + (CPScroller)themedVerticalScroller
+// {
+//     var scroller = [Aristo2ThemeDescriptor makeVerticalScroller],
+//         overrides =
+//         [
+//             [@"knob-color", nil, CPThemeStateVertical | CPThemeStateDisabled]
+//         ];
+//
+//     [self registerThemeValues:[self defaultThemeOverridesAddedTo:overrides] forView:scroller inherit:themedVerticalScrollerValues];
+//
+//     return scroller;
+// }
+//
+// + (CPScroller)themedHorizontalScroller
+// {
+//     var scroller = [Aristo2ThemeDescriptor makeHorizontalScroller],
+//         overrides =
+//         [
+//             [@"knob-color", nil, CPThemeStateDisabled]
+//         ];
+//
+//     [self registerThemeValues:[self defaultThemeOverridesAddedTo:overrides] forView:scroller inherit:themedHorizontalScrollerValues];
+//
+//     return scroller;
+// }
 
 + (CPSlider)themedHorizontalSlider
 {
