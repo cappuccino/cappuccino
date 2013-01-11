@@ -572,7 +572,7 @@ var themedButtonValues = nil,
 
 + (CPTextField)themedStandardTextField
 {
-    var textfield = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 29.0)],
+    var textfield = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, 160.0, 29.0)],
 
         bezelColor = PatternColor(
             [
@@ -664,7 +664,7 @@ var themedButtonValues = nil,
 
 + (CPTextField)themedRoundedTextField
 {
-    var textfield = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 29.0)],
+    var textfield = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, 160.0, 29.0)],
         bezelColor = PatternColor(
             [
                 ["textfield-bezel-rounded-left.png", 8.0, 23.0],
@@ -716,7 +716,7 @@ var themedButtonValues = nil,
 
 + (CPSearchField)themedSearchField
 {
-    var searchField = [[CPSearchField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 29.0)],
+    var searchField = [[CPSearchField alloc] initWithFrame:CGRectMake(0.0, 0.0, 160.0, 29.0)],
 
         imageSearch = PatternImage("search-field-search.png", 25.0, 22.0),
         imageFind = PatternImage("search-field-find.png", 25.0, 22.0),
@@ -737,7 +737,7 @@ var themedButtonValues = nil,
 
 + (CPTokenField)themedTokenField
 {
-    var tokenfield = [[CPTokenField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 29.0)];
+    var tokenfield = [[CPTokenField alloc] initWithFrame:CGRectMake(0.0, 0.0, 160.0, 29.0)];
 
         overrides =
         [
