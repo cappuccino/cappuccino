@@ -1416,6 +1416,7 @@ var themedButtonValues = nil,
             [@"default-row-height",         25.0],
         ];
 
+    [tableview setUsesAlternatingRowBackgroundColors:YES];
     [self registerThemeValues:themedTableViewValues forView:tableview];
 
     return tableview;
@@ -1610,7 +1611,7 @@ var themedButtonValues = nil,
 
 + (_CPToolTipWindowView)themedTooltip
 {
-    var toolTipView = [[_CPToolTipWindowView alloc] initWithFrame:CPRectMakeZero() styleMask:_CPToolTipWindowMask],
+    var toolTipView = [[_CPToolTipWindowView alloc] initWithFrame:CPRectMake(0.0, 0.0, 200.0, 100.0) styleMask:_CPToolTipWindowMask],
 
         themeValues =
         [
@@ -1845,7 +1846,7 @@ var themedButtonValues = nil,
 
 + (CPShadowView)themedShadowView
 {
-    var shadowView = [[CPShadowView alloc] initWithFrame:CGRectMakeZero()],
+    var shadowView = [[CPShadowView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 100.0)],
 
         lightColor = PatternColor(
             [
@@ -1889,7 +1890,7 @@ var themedButtonValues = nil,
 
 + (CPBrowser)themedBrowser
 {
-    var browser = [[CPBrowser alloc] initWithFrame:CGRectMakeZero()],
+    var browser = [[CPBrowser alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 100.0)],
 
         imageResize = PatternImage(@"browser-image-resize-control.png", 15.0, 14.0),
         imageLeaf = PatternImage(@"browser-image-leaf.png", 9.0, 9.0),
@@ -2168,7 +2169,7 @@ var themedButtonValues = nil,
 
 + (_CPToolbarView)themedToolbarView
 {
-    var toolbarView = [[_CPToolbarView alloc] initWithFrame:CGRectMakeZero()],
+    var toolbarView = [[_CPToolbarView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 59.0)],
 
         toolbarExtraItemsImage = PatternImage(@"toolbar-view-extra-items-image.png", 10.0, 15.0),
         toolbarExtraItemsAlternateImage = PatternImage(@"toolbar-view-extra-items-alternate-image.png", 10.0, 15.0),
@@ -2199,7 +2200,7 @@ var themedButtonValues = nil,
 
 + (_CPMenuItemMenuBarView)themedMenuItemMenuBarView
 {
-    var menuItemMenuBarView = [[_CPMenuItemMenuBarView alloc] initWithFrame:CGRectMakeZero()],
+    var menuItemMenuBarView = [[_CPMenuItemMenuBarView alloc] initWithFrame:CGRectMake(0.0, 0.0, 16.0, 16.0)],
 
         selectionColor = PatternColor(@"menu-bar-window-background-selected.png", 1.0, 28.0),
 
@@ -2221,7 +2222,7 @@ var themedButtonValues = nil,
 
 + (_CPMenuItemStandardView)themedMenuItemStandardView
 {
-    var menuItemStandardView = [[_CPMenuItemStandardView alloc] initWithFrame:CGRectMakeZero()],
+    var menuItemStandardView = [[_CPMenuItemStandardView alloc] initWithFrame:CGRectMake(0.0, 0.0, 16.0, 16.0)],
 
         menuItemDefaultOnStateImage = PatternImage(@"menu-item-on-state.png", 14.0, 14.0),
         menuItemDefaultOnStateHighlightedImage = PatternImage(@"menu-item-on-state-highlighted.png", 14.0, 14.0),
@@ -2252,7 +2253,7 @@ var themedButtonValues = nil,
 
 + (_CPMenuView)themedMenuView
 {
-    var menuView = [[_CPMenuView alloc] initWithFrame:CGRectMakeZero()],
+    var menuView = [[_CPMenuView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 100.0)],
 
 
         menuWindowMoreAboveImage = PatternImage(@"menu-window-more-above.png", 38.0, 18.0),
