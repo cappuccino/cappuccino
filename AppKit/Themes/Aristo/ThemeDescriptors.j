@@ -1971,22 +1971,22 @@ var themedButtonValues = nil,
 
 + (CPProgressIndicator)themedBarProgressIndicator
 {
-    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0,0,75,25)];
+    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 75, 16)];
     [progressBar setDoubleValue:30];
 
     var bezelColor = PatternColor(
             [
-                ["progress-indicator-bezel-border-bar-regular-left.png", 1.0, 25.0],
-                ["progress-indicator-bezel-border-bar-regular-center.png", 1.0, 25.0],
-                ["progress-indicator-bezel-border-bar-regular-right.png", 1.0, 25.0]
+                ["progress-indicator-bezel-border-bar-regular-left.png", 3.0, 16.0],
+                ["progress-indicator-bezel-border-bar-regular-center.png", 1.0, 16.0],
+                ["progress-indicator-bezel-border-bar-regular-right.png", 3.0, 16.0]
             ],
             PatternIsHorizontal),
 
         barColor = PatternColor(
             [
-                ["progress-indicator-bar-bar-regular-left.png", 1.0, 25.0],
-                ["progress-indicator-bar-bar-regular-center.png", 1.0, 25.0],
-                ["progress-indicator-bar-bar-regular-right.png", 1.0, 25.0]
+                ["progress-indicator-bar-bar-regular-left.png", 3.0, 16.0],
+                ["progress-indicator-bar-bar-regular-center.png", 1.0, 16.0],
+                ["progress-indicator-bar-bar-regular-right.png", 3.0, 16.0]
             ],
             PatternIsHorizontal),
 
@@ -2003,23 +2003,23 @@ var themedButtonValues = nil,
 
 + (CPProgressIndicator)themedIndeterminateBarProgressIndicator
 {
-    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0,0,75,25)];
+    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 75, 16)];
 
     [progressBar setIndeterminate:YES];
 
     var bezelColor = PatternColor(
             [
-                ["progress-indicator-bezel-border-bar-regular-left.png", 1.0, 25.0],
-                ["progress-indicator-bezel-border-bar-regular-center.png", 1.0, 25.0],
-                ["progress-indicator-bezel-border-bar-regular-right.png", 1.0, 25.0]
+                ["progress-indicator-bezel-border-bar-regular-left.png", 3.0, 16.0],
+                ["progress-indicator-bezel-border-bar-regular-center.png", 1.0, 16.0],
+                ["progress-indicator-bezel-border-bar-regular-right.png", 3.0, 16.0]
             ],
             PatternIsHorizontal),
 
         barColor = PatternColor(
             [
-                ["progress-indicator-inderterminate-bar-bar-regular-left.png", 1.0, 25.0],
-                ["progress-indicator-inderterminate-bar-bar-regular-center.png", 20.0, 25.0],
-                ["progress-indicator-inderterminate-bar-bar-regular-right.png", 1.0, 25.0]
+                ["progress-indicator-inderterminate-bar-bar-regular-left.png", 3.0, 16.0],
+                ["progress-indicator-inderterminate-bar-bar-regular-center.png", 1.0, 16.0],
+                ["progress-indicator-inderterminate-bar-bar-regular-right.png", 3.0, 16.0]
             ],
             PatternIsHorizontal),
 
@@ -2555,33 +2555,33 @@ var themedButtonValues = nil,
 
         menuWindowPopUpBackgroundStyleColor = PatternColor(
             [
-                [@"menu-window-rounded-0.png", 7.0, 7.0],
-                [@"menu-window-1.png", 1.0, 7.0],
-                [@"menu-window-rounded-2.png", 7.0, 7.0],
-                [@"menu-window-3.png", 7.0, 1.0],
+                [@"menu-window-rounded-0.png", 4.0, 4.0],
+                [@"menu-window-1.png", 1.0, 4.0],
+                [@"menu-window-rounded-2.png", 4.0, 4.0],
+                [@"menu-window-3.png", 4.0, 1.0],
                 [@"menu-window-4.png", 1.0, 1.0],
-                [@"menu-window-5.png", 7.0, 1.0],
-                [@"menu-window-rounded-6.png", 7.0, 7.0],
-                [@"menu-window-7.png", 1.0, 7.0],
-                [@"menu-window-rounded-8.png", 7.0, 7.0]
+                [@"menu-window-5.png", 4.0, 1.0],
+                [@"menu-window-rounded-6.png", 4.0, 4.0],
+                [@"menu-window-7.png", 1.0, 4.0],
+                [@"menu-window-rounded-8.png", 4.0, 4.0]
             ]
         ),
 
         menuWindowMenuBarBackgroundStyleColor = PatternColor(
             [
-                [@"menu-window-3.png", 7.0, 0.0],
+                [@"menu-window-3.png", 4.0, 0.0],
                 [@"menu-window-4.png", 1.0, 0.0],
-                [@"menu-window-5.png", 7.0, 0.0],
-                [@"menu-window-3.png", 7.0, 1.0],
+                [@"menu-window-5.png", 4.0, 0.0],
+                [@"menu-window-3.png", 4.0, 1.0],
                 [@"menu-window-4.png", 1.0, 1.0],
-                [@"menu-window-5.png", 7.0, 1.0],
-                [@"menu-window-rounded-6.png", 7.0, 7.0],
-                [@"menu-window-7.png", 1.0, 7.0],
-                [@"menu-window-rounded-8.png", 7.0, 7.0]
+                [@"menu-window-5.png", 4.0, 1.0],
+                [@"menu-window-rounded-6.png", 4.0, 4.0],
+                [@"menu-window-7.png", 1.0, 4.0],
+                [@"menu-window-rounded-8.png", 4.0, 4.0]
             ]
         ),
 
-        menuBarWindowBackgroundColor = PatternColor(@"menu-bar-window-background.png", 1.0, 30.0),
+        menuBarWindowBackgroundColor = PatternColor(@"menu-bar-window-background.png", 1.0, 28.0),
 
         themeValues =
         [
@@ -2589,12 +2589,12 @@ var themedButtonValues = nil,
             [@"menu-window-more-below-image",                       menuWindowMoreBelowImage],
             [@"menu-window-pop-up-background-style-color",          menuWindowPopUpBackgroundStyleColor],
             [@"menu-window-menu-bar-background-style-color",        menuWindowMenuBarBackgroundStyleColor],
-            [@"menu-window-margin-inset",                           CGInsetMake(5.0, 1.0, 5.0, 1.0)],
+            [@"menu-window-margin-inset",                           CGInsetMake(3.0, 1.0, 3.0, 1.0)],
             [@"menu-window-scroll-indicator-height",                16.0],
 
             [@"menu-bar-window-background-color",                   menuBarWindowBackgroundColor],
             [@"menu-bar-window-font",                               [CPFont boldSystemFontOfSize:[CPFont systemFontSize]]],
-            [@"menu-bar-window-height",                             30.0],
+            [@"menu-bar-window-height",                             28.0],
             [@"menu-bar-window-margin",                             10.0],
             [@"menu-bar-window-left-margin",                        10.0],
             [@"menu-bar-window-right-margin",                       10.0],
@@ -2606,7 +2606,7 @@ var themedButtonValues = nil,
             [@"menu-bar-highlight-color",                           [CPColor colorWithCalibratedRed:94.0 / 255.0 green:130.0 / 255.0 blue:186.0 / 255.0 alpha:1.0]],
             [@"menu-bar-highlight-text-color",                      [CPColor whiteColor]],
             [@"menu-bar-highlight-text-shadow-color",               [CPColor blackColor]],
-            [@"menu-bar-height",                                    30.0],
+            [@"menu-bar-height",                                    28.0],
             [@"menu-bar-icon-image",                                nil],
             [@"menu-bar-icon-image-alpha-value",                    1.0],
 
