@@ -88,49 +88,49 @@ var themedButtonValues = nil,
             // Rounded
             roundedBezelColor = PatternColor(
                 [
-                    ["button-bezel-rounded-left.png", 12.0, 24.0],
-                    ["button-bezel-rounded-center.png", 1.0, 24.0],
-                    ["button-bezel-rounded-right.png", 12.0, 24.0]
+                    ["button-bezel-rounded-left.png", 12.0, 25.0],
+                    ["button-bezel-rounded-center.png", 1.0, 25.0],
+                    ["button-bezel-rounded-right.png", 12.0, 25.0]
                 ],
                 PatternIsHorizontal),
 
             roundedHighlightedBezelColor = PatternColor(
                 [
-                    ["button-bezel-rounded-highlighted-left.png", 12.0, 24.0],
-                    ["button-bezel-rounded-highlighted-center.png", 1.0, 24.0],
-                    ["button-bezel-rounded-highlighted-right.png", 12.0, 24.0]
+                    ["button-bezel-rounded-highlighted-left.png", 12.0, 25.0],
+                    ["button-bezel-rounded-highlighted-center.png", 1.0, 25.0],
+                    ["button-bezel-rounded-highlighted-right.png", 12.0, 25.0]
                 ],
                 PatternIsHorizontal),
 
             roundedDisabledBezelColor = PatternColor(
                 [
-                    ["button-bezel-rounded-disabled-left.png", 12.0, 24.0],
-                    ["button-bezel-rounded-disabled-center.png", 1.0, 24.0],
-                    ["button-bezel-rounded-disabled-right.png", 12.0, 24.0]
+                    ["button-bezel-rounded-disabled-left.png", 12.0, 25.0],
+                    ["button-bezel-rounded-disabled-center.png", 1.0, 25.0],
+                    ["button-bezel-rounded-disabled-right.png", 12.0, 25.0]
                 ],
                 PatternIsHorizontal),
 
             defaultRoundedBezelColor = PatternColor(
                 [
-                    ["default-button-bezel-rounded-left.png", 12.0, 24.0],
-                    ["default-button-bezel-rounded-center.png", 1.0, 24.0],
-                    ["default-button-bezel-rounded-right.png", 12.0, 24.0]
+                    ["default-button-bezel-rounded-left.png", 12.0, 25.0],
+                    ["default-button-bezel-rounded-center.png", 1.0, 25.0],
+                    ["default-button-bezel-rounded-right.png", 12.0, 25.0]
                 ],
                 PatternIsHorizontal),
 
             defaultRoundedHighlightedBezelColor = PatternColor(
                 [
-                    ["default-button-bezel-rounded-highlighted-left.png", 12.0, 24.0],
-                    ["default-button-bezel-rounded-highlighted-center.png", 1.0, 24.0],
-                    ["default-button-bezel-rounded-highlighted-right.png", 12.0, 24.0]
+                    ["default-button-bezel-rounded-highlighted-left.png", 12.0, 25.0],
+                    ["default-button-bezel-rounded-highlighted-center.png", 1.0, 25.0],
+                    ["default-button-bezel-rounded-highlighted-right.png", 12.0, 25.0]
                 ],
                 PatternIsHorizontal),
 
             defaultRoundedDisabledBezelColor = PatternColor(
                 [
-                    ["default-button-bezel-rounded-disabled-left.png", 12.0, 24.0],
-                    ["default-button-bezel-rounded-disabled-center.png", 1.0, 24.0],
-                    ["default-button-bezel-rounded-disabled-right.png", 12.0, 24.0]
+                    ["default-button-bezel-rounded-disabled-left.png", 12.0, 25.0],
+                    ["default-button-bezel-rounded-disabled-center.png", 1.0, 25.0],
+                    ["default-button-bezel-rounded-disabled-right.png", 12.0, 25.0]
                 ],
                 PatternIsHorizontal),
 
@@ -203,6 +203,16 @@ var themedButtonValues = nil,
 
     [button setTitle:@"Save"];
     [button setThemeState:CPButtonStateBezelStyleRounded];
+
+    return button;
+}
+
++ (CPButton)themedDefaultRoundedButton
+{
+    var button = [self button];
+
+    [button setTitle:@"OK"];
+    [button setThemeState:CPButtonStateBezelStyleRounded | CPThemeStateDefault];
 
     return button;
 }
