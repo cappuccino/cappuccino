@@ -1357,26 +1357,25 @@ var _CPAppBootstrapperActions = nil;
     // FIXME: We should implement autoenabling.
     [mainMenu setAutoenablesItems:NO];
 
-    var themeBundle = [[CPApp themeBlend] bundle],
-        newMenuItem = [[CPMenuItem alloc] initWithTitle:@"New" action:@selector(newDocument:) keyEquivalent:@"n"];
+    var newMenuItem = [[CPMenuItem alloc] initWithTitle:@"New" action:@selector(newDocument:) keyEquivalent:@"n"];
 
-    [newMenuItem setImage:[[CPImage alloc] initWithContentsOfFile:[themeBundle pathForResource:@"application-icons/new.png"] size:CGSizeMake(16.0, 16.0)]];
-    [newMenuItem setAlternateImage:[[CPImage alloc] initWithContentsOfFile:[themeBundle pathForResource:@"application-icons/new-highlighted.png"] size:CGSizeMake(16.0, 16.0)]];
+    [newMenuItem setImage:[[CPTheme defaultTheme] valueForAttributeWithName:@"menu-general-icon-new" forClass:_CPMenuView]];
+    [newMenuItem setAlternateImage:[[CPTheme defaultTheme] valueForAttributeWithName:@"menu-general-icon-new" inState:CPThemeStateHighlighted forClass:_CPMenuView]];
 
     [mainMenu addItem:newMenuItem];
 
     var openMenuItem = [[CPMenuItem alloc] initWithTitle:@"Open" action:@selector(openDocument:) keyEquivalent:@"o"];
 
-    [openMenuItem setImage:[[CPImage alloc] initWithContentsOfFile:[themeBundle pathForResource:@"application-icons/open.png"] size:CGSizeMake(16.0, 16.0)]];
-    [openMenuItem setAlternateImage:[[CPImage alloc] initWithContentsOfFile:[themeBundle pathForResource:@"application-icons/open-highlighted.png"] size:CGSizeMake(16.0, 16.0)]];
+    [openMenuItem setImage:[[CPTheme defaultTheme] valueForAttributeWithName:@"menu-general-icon-open" forClass:_CPMenuView]];
+    [openMenuItem setAlternateImage:[[CPTheme defaultTheme] valueForAttributeWithName:@"menu-general-icon-open" inState:CPThemeStateHighlighted forClass:_CPMenuView]];
 
     [mainMenu addItem:openMenuItem];
 
     var saveMenu = [[CPMenu alloc] initWithTitle:@"Save"],
         saveMenuItem = [[CPMenuItem alloc] initWithTitle:@"Save" action:@selector(saveDocument:) keyEquivalent:nil];
 
-    [saveMenuItem setImage:[[CPImage alloc] initWithContentsOfFile:[themeBundle pathForResource:@"application-icons/save.png"] size:CGSizeMake(16.0, 16.0)]];
-    [saveMenuItem setAlternateImage:[[CPImage alloc] initWithContentsOfFile:[themeBundle pathForResource:@"application-icons/save-highlighted.png"] size:CGSizeMake(16.0, 16.0)]];
+    [saveMenuItem setImage:[[CPTheme defaultTheme] valueForAttributeWithName:@"menu-general-icon-save" forClass:_CPMenuView]];
+    [saveMenuItem setAlternateImage:[[CPTheme defaultTheme] valueForAttributeWithName:@"menu-general-icon-save" inState:CPThemeStateHighlighted forClass:_CPMenuView]];
 
     [saveMenu addItem:[[CPMenuItem alloc] initWithTitle:@"Save" action:@selector(saveDocument:) keyEquivalent:@"s"]];
     [saveMenu addItem:[[CPMenuItem alloc] initWithTitle:@"Save As" action:@selector(saveDocumentAs:) keyEquivalent:nil]];

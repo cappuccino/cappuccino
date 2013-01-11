@@ -414,7 +414,8 @@ var STICKY_TIME_INTERVAL        = 500;
 {
     return [CPDictionary dictionaryWithObjects:[    [CPNull null], [CPNull null], [CPNull null], [CPNull null], CGInsetMake(5.0, 1.0, 1.0, 5.0), 16.0,
                                                     [CPNull null], [CPNull null], 30.0, 10.0, 10.0, 10.0,
-                                                    [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], 28.0, [CPNull null], 1.0]
+                                                    [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], 28.0, [CPNull null], 1.0,
+                                                    [CPNull null], [CPNull null], [CPNull null]]
                                        forKeys:[    @"menu-window-more-above-image",
                                                     @"menu-window-more-below-image",
                                                     @"menu-window-pop-up-background-style-color",
@@ -438,7 +439,11 @@ var STICKY_TIME_INTERVAL        = 500;
                                                     @"menu-bar-highlight-text-shadow-color",
                                                     @"menu-bar-height",
                                                     @"menu-bar-icon-image",
-                                                    @"menu-bar-icon-image-alpha-value"]];
+                                                    @"menu-bar-icon-image-alpha-value",
+
+                                                    @"menu-general-icon-new",
+                                                    @"menu-general-icon-save",
+                                                    @"menu-general-icon-open"]];
 }
 
 - (unsigned)numberOfUnhiddenItems
