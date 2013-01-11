@@ -2488,7 +2488,7 @@ var themedButtonValues = nil,
 
 + (_CPMenuItemMenuBarView)themedMenuItemMenuBarView
 {
-    var menuItemMenuBarView = [[_CPMenuItemMenuBarView alloc] initWithFrame:CGRectMakeZero()],
+    var menuItemMenuBarView = [[_CPMenuItemMenuBarView alloc] initWithFrame:CGRectMake(0.0, 0.0, 16.0, 16.0)],
 
         selectionColor = PatternColor(@"menu-bar-window-background-selected.png", 1.0, 28.0),
 
@@ -2510,7 +2510,7 @@ var themedButtonValues = nil,
 
 + (_CPMenuItemStandardView)themedMenuItemStandardView
 {
-    var menuItemStandardView = [[_CPMenuItemStandardView alloc] initWithFrame:CGRectMakeZero()],
+    var menuItemStandardView = [[_CPMenuItemStandardView alloc] initWithFrame:CGRectMake(0.0, 0.0, 16.0, 16.0)],
 
         menuItemDefaultOnStateImage = PatternImage(@"menu-item-on-state.png", 14.0, 14.0),
         menuItemDefaultOnStateHighlightedImage = PatternImage(@"menu-item-on-state-highlighted.png", 14.0, 14.0),
@@ -2541,7 +2541,7 @@ var themedButtonValues = nil,
 
 + (_CPMenuView)themedMenuView
 {
-    var menuView = [[_CPMenuView alloc] initWithFrame:CGRectMakeZero()],
+    var menuView = [[_CPMenuView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 100.0)],
 
 
         menuWindowMoreAboveImage = PatternImage(@"menu-window-more-above.png", 38.0, 18.0),
@@ -2555,29 +2555,29 @@ var themedButtonValues = nil,
 
         menuWindowPopUpBackgroundStyleColor = PatternColor(
             [
-                [@"menu-window-rounded-0.png", 6.0, 6.0],
-                [@"menu-window-1.png", 1.0, 6.0],
-                [@"menu-window-rounded-2.png", 6.0, 6.0],
-                [@"menu-window-3.png", 6.0, 1.0],
+                [@"menu-window-rounded-0.png", 7.0, 7.0],
+                [@"menu-window-1.png", 1.0, 7.0],
+                [@"menu-window-rounded-2.png", 7.0, 7.0],
+                [@"menu-window-3.png", 7.0, 1.0],
                 [@"menu-window-4.png", 1.0, 1.0],
-                [@"menu-window-5.png", 6.0, 1.0],
-                [@"menu-window-rounded-6.png", 6.0, 6.0],
-                [@"menu-window-7.png", 1.0, 6.0],
-                [@"menu-window-rounded-8.png", 6.0, 6.0]
+                [@"menu-window-5.png", 7.0, 1.0],
+                [@"menu-window-rounded-6.png", 7.0, 7.0],
+                [@"menu-window-7.png", 1.0, 7.0],
+                [@"menu-window-rounded-8.png", 7.0, 7.0]
             ]
         ),
 
         menuWindowMenuBarBackgroundStyleColor = PatternColor(
             [
-                [@"menu-window-3.png", 6.0, 0.0],
+                [@"menu-window-3.png", 7.0, 0.0],
                 [@"menu-window-4.png", 1.0, 0.0],
-                [@"menu-window-5.png", 6.0, 0.0],
-                [@"menu-window-3.png", 6.0, 1.0],
+                [@"menu-window-5.png", 7.0, 0.0],
+                [@"menu-window-3.png", 7.0, 1.0],
                 [@"menu-window-4.png", 1.0, 1.0],
-                [@"menu-window-5.png", 6.0, 1.0],
-                [@"menu-window-rounded-6.png", 6.0, 6.0],
-                [@"menu-window-7.png", 1.0, 6.0],
-                [@"menu-window-rounded-8.png", 6.0, 6.0]
+                [@"menu-window-5.png", 7.0, 1.0],
+                [@"menu-window-rounded-6.png", 7.0, 7.0],
+                [@"menu-window-7.png", 1.0, 7.0],
+                [@"menu-window-rounded-8.png", 7.0, 7.0]
             ]
         ),
 
@@ -2606,7 +2606,7 @@ var themedButtonValues = nil,
             [@"menu-bar-highlight-color",                           [CPColor colorWithCalibratedRed:94.0 / 255.0 green:130.0 / 255.0 blue:186.0 / 255.0 alpha:1.0]],
             [@"menu-bar-highlight-text-color",                      [CPColor whiteColor]],
             [@"menu-bar-highlight-text-shadow-color",               [CPColor blackColor]],
-            [@"menu-bar-height",                                    28.0],
+            [@"menu-bar-height",                                    30.0],
             [@"menu-bar-icon-image",                                nil],
             [@"menu-bar-icon-image-alpha-value",                    1.0],
 
@@ -2626,7 +2626,6 @@ var themedButtonValues = nil,
     return menuView;
 }
 
-@end
 
 
 @implementation AristoHUDThemeDescriptor : BKThemeDescriptor
