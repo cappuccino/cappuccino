@@ -683,6 +683,14 @@ var themedButtonValues = nil,
             ],
             PatternIsHorizontal),
 
+        bezelDisabledColor = PatternColor(
+            [
+                ["textfield-bezel-rounded-disabled-left.png", 8.0, 23.0],
+                ["textfield-bezel-rounded-disabled-center.png", 1.0, 23.0],
+                ["textfield-bezel-rounded-disabled-right.png", 8.0, 23.0]
+            ],
+            PatternIsHorizontal),
+
         placeholderColor = [CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0];
 
     // Global for reuse by CPSearchField
@@ -690,6 +698,7 @@ var themedButtonValues = nil,
         [
             [@"bezel-color",    bezelColor,                         CPTextFieldStateRounded | CPThemeStateBezeled],
             [@"bezel-color",    bezelFocusedColor,                  CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
+            [@"bezel-color",    bezelDisabledColor,                 CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateDisabled],
             [@"font",           [CPFont systemFontOfSize:12.0]],
 
             [@"content-inset",  CGInsetMake(8.0, 14.0, 6.0, 14.0),  CPTextFieldStateRounded | CPThemeStateBezeled],
