@@ -2256,29 +2256,29 @@ var themedButtonValues = nil,
 
         menuWindowPopUpBackgroundStyleColor = PatternColor(
             [
-                [@"menu-window-rounded-0.png", 6.0, 6.0],
-                [@"menu-window-1.png", 1.0, 6.0],
-                [@"menu-window-rounded-2.png", 6.0, 6.0],
-                [@"menu-window-3.png", 6.0, 1.0],
+                [@"menu-window-rounded-0.png", 7.0, 7.0],
+                [@"menu-window-1.png", 1.0, 7.0],
+                [@"menu-window-rounded-2.png", 7.0, 7.0],
+                [@"menu-window-3.png", 7.0, 1.0],
                 [@"menu-window-4.png", 1.0, 1.0],
-                [@"menu-window-5.png", 6.0, 1.0],
-                [@"menu-window-rounded-6.png", 6.0, 6.0],
-                [@"menu-window-7.png", 1.0, 6.0],
-                [@"menu-window-rounded-8.png", 6.0, 6.0]
+                [@"menu-window-5.png", 7.0, 1.0],
+                [@"menu-window-rounded-6.png", 7.0, 7.0],
+                [@"menu-window-7.png", 1.0, 7.0],
+                [@"menu-window-rounded-8.png", 7.0, 7.0]
             ]
         ),
 
         menuWindowMenuBarBackgroundStyleColor = PatternColor(
             [
-                [@"menu-window-3.png", 6.0, 0.0],
+                [@"menu-window-3.png", 7.0, 0.0],
                 [@"menu-window-4.png", 1.0, 0.0],
-                [@"menu-window-5.png", 6.0, 0.0],
-                [@"menu-window-3.png", 6.0, 1.0],
+                [@"menu-window-5.png", 7.0, 0.0],
+                [@"menu-window-3.png", 7.0, 1.0],
                 [@"menu-window-4.png", 1.0, 1.0],
-                [@"menu-window-5.png", 6.0, 1.0],
-                [@"menu-window-rounded-6.png", 6.0, 6.0],
-                [@"menu-window-7.png", 1.0, 6.0],
-                [@"menu-window-rounded-8.png", 6.0, 6.0]
+                [@"menu-window-5.png", 7.0, 1.0],
+                [@"menu-window-rounded-6.png", 7.0, 7.0],
+                [@"menu-window-7.png", 1.0, 7.0],
+                [@"menu-window-rounded-8.png", 7.0, 7.0]
             ]
         ),
 
