@@ -18,7 +18,9 @@ var themedButtonValues = nil,
     themedCircularSliderValues = nil,
     themedButtonBarValues = nil,
     themedAlertValues = nil,
-    themedWindowViewValues = nil;
+    themedWindowViewValues = nil,
+    themedProgressIndicator = nil,
+    themedIndeterminateProgressIndicator = nil;
 
 @implementation Aristo2ThemeDescriptor : BKThemeDescriptor
 
@@ -1701,15 +1703,15 @@ var themedButtonValues = nil,
                 ["progress-indicator-bar-bar-regular-center.png", 1.0, 25.0],
                 ["progress-indicator-bar-bar-regular-right.png", 1.0, 25.0]
             ],
-            PatternIsHorizontal),
+            PatternIsHorizontal);
 
-        themeValues =
-        [
-            [@"bezel-color", bezelColor],
-            [@"bar-color", barColor]
-        ];
+    themedProgressIndicator =
+    [
+        [@"bezel-color", bezelColor],
+        [@"bar-color", barColor]
+    ];
 
-    [self registerThemeValues:themeValues forView:progressBar];
+    [self registerThemeValues:themedProgressIndicator forView:progressBar];
 
     return progressBar;
 }
@@ -1734,15 +1736,15 @@ var themedButtonValues = nil,
                 ["progress-indicator-inderterminate-bar-bar-regular-center.png", 20.0, 25.0],
                 ["progress-indicator-inderterminate-bar-bar-regular-right.png", 1.0, 25.0]
             ],
-            PatternIsHorizontal),
+            PatternIsHorizontal);
 
-        themeValues =
-        [
-            [@"bezel-color", bezelColor],
-            [@"inderterminate-bar-color", barColor]
-        ];
+    themedIndeterminateProgressIndicator =
+    [
+        [@"bezel-color", bezelColor],
+        [@"inderterminate-bar-color", barColor]
+    ];
 
-    [self registerThemeValues:themeValues forView:progressBar];
+    [self registerThemeValues:themedIndeterminateProgressIndicator forView:progressBar];
 
     return progressBar;
 }
@@ -2480,6 +2482,27 @@ var themedButtonValues = nil,
     [self registerThemeValues:hudSpecificValues forView:alert inherit:themedAlertValues];
 
     return [alert themeView];
+}
+
++ (CPProgressIndicator)themedBarProgressIndicator
+{
+    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 75, 16)];
+    [progressBar setDoubleValue:30];
+
+    [self registerThemeValues:nil forView:progressBar inherit:themedProgressIndicator];
+
+    return progressBar;
+
+}
+
++ (CPProgressIndicator)themedIndeterminateBarProgressIndicator
+{
+    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 75, 16)];
+    [progressBar setDoubleValue:30];
+
+    [self registerThemeValues:nil forView:progressBar inherit:themedIndeterminateProgressIndicator];
+
+    return progressBar;
 }
 
 @end
