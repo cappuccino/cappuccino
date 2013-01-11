@@ -29,7 +29,6 @@ var themedButtonValues = nil,
 
 + (CPButton)makeButton
 {
-    //return [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, CPButtonDefaultHeight)];
     return [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 25)];
 }
 
@@ -823,7 +822,7 @@ var themedButtonValues = nil,
             [@"bezel-color",        bezelNoBorderFocusedColor,      CPThemeStateBezeled | CPThemeStateEditing],
             [@"bezel-color",        bezelNoBorderDisabledColor,     CPThemeStateBezeled | CPThemeStateDisabled],
 
-            [@"border-inset",       CGInsetMake(3.0, 3.0, 3.0, 3.0), CPThemeStateBezeled],
+            [@"border-inset",       CGInsetMake(3.0, 3.0, 3.0, 3.0),    CPThemeStateBezeled],
 
             [@"bezel-inset",        CGInsetMake(0.0, 1.0, 1.0, 1.0),    CPThemeStateBezeled | CPThemeStateEditing],
 
@@ -844,7 +843,6 @@ var themedButtonValues = nil,
 
     return combo;
 }
-
 
 + (CPRadioButton)themedRadioButton
 {
@@ -896,8 +894,7 @@ var themedButtonValues = nil,
         themeValues =
         [
             [@"alignment",      CPLeftTextAlignment,                CPThemeStateNormal],
-            [@"font",           [CPFont systemFontOfSize:12.0],     CPThemeStateNormal],
-            [@"content-inset",  CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateNormal],
+            [@"content-inset",  CGInsetMakeZero(),                  CPThemeStateNormal],
 
             [@"image",          imageNormal,                        CPThemeStateNormal],
             [@"image",          imageSelected,                      CPThemeStateSelected],
@@ -907,6 +904,7 @@ var themedButtonValues = nil,
             [@"image",          imageSelectedDisabled,              CPThemeStateSelected | CPThemeStateDisabled],
             [@"image-offset",   CPCheckBoxImageOffset],
 
+            [@"font",           [CPFont systemFontOfSize:CPFontCurrentSystemSize], CPThemeStateNormal],
             [@"text-color",     [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0],  CPThemeStateDisabled],
 
             [@"min-size",       CGSizeMake(21.0, 21.0)],
@@ -1223,28 +1221,27 @@ var themedButtonValues = nil,
         buttonImageMinus = PatternImage("buttonbar-image-minus.png", 11.0, 4.0),
         buttonImageAction = PatternImage("buttonbar-image-action.png", 22.0, 14.0),
 
-    themedButtonBarValues =
-    [
-        [@"bezel-color", color],
+        themedButtonBarValues =
+        [
+            [@"bezel-color", color],
 
-        [@"resize-control-size",    CGSizeMake(5.0, 10.0)],
-        [@"resize-control-inset",   CGInsetMake(9.0, 4.0, 7.0, 4.0)],
-        [@"resize-control-color",   resizeColor],
+            [@"resize-control-size",    CGSizeMake(5.0, 10.0)],
+            [@"resize-control-inset",   CGInsetMake(9.0, 4.0, 7.0, 4.0)],
+            [@"resize-control-color",   resizeColor],
 
-        [@"button-bezel-color",     buttonBezelColor],
-        [@"button-bezel-color",     buttonBezelHighlightedColor,    CPThemeStateHighlighted],
-        [@"button-bezel-color",     buttonBezelDisabledColor,       CPThemeStateDisabled],
-        [@"button-text-color",      [CPColor blackColor]],
+            [@"button-bezel-color",     buttonBezelColor],
+            [@"button-bezel-color",     buttonBezelHighlightedColor,    CPThemeStateHighlighted],
+            [@"button-bezel-color",     buttonBezelDisabledColor,       CPThemeStateDisabled],
+            [@"button-text-color",      [CPColor blackColor]],
 
-        [@"button-image-plus",      buttonImagePlus],
-        [@"button-image-minus",     buttonImageMinus],
-        [@"button-image-action",    buttonImageAction]
-    ];
+            [@"button-image-plus",      buttonImagePlus],
+            [@"button-image-minus",     buttonImageMinus],
+            [@"button-image-action",    buttonImageAction]
+        ];
 
     [self registerThemeValues:themedButtonBarValues forView:buttonBar];
 
     return buttonBar;
-
 }
 
 + (_CPTableColumnHeaderView)makeColumnHeader
@@ -1274,6 +1271,7 @@ var themedButtonValues = nil,
             [@"text-shadow-color",  [CPColor whiteColor]],
             [@"text-shadow-offset", CGSizeMake(0.0, 1.0)],
             [@"text-alignment",     CPLeftTextAlignment],
+            [@"line-break-mode",    CPLineBreakByTruncatingTail],
 
             [@"background-color",   pressed,            CPThemeStateHighlighted],
             [@"background-color",   highlighted,        CPThemeStateSelected],
@@ -1346,20 +1344,27 @@ var themedButtonValues = nil,
     return tableview;
 }
 
++ (CPTextField)themedTableDataView
+{
+    var view = [self themedStandardTextField];
 
+    [view setBezeled:NO];
+    [view setEditable:NO];
+    [view setThemeState:CPThemeStateTableDataView];
+
+    return view;
+}
 
 + (CPSplitView)themedSplitView
 {
     var splitView = [[CPSplitView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 200.0)],
         leftView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 75.0, 150.0)],
-        rightView = [[CPView alloc] initWithFrame:CGRectMake(75.0, 0.0, 75.0, 150.0)];
+        rightView = [[CPView alloc] initWithFrame:CGRectMake(75.0, 0.0, 75.0, 150.0)],
+        horizontalDividerColor = PatternImage("splitview-divider-horizontal.png", 5.0, 10.0),
+        verticalDividerColor = PatternImage("splitview-divider-vertical.png", 10.0, 5.0);
 
     [splitView addSubview:leftView];
     [splitView addSubview:rightView];
-
-    var horizontalDividerColor = PatternImage("splitview-divider-horizontal.png", 5.0, 10.0),
-        verticalDividerColor = PatternImage("splitview-divider-vertical.png", 10.0, 5.0);
-
     [splitView setIsPaneSplitter:YES];
 
     var themedSplitViewValues =
@@ -1498,29 +1503,28 @@ var themedButtonValues = nil,
 
 + (CPRuleEditor)themedRuleEditor
 {
-    var ruleEditor = [[CPRuleEditor alloc] initWithFrame:CGRectMake(0, 0, 400, 300)];
-
-    var backgroundColors = [[CPColor whiteColor], [CPColor colorWithRed:235/255 green:239/255 blue:252/255 alpha:1]],
+    var ruleEditor = [[CPRuleEditor alloc] initWithFrame:CGRectMake(0, 0, 400, 300)],
+        backgroundColors = [[CPColor whiteColor], [CPColor colorWithRed:235/255 green:239/255 blue:252/255 alpha:1]],
         selectedActiveRowColor = [CPColor colorWithHexString:@"5f83b9"],
         selectedInactiveRowColor = [CPColor colorWithWhite:0.83 alpha:1],
         sliceTopBorderColor = [CPColor colorWithWhite:0.9 alpha:1],
         sliceBottomBorderColor = [CPColor colorWithWhite:0.729412 alpha:1],
         sliceLastBottomBorderColor = [CPColor colorWithWhite:0.6 alpha:1],
         addImage = PatternImage(@"rule-editor-add.png", 8.0, 8.0),
-        removeImage = PatternImage(@"rule-editor-remove.png", 8.0, 8.0);
+        removeImage = PatternImage(@"rule-editor-remove.png", 8.0, 8.0),
 
-    var ruleEditorThemedValues =
-    [
-        [@"alternating-row-colors",         backgroundColors],
-        [@"selected-color",                 selectedActiveRowColor, CPThemeStateNormal],
-        [@"selected-color",                 selectedInactiveRowColor, CPThemeStateDisabled],
-        [@"slice-top-border-color",         sliceTopBorderColor],
-        [@"slice-bottom-border-color",      sliceBottomBorderColor],
-        [@"slice-last-bottom-border-color", sliceLastBottomBorderColor],
-        [@"font",                           [CPFont systemFontOfSize:10.0]],
-        [@"add-image",                      addImage],
-        [@"remove-image",                   removeImage]
-    ];
+        ruleEditorThemedValues =
+        [
+            [@"alternating-row-colors",         backgroundColors],
+            [@"selected-color",                 selectedActiveRowColor, CPThemeStateNormal],
+            [@"selected-color",                 selectedInactiveRowColor, CPThemeStateDisabled],
+            [@"slice-top-border-color",         sliceTopBorderColor],
+            [@"slice-bottom-border-color",      sliceBottomBorderColor],
+            [@"slice-last-bottom-border-color", sliceLastBottomBorderColor],
+            [@"font",                           [CPFont systemFontOfSize:10.0]],
+            [@"add-image",                      addImage],
+            [@"remove-image",                   removeImage]
+        ];
 
     [self registerThemeValues:ruleEditorThemedValues forView:ruleEditor];
 
@@ -1529,7 +1533,7 @@ var themedButtonValues = nil,
 
 + (_CPToolTipWindowView)themedTooltip
 {
-    var toolTipView = [[_CPToolTipWindowView alloc] initWithFrame:CPRectMake(0,0,100,40) styleMask:_CPToolTipWindowMask],
+    var toolTipView = [[_CPToolTipWindowView alloc] initWithFrame:CPRectMakeZero() styleMask:_CPToolTipWindowMask],
 
         themeValues =
         [
@@ -1686,49 +1690,9 @@ var themedButtonValues = nil,
     return progressBar;
 }
 
-+ (_CPModalWindowView)themedModalWindowView
-{
-    var modalWindowView = [[_CPModalWindowView alloc] initWithFrame:CGRectMake(0,0,400,300) styleMask:_CPModalWindowView];
-
-    var bezelColor = PatternColor(
-        [
-            ["window-popup-top-left.png", 10.0, 10.0],
-            ["window-popup-top-center.png", 1.0, 10.0],
-            ["window-popup-top-right.png", 10.0, 10.0],
-            ["window-popup-center-left.png", 10.0, 1.0],
-            ["window-popup-center-center.png", 1.0, 1.0],
-            ["window-popup-center-right.png", 10.0, 1.0],
-            ["window-popup-bottom-left.png", 10.0, 71.0],
-            ["window-popup-bottom-center.png", 1.0, 71.0],
-            ["window-popup-bottom-right.png", 10.0, 71.0]
-        ]),
-
-        themeValues =
-        [
-            [@"bezel-color", bezelColor]
-        ];
-
-    [self registerThemeValues:themeValues forView:modalWindowView];
-
-    return modalWindowView;
-}
-
 + (CPBox)themedBox
 {
-    var box = [[CPBox alloc] initWithFrame:CGRectMake(0,0,100,100)];
-
-    var backgroundColor = PatternColor(
-        [
-            ["cpbox-background-1.png", 6.0, 6.0],
-            ["cpbox-background-2.png", 1.0, 6.0],
-            ["cpbox-background-3.png", 6.0, 6.0],
-            ["cpbox-background-4.png", 6.0, 1.0],
-            ["cpbox-background-5.png", 1.0, 1.0],
-            ["cpbox-background-6.png", 6.0, 1.0],
-            ["cpbox-background-7.png", 6.0, 6.0],
-            ["cpbox-background-8.png", 1.0, 6.0],
-            ["cpbox-background-9.png", 6.0, 6.0]
-        ]),
+    var box = [[CPBox alloc] initWithFrame:CGRectMake(0,0,100,100)],
 
         themeValues =
         [
@@ -1865,6 +1829,33 @@ var themedButtonValues = nil,
     return browser;
 }
 
++ (_CPModalWindowView)themedModalWindowView
+{
+    var modalWindowView = [[_CPModalWindowView alloc] initWithFrame:CGRectMake(0,0,400,300) styleMask:_CPModalWindowView];
+
+    var bezelColor = PatternColor(
+        [
+            ["window-popup-top-left.png", 10.0, 10.0],
+            ["window-popup-top-center.png", 1.0, 10.0],
+            ["window-popup-top-right.png", 10.0, 10.0],
+            ["window-popup-center-left.png", 10.0, 1.0],
+            ["window-popup-center-center.png", 1.0, 1.0],
+            ["window-popup-center-right.png", 10.0, 1.0],
+            ["window-popup-bottom-left.png", 10.0, 71.0],
+            ["window-popup-bottom-center.png", 1.0, 71.0],
+            ["window-popup-bottom-right.png", 10.0, 71.0]
+        ]),
+
+        themeValues =
+        [
+            [@"bezel-color", bezelColor]
+        ];
+
+    [self registerThemeValues:themeValues forView:modalWindowView];
+
+    return modalWindowView;
+}
+
 + (_CPWindowView)themedWindowView
 {
     var windowView = [[_CPWindowView alloc] initWithFrame:CGRectMakeZero()],
@@ -1945,7 +1936,7 @@ var themedButtonValues = nil,
     return HUDWindowView;
 }
 
-+(_CPTexturedWindowHeadView)themedWindowHeadView
++ (_CPTexturedWindowHeadView)themedWindowHeadView
 {
     var windowHeadView = [[_CPTexturedWindowHeadView alloc] initWithFrame:CGRectMake(0,0,120,32)],
 
@@ -1982,7 +1973,7 @@ var themedButtonValues = nil,
     return windowHeadView;
 }
 
-+(_CPStandardWindowView)themedStandardWindowView
++ (_CPStandardWindowView)themedStandardWindowView
 {
     var standardWindowView = [[_CPStandardWindowView alloc] initWithFrame:CGRectMake(0,0,200,300) styleMask:CPClosableWindowMask],
 
@@ -2043,12 +2034,10 @@ var themedButtonValues = nil,
 
     [self registerThemeValues:themeValues forView:standardWindowView inherit:themedWindowViewValues];
 
-
     return standardWindowView;
 }
 
-
-+(_CPDocModalWindowView)themedDocModalWindowView
++ (_CPDocModalWindowView)themedDocModalWindowView
 {
     var docModalWindowView = [[_CPDocModalWindowView alloc] initWithFrame:CGRectMake(0,0,200,300) styleMask:nil],
 
@@ -2146,7 +2135,6 @@ var themedButtonValues = nil,
             [@"horizontal-margin",                                      8.0],
             [@"submenu-indicator-margin",                               3.0],
             [@"vertical-margin",                                        4.0]
-
         ];
 
     [self registerThemeValues:themeValues forView:menuItemMenuBarView];

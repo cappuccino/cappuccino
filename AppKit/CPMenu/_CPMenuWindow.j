@@ -1,5 +1,5 @@
 @import "CPWindow.j"
-
+@import "CPView.j"
 
 var _CPMenuWindowPool                       = [],
     _CPMenuWindowPoolCapacity               = 5,
