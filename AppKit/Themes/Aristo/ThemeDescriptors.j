@@ -2626,6 +2626,7 @@ var themedButtonValues = nil,
     return menuView;
 }
 
+@end
 
 
 @implementation AristoHUDThemeDescriptor : BKThemeDescriptor
