@@ -198,7 +198,6 @@ CPWindowResizeStyle = CPWindowResizeStyleModern;
 CPWindowResizeSlop = 3;
 
 var CPWindowSaveImage       = nil,
-    CPWindowSavingImage     = nil,
 
     CPWindowResizeTime      = 0.2,
     CPWindowResizeStyleGlobalChangeNotification = @"CPWindowResizeStyleGlobalChangeNotification";
@@ -353,20 +352,6 @@ var CPWindowActionMessageKeys = [
     CPWindow                            _parentView;
     BOOL                                _isSheet;
     _CPWindowFrameAnimation             _frameAnimation;
-}
-
-/*
-    Private initializer for Objective-J
-    @ignore
-*/
-+ (void)initialize
-{
-    if (self !== [CPWindow class])
-        return;
-
-    var bundle = [CPBundle bundleForClass:[CPWindow class]];
-
-    CPWindowSavingImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPProgressIndicator/CPProgressIndicatorSpinningStyleRegular.gif"] size:CGSizeMake(16.0, 16.0)]
 }
 
 - (id)init
@@ -2093,7 +2078,7 @@ CPTexturedBackgroundWindowMask
         CPWindowSaveImage = [item image];
 
         [item setTitle:@"Saving..."];
-        [item setImage:CPWindowSavingImage];
+        [item setImage:[[CPTheme defaultTheme] valueForAttributeWithName:@"spinning-regular-gif" forClass:CPProgressIndicator]];
         [item setEnabled:NO];
     }
     else
