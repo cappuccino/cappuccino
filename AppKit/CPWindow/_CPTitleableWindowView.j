@@ -29,8 +29,7 @@
 
 + (int)titleBarHeight
 {
-    // Alloc a new class to get a theme attribute
-    return [[[self class] new] valueForThemeAttribute:@"title-bar-height"];
+    return [[CPTheme defaultTheme] valueForAttributeWithName:@"title-bar-height" forClass:[self class]];
 }
 
 + (CGRect)contentRectForFrameRect:(CGRect)aFrameRect

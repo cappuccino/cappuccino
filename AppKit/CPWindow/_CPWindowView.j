@@ -73,7 +73,25 @@ var _CPWindowViewCornerResizeRectWidth = 10,
 + (id)themeAttributes
 {
     return [CPDictionary dictionaryWithObjects:[25, CGInsetMakeZero(), 5, [CPColor clearColor], CGSizeMakeZero(), [CPNull null], [CPColor blackColor], [CPNull null],[CPNull null], [CPNull null], [CPNull null], [CPNull null] , [CPColor blackColor], [CPFont systemFontOfSize:CPFontCurrentSystemSize], [CPNull null], _CGSizeMakeZero(), CPCenterTextAlignment, CPLineBreakByTruncatingTail, CPTopVerticalTextAlignment]
-                                       forKeys:[@"title-bar-height", @"shadow-inset", @"shadow-distance", @"window-shadow-color",@"size-indicator", @"resize-indicator", @"attached-sheet-shadow-color", @"close-image-origin",@"close-image-size",@"close-image", @"close-active-image", @"bezel-color",@"title-text-color", @"title-font", @"title-text-shadow-color", @"title-text-shadow-offset", @"title-alignment", @"title-line-break-mode", @"title-vertical-alignment"]];
+                                       forKeys:[    @"title-bar-height",
+                                                    @"shadow-inset",
+                                                    @"shadow-distance",
+                                                    @"window-shadow-color",
+                                                    @"size-indicator",
+                                                    @"resize-indicator",
+                                                    @"attached-sheet-shadow-color",
+                                                    @"close-image-origin",
+                                                    @"close-image-size",
+                                                    @"close-image",
+                                                    @"close-active-image",
+                                                    @"bezel-color",
+                                                    @"title-text-color",
+                                                    @"title-font",
+                                                    @"title-text-shadow-color",
+                                                    @"title-text-shadow-offset",
+                                                    @"title-alignment",
+                                                    @"title-line-break-mode",
+                                                    @"title-vertical-alignment"]];
 }
 
 - (CGRect)contentRectForFrameRect:(CGRect)aFrameRect

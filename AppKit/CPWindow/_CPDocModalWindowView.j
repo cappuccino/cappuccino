@@ -1,7 +1,5 @@
-
 @import "_CPWindowView.j"
 
-var _CPStandardWindowViewBodyBackgroundColor = nil;
 
 @implementation _CPDocModalWindowView : _CPWindowView
 {
@@ -18,14 +16,6 @@ var _CPStandardWindowViewBodyBackgroundColor = nil;
 {
     return [CPDictionary dictionaryWithObjects:[[CPColor whiteColor], 8]
                                        forKeys:[ @"body-color", @"height-shadow"]];
-}
-
-+ (CPColor)bodyBackgroundColor
-{
-    if (!_CPStandardWindowViewBodyBackgroundColor)
-        _CPStandardWindowViewBodyBackgroundColor = [CPColor colorWithWhite:0.96 alpha:0.9];
-
-    return _CPStandardWindowViewBodyBackgroundColor;
 }
 
 - (id)initWithFrame:(CPRect)aFrame styleMask:(unsigned)aStyleMask

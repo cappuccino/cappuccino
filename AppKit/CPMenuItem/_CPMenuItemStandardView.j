@@ -49,10 +49,7 @@
 
 + (float)_standardLeftMargin
 {
-    // This method is used in popUpButton. Need to make a new instance to get the good value from the theme
-    var menuItemStandarView = [[self class] view];
-
-    return [menuItemStandarView valueForThemeAttribute:@"left-margin"] + [menuItemStandarView valueForThemeAttribute:@"state-column-width"];
+    return [[CPTheme defaultTheme] valueForAttributeWithName:@"left-margin" forClass:[self class]] + [[CPTheme defaultTheme] valueForAttributeWithName:@"state-column-width" forClass:[self class]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame

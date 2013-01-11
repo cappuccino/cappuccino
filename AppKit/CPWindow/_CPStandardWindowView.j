@@ -23,12 +23,6 @@
 @import "CPTextField.j"
 @import "_CPTitleableWindowView.j"
 
-
-// var GRADIENT_HEIGHT = 41.0;
-
-// var _CPTexturedWindowHeadGradientColor  = nil,
-//     _CPTexturedWindowHeadSolidColor     = nil;
-
 @implementation _CPTexturedWindowHeadView : CPView
 {
     CPView  _gradientView;
@@ -89,15 +83,6 @@
 
 @end
 
-var _CPStandardWindowViewBodyBackgroundColor                = nil,
-    _CPStandardWindowViewDividerBackgroundColor             = nil,
-    _CPStandardWindowViewCloseButtonImage                   = nil,
-    _CPStandardWindowViewCloseButtonHighlightedImage        = nil,
-    _CPStandardWindowViewCloseButtonUnsavedImage            = nil,
-    _CPStandardWindowViewCloseButtonUnsavedHighlightedImage = nil,
-    _CPStandardWindowViewMinimizeButtonImage                = nil,
-    _CPStandardWindowViewMinimizeButtonHighlightedImage     = nil,
-    _CPStandardWindowViewThemeValues                        = nil;
 
 @implementation _CPStandardWindowView : _CPTitleableWindowView
 {
@@ -120,24 +105,15 @@ var _CPStandardWindowViewBodyBackgroundColor                = nil,
 + (id)themeAttributes
 {
     return [CPDictionary dictionaryWithObjects:[[CPColor blackColor], [CPColor whiteColor], 32, [CPNull null], [CPNull null],[CPNull null], [CPNull null], [CPNull null], [CPNull null]]
-                                       forKeys:[   @"divider-color", @"body-color", @"title-bar-height",@"minimize-image-highlighted-button",@"minimize-image-button",
-                                                   @"close-image-button", @"close-image-highlighted-button", @"unsaved-image-button", @"unsaved-image-highlighted-button"]];
-}
-
-+ (CPColor)bodyBackgroundColor
-{
-    if (!_CPStandardWindowViewBodyBackgroundColor)
-        _CPStandardWindowViewBodyBackgroundColor = [CPColor colorWithWhite:0.96 alpha:1.0];
-
-    return _CPStandardWindowViewBodyBackgroundColor;
-}
-
-+ (CPColor)dividerBackgroundColor
-{
-    if (!_CPStandardWindowViewDividerBackgroundColor)
-        _CPStandardWindowViewDividerBackgroundColor = [CPColor colorWithCalibratedRed:125.0 / 255.0 green:125.0 / 255.0 blue:125.0 / 255.0 alpha:1.0];
-
-    return _CPStandardWindowViewDividerBackgroundColor;
+                                       forKeys:[   @"divider-color",
+                                                   @"body-color",
+                                                   @"title-bar-height",
+                                                   @"minimize-image-highlighted-button",
+                                                   @"minimize-image-button",
+                                                   @"close-image-button",
+                                                   @"close-image-highlighted-button",
+                                                   @"unsaved-image-button",
+                                                   @"unsaved-image-highlighted-button"]];
 }
 
 - (id)initWithFrame:(CPRect)aFrame styleMask:(unsigned)aStyleMask
@@ -319,9 +295,8 @@ var _CPStandardWindowViewBodyBackgroundColor                = nil,
     [_minimizeButton setHidden:enable];
     [_titleField setHidden:enable];
 
-    // Alloc a new class to get a theme attribute
     if (enable)
-        [_bodyView setBackgroundColor:[[_CPDocModalWindowView new] valueForThemeAttribute:@"body-color"]];
+        [_bodyView setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"body-color" forClass:_CPDocModalWindowView]];
     else
         [_bodyView setBackgroundColor:[self valueForThemeAttribute:@"body-color"]];
 
