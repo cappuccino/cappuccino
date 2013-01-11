@@ -181,7 +181,7 @@
 
 - (void)testTypeMasks
 {
-    var button = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
+    button = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
 
     // The default mask should be that of CPMomentaryPushInButton.
     [self assert:CPPushInButtonMask | CPGrayButtonMask | CPBackgroundButtonMask equals:[button highlightsBy]];

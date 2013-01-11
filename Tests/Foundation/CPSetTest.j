@@ -4,7 +4,6 @@
 
 @implementation CPSetTest : OJTestCase
 {
-    CPSet set;
 }
 
 - (void)assertSet:(CPSet)aSet onlyHasObjects:(CPArray)objects
