@@ -222,7 +222,7 @@ exports.main = function(args)
 
         if (argv[0] === "--help" || argv[0].substr(0, 1) == '-')
         {
-            print("Usage: " + args[0] + " [options] [--] file...");
+            print("Usage (objjc 2.0): " + args[0] + " [options] [--] file...");
             print("  -p, --print                    print the output directly to stdout");
             print("  --unmarked                     don't tag the output with @STATIC header");
             print("");
