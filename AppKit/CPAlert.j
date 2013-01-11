@@ -452,6 +452,8 @@ var bottomHeight = 71;
         defaultElementsMargin = [_themeView currentValueForThemeAttribute:@"default-elements-margin"],
         panelSize = [[_window contentView] frame].size,
         buttonsOriginY,
+        buttonMarginY,
+        buttonMarginX,
         theme = [self theme],
         offsetX;
 
@@ -469,6 +471,19 @@ var bottomHeight = 71;
 
     offsetX = panelSize.width - inset.right;
 
+    switch([_window styleMask])
+    {
+        case _CPModalWindowMask:
+            buttonMarginY = [_themeView currentValueForThemeAttribute:@"modal-window-button-margin-y"];
+            buttonMarginX = [_themeView currentValueForThemeAttribute:@"modal-window-button-margin-x"];
+            break;
+
+        default:
+            buttonMarginY = [_themeView currentValueForThemeAttribute:@"standard-window-button-margin-y"];
+            buttonMarginX = [_themeView currentValueForThemeAttribute:@"standard-window-button-margin-x"];
+            break;
+    }
+
     for (var i = [_buttons count] - 1; i >= 0 ; i--)
     {
         var button = _buttons[i];
@@ -480,7 +495,7 @@ var bottomHeight = 71;
             height = CGRectGetHeight(buttonFrame);
 
         offsetX -= width;
-        [button setFrame:CGRectMake(offsetX, buttonsOriginY, width, height)];
+        [button setFrame:CGRectMake(offsetX + buttonMarginX, buttonsOriginY + buttonMarginY, width, height)];
         offsetX -= 10;
 
     }
@@ -719,7 +734,11 @@ var bottomHeight = 71;
                                                 [CPColor blackColor],
                                                 [CPFont systemFontOfSize:12.0],
                                                 [CPNull null],
-                                                0.0
+                                                0.0,
+                                                0.0,
+                                                0.0,
+                                                0.0,
+                                                0.0,
                                                 ]
                                        forKeys:[@"size", @"content-inset", @"informative-offset", @"button-offset",
                                                 @"message-text-alignment", @"message-text-color", @"message-text-font", @"message-text-shadow-color", @"message-text-shadow-offset",
@@ -737,7 +756,11 @@ var bottomHeight = 71;
                                                 @"suppression-button-text-color",
                                                 @"suppression-button-text-font",
                                                 @"suppression-button-text-shadow-color",
-                                                @"suppression-button-text-shadow-offset"
+                                                @"suppression-button-text-shadow-offset",
+                                                @"modal-window-button-margin-y",
+                                                @"modal-window-button-margin-x",
+                                                @"standard-window-button-margin-y",
+                                                @"standard-window-button-margin-x"
                                                 ]];
 }
 
