@@ -250,6 +250,7 @@ var CPURLConnectionDelegate = nil;
                 {
                     var response = [[CPHTTPURLResponse alloc] initWithURL:URL];
                     [response _setStatusCode:statusCode];
+                    [response _setAllResponseHeaders:_HTTPRequest.getAllResponseHeaders()];
                     [_delegate connection:self didReceiveResponse:response];
                 }
             }
