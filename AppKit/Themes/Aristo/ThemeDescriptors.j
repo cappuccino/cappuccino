@@ -2202,15 +2202,15 @@ var themedButtonValues = nil,
 
     var bezelColor = PatternColor(
         [
-            ["window-popup-top-left.png", 10.0, 10.0],
-            ["window-popup-top-center.png", 1.0, 10.0],
-            ["window-popup-top-right.png", 10.0, 10.0],
-            ["window-popup-center-left.png", 10.0, 1.0],
+            ["window-popup-top-left.png", 16.0, 5.0],
+            ["window-popup-top-center.png", 1.0, 5.0],
+            ["window-popup-top-right.png", 16.0, 5.0],
+            ["window-popup-center-left.png", 16.0, 1.0],
             ["window-popup-center-center.png", 1.0, 1.0],
-            ["window-popup-center-right.png", 10.0, 1.0],
-            ["window-popup-bottom-left.png", 10.0, 71.0],
-            ["window-popup-bottom-center.png", 1.0, 71.0],
-            ["window-popup-bottom-right.png", 10.0, 71.0]
+            ["window-popup-center-right.png", 16.0, 1.0],
+            ["window-popup-bottom-left.png", 16.0, 56.0],
+            ["window-popup-bottom-center.png", 1.0, 56.0],
+            ["window-popup-bottom-right.png", 16.0, 56.0]
         ]),
 
         themeValues =
@@ -2266,15 +2266,15 @@ var themedButtonValues = nil,
 
     var HUDBezelColor = PatternColor(
             [
-                ["HUD/window-bezel-top-left.png", 5.0, 5.0],
-                ["HUD/window-bezel-top-center.png", 1.0, 5.0],
-                ["HUD/window-bezel-top-right.png", 5.0, 5.0],
+                ["HUD/window-bezel-top-left.png", 5.0, 37.0],
+                ["HUD/window-bezel-top-center.png", 1.0, 37.0],
+                ["HUD/window-bezel-top-right.png", 5.0, 37.0],
                 ["HUD/window-bezel-center-left.png", 5.0, 1.0],
                 ["HUD/window-bezel-center-center.png", 1.0, 1.0],
                 ["HUD/window-bezel-center-right.png", 5.0, 1.0],
-                ["HUD/window-bezel-bottom-left.png", 5.0, 5.0],
-                ["HUD/window-bezel-bottom-center.png", 1.0, 5.0],
-                ["HUD/window-bezel-bottom-right.png", 5.0, 5.0]
+                ["HUD/window-bezel-bottom-left.png", 5.0, 2.0],
+                ["HUD/window-bezel-bottom-center.png", 1.0, 2.0],
+                ["HUD/window-bezel-bottom-right.png", 5.0, 2.0]
             ]),
 
         closeImage = PatternImage(@"HUD/window-close.png", 18.0, 18.0),
@@ -2347,15 +2347,15 @@ var themedButtonValues = nil,
 
         bezelColor = PatternColor(
         [
-            [@"window-standard-top-left.png",5,5],
-            [@"window-standard-top-center.png",1,5],
-            [@"window-standard-top-right.png",5,5],
-            [@"window-standard-center-left.png",5,1],
-            [@"window-standard-center-center.png",1,1],
-            [@"window-standard-center-right.png",5,1],
-            [@"window-standard-bottom-left.png",5,5],
-            [@"window-standard-bottom-center.png",1,5],
-            [@"window-standard-bottom-right.png",5,5]
+            [@"window-standard-top-left.png", 2.0, 1.0],
+            [@"window-standard-top-center.png", 1.0, 1.0],
+            [@"window-standard-top-right.png", 2.0, 1.0],
+            [@"window-standard-center-left.png", 2.0, 1.0],
+            [@"window-standard-center-center.png", 1.0, 1.0],
+            [@"window-standard-center-right.png", 2.0, 1.0],
+            [@"window-standard-bottom-left.png", 2.0, 2.0],
+            [@"window-standard-bottom-center.png", 1.0, 2.0],
+            [@"window-standard-bottom-right.png", 2.0, 2.0]
         ]),
 
         closeButtonImage =                  PatternImage(@"window-standard-close-button.png", 16, 16),
@@ -2381,7 +2381,7 @@ var themedButtonValues = nil,
                 [@"title-vertical-alignment",   CPCenterVerticalTextAlignment],
                 [@"title-bar-height",           31],
 
-                [@"divider-color",              [CPColor colorWithHexString:@"858585"]],
+                [@"divider-color",              [CPColor colorWithHexString:@"979797"]],
                 [@"body-color",                 bezelColor],
                 [@"title-bar-height",           31],
 
@@ -2411,15 +2411,15 @@ var themedButtonValues = nil,
 
         bezelColor = PatternColor(
         [
-            [@"window-standard-top-left.png",5,5],
-            [@"window-standard-top-center.png",1,5],
-            [@"window-standard-top-right.png",5,5],
-            [@"window-standard-center-left.png",5,1],
-            [@"window-standard-center-center.png",1,1],
-            [@"window-standard-center-right.png",5,1],
-            [@"window-standard-bottom-left.png",5,5],
-            [@"window-standard-bottom-center.png",1,5],
-            [@"window-standard-bottom-right.png",5,5]
+            [@"window-standard-top-left.png", 2.0, 1.0],
+            [@"window-standard-top-center.png", 1.0, 1.0],
+            [@"window-standard-top-right.png", 2.0, 1.0],
+            [@"window-standard-center-left.png", 2.0, 1.0],
+            [@"window-standard-center-center.png", 1.0, 1.0],
+            [@"window-standard-center-right.png", 2.0, 1.0],
+            [@"window-standard-bottom-left.png", 2.0, 2.0],
+            [@"window-standard-bottom-center.png", 1.0, 2.0],
+            [@"window-standard-bottom-right.png", 2.0, 2.0]
         ]),
 
         sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
