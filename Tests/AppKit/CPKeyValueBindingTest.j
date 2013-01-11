@@ -154,8 +154,9 @@
 - (void)testTableColumn
 {
     var tableView = [CPTableView new],
-        tableColumn = [[CPTableColumn alloc] initWithIdentifier:"A Column"],
-        arrayController = [CPArrayController new];
+        tableColumn = [[CPTableColumn alloc] initWithIdentifier:"A Column"];
+
+    arrayController = [CPArrayController new];
 
     [tableView addTableColumn:tableColumn];
 
