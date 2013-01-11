@@ -1807,6 +1807,7 @@ var themedButtonValues = nil,
 {
     var alert = [CPAlert new],
         buttonOffset = 10.0,
+        buttonMarginY = 10.0,
         defaultElementsMargin = 3.0,
         errorIcon = PatternImage("alert-error.png", 53.0, 46.0),
         helpIcon = PatternImage("alert-help.png", 24.0, 24.0),
@@ -1825,6 +1826,7 @@ var themedButtonValues = nil,
 
     themedAlertValues =
     [
+        [@"modal-window-button-margin-y",       buttonMarginY],
         [@"button-offset",                      buttonOffset],
         [@"content-inset",                      inset],
         [@"default-elements-margin",            defaultElementsMargin],
