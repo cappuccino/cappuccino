@@ -37,8 +37,8 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[31, [CPNull null], [CPColor blackColor]]
-                                       forKeys:[@"gradient-height" ,@"bezel-color", @"solid-color"]];
+    return [CPDictionary dictionaryWithObjects:[]
+                                       forKeys:[]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -63,22 +63,22 @@
 {
     [super layoutSubviews];
 
-    var gradientHeight = [self valueForThemeAttribute:@"gradient-height"],
+    var gradientHeight = [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView],
         bounds = [self bounds];
 
     [_gradientView setFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), gradientHeight)];
-    [_gradientView setBackgroundColor:[self valueForThemeAttribute:@"bezel-color"]];
+    [_gradientView setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"bezel-head-color" forClass:_CPStandardWindowView]];
 
     [_solidView setFrame:CGRectMake(0.0, gradientHeight ,CGRectGetWidth(bounds), CGRectGetHeight(bounds) - gradientHeight)];
-    [_solidView setBackgroundColor:[self valueForThemeAttribute:@"solid-color"]];
+    [_solidView setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"solid-color" forClass:_CPStandardWindowView]];
 }
 
 - (void)resizeSubviewsWithOldSize:(CGSize)aSize
 {
     var bounds = [self bounds];
 
-    [_gradientView setFrameSize:CGSizeMake(CGRectGetWidth(bounds), [self valueForThemeAttribute:@"gradient-height"])];
-    [_solidView setFrameSize:CGSizeMake(CGRectGetWidth(bounds), CGRectGetHeight(bounds) - [self valueForThemeAttribute:@"gradient-height"])];
+    [_gradientView setFrameSize:CGSizeMake(CGRectGetWidth(bounds), [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView])];
+    [_solidView setFrameSize:CGSizeMake(CGRectGetWidth(bounds), CGRectGetHeight(bounds) - [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView])];
 }
 
 @end
@@ -104,8 +104,11 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPColor blackColor], [CPColor whiteColor], 32, [CPNull null], [CPNull null],[CPNull null], [CPNull null], [CPNull null], [CPNull null]]
-                                       forKeys:[   @"divider-color",
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], [CPNull null], [CPColor blackColor], [CPColor whiteColor], 32, [CPNull null], [CPNull null],[CPNull null], [CPNull null], [CPNull null], [CPNull null]]
+                                       forKeys:[   @"gradient-height",
+                                                   @"solid-color",
+                                                   @"bezel-head-color",
+                                                   @"divider-color",
                                                    @"body-color",
                                                    @"title-bar-height",
                                                    @"minimize-image-highlighted-button",
