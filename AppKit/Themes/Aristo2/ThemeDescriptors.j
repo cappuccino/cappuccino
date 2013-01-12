@@ -1725,7 +1725,7 @@ var themedButtonValues = nil,
                 ["progress-indicator-bar-bar-regular-center.png", 1.0, 25.0],
                 ["progress-indicator-bar-bar-regular-right.png", 1.0, 25.0]
             ],
-            PatternIsHorizontal),
+            PatternIsHorizontal);
 
     themedProgressIndicator =
     [
@@ -1758,7 +1758,7 @@ var themedButtonValues = nil,
                 ["progress-indicator-inderterminate-bar-bar-regular-center.png", 20.0, 25.0],
                 ["progress-indicator-inderterminate-bar-bar-regular-right.png", 1.0, 25.0]
             ],
-            PatternIsHorizontal),
+            PatternIsHorizontal);
 
     themedIndeterminateProgressIndicator =
     [
@@ -2509,7 +2509,7 @@ var themedButtonValues = nil,
     [progressBar setIndeterminate:YES];
 
     [self registerThemeValues:nil forView:progressBar inherit:themedIndeterminateProgressIndicator];
-    console.log([progressBar valueForThemeAttribute:@"bezel-color"])
+
     return progressBar;
 }
 
