@@ -21,6 +21,7 @@
  */
 
 #import "../Foundation/CPRange.h"
+#import "../Foundation/Ref.h"
 
 @import <Foundation/CPCharacterSet.j>
 @import <Foundation/CPIndexSet.j>
@@ -47,7 +48,7 @@ var CPTokenFieldDOMInputElement = nil,
     CPTokenFieldCachedDragFunction = nil,
     CPTokenFieldFocusInput = NO,
 
-    CPTokenFieldBlurFunction = nil;
+    CPTokenFieldBlurHandler = nil;
 
 #endif
 
@@ -71,7 +72,6 @@ var CPScrollDestinationNone             = 0,
 
     CPEvent             _mouseDownEvent;
 
-    BOOL                _preventResign;
     BOOL                _shouldNotifyTarget;
 }
 
@@ -390,9 +390,6 @@ var CPScrollDestinationNone             = 0,
 
 - (BOOL)resignFirstResponder
 {
-    if (_preventResign)
-        return NO;
-
     [self _autocomplete];
 
     // From CPTextField superclass.
@@ -427,7 +424,7 @@ var CPScrollDestinationNone             = 0,
     element.blur();
 
     if (!CPTokenFieldInputDidBlur)
-        CPTokenFieldBlurFunction();
+        CPTokenFieldBlurHandler();
 
     CPTokenFieldInputDidBlur = NO;
     CPTokenFieldInputResigning = NO;
@@ -451,7 +448,6 @@ var CPScrollDestinationNone             = 0,
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-    _preventResign = YES;
     _mouseDownEvent = anEvent;
 
     [self _selectToken:nil byExtendingSelection:NO];
@@ -461,13 +457,11 @@ var CPScrollDestinationNone             = 0,
 
 - (void)mouseUp:(CPEvent)anEvent
 {
-    _preventResign = NO;
     _mouseDownEvent = nil;
 }
 
 - (void)_mouseDownOnToken:(_CPTokenFieldToken)aToken withEvent:(CPEvent)anEvent
 {
-    _preventResign = YES;
     _mouseDownEvent = anEvent;
 }
 
@@ -480,8 +474,6 @@ var CPScrollDestinationNone             = 0,
         // Snap to the token if it's only half visible due to mouse wheel scrolling.
         _shouldScrollTo = aToken;
     }
-
-    _preventResign = NO;
 }
 
 // ===========
@@ -652,38 +644,19 @@ var CPScrollDestinationNone             = 0,
         CPTokenFieldDOMInputElement.style.background = "transparent";
         CPTokenFieldDOMInputElement.style.outline = "none";
 
-        CPTokenFieldBlurFunction = function(anEvent)
+        CPTokenFieldBlurHandler = function(anEvent)
         {
-            if (CPTokenFieldInputOwner && [CPTokenFieldInputOwner._tokenScrollView documentView]._DOMElement != CPTokenFieldDOMInputElement.parentNode)
-                return;
-
-            if (CPTokenFieldInputOwner && CPTokenFieldInputOwner._preventResign)
-                return false;
-
-            if (!CPTokenFieldInputResigning && [[CPTokenFieldInputOwner window] isKeyWindow])
-            {
-                // If we lost focus somehow but we're not resigning and we're still in the key window, we'll need to take it back.
-                window.setTimeout(function()
-                {
-                    CPTokenFieldDOMInputElement.focus();
-                }, 0.0);
-            }
-
-            CPTokenFieldHandleBlur(anEvent, CPTokenFieldDOMInputElement);
-            CPTokenFieldInputDidBlur = YES;
-
-            return true;
+            return CPTextFieldBlurFunction(
+                        anEvent,
+                        CPTokenFieldInputOwner,
+                        [CPTokenFieldInputOwner._tokenScrollView documentView]._DOMElement,
+                        CPTokenFieldDOMInputElement,
+                        CPTokenFieldInputResigning,
+                        AT_REF(CPTokenFieldInputDidBlur));
         };
 
-        CPTokenFieldHandleBlur = function(anEvent)
-        {
-            CPTokenFieldInputOwner = nil;
-
-            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-        };
-
-        //FIXME make this not onblur
-        CPTokenFieldDOMInputElement.onblur = CPTokenFieldBlurFunction;
+        // FIXME make this not onblur
+        CPTokenFieldDOMInputElement.onblur = CPTokenFieldBlurHandler;
 
         CPTokenFieldDOMStandardInputElement = CPTokenFieldDOMInputElement;
     }
