@@ -3,6 +3,8 @@
  *     Copyright (c) 2011 Pear, Inc. All rights reserved.
  */
 
+@import "CPPopUpButton.j"
+
 var GRADIENT_START_COLOR = "#fcfcfc",
     GRADIENT_END_COLOR = "#dfdfdf",
     BORDER_COLOR = "#BDBDBD";

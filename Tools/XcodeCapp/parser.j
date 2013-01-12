@@ -119,7 +119,7 @@ function main(args)
             "\n@end\n";
 
         ObjectiveCSource +=
-            "#import \"" + outputHeaderURL.absoluteString().replace(/\\/g,'/').replace( /.*\//, '' ) + "\"" +
+            "#import \"" + outputHeaderURL.absoluteString().replace(/\\/g,'/').replace(/(.*\/)/g, '') + "\"" +
             "\n@implementation " + class_getName(aClass) +
             "\n@end\n";
     });

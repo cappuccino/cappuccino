@@ -72,11 +72,34 @@ URL
 */
 @implementation CPHTTPURLResponse : CPURLResponse
 {
-    int _statusCode;
+    int             _statusCode;
+    CPString        _allResponseHeaders;
+    CPDictionary    _responseHeaders;
+}
+
++ (CPDictionary)parseHTTPHeaders:(CPString)headersString
+{
+    var r = [CPMutableDictionary dictionary];
+
+    if (headersString)
+    {
+        var headerLines = headersString.split('\r\n'),
+            count = headerLines.length;
+
+        while (count--)
+        {
+            var headerLine = headerLines[count],
+                index = headerLine.indexOf(': ');
+            if (index !== CPNotFound)
+                [r setValue:headerLine.substring(index + 2) forKey:headerLine.substring(0, index)];
+        }
+    }
+
+    return r;
 }
 
 /* @ignore */
-- (id)_setStatusCode:(int)aStatusCode
+- (void)_setStatusCode:(int)aStatusCode
 {
     _statusCode = aStatusCode;
 }
@@ -87,6 +110,23 @@ URL
 - (int)statusCode
 {
     return _statusCode;
+}
+
+- (void)_setAllResponseHeaders:(CPString)responseHeadersString
+{
+    _allResponseHeaders = responseHeadersString;
+}
+
+/*!
+    Return the HTTP response headers.
+*/
+- (CPDictionary)allHeaderFields
+{
+    // Lazily parse the headers.
+    if (!_responseHeaders)
+        _responseHeaders = [[self class] parseHTTPHeaders:_allResponseHeaders];
+
+    return _responseHeaders;
 }
 
 @end

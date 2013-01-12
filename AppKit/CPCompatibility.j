@@ -310,11 +310,18 @@ function CPBrowserStyleProperty(aProperty)
                 break;
             default:
                 var prefixes = ["Webkit", "Moz", "O", "ms"],
-                    capProperty = [aProperty capitalizedString];
+                    strippedProperty = aProperty.split('-').join(' '),
+                    capProperty = [strippedProperty capitalizedString].split(' ').join('');
 
                 for (var i = 0; i < prefixes.length; i++)
                 {
-                    if (prefixes[i] + capProperty in testElement.style)
+                    // First check if the property is already valid without being formatted, otherwise try the capitalized property
+                    if (prefixes[i] + aProperty in testElement.style)
+                    {
+                        r = prefixes[i] + aProperty;
+                        break;
+                    }
+                    else if (prefixes[i] + capProperty in testElement.style)
                     {
                         r = prefixes[i] + capProperty;
                         break;
@@ -352,9 +359,21 @@ function CPBrowserCSSProperty(aProperty)
     {
         if (browserProperty.substring(0, prefix.length) == prefix)
         {
-            return prefixes[prefix] + browserProperty.substring(prefix.length).toLowerCase();
+            var browserPropertyWithoutPrefix = browserProperty.substring(prefix.length),
+                parts = browserPropertyWithoutPrefix.match(/[A-Z][a-z]+/g);
+
+            // If there were any capitalized words in the browserProperty, insert a "-" between each one
+            if (parts && parts.length > 0)
+                browserPropertyWithoutPrefix = parts.join("-");
+
+            return prefixes[prefix] + browserPropertyWithoutPrefix.toLowerCase();
         }
     }
+
+    var parts = browserProperty.match(/[A-Z][a-z]+/g);
+
+    if (parts && parts.length > 0)
+        browserProperty = parts.join("-");
 
     return browserProperty.toLowerCase();
 }
