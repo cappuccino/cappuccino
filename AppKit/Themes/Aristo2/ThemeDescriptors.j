@@ -20,7 +20,9 @@ var themedButtonValues = nil,
     themedAlertValues = nil,
     themedWindowViewValues = nil,
     themedProgressIndicator = nil,
-    themedIndeterminateProgressIndicator = nil;
+    themedIndeterminateProgressIndicator = nil,
+    themedCheckBoxValues = nil,
+    themedRadioButtonValues = nil;
 
 @implementation Aristo2ThemeDescriptor : BKThemeDescriptor
 
@@ -309,7 +311,7 @@ var themedButtonValues = nil,
 
 + (CPScrollView)themedScrollView
 {
-    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 200.0)];
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)];
 
     var borderColor = [CPColor colorWithWhite:0.0 alpha:0.2],
         bottomCornerColor = PatternColor(@"scrollview-bottom-corner-color.png", 15.0, 15.0);
@@ -332,7 +334,7 @@ var themedButtonValues = nil,
 
 + (CPScroller)makeHorizontalScroller
 {
-    var scroller = [[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, 273.0, 15.0)];
+    var scroller = [[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 15.0)];
 
     [scroller setFloatValue:0.1];
     [scroller setKnobProportion:0.5];
@@ -344,7 +346,7 @@ var themedButtonValues = nil,
 
 + (CPScroller)makeVerticalScroller
 {
-    var scroller = [[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, 15.0, 273.0)];
+    var scroller = [[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, 15.0, 100.0)];
 
     [scroller setFloatValue:1];
     [scroller setKnobProportion:0.1];
@@ -941,29 +943,29 @@ var themedButtonValues = nil,
         imageSelectedHighlighted = PatternImage("radio-image-selected-highlighted.png", 21.0, 21.0),
         imageSelectedDisabled = PatternImage("radio-image-selected-disabled.png", 21.0, 21.0),
         imageDisabled = PatternImage("radio-image-disabled.png", 21.0, 21.0),
-        imageHighlighted = PatternImage("radio-image-highlighted.png", 21.0, 21.0),
+        imageHighlighted = PatternImage("radio-image-highlighted.png", 21.0, 21.0);
 
-        themeValues =
-        [
-            [@"alignment",      CPLeftTextAlignment,                CPThemeStateNormal],
-            [@"font",           [CPFont systemFontOfSize:12.0],     CPThemeStateNormal],
-            [@"content-inset",  CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateNormal],
+    themedRadioButtonValues =
+    [
+        [@"alignment",      CPLeftTextAlignment,                CPThemeStateNormal],
+        [@"font",           [CPFont systemFontOfSize:12.0],     CPThemeStateNormal],
+        [@"content-inset",  CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateNormal],
 
-            [@"image",          imageNormal,                        CPThemeStateNormal],
-            [@"image",          imageSelected,                      CPThemeStateSelected],
-            [@"image",          imageSelectedHighlighted,           CPThemeStateSelected | CPThemeStateHighlighted],
-            [@"image",          imageHighlighted,                   CPThemeStateHighlighted],
-            [@"image",          imageDisabled,                      CPThemeStateDisabled],
-            [@"image",          imageSelectedDisabled,              CPThemeStateSelected | CPThemeStateDisabled],
-            [@"image-offset",   CPRadioImageOffset],
+        [@"image",          imageNormal,                        CPThemeStateNormal],
+        [@"image",          imageSelected,                      CPThemeStateSelected],
+        [@"image",          imageSelectedHighlighted,           CPThemeStateSelected | CPThemeStateHighlighted],
+        [@"image",          imageHighlighted,                   CPThemeStateHighlighted],
+        [@"image",          imageDisabled,                      CPThemeStateDisabled],
+        [@"image",          imageSelectedDisabled,              CPThemeStateSelected | CPThemeStateDisabled],
+        [@"image-offset",   CPRadioImageOffset],
 
-            [@"text-color",     [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0],  CPThemeStateDisabled],
+        [@"text-color",     [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0],  CPThemeStateDisabled],
 
-            [@"min-size",       CGSizeMake(21.0, 21.0)],
-            [@"max-size",       CGSizeMake(-1.0, -1.0)]
-        ];
+        [@"min-size",       CGSizeMake(21.0, 21.0)],
+        [@"max-size",       CGSizeMake(-1.0, -1.0)]
+    ];
 
-    [self registerThemeValues:themeValues forView:button];
+    [self registerThemeValues:themedRadioButtonValues forView:button];
 
     return button;
 }
@@ -977,31 +979,31 @@ var themedButtonValues = nil,
         imageSelectedHighlighted = PatternImage("check-box-image-selected-highlighted.png", 21.0, 21.0),
         imageSelectedDisabled = PatternImage("check-box-image-selected-disabled.png", 21.0, 21.0),
         imageDisabled = PatternImage("check-box-image-disabled.png", 21.0, 21.0),
-        imageHighlighted = PatternImage("check-box-image-highlighted.png", 21.0, 21.0),
+        imageHighlighted = PatternImage("check-box-image-highlighted.png", 21.0, 21.0);
 
-        themeValues =
-        [
-            [@"alignment",      CPLeftTextAlignment,                CPThemeStateNormal],
-            [@"content-inset",  CGInsetMakeZero(),                  CPThemeStateNormal],
+    themedCheckBoxValues =
+    [
+        [@"alignment",      CPLeftTextAlignment,                CPThemeStateNormal],
+        [@"content-inset",  CGInsetMakeZero(),                  CPThemeStateNormal],
 
-            [@"image",          imageNormal,                        CPThemeStateNormal],
-            [@"image",          imageSelected,                      CPThemeStateSelected],
-            [@"image",          imageSelectedHighlighted,           CPThemeStateSelected | CPThemeStateHighlighted],
-            [@"image",          imageHighlighted,                   CPThemeStateHighlighted],
-            [@"image",          imageDisabled,                      CPThemeStateDisabled],
-            [@"image",          imageSelectedDisabled,              CPThemeStateSelected | CPThemeStateDisabled],
-            [@"image-offset",   CPCheckBoxImageOffset],
+        [@"image",          imageNormal,                        CPThemeStateNormal],
+        [@"image",          imageSelected,                      CPThemeStateSelected],
+        [@"image",          imageSelectedHighlighted,           CPThemeStateSelected | CPThemeStateHighlighted],
+        [@"image",          imageHighlighted,                   CPThemeStateHighlighted],
+        [@"image",          imageDisabled,                      CPThemeStateDisabled],
+        [@"image",          imageSelectedDisabled,              CPThemeStateSelected | CPThemeStateDisabled],
+        [@"image-offset",   CPCheckBoxImageOffset],
 
-            [@"font",           [CPFont systemFontOfSize:CPFontCurrentSystemSize], CPThemeStateNormal],
-            [@"text-color",     [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0],  CPThemeStateDisabled],
+        [@"font",           [CPFont systemFontOfSize:CPFontCurrentSystemSize], CPThemeStateNormal],
+        [@"text-color",     [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0],  CPThemeStateDisabled],
 
-            [@"min-size",       CGSizeMake(21.0, 21.0)],
-            [@"max-size",       CGSizeMake(-1.0, -1.0)]
-        ];
+        [@"min-size",       CGSizeMake(21.0, 21.0)],
+        [@"max-size",       CGSizeMake(-1.0, -1.0)]
+    ];
 
     [button setThemeState:CPThemeStateSelected];
 
-    [self registerThemeValues:themeValues forView:button];
+    [self registerThemeValues:themedCheckBoxValues forView:button];
 
     return button;
 }
@@ -1857,7 +1859,7 @@ var themedButtonValues = nil,
 
 + (CPShadowView)themedShadowView
 {
-    var shadowView = [[CPShadowView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 100.0)],
+    var shadowView = [[CPShadowView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100, 100)],
 
         lightColor = PatternColor(
             [
@@ -1901,7 +1903,7 @@ var themedButtonValues = nil,
 
 + (CPBrowser)themedBrowser
 {
-    var browser = [[CPBrowser alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 100.0)],
+    var browser = [[CPBrowser alloc] initWithFrame:CGRectMake(0.0, 0.0, 100, 100.0)],
 
         imageResize = PatternImage(@"browser-image-resize-control.png", 15.0, 14.0),
         imageLeaf = PatternImage(@"browser-image-leaf.png", 9.0, 9.0),
@@ -1920,7 +1922,7 @@ var themedButtonValues = nil,
 
 + (_CPModalWindowView)themedModalWindowView
 {
-    var modalWindowView = [[_CPModalWindowView alloc] initWithFrame:CGRectMake(0,0,400,300) styleMask:_CPModalWindowView];
+    var modalWindowView = [[_CPModalWindowView alloc] initWithFrame:CGRectMake(0, 0, 200, 200) styleMask:_CPModalWindowView];
 
     var bezelColor = PatternColor(
         [
@@ -1947,7 +1949,7 @@ var themedButtonValues = nil,
 
 + (_CPWindowView)themedWindowView
 {
-    var windowView = [[_CPWindowView alloc] initWithFrame:CGRectMakeZero()],
+    var windowView = [[_CPWindowView alloc] initWithFrame:CGRectMakeZero(0.0, 0.0, 200, 200)],
 
     sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
     resizeIndicator = PatternImage(@"window-resize-indicator.png", 12, 12),
@@ -1982,7 +1984,7 @@ var themedButtonValues = nil,
 
 + (_CPHUDWindowView)themedHUDWindowView
 {
-    var HUDWindowView = [[_CPHUDWindowView alloc] initWithFrame:CGRectMake(0,0,250,150) styleMask:CPHUDBackgroundWindowMask | CPClosableWindowMask];
+    var HUDWindowView = [[_CPHUDWindowView alloc] initWithFrame:CGRectMake(0, 0, 200, 200) styleMask:CPHUDBackgroundWindowMask | CPClosableWindowMask];
     [HUDWindowView setTitle:@"HUDWindow"];
 
     var HUDBezelColor = PatternColor(
@@ -2064,7 +2066,7 @@ var themedButtonValues = nil,
 
 + (_CPStandardWindowView)themedStandardWindowView
 {
-    var standardWindowView = [[_CPStandardWindowView alloc] initWithFrame:CGRectMake(0,0,200,300) styleMask:CPClosableWindowMask],
+    var standardWindowView = [[_CPStandardWindowView alloc] initWithFrame:CGRectMake(0, 0, 200, 200) styleMask:CPClosableWindowMask],
 
         bezelColor = PatternColor(
         [
@@ -2128,7 +2130,7 @@ var themedButtonValues = nil,
 
 + (_CPDocModalWindowView)themedDocModalWindowView
 {
-    var docModalWindowView = [[_CPDocModalWindowView alloc] initWithFrame:CGRectMake(0,0,200,300) styleMask:nil],
+    var docModalWindowView = [[_CPDocModalWindowView alloc] initWithFrame:CGRectMake(0, 0, 200, 200) styleMask:nil],
 
         bezelColor = PatternColor(
         [
@@ -2180,7 +2182,7 @@ var themedButtonValues = nil,
 
 + (_CPToolbarView)themedToolbarView
 {
-    var toolbarView = [[_CPToolbarView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 59.0)],
+    var toolbarView = [[_CPToolbarView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 59.0)],
 
         toolbarExtraItemsImage = PatternImage(@"toolbar-view-extra-items-image.png", 10.0, 15.0),
         toolbarExtraItemsAlternateImage = PatternImage(@"toolbar-view-extra-items-alternate-image.png", 10.0, 15.0),
@@ -2374,7 +2376,7 @@ var themedButtonValues = nil,
 + (CPArray)defaultThemeOverridesAddedTo:(CPArray)themeValues
 {
     var overrides = [CPArray arrayWithObjects:
-            [@"text-color",         [CPColor whiteColor]],
+            [@"text-color",         [CPColor colorWithHexString:@"cdcdcd"]],
             [@"text-color",         [CPColor colorWithCalibratedWhite:1.0 alpha:0.6], CPThemeStateDisabled],
             [@"text-shadow-color",  [CPColor blackColor]],
             [@"text-shadow-color",  [CPColor blackColor], CPThemeStateDisabled],
@@ -2510,8 +2512,77 @@ var themedButtonValues = nil,
     [progressBar setIndeterminate:YES];
 
     [self registerThemeValues:nil forView:progressBar inherit:themedIndeterminateProgressIndicator];
-
+    console.log([progressBar valueForThemeAttribute:@"bezel-color"])
     return progressBar;
 }
 
++ (CPCheckBox)themedCheckBoxButton
+{
+    var button = [CPCheckBox checkBoxWithTitle:@"Checkbox"];
+
+    [button setThemeState:CPThemeStateSelected];
+
+    var imageNormal = PatternImage("HUD/check-box-image.png", 21.0, 21.0),
+        imageSelected = PatternImage("HUD/check-box-image-selected.png", 21.0, 21.0),
+        imageSelectedHighlighted = PatternImage("HUD/check-box-image-selected-highlighted.png", 21.0, 21.0),
+        imageSelectedDisabled = PatternImage("HUD/check-box-image-selected-disabled.png", 21.0, 21.0),
+        imageDisabled = PatternImage("HUD/check-box-image-disabled.png", 21.0, 21.0),
+        imageHighlighted = PatternImage("HUD/check-box-image-highlighted.png", 21.0, 21.0),
+        mixedHighlightedImage = PatternImage("HUD/check-box-image-mixed-highlighted.png", 21.0, 21.0),
+        mixedDisabledImage = PatternImage("HUD/check-box-image-mixed-disabled.png", 21.0, 21.0),
+        mixedImage = PatternImage("HUD/check-box-image-mixed.png", 21.0, 21.0),
+
+        hudSpecific =
+        [
+            [@"image",          imageNormal,                        CPThemeStateNormal],
+            [@"image",          imageSelected,                      CPThemeStateSelected],
+            [@"image",          imageSelectedHighlighted,           CPThemeStateSelected | CPThemeStateHighlighted],
+            [@"image",          imageHighlighted,                   CPThemeStateHighlighted],
+            [@"image",          imageDisabled,                      CPThemeStateDisabled],
+            [@"image",          imageSelectedDisabled,              CPThemeStateSelected | CPThemeStateDisabled],
+            [@"image",          mixedImage,                         CPButtonStateMixed],
+            [@"image",          mixedHighlightedImage,              CPButtonStateMixed | CPThemeStateHighlighted],
+            [@"image",          mixedDisabledImage,                 CPButtonStateMixed | CPThemeStateDisabled]
+        ];
+
+    [self registerThemeValues:[self defaultThemeOverridesAddedTo:hudSpecific] forView:button inherit:themedCheckBoxValues];
+
+    return button;
+}
+
++ (CPCheckBox)themedMixedCheckBoxButton
+{
+    var button = [self themedCheckBoxButton];
+
+    [button setAllowsMixedState:YES];
+    [button setState:CPMixedState];
+
+    [self registerThemeValues:[self defaultThemeOverridesAddedTo:nil] forView:button];
+
+    return button;
+}
+
++ (CPRadioButton)themedRadioButton
+{
+    var button = [CPRadio radioWithTitle:@"Radio button"],
+        imageNormal = PatternImage("HUD/radio-image.png", 21.0, 21.0),
+        imageSelected = PatternImage("HUD/radio-image-selected.png", 21.0, 21.0),
+        imageSelectedHighlighted = PatternImage("HUD/radio-image-selected-highlighted.png", 21.0, 21.0),
+        imageSelectedDisabled = PatternImage("HUD/radio-image-selected-disabled.png", 21.0, 21.0),
+        imageDisabled = PatternImage("HUD/radio-image-disabled.png", 21.0, 21.0),
+        imageHighlighted = PatternImage("HUD/radio-image-highlighted.png", 21.0, 21.0);
+
+        hudSpecific =
+        [
+            [@"image",          imageNormal,                        CPThemeStateNormal],
+            [@"image",          imageSelected,                      CPThemeStateSelected],
+            [@"image",          imageSelectedHighlighted,           CPThemeStateSelected | CPThemeStateHighlighted],
+            [@"image",          imageHighlighted,                   CPThemeStateHighlighted],
+            [@"image",          imageDisabled,                      CPThemeStateDisabled],
+            [@"image",          imageSelectedDisabled,              CPThemeStateSelected | CPThemeStateDisabled]
+        ]
+
+    [self registerThemeValues:[self defaultThemeOverridesAddedTo:hudSpecific] forView:button inherit:themedRadioButtonValues];
+    return button;
+}
 @end
