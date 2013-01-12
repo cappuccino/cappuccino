@@ -537,7 +537,7 @@ CPCriticalAlertStyle        = 2;
     if (_showSuppressionButton)
         lastView = _suppressionButton;
     else if (_accessoryView)
-        lastView = _accessoryView
+        lastView = _accessoryView;
 
     finalSize = [self _layoutButtonsFromView:lastView];
     if ([_window styleMask] & CPDocModalWindowMask)
