@@ -21,9 +21,8 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], [CPNull null], [CPNull null], 8.0, 3.0, 4.0]
-                                       forKeys:[    @"selection-color",
-                                                    @"submenu-indicator-color",
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], [CPNull null], 8.0, 3.0, 4.0]
+                                       forKeys:[    @"submenu-indicator-color",
                                                     @"menu-item-selection-color",
                                                     @"menu-item-text-shadow-color",
                                                     @"horizontal-margin",
@@ -142,7 +141,7 @@
     if (shouldHighlight)
     {
         if (![_menuItem _isMenuBarButton])
-            [self setBackgroundColor:[self valueForThemeAttribute:@"selection-color"]];
+            [self setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"menu-bar-window-background-selected-color" forClass:_CPMenuView]];
 
         [_imageAndTextView setImage:[_menuItem alternateImage] || [_menuItem image]];
         [_imageAndTextView setTextColor:[CPColor whiteColor]];

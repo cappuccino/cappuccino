@@ -2226,11 +2226,8 @@ var themedButtonValues = nil,
 {
     var menuItemMenuBarView = [[_CPMenuItemMenuBarView alloc] initWithFrame:CGRectMake(0.0, 0.0, 16.0, 16.0)],
 
-        selectionColor = PatternColor(@"menu-bar-window-background-selected.png", 1.0, 28.0),
-
         themeValues =
         [
-            [@"selection-color",                                        selectionColor],
             [@"submenu-indicator-color",                                [CPColor grayColor]],
             [@"menu-item-selection-color",                              [CPColor colorWithHexString:@"5C85D8"]],
             [@"menu-item-text-shadow-color",                            [CPColor colorWithCalibratedRed:26.0 / 255.0 green: 73.0 / 255.0 blue:109.0 / 255.0 alpha:1.0]],
@@ -2279,7 +2276,6 @@ var themedButtonValues = nil,
 {
     var menuView = [[_CPMenuView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 100.0)],
 
-
         menuWindowMoreAboveImage = PatternImage(@"menu-window-more-above.png", 38.0, 18.0),
         menuWindowMoreBelowImage = PatternImage(@"menu-window-more-below.png", 38.0, 18.0),
         generalIconNew = PatternImage(@"menu-general-icon-new.png", 16.0, 16.0),
@@ -2318,6 +2314,7 @@ var themedButtonValues = nil,
         ),
 
         menuBarWindowBackgroundColor = PatternColor(@"menu-bar-window-background.png", 1.0, 30.0),
+        menuBarWindowBackgroundSelectedColor = PatternColor(@"menu-bar-window-background-selected.png", 1.0, 30.0),
 
         themeValues =
         [
@@ -2329,6 +2326,7 @@ var themedButtonValues = nil,
             [@"menu-window-scroll-indicator-height",                16.0],
 
             [@"menu-bar-window-background-color",                   menuBarWindowBackgroundColor],
+            [@"menu-bar-window-background-selected-color",          menuBarWindowBackgroundSelectedColor],
             [@"menu-bar-window-font",                               [CPFont boldSystemFontOfSize:[CPFont systemFontSize]]],
             [@"menu-bar-window-height",                             30.0],
             [@"menu-bar-window-margin",                             10.0],

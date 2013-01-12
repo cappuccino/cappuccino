@@ -413,7 +413,7 @@ var STICKY_TIME_INTERVAL        = 500;
 + (id)themeAttributes
 {
     return [CPDictionary dictionaryWithObjects:[    [CPNull null], [CPNull null], [CPNull null], [CPNull null], CGInsetMake(5.0, 1.0, 1.0, 5.0), 16.0,
-                                                    [CPNull null], [CPNull null], 30.0, 10.0, 10.0, 10.0,
+                                                    [CPNull null], [CPNull null], [CPNull null], 30.0, 10.0, 10.0, 10.0,
                                                     [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], 28.0, [CPNull null], 1.0,
                                                     [CPNull null], [CPNull null], [CPNull null]]
                                        forKeys:[    @"menu-window-more-above-image",
@@ -424,6 +424,7 @@ var STICKY_TIME_INTERVAL        = 500;
                                                     @"menu-window-scroll-indicator-height",
 
                                                     @"menu-bar-window-background-color",
+                                                    @"menu-bar-window-background-selected-color",
                                                     @"menu-bar-window-font",
                                                     @"menu-bar-window-height",
                                                     @"menu-bar-window-margin",
