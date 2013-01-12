@@ -1116,7 +1116,7 @@ var themedButtonValues = nil,
             [@"font",               [CPFont boldSystemFontOfSize:12.0]],
             [@"text-color",         [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0]],
             [@"text-color",         [CPColor colorWithCalibratedWhite:0.6 alpha:1.0], CPThemeStateDisabled],
-            [@"text-color",         [CPColor colorWithCalibratedWhite:0.6 alpha:1.0], CPThemeStateDisabled | CPThemeStateSelected],
+            [@"text-color",         [CPColor colorWithCalibratedWhite:1.0 alpha:0.5], CPThemeStateDisabled | CPThemeStateSelected],
             [@"text-color",         [CPColor whiteColor], CPThemeStateSelected],
             [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0]],
             [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0], CPThemeStateDisabled],
@@ -1714,7 +1714,7 @@ var themedButtonValues = nil,
                 ["progress-indicator-bar-bar-regular-center.png", 1.0, 25.0],
                 ["progress-indicator-bar-bar-regular-right.png", 1.0, 25.0]
             ],
-            PatternIsHorizontal);
+            PatternIsHorizontal),
 
     themedProgressIndicator =
     [
@@ -1747,7 +1747,7 @@ var themedButtonValues = nil,
                 ["progress-indicator-inderterminate-bar-bar-regular-center.png", 20.0, 25.0],
                 ["progress-indicator-inderterminate-bar-bar-regular-right.png", 1.0, 25.0]
             ],
-            PatternIsHorizontal);
+            PatternIsHorizontal),
 
     themedIndeterminateProgressIndicator =
     [
