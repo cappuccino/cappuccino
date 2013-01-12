@@ -796,16 +796,27 @@ var themedButtonValues = nil,
             ],
             PatternIsHorizontal),
 
+        bezelDisabledColor = PatternColor(
+            [
+                ["token-left-disabled.png", 11.0, 19.0],
+                ["token-center-disabled.png", 1.0, 19.0],
+                ["token-right-disabled.png", 11.0, 19.0]
+            ],
+            PatternIsHorizontal),
+
         textColor = [CPColor colorWithRed:41.0 / 255.0 green:51.0 / 255.0 blue:64.0 / 255.0 alpha:1.0],
         textHighlightedColor = [CPColor whiteColor],
+        textDisabledColor = [CPColor colorWithRed:41.0 / 255.0 green:51.0 / 255.0 blue:64.0 / 255.0 alpha:0.5],
 
         themeValues =
         [
             [@"bezel-color",    bezelColor,                         CPThemeStateBezeled],
             [@"bezel-color",    bezelHighlightedColor,              CPThemeStateBezeled | CPThemeStateHighlighted],
+            [@"bezel-color",    bezelDisabledColor,                 CPThemeStateBezeled | CPThemeStateDisabled],
 
             [@"text-color",     textColor],
             [@"text-color",     textHighlightedColor,               CPThemeStateHighlighted],
+            [@"text-color",     textDisabledColor,                  CPThemeStateDisabled],
 
             [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled],
             [@"content-inset",  CGInsetMake(1.0, 24.0, 2.0, 16.0),  CPThemeStateBezeled],
