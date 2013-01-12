@@ -613,14 +613,14 @@ if (!exports.acorn) {
   function readToken_caret() { // '^'
     var next = input.charCodeAt(tokPos+1);
     if (next === 61) return finishOp(_assign, 2);
-    return finishOp(_bin4, 1);    
+    return finishOp(_bin4, 1);
   }
 
   function readToken_plus_min(code) { // '+-'
     var next = input.charCodeAt(tokPos+1);
     if (next === code) return finishOp(_incdec, 2);
     if (next === 61) return finishOp(_assign, 2);
-    return finishOp(_plusmin, 1);    
+    return finishOp(_plusmin, 1);
   }
 
   function readToken_lt_gt(code) { // '<>'
@@ -647,7 +647,7 @@ if (!exports.acorn) {
       size = input.charCodeAt(tokPos+2) === 61 ? 3 : 2;
     return finishOp(_bin7, size);
   }
-  
+
   function readToken_eq_excl(code) { // '=!'
     var next = input.charCodeAt(tokPos+1);
     if (next === 61) return finishOp(_bin6, input.charCodeAt(tokPos+2) === 61 ? 3 : 2);
@@ -756,7 +756,7 @@ if (!exports.acorn) {
     // Identifier or keyword. '\uXXXX' sequences are allowed in
     // identifiers, so '\' also dispatches to that.
     if (isIdentifierStart(code) || code === 92 /* '\' */) return readWord();
-    
+
     var tok = getTokenFromCode(code);
 
     if(tok === false) {
@@ -765,7 +765,7 @@ if (!exports.acorn) {
       var ch = String.fromCharCode(code);
       if (ch === "\\" || nonASCIIidentifierStart.test(ch)) return readWord();
       raise(tokPos, "Unexpected character '" + ch + "'");
-    } 
+    }
     return tok;
   }
 
@@ -831,7 +831,7 @@ if (!exports.acorn) {
   }
 
   // Read an integer, octal integer, or floating-point number.
-  
+
   function readNumber(ch) {
     var start = tokPos, isFloat = ch === ".";
     if (!isFloat && readInt(10) == null) raise(start, "Invalid number");
@@ -995,7 +995,7 @@ if (!exports.acorn) {
   // ### Parser utilities
 
   // Continue to the next token.
-  
+
   function next() {
     lastStart = tokStart;
     lastEnd = tokEnd;
@@ -1141,7 +1141,7 @@ if (!exports.acorn) {
   // pretend that there is a semicolon at this position.
 
   function semicolon() {
-    if (!eat(_semi) && !canInsertSemicolon()) unexpected();
+    if (!eat(_semi) && !canInsertSemicolon()) raise(lastEnd, "Expected a semicolon");
   }
 
   // Expect a token of a given type. If found, consume it, otherwise,
@@ -1297,7 +1297,7 @@ if (!exports.acorn) {
       // In `return` (and `break`/`continue`), the keywords with
       // optional arguments, we eagerly look for a semicolon or the
       // possibility to insert one.
-      
+
       if (eat(_semi) || canInsertSemicolon()) node.argument = null;
       else { node.argument = parseExpression(); semicolon(); }
       return finishNode(node, "ReturnStatement");
@@ -1312,7 +1312,7 @@ if (!exports.acorn) {
       // Statements under must be grouped (by label) in SwitchCase
       // nodes. `cur` is used to keep the node that we are currently
       // adding statements to.
-      
+
       for (var cur, sawDefault; tokType != _braceR;) {
         if (tokType === _case || tokType === _default) {
           var isCase = tokType === _case;
@@ -1942,7 +1942,7 @@ if (!exports.acorn) {
 
   // New's precedence is slightly tricky. It must allow its argument
   // to be a `[]` or dot subscript expression, but not a call — at
-  // least, not without wrapping it in parentheses. Thus, it uses the 
+  // least, not without wrapping it in parentheses. Thus, it uses the
 
   function parseNew() {
     var node = startNode();
