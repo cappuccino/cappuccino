@@ -2306,11 +2306,11 @@ var themedButtonValues = nil,
     return HUDWindowView;
 }
 
-+ (_CPTexturedWindowHeadView)themedWindowHeadView
++ (_CPStandardWindowView)themedStandardWindowView
 {
-    var windowHeadView = [[_CPTexturedWindowHeadView alloc] initWithFrame:CGRectMake(0,0,120,32)],
+    var standardWindowView = [[_CPStandardWindowView alloc] initWithFrame:CGRectMake(0,0,200,300) styleMask:CPClosableWindowMask],
 
-        bezelColor = PatternColor(
+        bezelHeadColor = PatternColor(
         [
             [@"window-standard-head-left.png", 5.0, 31.0],
             [@"window-standard-head-center.png", 1.0, 31.0],
@@ -2330,22 +2330,6 @@ var themedButtonValues = nil,
                 [@"window-standard-head-solid-bottom-right.png", 5.0, 1.0]
             ]
         ),
-
-        themeValues =
-            [
-                [@"gradient-height", 31.0],
-                [@"bezel-color", bezelColor],
-                [@"solid-color", solidColor]
-            ];
-
-    [self registerThemeValues:themeValues forView:windowHeadView];
-
-    return windowHeadView;
-}
-
-+ (_CPStandardWindowView)themedStandardWindowView
-{
-    var standardWindowView = [[_CPStandardWindowView alloc] initWithFrame:CGRectMake(0,0,200,300) styleMask:CPClosableWindowMask],
 
         bezelColor = PatternColor(
         [
@@ -2372,6 +2356,10 @@ var themedButtonValues = nil,
 
         themeValues =
             [
+                [@"gradient-height",            31.0],
+                [@"bezel-head-color",           bezelHeadColor],
+                [@"solid-color",                solidColor],
+
                 [@"title-font",                 [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize]],
                 [@"title-text-color",           [CPColor colorWithWhite:22.0 / 255.0 alpha:0.75]],
                 [@"title-text-color",           [CPColor colorWithWhite:22.0 / 255.0 alpha:1], CPThemeStateKeyWindow],
