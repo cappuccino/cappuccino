@@ -161,7 +161,7 @@ if (!exports.acorn) {
   // These are used to hold arrays of spaces when
   // `options.trackSpaces` is true.
 
-  var tokSpacesBefore, tokSpacesAfter;
+  var tokSpacesBefore, tokSpacesAfter, lastTokSpacesAfter;
 
   // Interal state for the tokenizer. To distinguish between division
   // operators and regular expressions, it remembers whether the last
@@ -506,6 +506,7 @@ if (!exports.acorn) {
     skipSpace();
     tokVal = val;
     lastTokCommentsAfter = tokCommentsAfter;
+    lastTokSpacesAfter = tokSpacesAfter;
     tokCommentsAfter = tokComments;
     tokSpacesAfter = tokSpaces;
     tokRegexpAllowed = type.beforeExpr;
@@ -514,7 +515,6 @@ if (!exports.acorn) {
 
   function skipBlockComment() {
     var end = input.indexOf("*/", tokPos += 2);
-    tokSpaces = null;
     if (end === -1) raise(tokPos - 2, "Unterminated comment");
     if (options.trackComments)
       (tokComments || (tokComments = [])).push(input.slice(tokPos, end));
@@ -524,7 +524,6 @@ if (!exports.acorn) {
   function skipLineComment(skipCharacters) {
     var start = tokPos;
     var ch = input.charCodeAt(tokPos+=skipCharacters);
-    tokSpaces = null;
     while (tokPos < inputLen && ch !== 10 && ch !== 13 && ch !== 8232 && ch !== 8329) {
       ++tokPos;
       ch = input.charCodeAt(tokPos);
@@ -539,6 +538,7 @@ if (!exports.acorn) {
     while ((ch < 14 && ch > 8) || ch === 32 || ch === 160 || (ch >= 5760 && nonASCIIwhitespace.test(String.fromCharCode(ch)))) // 9 - 13, ' ', '\xa0' ....
       ch = input.charCodeAt(++tokPos);
     if (options.trackSpaces)
+      //tokSpaces = input.slice(start, tokPos);
       (tokSpaces || (tokSpaces = [])).push(input.slice(start, tokPos));
   }
 
@@ -1059,6 +1059,10 @@ if (!exports.acorn) {
       node.commentsBefore = other.commentsBefore;
       delete other.commentsBefore;
     }
+    if (other.spacesBefore) {
+      node.spacesBefore = other.spacesBefore;
+      delete other.spacesBefore;
+    }
     if (options.locations) {
       node.loc = new node_loc_t();
       node.loc.start = other.loc.start;
@@ -1096,13 +1100,13 @@ if (!exports.acorn) {
         lastFinishedNode = node;
     }
     if (options.trackSpaces) {
-      if (tokSpacesAfter) {
-        node.spacesAfter = tokSpacesAfter;
-        tokSpacesAfter = null;
+      if (lastTokSpacesAfter) {
+        node.spacesAfter = lastTokSpacesAfter;
+        lastTokSpacesAfter = null;
       } else if (lastFinishedNode && lastFinishedNode.end === lastEnd &&
                  lastFinishedNode.spacesAfter) {
         node.spacesAfter = lastFinishedNode.spacesAfter;
-        lastFinishedNode.spacesAfter = null;
+        delete lastFinishedNode.spacesAfter;
       }
       lastFinishedNode = node;
     }
