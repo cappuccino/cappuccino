@@ -203,6 +203,8 @@ if (!exports.acorn) {
   exports.MethodDeclarationStatement = ignore;
 
   exports.PreprocessStatement = ignore;
+  exports.ClassStatement = ignore;
+  exports.GlobalStatement = ignore;
 
   exports.MethodDeclarationStatement = function(node, st, c) {
     c(node.body, st, "Statement");

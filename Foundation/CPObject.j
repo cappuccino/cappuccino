@@ -61,6 +61,12 @@ CPLog(@"Got some class: %@", inst);
 
     @todo document KVC usage.
 */
+
+@class CPString
+@class CPException
+
+@global CPInvalidArgumentException
+
 @implementation CPObject
 {
     Class   isa;
