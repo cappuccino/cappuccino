@@ -29,5 +29,7 @@
 @import "_CPBorderlessWindowView.j"
 @import "_CPBorderlessBridgeWindowView.j"
 @import "_CPAttachedWindowView.j"
+@import "_CPModalWindowView.j"
+@import "_CPShadowWindowView.j"
 @import "CPDragServer.j"
 //@import "CPView.j"

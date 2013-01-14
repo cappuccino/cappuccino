@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CPApplicationDelegateClass</key>
+	<string>BKShowcaseController</string>
+	<key>CPBundleName</key>
+	<string>Aristo2</string>
+	<key>BKLearnMoreURL</key>
+	<string>http://cappuccino.org/aristo</string>
+	<key>BKLearnMoreButtonTitle</key>
+	<string>Aristo Home Page</string>
+	<key>CPPrincipalClass</key>
+	<string>CPApplication</string>
+</dict>
+</plist>

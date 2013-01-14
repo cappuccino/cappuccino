@@ -135,19 +135,6 @@ var CPToolbarsByIdentifier              = nil,
     [toolbarsSharingIdentifier addObject:toolbar];
 }
 
-/*
-    Temporary theme attributes until we've figured out which CPView these theme attributes should
-    belong to.
-    @ignore
-*/
-+ (id)_themeAttributes
-{
-    // "regular-size-height" is used if no item has a non-zero min size and sizeMode == CPToolbarSizeModeRegular.
-    // "small-size-height" is used if no item has a non-zero min size and sizeMode == CPToolbarSizeModeSmall.
-    return [CPDictionary dictionaryWithObjects:[_CGInsetMake(4.0, 4.0, 4.0, TOOLBAR_ITEM_MARGIN), 59.0, 46.0]
-                                       forKeys:[@"content-inset", @"regular-size-height", @"small-size-height"]];
-}
-
 - (id)init
 {
     return [self initWithIdentifier:@""];
@@ -281,18 +268,8 @@ var CPToolbarsByIdentifier              = nil,
 
 - (CGRect)_toolbarViewFrame
 {
-    var height = _desiredHeight || (_sizeMode != CPToolbarSizeModeSmall ? [self _valueForThemeAttribute:@"regular-size-height"] : [self _valueForThemeAttribute:@"small-size-height"]);
+    var height = _desiredHeight || (_sizeMode != CPToolbarSizeModeSmall ? [_toolbarView valueForThemeAttribute:@"regular-size-height"] : [_toolbarView valueForThemeAttribute:@"small-size-height"]);
     return CPRectMake(0.0, 0.0, 1200.0, height);
-}
-
-/*
-    Temporary theme attributes until we've figured out which CPView these theme attributes should
-    belong to.
-    @ignore
-*/
-- (id)_valueForThemeAttribute:(CPString)attributeName
-{
-    return [[[self class] _themeAttributes] valueForKey:attributeName];
 }
 
 /* @ignore */
@@ -592,9 +569,6 @@ var _CPToolbarViewBackgroundColor = nil,
     _CPToolbarViewExtraItemsImage = nil,
     _CPToolbarViewExtraItemsAlternateImage = nil;
 
-var TOOLBAR_ITEM_MARGIN         = 10.0,
-    TOOLBAR_EXTRA_ITEMS_WIDTH   = 20.0;
-
 var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 {
     return { index:anIndex, view:aView, label:aLabel, minWidth:aMinWidth };
@@ -623,16 +597,32 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     BOOL                _FIXME_isHUD;
 }
 
-+ (void)initialize
++ (CPString)defaultThemeClass
 {
-    if (self !== [_CPToolbarView class])
-        return;
+    return @"toolbar-view";
+}
 
-    var bundle = [CPBundle bundleForClass:self];
-
-    _CPToolbarViewExtraItemsImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"_CPToolbarView/_CPToolbarViewExtraItemsImage.png"] size:CPSizeMake(10.0, 15.0)];
-
-    _CPToolbarViewExtraItemsAlternateImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"_CPToolbarView/_CPToolbarViewExtraItemsAlternateImage.png"] size:_CGSizeMake(10.0, 15.0)];
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[10.0,
+                                                20.0,
+                                                [CPNull null],
+                                                [CPNull null],
+                                                _CGInsetMake(4.0, 4.0, 4.0, 10),
+                                                59.0,
+                                                46.0,
+                                                [CPNull null],
+                                                CGRectMake(0.0, 0.0, 2.0, 32.0)]
+                                       forKeys:[
+                                               @"item-margin",
+                                               @"extra-item-width",
+                                               @"extra-item-extra-image",
+                                               @"extra-item-extra-alternate-image",
+                                               @"content-inset",
+                                               @"regular-size-height",
+                                               @"small-size-height",
+                                               @"image-item-separator-color",
+                                               @"image-item-separator-size"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -652,8 +642,6 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
         [_additionalItemsButton setImagePosition:CPImageOnly];
         [[_additionalItemsButton menu] setShowsStateColumn:NO];
         [[_additionalItemsButton menu] setAutoenablesItems:NO];
-
-        [_additionalItemsButton setAlternateImage:_CPToolbarViewExtraItemsAlternateImage];
     }
 
     return self;
@@ -709,7 +697,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     // minimum width for hiding items.
     if (itemsWidth < minWidth)
     {
-        itemsWidth -= TOOLBAR_EXTRA_ITEMS_WIDTH;
+        itemsWidth -= [self valueForThemeAttribute:@"extra-item-width"];
 
         _visibleItems = [_visibleItems copy];
 
@@ -725,7 +713,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
             var item = itemsSortedByVisibilityPriority[--count],
                 view = [self viewForItem:item];
 
-            minWidth -= [view minSize].width + TOOLBAR_ITEM_MARGIN;
+            minWidth -= [view minSize].width + [self valueForThemeAttribute:@"item-margin"];
 
             [_visibleItems removeObjectIdenticalTo:item];
             [invisibleItemsSortedByPriority addObject:item];
@@ -751,7 +739,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     // We'll figure out the proper height for the toolbar depending on its items.
     // If nothing has a minimum size we'll use the standard toolbar size for the
     // sizeMode, indicated by a 0 _desiredHeight.
-    var contentInset = [_toolbar _valueForThemeAttribute:@"content-inset"],
+    var contentInset = [self valueForThemeAttribute:@"content-inset"],
         newDesiredHeight = height ? height + contentInset.top + contentInset.bottom : 0;
 
     if (newDesiredHeight != _toolbar._desiredHeight)
@@ -828,7 +816,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     var index = 0,
         count = _visibleItems.length,
         x = contentInset.left,
-        contentInset = [_toolbar _valueForThemeAttribute:@"content-inset"],
+        contentInset = [self valueForThemeAttribute:@"content-inset"],
         y = contentInset.top;
 
     for (; index < count; ++index)
@@ -838,7 +826,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
         [view setFrame:_CGRectMake(x, y, viewWidth, height)];
 
-        x += viewWidth + TOOLBAR_ITEM_MARGIN;
+        x += viewWidth + [self valueForThemeAttribute:@"item-margin"];
     }
 
     var needsAdditionalItemsButton = NO;
@@ -877,7 +865,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
         [_additionalItemsButton removeAllItems];
 
         [_additionalItemsButton addItemWithTitle:@"Additional Items"];
-        [[_additionalItemsButton itemArray][0] setImage:_CPToolbarViewExtraItemsImage];
+        [[_additionalItemsButton itemArray][0] setImage:[self valueForThemeAttribute:@"extra-item-extra-image"]];
 
         var index = 0,
             count = [_invisibleItems count],
@@ -943,7 +931,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
     count = items.length;
 
-    _minWidth = TOOLBAR_ITEM_MARGIN;
+    _minWidth = [self valueForThemeAttribute:@"item-margin"];
     _viewsForToolbarItems = { };
 
     for (; index < count; ++index)
@@ -958,10 +946,15 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
         [self addSubview:view];
 
-        _minWidth += [view minSize].width + TOOLBAR_ITEM_MARGIN;
+        _minWidth += [view minSize].width + [self valueForThemeAttribute:@"item-margin"];
     }
 
     [self tile];
+}
+
+- (void)layoutSubviews
+{
+    [_additionalItemsButton setAlternateImage:[self valueForThemeAttribute:@"extra-item-extra-alternate-image"]];
 }
 
 @end
@@ -1060,13 +1053,7 @@ var LABEL_MARGIN    = 2.0;
 
         if (identifier === CPToolbarSeparatorItemIdentifier)
         {
-            _view = [[CPView alloc] initWithFrame:_CGRectMake(0.0, 0.0, 2.0, 32.0)];
-
-            // FIXME: Get rid of this old API!!!
-            sizes = {};
-            sizes[@"CPToolbarItemSeparator"] = [_CGSizeMake(2.0, 26.0), _CGSizeMake(2.0, 1.0), _CGSizeMake(2.0, 26.0)];
-            [_view setBackgroundColor:_CPControlThreePartImagePattern(YES, sizes, @"CPToolbarItem", @"Separator")];
-
+            _view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
             [self addSubview:_view];
         }
 
@@ -1139,7 +1126,15 @@ var LABEL_MARGIN    = 2.0;
         width = _CGRectGetWidth(bounds);
 
     if (identifier === CPToolbarSeparatorItemIdentifier)
-        return [_view setFrame:_CGRectMake(ROUND((width - 2.0) / 2.0), 0.0, 2.0, _CGRectGetHeight(bounds))];
+    {
+        var itemSeparatorColor = [_toolbar valueForThemeAttribute:@"image-item-separator-color"],
+            itemSeparatorSize = [_toolbar valueForThemeAttribute:@"image-item-separator-size"];
+
+        [_view setFrame:_CGRectMake(ROUND((width - itemSeparatorSize.size.width) / 2.0), 0.0, itemSeparatorSize.size.width, _CGRectGetHeight(bounds))];
+        [_view setBackgroundColor:itemSeparatorColor];
+
+        return;
+    }
 
     // The view is centred in the available space above the label.
     var view = _view || _imageView,

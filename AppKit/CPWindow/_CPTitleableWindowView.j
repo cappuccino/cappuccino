@@ -22,8 +22,6 @@
 
 @import "_CPWindowView.j"
 
-var STANDARD_TITLEBAR_HEIGHT = 25.0;
-
 @implementation _CPTitleableWindowView : _CPWindowView
 {
     CPTextField         _titleField;
@@ -31,7 +29,7 @@ var STANDARD_TITLEBAR_HEIGHT = 25.0;
 
 + (int)titleBarHeight
 {
-    return STANDARD_TITLEBAR_HEIGHT;
+    return [[CPTheme defaultTheme] valueForAttributeWithName:@"title-bar-height" forClass:[self class]];
 }
 
 + (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
@@ -101,6 +99,8 @@ var STANDARD_TITLEBAR_HEIGHT = 25.0;
 - (void)layoutSubviews
 {
     [super layoutSubviews];
+
+    [self setBackgroundColor:[self valueForThemeAttribute:@"bezel-color"]];
 
     [_titleField setTextColor:[self currentValueForThemeAttribute:@"title-text-color"]];
     [_titleField setFont:[self currentValueForThemeAttribute:@"title-font"]];

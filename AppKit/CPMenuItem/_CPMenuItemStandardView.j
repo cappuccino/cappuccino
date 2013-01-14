@@ -1,22 +1,5 @@
 @import "CPControl.j"
 
-
-var LEFT_MARGIN                 = 3.0,
-    RIGHT_MARGIN                = 14.0 + 3.0,
-    STATE_COLUMN_WIDTH          = 14.0,
-    INDENTATION_WIDTH           = 17.0,
-    VERTICAL_MARGIN             = 4.0,
-
-    RIGHT_COLUMNS_MARGIN        = 30.0,
-    KEY_EQUIVALENT_MARGIN       = 10.0;
-
-var SUBMENU_INDICATOR_COLOR                     = nil,
-    _CPMenuItemSelectionColor                   = nil,
-    _CPMenuItemTextShadowColor                  = nil,
-
-    _CPMenuItemDefaultStateImages               = [],
-    _CPMenuItemDefaultStateHighlightedImages    = [];
-
 @implementation _CPMenuItemStandardView : CPView
 {
     CPMenuItem              _menuItem @accessors(property=menuItem);
@@ -34,26 +17,29 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
     CPView                  _submenuIndicatorView;
 }
 
-+ (void)initialize
++ (CPString)defaultThemeClass
 {
-    if (self !== [_CPMenuItemStandardView class])
-        return;
+    return "menu-item-standard-view";
+}
 
-    SUBMENU_INDICATOR_COLOR = [CPColor grayColor];
-
-    _CPMenuItemSelectionColor =  [CPColor colorWithCalibratedRed:95.0 / 255.0 green:131.0 / 255.0 blue:185.0 / 255.0 alpha:1.0];
-    _CPMenuItemTextShadowColor = [CPColor colorWithCalibratedRed:26.0 / 255.0 green: 73.0 / 255.0 blue:109.0 / 255.0 alpha:1.0];
-
-    var bundle = [CPBundle bundleForClass:self];
-
-    _CPMenuItemDefaultStateImages[CPOffState]               = nil;
-    _CPMenuItemDefaultStateHighlightedImages[CPOffState]    = nil;
-
-    _CPMenuItemDefaultStateImages[CPOnState]               = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPMenuItem/CPMenuItemOnState.png"] size:CGSizeMake(14.0, 14.0)];
-    _CPMenuItemDefaultStateHighlightedImages[CPOnState]    = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPMenuItem/CPMenuItemOnStateHighlighted.png"] size:CGSizeMake(14.0, 14.0)];
-
-    _CPMenuItemDefaultStateImages[CPMixedState]             = nil;
-    _CPMenuItemDefaultStateHighlightedImages[CPMixedState]  = nil;
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], 3.0, 17.0, 14.0, 17.0, 4.0, 30.0]
+                                       forKeys:[    @"submenu-indicator-color",
+                                                    @"menu-item-selection-color",
+                                                    @"menu-item-text-shadow-color",
+                                                    @"menu-item-default-off-state-image",
+                                                    @"menu-item-default-off-state-highlighted-image",
+                                                    @"menu-item-default-on-state-image",
+                                                    @"menu-item-default-on-state-highlighted-image",
+                                                    @"menu-item-default-mixed-state-image",
+                                                    @"menu-item-default-mixed-state-highlighted-image",
+                                                    @"left-margin",
+                                                    @"right-margin",
+                                                    @"state-column-width",
+                                                    @"indentation-width",
+                                                    @"vertical-margin",
+                                                    @"right-columns-margin"]];
 }
 
 + (id)view
@@ -63,7 +49,7 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
 
 + (float)_standardLeftMargin
 {
-    return LEFT_MARGIN + STATE_COLUMN_WIDTH;
+    return [[CPTheme defaultTheme] valueForAttributeWithName:@"left-margin" forClass:[self class]] + [[CPTheme defaultTheme] valueForAttributeWithName:@"state-column-width" forClass:[self class]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -95,7 +81,7 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
 
         _submenuIndicatorView = [[_CPMenuItemSubmenuIndicatorView alloc] initWithFrame:CGRectMake(0.0, 0.0, 8.0, 10.0)];
 
-        [_submenuIndicatorView setColor:SUBMENU_INDICATOR_COLOR];
+        [_submenuIndicatorView setColor:[self valueForThemeAttribute:@"submenu-indicator-color"]];
         [_submenuIndicatorView setAutoresizingMask:CPViewMinXMargin];
 
         [self addSubview:_submenuIndicatorView];
@@ -129,16 +115,34 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
 
 - (void)update
 {
-    var x = LEFT_MARGIN + [_menuItem indentationLevel] * INDENTATION_WIDTH,
+    var x = [self valueForThemeAttribute:@"left-margin"] + [_menuItem indentationLevel] * [self valueForThemeAttribute:@"indentation-width"],
         height = 0.0,
         hasStateColumn = [[_menuItem menu] showsStateColumn];
 
     if (hasStateColumn)
     {
         [_stateView setHidden:NO];
-        [_stateView setImage:_CPMenuItemDefaultStateImages[[_menuItem state]] || nil];
+        //[_stateView setImage:_CPMenuItemDefaultStateImages[[_menuItem state]] || nil];
 
-        x += STATE_COLUMN_WIDTH;
+        switch([_menuItem state])
+        {
+            case CPOnState:
+                [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-on-state-image"]];
+                break;
+
+            case CPOffState:
+                [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-off-state-image"]];
+                break;
+
+            case CPMixedState:
+                [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-mixed-state-image"]];
+                break;
+
+            default:
+                break;
+        }
+
+        x += [self valueForThemeAttribute:@"state-column-width"];
     }
     else
         [_stateView setHidden:YES];
@@ -162,7 +166,7 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
         hasSubmenu = [_menuItem hasSubmenu];
 
     if (hasKeyEquivalent || hasSubmenu)
-        x += RIGHT_COLUMNS_MARGIN;
+        x += [self valueForThemeAttribute:@"right-columns-margin"];
 
     if (hasKeyEquivalent)
     {
@@ -173,7 +177,7 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
         [_keyEquivalentView setTextColor:[self textColor]];
         [_keyEquivalentView setTextShadowColor:[self textShadowColor]];
         [_keyEquivalentView setTextShadowOffset:CGSizeMake(0, 1)];
-        [_keyEquivalentView setFrameOrigin:CGPointMake(x, VERTICAL_MARGIN)];
+        [_keyEquivalentView setFrameOrigin:CGPointMake(x, [self valueForThemeAttribute:@"vertical-margin"])];
         [_keyEquivalentView sizeToFit];
 
         var keyEquivalentViewFrame = [_keyEquivalentView frame];
@@ -183,7 +187,7 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
         height = MAX(height, CGRectGetHeight(keyEquivalentViewFrame));
 
         if (hasSubmenu)
-            x += RIGHT_COLUMNS_MARGIN;
+            x += [self valueForThemeAttribute:@"right-columns-margin"];
     }
     else
         [_keyEquivalentView setHidden:YES];
@@ -202,13 +206,13 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
     else
         [_submenuIndicatorView setHidden:YES];
 
-    height += 2.0 * VERTICAL_MARGIN;
+    height += 2.0 * [self valueForThemeAttribute:@"vertical-margin"];
 
     imageAndTextViewFrame.origin.y = FLOOR((height - CGRectGetHeight(imageAndTextViewFrame)) / 2.0);
     [_imageAndTextView setFrame:imageAndTextViewFrame];
 
     if (hasStateColumn)
-        [_stateView setFrameSize:CGSizeMake(STATE_COLUMN_WIDTH, height)];
+        [_stateView setFrameSize:CGSizeMake([self valueForThemeAttribute:@"state-column-width"], height)];
 
     if (hasKeyEquivalent)
     {
@@ -222,7 +226,7 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
         [_submenuIndicatorView setFrame:submenuViewFrame];
     }
 
-    _minSize = CGSizeMake(x + RIGHT_MARGIN, height);
+    _minSize = CGSizeMake(x + [self valueForThemeAttribute:@"right-margin"], height);
 
     [self setAutoresizesSubviews:NO];
     [self setFrameSize:_minSize];
@@ -237,15 +241,15 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
 
     if (shouldHighlight)
     {
-        [self setBackgroundColor:_CPMenuItemSelectionColor];
+        [self setBackgroundColor:[self valueForThemeAttribute:@"menu-item-selection-color"]];
 
         [_imageAndTextView setImage:[_menuItem alternateImage] || [_menuItem image]];
         [_imageAndTextView setTextColor:[CPColor whiteColor]];
         [_keyEquivalentView setTextColor:[CPColor whiteColor]];
         [_submenuIndicatorView setColor:[CPColor whiteColor]];
 
-        [_imageAndTextView setTextShadowColor:_CPMenuItemTextShadowColor];
-        [_keyEquivalentView setTextShadowColor:_CPMenuItemTextShadowColor];
+        [_imageAndTextView setTextShadowColor:[self valueForThemeAttribute:@"menu-item-text-shadow-color"]];
+        [_keyEquivalentView setTextShadowColor:[self valueForThemeAttribute:@"menu-item-text-shadow-color"]];
     }
     else
     {
@@ -254,7 +258,7 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
         [_imageAndTextView setImage:[_menuItem image]];
         [_imageAndTextView setTextColor:[self textColor]];
         [_keyEquivalentView setTextColor:[self textColor]];
-        [_submenuIndicatorView setColor:SUBMENU_INDICATOR_COLOR];
+        [_submenuIndicatorView setColor:[self valueForThemeAttribute:@"submenu-indicator-color"]];
 
         [_imageAndTextView setTextShadowColor:[self textShadowColor]];
         [_keyEquivalentView setTextShadowColor:[self textShadowColor]];
@@ -263,9 +267,45 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
     if ([[_menuItem menu] showsStateColumn])
     {
         if (shouldHighlight)
-            [_stateView setImage:_CPMenuItemDefaultStateHighlightedImages[[_menuItem state]] || nil];
+        {
+            switch([_menuItem state])
+            {
+                case CPOnState:
+                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-on-state-highlighted-image"]];
+                    break;
+
+                case CPOffState:
+                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-off-state-highlighted-image"]];
+                    break;
+
+                case CPMixedState:
+                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-mixed-state-highlighted-image"]];
+                    break;
+
+                default:
+                    break;
+            }
+        }
         else
-            [_stateView setImage:_CPMenuItemDefaultStateImages[[_menuItem state]] || nil];
+        {
+            switch([_menuItem state])
+            {
+                case CPOnState:
+                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-on-state-image"]];
+                    break;
+
+                case CPOffState:
+                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-off-state-image"]];
+                    break;
+
+                case CPMixedState:
+                    [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-mixed-state-image"]];
+                    break;
+
+                default:
+                    break;
+            }
+        }
     }
 }
 

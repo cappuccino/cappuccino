@@ -24,9 +24,7 @@
 @import "CPView.j"
 
 
-var _CPWindowViewResizeIndicatorImage = nil,
-    _CPWindowViewCornerResizeRectWidth = 10,
-
+var _CPWindowViewCornerResizeRectWidth = 10,
     _CPWindowViewResizeRegionNone = -1,
     _CPWindowViewResizeRegionTopLeft = 0,
     _CPWindowViewResizeRegionTop = 1,
@@ -57,14 +55,6 @@ var _CPWindowViewResizeIndicatorImage = nil,
     CPView      _sheetShadowView;
 }
 
-+ (void)initialize
-{
-    if (self !== [_CPWindowView class])
-        return;
-
-    _CPWindowViewResizeIndicatorImage = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPWindow class]] pathForResource:@"_CPWindowView/_CPWindowViewResizeIndicator.png"] size:_CGSizeMake(12.0, 12.0)];
-}
-
 + (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
     return _CGRectMakeCopy(aFrameRect);
@@ -82,8 +72,26 @@ var _CPWindowViewResizeIndicatorImage = nil,
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPColor blackColor], [CPFont systemFontOfSize:CPFontCurrentSystemSize], [CPNull null], _CGSizeMakeZero(), CPCenterTextAlignment, CPLineBreakByTruncatingTail, CPTopVerticalTextAlignment]
-                                       forKeys:[@"title-text-color", @"title-font", @"title-text-shadow-color", @"title-text-shadow-offset", @"title-alignment", @"title-line-break-mode", @"title-vertical-alignment"]];
+    return [CPDictionary dictionaryWithObjects:[25, CGInsetMakeZero(), 5, [CPColor clearColor], CGSizeMakeZero(), [CPNull null], [CPColor blackColor], [CPNull null],[CPNull null], [CPNull null], [CPNull null], [CPNull null] , [CPColor blackColor], [CPFont systemFontOfSize:CPFontCurrentSystemSize], [CPNull null], _CGSizeMakeZero(), CPCenterTextAlignment, CPLineBreakByTruncatingTail, CPTopVerticalTextAlignment]
+                                       forKeys:[    @"title-bar-height",
+                                                    @"shadow-inset",
+                                                    @"shadow-distance",
+                                                    @"window-shadow-color",
+                                                    @"size-indicator",
+                                                    @"resize-indicator",
+                                                    @"attached-sheet-shadow-color",
+                                                    @"close-image-origin",
+                                                    @"close-image-size",
+                                                    @"close-image",
+                                                    @"close-active-image",
+                                                    @"bezel-color",
+                                                    @"title-text-color",
+                                                    @"title-font",
+                                                    @"title-text-shadow-color",
+                                                    @"title-text-shadow-offset",
+                                                    @"title-alignment",
+                                                    @"title-line-break-mode",
+                                                    @"title-vertical-alignment"]];
 }
 
 - (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
@@ -573,12 +581,7 @@ var _CPWindowViewResizeIndicatorImage = nil,
 {
     if (shouldShowResizeIndicator && CPWindowResizeStyle === CPWindowResizeStyleLegacy)
     {
-        var size = [_CPWindowViewResizeIndicatorImage size],
-            boundsSize = [self frame].size;
-
-        _resizeIndicator = [[CPImageView alloc] initWithFrame:_CGRectMake(boundsSize.width - size.width - _resizeIndicatorOffset.width, boundsSize.height - size.height - _resizeIndicatorOffset.height, size.width, size.height)];
-
-        [_resizeIndicator setImage:_CPWindowViewResizeIndicatorImage];
+        _resizeIndicator = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
         [_resizeIndicator setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
 
         [self addSubview:_resizeIndicator];
@@ -589,6 +592,8 @@ var _CPWindowViewResizeIndicatorImage = nil,
 
         _resizeIndicator = nil;
     }
+
+    [self setNeedsLayout];
 }
 
 - (BOOL)showsResizeIndicator
@@ -753,16 +758,31 @@ var _CPWindowViewResizeIndicatorImage = nil,
 {
     if (enable)
     {
-        var bundle = [CPBundle bundleForClass:[CPWindow class]];
         _sheetShadowView = [[CPView alloc] initWithFrame:_CGRectMake(0, 0, _CGRectGetWidth([self bounds]), 8)];
         [_sheetShadowView setAutoresizingMask:CPViewWidthSizable];
-        [_sheetShadowView setBackgroundColor:[CPColor colorWithPatternImage:[[CPImage alloc]
-            initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowAttachedSheetShadow.png"] size:_CGSizeMake(9, 8)]]];
         [self addSubview:_sheetShadowView];
     }
     else
     {
         [_sheetShadowView removeFromSuperview];
+    }
+
+    [self setNeedsLayout];
+}
+
+- (void)layoutSubviews
+{
+    [super layoutSubviews];
+
+    [_sheetShadowView setBackgroundColor:[self valueForThemeAttribute:@"attached-sheet-shadow-color"]];
+
+    if(_resizeIndicator)
+    {
+        var size = [self valueForThemeAttribute:@"size-indicator"],
+            boundsSize = [self frame].size;
+
+        [_resizeIndicator setFrame:CGRectMake(boundsSize.width - size.width - _resizeIndicatorOffset.width, boundsSize.height - size.height - _resizeIndicatorOffset.height, size.width, size.height)];
+        [_resizeIndicator setImage:[self valueForThemeAttribute:@"resize-indicator"]];
     }
 }
 
