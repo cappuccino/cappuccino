@@ -497,7 +497,6 @@ var bottomHeight = 71;
         offsetX -= width;
         [button setFrame:CGRectMake(offsetX + buttonMarginX, buttonsOriginY + buttonMarginY, width, height)];
         offsetX -= 10;
-
     }
 
     if (_showHelp)
@@ -560,7 +559,7 @@ var bottomHeight = 71;
     if (_showSuppressionButton)
         lastView = _suppressionButton;
     else if (_accessoryView)
-        lastView = _accessoryView
+        lastView = _accessoryView;
 
     finalSize = [self _layoutButtonsFromView:lastView];
     if ([_window styleMask] & CPDocModalWindowMask)
