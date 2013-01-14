@@ -124,12 +124,12 @@ var DefaultDictionary       = nil,
 
 - (void)save
 {
-    var path = [self path];
+    var aPath = [self path];
 
-    if (!path)
+    if (!aPath)
         return;
 
-    CFPropertyList.writePropertyListToFile(dictionary, path);
+    CFPropertyList.writePropertyListToFile(dictionary, aPath);
 }
 
 @end

@@ -25,7 +25,7 @@
 
 
 @import <Foundation/CPString.j>
-@import <AppKit/CPController.j>
+@import "CPController.j"
 
 var SharedUserDefaultsController = nil;
 

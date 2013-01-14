@@ -184,7 +184,7 @@ CPLogRegister(CPLogConsole);
     return self;
 }
 
-- (BOOL)validatePrice:(id)value error:({CPError})error
+- (BOOL)validatePrice:(id)value error:(/*{*/CPError/*}*/)error
 {
     if ([value intValue] >= 0)
         return YES;

@@ -26,3 +26,5 @@
     [_searchField setRecentSearches:searches]
     [self assertTrue:[[_searchField recentSearches] count] == 3 message:@"After setRecentSearches array doesn't include results"];
 }
+
+@end

@@ -77,3 +77,5 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
 
     return aString;
 }
+
+@end

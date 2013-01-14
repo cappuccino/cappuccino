@@ -22,9 +22,9 @@
 
 #import "Ref.h"
 
-@import <Foundation/CPDate.j>
-@import <Foundation/CPString.j>
-@import <Foundation/CPFormatter.j>
+@import "CPDate.j"
+@import "CPString.j"
+@import "CPFormatter.j"
 
 CPDateFormatterNoStyle     = 0;
 CPDateFormatterShortStyle  = 1;

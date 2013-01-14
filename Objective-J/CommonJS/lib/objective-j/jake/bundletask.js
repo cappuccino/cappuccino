@@ -789,7 +789,13 @@ BundleTask.prototype.defineStaticTask = function()
 
             fileStream.write("e;");
             fileStream.close();
-        });
+
+           // Make sure all classes are removed and all FileExecutables are removed.
+            ObjectiveJ.Executable.resetCachedFileExecutableSearchers();
+            ObjectiveJ.StaticResource.resetRootResources();
+            ObjectiveJ.FileExecutable.resetFileExecutables();
+            objj_resetRegisterClasses();
+         });
 
         this.enhance([staticPath]);
     }, this);
@@ -832,7 +838,18 @@ BundleTask.prototype.defineSourceTasks = function()
             environmentCompilerFlags = anEnvironment.compilerFlags().join(" ") + " " + compilerFlags,
             flattensSources = this.flattensSources(),
             basePath = directoryInCommon(environmentSources),
-            basePathLength = basePath.length;
+            basePathLength = basePath.length,
+            translateFilenameToPath = {},
+            otherwayTranslateFilenameToPath = {};
+
+        // Create a filename to filename path dictionary. (For example: CPArray.j -> CPArray/CPArray.j)
+        environmentSources.forEach(function(/*String*/ aFilename)
+        {
+            translateFilenameToPath[flattensSources ? FILE.basename(aFilename) : aFilename] = aFilename;
+            otherwayTranslateFilenameToPath[aFilename] = flattensSources ? FILE.basename(aFilename) : aFilename;
+        }, this);
+
+        var e = {};
 
         environmentSources.forEach(function(/*String*/ aFilename)
         {
@@ -844,7 +861,17 @@ BundleTask.prototype.defineSourceTasks = function()
 
             filedir (compiledEnvironmentSource, [aFilename], function()
             {
-                var compile
+                // This ugly fix to make Cappuccino compile with rhino can be removed when the compiler is not loading classes into the runtime
+                var rhinoUglyFix = false;
+                if (system.engine === "rhino")
+                {
+                    if (typeof document == "undefined") {
+                        document = { createElement: function(x) { return { innerText: ""}}};
+                        rhinoUglyFix = true;
+                    }
+                }
+
+                var compile;
                 // if this file doesn't exist or isn't a .j file, don't preprocess it.
                 if (FILE.extension(aFilename) !== ".j")
                 {
@@ -853,9 +880,25 @@ BundleTask.prototype.defineSourceTasks = function()
                 }
                 else
                 {
+                    var translatedFilename = translateFilenameToPath[aFilename] ? translateFilenameToPath[aFilename] : aFilename,
+                        otherwayTranslatedFilename = otherwayTranslateFilenameToPath[aFilename] ? otherwayTranslateFilenameToPath[aFilename] : aFilename,
+                        theTranslatedFilename = otherwayTranslatedFilename ? otherwayTranslatedFilename : translatedFilename,
+                        absolutePath = FILE.absolute(theTranslatedFilename),
+                        basePath = absolutePath.substring(0, absolutePath.length - theTranslatedFilename.length);
+
+                    ObjectiveJ.setCurrentCompilerFlags(environmentCompilerFlags);
+                    ObjectiveJ.make_narwhal_factory(absolutePath, basePath, translateFilenameToPath)(require, e, module, system, print);
                     TERM.stream.write("Compiling [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)").flush();
-                    var compiled = require("objective-j/compiler").compile(aFilename, environmentCompilerFlags);
+
+                    var otherwayTranslatedFilename = otherwayTranslateFilenameToPath[aFilename] ? otherwayTranslateFilenameToPath[aFilename] : aFilename,
+                        translatedFilename = translateFilenameToPath[aFilename] ? translateFilenameToPath[aFilename] : aFilename,
+                        executer = new ObjectiveJ.FileExecutable(otherwayTranslatedFilename);
+
+                    var compiled = executer.toMarkedString();
                 }
+
+                if (rhinoUglyFix)
+                    delete document;
 
                 TERM.stream.print(Array(Math.round(compiled.length / 1024) + 3).join("."));
                 FILE.write(compiledEnvironmentSource, compiled, { charset:"UTF-8" });
@@ -863,11 +906,12 @@ BundleTask.prototype.defineSourceTasks = function()
 
             filedir (staticPath, [compiledEnvironmentSource]);
 
+
             replacedFiles.push(flattensSources ? FILE.basename(aFilename) : relativePath);
         }, this);
 
         this._replacedFiles[anEnvironment] = replacedFiles;
-    }, this);
+   }, this);
 }
 
 exports.BundleTask = BundleTask;

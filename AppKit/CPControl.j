@@ -22,7 +22,7 @@
 
 #import "../Foundation/Ref.h"
 
-@import "../Foundation/CPFormatter.j"
+@import <Foundation/CPFormatter.j>
 @import "CPFont.j"
 @import "CPShadow.j"
 @import "CPView.j"

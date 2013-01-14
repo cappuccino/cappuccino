@@ -328,7 +328,7 @@ var COUNTER;
     [self assert:[two valueForKeyPath:"@max.intValue"] equals:8];
     [self assert:[two valueForKeyPath:"@min.intValue"] equals:0];
 
-    var a = [A new];
+    var a = [AA new];
     [a setValue:one forKey:"b"];
     [self assert:[a valueForKeyPath:"b.@count"] equals:8];
     [self assert:[a valueForKeyPath:"b.@sum.intValue"] equals:8];
@@ -347,7 +347,7 @@ var COUNTER;
 
 @end
 
-@implementation A : CPObject
+@implementation AA : CPObject
 {
     id  b;
 }

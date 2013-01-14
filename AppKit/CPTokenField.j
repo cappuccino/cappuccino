@@ -921,7 +921,7 @@ var CPScrollDestinationNone             = 0,
     [self interpretKeyEvents:[anEvent]];
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-}}
+}
 
 - (void)keyUp:(CPEvent)anEvent
 {

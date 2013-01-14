@@ -21,6 +21,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <Foundation/CPMutableArray.j>
 @import <Foundation/CPString.j>
 @import <Foundation/CPKeyedUnarchiver.j>
 

@@ -4,7 +4,7 @@
 {
     CPOutlineView   outlineView;
     CPTableColumn   tableColumn;
-    TestDataSource  dataSource;
+    TestOutlineDataSource  dataSource;
 }
 
 - (void)setUp
@@ -17,7 +17,7 @@
 
     [outlineView setAllowsMultipleSelection:YES];
 
-    dataSource = [TestDataSource new];
+    dataSource = [TestOutlineDataSource new];
     [dataSource setEntries:[".1", ".1.1", ".1.2", ".1.2.1", ".1.2.2", ".2", ".3", ".3.1"]];
 
     [outlineView setDataSource:dataSource];
@@ -188,7 +188,7 @@
 
 @end
 
-@implementation TestDataSource : CPObject
+@implementation TestOutlineDataSource : CPObject
 {
     CPArray entries @accessors;
 }
