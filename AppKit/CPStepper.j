@@ -55,10 +55,14 @@
 */
 + (CPStepper)stepperWithInitialValue:(float)aValue minValue:(float)aMinValue maxValue:(float)aMaxValue
 {
-    var stepper = [[CPStepper alloc] initWithFrame:_CGRectMake(0, 0, 19, 25)];
+    var stepper = [[CPStepper alloc] initWithFrame:_CGRectMakeZero()];
+
     [stepper setDoubleValue:aValue];
     [stepper setMinValue:aMinValue];
     [stepper setMaxValue:aMaxValue];
+
+    // _sizeToFit will put the good size for the stepper depending of the current theme
+    [stepper _sizeToFit];
 
     return stepper;
 }
@@ -155,7 +159,7 @@
 
 - (void)setFrame:(CGRect)aFrame
 {
-    var upSize = [self valueForThemeAttribute:@"up-button-size"],
+     var upSize = [self valueForThemeAttribute:@"up-button-size"],
         downSize = [self valueForThemeAttribute:@"down-button-size"],
         minSize = _CGSizeMake(upSize.width, upSize.height + downSize.height),
         frame = _CGRectMakeCopy(aFrame);
@@ -182,6 +186,11 @@
     [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
     [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered | CPThemeStateDisabled] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateDisabled];
     [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered | CPThemeStateHighlighted] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateHighlighted];
+}
+
+- (void)_sizeToFit
+{
+    [self setFrame:CGRectMake([self frameOrigin].x, [self frameOrigin].y, 0, 0)];
 }
 
 /*!
