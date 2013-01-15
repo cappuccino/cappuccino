@@ -631,7 +631,7 @@ var themedButtonValues = nil,
         [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 8.0),    CPThemeStateBezeled],
         [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 8.0),    CPThemeStateBezeled | CPThemeStateEditing],
         [@"bezel-inset",        CGInsetMake(3.0, 4.0, 3.0, 4.0),    CPThemeStateBezeled],
-        [@"bezel-inset",        CGInsetMake(1.0, 1.0, 1.0, 1.0),    CPThemeStateBezeled | CPThemeStateEditing],
+        [@"bezel-inset",        CGInsetMake(0.0, 1.0, 0.0, 1.0),    CPThemeStateBezeled | CPThemeStateEditing],
 
         [@"text-color",         placeholderColor,                   CPTextFieldStatePlaceholder],
 
