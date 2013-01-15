@@ -767,10 +767,10 @@ var themedButtonValues = nil,
             [@"content-inset", CGInsetMake(7.0, 8.0, 6.0, 8.0), CPTextFieldStatePlaceholder],
 
             // Bezeled token field with tokens
-            [@"content-inset", CGInsetMake(5.0, 8.0, 4.0, 8.0), CPThemeStateBezeled],
+            [@"content-inset", CGInsetMake(4.0, 8.0, 4.0, 8.0), CPThemeStateBezeled],
 
             // Bezeled token field with no tokens
-            [@"content-inset", CGInsetMake(10.0, 8.0, 7.0, 8.0), CPThemeStateBezeled | CPTextFieldStatePlaceholder],
+            [@"content-inset", CGInsetMake(8.0, 8.0, 7.0, 8.0), CPThemeStateBezeled | CPTextFieldStatePlaceholder],
         ];
 
     [self registerThemeValues:overrides forView:tokenfield inherit:themedTextFieldValues];
