@@ -94,7 +94,7 @@
         domain = "";
 
 #if PLATFORM(DOM)
-    document.cookie = _cookieName+"="+value+expires+"; path=/"+domain;
+    document.cookie = _cookieName + "=" + value + expires + "; path=/" + domain;
 #else
     _cookieValue = value;
     _expires = expires;

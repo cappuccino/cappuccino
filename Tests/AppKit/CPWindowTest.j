@@ -19,12 +19,11 @@
     [self assertTrue:!![self window]];
 }
 
-- (void)testThatContentViewIsInitialFirstResponder
+- (void)testThatNilIsInitialFirstResponder
 {
-    var contentView = [[self window] contentView];
-    [self assert:contentView
+    [self assert:nil
           equals:[[self window] initialFirstResponder]
-         message:@"The window's content view must be the initial first responder"];
+         message:@"The initial first responder must be null"];
 }
 
 - (void)testKeyViewLoop
@@ -34,11 +33,11 @@
 
     [textField setFrame:CGRectMake(100.0, 100.0, 100.0, 26.0)];
     [contentView addSubview:textField];
-    [[self window] recalculateKeyViewLoop];
 
     var nextTextField = [CPTextField textFieldWithStringValue:@"" placeholder:@"" width:100];
     [nextTextField setFrame:CGRectMake(100.0, 200.0, 100.0, 26.0)];
     [contentView addSubview:nextTextField];
+
     [[self window] recalculateKeyViewLoop];
 
     // Test nextKeyView

@@ -390,6 +390,14 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 }
 
 /*!
+    Normally untitled windows cannot become main, but popovers can.
+*/
+- (BOOL)canBecomeMainWindow
+{
+    return [self isVisible];
+}
+
+/*!
     Called when the window is losing focus.
 */
 - (void)resignMainWindow

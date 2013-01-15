@@ -204,61 +204,107 @@ var _CPWindowViewResizeIndicatorImage = nil,
 - (int)resizeRegionForPoint:(CGPoint)aPoint
 {
     /*
-        There are 8 possible resize rects, 1 for each side and 1 for each corner.
+        If the window is fixed width (minSize.width === maxSize.width), there
+        are 2 possible resize rects: top and bottom.
+
+        If the window is fixed height (minSize.height === maxSize.height), there
+        are 2 possible resize rects: left and right.
+
+        Otherwise there are 8 possible resize rects, 1 for each side and 1 for each corner.
         The four corner rects are the same size, and the top/bottom and left/right
         rects are the same size. So to save calculations, we can just create
         3 rects and move them around to do hit testing. Start with the corners
         and then do left/right and top/bottom.
     */
-    var frame = [[self window] frame],
+    var wind = [self window],
+        frame = [wind frame],
+        rect,
+        minSize = [wind minSize],
+        maxSize = [wind maxSize],
+        isFixedWidth = minSize.width === maxSize.width,
+        isFixedHeight = minSize.height === maxSize.height;
+
+    if (isFixedWidth)
+    {
+        rect = _CGRectMake(frame.origin.x - CPWindowResizeSlop,
+                           frame.origin.y - CPWindowResizeSlop,
+                           frame.size.width + (CPWindowResizeSlop * 2),
+                           CPWindowResizeSlop * 2);
+
+        if (_CGRectContainsPoint(rect, aPoint))
+            return _CPWindowViewResizeRegionTop;
+
+        rect.origin.y = _CGRectGetMaxY(frame) - CPWindowResizeSlop;
+
+        if (_CGRectContainsPoint(rect, aPoint))
+            return _CPWindowViewResizeRegionBottom;
+    }
+    else if (isFixedHeight)
+    {
+        rect = _CGRectMake(frame.origin.x - CPWindowResizeSlop,
+                           frame.origin.y - CPWindowResizeSlop,
+                           CPWindowResizeSlop * 2,
+                           frame.size.height + (CPWindowResizeSlop * 2));
+
+        if (_CGRectContainsPoint(rect, aPoint))
+            return _CPWindowViewResizeRegionLeft;
+
+        rect.origin.x = _CGRectGetMaxX(frame) - CPWindowResizeSlop;
+
+        if (_CGRectContainsPoint(rect, aPoint))
+            return _CPWindowViewResizeRegionRight;
+    }
+    else
+    {
         rect = _CGRectMake(frame.origin.x - CPWindowResizeSlop,
                            frame.origin.y - CPWindowResizeSlop,
                            _CPWindowViewCornerResizeRectWidth + CPWindowResizeSlop,
                            _CPWindowViewCornerResizeRectWidth + CPWindowResizeSlop);
 
-    if (_CGRectContainsPoint(rect, aPoint))
-        return _CPWindowViewResizeRegionTopLeft;
+        if (_CGRectContainsPoint(rect, aPoint))
+            return _CPWindowViewResizeRegionTopLeft;
 
-    rect.origin.x = _CGRectGetMaxX(frame) - _CPWindowViewCornerResizeRectWidth;
+        rect.origin.x = _CGRectGetMaxX(frame) - _CPWindowViewCornerResizeRectWidth;
 
-    if (_CGRectContainsPoint(rect, aPoint))
-        return _CPWindowViewResizeRegionTopRight;
+        if (_CGRectContainsPoint(rect, aPoint))
+            return _CPWindowViewResizeRegionTopRight;
 
-    rect.origin.y = _CGRectGetMaxY(frame) - _CPWindowViewCornerResizeRectWidth;
+        rect.origin.y = _CGRectGetMaxY(frame) - _CPWindowViewCornerResizeRectWidth;
 
-    if (_CGRectContainsPoint(rect, aPoint))
-        return _CPWindowViewResizeRegionBottomRight;
+        if (_CGRectContainsPoint(rect, aPoint))
+            return _CPWindowViewResizeRegionBottomRight;
 
-    rect.origin.x = frame.origin.x - CPWindowResizeSlop;
+        rect.origin.x = frame.origin.x - CPWindowResizeSlop;
 
-    if (_CGRectContainsPoint(rect, aPoint))
-        return _CPWindowViewResizeRegionBottomLeft;
+        if (_CGRectContainsPoint(rect, aPoint))
+            return _CPWindowViewResizeRegionBottomLeft;
 
-    rect = _CGRectMake(rect.origin.x,
-                       frame.origin.y + _CPWindowViewCornerResizeRectWidth,
-                       CPWindowResizeSlop * 2,
-                       _CGRectGetHeight(frame) - (_CPWindowViewCornerResizeRectWidth * 2));
+        rect = _CGRectMake(rect.origin.x,
+                           frame.origin.y + _CPWindowViewCornerResizeRectWidth,
+                           CPWindowResizeSlop * 2,
+                           _CGRectGetHeight(frame) - (_CPWindowViewCornerResizeRectWidth * 2));
 
-    if (_CGRectContainsPoint(rect, aPoint))
-        return _CPWindowViewResizeRegionLeft;
+        if (_CGRectContainsPoint(rect, aPoint))
+            return _CPWindowViewResizeRegionLeft;
 
-    rect.origin.x = _CGRectGetMaxX(frame) - CPWindowResizeSlop;
+        rect.origin.x = _CGRectGetMaxX(frame) - CPWindowResizeSlop;
 
-    if (_CGRectContainsPoint(rect, aPoint))
-        return _CPWindowViewResizeRegionRight;
+        if (_CGRectContainsPoint(rect, aPoint))
+            return _CPWindowViewResizeRegionRight;
 
-    rect = _CGRectMake(frame.origin.x + _CPWindowViewCornerResizeRectWidth,
-                       frame.origin.y - CPWindowResizeSlop,
-                       _CGRectGetWidth(frame) - (_CPWindowViewCornerResizeRectWidth * 2),
-                       CPWindowResizeSlop * 2);
+        rect = _CGRectMake(frame.origin.x + _CPWindowViewCornerResizeRectWidth,
+                           frame.origin.y - CPWindowResizeSlop,
+                           _CGRectGetWidth(frame) - (_CPWindowViewCornerResizeRectWidth * 2),
+                           CPWindowResizeSlop * 2);
 
-    if (_CGRectContainsPoint(rect, aPoint))
-        return _CPWindowViewResizeRegionTop;
+        if (_CGRectContainsPoint(rect, aPoint))
+            return _CPWindowViewResizeRegionTop;
 
-    rect.origin.y = _CGRectGetMaxY(frame) - CPWindowResizeSlop;
+        rect.origin.y = _CGRectGetMaxY(frame) - CPWindowResizeSlop;
 
-    if (_CGRectContainsPoint(rect, aPoint))
-        return _CPWindowViewResizeRegionBottom;
+        if (_CGRectContainsPoint(rect, aPoint))
+            return _CPWindowViewResizeRegionBottom;
+    }
 
     return _CPWindowViewResizeRegionNone;
 }
@@ -268,12 +314,15 @@ var _CPWindowViewResizeIndicatorImage = nil,
 */
 - (void)setCursorForLocation:(CGPoint)aPoint resizing:(BOOL)isResizing
 {
-    if (!(_styleMask & CPResizableWindowMask) ||
+    var theWindow = [self window];
+
+    if ([theWindow isFullPlatformWindow] ||
+        !(_styleMask & CPResizableWindowMask) ||
         (CPWindowResizeStyle !== CPWindowResizeStyleModern))
         return;
 
-    var theWindow = [self window],
-        resizeRegion = isResizing ? _resizeRegion : [self resizeRegionForPoint:[theWindow convertBaseToGlobal:aPoint]],
+    var globalPoint = [theWindow convertBaseToGlobal:aPoint],
+        resizeRegion = isResizing ? _resizeRegion : [self resizeRegionForPoint:globalPoint],
         minSize = nil,
         maxSize = nil,
         frameSize;
@@ -300,6 +349,8 @@ var _CPWindowViewResizeIndicatorImage = nil,
             if (minSize && (frameSize.height === minSize.height))
                 [[CPCursor resizeUpCursor] set];
             else if (maxSize && (frameSize.height === maxSize.height))
+                [[CPCursor resizeDownCursor] set];
+            else if ([CPMenu menuBarVisible] && (_CGRectGetMinY([theWindow frame]) <= [CPMenu menuBarHeight]))
                 [[CPCursor resizeDownCursor] set];
             else
                 [[CPCursor resizeNorthSouthCursor] set];

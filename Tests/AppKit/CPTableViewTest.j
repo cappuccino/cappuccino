@@ -243,8 +243,9 @@
 - (void)testContentBinding
 {
     var contentBindingTable = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
-        tableColumn = [[CPTableColumn alloc] initWithIdentifier:@"A"],
         delegate = [ContentBindingTableDelegate new];
+
+    tableColumn = [[CPTableColumn alloc] initWithIdentifier:@"A"];
 
     [contentBindingTable addTableColumn:tableColumn];
     [delegate setTester:self];

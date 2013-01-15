@@ -86,6 +86,7 @@ CPRunContinuesResponse  = -1002;
     CPArray                 _eventListeners;
 
     CPEvent                 _currentEvent;
+    CPWindow                _lastMouseMoveWindow;
 
     CPArray                 _windows;
     CPWindow                _keyWindow;
@@ -621,10 +622,16 @@ CPRunContinuesResponse  = -1002;
         return;
     }
 
+    if ([anEvent type] == CPMouseMoved)
+    {
+        if (theWindow !== _lastMouseMoveWindow)
+            [_lastMouseMoveWindow _mouseExitedResizeRect];
+
+        _lastMouseMoveWindow = theWindow;
+    }
+
     if (theWindow)
         [theWindow sendEvent:anEvent];
-    else if ([anEvent type] == CPMouseMoved)
-        [[CPCursor arrowCursor] set];
 }
 
 /*!
@@ -963,6 +970,7 @@ CPRunContinuesResponse  = -1002;
         [aWindow orderFront:self];
         [aSheet setPlatformWindow:[aWindow platformWindow]];
     }
+
     [aWindow _attachSheet:aSheet modalDelegate:aModalDelegate didEndSelector:aDidEndSelector contextInfo:aContextInfo];
 }
 

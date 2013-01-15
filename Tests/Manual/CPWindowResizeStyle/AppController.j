@@ -16,11 +16,11 @@
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
-    [theWindow makeKeyAndOrderFront:nil];
 }
 
 - (void)awakeFromCib
 {
+    [theWindow setFullPlatformWindow:YES];
 }
 
 - (@action)resizeStyleDidChange:(id)sender
