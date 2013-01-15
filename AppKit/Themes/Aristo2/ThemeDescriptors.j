@@ -928,16 +928,16 @@ var themedButtonValues = nil,
             [@"bezel-inset",        CGInsetMake(0.0, 1.0, 1.0, 1.0),    CPThemeStateBezeled | CPThemeStateEditing],
 
             // The right border inset has to make room for the focus ring and popup button
-            [@"content-inset",      CGInsetMake(8.0, 26.0, 7.0, 8.0),    CPThemeStateBezeled | CPComboBoxStateButtonBordered],
-            [@"content-inset",      CGInsetMake(8.0, 24.0, 7.0, 8.0),    CPThemeStateBezeled],
-            [@"content-inset",      CGInsetMake(8.0, 24.0, 7.0, 8.0),    CPThemeStateBezeled | CPThemeStateEditing],
+            [@"content-inset",      CGInsetMake(10.0, 26.0, 7.0, 8.0),    CPThemeStateBezeled | CPComboBoxStateButtonBordered],
+            [@"content-inset",      CGInsetMake(10.0, 24.0, 7.0, 8.0),    CPThemeStateBezeled],
+            [@"content-inset",      CGInsetMake(10.0, 24.0, 7.0, 8.0),    CPThemeStateBezeled | CPThemeStateEditing],
 
             [@"popup-button-size",  CGSizeMake(21.0, 23.0), CPThemeStateBezeled | CPComboBoxStateButtonBordered],
             [@"popup-button-size",  CGSizeMake(17.0, 23.0), CPThemeStateBezeled],
 
             // Because combo box uses a three-part bezel, the height is fixed
-            [@"min-size",           CGSizeMake(0, 29.0)],
-            [@"max-size",           CGSizeMake(-1, 29.0)]
+            [@"min-size",           CGSizeMake(0, 31.0)],
+            [@"max-size",           CGSizeMake(-1, 31.0)]
         ];
 
     [self registerThemeValues:overrides forView:combo inherit:themedTextFieldValues];
