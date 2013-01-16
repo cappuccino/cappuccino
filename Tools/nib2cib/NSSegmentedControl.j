@@ -21,6 +21,7 @@
  */
 
 @import <AppKit/CPSegmentedControl.j>
+@import "NSCell.j"
 
 @implementation CPSegmentedControl (CPCoding)
 
