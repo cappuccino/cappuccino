@@ -1758,7 +1758,7 @@ var themedButtonValues = nil,
             [@"sort-image",                 sortImage],
             [@"sort-image-reversed",        sortImageReversed],
             [@"image-generic-file",         imageGenericFile],
-            [@"default-row-height",         25.0],
+            [@"default-row-height",         23.0],
         ];
 
     [self registerThemeValues:themedTableViewValues forView:tableview];
