@@ -497,11 +497,6 @@ CPBelowBottom = 6;
 
     aRect = CGRectInset(aRect, borderWidth / 2.0, borderWidth / 2.0);
 
-    // clip the canvas to the actual content view in order to only display inner shadow
-    CGContextBeginPath(context);
-    CGContextAddPath(context, CGPathWithRoundedRectangleInRect(aRect, cornerRadius, cornerRadius, YES, YES, YES, YES));
-    CGContextClip(context);
-
     CGContextSetFillColor(context, [self fillColor]);
     CGContextSetStrokeColor(context, [self borderColor]);
 
