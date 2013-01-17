@@ -213,7 +213,7 @@
         dividerMaxY = _CGRectGetMaxY([_dividerView frame]);
     }
 
-    [_bodyView setFrame:_CGRectMake(0.0, 0.0, width, _CGRectGetHeight(bounds) - dividerMaxY)];
+    [_bodyView setFrame:_CGRectMake(0.0, dividerMaxY, width, _CGRectGetHeight(bounds) - dividerMaxY)];
 
     var leftOffset = 8;
 
