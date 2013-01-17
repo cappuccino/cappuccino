@@ -7,7 +7,7 @@
 var FILE = require("file"),
     OS = require("os"),
 
-    DefaultTheme = "Aristo",
+    DefaultTheme = "Aristo2",
     BuildTypes = ["Debug", "Release"],
 
     FILE = require("file"),

@@ -1,0 +1,16 @@
+
+require("../../../common.jake");
+
+var blend = require("cappuccino/jake").blend;
+
+blend ("Aristo2.blend", function(aristo2Task)
+{
+    aristo2Task.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "Aristo2.build", $CONFIGURATION))
+    aristo2Task.setBuildPath(FILE.join($BUILD_DIR, $CONFIGURATION));
+
+    aristo2Task.setThemeDescriptors(new FileList("ThemeDescriptors.j"));
+    aristo2Task.setIdentifier("com.280n.blend.Aristo2");
+    aristo2Task.setResources(new FileList("Resources/*"));
+});
+
+task ("build", ["Aristo2.blend"]);

@@ -129,10 +129,10 @@ function press(rootPath, outputPath, options) {
         outputInfoPlist = CFPropertyList.propertyListFromString(outputInfoPlistContents);
 
     // read in the default theme name, and attempt to get its size
-    var themeName = outputInfoPlist.valueForKey("CPDefaultTheme") || "Aristo",
+    var themeName = outputInfoPlist.valueForKey("CPDefaultTheme") || "Aristo2",
         themePath = nil;
 
-    if (themeName === "Aristo")
+    if (themeName === "Aristo" || themeName === "Aristo2")
         themePath = FILE.join(outputPath, options.frameworks, "AppKit", "Resources", themeName+".blend");
     else
         themePath = FILE.join(outputPath, "Resources", themeName + ".blend");

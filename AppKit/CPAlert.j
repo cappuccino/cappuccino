@@ -53,6 +53,8 @@ CPInformationalAlertStyle   = 1;
 */
 CPCriticalAlertStyle        = 2;
 
+var bottomHeight = 71;
+
 /*!
     @ingroup appkit
 
@@ -164,7 +166,7 @@ CPCriticalAlertStyle        = 2;
         _alertStyle         = CPWarningAlertStyle;
         _showHelp           = NO;
         _needsLayout        = YES;
-        _defaultWindowStyle = CPTitledWindowMask;
+        _defaultWindowStyle = _CPModalWindowMask;
         _themeView          = [_CPAlertThemeView new];
 
         _messageLabel       = [CPTextField labelWithTitle:@"Alert"];
@@ -450,6 +452,9 @@ CPCriticalAlertStyle        = 2;
         defaultElementsMargin = [_themeView currentValueForThemeAttribute:@"default-elements-margin"],
         panelSize = [[_window contentView] frame].size,
         buttonsOriginY,
+        buttonMarginY,
+        buttonMarginX,
+        theme = [self theme],
         offsetX;
 
     [aRepresentativeButton setTheme:[self theme]];
@@ -460,7 +465,24 @@ CPCriticalAlertStyle        = 2;
         panelSize.height = minimumSize.height;
 
     buttonsOriginY = panelSize.height - [aRepresentativeButton frameSize].height + buttonOffset;
+
+    if ([_window styleMask] & _CPModalWindowMask)
+        buttonsOriginY = panelSize.height - [aRepresentativeButton frameSize].height / 2 + buttonOffset;
+
     offsetX = panelSize.width - inset.right;
+
+    switch([_window styleMask])
+    {
+        case _CPModalWindowMask:
+            buttonMarginY = [_themeView currentValueForThemeAttribute:@"modal-window-button-margin-y"];
+            buttonMarginX = [_themeView currentValueForThemeAttribute:@"modal-window-button-margin-x"];
+            break;
+
+        default:
+            buttonMarginY = [_themeView currentValueForThemeAttribute:@"standard-window-button-margin-y"];
+            buttonMarginX = [_themeView currentValueForThemeAttribute:@"standard-window-button-margin-x"];
+            break;
+    }
 
     for (var i = [_buttons count] - 1; i >= 0 ; i--)
     {
@@ -473,7 +495,7 @@ CPCriticalAlertStyle        = 2;
             height = CGRectGetHeight(buttonFrame);
 
         offsetX -= width;
-        [button setFrame:CGRectMake(offsetX, buttonsOriginY, width, height)];
+        [button setFrame:CGRectMake(offsetX + buttonMarginX, buttonsOriginY + buttonMarginY, width, height)];
         offsetX -= 10;
     }
 
@@ -545,6 +567,12 @@ CPCriticalAlertStyle        = 2;
 
     [_window setFrameSize:finalSize];
     [_window center];
+
+    if ([_window styleMask] & _CPModalWindowMask || [_window styleMask] & CPHUDBackgroundWindowMask)
+    {
+        [_window setMovable:YES];
+        [_window setMovableByWindowBackground:YES];
+    }
 
     _needsLayout = NO;
 }
@@ -689,63 +717,50 @@ CPCriticalAlertStyle        = 2;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[
-                CGSizeMake(400.0, 110.0),
-                CGInsetMake(15, 15, 15, 50), 6, 10,
-                CPJustifiedTextAlignment,
-                [CPColor blackColor],
-                [CPFont boldSystemFontOfSize:13.0],
-                [CPNull null], CGSizeMakeZero(),
-                CPJustifiedTextAlignment,
-                [CPColor blackColor],
-                [CPFont systemFontOfSize:12.0],
-                [CPNull null], CGSizeMakeZero(),
-                CGPointMake(15, 12),
-                [CPNull null],
-                [CPNull null],
-                [CPNull null],
-                [CPNull null],
-                [CPNull null],
-                [CPNull null],
-                0.0,
-                0.0,
-                3.0,
-                [CPColor blackColor],
-                [CPFont systemFontOfSize:12.0],
-                [CPNull null],
-                0.0
-            ]
-            forKeys:[
-                @"size",
-                @"content-inset",
-                @"informative-offset",
-                @"button-offset",
-                @"message-text-alignment",
-                @"message-text-color",
-                @"message-text-font",
-                @"message-text-shadow-color",
-                @"message-text-shadow-offset",
-                @"informative-text-alignment",
-                @"informative-text-color",
-                @"informative-text-font",
-                @"informative-text-shadow-color",
-                @"informative-text-shadow-offset",
-                @"image-offset",
-                @"information-image",
-                @"warning-image",
-                @"error-image",
-                @"help-image",
-                @"help-image-left-offset",
-                @"help-image-pressed",
-                @"suppression-button-y-offset",
-                @"suppression-button-x-offset",
-                @"default-elements-margin",
-                @"suppression-button-text-color",
-                @"suppression-button-text-font",
-                @"suppression-button-text-shadow-color",
-                @"suppression-button-text-shadow-offset"
-            ]
-        ];
+    return [CPDictionary dictionaryWithObjects:[CGSizeMake(400.0, 110.0), CGInsetMake(15, 15, 15, 50), 6, 10,
+                                                CPJustifiedTextAlignment, [CPColor blackColor], [CPFont boldSystemFontOfSize:13.0], [CPNull null], CGSizeMakeZero(),
+                                                CPJustifiedTextAlignment, [CPColor blackColor], [CPFont systemFontOfSize:12.0], [CPNull null], CGSizeMakeZero(),
+                                                CGPointMake(15, 12),
+                                                [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                0.0,
+                                                0.0,
+                                                3.0,
+                                                [CPColor blackColor],
+                                                [CPFont systemFontOfSize:12.0],
+                                                [CPNull null],
+                                                0.0,
+                                                0.0,
+                                                0.0,
+                                                0.0,
+                                                0.0,
+                                                ]
+                                       forKeys:[@"size", @"content-inset", @"informative-offset", @"button-offset",
+                                                @"message-text-alignment", @"message-text-color", @"message-text-font", @"message-text-shadow-color", @"message-text-shadow-offset",
+                                                @"informative-text-alignment", @"informative-text-color", @"informative-text-font", @"informative-text-shadow-color", @"informative-text-shadow-offset",
+                                                @"image-offset",
+                                                @"information-image",
+                                                @"warning-image",
+                                                @"error-image",
+                                                @"help-image",
+                                                @"help-image-left-offset",
+                                                @"help-image-pressed",
+                                                @"suppression-button-y-offset",
+                                                @"suppression-button-x-offset",
+                                                @"default-elements-margin",
+                                                @"suppression-button-text-color",
+                                                @"suppression-button-text-font",
+                                                @"suppression-button-text-shadow-color",
+                                                @"suppression-button-text-shadow-offset",
+                                                @"modal-window-button-margin-y",
+                                                @"modal-window-button-margin-x",
+                                                @"standard-window-button-margin-y",
+                                                @"standard-window-button-margin-x"
+                                                ]];
 }
 
 @end

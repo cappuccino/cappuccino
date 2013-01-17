@@ -31,18 +31,9 @@
 CPLightShadow   = 0;
 CPHeavyShadow   = 1;
 
-var CPShadowViewLightBackgroundColor    = nil,
-    CPShadowViewHeavyBackgroundColor    = nil;
+CPThemeStateShadowViewLight = CPThemeState("shadowview-style-light");
+CPThemeStateShadowViewHeavy = CPThemeState("shadowview-style-heavy");
 
-var LIGHT_LEFT_INSET    = 3.0,
-    LIGHT_RIGHT_INSET   = 3.0,
-    LIGHT_TOP_INSET     = 3.0,
-    LIGHT_BOTTOM_INSET  = 5.0,
-
-    HEAVY_LEFT_INSET    = 7.0,
-    HEAVY_RIGHT_INSET   = 7.0,
-    HEAVY_TOP_INSET     = 5.0,
-    HEAVY_BOTTOM_INSET  = 5.0;
 
 /*!
     @ingroup appkit
@@ -52,40 +43,25 @@ var LIGHT_LEFT_INSET    = 3.0,
     CPShadowWeight  _weight;
 }
 
-+ (void)initialize
++ (CPString)defaultThemeClass
 {
-    if (self !== [CPShadowView class])
-        return;
+    return "shadow-view";
+}
 
-    var bundle = [CPBundle bundleForClass:[self class]];
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithJSObject:{
+        @"bezel-color": [CPNull null],
+        @"content-inset": CGInsetMakeZero()
+    }];
+}
 
-    CPShadowViewLightBackgroundColor = CPColorWithImages([
-        [@"CPShadowView/CPShadowViewLightTopLeft.png", 9.0, 9.0, bundle],
-        [@"CPShadowView/CPShadowViewLightTop.png", 1.0, 9.0, bundle],
-        [@"CPShadowView/CPShadowViewLightTopRight.png", 9.0, 9.0, bundle],
++ (CGRect)frameForContentFrame:(CGRect)aFrame withWeight:(CPShadowWeight)aWeight
+{
+    var shadowView = [CPShadowView new],
+        inset =  [shadowView valueForThemeAttribute:@"content-inset" inState:(aWeight == CPLightShadow) ? CPThemeStateShadowViewLight : CPThemeStateShadowViewHeavy];
 
-        [@"CPShadowView/CPShadowViewLightLeft.png", 9.0, 1.0, bundle],
-        nil,
-        [@"CPShadowView/CPShadowViewLightRight.png", 9.0, 1.0, bundle],
-
-        [@"CPShadowView/CPShadowViewLightBottomLeft.png", 9.0, 9.0, bundle],
-        [@"CPShadowView/CPShadowViewLightBottom.png", 1.0, 9.0, bundle],
-        [@"CPShadowView/CPShadowViewLightBottomRight.png", 9.0, 9.0, bundle]
-    ]);
-
-    CPShadowViewHeavyBackgroundColor = CPColorWithImages([
-        [@"CPShadowView/CPShadowViewHeavyTopLeft.png", 17.0, 17.0, bundle],
-        [@"CPShadowView/CPShadowViewHeavyTop.png", 1.0, 17.0, bundle],
-        [@"CPShadowView/CPShadowViewHeavyTopRight.png", 17.0, 17.0, bundle],
-
-        [@"CPShadowView/CPShadowViewHeavyLeft.png", 17.0, 1.0, bundle],
-        nil,
-        [@"CPShadowView/CPShadowViewHeavyRight.png", 17.0, 1.0, bundle],
-
-        [@"CPShadowView/CPShadowViewHeavyBottomLeft.png", 17.0, 17.0, bundle],
-        [@"CPShadowView/CPShadowViewHeavyBottom.png", 1.0, 17.0, bundle],
-        [@"CPShadowView/CPShadowViewHeavyBottomRight.png", 17.0, 17.0, bundle]
-    ]);
+    return CGRectMake(_CGRectGetMinX(aFrame) - inset.left, _CGRectGetMinY(aFrame) - inset.top, _CGRectGetWidth(aFrame) + inset.left + inset.right, _CGRectGetHeight(aFrame) + inset.top + inset.bottom);
 }
 
 + (id)shadowViewEnclosingView:(CPView)aView
@@ -102,15 +78,16 @@ var LIGHT_LEFT_INSET    = 3.0,
         [shadowView setWeight:aWeight];
 
         var size = [shadowView frame].size,
-            width = size.width - [shadowView leftInset] - [shadowView rightInset],
-            height = size.height - [shadowView topInset] - [shadowView bottomInset],
+            inset = [shadowView currentValueForThemeAttribute:@"content-inset"],
+            width = size.width - inset.left - inset.right,
+            height = size.height - inset.top - inset.bottom,
             enclosingView = [aView superview];
 
         [shadowView setHitTests:[aView hitTests]];
         [shadowView setAutoresizingMask:[aView autoresizingMask]];
         [aView removeFromSuperview];
         [shadowView addSubview:aView];
-        [aView setFrame:CGRectMake([shadowView leftInset], [shadowView topInset], width, height)]
+        [aView setFrame:CGRectMake(inset.left, inset.top, width, height)];
         [enclosingView addSubview:shadowView];
     }
 
@@ -123,9 +100,7 @@ var LIGHT_LEFT_INSET    = 3.0,
 
     if (self)
     {
-        _weight = CPLightShadow;
-
-        [self setBackgroundColor:CPShadowViewLightBackgroundColor];
+        [self setWeight:CPLightShadow];
 
         [self setHitTests:NO];
     }
@@ -141,54 +116,45 @@ var LIGHT_LEFT_INSET    = 3.0,
     _weight = aWeight;
 
     if (_weight == CPLightShadow)
-        [self setBackgroundColor:CPShadowViewLightBackgroundColor];
-
+        [self setThemeState:CPThemeStateShadowViewLight];
     else
-        [self setBackgroundColor:CPShadowViewHeavyBackgroundColor];
+        [self setThemeState:CPThemeStateShadowViewHeavy];
+
+    [self setNeedsLayout];
 }
 
 - (float)leftInset
 {
-    return _weight == CPLightShadow ? LIGHT_LEFT_INSET : HEAVY_LEFT_INSET;
+    return [self currentValueForThemeAttribute:@"content-inset"].left;
 }
 
 - (float)rightInset
 {
-    return _weight == CPLightShadow ? LIGHT_RIGHT_INSET : HEAVY_RIGHT_INSET;
+    return [self currentValueForThemeAttribute:@"content-inset"].right;
 }
 
 - (float)topInset
 {
-    return _weight == CPLightShadow ? LIGHT_TOP_INSET : HEAVY_TOP_INSET;
+    return [self currentValueForThemeAttribute:@"content-inset"].top;
 }
 
 - (float)bottomInset
 {
-    return _weight == CPLightShadow ? LIGHT_BOTTOM_INSET : HEAVY_BOTTOM_INSET;
+    return [self currentValueForThemeAttribute:@"content-inset"].bottom;
 }
 
 - (float)horizontalInset
 {
-    if (_weight == CPLightShadow)
-        return LIGHT_LEFT_INSET + LIGHT_RIGHT_INSET;
+    var currentContentInset = [self currentValueForThemeAttribute:@"content-inset"];
 
-    return HEAVY_LEFT_INSET + HEAVY_RIGHT_INSET;
+    return currentContentInset.left + currentContentInset.right;
 }
 
 - (float)verticalInset
 {
-    if (_weight == CPLightShadow)
-        return LIGHT_TOP_INSET + LIGHT_BOTTOM_INSET;
+    var currentContentInset = [self currentValueForThemeAttribute:@"content-inset"];
 
-    return HEAVY_TOP_INSET + HEAVY_BOTTOM_INSET;
-}
-
-+ (CGRect)frameForContentFrame:(CGRect)aFrame withWeight:(CPShadowWeight)aWeight
-{
-    if (aWeight == CPLightShadow)
-        return CGRectMake(_CGRectGetMinX(aFrame) - LIGHT_LEFT_INSET, _CGRectGetMinY(aFrame) - LIGHT_TOP_INSET, _CGRectGetWidth(aFrame) + LIGHT_LEFT_INSET + LIGHT_RIGHT_INSET, _CGRectGetHeight(aFrame) + LIGHT_TOP_INSET + LIGHT_BOTTOM_INSET);
-    else
-        return CGRectMake(_CGRectGetMinX(aFrame) - HEAVY_LEFT_INSET, _CGRectGetMinY(aFrame) - HEAVY_TOP_INSET, _CGRectGetWidth(aFrame) + HEAVY_LEFT_INSET + HEAVY_RIGHT_INSET, _CGRectGetHeight(aFrame) + HEAVY_TOP_INSET + HEAVY_BOTTOM_INSET);
+    return currentContentInset.top + currentContentInset.bottom;
 }
 
 - (CGRect)frameForContentFrame:(CGRect)aFrame
@@ -199,6 +165,13 @@ var LIGHT_LEFT_INSET    = 3.0,
 - (void)setFrameForContentFrame:(CGRect)aFrame
 {
     [self setFrame:[self frameForContentFrame:aFrame]];
+}
+
+- (void)layoutSubviews
+{
+    [super layoutSubviews];
+
+    [self setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
 }
 
 @end
