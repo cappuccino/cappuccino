@@ -2,6 +2,7 @@
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPString.j>
 @import <Foundation/CPObject.j>
+@import <Foundation/CPSet.j>
 
 var FILE = require("file"),
     SYSTEM = require("system");
