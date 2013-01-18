@@ -3671,7 +3671,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (CPView)_unarchiveViewWithIdentifier:(CPString)anIdentifier owner:(id)anOwner
 {
     var cib = [_archivedDataViews objectForKey:anIdentifier];
-    
+
     if (!cib && !_unavailable_custom_cibs[anIdentifier])
     {
         var bundle = anOwner ? [CPBundle bundleForClass:[anOwner class]] : [CPBundle mainBundle];
@@ -5488,7 +5488,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
 - (CPString)description
 {
-    return "<" + class_getName(isa) + " 0x" + [CPString stringWithHash:[self UID]] + " identifier=" + [self identifier] + ">";
+    return "<" + [self className] + " 0x" + [CPString stringWithHash:[self UID]] + " identifier=" + [self identifier] + ">";
 }
 
 @end
