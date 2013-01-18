@@ -116,7 +116,7 @@ var currentCompilerFlags = "";
 
 var reservedIdentifiers = exports.acorn.makePredicate("self _cmd undefined localStorage arguments");
 
-var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags, /*unsigned*/ pass)
+var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags, /*unsigned*/ pass, /* Dictionary */ classDefs)
 {
     this.source = aString;
     this.URL = new CFURL(aURL);
@@ -144,7 +144,7 @@ var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*
 
     this.dependencies = [];
     this.flags = flags | ObjJAcornCompiler.Flags.IncludeDebugSymbols;
-    this.classDefs = Object.create(null);
+    this.classDefs = classDefs ? classDefs : Object.create(null);
     this.lastPos = 0;
     compile(this.tokens, new Scope(null ,{ compiler: this }), pass === 2 ? pass2 : pass1);
 }
@@ -157,9 +157,9 @@ exports.ObjJAcornCompiler.compileToExecutable = function(/*String*/ aString, /*C
     return new ObjJAcornCompiler(aString, aURL, flags, 2).executable();
 }
 
-exports.ObjJAcornCompiler.compileToIMBuffer = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags)
+exports.ObjJAcornCompiler.compileToIMBuffer = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags, classDefs)
 {
-    return new ObjJAcornCompiler(aString, aURL, flags, 2).IMBuffer();
+    return new ObjJAcornCompiler(aString, aURL, flags, 2, classDefs).IMBuffer();
 }
 
 exports.ObjJAcornCompiler.compileFileDependencies = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags)
@@ -438,7 +438,6 @@ ClassDeclarationStatement: function(node, st, c) {
             throw new SyntaxError(st.compiler.error_message("Can't find superclass " + node.superclassname.name, node.superclassname));
 
         classDef = {"className": className, "superClassName": node.superclassname.name, "ivars": Object.create(null), "methods": Object.create(null)};
-        st.compiler.classDefs[className] = classDef;
 
         CONCAT(saveJSBuffer, "{var the_class = objj_allocateClassPair(" + node.superclassname.name + ", \"" + className + "\"),\nmeta_class = the_class.isa;");
     }
@@ -455,7 +454,6 @@ ClassDeclarationStatement: function(node, st, c) {
     else
     {
         classDef = {"className": className, "superClassName": null, "ivars": Object.create(null), "methods": Object.create(null)};
-        st.compiler.classDefs[className] = classDef;
 
         CONCAT(saveJSBuffer, "{var the_class = objj_allocateClassPair(Nil, \"" + className + "\"),\nmeta_class = the_class.isa;");
     }
@@ -553,12 +551,15 @@ ClassDeclarationStatement: function(node, st, c) {
 
         // Remove all @accessors or we will get a recursive loop in infinity
         var b = getterSetterBuffer.toString().replace(/@accessors(\(.*\))?/g, "");
-        var imBuffer = ObjJAcornCompiler.compileToIMBuffer(b, "Accessors", st.compiler.flags);
+        var imBuffer = ObjJAcornCompiler.compileToIMBuffer(b, "Accessors", st.compiler.flags, st.compiler.classDefs);
 
         // Add the accessors methods first to instance method buffer.
         // This will allow manually added set and get methods to override the compiler generated
         CONCAT(st.compiler.imBuffer, imBuffer);
     }
+
+    // We will store the classDef first after accessors are done so we don't get a duplicate class error
+    st.compiler.classDefs[className] = classDef;
 
     if (node.body.length > 0)
     {
