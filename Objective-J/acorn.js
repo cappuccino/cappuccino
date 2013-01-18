@@ -1449,14 +1449,12 @@ if (!exports.acorn) {
     case _class:
       next();
       node.id = parseIdent(false);
-      print("Class: " + node.id.name);
       return finishNode(node, "ClassStatement");
 
       // This is a Objective-J statement
     case _global:
       next();
       node.id = parseIdent(false);
-      print("Global: " + node.id.name);
       return finishNode(node, "GlobalStatement");
 
       // If the statement does not start with a statement keyword or a

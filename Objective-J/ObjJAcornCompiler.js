@@ -745,7 +745,7 @@ Identifier: function(node, st, c) {
             if (!reservedIdentifiers(identifier) && !st.getLvar(identifier) && typeof global[identifier] === "undefined" && !st.compiler.getClassDef(identifier)) {
                 var message;
                 if (st.assignment) {
-                    message = createMessage("Creating global variable inside function or method'" + identifier + "'", node, st.compiler.source);
+                    message = createMessage("Creating global variable inside function or method '" + identifier + "'", node, st.compiler.source);
                     st.vars[identifier] = {type: "global", node: node};
                 } else
                     message = createMessage("Using unknown class or uninitialized global variable '" + identifier + "'", node, st.compiler.source);
@@ -801,7 +801,6 @@ GlobalStatement: function(node, st, c) {
     CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
     st.compiler.lastPos = node.start;
     CONCAT(st.compiler.jsBuffer, "//");
-    print("GlobalStatement: " + node.id.name);
     st.rootScope().vars[node.id.name] = {type: "global", node: node.id};
 }
 });
