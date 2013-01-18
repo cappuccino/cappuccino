@@ -22,6 +22,7 @@
 
 @import <AppKit/_CPCibWindowTemplate.j>
 
+@global CP_NSMapClassName
 
 var NSBorderlessWindowMask              = 0x00,
     NSTitledWindowMask                  = 0x01,
@@ -54,36 +55,36 @@ var NSBorderlessWindowMask              = 0x00,
         if ([aCoder containsValueForKey:@"NSMaxSize"])
             _maxSize = [aCoder decodeSizeForKey:@"NSMaxSize"];
 
-        _screenRect = [aCoder decodeRectForKey:@"NSScreenRect"]; // screen created on
-        _viewClass = [aCoder decodeObjectForKey:@"NSViewClass"]; // references the toolbar if present (anything else?)
-        _wtFlags = [aCoder decodeIntForKey:@"NSWTFlags"];
-        _windowAutorecalculatesKeyViewLoop = !!(_wtFlags & NSAutorecalculatesKeyViewLoopWTFlag);
-        _windowBacking = [aCoder decodeIntForKey:@"NSWindowBacking"];
+        self._screenRect = [aCoder decodeRectForKey:@"NSScreenRect"]; // screen created on
+        self._viewClass = [aCoder decodeObjectForKey:@"NSViewClass"]; // references the toolbar if present (anything else?)
+        self._wtFlags = [aCoder decodeIntForKey:@"NSWTFlags"];
+        self._windowAutorecalculatesKeyViewLoop = !!(_wtFlags & NSAutorecalculatesKeyViewLoopWTFlag);
+        self._windowBacking = [aCoder decodeIntForKey:@"NSWindowBacking"];
 
         // Convert NSWindows to CPWindows.
-        _windowClass = CP_NSMapClassName([aCoder decodeObjectForKey:@"NSWindowClass"]);
+        self._windowClass = CP_NSMapClassName([aCoder decodeObjectForKey:@"NSWindowClass"]);
 
-        _windowRect = [aCoder decodeRectForKey:@"NSWindowRect"];
-        _windowStyleMask = [aCoder decodeIntForKey:@"NSWindowStyleMask"];
-        _windowTitle = [aCoder decodeObjectForKey:@"NSWindowTitle"];
-        _windowView = [aCoder decodeObjectForKey:@"NSWindowView"];
+        self._windowRect = [aCoder decodeRectForKey:@"NSWindowRect"];
+        self._windowStyleMask = [aCoder decodeIntForKey:@"NSWindowStyleMask"];
+        self._windowTitle = [aCoder decodeObjectForKey:@"NSWindowTitle"];
+        self._windowView = [aCoder decodeObjectForKey:@"NSWindowView"];
 
         // Flip Y coordinate
-        _windowRect.origin.y = _screenRect.size.height - _windowRect.origin.y - _windowRect.size.height;
+        self._windowRect.origin.y = self._screenRect.size.height - self._windowRect.origin.y - self._windowRect.size.height;
 
-        if (_windowStyleMask === NSBorderlessWindowMask)
-            _windowStyleMask = CPBorderlessWindowMask;
+        if (self._windowStyleMask === NSBorderlessWindowMask)
+            self._windowStyleMask = CPBorderlessWindowMask;
 
         else
-            _windowStyleMask =  (_windowStyleMask & NSTitledWindowMask ? CPTitledWindowMask : 0) |
-                                (_windowStyleMask & NSClosableWindowMask ? CPClosableWindowMask : 0) |
-                                (_windowStyleMask & NSMiniaturizableWindowMask ? CPMiniaturizableWindowMask : 0) |
-                                (_windowStyleMask & NSResizableWindowMask ? CPResizableWindowMask : 0) |
-                                (_windowStyleMask & NSTexturedBackgroundWindowMask ? NSTexturedBackgroundWindowMask : 0) |
-                                (_windowStyleMask & NSDocModalWindowMask ? CPDocModalWindowMask : 0) |
-                                (_windowStyleMask & NSHUDBackgroundWindowMask ? CPHUDBackgroundWindowMask : 0);
+            self._windowStyleMask =  (self._windowStyleMask & NSTitledWindowMask ? CPTitledWindowMask : 0) |
+                                (self._windowStyleMask & NSClosableWindowMask ? CPClosableWindowMask : 0) |
+                                (self._windowStyleMask & NSMiniaturizableWindowMask ? CPMiniaturizableWindowMask : 0) |
+                                (self._windowStyleMask & NSResizableWindowMask ? CPResizableWindowMask : 0) |
+                                (self._windowStyleMask & NSTexturedBackgroundWindowMask ? NSTexturedBackgroundWindowMask : 0) |
+                                (self._windowStyleMask & NSDocModalWindowMask ? CPDocModalWindowMask : 0) |
+                                (self._windowStyleMask & NSHUDBackgroundWindowMask ? CPHUDBackgroundWindowMask : 0);
 
-        _windowIsFullBridge = [aCoder decodeObjectForKey:"NSFrameAutosaveName"] === "CPBorderlessBridgeWindowMask";
+        self._windowIsFullBridge = [aCoder decodeObjectForKey:"NSFrameAutosaveName"] === "CPBorderlessBridgeWindowMask";
 
         /*if (![_windowClass isEqualToString:@"NSPanel"])
            _windowRect.origin.y -= [NSMainMenuView menuHeight];   // compensation for the additional menu bar
