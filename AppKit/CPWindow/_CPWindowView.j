@@ -25,8 +25,16 @@
 
 @class CPCursor
 @class CPMenu
+@class CPPlatformWindow
 
 @global CPApp
+@global CPHUDBackgroundWindowMask
+@global CPResizableWindowMask
+@global CPWindowResizeSlop
+@global CPWindowResizeStyle
+@global CPWindowResizeStyleLegacy
+@global CPWindowResizeStyleModern
+
 
 var _CPWindowViewCornerResizeRectWidth = 10,
     _CPWindowViewResizeRegionNone = -1,
