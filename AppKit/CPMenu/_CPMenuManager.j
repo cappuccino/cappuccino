@@ -1,6 +1,9 @@
-@import <Foundation/CPObject.j>
+@import <Foundation/Foundation.j>
+@import "CPWindow.j"
+@import "CPEvent.j"
 
 @class _CPMenuWindow
+
 
 @global CPApp
 @global CPMenuDidEndTrackingNotification
@@ -133,15 +136,6 @@ var STICKY_TIME_INTERVAL            = 0.5,
         return;
     }
 
-    if (_keyBuffer)
-    {
-        if (([anEvent timestamp] - _startTime) > (STICKY_TIME_INTERVAL + [activeMenu numberOfItems] / 2))
-            [self selectNextItemBeginningWith:_keyBuffer inMenu:menu clearBuffer:YES];
-
-        if (type === CPPeriodic)
-            return;
-    }
-
     // Periodic events don't have a valid location.
     var globalLocation = type === CPPeriodic ? _lastGlobalLocation : [anEvent globalLocation];
 
@@ -156,6 +150,15 @@ var STICKY_TIME_INTERVAL            = 0.5,
         // Find out the item the mouse is currently on top of
         activeItemIndex = activeMenuContainer ? [activeMenuContainer itemIndexAtPoint:menuLocation] : CPNotFound,
         activeItem = activeItemIndex !== CPNotFound ? [activeMenu itemAtIndex:activeItemIndex] : nil;
+
+    if (_keyBuffer)
+    {
+        if (([anEvent timestamp] - _startTime) > (STICKY_TIME_INTERVAL + [activeMenu numberOfItems] / 2))
+            [self selectNextItemBeginningWith:_keyBuffer inMenu:menu clearBuffer:YES];
+
+        if (type === CPPeriodic)
+            return;
+    }
 
     // unhighlight when mouse is moved off the menu
     if (_lastGlobalLocation && CGRectContainsPoint([activeMenuContainer globalFrame], _lastGlobalLocation)
