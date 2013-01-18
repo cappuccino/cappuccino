@@ -31,6 +31,7 @@
 @import "CPCibBindingConnector.j"
 @import "CPCibRuntimeAttributesConnector.j"
 @import "CPCibHelpConnector.j"
+@import "CPClipView.j"
 
 @class CPScrollView
 
