@@ -22,6 +22,9 @@
 
 @import "_CPWindowView.j"
 
+@class CPTextField
+
+
 @implementation _CPTitleableWindowView : _CPWindowView
 {
     CPTextField         _titleField;

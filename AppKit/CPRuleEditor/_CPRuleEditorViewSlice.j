@@ -3,6 +3,8 @@
  *     Copyright (c) 2011 Pear, Inc. All rights reserved.
  */
 
+@import "CPView.j"
+
 @implementation _CPRuleEditorViewSlice : CPView
 {
     CPRuleEditor _ruleEditor;
@@ -12,6 +14,7 @@
     BOOL         _selected              @accessors(getter=_isSelected, setter=_setSelected:);
     BOOL         _lastSelected          @accessors(getter=_isLastSelected, setter=_setLastSelected:);
     CPColor      _backgroundColor       @accessors(property=backgroundColor);
+    BOOL         _editable              @accessors(getter=isEditable, setter=setEditable:);
 }
 
 - (void)removeFromSuperview
@@ -81,13 +84,13 @@
 
 - (void)mouseDown:(CPEvent)theEvent
 {
-    if (editable)
+    if (_editable)
         [_ruleEditor _mouseDownOnSlice:self withEvent:theEvent];
 }
 
 - (void)mouseUp:(CPEvent)theEvent
 {
-    if (editable)
+    if (_editable)
         [_ruleEditor _mouseUpOnSlice:self withEvent:theEvent];
 }
 

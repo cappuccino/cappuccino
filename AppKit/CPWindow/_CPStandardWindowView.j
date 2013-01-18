@@ -22,6 +22,7 @@
 
 @import "CPTextField.j"
 @import "_CPTitleableWindowView.j"
+@import "CPButton.j"
 
 @class _CPDocModalWindowView
 

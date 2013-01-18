@@ -31,6 +31,11 @@
 
 @global CPApp
 @global CPStringPboardType
+@global CPWindowAbove
+@global CPWindowBelow
+@global CPWindowDidBecomeKeyNotification
+@global CPWindowDidResignKeyNotification
+@global CPWindowDidResignKeyNotification
 
 CPTextFieldSquareBezel          = 0;    /*! A textfield bezel with squared corners. */
 CPTextFieldRoundedBezel         = 1;    /*! A textfield bezel with rounded corners. */
