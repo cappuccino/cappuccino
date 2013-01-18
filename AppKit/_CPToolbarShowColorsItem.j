@@ -21,7 +21,7 @@
  */
 
 @import "CPApplication.j"
-@import "CPToolbarItem.j"
+@import "_CPToolbarItem.j"
 
 
 @implementation _CPToolbarShowColorsItem : CPToolbarItem

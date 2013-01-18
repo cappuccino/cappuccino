@@ -46,12 +46,43 @@ var CPTextFieldDOMInputElement = nil,
     CPTextFieldInputIsActive = NO,
     CPTextFieldCachedSelectStartFunction = nil,
     CPTextFieldCachedDragFunction = nil,
-    CPTextFieldBlurFunction = nil,
+    CPTextFieldBlurHandler = nil,
     CPTextFieldInputFunction = nil;
 
 #endif
 
 var CPSecureTextFieldCharacter = "\u2022";
+
+
+function CPTextFieldBlurFunction(anEvent, owner, domElement, inputElement, resigning, didBlurRef)
+{
+    if (owner && domElement != inputElement.parentNode)
+        return;
+
+    if (!resigning && [[owner window] isKeyWindow])
+    {
+        /*
+            Browsers blur text fields when a click occurs anywhere outside the text field. That is normal for browsers, but in Cocoa the key view retains focus unless the click target accepts first responder. So if we lost focus but were not told to resign and our window is still key, restore focus.
+        */
+        window.setTimeout(function()
+        {
+            inputElement.focus();
+        }, 0.0);
+    }
+
+    CPTextFieldHandleBlur(anEvent, AT_REF(owner));
+    AT_DEREF(didBlurRef, YES);
+
+    return true;
+}
+
+function CPTextFieldHandleBlur(anEvent, ownerRef)
+{
+    AT_DEREF(ownerRef, nil);
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+}
+
 
 @implementation CPString (CPTextFieldAdditions)
 
@@ -188,28 +219,15 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         CPTextFieldDOMInputElement.style.background = "transparent";
         CPTextFieldDOMInputElement.style.outline = "none";
 
-        CPTextFieldBlurFunction = function(anEvent)
+        CPTextFieldBlurHandler = function(anEvent)
         {
-            if (CPTextFieldInputOwner && CPTextFieldInputOwner._DOMElement != CPTextFieldDOMInputElement.parentNode)
-                return;
-
-            if (!CPTextFieldInputResigning)
-            {
-                [[CPTextFieldInputOwner window] makeFirstResponder:nil];
-                return;
-            }
-
-            CPTextFieldHandleBlur(anEvent, CPTextFieldDOMInputElement);
-            CPTextFieldInputDidBlur = YES;
-
-            return true;
-        };
-
-        CPTextFieldHandleBlur = function(anEvent)
-        {
-            CPTextFieldInputOwner = nil;
-
-            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+            return CPTextFieldBlurFunction(
+                        anEvent,
+                        CPTextFieldInputOwner,
+                        CPTextFieldInputOwner._DOMElement,
+                        CPTextFieldDOMInputElement,
+                        CPTextFieldInputResigning,
+                        AT_REF(CPTextFieldInputDidBlur));
         };
 
         if (CPFeatureIsCompatible(CPInputOnInputEventFeature))
@@ -219,9 +237,16 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
                 if (!CPTextFieldInputOwner)
                     return;
 
-                var cappEvent = [CPEvent keyEventWithType:CPKeyUp location:_CGPointMakeZero() modifierFlags:0
-                                                timestamp:[CPEvent currentTimestamp] windowNumber:[[CPApp keyWindow] windowNumber] context:nil
-                                               characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:nil];
+                var cappEvent = [CPEvent keyEventWithType:CPKeyUp
+                                                 location:_CGPointMakeZero()
+                                            modifierFlags:0
+                                                timestamp:[CPEvent currentTimestamp]
+                                             windowNumber:[[CPApp keyWindow] windowNumber]
+                                                  context:nil
+                                               characters:nil
+                              charactersIgnoringModifiers:nil
+                                                isARepeat:NO
+                                                  keyCode:nil];
 
                 [CPTextFieldInputOwner keyUp:cappEvent];
 
@@ -231,8 +256,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             CPTextFieldDOMInputElement.oninput = CPTextFieldInputFunction;
         }
 
-        //FIXME make this not onblur
-        CPTextFieldDOMInputElement.onblur = CPTextFieldBlurFunction;
+        // FIXME make this not onblur
+        CPTextFieldDOMInputElement.onblur = CPTextFieldBlurHandler;
 
         CPTextFieldDOMStandardInputElement = CPTextFieldDOMInputElement;
     }
@@ -261,7 +286,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             CPTextFieldDOMPasswordInputElement.style.outline = "none";
             CPTextFieldDOMPasswordInputElement.type = "password";
 
-            CPTextFieldDOMPasswordInputElement.onblur = CPTextFieldBlurFunction;
+            CPTextFieldDOMPasswordInputElement.onblur = CPTextFieldBlurHandler;
         }
 
         CPTextFieldDOMInputElement = CPTextFieldDOMPasswordInputElement;
@@ -307,6 +332,11 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     if (shouldBeEditable)
         _isSelectable = YES;
+
+    if (_isEditable)
+        [self setThemeState:CPThemeStateEditable];
+    else
+        [self unsetThemeState:CPThemeStateEditable];
 
     // We only allow first responder status if the field is editable and enabled.
     if (!shouldBeEditable && [[self window] firstResponder] === self)
@@ -494,14 +524,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 /* @ignore */
 - (BOOL)becomeFirstResponder
 {
-#if PLATFORM(DOM)
-    if (CPTextFieldInputOwner && [CPTextFieldInputOwner window] !== [self window])
-        [[CPTextFieldInputOwner window] makeFirstResponder:nil];
-#endif
-
     // As long as we are the first responder we need to monitor the key status of our window.
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_windowDidResignKey:) name:CPWindowDidResignKeyNotification object:[self window]];
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_windowDidBecomeKey:) name:CPWindowDidBecomeKeyNotification object:[self window]];
+    [self _setObserveWindowKeyNotifications:YES];
 
     _isEditing = NO;
 
@@ -512,7 +536,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 /*!
-    A text field can be the first responder without necessarily being the focus of keyboard input. For example, it might be the first responder of window A but window B is the main and key window. It's important we don't put a focused input field into a text field in a non key window, even if that field is the first responder, because the key window might also have a first responder text field which the user will expect to receive keyboard input.
+    A text field can be the first responder without necessarily being the focus of keyboard input. For example, it might be the first responder of window A but window B is the main and key window. It's important we don't put a focused input field into a text field in a non-key window, even if that field is the first responder, because the key window might also have a first responder text field which the user will expect to receive keyboard input.
 
     Since a first responder but non-key window text field can't receive input it should not even look like an active text field (Cocoa has a "slightly active" text field look it uses when another window is the key window, but Cappuccino doesn't today.)
 */
@@ -534,8 +558,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     element.value = _stringValue;
     element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
+
     if (CPFeatureIsCompatible(CPInputSetFontOutsideOfDOM))
         element.style.font = [font cssString];
+
     element.style.zIndex = 1000;
 
     switch ([self alignment])
@@ -571,34 +597,23 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     element.style.top = topPoint;
     var left = _CGRectGetMinX(contentRect);
+
     // If the browser has a built in left padding, compensate for it. We need the input text to be exactly on top of the original text.
     if (CPFeatureIsCompatible(CPInput1PxLeftPadding))
         left -= 1;
+
     element.style.left = left + "px";
     element.style.width = _CGRectGetWidth(contentRect) + "px";
     element.style.height = ROUND(lineHeight) + "px";
     element.style.lineHeight = ROUND(lineHeight) + "px";
-    element.style.verticalAlign = @"top";
+    element.style.verticalAlign = "top";
+    element.style.cursor = "auto";
 
     _DOMElement.appendChild(element);
 
-    // The font change above doesn't work for some browsers if the element isn't already .appendChild'ed.
+    // The font change above doesn't work for some browsers if the element isn't already appendChild'ed.
     if (!CPFeatureIsCompatible(CPInputSetFontOutsideOfDOM))
         element.style.font = [font cssString];
-
-    window.setTimeout(function()
-    {
-        element.focus();
-
-        // Select the text if the textfield became first responder through keyboard interaction
-        if (!_willBecomeFirstResponderByClick)
-            [self _selectText:self immediately:YES];
-
-        _willBecomeFirstResponderByClick = NO;
-
-        [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
-        CPTextFieldInputOwner = self;
-    }, 0.0);
 
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 
@@ -612,16 +627,34 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [[self window] platformWindow]._DOMBodyElement.ondrag = function () {};
         [[self window] platformWindow]._DOMBodyElement.onselectstart = function () {};
     }
+
+    CPTextFieldInputOwner = self;
+
+    window.setTimeout(function()
+    {
+        /*
+            setTimeout handlers are not guaranteed to fire in the order they were initiated. This can cause a race condition when several windows with text fields are opened quickly, resulting in several instances of this timeout function being fired, perhaps out of order. So we have to check that by the time this function is fired, CPTextFieldInputOwner has not been changed to another text field in the meantime.
+        */
+        if (CPTextFieldInputOwner !== self)
+            return;
+
+        element.focus();
+
+        // Select the text if the textfield became first responder through keyboard interaction
+        if (!_willBecomeFirstResponderByClick)
+            [self _selectText:self immediately:YES];
+
+        _willBecomeFirstResponderByClick = NO;
+
+        [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
+    }, 0.0);
+
 #endif
 }
 
 /* @ignore */
 - (BOOL)resignFirstResponder
 {
-    // When we are no longer the first responder we don't worry about the key status of our window anymore.
-    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidResignKeyNotification object:[self window]];
-    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidBecomeKeyNotification object:[self window]];
-
 #if PLATFORM(DOM)
 
     var element = [self _inputElement],
@@ -642,6 +675,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
 
 #endif
+
+    // When we are no longer the first responder we don't worry about the key status of our window anymore.
+    [self _setObserveWindowKeyNotifications:NO];
 
     [self _resignFirstKeyResponder];
 
@@ -666,7 +702,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     _willBecomeFirstResponderByClick = NO;
 
     [self _updatePlaceholderState];
-
     [self setNeedsLayout];
 
 #if PLATFORM(DOM)
@@ -679,7 +714,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         element.blur();
 
     if (!CPTextFieldInputDidBlur)
-        CPTextFieldBlurFunction();
+        CPTextFieldBlurHandler();
 
     CPTextFieldInputDidBlur = NO;
     CPTextFieldInputResigning = NO;
@@ -699,6 +734,20 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
 
 #endif
+}
+
+- (void)_setObserveWindowKeyNotifications:(BOOL)shouldObserve
+{
+    if (shouldObserve)
+    {
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_windowDidResignKey:) name:CPWindowDidResignKeyNotification object:[self window]];
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_windowDidBecomeKey:) name:CPWindowDidBecomeKeyNotification object:[self window]];
+    }
+    else
+    {
+        [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidResignKeyNotification object:[self window]];
+        [[CPNotificationCenter defaultCenter] removeObserver:self name:CPWindowDidBecomeKeyNotification object:[self window]];
+    }
 }
 
 - (void)_windowDidResignKey:(CPNotification)aNotification

@@ -21,6 +21,7 @@
  */
 
 #include "CPRange.h"
+#include "Foundation.h"
 
 @import "CPArray.j"
 @import "CPObject.j"
@@ -79,6 +80,10 @@
 */
 - (id)initWithIndex:(CPInteger)anIndex
 {
+    if (!_IS_NUMERIC(anIndex))
+        [CPException raise:CPInvalidArgumentException
+                    reason:"Invalid index"];
+
     return [self initWithIndexesInRange:_CPMakeRange(anIndex, 1)];
 }
 

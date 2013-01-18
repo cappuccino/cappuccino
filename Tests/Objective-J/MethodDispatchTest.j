@@ -37,6 +37,7 @@
 
 @implementation RootClassWithForwardingTarget
 {
+    Class isa;
 }
 
 + (void)initialize

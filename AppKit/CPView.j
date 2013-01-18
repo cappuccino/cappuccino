@@ -464,7 +464,7 @@ var CPViewFlags                     = { },
     // We will have to adjust the z-index of all views starting at this index.
     var count = _subviews.length;
 
-    // dirty the key view loop, in case the window wants to auto recalculate it
+    // Dirty the key view loop, in case the window wants to auto recalculate it
     [[self window] _dirtyKeyViewLoop];
 
     // If this is already one of our subviews, remove it.
@@ -545,7 +545,7 @@ var CPViewFlags                     = { },
     if (!_superview)
         return;
 
-    // dirty the key view loop, in case the window wants to auto recalculate it
+    // Dirty the key view loop, in case the window wants to auto recalculate it
     [[self window] _dirtyKeyViewLoop];
 
     [_superview willRemoveSubview:self];

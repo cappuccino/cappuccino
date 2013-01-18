@@ -389,7 +389,7 @@
 					<string>title</string>
 					<string>URL</string>
 				</object>
-				<string key="NSObjectClassName">Bookmark</string>
+				<string key="NSObjectClassName">Bookmark2</string>
 				<bool key="NSEditable">YES</bool>
 				<object class="_NSManagedProxy" key="_NSManagedProxy"/>
 				<bool key="NSAvoidsEmptySelection">YES</bool>

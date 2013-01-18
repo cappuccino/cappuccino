@@ -46,6 +46,8 @@ if (input == nil)
 @implementation CPException : CPObject
 {
     id          _userInfo;
+    CPString    name;
+    CPString    message;
 }
 
 /*

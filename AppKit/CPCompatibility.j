@@ -83,7 +83,8 @@ CPCanvasParentDrawErrorsOnMovementBug   = 1 << 0;
 var USER_AGENT                          = "",
     PLATFORM_ENGINE                     = CPUnknownBrowserEngine,
     PLATFORM_FEATURES                   = 0,
-    PLATFORM_BUGS                       = 0;
+    PLATFORM_BUGS                       = 0,
+    PLATFORM_STYLE_JS_PROPERTIES        = {};
 
 // default these features to true
 
@@ -272,4 +273,107 @@ else
 
     CPUndoKeyEquivalentModifierMask = CPControlKeyMask;
     CPRedoKeyEquivalentModifierMask = CPControlKeyMask;
+}
+
+/*!
+    Return the properly prefixed JS property for the given name. E.g. in a webkit browser,
+    CPBrowserStyleProperty('transition') -> WebkitTransition
+
+    While technically not a style property, style related event handler names are also supported.
+    CPBrowserStyleProperty('transitionend') -> 'webkitTransitionEnd'
+
+    CSS is only available in platform(dom), so don't rely too heavily on it.
+*/
+function CPBrowserStyleProperty(aProperty)
+{
+    var lowerProperty = aProperty.toLowerCase();
+
+    if (PLATFORM_STYLE_JS_PROPERTIES[lowerProperty] === undefined)
+    {
+        var r = nil;
+
+#if PLATFORM(DOM)
+        var testElement = document.createElement('div');
+
+        switch (lowerProperty)
+        {
+            case 'transitionend':
+                var candidates = {
+                        'WebkitTransition' : 'webkitTransitionEnd',
+                        'MozTransition'    : 'transitionend',
+                        'OTransition'      : 'oTransitionEnd',
+                        'msTransition'     : 'MSTransitionEnd',
+                        'transition'       : 'transitionend'
+                    };
+
+                r = candidates[PLATFORM_STYLE_JS_PROPERTIES['transition']] || nil;
+                break;
+            default:
+                var prefixes = ["Webkit", "Moz", "O", "ms"],
+                    strippedProperty = aProperty.split('-').join(' '),
+                    capProperty = [strippedProperty capitalizedString].split(' ').join('');
+
+                for (var i = 0; i < prefixes.length; i++)
+                {
+                    // First check if the property is already valid without being formatted, otherwise try the capitalized property
+                    if (prefixes[i] + aProperty in testElement.style)
+                    {
+                        r = prefixes[i] + aProperty;
+                        break;
+                    }
+                    else if (prefixes[i] + capProperty in testElement.style)
+                    {
+                        r = prefixes[i] + capProperty;
+                        break;
+                    }
+                }
+
+                if (!r && lowerProperty in testElement.style)
+                    r = lowerProperty;
+
+                break;
+        }
+#endif
+
+        PLATFORM_STYLE_JS_PROPERTIES[lowerProperty] = r;
+    }
+
+    return PLATFORM_STYLE_JS_PROPERTIES[lowerProperty];
+}
+
+function CPBrowserCSSProperty(aProperty)
+{
+    var browserProperty = CPBrowserStyleProperty(aProperty);
+
+    if (!browserProperty)
+        return nil;
+
+    var prefixes = {
+            'Webkit': '-webkit-',
+            'Moz': '-moz-',
+            'O': '-o-',
+            'ms': '-ms-'
+        };
+
+    for (var prefix in prefixes)
+    {
+        if (browserProperty.substring(0, prefix.length) == prefix)
+        {
+            var browserPropertyWithoutPrefix = browserProperty.substring(prefix.length),
+                parts = browserPropertyWithoutPrefix.match(/[A-Z][a-z]+/g);
+
+            // If there were any capitalized words in the browserProperty, insert a "-" between each one
+            if (parts && parts.length > 0)
+                browserPropertyWithoutPrefix = parts.join("-");
+
+            return prefixes[prefix] + browserPropertyWithoutPrefix.toLowerCase();
+        }
+    }
+
+    var parts = browserProperty.match(/[A-Z][a-z]+/g);
+
+    if (parts && parts.length > 0)
+        browserProperty = parts.join("-");
+
+    return browserProperty.toLowerCase();
 }

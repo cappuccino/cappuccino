@@ -29,6 +29,7 @@
 
 @import "Nib2CibKeyedUnarchiver.j"
 @import "Converter.j"
+@import "Converter+Mac.j"
 
 var FILE = require("file"),
     OS = require("os"),
@@ -37,7 +38,7 @@ var FILE = require("file"),
     stream = require("narwhal/term").stream,
     StaticResource = require("objective-j").StaticResource,
 
-    DefaultTheme = "Aristo",
+    DefaultTheme = "Aristo2",
     BuildTypes = ["Debug", "Release"],
     DefaultFile = "MainMenu",
     AllowedStoredOptionsRe = new RegExp("^(defaultTheme|auxThemes|verbosity|quiet|frameworks|format)$"),

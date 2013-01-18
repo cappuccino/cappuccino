@@ -20,9 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CPControl.j>
-@import <AppKit/CPButton.j>
-@import <AppKit/CPTextField.j>
+@import "CPControl.j"
+@import "CPButton.j"
+@import "CPTextField.j"
 
 
 
@@ -55,10 +55,14 @@
 */
 + (CPStepper)stepperWithInitialValue:(float)aValue minValue:(float)aMinValue maxValue:(float)aMaxValue
 {
-    var stepper = [[CPStepper alloc] initWithFrame:_CGRectMake(0, 0, 19, 25)];
+    var stepper = [[CPStepper alloc] initWithFrame:_CGRectMakeZero()];
+
     [stepper setDoubleValue:aValue];
     [stepper setMinValue:aMinValue];
     [stepper setMaxValue:aMaxValue];
+
+    // _sizeToFit will put the good size for the stepper depending of the current theme
+    [stepper _sizeToFit];
 
     return stepper;
 }
@@ -74,6 +78,22 @@
 + (CPStepper)stepper
 {
     return [CPStepper stepperWithInitialValue:0.0 minValue:0.0 maxValue:59.0];
+}
+
++ (Class)_binderClassForBinding:(CPString)theBinding
+{
+    if (theBinding == CPValueBinding || theBinding == CPMinValueBinding || theBinding == CPMaxValueBinding)
+        return [_CPStepperValueBinder class];
+
+    return [super _binderClassForBinding:theBinding];
+}
+
+- (id)_replacementKeyPathForBinding:(CPString)aBinding
+{
+    if (aBinding == CPValueBinding)
+        return @"doubleValue";
+
+    return [super _replacementKeyPathForBinding:aBinding];
 }
 
 /*!
@@ -157,6 +177,7 @@
         downSize = [self valueForThemeAttribute:@"down-button-size"],
         upFrame = _CGRectMake(aFrame.size.width - upSize.width, 0, upSize.width, upSize.height),
         downFrame = _CGRectMake(aFrame.size.width - downSize.width, upSize.height, downSize.width, downSize.height);
+
     [_buttonUp setFrame:upFrame];
     [_buttonDown setFrame:downFrame];
 
@@ -166,6 +187,11 @@
     [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
     [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered | CPThemeStateDisabled] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateDisabled];
     [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered | CPThemeStateHighlighted] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateHighlighted];
+}
+
+- (void)_sizeToFit
+{
+    [self setFrame:CGRectMake([self frameOrigin].x, [self frameOrigin].y, 0, 0)];
 }
 
 /*!
@@ -211,8 +237,7 @@
     else
         [self setDoubleValue:([self doubleValue] - _increment)];
 
-    if (_target && _action && [_target respondsToSelector:_action])
-        [self sendAction:_action to:_target];
+    [self sendAction:[self action] to:[self target]];
 }
 
 /*!
@@ -246,6 +271,24 @@
 {
     return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], _CGSizeMakeZero(), _CGSizeMakeZero()]
                                        forKeys:[@"bezel-color-up-button", @"bezel-color-down-button", @"up-button-size", @"down-button-size"]];
+}
+
+@end
+
+@implementation _CPStepperValueBinder : CPBinder
+{
+}
+
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPString)aBinding
+{
+    var placeholder = (aBinding == CPMaxValueBinding) ? [_source maxValue] : [_source minValue];
+
+    [super _updatePlaceholdersWithOptions:options];
+
+    [self _setPlaceholder:placeholder forMarker:CPMultipleValuesMarker isDefault:YES];
+    [self _setPlaceholder:placeholder forMarker:CPNoSelectionMarker isDefault:YES];
+    [self _setPlaceholder:placeholder forMarker:CPNotApplicableMarker isDefault:YES];
+    [self _setPlaceholder:placeholder forMarker:CPNullMarker isDefault:YES];
 }
 
 @end

@@ -65,18 +65,18 @@
     CPArray         _columnWidths;
 }
 
-+ (CPImage)branchImage
++ (CPString)defaultThemeClass
 {
-    return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPBrowser class]]
-                                                    pathForResource:"browser-leaf.png"]
-                                              size:CGSizeMake(9,9)];
+    return "browser";
 }
 
-+ (CPImage)highlightedBranchImage
++ (id)themeAttributes
 {
-    return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPBrowser class]]
-                                                    pathForResource:"browser-leaf-highlighted.png"]
-                                              size:CGSizeMake(9,9)];
+    return [CPDictionary dictionaryWithJSObject:{
+        @"image-control-resize": [CPNull null],
+        @"image-control-leaf": [CPNull null],
+        @"image-control-leaf-pressed": [CPNull null]
+    }];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -276,8 +276,8 @@
     var column = [[CPTableColumn alloc] initWithIdentifier:@"Leaf"],
         view = [[_CPBrowserLeafView alloc] initWithFrame:CGRectMakeZero()];
 
-    [view setBranchImage:[[self class] branchImage]];
-    [view setHighlightedBranchImage:[[self class] highlightedBranchImage]];
+    [view setBranchImage:[self valueForThemeAttribute:@"image-control-leaf"]];
+    [view setHighlightedBranchImage:[self valueForThemeAttribute:@"image-control-leaf-pressed"]];
 
     [column setDataView:view];
     [column setResizingMask:CPTableColumnNoResizing];
@@ -704,8 +704,6 @@
 @end
 
 
-var _CPBrowserResizeControlBackgroundImage = nil;
-
 @implementation _CPBrowserResizeControl : CPView
 {
     CGPoint     _mouseDownX;
@@ -714,22 +712,14 @@ var _CPBrowserResizeControlBackgroundImage = nil;
     unsigned    _width;
 }
 
-+ (CPImage)backgroundImage
-{
-    if (!_CPBrowserResizeControlBackgroundImage)
-    {
-        var path = [[CPBundle bundleForClass:[self class]] pathForResource:"browser-resize-control.png"];
-        _CPBrowserResizeControlBackgroundImage = [[CPImage alloc] initWithContentsOfFile:path
-                                                                                    size:CGSizeMake(15, 14)];
-    }
-
-    return _CPBrowserResizeControlBackgroundImage;
-}
-
 - (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
-        [self setBackgroundColor:[CPColor colorWithPatternImage:[[self class] backgroundImage]]];
+    {
+        var browser = [[CPBrowser alloc] init];
+        [self setBackgroundColor:[CPColor colorWithPatternImage:[browser valueForThemeAttribute:@"image-control-resize"]]];
+    }
+
 
     return self;
 }

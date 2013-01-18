@@ -29,6 +29,48 @@ Now you can go to GitHub and [make a pull request](https://help.github.com/artic
 
 Some things are difficult to unit test in a way that's worthwhile. For instance a change to the mouse interaction of a `CPButton`. In this case a manual test is fine instead. Find the closest related manual test in `Tests/Manual` and add whatever it takes to easily reproduce the patched behavior, ideally with some labels describing how someone running the manual test should exercise it.
 
+## Commit Messages
+
+The style and format of your commit messages are very important to the health of the project. A good commit message helps not only users reading the release notes, but also your fellow Cappuccino developers as they review `git log` or `git blame` to figure out what you were doing.
+
+This is the preferred format of commit messages for complex changes:
+
+    [New:] <what's new.>
+
+    [OPTIONAL DESCRIPTION ABOUT WHAT THIS THING DOES.]
+
+Or for fixes:
+
+    Fixed: <what was fixed.>
+
+    BEFORE
+
+    AFTER
+
+**Example:**
+
+    nib2cib support for table view background colour.
+
+**Example:**
+
+    Fixed: CPAlert was a CPView.
+
+    Before this fix, CPAlert subclassed CPView, causing an API mismatch with Cocoa and exposing unexpected methods in the public API which made no sense for a CPAlert such as autoresizing masks. It also lead to CPAlert mistakingly shadowing _window from its CPView superclass.
+
+    This fix makes CPAlert inherit from CPObject as it should. The theming, which needs to be applied to a view, was moved to an internal view.
+
+The summary line concisely says what was fixed or improved by the commit. If it's an improvement or something new it optionally starts with "New:". If it's a bug fix it starts with "Fixed:".
+
+For a 'new' change, the rest of the summary line answers the question *"What is new and where?"*. Optionally the summary can be followed with more detail about what's new and why it's great.
+
+If the summary starts with "Fixed:" the rest of the summary line answers the question *"What was fixed?"*. E.g. "Fixed: the blargh had too many blurghs."
+
+(Note it does NOT answer the question *"what was done to fix it?"* E.g. **WRONG:** "Fixed: removed 2 blurghs from the blargh." That would imply that your very change was what was fixed by itself, causing an infinite loop in the universe and ending the world as we know it.)
+
+The rest of the fix message is in a before / after form. The first part describes what the situation was before the fix and says why the fix was needed. The after part describes what change was made to rectify the situation and any implementation notes that might be useful to know for people reviewing it in the future.
+
+Naturally small or unimportant commits have less rigid requirements. If you can comfortably and easily describe the whole change in the summary only, go ahead. Maybe you fixed a tiny typo or did a minor refactoring.
+
 ## Cappuccino Coding Style Guidelines
 
 ### Trailing whitespace

@@ -123,7 +123,7 @@ CPColorPickerViewHeight = 370;
 
     if (self)
     {
-        [[self contentView] setBackgroundColor:[CPColor colorWithWhite:0.95 alpha:1.0]];
+        //[[self contentView] setBackgroundColor:[CPColor colorWithWhite:0.95 alpha:1.0]];
 
         [self setTitle:@"Color Panel"];
         [self setLevel:CPFloatingWindowLevel];

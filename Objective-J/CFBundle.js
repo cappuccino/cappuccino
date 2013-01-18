@@ -106,6 +106,15 @@ function addClassToBundle(aClass, aBundle)
         CFBundlesForClasses[aClass.name] = aBundle;
 }
 
+function resetBundle()
+{
+    CFBundlesForURLStrings  = { };
+    CFBundlesForClasses     = { };
+    //CFCacheBuster       = new Date().getTime(),
+    CFTotalBytesLoaded  = 0;
+    CPApplicationSizeInBytes = 0;
+}
+
 CFBundle.bundleForClass = function(/*Class*/ aClass)
 {
     return CFBundlesForClasses[aClass.name] || CFBundle.mainBundle();

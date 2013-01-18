@@ -23,6 +23,7 @@
 @import <Foundation/CPObject.j>
 
 @import "CPTextField.j"
+@import "CPTableView.j"
 @import "_CPMenuWindow.j"
 
 // TODO Make themable.
@@ -55,7 +56,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
         [_menuWindow setLevel:CPPopUpMenuWindowLevel];
         [_menuWindow setHasShadow:YES];
         [_menuWindow setShadowStyle:CPMenuWindowShadowStyle];
-        [_menuWindow setAcceptsMouseMovedEvents:NO];
+        [_menuWindow setAcceptsMouseMovedEvents:YES];
         [_menuWindow setBackgroundColor:[_CPMenuWindow backgroundColorForBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle]];
 
         var contentView = [_menuWindow contentView];
@@ -73,6 +74,8 @@ var _CPAutocompleteMenuMaximumHeight = 307;
 
         [tableView setDataSource:self];
         [tableView setDelegate:self];
+        [tableView setTarget:self];
+        [tableView setAction:@selector(complete:)];
         [tableView setAllowsMultipleSelection:NO];
         [tableView setHeaderView:nil];
         [tableView setCornerView:nil];
@@ -161,7 +164,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
         // TODO Track down why mystery constant is needed to allocate enough width. Scroll view insets?
     }
 
-    var frameOrigin = [textField convertPoint:origin toView:nil],
+    var frameOrigin = [[textField window] convertBaseToGlobal:[textField convertPointToBase:origin]],
         screenSize = [([CPPlatform isBrowser] ? [_menuWindow platformWindow] : [_menuWindow screen]) visibleFrame].size,
         availableWidth = screenSize.width - frameOrigin.x,
         availableHeight = screenSize.height - frameOrigin.y,
@@ -249,6 +252,11 @@ var _CPAutocompleteMenuMaximumHeight = 307;
 - (void)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(int)row
 {
     return [contentArray objectAtIndex:row];
+}
+
+- (@action)complete:(id)sender
+{
+    [textField _complete:self];
 }
 
 @end

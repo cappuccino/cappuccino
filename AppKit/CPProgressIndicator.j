@@ -41,11 +41,7 @@ CPProgressIndicatorSpinningStyle    = 1;
 */
 CPProgressIndicatorHUDBarStyle      = 2;
 
-var CPProgressIndicatorSpinningStyleColors  = nil,
-
-    CPProgressIndicatorClassName            = nil,
-    CPProgressIndicatorStyleIdentifiers     = nil,
-    CPProgressIndicatorStyleSizes           = nil;
+var CPProgressIndicatorSpinningStyleColors  = nil;
 
 /*!
     @ingroup appkit
@@ -73,66 +69,15 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     BOOL                        _isDisplayedWhenStopped;
 }
 
-/*
-    @ignore
-*/
-+ (void)initialize
++ (CPString)defaultThemeClass
 {
-    if (self !== [CPProgressIndicator class])
-        return;
+    return @"progress-indicator";
+}
 
-    var bundle = [CPBundle bundleForClass:self];
-
-    CPProgressIndicatorSpinningStyleColors = [];
-
-    CPProgressIndicatorSpinningStyleColors[CPMiniControlSize]       = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:
-        [bundle pathForResource:@"CPProgressIndicator/CPProgressIndicatorSpinningStyleMini.gif"] size:CGSizeMake(16.0, 16.0)]];
-    CPProgressIndicatorSpinningStyleColors[CPSmallControlSize]      = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:
-        [bundle pathForResource:@"CPProgressIndicator/CPProgressIndicatorSpinningStyleSmall.gif"] size:CGSizeMake(32.0, 32.0)]];
-    CPProgressIndicatorSpinningStyleColors[CPRegularControlSize]    = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:
-        [bundle pathForResource:@"CPProgressIndicator/CPProgressIndicatorSpinningStyleRegular.gif"] size:CGSizeMake(64.0, 64.0)]];
-
-    CPProgressIndicatorBezelBorderViewPool = [];
-
-    var start = CPProgressIndicatorBarStyle,
-        end = CPProgressIndicatorHUDBarStyle;
-
-    for (; start <= end; ++start)
-    {
-        CPProgressIndicatorBezelBorderViewPool[start] = [];
-        CPProgressIndicatorBezelBorderViewPool[start][CPMiniControlSize]    = [];
-        CPProgressIndicatorBezelBorderViewPool[start][CPSmallControlSize]   = [];
-        CPProgressIndicatorBezelBorderViewPool[start][CPRegularControlSize]  = [];
-    }
-
-    CPProgressIndicatorClassName = [self className];
-    CPProgressIndicatorStyleIdentifiers = [];
-
-    CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle]        = @"Bar";
-    CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorSpinningStyle]   = @"Spinny";
-    CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorHUDBarStyle]     = @"HUDBar";
-
-    var regularIdentifier = _CPControlIdentifierForControlSize(CPRegularControlSize),
-        smallIdentifier = _CPControlIdentifierForControlSize(CPSmallControlSize),
-        miniIdentifier = _CPControlIdentifierForControlSize(CPMiniControlSize);
-
-    CPProgressIndicatorStyleSizes = [];
-
-    // Bar Style
-    var prefixes = [
-            CPProgressIndicatorClassName + @"BezelBorder" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle],
-            CPProgressIndicatorClassName + @"Bar" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle],
-            CPProgressIndicatorClassName + @"BezelBorder" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorHUDBarStyle],
-            CPProgressIndicatorClassName + @"Bar" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorHUDBarStyle]
-        ];
-
-    for (var i = 0, count = prefixes.length; i < count; i++)
-    {
-        var prefix = prefixes[i];
-        CPProgressIndicatorStyleSizes[prefix + regularIdentifier] = [_CGSizeMake(3.0, 16.0), _CGSizeMake(1.0, 16.0), _CGSizeMake(3.0, 16.0)];
-        CPProgressIndicatorStyleSizes[prefix + smallIdentifier] = [_CGSizeMake(3.0, 16.0), _CGSizeMake(1.0, 16.0), _CGSizeMake(3.0, 16.0)];
-        CPProgressIndicatorStyleSizes[prefix + miniIdentifier] = [_CGSizeMake(3.0, 16.0), _CGSizeMake(1.0, 16.0), _CGSizeMake(3.0, 16.0)];
-    }
++ (CPDictionary)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[[CPNull null],[CPNull null],25,[CPNull null],[CPNull null], [CPNull null], [CPNull null]]
+                                       forKeys:[@"inderterminate-bar-color", @"bar-color",@"default-height",@"bezel-color",@"spinning-mini-gif", @"spinning-small-gif", @"spinning-regular-gif"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -151,8 +96,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 
         _controlSize = CPRegularControlSize;
 
-        [self updateBackgroundColor];
-        [self drawBar];
+        [self setNeedsLayout];
     }
 
     return self;
@@ -354,8 +298,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     if (_style == CPProgressIndicatorSpinningStyle)
         [self setFrameSize:[[CPProgressIndicatorSpinningStyleColors[_controlSize] patternImage] size]];
     else
-        [self setFrameSize:CGSizeMake(CGRectGetWidth([self frame]), CPProgressIndicatorStyleSizes[
-            CPProgressIndicatorClassName + @"BezelBorder" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle] + _CPControlIdentifierForControlSize(_controlSize)][0].height)];
+        [self setFrameSize:CGSizeMake(CGRectGetWidth([self frame]), [self valueForThemeAttribute:@"default-height"])];
 }
 
 /*!
@@ -405,20 +348,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 /* @ignore */
 - (void)drawBar
 {
-    if (_style == CPProgressIndicatorSpinningStyle)
-        return;
-
-    var barView = [self layoutEphemeralSubviewNamed:"bar-view"
-                                         positioned:CPWindowBelow
-                    relativeToEphemeralSubviewNamed:nil];
-
-    [barView setBackgroundColor:_CPControlThreePartImagePattern(
-        NO,
-        CPProgressIndicatorStyleSizes,
-        CPProgressIndicatorClassName,
-        @"Bar",
-        CPProgressIndicatorStyleIdentifiers[_style],
-        _CPControlIdentifierForControlSize(_controlSize))];
+    [self setNeedsLayout];
 }
 
 - (CPView)createEphemeralSubviewNamed:(CPString)aName
@@ -436,7 +366,10 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
         if (barWidth > 0.0 && barWidth < 4.0)
             barWidth = 4.0;
 
-        return _CGRectMake(0, 0, barWidth, 16.0);
+        if (_isIndeterminate)
+            barWidth = width;
+
+        return _CGRectMake(0, 0, barWidth, [self valueForThemeAttribute:@"default-height"]);
     }
 
     return nil;
@@ -445,6 +378,17 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 /* @ignore */
 - (void)updateBackgroundColor
 {
+    [self setNeedsLayout];
+}
+
+- (void)layoutSubviews
+{
+    CPProgressIndicatorSpinningStyleColors = [];
+
+    CPProgressIndicatorSpinningStyleColors[CPMiniControlSize] = [self valueForThemeAttribute:@"spinning-mini-gif"];
+    CPProgressIndicatorSpinningStyleColors[CPSmallControlSize] = [self valueForThemeAttribute:@"spinning-small-gif"];
+    CPProgressIndicatorSpinningStyleColors[CPRegularControlSize] = [self valueForThemeAttribute:@"spinning-regular-gif"];
+
     if (YES)//_isBezeled)
     {
         if (_style == CPProgressIndicatorSpinningStyle)
@@ -458,15 +402,18 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
         }
         else
         {
-            [self setBackgroundColor:_CPControlThreePartImagePattern(
-                NO,
-                CPProgressIndicatorStyleSizes,
-                CPProgressIndicatorClassName,
-                @"BezelBorder",
-                CPProgressIndicatorStyleIdentifiers[_style],
-                _CPControlIdentifierForControlSize(_controlSize))];
+            // TODO: HUD theme
+           [self setBackgroundColor:[self valueForThemeAttribute:@"bezel-color"]];
 
-            [self drawBar];
+           var barView = [self layoutEphemeralSubviewNamed:"bar-view"
+                                                 positioned:CPWindowBelow
+                            relativeToEphemeralSubviewNamed:nil];
+
+           if (_isIndeterminate)
+               [barView setBackgroundColor:[self valueForThemeAttribute:@"inderterminate-bar-color"]];
+           else
+               [barView setBackgroundColor:[self valueForThemeAttribute:@"bar-color"]];
+
         }
     }
     else

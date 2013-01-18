@@ -21,6 +21,7 @@
  */
 
 #import "../Foundation/CPRange.h"
+#import "../Foundation/Ref.h"
 
 @import <Foundation/CPCharacterSet.j>
 @import <Foundation/CPIndexSet.j>
@@ -47,7 +48,7 @@ var CPTokenFieldDOMInputElement = nil,
     CPTokenFieldCachedDragFunction = nil,
     CPTokenFieldFocusInput = NO,
 
-    CPTokenFieldBlurFunction = nil;
+    CPTokenFieldBlurHandler = nil;
 
 #endif
 
@@ -71,7 +72,6 @@ var CPScrollDestinationNone             = 0,
 
     CPEvent             _mouseDownEvent;
 
-    BOOL                _preventResign;
     BOOL                _shouldNotifyTarget;
 }
 
@@ -138,18 +138,23 @@ var CPScrollDestinationNone             = 0,
     return _autocompleteMenu;
 }
 
+- (void)_complete:(_CPAutocompleteMenu)anAutocompleteMenu
+{
+    [self _autocompleteWithEvent:nil];
+}
+
 - (void)_autocompleteWithEvent:(CPEvent)anEvent
 {
-    if (![self _inputElement].value && (![_autocompleteMenu contentArray] || ![self hasThemeState:CPThemeStateAutocompleting]))
+    if (![self _editorValue] && (![_autocompleteMenu contentArray] || ![self hasThemeState:CPThemeStateAutocompleting]))
         return;
 
     [self _hideCompletions];
 
     var token = [_autocompleteMenu selectedItem],
-        shouldRemoveLastObject = token !== @"" && [self _inputElement].value !== @"";
+        shouldRemoveLastObject = token !== @"" && [self _editorValue] !== @"";
 
     if (!token)
-        token = [self _inputElement].value;
+        token = [self _editorValue];
 
     // Make sure the user typed an actual token to prevent the previous token from being emptied
     // If the input area is empty, we want to fall back to the normal behavior, resigning first
@@ -307,9 +312,22 @@ var CPScrollDestinationNone             = 0,
 
 - (BOOL)becomeFirstResponder
 {
+#if PLATFORM(DOM)
     if (CPTokenFieldInputOwner && [CPTokenFieldInputOwner window] !== [self window])
         [[CPTokenFieldInputOwner window] makeFirstResponder:nil];
+#endif
 
+    // As long as we are the first responder we need to monitor the key status of our window.
+    [self _setObserveWindowKeyNotifications:YES];
+
+    if ([[self window] isKeyWindow])
+        [self _becomeFirstKeyResponder];
+
+    return YES;
+}
+
+- (void)_becomeFirstKeyResponder
+{
     [self setThemeState:CPThemeStateEditing];
 
     [self _updatePlaceholderState];
@@ -368,18 +386,35 @@ var CPScrollDestinationNone             = 0,
     }
 
 #endif
-
-    return YES;
 }
 
 - (BOOL)resignFirstResponder
 {
-    if (_preventResign)
-        return NO;
+    [self _autocomplete];
 
+    // From CPTextField superclass.
+    [self _setObserveWindowKeyNotifications:NO];
+
+    [self _resignFirstKeyResponder];
+
+    if (_shouldNotifyTarget)
+    {
+        _shouldNotifyTarget = NO;
+        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
+
+        if ([self sendsActionOnEndEditing])
+            [self sendAction:[self action] to:[self target]];
+    }
+
+    return YES;
+}
+
+- (void)_resignFirstKeyResponder
+{
     [self unsetThemeState:CPThemeStateEditing];
 
-    [self _autocomplete];
+    [self _updatePlaceholderState];
+    [self setNeedsLayout];
 
 #if PLATFORM(DOM)
 
@@ -389,7 +424,7 @@ var CPScrollDestinationNone             = 0,
     element.blur();
 
     if (!CPTokenFieldInputDidBlur)
-        CPTokenFieldBlurFunction();
+        CPTokenFieldBlurHandler();
 
     CPTokenFieldInputDidBlur = NO;
     CPTokenFieldInputResigning = NO;
@@ -409,26 +444,10 @@ var CPScrollDestinationNone             = 0,
     }
 
 #endif
-
-    [self _updatePlaceholderState];
-
-    [self setNeedsLayout];
-
-    if (_shouldNotifyTarget)
-    {
-        _shouldNotifyTarget = NO;
-        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
-
-        if ([self sendsActionOnEndEditing])
-            [self sendAction:[self action] to:[self target]];
-    }
-
-    return YES;
 }
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-    _preventResign = YES;
     _mouseDownEvent = anEvent;
 
     [self _selectToken:nil byExtendingSelection:NO];
@@ -438,13 +457,11 @@ var CPScrollDestinationNone             = 0,
 
 - (void)mouseUp:(CPEvent)anEvent
 {
-    _preventResign = NO;
     _mouseDownEvent = nil;
 }
 
 - (void)_mouseDownOnToken:(_CPTokenFieldToken)aToken withEvent:(CPEvent)anEvent
 {
-    _preventResign = YES;
     _mouseDownEvent = anEvent;
 }
 
@@ -457,8 +474,6 @@ var CPScrollDestinationNone             = 0,
         // Snap to the token if it's only half visible due to mouse wheel scrolling.
         _shouldScrollTo = aToken;
     }
-
-    _preventResign = NO;
 }
 
 // ===========
@@ -492,9 +507,9 @@ var CPScrollDestinationNone             = 0,
 
 #if PLATFORM(DOM)
 
-    if ([self _inputElement].value != @"")
+    if ([self _editorValue])
     {
-        var token = [self _representedObjectForEditingString:[self _inputElement].value];
+        var token = [self _representedObjectForEditingString:[self _editorValue]];
         [objectValue insertObject:token atIndex:_selectedRange.location];
     }
 
@@ -547,6 +562,7 @@ var CPScrollDestinationNone             = 0,
                 [newToken setTokenField:self];
                 [newToken setRepresentedObject:tokenObject];
                 [newToken setStringValue:tokenValue];
+                [newToken setEditable:[self isEditable]];
                 [contentView addSubview:newToken];
             }
 
@@ -592,6 +608,13 @@ var CPScrollDestinationNone             = 0,
     }
 }
 
+- (void)setEditable:(BOOL)shouldBeEditable
+{
+    [super setEditable:shouldBeEditable];
+
+    [[self _tokens] makeObjectsPerformSelector:@selector(setEditable:) withObject:shouldBeEditable];
+}
+
 - (void)sendAction:(SEL)anAction to:(id)anObject
 {
     _shouldNotifyTarget = NO;
@@ -621,35 +644,19 @@ var CPScrollDestinationNone             = 0,
         CPTokenFieldDOMInputElement.style.background = "transparent";
         CPTokenFieldDOMInputElement.style.outline = "none";
 
-        CPTokenFieldBlurFunction = function(anEvent)
+        CPTokenFieldBlurHandler = function(anEvent)
         {
-            if (CPTokenFieldInputOwner && [CPTokenFieldInputOwner._tokenScrollView documentView]._DOMElement != CPTokenFieldDOMInputElement.parentNode)
-                return;
-
-            if (CPTokenFieldInputOwner && CPTokenFieldInputOwner._preventResign)
-                return false;
-
-            if (!CPTokenFieldInputResigning && !CPTokenFieldFocusInput)
-            {
-                [[CPTokenFieldInputOwner window] makeFirstResponder:nil];
-                return;
-            }
-
-            CPTokenFieldHandleBlur(anEvent, CPTokenFieldDOMInputElement);
-            CPTokenFieldInputDidBlur = YES;
-
-            return true;
+            return CPTextFieldBlurFunction(
+                        anEvent,
+                        CPTokenFieldInputOwner,
+                        [CPTokenFieldInputOwner._tokenScrollView documentView]._DOMElement,
+                        CPTokenFieldDOMInputElement,
+                        CPTokenFieldInputResigning,
+                        AT_REF(CPTokenFieldInputDidBlur));
         };
 
-        CPTokenFieldHandleBlur = function(anEvent)
-        {
-            CPTokenFieldInputOwner = nil;
-
-            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-        };
-
-        //FIXME make this not onblur
-        CPTokenFieldDOMInputElement.onblur = CPTokenFieldBlurFunction;
+        // FIXME make this not onblur
+        CPTokenFieldDOMInputElement.onblur = CPTokenFieldBlurHandler;
 
         CPTokenFieldDOMStandardInputElement = CPTokenFieldDOMInputElement;
     }
@@ -667,6 +674,13 @@ var CPScrollDestinationNone             = 0,
     return CPTokenFieldDOMInputElement;
 }
 #endif
+
+- (CPString)_editorValue
+{
+    if (![self hasThemeState:CPThemeStateEditing])
+        return @"";
+    return [self _inputElement].value;
+}
 
 - (void)moveUp:(id)sender
 {
@@ -747,7 +761,7 @@ var CPScrollDestinationNone             = 0,
 - (void)moveLeft:(id)sender
 {
     // Left arrow
-    if ((_selectedRange.location > 0 || _selectedRange.length) && CPTokenFieldDOMInputElement.value == "")
+    if ((_selectedRange.location > 0 || _selectedRange.length) && [self _editorValue] == "")
     {
         if (_selectedRange.length)
             // Simply collapse the range.
@@ -766,7 +780,7 @@ var CPScrollDestinationNone             = 0,
 
 - (void)moveLeftAndModifySelection:(id)sender
 {
-    if (_selectedRange.location > 0 && CPTokenFieldDOMInputElement.value == "")
+    if (_selectedRange.location > 0 && [self _editorValue] == "")
     {
         _selectedRange.location--;
         // When shift is depressed, select the next token backwards.
@@ -784,7 +798,7 @@ var CPScrollDestinationNone             = 0,
 - (void)moveRight:(id)sender
 {
     // Right arrow
-    if ((_selectedRange.location < [[self _tokens] count] || _selectedRange.length) && CPTokenFieldDOMInputElement.value == "")
+    if ((_selectedRange.location < [[self _tokens] count] || _selectedRange.length) && [self _editorValue] == "")
     {
         if (_selectedRange.length)
         {
@@ -810,7 +824,7 @@ var CPScrollDestinationNone             = 0,
 
 - (void)moveRightAndModifySelection:(id)sender
 {
-    if (_CPMaxRange(_selectedRange) < [[self _tokens] count] && CPTokenFieldDOMInputElement.value == "")
+    if (_CPMaxRange(_selectedRange) < [[self _tokens] count] && [self _editorValue] == "")
     {
         // Leave the selection location in place but include the next token to the right.
         _selectedRange.length++;
@@ -828,7 +842,7 @@ var CPScrollDestinationNone             = 0,
 {
     // TODO Even if the editor isn't empty you should be able to delete the previous token by placing the cursor
     // at the beginning of the editor.
-    if (CPTokenFieldDOMInputElement.value == @"")
+    if ([self _editorValue] == @"")
     {
         [self _hideCompletions];
 
@@ -854,7 +868,7 @@ var CPScrollDestinationNone             = 0,
 {
     // TODO Even if the editor isn't empty you should be able to delete the next token by placing the cursor
     // at the end of the editor.
-    if (CPTokenFieldDOMInputElement.value == @"")
+    if ([self _editorValue] == @"")
     {
         // Delete forward if nothing is selected, else delete all selected.
         [self _hideCompletions];
@@ -907,7 +921,7 @@ var CPScrollDestinationNone             = 0,
     [self interpretKeyEvents:[anEvent]];
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-}}
+}
 
 - (void)keyUp:(CPEvent)anEvent
 {
@@ -970,8 +984,7 @@ var CPScrollDestinationNone             = 0,
 
     var frame = [self frame],
         contentView = [_tokenScrollView documentView],
-        tokens = [self _tokens],
-        shouldShowAutoComplete = [self hasThemeState:CPThemeStateAutocompleting];
+        tokens = [self _tokens];
 
     // Hack to make sure we are handling an array
     if (![tokens isKindOfClass:[CPArray class]])
@@ -988,6 +1001,9 @@ var CPScrollDestinationNone             = 0,
         font = [self currentValueForThemeAttribute:@"font"],
         lineHeight = [font defaultLineHeightForFont],
         editorInset = [self currentValueForThemeAttribute:@"editor-inset"];
+
+    // Put half a spacing above the tokens.
+    offset.y += CEIL(spaceBetweenTokens.height / 2.0);
 
     // Get the height of a typical token, or a token token if you will.
     [tokenToken sizeToFit];
@@ -1088,7 +1104,7 @@ var CPScrollDestinationNone             = 0,
     }
 
     // Trim off any excess height downwards (in case we shrank).
-    var scrollHeight = offset.y + tokenHeight + CEIL(spaceBetweenTokens.height / 2.0);
+    var scrollHeight = offset.y + tokenHeight;
     if (_CGRectGetHeight([contentView bounds]) > scrollHeight)
         [contentView setFrameSize:_CGSizeMake(_CGRectGetWidth([_tokenScrollView bounds]), scrollHeight)];
 
@@ -1256,6 +1272,11 @@ var CPScrollDestinationNone             = 0,
     return "tokenfield-token";
 }
 
+- (BOOL)acceptsFirstResponder
+{
+    return NO;
+}
+
 - (id)initWithFrame:(CPRect)frame
 {
     if (self = [super initWithFrame:frame])
@@ -1291,6 +1312,34 @@ var CPScrollDestinationNone             = 0,
     _representedObject = representedObject;
 }
 
+- (void)setEditable:(BOOL)shouldBeEditable
+{
+    [super setEditable:shouldBeEditable];
+    [self setNeedsLayout];
+}
+
+- (BOOL)setThemeState:(CPThemeState)aState
+{
+    var r = [super setThemeState:aState];
+
+    // Share hover state with the delete button.
+    if (r && aState === CPThemeStateHovered)
+        [_deleteButton setThemeState:aState];
+
+    return r;
+}
+
+- (BOOL)unsetThemeState:(CPThemeState)aState
+{
+    var r = [super unsetThemeState:aState];
+
+    // Share hover state with the delete button.
+    if (r && aState === CPThemeStateHovered)
+        [_deleteButton unsetThemeState:aState];
+
+    return r;
+}
+
 - (CGSize)_minimumFrameSize
 {
     var size = _CGSizeMakeZero(),
@@ -1316,6 +1365,7 @@ var CPScrollDestinationNone             = 0,
     {
         [_deleteButton setTarget:self];
         [_deleteButton setAction:@selector(_delete:)];
+        [_deleteButton setEnabled:[self isEditable]];
 
         var frame = [bezelView frame],
             buttonOffset = [_deleteButton currentValueForThemeAttribute:@"offset"],
@@ -1337,7 +1387,8 @@ var CPScrollDestinationNone             = 0,
 
 - (void)_delete:(id)sender
 {
-    [_tokenField _deleteToken:self];
+    if ([self isEditable])
+        [_tokenField _deleteToken:self];
 }
 
 @end

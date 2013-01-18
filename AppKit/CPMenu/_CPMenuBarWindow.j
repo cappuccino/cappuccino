@@ -1,15 +1,6 @@
 @import "CPPanel.j"
 @import "_CPMenuWindow.j"
 
-
-var MENUBAR_HEIGHT          = 28.0,
-    MENUBAR_MARGIN          = 10.0,
-    MENUBAR_LEFT_MARGIN     = 10.0,
-    MENUBAR_RIGHT_MARGIN    = 10.0;
-
-var _CPMenuBarWindowBackgroundColor = nil,
-    _CPMenuBarWindowFont            = nil;
-
 @implementation _CPMenuBarWindow : CPPanel
 {
     CPMenu      _menu;
@@ -32,19 +23,9 @@ var _CPMenuBarWindowBackgroundColor = nil,
     CPColor     _highlightTextShadowColor;
 }
 
-+ (void)initialize
-{
-    if (self !== [_CPMenuBarWindow class])
-        return;
-
-    var bundle = [CPBundle bundleForClass:self];
-
-    _CPMenuBarWindowFont = [CPFont boldSystemFontOfSize:[CPFont systemFontSize]];
-}
-
 + (CPFont)font
 {
-    return _CPMenuBarWindowFont;
+    return [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-bar-window-font" forClass:_CPMenuView];
 }
 
 - (id)init
@@ -52,7 +33,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
     // This only shows up in browser land, so don't bother calculating metrics in desktop.
     var contentRect = [[CPPlatformWindow primaryPlatformWindow] contentBounds];
 
-    contentRect.size.height = MENUBAR_HEIGHT;
+    contentRect.size.height = [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-bar-window-height" forClass:_CPMenuView];
 
     self = [super initWithContentRect:contentRect styleMask:CPBorderlessWindowMask];
 
@@ -119,12 +100,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
 - (void)setColor:(CPColor)aColor
 {
     if (!aColor)
-    {
-        if (!_CPMenuBarWindowBackgroundColor)
-            _CPMenuBarWindowBackgroundColor = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[_CPMenuBarWindow class]] pathForResource:@"_CPMenuBarWindow/_CPMenuBarWindowBackground.png"] size:CGSizeMake(1.0, 28.0)]];
-
-        [[self contentView] setBackgroundColor:_CPMenuBarWindowBackgroundColor];
-    }
+        [[self contentView] setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"menu-bar-window-background-color" forClass:_CPMenuView]];
     else
         [[self contentView] setBackgroundColor:aColor];
 }
@@ -344,7 +320,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
         index = 0,
         count = items.length,
 
-        x = MENUBAR_LEFT_MARGIN,
+        x = [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-bar-window-left-margin" forClass:_CPMenuView],
         y = 0.0,
         isLeftAligned = YES;
 
@@ -354,7 +330,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
 
         if ([item isSeparatorItem])
         {
-            x = CGRectGetWidth([self frame]) - MENUBAR_RIGHT_MARGIN;
+            x = CGRectGetWidth([self frame]) - [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-bar-window-right-margin" forClass:_CPMenuView];
             isLeftAligned = NO;
 
             continue;
@@ -368,13 +344,13 @@ var _CPMenuBarWindowBackgroundColor = nil,
 
         if (isLeftAligned)
         {
-            [menuItemView setFrame:CGRectMake(x, 0.0, CGRectGetWidth(frame), MENUBAR_HEIGHT)];
+            [menuItemView setFrame:CGRectMake(x, 0.0, CGRectGetWidth(frame), [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-bar-window-height" forClass:_CPMenuView])];
 
             x += CGRectGetWidth([menuItemView frame]);
         }
         else
         {
-            [menuItemView setFrame:CGRectMake(x - CGRectGetWidth(frame), 0.0, CGRectGetWidth(frame), MENUBAR_HEIGHT)];
+            [menuItemView setFrame:CGRectMake(x - CGRectGetWidth(frame), 0.0, CGRectGetWidth(frame), [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-bar-window-height" forClass:_CPMenuView])];
 
             x = CGRectGetMinX([menuItemView frame]);
         }
@@ -453,101 +429,104 @@ var _CPMenuBarWindowBackgroundColor = nil,
 
 @end
 
-@implementation _CPMenuBarView : _CPMenuView
-{
-}
 
-- (CGRect)rectForItemAtIndex:(int)anIndex
-{
-    return [_menuItemViews[anIndex === CPNotFound ? 0 : anIndex] frame];
-}
+// Unused in AppKit ?
 
-- (int)itemIndexAtPoint:(CGPoint)aPoint
-{
-    var bounds = [self bounds];
-
-    if (!CGRectContainsPoint(bounds, aPoint))
-        return CPNotFound;
-
-    var x = aPoint.x,
-        low = 0,
-        high = _visibleMenuItemInfos.length - 1;
-
-    while (low <= high)
-    {
-        var middle = FLOOR(low + (high - low) / 2),
-            info = _visibleMenuItemInfos[middle],
-            frame = [info.view frame];
-
-        if (x < CGRectGetMinX(frame))
-            high = middle - 1;
-
-        else if (x > CGRectGetMaxX(frame))
-            low = middle + 1;
-
-        else
-            return info.index;
-   }
-
-   return CPNotFound;
-}
-
-- (void)tile
-{
-    var items = [_menu itemArray],
-        index = 0,
-        count = items.length,
-
-        x = MENUBAR_LEFT_MARGIN,
-        y = 0.0,
-        isLeftAligned = YES;
-
-    for (; index < count; ++index)
-    {
-        var item = items[index];
-
-        if ([item isSeparatorItem])
-        {
-            x = CGRectGetWidth([self frame]) - MENUBAR_RIGHT_MARGIN;
-            isLeftAligned = NO;
-
-            continue;
-        }
-
-         if ([item isHidden])
-            continue;
-
-        var menuItemView = [item _menuItemView],
-            frame = [menuItemView frame];
-
-        if (isLeftAligned)
-        {
-            [menuItemView setFrameOrigin:CGPointMake(x, (MENUBAR_HEIGHT - 1.0 - CGRectGetHeight(frame)) / 2.0)];
-
-            x += CGRectGetWidth([menuItemView frame]) + MENUBAR_MARGIN;
-        }
-        else
-        {
-            [menuItemView setFrameOrigin:CGPointMake(x - CGRectGetWidth(frame), (MENUBAR_HEIGHT - 1.0 - CGRectGetHeight(frame)) / 2.0)];
-
-            x = CGRectGetMinX([menuItemView frame]) - MENUBAR_MARGIN;
-        }
-    }
-
-    var bounds = [[self contentView] bounds],
-        titleFrame = [_titleField frame];
-
-    if ([_iconImageView isHidden])
-        [_titleField setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - CGRectGetWidth(titleFrame)) / 2.0, (CGRectGetHeight(bounds) - CGRectGetHeight(titleFrame)) / 2.0)];
-    else
-    {
-        var iconFrame = [_iconImageView frame],
-            iconWidth = CGRectGetWidth(iconFrame),
-            totalWidth = iconWidth + CGRectGetWidth(titleFrame);
-
-        [_iconImageView setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - totalWidth) / 2.0, (CGRectGetHeight(bounds) - CGRectGetHeight(iconFrame)) / 2.0)];
-        [_titleField setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - totalWidth) / 2.0 + iconWidth, (CGRectGetHeight(bounds) - CGRectGetHeight(titleFrame)) / 2.0)];
-    }
-}
-
-@end
+// @implementation _CPMenuBarView : _CPMenuView
+// {
+// }
+//
+// - (CGRect)rectForItemAtIndex:(int)anIndex
+// {
+//     return [_menuItemViews[anIndex === CPNotFound ? 0 : anIndex] frame];
+// }
+//
+// - (int)itemIndexAtPoint:(CGPoint)aPoint
+// {
+//     var bounds = [self bounds];
+//
+//     if (!CGRectContainsPoint(bounds, aPoint))
+//         return CPNotFound;
+//
+//     var x = aPoint.x,
+//         low = 0,
+//         high = _visibleMenuItemInfos.length - 1;
+//
+//     while (low <= high)
+//     {
+//         var middle = FLOOR(low + (high - low) / 2),
+//             info = _visibleMenuItemInfos[middle],
+//             frame = [info.view frame];
+//
+//         if (x < CGRectGetMinX(frame))
+//             high = middle - 1;
+//
+//         else if (x > CGRectGetMaxX(frame))
+//             low = middle + 1;
+//
+//         else
+//             return info.index;
+//    }
+//
+//    return CPNotFound;
+// }
+//
+// - (void)tile
+// {
+//     var items = [_menu itemArray],
+//         index = 0,
+//         count = items.length,
+//
+//         x = MENUBAR_LEFT_MARGIN,
+//         y = 0.0,
+//         isLeftAligned = YES;
+//
+//     for (; index < count; ++index)
+//     {
+//         var item = items[index];
+//
+//         if ([item isSeparatorItem])
+//         {
+//             x = CGRectGetWidth([self frame]) - MENUBAR_RIGHT_MARGIN;
+//             isLeftAligned = NO;
+//
+//             continue;
+//         }
+//
+//          if ([item isHidden])
+//             continue;
+//
+//         var menuItemView = [item _menuItemView],
+//             frame = [menuItemView frame];
+//
+//         if (isLeftAligned)
+//         {
+//             [menuItemView setFrameOrigin:CGPointMake(x, (MENUBAR_HEIGHT - 1.0 - CGRectGetHeight(frame)) / 2.0)];
+//
+//             x += CGRectGetWidth([menuItemView frame]) + MENUBAR_MARGIN;
+//         }
+//         else
+//         {
+//             [menuItemView setFrameOrigin:CGPointMake(x - CGRectGetWidth(frame), (MENUBAR_HEIGHT - 1.0 - CGRectGetHeight(frame)) / 2.0)];
+//
+//             x = CGRectGetMinX([menuItemView frame]) - MENUBAR_MARGIN;
+//         }
+//     }
+//
+//     var bounds = [[self contentView] bounds],
+//         titleFrame = [_titleField frame];
+//
+//     if ([_iconImageView isHidden])
+//         [_titleField setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - CGRectGetWidth(titleFrame)) / 2.0, (CGRectGetHeight(bounds) - CGRectGetHeight(titleFrame)) / 2.0)];
+//     else
+//     {
+//         var iconFrame = [_iconImageView frame],
+//             iconWidth = CGRectGetWidth(iconFrame),
+//             totalWidth = iconWidth + CGRectGetWidth(titleFrame);
+//
+//         [_iconImageView setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - totalWidth) / 2.0, (CGRectGetHeight(bounds) - CGRectGetHeight(iconFrame)) / 2.0)];
+//         [_titleField setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - totalWidth) / 2.0 + iconWidth, (CGRectGetHeight(bounds) - CGRectGetHeight(titleFrame)) / 2.0)];
+//     }
+// }
+//
+// @end
