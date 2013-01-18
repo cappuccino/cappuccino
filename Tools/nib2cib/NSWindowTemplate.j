@@ -59,7 +59,10 @@ var NSBorderlessWindowMask              = 0x00,
         _viewClass = [aCoder decodeObjectForKey:@"NSViewClass"]; // references the toolbar if present (anything else?)
         _wtFlags = [aCoder decodeIntForKey:@"NSWTFlags"];
         _windowAutorecalculatesKeyViewLoop = !!(_wtFlags & NSAutorecalculatesKeyViewLoopWTFlag);
-        _windowBacking = [aCoder decodeIntForKey:@"NSWindowBacking"];
+
+        // @TODO: this seems to not be used anywhere, maybe we should safely remove this
+        // from Antoine the 18 Jan 2013
+        // _windowBacking = [aCoder decodeIntForKey:@"NSWindowBacking"];
 
         // Convert NSWindows to CPWindows.
         _windowClass = CP_NSMapClassName([aCoder decodeObjectForKey:@"NSWindowClass"]);
@@ -84,7 +87,7 @@ var NSBorderlessWindowMask              = 0x00,
                                 (_windowStyleMask & NSDocModalWindowMask ? CPDocModalWindowMask : 0) |
                                 (_windowStyleMask & NSHUDBackgroundWindowMask ? CPHUDBackgroundWindowMask : 0);
 
-        _windowIsFullBridge = [aCoder decodeObjectForKey:"NSFrameAutosaveName"] === "CPBorderlessBridgeWindowMask";
+        [self setFullBridge:([aCoder decodeObjectForKey:"NSFrameAutosaveName"] === "CPBorderlessBridgeWindowMask")];
 
         /*if (![_windowClass isEqualToString:@"NSPanel"])
            _windowRect.origin.y -= [NSMainMenuView menuHeight];   // compensation for the additional menu bar
