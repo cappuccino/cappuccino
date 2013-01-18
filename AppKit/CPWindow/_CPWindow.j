@@ -30,6 +30,7 @@
 @import "CPResponder.j"
 @import "CPScreen.j"
 @import "CPEvent.j"
+@import "CPView.j"
 #if PLATFORM(BROWSER)
 @import "CPPlatformWindow+DOM.j"
 #endif
