@@ -24,6 +24,8 @@
 @import <AppKit/AppKit.j>
 @import <BlendKit/BlendKit.j>
 
+@global java
+
 var FILE = require("file"),
     OS = require("os"),
 

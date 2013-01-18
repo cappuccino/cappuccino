@@ -22,6 +22,9 @@
 
 @import <AppKit/CPObjectController.j>
 
+@global CP_NSMapClassName
+
+
 @implementation CPObjectController (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder

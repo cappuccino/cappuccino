@@ -22,6 +22,8 @@
 
 @import "Converter.j"
 
+@global CP_NSMapClassName
+
 var NSClassSwapperClassNames                = {},
     NSClassSwapperOriginalClassNames        = {};
 

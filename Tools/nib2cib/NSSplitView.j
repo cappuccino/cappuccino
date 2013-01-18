@@ -30,14 +30,14 @@ var NSThinDividerStyle = 2;
 {
     if (self = [super NS_initWithCoder:aCoder])
     {
-        _isVertical = [aCoder decodeBoolForKey:@"NSIsVertical"];
+        self._isVertical = [aCoder decodeBoolForKey:@"NSIsVertical"];
 
         // The possible values appear to be: no value (thick divider), 2 (thin divider) and 3 (pane splitter). For
         // Cappuccino's purposes we treat thick divider and pane splitter as the same thing since the only difference
         // seems to be graphical.
-        _isPaneSplitter = [aCoder decodeIntForKey:@"NSDividerStyle"] != NSThinDividerStyle;
+        self._isPaneSplitter = [aCoder decodeIntForKey:@"NSDividerStyle"] != NSThinDividerStyle;
 
-        _autosaveName = [aCoder decodeObjectForKey:@"NSAutosaveName"];
+        self._autosaveName = [aCoder decodeObjectForKey:@"NSAutosaveName"];
     }
 
     return self;
