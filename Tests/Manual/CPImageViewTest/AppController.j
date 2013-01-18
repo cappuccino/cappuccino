@@ -30,24 +30,30 @@
 
     var imageView = [[CPImageView alloc] initWithFrame:CGRectMake(20.0, 50.0, 290.0, 250.0)],
         image = CPImageInBundle("280px-1730_Homann_Map_of_Scandinavia,_Norway,_Sweden,_Denmark,_Finland_and_the_Baltics_-_Geographicus_-_Scandinavia-homann-1730.jpg", CGSizeMake(280, 240)),
-        imageViewShadow = [[CPImageView alloc] initWithFrame:CGRectMake(320.0, 50.0, 290.0, 250.0)];
-    
+        imageViewShadow = [[CPImageView alloc] initWithFrame:CGRectMake(320.0, 50.0, 290.0, 250.0)],
+        imageViewShadowHeavy = [[CPImageView alloc] initWithFrame:CGRectMake(620.0, 50.0, 290.0, 250.0)];
+
     // Test CPImage -data method
     // Create an image from a filename based image
     var im = [[CPImage alloc] initWithData:[image data]],
 
     // Create an image from a data based image
         otherImage = [[CPImage alloc] initWithData:[im data]];
-    
-    [imageView setImageScaling:CPImageScaleNone];
-    [imageViewShadow setImageScaling:CPImageScaleNone];
 
-    [imageView setImage:image];    
+    [imageView setImageScaling:CPImageScaleNone];
+    [imageView setImage:image];
+    [contentView addSubview:imageView];
+
+    [imageViewShadow setImageScaling:CPImageScaleNone];
     [imageViewShadow setImage:otherImage];
     [imageViewShadow setHasShadow:YES];
-
-    [contentView addSubview:imageView];
     [contentView addSubview:imageViewShadow];
+
+    [imageViewShadowHeavy setImageScaling:CPImageScaleNone];
+    [imageViewShadowHeavy setImage:image];
+    [imageViewShadowHeavy setHasShadow:YES];
+    [imageViewShadowHeavy._shadowView setWeight:CPHeavyShadow];
+    [contentView addSubview:imageViewShadowHeavy];
 
     [theWindow orderFront:self];
 

@@ -144,6 +144,7 @@ github_ref="v0.9.6-RC2"
 noprompt=""
 install_capp=""
 install_method="zip"
+verbosity=1
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -153,6 +154,8 @@ while [ $# -gt 0 ]; do
         --clone-http)   install_method="clone --http";;
         --github-user)  github_user="$2"; shift;;
         --github-ref)   github_ref="$2"; shift;;
+        -q|--quiet)     verbosity=$[verbosity - 1];;
+        -v|--verbose)   verbosity=$[verbosity + 1];;
         *)              cat >&2 <<-EOT
 usage: ./bootstrap.sh [OPTIONS]
 
@@ -162,6 +165,8 @@ usage: ./bootstrap.sh [OPTIONS]
     --clone-http:           Do "git clone http://" instead of downloading zips.
     --github-user [USER]:   Github user (default: $github_user).
     --github-ref [REF]:     Use another git ref (default: $github_ref).
+    -q | --quiet:           Output less logging.
+    -v | --verbose:         Output more logging.
 EOT
                         exit 1;;
     esac
@@ -174,7 +179,8 @@ github_path="$github_user/cappuccino-base"
 # The purpose of bootstrap is to install Cappuccino.
 install_cappuccino="yes"
 
-sed "s/\[\[ CAPPUCCINO_VERSION \]\]/$github_ref/" <<EOT
+if (( $verbosity > 0 )); then
+    sed "s/\[\[ CAPPUCCINO_VERSION \]\]/$github_ref/" <<EOT
 
                    _______ ____  ___  __ __________(_)__  ___
                   / __/ _ \`/ _ \/ _ \/ // / __/ __/ / _ \/ _ \\
@@ -192,8 +198,10 @@ sed "s/\[\[ CAPPUCCINO_VERSION \]\]/$github_ref/" <<EOT
                     http://github.com/cappuccino/cappuccino
                        irc://irc.freenode.org#cappuccino
 
-This script will install the Cappuccino environment for you. Continue?
 EOT
+fi
+
+echo "This script will install the Cappuccino environment for you. Continue?"
 
 if ! prompt "yes"; then
     install_cappuccino="no"
@@ -274,11 +282,17 @@ if [ "$install_cappuccino" ]; then
         zip_ball="http://github.com/$github_path/zipball/$github_ref"
 
         echo "Downloading Cappuccino base from \"$zip_ball\"..."
-        $(which curl &> /dev/null && echo curl -L -o || echo wget --no-check-certificate -O) "$tmp_zip" "$zip_ball"
+        curl_quiet_arg=""
+        wget_quiet_arg=""
+        if (( $verbosity < 1 )); then curl_quiet_arg="--silent"; wget_quiet_arg="--no-verbose"; fi
+        $(which curl &> /dev/null && echo curl $curl_quiet_arg -L -o || echo $wget_quiet_arg --no-check-certificate -O) "$tmp_zip" "$zip_ball"
         check_and_exit
 
         echo "Installing Cappuccino base..."
-        unzip "$tmp_zip" -d "$install_directory"
+
+        quiet_arg=""
+        if (( $verbosity < 2 )); then quiet_arg="-q"; fi
+        unzip $quiet_arg "$tmp_zip" -d "$install_directory"
         check_and_exit
         rm "$tmp_zip"
         check_and_exit

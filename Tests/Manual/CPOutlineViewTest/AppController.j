@@ -262,7 +262,7 @@ var rowHeights = [ ];
     return YES;
 }
 
-- (CPDragOperation)outlineView:(CPOutlineView)anOutlineView validateDrop:(id < CPDraggingInfo >)theInfo proposedItem:(id)theItem proposedChildIndex:(int)theIndex
+- (CPDragOperation)outlineView:(CPOutlineView)anOutlineView validateDrop:(id /*< CPDraggingInfo >*/)theInfo proposedItem:(id)theItem proposedChildIndex:(int)theIndex
 {
     CPLog.debug(@"validate item: %@ at index: %i", theItem, theIndex);
 
@@ -274,7 +274,7 @@ var rowHeights = [ ];
     return CPDragOperationEvery;
 }
 
-- (BOOL)outlineView:(CPOutlineView)outlineView acceptDrop:(id < CPDraggingInfo >)theInfo item:(id)theItem childIndex:(int)theIndex
+- (BOOL)outlineView:(CPOutlineView)outlineView acceptDrop:(id /*< CPDraggingInfo >*/)theInfo item:(id)theItem childIndex:(int)theIndex
 {
     if (theItem === nil)
         theItem = [self menu];

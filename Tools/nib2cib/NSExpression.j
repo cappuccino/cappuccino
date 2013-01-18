@@ -1,4 +1,11 @@
 @import <Foundation/CPExpression.j>
+@import <Foundation/_CPKeyPathExpression.j>
+@import <Foundation/_CPSetExpression.j>
+@import <Foundation/_CPSelfExpression.j>
+@import <Foundation/_CPConstantValueExpression.j>
+@import <Foundation/_CPFunctionExpression.j>
+@import <Foundation/_CPVariableExpression.j>
+@import <Foundation/_CPAggregateExpression.j>
 
 @implementation NSKeyPathExpression : _CPKeyPathExpression
 {

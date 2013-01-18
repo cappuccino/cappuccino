@@ -20,9 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CPControl.j>
-@import <AppKit/CPButton.j>
-@import <AppKit/CPTextField.j>
+@import "CPControl.j"
+@import "CPButton.j"
+@import "CPTextField.j"
 
 
 
@@ -55,10 +55,14 @@
 */
 + (CPStepper)stepperWithInitialValue:(float)aValue minValue:(float)aMinValue maxValue:(float)aMaxValue
 {
-    var stepper = [[CPStepper alloc] initWithFrame:_CGRectMake(0, 0, 19, 25)];
+    var stepper = [[CPStepper alloc] initWithFrame:_CGRectMakeZero()];
+
     [stepper setDoubleValue:aValue];
     [stepper setMinValue:aMinValue];
     [stepper setMaxValue:aMaxValue];
+
+    // _sizeToFit will put the good size for the stepper depending of the current theme
+    [stepper _sizeToFit];
 
     return stepper;
 }
@@ -173,6 +177,7 @@
         downSize = [self valueForThemeAttribute:@"down-button-size"],
         upFrame = _CGRectMake(aFrame.size.width - upSize.width, 0, upSize.width, upSize.height),
         downFrame = _CGRectMake(aFrame.size.width - downSize.width, upSize.height, downSize.width, downSize.height);
+
     [_buttonUp setFrame:upFrame];
     [_buttonDown setFrame:downFrame];
 
@@ -182,6 +187,11 @@
     [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
     [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered | CPThemeStateDisabled] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateDisabled];
     [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered | CPThemeStateHighlighted] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateHighlighted];
+}
+
+- (void)_sizeToFit
+{
+    [self setFrame:CGRectMake([self frameOrigin].x, [self frameOrigin].y, 0, 0)];
 }
 
 /*!

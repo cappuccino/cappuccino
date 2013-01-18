@@ -40,6 +40,7 @@ extern NSString * const XCCListeningStartNotification;
     NSString                        *XCodeSupportProjectName;
     NSString                        *XCodeTemplatePBXPath;
     NSString                        *profilePath;
+    NSString                        *shellPath;
     NSString                        *PBXModifierScriptPath;
     NSURL                           *currentProjectURL;
     NSURL                           *XCodeSupportProject;
@@ -99,4 +100,3 @@ extern NSString * const XCCListeningStartNotification;
 - (NSDate*)lastModificationDateForPath:(NSString *)path;
 
 @end
-

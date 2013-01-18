@@ -55,14 +55,6 @@ CPBelowBottom = 6;
 {
     CPBoxType       _boxType;
     CPBorderType    _borderType;
-
-    CPColor         _borderColor;
-    CPColor         _fillColor;
-
-    float           _cornerRadius;
-    float           _borderWidth;
-
-    CPSize          _contentMargin;
     CPView          _contentView;
 
     CPString        _title @accessors(getter=title);
@@ -85,6 +77,24 @@ CPBelowBottom = 6;
     return box;
 }
 
++ (CPString)defaultThemeClass
+{
+    return @"box";
+}
+
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], 1.0, 3.0, CPSizeMakeZero(), 6.0, [CPNull null], CPSizeMakeZero()]
+                                       forKeys:[   @"background-color",
+                                                   @"border-color",
+                                                   @"border-width",
+                                                   @"corner-radius",
+                                                   @"inner-shadow-offset",
+                                                   @"inner-shadow-size",
+                                                   @"inner-shadow-color",
+                                                   @"content-margin"]];
+}
+
 - (id)initWithFrame:(CPRect)frameRect
 {
     self = [super initWithFrame:frameRect];
@@ -92,11 +102,6 @@ CPBelowBottom = 6;
     if (self)
     {
         _borderType = CPBezelBorder;
-        _fillColor = [CPColor clearColor];
-        _borderColor = [CPColor blackColor];
-
-        _borderWidth = 1.0;
-        _contentMargin = CGSizeMake(0.0, 0.0);
 
         _titlePosition = CPNoTitle;
         _titleView = [CPTextField labelWithTitle:@""];
@@ -208,57 +213,57 @@ CPBelowBottom = 6;
 
 - (CPColor)borderColor
 {
-    return _borderColor;
+    return [self valueForThemeAttribute:@"border-color"];
 }
 
 - (void)setBorderColor:(CPColor)color
 {
-    if ([color isEqual:_borderColor])
+    if ([color isEqual:[self borderColor]])
         return;
 
-    _borderColor = color;
+    [self setValue:color forThemeAttribute:@"border-color"];
     [self setNeedsDisplay:YES];
 }
 
 - (float)borderWidth
 {
-    return _borderWidth;
+    return [self valueForThemeAttribute:@"border-width"];
 }
 
 - (void)setBorderWidth:(float)width
 {
-    if (width === _borderWidth)
+    if (width === [self borderWidth])
         return;
 
-    _borderWidth = width;
+    [self setValue:width forThemeAttribute:@"border-width"];
     [self setNeedsDisplay:YES];
 }
 
 - (float)cornerRadius
 {
-    return _cornerRadius;
+    return [self valueForThemeAttribute:@"corner-radius"];
 }
 
 - (void)setCornerRadius:(float)radius
 {
-    if (radius === _cornerRadius)
+    if (radius === [self cornerRadius])
         return;
 
-    _cornerRadius = radius;
+    [self setValue:radius forThemeAttribute:@"corner-radius"];
     [self setNeedsDisplay:YES];
 }
 
 - (CPColor)fillColor
 {
-    return _fillColor;
+    return [self valueForThemeAttribute:@"background-color"];
 }
 
 - (void)setFillColor:(CPColor)color
 {
-    if ([color isEqual:_fillColor])
+    if ([color isEqual:[self fillColor]])
         return;
 
-    _fillColor = color;
+    [self setValue:color forThemeAttribute:@"background-color"];
     [self setNeedsDisplay:YES];
 }
 
@@ -272,7 +277,10 @@ CPBelowBottom = 6;
     if (aView === _contentView)
         return;
 
-    [aView setFrame:CGRectInset([self bounds], _contentMargin.width + _borderWidth, _contentMargin.height + _borderWidth)];
+    var borderWidth = [self borderWidth],
+        contentMargin = [self valueForThemeAttribute:@"content-margin"];
+
+    [aView setFrame:CGRectInset([self bounds], contentMargin.width + borderWidth, contentMargin.height + borderWidth)];
     [aView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [self replaceSubview:_contentView with:aView];
 
@@ -281,7 +289,7 @@ CPBelowBottom = 6;
 
 - (CPSize)contentViewMargins
 {
-    return _contentMargin;
+    return [self valueForThemeAttribute:@"content-margin"];
 }
 
 - (void)setContentViewMargins:(CPSize)size
@@ -289,15 +297,17 @@ CPBelowBottom = 6;
      if (size.width < 0 || size.height < 0)
          [CPException raise:CPGenericException reason:@"Margins must be positive"];
 
-    _contentMargin = CGSizeMakeCopy(size);
+    [self setValue:CGSizeMakeCopy(size) forThemeAttribute:@"content-margin"];
     [self setNeedsDisplay:YES];
 }
 
 - (void)setFrameFromContentFrame:(CPRect)aRect
 {
-    var offset = [self _titleHeightOffset];
+    var offset = [self _titleHeightOffset],
+        borderWidth = [self borderWidth],
+        contentMargin = [self valueForThemeAttribute:@"content-margin"];
 
-    [self setFrame:CGRectInset(aRect, -(_contentMargin.width + _borderWidth), -(_contentMargin.height + offset[0] + _borderWidth))];
+    [self setFrame:CGRectInset(aRect, -(contentMargin.width + borderWidth), -(contentMargin.height + offset[0] + borderWidth))];
 
     [self setNeedsDisplay:YES];
 }
@@ -380,17 +390,18 @@ CPBelowBottom = 6;
 - (void)sizeToFit
 {
     var contentFrame = [_contentView frame],
-        offset = [self _titleHeightOffset];
+        offset = [self _titleHeightOffset],
+        contentMargin = [self valueForThemeAttribute:@"content-margin"];
 
     if (!contentFrame)
         return;
 
     [_contentView setAutoresizingMask:CPViewNotSizable];
-    [self setFrameSize:CGSizeMake(contentFrame.size.width + _contentMargin.width * 2,
-                                  contentFrame.size.height + _contentMargin.height * 2 + offset[0])];
+    [self setFrameSize:CGSizeMake(contentFrame.size.width + contentMargin.width * 2,
+                                  contentFrame.size.height + contentMargin.height * 2 + offset[0])];
     [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
-    [_contentView setFrameOrigin:CGPointMake(_contentMargin.width, _contentMargin.height + offset[1])];
+    [_contentView setFrameOrigin:CGPointMake(contentMargin.width, contentMargin.height + offset[1])];
 }
 
 - (float)_titleHeightOffset
@@ -478,44 +489,52 @@ CPBelowBottom = 6;
     CGContextStrokePath(context);
 }
 
-- (void)_drawBezelBorderInRect:(CGRect)aRect
-{
-    var context = [[CPGraphicsContext currentContext] graphicsPort],
-        sides = [CPMinYEdge, CPMaxXEdge, CPMaxYEdge, CPMinXEdge],
-        sideGray = 190.0 / 255.0,
-        grays = [142.0 / 255.0, sideGray, sideGray, sideGray],
-        borderWidth = _borderWidth;
-
-    while (borderWidth--)
-        aRect = CPDrawTiledRects(aRect, aRect, sides, grays);
-
-    CGContextSetFillColor(context, [self fillColor]);
-    CGContextFillRect(context, aRect);
-}
-
 - (void)_drawLineBorderInRect:(CGRect)aRect
 {
-    var context = [[CPGraphicsContext currentContext] graphicsPort];
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        cornerRadius = [self cornerRadius],
+        borderWidth = [self borderWidth];
 
-    aRect = CGRectInset(aRect, _borderWidth / 2.0, _borderWidth / 2.0);
+    aRect = CGRectInset(aRect, borderWidth / 2.0, borderWidth / 2.0);
 
     CGContextSetFillColor(context, [self fillColor]);
     CGContextSetStrokeColor(context, [self borderColor]);
 
-    CGContextSetLineWidth(context, _borderWidth);
-    CGContextFillRoundedRectangleInRect(context, aRect, _cornerRadius, YES, YES, YES, YES);
-    CGContextStrokeRoundedRectangleInRect(context, aRect, _cornerRadius, YES, YES, YES, YES);
+    CGContextSetLineWidth(context, borderWidth);
+    CGContextFillRoundedRectangleInRect(context, aRect, cornerRadius, YES, YES, YES, YES);
+    CGContextStrokeRoundedRectangleInRect(context, aRect, cornerRadius, YES, YES, YES, YES);
+}
+
+- (void)_drawBezelBorderInRect:(CGRect)aRect
+{
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        cornerRadius = [self cornerRadius],
+        borderWidth = [self borderWidth],
+        shadowOffset = [self valueForThemeAttribute:@"inner-shadow-offset"],
+        shadowSize = [self valueForThemeAttribute:@"inner-shadow-size"],
+        shadowColor = [self valueForThemeAttribute:@"inner-shadow-color"];
+
+    aRect = CGRectInset(aRect, borderWidth / 2.0, borderWidth / 2.0);
+
+    // clip the canvas to the actual content view in order to only display inner shadow
+    CGContextBeginPath(context);
+    CGContextAddPath(context, CGPathWithRoundedRectangleInRect(aRect, cornerRadius, cornerRadius, YES, YES, YES, YES));
+    CGContextClip(context);
+
+    CGContextSetFillColor(context, [self fillColor]);
+    CGContextSetStrokeColor(context, [self borderColor]);
+
+    CGContextSetShadowWithColor(context, shadowOffset, shadowSize, shadowColor);
+    CGContextSetLineWidth(context, borderWidth);
+    CGContextFillRoundedRectangleInRect(context, aRect, cornerRadius, YES, YES, YES, YES);
+    CGContextStrokeRoundedRectangleInRect(context, aRect, cornerRadius, YES, YES, YES, YES);
+
 }
 
 @end
 
 var CPBoxTypeKey          = @"CPBoxTypeKey",
     CPBoxBorderTypeKey    = @"CPBoxBorderTypeKey",
-    CPBoxBorderColorKey   = @"CPBoxBorderColorKey",
-    CPBoxFillColorKey     = @"CPBoxFillColorKey",
-    CPBoxCornerRadiusKey  = @"CPBoxCornerRadiusKey",
-    CPBoxBorderWidthKey   = @"CPBoxBorderWidthKey",
-    CPBoxContentMarginKey = @"CPBoxContentMarginKey",
     CPBoxTitle            = @"CPBoxTitle",
     CPBoxTitlePosition    = @"CPBoxTitlePosition",
     CPBoxTitleView        = @"CPBoxTitleView";
@@ -530,14 +549,6 @@ var CPBoxTypeKey          = @"CPBoxTypeKey",
     {
         _boxType       = [aCoder decodeIntForKey:CPBoxTypeKey];
         _borderType    = [aCoder decodeIntForKey:CPBoxBorderTypeKey];
-
-        _borderColor   = [aCoder decodeObjectForKey:CPBoxBorderColorKey];
-        _fillColor     = [aCoder decodeObjectForKey:CPBoxFillColorKey];
-
-        _cornerRadius  = [aCoder decodeFloatForKey:CPBoxCornerRadiusKey];
-        _borderWidth   = [aCoder decodeFloatForKey:CPBoxBorderWidthKey];
-
-        _contentMargin = [aCoder decodeSizeForKey:CPBoxContentMarginKey];
 
         _title         = [aCoder decodeObjectForKey:CPBoxTitle];
         _titlePosition = [aCoder decodeIntForKey:CPBoxTitlePosition];
@@ -560,18 +571,9 @@ var CPBoxTypeKey          = @"CPBoxTypeKey",
 
     [aCoder encodeInt:_boxType forKey:CPBoxTypeKey];
     [aCoder encodeInt:_borderType forKey:CPBoxBorderTypeKey];
-
-    [aCoder encodeObject:_borderColor forKey:CPBoxBorderColorKey];
-    [aCoder encodeObject:_fillColor forKey:CPBoxFillColorKey];
-
-    [aCoder encodeFloat:_cornerRadius forKey:CPBoxCornerRadiusKey];
-    [aCoder encodeFloat:_borderWidth forKey:CPBoxBorderWidthKey];
-
     [aCoder encodeObject:_title forKey:CPBoxTitle];
     [aCoder encodeInt:_titlePosition forKey:CPBoxTitlePosition];
     [aCoder encodeObject:_titleView forKey:CPBoxTitleView];
-
-    [aCoder encodeSize:_contentMargin forKey:CPBoxContentMarginKey];
 }
 
 @end

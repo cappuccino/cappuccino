@@ -26,6 +26,7 @@
 @import "_CPFunctionExpression.j"
 @import "CPKeyValueCoding.j"
 @import "CPString.j"
+@import "_CPConstantValueExpression.j"
 
 @implementation _CPKeyPathExpression : _CPFunctionExpression
 {

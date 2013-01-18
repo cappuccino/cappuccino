@@ -87,6 +87,11 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     // Delegate must be set before objectValue
     [tokenFieldD setDelegate:self];
 
+    var tokenFieldDEditable = [CPCheckBox checkBoxWithTitle:"Editable"];
+    [tokenFieldDEditable setFrame:CGRectMake(525, CGRectGetMinY([tokenFieldD frame]), 200, 30)];
+    [tokenFieldDEditable bind:CPValueBinding toObject:tokenFieldD withKeyPath:@"editable" options:nil];
+    [contentView addSubview:tokenFieldDEditable];
+
     allPersons = [
         [Person personWithFirstName:@"Luc" lastName:@"Vauvillier"],
         [Person personWithFirstName:@"John" lastName:@"Doe"],

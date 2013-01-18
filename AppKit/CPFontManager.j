@@ -99,6 +99,9 @@ var CPSharedFontManager     = nil,
 {
     if (!_availableFonts)
     {
+        _availableFonts = [];
+
+#if PLATFORM(DOM)
         _CPFontDetectSpan = document.createElement("span");
         _CPFontDetectSpan.fontSize = "24px";
         _CPFontDetectSpan.appendChild(document.createTextNode("mmmmmmmmmml"));
@@ -110,13 +113,16 @@ var CPSharedFontManager     = nil,
 
         _CPFontDetectReferenceFonts = _CPFontDetectPickTwoDifferentFonts(["monospace", "serif", "sans-serif", "cursive"]);
 
-        _availableFonts = [];
         for (var i = 0; i < _CPFontDetectAllFonts.length; i++)
         {
             var available = _CPFontDetectFontAvailable(_CPFontDetectAllFonts[i]);
             if (available)
                 _availableFonts.push(_CPFontDetectAllFonts[i]);
         }
+#else
+        // If there's no font detection, just assume all fonts are available.
+        _availableFonts = _CPFontDetectAllFonts;
+#endif
     }
     return _availableFonts;
 }

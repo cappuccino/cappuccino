@@ -1,7 +1,8 @@
 @import <AppKit/CPApplication.j>
 @import <AppKit/CPWindow.j>
+@import <AppKit/_CPStandardWindowView.j>
 
-globalResults = [];
+var globalResults = [];
 
 @implementation MyAppDelegate : CPObject
 {
@@ -67,7 +68,7 @@ globalResults = [];
     app = [CPApplication sharedApplication];
 
     // fake the window.location.hash
-    app.window = {location: {hash: "#var1=1/var2=2"}};
+    window.location = {hash: "#var1=1/var2=2"};
     [app setDelegate:[[MyAppDelegate alloc] init]];
 
     aWindow = [[CPWindow alloc] init];
@@ -77,6 +78,12 @@ globalResults = [];
     globalResults = []
 }
 
+- (void)tearDown
+{
+    // This is the only way to clear the global window list between tests. You'd normally never do this.
+    CPApp = nil;
+}
+
 - (void)receiveNotification:(CPNotification)aNote
 {
     globalResults.push(aNote);
@@ -84,11 +91,11 @@ globalResults = [];
 
 - (void)testRunModalForWindow
 {
-    var aWindow = [[CPWindow alloc] init];
-    [app runModalForWindow:aWindow];
+    var modalWindow = [[CPWindow alloc] init];
+    [app runModalForWindow:modalWindow];
 
-    [self assertTrue:[aWindow isKeyWindow] message:@"A window must be made key when it's run modally"];
-    [self assertFalse:[aWindow isMainWindow] message:@"A window must not become the main window when it's run modally"];
+    [self assertTrue:[modalWindow isKeyWindow] message:@"A window must be made key when it's run modally"];
+    [self assertFalse:[modalWindow isMainWindow] message:@"A window must not become the main window when it's run modally"];
 
     [app abortModal];
 }
@@ -182,12 +189,12 @@ globalResults = [];
 
 - (void)testWindows
 {
-    [self assert:@"My Great Window" equals:[[[app windows] objectAtIndex:1] title]];
+    [self assert:[[aWindow title]] equals:[[app windows] valueForKey:@"title"]];
 }
 
 - (void)testWindowWithWindowNumber
 {
-    [self assert:@"My Great Window" equals:[[app windowWithWindowNumber:1] title]];
+    [self assert:@"My Great Window" equals:[[app windowWithWindowNumber:[aWindow windowNumber]] title]];
 }
 
 - (void)testReplyToApplicationShouldTerminate
@@ -195,7 +202,7 @@ globalResults = [];
     [[CPNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(receiveNotification:)
                                                  name:CPApplicationWillTerminateNotification
-                                              object:nil];
+                                               object:nil];
 
     [app replyToApplicationShouldTerminate:CPTerminateNow];
     [self assert:CPApplicationWillTerminateNotification equals:[globalResults[0] name]];
@@ -223,8 +230,8 @@ globalResults = [];
 
 - (void)testTargetForAction
 {
-    var mainWin = [[TestMainWindow alloc] init];
-    var keyWin = [[TestKeyWindow alloc] init];
+    var mainWin = [[TestMainWindow alloc] init],
+        keyWin = [[TestKeyWindow alloc] init];
     mainWin._isVisible = YES;
     keyWin._isVisible = YES;
     [mainWin makeMainWindow];
@@ -252,6 +259,6 @@ globalResults = [];
 
     // when no target is given, targetForAction is called
     [self assert:app equals:[app targetForAction:@selector(someTestMethod:) to:nil from:nil]];
-
 }
+
 @end

@@ -22,9 +22,9 @@
 
 #import "Ref.h"
 
-@import <Foundation/CPString.j>
-@import <Foundation/CPFormatter.j>
-@import <Foundation/CPDecimalNumber.j>
+@import "CPString.j"
+@import "CPFormatter.j"
+@import "CPDecimalNumber.j"
 
 #define UPDATE_NUMBER_HANDLER_IF_NECESSARY() if (!_numberHandler) \
     _numberHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:_roundingMode scale:_maximumFractionDigits raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:YES];

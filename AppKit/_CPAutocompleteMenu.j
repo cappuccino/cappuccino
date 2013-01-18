@@ -23,6 +23,7 @@
 @import <Foundation/CPObject.j>
 
 @import "CPTextField.j"
+@import "CPTableView.j"
 @import "_CPMenuWindow.j"
 
 // TODO Make themable.
@@ -55,7 +56,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
         [_menuWindow setLevel:CPPopUpMenuWindowLevel];
         [_menuWindow setHasShadow:YES];
         [_menuWindow setShadowStyle:CPMenuWindowShadowStyle];
-        [_menuWindow setAcceptsMouseMovedEvents:NO];
+        [_menuWindow setAcceptsMouseMovedEvents:YES];
         [_menuWindow setBackgroundColor:[_CPMenuWindow backgroundColorForBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle]];
 
         var contentView = [_menuWindow contentView];

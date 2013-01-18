@@ -202,6 +202,7 @@ function descriptionWithoutEntity(aString)
     [self assertTrue:[[CPIndexSet indexSetWithIndex:1] containsIndex:1]];
     [self assertTrue:[[CPIndexSet indexSetWithIndex:0] containsIndex:0]];
     [self assertFalse:[[CPIndexSet indexSetWithIndex:0] containsIndex:1]];
+    [self assertThrows:function() { [CPIndexSet indexSetWithIndex:NaN] }];
 }
 
 - (void)testIndexSetWithIndexesInRange

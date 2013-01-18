@@ -91,10 +91,10 @@ task ("clean-sprites", function()
 
 task ("clobber-theme", function()
 {
-    var f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "**/Aristo.blend")),
+    var f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "**/Aristo.blend"), FILE.join(SYSTEM.env.CAPP_BUILD, "**/Aristo2.blend")),
         paths = f.items();
 
-    f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "Aristo.build"));
+    f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "Aristo.build"), FILE.join(SYSTEM.env.CAPP_BUILD, "Aristo2.build"));
     paths = paths.concat(f.items());
 
     paths.forEach(function(path)
@@ -263,8 +263,8 @@ task ("demos", function()
     rm_rf(demosDir);
     FILE.mkdirs(demosDir);
 
-    OS.system("curl -L http://github.com/280north/cappuccino-demos/zipball/master > "+zipQuoted);
-    OS.system("(cd "+demosQuoted+" && unzip "+zipQuoted+" -d demos)");
+    OS.system("curl -L http://github.com/280north/cappuccino-demos/zipball/master > " + zipQuoted);
+    OS.system("(cd " + demosQuoted + " && unzip " + zipQuoted + " -d demos)");
 
     require("objective-j");
 
@@ -311,8 +311,8 @@ task ("demos", function()
         cp_r(FILE.join($STARTER_DOWNLOAD_APPLICATION, "Frameworks"), FILE.join(demo.path(), "Frameworks"));
         rm_rf(FILE.join(demo.path(), "Frameworks", "Debug"));
 
-        var outputPath = demo.name().replace(/\s/g, "-")+".zip";
-        OS.system("cd "+OS.enquote(FILE.dirname(demo.path()))+" && zip -ry -8 "+OS.enquote(outputPath)+" "+OS.enquote(FILE.basename(demo.path())));
+        var outputPath = demo.name().replace(/\s/g, "-") + ".zip";
+        OS.system("cd " + OS.enquote(FILE.dirname(demo.path()))+" && zip -ry -8 " + OS.enquote(outputPath) + " " + OS.enquote(FILE.basename(demo.path())));
 
         // remove the frameworks
         rm_rf(FILE.join(demo.path(), "Frameworks"));
@@ -321,7 +321,7 @@ task ("demos", function()
 
 // Testing
 
-task("test", ["CommonJS", "test-only", "check-missing-imports"]);
+task("test", ["CommonJS", "test-only"]);
 
 task("test-only", function()
 {

@@ -1,4 +1,5 @@
 
+@import <Foundation/CPArray.j>
 @import <AppKit/CPArrayController.j>
 @import <AppKit/CPTextField.j>
 
@@ -428,7 +429,7 @@
 {
     [self _initTestRemoveObjects_SimpleArray];
     [self _testRemoveObjects_MultipleSelectedObjects_AvoidingEmptySelection];
-}/
+}
 
 - (void)testRemoveObjects_MultipleSelectedObjects_AvoidingEmptySelection_ContentBinding
 {

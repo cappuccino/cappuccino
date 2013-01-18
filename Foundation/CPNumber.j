@@ -223,7 +223,7 @@ FIXME: Do we need this?
 - (CPString)descriptionWithLocale:(CPDictionary)aDictionary
 {
     if (!aDictionary)
-        return toString();
+        return self.toString();
 
     throw new Error("descriptionWithLocale: NOT YET IMPLEMENTED");
 }
@@ -277,7 +277,7 @@ FIXME: Do we need this?
 
 - (CPString)stringValue
 {
-    return toString();
+    return self.toString();
 }
 
 - (unsigned char)unsignedCharValue
