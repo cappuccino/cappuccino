@@ -1,6 +1,10 @@
 
 @import "CPView.j"
 
+@class CPSplitView
+
+@global CPPopUpButtonStatePullsDown
+
 
 @implementation CPButtonBar : CPView
 {

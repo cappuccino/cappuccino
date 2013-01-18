@@ -1,6 +1,10 @@
 @import "CPPanel.j"
 @import "_CPMenuWindow.j"
 
+@global CPMenuDidAddItemNotification
+@global CPMenuDidChangeItemNotification
+@global CPMenuDidRemoveItemNotification
+
 @implementation _CPMenuBarWindow : CPPanel
 {
     CPMenu      _menu;

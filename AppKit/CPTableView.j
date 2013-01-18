@@ -31,6 +31,9 @@
 @import "CPScroller.j"
 @import "CPCompatibility.j"
 
+@class CPScrollView
+@class CPUserDefaults
+
 
 CPTableViewColumnDidMoveNotification        = @"CPTableViewColumnDidMoveNotification";
 CPTableViewColumnDidResizeNotification      = @"CPTableViewColumnDidResizeNotification";

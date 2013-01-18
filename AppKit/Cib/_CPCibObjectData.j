@@ -32,6 +32,8 @@
 @import "CPCibRuntimeAttributesConnector.j"
 @import "CPCibHelpConnector.j"
 
+@class CPScrollView
+
 
 @implementation _CPCibObjectData : CPObject
 {

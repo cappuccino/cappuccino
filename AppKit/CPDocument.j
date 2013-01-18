@@ -29,6 +29,12 @@
 @import "CPViewController.j"
 @import "CPWindowController.j"
 
+@class CPDocumentController
+@class CPAlert
+
+@global CPApp
+@global CPWarningAlertStyle
+
 
 /*
     @global

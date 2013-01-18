@@ -26,6 +26,8 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPString.j>
 
+@class CPButtonBar
+
 
 var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
     _CPCibCustomResourceResourceNameKey = @"_CPCibCustomResourceResourceNameKey",

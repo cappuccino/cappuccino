@@ -1,6 +1,7 @@
 
 @import "_CPArray.j"
 
+@class CPIndexSet
 
 /*!
     @class CPMutableArray

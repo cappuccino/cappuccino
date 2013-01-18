@@ -29,6 +29,8 @@
 @import "CPNumber.j"
 @import "CPObject.j"
 
+@class _CPConcreteMutableSet
+
 /*!
      @class CPMutableSet
      @ingroup Foundation

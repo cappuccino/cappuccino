@@ -37,6 +37,9 @@
 @import "CPPanel.j"
 @import "CPTextField.j"
 
+@class CPCheckBox
+
+
 /*
     @global
     @group CPAlertStyle

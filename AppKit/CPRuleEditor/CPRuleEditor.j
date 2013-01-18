@@ -31,6 +31,14 @@
 @import "_CPRuleEditorViewSliceRow.j"
 @import "_CPRuleEditorLocalizer.j"
 
+@class CPCompoundPredicate
+@class CPComparisonPredicate
+
+@global CPDirectPredicateModifier
+@global CPCaseInsensitivePredicateOption
+@global CPOrPredicateType
+
+
 CPRuleEditorPredicateLeftExpression     = "CPRuleEditorPredicateLeftExpression";
 CPRuleEditorPredicateRightExpression    = "CPRuleEditorPredicateRightExpression";
 CPRuleEditorPredicateComparisonModifier = "CPRuleEditorPredicateComparisonModifier";
@@ -1703,8 +1711,8 @@ TODO: implement
 
 - (void)_setBoundDataSource:(id)datasource withKeyPath:(CPString)keyPath options:(CPDictionary)options
 {
-    if ([observableController respondsToSelector:@selector(objectClass)])
-        _rowClass = [observableController objectClass];
+    if ([datasource respondsToSelector:@selector(objectClass)])
+        _rowClass = [datasource objectClass];
 
     _boundArrayKeyPath = keyPath;
     _boundArrayOwner = datasource;

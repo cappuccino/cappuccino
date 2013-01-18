@@ -26,6 +26,8 @@
 @import "CPDocument.j"
 @import "CPOpenPanel.j"
 
+@global CPApp
+
 
 var CPSharedDocumentController = nil;
 

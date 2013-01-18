@@ -23,6 +23,10 @@
 @import "CPImageView.j"
 @import "CPView.j"
 
+@class CPCursor
+@class CPMenu
+
+@global CPApp
 
 var _CPWindowViewCornerResizeRectWidth = 10,
     _CPWindowViewResizeRegionNone = -1,

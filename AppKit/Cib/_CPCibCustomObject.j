@@ -1,6 +1,8 @@
 
 @import <Foundation/CPObject.j>
 
+@class CPApplication
+
 
 var _CPCibCustomObjectClassName = @"_CPCibCustomObjectClassName";
 

@@ -59,7 +59,7 @@ CPSoundPlayBackStatePause   = 2;
     if (self = [super init])
     {
         _loadStatus = CPSoundLoadStateEmpty;
-        _loops = NO;
+//        _loops = NO;
         _audioTag = document.createElement("audio");
         _audioTag.preload = YES;
         _playRequestBeforeLoad = NO;

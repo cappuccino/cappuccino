@@ -86,7 +86,7 @@
 
 - (BOOL)isEqual:(id)anObject
 {
-   return self === object;
+   return self === anObject;
 }
 
 - (id)self

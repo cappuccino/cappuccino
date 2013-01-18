@@ -23,6 +23,8 @@
 @import "CPTextField.j"
 @import "_CPTitleableWindowView.j"
 
+@class _CPDocModalWindowView
+
 @implementation _CPTexturedWindowHeadView : CPView
 {
     CPView  _gradientView;

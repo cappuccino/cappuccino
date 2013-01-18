@@ -22,6 +22,8 @@
 @import "CPArray.j"
 @import "CPObject.j"
 
+@global CPKeyValueObservingOptionNew
+
 /*!
     Operations receive very low priority for execution.
     @global

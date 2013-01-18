@@ -21,6 +21,9 @@
  */
 
 @import "_CPWindowView.j"
+@import "CGGradient.j"
+
+@global CPPopoverAppearanceMinimal
 
 #define ALIGN_STROKE(point)  (FLOOR(point) === (point) ? (point) + halfStrokeWidth : (point))
 #define ALIGN_COORD(point)   (FLOOR(point))

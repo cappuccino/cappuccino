@@ -34,6 +34,17 @@
 @import "CPPlatformWindow+DOM.j"
 #endif
 
+@class _CPShadowWindowView
+@class CPCursor
+@class CPDragServer
+@class CPMenu
+@class CPProgressIndicator
+
+@global CPApp
+@global CPWindowPositionFlexibleLeft
+@global CPWindowPositionFlexibleRight
+@global CPWindowPositionFlexibleTop
+@global CPWindowPositionFlexibleBottom
 
 /*
     Borderless window mask option.

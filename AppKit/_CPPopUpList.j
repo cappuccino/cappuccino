@@ -24,6 +24,10 @@
 @import "CPPanel.j"
 @import "_CPPopUpListDataSource.j"
 
+@class CPScrollView
+
+@global CPLineBorder
+
 
 /*!
     Notification sent when the list is about to pop up. \c object is the _CPPopUpList.
@@ -840,7 +844,7 @@ var _CPPopUpListDataSourceKey   = @"_CPPopUpListDataSourceKey",
 */
 - (CPTableColumn)listColumn
 {
-    return _tableColumn;
+    return _tableColumns[0];
 }
 
 @end

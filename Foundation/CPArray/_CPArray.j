@@ -26,6 +26,8 @@
 @import "CPRange.j"
 @import "CPSortDescriptor.j"
 
+@class _CPJavaScriptArray
+@class CPIndexSet
 
 CPEnumerationNormal             = 0;
 CPEnumerationConcurrent         = 1 << 0;

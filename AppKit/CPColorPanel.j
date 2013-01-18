@@ -26,6 +26,8 @@
 @import "CPPanel.j"
 @import "CPView.j"
 
+@class CPSlider
+
 
 CPColorPanelColorDidChangeNotification = @"CPColorPanelColorDidChangeNotification";
 

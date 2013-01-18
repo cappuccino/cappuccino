@@ -7,6 +7,11 @@
 @import "_CPRuleEditorPopUpButton.j"
 @import "CPRuleEditor.j"
 
+@global CPRuleEditorNestingModeCompound
+@global CPRuleEditorRowTypeCompound
+@global CPRuleEditorNestingModeSingle
+
+
 var CONTROL_HEIGHT = 16.,
     BUTTON_HEIGHT = 16.;
 

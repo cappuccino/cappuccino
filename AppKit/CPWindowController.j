@@ -27,6 +27,13 @@
 @import "CPWindow.j"
 @import "CPDocument.j"
 
+@class CPDocument
+
+@global CPApp
+@global CPDocumentWillSaveNotification
+@global CPDocumentDidSaveNotification
+@global CPDocumentDidFailToSaveNotification
+
 
 /*!
     @ingroup appkit

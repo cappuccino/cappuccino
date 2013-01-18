@@ -13,7 +13,7 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
 {
     CPDictionary    _dictionary @accessors(property=dictionary);
     CPURLConnection connection;
-    CPURLRequest    resquest;
+    CPURLRequest    request;
 }
 
 - (void)loadContentOfURL:(CPURL)aURL

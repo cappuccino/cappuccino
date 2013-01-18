@@ -27,6 +27,7 @@
 @import <Foundation/CPArray.j>
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPValueTransformer.j>
+@import <Foundation/CPKeyValueObserving.j>
 
 
 var exposedBindingsMap = [CPDictionary new],

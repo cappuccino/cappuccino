@@ -33,6 +33,9 @@
 @import "CPCibLoading.j"
 @import "CPPlatform.j"
 
+@class CPCursor
+@class CPColorPanel
+
 
 var CPMainCibFile               = @"CPMainCibFile",
     CPMainCibFileHumanFriendly  = @"Main cib file base name",

@@ -1,5 +1,11 @@
 @import <Foundation/CPObject.j>
 
+@class _CPMenuWindow
+
+@global CPApp
+@global CPMenuDidEndTrackingNotification
+@global _CPMenuWindowMenuBarBackgroundStyle
+@global _CPMenuWindowPopUpBackgroundStyle
 
 _CPMenuManagerScrollingStateUp      = -1;
 _CPMenuManagerScrollingStateDown    = 1;
@@ -26,6 +32,8 @@ var STICKY_TIME_INTERVAL            = 0.5,
 
     CPMenuItem          _previousActiveItem;
     int                 _showTimerID;
+
+    int                 _menuBarButtonItemIndex;
 }
 
 + (_CPMenuManager)sharedMenuManager
@@ -85,7 +93,7 @@ var STICKY_TIME_INTERVAL            = 0.5,
             activeItem = activeItemIndex !== CPNotFound ? [menu itemAtIndex:activeItemIndex] : nil;
 
         _menuBarButtonItemIndex = activeItemIndex;
-        _menuBarButtonMenuContainer = aMenuContainer;
+//        _menuBarButtonMenuContainer = aMenuContainer;
 
         if ([activeItem _isMenuBarButton])
             return [self trackMenuBarButtonEvent:anEvent];
@@ -556,7 +564,7 @@ var STICKY_TIME_INTERVAL            = 0.5,
         return;
     }
 
-    next = current + (last - first);
+    var next = current + (last - first);
 
     if (next < [menu numberOfItems])
         [menu _highlightItemAtIndex:next];
@@ -584,7 +592,7 @@ var STICKY_TIME_INTERVAL            = 0.5,
         return;
     }
 
-    next = current - (last - first);
+    var next = current - (last - first);
 
     if (next < 0)
         [menu _highlightItemAtIndex:0];

@@ -24,6 +24,7 @@
 @import "CPNull.j"
 @import "_CPCollectionKVCOperators.j"
 
+@class CPIndexSet
 
 @implementation CPObject (CPArrayKVO)
 

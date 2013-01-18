@@ -21,7 +21,14 @@
  */
 
 @import <Foundation/CPObject.j>
+@import "CPKeyBinding.j"
+//@import "CPMenu.j"
+@import "CPPlatform.j"
+//@import "CPEvent.j"
 
+@class CPMenu
+
+@global CPApp
 
 var PrimaryPlatformWindow   = NULL;
 

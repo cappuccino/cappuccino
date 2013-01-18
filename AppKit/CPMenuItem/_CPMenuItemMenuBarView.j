@@ -1,5 +1,8 @@
 @import "CPView.j"
 
+@class _CPMenuBarWindow
+@class _CPMenuView
+
 @implementation _CPMenuItemMenuBarView : CPView
 {
     CPMenuItem              _menuItem @accessors(property=menuItem);

@@ -77,7 +77,7 @@ var currentCursor = nil,
 */
 - (id)initWithImage:(CPImage)image foregroundColorHint:(CPColor)foregroundColor backgroundColorHint:(CPColor)backgroundColor hotSpot:(CGPoint)aHotSpot
 {
-    return [self initWithImage:image hotSpot:hotSpot];
+    return [self initWithImage:image hotSpot:aHotSpot];
 }
 
 + (void)hide
