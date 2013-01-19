@@ -29,7 +29,7 @@ var THEME_ATTRIBUTES = [@"slice-top-border-color", @"slice-bottom-border-color",
     var contentView = [theWindow contentView];
     [theWindow setFullBridge:YES];
     [contentView setBackgroundColor:[CPColor colorWithHexString:@"f3f4f5"]];
-    
+
     var animationClass = (CPBrowserIsEngine(CPWebKitBrowserEngine)) ? [CPViewAnimationTransition class] : [CPViewAnimation class];
     animation = [[animationClass alloc] initWithDuration:0.4 animationCurve:CPAnimationEaseInOut];
     //[ruleEditor setAnimation:animation];
@@ -109,3 +109,5 @@ var THEME_ATTRIBUTES = [@"slice-top-border-color", @"slice-bottom-border-color",
     [ruleEditor setValue:value forThemeAttribute:attribute];
     [ruleEditor setNeedsDisplay:YES];
 }
+
+@end
