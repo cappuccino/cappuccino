@@ -18,10 +18,10 @@ var themedButtonValues = nil,
     themedHorizontalSliderValues = nil,
     themedVerticalSliderValues = nil,
     themedCircularSliderValues = nil,
-    themedButtonBarValues = nil,
     themedAlertValues = nil,
     themedProgressIndicator = nil,
-    themedIndeterminateProgressIndicator = nil;
+    themedIndeterminateProgressIndicator = nil,
+    themedWindowViewValues = nil;
 
 /*
     HOW TO ADD OR MODIFY THEMED ELEMENTS
@@ -694,7 +694,6 @@ var themedButtonValues = nil,
             ],
             PatternIsVertical);
 
-
     themedVerticalScrollerValues =
         [
             // Common
@@ -1171,16 +1170,17 @@ var themedButtonValues = nil,
             ],
             PatternIsHorizontal),
 
-        themedColorWellValues = [
-                [@"bezel-color",            bezelColor,                         CPThemeStateBordered],
-                [@"content-inset",          CGInsetMake(5.0, 5.0, 5.0, 5.0),    CPThemeStateBordered],
-                [@"content-border-inset",   CGInsetMake(5.0, 5.0, 4.0, 5.0),    CPThemeStateBordered],
-                [@"content-border-color",   contentBorderColor,                 CPThemeStateBordered],
+        themedColorWellValues =
+        [
+            [@"bezel-color",            bezelColor,                         CPThemeStateBordered],
+            [@"content-inset",          CGInsetMake(5.0, 5.0, 5.0, 5.0),    CPThemeStateBordered],
+            [@"content-border-inset",   CGInsetMake(5.0, 5.0, 4.0, 5.0),    CPThemeStateBordered],
+            [@"content-border-color",   contentBorderColor,                 CPThemeStateBordered],
 
-                [@"bezel-color",            bezelHighlightedColor,              CPThemeStateBordered | CPThemeStateHighlighted],
+            [@"bezel-color",            bezelHighlightedColor,              CPThemeStateBordered | CPThemeStateHighlighted],
 
-                [@"bezel-color",            bezelDisabledColor,                 CPThemeStateBordered | CPThemeStateDisabled],
-            ];
+            [@"bezel-color",            bezelDisabledColor,                 CPThemeStateBordered | CPThemeStateDisabled],
+        ];
 
     [self registerThemeValues:themedColorWellValues forView:colorWell];
 
@@ -2117,18 +2117,17 @@ var themedButtonValues = nil,
             [@"level-indicator-segment-critical-left.png", 3.0, 17.0],
             [@"level-indicator-segment-critical-center.png", 1.0, 17.0],
             [@"level-indicator-segment-critical-right.png", 3.0, 17.0]
-        ]);
+        ]),
 
-
-    themeValues =
-    [
-        [@"bezel-color",    bezelColor],
-        [@"color-empty",    emptyColor],
-        [@"color-normal",   normalColor],
-        [@"color-warning",  warningColor],
-        [@"color-critical", criticalColor],
-        [@"spacing",        1.0]
-    ];
+        themeValues =
+        [
+            [@"bezel-color",    bezelColor],
+            [@"color-empty",    emptyColor],
+            [@"color-normal",   normalColor],
+            [@"color-warning",  warningColor],
+            [@"color-critical", criticalColor],
+            [@"spacing",        1.0]
+        ];
 
     [self registerThemeValues:themeValues forView:levelIndicator];
 
@@ -2187,7 +2186,8 @@ var themedButtonValues = nil,
         imageLeaf = PatternImage(@"browser-image-leaf.png", 9.0, 9.0),
         imageLeafPressed = PatternImage(@"browser-image-leaf-pressed.png", 9.0, 9.0),
 
-        themedBrowser = [
+        themedBrowser =
+        [
             ["image-control-resize", imageResize],
             ["image-control-leaf", imageLeaf],
             ["image-control-leaf-pressed", imageLeafPressed]

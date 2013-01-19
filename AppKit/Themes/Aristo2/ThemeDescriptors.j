@@ -16,7 +16,6 @@ var themedButtonValues = nil,
     themedHorizontalSliderValues = nil,
     themedVerticalSliderValues = nil,
     themedCircularSliderValues = nil,
-    themedButtonBarValues = nil,
     themedAlertValues = nil,
     themedWindowViewValues = nil,
     themedProgressIndicator = nil,
@@ -418,7 +417,6 @@ var themedButtonValues = nil,
             ],
             PatternIsVertical);
 
-
     themedVerticalScrollerValues =
         [
             // Common
@@ -438,8 +436,8 @@ var themedButtonValues = nil,
             [@"knob-color",             knobColorDark,                      CPThemeStateVertical | CPThemeStateScrollerKnobDark],
             [@"increment-line-color",   [CPNull null],                      CPThemeStateVertical],
             [@"decrement-line-color",   [CPNull null],                      CPThemeStateVertical],
-            [@"decrement-line-size",    CPSizeMakeZero(),                   CPThemeStateVertical],
-            [@"increment-line-size",    CPSizeMakeZero(),                   CPThemeStateVertical],
+            [@"decrement-line-size",    CGSizeMakeZero(),                   CPThemeStateVertical],
+            [@"increment-line-size",    CGSizeMakeZero(),                   CPThemeStateVertical],
 
             // Legacy
             [@"scroller-width",         14.0,                               CPThemeStateVertical | CPThemeStateScrollViewLegacy],
@@ -457,8 +455,8 @@ var themedButtonValues = nil,
             [@"knob-color",             knobColorLegacy,                    CPThemeStateVertical | CPThemeStateScrollViewLegacy | CPThemeStateScrollerKnobDark],
             [@"increment-line-color",   incrementColorLegacy,               CPThemeStateVertical | CPThemeStateScrollViewLegacy],
             [@"decrement-line-color",   decrementColorLegacy,               CPThemeStateVertical | CPThemeStateScrollViewLegacy],
-            [@"decrement-line-size",    CPSizeMake(14.0, 11.0),             CPThemeStateVertical | CPThemeStateScrollViewLegacy],
-            [@"increment-line-size",    CPSizeMake(14.0, 11.0),             CPThemeStateVertical | CPThemeStateScrollViewLegacy]
+            [@"decrement-line-size",    CGSizeMake(14.0, 11.0),             CPThemeStateVertical | CPThemeStateScrollViewLegacy],
+            [@"increment-line-size",    CGSizeMake(14.0, 11.0),             CPThemeStateVertical | CPThemeStateScrollViewLegacy]
         ];
 
     [self registerThemeValues:themedVerticalScrollerValues forView:scroller];
@@ -547,8 +545,8 @@ var themedButtonValues = nil,
             [@"knob-color",             knobColor],
             [@"knob-color",             knobColorLight,                     CPThemeStateScrollerKnobLight],
             [@"knob-color",             knobColorDark,                      CPThemeStateScrollerKnobDark],
-            [@"decrement-line-size",    CPSizeMakeZero()],
-            [@"increment-line-size",    CPSizeMakeZero()],
+            [@"decrement-line-size",    CGSizeMakeZero()],
+            [@"increment-line-size",    CGSizeMakeZero()],
 
             // Legacy
             [@"scroller-width",         14.0,                               CPThemeStateScrollViewLegacy],
@@ -564,8 +562,8 @@ var themedButtonValues = nil,
             [@"knob-color",             knobColorLegacy,                    CPThemeStateScrollViewLegacy | CPThemeStateScrollerKnobDark],
             [@"increment-line-color",   incrementColorLegacy,               CPThemeStateScrollViewLegacy],
             [@"decrement-line-color",   decrementColorLegacy,               CPThemeStateScrollViewLegacy],
-            [@"decrement-line-size",    CPSizeMake(11.0, 14.0),             CPThemeStateScrollViewLegacy],
-            [@"increment-line-size",    CPSizeMake(11.0, 14.0),             CPThemeStateScrollViewLegacy]
+            [@"decrement-line-size",    CGSizeMake(11.0, 14.0),             CPThemeStateScrollViewLegacy],
+            [@"increment-line-size",    CGSizeMake(11.0, 14.0),             CPThemeStateScrollViewLegacy]
         ];
 
     [self registerThemeValues:themedHorizontalScrollerValues forView:scroller];
@@ -573,7 +571,7 @@ var themedButtonValues = nil,
     return scroller;
 }
 
-// + (CPTextField)themedStandardTextField
++ (CPTextField)themedStandardTextField
 {
     var textfield = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, 160.0, 29.0)],
 
@@ -735,7 +733,8 @@ var themedButtonValues = nil,
         imageCancel = PatternImage("search-field-cancel.png", 22.0, 22.0),
         imageCancelPressed = PatternImage("search-field-cancel-pressed.png", 22.0, 22.0),
 
-        overrides = [
+        overrides =
+        [
             [@"image-search", imageSearch],
             [@"image-find", imageFind],
             [@"image-cancel", imageCancel],
@@ -1634,7 +1633,7 @@ var themedButtonValues = nil,
 
 + (_CPToolTipWindowView)themedTooltip
 {
-    var toolTipView = [[_CPToolTipWindowView alloc] initWithFrame:CPRectMake(0.0, 0.0, 200.0, 100.0) styleMask:_CPToolTipWindowMask],
+    var toolTipView = [[_CPToolTipWindowView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 100.0) styleMask:_CPToolTipWindowMask],
 
         themeValues =
         [
@@ -1801,10 +1800,10 @@ var themedButtonValues = nil,
             [@"border-width", 1.0],
             [@"border-color", [CPColor colorWithHexString:@"B7B7B7"]],
             [@"corner-radius", 3.0],
-            [@"inner-shadow-offset", CPSizeMakeZero()],
+            [@"inner-shadow-offset", CGSizeMakeZero()],
             [@"inner-shadow-color", [CPColor blackColor]],
             [@"inner-shadow-size", 6.0],
-            [@"content-margin", CPSizeMakeZero()]
+            [@"content-margin", CGSizeMakeZero()]
         ];
 
     [self registerThemeValues:themeValues forView:box];
@@ -1850,7 +1849,6 @@ var themedButtonValues = nil,
             [@"level-indicator-segment-critical-center.png", 1.0, 17.0],
             [@"level-indicator-segment-critical-right.png", 3.0, 17.0]
         ]),
-
 
         themeValues =
         [
@@ -1919,7 +1917,8 @@ var themedButtonValues = nil,
         imageLeaf = PatternImage(@"browser-image-leaf.png", 9.0, 9.0),
         imageLeafPressed = PatternImage(@"browser-image-leaf-pressed.png", 9.0, 9.0),
 
-        themedBrowser = [
+        themedBrowser =
+        [
             ["image-control-resize", imageResize],
             ["image-control-leaf", imageLeaf],
             ["image-control-leaf-pressed", imageLeafPressed]
@@ -2015,8 +2014,8 @@ var themedButtonValues = nil,
 
         themeValues =
         [
-            [@"close-image-size",           CPSizeMake(18.0, 18.0)],
-            [@"close-image-origin",         CPPointMake(6.0,4.0)],
+            [@"close-image-size",           CGSizeMake(18.0, 18.0)],
+            [@"close-image-origin",         CGPointMake(6.0,4.0)],
             [@"close-image",                closeImage],
             [@"close-active-image",         closeActiveImage],
             [@"bezel-color",                HUDBezelColor],
@@ -2049,6 +2048,13 @@ var themedButtonValues = nil,
             [@"window-standard-head-right.png", 5.0, 31.0]
         ],  PatternIsHorizontal),
 
+        bezelHeadInactiveColor = PatternColor(
+        [
+            [@"window-standard-head-inactive-left.png", 5.0, 31.0],
+            [@"window-standard-head-inactive-center.png", 1.0, 31.0],
+            [@"window-standard-head-inactive-right.png", 5.0, 31.0]
+        ],  PatternIsHorizontal),
+
         solidColor = PatternColor(
         [
             [@"window-standard-head-solid-top-left.png", 5.0, 1.0],
@@ -2076,11 +2082,13 @@ var themedButtonValues = nil,
         ]),
 
         closeButtonImage =                  PatternImage(@"window-standard-close-button.png", 16, 16),
-        closeButtonImageHighlighted =       PatternImage(@"window-standard-button-highlighted.png",16, 16),
-        unsavedButtonImage =                PatternImage(@"window-standard-button-unsaved.png",16, 16),
-        unsavedButtonImageHighlighted =     PatternImage(@"window-standard-close-button-unsaved-highlighted.png",16, 16),
-        minimizeButtonImage =               PatternImage(@"window-standard-minimize-button.png",16, 16),
-        minimizeButtonImageHighlighted =    PatternImage(@"window-standard-minimize-button-highlighted.png",16, 16),
+        closeButtonImageInactive =          PatternImage(@"window-standard-close-button-inactive.png", 16, 16),
+        closeButtonImageHighlighted =       PatternImage(@"window-standard-button-highlighted.png", 16, 16),
+        unsavedButtonImage =                PatternImage(@"window-standard-button-unsaved.png", 16, 16),
+        unsavedButtonImageInactive =                PatternImage(@"window-standard-button-unsaved-inactive.png", 16, 16),
+        unsavedButtonImageHighlighted =     PatternImage(@"window-standard-close-button-unsaved-highlighted.png", 16, 16),
+        minimizeButtonImage =               PatternImage(@"window-standard-minimize-button.png", 16, 16),
+        minimizeButtonImageHighlighted =    PatternImage(@"window-standard-minimize-button-highlighted.png", 16, 16),
 
         sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
         resizeIndicator = PatternImage(@"window-resize-indicator.png", 12, 12),
@@ -2088,11 +2096,13 @@ var themedButtonValues = nil,
         themeValues =
         [
             [@"gradient-height",            31.0],
-            [@"bezel-head-color",           bezelHeadColor],
+            [@"bezel-head-color",           bezelHeadInactiveColor, CPThemeStateNormal],
+            [@"bezel-head-color",           bezelHeadColor, CPThemeStateKeyWindow],
+            [@"bezel-head-color",           bezelHeadColor, CPThemeStateMainWindow],
             [@"solid-color",                solidColor],
 
             [@"title-font",                 [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize]],
-            [@"title-text-color",           [CPColor colorWithWhite:22.0 / 255.0 alpha:0.75]],
+            [@"title-text-color",           [CPColor colorWithHexString:@"848484"]],
             [@"title-text-color",           [CPColor colorWithWhite:22.0 / 255.0 alpha:1], CPThemeStateKeyWindow],
             [@"title-text-shadow-color",    [CPColor whiteColor]],
             [@"title-text-shadow-offset",   CGSizeMake(0.0, 1.0)],
@@ -2106,15 +2116,17 @@ var themedButtonValues = nil,
             [@"body-color",                 bezelColor],
             [@"title-bar-height",           31],
 
-            [@"unsaved-image-button"                ,unsavedButtonImage],
-            [@"unsaved-image-highlighted-button"    ,unsavedButtonImageHighlighted],
-            [@"close-image-button"                  ,closeButtonImage],
-            [@"close-image-highlighted-button"      ,closeButtonImageHighlighted],
-            [@"minimize-image-button"               ,minimizeButtonImage],
-            [@"minimize-image-highlighted-button"   ,minimizeButtonImageHighlighted],
+            [@"unsaved-image-button",               unsavedButtonImage],
+            [@"unsaved-image-highlighted-button",   unsavedButtonImageHighlighted],
+            [@"close-image-button",                 closeButtonImageInactive, CPThemeStateNormal],
+            [@"close-image-button",                 closeButtonImage, CPThemeStateKeyWindow],
+            [@"close-image-button",                 closeButtonImage, CPThemeStateMainWindow],
+            [@"close-image-highlighted-button",     closeButtonImageHighlighted],
+            [@"minimize-image-button",              minimizeButtonImage],
+            [@"minimize-image-highlighted-button",  minimizeButtonImageHighlighted],
 
-            [@"close-image-size",                   CPSizeMake(16.0, 16.0)],
-            [@"close-image-origin",                 CPPointMake(8.0, 10.0)],
+            [@"close-image-size",               CGSizeMake(16.0, 16.0)],
+            [@"close-image-origin",             CGPointMake(8.0, 10.0)],
 
             [@"resize-indicator",               resizeIndicator],
             [@"attached-sheet-shadow-color",    sheetShadow],
@@ -2581,4 +2593,5 @@ var themedButtonValues = nil,
     [self registerThemeValues:[self defaultThemeOverridesAddedTo:hudSpecific] forView:button inherit:themedRadioButtonValues];
     return button;
 }
+
 @end
