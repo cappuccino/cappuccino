@@ -75,9 +75,9 @@
     [theDocument.selectedBookmarkTitleField performClick:self];
     [self assert:@"Another Title" equals:[theDocument.collection[1] title]];
 
-    [theDocument.selectedBookmarkURLField setStringValue:@"http://www.cappuccino.org"];
+    [theDocument.selectedBookmarkURLField setStringValue:@"http://www.cappuccino-project.org"];
     [theDocument.selectedBookmarkURLField performClick:self];
-    [self assert:[CPURL URLWithString:@"http://www.cappuccino.org"] equals:[theDocument.collection[1] URL]];
+    [self assert:[CPURL URLWithString:@"http://www.cappuccino-project.org"] equals:[theDocument.collection[1] URL]];
 
     // Verify the first entry remains.
     [theDocument.tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:0] byExtendingSelection:NO]
@@ -87,7 +87,7 @@
     // Remove it.
     [theDocument removeSelectedBookmarks:self];
     [self assert:@"Another Title" equals:[theDocument.selectedBookmarkTitleField stringValue]];
-    [self assert:@"http://www.cappuccino.org" equals:[theDocument.selectedBookmarkURLField stringValue]];
+    [self assert:@"http://www.cappuccino-project.org" equals:[theDocument.selectedBookmarkURLField stringValue]];
 }
 
 @end

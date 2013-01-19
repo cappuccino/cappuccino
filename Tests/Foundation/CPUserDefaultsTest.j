@@ -102,13 +102,13 @@ CPUserDefaultsTestKey2 = @"KEY2";
 
 - (void)testURL
 {
-    [target setURL:[CPURL URLWithString:@"http://cappuccino.org"] forKey:CPUserDefaultsTestKey1];
+    [target setURL:[CPURL URLWithString:@"http://cappuccino-project.org"] forKey:CPUserDefaultsTestKey1];
     [self assert:[[target URLForKey:CPUserDefaultsTestKey1] class] equals:CPURL];
-    [self assert:[[target URLForKey:CPUserDefaultsTestKey1] absoluteString] equals:@"http://cappuccino.org"];
+    [self assert:[[target URLForKey:CPUserDefaultsTestKey1] absoluteString] equals:@"http://cappuccino-project.org"];
 
-    [target setURL:@"http://cappuccino.org" forKey:CPUserDefaultsTestKey1];
+    [target setURL:@"http://cappuccino-project.org" forKey:CPUserDefaultsTestKey1];
     [self assert:[[target URLForKey:CPUserDefaultsTestKey1] class] equals:CPURL];
-    [self assert:[[target URLForKey:CPUserDefaultsTestKey1] absoluteString] equals:@"http://cappuccino.org"];
+    [self assert:[[target URLForKey:CPUserDefaultsTestKey1] absoluteString] equals:@"http://cappuccino-project.org"];
 
     [target removeObjectForKey:CPUserDefaultsTestKey1];
     [self assert:[target URLForKey:CPUserDefaultsTestKey1] equals:nil];

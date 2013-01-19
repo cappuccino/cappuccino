@@ -47,7 +47,7 @@
     webview2 = [[CPWebView alloc] initWithFrame:CGRectMake([contentView frameSize].width / 2 + 10, 40, [contentView frameSize].width / 2 - 10, [contentView frameSize].height - 40)];
 	[webview2 setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
 	[webview2 setHidden:YES];
-	[webview2 setMainFrameURL:"http://www.cappuccino.org"];
+	[webview2 setMainFrameURL:"http://www.cappuccino-project.org"];
 	[contentView addSubview:webview2];
 
     [theWindow orderFront:self];

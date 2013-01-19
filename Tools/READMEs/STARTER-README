@@ -7,10 +7,8 @@ Included you should find the following:
 3. bootstrap.sh
 4. README
 
-NewApplication is a stand alone Cappuccino application that you can use as a template to start building your own apps.  To get started, just open up NewApplication/index.html in your favorite web browser.  A great place to go from there is to read the "Downloading and Getting Started" tutorial found at http://cappuccino.org/learn/tutorials/starter-tutorial.php.  This will walk you through these initial steps as well as getting you to do a little coding. If you want to debug your application, try running it with index-debug.html instead, which should make it easier.
+NewApplication is a stand alone Cappuccino application that you can use as a template to start building your own apps.  To get started, just open up NewApplication/index.html in your favorite web browser.  A great place to go from there is to read the "Downloading and Getting Started" tutorial found at http://cappuccino-project.org/learn/starter.html.  This will walk you through these initial steps as well as getting you to do a little coding. If you want to debug your application, try running it with index-debug.html instead, which should make it easier.
 
 You can build your entire application right from either of these sample projects, but if you want to dig a little deeper, you can install the full set of tools by running the bootstrap.sh script.  This will set you up with some great additions like build tools to help fine tune the performance of your deployments.
 
-NOTE: If you'd like to make a nib-based application (so you can create your interface in Interface Builder), you will need to install the Cappuccino tools. 
-
-For more details, see our more thorough README on our website: http://cappuccino.org/download/readme.php
+NOTE: If you'd like to make a nib-based application (so you can create your interface in Interface Builder), you will need to install the Cappuccino tools.

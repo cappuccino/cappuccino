@@ -263,7 +263,7 @@ task ("demos", function()
     rm_rf(demosDir);
     FILE.mkdirs(demosDir);
 
-    OS.system("curl -L http://github.com/280north/cappuccino-demos/zipball/master > " + zipQuoted);
+    OS.system("curl -L http://github.com/cappuccino/cappuccino-demos/zipball/master > " + zipQuoted);
     OS.system("(cd " + demosQuoted + " && unzip " + zipQuoted + " -d demos)");
 
     require("objective-j");
