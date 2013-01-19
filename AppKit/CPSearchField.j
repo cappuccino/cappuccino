@@ -250,7 +250,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
 */
 - (CGRect)searchButtonRectForBounds:(CGRect)rect
 {
-    var size = [[self valueForThemeAttribute:@"image-search"] size] || CPSizeMakeZero();
+    var size = [[self valueForThemeAttribute:@"image-search"] size] || CGSizeMakeZero();
 
     return _CGRectMake(5, (_CGRectGetHeight(rect) - size.height) / 2, size.width, size.height);
 }
@@ -262,7 +262,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
 */
 - (CGRect)cancelButtonRectForBounds:(CGRect)rect
 {
-    var size = [[self valueForThemeAttribute:@"image-cancel"] size] || CPSizeMakeZero();
+    var size = [[self valueForThemeAttribute:@"image-cancel"] size] || CGSizeMakeZero();
 
     return _CGRectMake(_CGRectGetWidth(rect) - size.width - 5, (_CGRectGetHeight(rect) - size.width) / 2, size.height, size.height);
 }

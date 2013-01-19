@@ -196,7 +196,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 @implementation CPEvent : CPObject
 {
     CPEventType         _type;
-    CPPoint             _location;
+    CGPoint             _location;
     unsigned            _modifierFlags;
     CPTimeInterval      _timestamp;
     CPGraphicsContext   _context;
@@ -315,13 +315,13 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /* @ignore */
-- (id)_initMouseEventWithType:(CPEventType)anEventType location:(CPPoint)aPoint modifierFlags:(unsigned)modifierFlags
+- (id)_initMouseEventWithType:(CPEventType)anEventType location:(CGPoint)aPoint modifierFlags:(unsigned)modifierFlags
     timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
     eventNumber:(int)anEventNumber clickCount:(int)aClickCount pressure:(float)aPressure
 {
     if (self = [self _initWithType:anEventType])
     {
-        _location = CPPointCreateCopy(aPoint);
+        _location = CGPointCreateCopy(aPoint);
         _modifierFlags = modifierFlags;
         _timestamp = aTimestamp;
         _context = aGraphicsContext;
@@ -335,13 +335,13 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /* @ignore */
-- (id)_initKeyEventWithType:(CPEventType)anEventType location:(CPPoint)aPoint modifierFlags:(unsigned int)modifierFlags
+- (id)_initKeyEventWithType:(CPEventType)anEventType location:(CGPoint)aPoint modifierFlags:(unsigned int)modifierFlags
     timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
     characters:(CPString)characters charactersIgnoringModifiers:(CPString)unmodCharacters isARepeat:(BOOL)isARepeat keyCode:(unsigned short)code
 {
     if (self = [self _initWithType:anEventType])
     {
-        _location = CPPointCreateCopy(aPoint);
+        _location = CGPointCreateCopy(aPoint);
         _modifierFlags = modifierFlags;
         _timestamp = aTimestamp;
         _context = aGraphicsContext;
@@ -362,7 +362,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 {
     if (self = [self _initWithType:anEventType])
     {
-        _location = CPPointCreateCopy(aPoint);
+        _location = CGPointCreateCopy(aPoint);
         _modifierFlags = modifierFlags;
         _timestamp = aTimestamp;
         _context = aGraphicsContext;

@@ -2066,7 +2066,7 @@ TODO: implement
     [super setNeedsDisplay:flag];
 }
 
-- (void)setFrameSize:(CPSize)size
+- (void)setFrameSize:(CGSize)size
 {
     [self setNeedsDisplay:YES];
 
@@ -2262,7 +2262,7 @@ TODO: implement
     return [CPIndexSet indexSetWithIndex:CPDragOperationMove];
 }
 
-- (void)draggedView:(CPView)dragView endedAt:(CPPoint)aPoint operation:(CPDragOperation)operation
+- (void)draggedView:(CPView)dragView endedAt:(CGPoint)aPoint operation:(CPDragOperation)operation
 {
     _draggingRows = nil;
 
@@ -2586,7 +2586,7 @@ var dropSeparatorColor = [CPColor colorWithHexString:@"4886ca"];
 {
 }
 
-- (void)drawRect:(CPRect)rect
+- (void)drawRect:(CGRect)rect
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort];
     CGContextSetFillColor(context, dropSeparatorColor);

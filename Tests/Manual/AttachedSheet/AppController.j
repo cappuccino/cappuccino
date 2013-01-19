@@ -10,35 +10,36 @@
 
 @implementation AppController : CPObject
 {
-    CPWindow    window;
+    CPWindow    wind;
     CPWindow    sheet;
     CPTextField textField;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
-    window = [[CPWindow alloc] initWithContentRect:CGRectMake(100,100,500,300) styleMask:CPResizableWindowMask],
-        contentView = [window contentView];
+    wind = [[CPWindow alloc] initWithContentRect:CGRectMake(100, 100, 500, 300) styleMask:CPTitledWindowMask | CPResizableWindowMask];
+    [wind setMinSize:CGSizeMake(300, 200)];
+    [wind setTitle:@"Untitled"];
 
-    [window setMinSize:CGSizeMake(300, 200)];
-    sheet = [[CPWindow alloc] initWithContentRect:CGRectMake(0,0,300,100) styleMask:CPDocModalWindowMask | CPResizableWindowMask];
+    sheet = [[CPWindow alloc] initWithContentRect:CGRectMake(0, 0, 300, 100) styleMask:CPDocModalWindowMask | CPResizableWindowMask];
     [sheet setMinSize:CGSizeMake(300,100)];
 
     var sheetContent = [sheet contentView];
 
-    textField = [[CPTextField alloc] initWithFrame:CGRectMake(10,30,280,30)];
+    textField = [[CPTextField alloc] initWithFrame:CGRectMake(10, 30, 280, 30)];
     [textField setEditable:YES];
     [textField setBezeled:YES];
     [textField setAutoresizingMask:CPViewWidthSizable];
 
-    var okButton = [[CPButton alloc] initWithFrame:CGRectMake(230,70,50,24)];
+    var buttonHeight = [[CPTheme defaultTheme] valueForAttributeWithName:@"min-size" forClass:CPButton].height,
+        okButton = [[CPButton alloc] initWithFrame:CGRectMake(230, 70, 50, buttonHeight)];
     [okButton setTitle:"OK"];
     [okButton setTarget:self];
     [okButton setTag:1];
     [okButton setAction:@selector(closeSheet:)];
     [okButton setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
 
-    var cancelButton = [[CPButton alloc] initWithFrame:CGRectMake(120,70,100,24)];
+    var cancelButton = [[CPButton alloc] initWithFrame:CGRectMake(120, 70, 100, buttonHeight)];
     [cancelButton setTitle:"Cancel"];
     [cancelButton setTarget:self];
     [cancelButton setTag:0];
@@ -49,13 +50,13 @@
     [sheetContent addSubview:okButton];
     [sheetContent addSubview:cancelButton];
 
-    var displayButton = [[CPButton alloc] initWithFrame:CGRectMake(200,150,100,24)];
+    var displayButton = [[CPButton alloc] initWithFrame:CGRectMake(200, 150, 100, buttonHeight)];
     [displayButton setTitle:"Display Sheet"];
     [displayButton setTarget:self];
     [displayButton setAction:@selector(displaySheet:)];
-    [contentView addSubview:displayButton];
+    [[wind contentView] addSubview:displayButton];
 
-    [window orderFront:self]
+    [wind orderFront:self]
 }
 
 - (void)displaySheet:(id)sender
@@ -63,7 +64,7 @@
     [textField setStringValue:""];
     [sheet makeFirstResponder:textField];
 
-    [CPApp beginSheet:sheet modalForWindow:window modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];
+    [CPApp beginSheet:sheet modalForWindow:wind modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];
 }
 
 - (void)closeSheet:(id)sender
@@ -78,7 +79,7 @@
     [sheet orderOut:self];
 
     if (returnCode == CPOKButton && [str length] > 0)
-        [window setTitle:str];
+        [wind setTitle:str];
 }
 
 @end

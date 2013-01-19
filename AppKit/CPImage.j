@@ -118,7 +118,7 @@ function CPAppKitImage(aFilename, aSize)
 
     if (self)
     {
-        _size = CPSizeCreateCopy(aSize);
+        _size = CGSizeCreateCopy(aSize);
         _filename = aFilename;
         _loadStatus = CPImageLoadStatusInitialized;
     }

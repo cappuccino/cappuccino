@@ -74,7 +74,7 @@ var CPDragServerSource             = nil,
 - (unsigned)draggingSourceOperationMask
 */
 
-- (CPPoint)draggingLocation
+- (CGPoint)draggingLocation
 {
     return [[CPDragServer sharedDragServer] draggingLocation];
 }

@@ -357,7 +357,7 @@ var STICKY_TIME_INTERVAL        = 500;
 - (_CPManagerScrollingState)scrollingStateForPoint:(CGPoint)aGlobalLocation
 {
     var frame = [self frame];
-    if (!CPRectContainsPoint(frame,aGlobalLocation) || ![self canScroll])
+    if (!CGRectContainsPoint(frame,aGlobalLocation) || ![self canScroll])
         return _CPMenuManagerScrollingStateNone;
 
     // If we're at or above of the top scroll indicator...

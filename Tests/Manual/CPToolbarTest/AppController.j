@@ -102,13 +102,13 @@
     if (itemIdentifier == "colour")
     {
         [toolbarItem setLabel:@"Colour"];
-        [toolbarItem setImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle mainBundle] pathForResource:@"CPImageNameColorPanel.png"] size:CPSizeMake(26, 29)]];
+        [toolbarItem setImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle mainBundle] pathForResource:@"CPImageNameColorPanel.png"] size:CGSizeMake(26, 29)]];
         return toolbarItem;
     }
     else if (itemIdentifier == "new")
     {
         [toolbarItem setLabel:@"Small New"];
-        [toolbarItem setImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle mainBundle] pathForResource:@"New.png"] size:CPSizeMake(16, 16)]];
+        [toolbarItem setImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle mainBundle] pathForResource:@"New.png"] size:CGSizeMake(16, 16)]];
         return toolbarItem;
     }
     else if (itemIdentifier == "tallitem")

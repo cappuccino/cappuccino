@@ -10,7 +10,7 @@
     CPRuleEditor _ruleEditor;
     int          _indentation           @accessors(property=indentation);
     int          _rowIndex              @accessors(property=rowIndex);
-    CPRect       _animationTargetRect   @accessors(property=_animationTargetRect);
+    CGRect       _animationTargetRect   @accessors(property=_animationTargetRect);
     BOOL         _selected              @accessors(getter=_isSelected, setter=_setSelected:);
     BOOL         _lastSelected          @accessors(getter=_isLastSelected, setter=_setLastSelected:);
     CPColor      _backgroundColor       @accessors(property=backgroundColor);
@@ -44,7 +44,7 @@
     _selected = select;
 }
 
-- (void)drawRect:(CPRect)rect
+- (void)drawRect:(CGRect)rect
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort],
         bounds = [self bounds],

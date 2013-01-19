@@ -713,8 +713,8 @@ var themedButtonValues = nil,
             [@"knob-color",             knobColorDark,                      CPThemeStateVertical | CPThemeStateScrollerKnobDark],
             [@"increment-line-color",   [CPNull null],                      CPThemeStateVertical],
             [@"decrement-line-color",   [CPNull null],                      CPThemeStateVertical],
-            [@"decrement-line-size",    CPSizeMakeZero(),                   CPThemeStateVertical],
-            [@"increment-line-size",    CPSizeMakeZero(),                   CPThemeStateVertical],
+            [@"decrement-line-size",    CGSizeMakeZero(),                   CPThemeStateVertical],
+            [@"increment-line-size",    CGSizeMakeZero(),                   CPThemeStateVertical],
 
             // Legacy
             [@"scroller-width",         14.0,                               CPThemeStateVertical | CPThemeStateScrollViewLegacy],
@@ -732,8 +732,8 @@ var themedButtonValues = nil,
             [@"knob-color",             knobColorLegacy,                    CPThemeStateVertical | CPThemeStateScrollViewLegacy | CPThemeStateScrollerKnobDark],
             [@"increment-line-color",   incrementColorLegacy,               CPThemeStateVertical | CPThemeStateScrollViewLegacy],
             [@"decrement-line-color",   decrementColorLegacy,               CPThemeStateVertical | CPThemeStateScrollViewLegacy],
-            [@"decrement-line-size",    CPSizeMake(14.0, 11.0),             CPThemeStateVertical | CPThemeStateScrollViewLegacy],
-            [@"increment-line-size",    CPSizeMake(14.0, 11.0),             CPThemeStateVertical | CPThemeStateScrollViewLegacy]
+            [@"decrement-line-size",    CGSizeMake(14.0, 11.0),             CPThemeStateVertical | CPThemeStateScrollViewLegacy],
+            [@"increment-line-size",    CGSizeMake(14.0, 11.0),             CPThemeStateVertical | CPThemeStateScrollViewLegacy]
         ];
 
     [self registerThemeValues:themedVerticalScrollerValues forView:scroller];
@@ -831,8 +831,8 @@ var themedButtonValues = nil,
             [@"knob-color",             knobColor],
             [@"knob-color",             knobColorLight,                     CPThemeStateScrollerKnobLight],
             [@"knob-color",             knobColorDark,                      CPThemeStateScrollerKnobDark],
-            [@"decrement-line-size",    CPSizeMakeZero()],
-            [@"increment-line-size",    CPSizeMakeZero()],
+            [@"decrement-line-size",    CGSizeMakeZero()],
+            [@"increment-line-size",    CGSizeMakeZero()],
 
             // Legacy
             [@"scroller-width",         14.0,                               CPThemeStateScrollViewLegacy],
@@ -848,8 +848,8 @@ var themedButtonValues = nil,
             [@"knob-color",             knobColorLegacy,                    CPThemeStateScrollViewLegacy | CPThemeStateScrollerKnobDark],
             [@"increment-line-color",   incrementColorLegacy,               CPThemeStateScrollViewLegacy],
             [@"decrement-line-color",   decrementColorLegacy,               CPThemeStateScrollViewLegacy],
-            [@"decrement-line-size",    CPSizeMake(11.0, 14.0),             CPThemeStateScrollViewLegacy],
-            [@"increment-line-size",    CPSizeMake(11.0, 14.0),             CPThemeStateScrollViewLegacy]
+            [@"decrement-line-size",    CGSizeMake(11.0, 14.0),             CPThemeStateScrollViewLegacy],
+            [@"increment-line-size",    CGSizeMake(11.0, 14.0),             CPThemeStateScrollViewLegacy]
         ];
 
     [self registerThemeValues:themedHorizontalScrollerValues forView:scroller];
@@ -1957,7 +1957,7 @@ var themedButtonValues = nil,
 
 + (_CPToolTipWindowView)themedTooltip
 {
-    var toolTipView = [[_CPToolTipWindowView alloc] initWithFrame:CPRectMakeZero() styleMask:_CPToolTipWindowMask],
+    var toolTipView = [[_CPToolTipWindowView alloc] initWithFrame:CGRectMakeZero() styleMask:_CPToolTipWindowMask],
 
         themeValues =
         [
@@ -2069,10 +2069,10 @@ var themedButtonValues = nil,
             [@"border-width", 1.0],
             [@"border-color", [CPColor colorWithHexString:@"B7B7B7"]],
             [@"corner-radius", 3.0],
-            [@"inner-shadow-offset", CPSizeMakeZero()],
+            [@"inner-shadow-offset", CGSizeMakeZero()],
             [@"inner-shadow-color", [CPColor blackColor]],
             [@"inner-shadow-size", 6.0],
-            [@"content-margin", CPSizeMakeZero()]
+            [@"content-margin", CGSizeMakeZero()]
         ];
 
     [self registerThemeValues:themeValues forView:box];
@@ -2283,8 +2283,8 @@ var themedButtonValues = nil,
 
         themeValues =
         [
-            [@"close-image-size",           CPSizeMake(18.0, 18.0)],
-            [@"close-image-origin",         CPPointMake(6.0,4.0)],
+            [@"close-image-size",           CGSizeMake(18.0, 18.0)],
+            [@"close-image-origin",         CGPointMake(6.0,4.0)],
             [@"close-image",                closeImage],
             [@"close-active-image",         closeActiveImage],
             [@"bezel-color",                HUDBezelColor],
@@ -2382,8 +2382,8 @@ var themedButtonValues = nil,
             [@"minimize-image-button"               ,minimizeButtonImage],
             [@"minimize-image-highlighted-button"   ,minimizeButtonImageHighlighted],
 
-            [@"close-image-size",                   CPSizeMake(16.0, 16.0)],
-            [@"close-image-origin",                 CPPointMake(8.0, 10.0)],
+            [@"close-image-size",                   CGSizeMake(16.0, 16.0)],
+            [@"close-image-origin",                 CGPointMake(8.0, 10.0)],
 
             [@"resize-indicator",               resizeIndicator],
             [@"attached-sheet-shadow-color",    sheetShadow],

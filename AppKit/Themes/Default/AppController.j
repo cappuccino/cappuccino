@@ -27,9 +27,9 @@
 
     var horizontalTrackColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
         [
-            [_CPCibCustomResource imageResourceWithName:"horizontal-track-left.png" size:CPSizeMake(2.0, 4.0)],
-            [_CPCibCustomResource imageResourceWithName:"horizontal-track-center.png" size:CPSizeMake(1.0, 4.0)],
-            [_CPCibCustomResource imageResourceWithName:"horizontal-track-right.png" size:CPSizeMake(2.0, 4.0)]
+            [_CPCibCustomResource imageResourceWithName:"horizontal-track-left.png" size:CGSizeMake(2.0, 4.0)],
+            [_CPCibCustomResource imageResourceWithName:"horizontal-track-center.png" size:CGSizeMake(1.0, 4.0)],
+            [_CPCibCustomResource imageResourceWithName:"horizontal-track-right.png" size:CGSizeMake(2.0, 4.0)]
         ]
         isVertical:NO]],
         horizontalSlider = [[CPSlider alloc] initWithFrame:CGRectMake(0.0, 0.0, 50.0, 24.0)];
@@ -37,8 +37,8 @@
     [horizontalSlider setTrackWidth:4.0];
     [horizontalSlider setHorizontalTrackColor:horizontalTrackColor];
 
-    var knobColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"knob.png" size:CPSizeMake(11.0, 11.0)]],
-        knobHighlightedColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"knob-highlighted.png" size:CPSizeMake(12.0, 12.0)]];
+    var knobColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"knob.png" size:CGSizeMake(11.0, 11.0)]],
+        knobHighlightedColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"knob-highlighted.png" size:CGSizeMake(12.0, 12.0)]];
 
     [horizontalSlider setKnobSize:CGSizeMake(12.0, 12.0)];
     [horizontalSlider setKnobColor:knobColor];
@@ -50,9 +50,9 @@
 
     var verticalTrackColor =  [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
         [
-            [_CPCibCustomResource imageResourceWithName:"vertical-track-top.png" size:CPSizeMake(4.0, 2.0)],
-            [_CPCibCustomResource imageResourceWithName:"vertical-track-center.png" size:CPSizeMake(4.0, 1.0)],
-            [_CPCibCustomResource imageResourceWithName:"vertical-track-bottom.png" size:CPSizeMake(4.0, 2.0)]
+            [_CPCibCustomResource imageResourceWithName:"vertical-track-top.png" size:CGSizeMake(4.0, 2.0)],
+            [_CPCibCustomResource imageResourceWithName:"vertical-track-center.png" size:CGSizeMake(4.0, 1.0)],
+            [_CPCibCustomResource imageResourceWithName:"vertical-track-bottom.png" size:CGSizeMake(4.0, 2.0)]
         ]
         isVertical:YES]],
         verticalSlider = [[CPSlider alloc] initWithFrame:CGRectMake(0.0, 0.0, 24.0, 50.0)];

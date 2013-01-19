@@ -36,12 +36,12 @@
 - (void)positionWindow
 {
     var keyWindow = [CPApp keyWindow],
-        origin = CPPointMake(40, 40);
+        origin = CGPointMake(40, 40);
 
     if (keyWindow)
     {
         origin = ([keyWindow frame]).origin;
-        origin = CPPointMake(origin.x + 20, origin.y + 20);
+        origin = CGPointMake(origin.x + 20, origin.y + 20);
     }
 
     [[self window] setFrameOrigin:origin];
@@ -254,7 +254,7 @@
         [[self window] close];
 }
 
-- (void)windowWillClose:(NSNotification*)notification
+- (void)windowWillClose:(CPNotification)notification
 {
     CPLog.debug("[%@ %@]", [self class], _cmd);
 
@@ -455,7 +455,7 @@
     return [_shadeParentWindow state];
 }
 
-- (void)windowWillBeginSheet:(NSNotification*)notification
+- (void)windowWillBeginSheet:(CPNotification)notification
 {
     CPLog.debug("[%@ %@]", [self class], _cmd);
 
@@ -470,7 +470,7 @@
     }
 }
 
-- (void)windowDidEndSheet:(NSNotification *)notification
+- (void)windowDidEndSheet:(CPNotification)notification
 {
     CPLog.debug("[%@ %@]", [self class], _cmd);
 

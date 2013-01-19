@@ -269,7 +269,7 @@ var CPToolbarsByIdentifier              = nil,
 - (CGRect)_toolbarViewFrame
 {
     var height = _desiredHeight || (_sizeMode != CPToolbarSizeModeSmall ? [_toolbarView valueForThemeAttribute:@"regular-size-height"] : [_toolbarView valueForThemeAttribute:@"small-size-height"]);
-    return CPRectMake(0.0, 0.0, 1200.0, height);
+    return CGRectMake(0.0, 0.0, 1200.0, height);
 }
 
 /* @ignore */

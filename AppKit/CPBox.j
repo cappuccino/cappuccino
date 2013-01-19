@@ -84,7 +84,7 @@ CPBelowBottom = 6;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], 1.0, 3.0, CPSizeMakeZero(), 6.0, [CPNull null], CPSizeMakeZero()]
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], 1.0, 3.0, CGSizeMakeZero(), 6.0, [CPNull null], CGSizeMakeZero()]
                                        forKeys:[   @"background-color",
                                                    @"border-color",
                                                    @"border-width",
@@ -95,7 +95,7 @@ CPBelowBottom = 6;
                                                    @"content-margin"]];
 }
 
-- (id)initWithFrame:(CPRect)frameRect
+- (id)initWithFrame:(CGRect)frameRect
 {
     self = [super initWithFrame:frameRect];
 
@@ -123,7 +123,7 @@ CPBelowBottom = 6;
 
     @return the border rectangle of the box
 */
-- (CPRect)borderRect
+- (CGRect)borderRect
 {
     return [self bounds];
 }
@@ -287,12 +287,12 @@ CPBelowBottom = 6;
     _contentView = aView;
 }
 
-- (CPSize)contentViewMargins
+- (CGSize)contentViewMargins
 {
     return [self valueForThemeAttribute:@"content-margin"];
 }
 
-- (void)setContentViewMargins:(CPSize)size
+- (void)setContentViewMargins:(CGSize)size
 {
      if (size.width < 0 || size.height < 0)
          [CPException raise:CPGenericException reason:@"Margins must be positive"];
@@ -301,7 +301,7 @@ CPBelowBottom = 6;
     [self setNeedsDisplay:YES];
 }
 
-- (void)setFrameFromContentFrame:(CPRect)aRect
+- (void)setFrameFromContentFrame:(CGRect)aRect
 {
     var offset = [self _titleHeightOffset],
         borderWidth = [self borderWidth],
@@ -370,7 +370,7 @@ CPBelowBottom = 6;
         case CPAtTop:
         case CPAboveTop:
         case CPBelowTop:
-            [_titleView setFrameOrigin:CPPointMake(5.0, 0.0)];
+            [_titleView setFrameOrigin:CGPointMake(5.0, 0.0)];
             [_titleView setAutoresizingMask:CPViewNotSizable];
             break;
 
@@ -378,7 +378,7 @@ CPBelowBottom = 6;
         case CPAtBottom:
         case CPBelowBottom:
             var h = [_titleView frameSize].height;
-            [_titleView setFrameOrigin:CPPointMake(5.0, [self frameSize].height - h)];
+            [_titleView setFrameOrigin:CGPointMake(5.0, [self frameSize].height - h)];
             [_titleView setAutoresizingMask:CPViewMinYMargin];
             break;
     }
@@ -422,7 +422,7 @@ CPBelowBottom = 6;
     }
 }
 
-- (void)drawRect:(CPRect)rect
+- (void)drawRect:(CGRect)rect
 {
     if (_borderType === CPNoBorder)
         return;

@@ -473,7 +473,7 @@ var CONTROL_HEIGHT = 16.,
     [self layoutSubviews];
 }
 
-- (void)drawRect:(CPRect)rect
+- (void)drawRect:(CGRect)rect
 {
     [super drawRect:rect];
 }
@@ -523,9 +523,9 @@ var CONTROL_HEIGHT = 16.,
     return self;
 }
 
-- (id)hitTest:(CPPoint)point
+- (id)hitTest:(CGPoint)point
 {
-    if (!CPRectContainsPoint([self frame], point))
+    if (!CGRectContainsPoint([self frame], point))
         return nil;
 
     return [self superview];

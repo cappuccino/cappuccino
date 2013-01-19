@@ -183,7 +183,7 @@ CPRatingLevelIndicatorStyle                 = 3;
     return _isEditable;
 }
 
-- (CPView)hitTest:(CPPoint)aPoint
+- (CPView)hitTest:(CGPoint)aPoint
 {
     // Don't swallow clicks when displayed in a table.
     if (![self isEditable])

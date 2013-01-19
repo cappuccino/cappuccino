@@ -1453,7 +1453,7 @@ var resizeTimer = nil;
 }
 
 /* @ignore */
-- (id)_dragHitTest:(CPPoint)aPoint pasteboard:(CPPasteboard)aPasteboard
+- (id)_dragHitTest:(CGPoint)aPoint pasteboard:(CPPasteboard)aPasteboard
 {
     var levels = _windowLevels,
         layers = _windowLayers,
@@ -1507,17 +1507,17 @@ var resizeTimer = nil;
     return StopContextMenuDOMEventPropagation;
 }
 
-- (CPWindow)_mouseHitTest:(CPPoint)location
+- (CPWindow)_mouseHitTest:(CGPoint)location
 {
     return [self _hitTest:location withTest:@selector(_isValidMousePoint:)]
 }
 
-- (CPWindow)hitTest:(CPPoint)location
+- (CPWindow)hitTest:(CGPoint)location
 {
     return [self _hitTest:location withTest:@selector(containsPoint:)]
 }
 
-- (CPWindow)_hitTest:(CPPoint)location withTest:(SEL)aTest
+- (CPWindow)_hitTest:(CGPoint)location withTest:(SEL)aTest
 {
     if (self._only)
         return self._only;
