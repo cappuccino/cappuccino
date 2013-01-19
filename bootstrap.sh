@@ -194,7 +194,7 @@ if (( $verbosity > 0 )); then
                                  Version [[ CAPPUCCINO_VERSION ]]
 
 
-                             http://cappuccino.org
+                         http://cappuccino-project.org
                     http://github.com/cappuccino/cappuccino
                        irc://irc.freenode.org#cappuccino
 

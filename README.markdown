@@ -13,7 +13,7 @@ with the complexities of traditional web technologies like HTML, CSS, or even
 the DOM. The unpleasantries of building complex cross browser applications are
 abstracted away for you.
 
-For more information, see <http://cappuccino.org>.
+For more information, see <http://cappuccino-project.org>.
 
 System Requirements
 -------------------
@@ -65,8 +65,8 @@ Getting Help
 ------------
 If you need help with Cappuccino, you can get help from the following sources:
 
-  - [FAQ](http://cappuccino.org/discuss/faq.php)
-  - [Documentation](http://cappuccino.org/learn/)
+  - [FAQ](http://cappuccino-project.org/support/faq.html)
+  - [Documentation](http://cappuccino-project.org/learn/)
   - [Wiki](http://github.com/cappuccino/cappuccino/wikis)
   - Mailing Lists:
     - [Objective-J](http://groups.google.com/group/objectivej)

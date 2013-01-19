@@ -21,7 +21,7 @@
 is a formatting checker for Objective-J. It performs a number of checks that catch
 common formatting mistakes, as defined in the Cappuccino coding style guidelines:
 .Pp
-http://cappuccino.org/contribute/coding-style.php
+https://github.com/cappuccino/cappuccino/blob/master/CONTRIBUTING.md
 .Pp
 .Nm
 operates on a list of files and/or directory. You may pass one or more paths (relative to the
@@ -58,9 +58,9 @@ Given the following code:
     var bow = "foobar",
         wow = "woof";
 .Pp
-The 
+The
 .Ar none
-policy will obviously not flag this. The 
+policy will obviously not flag this. The
 .Ar single
 policy will not flag
 this because both blocks contain more than one declaration. The
@@ -72,7 +72,7 @@ policy will flag this. Given the following code:
 
     var bow = "foobar";
 .Pp
-The 
+The
 .Ar single
 policy will flag this because the second block is a single declaration.
 .It Fl f, \-format=[text|html]
