@@ -1520,22 +1520,9 @@ TODO: implement
             oldRows = [CPArray arrayWithArray:newRows];
             [oldRows removeObjectsInArray:changeNewValue];
         }
-        else if (changeKind === CPKeyValueChangeRemoval)
-        {
-            newRows = [self _subrowObjectsOfObject:object];
-            oldRows = [CPArray arrayWithArray:newRows];
-            var delIndexes = [change objectForKey:CPKeyValueChangeIndexesKey];
-            [oldRows insertObjects:delObjects atIndexes:changeOldValue];    // Pas sur que ce soit bon
-        }
 
         [self _changedRowArray:newRows withOldRowArray:oldRows forParent:object];
         [self _reconfigureSubviewsAnimate:[self _wantsRowAnimations]];
-    }
-    else if (context === itemsContext)
-    {
-    }
-    else if (context === valuesContext)
-    {
     }
 }
 
