@@ -350,9 +350,8 @@ var SelectionColor = nil;
 @end
 
 
-var ShowcaseCellBackgroundColor = nil;
-
-var BKShowcaseCellBackgroundColorDidChangeNotification  = @"BKShowcaseCellBackgroundColorDidChangeNotification";
+var ShowcaseCellBackgroundColor = nil,
+    BKShowcaseCellBackgroundColorDidChangeNotification  = @"BKShowcaseCellBackgroundColorDidChangeNotification";
 
 @implementation BKShowcaseCell : CPView
 {
