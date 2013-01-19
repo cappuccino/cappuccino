@@ -26,6 +26,9 @@
 @import "CPImage.j"
 @import "CPView.j"
 
+@class CPUserDefaults
+
+
 #define SPLIT_VIEW_MAYBE_POST_WILL_RESIZE() \
     if ((_suppressResizeNotificationsMask & DidPostWillResizeNotification) === 0) \
     { \

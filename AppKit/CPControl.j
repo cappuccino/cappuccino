@@ -22,11 +22,14 @@
 
 #import "../Foundation/Ref.h"
 
-@import "../Foundation/CPFormatter.j"
+@import <Foundation/CPFormatter.j>
+@import <Foundation/CPTimer.j>
 @import "CPFont.j"
 @import "CPShadow.j"
 @import "CPView.j"
 @import "CPKeyValueBinding.j"
+
+@global CPApp
 
 CPLeftTextAlignment      = 0;
 CPRightTextAlignment     = 1;

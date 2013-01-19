@@ -39,6 +39,8 @@ CPCircularSlider    = 1;
     double          _altIncrementValue;
 
     BOOL            _isVertical;
+
+    CGSize          _dragOffset;
 }
 
 + (CPString)defaultThemeClass

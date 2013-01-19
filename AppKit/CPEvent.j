@@ -21,8 +21,14 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <Foundation/CPGeometry.j>
 @import "CPText.j"
 
+@class CPTextField
+
+@global CPApp
+@global CPBrowserIsOperatingSystem
+@global CPMacOperatingSystem
 
 CPLeftMouseDown                         = 1;
 CPLeftMouseUp                           = 2;
@@ -206,6 +212,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     DOMEvent            _DOMEvent;
     int                 _data1;
     int                 _data2;
+    short               _subtype;
 
     float               _deltaX;
     float               _deltaY;

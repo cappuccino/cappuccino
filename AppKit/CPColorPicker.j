@@ -24,6 +24,12 @@
 
 @import "CPView.j"
 
+@class CPSlider
+
+@global CPColorPickerViewWidth
+@global CPColorPickerViewHeight
+@global CPWheelColorPickerMode
+
 
 /*!
     @ingroup appkit

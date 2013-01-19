@@ -29,6 +29,12 @@
 @import "CPViewController.j"
 @import "CPWindowController.j"
 
+@class CPDocumentController
+@class CPAlert
+
+@global CPApp
+@global CPWarningAlertStyle
+
 
 /*
     @global
@@ -142,7 +148,7 @@ var CPDocumentUntitledCount = 0;
     @param anError not used
     @return the initialized document
 */
-- (id)initWithType:(CPString)aType error:({CPError})anError
+- (id)initWithType:(CPString)aType error:(/*{*/CPError/*}*/)anError
 {
     self = [self init];
 
@@ -211,7 +217,7 @@ var CPDocumentUntitledCount = 0;
     @throws CPUnsupportedMethodException if this method hasn't been overridden by the subclass
     @return the document data
 */
-- (CPData)dataOfType:(CPString)aType error:({CPError})anError
+- (CPData)dataOfType:(CPString)aType error:(/*{*/CPError/*}*/)anError
 {
     [CPException raise:CPUnsupportedMethodException
                 reason:"dataOfType:error: must be overridden by the document subclass."];

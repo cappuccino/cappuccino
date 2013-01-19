@@ -21,6 +21,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import "CPGraphicsContext.j"
 
 @import "CGColor.j"
 

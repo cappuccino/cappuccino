@@ -26,6 +26,9 @@
 @import "CPImage.j"
 @import "CPShadowView.j"
 
+@global CPImagesPboardType
+@global appkit_tag_dom_elements
+
 CPImageAlignCenter      = 0;
 CPImageAlignTop         = 1;
 CPImageAlignTopLeft     = 2;

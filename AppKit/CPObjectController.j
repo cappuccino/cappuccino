@@ -798,7 +798,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 
     [_observationProxies removeObjectAtIndex:index];
 
-    _observedObjects = nil;
+    _observedObjectsByKeyPath[aKeyPath] = nil;
 }
 
 @end

@@ -24,6 +24,8 @@
 @import <AppKit/AppKit.j>
 @import <BlendKit/BlendKit.j>
 
+@global java
+
 var FILE = require("file"),
     OS = require("os"),
 
@@ -159,4 +161,4 @@ ConverterConversionException = @"ConverterConversionException";
 
 @end
 
-@import "Converter+Mac.j"
+//@import "Converter+Mac.j"

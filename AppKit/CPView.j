@@ -34,6 +34,18 @@
 @import "CPTheme.j"
 @import "_CPDisplayServer.j"
 
+@class _CPToolTip
+@class CPWindow
+@class _CPMenuItemView
+@class CPPlatformWindow
+@class CPMenu
+@class CPClipView
+@class CPScrollView
+
+@global appkit_tag_dom_elements
+@global CPWindowAbove
+@global CPBorderlessWindowMask
+@global CPScreenSaverWindowLevel
 
 /*
     @global
@@ -2192,6 +2204,7 @@ setBoundsOrigin:
     {
         var graphicsPort = CGBitmapGraphicsContextCreate();
 
+#if PLATFORM(DOM)
         _DOMContentsElement = graphicsPort.DOMElement;
 
         _DOMContentsElement.style.zIndex = -100;
@@ -2208,7 +2221,6 @@ setBoundsOrigin:
         _DOMContentsElement.style.width = ROUND(_CGRectGetWidth(_frame)) + "px";
         _DOMContentsElement.style.height = ROUND(_CGRectGetHeight(_frame)) + "px";
 
-#if PLATFORM(DOM)
         // The performance implications of this aren't clear, but without this subviews might not be redrawn when this
         // view moves.
         if (CPPlatformHasBug(CPCanvasParentDrawErrorsOnMovementBug))

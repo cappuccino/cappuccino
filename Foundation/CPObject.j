@@ -61,6 +61,12 @@ CPLog(@"Got some class: %@", inst);
 
     @todo document KVC usage.
 */
+
+@class CPString
+@class CPException
+
+@global CPInvalidArgumentException
+
 @implementation CPObject
 {
     Class   isa;
@@ -154,7 +160,7 @@ CPLog(@"Got some class: %@", inst);
 */
 + (Class)superclass
 {
-    return super_class;
+    return self.super_class;
 }
 
 /*!
@@ -292,7 +298,7 @@ CPLog(@"Got some class: %@", inst);
 
 + (CPString)description
 {
-    return class_getName(isa);
+    return class_getName(self.isa);
 }
 
 // Sending Messages
@@ -484,7 +490,7 @@ CPLog(@"Got some class: %@", inst);
     if (typeof self._UID === "undefined")
         self._UID = objj_generateObjectUID();
 
-    return _UID + "";
+    return self._UID + "";
 }
 
 /*!

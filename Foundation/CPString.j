@@ -28,6 +28,11 @@
 @import "CPURL.j"
 @import "CPValue.j"
 
+@class CPException
+
+@global CPInvalidArgumentException
+@global CPRangeException
+
 #define _CPMaxRange(aRange) ((aRange).location + (aRange).length)
 
 /*!
@@ -194,7 +199,7 @@ var CPStringUIDs = new CFMutableDictionary(),
 */
 - (int)length
 {
-    return length;
+    return self.length;
 }
 
 /*!
@@ -203,7 +208,7 @@ var CPStringUIDs = new CFMutableDictionary(),
 */
 - (CPString)characterAtIndex:(unsigned)anIndex
 {
-    return charAt(anIndex);
+    return self.charAt(anIndex);
 }
 
 // Combining strings
@@ -246,15 +251,15 @@ var CPStringUIDs = new CFMutableDictionary(),
 */
 - (CPString)stringByPaddingToLength:(unsigned)aLength withString:(CPString)aString startingAtIndex:(unsigned)anIndex
 {
-    if (length == aLength)
+    if (self.length == aLength)
         return self;
 
-    if (aLength < length)
-        return substr(0, aLength);
+    if (aLength < self.length)
+        return self.substr(0, aLength);
 
     var string = self,
         substring = aString.substring(anIndex),
-        difference = aLength - length;
+        difference = aLength - self.length;
 
     while ((difference -= substring.length) >= 0)
         string += substring;
@@ -279,7 +284,7 @@ var CPStringUIDs = new CFMutableDictionary(),
 */
 - (CPArray)componentsSeparatedByString:(CPString)aString
 {
-    return split(aString);
+    return self.split(aString);
 }
 
 /*!
@@ -289,7 +294,7 @@ var CPStringUIDs = new CFMutableDictionary(),
 */
 - (CPString)substringFromIndex:(unsigned)anIndex
 {
-    return substr(anIndex);
+    return self.substr(anIndex);
 }
 
 /*!
@@ -299,10 +304,10 @@ var CPStringUIDs = new CFMutableDictionary(),
 */
 - (CPString)substringWithRange:(CPRange)aRange
 {
-    if (aRange.location < 0 || _CPMaxRange(aRange) > length)
+    if (aRange.location < 0 || _CPMaxRange(aRange) > self.length)
         [CPException raise:CPRangeException reason:"aRange out of bounds"];
 
-    return substr(aRange.location, aRange.length);
+    return self.substr(aRange.location, aRange.length);
 }
 
 /*!
@@ -314,10 +319,10 @@ var CPStringUIDs = new CFMutableDictionary(),
 */
 - (CPString)substringToIndex:(unsigned)anIndex
 {
-    if (anIndex > length)
+    if (anIndex > self.length)
         [CPException raise:CPRangeException reason:"index out of bounds"];
 
-    return substring(0, anIndex);
+    return self.substring(0, anIndex);
 }
 
 // Finding characters and substrings
@@ -436,9 +441,9 @@ var CPStringUIDs = new CFMutableDictionary(),
 
 - (CPString)stringByReplacingOccurrencesOfString:(CPString)target withString:(CPString)replacement options:(int)options range:(CPRange)searchRange
 {
-    var start = substring(0, searchRange.location),
-        stringSegmentToSearch = substr(searchRange.location, searchRange.length),
-        end = substring(searchRange.location + searchRange.length, self.length),
+    var start = self.substring(0, searchRange.location),
+        stringSegmentToSearch = self.substr(searchRange.location, searchRange.length),
+        end = self.substring(searchRange.location + searchRange.length, self.length),
         target = [target stringByEscapingRegexControlCharacters],
         regExp;
 
@@ -459,7 +464,7 @@ var CPStringUIDs = new CFMutableDictionary(),
 
 - (CPString)stringByReplacingCharactersInRange:(CPRange)range withString:(CPString)replacement
 {
-    return '' + substring(0, range.location) + replacement + substring(range.location + range.length, self.length);
+    return '' + self.substring(0, range.location) + replacement + self.substring(range.location + range.length, self.length);
 }
 
 /*!
@@ -546,7 +551,7 @@ var CPStringUIDs = new CFMutableDictionary(),
 */
 - (BOOL)hasPrefix:(CPString)aString
 {
-    return aString && aString != "" && indexOf(aString) == 0;
+    return aString && aString != "" && self.indexOf(aString) == 0;
 }
 
 /*!
@@ -556,7 +561,7 @@ var CPStringUIDs = new CFMutableDictionary(),
 */
 - (BOOL)hasSuffix:(CPString)aString
 {
-    return aString && aString != "" && length >= aString.length && lastIndexOf(aString) == (length - aString.length);
+    return aString && aString != "" && self.length >= aString.length && self.lastIndexOf(aString) == (self.length - aString.length);
 }
 
 - (BOOL)isEqual:(id)anObject
@@ -657,7 +662,7 @@ var CPStringUIDs = new CFMutableDictionary(),
 */
 - (CPString)lowercaseString
 {
-    return toLowerCase();
+    return self.toLowerCase();
 }
 
 /*!
@@ -665,7 +670,7 @@ var CPStringUIDs = new CFMutableDictionary(),
 */
 - (CPString)uppercaseString
 {
-    return toUpperCase();
+    return self.toUpperCase();
 }
 
 /*!
@@ -710,13 +715,13 @@ var CPStringUIDs = new CFMutableDictionary(),
 */
 - (CPArray)pathComponents
 {
-    if (length === 0)
+    if (self.length === 0)
         return [""];
 
     if (self === "/")
         return ["/"];
 
-    var result = split('/');
+    var result = self.split('/');
 
     if (result[0] === "")
         result[0] = "/";
@@ -787,10 +792,10 @@ var CPStringUIDs = new CFMutableDictionary(),
 */
 - (CPString)pathExtension
 {
-    if (lastIndexOf('.') === CPNotFound)
+    if (self.lastIndexOf('.') === CPNotFound)
         return "";
 
-    return substr(lastIndexOf('.') + 1);
+    return self.substr(self.lastIndexOf('.') + 1);
 }
 
 /*!
@@ -830,7 +835,7 @@ var CPStringUIDs = new CFMutableDictionary(),
 */
 - (CPString)stringByAppendingPathExtension:(CPString)ext
 {
-    if (ext.indexOf('/') >= 0 || length === 0 || self === "/")  // Can't handle these
+    if (ext.indexOf('/') >= 0 || self.length === 0 || self === "/")  // Can't handle these
         return self;
 
     var components = [self pathComponents],
@@ -852,7 +857,7 @@ var CPStringUIDs = new CFMutableDictionary(),
 */
 - (CPString)stringByDeletingLastPathComponent
 {
-    if (length === 0)
+    if (self.length === 0)
         return "";
     else if (self === "/")
         return "/";
@@ -880,10 +885,10 @@ var CPStringUIDs = new CFMutableDictionary(),
 
     if (extension === "")
         return self;
-    else if (lastIndexOf('.') < 1)
+    else if (self.lastIndexOf('.') < 1)
         return self;
 
-    return substr(0, [self length] - (extension.length + 1));
+    return self.substr(0, [self length] - (extension.length + 1));
 }
 
 - (CPString)stringByStandardizingPath

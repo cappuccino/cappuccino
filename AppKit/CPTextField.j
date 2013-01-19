@@ -27,14 +27,21 @@
 @import "CPCompatibility.j"
 @import "_CPImageAndTextView.j"
 
+@class CPPasteboard
+
+@global CPApp
+@global CPStringPboardType
+@global CPWindowAbove
+@global CPWindowBelow
+@global CPWindowDidBecomeKeyNotification
+@global CPWindowDidResignKeyNotification
+@global CPWindowDidResignKeyNotification
 
 CPTextFieldSquareBezel          = 0;    /*! A textfield bezel with squared corners. */
 CPTextFieldRoundedBezel         = 1;    /*! A textfield bezel with rounded corners. */
 
 CPTextFieldDidFocusNotification = @"CPTextFieldDidFocusNotification";
 CPTextFieldDidBlurNotification  = @"CPTextFieldDidBlurNotification";
-
-#if PLATFORM(DOM)
 
 var CPTextFieldDOMInputElement = nil,
     CPTextFieldDOMPasswordInputElement = nil,
@@ -48,8 +55,6 @@ var CPTextFieldDOMInputElement = nil,
     CPTextFieldCachedDragFunction = nil,
     CPTextFieldBlurHandler = nil,
     CPTextFieldInputFunction = nil;
-
-#endif
 
 var CPSecureTextFieldCharacter = "\u2022";
 

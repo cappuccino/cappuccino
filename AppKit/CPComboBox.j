@@ -83,7 +83,7 @@ var CPComboBoxTextSubview = @"text",
 - (void)_initComboBox
 {
     _items = [CPArray array];
-    _listClass = [_CPPopUpList class];
+//    _listClass = [_CPPopUpList class];
     _usesDataSource = NO;
     _completes = NO;
     _canComplete = NO;

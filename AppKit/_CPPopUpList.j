@@ -21,7 +21,12 @@
  */
 
 @import "CPTableView.j"
+@import "CPPanel.j"
 @import "_CPPopUpListDataSource.j"
+
+@class CPScrollView
+
+@global CPLineBorder
 
 
 /*!
@@ -839,7 +844,7 @@ var _CPPopUpListDataSourceKey   = @"_CPPopUpListDataSourceKey",
 */
 - (CPTableColumn)listColumn
 {
-    return _tableColumn;
+    return _tableColumns[0];
 }
 
 @end

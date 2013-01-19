@@ -26,6 +26,8 @@
 @import "CPControl.j"
 @import "CPStringDrawing.j"
 
+@global CPWindowAbove
+@global CPWindowBelow
 
 /* @group CPBezelStyle */
 
@@ -989,5 +991,5 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
 
 @end
 
-@import "CPCheckBox.j"
-@import "CPRadio.j"
+//@import "CPCheckBox.j"
+//@import "CPRadio.j"

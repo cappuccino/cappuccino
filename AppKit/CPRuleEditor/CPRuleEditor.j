@@ -20,16 +20,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CPTextField.j>
-@import <AppKit/CPViewAnimation.j>
-@import <AppKit/CPView.j>
 @import <Foundation/CPPredicate.j>
 @import <Foundation/CPArray.j>
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPIndexSet.j>
+@import "CPTextField.j"
+@import "CPViewAnimation.j"
+@import "CPView.j"
 
 @import "_CPRuleEditorViewSliceRow.j"
 @import "_CPRuleEditorLocalizer.j"
+
+@class CPCompoundPredicate
+@class CPComparisonPredicate
+
+@global CPDirectPredicateModifier
+@global CPCaseInsensitivePredicateOption
+@global CPOrPredicateType
+
 
 CPRuleEditorPredicateLeftExpression     = "CPRuleEditorPredicateLeftExpression";
 CPRuleEditorPredicateRightExpression    = "CPRuleEditorPredicateRightExpression";
@@ -1703,8 +1711,8 @@ TODO: implement
 
 - (void)_setBoundDataSource:(id)datasource withKeyPath:(CPString)keyPath options:(CPDictionary)options
 {
-    if ([observableController respondsToSelector:@selector(objectClass)])
-        _rowClass = [observableController objectClass];
+    if ([datasource respondsToSelector:@selector(objectClass)])
+        _rowClass = [datasource objectClass];
 
     _boundArrayKeyPath = keyPath;
     _boundArrayOwner = datasource;

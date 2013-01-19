@@ -21,6 +21,9 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <AppKit/CPWindow.j>
+@import <AppKit/_CPStandardWindowView.j>
+@import <AppKit/_CPToolTipWindowView.j>
 
 
 var ItemSizes               = { },

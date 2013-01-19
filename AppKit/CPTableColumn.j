@@ -27,6 +27,9 @@
 @import <Foundation/CPString.j>
 
 @import "CPTableHeaderView.j"
+@import "CPKeyValueBinding.j"
+
+@global CPTableViewColumnDidResizeNotification
 
 
 CPTableColumnNoResizing         = 0;

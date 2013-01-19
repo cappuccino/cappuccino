@@ -23,6 +23,9 @@
 @import "CPButton.j"
 @import "CPTextField.j"
 
+@class CPUserDefaults
+
+
 CPSearchFieldRecentsTitleMenuItemTag    = 1000;
 CPSearchFieldRecentsMenuItemTag         = 1001;
 CPSearchFieldClearRecentsMenuItemTag    = 1002;

@@ -26,7 +26,7 @@
 @import "CPEnumerator.j"
 @import "CPExpression.j"
 @import "CPNull.j"
-@import "CPPredicate.j"
+@import "_CPPredicate.j"
 @import "CPString.j"
 
 /*!

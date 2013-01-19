@@ -22,6 +22,8 @@
 
 
 @import "Converter.j"
+@import "Nib2CibKeyedUnarchiver.j"
+@import "NSFont.j"
 
 @implementation Converter (Mac)
 
@@ -55,9 +57,8 @@
 
         [object setFrameOrigin:CGPointMake(CGRectGetMinX(frame), superviewHeight - CGRectGetMaxY(frame))];
 
-        var NS_autoresizingMask = [object autoresizingMask];
-
-        autoresizingMask = NS_autoresizingMask & ~(CPViewMaxYMargin | CPViewMinYMargin);
+        var NS_autoresizingMask = [object autoresizingMask],
+            autoresizingMask = NS_autoresizingMask & ~(CPViewMaxYMargin | CPViewMinYMargin);
 
         if (!(NS_autoresizingMask & (CPViewMaxYMargin | CPViewMinYMargin | CPViewHeightSizable)))
             autoresizingMask |= CPViewMinYMargin;

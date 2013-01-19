@@ -1,5 +1,14 @@
-@import <Foundation/CPObject.j>
+@import <Foundation/Foundation.j>
+@import "CPWindow.j"
+@import "CPEvent.j"
 
+@class _CPMenuWindow
+
+
+@global CPApp
+@global CPMenuDidEndTrackingNotification
+@global _CPMenuWindowMenuBarBackgroundStyle
+@global _CPMenuWindowPopUpBackgroundStyle
 
 _CPMenuManagerScrollingStateUp      = -1;
 _CPMenuManagerScrollingStateDown    = 1;
@@ -26,6 +35,8 @@ var STICKY_TIME_INTERVAL            = 0.5,
 
     CPMenuItem          _previousActiveItem;
     int                 _showTimerID;
+
+    int                 _menuBarButtonItemIndex;
 }
 
 + (_CPMenuManager)sharedMenuManager
@@ -85,7 +96,7 @@ var STICKY_TIME_INTERVAL            = 0.5,
             activeItem = activeItemIndex !== CPNotFound ? [menu itemAtIndex:activeItemIndex] : nil;
 
         _menuBarButtonItemIndex = activeItemIndex;
-        _menuBarButtonMenuContainer = aMenuContainer;
+//        _menuBarButtonMenuContainer = aMenuContainer;
 
         if ([activeItem _isMenuBarButton])
             return [self trackMenuBarButtonEvent:anEvent];
@@ -125,15 +136,6 @@ var STICKY_TIME_INTERVAL            = 0.5,
         return;
     }
 
-    if (_keyBuffer)
-    {
-        if (([anEvent timestamp] - _startTime) > (STICKY_TIME_INTERVAL + [activeMenu numberOfItems] / 2))
-            [self selectNextItemBeginningWith:_keyBuffer inMenu:menu clearBuffer:YES];
-
-        if (type === CPPeriodic)
-            return;
-    }
-
     // Periodic events don't have a valid location.
     var globalLocation = type === CPPeriodic ? _lastGlobalLocation : [anEvent globalLocation];
 
@@ -148,6 +150,15 @@ var STICKY_TIME_INTERVAL            = 0.5,
         // Find out the item the mouse is currently on top of
         activeItemIndex = activeMenuContainer ? [activeMenuContainer itemIndexAtPoint:menuLocation] : CPNotFound,
         activeItem = activeItemIndex !== CPNotFound ? [activeMenu itemAtIndex:activeItemIndex] : nil;
+
+    if (_keyBuffer)
+    {
+        if (([anEvent timestamp] - _startTime) > (STICKY_TIME_INTERVAL + [activeMenu numberOfItems] / 2))
+            [self selectNextItemBeginningWith:_keyBuffer inMenu:menu clearBuffer:YES];
+
+        if (type === CPPeriodic)
+            return;
+    }
 
     // unhighlight when mouse is moved off the menu
     if (_lastGlobalLocation && CGRectContainsPoint([activeMenuContainer globalFrame], _lastGlobalLocation)
@@ -556,7 +567,7 @@ var STICKY_TIME_INTERVAL            = 0.5,
         return;
     }
 
-    next = current + (last - first);
+    var next = current + (last - first);
 
     if (next < [menu numberOfItems])
         [menu _highlightItemAtIndex:next];
@@ -584,7 +595,7 @@ var STICKY_TIME_INTERVAL            = 0.5,
         return;
     }
 
-    next = current - (last - first);
+    var next = current - (last - first);
 
     if (next < 0)
         [menu _highlightItemAtIndex:0];

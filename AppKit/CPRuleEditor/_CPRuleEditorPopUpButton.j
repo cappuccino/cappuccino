@@ -46,9 +46,11 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
 {
     [self setBordered:NO];
 
+#if PLATFORM(DOM)
     var style = _DOMElement.style;
     style.border = "1px solid " + BORDER_COLOR;
     style[GRADIENT_PROPERTY] = GRADIENT_NORMAL;
+#endif
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -100,11 +102,13 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
 
 - (void)layoutSubviews
 {
+#if PLATFORM(DOM)
     radius = FLOOR(CGRectGetHeight([self bounds]) / 2);
     var style = _DOMElement.style,
         radiusCSS = radius + "px";
 
     style.borderRadius = radiusCSS;
+#endif
 
     [super layoutSubviews];
 }
@@ -141,9 +145,11 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
 {
     [self setBordered:NO];
 
+#if PLATFORM(DOM)
     var style = _DOMElement.style;
     style.border = "1px solid " + BORDER_COLOR;
     style[GRADIENT_PROPERTY] = GRADIENT_NORMAL;
+#endif
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -164,6 +170,7 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
 
 - (void)layoutSubviews
 {
+#if PLATFORM(DOM)
     radius = FLOOR(CGRectGetHeight([self bounds]) / 2);
 
     var style = _DOMElement.style,
@@ -171,6 +178,7 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
 
     style.borderRadius = radiusCSS;
     style[GRADIENT_PROPERTY] = ([self isHighlighted]) ? GRADIENT_HIGHLIGHTED : GRADIENT_NORMAL;
+#endif
 
     [super layoutSubviews];
 }

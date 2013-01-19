@@ -117,7 +117,7 @@ var CPPasteboards = nil,
 
     if (self)
     {
-        _name = aName;
+//        _name = aName;
         _types = [];
 
         _owners = [CPDictionary dictionary];

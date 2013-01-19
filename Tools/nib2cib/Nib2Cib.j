@@ -29,6 +29,7 @@
 
 @import "Nib2CibKeyedUnarchiver.j"
 @import "Converter.j"
+@import "Converter+Mac.j"
 
 var FILE = require("file"),
     OS = require("os"),
@@ -390,6 +391,8 @@ var FILE = require("file"),
 
 - (void)printOptions:options
 {
+    var option;
+
     for (option in options)
     {
         var value = options[option];
@@ -407,6 +410,8 @@ var FILE = require("file"),
 // Merges properties in sourceOptions into targetOptions, overriding properties in targetOptions
 - (void)mergeOptions:(JSObject)sourceOptions with:(JSObject)targetOptions
 {
+    var option;
+
     for (option in sourceOptions)
     {
         // Make sure only a supported option is given

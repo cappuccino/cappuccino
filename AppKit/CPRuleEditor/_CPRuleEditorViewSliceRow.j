@@ -7,6 +7,11 @@
 @import "_CPRuleEditorPopUpButton.j"
 @import "CPRuleEditor.j"
 
+@global CPRuleEditorNestingModeCompound
+@global CPRuleEditorRowTypeCompound
+@global CPRuleEditorNestingModeSingle
+
+
 var CONTROL_HEIGHT = 16.,
     BUTTON_HEIGHT = 16.;
 
@@ -18,7 +23,7 @@ var CONTROL_HEIGHT = 16.,
     CPMutableArray  _ruleOptionInitialViewFrames;
     CPButton        _addButton;
     CPButton        _subtractButton;
-    BOOL            editable;
+
     CPRuleEditorRowType _rowType @accessors;
     CPRuleEditorRowType _plusButtonRowType;
 }
@@ -37,14 +42,14 @@ var CONTROL_HEIGHT = 16.,
     _ruleOptionFrames = [[CPMutableArray alloc] init];
     _ruleOptionInitialViewFrames = [[CPMutableArray alloc] init];
     _ruleOptionViews = [[CPMutableArray alloc] init];
-     editable = [_ruleEditor isEditable];
+     _editable = [_ruleEditor isEditable];
 
     _addButton = [self _createAddRowButton];
     _subtractButton = [self _createDeleteRowButton];
     [_addButton setToolTip:[_ruleEditor _toolTipForAddSimpleRowButton]];
     [_subtractButton setToolTip:[_ruleEditor _toolTipForDeleteRowButton]];
-    [_addButton setHidden:!editable];
-    [_subtractButton setHidden:!editable];
+    [_addButton setHidden:!_editable];
+    [_subtractButton setHidden:!_editable];
     [self addSubview:_addButton];
     [self addSubview:_subtractButton];
 
@@ -300,7 +305,7 @@ var CONTROL_HEIGHT = 16.,
 
     [_correspondingRuleItems setArray:ruleItems];
 
-    if (!editable)
+    if (!_editable)
         [self _updateEnabledStateForSubviews];
 
     [self _relayoutSubviewsWidthChanged:YES];
@@ -390,14 +395,9 @@ var CONTROL_HEIGHT = 16.,
     [self _setRowTypeToAddFromPlusButton:type];
 }
 
-- (BOOL)isEditable
-{
-    return editable;
-}
-
 - (void)setEditable:(BOOL)value
 {
-    editable = value;
+    [super setEditable:value]
 //  [self _updateEnabledStateForSubviews];
     [self _updateButtonVisibilities];
 }

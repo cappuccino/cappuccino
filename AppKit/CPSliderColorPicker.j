@@ -23,6 +23,12 @@
 @import "CPView.j"
 @import "CPColorPicker.j"
 
+@class CPSlider
+
+@global CPColorPickerViewWidth
+@global CPColorPickerViewHeight
+@global CPSliderColorPickerMode
+
 
 /*
     @ignore
@@ -65,7 +71,7 @@
 
 - (id)initView
 {
-    aFrame = CGRectMake(0, 0, CPColorPickerViewWidth, CPColorPickerViewHeight);
+    var aFrame = CGRectMake(0, 0, CPColorPickerViewWidth, CPColorPickerViewHeight);
 
     _contentView = [[CPView alloc] initWithFrame:aFrame];
     [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];

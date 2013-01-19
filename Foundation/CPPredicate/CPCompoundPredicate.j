@@ -23,7 +23,7 @@
  */
 
 @import "CPArray.j"
-@import "CPPredicate.j"
+@import "_CPPredicate.j"
 
 /*!
     A predicate to directly compare the left and right hand sides.

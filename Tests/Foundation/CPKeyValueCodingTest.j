@@ -480,8 +480,8 @@ var accessIVARS = YES;
 
 - (void)testValueForKeyPath
 {
-    var department = [Department departmentWithName:@"Engineering"],
-        employee = [Employee employeeWithName:@"Klaas Pieter" department:department];
+    var department = [Department2 departmentWithName:@"Engineering"],
+        employee = [Employee2 employeeWithName:@"Klaas Pieter" department:department];
 
     [self assert:department equals:[employee valueForKey:@"department"]];
     [self assert:@"Engineering" equals:[employee valueForKeyPath:@"department.name"]];
@@ -489,10 +489,10 @@ var accessIVARS = YES;
 
 @end
 
-@implementation Employee : CPObject
+@implementation Employee2 : CPObject
 {
     CPString                    _name @accessors(property=name);
-    Department                  _department @accessors(property=department);
+    Department2                 _department @accessors(property=department);
 }
 
 + (id)employeeWithName:(CPString)theName department:(Department)theDepartment
@@ -513,7 +513,7 @@ var accessIVARS = YES;
 
 @end
 
-@implementation Department : CPObject
+@implementation Department2 : CPObject
 {
     CPString                _name @accessors(property=name);
 }

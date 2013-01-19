@@ -29,6 +29,8 @@
 @import "CPView.j"
 @import "_CPMenuItemView.j"
 
+@global CPApp
+
 
 var CPMenuItemStringRepresentationDictionary = [CPDictionary dictionary];
 [CPMenuItemStringRepresentationDictionary setObject:"\u238B" forKey:CPEscapeFunctionKey];

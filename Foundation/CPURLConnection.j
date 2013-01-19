@@ -94,7 +94,7 @@ var CPURLConnectionDelegate = nil;
     @param anError not used
     @return the data at the URL or \c nil if there was an error
 */
-+ (CPData)sendSynchronousRequest:(CPURLRequest)aRequest returningResponse:({CPURLResponse})aURLResponse
++ (CPData)sendSynchronousRequest:(CPURLRequest)aRequest returningResponse:(/*{*/CPURLResponse/*}*/)aURLResponse
 {
     try
     {
@@ -277,7 +277,7 @@ var CPURLConnectionDelegate = nil;
 
 @implementation CPURLConnection (Deprecated)
 
-+ (CPData)sendSynchronousRequest:(CPURLRequest)aRequest returningResponse:({CPURLResponse})aURLResponse error:(id)anError
++ (CPData)sendSynchronousRequest:(CPURLRequest)aRequest returningResponse:(/*{*/CPURLResponse/*}*/)aURLResponse error:(id)anError
 {
     _CPReportLenientDeprecation(self, _cmd, @selector(sendSynchronousRequest:returningResponse:));
 

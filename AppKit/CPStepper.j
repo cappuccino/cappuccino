@@ -20,9 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CPControl.j>
-@import <AppKit/CPButton.j>
-@import <AppKit/CPTextField.j>
+@import "CPControl.j"
+@import "CPButton.j"
+@import "CPTextField.j"
 
 
 
@@ -159,7 +159,7 @@
 
 - (void)setFrame:(CGRect)aFrame
 {
-     var upSize = [self valueForThemeAttribute:@"up-button-size"],
+    var upSize = [self valueForThemeAttribute:@"up-button-size"],
         downSize = [self valueForThemeAttribute:@"down-button-size"],
         minSize = _CGSizeMake(upSize.width, upSize.height + downSize.height),
         frame = _CGRectMakeCopy(aFrame);
@@ -177,6 +177,7 @@
         downSize = [self valueForThemeAttribute:@"down-button-size"],
         upFrame = _CGRectMake(aFrame.size.width - upSize.width, 0, upSize.width, upSize.height),
         downFrame = _CGRectMake(aFrame.size.width - downSize.width, upSize.height, downSize.width, downSize.height);
+
     [_buttonUp setFrame:upFrame];
     [_buttonDown setFrame:downFrame];
 

@@ -23,6 +23,8 @@
 @import "CPException.j"
 @import "CPObject.j"
 
+@global _CPRaiseInvalidAbstractInvocation;
+
 /*!
     @class CPCoder
     @ingroup foundation

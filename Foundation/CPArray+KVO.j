@@ -24,6 +24,7 @@
 @import "CPNull.j"
 @import "_CPCollectionKVCOperators.j"
 
+@class CPIndexSet
 
 @implementation CPObject (CPArrayKVO)
 
@@ -347,7 +348,7 @@
         while ((index = [self indexOfObject:theObject inRange:theRange]) !== CPNotFound)
         {
             [self removeObjectAtIndex:index];
-            theRange = CPIntersectionRange(CPMakeRange(index, length - index), theRange);
+            theRange = CPIntersectionRange(CPMakeRange(index, self.length - index), theRange);
         }
     }
 }
@@ -427,7 +428,7 @@
             [CPException raise:CPInvalidArgumentException reason:"called valueForKey: on an array with a complex key (" + aKey + "). use valueForKeyPath:"];
 
         if (aKey === "@count")
-            return length;
+            return self.length;
 
         return [self valueForUndefinedKey:aKey];
     }

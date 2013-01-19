@@ -4,6 +4,11 @@
 @import "CGGeometry.j"
 @import "CPWindow.j"
 
+@class CPToolbar
+
+@global CPPositionProportionalHorizontal
+@global CPPositionProportionalVertical
+
 CPWindowPositionFlexibleRight                = 1 << 19;
 CPWindowPositionFlexibleLeft                 = 1 << 20;
 CPWindowPositionFlexibleBottom               = 1 << 21;

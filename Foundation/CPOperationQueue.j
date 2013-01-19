@@ -50,7 +50,7 @@ var cpOperationMainQueue = nil;
     {
         _operations = [[CPArray alloc] init];
         _suspended = NO;
-        _currentlyModifyingOps = NO;
+//        _currentlyModifyingOps = NO;
         _timer = [CPTimer scheduledTimerWithTimeInterval:0.01
                                                   target:self
                                                 selector:@selector(_runNextOpsInQueue)

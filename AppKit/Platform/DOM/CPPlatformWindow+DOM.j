@@ -119,6 +119,25 @@
 @import "CPPlatformWindow.j"
 @import "CPPlatformWindow+DOMKeys.j"
 
+@class CPCursor
+@class CPDragServer
+@class CPPasteboard
+@class _CPDOMDataTransferPasteboard
+@class _CPToolTip
+
+@global CPDragOperationNone
+@global CPDragOperationMove
+@global CPDragOperationCopy
+@global CPDragOperationLink
+@global CPDragOperationPrivate
+@global CPDragOperationGeneric
+@global CPApp
+@global CPStringPboardType
+@global CPWindowOut
+@global _CPRunModalLoop
+@global CPDraggingWindowLevel
+@global CPWindowAbove
+
 // List of all open native windows
 var PlatformWindows = [CPSet set];
 
@@ -192,6 +211,7 @@ var ModifierKeyCodes = [
 
 var resizeTimer = nil;
 
+#if PLATFORM(DOM)
 @implementation CPPlatformWindow (DOM)
 
 - (id)_init
@@ -795,7 +815,7 @@ var resizeTimer = nil;
                             if (!characters)
                                 characters = String.fromCharCode(charCode);
 
-                            charactersIgnoringModifiers = characters.toLowerCase(); // FIXME: This isn't correct. It SHOULD include Shift.
+                            var charactersIgnoringModifiers = characters.toLowerCase(); // FIXME: This isn't correct. It SHOULD include Shift.
 
                             // Safari won't send proper capitalization during cmd-key events
                             if (!overrideCharacters && (modifierFlags & CPCommandKeyMask) && ((modifierFlags & CPShiftKeyMask) || _capsLockActive))
@@ -879,7 +899,7 @@ var resizeTimer = nil;
             windowNumber = [[CPApp keyWindow] windowNumber],
             modifierFlags = CPPlatformActionKeyMask;
 
-        event = [CPEvent keyEventWithType:CPKeyDown location:location modifierFlags:modifierFlags
+        var event = [CPEvent keyEventWithType:CPKeyDown location:location modifierFlags:modifierFlags
                     timestamp:timestamp windowNumber:windowNumber context:nil
                     characters:characters charactersIgnoringModifiers:characters isARepeat:NO keyCode:keyCode];
 
@@ -1581,6 +1601,7 @@ var resizeTimer = nil;
 }
 
 @end
+#endif
 
 var CPEventClass = [CPEvent class];
 

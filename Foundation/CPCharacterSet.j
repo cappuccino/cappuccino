@@ -237,8 +237,8 @@ var CPCharacterSetInvertedKey = @"CPCharacterSetInvertedKey";
 
 - (BOOL)characterIsMember:(CPString)aCharacter
 {
-    c = aCharacter.charCodeAt(0);
-    var enu = [_ranges objectEnumerator],
+    var c = aCharacter.charCodeAt(0),
+        enu = [_ranges objectEnumerator],
         range;
 
     while ((range = [enu nextObject]) !== nil)

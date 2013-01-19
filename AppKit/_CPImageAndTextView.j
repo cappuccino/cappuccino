@@ -27,6 +27,7 @@
 @import "CPImage.j"
 @import "CPView.j"
 @import "CPControl.j"
+@import "CPPlatform.j"
 
 
 var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
@@ -294,6 +295,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
     var textFrame = _CGRectMakeZero();
 
+#if PLATFORM(DOM)
     if (_DOMTextElement)
     {
         var textStyle = _DOMTextElement.style;
@@ -306,6 +308,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         textFrame.size.width += _textShadowOffset.width;
         textFrame.size.height += _textShadowOffset.height;
     }
+#endif
 
     return textFrame;
 }

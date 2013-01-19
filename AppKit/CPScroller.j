@@ -27,6 +27,13 @@
 
 @import "CPControl.j"
 
+@class CPViewAnimation
+
+@global CPViewAnimationFadeOutEffect
+@global CPViewAnimationTargetKey
+@global CPViewAnimationEffectKey
+
+
 // CPScroller Constants
 CPScrollerNoPart            = 0;
 CPScrollerDecrementPage     = 1;

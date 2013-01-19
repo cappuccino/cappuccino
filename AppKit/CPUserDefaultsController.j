@@ -25,7 +25,12 @@
 
 
 @import <Foundation/CPString.j>
-@import <AppKit/CPController.j>
+@import "CPController.j"
+
+@class CPUserDefaults
+
+@global CPUserDefaultsDidChangeNotification
+
 
 var SharedUserDefaultsController = nil;
 
@@ -34,6 +39,7 @@ var SharedUserDefaultsController = nil;
     CPUserDefaults  _defaults           @accessors(readonly, property=defaults);
     CPDictionary    _initialValues      @accessors(property=initialValues);
     BOOL            _appliesImmediately @accessors(property=appliesImmediately);
+    id              _valueProxy;
 }
 
 + (id)sharedUserDefaultsController

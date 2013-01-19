@@ -492,16 +492,17 @@ CPBelowBottom = 6;
 - (void)_drawLineBorderInRect:(CGRect)aRect
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort],
-        sides = [CPMinYEdge, CPMaxXEdge, CPMaxYEdge, CPMinXEdge],
-        sideGray = 190.0 / 255.0,
-        grays = [142.0 / 255.0, sideGray, sideGray, sideGray],
+        cornerRadius = [self cornerRadius],
         borderWidth = [self borderWidth];
 
-    while (borderWidth--)
-        aRect = CPDrawTiledRects(aRect, aRect, sides, grays);
+    aRect = CGRectInset(aRect, borderWidth / 2.0, borderWidth / 2.0);
 
     CGContextSetFillColor(context, [self fillColor]);
-    CGContextFillRect(context, aRect);
+    CGContextSetStrokeColor(context, [self borderColor]);
+
+    CGContextSetLineWidth(context, borderWidth);
+    CGContextFillRoundedRectangleInRect(context, aRect, cornerRadius, YES, YES, YES, YES);
+    CGContextStrokeRoundedRectangleInRect(context, aRect, cornerRadius, YES, YES, YES, YES);
 }
 
 - (void)_drawBezelBorderInRect:(CGRect)aRect

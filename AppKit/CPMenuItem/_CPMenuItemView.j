@@ -1,10 +1,11 @@
 
-@import <AppKit/CPControl.j>
+@import "CPControl.j"
 
 @import "_CPMenuItemSeparatorView.j"
 @import "_CPMenuItemStandardView.j"
 @import "_CPMenuItemMenuBarView.j"
 
+@global CPApp
 
 // var LEFT_MARGIN                 = 3.0,
 //     RIGHT_MARGIN                = 16.0,

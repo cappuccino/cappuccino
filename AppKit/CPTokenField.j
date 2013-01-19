@@ -911,7 +911,9 @@ var CPScrollDestinationNone             = 0,
 
 - (void)keyDown:(CPEvent)anEvent
 {
+#if PLATFORM(DOM)
     CPTokenFieldTextDidChangeValue = [self stringValue];
+#endif
 
     // Leave the default _propagateCurrentDOMEvent setting in place. This might be YES or NO depending
     // on if something that could be a browser shortcut was pressed or not, such as Cmd-R to reload.
@@ -921,14 +923,16 @@ var CPScrollDestinationNone             = 0,
     [self interpretKeyEvents:[anEvent]];
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-}}
+}
 
 - (void)keyUp:(CPEvent)anEvent
 {
+#if PLATFORM(DOM)
     if ([self stringValue] !== CPTokenFieldTextDidChangeValue)
     {
         [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
     }
+#endif
 
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 }

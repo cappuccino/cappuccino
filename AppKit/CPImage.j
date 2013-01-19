@@ -26,6 +26,7 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPRunLoop.j>
 @import <Foundation/CPString.j>
+@import <Foundation/CPData.j>
 
 
 CPImageLoadStatusInitialized    = 0;

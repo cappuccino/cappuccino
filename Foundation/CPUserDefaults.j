@@ -34,6 +34,9 @@
 @import "CPURLConnection.j"
 @import "CPURLRequest.j"
 
+@class CPCookie
+
+@global CPApp
 
 CPArgumentDomain        = @"CPArgumentDomain";
 CPApplicationDomain     = [[[CPBundle mainBundle] infoDictionary] objectForKey:@"CPBundleIdentifier"] || @"CPApplicationDomain";

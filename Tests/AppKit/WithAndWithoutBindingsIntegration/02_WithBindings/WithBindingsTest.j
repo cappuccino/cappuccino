@@ -20,7 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "MyDocument.j"
+@import "MyDocument2.j"
 @import "StringToURLTransformer.j"
 
 /*!
@@ -39,7 +39,7 @@
 
 - (void)test
 {
-    var theDocument = [MyDocument new],
+    var theDocument = [MyDocument2 new],
         cib = [CPBundle loadCibFile:[[CPBundle bundleForClass:WithBindingsTest] pathForResource:"02_WithBindings.cib"] externalNameTable:[CPDictionary dictionaryWithObject:theDocument forKey:CPCibOwner]];
 
     [theDocument windowControllerDidLoadCib:self];

@@ -1,5 +1,6 @@
 @import <AppKit/CPApplication.j>
 @import <AppKit/CPWindow.j>
+@import <AppKit/_CPStandardWindowView.j>
 
 var globalResults = [];
 
@@ -67,7 +68,7 @@ var globalResults = [];
     app = [CPApplication sharedApplication];
 
     // fake the window.location.hash
-    app.window = {location: {hash: "#var1=1/var2=2"}};
+    window.location = {hash: "#var1=1/var2=2"};
     [app setDelegate:[[MyAppDelegate alloc] init]];
 
     aWindow = [[CPWindow alloc] init];

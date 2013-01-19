@@ -94,7 +94,7 @@ exports.run = function(args)
         var arg0 = argv.shift();
         var mainFilePath = FILE.canonical(arg0);
 
-        exports.make_narwhal_factory(mainFilePath)(require, { }, module, system, print, window);
+        exports.make_narwhal_factory(mainFilePath)(require, { }, module, system, print);
 
         if (typeof main === "function")
             main([arg0].concat(argv));
@@ -149,13 +149,14 @@ exports.repl = function()
 };
 
 // creates a narwhal factory function in the objj module scope
-exports.make_narwhal_factory = function(path)
+exports.make_narwhal_factory = function(path, basePath, filenameTranslateDictionary)
 {
     return function(require, exports, module, system, print)
     {
         Executable.setCommonJSParameters("require", "exports", "module", "system", "print", "window");
         Executable.setCommonJSArguments(require, exports, module, system, print, window);
-        Executable.fileImporterForURL(FILE.dirname(path))(path, YES);
+        filenameTranslateDictionary && Executable.setFilenameTranslateDictionary(filenameTranslateDictionary);
+        Executable.fileImporterForURL(basePath ? basePath : FILE.dirname(path))(path, YES);
     }
 };
 

@@ -31,6 +31,8 @@
 @import "CPMenuItem.j"
 @import "CPPanel.j"
 
+@global CPApp
+
 
 CPMenuDidAddItemNotification        = @"CPMenuDidAddItemNotification";
 CPMenuDidChangeItemNotification     = @"CPMenuDidChangeItemNotification";

@@ -23,7 +23,11 @@
 @import <Foundation/CPObject.j>
 
 @import "CPTextField.j"
+@import "CPTableView.j"
 @import "_CPMenuWindow.j"
+
+@class CPScrollView
+
 
 // TODO Make themable.
 var _CPAutocompleteMenuMaximumHeight = 307;

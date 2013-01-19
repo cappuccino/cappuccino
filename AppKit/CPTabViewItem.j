@@ -60,6 +60,7 @@ CPPressedTab    = 2;
     CPView      _auxiliaryView;
 
     CPTabView   _tabView;
+    unsigned    _tabState;      // Looks like it is not yet implemented
 }
 
 - (id)init

@@ -54,7 +54,7 @@ var CPSharedFontManager     = nil,
     id              _delegate @accessors(property=delegate);
 
     CPFont          _selectedFont;
-    BOOL            _multiple @accessors;
+    BOOL            _multiple @accessors(getter=isMultiple, setter=setMultiple:);
 
     CPDictionary    _activeChange;
 }
@@ -139,7 +139,7 @@ var CPSharedFontManager     = nil,
 - (void)setSelectedFont:(CPFont)aFont isMultiple:(BOOL)aFlag
 {
     _selectedFont = aFont;
-    _isMultiple = aFlag;
+    _multiple = aFlag;
 
     // TODO Notify CPFontPanel when it exists.
 }
@@ -147,11 +147,6 @@ var CPSharedFontManager     = nil,
 - (CPFont)selectedFont
 {
     return _selectedFont;
-}
-
-- (BOOL)isMultiple
-{
-    return _isMultiple;
 }
 
 - (int)weightOfFont:(CPFont)aFont

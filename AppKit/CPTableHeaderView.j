@@ -26,6 +26,10 @@
 @import "CPTableView.j"
 @import "CPView.j"
 
+@class CPCursor
+
+@global CPTableColumnUserResizingMask
+
 
 @implementation _CPTableColumnHeaderView : CPView
 {
