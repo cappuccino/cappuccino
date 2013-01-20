@@ -222,7 +222,6 @@ CPBelowBottom = 6;
         return;
 
     [self setValue:color forThemeAttribute:@"border-color"];
-    [self setNeedsDisplay:YES];
 }
 
 - (float)borderWidth
@@ -236,7 +235,6 @@ CPBelowBottom = 6;
         return;
 
     [self setValue:width forThemeAttribute:@"border-width"];
-    [self setNeedsDisplay:YES];
 }
 
 - (float)cornerRadius
@@ -250,7 +248,6 @@ CPBelowBottom = 6;
         return;
 
     [self setValue:radius forThemeAttribute:@"corner-radius"];
-    [self setNeedsDisplay:YES];
 }
 
 - (CPColor)fillColor
@@ -264,7 +261,6 @@ CPBelowBottom = 6;
         return;
 
     [self setValue:color forThemeAttribute:@"background-color"];
-    [self setNeedsDisplay:YES];
 }
 
 - (CPView)contentView
@@ -298,7 +294,6 @@ CPBelowBottom = 6;
          [CPException raise:CPGenericException reason:@"Margins must be positive"];
 
     [self setValue:CGSizeMakeCopy(size) forThemeAttribute:@"content-margin"];
-    [self setNeedsDisplay:YES];
 }
 
 - (void)setFrameFromContentFrame:(CGRect)aRect
@@ -308,8 +303,6 @@ CPBelowBottom = 6;
         contentMargin = [self valueForThemeAttribute:@"content-margin"];
 
     [self setFrame:CGRectInset(aRect, -(contentMargin.width + borderWidth), -(contentMargin.height + offset[0] + borderWidth))];
-
-    [self setNeedsDisplay:YES];
 }
 
 - (void)setTitle:(CPString)aTitle
