@@ -325,7 +325,7 @@ ACTUAL_FRAME_RATE = 0;
 // currently used function to determine time
 // 1:1 conversion to js from webkit source files
 // UnitBezier.h, WebCore_animation_AnimationBase.cpp
-var CubicBezierAtTime = function CubicBezierAtTime(t, p1x, p1y, p2x, p2y, duration)
+var CubicBezierAtTime = function(t, p1x, p1y, p2x, p2y, duration)
 {
     var ax = 0,
         bx = 0,

@@ -342,10 +342,10 @@ var CPSharedDocumentController = nil;
 - (void)closeAllDocumentsWithDelegate:(id)aDelegate didCloseAllSelector:(SEL)didCloseSelector contextInfo:(Object)info
 {
     var context = {
-        delegate: aDelegate,
-        selector: didCloseSelector,
-        context: info
-    };
+            delegate: aDelegate,
+            selector: didCloseSelector,
+            context: info
+        };
 
     [self _closeDocumentsStartingWith:nil shouldClose:YES context:context];
 }

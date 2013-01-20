@@ -474,7 +474,7 @@ var bottomHeight = 71;
 
     offsetX = panelSize.width - inset.right;
 
-    switch([_window styleMask])
+    switch ([_window styleMask])
     {
         case _CPModalWindowMask:
             buttonMarginY = [_themeView currentValueForThemeAttribute:@"modal-window-button-margin-y"];
