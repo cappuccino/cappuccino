@@ -1,4 +1,4 @@
-    /*
+/*
  * AppController.j
  * CPBoxTest
  *
@@ -7,6 +7,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <AppKit/CPBox.j>
 
 
 @implementation AppController : CPObject
@@ -41,6 +42,8 @@
 
 - (IBAction)change:(id)aSender
 {
+    var pos;
+
     switch ([aSender title])
     {
         case @"CPAtTop":
