@@ -76,7 +76,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil;
 
 + (CPDictionary)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null],[CPNull null],25,[CPNull null],[CPNull null], [CPNull null], [CPNull null]]
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], 25, [CPNull null], [CPNull null], [CPNull null], [CPNull null]]
                                        forKeys:[@"inderterminate-bar-color", @"bar-color",@"default-height",@"bezel-color",@"spinning-mini-gif", @"spinning-small-gif", @"spinning-regular-gif"]];
 }
 

@@ -104,16 +104,16 @@ var ShouldSuppressResizeNotifications   = 1,
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[    1.0,
-                                                    10.0,
-                                                    [CPColor grayColor],
-                                                    [CPNull null],
-                                                    [CPNull null]]
-                                       forKeys:[    @"divider-thickness",
-                                                    @"pane-divider-thickness",
-                                                    @"pane-divider-color",
-                                                    @"horizontal-divider-color",
-                                                    @"vertical-divider-color"]];
+    return [CPDictionary dictionaryWithObjects:[1.0,
+                                                10.0,
+                                                [CPColor grayColor],
+                                                [CPNull null],
+                                                [CPNull null]]
+                                       forKeys:[@"divider-thickness",
+                                                @"pane-divider-thickness",
+                                                @"pane-divider-color",
+                                                @"horizontal-divider-color",
+                                                @"vertical-divider-color"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
