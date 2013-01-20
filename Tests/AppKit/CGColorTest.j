@@ -4,15 +4,15 @@
 
 - (void)testColorCreateReturnNullIfNull
 {
-    [self assert:NULL equals:CGColorCreate( NULL, [1,2,3] ) message:"colorspace null failed"];
-    [self assert:NULL 
-          equals:CGColorCreate( CGColorSpaceCreateDeviceRGB(), NULL ) 
+    [self assert:NULL equals:CGColorCreate(NULL, [1, 2, 3]) message:"colorspace null failed"];
+    [self assert:NULL
+          equals:CGColorCreate(CGColorSpaceCreateDeviceRGB(), NULL)
           message:"components null failed"];
 }
 
 - (void)testColorCreateEnsureComponentsAreCopied
 {
-    var colorspace = CGColorSpaceCreateDeviceRGB(), 
+    var colorspace = CGColorSpaceCreateDeviceRGB(),
         components = [2,3,4,5],
         clr = CGColorCreate(colorspace, components);
 
@@ -26,24 +26,24 @@
     var clr = CGColorCreate(CGColorSpaceCreateDeviceRGB(), [0.4, 0.3, 0.2, 0.2]),
         newclr = CGColorCreate(CGColorSpaceCreateDeviceRGB(), [0.4, 0.3, 0.2, 0.2]);
     newclr.components[newclr.components.length - 1] = 0.6;
-    [self assert:0.6 equals:clr.components[clr.components.length-1]];
+    [self assert:0.6 equals:clr.components[clr.components.length - 1]];
 }
 
 - (void)testColorCreate
 {
-    var colorspace = CGColorSpaceCreateDeviceRGB(), 
+    var colorspace = CGColorSpaceCreateDeviceRGB(),
         components = [2,3,4,5],
         clruid = CFHashCode(colorspace) + components.join("");
 
-    // Can't access the colormap cache, but it would be nice to 
+    // Can't access the colormap cache, but it would be nice to
     // [self assert:NULL equals:_CGColorMap[clruid]];
 
-    var clr = CGColorCreate( colorspace, components );
+    var clr = CGColorCreate(colorspace, components);
     [self assert:colorspace equals:clr.colorspace message:"colorspace failed"];
     [self assert:[1,1,1,1]  equals:clr.components message:"components failed"];
     [self assert:NULL       equals:clr.pattern message:"pattern failed"];
 
-    // Can't access the colormap cache, but it would be nice to 
+    // Can't access the colormap cache, but it would be nice to
     // [self assert:clr equals:_CGColorMap[clruid]];
 }
 
@@ -51,10 +51,10 @@
 {
     // it returns it's argument, a little artifical but will fail if something
     // changes with the function.
-    [self assert:"banana" equals:CGColorCreateCopy( "banana" )];
+    [self assert:"banana" equals:CGColorCreateCopy("banana")];
 
-    var colorspace = CGColorSpaceCreateDeviceRGB(), 
-        components = [2,3,4,5],
+    var colorspace = CGColorSpaceCreateDeviceRGB(),
+        components = [2, 3, 4, 5],
         clr = CGColorCreate( colorspace, components );
     [self assert:clr equals:CGColorCreateCopy(clr)];
 }
@@ -62,9 +62,9 @@
 - (void)testColorCreateGenericGray
 {
     var clr = CGColorCreateGenericGray(0.3, 0.5);
-    [self assert:CGColorSpaceCreateDeviceRGB() 
+    [self assert:CGColorSpaceCreateDeviceRGB()
           equals:clr.colorspace message:"colorspace failed"];
-    [self assert:[ROUND(0.3*255)/255,ROUND(0.3*255)/255,ROUND(0.3*255)/255,0.5]  
+    [self assert:[ROUND(0.3 * 255) / 255, ROUND(0.3 * 255) / 255, ROUND(0.3 * 255) / 255, 0.5]
           equals:clr.components message:"components failed"];
     [self assert:NULL equals:clr.pattern message:"pattern failed"];
 }
@@ -72,9 +72,9 @@
 - (void)testColorCreateGenericRGB
 {
     var clr = CGColorCreateGenericRGB(0.4,0.3,0.2,0.1);
-    [self assert:CGColorSpaceCreateDeviceRGB() 
+    [self assert:CGColorSpaceCreateDeviceRGB()
           equals:clr.colorspace message:"colorspace failed"];
-    [self assert:[ROUND(0.4*255)/255,ROUND(0.3*255)/255,ROUND(0.2*255)/255,0.1]
+    [self assert:[ROUND(0.4 * 255) / 255, ROUND(0.3 * 255) / 255,ROUND(0.2 * 255) / 255, 0.1]
           equals:clr.components message:"components failed"];
     [self assert:NULL equals:clr.pattern message:"pattern failed"];
 }
@@ -84,8 +84,7 @@
     var clr = CGColorCreateGenericCMYK(0.2, 0.3, 0.4, 0.5, 0.6)
     [self assert:CGColorSpaceCreateDeviceCMYK()
           equals:clr.colorspace message:"colorspace failed"];
-    [self assert:[ROUND(0.2*255)/255,ROUND(0.3*255)/255,ROUND(0.4*255)/255,
-                       ROUND(0.5*255)/255, 0.6]
+    [self assert:[ROUND(0.2 * 255) / 255,ROUND(0.3 * 255) / 255,ROUND(0.4 * 255) / 255, ROUND(0.5 * 255) / 255, 0.6]
           equals:clr.components message:"components failed"];
     [self assert:NULL equals:clr.pattern message:"pattern failed"];
 }
@@ -107,9 +106,9 @@
 
     // ensure that null is returned
     [self assert:NULL equals:CGColorCreateWithPattern(NULL, "a new pattern", [])];
-    [self assert:NULL equals:CGColorCreateWithPattern(CGColorSpaceCreateDeviceRGB(), 
+    [self assert:NULL equals:CGColorCreateWithPattern(CGColorSpaceCreateDeviceRGB(),
                                                       NULL, [])];
-    [self assert:NULL equals:CGColorCreateWithPattern(CGColorSpaceCreateDeviceRGB(), 
+    [self assert:NULL equals:CGColorCreateWithPattern(CGColorSpaceCreateDeviceRGB(),
                                                       "a new pattern", NULL)];
     [self assert:NULL equals:CGColorCreateWithPattern(NULL, NULL, NULL)];
 }
@@ -130,8 +129,8 @@
 - (void)testColorGetComponents
 {
     var clr = CGColorCreateGenericCMYK(0.2, 0.3, 0.4, 0.5, 0.6);
-    [self assert:[ROUND(0.2*255)/255, ROUND(0.3*255)/255, ROUND(0.4*255)/255,
-                  ROUND(0.5*255)/255, ROUND(0.6*255)/255] 
+    [self assert:[ROUND(0.2 * 255) / 255, ROUND(0.3 * 255) / 255, ROUND(0.4 * 255) / 255,
+                  ROUND(0.5 * 255) / 255, ROUND(0.6 * 255) / 255]
           equals:CGColorGetComponents(clr)];
 }
 
@@ -153,7 +152,7 @@
     var clr = CGColorCreateWithPattern(CGColorSpaceCreateDeviceRGB(), "a new pattern",
                                        [1,1,1,1]);
     [self assert:1 equals:CGColorGetAlpha(clr) message:"initial alpha"];
-    
+
     var newclr = CGColorCreateCopyWithAlpha(clr, 0.6);
     [self assert:0.6 equals:CGColorGetAlpha(newclr) message:"new color alpha value"];
     [self assert:1 equals:CGColorGetAlpha(clr) message:"alpha after copy"];
@@ -173,20 +172,20 @@
 
     [self assert:CGColorSpaceCreateDeviceRGB()
           equals:newclr.colorspace message:"newclr colorspace failed"];
-    [self assert:[ROUND(0.4*255)/255,ROUND(0.3*255)/255,ROUND(0.2*255)/255,0.6]
+    [self assert:[ROUND(0.4 * 255) / 255, ROUND(0.3 * 255) / 255, ROUND(0.2 * 255) / 255, 0.6]
           equals:newclr.components message:"newclr components failed"];
     [self assert:NULL equals:newclr.pattern message:"newclr pattern failed"];
 
     [self assert:CGColorSpaceCreateDeviceRGB()
           equals:clr.colorspace message:"orig clr colorspace failed"];
-    [self assert:[ROUND(0.4*255)/255,ROUND(0.3*255)/255,ROUND(0.2*255)/255,0.3]
+    [self assert:[ROUND(0.4 * 255) / 255, ROUND(0.3 * 255) / 255, ROUND(0.2 * 255) / 255, 0.3]
           equals:clr.components message:"orig clr components failed"];
     [self assert:NULL equals:clr.pattern message:"orig clr pattern failed"];
 }
 
 - (void)testColorCreateCopyWithAlphaWithComponentsNullColor
 {
-    [self assert:NULL 
+    [self assert:NULL
           equals:CGColorCreateCopyWithAlpha(NULL,0.5)
           message:"null color failed"];
 

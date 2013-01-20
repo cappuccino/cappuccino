@@ -432,7 +432,8 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
             var transformOrigin = "50% 100%",
                 frame = [self frame],
                 preferredEdge = [_windowView preferredEdge],
-                posX, posY;
+                posX,
+                posY;
 
             switch (preferredEdge)
             {
