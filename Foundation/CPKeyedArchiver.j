@@ -27,6 +27,7 @@
 @import "CPNumber.j"
 @import "CPString.j"
 @import "CPValue.j"
+@import "_CGGeometry.j"
 
 var CPArchiverReplacementClassNames                     = nil;
 
@@ -321,7 +322,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 */
 - (void)encodePoint:(CGPoint)aPoint forKey:(CPString)aKey
 {
-    [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, CPStringFromPoint(aPoint), NO) forKey:aKey];
+    [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, CGStringFromPoint(aPoint), NO) forKey:aKey];
 }
 
 /*!
@@ -331,7 +332,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 */
 - (void)encodeRect:(CGRect)aRect forKey:(CPString)aKey
 {
-    [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, CPStringFromRect(aRect), NO) forKey:aKey];
+    [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, CGStringFromRect(aRect), NO) forKey:aKey];
 }
 
 /*!
@@ -341,7 +342,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 */
 - (void)encodeSize:(CGSize)aSize forKey:(CPString)aKey
 {
-    [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, CPStringFromSize(aSize), NO) forKey:aKey];
+    [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, CGStringFromSize(aSize), NO) forKey:aKey];
 }
 
 /*!
