@@ -1872,7 +1872,7 @@ if (!exports.acorn) {
           firstExpr = null;
       next();
       if (tokType !== _comma && tokType !== _bracketR) {
-        firstExpr = parseExpression(true);
+        firstExpr = parseExpression(true, true);
         if (tokType !== _comma && tokType !== _bracketR)
           return parseMessageSendExpression(node, firstExpr);
       }
@@ -1944,13 +1944,13 @@ if (!exports.acorn) {
           selectors.push(null);
         }
         expect(_colon, "Expected ':' in selector");
-        args.push(parseExpression(true));
+        args.push(parseExpression(true, true));
         if (eat(close))
           break;
         if (tokType === _comma) {
           node.parameters = [];
           while(eat(_comma)) {
-            node.parameters.push(parseExpression(true));
+            node.parameters.push(parseExpression(true, true));
           }
           eat(close);
           break;
