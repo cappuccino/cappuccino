@@ -3,7 +3,7 @@
 # capp_lint.py - Check Objective-J source code formatting,
 # according to Cappuccino standards:
 #
-# http://cappuccino.org/contribute/coding-style.php
+# https://github.com/cappuccino/cappuccino/blob/master/CONTRIBUTING.md
 #
 # Copyright (C) 2011 Aparajita Fishman <aparajita@aparajita.com>
 
