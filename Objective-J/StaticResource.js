@@ -100,16 +100,16 @@ StaticResource.prototype.resolve = function()
         var url = this.URL(),
             aFilenameTranslateDictionary = this.filenameTranslateDictionary();
 
-            if (aFilenameTranslateDictionary)
-            {
-                var urlString = url.toString(),
-                    lastPathComponent = url.lastPathComponent(),
-                    basePath = urlString.substring(0, urlString.length - lastPathComponent.length),
-                    translatedName = aFilenameTranslateDictionary[lastPathComponent];
+        if (aFilenameTranslateDictionary)
+        {
+            var urlString = url.toString(),
+                lastPathComponent = url.lastPathComponent(),
+                basePath = urlString.substring(0, urlString.length - lastPathComponent.length),
+                translatedName = aFilenameTranslateDictionary[lastPathComponent];
 
-                if (translatedName && urlString.slice(-translatedName.length) !== translatedName)
-                    url = new CFURL(basePath + translatedName);  // FIXME: do an add component to url or something better....
-            }
+            if (translatedName && urlString.slice(-translatedName.length) !== translatedName)
+                url = new CFURL(basePath + translatedName);  // FIXME: do an add component to url or something better....
+        }
         new FileRequest(url, onsuccess, onfailure);
     }
 };

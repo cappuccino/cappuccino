@@ -1764,7 +1764,19 @@ CPTexturedBackgroundWindowMask
         case CPRightMouseDown:
             _leftMouseDownView = [_windowView hitTest:point];
 
-            if (_leftMouseDownView != _firstResponder && [_leftMouseDownView acceptsFirstResponder])
+            /*
+                hitTest: will only test within the window's frame.
+                If that fails, check if a left mousedown is within
+                the resize slop outside the frame.
+            */
+            if (!_leftMouseDownView &&
+                type === CPLeftMouseDown &&
+                [self _isValidMousePoint:[self convertBaseToGlobal:point]])
+            {
+                _leftMouseDownView = _windowView;
+            }
+
+            if (_leftMouseDownView !== _firstResponder && [_leftMouseDownView acceptsFirstResponder])
                 [self makeFirstResponder:_leftMouseDownView];
 
             [CPApp activateIgnoringOtherApps:YES];
@@ -3334,6 +3346,7 @@ var keyViewComparator = function(lhs, rhs, context)
     return _CGRectContainsPoint(_frame, aPoint);
 }
 
+/* aPoint should be global */
 - (BOOL)_isValidMousePoint:(CGPoint)aPoint
 {
     // If we are using the new resizing mode, mouse events are valid

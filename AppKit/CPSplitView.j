@@ -104,16 +104,16 @@ var ShouldSuppressResizeNotifications   = 1,
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[    1.0,
-                                                    10.0,
-                                                    [CPColor grayColor],
-                                                    [CPNull null],
-                                                    [CPNull null]]
-                                       forKeys:[    @"divider-thickness",
-                                                    @"pane-divider-thickness",
-                                                    @"pane-divider-color",
-                                                    @"horizontal-divider-color",
-                                                    @"vertical-divider-color"]];
+    return [CPDictionary dictionaryWithObjects:[1.0,
+                                                10.0,
+                                                [CPColor grayColor],
+                                                [CPNull null],
+                                                [CPNull null]]
+                                       forKeys:[@"divider-thickness",
+                                                @"pane-divider-thickness",
+                                                @"pane-divider-color",
+                                                @"horizontal-divider-color",
+                                                @"vertical-divider-color"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -787,7 +787,7 @@ var ShouldSuppressResizeNotifications   = 1,
     [self setNeedsDisplay:YES];
 }
 
-- (void)resizeSubviewsWithOldSize:(CPSize)oldSize
+- (void)resizeSubviewsWithOldSize:(CGSize)oldSize
 {
     if ([_delegate respondsToSelector:@selector(splitView:resizeSubviewsWithOldSize:)])
     {
@@ -1143,7 +1143,7 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 
         for (var i = 0, count = [frames count] - 1; i < count; i++)
         {
-            var frame = CPRectFromString(frames[i]);
+            var frame = CGRectFromString(frames[i]);
             position += frame.size[_sizeComponent];
 
             [self setPosition:position ofDividerAtIndex:i];

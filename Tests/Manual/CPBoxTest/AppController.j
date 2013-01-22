@@ -1,4 +1,4 @@
-    /*
+/*
  * AppController.j
  * CPBoxTest
  *
@@ -7,6 +7,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <AppKit/CPBox.j>
 
 
 @implementation AppController : CPObject
@@ -31,16 +32,18 @@
 
 - (IBAction)click:(id)sender
 {
-    [box1 setFrameFromContentFrame:CPRectMake(18, 81, 326, 133)];
+    [box1 setFrameFromContentFrame:CGRectMake(18, 81, 326, 133)];
 }
 
 - (IBAction)click2:(id)sender
 {
-    [box1 setFrameFromContentFrame:CPRectMake(18, 81, 300, 250)];
+    [box1 setFrameFromContentFrame:CGRectMake(18, 81, 300, 250)];
 }
 
 - (IBAction)change:(id)aSender
 {
+    var pos;
+
     switch ([aSender title])
     {
         case @"CPAtTop":

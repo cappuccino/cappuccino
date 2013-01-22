@@ -69,7 +69,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
         [scrollView setHasHorizontalScroller:NO];
         [contentView addSubview:scrollView];
 
-        tableView = [[_CPNonFirstResponderTableView alloc] initWithFrame:CPRectMakeZero()];
+        tableView = [[_CPNonFirstResponderTableView alloc] initWithFrame:CGRectMakeZero()];
 
         var tableColumn = [CPTableColumn new];
         [tableColumn setResizingMask:CPTableColumnAutoresizingMask];

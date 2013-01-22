@@ -63,7 +63,7 @@
     [[aWindow contentView] addSubview:scrollView];
 
     var button = [CPButton buttonWithTitle:@"Change Scroller Mode"];
-    [button setFrameOrigin:CPPointMake(10.0, 10.0)];
+    [button setFrameOrigin:CGPointMake(10.0, 10.0)];
     [button setTarget:self];
     [button setAction:@selector(changeScrollerMode:)];
 

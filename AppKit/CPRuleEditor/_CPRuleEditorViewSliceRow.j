@@ -128,15 +128,16 @@ var CONTROL_HEIGHT = 16.,
 
 - (_CPRuleEditorTextField)_createStaticTextFieldWithStringValue:(CPString)text
 {
-    var textField = [[_CPRuleEditorTextField alloc] initWithFrame:CPMakeRect(0, 0, 200, CONTROL_HEIGHT)],
-        refont = [_ruleEditor font],
-        font = [CPFont fontWithName:[refont familyName] size:[refont size] + 2],
+    var textField = [[_CPRuleEditorTextField alloc] initWithFrame:CGRectMakeZero()],
+        ruleEditorFont = [_ruleEditor font],
+        font = [CPFont fontWithName:[ruleEditorFont familyName] size:[ruleEditorFont size] + 2],
+        localizedText = [[_ruleEditor standardLocalizer] localizedStringForString:text],
+        size = [localizedText sizeWithFont:font];
 
-        localizedText = [[_ruleEditor standardLocalizer] localizedStringForString:text];
+    [textField setFrameSize:CGSizeMake(size.width + 4, CONTROL_HEIGHT + 2)];
 
     [textField setValue:font forThemeAttribute:@"font"];
     [textField setStringValue:localizedText];
-    [textField sizeToFit];
 
     return textField;
 }
@@ -358,14 +359,6 @@ var CONTROL_HEIGHT = 16.,
 
         optionFrame.origin.y = (rowHeight - CGRectGetHeight(optionFrame)) / 2 - 2;
 
-        // small positioning fix
-        if ([ruleOptionView isKindOfClass:CPTextField])
-        {
-            optionFrame.origin.y += 2;
-            [_ruleOptionViews[i] setValue:CGInsetMake(7, 7, 7, 8) forThemeAttribute:@"content-inset"];
-        }
-
-
         if (widthChanged)
         {
             optionFrame.origin.x = optionViewOriginX;
@@ -473,7 +466,7 @@ var CONTROL_HEIGHT = 16.,
     [self layoutSubviews];
 }
 
-- (void)drawRect:(CPRect)rect
+- (void)drawRect:(CGRect)rect
 {
     [super drawRect:rect];
 }
@@ -481,13 +474,6 @@ var CONTROL_HEIGHT = 16.,
 - (BOOL)_isRulePopup:(CPView)view
 {
     if ([view isKindOfClass:[_CPRuleEditorPopUpButton class]])
-        return YES;
-    return NO;
-}
-
-- (BOOL)_isRuleStaticTextField:(CPView)view
-{
-    if ([view isKindOfClass:[_CPRuleEditorTextField class]])
         return YES;
     return NO;
 }
@@ -513,19 +499,17 @@ var CONTROL_HEIGHT = 16.,
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
-    if (self != nil)
+    if (self)
     {
-        [self setBordered:NO];
-        [self setEditable:NO];
         [self setDrawsBackground:NO];
     }
 
     return self;
 }
 
-- (id)hitTest:(CPPoint)point
+- (id)hitTest:(CGPoint)point
 {
-    if (!CPRectContainsPoint([self frame], point))
+    if (!CGRectContainsPoint([self frame], point))
         return nil;
 
     return [self superview];

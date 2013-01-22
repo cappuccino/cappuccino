@@ -59,7 +59,7 @@ tableTestDragType = @"CPTableViewTestDragType";
     [iconColumn setMinWidth:32.0];
     [iconColumn setDataView:iconView];
     [tableView addTableColumn:iconColumn];
-    iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino.org/images/favicon.png" size:CGSizeMake(16,16)];
+    iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino-project.org/images/favicon.png" size:CGSizeMake(16,16)];
 
 
     var desc = [CPSortDescriptor sortDescriptorWithKey:@"self" ascending:YES];

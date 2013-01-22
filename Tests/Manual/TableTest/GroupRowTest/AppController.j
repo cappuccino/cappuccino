@@ -36,7 +36,7 @@
     [iconColumn setDataView:iconView];
     [tableView addTableColumn:iconColumn];
 
-    iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino.org/images/favicon.png" size:CGSizeMake(16,16)];
+    iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino-project.org/images/favicon.png" size:CGSizeMake(16,16)];
 
 
     for (var i = 1; i <= 5; i++)
@@ -76,7 +76,7 @@
     [iconColumn setDataView:iconView];
     [tableView addTableColumn:iconColumn];
 
-    iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino.org/images/favicon.png" size:CGSizeMake(16,16)];
+    iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino-project.org/images/favicon.png" size:CGSizeMake(16,16)];
 
 
     for (var i = 1; i <= 5; i++)

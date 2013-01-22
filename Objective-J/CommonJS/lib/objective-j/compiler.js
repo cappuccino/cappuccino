@@ -101,7 +101,10 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags, asPlainJavasc
             delete document;
     }
     catch (anException)
-    {}
+    {
+        print(anException);
+        return;
+    }
 
     if (shouldCompress)
     {
@@ -249,10 +252,14 @@ exports.main = function(args)
             print("Statically Compiling " + filePath);
         var output = compileWithResolvedFlags(filePath, objjcFlags, gccFlags, asPlainJavascript);
 
-        if (shouldPrintOutput)
-            print(output);
-        else
-            FILE.write(outputFilePaths[index], output, { charset: "UTF-8" });
+        // Only write the output if the compilation didn't fail.
+        if (output !== undefined)
+        {
+            if (shouldPrintOutput)
+                print(output);
+            else
+                FILE.write(outputFilePaths[index], output, { charset: "UTF-8" });
+        }
     });
 };
 

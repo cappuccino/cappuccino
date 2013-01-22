@@ -1528,7 +1528,7 @@ var CPViewFlags                     = { },
     @param aPoint the point to test
     @return returns the containing view, or nil if the point is not contained
 */
-- (CPView)hitTest:(CPPoint)aPoint
+- (CPView)hitTest:(CGPoint)aPoint
 {
     if (_isHidden || !_hitTests || !_CGRectContainsPoint(_frame, aPoint))
         return nil;
@@ -2049,7 +2049,7 @@ setBoundsOrigin:
     @param aSourceObject the drag operation controller
     @param slideBack Whether the view should 'slide back' if the drag is rejected
 */
-- (void)dragView:(CPView)aView at:(CPPoint)aLocation offset:(CPSize)mouseOffset event:(CPEvent)anEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
+- (void)dragView:(CPView)aView at:(CGPoint)aLocation offset:(CGSize)mouseOffset event:(CPEvent)anEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
 {
     [_window dragView:aView at:[self convertPoint:aLocation toView:nil] offset:mouseOffset event:anEvent pasteboard:aPasteboard source:aSourceObject slideBack:slideBack];
 }
@@ -2099,7 +2099,7 @@ setBoundsOrigin:
     Draws the receiver into \c aRect. This method should be overridden by subclasses.
     @param aRect the area that should be drawn into
 */
-- (void)drawRect:(CPRect)aRect
+- (void)drawRect:(CGRect)aRect
 {
 
 }
@@ -2119,7 +2119,7 @@ setBoundsOrigin:
     Marks the area denoted by \c aRect as dirty, and initiates a redraw on it.
     @param aRect the area that needs to be redrawn
 */
-- (void)setNeedsDisplayInRect:(CPRect)aRect
+- (void)setNeedsDisplayInRect:(CGRect)aRect
 {
     if (!(_viewClassFlags & CPViewHasCustomDrawRect))
         return;
@@ -2167,7 +2167,7 @@ setBoundsOrigin:
     Draws the receiver into the area defined by \c aRect.
     @param aRect the area to be drawn
 */
-- (void)displayRect:(CPRect)aRect
+- (void)displayRect:(CGRect)aRect
 {
     [self viewWillDraw];
 

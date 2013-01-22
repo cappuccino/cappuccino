@@ -135,7 +135,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 
     @param aSize the desired size
 */
-- (void)setContentSize:(CPSize)aSize
+- (void)setContentSize:(CGSize)aSize
 {
     [[_contentViewController view] setFrameSize:aSize];
 }

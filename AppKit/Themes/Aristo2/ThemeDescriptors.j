@@ -16,7 +16,6 @@ var themedButtonValues = nil,
     themedHorizontalSliderValues = nil,
     themedVerticalSliderValues = nil,
     themedCircularSliderValues = nil,
-    themedButtonBarValues = nil,
     themedAlertValues = nil,
     themedWindowViewValues = nil,
     themedProgressIndicator = nil,
@@ -89,58 +88,59 @@ var themedButtonValues = nil,
             ],
             PatternIsHorizontal),
 
-            // Rounded
-            roundedBezelColor = PatternColor(
-                [
-                    ["button-bezel-rounded-left.png", 12.0, 25.0],
-                    ["button-bezel-rounded-center.png", 1.0, 25.0],
-                    ["button-bezel-rounded-right.png", 12.0, 25.0]
-                ],
-                PatternIsHorizontal),
+        // Rounded
+        roundedBezelColor = PatternColor(
+            [
+                ["button-bezel-rounded-left.png", 12.0, 25.0],
+                ["button-bezel-rounded-center.png", 1.0, 25.0],
+                ["button-bezel-rounded-right.png", 12.0, 25.0]
+            ],
+            PatternIsHorizontal),
 
-            roundedHighlightedBezelColor = PatternColor(
-                [
-                    ["button-bezel-rounded-highlighted-left.png", 12.0, 25.0],
-                    ["button-bezel-rounded-highlighted-center.png", 1.0, 25.0],
-                    ["button-bezel-rounded-highlighted-right.png", 12.0, 25.0]
-                ],
-                PatternIsHorizontal),
+        roundedHighlightedBezelColor = PatternColor(
+            [
+                ["button-bezel-rounded-highlighted-left.png", 12.0, 25.0],
+                ["button-bezel-rounded-highlighted-center.png", 1.0, 25.0],
+                ["button-bezel-rounded-highlighted-right.png", 12.0, 25.0]
+            ],
+            PatternIsHorizontal),
 
-            roundedDisabledBezelColor = PatternColor(
-                [
-                    ["button-bezel-rounded-disabled-left.png", 12.0, 25.0],
-                    ["button-bezel-rounded-disabled-center.png", 1.0, 25.0],
-                    ["button-bezel-rounded-disabled-right.png", 12.0, 25.0]
-                ],
-                PatternIsHorizontal),
+        roundedDisabledBezelColor = PatternColor(
+            [
+                ["button-bezel-rounded-disabled-left.png", 12.0, 25.0],
+                ["button-bezel-rounded-disabled-center.png", 1.0, 25.0],
+                ["button-bezel-rounded-disabled-right.png", 12.0, 25.0]
+            ],
+            PatternIsHorizontal),
 
-            defaultRoundedBezelColor = PatternColor(
-                [
-                    ["default-button-bezel-rounded-left.png", 12.0, 25.0],
-                    ["default-button-bezel-rounded-center.png", 1.0, 25.0],
-                    ["default-button-bezel-rounded-right.png", 12.0, 25.0]
-                ],
-                PatternIsHorizontal),
+        defaultRoundedBezelColor = PatternColor(
+            [
+                ["default-button-bezel-rounded-left.png", 12.0, 25.0],
+                ["default-button-bezel-rounded-center.png", 1.0, 25.0],
+                ["default-button-bezel-rounded-right.png", 12.0, 25.0]
+            ],
+            PatternIsHorizontal),
 
-            defaultRoundedHighlightedBezelColor = PatternColor(
-                [
-                    ["default-button-bezel-rounded-highlighted-left.png", 12.0, 25.0],
-                    ["default-button-bezel-rounded-highlighted-center.png", 1.0, 25.0],
-                    ["default-button-bezel-rounded-highlighted-right.png", 12.0, 25.0]
-                ],
-                PatternIsHorizontal),
+        defaultRoundedHighlightedBezelColor = PatternColor(
+            [
+                ["default-button-bezel-rounded-highlighted-left.png", 12.0, 25.0],
+                ["default-button-bezel-rounded-highlighted-center.png", 1.0, 25.0],
+                ["default-button-bezel-rounded-highlighted-right.png", 12.0, 25.0]
+            ],
+            PatternIsHorizontal),
 
-            defaultRoundedDisabledBezelColor = PatternColor(
-                [
-                    ["default-button-bezel-rounded-disabled-left.png", 12.0, 25.0],
-                    ["default-button-bezel-rounded-disabled-center.png", 1.0, 25.0],
-                    ["default-button-bezel-rounded-disabled-right.png", 12.0, 25.0]
-                ],
-                PatternIsHorizontal),
+        defaultRoundedDisabledBezelColor = PatternColor(
+            [
+                ["default-button-bezel-rounded-disabled-left.png", 12.0, 25.0],
+                ["default-button-bezel-rounded-disabled-center.png", 1.0, 25.0],
+                ["default-button-bezel-rounded-disabled-right.png", 12.0, 25.0]
+            ],
+            PatternIsHorizontal),
 
         defaultTextColor = [CPColor colorWithCalibratedRed:38.0 / 255.0 green:38.0 / 255.0 blue:38.0 / 255.0 alpha:1.0],
         defaultDisabledTextColor = [CPColor colorWithCalibratedRed:38.0 / 255.0 green:38.0 / 255.0 blue:38.0 / 255.0 alpha:0.2];
 
+    // Global
     themedButtonValues =
         [
             [@"font",               [CPFont boldSystemFontOfSize:12.0], CPThemeStateBordered],
@@ -311,12 +311,10 @@ var themedButtonValues = nil,
 
 + (CPScrollView)themedScrollView
 {
-    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)];
-
-    var borderColor = [CPColor colorWithWhite:0.0 alpha:0.2],
-        bottomCornerColor = PatternColor(@"scrollview-bottom-corner-color.png", 15.0, 15.0);
-
-    var themedScrollViewValues =
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)],
+        borderColor = [CPColor colorWithWhite:0.0 alpha:0.2],
+        bottomCornerColor = PatternColor(@"scrollview-bottom-corner-color.png", 15.0, 15.0),
+        themedScrollViewValues =
         [
             [@"border-color", borderColor],
             [@"bottom-corner-color", bottomCornerColor]
@@ -419,7 +417,6 @@ var themedButtonValues = nil,
             ],
             PatternIsVertical);
 
-
     themedVerticalScrollerValues =
         [
             // Common
@@ -439,8 +436,8 @@ var themedButtonValues = nil,
             [@"knob-color",             knobColorDark,                      CPThemeStateVertical | CPThemeStateScrollerKnobDark],
             [@"increment-line-color",   [CPNull null],                      CPThemeStateVertical],
             [@"decrement-line-color",   [CPNull null],                      CPThemeStateVertical],
-            [@"decrement-line-size",    CPSizeMakeZero(),                   CPThemeStateVertical],
-            [@"increment-line-size",    CPSizeMakeZero(),                   CPThemeStateVertical],
+            [@"decrement-line-size",    CGSizeMakeZero(),                   CPThemeStateVertical],
+            [@"increment-line-size",    CGSizeMakeZero(),                   CPThemeStateVertical],
 
             // Legacy
             [@"scroller-width",         14.0,                               CPThemeStateVertical | CPThemeStateScrollViewLegacy],
@@ -458,8 +455,8 @@ var themedButtonValues = nil,
             [@"knob-color",             knobColorLegacy,                    CPThemeStateVertical | CPThemeStateScrollViewLegacy | CPThemeStateScrollerKnobDark],
             [@"increment-line-color",   incrementColorLegacy,               CPThemeStateVertical | CPThemeStateScrollViewLegacy],
             [@"decrement-line-color",   decrementColorLegacy,               CPThemeStateVertical | CPThemeStateScrollViewLegacy],
-            [@"decrement-line-size",    CPSizeMake(14.0, 11.0),             CPThemeStateVertical | CPThemeStateScrollViewLegacy],
-            [@"increment-line-size",    CPSizeMake(14.0, 11.0),             CPThemeStateVertical | CPThemeStateScrollViewLegacy]
+            [@"decrement-line-size",    CGSizeMake(14.0, 11.0),             CPThemeStateVertical | CPThemeStateScrollViewLegacy],
+            [@"increment-line-size",    CGSizeMake(14.0, 11.0),             CPThemeStateVertical | CPThemeStateScrollViewLegacy]
         ];
 
     [self registerThemeValues:themedVerticalScrollerValues forView:scroller];
@@ -548,8 +545,8 @@ var themedButtonValues = nil,
             [@"knob-color",             knobColor],
             [@"knob-color",             knobColorLight,                     CPThemeStateScrollerKnobLight],
             [@"knob-color",             knobColorDark,                      CPThemeStateScrollerKnobDark],
-            [@"decrement-line-size",    CPSizeMakeZero()],
-            [@"increment-line-size",    CPSizeMakeZero()],
+            [@"decrement-line-size",    CGSizeMakeZero()],
+            [@"increment-line-size",    CGSizeMakeZero()],
 
             // Legacy
             [@"scroller-width",         14.0,                               CPThemeStateScrollViewLegacy],
@@ -565,8 +562,8 @@ var themedButtonValues = nil,
             [@"knob-color",             knobColorLegacy,                    CPThemeStateScrollViewLegacy | CPThemeStateScrollerKnobDark],
             [@"increment-line-color",   incrementColorLegacy,               CPThemeStateScrollViewLegacy],
             [@"decrement-line-color",   decrementColorLegacy,               CPThemeStateScrollViewLegacy],
-            [@"decrement-line-size",    CPSizeMake(11.0, 14.0),             CPThemeStateScrollViewLegacy],
-            [@"increment-line-size",    CPSizeMake(11.0, 14.0),             CPThemeStateScrollViewLegacy]
+            [@"decrement-line-size",    CGSizeMake(11.0, 14.0),             CPThemeStateScrollViewLegacy],
+            [@"increment-line-size",    CGSizeMake(11.0, 14.0),             CPThemeStateScrollViewLegacy]
         ];
 
     [self registerThemeValues:themedHorizontalScrollerValues forView:scroller];
@@ -580,41 +577,41 @@ var themedButtonValues = nil,
 
         bezelColor = PatternColor(
             [
-                ["textfield-bezel-square-0.png", 3.0, 4.0],
+                ["textfield-bezel-square-0.png", 4.0, 4.0],
                 ["textfield-bezel-square-1.png", 1.0, 4.0],
-                ["textfield-bezel-square-2.png", 3.0, 4.0],
-                ["textfield-bezel-square-3.png", 3.0, 1.0],
+                ["textfield-bezel-square-2.png", 4.0, 4.0],
+                ["textfield-bezel-square-3.png", 4.0, 1.0],
                 ["textfield-bezel-square-4.png", 1.0, 1.0],
-                ["textfield-bezel-square-5.png", 3.0, 1.0],
-                ["textfield-bezel-square-6.png", 3.0, 4.0],
+                ["textfield-bezel-square-5.png", 4.0, 1.0],
+                ["textfield-bezel-square-6.png", 4.0, 4.0],
                 ["textfield-bezel-square-7.png", 1.0, 4.0],
-                ["textfield-bezel-square-8.png", 3.0, 4.0]
+                ["textfield-bezel-square-8.png", 4.0, 4.0]
             ]),
 
         bezelFocusedColor = PatternColor(
             [
-                ["textfield-bezel-square-focused-0.png", 7.0, 7.0],
-                ["textfield-bezel-square-focused-1.png", 1.0, 7.0],
-                ["textfield-bezel-square-focused-2.png", 7.0, 7.0],
-                ["textfield-bezel-square-focused-3.png", 7.0, 1.0],
+                ["textfield-bezel-square-focused-0.png", 9.0, 9.0],
+                ["textfield-bezel-square-focused-1.png", 1.0, 9.0],
+                ["textfield-bezel-square-focused-2.png", 9.0, 9.0],
+                ["textfield-bezel-square-focused-3.png", 9.0, 1.0],
                 ["textfield-bezel-square-focused-4.png", 1.0, 1.0],
-                ["textfield-bezel-square-focused-5.png", 7.0, 1.0],
-                ["textfield-bezel-square-focused-6.png", 7.0, 7.0],
-                ["textfield-bezel-square-focused-7.png", 1.0, 7.0],
-                ["textfield-bezel-square-focused-8.png", 7.0, 7.0]
+                ["textfield-bezel-square-focused-5.png", 9.0, 1.0],
+                ["textfield-bezel-square-focused-6.png", 9.0, 9.0],
+                ["textfield-bezel-square-focused-7.png", 1.0, 9.0],
+                ["textfield-bezel-square-focused-8.png", 9.0, 9.0]
             ]),
 
         bezelDisabledColor = PatternColor(
             [
-                ["textfield-bezel-square-disabled-0.png", 3.0, 4.0],
+                ["textfield-bezel-square-disabled-0.png", 4.0, 4.0],
                 ["textfield-bezel-square-disabled-1.png", 1.0, 4.0],
-                ["textfield-bezel-square-disabled-2.png", 3.0, 4.0],
-                ["textfield-bezel-square-disabled-3.png", 3.0, 1.0],
+                ["textfield-bezel-square-disabled-2.png", 4.0, 4.0],
+                ["textfield-bezel-square-disabled-3.png", 4.0, 1.0],
                 ["textfield-bezel-square-disabled-4.png", 1.0, 1.0],
-                ["textfield-bezel-square-disabled-5.png", 3.0, 1.0],
-                ["textfield-bezel-square-disabled-6.png", 3.0, 4.0],
+                ["textfield-bezel-square-disabled-5.png", 4.0, 1.0],
+                ["textfield-bezel-square-disabled-6.png", 4.0, 4.0],
                 ["textfield-bezel-square-disabled-7.png", 1.0, 4.0],
-                ["textfield-bezel-square-disabled-8.png", 3.0, 4.0]
+                ["textfield-bezel-square-disabled-8.png", 4.0, 4.0]
             ]),
 
         placeholderColor = [CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0];
@@ -628,8 +625,8 @@ var themedButtonValues = nil,
         [@"bezel-color",        bezelDisabledColor,                 CPThemeStateBezeled | CPThemeStateDisabled],
         [@"font",               [CPFont systemFontOfSize:12.0],     CPThemeStateBezeled],
 
-        [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 10.0),    CPThemeStateBezeled],
-        [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 10.0),    CPThemeStateBezeled | CPThemeStateEditing],
+        [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 10.0),   CPThemeStateBezeled],
+        [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 10.0),   CPThemeStateBezeled | CPThemeStateEditing],
         [@"bezel-inset",        CGInsetMake(3.0, 4.0, 3.0, 4.0),    CPThemeStateBezeled],
         [@"bezel-inset",        CGInsetMake(0.0, 1.0, 0.0, 1.0),    CPThemeStateBezeled | CPThemeStateEditing],
 
@@ -679,9 +676,9 @@ var themedButtonValues = nil,
 
         bezelFocusedColor = PatternColor(
             [
-                ["textfield-bezel-rounded-focused-left.png", 12.0, 29.0],
+                ["textfield-bezel-rounded-focused-left.png", 13.0, 29.0],
                 ["textfield-bezel-rounded-focused-center.png", 1.0, 29.0],
-                ["textfield-bezel-rounded-focused-right.png", 12.0, 29.0]
+                ["textfield-bezel-rounded-focused-right.png", 13.0, 29.0]
             ],
             PatternIsHorizontal),
 
@@ -706,8 +703,8 @@ var themedButtonValues = nil,
             [@"content-inset",  CGInsetMake(8.0, 14.0, 6.0, 14.0),  CPTextFieldStateRounded | CPThemeStateBezeled],
             [@"content-inset",  CGInsetMake(8.0, 14.0, 6.0, 14.0),  CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
 
-            [@"bezel-inset",    CGInsetMake(4.0, 4.0, 2.0, 4.0),    CPTextFieldStateRounded | CPThemeStateBezeled],
-            [@"bezel-inset",    CGInsetMake(1.0, 1.0, 1.0, 1.0),    CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
+            [@"bezel-inset",    CGInsetMake(3.0, 4.0, 3.0, 4.0),    CPTextFieldStateRounded | CPThemeStateBezeled],
+            [@"bezel-inset",    CGInsetMake(0.0, 1.0, 0.0, 1.0),    CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
 
             [@"text-color",     placeholderColor,       CPTextFieldStateRounded | CPTextFieldStatePlaceholder],
 
@@ -736,7 +733,8 @@ var themedButtonValues = nil,
         imageCancel = PatternImage("search-field-cancel.png", 22.0, 22.0),
         imageCancelPressed = PatternImage("search-field-cancel-pressed.png", 22.0, 22.0),
 
-        overrides = [
+        overrides =
+        [
             [@"image-search", imageSearch],
             [@"image-find", imageFind],
             [@"image-cancel", imageCancel],
@@ -750,7 +748,7 @@ var themedButtonValues = nil,
 
 + (CPTokenField)themedTokenField
 {
-    var tokenfield = [[CPTokenField alloc] initWithFrame:CGRectMake(0.0, 0.0, 160.0, 29.0)];
+    var tokenfield = [[CPTokenField alloc] initWithFrame:CGRectMake(0.0, 0.0, 160.0, 29.0)],
 
         overrides =
         [
@@ -770,7 +768,7 @@ var themedButtonValues = nil,
             [@"content-inset", CGInsetMake(4.0, 8.0, 4.0, 8.0), CPThemeStateBezeled],
 
             // Bezeled token field with no tokens
-            [@"content-inset", CGInsetMake(8.0, 8.0, 7.0, 8.0), CPThemeStateBezeled | CPTextFieldStatePlaceholder],
+            [@"content-inset", CGInsetMake(8.0, 8.0, 7.0, 8.0), CPThemeStateBezeled | CPTextFieldStatePlaceholder]
         ];
 
     [self registerThemeValues:overrides forView:tokenfield inherit:themedTextFieldValues];
@@ -863,9 +861,9 @@ var themedButtonValues = nil,
 
 + (CPComboBox)themedComboBox
 {
-    var combo = [[CPComboBox alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 31.0)];
+    var combo = [[CPComboBox alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 31.0)],
 
-    var bezelColor = PatternColor(
+        bezelColor = PatternColor(
             [
                 ["combobox-bezel-left.png", 4.0, 25.0],
                 ["combobox-bezel-center.png", 1.0, 25.0],
@@ -925,12 +923,12 @@ var themedButtonValues = nil,
 
             [@"border-inset",       CGInsetMake(3.0, 3.0, 3.0, 3.0),    CPThemeStateBezeled],
 
-            [@"bezel-inset",        CGInsetMake(0.0, 1.0, 1.0, 1.0),    CPThemeStateBezeled | CPThemeStateEditing],
+            [@"bezel-inset",        CGInsetMake(0.0, 1.0, 0.0, 1.0),    CPThemeStateBezeled | CPThemeStateEditing],
 
             // The right border inset has to make room for the focus ring and popup button
-            [@"content-inset",      CGInsetMake(10.0, 26.0, 7.0, 10.0),    CPThemeStateBezeled | CPComboBoxStateButtonBordered],
-            [@"content-inset",      CGInsetMake(10.0, 24.0, 7.0, 10.0),    CPThemeStateBezeled],
-            [@"content-inset",      CGInsetMake(10.0, 24.0, 7.0, 10.0),    CPThemeStateBezeled | CPThemeStateEditing],
+            [@"content-inset",      CGInsetMake(9.0, 26.0, 7.0, 10.0),    CPThemeStateBezeled | CPComboBoxStateButtonBordered],
+            [@"content-inset",      CGInsetMake(9.0, 24.0, 7.0, 10.0),    CPThemeStateBezeled],
+            [@"content-inset",      CGInsetMake(9.0, 24.0, 7.0, 10.0),    CPThemeStateBezeled | CPThemeStateEditing],
 
             [@"popup-button-size",  CGSizeMake(21.0, 23.0), CPThemeStateBezeled | CPComboBoxStateButtonBordered],
             [@"popup-button-size",  CGSizeMake(17.0, 23.0), CPThemeStateBezeled],
@@ -948,7 +946,6 @@ var themedButtonValues = nil,
 + (CPRadioButton)themedRadioButton
 {
     var button = [CPRadio radioWithTitle:@"Radio button"],
-
         imageNormal = PatternImage("radio-image.png", 21.0, 21.0),
         imageSelected = PatternImage("radio-image-selected.png", 21.0, 21.0),
         imageSelectedHighlighted = PatternImage("radio-image-selected-highlighted.png", 21.0, 21.0),
@@ -956,6 +953,7 @@ var themedButtonValues = nil,
         imageDisabled = PatternImage("radio-image-disabled.png", 21.0, 21.0),
         imageHighlighted = PatternImage("radio-image-highlighted.png", 21.0, 21.0);
 
+    // Global
     themedRadioButtonValues =
     [
         [@"alignment",      CPLeftTextAlignment,                CPThemeStateNormal],
@@ -984,7 +982,6 @@ var themedButtonValues = nil,
 + (CPCheckBox)themedCheckBoxButton
 {
     var button = [CPCheckBox checkBoxWithTitle:@"Checkbox"],
-
         imageNormal = PatternImage("check-box-image.png", 21.0, 21.0),
         imageSelected = PatternImage("check-box-image-selected.png", 21.0, 21.0),
         imageSelectedHighlighted = PatternImage("check-box-image-selected-highlighted.png", 21.0, 21.0),
@@ -992,6 +989,7 @@ var themedButtonValues = nil,
         imageDisabled = PatternImage("check-box-image-disabled.png", 21.0, 21.0),
         imageHighlighted = PatternImage("check-box-image-highlighted.png", 21.0, 21.0);
 
+    // Global
     themedCheckBoxValues =
     [
         [@"alignment",      CPLeftTextAlignment,                CPThemeStateNormal],
@@ -1064,7 +1062,7 @@ var themedButtonValues = nil,
     [segmentedControl setTag:3 forSegment:2];
 
     return segmentedControl;
-};
+}
 
 + (CPSegmentedControl)themedSegmentedControl
 {
@@ -1175,6 +1173,7 @@ var themedButtonValues = nil,
         knobHighlightedColor =  PatternColor("knob-highlighted.png", 21.0, 21.0),
         knobDisabledColor =     PatternColor("knob-disabled.png", 20.0, 21.0);
 
+    // Gobal
     themedHorizontalSliderValues =
     [
         [@"track-width", 5.0],
@@ -1291,7 +1290,6 @@ var themedButtonValues = nil,
 + (CPButtonBar)themedButtonBar
 {
     var buttonBar = [self makeButtonBar],
-
         color = PatternColor("buttonbar-bezel.png", 1.0, 26.0),
         resizeColor = PatternColor("buttonbar-resize-control.png", 5.0, 10.0),
         buttonBezelColor = PatternColor(
@@ -1358,9 +1356,9 @@ var themedButtonValues = nil,
 {
     var header = [self makeColumnHeader],
         highlightedPressed = PatternColor("tableview-headerview-highlighted-pressed.png", 1.0, 25.0),
-        highlighted        = PatternColor("tableview-headerview-highlighted.png", 1.0, 25.0),
-        pressed            = PatternColor("tableview-headerview-pressed.png", 1.0, 25.0),
-        normal             = PatternColor("tableview-headerview.png", 1.0, 25.0),
+        highlighted = PatternColor("tableview-headerview-highlighted.png", 1.0, 25.0),
+        pressed = PatternColor("tableview-headerview-pressed.png", 1.0, 25.0),
+        normal = PatternColor("tableview-headerview.png", 1.0, 25.0),
 
         themedColumnHeaderValues =
         [
@@ -1414,7 +1412,6 @@ var themedButtonValues = nil,
     // This is a bit more complicated than the rest because we actually set theme values for several different (table related) controls in this method
 
     var tableview = [[CPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 150.0, 150.0)],
-
         sortImage = PatternImage("tableview-headerview-ascending.png", 9.0, 8.0),
         sortImageReversed = PatternImage("tableview-headerview-descending.png", 9.0, 8.0),
         imageGenericFile = PatternImage("tableview-image-generic-file.png", 64.0, 64.0),
@@ -1503,6 +1500,7 @@ var themedButtonValues = nil,
         suppressionButtonFont = [CPFont systemFontOfSize:CPFontCurrentSystemSize],
         warningIcon = PatternImage("alert-warning.png", 53.0, 46.0);
 
+    // Global
     themedAlertValues =
     [
         [@"button-offset",                      buttonOffset],
@@ -1605,13 +1603,13 @@ var themedButtonValues = nil,
 
 + (CPRuleEditor)themedRuleEditor
 {
-    var ruleEditor = [[CPRuleEditor alloc] initWithFrame:CGRectMake(0, 0, 400, 300)],
-        backgroundColors = [[CPColor whiteColor], [CPColor colorWithRed:235/255 green:239/255 blue:252/255 alpha:1]],
+    var ruleEditor = [[CPRuleEditor alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 300.0)],
+        backgroundColors = [[CPColor whiteColor], [CPColor colorWithRed:235 / 255 green:239 / 255 blue:252 / 255 alpha:1]],
         selectedActiveRowColor = [CPColor colorWithHexString:@"5f83b9"],
         selectedInactiveRowColor = [CPColor colorWithWhite:0.83 alpha:1],
-        sliceTopBorderColor = [CPColor colorWithWhite:0.9 alpha:1],
-        sliceBottomBorderColor = [CPColor colorWithWhite:0.729412 alpha:1],
-        sliceLastBottomBorderColor = [CPColor colorWithWhite:0.6 alpha:1],
+        sliceTopBorderColor = [CPColor colorWithWhite:0.9 alpha:1.0],
+        sliceBottomBorderColor = [CPColor colorWithWhite:0.729412 alpha:1.0],
+        sliceLastBottomBorderColor = [CPColor colorWithWhite:0.6 alpha:1.0],
         addImage = PatternImage(@"rule-editor-add.png", 8.0, 8.0),
         removeImage = PatternImage(@"rule-editor-remove.png", 8.0, 8.0),
 
@@ -1635,7 +1633,7 @@ var themedButtonValues = nil,
 
 + (_CPToolTipWindowView)themedTooltip
 {
-    var toolTipView = [[_CPToolTipWindowView alloc] initWithFrame:CPRectMake(0.0, 0.0, 200.0, 100.0) styleMask:_CPToolTipWindowMask],
+    var toolTipView = [[_CPToolTipWindowView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 100.0) styleMask:_CPToolTipWindowMask],
 
         themeValues =
         [
@@ -1802,10 +1800,10 @@ var themedButtonValues = nil,
             [@"border-width", 1.0],
             [@"border-color", [CPColor colorWithHexString:@"B7B7B7"]],
             [@"corner-radius", 3.0],
-            [@"inner-shadow-offset", CPSizeMakeZero()],
+            [@"inner-shadow-offset", CGSizeMakeZero()],
             [@"inner-shadow-color", [CPColor blackColor]],
             [@"inner-shadow-size", 6.0],
-            [@"content-margin", CPSizeMakeZero()]
+            [@"content-margin", CGSizeMakeZero()]
         ];
 
     [self registerThemeValues:themeValues forView:box];
@@ -1850,8 +1848,7 @@ var themedButtonValues = nil,
             [@"level-indicator-segment-critical-left.png", 3.0, 17.0],
             [@"level-indicator-segment-critical-center.png", 1.0, 17.0],
             [@"level-indicator-segment-critical-right.png", 3.0, 17.0]
-        ]);
-
+        ]),
 
         themeValues =
         [
@@ -1873,43 +1870,43 @@ var themedButtonValues = nil,
     var shadowView = [[CPShadowView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100, 100)],
 
         lightColor = PatternColor(
-            [
-                [@"shadow-view-light-top-left.png", 9.0, 9.0],
-                [@"shadow-view-light-top.png", 1.0, 9.0],
-                [@"shadow-view-light-top-right.png", 9.0, 9.0],
-                [@"shadow-view-light-left.png", 9.0, 1.0],
-                nil,
-                [@"shadow-view-light-right.png", 9.0, 1.0],
-                [@"shadow-view-light-bottom-left.png", 9.0, 9.0],
-                [@"shadow-view-light-bottom.png", 1.0, 9.0],
-                [@"shadow-view-light-bottom-right.png", 9.0, 9.0]
-            ]),
+        [
+            [@"shadow-view-light-top-left.png", 9.0, 9.0],
+            [@"shadow-view-light-top.png", 1.0, 9.0],
+            [@"shadow-view-light-top-right.png", 9.0, 9.0],
+            [@"shadow-view-light-left.png", 9.0, 1.0],
+            nil,
+            [@"shadow-view-light-right.png", 9.0, 1.0],
+            [@"shadow-view-light-bottom-left.png", 9.0, 9.0],
+            [@"shadow-view-light-bottom.png", 1.0, 9.0],
+            [@"shadow-view-light-bottom-right.png", 9.0, 9.0]
+        ]),
 
         heavyColor = PatternColor(
-            [
-                [@"shadow-view-heavy-top-left.png", 17.0, 17.0],
-                [@"shadow-view-heavy-top.png", 1.0, 17.0],
-                [@"shadow-view-heavy-top-right.png", 17.0, 17.0],
-                [@"shadow-view-heavy-left.png", 17.0, 1.0],
-                nil,
-                [@"shadow-view-heavy-right.png", 17.0, 1.0],
-                [@"shadow-view-heavy-bottom-left.png", 17.0, 17.0],
-                [@"shadow-view-heavy-bottom.png", 1.0, 17.0],
-                [@"shadow-view-heavy-bottom-right.png", 17.0, 17.0]
-            ]),
+        [
+            [@"shadow-view-heavy-top-left.png", 17.0, 17.0],
+            [@"shadow-view-heavy-top.png", 1.0, 17.0],
+            [@"shadow-view-heavy-top-right.png", 17.0, 17.0],
+            [@"shadow-view-heavy-left.png", 17.0, 1.0],
+            nil,
+            [@"shadow-view-heavy-right.png", 17.0, 1.0],
+            [@"shadow-view-heavy-bottom-left.png", 17.0, 17.0],
+            [@"shadow-view-heavy-bottom.png", 1.0, 17.0],
+            [@"shadow-view-heavy-bottom-right.png", 17.0, 17.0]
+        ]),
 
         themedShadowViewValues =
-            [
-                [@"bezel-color",        lightColor,                         CPThemeStateShadowViewLight],
-                [@"bezel-color",        heavyColor,                         CPThemeStateShadowViewHeavy],
+        [
+            [@"bezel-color",        lightColor,                         CPThemeStateShadowViewLight],
+            [@"bezel-color",        heavyColor,                         CPThemeStateShadowViewHeavy],
 
-                [@"content-inset",      CGInsetMake(3.0, 3.0, 5.0, 3.0),    CPThemeStateShadowViewLight],
-                [@"content-inset",      CGInsetMake(5.0, 7.0, 5.0, 7.0),    CPThemeStateShadowViewHeavy]
-            ];
+            [@"content-inset",      CGInsetMake(3.0, 3.0, 5.0, 3.0),    CPThemeStateShadowViewLight],
+            [@"content-inset",      CGInsetMake(5.0, 7.0, 5.0, 7.0),    CPThemeStateShadowViewHeavy]
+        ];
 
-        [self registerThemeValues:themedShadowViewValues forView:shadowView];
+    [self registerThemeValues:themedShadowViewValues forView:shadowView];
 
-        return shadowView;
+    return shadowView;
 }
 
 + (CPBrowser)themedBrowser
@@ -1920,7 +1917,8 @@ var themedButtonValues = nil,
         imageLeaf = PatternImage(@"browser-image-leaf.png", 9.0, 9.0),
         imageLeafPressed = PatternImage(@"browser-image-leaf-pressed.png", 9.0, 9.0),
 
-        themedBrowser = [
+        themedBrowser =
+        [
             ["image-control-resize", imageResize],
             ["image-control-leaf", imageLeaf],
             ["image-control-leaf-pressed", imageLeafPressed]
@@ -1962,10 +1960,10 @@ var themedButtonValues = nil,
 {
     var windowView = [[_CPWindowView alloc] initWithFrame:CGRectMakeZero(0.0, 0.0, 200, 200)],
 
-    sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
-    resizeIndicator = PatternImage(@"window-resize-indicator.png", 12, 12),
+        sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
+        resizeIndicator = PatternImage(@"window-resize-indicator.png", 12, 12),
 
-    shadowColor = PatternColor(
+        shadowColor = PatternColor(
         [
             [@"window-shadow-0.png", 20.0, 19.0],
             [@"window-shadow-1.png", 1.0, 19.0],
@@ -1978,15 +1976,16 @@ var themedButtonValues = nil,
             [@"window-shadow-8.png", 19.0, 18.0],
         ]);
 
+    // Global
     themedWindowViewValues =
-        [
-            [@"shadow-inset",                   CGInsetMake(10.0, 19.0, 10.0, 20.0)],
-            [@"shadow-distance",                5.0],
-            [@"window-shadow-color",            shadowColor],
-            [@"resize-indicator",               resizeIndicator],
-            [@"attached-sheet-shadow-color",    sheetShadow],
-            [@"size-indicator",                 CGSizeMake(12, 12)]
-        ];
+    [
+        [@"shadow-inset",                   CGInsetMake(10.0, 19.0, 10.0, 20.0)],
+        [@"shadow-distance",                5.0],
+        [@"window-shadow-color",            shadowColor],
+        [@"resize-indicator",               resizeIndicator],
+        [@"attached-sheet-shadow-color",    sheetShadow],
+        [@"size-indicator",                 CGSizeMake(12, 12)]
+    ];
 
     [self registerThemeValues:themedWindowViewValues forView:windowView];
 
@@ -1995,45 +1994,45 @@ var themedButtonValues = nil,
 
 + (_CPHUDWindowView)themedHUDWindowView
 {
-    var HUDWindowView = [[_CPHUDWindowView alloc] initWithFrame:CGRectMake(0, 0, 200, 200) styleMask:CPHUDBackgroundWindowMask | CPClosableWindowMask];
-    [HUDWindowView setTitle:@"HUDWindow"];
-
-    var HUDBezelColor = PatternColor(
-            [
-                ["HUD/window-bezel-top-left.png", 5.0, 5.0],
-                ["HUD/window-bezel-top-center.png", 1.0, 5.0],
-                ["HUD/window-bezel-top-right.png", 5.0, 5.0],
-                ["HUD/window-bezel-center-left.png", 5.0, 1.0],
-                ["HUD/window-bezel-center-center.png", 1.0, 1.0],
-                ["HUD/window-bezel-center-right.png", 5.0, 1.0],
-                ["HUD/window-bezel-bottom-left.png", 5.0, 5.0],
-                ["HUD/window-bezel-bottom-center.png", 1.0, 5.0],
-                ["HUD/window-bezel-bottom-right.png", 5.0, 5.0]
-            ]),
+    var HUDWindowView = [[_CPHUDWindowView alloc] initWithFrame:CGRectMake(0, 0, 200, 200) styleMask:CPHUDBackgroundWindowMask | CPClosableWindowMask],
+        HUDBezelColor = PatternColor(
+        [
+            ["HUD/window-bezel-top-left.png", 5.0, 5.0],
+            ["HUD/window-bezel-top-center.png", 1.0, 5.0],
+            ["HUD/window-bezel-top-right.png", 5.0, 5.0],
+            ["HUD/window-bezel-center-left.png", 5.0, 1.0],
+            ["HUD/window-bezel-center-center.png", 1.0, 1.0],
+            ["HUD/window-bezel-center-right.png", 5.0, 1.0],
+            ["HUD/window-bezel-bottom-left.png", 5.0, 5.0],
+            ["HUD/window-bezel-bottom-center.png", 1.0, 5.0],
+            ["HUD/window-bezel-bottom-right.png", 5.0, 5.0]
+        ]),
 
         closeImage = PatternImage(@"HUD/window-close.png", 18.0, 18.0),
 
         closeActiveImage = PatternImage(@"HUD/window-close-active.png", 18.0, 18.0),
 
         themeValues =
-            [
-                [@"close-image-size",           CPSizeMake(18.0, 18.0)],
-                [@"close-image-origin",         CPPointMake(6.0,4.0)],
-                [@"close-image",                closeImage],
-                [@"close-active-image",         closeActiveImage],
-                [@"bezel-color",                HUDBezelColor],
-                [@"title-font",                 [CPFont systemFontOfSize:14]],
-                [@"title-text-color",           [CPColor colorWithWhite:255.0 / 255.0 alpha:1]],
-                [@"title-text-color",           [CPColor colorWithWhite:255.0 / 255.0 alpha:1], CPThemeStateKeyWindow],
-                [@"title-text-shadow-color",    [CPColor blackColor]],
-                [@"title-text-shadow-offset",   CGSizeMake(0.0, 1.0)],
-                [@"title-alignment",            CPCenterTextAlignment],
-                [@"title-line-break-mode",      CPLineBreakByTruncatingTail],
-                [@"title-vertical-alignment",   CPCenterVerticalTextAlignment],
-                [@"title-bar-height",           26],
-            ];
+        [
+            [@"close-image-size",           CGSizeMake(18.0, 18.0)],
+            [@"close-image-origin",         CGPointMake(6.0,4.0)],
+            [@"close-image",                closeImage],
+            [@"close-active-image",         closeActiveImage],
+            [@"bezel-color",                HUDBezelColor],
+            [@"title-font",                 [CPFont systemFontOfSize:14]],
+            [@"title-text-color",           [CPColor colorWithWhite:255.0 / 255.0 alpha:1]],
+            [@"title-text-color",           [CPColor colorWithWhite:255.0 / 255.0 alpha:1], CPThemeStateKeyWindow],
+            [@"title-text-shadow-color",    [CPColor blackColor]],
+            [@"title-text-shadow-offset",   CGSizeMake(0.0, 1.0)],
+            [@"title-alignment",            CPCenterTextAlignment],
+            [@"title-line-break-mode",      CPLineBreakByTruncatingTail],
+            [@"title-vertical-alignment",   CPCenterVerticalTextAlignment],
+            [@"title-bar-height",           26],
+        ];
 
     [self registerThemeValues:themeValues forView:HUDWindowView inherit:themedWindowViewValues];
+
+    [HUDWindowView setTitle:@"HUDWindow"];
 
     return HUDWindowView;
 }
@@ -2049,19 +2048,25 @@ var themedButtonValues = nil,
             [@"window-standard-head-right.png", 5.0, 31.0]
         ],  PatternIsHorizontal),
 
+        bezelHeadInactiveColor = PatternColor(
+        [
+            [@"window-standard-head-inactive-left.png", 5.0, 31.0],
+            [@"window-standard-head-inactive-center.png", 1.0, 31.0],
+            [@"window-standard-head-inactive-right.png", 5.0, 31.0]
+        ],  PatternIsHorizontal),
+
         solidColor = PatternColor(
-            [
-                [@"window-standard-head-solid-top-left.png", 5.0, 1.0],
-                [@"window-standard-head-solid-top-center.png", 1.0, 1.0],
-                [@"window-standard-head-solid-top-right.png", 5.0, 1.0],
-                [@"window-standard-head-solid-center-left.png", 5.0, 1.0],
-                [@"window-standard-head-solid-center-center.png", 1.0, 1.0],
-                [@"window-standard-head-solid-center-right.png", 5.0, 1.0],
-                [@"window-standard-head-solid-bottom-left.png", 5.0, 1.0],
-                [@"window-standard-head-solid-bottom-center.png", 1.0, 1.0],
-                [@"window-standard-head-solid-bottom-right.png", 5.0, 1.0]
-            ]
-        ),
+        [
+            [@"window-standard-head-solid-top-left.png", 5.0, 1.0],
+            [@"window-standard-head-solid-top-center.png", 1.0, 1.0],
+            [@"window-standard-head-solid-top-right.png", 5.0, 1.0],
+            [@"window-standard-head-solid-center-left.png", 5.0, 1.0],
+            [@"window-standard-head-solid-center-center.png", 1.0, 1.0],
+            [@"window-standard-head-solid-center-right.png", 5.0, 1.0],
+            [@"window-standard-head-solid-bottom-left.png", 5.0, 1.0],
+            [@"window-standard-head-solid-bottom-center.png", 1.0, 1.0],
+            [@"window-standard-head-solid-bottom-right.png", 5.0, 1.0]
+        ]),
 
         bezelColor = PatternColor(
         [
@@ -2077,50 +2082,56 @@ var themedButtonValues = nil,
         ]),
 
         closeButtonImage =                  PatternImage(@"window-standard-close-button.png", 16, 16),
-        closeButtonImageHighlighted =       PatternImage(@"window-standard-button-highlighted.png",16, 16),
-        unsavedButtonImage =                PatternImage(@"window-standard-button-unsaved.png",16, 16),
-        unsavedButtonImageHighlighted =     PatternImage(@"window-standard-close-button-unsaved-highlighted.png",16, 16),
-        minimizeButtonImage =               PatternImage(@"window-standard-minimize-button.png",16, 16),
-        minimizeButtonImageHighlighted =    PatternImage(@"window-standard-minimize-button-highlighted.png",16, 16),
+        closeButtonImageInactive =          PatternImage(@"window-standard-close-button-inactive.png", 16, 16),
+        closeButtonImageHighlighted =       PatternImage(@"window-standard-button-highlighted.png", 16, 16),
+        unsavedButtonImage =                PatternImage(@"window-standard-button-unsaved.png", 16, 16),
+        unsavedButtonImageInactive =                PatternImage(@"window-standard-button-unsaved-inactive.png", 16, 16),
+        unsavedButtonImageHighlighted =     PatternImage(@"window-standard-close-button-unsaved-highlighted.png", 16, 16),
+        minimizeButtonImage =               PatternImage(@"window-standard-minimize-button.png", 16, 16),
+        minimizeButtonImageHighlighted =    PatternImage(@"window-standard-minimize-button-highlighted.png", 16, 16),
 
         sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
         resizeIndicator = PatternImage(@"window-resize-indicator.png", 12, 12),
 
         themeValues =
-            [
-                [@"gradient-height",            31.0],
-                [@"bezel-head-color",           bezelHeadColor],
-                [@"solid-color",                solidColor],
+        [
+            [@"gradient-height",            31.0],
+            [@"bezel-head-color",           bezelHeadInactiveColor, CPThemeStateNormal],
+            [@"bezel-head-color",           bezelHeadColor, CPThemeStateKeyWindow],
+            [@"bezel-head-color",           bezelHeadColor, CPThemeStateMainWindow],
+            [@"solid-color",                solidColor],
 
-                [@"title-font",                 [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize]],
-                [@"title-text-color",           [CPColor colorWithWhite:22.0 / 255.0 alpha:0.75]],
-                [@"title-text-color",           [CPColor colorWithWhite:22.0 / 255.0 alpha:1], CPThemeStateKeyWindow],
-                [@"title-text-shadow-color",    [CPColor whiteColor]],
-                [@"title-text-shadow-offset",   CGSizeMake(0.0, 1.0)],
-                [@"title-alignment",            CPCenterTextAlignment],
-                // FIXME: Make this to CPLineBreakByTruncatingMiddle once it's implemented.
-                [@"title-line-break-mode",      CPLineBreakByTruncatingTail],
-                [@"title-vertical-alignment",   CPCenterVerticalTextAlignment],
-                [@"title-bar-height",           31],
+            [@"title-font",                 [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize]],
+            [@"title-text-color",           [CPColor colorWithHexString:@"848484"]],
+            [@"title-text-color",           [CPColor colorWithWhite:22.0 / 255.0 alpha:1], CPThemeStateKeyWindow],
+            [@"title-text-shadow-color",    [CPColor whiteColor]],
+            [@"title-text-shadow-offset",   CGSizeMake(0.0, 1.0)],
+            [@"title-alignment",            CPCenterTextAlignment],
+            // FIXME: Make this to CPLineBreakByTruncatingMiddle once it's implemented.
+            [@"title-line-break-mode",      CPLineBreakByTruncatingTail],
+            [@"title-vertical-alignment",   CPCenterVerticalTextAlignment],
+            [@"title-bar-height",           31],
 
-                [@"divider-color",              [CPColor colorWithHexString:@"858585"]],
-                [@"body-color",                 bezelColor],
-                [@"title-bar-height",           31],
+            [@"divider-color",              [CPColor colorWithHexString:@"858585"]],
+            [@"body-color",                 bezelColor],
+            [@"title-bar-height",           31],
 
-                [@"unsaved-image-button"                ,unsavedButtonImage],
-                [@"unsaved-image-highlighted-button"    ,unsavedButtonImageHighlighted],
-                [@"close-image-button"                  ,closeButtonImage],
-                [@"close-image-highlighted-button"      ,closeButtonImageHighlighted],
-                [@"minimize-image-button"               ,minimizeButtonImage],
-                [@"minimize-image-highlighted-button"   ,minimizeButtonImageHighlighted],
+            [@"unsaved-image-button",               unsavedButtonImage],
+            [@"unsaved-image-highlighted-button",   unsavedButtonImageHighlighted],
+            [@"close-image-button",                 closeButtonImageInactive, CPThemeStateNormal],
+            [@"close-image-button",                 closeButtonImage, CPThemeStateKeyWindow],
+            [@"close-image-button",                 closeButtonImage, CPThemeStateMainWindow],
+            [@"close-image-highlighted-button",     closeButtonImageHighlighted],
+            [@"minimize-image-button",              minimizeButtonImage],
+            [@"minimize-image-highlighted-button",  minimizeButtonImageHighlighted],
 
-                [@"close-image-size",                   CPSizeMake(16.0, 16.0)],
-                [@"close-image-origin",                 CPPointMake(8.0, 10.0)],
+            [@"close-image-size",               CGSizeMake(16.0, 16.0)],
+            [@"close-image-origin",             CGPointMake(8.0, 10.0)],
 
-                [@"resize-indicator",               resizeIndicator],
-                [@"attached-sheet-shadow-color",    sheetShadow],
-                [@"size-indicator",                 CGSizeMake(12, 12)]
-            ];
+            [@"resize-indicator",               resizeIndicator],
+            [@"attached-sheet-shadow-color",    sheetShadow],
+            [@"size-indicator",                 CGSizeMake(12, 12)]
+        ];
 
     [self registerThemeValues:themeValues forView:standardWindowView inherit:themedWindowViewValues];
 
@@ -2147,11 +2158,11 @@ var themedButtonValues = nil,
         sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
 
         themeValues =
-            [
-                [@"body-color",                     bezelColor],
-                [@"height-shadow",                  8],
-                [@"attached-sheet-shadow-color",    sheetShadow]
-            ];
+        [
+            [@"body-color",                     bezelColor],
+            [@"height-shadow",                  8],
+            [@"attached-sheet-shadow-color",    sheetShadow]
+        ];
 
     [self registerThemeValues:themeValues forView:docModalWindowView inherit:themedWindowViewValues];
 
@@ -2167,7 +2178,7 @@ var themedButtonValues = nil,
             nil,
             [@"toolbar-background-center.png", 1.0, 58.0],
             [@"toolbar-background-bottom.png", 1.0, 1.0]
-        ],  PatternIsVertical)
+        ],  PatternIsVertical),
 
         themeValues =
         [
@@ -2567,7 +2578,7 @@ var themedButtonValues = nil,
         imageSelectedHighlighted = PatternImage("HUD/radio-image-selected-highlighted.png", 21.0, 21.0),
         imageSelectedDisabled = PatternImage("HUD/radio-image-selected-disabled.png", 21.0, 21.0),
         imageDisabled = PatternImage("HUD/radio-image-disabled.png", 21.0, 21.0),
-        imageHighlighted = PatternImage("HUD/radio-image-highlighted.png", 21.0, 21.0);
+        imageHighlighted = PatternImage("HUD/radio-image-highlighted.png", 21.0, 21.0),
 
         hudSpecific =
         [
@@ -2577,9 +2588,10 @@ var themedButtonValues = nil,
             [@"image",          imageHighlighted,                   CPThemeStateHighlighted],
             [@"image",          imageDisabled,                      CPThemeStateDisabled],
             [@"image",          imageSelectedDisabled,              CPThemeStateSelected | CPThemeStateDisabled]
-        ]
+        ];
 
     [self registerThemeValues:[self defaultThemeOverridesAddedTo:hudSpecific] forView:button inherit:themedRadioButtonValues];
     return button;
 }
+
 @end

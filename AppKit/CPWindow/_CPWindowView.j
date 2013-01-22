@@ -138,7 +138,7 @@ var _CPWindowViewCornerResizeRectWidth = 10,
     return frameRect;
 }
 
-- (id)initWithFrame:(CPRect)aFrame styleMask:(unsigned)aStyleMask
+- (id)initWithFrame:(CGRect)aFrame styleMask:(unsigned)aStyleMask
 {
     self = [super initWithFrame:aFrame];
 
@@ -788,7 +788,7 @@ var _CPWindowViewCornerResizeRectWidth = 10,
 
     [_sheetShadowView setBackgroundColor:[self valueForThemeAttribute:@"attached-sheet-shadow-color"]];
 
-    if(_resizeIndicator)
+    if (_resizeIndicator)
     {
         var size = [self valueForThemeAttribute:@"size-indicator"],
             boundsSize = [self frame].size;

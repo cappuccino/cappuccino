@@ -465,7 +465,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     }
     else if (aName === "right-segment-bezel")
     {
-        return CPRectMake(CGRectGetWidth([self bounds]) - contentInset.right,
+        return CGRectMake(CGRectGetWidth([self bounds]) - contentInset.right,
                             bezelInset.top,
                             contentInset.right,
                             height);

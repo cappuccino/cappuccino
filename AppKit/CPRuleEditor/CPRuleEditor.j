@@ -1520,22 +1520,9 @@ TODO: implement
             oldRows = [CPArray arrayWithArray:newRows];
             [oldRows removeObjectsInArray:changeNewValue];
         }
-        else if (changeKind === CPKeyValueChangeRemoval)
-        {
-            newRows = [self _subrowObjectsOfObject:object];
-            oldRows = [CPArray arrayWithArray:newRows];
-            var delIndexes = [change objectForKey:CPKeyValueChangeIndexesKey];
-            [oldRows insertObjects:delObjects atIndexes:changeOldValue];    // Pas sur que ce soit bon
-        }
 
         [self _changedRowArray:newRows withOldRowArray:oldRows forParent:object];
         [self _reconfigureSubviewsAnimate:[self _wantsRowAnimations]];
-    }
-    else if (context === itemsContext)
-    {
-    }
-    else if (context === valuesContext)
-    {
     }
 }
 
@@ -2066,7 +2053,7 @@ TODO: implement
     [super setNeedsDisplay:flag];
 }
 
-- (void)setFrameSize:(CPSize)size
+- (void)setFrameSize:(CGSize)size
 {
     [self setNeedsDisplay:YES];
 
@@ -2262,7 +2249,7 @@ TODO: implement
     return [CPIndexSet indexSetWithIndex:CPDragOperationMove];
 }
 
-- (void)draggedView:(CPView)dragView endedAt:(CPPoint)aPoint operation:(CPDragOperation)operation
+- (void)draggedView:(CPView)dragView endedAt:(CGPoint)aPoint operation:(CPDragOperation)operation
 {
     _draggingRows = nil;
 
@@ -2586,7 +2573,7 @@ var dropSeparatorColor = [CPColor colorWithHexString:@"4886ca"];
 {
 }
 
-- (void)drawRect:(CPRect)rect
+- (void)drawRect:(CGRect)rect
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort];
     CGContextSetFillColor(context, dropSeparatorColor);

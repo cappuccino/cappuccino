@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPTextField.j"
 @import "CPView.j"
 
 // CPBoxType
@@ -84,7 +85,7 @@ CPBelowBottom = 6;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], 1.0, 3.0, CPSizeMakeZero(), 6.0, [CPNull null], CPSizeMakeZero()]
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], 1.0, 3.0, CGSizeMakeZero(), 6.0, [CPNull null], CGSizeMakeZero()]
                                        forKeys:[   @"background-color",
                                                    @"border-color",
                                                    @"border-width",
@@ -95,7 +96,7 @@ CPBelowBottom = 6;
                                                    @"content-margin"]];
 }
 
-- (id)initWithFrame:(CPRect)frameRect
+- (id)initWithFrame:(CGRect)frameRect
 {
     self = [super initWithFrame:frameRect];
 
@@ -123,7 +124,7 @@ CPBelowBottom = 6;
 
     @return the border rectangle of the box
 */
-- (CPRect)borderRect
+- (CGRect)borderRect
 {
     return [self bounds];
 }
@@ -222,7 +223,6 @@ CPBelowBottom = 6;
         return;
 
     [self setValue:color forThemeAttribute:@"border-color"];
-    [self setNeedsDisplay:YES];
 }
 
 - (float)borderWidth
@@ -236,7 +236,6 @@ CPBelowBottom = 6;
         return;
 
     [self setValue:width forThemeAttribute:@"border-width"];
-    [self setNeedsDisplay:YES];
 }
 
 - (float)cornerRadius
@@ -250,7 +249,6 @@ CPBelowBottom = 6;
         return;
 
     [self setValue:radius forThemeAttribute:@"corner-radius"];
-    [self setNeedsDisplay:YES];
 }
 
 - (CPColor)fillColor
@@ -264,7 +262,6 @@ CPBelowBottom = 6;
         return;
 
     [self setValue:color forThemeAttribute:@"background-color"];
-    [self setNeedsDisplay:YES];
 }
 
 - (CPView)contentView
@@ -287,29 +284,26 @@ CPBelowBottom = 6;
     _contentView = aView;
 }
 
-- (CPSize)contentViewMargins
+- (CGSize)contentViewMargins
 {
     return [self valueForThemeAttribute:@"content-margin"];
 }
 
-- (void)setContentViewMargins:(CPSize)size
+- (void)setContentViewMargins:(CGSize)size
 {
      if (size.width < 0 || size.height < 0)
          [CPException raise:CPGenericException reason:@"Margins must be positive"];
 
     [self setValue:CGSizeMakeCopy(size) forThemeAttribute:@"content-margin"];
-    [self setNeedsDisplay:YES];
 }
 
-- (void)setFrameFromContentFrame:(CPRect)aRect
+- (void)setFrameFromContentFrame:(CGRect)aRect
 {
     var offset = [self _titleHeightOffset],
         borderWidth = [self borderWidth],
         contentMargin = [self valueForThemeAttribute:@"content-margin"];
 
     [self setFrame:CGRectInset(aRect, -(contentMargin.width + borderWidth), -(contentMargin.height + offset[0] + borderWidth))];
-
-    [self setNeedsDisplay:YES];
 }
 
 - (void)setTitle:(CPString)aTitle
@@ -370,7 +364,7 @@ CPBelowBottom = 6;
         case CPAtTop:
         case CPAboveTop:
         case CPBelowTop:
-            [_titleView setFrameOrigin:CPPointMake(5.0, 0.0)];
+            [_titleView setFrameOrigin:CGPointMake(5.0, 0.0)];
             [_titleView setAutoresizingMask:CPViewNotSizable];
             break;
 
@@ -378,7 +372,7 @@ CPBelowBottom = 6;
         case CPAtBottom:
         case CPBelowBottom:
             var h = [_titleView frameSize].height;
-            [_titleView setFrameOrigin:CPPointMake(5.0, [self frameSize].height - h)];
+            [_titleView setFrameOrigin:CGPointMake(5.0, [self frameSize].height - h)];
             [_titleView setAutoresizingMask:CPViewMinYMargin];
             break;
     }
@@ -422,7 +416,7 @@ CPBelowBottom = 6;
     }
 }
 
-- (void)drawRect:(CPRect)rect
+- (void)drawRect:(CGRect)rect
 {
     if (_borderType === CPNoBorder)
         return;

@@ -69,9 +69,9 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
     return self;
 }
 
-- (id)hitTest:(CPPoint)point
+- (id)hitTest:(CGPoint)point
 {
-    if (!CPRectContainsPoint([self frame], point) || ![self sliceIsEditable])
+    if (!CGRectContainsPoint([self frame], point) || ![self sliceIsEditable])
         return nil;
 
     return self;

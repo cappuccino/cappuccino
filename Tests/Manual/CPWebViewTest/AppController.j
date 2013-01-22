@@ -26,11 +26,11 @@
     [[theWindow contentView] setBackgroundColor:[CPColor grayColor]];
 
     [webView1 setScrollMode:CPWebViewScrollAuto];
-    [webView1 loadHTMLString:"<html><body style='background-color:transparent'><p>This web view should have a coloured background.</p><img src='http://cappuccino.org/images/cappuccino-icon.png'><img src='http://cappuccino.org/images/cappuccino-icon.png'></body></html>"];
+    [webView1 loadHTMLString:"<html><body style='background-color:transparent'><p>This web view should have a coloured background.</p><img src='http://cappuccino-project.org/images/cappuccino-icon.png'><img src='http://cappuccino-project.org/images/cappuccino-icon.png'></body></html>"];
     [webView1 setBackgroundColor:[CPColor orangeColor]];
 
     [webView2 setScrollMode:CPWebViewScrollNative];
-    [webView2 loadHTMLString:"<html><body style='background-color:transparent'><p>This web view should be transparent.</p><img src='http://cappuccino.org/images/cappuccino-icon.png'><img src='http://cappuccino.org/images/cappuccino-icon.png'></body></html>"];
+    [webView2 loadHTMLString:"<html><body style='background-color:transparent'><p>This web view should be transparent.</p><img src='http://cappuccino-project.org/images/cappuccino-icon.png'><img src='http://cappuccino-project.org/images/cappuccino-icon.png'></body></html>"];
     [webView2 setDrawsBackground:NO];
     [webView2 setBackgroundColor:[CPColor clearColor]];
 
@@ -49,10 +49,10 @@
     if (document.location.href.indexOf('file://') == 0)
         alert("This test should be run from http://, not file:// in order to properly enable SOP testing.");
     [webView5 setScrollMode:CPWebViewScrollAuto];
-    [webView5 setMainFrameURL:"http://www.cappuccino.org"];
+    [webView5 setMainFrameURL:"http://www.cappuccino-project.org"];
 
     [webView6 setScrollMode:CPWebViewScrollAppKit];
-    [webView6 setMainFrameURL:"http://www.cappuccino.org"];
+    [webView6 setMainFrameURL:"http://www.cappuccino-project.org"];
 }
 
 - (void)clearAll:(id)sender

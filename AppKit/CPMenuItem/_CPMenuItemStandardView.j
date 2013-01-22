@@ -124,7 +124,7 @@
         [_stateView setHidden:NO];
         //[_stateView setImage:_CPMenuItemDefaultStateImages[[_menuItem state]] || nil];
 
-        switch([_menuItem state])
+        switch ([_menuItem state])
         {
             case CPOnState:
                 [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-on-state-image"]];
@@ -268,7 +268,7 @@
     {
         if (shouldHighlight)
         {
-            switch([_menuItem state])
+            switch ([_menuItem state])
             {
                 case CPOnState:
                     [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-on-state-highlighted-image"]];
@@ -288,7 +288,7 @@
         }
         else
         {
-            switch([_menuItem state])
+            switch ([_menuItem state])
             {
                 case CPOnState:
                     [_stateView setImage:[self valueForThemeAttribute:@"menu-item-default-on-state-image"]];

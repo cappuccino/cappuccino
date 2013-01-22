@@ -30,8 +30,8 @@
 
     [_editor setRowTemplates:[t1, t2]];
 
-    var trees = _editor._rootTrees;
-    var count = [trees count];
+    var trees = _editor._rootTrees,
+        count = [trees count];
 
     // We are expecting 3 criterion on the left.
     [self assertTrue:(count == 3) message:"We should have 3 criterion on the left, was " + count];
