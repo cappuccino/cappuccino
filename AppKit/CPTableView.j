@@ -33,6 +33,7 @@
 
 @class CPScrollView
 @class CPUserDefaults
+@class CPTableHeaderView
 
 
 CPTableViewColumnDidMoveNotification        = @"CPTableViewColumnDidMoveNotification";

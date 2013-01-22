@@ -25,6 +25,7 @@
 @import "CPButtonBar.j"
 @import "CPImage.j"
 @import "CPView.j"
+@import "CPCursor.j"
 
 @class CPUserDefaults
 
