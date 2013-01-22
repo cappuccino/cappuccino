@@ -340,7 +340,7 @@ Program: function(node, st, c) {
     var maybeWarnings = st.maybeWarnings();
     if (maybeWarnings) for (var i = 0; i < maybeWarnings.length; i++) {
         var maybeWarning = maybeWarnings[i];
-        if (!st.getLvar(maybeWarning.identifier) && (typeof global[maybeWarning.identifier] === "undefined" && !st.compiler.getClassDef(maybeWarning.identifier))) {
+        if (!st.getLvar(maybeWarning.identifier) && typeof global[maybeWarning.identifier] === "undefined" && typeof window[maybeWarning.identifier] === "undefined" && !st.compiler.getClassDef(maybeWarning.identifier)) {
             st.compiler.addWarning(maybeWarning.message);
         }
     }
@@ -743,7 +743,7 @@ Identifier: function(node, st, c) {
                 CONCAT(compiler.jsBuffer, "self.");
             }
         } else {
-            if (!reservedIdentifiers(identifier) && !st.getLvar(identifier) && typeof global[identifier] === "undefined" && !st.compiler.getClassDef(identifier)) {
+            if (!reservedIdentifiers(identifier) && !st.getLvar(identifier) && typeof global[identifier] === "undefined" && typeof window[identifier] === "undefined" && !st.compiler.getClassDef(identifier)) {
                 var message;
                 if (st.assignment) {
                     message = createMessage("Creating global variable inside function or method '" + identifier + "'", node, st.compiler.source);
