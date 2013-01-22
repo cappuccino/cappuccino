@@ -34,6 +34,7 @@
 @class CPScrollView
 @class CPUserDefaults
 @class CPTableHeaderView
+@global CPTableColumnAutoresizingMask
 
 
 CPTableViewColumnDidMoveNotification        = @"CPTableViewColumnDidMoveNotification";

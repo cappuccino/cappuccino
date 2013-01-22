@@ -28,7 +28,7 @@
 @import "CPCursor.j"
 
 @class CPUserDefaults
-
+@global CPApp
 
 #define SPLIT_VIEW_MAYBE_POST_WILL_RESIZE() \
     if ((_suppressResizeNotificationsMask & DidPostWillResizeNotification) === 0) \
