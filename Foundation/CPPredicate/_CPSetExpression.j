@@ -20,8 +20,8 @@
  */
 
 @import "CPException.j"
-@import "CPExpression.j"
 @import "CPSet.j"
+@import "_CPExpression.j"
 
 @implementation _CPSetExpression : CPExpression
 {

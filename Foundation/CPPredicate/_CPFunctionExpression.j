@@ -23,8 +23,8 @@
 @import "CPDate.j"
 @import "CPDictionary.j"
 @import "CPException.j"
-@import "CPExpression.j"
 @import "CPString.j"
+@import "_CPExpression.j"
 
 @implementation _CPFunctionExpression : CPExpression
 {

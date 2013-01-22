@@ -29,6 +29,7 @@
 @import "CPValue.j"
 
 @class CPException
+@class CPURL
 
 @global CPInvalidArgumentException
 @global CPRangeException

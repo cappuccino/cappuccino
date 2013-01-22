@@ -147,7 +147,8 @@ var _builtInCharacterSets = {};
 + (id)_sharedCharacterSetWithName:(id)csname
 {
     var cs = _builtInCharacterSets[csname];
-    if (cs == nil)
+
+    if (cs === nil)
     {
         var i = 0,
             ranges = [CPArray array],
@@ -160,6 +161,7 @@ var _builtInCharacterSets = {};
                 range = CPMakeRange(loc,length);
             [ranges addObject:range];
         }
+
         cs = [[_CPRangeCharacterSet alloc] initWithRanges:ranges];
         _builtInCharacterSets[csname] = cs;
     }
@@ -252,17 +254,29 @@ var CPCharacterSetInvertedKey = @"CPCharacterSetInvertedKey";
 
 - (BOOL)hasMemberInPlane:(int)plane // TO DO : when inverted
 {
-    // FIXME: range is undefined... don't know what's supposed to be going on here.
-    // the highest Unicode plane we reach.
-    // (There are 65536 code points in each plane.)
-    var maxPlane = FLOOR((range.start + range.length - 1) / 65536); // FIXME: should iterate _ranges
+    // JavaScript strings can only return char codes
+    // up to 0xFFFF (per the ECMA standard), so
+    // they all live in the Basic Multilingual Plane
+    // (aka plane 0).
 
-    return (plane <= maxPlane);
+    if (plane !== 0)
+        return NO;
+
+    var enu = [_ranges objectEnumerator],
+        range;
+
+    while ((range = [enu nextObject]) !== nil)
+    {
+        if (!CPEmptyRange(range))
+            return YES;
+    }
+
+    return NO;
 }
 
 - (void)addCharactersInRange:(CPRange)aRange // Needs _inverted support
 {
-        [_ranges addObject:aRange];
+    [_ranges addObject:aRange];
 }
 
 - (void)addCharactersInString:(CPString)aString // Needs _inverted support
@@ -317,7 +331,7 @@ var CPCharacterSetInvertedKey = @"CPCharacterSetInvertedKey";
 
 - (BOOL)characterIsMember:(CPString)c
 {
-    return (_string.indexOf(c.charAt(0)) != -1) == !_inverted;
+    return (_string.indexOf(c.charAt(0)) !== -1) === !_inverted;
 }
 
 - (CPString)description
@@ -331,9 +345,8 @@ var CPCharacterSetInvertedKey = @"CPCharacterSetInvertedKey";
     // up to 0xFFFF (per the ECMA standard), so
     // they all live in the Basic Multilingual Plane
     // (aka plane 0).
-    // TODO if the above is wrong, this must be changed!
 
-    return plane == 0;
+    return _string.length && plane === 0;
 }
 
 - (void)addCharactersInRange:(CPRange)aRange // Needs _inverted support
@@ -379,7 +392,7 @@ var CPCharacterSetInvertedKey = @"CPCharacterSetInvertedKey";
     if (!aCharacterSet)
         return NO;
 
-    return _string == aCharacterSet._string && _inverted == aCharacterSet._inverted;
+    return _string === aCharacterSet._string && _inverted === aCharacterSet._inverted;
 }
 
 @end

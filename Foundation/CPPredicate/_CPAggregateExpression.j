@@ -20,8 +20,8 @@
  */
 
 @import "CPArray.j"
-@import "CPExpression.j"
 @import "CPString.j"
+@import "_CPExpression.j"
 
 @implementation _CPAggregateExpression : CPExpression
 {

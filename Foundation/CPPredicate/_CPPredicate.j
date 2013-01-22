@@ -30,31 +30,14 @@
 @import "CPSet.j"
 @import "CPValue.j"
 @import "CPCharacterSet.j"
+@import "CPComparisonPredicate_Constants.j"
+@import "CPCompoundPredicate_Constants.j"
+@import "_CPExpression.j"
 
 @class CPCompoundPredicate
 @class CPComparisonPredicate
+@class _CPKeyPathExpression
 @class _CPSubqueryExpression
-
-@global CPAndPredicateType
-@global CPDirectPredicateModifier
-@global CPAnyPredicateModifier
-@global CPAllPredicateModifier
-@global CPOrPredicateType
-@global CPEqualToPredicateOperatorType
-@global CPNotEqualToPredicateOperatorType
-@global CPLessThanPredicateOperatorType
-@global CPGreaterThanPredicateOperatorType
-@global CPLessThanOrEqualToPredicateOperatorType
-@global CPGreaterThanOrEqualToPredicateOperatorType
-@global CPMatchesPredicateOperatorType
-@global CPLikePredicateOperatorType
-@global CPBeginsWithPredicateOperatorType
-@global CPEndsWithPredicateOperatorType
-@global CPInPredicateOperatorType
-@global CPContainsPredicateOperatorType
-@global CPBetweenPredicateOperatorType
-@global CPCaseInsensitivePredicateOption
-@global CPDiacriticInsensitivePredicateOption
 
 
 /*!
@@ -995,7 +978,3 @@ var CPRaiseParseError = function CPRaiseParseError(aScanner, target)
 {
     [CPException raise:CPInvalidArgumentException reason:@"unable to parse " + target + " at index " + [aScanner scanLocation]];
 };
-
-//@import "CPCompoundPredicate.j"
-//@import "CPComparisonPredicate.j"
-//@import "CPExpression.j"

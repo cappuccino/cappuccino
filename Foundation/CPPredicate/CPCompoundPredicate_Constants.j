@@ -1,5 +1,8 @@
 /*
- * _CPSelfExpression.j
+ * CPCompoundPredicate_h.j
+ *
+ * Portions based on NSCompoundPredicate.m in Cocotron (http://www.cocotron.org/)
+ * Copyright (c) 2006-2007 Christopher J. W. Lloyd
  *
  * Created by cacaodev.
  * Copyright 2010.
@@ -19,54 +22,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPDictionary.j"
-@import "CPString.j"
-@import "_CPExpression.j"
-
-var evaluatedObject = nil;
-
-@implementation _CPSelfExpression : CPExpression
-{
-}
-
-+ (id)evaluatedObject
-{
-    if (evaluatedObject == nil)
-        evaluatedObject = [_CPSelfExpression new];
-
-    return evaluatedObject;
-}
-
-- (id)init
-{
-    self = [super initWithExpressionType:CPEvaluatedObjectExpressionType];
-
-    return self;
-}
-
-- (id)initWithCoder:(CPCoder)coder
-{
-    return [_CPSelfExpression evaluatedObject];
-}
-
-- (void)encodeWithCoder:(CPCoder)coder
-{
-}
-
-- (BOOL)isEqual:(id)object
-{
-    return (object === self);
-}
-
-- (id)expressionValueWithObject:(id)object context:(CPDictionary)context
-{
-    return object;
-}
-
-- (CPString)description
-{
-    return @"SELF";
-}
-
-@end
-
+/*!
+    A predicate to directly compare the left and right hand sides.
+    @global
+    @class CPCompoundPredicate
+*/
+CPNotPredicateType = 0;
+/*!
+    A predicate to directly compare the left and right hand sides.
+    @global
+    @class CPCompoundPredicate
+*/
+CPAndPredicateType = 1;
+/*!
+    A predicate to directly compare the left and right hand sides.
+    @global
+    @class CPCompoundPredicate
+*/
+CPOrPredicateType  = 2;
