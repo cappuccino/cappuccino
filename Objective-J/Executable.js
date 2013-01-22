@@ -157,6 +157,7 @@ Executable.prototype.execute = function()
             index = 0,
             count = fileDependencies.length;
 
+        this._compiler.pushImport(this.URL().lastPathComponent());
         for (; index < count; ++index)
         {
             var fileDependency = fileDependencies[index],
@@ -165,6 +166,7 @@ Executable.prototype.execute = function()
 
             this.fileExecuter()(URL, isQuoted);
         }
+        this._compiler.popImport();
 
         this.setCode(this._compiler.compilePass2());
         this._compiler = null;

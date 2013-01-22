@@ -299,11 +299,24 @@ ObjJAcornCompiler.prototype.prettifyMessage = function(/* Message */ aMessage, /
     return message;
 }
 
-ObjJAcornCompiler.prototype.error_message = function(errorMessage, astNode)
+ObjJAcornCompiler.prototype.error_message = function(errorMessage, node)
 {
-    return errorMessage + " <Context File: "+ this.URL +
-                                (this.currentClass ? " Class: "+this.currentClass : "") +
-                                (this.currentSelector ? " Method: "+this.currentSelector : "") +">";
+    var pos = exports.acorn.getLineInfo(this.source, node.start),
+        syntaxError = {message: errorMessage, line: pos.line, column: pos.column, lineStart: pos.lineStart, lineEnd: pos.lineEnd};
+
+    return new SyntaxError(this.prettifyMessage(syntaxError, "ERROR"));
+}
+
+ObjJAcornCompiler.prototype.pushImport = function(url)
+{
+    if (!ObjJAcornCompiler.importStack) ObjJAcornCompiler.importStack = [];  // This is used to keep track of imports. Each time the compiler imports a file the url is pushed here.
+
+    ObjJAcornCompiler.importStack.push(url);
+}
+
+ObjJAcornCompiler.prototype.popImport = function()
+{
+    ObjJAcornCompiler.importStack.pop();
 }
 
 function createMessage(/* String */ aMessage, /* SpiderMonkey AST node */ node, /* String */ code)
@@ -433,9 +446,14 @@ ClassDeclarationStatement: function(node, st, c) {
     {
         classDef = st.compiler.getClassDef(className);
         if (classDef && classDef.ivars)     // Must have ivars dictionary to be a real declaration. Without it is a "@class" declaration
-            throw new SyntaxError(st.compiler.error_message("Duplicate class " + className, node.classname));
+            throw st.compiler.error_message("Duplicate class " + className, node.classname);
         if (!st.compiler.getClassDef(node.superclassname.name))
-            throw new SyntaxError(st.compiler.error_message("Can't find superclass " + node.superclassname.name, node.superclassname));
+        {
+            var errorMessage = "Can't find superclass " + node.superclassname.name;
+            for (var i = ObjJAcornCompiler.importStack.length; --i >= 0;)
+                errorMessage += "\n" + Array((ObjJAcornCompiler.importStack.length - i) * 2 + 1).join(" ") + "Imported by: " + ObjJAcornCompiler.importStack[i];
+            throw st.compiler.error_message(errorMessage, node.superclassname);
+        }
 
         classDef = {"className": className, "superClassName": node.superclassname.name, "ivars": Object.create(null), "methods": Object.create(null)};
 
@@ -445,7 +463,7 @@ ClassDeclarationStatement: function(node, st, c) {
     {
         classDef = st.compiler.getClassDef(className);
         if (!classDef)
-            throw new SyntaxError(st.compiler.error_message("Class " + className + " not found ", node.classname));
+            throw st.compiler.error_message("Class " + className + " not found ", node.classname);
 
         CONCAT(saveJSBuffer, "{\nvar the_class = objj_getClass(\"" + className + "\")\n");
         CONCAT(saveJSBuffer, "if(!the_class) throw new SyntaxError(\"*** Could not find definition for class \\\"" + className + "\\\"\");\n");
