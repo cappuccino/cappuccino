@@ -681,6 +681,7 @@ var resizeTimer = nil;
 - (void)keyEvent:(DOMEvent)aDOMEvent
 {
     var event,
+        location = _CGPointMake(aDOMEvent.clientX, aDOMEvent.clientY),
         timestamp = [CPEvent currentTimestamp],
         sourceElement = aDOMEvent.target || aDOMEvent.srcElement,
         windowNumber = [[CPApp keyWindow] windowNumber],
@@ -897,6 +898,7 @@ var resizeTimer = nil;
             characters = cut ? "x" : "c",
             timestamp = [CPEvent currentTimestamp],  // fake event, might as well use current timestamp
             windowNumber = [[CPApp keyWindow] windowNumber],
+            location = _CGPointMake(aDOMEvent.clientX, aDOMEvent.clientY),
             modifierFlags = CPPlatformActionKeyMask;
 
         var event = [CPEvent keyEventWithType:CPKeyDown location:location modifierFlags:modifierFlags
