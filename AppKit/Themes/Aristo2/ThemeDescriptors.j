@@ -590,15 +590,15 @@ var themedButtonValues = nil,
 
         bezelFocusedColor = PatternColor(
             [
-                ["textfield-bezel-square-focused-0.png", 7.0, 7.0],
-                ["textfield-bezel-square-focused-1.png", 1.0, 7.0],
-                ["textfield-bezel-square-focused-2.png", 7.0, 7.0],
-                ["textfield-bezel-square-focused-3.png", 7.0, 1.0],
+                ["textfield-bezel-square-focused-0.png", 9.0, 9.0],
+                ["textfield-bezel-square-focused-1.png", 1.0, 9.0],
+                ["textfield-bezel-square-focused-2.png", 9.0, 9.0],
+                ["textfield-bezel-square-focused-3.png", 9.0, 1.0],
                 ["textfield-bezel-square-focused-4.png", 1.0, 1.0],
-                ["textfield-bezel-square-focused-5.png", 7.0, 1.0],
-                ["textfield-bezel-square-focused-6.png", 7.0, 7.0],
-                ["textfield-bezel-square-focused-7.png", 1.0, 7.0],
-                ["textfield-bezel-square-focused-8.png", 7.0, 7.0]
+                ["textfield-bezel-square-focused-5.png", 9.0, 1.0],
+                ["textfield-bezel-square-focused-6.png", 9.0, 9.0],
+                ["textfield-bezel-square-focused-7.png", 1.0, 9.0],
+                ["textfield-bezel-square-focused-8.png", 9.0, 9.0]
             ]),
 
         bezelDisabledColor = PatternColor(
@@ -676,9 +676,9 @@ var themedButtonValues = nil,
 
         bezelFocusedColor = PatternColor(
             [
-                ["textfield-bezel-rounded-focused-left.png", 12.0, 29.0],
+                ["textfield-bezel-rounded-focused-left.png", 13.0, 29.0],
                 ["textfield-bezel-rounded-focused-center.png", 1.0, 29.0],
-                ["textfield-bezel-rounded-focused-right.png", 12.0, 29.0]
+                ["textfield-bezel-rounded-focused-right.png", 13.0, 29.0]
             ],
             PatternIsHorizontal),
 
