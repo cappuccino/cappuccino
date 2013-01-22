@@ -30,10 +30,16 @@
 @import "_CPCornerView.j"
 @import "CPScroller.j"
 @import "CPCompatibility.j"
+@import "CPPasteboard.j"
+@import "CPImageView.j"
 
 @class CPScrollView
 @class CPUserDefaults
 @class CPTableHeaderView
+@class CPClipView
+@class CPButton
+
+@global CPApp
 @global CPTableColumnAutoresizingMask
 
 

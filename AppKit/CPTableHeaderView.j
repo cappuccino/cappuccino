@@ -25,10 +25,12 @@
 @import "CPTableColumn.j"
 @import "CPTableView.j"
 @import "CPView.j"
+@import "CPPasteboard.j"
 
 @class CPCursor
 
 @global CPTableColumnUserResizingMask
+@global CPApp
 
 
 @implementation _CPTableColumnHeaderView : CPView

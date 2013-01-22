@@ -26,13 +26,10 @@
 #include "../Foundation/Foundation.h"
 
 @import "CPControl.j"
+@import "CPViewAnimation.j"
 
-@class CPViewAnimation
-
-@global CPViewAnimationFadeOutEffect
-@global CPViewAnimationTargetKey
-@global CPViewAnimationEffectKey
-
+@global CPWindowAbove
+@global CPWindowBelow
 
 // CPScroller Constants
 CPScrollerNoPart            = 0;
