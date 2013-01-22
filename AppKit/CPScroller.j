@@ -30,6 +30,8 @@
 
 @global CPWindowAbove
 @global CPWindowBelow
+@global CPApp
+
 
 // CPScroller Constants
 CPScrollerNoPart            = 0;

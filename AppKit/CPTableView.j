@@ -31,6 +31,7 @@
 @import "CPScroller.j"
 @import "CPCompatibility.j"
 @import "CPPasteboard.j"
+@import "CPDragServer.j"
 @import "CPImageView.j"
 
 @class CPScrollView
