@@ -29,10 +29,10 @@
 @import "_CPCibCustomResource.j"
 @import "_CPCibCustomView.j"
 @import "_CPCibKeyedUnarchiver.j"
-@import "_CPCibObjectData.j"
 @import "_CPCibProxyObject.j"
 @import "_CPCibWindowTemplate.j"
 
+@class _CPCibObjectData
 
 CPCibOwner              = @"CPCibOwner";
 CPCibTopLevelObjects    = @"CPCibTopLevelObjects";

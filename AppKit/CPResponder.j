@@ -21,6 +21,9 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <Foundation/CPObjJRuntime.j>
+
+@import "CPEvent.j"
 
 @class CPKeyBinding
 

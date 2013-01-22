@@ -23,9 +23,9 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPString.j>
 
+@import "CPCib.j"
 @import "CPResponder.j"
 @import "CPWindow.j"
-@import "CPDocument.j"
 
 @class CPDocument
 

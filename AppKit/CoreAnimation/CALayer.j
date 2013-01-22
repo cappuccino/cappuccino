@@ -21,6 +21,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <Foundation/CPRunLoop.j>
 
 @import "CABackingStore.j"
 

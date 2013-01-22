@@ -24,6 +24,8 @@
 @import "CPView.j"
 @import "CPWindow.j"
 
+@global CPApp
+
 _CPToolTipWindowMask = 1 << 27;
 
 var _CPToolTipHeight = 24.0,

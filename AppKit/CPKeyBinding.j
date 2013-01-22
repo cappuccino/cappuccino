@@ -21,6 +21,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <Foundation/CPArray.j>
 
 @import "CPEvent.j"
 

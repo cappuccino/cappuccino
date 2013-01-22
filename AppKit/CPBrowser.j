@@ -24,15 +24,16 @@
 
 @import "CPControl.j"
 @import "CPImage.j"
+@import "CPScrollView.j"
 @import "CPTableView.j"
 @import "CPTextField.j"
-@import "CPScrollView.j"
+
+@global CPApp
 
 /*!
     @ingroup appkit
     @class CPBrowser
 */
-
 @implementation CPBrowser : CPControl
 {
     id              _delegate;

@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPWindow_Constants.j"
 @import "_CPWindow.j"
 @import "_CPWindowView.j"
 @import "_CPStandardWindowView.j"
@@ -32,4 +33,3 @@
 @import "_CPModalWindowView.j"
 @import "_CPShadowWindowView.j"
 @import "CPDragServer.j"
-//@import "CPView.j"

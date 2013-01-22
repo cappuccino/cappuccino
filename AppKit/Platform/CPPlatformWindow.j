@@ -20,11 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/CPDictionary.j>
 @import <Foundation/CPObject.j>
 @import "CPKeyBinding.j"
-//@import "CPMenu.j"
 @import "CPPlatform.j"
-//@import "CPEvent.j"
 
 @class CPMenu
 

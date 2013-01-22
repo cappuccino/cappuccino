@@ -1,5 +1,5 @@
 /*
- * CPWindow.j
+ * _CPWindow.j
  * AppKit
  *
  * Created by Francisco Tolmasky.
@@ -31,6 +31,8 @@
 @import "CPScreen.j"
 @import "CPEvent.j"
 @import "CPView.j"
+@import "CPWindow_Constants.j"
+@import "_CPWindowView.j"
 #if PLATFORM(BROWSER)
 @import "CPPlatformWindow+DOM.j"
 #endif
@@ -42,176 +44,6 @@
 @class CPProgressIndicator
 
 @global CPApp
-@global CPWindowPositionFlexibleLeft
-@global CPWindowPositionFlexibleRight
-@global CPWindowPositionFlexibleTop
-@global CPWindowPositionFlexibleBottom
-
-/*
-    Borderless window mask option.
-    @global
-    @class CPWindow
-*/
-CPBorderlessWindowMask          = 0;
-/*
-    Titled window mask option.
-    @global
-    @class CPWindow
-*/
-CPTitledWindowMask              = 1 << 0;
-/*
-    Closeable window mask option.
-    @global
-    @class CPWindow
-*/
-CPClosableWindowMask            = 1 << 1;
-/*
-    Miniaturizabe window mask option.
-    @global
-    @class CPWindow
-*/
-CPMiniaturizableWindowMask      = 1 << 2;
-/*
-    Resizable window mask option.
-    @global
-    @class CPWindow
-*/
-CPResizableWindowMask           = 1 << 3;
-/*
-    Textured window mask option.
-    @global
-    @class CPWindow
-*/
-CPTexturedBackgroundWindowMask  = 1 << 8;
-/*
-    @global
-    @class CPWindow
-*/
-CPBorderlessBridgeWindowMask    = 1 << 20;
-/*
-    @global
-    @class CPWindow
-*/
-CPHUDBackgroundWindowMask       = 1 << 21;
-
-/*!
-    @global
-    @class CPWindow
-*/
-_CPModalWindowMask              = 1 << 22;
-
-CPWindowNotSizable              = 0;
-CPWindowMinXMargin              = 1;
-CPWindowWidthSizable            = 2;
-CPWindowMaxXMargin              = 4;
-CPWindowMinYMargin              = 8;
-CPWindowHeightSizable           = 16;
-CPWindowMaxYMargin              = 32;
-
-CPBackgroundWindowLevel         = -1;
-/*
-    Default level for windows
-    @group CPWindowLevel
-    @global
-*/
-CPNormalWindowLevel             = 0;
-/*
-    Floating palette type window
-    @group CPWindowLevel
-    @global
-*/
-CPFloatingWindowLevel           = 3;
-/*
-    Submenu type window
-    @group CPWindowLevel
-    @global
-*/
-CPSubmenuWindowLevel            = 3;
-/*
-    For a torn-off menu
-    @group CPWindowLevel
-    @global
-*/
-CPTornOffMenuWindowLevel        = 3;
-/*
-    For the application's main menu
-    @group CPWindowLevel
-    @global
-*/
-CPMainMenuWindowLevel           = 24;
-/*
-    Status window level
-    @group CPWindowLevel
-    @global
-*/
-CPStatusWindowLevel             = 25;
-/*
-    Level for a modal panel
-    @group CPWindowLevel
-    @global
-*/
-CPModalPanelWindowLevel         = 8;
-/*
-    Level for a pop up menu
-    @group CPWindowLevel
-    @global
-*/
-CPPopUpMenuWindowLevel          = 101;
-/*
-    Level for a window being dragged
-    @group CPWindowLevel
-    @global
-*/
-CPDraggingWindowLevel           = 500;
-/*
-    Level for the screens saver
-    @group CPWindowLevel
-    @global
-*/
-CPScreenSaverWindowLevel        = 1000;
-
-/*
-    The receiver is removed from the screen list and hidden.
-    @global
-    @class CPWindowOrderingMode
-*/
-CPWindowOut                     = 0;
-/*
-    The receiver is placed directly in front of the window specified.
-    @global
-    @class CPWindowOrderingMode
-*/
-CPWindowAbove                   = 1;
-/*
-    The receiver is placed directly behind the window specified.
-    @global
-    @class CPWindowOrderingMode
-*/
-CPWindowBelow                   = 2;
-
-CPWindowWillCloseNotification                   = @"CPWindowWillCloseNotification";
-CPWindowDidBecomeMainNotification               = @"CPWindowDidBecomeMainNotification";
-CPWindowDidResignMainNotification               = @"CPWindowDidResignMainNotification";
-CPWindowDidBecomeKeyNotification                = @"CPWindowDidBecomeKeyNotification";
-CPWindowDidResignKeyNotification                = @"CPWindowDidResignKeyNotification";
-CPWindowDidResizeNotification                   = @"CPWindowDidResizeNotification";
-CPWindowDidMoveNotification                     = @"CPWindowDidMoveNotification";
-CPWindowWillBeginSheetNotification              = @"CPWindowWillBeginSheetNotification";
-CPWindowDidEndSheetNotification                 = @"CPWindowDidEndSheetNotification";
-CPWindowDidMiniaturizeNotification              = @"CPWindowDidMiniaturizeNotification";
-CPWindowWillMiniaturizeNotification             = @"CPWindowWillMiniaturizeNotification";
-CPWindowDidDeminiaturizeNotification            = @"CPWindowDidDeminiaturizeNotification";
-
-_CPWindowDidChangeFirstResponderNotification    = @"_CPWindowDidChangeFirstResponderNotification";
-
-CPWindowShadowStyleStandard = 0;
-CPWindowShadowStyleMenu     = 1;
-CPWindowShadowStylePanel    = 2;
-
-CPWindowResizeStyleModern = 0;
-CPWindowResizeStyleLegacy = 1;
-CPWindowResizeStyle = CPWindowResizeStyleModern;
-CPWindowResizeSlop = 3;
 
 var CPWindowSaveImage       = nil,
 
@@ -2203,7 +2035,7 @@ CPTexturedBackgroundWindowMask
     if (!(_styleMask & CPClosableWindowMask))
         return;
 
-    if ([self isFullBridge])
+    if ([self isFullPlatformWindow])
     {
         var event = [CPApp currentEvent];
 
@@ -2214,16 +2046,18 @@ CPTexturedBackgroundWindowMask
         }
     }
 
-    // Only send ONE windowShouldClose: message.
+    // The Cocoa docs say that if both the delegate and the window implement
+    // windowShouldClose:, only the delegate receives the message.
     if ([_delegate respondsToSelector:@selector(windowShouldClose:)])
     {
         if (![_delegate windowShouldClose:self])
             return;
     }
-
-    // Only check self is delegate does NOT implement this.  This also ensures this when delegate == self (returns true).
-    else if ([self respondsToSelector:@selector(windowShouldClose:)] && ![self windowShouldClose:self])
-        return;
+    else if ([self respondsToSelector:@selector(windowShouldClose:)])
+    {
+        if (![self windowShouldClose:self])
+            return;
+    }
 
     var documents = [_windowController documents];
 
@@ -3351,7 +3185,7 @@ var keyViewComparator = function(lhs, rhs, context)
 {
     // If we are using the new resizing mode, mouse events are valid
     // outside the window's frame for non-full platform windows.
-    var mouseFrame = (!_isFullPlatformWindow && (_styleMask & CPResizableWindowMask) && (CPWindowResizeStyle === CPWindowResizeStyleModern)) ? _CGRectInset(_frame, -CPWindowResizeSlop, -CPWindowResizeSlop) : _frame;
+    var mouseFrame = (!_isFullPlatformWindow && (_styleMask & CPResizableWindowMask) && (CPWindowResizeStyle === CPWindowResizeStyleModern)) ? _CGRectInset(_frame, -_CPWindowViewResizeSlop, -_CPWindowViewResizeSlop) : _frame;
 
     return _CGRectContainsPoint(mouseFrame, aPoint);
 }
@@ -3365,6 +3199,8 @@ var keyViewComparator = function(lhs, rhs, context)
 */
 - (void)setFullBridge:(BOOL)shouldBeFullBridge
 {
+    _CPReportLenientDeprecation([self class], _cmd, @selector(setFullPlatformWindow:));
+
     [self setFullPlatformWindow:shouldBeFullBridge];
 }
 

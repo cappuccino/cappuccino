@@ -25,14 +25,9 @@
 @import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPString.j>
 
-@import "_CPMenuManager.j"
-@import "CPApplication.j"
-@import "CPClipView.j"
 @import "CPMenuItem.j"
-@import "CPPanel.j"
 
 @global CPApp
-
 
 CPMenuDidAddItemNotification        = @"CPMenuDidAddItemNotification";
 CPMenuDidChangeItemNotification     = @"CPMenuDidChangeItemNotification";

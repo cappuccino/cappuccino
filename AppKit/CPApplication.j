@@ -25,17 +25,17 @@
 @import <Foundation/CPBundle.j>
 
 @import "CPCompatibility.j"
+@import "CPColorPanel.j"
+@import "CPCursor.j"
+@import "CPDocumentController.j"
 @import "CPEvent.j"
 @import "CPMenu.j"
 @import "CPResponder.j"
-@import "CPDocumentController.j"
 @import "CPThemeBlend.j"
 @import "CPCibLoading.j"
+@import "CPPanel.j"
 @import "CPPlatform.j"
-
-@class CPCursor
-@class CPColorPanel
-
+@import "CPWindowController.j"
 
 var CPMainCibFile               = @"CPMainCibFile",
     CPMainCibFileHumanFriendly  = @"Main cib file base name",

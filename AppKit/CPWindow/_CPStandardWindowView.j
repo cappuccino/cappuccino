@@ -202,10 +202,11 @@
 
     var theWindow = [self window],
         bounds = [self bounds],
-        width = _CGRectGetWidth(bounds);
+        width = _CGRectGetWidth(bounds),
+        headHeight = [self toolbarMaxY];
 
-    [_headView setFrameSize:_CGSizeMake(width, [self toolbarMaxY])];
-    [_dividerView setFrame:_CGRectMake(0.0, _CGRectGetMaxY([_headView frame]), width, 1.0)];
+    [_headView setFrameSize:_CGSizeMake(width, headHeight)];
+    [_dividerView setFrame:_CGRectMake(0.0, headHeight, width, 1.0)];
 
     var dividerMaxY = 0,
         dividerMinY = 0;

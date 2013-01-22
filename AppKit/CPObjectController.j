@@ -24,6 +24,7 @@
 @import <Foundation/CPCountedSet.j>
 
 @import "CPController.j"
+@import "CPKeyValueBinding.j"
 
 /*!
     @class

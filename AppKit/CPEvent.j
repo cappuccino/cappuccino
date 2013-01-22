@@ -22,6 +22,9 @@
 
 @import <Foundation/CPObject.j>
 @import <Foundation/CPGeometry.j>
+@import <Foundation/CPObjJRuntime.j>
+@import <Foundation/CPString.j>
+
 @import "CPText.j"
 
 @class CPTextField

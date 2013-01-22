@@ -28,6 +28,7 @@
 @import <Foundation/CPString.j>
 @import <Foundation/CPData.j>
 
+@import "CPCompatibility.j"
 
 CPImageLoadStatusInitialized    = 0;
 CPImageLoadStatusLoading        = 1;

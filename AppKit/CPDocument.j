@@ -23,17 +23,15 @@
 @import <Foundation/CPString.j>
 @import <Foundation/CPArray.j>
 
-@import "CPApplication.j"
+@import "CPAlert.j"
 @import "CPResponder.j"
 @import "CPSavePanel.j"
 @import "CPViewController.j"
 @import "CPWindowController.j"
 
 @class CPDocumentController
-@class CPAlert
 
 @global CPApp
-@global CPWarningAlertStyle
 
 
 /*

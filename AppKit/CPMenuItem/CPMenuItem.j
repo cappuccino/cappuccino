@@ -25,31 +25,32 @@
 @import <Foundation/CPString.j>
 
 @import "CPImage.j"
-@import "CPMenu.j"
 @import "CPView.j"
 @import "_CPMenuItemView.j"
 
+@class CPMenu
+
 @global CPApp
 
-
-var CPMenuItemStringRepresentationDictionary = [CPDictionary dictionary];
-[CPMenuItemStringRepresentationDictionary setObject:"\u238B" forKey:CPEscapeFunctionKey];
-[CPMenuItemStringRepresentationDictionary setObject:"\u21E5" forKey:CPTabCharacter];
-[CPMenuItemStringRepresentationDictionary setObject:"\u21E4" forKey:CPBackTabCharacter];
-[CPMenuItemStringRepresentationDictionary setObject:"\u2423" forKey:CPSpaceFunctionKey];
-[CPMenuItemStringRepresentationDictionary setObject:"\u23CE" forKey:CPCarriageReturnCharacter];
-[CPMenuItemStringRepresentationDictionary setObject:"\u232B" forKey:CPBackspaceCharacter];
-[CPMenuItemStringRepresentationDictionary setObject:"\u232B" forKey:CPDeleteFunctionKey];
-[CPMenuItemStringRepresentationDictionary setObject:"\u2326" forKey:CPDeleteCharacter];
-[CPMenuItemStringRepresentationDictionary setObject:"\u21F1" forKey:CPHomeFunctionKey];
-[CPMenuItemStringRepresentationDictionary setObject:"\u21F2" forKey:CPEndFunctionKey];
-[CPMenuItemStringRepresentationDictionary setObject:"\u21DE" forKey:CPPageUpFunctionKey];
-[CPMenuItemStringRepresentationDictionary setObject:"\u21DF" forKey:CPPageDownFunctionKey];
-[CPMenuItemStringRepresentationDictionary setObject:"\u2191" forKey:CPUpArrowFunctionKey];
-[CPMenuItemStringRepresentationDictionary setObject:"\u2193" forKey:CPDownArrowFunctionKey];
-[CPMenuItemStringRepresentationDictionary setObject:"\u2190" forKey:CPLeftArrowFunctionKey];
-[CPMenuItemStringRepresentationDictionary setObject:"\u2192" forKey:CPRightArrowFunctionKey];
-[CPMenuItemStringRepresentationDictionary setObject:"\u2327" forKey:CPClearDisplayFunctionKey];
+var CPMenuItemStringRepresentationDictionary = [CPDictionary dictionaryWithObjectsAndKeys:
+        "\u238B", CPEscapeFunctionKey,
+        "\u21E5", CPTabCharacter,
+        "\u21E4", CPBackTabCharacter,
+        "\u2423", CPSpaceFunctionKey,
+        "\u23CE", CPCarriageReturnCharacter,
+        "\u232B", CPBackspaceCharacter,
+        "\u232B", CPDeleteFunctionKey,
+        "\u2326", CPDeleteCharacter,
+        "\u21F1", CPHomeFunctionKey,
+        "\u21F2", CPEndFunctionKey,
+        "\u21DE", CPPageUpFunctionKey,
+        "\u21DF", CPPageDownFunctionKey,
+        "\u2191", CPUpArrowFunctionKey,
+        "\u2193", CPDownArrowFunctionKey,
+        "\u2190", CPLeftArrowFunctionKey,
+        "\u2192", CPRightArrowFunctionKey,
+        "\u2327", CPClearDisplayFunctionKey
+    ];
 
 /*!
     @ingroup appkit

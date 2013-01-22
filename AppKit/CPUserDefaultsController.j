@@ -23,8 +23,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-
+@import <Foundation/CPDictionary.j>
+@import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPString.j>
+
 @import "CPController.j"
 
 @class CPUserDefaults

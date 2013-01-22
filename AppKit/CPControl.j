@@ -24,6 +24,7 @@
 
 @import <Foundation/CPFormatter.j>
 @import <Foundation/CPTimer.j>
+
 @import "CPFont.j"
 @import "CPShadow.j"
 @import "CPView.j"

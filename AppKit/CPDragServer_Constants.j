@@ -1,8 +1,8 @@
 /*
- * _CPModalWindowView.j
+ * CPDragServer_Constants.j
  * AppKit
  *
- * Created by Alexandre Wilhelm.
+ * Created by Francisco Tolmasky.
  * Copyright 2008, 280 North, Inc.
  *
  * This library is free software; you can redistribute it and/or
@@ -20,23 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "_CPWindowView.j"
-
-
-@implementation _CPModalWindowView : _CPWindowView
-{
-}
-
-+ (CPString)defaultThemeClass
-{
-    return @"modal-window-view";
-}
-
-- (void)layoutSubviews
-{
-    [super layoutSubviews];
-
-    [self setBackgroundColor:[self valueForThemeAttribute:@"bezel-color"]];
-}
-
-@end
+CPDragOperationNone     = 0;
+CPDragOperationCopy     = 1 << 1;
+CPDragOperationLink     = 1 << 1;
+CPDragOperationGeneric  = 1 << 2;
+CPDragOperationPrivate  = 1 << 3;
+CPDragOperationMove     = 1 << 4;
+CPDragOperationDelete   = 1 << 5;
+CPDragOperationEvery    = -1;

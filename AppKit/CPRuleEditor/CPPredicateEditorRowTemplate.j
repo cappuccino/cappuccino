@@ -22,6 +22,12 @@
 
 @import <Foundation/CPPredicate.j>
 
+@import "CPCheckBox.j"
+@import "CPPopUpButton.j"
+@import "CPMenuItem.j"
+@import "CPTextField.j"
+
+// NOTE: CPDatePicker is not implemented yet
 @class CPDatePicker
 
 

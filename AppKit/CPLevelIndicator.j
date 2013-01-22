@@ -21,6 +21,9 @@
  */
 
 @import "CPControl.j"
+@import "CPWindow_Constants.j"
+
+@global CPApp
 
 CPTickMarkBelow                             = 0;
 CPTickMarkAbove                             = 1;

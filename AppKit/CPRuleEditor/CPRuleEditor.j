@@ -24,6 +24,8 @@
 @import <Foundation/CPArray.j>
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPIndexSet.j>
+
+@import "CPRuleEditor_Constants.j"
 @import "CPTextField.j"
 @import "CPViewAnimation.j"
 @import "CPView.j"
@@ -37,26 +39,6 @@
 @global CPDirectPredicateModifier
 @global CPCaseInsensitivePredicateOption
 @global CPOrPredicateType
-
-
-CPRuleEditorPredicateLeftExpression     = "CPRuleEditorPredicateLeftExpression";
-CPRuleEditorPredicateRightExpression    = "CPRuleEditorPredicateRightExpression";
-CPRuleEditorPredicateComparisonModifier = "CPRuleEditorPredicateComparisonModifier";
-CPRuleEditorPredicateOptions            = "CPRuleEditorPredicateOptions";
-CPRuleEditorPredicateOperatorType       = "CPRuleEditorPredicateOperatorType";
-CPRuleEditorPredicateCustomSelector     = "CPRuleEditorPredicateCustomSelector";
-CPRuleEditorPredicateCompoundType       = "CPRuleEditorPredicateCompoundType";
-
-CPRuleEditorRowsDidChangeNotification   = "CPRuleEditorRowsDidChangeNotification";
-CPRuleEditorRulesDidChangeNotification  = "CPRuleEditorRulesDidChangeNotification";
-
-CPRuleEditorNestingModeSingle   = 0;        // Only a single row is allowed.  Plus/minus buttons will not be shown
-CPRuleEditorNestingModeList     = 1;        // Allows a single list, with no nesting and no compound rows
-CPRuleEditorNestingModeCompound = 2;        // Unlimited nesting and compound rows; this is the default
-CPRuleEditorNestingModeSimple   = 3;        // One compound row at the top with subrows beneath it, and no further nesting allowed
-
-CPRuleEditorRowTypeSimple       = 0;
-CPRuleEditorRowTypeCompound     = 1;
 
 var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
     itemsContext                = "items",

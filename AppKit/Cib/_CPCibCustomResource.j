@@ -26,6 +26,10 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPString.j>
 
+@import "CPCompatibility.j"
+@import "CPImage.j"
+@import "CPTheme.j"
+
 @class CPButtonBar
 
 

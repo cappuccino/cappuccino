@@ -31,8 +31,10 @@
 @import "CPScrollView.j"
 @import "CPTextField.j"
 @import "CPTableView.j"
-@import "CPWindow.j"
+@import "CPWindow_Constants.j"
 @import "_CPAutocompleteMenu.j"
+
+@global CPApp
 
 #if PLATFORM(DOM)
 

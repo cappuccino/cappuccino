@@ -23,7 +23,10 @@
 @import <Foundation/CPArray.j>
 
 @import "CPControl.j"
+@import "CPWindow_Constants.j"
+@import "_CPImageAndTextView.j"
 
+@global CPApp
 
 CPSegmentSwitchTrackingSelectOne = 0;
 CPSegmentSwitchTrackingSelectAny = 1;

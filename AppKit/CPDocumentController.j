@@ -26,6 +26,7 @@
 @import "CPDocument.j"
 @import "CPOpenPanel.j"
 @import "CPMenuItem.j"
+@import "CPWindowController.j"
 
 @global CPApp
 

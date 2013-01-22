@@ -21,6 +21,7 @@
  */
 
 @import "CPControl.j"
+@import "CPWindow_Constants.j"
 
 
 /*! SLIDER STATES */

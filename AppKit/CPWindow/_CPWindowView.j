@@ -22,21 +22,16 @@
 
 @import "CPImageView.j"
 @import "CPView.j"
+@import "CPWindow_Constants.j"
 
 @class CPCursor
 @class CPMenu
 @class CPPlatformWindow
 
 @global CPApp
-@global CPHUDBackgroundWindowMask
-@global CPResizableWindowMask
-@global CPWindowResizeSlop
-@global CPWindowResizeStyle
-@global CPWindowResizeStyleLegacy
-@global CPWindowResizeStyleModern
-
 
 var _CPWindowViewCornerResizeRectWidth = 10,
+
     _CPWindowViewResizeRegionNone = -1,
     _CPWindowViewResizeRegionTopLeft = 0,
     _CPWindowViewResizeRegionTop = 1,
@@ -46,6 +41,9 @@ var _CPWindowViewCornerResizeRectWidth = 10,
     _CPWindowViewResizeRegionBottom = 5,
     _CPWindowViewResizeRegionBottomLeft = 6,
     _CPWindowViewResizeRegionLeft = 7;
+
+_CPWindowViewResizeSlop = 3;
+
 
 @implementation _CPWindowView : CPView
 {
@@ -246,40 +244,40 @@ var _CPWindowViewCornerResizeRectWidth = 10,
 
     if (isFixedWidth)
     {
-        rect = _CGRectMake(frame.origin.x - CPWindowResizeSlop,
-                           frame.origin.y - CPWindowResizeSlop,
-                           frame.size.width + (CPWindowResizeSlop * 2),
-                           CPWindowResizeSlop * 2);
+        rect = _CGRectMake(frame.origin.x - _CPWindowViewResizeSlop,
+                           frame.origin.y - _CPWindowViewResizeSlop,
+                           frame.size.width + (_CPWindowViewResizeSlop * 2),
+                           _CPWindowViewResizeSlop * 2);
 
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionTop;
 
-        rect.origin.y = _CGRectGetMaxY(frame) - CPWindowResizeSlop;
+        rect.origin.y = _CGRectGetMaxY(frame) - _CPWindowViewResizeSlop;
 
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionBottom;
     }
     else if (isFixedHeight)
     {
-        rect = _CGRectMake(frame.origin.x - CPWindowResizeSlop,
-                           frame.origin.y - CPWindowResizeSlop,
-                           CPWindowResizeSlop * 2,
-                           frame.size.height + (CPWindowResizeSlop * 2));
+        rect = _CGRectMake(frame.origin.x - _CPWindowViewResizeSlop,
+                           frame.origin.y - _CPWindowViewResizeSlop,
+                           _CPWindowViewResizeSlop * 2,
+                           frame.size.height + (_CPWindowViewResizeSlop * 2));
 
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionLeft;
 
-        rect.origin.x = _CGRectGetMaxX(frame) - CPWindowResizeSlop;
+        rect.origin.x = _CGRectGetMaxX(frame) - _CPWindowViewResizeSlop;
 
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionRight;
     }
     else
     {
-        rect = _CGRectMake(frame.origin.x - CPWindowResizeSlop,
-                           frame.origin.y - CPWindowResizeSlop,
-                           _CPWindowViewCornerResizeRectWidth + CPWindowResizeSlop,
-                           _CPWindowViewCornerResizeRectWidth + CPWindowResizeSlop);
+        rect = _CGRectMake(frame.origin.x - _CPWindowViewResizeSlop,
+                           frame.origin.y - _CPWindowViewResizeSlop,
+                           _CPWindowViewCornerResizeRectWidth + _CPWindowViewResizeSlop,
+                           _CPWindowViewCornerResizeRectWidth + _CPWindowViewResizeSlop);
 
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionTopLeft;
@@ -294,33 +292,33 @@ var _CPWindowViewCornerResizeRectWidth = 10,
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionBottomRight;
 
-        rect.origin.x = frame.origin.x - CPWindowResizeSlop;
+        rect.origin.x = frame.origin.x - _CPWindowViewResizeSlop;
 
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionBottomLeft;
 
         rect = _CGRectMake(rect.origin.x,
                            frame.origin.y + _CPWindowViewCornerResizeRectWidth,
-                           CPWindowResizeSlop * 2,
+                           _CPWindowViewResizeSlop * 2,
                            _CGRectGetHeight(frame) - (_CPWindowViewCornerResizeRectWidth * 2));
 
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionLeft;
 
-        rect.origin.x = _CGRectGetMaxX(frame) - CPWindowResizeSlop;
+        rect.origin.x = _CGRectGetMaxX(frame) - _CPWindowViewResizeSlop;
 
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionRight;
 
         rect = _CGRectMake(frame.origin.x + _CPWindowViewCornerResizeRectWidth,
-                           frame.origin.y - CPWindowResizeSlop,
+                           frame.origin.y - _CPWindowViewResizeSlop,
                            _CGRectGetWidth(frame) - (_CPWindowViewCornerResizeRectWidth * 2),
-                           CPWindowResizeSlop * 2);
+                           _CPWindowViewResizeSlop * 2);
 
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionTop;
 
-        rect.origin.y = _CGRectGetMaxY(frame) - CPWindowResizeSlop;
+        rect.origin.y = _CGRectGetMaxY(frame) - _CPWindowViewResizeSlop;
 
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionBottom;

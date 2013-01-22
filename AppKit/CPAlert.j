@@ -28,7 +28,6 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPString.j>
 
-@import "CPApplication.j"
 @import "CPButton.j"
 @import "CPColor.j"
 @import "CPFont.j"
@@ -39,6 +38,7 @@
 
 @class CPCheckBox
 
+@global CPApp
 
 /*
     @global

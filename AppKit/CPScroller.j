@@ -25,13 +25,12 @@
 
 #include "../Foundation/Foundation.h"
 
+@import "CPAnimation.j"
 @import "CPControl.j"
+@import "CPWindow_Constants.j"
 @import "CPViewAnimation.j"
 
-@global CPWindowAbove
-@global CPWindowBelow
 @global CPApp
-
 
 // CPScroller Constants
 CPScrollerNoPart            = 0;

@@ -20,10 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPButton.j"
 @import "CPTableColumn.j"
 @import "CPTableView.j"
-@import "CPButton.j"
 
+@global CPApp
 
 CPOutlineViewColumnDidMoveNotification          = @"CPOutlineViewColumnDidMoveNotification";
 CPOutlineViewColumnDidResizeNotification        = @"CPOutlineViewColumnDidResizeNotification";

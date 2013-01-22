@@ -21,10 +21,13 @@
  */
 
 @import "CPButton.j"
+@import "CPMenu.j"
+@import "CPMenuItem.j"
 @import "CPTextField.j"
 
 @class CPUserDefaults
 
+@global CPApp
 
 CPSearchFieldRecentsTitleMenuItemTag    = 1000;
 CPSearchFieldRecentsMenuItemTag         = 1001;

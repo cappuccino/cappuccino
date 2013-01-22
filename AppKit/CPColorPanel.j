@@ -20,7 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPApplication.j"
 @import "CPButton.j"
 @import "CPCookie.j"
 @import "CPPanel.j"
@@ -28,17 +27,7 @@
 
 @class CPSlider
 
-
-CPColorPanelColorDidChangeNotification = @"CPColorPanelColorDidChangeNotification";
-
-var PREVIEW_HEIGHT = 20.0,
-    TOOLBAR_HEIGHT = 32.0,
-    SWATCH_HEIGHT  = 14.0,
-    ICON_WIDTH     = 32.0,
-    ICON_PADDING   = 12.0;
-
-var SharedColorPanel = nil,
-    ColorPickerClasses = [];
+@global CPApp
 
 /*
     A color wheel
@@ -55,6 +44,17 @@ CPSliderColorPickerMode = 2;
 
 CPColorPickerViewWidth  = 265;
 CPColorPickerViewHeight = 370;
+
+CPColorPanelColorDidChangeNotification = @"CPColorPanelColorDidChangeNotification";
+
+var PREVIEW_HEIGHT = 20.0,
+    TOOLBAR_HEIGHT = 32.0,
+    SWATCH_HEIGHT  = 14.0,
+    ICON_WIDTH     = 32.0,
+    ICON_PADDING   = 12.0;
+
+var SharedColorPanel = nil,
+    ColorPickerClasses = [];
 
 /*!
     @ingroup appkit

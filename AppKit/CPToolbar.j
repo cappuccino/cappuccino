@@ -28,6 +28,7 @@
 @import "CPPopUpButton.j"
 @import "CPToolbarItem.j"
 
+@global CPApp
 
 /*
     @global

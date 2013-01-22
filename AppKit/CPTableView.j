@@ -23,25 +23,25 @@
 @import <Foundation/CPArray.j>
 @import <Foundation/CPIndexSet.j>
 
+@import "CPDragServer_Constants.j"
 @import "CGGradient.j"
-
-@import "CPControl.j"
-@import "CPTableColumn.j"
-@import "_CPCornerView.j"
-@import "CPScroller.j"
 @import "CPCompatibility.j"
-@import "CPPasteboard.j"
-@import "CPDragServer.j"
+@import "CPControl.j"
 @import "CPImageView.j"
+@import "CPScroller.j"
+@import "CPScrollView.j"
+@import "CPTableColumn.j"
+@import "CPTableHeaderView.j"
+@import "_CPCornerView.j"
 
-@class CPScrollView
+@class CPButton
+@class CPClipView
 @class CPUserDefaults
 @class CPTableHeaderView
 @class CPClipView
 @class CPButton
 
 @global CPApp
-@global CPTableColumnAutoresizingMask
 
 
 CPTableViewColumnDidMoveNotification        = @"CPTableViewColumnDidMoveNotification";
@@ -4648,6 +4648,14 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
 */
 - (BOOL)acceptsFirstResponder
+{
+    return YES;
+}
+
+/*!
+    @ignore
+*/
+- (BOOL)needsPanelToBecomeKey
 {
     return YES;
 }

@@ -23,6 +23,7 @@
 @import "CGGeometry.j"
 @import "CPImageView.j"
 @import "CPView.j"
+@import "CPWindow_Constants.j"
 
 
 /*

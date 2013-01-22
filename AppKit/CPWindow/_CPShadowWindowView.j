@@ -23,6 +23,7 @@
 @import "_CPWindowView.j"
 @import "CPView.j"
 
+
 @implementation _CPShadowWindowView : CPView
 {
     _CPWindowView _windowView @accessors(setter=setWindowView:);

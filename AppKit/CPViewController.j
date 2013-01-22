@@ -22,7 +22,6 @@
 
 @import <Foundation/CPArray.j>
 
-@import "CPApplication.j"
 @import "CPCib.j"
 @import "CPResponder.j"
 

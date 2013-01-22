@@ -24,7 +24,6 @@
 
 @import "CGGeometry.j"
 @import "CPImage.j"
-@import "CPImageView.j"
 @import "CPView.j"
 
 
