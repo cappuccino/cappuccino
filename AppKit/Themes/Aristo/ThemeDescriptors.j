@@ -22,6 +22,7 @@
 
 @import <Foundation/CPObject.j>
 @import <Foundation/CPGeometry.j>
+@import <AppKit/CPAlert.j>
 @import <AppKit/CPApplication.j>
 @import <AppKit/CPBrowser.j>
 @import <AppKit/CPButton.j>
