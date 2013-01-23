@@ -145,21 +145,21 @@
 - (void)testBoolValue
 {
     var testStrings = [
-        ["  090",  YES],
-        ["  YES",  YES],
-        ["  true", YES],
-        ["  True", YES],
-        ["  tTR",  YES],
-        ["  +98",  YES],
-        ["  -98",  YES],
-        ["  +08",  YES],
-        ["  -98",  YES],
-        ["  NO",    NO],
-        ["  -N00",  NO],
-        ["  00",    NO],
-        ["  -00",   NO],
-        ["  -+001", NO],
-    ];
+            ["  090",  YES],
+            ["  YES",  YES],
+            ["  true", YES],
+            ["  True", YES],
+            ["  tTR",  YES],
+            ["  +98",  YES],
+            ["  -98",  YES],
+            ["  +08",  YES],
+            ["  -98",  YES],
+            ["  NO",    NO],
+            ["  -N00",  NO],
+            ["  00",    NO],
+            ["  -00",   NO],
+            ["  -+001", NO],
+        ];
 
     for (var i = 0; i < testStrings.length; i++)
         [self assert:[testStrings[i][0] boolValue] equals:testStrings[i][1]];
@@ -168,18 +168,18 @@
 - (void)testCommonPrefixWithString
 {
     var testStringsCase = [
-        ["Hello", "Helicopter", "Hel"],
-        ["Tester", "Taser", "T"],
-        ["Abcd", "Abcd", "Abcd"],
-        ["A long string", "A longer string", "A long"]
-    ];
+            ["Hello", "Helicopter", "Hel"],
+            ["Tester", "Taser", "T"],
+            ["Abcd", "Abcd", "Abcd"],
+            ["A long string", "A longer string", "A long"]
+        ];
 
     var testStringsCaseless = [
-        ["hElLo", "HeLiCoPtEr", "hEl"],
-        ["tEsTeR", "TaSeR", "t"],
-        ["aBcD", "AbCd", "aBcD"],
-        ["a LoNg StRiNg", "A lOnGeR sTrInG", "a LoNg"]
-    ];
+            ["hElLo", "HeLiCoPtEr", "hEl"],
+            ["tEsTeR", "TaSeR", "t"],
+            ["aBcD", "AbCd", "aBcD"],
+            ["a LoNg StRiNg", "A lOnGeR sTrInG", "a LoNg"]
+        ];
 
     for (var i = 0; i < testStringsCase.length; i++)
         [self assert: [testStringsCase[i][0] commonPrefixWithString:testStringsCase[i][1]]
@@ -194,11 +194,11 @@
 - (void)testCapitalizedString
 {
     var testStrings = [
-        ["", ""],
-        ["hElLo wOrLd", "Hello World"],
-        [" monkey-Cow", " Monkey-cow"],
-        ["tHe QuicK bRowN-Fox JumPed_Over +the LaZy%dog", "The Quick Brown-fox Jumped_over +the Lazy%dog"]
-    ];
+            ["", ""],
+            ["hElLo wOrLd", "Hello World"],
+            [" monkey-Cow", " Monkey-cow"],
+            ["tHe QuicK bRowN-Fox JumPed_Over +the LaZy%dog", "The Quick Brown-fox Jumped_over +the Lazy%dog"]
+        ];
 
     for (var i = 0; i < testStrings.length; i++)
         [self assert:[testStrings[i][0] capitalizedString] equals:testStrings[i][1]];
@@ -228,26 +228,26 @@
 - (void)testStringByAppendingPathComponent
 {
     var testStrings = [
-        ["/tmp/", "scratch.tiff", "/tmp/scratch.tiff"],
-        ["/tmp///", "scratch.tiff", "/tmp/scratch.tiff"],
-        ["/tmp///", "///scratch.tiff", "/tmp/scratch.tiff"],
-        ["/tmp", "scratch.tiff", "/tmp/scratch.tiff"],
-        ["/tmp///", "scratch.tiff", "/tmp/scratch.tiff"],
-        ["/tmp///", "///scratch.tiff", "/tmp/scratch.tiff"],
-        ["/", "scratch.tiff", "/scratch.tiff"],
-        ["", "scratch.tiff", "scratch.tiff"],
-        ["", "", ""],
-        ["", "/", ""],
-        ["/", "/", "/"],
-        ["/tmp", nil, "/tmp"],
-        ["/tmp", "/", "/tmp"],
-        ["/tmp/", "", "/tmp"]
-    ];
+            ["/tmp/", "scratch.tiff", "/tmp/scratch.tiff"],
+            ["/tmp///", "scratch.tiff", "/tmp/scratch.tiff"],
+            ["/tmp///", "///scratch.tiff", "/tmp/scratch.tiff"],
+            ["/tmp", "scratch.tiff", "/tmp/scratch.tiff"],
+            ["/tmp///", "scratch.tiff", "/tmp/scratch.tiff"],
+            ["/tmp///", "///scratch.tiff", "/tmp/scratch.tiff"],
+            ["/", "scratch.tiff", "/scratch.tiff"],
+            ["", "scratch.tiff", "scratch.tiff"],
+            ["", "", ""],
+            ["", "/", ""],
+            ["/", "/", "/"],
+            ["/tmp", nil, "/tmp"],
+            ["/tmp", "/", "/tmp"],
+            ["/tmp/", "", "/tmp"]
+        ];
 
     for (var i = 0; i < testStrings.length; i++)
     {
         var result = [testStrings[i][0] stringByAppendingPathComponent:testStrings[i][1]];
-        
+
         [self assertTrue:result === testStrings[i][2] message:"Value <" + testStrings[i][0] + "> Adding <" + testStrings[i][1] + "> Expected <" + testStrings[i][2] + "> was <" + result + ">"];
     }
 }
@@ -255,18 +255,18 @@
 - (void)testStringByAppendingPathExtension
 {
     var testStrings = [
-        ["/tmp/scratch.old", "tiff", "/tmp/scratch.old.tiff"],
-        ["/tmp/scratch.", "tiff", "/tmp/scratch..tiff"],
-        ["/tmp///", "tiff", "/tmp.tiff"],
-        ["scratch", "tiff", "scratch.tiff"],
-        ["/", "tiff", "/"],
-        ["", "tiff", ""]
-    ];
+            ["/tmp/scratch.old", "tiff", "/tmp/scratch.old.tiff"],
+            ["/tmp/scratch.", "tiff", "/tmp/scratch..tiff"],
+            ["/tmp///", "tiff", "/tmp.tiff"],
+            ["scratch", "tiff", "scratch.tiff"],
+            ["/", "tiff", "/"],
+            ["", "tiff", ""]
+        ];
 
     for (var i = 0; i < testStrings.length; i++)
     {
         var result = [testStrings[i][0] stringByAppendingPathExtension:testStrings[i][1]];
-        
+
         [self assertTrue:result === testStrings[i][2] message:"Value <" + testStrings[i][0] + "> Adding <" + testStrings[i][1] + "> Expected <" + testStrings[i][2] + "> was <" + result + ">"];
     }
 }
@@ -274,26 +274,26 @@
 - (void)testStringByDeletingLastPathComponent
 {
     var testStrings = [
-        ["/tmp/scratch.tiff", "/tmp"],
-        ["/tmp/lock/", "/tmp"],
-        ["/tmp/", "/"],
-        ["/tmp", "/"],
-        ["/", "/"],
-        ["scratch.tiff", ""],
-        ["a/b/c/d//////",  "a/b/c"],
-        ["a/b/////////c/d//////",  "a/b/c"],
-        ["a/b/././././c/d/./././", "a/b/././././c/d/./."],
-        [@"a/b/././././d////", "a/b/./././."],
-        [@"~/a", "~"],
-        [@"~/a/", "~"],
-        [@"../../", ".."],
-        [@"", ""]
-    ];
+            ["/tmp/scratch.tiff", "/tmp"],
+            ["/tmp/lock/", "/tmp"],
+            ["/tmp/", "/"],
+            ["/tmp", "/"],
+            ["/", "/"],
+            ["scratch.tiff", ""],
+            ["a/b/c/d//////",  "a/b/c"],
+            ["a/b/////////c/d//////",  "a/b/c"],
+            ["a/b/././././c/d/./././", "a/b/././././c/d/./."],
+            [@"a/b/././././d////", "a/b/./././."],
+            [@"~/a", "~"],
+            [@"~/a/", "~"],
+            [@"../../", ".."],
+            [@"", ""]
+        ];
 
     for (var i = 0; i < testStrings.length; i++)
     {
         var result = [testStrings[i][0] stringByDeletingLastPathComponent];
-        
+
         [self assertTrue:result === testStrings[i][1] message:"Value <" + testStrings[i][0] + "> Expected <" + testStrings[i][1] + "> was <" + result + ">"];
     }
 }
@@ -301,18 +301,18 @@
 - (void)testPathWithComponents
 {
     var testStrings = [
-        [["tmp", "scratch"], "tmp/scratch"],
-        [["/", "tmp", "scratch"], "/tmp/scratch"],
-        [["/", "tmp", "/", "scratch"], "/tmp/scratch"],
-        [["/", "tmp", "scratch", "/"], "/tmp/scratch"],
-        [["/", "tmp", "scratch", ""], "/tmp/scratch"],
-        [["", "/tmp", "scratch", ""], "/tmp/scratch"],
-        [["", "tmp", "scratch", ""], "tmp/scratch"],
-        [["/"], "/"],
-        [["/", "/", "/"], "/"],
-        [["", "", ""], ""],
-        [[""], ""]
-    ];
+            [["tmp", "scratch"], "tmp/scratch"],
+            [["/", "tmp", "scratch"], "/tmp/scratch"],
+            [["/", "tmp", "/", "scratch"], "/tmp/scratch"],
+            [["/", "tmp", "scratch", "/"], "/tmp/scratch"],
+            [["/", "tmp", "scratch", ""], "/tmp/scratch"],
+            [["", "/tmp", "scratch", ""], "/tmp/scratch"],
+            [["", "tmp", "scratch", ""], "tmp/scratch"],
+            [["/"], "/"],
+            [["/", "/", "/"], "/"],
+            [["", "", ""], ""],
+            [[""], ""]
+        ];
 
     for (var i = 0; i < testStrings.length; i++)
     {
@@ -325,15 +325,15 @@
 - (void)testPathComponents
 {
     var testStrings = [
-        ["tmp/scratch", ["tmp", "scratch"]],
-        ["/tmp/scratch", ["/", "tmp", "scratch"]],
-        ["/tmp/scratch/", ["/", "tmp", "scratch", "/"]],
-        ["/tmp/", ["/", "tmp", "/"]],
-        ["/////tmp/////scratch///", ["/", "tmp", "scratch", "/"]],
-        ["scratch.tiff", ["scratch.tiff"]],
-        ["/", ["/"]],
-        ["", [""]]
-    ];
+            ["tmp/scratch", ["tmp", "scratch"]],
+            ["/tmp/scratch", ["/", "tmp", "scratch"]],
+            ["/tmp/scratch/", ["/", "tmp", "scratch", "/"]],
+            ["/tmp/", ["/", "tmp", "/"]],
+            ["/////tmp/////scratch///", ["/", "tmp", "scratch", "/"]],
+            ["scratch.tiff", ["scratch.tiff"]],
+            ["/", ["/"]],
+            ["", [""]]
+        ];
 
     for (var i = 0; i < testStrings.length; i++)
     {
@@ -346,13 +346,13 @@
 - (void)testLastPathComponent
 {
     var testStrings = [
-        ["/tmp/scratch.tiff", "scratch.tiff"],
-        ["/tmp/scratch", "scratch"],
-        ["/tmp/", "tmp"],
-        ["scratch", "scratch"],
-        ["/", "/"],
-        ["", ""]
-    ];
+            ["/tmp/scratch.tiff", "scratch.tiff"],
+            ["/tmp/scratch", "scratch"],
+            ["/tmp/", "tmp"],
+            ["scratch", "scratch"],
+            ["/", "/"],
+            ["", ""]
+        ];
 
     for (var i = 0; i < testStrings.length; i++)
         [self assert:testStrings[i][1] equals:[testStrings[i][0] lastPathComponent]];
@@ -361,12 +361,12 @@
 - (void)testPathExtension
 {
     var testStrings = [
-        ["/tmp/scratch.tiff", "tiff"],
-        ["scratch.png", "png"],
-        ["/tmp/scratch..tiff", "tiff"],
-        ["/tmp", ""],
-        ["scratch", ""],
-    ];
+            ["/tmp/scratch.tiff", "tiff"],
+            ["scratch.png", "png"],
+            ["/tmp/scratch..tiff", "tiff"],
+            ["/tmp", ""],
+            ["scratch", ""],
+        ];
 
     for (var i = 0; i < testStrings.length; i++)
         [self assert:testStrings[i][1] equals:[testStrings[i][0] pathExtension]];
@@ -375,13 +375,13 @@
 - (void)testStringByDeletingPathExtension
 {
     var testStrings = [
-        ["/tmp/scratch.tiff", "/tmp/scratch"],
-        ["scratch.png", "scratch"],
-        ["/tmp/scratch..tiff", "/tmp/scratch."],
-        ["/tmp", "/tmp"],
-        [".tiff", ".tiff"],
-        ["/", "/"],
-    ];
+            ["/tmp/scratch.tiff", "/tmp/scratch"],
+            ["scratch.png", "scratch"],
+            ["/tmp/scratch..tiff", "/tmp/scratch."],
+            ["/tmp", "/tmp"],
+            [".tiff", ".tiff"],
+            ["/", "/"],
+        ];
 
     for (var i = 0; i < testStrings.length; i++)
         [self assert:testStrings[i][1] equals:[testStrings[i][0] stringByDeletingPathExtension]];
