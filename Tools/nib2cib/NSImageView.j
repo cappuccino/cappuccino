@@ -22,6 +22,8 @@
 
 @import <AppKit/CPImageView.j>
 
+@import "NSCell.j"
+
 
 @implementation CPImageView (NSCoding)
 

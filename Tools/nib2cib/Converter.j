@@ -20,8 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-@import <Foundation/Foundation.j>
-@import <AppKit/AppKit.j>
+@import <Foundation/CPObject.j>
+@import <Foundation/CPArray.j>
+@import <Foundation/CPData.j>
+@import <Foundation/CPException.j>
+@import <Foundation/CPString.j>
+@import <AppKit/CPRadio.j>
 @import <BlendKit/BlendKit.j>
 
 @global java

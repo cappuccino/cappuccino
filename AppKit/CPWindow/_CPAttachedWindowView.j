@@ -20,8 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "_CPWindowView.j"
+@import <Foundation/CPGeometry.j>
+
 @import "CGGradient.j"
+@import "_CPWindowView.j"
 
 @global CPPopoverAppearanceMinimal
 

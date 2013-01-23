@@ -1097,7 +1097,7 @@ The sum of the views and the sum of the dividers should be equal to the size of 
     for (var i = 0; i < count; i++)
     {
         var frame = [_subviews[i] frame];
-        [positions addObject:CPStringFromRect(frame)];
+        [positions addObject:CGStringFromRect(frame)];
         [preCollapseArray addObject:[_preCollapsePositions objectForKey:"" + i]];
     }
 

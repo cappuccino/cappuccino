@@ -20,19 +20,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <Foundation/Foundation.j>
+@import <Foundation/CPObject.j>
 @import <AppKit/CPCollectionView.j>
 @import <AppKit/CPColorPanel.j>
 @import <AppKit/CPScrollView.j>
 @import <AppKit/CPSplitView.j>
-@import <AppKit/CPTheme.j>
 @import <AppKit/CPToolbar.j>
 @import <AppKit/CPView.j>
-@import <AppKit/CPWindow.j>
+@import <AppKit/CPWindow_Constants.j>
 
 @import "BKThemeDescriptor.j"
 
+@class CPWindow
 
+@global CPApp
 
 var LEFT_PANEL_WIDTH    = 176.0;
 

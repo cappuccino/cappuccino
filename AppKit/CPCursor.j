@@ -161,7 +161,7 @@ var currentCursor = nil,
         if (doesHaveImage)
         {
             var themeResourcePath = [[[CPApp themeBlend] bundle] resourcePath];
-            cssString = [CPString stringWithFormat:@"url(%@/cursors/%@.cur), %@", themeResourcePath, cursorName, aString];
+            cssString = [CPString stringWithFormat:@"url(%@cursors/%@.cur), %@", themeResourcePath, cursorName, aString];
         }
 
         else

@@ -20,11 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <AppKit/CPFont.j>
 @import <AppKit/CPTextField.j>
 
-@import "NSControl.j"
 @import "NSCell.j"
-@import <AppKit/CPFont.j>
+@import "NSControl.j"
 
 @implementation CPTextField (NSCoding)
 

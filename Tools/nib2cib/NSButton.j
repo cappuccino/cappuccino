@@ -27,6 +27,7 @@
 @import <AppKit/CPCheckBox.j>
 @import <AppKit/CPRadio.j>
 
+@import "Converter.j"
 @import "NSCell.j"
 @import "NSControl.j"
 

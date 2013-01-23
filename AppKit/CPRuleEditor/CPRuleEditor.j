@@ -2103,7 +2103,7 @@ TODO: implement
     [dragview setBackgroundColor:[firstSlice backgroundColor]];
     [dragview setAlphaValue:0.7];
 
-    dragPoint = CPMakePoint(0, firstIndex * _sliceHeight);
+    dragPoint = CGPointMake(0, firstIndex * _sliceHeight);
 
     [self dragView:dragview
                 at:dragPoint
@@ -2165,7 +2165,7 @@ TODO: implement
         if (_subviewIndexOfDropLine !== CPNotFound && _subviewIndexOfDropLine < numberOfRows)
         {
             var previousBelowSlice = [_slices objectAtIndex:_subviewIndexOfDropLine];
-            [previousBelowSlice setFrameOrigin:CPMakePoint(0, [previousBelowSlice rowIndex] * _sliceHeight)];
+            [previousBelowSlice setFrameOrigin:CGPointMake(0, [previousBelowSlice rowIndex] * _sliceHeight)];
         }
 
         if (indexOfDropLine <= _lastRow && indexOfDropLine < numberOfRows)

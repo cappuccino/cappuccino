@@ -21,6 +21,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <AppKit/CPRadio.j>
 @import <AppKit/CPView.j>
 
 @import "NSView.j"

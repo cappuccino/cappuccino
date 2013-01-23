@@ -24,9 +24,9 @@
 @import <Foundation/CPException.j>
 @import <Foundation/CPMutableArray.j>
 
-@import "CoreGraphics/CGColor.j"
-@import "CoreGraphics/CGColorSpace.j"
-@import "CoreGraphics/CGGradient.j"
+@import "CGColor.j"
+@import "CGColorSpace.j"
+@import "CGGradient.j"
 @import "CPGraphicsContext.j"
 
 CPGradientDrawsBeforeStartingLocation   = kCGGradientDrawsBeforeStartLocation;

@@ -26,7 +26,6 @@
 @import "NSEvent.j"
 @import "NSMenu.j"
 
-
 @implementation CPMenuItem (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder

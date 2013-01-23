@@ -21,13 +21,13 @@
  */
 
 @import <Foundation/CPBundle.j>
-@import <Foundation/CPGeometry.j>
 @import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPObject.j>
 @import <Foundation/CPRunLoop.j>
 @import <Foundation/CPString.j>
 @import <Foundation/CPData.j>
 
+@import "CGGeometry.j"
 @import "CPCompatibility.j"
 
 CPImageLoadStatusInitialized    = 0;

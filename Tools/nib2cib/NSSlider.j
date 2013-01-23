@@ -22,6 +22,9 @@
 
 @import <AppKit/CPSlider.j>
 
+@import "NSCell.j"
+
+
 @implementation CPSlider (CPCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder

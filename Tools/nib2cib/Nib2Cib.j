@@ -20,12 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-@import <Foundation/Foundation.j>
-@import <AppKit/AppKit.j>
+@import <Foundation/CPObject.j>
+@import <Foundation/CPArray.j>
+@import <Foundation/CPDictionary.j>
+@import <Foundation/CPString.j>
 @import <BlendKit/BlendKit.j>
-
-@import "NSFoundation.j"
-@import "NSAppKit.j"
 
 @import "Nib2CibKeyedUnarchiver.j"
 @import "Converter.j"

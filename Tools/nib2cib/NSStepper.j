@@ -22,6 +22,9 @@
 
 @import <AppKit/CPStepper.j>
 
+@import "NSCell.j"
+
+
 @implementation CPStepper (CPCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder

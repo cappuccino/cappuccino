@@ -4179,7 +4179,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                                                      tableColumns:tableColumns
                                                             event:currentEvent
                                                            offset:offset];
-                    view = [[CPImageView alloc] initWithFrame:CPMakeRect(0, 0, [image size].width, [image size].height)];
+                    view = [[CPImageView alloc] initWithFrame:CGRectMake(0, 0, [image size].width, [image size].height)];
                     [view setImage:image];
                 }
 

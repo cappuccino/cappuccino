@@ -22,8 +22,6 @@
 
 @import <AppKit/CPMenu.j>
 
-@import "NSMenuItem.j"
-
 
 NS_CPMenuNameMap =
 {

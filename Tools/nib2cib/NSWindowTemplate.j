@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <AppKit/CPPanel.j>
 @import <AppKit/_CPCibWindowTemplate.j>
 
 @global CP_NSMapClassName

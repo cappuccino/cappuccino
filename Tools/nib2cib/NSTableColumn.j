@@ -20,10 +20,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-
+@import <AppKit/CPLevelIndicator.j>
 @import <AppKit/CPTableColumn.j>
 @import <AppKit/CPTableHeaderView.j>
 @import <AppKit/CPButton.j>
+
+@import "NSButton.j"
+@import "NSImageView.j"
+@import "NSLevelIndicator.j"
+@import "NSTextField.j"
 
 @implementation CPTableColumn (NSCoding)
 

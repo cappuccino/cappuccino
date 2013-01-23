@@ -22,7 +22,7 @@
 
 @import <Foundation/CPString.j>
 
-@import "CoreGraphics/CGGeometry.j"
+@import "CGGeometry.j"
 @import "CPPlatformString.j"
 
 

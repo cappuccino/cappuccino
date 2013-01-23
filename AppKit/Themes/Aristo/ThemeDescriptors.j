@@ -4,11 +4,50 @@
  *
  * Created by Francisco Tolmasky.
  * Copyright 2009, 280 North, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 @import <Foundation/CPObject.j>
-@import <AppKit/AppKit.j>
+@import <Foundation/CPGeometry.j>
+@import <AppKit/CPApplication.j>
+@import <AppKit/CPBrowser.j>
+@import <AppKit/CPButton.j>
+@import <AppKit/CPButtonBar.j>
+@import <AppKit/CPCheckBox.j>
+@import <AppKit/CPComboBox.j>
+@import <AppKit/CPColorWell.j>
+@import <AppKit/CPLevelIndicator.j>
+@import <AppKit/CPPopUpButton.j>
+@import <AppKit/CPProgressIndicator.j>
+@import <AppKit/CPRadio.j>
+@import <AppKit/CPRuleEditor.j>
+@import <AppKit/CPScroller.j>
+@import <AppKit/CPScrollView.j>
+@import <AppKit/CPSegmentedControl.j>
+@import <AppKit/CPSlider.j>
+@import <AppKit/CPSplitView.j>
+@import <AppKit/CPStepper.j>
 @import <AppKit/CPTableHeaderView.j>
+@import <AppKit/CPSearchField.j>
+@import <AppKit/CPTextField.j>
+@import <AppKit/CPTokenField.j>
+@import <AppKit/CPWindow.j>
+@import <AppKit/_CPToolTip.j>
+
+@import <BlendKit/BKThemeDescriptor.j>
 
 var themedButtonValues = nil,
     themedTextFieldValues = nil,

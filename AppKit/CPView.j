@@ -21,13 +21,11 @@
  */
 
 @import <Foundation/CPArray.j>
-@import <Foundation/CPGeometry.j>
 @import <Foundation/CPObjJRuntime.j>
 @import <Foundation/CPSet.j>
 
 @import "CGAffineTransform.j"
-
-
+@import "CGGeometry.j"
 @import "CPColor.j"
 @import "CPGraphicsContext.j"
 @import "CPResponder.j"
