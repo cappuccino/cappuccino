@@ -24,15 +24,15 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPString.j>
 
+@import "CPCibBindingConnector.j"
 @import "CPCibConnector.j"
 @import "CPCibControlConnector.j"
-@import "CPCibOutletConnector.j"
-@import "CPCibBindingConnector.j"
 @import "CPCibHelpConnector.j"
+@import "CPCibOutletConnector.j"
+@import "CPCibRuntimeAttributesConnector.j"
 @import "CPClipView.j"
 
 @class CPScrollView
-@class CPCibRuntimeAttributesConnector
 
 
 @implementation _CPCibObjectData : CPObject
