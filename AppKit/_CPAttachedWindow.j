@@ -189,6 +189,12 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
         // TODO: don't recompute everything, just compute the move offset
         var edge = [_windowView preferredEdge];
 
+        if (![_targetView window])
+        {
+            [self _close]
+            return;
+        }
+
         [self positionRelativeToRect:nil ofView:_targetView preferredEdge:edge];
     }
 }
