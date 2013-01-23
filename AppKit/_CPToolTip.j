@@ -25,6 +25,7 @@
 @import "CPWindow.j"
 
 @global CPApp
+@class _CPToolTipWindowView
 
 _CPToolTipWindowMask = 1 << 27;
 
