@@ -25,8 +25,10 @@
 @import <Foundation/CPData.j>
 @import <Foundation/CPException.j>
 @import <Foundation/CPString.j>
-@import <AppKit/CPRadio.j>
 @import <BlendKit/BlendKit.j>
+
+@import "NSFoundation.j"
+@import "NSAppKit.j"
 
 @global java
 

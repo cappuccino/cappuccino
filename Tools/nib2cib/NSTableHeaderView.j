@@ -22,8 +22,7 @@
 
 @import <AppKit/CPTableHeaderView.j>
 
-@import "Converter.j"
-
+@class Converter
 @class CPTableView
 
 

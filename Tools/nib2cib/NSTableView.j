@@ -22,7 +22,7 @@
 
 @import <AppKit/CPTableView.j>
 
-@import "Converter.j"
+@class Converter
 
 
 @implementation CPTableView (NSCoding)

@@ -22,8 +22,9 @@
 
 @import <AppKit/CPSegmentedControl.j>
 
-@import "Converter.j"
 @import "NSCell.j"
+
+@class Converter
 
 
 @implementation CPSegmentedControl (CPCoding)

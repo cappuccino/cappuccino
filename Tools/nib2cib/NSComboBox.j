@@ -23,8 +23,9 @@
 @import <AppKit/CPTextField.j>
 @import <AppKit/CPComboBox.j>
 
-@import "Converter.j"
 @import "NSTextField.j"
+
+@class Converter
 
 
 @implementation CPComboBox (NSCoding)
