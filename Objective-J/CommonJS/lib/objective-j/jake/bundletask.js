@@ -851,6 +851,12 @@ BundleTask.prototype.defineSourceTasks = function()
 
         environmentSources.forEach(function(/*String*/ aFilename)
         {
+           // Make sure all classes are removed and all FileExecutables are removed.
+            ObjectiveJ.Executable.resetCachedFileExecutableSearchers();
+            ObjectiveJ.StaticResource.resetRootResources();
+            ObjectiveJ.FileExecutable.resetFileExecutables();
+            objj_resetRegisterClasses();
+
             if (!FILE.exists(aFilename))
                 return;
 
@@ -889,7 +895,10 @@ BundleTask.prototype.defineSourceTasks = function()
                         absolutePath = FILE.absolute(theTranslatedFilename),
                         basePath = absolutePath.substring(0, absolutePath.length - theTranslatedFilename.length);
 
+                    // Here we set the current compiler flags so the load system will know what compiler flags to use
                     ObjectiveJ.setCurrentCompilerFlags(environmentCompilerFlags);
+                    // Here we tell the CFBundle to load frameworks for the current build enviroment and not the enviroment that is running
+                    CFBundle.environments = function() {return [anEnvironment.name(), "ObjJ"]};
                     ObjectiveJ.make_narwhal_factory(absolutePath, basePath, translateFilenameToPath)(require, e, module, system, print);
                     TERM.stream.write("Compiling [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)").flush();
 
