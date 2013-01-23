@@ -148,7 +148,7 @@ var _builtInCharacterSets = {};
 {
     var cs = _builtInCharacterSets[csname];
 
-    if (cs === nil)
+    if (!cs)
     {
         var i = 0,
             ranges = [CPArray array],
