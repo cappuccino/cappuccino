@@ -70,6 +70,22 @@ var themedButtonValues = nil,
     return @"Aristo2";
 }
 
++ (CPArray)themeShowcaseExcludes
+{
+    return ["themedAlert",
+            "themedMenuView",
+            "themedMenuItemStandardView",
+            "themedMenuItemMenuBarView",
+            "themedToolbarView",
+            "themedBordelessBridgeWindowView",
+            "themedWindowView",
+            "themedBrowser",
+            "themedRuleEditor",
+            "themedTableDataView",
+            "themedCornerview",
+            "themedTokenFieldTokenCloseButton"];
+}
+
 + (CPButton)makeButton
 {
     return [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 25)];
@@ -891,7 +907,7 @@ var themedButtonValues = nil,
             [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBordered],
             [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBordered | CPThemeStateHighlighted],
 
-            [@"offset",         CGPointMake(18, 6),                 CPThemeStateBordered]
+            [@"offset",         CGPointMake(17, 6),                 CPThemeStateBordered]
         ];
 
     [self registerThemeValues:themeValues forView:button];

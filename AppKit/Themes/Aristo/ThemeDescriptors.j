@@ -368,8 +368,20 @@ var themedButtonValues = nil,
 
 + (CPArray)themeShowcaseExcludes
 {
-    return ["alert", "cornerview", "columnHeader", "tableView", "tableHeaderRow", "tableDataView", "ruleeditor", "scrollView", "horizontalScroller", "verticalScroller", "tooltip"];
+    return ["themedAlert",
+            "themedMenuView",
+            "themedMenuItemStandardView",
+            "themedMenuItemMenuBarView",
+            "themedToolbarView",
+            "themedBordelessBridgeWindowView",
+            "themedWindowView",
+            "themedBrowser",
+            "themedRuleEditor",
+            "themedTableDataView",
+            "themedCornerview",
+            "themedTokenFieldTokenCloseButton"];
 }
+
 
 + (CPButton)makeButton
 {
@@ -668,6 +680,8 @@ var themedButtonValues = nil,
     [scroller setFloatValue:0.1];
     [scroller setKnobProportion:0.5];
 
+    [scroller setStyle:CPScrollerStyleLegacy];
+
     return scroller;
 }
 
@@ -787,6 +801,8 @@ var themedButtonValues = nil,
 
     [scroller setFloatValue:0.1];
     [scroller setKnobProportion:0.5];
+
+    [scroller setStyle:CPScrollerStyleLegacy];
 
     return scroller;
 }
@@ -997,7 +1013,7 @@ var themedButtonValues = nil,
 
 + (CPTextField)themedRoundedTextField
 {
-    var textfield = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 30.0)],
+    var textfield = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, 160.0, 30.0)],
         bezelColor = PatternColor(
             [
                 ["textfield-bezel-rounded-left.png", 15.0, 30.0],
@@ -1056,7 +1072,7 @@ var themedButtonValues = nil,
 
 + (CPSearchField)themedSearchField
 {
-    var searchField = [[CPSearchField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 30.0)],
+    var searchField = [[CPSearchField alloc] initWithFrame:CGRectMake(0.0, 0.0, 160.0, 30.0)],
 
         imageSearch = PatternImage("search-field-search.png", 25.0, 22.0),
         imageFind = PatternImage("search-field-find.png", 25.0, 22.0),
@@ -2010,7 +2026,7 @@ var themedButtonValues = nil,
 
 + (_CPToolTipWindowView)themedTooltip
 {
-    var toolTipView = [[_CPToolTipWindowView alloc] initWithFrame:CGRectMakeZero() styleMask:_CPToolTipWindowMask],
+    var toolTipView = [[_CPToolTipWindowView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 100.0) styleMask:_CPToolTipWindowMask],
 
         themeValues =
         [
@@ -2189,7 +2205,7 @@ var themedButtonValues = nil,
 
 + (CPShadowView)themedShadowView
 {
-    var shadowView = [[CPShadowView alloc] initWithFrame:CGRectMakeZero()],
+    var shadowView = [[CPShadowView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100, 100)],
 
         lightColor = PatternColor(
         [
@@ -2253,7 +2269,7 @@ var themedButtonValues = nil,
 
 + (_CPModalWindowView)themedModalWindowView
 {
-    var modalWindowView = [[_CPModalWindowView alloc] initWithFrame:CGRectMake(0,0,400,300) styleMask:_CPModalWindowView];
+    var modalWindowView = [[_CPModalWindowView alloc] initWithFrame:CGRectMake(0,0,200,200) styleMask:_CPModalWindowView];
 
     var bezelColor = PatternColor(
         [
@@ -2315,7 +2331,7 @@ var themedButtonValues = nil,
 
 + (_CPHUDWindowView)themedHUDWindowView
 {
-    var HUDWindowView = [[_CPHUDWindowView alloc] initWithFrame:CGRectMake(0,0,250,150) styleMask:CPHUDBackgroundWindowMask | CPClosableWindowMask],
+    var HUDWindowView = [[_CPHUDWindowView alloc] initWithFrame:CGRectMake(0,0,200,200) styleMask:CPHUDBackgroundWindowMask | CPClosableWindowMask],
 
         HUDBezelColor = PatternColor(
         [
@@ -2361,7 +2377,7 @@ var themedButtonValues = nil,
 
 + (_CPStandardWindowView)themedStandardWindowView
 {
-    var standardWindowView = [[_CPStandardWindowView alloc] initWithFrame:CGRectMake(0,0,200,300) styleMask:CPClosableWindowMask],
+    var standardWindowView = [[_CPStandardWindowView alloc] initWithFrame:CGRectMake(0,0,200,200) styleMask:CPClosableWindowMask],
 
         bezelHeadColor = PatternColor(
         [
@@ -2450,7 +2466,7 @@ var themedButtonValues = nil,
 
 + (_CPDocModalWindowView)themedDocModalWindowView
 {
-    var docModalWindowView = [[_CPDocModalWindowView alloc] initWithFrame:CGRectMake(0,0,200,300) styleMask:nil],
+    var docModalWindowView = [[_CPDocModalWindowView alloc] initWithFrame:CGRectMake(0,0,200,200) styleMask:nil],
 
         bezelColor = PatternColor(
         [
