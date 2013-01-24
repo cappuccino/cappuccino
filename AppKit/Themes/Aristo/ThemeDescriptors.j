@@ -1056,9 +1056,22 @@ var themedButtonValues = nil,
 
 + (CPSearchField)themedSearchField
 {
-    var searchField = [[CPSearchField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 30.0)];
+    var searchField = [[CPSearchField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 30.0)],
 
-    [self registerThemeValues:nil forView:searchField inherit:themedRoundedTextFieldValues];
+        imageSearch = PatternImage("search-field-search.png", 25.0, 22.0),
+        imageFind = PatternImage("search-field-find.png", 25.0, 22.0),
+        imageCancel = PatternImage("search-field-cancel.png", 22.0, 22.0),
+        imageCancelPressed = PatternImage("search-field-cancel-pressed.png", 22.0, 22.0),
+
+        overrides =
+        [
+            [@"image-search", imageSearch],
+            [@"image-find", imageFind],
+            [@"image-cancel", imageCancel],
+            [@"image-cancel-pressed", imageCancelPressed]
+        ];
+
+    [self registerThemeValues:overrides forView:searchField inherit:themedRoundedTextFieldValues];
     return searchField;
 }
 

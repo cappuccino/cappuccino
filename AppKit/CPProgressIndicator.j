@@ -288,6 +288,8 @@ var CPProgressIndicatorSpinningStyleColors  = nil;
 
     _style = aStyle;
 
+    [self setTheme:(_style === CPProgressIndicatorHUDBarStyle) ? [CPTheme defaultHudTheme] : [CPTheme defaultTheme]];
+
     [self updateBackgroundColor];
 }
 
@@ -403,17 +405,16 @@ var CPProgressIndicatorSpinningStyleColors  = nil;
         }
         else
         {
-            // TODO: HUD theme
-           [self setBackgroundColor:[self valueForThemeAttribute:@"bezel-color"]];
+           [self setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
 
            var barView = [self layoutEphemeralSubviewNamed:"bar-view"
                                                  positioned:CPWindowBelow
                             relativeToEphemeralSubviewNamed:nil];
 
            if (_isIndeterminate)
-               [barView setBackgroundColor:[self valueForThemeAttribute:@"inderterminate-bar-color"]];
+               [barView setBackgroundColor:[self currentValueForThemeAttribute:@"inderterminate-bar-color"]];
            else
-               [barView setBackgroundColor:[self valueForThemeAttribute:@"bar-color"]];
+               [barView setBackgroundColor:[self currentValueForThemeAttribute:@"bar-color"]];
 
         }
     }
