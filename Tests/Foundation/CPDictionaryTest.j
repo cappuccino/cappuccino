@@ -367,7 +367,7 @@
 
     // Stop enumerating after two keys.
     output = [CPMutableDictionary dictionary];
-    stoppingFunction = function(aKey, anObject, stop)
+    var stoppingFunction = function(aKey, anObject, stop)
     {
         [output setValue:anObject forKey:aKey];
         if ([output count] > 1)

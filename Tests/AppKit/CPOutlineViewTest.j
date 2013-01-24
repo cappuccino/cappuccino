@@ -130,7 +130,7 @@
 
     [outlineView expandItem:".1.2"];
 
-    afterSelection = [outlineView selectedRowIndexes];
+    var afterSelection = [outlineView selectedRowIndexes];
     [self assert:2 equals:[afterSelection count] message:"selections should remain"];
 
     [self assert:".1.1" equals:[outlineView itemAtRow:[afterSelection firstIndex]] message:".1.1 selection should remain"];

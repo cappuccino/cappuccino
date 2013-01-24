@@ -5,8 +5,8 @@
 - (void)testSince1970
 {
     /* These two dates should be equal to Fri Jan 13 2009 23:31:30 +0000 */
-    unixDate = [CPDate dateWithTimeIntervalSince1970:1231889490];
-    cocoaDate = [CPDate dateWithTimeIntervalSinceReferenceDate:253582290];
+    var unixDate = [CPDate dateWithTimeIntervalSince1970:1231889490],
+        cocoaDate = [CPDate dateWithTimeIntervalSinceReferenceDate:253582290];
     [self assertTrue:[unixDate isEqualToDate:cocoaDate] message:[unixDate description] + " isEqualToDate: " + [cocoaDate description]];
 }
 

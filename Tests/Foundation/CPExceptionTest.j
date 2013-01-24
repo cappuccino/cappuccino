@@ -2,6 +2,7 @@
 
 @implementation CPExceptionTest : OJTestCase
 {
+    CPException exception;
 }
 
 - (void)setUp
@@ -13,9 +14,9 @@
 
 - (void)testInitWithNameReasonUserInfo
 {
-    var exception = [[CPException alloc] initWithName:@"CPUnsupportedMethodException"
-                                               reason:@"setHeaderCell: is not supported. -setHeaderCell:aView instead."
-                                             userInfo:nil];
+    exception = [[CPException alloc] initWithName:@"CPUnsupportedMethodException"
+                                           reason:@"setHeaderCell: is not supported. -setHeaderCell:aView instead."
+                                         userInfo:nil];
     [self assert:[exception name] equals:"CPUnsupportedMethodException"];
     [self assert:[exception reason] equals:"setHeaderCell: is not supported. -setHeaderCell:aView instead."];
     [self assertThrows:function(){[exception raise]}];
@@ -43,7 +44,7 @@
 
 - (void)testRaise
 {
-    [self assertThrows:function(){[exception raise];}];
+    [self assertThrows:function() { [exception raise]; }];
 }
 
 @end

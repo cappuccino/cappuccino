@@ -10,6 +10,7 @@
 
     id          bob;
     id          obj;
+    id          obj2;
     id          cs101;
     id          focus;
 

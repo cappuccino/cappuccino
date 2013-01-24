@@ -616,7 +616,7 @@
     [self assert:input1[1] equals:[output valueForKey:"1"] message:@"output[0]"];
     [self assert:input1[2] equals:[output valueForKey:"2"] message:@"output[0]"];
 
-    stoppingFunction = function(anObject, idx, stop)
+    var stoppingFunction = function(anObject, idx, stop)
     {
         [output setValue:anObject forKey:"" + idx];
         if ([output count] > 1)

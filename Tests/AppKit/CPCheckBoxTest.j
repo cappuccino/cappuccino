@@ -14,11 +14,11 @@
     var control = [[CPCheckBox alloc] initWithFrame:CGRectMakeZero()];
     [control setAllowsMixedState:YES];
 
-    content = [
-        CPOffState,
-        CPOnState
-    ];
-    arrayController = [[CPArrayController alloc] initWithContent:content];
+    var content = [
+            CPOffState,
+            CPOnState
+        ],
+        arrayController = [[CPArrayController alloc] initWithContent:content];
 
     // First test defaults.
     [control bind:CPValueBinding toObject:arrayController withKeyPath:@"selection.self" options:nil];
