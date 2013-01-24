@@ -32,6 +32,7 @@
 @import "CPScrollView.j"
 @import "CPTableColumn.j"
 @import "CPTableHeaderView.j"
+@import "CPText.j"
 @import "_CPCornerView.j"
 
 @class CPButton

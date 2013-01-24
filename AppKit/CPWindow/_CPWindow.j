@@ -26,10 +26,11 @@
 
 @import "CGGeometry.j"
 @import "CPAnimation.j"
+@import "CPEvent.j"
 @import "CPPlatformWindow.j"
 @import "CPResponder.j"
 @import "CPScreen.j"
-@import "CPEvent.j"
+@import "CPText.j"
 @import "CPView.j"
 @import "CPWindow_Constants.j"
 @import "_CPWindowView.j"

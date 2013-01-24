@@ -20,8 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPTableView.j"
 @import "CPPanel.j"
+@import "CPTableView.j"
+@import "CPText.j"
 @import "_CPPopUpListDataSource.j"
 
 @class CPScrollView

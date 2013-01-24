@@ -29,8 +29,9 @@
 
 @import "CPButton.j"
 @import "CPScrollView.j"
-@import "CPTextField.j"
 @import "CPTableView.j"
+@import "CPText.j"
+@import "CPTextField.j"
 @import "CPWindow_Constants.j"
 @import "_CPAutocompleteMenu.j"
 
