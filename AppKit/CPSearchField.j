@@ -189,6 +189,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
         [_cancelButton setAutoresizingMask:CPViewMinXMargin];
         [_cancelButton setTarget:self];
         [_cancelButton setAction:@selector(cancelOperation:)];
+        [_cancelButton setButtonType:CPMomentaryChangeButton];
         [self _updateCancelButtonVisibility];
         [self addSubview:_cancelButton];
     }
