@@ -405,7 +405,6 @@ var CPProgressIndicatorSpinningStyleColors  = nil;
         }
         else
         {
-            // TODO: HUD theme
            [self setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
 
            var barView = [self layoutEphemeralSubviewNamed:"bar-view"
