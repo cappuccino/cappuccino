@@ -45,6 +45,7 @@
 @import <AppKit/CPTextField.j>
 @import <AppKit/CPTokenField.j>
 @import <AppKit/CPWindow.j>
+@import <AppKit/CPAlert.j>
 @import <AppKit/_CPToolTip.j>
 
 var themedButtonValues = nil,
