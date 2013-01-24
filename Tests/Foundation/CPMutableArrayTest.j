@@ -449,11 +449,8 @@
 
 - (void)testMutableCopy
 {
-    var normalArray = [CPArray array];
-
-    [self assertThrows:function () { [array addObject:[CPNull null]] }];
-
-    var mutableArray = [normalArray mutableCopy];
+    var normalArray = [],
+        mutableArray = [normalArray mutableCopy];
 
     [mutableArray addObject:[CPNull null]];
 

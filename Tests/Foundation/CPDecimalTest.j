@@ -143,11 +143,8 @@
 
 - (void)testNormalize
 {
-    var dcm1,
-        dcm2;
-
-    dcm1 = CPDecimalMakeWithString( @"200" );
-    dcm2 = CPDecimalMakeWithString( @"2" );
+    var dcm1 = CPDecimalMakeWithString( @"200" ),
+        dcm2 = CPDecimalMakeWithString( @"2" );
     [self assert:0 equals:CPDecimalNormalize(dcm1,dcm2,CPRoundDown) message:"CPDecimalNormalise() Tn1:call" ];
     [self assert:[2,0,0] equals:dcm1._mantissa message:"CPDecimalNormalise() Tn1: mantissa"];
     [self assert:0 equals:dcm1._exponent message:"CPDecimalNormalise() Tn1: exponent"];

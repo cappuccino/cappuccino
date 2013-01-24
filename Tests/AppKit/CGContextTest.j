@@ -2,6 +2,10 @@
 
 @import "CGTestCase.j"
 
+// These are left undefined in CGContext.j if CPFeatureIsCompatible(CPHTMLCanvasFeature)
+@global CGGStateCreate
+@global CGGStateCreateCopy
+
 @implementation CGContextTest : CGTestCase
 
 - (void)testEnsureTestingCanvas

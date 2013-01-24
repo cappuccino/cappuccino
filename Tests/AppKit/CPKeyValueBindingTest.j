@@ -160,7 +160,7 @@
 
     [tableView addTableColumn:tableColumn];
 
-    content = [
+    var content = [
         [AccessCounter counterWithValueA:"1" valueB:"2"],
         [AccessCounter counterWithValueA:"3" valueB:"4"],
         [AccessCounter counterWithValueA:"5" valueB:"6"],
@@ -229,7 +229,7 @@
     [textField bind:@"hidden" toObject:self withKeyPath:@"FOO" options:nil];
     [self assert:@"cheese" equals:[textField placeholderString] message:"placeholder should not be cleared when a binding is established"];
 
-    content = [
+    var content = [
         [BindingTester testerWithCheese:@"yellow"],
         [BindingTester testerWithCheese:@"green"],
     ];

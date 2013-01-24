@@ -23,6 +23,7 @@
     var slider = [[CPSlider alloc] initWithFrame:CGRectMakeZero()];
 
     [slider setContinuous:NO];
+
     var decoded = [CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:slider]];
     [self assert:[slider isContinuous] equals:[decoded isContinuous] message:@"a decoded slider should preserve isContinuous (NO case)"];
 

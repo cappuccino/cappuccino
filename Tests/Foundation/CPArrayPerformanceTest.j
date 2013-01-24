@@ -5,6 +5,8 @@ var FILE = require("file");
 @import <Foundation/CPNumber.j>
 @import <Foundation/CPSortDescriptor.j>
 
+@global module
+
 var ELEMENTS = 100,
     REPEATS = 10;
 
