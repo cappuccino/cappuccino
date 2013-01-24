@@ -52,7 +52,7 @@
 
 - (void)testSetContent
 {
-    otherContent = [@"5", @"6"];
+    var otherContent = [@"5", @"6"];
     [[self arrayController] setContent:otherContent];
 
     // This has not been decided on yet. See Issue #795.

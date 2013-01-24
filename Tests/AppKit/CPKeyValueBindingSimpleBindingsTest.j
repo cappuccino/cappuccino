@@ -124,8 +124,8 @@
     [self verifyVolume:0 method:"bindings"];
 
     // Test if CPNullPlaceholderBindingOption is correctly decoded
-    var bindingInfo = [textField infoForBinding:@"value"];
-    var nullPlaceHolder = [[bindingInfo objectForKey:CPOptionsKey] objectForKey:CPNullPlaceholderBindingOption];
+    var bindingInfo = [textField infoForBinding:@"value"],
+        nullPlaceHolder = [[bindingInfo objectForKey:CPOptionsKey] objectForKey:CPNullPlaceholderBindingOption];
     [self assert:@"Nothing" equals:nullPlaceHolder];
 }
 
@@ -140,7 +140,7 @@
 
 - (void)updateVolumeFrom:(id)sender
 {
-    newVolume = [sender floatValue];
+    var newVolume = [sender floatValue];
     [track setVolume:newVolume];
     [self updateUserInterface];
 }

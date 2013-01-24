@@ -1,4 +1,5 @@
 @import <Foundation/CPFormatter.j>
+@import <Foundation/CPRange.j>
 
 @implementation CPFormatterTest : OJTestCase
 
@@ -39,6 +40,7 @@
 {
     var formatter = [[CPFormatter alloc] init];
 
-    [self assertThrows:function(){ [formatter isPartialStringValue:@"Hello Wolrd" proposedSelectedRange:CPRangeMake(3,5) originalString:@"Hello World" originalSelectedRange:nil errorDescription:nil]; }];
+    [self assertThrows:function(){ [formatter isPartialStringValue:@"Hello Wolrd" proposedSelectedRange:CPMakeRange(3, 5) originalString:@"Hello World" originalSelectedRange:nil errorDescription:nil]; }];
 }
+
 @end

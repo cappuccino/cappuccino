@@ -20,7 +20,7 @@
 
 @implementation CPTabViewTest : OJTestCase
 {
-    CPTabView       _tableView;
+    CPTabView       _tabView;
     CPTabViewItem   _tabItem1;
     CPTabViewItem   _tabItem2;
 }
