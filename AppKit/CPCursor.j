@@ -23,6 +23,8 @@ Cursor support by browser:
 
 @import <Foundation/CPObject.j>
 
+@global CPApp
+
 var currentCursor = nil,
     cursorStack = [],
     cursors = {},

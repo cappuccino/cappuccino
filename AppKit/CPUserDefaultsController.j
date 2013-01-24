@@ -26,10 +26,9 @@
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPString.j>
+@import <Foundation/CPUserDefaults.j>
 
 @import "CPController.j"
-
-@class CPUserDefaults
 
 @global CPUserDefaultsDidChangeNotification
 

@@ -7,7 +7,7 @@
 
 - (void)setUp
 {
-    var exception = [CPException exceptionWithName:@"CPGenericException"
+    exception = [CPException exceptionWithName:@"CPGenericException"
                                         reason:@"Margins must be positive"
                                       userInfo:nil];
 }
