@@ -24,6 +24,7 @@
 @import <Foundation/CPArray.j>
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPString.j>
+@import <AppKit/CPApplication.j>
 @import <BlendKit/BlendKit.j>
 
 @import "Nib2CibKeyedUnarchiver.j"

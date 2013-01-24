@@ -113,15 +113,15 @@
 @import <Foundation/CPTimer.j>
 
 @import "CPCursor.j"
-@import "CPEvent.j"
-@import "CPText.j"
 @import "CPCompatibility.j"
 @import "CPDOMWindowLayer.j"
 @import "CPDragServer_Constants.j"
+@import "CPEvent.j"
 @import "CPPasteboard.j"
 @import "CPPlatform.j"
 @import "CPPlatformWindow.j"
 @import "CPPlatformWindow+DOMKeys.j"
+@import "CPText.j"
 @import "CPWindow_Constants.j"
 
 @class CPDragServer

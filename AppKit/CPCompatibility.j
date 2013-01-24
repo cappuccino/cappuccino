@@ -20,7 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPEvent.j"
+@import "CPEvent_Constants.j"
 @import "CPPlatform.j"
 
 

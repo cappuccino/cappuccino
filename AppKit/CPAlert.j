@@ -34,6 +34,7 @@
 @import "CPImage.j"
 @import "CPImageView.j"
 @import "CPPanel.j"
+@import "CPText.j"
 @import "CPTextField.j"
 
 @class CPCheckBox

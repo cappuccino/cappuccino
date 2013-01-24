@@ -25,9 +25,8 @@
 
 @import "CPControl.j"
 @import "CPStringDrawing.j"
-
-@global CPWindowAbove
-@global CPWindowBelow
+@import "CPText.j"
+@import "CPWindow_Constants.j"
 
 /* @group CPBezelStyle */
 

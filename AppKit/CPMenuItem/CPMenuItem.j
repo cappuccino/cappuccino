@@ -25,6 +25,7 @@
 @import <Foundation/CPString.j>
 
 @import "CPImage.j"
+@import "CPText.j"
 @import "CPView.j"
 @import "_CPMenuItemView.j"
 
