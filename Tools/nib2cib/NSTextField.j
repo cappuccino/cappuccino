@@ -71,7 +71,7 @@
         else
         {
             // // Adjust frame for difference between layout->bounds rect in IB
-            [self setFrame:CGRectInset(frame, 3.0, 0.0)];
+            // [self setFrame:CGRectInset(frame, 3.0, 0.0)];
 
             // Hack to get baselines to align
             var fontSize = [[self font] size];
