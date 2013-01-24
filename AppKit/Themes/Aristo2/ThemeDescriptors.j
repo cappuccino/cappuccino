@@ -1457,9 +1457,9 @@ var themedButtonValues = nil,
         alternatingRowColors = [[CPColor whiteColor], [CPColor colorWithRed:245.0 / 255.0 green:249.0 / 255.0 blue:252.0 / 255.0 alpha:1.0]],
         gridColor = [CPColor colorWithHexString:@"dce0e2"],
         selectionColor = [CPColor colorWithHexString:@"5780d8"],
-        sourceListSelectionColor = [CPDictionary dictionaryWithObjects: [CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [87.0 / 255.0, 128.0 / 210.0, 216.0 / 255.0, 1.0], [0], 1),
-                                                                          [CPColor colorWithCalibratedRed:84.0 / 255.0 green:121.0 / 255.0 blue:200.0 / 255.0 alpha:1.0],
-                                                                          [CPColor colorWithCalibratedRed:84.0 / 255.0 green:121.0 / 255.0 blue:200.0 / 255.0 alpha:1.0]
+        sourceListSelectionColor = [CPDictionary dictionaryWithObjects: [CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [109.0 / 255.0, 150.0 / 255.0, 238.0 / 255.0, 1.0, 72.0 / 255.0, 113.0 / 255.0, 201.0 / 255.0,1.0], [0,1], 2),
+                                                                          [CPColor colorWithCalibratedRed:73.0 / 255.0 green:109.0 / 255.0 blue:187.0 / 255.0 alpha:1.0],
+                                                                          [CPColor colorWithCalibratedRed:44.0 / 255.0 green:79.0 / 255.0 blue:155.0 / 255.0 alpha:1.0]
                                                                         ]
                                                                forKeys: [CPSourceListGradient, CPSourceListTopLineColor, CPSourceListBottomLineColor]],
 
