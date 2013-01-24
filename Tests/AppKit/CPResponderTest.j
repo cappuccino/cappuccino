@@ -41,6 +41,7 @@
             selector = tests[i + 2];
 
         responder.doCommandCalls = [];
+
         var keyEvent = [CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:0
             timestamp:0 windowNumber:0 context:nil
             characters:character charactersIgnoringModifiers:character isARepeat:NO keyCode:keyCode];
@@ -52,6 +53,7 @@
 - (void)testInterpretKeyEventsWithModifierFlags
 {
     responder.doCommandCalls = [];
+
     var keyEvent = [CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPShiftKeyMask
         timestamp:0 windowNumber:0 context:nil
         characters:CPLeftArrowFunctionKey charactersIgnoringModifiers:CPLeftArrowFunctionKey isARepeat:NO keyCode:CPKeyCodes.LEFT];

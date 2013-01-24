@@ -19,8 +19,8 @@
 {
     var so = [[SomeObject alloc] init],
         someVar = nil,
+        funcOp = [CPFunctionOperation functionOperationWithFunction:function() {[so setAString:@"Hello World"]}];
 
-        funcOp = [CPFunctionOperation functionOperationWithFunction:function() { [so setAString:@"Hello World"] }];
     [funcOp addExecutionFunction:function() {someVar = 'Soylent Green';}];
     [funcOp start];
 

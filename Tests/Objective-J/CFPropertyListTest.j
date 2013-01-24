@@ -1,3 +1,4 @@
+@global module
 
 var FILE = require("file"),
     FileList = require("jake").FileList;
@@ -19,7 +20,7 @@ var FILE = require("file"),
     var path = FILE.join(FILE.dirname(module.path), "PropertyLists/XMLDate.plist"),
         object = CFPropertyList.readPropertyListFromFile(path),
         date = [object objectForKey:@"date"];
-    
+
     [self assert:[CPDate class] equals:[date class]];
     [self assert:[[CPDate alloc] initWithString:"2012-01-01 10:00:00 +0100"] equals:date];
 }

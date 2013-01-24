@@ -14,7 +14,8 @@
     var control = [[CPCheckBox alloc] initWithFrame:CGRectMakeZero()];
     [control setAllowsMixedState:YES];
 
-    var content = [
+    var content =
+        [
             CPOffState,
             CPOnState
         ],
@@ -78,11 +79,12 @@
 {
     var control = [[CPCheckBox alloc] initWithFrame:CGRectMakeZero()];
 
-    content = [
-        [CPDictionary dictionaryWithObject:YES forKey:@"state"],
-        [CPDictionary dictionaryWithObject:NO forKey:@"state"]
-    ];
-    arrayController = [[CPArrayController alloc] initWithContent:content];
+    var content =
+        [
+            [CPDictionary dictionaryWithObject:YES forKey:@"state"],
+            [CPDictionary dictionaryWithObject:NO forKey:@"state"]
+        ],
+        arrayController = [[CPArrayController alloc] initWithContent:content];
 
     // First test defaults.
     [control bind:CPValueBinding toObject:arrayController withKeyPath:@"selection.state" options:[CPDictionary dictionaryWithObject:@"CPNegateBoolean" forKey:CPValueTransformerNameBindingOption]];
