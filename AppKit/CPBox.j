@@ -390,11 +390,6 @@ CPBelowBottom = 6;
     if (!contentFrame)
         return;
 
-    [_contentView setAutoresizingMask:CPViewNotSizable];
-    [self setFrameSize:CGSizeMake(contentFrame.size.width + contentMargin.width * 2,
-                                  contentFrame.size.height + contentMargin.height * 2 + offset[0])];
-    [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-
     [_contentView setFrameOrigin:CGPointMake(contentMargin.width, contentMargin.height + offset[1])];
 }
 
@@ -418,9 +413,6 @@ CPBelowBottom = 6;
 
 - (void)drawRect:(CGRect)rect
 {
-    if (_borderType === CPNoBorder)
-        return;
-
     var bounds = CGRectMakeCopy([self bounds]);
 
     switch (_boxType)
@@ -452,9 +444,13 @@ CPBelowBottom = 6;
             [self _drawBezelBorderInRect:bounds];
             break;
 
-        default:
+        case CPGrooveBorder:
         case CPLineBorder:
             [self _drawLineBorderInRect:bounds];
+            break;
+
+        case CPNoBorder:
+            [self _drawNoBorderInRect:bounds];
             break;
     }
 }
@@ -466,8 +462,8 @@ CPBelowBottom = 6;
     CGContextSetStrokeColor(context, [self borderColor]);
     CGContextSetLineWidth(context, 1.0);
 
-    CGContextMoveToPoint(context, CGRectGetMinX(aRect), CGRectGetMinY(aRect) + 0.5);
-    CGContextAddLineToPoint(context, CGRectGetWidth(aRect), CGRectGetMinY(aRect) + 0.5);
+    CGContextMoveToPoint(context, CGRectGetMinX(aRect), CGRectGetMidY(aRect));
+    CGContextAddLineToPoint(context, CGRectGetWidth(aRect), CGRectGetMidY(aRect));
     CGContextStrokePath(context);
 }
 
@@ -478,8 +474,8 @@ CPBelowBottom = 6;
     CGContextSetStrokeColor(context, [self borderColor]);
     CGContextSetLineWidth(context, 1.0);
 
-    CGContextMoveToPoint(context, CGRectGetMinX(aRect) + 0.5, CGRectGetMinY(aRect));
-    CGContextAddLineToPoint(context, CGRectGetMinX(aRect) + 0.5, CGRectGetHeight(aRect));
+    CGContextMoveToPoint(context, CGRectGetMidX(aRect), CGRectGetMinY(aRect));
+    CGContextAddLineToPoint(context, CGRectGetMidX(aRect), CGRectGetHeight(aRect));
     CGContextStrokePath(context);
 }
 
@@ -522,8 +518,19 @@ CPBelowBottom = 6;
     CGContextSetLineWidth(context, borderWidth);
     CGContextFillRoundedRectangleInRect(context, aRect, cornerRadius, YES, YES, YES, YES);
     CGContextStrokeRoundedRectangleInRect(context, aRect, cornerRadius, YES, YES, YES, YES);
-
 }
+
+
+- (void)_drawNoBorderInRect:(CGRect)aRect
+{
+    var context = [[CPGraphicsContext currentContext] graphicsPort];
+
+    CGContextSetFillColor(context, [self fillColor]);
+    CGContextFillRect(context, aRect);
+}
+
+
+
 
 @end
 
