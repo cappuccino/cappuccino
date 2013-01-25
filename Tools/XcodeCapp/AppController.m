@@ -25,6 +25,20 @@
 
 AppController *SharedAppControllerInstance = nil;
 
+float heightForStringDrawing(NSString *myString, NSFont *myFont, float myWidth)
+{
+    NSTextStorage *textStorage = [[[NSTextStorage alloc] initWithString:myString] autorelease];
+    NSTextContainer *textContainer = [[[NSTextContainer alloc] initWithContainerSize:NSMakeSize(myWidth, FLT_MAX)] autorelease];
+    NSLayoutManager *layoutManager = [[[NSLayoutManager alloc] init] autorelease];
+
+    [layoutManager addTextContainer:textContainer];
+    [textStorage addLayoutManager:layoutManager];
+    [textStorage addAttribute:NSFontAttributeName value:myFont range:NSMakeRange(0, [textStorage length])];
+    [textContainer setLineFragmentPadding:0.0];
+
+    (void) [layoutManager glyphRangeForTextContainer:textContainer];
+    return [layoutManager usedRectForTextContainer:textContainer].size.height;
+}
 
 @implementation AppController
 
@@ -46,6 +60,8 @@ AppController *SharedAppControllerInstance = nil;
 {
     SharedAppControllerInstance = self;
     
+    _archivedDataView = [NSKeyedArchiver archivedDataWithRootObject:dataViewError];
+
     if (!growlDelegateRef)
         growlDelegateRef = [[[PRHEmptyGrowlDelegate alloc] init] autorelease];
     
@@ -152,6 +168,9 @@ AppController *SharedAppControllerInstance = nil;
 - (void)XCodeCappConversionDidStop:(NSNotification *)aNotification
 {
     [_statusItem setImage:_iconActive];
+
+    if ([errorsPanel isVisible])
+        [errorsTable reloadData];
 }
 
 /*!
@@ -263,17 +282,6 @@ AppController *SharedAppControllerInstance = nil;
 }
 
 /*!
- reload error table data and show it
- @param aSender the sender of the action
- */
-- (void)updateErrorTable
-{
-    [errorsTable reloadData];
-    [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
-    [errorsPanel orderFront:self];
-}
-
-/*!
  Open the errors window
  @param aSender the sender of the action
  */
@@ -357,24 +365,21 @@ AppController *SharedAppControllerInstance = nil;
 - (void)tableViewColumnDidResize:(NSNotification *)tableView
 {
     [errorsTable noteHeightOfRowsWithIndexesChanged:
-     [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [[xcc errorList] count])]];
+    [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [[xcc errorList] count])]];
+}
+
+- (NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
+{
+    return [NSKeyedUnarchiver unarchiveObjectWithData:_archivedDataView];
 }
 
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)aRow
 {
-    // Get column you want - first in this case:
-    NSTableColumn *tabCol = [[tableView tableColumns] objectAtIndex:0];
-    float width = [tabCol width];
-    NSRect r = NSMakeRect(0,0,width,1000.0);
-    NSCell *cell = [tabCol dataCellForRow:aRow];
-    NSString *content = [[xcc errorList] objectAtIndex:aRow];
-    [cell setObjectValue:content];
-    float height = [cell cellSizeForBounds:r].height;
-    
-    if (height <= 0)
-        height = 16.0; // Ensure miniumum height is 16.0
-    
-    return height;
+    NSString *content = [[[xcc errorList] objectAtIndex:aRow] objectForKey:@"message"];
+    NSFont *currentFont = [[dataViewError fieldMessage] font];
+    float height = heightForStringDrawing(content, currentFont, [tableView frame].size.width);
+
+    return height + 25;
 }
 
 @end

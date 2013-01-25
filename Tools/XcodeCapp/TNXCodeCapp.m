@@ -545,7 +545,13 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         else if (![status intValue] == 0)
         {
             if (response)
-                [errorList addObject:response];
+            {
+                NSDictionary *errorDictionary = [NSDictionary dictionaryWithObjectsAndKeys:response, @"message",
+                                                                                            splitPath, @"file",
+                                                                                            fullPath, @"path", nil];
+
+                [errorList addObject:errorDictionary];
+            }
 
             [delegate performSelector:@selector(growlWithTitle:message:) withObject:@"Error processing file" withObject:splitPath];
         }
