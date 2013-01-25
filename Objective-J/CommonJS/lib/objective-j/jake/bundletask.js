@@ -873,7 +873,7 @@ BundleTask.prototype.defineSourceTasks = function()
                         document = {
                             createElement: function(x)
                             {
-                                return {innerText: ""};
+                                return {innerText: "", style: {}};
                             }
                         };
                         rhinoUglyFix = true;

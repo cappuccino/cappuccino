@@ -87,7 +87,7 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags, asPlainJavasc
         if (system.engine === "rhino")
         {
             if (typeof document == "undefined") {
-                document = { createElement: function(x) { return { innerText: ""}}};
+                document = { createElement: function(x) { return { innerText: "", style: {}}}};
                 rhinoUglyFix = true;
             }
         }
