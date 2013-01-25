@@ -10,11 +10,25 @@
 	<string>46</string>
 	<key>objects</key>
 	<dict>
+		<key>214B499A9A09D25135D90D84</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.c.objc</string>
+			<key>name</key>
+			<string>_Users_Tonio_Documents_Alcatel-Lucent_Applications_CNA-Dashboard_Libraries_Cappuccino_Tests_Manual_CPBoxTest_AppController.m</string>
+			<key>path</key>
+			<string>.XcodeSupport/_Users_Tonio_Documents_Alcatel-Lucent_Applications_CNA-Dashboard_Libraries_Cappuccino_Tests_Manual_CPBoxTest_AppController.m</string>
+			<key>sourceTree</key>
+			<string>SOURCE_ROOT</string>
+		</dict>
 		<key>399A461A8435A0A657675C03</key>
 		<dict>
 			<key>children</key>
 			<array>
 				<string>44C648E69BDB4D9D1CC552DE</string>
+				<string>AC734E62A9044F518F8D6C21</string>
 			</array>
 			<key>isa</key>
 			<string>PBXGroup</string>
@@ -40,6 +54,19 @@
 			<string>AppController.j</string>
 			<key>path</key>
 			<string>AppController.j</string>
+			<key>sourceTree</key>
+			<string>SOURCE_ROOT</string>
+		</dict>
+		<key>733D4A808DCF77A9E8BCA351</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.c.h</string>
+			<key>name</key>
+			<string>_Users_Tonio_Documents_Alcatel-Lucent_Applications_CNA-Dashboard_Libraries_Cappuccino_Tests_Manual_CPBoxTest_AppController.h</string>
+			<key>path</key>
+			<string>.XcodeSupport/_Users_Tonio_Documents_Alcatel-Lucent_Applications_CNA-Dashboard_Libraries_Cappuccino_Tests_Manual_CPBoxTest_AppController.h</string>
 			<key>sourceTree</key>
 			<string>SOURCE_ROOT</string>
 		</dict>
@@ -127,6 +154,7 @@
 			<key>files</key>
 			<array>
 				<string>40084B2EA0861D408775943B</string>
+				<string>D9D249B19B7E2F4CF2A5C9FB</string>
 			</array>
 			<key>isa</key>
 			<string>PBXSourcesBuildPhase</string>
@@ -452,6 +480,19 @@
 			<key>isa</key>
 			<string>PBXBuildFile</string>
 		</dict>
+		<key>AC734E62A9044F518F8D6C21</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>?</string>
+			<key>name</key>
+			<string>AppController.j</string>
+			<key>path</key>
+			<string>AppController.j</string>
+			<key>sourceTree</key>
+			<string>SOURCE_ROOT</string>
+		</dict>
 		<key>B514473DBBB6B75575FC8C01</key>
 		<dict>
 			<key>isa</key>
@@ -478,6 +519,13 @@
 			<key>sourceTree</key>
 			<string>SOURCE_ROOT</string>
 		</dict>
+		<key>D9D249B19B7E2F4CF2A5C9FB</key>
+		<dict>
+			<key>fileRef</key>
+			<string>214B499A9A09D25135D90D84</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
 		<key>E9AB4F0983C7C03F7EDDCFB1</key>
 		<dict>
 			<key>children</key>
@@ -485,6 +533,8 @@
 				<string>C2CA495BAA4D427B35CC5258</string>
 				<string>B514473DBBB6B75575FC8C01</string>
 				<string>93C748AD8D69861392FEB260</string>
+				<string>733D4A808DCF77A9E8BCA351</string>
+				<string>214B499A9A09D25135D90D84</string>
 			</array>
 			<key>isa</key>
 			<string>PBXGroup</string>

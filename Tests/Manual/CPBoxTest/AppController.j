@@ -14,20 +14,43 @@
 {
     CPWindow    theWindow; //this "outlet" is connected automatically by the Cib
     @outlet     CPBox   box1;
+    @outlet     CPView  documentView;
+    @outlet     CPScrollView mainScrollView;
 }
 
-- (void)applicationDidFinishLaunching:(CPNotification)aNotification
-{
-    // This is called when the application is done loading.
-}
+
 
 - (void)awakeFromCib
 {
-    // This is called when the cib is done loading.
-    // You can implement this method on any object instantiated from a Cib.
-    // It's a useful hook for setting up current UI values, and other things.
-    // In this case, we want the window from Cib to become our full browser window
+    [self makeRedViews];
+
+    [documentView setBackgroundColor:[CPColor whiteColor]];
+    [mainScrollView setDocumentView:documentView];
     [theWindow setFullPlatformWindow:YES];
+}
+
+- (void)makeRedViews
+{
+    var subviews = [documentView subviews];
+
+    for (var i = 0; i < [subviews count]; i++)
+    {
+        var subview = [subviews objectAtIndex:i];
+        if ([subview tag] == "red")
+            [subview setBackgroundColor:[CPColor redColor]];
+    }
+}
+
+- (void)makeTransparentViews
+{
+    var subviews = [documentView subviews];
+
+    for (var i = 0; i < [subviews count]; i++)
+    {
+        var subview = [subviews objectAtIndex:i];
+        if ([subview tag] == "red")
+            [subview setBackgroundColor:nil];
+    }
 }
 
 - (IBAction)click:(id)sender
@@ -71,4 +94,11 @@
     [box1 setTitlePosition:pos];
 }
 
+- (IBAction)switchBoxes:(id)aSender
+{
+    if ([aSender state])
+        [self makeRedViews];
+    else
+        [self makeTransparentViews]
+}
 @end
