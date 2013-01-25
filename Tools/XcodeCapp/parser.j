@@ -47,7 +47,8 @@ var xcc = ObjectiveJ.acorn.walk.make(
                         "name": className,
                         "superClass": superclassname,
                         "outlets": [],
-                        "actions": []
+                        "actions": [],
+                        "actionNames": []
                     };
 
             if (node.ivardeclarations)
@@ -87,6 +88,11 @@ var xcc = ObjectiveJ.acorn.walk.make(
 
             if (methodHasAction && arguments.length == 1)
             {
+                if (st.actionNames.indexOf(selector) !== -1)
+                    throw("Action named '" + selector + "' is declared multiple times");
+
+                st.actionNames.push(selector);
+
                 for (var i = 0; i < arguments.length; i++)
                 {
                     var argument = arguments[i],
