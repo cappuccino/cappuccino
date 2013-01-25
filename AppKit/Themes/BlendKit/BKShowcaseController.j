@@ -132,6 +132,9 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
 
     [_themesCollectionView setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
 
+    // Needed when displaying _CPWindowView, to avoid the moving of the main window
+    [theWindow setMovable:NO];
+
     [theWindow setFullPlatformWindow:YES];
     [theWindow makeKeyAndOrderFront:self];
 }
