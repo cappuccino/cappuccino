@@ -22,7 +22,7 @@
 @import <AppKit/CPBox.j>
 
 
-@implementation CPBox (CPCoding)
+@implementation CPBox (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
@@ -38,6 +38,19 @@
             cornerRadius = [aCoder decodeFloatForKey:@"NSCornerRadius2"],
             borderWidth = [aCoder decodeFloatForKey:@"NSBorderWidth2"],
             contentMargin = [aCoder decodeSizeForKey:@"NSOffsets"];
+
+        // small hack to position the box pixel perfect
+        var frame = [self frame];
+
+        if (_boxType !== CPBoxSeparator)
+        {
+            frame.origin.y += 4;
+            frame.origin.x += 4;
+            frame.size.width -= 8;
+            frame.size.height -= 6;
+        }
+
+        [self setFrame:frame];
 
         if (borderColor)
             [self setBorderColor:borderColor];
