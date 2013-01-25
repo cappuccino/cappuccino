@@ -740,7 +740,7 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
 
         for (var i = 0; i < slices.length; ++i)
         {
-            var imgDescription = [slices[i] description];
+            var imgDescription = [slices[i] description] || "nil";
 
             description += imgDescription.replace(/^/mg, "        ") + ",\n";
         }
@@ -748,7 +748,7 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
         description = description.substr(0, description.length - 2) + "\n    ]\n}";
     }
     else
-        description += [patternImage description].replace(/^/mg, "    ") + "\n}";
+        description += ([patternImage description] || "nil").replace(/^/mg, "    ") + "\n}";
 
     return description;
 }

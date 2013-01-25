@@ -33,6 +33,7 @@ function CGGradientCreateWithColorComponents(aColorSpace, components, locations,
     {
         var num_of_colors = components.length / 4,
             locations = [];
+
         for (var idx = 0; idx < num_of_colors; idx++)
             locations.push( idx / (num_of_colors - 1) );
     }

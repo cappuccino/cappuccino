@@ -538,24 +538,59 @@ CPLog(@"Got some class: %@", inst);
 
 function CPDescriptionOfObject(anObject)
 {
+    if (anObject === nil)
+        return "nil";
+
+    if (anObject === undefined)
+        return "undefined";
+
     if (anObject.isa)
     {
         if ([anObject isKindOfClass:CPString])
             return '@"' + [anObject description] + '"';
+
         return [anObject description];
     }
 
     if (typeof(anObject) !== "object")
         return String(anObject);
 
-    var desc = "JSObject\n{\n";
+    var properties = [],
+        desc;
 
     for (var property in anObject)
-    {
         if (anObject.hasOwnProperty(property))
-            desc += "   " + property + ": " + CPDescriptionOfObject(anObject[property]) + "\n";
-    }
-    desc += "}";
+            properties.push(property);
 
-    return desc.split('\n').join("\n\t");
+    properties.sort();
+
+    if (properties.length === 2 && anObject.hasOwnProperty("width") && anObject.hasOwnProperty("height"))
+        desc = [CPString stringWithFormat:@"CGSize: { width:%f, height:%f }", anObject.width, anObject.height];
+    else if (properties.length === 2 && anObject.hasOwnProperty("x") && anObject.hasOwnProperty("y"))
+        desc = [CPString stringWithFormat:@"CGPoint: { x:%f, y:%f }", anObject.x, anObject.y];
+    else if (properties.length === 2 && anObject.hasOwnProperty("origin") && anObject.hasOwnProperty("size"))
+        desc = [CPString stringWithFormat:@"CGRect: { x:%f, y:%f }, { width:%f, height:%f }", anObject.origin.x, anObject.origin.y, anObject.size.width, anObject.size.height];
+    else if (properties.length === 4 && anObject.hasOwnProperty("top") && anObject.hasOwnProperty("right") && anObject.hasOwnProperty("bottom") && anObject.hasOwnProperty("left"))
+        desc = [CPString stringWithFormat:@"CGInset: { top:%f, right:%f, bottom:%f, left:%f }", anObject.top, anObject.right, anObject.bottom, anObject.left];
+    else
+    {
+        desc = "{";
+
+        for (var i = 0; i < properties.length; ++i)
+        {
+            if (i === 0)
+                desc += "\n";
+
+            desc += "    " + properties[i] + ": " + CPDescriptionOfObject(anObject[properties[i]]).split("\n").join("\n    ");
+
+            if (i < properties.length - 1)
+                desc += ",\n";
+            else
+                desc += "\n";
+        }
+
+        desc += "}";
+    }
+
+    return desc;
 }

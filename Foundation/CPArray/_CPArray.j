@@ -874,18 +874,20 @@ var concat = Array.prototype.concat,
 {
     var index = 0,
         count = [self count],
-        description = "@[";
+        description = "[";
 
     for (; index < count; ++index)
     {
         if (index === 0)
-            description += "\n\t";
+            description += "\n";
 
         var object = [self objectAtIndex:index];
-        description += CPDescriptionOfObject(object);
 
-        if (index !== count - 1)
-            description += ",\n\t";
+        // NOTE: replace(/^/mg, "    ") inserts 4 spaces at the beginning of every line
+        description += CPDescriptionOfObject(object).replace(/^/mg, "    ");
+
+        if (index < count - 1)
+            description += ",\n";
         else
             description += "\n";
     }
