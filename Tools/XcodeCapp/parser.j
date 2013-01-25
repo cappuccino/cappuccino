@@ -63,7 +63,7 @@ var xcc = ObjectiveJ.acorn.walk.make(
                     if (ivarHasOutlet)
                     {
                         if (declaredOutletsName.indexOf(ivarName) !== -1)
-                            throw("Outlet named '" + ivarName + "' is declared multiple times");
+                            throw("Outlet named '" + ivarName + "' is declared multiple times.");
 
                         declaredOutletsName.push(ivarName);
                         classInfo.outlets.push({"type": ivarType, "name": ivarName});
@@ -89,7 +89,7 @@ var xcc = ObjectiveJ.acorn.walk.make(
             if (methodHasAction && arguments.length == 1)
             {
                 if (st.actionNames.indexOf(selector) !== -1)
-                    throw("Action named '" + selector + "' is declared multiple times");
+                    throw("Action named '" + selector + "' is declared multiple times.");
 
                 st.actionNames.push(selector);
 
@@ -105,7 +105,7 @@ var xcc = ObjectiveJ.acorn.walk.make(
                 st.actions.push(actionInformations)
             }
             else if (methodHasAction)
-                throw("Method '" + selector + "' is an action but has more that one parameter");
+                throw("Method '" + selector + "' is an action but has more than one parameter.");
 
         }
     }
