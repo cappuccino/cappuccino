@@ -65,34 +65,13 @@
 
         if ([self isBezeled])
         {
-            [self setFrameOrigin:CGPointMake(frame.origin.x - 6.0, frame.origin.y - 3.0)];
+            [self setFrameOrigin:CGPointMake(frame.origin.x - 4.0, frame.origin.y - 3.0)];
             [self setFrameSize:CGSizeMake(frame.size.width + 8.0, frame.size.height + 7.0)];
         }
         else
         {
-            // // Adjust frame for difference between layout->bounds rect in IB
-            // [self setFrame:CGRectInset(frame, 3.0, 0.0)];
-
-            // Hack to get baselines to align
-            var fontSize = [[self font] size];
-
-            switch (fontSize)
-            {
-                // normal
-                case 13.0:
-                    [self setFrameOrigin:CGPointMake(frame.origin.x, frame.origin.y - 1.0)];
-                    break;
-
-                // small
-                case 11.0:
-                    [self setFrameOrigin:CGPointMake(frame.origin.x, frame.origin.y + 2.0)];
-                    break;
-
-                // mini
-                case 9.0:
-                    [self setFrameOrigin:CGPointMake(frame.origin.x, frame.origin.y + 1.0)];
-                    break;
-            }
+            [self setFrameOrigin:CGPointMake(frame.origin.x + 3.0, frame.origin.y)];
+            [self setFrameSize:CGSizeMake(frame.size.width - 6.0, frame.size.height)];
         }
 
         CPLog.debug("NSTextField: title=\"" + [self stringValue] + "\", placeholder=" + ([cell placeholderString] == null ? "<none>" : '"' + [cell placeholderString] + '"') + ", isBordered=" + [self isBordered] + ", isBezeled="  + [self isBezeled] + ", bezelStyle=" + [self bezelStyle]);
