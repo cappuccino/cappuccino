@@ -1140,9 +1140,9 @@ var themedButtonValues = nil,
 
         bezelColorDisabled = PatternColor(
             [
-                ["token-left-disabled.png", 11.0, 19.0],
-                ["token-center-disabled.png", 1.0, 19.0],
-                ["token-right-disabled.png", 11.0, 19.0]
+                ["token-disabled-left.png", 11.0, 19.0],
+                ["token-disabled-center.png", 1.0, 19.0],
+                ["token-disabled-right.png", 11.0, 19.0]
             ],
             PatternIsHorizontal),
 
@@ -2049,17 +2049,17 @@ var themedButtonValues = nil,
 
     var bezelColor = PatternColor(
             [
-                ["progress-indicator-bezel-border-bar-regular-left.png", 3.0, 16.0],
-                ["progress-indicator-bezel-border-bar-regular-center.png", 1.0, 16.0],
-                ["progress-indicator-bezel-border-bar-regular-right.png", 3.0, 16.0]
+                ["progress-indicator-bezel-border-left.png", 3.0, 16.0],
+                ["progress-indicator-bezel-border-center.png", 1.0, 16.0],
+                ["progress-indicator-bezel-border-right.png", 3.0, 16.0]
             ],
             PatternIsHorizontal),
 
         barColor = PatternColor(
             [
-                ["progress-indicator-bar-bar-regular-left.png", 3.0, 16.0],
-                ["progress-indicator-bar-bar-regular-center.png", 1.0, 16.0],
-                ["progress-indicator-bar-bar-regular-right.png", 3.0, 16.0]
+                ["progress-indicator-bar-left.png", 3.0, 16.0],
+                ["progress-indicator-bar-center.png", 1.0, 16.0],
+                ["progress-indicator-bar-right.png", 3.0, 16.0]
             ],
             PatternIsHorizontal);
 
@@ -2082,24 +2082,24 @@ var themedButtonValues = nil,
 
     var bezelColor = PatternColor(
             [
-                ["progress-indicator-bezel-border-bar-regular-left.png", 3.0, 16.0],
-                ["progress-indicator-bezel-border-bar-regular-center.png", 1.0, 16.0],
-                ["progress-indicator-bezel-border-bar-regular-right.png", 3.0, 16.0]
+                ["progress-indicator-bezel-border-left.png", 3.0, 16.0],
+                ["progress-indicator-bezel-border-center.png", 1.0, 16.0],
+                ["progress-indicator-bezel-border-right.png", 3.0, 16.0]
             ],
             PatternIsHorizontal),
 
         barColor = PatternColor(
             [
-                ["progress-indicator-inderterminate-bar-bar-regular-left.png", 3.0, 16.0],
-                ["progress-indicator-inderterminate-bar-bar-regular-center.png", 1.0, 16.0],
-                ["progress-indicator-inderterminate-bar-bar-regular-right.png", 3.0, 16.0]
+                ["progress-indicator-indeterminate-bar-left.png", 3.0, 16.0],
+                ["progress-indicator-indeterminate-bar-center.png", 1.0, 16.0],
+                ["progress-indicator-indeterminate-bar-right.png", 3.0, 16.0]
             ],
             PatternIsHorizontal);
 
     themedIndeterminateProgressIndicator =
     [
         [@"bezel-color", bezelColor],
-        [@"inderterminate-bar-color", barColor]
+        [@"indeterminate-bar-color", barColor]
     ];
 
     [self registerThemeValues:themedIndeterminateProgressIndicator forView:progressBar];
