@@ -635,12 +635,12 @@
     var array = [CGRectMake(1, 2, 3, 4), CGPointMake(5, 6)],
         d = [array description];
 
-    [self assertTrue:d.indexOf("x: 1") !== -1 message:"Can't find 'x: 1' in description of array " + d];
-    [self assertTrue:d.indexOf("y: 2") !== -1 message:"Can't find 'y: 2' in description of array " + d];
-    [self assertTrue:d.indexOf("width: 3") !== -1 message:"Can't find 'width: 3' in description of array " + d];
-    [self assertTrue:d.indexOf("height: 4") !== -1 message:"Can't find 'height: 4' in description of array " + d];
-    [self assertTrue:d.indexOf("x: 5") !== -1 message:"Can't find 'x: 5' in description of array " + d];
-    [self assertTrue:d.indexOf("y: 6") !== -1 message:"Can't find 'y: 6' in description of array " + d];
+    [self assertTrue:d.indexOf("x:1") !== -1 message:"Can't find 'x:1' in description of array " + d];
+    [self assertTrue:d.indexOf("y:2") !== -1 message:"Can't find 'y:2' in description of array " + d];
+    [self assertTrue:d.indexOf("width:3") !== -1 message:"Can't find 'width:3' in description of array " + d];
+    [self assertTrue:d.indexOf("height:4") !== -1 message:"Can't find 'height:4' in description of array " + d];
+    [self assertTrue:d.indexOf("x:5") !== -1 message:"Can't find 'x:5' in description of array " + d];
+    [self assertTrue:d.indexOf("y:6") !== -1 message:"Can't find 'y:6' in description of array " + d];
 }
 
 - (void)testSortUsingDescriptorsWithDifferentSelectors
