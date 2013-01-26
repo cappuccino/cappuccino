@@ -651,7 +651,7 @@
         var key = keys[index],
             value = self.valueForKey(key);
 
-        string += "    " + key + " = " + CPDescriptionOfObject(value).split("\n").join("\n    ") + ";\n";
+        string += "    @\"" + key + "\": " + CPDescriptionOfObject(value).split("\n").join("\n    ") + (index + 1 < count ? "," : "") + "\n";
     }
 
     return string + "}";

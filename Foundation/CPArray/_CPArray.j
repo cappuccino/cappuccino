@@ -874,7 +874,7 @@ var concat = Array.prototype.concat,
 {
     var index = 0,
         count = [self count],
-        description = "[";
+        description = "@[";
 
     for (; index < count; ++index)
     {
