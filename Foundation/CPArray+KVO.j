@@ -314,7 +314,11 @@
             index = [theObjects count];
 
         while (index--)
-            [indexes addIndex:[self indexOfObject:[theObjects objectAtIndex:index]]];
+        {
+            var position = [self indexOfObject:[theObjects objectAtIndex:index]];
+            if (position !== CPNotFound)
+                [indexes addIndex:position];
+        }
 
         _removeMany(_proxyObject, _removeManySEL, indexes);
     }
@@ -322,7 +326,11 @@
     {
         var index = [theObjects count];
         while (index--)
-            _remove(_proxyObject, _removeSEL, [self indexOfObject:[theObjects objectAtIndex:index]]);
+        {
+            var position = [self indexOfObject:[theObjects objectAtIndex:index]];
+            if (position !== CPNotFound)
+                _remove(_proxyObject, _removeSEL, position);
+        }
     }
     else
     {

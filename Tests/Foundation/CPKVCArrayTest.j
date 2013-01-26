@@ -220,7 +220,11 @@ var COUNTER;
     [[[self object] mutableArrayValueForKey:@"values"] removeObjectsInArray:[3, 6]];
 
     [self assert:[0, 1, 2, 4, 5, 7, 8, 9] equals:[[self object] values]];
-    [self assert:2 equals:COUNTER message:"removeObjectFromValuesAtIndex: should have been called once"]
+    [self assert:2 equals:COUNTER message:"removeObjectFromValuesAtIndex: should have been called twice"]
+
+    // Try to remove something that doesn't exist. Should not crash.
+    [[[self object] mutableArrayValueForKey:@"values"] removeObjectsInArray:[3, 6]];
+    [self assert:[0, 1, 2, 4, 5, 7, 8, 9] equals:[[self object] values]];
 }
 
 - (void)testRemoveObjectsInArrayUsesRemoveKeyAtIndexes
@@ -231,6 +235,10 @@ var COUNTER;
 
     [self assert:[1, 2, 3, 4, 5, 6, 7, 8] equals:[[self object] values]];
     [self assert:1 equals:COUNTER message:@"removeValuesAtIndexes: should have been called once"];
+
+    // Try to remove something that doesn't exist. Should not crash.
+    [[[self object] mutableArrayValueForKey:@"values"] removeObjectsInArray:[0, 9]];
+    [self assert:[1, 2, 3, 4, 5, 6, 7, 8] equals:[[self object] values]];
 }
 
 - (void)testRemoveLastObjectUsesRemoveKeyAtIndex
