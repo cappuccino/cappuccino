@@ -284,7 +284,7 @@ var resizeTimer = nil;
     }
 }
 
-- (void)orderBack:(id)aSender
+- (void)orderBack:(CPWindow)aWindow
 {
     if (_DOMWindow)
         _DOMWindow.blur();
@@ -541,8 +541,11 @@ var resizeTimer = nil;
         return PlatformWindows;
 }
 
-- (void)orderFront:(id)aSender
+- (void)orderFront:(CPWindow)aWindow
 {
+    if ([aWindow parentWindow])
+        return;
+
     if (_DOMWindow)
         return _DOMWindow.focus();
 
@@ -571,7 +574,7 @@ var resizeTimer = nil;
     _DOMBodyElement.style.cursor = [[CPCursor currentCursor] _cssString];
 }
 
-- (void)orderOut:(id)aSender
+- (void)orderOut:(CPWindow)aWindow
 {
     if (!_DOMWindow)
         return;
@@ -1399,26 +1402,116 @@ var resizeTimer = nil;
     return layer;
 }
 
-- (void)order:(CPWindowOrderingMode)aPlace window:(CPWindow)aWindow relativeTo:(CPWindow)otherWindow
+- (void)order:(CPWindowOrderingMode)orderingMode window:(CPWindow)aWindow relativeTo:(CPWindow)otherWindow
 {
     [CPPlatform initializeScreenIfNecessary];
 
     // Grab the appropriate level for the layer, and create it if
     // necessary (if we are not simply removing the window).
-    var layer = [self layerAtLevel:[aWindow level] create:aPlace !== CPWindowOut];
+    var layer = [self layerAtLevel:[aWindow level] create:orderingMode !== CPWindowOut];
 
-    // Ignore otherWindow, simply remove this window from it's level.
+    // When ordering out, ignore otherWindow, simply remove aWindow from its level.
     // If layer is nil, this will be a no-op.
-    if (aPlace === CPWindowOut)
+    if (orderingMode === CPWindowOut)
         return [layer removeWindow:aWindow];
+
+    /*
+        If aWindow is a child of otherWindow and is not yet visible,
+        aWindow must actually be ordered relative to:
+
+        - otherWindow's last child which is not aWindow, or
+        - the furthest parent of aWindow
+
+        whichever is frontmost (orderingMode === CPWindowAbove) or rearmost
+        (orderingMode === CPWindowBelow).
+    */
+
+    if (![aWindow isVisible] && otherWindow && [aWindow parentWindow] === otherWindow)
+    {
+        var children = [otherWindow childWindows],
+            lastChild = [children lastObject];
+
+        if (lastChild === aWindow)
+        {
+            if ([children count] > 1)
+                otherWindow = [children objectAtIndex:[children count] - 2];
+        }
+        else if (lastChild)
+            otherWindow = lastChild;
+
+        var furthestParent = [self _furthestParentOf:otherWindow];
+
+        if ((orderingMode === CPWindowAbove && furthestParent._index > otherWindow._index) ||
+            (orderingMode === CPWindowBelow && furthestParent._index < otherWindow._index))
+            otherWindow = furthestParent;
+    }
+
+    /*
+        If a child window is ordered front, the furthest parent is actually
+        the one that is ordered front, and all of the descendent children
+        are ordered after it.
+    */
+    else if (orderingMode === CPWindowAbove && !otherWindow)
+        aWindow = [self _furthestParentOf:aWindow];
 
     var insertionIndex = CPNotFound;
 
     if (otherWindow)
-        insertionIndex = aPlace === CPWindowAbove ? otherWindow._index + 1 : otherWindow._index;
+        insertionIndex = orderingMode === CPWindowAbove ? otherWindow._index + 1 : otherWindow._index;
 
     // Place the window at the appropriate index.
     [layer insertWindow:aWindow atIndex:insertionIndex];
+
+    // If aWindow is a parent, recursively order all of its children after it
+    if ([[aWindow childWindows] count])
+        [self _orderChildWindowsOf:aWindow furthestParent:[self _furthestParentOf:aWindow] layer:layer];
+}
+
+- (CPWindow)_furthestParentOf:(CPWindow)aWindow
+{
+    var parent;
+
+    while ((parent = [aWindow parentWindow]))
+        aWindow = parent;
+
+    return aWindow;
+}
+
+- (int)_orderChildWindowsOf:(CPWindow)aWindow furthestParent:(CPWindow)furthestParent layer:(CPDOMWindowLayer)aLayer
+{
+    // When a parent window is ordered, Cocoa orders its child windows
+    // relative to it or the furthest parent.
+    var children = [aWindow childWindows],
+        count = [children count],
+        parent = aWindow,
+        index;
+
+    for (var i = 0; i < count; ++i)
+    {
+        var child = children[i];
+
+        if (![child isVisible])
+            continue;
+
+        var ordering = [child _childOrdering];
+
+        if ((ordering === CPWindowAbove && furthestParent._index > parent._index) ||
+            (ordering === CPWindowBelow && furthestParent._index < parent._index))
+            parent = furthestParent;
+
+        index = ordering === CPWindowAbove ? parent._index : parent._index - 1;
+
+        [aLayer insertWindow:child atIndex:index];
+
+        if ([[child childWindows] count])
+            index = [self _orderChildWindowsOf:child furthestParent:furthestParent layer:aLayer];
+        else
+            index = [child _childOrdering] === CPWindowAbove ? child._index : child._index - 1;
+
+        parent = child;
+    }
+
+    return index;
 }
 
 - (void)_removeLayers

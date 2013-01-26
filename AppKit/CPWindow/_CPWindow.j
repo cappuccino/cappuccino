@@ -198,6 +198,10 @@ var CPWindowActionMessageKeys = [
     BOOL                                _isFullPlatformWindow;
     _CPWindowFullPlatformWindowSession  _fullPlatformWindowSession;
 
+    CPWindow                            _parentWindow;
+    CPArray                             _childWindows;
+    CPWindowOrderingMode                _childOrdering @accessors(setter=_setChildOrdering);
+
     CPDictionary                        _sheetContext;
     CPWindow                            _parentView;
     BOOL                                _isSheet;
@@ -258,6 +262,10 @@ CPTexturedBackgroundWindowMask
         _registeredDraggedTypesArray = [];
         _acceptsMouseMovedEvents = YES;
         _isMovable = YES;
+
+        _parentWindow = nil;
+        _childWindows = [];
+        _childOrdering = CPWindowOut;
 
         _isSheet = NO;
         _sheetContext = nil;
@@ -663,10 +671,12 @@ CPTexturedBackgroundWindowMask
     else
     {
         var origin = _frame.origin,
-            newOrigin = aFrame.origin;
+            newOrigin = aFrame.origin,
+            originMoved = !_CGPointEqualToPoint(origin, newOrigin);
 
-        if (!_CGPointEqualToPoint(origin, newOrigin))
+        if (originMoved)
         {
+            delta = _CGPointMake(newOrigin.x - origin.x, newOrigin.y - origin.y);
             origin.x = newOrigin.x;
             origin.y = newOrigin.y;
 
@@ -699,7 +709,20 @@ CPTexturedBackgroundWindowMask
 
         if ([self _sharesChromeWithPlatformWindow])
             [_platformWindow setContentRect:_frame];
+
+        if (originMoved)
+            [self _moveChildWindows:delta];
     }
+}
+
+- (void)_moveChildWindows:(CGPoint)delta
+{
+    [_childWindows enumerateObjectsUsingBlock:function(childWindow)
+        {
+            var origin = [childWindow frame].origin;
+
+            [childWindow setFrameOrigin:_CGPointMake(origin.x + delta.x, origin.y + delta.y)];
+        }];
 }
 
 /*!
@@ -749,6 +772,11 @@ CPTexturedBackgroundWindowMask
 */
 - (void)orderFront:(id)aSender
 {
+    [self orderWindow:CPWindowAbove relativeTo:0];
+}
+
+- (void)_orderFront
+{
 #if PLATFORM(DOM)
     // -dw- if a sheet is clicked, the parent window should come up too
     if ([self isSheet])
@@ -775,7 +803,12 @@ CPTexturedBackgroundWindowMask
 */
 - (void)orderBack:(id)aSender
 {
-    //[_platformWindow order:CPWindowBelow
+    [self orderWindow:CPWindowBelow relativeTo:0];
+}
+
+- (void)_orderBack
+{
+    // FIXME: Implement this
 }
 
 /*!
@@ -784,6 +817,11 @@ CPTexturedBackgroundWindowMask
 */
 - (void)orderOut:(id)aSender
 {
+    [self orderWindow:CPWindowOut relativeTo:0];
+}
+
+- (void)_orderOut
+{
     if ([self isSheet])
     {
         // -dw- as in Cocoa, orderOut: detaches the sheet and animates out
@@ -791,15 +829,13 @@ CPTexturedBackgroundWindowMask
         return;
     }
 
+    [_parentWindow removeChildWindow:self];
+    [_childWindows makeObjectsPerformSelector:@selector(_orderOut)];
+
 #if PLATFORM(DOM)
     if ([self _sharesChromeWithPlatformWindow])
         [_platformWindow orderOut:self];
-#endif
 
-    if ([_delegate respondsToSelector:@selector(windowWillClose:)])
-        [_delegate windowWillClose:self];
-
-#if PLATFORM(DOM)
     [_platformWindow order:CPWindowOut window:self relativeTo:nil];
 #endif
 
@@ -808,13 +844,20 @@ CPTexturedBackgroundWindowMask
 
 /*!
     Relocates the window in the screen list.
-    @param aPlace the positioning relative to \c otherWindowNumber
+    @param orderingMode the positioning relative to \c otherWindowNumber
     @param otherWindowNumber the window relative to which the receiver should be placed
 */
-- (void)orderWindow:(CPWindowOrderingMode)aPlace relativeTo:(int)otherWindowNumber
+- (void)orderWindow:(CPWindowOrderingMode)orderingMode relativeTo:(int)otherWindowNumber
 {
+    if (orderingMode === CPWindowOut)
+        [self _orderOut];
+    else if (orderingMode === CPWindowAbove && otherWindowNumber === 0)
+        [self _orderFront];
+    else if (orderingMode === CPWindowBelow && otherWindowNumber === 0)
+        [self _orderBack];
 #if PLATFORM(DOM)
-    [_platformWindow order:aPlace window:self relativeTo:CPApp._windows[otherWindowNumber]];
+    else
+        [_platformWindow order:orderingMode window:self relativeTo:CPApp._windows[otherWindowNumber]];
 #endif
 }
 
@@ -1617,7 +1660,7 @@ CPTexturedBackgroundWindowMask
             var theWindow = [anEvent window],
                 selector = type == CPRightMouseDown ? @selector(rightMouseDown:) : @selector(mouseDown:);
 
-            if ([theWindow isKeyWindow] || [theWindow becomesKeyOnlyIfNeeded] && ![_leftMouseDownView needsPanelToBecomeKey])
+            if ([theWindow isKeyWindow] || ([theWindow becomesKeyOnlyIfNeeded] && ![_leftMouseDownView needsPanelToBecomeKey]))
                 return [_leftMouseDownView performSelector:selector withObject:anEvent];
             else
             {
@@ -2107,6 +2150,9 @@ CPTexturedBackgroundWindowMask
 */
 - (void)close
 {
+    if ([_delegate respondsToSelector:@selector(windowWillClose:)])
+        [_delegate windowWillClose:self];
+
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillCloseNotification object:self];
 
     [self orderOut:nil];
@@ -2313,6 +2359,54 @@ CPTexturedBackgroundWindowMask
     [self setFrame:newFrame display:YES animate:YES];
     [_windowView setAnimatingToolbar:NO];
     */
+}
+
+/*!
+    Do NOT modify the array returned by this method!
+*/
+- (CPArray)childWindows
+{
+    return _childWindows;
+}
+
+- (void)addChildWindow:(CPWindow)childWindow ordered:(CPWindowOrderingMode)orderingMode
+{
+    // Don't add the child if it is already in our list
+    if ([_childWindows indexOfObject:childWindow] >= 0)
+        return;
+
+    if (orderingMode === CPWindowAbove || orderingMode === CPWindowBelow)
+        [_childWindows addObject:childWindow];
+    else
+        [CPException raise:CPInvalidArgumentException
+                    reason:_cmd + @" unrecognized ordering mode " + orderingMode];
+
+    [childWindow setParentWindow:self];
+    [childWindow _setChildOrdering:orderingMode];
+
+    if ([self isVisible] && ![childWindow isVisible])
+        [childWindow orderWindow:orderingMode relativeTo:_windowNumber];
+}
+
+- (void)removeChildWindow:(CPWindow)childWindow
+{
+    var index = [_childWindows indexOfObject:childWindow];
+
+    if (index === CPNotFound)
+        return;
+
+    [_childWindows removeObjectAtIndex:index];
+    [childWindow setParentWindow:nil];
+}
+
+- (CPWindow)parentWindow
+{
+    return _parentWindow;
+}
+
+- (CPWindow)setParentWindow:(CPWindow)parentWindow
+{
+    _parentWindow = parentWindow;
 }
 
 - (void)_setFrame:(CGRect)aFrame delegate:(id)delegate duration:(int)duration curve:(CPAnimationCurve)curve

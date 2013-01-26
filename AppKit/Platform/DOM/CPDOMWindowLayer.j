@@ -82,7 +82,7 @@
 {
     // We will have to adjust the z-index of all windows starting at this index.
     var count = [_windows count],
-        zIndex = (anIndex == CPNotFound ? count : anIndex),
+        zIndex = (anIndex === CPNotFound ? count : anIndex),
         isVisible = aWindow._isVisible;
 
     // If the window is already a resident of this layer, remove it.
@@ -94,7 +94,7 @@
     else
         ++count;
 
-    if (anIndex == CPNotFound || anIndex >= count)
+    if (anIndex === CPNotFound || anIndex >= count)
         [_windows addObject:aWindow];
     else
         [_windows insertObject:aWindow atIndex:anIndex];
@@ -113,7 +113,7 @@
 
         aWindow._isVisible = YES;
 
-        if ([aWindow isFullBridge])
+        if ([aWindow isFullPlatformWindow])
             [aWindow setFrame:[aWindow._platformWindow usableContentFrame]];
     }
 }
