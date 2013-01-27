@@ -28,13 +28,13 @@
 {
     var item = [[CPTabViewItem alloc] initWithIdentifier:@"item"],
         view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
-        
+
     [item setView:view];
     [item setLabel:@"item"];
-    
+
     [nibTabViewEmpty addTabViewItem:item];
-    
-    [theWindow setFullBridge:YES];
+
+    [theWindow setFullPlatformWindow:YES];
 }
 
 - (void)tabView:(CPTabView)aTabView didSelectTabViewItem:(CPTabViewItem)tabViewItem

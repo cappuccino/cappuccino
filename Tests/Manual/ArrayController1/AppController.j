@@ -68,7 +68,7 @@ CPLogRegister(CPLogConsole);
 
     //order front window
 
-    [theWindow setFullBridge:YES];
+    [theWindow setFullPlatformWindow:YES];
     [theWindow orderFront:self];
 }
 /*
