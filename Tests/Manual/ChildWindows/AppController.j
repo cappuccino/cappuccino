@@ -15,6 +15,8 @@
     @outlet CPWindow child;
     @outlet CPWindow grandchild;
     @outlet CPWindow other;
+
+    CPWindow outWindow;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -23,7 +25,7 @@
     [child addChildWindow:grandchild ordered:CPWindowBelow];
 
     [other orderFront:self];
-    [parent orderFront:self];
+    [parent makeKeyAndOrderFront:self];
 }
 
 - (@action)move:(id)sender
@@ -32,6 +34,18 @@
         newOrigin = CGPointMake(origin.x + 20, origin.y + 20);
 
     [[sender window] setFrameOrigin:newOrigin];
+}
+
+- (@action)out:(id)sender
+{
+    outWindow = [sender window];
+    [outWindow orderOut:self];
+    [CPTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(in:) userInfo:nil repeats:NO];
+}
+
+- (void)in:(id)sender
+{
+    [outWindow makeKeyAndOrderFront:self];
 }
 
 @end

@@ -131,6 +131,7 @@ var CPWindowActionMessageKeys = [
     CGRect                              _frame;
     int                                 _level;
     BOOL                                _isVisible;
+    BOOL                                _hasBeenOrderedIn @accessors;
     BOOL                                _isMiniaturized;
     BOOL                                _isAnimating;
     BOOL                                _hasShadow;
@@ -253,6 +254,7 @@ CPTexturedBackgroundWindowMask
                 _frame.origin.x = (visibleFrame.size.width - _frame.size.width) / 2;
                 _frame.origin.y = (visibleFrame.size.height - _frame.size.height) / 2;
             }
+
             [self setPlatformWindow:[[CPPlatformWindow alloc] initWithContentRect:_frame]];
             [self platformWindow]._only = self;
         }
@@ -262,6 +264,7 @@ CPTexturedBackgroundWindowMask
         _registeredDraggedTypesArray = [];
         _acceptsMouseMovedEvents = YES;
         _isMovable = YES;
+        _hasBeenOrderedIn = NO;
 
         _parentWindow = nil;
         _childWindows = [];
@@ -722,7 +725,8 @@ CPTexturedBackgroundWindowMask
             var origin = [childWindow frame].origin;
 
             [childWindow setFrameOrigin:_CGPointMake(origin.x + delta.x, origin.y + delta.y)];
-        }];
+        }
+    ];
 }
 
 /*!
@@ -820,7 +824,7 @@ CPTexturedBackgroundWindowMask
     [self orderWindow:CPWindowOut relativeTo:0];
 }
 
-- (void)_orderOut
+- (void)_orderOutRecursively:(BOOL)recursive
 {
     if ([self isSheet])
     {
@@ -829,8 +833,8 @@ CPTexturedBackgroundWindowMask
         return;
     }
 
-    [_parentWindow removeChildWindow:self];
-    [_childWindows makeObjectsPerformSelector:@selector(_orderOut)];
+    if (recursive)
+        [_childWindows makeObjectsPerformSelector:@selector(_orderOutRecursively:) withObject:recursive];
 
 #if PLATFORM(DOM)
     if ([self _sharesChromeWithPlatformWindow])
@@ -850,7 +854,15 @@ CPTexturedBackgroundWindowMask
 - (void)orderWindow:(CPWindowOrderingMode)orderingMode relativeTo:(int)otherWindowNumber
 {
     if (orderingMode === CPWindowOut)
-        [self _orderOut];
+    {
+        var hasParent = !!_parentWindow;
+
+        // Directly ordering out will detach a child window
+        [_parentWindow removeChildWindow:self];
+
+        // In Cocoa, a window orders out its child windows only if it has no parent
+        [self _orderOutRecursively:!hasParent];
+    }
     else if (orderingMode === CPWindowAbove && otherWindowNumber === 0)
         [self _orderFront];
     else if (orderingMode === CPWindowBelow && otherWindowNumber === 0)
@@ -2155,7 +2167,31 @@ CPTexturedBackgroundWindowMask
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillCloseNotification object:self];
 
+    var hasParent = !!_parentWindow;
+
     [self orderOut:nil];
+
+    // If a window has no parent, close all of the children
+    [self _detachFromChildrenClosing:!hasParent];
+}
+
+- (void)_detachFromChildrenClosing:(BOOL)shouldClose
+{
+    // When a window is closed, it must detach itself from all children
+    [_childWindows enumerateObjectsUsingBlock:function(child)
+        {
+            [child setParentWindow:nil];
+        }
+    ];
+
+    if (shouldClose)
+        [_childWindows enumerateObjectsUsingBlock:function(child)
+            {
+                [child close];
+            }
+        ];
+
+    _childWindows = [];
 }
 
 // Managing Main Status

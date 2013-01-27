@@ -28,7 +28,7 @@
 @import "CPImageView.j"
 @import "CPResponder.j"
 @import "CPView.j"
-@import "_CPAttachedWindow.j"
+@import "_CPPopoverWindow.j"
 
 
 CPPopoverBehaviorApplicationDefined = 0;
@@ -45,7 +45,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 /*! @ingroup appkit
     @class CPPopover
 
-    This class represent a widget that displays a attached
+    This class represent a widget that displays a popover
     view relative to another one.
 
     Delegate can implement:
@@ -67,7 +67,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     int                         _appearance             @accessors(property=appearance);
     int                         _behavior               @accessors(getter=behavior);
 
-    _CPAttachedWindow           _attachedWindow;
+    _CPPopoverWindow            _popoverWindow;
     int                         _implementedDelegateMethods;
 }
 
@@ -103,9 +103,10 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 */
 - (CGRect)positioningRect
 {
-    if (![_attachedWindow isVisible])
+    if (![_popoverWindow isVisible])
         return CGRectMakeZero();
-    return [_attachedWindow frame];
+
+    return [_popoverWindow frame];
 }
 
 /*! Sets the frame of the popover
@@ -113,9 +114,10 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 */
 - (void)setPositioningRect:(CGRect)aRect
 {
-    if (![_attachedWindow isVisible])
+    if (![_popoverWindow isVisible])
         return;
-    [_attachedWindow setFrame:aRect];
+
+    [_popoverWindow setFrame:aRect];
 }
 
 /*!
@@ -125,8 +127,9 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 */
 - (CGSize)contentSize
 {
-    if (![_attachedWindow isVisible])
+    if (![_popoverWindow isVisible])
         return CGRectMakeZero();
+
     return [[_contentViewController view] frameSize];
 }
 
@@ -147,7 +150,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 */
 - (BOOL)isShown
 {
-    return [_attachedWindow isVisible];
+    return [_popoverWindow isVisible];
 }
 
 /*!
@@ -164,7 +167,7 @@ Set the behavior of the CPPopover. It can be:
         return;
 
     _behavior = aBehavior;
-    [_attachedWindow setStyleMask:[self styleMaskForBehavior]];
+    [_popoverWindow setStyleMask:[self styleMaskForBehavior]];
 }
 
 - (void)setDelegate:(id)aDelegate
@@ -210,29 +213,29 @@ Set the behavior of the CPPopover. It can be:
         [CPException raise:CPInternalInconsistencyException reason:@"contentViewController must not be nil"];
 
     // If the popover is currently closing, do nothing. That is what Cocoa does.
-    if ([_attachedWindow isClosing])
+    if ([_popoverWindow isClosing])
         return;
 
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_willShow_)
         [_delegate popoverWillShow:self];
 
-    if (!_attachedWindow)
+    if (!_popoverWindow)
     {
-        _attachedWindow = [[_CPAttachedWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:[self styleMaskForBehavior]];
+        _popoverWindow = [[_CPPopoverWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:[self styleMaskForBehavior]];
 
         var parentWindow = [positioningView window];
 
-        if (![parentWindow isKindOfClass:_CPAttachedWindow])
+        if (![parentWindow isKindOfClass:_CPPopoverWindow])
             [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(parentWindowWillClose:) name:CPWindowWillCloseNotification object:parentWindow];
     }
 
-    [_attachedWindow setAppearance:_appearance];
-    [_attachedWindow setAnimates:_animates];
-    [_attachedWindow setDelegate:self];
-    [_attachedWindow setMovableByWindowBackground:NO];
-    [_attachedWindow setFrame:[_attachedWindow frameRectForContentRect:[[_contentViewController view] frame]]];
-    [_attachedWindow setContentView:[_contentViewController view]];
-    [_attachedWindow positionRelativeToRect:positioningRect ofView:positioningView preferredEdge:preferredEdge];
+    [_popoverWindow setAppearance:_appearance];
+    [_popoverWindow setAnimates:_animates];
+    [_popoverWindow setDelegate:self];
+    [_popoverWindow setMovableByWindowBackground:NO];
+    [_popoverWindow setFrame:[_popoverWindow frameRectForContentRect:[[_contentViewController view] frame]]];
+    [_popoverWindow setContentView:[_contentViewController view]];
+    [_popoverWindow positionRelativeToRect:positioningRect ofView:positioningView preferredEdge:preferredEdge];
 
     if (!_animates && _implementedDelegateMethods & CPPopoverDelegate_popover_didShow_)
         [_delegate popoverDidShow:self];
@@ -256,16 +259,16 @@ Set the behavior of the CPPopover. It can be:
 */
 - (void)_close
 {
-    if ([_attachedWindow isClosing] || ![self isShown])
+    if ([_popoverWindow isClosing] || ![self isShown])
         return;
 
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_willClose_)
         [_delegate popoverWillClose:self];
 
-    [_attachedWindow close];
+    [_popoverWindow close];
 
-    // popoverDidClose will be sent from attachedWindowDidClose, since
-    // the attached window will close asynchronously when animating.
+    // popoverDidClose will be sent from popoverWindowDidClose, since
+    // the popover window will close asynchronously when animating.
 }
 
 
@@ -279,7 +282,7 @@ Set the behavior of the CPPopover. It can be:
 */
 - (IBAction)performClose:(id)sender
 {
-    if ([_attachedWindow isClosing])
+    if ([_popoverWindow isClosing])
         return;
 
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_shouldClose_)
@@ -294,25 +297,25 @@ Set the behavior of the CPPopover. It can be:
 #pragma mark Delegates
 
 /*! @ignore */
-- (BOOL)attachedWindowShouldClose:(_CPAttachedWindow)anAttachedWindow
+- (BOOL)popoverWindowShouldClose:(_CPPopoverWindow)aPopoverWindow
 {
     [self performClose:self];
 
     // We return NO, because we want the CPPopover to determine
-    // if the attached window can be closed and to give us a chance
+    // if the popover window can be closed and to give us a chance
     // to send delegate messages.
     return NO;
 }
 
 /*! @ignore */
-- (void)attachedWindowDidClose:(_CPAttachedWindow)anAttachedWindow
+- (void)popoverWindowDidClose:(_CPPopoverWindow)aPopoverWindow
 {
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_didClose_)
         [_delegate popoverDidClose:self];
 }
 
 /*! @ignore */
-- (void)attachedWindowDidShow:(_CPAttachedWindow)anAttachedWindow
+- (void)popoverWindowDidShow:(_CPPopoverWindow)aPopoverWindow
 {
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_didShow_)
         [_delegate popoverDidShow:self];
@@ -330,7 +333,7 @@ Set the behavior of the CPPopover. It can be:
 */
 - (void)parentWindowWillClose:(CPNotification)aNotification
 {
-    [_attachedWindow orderOut:nil];
+    [_popoverWindow orderOut:nil];
     [self performClose:nil];
 }
 
@@ -347,7 +350,7 @@ Set the behavior of the CPPopover. It can be:
 
 @end
 
-var CPPopoverNeedsNewAttachedWindowKey = @"CPPopoverNeedsNewAttachedWindowKey",
+var CPPopoverNeedsNewPopoverWindowKey = @"CPPopoverNeedsNewPopoverWindowKey",
     CPPopoverAppearanceKey = @"CPPopoverAppearanceKey",
     CPPopoverAnimatesKey = @"CPPopoverAnimatesKey",
     CPPopoverContentViewControllerKey = @"CPPopoverContentViewControllerKey",

@@ -1497,10 +1497,9 @@ var CPViewFlags                     = { },
     Returns \c YES by default.
     @return \c YES, if the view object accepts first mouse-down event. \c NO, otherwise.
 */
-//FIXME: should be NO by default?
 - (BOOL)acceptsFirstMouse:(CPEvent)anEvent
 {
-    return YES;
+    return NO;
 }
 
 /*!

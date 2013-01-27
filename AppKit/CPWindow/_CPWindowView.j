@@ -158,6 +158,16 @@ _CPWindowViewResizeSlop = 3;
 {
 }
 
+- (CPView)hitTest:(CGPoint)locationInWindow
+{
+    var region = [self resizeRegionForPoint:[_window convertBaseToGlobal:locationInWindow]];
+
+    if (region !== _CPWindowViewResizeRegionNone)
+        return self;
+    else
+        return [super hitTest:locationInWindow];
+}
+
 - (BOOL)acceptsFirstMouse:(CPEvent)anEvent
 {
     return YES;

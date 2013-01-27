@@ -88,7 +88,14 @@
     // If the window is already a resident of this layer, remove it.
     if (isVisible)
     {
+        // Adjust the z-index to start at the window being inserted
         zIndex = MIN(zIndex, aWindow._index);
+
+        // If the window being inserted is below the insertion index,
+        // the index will be one less after we remove the window below.
+        if (aWindow._index < anIndex)
+            --anIndex;
+
         [_windows removeObjectAtIndex:aWindow._index];
     }
     else

@@ -1,5 +1,5 @@
 /*
- * _CPAttachedWindowView.j
+ * _CPPopoverWindowView.j
  * AppKit
  *
  * Created by Antoine Mercadal
@@ -30,18 +30,18 @@
 #define ALIGN_STROKE(point)  (FLOOR(point) === (point) ? (point) + halfStrokeWidth : (point))
 #define ALIGN_COORD(point)   (FLOOR(point))
 
-var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10),
-    _CPAttachedWindowViewRadius = 5.0,
-    _CPAttachedWindowViewStrokeWidth = 1.0,
-    _CPAttachedWindowViewShadowSize = CGSizeMake(0, 6),
-    _CPAttachedWindowViewShadowBlur = 15.0;
+var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
+    _CPPopoverWindowViewRadius = 5.0,
+    _CPPopoverWindowViewStrokeWidth = 1.0,
+    _CPPopoverWindowViewShadowSize = _CGSizeMake(0, 6),
+    _CPPopoverWindowViewShadowBlur = 15.0;
 
 /*!
     @ignore
 
     A custom CPWindowView that manages a border and cursor
 */
-@implementation _CPAttachedWindowView : _CPWindowView
+@implementation _CPPopoverWindowView : _CPWindowView
 {
     float       _arrowOffsetX   @accessors(property=arrowOffsetX);
     float       _arrowOffsetY   @accessors(property=arrowOffsetY);
@@ -58,7 +58,7 @@ var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10),
 */
 - (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
-    var contentRect = CGRectMakeCopy(aFrameRect),
+    var contentRect = _CGRectMakeCopy(aFrameRect),
         modifierX = 16,
         modifierY = 19;
 
@@ -66,7 +66,7 @@ var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10),
     //
     // @comment: If we use this, each time we open the popover, the content
     // view is reduced a little over and over
-    // return CGRectInset(contentRect, modifierX, modifierY);
+    // return _CGRectInset(contentRect, modifierX, modifierY);
 
     contentRect.origin.x += modifierX;
     contentRect.origin.y += modifierY;
@@ -83,7 +83,7 @@ var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10),
 */
 + (CGRect)frameRectForContentRect:(CGRect)aContentRect
 {
-    var frameRect = CGRectMakeCopy(aContentRect),
+    var frameRect = _CGRectMakeCopy(aContentRect),
         modifierX = 16,
         modifierY = 19;
 
@@ -91,7 +91,7 @@ var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10),
     // @comment: If we use this, each time we open the popover, the content
     //
     // view is reduced a little over and over
-    // return CGRectOffset(frameRect, modifierX, modifierY);
+    // return _CGRectOffset(frameRect, modifierX, modifierY);
 
     frameRect.origin.x -= modifierX;
     frameRect.origin.y -= modifierY;
@@ -111,7 +111,7 @@ var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10),
         _arrowOffsetX = 0.0;
         _arrowOffsetY = 0.0;
         _appearance = CPPopoverAppearanceMinimal;
-        _cursorSize = CGSizeMakeCopy(_CPAttachedWindowViewDefaultCursorSize);
+        _cursorSize = _CGSizeMakeCopy(_CPPopoverWindowViewDefaultCursorSize);
     }
 
     return self;
@@ -122,7 +122,7 @@ var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10),
 */
 - (void)hideCursor
 {
-    _cursorSize = CGSizeMakeZero();
+    _cursorSize = _CGSizeMakeZero();
     [self setNeedsDisplay:YES];
 }
 
@@ -131,7 +131,7 @@ var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10),
 */
 - (void)showCursor
 {
-    _cursorSize = CGSizeMakeCopy(_CPAttachedWindowViewDefaultCursorSize);
+    _cursorSize = _CGSizeMakeCopy(_CPPopoverWindowViewDefaultCursorSize);
     [self setNeedsDisplay:YES];
 }
 
@@ -143,15 +143,15 @@ var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10),
     [super drawRect:aRect];
 
     var context = [[CPGraphicsContext currentContext] graphicsPort],
-        radius = _CPAttachedWindowViewRadius,
+        radius = _CPPopoverWindowViewRadius,
         arrowWidth = _cursorSize.width,
         arrowHeight = _cursorSize.height,
-        strokeWidth = _CPAttachedWindowViewStrokeWidth,
+        strokeWidth = _CPPopoverWindowViewStrokeWidth,
         halfStrokeWidth = strokeWidth / 2.0,
         strokeColor,
         shadowColor = [[CPColor blackColor] colorWithAlphaComponent:.2],
-        shadowSize = _CPAttachedWindowViewShadowSize,
-        shadowBlur = _CPAttachedWindowViewShadowBlur,
+        shadowSize = _CPPopoverWindowViewShadowSize,
+        shadowBlur = _CPPopoverWindowViewShadowBlur,
         gradient,
         frame = [self bounds];
 
@@ -191,7 +191,7 @@ var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10),
     CGContextSetLineWidth(context, strokeWidth);
     CGContextBeginPath(context);
     CGContextSetShadowWithColor(context, shadowSize, shadowBlur, shadowColor);
-    CGContextDrawLinearGradient(context, gradient, CGPointMake(CGRectGetMidX(frame), 0.0), CGPointMake(CGRectGetMidX(frame), frame.size.height), 0);
+    CGContextDrawLinearGradient(context, gradient, _CGPointMake(_CGRectGetMidX(frame), 0.0), _CGPointMake(_CGRectGetMidX(frame), frame.size.height), 0);
 
     var xMin = _CGRectGetMinX(frame),
         xMax = _CGRectGetMaxX(frame),
@@ -201,9 +201,9 @@ var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10),
         arrowMaxX = ALIGN_COORD(xMax - radius - strokeWidth),
         arrowMinY = ALIGN_COORD(yMin + radius + strokeWidth),
         arrowMaxY = ALIGN_COORD(yMax - radius + strokeWidth),
-        arrowAnchor = CGPointMakeZero(),
-        arrowStart = CGPointMakeZero(),
-        pt = CGPointMakeZero();
+        arrowAnchor = _CGPointMakeZero(),
+        arrowStart = _CGPointMakeZero(),
+        pt = _CGPointMakeZero();
 
     // draw!
     switch (_preferredEdge)
@@ -236,7 +236,7 @@ var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10),
                     pt.y = arrowMaxY - arrowWidth;
 
                 pt.x = arrowAnchor.x;
-                arrowStart = CGPointMakeCopy(pt);
+                arrowStart = _CGPointMakeCopy(pt);
                 CGContextAddLineToPoint(context, pt.x, pt.y);
 
                 // top edge -> point
@@ -278,7 +278,7 @@ var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10),
                     pt.y = arrowMaxY;
 
                 pt.x = arrowAnchor.x;
-                arrowStart = CGPointMakeCopy(pt);
+                arrowStart = _CGPointMakeCopy(pt);
                 CGContextAddLineToPoint(context, pt.x, pt.y);
 
                 // bottom edge -> point
@@ -327,7 +327,7 @@ var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10),
                     pt.x = arrowMaxX - arrowWidth;
 
                 pt.y = arrowAnchor.y;
-                arrowStart = CGPointMakeCopy(pt);
+                arrowStart = _CGPointMakeCopy(pt);
                 CGContextAddLineToPoint(context, pt.x, pt.y);
 
                 // left edge -> point
@@ -369,7 +369,7 @@ var _CPAttachedWindowViewDefaultCursorSize = CGSizeMake(16, 10),
                     pt.x = arrowMaxX;
 
                 pt.y = arrowAnchor.y;
-                arrowStart = CGPointMakeCopy(pt);
+                arrowStart = _CGPointMakeCopy(pt);
                 CGContextAddLineToPoint(context, pt.x, pt.y);
 
                 // right edge -> point

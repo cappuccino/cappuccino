@@ -18,9 +18,11 @@
     CPPopUpButton       buttonBehaviour;
     CPButton            lastButton;
     int                 lastPreferredEdge;
+    @outlet CPTextField titleLabel;
     @outlet CPPopover   popover;
     @outlet CPPopover   windowPopover;
     @outlet CPWindow    popoverWindow;
+    @outlet CPPopover   nestedPopover;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -98,7 +100,9 @@
     [button setFrameOrigin:CGPointMake(CGRectGetMinX([button frame]), 70)];
     [contentView addSubview:button];
 
-    buttonEdge = [[CPPopUpButton alloc] initWithFrame:CGRectMake(150, 10, 130, 24)];
+    var buttonHeight = [[CPTheme defaultTheme] valueForAttributeWithName:@"min-size" forClass:CPPopUpButton].height;
+
+    buttonEdge = [[CPPopUpButton alloc] initWithFrame:CGRectMake(150, 10, 130, buttonHeight)];
     [buttonEdge addItemWithTitle:"Automatic"];
     [buttonEdge addItemWithTitle:"Bottom"];
     [buttonEdge addItemWithTitle:"Top"];
@@ -106,20 +110,23 @@
     [buttonEdge addItemWithTitle:"Left"];
     [contentView addSubview:buttonEdge];
 
-    buttonStyle = [[CPPopUpButton alloc] initWithFrame:CGRectMake(290, 10, 130, 24)];
+    buttonStyle = [[CPPopUpButton alloc] initWithFrame:CGRectMake(290, 10, 130, buttonHeight)];
     [buttonStyle addItemWithTitle:"Minimal"];
     [buttonStyle addItemWithTitle:"HUD"];
     [contentView addSubview:buttonStyle];
 
-    buttonAnimation = [[CPPopUpButton alloc] initWithFrame:CGRectMake(430, 10, 130, 24)];
+    buttonAnimation = [[CPPopUpButton alloc] initWithFrame:CGRectMake(430, 10, 130, buttonHeight)];
     [buttonAnimation addItemWithTitle:"With animation"];
     [buttonAnimation addItemWithTitle:"No animation"];
     [contentView addSubview:buttonAnimation];
 
-    buttonBehaviour = [[CPPopUpButton alloc] initWithFrame:CGRectMake(570, 10, 130, 24)];
+    buttonBehaviour = [[CPPopUpButton alloc] initWithFrame:CGRectMake(570, 10, 130, buttonHeight)];
     [buttonBehaviour addItemWithTitle:"Transient"];
     [buttonBehaviour addItemWithTitle:"Not managed"];
     [contentView addSubview:buttonBehaviour];
+
+    [windowPopover setDelegate:self];
+    [nestedPopover setDelegate:self];
 
     [theWindow orderFront:self];
 }
@@ -146,18 +153,23 @@
 - (@action)open:(id)sender
 {
     var edge = [self popoverEdge],
-        appearance;
+        appearance,
+        color;
 
     switch ([buttonStyle title])
     {
         case "Minimal":
             appearance = CPPopoverAppearanceMinimal;
+            color = [CPColor blackColor];
             break;
+
         case "HUD":
             appearance = CPPopoverAppearanceHUD;
+            color = [CPColor whiteColor];
             break;
     }
 
+    [titleLabel setTextColor:color];
     [self initPopover:popover withAppearance:appearance];
     lastButton = sender;
     lastPreferredEdge = edge;
@@ -166,12 +178,23 @@
 
 - (void)openWindow:(id)sender
 {
-    [popoverWindow orderFront:nil];
+    [popoverWindow makeKeyAndOrderFront:nil];
 }
 
 - (@action)openWindowPopover:(id)sender
 {
     [windowPopover showRelativeToRect:nil ofView:sender preferredEdge:[self popoverEdge]];
+}
+
+- (@action)openNestedPopover:(id)sender
+{
+    [nestedPopover showRelativeToRect:nil ofView:sender preferredEdge:[self popoverEdge]];
+}
+
+- (@action)setTransient:(id)sender
+{
+    [windowPopover setBehavior:[sender state] === CPOnState ? CPPopoverBehaviorTransient : CPPopoverBehaviorApplicationDefined];
+    [nestedPopover setBehavior:[sender state] === CPOnState ? CPPopoverBehaviorTransient : CPPopoverBehaviorApplicationDefined];
 }
 
 - (@action)movePopover:(id)sender
@@ -206,6 +229,9 @@
 - (void)popoverDidShow:(CPPopover)aPopover
 {
     CPLog.info("popover " + aPopover + " did show");
+
+    var popWindow = [[[aPopover contentViewController] view] window];
+    [popWindow makeFirstResponder:[[popWindow contentView] nextValidKeyView]];
 }
 
 - (BOOL)popoverShouldClose:(CPPopover)aPopover

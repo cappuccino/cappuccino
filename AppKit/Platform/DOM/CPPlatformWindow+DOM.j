@@ -1465,6 +1465,8 @@ var resizeTimer = nil;
     // If aWindow is a parent, recursively order all of its children after it
     if ([[aWindow childWindows] count])
         [self _orderChildWindowsOf:aWindow furthestParent:[self _furthestParentOf:aWindow] layer:layer];
+
+    [aWindow _setHasBeenOrderedIn:YES];
 }
 
 - (CPWindow)_furthestParentOf:(CPWindow)aWindow
@@ -1477,20 +1479,20 @@ var resizeTimer = nil;
     return aWindow;
 }
 
-- (int)_orderChildWindowsOf:(CPWindow)aWindow furthestParent:(CPWindow)furthestParent layer:(CPDOMWindowLayer)aLayer
+- (void)_orderChildWindowsOf:(CPWindow)aWindow furthestParent:(CPWindow)furthestParent layer:(CPDOMWindowLayer)aLayer
 {
     // When a parent window is ordered, Cocoa orders its child windows
     // relative to it or the furthest parent.
     var children = [aWindow childWindows],
         count = [children count],
-        parent = aWindow,
-        index;
+        parent = aWindow;
 
     for (var i = 0; i < count; ++i)
     {
         var child = children[i];
 
-        if (![child isVisible])
+        // If a child is not visible and has not yet been ordered in, skip it
+        if (![child isVisible] && ![child _hasBeenOrderedIn])
             continue;
 
         var ordering = [child _childOrdering];
@@ -1499,14 +1501,12 @@ var resizeTimer = nil;
             (ordering === CPWindowBelow && furthestParent._index < parent._index))
             parent = furthestParent;
 
-        index = ordering === CPWindowAbove ? parent._index : parent._index - 1;
+        var index = ordering === CPWindowAbove ? parent._index + 1 : parent._index;
 
         [aLayer insertWindow:child atIndex:index];
 
         if ([[child childWindows] count])
-            index = [self _orderChildWindowsOf:child furthestParent:furthestParent layer:aLayer];
-        else
-            index = [child _childOrdering] === CPWindowAbove ? child._index : child._index - 1;
+            [self _orderChildWindowsOf:child furthestParent:furthestParent layer:aLayer];
 
         parent = child;
     }

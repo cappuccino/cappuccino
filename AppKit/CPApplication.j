@@ -1232,7 +1232,7 @@ _CPRunModalLoop = function(anEvent)
     if (theWindow == modalSession._window ||
         [theWindow worksWhenModal] ||
         [theWindow attachedSheet] == modalSession._window || // -dw- allow modal parent of sheet to be repositioned
-        ([theWindow isKindOfClass:_CPAttachedWindow] && [[theWindow targetView] window] === modalSession._window))
+        ([theWindow isKindOfClass:_CPPopoverWindow] && [[theWindow targetView] window] === modalSession._window))
         [theWindow sendEvent:anEvent];
 };
 
