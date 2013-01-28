@@ -35,6 +35,7 @@
     @group CPColorPanelMode
 */
 CPWheelColorPickerMode = 1;
+
 /*
     Slider based picker
     @global

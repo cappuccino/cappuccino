@@ -401,6 +401,14 @@ var CPControlBlackColor = [CPColor blackColor];
         [self highlight:YES];
 }
 
+/*!
+    Enabled controls accept first mouse by default.
+*/
+- (BOOL)acceptsFirstMouse:(CPEvent)anEvent
+{
+    return [self isEnabled];
+}
+
 - (void)mouseDown:(CPEvent)anEvent
 {
     if (![self isEnabled])
