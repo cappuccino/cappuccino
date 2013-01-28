@@ -311,12 +311,13 @@
     if (_removeMany)
     {
         var indexes = [CPIndexSet indexSet],
-            index = [theObjects count];
+            index = [theObjects count],
+            position = 0,
+            count = [self count];
 
         while (index--)
         {
-            var position = [self indexOfObject:[theObjects objectAtIndex:index]];
-            if (position !== CPNotFound)
+            while ((position = [self indexOfObject:[theObjects objectAtIndex:index] inRange:_CPMakeRange(position + 1, count)]) !== CPNotFound)
                 [indexes addIndex:position];
         }
 
@@ -324,11 +325,11 @@
     }
     else if (_remove)
     {
-        var index = [theObjects count];
+        var index = [theObjects count],
+            position;
         while (index--)
         {
-            var position = [self indexOfObject:[theObjects objectAtIndex:index]];
-            if (position !== CPNotFound)
+            while ((position = [self indexOfObject:[theObjects objectAtIndex:index]]) !== CPNotFound)
                 _remove(_proxyObject, _removeSEL, position);
         }
     }
