@@ -826,6 +826,9 @@ CPTexturedBackgroundWindowMask
 
 - (void)_orderOutRecursively:(BOOL)recursive
 {
+    if (!_isVisible)
+        return;
+
     if ([self isSheet])
     {
         // -dw- as in Cocoa, orderOut: detaches the sheet and animates out
@@ -855,13 +858,11 @@ CPTexturedBackgroundWindowMask
 {
     if (orderingMode === CPWindowOut)
     {
-        var hasParent = !!_parentWindow;
-
         // Directly ordering out will detach a child window
         [_parentWindow removeChildWindow:self];
 
         // In Cocoa, a window orders out its child windows only if it has no parent
-        [self _orderOutRecursively:!hasParent];
+        [self _orderOutRecursively:!_parentWindow];
     }
     else if (orderingMode === CPWindowAbove && otherWindowNumber === 0)
         [self _orderFront];
@@ -1650,19 +1651,8 @@ CPTexturedBackgroundWindowMask
 
         case CPLeftMouseDown:
         case CPRightMouseDown:
+            // This will return _windowView if it is within a resize region
             _leftMouseDownView = [_windowView hitTest:point];
-
-            /*
-                hitTest: will only test within the window's frame.
-                If that fails, check if a left mousedown is within
-                the resize slop outside the frame.
-            */
-            if (!_leftMouseDownView &&
-                type === CPLeftMouseDown &&
-                [self _isValidMousePoint:[self convertBaseToGlobal:point]])
-            {
-                _leftMouseDownView = _windowView;
-            }
 
             if (_leftMouseDownView !== _firstResponder && [_leftMouseDownView acceptsFirstResponder])
                 [self makeFirstResponder:_leftMouseDownView];
@@ -2167,15 +2157,12 @@ CPTexturedBackgroundWindowMask
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillCloseNotification object:self];
 
-    var hasParent = !!_parentWindow;
-
-    [self orderOut:nil];
-
-    // If a window has no parent, close all of the children
-    [self _detachFromChildrenClosing:!hasParent];
+    [_parentWindow removeChildWindow:self];
+    [self _orderOutRecursively:NO];
+    [self _detachFromChildrenClosing:!_parentWindow];
 }
 
-- (void)_detachFromChildrenClosing:(BOOL)shouldClose
+- (void)_detachFromChildrenClosing:(BOOL)shouldCloseChildren
 {
     // When a window is closed, it must detach itself from all children
     [_childWindows enumerateObjectsUsingBlock:function(child)
@@ -2184,12 +2171,17 @@ CPTexturedBackgroundWindowMask
         }
     ];
 
-    if (shouldClose)
+    if (shouldCloseChildren)
+    {
         [_childWindows enumerateObjectsUsingBlock:function(child)
             {
-                [child close];
+                // Cocoa does NOT call close or orderOut when closing child windows,
+                // they are summarily closed.
+                [child _orderOutRecursively:NO];
+                [child _detachFromChildrenClosing:![child parentWindow]];
             }
         ];
+    }
 
     _childWindows = [];
 }

@@ -455,6 +455,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     else if (type === CPKeyDown)
     {
         var characters = [anEvent characters];
+
         if (characters === CPEscapeFunctionKey)
         {
             _dragOperation = CPDragOperationNone;
@@ -471,7 +472,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     // If we're not a mouse up, then we're going to want to grab the next event.
     [CPApp setTarget:self selector:@selector(trackDragging:)
         forNextEventMatchingMask:CPMouseMovedMask | CPLeftMouseDraggedMask | CPLeftMouseUpMask | CPKeyDownMask
-        untilDate:nil inMode:0 dequeue:NO];
+        untilDate:nil inMode:0 dequeue:YES];
 }
 
 @end

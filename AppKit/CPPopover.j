@@ -222,11 +222,6 @@ Set the behavior of the CPPopover. It can be:
     if (!_popoverWindow)
     {
         _popoverWindow = [[_CPPopoverWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:[self styleMaskForBehavior]];
-
-        var parentWindow = [positioningView window];
-
-        if (![parentWindow isKindOfClass:_CPPopoverWindow])
-            [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(parentWindowWillClose:) name:CPWindowWillCloseNotification object:parentWindow];
     }
 
     [_popoverWindow setAppearance:_appearance];
@@ -319,22 +314,6 @@ Set the behavior of the CPPopover. It can be:
 {
     if (_implementedDelegateMethods & CPPopoverDelegate_popover_didShow_)
         [_delegate popoverDidShow:self];
-}
-
-
-#pragma mark -
-#pragma mark Notifications
-
-/*!
-    @ignore
-
-    This method is called only when a non-popover parent window
-    is closing. In that case popovers should order out.
-*/
-- (void)parentWindowWillClose:(CPNotification)aNotification
-{
-    [_popoverWindow orderOut:nil];
-    [self performClose:nil];
 }
 
 @end
