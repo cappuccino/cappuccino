@@ -329,8 +329,6 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
         _targetView = positioningView;
     }
 
-    [_targetView addObserver:self forKeyPath:@"frame" options:0 context:nil];
-
     /*
         If _targetView's window is not a full platform window,
         add us as a child, because when we close we are detached from
@@ -484,6 +482,19 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
 
     _shouldPerformAnimation = NO;
     _isClosing = NO;
+}
+
+- (void)_orderFront
+{
+    if (![self isVisible])
+        [_targetView addObserver:self forKeyPath:@"frame" options:0 context:nil];
+
+    [super _orderFront];
+}
+
+- (void)_parentDidOrderInChild
+{
+    [_targetView addObserver:self forKeyPath:@"frame" options:0 context:nil];
 }
 
 /*!

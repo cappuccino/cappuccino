@@ -624,7 +624,7 @@ CPRunContinuesResponse  = -1002;
             var listener = _eventListeners.pop();
             listener._callback(anEvent);
 
-            if (listener._shouldDequeue)
+            if (listener._dequeue)
                 return;
         }
     }

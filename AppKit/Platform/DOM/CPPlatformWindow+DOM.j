@@ -1489,10 +1489,11 @@ var resizeTimer = nil;
 
     for (var i = 0; i < count; ++i)
     {
-        var child = children[i];
+        var child = children[i],
+            childWasVisible = [child isVisible];
 
         // If a child is not visible and has not yet been ordered in, skip it
-        if (![child isVisible] && ![child _hasBeenOrderedIn])
+        if (!childWasVisible && ![child _hasBeenOrderedIn])
             continue;
 
         var ordering = [child _childOrdering];
@@ -1505,13 +1506,14 @@ var resizeTimer = nil;
 
         [aLayer insertWindow:child atIndex:index];
 
+        if (!childWasVisible)
+            [child _parentDidOrderInChild];
+
         if ([[child childWindows] count])
             [self _orderChildWindowsOf:child furthestParent:furthestParent layer:aLayer];
 
         parent = child;
     }
-
-    return index;
 }
 
 - (void)_removeLayers

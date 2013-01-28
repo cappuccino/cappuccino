@@ -801,6 +801,14 @@ CPTexturedBackgroundWindowMask
 }
 
 /*
+    Called when a parent window orders in a child window directly.
+    without going through the ordering methods in CPWindow.
+*/
+- (void)_parentDidOrderInChild
+{
+}
+
+/*
     Makes the receiver the last window in the screen ordering.
     @param aSender the object that requested this
     @ignore
