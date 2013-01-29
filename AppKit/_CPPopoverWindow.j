@@ -1,5 +1,5 @@
 /*
- * _CPAttachedWindow.j
+ * _CPPopoverWindow.j
  * AppKit
  *
  * Created by Antoine Mercadal
@@ -23,25 +23,29 @@
 @import <Foundation/CPObject.j>
 
 @import "CPButton.j"
-@import "CPWindow.j"
+@import "CPPanel.j"
 
+// Use forward declaration because this file is imported by CPPopover
+@class CPPopover
+
+@global CPApp
 
 CPClosableOnBlurWindowMask  = 1 << 4;
 CPPopoverAppearanceMinimal  = 0;
 CPPopoverAppearanceHUD      = 1;
 
-var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
-    _CPAttachedWindow_attachedWindowDidClose_       = 1 << 1,
-    _CPAttachedWindow_attachedWindowDidShow_        = 1 << 2;
+var _CPPopoverWindow_shouldClose_    = 1 << 0,
+    _CPPopoverWindow_didClose_       = 1 << 1,
+    _CPPopoverWindow_didShow_        = 1 << 2;
 
 
 /*!
     @ignore
 
-    This is a simple attached window like the one that pops up
+    This is a simple popover window like the one that pops up
     when you double click on a meeting in iCal.
 */
-@implementation _CPAttachedWindow : CPWindow
+@implementation _CPPopoverWindow : CPPanel
 {
     BOOL            _animates           @accessors(property=animates);
     id              _targetView         @accessors(property=targetView);
@@ -52,6 +56,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
     BOOL            _browserAnimates;
     BOOL            _shouldPerformAnimation;
     CPInteger       _implementedDelegateMethods;
+    JSObject        _orderOutTransitionFunction;
 }
 
 
@@ -66,7 +71,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 */
 + (Class)_windowViewClassForStyleMask:(unsigned)aStyleMask
 {
-    return _CPAttachedWindowView;
+    return _CPPopoverWindowView;
 }
 
 
@@ -74,39 +79,10 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 #pragma mark Initialization
 
 /*!
-    Create and init a _CPAttachedWindow with the given size and view.
+    Create and init a _CPPopoverWindow with given the given frame.
 
-    @param aSize the size of the attached window
-    @param aView the target view
-    @return ready to use _CPAttachedWindow
-*/
-+ (id)attachedWindowWithSize:(CGSize)aSize forView:(CPView)aView
-{
-    return [_CPAttachedWindow attachedWindowWithSize:aSize forView:aView styleMask:0];
-}
-
-/*!
-    Create and init a _CPAttachedWindow with given the size, view and style mask.
-
-    @param aSize the size of the attached window
-    @param aView the target view
-    @param styleMask the window style mask  (combine CPClosableWindowMask and CPClosableOnBlurWindowMask)
-    @return ready to use _CPAttachedWindow
-*/
-+ (id)attachedWindowWithSize:(CGSize)aSize forView:(CPView)aView styleMask:(int)aMask
-{
-    var attachedWindow = [[_CPAttachedWindow alloc] initWithContentRect:_CGRectMake(0.0, 0.0, aSize.width, aSize.height) styleMask:aMask];
-
-    [attachedWindow attachToView:aView];
-
-    return attachedWindow;
-}
-
-/*!
-    Create and init a _CPAttachedWindow with given the given frame.
-
-    @param aFrame the frame of the attached window
-    @return ready to use _CPAttachedWindow
+    @param aFrame the frame of the popover window
+    @return ready to use _CPPopoverWindow
 */
 - (id)initWithContentRect:(CGRect)aFrame
 {
@@ -114,23 +90,25 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 }
 
 /*!
-    Designated initializer. Create and init a _CPAttachedWindow with the given frame and style mask.
+    Designated initializer. Create and init a _CPPopoverWindow with the given frame and style mask.
 
-    @param aFrame the frame of the attached window
+    @param aFrame the frame of the popover window
     @param styleMask the window style mask  (combine CPClosableWindowMask and CPClosableOnBlurWindowMask)
-    @return ready to use _CPAttachedWindow
+    @return ready to use _CPPopoverWindow
 */
 - (id)initWithContentRect:(CGRect)aFrame styleMask:(unsigned)aStyleMask
 {
     if (self = [super initWithContentRect:aFrame styleMask:aStyleMask])
     {
         _animates                   = YES;
-        _closeOnBlur                = (aStyleMask & CPClosableOnBlurWindowMask);
         _isClosing                  = NO;
         _browserAnimates            = [self browserSupportsAnimation];
         _shouldPerformAnimation     = YES;
+        _orderOutTransitionFunction = function() { [self _orderOutRecursively:YES]; };
 
-        [self setLevel:CPStatusWindowLevel];
+
+        [self setStyleMask:aStyleMask];
+        [self setBecomesKeyOnlyIfNeeded:YES];
         [self setMovableByWindowBackground:YES];
         [self setHasShadow:NO];
 
@@ -166,36 +144,32 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
     _delegate = aDelegate;
     _implementedDelegateMethods = 0;
 
-    if ([_delegate respondsToSelector:@selector(attachedWindowShouldClose:)])
-        _implementedDelegateMethods |= _CPAttachedWindow_attachedWindowShouldClose_;
+    if ([_delegate respondsToSelector:@selector(popoverWindowShouldClose:)])
+        _implementedDelegateMethods |= _CPPopoverWindow_shouldClose_;
 
-    if ([_delegate respondsToSelector:@selector(attachedWindowDidClose:)])
-        _implementedDelegateMethods |= _CPAttachedWindow_attachedWindowDidClose_;
+    if ([_delegate respondsToSelector:@selector(popoverWindowDidClose:)])
+        _implementedDelegateMethods |= _CPPopoverWindow_didClose_;
 
-    if ([_delegate respondsToSelector:@selector(attachedWindowDidShow:)])
-        _implementedDelegateMethods |= _CPAttachedWindow_attachedWindowDidShow_;
+    if ([_delegate respondsToSelector:@selector(popoverWindowDidShow:)])
+        _implementedDelegateMethods |= _CPPopoverWindow_didShow_;
 }
 
 #pragma mark -
 #pragma mark Observer
 
 /*!
-    Update the _CPAttachedWindow frame if a resize event is observed.
+    Update the _CPPopoverWindow frame if a resize event is observed.
 */
 - (void)observeValueForKeyPath:(CPString)aPath ofObject:(id)anObject change:(CPDictionary)theChange context:(void)aContext
 {
-    if ([aPath isEqual:@"frame"])
+    if (aPath === @"frame")
     {
-        // TODO: don't recompute everything, just compute the move offset
-        var edge = [_windowView preferredEdge];
-
         if (![_targetView window])
-        {
-            [self _close]
             return;
-        }
 
-        [self positionRelativeToRect:nil ofView:_targetView preferredEdge:edge];
+        var point = [self computeOriginFromRect:[_targetView bounds] ofView:_targetView preferredEdge:[_windowView preferredEdge]];
+
+        [self setFrameOrigin:point];
     }
 }
 
@@ -318,9 +292,9 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 
 /*!
     Compute the frame needed to be placed to the given view
-    and position the attached window according to this view (edge will be automatic)
+    and position the popover window according to this view (edge will be automatic)
 
-    @param aView the view where _CPAttachedWindow must be attached
+    @param aView the view where _CPPopoverWindow must be popover
 */
 - (void)positionRelativeToView:(CPView)aView
 {
@@ -328,14 +302,16 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 }
 
 /*!
-    Position the _CPAttachedWindow relative to a given rect's edge.
+    Position the _CPPopoverWindow relative to a given rect's edge.
 
-    @param aRect the rect relative to which the attached window will be positioned
-    @param positioningView the view to which the attached window is attached
+    @param aRect the rect relative to which the popover window will be positioned
+    @param positioningView the view to which the popover window is popover
     @param anEdge the prefered edge
 */
 - (void)positionRelativeToRect:(CGRect)aRect ofView:(CPView)positioningView preferredEdge:(int)anEdge
 {
+    var wasVisible = [self isVisible];
+
     if (!aRect || _CGRectIsEmpty(aRect))
         aRect = [positioningView bounds];
 
@@ -343,16 +319,28 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 
     [self setFrameOrigin:point];
     [_windowView showCursor];
-    [self setLevel:CPStatusWindowLevel];
     [_windowView setNeedsDisplay:YES];
     [self makeKeyAndOrderFront:nil];
 
     if (positioningView !== _targetView)
     {
+        [[_targetView window] removeChildWindow:self];
         [_targetView removeObserver:self forKeyPath:@"frame"];
         _targetView = positioningView;
-        [_targetView addObserver:self forKeyPath:@"frame" options:0 context:nil];
     }
+
+    /*
+        If _targetView's window is not a full platform window,
+        add us as a child, because when we close we are detached from
+        the parent, and the parent may cache this window and reopen it.
+    */
+    var targetWindow = [_targetView window];
+
+    if (![targetWindow isFullPlatformWindow])
+        [[_targetView window] addChildWindow:self ordered:CPWindowAbove];
+
+    if (!wasVisible)
+        [self _trapNextMouseDown];
 }
 
 /*! @ignore */
@@ -376,7 +364,8 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 #pragma mark Actions
 
 /*!
-    Closes the _CPAttachedWindow
+    @ignore
+    Closes the _CPPopoverWindow
 
     @param sender the sender of the action
 */
@@ -390,38 +379,17 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 #pragma mark Overrides
 
 /*!
-    Attached windows, such as pop overs, can usually become the key window.
+    @ignore
+    Show animation if necessary.
 */
-- (BOOL)canBecomeKeyWindow
+- (void)close
 {
-    return YES;
+    [self orderOut:self];
+    [self _detachFromChildrenClosing:YES];
 }
 
 /*!
-    Normally untitled windows cannot become main, but popovers can.
-*/
-- (BOOL)canBecomeMainWindow
-{
-    return [self isVisible];
-}
-
-/*!
-    Called when the window is losing focus.
-*/
-- (void)resignMainWindow
-{
-    if (_closeOnBlur && !_isClosing)
-    {
-        if (!_delegate ||
-            ((_implementedDelegateMethods & _CPAttachedWindow_attachedWindowShouldClose_) &&
-             [_delegate attachedWindowShouldClose:self]))
-        {
-            [self close];
-        }
-    }
-}
-
-/*!
+    @ignore
     When the window appears, show animation if necessary.
     Also take this opportunity to keep track of window moves.
 
@@ -429,7 +397,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 */
 - (IBAction)orderFront:(is)aSender
 {
-    if (![self isMainWindow])
+    if (![self isKeyWindow])
     {
         [super orderFront:aSender];
 
@@ -438,8 +406,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
             var transformOrigin = "50% 100%",
                 frame = [self frame],
                 preferredEdge = [_windowView preferredEdge],
-                posX,
-                posY;
+                posX, posY;
 
             switch (preferredEdge)
             {
@@ -474,10 +441,10 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
                 [self setCSS3Property:@"Transform" value:@"scale(1.1)"];
                 [self setCSS3Property:@"Transition" value:CPBrowserCSSProperty('transform') + @" 200ms ease-in"];
 
-                var transitionEndFunction = function()
+                var orderFrontTransitionFunction = function()
                 {
 #if PLATFORM(DOM)
-                    _DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), transitionEndFunction, YES);
+                    _DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), orderFrontTransitionFunction, YES);
 #endif
 
                     // Now set up the pop-in to normal size transition.
@@ -490,8 +457,8 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
 #if PLATFORM(DOM)
                         _DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), transitionCompleteFunction, YES);
 #endif
-                        if (_implementedDelegateMethods & _CPAttachedWindow_attachedWindowDidShow_)
-                             [_delegate attachedWindowDidShow:self];
+                        if (_implementedDelegateMethods & _CPPopoverWindow_didShow_)
+                             [_delegate popoverWindowDidShow:self];
                     }
 
 #if PLATFORM(DOM)
@@ -500,7 +467,7 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
                 };
 
 #if PLATFORM(DOM)
-                _DOMElement.addEventListener(CPBrowserStyleProperty('transitionend'), transitionEndFunction, YES);
+                _DOMElement.addEventListener(CPBrowserStyleProperty('transitionend'), orderFrontTransitionFunction, YES);
 #endif
             }, 0);
         }
@@ -517,15 +484,28 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
     _isClosing = NO;
 }
 
+- (void)_orderFront
+{
+    if (![self isVisible])
+        [_targetView addObserver:self forKeyPath:@"frame" options:0 context:nil];
+
+    [super _orderFront];
+}
+
+- (void)_parentDidOrderInChild
+{
+    [_targetView addObserver:self forKeyPath:@"frame" options:0 context:nil];
+}
+
 /*!
+    @ignore
     Animate window closing.
 */
-- (void)close
+- (void)orderOut:(id)aSender
 {
     if (![self isVisible])
         return;
 
-    // set a flag to avoid an infinite loop in resignMainWindow
     _isClosing = YES;
 
     if (_animates && _browserAnimates)
@@ -534,36 +514,69 @@ var _CPAttachedWindow_attachedWindowShouldClose_    = 1 << 0,
         [self setCSS3Property:@"Transition" value:@"opacity 250ms linear"];
 #if PLATFORM(DOM)
         _DOMElement.style.opacity = 0;
-#endif
-
-        var transitionEndFunction = function()
-        {
-#if PLATFORM(DOM)
-            _DOMElement.removeEventListener(CPBrowserStyleProperty("transitionend"), transitionEndFunction, YES);
-#endif
-            [self _close];
-        };
-
-#if PLATFORM(DOM)
-        _DOMElement.addEventListener(CPBrowserStyleProperty("transitionend"), transitionEndFunction, YES);
+        _DOMElement.addEventListener(CPBrowserStyleProperty("transitionend"), _orderOutTransitionFunction, YES);
 #endif
     }
     else
     {
-        [self _close];
+        [self _orderOutRecursively:YES];
     }
 }
 
-- (void)_close
+- (void)_orderOutRecursively:(BOOL)recursive
 {
-    [super close];
+    // Make absolutely sure no dangling event listeners are left
+#if PLATFORM(DOM)
+    _DOMElement.removeEventListener(CPBrowserStyleProperty("transitionend"), _orderOutTransitionFunction, YES);
+#endif
+
     [_targetView removeObserver:self forKeyPath:@"frame"];
+    [super _orderOutRecursively:recursive];
 
     _shouldPerformAnimation = YES;
     _isClosing = NO;
 
-    if (_implementedDelegateMethods & _CPAttachedWindow_attachedWindowDidClose_)
-        [_delegate attachedWindowDidClose:self];
+    if (_implementedDelegateMethods & _CPPopoverWindow_didClose_)
+        [_delegate popoverWindowDidClose:self];
+}
+
+
+#pragma mark -
+#pragma mark Private
+
+- (void)_mouseWasClicked:(CPEvent)anEvent
+{
+    /*
+        If the mouse was clicked inside us, trap the next mouse down.
+        If the mouse was clicked outside of us, we close and send this
+        message to any parent popovers so they have a chance to close
+        if necessary.
+    */
+    if (![self isVisible])
+        return;
+
+    var mouseWindow = [anEvent window];
+
+    if (mouseWindow === self)
+        [self _trapNextMouseDown];
+    else
+    {
+        // Send _close to the delegate so popoverWillClose is sent to the popover's delegate
+        if (_closeOnBlur)
+            [_delegate _close];
+
+        // Give a transient parent popover a chance to close
+        var parent = [self parentWindow];
+
+        if ([parent isKindOfClass:[self class]])
+            [parent _mouseWasClicked:anEvent];
+    }
+}
+
+- (void)_trapNextMouseDown
+{
+    // Don't dequeue the event so clicks in controls will work
+    [CPApp setTarget:self selector:@selector(_mouseWasClicked:) forNextEventMatchingMask:CPLeftMouseDownMask untilDate:nil inMode:CPDefaultRunLoopMode dequeue:NO];
 }
 
 @end

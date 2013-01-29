@@ -158,6 +158,16 @@ _CPWindowViewResizeSlop = 3;
 {
 }
 
+- (CPView)hitTest:(CGPoint)locationInWindow
+{
+    var region = [self resizeRegionForPoint:[_window convertBaseToGlobal:locationInWindow]];
+
+    if (region !== _CPWindowViewResizeRegionNone)
+        return self;
+    else
+        return [super hitTest:locationInWindow];
+}
+
 - (BOOL)acceptsFirstMouse:(CPEvent)anEvent
 {
     return YES;
@@ -453,8 +463,8 @@ _CPWindowViewResizeSlop = 3;
 
     else if (type === CPLeftMouseDragged)
     {
-        var diffX = globalLocation.x - _mouseDraggedPoint.x,
-            diffY = globalLocation.y - _mouseDraggedPoint.y,
+        var deltaX = globalLocation.x - _mouseDraggedPoint.x,
+            deltaY = globalLocation.y - _mouseDraggedPoint.y,
             newX = _CGRectGetMinX(_resizeFrame),
             newY = _CGRectGetMinY(_resizeFrame),
             newWidth = _CGRectGetWidth(_resizeFrame),
@@ -469,19 +479,19 @@ _CPWindowViewResizeSlop = 3;
             case _CPWindowViewResizeRegionTopLeft:
             case _CPWindowViewResizeRegionLeft:
             case _CPWindowViewResizeRegionBottomLeft:
-                if (minSize && diffX > 0)
-                    diffX = MIN(newWidth - minSize.width, diffX);
-                else if (maxSize && diffX < 0)
-                    diffX = MAX(newWidth - maxSize.width, diffX);
+                if (minSize && deltaX > 0)
+                    deltaX = MIN(newWidth - minSize.width, deltaX);
+                else if (maxSize && deltaX < 0)
+                    deltaX = MAX(newWidth - maxSize.width, deltaX);
 
-                newX += diffX,
-                newWidth -= diffX;
+                newX += deltaX,
+                newWidth -= deltaX;
                 break;
 
             case _CPWindowViewResizeRegionTopRight:
             case _CPWindowViewResizeRegionRight:
             case _CPWindowViewResizeRegionBottomRight:
-                newWidth += diffX;
+                newWidth += deltaX;
                 break;
         }
 
@@ -491,19 +501,19 @@ _CPWindowViewResizeSlop = 3;
             case _CPWindowViewResizeRegionTopLeft:
             case _CPWindowViewResizeRegionTop:
             case _CPWindowViewResizeRegionTopRight:
-                if (minSize && diffY > 0)
-                    diffY = MIN(newHeight - minSize.height, diffY);
-                else if (maxSize && diffY < 0)
-                    diffY = MAX(newHeight - maxSize.height, diffY);
+                if (minSize && deltaY > 0)
+                    deltaY = MIN(newHeight - minSize.height, deltaY);
+                else if (maxSize && deltaY < 0)
+                    deltaY = MAX(newHeight - maxSize.height, deltaY);
 
-                newY += diffY,
-                newHeight -= diffY;
+                newY += deltaY,
+                newHeight -= deltaY;
                 break;
 
             case _CPWindowViewResizeRegionBottomLeft:
             case _CPWindowViewResizeRegionBottom:
             case _CPWindowViewResizeRegionBottomRight:
-                newHeight += diffY;
+                newHeight += deltaY;
                 break;
         }
 
@@ -566,8 +576,10 @@ _CPWindowViewResizeSlop = 3;
         var theWindow = [self window],
             frame = [theWindow frame],
             location = [theWindow convertBaseToGlobal:[anEvent locationInWindow]],
-            origin = [self _pointWithinScreenFrame:_CGPointMake(_CGRectGetMinX(frame) + (location.x - _mouseDraggedPoint.x),
-                                                                _CGRectGetMinY(frame) + (location.y - _mouseDraggedPoint.y))];
+            deltaX = location.x - _mouseDraggedPoint.x,
+            deltaY = location.y - _mouseDraggedPoint.y,
+            origin = [self _pointWithinScreenFrame:_CGPointMake(frame.origin.x + deltaX,
+                                                                frame.origin.y + deltaY)];
         [theWindow setFrameOrigin:origin];
 
         _mouseDraggedPoint = [self _pointWithinScreenFrame:location];

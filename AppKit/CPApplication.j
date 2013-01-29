@@ -620,9 +620,13 @@ CPRunContinuesResponse  = -1002;
     if (_eventListeners.length)
     {
         if (_eventListeners[_eventListeners.length - 1]._mask & (1 << [anEvent type]))
-            _eventListeners.pop()._callback(anEvent);
+        {
+            var listener = _eventListeners.pop();
+            listener._callback(anEvent);
 
-        return;
+            if (listener._dequeue)
+                return;
+        }
     }
 
     if ([anEvent type] == CPMouseMoved)
@@ -919,7 +923,7 @@ CPRunContinuesResponse  = -1002;
 */
 - (void)setCallback:(Function)aCallback forNextEventMatchingMask:(unsigned int)aMask untilDate:(CPDate)anExpiration inMode:(CPString)aMode dequeue:(BOOL)shouldDequeue
 {
-    _eventListeners.push(_CPEventListenerMake(aMask, aCallback));
+    _eventListeners.push(_CPEventListenerMake(aMask, aCallback, shouldDequeue));
 }
 
 /*!
@@ -935,7 +939,7 @@ CPRunContinuesResponse  = -1002;
 */
 - (void)setTarget:(id)aTarget selector:(SEL)aSelector forNextEventMatchingMask:(unsigned int)aMask untilDate:(CPDate)anExpiration inMode:(CPString)aMode dequeue:(BOOL)shouldDequeue
 {
-    _eventListeners.push(_CPEventListenerMake(aMask, function (anEvent) { objj_msgSend(aTarget, aSelector, anEvent); }));
+    _eventListeners.push(_CPEventListenerMake(aMask, function (anEvent) { objj_msgSend(aTarget, aSelector, anEvent); }, shouldDequeue));
 }
 
 /*!
@@ -1212,28 +1216,29 @@ var _CPModalSessionMake = function(aWindow, aStopCode)
     return { _window:aWindow, _state:CPRunContinuesResponse , _previous:nil };
 };
 
-var _CPEventListenerMake = function(anEventMask, aCallback)
+var _CPEventListenerMake = function(anEventMask, aCallback, shouldDequeue)
 {
-    return { _mask:anEventMask, _callback:aCallback };
+    return { _mask:anEventMask, _callback:aCallback, _dequeue:shouldDequeue };
 };
 
 // Make this a global for use in CPPlatformWindow+DOM.j.
 _CPRunModalLoop = function(anEvent)
 {
-    [CPApp setCallback:_CPRunModalLoop forNextEventMatchingMask:CPAnyEventMask untilDate:nil inMode:0 dequeue:NO];
+    [CPApp setCallback:_CPRunModalLoop forNextEventMatchingMask:CPAnyEventMask untilDate:nil inMode:0 dequeue:YES];
 
     var theWindow = [anEvent window],
         modalSession = CPApp._currentSession;
 
-    // The special case for popovers here is not clear. In Cocoa the popover window does not respond YES to worksWhenModal,
-    // yet it works when there is a modal window. Maybe it starts its own modal session, but interaction with the original
-    // modal window seems to continue working as well. Regardless of correctness, this solution beats popovers not working
-    // at all from sheets.
+    /*
+        The special case for popovers here is not clear. In Cocoa the popover window does not respond YES to worksWhenModal, yet it works when there is a modal window. Maybe it starts its own modal session, but interaction with the original modal window seems to continue working as well. Regardless of correctness, this solution beats popovers not working at all from sheets.
+    */
     if (theWindow == modalSession._window ||
         [theWindow worksWhenModal] ||
         [theWindow attachedSheet] == modalSession._window || // -dw- allow modal parent of sheet to be repositioned
-        ([theWindow isKindOfClass:_CPAttachedWindow] && [[theWindow targetView] window] === modalSession._window))
+        ([theWindow isKindOfClass:_CPPopoverWindow] && [[theWindow targetView] window] === modalSession._window))
+    {
         [theWindow sendEvent:anEvent];
+    }
 };
 
 /*!

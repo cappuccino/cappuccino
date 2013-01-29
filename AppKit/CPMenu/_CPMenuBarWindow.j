@@ -320,6 +320,11 @@
     [self tile];
 }
 
+- (BOOL)acceptsFirstMouse:(CPEvent)anEvent
+{
+    return YES;
+}
+
 - (void)mouseDown:(CPEvent)anEvent
 {
     var constraintRect = CGRectInset([[self platformWindow] visibleFrame], 5.0, 0.0);

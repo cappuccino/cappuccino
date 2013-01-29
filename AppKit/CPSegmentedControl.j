@@ -804,6 +804,7 @@ CPSegmentSwitchTrackingMomentary = 2;
             return;
 
         var highlighted = [self testSegment:location] === _trackingSegment;
+
         if (highlighted != _trackingHighlighted)
         {
             _trackingHighlighted = highlighted;

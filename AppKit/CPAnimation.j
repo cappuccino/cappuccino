@@ -123,23 +123,29 @@ ACTUAL_FRAME_RATE = 0;
 - (void)setAnimationCurve:(CPAnimationCurve)anAnimationCurve
 {
     var timingFunctionName;
+
     switch (anAnimationCurve)
     {
-        case CPAnimationEaseInOut:  timingFunctionName = kCAMediaTimingFunctionEaseInEaseOut;
-                                    break;
+        case CPAnimationEaseInOut:
+            timingFunctionName = kCAMediaTimingFunctionEaseInEaseOut;
+            break;
 
-        case CPAnimationEaseIn:     timingFunctionName = kCAMediaTimingFunctionEaseIn;
-                                    break;
+        case CPAnimationEaseIn:
+            timingFunctionName = kCAMediaTimingFunctionEaseIn;
+            break;
 
-        case CPAnimationEaseOut:    timingFunctionName = kCAMediaTimingFunctionEaseOut;
-                                    break;
+        case CPAnimationEaseOut:
+            timingFunctionName = kCAMediaTimingFunctionEaseOut;
+            break;
 
-        case CPAnimationLinear:     timingFunctionName = kCAMediaTimingFunctionLinear;
-                                    break;
+        case CPAnimationLinear:
+            timingFunctionName = kCAMediaTimingFunctionLinear;
+            break;
 
-        default:                    [CPException raise:CPInvalidArgumentException
-                                                reason:"Invalid value provided for animation curve"];
-                                    break;
+        default:
+            [CPException raise:CPInvalidArgumentException
+                        reason:@"Invalid value provided for animation curve"];
+            break;
     }
 
     _animationCurve = anAnimationCurve;

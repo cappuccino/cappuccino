@@ -111,9 +111,7 @@
     [_windowView setAutoresizesSubviews:YES];
 
     if ([_viewClass isKindOfClass:[CPToolbar class]])
-    {
        [theWindow setToolbar:_viewClass];
-    }
 
     [theWindow setAutorecalculatesKeyViewLoop:_windowAutorecalculatesKeyViewLoop];
     [theWindow setFullPlatformWindow:_windowIsFullPlatformWindow];

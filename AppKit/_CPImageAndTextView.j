@@ -105,6 +105,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         }
 
         _textSize = nil;
+        [self setHitTests:NO];
     }
 
     return self;

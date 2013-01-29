@@ -82,19 +82,26 @@
 {
     // We will have to adjust the z-index of all windows starting at this index.
     var count = [_windows count],
-        zIndex = (anIndex == CPNotFound ? count : anIndex),
+        zIndex = (anIndex === CPNotFound ? count : anIndex),
         isVisible = aWindow._isVisible;
 
     // If the window is already a resident of this layer, remove it.
     if (isVisible)
     {
+        // Adjust the z-index to start at the window being inserted
         zIndex = MIN(zIndex, aWindow._index);
+
+        // If the window being inserted is below the insertion index,
+        // the index will be one less after we remove the window below.
+        if (aWindow._index < anIndex)
+            --anIndex;
+
         [_windows removeObjectAtIndex:aWindow._index];
     }
     else
         ++count;
 
-    if (anIndex == CPNotFound || anIndex >= count)
+    if (anIndex === CPNotFound || anIndex >= count)
         [_windows addObject:aWindow];
     else
         [_windows insertObject:aWindow atIndex:anIndex];
@@ -113,7 +120,7 @@
 
         aWindow._isVisible = YES;
 
-        if ([aWindow isFullBridge])
+        if ([aWindow isFullPlatformWindow])
             [aWindow setFrame:[aWindow._platformWindow usableContentFrame]];
     }
 }
