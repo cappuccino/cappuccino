@@ -20,13 +20,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <AppKit/CPApplication.j>
+
 @import "MyDocument2.j"
 @import "StringToURLTransformer.j"
 
 /*!
     Bindings test exercising the functionality seen in the Cocoa example "WithAndWithoutBindings" part 1. Part 1 does in fact not use bindings and serves only as a base line test case.
 */
-
 @implementation WithBindingsTest : OJTestCase
 {
 }
