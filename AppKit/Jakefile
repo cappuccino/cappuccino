@@ -1,8 +1,10 @@
 
 require("../common.jake");
 
-var framework = require("objective-j/jake").framework;
-var BundleTask = require("objective-j/jake").BundleTask;
+checkUlimit();
+
+var framework = require("objective-j/jake").framework,
+    BundleTask = require("objective-j/jake").BundleTask;
 
 $BUILD_PATH = FILE.join($BUILD_DIR, $CONFIGURATION, 'AppKit');
 
