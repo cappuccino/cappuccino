@@ -295,7 +295,7 @@ if (!exports.acorn) {
 
   // Map Objective-J keyword names to token types.
 
-  var keywordTypesObjJ = {"IBAction": _action, "unsigned": _unsigned, "signed": _signed, "byte": _byte, "char": _char,
+  var keywordTypesObjJ = {"IBAction": _action, "IBOutlet": _outlet, "unsigned": _unsigned, "signed": _signed, "byte": _byte, "char": _char,
                           "short": _short, "int": _int, "long": _long };
 
   // Map Objective-J "@" keyword names to token types.
@@ -411,7 +411,7 @@ if (!exports.acorn) {
 
   // The Objective-J keywords.
 
-  var isKeywordObjJ = makePredicate("IBAction byte char short int long unsigned signed");
+  var isKeywordObjJ = makePredicate("IBAction IBOutlet byte char short int long unsigned signed");
 
   // ## Character categories
 
