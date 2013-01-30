@@ -552,7 +552,7 @@ global.checkUlimit = function()
 
         if (Number(limit) < minUlimit)
         {
-            stream.print("\0red(\0bold(WARNING:\0)\0) Cappuccino may need to open more files than this terminal session currently allows (" + limit + "). Add the following line to your login configuration file (.bash_profile, .bashrc, etc.), start a new terminal session, then try again:\n");
+            stream.print("\0red(\0bold(ERROR:\0)\0) Cappuccino may need to open more files than this terminal session currently allows (" + limit + "). Add the following line to your login configuration file (.bash_profile, .bashrc, etc.), start a new terminal session, then try again:\n");
             stream.print("ulimit -n " + minUlimit);
             OS.exit(1);
         }
