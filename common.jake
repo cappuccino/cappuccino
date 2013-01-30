@@ -544,7 +544,12 @@ var minUlimit = 1024;
 
 global.checkUlimit = function()
 {
-    var p = OS.popen(["ulimit", "-n"]);
+    var ulimitPath = executableExists("ulimit");
+
+    if (!ulimitPath)
+        return;
+
+    var p = OS.popen([ulimitPath, "-n"]);
 
     if (p.wait() === 0)
     {
