@@ -218,7 +218,6 @@ var resizeTimer = nil;
         _windowLevels = [];
         _windowLayers = [CPDictionary dictionary];
 
-
         [self registerDOMWindow];
         [self updateFromNativeContentRect];
 
@@ -677,6 +676,7 @@ var resizeTimer = nil;
 - (void)keyEvent:(DOMEvent)aDOMEvent
 {
     var event,
+        location = _lastMouseEventLocation || _CGPointMakeZero(),
         timestamp = [CPEvent currentTimestamp],
         sourceElement = aDOMEvent.target || aDOMEvent.srcElement,
         windowNumber = [[CPApp keyWindow] windowNumber],
