@@ -386,16 +386,19 @@ function CPDecimalCompare(leftOperand, rightOperand)
         s1 = leftOperand._exponent + leftOperand._mantissa.length,
         s2 = rightOperand._exponent + rightOperand._mantissa.length;
 
-    if (leftIsZero || s1 < s2)
+    if (leftIsZero && rightIsZero)
+        return CPOrderedSame;
+
+    if (leftIsZero || (s1 < s2 && !rightIsZero))
     {
         if (rightOperand._isNegative)
             return CPOrderedDescending;
         else
             return CPOrderedAscending;
     }
-    if (rightIsZero || s1 > s2)
+    if (rightIsZero || (s1 > s2 && !leftIsZero))
     {
-        if (rightOperand._isNegative)
+        if (leftOperand._isNegative)
             return CPOrderedAscending;
         else
             return CPOrderedDescending;
