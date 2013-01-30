@@ -22,7 +22,7 @@
 
 @import "Nib2Cib.j"
 
-var OS = require("OS"),
+var OS = require("os"),
     stream = require("narwhal/term").stream;
 
 
