@@ -25,8 +25,9 @@
 @import "CPImageView.j"
 @import "CPPasteboard.j"
 @import "CPView.j"
-@import "CPWindow.j"
+@import "CPWindow_Constants.j"
 
+@class CPWindow  // This file is imported by CPWindow.j
 @class _CPDOMDataTransferPasteboard
 
 @global CPApp

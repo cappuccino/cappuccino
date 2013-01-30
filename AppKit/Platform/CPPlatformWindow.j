@@ -142,7 +142,7 @@ var PrimaryPlatformWindow   = NULL;
 {
     var frame = [self contentBounds];
 
-    frame.origin = CGPointMakeZero();
+    frame.origin = _CGPointMakeZero();
 
     if ([CPMenu menuBarVisible] && [CPPlatformWindow primaryPlatformWindow] === self)
     {

@@ -23,6 +23,7 @@
 @import "CPButton.j"
 @import "CPCookie.j"
 @import "CPPanel.j"
+@import "CPPasteboard.j"
 @import "CPView.j"
 
 @class CPSlider
