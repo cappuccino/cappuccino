@@ -477,35 +477,3 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
 }
 
 @end
-
-@implementation CPWindow (CPDraggingAdditions)
-
-/* @ignore */
-- (id)_dragHitTest:(CGPoint)aPoint pasteboard:(CPPasteboard)aPasteboard
-{
-    // If none of our views or ourselves has registered for drag events...
-    if (!_inclusiveRegisteredDraggedTypes)
-        return nil;
-
-// We don't need to do this because the only place this gets called
-// -_dragHitTest: in CPPlatformWindow does this already. Perhaps to
-// be safe?
-//    if (![self containsPoint:aPoint])
-//        return nil;
-
-    var adjustedPoint = [self convertPlatformWindowToBase:aPoint],
-        hitView = [_windowView hitTest:adjustedPoint];
-
-    while (hitView && ![aPasteboard availableTypeFromArray:[hitView registeredDraggedTypes]])
-        hitView = [hitView superview];
-
-    if (hitView)
-        return hitView;
-
-    if ([aPasteboard availableTypeFromArray:[self registeredDraggedTypes]])
-        return self;
-
-    return nil;
-}
-
-@end
