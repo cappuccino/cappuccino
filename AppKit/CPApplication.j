@@ -915,11 +915,12 @@ CPRunContinuesResponse  = -1002;
 
 /*!
     Fires a callback function when an event matching a given mask occurs.
-    @param aCallback - A js function to be fired.
-    @prarm aMask - An event mask for the next event.
-    @param anExpiration - The date for which this callback expires (not implemented).
+    @param aCallback A js function to be fired.
+    @prarm aMask An event mask for the next event.
+    @param anExpiration The date for which this callback expires (not implemented).
     @param inMode (not implemented).
-    @param shouldDequeue (not implemented).
+    @param shouldDequeue YES to remove the event from the queue after calling the callback,
+    NO to deliver it normally.
 */
 - (void)setCallback:(Function)aCallback forNextEventMatchingMask:(unsigned int)aMask untilDate:(CPDate)anExpiration inMode:(CPString)aMode dequeue:(BOOL)shouldDequeue
 {
@@ -930,12 +931,13 @@ CPRunContinuesResponse  = -1002;
     Assigns a target and action for the next event matching a given event mask.
     The callback method called will be passed the CPEvent when it fires.
 
-    @param aTarget - The target object for the callback.
-    @param aSelector - The selector which should be called on the target object.
-    @param aMask - The mask for a given event which should trigger the callback.
-    @param anExpiration - The date for which the callback expires (not implemented).
+    @param aTarget The target object for the callback.
+    @param aSelector The selector which should be called on the target object.
+    @param aMask The mask for a given event which should trigger the callback.
+    @param anExpiration The date for which the callback expires (not implemented).
     @param aMode (not implemented).
-    @param shouldDequeue (not implemented).
+    @param shouldDequeue YES to remove the event from the queue after calling the callback,
+    NO to deliver it normally.
 */
 - (void)setTarget:(id)aTarget selector:(SEL)aSelector forNextEventMatchingMask:(unsigned int)aMask untilDate:(CPDate)anExpiration inMode:(CPString)aMode dequeue:(BOOL)shouldDequeue
 {

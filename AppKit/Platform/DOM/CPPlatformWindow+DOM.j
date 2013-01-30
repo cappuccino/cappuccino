@@ -318,7 +318,8 @@ var resizeTimer = nil;
     // Make sure the pastboard element is blurred.
     _DOMPasteboardElement.blur();
 
-    // Create a full screen div to protect against iframes and other elements from consuming events during tracking
+    // Create a full screen div to protect against iframes and other elements
+    // from consuming events during tracking
     // FIXME: multiple windows
     _DOMEventGuard = theDocument.createElement("div");
     _DOMEventGuard.style.position = "absolute";
@@ -1275,7 +1276,7 @@ var resizeTimer = nil;
             _DOMEventMode = YES;
             _mouseIsDown = YES;
 
-            //fake a down and up event so that event tracking mode will work correctly
+            // Fake a down and up event so that event tracking mode will work correctly
             [CPApp sendEvent:[CPEvent mouseEventWithType:_mouseDownIsRightClick ? CPRightMouseDown : CPLeftMouseDown location:location modifierFlags:modifierFlags
                     timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1
                     clickCount:CPDOMEventGetClickCount(_lastMouseDown, timestamp, location) pressure:0]];
@@ -1322,13 +1323,15 @@ var resizeTimer = nil;
     if (StopDOMEventPropagation && (!supportsNativeDragAndDrop || type !== "mousedown" && !isDragging))
         CPDOMEventStop(aDOMEvent, self);
 
-    // if there are any tracking event listeners then show the event guard so we don't lose events to iframes
-    // TODO Actually check for tracking event listeners, not just any listener but _CPRunModalLoop.
+    // If there are any tracking event listeners (listening for CPLeftMouseDraggedMask)
+    // then show the event guard so we don't lose events to iframes
     var hasTrackingEventListener = NO;
 
     for (var i = 0; i < CPApp._eventListeners.length; i++)
     {
-        if (CPApp._eventListeners[i]._callback !== _CPRunModalLoop)
+        var listener = CPApp._eventListeners[i];
+
+        if (listener._callback !== _CPRunModalLoop && (listener._mask & CPLeftMouseDraggedMask))
         {
             hasTrackingEventListener = YES;
             break;
