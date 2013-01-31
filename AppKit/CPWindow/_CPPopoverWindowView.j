@@ -51,6 +51,23 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
     CGSize      _cursorSize;
 }
 
++ (CPString)defaultThemeClass
+{
+    return @"popover-window-view";
+}
+
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[[CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null]]
+                                       forKeys:[@"background-gradient",
+                                                @"background-gradient-hud",
+                                                @"stroke-color",
+                                                @"stroke-color-hud"]];
+}
+
 /*!
     Compute the contentView frame from a given window frame
 
@@ -157,28 +174,14 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
 
     if (_appearance == CPPopoverAppearanceMinimal)
     {
-        gradient = CGGradientCreateWithColorComponents(
-                        CGColorSpaceCreateDeviceRGB(),
-                        [
-                            (254.0 / 255), (254.0 / 255), (254.0 / 255), 0.93,
-                            (231.0 / 255), (231.0 / 255), (231.0 / 255), 0.93
-                        ],
-                        [0, 1],
-                        2
-                    );
-        strokeColor = [CPColor colorWithHexString:@"B8B8B8"];
+        gradient = [self valueForThemeAttribute:@"background-gradient"];
+        strokeColor = [self valueForThemeAttribute:@"stroke-color"];
+        console.error(gradient);
     }
     else
     {
-        gradient = CGGradientCreateWithColorComponents(
-                        CGColorSpaceCreateDeviceRGB(),
-                        [
-                            (38.0 / 255), (38.0 / 255), (38.0 / 255), 0.93,
-                            (18.0 / 255), (18.0 / 255), (18.0 / 255), 0.93
-                        ],
-                        [0, 1],
-                        2);
-        strokeColor = [CPColor colorWithHexString:@"222222"];
+        gradient = [self valueForThemeAttribute:@"background-gradient-hud"];
+        strokeColor = [self valueForThemeAttribute:@"stroke-color-hud"];
     }
 
     // fix rect to take care of stroke and shadow
