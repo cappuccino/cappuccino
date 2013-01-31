@@ -28,12 +28,6 @@
 
 @global CPApp
 
-// var LEFT_MARGIN                 = 3.0,
-//     RIGHT_MARGIN                = 16.0,
-//     STATE_COLUMN_WIDTH          = 14.0,
-//     INDENTATION_WIDTH           = 17.0,
-//     VERTICAL_MARGIN             = 4.0;
-
 /*
     @ignore
 */
