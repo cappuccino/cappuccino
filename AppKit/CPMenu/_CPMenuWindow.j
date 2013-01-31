@@ -34,8 +34,6 @@ _CPMenuWindowMenuBarBackgroundStyle         = 0;
 _CPMenuWindowPopUpBackgroundStyle           = 1;
 _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 
-var STICKY_TIME_INTERVAL        = 500;
-
 /*
     @ignore
 */
