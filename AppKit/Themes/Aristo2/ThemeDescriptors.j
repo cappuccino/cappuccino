@@ -47,6 +47,7 @@
 @import <AppKit/CPWindow.j>
 @import <AppKit/CPAlert.j>
 @import <AppKit/_CPToolTip.j>
+@import <AppKit/CPPopover.j>
 
 var themedButtonValues = nil,
     themedTextFieldValues = nil,
@@ -2120,6 +2121,45 @@ var themedButtonValues = nil,
     [self registerThemeValues:themeValues forView:menuView];
 
     return menuView;
+}
+
++ (_CPPopoverWindowView)themedPopoverWindowView
+{
+    var popoverWindowView = [[_CPPopoverWindowView alloc] initWithFrame:CGRectMake(0, 0, 200, 200) styleMask:nil],
+
+        gradient = CGGradientCreateWithColorComponents(
+                         CGColorSpaceCreateDeviceRGB(),
+                         [
+                             (254.0 / 255), (254.0 / 255), (254.0 / 255), 0.93,
+                             (241.0 / 255), (241.0 / 255), (241.0 / 255), 0.93
+                         ],
+                         [0, 1],
+                         2
+                     ),
+
+        gradientHUD = CGGradientCreateWithColorComponents(
+                        CGColorSpaceCreateDeviceRGB(),
+                        [
+                            (38.0 / 255), (38.0 / 255), (38.0 / 255), 0.93,
+                            (18.0 / 255), (18.0 / 255), (18.0 / 255), 0.93
+                        ],
+                        [0, 1],
+                        2),
+
+        strokeColor = [CPColor colorWithHexString:@"B8B8B8"],
+        strokeColorHUD = [CPColor colorWithHexString:@"222222"],
+
+        themeValues =
+        [
+            [@"background-gradient",        gradient],
+            [@"background-gradient-hud",    gradientHUD],
+            [@"stroke-color",               strokeColor],
+            [@"stroke-color-hud",           strokeColorHUD]
+        ];
+
+    [self registerThemeValues:themeValues forView:popoverWindowView];
+
+    return popoverWindowView;
 }
 
 @end
