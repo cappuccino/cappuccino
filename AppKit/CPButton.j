@@ -222,7 +222,7 @@ CPButtonImageOffset   = 3.0;
     else if (![anObjectValue isKindOfClass:[CPNumber class]])
         anObjectValue = CPOnState;
     else if (anObjectValue >= CPOnState)
-        anObjectValue = CPOnState
+        anObjectValue = CPOnState;
     else if (anObjectValue < CPOffState)
         if ([self allowsMixedState])
             anObjectValue = CPMixedState;
