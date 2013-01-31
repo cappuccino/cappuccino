@@ -556,7 +556,7 @@ CPRunContinuesResponse  = -1002;
 
 //    [theWindow._bridge _obscureWindowsBelowModalWindow];
 
-    [CPApp setCallback:_CPRunModalLoop forNextEventMatchingMask:CPAnyEventMask untilDate:nil inMode:0 dequeue:NO];
+    [CPApp setCallback:_CPRunModalLoop forNextEventMatchingMask:CPAnyEventMask untilDate:nil inMode:0 dequeue:YES];
 }
 
 /*!
@@ -619,14 +619,22 @@ CPRunContinuesResponse  = -1002;
 
     if (_eventListeners.length)
     {
-        if (_eventListeners[_eventListeners.length - 1]._mask & (1 << [anEvent type]))
-        {
-            var listener = _eventListeners.pop();
-            listener._callback(anEvent);
+        var listener = _eventListeners[_eventListeners.length - 1];
 
-            if (listener._dequeue)
-                return;
+        if (listener._mask & (1 << [anEvent type]))
+        {
+            _eventListeners.pop();
+            listener._callback(anEvent);
         }
+
+        /*
+            FIXME: This does not match Cocoa documented behavior for the dequeue
+            flag. Cocoa says the event is dequeued only if it matches the mask.
+            Unfortunately event handling code in Cappuccino is depending
+            on an event being dequeued even if it does not match.
+        */
+        if (listener._dequeue)
+            return;
     }
 
     if ([anEvent type] == CPMouseMoved)
