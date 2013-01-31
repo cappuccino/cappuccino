@@ -29,11 +29,10 @@
     CPMenuItem              _menuItem @accessors(property=menuItem);
 
     CPFont                  _font;
-    CPColor                 _textColor;
-    CPColor                 _textShadowColor;
 
     CGSize                  _minSize @accessors(readonly, property=minSize);
     BOOL                    _isDirty;
+    BOOL                    _highlighted;
 
     CPImageView             _stateView;
     _CPImageAndTextView     _imageAndTextView;
@@ -48,16 +47,18 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], 3.0, 17.0, 14.0, 17.0, 4.0, 30.0]
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], 3.0, 17.0, 14.0, 17.0, 4.0, 30.0]
                                        forKeys:[    @"submenu-indicator-color",
                                                     @"menu-item-selection-color",
                                                     @"menu-item-text-shadow-color",
+                                                    @"menu-item-text-color",
                                                     @"menu-item-default-off-state-image",
                                                     @"menu-item-default-off-state-highlighted-image",
                                                     @"menu-item-default-on-state-image",
                                                     @"menu-item-default-on-state-highlighted-image",
                                                     @"menu-item-default-mixed-state-image",
                                                     @"menu-item-default-mixed-state-highlighted-image",
+                                                    @"menu-item-separator-color",
                                                     @"left-margin",
                                                     @"right-margin",
                                                     @"state-column-width",
@@ -121,7 +122,10 @@
     if (![_menuItem isEnabled])
         return [CPColor lightGrayColor];
 
-    return _textColor || [CPColor colorWithCalibratedRed:70.0 / 255.0 green:69.0 / 255.0 blue:69.0 / 255.0 alpha:1.0];
+    if (_highlighted)
+        return [CPColor whiteColor];
+
+    return [self valueForThemeAttribute:@"menu-item-text-color"];
 }
 
 - (CPColor)textShadowColor
@@ -129,7 +133,10 @@
     if (![_menuItem isEnabled])
         return nil;
 
-    return _textShadowColor || [CPColor colorWithWhite:1.0 alpha:0.8];
+    if (_highlighted)
+        return nil;
+
+    return [self valueForThemeAttribute:@"menu-item-text-shadow-color"];
 }
 
 - (void)setFont:(CPFont)aFont
@@ -263,29 +270,24 @@
     if (![_menuItem isEnabled])
         return;
 
+    _highlighted = shouldHighlight;
+
+    [_imageAndTextView setTextColor:[self textColor]];
+    [_keyEquivalentView setTextColor:[self textColor]];
+    [_imageAndTextView setTextShadowColor:[self textShadowColor]];
+    [_keyEquivalentView setTextShadowColor:[self textShadowColor]];
+
     if (shouldHighlight)
     {
         [self setBackgroundColor:[self valueForThemeAttribute:@"menu-item-selection-color"]];
-
         [_imageAndTextView setImage:[_menuItem alternateImage] || [_menuItem image]];
-        [_imageAndTextView setTextColor:[CPColor whiteColor]];
-        [_keyEquivalentView setTextColor:[CPColor whiteColor]];
-        [_submenuIndicatorView setColor:[CPColor whiteColor]];
-
-        [_imageAndTextView setTextShadowColor:[self valueForThemeAttribute:@"menu-item-text-shadow-color"]];
-        [_keyEquivalentView setTextShadowColor:[self valueForThemeAttribute:@"menu-item-text-shadow-color"]];
+        [_submenuIndicatorView setColor:[self textColor]];
     }
     else
     {
         [self setBackgroundColor:nil];
-
         [_imageAndTextView setImage:[_menuItem image]];
-        [_imageAndTextView setTextColor:[self textColor]];
-        [_keyEquivalentView setTextColor:[self textColor]];
         [_submenuIndicatorView setColor:[self valueForThemeAttribute:@"submenu-indicator-color"]];
-
-        [_imageAndTextView setTextShadowColor:[self textShadowColor]];
-        [_keyEquivalentView setTextShadowColor:[self textShadowColor]];
     }
 
     if ([[_menuItem menu] showsStateColumn])

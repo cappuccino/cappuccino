@@ -22,6 +22,8 @@
 
 @import "CPView.j"
 
+@class _CPMenuItemStandardView
+
 
 @implementation _CPMenuItemSeparatorView : CPView
 {
@@ -52,7 +54,7 @@
     CGContextMoveToPoint(context, CGRectGetMinX(bounds), FLOOR(CGRectGetMidY(bounds)) - 0.5);
     CGContextAddLineToPoint(context, CGRectGetMaxX(bounds), FLOOR(CGRectGetMidY(bounds)) - 0.5);
 
-    CGContextSetStrokeColor(context, [CPColor lightGrayColor]);
+    CGContextSetStrokeColor(context, [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-item-separator-color" forClass:_CPMenuItemStandardView]);
     CGContextStrokePath(context);
 }
 
