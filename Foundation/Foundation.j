@@ -34,6 +34,7 @@
 @import "CPDecimalNumber.j"
 @import "CPDictionary.j"
 @import "CPEnumerator.j"
+@import "CPError.j"
 @import "CPException.j"
 @import "CPExpression.j"
 @import "CPFormatter.j"
