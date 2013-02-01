@@ -20,14 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPTextField.j"
 @import "_CPWindowView.j"
-
-@class CPTextField
 
 
 @implementation _CPTitleableWindowView : _CPWindowView
 {
-    CPTextField         _titleField;
+    CPTextField _titleField;
 }
 
 + (int)titleBarHeight

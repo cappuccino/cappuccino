@@ -21,7 +21,7 @@
  */
 
 @import "_CPWindowView.j"
-@import "_CPToolTip.j"
+
 
 @implementation _CPToolTipWindowView : _CPWindowView
 {

@@ -21,7 +21,6 @@
  */
 
 @import "_CPWindowView.j"
-@import "CPView.j"
 
 
 @implementation _CPShadowWindowView : CPView
