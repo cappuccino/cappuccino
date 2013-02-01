@@ -469,10 +469,6 @@ var bottomHeight = 71;
         panelSize.height = minimumSize.height;
 
     buttonsOriginY = panelSize.height - [aRepresentativeButton frameSize].height + buttonOffset;
-
-    if ([_window styleMask] & _CPModalWindowMask)
-        buttonsOriginY = panelSize.height - [aRepresentativeButton frameSize].height / 2 + buttonOffset;
-
     offsetX = panelSize.width - inset.right;
 
     switch ([_window styleMask])
