@@ -523,6 +523,7 @@ CPButtonImageOffset   = 3.0;
     _isTracking = YES;
 
     var startedTracking = [super startTrackingAt:aPoint];
+
     if (_highlightsBy & (CPPushInCellMask | CPChangeGrayCellMask))
     {
         if (_showsStateBy & (CPChangeGrayCellMask | CPChangeBackgroundCellMask))
@@ -537,6 +538,7 @@ CPButtonImageOffset   = 3.0;
         else
             [self highlight:NO];
     }
+
     return startedTracking;
 }
 

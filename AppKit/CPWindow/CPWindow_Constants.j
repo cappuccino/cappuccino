@@ -189,3 +189,8 @@ CPWindowPositionFlexibleRight   = 1 << 19;
 CPWindowPositionFlexibleLeft    = 1 << 20;
 CPWindowPositionFlexibleBottom  = 1 << 21;
 CPWindowPositionFlexibleTop     = 1 << 22;
+
+CPStandardWindowShadowStyle = 0;
+CPMenuWindowShadowStyle     = 1;
+CPPanelWindowShadowStyle    = 2;
+CPCustomWindowShadowStyle   = 3;

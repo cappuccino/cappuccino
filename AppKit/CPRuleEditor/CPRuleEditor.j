@@ -25,6 +25,7 @@
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPIndexSet.j>
 
+@import "CPPasteboard.j"
 @import "CPRuleEditor_Constants.j"
 @import "CPTextField.j"
 @import "CPViewAnimation.j"
