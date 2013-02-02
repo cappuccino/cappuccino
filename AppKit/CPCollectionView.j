@@ -26,9 +26,13 @@
 @import <Foundation/CPKeyedArchiver.j>
 @import <Foundation/CPKeyedUnarchiver.j>
 
-@import "CPView.j"
 @import "CPCollectionViewItem.j"
 @import "CPCompatibility.j"
+@import "CPPasteboard.j"
+@import "CPView.j"
+
+@class CPClipView
+
 
 /*!
     @ingroup appkit

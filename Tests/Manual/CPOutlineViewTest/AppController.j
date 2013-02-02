@@ -198,7 +198,7 @@ var rowHeights = [ ];
     [_outlineView setAllowsMultipleSelection:YES];
     [_outlineView expandItem:nil expandChildren:YES];
     // [_outlineView setRowHeight:50.0];
-    // [_outlineView setIntercellSpacing:CPSizeMake(0.0, 10.0)]
+    // [_outlineView setIntercellSpacing:CGSizeMake(0.0, 10.0)]
 
     [scrollView setDocumentView:_outlineView];
     [theWindow setContentView:scrollView];
@@ -207,7 +207,7 @@ var rowHeights = [ ];
 
     [theWindow orderFront:self];
 
-    [column setWidth:CPRectGetWidth([_outlineView bounds])];
+    [column setWidth:CGRectGetWidth([_outlineView bounds])];
 }
 
 - (id)outlineView:(CPOutlineView)theOutlineView child:(int)theIndex ofItem:(id)theItem
@@ -262,7 +262,7 @@ var rowHeights = [ ];
     return YES;
 }
 
-- (CPDragOperation)outlineView:(CPOutlineView)anOutlineView validateDrop:(id < CPDraggingInfo >)theInfo proposedItem:(id)theItem proposedChildIndex:(int)theIndex
+- (CPDragOperation)outlineView:(CPOutlineView)anOutlineView validateDrop:(id /*< CPDraggingInfo >*/)theInfo proposedItem:(id)theItem proposedChildIndex:(int)theIndex
 {
     CPLog.debug(@"validate item: %@ at index: %i", theItem, theIndex);
 
@@ -274,7 +274,7 @@ var rowHeights = [ ];
     return CPDragOperationEvery;
 }
 
-- (BOOL)outlineView:(CPOutlineView)outlineView acceptDrop:(id < CPDraggingInfo >)theInfo item:(id)theItem childIndex:(int)theIndex
+- (BOOL)outlineView:(CPOutlineView)outlineView acceptDrop:(id /*< CPDraggingInfo >*/)theInfo item:(id)theItem childIndex:(int)theIndex
 {
     if (theItem === nil)
         theItem = [self menu];

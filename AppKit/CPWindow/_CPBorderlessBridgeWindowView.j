@@ -22,27 +22,20 @@
 
 @import "_CPWindowView.j"
 
-
-var _CPToolbarViewBackgroundColor = nil;
-
 @implementation _CPBorderlessBridgeWindowView : _CPWindowView
 {
     CPView  _toolbarBackgroundView;
 }
 
-+ (CPColor)toolbarBackgroundColor
++ (CPString)defaultThemeClass
 {
-    if (!_CPToolbarViewBackgroundColor)
-    {
-        var bundle = [CPBundle bundleForClass:[_CPBorderlessBridgeWindowView class]];
-        _CPToolbarViewBackgroundColor = CPColorWithImages([
-                ["_CPToolbarView/toolbar-background-top.png", 1, 1, bundle],
-                ["_CPToolbarView/toolbar-background-center.png", 1, 57.0, bundle],
-                ["_CPToolbarView/toolbar-background-bottom.png", 1, 1, bundle]
-            ], CPColorPatternIsVertical);
-    }
+    return @"bordeless-bridge-window-view";
+}
 
-    return _CPToolbarViewBackgroundColor;
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[[CPColor grayColor]]
+                                       forKeys:[@"toolbar-background-color"]];
 }
 
 - (void)setShowsResizeIndicator:(BOOL)shouldShowResizeIndicator
@@ -72,7 +65,7 @@ var _CPToolbarViewBackgroundColor = nil;
     {
         _toolbarBackgroundView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
 
-        [_toolbarBackgroundView setBackgroundColor:[[self class] toolbarBackgroundColor]];
+        [_toolbarBackgroundView setBackgroundColor:[self valueForThemeAttribute:@"toolbar-background-color"]];
         [_toolbarBackgroundView setAutoresizingMask:CPViewWidthSizable];
 
         [self addSubview:_toolbarBackgroundView positioned:CPWindowBelow relativeTo:nil];

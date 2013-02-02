@@ -31,7 +31,7 @@ PROJECT_NAME           = " API"
 # This could be handy for archiving the generated documentation or
 # if some version control system is used.
 
-PROJECT_NUMBER         = 0.9.5
+PROJECT_NUMBER         = 0.9.7
 
 PROJECT_LOGO             = ./Tools/Documentation/logo.png
 

@@ -27,6 +27,7 @@
 
 @implementation CPProxy
 {
+    Class   isa;
 }
 
 + (void)load
@@ -80,12 +81,12 @@
     if (typeof self._UID === "undefined")
         self._UID = objj_generateObjectUID();
 
-    return _UID;
+    return self._UID;
 }
 
 - (BOOL)isEqual:(id)anObject
 {
-   return self === object;
+   return self === anObject;
 }
 
 - (id)self

@@ -23,7 +23,11 @@
 @import <Foundation/CPObject.j>
 
 @import "CPTextField.j"
+@import "CPTableView.j"
 @import "_CPMenuWindow.j"
+
+@class CPScrollView
+
 
 // TODO Make themable.
 var _CPAutocompleteMenuMaximumHeight = 307;
@@ -67,7 +71,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
         [scrollView setHasHorizontalScroller:NO];
         [contentView addSubview:scrollView];
 
-        tableView = [[_CPNonFirstResponderTableView alloc] initWithFrame:CPRectMakeZero()];
+        tableView = [[_CPNonFirstResponderTableView alloc] initWithFrame:CGRectMakeZero()];
 
         var tableColumn = [CPTableColumn new];
         [tableColumn setResizingMask:CPTableColumnAutoresizingMask];

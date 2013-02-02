@@ -78,7 +78,7 @@ BundleTask.defineTask = function(/*String*/ aName, /*Function*/ aFunction)
     bundleTask.defineTasks();
 
     return bundleTask;
-}
+};
 
 BundleTask.prototype.setEnvironments = function(environments)
 {
@@ -93,62 +93,62 @@ BundleTask.prototype.setEnvironments = function(environments)
 
     else
         this._environments = [environments];
-}
+};
 
 BundleTask.prototype.environments = function()
 {
     return this._environments;
-}
+};
 
 BundleTask.prototype.setAuthor = function(anAuthor)
 {
     this._author = anAuthor;
-}
+};
 
 BundleTask.prototype.author = function()
 {
     return this._author;
-}
+};
 
 BundleTask.prototype.setEmail = function(anEmail)
 {
     this._email = anEmail;
-}
+};
 
 BundleTask.prototype.email = function()
 {
     return this._email;
-}
+};
 
 BundleTask.prototype.setSummary = function(aSummary)
 {
     this._summary = aSummary;
-}
+};
 
 BundleTask.prototype.summary = function()
 {
     return this._summary;
-}
+};
 
 BundleTask.prototype.setIdentifier = function(anIdentifier)
 {
     this._identifier = anIdentifier;
-}
+};
 
 BundleTask.prototype.identifier = function()
 {
     return this._identifier;
-}
+};
 
 BundleTask.prototype.setVersion = function(aVersion)
 {
     this._version = aVersion;
-}
+};
 
 BundleTask.prototype.version = function()
 {
     return this._version;
-}
+};
 
 BundleTask.prototype.setSources = function(sources, environments)
 {
@@ -168,179 +168,179 @@ BundleTask.prototype.setSources = function(sources, environments)
             this._sources[anEnvironment] = sources;
         }, this);
     }
-}
+};
 
 BundleTask.prototype.sources = function()
 {
     return this._sources;
-}
+};
 
 BundleTask.prototype.setResources = function(resources)
 {
     this._resources = resources;
-}
+};
 
 BundleTask.prototype.resources = function(resources)
 {
     this._resources = resources;
-}
+};
 
 BundleTask.prototype.setSpritesResources = function(shouldSpriteResources)
 {
     this._spritesResources = shouldSpriteResources;
-}
+};
 
 BundleTask.prototype.spritesResources = function()
 {
     return this._spritesResources;
-}
+};
 
 BundleTask.prototype.setIncludesNibsAndXibs = function(shouldIncludeNibsAndXibs)
 {
     this._includesNibsAndXibs = shouldIncludeNibsAndXibs;
-}
+};
 
 BundleTask.prototype.includesNibsAndXibs = function()
 {
     return this._includesNibsAndXibs;
-}
+};
 
 BundleTask.prototype.setPreventsNib2Cib = function(shouldPreventNib2Cib)
 {
     this._preventsNib2Cib = shouldPreventNib2Cib;
-}
+};
 
 BundleTask.prototype.preventsNib2Cib = function()
 {
     return this._preventsNib2Cib;
-}
+};
 
 BundleTask.prototype.setProductName = function(aProductName)
 {
     this._productName = aProductName;
-}
+};
 
 BundleTask.prototype.productName = function()
 {
     return this._productName;
-}
+};
 
 BundleTask.prototype.setInfoPlistPath = function(anInfoPlistPath)
 {
     this._infoPlistPath = anInfoPlistPath;
-}
+};
 
 BundleTask.prototype.infoPlistPath = function()
 {
     return this._infoPlistPath;
-}
+};
 
 BundleTask.prototype.setPrincipalClass = function(aPrincipalClass)
 {
     this._principalClass = aPrincipalClass;
-}
+};
 
 BundleTask.prototype.principalClass = function()
 {
     return this._principalClass;
-}
+};
 
 BundleTask.prototype.setCompilerFlags = function(flags)
 {
     this._compilerFlags = flags;
-}
+};
 
 BundleTask.prototype.compilerFlags = function()
 {
     return this._compilerFlags;
-}
+};
 
 BundleTask.prototype.setNib2cibFlags = function(flags)
 {
     this._nib2cibFlags = flags;
-}
+};
 
 BundleTask.prototype.setNib2CibFlags = BundleTask.prototype.setNib2cibFlags;
 
 BundleTask.prototype.nib2cibFlags = function()
 {
     return this._nib2cibFlags;
-}
+};
 
 BundleTask.prototype.flattensSources = function()
 {
     return this._flattensSources;
-}
+};
 
 BundleTask.prototype.setFlattensSources = function(/*Boolean*/ shouldFlattenSources)
 {
     this._flattensSources = shouldFlattenSources;
-}
+};
 
 BundleTask.prototype.setLicense = function(aLicense)
 {
     this._license = aLicense;
-}
+};
 
 BundleTask.prototype.license = function()
 {
     return this._license;
-}
+};
 
 BundleTask.prototype.setBuildPath = function(aBuildPath)
 {
     this._buildPath = aBuildPath;
-}
+},
 
 BundleTask.prototype.buildPath = function()
 {
     return this._buildPath;
-}
+};
 
 BundleTask.prototype.setBuildIntermediatesPath = function(aBuildPath)
 {
     this._buildIntermediatesPath = aBuildPath;
-}
+};
 
 BundleTask.prototype.buildIntermediatesPath = function()
 {
     return this._buildIntermediatesPath || this.buildPath();
-}
+};
 
 BundleTask.prototype.buildProductPath = function()
 {
     return FILE.join(this.buildPath(), this.productName());
-}
+};
 
 BundleTask.prototype.buildIntermediatesProductPath = function()
 {
     return this.buildIntermediatesPath() || FILE.join(this.buildPath(), this.productName() + ".build");
-}
+};
 
 BundleTask.prototype.buildProductStaticPathForEnvironment = function(anEnvironment)
 {
     return FILE.join(this.buildProductPath(), anEnvironment.name() + ".environment", this.productName() + ".sj");
-}
+};
 
 BundleTask.prototype.buildProductMHTMLPathForEnvironment = function(anEnvironment)
 {
     return FILE.join(this.buildProductPath(), anEnvironment.name() + ".environment", "MHTMLPaths.txt");
-}
+};
 
 BundleTask.prototype.buildProductMHTMLDataPathForEnvironment = function(anEnvironment)
 {
     return FILE.join(this.buildProductPath(), anEnvironment.name() + ".environment", "MHTMLData.txt");
-}
+};
 
 BundleTask.prototype.buildProductMHTMLTestPathForEnvironment = function(anEnvironment)
 {
     return FILE.join(this.buildProductPath(), anEnvironment.name() + ".environment", "MHTMLTest.txt");
-}
+};
 
 BundleTask.prototype.buildProductDataURLPathForEnvironment = function(anEnvironment)
 {
     return FILE.join(this.buildProductPath(), anEnvironment.name() + ".environment", "dataURLs.txt");
-}
+};
 
 BundleTask.prototype.defineTasks = function()
 {
@@ -353,21 +353,22 @@ BundleTask.prototype.defineTasks = function()
 
     CLEAN.include(this.buildIntermediatesProductPath());
     CLOBBER.include(this.buildProductPath());
-}
+};
 
 BundleTask.prototype.packageType = function()
 {
     return 1;
-}
+};
 
 BundleTask.prototype.infoPlist = function()
 {
-    var infoPlistPath = this.infoPlistPath();
+    var infoPlistPath = this.infoPlistPath(),
+        infoPlist;
 
     if (infoPlistPath && FILE.exists(infoPlistPath))
-        var infoPlist = CFPropertyList.propertyListFromString(FILE.read(infoPlistPath, { charset:"UTF-8" }));
+        infoPlist = CFPropertyList.propertyListFromString(FILE.read(infoPlistPath, { charset:"UTF-8" }));
     else
-        var infoPlist = new CFMutableDictionary();
+        infoPlist = new CFMutableDictionary();
 
     // FIXME: Should all of these unconditionally overwrite?
     infoPlist.setValueForKey("CPBundleInfoDictionaryVersion", 6.0);
@@ -398,7 +399,7 @@ BundleTask.prototype.infoPlist = function()
         infoPlist.setValueForKey("CPPrincipalClass", principalClass);
 
     return infoPlist;
-}
+};
 
 BundleTask.prototype.defineInfoPlistTask = function()
 {
@@ -426,7 +427,7 @@ BundleTask.prototype.defineInfoPlistTask = function()
     }, this);
 
     this.enhance([infoPlistProductPath]);
-}
+};
 
 BundleTask.License  =   {
                             LGPL_v2_1   : "LGPL_v2_1",
@@ -455,19 +456,19 @@ BundleTask.prototype.defineLicenseTask = function()
     });
 
     this.enhance([licenseProductPath]);
-}
+};
 
 BundleTask.prototype.resourcesPath = function()
 {
     return FILE.join(this.buildProductPath(), "Resources", "");
-}
+};
 
 // Don't sprite images larger than 32KB, IE 8 doesn't like it.
 BundleTask.isSpritable = function(aResourcePath) {
     return isImage(aResourcePath) && FILE.size(aResourcePath) < 32768 &&
            ("data:" + mimeType(aResourcePath) + ";base64," +
             base64.encode(FILE.read(aResourcePath, "b"))).length < 32768;
-}
+};
 
 BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPath)
 {
@@ -535,7 +536,7 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
 
         this.enhance([cibDestinationPath]);
     }
-}
+};
 
 function directoryInCommon(filenames)
 {
@@ -598,7 +599,7 @@ BundleTask.prototype.defineResourceTasks = function()
     {
         this.defineResourceTask(aResourcePath, FILE.join(resourcesPath, aResourcePath.substring(basePathLength)));
     }, this);
-}
+};
 
 var RESOURCES_PATH  = FILE.join(FILE.absolute(FILE.dirname(module.path)), "RESOURCES"),
     MHTMLTestPath   = FILE.join(RESOURCES_PATH, "MHTMLTest.txt");
@@ -733,7 +734,7 @@ BundleTask.prototype.defineSpritedImagesTask = function()
 
         this.enhance([MHTMLTestDestinationPath]);
     }, this);
-}
+};
 
 BundleTask.prototype.defineStaticTask = function()
 {
@@ -789,11 +790,17 @@ BundleTask.prototype.defineStaticTask = function()
 
             fileStream.write("e;");
             fileStream.close();
-        });
+
+           // Make sure all classes are removed and all FileExecutables are removed.
+            ObjectiveJ.Executable.resetCachedFileExecutableSearchers();
+            ObjectiveJ.StaticResource.resetRootResources();
+            ObjectiveJ.FileExecutable.resetFileExecutables();
+            objj_resetRegisterClasses();
+         });
 
         this.enhance([staticPath]);
     }, this);
-}
+};
 
 BundleTask.prototype.defineSourceTasks = function()
 {
@@ -807,11 +814,8 @@ BundleTask.prototype.defineSourceTasks = function()
 
     if (!compilerFlags)
         compilerFlags = "";
-
     else if (compilerFlags.join)
         compilerFlags = compilerFlags.join(" ");
-
-    var flattensSources = this.flattensSources();
 
     this.environments().forEach(function(/*Environment*/ anEnvironment)
     {
@@ -832,10 +836,27 @@ BundleTask.prototype.defineSourceTasks = function()
             environmentCompilerFlags = anEnvironment.compilerFlags().join(" ") + " " + compilerFlags,
             flattensSources = this.flattensSources(),
             basePath = directoryInCommon(environmentSources),
-            basePathLength = basePath.length;
+            basePathLength = basePath.length,
+            translateFilenameToPath = {},
+            otherwayTranslateFilenameToPath = {};
+
+        // Create a filename to filename path dictionary. (For example: CPArray.j -> CPArray/CPArray.j)
+        environmentSources.forEach(function(/*String*/ aFilename)
+        {
+            translateFilenameToPath[flattensSources ? FILE.basename(aFilename) : aFilename] = aFilename;
+            otherwayTranslateFilenameToPath[aFilename] = flattensSources ? FILE.basename(aFilename) : aFilename;
+        }, this);
+
+        var e = {};
 
         environmentSources.forEach(function(/*String*/ aFilename)
         {
+           // Make sure all classes are removed and all FileExecutables are removed.
+            ObjectiveJ.Executable.resetCachedFileExecutableSearchers();
+            ObjectiveJ.StaticResource.resetRootResources();
+            ObjectiveJ.FileExecutable.resetFileExecutables();
+            objj_resetRegisterClasses();
+
             if (!FILE.exists(aFilename))
                 return;
 
@@ -844,7 +865,22 @@ BundleTask.prototype.defineSourceTasks = function()
 
             filedir (compiledEnvironmentSource, [aFilename], function()
             {
-                var compile
+                // This ugly fix to make Cappuccino compile with rhino can be removed when the compiler is not loading classes into the runtime
+                var rhinoUglyFix = false;
+                if (system.engine === "rhino")
+                {
+                    if (typeof document == "undefined") {
+                        document = {
+                            createElement: function(x)
+                            {
+                                return {innerText: "", style: {}};
+                            }
+                        };
+                        rhinoUglyFix = true;
+                    }
+                }
+
+                var compile;
                 // if this file doesn't exist or isn't a .j file, don't preprocess it.
                 if (FILE.extension(aFilename) !== ".j")
                 {
@@ -853,9 +889,28 @@ BundleTask.prototype.defineSourceTasks = function()
                 }
                 else
                 {
+                    var translatedFilename = translateFilenameToPath[aFilename] ? translateFilenameToPath[aFilename] : aFilename,
+                        otherwayTranslatedFilename = otherwayTranslateFilenameToPath[aFilename] ? otherwayTranslateFilenameToPath[aFilename] : aFilename,
+                        theTranslatedFilename = otherwayTranslatedFilename ? otherwayTranslatedFilename : translatedFilename,
+                        absolutePath = FILE.absolute(theTranslatedFilename),
+                        basePath = absolutePath.substring(0, absolutePath.length - theTranslatedFilename.length);
+
+                    // Here we set the current compiler flags so the load system will know what compiler flags to use
+                    ObjectiveJ.setCurrentCompilerFlags(environmentCompilerFlags);
+                    // Here we tell the CFBundle to load frameworks for the current build enviroment and not the enviroment that is running
+                    CFBundle.environments = function() {return [anEnvironment.name(), "ObjJ"]};
+                    ObjectiveJ.make_narwhal_factory(absolutePath, basePath, translateFilenameToPath)(require, e, module, system, print);
                     TERM.stream.write("Compiling [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)").flush();
-                    var compiled = require("objective-j/compiler").compile(aFilename, environmentCompilerFlags);
+
+                    var otherwayTranslatedFilename = otherwayTranslateFilenameToPath[aFilename] ? otherwayTranslateFilenameToPath[aFilename] : aFilename,
+                        translatedFilename = translateFilenameToPath[aFilename] ? translateFilenameToPath[aFilename] : aFilename,
+                        executer = new ObjectiveJ.FileExecutable(otherwayTranslatedFilename);
+
+                    var compiled = executer.toMarkedString();
                 }
+
+                if (rhinoUglyFix)
+                    delete document;
 
                 TERM.stream.print(Array(Math.round(compiled.length / 1024) + 3).join("."));
                 FILE.write(compiledEnvironmentSource, compiled, { charset:"UTF-8" });
@@ -863,12 +918,13 @@ BundleTask.prototype.defineSourceTasks = function()
 
             filedir (staticPath, [compiledEnvironmentSource]);
 
+
             replacedFiles.push(flattensSources ? FILE.basename(aFilename) : relativePath);
         }, this);
 
         this._replacedFiles[anEnvironment] = replacedFiles;
-    }, this);
-}
+   }, this);
+};
 
 exports.BundleTask = BundleTask;
 
@@ -876,4 +932,4 @@ exports.bundle = function(aName, aFunction)
 {
     // No .apply necessary because the parameters aren't variable.
     return BundleTask.defineTask(aName, aFunction);
-}
+};

@@ -52,7 +52,7 @@
         [theWindow orderOut:self];
         [theWindow setPlatformWindow:platformWindow];
         [theWindow orderFront:self];
-        [theWindow setFullBridge:YES];
+        [theWindow setFullPlatformWindow:YES];
         var button = [[theWindow contentView] subviews][2];
 
         [button setTarget:self];

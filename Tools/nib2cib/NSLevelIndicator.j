@@ -22,6 +22,9 @@
 
 @import <AppKit/CPLevelIndicator.j>
 
+@import "NSCell.j"
+
+
 @implementation CPLevelIndicator (CPCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder

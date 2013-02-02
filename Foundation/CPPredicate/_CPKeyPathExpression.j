@@ -22,10 +22,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPExpression.j"
-@import "_CPFunctionExpression.j"
 @import "CPKeyValueCoding.j"
 @import "CPString.j"
+@import "_CPExpression.j"
+@import "_CPFunctionExpression.j"
+@import "_CPConstantValueExpression.j"
 
 @implementation _CPKeyPathExpression : _CPFunctionExpression
 {

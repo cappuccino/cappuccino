@@ -20,11 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <AppKit/CPFont.j>
 @import <AppKit/CPTextField.j>
 
-@import "NSControl.j"
 @import "NSCell.j"
-@import <AppKit/CPFont.j>
+@import "NSControl.j"
 
 @implementation CPTextField (NSCoding)
 
@@ -65,16 +65,13 @@
 
         if ([self isBezeled])
         {
-            [self setFrameOrigin:CGPointMake(frame.origin.x - 6.0, frame.origin.y - 3.0)];
+            [self setFrameOrigin:CGPointMake(frame.origin.x - 4.0, frame.origin.y - 3.0)];
             [self setFrameSize:CGSizeMake(frame.size.width + 8.0, frame.size.height + 7.0)];
         }
         else
         {
-            // Adjust frame for difference between layout->bounds rect in IB
-            [self setFrame:CGRectInset(frame, 3.0, 0.0)];
-
-            // Hack to get baselines to align
-            [self setFrameOrigin:CGPointMake(frame.origin.x, frame.origin.y - 1.0)];
+            [self setFrameOrigin:CGPointMake(frame.origin.x + 3.0, frame.origin.y)];
+            [self setFrameSize:CGSizeMake(frame.size.width - 6.0, frame.size.height)];
         }
 
         CPLog.debug("NSTextField: title=\"" + [self stringValue] + "\", placeholder=" + ([cell placeholderString] == null ? "<none>" : '"' + [cell placeholderString] + '"') + ", isBordered=" + [self isBordered] + ", isBezeled="  + [self isBezeled] + ", bezelStyle=" + [self bezelStyle]);

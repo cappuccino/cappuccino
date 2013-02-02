@@ -43,10 +43,10 @@ var transformerMap = [CPDictionary dictionary];
     if (self !== [CPValueTransformer class])
         return;
 
-    [CPValueTransformer setValueTransformer:[[CPNegateBooleanTransformer alloc] init] forName:CPNegateBooleanTransformerName];
-    [CPValueTransformer setValueTransformer:[[CPIsNilTransformer alloc] init] forName:CPIsNilTransformerName];
-    [CPValueTransformer setValueTransformer:[[CPIsNotNilTransformer alloc] init] forName:CPIsNotNilTransformerName];
-    [CPValueTransformer setValueTransformer:[[CPUnarchiveFromDataTransformer alloc] init] forName:CPUnarchiveFromDataTransformerName];
+//    [CPValueTransformer setValueTransformer:[[CPNegateBooleanTransformer alloc] init] forName:CPNegateBooleanTransformerName];
+//    [CPValueTransformer setValueTransformer:[[CPIsNilTransformer alloc] init] forName:CPIsNilTransformerName];
+//    [CPValueTransformer setValueTransformer:[[CPIsNotNilTransformer alloc] init] forName:CPIsNotNilTransformerName];
+//    [CPValueTransformer setValueTransformer:[[CPUnarchiveFromDataTransformer alloc] init] forName:CPUnarchiveFromDataTransformerName];
 }
 
 + (void)setValueTransformer:(CPValueTransformer)transformer forName:(CPString)aName
@@ -192,3 +192,8 @@ CPIsNilTransformerName                  = @"CPIsNil";
 CPIsNotNilTransformerName               = @"CPIsNotNil";
 CPUnarchiveFromDataTransformerName      = @"CPUnarchiveFromData";
 CPKeyedUnarchiveFromDataTransformerName = @"CPKeyedUnarchiveFromData";
+
+[CPValueTransformer setValueTransformer:[[CPNegateBooleanTransformer alloc] init] forName:CPNegateBooleanTransformerName];
+[CPValueTransformer setValueTransformer:[[CPIsNilTransformer alloc] init] forName:CPIsNilTransformerName];
+[CPValueTransformer setValueTransformer:[[CPIsNotNilTransformer alloc] init] forName:CPIsNotNilTransformerName];
+[CPValueTransformer setValueTransformer:[[CPUnarchiveFromDataTransformer alloc] init] forName:CPUnarchiveFromDataTransformerName];

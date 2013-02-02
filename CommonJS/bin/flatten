@@ -112,11 +112,11 @@ function main(args)
 
     print("Loading default theme.");
     flattener.require("objective-j").objj_eval("("+(function() {
-    
+
         var defaultThemeName = [CPApplication defaultThemeName],
             bundle = nil;
 
-        if (defaultThemeName === @"Aristo")
+        if (defaultThemeName === @"Aristo" || defaultThemeName === @"Aristo2")
             bundle = [CPBundle bundleForClass:[CPApplication class]];
         else
             bundle = [CPBundle mainBundle];

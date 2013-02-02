@@ -21,7 +21,15 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <Foundation/CPArray.j>
+@import <AppKit/CPColor.j>
+@import <AppKit/CPImage.j>
+@import <AppKit/CPView.j>
+@import <AppKit/_CPCibCustomResource.j>
 
+
+PatternIsHorizontal = CPColorPatternIsHorizontal;
+PatternIsVertical   = CPColorPatternIsVertical;
 
 var ItemSizes               = { },
     ThemedObjects           = { },
@@ -78,12 +86,12 @@ var ItemSizes               = { },
 
 + (CPColor)windowBackgroundColor
 {
-    return [_CPStandardWindowView bodyBackgroundColor];
+    return [CPColor colorWithCalibratedWhite:0.95 alpha:1.0];
 }
 
 + (CPColor)defaultShowcaseBackgroundColor
 {
-    return [_CPStandardWindowView bodyBackgroundColor];//[self lightCheckersColor];
+    return [CPColor colorWithCalibratedWhite:0.95 alpha:1.0];
 }
 
 + (CPColor)showcaseBackgroundColor
@@ -340,58 +348,19 @@ function BKLabelFromIdentifier(anIdentifier)
     return label;
 }
 
-
-PatternIsVertical = YES;
-PatternIsHorizontal = NO;
-
-/*
-    To create a simple color with a pattern image:
-        PatternColor(name, width, height)
-
-    To create a color with a three part pattern image:
-        PatternColor(slices, orientation)
-
-    where slices is an array of three [name, width, height] arrays,
-    and orientation is PatternIsVertical or PatternIsHorizontal.
-
-    To create a color with a nine part pattern image:
-        PatternColor(slices);
-
-    where slices is an array of nine [name, width, height] arrays.
-*/
-function PatternColor()
-{
-    if (arguments.length < 3)
-    {
-        var slices = arguments[0],
-            imageSlices = [];
-
-        for (var i = 0; i < slices.length; ++i)
-        {
-            var slice = slices[i];
-
-            imageSlices.push(slice ? [_CPCibCustomResource imageResourceWithName:slice[0] size:CGSizeMake(slice[1], slice[2])] : nil);
-        }
-
-        if (arguments.length == 2)
-            return [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:imageSlices isVertical:arguments[1]]];
-        else
-            return [CPColor colorWithPatternImage:[[CPNinePartImage alloc] initWithImageSlices:imageSlices]];
-    }
-    else if (arguments.length == 3)
-    {
-        return [CPColor colorWithPatternImage:PatternImage(arguments[0], arguments[1], arguments[2])];
-    }
-    else
-    {
-        return nil;
-    }
-}
-
-/*
-    Like the 3 argument PatternColor, but return an image instead of a color.
-*/
 function PatternImage(name, width, height)
 {
     return [_CPCibCustomResource imageResourceWithName:name size:CGSizeMake(width, height)];
+}
+
+/*
+    PatternColor is just a wrapper around CPColorWithImages
+    that uses an image factory that uses _CPCibCustomResource.
+*/
+function PatternColor()
+{
+    var args = Array.prototype.slice.apply(arguments);
+    args.push(PatternImage);
+
+    return CPColorWithImages.apply(this, args);
 }

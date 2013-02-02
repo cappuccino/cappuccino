@@ -1,11 +1,27 @@
 /*
- *     Created by cacaodev@gmail.com.
- *     Copyright (c) 2011 Pear, Inc. All rights reserved.
+ * Created by cacaodev@gmail.com.
+ * Copyright (c) 2011 Pear, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPRuleEditor_Constants.j"
 @import "_CPRuleEditorViewSlice.j"
 @import "_CPRuleEditorPopUpButton.j"
-@import "CPRuleEditor.j"
+
+@global CPApp
 
 var CONTROL_HEIGHT = 16.,
     BUTTON_HEIGHT = 16.;
@@ -18,7 +34,7 @@ var CONTROL_HEIGHT = 16.,
     CPMutableArray  _ruleOptionInitialViewFrames;
     CPButton        _addButton;
     CPButton        _subtractButton;
-    BOOL            editable;
+
     CPRuleEditorRowType _rowType @accessors;
     CPRuleEditorRowType _plusButtonRowType;
 }
@@ -37,14 +53,14 @@ var CONTROL_HEIGHT = 16.,
     _ruleOptionFrames = [[CPMutableArray alloc] init];
     _ruleOptionInitialViewFrames = [[CPMutableArray alloc] init];
     _ruleOptionViews = [[CPMutableArray alloc] init];
-     editable = [_ruleEditor isEditable];
+     _editable = [_ruleEditor isEditable];
 
     _addButton = [self _createAddRowButton];
     _subtractButton = [self _createDeleteRowButton];
     [_addButton setToolTip:[_ruleEditor _toolTipForAddSimpleRowButton]];
     [_subtractButton setToolTip:[_ruleEditor _toolTipForDeleteRowButton]];
-    [_addButton setHidden:!editable];
-    [_subtractButton setHidden:!editable];
+    [_addButton setHidden:!_editable];
+    [_subtractButton setHidden:!_editable];
     [self addSubview:_addButton];
     [self addSubview:_subtractButton];
 
@@ -123,15 +139,16 @@ var CONTROL_HEIGHT = 16.,
 
 - (_CPRuleEditorTextField)_createStaticTextFieldWithStringValue:(CPString)text
 {
-    var textField = [[_CPRuleEditorTextField alloc] initWithFrame:CPMakeRect(0, 0, 200, CONTROL_HEIGHT)],
-        refont = [_ruleEditor font],
-        font = [CPFont fontWithName:[refont familyName] size:[refont size] + 2],
+    var textField = [[_CPRuleEditorTextField alloc] initWithFrame:CGRectMakeZero()],
+        ruleEditorFont = [_ruleEditor font],
+        font = [CPFont fontWithName:[ruleEditorFont familyName] size:[ruleEditorFont size] + 2],
+        localizedText = [[_ruleEditor standardLocalizer] localizedStringForString:text],
+        size = [localizedText sizeWithFont:font];
 
-        localizedText = [[_ruleEditor standardLocalizer] localizedStringForString:text];
+    [textField setFrameSize:CGSizeMake(size.width + 4, CONTROL_HEIGHT + 2)];
 
     [textField setValue:font forThemeAttribute:@"font"];
     [textField setStringValue:localizedText];
-    [textField sizeToFit];
 
     return textField;
 }
@@ -300,7 +317,7 @@ var CONTROL_HEIGHT = 16.,
 
     [_correspondingRuleItems setArray:ruleItems];
 
-    if (!editable)
+    if (!_editable)
         [self _updateEnabledStateForSubviews];
 
     [self _relayoutSubviewsWidthChanged:YES];
@@ -353,14 +370,6 @@ var CONTROL_HEIGHT = 16.,
 
         optionFrame.origin.y = (rowHeight - CGRectGetHeight(optionFrame)) / 2 - 2;
 
-        // small positioning fix
-        if ([ruleOptionView isKindOfClass:CPTextField])
-        {
-            optionFrame.origin.y += 2;
-            [_ruleOptionViews[i] setValue:CGInsetMake(7, 7, 7, 8) forThemeAttribute:@"content-inset"];
-        }
-
-
         if (widthChanged)
         {
             optionFrame.origin.x = optionViewOriginX;
@@ -390,14 +399,9 @@ var CONTROL_HEIGHT = 16.,
     [self _setRowTypeToAddFromPlusButton:type];
 }
 
-- (BOOL)isEditable
-{
-    return editable;
-}
-
 - (void)setEditable:(BOOL)value
 {
-    editable = value;
+    [super setEditable:value]
 //  [self _updateEnabledStateForSubviews];
     [self _updateButtonVisibilities];
 }
@@ -473,7 +477,7 @@ var CONTROL_HEIGHT = 16.,
     [self layoutSubviews];
 }
 
-- (void)drawRect:(CPRect)rect
+- (void)drawRect:(CGRect)rect
 {
     [super drawRect:rect];
 }
@@ -481,13 +485,6 @@ var CONTROL_HEIGHT = 16.,
 - (BOOL)_isRulePopup:(CPView)view
 {
     if ([view isKindOfClass:[_CPRuleEditorPopUpButton class]])
-        return YES;
-    return NO;
-}
-
-- (BOOL)_isRuleStaticTextField:(CPView)view
-{
-    if ([view isKindOfClass:[_CPRuleEditorTextField class]])
         return YES;
     return NO;
 }
@@ -513,19 +510,17 @@ var CONTROL_HEIGHT = 16.,
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
-    if (self != nil)
+    if (self)
     {
-        [self setBordered:NO];
-        [self setEditable:NO];
         [self setDrawsBackground:NO];
     }
 
     return self;
 }
 
-- (id)hitTest:(CPPoint)point
+- (id)hitTest:(CGPoint)point
 {
-    if (!CPRectContainsPoint([self frame], point))
+    if (!CGRectContainsPoint([self frame], point))
         return nil;
 
     return [self superview];

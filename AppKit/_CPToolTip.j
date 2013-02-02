@@ -24,6 +24,9 @@
 @import "CPView.j"
 @import "CPWindow.j"
 
+@global CPApp
+@class _CPToolTipWindowView
+
 _CPToolTipWindowMask = 1 << 27;
 
 var _CPToolTipHeight = 24.0,
@@ -103,7 +106,7 @@ var _CPToolTipHeight = 24.0,
     @param aText the wanted text
     @return CPArray containing the computer toolTipSize and textFrameSize
 */
-+ (CPSize)computeCorrectSize:(CPSize)aToolTipSize text:(CPString)aText
++ (CGSize)computeCorrectSize:(CGSize)aToolTipSize text:(CPString)aText
 {
     var font = [CPFont systemFontOfSize:_CPToolTipFontSize],
         textFrameSizeSingleLine = [aText sizeWithFont:font],
@@ -156,7 +159,7 @@ var _CPToolTipHeight = 24.0,
 */
 - (id)initWithString:(CPString)aString styleMask:(unsigned)aStyleMask
 {
-    var toolTipFrame = CPRectMake(0.0, 0.0, 250.0, _CPToolTipHeight),
+    var toolTipFrame = CGRectMake(0.0, 0.0, 250.0, _CPToolTipHeight),
         layout = [_CPToolTip computeCorrectSize:toolTipFrame.size text:aString],
         textFrameSize = layout[1];
 
@@ -171,7 +174,7 @@ var _CPToolTipHeight = 24.0,
         [_content setLineBreakMode:CPLineBreakByCharWrapping];
         [_content setAlignment:CPJustifiedTextAlignment];
         [_content setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-        [_content setFrameOrigin:CPPointMake(0.0, 0.0)];
+        [_content setFrameOrigin:CGPointMake(0.0, 0.0)];
         [_content setFrameSize:textFrameSize];
         [_content setTextShadowOffset:CGSizeMake(0.0, 1.0)];
         [_content setTextColor:[[[CPTheme defaultTheme] attributeWithName:@"color" forClass:_CPToolTipWindowView] value]];
@@ -203,19 +206,15 @@ var _CPToolTipHeight = 24.0,
 
     if (mousePosition.x < 0)
         mousePosition.x = 5;
-    if (mousePosition.x + CPRectGetWidth([self frame]) > nativeRect.size.width)
-        mousePosition.x = nativeRect.size.width - CPRectGetWidth([self frame]) - 5;
+    if (mousePosition.x + CGRectGetWidth([self frame]) > nativeRect.size.width)
+        mousePosition.x = nativeRect.size.width - CGRectGetWidth([self frame]) - 5;
     if (mousePosition.y < 0)
         mousePosition.y = 5;
-    if (mousePosition.y + CPRectGetHeight([self frame]) > nativeRect.size.height)
-        mousePosition.y = mousePosition.y - CPRectGetHeight([self frame]) - 40;
+    if (mousePosition.y + CGRectGetHeight([self frame]) > nativeRect.size.height)
+        mousePosition.y = mousePosition.y - CGRectGetHeight([self frame]) - 40;
 
     [self setFrameOrigin:mousePosition];
     [self orderFront:nil];
 }
 
 @end
-
-
-
-

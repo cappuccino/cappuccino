@@ -1,17 +1,34 @@
 /*
- *     Created by cacaodev@gmail.com.
- *     Copyright (c) 2011 Pear, Inc. All rights reserved.
+ * Created by cacaodev@gmail.com.
+ * Copyright (c) 2011 Pear, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
+
+@import "CPView.j"
 
 @implementation _CPRuleEditorViewSlice : CPView
 {
     CPRuleEditor _ruleEditor;
     int          _indentation           @accessors(property=indentation);
     int          _rowIndex              @accessors(property=rowIndex);
-    CPRect       _animationTargetRect   @accessors(property=_animationTargetRect);
+    CGRect       _animationTargetRect   @accessors(property=_animationTargetRect);
     BOOL         _selected              @accessors(getter=_isSelected, setter=_setSelected:);
     BOOL         _lastSelected          @accessors(getter=_isLastSelected, setter=_setLastSelected:);
     CPColor      _backgroundColor       @accessors(property=backgroundColor);
+    BOOL         _editable              @accessors(getter=isEditable, setter=setEditable:);
 }
 
 - (void)removeFromSuperview
@@ -41,7 +58,7 @@
     _selected = select;
 }
 
-- (void)drawRect:(CPRect)rect
+- (void)drawRect:(CGRect)rect
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort],
         bounds = [self bounds],
@@ -81,13 +98,13 @@
 
 - (void)mouseDown:(CPEvent)theEvent
 {
-    if (editable)
+    if (_editable)
         [_ruleEditor _mouseDownOnSlice:self withEvent:theEvent];
 }
 
 - (void)mouseUp:(CPEvent)theEvent
 {
-    if (editable)
+    if (_editable)
         [_ruleEditor _mouseUpOnSlice:self withEvent:theEvent];
 }
 

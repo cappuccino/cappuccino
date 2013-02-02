@@ -1112,8 +1112,8 @@ Notifies the delegate when the scroll view has finished scrolling.
     contentFrame.size.height -= headerClipViewHeight;
 
     var difference = _CGSizeMake(_CGRectGetWidth(documentFrame) - _CGRectGetWidth(contentFrame), _CGRectGetHeight(documentFrame) - _CGRectGetHeight(contentFrame)),
-        verticalScrollerWidth = _CGRectGetWidth([_verticalScroller frame]),
-        horizontalScrollerHeight = _CGRectGetHeight([_horizontalScroller frame]),
+        verticalScrollerWidth = [CPScroller scrollerWidthInStyle:[_verticalScroller style]],
+        horizontalScrollerHeight = [CPScroller scrollerWidthInStyle:[_horizontalScroller style]],
         hasVerticalScroll = difference.height > 0.0,
         hasHorizontalScroll = difference.width > 0.0,
         shouldShowVerticalScroller = _hasVerticalScroller && (!_autohidesScrollers || hasVerticalScroll),
@@ -1256,7 +1256,7 @@ Notifies the delegate when the scroll view has finished scrolling.
 #pragma mark -
 #pragma mark Overrides
 
-- (void)drawRect:(CPRect)aRect
+- (void)drawRect:(CGRect)aRect
 {
     [super drawRect:aRect];
 

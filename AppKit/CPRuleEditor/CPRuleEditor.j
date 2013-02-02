@@ -20,35 +20,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CPTextField.j>
-@import <AppKit/CPViewAnimation.j>
-@import <AppKit/CPView.j>
 @import <Foundation/CPPredicate.j>
 @import <Foundation/CPArray.j>
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPIndexSet.j>
 
+@import "CPPasteboard.j"
+@import "CPRuleEditor_Constants.j"
+@import "CPTextField.j"
+@import "CPViewAnimation.j"
+@import "CPView.j"
+
 @import "_CPRuleEditorViewSliceRow.j"
 @import "_CPRuleEditorLocalizer.j"
 
-CPRuleEditorPredicateLeftExpression     = "CPRuleEditorPredicateLeftExpression";
-CPRuleEditorPredicateRightExpression    = "CPRuleEditorPredicateRightExpression";
-CPRuleEditorPredicateComparisonModifier = "CPRuleEditorPredicateComparisonModifier";
-CPRuleEditorPredicateOptions            = "CPRuleEditorPredicateOptions";
-CPRuleEditorPredicateOperatorType       = "CPRuleEditorPredicateOperatorType";
-CPRuleEditorPredicateCustomSelector     = "CPRuleEditorPredicateCustomSelector";
-CPRuleEditorPredicateCompoundType       = "CPRuleEditorPredicateCompoundType";
+@class CPCompoundPredicate
+@class CPComparisonPredicate
 
-CPRuleEditorRowsDidChangeNotification   = "CPRuleEditorRowsDidChangeNotification";
-CPRuleEditorRulesDidChangeNotification  = "CPRuleEditorRulesDidChangeNotification";
-
-CPRuleEditorNestingModeSingle   = 0;        // Only a single row is allowed.  Plus/minus buttons will not be shown
-CPRuleEditorNestingModeList     = 1;        // Allows a single list, with no nesting and no compound rows
-CPRuleEditorNestingModeCompound = 2;        // Unlimited nesting and compound rows; this is the default
-CPRuleEditorNestingModeSimple   = 3;        // One compound row at the top with subrows beneath it, and no further nesting allowed
-
-CPRuleEditorRowTypeSimple       = 0;
-CPRuleEditorRowTypeCompound     = 1;
+@global CPDirectPredicateModifier
+@global CPCaseInsensitivePredicateOption
+@global CPOrPredicateType
 
 var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
     itemsContext                = "items",
@@ -1512,22 +1503,9 @@ TODO: implement
             oldRows = [CPArray arrayWithArray:newRows];
             [oldRows removeObjectsInArray:changeNewValue];
         }
-        else if (changeKind === CPKeyValueChangeRemoval)
-        {
-            newRows = [self _subrowObjectsOfObject:object];
-            oldRows = [CPArray arrayWithArray:newRows];
-            var delIndexes = [change objectForKey:CPKeyValueChangeIndexesKey];
-            [oldRows insertObjects:delObjects atIndexes:changeOldValue];    // Pas sur que ce soit bon
-        }
 
         [self _changedRowArray:newRows withOldRowArray:oldRows forParent:object];
         [self _reconfigureSubviewsAnimate:[self _wantsRowAnimations]];
-    }
-    else if (context === itemsContext)
-    {
-    }
-    else if (context === valuesContext)
-    {
     }
 }
 
@@ -1703,8 +1681,8 @@ TODO: implement
 
 - (void)_setBoundDataSource:(id)datasource withKeyPath:(CPString)keyPath options:(CPDictionary)options
 {
-    if ([observableController respondsToSelector:@selector(objectClass)])
-        _rowClass = [observableController objectClass];
+    if ([datasource respondsToSelector:@selector(objectClass)])
+        _rowClass = [datasource objectClass];
 
     _boundArrayKeyPath = keyPath;
     _boundArrayOwner = datasource;
@@ -2058,7 +2036,7 @@ TODO: implement
     [super setNeedsDisplay:flag];
 }
 
-- (void)setFrameSize:(CPSize)size
+- (void)setFrameSize:(CGSize)size
 {
     [self setNeedsDisplay:YES];
 
@@ -2126,7 +2104,7 @@ TODO: implement
     [dragview setBackgroundColor:[firstSlice backgroundColor]];
     [dragview setAlphaValue:0.7];
 
-    dragPoint = CPMakePoint(0, firstIndex * _sliceHeight);
+    dragPoint = CGPointMake(0, firstIndex * _sliceHeight);
 
     [self dragView:dragview
                 at:dragPoint
@@ -2188,7 +2166,7 @@ TODO: implement
         if (_subviewIndexOfDropLine !== CPNotFound && _subviewIndexOfDropLine < numberOfRows)
         {
             var previousBelowSlice = [_slices objectAtIndex:_subviewIndexOfDropLine];
-            [previousBelowSlice setFrameOrigin:CPMakePoint(0, [previousBelowSlice rowIndex] * _sliceHeight)];
+            [previousBelowSlice setFrameOrigin:CGPointMake(0, [previousBelowSlice rowIndex] * _sliceHeight)];
         }
 
         if (indexOfDropLine <= _lastRow && indexOfDropLine < numberOfRows)
@@ -2254,7 +2232,7 @@ TODO: implement
     return [CPIndexSet indexSetWithIndex:CPDragOperationMove];
 }
 
-- (void)draggedView:(CPView)dragView endedAt:(CPPoint)aPoint operation:(CPDragOperation)operation
+- (void)draggedView:(CPView)dragView endedAt:(CGPoint)aPoint operation:(CPDragOperation)operation
 {
     _draggingRows = nil;
 
@@ -2578,7 +2556,7 @@ var dropSeparatorColor = [CPColor colorWithHexString:@"4886ca"];
 {
 }
 
-- (void)drawRect:(CPRect)rect
+- (void)drawRect:(CGRect)rect
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort];
     CGContextSetFillColor(context, dropSeparatorColor);

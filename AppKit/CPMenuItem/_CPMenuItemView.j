@@ -1,22 +1,32 @@
+/*
+ * _CPMenuItemView.j
+ * AppKit
+ *
+ * Created by Francisco Tolmasky.
+ * Copyright 2009, 280 North, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
-@import <AppKit/CPControl.j>
+@import "CPControl.j"
 
 @import "_CPMenuItemSeparatorView.j"
 @import "_CPMenuItemStandardView.j"
 @import "_CPMenuItemMenuBarView.j"
 
-
-var LEFT_MARGIN                 = 3.0,
-    RIGHT_MARGIN                = 16.0,
-    STATE_COLUMN_WIDTH          = 14.0,
-    INDENTATION_WIDTH           = 17.0,
-    VERTICAL_MARGIN             = 4.0;
-
-var _CPMenuItemSelectionColor                   = nil,
-    _CPMenuItemTextShadowColor                  = nil,
-
-    _CPMenuItemDefaultStateImages               = [],
-    _CPMenuItemDefaultStateHighlightedImages    = [];
+@global CPApp
 
 /*
     @ignore
@@ -38,30 +48,22 @@ var _CPMenuItemSelectionColor                   = nil,
     CPView                  _submenuView;
 }
 
-+ (void)initialize
++ (CPString)defaultThemeClass
 {
-    if (self !== [_CPMenuItemView class])
-        return;
-
-    _CPMenuItemSelectionColor =  [CPColor colorWithCalibratedRed:95.0 / 255.0 green:131.0 / 255.0 blue:185.0 / 255.0 alpha:1.0];
-    _CPMenuItemTextShadowColor = [CPColor colorWithCalibratedRed:26.0 / 255.0 green: 73.0 / 255.0 blue:109.0 / 255.0 alpha:1.0];
-
-    var bundle = [CPBundle bundleForClass:self];
-
-    _CPMenuItemDefaultStateImages[CPOffState]               = nil;
-    _CPMenuItemDefaultStateHighlightedImages[CPOffState]    = nil;
-
-    _CPMenuItemDefaultStateImages[CPOnState]               = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPMenuItem/CPMenuItemOnState.png"] size:CGSizeMake(14.0, 14.0)];
-    _CPMenuItemDefaultStateHighlightedImages[CPOnState]    = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPMenuItem/CPMenuItemOnStateHighlighted.png"] size:CGSizeMake(14.0, 14.0)];
-
-    _CPMenuItemDefaultStateImages[CPMixedState]             = nil;
-    _CPMenuItemDefaultStateHighlightedImages[CPMixedState]  = nil;
+    return "menu-item-view";
 }
 
-+ (float)leftMargin
++ (id)themeAttributes
 {
-    return LEFT_MARGIN + STATE_COLUMN_WIDTH;
+    return [CPDictionary dictionaryWithObjects:[]
+                                       forKeys:[]];
 }
+
+// Not used in the Appkit
+// + (float)leftMargin
+// {
+//     return LEFT_MARGIN + STATE_COLUMN_WIDTH;
+// }
 
 - (id)initWithFrame:(CGRect)aFrame forMenuItem:(CPMenuItem)aMenuItem
 {

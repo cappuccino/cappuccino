@@ -31,7 +31,7 @@
 */
 @implementation CPShadow : CPObject
 {
-    CPSize      _offset;
+    CGSize      _offset;
     float       _blurRadius;
     CPColor     _color;
 
@@ -51,7 +51,7 @@
 }
 
 /* @ignore */
-- (id)_initWithOffset:(CPSize)anOffset blurRadius:(float)aBlurRadius color:(CPColor)aColor
+- (id)_initWithOffset:(CGSize)anOffset blurRadius:(float)aBlurRadius color:(CPColor)aColor
 {
     self = [super init];
 

@@ -10,3 +10,4 @@ WebSite
 xcuserdata/
 !*.xcodeproj/project.pbxproj
 *.xCodeSupport/
+*.XcodeSupport/

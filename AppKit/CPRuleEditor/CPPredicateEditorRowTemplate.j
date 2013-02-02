@@ -20,6 +20,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/CPPredicate.j>
+
+@import "CPCheckBox.j"
+@import "CPPopUpButton.j"
+@import "CPMenuItem.j"
+@import "CPTextField.j"
+
+// NOTE: CPDatePicker is not implemented yet
+@class CPDatePicker
+
+
 CPUndefinedAttributeType     = 0;
 CPInteger16AttributeType     = 100;
 CPInteger32AttributeType     = 200;
@@ -583,7 +594,7 @@ CPTransformableAttributeType = 1800;
 
 - (CPPopUpButton)_viewFromExpressions:(CPArray)expressions
 {
-    var popup = [[CPPopUpButton alloc] initWithFrame:CPMakeRect(0, 0, 100, 18)],
+    var popup = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0, 0, 100, 18)],
         count = [expressions count];
 
     for (var i = 0; i < count; i++)

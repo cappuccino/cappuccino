@@ -22,6 +22,7 @@
 
 @import "CPAnimation.j"
 
+@class CPWindow
 
 CPViewAnimationTargetKey = @"CPViewAnimationTargetKey";
 CPViewAnimationStartFrameKey = @"CPViewAnimationStartFrameKey";

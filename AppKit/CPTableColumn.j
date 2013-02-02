@@ -26,8 +26,11 @@
 @import <Foundation/CPSortDescriptor.j>
 @import <Foundation/CPString.j>
 
-@import "CPTableHeaderView.j"
+@import "CPTextField.j"
 
+@global CPTableViewColumnDidResizeNotification
+
+@class _CPTableColumnHeaderView
 
 CPTableColumnNoResizing         = 0;
 CPTableColumnAutoresizingMask   = 1 << 0;

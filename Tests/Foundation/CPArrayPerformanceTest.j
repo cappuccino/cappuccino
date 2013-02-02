@@ -5,6 +5,8 @@ var FILE = require("file");
 @import <Foundation/CPNumber.j>
 @import <Foundation/CPSortDescriptor.j>
 
+@global module
+
 var ELEMENTS = 100,
     REPEATS = 10;
 
@@ -15,7 +17,7 @@ var ELEMENTS = 100,
 
 - (void)setUp
 {
-    var descriptors = [
+    descriptors = [
             [CPSortDescriptor sortDescriptorWithKey:"a" ascending:NO],
             [CPSortDescriptor sortDescriptorWithKey:"b" ascending:YES]
         ];
@@ -227,7 +229,7 @@ var ELEMENTS = 100,
 {
     var count = [descriptors count];
 
-    sort(function(lhs, rhs)
+    self.sort(function(lhs, rhs)
     {
         var i = 0,
             result = CPOrderedSame;
@@ -251,7 +253,7 @@ var ELEMENTS = 100,
 
 - (CPArray)_native_sortUsingSelector:(SEL)aSelector
 {
-    sort(function(lhs, rhs)
+    self.sort(function(lhs, rhs)
     {
         return [lhs performSelector:aSelector withObject:rhs];
     });

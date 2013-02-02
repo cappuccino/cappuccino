@@ -21,10 +21,12 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <AppKit/CPRadio.j>
 @import <AppKit/CPView.j>
 
 @import "NSView.j"
 
+@global NIB_CONNECTION_EQUIVALENCY_TABLE
 
 var NSMatrixRadioModeMask = 0x40000000,
     NSMatrixDrawsBackgroundMask = 0x01000000;

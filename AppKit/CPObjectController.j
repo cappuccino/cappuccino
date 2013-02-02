@@ -24,6 +24,7 @@
 @import <Foundation/CPCountedSet.j>
 
 @import "CPController.j"
+@import "CPKeyValueBinding.j"
 
 /*!
     @class
@@ -798,7 +799,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 
     [_observationProxies removeObjectAtIndex:index];
 
-    _observedObjects = nil;
+    _observedObjectsByKeyPath[aKeyPath] = nil;
 }
 
 @end

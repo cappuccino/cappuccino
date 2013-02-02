@@ -21,12 +21,14 @@
  */
 
 @import <Foundation/CPBundle.j>
-@import <Foundation/CPGeometry.j>
 @import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPObject.j>
 @import <Foundation/CPRunLoop.j>
 @import <Foundation/CPString.j>
+@import <Foundation/CPData.j>
 
+@import "CGGeometry.j"
+@import "CPCompatibility.j"
 
 CPImageLoadStatusInitialized    = 0;
 CPImageLoadStatusLoading        = 1;
@@ -49,15 +51,44 @@ var imagesForNames = { },
 AppKitImageForNames[CPImageNameColorPanel]              = CGSizeMake(26.0, 29.0);
 AppKitImageForNames[CPImageNameColorPanelHighlighted]   = CGSizeMake(26.0, 29.0);
 
-function CPImageInBundle(aFilename, aSize, aBundle)
+/*!
+    Returns a resource image with a relative path and size
+    in a bundle.
+
+    @param filename A filename or relative path to a resource image.
+    @param width    Width of the image. May be omitted.
+    @param height   Height of the image. May be omitted if width is omitted.
+    @param size     Instead of passing width/height, a CGSize may be passed.
+    @param bundle   Bundle in which the image resource can be found.
+                    If omitted, defaults to the main bundle.
+    @return CPImage
+*/
+function CPImageInBundle()
 {
-    if (!aBundle)
-        aBundle = [CPBundle mainBundle];
+    var filename = arguments[0],
+        size = nil,
+        bundle = nil;
 
-    if (aSize)
-        return [[CPImage alloc] initWithContentsOfFile:[aBundle pathForResource:aFilename] size:aSize];
+    if (typeof(arguments[1]) === "number")
+    {
+        if (arguments[1] !== nil && arguments[1] === undefined)
+            size = CGSizeMake(arguments[1], arguments[2]);
 
-    return [[CPImage alloc] initWithContentsOfFile:[aBundle pathForResource:aFilename]];
+        bundle = arguments[3];
+    }
+    else if (typeof(arguments[1]) === "object")
+    {
+        size = arguments[1];
+        bundle = arguments[2];
+    }
+
+    if (!bundle)
+        bundle = [CPBundle mainBundle];
+
+    if (size)
+        return [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:filename] size:size];
+
+    return [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:filename]];
 }
 
 function CPAppKitImage(aFilename, aSize)
@@ -117,7 +148,7 @@ function CPAppKitImage(aFilename, aSize)
 
     if (self)
     {
-        _size = CPSizeCreateCopy(aSize);
+        _size = CGSizeCreateCopy(aSize);
         _filename = aFilename;
         _loadStatus = CPImageLoadStatusInitialized;
     }

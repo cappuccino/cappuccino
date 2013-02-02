@@ -300,6 +300,32 @@ function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure)
     if (aURL.pathExtension() === "plist")
         request.overrideMimeType("text/xml");
 
+#if COMMONJS
+    if (aURL.pathExtension() === "j")
+    {
+        var aFilePath = aURL.toString().substring(5),
+            OS = require("os"),
+            gccFlags = require("objective-j").currentCompilerFlags(),
+            gcc = OS.popen("gcc -E -x c -P " + (gccFlags ? gccFlags : "") + " " + OS.enquote(aFilePath), { charset:"UTF-8" }),
+            chunk,
+            fileContents = "";
+
+        while (chunk = gcc.stdout.read())
+            fileContents += chunk;
+
+        if (fileContents.length > 0)
+        {
+            request._nativeRequest.responseText = fileContents;
+            onsuccess({request: request});
+        }
+        else
+        {
+            onfailure({request: request});
+        }
+        return;
+    }
+#endif
+
     if (exports.asyncLoader)
     {
         request.onsuccess = Asynchronous(onsuccess);

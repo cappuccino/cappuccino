@@ -23,9 +23,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-
+@import <Foundation/CPDictionary.j>
+@import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPString.j>
-@import <AppKit/CPController.j>
+@import <Foundation/CPUserDefaults.j>
+
+@import "CPController.j"
+
+@global CPUserDefaultsDidChangeNotification
+
 
 var SharedUserDefaultsController = nil;
 
@@ -34,6 +40,7 @@ var SharedUserDefaultsController = nil;
     CPUserDefaults  _defaults           @accessors(readonly, property=defaults);
     CPDictionary    _initialValues      @accessors(property=initialValues);
     BOOL            _appliesImmediately @accessors(property=appliesImmediately);
+    id              _valueProxy;
 }
 
 + (id)sharedUserDefaultsController

@@ -23,6 +23,7 @@
  */
 
 @import "Bookmark.j"
+@import "MyDocument.j"
 
 @implementation MyDocument (TableView)
 

@@ -21,8 +21,8 @@
 
 @import "CPArray.j"
 @import "CPDictionary.j"
-@import "CPExpression.j"
-@import "CPPredicate.j"
+@import "_CPExpression.j"
+@import "_CPPredicate.j"
 
 @implementation _CPSubqueryExpression : CPExpression
 {

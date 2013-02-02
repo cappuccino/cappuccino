@@ -22,6 +22,11 @@
 
 @import <AppKit/CPSegmentedControl.j>
 
+@import "NSCell.j"
+
+@class Converter
+
+
 @implementation CPSegmentedControl (CPCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
@@ -59,6 +64,10 @@
 
         // Adjust for differences between Cocoa and Cappuccino widget framing.
         frame.origin.x += 4;
+
+        if ([[[Converter sharedConverter] themes][0] name] == @"Aristo2")
+            frame.size.height += 1;
+
         frame.size.width = originalWidth;
         [self setFrame:frame];
     }

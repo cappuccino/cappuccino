@@ -20,11 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <AppKit/CPCibBindingConnector.j>
 @import <AppKit/CPCibConnector.j>
 @import <AppKit/CPCibControlConnector.j>
 @import <AppKit/CPCibOutletConnector.j>
 @import <AppKit/CPCibRuntimeAttributesConnector.j>
 @import <AppKit/CPCibHelpConnector.j>
+@import <AppKit/CPKeyValueBinding.j>
 
 NIB_CONNECTION_EQUIVALENCY_TABLE = {};
 

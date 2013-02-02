@@ -21,9 +21,10 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <Foundation/CPArray.j>
 
-@import "CPEvent.j"
-
+@import "CPEvent_Constants.j"
+@import "CPText.j"
 
 CPStandardKeyBindings = {
     @"@.": @"cancelOperation:",

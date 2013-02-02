@@ -23,7 +23,7 @@
  */
 
 @import "CPDictionary.j"
-@import "CPExpression.j"
+@import "_CPExpression.j"
 
 @implementation _CPConstantValueExpression : CPExpression
 {

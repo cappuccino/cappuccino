@@ -21,21 +21,18 @@
  */
 
 @import "CPButton.j"
+@import "CPMenu.j"
+@import "CPMenuItem.j"
 @import "CPTextField.j"
+
+@class CPUserDefaults
+
+@global CPApp
 
 CPSearchFieldRecentsTitleMenuItemTag    = 1000;
 CPSearchFieldRecentsMenuItemTag         = 1001;
 CPSearchFieldClearRecentsMenuItemTag    = 1002;
 CPSearchFieldNoRecentsMenuItemTag       = 1003;
-
-var CPSearchFieldSearchImage = nil,
-    CPSearchFieldFindImage = nil,
-    CPSearchFieldCancelImage = nil,
-    CPSearchFieldCancelPressedImage = nil;
-
-var SEARCH_BUTTON_DEFAULT_WIDTH = 25.0,
-    CANCEL_BUTTON_DEFAULT_WIDTH = 22.0,
-    BUTTON_DEFAULT_HEIGHT = 22.0;
 
 var CPAutosavedRecentsChangedNotification = @"CPAutosavedRecentsChangedNotification";
 
@@ -70,16 +67,15 @@ var RECENT_SEARCH_PREFIX = @"   ";
     return @"searchfield"
 }
 
-+ (void)initialize
++ (CPDictionary)themeAttributes
 {
-    if (self !== [CPSearchField class])
-        return;
-
-    var bundle = [CPBundle bundleForClass:self];
-    CPSearchFieldSearchImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldSearch.png"] size:_CGSizeMake(SEARCH_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT)];
-    CPSearchFieldFindImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldFind.png"] size:_CGSizeMake(SEARCH_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT)];
-    CPSearchFieldCancelImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldCancel.png"] size:_CGSizeMake(CANCEL_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT)];
-    CPSearchFieldCancelPressedImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldCancelPressed.png"] size:_CGSizeMake(CANCEL_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT)];
+    return [CPDictionary dictionaryWithJSObject:
+        {
+            @"image-search": [CPNull null],
+            @"image-find": [CPNull null],
+            @"image-cancel": [CPNull null],
+            @"image-cancel-pressed": [CPNull null]
+        }];
 }
 
 - (id)initWithFrame:(CGRect)frame
@@ -170,7 +166,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
 - (void)resetSearchButton
 {
     var button = [self searchButton],
-        searchButtonImage = (_searchMenuTemplate === nil) ? CPSearchFieldSearchImage : CPSearchFieldFindImage;
+        searchButtonImage = (_searchMenuTemplate === nil) ? [self valueForThemeAttribute:@"image-search"] : [self valueForThemeAttribute:@"image-find"];
 
     [button setBordered:NO];
     [button setImageScaling:CPImageScaleAxesIndependently];
@@ -193,6 +189,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
         [_cancelButton setAutoresizingMask:CPViewMinXMargin];
         [_cancelButton setTarget:self];
         [_cancelButton setAction:@selector(cancelOperation:)];
+        [_cancelButton setButtonType:CPMomentaryChangeButton];
         [self _updateCancelButtonVisibility];
         [self addSubview:_cancelButton];
     }
@@ -216,8 +213,8 @@ var RECENT_SEARCH_PREFIX = @"   ";
     var button = [self cancelButton];
     [button setBordered:NO];
     [button setImageScaling:CPImageScaleAxesIndependently];
-    [button setImage:CPSearchFieldCancelImage];
-    [button setAlternateImage:CPSearchFieldCancelPressedImage];
+    [button setImage:[self valueForThemeAttribute:@"image-cancel"]];
+    [button setAlternateImage:[self valueForThemeAttribute:@"image-cancel-pressed"]];
     [button setAutoresizingMask:CPViewMinXMargin];
     [button setTarget:self];
     [button setAction:@selector(cancelOperation:)];
@@ -258,7 +255,9 @@ var RECENT_SEARCH_PREFIX = @"   ";
 */
 - (CGRect)searchButtonRectForBounds:(CGRect)rect
 {
-    return _CGRectMake(5, (_CGRectGetHeight(rect) - BUTTON_DEFAULT_HEIGHT) / 2, SEARCH_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT);
+    var size = [[self valueForThemeAttribute:@"image-search"] size] || CGSizeMakeZero();
+
+    return _CGRectMake(5, (_CGRectGetHeight(rect) - size.height) / 2, size.width, size.height);
 }
 
 /*!
@@ -268,7 +267,9 @@ var RECENT_SEARCH_PREFIX = @"   ";
 */
 - (CGRect)cancelButtonRectForBounds:(CGRect)rect
 {
-    return _CGRectMake(_CGRectGetWidth(rect) - CANCEL_BUTTON_DEFAULT_WIDTH - 5, (_CGRectGetHeight(rect) - CANCEL_BUTTON_DEFAULT_WIDTH) / 2, BUTTON_DEFAULT_HEIGHT, BUTTON_DEFAULT_HEIGHT);
+    var size = [[self valueForThemeAttribute:@"image-cancel"] size] || CGSizeMakeZero();
+
+    return _CGRectMake(_CGRectGetWidth(rect) - size.width - 5, (_CGRectGetHeight(rect) - size.width) / 2, size.height, size.height);
 }
 
 // Managing Menu Templates
@@ -679,7 +680,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
         return;
 
     var aFrame = [[self superview] convertRect:[self frame] toView:nil],
-        location = CPMakePoint(aFrame.origin.x + 10, aFrame.origin.y + aFrame.size.height - 4);
+        location = CGPointMake(aFrame.origin.x + 10, aFrame.origin.y + aFrame.size.height - 4);
 
     var anEvent = [CPEvent mouseEventWithType:CPRightMouseDown location:location modifierFlags:0 timestamp:[[CPApp currentEvent] timestamp] windowNumber:[[self window] windowNumber] context:nil eventNumber:1 clickCount:1 pressure:0];
 

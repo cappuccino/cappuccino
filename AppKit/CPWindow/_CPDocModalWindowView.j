@@ -1,7 +1,27 @@
+/*
+ * _CPDocModalWindowView.j
+ * AppKit
+ *
+ * Created by Ross Boucher.
+ * Copyright 2009, 280 North, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
 @import "_CPWindowView.j"
 
-var _CPStandardWindowViewBodyBackgroundColor = nil;
 
 @implementation _CPDocModalWindowView : _CPWindowView
 {
@@ -9,35 +29,34 @@ var _CPStandardWindowViewBodyBackgroundColor = nil;
     CPView _shadowView;
 }
 
-+ (CPColor)bodyBackgroundColor
++ (CPString)defaultThemeClass
 {
-    if (!_CPStandardWindowViewBodyBackgroundColor)
-        _CPStandardWindowViewBodyBackgroundColor = [CPColor colorWithWhite:0.96 alpha:0.9];
-
-    return _CPStandardWindowViewBodyBackgroundColor;
+    return @"doc-modal-window-view";
 }
 
-- (id)initWithFrame:(CPRect)aFrame styleMask:(unsigned)aStyleMask
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[[CPColor whiteColor], 8]
+                                       forKeys:[ @"body-color", @"height-shadow"]];
+}
+
+- (id)initWithFrame:(CGRect)aFrame styleMask:(unsigned)aStyleMask
 {
     self = [super initWithFrame:aFrame styleMask:aStyleMask];
 
     if (self)
     {
-        var theClass = [self class],
-            bounds = [self bounds];
+        var bounds = [self bounds];
 
        _bodyView = [[CPView alloc] initWithFrame:_CGRectMake(0.0, 0.0, _CGRectGetWidth(bounds), _CGRectGetHeight(bounds))];
 
         [_bodyView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-        [_bodyView setBackgroundColor:[theClass bodyBackgroundColor]];
         [_bodyView setHitTests:NO];
 
         [self addSubview:_bodyView];
 
-        var bundle = [CPBundle bundleForClass:[CPWindow class]];
-        _shadowView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, _CGRectGetWidth(bounds), 8)];
+        _shadowView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, _CGRectGetWidth(bounds), [self valueForThemeAttribute:@"height-shadow"])];
         [_shadowView setAutoresizingMask:CPViewWidthSizable];
-        [_shadowView setBackgroundColor:[CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowAttachedSheetShadow.png"] size:CGSizeMake(9,8)]]];
         [self addSubview:_shadowView];
      }
 
@@ -57,6 +76,18 @@ var _CPStandardWindowViewBodyBackgroundColor = nil;
 - (void)_enableSheet:(BOOL)enable
 {
     // do nothing, already a sheet
+}
+
+- (void)layoutSubviews
+{
+    [super layoutSubviews];
+
+    var bounds = [self bounds];
+
+    [_bodyView setBackgroundColor:[self valueForThemeAttribute:@"body-color"]];
+
+    [_shadowView setFrame:CGRectMake(0,0, _CGRectGetWidth(bounds), [self valueForThemeAttribute:@"height-shadow"])];
+    [_shadowView setBackgroundColor:[self valueForThemeAttribute:@"attached-sheet-shadow-color"]];
 }
 
 @end

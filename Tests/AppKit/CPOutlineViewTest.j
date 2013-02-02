@@ -4,7 +4,7 @@
 {
     CPOutlineView   outlineView;
     CPTableColumn   tableColumn;
-    TestDataSource  dataSource;
+    TestOutlineDataSource  dataSource;
 }
 
 - (void)setUp
@@ -17,7 +17,7 @@
 
     [outlineView setAllowsMultipleSelection:YES];
 
-    dataSource = [TestDataSource new];
+    dataSource = [TestOutlineDataSource new];
     [dataSource setEntries:[".1", ".1.1", ".1.2", ".1.2.1", ".1.2.2", ".2", ".3", ".3.1"]];
 
     [outlineView setDataSource:dataSource];
@@ -130,7 +130,7 @@
 
     [outlineView expandItem:".1.2"];
 
-    afterSelection = [outlineView selectedRowIndexes];
+    var afterSelection = [outlineView selectedRowIndexes];
     [self assert:2 equals:[afterSelection count] message:"selections should remain"];
 
     [self assert:".1.1" equals:[outlineView itemAtRow:[afterSelection firstIndex]] message:".1.1 selection should remain"];
@@ -188,7 +188,7 @@
 
 @end
 
-@implementation TestDataSource : CPObject
+@implementation TestOutlineDataSource : CPObject
 {
     CPArray entries @accessors;
 }

@@ -21,6 +21,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <Foundation/CPRunLoop.j>
 
 CPSoundLoadStateEmpty       = 0;
 CPSoundLoadStateLoading     = 1;
@@ -59,7 +60,7 @@ CPSoundPlayBackStatePause   = 2;
     if (self = [super init])
     {
         _loadStatus = CPSoundLoadStateEmpty;
-        _loops = NO;
+//        _loops = NO;
         _audioTag = document.createElement("audio");
         _audioTag.preload = YES;
         _playRequestBeforeLoad = NO;

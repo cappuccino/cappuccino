@@ -1,7 +1,7 @@
 
 var rootResources = { };
 
-function StaticResource(/*CFURL*/ aURL, /*StaticResource*/ aParent, /*BOOL*/ isDirectory, /*BOOL*/ isResolved)
+function StaticResource(/*CFURL*/ aURL, /*StaticResource*/ aParent, /*BOOL*/ isDirectory, /*BOOL*/ isResolved, /*Dictionary*/ aFilenameTranslateDictionary)
 {
     this._parent = aParent;
     this._eventDispatcher = new EventDispatcher(this);
@@ -11,6 +11,7 @@ function StaticResource(/*CFURL*/ aURL, /*StaticResource*/ aParent, /*BOOL*/ isD
     this._name = name;
     this._URL = aURL; //new CFURL(aName, aParent && aParent.URL().asDirectoryPathURL());
     this._isResolved = !!isResolved;
+    this._filenameTranslateDictionary = aFilenameTranslateDictionary;
 
     if (isDirectory)
         this._URL = this._URL.asDirectoryPathURL();
@@ -34,6 +35,26 @@ function StaticResource(/*CFURL*/ aURL, /*StaticResource*/ aParent, /*BOOL*/ isD
 StaticResource.rootResources = function()
 {
     return rootResources;
+};
+
+function countProp(x) {
+    var count = 0;
+    for (var k in x) {
+        if (x.hasOwnProperty(k)) {
+            ++count;
+        }
+    }
+    return count;
+}
+
+StaticResource.resetRootResources = function()
+{
+    rootResources = {};
+};
+
+StaticResource.prototype.filenameTranslateDictionary = function()
+{
+    return this._filenameTranslateDictionary || {};
 };
 
 exports.StaticResource = StaticResource;
@@ -76,7 +97,20 @@ StaticResource.prototype.resolve = function()
             resolveStaticResource(self);
         }
 
-        new FileRequest(this.URL(), onsuccess, onfailure);
+        var url = this.URL(),
+            aFilenameTranslateDictionary = this.filenameTranslateDictionary();
+
+        if (aFilenameTranslateDictionary)
+        {
+            var urlString = url.toString(),
+                lastPathComponent = url.lastPathComponent(),
+                basePath = urlString.substring(0, urlString.length - lastPathComponent.length),
+                translatedName = aFilenameTranslateDictionary[lastPathComponent];
+
+            if (translatedName && urlString.slice(-translatedName.length) !== translatedName)
+                url = new CFURL(basePath + translatedName);  // FIXME: do an add component to url or something better....
+        }
+        new FileRequest(url, onsuccess, onfailure);
     }
 };
 
@@ -163,11 +197,11 @@ StaticResource.prototype.resourceAtURL = function(/*CFURL|String*/ aURL, /*BOOL*
     return StaticResource.resourceAtURL(new CFURL(aURL, this.URL()), resolveAsDirectoriesIfNecessary);
 };
 
-StaticResource.resolveResourceAtURL = function(/*CFURL|String*/ aURL, /*BOOL*/ isDirectory, /*Function*/ aCallback)
+StaticResource.resolveResourceAtURL = function(/*CFURL|String*/ aURL, /*BOOL*/ isDirectory, /*Function*/ aCallback, /*Dictionary*/ aFilenameTranslateDictionary)
 {
     aURL = makeAbsoluteURL(aURL).absoluteURL();
 
-    resolveResourceComponents(rootResourceForAbsoluteURL(aURL), isDirectory, aURL.pathComponents(), 0, aCallback);
+    resolveResourceComponents(rootResourceForAbsoluteURL(aURL), isDirectory, aURL.pathComponents(), 0, aCallback, aFilenameTranslateDictionary);
 };
 
 StaticResource.prototype.resolveResourceAtURL = function(/*CFURL|String*/ aURL, /*BOOL*/ isDirectory, /*Function*/ aCallback)
@@ -175,7 +209,7 @@ StaticResource.prototype.resolveResourceAtURL = function(/*CFURL|String*/ aURL, 
     StaticResource.resolveResourceAtURL(new CFURL(aURL, this.URL()).absoluteURL(), isDirectory, aCallback);
 };
 
-function resolveResourceComponents(/*StaticResource*/ aResource, /*BOOL*/ isDirectory, /*Array*/ components, /*Integer*/ index, /*Function*/ aCallback)
+function resolveResourceComponents(/*StaticResource*/ aResource, /*BOOL*/ isDirectory, /*Array*/ components, /*Integer*/ index, /*Function*/ aCallback, /*Dictionry*/ aFilenameTranslateDictionary)
 {
     var count = components.length;
 
@@ -187,7 +221,7 @@ function resolveResourceComponents(/*StaticResource*/ aResource, /*BOOL*/ isDire
         // If the child doesn't exist, create and resolve it.
         if (!child)
         {
-            child = new StaticResource(new CFURL(name, aResource.URL()), aResource, index + 1 < count || isDirectory , NO);
+            child = new StaticResource(new CFURL(name, aResource.URL()), aResource, index + 1 < count || isDirectory , NO, aFilenameTranslateDictionary);
             child.resolve();
         }
 
@@ -196,7 +230,7 @@ function resolveResourceComponents(/*StaticResource*/ aResource, /*BOOL*/ isDire
             return child.addEventListener("resolve", function()
             {
                 // Continue resolving once this is done.
-                resolveResourceComponents(aResource, isDirectory, components, index, aCallback);
+                resolveResourceComponents(aResource, isDirectory, components, index, aCallback, aFilenameTranslateDictionary);
             });
 
         // If we've already determined that this file doesn't exist...

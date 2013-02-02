@@ -20,8 +20,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPPanel.j"
 @import "CPTableView.j"
+@import "CPText.j"
 @import "_CPPopUpListDataSource.j"
+
+@class CPScrollView
+
+@global CPLineBorder
 
 
 /*!
@@ -582,7 +588,7 @@ var ListColumnIdentifier = @"1";
         case CPCarriageReturnCharacter:
             if ([self isVisible])
             {
-                [self closeListAfterItemClick];
+                [self closeListAfterItemClick];
                 return YES;
             }
             break;
@@ -839,7 +845,7 @@ var _CPPopUpListDataSourceKey   = @"_CPPopUpListDataSourceKey",
 */
 - (CPTableColumn)listColumn
 {
-    return _tableColumn;
+    return _tableColumns[0];
 }
 
 @end

@@ -25,6 +25,8 @@
 
 @import <AppKit/_CPCibCustomResource.j>
 
+@global CP_NSMapClassName
+
 var FILE = require("file"),
     imageSize = require("cappuccino/imagesize").imagesize;
 

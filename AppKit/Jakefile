@@ -1,8 +1,10 @@
 
 require("../common.jake");
 
-var framework = require("objective-j/jake").framework;
-var BundleTask = require("objective-j/jake").BundleTask;
+checkUlimit();
+
+var framework = require("objective-j/jake").framework,
+    BundleTask = require("objective-j/jake").BundleTask;
 
 $BUILD_PATH = FILE.join($BUILD_DIR, $CONFIGURATION, 'AppKit');
 
@@ -54,6 +56,9 @@ task ("Theme", [$BUILD_CJS_CAPPUCCINO_APPKIT], function()
 
     cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), FILE.join($BUILD_PATH, 'Resources', 'Aristo.blend'));
     cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), FILE.join($BUILD_CJS_CAPPUCCINO_APPKIT, "Resources", "Aristo.blend"));
+
+    cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, 'Aristo2.blend'), FILE.join($BUILD_PATH, 'Resources', 'Aristo2.blend'));
+    cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, 'Aristo2.blend'), FILE.join($BUILD_CJS_CAPPUCCINO_APPKIT, "Resources", "Aristo2.blend"));
 });
 
 task ("build", ["AppKit", $BUILD_CJS_CAPPUCCINO_APPKIT, "Theme"]);

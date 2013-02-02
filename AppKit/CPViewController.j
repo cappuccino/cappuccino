@@ -22,9 +22,12 @@
 
 @import <Foundation/CPArray.j>
 
-@import "CPApplication.j"
 @import "CPCib.j"
 @import "CPResponder.j"
+
+@class CPDocument
+
+@global CPApp
 
 
 var CPViewControllerCachedCibs;
@@ -222,7 +225,7 @@ var CPViewControllerCachedCibs;
 {
     [self willChangeValueForKey:"isViewLoaded"];
     [self viewDidLoad];
-    isViewLoaded = YES;
+    _isViewLoaded = YES;
     [self didChangeValueForKey:"isViewLoaded"];
 }
 

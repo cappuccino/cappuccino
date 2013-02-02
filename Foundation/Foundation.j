@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "_CGGeometry.j"
 @import "CPArray.j"
 @import "CPBundle.j"
 @import "CPCharacterSet.j"
@@ -33,10 +34,10 @@
 @import "CPDecimalNumber.j"
 @import "CPDictionary.j"
 @import "CPEnumerator.j"
+@import "CPError.j"
 @import "CPException.j"
 @import "CPExpression.j"
 @import "CPFormatter.j"
-@import "CPGeometry.j"
 @import "CPIndexSet.j"
 @import "CPIndexPath.j"
 @import "CPInvocation.j"

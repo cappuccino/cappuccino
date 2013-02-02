@@ -1,4 +1,4 @@
-@import <AppKit/CPTokenField.j>
+@import <AppKit/AppKit.j>
 
 [CPApplication sharedApplication];
 

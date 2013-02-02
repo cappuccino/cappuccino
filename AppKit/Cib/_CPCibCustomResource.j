@@ -26,6 +26,12 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPString.j>
 
+@import "CPCompatibility.j"
+@import "CPImage.j"
+@import "CPTheme.j"
+
+@class CPButtonBar
+
 
 var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
     _CPCibCustomResourceResourceNameKey = @"_CPCibCustomResourceResourceNameKey",
@@ -90,9 +96,9 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
         if (_className === @"CPImage")
         {
             if (_resourceName == "CPAddTemplate")
-                return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPButtonBar class]] pathForResource:@"plus_button.png"] size:CGSizeMake(11, 12)];
+                return [[CPTheme defaultTheme] valueForAttributeWithName:@"button-image-plus" forClass:[CPButtonBar class]];
             else if (_resourceName == "CPRemoveTemplate")
-                return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPButtonBar class]] pathForResource:@"minus_button.png"] size:CGSizeMake(11, 4)];
+                return [[CPTheme defaultTheme] valueForAttributeWithName:@"button-image-minus" forClass:[CPButtonBar class]];
 
             return [self imageFromBundle:[aCoder bundle]];
         }

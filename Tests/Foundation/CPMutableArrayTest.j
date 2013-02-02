@@ -380,11 +380,11 @@
 
     [pretty sortUsingDescriptors:[[[CPSortDescriptor alloc] initWithKey:@"value" ascending:NO]]];
 
-    [self assert:"@[\n\t3:d,\n\t2:c,\n\t1:b,\n\t0:a\n]" equals:[pretty description]];
+    [self assert:"@[\n    3:d,\n    2:c,\n    1:b,\n    0:a\n]" equals:[pretty description]];
 
     [pretty sortUsingDescriptors:[[[CPSortDescriptor alloc] initWithKey:@"value" ascending:YES]]];
 
-    [self assert:"@[\n\t0:a,\n\t1:b,\n\t2:c,\n\t3:d\n]" equals:[pretty description]];
+    [self assert:"@[\n    0:a,\n    1:b,\n    2:c,\n    3:d\n]" equals:[pretty description]];
 }
 
 - (void)testThatCPArrayDoesSortUsingTwoDescriptors
@@ -449,11 +449,8 @@
 
 - (void)testMutableCopy
 {
-    var normalArray = [CPArray array];
-
-    [self assertThrows:function () { [array addObject:[CPNull null]] }];
-
-    var mutableArray = [normalArray mutableCopy];
+    var normalArray = [],
+        mutableArray = [normalArray mutableCopy];
 
     [mutableArray addObject:[CPNull null]];
 

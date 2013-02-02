@@ -48,24 +48,24 @@ function formatter(aString, aLevel, aTitle)
     var bundle = [CPBundle bundleForClass:[CPView class]];
 
     color = CPColorWithImages([
-        ["Aristo.blend/Resources/button-bezel-left.png", 4, 24, bundle],
-        ["Aristo.blend/Resources/button-bezel-center.png", 1, 24, bundle],
-        ["Aristo.blend/Resources/button-bezel-right.png", 4, 24, bundle]
+        ["Aristo2.blend/Resources/button-bezel-left.png", 4, 24, bundle],
+        ["Aristo2.blend/Resources/button-bezel-center.png", 1, 24, bundle],
+        ["Aristo2.blend/Resources/button-bezel-right.png", 4, 24, bundle]
     ]);
     CPLog([color description]);
 
     [threePartColor setBackgroundColor:color];
 
     color = CPColorWithImages([
-        ["Aristo.blend/Resources/textfield-bezel-square-focused-0.png", 7, 7, bundle],
-        ["Aristo.blend/Resources/textfield-bezel-square-focused-1.png", 1, 7, bundle],
-        ["Aristo.blend/Resources/textfield-bezel-square-focused-2.png", 7, 7, bundle],
-        ["Aristo.blend/Resources/textfield-bezel-square-focused-3.png", 7, 1, bundle],
-        ["Aristo.blend/Resources/textfield-bezel-square-focused-4.png", 1, 1, bundle],
-        ["Aristo.blend/Resources/textfield-bezel-square-focused-5.png", 7, 1, bundle],
-        ["Aristo.blend/Resources/textfield-bezel-square-focused-6.png", 7, 7, bundle],
-        ["Aristo.blend/Resources/textfield-bezel-square-focused-7.png", 1, 7, bundle],
-        ["Aristo.blend/Resources/textfield-bezel-square-focused-8.png", 7, 7, bundle],
+        ["Aristo2.blend/Resources/textfield-bezel-square-focused-0.png", 7, 7, bundle],
+        ["Aristo2.blend/Resources/textfield-bezel-square-focused-1.png", 1, 7, bundle],
+        ["Aristo2.blend/Resources/textfield-bezel-square-focused-2.png", 7, 7, bundle],
+        ["Aristo2.blend/Resources/textfield-bezel-square-focused-3.png", 7, 1, bundle],
+        ["Aristo2.blend/Resources/textfield-bezel-square-focused-4.png", 1, 1, bundle],
+        ["Aristo2.blend/Resources/textfield-bezel-square-focused-5.png", 7, 1, bundle],
+        ["Aristo2.blend/Resources/textfield-bezel-square-focused-6.png", 7, 7, bundle],
+        ["Aristo2.blend/Resources/textfield-bezel-square-focused-7.png", 1, 7, bundle],
+        ["Aristo2.blend/Resources/textfield-bezel-square-focused-8.png", 7, 7, bundle],
     ]);
     CPLog([color description]);
 

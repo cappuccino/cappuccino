@@ -22,6 +22,10 @@
 
 @import <AppKit/CPTableHeaderView.j>
 
+@class Converter
+@class CPTableView
+
+
 @implementation CPTableHeaderView (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
@@ -33,8 +37,11 @@
         // change the default height
         if (_bounds.size.height === 17)
         {
-            _bounds.size.height = 23;
-            _frame.size.height = 23;
+            var theme = [[Converter sharedConverter] themes][0],
+                height = [theme valueForAttributeWithName:@"default-row-height" forClass:CPTableView];
+
+            _bounds.size.height = height;
+            _frame.size.height = height;
         }
 
         _drawsColumnLines = YES;

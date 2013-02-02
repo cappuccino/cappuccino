@@ -30,6 +30,10 @@
 @import "NSCell.j"
 @import "NSControl.j"
 
+@class Converter
+
+@global NIB_CONNECTION_EQUIVALENCY_TABLE
+
 
 var NSButtonIsBorderedMask = 0x00800000,
     NSButtonAllowsMixedStateMask = 0x1000000,

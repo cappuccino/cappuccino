@@ -1,5 +1,29 @@
-@import "CPWindow.j"
+/*
+ * _CPMenuWindow.j
+ * AppKit
+ *
+ * Created by Francisco Tolmasky.
+ * Copyright 2009, 280 North, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
+@import "CPClipView.j"
+@import "CPImageView.j"
+@import "CPWindow.j"
+@import "_CPMenuManager.j"
 
 var _CPMenuWindowPool                       = [],
     _CPMenuWindowPoolCapacity               = 5,
@@ -9,15 +33,6 @@ var _CPMenuWindowPool                       = [],
 _CPMenuWindowMenuBarBackgroundStyle         = 0;
 _CPMenuWindowPopUpBackgroundStyle           = 1;
 _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
-
-var STICKY_TIME_INTERVAL        = 500,
-
-    TOP_MARGIN                  = 5.0,
-    LEFT_MARGIN                 = 1.0,
-    RIGHT_MARGIN                = 1.0,
-    BOTTOM_MARGIN               = 5.0,
-
-    SCROLL_INDICATOR_HEIGHT     = 16.0;
 
 /*
     @ignore
@@ -63,17 +78,6 @@ var STICKY_TIME_INTERVAL        = 500,
     _CPMenuWindowPool.push(aMenuWindow);
 }
 
-+ (void)initialize
-{
-    if (self !== [_CPMenuWindow class])
-        return;
-
-    var bundle = [CPBundle bundleForClass:self];
-
-    _CPMenuWindowMoreAboveImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindowMoreAbove.png"] size:CGSizeMake(38.0, 18.0)];
-    _CPMenuWindowMoreBelowImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindowMoreBelow.png"] size:CGSizeMake(38.0, 18.0)];
-}
-
 - (id)initWithContentRect:(CGRect)aRect styleMask:(unsigned)aStyleMask
 {
     _constraintRect = _CGRectMakeZero();
@@ -92,22 +96,22 @@ var STICKY_TIME_INTERVAL        = 500,
 
         _menuView = [[_CPMenuView alloc] initWithFrame:CGRectMakeZero()];
 
-        _menuClipView = [[CPClipView alloc] initWithFrame:CGRectMake(LEFT_MARGIN, TOP_MARGIN, 0.0, 0.0)];
+        _menuClipView = [[CPClipView alloc] initWithFrame:CGRectMake([_menuView valueForThemeAttribute:@"menu-window-margin-inset"].left, [_menuView valueForThemeAttribute:@"menu-window-margin-inset"].top, 0.0, 0.0)];
         [_menuClipView setDocumentView:_menuView];
 
         [contentView addSubview:_menuClipView];
 
         _moreAboveView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
 
-        [_moreAboveView setImage:_CPMenuWindowMoreAboveImage];
-        [_moreAboveView setFrameSize:[_CPMenuWindowMoreAboveImage size]];
+        [_moreAboveView setImage:[_menuView valueForThemeAttribute:@"menu-window-more-above-image"]];
+        [_moreAboveView setFrameSize:[[_menuView valueForThemeAttribute:@"menu-window-more-above-image"] size]];
 
         [contentView addSubview:_moreAboveView];
 
         _moreBelowView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
 
-        [_moreBelowView setImage:_CPMenuWindowMoreBelowImage];
-        [_moreBelowView setFrameSize:[_CPMenuWindowMoreBelowImage size]];
+        [_moreBelowView setImage:[_menuView valueForThemeAttribute:@"menu-window-more-below-image"]];
+        [_moreBelowView setFrameSize:[[_menuView valueForThemeAttribute:@"menu-window-more-below-image"] size]];
 
         [contentView addSubview:_moreBelowView];
     }
@@ -117,7 +121,7 @@ var STICKY_TIME_INTERVAL        = 500,
 
 + (float)_standardLeftMargin
 {
-    return LEFT_MARGIN;
+    return [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-window-margin-inset" forClass:_CPMenuView].left;
 }
 
 - (void)setFont:(CPFont)aFont
@@ -139,36 +143,10 @@ var STICKY_TIME_INTERVAL        = 500,
         var bundle = [CPBundle bundleForClass:[self class]];
 
         if (aBackgroundStyle == _CPMenuWindowPopUpBackgroundStyle)
-            color = [CPColor colorWithPatternImage:[[CPNinePartImage alloc] initWithImageSlices:
-                [
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindowRounded0.png"] size:CGSizeMake(4.0, 4.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow1.png"] size:CGSizeMake(1.0, 4.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindowRounded2.png"] size:CGSizeMake(4.0, 4.0)],
-
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow3.png"] size:CGSizeMake(4.0, 1.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow4.png"] size:CGSizeMake(1.0, 1.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow5.png"] size:CGSizeMake(4.0, 1.0)],
-
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindowRounded6.png"] size:CGSizeMake(4.0, 4.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow7.png"] size:CGSizeMake(1.0, 4.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindowRounded8.png"] size:CGSizeMake(4.0, 4.0)]
-                ]]];
+            color = [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-window-pop-up-background-style-color" forClass:_CPMenuView];
 
         else if (aBackgroundStyle == _CPMenuWindowMenuBarBackgroundStyle)
-            color = [CPColor colorWithPatternImage:[[CPNinePartImage alloc] initWithImageSlices:
-                [
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow3.png"] size:CGSizeMake(4.0, 0.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow4.png"] size:CGSizeMake(1.0, 0.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow5.png"] size:CGSizeMake(4.0, 0.0)],
-
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow3.png"] size:CGSizeMake(4.0, 1.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow4.png"] size:CGSizeMake(1.0, 1.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow5.png"] size:CGSizeMake(4.0, 1.0)],
-
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindowRounded6.png"] size:CGSizeMake(4.0, 4.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindow7.png"] size:CGSizeMake(1.0, 4.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindowRounded8.png"] size:CGSizeMake(4.0, 4.0)]
-                ]]];
+            color = [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-window-menu-bar-background-style-color" forClass:_CPMenuView];
 
         _CPMenuWindowBackgroundColors[aBackgroundStyle] = color;
     }
@@ -186,12 +164,13 @@ var STICKY_TIME_INTERVAL        = 500,
     [aMenu _setMenuWindow:self];
     [_menuView setMenu:aMenu];
 
-    var menuViewSize = [_menuView frame].size;
+    var menuViewSize = [_menuView frame].size,
+        marginInset = [_menuView valueForThemeAttribute:@"menu-window-margin-inset"];
 
-    [self setFrameSize:CGSizeMake(LEFT_MARGIN + menuViewSize.width + RIGHT_MARGIN, TOP_MARGIN + menuViewSize.height + BOTTOM_MARGIN)];
+    [self setFrameSize:CGSizeMake(marginInset.left + menuViewSize.width + marginInset.right, marginInset.top + menuViewSize.height + marginInset.bottom)];
 
     [_menuView scrollPoint:CGPointMake(0.0, 0.0)];
-    [_menuClipView setFrame:CGRectMake(LEFT_MARGIN, TOP_MARGIN, menuViewSize.width, menuViewSize.height)];
+    [_menuClipView setFrame:CGRectMake(marginInset.left, marginInset.top, menuViewSize.width, menuViewSize.height)];
 }
 
 - (void)setMinWidth:(float)aWidth
@@ -249,7 +228,9 @@ var STICKY_TIME_INTERVAL        = 500,
     // FIXME: This gets called far too often.
     _unconstrainedFrame = _CGRectMakeCopy(aFrame);
 
-    var constrainedFrame = CGRectIntersection(_unconstrainedFrame, _constraintRect);
+    var constrainedFrame = CGRectIntersection(_unconstrainedFrame, _constraintRect),
+        marginInset = [_menuView valueForThemeAttribute:@"menu-window-margin-inset"],
+        scrollIndicatorHeight = [_menuView valueForThemeAttribute:@"menu-window-scroll-indicator-height"];
 
     // We don't want to simply intersect the visible frame and the unconstrained frame.
     // We should be allowing as much of the width to fit as possible (pushing back and forward).
@@ -268,41 +249,41 @@ var STICKY_TIME_INTERVAL        = 500,
     [super setFrame:constrainedFrame display:shouldDisplay animate:shouldAnimate];
 
     // This needs to happen before changing the frame.
-    var menuViewOrigin = CGPointMake(CGRectGetMinX(aFrame) + LEFT_MARGIN, CGRectGetMinY(aFrame) + TOP_MARGIN),
-        moreAbove = menuViewOrigin.y < CGRectGetMinY(constrainedFrame) + TOP_MARGIN,
-        moreBelow = menuViewOrigin.y + CGRectGetHeight([_menuView frame]) > CGRectGetMaxY(constrainedFrame) - BOTTOM_MARGIN,
+    var menuViewOrigin = CGPointMake(CGRectGetMinX(aFrame) + marginInset.left, CGRectGetMinY(aFrame) + marginInset.top),
+        moreAbove = menuViewOrigin.y < CGRectGetMinY(constrainedFrame) + marginInset.top,
+        moreBelow = menuViewOrigin.y + CGRectGetHeight([_menuView frame]) > CGRectGetMaxY(constrainedFrame) - marginInset.bottom,
 
-        topMargin = TOP_MARGIN,
-        bottomMargin = BOTTOM_MARGIN,
+        topMargin = marginInset.top,
+        bottomMargin = marginInset.bottom,
 
         contentView = [self contentView],
         bounds = [contentView bounds];
 
     if (moreAbove)
     {
-        topMargin += SCROLL_INDICATOR_HEIGHT;
+        topMargin += scrollIndicatorHeight;
 
         var frame = [_moreAboveView frame];
 
-        [_moreAboveView setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - CGRectGetWidth(frame)) / 2.0, (TOP_MARGIN + SCROLL_INDICATOR_HEIGHT - CGRectGetHeight(frame)) / 2.0)];
+        [_moreAboveView setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - CGRectGetWidth(frame)) / 2.0, (marginInset.top + scrollIndicatorHeight - CGRectGetHeight(frame)) / 2.0)];
     }
 
     [_moreAboveView setHidden:!moreAbove];
 
     if (moreBelow)
     {
-        bottomMargin += SCROLL_INDICATOR_HEIGHT;
+        bottomMargin += scrollIndicatorHeight;
 
-        [_moreBelowView setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - CGRectGetWidth([_moreBelowView frame])) / 2.0, CGRectGetHeight(bounds) - SCROLL_INDICATOR_HEIGHT - BOTTOM_MARGIN)];
+        [_moreBelowView setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - CGRectGetWidth([_moreBelowView frame])) / 2.0, CGRectGetHeight(bounds) - scrollIndicatorHeight - marginInset.bottom)];
     }
 
     [_moreBelowView setHidden:!moreBelow];
 
     var clipFrame = CGRectMakeZero();
 
-    clipFrame.origin.x = LEFT_MARGIN;
+    clipFrame.origin.x = marginInset.left;
     clipFrame.origin.y = topMargin;
-    clipFrame.size.width = CGRectGetWidth(constrainedFrame) - LEFT_MARGIN - RIGHT_MARGIN;
+    clipFrame.size.width = CGRectGetWidth(constrainedFrame) - marginInset.left - marginInset.right;
     clipFrame.size.height = CGRectGetHeight(constrainedFrame) - topMargin - bottomMargin;
 
     [_menuClipView setFrame:clipFrame];
@@ -398,15 +379,15 @@ var STICKY_TIME_INTERVAL        = 500,
 - (_CPManagerScrollingState)scrollingStateForPoint:(CGPoint)aGlobalLocation
 {
     var frame = [self frame];
-    if (!CPRectContainsPoint(frame,aGlobalLocation) || ![self canScroll])
+    if (!CGRectContainsPoint(frame,aGlobalLocation) || ![self canScroll])
         return _CPMenuManagerScrollingStateNone;
 
     // If we're at or above of the top scroll indicator...
-    if (aGlobalLocation.y < CGRectGetMinY(frame) + TOP_MARGIN + SCROLL_INDICATOR_HEIGHT &&  ![_moreAboveView isHidden])
+    if (aGlobalLocation.y < CGRectGetMinY(frame) + [_menuView valueForThemeAttribute:@"menu-window-margin-inset"].top + [_menuView valueForThemeAttribute:@"menu-window-scroll-indicator-height"] &&  ![_moreAboveView isHidden])
         return _CPMenuManagerScrollingStateUp;
 
     // If we're at or below the bottom scroll indicator...
-    if (aGlobalLocation.y > CGRectGetMaxY(frame) - BOTTOM_MARGIN - SCROLL_INDICATOR_HEIGHT &&  ![_moreBelowView isHidden])
+    if (aGlobalLocation.y > CGRectGetMaxY(frame) - [_menuView valueForThemeAttribute:@"menu-window-margin-inset"].bottom - [_menuView valueForThemeAttribute:@"menu-window-scroll-indicator-height"] &&  ![_moreBelowView isHidden])
         return _CPMenuManagerScrollingStateDown;
 
     return _CPMenuManagerScrollingStateNone;
@@ -414,7 +395,7 @@ var STICKY_TIME_INTERVAL        = 500,
 
 - (float)deltaYForItemAtIndex:(int)anIndex
 {
-    return TOP_MARGIN + CGRectGetMinY([_menuView rectForItemAtIndex:anIndex]);
+    return [_menuView valueForThemeAttribute:@"menu-window-margin-inset"].top + CGRectGetMinY([_menuView rectForItemAtIndex:anIndex]);
 }
 
 - (CGPoint)rectForItemAtIndex:(int)anIndex
@@ -443,6 +424,49 @@ var STICKY_TIME_INTERVAL        = 500,
     CPArray _visibleMenuItemInfos;
 
     CPFont  _font @accessors(property=font);
+}
+
+
++ (CPString)defaultThemeClass
+{
+    return "menu-view";
+}
+
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[    [CPNull null], [CPNull null], [CPNull null], [CPNull null], CGInsetMake(5.0, 1.0, 1.0, 5.0), 16.0,
+                                                    [CPNull null], [CPNull null], [CPNull null], 30.0, 10.0, 10.0, 10.0,
+                                                    [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], 28.0, [CPNull null], 1.0,
+                                                    [CPNull null], [CPNull null], [CPNull null]]
+                                       forKeys:[    @"menu-window-more-above-image",
+                                                    @"menu-window-more-below-image",
+                                                    @"menu-window-pop-up-background-style-color",
+                                                    @"menu-window-menu-bar-background-style-color",
+                                                    @"menu-window-margin-inset",
+                                                    @"menu-window-scroll-indicator-height",
+
+                                                    @"menu-bar-window-background-color",
+                                                    @"menu-bar-window-background-selected-color",
+                                                    @"menu-bar-window-font",
+                                                    @"menu-bar-window-height",
+                                                    @"menu-bar-window-margin",
+                                                    @"menu-bar-window-left-margin",
+                                                    @"menu-bar-window-right-margin",
+
+                                                    @"menu-bar-text-color",
+                                                    @"menu-bar-title-color",
+                                                    @"menu-bar-text-shadow-color",
+                                                    @"menu-bar-title-shadow-color",
+                                                    @"menu-bar-highlight-color",
+                                                    @"menu-bar-highlight-text-color",
+                                                    @"menu-bar-highlight-text-shadow-color",
+                                                    @"menu-bar-height",
+                                                    @"menu-bar-icon-image",
+                                                    @"menu-bar-icon-image-alpha-value",
+
+                                                    @"menu-general-icon-new",
+                                                    @"menu-general-icon-save",
+                                                    @"menu-general-icon-open"]];
 }
 
 - (unsigned)numberOfUnhiddenItems

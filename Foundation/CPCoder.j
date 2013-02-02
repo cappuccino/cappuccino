@@ -23,6 +23,8 @@
 @import "CPException.j"
 @import "CPObject.j"
 
+@global _CPRaiseInvalidAbstractInvocation;
+
 /*!
     @class CPCoder
     @ingroup foundation
@@ -78,7 +80,7 @@
     Encodes a point
     @param aPoint the point to be encoded.
 */
-- (void)encodePoint:(CPPoint)aPoint
+- (void)encodePoint:(CGPoint)aPoint
 {
     [self encodeNumber:aPoint.x];
     [self encodeNumber:aPoint.y];
@@ -98,7 +100,7 @@
     Encodes a CGSize
     @param aSize the size to be encoded
 */
-- (void)encodeSize:(CPSize)aSize
+- (void)encodeSize:(CGSize)aSize
 {
     [self encodeNumber:aSize.width];
     [self encodeNumber:aSize.height];

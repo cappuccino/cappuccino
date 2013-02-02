@@ -22,6 +22,7 @@
 
 @import "CPView.j"
 
+@class CPScrollView
 
 /*!
     @ingroup appkit

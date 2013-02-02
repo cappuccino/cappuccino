@@ -23,11 +23,15 @@
 @import <Foundation/CPString.j>
 @import <Foundation/CPArray.j>
 
-@import "CPApplication.j"
+@import "CPAlert.j"
 @import "CPResponder.j"
 @import "CPSavePanel.j"
 @import "CPViewController.j"
 @import "CPWindowController.j"
+
+@class CPDocumentController
+
+@global CPApp
 
 
 /*
@@ -142,7 +146,7 @@ var CPDocumentUntitledCount = 0;
     @param anError not used
     @return the initialized document
 */
-- (id)initWithType:(CPString)aType error:({CPError})anError
+- (id)initWithType:(CPString)aType error:(/*{*/CPError/*}*/)anError
 {
     self = [self init];
 
@@ -211,7 +215,7 @@ var CPDocumentUntitledCount = 0;
     @throws CPUnsupportedMethodException if this method hasn't been overridden by the subclass
     @return the document data
 */
-- (CPData)dataOfType:(CPString)aType error:({CPError})anError
+- (CPData)dataOfType:(CPString)aType error:(/*{*/CPError/*}*/)anError
 {
     [CPException raise:CPUnsupportedMethodException
                 reason:"dataOfType:error: must be overridden by the document subclass."];

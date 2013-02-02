@@ -20,6 +20,7 @@
 #import <CoreServices/CoreServices.h>
 #import "PRHEmptyGrowlDelegate.h"
 #import "TNXCodeCapp.h"
+#import "TNErrorDataView.h"
 
 @interface AppController : NSObject <NSMenuDelegate, NSTableViewDataSource, NSTableViewDelegate>
 {
@@ -38,12 +39,14 @@
     IBOutlet TNXCodeCapp                *xcc;
     IBOutlet NSWindow                   *windowDebug;
     IBOutlet NSMenuItem                 *menuDebug;
+    IBOutlet TNErrorDataView            *dataViewError;
 
     NSImage                             *_iconActive;
     NSImage                             *_iconInactive;
     NSImage                             *_iconWorking;
     NSStatusItem                        *_statusItem;
     PRHEmptyGrowlDelegate               *growlDelegateRef;
+    NSData                              *_archivedDataView;
 }
 
 @property BOOL supportsFileModeListening;
@@ -53,7 +56,6 @@
 
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem;
 - (void)registerDefaults;
-- (void)updateErrorTable;
 - (void)growlWithTitle:(NSString *)aTitle message:(NSString *)aMessage;
 - (void)openCenteredWindow:(NSWindow *)aWindow;
 

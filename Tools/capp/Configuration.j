@@ -2,6 +2,8 @@
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPString.j>
 @import <Foundation/CPObject.j>
+@import <Foundation/CPSet.j>
+
 
 var FILE = require("file"),
     SYSTEM = require("system");
@@ -124,12 +126,12 @@ var DefaultDictionary       = nil,
 
 - (void)save
 {
-    var path = [self path];
+    var aPath = [self path];
 
-    if (!path)
+    if (!aPath)
         return;
 
-    CFPropertyList.writePropertyListToFile(dictionary, path);
+    CFPropertyList.writePropertyListToFile(dictionary, aPath);
 }
 
 @end

@@ -25,6 +25,8 @@
 
 @import "NSTextField.j"
 
+@class Converter
+
 
 @implementation CPComboBox (NSCoding)
 

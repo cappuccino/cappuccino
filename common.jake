@@ -540,6 +540,30 @@ global.colorPrint = function(/* String */ message, /* String */ color)
     stream.print(colorize(message, color));
 };
 
+var minUlimit = 1024;
+
+global.checkUlimit = function()
+{
+    var ulimitPath = executableExists("ulimit");
+
+    if (!ulimitPath)
+        return;
+
+    var p = OS.popen([ulimitPath, "-n"]);
+
+    if (p.wait() === 0)
+    {
+        var limit = p.stdout.read().split("\n")[0];
+
+        if (Number(limit) < minUlimit)
+        {
+            stream.print("\0red(\0bold(ERROR:\0)\0) Cappuccino may need to open more files than this terminal session currently allows (" + limit + "). Add the following line to your login configuration file (.bash_profile, .bashrc, etc.), start a new terminal session, then try again:\n");
+            stream.print("ulimit -n " + minUlimit);
+            OS.exit(1);
+        }
+    }
+}
+
 
 // built in tasks
 

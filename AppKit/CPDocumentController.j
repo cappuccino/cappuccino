@@ -25,6 +25,10 @@
 
 @import "CPDocument.j"
 @import "CPOpenPanel.j"
+@import "CPMenuItem.j"
+@import "CPWindowController.j"
+
+@global CPApp
 
 
 var CPSharedDocumentController = nil;
@@ -124,7 +128,7 @@ var CPSharedDocumentController = nil;
     @param anError not used
     @return the created document
 */
-- (CPDocument)makeUntitledDocumentOfType:(CPString)aType error:({CPError})anError
+- (CPDocument)makeUntitledDocumentOfType:(CPString)aType error:(/*{*/CPError/*}*/)anError
 {
     return [[[self documentClassForType:aType] alloc] initWithType:aType error:anError];
 }
@@ -339,10 +343,10 @@ var CPSharedDocumentController = nil;
 - (void)closeAllDocumentsWithDelegate:(id)aDelegate didCloseAllSelector:(SEL)didCloseSelector contextInfo:(Object)info
 {
     var context = {
-        delegate: aDelegate,
-        selector: didCloseSelector,
-        context: info
-    };
+            delegate: aDelegate,
+            selector: didCloseSelector,
+            context: info
+        };
 
     [self _closeDocumentsStartingWith:nil shouldClose:YES context:context];
 }

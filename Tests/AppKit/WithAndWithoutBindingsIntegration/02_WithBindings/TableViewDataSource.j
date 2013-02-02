@@ -22,7 +22,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "Bookmark.j"
+@import <AppKit/CPArrayController.j>
+@import <AppKit/CPTableView.j>
+
+@import "Bookmark2.j"
 
 // In 02 this is a subclass of CPArrayController.
 @implementation MyArrayController : CPArrayController

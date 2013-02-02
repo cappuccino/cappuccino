@@ -24,6 +24,7 @@
 @import "CPNull.j"
 @import "_CPCollectionKVCOperators.j"
 
+@class CPIndexSet
 
 @implementation CPObject (CPArrayKVO)
 
@@ -310,18 +311,27 @@
     if (_removeMany)
     {
         var indexes = [CPIndexSet indexSet],
-            index = [theObjects count];
+            index = [theObjects count],
+            position = 0,
+            count = [self count];
 
         while (index--)
-            [indexes addIndex:[self indexOfObject:[theObjects objectAtIndex:index]]];
+        {
+            while ((position = [self indexOfObject:[theObjects objectAtIndex:index] inRange:_CPMakeRange(position + 1, count)]) !== CPNotFound)
+                [indexes addIndex:position];
+        }
 
         _removeMany(_proxyObject, _removeManySEL, indexes);
     }
     else if (_remove)
     {
-        var index = [theObjects count];
+        var index = [theObjects count],
+            position;
         while (index--)
-            _remove(_proxyObject, _removeSEL, [self indexOfObject:[theObjects objectAtIndex:index]]);
+        {
+            while ((position = [self indexOfObject:[theObjects objectAtIndex:index]]) !== CPNotFound)
+                _remove(_proxyObject, _removeSEL, position);
+        }
     }
     else
     {
@@ -347,7 +357,7 @@
         while ((index = [self indexOfObject:theObject inRange:theRange]) !== CPNotFound)
         {
             [self removeObjectAtIndex:index];
-            theRange = CPIntersectionRange(CPMakeRange(index, length - index), theRange);
+            theRange = CPIntersectionRange(CPMakeRange(index, self.length - index), theRange);
         }
     }
 }
@@ -427,7 +437,7 @@
             [CPException raise:CPInvalidArgumentException reason:"called valueForKey: on an array with a complex key (" + aKey + "). use valueForKeyPath:"];
 
         if (aKey === "@count")
-            return length;
+            return self.length;
 
         return [self valueForUndefinedKey:aKey];
     }

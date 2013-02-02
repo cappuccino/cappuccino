@@ -20,6 +20,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/CPObject.j>
+@import <Foundation/CPException.j>
+@import <Foundation/CPMutableArray.j>
+
+@import "CGColor.j"
+@import "CGColorSpace.j"
+@import "CGGradient.j"
+@import "CPGraphicsContext.j"
+
 CPGradientDrawsBeforeStartingLocation   = kCGGradientDrawsBeforeStartLocation;
 CPGradientDrawsAfterEndingLocation      = kCGGradientDrawsAfterEndLocation;
 

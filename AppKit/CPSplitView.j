@@ -25,6 +25,10 @@
 @import "CPButtonBar.j"
 @import "CPImage.j"
 @import "CPView.j"
+@import "CPCursor.j"
+
+@class CPUserDefaults
+@global CPApp
 
 #define SPLIT_VIEW_MAYBE_POST_WILL_RESIZE() \
     if ((_suppressResizeNotificationsMask & DidPostWillResizeNotification) === 0) \
@@ -51,10 +55,7 @@
 CPSplitViewDidResizeSubviewsNotification = @"CPSplitViewDidResizeSubviewsNotification";
 CPSplitViewWillResizeSubviewsNotification = @"CPSplitViewWillResizeSubviewsNotification";
 
-var CPSplitViewHorizontalImage = nil,
-    CPSplitViewVerticalImage = nil,
-
-    ShouldSuppressResizeNotifications   = 1,
+var ShouldSuppressResizeNotifications   = 1,
     DidPostWillResizeNotification       = 1 << 1,
     DidSuppressResizeNotification       = 1 << 2;
 
@@ -104,22 +105,16 @@ var CPSplitViewHorizontalImage = nil,
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[1.0, 10.0, [CPColor grayColor]]
-                                       forKeys:[@"divider-thickness", @"pane-divider-thickness", @"pane-divider-color"]];
-}
-
-/*
-    @ignore
-*/
-+ (void)initialize
-{
-    if (self !== [CPSplitView class])
-        return;
-
-    var bundle = [CPBundle bundleForClass:self];
-
-    CPSplitViewHorizontalImage = CPImageInBundle("CPSplitView/CPSplitViewHorizontal.png", CGSizeMake(5.0, 10.0), bundle);
-    CPSplitViewVerticalImage = CPImageInBundle("CPSplitView/CPSplitViewVertical.png", CGSizeMake(10.0, 5.0), bundle);
+    return [CPDictionary dictionaryWithObjects:[1.0,
+                                                10.0,
+                                                [CPColor grayColor],
+                                                [CPNull null],
+                                                [CPNull null]]
+                                       forKeys:[@"divider-thickness",
+                                                @"pane-divider-thickness",
+                                                @"pane-divider-color",
+                                                @"horizontal-divider-color",
+                                                @"vertical-divider-color"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -202,7 +197,7 @@ var CPSplitViewHorizontalImage = nil,
 
     _originComponent = [self isVertical] ? "x" : "y";
     _sizeComponent = [self isVertical] ? "width" : "height";
-    _dividerImagePath = [self isVertical] ? [CPSplitViewVerticalImage filename] : [CPSplitViewHorizontalImage filename];
+    _dividerImagePath = [self isVertical] ? [[self valueForThemeAttribute:@"vertical-divider-color"] filename] : [[self valueForThemeAttribute:@"horizontal-divider-color"] filename];
 
     return changed;
 }
@@ -793,7 +788,7 @@ var CPSplitViewHorizontalImage = nil,
     [self setNeedsDisplay:YES];
 }
 
-- (void)resizeSubviewsWithOldSize:(CPSize)oldSize
+- (void)resizeSubviewsWithOldSize:(CGSize)oldSize
 {
     if ([_delegate respondsToSelector:@selector(splitView:resizeSubviewsWithOldSize:)])
     {
@@ -1102,7 +1097,7 @@ The sum of the views and the sum of the dividers should be equal to the size of 
     for (var i = 0; i < count; i++)
     {
         var frame = [_subviews[i] frame];
-        [positions addObject:CPStringFromRect(frame)];
+        [positions addObject:CGStringFromRect(frame)];
         [preCollapseArray addObject:[_preCollapsePositions objectForKey:"" + i]];
     }
 
@@ -1149,7 +1144,7 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 
         for (var i = 0, count = [frames count] - 1; i < count; i++)
         {
-            var frame = CPRectFromString(frames[i]);
+            var frame = CGRectFromString(frames[i]);
             position += frame.size[_sizeComponent];
 
             [self setPosition:position ofDividerAtIndex:i];

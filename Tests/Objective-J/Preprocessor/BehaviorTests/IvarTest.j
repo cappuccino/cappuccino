@@ -41,6 +41,31 @@
     self.ivar1 = ivar1;
 }
 
+- (void)returnShadowingLocalVariable
+{
+    var ivar1 = 2;
+
+    return ivar1;
+}
+
+- (void)returnShadowingHoistedLocalVariable
+{
+    return ivar1;
+
+    var ivar1;
+}
+
+- (void)returnFunctionWithShadowingFunctionParameter
+{
+    return function(ivar1) { return ivar1 };
+}
+
+- (void)returnFunctionWithShadowingHoistedLocalVariable
+{
+    return function() { return ivar1; }
+    var ivar1;
+}
+
 @end
 
 @implementation IvarTest : OJTestCase
@@ -60,33 +85,34 @@
     [self assert:5 equals:testClass.ivar1];
 }
 
-- (void)testWithStatementInMethod
+// I'm turning this test off as we move to the new compiler.
+// We have to figure out how this should work. - Martin
+/*- (void)testWithStatementInMethod
 {
     [self assert:nil equals:testClass.ivar1];
     [testClass setIvar1DespiteAWithStatement:5];
     [self assert:5 equals:testClass.ivar1];
     [testClass doNothingToIvar1BecauseOfWithStatement:10];
     [self assert:5 equals:testClass.ivar1];
-}
+}*/
 
-- (void)testEvalInMethod
+// I'm turning this test off as we move to the new compiler.
+// We have to figure out how this should work. - Martin
+/*- (void)testEvalInMethod
 {
     [self assert:nil equals:testClass.ivar1];
     [testClass setIvar1UsingEval:5];
     [self assert:5 equals:testClass.ivar1];
     [testClass doNothingToIvar1UsingEval:10];
     [self assert:5 equals:testClass.ivar1];
-}
-
-/*
-TODO Reactivate this test after issue #498 is resolved.
+}*/
 
 - (void)testIvarShadowing
 {
     [self assert:nil equals:testClass.ivar1];
     [testClass setIvar1UsingAShadowingLocalVariable:5];
     [self assert:5 equals:testClass.ivar1];
-}*/
+}
 
 - (void)testAccessorGeneration
 {
@@ -115,6 +141,39 @@ TODO Reactivate this test after issue #498 is resolved.
         [testClass setIvar3:20];
     }];
     [self assert:nil equals:testClass.ivar3];
+}
+
+- (void)testShadowingLocalVariable
+{
+    [self assert:nil equals:testClass.ivar1];
+    testClass.ivar1 = 99;
+    var x = [testClass returnShadowingLocalVariable];
+    [self assert:2 equals:x];
+}
+
+- (void)testShadowingHoistedLocalVariable
+{
+    [self assert:nil equals:testClass.ivar1];
+    testClass.ivar1 = 99;
+    var x = [testClass returnShadowingHoistedLocalVariable];
+    [self assert:"undefined" equals:typeof x];
+}
+
+- (void)testFunctionWithShadowingFunctionParameter
+{
+    [self assert:nil equals:testClass.ivar1];
+    testClass.ivar1 = 99;
+    var f = [testClass returnFunctionWithShadowingFunctionParameter];
+    [self assert:8 equals:f(8)];
+}
+
+- (void)testFunctionWithShadowingHoistedLocalVariable
+{
+    [self assert:nil equals:testClass.ivar1];
+    testClass.ivar1 = 99;
+    var f = [testClass returnFunctionWithShadowingHoistedLocalVariable];
+
+    [self assert:"undefined" equals:typeof f()];
 }
 
 @end

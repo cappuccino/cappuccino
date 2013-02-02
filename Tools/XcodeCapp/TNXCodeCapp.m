@@ -537,6 +537,24 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         response = [statusInfo objectAtIndex:1];
 
         DLog(@"handleFileModification:notify: Conversion task result/response: %@/%@", status, response);
+
+        if ([status intValue] == 0 && shouldNotify)
+        {
+            [delegate performSelector:@selector(growlWithTitle:message:) withObject:successTitle withObject:successMsg];
+        }
+        else if (![status intValue] == 0)
+        {
+            if (response)
+            {
+                NSDictionary *errorDictionary = [NSDictionary dictionaryWithObjectsAndKeys:response, @"message",
+                                                                                            splitPath, @"file",
+                                                                                            fullPath, @"path", nil];
+
+                [errorList addObject:errorDictionary];
+            }
+
+            [delegate performSelector:@selector(growlWithTitle:message:) withObject:@"Error processing file" withObject:splitPath];
+        }
     }
 
     if (PBXArguments)
@@ -546,18 +564,6 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         status = [statusInfo objectAtIndex:0];
         response = [statusInfo objectAtIndex:1];
         DLog(@"handleFileModification:notify: Update PBX Task result/response: %@/%@", status, response);
-    }
-
-    if ([status intValue] == 0 && shouldNotify)
-    {
-        [delegate performSelector:@selector(growlWithTitle:message:) withObject:successTitle withObject:successMsg];
-    }
-    else if (![status intValue] == 0)
-    {
-        if (response)
-            [errorList addObject:response];
-
-        [delegate performSelector:@selector(growlWithTitle:message:) withObject:@"Error processing file" withObject:splitPath];
     }
 
     [[NSNotificationCenter defaultCenter] postNotificationName:XCCConversionStopNotification object:self];

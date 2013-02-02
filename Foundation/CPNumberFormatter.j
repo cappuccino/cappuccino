@@ -22,9 +22,9 @@
 
 #import "Ref.h"
 
-@import <Foundation/CPString.j>
-@import <Foundation/CPFormatter.j>
-@import <Foundation/CPDecimalNumber.j>
+@import "CPString.j"
+@import "CPFormatter.j"
+@import "CPDecimalNumber.j"
 
 #define UPDATE_NUMBER_HANDLER_IF_NECESSARY() if (!_numberHandler) \
     _numberHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:_roundingMode scale:_maximumFractionDigits raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:YES];
@@ -44,6 +44,8 @@ CPNumberFormatterRoundUp            = CPRoundUp;
 CPNumberFormatterRoundHalfEven      = CPRoundBankers;
 CPNumberFormatterRoundHalfDown      = _CPRoundHalfDown;
 CPNumberFormatterRoundHalfUp        = CPRoundPlain;
+
+var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
 
 /*!
     @ingroup foundation
@@ -108,9 +110,11 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
             dcmn = [dcmn decimalNumberByRoundingAccordingToBehavior:_numberHandler];
 
             var output = [dcmn descriptionWithLocale:nil],
-                parts = [output componentsSeparatedByString:"."], // FIXME Locale specific.
-                preFraction = parts[0],
-                fraction = parts.length > 1 ? parts[1] : "",
+                // FIXME this is probably locale dependent.
+                parts = output.match(NumberRegex) || ["", undefined, "", undefined, undefined],
+                negativePrefix = parts[1] || "",
+                preFraction = parts[2] || "",
+                fraction = parts[4] || "",
                 preFractionLength = [preFraction length],
                 commaPosition = 3;
 
@@ -141,9 +145,10 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
             }
 
             if (_numberStyle == CPNumberFormatterPercentStyle)
-            {
                 string += "%";
-            }
+
+            if (negativePrefix)
+                string = negativePrefix + string;
 
             return string;
         default:

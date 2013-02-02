@@ -22,10 +22,15 @@
 
 @import "CPImageView.j"
 @import "CPView.j"
+@import "CPWindow_Constants.j"
 
+@class CPCursor
+@class CPMenu
+@class CPPlatformWindow
 
-var _CPWindowViewResizeIndicatorImage = nil,
-    _CPWindowViewCornerResizeRectWidth = 10,
+@global CPApp
+
+var _CPWindowViewCornerResizeRectWidth = 10,
 
     _CPWindowViewResizeRegionNone = -1,
     _CPWindowViewResizeRegionTopLeft = 0,
@@ -36,6 +41,9 @@ var _CPWindowViewResizeIndicatorImage = nil,
     _CPWindowViewResizeRegionBottom = 5,
     _CPWindowViewResizeRegionBottomLeft = 6,
     _CPWindowViewResizeRegionLeft = 7;
+
+_CPWindowViewResizeSlop = 3;
+
 
 @implementation _CPWindowView : CPView
 {
@@ -57,14 +65,6 @@ var _CPWindowViewResizeIndicatorImage = nil,
     CPView      _sheetShadowView;
 }
 
-+ (void)initialize
-{
-    if (self !== [_CPWindowView class])
-        return;
-
-    _CPWindowViewResizeIndicatorImage = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPWindow class]] pathForResource:@"_CPWindowView/_CPWindowViewResizeIndicator.png"] size:_CGSizeMake(12.0, 12.0)];
-}
-
 + (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
     return _CGRectMakeCopy(aFrameRect);
@@ -82,8 +82,26 @@ var _CPWindowViewResizeIndicatorImage = nil,
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPColor blackColor], [CPFont systemFontOfSize:CPFontCurrentSystemSize], [CPNull null], _CGSizeMakeZero(), CPCenterTextAlignment, CPLineBreakByTruncatingTail, CPTopVerticalTextAlignment]
-                                       forKeys:[@"title-text-color", @"title-font", @"title-text-shadow-color", @"title-text-shadow-offset", @"title-alignment", @"title-line-break-mode", @"title-vertical-alignment"]];
+    return [CPDictionary dictionaryWithObjects:[25, CGInsetMakeZero(), 5, [CPColor clearColor], CGSizeMakeZero(), [CPNull null], [CPColor blackColor], [CPNull null],[CPNull null], [CPNull null], [CPNull null], [CPNull null] , [CPColor blackColor], [CPFont systemFontOfSize:CPFontCurrentSystemSize], [CPNull null], _CGSizeMakeZero(), CPCenterTextAlignment, CPLineBreakByTruncatingTail, CPTopVerticalTextAlignment]
+                                       forKeys:[    @"title-bar-height",
+                                                    @"shadow-inset",
+                                                    @"shadow-distance",
+                                                    @"window-shadow-color",
+                                                    @"size-indicator",
+                                                    @"resize-indicator",
+                                                    @"attached-sheet-shadow-color",
+                                                    @"close-image-origin",
+                                                    @"close-image-size",
+                                                    @"close-image",
+                                                    @"close-active-image",
+                                                    @"bezel-color",
+                                                    @"title-text-color",
+                                                    @"title-font",
+                                                    @"title-text-shadow-color",
+                                                    @"title-text-shadow-offset",
+                                                    @"title-alignment",
+                                                    @"title-line-break-mode",
+                                                    @"title-vertical-alignment"]];
 }
 
 - (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
@@ -118,7 +136,7 @@ var _CPWindowViewResizeIndicatorImage = nil,
     return frameRect;
 }
 
-- (id)initWithFrame:(CPRect)aFrame styleMask:(unsigned)aStyleMask
+- (id)initWithFrame:(CGRect)aFrame styleMask:(unsigned)aStyleMask
 {
     self = [super initWithFrame:aFrame];
 
@@ -138,6 +156,16 @@ var _CPWindowViewResizeIndicatorImage = nil,
 
 - (void)setTitle:(CPString)aTitle
 {
+}
+
+- (CPView)hitTest:(CGPoint)locationInWindow
+{
+    var region = [self resizeRegionForPoint:[_window convertBaseToGlobal:locationInWindow]];
+
+    if (region !== _CPWindowViewResizeRegionNone)
+        return self;
+    else
+        return [super hitTest:locationInWindow];
 }
 
 - (BOOL)acceptsFirstMouse:(CPEvent)anEvent
@@ -226,40 +254,40 @@ var _CPWindowViewResizeIndicatorImage = nil,
 
     if (isFixedWidth)
     {
-        rect = _CGRectMake(frame.origin.x - CPWindowResizeSlop,
-                           frame.origin.y - CPWindowResizeSlop,
-                           frame.size.width + (CPWindowResizeSlop * 2),
-                           CPWindowResizeSlop * 2);
+        rect = _CGRectMake(frame.origin.x - _CPWindowViewResizeSlop,
+                           frame.origin.y - _CPWindowViewResizeSlop,
+                           frame.size.width + (_CPWindowViewResizeSlop * 2),
+                           _CPWindowViewResizeSlop * 2);
 
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionTop;
 
-        rect.origin.y = _CGRectGetMaxY(frame) - CPWindowResizeSlop;
+        rect.origin.y = _CGRectGetMaxY(frame) - _CPWindowViewResizeSlop;
 
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionBottom;
     }
     else if (isFixedHeight)
     {
-        rect = _CGRectMake(frame.origin.x - CPWindowResizeSlop,
-                           frame.origin.y - CPWindowResizeSlop,
-                           CPWindowResizeSlop * 2,
-                           frame.size.height + (CPWindowResizeSlop * 2));
+        rect = _CGRectMake(frame.origin.x - _CPWindowViewResizeSlop,
+                           frame.origin.y - _CPWindowViewResizeSlop,
+                           _CPWindowViewResizeSlop * 2,
+                           frame.size.height + (_CPWindowViewResizeSlop * 2));
 
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionLeft;
 
-        rect.origin.x = _CGRectGetMaxX(frame) - CPWindowResizeSlop;
+        rect.origin.x = _CGRectGetMaxX(frame) - _CPWindowViewResizeSlop;
 
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionRight;
     }
     else
     {
-        rect = _CGRectMake(frame.origin.x - CPWindowResizeSlop,
-                           frame.origin.y - CPWindowResizeSlop,
-                           _CPWindowViewCornerResizeRectWidth + CPWindowResizeSlop,
-                           _CPWindowViewCornerResizeRectWidth + CPWindowResizeSlop);
+        rect = _CGRectMake(frame.origin.x - _CPWindowViewResizeSlop,
+                           frame.origin.y - _CPWindowViewResizeSlop,
+                           _CPWindowViewCornerResizeRectWidth + _CPWindowViewResizeSlop,
+                           _CPWindowViewCornerResizeRectWidth + _CPWindowViewResizeSlop);
 
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionTopLeft;
@@ -274,33 +302,33 @@ var _CPWindowViewResizeIndicatorImage = nil,
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionBottomRight;
 
-        rect.origin.x = frame.origin.x - CPWindowResizeSlop;
+        rect.origin.x = frame.origin.x - _CPWindowViewResizeSlop;
 
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionBottomLeft;
 
         rect = _CGRectMake(rect.origin.x,
                            frame.origin.y + _CPWindowViewCornerResizeRectWidth,
-                           CPWindowResizeSlop * 2,
+                           _CPWindowViewResizeSlop * 2,
                            _CGRectGetHeight(frame) - (_CPWindowViewCornerResizeRectWidth * 2));
 
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionLeft;
 
-        rect.origin.x = _CGRectGetMaxX(frame) - CPWindowResizeSlop;
+        rect.origin.x = _CGRectGetMaxX(frame) - _CPWindowViewResizeSlop;
 
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionRight;
 
         rect = _CGRectMake(frame.origin.x + _CPWindowViewCornerResizeRectWidth,
-                           frame.origin.y - CPWindowResizeSlop,
+                           frame.origin.y - _CPWindowViewResizeSlop,
                            _CGRectGetWidth(frame) - (_CPWindowViewCornerResizeRectWidth * 2),
-                           CPWindowResizeSlop * 2);
+                           _CPWindowViewResizeSlop * 2);
 
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionTop;
 
-        rect.origin.y = _CGRectGetMaxY(frame) - CPWindowResizeSlop;
+        rect.origin.y = _CGRectGetMaxY(frame) - _CPWindowViewResizeSlop;
 
         if (_CGRectContainsPoint(rect, aPoint))
             return _CPWindowViewResizeRegionBottom;
@@ -435,8 +463,8 @@ var _CPWindowViewResizeIndicatorImage = nil,
 
     else if (type === CPLeftMouseDragged)
     {
-        var diffX = globalLocation.x - _mouseDraggedPoint.x,
-            diffY = globalLocation.y - _mouseDraggedPoint.y,
+        var deltaX = globalLocation.x - _mouseDraggedPoint.x,
+            deltaY = globalLocation.y - _mouseDraggedPoint.y,
             newX = _CGRectGetMinX(_resizeFrame),
             newY = _CGRectGetMinY(_resizeFrame),
             newWidth = _CGRectGetWidth(_resizeFrame),
@@ -451,19 +479,19 @@ var _CPWindowViewResizeIndicatorImage = nil,
             case _CPWindowViewResizeRegionTopLeft:
             case _CPWindowViewResizeRegionLeft:
             case _CPWindowViewResizeRegionBottomLeft:
-                if (minSize && diffX > 0)
-                    diffX = MIN(newWidth - minSize.width, diffX);
-                else if (maxSize && diffX < 0)
-                    diffX = MAX(newWidth - maxSize.width, diffX);
+                if (minSize && deltaX > 0)
+                    deltaX = MIN(newWidth - minSize.width, deltaX);
+                else if (maxSize && deltaX < 0)
+                    deltaX = MAX(newWidth - maxSize.width, deltaX);
 
-                newX += diffX,
-                newWidth -= diffX;
+                newX += deltaX,
+                newWidth -= deltaX;
                 break;
 
             case _CPWindowViewResizeRegionTopRight:
             case _CPWindowViewResizeRegionRight:
             case _CPWindowViewResizeRegionBottomRight:
-                newWidth += diffX;
+                newWidth += deltaX;
                 break;
         }
 
@@ -473,19 +501,19 @@ var _CPWindowViewResizeIndicatorImage = nil,
             case _CPWindowViewResizeRegionTopLeft:
             case _CPWindowViewResizeRegionTop:
             case _CPWindowViewResizeRegionTopRight:
-                if (minSize && diffY > 0)
-                    diffY = MIN(newHeight - minSize.height, diffY);
-                else if (maxSize && diffY < 0)
-                    diffY = MAX(newHeight - maxSize.height, diffY);
+                if (minSize && deltaY > 0)
+                    deltaY = MIN(newHeight - minSize.height, deltaY);
+                else if (maxSize && deltaY < 0)
+                    deltaY = MAX(newHeight - maxSize.height, deltaY);
 
-                newY += diffY,
-                newHeight -= diffY;
+                newY += deltaY,
+                newHeight -= deltaY;
                 break;
 
             case _CPWindowViewResizeRegionBottomLeft:
             case _CPWindowViewResizeRegionBottom:
             case _CPWindowViewResizeRegionBottomRight:
-                newHeight += diffY;
+                newHeight += deltaY;
                 break;
         }
 
@@ -548,8 +576,10 @@ var _CPWindowViewResizeIndicatorImage = nil,
         var theWindow = [self window],
             frame = [theWindow frame],
             location = [theWindow convertBaseToGlobal:[anEvent locationInWindow]],
-            origin = [self _pointWithinScreenFrame:_CGPointMake(_CGRectGetMinX(frame) + (location.x - _mouseDraggedPoint.x),
-                                                                _CGRectGetMinY(frame) + (location.y - _mouseDraggedPoint.y))];
+            deltaX = location.x - _mouseDraggedPoint.x,
+            deltaY = location.y - _mouseDraggedPoint.y,
+            origin = [self _pointWithinScreenFrame:_CGPointMake(frame.origin.x + deltaX,
+                                                                frame.origin.y + deltaY)];
         [theWindow setFrameOrigin:origin];
 
         _mouseDraggedPoint = [self _pointWithinScreenFrame:location];
@@ -573,12 +603,7 @@ var _CPWindowViewResizeIndicatorImage = nil,
 {
     if (shouldShowResizeIndicator && CPWindowResizeStyle === CPWindowResizeStyleLegacy)
     {
-        var size = [_CPWindowViewResizeIndicatorImage size],
-            boundsSize = [self frame].size;
-
-        _resizeIndicator = [[CPImageView alloc] initWithFrame:_CGRectMake(boundsSize.width - size.width - _resizeIndicatorOffset.width, boundsSize.height - size.height - _resizeIndicatorOffset.height, size.width, size.height)];
-
-        [_resizeIndicator setImage:_CPWindowViewResizeIndicatorImage];
+        _resizeIndicator = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
         [_resizeIndicator setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
 
         [self addSubview:_resizeIndicator];
@@ -589,6 +614,8 @@ var _CPWindowViewResizeIndicatorImage = nil,
 
         _resizeIndicator = nil;
     }
+
+    [self setNeedsLayout];
 }
 
 - (BOOL)showsResizeIndicator
@@ -753,16 +780,31 @@ var _CPWindowViewResizeIndicatorImage = nil,
 {
     if (enable)
     {
-        var bundle = [CPBundle bundleForClass:[CPWindow class]];
         _sheetShadowView = [[CPView alloc] initWithFrame:_CGRectMake(0, 0, _CGRectGetWidth([self bounds]), 8)];
         [_sheetShadowView setAutoresizingMask:CPViewWidthSizable];
-        [_sheetShadowView setBackgroundColor:[CPColor colorWithPatternImage:[[CPImage alloc]
-            initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowAttachedSheetShadow.png"] size:_CGSizeMake(9, 8)]]];
         [self addSubview:_sheetShadowView];
     }
     else
     {
         [_sheetShadowView removeFromSuperview];
+    }
+
+    [self setNeedsLayout];
+}
+
+- (void)layoutSubviews
+{
+    [super layoutSubviews];
+
+    [_sheetShadowView setBackgroundColor:[self valueForThemeAttribute:@"attached-sheet-shadow-color"]];
+
+    if (_resizeIndicator)
+    {
+        var size = [self valueForThemeAttribute:@"size-indicator"],
+            boundsSize = [self frame].size;
+
+        [_resizeIndicator setFrame:CGRectMake(boundsSize.width - size.width - _resizeIndicatorOffset.width, boundsSize.height - size.height - _resizeIndicatorOffset.height, size.width, size.height)];
+        [_resizeIndicator setImage:[self valueForThemeAttribute:@"resize-indicator"]];
     }
 }
 

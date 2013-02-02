@@ -281,7 +281,7 @@ following:
            that dynamically tracks the current system font size.
     @return the requested system font
 */
-+ (CPFont)systemFontOfSize:(CPSize)aSize
++ (CPFont)systemFontOfSize:(CGSize)aSize
 {
     return _CPSystemFont(aSize === 0 ? _CPFontSystemFontSize : aSize, NO);
 }
@@ -293,7 +293,7 @@ following:
            that dynamically tracks the current system font size.
     @return the requested bold system font
 */
-+ (CPFont)boldSystemFontOfSize:(CPSize)aSize
++ (CPFont)boldSystemFontOfSize:(CGSize)aSize
 {
     return _CPSystemFont(aSize === 0 ? _CPFontSystemFontSize : aSize, YES);
 }

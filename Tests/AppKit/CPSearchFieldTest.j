@@ -22,7 +22,9 @@
 
 - (void)testSetRecentSearches
 {
-    searches = ["foo", "bar", "baz"];
+    var searches = ["foo", "bar", "baz"];
     [_searchField setRecentSearches:searches]
     [self assertTrue:[[_searchField recentSearches] count] == 3 message:@"After setRecentSearches array doesn't include results"];
 }
+
+@end

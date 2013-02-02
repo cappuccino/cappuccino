@@ -1,4 +1,5 @@
 
+@import <Foundation/CPArray.j>
 @import <AppKit/CPArrayController.j>
 @import <AppKit/CPTextField.j>
 
@@ -51,7 +52,7 @@
 
 - (void)testSetContent
 {
-    otherContent = [@"5", @"6"];
+    var otherContent = [@"5", @"6"];
     [[self arrayController] setContent:otherContent];
 
     // This has not been decided on yet. See Issue #795.
@@ -428,7 +429,7 @@
 {
     [self _initTestRemoveObjects_SimpleArray];
     [self _testRemoveObjects_MultipleSelectedObjects_AvoidingEmptySelection];
-}/
+}
 
 - (void)testRemoveObjects_MultipleSelectedObjects_AvoidingEmptySelection_ContentBinding
 {

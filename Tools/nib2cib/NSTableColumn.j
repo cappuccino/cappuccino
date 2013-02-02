@@ -20,10 +20,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-
+@import <AppKit/CPLevelIndicator.j>
 @import <AppKit/CPTableColumn.j>
 @import <AppKit/CPTableHeaderView.j>
 @import <AppKit/CPButton.j>
+
+@import "NSButton.j"
+@import "NSImageView.j"
+@import "NSLevelIndicator.j"
+@import "NSTextField.j"
 
 @implementation CPTableColumn (NSCoding)
 
@@ -45,7 +50,7 @@
         }
         else if ([dataViewCell isKindOfClass:[NSTextFieldCell class]])
         {
-            _dataView = [[CPTextField alloc] initWithFrame:CPRectMakeZero()];
+            _dataView = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
 
             var font = [dataViewCell font],
                 selectedFont = nil;
@@ -87,7 +92,7 @@
         [_dataView setValue:[dataViewCell alignment] forThemeAttribute:@"alignment"];
 
         var headerCell = [aCoder decodeObjectForKey:@"NSHeaderCell"],
-            headerView = [[_CPTableColumnHeaderView alloc] initWithFrame:CPRectMakeZero()];
+            headerView = [[_CPTableColumnHeaderView alloc] initWithFrame:CGRectMakeZero()];
 
         [headerView setStringValue:[headerCell objectValue]];
         [headerView setFont:[headerCell font]];

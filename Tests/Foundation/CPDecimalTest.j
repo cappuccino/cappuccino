@@ -34,7 +34,7 @@
     var dcm = CPDecimalMakeWithString(@"11111111111111111111111111111111111111111");
     [self assertNotNull:dcm message:"CPDecimalMakeWithString() Tb1: mantissa rounding string"];
     [self assert:3 equals:dcm._exponent message:"CPDecimalMakeWithString() Tb1: exponent"];
-    [self assert:[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] equals:dcm._mantissa message:"CPDecimalMakeWithString() Tb1: mantissa"];
+    [self assert:[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] equals:dcm._mantissa message:"CPDecimalMakeWithString() Tb1: mantissa"];
     [self assert:NO equals:dcm._isNegative message:"CPDecimalMakeWithString() Tb1: sign"];
     [self assert:NO equals:dcm._isNaN message:"CPDecimalMakeWithString() Tb1: NaN is incorrectly set"];
 
@@ -56,7 +56,7 @@
     dcm = CPDecimalMakeWithString(@"-1234.5678e100");
     [self assertNotNull:dcm message:"CPDecimalMakeWithString() Tf3: mantissa rounding string"];
     [self assert:96 equals:dcm._exponent message:"CPDecimalMakeWithString() Tf3: exponent"];
-    [self assert:[1,2,3,4,5,6,7,8] equals:dcm._mantissa message:"CPDecimalMakeWithString() Tf3: mantissa"];
+    [self assert:[1, 2, 3, 4, 5, 6, 7, 8] equals:dcm._mantissa message:"CPDecimalMakeWithString() Tf3: mantissa"];
     [self assert:YES equals:dcm._isNegative message:"CPDecimalMakeWithString() Tf3: sign"];
     [self assert:NO equals:dcm._isNaN message:"CPDecimalMakeWithString() Tf3: NaN is incorrectly set"];
 
@@ -101,20 +101,20 @@
     [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti10: catch of invalid number string. Should return NaN"];
 
     //test make with parts
-    dcm = CPDecimalMakeWithParts(10127658,2);
+    dcm = CPDecimalMakeWithParts(10127658, 2);
     [self assert:2 equals:dcm._exponent message:"CPDecimalMakeWithParts() Tmp1: exponent"];
-    [self assert:[1,0,1,2,7,6,5,8] equals:dcm._mantissa message:"CPDecimalMakeWithParts() Tmp1: mantissa"];
+    [self assert:[1, 0, 1, 2, 7, 6, 5, 8] equals:dcm._mantissa message:"CPDecimalMakeWithParts() Tmp1: mantissa"];
     [self assert:NO equals:dcm._isNegative message:"CPDecimalMakeWithParts() Tmp1: sign"];
     [self assert:NO equals:dcm._isNaN message:"CPDecimalMakeWithParts() Tmp1: NaN is incorrectly set"];
-    dcm = CPDecimalMakeWithParts(-1000000,0);
+    dcm = CPDecimalMakeWithParts(-1000000, 0);
     [self assert:6 equals:dcm._exponent message:"CPDecimalMakeWithParts() Tmp2: exponent"];
     [self assert:[1] equals:dcm._mantissa message:"CPDecimalMakeWithParts() Tmp2: mantissa"];
     [self assert:YES equals:dcm._isNegative message:"CPDecimalMakeWithParts() Tmp2: sign"];
     [self assert:NO equals:dcm._isNaN message:"CPDecimalMakeWithParts() Tmp2: NaN is incorrectly set"];
 
-    dcm = CPDecimalMakeWithParts(1,10000);
+    dcm = CPDecimalMakeWithParts(1, 10000);
     [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithParts() Tmp3: exponent overflow not caught. Should return NaN"];
-    dcm = CPDecimalMakeWithParts(-1,-1000);
+    dcm = CPDecimalMakeWithParts(-1, -1000);
     [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithParts() Tmp4: exponent underflow not caught. Should return NaN"];
 }
 
@@ -143,8 +143,8 @@
 
 - (void)testNormalize
 {
-    dcm1 = CPDecimalMakeWithString( @"200" );
-    dcm2 = CPDecimalMakeWithString( @"2" );
+    var dcm1 = CPDecimalMakeWithString( @"200" ),
+        dcm2 = CPDecimalMakeWithString( @"2" );
     [self assert:0 equals:CPDecimalNormalize(dcm1,dcm2,CPRoundDown) message:"CPDecimalNormalise() Tn1:call" ];
     [self assert:[2,0,0] equals:dcm1._mantissa message:"CPDecimalNormalise() Tn1: mantissa"];
     [self assert:0 equals:dcm1._exponent message:"CPDecimalNormalise() Tn1: exponent"];
@@ -172,7 +172,7 @@
     [self assert:0 equals:CPDecimalNormalize(dcm1,dcm2,CPRoundDown) message:"CPDecimalNormalise() Tn4:call" ];
     [self assert:[1,0] equals:dcm1._mantissa message:"CPDecimalNormalise() Tn4: mantissa"];
     [self assert:-8 equals:dcm1._exponent message:"CPDecimalNormalise() Tn4: exponent"];
-    [self assert:[2,1] equals:dcm2._mantissa message:"CPDecimalNormalise() Tn4: mantissa"];
+    [self assert:[2, 1] equals:dcm2._mantissa message:"CPDecimalNormalise() Tn4: mantissa"];
     [self assert:-8 equals:dcm2._exponent message:"CPDecimalNormalise() Tn4: exponent"];
 
     // these will result in one number becoming zero.
@@ -181,13 +181,13 @@
     [self assert:CPCalculationLossOfPrecision equals:CPDecimalNormalize(dcm1,dcm2,CPRoundDown) message:"CPDecimalNormalise() Tnp1:call should ret LossOfPrecision" ];
     [self assert:[0] equals:dcm1._mantissa message:"CPDecimalNormalise() Tnp1: mantissa"];
     [self assert:0 equals:dcm1._exponent message:"CPDecimalNormalise() Tnp1: exponent"];
-    [self assert:[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1] equals:dcm2._mantissa message:"CPDecimalNormalise() Tnp1: mantissa"];
+    [self assert:[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 1] equals:dcm2._mantissa message:"CPDecimalNormalise() Tnp1: mantissa"];
     [self assert:2 equals:dcm2._exponent message:"CPDecimalNormalise() Tnp1: exponent"];
 
     dcm1 = CPDecimalMakeWithString( @"10000000000000000000000000000000000001e2" );
     dcm2 = CPDecimalMakeWithString( @"1e0" );
     [self assert:CPCalculationLossOfPrecision equals:CPDecimalNormalize(dcm1,dcm2,CPRoundDown) message:"CPDecimalNormalise() Tnp2:call should ret LossOfPrecision" ];
-    [self assert:[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1] equals:dcm1._mantissa message:"CPDecimalNormalise() Tnp2: mantissa"];
+    [self assert:[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 1] equals:dcm1._mantissa message:"CPDecimalNormalise() Tnp2: mantissa"];
     [self assert:2 equals:dcm1._exponent message:"CPDecimalNormalise() Tnp2:exponent"];
     [self assert:[0] equals:dcm2._mantissa message:"CPDecimalNormalise() Tnp2: mantissa"];
     [self assert:0 equals:dcm2._exponent message:"CPDecimalNormalise() Tnp2: exponent"];
@@ -195,7 +195,7 @@
     dcm1 = CPDecimalMakeWithString( @"10000000000000000000000000000000000001e127" );
     dcm2 = CPDecimalMakeWithString( @"1e0" );
     [self assert:CPCalculationLossOfPrecision equals:CPDecimalNormalize(dcm1,dcm2,CPRoundDown) message:"CPDecimalNormalise() Tnp3:call should ret LossOfPrecision" ];
-    [self assert:[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1] equals:dcm1._mantissa message:"CPDecimalNormalise() Tnp3: mantissa"];
+    [self assert:[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 1] equals:dcm1._mantissa message:"CPDecimalNormalise() Tnp3: mantissa"];
     [self assert:127 equals:dcm1._exponent message:"CPDecimalNormalise() Tnp3: exponent"];
     [self assert:[0] equals:dcm2._mantissa message:"CPDecimalNormalise() Tnp3: mantissa"];
     [self assert:0 equals:dcm2._exponent message:"CPDecimalNormalise() Tnp3: exponent"];
@@ -350,14 +350,14 @@
 - (void)testCompact
 {
     var dcm = CPDecimalMakeZero();
-    dcm._mantissa = [0,0,0,0,1,0,0,0,0,1];
+    dcm._mantissa = [0,0,0,0, 1,0,0,0,0, 1];
     dcm._exponent = 2;
     CPDecimalCompact(dcm);
     [self assert:2 equals:dcm._exponent message:"CPDecimalCompact() Tcm1: exponent"];
-    [self assert:[1,0,0,0,0,1] equals:dcm._mantissa message:"CPDecimalCompact() Tcm1: mantissa"];
+    [self assert:[1,0,0,0,0, 1] equals:dcm._mantissa message:"CPDecimalCompact() Tcm1: mantissa"];
 
     dcm = CPDecimalMakeZero();
-    dcm._mantissa = [0,0,0,0,1,2,0,0,0,0];
+    dcm._mantissa = [0,0,0,0, 1,2,0,0,0,0];
     dcm._exponent = -4;
     dcm._isNegative = YES;
     CPDecimalCompact(dcm);
@@ -375,12 +375,12 @@
     [self assert:NO equals:dcm._isNaN message:"CPDecimalCompact() Tcm3: NaN is incorrectly set"];
 
     dcm = CPDecimalMakeZero();
-    dcm._mantissa = [8,9,0,0,0,0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+    dcm._mantissa = [8,9,0,0,0,0, 1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
     dcm._exponent = -20;
     dcm._isNegative = YES;
     CPDecimalCompact(dcm);
     [self assert:-5 equals:dcm._exponent message:"CPDecimalCompact() Tcm4: exponent"];
-    [self assert:[8,9,0,0,0,0,1,2,3] equals:dcm._mantissa message:"CPDecimalCompact() Tcm4: mantissa"];
+    [self assert:[8,9,0,0,0,0, 1,2,3] equals:dcm._mantissa message:"CPDecimalCompact() Tcm4: mantissa"];
     [self assert:YES equals:dcm._isNegative message:"CPDecimalCompact() Tcm4: sign"];
     [self assert:NO equals:dcm._isNaN message:"CPDecimalCompact() Tcm4: NaN is incorrectly set"];
 }
@@ -395,7 +395,7 @@
     while (i--)
         [self assert:CPDecimalAdd(d1, d1, d2, CPRoundPlain) equals:CPCalculationNoError message:"CPDecimalAdd() Tap1: addition"];
     [self assert:0 equals:d1._exponent message:"CPDecimalAdd() Tap1: exponent"];
-    [self assert:[5,1] equals:d1._mantissa message:"CPDecimalAdd() Tap1: mantissa"];
+    [self assert:[5, 1] equals:d1._mantissa message:"CPDecimalAdd() Tap1: mantissa"];
     [self assert:NO equals:d1._isNegative message:"CPDecimalAdd() Tap1: sign"];
     [self assert:NO equals:d1._isNaN message:"CPDecimalAdd() Tap1: NaN is incorrectly set"];
 
@@ -404,7 +404,7 @@
     d2 = CPDecimalMakeWithString(@"-1e-10");
     [self assert:CPCalculationNoError equals:CPDecimalAdd(d1, d1, d2, CPRoundPlain) message:"CPDecimalAdd() Tan1: addition of 2 negatives"];
     [self assert:-10 equals:d1._exponent message:"CPDecimalAdd() Tan1: exponent"];
-    [self assert:[1,0,0,0,0,0,0,0,0,0,1] equals:d1._mantissa message:"CPDecimalAdd() Tan1: mantissa"];
+    [self assert:[1,0,0,0,0,0,0,0,0,0, 1] equals:d1._mantissa message:"CPDecimalAdd() Tan1: mantissa"];
     [self assert:YES equals:d1._isNegative message:"CPDecimalAdd() Tan1: sign"];
     [self assert:NO equals:d1._isNaN message:"CPDecimalAdd() Tan1: NaN is incorrectly set"];
 
@@ -429,7 +429,7 @@
     d2 = CPDecimalMakeWithString(@"99999999999999999999999999999999999999");
     [self assert:0 equals:CPDecimalAdd(d1, d1, d2, CPRoundPlain) message:"CPDecimalAdd() Tapc1: addition with mantissa overflow and rounding"];
     [self assert:1 equals:d1._exponent message:"CPDecimalAdd() Tapc1: exponent"];
-    [self assert:[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,4] equals:d1._mantissa message:"CPDecimalAdd() Tapc1: mantissa"];
+    [self assert:[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 1,2,3,4] equals:d1._mantissa message:"CPDecimalAdd() Tapc1: mantissa"];
     [self assert:NO equals:d1._isNegative message:"CPDecimalAdd() Tapc1: sign"];
     [self assert:NO equals:d1._isNaN message:"CPDecimalAdd() Tapc1: NaN is incorrectly set"];
 
@@ -450,7 +450,7 @@
         d3 = CPDecimalMakeWithString(@"12.67");
     [self assert:CPCalculationNoError equals:CPDecimalSubtract(d1,d2,d3,CPRoundPlain) message:"CPDecimalSubtract(): Ts1: Should succeed"];
     [self assert:-3 equals:d1._exponent message:"CPDecimalSubtract(): Ts1: exponent"];
-    [self assert:[1,1,7,9,5] equals:d1._mantissa message:"CPDecimalSubtract(): Ts1: mantissa"];
+    [self assert:[1, 1,7,9,5] equals:d1._mantissa message:"CPDecimalSubtract(): Ts1: mantissa"];
     [self assert:YES equals:d1._isNegative message:"CPDecimalSubtract(): Ts1: sign"];
     [self assert:NO equals:d1._isNaN message:"CPDecimalSubtract(): Ts1: NaN is incorrectly set"];
 
@@ -459,7 +459,7 @@
     d3 = CPDecimalMakeWithString(@"-12.67");
     [self assert:CPCalculationNoError equals:CPDecimalSubtract(d1,d2,d3,CPRoundPlain) message:"CPDecimalSubtract(): Ts2: Should succeed"];
     [self assert:-3 equals:d1._exponent message:"CPDecimalSubtract(): Ts2: exponent"];
-    [self assert:[1,1,7,9,5] equals:d1._mantissa message:"CPDecimalSubtract(): Ts2: mantissa"];
+    [self assert:[1, 1,7,9,5] equals:d1._mantissa message:"CPDecimalSubtract(): Ts2: mantissa"];
     [self assert:NO equals:d1._isNegative message:"CPDecimalSubtract(): Ts2: sign"];
     [self assert:NO equals:d1._isNaN message:"CPDecimalSubtract(): Ts2: NaN is incorrectly set"];
 
@@ -499,7 +499,7 @@
         d3 = CPDecimalMakeWithString(@"-5e20");
     [self assert:CPCalculationNoError equals:CPDecimalDivide(d1,d2,d3,CPRoundPlain) message:"CPDecimalDivide(): Td1: Should succeed"];
     [self assert:-8 equals:d1._exponent message:"CPDecimalDivide(): Td1: exponent"];
-    [self assert:[1,1] equals:d1._mantissa message:"CPDecimalDivide(): Td1: mantissa"];
+    [self assert:[1, 1] equals:d1._mantissa message:"CPDecimalDivide(): Td1: mantissa"];
     [self assert:YES equals:d1._isNegative message:"CPDecimalDivide(): Td1: sign"];
     [self assert:NO equals:d1._isNaN message:"CPDecimalDivide(): Td1: NaN is incorrectly set"];
 
@@ -536,7 +536,7 @@
     d3 = CPDecimalMakeWithString(@"12");
     [self assert:CPCalculationLossOfPrecision equals:CPDecimalDivide(d1,d2,d3,CPRoundUp) message:"CPDecimalDivide(): Tdp2: Should Loss of precision"];
     [self assert:-39 equals:d1._exponent message:"CPDecimalDivide(): Td2: exponent"];
-    [self assert:[7,2,9,1,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6] equals:d1._mantissa message:"CPDecimalDivide(): Td2: mantissa"];
+    [self assert:[7,2,9, 1,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6] equals:d1._mantissa message:"CPDecimalDivide(): Td2: mantissa"];
     [self assert:YES equals:d1._isNegative message:"CPDecimalDivide(): Td2: sign"];
     [self assert:NO equals:d1._isNaN message:"CPDecimalDivide(): Td2: NaN is incorrectly set"];
 
@@ -564,7 +564,7 @@
         d3 = CPDecimalMakeWithString(@"-1441231251321235231");
     [self assert:CPCalculationNoError equals:CPDecimalMultiply(d1,d2,d3,CPRoundPlain) message:"CPDecimalMultiply(): Tm1: Should succeed"];
     [self assert:0 equals:d1._exponent message:"CPDecimalMultiply(): Tm1: exponent"];
-    [self assert:[1,7,2,9,4,7,7,5,0,1,5,8,5,4,8,2,2,7,7,2] equals:d1._mantissa message:"CPDecimalMultiply(): Tm1: mantissa"];
+    [self assert:[1,7,2,9,4,7,7,5,0, 1,5,8,5,4,8,2,2,7,7,2] equals:d1._mantissa message:"CPDecimalMultiply(): Tm1: mantissa"];
     [self assert:YES equals:d1._isNegative message:"CPDecimalMultiply(): Tm1: sign"];
     [self assert:NO equals:d1._isNaN message:"CPDecimalMultiply(): Tm1: NaN is incorrectly set"];
 
@@ -601,7 +601,7 @@
     d3 = CPDecimalMakeWithString(@"127889465810478913");
     [self assert:CPCalculationLossOfPrecision equals:CPDecimalMultiply(d1,d2,d3,CPRoundDown) message:"CPDecimalMultiply(): Tmp1: Should throw loss of precision"];
     [self assert:15 equals:d1._exponent message:"CPDecimalMultiply(): Tmp1: exponent"]; // 69 diff
-    [self assert:[2,7,1,5,6,2,0,9,1,7,5,7,6,3,3,5,0,9,2,9,7,4,0,2,3,5,6,0,8,0,6,9,5,2,8,3,9,1] equals:d1._mantissa message:"CPDecimalMultiply(): Tmp1: mantissa"];
+    [self assert:[2,7, 1,5,6,2,0,9, 1,7,5,7,6,3,3,5,0,9,2,9,7,4,0,2,3,5,6,0,8,0,6,9,5,2,8,3,9, 1] equals:d1._mantissa message:"CPDecimalMultiply(): Tmp1: mantissa"];
     [self assert:NO equals:d1._isNegative message:"CPDecimalMultiply(): Tmp1: sign"];
     [self assert:NO equals:d1._isNaN message:"CPDecimalMultiply(): Tmp1: NaN is incorrectly set"];
 
@@ -621,7 +621,7 @@
         d3 = 12;
     [self assert:CPCalculationNoError equals:CPDecimalPower(d1,d2,d3,CPRoundPlain) message:"CPDecimalPower(): Tp1: Should succeed"];
     [self assert:0 equals:d1._exponent message:"CPDecimalPower(): Tp1: exponent"];
-    [self assert:[1,1,9,9,1,1,6,3,8,4,8,7,1,6,9,0,6,2,9,7,0,7,2,7,2,1] equals:d1._mantissa message:"CPDecimalPower(): Tp1: mantissa"];
+    [self assert:[1, 1,9,9, 1, 1,6,3,8,4,8,7, 1,6,9,0,6,2,9,7,0,7,2,7,2, 1] equals:d1._mantissa message:"CPDecimalPower(): Tp1: mantissa"];
     [self assert:NO equals:d1._isNegative message:"CPDecimalPower(): Tp1: sign"];
     [self assert:NO equals:d1._isNaN message:"CPDecimalPower(): Tp1: NaN is incorrectly set"];
 
@@ -632,7 +632,7 @@
     d3 = 101;
     [self assert:CPCalculationLossOfPrecision equals:CPDecimalPower(d1,d2,d3,CPRoundUp) message:"CPDecimalPower(): Tp2: Should throw Loss of precision"];
     [self assert:-43 equals:d1._exponent message:"CPDecimalPower(): Tp2: exponent"];
-    [self assert:[1,3,8,9,3,5,5,4,0,5,9,9,2,5,6,6,1,2,7,4,8,2,1,8,1,4,6,3,6,8,0,7,5,3,5,2,0,4] equals:d1._mantissa message:"CPDecimalPower(): Tp2: mantissa"];
+    [self assert:[1,3,8,9,3,5,5,4,0,5,9,9,2,5,6,6, 1,2,7,4,8,2, 1,8, 1,4,6,3,6,8,0,7,5,3,5,2,0,4] equals:d1._mantissa message:"CPDecimalPower(): Tp2: mantissa"];
     [self assert:NO equals:d1._isNegative message:"CPDecimalPower(): Tp2: sign"];
     [self assert:NO equals:d1._isNaN message:"CPDecimalPower(): Tp2: NaN is incorrectly set"];
 

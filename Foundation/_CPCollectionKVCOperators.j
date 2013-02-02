@@ -20,6 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPObject.j"
+
 @implementation _CPCollectionKVCOperator : CPObject
 
 + (id)performOperation:(CPString)operator withCollection:(id)aCollection propertyPath:(CPString)propertyPath

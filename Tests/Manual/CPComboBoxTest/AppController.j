@@ -121,7 +121,7 @@
 
     [contentView addSubview:employeesScrollView];
 
-    combo = [[CPComboBox alloc] initWithFrame:CGRectMake(250, 240, 200, 29)];
+    combo = [[CPComboBox alloc] initWithFrame:CGRectMake(250, 240, 200, 31)];
     [combo setCompletes:YES];
     [contentView addSubview:combo];
 

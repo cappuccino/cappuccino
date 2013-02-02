@@ -21,6 +21,7 @@
  */
 
 @import <AppKit/CPTableHeaderView.j>
+@import <AppKit/_CPCornerView.j>
 
 @implementation _CPCornerView (NSCoding)
 

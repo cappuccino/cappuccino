@@ -21,18 +21,18 @@
 - (void)testInterpretKeyEvents
 {
     var tests = [
-        CPKeyCodes.PAGE_UP,     CPPageUpFunctionKey,        @selector(scrollPageUp:),
-        CPKeyCodes.PAGE_DOWN,   CPPageDownFunctionKey,      @selector(scrollPageDown:),
-        CPKeyCodes.LEFT,        CPLeftArrowFunctionKey,     @selector(moveLeft:),
-        CPKeyCodes.RIGHT,       CPRightArrowFunctionKey,    @selector(moveRight:),
-        CPKeyCodes.UP,          CPUpArrowFunctionKey,       @selector(moveUp:),
-        CPKeyCodes.DOWN,        CPDownArrowFunctionKey,     @selector(moveDown:),
-        CPKeyCodes.BACKSPACE,   CPDeleteCharacter,          @selector(deleteBackward:),
-        CPKeyCodes.ENTER,       CPCarriageReturnCharacter,  @selector(insertNewline:),
-        0,                      CPNewlineCharacter,         @selector(insertNewline:),
-        CPKeyCodes.ESC,         CPEscapeFunctionKey,        @selector(cancelOperation:),
-        CPKeyCodes.TAB,         CPTabCharacter,             @selector(insertTab:)
-    ];
+            CPKeyCodes.PAGE_UP,     CPPageUpFunctionKey,        @selector(scrollPageUp:),
+            CPKeyCodes.PAGE_DOWN,   CPPageDownFunctionKey,      @selector(scrollPageDown:),
+            CPKeyCodes.LEFT,        CPLeftArrowFunctionKey,     @selector(moveLeft:),
+            CPKeyCodes.RIGHT,       CPRightArrowFunctionKey,    @selector(moveRight:),
+            CPKeyCodes.UP,          CPUpArrowFunctionKey,       @selector(moveUp:),
+            CPKeyCodes.DOWN,        CPDownArrowFunctionKey,     @selector(moveDown:),
+            CPKeyCodes.BACKSPACE,   CPDeleteCharacter,          @selector(deleteBackward:),
+            CPKeyCodes.ENTER,       CPCarriageReturnCharacter,  @selector(insertNewline:),
+            0,                      CPNewlineCharacter,         @selector(insertNewline:),
+            CPKeyCodes.ESC,         CPEscapeFunctionKey,        @selector(cancelOperation:),
+            CPKeyCodes.TAB,         CPTabCharacter,             @selector(insertTab:)
+        ];
 
     for (var i = 0; i < tests.length; i += 3)
     {
@@ -41,7 +41,8 @@
             selector = tests[i + 2];
 
         responder.doCommandCalls = [];
-        keyEvent = [CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:0
+
+        var keyEvent = [CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:0
             timestamp:0 windowNumber:0 context:nil
             characters:character charactersIgnoringModifiers:character isARepeat:NO keyCode:keyCode];
         [responder interpretKeyEvents:[keyEvent]];
@@ -52,7 +53,8 @@
 - (void)testInterpretKeyEventsWithModifierFlags
 {
     responder.doCommandCalls = [];
-    keyEvent = [CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPShiftKeyMask
+
+    var keyEvent = [CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPShiftKeyMask
         timestamp:0 windowNumber:0 context:nil
         characters:CPLeftArrowFunctionKey charactersIgnoringModifiers:CPLeftArrowFunctionKey isARepeat:NO keyCode:CPKeyCodes.LEFT];
     [responder interpretKeyEvents:[keyEvent]];

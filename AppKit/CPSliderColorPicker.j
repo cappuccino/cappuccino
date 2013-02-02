@@ -20,8 +20,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPView.j"
 @import "CPColorPicker.j"
+@import "CPSlider.j"
+@import "CPTextField.j"
+@import "CPView.j"
+
+@global CPColorPickerViewWidth
+@global CPColorPickerViewHeight
+@global CPSliderColorPickerMode
 
 
 /*
@@ -65,7 +71,7 @@
 
 - (id)initView
 {
-    aFrame = CGRectMake(0, 0, CPColorPickerViewWidth, CPColorPickerViewHeight);
+    var aFrame = CGRectMake(0, 0, CPColorPickerViewWidth, CPColorPickerViewHeight);
 
     _contentView = [[CPView alloc] initWithFrame:aFrame];
     [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];

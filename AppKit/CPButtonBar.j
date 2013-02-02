@@ -1,5 +1,31 @@
+/*
+ * CPButtonBar.j
+ * AppKit
+ *
+ * Created by Francisco Tolmasky.
+ * Copyright 2009, 280 North, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
 @import "CPView.j"
+@import "CPWindow_Constants.j"
+
+@class CPSplitView
+
+@global CPPopUpButtonStatePullsDown
 
 
 @implementation CPButtonBar : CPView
@@ -12,7 +38,7 @@
 + (id)plusButton
 {
     var button = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)],
-        image = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPButtonBar class]] pathForResource:@"plus_button.png"] size:CGSizeMake(11, 12)];
+        image = [[CPTheme defaultTheme] valueForAttributeWithName:@"button-image-plus" forClass:[CPButtonBar class]];
 
     [button setBordered:NO];
     [button setImage:image];
@@ -24,7 +50,7 @@
 + (id)minusButton
 {
     var button = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)],
-        image = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPButtonBar class]] pathForResource:@"minus_button.png"] size:CGSizeMake(11, 4)];
+        image = [[CPTheme defaultTheme] valueForAttributeWithName:@"button-image-minus" forClass:[CPButtonBar class]];
 
     [button setBordered:NO];
     [button setImage:image];
@@ -36,7 +62,7 @@
 + (id)actionPopupButton
 {
     var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)],
-        image = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPButtonBar class]] pathForResource:@"action_button.png"] size:CGSizeMake(22, 14)];
+        image = [[CPTheme defaultTheme] valueForAttributeWithName:@"button-image-action" forClass:[CPButtonBar class]];
 
     [button addItemWithTitle:nil];
     [[button lastItem] setImage:image];
@@ -55,8 +81,24 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[CGInsetMake(0.0, 0.0, 0.0, 0.0), CGSizeMakeZero(), [CPNull null], [CPNull null], [CPNull null], [CPNull null]]
-                                       forKeys:[@"resize-control-inset", @"resize-control-size", @"resize-control-color", @"bezel-color", @"button-bezel-color", @"button-text-color"]];
+    return [CPDictionary dictionaryWithObjects:[   CGInsetMake(0.0, 0.0, 0.0, 0.0),
+                                                   CGSizeMakeZero(),
+                                                   [CPNull null],
+                                                   [CPNull null],
+                                                   [CPNull null],
+                                                   [CPNull null],
+                                                   [CPNull null],
+                                                   [CPNull null],
+                                                   [CPNull null]]
+                                       forKeys:[   @"resize-control-inset",
+                                                   @"resize-control-size",
+                                                   @"resize-control-color",
+                                                   @"bezel-color",
+                                                   @"button-bezel-color",
+                                                   @"button-text-color",
+                                                   @"button-image-plus",
+                                                   @"button-image-minus",
+                                                   @"button-image-action"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame

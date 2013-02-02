@@ -22,9 +22,15 @@
 
 @import <Foundation/CPIndexSet.j>
 
+@import "CPCursor.j"
+@import "CPPasteboard.j"
 @import "CPTableColumn.j"
-@import "CPTableView.j"
 @import "CPView.j"
+@import "_CPImageAndTextView.j"
+
+@class CPTableView
+
+@global CPApp
 
 
 @implementation _CPTableColumnHeaderView : CPView
@@ -46,6 +52,7 @@
 - (void)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
+
     if (self)
         [self _init];
 

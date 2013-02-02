@@ -30,6 +30,14 @@
     [self assert:@"123,456" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:123456]]];
     [self assert:@"1,234,567" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:1234567]]];
 
+    [self assert:@"-1"          equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:-1]]];
+    [self assert:@"-12"         equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:-12]]];
+    [self assert:@"-123"        equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:-123]]];
+    [self assert:@"-1,234"      equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:-1234]]];
+    [self assert:@"-12,345"     equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:-12345]]];
+    [self assert:@"-123,456"    equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:-123456]]];
+    [self assert:@"-1,234,567"  equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:-1234567]]];
+
     [numberFormatter setGroupingSeparator:@" "];
     [self assert:@"1" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:1]]];
     [self assert:@"12" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:12]]];
@@ -78,6 +86,7 @@
 
     [self assert:@"1" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"1"]]];
     [self assert:@"0.4" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"0.4467"]]];
+    [self assert:@"-0.4" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"-0.4467"]]];
 }
 
 - (void)testSetMinimumFractionDigits_
@@ -89,6 +98,7 @@
 
     [self assert:@"1.000" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"1"]]];
     [self assert:@"1.100" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"1.1"]]];
+    [self assert:@"-1.100" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"-1.1"]]];
     [self assert:@"0.4467" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"0.4467"]]];
 }
 
@@ -121,6 +131,7 @@
     [numberFormatter setCurrencyCode:@"USD"];
 
     [self assert:@"$1.00" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"1"]]];
+    [self assert:@"-$1.00" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"-1"]]];
     [self assert:@"$12.00" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"12"]]];
     [self assert:@"$12.10" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"12.1"]]];
     [self assert:@"$12.10" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"12.10"]]];
@@ -149,6 +160,7 @@
     [numberFormatter setNumberStyle:CPNumberFormatterPercentStyle];
 
     [self assert:@"1%" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"0.01"]]];
+    [self assert:@"-1%" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"-0.01"]]];
     [self assert:@"100%" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"1.0"]]];
     [self assert:@"150%" equals:[numberFormatter stringFromNumber:[CPDecimalNumber decimalNumberWithString:@"1.5"]]];
 

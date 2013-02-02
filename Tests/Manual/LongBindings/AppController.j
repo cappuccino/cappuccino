@@ -23,7 +23,7 @@
 
 - (void)awakeFromCib
 {
-    [[self mainWindow] setFullBridge:YES];
+    [[self mainWindow] setFullPlatformWindow:YES];
 
     orders = [];
     [orders addObject:[Order orderWithCustomer:[Customer customerWithName:@"Klaas Pieter" email:@"klaaspieter@madebysofa.com" job:@"Programmer"]]];

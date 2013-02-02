@@ -20,8 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-
 @import <AppKit/CPTableView.j>
+
+@class Converter
+
 
 @implementation CPTableView (NSCoding)
 
@@ -40,7 +42,13 @@
 
         // Convert xib default to cib default
         if (_rowHeight == 17)
-            _rowHeight = 23;
+        {
+            var theme = [[Converter sharedConverter] themes][0],
+                height = [theme valueForAttributeWithName:@"default-row-height" forClass:CPTableView];
+
+            _rowHeight = height;
+        }
+
 
         _headerView = [aCoder decodeObjectForKey:@"NSHeaderView"];
 

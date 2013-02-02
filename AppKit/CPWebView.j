@@ -126,7 +126,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     BOOL                _drawsBackground;
 }
 
-- (id)initWithFrame:(CPRect)frameRect frameName:(CPString)frameName groupName:(CPString)groupName
+- (id)initWithFrame:(CGRect)frameRect frameName:(CPString)frameName groupName:(CPString)groupName
 {
     if (self = [self initWithFrame:frameRect])
     {
@@ -136,7 +136,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     return self;
 }
 
-- (id)initWithFrame:(CPRect)aFrame
+- (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
     {
@@ -157,7 +157,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     return self;
 }
 
-- (id)_initDOMWithFrame:(CPRect)aFrame
+- (id)_initDOMWithFrame:(CGRect)aFrame
 {
     _ignoreLoadStart = YES;
     _ignoreLoadEnd  = YES;
@@ -221,7 +221,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     [self addSubview:_scrollView];
 }
 
-- (void)setFrameSize:(CPSize)aSize
+- (void)setFrameSize:(CGSize)aSize
 {
     [super setFrameSize:aSize];
     [self _resizeWebFrame];

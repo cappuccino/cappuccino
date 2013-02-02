@@ -88,7 +88,7 @@ var categories = ["firstName", "lastName"],
 - (void)awakeFromCib
 {
     [theWindow setBackgroundColor:[CPColor colorWithHexString:@"f3f4f5"]];
-    [theWindow setFullBridge:YES];
+    [theWindow setFullPlatformWindow:YES];
 }
 
 - (IBAction)sendsWholeSearchString:(id)sender

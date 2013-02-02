@@ -22,6 +22,9 @@
 
 @import <AppKit/CPSlider.j>
 
+@import "NSCell.j"
+
+
 @implementation CPSlider (CPCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
@@ -84,14 +87,14 @@
 
     if (self)
     {
-        _objectValue        = [aCoder decodeDoubleForKey:@"NSValue"];
+        self._objectValue        = [aCoder decodeDoubleForKey:@"NSValue"];
 
-        _minValue           = [aCoder decodeDoubleForKey:@"NSMinValue"];
-        _maxValue           = [aCoder decodeDoubleForKey:@"NSMaxValue"];
-        _altIncrementValue  = [aCoder decodeDoubleForKey:@"NSAltIncValue"];
-        _isVertical         = [aCoder decodeBoolForKey:@"NSVertical"];
+        self._minValue           = [aCoder decodeDoubleForKey:@"NSMinValue"];
+        self._maxValue           = [aCoder decodeDoubleForKey:@"NSMaxValue"];
+        self._altIncrementValue  = [aCoder decodeDoubleForKey:@"NSAltIncValue"];
+        self._isVertical         = [aCoder decodeBoolForKey:@"NSVertical"];
 
-        _sliderType         = [aCoder decodeIntForKey:@"NSSliderType"];
+        self._sliderType         = [aCoder decodeIntForKey:@"NSSliderType"];
     }
 
     return self;

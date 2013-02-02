@@ -24,15 +24,16 @@
 
 @import "CPControl.j"
 @import "CPImage.j"
+@import "CPScrollView.j"
 @import "CPTableView.j"
 @import "CPTextField.j"
-@import "CPScrollView.j"
+
+@global CPApp
 
 /*!
     @ingroup appkit
     @class CPBrowser
 */
-
 @implementation CPBrowser : CPControl
 {
     id              _delegate;
@@ -65,18 +66,18 @@
     CPArray         _columnWidths;
 }
 
-+ (CPImage)branchImage
++ (CPString)defaultThemeClass
 {
-    return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPBrowser class]]
-                                                    pathForResource:"browser-leaf.png"]
-                                              size:CGSizeMake(9,9)];
+    return "browser";
 }
 
-+ (CPImage)highlightedBranchImage
++ (id)themeAttributes
 {
-    return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPBrowser class]]
-                                                    pathForResource:"browser-leaf-highlighted.png"]
-                                              size:CGSizeMake(9,9)];
+    return [CPDictionary dictionaryWithJSObject:{
+        @"image-control-resize": [CPNull null],
+        @"image-control-leaf": [CPNull null],
+        @"image-control-leaf-pressed": [CPNull null]
+    }];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -276,8 +277,8 @@
     var column = [[CPTableColumn alloc] initWithIdentifier:@"Leaf"],
         view = [[_CPBrowserLeafView alloc] initWithFrame:CGRectMakeZero()];
 
-    [view setBranchImage:[[self class] branchImage]];
-    [view setHighlightedBranchImage:[[self class] highlightedBranchImage]];
+    [view setBranchImage:[self valueForThemeAttribute:@"image-control-leaf"]];
+    [view setHighlightedBranchImage:[self valueForThemeAttribute:@"image-control-leaf-pressed"]];
 
     [column setDataView:view];
     [column setResizingMask:CPTableColumnNoResizing];
@@ -704,8 +705,6 @@
 @end
 
 
-var _CPBrowserResizeControlBackgroundImage = nil;
-
 @implementation _CPBrowserResizeControl : CPView
 {
     CGPoint     _mouseDownX;
@@ -714,22 +713,14 @@ var _CPBrowserResizeControlBackgroundImage = nil;
     unsigned    _width;
 }
 
-+ (CPImage)backgroundImage
-{
-    if (!_CPBrowserResizeControlBackgroundImage)
-    {
-        var path = [[CPBundle bundleForClass:[self class]] pathForResource:"browser-resize-control.png"];
-        _CPBrowserResizeControlBackgroundImage = [[CPImage alloc] initWithContentsOfFile:path
-                                                                                    size:CGSizeMake(15, 14)];
-    }
-
-    return _CPBrowserResizeControlBackgroundImage;
-}
-
 - (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
-        [self setBackgroundColor:[CPColor colorWithPatternImage:[[self class] backgroundImage]]];
+    {
+        var browser = [[CPBrowser alloc] init];
+        [self setBackgroundColor:[CPColor colorWithPatternImage:[browser valueForThemeAttribute:@"image-control-resize"]]];
+    }
+
 
     return self;
 }
@@ -819,13 +810,13 @@ var _CPBrowserResizeControlBackgroundImage = nil;
     return [_browser canDragRowsWithIndexes:rowIndexes inColumn:[_browser columnOfTableView:self] withEvent:[CPApp currentEvent]];
 }
 
-- (CPImage)dragImageForRowsWithIndexes:(CPIndexSet)dragRows tableColumns:(CPArray)theTableColumns event:(CPEvent)dragEvent offset:(CPPointPointer)dragImageOffset
+- (CPImage)dragImageForRowsWithIndexes:(CPIndexSet)dragRows tableColumns:(CPArray)theTableColumns event:(CPEvent)dragEvent offset:(CGPoint)dragImageOffset
 {
     return [_browser draggingImageForRowsWithIndexes:dragRows inColumn:[_browser columnOfTableView:self] withEvent:dragEvent offset:dragImageOffset] ||
            [super dragImageForRowsWithIndexes:dragRows tableColumns:theTableColumns event:dragEvent offset:dragImageOffset];
 }
 
-- (CPView)dragViewForRowsWithIndexes:(CPIndexSet)dragRows tableColumns:(CPArray)theTableColumns event:(CPEvent)dragEvent offset:(CPPoint)dragViewOffset
+- (CPView)dragViewForRowsWithIndexes:(CPIndexSet)dragRows tableColumns:(CPArray)theTableColumns event:(CPEvent)dragEvent offset:(CGPoint)dragViewOffset
 {
     var count = theTableColumns.length;
     while (count--)

@@ -29,10 +29,13 @@
 
 @import "CPButton.j"
 @import "CPScrollView.j"
-@import "CPTextField.j"
 @import "CPTableView.j"
-@import "CPWindow.j"
+@import "CPText.j"
+@import "CPTextField.j"
+@import "CPWindow_Constants.j"
 @import "_CPAutocompleteMenu.j"
+
+@global CPApp
 
 #if PLATFORM(DOM)
 
@@ -95,7 +98,7 @@ var CPScrollDestinationNone             = 0,
     return [CPDictionary dictionaryWithObject:_CGInsetMakeZero() forKey:@"editor-inset"];
 }
 
-- (id)initWithFrame:(CPRect)frame
+- (id)initWithFrame:(CGRect)frame
 {
     if (self = [super initWithFrame:frame])
     {
@@ -915,7 +918,9 @@ var CPScrollDestinationNone             = 0,
 
 - (void)keyDown:(CPEvent)anEvent
 {
+#if PLATFORM(DOM)
     CPTokenFieldTextDidChangeValue = [self stringValue];
+#endif
 
     // Leave the default _propagateCurrentDOMEvent setting in place. This might be YES or NO depending
     // on if something that could be a browser shortcut was pressed or not, such as Cmd-R to reload.
@@ -925,14 +930,16 @@ var CPScrollDestinationNone             = 0,
     [self interpretKeyEvents:[anEvent]];
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-}}
+}
 
 - (void)keyUp:(CPEvent)anEvent
 {
+#if PLATFORM(DOM)
     if ([self stringValue] !== CPTokenFieldTextDidChangeValue)
     {
         [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
     }
+#endif
 
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 }
@@ -998,8 +1005,8 @@ var CPScrollDestinationNone             = 0,
     var contentRect = _CGRectMakeCopy([contentView bounds]),
         contentOrigin = contentRect.origin,
         contentSize = contentRect.size,
-        offset = CPPointMake(contentOrigin.x, contentOrigin.y),
-        spaceBetweenTokens = CPSizeMake(2.0, 2.0),
+        offset = CGPointMake(contentOrigin.x, contentOrigin.y),
+        spaceBetweenTokens = CGSizeMake(2.0, 2.0),
         isEditing = [[self window] firstResponder] == self,
         tokenToken = [_CPTokenFieldToken new],
         font = [self currentValueForThemeAttribute:@"font"],
@@ -1281,11 +1288,11 @@ var CPScrollDestinationNone             = 0,
     return NO;
 }
 
-- (id)initWithFrame:(CPRect)frame
+- (id)initWithFrame:(CGRect)frame
 {
     if (self = [super initWithFrame:frame])
     {
-        _deleteButton = [[_CPTokenFieldTokenCloseButton alloc] initWithFrame:CPRectMakeZero()];
+        _deleteButton = [[_CPTokenFieldTokenCloseButton alloc] initWithFrame:CGRectMakeZero()];
         [self addSubview:_deleteButton];
 
         [self setEditable:NO];
@@ -1375,7 +1382,7 @@ var CPScrollDestinationNone             = 0,
             buttonOffset = [_deleteButton currentValueForThemeAttribute:@"offset"],
             buttonSize = [_deleteButton currentValueForThemeAttribute:@"min-size"];
 
-        [_deleteButton setFrame:_CGRectMake(CPRectGetMaxX(frame) - buttonOffset.x, CPRectGetMinY(frame) + buttonOffset.y, buttonSize.width, buttonSize.height)];
+        [_deleteButton setFrame:_CGRectMake(CGRectGetMaxX(frame) - buttonOffset.x, CGRectGetMinY(frame) + buttonOffset.y, buttonSize.width, buttonSize.height)];
     }
 }
 

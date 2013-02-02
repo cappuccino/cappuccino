@@ -22,6 +22,7 @@
 
 @import <AppKit/_CPCibCustomObject.j>
 
+@global CP_NSMapClassName
 
 @implementation _CPCibCustomObject (NSCoding)
 

@@ -24,42 +24,42 @@ function descriptionWithoutEntity(aString)
     [self assert:descriptionWithoutEntity(indexSet) equals:@"(no indexes)"];
 
     // Test adding initial range
-    [indexSet addIndexesInRange:CPMakeRange(30,10)];
+    [indexSet addIndexesInRange:CPMakeRange(30, 10)];
 
     [self assert:@"[number of indexes: 10 (in 1 range), indexes: (30-39)]" equals:descriptionWithoutEntity(indexSet)];
 
     // Test adding range after existing ranges.
-    [indexSet addIndexesInRange:CPMakeRange(50,10)];
+    [indexSet addIndexesInRange:CPMakeRange(50, 10)];
 
     [self assert:@"[number of indexes: 20 (in 2 ranges), indexes: (30-39 50-59)]" equals:descriptionWithoutEntity(indexSet)];
 
     // Test adding range before existing ranges.
-    [indexSet addIndexesInRange:CPMakeRange(10,10)];
+    [indexSet addIndexesInRange:CPMakeRange(10, 10)];
 
     [self assert:@"[number of indexes: 30 (in 3 ranges), indexes: (10-19 30-39 50-59)]" equals:descriptionWithoutEntity(indexSet)];
 
     // Test adding range inbetween existing ranges.
-    [indexSet addIndexesInRange:CPMakeRange(45,2)];
+    [indexSet addIndexesInRange:CPMakeRange(45, 2)];
 
     [self assert:@"[number of indexes: 32 (in 4 ranges), indexes: (10-19 30-39 45-46 50-59)]" equals:descriptionWithoutEntity(indexSet)];
 
     // Test adding single index inbetween existing ranges.
-    [indexSet addIndexesInRange:CPMakeRange(23,1)];
+    [indexSet addIndexesInRange:CPMakeRange(23, 1)];
 
     [self assert:@"[number of indexes: 33 (in 5 ranges), indexes: (10-19 23 30-39 45-46 50-59)]" equals:descriptionWithoutEntity(indexSet)];
 
     // Test adding range inbetween existing ranges that forces a combination
-    [indexSet addIndexesInRange:CPMakeRange(47,3)];
+    [indexSet addIndexesInRange:CPMakeRange(47, 3)];
 
     [self assert:@"[number of indexes: 36 (in 4 ranges), indexes: (10-19 23 30-39 45-59)]" equals:descriptionWithoutEntity(indexSet)];
 
     // Test adding range across ranges forcing a combination
-    [indexSet addIndexesInRange:CPMakeRange(35,15)];
+    [indexSet addIndexesInRange:CPMakeRange(35, 15)];
 
     [self assert:@"[number of indexes: 41 (in 3 ranges), indexes: (10-19 23 30-59)]" equals:descriptionWithoutEntity(indexSet)];
 
     // Test adding range across two empty slots forcing a combination
-    [indexSet addIndexesInRange:CPMakeRange(5,70)];
+    [indexSet addIndexesInRange:CPMakeRange(5, 70)];
 
     [self assert:@"[number of indexes: 70 (in 1 range), indexes: (5-74)]" equals:descriptionWithoutEntity(indexSet)];
 
@@ -67,6 +67,8 @@ function descriptionWithoutEntity(aString)
     [indexSet addIndex:4];
 
     [self assert:@"[number of indexes: 71 (in 1 range), indexes: (4-74)]" equals:descriptionWithoutEntity(indexSet)];
+
+    [self assertThrows:function() { [indexSet addIndex:CPNotFound]; }];
 }
 
 - (void)testRemoveIndexes

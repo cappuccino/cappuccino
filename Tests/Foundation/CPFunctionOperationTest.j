@@ -17,11 +17,10 @@
 
 - (void)testRunInvocation
 {
-    so = [[SomeObject alloc] init];
+    var so = [[SomeObject alloc] init],
+        someVar = nil,
+        funcOp = [CPFunctionOperation functionOperationWithFunction:function() {[so setAString:@"Hello World"]}];
 
-    var someVar = nil;
-
-    funcOp = [CPFunctionOperation functionOperationWithFunction:function() {[so setAString:@"Hello World"]}];
     [funcOp addExecutionFunction:function() {someVar = 'Soylent Green';}];
     [funcOp start];
 

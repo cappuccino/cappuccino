@@ -1,13 +1,14 @@
 #!/usr/bin/env objj
 
-@import <Foundation/Foundation.j>
-@import <AppKit/AppKit.j>
+@import <Foundation/CPObject.j>
+@import <Foundation/CPArray.j>
+@import <AppKit/CPTheme.j>
 @import <BlendKit/BlendKit.j>
 
 var FILE = require("file"),
     OS = require("os"),
 
-    DefaultTheme = "Aristo",
+    DefaultTheme = "Aristo2",
     BuildTypes = ["Debug", "Release"],
 
     FILE = require("file"),
@@ -133,7 +134,7 @@ function main(args)
             {
                 var state = states[stateIndex],
                     value = [theme valueForAttributeWithName:attributeName inState:state forClass:className],
-                    description = [self descriptionForValue:value].replace(/^/mg, "      ");
+                    description = CPDescriptionOfObject(value).replace(/^/mg, "      ");
 
                 colorPrint("cyan", "   " + CPThemeStateName(state));
                 stream.print(description + "\n");
@@ -142,47 +143,6 @@ function main(args)
 
         stream.print("");
     }
-}
-
-- (CPString)descriptionForValue:(id)aValue
-{
-    var description = @"";
-
-    if (!aValue)
-        return @"<null>";
-
-    if (!aValue.isa)
-    {
-        if (typeof(aValue) === "object")
-        {
-            if (aValue.hasOwnProperty("width") && aValue.hasOwnProperty("height"))
-                description = [CPString stringWithFormat:@"CGSize: { width:%f, height:%f }", aValue.width, aValue.height];
-            else if (aValue.hasOwnProperty("x") && aValue.hasOwnProperty("y"))
-                description = [CPString stringWithFormat:@"CGPoint: { x:%f, y:%f }", aValue.x, aValue.y];
-            else if (aValue.hasOwnProperty("origin") && aValue.hasOwnProperty("size"))
-                description = [CPString stringWithFormat:@"CGRect: { x:%f, y:%f }, { width:%f, height:%f }", aValue.origin.x, aValue.origin.y, aValue.size.width, aValue.size.height];
-            else if (aValue.hasOwnProperty("top") && aValue.hasOwnProperty("right") && aValue.hasOwnProperty("bottom") && aValue.hasOwnProperty("left"))
-                description = [CPString stringWithFormat:@"CGInset: { top:%f, right:%f, bottom:%f, left:%f }", aValue.top, aValue.right, aValue.bottom, aValue.left];
-            else
-            {
-                description = "Object\n{\n";
-
-                for (var property in aValue)
-                {
-                    if (aValue.hasOwnProperty(property))
-                        description += "   " + property + ":" + aValue[property] + "\n";
-                }
-
-                description += "}";
-            }
-        }
-        else
-            description = "Unknown object";
-    }
-    else
-        description = [aValue description];
-
-    return description;
 }
 
 // Returns undefined if $CAPP_BUILD is not defined, false if path cannot be found in $CAPP_BUILD

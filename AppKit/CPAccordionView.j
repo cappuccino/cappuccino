@@ -227,7 +227,7 @@ var secondItem = [[CPAccordionViewItem alloc] initWithIdentifier:@"secondSection
 {
     var indexSet = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, _items.length)];
 
-    [indexSet removeIndexes:_expandedIndexes];
+    [indexSet removeIndexes:_expandedItemIndexes];
 
     return indexSet;
 }

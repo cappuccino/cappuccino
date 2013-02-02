@@ -29,7 +29,7 @@
     [array addObject:[CPDictionary dictionaryWithObjectsAndKeys:@"Barack",@"name",@"President",@"job",@"barack@whitehouse.gov",@"email", 1, @"tag", @"Resources/Jakabos4.jpg", @"image"]];
 
     [self setPeople:array];
-    
+
 // Setup tags for the second popup
     var items = [tagPopUp itemArray];
     [items enumerateObjectsUsingBlock:function(item, idx)
@@ -37,8 +37,8 @@
         [item setTag:idx];
         [item setTitle:([item title] + "    Tag:" + idx)];
     }];
-    
-    [mainWindow setFullBridge:YES];
+
+    [mainWindow setFullPlatformWindow:YES];
 
 }
 

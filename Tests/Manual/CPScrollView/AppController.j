@@ -61,6 +61,13 @@
 
     [[scrollView documentView] addSubview:innerScrollView];
     [[aWindow contentView] addSubview:scrollView];
+
+    var button = [CPButton buttonWithTitle:@"Change Scroller Mode"];
+    [button setFrameOrigin:CGPointMake(10.0, 10.0)];
+    [button setTarget:self];
+    [button setAction:@selector(changeScrollerMode:)];
+
+    [[theWindow contentView] addSubview:button];
 }
 
 - (void)scrollViewWillScroll:(CPScrollView)aScrollView
@@ -87,6 +94,14 @@
     }
 
     return scrollView;
+}
+
+- (IBAction)changeScrollerMode:(id)aSender
+{
+    if ([CPScrollView globalScrollerStyle] == CPScrollerStyleOverlay)
+        [CPScrollView setGlobalScrollerStyle:CPScrollerStyleLegacy];
+    else
+        [CPScrollView setGlobalScrollerStyle:CPScrollerStyleOverlay];
 }
 
 @end

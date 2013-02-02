@@ -26,6 +26,7 @@
 		02998CEB1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict in Resources */ = {isa = PBXBuildFile; fileRef = 02998CEA1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict */; };
 		02998CF71369C339006C73DB /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02998CF61369C339006C73DB /* Growl.framework */; };
 		02998CF91369C38A006C73DB /* Growl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02998CF61369C339006C73DB /* Growl.framework */; };
+		02B1C8D816B25C74003C6E82 /* TNErrorDataView.m in Sources */ = {isa = PBXBuildFile; fileRef = 02B1C8D716B25C74003C6E82 /* TNErrorDataView.m */; };
 		4E2D0D01154840B400475C01 /* help.rtfd in Resources */ = {isa = PBXBuildFile; fileRef = 4E2D0D00154840B400475C01 /* help.rtfd */; };
 		4E2D0D03154840BC00475C01 /* help.rtfd in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4E2D0D00154840B400475C01 /* help.rtfd */; };
 		651DAE1F13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 651DAE1D13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.m */; };
@@ -62,6 +63,8 @@
 		0294F09215D345A500840547 /* mod_pbxproj.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = mod_pbxproj.py; sourceTree = "<group>"; };
 		02998CEA1369BF7D006C73DB /* Growl Registration Ticket.growlRegDict */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "Growl Registration Ticket.growlRegDict"; sourceTree = "<group>"; };
 		02998CF61369C339006C73DB /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Growl.framework; sourceTree = "<group>"; };
+		02B1C8D616B25C74003C6E82 /* TNErrorDataView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TNErrorDataView.h; sourceTree = "<group>"; };
+		02B1C8D716B25C74003C6E82 /* TNErrorDataView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TNErrorDataView.m; sourceTree = "<group>"; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
@@ -98,6 +101,8 @@
 			children = (
 				651DAE1C13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.h */,
 				651DAE1D13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.m */,
+				02B1C8D616B25C74003C6E82 /* TNErrorDataView.h */,
+				02B1C8D716B25C74003C6E82 /* TNErrorDataView.m */,
 				8E01A91D0DE9EED20008BB35 /* AppController.h */,
 				8E01A91E0DE9EED20008BB35 /* AppController.m */,
 				027FE49B1462D74C00B1AB92 /* TNXCodeCapp.h */,
@@ -285,6 +290,7 @@
 				651DAE1F13B0CAB900ECA3F0 /* PRHEmptyGrowlDelegate.m in Sources */,
 				027FE49D1462D74C00B1AB92 /* TNXCodeCapp.m in Sources */,
 				027FE4BD1462F7EB00B1AB92 /* FSEventCallback.m in Sources */,
+				02B1C8D816B25C74003C6E82 /* TNErrorDataView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

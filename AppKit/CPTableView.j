@@ -23,13 +23,26 @@
 @import <Foundation/CPArray.j>
 @import <Foundation/CPIndexSet.j>
 
+@import "CPDragServer_Constants.j"
 @import "CGGradient.j"
-
-@import "CPControl.j"
-@import "CPTableColumn.j"
-@import "_CPCornerView.j"
-@import "CPScroller.j"
 @import "CPCompatibility.j"
+@import "CPControl.j"
+@import "CPImageView.j"
+@import "CPScroller.j"
+@import "CPScrollView.j"
+@import "CPTableColumn.j"
+@import "CPTableHeaderView.j"
+@import "CPText.j"
+@import "_CPCornerView.j"
+
+@class CPButton
+@class CPClipView
+@class CPUserDefaults
+@class CPTableHeaderView
+@class CPClipView
+@class CPButton
+
+@global CPApp
 
 
 CPTableViewColumnDidMoveNotification        = @"CPTableViewColumnDidMoveNotification";
@@ -260,8 +273,26 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null]]
-                                       forKeys:["alternating-row-colors", "grid-color", "highlighted-grid-color", "selection-color", "sourcelist-selection-color", "sort-image", "sort-image-reversed", "selection-radius"]];
+    return [CPDictionary dictionaryWithObjects:[[CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                [CPNull null],
+                                                25.0]
+                                       forKeys:[@"alternating-row-colors",
+                                                @"grid-color",
+                                                @"highlighted-grid-color",
+                                                @"selection-color",
+                                                @"sourcelist-selection-color",
+                                                @"sort-image",
+                                                @"sort-image-reversed",
+                                                @"selection-radius",
+                                                @"image-generic-file",
+                                                @"default-row-height"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -291,7 +322,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _numberOfHiddenColumns = 0;
 
         _intercellSpacing = _CGSizeMake(3.0, 2.0);
-        _rowHeight = 23.0;
+        _rowHeight = [self valueForThemeAttribute:@"default-row-height"];
 
         [self setGridColor:[CPColor colorWithHexString:@"dce0e2"]];
         [self setGridStyleMask:CPTableViewGridNone];
@@ -2803,7 +2834,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (CPImage)dragImageForRowsWithIndexes:(CPIndexSet)dragRows tableColumns:(CPArray)theTableColumns event:(CPEvent)dragEvent offset:(CGPoint)dragImageOffset
 {
-    return [[CPImage alloc] initWithContentsOfFile:@"Frameworks/AppKit/Resources/GenericFile.png" size:CGSizeMake(32,32)];
+    return [self valueForThemeAttribute:@"image-generic-file"];
 }
 
 /*!
@@ -2860,11 +2891,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // Copy the dataviews add them to a transparent drag view and use that drag view
     // to make it appear we are dragging images of those rows (as you would do in regular Cocoa)
 */
-- (CPView)_dragViewForColumn:(int)theColumnIndex event:(CPEvent)theDragEvent offset:(CPPointPointer)theDragViewOffset
+- (CPView)_dragViewForColumn:(int)theColumnIndex event:(CPEvent)theDragEvent offset:(CGPoint)theDragViewOffset
 {
     var dragView = [[_CPColumnDragView alloc] initWithLineColor:[self gridColor]],
         tableColumn = [[self tableColumns] objectAtIndex:theColumnIndex],
-        bounds = _CGRectMake(0.0, 0.0, [tableColumn width], _CGRectGetHeight([self exposedRect]) + 23.0),
+        defaultRowHeight = [self valueForThemeAttribute:@"default-row-height"],
+        bounds = _CGRectMake(0.0, 0.0, [tableColumn width], _CGRectGetHeight([self exposedRect]) + defaultRowHeight),
         columnRect = [self rectOfColumn:theColumnIndex],
         headerView = [tableColumn headerView],
         row = [_exposedRows firstIndex];
@@ -2878,7 +2910,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         dataViewFrame.origin.x = 0.0;
 
         // Offset by table header height - scroll position
-        dataViewFrame.origin.y = ( _CGRectGetMinY(dataViewFrame) - _CGRectGetMinY([self exposedRect]) ) + 23.0;
+        dataViewFrame.origin.y = ( _CGRectGetMinY(dataViewFrame) - _CGRectGetMinY([self exposedRect]) ) + defaultRowHeight;
         [dataView setFrame:dataViewFrame];
 
         [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
@@ -4131,7 +4163,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             if ([self canDragRowsWithIndexes:_draggedRowIndexes atPoint:aPoint] && [_dataSource tableView:self writeRowsWithIndexes:_draggedRowIndexes toPasteboard:pboard])
             {
                 var currentEvent = [CPApp currentEvent],
-                    offset = CPPointMakeZero(),
+                    offset = CGPointMakeZero(),
                     tableColumns = [_tableColumns objectsAtIndexes:_exposedColumns];
 
                 // We deviate from the default Cocoa implementation here by asking for a view in stead of an image
@@ -4148,13 +4180,13 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                                                      tableColumns:tableColumns
                                                             event:currentEvent
                                                            offset:offset];
-                    view = [[CPImageView alloc] initWithFrame:CPMakeRect(0, 0, [image size].width, [image size].height)];
+                    view = [[CPImageView alloc] initWithFrame:CGRectMake(0, 0, [image size].width, [image size].height)];
                     [view setImage:image];
                 }
 
                 var bounds = [view bounds],
-                    viewLocation = CPPointMake(aPoint.x - CGRectGetWidth(bounds) / 2 + offset.x, aPoint.y - CGRectGetHeight(bounds) / 2 + offset.y);
-                [self dragView:view at:viewLocation offset:CPPointMakeZero() event:[CPApp currentEvent] pasteboard:pboard source:self slideBack:YES];
+                    viewLocation = CGPointMake(aPoint.x - CGRectGetWidth(bounds) / 2 + offset.x, aPoint.y - CGRectGetHeight(bounds) / 2 + offset.y);
+                [self dragView:view at:viewLocation offset:CGPointMakeZero() event:[CPApp currentEvent] pasteboard:pboard source:self slideBack:YES];
                 _startTrackingPoint = nil;
 
                 return NO;
@@ -4333,7 +4365,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     // If there is no (the default) or to little inter cell spacing we create some room for the CPTableViewDropAbove indicator
     // This probably doesn't work if the row height is smaller than or around 5.0
     if ([self intercellSpacing].height < 5.0)
-        rowRect = CPRectInset(rowRect, 0.0, 5.0 - [self intercellSpacing].height);
+        rowRect = CGRectInset(rowRect, 0.0, 5.0 - [self intercellSpacing].height);
 
     // If the altered row rect contains the drag point we show the drop on
     // We don't show the drop on indicator if we are dragging below the last row
@@ -4381,7 +4413,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 /*!
     @ignore
 */
-- (CPRect)_rectForDropHighlightViewOnRow:(int)theRowIndex
+- (CGRect)_rectForDropHighlightViewOnRow:(int)theRowIndex
 {
     if (theRowIndex >= [self numberOfRows])
         theRowIndex = [self numberOfRows] - 1;
@@ -4392,7 +4424,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 /*!
     @ignore
 */
-- (CPRect)_rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex offset:(CPPoint)theOffset
+- (CGRect)_rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex offset:(CGPoint)theOffset
 {
     if (theLowerRowIndex > [self numberOfRows])
         theLowerRowIndex = [self numberOfRows];
@@ -4617,6 +4649,14 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     @ignore
 */
 - (BOOL)acceptsFirstResponder
+{
+    return YES;
+}
+
+/*!
+    @ignore
+*/
+- (BOOL)needsPanelToBecomeKey
 {
     return YES;
 }
@@ -4875,7 +4915,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
         _tableColumns = [aCoder decodeObjectForKey:CPTableViewTableColumnsKey] || [];
         [_tableColumns makeObjectsPerformSelector:@selector(setTableView:) withObject:self];
 
-        _rowHeight = [aCoder decodeFloatForKey:CPTableViewRowHeightKey] || 23.0;
+        _rowHeight = [aCoder decodeFloatForKey:CPTableViewRowHeightKey] || [self valueForThemeAttribute:@"default-row-height"];
         _intercellSpacing = [aCoder decodeSizeForKey:CPTableViewIntercellSpacingKey];
 
         if (_CGSizeEqualToSize(_intercellSpacing, _CGSizeMakeZero()))

@@ -80,22 +80,22 @@
 
 - (IBAction)makeBigDocView:(id)aSender
 {
-    [contentView setFrameSize:CPSizeMake(1000, 1000)];
+    [contentView setFrameSize:CGSizeMake(1000, 1000)];
 }
 
 - (IBAction)makeSmallDocView:(id)aSender
 {
-    [contentView setFrameSize:CPSizeMake(200, 200)];
+    [contentView setFrameSize:CGSizeMake(200, 200)];
 }
 
 - (IBAction)makeNarrowDocView:(id)aSender
 {
-    [contentView setFrameSize:CPSizeMake(200, 1000)];
+    [contentView setFrameSize:CGSizeMake(200, 1000)];
 }
 
 - (IBAction)makeShortDocView:(id)aSender
 {
-    [contentView setFrameSize:CPSizeMake(1000, 200)];
+    [contentView setFrameSize:CGSizeMake(1000, 200)];
 }
 
 - (IBAction)flash:(id)aSender

@@ -25,7 +25,8 @@
 
 @import "CPControl.j"
 @import "CPStringDrawing.j"
-
+@import "CPText.j"
+@import "CPWindow_Constants.j"
 
 /* @group CPBezelStyle */
 
@@ -79,7 +80,7 @@ var CPButtonBezelStyleStateMap = [CPDictionary dictionaryWithObjects:[CPButtonSt
                                                              forKeys:[CPRoundedBezelStyle, CPRoundRectBezelStyle]];
 
 
-CPButtonDefaultHeight = 24.0;
+CPButtonDefaultHeight = 25.0;
 CPButtonImageOffset   = 3.0;
 
 /*!
@@ -221,7 +222,7 @@ CPButtonImageOffset   = 3.0;
     else if (![anObjectValue isKindOfClass:[CPNumber class]])
         anObjectValue = CPOnState;
     else if (anObjectValue >= CPOnState)
-        anObjectValue = CPOnState
+        anObjectValue = CPOnState;
     else if (anObjectValue < CPOffState)
         if ([self allowsMixedState])
             anObjectValue = CPMixedState;
@@ -522,6 +523,7 @@ CPButtonImageOffset   = 3.0;
     _isTracking = YES;
 
     var startedTracking = [super startTrackingAt:aPoint];
+
     if (_highlightsBy & (CPPushInCellMask | CPChangeGrayCellMask))
     {
         if (_showsStateBy & (CPChangeGrayCellMask | CPChangeBackgroundCellMask))
@@ -536,6 +538,7 @@ CPButtonImageOffset   = 3.0;
         else
             [self highlight:NO];
     }
+
     return startedTracking;
 }
 
@@ -989,5 +992,5 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
 
 @end
 
-@import "CPCheckBox.j"
-@import "CPRadio.j"
+//@import "CPCheckBox.j"
+//@import "CPRadio.j"

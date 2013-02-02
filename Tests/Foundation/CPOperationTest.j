@@ -1,6 +1,6 @@
 @import <Foundation/CPOperation.j>
 
-@implementation TestOperation : CPOperation
+@implementation TestOperation2 : CPOperation
 {
     CPString name @accessors;
     CPString value @accessors;
@@ -13,7 +13,7 @@
 
 @end
 
-@implementation TestObserver : CPObject
+@implementation TestObserver2 : CPObject
 {
     CPArray changedKeyPaths @accessors;
 }
@@ -106,7 +106,7 @@
 
 - (void)testCompletionFunction
 {
-    var to = [[TestOperation alloc] init];
+    var to = [[TestOperation2 alloc] init];
 
     [to setCompletionFunction:function() {[to setValue:@"something"];}];
     [to start];
@@ -118,9 +118,9 @@
 
 - (void)testKVO
 {
-    var to = [[TestOperation alloc] init],
-        to2 = [[TestOperation alloc] init],
-        obs = [[TestObserver alloc] init];
+    var to = [[TestOperation2 alloc] init],
+        to2 = [[TestOperation2 alloc] init],
+        obs = [[TestObserver2 alloc] init];
 
     [to addObserver:obs
          forKeyPath:@"isCancelled"

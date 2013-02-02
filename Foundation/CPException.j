@@ -28,6 +28,7 @@ CPInvalidArgumentException          = @"CPInvalidArgumentException";
 CPUnsupportedMethodException        = @"CPUnsupportedMethodException";
 CPRangeException                    = @"CPRangeException";
 CPInternalInconsistencyException    = @"CPInternalInconsistencyException";
+CPGenericException                  = @"CPGenericException";
 
 /*!
     @class CPException
@@ -46,6 +47,8 @@ if (input == nil)
 @implementation CPException : CPObject
 {
     id          _userInfo;
+    CPString    name;
+    CPString    message;
 }
 
 /*

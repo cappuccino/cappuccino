@@ -25,7 +25,12 @@
 
 #include "../Foundation/Foundation.h"
 
+@import "CPAnimation.j"
 @import "CPControl.j"
+@import "CPWindow_Constants.j"
+@import "CPViewAnimation.j"
+
+@global CPApp
 
 // CPScroller Constants
 CPScrollerNoPart            = 0;
@@ -217,7 +222,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
         [self unsetThemeState:CPThemeStateScrollViewLegacy];
     }
 
-    [self _adjustScrollerSize];
+    //[self _adjustScrollerSize];
 }
 
 - (void)setObjectValue:(id)aValue
@@ -523,6 +528,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
 - (void)layoutSubviews
 {
+    [self _adjustScrollerSize];
     [self checkSpaceForParts];
 
     var index = 0,

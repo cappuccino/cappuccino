@@ -20,12 +20,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPApplication.j"
 @import "CPButton.j"
 @import "CPCookie.j"
 @import "CPPanel.j"
+@import "CPPasteboard.j"
 @import "CPView.j"
 
+@class CPSlider
+
+@global CPApp
+
+/*
+    A color wheel
+    @global
+    @group CPColorPanelMode
+*/
+CPWheelColorPickerMode = 1;
+
+/*
+    Slider based picker
+    @global
+    @group CPColorPanelMode
+*/
+CPSliderColorPickerMode = 2;
+
+CPColorPickerViewWidth  = 265;
+CPColorPickerViewHeight = 370;
 
 CPColorPanelColorDidChangeNotification = @"CPColorPanelColorDidChangeNotification";
 
@@ -37,22 +57,6 @@ var PREVIEW_HEIGHT = 20.0,
 
 var SharedColorPanel = nil,
     ColorPickerClasses = [];
-
-/*
-    A color wheel
-    @global
-    @group CPColorPanelMode
-*/
-CPWheelColorPickerMode = 1;
-/*
-    Slider based picker
-    @global
-    @group CPColorPanelMode
-*/
-CPSliderColorPickerMode = 2;
-
-CPColorPickerViewWidth  = 265;
-CPColorPickerViewHeight = 370;
 
 /*!
     @ingroup appkit
@@ -123,7 +127,7 @@ CPColorPickerViewHeight = 370;
 
     if (self)
     {
-        [[self contentView] setBackgroundColor:[CPColor colorWithWhite:0.95 alpha:1.0]];
+        //[[self contentView] setBackgroundColor:[CPColor colorWithWhite:0.95 alpha:1.0]];
 
         [self setTitle:@"Color Panel"];
         [self setLevel:CPFloatingWindowLevel];
@@ -248,8 +252,8 @@ CPColorPickerViewHeight = 370;
         var height = (TOOLBAR_HEIGHT + 10 + PREVIEW_HEIGHT + 5 + SWATCH_HEIGHT + 32),
             bounds = [[self contentView] bounds];
 
-        [view setFrameSize:CPSizeMake(bounds.size.width - 10, bounds.size.height - height)];
-        [view setFrameOrigin:CPPointMake(5, height)];
+        [view setFrameSize:CGSizeMake(bounds.size.width - 10, bounds.size.height - height)];
+        [view setFrameOrigin:CGPointMake(5, height)];
     }
 
     [_currentView removeFromSuperview];
@@ -419,7 +423,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
     CPCookie        _swatchCookie;
 }
 
-- (id)initWithFrame:(CPRect)aFrame
+- (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
 
@@ -437,7 +441,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
     for (var i = 0; i < 50; i++)
     {
         // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
-        var view = [[CPView alloc] initWithFrame:CPRectMake(13 * i + 1, 1, 12, 12)],
+        var view = [[CPView alloc] initWithFrame:CGRectMake(13 * i + 1, 1, 12, 12)],
             fillView = [[CPView alloc] initWithFrame:CGRectInset([view bounds], 1.0, 1.0)];
 
         [view setBackgroundColor:whiteColor];
@@ -592,7 +596,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
     CPColorPanel    _colorPanel;
 }
 
-- (id)initWithFrame:(CPRect)aFrame
+- (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
 
@@ -633,7 +637,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
     [[CPPasteboard pasteboardWithName:CPDragPboard] declareTypes:[CPColorDragType] owner:self];
 
-    var bounds = CPRectMake(0, 0, 15, 15);
+    var bounds = CGRectMake(0, 0, 15, 15);
 
     // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
     var dragView = [[CPView alloc] initWithFrame:bounds],
@@ -645,8 +649,8 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
     [dragView addSubview:dragFillView];
 
     [self dragView:dragView
-                at:CPPointMake(point.x - bounds.size.width / 2.0, point.y - bounds.size.height / 2.0)
-            offset:CPPointMake(0.0, 0.0)
+                at:CGPointMake(point.x - bounds.size.width / 2.0, point.y - bounds.size.height / 2.0)
+            offset:CGPointMake(0.0, 0.0)
              event:anEvent
         pasteboard:nil
             source:self

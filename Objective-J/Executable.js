@@ -26,16 +26,19 @@ var ExecutableUnloadedFileDependencies  = 0,
     ExecutableLoadedFileDependencies    = 2,
     AnonymousExecutableCount            = 0;
 
-function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String*/ aURL, /*Function*/ aFunction)
+function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String*/ aURL, /*Function*/ aFunction, /*ObjJCompiler*/aCompiler, /*Dictionary*/ aFilenameTranslateDictionary)
 {
     if (arguments.length === 0)
         return this;
 
     this._code = aCode;
-    this._function = aFunction || NULL;
+    this._function = aFunction || null;
     this._URL = makeAbsoluteURL(aURL || new CFURL("(Anonymous" + (AnonymousExecutableCount++) + ")"));
 
+    this._compiler = aCompiler || null;
+
     this._fileDependencies = fileDependencies;
+    this._filenameTranslateDictionary = aFilenameTranslateDictionary;
 
     if (fileDependencies.length)
     {
@@ -48,7 +51,8 @@ function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String
     if (this._function)
         return;
 
-    this.setCode(aCode);
+    if (!aCompiler)
+        this.setCode(aCode);
 }
 
 exports.Executable = Executable;
@@ -114,6 +118,17 @@ Executable.commonJSArguments = function()
     return this._commonJSArguments || [];
 };
 
+Executable.setFilenameTranslateDictionary = function(dict)
+{
+    this._filenameTranslateDictionary = dict;
+};
+
+Executable.filenameTranslateDictionary = function()
+{
+    return this._filenameTranslateDictionary || {};
+};
+
+
 Executable.prototype.toMarkedString = function()
 {
     var markedString = "@STATIC;1.0;",
@@ -135,6 +150,28 @@ Executable.prototype.execute = function()
 #if EXECUTION_LOGGING
     CPLog("EXECUTION: " + this.URL());
 #endif
+
+    if (this._compiler)
+    {
+        var fileDependencies = this.fileDependencies(),
+            index = 0,
+            count = fileDependencies.length;
+
+        this._compiler.pushImport(this.URL().lastPathComponent());
+        for (; index < count; ++index)
+        {
+            var fileDependency = fileDependencies[index],
+                isQuoted = fileDependency.isLocal(),
+                URL = fileDependency.URL();
+
+            this.fileExecuter()(URL, isQuoted);
+        }
+        this._compiler.popImport();
+
+        this.setCode(this._compiler.compilePass2());
+        this._compiler = null;
+    }
+
     var oldContextBundle = CONTEXT_BUNDLE;
 
     // FIXME: Should we have stored this?
@@ -410,10 +447,30 @@ DISPLAY_NAME(Executable.fileImporterForURL);
 var cachedFileExecutableSearchers = { },
     cachedFileExecutableSearchResults = { };
 
+function countProp(x) {
+    var count = 0;
+    for (var k in x) {
+        if (x.hasOwnProperty(k)) {
+            ++count;
+        }
+    }
+    return count;
+}
+
+Executable.resetCachedFileExecutableSearchers = function()
+{
+    cachedFileExecutableSearchers = { };
+    cachedFileExecutableSearchResults = { };
+    cachedFileImporters = { };
+    cachedFileExecuters = { };
+    fileDependencyMarkers = { };
+}
+
 Executable.fileExecutableSearcherForURL = function(/*CFURL*/ referenceURL)
 {
     var referenceURLString = referenceURL.absoluteString(),
         cachedFileExecutableSearcher = cachedFileExecutableSearchers[referenceURLString],
+        aFilenameTranslateDictionary = Executable.filenameTranslateDictionary ? Executable.filenameTranslateDictionary() : null;
         cachedSearchResults = { };
 
     if (!cachedFileExecutableSearcher)
@@ -433,7 +490,7 @@ Executable.fileExecutableSearcherForURL = function(/*CFURL*/ referenceURL)
                 if (!isAbsoluteURL)
                     aURL = new CFURL(aURL, referenceURL);
 
-                StaticResource.resolveResourceAtURL(aURL, NO, completed);
+                StaticResource.resolveResourceAtURL(aURL, NO, completed, aFilenameTranslateDictionary);
             }
             else
                 StaticResource.resolveResourceAtURLSearchingIncludeURLs(aURL, completed);
@@ -441,11 +498,14 @@ Executable.fileExecutableSearcherForURL = function(/*CFURL*/ referenceURL)
             function completed(/*StaticResource*/ aStaticResource)
             {
                 if (!aStaticResource)
-                    throw new Error("Could not load file at " + aURL);
+                {
+                    var compilingFileUrl = ObjJAcornCompiler ? ObjJAcornCompiler.currentCompileFile : null;
+                    throw new Error("Could not load file at " + aURL + (compilingFileUrl ? " when compiling " + compilingFileUrl : ""));
+                }
 
                 cachedFileExecutableSearchResults[cacheUID] = aStaticResource;
 
-                success(new FileExecutable(aStaticResource.URL()));
+                success(new FileExecutable(aStaticResource.URL(), aFilenameTranslateDictionary));
             }
         };
 

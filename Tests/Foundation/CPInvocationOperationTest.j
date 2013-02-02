@@ -1,6 +1,6 @@
 @import <Foundation/CPInvocationOperation.j>
 
-@implementation SomeObject : CPObject
+@implementation SomeObject2 : CPObject
 {
     CPString result @accessors;
 }
@@ -17,7 +17,7 @@
 
 - (void)testRunInvocation
 {
-    var so = [[SomeObject alloc] init],
+    var so = [[SomeObject2 alloc] init],
         io = [[CPInvocationOperation alloc] initWithTarget:so selector:@selector(setAString:) object:@"Hello World"];
 
     [io start];

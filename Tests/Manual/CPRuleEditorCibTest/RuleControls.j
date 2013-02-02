@@ -7,7 +7,7 @@
 {
 }
 
-- (id)initWithFrame:(CPRect)frame
+- (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:CGRectMake(0, 0, 500, 24)];
 
@@ -46,7 +46,7 @@
 {
 }
 
-- (id) initWithFrame:(CPRect)frame
+- (id) initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:CGRectMake(0, 0, 500, 18)];
 

@@ -21,6 +21,7 @@
  */
 
 @import "CPControl.j"
+@import "CPWindow_Constants.j"
 
 
 /*! SLIDER STATES */
@@ -39,6 +40,8 @@ CPCircularSlider    = 1;
     double          _altIncrementValue;
 
     BOOL            _isVertical;
+
+    CGSize          _dragOffset;
 }
 
 + (CPString)defaultThemeClass

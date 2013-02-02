@@ -23,7 +23,7 @@
         connection = [CPURLConnection connectionWithRequest:request delegate:self];
 
     rootItem = nil;
-    [theWindow setFullBridge:YES];
+    [theWindow setFullPlatformWindow:YES];
 
 }
 
@@ -38,9 +38,9 @@
     [outlineView reloadData];
 }
 
-// ========================== 
-// ! CPOutlineView Delegate   
-// ========================== 
+// ==========================
+// ! CPOutlineView Delegate
+// ==========================
 
 - (int)outlineView:(CPOutlineView)theOutlineView numberOfChildrenOfItem:(id)theItem
 {
