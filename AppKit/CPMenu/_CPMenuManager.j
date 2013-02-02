@@ -39,7 +39,7 @@ _CPMenuManagerScrollingStateUp      = -1;
 _CPMenuManagerScrollingStateDown    = 1;
 _CPMenuManagerScrollingStateNone    = 0;
 
-var STICKY_TIME_INTERVAL            = 0.1,
+var STICKY_TIME_INTERVAL            = 0.4,
     SharedMenuManager               = nil;
 
 @implementation _CPMenuManager: CPObject
