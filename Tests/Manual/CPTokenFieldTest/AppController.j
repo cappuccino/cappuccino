@@ -88,9 +88,16 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     [tokenFieldD setDelegate:self];
 
     var tokenFieldDEditable = [CPCheckBox checkBoxWithTitle:"Editable"];
-    [tokenFieldDEditable setFrame:CGRectMake(525, CGRectGetMinY([tokenFieldD frame]), 200, 30)];
+    [tokenFieldDEditable sizeToFit];
+    [tokenFieldDEditable setFrameOrigin:CGPointMake(525, 5 + CGRectGetMinY([tokenFieldD frame]))];
     [tokenFieldDEditable bind:CPValueBinding toObject:tokenFieldD withKeyPath:@"editable" options:nil];
     [contentView addSubview:tokenFieldDEditable];
+
+    var tokenFieldDMenus = [CPCheckBox checkBoxWithTitle:"Menus"];
+    [tokenFieldDMenus sizeToFit];
+    [tokenFieldDMenus setFrameOrigin:CGPointMake(CGRectGetMaxX([tokenFieldDEditable frame]), 5 + CGRectGetMinY([tokenFieldD frame]))];
+    [tokenFieldDMenus bind:CPValueBinding toObject:self withKeyPath:@"tokenFieldDHasMenus" options:nil];
+    [contentView addSubview:tokenFieldDMenus];
 
     allPersons = [
         [Person personWithFirstName:@"Luc" lastName:@"Vauvillier"],
@@ -111,6 +118,27 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
 
     [theWindow orderFront:self];
 
+}
+
+- (void)setTokenFieldDHasMenus:(BOOL)shouldHaveMenus
+{
+    if (shouldHaveMenus)
+    {
+        [[tokenFieldD objectValue] enumerateObjectsUsingBlock:function(aPerson)
+            {
+                var menu = [CPMenu new];
+                for (var i = 0; i < 3; i++)
+                    [menu addItem:[[CPMenuItem alloc] initWithTitle:[CPString stringWithFormat:@"%@ Item %i", aPerson, i] action:nil keyEquivalent:nil]];
+                aPerson.menu = menu;
+            }];
+    }
+    else
+        [[tokenFieldD objectValue] makeObjectsPerformSelector:@selector(setMenu:) withObject:nil];
+}
+
+- (BOOL)tokenFieldDHasMenus
+{
+    return !![[[tokenFieldD objectValue] firstObject] menu];
 }
 
 - (void)getObjectValues:(id)sender
@@ -177,6 +205,16 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     return tokens;
 }
 
+- (BOOL)tokenField:(CPTokenField)aTokenField hasMenuForRepresentedObject:(id)aRepresentedObject
+{
+    return !!aRepresentedObject.menu;
+}
+
+- (CPMenu)tokenField:(CPTokenField)aTokenField menuForRepresentedObject:(id)aRepresentedObject
+{
+    return aRepresentedObject.menu;
+}
+
 @end
 
 // A sample of a custom Object
@@ -185,6 +223,8 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
 {
     CPString    _firstName;
     CPString    _lastName;
+
+    CPMenu      menu @accessors;
 }
 
 + (id)personWithFirstName:(CPString)aFirstName lastName:(CPString)aLastName

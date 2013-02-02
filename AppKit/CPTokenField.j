@@ -1241,6 +1241,20 @@ var CPScrollDestinationNone             = 0,
     return aString;
 }
 
+- (CPMenu)_menuForRepresentedObject:(id)aRepresentedObject
+{
+    var delegate = [self delegate];
+    if ([delegate respondsToSelector:@selector(tokenField:hasMenuForRepresentedObject:)] &&
+        [delegate respondsToSelector:@selector(tokenField:menuForRepresentedObject:)])
+    {
+        var hasMenu = [delegate tokenField:self hasMenuForRepresentedObject:aRepresentedObject];
+        if (hasMenu)
+            return [delegate tokenField:self menuForRepresentedObject:aRepresentedObject];
+    }
+
+    return nil;
+}
+
 // We put the string on the pasteboard before calling this delegate method.
 // By default, we write the NSStringPboardType as well as an array of NSStrings.
 // - (BOOL)tokenField:(NSTokenField *)tokenField writeRepresentedObjects:(NSArray *)objects toPasteboard:(NSPasteboard *)pboard;
@@ -1396,6 +1410,11 @@ var CPScrollDestinationNone             = 0,
 {
     if ([self isEditable])
         [_tokenField _deleteToken:self];
+}
+
+- (CPMenu)menu
+{
+    return [_tokenField _menuForRepresentedObject:_representedObject];
 }
 
 @end
