@@ -1440,6 +1440,16 @@ var CPScrollDestinationNone             = 0,
     return "tokenfield-token-close-button";
 }
 
+- (void)mouseEntered:(CPEvent)anEvent
+{
+    // Don't toggle hover state from within the button - we use the hover state of the token field as a whole.
+}
+
+- (void)mouseExited:(CPEvent)anEvent
+{
+    // Don't toggle hover state from within the button - we use the hover state of the token field as a whole.
+}
+
 @end
 
 
