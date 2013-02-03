@@ -1469,7 +1469,7 @@ var themedButtonValues = nil,
 
         themeValues =
         [
-            [@"stroke-color",       [CPColor colorWithHexString:@"E3E3E3"]],
+            [@"stroke-color",       [CPColor colorWithHexString:@"B0B0B0"]],
             [@"stroke-width",       1.0],
             [@"border-radius",      2.0],
             [@"background-color",   [CPColor colorWithHexString:@"FFFFCA"]],

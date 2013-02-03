@@ -22,13 +22,11 @@
 
 @import <Foundation/CPGeometry.j>
 
+@import "CGGeometry.j"
 @import "CGGradient.j"
 @import "_CPWindowView.j"
 
 @global CPPopoverAppearanceMinimal
-
-#define ALIGN_STROKE(point)  (FLOOR(point) === (point) ? (point) + halfStrokeWidth : (point))
-#define ALIGN_COORD(point)   (FLOOR(point))
 
 var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
     _CPPopoverWindowViewRadius = 5.0,
@@ -176,7 +174,6 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
     {
         gradient = [self valueForThemeAttribute:@"background-gradient"];
         strokeColor = [self valueForThemeAttribute:@"stroke-color"];
-        console.error(gradient);
     }
     else
     {
@@ -200,10 +197,10 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
         xMax = _CGRectGetMaxX(frame),
         yMin = _CGRectGetMinY(frame),
         yMax = _CGRectGetMaxY(frame),
-        arrowMinX = ALIGN_COORD(xMin + radius + strokeWidth),
-        arrowMaxX = ALIGN_COORD(xMax - radius - strokeWidth),
-        arrowMinY = ALIGN_COORD(yMin + radius + strokeWidth),
-        arrowMaxY = ALIGN_COORD(yMax - radius + strokeWidth),
+        arrowMinX = CGAlignCoordinate(xMin + radius + strokeWidth),
+        arrowMaxX = CGAlignCoordinate(xMax - radius - strokeWidth),
+        arrowMinY = CGAlignCoordinate(yMin + radius + strokeWidth),
+        arrowMaxY = CGAlignCoordinate(yMax - radius + strokeWidth),
         arrowAnchor = _CGPointMakeZero(),
         arrowStart = _CGPointMakeZero(),
         pt = _CGPointMakeZero();
@@ -214,23 +211,23 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
         case CPMinXEdge:
         case CPMaxXEdge:
             // origin nw
-            pt.x = ALIGN_COORD(xMin + radius);
+            pt.x = CGAlignCoordinate(xMin + radius);
             pt.y = yMin;
             CGContextMoveToPoint(context, pt.x, pt.y);
 
             // ne
-            pt.x = ALIGN_COORD(xMax - radius);
+            pt.x = CGAlignCoordinate(xMax - radius);
             CGContextAddLineToPoint(context, pt.x, pt.y);
-            CGContextAddCurveToPoint(context, pt.x, pt.y, xMax, yMin, xMax, ALIGN_COORD(yMin + radius));
+            CGContextAddCurveToPoint(context, pt.x, pt.y, xMax, yMin, xMax, CGAlignCoordinate(yMin + radius));
 
             if (_preferredEdge === CPMinXEdge)
             {
                 // arrow CPMinXEdge
-                arrowAnchor.x = ALIGN_STROKE(xMax);
-                arrowAnchor.y = ALIGN_COORD((frame.size.height / 2) + yMin + _arrowOffsetY);
+                arrowAnchor.x = CGAlignStroke(xMax, strokeWidth);
+                arrowAnchor.y = CGAlignCoordinate((frame.size.height / 2) + yMin + _arrowOffsetY);
 
                 // to top edge
-                pt.y = ALIGN_COORD(arrowAnchor.y - (arrowWidth / 2));
+                pt.y = CGAlignCoordinate(arrowAnchor.y - (arrowWidth / 2));
 
                 // adjust starting point to not go beyond the corner
                 if (pt.y <= arrowMinY)
@@ -243,36 +240,36 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
                 CGContextAddLineToPoint(context, pt.x, pt.y);
 
                 // top edge -> point
-                pt.x = ALIGN_STROKE(arrowAnchor.x + arrowHeight);
+                pt.x = CGAlignStroke(arrowAnchor.x + arrowHeight, strokeWidth);
                 pt.y = arrowAnchor.y;
                 CGContextAddLineToPoint(context, pt.x, pt.y);
 
                 // point -> bottom edge
                 pt.x = arrowAnchor.x;
-                pt.y = ALIGN_COORD(arrowStart.y + arrowWidth);
+                pt.y = CGAlignCoordinate(arrowStart.y + arrowWidth);
                 CGContextAddLineToPoint(context, pt.x, pt.y);
             }
 
             // se
             pt.x = xMax;
-            pt.y = ALIGN_COORD(yMax - radius);
+            pt.y = CGAlignCoordinate(yMax - radius);
             CGContextAddLineToPoint(context, pt.x, pt.y);
-            CGContextAddCurveToPoint(context, pt.x, pt.y, pt.x, yMax, ALIGN_COORD(xMax - radius), yMax);
+            CGContextAddCurveToPoint(context, pt.x, pt.y, pt.x, yMax, CGAlignCoordinate(xMax - radius), yMax);
 
             // sw
-            pt.x = ALIGN_COORD(xMin + radius);
+            pt.x = CGAlignCoordinate(xMin + radius);
             pt.y = yMax;
             CGContextAddLineToPoint(context, pt.x, pt.y);
-            CGContextAddCurveToPoint(context, pt.x, pt.y, xMin, pt.y, xMin, ALIGN_COORD(yMax - radius));
+            CGContextAddCurveToPoint(context, pt.x, pt.y, xMin, pt.y, xMin, CGAlignCoordinate(yMax - radius));
 
             if (_preferredEdge === CPMaxXEdge)
             {
                 // arrow CPMaxXEdge
-                arrowAnchor.x = ALIGN_STROKE(xMin);
-                arrowAnchor.y = ALIGN_COORD((frame.size.height / 2) + yMin + _arrowOffsetY);
+                arrowAnchor.x = CGAlignStroke(xMin, strokeWidth);
+                arrowAnchor.y = CGAlignCoordinate((frame.size.height / 2) + yMin + _arrowOffsetY);
 
                 // to bottom edge
-                pt.y = ALIGN_COORD(arrowAnchor.y + (arrowWidth / 2));
+                pt.y = CGAlignCoordinate(arrowAnchor.y + (arrowWidth / 2));
 
                 // adjust starting point to not go beyond the corner
                 if ((pt.y - arrowWidth) < arrowMinY)
@@ -285,43 +282,43 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
                 CGContextAddLineToPoint(context, pt.x, pt.y);
 
                 // bottom edge -> point
-                pt.x = ALIGN_STROKE(arrowAnchor.x - arrowHeight);
+                pt.x = CGAlignStroke(arrowAnchor.x - arrowHeight, strokeWidth);
                 pt.y = arrowAnchor.y;
                 CGContextAddLineToPoint(context, pt.x, pt.y);
 
                 // point -> top edge
                 pt.x = arrowAnchor.x;
-                pt.y = ALIGN_COORD(arrowStart.y - arrowWidth);
+                pt.y = CGAlignCoordinate(arrowStart.y - arrowWidth);
                 CGContextAddLineToPoint(context, pt.x, pt.y);
             }
 
             // nw
             pt.x = xMin;
-            pt.y = ALIGN_COORD(yMin + radius);
+            pt.y = CGAlignCoordinate(yMin + radius);
             CGContextAddLineToPoint(context, pt.x, pt.y);
-            CGContextAddCurveToPoint(context, pt.x, pt.y, pt.x, yMin, ALIGN_COORD(xMin + radius), yMin);
+            CGContextAddCurveToPoint(context, pt.x, pt.y, pt.x, yMin, CGAlignCoordinate(xMin + radius), yMin);
             break;
 
         case CPMaxYEdge:
         case CPMinYEdge:
             // origin sw
             pt.x = xMin;
-            pt.y = ALIGN_COORD(yMax - radius);
+            pt.y = CGAlignCoordinate(yMax - radius);
             CGContextMoveToPoint(context, pt.x, pt.y);
 
             // nw
-            pt.y = ALIGN_COORD(yMin + radius);
+            pt.y = CGAlignCoordinate(yMin + radius);
             CGContextAddLineToPoint(context, pt.x, pt.y);
-            CGContextAddCurveToPoint(context, pt.x, pt.y, pt.x, yMin, ALIGN_COORD(xMin + radius), yMin);
+            CGContextAddCurveToPoint(context, pt.x, pt.y, pt.x, yMin, CGAlignCoordinate(xMin + radius), yMin);
 
             if (_preferredEdge === CPMaxYEdge)
             {
                 // arrow CPMaxYEdge
-                arrowAnchor.x = ALIGN_COORD((frame.size.width / 2) + xMin + _arrowOffsetX);
-                arrowAnchor.y = ALIGN_STROKE(yMin + _arrowOffsetY);
+                arrowAnchor.x = CGAlignCoordinate((frame.size.width / 2) + xMin + _arrowOffsetX);
+                arrowAnchor.y = CGAlignStroke(yMin + _arrowOffsetY, strokeWidth);
 
                 // to left edge
-                pt.x = ALIGN_COORD(arrowAnchor.x - (arrowWidth / 2));
+                pt.x = CGAlignCoordinate(arrowAnchor.x - (arrowWidth / 2));
 
                 // adjust starting point to not go beyond the corner
                 if (pt.x < arrowMinX)
@@ -335,35 +332,35 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
 
                 // left edge -> point
                 pt.x = arrowAnchor.x;
-                pt.y = ALIGN_STROKE(arrowAnchor.y - arrowHeight);
+                pt.y = CGAlignStroke(arrowAnchor.y - arrowHeight, strokeWidth);
                 CGContextAddLineToPoint(context, pt.x, pt.y);
 
                 // point -> right edge
-                pt.x = ALIGN_COORD(arrowStart.x + arrowWidth);
+                pt.x = CGAlignCoordinate(arrowStart.x + arrowWidth);
                 pt.y = arrowAnchor.y;
                 CGContextAddLineToPoint(context, pt.x, pt.y);
             }
 
             // ne
-            pt.x = ALIGN_COORD(xMax - radius);
+            pt.x = CGAlignCoordinate(xMax - radius);
             pt.y = yMin;
             CGContextAddLineToPoint(context, pt.x, pt.y);
-            CGContextAddCurveToPoint(context, pt.x, pt.y, xMax, pt.y, xMax, ALIGN_COORD(yMin + radius));
+            CGContextAddCurveToPoint(context, pt.x, pt.y, xMax, pt.y, xMax, CGAlignCoordinate(yMin + radius));
 
             // se
             pt.x = xMax;
-            pt.y = ALIGN_COORD(yMax - radius);
+            pt.y = CGAlignCoordinate(yMax - radius);
             CGContextAddLineToPoint(context, pt.x, pt.y);
-            CGContextAddCurveToPoint(context, pt.x, pt.y, pt.x, yMax, ALIGN_COORD(xMax - radius), yMax);
+            CGContextAddCurveToPoint(context, pt.x, pt.y, pt.x, yMax, CGAlignCoordinate(xMax - radius), yMax);
 
             if (_preferredEdge === CPMinYEdge)
             {
                 // arrow CPMinYEdge
-                arrowAnchor.x = ALIGN_COORD((frame.size.width / 2) + xMin + _arrowOffsetX);
-                arrowAnchor.y = ALIGN_STROKE(yMax + _arrowOffsetY);
+                arrowAnchor.x = CGAlignCoordinate((frame.size.width / 2) + xMin + _arrowOffsetX);
+                arrowAnchor.y = CGAlignStroke(yMax + _arrowOffsetY, strokeWidth);
 
                 // to right edge
-                pt.x = ALIGN_COORD(arrowAnchor.x + (arrowWidth / 2));
+                pt.x = CGAlignCoordinate(arrowAnchor.x + (arrowWidth / 2));
 
                 // adjust starting point to not go beyond the corner
                 if ((pt.x - arrowWidth) < arrowMinX)
@@ -377,20 +374,20 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
 
                 // right edge -> point
                 pt.x = arrowAnchor.x;
-                pt.y = ALIGN_STROKE(arrowAnchor.y + arrowHeight);
+                pt.y = CGAlignStroke(arrowAnchor.y + arrowHeight, strokeWidth);
                 CGContextAddLineToPoint(context, pt.x, pt.y);
 
                 // point -> left edge
-                pt.x = ALIGN_COORD(arrowStart.x - arrowWidth);
+                pt.x = CGAlignCoordinate(arrowStart.x - arrowWidth);
                 pt.y = arrowAnchor.y;
                 CGContextAddLineToPoint(context, pt.x, pt.y);
             }
 
             // sw
-            pt.x = ALIGN_COORD(xMin + radius);
+            pt.x = CGAlignCoordinate(xMin + radius);
             pt.y = yMax;
             CGContextAddLineToPoint(context, pt.x, pt.y);
-            CGContextAddCurveToPoint(context, pt.x, pt.y, xMin, pt.y, xMin, ALIGN_COORD(yMax - radius));
+            CGContextAddCurveToPoint(context, pt.x, pt.y, xMin, pt.y, xMin, CGAlignCoordinate(yMax - radius));
             break;
 
         default:

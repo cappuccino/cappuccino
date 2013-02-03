@@ -109,7 +109,6 @@
     CGContextAddPath(context, CGPathWithRoundedRectangleInRect(aRect, radius, radius, YES, YES, YES, YES));
     CGContextClosePath(context);
 
-    //Draw it
     CGContextStrokePath(context);
     CGContextFillPath(context);
 }
