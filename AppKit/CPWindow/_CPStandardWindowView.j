@@ -294,6 +294,7 @@
 
 - (void)_enableSheet:(BOOL)enable
 {
+
     [super _enableSheet:enable];
 
     [_headView setHidden:enable];
@@ -309,11 +310,13 @@
 
     // resize the window
     var theWindow = [self window],
-        frame = [theWindow frame];
+        frame = [theWindow frame],
+        dy;
 
-    var dy = _CGRectGetHeight([_headView frame]) + _CGRectGetHeight([_dividerView frame]);
     if (enable)
-        dy = -dy;
+        dy = -(_CGRectGetHeight([_headView frame]) + _CGRectGetHeight([_dividerView frame]));
+    else
+        dy = [self toolbarMaxY] + 1.0;
 
     var newHeight = _CGRectGetMaxY(frame) + dy,
         newWidth = _CGRectGetMaxX(frame);
@@ -321,9 +324,10 @@
     frame.size.height += dy;
 
     [self setFrameSize:_CGSizeMake(newWidth, newHeight)];
+
     [self tile];
     [theWindow setFrame:frame display:NO animate:NO];
-
+    [self setNeedsLayout];
 }
 
 - (void)layoutSubviews
