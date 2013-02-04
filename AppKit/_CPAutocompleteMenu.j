@@ -115,8 +115,13 @@ var _CPAutocompleteMenuMaximumHeight = 307;
 
 - (void)setIndexOfSelectedItem:(int)anIndex
 {
-    [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:anIndex] byExtendingSelection:NO];
-    [tableView scrollRowToVisible:anIndex];
+    if (anIndex == CPNotFound)
+        [tableView selectRowIndexes:[CPIndexSet indexSet] byExtendingSelection:NO];
+    else
+    {
+        [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:anIndex] byExtendingSelection:NO];
+        [tableView scrollRowToVisible:anIndex];
+    }
 }
 
 - (int)indexOfSelectedItem

@@ -1174,6 +1174,32 @@ var themedButtonValues = nil,
     return token;
 }
 
++ (_CPTokenFieldTokenDisclosureButton)themedTokenFieldDisclosureButton
+{
+    var button = [[_CPTokenFieldTokenDisclosureButton alloc] initWithFrame:CGRectMake(0, 0, 9, 9)],
+
+        arrowImage = PatternColor("token-disclosure.png", 7.0, 6.0),
+        arrowImageHiglighted = PatternColor("token-disclosure-highlighted.png", 7.0, 6.0),
+
+        themeValues =
+        [
+            [@"content-inset",  CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateNormal],
+
+            [@"bezel-color",    nil,                                CPThemeStateBordered],
+            [@"bezel-color",    arrowImage,                         CPThemeStateBordered | CPThemeStateHovered],
+            [@"bezel-color",    arrowImageHiglighted,               CPThemeStateBordered | CPThemeStateHovered | CPThemeStateHighlighted],
+
+            [@"min-size",       CGSizeMake(7.0, 6.0)],
+            [@"max-size",       CGSizeMake(7.0, 6.0)],
+
+            [@"offset",         CGPointMake(17, 7)]
+        ];
+
+    [self registerThemeValues:themeValues forView:button];
+
+    return button;
+}
+
 + (_CPTokenFieldTokenCloseButton)themedTokenFieldTokenCloseButton
 {
     var button = [[_CPTokenFieldTokenCloseButton alloc] initWithFrame:CGRectMake(0, 0, 9, 9)],
