@@ -323,5 +323,23 @@ function CPStringFromCGInset(anInset)
 }
 
 /*!
+    When drawing lines in a canvas, they have to be aligned to half the stroke width.
+    This function aligns an x or y coordinate so that drawing a line along the opposite
+    coordinate will draw correctly.
+*/
+function CGAlignStroke(coord, strokeWidth)
+{
+    return FLOOR(coord) === (coord) ? (coord) + (strokeWidth / 2) : (coord);
+}
+
+/*!
+    Ensure a coordinate falls exactly on a pixel boundary.
+*/
+function CGAlignCoordinate(coord)
+{
+    return FLOOR(coord);
+}
+
+/*!
     @}
 */

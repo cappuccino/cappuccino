@@ -4,6 +4,8 @@
 <dict>
 	<key>Main cib file base name</key>
 	<string>MainMenu.cib</string>
+    <key>CPDefaultTheme</key>
+    <string>Aristo2</string>
 	<key>CPBundleName</key>
 	<string>CPBox</string>
 </dict>
