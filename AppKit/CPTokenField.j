@@ -110,6 +110,7 @@ CPTokenFieldDeleteButtonType     = 1;
     {
         _completionDelay = [[self class] defaultCompletionDelay];
         _tokenizingCharacterSet = [[self class] defaultTokenizingCharacterSet];
+        _buttonType = CPTokenFieldDisclosureButtonType;
         [self setBezeled:YES];
 
         [self _init];
@@ -567,7 +568,7 @@ CPTokenFieldDeleteButtonType     = 1;
 
             if (newToken === nil)
             {
-                newToken = [[_CPTokenFieldToken alloc] init];
+                newToken = [_CPTokenFieldToken new];
                 [newToken setTokenField:self];
                 [newToken setRepresentedObject:tokenObject];
                 [newToken setStringValue:tokenValue];
@@ -1309,9 +1310,6 @@ CPTokenFieldDeleteButtonType     = 1;
 
 @end
 
-var _CPTokenFieldDisclosureButtonType = 0,
-    _CPTokenFieldDeleteButtonType     = 1;
-
 @implementation _CPTokenFieldToken : CPTextField
 {
     _CPTokenFieldTokenCloseButton       _deleteButton;
@@ -1362,6 +1360,7 @@ var _CPTokenFieldDisclosureButtonType = 0,
 - (void)setRepresentedObject:(id)representedObject
 {
     _representedObject = representedObject;
+    [self setNeedsLayout];
 }
 
 - (void)setEditable:(BOOL)shouldBeEditable
@@ -1375,10 +1374,10 @@ var _CPTokenFieldDisclosureButtonType = 0,
     var r = [super setThemeState:aState];
 
     // Share hover state with the disclosure and delete buttons.
-    if (r && aState & CPThemeStateHovered)
+    if (aState & CPThemeStateHovered)
     {
-        [_disclosureButton setThemeState:aState];
-        [_deleteButton setThemeState:aState];
+        [_disclosureButton setThemeState:CPThemeStateHovered];
+        [_deleteButton setThemeState:CPThemeStateHovered];
     }
 
     return r;
@@ -1389,10 +1388,10 @@ var _CPTokenFieldDisclosureButtonType = 0,
     var r = [super unsetThemeState:aState];
 
     // Share hover state with the disclosure and delete button.
-    if (r && aState & CPThemeStateHovered)
+    if (aState & CPThemeStateHovered)
     {
-        [_disclosureButton unsetThemeState:aState];
-        [_deleteButton unsetThemeState:aState];
+        [_disclosureButton unsetThemeState:CPThemeStateHovered];
+        [_deleteButton unsetThemeState:CPThemeStateHovered];
     }
 
     return r;
@@ -1460,13 +1459,11 @@ var _CPTokenFieldDisclosureButtonType = 0,
                                            positioned:CPWindowBelow
                       relativeToEphemeralSubviewNamed:@"content-view"];
 
-    if (bezelView)
+    if (bezelView && _tokenField)
     {
         switch (_buttonType)
         {
             case CPTokenFieldDisclosureButtonType:
-                if (!_disclosureButton)
-                    return;
                 var shouldBeEnabled = [self hasMenu];
                 [_disclosureButton setHidden:!shouldBeEnabled];
 
@@ -1480,9 +1477,6 @@ var _CPTokenFieldDisclosureButtonType = 0,
                 [_disclosureButton setFrame:_CGRectMake(CGRectGetMaxX(frame) - buttonOffset.x, CGRectGetMinY(frame) + buttonOffset.y, buttonSize.width, buttonSize.height)];
                 break;
             case CPTokenFieldDeleteButtonType:
-                if (!_deleteButton)
-                    return;
-
                 [_deleteButton setEnabled:[self isEditable] && [self isEnabled]];
 
                 var frame = [bezelView frame],
@@ -1606,7 +1600,8 @@ var _CPTokenFieldDisclosureButtonType = 0,
 
 
 var CPTokenFieldTokenizingCharacterSetKey   = "CPTokenFieldTokenizingCharacterSetKey",
-    CPTokenFieldCompletionDelayKey          = "CPTokenFieldCompletionDelay";
+    CPTokenFieldCompletionDelayKey          = "CPTokenFieldCompletionDelay",
+    CPTokenFieldButtonTypeKey               = "CPTokenFieldButtonTypeKey";
 
 @implementation CPTokenField (CPCoding)
 
@@ -1618,6 +1613,7 @@ var CPTokenFieldTokenizingCharacterSetKey   = "CPTokenFieldTokenizingCharacterSe
     {
         _tokenizingCharacterSet = [aCoder decodeObjectForKey:CPTokenFieldTokenizingCharacterSetKey] || [[self class] defaultTokenizingCharacterSet];
         _completionDelay = [aCoder decodeDoubleForKey:CPTokenFieldCompletionDelayKey] || [[self class] defaultCompletionDelay];
+        _buttonType = [aCoder decodeIntForKey:CPTokenFieldButtonTypeKey] || CPTokenFieldDisclosureButtonType;
 
         [self _init];
 
@@ -1634,6 +1630,7 @@ var CPTokenFieldTokenizingCharacterSetKey   = "CPTokenFieldTokenizingCharacterSe
 
     [aCoder encodeInt:_tokenizingCharacterSet forKey:CPTokenFieldTokenizingCharacterSetKey];
     [aCoder encodeDouble:_completionDelay forKey:CPTokenFieldCompletionDelayKey];
+    [aCoder encodeInt:_buttonType forKey:CPTokenFieldButtonTypeKey];
 }
 
 @end
