@@ -52,20 +52,20 @@
 
         [self setFrame:frame];
 
-        if (borderColor)
-            [self setBorderColor:borderColor];
+        if (_boxType !== CPBoxPrimary && _boxType !== CPBoxSecondary)
+        {
+            // Primary and secondary boxes have a fixed look that can't be customised, but for a CPBoxCustom
+            // all of these parameters can be changed.
+            if (borderColor)
+                [self setBorderColor:borderColor];
 
-        if (fillColor)
-            [self setFillColor:fillColor];
+            if (fillColor)
+                [self setFillColor:fillColor];
 
-        if (cornerRadius)
             [self setCornerRadius:cornerRadius];
-
-        if (borderWidth)
             [self setBorderWidth:borderWidth];
-
-        if (contentMargin)
             [self setContentViewMargins:contentMargin];
+        }
 
         _title         = [[aCoder decodeObjectForKey:@"NSTitleCell"] objectValue] || @"";
         _titlePosition = [aCoder decodeObjectForKey:@"NSTitlePosition"];
