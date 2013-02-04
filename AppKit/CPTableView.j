@@ -3112,7 +3112,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         }
         else if (![self infoForBinding:@"content"])
         {
-            CPLog(@"no content binding established and data source " + [_dataSource description] + " does not implement tableView:objectValueForTableColumn:row:");
+            CPLog.warn(@"no content binding established and data source " + [_dataSource description] + " does not implement tableView:objectValueForTableColumn:row:");
         }
     }
 

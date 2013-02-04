@@ -30,6 +30,7 @@
 @import "CPGraphicsContext.j"
 @import "CPResponder.j"
 @import "CPTheme.j"
+@import "CPWindow_Constants.j"
 @import "_CPDisplayServer.j"
 
 @class _CPToolTip
@@ -41,9 +42,6 @@
 @class CPScrollView
 
 @global appkit_tag_dom_elements
-@global CPWindowAbove
-@global CPBorderlessWindowMask
-@global CPScreenSaverWindowLevel
 
 /*
     @global

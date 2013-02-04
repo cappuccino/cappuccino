@@ -96,17 +96,23 @@ Use spaces, not tabs. Tabs should only appear in files that require them for sem
 
 ---
 
-A case label should be indented once from its switch statement. The case statement is indented out from the longest label.
+A case label should be indented once from its switch statement. The case statement is indented once from its label. There should be one blank line between case + code blocks.
 
 ##### Right:
 
     switch (condition)
     {
         case fooCondition:
-        case barCondition:  i++;
-                            break;
+        case barCondition:
+            i++;
+            break;
+            
+        case bazCondition:
+            i += 2;
+            break;
 
-        default:            i--;
+        default:
+            i--;
     }
 
 ##### Wrong:
@@ -116,6 +122,8 @@ A case label should be indented once from its switch statement. The case stateme
         case barCondition:
             i++;
             break;
+        case bazCondition:  i += 2;
+                            break;             
         default:
             i--;
     }
@@ -212,6 +220,7 @@ Each statement should get its own line.
         y;
     x++;
     y++;
+    
     if (condition)
         doIt();
 
@@ -220,6 +229,41 @@ Each statement should get its own line.
     var x, y;
     x++; y++;
     if (condition) doIt();
+
+There should be blank lines around bracketed code blocks and control structures, and a blank line after multiline var blocks.
+
+##### Right:
+
+    var x,
+        y;
+        
+    x++;
+    y++;
+    
+    if (condition)
+        doIt();
+    else
+    {
+        doSomethingElse();
+        doMore();
+    }
+    
+    return x;
+
+##### Wrong:
+
+    var x,
+        y;
+    x++;
+    y++;
+    if (condition)
+        doIt();
+    else
+    {
+        doSomethingElse();
+        doMore();
+    }
+    return x;        
 
 ### Braces
 
@@ -338,10 +382,12 @@ Variable declarations should be created as needed, rather than up front ("hoiste
     - (BOOL)doSomething:(id)aFoo
     {
         var importantVariable = [aFoo message];
+        
         if (!importantVariable)
             return;
 
         var index = [aFoo count];
+        
         while (index--)
         {
             var innerVariable = [aFoo objectAtIndex:index];
@@ -409,15 +455,17 @@ Precede boolean values with words like "is" and "did".
 
 ##### Right:
 
-    var isValid;
-    var didSendData;
+    var isValid,
+        didSendData;
+        
     - (BOOL)isEditable;
     - (BOOL)didReceiveResponse;
 
 ##### Wrong:
 
-    var valid;
-    var sentData;
+    var valid,
+        sentData;
+        
     - (BOOL)editable;
     - (BOOL)receivedResponse;
 
