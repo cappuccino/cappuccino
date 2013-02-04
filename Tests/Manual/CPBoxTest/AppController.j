@@ -18,11 +18,11 @@
     @outlet     CPScrollView mainScrollView;
 }
 
-
-
 - (void)awakeFromCib
 {
     [self makeRedViews];
+
+    [[theWindow contentView] setBackgroundColor:[[CPColor greenColor] colorWithAlphaComponent:0.25]];
 
     [documentView setBackgroundColor:[CPColor whiteColor]];
     [mainScrollView setDocumentView:documentView];
