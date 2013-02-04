@@ -95,9 +95,15 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
 
     var tokenFieldDMenus = [CPCheckBox checkBoxWithTitle:"Menus"];
     [tokenFieldDMenus sizeToFit];
-    [tokenFieldDMenus setFrameOrigin:CGPointMake(CGRectGetMaxX([tokenFieldDEditable frame]), 5 + CGRectGetMinY([tokenFieldD frame]))];
+    [tokenFieldDMenus setFrameOrigin:CGPointMake(CGRectGetMaxX([tokenFieldDEditable frame]) + 5, 5 + CGRectGetMinY([tokenFieldD frame]))];
     [tokenFieldDMenus bind:CPValueBinding toObject:self withKeyPath:@"tokenFieldDHasMenus" options:nil];
     [contentView addSubview:tokenFieldDMenus];
+
+    var tokenFieldDClose = [CPCheckBox checkBoxWithTitle:"Close Buttons"];
+    [tokenFieldDClose sizeToFit];
+    [tokenFieldDClose setFrameOrigin:CGPointMake(CGRectGetMaxX([tokenFieldDMenus frame]) + 5, 5 + CGRectGetMinY([tokenFieldD frame]))];
+    [tokenFieldDClose bind:CPValueBinding toObject:self withKeyPath:@"tokenFieldDHasCloseButtons" options:nil];
+    [contentView addSubview:tokenFieldDClose];
 
     allPersons = [
         [Person personWithFirstName:@"Luc" lastName:@"Vauvillier"],
@@ -139,6 +145,16 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
 - (BOOL)tokenFieldDHasMenus
 {
     return !![[[tokenFieldD objectValue] firstObject] menu];
+}
+
+- (void)setTokenFieldDHasCloseButtons:(BOOL)shouldHaveCloseButtons
+{
+   [tokenFieldD setButtonType:shouldHaveCloseButtons ? CPTokenFieldDeleteButtonType : CPTokenFieldDisclosureButtonType];
+}
+
+- (BOOL)tokenFieldDHasCloseButtons
+{
+    return !![tokenFieldD buttonType] === CPTokenFieldDeleteButtonType;
 }
 
 - (void)getObjectValues:(id)sender
