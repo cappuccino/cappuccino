@@ -47,7 +47,7 @@
         {
             var frame = [self frame];
 
-            [self setFrameSize:CGSizeMake(frame.size.width + 4.0, frame.size.height + 2.0)];
+            [self setFrameSize:CGSizeMake(frame.size.width + 2.0, frame.size.height + 2.0)];
         }
     }
 
