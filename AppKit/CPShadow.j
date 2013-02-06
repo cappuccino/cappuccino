@@ -63,8 +63,11 @@
     return self;
 }
 
+- (void)set
 {
+   var context = [[CPGraphicsContext currentContext] graphicsPort];
 
+   CGContextSetShadowWithColor(context, _offset, _blurRadius, _color);
 }
 
 /*!
