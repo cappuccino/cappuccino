@@ -1873,6 +1873,14 @@ var themedButtonValues = nil,
                 bottomHeight:5.0
             }),
 
+        dividerColor = PatternColor(
+            "window-standard-divider{position}.png",
+            {
+                width: 1.0,
+                height: 1.0,
+                orientation: PatternIsHorizontal
+            }),
+
         closeButtonImage =                  PatternImage(@"window-standard-close-button.png", 16, 16),
         closeButtonImageInactive =          PatternImage(@"window-standard-close-button-inactive.png", 16, 16),
         closeButtonImageHighlighted =       PatternImage(@"window-standard-button-highlighted.png", 16, 16),
@@ -1905,7 +1913,7 @@ var themedButtonValues = nil,
             [@"title-vertical-alignment",   CPCenterVerticalTextAlignment],
             [@"title-bar-height",           31],
 
-            [@"divider-color",              [CPColor colorWithHexString:@"858585"]],
+            [@"divider-color",              dividerColor],
             [@"body-color",                 bezelColor],
             [@"title-bar-height",           31],
 
