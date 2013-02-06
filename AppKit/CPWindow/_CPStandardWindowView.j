@@ -294,7 +294,6 @@
 
 - (void)_enableSheet:(BOOL)enable
 {
-
     [super _enableSheet:enable];
 
     [_headView setHidden:enable];
@@ -327,6 +326,7 @@
 
     [self tile];
     [theWindow setFrame:frame display:NO animate:NO];
+
     [self setNeedsLayout];
 }
 
@@ -339,22 +339,6 @@
 
     [_minimizeButton setImage:[self valueForThemeAttribute:@"minimize-image-button"]];
     [_minimizeButton setAlternateImage:[self valueForThemeAttribute:@"minimize-image-highlighted-button"]];
-
-    if (![_headView isHidden])
-        [_headView setFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), [self toolbarMaxY])];
-    else
-        [_headView setFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), 0)];
-
-    if (![_dividerView isHidden])
-        [_dividerView setFrame:CGRectMake(0.0, CGRectGetMaxY([_headView frame]), CGRectGetWidth(bounds), 1.0)];
-    else
-        [_dividerView setFrame:CGRectMake(0.0, CGRectGetMaxY([_headView frame]), CGRectGetWidth(bounds), 0.0)];
-
-    [_dividerView setBackgroundColor:[self valueForThemeAttribute:@"divider-color"]];
-
-    var y = CGRectGetMaxY([_dividerView frame]);
-
-    [_bodyView setFrame:CGRectMake(0.0, y, CGRectGetWidth(bounds), CGRectGetHeight(bounds) - y)];
     [_bodyView setBackgroundColor:[self valueForThemeAttribute:@"body-color"]];
 
     [_headView setNeedsLayout];
