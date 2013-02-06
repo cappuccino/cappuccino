@@ -39,6 +39,7 @@
     IBOutlet TNXCodeCapp                *xcc;
     IBOutlet NSWindow                   *windowDebug;
     IBOutlet NSMenuItem                 *menuDebug;
+    IBOutlet NSMenuItem                 *menuHistory;
     IBOutlet TNErrorDataView            *dataViewError;
 
     NSImage                             *_iconActive;
@@ -58,6 +59,7 @@
 - (void)registerDefaults;
 - (void)growlWithTitle:(NSString *)aTitle message:(NSString *)aMessage;
 - (void)openCenteredWindow:(NSWindow *)aWindow;
+- (void)_prepareHistoryMenu;
 
 - (IBAction)chooseFolder:(id)aSender;
 - (IBAction)openErrors:(id)sender;
@@ -67,6 +69,8 @@
 - (IBAction)openHelp:(id)aSender;
 - (IBAction)openAbout:(id)aSender;
 - (IBAction)updatePreferences:(id)aSender;
+- (IBAction)switchProject:(id)aSender;
+- (IBAction)clearProjectHistory:(id)aSender;
 
 @end
 

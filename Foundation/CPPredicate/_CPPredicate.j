@@ -190,13 +190,18 @@
     if (self === anObject)
         return YES;
 
-    if (self.isa !== anObject.isa || _value !== [anObject evaluateObject:nil])
+    if (self.isa !== anObject.isa || _value !== [anObject evaluateWithObject:nil])
         return NO;
 
     return YES;
 }
 
-- (BOOL)evaluateObject:(id)object
+- (BOOL)evaluateWithObject:(id)object
+{
+    return _value;
+}
+
+- (BOOL)evaluateWithObject:(id)object substitutionVariables:(CPDictionary)variables
 {
     return _value;
 }

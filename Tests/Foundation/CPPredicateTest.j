@@ -450,6 +450,23 @@
     [self assertTrue:([filtered count] == 2) message:@"Count should be 2 and is " + [filtered count]];
 }
 
+- (void)testTruepredicate
+{
+    var data = [1, 2, 3],
+        result;
+
+    var tpred = [CPPredicate predicateWithFormat:@"TRUEPREDICATE"];
+    var ctpred = [CPCompoundPredicate andPredicateWithSubpredicates:[tpred]];
+
+    // fails if evaluateWithObject: isn't implemented in CPPredicate_BOOL
+    result = [tpred evaluateWithObject:"gazonk"];
+    [self assertTrue:result message:"'" + [tpred description] + "' should evaluate to true"];
+
+    // fails if evaluateWithObject:substitutionVariables: isn't implemented in CPPredicate_BOOL
+    result = [data filteredArrayUsingPredicate:ctpred];
+    [self assertTrue:[result isEqual:data] message:"[1, 2, 3] filtered with '" + [ctpred description] + "' should return [1, 2, 3]"];
+}
+
 @end
 
 @implementation CPObject (PredicateTesting)

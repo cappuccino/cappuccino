@@ -31,11 +31,9 @@
 */
 @implementation CPShadow : CPObject
 {
-    CGSize      _offset;
-    float       _blurRadius;
-    CPColor     _color;
-
-    CPString    _cssString;
+    CGSize      _offset @accessors(property=shadowOffset);
+    float       _blurRadius @accessors(property=shadowBlurRadius);
+    CPColor     _color @accessors(property=shadowColor);
 }
 
 /*!
@@ -60,35 +58,16 @@
         _offset = anOffset;
         _blurRadius = aBlurRadius;
         _color = aColor;
-
-        _cssString = [_color cssString] + " " + ROUND(anOffset.width) + @"px " + ROUND(anOffset.height) + @"px " + ROUND(_blurRadius) + @"px";
     }
 
     return self;
 }
 
-/*!
-    Returns the shadow's offset.
-*/
-- (CGSize)shadowOffset
+- (void)set
 {
-    return _offset;
-}
+   var context = [[CPGraphicsContext currentContext] graphicsPort];
 
-/*!
-    Returns the shadow's blur radius
-*/
-- (float)shadowBlurRadius
-{
-    return _blurRadius;
-}
-
-/*!
-    Returns the shadow's color.
-*/
-- (CPColor)shadowColor
-{
-    return _color;
+   CGContextSetShadowWithColor(context, _offset, _blurRadius, _color);
 }
 
 /*!
@@ -96,7 +75,7 @@
 */
 - (CPString)cssString
 {
-    return _cssString;
+    return [_color cssString] + " " + ROUND(_offset.width) + @"px " + ROUND(_offset.height) + @"px " + ROUND(_blurRadius) + @"px";
 }
 
 @end

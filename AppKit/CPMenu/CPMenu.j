@@ -223,7 +223,7 @@ var _CPMenuBarVisible               = NO,
 - (float)menuBarHeight
 {
     if (self === [CPApp mainMenu])
-        return [[CPTheme defaultTheme] valueForAttributeWithName:@"menu-bar-height" forClass:_CPMenuView];
+        return [CPMenu menuBarHeight];
 
     return 0.0;
 }

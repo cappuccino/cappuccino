@@ -23,6 +23,7 @@
 @import <Foundation/CPObject.j>
 
 @import "CPButton.j"
+@import "CPMenu.j"
 @import "CPPanel.j"
 
 // Use forward declaration because this file is imported by CPPopover
@@ -189,7 +190,8 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
         originRight     = _CGPointCreateCopy(platformOrigin),
         originTop       = _CGPointCreateCopy(platformOrigin),
         originBottom    = _CGPointCreateCopy(platformOrigin),
-        frameSize       = [self frame].size;
+        frameSize       = [self frame].size,
+        menuBarHeight   = [CPMenu menuBarVisible] ? [CPMenu menuBarHeight] : 0;
 
     // CPMaxXEdge
     originRight.x += platformRect.size.width;
@@ -215,12 +217,15 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
         case CPMaxXEdge:
             requestedOrigin = originRight;
             break;
+
         case CPMinXEdge:
             requestedOrigin = originLeft;
             break;
+
         case CPMinYEdge:
             requestedOrigin = originTop;
             break;
+
         case CPMaxYEdge:
             requestedOrigin = originBottom;
             break;
@@ -252,8 +257,8 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
 
         if (origin.y < 0)
         {
-            [_windowView setArrowOffsetY:origin.y];
-            origin.y = 0;
+            [_windowView setArrowOffsetY:origin.y - menuBarHeight];
+            origin.y = menuBarHeight;
         }
 
         if (origin.y + frameSize.height > nativeRect.size.height)
