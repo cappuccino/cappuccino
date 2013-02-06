@@ -232,13 +232,15 @@ var ELEMENTS = 100,
         location += rangeLength + ROUND(10 * RAND());
     }
 
-    var d = new Date();
+    var d = new Date(),
+        test1,
+        test2;
     while (r--)
-        var test1 = [array _previous_objectsAtIndexes:indexes];
+        test1 = [array _previous_objectsAtIndexes:indexes];
     var dd = new Date();
 
     while (rr--)
-        var test2 = [array objectsAtIndexes:indexes];
+        test2 = [array objectsAtIndexes:indexes];
     var ddd = new Date();
 
     CPLog.warn("\n_CPJavaScriptArray -objectsAtIndexes:");
