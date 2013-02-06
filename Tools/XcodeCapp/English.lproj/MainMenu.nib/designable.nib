@@ -169,7 +169,7 @@ YWppdGFAYXBhcmFqaXRhLmNvbQ</string>
 					</object>
 					<object class="NSMenuItem" id="602162139">
 						<reference key="NSMenu" ref="293792969"/>
-						<string key="NSTitle">Open Recent...</string>
+						<string key="NSTitle">Open Recent</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
 						<reference key="NSOnImage" ref="451435966"/>
