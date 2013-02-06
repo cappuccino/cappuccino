@@ -1869,7 +1869,8 @@ var themedButtonValues = nil,
             {
                 positions: "full",
                 width: 5.0,
-                height: 1.0
+                height: 1.0,
+                bottomHeight:5.0
             }),
 
         closeButtonImage =                  PatternImage(@"window-standard-close-button.png", 16, 16),

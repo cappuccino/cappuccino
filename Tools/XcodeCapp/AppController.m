@@ -93,15 +93,17 @@ float heightForStringDrawing(NSString *myString, NSFont *myFont, float myWidth)
     }
 
     [xcc setDelegate:self];
-    
+
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(XCodeCappConversionDidStart:) name:XCCConversionStartNotification object:xcc];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(XCodeCappConversionDidStop:) name:XCCConversionStopNotification object:xcc];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(XCodeCappPopulateProject:) name:XCCDidPopulateProjectNotification object:xcc];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(XCodeCappListeningDidStart:) name:XCCListeningStartNotification object:xcc];
-    
+
     [helpTextView setTextContainerInset:NSSizeFromCGSize(CGSizeMake(10.0, 10.0))];
-    
+
     [xcc start];
+
+    [self _prepareHistoryMenu];
 }
 
 /*!
@@ -133,6 +135,7 @@ float heightForStringDrawing(NSString *myString, NSFont *myFont, float myWidth)
     [appDefaults setObject:[NSNumber numberWithInt:0] forKey:@"XCCAPIMode"];
     [appDefaults setObject:[NSNumber numberWithInt:1] forKey:@"XCCReactMode"];
     [appDefaults setObject:[NSNumber numberWithInt:1] forKey:@"XCCReopenLastProject"];
+    [appDefaults setObject:[[NSArray alloc] init] forKey:@"XCCProjectHistory"];
     
     [defaults registerDefaults:appDefaults];
 }
@@ -215,6 +218,33 @@ float heightForStringDrawing(NSString *myString, NSFont *myFont, float myWidth)
                                clickContext:nil];
 }
 
+/*!
+ Prepare the history menu
+ */
+- (void)_prepareHistoryMenu
+{
+    NSMenu *menu = [[NSMenu alloc] init];
+    NSArray *projectHistory = [[NSUserDefaults standardUserDefaults] objectForKey:@"XCCProjectHistory"];
+
+    for(int i = 0; i < [projectHistory count]; i++)
+    {
+        NSString *itemTitle = [[projectHistory objectAtIndex:i] lastPathComponent];
+        NSString *projectPath = [[projectHistory objectAtIndex:i] stringByStandardizingPath];
+        NSString *currentProjectPath  = [[[xcc currentProjectURL] path] stringByStandardizingPath];
+        NSMenuItem *item = [menu addItemWithTitle:itemTitle action:@selector(switchProject:) keyEquivalent:@""];
+
+        [item setRepresentedObject:projectPath];
+
+        if ([currentProjectPath isEqualToString:projectPath])
+            [item setAction:nil];
+    }
+
+    [menu addItem:[NSMenuItem separatorItem]];
+    [menu addItemWithTitle:@"Clear history" action:@selector(clearProjectHistory:) keyEquivalent:@""];
+
+    [menuHistory setEnabled:([projectHistory count]) ? YES : NO];
+    [menuHistory setSubmenu:menu];
+}
 
 
 #pragma mark -
@@ -250,7 +280,19 @@ float heightForStringDrawing(NSString *myString, NSFont *myFont, float myWidth)
     if ([openPanel runModal] != NSFileHandlingPanelOKButton)
         return;
     
-    [xcc listenProjectAtPath:[NSString stringWithFormat:@"%@/", [[[openPanel URLs] objectAtIndex:0] path]]];
+    NSString *projectPath = [NSString stringWithFormat:@"%@/", [[[openPanel URLs] objectAtIndex:0] path]];
+    NSMutableArray *projectHistory = [NSMutableArray arrayWithArray:[[NSUserDefaults standardUserDefaults] objectForKey:@"XCCProjectHistory"]];
+
+    if ([projectHistory containsObject:[projectPath stringByStandardizingPath]])
+        [projectHistory removeObject:[projectPath stringByStandardizingPath]];
+
+    [projectHistory insertObject:[projectPath stringByStandardizingPath] atIndex:0];
+
+    [[NSUserDefaults standardUserDefaults] setObject:projectHistory forKey:@"XCCProjectHistory"];
+
+    [xcc listenProjectAtPath:projectPath];
+
+    [self _prepareHistoryMenu];
 }
 
 /*!
@@ -266,6 +308,21 @@ float heightForStringDrawing(NSString *myString, NSFont *myFont, float myWidth)
     [menuItemStartStop setAction:@selector(chooseFolder:)];
     
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"LastOpenedPath"];
+}
+
+- (IBAction)switchProject:(id)aSender
+{
+    NSString *newPath = [aSender representedObject];
+
+    [self stopListener:aSender];
+    [xcc listenProjectAtPath:newPath];
+    [self _prepareHistoryMenu];
+}
+
+- (IBAction)clearProjectHistory:(id)aSender
+{
+    [[NSUserDefaults standardUserDefaults] setObject:[NSArray array] forKey:@"XCCProjectHistory"];
+    [self _prepareHistoryMenu];
 }
 
 /*!
