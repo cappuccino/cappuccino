@@ -40,6 +40,11 @@ CPGradientDrawsAfterEndingLocation      = kCGGradientDrawsAfterEndLocation;
     CGGradient _gradient;
 }
 
+- (id)initWithStartingColor:(CPColor)startingColor endingColor:(CPColor)endingColor
+{
+    return [self initWithColors:[startingColor, endingColor]];
+}
+
 - (id)initWithColors:(CPArray)someColors
 {
     var count = [someColors count];
