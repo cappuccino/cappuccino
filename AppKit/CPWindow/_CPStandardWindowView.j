@@ -339,6 +339,7 @@
 
     [_minimizeButton setImage:[self valueForThemeAttribute:@"minimize-image-button"]];
     [_minimizeButton setAlternateImage:[self valueForThemeAttribute:@"minimize-image-highlighted-button"]];
+    [_dividerView setBackgroundColor:[self valueForThemeAttribute:@"divider-color"]];
     [_bodyView setBackgroundColor:[self valueForThemeAttribute:@"body-color"]];
 
     [_headView setNeedsLayout];
