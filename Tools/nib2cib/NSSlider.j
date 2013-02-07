@@ -43,12 +43,12 @@
 
         [self setSliderType:[cell sliderType]];
 
-        if ([self sliderType] === CPCircularSlider)
-        {
-            var frame = [self frame];
+        var frame = [self frame];
 
+        if ([self sliderType] === CPCircularSlider)
             [self setFrameSize:CGSizeMake(frame.size.width + 4.0, frame.size.height + 2.0)];
-        }
+        else
+            [self setFrame:CGRectMake(frame.origin.x + 2, frame.origin.y, frame.size.width - 4, frame.size.height)];
     }
 
     return self;
