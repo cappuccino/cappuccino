@@ -659,7 +659,7 @@ CPTokenFieldDeleteButtonType     = 1;
             return CPTextFieldBlurFunction(
                         anEvent,
                         CPTokenFieldInputOwner,
-                        [CPTokenFieldInputOwner._tokenScrollView documentView]._DOMElement,
+                        CPTokenFieldInputOwner ? [CPTokenFieldInputOwner._tokenScrollView documentView]._DOMElement : nil,
                         CPTokenFieldDOMInputElement,
                         CPTokenFieldInputResigning,
                         AT_REF(CPTokenFieldInputDidBlur));
