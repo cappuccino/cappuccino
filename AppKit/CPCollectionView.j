@@ -31,6 +31,7 @@
 
 @import "CPCollectionViewItem.j"
 @import "CPCompatibility.j"
+@import "CPDragServer_Constants.j"
 @import "CPPasteboard.j"
 @import "CPView.j"
 

@@ -47,7 +47,7 @@
 
         copy = [CPKeyedUnarchiver unarchiveObjectWithData:_cachedArchive];
 
-      // copy connections
+        // copy connections
     }
 
     [copy setRepresentedObject:[self representedObject]];
