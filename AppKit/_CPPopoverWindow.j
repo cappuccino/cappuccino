@@ -461,6 +461,13 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
                     {
 #if PLATFORM(DOM)
                         _DOMElement.removeEventListener(CPBrowserStyleProperty('transitionend'), transitionCompleteFunction, YES);
+
+                        // Make sure to clear these properties when the animation is done. Without this,
+                        // the window becomes blurry in Chrome, presumably because the browser composits
+                        // a layer with a transform differently even when it's an identity transform.
+                        [self setCSS3Property:@"Transform" value:nil];
+                        [self setCSS3Property:@"TransformOrigin" value:nil];
+                        [self setCSS3Property:@"Transition" value:nil];
 #endif
                         if (_implementedDelegateMethods & _CPPopoverWindow_didShow_)
                              [_delegate popoverWindowDidShow:self];
