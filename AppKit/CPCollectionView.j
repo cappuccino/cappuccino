@@ -226,7 +226,7 @@ var HORIZONTAL_MARGIN = 2;
     _itemForDragging = nil;
     _itemPrototype = anItem;
 
-    [self reloadContentCachingRemovedItems:NO];
+    [self _reloadContentCachingRemovedItems:NO];
 }
 
 /*!
@@ -417,11 +417,11 @@ var HORIZONTAL_MARGIN = 2;
 
 - (void)reloadContent
 {
-    [self reloadContentCachingRemovedItems:YES];
+    [self _reloadContentCachingRemovedItems:YES];
 }
 
 /* @ignore */
-- (void)reloadContentCachingRemovedItems:(BOOL)shouldCache
+- (void)_reloadContentCachingRemovedItems:(BOOL)shouldCache
 {
     // Remove current views
     var count = _items.length;
