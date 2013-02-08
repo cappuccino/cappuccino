@@ -492,6 +492,10 @@ var HORIZONTAL_MARGIN = 2;
         oldItemSize         = _itemSize,
         storedFrameSize     = _storedFrameSize;
 
+    // No need to tile if we are not yet placed in the view hierarchy.
+    if (!frameSize)
+        return;
+
     [self _updateMinMaxItemSizeIfNeeded];
 
     [self _computeGridWithSize:frameSize count:AT_REF(count)];
