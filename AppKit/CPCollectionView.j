@@ -129,8 +129,8 @@ var HORIZONTAL_MARGIN = 2;
         _maxNumberOfRows = 0;
         _maxNumberOfColumns = 0;
 
-        _minItemSize = CGSizeMakeZero();
-        _maxItemSize = CGSizeMakeZero();
+        _minItemSize = _CGSizeMakeZero();
+        _maxItemSize = _CGSizeMakeZero();
 
         [self setBackgroundColors:nil];
 
@@ -146,30 +146,30 @@ var HORIZONTAL_MARGIN = 2;
 
 - (void)_init
 {
-        _content = [];
+    _content = [];
 
-        _items = [];
-        _cachedItems = [];
+    _items = [];
+    _cachedItems = [];
 
-        _numberOfColumns = CPNotFound;
-        _numberOfRows = CPNotFound;
+    _numberOfColumns = CPNotFound;
+    _numberOfRows = CPNotFound;
 
-        _itemSize = CGSizeMakeZero();
+    _itemSize = CGSizeMakeZero();
 
-        _selectionIndexes = [CPIndexSet indexSet];
+    _selectionIndexes = [CPIndexSet indexSet];
 
-        _storedFrameSize = CGSizeMakeZero();
+    _storedFrameSize = CGSizeMakeZero();
 
-        _needsMinMaxItemSizeUpdate = YES;
-        _uniformSubviewsResizing = NO;
-        _lockResizing = NO;
+    _needsMinMaxItemSizeUpdate = YES;
+    _uniformSubviewsResizing = NO;
+    _lockResizing = NO;
 
-        _currentDropIndex      = -1;
-        _currentDragOperation  = CPDragOperationNone;
-        _dropView = nil;
+    _currentDropIndex      = -1;
+    _currentDragOperation  = CPDragOperationNone;
+    _dropView = nil;
 
-        [self setAutoresizesSubviews:NO];
-        [self setAutoresizingMask:0];
+    [self setAutoresizesSubviews:NO];
+    [self setAutoresizingMask:0];
 }
 
 /*!
@@ -502,7 +502,7 @@ var HORIZONTAL_MARGIN = 2;
     if (!lazyFlag ||
         _numberOfColumns !== oldNumberOfColumns ||
         _numberOfRows    !== oldNumberOfRows ||
-        !CGSizeEqualToSize(_itemSize, oldItemSize))
+        !_CGSizeEqualToSize(_itemSize, oldItemSize))
 
         [self displayItems:_items frameSize:_storedFrameSize itemSize:_itemSize columns:_numberOfColumns rows:_numberOfRows count:count];
 }
@@ -547,8 +547,8 @@ var HORIZONTAL_MARGIN = 2;
     if (maxItemSizeHeight > 0)
         itemSizeHeight = MIN(itemSizeHeight, maxItemSizeHeight);
 
-    _itemSize        = CGSizeMake(MAX(_minItemSize.width, itemSize.width), MAX(_minItemSize.height, itemSizeHeight));
-    _storedFrameSize = CGSizeMake(MAX(width, _minItemSize.width), height);
+    _itemSize        = _CGSizeMake(MAX(_minItemSize.width, itemSize.width), MAX(_minItemSize.height, itemSizeHeight));
+    _storedFrameSize = _CGSizeMake(MAX(width, _minItemSize.width), height);
     _numberOfColumns = numberOfColumns;
     _numberOfRows    = numberOfRows;
     countRef(MIN(itemsCount, numberOfColumns * numberOfRows));
