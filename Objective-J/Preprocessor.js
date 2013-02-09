@@ -446,6 +446,7 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
         {
             var ivar_names = {},
                 ivar_count = 0,
+                statement_ivar_count = 0,
                 declaration = [],
                 attributes,
                 accessors = {},
@@ -464,19 +465,36 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
                     else
                         types.push("@" + token);
                 }
-                else if (token == TOKEN_SEMICOLON)
+                else if (token == TOKEN_SEMICOLON || token == TOKEN_COMMA)
                 {
+                    if (statement_ivar_count && declaration.length > 1)
+                        throw new SyntaxError(this.error_message("*** Only ivar name expected between ',' in ivar declaration."));
+
                     if (ivar_count++ === 0)
                         CONCAT(buffer, "class_addIvars(the_class, [");
                     else
                         CONCAT(buffer, ", ");
 
-                    var name = declaration[declaration.length - 1];
+                    var name;
+                    if (statement_ivar_count++ === 0)
+                        name = declaration[declaration.length - 1];
+                    else
+                    {
+                        if (declaration.length > 1)
+                            throw new SyntaxError(this.error_message("*** Ivar name expected between ',' in ivar declaration."));
+                        name = declaration[0];
+                    }
+
+                    if (ivar_names.hasOwnProperty(name))
+                        throw new SyntaxError(this.error_message("*** Ivar name '" + name + "' already declared."));
 
                     if (this._flags & Preprocessor.Flags.IncludeTypeSignatures)
                         CONCAT(buffer, "new objj_ivar(\"" + name + "\", \"" + types.slice(0, types.length - 1). join(" ") + "\")");
                     else
                         CONCAT(buffer, "new objj_ivar(\"" + name + "\")");
+
+                    if (token == TOKEN_SEMICOLON)
+                        statement_ivar_count = 0;
 
                     ivar_names[name] = 1;
                     declaration = [];
@@ -496,7 +514,7 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
             }
 
             // If we have objects in our declaration, the user forgot a ';'.
-            if (declaration.length)
+            if (declaration.length || statement_ivar_count)
                 throw new SyntaxError(this.error_message("*** Expected ';' in ivar declaration, found '}'."));
 
             if (ivar_count)
