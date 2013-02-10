@@ -1467,7 +1467,7 @@ CPTexturedBackgroundWindowMask
 - (void)setRepresentedFilename:(CPString)aFilePath
 {
     // FIXME: urls vs filepaths and all.
-    [self setRepresentedURL:aFilePath];
+    [self setRepresentedURL:[CPURL URLWithString:aFilePath]];
 }
 
 /*!
@@ -1475,7 +1475,7 @@ CPTexturedBackgroundWindowMask
 */
 - (CPString)representedFilename
 {
-    return _representedURL;
+    return [_representedURL absoluteString];
 }
 
 /*!
