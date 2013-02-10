@@ -438,7 +438,7 @@
         {
             var previousColumn = column - 1,
                 selectedRow = [self selectedRowInColumn:previousColumn];
-        
+
             [self selectRow:selectedRow inColumn:previousColumn];
         }
         else
