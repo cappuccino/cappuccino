@@ -269,7 +269,7 @@ var themedButtonValues = nil,
 {
     var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 25.0) pullsDown:YES],
         color = PatternColor(
-            "popup-bezel{state}{position}.png",
+            "pulldown-bezel{state}{position}.png",
             {
                 states: ["", "disabled"],
                 width: 3.0,
