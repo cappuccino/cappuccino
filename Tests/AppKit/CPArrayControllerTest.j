@@ -222,7 +222,7 @@
     [_arrayController setObjectClass:[Department class]];
     [_arrayController setSelectionIndex:1];
     [_arrayController insert:nil];
-    [self assert:[[[_arrayController arrangedObjects] objectAtIndex:2] class] equals:[Department class]];
+    [self assert:[[[_arrayController arrangedObjects] objectAtIndex:1] class] equals:[Department class]];
 }
 
 - (void)_initTestRemoveObjects_SimpleArray

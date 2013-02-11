@@ -915,7 +915,7 @@
         lastSelectedIndex = [_selectionIndexes lastIndex];
 
     if (lastSelectedIndex)
-        [self insertObject:newObject atArrangedObjectIndex:lastSelectedIndex + 1];
+        [self insertObject:newObject atArrangedObjectIndex:lastSelectedIndex];
     else
         [self addObject:newObject];
 
