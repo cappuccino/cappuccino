@@ -32,6 +32,7 @@
 {
     if (!_dcmnh)
         _dcmnh = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:CPRoundPlain scale:0 raiseOnExactness:NO raiseOnOverflow:YES raiseOnUnderflow:YES raiseOnDivideByZero:YES];
+
     if (!_dcmnhWithExactness)
         _dcmnhWithExactness = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:CPRoundPlain scale:0 raiseOnExactness:YES raiseOnOverflow:YES raiseOnUnderflow:YES raiseOnDivideByZero:YES];
 }
@@ -42,6 +43,7 @@
     // CPDecimalNumber class initialisers
     var dcmn = [[CPDecimalNumber alloc] initWithString:@"10.72342"],
         dcm = [dcmn decimalValue];
+
     [self assert:-5 equals:dcm._exponent message:"initWithString: - exponent"];
     [self assert:[1,0,7,2,3,4,2] equals:dcm._mantissa message:"initWithString: - mantissa"];
     [self assert:NO equals:dcm._isNegative message:"initWithString: - sign"];
@@ -157,11 +159,11 @@
 
 - (void)testAdd
 {
-
     var dcmn1 = [CPDecimalNumber decimalNumberWithString:@"123"],
         dcmn2 = [CPDecimalNumber decimalNumberWithString:@"321"],
         dcmn3 = [dcmn1 decimalNumberByAdding:dcmn2],
         d1 = [dcmn3 decimalValue];
+
     [self assert:0 equals:d1._exponent message:"decimalNumberByAdding: - exponent"];
     [self assert:[4,4,4] equals:d1._mantissa message:"decimalNumberByAdding: - mantissa"];
     [self assert:NO equals:d1._isNegative message:"decimalNumberByAdding: - sign"];
@@ -170,6 +172,7 @@
     // precision throw - with behavior
     dcmn1 = [CPDecimalNumber decimalNumberWithString:@"10000000000000000000000000000000000001"];
     dcmn2 = [CPDecimalNumber decimalNumberWithString:@"1.00001"];
+
     try
     {
         dcmn3 = [dcmn1 decimalNumberByAdding:dcmn2 withBehavior:_dcmnhWithExactness];
@@ -202,7 +205,6 @@
         if ((e.isa) && [e name] == AssertionFailedError)
             throw e;
     }
-
 }
 
 - (void)testSubtract
@@ -211,6 +213,7 @@
         dcmn2 = [CPDecimalNumber decimalNumberWithString:@"153"],
         dcmn3 = [dcmn1 decimalNumberBySubtracting:dcmn2],
         d1 = [dcmn3 decimalValue];
+
     [self assert:0 equals:d1._exponent message:"decimalNumberBySubtracting: - exponent"];
     [self assert:[1,4,8] equals:d1._mantissa message:"decimalNumberBySubtracting: - mantissa"];
     [self assert:NO equals:d1._isNegative message:"decimalNumberBySubtracting: - sign"];
@@ -219,6 +222,7 @@
     // precision throw - with behavior
     dcmn1 = [CPDecimalNumber decimalNumberWithString:@"1e-128"];
     dcmn2 = [CPDecimalNumber decimalNumberWithString:@"1"];
+
     try
     {
         dcmn3 = [dcmn1 decimalNumberBySubtracting:dcmn2 withBehavior:_dcmnhWithExactness];
@@ -247,6 +251,7 @@
         dcmn2 = [CPDecimalNumber decimalNumberWithString:@"1235"],
         dcmn3 = [dcmn1 decimalNumberByDividingBy:dcmn2],
         d1 = [dcmn3 decimalValue];
+
     [self assert:-34 equals:d1._exponent message:"decimalNumberByDividingBy: - exponent"];
     [self assert:[5,7,7,0,2,9,3,9,2,7,1,2,5,5,0,6,0,7,2,8,7,4,4,9,3,9,2,7,1,2,5,5,0,6,0,7,2,8] equals:d1._mantissa message:"decimalNumberByDividingBy: T1: mantissa"];
     [self assert:NO equals:d1._isNegative message:"decimalNumberByDividingBy: - sign"];
@@ -264,6 +269,7 @@
     // Exceptions
     dcmn1 = [CPDecimalNumber decimalNumberWithString:@"1"];
     dcmn2 = [CPDecimalNumber decimalNumberWithString:@"3"];
+
     try
     {
         dcmn3 = [dcmn1 decimalNumberByDividingBy:dcmn2 withBehavior:_dcmnhWithExactness];
@@ -286,7 +292,9 @@
     // underflow  , if dcnm2 is < 10 this is LossOfPrecision, is this correct? check vs cocoa.
     dcmn1 = [CPDecimalNumber decimalNumberWithString:@"-1e-128"];
     dcmn2 = [CPDecimalNumber decimalNumberWithString:@"10"];
-     try {
+
+    try
+    {
         dcmn3 = [dcmn1 decimalNumberByDividingBy:dcmn2];
         [self fail:"decimalNumberByDividingBy: TEX3 - should have thrown underflow error "];
     }
@@ -298,6 +306,7 @@
 
     dcmn1 = [CPDecimalNumber decimalNumberWithString:@"-1e-128"];
     dcmn2 = [CPDecimalNumber decimalNumberWithString:@"0"];
+
     try
     {
         dcmn3 = [dcmn1 decimalNumberByDividingBy:dcmn2];
@@ -322,11 +331,11 @@
 
 - (void)testMultiply
 {
-
     var dcmn1 = [CPDecimalNumber decimalNumberWithString:@"17"],
         dcmn2 = [CPDecimalNumber decimalNumberWithString:@"512"],
         dcmn3 = [dcmn1 decimalNumberByMultiplyingBy:dcmn2],
         d1 = [dcmn3 decimalValue];
+
     [self assert:0 equals:d1._exponent message:"decimalNumberByMultiplyingBy: - exponent"];
     [self assert:[8,7,0,4] equals:d1._mantissa message:"decimalNumberByMultiplyingBy: - mantissa"];
     [self assert:NO equals:d1._isNegative message:"decimalNumberByMultiplyingBy: - sign"];
@@ -344,6 +353,7 @@
     // Exceptions
     dcmn1 = [CPDecimalNumber decimalNumberWithString:@"18302741890374918"];
     dcmn2 = [CPDecimalNumber decimalNumberWithString:@"123847190277982223422346878934534"];
+
     try
     {
         dcmn3 = [dcmn1 decimalNumberByMultiplyingBy:dcmn2 withBehavior:_dcmnhWithExactness];
@@ -354,6 +364,7 @@
         if ((e.isa) && [e name] == AssertionFailedError)
             throw e;
     }
+
     try
     {
         dcmn3 = [dcmn1 decimalNumberByMultiplyingBy:dcmn2];
@@ -366,6 +377,7 @@
     // overflow
     dcmn1 = [CPDecimalNumber decimalNumberWithString:@"23e100"];
     dcmn2 = [CPDecimalNumber decimalNumberWithString:@"-13e76"];
+
     try
     {
         dcmn3 = [dcmn1 decimalNumberByMultiplyingBy:dcmn2];
@@ -384,6 +396,7 @@
         p = 21,
         dcmn3 = [dcmn1 decimalNumberByMultiplyingByPowerOf10:p],
         d1 = [dcmn3 decimalValue];
+
     [self assert:21 equals:d1._exponent message:"decimalNumberByMultiplyingByPowerOf10: - exponent"];
     [self assert:[1,7] equals:d1._mantissa message:"decimalNumberByMultiplyingByPowerOf10: - mantissa"];
     [self assert:NO equals:d1._isNegative message:"decimalNumberByMultiplyingByPowerOf10: - sign"];
@@ -402,7 +415,9 @@
     // overflow
     dcmn1 = [CPDecimalNumber decimalNumberWithString:@"1e23"];
     p = 127;
-    try {
+
+    try
+    {
         dcmn3 = [dcmn1 decimalNumberByMultiplyingByPowerOf10:p];
         [self fail:"decimalNumberByMultiplyingByPowerOf10: TEX1 - should have overflowed "];
     }
@@ -420,6 +435,7 @@
         p = 10,
         dcmn3 = [dcmn1 decimalNumberByRaisingToPower:p],
         d1 = [dcmn3 decimalValue];
+
     [self assert:0 equals:d1._exponent message:"decimalNumberByRaisingToPower: - exponent"];
     [self assert:[2,0,1,5,9,9,3,9,0,0,4,4,9] equals:d1._mantissa message:"decimalNumberByRaisingToPower: - mantissa"];
     [self assert:NO equals:d1._isNegative message:"decimalNumberByRaisingToPower: - sign"];
@@ -437,6 +453,7 @@
     // Exceptions
     dcmn1 = [CPDecimalNumber decimalNumberWithString:@"123198771093489073413"];
     p = 2;
+
     try
     {
         dcmn3 = [dcmn1 decimalNumberByRaisingToPower:p withBehavior:_dcmnhWithExactness];
@@ -447,6 +464,7 @@
         if ((e.isa) && [e name] == AssertionFailedError)
             throw e;
     }
+
     try
     {
         dcmn3 = [dcmn1 decimalNumberByRaisingToPower:p];
@@ -459,6 +477,7 @@
     // overflow
     dcmn1 = [CPDecimalNumber decimalNumberWithString:@"1234"];
     p = 123;
+
     try
     {
         dcmn3 = [dcmn1 decimalNumberByRaisingToPower:p];
@@ -477,6 +496,7 @@
         dcmn1 = [CPDecimalNumber decimalNumberWithString:@"1.4"],
         dcmn3 = [dcmn1 decimalNumberByRoundingAccordingToBehavior:h],
         d1 = [dcmn3 decimalValue];
+
     [self assert:0 equals:d1._exponent message:"decimalNumberByRoundingAccordingToBehavior: - exponent"];
     [self assert:[1] equals:d1._mantissa message:"decimalNumberByRoundingAccordingToBehavior: - mantissa"];
     [self assert:NO equals:d1._isNegative message:"decimalNumberByRoundingAccordingToBehavior: - sign"];
@@ -493,6 +513,7 @@
     var dcmn1 = [CPDecimalNumber decimalNumberWithString:@"17"],
         dcmn2 = [CPDecimalNumber decimalNumberWithString:@"512"],
         c = [dcmn1 compare:dcmn2];
+
     [self assert:c equals:CPOrderedAscending message:"compare: - ascending"];
 
     dcmn1 = [CPDecimalNumber decimalNumberWithString:@"1234"];
@@ -509,6 +530,7 @@
 - (void)testStringValue
 {
     var dcmn = [CPDecimalNumber decimalNumberWithString:@"512"];
+
     [self assert:"512" equals:[dcmn stringValue] message:"stringValue: - small number"];
     dcmn = [CPDecimalNumber decimalNumberWithString:@"10823478917236482"];
     [self assert:"10823478917236482" equals:[dcmn stringValue] message:"stringValue: - medium number"];

@@ -304,6 +304,7 @@
     [self assert:-3 equals:dcm1._exponent message:"CPDecimalRound() Tb5: exponent"];
 
     // Noscale
+    dcm1 = CPDecimalMakeZero();
     CPDecimalRound(dcm1,dcm,CPDecimalNoScale,CPRoundPlain);
     [self assert:[1,2,3,4,5,6] equals:dcm1._mantissa message:"CPDecimalRound() Tns1: mantissa"];
     [self assert:-3 equals:dcm1._exponent message:"CPDecimalRound() Tns1: exponent"];
