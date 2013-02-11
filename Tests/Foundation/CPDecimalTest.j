@@ -339,12 +339,37 @@
     dcm1 = CPDecimalMakeWithString(@"0.0");
     dcm = CPDecimalMakeWithString(@"0.5");
     c = CPDecimalCompare(dcm1,dcm);
-    [self assert:CPOrderedAscending equals:c message:"CPDecimalCompare() Tc4: should be descending"];
+    [self assert:CPOrderedAscending equals:c message:"CPDecimalCompare() (0.0, 0.5) should be ascending"];
 
     dcm1 = CPDecimalMakeWithString(@"0.0");
     dcm = CPDecimalMakeWithString(@"-0.5");
     c = CPDecimalCompare(dcm1,dcm);
-    [self assert:CPOrderedDescending equals:c message:"CPDecimalCompare() Tc4: should be descending"];
+    [self assert:CPOrderedDescending equals:c message:"CPDecimalCompare() (0, -0.5) should be descending"];
+
+    dcm1 = CPDecimalMakeZero();
+    dcm = CPDecimalMakeZero();
+    c = CPDecimalCompare(dcm1,dcm);
+    [self assert:CPOrderedSame equals:c message:"CPDecimalCompare(): zeros should be same"];
+
+    dcm1 = CPDecimalMakeWithString(@"0.0001");
+    dcm = CPDecimalMakeZero();
+    c = CPDecimalCompare(dcm1,dcm);
+    [self assert:CPOrderedDescending equals:c message:"CPDecimalCompare(): (0.0001, 0) should be descending"];
+
+    dcm1 = CPDecimalMakeZero();
+    dcm = CPDecimalMakeWithString(@"0.0001");
+    c = CPDecimalCompare(dcm1,dcm);
+    [self assert:CPOrderedAscending equals:c message:"CPDecimalCompare(): (0, 0.0001) should be ascending"];
+
+    dcm1 = CPDecimalMakeWithString(@"-0.0001");
+    dcm = CPDecimalMakeZero();
+    c = CPDecimalCompare(dcm1,dcm);
+    [self assert:CPOrderedAscending equals:c message:"CPDecimalCompare(): (-0.0001, 0) should be ascending"];
+
+    dcm1 = CPDecimalMakeZero();
+    dcm = CPDecimalMakeWithString(@"-0.0001");
+    c = CPDecimalCompare(dcm1,dcm);
+    [self assert:CPOrderedDescending equals:c message:"CPDecimalCompare(): (0, -0.0001) should be descending"];
 }
 
 - (void)testCompact
