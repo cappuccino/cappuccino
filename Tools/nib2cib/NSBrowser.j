@@ -26,14 +26,11 @@
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    _allowsEmptySelection = YES;
-
     if (self = [super NS_initWithCoder:aCoder])
     {
-        _isSelectable             = [aCoder decodeBoolForKey:@"NSSelectable"];
+        _allowsEmptySelection     = YES;
         _allowsMultipleSelection  = [aCoder decodeBoolForKey:@"NSAllowsMultipleSelection"];
     }
-
     return self;
 }
 
