@@ -184,7 +184,46 @@
     [self assert:[CPNumber numberWithInt:2] equals:[_arrayController arrangedObjects][1]];
 }
 
+- (void)testAdd
+{
+    _contentArray = [];
+    _arrayController = [[CPArrayController alloc] initWithContent:_contentArray];
+    [self _testAdd];
+}
 
+- (void)_testAdd
+{
+    [_arrayController setObjectClass:[Employee class]];
+    [self assert:[[_arrayController contentArray] count] equals:0];
+    [_arrayController add:nil];
+    [self assert:[[_arrayController contentArray] count] equals:1];
+    [self assert:[[_arrayController arrangedObjects][0] class] equals:[Employee class]];
+
+    // switch it up so that we can tell where this one is.
+    [_arrayController setObjectClass:[Department class]];
+    [_arrayController add:nil];
+    [self assert:[[[_arrayController arrangedObjects] lastObject] class] equals:[Department class]];
+}
+
+- (void)testInsert
+{
+    _contentArray = [];
+    _arrayController = [[CPArrayController alloc] initWithContent:_contentArray];
+    [self _testInsert];
+}
+
+- (void)_testInsert
+{
+    [_arrayController setObjectClass:[Employee class]];
+    [_arrayController add:nil];
+    [_arrayController add:nil];
+    [_arrayController add:nil];
+
+    [_arrayController setObjectClass:[Department class]];
+    [_arrayController setSelectionIndex:1];
+    [_arrayController insert:nil];
+    [self assert:[[[_arrayController arrangedObjects] objectAtIndex:1] class] equals:[Department class]];
+}
 
 - (void)_initTestRemoveObjects_SimpleArray
 {
