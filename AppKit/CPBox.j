@@ -421,9 +421,9 @@ CPBelowBottom = 6;
             // NSBox does not include a horizontal flag for the separator type. We have to determine
             // the type of separator to draw by the width and height of the frame.
             if (CGRectGetWidth(bounds) === 5.0)
-                return [self _drawVerticalSeperatorInRect:bounds];
+                return [self _drawVerticalSeparatorInRect:bounds];
             else if (CGRectGetHeight(bounds) === 5.0)
-                return [self _drawHorizontalSeperatorInRect:bounds];
+                return [self _drawHorizontalSeparatorInRect:bounds];
 
             break;
     }
@@ -436,6 +436,13 @@ CPBelowBottom = 6;
     if (_titlePosition == CPAtBottom)
     {
         bounds.size.height -= [_titleView frameSize].height;
+    }
+
+    // Primary or secondary type boxes always draw the same way, unless they are CPNoBorder.
+    if ((_boxType === CPBoxPrimary || _boxType === CPBoxSecondary) && _borderType !== CPNoBorder)
+    {
+        [self _drawPrimaryBorderInRect:bounds];
+        return;
     }
 
     switch (_borderType)
@@ -455,7 +462,7 @@ CPBelowBottom = 6;
     }
 }
 
-- (void)_drawHorizontalSeperatorInRect:(CGRect)aRect
+- (void)_drawHorizontalSeparatorInRect:(CGRect)aRect
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort];
 
@@ -467,7 +474,7 @@ CPBelowBottom = 6;
     CGContextStrokePath(context);
 }
 
-- (void)_drawVerticalSeperatorInRect:(CGRect)aRect
+- (void)_drawVerticalSeparatorInRect:(CGRect)aRect
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort];
 
@@ -504,22 +511,51 @@ CPBelowBottom = 6;
         shadowSize = [self valueForThemeAttribute:@"inner-shadow-size"],
         shadowColor = [self valueForThemeAttribute:@"inner-shadow-color"];
 
+    var baseRect = aRect;
     aRect = CGRectInset(aRect, borderWidth / 2.0, borderWidth / 2.0);
 
-    // clip the canvas to the actual content view in order to only display inner shadow
-    CGContextBeginPath(context);
-    CGContextAddPath(context, CGPathWithRoundedRectangleInRect(aRect, cornerRadius, cornerRadius, YES, YES, YES, YES));
-    CGContextClip(context);
+    CGContextSaveGState(context);
 
-    CGContextSetFillColor(context, [self fillColor]);
     CGContextSetStrokeColor(context, [self borderColor]);
-
-    CGContextSetShadowWithColor(context, shadowOffset, shadowSize, shadowColor);
     CGContextSetLineWidth(context, borderWidth);
+    CGContextSetFillColor(context, [self fillColor]);
     CGContextFillRoundedRectangleInRect(context, aRect, cornerRadius, YES, YES, YES, YES);
     CGContextStrokeRoundedRectangleInRect(context, aRect, cornerRadius, YES, YES, YES, YES);
+
+    CGContextRestoreGState(context);
 }
 
+- (void)_drawPrimaryBorderInRect:(CGRect)aRect
+{
+    // Draw the "primary" style CPBox.
+
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        cornerRadius = [self cornerRadius],
+        borderWidth = [self borderWidth],
+        shadowOffset = [self valueForThemeAttribute:@"inner-shadow-offset"],
+        shadowSize = [self valueForThemeAttribute:@"inner-shadow-size"],
+        shadowColor = [self valueForThemeAttribute:@"inner-shadow-color"],
+        baseRect = aRect;
+
+    aRect = CGRectInset(aRect, borderWidth / 2.0, borderWidth / 2.0);
+
+    CGContextSaveGState(context);
+
+    CGContextSetStrokeColor(context, [self borderColor]);
+    CGContextSetLineWidth(context, borderWidth);
+    CGContextSetFillColor(context, [self fillColor]);
+    CGContextFillRoundedRectangleInRect(context, aRect, cornerRadius, YES, YES, YES, YES);
+
+    CGContextBeginPath(context);
+    // Note we can't use the 0.5 inset rectangle when setting up clipping. The clipping has to be
+    // on integer coordinates for this to look right in Chrome.
+    CGContextAddPath(context, CGPathWithRoundedRectangleInRect(baseRect, cornerRadius, cornerRadius, YES, YES, YES, YES));
+    CGContextClip(context);
+    CGContextSetShadowWithColor(context, shadowOffset, shadowSize, shadowColor);
+    CGContextStrokeRoundedRectangleInRect(context, aRect, cornerRadius, YES, YES, YES, YES);
+
+    CGContextRestoreGState(context);
+}
 
 - (void)_drawNoBorderInRect:(CGRect)aRect
 {
@@ -528,9 +564,6 @@ CPBelowBottom = 6;
     CGContextSetFillColor(context, [self fillColor]);
     CGContextFillRect(context, aRect);
 }
-
-
-
 
 @end
 

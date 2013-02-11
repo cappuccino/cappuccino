@@ -309,11 +309,13 @@
 
     // resize the window
     var theWindow = [self window],
-        frame = [theWindow frame];
+        frame = [theWindow frame],
+        dy;
 
-    var dy = _CGRectGetHeight([_headView frame]) + _CGRectGetHeight([_dividerView frame]);
     if (enable)
-        dy = -dy;
+        dy = -(_CGRectGetHeight([_headView frame]) + _CGRectGetHeight([_dividerView frame]));
+    else
+        dy = [self toolbarMaxY] + 1.0;
 
     var newHeight = _CGRectGetMaxY(frame) + dy,
         newWidth = _CGRectGetMaxX(frame);
@@ -321,9 +323,11 @@
     frame.size.height += dy;
 
     [self setFrameSize:_CGSizeMake(newWidth, newHeight)];
+
     [self tile];
     [theWindow setFrame:frame display:NO animate:NO];
 
+    [self setNeedsLayout];
 }
 
 - (void)layoutSubviews
@@ -335,22 +339,7 @@
 
     [_minimizeButton setImage:[self valueForThemeAttribute:@"minimize-image-button"]];
     [_minimizeButton setAlternateImage:[self valueForThemeAttribute:@"minimize-image-highlighted-button"]];
-
-    if (![_headView isHidden])
-        [_headView setFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), [self toolbarMaxY])];
-    else
-        [_headView setFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), 0)];
-
-    if (![_dividerView isHidden])
-        [_dividerView setFrame:CGRectMake(0.0, CGRectGetMaxY([_headView frame]), CGRectGetWidth(bounds), 1.0)];
-    else
-        [_dividerView setFrame:CGRectMake(0.0, CGRectGetMaxY([_headView frame]), CGRectGetWidth(bounds), 0.0)];
-
     [_dividerView setBackgroundColor:[self valueForThemeAttribute:@"divider-color"]];
-
-    var y = CGRectGetMaxY([_dividerView frame]);
-
-    [_bodyView setFrame:CGRectMake(0.0, y, CGRectGetWidth(bounds), CGRectGetHeight(bounds) - y)];
     [_bodyView setBackgroundColor:[self valueForThemeAttribute:@"body-color"]];
 
     [_headView setNeedsLayout];

@@ -27,6 +27,7 @@
 @import "CGColor.j"
 @import "CGColorSpace.j"
 @import "CGGradient.j"
+@import "CPBezierPath.j"
 @import "CPGraphicsContext.j"
 
 CPGradientDrawsBeforeStartingLocation   = kCGGradientDrawsBeforeStartLocation;
@@ -38,6 +39,11 @@ CPGradientDrawsAfterEndingLocation      = kCGGradientDrawsAfterEndLocation;
 @implementation CPGradient : CPObject
 {
     CGGradient _gradient;
+}
+
+- (id)initWithStartingColor:(CPColor)startingColor endingColor:(CPColor)endingColor
+{
+    return [self initWithColors:[startingColor, endingColor]];
 }
 
 - (id)initWithColors:(CPArray)someColors
@@ -83,7 +89,19 @@ CPGradientDrawsAfterEndingLocation      = kCGGradientDrawsAfterEndLocation;
     CGContextClipToRect(ctx, rect);
     CGContextAddRect(ctx, rect);
 
-    var startPoint,
+    [self _drawAtAngle:angle];
+
+    CGContextRestoreGState(ctx);
+}
+
+/*!
+    @ignore like draw in rect but apply no clipping.
+*/
+- (void)_drawInRect:(CGRect)rect atAngle:(float)angle
+{
+    var ctx = [[CPGraphicsContext currentContext] graphicsPort],
+
+        startPoint,
         endPoint;
 
     // Modulo of negative values doesn't work as expected in JS.
@@ -117,7 +135,25 @@ CPGradientDrawsAfterEndingLocation      = kCGGradientDrawsAfterEndLocation;
                            startPoint.y + length * SIN(radians));
 
     [self drawFromPoint:startPoint toPoint:endPoint options:CPGradientDrawsBeforeStartingLocation | CPGradientDrawsAfterEndingLocation];
-    CGContextRestoreGState(ctx);
+}
+
+- (void)drawInBezierPath:(CPBezierPath)aPath angle:(float)anAngle
+{
+    [CPGraphicsContext saveGraphicsState];
+
+    var ctx = [[CPGraphicsContext currentContext] graphicsPort];
+
+    // Nail down the path which CGContextDrawLinearGradient will cause to be filled.
+    // Note we don't do this by clipping to the path and then calling drawInRect:atAngle:
+    // as this would cut off any antialias of the drawing, plus any active context shadow.
+    CGContextBeginPath(ctx);
+    CGContextAddPath(ctx, aPath._path);
+    CGContextSetLineWidth(ctx, [aPath lineWidth]);
+    CGContextClosePath(ctx);
+
+    [self _drawInRect:[aPath bounds] atAngle:anAngle];
+
+    [CPGraphicsContext restoreGraphicsState];
 }
 
 - (void)drawFromPoint:(NSPoint)startingPoint toPoint:(NSPoint)endingPoint options:(NSGradientDrawingOptions)options

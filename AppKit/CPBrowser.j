@@ -426,11 +426,26 @@
 
 - (void)keyDown:(CPEvent)anEvent
 {
-    var column = [self selectedColumn];
-    if (column === -1)
+    var key = [anEvent charactersIgnoringModifiers],
+        column = [self selectedColumn];
+
+    if (column === CPNotFound)
         return;
 
-    [_tableViews[column] keyDown:anEvent];
+    if (key === CPLeftArrowFunctionKey || key === CPRightArrowFunctionKey)
+    {
+        if (key === CPLeftArrowFunctionKey)
+        {
+            var previousColumn = column - 1,
+                selectedRow = [self selectedRowInColumn:previousColumn];
+
+            [self selectRow:selectedRow inColumn:previousColumn];
+        }
+        else
+            [self selectRow:0 inColumn:column + 1];
+    }
+    else
+        [_tableViews[column] keyDown:anEvent];
 }
 
 // SIZING
@@ -829,30 +844,6 @@
            [super dragViewForRowsWithIndexes:dragRows tableColumns:theTableColumns event:dragEvent offset:dragViewOffset];
 }
 
-- (void)moveUp:(id)sender
-{
-    [super moveUp:sender];
-    [_browser selectRow:[self selectedRow] inColumn:[_browser selectedColumn]];
-}
-
-- (void)moveDown:(id)sender
-{
-    [super moveDown:sender];
-    [_browser selectRow:[self selectedRow] inColumn:[_browser selectedColumn]];
-}
-
-- (void)moveLeft:(id)sender
-{
-    var previousColumn = [_browser selectedColumn] - 1,
-        selectedRow = [_browser selectedRowInColumn:previousColumn];
-
-    [_browser selectRow:selectedRow inColumn:previousColumn];
-}
-
-- (void)moveRight:(id)sender
-{
-    [_browser selectRow:0 inColumn:[_browser selectedColumn] + 1];
-}
 
 @end
 

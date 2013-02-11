@@ -130,8 +130,8 @@ var NSButtonIsBorderedMask = 0x00800000,
         // implemented:
         case CPRoundedBezelStyle:  // Push IB style
             positionOffsetOriginY = 6;
-            positionOffsetOriginX = 4;
-            positionOffsetSizeWidth = -12;
+            positionOffsetOriginX = 6;
+            positionOffsetSizeWidth = -12
             fixedHeight = YES;
             break;
 
