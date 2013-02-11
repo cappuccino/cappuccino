@@ -76,7 +76,7 @@ CPButtonStateMixed                  = CPThemeState("mixed");
 CPButtonStateBezelStyleRounded      = CPThemeState("rounded");
 
 // add all future correspondance between bezel styles and theme state here.
-var CPButtonBezelStyleStateMap = [CPDictionary dictionaryWithObjects:[CPButtonStateBezelStyleRounded, nil]
+var CPButtonBezelStyleStateMap = [CPDictionary dictionaryWithObjects:[CPButtonStateBezelStyleRounded, [CPNull null]]
                                                              forKeys:[CPRoundedBezelStyle, CPRoundRectBezelStyle]];
 
 
