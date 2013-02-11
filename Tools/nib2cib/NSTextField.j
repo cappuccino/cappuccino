@@ -75,6 +75,9 @@
         }
 
         CPLog.debug("NSTextField: title=\"" + [self stringValue] + "\", placeholder=" + ([cell placeholderString] == null ? "<none>" : '"' + [cell placeholderString] + '"') + ", isBordered=" + [self isBordered] + ", isBezeled="  + [self isBezeled] + ", bezelStyle=" + [self bezelStyle]);
+
+        if ([self formatter])
+            CPLog.debug(">> Formatter: " + [[self formatter] description]);
     }
 
     return self;
