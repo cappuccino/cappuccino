@@ -23,6 +23,7 @@
 @import "_CGGeometry.j"
 @import "CPArray.j"
 @import "CPBundle.j"
+@import "CPByteCountFormatter.j"
 @import "CPCharacterSet.j"
 @import "CPCoder.j"
 @import "CPComparisonPredicate.j"
