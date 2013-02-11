@@ -1550,7 +1550,7 @@ var themedButtonValues = nil,
 
 + (CPProgressIndicator)themedBarProgressIndicator
 {
-    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0,0,75,25)];
+    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 75, 25)];
     [progressBar setDoubleValue:30];
 
     var bezelColor = PatternColor(
@@ -1582,7 +1582,7 @@ var themedButtonValues = nil,
 
 + (CPProgressIndicator)themedIndeterminateBarProgressIndicator
 {
-    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0,0,75,25)];
+    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 75, 25)];
 
     [progressBar setIndeterminate:YES];
 
@@ -1616,7 +1616,7 @@ var themedButtonValues = nil,
 
 + (CPProgressIndicator)themedSpinningProgressIndicator
 {
-    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0,0,64,64)];
+    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 64, 64)];
     [progressBar setStyle:CPProgressIndicatorSpinningStyle];
 
     var spinningMini = PatternColor(@"progress-indicator-spinning-style-mini.gif", 16.0, 16.0),
@@ -1658,7 +1658,7 @@ var themedButtonValues = nil,
 
 + (CPLevelIndicator)themedLevelIndicator
 {
-    var levelIndicator = [[CPLevelIndicator alloc] initWithFrame:CGRectMake(0,0,100,100)],
+    var levelIndicator = [[CPLevelIndicator alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
 
         bezelColor = PatternColor(
             "level-indicator-bezel{position}.png",

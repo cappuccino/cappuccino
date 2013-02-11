@@ -1114,6 +1114,7 @@
     }
 
     var isPlaceholder = CPIsControllerMarker(newValue);
+
     if (isPlaceholder)
     {
         if (newValue === CPNotApplicableMarker && [options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
