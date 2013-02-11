@@ -31,6 +31,7 @@
         _allowsEmptySelection     = YES;
         _allowsMultipleSelection  = [aCoder decodeBoolForKey:@"NSAllowsMultipleSelection"];
     }
+
     return self;
 }
 
