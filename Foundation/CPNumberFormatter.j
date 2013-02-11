@@ -26,9 +26,6 @@
 @import "CPFormatter.j"
 @import "CPDecimalNumber.j"
 
-#define UPDATE_NUMBER_HANDLER_IF_NECESSARY() if (!_numberHandler) \
-    _numberHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:_roundingMode scale:_maximumFractionDigits raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:YES];
-#define SET_NEEDS_NUMBER_HANDLER_UPDATE() _numberHandler = nil;
 
 CPNumberFormatterNoStyle            = 0;
 CPNumberFormatterDecimalStyle       = 1;
@@ -46,6 +43,9 @@ CPNumberFormatterRoundHalfDown      = _CPRoundHalfDown;
 CPNumberFormatterRoundHalfUp        = CPRoundPlain;
 
 var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
+
+#define SET_NEEDS_NUMBER_HANDLER_UPDATE() _numberHandler = nil;
+
 
 /*!
     @ingroup foundation
@@ -105,7 +105,7 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
         case CPNumberFormatterCurrencyStyle:
         case CPNumberFormatterDecimalStyle:
         case CPNumberFormatterPercentStyle:
-            UPDATE_NUMBER_HANDLER_IF_NECESSARY();
+            [self _updateNumberHandlerIfNecessary];
 
             dcmn = [dcmn decimalNumberByRoundingAccordingToBehavior:_numberHandler];
 
@@ -133,6 +133,7 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
             }
 
             var string = preFraction;
+
             if (fraction)
                 string += "." + fraction;
 
@@ -151,6 +152,7 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
                 string = negativePrefix + string;
 
             return string;
+
         default:
             return [number description];
     }
@@ -197,6 +199,7 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
             _maximumFractionDigits = 3;
             SET_NEEDS_NUMBER_HANDLER_UPDATE();
             break;
+
         case CPNumberFormatterCurrencyStyle:
             _minimumFractionDigits = 2;
             _maximumFractionDigits = 2;
@@ -223,9 +226,17 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
     SET_NEEDS_NUMBER_HANDLER_UPDATE();
 }
 
+#pragma mark Private
+
+- (void)_updateNumberHandlerIfNecessary
+{
+    if (!_numberHandler)
+        _numberHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:_roundingMode scale:_maximumFractionDigits raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:YES];
+}
+
 @end
 
-var CPNumberFormatterStyleKey                   = "CPNumberFormatterStyleKey",
+var CPNumberFormatterStyleKey                   = @"CPNumberFormatterStyleKey",
     CPNumberFormatterMinimumFractionDigitsKey   = @"CPNumberFormatterMinimumFractionDigitsKey",
     CPNumberFormatterMaximumFractionDigitsKey   = @"CPNumberFormatterMaximumFractionDigitsKey",
     CPNumberFormatterRoundingModeKey            = @"CPNumberFormatterRoundingModeKey",
