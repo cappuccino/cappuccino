@@ -61,7 +61,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil;
 
     CPControlSize               _controlSize;
 
-    BOOL                        _isIndeterminate;
+    BOOL                        _indeterminate;
     CPProgressIndicatorStyle    _style;
 
     BOOL                        _isAnimating;
@@ -77,8 +77,22 @@ var CPProgressIndicatorSpinningStyleColors  = nil;
 
 + (CPDictionary)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], 25, [CPNull null], [CPNull null], [CPNull null], [CPNull null]]
-                                       forKeys:[@"indeterminate-bar-color", @"bar-color", @"default-height", @"bezel-color", @"spinning-mini-gif", @"spinning-small-gif", @"spinning-regular-gif"]];
+    return [CPDictionary dictionaryWithObjectsAndKeys:
+                [CPNull null], @"indeterminate-bar-color",
+                [CPNull null], @"bar-color",
+                25, @"default-height",
+                [CPNull null], @"bezel-color",
+                [CPNull null], @"spinning-mini-gif",
+                [CPNull null], @"spinning-small-gif",
+                [CPNull null], @"spinning-regular-gif"];
+}
+
++ (Class)_binderClassForBinding:(CPString)theBinding
+{
+    if (theBinding === CPValueBinding || theBinding === @"isIndeterminate")
+        return [_CPProgressIndicatorBinder class];
+
+    return [super _binderClassForBinding:theBinding];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -259,12 +273,12 @@ var CPProgressIndicatorSpinningStyleColors  = nil;
     Specifies whether this progress indicator should be indeterminate or display progress based on it's max and min.
     @param isDeterminate \c YES makes the indicator indeterminate
 */
-- (void)setIndeterminate:(BOOL)isIndeterminate
+- (void)setIndeterminate:(BOOL)indeterminate
 {
-    if (_isIndeterminate == isIndeterminate)
+    if (_indeterminate == indeterminate)
         return;
 
-    _isIndeterminate = isIndeterminate;
+    _indeterminate = indeterminate;
 
     [self updateBackgroundColor];
 }
@@ -274,7 +288,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil;
 */
 - (BOOL)isIndeterminate
 {
-    return _isIndeterminate;
+    return _indeterminate;
 }
 
 /*!
@@ -369,7 +383,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil;
         if (barWidth > 0.0 && barWidth < 4.0)
             barWidth = 4.0;
 
-        if (_isIndeterminate)
+        if (_indeterminate)
             barWidth = width;
 
         return _CGRectMake(0, 0, barWidth, [self valueForThemeAttribute:@"default-height"]);
@@ -411,7 +425,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil;
                                                  positioned:CPWindowBelow
                             relativeToEphemeralSubviewNamed:nil];
 
-           if (_isIndeterminate)
+           if (_indeterminate)
                [barView setBackgroundColor:[self currentValueForThemeAttribute:@"indeterminate-bar-color"]];
            else
                [barView setBackgroundColor:[self currentValueForThemeAttribute:@"bar-color"]];
@@ -435,7 +449,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil;
         _maxValue                   = [aCoder decodeObjectForKey:@"_maxValue"];
         _doubleValue                = [aCoder decodeObjectForKey:@"_doubleValue"];
         _controlSize                = [aCoder decodeObjectForKey:@"_controlSize"];
-        _isIndeterminate            = [aCoder decodeObjectForKey:@"_isIndeterminate"];
+        _indeterminate              = [aCoder decodeObjectForKey:@"_indeterminate"];
         _style                      = [aCoder decodeIntForKey:@"_style"];
         _isAnimating                = [aCoder decodeObjectForKey:@"_isAnimating"];
         _isDisplayedWhenStoppedSet  = [aCoder decodeObjectForKey:@"_isDisplayedWhenStoppedSet"];
@@ -449,8 +463,8 @@ var CPProgressIndicatorSpinningStyleColors  = nil;
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    // Don't encode the background colour. It can be recreated based on the flags and if encoded causes hardcoded
-    // image paths in the cib while just wasting space.
+    // Don't encode the background colour. It can be recreated based on the flags
+    // and if encoded causes hardcoded image paths in the cib while just wasting space.
     var backgroundColor = [self backgroundColor];
     [self setBackgroundColor:nil];
     [super encodeWithCoder:aCoder];
@@ -460,11 +474,46 @@ var CPProgressIndicatorSpinningStyleColors  = nil;
     [aCoder encodeObject:_maxValue forKey:@"_maxValue"];
     [aCoder encodeObject:_doubleValue forKey:@"_doubleValue"];
     [aCoder encodeObject:_controlSize forKey:@"_controlSize"];
-    [aCoder encodeObject:_isIndeterminate forKey:@"_isIndeterminate"];
+    [aCoder encodeObject:_indeterminate forKey:@"_indeterminate"];
     [aCoder encodeInt:_style forKey:@"_style"];
     [aCoder encodeObject:_isAnimating forKey:@"_isAnimating"];
     [aCoder encodeObject:_isDisplayedWhenStoppedSet forKey:@"_isDisplayedWhenStoppedSet"];
     [aCoder encodeObject:_isDisplayedWhenStopped forKey:@"_isDisplayedWhenStopped"];
+}
+
+@end
+
+
+@implementation _CPProgressIndicatorBinder : CPBinder
+
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPString)aBinding
+{
+    var value = aBinding === CPValueBinding ? 0.0 : YES;
+
+    [self _setPlaceholder:value forMarker:CPMultipleValuesMarker isDefault:YES];
+    [self _setPlaceholder:value forMarker:CPNoSelectionMarker isDefault:YES];
+    [self _setPlaceholder:value forMarker:CPNotApplicableMarker isDefault:YES];
+    [self _setPlaceholder:value forMarker:CPNullMarker isDefault:YES];
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    if (aBinding === CPValueBinding)
+        [_source setDoubleValue:aValue];
+    else if (aBinding === @"isIndeterminate")
+        [_source setIndeterminate:aValue];
+    else
+        [super setValue:aValue forBinding:aBinding];
+}
+
+- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
+{
+    if (aBinding === CPValueBinding)
+        [_source setDoubleValue:aValue];
+    else if (aBinding === @"isIndeterminate")
+        [_source setIndeterminate:aValue];
+    else
+        [super setPlaceholderValue:aValue withMarker:aMarker forBinding:aBinding];
 }
 
 @end
