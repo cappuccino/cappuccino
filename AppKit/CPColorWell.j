@@ -323,30 +323,19 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     [self _setPlaceholder:placeholderColor forMarker:CPNullMarker isDefault:YES];
 }
 
-- (void)setValueFor:(CPString)theBinding
+- (id)valueForBinding:(CPString)aBinding
 {
-    var destination = [_info objectForKey:CPObservedObjectKey],
-        keyPath = [_info objectForKey:CPObservedKeyPathKey],
-        options = [_info objectForKey:CPOptionsKey],
-        newValue = [destination valueForKeyPath:keyPath],
-        isPlaceholder = CPIsControllerMarker(newValue);
+    return [_source color];
+}
 
-    if (isPlaceholder)
-    {
-        if (newValue === CPNotApplicableMarker && [options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
-        {
-           [CPException raise:CPGenericException
-                       reason:@"can't transform non applicable key on: " + _source + " value: " + newValue];
-        }
+- (void)setValue:(id)aValue forBinding:(CPString)theBinding
+{
+    [_source setColor:aValue];
+}
 
-        newValue = [self _placeholderForMarker:newValue];
-    }
-    else
-    {
-        newValue = [self transformValue:newValue withOptions:options];
-    }
-
-    [_source setColor:newValue];
+- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
+{
+    [_source setColor:aValue];
 }
 
 @end
