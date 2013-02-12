@@ -496,23 +496,27 @@ var CPProgressIndicatorSpinningStyleColors  = nil;
     [self _setPlaceholder:value forMarker:CPNullMarker isDefault:YES];
 }
 
-- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+- (BOOL)_setValue:(id)aValue forBinding:(CPString)aBinding
 {
     if (aBinding === CPValueBinding)
         [_source setDoubleValue:aValue];
     else if (aBinding === @"isIndeterminate")
         [_source setIndeterminate:aValue];
     else
+        return NO;
+
+    return YES;
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    if (![self _setValue:aValue forBinding:aBinding])
         [super setValue:aValue forBinding:aBinding];
 }
 
 - (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
 {
-    if (aBinding === CPValueBinding)
-        [_source setDoubleValue:aValue];
-    else if (aBinding === @"isIndeterminate")
-        [_source setIndeterminate:aValue];
-    else
+    if (![self _setValue:aValue forBinding:aBinding])
         [super setPlaceholderValue:aValue withMarker:aMarker forBinding:aBinding];
 }
 
