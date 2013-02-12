@@ -69,7 +69,6 @@
             [[menu itemAtIndex:1] setState:CPOnState];
     }
 
-    console.log("units: %d", units);
     [[formattedByteCount formatter] setAllowedUnits:units];
     [self propertyChanged:nil];
 }
