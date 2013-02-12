@@ -269,8 +269,8 @@ var CPByteCountFormatterUnits = [ @"bytes", @"KB", @"MB", @"GB", @"TB", @"PB" ];
 
 - (void)setAllowedUnits:(int)allowed
 {
-    // CPByteCountFormatterUseDefault is equivalent to UseAll
-    _allowedUnits = allowed ? allowed : CPByteCountFormatterUseAll;
+    // Note: CPByteCountFormatterUseDefault is equivalent to UseAll
+    _allowedUnits = allowed;
 }
 
 - (BOOL)includesCount
