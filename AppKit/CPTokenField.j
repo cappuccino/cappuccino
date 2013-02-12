@@ -1108,15 +1108,8 @@ CPTokenFieldDeleteButtonType     = 1;
     if (isEditing && _selectedRange.length)
     {
         _inputFrame = nil;
-        var inputElement = [self _inputElement];
-        inputElement.style.display = "none";
-    }
-    else if (isEditing)
-    {
-        var inputElement = [self _inputElement];
-        inputElement.style.display = "block";
-        if (document.activeElement !== inputElement)
-            inputElement.focus();
+        [self _inputElement].style.left = "-10000px";
+        [self _inputElement].focus();
     }
 
     // Trim off any excess height downwards (in case we shrank).
