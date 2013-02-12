@@ -1,5 +1,5 @@
 /*
- * CPKeyValueCoding.j
+ * CPKeyValueObserving.j
  * Foundation
  *
  * Created by Ross Boucher.
