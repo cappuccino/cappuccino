@@ -496,6 +496,16 @@ var CPProgressIndicatorSpinningStyleColors  = nil;
     [self _setPlaceholder:value forMarker:CPNullMarker isDefault:YES];
 }
 
+- (id)valueForBinding:(CPString)aBinding
+{
+    if (aBinding === CPValueBinding)
+        return [_source doubleValue];
+    else if (aBinding === @"isIndeterminate")
+        [_source isIndeterminate];
+    else
+        return [super valueForBinding:aBinding];
+}
+
 - (BOOL)_setValue:(id)aValue forBinding:(CPString)aBinding
 {
     if (aBinding === CPValueBinding)
