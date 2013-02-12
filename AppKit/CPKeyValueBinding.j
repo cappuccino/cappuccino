@@ -286,6 +286,7 @@ var CPBindingOperationAnd = 0,
 
     var uid = [anObject UID],
         objectSuppressions = _suppressedNotifications[uid];
+
     if (!objectSuppressions)
         _suppressedNotifications[uid] = objectSuppressions = {};
 
@@ -302,6 +303,7 @@ var CPBindingOperationAnd = 0,
 
     var uid = [anObject UID],
         objectSuppressions = _suppressedNotifications[uid];
+
     if (!objectSuppressions)
         return;
 
@@ -318,6 +320,7 @@ var CPBindingOperationAnd = 0,
             optionName = CPBinderPlaceholderOptions[count],
             isExplicit = [options containsKey:optionName],
             placeholder = isExplicit ? [options objectForKey:optionName] : nil;
+
         [self _setPlaceholder:placeholder forMarker:marker isDefault:!isExplicit];
     }
 }
@@ -330,8 +333,10 @@ var CPBindingOperationAnd = 0,
 - (void)_placeholderForMarker:aMarker
 {
     var placeholder = _placeholderForMarker[aMarker];
+
     if (placeholder)
         return placeholder['value'];
+
     return nil;
 }
 
