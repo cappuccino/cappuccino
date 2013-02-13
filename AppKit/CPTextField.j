@@ -612,7 +612,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (!CPFeatureIsCompatible(CPInputSetFontOutsideOfDOM))
         element.style.font = [font cssString];
 
-    [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
 
     CPTextFieldInputIsActive = YES;
 
