@@ -60,11 +60,11 @@ CPMomentaryPushInButton = 7;
 CPMomentaryPushButton   = 0;
 CPMomentaryLight        = 7;
 
-CPNoButtonMask              = 0;
-CPContentsButtonMask        = 1;
-CPPushInButtonMask          = 2;
-CPGrayButtonMask            = 4;
-CPBackgroundButtonMask      = 8;
+CPNoButtonMask          = 0;
+CPContentsButtonMask    = 1;
+CPPushInButtonMask      = 2;
+CPGrayButtonMask        = 4;
+CPBackgroundButtonMask  = 8;
 
 CPNoCellMask                = CPNoButtonMask;
 CPContentsCellMask          = CPContentsButtonMask;
@@ -72,11 +72,11 @@ CPPushInCellMask            = CPPushInButtonMask;
 CPChangeGrayCellMask        = CPGrayButtonMask;
 CPChangeBackgroundCellMask  = CPBackgroundButtonMask;
 
-CPButtonStateMixed                  = CPThemeState("mixed");
-CPButtonStateBezelStyleRounded      = CPThemeState("rounded");
+CPButtonStateMixed             = CPThemeState("mixed");
+CPButtonStateBezelStyleRounded = CPThemeState("rounded");
 
 // add all future correspondance between bezel styles and theme state here.
-var CPButtonBezelStyleStateMap = [CPDictionary dictionaryWithObjects:[CPButtonStateBezelStyleRounded, nil]
+var CPButtonBezelStyleStateMap = [CPDictionary dictionaryWithObjects:[CPButtonStateBezelStyleRounded, [CPNull null]]
                                                              forKeys:[CPRoundedBezelStyle, CPRoundRectBezelStyle]];
 
 

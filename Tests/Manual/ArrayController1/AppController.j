@@ -21,7 +21,7 @@ CPLogRegister(CPLogConsole);
     @outlet CPTextField         selectedPriceField;
 
     CPArray             itemsArray;
-    CPArrayController   arrayController;
+    @outlet CPArrayController   arrayController;
 }
 
 - (void)awakeFromCib
@@ -31,8 +31,6 @@ CPLogRegister(CPLogConsole);
 
     [notWrongItem setRightOrWrong:"also right"];
     itemsArray = [[Item new], notWrongItem];
-
-    arrayController = [[CPArrayController alloc] init];
 
     [arrayController setEditable:YES];
     [arrayController setObjectClass:Item];
@@ -86,16 +84,6 @@ CPLogRegister(CPLogConsole);
 - (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)aTableColumn row:(int)rowIndex
 {
     return YES;
-}
-
-- (void)add:(id)aSender
-{
-    [arrayController add:self];
-}
-
-- (void)remove:(id)aSender
-{
-    [arrayController remove:self];
 }
 
 - (void)createBindings
@@ -168,6 +156,8 @@ CPLogRegister(CPLogConsole);
 
 @end
 
+var ItemCounter = 0;
+
 @implementation Item : CPObject
 {
     float price @accessors;
@@ -179,7 +169,7 @@ CPLogRegister(CPLogConsole);
 {
     self = [super init];
     price = 7.0;
-    name = "bob";
+    name = "bob " + (ItemCounter++);
     rightOrWrong = "wrong";
     return self;
 }

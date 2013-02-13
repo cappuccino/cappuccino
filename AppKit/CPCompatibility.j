@@ -38,58 +38,58 @@ CPWindowsOperatingSystem                = 1;
 CPOtherOperatingSystem                  = 2;
 
 // Features
-CPCSSRGBAFeature                        = 1 << 5;
+CPCSSRGBAFeature                        = 5;
 
-CPHTMLCanvasFeature                     = 1 << 6;
-CPHTMLContentEditableFeature            = 1 << 7;
-CPHTMLDragAndDropFeature                = 1 << 8;
+CPHTMLCanvasFeature                     = 6;
+CPHTMLContentEditableFeature            = 7;
+CPHTMLDragAndDropFeature                = 8;
 
-CPJavaScriptInnerTextFeature            = 1 << 9;
-CPJavaScriptTextContentFeature          = 1 << 10;
-CPJavaScriptClipboardEventsFeature      = 1 << 11;
-CPJavaScriptClipboardAccessFeature      = 1 << 12;
-CPJavaScriptCanvasDrawFeature           = 1 << 13;
-CPJavaScriptCanvasTransformFeature      = 1 << 14;
+CPJavaScriptInnerTextFeature            = 9;
+CPJavaScriptTextContentFeature          = 10;
+CPJavaScriptClipboardEventsFeature      = 11;
+CPJavaScriptClipboardAccessFeature      = 12;
+CPJavaScriptCanvasDrawFeature           = 13;
+CPJavaScriptCanvasTransformFeature      = 14;
 
-CPVMLFeature                            = 1 << 15;
+CPVMLFeature                            = 15;
 
-CPJavaScriptRemedialKeySupport          = 1 << 16;
-CPJavaScriptShadowFeature               = 1 << 20;
+CPJavaScriptRemedialKeySupport          = 16;
+CPJavaScriptShadowFeature               = 20;
 
-CPJavaScriptNegativeMouseWheelValues    = 1 << 22;
-CPJavaScriptMouseWheelValues_8_15       = 1 << 23;
+CPJavaScriptNegativeMouseWheelValues    = 22;
+CPJavaScriptMouseWheelValues_8_15       = 23;
 
-CPOpacityRequiresFilterFeature          = 1 << 24;
+CPOpacityRequiresFilterFeature          = 24;
 
-//Internet explorer does not allow dynamically changing the type of an input element
-CPInputTypeCanBeChangedFeature          = 1 << 25;
-CPHTML5DragAndDropSourceYOffBy1         = 1 << 26;
+// Internet explorer does not allow dynamically changing the type of an input element
+CPInputTypeCanBeChangedFeature          = 25;
+CPHTML5DragAndDropSourceYOffBy1         = 26;
 
-CPSOPDisabledFromFileURLs               = 1 << 27;
+CPSOPDisabledFromFileURLs               = 27;
 
 // element.style.font can be set for an element not in the DOM.
-CPInputSetFontOutsideOfDOM              = 1 << 28;
+CPInputSetFontOutsideOfDOM              = 28;
 
 // Input elements have 1 px of extra padding on the left regardless of padding setting.
-CPInput1PxLeftPadding                   = 1 << 29;
-CPInputOnInputEventFeature              = 1 << 30;
+CPInput1PxLeftPadding                   = 29;
+CPInputOnInputEventFeature              = 30;
 
-// When an absolutely positioned div (CPView) with an absolutely positioned canvas in it (CPView with drawRect:) moves things on top of the canvas
-// (subviews) don't redraw correctly. E.g. if you have a bunch of text fields in a CPBox in a sheet which animates in, some of the text fields might
-// not be visible because the CPBox has a canvas at the bottom and the box moved form offscreen to onscreen.
-// This bug is probably very related: https://bugs.webkit.org/show_bug.cgi?id=67203
+CPFileAPIFeature                        = 31;
+
+/*
+    When an absolutely positioned div (CPView) with an absolutely positioned canvas in it (CPView with drawRect:) moves things on top of the canvas (subviews) don't redraw correctly. E.g. if you have a bunch of text fields in a CPBox in a sheet which animates in, some of the text fields might not be visible because the CPBox has a canvas at the bottom and the box moved form offscreen to onscreen. This bug is probably very related: https://bugs.webkit.org/show_bug.cgi?id=67203
+*/
 CPCanvasParentDrawErrorsOnMovementBug   = 1 << 0;
 
 var USER_AGENT                          = "",
     PLATFORM_ENGINE                     = CPUnknownBrowserEngine,
-    PLATFORM_FEATURES                   = 0,
+    PLATFORM_FEATURES                   = [],
     PLATFORM_BUGS                       = 0,
     PLATFORM_STYLE_JS_PROPERTIES        = {};
 
 // default these features to true
-
-PLATFORM_FEATURES |= CPInputTypeCanBeChangedFeature;
-PLATFORM_FEATURES |= CPInputSetFontOutsideOfDOM;
+PLATFORM_FEATURES[CPInputTypeCanBeChangedFeature] = YES;
+PLATFORM_FEATURES[CPInputSetFontOutsideOfDOM] = YES;
 
 if (typeof window !== "undefined" && typeof window.navigator !== "undefined")
     USER_AGENT = window.navigator.userAgent;
@@ -99,7 +99,7 @@ if (typeof window !== "undefined" && window.opera)
 {
     PLATFORM_ENGINE = CPOperaBrowserEngine;
 
-    PLATFORM_FEATURES |= CPJavaScriptCanvasDrawFeature;
+    PLATFORM_FEATURES[CPJavaScriptCanvasDrawFeature] = YES;
 }
 
 // Internet Explorer
@@ -108,16 +108,16 @@ else if (typeof window !== "undefined" && window.attachEvent) // Must follow Ope
     PLATFORM_ENGINE = CPInternetExplorerBrowserEngine;
 
     // Features we can only be sure of with IE (no known independent tests)
-    PLATFORM_FEATURES |= CPVMLFeature;
-    PLATFORM_FEATURES |= CPJavaScriptRemedialKeySupport;
-    PLATFORM_FEATURES |= CPJavaScriptShadowFeature;
+    PLATFORM_FEATURES[CPVMLFeature] = YES;
+    PLATFORM_FEATURES[CPJavaScriptRemedialKeySupport] = YES;
+    PLATFORM_FEATURES[CPJavaScriptShadowFeature] = YES;
 
-    PLATFORM_FEATURES |= CPOpacityRequiresFilterFeature;
+    PLATFORM_FEATURES[CPOpacityRequiresFilterFeature] = YES;
 
-    PLATFORM_FEATURES &= ~CPInputTypeCanBeChangedFeature;
+    PLATFORM_FEATURES[CPInputTypeCanBeChangedFeature] = NO;
 
     // Tested in Internet Explore 8 and 9.
-    PLATFORM_FEATURES &= ~CPInputSetFontOutsideOfDOM;
+    PLATFORM_FEATURES[CPInputSetFontOutsideOfDOM] = NO;
 }
 
 // WebKit
@@ -126,15 +126,15 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
     PLATFORM_ENGINE = CPWebKitBrowserEngine;
 
     // Features we can only be sure of with WebKit (no known independent tests)
-    PLATFORM_FEATURES |= CPCSSRGBAFeature;
-    PLATFORM_FEATURES |= CPHTMLContentEditableFeature;
+    PLATFORM_FEATURES[CPCSSRGBAFeature] = YES;
+    PLATFORM_FEATURES[CPHTMLContentEditableFeature] = YES;
 
     if (USER_AGENT.indexOf("Chrome") === -1)
-        PLATFORM_FEATURES |= CPHTMLDragAndDropFeature;
+        PLATFORM_FEATURES[CPHTMLDragAndDropFeature] = YES;
 
-    PLATFORM_FEATURES |= CPJavaScriptClipboardEventsFeature;
-    PLATFORM_FEATURES |= CPJavaScriptClipboardAccessFeature;
-    PLATFORM_FEATURES |= CPJavaScriptShadowFeature;
+    PLATFORM_FEATURES[CPJavaScriptClipboardEventsFeature] = YES;
+    PLATFORM_FEATURES[CPJavaScriptClipboardAccessFeature] = YES;
+    PLATFORM_FEATURES[CPJavaScriptShadowFeature] = YES;
 
     var versionStart = USER_AGENT.indexOf("AppleWebKit/") + "AppleWebKit/".length,
         versionEnd = USER_AGENT.indexOf(" ", versionStart),
@@ -144,22 +144,22 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
         minorVersion = parseInt(versionString.substr(versionDivision + 1));
 
     if ((USER_AGENT.indexOf("Safari") !== CPNotFound && (majorVersion > 525 || (majorVersion === 525 && minorVersion > 14))) || USER_AGENT.indexOf("Chrome") !== CPNotFound)
-        PLATFORM_FEATURES |= CPJavaScriptRemedialKeySupport;
+        PLATFORM_FEATURES[CPJavaScriptRemedialKeySupport] = YES;
 
     // FIXME this is a terrible hack to get around this bug:
     // https://bugs.webkit.org/show_bug.cgi?id=21548
     if (![CPPlatform isBrowser])
-        PLATFORM_FEATURES |= CPJavaScriptRemedialKeySupport;
+        PLATFORM_FEATURES[CPJavaScriptRemedialKeySupport] = YES;
 
     if (majorVersion < 532 || (majorVersion === 532 && minorVersion < 6))
-        PLATFORM_FEATURES |= CPHTML5DragAndDropSourceYOffBy1;
+        PLATFORM_FEATURES[CPHTML5DragAndDropSourceYOffBy1] = YES;
 
     // This is supposedly fixed in webkit r123603. Seems to work in Chrome 21 but not Safari 6.0.
     if (majorVersion < 537)
-        PLATFORM_FEATURES |= CPInput1PxLeftPadding;
+        PLATFORM_FEATURES[CPInput1PxLeftPadding] = YES;
 
     if (USER_AGENT.indexOf("Chrome") === CPNotFound)
-        PLATFORM_FEATURES |= CPSOPDisabledFromFileURLs;
+        PLATFORM_FEATURES[CPSOPDisabledFromFileURLs] = YES;
 
     // Assume this bug was introduced around Safari 5.1/Chrome 16. This could probably be tighter.
     if (majorVersion > 533)
@@ -177,59 +177,71 @@ else if (USER_AGENT.indexOf("Gecko") !== -1) // Must follow KHTML check.
 {
     PLATFORM_ENGINE = CPGeckoBrowserEngine;
 
-    PLATFORM_FEATURES |= CPJavaScriptCanvasDrawFeature;
+    PLATFORM_FEATURES[CPJavaScriptCanvasDrawFeature] = YES;
 
     var index = USER_AGENT.indexOf("Firefox"),
         version = (index === -1) ? 2.0 : parseFloat(USER_AGENT.substring(index + "Firefox".length + 1));
 
     if (version >= 3.0)
-        PLATFORM_FEATURES |= CPCSSRGBAFeature;
+        PLATFORM_FEATURES[CPCSSRGBAFeature] = YES;
 
     if (version < 3.0)
-        PLATFORM_FEATURES |= CPJavaScriptMouseWheelValues_8_15;
+        PLATFORM_FEATURES[CPJavaScriptMouseWheelValues_8_15] = YES;
 
     // Some day this might be fixed and should be version prefixed. No known fixed version yet.
-    PLATFORM_FEATURES |= CPInput1PxLeftPadding;
+    PLATFORM_FEATURES[CPInput1PxLeftPadding] = YES;
 }
 
-// Feature Specific Checks
+// Feature-specific checks
 if (typeof document != "undefined")
 {
     var canvasElement = document.createElement("canvas");
-    // Detect Canvas Support
+
+    // Detect canvas support
     if (canvasElement && canvasElement.getContext)
     {
-        PLATFORM_FEATURES |= CPHTMLCanvasFeature;
+        PLATFORM_FEATURES[CPHTMLCanvasFeature] = YES;
 
-        // Detect Canvas setTransform/transform support
+        // Detect canvas setTransform/transform support
         var context = document.createElement("canvas").getContext("2d");
 
         if (context && context.setTransform && context.transform)
-            PLATFORM_FEATURES |= CPJavaScriptCanvasTransformFeature;
+            PLATFORM_FEATURES[CPJavaScriptCanvasTransformFeature] = YES;
     }
 
     var DOMElement = document.createElement("div");
 
     // Detect whether we have innerText or textContent (or neither)
     if (DOMElement.innerText != undefined)
-        PLATFORM_FEATURES |= CPJavaScriptInnerTextFeature;
+        PLATFORM_FEATURES[CPJavaScriptInnerTextFeature] = YES;
     else if (DOMElement.textContent != undefined)
-        PLATFORM_FEATURES |= CPJavaScriptTextContentFeature;
+        PLATFORM_FEATURES[CPJavaScriptTextContentFeature] = YES;
 
     var DOMInputElement = document.createElement("input");
+
     if ("oninput" in DOMInputElement)
-        PLATFORM_FEATURES |= CPInputOnInputEventFeature;
+        PLATFORM_FEATURES[CPInputOnInputEventFeature] = YES;
     else if (typeof DOMInputElement.setAttribute === "function")
     {
         DOMInputElement.setAttribute("oninput", "return;");
+
         if (typeof DOMInputElement.oninput === "function")
-            PLATFORM_FEATURES |= CPInputOnInputEventFeature;
+            PLATFORM_FEATURES[CPInputOnInputEventFeature] = YES;
     }
+
+    // Detect FileAPI support
+    if (typeof DOMInputElement.setAttribute === "function")
+    {
+        DOMInputElement.setAttribute("type", "file");
+        PLATFORM_FEATURES[CPFileAPIFeature] = !!DOMInputElement["files"];
+    }
+    else
+        PLATFORM_FEATURES[CPFileAPIFeature] = NO;
 }
 
 function CPFeatureIsCompatible(aFeature)
 {
-    return PLATFORM_FEATURES & aFeature;
+    return !!PLATFORM_FEATURES[aFeature];
 }
 
 function CPPlatformHasBug(aBug)

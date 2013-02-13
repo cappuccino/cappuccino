@@ -528,7 +528,7 @@
  Raises an exception.
 
  CPArray objects are not observable, so this method raises an exception when invoked on an CPArray object.
- Instead of observing a array, observe the ordered to-many relationship for which the array is the collection of related objects.
+ Instead of observing an array, observe the ordered to-many relationship for which the array is the collection of related objects.
 */
 - (void)addObserver:(id)anObserver forKeyPath:(CPString)aKeyPath options:(CPKeyValueObservingOptions)anOptions context:(id)aContext
 {
@@ -539,7 +539,7 @@
  Raises an exception.
 
  CPArray objects are not observable, so this method raises an exception when invoked on an CPArray object.
- Instead of observing a array, observe the ordered to-many relationship for which the array is the collection of related objects.
+ Instead of observing an array, observe the ordered to-many relationship for which the array is the collection of related objects.
 */
 - (void)removeObserver:(id)anObserver forKeyPath:(CPString)aKeyPath
 {

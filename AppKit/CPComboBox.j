@@ -1155,11 +1155,13 @@ var CPComboBoxCompletionTest = function(object, index, context)
 
     switch (theBinding)
     {
-        case CPContentBinding:          [_source setContent:newValue];
-                                        break;
+        case CPContentBinding:
+            [_source setContent:newValue];
+            break;
 
-        case CPContentValuesBinding:    [_source setContentValues:newValue];
-                                        break;
+        case CPContentValuesBinding:
+            [_source setContentValues:newValue];
+            break;
     }
 }
 

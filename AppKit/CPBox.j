@@ -421,9 +421,9 @@ CPBelowBottom = 6;
             // NSBox does not include a horizontal flag for the separator type. We have to determine
             // the type of separator to draw by the width and height of the frame.
             if (CGRectGetWidth(bounds) === 5.0)
-                return [self _drawVerticalSeperatorInRect:bounds];
+                return [self _drawVerticalSeparatorInRect:bounds];
             else if (CGRectGetHeight(bounds) === 5.0)
-                return [self _drawHorizontalSeperatorInRect:bounds];
+                return [self _drawHorizontalSeparatorInRect:bounds];
 
             break;
     }
@@ -462,7 +462,7 @@ CPBelowBottom = 6;
     }
 }
 
-- (void)_drawHorizontalSeperatorInRect:(CGRect)aRect
+- (void)_drawHorizontalSeparatorInRect:(CGRect)aRect
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort];
 
@@ -474,7 +474,7 @@ CPBelowBottom = 6;
     CGContextStrokePath(context);
 }
 
-- (void)_drawVerticalSeperatorInRect:(CGRect)aRect
+- (void)_drawVerticalSeparatorInRect:(CGRect)aRect
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort];
 
@@ -534,9 +534,9 @@ CPBelowBottom = 6;
         borderWidth = [self borderWidth],
         shadowOffset = [self valueForThemeAttribute:@"inner-shadow-offset"],
         shadowSize = [self valueForThemeAttribute:@"inner-shadow-size"],
-        shadowColor = [self valueForThemeAttribute:@"inner-shadow-color"];
+        shadowColor = [self valueForThemeAttribute:@"inner-shadow-color"],
+        baseRect = aRect;
 
-    var baseRect = aRect;
     aRect = CGRectInset(aRect, borderWidth / 2.0, borderWidth / 2.0);
 
     CGContextSaveGState(context);

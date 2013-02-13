@@ -359,7 +359,12 @@ var _CPMenuBarVisible               = NO,
 */
 - (void)itemChanged:(CPMenuItem)aMenuItem
 {
-    if ([aMenuItem menu] !== self)
+    /*
+        During cib unarchiving, menu items will have a reference to their menu,
+        but of course the items are still being unarchived and the menu's _items
+        have not yet been instantiated. In that case we will not do anything here.
+    */
+    if ([aMenuItem menu] !== self || !_items)
         return;
 
     [aMenuItem setValue:[aMenuItem valueForKey:@"changeCount"] + 1 forKey:@"changeCount"];

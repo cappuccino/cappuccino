@@ -214,5 +214,53 @@
     [self assert:replacementDocumentView equals:[scrollView documentView] message:@"documentView was not replaced properly"];
 }
 
+- (void)testScrollRectToVisible
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
+        documentView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 1000, 1000)],
+        textField1 = [CPTextField textFieldWithStringValue:@"Martin" placeholder:@"" width:10],
+        textField2 = [CPTextField textFieldWithStringValue:@"Malte" placeholder:@"" width:10],
+        textField1Size = CGSizeMakeCopy([textField1 bounds].size),
+        textField2Size = CGSizeMakeCopy([textField2 bounds].size);
+
+    [scrollView setDocumentView:documentView];
+
+    [textField1 setFrameOrigin:CGPointMake(0, 0)];
+    [textField2 setFrameOrigin:CGPointMake(500, 500)];
+
+    [documentView addSubview:textField1];
+    [documentView addSubview:textField2];
+
+    var visibleRect = [documentView visibleRect],
+        originalVisibleSize = CGSizeMakeCopy(visibleRect.size);
+
+    // Make sure we are at the top left corner
+    [self assertPoint:CGPointMake(0, 0) equals:visibleRect.origin message:@"VisibleRect origin not at top left corner"];
+
+    // Make the second text field visible
+    [textField2 scrollRectToVisible:[textField2 bounds]];
+
+    var visibleRectOriginShouldBeAt = CGPointMake(500 - originalVisibleSize.width + textField2Size.width, 500 -originalVisibleSize.height + textField2Size.height);
+
+    visibleRect = [documentView visibleRect];
+
+    // We should now have the text field in the lower right corner
+    [self assertPoint:visibleRectOriginShouldBeAt equals:visibleRect.origin message:@"Second text field not at lower right corner in visible rect"];
+
+    // Make the first text field visible again
+    [textField1 scrollRectToVisible:[textField2 bounds]];
+
+    visibleRect = [documentView visibleRect];
+
+    // We should now be back at top left corner
+    [self assertPoint:CGPointMake(0, 0) equals:visibleRect.origin message:@"VisibleRect origin not at top left corner again"];
+}
+
+- (void)assertPoint:(CGPoint)expected equals:(CGPoint)actual message:(CPString)message
+{
+    [self assert:expected.x equals:actual.x message:@"X: " + message];
+    [self assert:expected.y equals:actual.y message:@"Y: " + message];
+}
+
 @end
 

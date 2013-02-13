@@ -55,7 +55,7 @@
     [textField setBezeled:YES];
     [textField setCenter:CGPointMake([contentView center].x, [contentView center].y + 40.0)];
     [textField setValue:CPCenterTextAlignment forThemeAttribute:@"alignment"];
-    [textField bind:@"value" toObject:popUpButton withKeyPath:@"selectedTag" options:nil];
+    [textField bind:CPValueBinding toObject:popUpButton withKeyPath:@"selectedItem.tag" options:nil];
     [contentView addSubview:textField];
 
     var button = [CPButton buttonWithTitle:@"Remove Items"],
@@ -67,13 +67,13 @@
     [button setAction:@selector(removeItems:)];
     [contentView addSubview:button];
 
-    [popUpButton bind:@"selectedTag" toObject:textField withKeyPath:@"value" options:nil]
-    [popUpButton2 bind:@"selectedTag" toObject:popUpButton withKeyPath:@"selectedTag" options:nil];
+    [popUpButton bind:CPSelectedTagBinding toObject:textField withKeyPath:@"value" options:nil]
+    [popUpButton2 bind:CPSelectedTagBinding toObject:popUpButton withKeyPath:@"selectedItem.tag" options:nil];
 
     // Change the selected tag of the second popup doesn't reverse set it,
     // see the discussion for pull request 1018 for more details about the problem.
     // https://github.com/280north/cappuccino/pull/1018
-    [popUpButton2 _setSelectedTag:2];
+    [popUpButton2 selectItemWithTag:2];
 
     [theWindow orderFront:self];
 }

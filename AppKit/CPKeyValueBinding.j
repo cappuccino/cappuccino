@@ -106,6 +106,7 @@ var CPBindingOperationAnd = 0,
 + (void)unbindAllForObject:(id)anObject
 {
     var bindings = [bindingsMap objectForKey:[anObject UID]];
+
     if (!bindings)
         return;
 
@@ -125,7 +126,7 @@ var CPBindingOperationAnd = 0,
     if (self)
     {
         _source = aSource;
-        _info   = [CPDictionary dictionaryWithObjects:[aDestination, aKeyPath] forKeys:[CPObservedObjectKey, CPObservedKeyPathKey]];
+        _info = [CPDictionary dictionaryWithObjects:[aDestination, aKeyPath] forKeys:[CPObservedObjectKey, CPObservedKeyPathKey]];
         _suppressedNotifications = {};
         _placeholderForMarker = {};
 
@@ -137,6 +138,7 @@ var CPBindingOperationAnd = 0,
         [aDestination addObserver:self forKeyPath:aKeyPath options:CPKeyValueObservingOptionNew context:aBinding];
 
         var bindings = [bindingsMap objectForKey:[_source UID]];
+
         if (!bindings)
         {
             bindings = [CPDictionary new];
@@ -211,6 +213,7 @@ var CPBindingOperationAnd = 0,
         return;
 
     var objectSuppressions = _suppressedNotifications[[anObject UID]];
+
     if (objectSuppressions && objectSuppressions[aKeyPath])
         return;
 
@@ -229,6 +232,7 @@ var CPBindingOperationAnd = 0,
         if (!valueTransformer)
         {
             var valueTransformerClass = CPClassFromString(valueTransformerName);
+
             if (valueTransformerClass)
             {
                 valueTransformer = [[valueTransformerClass alloc] init];
@@ -286,6 +290,7 @@ var CPBindingOperationAnd = 0,
 
     var uid = [anObject UID],
         objectSuppressions = _suppressedNotifications[uid];
+
     if (!objectSuppressions)
         _suppressedNotifications[uid] = objectSuppressions = {};
 
@@ -302,6 +307,7 @@ var CPBindingOperationAnd = 0,
 
     var uid = [anObject UID],
         objectSuppressions = _suppressedNotifications[uid];
+
     if (!objectSuppressions)
         return;
 
@@ -318,6 +324,7 @@ var CPBindingOperationAnd = 0,
             optionName = CPBinderPlaceholderOptions[count],
             isExplicit = [options containsKey:optionName],
             placeholder = isExplicit ? [options objectForKey:optionName] : nil;
+
         [self _setPlaceholder:placeholder forMarker:marker isDefault:!isExplicit];
     }
 }
@@ -330,8 +337,10 @@ var CPBindingOperationAnd = 0,
 - (void)_placeholderForMarker:aMarker
 {
     var placeholder = _placeholderForMarker[aMarker];
+
     if (placeholder)
         return placeholder['value'];
+
     return nil;
 }
 
@@ -420,13 +429,13 @@ var CPBindingOperationAnd = 0,
 
 /*!
     @ignore
-    Provides stub implementations that simply call super for the "objectValue" binding
-    This class should not be necessary but assures backwards compliance with our old way of doing bindings
-    Every class with a value binding should implement a subclass to handle it's specific value binding logic
+    Provides stub implementations that simply calls super for the "objectValue" binding.
+    This class should not be necessary but assures backwards compliance with our old way of doing bindings.
+
+    IMPORTANT!
+    Every class with a value binding should implement a subclass to handle its specific value binding logic.
 */
 @implementation _CPValueBinder : CPBinder
-{
-}
 
 - (void)setValueFor:(CPString)theBinding
 {
@@ -441,8 +450,6 @@ var CPBindingOperationAnd = 0,
 @end
 
 @implementation _CPKeyValueOrBinding : CPBinder
-{
-}
 
 - (void)setValueFor:(CPString)aBinding
 {
@@ -482,7 +489,7 @@ var CPBindingOperationAnd = 0,
 
 @end
 
-var resolveMultipleValues = function(/*CPString*/key, /*CPDictionary*/bindings, /*GSBindingOperationKind*/operation)
+var resolveMultipleValues = function(/*CPString*/key, /*CPDictionary*/bindings, /*CPBindingOperationKind*/operation)
 {
     var bindingName = key,
         theBinding,

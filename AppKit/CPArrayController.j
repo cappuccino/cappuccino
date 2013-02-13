@@ -897,7 +897,9 @@
     if (![self canAdd])
         return;
 
-    [self insert:sender];
+    var newObject = [self automaticallyPreparesContent] ? [self newObject] : [self _defaultNewObject];
+
+    [self addObject:newObject];
 }
 
 /*!
@@ -909,9 +911,14 @@
     if (![self canInsert])
         return;
 
-    var newObject = [self automaticallyPreparesContent] ? [self newObject] : [self _defaultNewObject];
+    var newObject = [self automaticallyPreparesContent] ? [self newObject] : [self _defaultNewObject],
+        lastSelectedIndex = [_selectionIndexes lastIndex];
 
-    [self addObject:newObject];
+    if (lastSelectedIndex)
+        [self insertObject:newObject atArrangedObjectIndex:lastSelectedIndex];
+    else
+        [self addObject:newObject];
+
 }
 
 /*!
@@ -1114,6 +1121,7 @@
     }
 
     var isPlaceholder = CPIsControllerMarker(newValue);
+
     if (isPlaceholder)
     {
         if (newValue === CPNotApplicableMarker && [options objectForKey:CPRaisesForNotApplicableKeysBindingOption])

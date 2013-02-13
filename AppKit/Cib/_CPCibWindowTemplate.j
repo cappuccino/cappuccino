@@ -24,10 +24,10 @@
 @import <Foundation/CPObjJRuntime.j>
 
 @import "CGGeometry.j"
+@import "CPToolbar.j"
 @import "CPView.j"
 @import "CPWindow_Constants.j"
-
-@class CPToolbar
+@import "_CPToolTip.j"
 
 
 @implementation _CPCibWindowTemplate : CPObject

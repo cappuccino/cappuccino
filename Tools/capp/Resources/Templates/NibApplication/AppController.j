@@ -11,7 +11,7 @@
 
 @implementation AppController : CPObject
 {
-    CPWindow    theWindow; //this "outlet" is connected automatically by the Cib
+    @outlet CPWindow    theWindow;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
