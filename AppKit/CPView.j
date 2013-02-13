@@ -2322,7 +2322,7 @@ setBoundsOrigin:
     aRect = CGRectIntersection(aRect, _bounds);
 
     // If aRect is empty no scrolling required.
-    if (CGRectIsEmpty(aRect))
+    if (_CGRectIsEmpty(aRect))
         return NO;
 
     var enclosingClipView = [self _enclosingClipView];
@@ -2345,7 +2345,7 @@ setBoundsOrigin:
     if (CGRectContainsRect(documentViewVisibleRect, rectInDocumentView))
         return NO;
 
-    var scrollPoint = CGPointMakeCopy(documentViewVisibleRect.origin);
+    var scrollPoint = _CGPointMakeCopy(documentViewVisibleRect.origin);
 
     // One of the following has to be true since our current visible rect didn't contain aRect.
     if (_CGRectGetMinX(rectInDocumentView) < _CGRectGetMinX(documentViewVisibleRect))
