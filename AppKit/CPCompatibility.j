@@ -230,8 +230,13 @@ if (typeof document != "undefined")
     }
 
     // Detect FileAPI support
-    DOMInputElement.setAttribute("type", "file");
-    PLATFORM_FEATURES[CPFileAPIFeature] = !!DOMInputElement["files"];
+    if (typeof DOMInputElement.setAttribute === "function")
+    {
+        DOMInputElement.setAttribute("type", "file");
+        PLATFORM_FEATURES[CPFileAPIFeature] = !!DOMInputElement["files"];
+    }
+    else
+        PLATFORM_FEATURES[CPFileAPIFeature] = NO;
 }
 
 function CPFeatureIsCompatible(aFeature)
