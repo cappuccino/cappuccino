@@ -22,6 +22,8 @@
 
 @import <AppKit/CPProgressIndicator.j>
 
+@import "Converter.j"
+
 var NSProgressIndicatorSpinningFlag = 1 << 12;
 
 @implementation CPProgressIndicator (NSCoding)
@@ -38,7 +40,7 @@ var NSProgressIndicatorSpinningFlag = 1 << 12;
         _maxValue       = [aCoder decodeDoubleForKey:@"NSMaxValue"];
 
         _style = (NS_flags & NSProgressIndicatorSpinningFlag) ? CPProgressIndicatorSpinningStyle : CPProgressIndicatorBarStyle;
-        _isIndeterminate = (NS_flags & 2) ? YES : NO;
+        _indeterminate = (NS_flags & 2) ? YES : NO;
         _isDisplayedWhenStopped = (NS_flags & 8192) ? NO : YES;
         _controlSize = (NS_flags & 256) ? CPSmallControlSize : CPRegularControlSize;
 
@@ -53,10 +55,15 @@ var NSProgressIndicatorSpinningFlag = 1 << 12;
         // Let's set it to 0.0 for now.
         _doubleValue = 0.0;
 
-        // Readjust the height of the control to the correct size.
         var currentFrameSize = [self frameSize];
+
         if (_style !== CPProgressIndicatorSpinningStyle)
-            currentFrameSize.height = 15.0;
+        {
+            var theme = [[Converter sharedConverter] themes][0],
+                height = [theme valueForAttributeWithName:@"default-height" forClass:CPProgressIndicator];
+
+            currentFrameSize.height = height;
+        }
 
         [self setFrameSize:currentFrameSize];
 

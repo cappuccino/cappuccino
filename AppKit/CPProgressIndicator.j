@@ -30,19 +30,19 @@
     @global
     @group CPProgressIndicatorStyle
 */
-CPProgressIndicatorBarStyle         = 0;
+CPProgressIndicatorBarStyle = 0;
 /*
     @global
     @group CPProgressIndicatorStyle
 */
-CPProgressIndicatorSpinningStyle    = 1;
+CPProgressIndicatorSpinningStyle = 1;
 /*
     @global
     @group CPProgressIndicatorStyle
 */
-CPProgressIndicatorHUDBarStyle      = 2;
+CPProgressIndicatorHUDBarStyle = 2;
 
-var CPProgressIndicatorSpinningStyleColors  = nil;
+var CPProgressIndicatorSpinningStyleColors = [];
 
 /*!
     @ingroup appkit
@@ -80,7 +80,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil;
     return [CPDictionary dictionaryWithObjectsAndKeys:
                 [CPNull null], @"indeterminate-bar-color",
                 [CPNull null], @"bar-color",
-                25, @"default-height",
+                20, @"default-height",
                 [CPNull null], @"bezel-color",
                 [CPNull null], @"spinning-mini-gif",
                 [CPNull null], @"spinning-small-gif",
@@ -395,17 +395,18 @@ var CPProgressIndicatorSpinningStyleColors  = nil;
 /* @ignore */
 - (void)updateBackgroundColor
 {
+    if ([CPProgressIndicatorSpinningStyleColors count] === 0)
+    {
+        CPProgressIndicatorSpinningStyleColors[CPMiniControlSize] = [self valueForThemeAttribute:@"spinning-mini-gif"];
+        CPProgressIndicatorSpinningStyleColors[CPSmallControlSize] = [self valueForThemeAttribute:@"spinning-small-gif"];
+        CPProgressIndicatorSpinningStyleColors[CPRegularControlSize] = [self valueForThemeAttribute:@"spinning-regular-gif"];
+    }
+
     [self setNeedsLayout];
 }
 
 - (void)layoutSubviews
 {
-    CPProgressIndicatorSpinningStyleColors = [];
-
-    CPProgressIndicatorSpinningStyleColors[CPMiniControlSize] = [self valueForThemeAttribute:@"spinning-mini-gif"];
-    CPProgressIndicatorSpinningStyleColors[CPSmallControlSize] = [self valueForThemeAttribute:@"spinning-small-gif"];
-    CPProgressIndicatorSpinningStyleColors[CPRegularControlSize] = [self valueForThemeAttribute:@"spinning-regular-gif"];
-
     if (YES)//_isBezeled)
     {
         if (_style == CPProgressIndicatorSpinningStyle)
@@ -429,7 +430,6 @@ var CPProgressIndicatorSpinningStyleColors  = nil;
                [barView setBackgroundColor:[self currentValueForThemeAttribute:@"indeterminate-bar-color"]];
            else
                [barView setBackgroundColor:[self currentValueForThemeAttribute:@"bar-color"]];
-
         }
     }
     else
