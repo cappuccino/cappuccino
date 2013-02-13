@@ -934,18 +934,24 @@ var HORIZONTAL_MARGIN = 2;
     [aPasteboard setData:[_delegate collectionView:self dataForItemsAtIndexes:_selectionIndexes forType:aType] forType:aType];
 }
 
+- (void)_createDropIndicatorIfNeeded
+{
+    // Create and position the drop indicator view.
+
+    if (!_dropView)
+        _dropView = [[_CPCollectionViewDropIndicator alloc] initWithFrame:_CGRectMake(-8, -8, 0, 0)];
+
+    [_dropView setFrameSize:_CGSizeMake(10, _itemSize.height + _verticalMargin)];
+    [self addSubview:_dropView];
+}
+
 - (void)mouseDragged:(CPEvent)anEvent
 {
     // Don't crash if we never registered the intial click.
     if (!_mouseDownEvent)
         return;
 
-    // Create and position the drop indicator view.
-    if (!_dropView)
-        _dropView = [[_CPCollectionViewDropIndicator alloc] initWithFrame:_CGRectMake(-8, -8, 0, 0)];
-
-    [_dropView setFrameSize:_CGSizeMake(10, _itemSize.height + _verticalMargin)];
-    [self addSubview:_dropView];
+    [self _createDropIndicatorIfNeeded];
 
     var locationInWindow = [anEvent locationInWindow],
         mouseDownLocationInWindow = [_mouseDownEvent locationInWindow];
@@ -1020,11 +1026,12 @@ var HORIZONTAL_MARGIN = 2;
 - (CPDragOperation)draggingEntered:(id)draggingInfo
 {
     var dropIndex = -1,
-        dropIndexRef = AT_REF(dropIndex);
-
-    var dragOp = [self _validateDragWithInfo:draggingInfo dropIndex:dropIndexRef dropOperation:1];
+        dropIndexRef = AT_REF(dropIndex),
+        dragOp = [self _validateDragWithInfo:draggingInfo dropIndex:dropIndexRef dropOperation:1];
 
     dropIndex = dropIndexRef();
+
+    [self _createDropIndicatorIfNeeded];
 
     [self _updateDragAndDropStateWithDraggingInfo:draggingInfo newDragOperation:dragOp newDropIndex:dropIndex newDropOperation:1];
 
@@ -1113,6 +1120,8 @@ Not supported. Use -collectionView:dataForItemsAtIndexes:fortype:
 
     if (_currentDropIndex == -1 || _currentDragOperation == CPDragOperationNone)
         frameOrigin = _CGPointMake(-dropviewFrameWidth, 0);
+    else if (_currentDropIndex == 0)
+        frameOrigin = _CGPointMake(0, 0);
     else
     {
         var offset;

@@ -14,7 +14,8 @@ CPLogRegister(CPLogConsole);
 @implementation AppController : CPObject
 {
     CPWindow    theWindow; //this "outlet" is connected automatically by the Cib
-    @outlet     CPCollectionView     collectionView @accessors;
+    @outlet     CPCollectionView     collectionView;
+    @outlet     CPCollectionView     emptyCollectionView;
     @outlet     InternalProtoypeItem prototypeItemInternal;
     @outlet     ExternalProtoypeItem prototypeItemExternal;
     @outlet     CPTableView          tableView;
@@ -40,6 +41,7 @@ CPLogRegister(CPLogConsole);
     [self didChangeValueForKey:@"maxItemHeight"];
 
     [collectionView registerForDraggedTypes:[@"DragType"]];
+    [emptyCollectionView registerForDraggedTypes:[@"DragType"]];
     //[theWindow setFullPlatformWindow:YES];
 }
 
@@ -130,10 +132,13 @@ CPLogRegister(CPLogConsole);
 - (CPDragOperation)collectionView:(CPCollectionView)aCollectionView validateDrop:(id)draggingInfo proposedIndex:(Function)proposedIndexRef dropOperation:(CPInteger)collectionViewDropOperation
 {
     var pboard = [draggingInfo draggingPasteboard],
+        draggingSource = [draggingInfo draggingSource],
         dragIndex = [[pboard dataForType:@"DragType"] firstIndex],
         proposedIndex = proposedIndexRef();
 
-    if (proposedIndex == dragIndex || proposedIndex == dragIndex + 1)
+    if (aCollectionView !== draggingSource)
+        return CPDragOperationCopy;
+    else if (proposedIndex == dragIndex || proposedIndex == dragIndex + 1)
         return CPDragOperationNone;
 
     return CPDragOperationMove;
@@ -142,9 +147,17 @@ CPLogRegister(CPLogConsole);
 - (BOOL)collectionView:(CPCollectionView)aCollectionView acceptDrop:(id)draggingInfo index:(CPInteger)proposedIndex dropOperation:(CPInteger)collectionViewDropOperation
 {
     var pboard = [draggingInfo draggingPasteboard],
-        dragIndexes = [pboard dataForType:@"DragType"];
+        dragIndexes = [pboard dataForType:@"DragType"],
+        draggingSource = [draggingInfo draggingSource];
 
-    [[aCollectionView content] moveIndexes:dragIndexes toIndex:proposedIndex];
+    if (aCollectionView == draggingSource)
+        [[aCollectionView content] moveIndexes:dragIndexes toIndex:proposedIndex];
+    else
+    {
+        var sourceObjects = [[draggingSource content] objectsAtIndexes:dragIndexes]; // copy ?
+        [[aCollectionView content] insertObjects:sourceObjects atIndexes:[CPIndexSet indexSetWithIndex:proposedIndex]];
+    }
+
     [aCollectionView reloadContent];
     [tableView reloadData];
 
