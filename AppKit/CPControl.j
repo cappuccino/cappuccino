@@ -113,7 +113,7 @@ var CPControlBlackColor = [CPColor blackColor];
 + (CPDictionary)themeAttributes
 {
     return [CPDictionary dictionaryWithObjects:[CPLeftTextAlignment,
-                                                CPTopVerticalTextAlignment,
+                                                CPCenterVerticalTextAlignment,
                                                 CPLineBreakByClipping,
                                                 [CPColor blackColor],
                                                 [CPFont systemFontOfSize:CPFontCurrentSystemSize],
