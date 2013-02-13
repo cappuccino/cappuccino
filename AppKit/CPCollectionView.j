@@ -1108,15 +1108,20 @@ Not supported. Use -collectionView:dataForItemsAtIndexes:fortype:
     _currentDropIndex = dropIndex;
     _currentDragOperation = dragOperation;
 
+    if (!_dropView)
+        _dropView = [[_CPCollectionViewDropIndicator alloc] initWithFrame:_CGRectMake(-8, -8, 0, 0)];
+
+    [_dropView setFrameSize:_CGSizeMake(10, _itemSize.height + _verticalMargin)];
+    [self addSubview:_dropView];
+
     var frameOrigin,
         dropviewFrameWidth = _CGRectGetWidth([_dropView frame]);
 
-    if (_currentDropIndex == -1 || _currentDragOperation == CPDragOperationNone)
+    if (_currentDropIndex == -1 || _currentDragOperation == CPDragOperationNone || [_items count] == 0)
         frameOrigin = _CGPointMake(-dropviewFrameWidth, 0);
     else
     {
         var offset;
-
         if ((_currentDropIndex % _numberOfColumns) !== 0 || _currentDropIndex == [_items count])
         {
             dropIndex = _currentDropIndex - 1;
