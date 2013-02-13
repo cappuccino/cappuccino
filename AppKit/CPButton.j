@@ -25,7 +25,8 @@
 
 @import "CPControl.j"
 @import "CPStringDrawing.j"
-
+@import "CPText.j"
+@import "CPWindow_Constants.j"
 
 /* @group CPBezelStyle */
 
@@ -59,11 +60,11 @@ CPMomentaryPushInButton = 7;
 CPMomentaryPushButton   = 0;
 CPMomentaryLight        = 7;
 
-CPNoButtonMask              = 0;
-CPContentsButtonMask        = 1;
-CPPushInButtonMask          = 2;
-CPGrayButtonMask            = 4;
-CPBackgroundButtonMask      = 8;
+CPNoButtonMask          = 0;
+CPContentsButtonMask    = 1;
+CPPushInButtonMask      = 2;
+CPGrayButtonMask        = 4;
+CPBackgroundButtonMask  = 8;
 
 CPNoCellMask                = CPNoButtonMask;
 CPContentsCellMask          = CPContentsButtonMask;
@@ -71,11 +72,11 @@ CPPushInCellMask            = CPPushInButtonMask;
 CPChangeGrayCellMask        = CPGrayButtonMask;
 CPChangeBackgroundCellMask  = CPBackgroundButtonMask;
 
-CPButtonStateMixed                  = CPThemeState("mixed");
-CPButtonStateBezelStyleRounded      = CPThemeState("rounded");
+CPButtonStateMixed             = CPThemeState("mixed");
+CPButtonStateBezelStyleRounded = CPThemeState("rounded");
 
 // add all future correspondance between bezel styles and theme state here.
-var CPButtonBezelStyleStateMap = [CPDictionary dictionaryWithObjects:[CPButtonStateBezelStyleRounded, nil]
+var CPButtonBezelStyleStateMap = [CPDictionary dictionaryWithObjects:[CPButtonStateBezelStyleRounded, [CPNull null]]
                                                              forKeys:[CPRoundedBezelStyle, CPRoundRectBezelStyle]];
 
 
@@ -221,7 +222,7 @@ CPButtonImageOffset   = 3.0;
     else if (![anObjectValue isKindOfClass:[CPNumber class]])
         anObjectValue = CPOnState;
     else if (anObjectValue >= CPOnState)
-        anObjectValue = CPOnState
+        anObjectValue = CPOnState;
     else if (anObjectValue < CPOffState)
         if ([self allowsMixedState])
             anObjectValue = CPMixedState;
@@ -522,6 +523,7 @@ CPButtonImageOffset   = 3.0;
     _isTracking = YES;
 
     var startedTracking = [super startTrackingAt:aPoint];
+
     if (_highlightsBy & (CPPushInCellMask | CPChangeGrayCellMask))
     {
         if (_showsStateBy & (CPChangeGrayCellMask | CPChangeBackgroundCellMask))
@@ -536,6 +538,7 @@ CPButtonImageOffset   = 3.0;
         else
             [self highlight:NO];
     }
+
     return startedTracking;
 }
 

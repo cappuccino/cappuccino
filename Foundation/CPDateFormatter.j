@@ -78,9 +78,9 @@ CPDateFormatterFullStyle   = 4;
     {
         case CPDateFormatterShortStyle:
             var format = "d/m/Y";
-            return Date.parseDate(string, format);
+            return Date.parseDate(aString, format);
         default:
-            return Date.parseDate(string);
+            return Date.parseDate(aString);
     }
 }
 

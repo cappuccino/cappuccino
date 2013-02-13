@@ -27,14 +27,15 @@
 @import "CPNumber.j"
 @import "CPString.j"
 @import "CPValue.j"
+@import "_CGGeometry.j"
 
 var CPArchiverReplacementClassNames                     = nil;
 
 var _CPKeyedArchiverDidEncodeObjectSelector             = 1,
     _CPKeyedArchiverWillEncodeObjectSelector            = 2,
     _CPKeyedArchiverWillReplaceObjectWithObjectSelector = 4,
-    _CPKeyedArchiverDidFinishSelector                   = 8,
-    _CPKeyedArchiverWillFinishSelector                  = 16;
+    _CPKeyedArchiverDidFinishEncodingSelector           = 8,
+    _CPKeyedArchiverWillFinishEncodingSelector          = 16;
 
 var _CPKeyedArchiverNullString                          = "$null",
     _CPKeyedArchiverNullReference                       = nil,
@@ -190,7 +191,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 */
 - (void)finishEncoding
 {
-    if (_delegate && _delegateSelectors & _CPKeyedArchiverWillFinishSelector)
+    if (_delegate && _delegateSelectors & _CPKeyedArchiverDidFinishEncodingSelector)
         [_delegate archiverWillFinish:self];
 
     var i = 0,
@@ -220,7 +221,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 
     [_data setPlistObject:_plistObject];
 
-    if (_delegate && _delegateSelectors & _CPKeyedArchiverDidFinishSelector)
+    if (_delegate && _delegateSelectors & _CPKeyedArchiverDidFinishEncodingSelector)
         [_delegate archiverDidFinish:self];
 }
 
@@ -321,7 +322,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 */
 - (void)encodePoint:(CGPoint)aPoint forKey:(CPString)aKey
 {
-    [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, CPStringFromPoint(aPoint), NO) forKey:aKey];
+    [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, CGStringFromPoint(aPoint), NO) forKey:aKey];
 }
 
 /*!
@@ -331,7 +332,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 */
 - (void)encodeRect:(CGRect)aRect forKey:(CPString)aKey
 {
-    [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, CPStringFromRect(aRect), NO) forKey:aKey];
+    [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, CGStringFromRect(aRect), NO) forKey:aKey];
 }
 
 /*!
@@ -341,7 +342,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 */
 - (void)encodeSize:(CGSize)aSize forKey:(CPString)aKey
 {
-    [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, CPStringFromSize(aSize), NO) forKey:aKey];
+    [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, CGStringFromSize(aSize), NO) forKey:aKey];
 }
 
 /*!
@@ -460,7 +461,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     if (!_replacementClassNames)
         return aClass.name;
 
-    var className = [_replacementClassNames objectForKey:CPStringFromClass(aClassName)];
+    var className = [_replacementClassNames objectForKey:CPStringFromClass(aClass)];
 
     return className ? className : aClass.name;
 }

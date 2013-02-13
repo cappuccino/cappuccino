@@ -20,6 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/CPObject.j>
+@import <Foundation/CPException.j>
 
 /*!
     This abstract base class defines the methods that delegates of _CPPopUpList must implement.

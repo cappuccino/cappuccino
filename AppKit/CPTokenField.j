@@ -27,12 +27,16 @@
 @import <Foundation/CPIndexSet.j>
 @import <Foundation/CPTimer.j>
 
-@import "CPButton.j"
-@import "CPScrollView.j"
-@import "CPTextField.j"
-@import "CPTableView.j"
-@import "CPWindow.j"
 @import "_CPAutocompleteMenu.j"
+@import "CPButton.j"
+@import "CPPopUpButton.j"
+@import "CPScrollView.j"
+@import "CPTableView.j"
+@import "CPText.j"
+@import "CPTextField.j"
+@import "CPWindow_Constants.j"
+
+@global CPApp
 
 #if PLATFORM(DOM)
 
@@ -56,6 +60,9 @@ var CPScrollDestinationNone             = 0,
     CPScrollDestinationLeft             = 1,
     CPScrollDestinationRight            = 2;
 
+CPTokenFieldDisclosureButtonType = 0;
+CPTokenFieldDeleteButtonType     = 1;
+
 @implementation CPTokenField : CPTextField
 {
     CPScrollView        _tokenScrollView;
@@ -73,6 +80,8 @@ var CPScrollDestinationNone             = 0,
     CPEvent             _mouseDownEvent;
 
     BOOL                _shouldNotifyTarget;
+
+    int                 _buttonType @accessors(property=buttonType);
 }
 
 + (CPCharacterSet)defaultTokenizingCharacterSet
@@ -95,12 +104,13 @@ var CPScrollDestinationNone             = 0,
     return [CPDictionary dictionaryWithObject:_CGInsetMakeZero() forKey:@"editor-inset"];
 }
 
-- (id)initWithFrame:(CPRect)frame
+- (id)initWithFrame:(CGRect)frame
 {
     if (self = [super initWithFrame:frame])
     {
         _completionDelay = [[self class] defaultCompletionDelay];
         _tokenizingCharacterSet = [[self class] defaultTokenizingCharacterSet];
+        _buttonType = CPTokenFieldDisclosureButtonType;
         [self setBezeled:YES];
 
         [self _init];
@@ -558,7 +568,7 @@ var CPScrollDestinationNone             = 0,
 
             if (newToken === nil)
             {
-                newToken = [[_CPTokenFieldToken alloc] init];
+                newToken = [_CPTokenFieldToken new];
                 [newToken setTokenField:self];
                 [newToken setRepresentedObject:tokenObject];
                 [newToken setStringValue:tokenValue];
@@ -649,7 +659,7 @@ var CPScrollDestinationNone             = 0,
             return CPTextFieldBlurFunction(
                         anEvent,
                         CPTokenFieldInputOwner,
-                        [CPTokenFieldInputOwner._tokenScrollView documentView]._DOMElement,
+                        CPTokenFieldInputOwner ? [CPTokenFieldInputOwner._tokenScrollView documentView]._DOMElement : nil,
                         CPTokenFieldDOMInputElement,
                         CPTokenFieldInputResigning,
                         AT_REF(CPTokenFieldInputDidBlur));
@@ -911,7 +921,9 @@ var CPScrollDestinationNone             = 0,
 
 - (void)keyDown:(CPEvent)anEvent
 {
+#if PLATFORM(DOM)
     CPTokenFieldTextDidChangeValue = [self stringValue];
+#endif
 
     // Leave the default _propagateCurrentDOMEvent setting in place. This might be YES or NO depending
     // on if something that could be a browser shortcut was pressed or not, such as Cmd-R to reload.
@@ -925,10 +937,12 @@ var CPScrollDestinationNone             = 0,
 
 - (void)keyUp:(CPEvent)anEvent
 {
+#if PLATFORM(DOM)
     if ([self stringValue] !== CPTokenFieldTextDidChangeValue)
     {
         [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
     }
+#endif
 
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 }
@@ -994,8 +1008,8 @@ var CPScrollDestinationNone             = 0,
     var contentRect = _CGRectMakeCopy([contentView bounds]),
         contentOrigin = contentRect.origin,
         contentSize = contentRect.size,
-        offset = CPPointMake(contentOrigin.x, contentOrigin.y),
-        spaceBetweenTokens = CPSizeMake(2.0, 2.0),
+        offset = CGPointMake(contentOrigin.x, contentOrigin.y),
+        spaceBetweenTokens = CGSizeMake(2.0, 2.0),
         isEditing = [[self window] firstResponder] == self,
         tokenToken = [_CPTokenFieldToken new],
         font = [self currentValueForThemeAttribute:@"font"],
@@ -1082,6 +1096,8 @@ var CPScrollDestinationNone             = 0,
             tokenFrame = fitAndFrame(tokenViewSize.width, tokenViewSize.height);
 
         [tokenView setFrame:tokenFrame];
+
+        [tokenView setButtonType:_buttonType];
     }
 
     if (isEditing && !_selectedRange.length && _CPMaxRange(_selectedRange) >= [tokens count])
@@ -1234,6 +1250,30 @@ var CPScrollDestinationNone             = 0,
     return aString;
 }
 
+- (BOOL)_hasMenuForRepresentedObject:(id)aRepresentedObject
+{
+    var delegate = [self delegate];
+    if ([delegate respondsToSelector:@selector(tokenField:hasMenuForRepresentedObject:)] &&
+        [delegate respondsToSelector:@selector(tokenField:menuForRepresentedObject:)])
+        return [delegate tokenField:self hasMenuForRepresentedObject:aRepresentedObject];
+
+    return NO;
+}
+
+- (CPMenu)_menuForRepresentedObject:(id)aRepresentedObject
+{
+    var delegate = [self delegate];
+    if ([delegate respondsToSelector:@selector(tokenField:hasMenuForRepresentedObject:)] &&
+        [delegate respondsToSelector:@selector(tokenField:menuForRepresentedObject:)])
+    {
+        var hasMenu = [delegate tokenField:self hasMenuForRepresentedObject:aRepresentedObject];
+        if (hasMenu)
+            return [delegate tokenField:self menuForRepresentedObject:aRepresentedObject] || nil;
+    }
+
+    return nil;
+}
+
 // We put the string on the pasteboard before calling this delegate method.
 // By default, we write the NSStringPboardType as well as an array of NSStrings.
 // - (BOOL)tokenField:(NSTokenField *)tokenField writeRepresentedObjects:(NSArray *)objects toPasteboard:(NSPasteboard *)pboard;
@@ -1258,13 +1298,25 @@ var CPScrollDestinationNone             = 0,
     [_autocompleteMenu _hideCompletions];
 }
 
+
+- (void)setButtonType:(int)aButtonType
+{
+    if (_buttonType === aButtonType)
+        return;
+
+    _buttonType = aButtonType;
+    [self setNeedsLayout];
+}
+
 @end
 
 @implementation _CPTokenFieldToken : CPTextField
 {
-    _CPTokenFieldTokenCloseButton   _deleteButton;
-    CPTokenField                    _tokenField;
-    id                              _representedObject;
+    _CPTokenFieldTokenCloseButton       _deleteButton;
+    _CPTokenFieldTokenDisclosureButton  _disclosureButton;
+    CPTokenField                        _tokenField;
+    id                                  _representedObject;
+    int                                 _buttonType;
 }
 
 + (CPString)defaultThemeClass
@@ -1277,16 +1329,14 @@ var CPScrollDestinationNone             = 0,
     return NO;
 }
 
-- (id)initWithFrame:(CPRect)frame
+- (id)initWithFrame:(CGRect)frame
 {
     if (self = [super initWithFrame:frame])
     {
-        _deleteButton = [[_CPTokenFieldTokenCloseButton alloc] initWithFrame:CPRectMakeZero()];
-        [self addSubview:_deleteButton];
-
         [self setEditable:NO];
         [self setHighlighted:NO];
         [self setBezeled:YES];
+        [self setButtonType:CPTokenFieldDisclosureButtonType];
     }
 
     return self;
@@ -1310,6 +1360,7 @@ var CPScrollDestinationNone             = 0,
 - (void)setRepresentedObject:(id)representedObject
 {
     _representedObject = representedObject;
+    [self setNeedsLayout];
 }
 
 - (void)setEditable:(BOOL)shouldBeEditable
@@ -1322,9 +1373,12 @@ var CPScrollDestinationNone             = 0,
 {
     var r = [super setThemeState:aState];
 
-    // Share hover state with the delete button.
-    if (r && aState === CPThemeStateHovered)
-        [_deleteButton setThemeState:aState];
+    // Share hover state with the disclosure and delete buttons.
+    if (aState & CPThemeStateHovered)
+    {
+        [_disclosureButton setThemeState:CPThemeStateHovered];
+        [_deleteButton setThemeState:CPThemeStateHovered];
+    }
 
     return r;
 }
@@ -1333,9 +1387,12 @@ var CPScrollDestinationNone             = 0,
 {
     var r = [super unsetThemeState:aState];
 
-    // Share hover state with the delete button.
-    if (r && aState === CPThemeStateHovered)
-        [_deleteButton unsetThemeState:aState];
+    // Share hover state with the disclosure and delete button.
+    if (aState & CPThemeStateHovered)
+    {
+        [_disclosureButton unsetThemeState:CPThemeStateHovered];
+        [_deleteButton unsetThemeState:CPThemeStateHovered];
+    }
 
     return r;
 }
@@ -1353,6 +1410,47 @@ var CPScrollDestinationNone             = 0,
     return size;
 }
 
+- (void)setButtonType:(int)aButtonType
+{
+    if (_buttonType === aButtonType)
+        return;
+
+    _buttonType = aButtonType;
+
+    if (_buttonType === CPTokenFieldDisclosureButtonType)
+    {
+        if (_deleteButton)
+        {
+            [_deleteButton removeFromSuperview];
+            _deleteButton = nil;
+        }
+
+        if (!_disclosureButton)
+        {
+            _disclosureButton = [[_CPTokenFieldTokenDisclosureButton alloc] initWithFrame:CGRectMakeZero()];
+            [self addSubview:_disclosureButton];
+        }
+    }
+    else
+    {
+        if (_disclosureButton)
+        {
+            [_disclosureButton removeFromSuperview];
+            _disclosureButton = nil;
+        }
+
+        if (!_deleteButton)
+        {
+            _deleteButton = [[_CPTokenFieldTokenCloseButton alloc] initWithFrame:CGRectMakeZero()];
+            [self addSubview:_deleteButton];
+            [_deleteButton setTarget:self];
+            [_deleteButton setAction:@selector(_delete:)];
+        }
+    }
+
+    [self setNeedsLayout];
+}
+
 - (void)layoutSubviews
 {
     [super layoutSubviews];
@@ -1361,17 +1459,33 @@ var CPScrollDestinationNone             = 0,
                                            positioned:CPWindowBelow
                       relativeToEphemeralSubviewNamed:@"content-view"];
 
-    if (bezelView)
+    if (bezelView && _tokenField)
     {
-        [_deleteButton setTarget:self];
-        [_deleteButton setAction:@selector(_delete:)];
-        [_deleteButton setEnabled:[self isEditable]];
+        switch (_buttonType)
+        {
+            case CPTokenFieldDisclosureButtonType:
+                var shouldBeEnabled = [self hasMenu];
+                [_disclosureButton setHidden:!shouldBeEnabled];
 
-        var frame = [bezelView frame],
-            buttonOffset = [_deleteButton currentValueForThemeAttribute:@"offset"],
-            buttonSize = [_deleteButton currentValueForThemeAttribute:@"min-size"];
+                if (shouldBeEnabled)
+                    [_disclosureButton setMenu:[self menu]];
 
-        [_deleteButton setFrame:_CGRectMake(CPRectGetMaxX(frame) - buttonOffset.x, CPRectGetMinY(frame) + buttonOffset.y, buttonSize.width, buttonSize.height)];
+                var frame = [bezelView frame],
+                    buttonOffset = [_disclosureButton currentValueForThemeAttribute:@"offset"],
+                    buttonSize = [_disclosureButton currentValueForThemeAttribute:@"min-size"];
+
+                [_disclosureButton setFrame:_CGRectMake(CGRectGetMaxX(frame) - buttonOffset.x, CGRectGetMinY(frame) + buttonOffset.y, buttonSize.width, buttonSize.height)];
+                break;
+            case CPTokenFieldDeleteButtonType:
+                [_deleteButton setEnabled:[self isEditable] && [self isEnabled]];
+
+                var frame = [bezelView frame],
+                    buttonOffset = [_deleteButton currentValueForThemeAttribute:@"offset"],
+                    buttonSize = [_deleteButton currentValueForThemeAttribute:@"min-size"];
+
+                [_deleteButton setFrame:_CGRectMake(CGRectGetMaxX(frame) - buttonOffset.x, CGRectGetMinY(frame) + buttonOffset.y, buttonSize.width, buttonSize.height)];
+                break;
+        }
     }
 }
 
@@ -1391,11 +1505,18 @@ var CPScrollDestinationNone             = 0,
         [_tokenField _deleteToken:self];
 }
 
+- (BOOL)hasMenu
+{
+    return [_tokenField _hasMenuForRepresentedObject:_representedObject];
+}
+
+- (CPMenu)menu
+{
+    return [_tokenField _menuForRepresentedObject:_representedObject];
+}
+
 @end
 
-/*
-    Theming hook.
-*/
 @implementation _CPTokenFieldTokenCloseButton : CPButton
 {
 }
@@ -1414,11 +1535,73 @@ var CPScrollDestinationNone             = 0,
     return "tokenfield-token-close-button";
 }
 
+- (void)mouseEntered:(CPEvent)anEvent
+{
+    // Don't toggle hover state from within the button - we use the hover state of the token field as a whole.
+}
+
+- (void)mouseExited:(CPEvent)anEvent
+{
+    // Don't toggle hover state from within the button - we use the hover state of the token field as a whole.
+}
+
+@end
+
+@implementation _CPTokenFieldTokenDisclosureButton : CPPopUpButton
+{
+}
+
++ (id)themeAttributes
+{
+    var attributes = [CPButton themeAttributes];
+
+    [attributes setObject:_CGPointMake(15, 5) forKey:@"offset"];
+
+    return attributes;
+}
+
++ (CPString)defaultThemeClass
+{
+    return "tokenfield-token-disclosure-button";
+}
+
+- (id)initWithFrame:(CGRect)aFrame
+{
+    if (self = [self initWithFrame:aFrame pullsDown:YES])
+    {
+        [self setBordered:YES];
+        [super setTitle:@""];
+    }
+
+    return self;
+}
+
+- (void)setTitle:(CPString)aTitle
+{
+    // skip
+}
+
+- (void)synchronizeTitleAndSelectedItem
+{
+    // skip
+}
+
+- (void)mouseEntered:(CPEvent)anEvent
+{
+    // Don't toggle hover state from within the button - we use the hover state of the token field as a whole.
+}
+
+- (void)mouseExited:(CPEvent)anEvent
+{
+    // Don't toggle hover state from within the button - we use the hover state of the token field as a whole.
+}
+
 @end
 
 
 var CPTokenFieldTokenizingCharacterSetKey   = "CPTokenFieldTokenizingCharacterSetKey",
-    CPTokenFieldCompletionDelayKey          = "CPTokenFieldCompletionDelay";
+    CPTokenFieldCompletionDelayKey          = "CPTokenFieldCompletionDelay",
+    CPTokenFieldButtonTypeKey               = "CPTokenFieldButtonTypeKey";
 
 @implementation CPTokenField (CPCoding)
 
@@ -1430,6 +1613,7 @@ var CPTokenFieldTokenizingCharacterSetKey   = "CPTokenFieldTokenizingCharacterSe
     {
         _tokenizingCharacterSet = [aCoder decodeObjectForKey:CPTokenFieldTokenizingCharacterSetKey] || [[self class] defaultTokenizingCharacterSet];
         _completionDelay = [aCoder decodeDoubleForKey:CPTokenFieldCompletionDelayKey] || [[self class] defaultCompletionDelay];
+        _buttonType = [aCoder decodeIntForKey:CPTokenFieldButtonTypeKey] || CPTokenFieldDisclosureButtonType;
 
         [self _init];
 
@@ -1446,6 +1630,7 @@ var CPTokenFieldTokenizingCharacterSetKey   = "CPTokenFieldTokenizingCharacterSe
 
     [aCoder encodeInt:_tokenizingCharacterSet forKey:CPTokenFieldTokenizingCharacterSetKey];
     [aCoder encodeDouble:_completionDelay forKey:CPTokenFieldCompletionDelayKey];
+    [aCoder encodeInt:_buttonType forKey:CPTokenFieldButtonTypeKey];
 }
 
 @end

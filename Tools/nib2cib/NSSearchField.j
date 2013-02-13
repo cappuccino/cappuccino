@@ -21,7 +21,10 @@
  */
 
 @import <AppKit/CPSearchField.j>
+
 @import "NSTextField.j"
+
+@class Converter
 
 
 @implementation CPSearchField (NSCoding)

@@ -21,7 +21,11 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <Foundation/CPObjJRuntime.j>
 
+@import "CPEvent.j"
+
+@class CPKeyBinding
 
 CPDeleteKeyCode         = 8;
 CPTabKeyCode            = 9;

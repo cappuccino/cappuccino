@@ -24,7 +24,6 @@
 
 @import "CGGeometry.j"
 @import "CPImage.j"
-@import "CPImageView.j"
 @import "CPView.j"
 
 
@@ -50,16 +49,17 @@ CPThemeStateShadowViewHeavy = CPThemeState("shadowview-style-heavy");
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithJSObject:{
-        @"bezel-color": [CPNull null],
-        @"content-inset": CGInsetMakeZero()
-    }];
+    return [CPDictionary dictionaryWithJSObject:
+        {
+            @"bezel-color": [CPNull null],
+            @"content-inset": CGInsetMakeZero()
+        }];
 }
 
 + (CGRect)frameForContentFrame:(CGRect)aFrame withWeight:(CPShadowWeight)aWeight
 {
     var shadowView = [CPShadowView new],
-        inset =  [shadowView valueForThemeAttribute:@"content-inset" inState:(aWeight == CPLightShadow) ? CPThemeStateShadowViewLight : CPThemeStateShadowViewHeavy];
+        inset = [shadowView valueForThemeAttribute:@"content-inset" inState:(aWeight == CPLightShadow) ? CPThemeStateShadowViewLight : CPThemeStateShadowViewHeavy];
 
     return CGRectMake(_CGRectGetMinX(aFrame) - inset.left, _CGRectGetMinY(aFrame) - inset.top, _CGRectGetWidth(aFrame) + inset.left + inset.right, _CGRectGetHeight(aFrame) + inset.top + inset.bottom);
 }

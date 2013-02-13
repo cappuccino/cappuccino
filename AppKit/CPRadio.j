@@ -25,6 +25,8 @@
 
 @import "CPButton.j"
 
+@global CPApp
+
 
 /*!
     @ingroup appkit

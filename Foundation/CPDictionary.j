@@ -638,17 +638,20 @@
 */
 - (CPString)description
 {
-    var string = "@{\n",
+    var string = "@{",
         keys = self._keys,
         index = 0,
         count = self._count;
 
     for (; index < count; ++index)
     {
+        if (index === 0)
+            string += "\n";
+
         var key = keys[index],
             value = self.valueForKey(key);
 
-        string += "\t" + key + ": " + CPDescriptionOfObject(value).split('\n').join("\n\t") + ",\n";
+        string += "    @\"" + key + "\": " + CPDescriptionOfObject(value).split("\n").join("\n    ") + (index + 1 < count ? "," : "") + "\n";
     }
 
     return string + "}";

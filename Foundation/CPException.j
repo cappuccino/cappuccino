@@ -28,6 +28,7 @@ CPInvalidArgumentException          = @"CPInvalidArgumentException";
 CPUnsupportedMethodException        = @"CPUnsupportedMethodException";
 CPRangeException                    = @"CPRangeException";
 CPInternalInconsistencyException    = @"CPInternalInconsistencyException";
+CPGenericException                  = @"CPGenericException";
 
 /*!
     @class CPException

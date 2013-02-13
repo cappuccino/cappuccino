@@ -897,7 +897,9 @@
     if (![self canAdd])
         return;
 
-    [self insert:sender];
+    var newObject = [self automaticallyPreparesContent] ? [self newObject] : [self _defaultNewObject];
+
+    [self addObject:newObject];
 }
 
 /*!
@@ -909,9 +911,14 @@
     if (![self canInsert])
         return;
 
-    var newObject = [self automaticallyPreparesContent] ? [self newObject] : [self _defaultNewObject];
+    var newObject = [self automaticallyPreparesContent] ? [self newObject] : [self _defaultNewObject],
+        lastSelectedIndex = [_selectionIndexes lastIndex];
 
-    [self addObject:newObject];
+    if (lastSelectedIndex)
+        [self insertObject:newObject atArrangedObjectIndex:lastSelectedIndex];
+    else
+        [self addObject:newObject];
+
 }
 
 /*!
@@ -964,7 +971,7 @@
                 // be the 'wrong' one - as in not the one the user selected - but the wrong
                 // one is still just another pointer to the same object, so the user will not
                 // be able to see any difference.
-                contentIndex = [_contentObject indexOfObjectIdenticalTo:object];
+                var contentIndex = [_contentObject indexOfObjectIdenticalTo:object];
                 [_contentObject removeObjectAtIndex:contentIndex];
             }
             [arrangedObjects removeObjectAtIndex:anIndex];
@@ -1093,7 +1100,8 @@
         isCompound = [self handlesContentAsCompoundValue],
         dotIndex = keyPath.lastIndexOf("."),
         firstPart = dotIndex !== CPNotFound ? keyPath.substring(0, dotIndex) : nil,
-        isSelectionProxy = firstPart && [[destination valueForKeyPath:firstPart] isKindOfClass:CPControllerSelectionProxy];
+        isSelectionProxy = firstPart && [[destination valueForKeyPath:firstPart] isKindOfClass:CPControllerSelectionProxy],
+        newValue;
 
     if (!isCompound && !isSelectionProxy)
     {
@@ -1113,6 +1121,7 @@
     }
 
     var isPlaceholder = CPIsControllerMarker(newValue);
+
     if (isPlaceholder)
     {
         if (newValue === CPNotApplicableMarker && [options objectForKey:CPRaisesForNotApplicableKeysBindingOption])

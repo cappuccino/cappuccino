@@ -25,16 +25,20 @@
 @import "CPControl.j"
 @import "CPStringDrawing.j"
 @import "CPCompatibility.j"
+@import "CPText.j"
+@import "CPWindow_Constants.j"
 @import "_CPImageAndTextView.j"
 
+@class CPPasteboard
+
+@global CPApp
+@global CPStringPboardType
 
 CPTextFieldSquareBezel          = 0;    /*! A textfield bezel with squared corners. */
 CPTextFieldRoundedBezel         = 1;    /*! A textfield bezel with rounded corners. */
 
 CPTextFieldDidFocusNotification = @"CPTextFieldDidFocusNotification";
 CPTextFieldDidBlurNotification  = @"CPTextFieldDidBlurNotification";
-
-#if PLATFORM(DOM)
 
 var CPTextFieldDOMInputElement = nil,
     CPTextFieldDOMPasswordInputElement = nil,
@@ -48,8 +52,6 @@ var CPTextFieldDOMInputElement = nil,
     CPTextFieldCachedDragFunction = nil,
     CPTextFieldBlurHandler = nil,
     CPTextFieldInputFunction = nil;
-
-#endif
 
 var CPSecureTextFieldCharacter = "\u2022";
 
@@ -200,7 +202,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMake(2.0, 2.0, 2.0, 2.0), [CPNull null]]
+    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMake(1.0, 0.0, 0.0, 0.0), [CPNull null]]
                                        forKeys:[@"bezel-inset", @"content-inset", @"bezel-color"]];
 }
 
@@ -785,11 +787,20 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 /*!
-    Text fields require panels to become key window, so this returns \c YES.
+    Text fields require panels to become key window, so this returns \c YES
+    if the text field is ready to become the first responder as well.
 */
 - (BOOL)needsPanelToBecomeKey
 {
-    return YES;
+    return [self acceptsFirstResponder];
+}
+
+/*!
+    Only text fields that can become first responder accepts first mouse.
+*/
+- (BOOL)acceptsFirstMouse:(CPEvent)anEvent
+{
+    return [self acceptsFirstResponder];
 }
 
 - (void)mouseDown:(CPEvent)anEvent

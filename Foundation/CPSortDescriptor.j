@@ -24,6 +24,8 @@
 @import "CPObjJRuntime.j"
 @import "CPString.j"
 
+@class CPString
+
 /*!
     @class CPSortDescriptor
     @ingroup foundation

@@ -1,5 +1,10 @@
 @import <AppKit/CGContext.j>
+
 @import "CGTestCase.j"
+
+// These are left undefined in CGContext.j if CPFeatureIsCompatible(CPHTMLCanvasFeature)
+@global CGGStateCreate
+@global CGGStateCreateCopy
 
 @implementation CGContextTest : CGTestCase
 
@@ -33,7 +38,7 @@
                      shadowBlur:  0.0,
                      shadowColor: NULL };
 
-    for ( var key in testdata )
+    for (var key in testdata)
         [self assert:testdata[key] equals:gstate[key] message:"Failed for " + key];
 
     [self compareSize:CGSizeMakeZero()
@@ -64,17 +69,17 @@
                      shadowBlur:  0.0,
                      shadowColor: NULL };
 
-    for ( var key in testdata )
+    for (var key in testdata)
         [self assert:testdata[key] equals:gstatecopy[key] message:"Failed for " + key];
 
     // ensure that the size is copied
-    var sizecopy = CGSizeMakeCopy( gstate.shadowOffset );
+    var sizecopy = CGSizeMakeCopy(gstate.shadowOffset);
     gstate.shadowOffset.width += 1000;
     gstate.shadowOffset.height += 2000;
     [self compareSize:sizecopy with:gstatecopy.shadowOffset message:"Failed for shadowOffset"];
 
     // ensure that the transform is copied
-    var transformcopy = CGAffineTransformMakeCopy( gstate.CTM );
+    var transformcopy = CGAffineTransformMakeCopy(gstate.CTM);
     gstate.CTM.a += 1000;
     gstate.CTM.b += 1000;
     gstate.CTM.c += 1000;

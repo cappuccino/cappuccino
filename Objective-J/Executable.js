@@ -35,7 +35,7 @@ function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String
     this._function = aFunction || null;
     this._URL = makeAbsoluteURL(aURL || new CFURL("(Anonymous" + (AnonymousExecutableCount++) + ")"));
 
-	this._compiler = aCompiler || null;
+    this._compiler = aCompiler || null;
 
     this._fileDependencies = fileDependencies;
     this._filenameTranslateDictionary = aFilenameTranslateDictionary;
@@ -51,8 +51,8 @@ function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String
     if (this._function)
         return;
 
-	if (!aCompiler)
-    	this.setCode(aCode);
+    if (!aCompiler)
+        this.setCode(aCode);
 }
 
 exports.Executable = Executable;
@@ -151,12 +151,13 @@ Executable.prototype.execute = function()
     CPLog("EXECUTION: " + this.URL());
 #endif
 
-	if (this._compiler)
-	{
+    if (this._compiler)
+    {
         var fileDependencies = this.fileDependencies(),
             index = 0,
             count = fileDependencies.length;
 
+        this._compiler.pushImport(this.URL().lastPathComponent());
         for (; index < count; ++index)
         {
             var fileDependency = fileDependencies[index],
@@ -165,10 +166,11 @@ Executable.prototype.execute = function()
 
             this.fileExecuter()(URL, isQuoted);
         }
+        this._compiler.popImport();
 
-	    this.setCode(this._compiler.compilePass2());
+        this.setCode(this._compiler.compilePass2());
         this._compiler = null;
-	}
+    }
 
     var oldContextBundle = CONTEXT_BUNDLE;
 

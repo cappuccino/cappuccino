@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPText.j"
 @import "CPTextField.j"
 @import "_CPPopUpList.j"
 
@@ -83,7 +84,7 @@ var CPComboBoxTextSubview = @"text",
 - (void)_initComboBox
 {
     _items = [CPArray array];
-    _listClass = [_CPPopUpList class];
+//    _listClass = [_CPPopUpList class];
     _usesDataSource = NO;
     _completes = NO;
     _canComplete = NO;
@@ -1154,11 +1155,13 @@ var CPComboBoxCompletionTest = function(object, index, context)
 
     switch (theBinding)
     {
-        case CPContentBinding:          [_source setContent:newValue];
-                                        break;
+        case CPContentBinding:
+            [_source setContent:newValue];
+            break;
 
-        case CPContentValuesBinding:    [_source setContentValues:newValue];
-                                        break;
+        case CPContentValuesBinding:
+            [_source setContentValues:newValue];
+            break;
     }
 }
 

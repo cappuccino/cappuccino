@@ -24,15 +24,16 @@
 
 @import "CPControl.j"
 @import "CPImage.j"
+@import "CPScrollView.j"
 @import "CPTableView.j"
 @import "CPTextField.j"
-@import "CPScrollView.j"
+
+@global CPApp
 
 /*!
     @ingroup appkit
     @class CPBrowser
 */
-
 @implementation CPBrowser : CPControl
 {
     id              _delegate;
@@ -425,11 +426,26 @@
 
 - (void)keyDown:(CPEvent)anEvent
 {
-    var column = [self selectedColumn];
-    if (column === -1)
+    var key = [anEvent charactersIgnoringModifiers],
+        column = [self selectedColumn];
+
+    if (column === CPNotFound)
         return;
 
-    [_tableViews[column] keyDown:anEvent];
+    if (key === CPLeftArrowFunctionKey || key === CPRightArrowFunctionKey)
+    {
+        if (key === CPLeftArrowFunctionKey)
+        {
+            var previousColumn = column - 1,
+                selectedRow = [self selectedRowInColumn:previousColumn];
+
+            [self selectRow:selectedRow inColumn:previousColumn];
+        }
+        else
+            [self selectRow:0 inColumn:column + 1];
+    }
+    else
+        [_tableViews[column] keyDown:anEvent];
 }
 
 // SIZING
@@ -809,13 +825,13 @@
     return [_browser canDragRowsWithIndexes:rowIndexes inColumn:[_browser columnOfTableView:self] withEvent:[CPApp currentEvent]];
 }
 
-- (CPImage)dragImageForRowsWithIndexes:(CPIndexSet)dragRows tableColumns:(CPArray)theTableColumns event:(CPEvent)dragEvent offset:(CPPointPointer)dragImageOffset
+- (CPImage)dragImageForRowsWithIndexes:(CPIndexSet)dragRows tableColumns:(CPArray)theTableColumns event:(CPEvent)dragEvent offset:(CGPoint)dragImageOffset
 {
     return [_browser draggingImageForRowsWithIndexes:dragRows inColumn:[_browser columnOfTableView:self] withEvent:dragEvent offset:dragImageOffset] ||
            [super dragImageForRowsWithIndexes:dragRows tableColumns:theTableColumns event:dragEvent offset:dragImageOffset];
 }
 
-- (CPView)dragViewForRowsWithIndexes:(CPIndexSet)dragRows tableColumns:(CPArray)theTableColumns event:(CPEvent)dragEvent offset:(CPPoint)dragViewOffset
+- (CPView)dragViewForRowsWithIndexes:(CPIndexSet)dragRows tableColumns:(CPArray)theTableColumns event:(CPEvent)dragEvent offset:(CGPoint)dragViewOffset
 {
     var count = theTableColumns.length;
     while (count--)
@@ -828,30 +844,6 @@
            [super dragViewForRowsWithIndexes:dragRows tableColumns:theTableColumns event:dragEvent offset:dragViewOffset];
 }
 
-- (void)moveUp:(id)sender
-{
-    [super moveUp:sender];
-    [_browser selectRow:[self selectedRow] inColumn:[_browser selectedColumn]];
-}
-
-- (void)moveDown:(id)sender
-{
-    [super moveDown:sender];
-    [_browser selectRow:[self selectedRow] inColumn:[_browser selectedColumn]];
-}
-
-- (void)moveLeft:(id)sender
-{
-    var previousColumn = [_browser selectedColumn] - 1,
-        selectedRow = [_browser selectedRowInColumn:previousColumn];
-
-    [_browser selectRow:selectedRow inColumn:previousColumn];
-}
-
-- (void)moveRight:(id)sender
-{
-    [_browser selectRow:0 inColumn:[_browser selectedColumn] + 1];
-}
 
 @end
 

@@ -22,6 +22,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/CPURL.j>
+@import <Foundation/CPValueTransformer.j>
+
 @implementation StringToURLTransformer : CPValueTransformer
 
 + (void)initialize

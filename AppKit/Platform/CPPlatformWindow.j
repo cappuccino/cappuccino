@@ -20,8 +20,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/CPDictionary.j>
 @import <Foundation/CPObject.j>
+@import "CPKeyBinding.j"
+@import "CPPlatform.j"
 
+@class CPMenu
+
+@global CPApp
 
 var PrimaryPlatformWindow   = NULL;
 
@@ -136,7 +142,7 @@ var PrimaryPlatformWindow   = NULL;
 {
     var frame = [self contentBounds];
 
-    frame.origin = CGPointMakeZero();
+    frame.origin = _CGPointMakeZero();
 
     if ([CPMenu menuBarVisible] && [CPPlatformWindow primaryPlatformWindow] === self)
     {

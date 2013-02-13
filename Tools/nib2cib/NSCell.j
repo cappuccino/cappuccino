@@ -24,6 +24,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <AppKit/CPControl.j>
 
 @import "NSFont.j"
 

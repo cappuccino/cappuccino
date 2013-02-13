@@ -1,9 +1,26 @@
 /*
- *     Created by cacaodev@gmail.com.
- *     Copyright (c) 2011 Pear, Inc. All rights reserved.
+ * Created by cacaodev@gmail.com.
+ * Copyright (c) 2011 Pear, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPBezierPath.j"
 @import "CPPopUpButton.j"
+
+@class _CPRuleEditorViewSlice
 
 var GRADIENT_START_COLOR = "#fcfcfc",
     GRADIENT_END_COLOR = "#dfdfdf",
@@ -46,9 +63,11 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
 {
     [self setBordered:NO];
 
+#if PLATFORM(DOM)
     var style = _DOMElement.style;
     style.border = "1px solid " + BORDER_COLOR;
     style[GRADIENT_PROPERTY] = GRADIENT_NORMAL;
+#endif
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -67,9 +86,9 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
     return self;
 }
 
-- (id)hitTest:(CPPoint)point
+- (id)hitTest:(CGPoint)point
 {
-    if (!CPRectContainsPoint([self frame], point) || ![self sliceIsEditable])
+    if (!CGRectContainsPoint([self frame], point) || ![self sliceIsEditable])
         return nil;
 
     return self;
@@ -100,11 +119,13 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
 
 - (void)layoutSubviews
 {
+#if PLATFORM(DOM)
     radius = FLOOR(CGRectGetHeight([self bounds]) / 2);
     var style = _DOMElement.style,
         radiusCSS = radius + "px";
 
     style.borderRadius = radiusCSS;
+#endif
 
     [super layoutSubviews];
 }
@@ -141,9 +162,11 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
 {
     [self setBordered:NO];
 
+#if PLATFORM(DOM)
     var style = _DOMElement.style;
     style.border = "1px solid " + BORDER_COLOR;
     style[GRADIENT_PROPERTY] = GRADIENT_NORMAL;
+#endif
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -164,6 +187,7 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
 
 - (void)layoutSubviews
 {
+#if PLATFORM(DOM)
     radius = FLOOR(CGRectGetHeight([self bounds]) / 2);
 
     var style = _DOMElement.style,
@@ -171,6 +195,7 @@ else if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
 
     style.borderRadius = radiusCSS;
     style[GRADIENT_PROPERTY] = ([self isHighlighted]) ? GRADIENT_HIGHLIGHTED : GRADIENT_NORMAL;
+#endif
 
     [super layoutSubviews];
 }

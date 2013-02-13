@@ -22,9 +22,33 @@
 
 @import "Nib2Cib.j"
 
+var OS = require("os"),
+    stream = require("narwhal/term").stream;
+
+
 function main(args)
 {
+    checkUlimit();
+
     var nib2cib = [[Nib2Cib alloc] initWithArgs:args];
 
     [nib2cib run];
+}
+
+function checkUlimit()
+{
+    var minUlimit = 1024,
+        p = OS.popen(["ulimit", "-n"]);
+
+    if (p.wait() === 0)
+    {
+        var limit = p.stdout.read().split("\n")[0];
+
+        if (Number(limit) < minUlimit)
+        {
+            stream.print("\0red(\0bold(WARNING:\0)\0) nib2cib may need to open more files than this terminal session currently allows (" + limit + "). Add the following line to your login configuration file (.bash_profile, .bashrc, etc.), start a new terminal session, then try again:\n");
+            stream.print("ulimit -n " + minUlimit);
+            OS.exit(1);
+        }
+    }
 }

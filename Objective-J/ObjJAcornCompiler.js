@@ -33,6 +33,16 @@ Scope.prototype.compiler = function()
     return this.compiler;
 }
 
+Scope.prototype.rootScope = function()
+{
+    return this.prev ? this.prev.rootScope() : this;
+}
+
+Scope.prototype.isRootScope = function()
+{
+    return !this.prev;
+}
+
 Scope.prototype.currentClassName = function()
 {
     return this.classDef ? this.classDef.className : this.prev ? this.prev.currentClassName() : null;
@@ -56,7 +66,7 @@ Scope.prototype.getIvarForCurrentClass = function(/* String */ ivarName)
     return null;
 }
 
-Scope.prototype.getLvar = function(/* String */ lvarName)
+Scope.prototype.getLvar = function(/* String */ lvarName, /* BOOL */ stopAtMethod)
 {
     if (this.vars)
     {
@@ -68,8 +78,8 @@ Scope.prototype.getLvar = function(/* String */ lvarName)
     var prev = this.prev;
 
     // Stop at the method declaration
-    if (prev && !this.methodtype)
-        return prev.getLvar(lvarName);
+    if (prev && (!stopAtMethod || !this.methodtype))
+        return prev.getLvar(lvarName, stopAtMethod);
 
     return null;
 }
@@ -90,9 +100,23 @@ Scope.prototype.copyAddedSelfToIvarsToParent = function()
   }
 }
 
+Scope.prototype.addMaybeWarning = function(warning)
+{
+    var rootScope = this.rootScope();
+
+    (rootScope._maybeWarnings || (rootScope._maybeWarnings = [])).push(warning);
+}
+
+Scope.prototype.maybeWarnings = function()
+{
+    return this.rootScope()._maybeWarnings;
+}
+
 var currentCompilerFlags = "";
 
-var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags, /*unsigned*/ pass)
+var reservedIdentifiers = exports.acorn.makePredicate("self _cmd undefined localStorage arguments");
+
+var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags, /*unsigned*/ pass, /* Dictionary */ classDefs)
 {
     this.source = aString;
     this.URL = new CFURL(aURL);
@@ -120,7 +144,7 @@ var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*
 
     this.dependencies = [];
     this.flags = flags | ObjJAcornCompiler.Flags.IncludeDebugSymbols;
-    this.classDefs = Object.create(null);
+    this.classDefs = classDefs ? classDefs : Object.create(null);
     this.lastPos = 0;
     compile(this.tokens, new Scope(null ,{ compiler: this }), pass === 2 ? pass2 : pass1);
 }
@@ -133,9 +157,9 @@ exports.ObjJAcornCompiler.compileToExecutable = function(/*String*/ aString, /*C
     return new ObjJAcornCompiler(aString, aURL, flags, 2).executable();
 }
 
-exports.ObjJAcornCompiler.compileToIMBuffer = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags)
+exports.ObjJAcornCompiler.compileToIMBuffer = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags, classDefs)
 {
-    return new ObjJAcornCompiler(aString, aURL, flags, 2).IMBuffer();
+    return new ObjJAcornCompiler(aString, aURL, flags, 2, classDefs).IMBuffer();
 }
 
 exports.ObjJAcornCompiler.compileFileDependencies = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags)
@@ -275,11 +299,24 @@ ObjJAcornCompiler.prototype.prettifyMessage = function(/* Message */ aMessage, /
     return message;
 }
 
-ObjJAcornCompiler.prototype.error_message = function(errorMessage, astNode)
+ObjJAcornCompiler.prototype.error_message = function(errorMessage, node)
 {
-    return errorMessage + " <Context File: "+ this.URL +
-                                (this.currentClass ? " Class: "+this.currentClass : "") +
-                                (this.currentSelector ? " Method: "+this.currentSelector : "") +">";
+    var pos = exports.acorn.getLineInfo(this.source, node.start),
+        syntaxError = {message: errorMessage, line: pos.line, column: pos.column, lineStart: pos.lineStart, lineEnd: pos.lineEnd};
+
+    return new SyntaxError(this.prettifyMessage(syntaxError, "ERROR"));
+}
+
+ObjJAcornCompiler.prototype.pushImport = function(url)
+{
+    if (!ObjJAcornCompiler.importStack) ObjJAcornCompiler.importStack = [];  // This is used to keep track of imports. Each time the compiler imports a file the url is pushed here.
+
+    ObjJAcornCompiler.importStack.push(url);
+}
+
+ObjJAcornCompiler.prototype.popImport = function()
+{
+    ObjJAcornCompiler.importStack.pop();
 }
 
 function createMessage(/* String */ aMessage, /* SpiderMonkey AST node */ node, /* String */ code)
@@ -312,6 +349,14 @@ Program: function(node, st, c) {
       c(node.body[i], st, "Statement");
     }
     CONCAT(st.compiler.jsBuffer,st.compiler.source.substring(st.compiler.lastPos, node.end));
+    // Check maybe warnings
+    var maybeWarnings = st.maybeWarnings();
+    if (maybeWarnings) for (var i = 0; i < maybeWarnings.length; i++) {
+        var maybeWarning = maybeWarnings[i];
+        if (!st.getLvar(maybeWarning.identifier) && typeof global[maybeWarning.identifier] === "undefined" && typeof window[maybeWarning.identifier] === "undefined" && !st.compiler.getClassDef(maybeWarning.identifier)) {
+            st.compiler.addWarning(maybeWarning.message);
+        }
+    }
 },
 Function: function(node, scope, c) {
   var inner = new Scope(scope);
@@ -359,6 +404,15 @@ VariableDeclaration: function(node, scope, c) {
     }
   }
 },
+AssignmentExpression: function(node, st, c) {
+    var saveAssignment = st.assignment;
+    st.assignment = true;
+    c(node.left, st, "Expression");
+    st.assignment = saveAssignment;
+    c(node.right, st, "Expression");
+    if (st.isRootScope() && node.left.type === "Identifier" && !st.getLvar(node.left.name))
+        st.vars[node.left.name] = {type: "global", node: node.left};
+},
 MemberExpression: function(node, st, c) {
     c(node.object, st, "Expression");
     st.secondMemberExpression = !node.computed;
@@ -390,13 +444,18 @@ ClassDeclarationStatement: function(node, st, c) {
     // First we declare the class
     if (node.superclassname)
     {
-        if (st.compiler.getClassDef(className))
-            throw new SyntaxError(st.compiler.error_message("Duplicate class " + className, node.classname));
+        classDef = st.compiler.getClassDef(className);
+        if (classDef && classDef.ivars)     // Must have ivars dictionary to be a real declaration. Without it is a "@class" declaration
+            throw st.compiler.error_message("Duplicate class " + className, node.classname);
         if (!st.compiler.getClassDef(node.superclassname.name))
-            throw new SyntaxError(st.compiler.error_message("Can't find superclass " + node.superclassname.name, node.superclassname));
+        {
+            var errorMessage = "Can't find superclass " + node.superclassname.name;
+            for (var i = ObjJAcornCompiler.importStack.length; --i >= 0;)
+                errorMessage += "\n" + Array((ObjJAcornCompiler.importStack.length - i) * 2 + 1).join(" ") + "Imported by: " + ObjJAcornCompiler.importStack[i];
+            throw st.compiler.error_message(errorMessage, node.superclassname);
+        }
 
         classDef = {"className": className, "superClassName": node.superclassname.name, "ivars": Object.create(null), "methods": Object.create(null)};
-        st.compiler.classDefs[className] = classDef;
 
         CONCAT(saveJSBuffer, "{var the_class = objj_allocateClassPair(" + node.superclassname.name + ", \"" + className + "\"),\nmeta_class = the_class.isa;");
     }
@@ -404,7 +463,7 @@ ClassDeclarationStatement: function(node, st, c) {
     {
         classDef = st.compiler.getClassDef(className);
         if (!classDef)
-            throw new SyntaxError(st.compiler.error_message("Class " + className + " not found ", node.classname));
+            throw st.compiler.error_message("Class " + className + " not found ", node.classname);
 
         CONCAT(saveJSBuffer, "{\nvar the_class = objj_getClass(\"" + className + "\")\n");
         CONCAT(saveJSBuffer, "if(!the_class) throw new SyntaxError(\"*** Could not find definition for class \\\"" + className + "\\\"\");\n");
@@ -413,7 +472,6 @@ ClassDeclarationStatement: function(node, st, c) {
     else
     {
         classDef = {"className": className, "superClassName": null, "ivars": Object.create(null), "methods": Object.create(null)};
-        st.compiler.classDefs[className] = classDef;
 
         CONCAT(saveJSBuffer, "{var the_class = objj_allocateClassPair(Nil, \"" + className + "\"),\nmeta_class = the_class.isa;");
     }
@@ -511,12 +569,15 @@ ClassDeclarationStatement: function(node, st, c) {
 
         // Remove all @accessors or we will get a recursive loop in infinity
         var b = getterSetterBuffer.toString().replace(/@accessors(\(.*\))?/g, "");
-        var imBuffer = ObjJAcornCompiler.compileToIMBuffer(b, "Accessors", st.compiler.flags);
+        var imBuffer = ObjJAcornCompiler.compileToIMBuffer(b, "Accessors", st.compiler.flags, st.compiler.classDefs);
 
         // Add the accessors methods first to instance method buffer.
         // This will allow manually added set and get methods to override the compiler generated
         CONCAT(st.compiler.imBuffer, imBuffer);
     }
+
+    // We will store the classDef first after accessors are done so we don't get a duplicate class error
+    st.compiler.classDefs[className] = classDef;
 
     if (node.body.length > 0)
     {
@@ -678,7 +739,7 @@ Identifier: function(node, st, c) {
     if (st.currentMethodType() === "-" && !st.secondMemberExpression)
     {
         var identifier = node.name,
-            lvar = st.getLvar(identifier),
+            lvar = st.getLvar(identifier, true), // Stop looking at method
             ivar = st.compiler.getIvarForClass(identifier, st);
 
         if (ivar)
@@ -698,6 +759,17 @@ Identifier: function(node, st, c) {
                 // These will be used if we find a variable declaration that is hoisting this identifier.
                 ((st.addedSelfToIvars || (st.addedSelfToIvars = Object.create(null)))[identifier] || (st.addedSelfToIvars[identifier] = [])).push({node: node, index: compiler.jsBuffer.atoms.length});
                 CONCAT(compiler.jsBuffer, "self.");
+            }
+        } else {
+            if (!reservedIdentifiers(identifier) && !st.getLvar(identifier) && typeof global[identifier] === "undefined" && typeof window[identifier] === "undefined" && !st.compiler.getClassDef(identifier)) {
+                var message;
+                if (st.assignment) {
+                    message = createMessage("Creating global variable inside function or method '" + identifier + "'", node, st.compiler.source);
+                    st.vars[identifier] = {type: "global", node: node};
+                } else
+                    message = createMessage("Using unknown class or uninitialized global variable '" + identifier + "'", node, st.compiler.source);
+
+                st.addMaybeWarning({identifier: identifier, message: message});
             }
         }
     }
@@ -732,5 +804,22 @@ PreprocessStatement: function(node, st, c) {
     CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
     st.compiler.lastPos = node.start;
     CONCAT(st.compiler.jsBuffer, "//");
+},
+ClassStatement: function(node, st, c) {
+    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
+    st.compiler.lastPos = node.start;
+    CONCAT(st.compiler.jsBuffer, "//");
+    var className = node.id.name;
+    if (!st.compiler.getClassDef(className)) {
+        classDef = {"className": className};
+        st.compiler.classDefs[className] = classDef;
+    }
+    st.vars[node.id.name] = {type: "class", node: node.id};
+},
+GlobalStatement: function(node, st, c) {
+    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
+    st.compiler.lastPos = node.start;
+    CONCAT(st.compiler.jsBuffer, "//");
+    st.rootScope().vars[node.id.name] = {type: "global", node: node.id};
 }
 });

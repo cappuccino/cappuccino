@@ -25,6 +25,8 @@
 
 @import <AppKit/_CPCibCustomResource.j>
 
+@global CP_NSMapClassName
+
 var FILE = require("file"),
     imageSize = require("cappuccino/imagesize").imagesize;
 
@@ -65,7 +67,7 @@ var FILE = require("file"),
             if (resourcePath && FILE.extension(resourcePath) !== FILE.extension(_resourceName))
                 _resourceName += FILE.extension(resourcePath);
 
-            CPLog.debug("   Path: %s\n   Size: %dx%d", FILE.canonical(resourcePath), size.width, size.height);
+            CPLog.debug("   Path: %s\n   Size: %d x %d", FILE.canonical(resourcePath), size.width, size.height);
         }
 
         _properties = [CPDictionary dictionaryWithObject:size forKey:@"size"];

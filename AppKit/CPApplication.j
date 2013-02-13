@@ -25,14 +25,17 @@
 @import <Foundation/CPBundle.j>
 
 @import "CPCompatibility.j"
+@import "CPColorPanel.j"
+@import "CPCursor.j"
+@import "CPDocumentController.j"
 @import "CPEvent.j"
 @import "CPMenu.j"
 @import "CPResponder.j"
-@import "CPDocumentController.j"
 @import "CPThemeBlend.j"
 @import "CPCibLoading.j"
+@import "CPPanel.j"
 @import "CPPlatform.j"
-
+@import "CPWindowController.j"
 
 var CPMainCibFile               = @"CPMainCibFile",
     CPMainCibFileHumanFriendly  = @"Main cib file base name",
@@ -553,7 +556,7 @@ CPRunContinuesResponse  = -1002;
 
 //    [theWindow._bridge _obscureWindowsBelowModalWindow];
 
-    [CPApp setCallback:_CPRunModalLoop forNextEventMatchingMask:CPAnyEventMask untilDate:nil inMode:0 dequeue:NO];
+    [CPApp setCallback:_CPRunModalLoop forNextEventMatchingMask:CPAnyEventMask untilDate:nil inMode:0 dequeue:YES];
 }
 
 /*!
@@ -616,10 +619,22 @@ CPRunContinuesResponse  = -1002;
 
     if (_eventListeners.length)
     {
-        if (_eventListeners[_eventListeners.length - 1]._mask & (1 << [anEvent type]))
-            _eventListeners.pop()._callback(anEvent);
+        var listener = _eventListeners[_eventListeners.length - 1];
 
-        return;
+        if (listener._mask & (1 << [anEvent type]))
+        {
+            _eventListeners.pop();
+            listener._callback(anEvent);
+        }
+
+        /*
+            FIXME: This does not match Cocoa documented behavior for the dequeue
+            flag. Cocoa says the event is dequeued only if it matches the mask.
+            Unfortunately event handling code in Cappuccino is depending
+            on an event being dequeued even if it does not match.
+        */
+        if (listener._dequeue)
+            return;
     }
 
     if ([anEvent type] == CPMouseMoved)
@@ -908,31 +923,33 @@ CPRunContinuesResponse  = -1002;
 
 /*!
     Fires a callback function when an event matching a given mask occurs.
-    @param aCallback - A js function to be fired.
-    @prarm aMask - An event mask for the next event.
-    @param anExpiration - The date for which this callback expires (not implemented).
+    @param aCallback A js function to be fired.
+    @prarm aMask An event mask for the next event.
+    @param anExpiration The date for which this callback expires (not implemented).
     @param inMode (not implemented).
-    @param shouldDequeue (not implemented).
+    @param shouldDequeue YES to remove the event from the queue after calling the callback,
+    NO to deliver it normally.
 */
 - (void)setCallback:(Function)aCallback forNextEventMatchingMask:(unsigned int)aMask untilDate:(CPDate)anExpiration inMode:(CPString)aMode dequeue:(BOOL)shouldDequeue
 {
-    _eventListeners.push(_CPEventListenerMake(aMask, aCallback));
+    _eventListeners.push(_CPEventListenerMake(aMask, aCallback, shouldDequeue));
 }
 
 /*!
     Assigns a target and action for the next event matching a given event mask.
     The callback method called will be passed the CPEvent when it fires.
 
-    @param aTarget - The target object for the callback.
-    @param aSelector - The selector which should be called on the target object.
-    @param aMask - The mask for a given event which should trigger the callback.
-    @param anExpiration - The date for which the callback expires (not implemented).
+    @param aTarget The target object for the callback.
+    @param aSelector The selector which should be called on the target object.
+    @param aMask The mask for a given event which should trigger the callback.
+    @param anExpiration The date for which the callback expires (not implemented).
     @param aMode (not implemented).
-    @param shouldDequeue (not implemented).
+    @param shouldDequeue YES to remove the event from the queue after calling the callback,
+    NO to deliver it normally.
 */
 - (void)setTarget:(id)aTarget selector:(SEL)aSelector forNextEventMatchingMask:(unsigned int)aMask untilDate:(CPDate)anExpiration inMode:(CPString)aMode dequeue:(BOOL)shouldDequeue
 {
-    _eventListeners.push(_CPEventListenerMake(aMask, function (anEvent) { objj_msgSend(aTarget, aSelector, anEvent); }));
+    _eventListeners.push(_CPEventListenerMake(aMask, function (anEvent) { objj_msgSend(aTarget, aSelector, anEvent); }, shouldDequeue));
 }
 
 /*!
@@ -1209,28 +1226,29 @@ var _CPModalSessionMake = function(aWindow, aStopCode)
     return { _window:aWindow, _state:CPRunContinuesResponse , _previous:nil };
 };
 
-var _CPEventListenerMake = function(anEventMask, aCallback)
+var _CPEventListenerMake = function(anEventMask, aCallback, shouldDequeue)
 {
-    return { _mask:anEventMask, _callback:aCallback };
+    return { _mask:anEventMask, _callback:aCallback, _dequeue:shouldDequeue };
 };
 
 // Make this a global for use in CPPlatformWindow+DOM.j.
 _CPRunModalLoop = function(anEvent)
 {
-    [CPApp setCallback:_CPRunModalLoop forNextEventMatchingMask:CPAnyEventMask untilDate:nil inMode:0 dequeue:NO];
+    [CPApp setCallback:_CPRunModalLoop forNextEventMatchingMask:CPAnyEventMask untilDate:nil inMode:0 dequeue:YES];
 
     var theWindow = [anEvent window],
         modalSession = CPApp._currentSession;
 
-    // The special case for popovers here is not clear. In Cocoa the popover window does not respond YES to worksWhenModal,
-    // yet it works when there is a modal window. Maybe it starts its own modal session, but interaction with the original
-    // modal window seems to continue working as well. Regardless of correctness, this solution beats popovers not working
-    // at all from sheets.
+    /*
+        The special case for popovers here is not clear. In Cocoa the popover window does not respond YES to worksWhenModal, yet it works when there is a modal window. Maybe it starts its own modal session, but interaction with the original modal window seems to continue working as well. Regardless of correctness, this solution beats popovers not working at all from sheets.
+    */
     if (theWindow == modalSession._window ||
         [theWindow worksWhenModal] ||
         [theWindow attachedSheet] == modalSession._window || // -dw- allow modal parent of sheet to be repositioned
-        ([theWindow isKindOfClass:_CPAttachedWindow] && [[theWindow targetView] window] === modalSession._window))
+        ([theWindow isKindOfClass:_CPPopoverWindow] && [[theWindow targetView] window] === modalSession._window))
+    {
         [theWindow sendEvent:anEvent];
+    }
 };
 
 /*!

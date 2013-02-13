@@ -20,14 +20,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPTextField.j"
+@import "CPButton.j"
 @import "_CPTitleableWindowView.j"
+
+@class _CPDocModalWindowView
 
 @implementation _CPTexturedWindowHeadView : CPView
 {
-    CPView  _gradientView;
-    CPView  _solidView;
-    CPView  _dividerView;
+    _CPWindowView   _parentView;
+    CPView          _gradientView;
+    CPView          _solidView;
+    CPView          _dividerView;
 }
 
 + (CPString)defaultThemeClass
@@ -41,18 +44,17 @@
                                        forKeys:[]];
 }
 
-- (id)initWithFrame:(CGRect)aFrame
+- (id)initWithFrame:(CGRect)aFrame windowView:(_CPWindowView)parentView
 {
     self = [super initWithFrame:aFrame];
 
     if (self)
     {
+        _parentView = parentView;
         _gradientView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
-
         [self addSubview:_gradientView];
 
         _solidView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
-
         [self addSubview:_solidView];
     }
 
@@ -67,9 +69,9 @@
         bounds = [self bounds];
 
     [_gradientView setFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), gradientHeight)];
-    [_gradientView setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"bezel-head-color" forClass:_CPStandardWindowView]];
+    [_gradientView setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"bezel-head-color" inState:[_parentView themeState] forClass:_CPStandardWindowView]];
 
-    [_solidView setFrame:CGRectMake(0.0, gradientHeight ,CGRectGetWidth(bounds), CGRectGetHeight(bounds) - gradientHeight)];
+    [_solidView setFrame:CGRectMake(0.0, gradientHeight, CGRectGetWidth(bounds), CGRectGetHeight(bounds) - gradientHeight)];
     [_solidView setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"solid-color" forClass:_CPStandardWindowView]];
 }
 
@@ -119,7 +121,7 @@
                                                    @"unsaved-image-highlighted-button"]];
 }
 
-- (id)initWithFrame:(CPRect)aFrame styleMask:(unsigned)aStyleMask
+- (id)initWithFrame:(CGRect)aFrame styleMask:(unsigned)aStyleMask
 {
     self = [super initWithFrame:aFrame styleMask:aStyleMask];
 
@@ -128,7 +130,7 @@
         var theClass = [self class],
             bounds = [self bounds];
 
-        _headView = [[_CPTexturedWindowHeadView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), [self valueForThemeAttribute:@"title-bar-height"])];
+        _headView = [[_CPTexturedWindowHeadView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), [self valueForThemeAttribute:@"title-bar-height"]) windowView:self];
 
         [_headView setAutoresizingMask:CPViewWidthSizable];;
         [_headView setHitTests:NO];
@@ -199,10 +201,11 @@
 
     var theWindow = [self window],
         bounds = [self bounds],
-        width = _CGRectGetWidth(bounds);
+        width = _CGRectGetWidth(bounds),
+        headHeight = [self toolbarMaxY];
 
-    [_headView setFrameSize:_CGSizeMake(width, [self toolbarMaxY])];
-    [_dividerView setFrame:_CGRectMake(0.0, _CGRectGetMaxY([_headView frame]), width, 1.0)];
+    [_headView setFrameSize:_CGSizeMake(width, headHeight)];
+    [_dividerView setFrame:_CGRectMake(0.0, headHeight, width, 1.0)];
 
     var dividerMaxY = 0,
         dividerMinY = 0;
@@ -264,13 +267,13 @@
 
     if (_isDocumentEdited)
     {
-        [_closeButton setImage:[self valueForThemeAttribute:@"unsaved-image-button"]];
+        [_closeButton setImage:[self currentValueForThemeAttribute:@"unsaved-image-button"]];
         [_closeButton setAlternateImage:[self valueForThemeAttribute:@"unsaved-image-highlighted-button"]];
     }
     else
     {
-        [_closeButton setImage:[self valueForThemeAttribute:@"close-image-button"]];
-        [_closeButton setAlternateImage:[self valueForThemeAttribute:@"close-image-highlighted-button"]];
+        [_closeButton setImage:[self currentValueForThemeAttribute:@"close-image-button"]];
+        [_closeButton setAlternateImage:[self currentValueForThemeAttribute:@"close-image-highlighted-button"]];
     }
 }
 
@@ -306,11 +309,13 @@
 
     // resize the window
     var theWindow = [self window],
-        frame = [theWindow frame];
+        frame = [theWindow frame],
+        dy;
 
-    var dy = _CGRectGetHeight([_headView frame]) + _CGRectGetHeight([_dividerView frame]);
     if (enable)
-        dy = -dy;
+        dy = -(_CGRectGetHeight([_headView frame]) + _CGRectGetHeight([_dividerView frame]));
+    else
+        dy = [self toolbarMaxY] + 1.0;
 
     var newHeight = _CGRectGetMaxY(frame) + dy,
         newWidth = _CGRectGetMaxX(frame);
@@ -318,9 +323,11 @@
     frame.size.height += dy;
 
     [self setFrameSize:_CGSizeMake(newWidth, newHeight)];
+
     [self tile];
     [theWindow setFrame:frame display:NO animate:NO];
 
+    [self setNeedsLayout];
 }
 
 - (void)layoutSubviews
@@ -332,22 +339,7 @@
 
     [_minimizeButton setImage:[self valueForThemeAttribute:@"minimize-image-button"]];
     [_minimizeButton setAlternateImage:[self valueForThemeAttribute:@"minimize-image-highlighted-button"]];
-
-    if(![_headView isHidden])
-        [_headView setFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), [self toolbarMaxY])];
-    else
-        [_headView setFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), 0)];
-
-    if(![_dividerView isHidden])
-        [_dividerView setFrame:CGRectMake(0.0, CGRectGetMaxY([_headView frame]), CGRectGetWidth(bounds), 1.0)];
-    else
-        [_dividerView setFrame:CGRectMake(0.0, CGRectGetMaxY([_headView frame]), CGRectGetWidth(bounds), 0.0)];
-
     [_dividerView setBackgroundColor:[self valueForThemeAttribute:@"divider-color"]];
-
-    var y = CGRectGetMaxY([_dividerView frame]);
-
-    [_bodyView setFrame:CGRectMake(0.0, y, CGRectGetWidth(bounds), CGRectGetHeight(bounds) - y)];
     [_bodyView setBackgroundColor:[self valueForThemeAttribute:@"body-color"]];
 
     [_headView setNeedsLayout];

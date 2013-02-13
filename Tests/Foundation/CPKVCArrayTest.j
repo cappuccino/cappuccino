@@ -215,22 +215,33 @@ var COUNTER;
 
 - (void)testRemoveObjectsInArrayUsesRemoveKeyAtIndex
 {
+    [[self object] setValues:[3, 1, 1, 3, 6]];
     [self _patchSelector:@selector(removeObjectFromValuesAtIndex:)];
 
     [[[self object] mutableArrayValueForKey:@"values"] removeObjectsInArray:[3, 6]];
 
-    [self assert:[0, 1, 2, 4, 5, 7, 8, 9] equals:[[self object] values]];
-    [self assert:2 equals:COUNTER message:"removeObjectFromValuesAtIndex: should have been called once"]
+    // Note that all instances of the specified values are removed, not just the first one.
+    [self assert:[1, 1] equals:[[self object] values]];
+    [self assert:3 equals:COUNTER message:"removeObjectFromValuesAtIndex: should have been called thrice"]
+
+    // Try to remove something that doesn't exist. Should not crash.
+    [[[self object] mutableArrayValueForKey:@"values"] removeObjectsInArray:[3, 6]];
+    [self assert:[1, 1] equals:[[self object] values]];
 }
 
 - (void)testRemoveObjectsInArrayUsesRemoveKeyAtIndexes
 {
+    [[self object] setValues:[3, 1, 1, 3, 6]];
     [self _patchSelector:@selector(removeValuesAtIndexes:)];
 
-    [[[self object] mutableArrayValueForKey:@"values"] removeObjectsInArray:[0, 9]];
+    [[[self object] mutableArrayValueForKey:@"values"] removeObjectsInArray:[3, 6]];
 
-    [self assert:[1, 2, 3, 4, 5, 6, 7, 8] equals:[[self object] values]];
+    [self assert:[1, 1] equals:[[self object] values]];
     [self assert:1 equals:COUNTER message:@"removeValuesAtIndexes: should have been called once"];
+
+    // Try to remove something that doesn't exist. Should not crash.
+    [[[self object] mutableArrayValueForKey:@"values"] removeObjectsInArray:[3, 6]];
+    [self assert:[1, 1] equals:[[self object] values]];
 }
 
 - (void)testRemoveLastObjectUsesRemoveKeyAtIndex

@@ -24,6 +24,8 @@
 
 @import "NSView.j"
 
+@global CP_NSMapClassName
+
 
 var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
 

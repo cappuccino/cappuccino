@@ -22,6 +22,7 @@
 
 @import <Foundation/CPObject.j>
 @import <Foundation/CPArray.j>
+@import <Foundation/CPData.j>
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPPropertyListSerialization.j>
 
@@ -117,7 +118,7 @@ var CPPasteboards = nil,
 
     if (self)
     {
-        _name = aName;
+//        _name = aName;
         _types = [];
 
         _owners = [CPDictionary dictionary];

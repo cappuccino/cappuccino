@@ -5,6 +5,10 @@
 
 @implementation CPKeyValueObservingTest : OJTestCase
 {
+    CPString        _lastKeyPath;
+    id              _lastObject;
+    CPDictionary    _lastChange;
+    id              _lastContext;
 }
 
 - (Class)objectWithMethods:(CPString)aMethodName, ...
@@ -24,7 +28,7 @@
 
 - (void)setup
 {
-  _lastKeyPath = _lastObject = _lastChange = _lastContext = nil;
+    _lastKeyPath = _lastObject = _lastChange = _lastContext = nil;
 }
 
 - (void)testInitialObserving

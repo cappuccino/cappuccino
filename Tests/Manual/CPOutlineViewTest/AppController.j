@@ -198,7 +198,7 @@ var rowHeights = [ ];
     [_outlineView setAllowsMultipleSelection:YES];
     [_outlineView expandItem:nil expandChildren:YES];
     // [_outlineView setRowHeight:50.0];
-    // [_outlineView setIntercellSpacing:CPSizeMake(0.0, 10.0)]
+    // [_outlineView setIntercellSpacing:CGSizeMake(0.0, 10.0)]
 
     [scrollView setDocumentView:_outlineView];
     [theWindow setContentView:scrollView];
@@ -207,7 +207,7 @@ var rowHeights = [ ];
 
     [theWindow orderFront:self];
 
-    [column setWidth:CPRectGetWidth([_outlineView bounds])];
+    [column setWidth:CGRectGetWidth([_outlineView bounds])];
 }
 
 - (id)outlineView:(CPOutlineView)theOutlineView child:(int)theIndex ofItem:(id)theItem

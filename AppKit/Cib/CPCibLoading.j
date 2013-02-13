@@ -24,6 +24,7 @@
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPString.j>
 
+@import "CPCib.j"
 
 var CPCibOwner = @"CPCibOwner";
 

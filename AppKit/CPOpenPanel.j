@@ -47,9 +47,9 @@
         var options = { directoryURL: [self directoryURL],
                         canChooseFiles: [self canChooseFiles],
                         canChooseDirectories: [self canChooseDirectories],
-                        allowsMultipleSelection: [self allowsMultipleSelection] };
+                        allowsMultipleSelection: [self allowsMultipleSelection] },
 
-        var result = window.cpOpenPanel(options);
+            result = window.cpOpenPanel(options);
 
         _URLs = result.URLs;
 

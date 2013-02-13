@@ -24,21 +24,21 @@
 
     backgroundMovableCB = [CPCheckBox checkBoxWithTitle:@"Movable by background"];
 
-    [backgroundMovableCB setFrameOrigin:CPPointMake(10, 10)];
+    [backgroundMovableCB setFrameOrigin:CGPointMake(10, 10)];
     [backgroundMovableCB setTarget:self];
     [backgroundMovableCB setAction:@selector(setMovableByBackground:)]
     [contentView addSubview:backgroundMovableCB];
 
     movableCB = [CPCheckBox checkBoxWithTitle:@"Movable"];
 
-    [movableCB setFrameOrigin:CPPointMake(200, 10)];
+    [movableCB setFrameOrigin:CGPointMake(200, 10)];
     [movableCB setTarget:self];
     [movableCB setAction:@selector(setMovable:)]
     [contentView addSubview:movableCB];
 
     [theWindow orderFront:self];
 
-    aWindow = [[CPWindow alloc] initWithContentRect:CPRectMake(0, 0, 200, 200) styleMask:CPTitledWindowMask];
+    aWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0, 0, 200, 200) styleMask:CPTitledWindowMask];
     [aWindow setTitle:@"Move me!"];
     [aWindow center];
     [aWindow makeKeyAndOrderFront:self];

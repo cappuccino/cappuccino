@@ -24,6 +24,7 @@
 @import "CPNull.j"
 @import "_CPCollectionKVCOperators.j"
 
+@class CPIndexSet
 
 @implementation CPObject (CPArrayKVO)
 
@@ -310,18 +311,27 @@
     if (_removeMany)
     {
         var indexes = [CPIndexSet indexSet],
-            index = [theObjects count];
+            index = [theObjects count],
+            position = 0,
+            count = [self count];
 
         while (index--)
-            [indexes addIndex:[self indexOfObject:[theObjects objectAtIndex:index]]];
+        {
+            while ((position = [self indexOfObject:[theObjects objectAtIndex:index] inRange:_CPMakeRange(position + 1, count)]) !== CPNotFound)
+                [indexes addIndex:position];
+        }
 
         _removeMany(_proxyObject, _removeManySEL, indexes);
     }
     else if (_remove)
     {
-        var index = [theObjects count];
+        var index = [theObjects count],
+            position;
         while (index--)
-            _remove(_proxyObject, _removeSEL, [self indexOfObject:[theObjects objectAtIndex:index]]);
+        {
+            while ((position = [self indexOfObject:[theObjects objectAtIndex:index]]) !== CPNotFound)
+                _remove(_proxyObject, _removeSEL, position);
+        }
     }
     else
     {
@@ -518,7 +528,7 @@
  Raises an exception.
 
  CPArray objects are not observable, so this method raises an exception when invoked on an CPArray object.
- Instead of observing a array, observe the ordered to-many relationship for which the array is the collection of related objects.
+ Instead of observing an array, observe the ordered to-many relationship for which the array is the collection of related objects.
 */
 - (void)addObserver:(id)anObserver forKeyPath:(CPString)aKeyPath options:(CPKeyValueObservingOptions)anOptions context:(id)aContext
 {
@@ -529,7 +539,7 @@
  Raises an exception.
 
  CPArray objects are not observable, so this method raises an exception when invoked on an CPArray object.
- Instead of observing a array, observe the ordered to-many relationship for which the array is the collection of related objects.
+ Instead of observing an array, observe the ordered to-many relationship for which the array is the collection of related objects.
 */
 - (void)removeObserver:(id)anObserver forKeyPath:(CPString)aKeyPath
 {

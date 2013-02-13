@@ -1,11 +1,45 @@
-@import <Foundation/CPObject.j>
+/*
+ * _CPMenuManager.j
+ * AppKit
+ *
+ * Created by Francisco Tolmasky.
+ * Copyright 2009, 280 North, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
+@import <Foundation/CPObject.j>
+@import <Foundation/CPNotificationCenter.j>
+
+@import "CPEvent.j"
+@import "CPKeyBinding.j"
+
+@class CPWindow
+@class _CPMenuWindow
+
+
+@global CPApp
+@global CPMenuDidEndTrackingNotification
+@global _CPMenuWindowMenuBarBackgroundStyle
+@global _CPMenuWindowPopUpBackgroundStyle
 
 _CPMenuManagerScrollingStateUp      = -1;
 _CPMenuManagerScrollingStateDown    = 1;
 _CPMenuManagerScrollingStateNone    = 0;
 
-var STICKY_TIME_INTERVAL            = 0.5,
+var STICKY_TIME_INTERVAL            = 0.4,
     SharedMenuManager               = nil;
 
 @implementation _CPMenuManager: CPObject
@@ -26,6 +60,8 @@ var STICKY_TIME_INTERVAL            = 0.5,
 
     CPMenuItem          _previousActiveItem;
     int                 _showTimerID;
+
+    int                 _menuBarButtonItemIndex;
 }
 
 + (_CPMenuManager)sharedMenuManager
@@ -85,7 +121,7 @@ var STICKY_TIME_INTERVAL            = 0.5,
             activeItem = activeItemIndex !== CPNotFound ? [menu itemAtIndex:activeItemIndex] : nil;
 
         _menuBarButtonItemIndex = activeItemIndex;
-        _menuBarButtonMenuContainer = aMenuContainer;
+//        _menuBarButtonMenuContainer = aMenuContainer;
 
         if ([activeItem _isMenuBarButton])
             return [self trackMenuBarButtonEvent:anEvent];
@@ -125,15 +161,6 @@ var STICKY_TIME_INTERVAL            = 0.5,
         return;
     }
 
-    if (_keyBuffer)
-    {
-        if (([anEvent timestamp] - _startTime) > (STICKY_TIME_INTERVAL + [activeMenu numberOfItems] / 2))
-            [self selectNextItemBeginningWith:_keyBuffer inMenu:menu clearBuffer:YES];
-
-        if (type === CPPeriodic)
-            return;
-    }
-
     // Periodic events don't have a valid location.
     var globalLocation = type === CPPeriodic ? _lastGlobalLocation : [anEvent globalLocation];
 
@@ -148,6 +175,15 @@ var STICKY_TIME_INTERVAL            = 0.5,
         // Find out the item the mouse is currently on top of
         activeItemIndex = activeMenuContainer ? [activeMenuContainer itemIndexAtPoint:menuLocation] : CPNotFound,
         activeItem = activeItemIndex !== CPNotFound ? [activeMenu itemAtIndex:activeItemIndex] : nil;
+
+    if (_keyBuffer)
+    {
+        if (([anEvent timestamp] - _startTime) > (STICKY_TIME_INTERVAL + [activeMenu numberOfItems] / 2))
+            [self selectNextItemBeginningWith:_keyBuffer inMenu:menu clearBuffer:YES];
+
+        if (type === CPPeriodic)
+            return;
+    }
 
     // unhighlight when mouse is moved off the menu
     if (_lastGlobalLocation && CGRectContainsPoint([activeMenuContainer globalFrame], _lastGlobalLocation)
@@ -556,7 +592,7 @@ var STICKY_TIME_INTERVAL            = 0.5,
         return;
     }
 
-    next = current + (last - first);
+    var next = current + (last - first);
 
     if (next < [menu numberOfItems])
         [menu _highlightItemAtIndex:next];
@@ -584,7 +620,7 @@ var STICKY_TIME_INTERVAL            = 0.5,
         return;
     }
 
-    next = current - (last - first);
+    var next = current - (last - first);
 
     if (next < 0)
         [menu _highlightItemAtIndex:0];

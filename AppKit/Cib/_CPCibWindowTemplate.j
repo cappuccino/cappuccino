@@ -1,13 +1,33 @@
+/*
+ * _CPCibWindowTemplate.j
+ * AppKit
+ *
+ * Created by Francisco Tolmasky.
+ * Copyright 2008, 280 North, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
 @import <Foundation/CPObject.j>
+@import <Foundation/CPObjJRuntime.j>
 
 @import "CGGeometry.j"
-@import "CPWindow.j"
-
-CPWindowPositionFlexibleRight                = 1 << 19;
-CPWindowPositionFlexibleLeft                 = 1 << 20;
-CPWindowPositionFlexibleBottom               = 1 << 21;
-CPWindowPositionFlexibleTop                  = 1 << 22;
+@import "CPToolbar.j"
+@import "CPView.j"
+@import "CPWindow_Constants.j"
+@import "_CPToolTip.j"
 
 
 @implementation _CPCibWindowTemplate : CPObject
@@ -44,7 +64,7 @@ CPWindowPositionFlexibleTop                  = 1 << 22;
 
         _windowIsFullPlatformWindow = NO;
 
-        _wtFlags = CPPositionProportionalHorizontal | CPPositionProportionalVertical;
+        _wtFlags = CPWindowPositionFlexibleLeft | CPWindowPositionFlexibleRight | CPWindowPositionFlexibleTop | CPWindowPositionFlexibleBottom;
     }
 
     return self;
@@ -91,12 +111,10 @@ CPWindowPositionFlexibleTop                  = 1 << 22;
     [_windowView setAutoresizesSubviews:YES];
 
     if ([_viewClass isKindOfClass:[CPToolbar class]])
-    {
        [theWindow setToolbar:_viewClass];
-    }
 
     [theWindow setAutorecalculatesKeyViewLoop:_windowAutorecalculatesKeyViewLoop];
-    [theWindow setFullBridge:_windowIsFullPlatformWindow];
+    [theWindow setFullPlatformWindow:_windowIsFullPlatformWindow];
 
     theWindow._positioningMask = _wtFlags;
     theWindow._positioningScreenRect = _screenRect;

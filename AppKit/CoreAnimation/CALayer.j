@@ -21,6 +21,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <Foundation/CPRunLoop.j>
 
 @import "CABackingStore.j"
 
@@ -85,6 +86,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 
     float               _opacity;
     BOOL                _isHidden;
+    BOOL                _masksToBounds;
     CPColor             _backgroundColor;
 
     // Managing Layer Hierarchy
@@ -856,7 +858,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 */
 - (void)setNeedsDisplayInRect:(CGRect)aRect
 {
-    _dirtyRect = aRect;
+//    _dirtyRect = aRect;
     [self display];
 }
 

@@ -28,7 +28,7 @@
         request = [CPURLRequest requestWithURL:path],
         connection = [CPURLConnection connectionWithRequest:request delegate:self];
 
-    [theWindow setFullBridge:YES];
+    [theWindow setFullPlatformWindow:YES];
 }
 
 - (void)awakeFromCib

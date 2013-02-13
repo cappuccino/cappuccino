@@ -64,7 +64,7 @@ var CPControllerDeclaredKeysKey = @"CPControllerDeclaredKeysKey";
         count = _editors.length;
 
     for (; index < count; ++index)
-        if (![[_editors objectAtIndex:i] commitEditing])
+        if (![[_editors objectAtIndex:index] commitEditing])
             return NO;
 
     return YES;

@@ -20,9 +20,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CPTheme.j>
+@import <Foundation/CPObject.j>
+@import <AppKit/CPCollectionView.j>
+@import <AppKit/CPColorPanel.j>
+@import <AppKit/CPScrollView.j>
+@import <AppKit/CPSplitView.j>
+@import <AppKit/CPToolbar.j>
 @import <AppKit/CPView.j>
+@import <AppKit/CPWindow_Constants.j>
 
+@import "BKThemeDescriptor.j"
+
+@class CPWindow
+
+@global CPApp
 
 var LEFT_PANEL_WIDTH    = 176.0;
 
@@ -120,6 +131,9 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
     [splitView addSubview:scrollView];
 
     [_themesCollectionView setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
+
+    // Needed when displaying _CPWindowView, to avoid the moving of the main window
+    [theWindow setMovable:NO];
 
     [theWindow setFullPlatformWindow:YES];
     [theWindow makeKeyAndOrderFront:self];
@@ -340,9 +354,8 @@ var SelectionColor = nil;
 @end
 
 
-var ShowcaseCellBackgroundColor = nil;
-
-var BKShowcaseCellBackgroundColorDidChangeNotification  = @"BKShowcaseCellBackgroundColorDidChangeNotification";
+var ShowcaseCellBackgroundColor = nil,
+    BKShowcaseCellBackgroundColorDidChangeNotification  = @"BKShowcaseCellBackgroundColorDidChangeNotification";
 
 @implementation BKShowcaseCell : CPView
 {

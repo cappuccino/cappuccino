@@ -26,6 +26,7 @@
 @import "CPImage.j"
 @import "CPView.j"
 
+@global CPApp
 
 CPToolbarItemVisibilityPriorityStandard = 0;
 CPToolbarItemVisibilityPriorityLow      = -1000;

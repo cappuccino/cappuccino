@@ -23,6 +23,8 @@ Cursor support by browser:
 
 @import <Foundation/CPObject.j>
 
+@global CPApp
+
 var currentCursor = nil,
     cursorStack = [],
     cursors = {},
@@ -77,7 +79,7 @@ var currentCursor = nil,
 */
 - (id)initWithImage:(CPImage)image foregroundColorHint:(CPColor)foregroundColor backgroundColorHint:(CPColor)backgroundColor hotSpot:(CGPoint)aHotSpot
 {
-    return [self initWithImage:image hotSpot:hotSpot];
+    return [self initWithImage:image hotSpot:aHotSpot];
 }
 
 + (void)hide
@@ -161,7 +163,7 @@ var currentCursor = nil,
         if (doesHaveImage)
         {
             var themeResourcePath = [[[CPApp themeBlend] bundle] resourcePath];
-            cssString = [CPString stringWithFormat:@"url(%@/cursors/%@.cur), %@", themeResourcePath, cursorName, aString];
+            cssString = [CPString stringWithFormat:@"url(%@cursors/%@.cur), %@", themeResourcePath, cursorName, aString];
         }
 
         else

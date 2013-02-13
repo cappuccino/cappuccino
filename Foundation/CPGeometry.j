@@ -21,7 +21,7 @@
  */
 
 @import "_CGGeometry.j"
-       
+
 CPMinXEdge = 0;
 CPMinYEdge = 1;
 CPMaxXEdge = 2;

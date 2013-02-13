@@ -26,6 +26,8 @@
 @import "CPRange.j"
 @import "CPSortDescriptor.j"
 
+@class _CPJavaScriptArray
+@class CPIndexSet
 
 CPEnumerationNormal             = 0;
 CPEnumerationConcurrent         = 1 << 0;
@@ -877,13 +879,15 @@ var concat = Array.prototype.concat,
     for (; index < count; ++index)
     {
         if (index === 0)
-            description += "\n\t";
+            description += "\n";
 
         var object = [self objectAtIndex:index];
-        description += CPDescriptionOfObject(object);
 
-        if (index !== count - 1)
-            description += ",\n\t";
+        // NOTE: replace(/^/mg, "    ") inserts 4 spaces at the beginning of every line
+        description += CPDescriptionOfObject(object).replace(/^/mg, "    ");
+
+        if (index < count - 1)
+            description += ",\n";
         else
             description += "\n";
     }

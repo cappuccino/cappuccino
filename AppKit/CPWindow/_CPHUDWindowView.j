@@ -20,8 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPButton.j"
 @import "CPTextField.j"
 @import "_CPTitleableWindowView.j"
+
 
 @implementation _CPHUDWindowView : _CPTitleableWindowView
 {
@@ -64,7 +66,7 @@
     return frameRect;
 }
 
-- (id)initWithFrame:(CPRect)aFrame styleMask:(unsigned)aStyleMask
+- (id)initWithFrame:(CGRect)aFrame styleMask:(unsigned)aStyleMask
 {
     self = [super initWithFrame:aFrame styleMask:aStyleMask];
 

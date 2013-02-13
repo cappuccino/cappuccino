@@ -21,6 +21,9 @@
  */
 
 @import "CPControl.j"
+@import "CPWindow_Constants.j"
+
+@global CPApp
 
 CPTickMarkBelow                             = 0;
 CPTickMarkAbove                             = 1;
@@ -61,12 +64,12 @@ CPRatingLevelIndicatorStyle                 = 3;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjectsAndKeys:  [CPNull null],  @"bezel-color",
-                                                        [CPNull null],  @"color-empty",
-                                                        [CPNull null],  @"color-normal",
-                                                        [CPNull null],  @"color-warning",
-                                                        [CPNull null],  @"color-critical",
-                                                        1.0,            @"spacing"];
+    return [CPDictionary dictionaryWithObjectsAndKeys:[CPNull null], @"bezel-color",
+                                                      [CPNull null], @"color-empty",
+                                                      [CPNull null], @"color-normal",
+                                                      [CPNull null], @"color-warning",
+                                                      [CPNull null], @"color-critical",
+                                                      1.0,           @"spacing"];
 }
 
 
@@ -183,7 +186,7 @@ CPRatingLevelIndicatorStyle                 = 3;
     return _isEditable;
 }
 
-- (CPView)hitTest:(CPPoint)aPoint
+- (CPView)hitTest:(CGPoint)aPoint
 {
     // Don't swallow clicks when displayed in a table.
     if (![self isEditable])

@@ -23,6 +23,7 @@
 @import <AppKit/CPPopUpButton.j>
 
 @import "NSMenu.j"
+@import "NSMenuItem.j"
 
 
 @implementation CPPopUpButton (CPCoding)

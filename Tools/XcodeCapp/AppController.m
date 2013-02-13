@@ -25,6 +25,20 @@
 
 AppController *SharedAppControllerInstance = nil;
 
+float heightForStringDrawing(NSString *myString, NSFont *myFont, float myWidth)
+{
+    NSTextStorage *textStorage = [[[NSTextStorage alloc] initWithString:myString] autorelease];
+    NSTextContainer *textContainer = [[[NSTextContainer alloc] initWithContainerSize:NSMakeSize(myWidth, FLT_MAX)] autorelease];
+    NSLayoutManager *layoutManager = [[[NSLayoutManager alloc] init] autorelease];
+
+    [layoutManager addTextContainer:textContainer];
+    [textStorage addLayoutManager:layoutManager];
+    [textStorage addAttribute:NSFontAttributeName value:myFont range:NSMakeRange(0, [textStorage length])];
+    [textContainer setLineFragmentPadding:0.0];
+
+    (void) [layoutManager glyphRangeForTextContainer:textContainer];
+    return [layoutManager usedRectForTextContainer:textContainer].size.height;
+}
 
 @implementation AppController
 
@@ -46,6 +60,8 @@ AppController *SharedAppControllerInstance = nil;
 {
     SharedAppControllerInstance = self;
     
+    _archivedDataView = [NSKeyedArchiver archivedDataWithRootObject:dataViewError];
+
     if (!growlDelegateRef)
         growlDelegateRef = [[[PRHEmptyGrowlDelegate alloc] init] autorelease];
     
@@ -77,15 +93,17 @@ AppController *SharedAppControllerInstance = nil;
     }
 
     [xcc setDelegate:self];
-    
+
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(XCodeCappConversionDidStart:) name:XCCConversionStartNotification object:xcc];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(XCodeCappConversionDidStop:) name:XCCConversionStopNotification object:xcc];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(XCodeCappPopulateProject:) name:XCCDidPopulateProjectNotification object:xcc];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(XCodeCappListeningDidStart:) name:XCCListeningStartNotification object:xcc];
-    
+
     [helpTextView setTextContainerInset:NSSizeFromCGSize(CGSizeMake(10.0, 10.0))];
-    
+
     [xcc start];
+
+    [self _prepareHistoryMenu];
 }
 
 /*!
@@ -117,6 +135,7 @@ AppController *SharedAppControllerInstance = nil;
     [appDefaults setObject:[NSNumber numberWithInt:0] forKey:@"XCCAPIMode"];
     [appDefaults setObject:[NSNumber numberWithInt:1] forKey:@"XCCReactMode"];
     [appDefaults setObject:[NSNumber numberWithInt:1] forKey:@"XCCReopenLastProject"];
+    [appDefaults setObject:[[NSArray alloc] init] forKey:@"XCCProjectHistory"];
     
     [defaults registerDefaults:appDefaults];
 }
@@ -152,6 +171,9 @@ AppController *SharedAppControllerInstance = nil;
 - (void)XCodeCappConversionDidStop:(NSNotification *)aNotification
 {
     [_statusItem setImage:_iconActive];
+
+    if ([errorsPanel isVisible])
+        [errorsTable reloadData];
 }
 
 /*!
@@ -196,6 +218,33 @@ AppController *SharedAppControllerInstance = nil;
                                clickContext:nil];
 }
 
+/*!
+ Prepare the history menu
+ */
+- (void)_prepareHistoryMenu
+{
+    NSMenu *menu = [[NSMenu alloc] init];
+    NSArray *projectHistory = [[NSUserDefaults standardUserDefaults] objectForKey:@"XCCProjectHistory"];
+
+    for(int i = 0; i < [projectHistory count]; i++)
+    {
+        NSString *itemTitle = [[projectHistory objectAtIndex:i] lastPathComponent];
+        NSString *projectPath = [[projectHistory objectAtIndex:i] stringByStandardizingPath];
+        NSString *currentProjectPath  = [[[xcc currentProjectURL] path] stringByStandardizingPath];
+        NSMenuItem *item = [menu addItemWithTitle:itemTitle action:@selector(switchProject:) keyEquivalent:@""];
+
+        [item setRepresentedObject:projectPath];
+
+        if ([currentProjectPath isEqualToString:projectPath])
+            [item setAction:nil];
+    }
+
+    [menu addItem:[NSMenuItem separatorItem]];
+    [menu addItemWithTitle:@"Clear history" action:@selector(clearProjectHistory:) keyEquivalent:@""];
+
+    [menuHistory setEnabled:([projectHistory count]) ? YES : NO];
+    [menuHistory setSubmenu:menu];
+}
 
 
 #pragma mark -
@@ -231,7 +280,19 @@ AppController *SharedAppControllerInstance = nil;
     if ([openPanel runModal] != NSFileHandlingPanelOKButton)
         return;
     
-    [xcc listenProjectAtPath:[NSString stringWithFormat:@"%@/", [[[openPanel URLs] objectAtIndex:0] path]]];
+    NSString *projectPath = [NSString stringWithFormat:@"%@/", [[[openPanel URLs] objectAtIndex:0] path]];
+    NSMutableArray *projectHistory = [NSMutableArray arrayWithArray:[[NSUserDefaults standardUserDefaults] objectForKey:@"XCCProjectHistory"]];
+
+    if ([projectHistory containsObject:[projectPath stringByStandardizingPath]])
+        [projectHistory removeObject:[projectPath stringByStandardizingPath]];
+
+    [projectHistory insertObject:[projectPath stringByStandardizingPath] atIndex:0];
+
+    [[NSUserDefaults standardUserDefaults] setObject:projectHistory forKey:@"XCCProjectHistory"];
+
+    [xcc listenProjectAtPath:projectPath];
+
+    [self _prepareHistoryMenu];
 }
 
 /*!
@@ -249,6 +310,21 @@ AppController *SharedAppControllerInstance = nil;
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"LastOpenedPath"];
 }
 
+- (IBAction)switchProject:(id)aSender
+{
+    NSString *newPath = [aSender representedObject];
+
+    [self stopListener:aSender];
+    [xcc listenProjectAtPath:newPath];
+    [self _prepareHistoryMenu];
+}
+
+- (IBAction)clearProjectHistory:(id)aSender
+{
+    [[NSUserDefaults standardUserDefaults] setObject:[NSArray array] forKey:@"XCCProjectHistory"];
+    [self _prepareHistoryMenu];
+}
+
 /*!
  Open the xCode support project in xCode
  @param aSender the sender of the action
@@ -260,17 +336,6 @@ AppController *SharedAppControllerInstance = nil;
     
     DLog(@"Opening Xcode project at URL: '%@'", [[xcc XCodeSupportProject] path]);
     system([[NSString stringWithFormat:@"open \"%@\"", [[xcc XCodeSupportProject] path]] UTF8String]);
-}
-
-/*!
- reload error table data and show it
- @param aSender the sender of the action
- */
-- (void)updateErrorTable
-{
-    [errorsTable reloadData];
-    [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
-    [errorsPanel orderFront:self];
 }
 
 /*!
@@ -357,24 +422,21 @@ AppController *SharedAppControllerInstance = nil;
 - (void)tableViewColumnDidResize:(NSNotification *)tableView
 {
     [errorsTable noteHeightOfRowsWithIndexesChanged:
-     [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [[xcc errorList] count])]];
+    [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [[xcc errorList] count])]];
+}
+
+- (NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
+{
+    return [NSKeyedUnarchiver unarchiveObjectWithData:_archivedDataView];
 }
 
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)aRow
 {
-    // Get column you want - first in this case:
-    NSTableColumn *tabCol = [[tableView tableColumns] objectAtIndex:0];
-    float width = [tabCol width];
-    NSRect r = NSMakeRect(0,0,width,1000.0);
-    NSCell *cell = [tabCol dataCellForRow:aRow];
-    NSString *content = [[xcc errorList] objectAtIndex:aRow];
-    [cell setObjectValue:content];
-    float height = [cell cellSizeForBounds:r].height;
-    
-    if (height <= 0)
-        height = 16.0; // Ensure miniumum height is 16.0
-    
-    return height;
+    NSString *content = [[[xcc errorList] objectAtIndex:aRow] objectForKey:@"message"];
+    NSFont *currentFont = [[dataViewError fieldMessage] font];
+    float height = heightForStringDrawing(content, currentFont, [tableView frame].size.width);
+
+    return height + 25;
 }
 
 @end

@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPTextField.j"
 @import "CPView.j"
 
 // CPBoxType
@@ -84,7 +85,7 @@ CPBelowBottom = 6;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], 1.0, 3.0, CPSizeMakeZero(), 6.0, [CPNull null], CPSizeMakeZero()]
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], 1.0, 3.0, CGSizeMakeZero(), 6.0, [CPNull null], CGSizeMakeZero()]
                                        forKeys:[   @"background-color",
                                                    @"border-color",
                                                    @"border-width",
@@ -95,7 +96,7 @@ CPBelowBottom = 6;
                                                    @"content-margin"]];
 }
 
-- (id)initWithFrame:(CPRect)frameRect
+- (id)initWithFrame:(CGRect)frameRect
 {
     self = [super initWithFrame:frameRect];
 
@@ -123,7 +124,7 @@ CPBelowBottom = 6;
 
     @return the border rectangle of the box
 */
-- (CPRect)borderRect
+- (CGRect)borderRect
 {
     return [self bounds];
 }
@@ -222,7 +223,6 @@ CPBelowBottom = 6;
         return;
 
     [self setValue:color forThemeAttribute:@"border-color"];
-    [self setNeedsDisplay:YES];
 }
 
 - (float)borderWidth
@@ -236,7 +236,6 @@ CPBelowBottom = 6;
         return;
 
     [self setValue:width forThemeAttribute:@"border-width"];
-    [self setNeedsDisplay:YES];
 }
 
 - (float)cornerRadius
@@ -250,7 +249,6 @@ CPBelowBottom = 6;
         return;
 
     [self setValue:radius forThemeAttribute:@"corner-radius"];
-    [self setNeedsDisplay:YES];
 }
 
 - (CPColor)fillColor
@@ -264,7 +262,6 @@ CPBelowBottom = 6;
         return;
 
     [self setValue:color forThemeAttribute:@"background-color"];
-    [self setNeedsDisplay:YES];
 }
 
 - (CPView)contentView
@@ -287,29 +284,26 @@ CPBelowBottom = 6;
     _contentView = aView;
 }
 
-- (CPSize)contentViewMargins
+- (CGSize)contentViewMargins
 {
     return [self valueForThemeAttribute:@"content-margin"];
 }
 
-- (void)setContentViewMargins:(CPSize)size
+- (void)setContentViewMargins:(CGSize)size
 {
      if (size.width < 0 || size.height < 0)
          [CPException raise:CPGenericException reason:@"Margins must be positive"];
 
     [self setValue:CGSizeMakeCopy(size) forThemeAttribute:@"content-margin"];
-    [self setNeedsDisplay:YES];
 }
 
-- (void)setFrameFromContentFrame:(CPRect)aRect
+- (void)setFrameFromContentFrame:(CGRect)aRect
 {
     var offset = [self _titleHeightOffset],
         borderWidth = [self borderWidth],
         contentMargin = [self valueForThemeAttribute:@"content-margin"];
 
     [self setFrame:CGRectInset(aRect, -(contentMargin.width + borderWidth), -(contentMargin.height + offset[0] + borderWidth))];
-
-    [self setNeedsDisplay:YES];
 }
 
 - (void)setTitle:(CPString)aTitle
@@ -370,7 +364,7 @@ CPBelowBottom = 6;
         case CPAtTop:
         case CPAboveTop:
         case CPBelowTop:
-            [_titleView setFrameOrigin:CPPointMake(5.0, 0.0)];
+            [_titleView setFrameOrigin:CGPointMake(5.0, 0.0)];
             [_titleView setAutoresizingMask:CPViewNotSizable];
             break;
 
@@ -378,7 +372,7 @@ CPBelowBottom = 6;
         case CPAtBottom:
         case CPBelowBottom:
             var h = [_titleView frameSize].height;
-            [_titleView setFrameOrigin:CPPointMake(5.0, [self frameSize].height - h)];
+            [_titleView setFrameOrigin:CGPointMake(5.0, [self frameSize].height - h)];
             [_titleView setAutoresizingMask:CPViewMinYMargin];
             break;
     }
@@ -395,11 +389,6 @@ CPBelowBottom = 6;
 
     if (!contentFrame)
         return;
-
-    [_contentView setAutoresizingMask:CPViewNotSizable];
-    [self setFrameSize:CGSizeMake(contentFrame.size.width + contentMargin.width * 2,
-                                  contentFrame.size.height + contentMargin.height * 2 + offset[0])];
-    [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
     [_contentView setFrameOrigin:CGPointMake(contentMargin.width, contentMargin.height + offset[1])];
 }
@@ -422,11 +411,8 @@ CPBelowBottom = 6;
     }
 }
 
-- (void)drawRect:(CPRect)rect
+- (void)drawRect:(CGRect)rect
 {
-    if (_borderType === CPNoBorder)
-        return;
-
     var bounds = CGRectMakeCopy([self bounds]);
 
     switch (_boxType)
@@ -435,9 +421,9 @@ CPBelowBottom = 6;
             // NSBox does not include a horizontal flag for the separator type. We have to determine
             // the type of separator to draw by the width and height of the frame.
             if (CGRectGetWidth(bounds) === 5.0)
-                return [self _drawVerticalSeperatorInRect:bounds];
+                return [self _drawVerticalSeparatorInRect:bounds];
             else if (CGRectGetHeight(bounds) === 5.0)
-                return [self _drawHorizontalSeperatorInRect:bounds];
+                return [self _drawHorizontalSeparatorInRect:bounds];
 
             break;
     }
@@ -452,40 +438,51 @@ CPBelowBottom = 6;
         bounds.size.height -= [_titleView frameSize].height;
     }
 
+    // Primary or secondary type boxes always draw the same way, unless they are CPNoBorder.
+    if ((_boxType === CPBoxPrimary || _boxType === CPBoxSecondary) && _borderType !== CPNoBorder)
+    {
+        [self _drawPrimaryBorderInRect:bounds];
+        return;
+    }
+
     switch (_borderType)
     {
         case CPBezelBorder:
             [self _drawBezelBorderInRect:bounds];
             break;
 
-        default:
+        case CPGrooveBorder:
         case CPLineBorder:
             [self _drawLineBorderInRect:bounds];
+            break;
+
+        case CPNoBorder:
+            [self _drawNoBorderInRect:bounds];
             break;
     }
 }
 
-- (void)_drawHorizontalSeperatorInRect:(CGRect)aRect
+- (void)_drawHorizontalSeparatorInRect:(CGRect)aRect
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort];
 
     CGContextSetStrokeColor(context, [self borderColor]);
     CGContextSetLineWidth(context, 1.0);
 
-    CGContextMoveToPoint(context, CGRectGetMinX(aRect), CGRectGetMinY(aRect) + 0.5);
-    CGContextAddLineToPoint(context, CGRectGetWidth(aRect), CGRectGetMinY(aRect) + 0.5);
+    CGContextMoveToPoint(context, CGRectGetMinX(aRect), CGRectGetMidY(aRect));
+    CGContextAddLineToPoint(context, CGRectGetWidth(aRect), CGRectGetMidY(aRect));
     CGContextStrokePath(context);
 }
 
-- (void)_drawVerticalSeperatorInRect:(CGRect)aRect
+- (void)_drawVerticalSeparatorInRect:(CGRect)aRect
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort];
 
     CGContextSetStrokeColor(context, [self borderColor]);
     CGContextSetLineWidth(context, 1.0);
 
-    CGContextMoveToPoint(context, CGRectGetMinX(aRect) + 0.5, CGRectGetMinY(aRect));
-    CGContextAddLineToPoint(context, CGRectGetMinX(aRect) + 0.5, CGRectGetHeight(aRect));
+    CGContextMoveToPoint(context, CGRectGetMidX(aRect), CGRectGetMinY(aRect));
+    CGContextAddLineToPoint(context, CGRectGetMidX(aRect), CGRectGetHeight(aRect));
     CGContextStrokePath(context);
 }
 
@@ -514,21 +511,58 @@ CPBelowBottom = 6;
         shadowSize = [self valueForThemeAttribute:@"inner-shadow-size"],
         shadowColor = [self valueForThemeAttribute:@"inner-shadow-color"];
 
+    var baseRect = aRect;
     aRect = CGRectInset(aRect, borderWidth / 2.0, borderWidth / 2.0);
 
-    // clip the canvas to the actual content view in order to only display inner shadow
-    CGContextBeginPath(context);
-    CGContextAddPath(context, CGPathWithRoundedRectangleInRect(aRect, cornerRadius, cornerRadius, YES, YES, YES, YES));
-    CGContextClip(context);
+    CGContextSaveGState(context);
 
-    CGContextSetFillColor(context, [self fillColor]);
     CGContextSetStrokeColor(context, [self borderColor]);
-
-    CGContextSetShadowWithColor(context, shadowOffset, shadowSize, shadowColor);
     CGContextSetLineWidth(context, borderWidth);
+    CGContextSetFillColor(context, [self fillColor]);
     CGContextFillRoundedRectangleInRect(context, aRect, cornerRadius, YES, YES, YES, YES);
     CGContextStrokeRoundedRectangleInRect(context, aRect, cornerRadius, YES, YES, YES, YES);
 
+    CGContextRestoreGState(context);
+}
+
+- (void)_drawPrimaryBorderInRect:(CGRect)aRect
+{
+    // Draw the "primary" style CPBox.
+
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        cornerRadius = [self cornerRadius],
+        borderWidth = [self borderWidth],
+        shadowOffset = [self valueForThemeAttribute:@"inner-shadow-offset"],
+        shadowSize = [self valueForThemeAttribute:@"inner-shadow-size"],
+        shadowColor = [self valueForThemeAttribute:@"inner-shadow-color"],
+        baseRect = aRect;
+
+    aRect = CGRectInset(aRect, borderWidth / 2.0, borderWidth / 2.0);
+
+    CGContextSaveGState(context);
+
+    CGContextSetStrokeColor(context, [self borderColor]);
+    CGContextSetLineWidth(context, borderWidth);
+    CGContextSetFillColor(context, [self fillColor]);
+    CGContextFillRoundedRectangleInRect(context, aRect, cornerRadius, YES, YES, YES, YES);
+
+    CGContextBeginPath(context);
+    // Note we can't use the 0.5 inset rectangle when setting up clipping. The clipping has to be
+    // on integer coordinates for this to look right in Chrome.
+    CGContextAddPath(context, CGPathWithRoundedRectangleInRect(baseRect, cornerRadius, cornerRadius, YES, YES, YES, YES));
+    CGContextClip(context);
+    CGContextSetShadowWithColor(context, shadowOffset, shadowSize, shadowColor);
+    CGContextStrokeRoundedRectangleInRect(context, aRect, cornerRadius, YES, YES, YES, YES);
+
+    CGContextRestoreGState(context);
+}
+
+- (void)_drawNoBorderInRect:(CGRect)aRect
+{
+    var context = [[CPGraphicsContext currentContext] graphicsPort];
+
+    CGContextSetFillColor(context, [self fillColor]);
+    CGContextFillRect(context, aRect);
 }
 
 @end

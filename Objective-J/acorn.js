@@ -210,7 +210,6 @@ if (!exports.acorn) {
 
   function raise(pos, message) {
     if (typeof pos == "number") pos = getLineInfo(input, pos);
-    message += " (" + pos.line + ":" + pos.column + ")";
     var syntaxError = new SyntaxError(message);
     syntaxError.line = pos.line;
     syntaxError.column = pos.column;
@@ -273,7 +272,7 @@ if (!exports.acorn) {
 
   var _implementation = {keyword: "implementation"}, _outlet = {keyword: "outlet"}, _accessors = {keyword: "accessors"};
   var _end = {keyword: "end"}, _import = {keyword: "import", afterImport: true};
-  var _action = {keyword: "action"}, _selector = {keyword: "selector"};
+  var _action = {keyword: "action"}, _selector = {keyword: "selector"}, _class = {keyword: "class"}, _global = {keyword: "global"};
 
   // Objective-J keywords
 
@@ -296,13 +295,13 @@ if (!exports.acorn) {
 
   // Map Objective-J keyword names to token types.
 
-  var keywordTypesObjJ = {"IBAction": _action, "unsigned": _unsigned, "signed": _signed, "byte": _byte, "char": _char,
+  var keywordTypesObjJ = {"IBAction": _action, "IBOutlet": _outlet, "unsigned": _unsigned, "signed": _signed, "byte": _byte, "char": _char,
                           "short": _short, "int": _int, "long": _long };
 
   // Map Objective-J "@" keyword names to token types.
 
   var objJAtKeywordTypes = {"implementation": _implementation, "outlet": _outlet, "accessors": _accessors, "end": _end,
-                            "import": _import, "action": _action, "selector": _selector};
+                            "import": _import, "action": _action, "selector": _selector, "class": _class, "global": _global};
 
   // Punctuation token types. Again, the `type` property is purely for debugging.
 
@@ -388,6 +387,8 @@ if (!exports.acorn) {
     return new Function("str", f);
   }
 
+  exports.makePredicate = makePredicate;
+
   // The ECMAScript 3 reserved word list.
 
   var isReservedWord3 = makePredicate("abstract boolean byte char class double enum export extends final float goto implements import int interface long native package private protected public short static super synchronized throws transient volatile");
@@ -410,7 +411,7 @@ if (!exports.acorn) {
 
   // The Objective-J keywords.
 
-  var isKeywordObjJ = makePredicate("IBAction byte char short int long unsigned signed");
+  var isKeywordObjJ = makePredicate("IBAction IBOutlet byte char short int long unsigned signed");
 
   // ## Character categories
 
@@ -1443,6 +1444,18 @@ if (!exports.acorn) {
       next();
       return finishNode(node, "PreprocessStatement");
 
+      // This is a Objective-J statement
+    case _class:
+      next();
+      node.id = parseIdent(false);
+      return finishNode(node, "ClassStatement");
+
+      // This is a Objective-J statement
+    case _global:
+      next();
+      node.id = parseIdent(false);
+      return finishNode(node, "GlobalStatement");
+
       // If the statement does not start with a statement keyword or a
       // brace, it's an ExpressionStatement or LabeledStatement. We
       // simply start parsing an expression, and afterwards, if the
@@ -1858,7 +1871,7 @@ if (!exports.acorn) {
           firstExpr = null;
       next();
       if (tokType !== _comma && tokType !== _bracketR) {
-        firstExpr = parseExpression(true);
+        firstExpr = parseExpression(true, true);
         if (tokType !== _comma && tokType !== _bracketR)
           return parseMessageSendExpression(node, firstExpr);
       }
@@ -1930,13 +1943,13 @@ if (!exports.acorn) {
           selectors.push(null);
         }
         expect(_colon, "Expected ':' in selector");
-        args.push(parseExpression(true));
+        args.push(parseExpression(true, true));
         if (eat(close))
           break;
         if (tokType === _comma) {
           node.parameters = [];
           while(eat(_comma)) {
-            node.parameters.push(parseExpression(true));
+            node.parameters.push(parseExpression(true, true));
           }
           eat(close);
           break;

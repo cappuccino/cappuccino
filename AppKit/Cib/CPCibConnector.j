@@ -85,4 +85,5 @@ var _CPCibConnectorSourceKey        = @"_CPCibConnectorSourceKey",
 @end
 
 // For backwards compatibility.
-@implementation _CPCibConnector : CPCibConnector { } @end
+@implementation _CPCibConnector : CPCibConnector
+@end

@@ -22,7 +22,7 @@
 @import <AppKit/CPBox.j>
 
 
-@implementation CPBox (CPCoding)
+@implementation CPBox (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
@@ -39,20 +39,33 @@
             borderWidth = [aCoder decodeFloatForKey:@"NSBorderWidth2"],
             contentMargin = [aCoder decodeSizeForKey:@"NSOffsets"];
 
-        if (borderColor)
-            [self setBorderColor:borderColor];
+        // small hack to position the box pixel perfect
+        var frame = [self frame];
 
-        if (fillColor)
-            [self setFillColor:fillColor];
+        if (_boxType !== CPBoxSeparator)
+        {
+            frame.origin.y += 4;
+            frame.origin.x += 4;
+            frame.size.width -= 8;
+            frame.size.height -= 6;
+        }
 
-        if (cornerRadius)
+        [self setFrame:frame];
+
+        if (_boxType !== CPBoxPrimary && _boxType !== CPBoxSecondary)
+        {
+            // Primary and secondary boxes have a fixed look that can't be customised, but for a CPBoxCustom
+            // all of these parameters can be changed.
+            if (borderColor)
+                [self setBorderColor:borderColor];
+
+            if (fillColor)
+                [self setFillColor:fillColor];
+
             [self setCornerRadius:cornerRadius];
-
-        if (borderWidth)
             [self setBorderWidth:borderWidth];
-
-        if (contentMargin)
             [self setContentViewMargins:contentMargin];
+        }
 
         _title         = [[aCoder decodeObjectForKey:@"NSTitleCell"] objectValue] || @"";
         _titlePosition = [aCoder decodeObjectForKey:@"NSTitlePosition"];

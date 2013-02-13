@@ -22,7 +22,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <AppKit/CPButton.j>
+@import <AppKit/CPDocument.j>
+@import <AppKit/CPTableView.j>
+
 @import "Bookmark2.j"
+@import "TableViewDataSource.j"
 
 @implementation MyDocument2 : CPDocument
 {
@@ -86,6 +91,3 @@
 }
 
 @end
-
-@import "TableViewDataSource.j"
-

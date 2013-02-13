@@ -220,7 +220,7 @@
         var children = [CPArray array],
             itemsCount = 0,
             menuIndex = -1,
-            itemsArray,
+            itemArray,
 
             templateView = [templateViews objectAtIndex:count],
             isPopup = [templateView isKindOfClass:[CPPopUpButton class]];

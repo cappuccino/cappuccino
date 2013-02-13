@@ -20,8 +20,8 @@
  */
 
 @import "CPDictionary.j"
-@import "CPExpression.j"
 @import "CPString.j"
+@import "_CPExpression.j"
 
 var evaluatedObject = nil;
 

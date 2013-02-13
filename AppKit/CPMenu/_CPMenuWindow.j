@@ -1,5 +1,29 @@
+/*
+ * _CPMenuWindow.j
+ * AppKit
+ *
+ * Created by Francisco Tolmasky.
+ * Copyright 2009, 280 North, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+@import "CPClipView.j"
+@import "CPImageView.j"
 @import "CPWindow.j"
-@import "CPView.j"
+@import "_CPMenuManager.j"
 
 var _CPMenuWindowPool                       = [],
     _CPMenuWindowPoolCapacity               = 5,
@@ -9,8 +33,6 @@ var _CPMenuWindowPool                       = [],
 _CPMenuWindowMenuBarBackgroundStyle         = 0;
 _CPMenuWindowPopUpBackgroundStyle           = 1;
 _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
-
-var STICKY_TIME_INTERVAL        = 500;
 
 /*
     @ignore
@@ -357,7 +379,7 @@ var STICKY_TIME_INTERVAL        = 500;
 - (_CPManagerScrollingState)scrollingStateForPoint:(CGPoint)aGlobalLocation
 {
     var frame = [self frame];
-    if (!CPRectContainsPoint(frame,aGlobalLocation) || ![self canScroll])
+    if (!CGRectContainsPoint(frame,aGlobalLocation) || ![self canScroll])
         return _CPMenuManagerScrollingStateNone;
 
     // If we're at or above of the top scroll indicator...

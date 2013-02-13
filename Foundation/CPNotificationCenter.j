@@ -25,6 +25,7 @@
 @import "CPException.j"
 @import "CPNotification.j"
 @import "CPNull.j"
+@import "CPSet.j"
 
 var CPNotificationDefaultCenter = nil;
 

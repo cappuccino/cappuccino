@@ -1,5 +1,33 @@
+/*
+ * _CPMenuBarWindow.j
+ * AppKit
+ *
+ * Created by Francisco Tolmasky.
+ * Copyright 2009, 280 North, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
 @import "CPPanel.j"
-@import "_CPMenuWindow.j"
+@import "_CPMenuManager.j"
+
+@class _CPMenuView
+
+@global CPMenuDidAddItemNotification
+@global CPMenuDidChangeItemNotification
+@global CPMenuDidRemoveItemNotification
 
 @implementation _CPMenuBarWindow : CPPanel
 {
@@ -292,6 +320,11 @@
     [self tile];
 }
 
+- (BOOL)acceptsFirstMouse:(CPEvent)anEvent
+{
+    return YES;
+}
+
 - (void)mouseDown:(CPEvent)anEvent
 {
     var constraintRect = CGRectInset([[self platformWindow] visibleFrame], 5.0, 0.0);
@@ -428,105 +461,3 @@
 }
 
 @end
-
-
-// Unused in AppKit ?
-
-// @implementation _CPMenuBarView : _CPMenuView
-// {
-// }
-//
-// - (CGRect)rectForItemAtIndex:(int)anIndex
-// {
-//     return [_menuItemViews[anIndex === CPNotFound ? 0 : anIndex] frame];
-// }
-//
-// - (int)itemIndexAtPoint:(CGPoint)aPoint
-// {
-//     var bounds = [self bounds];
-//
-//     if (!CGRectContainsPoint(bounds, aPoint))
-//         return CPNotFound;
-//
-//     var x = aPoint.x,
-//         low = 0,
-//         high = _visibleMenuItemInfos.length - 1;
-//
-//     while (low <= high)
-//     {
-//         var middle = FLOOR(low + (high - low) / 2),
-//             info = _visibleMenuItemInfos[middle],
-//             frame = [info.view frame];
-//
-//         if (x < CGRectGetMinX(frame))
-//             high = middle - 1;
-//
-//         else if (x > CGRectGetMaxX(frame))
-//             low = middle + 1;
-//
-//         else
-//             return info.index;
-//    }
-//
-//    return CPNotFound;
-// }
-//
-// - (void)tile
-// {
-//     var items = [_menu itemArray],
-//         index = 0,
-//         count = items.length,
-//
-//         x = MENUBAR_LEFT_MARGIN,
-//         y = 0.0,
-//         isLeftAligned = YES;
-//
-//     for (; index < count; ++index)
-//     {
-//         var item = items[index];
-//
-//         if ([item isSeparatorItem])
-//         {
-//             x = CGRectGetWidth([self frame]) - MENUBAR_RIGHT_MARGIN;
-//             isLeftAligned = NO;
-//
-//             continue;
-//         }
-//
-//          if ([item isHidden])
-//             continue;
-//
-//         var menuItemView = [item _menuItemView],
-//             frame = [menuItemView frame];
-//
-//         if (isLeftAligned)
-//         {
-//             [menuItemView setFrameOrigin:CGPointMake(x, (MENUBAR_HEIGHT - 1.0 - CGRectGetHeight(frame)) / 2.0)];
-//
-//             x += CGRectGetWidth([menuItemView frame]) + MENUBAR_MARGIN;
-//         }
-//         else
-//         {
-//             [menuItemView setFrameOrigin:CGPointMake(x - CGRectGetWidth(frame), (MENUBAR_HEIGHT - 1.0 - CGRectGetHeight(frame)) / 2.0)];
-//
-//             x = CGRectGetMinX([menuItemView frame]) - MENUBAR_MARGIN;
-//         }
-//     }
-//
-//     var bounds = [[self contentView] bounds],
-//         titleFrame = [_titleField frame];
-//
-//     if ([_iconImageView isHidden])
-//         [_titleField setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - CGRectGetWidth(titleFrame)) / 2.0, (CGRectGetHeight(bounds) - CGRectGetHeight(titleFrame)) / 2.0)];
-//     else
-//     {
-//         var iconFrame = [_iconImageView frame],
-//             iconWidth = CGRectGetWidth(iconFrame),
-//             totalWidth = iconWidth + CGRectGetWidth(titleFrame);
-//
-//         [_iconImageView setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - totalWidth) / 2.0, (CGRectGetHeight(bounds) - CGRectGetHeight(iconFrame)) / 2.0)];
-//         [_titleField setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - totalWidth) / 2.0 + iconWidth, (CGRectGetHeight(bounds) - CGRectGetHeight(titleFrame)) / 2.0)];
-//     }
-// }
-//
-// @end

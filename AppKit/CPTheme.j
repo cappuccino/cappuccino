@@ -25,6 +25,7 @@
 @import <Foundation/CPString.j>
 @import <Foundation/CPKeyedUnarchiver.j>
 
+@class CPView
 
 var CPThemesByName          = { },
     CPThemeDefaultTheme     = nil,
@@ -146,7 +147,7 @@ var CPThemesByName          = { },
                 className = [aClass defaultThemeClass];
             else if ([aClass respondsToSelector:@selector(themeClass)])
             {
-                CPLog.warn(@"%@ themeClass is deprecated in favor of defaultThemeClass",CPStringFromClass([anObject class]));
+                CPLog.warn(@"%@ themeClass is deprecated in favor of defaultThemeClass", CPStringFromClass(aClass));
                 className = [aClass themeClass];
             }
             else

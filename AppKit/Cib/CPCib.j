@@ -33,7 +33,6 @@
 @import "_CPCibProxyObject.j"
 @import "_CPCibWindowTemplate.j"
 
-
 CPCibOwner              = @"CPCibOwner";
 CPCibTopLevelObjects    = @"CPCibTopLevelObjects";
 CPCibReplacementClasses = @"CPCibReplacementClasses";

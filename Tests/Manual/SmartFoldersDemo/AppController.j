@@ -104,7 +104,7 @@ var rootItems = [CPArray arrayWithObject:[CPDictionary dictionaryWithObjectsAndK
     [buttonBar setButtons:[CPArray arrayWithObjects:plusButton, minusButton]];
     [superView addSubview:buttonBar];
 
-    [theWindow setFullBridge:YES];
+    [theWindow setFullPlatformWindow:YES];
 }
 // Get the table data
 - (void)connection:(CPURLConnection)connection didReceiveData:(CPString)dataString

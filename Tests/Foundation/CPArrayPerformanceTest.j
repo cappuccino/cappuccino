@@ -5,6 +5,8 @@ var FILE = require("file");
 @import <Foundation/CPNumber.j>
 @import <Foundation/CPSortDescriptor.j>
 
+@global module
+
 var ELEMENTS = 100,
     REPEATS = 10;
 
@@ -208,6 +210,57 @@ var ELEMENTS = 100,
         if ([sorted[j].a  compare:sorted[j + 1].a] == CPOrderedSame && [sorted[j].b compare: sorted[j + 1].b] == CPOrderedDescending)
             [self fail:"b out of order: " + sorted[j].b + " < " + sorted[j + 1].b];
     }
+}
+
+- (void)testObjectsAtIndexesSpeed
+{
+    REPEATS = 100;
+
+    var SIZE = 1000,
+        c = SIZE,
+        r = REPEATS,
+        rr = r,
+        location = 0,
+        array = [CPArray array],
+        indexes = [CPIndexSet indexSet];
+
+    while (c--)
+        array.push(""+c);
+
+    while (location < SIZE - 10)
+    {
+        var rangeLength = ROUND(10 * RAND());
+        [indexes addIndexesInRange:CPMakeRange(location, rangeLength)];
+
+        location += rangeLength + ROUND(10 * RAND());
+    }
+
+    var d = new Date(),
+        test1,
+        test2;
+    while (r--)
+        test1 = [array _previous_objectsAtIndexes:indexes];
+    var dd = new Date();
+
+    while (rr--)
+        test2 = [array objectsAtIndexes:indexes];
+    var ddd = new Date();
+
+    CPLog.warn("\n_CPJavaScriptArray -objectsAtIndexes:");
+    CPLog.warn("           CPArray -objectsAtIndexes: " + (dd - d) + "ms.");
+    CPLog.warn("_CPJavaScriptArray -objectsAtIndexes: " + (ddd - dd) + "ms.");
+
+    if (![test1 isEqual:test2])
+        [self fail:"_CPJavaScriptArray -objectsAtIndexes: returns an wrong value"];
+}
+
+@end
+
+@implementation _CPJavaScriptArray (ObjectsAtIndexes)
+
+- (CPArray)_previous_objectsAtIndexes:(CPIndexSet)indexes
+{
+    return [super objectsAtIndexes:indexes];
 }
 
 @end

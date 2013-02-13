@@ -21,7 +21,13 @@
  */
 
 @import "CPButton.j"
+@import "CPMenu.j"
+@import "CPMenuItem.j"
 @import "CPTextField.j"
+
+@class CPUserDefaults
+
+@global CPApp
 
 CPSearchFieldRecentsTitleMenuItemTag    = 1000;
 CPSearchFieldRecentsMenuItemTag         = 1001;
@@ -63,12 +69,13 @@ var RECENT_SEARCH_PREFIX = @"   ";
 
 + (CPDictionary)themeAttributes
 {
-    return [CPDictionary dictionaryWithJSObject:{
-        @"image-search": [CPNull null],
-        @"image-find": [CPNull null],
-        @"image-cancel": [CPNull null],
-        @"image-cancel-pressed": [CPNull null]
-    }];
+    return [CPDictionary dictionaryWithJSObject:
+        {
+            @"image-search": [CPNull null],
+            @"image-find": [CPNull null],
+            @"image-cancel": [CPNull null],
+            @"image-cancel-pressed": [CPNull null]
+        }];
 }
 
 - (id)initWithFrame:(CGRect)frame
@@ -182,6 +189,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
         [_cancelButton setAutoresizingMask:CPViewMinXMargin];
         [_cancelButton setTarget:self];
         [_cancelButton setAction:@selector(cancelOperation:)];
+        [_cancelButton setButtonType:CPMomentaryChangeButton];
         [self _updateCancelButtonVisibility];
         [self addSubview:_cancelButton];
     }
@@ -247,7 +255,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
 */
 - (CGRect)searchButtonRectForBounds:(CGRect)rect
 {
-    var size = [[self valueForThemeAttribute:@"image-search"] size] || CPSizeMakeZero();
+    var size = [[self valueForThemeAttribute:@"image-search"] size] || CGSizeMakeZero();
 
     return _CGRectMake(5, (_CGRectGetHeight(rect) - size.height) / 2, size.width, size.height);
 }
@@ -259,7 +267,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
 */
 - (CGRect)cancelButtonRectForBounds:(CGRect)rect
 {
-    var size = [[self valueForThemeAttribute:@"image-cancel"] size] || CPSizeMakeZero();
+    var size = [[self valueForThemeAttribute:@"image-cancel"] size] || CGSizeMakeZero();
 
     return _CGRectMake(_CGRectGetWidth(rect) - size.width - 5, (_CGRectGetHeight(rect) - size.width) / 2, size.height, size.height);
 }
@@ -672,7 +680,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
         return;
 
     var aFrame = [[self superview] convertRect:[self frame] toView:nil],
-        location = CPMakePoint(aFrame.origin.x + 10, aFrame.origin.y + aFrame.size.height - 4);
+        location = CGPointMake(aFrame.origin.x + 10, aFrame.origin.y + aFrame.size.height - 4);
 
     var anEvent = [CPEvent mouseEventWithType:CPRightMouseDown location:location modifierFlags:0 timestamp:[[CPApp currentEvent] timestamp] windowNumber:[[self window] windowNumber] context:nil eventNumber:1 clickCount:1 pressure:0];
 

@@ -21,19 +21,27 @@
  */
 
 @import <Foundation/CPArray.j>
-@import <Foundation/CPGeometry.j>
 @import <Foundation/CPObjJRuntime.j>
 @import <Foundation/CPSet.j>
 
 @import "CGAffineTransform.j"
-
-
+@import "CGGeometry.j"
 @import "CPColor.j"
 @import "CPGraphicsContext.j"
 @import "CPResponder.j"
 @import "CPTheme.j"
+@import "CPWindow_Constants.j"
 @import "_CPDisplayServer.j"
 
+@class _CPToolTip
+@class CPWindow
+@class _CPMenuItemView
+@class CPPlatformWindow
+@class CPMenu
+@class CPClipView
+@class CPScrollView
+
+@global appkit_tag_dom_elements
 
 /*
     @global
@@ -1488,10 +1496,9 @@ var CPViewFlags                     = { },
     Returns \c YES by default.
     @return \c YES, if the view object accepts first mouse-down event. \c NO, otherwise.
 */
-//FIXME: should be NO by default?
 - (BOOL)acceptsFirstMouse:(CPEvent)anEvent
 {
-    return YES;
+    return NO;
 }
 
 /*!
@@ -1517,7 +1524,7 @@ var CPViewFlags                     = { },
     @param aPoint the point to test
     @return returns the containing view, or nil if the point is not contained
 */
-- (CPView)hitTest:(CPPoint)aPoint
+- (CPView)hitTest:(CGPoint)aPoint
 {
     if (_isHidden || !_hitTests || !_CGRectContainsPoint(_frame, aPoint))
         return nil;
@@ -2038,7 +2045,7 @@ setBoundsOrigin:
     @param aSourceObject the drag operation controller
     @param slideBack Whether the view should 'slide back' if the drag is rejected
 */
-- (void)dragView:(CPView)aView at:(CPPoint)aLocation offset:(CPSize)mouseOffset event:(CPEvent)anEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
+- (void)dragView:(CPView)aView at:(CGPoint)aLocation offset:(CGSize)mouseOffset event:(CPEvent)anEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
 {
     [_window dragView:aView at:[self convertPoint:aLocation toView:nil] offset:mouseOffset event:anEvent pasteboard:aPasteboard source:aSourceObject slideBack:slideBack];
 }
@@ -2088,7 +2095,7 @@ setBoundsOrigin:
     Draws the receiver into \c aRect. This method should be overridden by subclasses.
     @param aRect the area that should be drawn into
 */
-- (void)drawRect:(CPRect)aRect
+- (void)drawRect:(CGRect)aRect
 {
 
 }
@@ -2108,7 +2115,7 @@ setBoundsOrigin:
     Marks the area denoted by \c aRect as dirty, and initiates a redraw on it.
     @param aRect the area that needs to be redrawn
 */
-- (void)setNeedsDisplayInRect:(CPRect)aRect
+- (void)setNeedsDisplayInRect:(CGRect)aRect
 {
     if (!(_viewClassFlags & CPViewHasCustomDrawRect))
         return;
@@ -2156,7 +2163,7 @@ setBoundsOrigin:
     Draws the receiver into the area defined by \c aRect.
     @param aRect the area to be drawn
 */
-- (void)displayRect:(CPRect)aRect
+- (void)displayRect:(CGRect)aRect
 {
     [self viewWillDraw];
 
@@ -2193,6 +2200,7 @@ setBoundsOrigin:
     {
         var graphicsPort = CGBitmapGraphicsContextCreate();
 
+#if PLATFORM(DOM)
         _DOMContentsElement = graphicsPort.DOMElement;
 
         _DOMContentsElement.style.zIndex = -100;
@@ -2209,7 +2217,6 @@ setBoundsOrigin:
         _DOMContentsElement.style.width = ROUND(_CGRectGetWidth(_frame)) + "px";
         _DOMContentsElement.style.height = ROUND(_CGRectGetHeight(_frame)) + "px";
 
-#if PLATFORM(DOM)
         // The performance implications of this aren't clear, but without this subviews might not be redrawn when this
         // view moves.
         if (CPPlatformHasBug(CPCanvasParentDrawErrorsOnMovementBug))

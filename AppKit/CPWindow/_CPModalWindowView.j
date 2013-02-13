@@ -22,6 +22,7 @@
 
 @import "_CPWindowView.j"
 
+
 @implementation _CPModalWindowView : _CPWindowView
 {
 }

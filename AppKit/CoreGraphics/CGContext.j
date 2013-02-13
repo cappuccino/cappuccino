@@ -711,6 +711,11 @@ else if (CPFeatureIsCompatible(CPVMLFeature))
 {
 #include "CGContextVML.j"
 }
+else
+{
+    // I have declared these functions here to make it compile without warnings with the new compiler under rhino.
+    CGContextClearRect = CGContextDrawLinearGradient = CGContextClip = CGContextClipToRect = function() {throw new Error("function is not declared in this environment")}
+}
 /*!
 @endcond
 */

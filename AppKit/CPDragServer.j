@@ -20,22 +20,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPApplication.j"
+@import "CPDragServer_Constants.j"
 @import "CPEvent.j"
 @import "CPImageView.j"
 @import "CPPasteboard.j"
 @import "CPView.j"
-@import "CPWindow.j"
+@import "CPWindow_Constants.j"
 
+@class CPWindow  // This file is imported by CPWindow.j
+@class _CPDOMDataTransferPasteboard
 
-CPDragOperationNone     = 0;
-CPDragOperationCopy     = 1 << 1;
-CPDragOperationLink     = 1 << 1;
-CPDragOperationGeneric  = 1 << 2;
-CPDragOperationPrivate  = 1 << 3;
-CPDragOperationMove     = 1 << 4;
-CPDragOperationDelete   = 1 << 5;
-CPDragOperationEvery    = -1;
+@global CPApp
 
 #define DRAGGING_WINDOW(anObject) ([anObject isKindOfClass:[CPWindow class]] ? anObject : [anObject window])
 
@@ -72,7 +67,7 @@ var CPDragServerSource             = nil,
 - (unsigned)draggingSourceOperationMask
 */
 
-- (CPPoint)draggingLocation
+- (CGPoint)draggingLocation
 {
     return [[CPDragServer sharedDragServer] draggingLocation];
 }
@@ -461,6 +456,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     else if (type === CPKeyDown)
     {
         var characters = [anEvent characters];
+
         if (characters === CPEscapeFunctionKey)
         {
             _dragOperation = CPDragOperationNone;
@@ -477,39 +473,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     // If we're not a mouse up, then we're going to want to grab the next event.
     [CPApp setTarget:self selector:@selector(trackDragging:)
         forNextEventMatchingMask:CPMouseMovedMask | CPLeftMouseDraggedMask | CPLeftMouseUpMask | CPKeyDownMask
-        untilDate:nil inMode:0 dequeue:NO];
-}
-
-@end
-
-@implementation CPWindow (CPDraggingAdditions)
-
-/* @ignore */
-- (id)_dragHitTest:(CGPoint)aPoint pasteboard:(CPPasteboard)aPasteboard
-{
-    // If none of our views or ourselves has registered for drag events...
-    if (!_inclusiveRegisteredDraggedTypes)
-        return nil;
-
-// We don't need to do this because the only place this gets called
-// -_dragHitTest: in CPPlatformWindow does this already. Perhaps to
-// be safe?
-//    if (![self containsPoint:aPoint])
-//        return nil;
-
-    var adjustedPoint = [self convertPlatformWindowToBase:aPoint],
-        hitView = [_windowView hitTest:adjustedPoint];
-
-    while (hitView && ![aPasteboard availableTypeFromArray:[hitView registeredDraggedTypes]])
-        hitView = [hitView superview];
-
-    if (hitView)
-        return hitView;
-
-    if ([aPasteboard availableTypeFromArray:[self registeredDraggedTypes]])
-        return self;
-
-    return nil;
+        untilDate:nil inMode:0 dequeue:YES];
 }
 
 @end

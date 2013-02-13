@@ -20,12 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-@import <Foundation/Foundation.j>
-@import <AppKit/AppKit.j>
+@import <Foundation/CPObject.j>
+@import <Foundation/CPArray.j>
+@import <Foundation/CPDictionary.j>
+@import <Foundation/CPString.j>
+@import <AppKit/CPApplication.j>
 @import <BlendKit/BlendKit.j>
-
-@import "NSFoundation.j"
-@import "NSAppKit.j"
 
 @import "Nib2CibKeyedUnarchiver.j"
 @import "Converter.j"
@@ -391,6 +391,8 @@ var FILE = require("file"),
 
 - (void)printOptions:options
 {
+    var option;
+
     for (option in options)
     {
         var value = options[option];
@@ -408,6 +410,8 @@ var FILE = require("file"),
 // Merges properties in sourceOptions into targetOptions, overriding properties in targetOptions
 - (void)mergeOptions:(JSObject)sourceOptions with:(JSObject)targetOptions
 {
+    var option;
+
     for (option in sourceOptions)
     {
         // Make sure only a supported option is given

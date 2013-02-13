@@ -417,7 +417,7 @@ var CPArrayClass                                                            = Ni
         _delegateSelectors |= _CPKeyedUnarchiverWillReplaceObjectWithObjectSelector;
 
     if ([_delegate respondsToSelector:@selector(unarchiverWillFinish:)])
-        _delegateSelectors |= _CPKeyedUnarchiverWilFinishSelector;
+        _delegateSelectors |= _CPKeyedUnarchiverWillFinishSelector;
 
     if ([_delegate respondsToSelector:@selector(unarchiverDidFinish:)])
         _delegateSelectors |= _CPKeyedUnarchiverDidFinishSelector;

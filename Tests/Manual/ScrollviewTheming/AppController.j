@@ -20,13 +20,13 @@
     var headerView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
     [headerView setBackgroundColor:[CPColor blueColor]];
 
-    [[self window] setFullBridge:YES];
+    [[self window] setFullPlatformWindow:YES];
 }
 
 - (@action)changeBorderType:(id)aSender
 {
     var borderType = CPNoBorder;
-    
+
     switch ([aSender title])
     {
         default:
@@ -37,11 +37,11 @@
         case @"CPLineBorder":
             borderType = CPLineBorder;
             break;
-        
+
         case @"CPBezelBorder":
             borderType = CPBezelBorder;
             break;
-        
+
         case @"CPGrooveBorder":
             borderType = CPGrooveBorder;
             break;

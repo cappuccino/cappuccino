@@ -23,6 +23,8 @@
 
 @import <AppKit/CPToolbarItem.j>
 
+@class CPSearchField
+
 
 NS_CPToolbarItemIdentifierMap =
 {

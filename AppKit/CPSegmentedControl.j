@@ -23,7 +23,10 @@
 @import <Foundation/CPArray.j>
 
 @import "CPControl.j"
+@import "CPWindow_Constants.j"
+@import "_CPImageAndTextView.j"
 
+@global CPApp
 
 CPSegmentSwitchTrackingSelectOne = 0;
 CPSegmentSwitchTrackingSelectAny = 1;
@@ -465,7 +468,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     }
     else if (aName === "right-segment-bezel")
     {
-        return CPRectMake(CGRectGetWidth([self bounds]) - contentInset.right,
+        return CGRectMake(CGRectGetWidth([self bounds]) - contentInset.right,
                             bezelInset.top,
                             contentInset.right,
                             height);
@@ -801,6 +804,7 @@ CPSegmentSwitchTrackingMomentary = 2;
             return;
 
         var highlighted = [self testSegment:location] === _trackingSegment;
+
         if (highlighted != _trackingHighlighted)
         {
             _trackingHighlighted = highlighted;

@@ -20,10 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPButton.j"
 @import "CPTableColumn.j"
 @import "CPTableView.j"
-@import "CPButton.j"
 
+@global CPApp
 
 CPOutlineViewColumnDidMoveNotification          = @"CPOutlineViewColumnDidMoveNotification";
 CPOutlineViewColumnDidResizeNotification        = @"CPOutlineViewColumnDidResizeNotification";
@@ -1054,7 +1055,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     @ignore
     We need to offset the dataview and add the disclosure triangle.
 */
-- (CPView)_dragViewForColumn:(int)theColumnIndex event:(CPEvent)theDragEvent offset:(CPPointPointer)theDragViewOffset
+- (CPView)_dragViewForColumn:(int)theColumnIndex event:(CPEvent)theDragEvent offset:(CGPoint)theDragViewOffset
 {
     var dragView = [[_CPColumnDragView alloc] initWithLineColor:[self gridColor]],
         tableColumn = [[self tableColumns] objectAtIndex:theColumnIndex],
@@ -1187,7 +1188,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 /*!
     @ignore
 */
-- (id)_parentItemForUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex atMouseOffset:(CPPoint)theOffset
+- (id)_parentItemForUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex atMouseOffset:(CGPoint)theOffset
 {
     if (_shouldRetargetItem)
         return _retargetedItem;
@@ -1217,7 +1218,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 /*!
     @ignore
 */
-- (CPRect)_rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex offset:(CPPoint)theOffset
+- (CGRect)_rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex offset:(CGPoint)theOffset
 {
     // Call super and the update x to reflect the current indentation level
     var rect = [super _rectForDropHighlightViewBetweenUpperRow:theUpperRowIndex andLowerRow:theLowerRowIndex offset:theOffset],
@@ -1740,7 +1741,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return [_outlineView._outlineViewDataSource outlineView:_outlineView writeItems:items toPasteboard:thePasteboard];
 }
 
-- (int)_childIndexForDropOperation:(CPTableViewDropOperation)theDropOperation row:(int)theRow offset:(CPPoint)theOffset
+- (int)_childIndexForDropOperation:(CPTableViewDropOperation)theDropOperation row:(int)theRow offset:(CGPoint)theOffset
 {
     if (_outlineView._shouldRetargetChildIndex)
         return _outlineView._retargedChildIndex;
@@ -1764,7 +1765,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return childIndex;
 }
 
-- (void)_parentItemForDropOperation:(CPTableViewDropOperation)theDropOperation row:(int)theRow offset:(CPPoint)theOffset
+- (void)_parentItemForDropOperation:(CPTableViewDropOperation)theDropOperation row:(int)theRow offset:(CGPoint)theOffset
 {
     if (theDropOperation === CPTableViewDropAbove)
         return [_outlineView _parentItemForUpperRow:theRow - 1 andLowerRow:theRow atMouseOffset:theOffset]

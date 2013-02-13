@@ -24,6 +24,12 @@
 
 @import "CPView.j"
 
+@class CPSlider
+
+@global CPColorPickerViewWidth
+@global CPColorPickerViewHeight
+@global CPWheelColorPickerMode
+
 
 /*!
     @ingroup appkit
@@ -222,7 +228,7 @@
     float       _radius;
 }
 
-- (id)initWithFrame:(CPRect)aFrame
+- (id)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
     {
@@ -269,13 +275,13 @@
 #endif
 }
 
-- (void)setFrameSize:(CPSize)aSize
+- (void)setFrameSize:(CGSize)aSize
 {
     [super setFrameSize:aSize];
     [self setWheelSize:aSize];
 }
 
-- (void)setWheelSize:(CPSize)aSize
+- (void)setWheelSize:(CGSize)aSize
 {
     var min = MIN(aSize.width, aSize.height);
 
@@ -353,7 +359,7 @@
     _angle     = [self radiansToDegrees:angle];
     _distance  = (distance / _radius) * 100.0;
 
-    [_crosshair setFrameOrigin:CPPointMake(COS(angle) * distance + midX - 2.0, SIN(angle) * distance + midY - 2.0)];
+    [_crosshair setFrameOrigin:CGPointMake(COS(angle) * distance + midX - 2.0, SIN(angle) * distance + midY - 2.0)];
 }
 
 - (void)setPositionToColor:(CPColor)aColor

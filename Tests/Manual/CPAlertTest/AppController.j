@@ -44,7 +44,9 @@
         [CPDocModalWindowMask, CPCriticalAlertStyle]
     ];
 
-    theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(100,100,500,500) styleMask:CPTitledWindowMask];
+    theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(100, 100, 500, 500) styleMask:CPTitledWindowMask];
+    [theWindow setTitle:@"CPAlert Test"];
+
     var contentView = [theWindow contentView];
 
     label = [[CPTextField alloc] initWithFrame:CGRectMake(15, 15, 400, 24)];

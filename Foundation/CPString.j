@@ -28,6 +28,12 @@
 @import "CPURL.j"
 @import "CPValue.j"
 
+@class CPException
+@class CPURL
+
+@global CPInvalidArgumentException
+@global CPRangeException
+
 #define _CPMaxRange(aRange) ((aRange).location + (aRange).length)
 
 /*!
@@ -250,7 +256,7 @@ var CPStringUIDs = new CFMutableDictionary(),
         return self;
 
     if (aLength < self.length)
-        return substr(0, aLength);
+        return self.substr(0, aLength);
 
     var string = self,
         substring = aString.substring(anIndex),

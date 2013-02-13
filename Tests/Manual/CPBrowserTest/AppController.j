@@ -126,7 +126,7 @@
 
 - (id)browser:(id)aBrowser imageValueForItem:(id)anItem
 {
-    return [[CPImage alloc] initWithContentsOfFile:"http://cappuccino.org/images/favicon.png" size:CGSizeMake(16, 16)];
+    return [[CPImage alloc] initWithContentsOfFile:"http://cappuccino-project.org/img/favicon.ico" size:CGSizeMake(16, 16)];
 }
 
 - (id)browser:(id)aBrowser objectValueForItem:(id)anItem

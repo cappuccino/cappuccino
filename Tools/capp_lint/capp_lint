@@ -3,7 +3,7 @@
 # capp_lint.py - Check Objective-J source code formatting,
 # according to Cappuccino standards:
 #
-# http://cappuccino.org/contribute/coding-style.php
+# https://github.com/cappuccino/cappuccino/blob/master/CONTRIBUTING.md
 #
 # Copyright (C) 2011 Aparajita Fishman <aparajita@aparajita.com>
 
@@ -181,6 +181,7 @@ class LintChecker(object):
     METHOD_RE = ur'[-+]\s*\([a-zA-Z_$]\w*\)\s*[a-zA-Z_$]\w*'
     FUNCTION_RE = re.compile(ur'\s*function\s*(?P<name>[a-zA-Z_$]\w*)?\(.*\)\s*\{?')
     RE_RE = re.compile(ur'(?<!\\)/.*?[^\\]/[gims]*')
+    DEPRECATED_CP_RE = re.compile(ur'\b(CP(?:Point|Rect(?!Edge)|Size))')
     EMPTY_STRING_LITERAL_FUNCTION = lambda match: match.group(1) + (len(match.group(2)) * ' ') + match.group(1)
     EMPTY_SELF_STRING_LITERAL_FUNCTION = lambda self, match: match.group(1) + (len(match.group(2)) * ' ') + match.group(1)
 
@@ -315,7 +316,13 @@ class LintChecker(object):
             'regex': re.compile(ur'^\s*var\s+[a-zA-Z_$]\w*\s*=\s*function\s+([a-zA-Z_$]\w*)\s*\('),
             'error': 'function name is ignored',
             'showPositionForGroup': 1,
-            'skip': True,
+            'type': ERROR_TYPE_WARNING
+        },
+        {
+            'regex': DEPRECATED_CP_RE,
+            'preprocess': STD_IGNORES,
+            'error': 'CP types/functions have been deprecated in favor of CG types/functions',
+            'showPositionForGroup': 0,
             'type': ERROR_TYPE_WARNING
         },
     )

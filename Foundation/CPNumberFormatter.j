@@ -26,9 +26,6 @@
 @import "CPFormatter.j"
 @import "CPDecimalNumber.j"
 
-#define UPDATE_NUMBER_HANDLER_IF_NECESSARY() if (!_numberHandler) \
-    _numberHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:_roundingMode scale:_maximumFractionDigits raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:YES];
-#define SET_NEEDS_NUMBER_HANDLER_UPDATE() _numberHandler = nil;
 
 CPNumberFormatterNoStyle            = 0;
 CPNumberFormatterDecimalStyle       = 1;
@@ -44,6 +41,11 @@ CPNumberFormatterRoundUp            = CPRoundUp;
 CPNumberFormatterRoundHalfEven      = CPRoundBankers;
 CPNumberFormatterRoundHalfDown      = _CPRoundHalfDown;
 CPNumberFormatterRoundHalfUp        = CPRoundPlain;
+
+var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
+
+#define SET_NEEDS_NUMBER_HANDLER_UPDATE() _numberHandler = nil;
+
 
 /*!
     @ingroup foundation
@@ -103,14 +105,16 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
         case CPNumberFormatterCurrencyStyle:
         case CPNumberFormatterDecimalStyle:
         case CPNumberFormatterPercentStyle:
-            UPDATE_NUMBER_HANDLER_IF_NECESSARY();
+            [self _updateNumberHandlerIfNecessary];
 
             dcmn = [dcmn decimalNumberByRoundingAccordingToBehavior:_numberHandler];
 
             var output = [dcmn descriptionWithLocale:nil],
-                parts = [output componentsSeparatedByString:"."], // FIXME Locale specific.
-                preFraction = parts[0],
-                fraction = parts.length > 1 ? parts[1] : "",
+                // FIXME this is probably locale dependent.
+                parts = output.match(NumberRegex) || ["", undefined, "", undefined, undefined],
+                negativePrefix = parts[1] || "",
+                preFraction = parts[2] || "",
+                fraction = parts[4] || "",
                 preFractionLength = [preFraction length],
                 commaPosition = 3;
 
@@ -129,6 +133,7 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
             }
 
             var string = preFraction;
+
             if (fraction)
                 string += "." + fraction;
 
@@ -141,11 +146,13 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
             }
 
             if (_numberStyle == CPNumberFormatterPercentStyle)
-            {
                 string += "%";
-            }
+
+            if (negativePrefix)
+                string = negativePrefix + string;
 
             return string;
+
         default:
             return [number description];
     }
@@ -192,6 +199,7 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
             _maximumFractionDigits = 3;
             SET_NEEDS_NUMBER_HANDLER_UPDATE();
             break;
+
         case CPNumberFormatterCurrencyStyle:
             _minimumFractionDigits = 2;
             _maximumFractionDigits = 2;
@@ -218,9 +226,17 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
     SET_NEEDS_NUMBER_HANDLER_UPDATE();
 }
 
+#pragma mark Private
+
+- (void)_updateNumberHandlerIfNecessary
+{
+    if (!_numberHandler)
+        _numberHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:_roundingMode scale:_maximumFractionDigits raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:YES];
+}
+
 @end
 
-var CPNumberFormatterStyleKey                   = "CPNumberFormatterStyleKey",
+var CPNumberFormatterStyleKey                   = @"CPNumberFormatterStyleKey",
     CPNumberFormatterMinimumFractionDigitsKey   = @"CPNumberFormatterMinimumFractionDigitsKey",
     CPNumberFormatterMaximumFractionDigitsKey   = @"CPNumberFormatterMaximumFractionDigitsKey",
     CPNumberFormatterRoundingModeKey            = @"CPNumberFormatterRoundingModeKey",

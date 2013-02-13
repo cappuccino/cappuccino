@@ -22,6 +22,10 @@
 
 @import <AppKit/CPTableHeaderView.j>
 
+@class Converter
+@class CPTableView
+
+
 @implementation CPTableHeaderView (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder

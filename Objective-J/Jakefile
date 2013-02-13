@@ -111,7 +111,7 @@ function environmentFlags()
 
 var SHRINKSAFE = require("minify/shrinksafe");
 function compressor(code) {
-    return SHRINKSAFE.compress(code, { charset : "UTF-16", useServer : true });
+    return SHRINKSAFE.compress(code, { charset : "UTF-8", useServer : true });
 }
 
 function gcc(inputFilePath, outputFilePath, flags, compress)

@@ -21,11 +21,23 @@
  */
 
 @import <Foundation/CPObject.j>
+@import "CPGraphicsContext.j"
 
 @import "CGColor.j"
 
 @import "CPCompatibility.j"
 @import "CPImage.j"
+
+
+/*!
+    Orientation to use with \c CPColorPattern for vertical patterns.
+*/
+CPColorPatternIsVertical = YES;
+
+/*!
+    Orientation to use with \c CPColorPattern for horizontal patterns.
+*/
+CPColorPatternIsHorizontal = NO;
 
 /// @cond IGNORE
 
@@ -56,64 +68,6 @@ var cachedBlackColor,
     cachedClearColor;
 
 /// @endcond
-
-/*!
-    Orientation to use with \c CPColorPattern for vertical patterns.
-*/
-CPColorPatternIsVertical = YES;
-
-/*!
-    Orientation to use with \c CPColorPattern for horizontal patterns.
-*/
-CPColorPatternIsHorizontal = NO;
-
-/*!
-    To create a simple color with a pattern image:
-
-    <code>CPColorWithImages(name, width, height{, bundle})</code>
-
-    To create a color with a three part pattern image:
-
-    <code>CPColorWithImages(slices{, orientation})</code>
-
-    where slices is an array of three [name, width, height{, bundle}] arrays,
-    and orientation is \c CPColorPatternIsVertical or \ref CPColorPatternIsHorizontal.
-    If orientatation is not passed, it defaults to \ref CPColorPatternIsHorizontal.
-
-    To create a color with a nine part pattern image:
-
-    <code>CPColorWithImages(slices);</code>
-
-    where slices is an array of nine [name, width, height{, bundle}] arrays.
-*/
-function CPColorWithImages()
-{
-    if (arguments.length < 3)
-    {
-        var slices = arguments[0],
-            imageSlices = [];
-
-        for (var i = 0; i < slices.length; ++i)
-        {
-            var slice = slices[i];
-
-            imageSlices.push(slice ? CPImageInBundle(slice[0], CGSizeMake(slice[1], slice[2]), slice[3]) : nil);
-        }
-
-        if (imageSlices.length === 3)
-            return [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:imageSlices isVertical:arguments[1] || CPColorPatternIsHorizontal]];
-        else
-            return [CPColor colorWithPatternImage:[[CPNinePartImage alloc] initWithImageSlices:imageSlices]];
-    }
-    else if (arguments.length === 3 || arguments.length === 4)
-    {
-        return [CPColor colorWithPatternImage:CPImageInBundle(arguments[0], CGSizeMake(arguments[1], arguments[2]), arguments[3])];
-    }
-    else
-    {
-        return nil;
-    }
-}
 
 /*!
     @ingroup appkit
@@ -739,7 +693,7 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
 
         for (var i = 0; i < slices.length; ++i)
         {
-            var imgDescription = [slices[i] description];
+            var imgDescription = [slices[i] description] || "nil";
 
             description += imgDescription.replace(/^/mg, "        ") + ",\n";
         }
@@ -747,7 +701,7 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
         description = description.substr(0, description.length - 2) + "\n    ]\n}";
     }
     else
-        description += [patternImage description].replace(/^/mg, "    ") + "\n}";
+        description += ([patternImage description] || "nil").replace(/^/mg, "    ") + "\n}";
 
     return description;
 }
@@ -870,6 +824,552 @@ var byteToHex = function(n)
 
     return hexCharacters.charAt((n - n % 16) / 16) +
            hexCharacters.charAt(n % 16);
+};
+
+/*!
+    To create a simple color with a pattern image:
+        CPColorWithImages(name, width, height{, bundle})
+
+    To create a color with a three-part/nine-part image using a pattern string:
+        CPColorWithImages(pattern, attributes{, bundle})
+
+    <pattern> must have one or more placeholders. There are there possible
+    placeholders available that together can be used to build a filename:
+
+    style     A top-level style, for example normal (empty) and "default".
+    state     The state of a view, for example "highlighted" and "disabled".
+    position  The position of an image within a 3-part or 9-part image.
+              This must be provided.
+
+    Each placeholder is filled with the values you pass in a the attributes object.
+    Neither style nor state are necessary, if you omit them the next level of the
+    hierarchy is the top level.
+
+    Attributes
+    ----------
+    styles: [...]
+    An array of style names. For example, if you want to generate the filenames
+    "button-bezel" and "default-button-bezel", you would use ["", "default"]
+    for the styles.
+
+    states: [...]
+    An array of state names.
+
+    positions: <spec>
+    Specifies the naming convention for the slices of the image. For 3-part images,
+    <spec> may be one of:
+
+        "@"     Equivalent to ["left", "center", "right"] for horizontal
+                images, ["top", "center", "bottom"] for vertical images
+        "#"     Equivalent to ["0", "1", "2"]
+        [...]   An array of any three literal strings
+
+    For 9-part images, <spec> may be one of:
+
+        "@" | "abbrev"  Equivalent to ["top-left", "top", "top-right",
+                                       "left", "center", "right",
+                                       "bottom-left", "bottom", "bottom-right"]
+        "full"          Equivalent to ["top-left", "top-center", "top-right",
+                                       "center-left", "center-center", "center-right",
+                                       "bottom-left", "bottom-center", "bottom-right"]
+        "#"              Equivalent to ["0", "1", "2", "3", "4", "5", "6", "7", "8"]
+        [...]           An array of any nine literal strings
+
+    width: <number>
+    The width of the left image for horizontal 3-part images, the top image for
+    vertical 3-part images, or the top left corner for 9-part images.
+
+    height: <number>
+    The height of the left image for horizontal 3-part images, the top image for
+    vertical 3-part images, or the top left corner for 9-part images.
+
+    centerWidth: <number>
+    For a horizontal 3-part image that has a center slice width that is not 1.0,
+    set this for the width of the center slice. If omitted, it defaults
+    to 1.0. Not used for 9-part images.
+
+    rightWidth: <number>
+    For a horizontal 3-part image that has different left/right slice widths,
+    or a 9-part image that has different left/right corner slice widths,
+    set this for the width of the right slice. If omitted, the "width"
+    value is used for left and right widths.
+
+    centerHeight: <number>
+    For a vertical 3-part image that has a center slice height that is not 1.0,
+    set this for the height of the center slice. If omitted, it defaults
+    to 1.0. Not used for 9-part images.
+
+    bottomHeight: <number>
+    For a vertical image that has different top/bottom slice heights,
+    or a 9-part image that has different top/bottom corner slice heights,
+    set this for the height of the bottom slice. If omitted, the "height"
+    value is used for top and bottom heights.
+
+    centerIsNil: <BOOL>
+    For 9-part images, if the center image is nil, set this to YES.
+    If omitted or set to NO, a center image must be provided.
+
+    separator: <string>
+    The separator to use between components of the pattern.
+    If it is omitted, it defaults to "-".
+
+    orientation: PatternIsHorizontal | PatternIsVertical
+    The orientation of the image. This must be specified for 3-part images,
+    it should NOT be specified for 9-part images.
+
+    Using a pattern, all of this:
+
+    bezelColor = PatternColor(
+        [
+            ["button-bezel-left.png", 4.0, 24.0],
+            ["button-bezel-center.png", 1.0, 24.0],
+            ["button-bezel-right.png", 4.0, 24.0]
+        ],
+        PatternIsHorizontal),
+
+    highlightedBezelColor = PatternColor(
+        [
+            ["button-bezel-highlighted-left.png", 4.0, 24.0],
+            ["button-bezel-highlighted-center.png", 1.0, 24.0],
+            ["button-bezel-highlighted-right.png", 4.0, 24.0]
+        ],
+        PatternIsHorizontal),
+
+    disabledBezelColor = PatternColor(
+        [
+            ["button-bezel-disabled-left.png", 4.0, 24.0],
+            ["button-bezel-disabled-center.png", 1.0, 24.0],
+            ["button-bezel-disabled-right.png", 4.0, 24.0]
+        ],
+        PatternIsHorizontal),
+
+    defaultBezelColor = PatternColor(
+        [
+            ["default-button-bezel-left.png", 4.0, 24.0],
+            ["default-button-bezel-center.png", 1.0, 24.0],
+            ["default-button-bezel-right.png", 4.0, 24.0]
+        ],
+        PatternIsHorizontal),
+
+    defaultHighlightedBezelColor = PatternColor(
+        [
+            ["default-button-bezel-highlighted-left.png", 4.0, 24.0],
+            ["default-button-bezel-highlighted-center.png", 1.0, 24.0],
+            ["default-button-bezel-highlighted-right.png", 4.0, 24.0]
+        ],
+        PatternIsHorizontal),
+
+    defaultDisabledBezelColor = PatternColor(
+        [
+            ["default-button-bezel-disabled-left.png", 4.0, 24.0],
+            ["default-button-bezel-disabled-center.png", 1.0, 24.0],
+            ["default-button-bezel-disabled-right.png", 4.0, 24.0]
+        ],
+        PatternIsHorizontal)
+
+    can be replaced with this:
+
+    bezelColors = PatternColor(
+        "{style}button-bezel{state}{position}.png",
+        {
+            styles: ["", "default"],
+            states: ["", "highlighted", "disabled"],
+            positions: "@",
+            width: 4.0,
+            height: 24.0,
+            orientation: PatternIsHorizontal
+        })
+
+    Which would effectively create the following object:
+
+    {
+        "@":
+        {
+            "@": <ThreePartImage>:
+            [
+                ["button-bezel-left.png", 4.0, 24.0],
+                ["button-bezel-center.png", 1.0, 24.0],
+                ["button-bezel-right.png", 4.0, 24.0]
+            ],
+            "highlighted": <ThreePartImage>:
+            [
+                ["button-bezel-highlighted-left.png", 4.0, 24.0],
+                ["button-bezel-highlighted-center.png", 1.0, 24.0],
+                ["button-bezel-highlighted-right.png", 4.0, 24.0]
+            ],
+            "disabled": <ThreePartImage>:
+            [
+                ["button-bezel-disabled-left.png", 4.0, 24.0],
+                ["button-bezel-disabled-center.png", 1.0, 24.0],
+                ["button-bezel-disabled-right.png", 4.0, 24.0]
+            ]
+        },
+
+        "default":
+        {
+            "@": <ThreePartImage>:
+            [
+                ["default-button-bezel-left.png", 4.0, 24.0],
+                ["default-button-bezel-center.png", 1.0, 24.0],
+                ["default-button-bezel-right.png", 4.0, 24.0]
+            ],
+            "highlighted": <ThreePartImage>:
+            [
+                ["default-button-bezel-highlighted-left.png", 4.0, 24.0],
+                ["default-button-bezel-highlighted-center.png", 1.0, 24.0],
+                ["default-button-bezel-highlighted-right.png", 4.0, 24.0]
+            ],
+            "disabled": <ThreePartImage>:
+            [
+                ["default-button-bezel-disabled-left.png", 4.0, 24.0],
+                ["button-bezel-disabled-center.png", 1.0, 24.0],
+                ["default-button-bezel-disabled-right.png", 4.0, 24.0]
+            ]
+        }
+    }
+
+    To reference empty names in the pattern color, use the key "@".
+    So, for example, to reference the "default" style, "disabled" state,
+    you would use the following expression:
+
+    bezelColors["@"]["disabled"]
+
+    To create a color with a three-part pattern image explicitly:
+        CPColorWithImages(slices, orientation)
+
+    where slices is an array of three [name, width, height{, bundle}] arrays,
+    and orientation is CPColorPatternIsVertical or CPColorPatternIsHorizontal.
+
+    To create a color with a nine-part pattern image explicitly:
+        CPColorWithImages(slices);
+
+    where slices is an array of nine [name, width, height{, bundle}] arrays.
+*/
+function CPColorWithImages()
+{
+    var slices = nil,
+        numParts = 0,
+        isVertical = false,
+        imageFactory = CPImageInBundle,
+        args = Array.prototype.slice.apply(arguments);
+
+    if (typeof(args[args.length - 1]) === "function")
+        imageFactory = args.pop();
+
+    switch (args.length)
+    {
+        case 1:
+            return imageFromSlices(args[0], isVertical, imageFactory);
+
+        case 2:
+            // New-style 3-part and 9-part images
+            if (typeof(args[0]) === "string")
+                return patternColorsFromPattern.call(this, args[0], args[1], imageFactory);
+
+            return imageFromSlices(args[0], args[1], imageFactory);
+
+        case 3:
+            return [CPColor colorWithPatternImage:imageFactory(args[0], args[1], args[2])];
+
+        default:
+            throw("ERROR: Invalid argument count: " + args.length);
+    }
+}
+
+var imageFromSlices = function(slices, isVertical, imageFactory)
+{
+    var imageSlices = [];
+
+    for (var i = 0; i < slices.length; ++i)
+    {
+        var slice = slices[i];
+
+        imageSlices.push(slice ? imageFactory(slice[0], slice[1], slice[2]) : nil);
+    }
+
+    switch (slices.length)
+    {
+        case 3:
+            return [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:imageSlices isVertical:isVertical]];
+
+        case 9:
+            return [CPColor colorWithPatternImage:[[CPNinePartImage alloc] initWithImageSlices:imageSlices]];
+
+        default:
+            throw("ERROR: Invalid number of image slices: " + slices.length);
+    }
+};
+
+var patternColorsFromPattern = function(pattern, attributes, imageFactory)
+{
+    if (pattern.match(/^.*\{[^}]+\}/))
+    {
+        var width = attributes["width"],
+            height = attributes["height"],
+            separator = attributes["separator"] || "-",
+            orientation = attributes["orientation"],
+            rightWidth,
+            bottomHeight,
+            centerWidthHeight,
+            centerIsNil,
+            numParts;
+
+        // positions are mandatory
+        if (pattern.indexOf("{position}") < 0)
+            throw("ERROR: Pattern strings must have a {position} placeholder (\"" + pattern + "\")");
+
+        if (orientation === undefined)
+        {
+            numParts = 9;
+
+            if (attributes["centerIsNil"] !== undefined)
+                centerIsNil = attributes["centerIsNil"];
+        }
+        else
+        {
+            numParts = 3;
+            isVertical = orientation === PatternIsVertical;
+
+            if (isVertical)
+            {
+                if (attributes["centerHeight"])
+                    centerWidthHeight = attributes["centerHeight"];
+            }
+            else
+            {
+                if (attributes["centerWidth"])
+                    centerWidthHeight = attributes["centerWidth"];
+            }
+        }
+
+        if (attributes["rightWidth"])
+            rightWidth = attributes["rightWidth"];
+
+        if (attributes["bottomHeight"])
+            bottomHeight = attributes["bottomHeight"];
+
+        var positions = attributes["positions"] || "@",
+            states = nil,
+            styles = nil;
+
+        if (numParts === 3)
+        {
+            if (positions === "@")
+            {
+                if (isVertical)
+                    positions = ["top", "center", "bottom"];
+                else
+                    positions = ["left", "center", "right"];
+            }
+            else if (positions === "#")
+                positions = ["0", "1", "2"];
+            else
+                throw("ERROR: Invalid positions: " + positions)
+        }
+        else // numParts === 9
+        {
+            if (positions === "@" || positions === "abbrev")
+                positions = ["top-left", "top", "top-right", "left", "center", "right", "bottom-left", "bottom", "bottom-right"];
+            else if (positions === "full")
+                positions = ["top-left", "top-center", "top-right", "center-left", "center-center", "center-right", "bottom-left", "bottom-center", "bottom-right"];
+            else if (positions === "#")
+                positions = ["0", "1", "2", "3", "4", "5", "6", "7", "8"];
+            else
+                throw("ERROR: Invalid positions: " + positions)
+        }
+
+        // states
+        if (pattern.indexOf("{state}") >= 0)
+        {
+            states = attributes["states"];
+
+            if (!states)
+                throw("ERROR: {state} placeholder in the pattern (\"" + pattern + "\") but no states item in the attributes");
+        }
+
+        // styles
+        if (pattern.indexOf("{style}") >= 0)
+        {
+            styles = attributes["styles"];
+
+            if (!styles)
+                throw("ERROR: {style} placeholder in the pattern (\"" + pattern + "\") but no styles item in the attributes");
+        }
+
+        // Now assemble the hierarchy
+        var placeholder = "{position}",
+            pos = pattern.indexOf(placeholder),
+            i;
+
+        for (i = 0; i < positions.length; ++i)
+            positions[i] = pattern.replace(placeholder, pos === 0 ? positions[i] + separator : separator + positions[i]);
+
+        var slices = positions,
+            object = slices,
+            key,
+            sep;
+
+        if (states)
+        {
+            placeholder = "{state}";
+            pos = pattern.indexOf(placeholder);
+            object = {};
+
+            for (i = 0; i < states.length; ++i)
+            {
+                var state = states[i];
+                key = state || "@";
+                sep = state ? separator : "";
+
+                object[key] = slices.slice(0);
+                replacePlaceholderInArray(object[key], placeholder, pos === 0 ? state + sep : sep + state);
+            }
+        }
+
+        if (styles)
+        {
+            placeholder = "{style}";
+            pos = pattern.indexOf(placeholder);
+
+            var styleObject = {};
+
+            for (i = 0; i < styles.length; ++i)
+            {
+                var style = styles[i];
+                key = style || "@";
+                sep = style ? separator : "";
+
+                if (states)
+                {
+                    styleObject[key] = cloneObject(object);
+                    replacePlaceholderInObject(styleObject[key], placeholder, pos === 0 ? style + sep : sep + style);
+                }
+                else
+                {
+                    styleObject[key] = slices.slice(0);
+                    replacePlaceholderInArray(styleObject[key], placeholder, pos === 0 ? style + sep : sep + style);
+                }
+            }
+
+            object = styleObject;
+        }
+
+        if (styles || states)
+        {
+            if (numParts === 3)
+                makeThreePartSlicesFromObject(object, width, height, centerWidthHeight, rightWidth, bottomHeight, isVertical);
+            else
+                makeNinePartSlicesFromObject(object, width, height, rightWidth, bottomHeight, centerIsNil);
+
+            makeImagesFromObject(object, isVertical, imageFactory);
+            return object;
+        }
+        else
+        {
+            if (numParts === 3)
+                makeThreePartSlicesFromArray(object, width, height, centerWidthHeight, rightWidth, bottomHeight, isVertical);
+            else
+                makeNinePartSlicesFromArray(object, width, height, rightWidth, bottomHeight, centerIsNil);
+
+            return imageFromSlices(object, isVertical, imageFactory);
+        }
+    }
+    else
+        throw("ERROR: No placeholders in slice pattern (\"" + pattern + "\")");
+};
+
+var replacePlaceholderInArray = function(array, find, replacement)
+{
+    for (var i = 0; i < array.length; ++i)
+        array[i] = array[i].replace(find, replacement);
+};
+
+var replacePlaceholderInObject = function(object, find, replacement)
+{
+    for (var key in object)
+        if (object.hasOwnProperty(key))
+            if (object[key].constructor === Array)
+                replacePlaceholderInArray(object[key], find, replacement);
+            else
+                replacePlaceholderInObject(object[key], find, replacement);
+};
+
+var cloneObject = function(object)
+{
+    var clone = {};
+
+    for (var key in object)
+        if (object.hasOwnProperty(key))
+            if (object[key].constructor === Array)
+                clone[key] = object[key].slice(0);
+            else if (typeof(object[key]) === "object")
+                clone[key] = cloneObject(object[key]);
+            else
+                clone[key] = object[key];
+
+    return clone;
+};
+
+var makeThreePartSlicesFromObject = function(object, width, height, centerWidthHeight, rightWidth, bottomHeight, isVertical)
+{
+    for (var key in object)
+        if (object.hasOwnProperty(key))
+            if (object[key].constructor === Array)
+                makeThreePartSlicesFromArray(object[key], width, height, centerWidthHeight, rightWidth, bottomHeight, isVertical);
+            else // object
+                makeThreePartSlicesFromObject(object[key], width, height, centerWidthHeight, rightWidth, bottomHeight, isVertical);
+};
+
+var makeThreePartSlicesFromArray = function(array, width, height, centerWidthHeight, rightWidth, bottomHeight, isVertical)
+{
+    array[0] = [array[0], width, height];
+
+    if (isVertical)
+    {
+        array[1] = [array[1], width, centerWidthHeight ? centerWidthHeight : 1.0];
+        array[2] = [array[2], width, bottomHeight ? bottomHeight : height];
+    }
+    else
+    {
+        array[1] = [array[1], centerWidthHeight ? centerWidthHeight : 1.0, height];
+        array[2] = [array[2], rightWidth ? rightWidth : width, height];
+    }
+};
+
+var makeNinePartSlicesFromObject = function(object, width, height, rightWidth, bottomHeight, centerIsNil)
+{
+    for (var key in object)
+        if (object.hasOwnProperty(key))
+            if (object[key].constructor === Array)
+                makeNinePartSlicesFromArray(object[key], width, height, rightWidth, bottomHeight, centerIsNil);
+            else // object
+                makeNinePartSlicesFromObject(object[key], width, height, rightWidth, bottomHeight, centerIsNil);
+};
+
+var makeNinePartSlicesFromArray = function(array, width, height, rightWidth, bottomHeight, centerIsNil)
+{
+    rightWidth = rightWidth ? rightWidth : width;
+    bottomHeight = bottomHeight ? bottomHeight : height;
+
+    array[0] = [array[0], width, height];                // top-left
+    array[1] = [array[1], 1.0, height];                  // top
+    array[2] = [array[2], rightWidth, height];           // top-right
+    array[3] = [array[3], width, 1.0];                   // left
+    array[4] = centerIsNil ? nil : [array[4], 1.0, 1.0]; // center
+    array[5] = [array[5], rightWidth, 1.0];              // right
+    array[6] = [array[6], width, bottomHeight];          // bottom-left
+    array[7] = [array[7], 1.0, bottomHeight];            // bottom
+    array[8] = [array[8], rightWidth, bottomHeight];     // bottom-right
+};
+
+var makeImagesFromObject = function(object, isVertical, imageFactory)
+{
+    for (var key in object)
+        if (object.hasOwnProperty(key))
+            if (object[key].constructor === Array)
+                object[key] = imageFromSlices(object[key], isVertical, imageFactory);
+            else // object
+                makeImagesFromObject(object[key], isVertical, imageFactory);
 };
 
 /// @endcond
