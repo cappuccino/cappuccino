@@ -258,6 +258,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
         };
 
         win.addEventListener("DOMMouseScroll", scrollEventHandler, false);
+        win.addEventListener("wheel", scrollEventHandler, false);
     }
 }
 
