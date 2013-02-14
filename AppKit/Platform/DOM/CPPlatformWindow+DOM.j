@@ -438,6 +438,7 @@ var resizeTimer = nil;
         theDocument.addEventListener("touchcancel", touchEventCallback, NO);
 
         _DOMWindow.addEventListener("DOMMouseScroll", scrollEventCallback, NO);
+        _DOMWindow.addEventListener("wheel", scrollEventCallback, NO);
         _DOMWindow.addEventListener("mousewheel", scrollEventCallback, NO);
 
         _DOMWindow.addEventListener("resize", resizeEventCallback, NO);
@@ -468,6 +469,7 @@ var resizeTimer = nil;
 
             //FIXME: does firefox really need a different value?
             _DOMWindow.removeEventListener("DOMMouseScroll", scrollEventCallback, NO);
+            _DOMWindow.removeEventListener("wheel", scrollEventCallback, NO);
             _DOMWindow.removeEventListener("mousewheel", scrollEventCallback, NO);
 
             //_DOMWindow.removeEventListener("beforeunload", this, NO);
@@ -1059,7 +1061,7 @@ var resizeTimer = nil;
     {
         // Find the scroll delta
         var deltaX = _DOMScrollingElement.scrollLeft - 150,
-            deltaY = _DOMScrollingElement.scrollTop - 150;
+            deltaY = (_DOMScrollingElement.scrollTop - 150) || (aDOMEvent.deltaY===undefined?0: aDOMEvent.deltaY);
 
         // If we scroll super with momentum,
         // there are so many events going off that
