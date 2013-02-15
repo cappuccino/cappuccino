@@ -900,6 +900,7 @@ var resizeTimer = nil;
             timestamp = [CPEvent currentTimestamp],  // fake event, might as well use current timestamp
             windowNumber = [[CPApp keyWindow] windowNumber],
             modifierFlags = CPPlatformActionKeyMask,
+            location = _lastMouseEventLocation || _CGPointMakeZero(),
             event = [CPEvent keyEventWithType:CPKeyDown location:location modifierFlags:modifierFlags
                     timestamp:timestamp windowNumber:windowNumber context:nil
                     characters:characters charactersIgnoringModifiers:characters isARepeat:NO keyCode:keyCode];
@@ -1001,6 +1002,7 @@ var resizeTimer = nil;
         aDOMEvent = window.event;
 
     var location = nil;
+
     if (CPFeatureIsCompatible(CPJavaScriptMouseWheelValues_8_15))
     {
         var x = aDOMEvent._offsetX || 0.0,
