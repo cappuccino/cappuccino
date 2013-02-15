@@ -45,12 +45,12 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     CPColor _color;
 }
 
-+ (Class)_binderClassForBinding:(CPString)theBinding
++ (Class)_binderClassForBinding:(CPString)aBinding
 {
-    if (theBinding == CPValueBinding)
+    if (aBinding == CPValueBinding)
         return [CPColorWellValueBinder class];
 
-    return [super _binderClassForBinding:theBinding];
+    return [super _binderClassForBinding:aBinding];
 }
 
 + (CPString)defaultThemeClass
@@ -315,7 +315,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 
 - (void)_updatePlaceholdersWithOptions:(CPDictionary)options
 {
-    var placeholderColor = [CPColor blueColor];
+    var placeholderColor = [CPColor blackColor];
 
     [self _setPlaceholder:placeholderColor forMarker:CPMultipleValuesMarker isDefault:YES];
     [self _setPlaceholder:placeholderColor forMarker:CPNoSelectionMarker isDefault:YES];

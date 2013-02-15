@@ -129,6 +129,18 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     CPControlSize           _controlSize;
 }
 
++ (Class)_binderClassForBinding:(CPString)aBinding
+{
+    if (aBinding === CPValueBinding)
+        return [_CPTextFieldValueBinder class];
+    else if ([aBinding hasPrefix:CPDisplayPatternValueBinding])
+        return [_CPTextFieldPatternValueBinder class];
+    else if ([aBinding hasPrefix:CPEditableBinding])
+        return [CPMultipleValueAndBinding class];
+
+    return [super _binderClassForBinding:aBinding];
+}
+
 + (CPTextField)textFieldWithStringValue:(CPString)aStringValue placeholder:(CPString)aPlaceholder width:(float)aWidth
 {
     return [self textFieldWithStringValue:aStringValue placeholder:aPlaceholder width:aWidth theme:[CPTheme defaultTheme]];
@@ -190,14 +202,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 + (CPString)defaultThemeClass
 {
     return "textfield";
-}
-
-+ (Class)_binderClassForBinding:(CPString)theBinding
-{
-    if (theBinding === CPValueBinding)
-        return [_CPTextFieldValueBinder class];
-
-    return [super _binderClassForBinding:theBinding];
 }
 
 + (id)themeAttributes
@@ -1626,17 +1630,20 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 @end
 
 @implementation _CPTextFieldValueBinder : CPBinder
+
++ (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinder:(CPBinder)aBinder
 {
+    objj_msgSendSuper([aBinder class], "_updatePlaceholdersWithOptions:", options);
+
+    [aBinder _setPlaceholder:@"Multiple Values" forMarker:CPMultipleValuesMarker isDefault:YES];
+    [aBinder _setPlaceholder:@"No Selection" forMarker:CPNoSelectionMarker isDefault:YES];
+    [aBinder _setPlaceholder:@"Not Applicable" forMarker:CPNotApplicableMarker isDefault:YES];
+    [aBinder _setPlaceholder:@"" forMarker:CPNullMarker isDefault:YES];
 }
 
-- (void)_updatePlaceholdersWithOptions:(CPDictionary)options
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinder:(CPBinder)aBinder
 {
-    [super _updatePlaceholdersWithOptions:options];
-
-    [self _setPlaceholder:@"Multiple Values" forMarker:CPMultipleValuesMarker isDefault:YES];
-    [self _setPlaceholder:@"No Selection" forMarker:CPNoSelectionMarker isDefault:YES];
-    [self _setPlaceholder:@"Not Applicable" forMarker:CPNotApplicableMarker isDefault:YES];
-    [self _setPlaceholder:@"" forMarker:CPNullMarker isDefault:YES];
+    [[self class] _updatePlaceholdersWithOptions:options forBinder:self];
 }
 
 - (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
@@ -1652,3 +1659,22 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 @end
 
+@implementation _CPTextFieldPatternValueBinder : CPValueWithPatternBinding
+
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinder:(CPBinder)aBinder
+{
+    [_CPTextFieldValueBinder _updatePlaceholdersWithOptions:options forBinder:self];
+}
+
+- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
+{
+    [_source setPlaceholderString:aValue];
+    [_source setObjectValue:nil];
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    [_source setObjectValue:aValue];
+}
+
+@end

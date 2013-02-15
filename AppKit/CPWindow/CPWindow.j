@@ -216,6 +216,14 @@ var CPWindowActionMessageKeys = [
     _CPWindowFrameAnimation             _frameAnimation;
 }
 
++ (Class)_binderClassForBinding:(CPString)aBinding
+{
+    if ([aBinding hasPrefix:CPDisplayPatternTitleBinding])
+        return [CPTitleWithPatternBinding class];
+
+    return [super _binderClassForBinding:aBinding];
+}
+
 - (id)init
 {
     return [self initWithContentRect:_CGRectMakeZero() styleMask:CPTitledWindowMask];
@@ -3103,6 +3111,14 @@ CPTexturedBackgroundWindowMask
 - (void)disableKeyEquivalentForDefaultButtonCell
 {
     [self disableKeyEquivalentForDefaultButton];
+}
+
+- (void)setValue:(id)aValue forKey:(CPString)aKey
+{
+    if (aKey === CPDisplayPatternTitleBinding)
+        [self setTitle:aValue || @""];
+    else
+        [super setValue:aValue forKey:aKey];
 }
 
 @end

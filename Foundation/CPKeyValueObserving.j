@@ -788,7 +788,11 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
     if (aPath.indexOf('.') != CPNotFound)
     {
-        var forwarder = [observers objectForKey:[anObserver UID]].forwarder;
+        // During cib instantiation, it is possible for the forwarder to not yet be available,
+        // so we have to check for nil.
+        var observer = [observers objectForKey:[anObserver UID]],
+            forwarder = observer ? observer.forwarder : nil;
+
         [forwarder finalize];
     }
 

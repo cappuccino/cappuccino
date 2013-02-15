@@ -227,6 +227,14 @@ var CPViewFlags                     = { },
     CachedNotificationCenter = [CPNotificationCenter defaultCenter];
 }
 
++ (Class)_binderClassForBinding:(CPString)aBinding
+{
+    if ([aBinding hasPrefix:CPHiddenBinding])
+        return [CPMultipleValueOrBinding class];
+
+    return [super _binderClassForBinding:aBinding];
+}
+
 - (void)_setupViewFlags
 {
     var theClass = [self class],

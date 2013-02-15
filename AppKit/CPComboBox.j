@@ -63,12 +63,12 @@ var CPComboBoxTextSubview = @"text",
     return [CPDictionary dictionaryWithObjectsAndKeys:_CGSizeMake(21.0, 29.0), @"popup-button-size", _CGInsetMake(3.0, 3.0, 3.0, 3.0), @"border-inset"];
 }
 
-+ (Class)_binderClassForBinding:(CPString)theBinding
++ (Class)_binderClassForBinding:(CPString)aBinding
 {
-    if (theBinding === CPContentBinding || theBinding === CPContentValuesBinding)
+    if (aBinding === CPContentBinding || aBinding === CPContentValuesBinding)
         return [_CPComboBoxContentBinder class];
 
-    return [super _binderClassForBinding:theBinding];
+    return [super _binderClassForBinding:aBinding];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -1111,7 +1111,7 @@ var CPComboBoxCompletionTest = function(object, index, context)
 */
 @implementation _CPComboBoxContentBinder : CPBinder
 
-- (void)setValueFor:(CPString)theBinding
+- (void)setValueFor:(CPString)aBinding
 {
     var destination = [_info objectForKey:CPObservedObjectKey],
         keyPath = [_info objectForKey:CPObservedKeyPathKey],
@@ -1153,7 +1153,7 @@ var CPComboBoxCompletionTest = function(object, index, context)
     else
         newValue = [self transformValue:newValue withOptions:options];
 
-    switch (theBinding)
+    switch (aBinding)
     {
         case CPContentBinding:
             [_source setContent:newValue];

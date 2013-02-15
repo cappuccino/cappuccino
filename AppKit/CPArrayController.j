@@ -1080,12 +1080,12 @@
 
 @implementation CPArrayController (CPBinder)
 
-+ (Class)_binderClassForBinding:(CPString)theBinding
++ (Class)_binderClassForBinding:(CPString)aBinding
 {
-    if (theBinding == @"contentArray")
+    if (aBinding == @"contentArray")
         return [_CPArrayControllerContentBinder class];
 
-    return [super _binderClassForBinding:theBinding];
+    return [super _binderClassForBinding:aBinding];
 }
 
 @end
