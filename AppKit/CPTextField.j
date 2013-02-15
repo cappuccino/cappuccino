@@ -1631,19 +1631,22 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 @implementation _CPTextFieldValueBinder : CPBinder
 
-+ (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinder:(CPBinder)aBinder
++ (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPBinder)aBinding
 {
-    objj_msgSendSuper([aBinder class], "_updatePlaceholdersWithOptions:", options);
+    var selector = "_updatePlaceholdersWithOptions:",
+        implementation = class_getMethodImplementation([aBinding superclass], selector);
 
-    [aBinder _setPlaceholder:@"Multiple Values" forMarker:CPMultipleValuesMarker isDefault:YES];
-    [aBinder _setPlaceholder:@"No Selection" forMarker:CPNoSelectionMarker isDefault:YES];
-    [aBinder _setPlaceholder:@"Not Applicable" forMarker:CPNotApplicableMarker isDefault:YES];
-    [aBinder _setPlaceholder:@"" forMarker:CPNullMarker isDefault:YES];
+    implementation.apply(aBinding, [aBinding, selector, options]);
+
+    [aBinding _setPlaceholder:@"Multiple Values" forMarker:CPMultipleValuesMarker isDefault:YES];
+    [aBinding _setPlaceholder:@"No Selection" forMarker:CPNoSelectionMarker isDefault:YES];
+    [aBinding _setPlaceholder:@"Not Applicable" forMarker:CPNotApplicableMarker isDefault:YES];
+    [aBinding _setPlaceholder:@"" forMarker:CPNullMarker isDefault:YES];
 }
 
-- (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinder:(CPBinder)aBinder
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPBinder)aBinding
 {
-    [[self class] _updatePlaceholdersWithOptions:options forBinder:self];
+    [[self class] _updatePlaceholdersWithOptions:options forBinding:self];
 }
 
 - (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
@@ -1661,9 +1664,9 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 @implementation _CPTextFieldPatternValueBinder : CPValueWithPatternBinding
 
-- (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinder:(CPBinder)aBinder
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPBinder)aBinding
 {
-    [_CPTextFieldValueBinder _updatePlaceholdersWithOptions:options forBinder:self];
+    [_CPTextFieldValueBinder _updatePlaceholdersWithOptions:options forBinding:self];
 }
 
 - (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
