@@ -44,12 +44,12 @@ CPCheckBoxImageOffset = 4.0;
     return @"check-box";
 }
 
-+ (Class)_binderClassForBinding:(CPString)theBinding
++ (Class)_binderClassForBinding:(CPString)aBinding
 {
-    if (theBinding === CPValueBinding)
+    if (aBinding === CPValueBinding)
         return [_CPCheckBoxValueBinder class];
 
-    return [super _binderClassForBinding:theBinding];
+    return [super _binderClassForBinding:aBinding];
 }
 
 - (id)initWithFrame:(CGRect)aFrame

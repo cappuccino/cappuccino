@@ -1174,6 +1174,32 @@ var themedButtonValues = nil,
     return token;
 }
 
++ (_CPTokenFieldTokenDisclosureButton)themedTokenFieldDisclosureButton
+{
+    var button = [[_CPTokenFieldTokenDisclosureButton alloc] initWithFrame:CGRectMake(0, 0, 9, 9)],
+
+        arrowImage = PatternColor("token-disclosure.png", 7.0, 6.0),
+        arrowImageHiglighted = PatternColor("token-disclosure-highlighted.png", 7.0, 6.0),
+
+        themeValues =
+        [
+            [@"content-inset",  CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateNormal],
+
+            [@"bezel-color",    nil,                                CPThemeStateBordered],
+            [@"bezel-color",    arrowImage,                         CPThemeStateBordered | CPThemeStateHovered],
+            [@"bezel-color",    arrowImageHiglighted,               CPThemeStateBordered | CPThemeStateHovered | CPThemeStateHighlighted],
+
+            [@"min-size",       CGSizeMake(7.0, 6.0)],
+            [@"max-size",       CGSizeMake(7.0, 6.0)],
+
+            [@"offset",         CGPointMake(17, 7)]
+        ];
+
+    [self registerThemeValues:themeValues forView:button];
+
+    return button;
+}
+
 + (_CPTokenFieldTokenCloseButton)themedTokenFieldTokenCloseButton
 {
     var button = [[_CPTokenFieldTokenCloseButton alloc] initWithFrame:CGRectMake(0, 0, 9, 9)],
@@ -2414,6 +2440,14 @@ var themedButtonValues = nil,
             [@"window-standard-bottom-right.png", 2.0, 2.0]
         ]),
 
+        dividerColor = PatternColor(
+            "window-standard-divider{position}.png",
+            {
+                width: 1.0,
+                height: 1.0,
+                orientation: PatternIsHorizontal
+            }),
+
         closeButtonImage =                  PatternImage(@"window-standard-close-button.png", 16, 16),
         closeButtonImageHighlighted =       PatternImage(@"window-standard-button-highlighted.png",16, 16),
         unsavedButtonImage =                PatternImage(@"window-standard-button-unsaved.png",16, 16),
@@ -2441,7 +2475,7 @@ var themedButtonValues = nil,
             [@"title-vertical-alignment",   CPCenterVerticalTextAlignment],
             [@"title-bar-height",           31],
 
-            [@"divider-color",              [CPColor colorWithHexString:@"979797"]],
+            [@"divider-color",              dividerColor],
             [@"body-color",                 bezelColor],
             [@"title-bar-height",           31],
 

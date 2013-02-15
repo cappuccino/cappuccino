@@ -60,11 +60,11 @@ CPMomentaryPushInButton = 7;
 CPMomentaryPushButton   = 0;
 CPMomentaryLight        = 7;
 
-CPNoButtonMask              = 0;
-CPContentsButtonMask        = 1;
-CPPushInButtonMask          = 2;
-CPGrayButtonMask            = 4;
-CPBackgroundButtonMask      = 8;
+CPNoButtonMask          = 0;
+CPContentsButtonMask    = 1;
+CPPushInButtonMask      = 2;
+CPGrayButtonMask        = 4;
+CPBackgroundButtonMask  = 8;
 
 CPNoCellMask                = CPNoButtonMask;
 CPContentsCellMask          = CPContentsButtonMask;
@@ -72,16 +72,18 @@ CPPushInCellMask            = CPPushInButtonMask;
 CPChangeGrayCellMask        = CPGrayButtonMask;
 CPChangeBackgroundCellMask  = CPBackgroundButtonMask;
 
-CPButtonStateMixed                  = CPThemeState("mixed");
-CPButtonStateBezelStyleRounded      = CPThemeState("rounded");
+CPButtonStateMixed             = CPThemeState("mixed");
+CPButtonStateBezelStyleRounded = CPThemeState("rounded");
 
 // add all future correspondance between bezel styles and theme state here.
-var CPButtonBezelStyleStateMap = [CPDictionary dictionaryWithObjects:[CPButtonStateBezelStyleRounded, nil]
-                                                             forKeys:[CPRoundedBezelStyle, CPRoundRectBezelStyle]];
+var CPButtonBezelStyleStateMap = [CPDictionary dictionaryWithObjectsAndKeys:
+                                    CPButtonStateBezelStyleRounded, CPRoundedBezelStyle,
+                                    [CPNull null], CPRoundRectBezelStyle];
 
-
+/// @cond IGNORE
 CPButtonDefaultHeight = 25.0;
 CPButtonImageOffset   = 3.0;
+/// @endcond
 
 /*!
     @ingroup appkit
@@ -115,6 +117,14 @@ CPButtonImageOffset   = 3.0;
     float               _periodicInterval;
 
     BOOL                _isTracking;
+}
+
++ (Class)_binderClassForBinding:(CPString)aBinding
+{
+    if (aBinding === CPTargetBinding || [aBinding hasPrefix:CPArgumentBinding])
+        return [CPArgumentTargetBinding class];
+
+    return [super _binderClassForBinding:aBinding];
 }
 
 + (id)buttonWithTitle:(CPString)aTitle
@@ -991,6 +1001,3 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
 }
 
 @end
-
-//@import "CPCheckBox.j"
-//@import "CPRadio.j"

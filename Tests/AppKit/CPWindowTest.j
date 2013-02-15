@@ -1,6 +1,7 @@
 
 @import <AppKit/CPWindow.j>
 @import <AppKit/_CPBorderlessWindowView.j>
+@import <Foundation/CPURL.j>
 
 [CPApplication sharedApplication];
 
@@ -107,6 +108,24 @@
     [self assert:nextTextField
           equals:[contentView previousValidKeyView]
          message:@"nextTextField should be the previous valid key view of contentView"];
+}
+
+- (void)testRepresentedFilename
+{
+    /*
+        representedURL and representedFilename
+        are drawn from the _representedURL variable.
+    */
+    var aURL = @"http://www.cappuccino-project.org";
+
+    [[self window] setRepresentedURL:[CPURL URLWithString:aURL]];
+    [self assertTrue:[[[self window] representedURL] class] === [CPURL class]];
+    /*
+        Test for Issue 1633
+        Make sure that changing it via setRepresentedFilename doesn't change the type
+    */
+    [[self window] setRepresentedFilename:aURL];
+    [self assertTrue:[[[self window] representedURL] class] === [CPURL class]];
 }
 
 @end

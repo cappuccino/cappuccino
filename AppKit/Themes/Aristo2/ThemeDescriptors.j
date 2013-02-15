@@ -269,7 +269,7 @@ var themedButtonValues = nil,
 {
     var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 25.0) pullsDown:YES],
         color = PatternColor(
-            "popup-bezel{state}{position}.png",
+            "pulldown-bezel{state}{position}.png",
             {
                 states: ["", "disabled"],
                 width: 3.0,
@@ -709,7 +709,7 @@ var themedButtonValues = nil,
             [@"text-color",     textDisabledColor,                  CPThemeStateDisabled],
 
             [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled],
-            [@"content-inset",  CGInsetMake(1.0, 24.0, 2.0, 16.0),  CPThemeStateBezeled],
+            [@"content-inset",  CGInsetMake(1.0, 20.0, 2.0, 20.0),  CPThemeStateBezeled],
 
             // Minimum height == maximum height since tokens are fixed height.
             [@"min-size",       CGSizeMake(0.0, 19.0)],
@@ -723,6 +723,32 @@ var themedButtonValues = nil,
     return token;
 }
 
++ (_CPTokenFieldTokenDisclosureButton)themedTokenFieldDisclosureButton
+{
+    var button = [[_CPTokenFieldTokenDisclosureButton alloc] initWithFrame:CGRectMake(0, 0, 9, 9)],
+
+        arrowImage = PatternColor("token-disclosure.png", 7.0, 6.0),
+        arrowImageHiglighted = PatternColor("token-disclosure-highlighted.png", 7.0, 6.0),
+
+        themeValues =
+        [
+            [@"content-inset",  CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateNormal],
+
+            [@"bezel-color",    nil,                                CPThemeStateBordered],
+            [@"bezel-color",    arrowImage,                         CPThemeStateBordered | CPThemeStateHovered],
+            [@"bezel-color",    arrowImageHiglighted,               CPThemeStateBordered | CPThemeStateHovered | CPThemeStateHighlighted],
+
+            [@"min-size",       CGSizeMake(7.0, 6.0)],
+            [@"max-size",       CGSizeMake(7.0, 6.0)],
+
+            [@"offset",         CGPointMake(16, 7)]
+        ];
+
+    [self registerThemeValues:themeValues forView:button];
+
+    return button;
+}
+
 + (_CPTokenFieldTokenCloseButton)themedTokenFieldTokenCloseButton
 {
     var button = [[_CPTokenFieldTokenCloseButton alloc] initWithFrame:CGRectMake(0, 0, 9, 9)],
@@ -732,16 +758,17 @@ var themedButtonValues = nil,
 
         themeValues =
         [
-            [@"bezel-color",    bezelColor,                         CPThemeStateBordered],
-            [@"bezel-color",    bezelHighlightedColor,              CPThemeStateBordered | CPThemeStateHighlighted],
+            [@"bezel-color",    bezelColor,                             CPThemeStateBordered | CPThemeStateHovered],
+            [@"bezel-color",    [bezelColor colorWithAlphaComponent:0], CPThemeStateBordered | CPThemeStateDisabled],
+            [@"bezel-color",    bezelHighlightedColor,                  CPThemeStateBordered | CPThemeStateHighlighted],
 
             [@"min-size",       CGSizeMake(8.0, 8.0)],
             [@"max-size",       CGSizeMake(8.0, 8.0)],
 
-            [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBordered],
-            [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBordered | CPThemeStateHighlighted],
+            [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),        CPThemeStateBordered],
+            [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),        CPThemeStateBordered | CPThemeStateHighlighted],
 
-            [@"offset",         CGPointMake(17, 6),                 CPThemeStateBordered]
+            [@"offset",         CGPointMake(16, 6),                     CPThemeStateBordered]
         ];
 
     [self registerThemeValues:themeValues forView:button];
@@ -1523,14 +1550,14 @@ var themedButtonValues = nil,
 
 + (CPProgressIndicator)themedBarProgressIndicator
 {
-    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0,0,75,25)];
+    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 75, 20)];
     [progressBar setDoubleValue:30];
 
     var bezelColor = PatternColor(
             "progress-indicator-bezel-border{position}.png",
             {
                 width: 1.0,
-                height: 25.0,
+                height: 20.0,
                 orientation: PatternIsHorizontal
             }),
 
@@ -1538,14 +1565,15 @@ var themedButtonValues = nil,
             "progress-indicator-bar{position}.png",
             {
                 width: 1.0,
-                height: 25.0,
+                height: 20.0,
                 orientation: PatternIsHorizontal
             });
 
     themedProgressIndicator =
     [
         [@"bezel-color", bezelColor],
-        [@"bar-color", barColor]
+        [@"bar-color", barColor],
+        [@"default-height", 20]
     ];
 
     [self registerThemeValues:themedProgressIndicator forView:progressBar];
@@ -1555,7 +1583,7 @@ var themedButtonValues = nil,
 
 + (CPProgressIndicator)themedIndeterminateBarProgressIndicator
 {
-    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0,0,75,25)];
+    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 75, 20)];
 
     [progressBar setIndeterminate:YES];
 
@@ -1563,7 +1591,7 @@ var themedButtonValues = nil,
             "progress-indicator-bezel-border{position}.png",
             {
                 width: 1.0,
-                height: 25.0,
+                height: 20.0,
                 orientation: PatternIsHorizontal
             }),
 
@@ -1571,7 +1599,7 @@ var themedButtonValues = nil,
             "progress-indicator-indeterminate-bar{position}.png",
             {
                 width: 1.0,
-                height: 25.0,
+                height: 20.0,
                 centerWidth: 20.0,
                 orientation: PatternIsHorizontal
             });
@@ -1579,7 +1607,8 @@ var themedButtonValues = nil,
     themedIndeterminateProgressIndicator =
     [
         [@"bezel-color", bezelColor],
-        [@"indeterminate-bar-color", barColor]
+        [@"indeterminate-bar-color", barColor],
+        [@"default-height", 20]
     ];
 
     [self registerThemeValues:themedIndeterminateProgressIndicator forView:progressBar];
@@ -1589,7 +1618,7 @@ var themedButtonValues = nil,
 
 + (CPProgressIndicator)themedSpinningProgressIndicator
 {
-    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0,0,64,64)];
+    var progressBar = [[CPProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, 64, 64)];
     [progressBar setStyle:CPProgressIndicatorSpinningStyle];
 
     var spinningMini = PatternColor(@"progress-indicator-spinning-style-mini.gif", 16.0, 16.0),
@@ -1610,7 +1639,7 @@ var themedButtonValues = nil,
 
 + (CPBox)themedBox
 {
-    var box = [[CPBox alloc] initWithFrame:CGRectMake(0,0,100,100)],
+    var box = [[CPBox alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
 
         themeValues =
         [
@@ -1631,7 +1660,7 @@ var themedButtonValues = nil,
 
 + (CPLevelIndicator)themedLevelIndicator
 {
-    var levelIndicator = [[CPLevelIndicator alloc] initWithFrame:CGRectMake(0,0,100,100)],
+    var levelIndicator = [[CPLevelIndicator alloc] initWithFrame:CGRectMake(0, 0, 100, 100)],
 
         bezelColor = PatternColor(
             "level-indicator-bezel{position}.png",
@@ -1842,7 +1871,16 @@ var themedButtonValues = nil,
             {
                 positions: "full",
                 width: 5.0,
-                height: 1.0
+                height: 1.0,
+                bottomHeight:5.0
+            }),
+
+        dividerColor = PatternColor(
+            "window-standard-divider{position}.png",
+            {
+                width: 1.0,
+                height: 1.0,
+                orientation: PatternIsHorizontal
             }),
 
         closeButtonImage =                  PatternImage(@"window-standard-close-button.png", 16, 16),
@@ -1877,7 +1915,7 @@ var themedButtonValues = nil,
             [@"title-vertical-alignment",   CPCenterVerticalTextAlignment],
             [@"title-bar-height",           31],
 
-            [@"divider-color",              [CPColor colorWithHexString:@"858585"]],
+            [@"divider-color",              dividerColor],
             [@"body-color",                 bezelColor],
             [@"title-bar-height",           31],
 

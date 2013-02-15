@@ -212,6 +212,57 @@ var ELEMENTS = 100,
     }
 }
 
+- (void)testObjectsAtIndexesSpeed
+{
+    REPEATS = 100;
+
+    var SIZE = 1000,
+        c = SIZE,
+        r = REPEATS,
+        rr = r,
+        location = 0,
+        array = [CPArray array],
+        indexes = [CPIndexSet indexSet];
+
+    while (c--)
+        array.push(""+c);
+
+    while (location < SIZE - 10)
+    {
+        var rangeLength = ROUND(10 * RAND());
+        [indexes addIndexesInRange:CPMakeRange(location, rangeLength)];
+
+        location += rangeLength + ROUND(10 * RAND());
+    }
+
+    var d = new Date(),
+        test1,
+        test2;
+    while (r--)
+        test1 = [array _previous_objectsAtIndexes:indexes];
+    var dd = new Date();
+
+    while (rr--)
+        test2 = [array objectsAtIndexes:indexes];
+    var ddd = new Date();
+
+    CPLog.warn("\n_CPJavaScriptArray -objectsAtIndexes:");
+    CPLog.warn("           CPArray -objectsAtIndexes: " + (dd - d) + "ms.");
+    CPLog.warn("_CPJavaScriptArray -objectsAtIndexes: " + (ddd - dd) + "ms.");
+
+    if (![test1 isEqual:test2])
+        [self fail:"_CPJavaScriptArray -objectsAtIndexes: returns an wrong value"];
+}
+
+@end
+
+@implementation _CPJavaScriptArray (ObjectsAtIndexes)
+
+- (CPArray)_previous_objectsAtIndexes:(CPIndexSet)indexes
+{
+    return [super objectsAtIndexes:indexes];
+}
+
 @end
 
 @implementation CPArray (NativeSort)

@@ -65,6 +65,7 @@ CPDateFormatterFullStyle   = 4;
         case CPDateFormatterShortStyle:
             var format = "d/m/Y";
             return aDate.dateFormat(format);
+
         default:
             return [aDate description];
     }
@@ -74,11 +75,13 @@ CPDateFormatterFullStyle   = 4;
 {
     if (!aString)
         return nil;
+
     switch (_dateStyle)
     {
         case CPDateFormatterShortStyle:
             var format = "d/m/Y";
             return Date.parseDate(aString, format);
+
         default:
             return Date.parseDate(aString);
     }

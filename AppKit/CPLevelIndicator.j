@@ -72,8 +72,6 @@ CPRatingLevelIndicatorStyle                 = 3;
                                                       1.0,           @"spacing"];
 }
 
-
-
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
@@ -84,15 +82,9 @@ CPRatingLevelIndicatorStyle                 = 3;
         _maxValue = 2;
         _warningValue = 2;
         _criticalValue = 2;
-
-        [self _init];
     }
 
     return self;
-}
-
-- (void)_init
-{
 }
 
 - (void)layoutSubviews
@@ -347,8 +339,6 @@ var CPLevelIndicatorStyleKey                    = "CPLevelIndicatorStyleKey",
         _numberOfMajorTickMarks = [aCoder decodeIntForKey:CPLevelIndicatorNumberOfMajorTickMarksKey];
 
         _isEditable = [aCoder decodeBoolForKey:CPLevelIndicatorIsEditableKey];
-
-        [self _init];
 
         [self setNeedsLayout];
         [self setNeedsDisplay:YES];

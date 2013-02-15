@@ -4,6 +4,8 @@
 <dict>
 	<key>CPApplicationDelegateClass</key>
 	<string>AppController</string>
+    <key>CPDefaultTheme</key>
+    <string>Aristo2</string>
 	<key>CPBundleName</key>
 	<string>CPTokenFieldTest</string>
 	<key>CPPrincipalClass</key>

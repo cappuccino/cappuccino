@@ -22,14 +22,24 @@
 
 @import <Foundation/CPNumberFormatter.j>
 
-@implementation CPNumberFormatter (CPCoding)
+@implementation CPNumberFormatter (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    self = [super init];
+    // We use [self init] so we can a default-constructed CPNumberFormatter
+    self = [self init];
 
     if (self)
     {
+        var attributes = [aCoder decodeObjectForKey:@"NS.attributes"];
+
+        [self setNumberStyle:[attributes valueForKey:@"numberStyle"] || CPNumberFormatterNoStyle];
+
+        // if ([attributes containsKey:@"minimum"])
+        //     [self setMinimum:[attributes valueForKey:@"minimum"]];
+
+        // if ([attributes containsKey:@"maximum"])
+        //     [self setMaximum:[attributes valueForKey:@"maximum"]];
     }
 
     return self;

@@ -33,8 +33,8 @@ CPUndefinedKeyException     = @"CPUndefinedKeyException";
 CPTargetObjectUserInfoKey   = @"CPTargetObjectUserInfoKey";
 CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
 
-var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
-    CPObjectModifiersForClassKey            = @"$CPObjectModifiersForClassKey";
+var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
+    CPObjectModifiersForClassKey = @"$CPObjectModifiersForClassKey";
 
 @implementation CPObject (CPKeyValueCoding)
 
@@ -107,13 +107,20 @@ var CPObjectAccessorsForClassKey            = @"$CPObjectAccessorsForClassKey",
 
     switch (accessor[0])
     {
-        case 0:     return objj_msgSend(self, accessor[1]);
-                    // FIXME: We shouldn't be creating a new one every time.
-        case 1:     return [[_CPKeyValueCodingArray alloc] initWithTarget:self key:aKey];
-                    // FIXME: We shouldn't be creating a new one every time.
-        case 2:     return [[_CPKeyValueCodingSet alloc] initWithTarget:self key:aKey];
-        case 3:     if ([theClass accessInstanceVariablesDirectly])
-                        return self[accessor[1]];
+        case 0:
+            return objj_msgSend(self, accessor[1]);
+
+        case 1:
+            // FIXME: We shouldn't be creating a new one every time.
+            return [[_CPKeyValueCodingArray alloc] initWithTarget:self key:aKey];
+
+        case 2:
+            // FIXME: We shouldn't be creating a new one every time.
+            return [[_CPKeyValueCodingSet alloc] initWithTarget:self key:aKey];
+
+        case 3:
+            if ([theClass accessInstanceVariablesDirectly])
+                return self[accessor[1]];
     }
 
     return [self valueForUndefinedKey:aKey];

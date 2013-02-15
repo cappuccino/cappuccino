@@ -1,4 +1,8 @@
 @import <Foundation/CPObject.j>
+@import <AppKit/CPWindow.j>
+@import <AppKit/CPView.j>
+@import <AppKit/CPTextField.j>
+@import <AppKit/CPCursor.j>
 
 @implementation CursorTester : CPView
 { 
@@ -37,6 +41,8 @@
 }
 @end
 
+
+
 @implementation AppController : CPObject
 {
 }
@@ -46,61 +52,64 @@
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask];
     [theWindow setAcceptsMouseMovedEvents:YES];
     var contentView = [theWindow contentView],
+    	x = 20,
+    	y = 20,
+    	yInc = 25,
         imageCursorTester = [[CursorTester alloc] initWithText:@"Image cursor"
-                                                        origin:CGPointMake(0, 0)
-                                                        cursor:[[CPCursor alloc] initWithImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPCursor class]] resourcePath] + @"/CPCursor/openHandCursor.cur"] 
+                                                        origin:CGPointMake(x, y)
+                                                        cursor:[[CPCursor alloc] initWithImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle mainBundle] resourcePath] + @"spinner.gif"] 
                                                                                        hotSpot:CGPointMakeZero()]],
         arrowCursorTester = [[CursorTester alloc] initWithText:@"Arrow cursor"
-                                                        origin:CGPointMake(0, 20)
+                                                        origin:CGPointMake(x, y+=yInc)
                                                         cursor:[CPCursor arrowCursor]],
         crosshairCursorTester = [[CursorTester alloc] initWithText:@"Crosshair cursor"
-                                                            origin:CGPointMake(0, 40)
-                                                            cursor:[CPCursor crosshairCursor]]
+                                                        origin:CGPointMake(x, y+=yInc)
+                                                        cursor:[CPCursor crosshairCursor]],
         IBeamCursorTester = [[CursorTester alloc] initWithText:@"IBeam cursor"
-                                                        origin:CGPointMake(0, 60)
+                                                        origin:CGPointMake(x, y+=yInc)
                                                         cursor:[CPCursor IBeamCursor]],
         pointingHandCursorTester = [[CursorTester alloc] initWithText:@"Pointing hand cursor"
-                                                               origin:CGPointMake(0, 80)
-                                                               cursor:[CPCursor pointingHandCursor]],
+                                                        origin:CGPointMake(x, y+=yInc)
+                                                        cursor:[CPCursor pointingHandCursor]],
         resizeDownCursorTester = [[CursorTester alloc] initWithText:@"Resize down cursor"
-                                                             origin:CGPointMake(0, 100)
-                                                             cursor:[CPCursor resizeDownCursor]],
+                                                        origin:CGPointMake(x, y+=yInc)
+														cursor:[CPCursor resizeDownCursor]],
         resizeUpCursorTester = [[CursorTester alloc] initWithText:@"Resize up cursor"
-                                                           origin:CGPointMake(0, 120)
+                                                        origin:CGPointMake(x, y+=yInc)
                                                         cursor:[CPCursor resizeUpCursor]],
         resizeLeftCursorTester = [[CursorTester alloc] initWithText:@"Resize left cursor"
-                                                             origin:CGPointMake(0, 140)
-                                                             cursor:[CPCursor resizeLeftCursor]],
+                                                        origin:CGPointMake(x, y+=yInc)
+                                                        cursor:[CPCursor resizeLeftCursor]],
         resizeRightCursorTester = [[CursorTester alloc] initWithText:@"Resize right cursor"
-                                                              origin:CGPointMake(0, 160)
-                                                              cursor:[CPCursor resizeRightCursor]],
+                                                        origin:CGPointMake(x, y+=yInc)
+                                                        cursor:[CPCursor resizeRightCursor]],
         resizeLeftRightCursorTester = [[CursorTester alloc] initWithText:@"Resize left-right cursor"
-                                                                  origin:CGPointMake(0, 180)
-                                                                  cursor:[CPCursor resizeLeftRightCursor]],
+                                                        origin:CGPointMake(x, y+=yInc)
+                                                        cursor:[CPCursor resizeLeftRightCursor]],
         resizeUpDownCursorTester = [[CursorTester alloc] initWithText:@"Resize up-down cursor"
-                                                               origin:CGPointMake(0, 200)
-                                                               cursor:[CPCursor resizeUpDownCursor]],
+                                                        origin:CGPointMake(x, y+=yInc)
+                                                        cursor:[CPCursor resizeUpDownCursor]],
         operationNotAllowedCursorTester = [[CursorTester alloc] initWithText:@"Operation not allowed cursor"
-                                                                      origin:CGPointMake(0, 220)
-                                                                      cursor:[CPCursor operationNotAllowedCursor]],
+                                                        origin:CGPointMake(x, y+=yInc)
+                                                        cursor:[CPCursor operationNotAllowedCursor]],
         dragCopyCursorTester = [[CursorTester alloc] initWithText:@"Drag copy cursor"
-                                                           origin:CGPointMake(0, 240)
-                                                           cursor:[CPCursor dragCopyCursor]],
+                                                        origin:CGPointMake(x, y+=yInc)
+                                                        cursor:[CPCursor dragCopyCursor]],
         dragLinkCursorTester = [[CursorTester alloc] initWithText:@"Drag link cursor"
-                                                           origin:CGPointMake(0, 260)
-                                                           cursor:[CPCursor dragLinkCursor]],
+                                                        origin:CGPointMake(x, y+=yInc)
+                                                        cursor:[CPCursor dragLinkCursor]],
         contextualMenuCursorTester = [[CursorTester alloc] initWithText:@"Contextual menu cursor"
-                                                                 origin:CGPointMake(0, 280)
-                                                                 cursor:[CPCursor contextualMenuCursor]],
+                                                        origin:CGPointMake(x, y+=yInc)
+                                                        cursor:[CPCursor contextualMenuCursor]],
         openHandCursorTester = [[CursorTester alloc] initWithText:@"Open hand cursor"
-                                                           origin:CGPointMake(0, 300)
+                                                        origin:CGPointMake(x, y+=yInc)
                                                         cursor:[CPCursor openHandCursor]],
         closedHandCursorTester = [[CursorTester alloc] initWithText:@"Closed hand cursor"
-                                                             origin:CGPointMake(0, 320)
-                                                             cursor:[CPCursor closedHandCursor]],
+                                                        origin:CGPointMake(x, y+=yInc)
+                                                        cursor:[CPCursor closedHandCursor]],
         disappearingItemCursorTester = [[CursorTester alloc] initWithText:@"Disappearing item cursor"
-                                                                   origin:CGPointMake(0, 340)
-                                                                   cursor:[CPCursor disappearingItemCursor]];
+                                                        origin:CGPointMake(x, y+=yInc)
+ 													    cursor:[CPCursor disappearingItemCursor]];
         
     [contentView addSubview:imageCursorTester];
     [contentView addSubview:arrowCursorTester];
