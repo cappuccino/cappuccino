@@ -7,7 +7,9 @@
  */
 
 @import <Foundation/CPObject.j>
-@import "../CPTrace.j"
+@import "CPTrace.j"
+
+CPLogRegister(CPLogConsole)
 
 @implementation AppController : CPObject
 {
@@ -60,9 +62,9 @@
         var lr = [c[0] count];
         if (d > 0)
             tlr += lr;
-    
+
         var avg = (ROUND(100 * e/tlr) / 100);
-        console.log(b + " " + lr + " rows in " + d + " ms ; avg/row = " + avg + " ms");
+        CPLog.debug(b + " " + lr + " rows in " + d + " ms ; avg/row = " + avg + " ms");
     }
 
     CPTrace(@"CPTableView", @"_loadDataViewsInRows:columns:", f);
@@ -85,8 +87,8 @@
         column = [tableView columnForView:sender],
         identifier = [[[tableView tableColumns] objectAtIndex:column] identifier];
 
-    //CPLogConsole(_cmd + sender + " row = " + row + " column = " + column);
-    content[row][identifier] = [sender value];
+    CPLog.debug(_cmd + " from "sender + " row = " + row + " column = " + column);
+    content[row][identifier] = [sender doubleValue];
 }
 
 - (int)numberOfRowsInTableView:(id)aTableView
@@ -123,7 +125,7 @@
     if (n == 0)
         [view setObjectValue:("Column " + tableColumnId + " Row " + aRow)];
     else if (n == 1)
-        [view setValue:content[aRow][tableColumnId]];
+        [view setDoubleValue:content[aRow][tableColumnId]];
 
     return view;
 }

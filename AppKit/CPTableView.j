@@ -1931,6 +1931,7 @@ NOT YET IMPLEMENTED
         else
         {
             var superview = [cellView superview];
+
             if ([superview isKindOfClass:[CPTableView class]])
             {
                 break;
@@ -1959,6 +1960,7 @@ NOT YET IMPLEMENTED
         while (rowcount--)
         {
             var row = exposedRows[rowcount];
+
             if (cellView == dataViewsInTableColumn[row])
                 return isRow ? row : column;
         }
@@ -3612,9 +3614,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (CPView)_dataViewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
 {
     var view = nil;
+
     if ([self _delegateRespondsToDataViewForTableColumn])
     {
         view = [_delegate tableView:self dataViewForTableColumn:aTableColumn row:aRow];
+
         if (!view)
             [CPException raise:CPInternalInconsistencyException reason:"The view returned by -tableView:dataViewForTableColumn:row: should not be nil"];
     }
@@ -3666,12 +3670,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         return nil;
 
     var view,
-// See if we have some reusable view available
+        // See if we have some reusable view available
         reusableViews = _cachedDataViews[anIdentifier];
 
     if (reusableViews && reusableViews.length)
         view = reusableViews.pop();
-// Otherwise see if we have a view in the cib with this identifier
+    // Otherwise see if we have a view in the cib with this identifier
     else if (_isViewBased)
         view = [self _unarchiveViewWithIdentifier:anIdentifier owner:anOwner];
 
@@ -3704,9 +3708,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         return nil;
 
     var count = objects.length;
+
     while (count--)
     {
         var obj = objects[count];
+
         if ([obj isKindOfClass:[CPView class]])
         {
             [obj setIdentifier:anIdentifier];
@@ -5270,6 +5276,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     [aCoder encodeObject:_headerView forKey:CPTableViewHeaderViewKey];
 
     [aCoder encodeObject:_autosaveName forKey:CPTableViewAutosaveNameKey];
+
     if (_archivedDataViews)
         [aCoder encodeObject:_archivedDataViews forKey:CPTableViewArchivedReusableViewsKey];
 }
@@ -5445,13 +5452,8 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
 @end
 
-//var CPTableCellViewBackgroundStyleKey = @"CPTableCellViewBackgroundStyleKey",
-//    CPTableCellViewRowSizeStyleKey = @"CPTableCellViewRowSizeStyleKey";
-
 @implementation CPTableCellView : CPView
 {
-    //int _backgroundStyle    @accessors(property=backgroundStyle);
-    //int _rowSizeStyle       @accessors(property=rowSizeStyle);
     id _objectValue         @accessors(property=objectValue);
 
     CPTextField _textField  @accessors(property=textField);
@@ -5461,6 +5463,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 - (id)initWithFrame:(CGRect)aRect
 {
     self = [super initWithFrame:aRect];
+
     [self _init];
 
     return self;
@@ -5469,6 +5472,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
+
     [self _init];
 
     return self;
@@ -5501,6 +5505,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     [[aView subviews] enumerateObjectsUsingBlock:function(view, idx)
     {
         [view performSelector:selector withObject:anObject];
+
         if (![view isKindOfClass:[self class]]) // Avoid infinite loop if a subview is a CPTableCellView.
             [self recursivelyPerformSelector:selector withObject:anObject startingFrom:view];
     }];

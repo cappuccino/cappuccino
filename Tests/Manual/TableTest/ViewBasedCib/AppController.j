@@ -9,10 +9,12 @@
 @import <Foundation/CPObject.j>
 @import <AppKit/CPGraphicsContext.j>
 
-@import "../CPTrace.j"
+@import "CPTrace.j"
 
 var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
     tracing = NO;
+
+CPLogRegister(CPLogConsole)
 
 @implementation AppController : CPObject
 {
@@ -32,8 +34,12 @@ var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
         request = [CPURLRequest requestWithURL:path],
         connection = [CPURLConnection connectionWithRequest:request delegate:self];
 
-    [theWindow setFullBridge:YES];
     [tableView registerForDraggedTypes:[CPArray arrayWithObject:TABLE_DRAG_TYPE]];
+}
+
+- (void)awakeFromCib
+{
+    [theWindow setFullPlatformWindow:YES];
 }
 
 - (void)connection:(CPURLConnection)connection didReceiveData:(CPString)dataString
@@ -60,7 +66,7 @@ var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
                 tlr += lr;
 
             var avg = (ROUND(100 * e/tlr) / 100);
-            console.log(b + " " + lr + " rows in " + d + " ms ; avg/row = " + avg + " ms");
+            CPLog.debug(b + " " + lr + " rows in " + d + " ms ; avg/row = " + avg + " ms");
             [self setAvgPerRow:avg];
         }
 
@@ -78,29 +84,33 @@ var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
     @outlet CPView personView;
     @outlet CPView placeView;
     @outlet CPArrayController contentController;
-    
+
+    @outlet CPTableCellView view;
+    @outlet CPImageView imageView;
+    @outlet CPTextField textField;
+
     CPArray images @accessors;
 }
 
 - (id)init
 {
     self = [super init];
-    
+
     images = [
                 [CPDictionary dictionaryWithObjectsAndKeys:@"Brad",  @"name", @"Resources/brad.jpg"  ,@"path"],
                 [CPDictionary dictionaryWithObjectsAndKeys:@"George",@"name", @"Resources/george.jpg",@"path"],
                 [CPDictionary dictionaryWithObjectsAndKeys:@"John",  @"name", @"Resources/john.jpg"  ,@"path"]
              ];
-        
+
     return self;
 }
 
 - (CPView)makeOrangeView
 {
-    var view = [[CustomView alloc] initWithFrame:CGRectMakeZero()];
-    [view setIdentifier:@"Orange"];
+    var orangeView = [[CustomView alloc] initWithFrame:CGRectMakeZero()];
+    [orangeView setIdentifier:@"Orange"];
 
-    return view;
+    return orangeView;
 }
 
 - (CPArray)content
@@ -116,16 +126,17 @@ var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
     if (identifier == @"multiple")
         identifier = [[[self content] objectAtIndex:aRow] objectForKey:@"identifier"];
 
-    var view = [aTableView makeViewWithIdentifier:identifier owner:self];
+    var aView = [aTableView makeViewWithIdentifier:identifier owner:self];
 
     if (identifier == "Orange")
     {
-        if (view == nil)
-            view = [self makeOrangeView];
-        [[view textField] setStringValue:aRow];
+        if (aView == nil)
+            aView = [self makeOrangeView];
+
+        [[aView textField] setStringValue:aRow];
     }
 
-    return view;
+    return aView;
 }
 
 - (BOOL)tableView:(CPTableView)aTableView writeRowsWithIndexes:(CPIndexSet)rowIndexes toPasteboard:(CPPasteboard)pboard
@@ -172,25 +183,28 @@ var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
     // This method is called each time a cib containing a CPTableCellView is instantiated.
     // Outlets are now connected and available.
     // If the view has its own xib, only the view will be instantiated and connected to the owner.
-    CPLogConsole(_cmd + " externalView=" + externalView);
-    [[externalView textField] setTextColor:[CPColor greenColor]];
+    if (externalView)
+    {
+        CPLog.debug(_cmd + " loaded externalView : " + externalView);
+        [[externalView textField] setTextColor:[CPColor greenColor]];
+    }
 }
 
 // CELL VIEWS ACTIONS
 - (IBAction)_sliderAction:(id)sender
 {
     // Action sent from a cellView subview to its target.
-    CPLogConsole(_cmd);
+    CPLog.debug(_cmd + " value=" + [sender doubleValue]);
 }
 
 - (IBAction)_textFieldNotBezeledAction:(id)sender
 {
-    CPLogConsole(_cmd + " value=" + [sender stringValue]);
+    CPLog.debug(_cmd + " value=" + [sender stringValue]);
 }
 
 - (IBAction)_textFieldBezeledAction:(id)sender
 {
-    CPLogConsole(_cmd + " value=" + [sender stringValue]);
+    CPLog.debug(_cmd + " value=" + [sender stringValue]);
 }
 
 @end
