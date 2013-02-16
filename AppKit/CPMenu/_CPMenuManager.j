@@ -701,6 +701,8 @@ var STICKY_TIME_INTERVAL            = 0.4,
         if ([item isSeparatorItem] || [item isHidden] || ![item isEnabled])
             [self moveDown:menu];
     }
+    else if (menu == [CPApp mainMenu])
+         [menu _highlightItemAtIndex:0];
 }
 
 - (void)moveUp:(CPMenu)menu
@@ -709,7 +711,7 @@ var STICKY_TIME_INTERVAL            = 0.4,
 
     if (index < 0)
     {
-        if (index != CPNotFound)
+        if (index != CPNotFound || menu == [CPApp mainMenu])
             [menu _highlightItemAtIndex:[menu numberOfItems] - 1];
         return;
     }
