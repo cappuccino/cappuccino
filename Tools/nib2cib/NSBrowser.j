@@ -20,7 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/CPObject.j>
 @import <AppKit/CPBrowser.j>
+@import <AppKit/CPTextField.j>
+@import <AppKit/CPColor.j>
 
 @implementation CPBrowser (NSCoding)
 
@@ -28,8 +31,18 @@
 {
     if (self = [super NS_initWithCoder:aCoder])
     {
-        _allowsEmptySelection     = YES;
-        _allowsMultipleSelection  = [aCoder decodeBoolForKey:@"NSAllowsMultipleSelection"];
+        var flags = [aCoder decodeIntForKey:@"NSBrFlags"];
+
+        _columnWidths = [];
+        _allowsEmptySelection     = (flags & 0x10000000) ? YES : NO;
+        _allowsMultipleSelection  = (flags & 0x08000000) ? YES : NO;
+        _minColumnWidth = [aCoder decodeFloatForKey:@"NSMinColumnWidth"];
+        _rowHeight = [aCoder decodeFloatForKey:@"NSBrowserRowHeight"];
+
+        _prototypeView = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
+        [_prototypeView setVerticalAlignment:CPCenterVerticalTextAlignment];
+        [_prototypeView setValue:[CPColor whiteColor] forThemeAttribute:"text-color" inState:CPThemeStateSelectedDataView];
+        [_prototypeView setLineBreakMode:CPLineBreakByTruncatingTail];
     }
 
     return self;

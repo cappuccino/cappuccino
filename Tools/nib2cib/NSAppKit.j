@@ -24,6 +24,7 @@
 @import "NSArrayController.j"
 @import "NSBox.j"
 @import "NSButton.j"
+@import "NSBrowser.j"
 @import "NSCell.j"
 @import "NSClassSwapper.j"
 @import "NSClipView.j"
