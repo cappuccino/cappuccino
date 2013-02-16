@@ -431,9 +431,8 @@ function CPAppKitImage(aFilename, aSize)
 {
     _loadStatus = CPImageLoadStatusCompleted;
 
-    // FIXME: IE is wrong on image sizes????
-    if (!_size || (_size.width == -1 && _size.height == -1))
-        _size = CGSizeMake(_image.width, _image.height);
+    // get the size from the loaded image
+    _size = CGSizeMake(_image.width, _image.height);
 
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPImageDidLoadNotification
@@ -495,7 +494,7 @@ function CPAppKitImage(aFilename, aSize)
 
 - (id)initWithImageSlices:(CPArray)imageSlices isVertical:(BOOL)isVertical
 {
-    self = [super init];
+    self = [self init];
 
     if (self)
     {
