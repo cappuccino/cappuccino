@@ -213,7 +213,7 @@ var NSButtonIsBorderedMask = 0x00800000,
             fixedHeight = YES;
     }
 
-    if ([cell isBordered])
+    if ([cell isBordered] || [self isKindOfClass:[CPRadio class]] || [self isKindOfClass:[CPCheckBox class]])
     {
         /*
             Try to figure out the intention of the theme in regards to fixed height buttons.
@@ -252,11 +252,14 @@ var NSButtonIsBorderedMask = 0x00800000,
                 CPLog.debug("NSButton [%s]: adjusted height from %d to %d", _title == null ? "<no title>" : '"' + _title + '"', oldHeight, _frame.size.height);
         }
 
-        // Reposition the buttons according to its particular offsets
-        _frame.origin.x += positionOffsetOriginX;
-        _frame.origin.y += positionOffsetOriginY;
-        _frame.size.width += positionOffsetSizeWidth;
-        _bounds.size.width += positionOffsetSizeWidth;
+        if ([cell isBordered])
+        {
+            // Reposition the buttons according to its particular offsets
+            _frame.origin.x += positionOffsetOriginX;
+            _frame.origin.y += positionOffsetOriginY;
+            _frame.size.width += positionOffsetSizeWidth;
+            _bounds.size.width += positionOffsetSizeWidth;
+        }
     }
 
     _keyEquivalent = [cell keyEquivalent];
