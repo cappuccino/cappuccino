@@ -713,8 +713,10 @@ var STICKY_TIME_INTERVAL            = 0.4,
     {
         if (index != CPNotFound || menu == [CPApp mainMenu])
             [menu _highlightItemAtIndex:[menu numberOfItems] - 1];
+
         return;
     }
+
     [menu _highlightItemAtIndex:index];
 
     var item = [menu highlightedItem];
