@@ -1631,24 +1631,6 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 @implementation _CPTextFieldValueBinder : CPBinder
 
-+ (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPBinder)aBinding
-{
-    var selector = "_updatePlaceholdersWithOptions:",
-        implementation = class_getMethodImplementation([aBinding superclass], selector);
-
-    implementation.apply(aBinding, [aBinding, selector, options]);
-
-    [aBinding _setPlaceholder:@"Multiple Values" forMarker:CPMultipleValuesMarker isDefault:YES];
-    [aBinding _setPlaceholder:@"No Selection" forMarker:CPNoSelectionMarker isDefault:YES];
-    [aBinding _setPlaceholder:@"Not Applicable" forMarker:CPNotApplicableMarker isDefault:YES];
-    [aBinding _setPlaceholder:@"" forMarker:CPNullMarker isDefault:YES];
-}
-
-- (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPBinder)aBinding
-{
-    [[self class] _updatePlaceholdersWithOptions:options forBinding:self];
-}
-
 - (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
 {
     [_source setPlaceholderString:aValue];
@@ -1663,11 +1645,6 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 @end
 
 @implementation _CPTextFieldPatternValueBinder : CPValueWithPatternBinding
-
-- (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPBinder)aBinding
-{
-    [_CPTextFieldValueBinder _updatePlaceholdersWithOptions:options forBinding:self];
-}
 
 - (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
 {
