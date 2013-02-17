@@ -1,6 +1,6 @@
 
 @import <AppKit/CPCib.j>
-@import "Converter.j"
+@class Converter
 
 var FILE = require("file"),
     OS = require("os"),

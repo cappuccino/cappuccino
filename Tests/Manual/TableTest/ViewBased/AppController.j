@@ -87,7 +87,7 @@ CPLogRegister(CPLogConsole)
         column = [tableView columnForView:sender],
         identifier = [[[tableView tableColumns] objectAtIndex:column] identifier];
 
-    CPLog.debug(_cmd + " from " + sender + " row = " + row + " column = " + column);
+    CPLog.debug(_cmd + " from " + sender + " row = " + row + " column = " + column + " value = " + [sender intValue]);
     content[row][identifier] = [sender doubleValue];
 }
 

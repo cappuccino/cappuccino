@@ -25,6 +25,7 @@
 
 @import "CPDragServer_Constants.j"
 @import "CGGradient.j"
+@import "CPCib.j"
 @import "CPCompatibility.j"
 @import "CPControl.j"
 @import "CPImageView.j"
