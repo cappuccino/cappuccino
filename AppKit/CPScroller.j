@@ -57,6 +57,8 @@ var PARTS_ARRANGEMENT   = [CPScrollerKnobSlot, CPScrollerDecrementLine, CPScroll
     NAMES_FOR_PARTS     = {},
     PARTS_FOR_NAMES     = {};
 
+var _CACHED_THEME_SCROLLER = nil; // This is used by the class methods to pull the theme attributes.
+
 NAMES_FOR_PARTS[CPScrollerDecrementLine]    = @"decrement-line";
 NAMES_FOR_PARTS[CPScrollerIncrementLine]    = @"increment-line";
 NAMES_FOR_PARTS[CPScrollerKnobSlot]         = @"knob-slot";
@@ -133,11 +135,13 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 */
 + (float)scrollerWidthInStyle:(int)aStyle
 {
-    var scroller = [[self alloc] init];
+    if (!_CACHED_THEME_SCROLLER)
+        _CACHED_THEME_SCROLLER = [[self alloc] init];
 
     if (aStyle == CPScrollerStyleLegacy)
-        return [scroller valueForThemeAttribute:@"scroller-width" inState:CPThemeStateScrollViewLegacy];
-    return [scroller currentValueForThemeAttribute:@"scroller-width"];
+        return [_CACHED_THEME_SCROLLER valueForThemeAttribute:@"scroller-width" inState:CPThemeStateScrollViewLegacy];
+
+    return [_CACHED_THEME_SCROLLER currentValueForThemeAttribute:@"scroller-width"];
 }
 
 /*!
@@ -145,7 +149,10 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 */
 + (float)scrollerOverlay
 {
-    return [[[self alloc] init] currentValueForThemeAttribute:@"track-border-overlay"];
+    if (!_CACHED_THEME_SCROLLER)
+        _CACHED_THEME_SCROLLER = [[self alloc] init];
+
+    return [_CACHED_THEME_SCROLLER currentValueForThemeAttribute:@"track-border-overlay"];
 }
 
 /*!
