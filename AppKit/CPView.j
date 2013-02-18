@@ -1576,6 +1576,7 @@ var CPViewFlags                     = { },
 - (void)rightMouseDown:(CPEvent)anEvent
 {
     var menu = [self menuForEvent:anEvent];
+
     if (menu)
         [CPMenu popUpContextMenu:menu withEvent:anEvent forView:self];
     else if ([[self nextResponder] isKindOfClass:CPView])
