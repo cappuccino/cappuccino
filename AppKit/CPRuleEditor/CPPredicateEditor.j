@@ -82,15 +82,15 @@
 }
 
 /*! @cond */
-+ (Class)_binderClassForBinding:(CPString)theBinding
++ (Class)_binderClassForBinding:(CPString)aBinding
 {
-    if (theBinding == CPValueBinding)
+    if (aBinding == CPValueBinding)
         return [CPPredicateEditorValueBinder class];
 
-    return [super _binderClassForBinding:theBinding];
+    return [super _binderClassForBinding:aBinding];
 }
 
-- (id)_replacementKeyPathForBinding:(CPString)aBinding
+- (CPString)_replacementKeyPathForBinding:(CPString)aBinding
 {
     if (aBinding == CPValueBinding)
         return @"predicate";

@@ -241,8 +241,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     if (_effectiveScrollMode !== CPWebViewScrollAppKit)
         return;
 
-    var win = null;
-    try { win = [self DOMWindow]; } catch (e) {}
+    var win = [self DOMWindow];
 
     if (win && win.addEventListener)
     {
@@ -258,6 +257,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
         };
 
         win.addEventListener("DOMMouseScroll", scrollEventHandler, false);
+        win.addEventListener("wheel", scrollEventHandler, false);
     }
 }
 
@@ -277,8 +277,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
         [_frameView setFrameSize:CGSizeMake(CGRectGetMaxX(visibleRect), CGRectGetMaxY(visibleRect))];
 
         // try to get the document size so we can correctly set the frame
-        var win = null;
-        try { win = [self DOMWindow]; } catch (e) {}
+        var win = [self DOMWindow];
 
         if (win && win.document && win.document.body)
         {
@@ -579,6 +578,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 {
     if (_mainFrameURL)
         [_backwardStack addObject:_mainFrameURL];
+
     _mainFrameURL = URLString;
     [_forwardStack removeAllObjects];
 
@@ -596,6 +596,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     {
         if (_mainFrameURL)
             [_forwardStack addObject:_mainFrameURL];
+
         _mainFrameURL = [_backwardStack lastObject];
         [_backwardStack removeLastObject];
 
@@ -603,6 +604,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 
         return YES;
     }
+
     return NO;
 }
 
@@ -617,6 +619,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     {
         if (_mainFrameURL)
             [_backwardStack addObject:_mainFrameURL];
+
         _mainFrameURL = [_forwardStack lastObject];
         [_forwardStack removeLastObject];
 
@@ -624,6 +627,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 
         return YES;
     }
+
     return NO;
 }
 
@@ -671,7 +675,14 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 */
 - (DOMWindow)DOMWindow
 {
-    return (_iframe.contentDocument && _iframe.contentDocument.defaultView) || _iframe.contentWindow;
+    try
+    {
+        return (_iframe.contentDocument && _iframe.contentDocument.defaultView) || _iframe.contentWindow;
+    }
+    catch (e)
+    {
+        return nil;
+    }
 }
 
 /*!
@@ -682,6 +693,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 - (CPWebScriptObject)windowScriptObject
 {
     var win = [self DOMWindow];
+
     if (!_wso || win != [_wso window])
     {
         if (win)
@@ -689,6 +701,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
         else
             _wso = nil;
     }
+
     return _wso;
 }
 
@@ -726,6 +739,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 - (DOMCSSStyleDeclaration)computedStyleForElement:(DOMElement)element pseudoElement:(CPString)pseudoElement
 {
     var win = [[self windowScriptObject] window];
+
     if (win)
     {
         // FIXME: IE version?
@@ -758,6 +772,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 {
     if (drawsBackground == _drawsBackground)
         return;
+
     _drawsBackground = drawsBackground;
 
     [self _applyBackgroundColor];
@@ -863,38 +878,47 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 {
     return _downloadDelegate;
 }
+
 - (void)setDownloadDelegate:(id)anObject
 {
     _downloadDelegate = anObject;
 }
+
 - (id)frameLoadDelegate
 {
     return _frameLoadDelegate;
 }
+
 - (void)setFrameLoadDelegate:(id)anObject
 {
     _frameLoadDelegate = anObject;
 }
+
 - (id)policyDelegate
 {
     return _policyDelegate;
 }
+
 - (void)setPolicyDelegate:(id)anObject
 {
     _policyDelegate = anObject;
 }
+
 - (id)resourceLoadDelegate
 {
     return _resourceLoadDelegate;
 }
+
 - (void)setResourceLoadDelegate:(id)anObject
 {
     _resourceLoadDelegate = anObject;
 }
+
 - (id)UIDelegate
 {
     return _UIDelegate;
 }
+
 - (void)setUIDelegate:(id)anObject
 {
     _UIDelegate = anObject;
@@ -921,6 +945,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     {
         _window = aWindow;
     }
+
     return self;
 }
 
@@ -935,9 +960,12 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     // Would using "with" be better here?
     if (typeof _window[methodName] == "function")
     {
-        try {
+        try
+        {
             return _window[methodName].apply(args);
-        } catch (e) {
+        }
+        catch (e)
+        {
         }
     }
     return undefined;
@@ -951,11 +979,15 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 */
 - (id)evaluateWebScript:(CPString)script
 {
-    try {
+    try
+    {
         return _window.eval(script);
-    } catch (e) {
+    }
+    catch (e)
+    {
         // FIX ME: if we fail inside here, shouldn't we return an exception?
     }
+
     return undefined;
 }
 
@@ -1030,6 +1062,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
 - (BOOL)_passesSameOriginPolicy
 {
     var documentURL = [CPURL URLWithString:window.location.href];
+
     if ([documentURL isFileURL] && CPFeatureIsCompatible(CPSOPDisabledFromFileURLs))
         return YES;
 

@@ -63,19 +63,12 @@ CPBelowBottom = 6;
     CPTextField     _titleView;
 }
 
-+ (id)boxEnclosingView:(CPView)aView
++ (Class)_binderClassForBinding:(CPString)aBinding
 {
-    var box = [[self alloc] initWithFrame:CGRectMakeZero()],
-        enclosingView = [aView superview];
+    if ([aBinding hasPrefix:CPDisplayPatternTitleBinding])
+        return [CPTitleWithPatternBinding class];
 
-    [box setAutoresizingMask:[aView autoresizingMask]];
-    [box setFrameFromContentFrame:[aView frame]];
-
-    [enclosingView replaceSubview:aView with:box];
-
-    [box setContentView:aView];
-
-    return box;
+    return [super _binderClassForBinding:aBinding];
 }
 
 + (CPString)defaultThemeClass
@@ -94,6 +87,21 @@ CPBelowBottom = 6;
                                                    @"inner-shadow-size",
                                                    @"inner-shadow-color",
                                                    @"content-margin"]];
+}
+
++ (id)boxEnclosingView:(CPView)aView
+{
+    var box = [[self alloc] initWithFrame:CGRectMakeZero()],
+        enclosingView = [aView superview];
+
+    [box setAutoresizingMask:[aView autoresizingMask]];
+    [box setFrameFromContentFrame:[aView frame]];
+
+    [enclosingView replaceSubview:aView with:box];
+
+    [box setContentView:aView];
+
+    return box;
 }
 
 - (id)initWithFrame:(CGRect)frameRect
@@ -409,6 +417,14 @@ CPBelowBottom = 6;
         default:
             return [0.0, 0.0];
     }
+}
+
+- (void)setValue:(id)aValue forKey:(CPString)aKey
+{
+    if (aKey === CPDisplayPatternTitleBinding)
+        [self setTitle:aValue || @""];
+    else
+        [super setValue:aValue forKey:aKey];
 }
 
 - (void)drawRect:(CGRect)rect

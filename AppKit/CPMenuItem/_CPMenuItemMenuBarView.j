@@ -37,7 +37,6 @@
     BOOL                    _isDirty;
 
     _CPImageAndTextView     _imageAndTextView;
-    CPView                  _submenuIndicatorView;
 }
 
 + (CPString)defaultThemeClass
@@ -47,9 +46,8 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], [CPNull null], 8.0, 3.0, 4.0]
-                                       forKeys:[    @"submenu-indicator-color",
-                                                    @"menu-item-selection-color",
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], 12.0, 3.0, 4.0]
+                                       forKeys:[    @"menu-item-selection-color",
                                                     @"menu-item-text-shadow-color",
                                                     @"horizontal-margin",
                                                     @"submenu-indicator-margin",
@@ -76,12 +74,6 @@
 
         [self addSubview:_imageAndTextView];
 
-        _submenuIndicatorView = [[_CPMenuItemMenuBarSubmenuIndicatorView alloc] initWithFrame:CGRectMake(0.0, 0.0, 9.0, 6.0)];
-
-        [_submenuIndicatorView setAutoresizingMask:CPViewMinYMargin | CPViewMaxYMargin];
-
-        [self addSubview:_submenuIndicatorView];
-
         [self setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     }
 
@@ -99,7 +91,7 @@
 - (CPColor)textShadowColor
 {
     if (![_menuItem isEnabled])
-        return [CPColor colorWithWhite:0.8 alpha:0.8];
+        return [CPColor clearColor];
 
     return _textShadowColor || [CPColor colorWithWhite:1.0 alpha:0.8];
 }
@@ -122,36 +114,10 @@
 
     imageAndTextViewFrame.origin.x = x;
     x += CGRectGetWidth(imageAndTextViewFrame);
-    height = MAX(height, CGRectGetHeight(imageAndTextViewFrame));
-
-    var hasSubmenuIndicator = [_menuItem hasSubmenu] && [_menuItem action];
-
-    if (hasSubmenuIndicator)
-    {
-        [_submenuIndicatorView setHidden:NO];
-        [_submenuIndicatorView setColor:[self textColor]];
-        [_submenuIndicatorView setShadowColor:[self textShadowColor]];
-
-        var submenuViewFrame = [_submenuIndicatorView frame];
-
-        submenuViewFrame.origin.x = x + [self valueForThemeAttribute:@"submenu-indicator-margin"];
-
-        x = CGRectGetMaxX(submenuViewFrame);
-        height = MAX(height, CGRectGetHeight(submenuViewFrame));
-    }
-    else
-        [_submenuIndicatorView setHidden:YES];
-
-    height += 2.0 * [self valueForThemeAttribute:@"vertical-margin"];
+    height = MAX(height, CGRectGetHeight(imageAndTextViewFrame)) + 2.0 * [self valueForThemeAttribute:@"vertical-margin"];
 
     imageAndTextViewFrame.origin.y = FLOOR((height - CGRectGetHeight(imageAndTextViewFrame)) / 2.0);
     [_imageAndTextView setFrame:imageAndTextViewFrame];
-
-    if (hasSubmenuIndicator)
-    {
-        submenuViewFrame.origin.y = FLOOR((height - CGRectGetHeight(submenuViewFrame)) / 2.0) + 1.0;
-        [_submenuIndicatorView setFrame:submenuViewFrame];
-    }
 
     [self setAutoresizesSubviews:NO];
     [self setFrameSize:CGSizeMake(x + [self valueForThemeAttribute:@"horizontal-margin"], height)];
@@ -172,9 +138,6 @@
         [_imageAndTextView setImage:[_menuItem alternateImage] || [_menuItem image]];
         [_imageAndTextView setTextColor:[CPColor whiteColor]];
         [_imageAndTextView setTextShadowColor:[self valueForThemeAttribute:@"menu-item-text-shadow-color"]];
-
-        [_submenuIndicatorView setColor:[CPColor whiteColor]];
-        [_submenuIndicatorView setShadowColor:[CPColor colorWithWhite:0.1 alpha:0.7]];
     }
     else
     {
@@ -183,60 +146,7 @@
         [_imageAndTextView setImage:[_menuItem image]];
         [_imageAndTextView setTextColor:[self textColor]];
         [_imageAndTextView setTextShadowColor:[self textShadowColor]];
-
-        [_submenuIndicatorView setColor:[self textColor]];
-        [_submenuIndicatorView setShadowColor:[self textShadowColor]];
     }
-}
-
-@end
-
-@implementation _CPMenuItemMenuBarSubmenuIndicatorView : CPView
-{
-    CPColor _color;
-    CPColor _shadowColor;
-}
-
-- (void)setColor:(CPColor)aColor
-{
-    if (_color === aColor)
-        return;
-
-    _color = aColor;
-
-    [self setNeedsDisplay:YES];
-}
-
-- (void)setShadowColor:(CPColor)aColor
-{
-    if (_shadowColor === aColor)
-        return;
-
-    _shadowColor = aColor;
-
-    [self setNeedsDisplay:YES];
-}
-
-- (void)drawRect:(CGRect)aRect
-{
-    var context = [[CPGraphicsContext currentContext] graphicsPort],
-        bounds = [self bounds];
-
-    bounds.size.height -= 1.0;
-    bounds.size.width -= 2.0;
-    bounds.origin.x += 1.0;
-
-    CGContextBeginPath(context);
-
-    CGContextMoveToPoint(context, CGRectGetMinX(bounds), CGRectGetMinY(bounds));
-    CGContextAddLineToPoint(context, CGRectGetMaxX(bounds), CGRectGetMinY(bounds));
-    CGContextAddLineToPoint(context, CGRectGetMidX(bounds), CGRectGetMaxY(bounds));
-
-    CGContextClosePath(context);
-
-    CGContextSetShadowWithColor(context, CGSizeMake(0.0, 1.0), 1.1, _shadowColor || [CPColor whiteColor]);
-    CGContextSetFillColor(context, _color || [CPColor blackColor]);
-    CGContextFillPath(context);
 }
 
 @end

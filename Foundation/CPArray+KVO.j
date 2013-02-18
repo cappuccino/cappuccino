@@ -431,7 +431,7 @@
 
 - (id)valueForKey:(CPString)aKey
 {
-    if (aKey.indexOf("@") === 0)
+    if (aKey.charAt(0) === "@")
     {
         if (aKey.indexOf(".") !== -1)
             [CPException raise:CPInvalidArgumentException reason:"called valueForKey: on an array with a complex key (" + aKey + "). use valueForKeyPath:"];

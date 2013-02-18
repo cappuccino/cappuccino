@@ -44,7 +44,7 @@ CPNumberFormatterRoundHalfUp        = CPRoundPlain;
 
 var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
 
-#define SET_NEEDS_NUMBER_HANDLER_UPDATE() _numberHandler = nil;
+#define SET_NEEDS_NUMBER_HANDLER_UPDATE() _numberHandler = nil
 
 
 /*!

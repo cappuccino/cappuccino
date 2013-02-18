@@ -87,12 +87,12 @@ var CPProgressIndicatorSpinningStyleColors = [];
                 [CPNull null], @"spinning-regular-gif"];
 }
 
-+ (Class)_binderClassForBinding:(CPString)theBinding
++ (Class)_binderClassForBinding:(CPString)aBinding
 {
-    if (theBinding === CPValueBinding || theBinding === @"isIndeterminate")
+    if (aBinding === CPValueBinding || aBinding === @"isIndeterminate")
         return [_CPProgressIndicatorBinder class];
 
-    return [super _binderClassForBinding:theBinding];
+    return [super _binderClassForBinding:aBinding];
 }
 
 - (id)initWithFrame:(CGRect)aFrame

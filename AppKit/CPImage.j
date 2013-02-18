@@ -48,8 +48,8 @@ var imagesForNames = { },
     AppKitImageForNames = { },
     ImageDescriptionFormat = "%s {\n   filename: \"%s\",\n   size: { width:%f, height:%f }\n}";
 
-AppKitImageForNames[CPImageNameColorPanel]              = CGSizeMake(26.0, 29.0);
-AppKitImageForNames[CPImageNameColorPanelHighlighted]   = CGSizeMake(26.0, 29.0);
+AppKitImageForNames[CPImageNameColorPanel]              = _CGSizeMake(26.0, 29.0);
+AppKitImageForNames[CPImageNameColorPanelHighlighted]   = _CGSizeMake(26.0, 29.0);
 
 /*!
     Returns a resource image with a relative path and size
@@ -72,7 +72,7 @@ function CPImageInBundle()
     if (typeof(arguments[1]) === "number")
     {
         if (arguments[1] !== nil && arguments[1] === undefined)
-            size = CGSizeMake(arguments[1], arguments[2]);
+            size = _CGSizeMake(arguments[1], arguments[2]);
 
         bundle = arguments[3];
     }
@@ -131,7 +131,7 @@ function CPAppKitImage(aFilename, aSize)
 
 - (id)init
 {
-    return [self initByReferencingFile:@"" size:CGSizeMake(-1, -1)];
+    return [self initByReferencingFile:@"" size:_CGSizeMake(-1, -1)];
 }
 
 /*!
@@ -148,7 +148,7 @@ function CPAppKitImage(aFilename, aSize)
 
     if (self)
     {
-        _size = CGSizeCreateCopy(aSize);
+        _size = _CGSizeMakeCopy(aSize);
         _filename = aFilename;
         _loadStatus = CPImageLoadStatusInitialized;
     }
@@ -180,7 +180,7 @@ function CPAppKitImage(aFilename, aSize)
 */
 - (id)initWithContentsOfFile:(CPString)aFilename
 {
-    self = [self initByReferencingFile:aFilename size:CGSizeMake(-1, -1)];
+    self = [self initByReferencingFile:aFilename size:_CGSizeMake(-1, -1)];
 
     if (self)
         [self load];
@@ -247,7 +247,7 @@ function CPAppKitImage(aFilename, aSize)
 */
 - (void)setSize:(CGSize)aSize
 {
-    _size = CGSizeMakeCopy(aSize);
+    _size = _CGSizeMakeCopy(aSize);
 }
 
 /*!
@@ -433,7 +433,7 @@ function CPAppKitImage(aFilename, aSize)
 
     // FIXME: IE is wrong on image sizes????
     if (!_size || (_size.width == -1 && _size.height == -1))
-        _size = CGSizeMake(_image.width, _image.height);
+        _size = _CGSizeMake(_image.width, _image.height);
 
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPImageDidLoadNotification

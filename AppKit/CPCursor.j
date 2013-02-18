@@ -162,8 +162,10 @@ var currentCursor = nil,
 
         if (doesHaveImage)
         {
-            var themeResourcePath = [[[CPApp themeBlend] bundle] resourcePath];
-            cssString = [CPString stringWithFormat:@"url(%@cursors/%@.cur), %@", themeResourcePath, cursorName, aString];
+            var themeResourcePath = [[[CPApp themeBlend] bundle] resourcePath],
+                extension = CPBrowserIsEngine(CPInternetExplorerBrowserEngine) ? @"cur" : @"png";
+
+            cssString = [CPString stringWithFormat:@"url(%@cursors/%@.%@), %@", themeResourcePath, cursorName, extension, aString];
         }
 
         else

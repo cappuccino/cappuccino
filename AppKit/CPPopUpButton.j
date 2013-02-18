@@ -679,7 +679,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     if ([self pullsDown])
     {
         var positionedItem = nil,
-            location = CGPointMake(0.0, CGRectGetMaxY(bounds));
+            location = CGPointMake(0.0, CGRectGetMaxY(bounds) - 1);
     }
     else
     {

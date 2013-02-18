@@ -93,9 +93,9 @@ var CPWindowActionMessageKeys = [
     Sent from the notification center when the window has been resized.
     @param notification contains information about the resize event
 
-    @delegate  -(CPUndoManager)windowWillReturnUndoManager:(CPWindow)window;
+    @delegate  -(CPUndoManager)windowWillReturnUndoManager:(CPWindow)aWindow;
     Called to obtain the undo manager for a window
-    @param window the window for which to return the undo manager
+    @param aWindow the window for which to return the undo manager
     @return the window's undo manager
 
     @delegate -(void)windowDidBecomeMain:(CPNotification)notification;
@@ -113,9 +113,9 @@ var CPWindowActionMessageKeys = [
     resigned key window status.
     @param notification contains information about the event
 
-    @delegate -(BOOL)windowShouldClose:(id)window;
+    @delegate -(BOOL)windowShouldClose:(id)aWindow;
     Called when the user tries to close the window.
-    @param window the window to close
+    @param aWindow the window to close
     @return \c YES allows the window to close. \c NO
     vetoes the close operation and leaves the window open.
 
@@ -214,6 +214,14 @@ var CPWindowActionMessageKeys = [
     CPWindow                            _parentView;
     BOOL                                _isSheet;
     _CPWindowFrameAnimation             _frameAnimation;
+}
+
++ (Class)_binderClassForBinding:(CPString)aBinding
+{
+    if ([aBinding hasPrefix:CPDisplayPatternTitleBinding])
+        return [CPTitleWithPatternBinding class];
+
+    return [super _binderClassForBinding:aBinding];
 }
 
 - (id)init
@@ -3103,6 +3111,14 @@ CPTexturedBackgroundWindowMask
 - (void)disableKeyEquivalentForDefaultButtonCell
 {
     [self disableKeyEquivalentForDefaultButton];
+}
+
+- (void)setValue:(id)aValue forKey:(CPString)aKey
+{
+    if (aKey === CPDisplayPatternTitleBinding)
+        [self setTitle:aValue || @""];
+    else
+        [super setValue:aValue forKey:aKey];
 }
 
 @end
