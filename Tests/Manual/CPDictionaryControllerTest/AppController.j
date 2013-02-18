@@ -23,13 +23,13 @@
 
 - (void)awakeFromCib
 {
-    // This is called when the cib is done loading.
-    // You can implement this method on any object instantiated from a Cib.
-    // It's a useful hook for setting up current UI values, and other things.
+    var dictionary = [CPDictionary dictionaryWithObjectsAndKeys:
+                        @"867-5309", @"Phone Number", // Phone Number is in the Excluded List in the Xib
+                        @"Blair", @"First Name",
+                        @"Duncan", @"Last Name", 
+                        @"Toronto", @"City"];
 
-    // In this case, we want the window from Cib to become our full browser window
-    [dictionaryController setContent:[CPDictionary dictionaryWithObjectsAndKeys:@"Blair", @"FirstName", @"Duncan", @"LastName", @"Toronto", @"City"]];
-    [theWindow setFullPlatformWindow:YES];
+    [dictionaryController setContent:dictionary];
 }
 
 @end
