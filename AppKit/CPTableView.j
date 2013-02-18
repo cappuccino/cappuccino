@@ -980,9 +980,16 @@ NOT YET IMPLEMENTED
     if (_draggedColumn === aColumn)
         return;
 
+    var previouslyDraggedColumn = _draggedColumn;
     _draggedColumn = aColumn;
 
-    [self reloadDataForRowIndexes:_exposedRows columnIndexes:[CPIndexSet indexSetWithIndex:[_tableColumns indexOfObject:aColumn]]];
+    // if a column is currently being dragged, update that column (removing data views)
+    if (aColumn)
+        [self reloadDataForRowIndexes:_exposedRows columnIndexes:[CPIndexSet indexSetWithIndex:[_tableColumns indexOfObject:aColumn]]];
+
+    // when the column is dropped, we should also update it.
+    if (previouslyDraggedColumn)
+        [self reloadDataForRowIndexes:_exposedRows columnIndexes:[CPIndexSet indexSetWithIndex:[_tableColumns indexOfObject:previouslyDraggedColumn]]];
 }
 
 /*
