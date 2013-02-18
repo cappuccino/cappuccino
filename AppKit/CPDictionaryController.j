@@ -41,8 +41,6 @@
 
     if (self)
     {
-        // CPDictionaryController has a default sort descriptor, CPArrayController does not
-        [self setSortDescriptors:[CPArray arrayWithObject:[CPSortDescriptor sortDescriptorWithKey:@"key" ascending:YES]]];
         _initialKey = @"key";
         _initialValue = @"value";
     }
@@ -128,7 +126,6 @@ var CPIncludedKeys  = @"CPIncludedKeys",
     {
         _includedKeys = [aCoder decodeObjectForKey:CPIncludedKeys];
         _excludedKeys = [aCoder decodeObjectForKey:CPExcludedKeys];
-        [self setSortDescriptors:[CPArray arrayWithObject:[CPSortDescriptor sortDescriptorWithKey:@"key" ascending:YES]]];
         _initialKey = @"key";
         _initialValue = @"value";
     }

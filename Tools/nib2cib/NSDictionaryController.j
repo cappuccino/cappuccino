@@ -30,6 +30,8 @@
 
     if (self)
     {
+        _includedKeys = [aCoder decodeObjectForKey:@"NSIncludedKeys"];
+        _excludedKeys = [aCoder decodeObjectForKey:@"NSExcludedKeys"];
     }
 
     return self;
