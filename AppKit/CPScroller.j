@@ -189,7 +189,10 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
         [_animationScroller setViewAnimations:[paramAnimFadeOut]];
         [_animationScroller setDelegate:self];
         [self setAlphaValue:0.0];
-        [self _calculateIsVertical];
+
+        // We have to choose an orientation. If for some bizarre reason width === height,
+        // punt and choose vertical.
+        [self _setIsVertical:_CGRectGetHeight(aFrame) >= _CGRectGetWidth(aFrame)];
     }
 
     return self;
@@ -700,18 +703,13 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
 }
 
-- (void)_calculateIsVertical
+- (void)_setIsVertical:(BOOL)isVertical
 {
-    // Recalculate isVertical.
-    var bounds = [self bounds],
-        width = _CGRectGetWidth(bounds),
-        height = _CGRectGetHeight(bounds);
+    _isVertical = isVertical;
 
-    _isVertical = width < height ? 1 : (width > height ? 0 : -1);
-
-    if (_isVertical === 1)
+    if (_isVertical)
         [self setThemeState:CPThemeStateVertical];
-    else if (_isVertical === 0)
+    else
         [self unsetThemeState:CPThemeStateVertical];
 }
 
@@ -800,6 +798,7 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 @end
 
 var CPScrollerControlSizeKey = @"CPScrollerControlSize",
+    CPScrollerIsVerticalKey = @"CPScrollerIsVerticalKey",
     CPScrollerKnobProportionKey = @"CPScrollerKnobProportion",
     CPScrollerStyleKey = @"CPScrollerStyleKey";
 
@@ -810,7 +809,6 @@ var CPScrollerControlSizeKey = @"CPScrollerControlSize",
     if (self = [super initWithCoder:aCoder])
     {
         _controlSize = CPRegularControlSize;
-
         if ([aCoder containsValueForKey:CPScrollerControlSizeKey])
             _controlSize = [aCoder decodeIntForKey:CPScrollerControlSizeKey];
 
@@ -834,9 +832,9 @@ var CPScrollerControlSizeKey = @"CPScrollerControlSize",
         [_animationScroller setDelegate:self];
         [self setAlphaValue:0.0];
 
-        [self _calculateIsVertical];
-
         [self setStyle:[aCoder decodeIntForKey:CPScrollerStyleKey]];
+
+        [self _setIsVertical:[aCoder decodeBoolForKey:CPScrollerIsVerticalKey]];
     }
 
     return self;
@@ -847,6 +845,7 @@ var CPScrollerControlSizeKey = @"CPScrollerControlSize",
     [super encodeWithCoder:aCoder];
 
     [aCoder encodeInt:_controlSize forKey:CPScrollerControlSizeKey];
+    [aCoder encodeInt:_isVertical forKey:CPScrollerIsVerticalKey];
     [aCoder encodeFloat:_knobProportion forKey:CPScrollerKnobProportionKey];
     [aCoder encodeInt:_style forKey:CPScrollerStyleKey];
 }
