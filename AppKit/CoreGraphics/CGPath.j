@@ -183,36 +183,43 @@ function CGPathAddPath(aPath, aTransform, anotherPath)
 
         switch (element.type)
         {
-            case kCGPathElementAddLineToPoint:      CGPathAddLineToPoint(aPath, aTransform, element.x, element.y);
-                                                    break;
+            case kCGPathElementAddLineToPoint:
+                CGPathAddLineToPoint(aPath, aTransform, element.x, element.y);
+                break;
 
-            case kCGPathElementAddCurveToPoint:     CGPathAddCurveToPoint(aPath, aTransform,
-                                                                          element.cp1x, element.cp1y,
-                                                                          element.cp2x, element.cp2y,
-                                                                          element.x, element.y);
-                                                    break;
+            case kCGPathElementAddCurveToPoint:
+                CGPathAddCurveToPoint(aPath, aTransform,
+                                      element.cp1x, element.cp1y,
+                                      element.cp2x, element.cp2y,
+                                      element.x, element.y);
+                break;
 
-            case kCGPathElementAddArc:              CGPathAddArc(aPath, aTransform, element.x, element.y,
-                                                                 element.radius, element.startAngle,
-                                                                 element.endAngle, element.isClockwise);
-                                                    break;
+            case kCGPathElementAddArc:
+                CGPathAddArc(aPath, aTransform, element.x, element.y,
+                             element.radius, element.startAngle,
+                             element.endAngle, element.isClockwise);
+                break;
 
-            case kCGPathElementAddArcToPoint:       CGPathAddArcToPoint(aPath, aTransform,
-                                                                        element.p1x, element.p1y,
-                                                                        element.p2x, element.p2y,
-                                                                        element.radius);
-                                                    break;
+            case kCGPathElementAddArcToPoint:
+                CGPathAddArcToPoint(aPath, aTransform,
+                                    element.p1x, element.p1y,
+                                    element.p2x, element.p2y,
+                                    element.radius);
+                break;
 
-            case kCGPathElementAddQuadCurveToPoint: CGPathAddQuadCurveToPoint(aPath, aTransform,
-                                                                              element.cpx, element.cpy,
-                                                                              element.x, element.y);
-                                                    break;
+            case kCGPathElementAddQuadCurveToPoint:
+                CGPathAddQuadCurveToPoint(aPath, aTransform,
+                                          element.cpx, element.cpy,
+                                          element.x, element.y);
+                break;
 
-            case kCGPathElementMoveToPoint:         CGPathMoveToPoint(aPath, aTransform, element.x, element.y);
-                                                    break;
+            case kCGPathElementMoveToPoint:
+                CGPathMoveToPoint(aPath, aTransform, element.x, element.y);
+                break;
 
-            case kCGPathElementCloseSubpath:        CGPathCloseSubpath(aPath);
-                                                    break;
+            case kCGPathElementCloseSubpath:
+                CGPathCloseSubpath(aPath);
+                break;
         }
     }
 }
