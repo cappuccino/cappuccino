@@ -392,23 +392,6 @@ function CGContextStrokeRect(aContext, aRect)
 }
 
 /*!
-    Strokes a rectangle with the given dimensions and the given stroke width
-    @param aContext the CGContext to draw into
-    @param aRect the CGRect indicating the bounds of the rect to be drawn
-    @param aWidth the width with which to stroke the rect
-    @return void
-*/
-function CGContextStrokeRectWithWidth(aContext, aRect, aWidth)
-{
-    CGContextSaveGState(aContext);
-
-    CGContextSetLineWidth(aContext, aWidth);
-    CGContextStrokeRect(aContext, aRect);
-
-    CGContextRestoreGState(aContext);
-}
-
-/*!
     Concatenates the given transformation matrix onto the current transformation matrix in aContext
     @param aContext the CGContext to transform
     @param aTransform the CGAffineTransform to apply to the given context
@@ -546,6 +529,23 @@ function CGContextFillPath(aContext)
 {
     CGContextDrawPath(aContext, kCGPathFill);
     CGContextClosePath(aContext);
+}
+
+/*!
+    Strokes a rectangle with the given dimensions and the given stroke width
+    @param aContext the CGContext to draw into
+    @param aRect the CGRect indicating the bounds of the rect to be drawn
+    @param aWidth the width with which to stroke the rect
+    @return void
+*/
+function CGContextStrokeRectWithWidth(aContext, aRect, aWidth)
+{
+    CGContextSaveGState(aContext);
+
+    CGContextSetLineWidth(aContext, aWidth);
+    CGContextStrokeRect(aContext, aRect);
+
+    CGContextRestoreGState(aContext);
 }
 
 var KAPPA = 4.0 * ((SQRT2 - 1.0) / 3.0);
