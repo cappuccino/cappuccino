@@ -543,6 +543,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 */
 - (void)_becomeFirstKeyResponder
 {
+    // Make sure the text field is visible so the browser will not scroll without the NSScrollView knowing about it.
+    [self scrollRectToVisible:[self bounds]];
+
     [self setThemeState:CPThemeStateEditing];
 
     [self _updatePlaceholderState];
