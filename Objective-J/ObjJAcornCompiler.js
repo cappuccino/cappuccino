@@ -112,6 +112,17 @@ Scope.prototype.maybeWarnings = function()
     return this.rootScope()._maybeWarnings;
 }
 
+var GlobalVariableMaybeWarning = function(/* String */ aMessage, /* SpiderMonkey AST node */ node, /* String */ code)
+{
+    this.message = createMessage(aMessage, node, code);
+    this.node = node;
+}
+
+GlobalVariableMaybeWarning.prototype.checkIfWarning = function(/* Scope */ st)
+{
+    var identifier = this.node.name;
+    return !st.getLvar(identifier) && typeof global[identifier] === "undefined" && typeof window[identifier] === "undefined" && !st.compiler.getClassDef(identifier);
+}
 
 // This is for IE8 support. It doesn't have the Object.create function
 if (typeof Object.create !== 'function')
@@ -365,7 +376,7 @@ Program: function(node, st, c) {
     var maybeWarnings = st.maybeWarnings();
     if (maybeWarnings) for (var i = 0; i < maybeWarnings.length; i++) {
         var maybeWarning = maybeWarnings[i];
-        if (!st.getLvar(maybeWarning.identifier) && typeof global[maybeWarning.identifier] === "undefined" && typeof window[maybeWarning.identifier] === "undefined" && !st.compiler.getClassDef(maybeWarning.identifier)) {
+        if (maybeWarning.checkIfWarning(st)) {
             st.compiler.addWarning(maybeWarning.message);
         }
     }
@@ -772,17 +783,26 @@ Identifier: function(node, st, c) {
                 ((st.addedSelfToIvars || (st.addedSelfToIvars = Object.create(null)))[identifier] || (st.addedSelfToIvars[identifier] = [])).push({node: node, index: compiler.jsBuffer.atoms.length});
                 CONCAT(compiler.jsBuffer, "self.");
             }
-        } else {
-            if (!reservedIdentifiers(identifier) && !st.getLvar(identifier) && typeof global[identifier] === "undefined" && typeof window[identifier] === "undefined" && !st.compiler.getClassDef(identifier)) {
-                var message;
+        } else if (!reservedIdentifiers(identifier)) {  // Don't check for warnings if it is a reserved word like self, localStorage, _cmd, etc...
+            var message,
+                classOrGlobal = typeof global[identifier] !== "undefined" || typeof window[identifier] !== "undefined" || st.compiler.getClassDef(identifier),
+                globalVar = st.getLvar(identifier);
+            if (classOrGlobal && (!globalVar || globalVar.type !== "class")) { // It can't be declared with a @class statement.
+                /* Turned off this warning as there are many many warnings when compiling the Cappuccino frameworks - Martin
+                if (lvar) {
+                    message = st.compiler.addWarning(createMessage("Local declaration of '" + identifier + "' hides global variable", node, st.compiler.source));
+                }*/
+            } else if (!globalVar) {
                 if (st.assignment) {
-                    message = createMessage("Creating global variable inside function or method '" + identifier + "'", node, st.compiler.source);
-                    st.vars[identifier] = {type: "global", node: node};
-                } else
-                    message = createMessage("Using unknown class or uninitialized global variable '" + identifier + "'", node, st.compiler.source);
-
-                st.addMaybeWarning({identifier: identifier, message: message});
+                    message = new GlobalVariableMaybeWarning("Creating global variable inside function or method '" + identifier + "'", node, st.compiler.source);
+                    // Turn off these warnings for this identifier, we only want one.
+                    st.vars[identifier] = {type: "remove global warning", node: node};
+                } else {
+                    message = new GlobalVariableMaybeWarning("Using unknown class or uninitialized global variable '" + identifier + "'", node, st.compiler.source);
+                }
             }
+            if (message)
+                st.addMaybeWarning(message);
         }
     }
 },
