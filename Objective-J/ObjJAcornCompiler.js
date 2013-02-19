@@ -78,7 +78,7 @@ Scope.prototype.getLvar = function(/* String */ lvarName, /* BOOL */ stopAtMetho
     var prev = this.prev;
 
     // Stop at the method declaration
-    if (prev && (!stopAtMethod || !this.methodtype))
+    if (prev && (!stopAtMethod || !this.methodType))
         return prev.getLvar(lvarName, stopAtMethod);
 
     return null;
