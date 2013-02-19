@@ -47,16 +47,12 @@ GLOBAL(objj_ivar) = function(/*String*/ aName, /*String*/ aType)
     this.type = aType;
 }
 
-DISPLAY_NAME(objj_ivar);
-
 GLOBAL(objj_method) = function(/*String*/ aName, /*IMP*/ anImplementation, /*String*/ types)
 {
     this.name = aName;
     this.method_imp = anImplementation;
     this.types = types;
 }
-
-DISPLAY_NAME(objj_method);
 
 GLOBAL(objj_class) = function(displayName)
 {
@@ -89,15 +85,11 @@ GLOBAL(objj_class) = function(displayName)
     this._UID           = -1;
 }
 
-DISPLAY_NAME(objj_class);
-
 GLOBAL(objj_object) = function()
 {
     this.isa    = NULL;
     this._UID   = -1;
 }
-
-DISPLAY_NAME(objj_object);
 
 // Working with Classes
 
@@ -109,8 +101,6 @@ GLOBAL(class_getName) = function(/*Class*/ aClass)
     return aClass.name;
 }
 
-DISPLAY_NAME(class_getName);
-
 GLOBAL(class_isMetaClass) = function(/*Class*/ aClass)
 {
     if (!aClass)
@@ -118,8 +108,6 @@ GLOBAL(class_isMetaClass) = function(/*Class*/ aClass)
 
     return ISMETA(aClass);
 }
-
-DISPLAY_NAME(class_isMetaClass);
 
 GLOBAL(class_getSuperclass) = function(/*Class*/ aClass)
 {
@@ -129,16 +117,12 @@ GLOBAL(class_getSuperclass) = function(/*Class*/ aClass)
     return aClass.super_class;
 }
 
-DISPLAY_NAME(class_getSuperclass)
-
 GLOBAL(class_setSuperclass) = function(/*Class*/ aClass, /*Class*/ aSuperClass)
 {
     // Set up the actual class hierarchy.
     aClass.super_class = aSuperClass;
     aClass.isa.super_class = aSuperClass.isa;
 }
-
-DISPLAY_NAME(class_setSuperclass);
 
 GLOBAL(class_addIvar) = function(/*Class*/ aClass, /*String*/ aName, /*String*/ aType)
 {
@@ -157,8 +141,6 @@ GLOBAL(class_addIvar) = function(/*Class*/ aClass, /*String*/ aName, /*String*/ 
 
     return YES;
 }
-
-DISPLAY_NAME(class_addIvar);
 
 GLOBAL(class_addIvars) = function(/*Class*/ aClass, /*Array*/ivars)
 {
@@ -182,14 +164,10 @@ GLOBAL(class_addIvars) = function(/*Class*/ aClass, /*Array*/ivars)
     }
 }
 
-DISPLAY_NAME(class_addIvars);
-
 GLOBAL(class_copyIvarList) = function(/*Class*/ aClass)
 {
     return aClass.ivar_list.slice(0);
 }
-
-DISPLAY_NAME(class_copyIvarList);
 
 //#define class_copyIvarList(aClass) (aClass.ivar_list.slice(0))
 
@@ -215,8 +193,6 @@ GLOBAL(class_addMethod) = function(/*Class*/ aClass, /*SEL*/ aName, /*IMP*/ anIm
 
     return YES;
 }
-
-DISPLAY_NAME(class_addMethod);
 
 GLOBAL(class_addMethods) = function(/*Class*/ aClass, /*Array*/ methods)
 {
@@ -245,8 +221,6 @@ GLOBAL(class_addMethods) = function(/*Class*/ aClass, /*Array*/ methods)
         class_addMethods(GETMETA(aClass), methods);
 }
 
-DISPLAY_NAME(class_addMethods);
-
 GLOBAL(class_getInstanceMethod) = function(/*Class*/ aClass, /*SEL*/ aSelector)
 {
     if (!aClass || !aSelector)
@@ -256,8 +230,6 @@ GLOBAL(class_getInstanceMethod) = function(/*Class*/ aClass, /*SEL*/ aSelector)
 
     return method ? method : NULL;
 }
-
-DISPLAY_NAME(class_getInstanceMethod);
 
 GLOBAL(class_getInstanceVariable) = function(/*Class*/ aClass, /*String*/ aName)
 {
@@ -270,8 +242,6 @@ GLOBAL(class_getInstanceVariable) = function(/*Class*/ aClass, /*String*/ aName)
     return variable;
 }
 
-DISPLAY_NAME(class_getInstanceVariable);
-
 GLOBAL(class_getClassMethod) = function(/*Class*/ aClass, /*SEL*/ aSelector)
 {
     if (!aClass || !aSelector)
@@ -282,35 +252,25 @@ GLOBAL(class_getClassMethod) = function(/*Class*/ aClass, /*SEL*/ aSelector)
     return method ? method : NULL;
 }
 
-DISPLAY_NAME(class_getClassMethod);
-
 GLOBAL(class_respondsToSelector) = function(/*Class*/ aClass, /*SEL*/ aSelector)
 {
     return class_getClassMethod(aClass, aSelector) != NULL;
 }
-
-DISPLAY_NAME(class_respondsToSelector);
 
 GLOBAL(class_copyMethodList) = function(/*Class*/ aClass)
 {
     return aClass.method_list.slice(0);
 }
 
-DISPLAY_NAME(class_copyMethodList);
-
 GLOBAL(class_getVersion) = function(/*Class*/ aClass)
 {
     return aClass.version;
 }
 
-DISPLAY_NAME(class_getVersion);
-
 GLOBAL(class_setVersion) = function(/*Class*/ aClass, /*Integer*/ aVersion)
 {
     aClass.version = parseInt(aVersion, 10);
 }
-
-DISPLAY_NAME(class_setVersion);
 
 GLOBAL(class_replaceMethod) = function(/*Class*/ aClass, /*SEL*/ aSelector, /*IMP*/ aMethodImplementation)
 {
@@ -327,8 +287,6 @@ GLOBAL(class_replaceMethod) = function(/*Class*/ aClass, /*SEL*/ aSelector, /*IM
 
     return method_imp;
 }
-
-DISPLAY_NAME(class_replaceMethod);
 
 var _class_initialize = function(/*Class*/ aClass)
 {
@@ -422,8 +380,6 @@ GLOBAL(class_getMethodImplementation) = function(/*Class*/ aClass, /*SEL*/ aSele
     return implementation;
 }
 
-DISPLAY_NAME(class_getMethodImplementation);
-
 // Adding Classes
 var REGISTERED_CLASSES  = { };
 
@@ -470,8 +426,6 @@ GLOBAL(objj_allocateClassPair) = function(/*Class*/ superclass, /*String*/ aName
     return classObject;
 }
 
-DISPLAY_NAME(objj_allocateClassPair);
-
 var CONTEXT_BUNDLE = nil;
 
 GLOBAL(objj_registerClassPair) = function(/*Class*/ aClass)
@@ -482,8 +436,6 @@ GLOBAL(objj_registerClassPair) = function(/*Class*/ aClass)
     addClassToBundle(aClass, CONTEXT_BUNDLE);
 }
 
-DISPLAY_NAME(objj_registerClassPair);
-
 GLOBAL(objj_resetRegisterClasses) = function()
 {
     for (var key in REGISTERED_CLASSES)
@@ -493,8 +445,6 @@ GLOBAL(objj_resetRegisterClasses) = function()
 
     resetBundle();
 }
-
-DISPLAY_NAME(objj_resetRegisterClasses);
 
 // Instantiating Classes
 
@@ -510,8 +460,6 @@ GLOBAL(class_createInstance) = function(/*Class*/ aClass)
 
     return object;
 }
-
-DISPLAY_NAME(class_createInstance);
 
 // Opera 9.5.1 has a bug where prototypes "inheret" members from instances when "with" is used.
 // Given that the Opera team is so fond of bug-testing instead of version-testing, we'll go
@@ -570,8 +518,6 @@ GLOBAL(object_getClassName) = function(/*id*/ anObject)
     return theClass ? class_getName(theClass) : "";
 }
 
-DISPLAY_NAME(object_getClassName);
-
 //objc_getClassList
 GLOBAL(objj_lookUpClass) = function(/*String*/ aName)
 {
@@ -579,8 +525,6 @@ GLOBAL(objj_lookUpClass) = function(/*String*/ aName)
 
     return theClass ? theClass : Nil;
 }
-
-DISPLAY_NAME(objj_lookUpClass);
 
 GLOBAL(objj_getClass) = function(/*String*/ aName)
 {
@@ -603,8 +547,6 @@ GLOBAL(objj_getClass) = function(/*String*/ aName)
     return theClass ? theClass : Nil;
 }
 
-DISPLAY_NAME(objj_getClass);
-
 //objc_getRequiredClass
 GLOBAL(objj_getMetaClass) = function(/*String*/ aName)
 {
@@ -613,8 +555,6 @@ GLOBAL(objj_getMetaClass) = function(/*String*/ aName)
     return GETMETA(theClass);
 }
 
-DISPLAY_NAME(objj_getMetaClass);
-
 // Working with Instance Variables
 
 GLOBAL(ivar_getName) = function(anIvar)
@@ -622,14 +562,10 @@ GLOBAL(ivar_getName) = function(anIvar)
     return anIvar.name;
 }
 
-DISPLAY_NAME(ivar_getName);
-
 GLOBAL(ivar_getTypeEncoding) = function(anIvar)
 {
     return anIvar.type;
 }
-
-DISPLAY_NAME(ivar_getTypeEncoding);
 
 // Sending Messages
 
@@ -669,8 +605,6 @@ GLOBAL(objj_msgSend) = function(/*id*/ aReceiver, /*SEL*/ aSelector)
 #endif
 }
 
-DISPLAY_NAME(objj_msgSend);
-
 GLOBAL(objj_msgSendSuper) = function(/*id*/ aSuper, /*SEL*/ aSelector)
 {
     var super_class = aSuper.super_class;
@@ -682,8 +616,6 @@ GLOBAL(objj_msgSendSuper) = function(/*id*/ aSuper, /*SEL*/ aSelector)
     return implementation.apply(aSuper.receiver, arguments);
 }
 
-DISPLAY_NAME(objj_msgSendSuper);
-
 // Working with Methods
 
 GLOBAL(method_getName) = function(/*Method*/ aMethod)
@@ -691,14 +623,10 @@ GLOBAL(method_getName) = function(/*Method*/ aMethod)
     return aMethod.name;
 }
 
-DISPLAY_NAME(method_getName);
-
 GLOBAL(method_getImplementation) = function(/*Method*/ aMethod)
 {
     return aMethod.method_imp;
 }
-
-DISPLAY_NAME(method_getImplementation);
 
 GLOBAL(method_setImplementation) = function(/*Method*/ aMethod, /*IMP*/ anImplementation)
 {
@@ -709,8 +637,6 @@ GLOBAL(method_setImplementation) = function(/*Method*/ aMethod, /*IMP*/ anImplem
     return oldImplementation;
 }
 
-DISPLAY_NAME(method_setImplementation);
-
 GLOBAL(method_exchangeImplementations) = function(/*Method*/ lhs, /*Method*/ rhs)
 {
     var lhs_imp = method_getImplementation(lhs),
@@ -720,8 +646,6 @@ GLOBAL(method_exchangeImplementations) = function(/*Method*/ lhs, /*Method*/ rhs
     method_setImplementation(rhs, lhs_imp);
 }
 
-DISPLAY_NAME(method_exchangeImplementations);
-
 // Working with Selectors
 
 GLOBAL(sel_getName) = function(aSelector)
@@ -729,28 +653,20 @@ GLOBAL(sel_getName) = function(aSelector)
     return aSelector ? aSelector : "<null selector>";
 }
 
-DISPLAY_NAME(sel_getName);
-
 GLOBAL(sel_getUid) = function(/*String*/ aName)
 {
     return aName;
 }
-
-DISPLAY_NAME(sel_getUid);
 
 GLOBAL(sel_isEqual) = function(/*SEL*/ lhs, /*SEL*/ rhs)
 {
     return lhs === rhs;
 }
 
-DISPLAY_NAME(sel_isEqual);
-
 GLOBAL(sel_registerName) = function(/*String*/ aName)
 {
     return aName;
 }
-
-DISPLAY_NAME(sel_registerName);
 
 objj_class.prototype.toString = objj_object.prototype.toString = function()
 {
