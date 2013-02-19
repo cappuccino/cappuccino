@@ -38,7 +38,6 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
 #if PLATFORM(DOM)
     DOMElement      _DOMParamElement;
     DOMElement      _DOMObjectElement;
-    DOMElement      _DOMInnerObjectElement;
 #endif
 }
 
@@ -52,22 +51,16 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
         if (!CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
         {
             _DOMObjectElement = document.createElement(@"object");
+            _DOMObjectElement.id = [self elementID];
             _DOMObjectElement.width = @"100%";
             _DOMObjectElement.height = @"100%";
             _DOMObjectElement.style.top = @"0px";
             _DOMObjectElement.style.left = @"0px";
             _DOMObjectElement.type = @"application/x-shockwave-flash";
-            _DOMObjectElement.setAttribute(@"classid", IEFlashCLSID);
-
             _DOMParamElement = document.createElement(@"param");
             _DOMParamElement.name = @"movie";
 
-            _DOMInnerObjectElement = document.createElement(@"object");
-            _DOMInnerObjectElement.width = @"100%";
-            _DOMInnerObjectElement.height = @"100%";
-
             _DOMObjectElement.appendChild(_DOMParamElement);
-            _DOMObjectElement.appendChild(_DOMInnerObjectElement);
 
             _DOMElement.appendChild(_DOMObjectElement);
         }
@@ -89,7 +82,7 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
     if (!CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
     {
         _DOMParamElement.value = [aFlashMovie filename];
-        _DOMInnerObjectElement.data = [aFlashMovie filename];
+        _DOMObjectElement.data = [aFlashMovie filename];
     }
     else
         [self _rebuildIEObjects];
@@ -107,7 +100,10 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
         enumerator = [aDictionary keyEnumerator],
         key;
 
-    while ((key = [enumerator nextObject]) !== nil)
+    if (key = [enumerator nextObject])
+        varString = [varString stringByAppendingFormat:@"%@=%@", key, [aDictionary objectForKey:key]];
+
+    while (key = [enumerator nextObject])
         varString = [varString stringByAppendingFormat:@"&%@=%@", key, [aDictionary objectForKey:key]];
 
     if (!_params)
@@ -184,9 +180,19 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
     _DOMObjectElement = document.createElement(@"object");
     _DOMElement.appendChild(_DOMObjectElement);
 
-    _DOMObjectElement.outerHTML = [CPString stringWithFormat:@"<object classid=%@ width=%@ height=%@>%@</object>", IEFlashCLSID, CGRectGetWidth([self bounds]), CGRectGetHeight([self bounds]), paramString];
+    _DOMObjectElement.outerHTML = [CPString stringWithFormat:@"<object id=%@ classid=%@ width=%@ height=%@>%@</object>", [self elementID], IEFlashCLSID, CGRectGetWidth([self bounds]), CGRectGetHeight([self bounds]), paramString];
 }
 #endif
+
+- (CPString)elementID
+{
+    return @"CPFV_" + [self UID];
+}
+
+- (void)mouseMoved:(id)sommit
+{
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
+}
 
 - (void)mouseDragged:(CPEvent)anEvent
 {

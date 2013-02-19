@@ -25,6 +25,7 @@
 @import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPString.j>
 
+@import "CPKeyValueBinding.j"
 @import "CPMenuItem.j"
 
 @global CPApp
@@ -605,8 +606,9 @@ var _CPMenuBarVisible               = NO,
 
 /*!
     Enables or disables the receiver’s menu items.
-    If the target does not implement the menu item's action method the item is disabled.
-    If the target responsds to selector validateMenuItem: or validateUserInterfaceItem: (in that order) the return value is used.
+    If the item has no target, an action binding is checked. If the target does not implement
+    the menu item's action method or the binding's selector, the item is disabled.
+    If the target responds to selector validateMenuItem: or validateUserInterfaceItem: (in that order) the return value is used.
 */
 - (void)update
 {
@@ -614,6 +616,7 @@ var _CPMenuBarVisible               = NO,
         return;
 
     var items = [self itemArray];
+
     for (var i = 0; i < [items count]; i++)
     {
         var item = [items objectAtIndex:i];
@@ -623,7 +626,26 @@ var _CPMenuBarVisible               = NO,
 
         var validator = [CPApp targetForAction:[item action] to:[item target] from:item];
 
-        if (!validator || ![validator respondsToSelector:[item action]])
+        if (!validator)
+        {
+            // Check to see if there is a target binding with a valid selector
+            var info = [CPBinder infoForBinding:CPTargetBinding forObject:item],
+                valid = NO;
+
+            if (info)
+            {
+                var object = [info objectForKey:CPObservedObjectKey],
+                    keyPath = [info objectForKey:CPObservedKeyPathKey],
+                    options = [info objectForKey:CPOptionsKey],
+                    target = [object valueForKeyPath:keyPath],
+                    selector = [options valueForKey:CPSelectorNameBindingOption];
+
+                valid = target && selector && [target respondsToSelector:CPSelectorFromString(selector)];
+            }
+
+            [item setEnabled:valid];
+        }
+        else if (![validator respondsToSelector:[item action]])
             [item setEnabled:NO];
         else if ([validator respondsToSelector:@selector(validateMenuItem:)])
             [item setEnabled:[validator validateMenuItem:item]];
@@ -673,7 +695,13 @@ var _CPMenuBarVisible               = NO,
     // highlightedItem is always enabled. Do there exist edge cases: disabling on closing a menu,
     // etc.? Requires further investigation and tests.
     if (highlightedItem && [highlightedItem isEnabled])
+    {
+        // Perform any action binding
+        var binding = [CPBinder getBinding:CPTargetBinding forObject:highlightedItem];
+        [binding invokeAction];
+
         [CPApp sendAction:[highlightedItem action] to:[highlightedItem target] from:highlightedItem];
+    }
 }
 
 //

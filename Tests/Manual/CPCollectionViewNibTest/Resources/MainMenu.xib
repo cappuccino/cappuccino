@@ -57,7 +57,7 @@
 			<object class="NSWindowTemplate" id="972006081">
 				<int key="NSWindowStyleMask">9</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{618, 471}, {959, 583}}</string>
+				<string key="NSWindowRect">{{618, 234}, {959, 583}}</string>
 				<int key="NSWTFlags">1949827072</int>
 				<string key="NSWindowTitle">Window</string>
 				<string key="NSWindowClass">NSWindow</string>
@@ -879,7 +879,7 @@
 						</object>
 						<object class="NSScrollView" id="252338113">
 							<reference key="NSNextResponder" ref="439893737"/>
-							<int key="NSvFlags">268</int>
+							<int key="NSvFlags">306</int>
 							<object class="NSMutableArray" key="NSSubviews">
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSClipView" id="200232934">
@@ -903,6 +903,8 @@
 												<bool key="EncodedWithXMLCoder">YES</bool>
 												<reference ref="791752420"/>
 											</object>
+											<bool key="NSSelectable">YES</bool>
+											<bool key="NSAllowsMultipleSelection">YES</bool>
 											<int key="NSDraggingSourceMaskForLocal">-1</int>
 											<int key="NSDraggingSourceMaskForNonLocal">0</int>
 										</object>
@@ -935,7 +937,6 @@
 									<string key="NSFrame">{{1, 144}, {233, 15}}</string>
 									<reference key="NSSuperview" ref="252338113"/>
 									<reference key="NSWindow"/>
-									<reference key="NSNextKeyView"/>
 									<string key="NSReuseIdentifierKey">_NS:91</string>
 									<int key="NSsFlags">1</int>
 									<reference key="NSTarget" ref="252338113"/>
@@ -989,7 +990,7 @@
 				<object class="_NSManagedProxy" key="_NSManagedProxy"/>
 			</object>
 			<object class="NSCustomView" id="748828714">
-				<reference key="NSNextResponder"/>
+				<nil key="NSNextResponder"/>
 				<int key="NSvFlags">319</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -998,7 +999,6 @@
 						<int key="NSvFlags">271</int>
 						<string key="NSFrame">{{35, 57}, {78, 17}}</string>
 						<reference key="NSSuperview" ref="748828714"/>
-						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="26255097"/>
 						<string key="NSReuseIdentifierKey">_NS:1535</string>
 						<bool key="NSEnabled">YES</bool>
@@ -1018,8 +1018,6 @@
 						<int key="NSvFlags">319</int>
 						<string key="NSFrame">{{43, 23}, {62, 33}}</string>
 						<reference key="NSSuperview" ref="748828714"/>
-						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView"/>
 						<string key="NSReuseIdentifierKey">_NS:1535</string>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="672395192">
@@ -1040,8 +1038,6 @@
 					</object>
 				</object>
 				<string key="NSFrameSize">{149, 81}</string>
-				<reference key="NSSuperview"/>
-				<reference key="NSWindow"/>
 				<reference key="NSNextKeyView" ref="983992782"/>
 				<string key="NSClassName">ColorView</string>
 			</object>

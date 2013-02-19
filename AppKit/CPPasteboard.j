@@ -248,14 +248,14 @@ var CPPasteboards = nil,
 
 // Determining Types
 /*!
-    Checks the pasteboard's types for a match with the types listen in the specified array. The array should
+    Checks the pasteboard's types for a match with the types listed in the specified array. The array should
     be ordered by the requestor's most preferred data type first.
     @param anArray an array of requested types ordered by preference
     @return the highest match with the pasteboard's supported types or \c nil if no match was found
 */
 - (CPString)availableTypeFromArray:(CPArray)anArray
 {
-    return [[self types] firstObjectCommonWithArray:anArray];
+    return [anArray firstObjectCommonWithArray:[self types]];
 }
 
 /*!

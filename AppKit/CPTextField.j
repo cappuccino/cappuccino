@@ -543,6 +543,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 */
 - (void)_becomeFirstKeyResponder
 {
+    // Make sure the text field is visible so the browser will not scroll without the NSScrollView knowing about it.
+    [self scrollRectToVisible:[self bounds]];
+
     [self setThemeState:CPThemeStateEditing];
 
     [self _updatePlaceholderState];
@@ -1630,6 +1633,16 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 @end
 
 @implementation _CPTextFieldValueBinder : CPBinder
+
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPBinder)aBinding
+{
+    [super _updatePlaceholdersWithOptions:options];
+
+    [self _setPlaceholder:@"Multiple Values" forMarker:CPMultipleValuesMarker isDefault:YES];
+    [self _setPlaceholder:@"No Selection" forMarker:CPNoSelectionMarker isDefault:YES];
+    [self _setPlaceholder:@"Not Applicable" forMarker:CPNotApplicableMarker isDefault:YES];
+    [self _setPlaceholder:@"" forMarker:CPNullMarker isDefault:YES];
+}
 
 - (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
 {

@@ -330,6 +330,8 @@ CPTokenFieldDeleteButtonType     = 1;
     // As long as we are the first responder we need to monitor the key status of our window.
     [self _setObserveWindowKeyNotifications:YES];
 
+    [self scrollRectToVisible:[self bounds]];
+
     if ([[self window] isKeyWindow])
         [self _becomeFirstKeyResponder];
 
@@ -371,16 +373,19 @@ CPTokenFieldDeleteButtonType     = 1;
     element.style.width = CGRectGetWidth(contentRect) + "px";
     element.style.height = [font defaultLineHeightForFont] + "px";
 
-    [_tokenScrollView documentView]._DOMElement.appendChild(element);
-
     window.setTimeout(function()
     {
-        element.focus();
-        CPTokenFieldInputOwner = self;
-    }, 0.0);
+        [_tokenScrollView documentView]._DOMElement.appendChild(element);
 
-    //post CPControlTextDidBeginEditingNotification
-    [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+        //post CPControlTextDidBeginEditingNotification
+        [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+
+        window.setTimeout(function()
+        {
+            element.focus();
+            CPTokenFieldInputOwner = self;
+        }, 0.0);
+    }, 0.0);
 
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 
