@@ -12,8 +12,8 @@
 
 @implementation AppController : CPObject
 {
-    @outlet CPWindow        theWindow;
     CPDictionaryController  dictionaryController @accessors;
+    CPTableView             tableView @accessors;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -28,8 +28,9 @@
                         @"Blair", @"First Name",
                         @"Duncan", @"Last Name", 
                         @"Toronto", @"City"];
-
-    [dictionaryController setContent:dictionary];
+    [dictionaryController setContentDictionary:dictionary];
+    [tableView reloadData];
 }
+
 
 @end

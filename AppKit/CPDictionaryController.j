@@ -71,11 +71,6 @@
     return _contentDictionary;
 }
 
-- (void)setContent:(id)value
-{
-    [self setContentDictionary:value];
-}
-
 - (void)setContentDictionary:(CPDictionary)aDictionary
 {
     if (aDictionary == _contentDictionary)
