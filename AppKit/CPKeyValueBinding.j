@@ -550,7 +550,7 @@ var CPBindingOperationAnd = 0,
 
 @end
 
-@implementation _CPMultipleValueArgumentBinding : CPBinder
+@implementation _CPMultipleValueActionBinding : CPBinder
 {
     CPString _argumentBinding;
     CPString _targetBinding;
@@ -652,7 +652,7 @@ var CPBindingOperationAnd = 0,
 
 @end
 
-@implementation CPArgumentTargetBinding : _CPMultipleValueArgumentBinding
+@implementation CPActionBinding : _CPMultipleValueActionBinding
 
 - (id)init
 {
@@ -667,7 +667,7 @@ var CPBindingOperationAnd = 0,
 
 @end
 
-@implementation CPDoubleClickArgumentTargetBinding : _CPMultipleValueArgumentBinding
+@implementation CPDoubleClickActionBinding : _CPMultipleValueActionBinding
 
 - (id)init
 {

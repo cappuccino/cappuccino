@@ -122,7 +122,7 @@ CPButtonImageOffset   = 3.0;
 + (Class)_binderClassForBinding:(CPString)aBinding
 {
     if (aBinding === CPTargetBinding || [aBinding hasPrefix:CPArgumentBinding])
-        return [CPArgumentTargetBinding class];
+        return [CPActionBinding class];
 
     return [super _binderClassForBinding:aBinding];
 }

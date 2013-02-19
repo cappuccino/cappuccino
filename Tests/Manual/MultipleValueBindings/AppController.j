@@ -76,6 +76,15 @@
          informativeTextWithFormat:nil] runModal];
 }
 
+- (void)showHelp
+{
+    [[CPAlert alertWithMessageText:@"So you want some help?"
+                     defaultButton:@"Help!"
+                   alternateButton:nil
+                       otherButton:nil
+         informativeTextWithFormat:nil] runModal];
+}
+
 - (void)setNow
 {
     var now = [CPDate date];
