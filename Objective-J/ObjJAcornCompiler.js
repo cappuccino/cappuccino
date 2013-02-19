@@ -112,6 +112,18 @@ Scope.prototype.maybeWarnings = function()
     return this.rootScope()._maybeWarnings;
 }
 
+
+// This is for IE8 support. It doesn't have the Object.create function
+if (typeof Object.create !== 'function')
+{
+   Object.create = function (o)
+   {
+       function F() {}
+       F.prototype = o;
+       return new F();
+   };
+}
+
 var currentCompilerFlags = "";
 
 var reservedIdentifiers = exports.acorn.makePredicate("self _cmd undefined localStorage arguments");
