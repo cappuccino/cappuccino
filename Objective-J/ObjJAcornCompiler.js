@@ -751,7 +751,7 @@ Identifier: function(node, st, c) {
     if (st.currentMethodType() === "-" && !st.secondMemberExpression)
     {
         var identifier = node.name,
-            lvar = st.getLvar(identifier, true), // Stop looking at method
+            lvar = st.getLvar(identifier, true), // Only look inside method
             ivar = st.compiler.getIvarForClass(identifier, st);
 
         if (ivar)
