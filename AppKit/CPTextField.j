@@ -1634,6 +1634,16 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 @implementation _CPTextFieldValueBinder : CPBinder
 
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPBinder)aBinding
+{
+    [super _updatePlaceholdersWithOptions:options];
+
+    [self _setPlaceholder:@"Multiple Values" forMarker:CPMultipleValuesMarker isDefault:YES];
+    [self _setPlaceholder:@"No Selection" forMarker:CPNoSelectionMarker isDefault:YES];
+    [self _setPlaceholder:@"Not Applicable" forMarker:CPNotApplicableMarker isDefault:YES];
+    [self _setPlaceholder:@"" forMarker:CPNullMarker isDefault:YES];
+}
+
 - (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
 {
     [_source setPlaceholderString:aValue];
