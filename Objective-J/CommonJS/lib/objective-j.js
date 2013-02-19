@@ -185,7 +185,7 @@ exports.fullVersionString = function() {
 
 global.ObjectiveJ = {};
 
-for (key in exports)
+for (var key in exports)
     if (Object.prototype.hasOwnProperty.call(exports, key))
         global.ObjectiveJ[key] = exports[key];
 
