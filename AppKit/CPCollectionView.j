@@ -178,20 +178,19 @@ var HORIZONTAL_MARGIN = 2;
     Sets the item prototype to \c anItem
 
     The item prototype should implement the CPCoding protocol
-    because the item is copied by archiving and unarchiving the
-    prototypal view.
+    because the item is copied by archiving and unarchiving.
 
     Example:
 
     <pre>
-      @implement MyCustomView : CPCollectionViewItem
+      @implement MyCustomViewItem : CPCollectionViewItem
       {
           CPArray   items   @accessors;
       }
 
-      - (id)initWithFrame:(CGRect)aFrame
+      - (id)initWithCibName:(CPString)aCibNameOrNil bundle:(CPBundle)aCibBundleOrNil
       {
-        self = [super initWithFrame:aFrame];
+        self = [super initWithCibName:aCibNameOrNil bundle:aCibBundleOrNil];
         if (self)
         {
           items = [];
