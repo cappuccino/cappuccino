@@ -237,7 +237,7 @@
 
     [arrayController setSelectionIndex:0];
 
-    var options = [CPDictionary dictionaryWithJSObject:{CPMultipleValuesPlaceholderBindingOption:@"Multiple Values"}];
+    var options = [CPDictionary dictionaryWithObject:@"Multiple Values" forKey:CPMultipleValuesPlaceholderBindingOption];
     [textField bind:@"value" toObject:arrayController withKeyPath:@"selection.cheese" options:options];
 
     [self assert:@"yellow" equals:[textField stringValue] message:@"text field string value should be 'yellow'"];

@@ -133,15 +133,12 @@
 // List of all open native windows
 var PlatformWindows = [CPSet set];
 
-// Define up here so compressor knows about em.
+// Define up here so compressor knows about them.
 var CPDOMEventGetClickCount,
     CPDOMEventStop,
     StopDOMEventPropagation,
     StopContextMenuDOMEventPropagation;
 
-//right now we hard code q, w, r and t as keys to propogate
-//these aren't normal keycodes, they are with modifier key codes
-//might be mac only, we should investigate futher later.
 var KeyCodesToPrevent = {},
     CharacterKeysToPrevent = {},
     KeyCodesToAllow = {},
@@ -438,6 +435,7 @@ var resizeTimer = nil;
         theDocument.addEventListener("touchcancel", touchEventCallback, NO);
 
         _DOMWindow.addEventListener("DOMMouseScroll", scrollEventCallback, NO);
+        _DOMWindow.addEventListener("wheel", scrollEventCallback, NO);
         _DOMWindow.addEventListener("mousewheel", scrollEventCallback, NO);
 
         _DOMWindow.addEventListener("resize", resizeEventCallback, NO);
@@ -468,6 +466,7 @@ var resizeTimer = nil;
 
             //FIXME: does firefox really need a different value?
             _DOMWindow.removeEventListener("DOMMouseScroll", scrollEventCallback, NO);
+            _DOMWindow.removeEventListener("wheel", scrollEventCallback, NO);
             _DOMWindow.removeEventListener("mousewheel", scrollEventCallback, NO);
 
             //_DOMWindow.removeEventListener("beforeunload", this, NO);
@@ -554,7 +553,7 @@ var resizeTimer = nil;
     [PlatformWindows addObject:self];
 
     // FIXME: cpSetFrame?
-    _DOMWindow.document.write("<!DOCTYPE html><html lang='en'><head></head><body style='background-color:transparent;'></body></html>");
+    _DOMWindow.document.write('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"></head><body style="background-color:transparent;"></body></html>');
     _DOMWindow.document.close();
 
     if (self != [CPPlatformWindow primaryPlatformWindow])
@@ -898,6 +897,7 @@ var resizeTimer = nil;
             timestamp = [CPEvent currentTimestamp],  // fake event, might as well use current timestamp
             windowNumber = [[CPApp keyWindow] windowNumber],
             modifierFlags = CPPlatformActionKeyMask,
+            location = _lastMouseEventLocation || _CGPointMakeZero(),
             event = [CPEvent keyEventWithType:CPKeyDown location:location modifierFlags:modifierFlags
                     timestamp:timestamp windowNumber:windowNumber context:nil
                     characters:characters charactersIgnoringModifiers:characters isARepeat:NO keyCode:keyCode];
@@ -999,6 +999,7 @@ var resizeTimer = nil;
         aDOMEvent = window.event;
 
     var location = nil;
+
     if (CPFeatureIsCompatible(CPJavaScriptMouseWheelValues_8_15))
     {
         var x = aDOMEvent._offsetX || 0.0,
@@ -1059,7 +1060,7 @@ var resizeTimer = nil;
     {
         // Find the scroll delta
         var deltaX = _DOMScrollingElement.scrollLeft - 150,
-            deltaY = _DOMScrollingElement.scrollTop - 150;
+            deltaY = (_DOMScrollingElement.scrollTop - 150) || (aDOMEvent.deltaY===undefined?0: aDOMEvent.deltaY);
 
         // If we scroll super with momentum,
         // there are so many events going off that
@@ -1263,6 +1264,7 @@ var resizeTimer = nil;
         [_CPToolTip invalidateCurrentToolTipIfNeeded];
 
         var button = aDOMEvent.button;
+
         _mouseDownIsRightClick = button == 2 || (CPBrowserIsOperatingSystem(CPMacOperatingSystem) && button == 0 && modifierFlags & CPControlKeyMask);
 
         if (sourceElement.tagName === "INPUT" && sourceElement != _DOMFocusElement)
@@ -1649,7 +1651,7 @@ var resizeTimer = nil;
 + (void)preventCharacterKeysFromPropagating:(CPArray)characters
 {
     for (var i = characters.length; i > 0; i--)
-        CharacterKeysToPrevent[""+characters[i-1].toLowerCase()] = YES;
+        CharacterKeysToPrevent["" + characters[i - 1].toLowerCase()] = YES;
 }
 
 /*!

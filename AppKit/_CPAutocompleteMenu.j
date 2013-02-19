@@ -205,7 +205,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
     [self setIndexOfSelectedItem:indexOfSelectedItem];
 
     [textField setThemeState:CPThemeStateAutocompleting];
-    [_menuWindow orderFront:self];
+    [[textField window] addChildWindow:_menuWindow ordered:CPWindowAbove];
 
     [self layoutSubviews];
 }

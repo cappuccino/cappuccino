@@ -152,12 +152,14 @@ var CPControlBlackColor = [CPColor blackColor];
     [self exposeBinding:@"enabled"];
 }
 
-+ (Class)_binderClassForBinding:(CPString)theBinding
++ (Class)_binderClassForBinding:(CPString)aBinding
 {
-    if (theBinding === CPValueBinding)
+    if (aBinding === CPValueBinding)
         return [_CPValueBinder class];
+    else if ([aBinding hasPrefix:CPEnabledBinding])
+        return [CPMultipleValueAndBinding class];
 
-    return [super _binderClassForBinding:theBinding];
+    return [super _binderClassForBinding:aBinding];
 }
 
 /*!
@@ -238,6 +240,9 @@ var CPControlBlackColor = [CPColor blackColor];
 - (BOOL)sendAction:(SEL)anAction to:(id)anObject
 {
     [self _reverseSetBinding];
+
+    var binding = [CPBinder getBinding:CPTargetBinding forObject:self];
+    [binding invokeAction];
 
     return [CPApp sendAction:anAction to:anObject from:self];
 }

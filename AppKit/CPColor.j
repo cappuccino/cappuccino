@@ -1302,7 +1302,7 @@ var cloneObject = function(object)
         if (object.hasOwnProperty(key))
             if (object[key].constructor === Array)
                 clone[key] = object[key].slice(0);
-            else if (typeof(object) === "object")
+            else if (typeof(object[key]) === "object")
                 clone[key] = cloneObject(object[key]);
             else
                 clone[key] = object[key];

@@ -399,4 +399,13 @@
     [self assert:'@{\n    @"key1": @[\n        @"1",\n        @"2",\n        @"3"\n    ],\n    @"key2": @"This is a string",\n    @"key3": @{\n        @"another": @"object"\n    }\n}' equals:[json_dict description]];
 }
 
+- (void)testInitWithObjectsAndKeys
+{
+    var dict = [[CPDictionary alloc] initWithObjectsAndKeys:@"Value1", @"Key1", nil, @"Key2", @"Value3", @"Key3"];
+
+    [self assert:2 equals:[dict count]];    
+    [self assert:@"Value1" equals:[dict objectForKey:@"Key1"]];
+    [self assert:nil equals:[dict objectForKey:@"Key2"]]; // No key/value pair
+    [self assert:@"Value3" equals:[dict objectForKey:@"Key3"]];
+}
 @end

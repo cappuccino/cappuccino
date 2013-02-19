@@ -136,13 +136,26 @@ function CGColorSpaceCreateWithName(aName)
 
     switch (aName)
     {
-        case kCGColorSpaceGenericGray:      return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelMonochrome, 1, NULL);
-        case kCGColorSpaceGenericRGB:       return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelRGB, 3, NULL);
-        case kCGColorSpaceGenericCMYK:      return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelCMYK, 4, NULL);
-        case kCGColorSpaceGenericRGBLinear: return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelRGB, 3, NULL);
-        case kCGColorSpaceGenericRGBHDR:    return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelRGB, 3, NULL);
-        case kCGColorSpaceAdobeRGB1998:     return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelRGB, 3, NULL);
-        case kCGColorSpaceSRGB:             return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelRGB, 3, NULL);
+        case kCGColorSpaceGenericGray:
+            return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelMonochrome, 1, NULL);
+
+        case kCGColorSpaceGenericRGB:
+            return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelRGB, 3, NULL);
+
+        case kCGColorSpaceGenericCMYK:
+            return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelCMYK, 4, NULL);
+
+        case kCGColorSpaceGenericRGBLinear:
+            return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelRGB, 3, NULL);
+
+        case kCGColorSpaceGenericRGBHDR:
+            return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelRGB, 3, NULL);
+
+        case kCGColorSpaceAdobeRGB1998:
+            return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelRGB, 3, NULL);
+
+        case kCGColorSpaceSRGB:
+            return _CGNamedColorSpaces[aName] = _CGColorSpaceCreateWithModel(kCGColorSpaceModelRGB, 3, NULL);
     }
 
     return NULL;
@@ -228,13 +241,15 @@ function CGColorSpaceStandardizeComponents(aColorSpace, components)
         case kCGColorSpaceModelMonochrome:
         case kCGColorSpaceModelRGB:
         case kCGColorSpaceModelCMYK:
-        case kCGColorSpaceModelDeviceN:     while (count--)
-                                                STANDARDIZE(components, count, 0, 1, 255);
-                                            break;
+        case kCGColorSpaceModelDeviceN:
+            while (count--)
+                STANDARDIZE(components, count, 0, 1, 255);
+            break;
 
         // We don't currently support these color spaces.
         case kCGColorSpaceModelIndexed:
         case kCGColorSpaceModelLab:
-        case kCGColorSpaceModelPattern:     break;
+        case kCGColorSpaceModelPattern:
+            break;
     }
 }

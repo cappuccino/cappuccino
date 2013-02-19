@@ -214,9 +214,12 @@ var ELEMENTS = 100,
 
 - (void)testObjectsAtIndexesSpeed
 {
+    REPEATS = 100;
+
     var SIZE = 1000,
         c = SIZE,
-        r = rr = REPEATS = 100,
+        r = REPEATS,
+        rr = r,
         location = 0,
         array = [CPArray array],
         indexes = [CPIndexSet indexSet];

@@ -2440,6 +2440,14 @@ var themedButtonValues = nil,
             [@"window-standard-bottom-right.png", 2.0, 2.0]
         ]),
 
+        dividerColor = PatternColor(
+            "window-standard-divider{position}.png",
+            {
+                width: 1.0,
+                height: 1.0,
+                orientation: PatternIsHorizontal
+            }),
+
         closeButtonImage =                  PatternImage(@"window-standard-close-button.png", 16, 16),
         closeButtonImageHighlighted =       PatternImage(@"window-standard-button-highlighted.png",16, 16),
         unsavedButtonImage =                PatternImage(@"window-standard-button-unsaved.png",16, 16),
@@ -2467,7 +2475,7 @@ var themedButtonValues = nil,
             [@"title-vertical-alignment",   CPCenterVerticalTextAlignment],
             [@"title-bar-height",           31],
 
-            [@"divider-color",              [CPColor colorWithHexString:@"979797"]],
+            [@"divider-color",              dividerColor],
             [@"body-color",                 bezelColor],
             [@"title-bar-height",           31],
 
@@ -2580,10 +2588,9 @@ var themedButtonValues = nil,
 
         themeValues =
         [
-            [@"submenu-indicator-color",                                [CPColor grayColor]],
             [@"menu-item-selection-color",                              [CPColor colorWithHexString:@"5C85D8"]],
             [@"menu-item-text-shadow-color",                            [CPColor colorWithCalibratedRed:26.0 / 255.0 green: 73.0 / 255.0 blue:109.0 / 255.0 alpha:1.0]],
-            [@"horizontal-margin",                                      8.0],
+            [@"horizontal-margin",                                      12.0],
             [@"submenu-indicator-margin",                               3.0],
             [@"vertical-margin",                                        4.0]
         ];

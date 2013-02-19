@@ -63,19 +63,12 @@ CPBelowBottom = 6;
     CPTextField     _titleView;
 }
 
-+ (id)boxEnclosingView:(CPView)aView
++ (Class)_binderClassForBinding:(CPString)aBinding
 {
-    var box = [[self alloc] initWithFrame:CGRectMakeZero()],
-        enclosingView = [aView superview];
+    if ([aBinding hasPrefix:CPDisplayPatternTitleBinding])
+        return [CPTitleWithPatternBinding class];
 
-    [box setAutoresizingMask:[aView autoresizingMask]];
-    [box setFrameFromContentFrame:[aView frame]];
-
-    [enclosingView replaceSubview:aView with:box];
-
-    [box setContentView:aView];
-
-    return box;
+    return [super _binderClassForBinding:aBinding];
 }
 
 + (CPString)defaultThemeClass
@@ -94,6 +87,21 @@ CPBelowBottom = 6;
                                                    @"inner-shadow-size",
                                                    @"inner-shadow-color",
                                                    @"content-margin"]];
+}
+
++ (id)boxEnclosingView:(CPView)aView
+{
+    var box = [[self alloc] initWithFrame:CGRectMakeZero()],
+        enclosingView = [aView superview];
+
+    [box setAutoresizingMask:[aView autoresizingMask]];
+    [box setFrameFromContentFrame:[aView frame]];
+
+    [enclosingView replaceSubview:aView with:box];
+
+    [box setContentView:aView];
+
+    return box;
 }
 
 - (id)initWithFrame:(CGRect)frameRect
@@ -411,6 +419,14 @@ CPBelowBottom = 6;
     }
 }
 
+- (void)setValue:(id)aValue forKey:(CPString)aKey
+{
+    if (aKey === CPDisplayPatternTitleBinding)
+        [self setTitle:aValue || @""];
+    else
+        [super setValue:aValue forKey:aKey];
+}
+
 - (void)drawRect:(CGRect)rect
 {
     var bounds = CGRectMakeCopy([self bounds]);
@@ -421,9 +437,9 @@ CPBelowBottom = 6;
             // NSBox does not include a horizontal flag for the separator type. We have to determine
             // the type of separator to draw by the width and height of the frame.
             if (CGRectGetWidth(bounds) === 5.0)
-                return [self _drawVerticalSeperatorInRect:bounds];
+                return [self _drawVerticalSeparatorInRect:bounds];
             else if (CGRectGetHeight(bounds) === 5.0)
-                return [self _drawHorizontalSeperatorInRect:bounds];
+                return [self _drawHorizontalSeparatorInRect:bounds];
 
             break;
     }
@@ -462,7 +478,7 @@ CPBelowBottom = 6;
     }
 }
 
-- (void)_drawHorizontalSeperatorInRect:(CGRect)aRect
+- (void)_drawHorizontalSeparatorInRect:(CGRect)aRect
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort];
 
@@ -474,7 +490,7 @@ CPBelowBottom = 6;
     CGContextStrokePath(context);
 }
 
-- (void)_drawVerticalSeperatorInRect:(CGRect)aRect
+- (void)_drawVerticalSeparatorInRect:(CGRect)aRect
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort];
 
@@ -534,9 +550,9 @@ CPBelowBottom = 6;
         borderWidth = [self borderWidth],
         shadowOffset = [self valueForThemeAttribute:@"inner-shadow-offset"],
         shadowSize = [self valueForThemeAttribute:@"inner-shadow-size"],
-        shadowColor = [self valueForThemeAttribute:@"inner-shadow-color"];
+        shadowColor = [self valueForThemeAttribute:@"inner-shadow-color"],
+        baseRect = aRect;
 
-    var baseRect = aRect;
     aRect = CGRectInset(aRect, borderWidth / 2.0, borderWidth / 2.0);
 
     CGContextSaveGState(context);

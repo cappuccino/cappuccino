@@ -61,11 +61,11 @@ var DefaultLineWidth = 1.0;
 /*!
     Create a new CPBezierPath object initialized with an oval path drawn within a rectangular path.
 */
-+ (CPBezierPath)bezierPathWithOvalInRect:(CGRect)rect
++ (CPBezierPath)bezierPathWithOvalInRect:(CGRect)aRect
 {
     var path = [self bezierPath];
 
-    [path appendBezierPathWithOvalInRect:rect];
+    [path appendBezierPathWithOvalInRect:aRect];
 
     return path;
 }
@@ -73,11 +73,20 @@ var DefaultLineWidth = 1.0;
 /*!
     Create a new CPBezierPath object initialized with a rectangular path.
 */
-+ (CPBezierPath)bezierPathWithRect:(CGRect)rect
++ (CPBezierPath)bezierPathWithRect:(CGRect)aRect
 {
     var path = [self bezierPath];
 
-    [path appendBezierPathWithRect:rect];
+    [path appendBezierPathWithRect:aRect];
+
+    return path;
+}
+
++ (CPBezierPath)bezierPathWithRoundedRect:(CGRect)aRect xRadius:(float)xRadius yRadius:(float)yRadius
+{
+    var path = [self bezierPath];
+
+    [path appendBezierPathWithRoundedRect:aRect xRadius:xRadius yRadius:yRadius];
 
     return path;
 }

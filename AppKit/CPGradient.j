@@ -89,7 +89,7 @@ CPGradientDrawsAfterEndingLocation      = kCGGradientDrawsAfterEndLocation;
     CGContextClipToRect(ctx, rect);
     CGContextAddRect(ctx, rect);
 
-    [self _drawAtAngle:angle];
+    [self _drawInRect:rect atAngle:angle];
 
     CGContextRestoreGState(ctx);
 }

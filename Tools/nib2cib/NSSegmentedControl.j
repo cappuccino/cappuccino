@@ -63,7 +63,7 @@
         }
 
         // Adjust for differences between Cocoa and Cappuccino widget framing.
-        frame.origin.x += 4;
+        frame.origin.x += 6;
 
         if ([[[Converter sharedConverter] themes][0] name] == @"Aristo2")
             frame.size.height += 1;
