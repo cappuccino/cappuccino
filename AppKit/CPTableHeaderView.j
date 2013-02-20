@@ -321,6 +321,9 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     {
         var headerView = [_tableView._tableColumns[column] headerView];
         [headerView setThemeState:CPThemeStateHighlighted];
+
+        if (_tableView._editingColumn == column)
+            [[self window] makeFirstResponder:_tableView];
     }
 
     _pressedColumn = column;
