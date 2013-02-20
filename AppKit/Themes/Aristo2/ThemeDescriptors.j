@@ -1383,7 +1383,7 @@ var themedButtonValues = nil,
         suppressionButtonXOffset = 2.0,
         suppressionButtonYOffset = 10.0,
         suppressionButtonFont = [CPFont systemFontOfSize:CPFontCurrentSystemSize],
-        warningIcon = PatternImage("alert-warning.png", 53.0, 46.0);
+        warningIcon = PatternImage("alert-warning.png", 48.0, 43.0);
 
     // Global
     themedAlertValues =
