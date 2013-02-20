@@ -150,17 +150,15 @@ function CGPathAddCurveToPoint(aPath, aTransform, cp1x, cp1y, cp2x, cp2y, x, y)
 
 function CGPathAddLines(aPath, aTransform, points, count)
 {
-    var i = 1;
+    if (count === null || count === undefined)
+        count = points.length;
 
-    if (count === NULL)
-        var count = points.length;
-
-    if (!aPath || count < 2)
+    if (!aPath || count < 1)
         return;
 
     CGPathMoveToPoint(aPath, aTransform, points[0].x, points[0].y);
 
-    for (; i < count; ++i)
+    for (var i = 1; i < count; ++i)
         CGPathAddLineToPoint(aPath, aTransform, points[i].x, points[i].y);
 }
 
