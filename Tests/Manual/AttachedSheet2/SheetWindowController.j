@@ -100,6 +100,10 @@
     [_otherCloseButton setTarget:self];
     [_otherCloseButton setAction:unsetAction];
     [[aWindow contentView] addSubview:_otherCloseButton positioned:CPWindowAbove relativeTo:nil];
+
+    if ([aWindow styleMask] & CPHUDBackgroundWindowMask)
+        [[_closeButton, _altCloseButton, _otherCloseButton] makeObjectsPerformSelector:@selector(setTheme:) withObject:[CPTheme defaultHudTheme]];
+
 }
 
 - (SheetWindowController)initWithStyleMask:(int)styleMask debug:(int)debug
