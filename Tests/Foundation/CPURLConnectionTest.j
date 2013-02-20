@@ -1,4 +1,3 @@
-@import <Foundation/CPURLResponse.j>
 
 @implementation CPURLConnectionTest : OJTestCase
 {
@@ -17,6 +16,24 @@
     [self assert:@"application/json; charset=utf-8" equals:[parsed valueForKey:@"Content-Type"]];
     [self assert:@"no-cache" equals:[parsed valueForKey:@"Cache-Control"]];
     [self assert:7 equals:[[parsed allKeys] count]];
+}
+
+- (void)testSynchronousRequestSuccess
+{
+    var req = [CPURLRequest requestWithURL:@"Tests/Foundation/CPURLConnectionTest.j"],    
+        data = [CPURLConnection sendSynchronousRequest:req returningResponse:nil];
+
+    [self assert:CPData equals:[data class]];
+    [self assertNotNull:data];
+    [self assertFalse:([data rawString] == @"")];
+}
+
+- (void)testSynchronousRequestNotFound
+{
+    var req = [CPURLRequest requestWithURL:@"NotFound"],    
+        data = [CPURLConnection sendSynchronousRequest:req returningResponse:nil];
+
+    [self assertNull:data];
 }
 
 @end

@@ -95,6 +95,21 @@ function CGContextAddCurveToPoint(aContext, cp1x, cp1y, cp2x, cp2y, x, y)
     _CGContextAddCurveToPointCanvas(aContext, cp1x, cp1y, cp2x, cp2y, x, y);
 }
 
+function CGContextAddLines(aContext, points, count)
+{
+    // implementation mirrors that of CGPathAddLines()
+    if (count === null || count === undefined)
+        count = points.length;
+
+    if (count < 1)
+        return;
+
+    _CGContextMoveToPointCanvas(aContext, points[0].x, points[0].y);
+
+    for (var i = 1; i < count; ++i)
+        _CGContextAddLineToPointCanvas(aContext, points[i].x, points[i].y);
+}
+
 function CGContextAddLineToPoint(aContext, x, y)
 {
     _CGContextAddLineToPointCanvas(aContext, x, y);
@@ -106,7 +121,6 @@ function CGContextAddPath(aContext, aPath)
         return;
 
     var elements = aPath.elements,
-
         i = 0,
         count = aPath.count;
 
@@ -140,14 +154,17 @@ function CGContextAddRect(aContext, aRect)
     _CGContextAddRectCanvas(aContext, aRect);
 }
 
+function CGContextAddQuadCurveToPoint(aContext, cpx, cpy, x, y)
+{
+    _CGContextAddQuadCurveToPointCanvas(aContext, cpx, cpy, x, y);
+}
+
 function CGContextAddRects(aContext, rects, count)
 {
-    var i = 0;
+    if (count === null || count === undefined)
+        count = rects.length;
 
-    if (count === NULL)
-        var count = rects.length;
-
-    for (; i < count; ++i)
+    for (var i = 0; i < count; ++i)
     {
         var rect = rects[i];
         _CGContextAddRectCanvas(aContext, rect);
@@ -192,12 +209,10 @@ function CGContextFillRect(aContext, aRect)
 
 function CGContextFillRects(aContext, rects, count)
 {
-    var i = 0;
+    if (count === null || count === undefined)
+        count = rects.length;
 
-    if (count === NULL)
-        var count = rects.length;
-
-    for (; i < count; ++i)
+    for (var i = 0; i < count; ++i)
     {
         var rect = rects[i];
         _CGContextFillRectCanvas(aContext, rect);
@@ -225,8 +240,8 @@ function CGContextClipToRect(aContext, aRect)
 
 function CGContextClipToRects(aContext, rects, count)
 {
-    if (count === NULL)
-        var count = rects.length;
+    if (count === null || count === undefined)
+        count = rects.length;
 
     _CGContextBeginPathCanvas(aContext);
     CGContextAddRects(aContext, rects, count);

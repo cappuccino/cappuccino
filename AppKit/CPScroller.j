@@ -182,14 +182,17 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
         _allowFadingOut = YES;
         _isMouseOver = NO;
         _style = CPScrollerStyleOverlay;
-        var paramAnimFadeOut   = [CPDictionary dictionaryWithObjects:[self, CPViewAnimationFadeOutEffect]
-                                                          forKeys:[CPViewAnimationTargetKey, CPViewAnimationEffectKey]];
+        var paramAnimFadeOut = [CPDictionary dictionaryWithObjects:[self, CPViewAnimationFadeOutEffect]
+                                                           forKeys:[CPViewAnimationTargetKey, CPViewAnimationEffectKey]];
 
         _animationScroller = [[CPViewAnimation alloc] initWithDuration:0.2 animationCurve:CPAnimationEaseInOut];
         [_animationScroller setViewAnimations:[paramAnimFadeOut]];
         [_animationScroller setDelegate:self];
         [self setAlphaValue:0.0];
-        [self _calculateIsVertical];
+
+        // We have to choose an orientation. If for some bizarre reason width === height,
+        // punt and choose vertical.
+        [self _setIsVertical:_CGRectGetHeight(aFrame) >= _CGRectGetWidth(aFrame)];
     }
 
     return self;
@@ -646,13 +649,13 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
         if ([anEvent modifierFlags] & CPAlternateKeyMask)
         {
-            if (_trackingPart == CPScrollerDecrementLine)
+            if (_trackingPart === CPScrollerDecrementLine)
                 _hitPart = CPScrollerDecrementPage;
 
-            else if (_trackingPart == CPScrollerIncrementLine)
+            else if (_trackingPart === CPScrollerIncrementLine)
                 _hitPart = CPScrollerIncrementPage;
 
-            else if (_trackingPart == CPScrollerDecrementPage || _trackingPart == CPScrollerIncrementPage)
+            else if (_trackingPart === CPScrollerDecrementPage || _trackingPart === CPScrollerIncrementPage)
             {
                 var knobRect = [self rectForPart:CPScrollerKnob],
                     knobWidth = ![self isVertical] ? _CGRectGetWidth(knobRect) : _CGRectGetHeight(knobRect),
@@ -680,11 +683,11 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
     {
         _trackingStartPoint = [self convertPoint:[anEvent locationInWindow] fromView:nil];
 
-        if (_trackingPart == CPScrollerDecrementPage || _trackingPart == CPScrollerIncrementPage)
+        if (_trackingPart === CPScrollerDecrementPage || _trackingPart === CPScrollerIncrementPage)
         {
             var hitPart = [self testPart:[anEvent locationInWindow]];
 
-            if (hitPart == CPScrollerDecrementPage || hitPart == CPScrollerIncrementPage)
+            if (hitPart === CPScrollerDecrementPage || hitPart === CPScrollerIncrementPage)
             {
                 _trackingPart = hitPart;
                 _hitPart = hitPart;
@@ -700,18 +703,13 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
 }
 
-- (void)_calculateIsVertical
+- (void)_setIsVertical:(BOOL)isVertical
 {
-    // Recalculate isVertical.
-    var bounds = [self bounds],
-        width = _CGRectGetWidth(bounds),
-        height = _CGRectGetHeight(bounds);
+    _isVertical = isVertical;
 
-    _isVertical = width < height ? 1 : (width > height ? 0 : -1);
-
-    if (_isVertical === 1)
+    if (_isVertical)
         [self setThemeState:CPThemeStateVertical];
-    else if (_isVertical === 0)
+    else
         [self unsetThemeState:CPThemeStateVertical];
 }
 
@@ -746,12 +744,14 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
     switch (_hitPart)
     {
-        case CPScrollerKnob:            return [self trackKnob:anEvent];
+        case CPScrollerKnob:
+            return [self trackKnob:anEvent];
 
         case CPScrollerDecrementLine:
         case CPScrollerIncrementLine:
         case CPScrollerDecrementPage:
-        case CPScrollerIncrementPage:   return [self trackScrollButtons:anEvent];
+        case CPScrollerIncrementPage:
+            return [self trackScrollButtons:anEvent];
     }
 }
 
@@ -799,9 +799,10 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
 @end
 
-var CPScrollerControlSizeKey = @"CPScrollerControlSize",
+var CPScrollerControlSizeKey    = @"CPScrollerControlSize",
+    CPScrollerIsVerticalKey     = @"CPScrollerIsVerticalKey",
     CPScrollerKnobProportionKey = @"CPScrollerKnobProportion",
-    CPScrollerStyleKey = @"CPScrollerStyleKey";
+    CPScrollerStyleKey          = @"CPScrollerStyleKey";
 
 @implementation CPScroller (CPCoding)
 
@@ -810,7 +811,6 @@ var CPScrollerControlSizeKey = @"CPScrollerControlSize",
     if (self = [super initWithCoder:aCoder])
     {
         _controlSize = CPRegularControlSize;
-
         if ([aCoder containsValueForKey:CPScrollerControlSizeKey])
             _controlSize = [aCoder decodeIntForKey:CPScrollerControlSizeKey];
 
@@ -834,9 +834,9 @@ var CPScrollerControlSizeKey = @"CPScrollerControlSize",
         [_animationScroller setDelegate:self];
         [self setAlphaValue:0.0];
 
-        [self _calculateIsVertical];
-
         [self setStyle:[aCoder decodeIntForKey:CPScrollerStyleKey]];
+
+        [self _setIsVertical:[aCoder decodeBoolForKey:CPScrollerIsVerticalKey]];
     }
 
     return self;
@@ -847,6 +847,7 @@ var CPScrollerControlSizeKey = @"CPScrollerControlSize",
     [super encodeWithCoder:aCoder];
 
     [aCoder encodeInt:_controlSize forKey:CPScrollerControlSizeKey];
+    [aCoder encodeInt:_isVertical forKey:CPScrollerIsVerticalKey];
     [aCoder encodeFloat:_knobProportion forKey:CPScrollerKnobProportionKey];
     [aCoder encodeInt:_style forKey:CPScrollerStyleKey];
 }

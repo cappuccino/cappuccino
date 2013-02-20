@@ -544,7 +544,10 @@ var HORIZONTAL_MARGIN = 2;
             itemSize.width = MIN(maxItemSizeWidth, width);
     }
 
-    numberOfRows = MAX(1.0 , MIN(CEIL(itemsCount / numberOfColumns), _maxNumberOfRows));
+    numberOfRows = CEIL(itemsCount / numberOfColumns);
+
+    if (_maxNumberOfRows > 0)
+        numberOfRows = MIN(numberOfRows, _maxNumberOfRows);
 
     height = MAX(height, numberOfRows * (_minItemSize.height + _verticalMargin));
 
