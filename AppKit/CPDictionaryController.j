@@ -44,6 +44,7 @@
         _initialKey = @"key";
         _initialValue = @"value";
     }
+
     return self;
 }
 
@@ -63,14 +64,15 @@
 - (id)_newObjectWithKey:(CPString)aKey value:(id)aValue
 {
     var aNewObject = [_CPDictionaryControllerKeyValuePair new];
-    
+
     aNewObject._dictionary = _contentDictionary;
     aNewObject._controller = self;
     aNewObject._key = aKey;
+
     if (aValue !== nil)
         [aNewObject setValue:aValue];
 
-    return aNewObject
+    return aNewObject;
 }
 
 - (CPDictionary)contentDictionary
@@ -95,7 +97,7 @@
 
     var iter = [[CPSet setWithArray:allKeys] objectEnumerator],
         obj;
-    
+
     while ((obj = [iter nextObject]) !== nil)
         if (![_excludedKeys containsObject:obj])
             [array addObject:[self _newObjectWithKey:obj value:nil]];
