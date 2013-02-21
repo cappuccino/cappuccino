@@ -661,12 +661,6 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 - (void)addSublayer:(CALayer)aLayer
 {
     [self insertSublayer:aLayer atIndex:_sublayers.length];
-    return;
-
-    ADJUST_CONTENTS_ZINDEX(aLayer);
-
-    [_sublayers addObject:aLayer];
-    _DOMElement.appendChild(DOM(aLayer));
 }
 
 /*!
