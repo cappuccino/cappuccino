@@ -13,6 +13,13 @@
 //
 // [ghbt]: https://github.com/marijnh/acorn/issues
 //
+// This file defines the main parser interface. The library also comes
+// with a [error-tolerant parser][dammit] and an
+// [abstract syntax tree walker][walk], defined in other files.
+//
+// [dammit]: acorn_loose.js
+// [walk]: util/walk.js
+//
 // Objective-J extensions made by Martin Carlberg
 //
 // Git repositories for Acorn with Objective-J extension is available at
@@ -27,7 +34,7 @@ if (!exports.acorn) {
 (function(exports) {
   "use strict";
 
-  exports.version = "0.0.1";
+  exports.version = "0.1.01";
 
   // The main exported interface (under `self.acorn` when in the
   // browser) is a `parse` function that takes a code string and
@@ -41,10 +48,8 @@ if (!exports.acorn) {
 
   exports.parse = function(inpt, opts) {
     input = String(inpt); inputLen = input.length;
-    options = opts || {};
-    for (var opt in defaultOptions) if (!options.hasOwnProperty(opt))
-      options[opt] = defaultOptions[opt];
-    sourceFile = options.sourceFile || null;
+    setOptions(opts);
+    initTokenState();
     return parseTopLevel(options.program);
   };
 
@@ -107,6 +112,13 @@ if (!exports.acorn) {
     objj: true
   };
 
+  function setOptions(opts) {
+    options = opts || {};
+    for (var opt in defaultOptions) if (!options.hasOwnProperty(opt))
+      options[opt] = defaultOptions[opt];
+    sourceFile = options.sourceFile || null;
+  }
+
   // The `getLineInfo` function is mostly useful when the
   // `locations` option is off (for performance reasons) and you
   // want to find the line/column position for a given character
@@ -126,9 +138,44 @@ if (!exports.acorn) {
   };
 
   // Acorn is organized as a tokenizer and a recursive-descent parser.
-  // Both use (closure-)global variables to keep their state and
-  // communicate. We already saw the `options`, `input`, and
-  // `inputLen` variables above (set in `parse`).
+  // The `tokenize` export provides an interface to the tokenizer.
+  // Because the tokenizer is optimized for being efficiently used by
+  // the Acorn parser itself, this interface is somewhat crude and not
+  // very modular. Performing another parse or call to `tokenize` will
+  // reset the internal state, and invalidate existing tokenizers.
+
+  exports.tokenize = function(inpt, opts) {
+    input = String(inpt); inputLen = input.length;
+    setOptions(opts);
+    initTokenState();
+
+    var t = {};
+    function getToken(forceRegexp) {
+      readToken(forceRegexp);
+      t.start = tokStart; t.end = tokEnd;
+      t.startLoc = tokStartLoc; t.endLoc = tokEndLoc;
+      t.type = tokType; t.value = tokVal;
+      return t;
+    }
+    getToken.jumpTo = function(pos, reAllowed) {
+      tokPos = pos;
+      if (options.locations) {
+        tokCurLine = tokLineStart = lineBreak.lastIndex = 0;
+        var match;
+        while ((match = lineBreak.exec(input)) && match.index < pos) {
+          ++tokCurLine;
+          tokLineStart = match.index + match[0].length;
+        }
+      }
+      var ch = input.charAt(pos - 1);
+      tokRegexpAllowed = reAllowed;
+      skipSpace();
+    };
+    return getToken;
+  };
+
+  // State is kept in (closure-)global variables. We already saw the
+  // `options`, `input`, and `inputLen` variables above.
 
   // The current position of the tokenizer in the input.
 
@@ -174,7 +221,7 @@ if (!exports.acorn) {
 
   // When `options.locations` is true, these are used to keep
   // track of the current line, and know when a new line has been
-  // entered. See the `curLineLoc` function.
+  // entered.
 
   var tokCurLine, tokLineStart, tokLineStartNext;
 
@@ -255,7 +302,7 @@ if (!exports.acorn) {
   var _throw = {keyword: "throw", beforeExpr: true}, _try = {keyword: "try"}, _var = {keyword: "var"};
   var _while = {keyword: "while", isLoop: true}, _with = {keyword: "with"}, _new = {keyword: "new", beforeExpr: true};
   var _this = {keyword: "this"};
-  var _void = {keyword: "void", prefix: true};
+  var _void = {keyword: "void", prefix: true, beforeExpr: true};
 
   // The keywords that denote values.
 
@@ -288,10 +335,10 @@ if (!exports.acorn) {
                       "function": _function, "if": _if, "return": _return, "switch": _switch,
                       "throw": _throw, "try": _try, "var": _var, "while": _while, "with": _with,
                       "null": _null, "true": _true, "false": _false, "new": _new, "in": _in,
-                      "instanceof": {keyword: "instanceof", binop: 7}, "this": _this,
-                      "typeof": {keyword: "typeof", prefix: true},
+                      "instanceof": {keyword: "instanceof", binop: 7, beforeExpr: true}, "this": _this,
+                      "typeof": {keyword: "typeof", prefix: true, beforeExpr: true},
                       "void": _void,
-                      "delete": {keyword: "delete", prefix: true} };
+                      "delete": {keyword: "delete", prefix: true, beforeExpr: true} };
 
   // Map Objective-J keyword names to token types.
 
@@ -338,6 +385,15 @@ if (!exports.acorn) {
   var _bin5 = {binop: 5, beforeExpr: true}, _bin6 = {binop: 6, beforeExpr: true};
   var _bin7 = {binop: 7, beforeExpr: true}, _bin8 = {binop: 8, beforeExpr: true};
   var _bin10 = {binop: 10, beforeExpr: true};
+
+  // Provide access to the token types for external users of the
+  // tokenizer.
+
+  exports.tokTypes = {bracketL: _bracketL, bracketR: _bracketR, braceL: _braceL, braceR: _braceR,
+                      parenL: _parenL, parenR: _parenR, comma: _comma, semi: _semi, colon: _colon,
+                      dot: _dot, question: _question, slash: _slash, eq: _eq, name: _name, eof: _eof,
+                      num: _num, regexp: _regexp, string: _string};
+  for (var kw in keywordTypes) exports.tokTypes[kw] = keywordTypes[kw];
 
   // This is a trick taken from Esprima. It turns out that, on
   // non-Chrome browsers, to check whether a string is in a set, a
@@ -459,28 +515,12 @@ if (!exports.acorn) {
 
   // ## Tokenizer
 
-  // These are used when `options.locations` is on, in order to track
-  // the current line number and start of line offset, in order to set
-  // `tokStartLoc` and `tokEndLoc`.
+  // These are used when `options.locations` is on, for the
+  // `tokStartLoc` and `tokEndLoc` properties.
 
-  function nextLineStart() {
-    lineBreak.lastIndex = tokLineStart;
-    var match = lineBreak.exec(input);
-    return match ? match.index + match[0].length : input.length + 1;
-  }
-
-  var line_loc_t = function() {
+  function line_loc_t() {
     this.line = tokCurLine;
     this.column = tokPos - tokLineStart;
-  }
-
-  function curLineLoc() {
-    while (tokLineStartNext <= tokPos) {
-      ++tokCurLine;
-      tokLineStart = tokLineStartNext;
-      tokLineStartNext = nextLineStart();
-    }
-    return new line_loc_t();
   }
 
   // Reset the token state. Used at the start of a parse.
@@ -488,7 +528,6 @@ if (!exports.acorn) {
   function initTokenState() {
     tokCurLine = 1;
     tokPos = tokLineStart = 0;
-    tokLineStartNext = nextLineStart();
     tokRegexpAllowed = true;
     tokComments = null;
     tokSpaces = null;
@@ -502,7 +541,7 @@ if (!exports.acorn) {
 
   function finishToken(type, val) {
     tokEnd = tokPos;
-    if (options.locations) tokEndLoc = curLineLoc();
+    if (options.locations) tokEndLoc = new line_loc_t;
     tokType = type;
     skipSpace();
     tokVal = val;
@@ -515,32 +554,38 @@ if (!exports.acorn) {
   }
 
   function skipBlockComment() {
-    var end = input.indexOf("*/", tokPos += 2);
+    var startLoc = options.onComment && options.locations && new line_loc_t;
+    var start = tokPos, end = input.indexOf("*/", tokPos += 2);
     if (end === -1) raise(tokPos - 2, "Unterminated comment");
-    if (options.trackComments)
-      (tokComments || (tokComments = [])).push(input.slice(tokPos, end));
     tokPos = end + 2;
+    if (options.locations) {
+      lineBreak.lastIndex = start;
+      var match;
+      while ((match = lineBreak.exec(input)) && match.index < tokPos) {
+        ++tokCurLine;
+        tokLineStart = match.index + match[0].length;
+      }
+    }
+    if (options.onComment)
+      options.onComment(true, input.slice(start + 2, end), start, tokPos,
+                        startLoc, options.locations && new line_loc_t);
+    if (options.trackComments)
+      (tokComments || (tokComments = [])).push(input.slice(start, end));
   }
 
-  function skipLineComment(skipCharacters) {
+  function skipLineComment() {
     var start = tokPos;
-    var ch = input.charCodeAt(tokPos+=skipCharacters);
+    var startLoc = options.onComment && options.locations && new line_loc_t;
+    var ch = input.charCodeAt(tokPos+=2);
     while (tokPos < inputLen && ch !== 10 && ch !== 13 && ch !== 8232 && ch !== 8329) {
       ++tokPos;
       ch = input.charCodeAt(tokPos);
     }
+    if (options.onComment)
+      options.onComment(false, input.slice(start + 2, tokPos), start, tokPos,
+                        startLoc, options.locations && new line_loc_t);
     if (options.trackComments)
       (tokComments || (tokComments = [])).push(input.slice(start, tokPos));
-  }
-
-  function skipWhiteSpaces() {
-    var start = tokPos;
-    var ch = input.charCodeAt(++tokPos);
-    while ((ch < 14 && ch > 8) || ch === 32 || ch === 160 || (ch >= 5760 && nonASCIIwhitespace.test(String.fromCharCode(ch)))) // 9 - 13, ' ', '\xa0' ....
-      ch = input.charCodeAt(++tokPos);
-    if (options.trackSpaces)
-      //tokSpaces = input.slice(start, tokPos);
-      (tokSpaces || (tokSpaces = [])).push(input.slice(start, tokPos));
   }
 
   // Called at the start of the parse and after every token. Skips
@@ -552,17 +597,44 @@ if (!exports.acorn) {
   function skipSpace() {
     tokComments = null;
     tokSpaces = null;
+  var spaceStart = tokPos;
     while (tokPos < inputLen) {
       var ch = input.charCodeAt(tokPos);
-      if (ch === 47) { // '/'
+      if (ch === 32) { // ' '
+        ++tokPos;
+      } else if(ch === 13) {
+        ++tokPos;
+        var next = input.charCodeAt(tokPos);
+        if(next === 10) {
+          ++tokPos;
+        }
+        if(options.locations) {
+          ++tokCurLine;
+          tokLineStart = tokPos;
+        }
+      } else if (ch === 10) {
+        ++tokPos;
+        ++tokCurLine;
+        tokLineStart = tokPos;
+      } else if(ch < 14 && ch > 8) {
+        ++tokPos;
+      } else if (ch === 47) { // '/'
         var next = input.charCodeAt(tokPos+1);
         if (next === 42) { // '*'
+          if (options.trackSpaces)
+            (tokSpaces || (tokSpaces = [])).push(input.slice(spaceStart, tokPos));
           skipBlockComment();
+          spaceStart = tokPos;
         } else if (next === 47) { // '/'
-          skipLineComment(2);
+          if (options.trackSpaces)
+            (tokSpaces || (tokSpaces = [])).push(input.slice(spaceStart, tokPos));
+          skipLineComment();
+          spaceStart = tokPos;
         } else break;
-      } else if ((ch < 14 && ch > 8) || ch === 32 || ch === 160 || (ch >= 5760 && nonASCIIwhitespace.test(String.fromCharCode(ch)))) { // 9 - 13, ' ', '\xa0' ....
-        skipWhiteSpaces();
+      } else if ((ch < 14 && ch > 8) || ch === 32 || ch === 160) { // ' ', '\xa0'
+        ++tokPos;
+      } else if (ch >= 5760 && nonASCIIwhitespace.test(String.fromCharCode(ch))) {
+        ++tokPos;
       } else {
         break;
       }
@@ -692,7 +764,7 @@ if (!exports.acorn) {
       // Anything else beginning with a digit is an integer, octal
       // number, or float.
     case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: // 1-9
-      return readNumber(String.fromCharCode(code));
+      return readNumber(false);
 
       // Quotes produce strings.
     case 34: case 39: // '"', "'"
@@ -748,7 +820,7 @@ if (!exports.acorn) {
 
   function readToken(forceRegexp) {
     tokStart = tokPos;
-    if (options.locations) tokStartLoc = curLineLoc();
+    if (options.locations) tokStartLoc = new line_loc_t;
     tokCommentsBefore = tokComments;
     tokSpacesBefore = tokSpaces;
     if (forceRegexp) return readRegexp();
@@ -761,7 +833,7 @@ if (!exports.acorn) {
 
     var tok = getTokenFromCode(code);
 
-    if(tok === false) {
+    if (tok === false) {
       // If we are here, we either found a non-ASCII identifier
       // character, or something that's entirely disallowed.
       var ch = String.fromCharCode(code);
@@ -834,18 +906,18 @@ if (!exports.acorn) {
 
   // Read an integer, octal integer, or floating-point number.
 
-  function readNumber(ch) {
-    var start = tokPos, isFloat = ch === ".";
-    if (!isFloat && readInt(10) == null) raise(start, "Invalid number");
-    if (isFloat || input.charAt(tokPos) === ".") {
-      var next = input.charAt(++tokPos);
-      if (next === "-" || next === "+") ++tokPos;
-      if (readInt(10) === null && ch === ".") raise(start, "Invalid number");
+  function readNumber(startsWithDot) {
+    var start = tokPos, isFloat = false, octal = input.charCodeAt(tokPos) === 48;
+    if (!startsWithDot && readInt(10) === null) raise(start, "Invalid number");
+    if (input.charCodeAt(tokPos) === 46) {
+      ++tokPos;
+      readInt(10);
       isFloat = true;
     }
-    if (/e/i.test(input.charAt(tokPos))) {
-      var next = input.charAt(++tokPos);
-      if (next === "-" || next === "+") ++tokPos;
+    var next = input.charCodeAt(tokPos);
+    if (next === 69 || next === 101) { // 'eE'
+      next = input.charCodeAt(++tokPos);
+      if (next === 43 || next === 45) ++tokPos; // '+-'
       if (readInt(10) === null) raise(start, "Invalid number")
       isFloat = true;
     }
@@ -853,7 +925,7 @@ if (!exports.acorn) {
 
     var str = input.slice(start, tokPos), val;
     if (isFloat) val = parseFloat(str);
-    else if (ch !== "0" || str.length === 1) val = parseInt(str, 10);
+    else if (!octal || str.length === 1) val = parseInt(str, 10);
     else if (/[89]/.test(str) || strict) raise(start, "Invalid number");
     else val = parseInt(str, 8);
     return finishToken(_num, val);
@@ -897,13 +969,15 @@ if (!exports.acorn) {
           case 102: rs_str.push(12); break; // 'f' -> '\f'
           case 48: rs_str.push(0); break; // 0 -> '\0'
           case 13: if (input.charCodeAt(tokPos) === 10) ++tokPos; // '\r\n'
-          case 10: break; // ' \n'
+          case 10: // ' \n'
+            if (options.locations) { tokLineStart = tokPos; ++tokCurLine; }
+            break;
           default: rs_str.push(ch); break;
           }
         }
       } else {
         if (ch === 13 || ch === 10 || ch === 8232 || ch === 8329) raise(tokStart, "Unterminated string constant");
-        if (ch !== 92) rs_str.push(ch); // '\'   // This 'if' seems useless as the same thing is checked above..... - Martin
+        rs_str.push(ch); // '\'
         ++tokPos;
       }
     }
@@ -1019,17 +1093,17 @@ if (!exports.acorn) {
   // Start an AST node, attaching a start offset and optionally a
   // `commentsBefore` property to it.
 
-  var node_t = function(s) {
+  function node_t() {
     this.type = null;
     this.start = tokStart;
     this.end = null;
-  };
+  }
 
-  var node_loc_t = function(s) {
+  function node_loc_t() {
     this.start = tokStartLoc;
     this.end = null;
     if (sourceFile !== null) this.source = sourceFile;
-  };
+  }
 
   function startNode() {
     var node = new node_t();
@@ -1182,9 +1256,8 @@ if (!exports.acorn) {
   // to its body instead of creating a new node.
 
   function parseTopLevel(program) {
-    initTokenState();
     lastStart = lastEnd = tokPos;
-    if (options.locations) lastEndLoc = curLineLoc();
+    if (options.locations) lastEndLoc = new line_loc_t;
     inFunction = strict = null;
     labels = [];
     readToken();
@@ -1198,7 +1271,7 @@ if (!exports.acorn) {
       first = false;
     }
     return finishNode(node, "Program");
-  };
+  }
 
   var loopLabel = {kind: "loop"}, switchLabel = {kind: "switch"};
 
@@ -1993,7 +2066,7 @@ if (!exports.acorn) {
         isGetSet = sawGetSet = true;
         kind = prop.kind = prop.key.name;
         prop.key = parsePropertyName();
-        if (!tokType === _parenL) unexpected();
+        if (tokType !== _parenL) unexpected();
         prop.value = parseFunction(startNode(), false);
       } else unexpected();
 
