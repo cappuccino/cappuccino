@@ -133,15 +133,12 @@
 // List of all open native windows
 var PlatformWindows = [CPSet set];
 
-// Define up here so compressor knows about em.
+// Define up here so compressor knows about them.
 var CPDOMEventGetClickCount,
     CPDOMEventStop,
     StopDOMEventPropagation,
     StopContextMenuDOMEventPropagation;
 
-//right now we hard code q, w, r and t as keys to propogate
-//these aren't normal keycodes, they are with modifier key codes
-//might be mac only, we should investigate futher later.
 var KeyCodesToPrevent = {},
     CharacterKeysToPrevent = {},
     KeyCodesToAllow = {},
@@ -556,7 +553,7 @@ var resizeTimer = nil;
     [PlatformWindows addObject:self];
 
     // FIXME: cpSetFrame?
-    _DOMWindow.document.write("<!DOCTYPE html><html lang='en'><head></head><body style='background-color:transparent;'></body></html>");
+    _DOMWindow.document.write('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"></head><body style="background-color:transparent;"></body></html>');
     _DOMWindow.document.close();
 
     if (self != [CPPlatformWindow primaryPlatformWindow])
@@ -1267,6 +1264,7 @@ var resizeTimer = nil;
         [_CPToolTip invalidateCurrentToolTipIfNeeded];
 
         var button = aDOMEvent.button;
+
         _mouseDownIsRightClick = button == 2 || (CPBrowserIsOperatingSystem(CPMacOperatingSystem) && button == 0 && modifierFlags & CPControlKeyMask);
 
         if (sourceElement.tagName === "INPUT" && sourceElement != _DOMFocusElement)
@@ -1653,7 +1651,7 @@ var resizeTimer = nil;
 + (void)preventCharacterKeysFromPropagating:(CPArray)characters
 {
     for (var i = characters.length; i > 0; i--)
-        CharacterKeysToPrevent[""+characters[i-1].toLowerCase()] = YES;
+        CharacterKeysToPrevent["" + characters[i - 1].toLowerCase()] = YES;
 }
 
 /*!

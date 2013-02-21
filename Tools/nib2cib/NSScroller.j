@@ -29,28 +29,29 @@
 {
     if (self = [super NS_initWithCoder:aCoder])
     {
-        //"NSsFlags"
         //"NSArrowsLoc"
 
         _controlSize = CPRegularControlSize;
+
         //if ([aCoder containsValueForKey:CPScrollerControlSizeKey])
         //    _controlSize = [aCoder decodeIntForKey:CPScrollerControlSizeKey];
 
         _knobProportion = 1.0;
-        if ([aCoder containsValueForKey:"NSPercent"])
-            _knobProportion = [aCoder decodeFloatForKey:"NSPercent"];
+
+        if ([aCoder containsValueForKey:@"NSPercent"])
+            _knobProportion = [aCoder decodeFloatForKey:@"NSPercent"];
 
         _value = 0.0;
+
         // Cocoa uses NSCurValue instead of NSControl's NSContents
-        if ([aCoder containsValueForKey:"NSCurValue"])
-            _value = [aCoder decodeFloatForKey:"NSCurValue"];
+        if ([aCoder containsValueForKey:@"NSCurValue"])
+            _value = [aCoder decodeFloatForKey:@"NSCurValue"];
 
-        [self _calculateIsVertical];
-
-        var isVertical = [self isVertical];
+        // Horizontal scrollers have an int key NSsFlags === 1
+        _isVertical = [aCoder decodeIntForKey:@"NSsFlags"] !== 1;
 
         if (CPStringFromSelector([self action]) === @"_doScroller:")
-            if (isVertical)
+            if (_isVertical)
                 [self setAction:@selector(_verticalScrollerDidScroll:)];
             else
                 [self setAction:@selector(_horizontalScrollerDidScroll:)];
@@ -58,7 +59,7 @@
         _partRects = [];
 
         // FIXME:SIZE
-        if (isVertical)
+        if (_isVertical)
             [self setFrameSize:CGSizeMake(15.0, CGRectGetHeight([self frame]))];
         else
             [self setFrameSize:CGSizeMake(CGRectGetWidth([self frame]), 15.0)];

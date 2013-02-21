@@ -202,6 +202,9 @@ if (typeof document != "undefined")
     {
         PLATFORM_FEATURES[CPHTMLCanvasFeature] = YES;
 
+        // Any browser that supports canvas supports CSS opacity
+        PLATFORM_FEATURES[CPOpacityRequiresFilterFeature] = NO;
+
         // Detect canvas setTransform/transform support
         var context = document.createElement("canvas").getContext("2d");
 

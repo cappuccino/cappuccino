@@ -270,9 +270,12 @@ var PrimaryPlatformWindow   = NULL;
     _title = aTitle;
 
 #if PLATFORM(DOM)
-    if (_DOMWindow && _DOMWindow.document
-        && (aWindow === [CPApp mainWindow] || [aWindow platformWindow] !== [CPPlatformWindow primaryPlatformWindow]))
+    if (_DOMWindow &&
+        _DOMWindow.document &&
+        ([aWindow isFullPlatformWindow]))
+    {
         _DOMWindow.document.title = _title;
+    }
 #endif
 }
 

@@ -543,6 +543,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 */
 - (void)_becomeFirstKeyResponder
 {
+    // Make sure the text field is visible so the browser will not scroll without the NSScrollView knowing about it.
+    [self scrollRectToVisible:[self bounds]];
+
     [self setThemeState:CPThemeStateEditing];
 
     [self _updatePlaceholderState];
@@ -1631,22 +1634,14 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 @implementation _CPTextFieldValueBinder : CPBinder
 
-+ (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPBinder)aBinding
-{
-    var selector = "_updatePlaceholdersWithOptions:",
-        implementation = class_getMethodImplementation([aBinding superclass], selector);
-
-    implementation.apply(aBinding, [aBinding, selector, options]);
-
-    [aBinding _setPlaceholder:@"Multiple Values" forMarker:CPMultipleValuesMarker isDefault:YES];
-    [aBinding _setPlaceholder:@"No Selection" forMarker:CPNoSelectionMarker isDefault:YES];
-    [aBinding _setPlaceholder:@"Not Applicable" forMarker:CPNotApplicableMarker isDefault:YES];
-    [aBinding _setPlaceholder:@"" forMarker:CPNullMarker isDefault:YES];
-}
-
 - (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPBinder)aBinding
 {
-    [[self class] _updatePlaceholdersWithOptions:options forBinding:self];
+    [super _updatePlaceholdersWithOptions:options];
+
+    [self _setPlaceholder:@"Multiple Values" forMarker:CPMultipleValuesMarker isDefault:YES];
+    [self _setPlaceholder:@"No Selection" forMarker:CPNoSelectionMarker isDefault:YES];
+    [self _setPlaceholder:@"Not Applicable" forMarker:CPNotApplicableMarker isDefault:YES];
+    [self _setPlaceholder:@"" forMarker:CPNullMarker isDefault:YES];
 }
 
 - (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
@@ -1663,11 +1658,6 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 @end
 
 @implementation _CPTextFieldPatternValueBinder : CPValueWithPatternBinding
-
-- (void)_updatePlaceholdersWithOptions:(CPDictionary)options forBinding:(CPBinder)aBinding
-{
-    [_CPTextFieldValueBinder _updatePlaceholdersWithOptions:options forBinding:self];
-}
 
 - (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
 {

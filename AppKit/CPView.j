@@ -1576,6 +1576,7 @@ var CPViewFlags                     = { },
 - (void)rightMouseDown:(CPEvent)anEvent
 {
     var menu = [self menuForEvent:anEvent];
+
     if (menu)
         [CPMenu popUpContextMenu:menu withEvent:anEvent forView:self];
     else if ([[self nextResponder] isKindOfClass:CPView])
@@ -2784,6 +2785,12 @@ setBoundsOrigin:
     _theme = aTheme;
 
     [self viewDidChangeTheme];
+}
+
+- (void)_setThemeIncludingDescendants:(CPTheme)aTheme
+{
+    [self setTheme:aTheme];
+    [[self subviews] makeObjectsPerformSelector:@selector(_setThemeIncludingDescendants:) withObject:aTheme];
 }
 
 - (CPTheme)theme

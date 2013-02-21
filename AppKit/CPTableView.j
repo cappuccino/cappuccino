@@ -250,6 +250,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPDragOperation     _dragOperationDefaultMask;
     int                 _retargetedDropRow;
     CPDragOperation     _retargetedDropOperation;
+    CPArray             _draggingViews;
 
     BOOL                _disableAutomaticResizing @accessors(property=disableAutomaticResizing);
     BOOL                _lastColumnShouldSnap;
@@ -389,6 +390,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self addSubview:_tableDrawView];
 
     _draggedColumn = nil;
+    _draggingViews = [CPArray array];
 
 /*      //gradients for the source list when CPTableView is NOT first responder or the window is NOT key
     // FIX ME: we need to actually implement this.
@@ -980,9 +982,16 @@ NOT YET IMPLEMENTED
     if (_draggedColumn === aColumn)
         return;
 
+    var previouslyDraggedColumn = _draggedColumn;
     _draggedColumn = aColumn;
 
-    [self reloadDataForRowIndexes:_exposedRows columnIndexes:[CPIndexSet indexSetWithIndex:[_tableColumns indexOfObject:aColumn]]];
+    // if a column is currently being dragged, update that column (removing data views)
+    if (aColumn)
+        [self reloadDataForRowIndexes:_exposedRows columnIndexes:[CPIndexSet indexSetWithIndex:[_tableColumns indexOfObject:aColumn]]];
+
+    // when the column is dropped, we should also update it.
+    if (previouslyDraggedColumn)
+        [self reloadDataForRowIndexes:_exposedRows columnIndexes:[CPIndexSet indexSetWithIndex:[_tableColumns indexOfObject:previouslyDraggedColumn]]];
 }
 
 /*
@@ -2341,6 +2350,9 @@ NOT YET IMPLEMENTED
         autosaveName = [self autosaveName],
         tableColumns = [userDefaults objectForKey:[self _columnsKeyForAutosaveName:autosaveName]];
 
+    if ([tableColumns count] != [[self tableColumns] count])
+        return;
+
     for (var i = 0; i < [tableColumns count]; i++)
     {
         var metaData = [tableColumns objectAtIndex:i],
@@ -2348,11 +2360,13 @@ NOT YET IMPLEMENTED
             column = [self columnWithIdentifier:columnIdentifier],
             tableColumn = [self tableColumnWithIdentifier:columnIdentifier];
 
-        [self _moveColumn:column toColumn:i];
-        [tableColumn setWidth:[metaData objectForKey:@"width"]];
+        if (tableColumn && column != CPNotFound)
+        {
+            [self _moveColumn:column toColumn:i];
+            [tableColumn setWidth:[metaData objectForKey:@"width"]];
+        }
     }
 }
-
 
 /*!
 @anchor setdelegate
@@ -2873,6 +2887,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
             [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
             [view addSubview:dataView];
+            [_draggingViews addObject:dataView];
 
             row = [theDraggedRows indexGreaterThanIndex:row];
         }
@@ -2915,6 +2930,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
         [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
         [dragView addSubview:dataView];
+        [_draggingViews addObject:dataView];
 
         row = [_exposedRows indexGreaterThanIndex:row];
     }
@@ -4341,6 +4357,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     _retargetedDropRow = nil;
     _draggedRowIndexes = [CPIndexSet indexSet];
     [_dropOperationFeedbackView removeFromSuperview];
+    [self _enqueueDraggingViews];
 }
 
 /*
@@ -4527,6 +4544,16 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     [self _draggingEnded];
     [self draggedImage:aView endedAt:aLocation operation:anOperation];
+}
+
+- (void)_enqueueDraggingViews
+{
+    [_draggingViews enumerateObjectsUsingBlock:function(dataView, idx)
+    {
+        [self _enqueueReusableDataView:dataView];
+    }];
+
+    [_draggingViews removeAllObjects];
 }
 
 /*!

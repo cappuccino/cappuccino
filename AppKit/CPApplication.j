@@ -617,6 +617,14 @@ CPRunContinuesResponse  = -1002;
     [[theWindow platformWindow] _propagateCurrentDOMEvent:willPropagate];
 #endif
 
+    if ([anEvent type] == CPMouseMoved)
+    {
+        if (theWindow !== _lastMouseMoveWindow)
+            [_lastMouseMoveWindow _mouseExitedResizeRect];
+
+        _lastMouseMoveWindow = theWindow;
+    }
+
     if (_eventListeners.length)
     {
         var listener = _eventListeners[_eventListeners.length - 1];
@@ -635,14 +643,6 @@ CPRunContinuesResponse  = -1002;
         */
         if (listener._dequeue)
             return;
-    }
-
-    if ([anEvent type] == CPMouseMoved)
-    {
-        if (theWindow !== _lastMouseMoveWindow)
-            [_lastMouseMoveWindow _mouseExitedResizeRect];
-
-        _lastMouseMoveWindow = theWindow;
     }
 
     if (theWindow)

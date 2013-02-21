@@ -137,7 +137,10 @@ CPLogRegister(CPLogConsole);
         proposedIndex = proposedIndexRef();
 
     if (aCollectionView !== draggingSource)
+    {
+        [[CPCursor dragCopyCursor] set];
         return CPDragOperationCopy;
+    }
     else if (proposedIndex == dragIndex || proposedIndex == dragIndex + 1)
         return CPDragOperationNone;
 
@@ -160,6 +163,8 @@ CPLogRegister(CPLogConsole);
 
     [aCollectionView reloadContent];
     [tableView reloadData];
+
+    [CPCursor pop];
 
     return YES;
 }

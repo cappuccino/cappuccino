@@ -22,7 +22,7 @@
 
 @import <AppKit/CPProgressIndicator.j>
 
-@import "Converter.j"
+@class Converter
 
 var NSProgressIndicatorSpinningFlag = 1 << 12;
 
