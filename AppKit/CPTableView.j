@@ -2350,16 +2350,17 @@ NOT YET IMPLEMENTED
         autosaveName = [self autosaveName],
         tableColumns = [userDefaults objectForKey:[self _columnsKeyForAutosaveName:autosaveName]];
 
-    if([tableColumns count] != [[self tableColumns] count])
+    if ([tableColumns count] != [[self tableColumns] count])
         return;
-    
+
     for (var i = 0; i < [tableColumns count]; i++)
     {
         var metaData = [tableColumns objectAtIndex:i],
             columnIdentifier = [metaData objectForKey:@"identifier"],
             column = [self columnWithIdentifier:columnIdentifier],
             tableColumn = [self tableColumnWithIdentifier:columnIdentifier];
-        if(tableColumn && column != CPNotFound)
+
+        if (tableColumn && column != CPNotFound)
         {
             [self _moveColumn:column toColumn:i];
             [tableColumn setWidth:[metaData objectForKey:@"width"]];
@@ -2887,7 +2888,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
             [view addSubview:dataView];
             [_draggingViews addObject:dataView];
-            
+
             row = [theDraggedRows indexGreaterThanIndex:row];
         }
     }
@@ -4551,7 +4552,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     {
         [self _enqueueReusableDataView:dataView];
     }];
-    
+
     [_draggingViews removeAllObjects];
 }
 
