@@ -36,6 +36,7 @@ var CALayerGeometryBoundsMask                   = 1,
     CALayerGeometryAnchorPointMask              = 4,
     CALayerGeometryAffineTransformMask          = 8,
     CALayerGeometryParentSublayerTransformMask  = 16;
+
 var USE_BUFFER = NO;
 
 var CALayerFrameOriginUpdateMask                = 1,
@@ -349,7 +350,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 */
 - (void)setFrame:(CGRect)aFrame
 {
-    alert("FIXME IMPLEMENT");
+    // FIXME: implement this
 }
 
 /*!
@@ -932,7 +933,6 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
         return nil;
 
     var point = CGPointApplyAffineTransform(aPoint, _transformToLayer);
-    //alert(point.x + " " + point.y);
 
     if (!_CGRectContainsPoint(_bounds, point))
         return nil;
