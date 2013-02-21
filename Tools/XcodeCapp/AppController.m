@@ -306,7 +306,8 @@ float heightForStringDrawing(NSString *myString, NSFont *myFont, float myWidth)
     [_statusItem setImage:_iconInactive];
     [menuItemStartStop setTitle:@"Listen to Project…"];
     [menuItemStartStop setAction:@selector(chooseFolder:)];
-    
+    [self _prepareHistoryMenu];
+
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"LastOpenedPath"];
 }
 
