@@ -68,7 +68,6 @@ var CPGraphicsContextCurrent = nil,
 + (void)restoreGraphicsState
 {
     var lastContext = [CPGraphicsContextThreadStack lastObject];
-
     if (lastContext)
     {
         [lastContext restoreGraphicsState];
