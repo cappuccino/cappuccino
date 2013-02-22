@@ -42,7 +42,9 @@
         // small hack to position the box pixel perfect
         var frame = [self frame];
 
-        if (_boxType !== CPBoxSeparator)
+        // The primary and secondary boxes have a well-like look both in Cocoa and Cappuccino, but there
+        // are some sizing differences. Regular custom boxes have no size differences.
+        if (_boxType !== CPBoxSeparator && (_boxType === CPBoxPrimary || _boxType === CPBoxSecondary))
         {
             frame.origin.y += 4;
             frame.origin.x += 4;
