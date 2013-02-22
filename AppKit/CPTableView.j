@@ -1406,12 +1406,45 @@ NOT YET IMPLEMENTED
 
 
 /*!
-    Deselects all rows
+    @ignore
+    Deselects all rows and columns
 */
 - (void)deselectAll
 {
     [self selectRowIndexes:[CPIndexSet indexSet] byExtendingSelection:NO];
     [self selectColumnIndexes:[CPIndexSet indexSet] byExtendingSelection:NO];
+}
+
+- (void)selectAll:(id)sender
+{
+    if ([self allowsMultipleSelection])
+    {
+        if (_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ &&
+            ![_delegate selectionShouldChangeInTableView:self])
+            return;
+
+        if ([[self selectedColumnIndexes] count])
+            [self selectColumnIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfColumns])] byExtendingSelection:NO];
+        else
+            [self selectRowIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])] byExtendingSelection:NO];
+    }
+}
+
+- (void)selectNone:(id)sender
+{
+    [self deselectAll:sender];
+}
+
+- (void)deselectAll:(id)sender
+{
+    if ([self allowsEmptySelection])
+    {
+        if (_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ &&
+            ![_delegate selectionShouldChangeInTableView:self])
+            return;
+
+        [self deselectAll];
+    }
 }
 
 /*!
