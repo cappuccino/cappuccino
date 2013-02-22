@@ -1417,7 +1417,7 @@ NOT YET IMPLEMENTED
 
 - (void)selectAll:(id)sender
 {
-    if ([self allowsMultipleSelection])
+    if (_allowsMultipleSelection)
     {
         if (_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ &&
             ![_delegate selectionShouldChangeInTableView:self])
@@ -4600,6 +4600,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     var newSelection,
         shouldExtendSelection = NO;
+
     // If cmd/ctrl was held down XOR the old selection with the proposed selection
     if ([self mouseDownFlags] & (CPCommandKeyMask | CPControlKeyMask | CPAlternateKeyMask))
     {
@@ -4609,14 +4610,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
             [newSelection removeIndex:aRow];
         }
-
         else if (_allowsMultipleSelection)
         {
             newSelection = [_selectedRowIndexes copy];
 
             [newSelection addIndex:aRow];
         }
-
         else
             newSelection = [CPIndexSet indexSetWithIndex:aRow];
     }
