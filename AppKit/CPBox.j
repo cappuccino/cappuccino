@@ -287,7 +287,14 @@ CPBelowBottom = 6;
 
     [aView setFrame:CGRectInset([self bounds], contentMargin.width + borderWidth, contentMargin.height + borderWidth)];
     [aView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-    [self replaceSubview:_contentView with:aView];
+
+    //  A nil contentView is allowed (tested in Cocoa 2013-02-22).
+    if (!aView)
+        [_contentView removeFromSuperview];
+    else if (_contentView)
+        [self replaceSubview:_contentView with:aView];
+    else
+        [self addSubview:aView];
 
     _contentView = aView;
 }
