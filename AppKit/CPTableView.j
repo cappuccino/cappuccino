@@ -1406,7 +1406,8 @@ NOT YET IMPLEMENTED
 
 
 /*!
-    Deselects all rows
+    @ignore
+    Deselects all rows and columns
 */
 - (void)deselectAll
 {
