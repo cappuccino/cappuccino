@@ -259,6 +259,32 @@ var CPRadioRadioGroupKey    = @"CPRadioRadioGroupKey";
     return [_radios allObjects];
 }
 
+- (CPString)selectedValue
+{
+    return [_selectedRadio title];
+}
+
+- (void)setSelectedValue:(CPString)value
+{
+    var index = [[self radios] indexOfObjectPassingTest:
+                        function(a, i) 
+                            { return ([a title] === value);}
+                    ];
+    if (index != CPNotFound)
+    {
+        [self _setSelectedRadio:[[self radios] objectAtIndex:index]];
+        [_selectedRadio setState:CPOnState];
+    }
+    else
+        [self _setSelectedRadio:nil];
+}
+
+- (void)setEnabled:(BOOL)value
+{
+    [[self radios] makeObjectsPerformSelector:@selector(setEnabled:) withObject:value]
+}
+
+
 @end
 
 var CPRadioGroupRadiosKey           = @"CPRadioGroupRadiosKey",
