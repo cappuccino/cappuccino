@@ -1955,9 +1955,8 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     CGContextMoveToPoint(context, 0.0, 0.0);
     CGContextAddLineToPoint(context, 9.0, 0.0);
     CGContextAddLineToPoint(context, 4.5, 8.0);
-    CGContextAddLineToPoint(context, 0.0, 0.0);
-
     CGContextClosePath(context);
+
     CGContextSetFillColor(context,
         colorForDisclosureTriangle([self hasThemeState:CPThemeStateSelected],
             [self hasThemeState:CPThemeStateHighlighted]));
@@ -1965,8 +1964,8 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
     CGContextBeginPath(context);
     CGContextMoveToPoint(context, 0.0, 0.0);
-
     CGContextAddLineToPoint(context, 4.5, 8.0);
+
     if (_angle === 0.0)
         CGContextAddLineToPoint(context, 9.0, 0.0);
 

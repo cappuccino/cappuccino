@@ -554,7 +554,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     [self stopTrackingTableColumn:_activeColumn at:aLocation];
 
     [self setNeedsDisplay:YES];
-    
+
     [_tableView _enqueueDraggingViews];
 }
 
@@ -704,6 +704,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         columnMaxX;
 
     CGContextBeginPath(context);
+
     for (; columnArrayIndex < columnArrayCount; columnArrayIndex++)
     {
         // grab each column rect and add vertical lines
@@ -715,6 +716,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         CGContextMoveToPoint(context, FLOOR(columnMaxX) - 0.5, ROUND(_CGRectGetMinY(columnToStroke)));
         CGContextAddLineToPoint(context, FLOOR(columnMaxX) - 0.5, ROUND(_CGRectGetMaxY(columnToStroke)) - 1.0);
     }
+
     CGContextClosePath(context);
     CGContextStrokePath(context);
 

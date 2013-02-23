@@ -32,11 +32,13 @@
     [points addObject:CGPointMake(midX, minY)];
 
     [self lockFocus];
+
     var context = [[CPGraphicsContext currentContext] graphicsPort];
     CGContextSetLineWidth(context, 2);
     CGContextSetStrokeColor(context, [CPColor blueColor]);
 
     // test CGContextAddLines
+    CGContextBeginPath(context);
     CGContextAddLines(context, points, NULL);
 
     // test CGContextAddQuadCurveToPoint

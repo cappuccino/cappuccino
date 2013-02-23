@@ -43,7 +43,7 @@ kCGPathElementAddArcToPoint         = 6;
 */
 function CGPathCreateMutable()
 {
-    return { count:0, start:NULL, current:NULL, elements:[] };
+    return { count:0, start:_CGPointMake(0, 0), current:_CGPointMake(0, 0), elements:[] };
 }
 
 /*!
@@ -101,7 +101,7 @@ function CGPathAddArc(aPath, aTransform, x, y, aRadius, aStartAngle, anEndAngle,
         // Angles that equal "modulo" 2 pi return as equal after transforming them,
         // so we have to make sure to make them different again if they were different
         // to start out with.  It's the difference between no circle and a full circle.
-        if (anEndAngle == aStartAngle && oldEndAngle != oldStartAngle)
+        if (anEndAngle === aStartAngle && oldEndAngle != oldStartAngle)
             if (oldStartAngle > oldEndAngle)
                 anEndAngle = anEndAngle - PI2;
             else
@@ -112,7 +112,30 @@ function CGPathAddArc(aPath, aTransform, x, y, aRadius, aStartAngle, anEndAngle,
         aRadius = SQRT(aRadius.width * aRadius.width + aRadius.height * aRadius.height);
     }
 
-    aPath.current = _CGPointMake(x + aRadius * COS(anEndAngle), y + aRadius * SIN(anEndAngle));
+    /*
+        From the Cocoa docs:
+
+        If the specified path already contains a subpath, Quartz implicitly adds a line connecting the subpath’s current point to the beginning of the arc. If the path is empty, Quartz creates a new subpath with a starting point set to the starting point of the arc.
+
+        The ending point of the arc becomes the new current point of the path.
+    */
+    var arcEndX = x + aRadius * COS(anEndAngle),
+        arcEndY = y + aRadius * SIN(anEndAngle);
+
+    if (aPath.count)
+    {
+        if (aPath.current.x !== arcEndX || aPath.current.y !== arcEndY)
+            CGPathAddLineToPoint(aPath, aTransform, arcEndX, arcEndY);
+    }
+    else
+    {
+        var arcStartX = x + aRadius * COS(aStartAngle),
+            arcStartY = y + aRadius * SIN(aStartAngle);
+
+        aPath.start = _CGPointMake(arcStartX, arcStartY);
+    }
+
+    aPath.current = _CGPointMake(arcEndX, arcEndY);
     aPath.elements[aPath.count++] = { type:kCGPathElementAddArc, x:x, y:y, radius:aRadius, startAngle:aStartAngle, endAngle:anEndAngle, clockwise:isClockwise };
 }
 
@@ -126,6 +149,21 @@ function CGPathAddArcToPoint(aPath, aTransform, x1, y1, x2, y2, aRadius)
         p1 = _CGPointApplyAffineTransform(p1, aTransform);
         p2 = _CGPointApplyAffineTransform(p2, aTransform);
     }
+
+    /*
+        From the Cocoa docs:
+
+        If the current point and the first tangent point of the arc (the starting point) are not equal, Quartz appends a straight line segment from the current point to the first tangent point.
+
+        The ending point of the arc becomes the new current point of the path.
+    */
+    if (aPath.count)
+    {
+        if (aPath.current.x !== p1.x || aPath.current.y !== p1.y)
+            CGPathAddLineToPoint(aPath, aTransform, p1.x, p1.y);
+    }
+    else
+        aPath.start = p1;
 
     aPath.current = p2;
     aPath.elements[aPath.count++] = { type:kCGPathElementAddArcToPoint, p1x:p1.x, p1y:p1.y, p2x:p2.x, p2y:p2.y, radius:aRadius };
@@ -144,8 +182,8 @@ function CGPathAddCurveToPoint(aPath, aTransform, cp1x, cp1y, cp2x, cp2y, x, y)
         end = _CGPointApplyAffineTransform(end, aTransform);
     }
 
-   aPath.current = end;
-   aPath.elements[aPath.count++] = { type:kCGPathElementAddCurveToPoint, cp1x:cp1.x, cp1y:cp1.y, cp2x:cp2.x, cp2y:cp2.y, x:end.x, y:end.y };
+    aPath.current = end;
+    aPath.elements[aPath.count++] = { type:kCGPathElementAddCurveToPoint, cp1x:cp1.x, cp1y:cp1.y, cp2x:cp2.x, cp2y:cp2.y, x:end.x, y:end.y };
 }
 
 function CGPathAddLines(aPath, aTransform, points, count)
@@ -264,21 +302,23 @@ function CGPathAddRects(aPath, aTransform, rects, count)
 
 function CGPathMoveToPoint(aPath, aTransform, x, y)
 {
-    var point = _CGPointMake(x, y),
-        count = aPath.count;
+    var point = _CGPointMake(x, y);
 
     if (aTransform != NULL)
         point = _CGPointApplyAffineTransform(point, aTransform);
 
-    aPath.start = point;
-    aPath.current = point;
+    aPath.start = aPath.current = point;
 
-    var previous = aPath.elements[count - 1];
-
-    if (count != 0 && previous.type == kCGPathElementMoveToPoint)
+    // If the previous op was a move, just update that point
+    if (aPath.count)
     {
-        previous.x = point.x;
-        previous.y = point.y;
+        var previous = aPath.elements[count - 1];
+
+        if (previous.type === kCGPathElementMoveToPoint)
+        {
+            previous.x = point.x;
+            previous.y = point.y;
+        }
     }
     else
         aPath.elements[aPath.count++] = { type:kCGPathElementMoveToPoint, x:point.x, y:point.y };
@@ -290,7 +330,7 @@ function CGPathWithEllipseInRect(aRect)
 {
     var path = CGPathCreateMutable();
 
-    if (_CGRectGetWidth(aRect) == _CGRectGetHeight(aRect))
+    if (_CGRectGetWidth(aRect) === _CGRectGetHeight(aRect))
         CGPathAddArc(path, nil, _CGRectGetMidX(aRect), _CGRectGetMidY(aRect), _CGRectGetWidth(aRect) / 2.0, 0.0, 2 * PI, YES);
     else
     {
@@ -362,15 +402,17 @@ function CGPathCloseSubpath(aPath)
     var count = aPath.count;
 
     // Don't bother closing this subpath if there aren't any current elements, or the last element already closed the subpath.
-    if (count == 0 || aPath.elements[count - 1].type == kCGPathElementCloseSubpath)
+    if (count === 0 || aPath.elements[count - 1].type === kCGPathElementCloseSubpath)
         return;
 
+    // After closing, the current point is the previous path's starting point
+    aPath.current = _CGPointCreateCopy(aPath.start);
     aPath.elements[aPath.count++] = { type:kCGPathElementCloseSubpath, points:[aPath.start] };
 }
 
 function CGPathEqualToPath(aPath, anotherPath)
 {
-    if (aPath == anotherPath)
+    if (aPath === anotherPath)
         return YES;
 
     if (aPath.count != anotherPath.count || !_CGPointEqualToPoint(aPath.start, anotherPath.start) || !_CGPointEqualToPoint(aPath.current, anotherPath.current))
@@ -387,7 +429,7 @@ function CGPathEqualToPath(aPath, anotherPath)
         if (element.type != anotherElement.type)
             return NO;
 
-        if ((element.type == kCGPathElementAddArc || element.type == kCGPathElementAddArcToPoint) &&
+        if ((element.type === kCGPathElementAddArc || element.type === kCGPathElementAddArcToPoint) &&
             element.radius != anotherElement.radius)
             return NO;
 
@@ -408,7 +450,7 @@ function CGPathGetCurrentPoint(aPath)
 
 function CGPathIsEmpty(aPath)
 {
-    return !aPath || aPath.count == 0;
+    return !aPath || aPath.count === 0;
 }
 
 /*!
@@ -438,7 +480,7 @@ function CGPathGetBoundingBox(aPath)
         var element = aPath.elements[i];
 
         // Just enclose all the control points. The curves must be inside of the control points.
-        // This won't work for CGPathGetPathBoundingBox.
+        // This won't work for CGPathGetBoundingBox.
         switch (element.type)
         {
             case kCGPathElementAddLineToPoint:
