@@ -1430,11 +1430,6 @@ NOT YET IMPLEMENTED
     }
 }
 
-- (void)selectNone:(id)sender
-{
-    [self deselectAll:sender];
-}
-
 - (void)deselectAll:(id)sender
 {
     if ([self allowsEmptySelection])
