@@ -280,7 +280,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     [self stopEventStream];
 
     NSMutableArray *pathsToWatch = [NSMutableArray arrayWithObject:aPath];
-    void *appPointer = (void *)self;
+    void *appPointer = (__bridge void *)self;
     FSEventStreamContext context = {0, appPointer, NULL, NULL, NULL};
     CFTimeInterval latency = 2.0;
     FSEventStreamCreateFlags flags = 0;
@@ -314,7 +314,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         }
     }
 
-    stream = FSEventStreamCreate(NULL, &fsevents_callback, &context, (CFArrayRef) pathsToWatch,
+    stream = FSEventStreamCreate(NULL, &fsevents_callback, &context, (__bridge CFArrayRef) pathsToWatch,
                                  [lastEventId unsignedLongLongValue], latency, flags);
 
     FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
@@ -741,7 +741,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 
     for (NSString *subpath in subpaths)
     {
-        if ([subpath pathExtension] != @".h" || [subpath lastPathComponent] == @"xcc_general_include.h")
+        if (![[subpath pathExtension] isEqual:@".h"] || [[subpath lastPathComponent] isEqual:@"xcc_general_include.h"])
             continue;
 
         NSURL *unshadowed = [self sourceURLForShadowName:subpath];
@@ -856,7 +856,7 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     }
 
     if (date)
-        [pathModificationDates setObject:[date retain] forKey:path];
+        [pathModificationDates setObject:date forKey:path];
     else
         [pathModificationDates removeObjectForKey:path];
 
