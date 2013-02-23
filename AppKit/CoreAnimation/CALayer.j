@@ -36,6 +36,7 @@ var CALayerGeometryBoundsMask                   = 1,
     CALayerGeometryAnchorPointMask              = 4,
     CALayerGeometryAffineTransformMask          = 8,
     CALayerGeometryParentSublayerTransformMask  = 16;
+
 var USE_BUFFER = NO;
 
 var CALayerFrameOriginUpdateMask                = 1,
@@ -349,7 +350,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 */
 - (void)setFrame:(CGRect)aFrame
 {
-    alert("FIXME IMPLEMENT");
+    // FIXME: implement this
 }
 
 /*!
@@ -474,6 +475,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     CGContextSaveGState(_context);
 
     CGContextConcatCTM(_context, transform);//_transformFromView);
+
     if (USE_BUFFER)
     {
 //        CGContextDrawImage(_context, _bounds, _contents.context);
@@ -481,6 +483,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     }
     else
         [self drawInContext:_context];
+
     CGContextRestoreGState(_context);
 }
 
@@ -536,7 +539,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     @param aContext the context to draw the layer into
 */
 - (void)drawInContext:(CGContext)aContext
-{   //if (!window.loop || window.nodisplay) CPLog.error("htiasd");
+{
     if (_backgroundColor)
     {
         CGContextSetFillColor(aContext, _backgroundColor);
@@ -658,11 +661,6 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 - (void)addSublayer:(CALayer)aLayer
 {
     [self insertSublayer:aLayer atIndex:_sublayers.length];
-    return;
-    ADJUST_CONTENTS_ZINDEX(aLayer);
-
-    [_sublayers addObject:aLayer];
-    _DOMElement.appendChild(DOM(aLayer));
 }
 
 /*!
@@ -746,6 +744,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 - (void)insertSublayer:(CALayer)aLayer above:(CALayer)aSublayer
 {
     var index = aSublayer ? [_sublayers indexOfObjectIdenticalTo:aSublayer] : _sublayers.length;
+
     if (index == CPNotFound)
         [CPException raise:"CALayerNotFoundException" reason:"aSublayer is not a sublayer of this layer"];
 
@@ -762,10 +761,9 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
     if (aSublayer == aLayer)
         return;
 
-    // FIXME: EXCEPTION
     if (aSublayer._superlayer != self)
     {
-        alert("EXCEPTION");
+        CPLog.warn("Attempt to replace a sublayer (%s) which is not in the sublayers of the receiver (%s).", [aSublayer description], [self description]);
         return;
     }
 
@@ -798,6 +796,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 
         layer._runLoopUpdateMask = 0;
     }
+
     window.loop = false;
     CALayerRegisteredRunLoopUpdates = nil;
 }
@@ -928,7 +927,6 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
         return nil;
 
     var point = CGPointApplyAffineTransform(aPoint, _transformToLayer);
-    //alert(point.x + " " + point.y);
 
     if (!_CGRectContainsPoint(_bounds, point))
         return nil;

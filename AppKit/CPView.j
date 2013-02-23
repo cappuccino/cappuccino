@@ -2788,6 +2788,12 @@ setBoundsOrigin:
     [self viewDidChangeTheme];
 }
 
+- (void)_setThemeIncludingDescendants:(CPTheme)aTheme
+{
+    [self setTheme:aTheme];
+    [[self subviews] makeObjectsPerformSelector:@selector(_setThemeIncludingDescendants:) withObject:aTheme];
+}
+
 - (CPTheme)theme
 {
     return _theme;

@@ -91,15 +91,15 @@ var bottomHeight = 71;
     CPView              _accessoryView          @accessors(property=accessoryView);
     CPImage             _icon                   @accessors(property=icon);
 
-    CPArray             _buttons                @accessors(property=buttons,readonly);
-    CPCheckBox          _suppressionButton      @accessors(property=suppressionButton,readonly);
+    CPArray             _buttons                @accessors(property=buttons, readonly);
+    CPCheckBox          _suppressionButton      @accessors(property=suppressionButton, readonly);
 
     id                  _delegate               @accessors(property=delegate);
     id                  _modalDelegate;
     SEL                 _didEndSelector;
 
     _CPAlertThemeView   _themeView              @accessors(property=themeView, readonly);
-    CPWindow            _window                 @accessors(property=window,readonly);
+    CPWindow            _window                 @accessors(property=window, readonly);
     int                 _defaultWindowStyle;
 
     CPImageView         _alertImageView;
@@ -640,7 +640,7 @@ var bottomHeight = 71;
     var frame = CGRectMakeZero();
     frame.size = [_themeView currentValueForThemeAttribute:@"size"];
 
-    _window = [[CPWindow alloc] initWithContentRect:frame styleMask:forceStyle || _defaultWindowStyle];
+    _window = [[CPPanel alloc] initWithContentRect:frame styleMask:forceStyle || _defaultWindowStyle];
     [_window setLevel:CPStatusWindowLevel];
 
     if (_title)

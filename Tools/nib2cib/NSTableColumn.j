@@ -30,6 +30,10 @@
 @import "NSLevelIndicator.j"
 @import "NSTextField.j"
 
+@class Converter
+
+var IBDefaultFontSizeTableHeader = 11.0;
+
 @implementation CPTableColumn (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
@@ -92,11 +96,18 @@
         [_dataView setValue:[dataViewCell alignment] forThemeAttribute:@"alignment"];
 
         var headerCell = [aCoder decodeObjectForKey:@"NSHeaderCell"],
-            headerView = [[_CPTableColumnHeaderView alloc] initWithFrame:CGRectMakeZero()];
+            headerView = [[_CPTableColumnHeaderView alloc] initWithFrame:CGRectMakeZero()],
+            theme = [[Converter sharedConverter] themes][0];
 
         [headerView setStringValue:[headerCell objectValue]];
         [headerView setFont:[headerCell font]];
         [headerView setAlignment:[headerCell alignment]];
+
+        if ([[headerCell font] familyName] === IBDefaultFontFace && [[headerCell font] size] == IBDefaultFontSizeTableHeader)
+        {
+            [headerView setTextColor:[theme valueForAttributeWithName:@"text-color" forClass:_CPTableColumnHeaderView]];
+            [headerView setFont:[theme valueForAttributeWithName:@"font" forClass:_CPTableColumnHeaderView]];
+        }
 
         [self setHeaderView:headerView];
 

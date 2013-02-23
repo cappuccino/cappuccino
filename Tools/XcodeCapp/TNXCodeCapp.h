@@ -56,12 +56,12 @@ extern NSString * const XCCListeningStartNotification;
     BOOL                            supportFileLevelAPI;
 }
 
-@property (retain) NSObject* delegate;
-@property (retain) NSMutableArray* errorList;
-@property (retain) NSURL* XCodeSupportProject;
-@property (retain) NSURL* currentProjectURL;
-@property (retain) NSString* currentProjectName;
-@property (retain) NSString* currentAPIMode;
+@property (strong) NSObject* delegate;
+@property (strong) NSMutableArray* errorList;
+@property (strong) NSURL* XCodeSupportProject;
+@property (strong) NSURL* currentProjectURL;
+@property (strong) NSString* currentProjectName;
+@property (strong) NSString* currentAPIMode;
 @property BOOL supportsFileBasedListening;
 @property BOOL reactToInodeModification;
 @property BOOL isListening;

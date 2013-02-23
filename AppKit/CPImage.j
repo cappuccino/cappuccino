@@ -71,7 +71,7 @@ function CPImageInBundle()
 
     if (typeof(arguments[1]) === "number")
     {
-        if (arguments[1] !== nil && arguments[1] === undefined)
+        if (arguments[1] !== nil && arguments[1] !== undefined)
             size = _CGSizeMake(arguments[1], arguments[2]);
 
         bundle = arguments[3];

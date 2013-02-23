@@ -1418,12 +1418,45 @@ NOT YET IMPLEMENTED
 
 
 /*!
-    Deselects all rows
+    @ignore
+    Deselects all rows and columns
 */
 - (void)deselectAll
 {
     [self selectRowIndexes:[CPIndexSet indexSet] byExtendingSelection:NO];
     [self selectColumnIndexes:[CPIndexSet indexSet] byExtendingSelection:NO];
+}
+
+- (void)selectAll:(id)sender
+{
+    if (_allowsMultipleSelection)
+    {
+        if (_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ &&
+            ![_delegate selectionShouldChangeInTableView:self])
+            return;
+
+        if ([[self selectedColumnIndexes] count])
+            [self selectColumnIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfColumns])] byExtendingSelection:NO];
+        else
+            [self selectRowIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])] byExtendingSelection:NO];
+    }
+}
+
+- (void)selectNone:(id)sender
+{
+    [self deselectAll:sender];
+}
+
+- (void)deselectAll:(id)sender
+{
+    if ([self allowsEmptySelection])
+    {
+        if (_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ &&
+            ![_delegate selectionShouldChangeInTableView:self])
+            return;
+
+        [self deselectAll];
+    }
 }
 
 /*!
@@ -2455,6 +2488,9 @@ NOT YET IMPLEMENTED
         autosaveName = [self autosaveName],
         tableColumns = [userDefaults objectForKey:[self _columnsKeyForAutosaveName:autosaveName]];
 
+    if ([tableColumns count] != [[self tableColumns] count])
+        return;
+
     for (var i = 0; i < [tableColumns count]; i++)
     {
         var metaData = [tableColumns objectAtIndex:i],
@@ -2462,11 +2498,13 @@ NOT YET IMPLEMENTED
             column = [self columnWithIdentifier:columnIdentifier],
             tableColumn = [self tableColumnWithIdentifier:columnIdentifier];
 
-        [self _moveColumn:column toColumn:i];
-        [tableColumn setWidth:[metaData objectForKey:@"width"]];
+        if (tableColumn && column != CPNotFound)
+        {
+            [self _moveColumn:column toColumn:i];
+            [tableColumn setWidth:[metaData objectForKey:@"width"]];
+        }
     }
 }
-
 
 /*!
 @anchor setdelegate
@@ -2990,7 +3028,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
             [view addSubview:dataView];
             [_draggingViews addObject:dataView];
-            
+
             row = [theDraggedRows indexGreaterThanIndex:row];
         }
     }
@@ -4774,7 +4812,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     {
         [self _enqueueReusableDataView:dataView];
     }];
-    
+
     [_draggingViews removeAllObjects];
 }
 
@@ -4789,6 +4827,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     var newSelection,
         shouldExtendSelection = NO;
+
     // If cmd/ctrl was held down XOR the old selection with the proposed selection
     if ([self mouseDownFlags] & (CPCommandKeyMask | CPControlKeyMask | CPAlternateKeyMask))
     {
@@ -4798,14 +4837,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
             [newSelection removeIndex:aRow];
         }
-
         else if (_allowsMultipleSelection)
         {
             newSelection = [_selectedRowIndexes copy];
 
             [newSelection addIndex:aRow];
         }
-
         else
             newSelection = [CPIndexSet indexSetWithIndex:aRow];
     }
