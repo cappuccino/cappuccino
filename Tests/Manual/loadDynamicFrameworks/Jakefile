@@ -2,8 +2,8 @@
  * Jakefile
  * loadDynamicFrameworks
  *
- * Created by You on April 10, 2012.
- * Copyright 2012, Your Company All rights reserved.
+ * Created by Blair Duncan on February 23, 2013.
+ * Copyright 2013, SGL Studio, BBDO Toronto All rights reserved.
  */
 
 var ENV = require("system").env,
@@ -23,13 +23,14 @@ app ("loadDynamicFrameworks", function(task)
     task.setProductName("loadDynamicFrameworks");
     task.setIdentifier("com.yourcompany.loadDynamicFrameworks");
     task.setVersion("1.0");
-    task.setAuthor("Your Company");
-    task.setEmail("feedback @nospam@ yourcompany.com");
+    task.setAuthor("SGL Studio, BBDO Toronto");
+    task.setEmail("Blair.Duncan@BBDO.com");
     task.setSummary("loadDynamicFrameworks");
     task.setSources((new FileList("**/*.j")).exclude(FILE.join("Build", "**")));
     task.setResources(new FileList("Resources/**"));
     task.setIndexFilePath("index.html");
     task.setInfoPlistPath("Info.plist");
+    task.setNib2CibFlags("-R Resources/");
 
     if (configuration === "Debug")
         task.setCompilerFlags("-DDEBUG -g");

@@ -2,8 +2,8 @@
  * AppController.j
  * loadDynamicFrameworks
  *
- * Created by You on April 10, 2012.
- * Copyright 2012, Your Company All rights reserved.
+ * Created by Blair Duncan on February 23, 2013.
+ * Copyright 2013, SGL Studio, BBDO Toronto All rights reserved.
  */
 
 @import <Foundation/Foundation.j>

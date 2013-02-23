@@ -1,33 +1,38 @@
-<!DOCTYPE html
-    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <!--
  index-debug.html
  loadDynamicFrameworks
 
- Created by You on April 10, 2012.
- Copyright 2012, Your Company All rights reserved.
+ Created by Blair Duncan on February 23, 2013.
+ Copyright 2013, SGL Studio, BBDO Toronto All rights reserved.
 -->
     <head>
-        <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7, chrome=1" />
+        <meta charset="utf-8">
 
-        <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+        <!--[if lte IE 8]>
+        <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7, chrome=1">
+        <![endif]-->
+        <!--[if gte IE 9]>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <![endif]-->
 
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
 
-        <link rel="apple-touch-icon" href="Resources/icon.png" />
-        <link rel="apple-touch-startup-image" href="Resources/default.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+        <link rel="apple-touch-icon" href="Resources/icon.png">
+        <link rel="apple-touch-startup-image" href="Resources/default.png">
 
         <title>loadDynamicFrameworks</title>
 
         <script type="text/javascript">
             OBJJ_MAIN_FILE = "main.j";
-            OBJJ_INCLUDE_PATHS = ["Frameworks/Debug", "Frameworks", "SomethingElse"];
+            OBJJ_INCLUDE_PATHS = ["Frameworks/Debug", "Frameworks"];
         </script>
 
-        <script src="Frameworks/Debug/Objective-J/Objective-J.js" type="text/javascript" charset="UTF-8"></script>
+        <script type="text/javascript" src="Frameworks/Debug/Objective-J/Objective-J.js" charset="UTF-8"></script>
 
         <script type="text/javascript">
             objj_msgSend_reset();
@@ -88,7 +93,7 @@
                     <div id="container">
                         <div style="width: 440px; padding: 10px 25px 20px 25px; font-family: sans-serif; background-color: #ffffff; position: relative; left: -245px; top: -120px; text-align: center; -moz-border-radius: 20px; -webkit-border-radius: 20px; color: #555555">
                             <p style="line-height: 1.4em;">JavaScript is required for this site to work correctly but is either disabled or not supported by your browser.</p>
-                            <p style="font-size:120%; padding:10px;"><a href="http://cappuccino.org/noscript">Show me how to enable JavaScript</a></p>
+                            <p style="font-size:120%; padding:10px;"><a href="http://cappuccino-project.org/noscript">Show me how to enable JavaScript</a></p>
                             <p style="font-size:80%;">You may want to upgrade to a newer browser while you're at it:</p>
                             <ul style="margin:0;padding:0; text-align: center; font-size:80%;" >
                                 <li style="display: inline;"><a href="http://www.apple.com/safari/download/">Safari</a></li>
