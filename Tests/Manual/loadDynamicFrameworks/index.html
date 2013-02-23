@@ -1,0 +1,112 @@
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!--
+ index.html
+ MA
+
+ Created by Blair Duncan on January 31, 2013.
+ Copyright 2013, SGL Studio, BBDO Toronto All rights reserved.
+-->
+    <head>
+        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <meta content="utf-8" http-equiv="encoding">
+
+        <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7, chrome=1" />
+
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+        <link rel="apple-touch-icon" href="Resources/icon.png" />
+        <link rel="apple-touch-startup-image" href="Resources/default.png" />
+
+        <title>DocumentLoaderTest</title>
+
+        <script type="text/javascript">
+            OBJJ_MAIN_FILE = "main.j";
+        </script>
+        <script type="text/javascript">
+            var progressBarPill = null;
+
+            OBJJ_PROGRESS_CALLBACK = function(percent)
+            {
+                percent = 100 * percent;
+                if (!progressBarPill)
+                    progressBarPill = document.getElementById("progressBarPill");
+
+                if (percent > 5)
+                    progressBarPill.style.width = percent + "%";
+            }
+        </script>
+        <script type="text/javascript">
+            var ShowStartButton = function()
+            {
+                document.getElementById('container').innerHTML=("<div id='button'><BR><img onclick='StartMeUp()' src='Resources/StartButton.png'/><BR>Click to install</div>");
+            }
+            var StartMeUp = function()
+            {
+                var cpobj = document.createElement("script");
+                cpobj.type = "text/javascript";
+                cpobj.async = true;
+                cpobj.src = "Frameworks/Objective-J/Objective-J.js";
+                var s = document.getElementsByTagName('script')[0];
+                s.parentNode.insertBefore(cpobj, s);
+                document.getElementById('container').innerHTML=("<div id='container'>" +
+                                   "<div id='content'>" +
+                                       "<div id='textcontent'>Loading application...</div>" +
+                                       "<div id='progressBar'>" +
+                                           "<span id='progressBarPill'><span id='left'></span><span id='center'></span><span id='right'></span></span>" +
+                                       "</div>" +
+                                   "</div>" +
+                               "</div>");
+            }
+        </script>
+        <style type = "text/css">
+            body{margin:0; padding:0; background-color: rgb(211, 218, 223);}
+            #container {position: absolute; top:50%; left:50%;}
+            #button {width: 300px; margin-left: -150px; height: 300px; margin-top:-80px; text-align: center; font-family: sans-serif; font-size: 16px; color: #555555; text-shadow: 0px 1px 0px white;}
+            #content {width: 474px; margin-left: -254px; height: 135px; margin-top:-108px; background-image: url("Resources/LoginWindowBackground.png"); padding-top: 80px; padding-left: 35px; line-height: 30px; font-family: "Helvetica", "Arial", sans-serif; font-size: 14px; color: black; text-shadow: 0px 1px 0px white;}
+            #loadgraphic {margin-right: 0.2em; margin-bottom:-2px;}
+            #progressBarPill { display: block; height: 16px; width: 5%; position: relative; }
+            #progressBar { display: block; width: 190px; height: 16px; background: url('Resources/ProgressBarBezel.png'); }
+            #left { display: block; position: absolute; width: 3px; height: 15px; background-image: url('Resources/CPProgressIndicator/CPProgressIndicatorBarBarRegular0.png'); }
+            #center { display: block; position: absolute; left:3px; right: 3px; height: 15px; background-image: url('Resources/CPProgressIndicator/CPProgressIndicatorBarBarRegular1.png'); }
+            #right { display: block; position: absolute; right: 0; width: 3px; height: 15px; background-image: url('Resources/CPProgressIndicator/CPProgressIndicatorBarBarRegular2.png'); }
+            #foot {position: absolute; top:75%;width: 300px; margin-left: -150px; height: 40px;  text-align: center; font-family: sans-serif; font-size: 12px; color: #555555; text-shadow: 0px 1px 0px white;}
+        </style>
+
+        <!--[if lt IE 7]>
+        <STYLE type="text/css">
+            #container { position: relative; top: 50%; }
+            #content { position: relative;}
+        </STYLE>
+        <![endif]-->
+
+    </head>
+
+    <body style="" onload="ShowStartButton()">
+        <div id="loadingcontainer" style=" overflow:hidden; width:100%; height:100%; position: absolute; top: 0; left: 0;">
+            <div id="container">
+            </div>
+            <noscript>
+            <div id="container">
+                <div style="width: 440px; padding: 10px 25px 20px 25px; font-family: sans-serif; background-color: #ffffff; position: relative; left: -245px; top: -120px; text-align: center; -moz-border-radius: 20px; -webkit-border-radius: 20px; color: #555555">
+                    <p style="line-height: 1.4em;">JavaScript is required for this site to work correctly but is either disabled or not supported by your browser.</p>
+                    <p style="font-size:120%; padding:10px;"><a href="http://cappuccino.org/noscript">Show me how to enable JavaScript</a></p>
+                    <p style="font-size:80%;">You may want to upgrade to a newer browser while you're at it:</p>
+                    <ul style="margin:0;padding:0; text-align: center; font-size:80%;" >
+                        <li style="display: inline;"><a href="http://www.apple.com/safari/download/">Safari</a></li>
+                        <li style="display: inline;"><a href="http://www.mozilla.com/en-US/firefox/">Firefox</a></li>
+                        <li style="display: inline;"><a href="http://www.google.com/chrome/">Chrome</a></li>
+                        <li style="display: inline;"><a href="http://www.opera.com/download/">Opera</a></li>
+                        <li style="display: inline;"><a href="http://www.microsoft.com/windows/downloads/ie/getitnow.mspx">Internet Explorer</a></li>
+                    </ul>
+                </div>
+            </div>
+            </noscript>
+        </div>
+    </body>
+</html>
