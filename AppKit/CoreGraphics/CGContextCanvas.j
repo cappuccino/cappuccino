@@ -43,6 +43,16 @@ var CANVAS_LINECAP_TABLE    = [ "butt", "round", "square" ],
 #define _CGContextFillRectCanvas(aContext, aRect) aContext.fillRect(_CGRectGetMinX(aRect), _CGRectGetMinY(aRect), _CGRectGetWidth(aRect), _CGRectGetHeight(aRect))
 #define _CGContextClipCanvas(aContext) aContext.clip()
 
+// In Cocoa, all primitives excepts rects cannot be added to the context's path
+// until a move to point has been done, because an empty path has no current point.
+var hasPath = function(aContext, methodName)
+{
+    if (!aContext.hasPath)
+        CPLog.error(methodName + ": no current point");
+
+    return aContext.hasPath;
+}
+
 function CGContextSaveGState(aContext)
 {
     aContext.save();
@@ -80,6 +90,9 @@ function CGContextSetBlendMode(aContext, aBlendMode)
 
 function CGContextAddArc(aContext, x, y, radius, startAngle, endAngle, clockwise)
 {
+    if (!hasPath(aContext, "CGContextAddArc"))
+        return;
+
     // Despite the documentation saying otherwise, the last parameter is anti-clockwise not clockwise.
     // http://developer.mozilla.org/en/docs/Canvas_tutorial:Drawing_shapes#Arcs
     _CGContextAddArcCanvas(aContext, x, y, radius, startAngle, endAngle, !clockwise);
@@ -87,11 +100,17 @@ function CGContextAddArc(aContext, x, y, radius, startAngle, endAngle, clockwise
 
 function CGContextAddArcToPoint(aContext, x1, y1, x2, y2, radius)
 {
+    if (!hasPath(aContext, "CGContextAddArcToPoint"))
+        return;
+
     _CGContextAddArcToPointCanvas(aContext, x1, y1, x2, y2, radius);
 }
 
 function CGContextAddCurveToPoint(aContext, cp1x, cp1y, cp2x, cp2y, x, y)
 {
+    if (!hasPath(aContext, "CGContextAddCurveToPoint"))
+        return;
+
     _CGContextAddCurveToPointCanvas(aContext, cp1x, cp1y, cp2x, cp2y, x, y);
 }
 
@@ -108,10 +127,15 @@ function CGContextAddLines(aContext, points, count)
 
     for (var i = 1; i < count; ++i)
         _CGContextAddLineToPointCanvas(aContext, points[i].x, points[i].y);
+
+    aContext.hasPath = YES;
 }
 
 function CGContextAddLineToPoint(aContext, x, y)
 {
+    if (!hasPath(aContext, "CGContextAddLineToPoint"))
+        return;
+
     _CGContextAddLineToPointCanvas(aContext, x, y);
 }
 
@@ -119,6 +143,13 @@ function CGContextAddPath(aContext, aPath)
 {
     if (!aContext || CGPathIsEmpty(aPath))
         return;
+
+    // If the context does not have a path, explicitly begin one
+    if (!aContext.hasPath)
+        _CGContextBeginPathCanvas(aContext);
+
+    // We must implicitly move to the start of the path
+    _CGContextMoveToPointCanvas(aContext, aPath.start.x, aPath.start.y);
 
     var elements = aPath.elements,
         i = 0,
@@ -131,31 +162,50 @@ function CGContextAddPath(aContext, aPath)
 
         switch (type)
         {
-            case kCGPathElementMoveToPoint:         _CGContextMoveToPointCanvas(aContext, element.x, element.y);
-                                                    break;
-            case kCGPathElementAddLineToPoint:      _CGContextAddLineToPointCanvas(aContext, element.x, element.y);
-                                                    break;
-            case kCGPathElementAddQuadCurveToPoint: _CGContextAddQuadCurveToPointCanvas(aContext, element.cpx, element.cpy, element.x, element.y);
-                                                    break;
-            case kCGPathElementAddCurveToPoint:     _CGContextAddCurveToPointCanvas(aContext, element.cp1x, element.cp1y, element.cp2x, element.cp2y, element.x, element.y);
-                                                    break;
-            case kCGPathElementCloseSubpath:        _CGContextClosePathCanvas(aContext);
-                                                    break;
-            case kCGPathElementAddArc:              _CGContextAddArcCanvas(aContext, element.x, element.y, element.radius, element.startAngle, element.endAngle, element.clockwise);
-                                                    break;
-            case kCGPathElementAddArcToPoint:       _CGContextAddArcToPointCanvas(aContext, element.p1x, element.p1y, element.p2x, element.p2y, element.radius);
-                                                    break;
+            case kCGPathElementMoveToPoint:
+                _CGContextMoveToPointCanvas(aContext, element.x, element.y);
+                break;
+
+            case kCGPathElementAddLineToPoint:
+                _CGContextAddLineToPointCanvas(aContext, element.x, element.y);
+                break;
+
+            case kCGPathElementAddQuadCurveToPoint:
+                _CGContextAddQuadCurveToPointCanvas(aContext, element.cpx, element.cpy, element.x, element.y);
+                break;
+
+            case kCGPathElementAddCurveToPoint:
+                _CGContextAddCurveToPointCanvas(aContext, element.cp1x, element.cp1y, element.cp2x, element.cp2y, element.x, element.y);
+                break;
+
+            case kCGPathElementCloseSubpath:
+                _CGContextClosePathCanvas(aContext);
+                break;
+
+            case kCGPathElementAddArc:
+                _CGContextAddArcCanvas(aContext, element.x, element.y, element.radius, element.startAngle, element.endAngle, element.clockwise);
+                break;
+
+            case kCGPathElementAddArcToPoint:
+                _CGContextAddArcToPointCanvas(aContext, element.p1x, element.p1y, element.p2x, element.p2y, element.radius);
+                break;
         }
     }
+
+    aContext.hasPath = YES;
 }
 
 function CGContextAddRect(aContext, aRect)
 {
     _CGContextAddRectCanvas(aContext, aRect);
+    aContext.hasPath = YES;
 }
 
 function CGContextAddQuadCurveToPoint(aContext, cpx, cpy, x, y)
 {
+    if (!hasPath(aContext, "CGContextAddQuadCurveToPoint"))
+        return;
+
     _CGContextAddQuadCurveToPointCanvas(aContext, cpx, cpy, x, y);
 }
 
@@ -169,11 +219,14 @@ function CGContextAddRects(aContext, rects, count)
         var rect = rects[i];
         _CGContextAddRectCanvas(aContext, rect);
     }
+
+    aContext.hasPath = YES;
 }
 
 function CGContextBeginPath(aContext)
 {
     _CGContextBeginPathCanvas(aContext);
+    aContext.hasPath = NO;
 }
 
 function CGContextClosePath(aContext)
@@ -181,30 +234,42 @@ function CGContextClosePath(aContext)
     _CGContextClosePathCanvas(aContext);
 }
 
+function CGContextIsPathEmpty(aContext)
+{
+    return !aContext.hasPath;
+}
+
 function CGContextMoveToPoint(aContext, x, y)
 {
     _CGContextMoveToPointCanvas(aContext, x, y);
+    aContext.hasPath = YES;
 }
 
 function CGContextClearRect(aContext, aRect)
 {
     aContext.clearRect(_CGRectGetMinX(aRect), _CGRectGetMinY(aRect), _CGRectGetWidth(aRect), _CGRectGetHeight(aRect));
+    aContext.hasPath = NO;
 }
 
 function CGContextDrawPath(aContext, aMode)
 {
-    if (aMode == kCGPathFill || aMode == kCGPathFillStroke)
-        aContext.fill();
-    else if (aMode == kCGPathEOFill || aMode == kCGPathEOFillStroke)
-        alert("not implemented!!!");
+    if (!aContext.hasPath)
+        return;
 
-    if (aMode == kCGPathStroke || aMode == kCGPathFillStroke || aMode == kCGPathEOFillStroke)
+    if (aMode === kCGPathFill || aMode === kCGPathFillStroke)
+        aContext.fill();
+    else if (aMode === kCGPathStroke || aMode === kCGPathFillStroke || aMode === kCGPathEOFillStroke)
         aContext.stroke();
+    else if (aMode === kCGPathEOFill || aMode === kCGPathEOFillStroke)
+        CPLog.warn("Unimplemented fill mode in CGContextDrawPath: %d", aMode);
+
+    aContext.hasPath = NO;
 }
 
 function CGContextFillRect(aContext, aRect)
 {
     _CGContextFillRectCanvas(aContext, aRect);
+    aContext.hasPath = NO;
 }
 
 function CGContextFillRects(aContext, rects, count)
@@ -217,16 +282,20 @@ function CGContextFillRects(aContext, rects, count)
         var rect = rects[i];
         _CGContextFillRectCanvas(aContext, rect);
     }
+
+    aContext.hasPath = NO;
 }
 
 function CGContextStrokeRect(aContext, aRect)
 {
     aContext.strokeRect(_CGRectGetMinX(aRect), _CGRectGetMinY(aRect), _CGRectGetWidth(aRect), _CGRectGetHeight(aRect));
+    aContext.hasPath = NO;
 }
 
 function CGContextClip(aContext)
 {
     _CGContextClipCanvas(aContext);
+    aContext.hasPath = NO;
 }
 
 function CGContextClipToRect(aContext, aRect)
@@ -236,6 +305,7 @@ function CGContextClipToRect(aContext, aRect)
     _CGContextClosePathCanvas(aContext);
 
     _CGContextClipCanvas(aContext);
+    aContext.hasPath = NO;
 }
 
 function CGContextClipToRects(aContext, rects, count)
@@ -246,6 +316,7 @@ function CGContextClipToRects(aContext, rects, count)
     _CGContextBeginPathCanvas(aContext);
     CGContextAddRects(aContext, rects, count);
     _CGContextClipCanvas(aContext);
+    aContext.hasPath = NO;
 }
 
 function CGContextSetAlpha(aContext, anAlpha)
@@ -255,20 +326,11 @@ function CGContextSetAlpha(aContext, anAlpha)
 
 function CGContextSetFillColor(aContext, aColor)
 {
-    if ([aColor patternImage])
+    var patternImage = [aColor patternImage];
+
+    if ([patternImage isSingleImage])
     {
-        var patternImg = [aColor patternImage],
-            size = [patternImg size],
-            img;
-
-        if (size)
-            img = new Image(size.width, size.height);
-        else
-            img = new Image();
-
-        img.src = [patternImg filename];
-
-        var pattern = aContext.createPattern(img, "repeat");
+        var pattern = aContext.createPattern([patternImage image], "repeat");
 
         aContext.fillStyle = pattern;
     }
@@ -276,9 +338,54 @@ function CGContextSetFillColor(aContext, aColor)
         aContext.fillStyle = [aColor cssString];
 }
 
+/*!
+    Creates a context into which you can render a fill pattern
+    of the given size. Once the pattern is rendered, you can
+    set the fill or stroke pattern to the rendered pattern
+    with CGContextSetFillPattern or CGContextSetStrokePattern.
+*/
+function CGContextCreatePatternContext(aContext, aSize)
+{
+    var pattern = document.createElement("canvas");
+
+    pattern.width = aSize.width;
+    pattern.height = aSize.height;
+
+    return pattern.getContext("2d");
+}
+
+/*!
+    Sets the fill pattern for aContext to the rendered pattern context
+    returned by CGContextCreatePatternContext.
+*/
+function CGContextSetFillPattern(aContext, aPatternContext)
+{
+    var pattern = aContext.createPattern(aPatternContext.canvas, "repeat");
+    aContext.fillStyle = pattern;
+}
+
+/*!
+    Sets the stroke pattern for aContext to the rendered pattern context
+    returned by CGContextCreatePatternContext.
+*/
+function CGContextSetStrokePattern(aContext, aPatternContext)
+{
+    var pattern = aContext.createPattern(aPatternContext.canvas, "repeat");
+    aContext.strokeStyle = pattern;
+}
+
 function CGContextSetStrokeColor(aContext, aColor)
 {
-    aContext.strokeStyle = [aColor cssString];
+    var patternImage = [aColor patternImage];
+
+    if ([patternImage isSingleImage])
+    {
+        var pattern = aContext.createPattern([patternImage image], "repeat");
+
+        aContext.strokeStyle = pattern;
+    }
+    else
+        aContext.strokeStyle = [aColor cssString];
 }
 
 function CGContextSetShadow(aContext, aSize, aBlur)
@@ -311,59 +418,63 @@ function CGContextTranslateCTM(aContext, tx, ty)
     aContext.translate(tx, ty);
 }
 
-#define scale_rotate(a, b, c, d) \
-        var sign = (a * d < 0.0 || b * c > 0.0) ? -1.0 : 1.0, \
-            a2 = (ATAN2(b, d) + ATAN2(-sign * c, sign * a)) / 2.0, \
-            cos = COS(a2),\
-            sin = SIN(a2);\
-        \
-        if (cos == 0)\
-        {\
-            sx = -c / sin;\
-            sy = b / sin;\
-        }\
-        else if (sin == 0)\
-        {\
-            sx = a / cos;\
-            sy = d / cos;\
-        }\
-        else\
-        {\
-            abs_cos = ABS(cos);\
-            abs_sin = ABS(sin);\
-            \
-            sx = (abs_cos * a / cos + abs_sin * -c / sin) / (abs_cos + abs_sin);\
-            sy = (abs_cos * d / cos + abs_sin * b / sin) / (abs_cos + abs_sin);\
-        }\
+var scale_rotate = function(a, b, c, d)
+{
+    var sign = (a * d < 0.0 || b * c > 0.0) ? -1.0 : 1.0,
+        a2 = (ATAN2(b, d) + ATAN2(-sign * c, sign * a)) / 2.0,
+        cos = COS(a2),
+        sin = SIN(a2);
 
-#define rotate_scale(a, b, c, d) \
-        var sign = (a * d < 0.0 || b * c > 0.0) ? -1.0 : 1.0;\
-            a1 = (ATAN2(sign * b, sign * a) + ATAN2(-c, d)) / 2.0,\
-            cos = COS(a1),\
-            sin = SIN(a1);\
-               \
-        if (cos == 0)\
-        {\
-            sx = b / sin;\
-            sy = -c / sin;\
-        }\
-        else if (sin == 0)\
-        {\
-            sx = a / cos;\
-            sy = d / cos;\
-        }\
-        else\
-        {\
-            abs_cos = ABS(cos);\
-            abs_sin = ABS(sin);\
-            \
-            sx = (abs_cos * a / cos + abs_sin * b / sin) / (abs_cos + abs_sin);\
-            sy = (abs_cos * d / cos + abs_sin * -c / sin) / (abs_cos + abs_sin);\
-        }\
+    if (cos === 0)
+    {
+        sx = -c / sin;
+        sy = b / sin;
+    }
+    else if (sin === 0)
+    {
+        sx = a / cos;
+        sy = d / cos;
+    }
+    else
+    {
+        abs_cos = ABS(cos);
+        abs_sin = ABS(sin);
+
+        sx = (abs_cos * a / cos + abs_sin * -c / sin) / (abs_cos + abs_sin);
+        sy = (abs_cos * d / cos + abs_sin * b / sin) / (abs_cos + abs_sin);
+    }
+};
+
+var rotate_scale = function(a, b, c, d)
+{
+    var sign = (a * d < 0.0 || b * c > 0.0) ? -1.0 : 1.0;
+        a1 = (ATAN2(sign * b, sign * a) + ATAN2(-c, d)) / 2.0,
+        cos = COS(a1),
+        sin = SIN(a1);
+
+    if (cos === 0)
+    {
+        sx = b / sin;
+        sy = -c / sin;
+    }
+    else if (sin === 0)
+    {
+        sx = a / cos;
+        sy = d / cos;
+    }
+    else
+    {
+        abs_cos = ABS(cos);
+        abs_sin = ABS(sin);
+
+        sx = (abs_cos * a / cos + abs_sin * b / sin) / (abs_cos + abs_sin);
+        sy = (abs_cos * d / cos + abs_sin * -c / sin) / (abs_cos + abs_sin);
+    }
+};
 
 function eigen(anAffineTransform)
 {
-    alert("IMPLEMENT ME!");
+    CPLog.warn("Unimplemented function: eigen");
 }
 
 
@@ -393,20 +504,20 @@ CGContextConcatCTM = function(aContext, anAffineTransform)
         a2 = 0.0;
 
     // Detect the simple case of just scaling.
-    if (b == 0.0 && c == 0.0)
+    if (b === 0.0 && c === 0.0)
     {
         sx = a;
         sy = d;
     }
 
     // a scale followed by a rotate
-    else if (a * b == -c * d)
+    else if (a * b === -c * d)
     {
         scale_rotate(a, b, c, d)
     }
 
     // rotate, then scale.
-    else if (a * c == -b * d)
+    else if (a * c === -b * d)
     {
         rotate_scale(a, b, c, d)
     }
@@ -450,6 +561,7 @@ CGContextConcatCTM = function(aContext, anAffineTransform)
 function CGContextDrawImage(aContext, aRect, anImage)
 {
     aContext.drawImage(anImage._image, _CGRectGetMinX(aRect), _CGRectGetMinY(aRect), _CGRectGetWidth(aRect), _CGRectGetHeight(aRect));
+    aContext.hasPath = NO;
 }
 
 function to_string(aColor)
@@ -469,6 +581,7 @@ function CGContextDrawLinearGradient(aContext, aGradient, aStartPoint, anEndPoin
 
     aContext.fillStyle = linearGradient;
     aContext.fill();
+    aContext.hasPath = NO;
 }
 
 function CGBitmapGraphicsContextCreate()
@@ -477,6 +590,9 @@ function CGBitmapGraphicsContextCreate()
         context = DOMElement.getContext("2d");
 
     context.DOMElement = DOMElement;
+
+    // canvas gives us no way to query whether the path is empty or not, so we have to track it ourselves
+    context.hasPath = NO;
 
     return context;
 }

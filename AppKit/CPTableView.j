@@ -3681,6 +3681,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     while (colorIndex < colorCount)
     {
         CGContextBeginPath(context);
+
         for (var row = firstRow + colorIndex; row <= lastRow; row += colorCount)
         {
             // if it's not a group row draw it otherwise we draw it later
@@ -3689,6 +3690,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             else
                 groupRowRects.push(CGRectIntersection(aRect, [self _rectOfRow:row checkRange:NO]));
         }
+
         CGContextClosePath(context);
 
         CGContextSetFillColor(context, rowColors[colorIndex]);
@@ -3861,22 +3863,20 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                 CGContextFillPath(context);
                 CGContextBeginPath(context);
             }
+
             CGContextAddRect(context, rowRect);
 
             CGContextDrawLinearGradient(context, (shouldUseGroupGradient) ? gradientGroupColor : gradientColor, rowRect.origin, _CGPointMake(minX, maxY), 0);
-            CGContextClosePath(context);
 
             CGContextBeginPath(context);
             CGContextMoveToPoint(context, minX, minY + .5);
             CGContextAddLineToPoint(context, maxX, minY + .5);
-            CGContextClosePath(context);
             CGContextSetStrokeColor(context, (shouldUseGroupGradient) ? topGroupLineColor : topLineColor);
             CGContextStrokePath(context);
 
             CGContextBeginPath(context);
             CGContextMoveToPoint(context, minX, maxY - .5);
             CGContextAddLineToPoint(context, maxX, maxY - .5);
-            CGContextClosePath(context);
             CGContextSetStrokeColor(context, (shouldUseGroupGradient) ? bottomGroupLineColor : bottomLineColor);
             CGContextStrokePath(context);
         }
@@ -3911,7 +3911,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     }
 
     CGContextBeginPath(context);
+
     var gridStyleMask = [self gridStyleMask];
+
     for (var i = 0; i < count2; i++)
     {
          var rect = objj_msgSend(self, rectSelector, indexes[i]),
@@ -3926,7 +3928,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                 exposedColumnIndexes = [],
                 firstExposedColumn = [exposedColumns firstIndex],
                 exposedRange = CPMakeRange(firstExposedColumn, [exposedColumns lastIndex] - firstExposedColumn + 1);
+
             [exposedColumns getIndexes:exposedColumnIndexes maxCount:-1 inIndexRange:exposedRange];
+
             var exposedColumnCount = [exposedColumnIndexes count];
 
             for (var c = firstExposedColumn; c < exposedColumnCount; c++)
@@ -3988,25 +3992,20 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                 maxY = CGRectGetMaxY(rowRect);
 
             CGContextDrawLinearGradient(context, gradientColor, rowRect.origin, CGPointMake(minX, maxY), 0);
-            CGContextClosePath(context);
 
             CGContextBeginPath(context);
             CGContextMoveToPoint(context, minX, minY);
             CGContextAddLineToPoint(context, maxX, minY);
-            CGContextClosePath(context);
             CGContextSetStrokeColor(context, topLineColor);
             CGContextStrokePath(context);
 
             CGContextBeginPath(context);
             CGContextMoveToPoint(context, minX, maxY);
             CGContextAddLineToPoint(context, maxX, maxY - 1);
-            CGContextClosePath(context);
             CGContextSetStrokeColor(context, bottomLineColor);
             CGContextStrokePath(context);
         }
     }
-
-    CGContextClosePath(context);
 }
 
 /*!
@@ -5098,6 +5097,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
             CGContextSetFillColor(context, [CPColor colorWithRed:72 / 255 green:134 / 255 blue:202 / 255 alpha:0.25]);
             CGContextFillRoundedRectangleInRect(context, newRect, 8, YES, YES, YES, YES);
         }
+
         CGContextStrokeRoundedRectangleInRect(context, newRect, 8, YES, YES, YES, YES);
 
     }
@@ -5118,7 +5118,6 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
             CGContextBeginPath(context);
             CGContextMoveToPoint(context, 10, aRect.origin.y + 8);
             CGContextAddLineToPoint(context, aRect.size.width - aRect.origin.y - 8, aRect.origin.y + 8);
-            CGContextClosePath(context);
             CGContextStrokePath(context);
 
             CGContextSetStrokeColor(context, [CPColor colorWithHexString:@"4886ca"]);
@@ -5131,7 +5130,6 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
         CGContextBeginPath(context);
         CGContextMoveToPoint(context, 10, aRect.origin.y + 8);
         CGContextAddLineToPoint(context, aRect.size.width - aRect.origin.y - 8, aRect.origin.y + 8);
-        CGContextClosePath(context);
         CGContextStrokePath(context);
         //CGContextStrokeLineSegments(context, [aRect.origin.x + 8,  aRect.origin.y + 8, 300 , aRect.origin.y + 8]);
     }

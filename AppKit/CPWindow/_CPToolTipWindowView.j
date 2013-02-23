@@ -99,17 +99,17 @@
     CGContextSetStrokeColor(context, strokeColor);
     CGContextSetFillColor(context, bgColor);
     CGContextSetLineWidth(context, strokeWidth);
-    CGContextBeginPath(context);
 
     aRect.origin.x += strokeWidth;
     aRect.origin.y += strokeWidth;
     aRect.size.width -= strokeWidth * 2;
     aRect.size.height -= strokeWidth * 2;
 
-    CGContextAddPath(context, CGPathWithRoundedRectangleInRect(aRect, radius, radius, YES, YES, YES, YES));
-    CGContextClosePath(context);
-
+    var path = CGPathWithRoundedRectangleInRect(aRect, radius, radius, YES, YES, YES, YES);
+    CGContextAddPath(context, path);
     CGContextStrokePath(context);
+
+    CGContextAddPath(context, path);
     CGContextFillPath(context);
 }
 

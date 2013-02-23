@@ -1197,13 +1197,14 @@ Not supported. Use -collectionView:dataForItemsAtIndexes:fortype:
 
     //draw white under the circle thing
     CGContextFillRect(context, circleRect);
+
     //draw the circle thing
     CGContextStrokeEllipseInRect(context, circleRect);
+
     //then draw the line
     CGContextBeginPath(context);
     CGContextMoveToPoint(context, FLOOR(width / 2), _CGRectGetMinY(aRect) + width);
     CGContextAddLineToPoint(context, FLOOR(width / 2), _CGRectGetHeight(aRect));
-    CGContextClosePath(context);
     CGContextStrokePath(context);
 }
 
