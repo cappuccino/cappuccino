@@ -54,6 +54,7 @@ tableTestDragType = @"CPTableViewTestDragType";
 
     var iconView = [[CPImageView alloc] initWithFrame:CGRectMake(16, 16, 0, 0)];
     [iconView setImageScaling:CPImageScaleNone];
+
     var iconColumn = [[CPTableColumn alloc] initWithIdentifier:"icons"];
     [iconColumn setWidth:32.0];
     [iconColumn setMinWidth:32.0];
@@ -63,6 +64,7 @@ tableTestDragType = @"CPTableViewTestDragType";
 
 
     var desc = [CPSortDescriptor sortDescriptorWithKey:@"self" ascending:YES];
+
     for (var i = 1; i <= 5; i++)
     {
         var column = [[CPTableColumn alloc] initWithIdentifier:String(i)];
@@ -79,6 +81,9 @@ tableTestDragType = @"CPTableViewTestDragType";
         if (i === 2)
             randomColumn = column;
     }
+
+    [tableView setAutosaveTableColumns:YES];
+    [tableView setAutosaveName:@"TableTest"];
 
     // we offset this scrollview to make sure all the coordinates are calculated correctly
     // bad things can happen when the tableview doesn't sit at (0,0)
@@ -199,6 +204,7 @@ tableTestDragType = @"CPTableViewTestDragType";
     [tableView2 addTableColumn:checkBoxColumn];
 
     var desc = [CPSortDescriptor sortDescriptorWithKey:@"self" ascending:YES];
+
     for (var i = 1; i <= 3; i++)
     {
         var column = [[CPTableColumn alloc] initWithIdentifier:String(i)];

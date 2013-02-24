@@ -15,12 +15,12 @@ function formatter(aString, aLevel, aTitle)
 
 @implementation AppController : CPObject
 {
-    CPWindow    theWindow; //this "outlet" is connected automatically by the Cib
-    CPView      simpleColor;
-    CPView      patternColor;
-    CPView      threePartColor;
-    CPView      ninePartColor;
-    CPImage     imageView;
+    @outlet CPWindow    theWindow; //this "outlet" is connected automatically by the Cib
+    @outlet CPView      simpleColor;
+    @outlet CPView      patternColor;
+    @outlet CPView      threePartColor;
+    @outlet CPView      ninePartColor;
+    @outlet CPImageView imageView;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -48,25 +48,27 @@ function formatter(aString, aLevel, aTitle)
     var bundle = [CPBundle bundleForClass:[CPView class]];
 
     color = CPColorWithImages([
-        ["Aristo2.blend/Resources/button-bezel-left.png", 4, 24, bundle],
-        ["Aristo2.blend/Resources/button-bezel-center.png", 1, 24, bundle],
-        ["Aristo2.blend/Resources/button-bezel-right.png", 4, 24, bundle]
+        ["Aristo2.blend/Resources/button-bezel-left.png", 4, 25, bundle],
+        ["Aristo2.blend/Resources/button-bezel-center.png", 1, 25, bundle],
+        ["Aristo2.blend/Resources/button-bezel-right.png", 4, 25, bundle]
     ]);
+
     CPLog([color description]);
 
     [threePartColor setBackgroundColor:color];
 
     color = CPColorWithImages([
-        ["Aristo2.blend/Resources/textfield-bezel-square-focused-0.png", 7, 7, bundle],
-        ["Aristo2.blend/Resources/textfield-bezel-square-focused-1.png", 1, 7, bundle],
-        ["Aristo2.blend/Resources/textfield-bezel-square-focused-2.png", 7, 7, bundle],
-        ["Aristo2.blend/Resources/textfield-bezel-square-focused-3.png", 7, 1, bundle],
+        ["Aristo2.blend/Resources/textfield-bezel-square-focused-0.png", 4, 4, bundle],
+        ["Aristo2.blend/Resources/textfield-bezel-square-focused-1.png", 1, 4, bundle],
+        ["Aristo2.blend/Resources/textfield-bezel-square-focused-2.png", 4, 4, bundle],
+        ["Aristo2.blend/Resources/textfield-bezel-square-focused-3.png", 4, 1, bundle],
         ["Aristo2.blend/Resources/textfield-bezel-square-focused-4.png", 1, 1, bundle],
-        ["Aristo2.blend/Resources/textfield-bezel-square-focused-5.png", 7, 1, bundle],
-        ["Aristo2.blend/Resources/textfield-bezel-square-focused-6.png", 7, 7, bundle],
-        ["Aristo2.blend/Resources/textfield-bezel-square-focused-7.png", 1, 7, bundle],
-        ["Aristo2.blend/Resources/textfield-bezel-square-focused-8.png", 7, 7, bundle],
+        ["Aristo2.blend/Resources/textfield-bezel-square-focused-5.png", 4, 1, bundle],
+        ["Aristo2.blend/Resources/textfield-bezel-square-focused-6.png", 4, 4, bundle],
+        ["Aristo2.blend/Resources/textfield-bezel-square-focused-7.png", 1, 4, bundle],
+        ["Aristo2.blend/Resources/textfield-bezel-square-focused-8.png", 4, 4, bundle],
     ]);
+
     CPLog([color description]);
 
     [ninePartColor setBackgroundColor:color];

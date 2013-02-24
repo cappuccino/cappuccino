@@ -189,6 +189,7 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
 
     CGContextSetStrokeColor(context, strokeColor);
     CGContextSetLineWidth(context, strokeWidth);
+
     CGContextBeginPath(context);
     CGContextSetShadowWithColor(context, shadowSize, shadowBlur, shadowColor);
     CGContextDrawLinearGradient(context, gradient, _CGPointMake(_CGRectGetMidX(frame), 0.0), _CGPointMake(_CGRectGetMidX(frame), frame.size.height), 0);
@@ -206,6 +207,8 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
         pt = _CGPointMakeZero();
 
     // draw!
+    var path = CGPathCreateMutable();
+
     switch (_preferredEdge)
     {
         case CPMinXEdge:
@@ -213,12 +216,12 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
             // origin nw
             pt.x = CGAlignCoordinate(xMin + radius);
             pt.y = yMin;
-            CGContextMoveToPoint(context, pt.x, pt.y);
+            CGPathMoveToPoint(path, NULL, pt.x, pt.y);
 
             // ne
             pt.x = CGAlignCoordinate(xMax - radius);
-            CGContextAddLineToPoint(context, pt.x, pt.y);
-            CGContextAddCurveToPoint(context, pt.x, pt.y, xMax, yMin, xMax, CGAlignCoordinate(yMin + radius));
+            CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
+            CGPathAddCurveToPoint(path, NULL, pt.x, pt.y, xMax, yMin, xMax, CGAlignCoordinate(yMin + radius));
 
             if (_preferredEdge === CPMinXEdge)
             {
@@ -237,30 +240,30 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
 
                 pt.x = arrowAnchor.x;
                 arrowStart = _CGPointMakeCopy(pt);
-                CGContextAddLineToPoint(context, pt.x, pt.y);
+                CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
 
                 // top edge -> point
                 pt.x = CGAlignStroke(arrowAnchor.x + arrowHeight, strokeWidth);
                 pt.y = arrowAnchor.y;
-                CGContextAddLineToPoint(context, pt.x, pt.y);
+                CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
 
                 // point -> bottom edge
                 pt.x = arrowAnchor.x;
                 pt.y = CGAlignCoordinate(arrowStart.y + arrowWidth);
-                CGContextAddLineToPoint(context, pt.x, pt.y);
+                CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
             }
 
             // se
             pt.x = xMax;
             pt.y = CGAlignCoordinate(yMax - radius);
-            CGContextAddLineToPoint(context, pt.x, pt.y);
-            CGContextAddCurveToPoint(context, pt.x, pt.y, pt.x, yMax, CGAlignCoordinate(xMax - radius), yMax);
+            CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
+            CGPathAddCurveToPoint(path, NULL, pt.x, pt.y, pt.x, yMax, CGAlignCoordinate(xMax - radius), yMax);
 
             // sw
             pt.x = CGAlignCoordinate(xMin + radius);
             pt.y = yMax;
-            CGContextAddLineToPoint(context, pt.x, pt.y);
-            CGContextAddCurveToPoint(context, pt.x, pt.y, xMin, pt.y, xMin, CGAlignCoordinate(yMax - radius));
+            CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
+            CGPathAddCurveToPoint(path, NULL, pt.x, pt.y, xMin, pt.y, xMin, CGAlignCoordinate(yMax - radius));
 
             if (_preferredEdge === CPMaxXEdge)
             {
@@ -279,24 +282,24 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
 
                 pt.x = arrowAnchor.x;
                 arrowStart = _CGPointMakeCopy(pt);
-                CGContextAddLineToPoint(context, pt.x, pt.y);
+                CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
 
                 // bottom edge -> point
                 pt.x = CGAlignStroke(arrowAnchor.x - arrowHeight, strokeWidth);
                 pt.y = arrowAnchor.y;
-                CGContextAddLineToPoint(context, pt.x, pt.y);
+                CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
 
                 // point -> top edge
                 pt.x = arrowAnchor.x;
                 pt.y = CGAlignCoordinate(arrowStart.y - arrowWidth);
-                CGContextAddLineToPoint(context, pt.x, pt.y);
+                CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
             }
 
             // nw
             pt.x = xMin;
             pt.y = CGAlignCoordinate(yMin + radius);
-            CGContextAddLineToPoint(context, pt.x, pt.y);
-            CGContextAddCurveToPoint(context, pt.x, pt.y, pt.x, yMin, CGAlignCoordinate(xMin + radius), yMin);
+            CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
+            CGPathAddCurveToPoint(path, NULL, pt.x, pt.y, pt.x, yMin, CGAlignCoordinate(xMin + radius), yMin);
             break;
 
         case CPMaxYEdge:
@@ -304,12 +307,12 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
             // origin sw
             pt.x = xMin;
             pt.y = CGAlignCoordinate(yMax - radius);
-            CGContextMoveToPoint(context, pt.x, pt.y);
+            CGPathMoveToPoint(path, NULL, pt.x, pt.y);
 
             // nw
             pt.y = CGAlignCoordinate(yMin + radius);
-            CGContextAddLineToPoint(context, pt.x, pt.y);
-            CGContextAddCurveToPoint(context, pt.x, pt.y, pt.x, yMin, CGAlignCoordinate(xMin + radius), yMin);
+            CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
+            CGPathAddCurveToPoint(path, NULL, pt.x, pt.y, pt.x, yMin, CGAlignCoordinate(xMin + radius), yMin);
 
             if (_preferredEdge === CPMaxYEdge)
             {
@@ -328,30 +331,30 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
 
                 pt.y = arrowAnchor.y;
                 arrowStart = _CGPointMakeCopy(pt);
-                CGContextAddLineToPoint(context, pt.x, pt.y);
+                CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
 
                 // left edge -> point
                 pt.x = arrowAnchor.x;
                 pt.y = CGAlignStroke(arrowAnchor.y - arrowHeight, strokeWidth);
-                CGContextAddLineToPoint(context, pt.x, pt.y);
+                CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
 
                 // point -> right edge
                 pt.x = CGAlignCoordinate(arrowStart.x + arrowWidth);
                 pt.y = arrowAnchor.y;
-                CGContextAddLineToPoint(context, pt.x, pt.y);
+                CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
             }
 
             // ne
             pt.x = CGAlignCoordinate(xMax - radius);
             pt.y = yMin;
-            CGContextAddLineToPoint(context, pt.x, pt.y);
-            CGContextAddCurveToPoint(context, pt.x, pt.y, xMax, pt.y, xMax, CGAlignCoordinate(yMin + radius));
+            CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
+            CGPathAddCurveToPoint(path, NULL, pt.x, pt.y, xMax, pt.y, xMax, CGAlignCoordinate(yMin + radius));
 
             // se
             pt.x = xMax;
             pt.y = CGAlignCoordinate(yMax - radius);
-            CGContextAddLineToPoint(context, pt.x, pt.y);
-            CGContextAddCurveToPoint(context, pt.x, pt.y, pt.x, yMax, CGAlignCoordinate(xMax - radius), yMax);
+            CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
+            CGPathAddCurveToPoint(path, NULL, pt.x, pt.y, pt.x, yMax, CGAlignCoordinate(xMax - radius), yMax);
 
             if (_preferredEdge === CPMinYEdge)
             {
@@ -370,33 +373,35 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
 
                 pt.y = arrowAnchor.y;
                 arrowStart = _CGPointMakeCopy(pt);
-                CGContextAddLineToPoint(context, pt.x, pt.y);
+                CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
 
                 // right edge -> point
                 pt.x = arrowAnchor.x;
                 pt.y = CGAlignStroke(arrowAnchor.y + arrowHeight, strokeWidth);
-                CGContextAddLineToPoint(context, pt.x, pt.y);
+                CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
 
                 // point -> left edge
                 pt.x = CGAlignCoordinate(arrowStart.x - arrowWidth);
                 pt.y = arrowAnchor.y;
-                CGContextAddLineToPoint(context, pt.x, pt.y);
+                CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
             }
 
             // sw
             pt.x = CGAlignCoordinate(xMin + radius);
             pt.y = yMax;
-            CGContextAddLineToPoint(context, pt.x, pt.y);
-            CGContextAddCurveToPoint(context, pt.x, pt.y, xMin, pt.y, xMin, CGAlignCoordinate(yMax - radius));
+            CGPathAddLineToPoint(path, NULL, pt.x, pt.y);
+            CGPathAddCurveToPoint(path, NULL, pt.x, pt.y, xMin, pt.y, xMin, CGAlignCoordinate(yMax - radius));
             break;
 
         default:
             // no computed edge means standard rounded rect
-            CGContextAddPath(context, CGPathWithRoundedRectangleInRect(frame, radius, radius, YES, YES, YES, YES));
+            CGPathAddPath(path, NULL, CGPathWithRoundedRectangleInRect(frame, radius, radius, YES, YES, YES, YES));
     }
 
-    CGContextClosePath(context);
+    CGContextAddPath(context, path);
     CGContextStrokePath(context);
+
+    CGContextAddPath(context, path);
     CGContextFillPath(context);
 }
 

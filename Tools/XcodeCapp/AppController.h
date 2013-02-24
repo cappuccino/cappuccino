@@ -36,7 +36,7 @@
     IBOutlet NSPopUpButton              *buttonPreferencesAPIMode;
     IBOutlet NSButton                   *checkBoxPreferencesReactMode;
     IBOutlet NSUserDefaultsController   *preferencesController;
-    IBOutlet TNXCodeCapp                *xcc;
+    IBOutlet TNXCodeCapp                *__strong xcc;
     IBOutlet NSWindow                   *windowDebug;
     IBOutlet NSMenuItem                 *menuDebug;
     IBOutlet NSMenuItem                 *menuHistory;
@@ -51,7 +51,7 @@
 }
 
 @property BOOL supportsFileModeListening;
-@property (assign) TNXCodeCapp *xcc;
+@property (strong) TNXCodeCapp *xcc;
 
 + (AppController *)sharedAppController;
 

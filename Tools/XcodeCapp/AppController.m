@@ -27,9 +27,9 @@ AppController *SharedAppControllerInstance = nil;
 
 float heightForStringDrawing(NSString *myString, NSFont *myFont, float myWidth)
 {
-    NSTextStorage *textStorage = [[[NSTextStorage alloc] initWithString:myString] autorelease];
-    NSTextContainer *textContainer = [[[NSTextContainer alloc] initWithContainerSize:NSMakeSize(myWidth, FLT_MAX)] autorelease];
-    NSLayoutManager *layoutManager = [[[NSLayoutManager alloc] init] autorelease];
+    NSTextStorage *textStorage = [[NSTextStorage alloc] initWithString:myString];
+    NSTextContainer *textContainer = [[NSTextContainer alloc] initWithContainerSize:NSMakeSize(myWidth, FLT_MAX)];
+    NSLayoutManager *layoutManager = [[NSLayoutManager alloc] init];
 
     [layoutManager addTextContainer:textContainer];
     [textStorage addLayoutManager:layoutManager];
@@ -63,7 +63,7 @@ float heightForStringDrawing(NSString *myString, NSFont *myFont, float myWidth)
     _archivedDataView = [NSKeyedArchiver archivedDataWithRootObject:dataViewError];
 
     if (!growlDelegateRef)
-        growlDelegateRef = [[[PRHEmptyGrowlDelegate alloc] init] autorelease];
+        growlDelegateRef = [[PRHEmptyGrowlDelegate alloc] init];
     
     [GrowlApplicationBridge setGrowlDelegate:growlDelegateRef];
     
@@ -306,7 +306,8 @@ float heightForStringDrawing(NSString *myString, NSFont *myFont, float myWidth)
     [_statusItem setImage:_iconInactive];
     [menuItemStartStop setTitle:@"Listen to Project…"];
     [menuItemStartStop setAction:@selector(chooseFolder:)];
-    
+    [self _prepareHistoryMenu];
+
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"LastOpenedPath"];
 }
 
@@ -436,7 +437,7 @@ float heightForStringDrawing(NSString *myString, NSFont *myFont, float myWidth)
     NSFont *currentFont = [[dataViewError fieldMessage] font];
     float height = heightForStringDrawing(content, currentFont, [tableView frame].size.width);
 
-    return height + 25;
+    return height + 31;
 }
 
 @end

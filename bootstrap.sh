@@ -285,7 +285,7 @@ if [ "$install_cappuccino" ]; then
         curl_quiet_arg=""
         wget_quiet_arg=""
         if (( $verbosity < 1 )); then curl_quiet_arg="--silent"; wget_quiet_arg="--no-verbose"; fi
-        $(which curl &> /dev/null && echo curl $curl_quiet_arg -L -o || echo $wget_quiet_arg --no-check-certificate -O) "$tmp_zip" "$zip_ball"
+        $(which curl &> /dev/null && echo curl $curl_quiet_arg -L -o || echo wget $wget_quiet_arg --no-check-certificate -O) "$tmp_zip" "$zip_ball"
         check_and_exit
 
         echo "Installing Cappuccino base..."

@@ -71,7 +71,7 @@ function CPImageInBundle()
 
     if (typeof(arguments[1]) === "number")
     {
-        if (arguments[1] !== nil && arguments[1] === undefined)
+        if (arguments[1] !== nil && arguments[1] !== undefined)
             size = _CGSizeMake(arguments[1], arguments[2]);
 
         bundle = arguments[3];
@@ -303,6 +303,14 @@ function CPAppKitImage(aFilename, aSize)
 }
 
 /*!
+    Returns the underlying Image element for a single image.
+*/
+- (Image)image
+{
+    return _image;
+}
+
+/*!
     Sets the receiver's delegate.
     @param the delegate
 */
@@ -388,6 +396,11 @@ function CPAppKitImage(aFilename, aSize)
     // crazy, I know. So don't set isSynchronous here, rather wait a bit longer.
     window.setTimeout(function() { isSynchronous = NO; }, 0);
 #endif
+}
+
+- (BOOL)isSingleImage
+{
+    return YES;
 }
 
 - (BOOL)isThreePartImage
@@ -521,6 +534,11 @@ function CPAppKitImage(aFilename, aSize)
     return _isVertical;
 }
 
+- (BOOL)isSingleImage
+{
+    return NO;
+}
+
 - (BOOL)isThreePartImage
 {
     return YES;
@@ -583,6 +601,11 @@ var CPThreePartImageImageSlicesKey  = @"CPThreePartImageImageSlicesKey",
 - (CPArray)imageSlices
 {
     return _imageSlices;
+}
+
+- (BOOL)isSingleImage
+{
+    return NO;
 }
 
 - (BOOL)isThreePartImage

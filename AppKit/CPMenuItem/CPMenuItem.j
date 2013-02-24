@@ -109,6 +109,8 @@ var CPMenuItemStringRepresentationDictionary = [CPDictionary dictionaryWithObjec
 {
     if ([aBinding hasPrefix:CPEnabledBinding])
         return [CPMultipleValueAndBinding class];
+    else if (aBinding === CPTargetBinding || [aBinding hasPrefix:CPArgumentBinding])
+        return [CPActionBinding class];
 
     return [super _binderClassForBinding:aBinding];
 }

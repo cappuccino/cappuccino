@@ -31,7 +31,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
                        const FSEventStreamEventFlags eventFlags[],
                        const FSEventStreamEventId eventIds[])
 {    
-    TNXCodeCapp *xcc = (TNXCodeCapp *)userData;
+    TNXCodeCapp *xcc = (__bridge  TNXCodeCapp *)userData;
     BOOL useFileBasedListening = [xcc supportsFileBasedListening];
     size_t i;
 
@@ -41,7 +41,7 @@ void fsevents_callback(ConstFSEventStreamRef streamRef,
 
         FSEventStreamEventFlags flags = eventFlags[i];
 
-        NSString *path = [[(NSArray *)eventPaths objectAtIndex:i] stringByStandardizingPath];
+        NSString *path = [[(__bridge  NSArray *)eventPaths objectAtIndex:i] stringByStandardizingPath];
 
         if (useFileBasedListening)
         {
