@@ -218,7 +218,7 @@
 */
 - (void)removeObject:(id)anObject
 {
-    [self removeObject:anObject inRange:CPMakeRange(0, self.length)];
+    [self removeObject:anObject inRange:CPMakeRange(0, [self count])];
 }
 
 /*!
@@ -233,7 +233,7 @@
     while ((index = [self indexOfObject:anObject inRange:aRange]) != CPNotFound)
     {
         [self removeObjectAtIndex:index];
-        aRange = CPIntersectionRange(CPMakeRange(index, self.length - index), aRange);
+        aRange = CPIntersectionRange(CPMakeRange(index, [self count] - index), aRange);
     }
 }
 
