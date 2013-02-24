@@ -119,7 +119,7 @@ var documentLoaded = NO;
 
 function afterDocumentLoad(/*Function*/ aFunction)
 {
-    if (documentLoaded)
+    if (documentLoaded || document.readyState === "complete")
         return aFunction();
 
     if (window.addEventListener)
