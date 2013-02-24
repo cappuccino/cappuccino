@@ -44,6 +44,7 @@
         _initialKey = @"key";
         _initialValue = @"value";
     }
+
     return self;
 }
 
@@ -57,13 +58,21 @@
         while ([keys containsObject:newKey])
             newKey = [CPString stringWithFormat:@"%@%i", _initialKey, ++count];
 
-    [_contentDictionary setObject:_initialValue forKey:newKey];
+    return [self _newObjectWithKey:newKey value:_initialValue];
+}
 
-    var keyValuePairProtocol = [_CPDictionaryControllerKeyValuePair new];
-    keyValuePairProtocol._key = newKey;
-    keyValuePairProtocol._dictionary = _contentDictionary;
-    keyValuePairProtocol._controller = self;
-    return keyValuePairProtocol;
+- (id)_newObjectWithKey:(CPString)aKey value:(id)aValue
+{
+    var aNewObject = [_CPDictionaryControllerKeyValuePair new];
+
+    aNewObject._dictionary = _contentDictionary;
+    aNewObject._controller = self;
+    aNewObject._key = aKey;
+
+    if (aValue !== nil)
+        [aNewObject setValue:aValue];
+
+    return aNewObject;
 }
 
 - (CPDictionary)contentDictionary
@@ -88,21 +97,13 @@
 
     var iter = [[CPSet setWithArray:allKeys] objectEnumerator],
         obj;
-    
+
     while ((obj = [iter nextObject]) !== nil)
-    {
         if (![_excludedKeys containsObject:obj])
-        {
-            var keyValuePairProtocol = [_CPDictionaryControllerKeyValuePair new];
-            keyValuePairProtocol._key = obj;
-            keyValuePairProtocol._dictionary = _contentDictionary;
-            keyValuePairProtocol._controller = self;
-            [array addObject:keyValuePairProtocol];
-        }
-    }
+            [array addObject:[self _newObjectWithKey:obj value:nil]];
+
     [super setContent:array];
 }
-
 
 
 @end
@@ -137,6 +138,9 @@ var CPIncludedKeys  = @"CPIncludedKeys",
 }
 
 @end
+
+
+
 
 @implementation _CPDictionaryControllerKeyValuePair : CPObject
 {

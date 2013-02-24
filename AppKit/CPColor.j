@@ -1069,7 +1069,8 @@ function CPColorWithImages()
             return imageFromSlices(args[0], args[1], imageFactory);
 
         case 3:
-            return [CPColor colorWithPatternImage:imageFactory(args[0], args[1], args[2])];
+        case 4:
+            return [CPColor colorWithPatternImage:imageFactory(args[0], args[1], args[2], args[3])];
 
         default:
             throw("ERROR: Invalid argument count: " + args.length);
@@ -1084,7 +1085,7 @@ var imageFromSlices = function(slices, isVertical, imageFactory)
     {
         var slice = slices[i];
 
-        imageSlices.push(slice ? imageFactory(slice[0], slice[1], slice[2]) : nil);
+        imageSlices.push(slice ? imageFactory(slice[0], slice[1], slice[2], slice[3]) : nil);
     }
 
     switch (slices.length)

@@ -565,10 +565,10 @@ var CPViewFlags                     = { },
 
     [_superview willRemoveSubview:self];
 
-    [_superview._subviews removeObject:self];
+    [_superview._subviews removeObjectIdenticalTo:self];
 
 #if PLATFORM(DOM)
-        CPDOMDisplayServerRemoveChild(_superview._DOMElement, _DOMElement);
+    CPDOMDisplayServerRemoveChild(_superview._DOMElement, _DOMElement);
 #endif
     _superview = nil;
 
@@ -2790,6 +2790,12 @@ setBoundsOrigin:
     _theme = aTheme;
 
     [self viewDidChangeTheme];
+}
+
+- (void)_setThemeIncludingDescendants:(CPTheme)aTheme
+{
+    [self setTheme:aTheme];
+    [[self subviews] makeObjectsPerformSelector:@selector(_setThemeIncludingDescendants:) withObject:aTheme];
 }
 
 - (CPTheme)theme

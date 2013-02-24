@@ -21,13 +21,13 @@
 @interface TNErrorDataView : NSView
 {
     IBOutlet NSTextField    *fieldFileName;
-    IBOutlet NSTextField    *fieldMessage;
+    IBOutlet NSTextField    *__strong fieldMessage;
     IBOutlet NSButton       *buttonOpenFile;
 
     NSString *_fullPath;
 }
 
-@property (assign) NSTextField *fieldMessage;
+@property (strong) NSTextField *fieldMessage;
 
 - (IBAction)openFile:(id)aSender;
 

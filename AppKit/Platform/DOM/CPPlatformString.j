@@ -23,7 +23,6 @@
 var DOMFixedWidthSpanElement    = nil,
     DOMFlexibleWidthSpanElement = nil,
     DOMMetricsDivElement        = nil,
-    DOMMetricsTextSpanElement   = nil,
     DOMMetricsImgElement        = nil,
     DefaultFont                 = nil;
 
@@ -98,24 +97,18 @@ var DOMFixedWidthSpanElement    = nil,
 
     DOMMetricsDivElement = document.createElement("div");
     DOMMetricsDivElement.className = "cpdontremove";
-    DOMMetricsDivElement.style.position = "absolute";
-    DOMMetricsDivElement.style.left = "-10000px";
-    DOMMetricsDivElement.style.zIndex = -10000;
-    DOMMetricsDivElement.style.width = "100000px";
-
-    bodyElement.appendChild(DOMMetricsDivElement);
-
-    DOMMetricsTextSpanElement = document.createElement("span");
-    DOMMetricsTextSpanElement.className = "cpdontremove";
-    DOMMetricsTextSpanElement.innerHTML = "x";
-    style = DOMMetricsTextSpanElement.style;
+    style = DOMMetricsDivElement.style;
     style.position = "absolute";
     style.left = "-10000px";
     style.zIndex = -10000;
-    style.visibility = "visible";
+    style.width = "100000px";
+    style.whiteSpace = "nowrap";
+    style.lineHeight = "1em";
     style.padding = "0px";
     style.margin = "0px";
-    style.whiteSpace = "pre";
+    DOMMetricsDivElement.innerHTML = "x";
+
+    bodyElement.appendChild(DOMMetricsDivElement);
 
     var imgPath = [[CPBundle bundleForClass:[CPView class]] pathForResource:@"empty.png"];
 
@@ -126,8 +119,6 @@ var DOMFixedWidthSpanElement    = nil,
     DOMMetricsImgElement.setAttribute("height", "1");
     DOMMetricsImgElement.setAttribute("alt", "");
     style = DOMMetricsImgElement.style;
-    style.position = "absolute";
-    style.left = "-10000px";
     style.zIndex = -10000;
     style.visibility = "visible";
     style.padding = "0px";
@@ -135,7 +126,6 @@ var DOMFixedWidthSpanElement    = nil,
     style.border = "none";
     style.verticalAlign = "baseline";
 
-    DOMMetricsDivElement.appendChild(DOMMetricsTextSpanElement);
     DOMMetricsDivElement.appendChild(DOMMetricsImgElement);
 }
 
@@ -171,9 +161,9 @@ var DOMFixedWidthSpanElement    = nil,
 
     DOMMetricsDivElement.style.font = [(aFont || DefaultFont) cssString];
 
-    var baseline = DOMMetricsImgElement.offsetTop - DOMMetricsTextSpanElement.offsetTop + DOMMetricsImgElement.offsetHeight,
-        descender = baseline - DOMMetricsTextSpanElement.offsetHeight,
-        lineHeight = DOMMetricsTextSpanElement.offsetHeight;
+    var lineHeight = DOMMetricsDivElement.offsetHeight,
+        baseline = DOMMetricsImgElement.offsetTop + DOMMetricsImgElement.offsetHeight,
+        descender = baseline - lineHeight;
 
     return [CPDictionary dictionaryWithObjectsAndKeys:baseline, @"ascender", descender, @"descender", lineHeight, @"lineHeight"];
 }

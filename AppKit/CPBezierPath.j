@@ -177,7 +177,7 @@ var DefaultLineWidth = 1.0;
 - (CGRect)bounds
 {
     // TODO: this should return this. The controlPointBounds is not a tight fit.
-    // return CGPathGetPathBoundingBox(_path);
+    // return CGPathGetBoundingBox(_path);
 
     return [self controlPointBounds];
 }

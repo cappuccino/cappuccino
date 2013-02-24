@@ -175,6 +175,7 @@ var SharedAppController = nil;
     float textTop;
     float ascender;
     float descender;
+    float lineHeight;
 }
 
 - (id)initWithFrame:(CGRect)frame
@@ -205,7 +206,7 @@ var SharedAppController = nil;
     if (ascender === 0)
         return;
 
-    var context = [[CPGraphicsContext currentContext] graphicsPort];
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
         bounds = [self bounds],
         minX = CGRectGetMinX(bounds),
         maxX = CGRectGetMaxX(bounds);
