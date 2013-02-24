@@ -565,10 +565,10 @@ var CPViewFlags                     = { },
 
     [_superview willRemoveSubview:self];
 
-    [_superview._subviews removeObject:self];
+    [_superview._subviews removeObjectIdenticalTo:self];
 
 #if PLATFORM(DOM)
-        CPDOMDisplayServerRemoveChild(_superview._DOMElement, _DOMElement);
+    CPDOMDisplayServerRemoveChild(_superview._DOMElement, _DOMElement);
 #endif
     _superview = nil;
 
