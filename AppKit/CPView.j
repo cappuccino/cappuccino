@@ -475,6 +475,10 @@ var CPViewFlags                     = { },
 {
     if (aSubview === self)
         [CPException raise:CPInvalidArgumentException reason:"can't add a view as a subview of itself"];
+#if DEBUG
+    if (!aSubview._superview && _subviews.indexOf(aSubview) !== CPNotFound)
+        [CPException raise:CPInvalidArgumentException reason:"can't insert a subview in duplicate (probably partially decoded)"];
+#endif
 
     // We will have to adjust the z-index of all views starting at this index.
     var count = _subviews.length;
