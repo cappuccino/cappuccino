@@ -1369,6 +1369,7 @@ var CPViewFlags                     = { },
     }
     else
     {
+        [self setNeedsDisplay:YES];
         [self _notifyViewDidUnhide];
     }
 }
