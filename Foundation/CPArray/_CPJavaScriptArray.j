@@ -251,7 +251,7 @@ var concat = Array.prototype.concat,
     if (indexOf)
     {
         var anIndex;
-        if ((anIndex = indexOf.call(self, anObject)) !== -1)
+        while ((anIndex = indexOf.call(self, anObject)) !== -1)
             splice.call(self, anIndex, 1);
     }
     else

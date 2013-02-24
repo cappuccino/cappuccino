@@ -103,6 +103,18 @@
     [array removeObject:a];
     [self assert:array equals:[arrayClass arrayWithObjects:c]];
 }
+
+- (void)test_removeObjectIdenticalTo_
+{
+    var arrayClass = [[self class] arrayClass],
+        a = [CPDate distantFuture],
+        b = [a copy],
+        array = [arrayClass arrayWithObjects:a, b, a, b, b];
+
+    [array removeObjectIdenticalTo:b];
+    [self assert:array equals:[arrayClass arrayWithObjects:a, a]];
+}
+
 - (void)test_removeObjectsAtIndexes_
 {
     var arrayClass = [[self class] arrayClass],

@@ -262,7 +262,7 @@
 }
 
 /*!
-    Remove the first instance of \c anObject from the array.
+    Remove all instances of \c anObject from the array.
     The search for the object is done using \c ==.
     @param anObject the object to remove
 */
