@@ -230,7 +230,7 @@ var CPToolbarsByIdentifier              = nil,
 - (void)_setWindow:(CPWindow)aWindow
 {
     if (_window)
-        [[CPNotificationCenter defaultCenter] removeObserver:self object:_window];
+        [[CPNotificationCenter defaultCenter] removeObserver:self name:_CPWindowDidChangeFirstResponderNotification object:_window];
 
     _window = aWindow;
 
