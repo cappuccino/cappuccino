@@ -26,7 +26,7 @@
 //
 //     https://github.com/mrcarlberg/acorn.git
 
-if (!exports.acorn) {
+if (typeof exports != "undefined" && !exports.acorn) {
   exports.acorn = {};
   exports.acorn.walk = {};
 }
