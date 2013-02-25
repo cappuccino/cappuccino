@@ -54,7 +54,7 @@
 */
 + (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
-    var contentRect = CGRectMakeCopy(aFrameRect);
+    var contentRect = [super contentRectForFrameRect:aFrameRect];
 
     contentRect.origin.x += 3;
     contentRect.origin.y += 3;

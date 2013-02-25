@@ -394,7 +394,7 @@ CPTexturedBackgroundWindowMask
         return _CPDocModalWindowView;
 
     else if (aStyleMask & _CPModalWindowMask)
-        return _CPModalWindowView
+        return _CPModalWindowView;
 
     return _CPStandardWindowView;
 }
