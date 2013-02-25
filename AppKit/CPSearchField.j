@@ -120,15 +120,15 @@ var RECENT_SEARCH_PREFIX = @"   ";
     _canResignFirstResponder = YES;
 }
 
-- (void)viewWillMoveToSuperview:(CPView)aView
+- (void)viewWillMoveToWindow:(CPWindow)aWindow
 {
-    [super viewWillMoveToSuperview:aView];
+    [super viewWillMoveToWindow:aWindow];
 
     // First we remove any observer that may have been in place to avoid memory leakage.
     [[CPNotificationCenter defaultCenter] removeObserver:self name:CPControlTextDidChangeNotification object:self];
 
     // Register the observe here if we need to.
-    if (aView)
+    if (aWindow)
         [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_searchFieldTextDidChange:) name:CPControlTextDidChangeNotification object:self];
 }
 
