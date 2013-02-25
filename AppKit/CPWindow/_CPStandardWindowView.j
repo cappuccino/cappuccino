@@ -125,7 +125,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 + (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
     /*
-        This is the first window view class that draws a frame.
+        This window view class draws a frame.
         So we have to inset the content rect to be inside the frame.
         The top coordinate has already been adjusted by _CPTitleableWindowView.
     */
