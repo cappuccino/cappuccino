@@ -132,7 +132,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     _CPKeyedArchiverStringClass = [CPString class];
     _CPKeyedArchiverNumberClass = [CPNumber class];
 
-    _CPKeyedArchiverNullReference = [CPDictionary dictionaryWithObject:0 forKey:_CPKeyedArchiverUIDKey];
+    _CPKeyedArchiverNullReference = @{ _CPKeyedArchiverUIDKey: 0 };
 }
 
 + (BOOL)allowsKeyedCoding
@@ -576,7 +576,7 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
                     [self._UIDs setObject:classUID forKey:className];
                 }
 
-                [plistObject setObject:[CPDictionary dictionaryWithObject:classUID forKey:_CPKeyedArchiverUIDKey] forKey:_CPKeyedArchiverClassKey];
+                [plistObject setObject:@{ _CPKeyedArchiverUIDKey: classUID } forKey:_CPKeyedArchiverClassKey];
             }
 
             UID = [self._conditionalUIDs objectForKey:GUID];
@@ -595,5 +595,5 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
         }
     }
 
-    return [CPDictionary dictionaryWithObject:UID forKey:_CPKeyedArchiverUIDKey];
+    return @{ _CPKeyedArchiverUIDKey: UID };
 };

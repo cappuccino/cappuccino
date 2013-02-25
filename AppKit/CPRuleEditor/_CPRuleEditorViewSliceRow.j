@@ -271,7 +271,11 @@ var CONTROL_HEIGHT = 16.,
                     }
                 }
 
-                repObject = [CPDictionary dictionaryWithObjectsAndKeys:childItem, @"item", childValue, @"value", i, @"indexInCriteria"];
+                repObject = @{
+                        @"item": childItem,
+                        @"value": childValue,
+                        @"indexInCriteria": i
+                    };
                 [menuItem setRepresentedObject:repObject];
                 [menuItems addObject:menuItem];
             }

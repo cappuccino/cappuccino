@@ -55,7 +55,7 @@
     var collection = [_collection expressionValueWithObject:object context:context],
         count = [collection count],
         result = [CPArray array],
-        bindings = [CPDictionary dictionaryWithObject:[CPExpression expressionForEvaluatedObject] forKey:[self variable]],
+        bindings = @{ [self variable]: [CPExpression expressionForEvaluatedObject] },
         i = 0;
 
     for (; i < count; i++)

@@ -130,7 +130,10 @@ var CPBindingOperationAnd = 0,
     if (self)
     {
         _source = aSource;
-        _info = [CPDictionary dictionaryWithObjects:[aDestination, aKeyPath] forKeys:[CPObservedObjectKey, CPObservedKeyPathKey]];
+        _info = @{
+                CPObservedObjectKey: aDestination,
+                CPObservedKeyPathKey: aKeyPath,
+            };
         _suppressedNotifications = {};
         _placeholderForMarker = {};
 

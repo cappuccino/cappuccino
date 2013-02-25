@@ -41,8 +41,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[]
-                                       forKeys:[]];
+    return @{};
 }
 
 - (id)initWithFrame:(CGRect)aFrame windowView:(_CPWindowView)parentView
@@ -107,19 +106,20 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjectsAndKeys:
-                [CPNull null], @"gradient-height",
-                [CPNull null], @"solid-color",
-                [CPNull null], @"bezel-head-color",
-                [CPColor blackColor], @"divider-color",
-                [CPColor whiteColor], @"body-color",
-                32, @"title-bar-height",
-                [CPNull null], @"minimize-image-highlighted-button",
-                [CPNull null], @"minimize-image-button",
-                [CPNull null], @"close-image-button",
-                [CPNull null], @"close-image-highlighted-button",
-                [CPNull null], @"unsaved-image-button",
-                [CPNull null], @"unsaved-image-highlighted-button"];
+    return @{
+            @"gradient-height": [CPNull null],
+            @"solid-color": [CPNull null],
+            @"bezel-head-color": [CPNull null],
+            @"divider-color": [CPColor blackColor],
+            @"body-color": [CPColor whiteColor],
+            @"title-bar-height": 32,
+            @"minimize-image-highlighted-button": [CPNull null],
+            @"minimize-image-button": [CPNull null],
+            @"close-image-button": [CPNull null],
+            @"close-image-highlighted-button": [CPNull null],
+            @"unsaved-image-button": [CPNull null],
+            @"unsaved-image-highlighted-button": [CPNull null],
+        };
 }
 
 + (CGRect)contentRectForFrameRect:(CGRect)aFrameRect

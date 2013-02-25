@@ -33,25 +33,25 @@
 
 @global CPApp
 
-var CPMenuItemStringRepresentationDictionary = [CPDictionary dictionaryWithObjectsAndKeys:
-        "\u238B", CPEscapeFunctionKey,
-        "\u21E5", CPTabCharacter,
-        "\u21E4", CPBackTabCharacter,
-        "\u2423", CPSpaceFunctionKey,
-        "\u23CE", CPCarriageReturnCharacter,
-        "\u232B", CPBackspaceCharacter,
-        "\u232B", CPDeleteFunctionKey,
-        "\u2326", CPDeleteCharacter,
-        "\u21F1", CPHomeFunctionKey,
-        "\u21F2", CPEndFunctionKey,
-        "\u21DE", CPPageUpFunctionKey,
-        "\u21DF", CPPageDownFunctionKey,
-        "\u2191", CPUpArrowFunctionKey,
-        "\u2193", CPDownArrowFunctionKey,
-        "\u2190", CPLeftArrowFunctionKey,
-        "\u2192", CPRightArrowFunctionKey,
-        "\u2327", CPClearDisplayFunctionKey
-    ];
+var CPMenuItemStringRepresentationDictionary = @{
+        CPEscapeFunctionKey:        "\u238B",
+        CPTabCharacter:             "\u21E5",
+        CPBackTabCharacter:         "\u21E4",
+        CPSpaceFunctionKey:         "\u2423",
+        CPCarriageReturnCharacter:  "\u23CE",
+        CPBackspaceCharacter:       "\u232B",
+        CPDeleteFunctionKey:        "\u232B",
+        CPDeleteCharacter:          "\u2326",
+        CPHomeFunctionKey:          "\u21F1",
+        CPEndFunctionKey:           "\u21F2",
+        CPPageUpFunctionKey:        "\u21DE",
+        CPPageDownFunctionKey:      "\u21DF",
+        CPUpArrowFunctionKey:       "\u2191",
+        CPDownArrowFunctionKey:     "\u2193",
+        CPLeftArrowFunctionKey:     "\u2190",
+        CPRightArrowFunctionKey:    "\u2192",
+        CPClearDisplayFunctionKey:  "\u2327",
+    };
 
 /*!
     @ingroup appkit

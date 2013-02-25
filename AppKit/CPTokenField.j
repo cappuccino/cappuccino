@@ -101,7 +101,7 @@ CPTokenFieldDeleteButtonType     = 1;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObject:_CGInsetMakeZero() forKey:@"editor-inset"];
+    return @{ @"editor-inset": _CGInsetMakeZero() };
 }
 
 - (id)initWithFrame:(CGRect)frame

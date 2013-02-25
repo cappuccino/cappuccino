@@ -83,26 +83,27 @@ _CPWindowViewResizeSlop = 3;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjectsAndKeys:
-                25, @"title-bar-height",
-                CGInsetMakeZero(), @"shadow-inset",
-                5, @"shadow-distance",
-                [CPColor clearColor], @"window-shadow-color",
-                CGSizeMakeZero(), @"size-indicator",
-                [CPNull null], @"resize-indicator",
-                [CPColor blackColor], @"attached-sheet-shadow-color",
-                [CPNull null], @"close-image-origin",
-                [CPNull null], @"close-image-size",
-                [CPNull null], @"close-image",
-                [CPNull null], @"close-active-image",
-                [CPNull null] , @"bezel-color",
-                [CPColor blackColor], @"title-text-color",
-                [CPFont systemFontOfSize:CPFontCurrentSystemSize], @"title-font",
-                [CPNull null], @"title-text-shadow-color",
-                _CGSizeMakeZero(), @"title-text-shadow-offset",
-                CPCenterTextAlignment, @"title-alignment",
-                CPLineBreakByTruncatingTail, @"title-line-break-mode",
-                CPTopVerticalTextAlignment, @"title-vertical-alignment"];
+    return @{
+            @"title-bar-height": 25,
+            @"shadow-inset": CGInsetMakeZero(),
+            @"shadow-distance": 5,
+            @"window-shadow-color": [CPColor clearColor],
+            @"size-indicator": CGSizeMakeZero(),
+            @"resize-indicator": [CPNull null],
+            @"attached-sheet-shadow-color": [CPColor blackColor],
+            @"close-image-origin": [CPNull null],
+            @"close-image-size": [CPNull null],
+            @"close-image": [CPNull null],
+            @"close-active-image": [CPNull null],
+            @"bezel-color": [CPNull null],
+            @"title-text-color": [CPColor blackColor],
+            @"title-font": [CPFont systemFontOfSize:CPFontCurrentSystemSize],
+            @"title-text-shadow-color": [CPNull null],
+            @"title-text-shadow-offset": _CGSizeMakeZero(),
+            @"title-alignment": CPCenterTextAlignment,
+            @"title-line-break-mode": CPLineBreakByTruncatingTail,
+            @"title-vertical-alignment": CPTopVerticalTextAlignment,
+        };
 }
 
 - (CGRect)contentRectForFrameRect:(CGRect)aFrameRect

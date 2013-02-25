@@ -34,8 +34,9 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPColor grayColor]]
-                                       forKeys:[@"toolbar-background-color"]];
+    return @{
+            @"toolbar-background-color": [CPColor grayColor],
+        };
 }
 
 - (void)setShowsResizeIndicator:(BOOL)shouldShowResizeIndicator

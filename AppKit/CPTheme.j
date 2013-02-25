@@ -476,7 +476,7 @@ CPThemeStateKeyWindow       = CPThemeState("keyWindow");
     if (aValue === undefined || aValue === nil)
         _values = @{};
     else
-        _values = [CPDictionary dictionaryWithObject:aValue forKey:String(CPThemeStateNormal)];
+        _values = @{ String(CPThemeStateNormal): aValue };
 }
 
 - (void)setValue:(id)aValue forState:(CPThemeState)aState

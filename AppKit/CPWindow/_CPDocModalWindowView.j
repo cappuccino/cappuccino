@@ -36,8 +36,10 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPColor whiteColor], 8]
-                                       forKeys:[ @"body-color", @"height-shadow"]];
+    return @{
+            @"body-color": [CPColor whiteColor],
+            @"height-shadow": 8,
+        };
 }
 
 - (id)initWithFrame:(CGRect)aFrame styleMask:(unsigned)aStyleMask

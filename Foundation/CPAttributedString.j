@@ -620,7 +620,7 @@
 */
 - (void)addAttribute:(CPString)anAttribute value:(id)aValue range:(CPRange)aRange
 {
-    [self addAttributes:[CPDictionary dictionaryWithObject:aValue forKey:anAttribute] range:aRange];
+    [self addAttributes:@{ anAttribute: aValue } range:aRange];
 }
 
 /*!

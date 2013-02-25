@@ -45,8 +45,16 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], CPLeftTextAlignment, CPLineBreakByTruncatingTail, CGInsetMakeZero(), [CPNull null], [CPNull null], [CPNull null], CGSizeMakeZero()]
-                                       forKeys:[@"background-color", @"text-alignment", @"line-break-mode", @"text-inset", @"text-color", @"font", @"text-shadow-color", @"text-shadow-offset"]];
+    return @{
+            @"background-color": [CPNull null],
+            @"text-alignment": CPLeftTextAlignment,
+            @"line-break-mode": CPLineBreakByTruncatingTail,
+            @"text-inset": CGInsetMakeZero(),
+            @"text-color": [CPNull null],
+            @"font": [CPNull null],
+            @"text-shadow-color": [CPNull null],
+            @"text-shadow-offset": CGSizeMakeZero(),
+        };
 }
 
 - (void)initWithFrame:(CGRect)frame
@@ -239,8 +247,10 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPColor grayColor]]
-                                       forKeys:[@"background-color", @"divider-color"]];
+    return @{
+            @"background-color": [CPNull null],
+            @"divider-color": [CPColor grayColor],
+        };
 }
 
 - (void)_init

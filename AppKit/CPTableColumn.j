@@ -560,7 +560,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
     [[CPNotificationCenter defaultCenter]
     postNotificationName:CPTableViewColumnDidResizeNotification
                   object:[self tableView]
-                userInfo:[CPDictionary dictionaryWithObjects:[self, oldWidth] forKeys:[@"CPTableColumn", "CPOldWidth"]]];
+                userInfo:@{ @"CPTableColumn": self, @"CPOldWidth": oldWidth }];
 }
 
 @end

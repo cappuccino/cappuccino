@@ -105,16 +105,13 @@ var ShouldSuppressResizeNotifications   = 1,
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[1.0,
-                                                10.0,
-                                                [CPColor grayColor],
-                                                [CPNull null],
-                                                [CPNull null]]
-                                       forKeys:[@"divider-thickness",
-                                                @"pane-divider-thickness",
-                                                @"pane-divider-color",
-                                                @"horizontal-divider-color",
-                                                @"vertical-divider-color"]];
+    return @{
+            @"divider-thickness": 1.0,
+            @"pane-divider-thickness": 10.0,
+            @"pane-divider-color": [CPColor grayColor],
+            @"horizontal-divider-color": [CPNull null],
+            @"vertical-divider-color": [CPNull null],
+        };
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -1032,7 +1029,7 @@ The sum of the views and the sum of the dividers should be equal to the size of 
     var userInfo = nil;
 
     if (_currentDivider !== CPNotFound)
-        userInfo = [CPDictionary dictionaryWithObject:_currentDivider forKey:@"CPSplitViewDividerIndex"];
+        userInfo = @{ @"CPSplitViewDividerIndex": _currentDivider };
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPSplitViewWillResizeSubviewsNotification
                                                         object:self
@@ -1044,7 +1041,7 @@ The sum of the views and the sum of the dividers should be equal to the size of 
     var userInfo = nil;
 
     if (_currentDivider !== CPNotFound)
-        userInfo = [CPDictionary dictionaryWithObject:_currentDivider forKey:@"CPSplitViewDividerIndex"];
+        userInfo = @{ @"CPSplitViewDividerIndex": _currentDivider };
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPSplitViewDidResizeSubviewsNotification
                                                         object:self

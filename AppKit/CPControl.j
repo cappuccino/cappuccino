@@ -112,28 +112,19 @@ var CPControlBlackColor = [CPColor blackColor];
 
 + (CPDictionary)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[CPLeftTextAlignment,
-                                                CPTopVerticalTextAlignment,
-                                                CPLineBreakByClipping,
-                                                [CPColor blackColor],
-                                                [CPFont systemFontOfSize:CPFontCurrentSystemSize],
-                                                [CPNull null],
-                                                _CGSizeMakeZero(),
-                                                CPImageLeft,
-                                                CPScaleToFit,
-                                                _CGSizeMakeZero(),
-                                                _CGSizeMake(-1.0, -1.0)]
-                                       forKeys:[@"alignment",
-                                                @"vertical-alignment",
-                                                @"line-break-mode",
-                                                @"text-color",
-                                                @"font",
-                                                @"text-shadow-color",
-                                                @"text-shadow-offset",
-                                                @"image-position",
-                                                @"image-scaling",
-                                                @"min-size",
-                                                @"max-size"]];
+    return @{
+            @"alignment": CPLeftTextAlignment,
+            @"vertical-alignment": CPTopVerticalTextAlignment,
+            @"line-break-mode": CPLineBreakByClipping,
+            @"text-color": [CPColor blackColor],
+            @"font": [CPFont systemFontOfSize:CPFontCurrentSystemSize],
+            @"text-shadow-color": [CPNull null],
+            @"text-shadow-offset": _CGSizeMakeZero(),
+            @"image-position": CPImageLeft,
+            @"image-scaling": CPScaleToFit,
+            @"min-size": _CGSizeMakeZero(),
+            @"max-size": _CGSizeMake(-1.0, -1.0),
+        };
 }
 
 + (void)initialize
@@ -618,7 +609,7 @@ var CPControlBlackColor = [CPColor blackColor];
     if ([note object] != self)
         return;
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidBeginEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidBeginEditingNotification object:self userInfo:@{ "CPFieldEditor": [note object] }];
 }
 
 - (void)textDidChange:(CPNotification)note
@@ -627,7 +618,7 @@ var CPControlBlackColor = [CPColor blackColor];
     if ([note object] != self)
         return;
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidChangeNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidChangeNotification object:self userInfo:@{ "CPFieldEditor": [note object] }];
 }
 
 - (void)textDidEndEditing:(CPNotification)note
@@ -638,7 +629,7 @@ var CPControlBlackColor = [CPColor blackColor];
 
     [self _reverseSetBinding];
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:@{ "CPFieldEditor": [note object] }];
 }
 
 /*!

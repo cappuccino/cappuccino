@@ -1,0 +1,10 @@
+{
+	"folders":
+	[
+		{
+			"path": "/Users/siker/dev/cappuccino",
+			"folder_exclude_patterns": ["Build", "*.environment", "AppKit/Themes/Aristo/Frameworks"],
+            "file_exclude_patterns": ["*.cib", "dataURLs.txt", "MHTMLData.txt", "MHTMLPaths.txt"]
+		}
+	]
+}

@@ -60,8 +60,13 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), [CPNull null], _CGInsetMake(3.0, 3.0, 3.0, 3.0), _CGInsetMakeZero(), [CPNull null]]
-                                       forKeys:[@"bezel-inset", @"bezel-color", @"content-inset", @"content-border-inset", @"content-border-color"]];
+    return @{
+            @"bezel-inset": _CGInsetMakeZero(),
+            @"bezel-color": [CPNull null],
+            @"content-inset": _CGInsetMake(3.0, 3.0, 3.0, 3.0),
+            @"content-border-inset": _CGInsetMakeZero(),
+            @"content-border-color": [CPNull null],
+        };
 }
 
 - (void)_reverseSetBinding
