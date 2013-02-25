@@ -1441,7 +1441,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPOutlineViewItemWillExpandNotification
                       object:self
-                    userInfo:[CPDictionary dictionaryWithObject:item forKey:"CPObject"]];
+                    userInfo:@{ "CPObject": item }];
 }
 
 /*!

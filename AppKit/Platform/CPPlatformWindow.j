@@ -110,7 +110,7 @@ var PrimaryPlatformWindow   = NULL;
 
 #if PLATFORM(DOM)
         _windowLevels = [];
-        _windowLayers = [CPDictionary dictionary];
+        _windowLayers = @{};
 
         _charCodes = {};
 #endif

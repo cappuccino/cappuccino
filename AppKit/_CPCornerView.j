@@ -33,8 +33,10 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null]]
-                                       forKeys:[@"background-color", @"divider-color"]];
+    return @{
+        @"background-color": [CPNull null],
+        @"divider-color": [CPNull null],
+    };
 }
 
 - (void)drawRect:(CGRect)aRect

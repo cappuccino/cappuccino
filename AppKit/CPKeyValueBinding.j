@@ -32,8 +32,8 @@
 
 @class CPButton
 
-var exposedBindingsMap = [CPDictionary new],
-    bindingsMap = [CPDictionary new];
+var exposedBindingsMap = @{},
+    bindingsMap = @{};
 
 var CPBindingOperationAnd = 0,
     CPBindingOperationOr  = 1;
@@ -145,7 +145,7 @@ var CPBindingOperationAnd = 0,
 
         if (!bindings)
         {
-            bindings = [CPDictionary new];
+            bindings = @{};
             [bindingsMap setObject:bindings forKey:[_source UID]];
         }
 

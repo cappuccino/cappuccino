@@ -352,7 +352,7 @@
 
 - (void)testEnumerateKeysAndObjectsUsingBlock_
 {
-    var input0 = [CPDictionary dictionary],
+    var input0 = @{},
         input1 = [CPDictionary dictionaryWithJSObject:{a: 1, b: 3, c: "b"}],
         output = [CPMutableDictionary dictionary],
         outputFunction = function(aKey, anObject)

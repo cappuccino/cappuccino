@@ -96,14 +96,14 @@ CPLogRegister(CPLogConsole);
     [totalCountField bind:CPValueBinding toObject:arrayController
               withKeyPath:@"selectedObjects.@sum.price" options:nil];
 
-    var bindingOptions = [CPDictionary dictionary];
+    var bindingOptions = @{};
     //[bindingOptions setObject:@"No Name" forKey:@"NSNullPlaceholder"];
     [selectedNameField bind:CPValueBinding toObject:arrayController
                 withKeyPath:@"selection.name" options:bindingOptions];
 
     // binding for "name" column
     var tableColumn = [tableView tableColumnWithIdentifier:@"name"],
-        bindingOptions = [CPDictionary dictionary];
+        bindingOptions = @{};
 
     [tableColumn bind:CPValueBinding toObject:arrayController
           withKeyPath:@"arrangedObjects.name" options:bindingOptions];
@@ -111,7 +111,7 @@ CPLogRegister(CPLogConsole);
 
     // binding options for "price"
     // no need for placeholder as overridden by formatters
-    bindingOptions = [CPDictionary dictionary];
+    bindingOptions = @{};
     //[bindingOptions removeObjectForKey:@"NSNullPlaceholder"];
     //[bindingOptions setObject:YES
     //                 forKey:CPValidatesImmediatelyBindingOption];
@@ -120,7 +120,7 @@ CPLogRegister(CPLogConsole);
 
     // binding for "price" column
     tableColumn = [tableView tableColumnWithIdentifier:@"price"];
-    bindingOptions = [CPDictionary dictionary];
+    bindingOptions = @{};
     [tableColumn bind:CPValueBinding toObject:arrayController
           withKeyPath:@"arrangedObjects.price" options:bindingOptions];
 

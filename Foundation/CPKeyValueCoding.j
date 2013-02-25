@@ -144,7 +144,7 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
 {
     var index = 0,
         count = keys.length,
-        dictionary = [CPDictionary dictionary];
+        dictionary = @{};
 
     for (; index < count; ++index)
     {

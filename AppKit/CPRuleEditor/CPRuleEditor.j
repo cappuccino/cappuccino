@@ -791,7 +791,7 @@ TODO: implement
 */
 - (CPPredicate)predicateForRow:(CPInteger)aRow
 {
-    var predicateParts = [CPDictionary dictionary],
+    var predicateParts = @{},
         items = [self criteriaForRow:aRow],
         count = [items count],
         predicate,
@@ -1771,7 +1771,7 @@ TODO: implement
 
         if (animate)
         {
-            var animation = [CPDictionary dictionary];
+            var animation = @{};
             [animation setObject:aslice forKey:CPViewAnimationTargetKey];
             [animation setObject:startRect forKey:CPViewAnimationStartFrameKey];
             [animation setObject:targetRect forKey:CPViewAnimationEndFrameKey];

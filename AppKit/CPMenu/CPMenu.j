@@ -77,7 +77,7 @@ var _CPMenuBarVisible               = NO,
     if (self !== [CPMenu class])
         return;
 
-    [[self class] setMenuBarAttributes:[CPDictionary dictionary]];
+    [[self class] setMenuBarAttributes:@{}];
 }
 
 + (BOOL)menuBarVisible

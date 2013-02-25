@@ -107,7 +107,7 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
         varString = [varString stringByAppendingFormat:@"&%@=%@", key, [aDictionary objectForKey:key]];
 
     if (!_params)
-        _params = [CPDictionary dictionary];
+        _params = @{};
 
     [_params setObject:varString forKey:@"flashvars"];
     [self setParameters:_params];
@@ -137,7 +137,7 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
 #if PLATFORM(DOM)
     if (!CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
     {
-        _paramElements = [CPDictionary dictionary];
+        _paramElements = @{};
 
         var enumerator = [_params keyEnumerator],
             key;

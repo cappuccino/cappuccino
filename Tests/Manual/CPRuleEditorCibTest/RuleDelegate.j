@@ -91,8 +91,8 @@ var CPRuleEditorCustomControlClass = @"CPRuleEditorCustomControlClass";
             control = [[custom_class alloc] initWithFrame:CGRectMake(0, 0, 100, 18)];
             [criterion setObject:control forKey:("control_"+row)];
         }
-        
-        return control;        
+
+        return control;
     }
 
     return [criterion objectForKey:@"valeur"];
@@ -100,7 +100,7 @@ var CPRuleEditorCustomControlClass = @"CPRuleEditorCustomControlClass";
 
 - (CPDictionary)ruleEditor:(CPRuleEditor)editor predicatePartsForCriterion:(id)criterion withDisplayValue:(id)value inRow:(int)row
 {
-    var predicatePartsForCriterion = [CPDictionary dictionary];
+    var predicatePartsForCriterion = @{};
 
     if ([editor rowTypeForRow:row] == CPRuleEditorRowTypeCompound)
     {

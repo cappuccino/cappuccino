@@ -755,7 +755,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
     if (!observers)
     {
-        observers = [CPDictionary dictionary];
+        observers = @{};
         _observersForKey[aPath] = observers;
         _observersForKeyLength++;
     }

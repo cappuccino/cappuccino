@@ -85,7 +85,7 @@ var CPThemesByName          = { },
     if (self)
     {
         _name = aName;
-        _attributes = [CPDictionary dictionary];
+        _attributes = @{};
 
         CPThemesByName[_name] = self;
     }
@@ -270,7 +270,7 @@ var CPThemesByName          = { },
 
     if (!attributes)
     {
-        attributes = [CPDictionary dictionary];
+        attributes = @{};
 
         [_attributes setObject:attributes forKey:aClass];
     }
@@ -443,7 +443,7 @@ CPThemeStateKeyWindow       = CPThemeState("keyWindow");
         _cache = { };
         _name = aName;
         _defaultValue = aDefaultValue;
-        _values = [CPDictionary dictionary];
+        _values = @{};
     }
 
     return self;
@@ -474,7 +474,7 @@ CPThemeStateKeyWindow       = CPThemeState("keyWindow");
     _cache = {};
 
     if (aValue === undefined || aValue === nil)
-        _values = [CPDictionary dictionary];
+        _values = @{};
     else
         _values = [CPDictionary dictionaryWithObject:aValue forKey:String(CPThemeStateNormal)];
 }
@@ -585,7 +585,7 @@ CPThemeStateKeyWindow       = CPThemeState("keyWindow");
 
         _name = [aCoder decodeObjectForKey:@"name"];
         _defaultValue = [aCoder decodeObjectForKey:@"defaultValue"];
-        _values = [CPDictionary dictionary];
+        _values = @{};
 
         if ([aCoder containsValueForKey:@"value"])
         {
@@ -633,7 +633,7 @@ CPThemeStateKeyWindow       = CPThemeState("keyWindow");
     }
     else
     {
-        var encodedValues = [CPDictionary dictionary];
+        var encodedValues = @{};
 
         while (count--)
         {

@@ -31,7 +31,7 @@
 @import "CPNumber.j"
 @import "CPObject.j"
 
-var transformerMap = [CPDictionary dictionary];
+var transformerMap = @{};
 
 @implementation CPValueTransformer : CPObject
 {

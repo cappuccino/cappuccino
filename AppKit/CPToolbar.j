@@ -118,8 +118,8 @@ var CPToolbarsByIdentifier              = nil,
     if (self !== [CPToolbar class])
         return;
 
-    CPToolbarsByIdentifier = [CPDictionary dictionary];
-    CPToolbarConfigurationsByIdentifier = [CPDictionary dictionary];
+    CPToolbarsByIdentifier = @{};
+    CPToolbarConfigurationsByIdentifier = @{};
 }
 
 /* @ignore */

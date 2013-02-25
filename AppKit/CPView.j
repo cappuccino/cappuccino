@@ -2821,7 +2821,7 @@ setBoundsOrigin:
 
 - (CPDictionary)_themeAttributeDictionary
 {
-    var dictionary = [CPDictionary dictionary];
+    var dictionary = @{};
 
     if (_themeAttributes)
     {

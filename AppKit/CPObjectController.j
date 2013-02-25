@@ -667,7 +667,7 @@ var CPObjectControllerContentKey                        = @"CPObjectControllerCo
 {
     if (self = [super init])
     {
-        _cachedValues = [CPDictionary dictionary];
+        _cachedValues = @{};
         _observationProxies = [CPArray array];
         _controller = aController;
         _observedObjectsByKeyPath = {};
