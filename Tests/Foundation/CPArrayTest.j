@@ -1,5 +1,6 @@
 @import <Foundation/Foundation.j>
 
+@import <OJUnit/OJTestCase.j>
 
 @implementation CPArrayTest : OJTestCase
 {
@@ -679,6 +680,13 @@
 
     [self assertThrows:function() { [anArray addObserver:self forKeyPath:@"self" options:0 context:nil]; }];
     [self assertThrows:function() { [anArray removeObserver:self forKeyPath:@"self"]; }];
+}
+
+- (void)testArrayLiteral
+{
+  var anArray = @[1, [CPNull null], @"3"];
+
+  [self assert:[1, [CPNull null], "3"] equals:anArray];
 }
 
 @end

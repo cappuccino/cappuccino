@@ -149,7 +149,7 @@ if (!exports.acorn) {
 
   exports.Expression = skipThrough;
   exports.ThisExpression = ignore;
-  exports.ArrayExpression = function(node, st, c) {
+  exports.ArrayExpression = exports.ArrayLiteral = function(node, st, c) {
     for (var i = 0; i < node.elements.length; ++i) {
       var elt = node.elements[i];
       if (elt) c(elt, st, "Expression");

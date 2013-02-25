@@ -273,7 +273,7 @@ if (!exports.acorn) {
   var _implementation = {keyword: "implementation"}, _outlet = {keyword: "outlet"}, _accessors = {keyword: "accessors"};
   var _end = {keyword: "end"}, _import = {keyword: "import", afterImport: true};
   var _action = {keyword: "action"}, _selector = {keyword: "selector"}, _class = {keyword: "class"}, _global = {keyword: "global"};
-  var _dictionaryLiteral = {keyword: "{"};
+  var _dictionaryLiteral = {keyword: "{"}, _arrayLiteral = {keyword: "["};
 
   // Objective-J keywords
 
@@ -663,6 +663,8 @@ if (!exports.acorn) {
       return readString(next);
     if (next === 123) // Read dictionary literal if "{"
       return finishToken(_dictionaryLiteral);
+    if (next === 91) // Ready array literal if "["
+      return finishToken(_arrayLiteral);
 
     var word = readWord1(),
         token = objJAtKeywordTypes[word];
@@ -1851,7 +1853,7 @@ if (!exports.acorn) {
     case _null: case _true: case _false:
       var node = startNode();
       node.value = tokType.atomValue;
-      node.raw = tokType.keyword
+      node.raw = tokType.keyword;
       next();
       return finishNode(node, "Literal");
 
@@ -1870,6 +1872,18 @@ if (!exports.acorn) {
       expect(_parenR, "Expected closing ')' in expression");
       return val;
 
+    case _arrayLiteral:
+      var node = startNode(),
+          firstExpr = null;
+
+      next();
+      expect(_bracketL, "Expected '[' at beginning of array literal");
+
+      if (tokType !== _bracketR)
+        firstExpr = parseExpression(true, true);
+
+      node.elements = parseExprList(_bracketR, firstExpr, true, true);
+      return finishNode(node, "ArrayLiteral");
     case _bracketL:
       var node = startNode(),
           firstExpr = null;

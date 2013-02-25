@@ -774,6 +774,29 @@ Identifier: function(node, st, c) {
         }
     }
 },
+ArrayLiteral: function(node, st, c) {
+    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
+    st.compiler.lastPos = node.start;
+
+    if (!node.elements.length) {
+        CONCAT(st.compiler.jsBuffer, "objj_msgSend(objj_msgSend(CPArray, \"alloc\"), \"init\")");
+    } else {
+        CONCAT(st.compiler.jsBuffer, "objj_msgSend(objj_msgSend(CPArray, \"alloc\"), \"initWithObjects:count:\", [");
+        for (var i = 0; i < node.elements.length; i++) {
+            var elt = node.elements[i];
+
+            if (i)
+                CONCAT(st.compiler.jsBuffer, ", ");
+
+            st.compiler.lastPos = elt.start;
+            c(elt, st, "Expression");
+            CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, elt.end));
+        }
+        CONCAT(st.compiler.jsBuffer, "], " + node.elements.length + ")");
+    }
+
+    st.compiler.lastPos = node.end;
+},
 DictionaryLiteral: function(node, st, c) {
     CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
     st.compiler.lastPos = node.start;
