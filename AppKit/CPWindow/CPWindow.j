@@ -297,14 +297,15 @@ CPTexturedBackgroundWindowMask
 
         [self setLevel:CPNormalWindowLevel];
 
-        _minSize = _CGSizeMake(0.0, 0.0);
-        _maxSize = _CGSizeMake(1000000.0, 1000000.0);
-
         // Create our border view which is the actual root of our view hierarchy.
         _windowView = [[windowViewClass alloc] initWithFrame:_CGRectMake(0.0, 0.0, _CGRectGetWidth(_frame), _CGRectGetHeight(_frame)) styleMask:aStyleMask];
 
         [_windowView _setWindow:self];
         [_windowView setNextResponder:self];
+
+        // Size calculation needs _windowView
+        _minSize = [self _calculateMinSizeForProposedSize:_CGSizeMake(0.0, 0.0)];
+        _maxSize = _CGSizeMake(1000000.0, 1000000.0);
 
         [self setMovableByWindowBackground:aStyleMask & CPHUDBackgroundWindowMask];
 
@@ -631,20 +632,6 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Sets the window's frame rectangle. Also tells the window whether it should animate
-    the resize operation, and redraw itself if necessary.
-    @param aFrame the new size and location for the window
-    @param shouldDisplay whether the window should redraw its views
-    @param shouldAnimate whether the window resize should be animated.
-*/
-- (void)_setClippedFrame:(CGRect)aFrame display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate
-{
-    aFrame.size.width = MIN(MAX(aFrame.size.width, _minSize.width), _maxSize.width)
-    aFrame.size.height = MIN(MAX(aFrame.size.height, _minSize.height), _maxSize.height);
-    [self setFrame:aFrame display:shouldDisplay animate:shouldAnimate];
-}
-
-/*!
     Sets the frame of the window.
 
     @param aFrame - A CGRect of the new frame for the receiver.
@@ -751,7 +738,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay
 {
-    [self _setClippedFrame:aFrame display:shouldDisplay animate:NO];
+    [self setFrame:aFrame display:shouldDisplay animate:NO];
 }
 
 /*!
@@ -760,7 +747,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setFrame:(CGRect)aFrame
 {
-    [self _setClippedFrame:aFrame display:YES animate:NO];
+    [self setFrame:aFrame display:YES animate:NO];
 }
 
 /*!
@@ -769,7 +756,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setFrameOrigin:(CGPoint)anOrigin
 {
-    [self _setClippedFrame:_CGRectMake(anOrigin.x, anOrigin.y, _CGRectGetWidth(_frame), _CGRectGetHeight(_frame)) display:YES animate:NO];
+    [self setFrame:_CGRectMake(anOrigin.x, anOrigin.y, _CGRectGetWidth(_frame), _CGRectGetHeight(_frame)) display:YES animate:NO];
 
     // reposition sheet
     if ([self attachedSheet])
@@ -782,7 +769,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setFrameSize:(CGSize)aSize
 {
-    [self _setClippedFrame:_CGRectMake(_CGRectGetMinX(_frame), _CGRectGetMinY(_frame), aSize.width, aSize.height) display:YES animate:NO];
+    [self setFrame:_CGRectMake(_CGRectGetMinX(_frame), _CGRectGetMinY(_frame), aSize.width, aSize.height) display:YES animate:NO];
 }
 
 /*!
@@ -1068,6 +1055,8 @@ CPTexturedBackgroundWindowMask
 /*!
     Sets the window's minimum size. If the provided
     size is the same as the current minimum size, the method simply returns.
+    The height is pinned to the difference in height between the frame rect
+    and content rect, to account for a title bar + toolbar.
     @param aSize the new minimum size for the window
 */
 - (void)setMinSize:(CGSize)aSize
@@ -1075,7 +1064,7 @@ CPTexturedBackgroundWindowMask
     if (_CGSizeEqualToSize(_minSize, aSize))
         return;
 
-    _minSize = _CGSizeMakeCopy(aSize);
+    _minSize = [self _calculateMinSizeForProposedSize:aSize];
 
     var size = _CGSizeMakeCopy([self frame].size),
         needsFrameChange = NO;
@@ -1102,6 +1091,15 @@ CPTexturedBackgroundWindowMask
 - (CGSize)minSize
 {
     return _minSize;
+}
+
+/*! @ignore */
+- (CGSize)_calculateMinSizeForProposedSize:(CGSize)proposedSize
+{
+    var contentFrame = [self contentRectForFrameRect:_frame],
+        minHeight = _CGRectGetHeight(_frame) - _CGRectGetHeight(contentFrame);
+
+    return _CGSizeMake(MAX(proposedSize.width, 0), MAX(proposedSize.height, minHeight));
 }
 
 /*!

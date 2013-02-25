@@ -25,12 +25,13 @@
 
 @class _CPDocModalWindowView
 
+var _CPStandardWindowViewDividerViewHeight = 1.0;
+
 @implementation _CPTexturedWindowHeadView : CPView
 {
     _CPWindowView   _parentView;
     CPView          _gradientView;
     CPView          _solidView;
-    CPView          _dividerView;
 }
 
 + (CPString)defaultThemeClass
@@ -51,10 +52,10 @@
     if (self)
     {
         _parentView = parentView;
-        _gradientView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+        _gradientView = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
         [self addSubview:_gradientView];
 
-        _solidView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+        _solidView = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
         [self addSubview:_solidView];
     }
 
@@ -68,10 +69,10 @@
     var gradientHeight = [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView],
         bounds = [self bounds];
 
-    [_gradientView setFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), gradientHeight)];
+    [_gradientView setFrame:_CGRectMake(0.0, 0.0, _CGRectGetWidth(bounds), gradientHeight)];
     [_gradientView setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"bezel-head-color" inState:[_parentView themeState] forClass:_CPStandardWindowView]];
 
-    [_solidView setFrame:CGRectMake(0.0, gradientHeight, CGRectGetWidth(bounds), CGRectGetHeight(bounds) - gradientHeight)];
+    [_solidView setFrame:_CGRectMake(0.0, gradientHeight, _CGRectGetWidth(bounds), _CGRectGetHeight(bounds) - gradientHeight)];
     [_solidView setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"solid-color" forClass:_CPStandardWindowView]];
 }
 
@@ -79,8 +80,8 @@
 {
     var bounds = [self bounds];
 
-    [_gradientView setFrameSize:CGSizeMake(CGRectGetWidth(bounds), [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView])];
-    [_solidView setFrameSize:CGSizeMake(CGRectGetWidth(bounds), CGRectGetHeight(bounds) - [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView])];
+    [_gradientView setFrameSize:_CGSizeMake(_CGRectGetWidth(bounds), [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView])];
+    [_solidView setFrameSize:_CGSizeMake(_CGRectGetWidth(bounds), _CGRectGetHeight(bounds) - [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView])];
 }
 
 @end
@@ -106,19 +107,30 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], [CPNull null], [CPColor blackColor], [CPColor whiteColor], 32, [CPNull null], [CPNull null],[CPNull null], [CPNull null], [CPNull null], [CPNull null]]
-                                       forKeys:[   @"gradient-height",
-                                                   @"solid-color",
-                                                   @"bezel-head-color",
-                                                   @"divider-color",
-                                                   @"body-color",
-                                                   @"title-bar-height",
-                                                   @"minimize-image-highlighted-button",
-                                                   @"minimize-image-button",
-                                                   @"close-image-button",
-                                                   @"close-image-highlighted-button",
-                                                   @"unsaved-image-button",
-                                                   @"unsaved-image-highlighted-button"]];
+    return [CPDictionary dictionaryWithObjectsAndKeys:
+                [CPNull null], @"gradient-height",
+                [CPNull null], @"solid-color",
+                [CPNull null], @"bezel-head-color",
+                [CPColor blackColor], @"divider-color",
+                [CPColor whiteColor], @"body-color",
+                32, @"title-bar-height",
+                [CPNull null], @"minimize-image-highlighted-button",
+                [CPNull null], @"minimize-image-button",
+                [CPNull null], @"close-image-button",
+                [CPNull null], @"close-image-highlighted-button",
+                [CPNull null], @"unsaved-image-button",
+                [CPNull null], @"unsaved-image-highlighted-button"];
+}
+
++ (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
+{
+    var contentRect = [super contentRectForFrameRect:aFrameRect];
+
+    // Adjust for the divider
+    contentRect.origin.y += _CPStandardWindowViewDividerViewHeight;
+    contentRect.size.height -= _CPStandardWindowViewDividerViewHeight;
+
+    return contentRect;
 }
 
 - (id)initWithFrame:(CGRect)aFrame styleMask:(unsigned)aStyleMask
@@ -130,34 +142,34 @@
         var theClass = [self class],
             bounds = [self bounds];
 
-        _headView = [[_CPTexturedWindowHeadView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), [self valueForThemeAttribute:@"title-bar-height"]) windowView:self];
+        _headView = [[_CPTexturedWindowHeadView alloc] initWithFrame:_CGRectMake(0.0, 0.0, _CGRectGetWidth(bounds), [self valueForThemeAttribute:@"title-bar-height"]) windowView:self];
 
         [_headView setAutoresizingMask:CPViewWidthSizable];;
         [_headView setHitTests:NO];
 
         [self addSubview:_headView positioned:CPWindowBelow relativeTo:_titleField];
 
-        _dividerView = [[CPView alloc] initWithFrame:CGRectMake(0.0, CGRectGetMaxY([_headView frame]), CGRectGetWidth(bounds), 1.0)];
+        _dividerView = [[CPView alloc] initWithFrame:_CGRectMake(0.0, _CGRectGetMaxY([_headView frame]), _CGRectGetWidth(bounds), _CPStandardWindowViewDividerViewHeight)];
 
         [_dividerView setAutoresizingMask:CPViewWidthSizable];
         [_dividerView setHitTests:NO];
 
         [self addSubview:_dividerView];
 
-        var y = CGRectGetMaxY([_dividerView frame]);
+        var y = _CGRectGetMaxY([_dividerView frame]);
 
-        _bodyView = [[CPView alloc] initWithFrame:CGRectMake(0.0, y, CGRectGetWidth(bounds), CGRectGetHeight(bounds) - y)];
+        _bodyView = [[CPView alloc] initWithFrame:_CGRectMake(0.0, y, _CGRectGetWidth(bounds), _CGRectGetHeight(bounds) - y)];
 
         [_bodyView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
         [_bodyView setHitTests:NO];
 
         [self addSubview:_bodyView];
 
-        [self setResizeIndicatorOffset:CGSizeMake(2.0, 2.0)];
+        [self setResizeIndicatorOffset:_CGSizeMake(2.0, 2.0)];
 
         if (_styleMask & CPClosableWindowMask)
         {
-            _closeButton = [[CPButton alloc] initWithFrame:CGRectMake(8.0, 8.0, 16.0, 16.0)];
+            _closeButton = [[CPButton alloc] initWithFrame:_CGRectMake(8.0, 8.0, 16.0, 16.0)];
 
             [_closeButton setButtonType:CPMomentaryChangeButton];
             [_closeButton setBordered:NO];
@@ -168,7 +180,7 @@
 
         if (_styleMask & CPMiniaturizableWindowMask && ![CPPlatform isBrowser])
         {
-            _minimizeButton = [[CPButton alloc] initWithFrame:CGRectMake(27.0, 7.0, 16.0, 16.0)];
+            _minimizeButton = [[CPButton alloc] initWithFrame:_CGRectMake(27.0, 7.0, 16.0, 16.0)];
             [_minimizeButton setButtonType:CPMomentaryChangeButton];
             [_minimizeButton setBordered:NO];
 
@@ -192,7 +204,7 @@
 
 - (CGSize)toolbarOffset
 {
-    return CGSizeMake(0.0, [self valueForThemeAttribute:@"title-bar-height"]);
+    return _CGSizeMake(0.0, [self valueForThemeAttribute:@"title-bar-height"]);
 }
 
 - (void)tile
@@ -286,7 +298,7 @@
 - (BOOL)couldBeMoveEvent:(CPEvent)anEvent
 {
     if (![_headView isHidden])
-        if (CGRectContainsPoint([_headView frame], [self convertPoint:[anEvent locationInWindow] fromView:nil]))
+        if (_CGRectContainsPoint([_headView frame], [self convertPoint:[anEvent locationInWindow] fromView:nil]))
             return YES;
 
     return [super couldBeMoveEvent:anEvent];
@@ -343,6 +355,20 @@
     [_bodyView setBackgroundColor:[self valueForThemeAttribute:@"body-color"]];
 
     [_headView setNeedsLayout];
+}
+
+- (CGSize)_minimumResizeSize
+{
+    // The minimum width is such that the close button would always be visible.
+    // We give the same margin to the right of the button as there is to the left.
+    var size = [super _minimumResizeSize],
+        closeSize = [self valueForThemeAttribute:@"close-image-size"],
+        closeOrigin = [self valueForThemeAttribute:@"close-image-origin"];
+
+    size.width = closeSize.width + (closeOrigin.x * 2);
+    size.height += _CPStandardWindowViewDividerViewHeight;
+
+    return size;
 }
 
 @end
