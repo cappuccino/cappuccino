@@ -83,7 +83,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
         [tableView setHeaderView:nil];
         [tableView setCornerView:nil];
         [tableView setRowHeight:24.0];
-        [tableView setGridStyleMask:CPTableViewSolidHorizontalGridLineMask];
+        [tableView setGridStyleMask:CPTableViewGridNone];
         [tableView setBackgroundColor:[CPColor clearColor]];
         [tableView setGridColor:[CPColor colorWithRed:242.0 / 255.0 green:243.0 / 255.0 blue:245.0 / 255.0 alpha:1.0]];
 
