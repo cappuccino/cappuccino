@@ -10,21 +10,21 @@
 
 @implementation AppController : CPObject
 {
-    CPWindow      theWindow;
-    CPOutlineView outlineView;
+    @outlet CPWindow      theWindow;
+    @outlet CPOutlineView outlineView;
 
     CPDictionary  rootItem;
 }
 
 - (void)awakeFromCib
 {
+    rootItem = nil;
+
     var path = [[CPBundle mainBundle] pathForResource:@"InitInfo.dict"],
         request = [CPURLRequest requestWithURL:path],
         connection = [CPURLConnection connectionWithRequest:request delegate:self];
 
-    rootItem = nil;
     [theWindow setFullPlatformWindow:YES];
-
 }
 
 - (void)connection:(CPURLConnection)connection didReceiveData:(CPString)dataString
@@ -32,8 +32,9 @@
     if (!dataString)
         return;
 
-    var data = [[CPData alloc] initWithRawString:dataString],
-        rootItem = [CPPropertyListSerialization propertyListFromData:data format:CPPropertyListXMLFormat_v1_0];
+    var data = [[CPData alloc] initWithRawString:dataString];
+
+    rootItem = [CPPropertyListSerialization propertyListFromData:data format:CPPropertyListXMLFormat_v1_0];
 
     [outlineView reloadData];
 }

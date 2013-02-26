@@ -134,6 +134,7 @@ var CPViewFlags                     = { },
     CPGraphicsContext   _graphicsContext;
 
     int                 _tag;
+    CPString            _identifier @accessors(property=identifier);
 
     CGRect              _frame;
     CGRect              _bounds;
@@ -3014,7 +3015,8 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewThemeStateKey             = @"CPViewThemeStateKey",
     CPViewWindowKey                 = @"CPViewWindowKey",
     CPViewNextKeyViewKey            = @"CPViewNextKeyViewKey",
-    CPViewPreviousKeyViewKey        = @"CPViewPreviousKeyViewKey";
+    CPViewPreviousKeyViewKey        = @"CPViewPreviousKeyViewKey",
+    CPReuseIdentifierKey            = @"CPReuseIdentifierKey";
 
 @implementation CPView (CPCoding)
 
@@ -3043,6 +3045,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     {
         // We have to manually check because it may be 0, so we can't use ||
         _tag = [aCoder containsValueForKey:CPViewTagKey] ? [aCoder decodeIntForKey:CPViewTagKey] : -1;
+        _identifier = [aCoder decodeObjectForKey:CPReuseIdentifierKey];
 
         _window = [aCoder decodeObjectForKey:CPViewWindowKey];
         _superview = [aCoder decodeObjectForKey:CPViewSuperviewKey];
@@ -3205,6 +3208,9 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     for (var attributeName in _themeAttributes)
         if (_themeAttributes.hasOwnProperty(attributeName))
             CPThemeAttributeEncode(aCoder, _themeAttributes[attributeName]);
+    
+    if (_identifier)
+        [aCoder encodeObject:_identifier forKey:CPReuseIdentifierKey];
 }
 
 @end

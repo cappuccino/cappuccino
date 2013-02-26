@@ -63,6 +63,8 @@
 
         _tableColumns = [aCoder decodeObjectForKey:@"NSTableColumns"];
         [_tableColumns makeObjectsPerformSelector:@selector(setTableView:) withObject:self];
+        
+        _archivedDataViews = [aCoder decodeObjectForKey:@"NSTableViewArchivedReusableViewsKey"];
 
         _intercellSpacing = CGSizeMake([aCoder decodeFloatForKey:@"NSIntercellSpacingWidth"],
                                        [aCoder decodeFloatForKey:@"NSIntercellSpacingHeight"]);

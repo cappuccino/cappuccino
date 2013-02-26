@@ -198,3 +198,25 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 }
 
 @end
+
+var CPCibDataFileKey = @"CPCibDataFileKey",
+    CPCibBundleIdentifierKey = @"CPCibBundleIdentifierKey";
+
+@implementation CPCib (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+
+    var base64 = [aCoder decodeObjectForKey:CPCibDataFileKey];
+    _data = [CPData dataWithBase64:base64];
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:[_data base64] forKey:CPCibDataFileKey];
+}
+
+@end
