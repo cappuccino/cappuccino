@@ -1506,7 +1506,7 @@ var CPViewFlags                     = { },
 
 /*!
     Returns whether the receiver should be sent a \c -mouseDown: message for \c anEvent.<br/>
-    Returns \c YES by default.
+    Returns \c NO by default.
     @return \c YES, if the view object accepts first mouse-down event. \c NO, otherwise.
 */
 - (BOOL)acceptsFirstMouse:(CPEvent)anEvent
@@ -3208,7 +3208,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     for (var attributeName in _themeAttributes)
         if (_themeAttributes.hasOwnProperty(attributeName))
             CPThemeAttributeEncode(aCoder, _themeAttributes[attributeName]);
-    
+
     if (_identifier)
         [aCoder encodeObject:_identifier forKey:CPReuseIdentifierKey];
 }
