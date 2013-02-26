@@ -55,7 +55,7 @@ var sharedObject = [CPObject new];
 
 - (void)testIinitWithString_attributes
 {
-    var string = [[CPAttributedString alloc] initWithString:@"hi there" attributes:[CPDictionary dictionary]];
+    var string = [[CPAttributedString alloc] initWithString:@"hi there" attributes:@{}];
 
     [self assertTrue:([string string] === @"hi there")
              message:"testIinitWithString_attributes: expected:" + @"hi there" + " actual:" + [string string]];
@@ -370,7 +370,7 @@ var sharedObject = [CPObject new];
 {
     var string = [self stringForTesting];
 
-    [string setAttributes:[CPDictionary dictionary] range:CPMakeRange(0, [string length])];
+    [string setAttributes:@{} range:CPMakeRange(0, [string length])];
 
     testAttributesAtIndexWithValues(string, 10, {a:undefined, b:undefined, c:undefined, d:undefined, e:undefined, f:undefined}, self);
 

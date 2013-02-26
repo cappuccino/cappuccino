@@ -32,8 +32,8 @@
 
 @class CPButton
 
-var exposedBindingsMap = [CPDictionary new],
-    bindingsMap = [CPDictionary new];
+var exposedBindingsMap = @{},
+    bindingsMap = @{};
 
 var CPBindingOperationAnd = 0,
     CPBindingOperationOr  = 1;
@@ -130,7 +130,10 @@ var CPBindingOperationAnd = 0,
     if (self)
     {
         _source = aSource;
-        _info = [CPDictionary dictionaryWithObjects:[aDestination, aKeyPath] forKeys:[CPObservedObjectKey, CPObservedKeyPathKey]];
+        _info = @{
+                CPObservedObjectKey: aDestination,
+                CPObservedKeyPathKey: aKeyPath,
+            };
         _suppressedNotifications = {};
         _placeholderForMarker = {};
 
@@ -145,7 +148,7 @@ var CPBindingOperationAnd = 0,
 
         if (!bindings)
         {
-            bindings = [CPDictionary new];
+            bindings = @{};
             [bindingsMap setObject:bindings forKey:[_source UID]];
         }
 

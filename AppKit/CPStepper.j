@@ -269,8 +269,12 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], _CGSizeMakeZero(), _CGSizeMakeZero()]
-                                       forKeys:[@"bezel-color-up-button", @"bezel-color-down-button", @"up-button-size", @"down-button-size"]];
+    return @{
+            @"bezel-color-up-button": [CPNull null],
+            @"bezel-color-down-button": [CPNull null],
+            @"up-button-size": _CGSizeMakeZero(),
+            @"down-button-size": _CGSizeMakeZero(),
+        };
 }
 
 @end

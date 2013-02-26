@@ -59,8 +59,12 @@ CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOutEffect";
 
     For example:
     <pre>
-    var animation = [CPDictionary dictionaryWithObjects:[myViewToAnimate, aStartFrame, anEndFrame, CPViewAnimationFadeInEffect]
-                                                forKeys:[CPViewAnimationTargetKey, CPViewAnimationStartFrameKey, CPViewAnimationEndFrameKey, CPViewAnimationEffectKey]];
+    var animation = @{
+            CPViewAnimationTargetKey: myViewToAnimate,
+            CPViewAnimationStartFrameKey: aStartFrame,
+            CPViewAnimationEndFrameKey: anEndFrame,
+            CPViewAnimationEffectKey: CPViewAnimationFadeInEffect,
+        };
     </pre>
 
     If you pass nil instead of an array of dictionaries you should later call setViewAnimations:.

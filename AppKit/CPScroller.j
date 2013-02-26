@@ -110,19 +110,19 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithJSObject:{
-        @"scroller-width": 7.0,
-        @"knob-slot-color": [CPNull null],
-        @"decrement-line-color": [CPNull null],
-        @"increment-line-color": [CPNull null],
-        @"knob-color": [CPNull null],
-        @"decrement-line-size":_CGSizeMakeZero(),
-        @"increment-line-size":_CGSizeMakeZero(),
-        @"track-inset":_CGInsetMakeZero(),
-        @"knob-inset": _CGInsetMakeZero(),
-        @"minimum-knob-length":21.0,
-        @"track-border-overlay": 9.0
-    }];
+    return @{
+            @"scroller-width": 7.0,
+            @"knob-slot-color": [CPNull null],
+            @"decrement-line-color": [CPNull null],
+            @"increment-line-color": [CPNull null],
+            @"knob-color": [CPNull null],
+            @"decrement-line-size":_CGSizeMakeZero(),
+            @"increment-line-size":_CGSizeMakeZero(),
+            @"track-inset":_CGInsetMakeZero(),
+            @"knob-inset": _CGInsetMakeZero(),
+            @"minimum-knob-length":21.0,
+            @"track-border-overlay": 9.0
+        };
 }
 
 + (float)scrollerWidth
@@ -182,8 +182,10 @@ CPThemeStateScrollerKnobDark    = CPThemeState("scroller-knob-dark");
         _allowFadingOut = YES;
         _isMouseOver = NO;
         _style = CPScrollerStyleOverlay;
-        var paramAnimFadeOut = [CPDictionary dictionaryWithObjects:[self, CPViewAnimationFadeOutEffect]
-                                                           forKeys:[CPViewAnimationTargetKey, CPViewAnimationEffectKey]];
+        var paramAnimFadeOut = @{
+                CPViewAnimationTargetKey: self,
+                CPViewAnimationEffectKey: CPViewAnimationFadeOutEffect,
+            };
 
         _animationScroller = [[CPViewAnimation alloc] initWithDuration:0.2 animationCurve:CPAnimationEaseInOut];
         [_animationScroller setViewAnimations:[paramAnimFadeOut]];
@@ -826,8 +828,10 @@ var CPScrollerControlSizeKey    = @"CPScrollerControlSize",
         _allowFadingOut = YES;
         _isMouseOver = NO;
 
-        var paramAnimFadeOut = [CPDictionary dictionaryWithObjects:[self, CPViewAnimationFadeOutEffect]
-                                                           forKeys:[CPViewAnimationTargetKey, CPViewAnimationEffectKey]];
+        var paramAnimFadeOut = @{
+                CPViewAnimationTargetKey: self,
+                CPViewAnimationEffectKey: CPViewAnimationFadeOutEffect,
+            };
 
         _animationScroller = [[CPViewAnimation alloc] initWithDuration:0.2 animationCurve:CPAnimationEaseInOut];
         [_animationScroller setViewAnimations:[paramAnimFadeOut]];

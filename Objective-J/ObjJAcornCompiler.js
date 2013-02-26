@@ -774,6 +774,58 @@ Identifier: function(node, st, c) {
         }
     }
 },
+ArrayLiteral: function(node, st, c) {
+    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
+    st.compiler.lastPos = node.start;
+
+    if (!node.elements.length) {
+        CONCAT(st.compiler.jsBuffer, "objj_msgSend(objj_msgSend(CPArray, \"alloc\"), \"init\")");
+    } else {
+        CONCAT(st.compiler.jsBuffer, "objj_msgSend(objj_msgSend(CPArray, \"alloc\"), \"initWithObjects:count:\", [");
+        for (var i = 0; i < node.elements.length; i++) {
+            var elt = node.elements[i];
+
+            if (i)
+                CONCAT(st.compiler.jsBuffer, ", ");
+
+            st.compiler.lastPos = elt.start;
+            c(elt, st, "Expression");
+            CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, elt.end));
+        }
+        CONCAT(st.compiler.jsBuffer, "], " + node.elements.length + ")");
+    }
+
+    st.compiler.lastPos = node.end;
+},
+DictionaryLiteral: function(node, st, c) {
+    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
+    st.compiler.lastPos = node.start;
+
+    if (!node.keys.length) {
+        CONCAT(st.compiler.jsBuffer, "objj_msgSend(objj_msgSend(CPDictionary, \"alloc\"), \"init\")");
+    } else {
+        CONCAT(st.compiler.jsBuffer, "objj_msgSend(objj_msgSend(CPDictionary, \"alloc\"), \"initWithObjectsAndKeys:\"");
+        for (var i = 0; i < node.keys.length; i++) {
+            var key = node.keys[i],
+                value = node.values[i];
+
+            CONCAT(st.compiler.jsBuffer, ", ");
+
+            st.compiler.lastPos = value.start;
+            c(value, st, "Expression");
+            CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, value.end));
+
+            CONCAT(st.compiler.jsBuffer, ", ");
+
+            st.compiler.lastPos = key.start;
+            c(key, st, "Expression");
+            CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, key.end));
+        }
+        CONCAT(st.compiler.jsBuffer, ")");
+    }
+
+    st.compiler.lastPos = node.end;
+},
 SelectorLiteralExpression: function(node, st, c) {
     CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
     CONCAT(st.compiler.jsBuffer, "sel_getUid(\"");

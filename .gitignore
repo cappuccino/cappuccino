@@ -11,3 +11,6 @@ xcuserdata/
 !*.xcodeproj/project.pbxproj
 *.xCodeSupport/
 *.XcodeSupport/
+
+/cappuccino.sublime-project
+/cappuccino.sublime-workspace

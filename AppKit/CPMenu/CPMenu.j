@@ -77,7 +77,7 @@ var _CPMenuBarVisible               = NO,
     if (self !== [CPMenu class])
         return;
 
-    [[self class] setMenuBarAttributes:[CPDictionary dictionary]];
+    [[self class] setMenuBarAttributes:@{}];
 }
 
 + (BOOL)menuBarVisible
@@ -373,7 +373,7 @@ var _CPMenuBarVisible               = NO,
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPMenuDidChangeItemNotification
                       object:self
-                    userInfo:[CPDictionary dictionaryWithObject:[_items indexOfObjectIdenticalTo:aMenuItem] forKey:@"CPMenuItemIndex"]];
+                    userInfo:@{ @"CPMenuItemIndex": [_items indexOfObjectIdenticalTo:aMenuItem] }];
 }
 
 // Finding Menu Items
@@ -1136,7 +1136,7 @@ var _CPMenuBarVisible               = NO,
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPMenuDidAddItemNotification
                       object:self
-                    userInfo:[CPDictionary dictionaryWithObject:anIndex forKey:@"CPMenuItemIndex"]];
+                    userInfo:@{ @"CPMenuItemIndex": anIndex }];
 }
 
 - (void)removeObjectFromItemsAtIndex:(CPUInteger)anIndex
@@ -1150,7 +1150,7 @@ var _CPMenuBarVisible               = NO,
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPMenuDidRemoveItemNotification
                       object:self
-                    userInfo:[CPDictionary dictionaryWithObject:anIndex forKey:@"CPMenuItemIndex"]];
+                    userInfo:@{ @"CPMenuItemIndex": anIndex }];
 }
 
 @end

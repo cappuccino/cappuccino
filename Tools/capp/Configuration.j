@@ -24,7 +24,7 @@ var DefaultDictionary       = nil,
     if (self !== [Configuration class])
         return;
 
-    DefaultDictionary = [CPDictionary dictionary];
+    DefaultDictionary = @{};
 
     [DefaultDictionary setObject:@"You" forKey:@"user.name"];
     [DefaultDictionary setObject:@"you@yourcompany.com" forKey:@"user.email"];
@@ -63,14 +63,14 @@ var DefaultDictionary       = nil,
     if (self)
     {
         path = aPath;
-        temporaryDictionary = [CPDictionary dictionary];
+        temporaryDictionary = @{};
 
         if (path && FILE.isReadable(path))
             dictionary = CFPropertyList.readPropertyListFromFile(path);
 
         // readPlist will return nil if the file is empty
         if (!dictionary)
-            dictionary = [CPDictionary dictionary];
+            dictionary = @{};
     }
 
     return self;

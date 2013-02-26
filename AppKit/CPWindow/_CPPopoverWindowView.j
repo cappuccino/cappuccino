@@ -56,14 +56,12 @@ var _CPPopoverWindowViewDefaultCursorSize = _CGSizeMake(16, 10),
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null],
-                                                [CPNull null],
-                                                [CPNull null],
-                                                [CPNull null]]
-                                       forKeys:[@"background-gradient",
-                                                @"background-gradient-hud",
-                                                @"stroke-color",
-                                                @"stroke-color-hud"]];
+    return @{
+            @"background-gradient": [CPNull null],
+            @"background-gradient-hud": [CPNull null],
+            @"stroke-color": [CPNull null],
+            @"stroke-color-hud": [CPNull null],
+        };
 }
 
 /*!

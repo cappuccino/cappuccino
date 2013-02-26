@@ -20,7 +20,7 @@
 {
     var dict = new CFMutableDictionary();
     [self assert:0 equals:dict.countOfValue(@"123")];
-    
+
     dict.setValueForKey(@"abc", @"123");
     [self assert:1 equals:dict.countOfValue(@"123")];
 

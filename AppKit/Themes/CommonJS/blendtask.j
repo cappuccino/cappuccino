@@ -162,7 +162,7 @@ function themeFromCibData(data)
         topLevelObjects = [];
 
     [cib _setAwakenCustomResources:NO];
-    [cib instantiateCibWithExternalNameTable:[CPDictionary dictionaryWithObject:topLevelObjects forKey:CPCibTopLevelObjects]];
+    [cib instantiateCibWithExternalNameTable:@{ CPCibTopLevelObjects: topLevelObjects }];
 
     var count = topLevelObjects.length,
         theme = nil,

@@ -64,12 +64,14 @@ CPRatingLevelIndicatorStyle                 = 3;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjectsAndKeys:[CPNull null], @"bezel-color",
-                                                      [CPNull null], @"color-empty",
-                                                      [CPNull null], @"color-normal",
-                                                      [CPNull null], @"color-warning",
-                                                      [CPNull null], @"color-critical",
-                                                      1.0,           @"spacing"];
+    return @{
+            @"bezel-color": [CPNull null],
+            @"color-empty": [CPNull null],
+            @"color-normal": [CPNull null],
+            @"color-warning": [CPNull null],
+            @"color-critical": [CPNull null],
+            @"spacing": 1.0,
+        };
 }
 
 - (id)initWithFrame:(CGRect)aFrame

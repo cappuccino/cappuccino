@@ -44,7 +44,7 @@ var CAMediaNamedTimingFunctions = nil;
 {
     if (!CAMediaNamedTimingFunctions)
     {
-        CAMediaNamedTimingFunctions = [CPDictionary dictionary];
+        CAMediaNamedTimingFunctions = @{};
 
         [CAMediaNamedTimingFunctions setObject:[CAMediaTimingFunction functionWithControlPoints:0.0 :0.0 :1.0 :1.0] forKey:kCAMediaTimingFunctionLinear];
         [CAMediaNamedTimingFunctions setObject:[CAMediaTimingFunction functionWithControlPoints:0.42 :0.0 :1.0 :1.0] forKey:kCAMediaTimingFunctionEaseIn];

@@ -36,8 +36,8 @@
 
 + (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
-    var contentRect = CGRectMakeCopy(aFrameRect),
-        titleBarHeight = [[self class] titleBarHeight];
+    var contentRect = [super contentRectForFrameRect:aFrameRect],
+        titleBarHeight = [self titleBarHeight];
 
     contentRect.origin.y += titleBarHeight;
     contentRect.size.height -= titleBarHeight;
@@ -48,7 +48,7 @@
 + (CGRect)frameRectForContentRect:(CGRect)aContentRect
 {
     var frameRect = CGRectMakeCopy(aContentRect),
-        titleBarHeight = [[self class] titleBarHeight];
+        titleBarHeight = [self titleBarHeight];
 
     frameRect.origin.y -= titleBarHeight;
     frameRect.size.height += titleBarHeight;
@@ -111,6 +111,14 @@
     [_titleField setLineBreakMode:[self currentValueForThemeAttribute:@"title-line-break-mode"]];
     [_titleField setTextShadowColor:[self currentValueForThemeAttribute:@"title-text-shadow-color"]];
     [_titleField setTextShadowOffset:[self currentValueForThemeAttribute:@"title-text-shadow-offset"]];
+}
+
+- (CGSize)_minimumResizeSize
+{
+    var size = [super _minimumResizeSize];
+
+    size.height += [[self class] titleBarHeight];
+    return size;
 }
 
 @end

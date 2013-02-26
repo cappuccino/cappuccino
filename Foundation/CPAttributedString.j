@@ -89,7 +89,7 @@
     if (self)
     {
         if (!attributes)
-            attributes = [CPDictionary dictionary];
+            attributes = @{};
 
         _string = ""+aString;
         _rangeEntries = [makeRangeEntry(CPMakeRange(0, _string.length), attributes)];
@@ -620,7 +620,7 @@
 */
 - (void)addAttribute:(CPString)anAttribute value:(id)aValue range:(CPRange)aRange
 {
-    [self addAttributes:[CPDictionary dictionaryWithObject:aValue forKey:anAttribute] range:aRange];
+    [self addAttributes:@{ anAttribute: aValue } range:aRange];
 }
 
 /*!

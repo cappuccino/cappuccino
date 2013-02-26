@@ -1442,7 +1442,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPOutlineViewItemWillExpandNotification
                       object:self
-                    userInfo:[CPDictionary dictionaryWithObject:item forKey:"CPObject"]];
+                    userInfo:@{ "CPObject": item }];
 }
 
 /*!
@@ -1453,7 +1453,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPOutlineViewItemDidExpandNotification
                       object:self
-                    userInfo:[CPDictionary dictionaryWithObject:item forKey:"CPObject"]];
+                    userInfo:@{ "CPObject": item }];
 }
 
 /*!
@@ -1464,7 +1464,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPOutlineViewItemWillCollapseNotification
                       object:self
-                    userInfo:[CPDictionary dictionaryWithObject:item forKey:"CPObject"]];
+                    userInfo:@{ "CPObject": item }];
 }
 
 /*!
@@ -1475,7 +1475,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPOutlineViewItemDidCollapseNotification
                       object:self
-                    userInfo:[CPDictionary dictionaryWithObject:item forKey:"CPObject"]];
+                    userInfo:@{ "CPObject": item }];
 }
 
 - (void)keyDown:(CPEvent)anEvent

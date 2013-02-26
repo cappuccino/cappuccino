@@ -77,7 +77,7 @@
 
         _HTTPBody = @"";
         _HTTPMethod = @"GET";
-        _HTTPHeaderFields = [CPDictionary dictionary];
+        _HTTPHeaderFields = @{};
 
         [self setValue:"Thu, 01 Jan 1970 00:00:00 GMT" forHTTPHeaderField:"If-Modified-Since"];
         [self setValue:"no-cache" forHTTPHeaderField:"Cache-Control"];

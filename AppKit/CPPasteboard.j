@@ -79,7 +79,7 @@ var CPPasteboards = nil,
 
     [self setVersion:1.0];
 
-    CPPasteboards = [CPDictionary dictionary];
+    CPPasteboards = @{};
 
     if (typeof window.cpPasteboardWithName !== "undefined")
         supportsNativePasteboard = YES;
@@ -121,8 +121,8 @@ var CPPasteboards = nil,
 //        _name = aName;
         _types = [];
 
-        _owners = [CPDictionary dictionary];
-        _provided = [CPDictionary dictionary];
+        _owners = @{};
+        _provided = @{};
 
         _changeCount = 0;
 
@@ -188,8 +188,8 @@ var CPPasteboards = nil,
 {
     [_types setArray:types];
 
-    _owners = [CPDictionary dictionary];
-    _provided = [CPDictionary dictionary];
+    _owners = @{};
+    _provided = @{};
 
     var count = _types.length;
 

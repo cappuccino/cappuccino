@@ -82,6 +82,34 @@ var NSViewAutoresizingMask = 0x3F,
     return NO;
 }
 
+- (void)awakeFromNib
+{
+    var superview = [self superview];
+
+    if (!superview || [superview NS_isFlipped])
+        return;
+
+    var superviewHeight = CGRectGetHeight([superview bounds]),
+        frame = [self frame];
+
+    [self setFrameOrigin:CGPointMake(CGRectGetMinX(frame), superviewHeight - CGRectGetMaxY(frame))];
+
+    var NS_autoresizingMask = [self autoresizingMask],
+        autoresizingMask = NS_autoresizingMask & ~(CPViewMaxYMargin | CPViewMinYMargin);
+
+    if (!(NS_autoresizingMask & (CPViewMaxYMargin | CPViewMinYMargin | CPViewHeightSizable)))
+        autoresizingMask |= CPViewMinYMargin;
+    else
+    {
+        if (NS_autoresizingMask & CPViewMaxYMargin)
+            autoresizingMask |= CPViewMinYMargin;
+        if (NS_autoresizingMask & CPViewMinYMargin)
+            autoresizingMask |= CPViewMaxYMargin;
+    }
+
+    [self setAutoresizingMask:autoresizingMask];
+}
+
 @end
 
 @implementation NSView : CPView

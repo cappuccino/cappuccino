@@ -85,7 +85,7 @@ var CPViewControllerCachedCibs;
     if (self !== [CPViewController class])
         return;
 
-    CPViewControllerCachedCibs = [CPDictionary dictionary];
+    CPViewControllerCachedCibs = @{};
 }
 
 /*!
@@ -103,7 +103,7 @@ var CPViewControllerCachedCibs;
 
 - (id)initWithCibName:(CPString)aCibNameOrNil bundle:(CPBundle)aCibBundleOrNil owner:(id)anOwner
 {
-    return [self initWithCibName:aCibNameOrNil bundle:aCibBundleOrNil externalNameTable:[CPDictionary dictionaryWithObject:anOwner forKey:CPCibOwner]];
+    return [self initWithCibName:aCibNameOrNil bundle:aCibBundleOrNil externalNameTable:@{ CPCibOwner: anOwner }];
 }
 
 /*!
@@ -128,7 +128,7 @@ var CPViewControllerCachedCibs;
         // Don't load the cib until someone actually requests the view. The user may just be intending to use setView:.
         _cibName = aCibNameOrNil;
         _cibBundle = aCibBundleOrNil || [CPBundle mainBundle];
-        _cibExternalNameTable = anExternalNameTable || [CPDictionary dictionaryWithObject:self forKey:CPCibOwner];
+        _cibExternalNameTable = anExternalNameTable || @{ CPCibOwner: self };
 
         _isLoading = NO;
         _isLazy = NO;
@@ -298,7 +298,7 @@ var CPViewControllerViewKey     = @"CPViewControllerViewKey",
         var bundlePath = [aCoder decodeObjectForKey:CPViewControllerBundleKey];
         _cibBundle = bundlePath ? [CPBundle bundleWithPath:bundlePath] : [CPBundle mainBundle];
 
-        _cibExternalNameTable = [CPDictionary dictionaryWithObject:self forKey:CPCibOwner];
+        _cibExternalNameTable = @{ CPCibOwner: self };
         _isLazy = YES;
     }
 

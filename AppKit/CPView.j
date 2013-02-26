@@ -476,6 +476,10 @@ var CPViewFlags                     = { },
 {
     if (aSubview === self)
         [CPException raise:CPInvalidArgumentException reason:"can't add a view as a subview of itself"];
+#if DEBUG
+    if (!aSubview._superview && _subviews.indexOf(aSubview) !== CPNotFound)
+        [CPException raise:CPInvalidArgumentException reason:"can't insert a subview in duplicate (probably partially decoded)"];
+#endif
 
     // We will have to adjust the z-index of all views starting at this index.
     var count = _subviews.length;
@@ -1366,6 +1370,7 @@ var CPViewFlags                     = { },
     }
     else
     {
+        [self setNeedsDisplay:YES];
         [self _notifyViewDidUnhide];
     }
 }
@@ -2817,7 +2822,7 @@ setBoundsOrigin:
 
 - (CPDictionary)_themeAttributeDictionary
 {
-    var dictionary = [CPDictionary dictionary];
+    var dictionary = @{};
 
     if (_themeAttributes)
     {
@@ -3040,11 +3045,24 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     {
         // We have to manually check because it may be 0, so we can't use ||
         _tag = [aCoder containsValueForKey:CPViewTagKey] ? [aCoder decodeIntForKey:CPViewTagKey] : -1;
+        _identifier = [aCoder decodeObjectForKey:CPReuseIdentifierKey];
 
         _window = [aCoder decodeObjectForKey:CPViewWindowKey];
-        _subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey] || [];
         _superview = [aCoder decodeObjectForKey:CPViewSuperviewKey];
-        _identifier = [aCoder decodeObjectForKey:CPReuseIdentifierKey];
+
+        // We have to manually add the subviews so that they will receive
+        // viewWillMoveToSuperview: and viewDidMoveToSuperview:
+        _subviews = [];
+
+        var subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey] || [];
+
+        for (var i = 0, count = [subviews count]; i < count; ++i)
+        {
+            // addSubview won't do anything if the superview is already self, so clear it
+            subviews[i]._superview = nil;
+            [self addSubview:subviews[i]];
+        }
+
         // FIXME: Should we encode/decode this?
         _registeredDraggedTypes = [CPSet set];
         _registeredDraggedTypesArray = [];

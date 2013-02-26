@@ -36,8 +36,21 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPColor whiteColor], 8]
-                                       forKeys:[ @"body-color", @"height-shadow"]];
+    return @{
+            @"body-color": [CPColor whiteColor],
+            @"height-shadow": 8,
+        };
+}
+
++ (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
+{
+    /*
+        This window view class draws a frame.
+        So we have to inset the content rect to be inside the frame.
+    */
+    var contentRect = [super contentRectForFrameRect:aFrameRect];
+
+    return _CGRectInset(contentRect, 1.0, 1.0);
 }
 
 - (id)initWithFrame:(CGRect)aFrame styleMask:(unsigned)aStyleMask
@@ -65,12 +78,12 @@
 
 - (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
-    return aFrameRect;
+    return [[self class] contentRectForFrameRect:aFrameRect];
 }
 
 - (CGRect)frameRectForContentRect:(CGRect)aContentRect
 {
-    return aContentRect;
+    return [[self class] frameRectForContentRect:aContentRect];
 }
 
 - (void)_enableSheet:(BOOL)enable

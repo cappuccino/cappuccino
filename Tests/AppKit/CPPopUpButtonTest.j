@@ -165,7 +165,7 @@
 
 - (void)testBindingSelectedTag
 {
-    var dict = [CPDictionary dictionary],
+    var dict = @{},
         item = nil;
 
     item = [[CPMenuItem alloc] initWithTitle:@"Mouse" action:nil keyEquivalent:nil];
@@ -412,7 +412,7 @@
     [arrayController setContent:menuObjects];
 
     [button bind:CPContentBinding toObject:arrayController withKeyPath:@"arrangedObjects" options:nil];
-    var options = [CPDictionary dictionary];
+    var options = @{};
     [options setObject:[ContentValuesTransformer new] forKey:CPValueTransformerBindingOption];
     [button bind:CPContentValuesBinding toObject:arrayController withKeyPath:@"arrangedObjects.name" options:options];
 

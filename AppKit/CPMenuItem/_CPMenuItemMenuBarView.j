@@ -46,12 +46,13 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], 12.0, 3.0, 4.0]
-                                       forKeys:[    @"menu-item-selection-color",
-                                                    @"menu-item-text-shadow-color",
-                                                    @"horizontal-margin",
-                                                    @"submenu-indicator-margin",
-                                                    @"vertical-margin"]];
+    return @{
+            @"menu-item-selection-color": [CPNull null],
+            @"menu-item-text-shadow-color": [CPNull null],
+            @"horizontal-margin": 12.0,
+            @"submenu-indicator-margin": 3.0,
+            @"vertical-margin": 4.0,
+        };
 }
 
 + (id)view

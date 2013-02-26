@@ -280,26 +280,18 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null],
-                                                [CPNull null],
-                                                [CPNull null],
-                                                [CPNull null],
-                                                [CPNull null],
-                                                [CPNull null],
-                                                [CPNull null],
-                                                [CPNull null],
-                                                [CPNull null],
-                                                25.0]
-                                       forKeys:[@"alternating-row-colors",
-                                                @"grid-color",
-                                                @"highlighted-grid-color",
-                                                @"selection-color",
-                                                @"sourcelist-selection-color",
-                                                @"sort-image",
-                                                @"sort-image-reversed",
-                                                @"selection-radius",
-                                                @"image-generic-file",
-                                                @"default-row-height"]];
+    return @{
+            @"alternating-row-colors": [CPNull null],
+            @"grid-color": [CPNull null],
+            @"highlighted-grid-color": [CPNull null],
+            @"selection-color": [CPNull null],
+            @"sourcelist-selection-color": [CPNull null],
+            @"sort-image": [CPNull null],
+            @"sort-image-reversed": [CPNull null],
+            @"selection-radius": [CPNull null],
+            @"image-generic-file": [CPNull null],
+            @"default-row-height": 25.0,
+        };
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -1041,8 +1033,7 @@ NOT YET IMPLEMENTED
     // TODO Only notify when a column drag operation ends, not each time a column reaches a new slot?
     [[CPNotificationCenter defaultCenter] postNotificationName:CPTableViewColumnDidMoveNotification
                                                         object:self
-                                                      userInfo:[CPDictionary dictionaryWithObjects:[fromIndex, toIndex]
-                                                                                           forKeys:[@"CPOldColumn", @"CPNewColumn"]]];
+                                                      userInfo:@{  @"CPOldColumn": fromIndex, @"CPNewColumn": toIndex }];
 }
 
 /*!
@@ -2460,10 +2451,11 @@ NOT YET IMPLEMENTED
     for (var i = 0; i < [columns count]; i++)
     {
         var column = [columns objectAtIndex:i],
-            metaData = [CPDictionary dictionaryWithJSObject:{
-            @"identifier": [column identifier],
-            @"width": [column width]
-            }];
+            metaData = @{
+                @"identifier": [column identifier],
+                @"width": [column width]
+            };
+
 
         [columnsSetup addObject:metaData];
     }

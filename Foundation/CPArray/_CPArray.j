@@ -623,6 +623,7 @@ var concat = Array.prototype.concat,
     for (; index < count; ++index)
     {
         aFunction([self objectAtIndex:index], index, shouldStopRef);
+
         if (shouldStop)
             return;
     }
@@ -648,6 +649,7 @@ var concat = Array.prototype.concat,
     for (; index !== stop; index += increment)
     {
         aFunction([self objectAtIndex:index], index, AT_REF(shouldStop));
+
         if (shouldStop)
             return;
     }

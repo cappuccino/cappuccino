@@ -58,8 +58,20 @@ CPSegmentSwitchTrackingMomentary = 2;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[CPCenterTextAlignment, CPCenterVerticalTextAlignment, CPImageLeft, CPImageScaleNone, _CGInsetMakeZero(), _CGInsetMakeZero(), [CPNull null], [CPNull null], [CPNull null], [CPNull null], 1.0, 24.0]
-                                       forKeys:[@"alignment", @"vertical-alignment", @"image-position", @"image-scaling", @"bezel-inset", @"content-inset", @"left-segment-bezel-color", @"right-segment-bezel-color", @"center-segment-bezel-color", @"divider-bezel-color", @"divider-thickness", @"default-height"]];
+    return @{
+            @"alignment": CPCenterTextAlignment,
+            @"vertical-alignment": CPCenterVerticalTextAlignment,
+            @"image-position": CPImageLeft,
+            @"image-scaling": CPImageScaleNone,
+            @"bezel-inset": _CGInsetMakeZero(),
+            @"content-inset": _CGInsetMakeZero(),
+            @"left-segment-bezel-color": [CPNull null],
+            @"right-segment-bezel-color": [CPNull null],
+            @"center-segment-bezel-color": [CPNull null],
+            @"divider-bezel-color": [CPNull null],
+            @"divider-thickness": 1.0,
+            @"default-height": 24.0,
+        };
 }
 
 - (id)initWithFrame:(CGRect)aRect

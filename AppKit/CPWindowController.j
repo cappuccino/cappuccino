@@ -144,7 +144,7 @@
     if (_window)
         return;
 
-    [[CPBundle mainBundle] loadCibFile:[self windowCibPath] externalNameTable:[CPDictionary dictionaryWithObject:_cibOwner forKey:CPCibOwner]];
+    [[CPBundle mainBundle] loadCibFile:[self windowCibPath] externalNameTable:@{ CPCibOwner: _cibOwner }];
 }
 
 /*!

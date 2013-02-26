@@ -43,8 +43,7 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[]
-                                       forKeys:[]];
+    return @{};
 }
 
 - (void)layoutSubviews

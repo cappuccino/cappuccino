@@ -67,7 +67,7 @@ var FILE = require("file"),
         nibInfo = {};
         appDirectory = @"";
         resourcesDirectory = @"";
-        infoPlist = [CPDictionary dictionary];
+        infoPlist = @{};
         userNSClasses = [];
     }
 
@@ -139,7 +139,7 @@ var FILE = require("file"),
                 [CPFont setSystemFontSize:parseFloat(systemFontSize, 10)];
         }
         else
-            infoPlist = [CPDictionary dictionary];
+            infoPlist = @{};
 
         var themeList = [self getThemeList:options],
             themes = [self loadThemesFromList:themeList];

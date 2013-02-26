@@ -81,24 +81,17 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[   CGInsetMake(0.0, 0.0, 0.0, 0.0),
-                                                   CGSizeMakeZero(),
-                                                   [CPNull null],
-                                                   [CPNull null],
-                                                   [CPNull null],
-                                                   [CPNull null],
-                                                   [CPNull null],
-                                                   [CPNull null],
-                                                   [CPNull null]]
-                                       forKeys:[   @"resize-control-inset",
-                                                   @"resize-control-size",
-                                                   @"resize-control-color",
-                                                   @"bezel-color",
-                                                   @"button-bezel-color",
-                                                   @"button-text-color",
-                                                   @"button-image-plus",
-                                                   @"button-image-minus",
-                                                   @"button-image-action"]];
+    return @{
+            @"resize-control-inset": CGInsetMake(0.0, 0.0, 0.0, 0.0),
+            @"resize-control-size": CGSizeMakeZero(),
+            @"resize-control-color": [CPNull null],
+            @"bezel-color": [CPNull null],
+            @"button-bezel-color": [CPNull null],
+            @"button-text-color": [CPNull null],
+            @"button-image-plus": [CPNull null],
+            @"button-image-minus": [CPNull null],
+            @"button-image-action": [CPNull null],
+        };
 }
 
 - (id)initWithFrame:(CGRect)aFrame
