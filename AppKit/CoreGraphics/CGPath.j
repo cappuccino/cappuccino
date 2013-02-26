@@ -318,10 +318,11 @@ function CGPathMoveToPoint(aPath, aTransform, x, y)
         {
             previous.x = point.x;
             previous.y = point.y;
+            return;
         }
     }
-    else
-        aPath.elements[aPath.count++] = { type:kCGPathElementMoveToPoint, x:point.x, y:point.y };
+
+    aPath.elements[aPath.count++] = { type:kCGPathElementMoveToPoint, x:point.x, y:point.y };
 }
 
 var KAPPA = 4.0 * ((SQRT2 - 1.0) / 3.0);
