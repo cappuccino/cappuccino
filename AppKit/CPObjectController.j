@@ -106,12 +106,13 @@
 {
     if (self = [super init])
     {
-        [self setContent:aContent];
         [self setEditable:YES];
         [self setObjectClass:[CPMutableDictionary class]];
 
         _observedKeys = [[CPCountedSet alloc] init];
         _selection = [[CPControllerSelectionProxy alloc] initWithController:self];
+
+        [self setContent:aContent];
     }
 
     return self;
