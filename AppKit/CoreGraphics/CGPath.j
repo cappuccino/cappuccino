@@ -312,7 +312,7 @@ function CGPathMoveToPoint(aPath, aTransform, x, y)
     // If the previous op was a move, just update that point
     if (aPath.count)
     {
-        var previous = aPath.elements[count - 1];
+        var previous = aPath.elements[aPath.count - 1];
 
         if (previous.type === kCGPathElementMoveToPoint)
         {
