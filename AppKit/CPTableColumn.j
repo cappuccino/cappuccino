@@ -52,7 +52,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
     CPTableView         _tableView;
     CPView              _headerView;
     CPView              _dataView;
-    Object              _dataViewData;
+    CPData              _dataViewData;
 
     float               _width;
     float               _minWidth;
@@ -86,7 +86,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 
     if (self)
     {
-        _dataViewData = { };
+        _dataViewData = nil;
 
         _width = 100.0;
         _minWidth = 10.0;
@@ -395,12 +395,12 @@ CPTableColumnUserResizingMask   = 1 << 1;
 - (void)setDataView:(CPView)aView
 {
     if (_dataView)
-        _dataViewData[[_dataView UID]] = nil;
+        _dataViewData = nil;
 
     [aView setThemeState:CPThemeStateTableDataView];
 
     _dataView = aView;
-    _dataViewData[[aView UID]] = [CPKeyedArchiver archivedDataWithRootObject:aView];
+    _dataViewData = [CPKeyedArchiver archivedDataWithRootObject:aView];
 }
 
 - (CPView)dataView
@@ -424,24 +424,12 @@ CPTableColumnUserResizingMask   = 1 << 1;
 /*!
     @ignore
 */
-- (id)_newDataViewForRow:(int)aRowIndex
+- (id)_newDataView
 {
-    var dataView = [self dataViewForRow:aRowIndex],
-        dataViewUID = [dataView UID];
+    if (!_dataViewData)
+        return nil;
 
-    var x = [self tableView]._cachedDataViews[dataViewUID];
-    if (x && x.length)
-        return x.pop();
-
-    // if we haven't cached an archive of the data view, do it now
-    if (!_dataViewData[dataViewUID])
-        _dataViewData[dataViewUID] = [CPKeyedArchiver archivedDataWithRootObject:dataView];
-
-    // unarchive the data view cache
-    var newDataView = [CPKeyedUnarchiver unarchiveObjectWithData:_dataViewData[dataViewUID]];
-    newDataView.identifier = dataViewUID;
-
-    // make sure only we have control over the size and placement
+    var newDataView = [CPKeyedUnarchiver unarchiveObjectWithData:_dataViewData];
     [newDataView setAutoresizingMask:CPViewNotSizable];
 
     return newDataView;
@@ -757,7 +745,7 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
 
     if (self)
     {
-        _dataViewData = { };
+        _dataViewData = nil;
 
         _width = [aCoder decodeFloatForKey:CPTableColumnWidthKey];
         _minWidth = [aCoder decodeFloatForKey:CPTableColumnMinWidthKey];
