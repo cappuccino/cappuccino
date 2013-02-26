@@ -294,7 +294,6 @@ if (typeof exports != "undefined" && !exports.acorn) {
 
   function raise(pos, message) {
     if (typeof pos == "number") pos = getLineInfo(input, pos);
-    if (!options.objj) message += " (" + pos.line + ":" + pos.column + ")";
     var syntaxError = new SyntaxError(message);
     syntaxError.line = pos.line;
     syntaxError.column = pos.column;
