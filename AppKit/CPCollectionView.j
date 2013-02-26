@@ -49,7 +49,7 @@
     @par Delegate Methods
 
     @delegate - (void)collectionViewDidChangeSelection:(CPCollectionView)collectionView;
-    Called when the selection in the collection view has changed.
+    DEPRECATED: Please do not use.
     @param collectionView the collection view who's selection changed
 
     @delegate - (void)collectionView:(CPCollectionView)collectionView didDoubleClickOnItemAtIndex:(int)index;
@@ -406,7 +406,10 @@ var HORIZONTAL_MARGIN = 2;
     [[binderClass getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectionIndexes"];
 
     if ([_delegate respondsToSelector:@selector(collectionViewDidChangeSelection:)])
+    {
+        CPLog.warn("The delegate method collectionViewDidChangeSelection: is deprecated and will be removed in a future version, please bind to selectionIndexes instead.");
         [_delegate collectionViewDidChangeSelection:self];
+    }
 }
 
 /*!
