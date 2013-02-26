@@ -101,7 +101,7 @@ function CGPathAddArc(aPath, aTransform, x, y, aRadius, aStartAngle, anEndAngle,
         // Angles that equal "modulo" 2 pi return as equal after transforming them,
         // so we have to make sure to make them different again if they were different
         // to start out with.  It's the difference between no circle and a full circle.
-        if (anEndAngle === aStartAngle && oldEndAngle != oldStartAngle)
+        if (anEndAngle === aStartAngle && oldEndAngle !== oldStartAngle)
             if (oldStartAngle > oldEndAngle)
                 anEndAngle = anEndAngle - PI2;
             else
@@ -204,7 +204,7 @@ function CGPathAddLineToPoint(aPath, aTransform, x, y)
 {
     var point = _CGPointMake(x, y);
 
-    if (aTransform != NULL)
+    if (aTransform !== NULL)
         point = _CGPointApplyAffineTransform(point, aTransform);
 
     aPath.elements[aPath.count++] = { type: kCGPathElementAddLineToPoint, x:point.x, y:point.y };
@@ -304,7 +304,7 @@ function CGPathMoveToPoint(aPath, aTransform, x, y)
 {
     var point = _CGPointMake(x, y);
 
-    if (aTransform != NULL)
+    if (aTransform !== NULL)
         point = _CGPointApplyAffineTransform(point, aTransform);
 
     aPath.start = aPath.current = point;
@@ -407,7 +407,7 @@ function CGPathCloseSubpath(aPath)
 
     // After closing, the current point is the previous path's starting point
     aPath.current = _CGPointCreateCopy(aPath.start);
-    aPath.elements[aPath.count++] = { type:kCGPathElementCloseSubpath, points:[aPath.start] };
+    aPath.elements[aPath.count++] = { type:kCGPathElementCloseSubpath, start:aPath.start };
 }
 
 function CGPathEqualToPath(aPath, anotherPath)
@@ -415,7 +415,7 @@ function CGPathEqualToPath(aPath, anotherPath)
     if (aPath === anotherPath)
         return YES;
 
-    if (aPath.count != anotherPath.count || !_CGPointEqualToPoint(aPath.start, anotherPath.start) || !_CGPointEqualToPoint(aPath.current, anotherPath.current))
+    if (aPath.count !== anotherPath.count || !_CGPointEqualToPoint(aPath.start, anotherPath.start) || !_CGPointEqualToPoint(aPath.current, anotherPath.current))
         return NO;
 
     var i = 0,
@@ -426,18 +426,70 @@ function CGPathEqualToPath(aPath, anotherPath)
         var element = aPath[i],
             anotherElement = anotherPath[i];
 
-        if (element.type != anotherElement.type)
+        if (element.type !== anotherElement.type)
             return NO;
 
-        if ((element.type === kCGPathElementAddArc || element.type === kCGPathElementAddArcToPoint) &&
-            element.radius != anotherElement.radius)
-            return NO;
+        switch (element.type)
+        {
+            case kCGPathElementAddArc:
+                if (element.x !== anotherElement.x ||
+                    element.y !== anotherElement.y ||
+                    element.radius !== anotherElement.radius ||
+                    element.startAngle !== anotherElement.startAngle ||
+                    element.endAngle !== anotherElement.endAngle ||
+                    element.clockwise !== anotherElement.clockwise)
+                {
+                    return NO;
+                }
+                break;
 
-        var j = element.points.length;
+            case kCGPathElementAddArcToPoint:
+                if (element.p1x !== anotherElement.p1x ||
+                    element.p1y !== anotherElement.p1y ||
+                    element.p2x !== anotherElement.p2x ||
+                    element.p2y !== anotherElement.p2y ||
+                    element.radius !== anotherElement.radius)
+                {
+                    return NO;
+                }
+                break;
 
-        while (j--)
-            if (!_CGPointEqualToPoint(element.points[j], anotherElement.points[j]))
-                return NO;
+            case kCGPathElementAddCurveToPoint:
+                if (element.cp1x !== anotherElement.cp1x ||
+                    element.cp1y !== anotherElement.cp1y ||
+                    element.cp2x !== anotherElement.cp2x ||
+                    element.cp2y !== anotherElement.cp2y ||
+                    element.x !== anotherElement.x ||
+                    element.y !== anotherElement.y)
+                {
+                    return NO;
+                }
+                break;
+
+            case kCGPathElementAddLineToPoint:
+            case kCGPathElementMoveToPoint:
+                if (element.x !== anotherElement.x ||
+                    element.y !== anotherElement.y)
+                {
+                    return NO;
+                }
+                break;
+
+            case kCGPathElementAddQuadCurveToPoint:
+                if (element.cpx !== anotherElement.cpx ||
+                    element.cpy !== anotherElement.cpy ||
+                    element.x !== anotherElement.x ||
+                    element.y !== anotherElement.y)
+                {
+                    return NO;
+                }
+                break;
+
+            case kCGPathElementCloseSubpath:
+                if (!_CGPointEqualToPoint(element.start, anotherElement.start))
+                    return NO;
+                break;
+        }
     }
 
     return YES;
