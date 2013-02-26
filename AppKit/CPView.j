@@ -3045,8 +3045,20 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         _tag = [aCoder containsValueForKey:CPViewTagKey] ? [aCoder decodeIntForKey:CPViewTagKey] : -1;
 
         _window = [aCoder decodeObjectForKey:CPViewWindowKey];
-        _subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey] || [];
         _superview = [aCoder decodeObjectForKey:CPViewSuperviewKey];
+
+        // We have to manually add the subviews so that they will receive
+        // viewWillMoveToSuperview: and viewDidMoveToSuperview:
+        _subviews = [];
+
+        var subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey] || [];
+
+        for (var i = 0, count = [subviews count]; i < count; ++i)
+        {
+            // addSubview won't do anything if the superview is already self, so clear it
+            subviews[i]._superview = nil;
+            [self addSubview:subviews[i]];
+        }
 
         // FIXME: Should we encode/decode this?
         _registeredDraggedTypes = [CPSet set];
