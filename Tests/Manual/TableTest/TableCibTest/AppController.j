@@ -7,7 +7,6 @@
  */
 
 @import <Foundation/CPObject.j>
-@import "CPTrace.j"
 
 CPLogRegister(CPLogConsole);
 
@@ -31,7 +30,6 @@ CPLogRegister(CPLogConsole);
 
     // In this case, we want the window from Cib to become our full browser window
     [theWindow setFullPlatformWindow:YES];
-    CPTrace(@"CPTableView", @"_loadDataViewsInRows:columns:", traceLog);
 }
 
 - (int)numberOfRowsInTableView:(CPTableView)tableView
@@ -48,16 +46,3 @@ CPLogRegister(CPLogConsole);
 }
 
 @end
-
-var traceLog = function(a,b,c,d,e,f,g)
-{
-    if (this.tlr == null)
-        this.tlr = 0;
-
-    var lr = [c[0] count];
-    if (d > 0)
-        this.tlr += lr;
-
-    var avg = (ROUND(100 * e/this.tlr) / 100);
-    console.log(b + " " + lr + " rows in " + d + " ms ; avg/row = " + avg + " ms");
-}

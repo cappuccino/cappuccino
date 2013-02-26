@@ -97,9 +97,9 @@ function CPTrace(aClassName, aSelector, displayFunction)
                 console.log("Patching " + cls + " -" + aSelector);
                 _CPTraceClass(cls, aSelector, displayFunction);
                 patchednum++;
-            }    
+            }
         }
-        
+
         if (patchednum == 0)
             console.log("Could not find any class matching '" + aClassName + "'");
         else
@@ -110,7 +110,7 @@ function CPTrace(aClassName, aSelector, displayFunction)
 }
 
 var _CPTraceClass = function(aClass, aSelector, displayFunction)
-{    
+{
     if (![aClass instancesRespondToSelector:aSelector])
         [CPException raise:CPInvalidArgumentException reason:(aClass + " does not respond to '" + aSelector + "'")];
 
@@ -133,7 +133,7 @@ var _CPTraceClass = function(aClass, aSelector, displayFunction)
         tracer = new Tracer();
 
     tracer.displayFunction = displayFunction ? displayFunction : defaultDisplay;
-    
+
     class_addMethod(aClass, patched_sel, function()
     {
         var orig_arguments = arguments,
@@ -173,7 +173,7 @@ function CPTraceStop(aClass, aSelector)
     var patchUniqueString = (aClass + "_" + aSelector);
     if (![patchedClassesAndSelectors containsObject:patchUniqueString])
         return;
-    
+
     var patched_sel = CPSelectorFromString("patched_" + CPStringFromSelector(aSelector));
     Swizzle(CPClassFromString(aClass), patched_sel, aSelector);
     [patchedClassesAndSelectors removeObject:patchUniqueString];
@@ -213,9 +213,38 @@ var getMethodNoSuper = function(cls, sel)
         if (mthd.name == sel)
             return mthd;
     }
-    
+
     return NULL;
 }
+
+/*
+    Utility for moving average
+*/
+var moving_averager = function(period)
+{
+    var nums = [];
+
+    return function(num)
+    {
+        nums.push(num);
+
+        if (nums.length > period)
+            nums.splice(0,1);  // remove the first element of the array
+
+        var sum = 0,
+            count = nums.length;
+
+        for (var i = 0; i < count; i++)
+            sum += nums[i];
+
+        var n = period;
+
+        if (count < period)
+            n = count;
+
+        return(sum / n);
+    }
+};
 
 @implementation CPObject (instancesImplementsSelector)
 

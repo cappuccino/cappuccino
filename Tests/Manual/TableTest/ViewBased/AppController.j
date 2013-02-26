@@ -7,7 +7,6 @@
  */
 
 @import <Foundation/CPObject.j>
-@import "CPTrace.j"
 
 CPLogRegister(CPLogConsole)
 
@@ -55,19 +54,6 @@ CPLogRegister(CPLogConsole)
     var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(100,100,700,400)];
     [scrollView setDocumentView:tableView];
     [contentView addSubview:scrollView];
-
-    var tlr = 0;
-    var f = function(a,b,c,d,e,f,g)
-    {
-        var lr = [c[0] count];
-        if (d > 0)
-            tlr += lr;
-
-        var avg = (ROUND(100 * e/tlr) / 100);
-        CPLog.debug(b + " " + lr + " rows in " + d + " ms ; avg/row = " + avg + " ms");
-    }
-
-    CPTrace(@"CPTableView", @"_loadDataViewsInRows:columns:", f);
 
     [theWindow orderFront:self];
 }

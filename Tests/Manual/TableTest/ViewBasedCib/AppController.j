@@ -9,8 +9,6 @@
 @import <Foundation/CPObject.j>
 @import <AppKit/CPGraphicsContext.j>
 
-@import "CPTrace.j"
-
 var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
     tracing = NO;
 
@@ -51,29 +49,6 @@ CPLogRegister(CPLogConsole)
         theRows = [CPPropertyListSerialization propertyListFromData:data format:CPPropertyListXMLFormat_v1_0];
 
     [self setContent:theRows];
-}
-
-// TRACE UTILITY
-- (IBAction)trace:(id)sender
-{
-    if ([sender state] == CPOnState)
-    {
-        var tlr = 0;
-        var f = function(a,b,c,d,e,f,g)
-        {
-            var lr = [c[0] count];
-            if (d > 0)
-                tlr += lr;
-
-            var avg = (ROUND(100 * e/tlr) / 100);
-            CPLog.debug(b + " " + lr + " rows in " + d + " ms ; avg/row = " + avg + " ms");
-            [self setAvgPerRow:avg];
-        }
-
-        CPTrace(@"CPTableView", @"_loadDataViewsInRows:columns:", f);
-    }
-    else
-        CPTraceStop(@"CPTableView", @"_loadDataViewsInRows:columns:");
 }
 
 @end
