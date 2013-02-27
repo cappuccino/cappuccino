@@ -629,8 +629,7 @@ var _CPMenuBarVisible               = NO,
         if (!validator)
         {
             // Check to see if there is a target binding with a valid selector
-            var info = [CPBinder infoForBinding:CPTargetBinding forObject:item],
-                valid = NO;
+            var info = [CPBinder infoForBinding:CPTargetBinding forObject:item];
 
             if (info)
             {
@@ -640,10 +639,9 @@ var _CPMenuBarVisible               = NO,
                     target = [object valueForKeyPath:keyPath],
                     selector = [options valueForKey:CPSelectorNameBindingOption];
 
-                valid = target && selector && [target respondsToSelector:CPSelectorFromString(selector)];
+                if (target && selector && ![target respondsToSelector:CPSelectorFromString(selector)])
+                    [item setEnabled:NO];
             }
-
-            [item setEnabled:valid];
         }
         else if (![validator respondsToSelector:[item action]])
             [item setEnabled:NO];
