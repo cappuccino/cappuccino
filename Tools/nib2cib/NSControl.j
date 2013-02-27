@@ -34,28 +34,14 @@
 
     if (self)
     {
-        var cell = [aCoder decodeObjectForKey:@"NSCell"];
-
-        [self sendActionOn:CPLeftMouseUpMask];
-        [self setSendsActionOnEndEditing:[cell sendsActionOnEndEditing]];
-
-        [self setObjectValue:[cell objectValue]];
-
-        [self setFont:[cell font]];
-        [self setAlignment:[cell alignment]];
-
         // Enabled state is derived from the NSEnabled flag or the control's cell.
         // For example NSTableView uses the NSEnabled flag, but NSButton uses it's cell isEnabled state.
         // We use the NSEnabled flag here and override the behavior in controls using different logic (NSButton).
         [self setEnabled:[aCoder decodeBoolForKey:@"NSEnabled"]];
-        [self setContinuous:[cell isContinuous]];
 
+        [self sendActionOn:CPLeftMouseUpMask];
         [self setTarget:[aCoder decodeObjectForKey:@"NSTarget"]];
         [self setAction:[aCoder decodeObjectForKey:@"NSAction"]];
-
-        [self setLineBreakMode:[cell lineBreakMode]];
-
-        [self setFormatter:[cell formatter]];
 
         // In IB, both cells and controls can have tags.
         // If the control has a tag, that takes precedence.
@@ -66,15 +52,32 @@
     return self;
 }
 
+- (void)NS_initWithCell:(NSCell)cell
+{
+    [self setSendsActionOnEndEditing:[cell sendsActionOnEndEditing]];
+    [self setObjectValue:[cell objectValue]];
+    [self setFont:[cell font]];
+    [self setAlignment:[cell alignment]];
+    [self setContinuous:[cell isContinuous]];
+    [self setLineBreakMode:[cell lineBreakMode]];
+    [self setFormatter:[cell formatter]];
+}
+
 @end
 
 @implementation NSControl : CPControl
-{
-}
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [self NS_initWithCoder:aCoder];
+    self = [self NS_initWithCoder:aCoder];
+
+    if (self)
+    {
+        var cell = [aCoder decodeObjectForKey:@"NSCell"];
+        [self NS_initWithCell:cell];
+    }
+
+    return self;
 }
 
 - (Class)classForKeyedArchiver

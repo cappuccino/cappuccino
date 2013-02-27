@@ -35,23 +35,15 @@
     _minValue = [cell minValue];
     _maxValue = [cell maxValue];
 
-    self = [super NS_initWithCoder:aCoder];
+    return [super NS_initWithCoder:aCoder];
+}
 
-    if (self)
-    {
-        _altIncrementValue  = [cell altIncrementValue];
+- (void)NS_initWithCell:(NSCell)cell
+{
+    [super NS_initWithCell:cell];
 
-        [self setSliderType:[cell sliderType]];
-
-        var frame = [self frame];
-
-        if ([self sliderType] === CPCircularSlider)
-            [self setFrameSize:CGSizeMake(frame.size.width + 2.0, frame.size.height + 2.0)];
-        else
-            [self setFrame:CGRectMake(frame.origin.x + 2, frame.origin.y, frame.size.width - 4, frame.size.height)];
-    }
-
-    return self;
+    _altIncrementValue  = [cell altIncrementValue];
+    [self setSliderType:[cell sliderType]];
 }
 
 @end
@@ -62,7 +54,22 @@
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [self NS_initWithCoder:aCoder];
+    self = [self NS_initWithCoder:aCoder];
+
+    if (self)
+    {
+        var cell = [aCoder decodeObjectForKey:@"NSCell"];
+        [self NS_initWithCell:cell];
+
+        var frame = [self frame];
+
+        if ([self sliderType] === CPCircularSlider)
+            [self setFrameSize:CGSizeMake(frame.size.width + 2.0, frame.size.height + 2.0)];
+        else
+            [self setFrame:CGRectMake(frame.origin.x + 2, frame.origin.y, frame.size.width - 4, frame.size.height)];
+    }
+
+    return self;
 }
 
 - (Class)classForKeyedArchiver
