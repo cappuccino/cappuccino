@@ -100,7 +100,7 @@
         if (!attributes)
             attributes = @{};
 
-        _string = aString;
+        _string = "" + aString;
         _rangeEntries = [makeRangeEntry(CPMakeRange(0, _string.length), attributes)];
     }
 
