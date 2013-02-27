@@ -55,17 +55,42 @@ var IBDefaultFontSizeTableHeader = 11.0;
         else if ([dataViewCell isKindOfClass:[NSTextFieldCell class]])
         {
             _dataView = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
-            [_dataView NS_initWithCell:dataViewCell];
+
+            var font = [dataViewCell font],
+                selectedFont = nil;
+
+            if (font)
+                font = [font cibFontForNibFont];
+
+            if (!font)
+                font = [CPFont systemFontOfSize:[CPFont systemFontSize]];
+
+            var selectedFont = [CPFont boldFontWithName:[font familyName] size:[font size]];
+
+            [_dataView setFont:font];
+            [_dataView setValue:selectedFont forThemeAttribute:@"font" inState:CPThemeStateSelectedDataView];
+
+            [_dataView setLineBreakMode:CPLineBreakByTruncatingTail];
+
+            [_dataView setValue:CPCenterVerticalTextAlignment forThemeAttribute:@"vertical-alignment"];
+            [_dataView setValue:CGInsetMake(0.0, 5.0, 0.0, 5.0) forThemeAttribute:@"content-inset"];
+
+            var textColor = [dataViewCell textColor],
+                defaultColor = [_dataView currentValueForThemeAttribute:@"text-color"];
+
+            // Don't change the text color if it is not the default, that messes up the theme lookups later
+            if (![textColor isEqual:defaultColor])
+                [_dataView setTextColor:[dataViewCell textColor]];
         }
         else if ([dataViewCell isKindOfClass:[NSButtonCell class]])
         {
             _dataView = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
-            [_dataView NS_initWithCell:dataViewCell];
+            _dataView = [_dataView NS_initWithCell:dataViewCell];
         }
         else if ([dataViewCell isKindOfClass:[NSLevelIndicatorCell class]])
         {
             _dataView = [[CPLevelIndicator alloc] initWithFrame:CGRectMakeZero()];
-            [_dataView NS_initWithCell:dataViewCell];
+            _dataView = [_dataView NS_initWithCell:dataViewCell];
         }
 
         [_dataView setValue:[dataViewCell alignment] forThemeAttribute:@"alignment"];

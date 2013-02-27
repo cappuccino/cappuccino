@@ -4,13 +4,17 @@
 @implementation CPTableCellView (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
-{
-    return [super NS_initWithCoder:aCoder];
+{    
+    self = [super NS_initWithCoder:aCoder];
+        
+    return self;
 }
 
 @end
 
 @implementation NSTableCellView : CPTableCellView
+{
+}
 
 - (id)initWithCoder:(CPCoder)aCoder
 {

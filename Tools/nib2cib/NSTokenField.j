@@ -31,34 +31,38 @@
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    return [super NS_initWithCoder:aCoder];
+    self = [super NS_initWithCoder:aCoder];
+
+    if (self)
+    {
+        var cell = [aCoder decodeObjectForKey:@"NSCell"];
+        self = [self NS_initWithCell:cell];
+    }
+
+    return self;
 }
 
 /*!
     Intialise the receiver given a cell. This method is meant for reuse by controls which contain
     cells other than CPTokenField itself.
 */
-- (void)NS_initWithCell:(NSCell)cell
+- (id)NS_initWithCell:(NSCell)cell
 {
     // Uncomment if we add support for token styles.
     // _style = [cell tokenStyle];
+
+    return self;
 }
 
 @end
 
 @implementation NSTokenField : CPTokenField
+{
+}
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    self = [self NS_initWithCoder:aCoder];
-
-    if (self)
-    {
-        var cell = [aCoder decodeObjectForKey:@"NSCell"];
-        [self NS_initWithCell:cell];
-    }
-
-    return self;
+    return [self NS_initWithCoder:aCoder];
 }
 
 - (Class)classForKeyedArchiver

@@ -30,48 +30,34 @@
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    return [super NS_initWithCoder:aCoder];
-}
-
-- (void)NS_initWithCell:(NSCell)cell
-{
-    [super NS_initWithCell:cell];
-
-    [self setEditable:[cell isEditable]];
-    [self setSelectable:[cell isSelectable]];
-    [self setSendsActionOnEndEditing:[cell sendsActionOnEndEditing]];
-
-    [self setBordered:[cell isBordered]];
-    [self setBezeled:[cell isBezeled]];
-    [self setBezelStyle:[cell bezelStyle]];
-    [self setDrawsBackground:[cell drawsBackground]];
-
-    [self setLineBreakMode:[cell lineBreakMode]];
-    [self setAlignment:[cell alignment]];
-    [self setTextFieldBackgroundColor:[cell backgroundColor]];
-
-    [self setPlaceholderString:[cell placeholderString]];
-
-    var textColor = [cell textColor],
-        defaultColor = [self currentValueForThemeAttribute:@"text-color"];
-
-    // Don't change the text color if it is not the default, that messes up the theme lookups later
-    if (![textColor isEqual:defaultColor])
-        [self setTextColor:[cell textColor]];
-}
-
-@end
-
-@implementation NSTextField : CPTextField
-
-- (id)initWithCoder:(CPCoder)aCoder
-{
-    self = [self NS_initWithCoder:aCoder];
+    self = [super NS_initWithCoder:aCoder];
 
     if (self)
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
-        [self NS_initWithCell:cell];
+
+        [self sendActionOn:CPKeyUpMask | CPKeyDownMask];
+
+        [self setEditable:[cell isEditable]];
+        [self setSelectable:[cell isSelectable]];
+
+        [self setBordered:[cell isBordered]];
+        [self setBezeled:[cell isBezeled]];
+        [self setBezelStyle:[cell bezelStyle]];
+        [self setDrawsBackground:[cell drawsBackground]];
+
+        [self setLineBreakMode:[cell lineBreakMode]];
+        [self setAlignment:[cell alignment]];
+        [self setTextFieldBackgroundColor:[cell backgroundColor]];
+
+        [self setPlaceholderString:[cell placeholderString]];
+
+        var textColor = [cell textColor],
+            defaultColor = [self currentValueForThemeAttribute:@"text-color"];
+
+        // Don't change the text color if it is not the default, that messes up the theme lookups later
+        if (![textColor isEqual:defaultColor])
+            [self setTextColor:[cell textColor]];
 
         // Only adjust the origin and size if this is a bezeled textfield.
         // This ensures that labels positioned in IB are properly positioned after nibcib.
@@ -95,6 +81,17 @@
     }
 
     return self;
+}
+
+@end
+
+@implementation NSTextField : CPTextField
+{
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    return [self NS_initWithCoder:aCoder];
 }
 
 - (Class)classForKeyedArchiver
