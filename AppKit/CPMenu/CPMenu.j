@@ -628,19 +628,26 @@ var _CPMenuBarVisible               = NO,
 
         if (!validator)
         {
-            // Check to see if there is a target binding with a valid selector
-            var info = [CPBinder infoForBinding:CPTargetBinding forObject:item];
-
-            if (info)
+            // If targetForAction: returns nil, it could be that there is no action.
+            // If there is an action and nil is returned, no valid target could be found.
+            if ([item action] || [item target])
+                [item setEnabled:NO];
+            else
             {
-                var object = [info objectForKey:CPObservedObjectKey],
-                    keyPath = [info objectForKey:CPObservedKeyPathKey],
-                    options = [info objectForKey:CPOptionsKey],
-                    target = [object valueForKeyPath:keyPath],
-                    selector = [options valueForKey:CPSelectorNameBindingOption];
+                // Check to see if there is a target binding with an invalid selector
+                var info = [CPBinder infoForBinding:CPTargetBinding forObject:item];
 
-                if (target && selector && ![target respondsToSelector:CPSelectorFromString(selector)])
-                    [item setEnabled:NO];
+                if (info)
+                {
+                    var object = [info objectForKey:CPObservedObjectKey],
+                        keyPath = [info objectForKey:CPObservedKeyPathKey],
+                        options = [info objectForKey:CPOptionsKey],
+                        target = [object valueForKeyPath:keyPath],
+                        selector = [options valueForKey:CPSelectorNameBindingOption];
+
+                    if (target && selector && ![target respondsToSelector:CPSelectorFromString(selector)])
+                        [item setEnabled:NO];
+                }
             }
         }
         else if (![validator respondsToSelector:[item action]])
