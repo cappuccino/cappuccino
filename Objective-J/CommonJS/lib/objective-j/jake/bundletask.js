@@ -878,6 +878,12 @@ BundleTask.prototype.defineSourceTasks = function()
                         };
                         rhinoUglyFix = true;
                     }
+
+                    if (typeof navigator == "undefined")
+                    {
+                        navigator =  { "userAgent": "fakenavigator" };
+                        rhinoUglyFix = true;
+                    }
                 }
 
                 var compile;

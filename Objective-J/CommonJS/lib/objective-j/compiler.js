@@ -90,6 +90,11 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags, asPlainJavasc
                 document = { createElement: function(x) { return { innerText: "", style: {}}}};
                 rhinoUglyFix = true;
             }
+            if (typeof navigator == "undefined")
+            {
+                navigator =  { "userAgent": "fakenavigator" };
+                rhinoUglyFix = true;
+            }
         }
 
         ObjectiveJ.setCurrentCompilerFlags(objjcFlags);
