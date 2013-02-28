@@ -503,7 +503,8 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
             }
         }
 
-        [self._replacementObjects setObject:object forKey:GUID];
+        if (object != nil && GUID != nil)
+            [self._replacementObjects setObject:object forKey:GUID];
     }
 
     // If we still don't have an object by this point, then return a
