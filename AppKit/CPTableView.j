@@ -5093,7 +5093,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_)
     {
 
-        while (![_delegate tableView:self shouldSelectRow:i] && (i < [self numberOfRows] || i > 0))
+        while (![_delegate tableView:self shouldSelectRow:i] && (i < [self numberOfRows] && i > 0))
             shouldGoUpward ? i-- : i++; //check to see if the row can be selected if it can't be then see if the next row can be selected
 
         // If the index still can be selected after the loop then just return.
