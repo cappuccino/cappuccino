@@ -270,7 +270,6 @@ var CPRunLoopLastNativeRunLoop = 0;
 
     aTimer._lastNativeRunLoopsForModes[aMode] = CPRunLoopLastNativeRunLoop;
 
-
     // FIXME: Hack for not doing this in CommonJS
     if ([CFBundle.environments() indexOfObject:("Browser")] !== CPNotFound)
     {
@@ -308,6 +307,7 @@ var CPRunLoopLastNativeRunLoop = 0;
         nextTimerFireDate = _nextTimerFireDatesForModes[aMode];
 
     // Perform Timers if necessary
+
     if (_didAddTimer || nextTimerFireDate && nextTimerFireDate <= now)
     {
         _didAddTimer = NO;
@@ -326,12 +326,16 @@ var CPRunLoopLastNativeRunLoop = 0;
 
         _timersForModes[aMode] = nil;
 
-        //  Loop through timers looking for ones that had fired
+        // If we're running in CommonJS (unit tests) we shouldn't wait for at least 1 native run loop
+        // since those will never happen.
+        var hasNativeTimers = [CFBundle.environments() indexOfObject:("Browser")] !== CPNotFound;
+
+        // Loop through timers looking for ones that had fired
         while (index--)
         {
             var timer = timers[index];
 
-            if (timer._lastNativeRunLoopsForModes[aMode] < CPRunLoopLastNativeRunLoop && timer._isValid && timer._fireDate <= now)
+            if ((!hasNativeTimers || timer._lastNativeRunLoopsForModes[aMode] < CPRunLoopLastNativeRunLoop) && timer._isValid && timer._fireDate <= now)
                 [timer fire];
 
             // Timer may or may not still be valid
