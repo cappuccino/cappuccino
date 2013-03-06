@@ -263,11 +263,13 @@ var deprecatedMessage = YES;
     {
         var i = [keyArray count];
 
-        while (i--) {
+        while (i--)
+        {
             var aValue = objects[i],
                 aKey = keyArray[i];
 
-            if (aValue === nil || aKey === nil) {
+            if (aValue === nil || aKey === nil)
+            {
                 deprecatedMessage = NO;
                 CPLog.warn(@"[" + [self className] + @" " + _cmd +  @"DEPRECATED: Attempt to insert nil object from objects[" + i + @"]");
                 objj_backtrace_print(CPLog.warn);
@@ -314,7 +316,8 @@ var deprecatedMessage = YES;
             var value = arguments[index],
                 aKey = arguments[index + 1];
 
-            if (value === nil || aKey === nil) {
+            if (value === nil || aKey === nil)
+            {
                 deprecatedMessage = NO;
                 CPLog.warn(@"[" + [self className] + @" " + _cmd +  @"DEPRECATED: Attempt to insert nil object from objects[" + (index / 2 - 1) + @"]");
                 objj_backtrace_print(CPLog.warn);
@@ -631,14 +634,16 @@ var deprecatedMessage = YES;
 */
 - (void)setObject:(id)anObject forKey:(id)aKey
 {
-    if (deprecatedMessage && aKey === nil) {
+    if (deprecatedMessage && aKey === nil)
+    {
         CPLog.warn(@"[" + [self className] + @" " + _cmd +  @"] DEPRECATED: Key cannot be nil");
         objj_backtrace_print(CPLog.warn);
         //FIXME: After release of 0.9.7 change above line to this:
         //[CPException raise:CPInvalidArgumentException reason:@"Key cannot be nil"];
     }
 
-    if (deprecatedMessage && anObject === nil) {
+    if (deprecatedMessage && anObject === nil)
+    {
         CPLog.warn(@"[" + [self className] + @" " + _cmd +  @"] DEPRECATED: Object cannot be nil (key: " + aKey + @")");
         objj_backtrace_print(CPLog.warn);
         //FIXME: After release of 0.9.7 change above line to this:
