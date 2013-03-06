@@ -342,7 +342,10 @@ var StandardUserDefaults;
     var data = [[self persistentStoreForDomain:aDomain] data],
         domain = data ? [CPKeyedUnarchiver unarchiveObjectWithData:data] : nil;
 
-    [_domains setObject:domain forKey:aDomain];
+    if (domain === nil)
+        [_domains removeObjectForKey:aDomain];
+    else
+        [_domains setObject:domain forKey:aDomain];
 
     _searchListNeedsReload = YES;
 }
