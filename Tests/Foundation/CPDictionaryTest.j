@@ -204,7 +204,6 @@
 {
     [self assertThrows:function(){
         var dict = [[CPDictionary alloc] initWithObjects:[1, nil] forKeys:["1", "2"]];
-        [self assertFalse:dict];
     }];
 }
 
