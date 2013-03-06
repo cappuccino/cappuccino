@@ -1660,6 +1660,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 - (void)setValue:(id)aValue forBinding:(CPString)aBinding
 {
+    [_source setPlaceholderString:[self _placeholderForMarker:CPNullMarker]];
     [_source setObjectValue:aValue];
 }
 
@@ -1675,6 +1676,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 - (void)setValue:(id)aValue forBinding:(CPString)aBinding
 {
+    [_source setPlaceholderString:[self _placeholderForMarker:CPNullMarker]];
     [_source setObjectValue:aValue];
 }
 
