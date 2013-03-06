@@ -347,7 +347,7 @@ var CPBindingOperationAnd = 0,
 
 - (void)_placeholderForMarker:aMarker
 {
-    var placeholder = _placeholderForMarker[aMarker];
+    var placeholder = _placeholderForMarker[[aMarker hash]];
 
     if (placeholder)
         return placeholder['value'];
@@ -359,14 +359,14 @@ var CPBindingOperationAnd = 0,
 {
     if (isDefault)
     {
-        var existingPlaceholder = _placeholderForMarker[aMarker];
+        var existingPlaceholder = _placeholderForMarker[[aMarker hash]];
 
         // Don't overwrite an explicitly set placeholder with a default.
         if (existingPlaceholder && !existingPlaceholder['isDefault'])
             return;
     }
 
-    _placeholderForMarker[aMarker] = { 'isDefault': isDefault, 'value': aPlaceholder };
+    _placeholderForMarker[[aMarker hash]] = { 'isDefault': isDefault, 'value': aPlaceholder };
 }
 
 @end
@@ -802,6 +802,26 @@ var CPBindingOperationAnd = 0,
 
 @end
 
+@implementation _CPStateMarker : CPObject
+{
+    CPString _name;
+}
+
+- (id)initWithName:(CPString)aName
+{
+    if (self = [super init])
+        _name = aName
+
+    return self;
+}
+
+- (CPString)description
+{
+    return "<" + _name + ">";
+}
+
+@end
+
 
 // Keys in options dictionary
 
@@ -811,10 +831,10 @@ CPObservedKeyPathKey    = @"CPObservedKeyPathKey";
 CPOptionsKey            = @"CPOptionsKey";
 
 // special markers
-CPMultipleValuesMarker  = @"CPMultipleValuesMarker";
-CPNoSelectionMarker     = @"CPNoSelectionMarker";
-CPNotApplicableMarker   = @"CPNotApplicableMarker";
-CPNullMarker            = @"CPNullMarker";
+CPNoSelectionMarker     = [[_CPStateMarker alloc] initWithName:@"NO SELECTION MARKER"];
+CPMultipleValuesMarker  = [[_CPStateMarker alloc] initWithName:@"MULTIPLE VALUES MARKER"];
+CPNotApplicableMarker   = [[_CPStateMarker alloc] initWithName:@"NOT APPLICABLE MARKER"];
+CPNullMarker            = [[_CPStateMarker alloc] initWithName:@"NULL MARKER"];
 
 // Binding name constants
 CPAlignmentBinding                        = @"alignment";
