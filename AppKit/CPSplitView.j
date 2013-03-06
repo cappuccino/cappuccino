@@ -1156,8 +1156,14 @@ The sum of the views and the sum of the dividers should be equal to the size of 
     {
         _preCollapsePositions = [CPMutableDictionary new];
 
-        for (var i = 0, count = [preCollapseArray count]; i < count; i++)
-            [_preCollapsePositions setObject:preCollapseArray[i] forKey:i + ""];
+        for (var i = 0, count = [preCollapseArray count]; i < count; i++) {
+            var item = preCollapseArray[i];
+
+            if (item === nil)
+                [_preCollapsePositions removeObjectForKey:i + ""];
+            else
+                [_preCollapsePositions setObject:item forKey:i + ""];
+        }
     }
 }
 

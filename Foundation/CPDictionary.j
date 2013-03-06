@@ -27,6 +27,9 @@
 @import "CPObject.j"
 #import "Ref.h"
 
+//FIXME: After release of 0.9.7 remove below variable
+var deprecatedMessage = YES;
+
 /* @ignore */
 @implementation _CPDictionaryValueEnumerator : CPEnumerator
 {
@@ -261,7 +264,20 @@
         var i = [keyArray count];
 
         while (i--)
-            [self setObject:objects[i] forKey:keyArray[i]];
+        {
+            var aValue = objects[i],
+                aKey = keyArray[i];
+
+            if (aValue === nil || aKey === nil)
+            {
+                deprecatedMessage = NO;
+                CPLog.warn(@"[" + [self className] + @" " + _cmd +  @"DEPRECATED: Attempt to insert nil object from objects[" + i + @"]");
+                objj_backtrace_print(CPLog.warn);
+                //FIXME: After release of 0.9.7 remove variable deprecatedMessage and change above line to this:
+                //[CPException raise:CPInvalidArgumentException reason:@"Attempt to insert nil object from objects[" + i + @"]"];
+            }
+            [self setObject:aValue forKey:aKey];
+        }
     }
 
     return self;
@@ -297,12 +313,19 @@
 
         for (; index < argCount; index += 2)
         {
-            var value = arguments[index];
+            var value = arguments[index],
+                aKey = arguments[index + 1];
 
-            if (value === nil)
-                continue;
+            if (value === nil || aKey === nil)
+            {
+                deprecatedMessage = NO;
+                CPLog.warn(@"[" + [self className] + @" " + _cmd +  @"DEPRECATED: Attempt to insert nil object from objects[" + (index / 2 - 1) + @"]");
+                objj_backtrace_print(CPLog.warn);
+                //FIXME: After release of 0.9.7 remove variable deprecatedMessage and change above line to this:
+                //[CPException raise:CPInvalidArgumentException reason:@"Attempt to insert nil object from objects[" + (index / 2 - 1) + @"]"];
+            }
 
-            [self setObject:value forKey:arguments[index + 1]];
+            [self setObject:value forKey:aKey];
         }
     }
 
@@ -611,6 +634,24 @@
 */
 - (void)setObject:(id)anObject forKey:(id)aKey
 {
+    if (deprecatedMessage && aKey === nil)
+    {
+        CPLog.warn(@"[" + [self className] + @" " + _cmd +  @"] DEPRECATED: Key cannot be nil");
+        objj_backtrace_print(CPLog.warn);
+        //FIXME: After release of 0.9.7 change above line to this:
+        //[CPException raise:CPInvalidArgumentException reason:@"Key cannot be nil"];
+    }
+
+    if (deprecatedMessage && anObject === nil)
+    {
+        CPLog.warn(@"[" + [self className] + @" " + _cmd +  @"] DEPRECATED: Object cannot be nil (key: " + aKey + @")");
+        objj_backtrace_print(CPLog.warn);
+        //FIXME: After release of 0.9.7 change above line to this:
+        //[CPException raise:CPInvalidArgumentException reason:@"Object cannot be nil (key: " + aKey + @")"];
+    }
+
+    //FIXME: After release of 0.9.7 remove below line.
+    deprecatedMessage = YES;
     self.setValueForKey(aKey, anObject);
 }
 
