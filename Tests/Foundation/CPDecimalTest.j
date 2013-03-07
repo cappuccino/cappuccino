@@ -68,7 +68,7 @@
     [self assert:NO equals:dcm._isNaN message:"CPDecimalMakeWithString() Tf4: NaN is incorrectly set"];
 
     dcm = CPDecimalMakeWithString(@"000000000000000000");
-    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Tf5: Should be invalid"];
+    [self assertFalse:dcm._isNaN message:"CPDecimalMakeWithString() Tf5: Should be valid"];
 
     // too large return NaN
     dcm = CPDecimalMakeWithString(@"111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
@@ -95,10 +95,12 @@
     [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti7: catch of invalid number string. Should return NaN"];
     dcm = CPDecimalMakeWithString(@"123ee");
     [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti8: catch of invalid number string. Should return NaN"];
+
+    // this behaviour has changed to match Cocoa. Making a decimal with a leading zero should return the decimal.
     dcm = CPDecimalMakeWithString(@"0001");
-    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti9: catch of invalid number string. Should return NaN"];
+    [self assertFalse:dcm._isNaN message:"CPDecimalMakeWithString() Ti9: Numbers with leading zeros are valid numbers. Expected False when evaluating against NaN, got True."];
     dcm = CPDecimalMakeWithString(@"-0001");
-    [self assertTrue:dcm._isNaN message:"CPDecimalMakeWithString() Ti10: catch of invalid number string. Should return NaN"];
+    [self assertFalse:dcm._isNaN message:"CPDecimalMakeWithString() Ti10: Numbers with leading zeros are valid numbers. Expected False when evaluating against NaN, got True."];
 
     //test make with parts
     dcm = CPDecimalMakeWithParts(10127658, 2);

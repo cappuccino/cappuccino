@@ -130,6 +130,9 @@
     [self assert:[0] equals:dcm._mantissa message:"zero: - mantissa"];
     [self assert:NO equals:dcm._isNegative message:"zero: - sign"];
 
+    // this is Cocoa behaviour -- convert a decimal number with a leading zero to a number.
+    dcmn = [[CPDecimalNumber alloc] initWithString:@"0123"];
+    [self assertTrue:[dcmn isEqualToNumber:123]];
 
     // misc
     // decimalValue <- if it hasnt been working so far, you would know.
@@ -147,14 +150,11 @@
     dcmn = [[CPDecimalNumber alloc] initWithString:@"foo"];
     [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 2 overflow should return NaN"];
 
-    dcmn = [[CPDecimalNumber alloc] initWithString:@"0123"];
+    dcmn = [[CPDecimalNumber alloc] initWithString:@"1e200"];
     [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 3 overflow should return NaN"];
 
-    dcmn = [[CPDecimalNumber alloc] initWithString:@"1e200"];
-    [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 4 overflow should return NaN"];
-
     dcmn = [[CPDecimalNumber alloc] initWithString:@"12312e-23421"];
-    [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 5 overflow should return NaN"];
+    [self assert:CPOrderedSame equals:[dcmn compare:[CPDecimalNumber notANumber]] message:"initWithString: 4 overflow should return NaN"];
 }
 
 - (void)testAdd
