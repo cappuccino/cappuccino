@@ -1188,27 +1188,20 @@ var CPViewFlags                     = { },
 
     var frame = _superview._frame,
         newFrame = _CGRectMakeCopy(_frame),
-        dX = frame.size.width - aSize.width,
-        dY = frame.size.height - aSize.height,
-        evenFractionX = 1.0 / ((mask & CPViewMinXMargin ? 1 : 0) + (mask & CPViewWidthSizable ? 1 : 0) + (mask & CPViewMaxXMargin ? 1 : 0)),
-        evenFractionY = 1.0 / ((mask & CPViewMinYMargin ? 1 : 0) + (mask & CPViewHeightSizable ? 1 : 0) + (mask & CPViewMaxYMargin ? 1 : 0)),
-        baseX = (mask & CPViewMinXMargin    ? _frame.origin.x : 0) +
-                (mask & CPViewWidthSizable  ? _frame.size.width : 0) +
-                (mask & CPViewMaxXMargin    ? aSize.width - _frame.size.width - _frame.origin.x : 0),
-        baseY = (mask & CPViewMinYMargin    ? _frame.origin.y : 0) +
-                (mask & CPViewHeightSizable ? _frame.size.height : 0) +
-                (mask & CPViewMaxYMargin    ? aSize.height - _frame.size.height - _frame.origin.y : 0);
-
+        dX = (_CGRectGetWidth(frame) - aSize.width) /
+            (((mask & CPViewMinXMargin) ? 1 : 0) + (mask & CPViewWidthSizable ? 1 : 0) + (mask & CPViewMaxXMargin ? 1 : 0)),
+        dY = (_CGRectGetHeight(frame) - aSize.height) /
+            ((mask & CPViewMinYMargin ? 1 : 0) + (mask & CPViewHeightSizable ? 1 : 0) + (mask & CPViewMaxYMargin ? 1 : 0));
 
     if (mask & CPViewMinXMargin)
-        newFrame.origin.x += dX * (baseX > 0 ? _frame.origin.x / baseX : evenFractionX);
+        newFrame.origin.x += dX;
     if (mask & CPViewWidthSizable)
-        newFrame.size.width += dX * (baseX > 0 ? _frame.size.width / baseX : evenFractionX);
+        newFrame.size.width += dX;
 
     if (mask & CPViewMinYMargin)
-        newFrame.origin.y += dY * (baseY > 0 ? _frame.origin.y / baseY : evenFractionY);
+        newFrame.origin.y += dY;
     if (mask & CPViewHeightSizable)
-        newFrame.size.height += dY * (baseY > 0 ? _frame.size.height / baseY : evenFractionY);
+        newFrame.size.height += dY;
 
     [self setFrame:newFrame];
 }
