@@ -56,18 +56,33 @@
     [numberFormatter setMinimum:10];
     [numberFormatter setMaximum:20];
 
-    [self assertTrue:[numberFormatter getObjectValue:noneFunction forString:@"10" errorDescription:nil]];
-    [self assertTrue:[numberFormatter getObjectValue:noneFunction forString:@"15" errorDescription:nil]];
-    [self assertTrue:[numberFormatter getObjectValue:noneFunction forString:@"20" errorDescription:nil]];
-    [self assertTrue:[numberFormatter getObjectValue:noneFunction forString:@"020" errorDescription:nil]];
+    [self assertTrue:[numberFormatter getObjectValue:noneFunction forString:@"10" errorDescription:nil]
+             message:@"MinMax T1: Expected True."];
+    [self assertTrue:[numberFormatter getObjectValue:noneFunction forString:@"15" errorDescription:nil]
+             message:@"MinMax T2: Expected True."];
+    [self assertTrue:[numberFormatter getObjectValue:noneFunction forString:@"20" errorDescription:nil]
+             message:@"MinMax T3: Expected True."];
+    [self assertTrue:[numberFormatter getObjectValue:noneFunction forString:@"020" errorDescription:nil]
+             message:@"MinMax T4: Expected True."];
 
     // check if this formatter behaves like Cocoa, which allows a blank string to pass
-    [self assertTrue:[numberFormatter getObjectValue:noneFunction forString:@"" errorDescription:nil]];
+    [self assertTrue:[numberFormatter getObjectValue:noneFunction forString:@"" errorDescription:nil]
+             message:@"MinMax T5: Expected True."];
 
-    [self assertFalse:[numberFormatter getObjectValue:noneFunction forString:@"-1" errorDescription:nil]];
-    [self assertFalse:[numberFormatter getObjectValue:noneFunction forString:@"1" errorDescription:nil]];
-    [self assertFalse:[numberFormatter getObjectValue:noneFunction forString:@"100" errorDescription:nil]];
-    [self assertFalse:[numberFormatter getObjectValue:noneFunction forString:@"Cappuccino" errorDescription:nil]];
+    [self assertFalse:[numberFormatter getObjectValue:noneFunction forString:@"-1" errorDescription:nil]
+              message:@"MinMax T6: Expected False."];
+    [self assertFalse:[numberFormatter getObjectValue:noneFunction forString:@"1" errorDescription:nil]
+              message:@"MinMax T7: Expected False."];
+    [self assertFalse:[numberFormatter getObjectValue:noneFunction forString:@"100" errorDescription:nil]
+              message:@"MinMax T8: Expected False."];
+
+    var testErrorDescription = @"",
+        testWithString = [numberFormatter getObjectValue:noneFunction forString:@"Cappuccino" errorDescription:testErrorDescription];
+    [self assertFalse:testWithString
+              message:@"MinMax T9: Expected False."];
+    // [self assert:testErrorDescription
+    //       equals:@"Value is not a number"
+    //       message:@"MinMax T10: Error string does not match."];
 }
 
 
