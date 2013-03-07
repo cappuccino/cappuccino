@@ -185,32 +185,31 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
 
 - (BOOL)getObjectValue:(id)anObject forString:(CPString)aString errorDescription:(CPString)anError
 {
-    // TODO Error handling.
     // allows an empty string to pass without validation
     if (aString === @"")
         return YES;
 
-    var value = [self numberFromString:aString];
+    var value = [self numberFromString:aString],
+        error = @"";
 
+    // this will return false if we've received anything but a number, most likely NaN
     if (!isFinite(value))
+        error = @"Value is not a number";
+    else if (_minimum !== nil && value < _minimum)
+        error = @"Value is less than the minimum allowed value";
+    else if (_maximum !== nil && value > _maximum)
+        error = @"Value is greater than the maximum allowed value";
+
+    if (error)
     {
-        anError = @"Value is not a number";
+        // Since we lack any reference functionality, we cannot pass the error by reference.
+        // We can keep this here until we do.
+        // if (anError)
+        //     AT_DEREF(anError, error);
         return NO;
     }
 
-    if (_minimum !== nil && value < _minimum)
-    {
-        anError = @"Value is less than the minimum allowed value";
-        return NO;
-    }
-
-    if (_maximum !== nil && value > _maximum)
-    {
-        anError = @"Value is greater than the maximum allowed value";
-        return NO;
-    }
-
-    AT_DEREF(anObject, value, anError);
+    AT_DEREF(anObject, value);
 
     return YES;
 }
