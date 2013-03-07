@@ -345,7 +345,7 @@ var CPBindingOperationAnd = 0,
     [self _updatePlaceholdersWithOptions:options];
 }
 
-- (void)_placeholderForMarker:aMarker
+- (JSObject)_placeholderForMarker:aMarker
 {
     var placeholder = _placeholderForMarker[[aMarker UID]];
 
