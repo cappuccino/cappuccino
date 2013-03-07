@@ -9,24 +9,21 @@
 @import <Foundation/CPObject.j>
 @import <AppKit/CPGraphicsContext.j>
 
-var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE",
-    tracing = NO;
+var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE";
 
 CPLogRegister(CPLogConsole)
 
 @implementation AppController : CPObject
 {
-    CPWindow    theWindow; //this "outlet" is connected automatically by the Cib
-    @outlet CPTableView tableView;
+    CPWindow theWindow; //this "outlet" is connected automatically by the Cib
+    @outlet CPTableView tableView @accessors(getter=tableView);
 
-    CPArray content   @accessors;
-    float   avgPerRow @accessors;
+    CPArray content           @accessors;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)note
 {
     content = [CPArray new];
-    avgPerRow = 0;
 
     var path = [[CPBundle mainBundle] pathForResource:@"Data.plist"],
         request = [CPURLRequest requestWithURL:path],
@@ -64,7 +61,10 @@ CPLogRegister(CPLogConsole)
     @outlet CPImageView imageView;
     @outlet CPTextField textField;
 
-    CPArray images @accessors;
+    CPTableView tableView;
+    CPArray     content;
+    CPArray     images            @accessors;
+    BOOL        variableRowHeight @accessors;
 }
 
 - (id)init
@@ -76,6 +76,8 @@ CPLogRegister(CPLogConsole)
                 [CPDictionary dictionaryWithObjectsAndKeys:@"George",@"name", @"Resources/george.jpg",@"path"],
                 [CPDictionary dictionaryWithObjectsAndKeys:@"John",  @"name", @"Resources/john.jpg"  ,@"path"]
              ];
+
+    variableRowHeight = NO;
 
     return self;
 }
@@ -90,7 +92,18 @@ CPLogRegister(CPLogConsole)
 
 - (CPArray)content
 {
-    return [[CPApp delegate] content];
+    if (!content)
+        content = [[CPApp delegate] content];
+
+    return content;
+}
+
+- (CPTableView)tableView
+{
+    if (!tableView)
+        tableView = [[CPApp delegate] tableView];
+
+    return tableView;
 }
 
 // DELEGATE METHODS FOR THE TABLE VIEW
@@ -134,8 +147,7 @@ CPLogRegister(CPLogConsole)
 
 - (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id)info row:(int)row dropOperation:(CPTableViewDropOperation)operation
 {
-    var content = [self content],
-        pboard = [info draggingPasteboard],
+    var pboard = [info draggingPasteboard],
         sourceIndexes = [pboard dataForType:TABLE_DRAG_TYPE],
         firstObject = [content objectAtIndex:[sourceIndexes firstIndex]];
 
@@ -151,6 +163,15 @@ CPLogRegister(CPLogConsole)
     return YES;
 }
 
+- (int)tableView:(CPTableView)aTableView heightOfRow:(int)aRow
+{
+    var height;
+
+    if (!variableRowHeight || !(height = [[[self content] objectAtIndex:aRow] objectForKey:@"slider"]))
+        return [aTableView rowHeight];
+
+    return [height intValue];
+}
 
 - (void)awakeFromCib
 {
@@ -168,8 +189,17 @@ CPLogRegister(CPLogConsole)
 // CELL VIEWS ACTIONS
 - (IBAction)_sliderAction:(id)sender
 {
+    if (variableRowHeight)
+    {
+        var table = [self tableView],
+            row = [table rowForView:sender];
+
+        [table noteHeightOfRowsWithIndexesChanged:[CPIndexSet indexSetWithIndex:row]];
+        [table reloadData];
+    }
+
     // Action sent from a cellView subview to its target.
-    CPLog.debug(_cmd + " value=" + [sender doubleValue]);
+    CPLog.debug(_cmd + " value=" + [sender intValue]);
 }
 
 - (IBAction)_textFieldNotBezeledAction:(id)sender
