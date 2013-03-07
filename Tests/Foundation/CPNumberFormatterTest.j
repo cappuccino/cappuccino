@@ -48,6 +48,29 @@
     [self assert:@"1 234 567" equals:[numberFormatter stringFromNumber:[CPNumber numberWithInt:1234567]]];
 }
 
+- (void)testMinimumMaximumValues
+{
+    var numberFormatter = [CPNumberFormatter new],
+        noneFunction = function() {};
+
+    [numberFormatter setMinimum:10];
+    [numberFormatter setMaximum:20];
+
+    [self assertTrue:[numberFormatter getObjectValue:noneFunction forString:@"10" errorDescription:nil]];
+    [self assertTrue:[numberFormatter getObjectValue:noneFunction forString:@"15" errorDescription:nil]];
+    [self assertTrue:[numberFormatter getObjectValue:noneFunction forString:@"20" errorDescription:nil]];
+    [self assertTrue:[numberFormatter getObjectValue:noneFunction forString:@"020" errorDescription:nil]];
+
+    // check if this formatter behaves like Cocoa, which allows a blank string to pass
+    [self assertTrue:[numberFormatter getObjectValue:noneFunction forString:@"" errorDescription:nil]];
+
+    [self assertFalse:[numberFormatter getObjectValue:noneFunction forString:@"-1" errorDescription:nil]];
+    [self assertFalse:[numberFormatter getObjectValue:noneFunction forString:@"1" errorDescription:nil]];
+    [self assertFalse:[numberFormatter getObjectValue:noneFunction forString:@"100" errorDescription:nil]];
+    [self assertFalse:[numberFormatter getObjectValue:noneFunction forString:@"Cappuccino" errorDescription:nil]];
+}
+
+
 - (void)testRoundingMode
 {
     var numberFormatter = [[CPNumberFormatter alloc] init],

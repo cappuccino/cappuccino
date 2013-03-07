@@ -63,6 +63,8 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
     CPNumberFormatterRoundingMode   _roundingMode @accessors(property=roundingMode);
     CPUInteger                      _minimumFractionDigits @accessors(property=minimumFractionDigits);
     CPUInteger                      _maximumFractionDigits @accessors(property=maximumFractionDigits);
+    CPUInteger                      _minimum @accessors(property=minimum);
+    CPUInteger                      _maximum @accessors(property=maximum);
     CPString                        _currencyCode @accessors(property=currencyCode);
     CPString                        _currencySymbol @accessors(property=currencySymbol);
     BOOL                            _generatesDecimalNumbers @accessors(property=generatesDecimalNumbers);
@@ -81,6 +83,8 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
         _maximumFractionDigits = 0;
         _groupingSeparator = @",";
         _generatesDecimalNumbers = YES;
+        _minimum = nil;
+        _maximum = nil;
 
         // FIXME Add locale support.
         _currencyCode = @"USD";
@@ -182,8 +186,31 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
 - (BOOL)getObjectValue:(id)anObject forString:(CPString)aString errorDescription:(CPString)anError
 {
     // TODO Error handling.
+    // allows an empty string to pass without validation
+    if (aString === @"")
+        return YES;
+
     var value = [self numberFromString:aString];
-    AT_DEREF(anObject, value);
+
+    if (!isFinite(value))
+    {
+        anError = @"Value is not a number";
+        return NO;
+    }
+
+    if (_minimum !== nil && value < _minimum)
+    {
+        anError = @"Value is less than the minimum allowed value";
+        return NO;
+    }
+
+    if (_maximum !== nil && value > _maximum)
+    {
+        anError = @"Value is greater than the maximum allowed value";
+        return NO;
+    }
+
+    AT_DEREF(anObject, value, anError);
 
     return YES;
 }
@@ -226,12 +253,29 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
     SET_NEEDS_NUMBER_HANDLER_UPDATE();
 }
 
+- (void)setMinimum:(CPUInteger)aNumber
+{
+    _minimum = aNumber;
+    SET_NEEDS_NUMBER_HANDLER_UPDATE();
+}
+
+- (void)setMaximum:(CPUInteger)aNumber
+{
+    _maximum = aNumber;
+    SET_NEEDS_NUMBER_HANDLER_UPDATE();
+}
+
 #pragma mark Private
 
 - (void)_updateNumberHandlerIfNecessary
 {
     if (!_numberHandler)
-        _numberHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:_roundingMode scale:_maximumFractionDigits raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:YES];
+        _numberHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:_roundingMode
+                                                                                scale:_maximumFractionDigits
+                                                                     raiseOnExactness:NO
+                                                                      raiseOnOverflow:NO
+                                                                     raiseOnUnderflow:NO
+                                                                  raiseOnDivideByZero:YES];
 }
 
 @end
@@ -239,6 +283,8 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
 var CPNumberFormatterStyleKey                   = @"CPNumberFormatterStyleKey",
     CPNumberFormatterMinimumFractionDigitsKey   = @"CPNumberFormatterMinimumFractionDigitsKey",
     CPNumberFormatterMaximumFractionDigitsKey   = @"CPNumberFormatterMaximumFractionDigitsKey",
+    CPNumberFormatterMinimumKey                 = @"CPNumberFormatterMinimumKey",
+    CPNumberFormatterMaximumKey                 = @"CPNumberFormatterMaximumKey",
     CPNumberFormatterRoundingModeKey            = @"CPNumberFormatterRoundingModeKey",
     CPNumberFormatterGroupingSeparatorKey       = @"CPNumberFormatterGroupingSeparatorKey",
     CPNumberFormatterCurrencyCodeKey            = @"CPNumberFormatterCurrencyCodeKey",
@@ -256,6 +302,8 @@ var CPNumberFormatterStyleKey                   = @"CPNumberFormatterStyleKey",
         _numberStyle = [aCoder decodeIntForKey:CPNumberFormatterStyleKey];
         _minimumFractionDigits = [aCoder decodeIntForKey:CPNumberFormatterMinimumFractionDigitsKey];
         _maximumFractionDigits = [aCoder decodeIntForKey:CPNumberFormatterMaximumFractionDigitsKey];
+        _minimum = [aCoder decodeIntForKey:CPNumberFormatterMinimumKey];
+        _maximum = [aCoder decodeIntForKey:CPNumberFormatterMaximumKey];
         _roundingMode = [aCoder decodeIntForKey:CPNumberFormatterRoundingModeKey];
         _groupingSeparator = [aCoder decodeObjectForKey:CPNumberFormatterGroupingSeparatorKey];
         _currencyCode = [aCoder decodeObjectForKey:CPNumberFormatterCurrencyCodeKey];
@@ -273,6 +321,8 @@ var CPNumberFormatterStyleKey                   = @"CPNumberFormatterStyleKey",
     [aCoder encodeInt:_numberStyle forKey:CPNumberFormatterStyleKey];
     [aCoder encodeInt:_minimumFractionDigits forKey:CPNumberFormatterMinimumFractionDigitsKey];
     [aCoder encodeInt:_maximumFractionDigits forKey:CPNumberFormatterMaximumFractionDigitsKey];
+    [aCoder encodeInt:_minimum forKey:CPNumberFormatterMinimumKey];
+    [aCoder encodeInt:_maximum forKey:CPNumberFormatterMaximumKey];
     [aCoder encodeInt:_roundingMode forKey:CPNumberFormatterRoundingModeKey];
     [aCoder encodeObject:_groupingSeparator forKey:CPNumberFormatterGroupingSeparatorKey];
     [aCoder encodeObject:_currencyCode forKey:CPNumberFormatterCurrencyCodeKey];
