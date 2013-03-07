@@ -576,7 +576,7 @@ if (_currentGroup == nil)
 */
 - (BOOL)isUndoRegistrationEnabled
 {
-    return _disableCount == 0;
+    return !_disableCount;
 }
 
 // Checking Whether Undo or Redo Is Being Performed
