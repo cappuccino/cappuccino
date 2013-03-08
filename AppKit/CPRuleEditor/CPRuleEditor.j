@@ -1877,7 +1877,7 @@ TODO: implement
 
 - (CPString)_toolTipForAddCompoundRowButton
 {
-    return [_standardLocalizer localizedStringForString:@"Add Compound row"];
+    return [_standardLocalizer localizedStringForString:@"Add compound row"];
 }
 
 - (CPString)_toolTipForAddSimpleRowButton
