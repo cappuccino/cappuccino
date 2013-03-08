@@ -1662,6 +1662,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 {
     if (!aValue || (aValue.isa && [aValue isMemberOfClass:CPNull]))
         [_source setPlaceholderString:[self _placeholderForMarker:CPNullMarker]];
+
     [_source setObjectValue:aValue];
 }
 
@@ -1679,6 +1680,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 {
     if (!aValue || (aValue.isa && [aValue isMemberOfClass:CPNull]))
         [_source setPlaceholderString:[self _placeholderForMarker:CPNullMarker]];
+
     [_source setObjectValue:aValue];
 }
 
