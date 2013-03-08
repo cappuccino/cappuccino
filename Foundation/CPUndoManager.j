@@ -218,6 +218,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
         _redoStack = [];
         _undoStack = [];
 
+        _disableCount = 0;
         _state = CPUndoManagerNormal;
 
         [self setRunLoopModes:[CPDefaultRunLoopMode]];
@@ -576,7 +577,7 @@ if (_currentGroup == nil)
 */
 - (BOOL)isUndoRegistrationEnabled
 {
-    return !_disableCount;
+    return _disableCount == 0;
 }
 
 // Checking Whether Undo or Redo Is Being Performed
