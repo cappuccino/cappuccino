@@ -20,8 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#import "../Foundation/CPRange.h"
-#import "../Foundation/Ref.h"
+//#import "../Foundation/CPRange.h"
+//#import "../Foundation/Ref.h"
 
 @import <Foundation/CPArray.j>
 @import <Foundation/CPData.j>
@@ -35,7 +35,7 @@
 @import "CPPasteboard.j"
 @import "CPView.j"
 
-@class CPClipView
+//@class CPClipView
 
 
 /*!
@@ -176,50 +176,47 @@ var HORIZONTAL_MARGIN = 2;
 
 /*!
     Sets the item prototype to \c anItem
+    @param anItem the new item prototype.
 
-    The item prototype should implement the CPCoding protocol
-    because the item is copied by archiving and unarchiving the
-    prototypal view.
+    @note
+    - If anItem is located in an external cib file, representedObject, outlets, and bindings will be automatically restored when an item is created.
+    - If anItem and its view belong to the same cib as the collection view, the item prototype should implement the CPCoding protocol because the item is copied by archiving and unarchiving the prototypal view.
+    @note
+        Bindings won't be restored through archiving, instead you need to subclass the -representedObject: method and update the view there.
 
-    Example:
+    @par Example:
 
-    <pre>
-      @implement MyCustomView : CPCollectionViewItem
-      {
-          CPArray   items   @accessors;
-      }
+@code
+@implementation MyCustomPrototypeItem: CPCollectionViewItem
+{
+    @outlet CPTextField textField;
+}
 
-      - (id)initWithFrame:(CGRect)aFrame
-      {
-        self = [super initWithFrame:aFrame];
-        if (self)
-        {
-          items = [];
-        }
-        return self;
-      }
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
 
-      - (id)initWithCoder:(CPCoder)aCoder
-      {
-        self = [super initWithCoder:aCoder];
-        items = [aCoder decodeObjectForKey:@"KEY"];
-        return self;
-      }
+    textField = [aCoder decodeObjectForKey:@"TextField"];
 
-      - (void)encodeWithCoder:(CPCoder)aCoder
-      {
-        [aCoder encodeObject:items forKey:@"KEY"];
-        [super encodeWithCoder:aCoder];
-      }
+    return self;
+}
 
-      @end
-    </pre>
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+    [aCoder encodeConditionalObject:textField forKey:@"TextField"];
+}
 
-    This will allow the collection view to create multiple 'clean' copies
-    of the item prototype which will maintain the original values for item
-    and all of the properties archived by the super class.
+- (void)setRepresentedObject:(id)anObject
+{
+    [super setRepresentedObject:anObject];
+    [textField setStringValue:[anObject objectForKey:@"value"]];
+    [[self view] setColor:[anObject objectForKey:@"color"]];
+}
 
-    @param anItem the new item prototype
+@end
+@endcode
+
 */
 - (void)setItemPrototype:(CPCollectionViewItem)anItem
 {
