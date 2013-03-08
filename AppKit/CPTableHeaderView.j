@@ -455,7 +455,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 - (BOOL)_shouldDragTableColumn:(int)aColumnIndex at:(CGPoint)aPoint
 {
-    return [_tableView _shouldReorderColumn:aColumnIndex toColumn:-1] && ABS(aPoint.x - _mouseDownLocation.x) >= 10.0;
+    return ABS(aPoint.x - _mouseDownLocation.x) >= 10.0 && [_tableView _shouldReorderColumn:aColumnIndex toColumn:-1];
 }
 
 - (CGRect)_headerRectOfLastVisibleColumn
