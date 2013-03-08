@@ -21,7 +21,7 @@
 		<key>show</key>
 		<true/>
 		<key>slider</key>
-		<integer>10</integer>
+		<integer>100</integer>
 		<key>identifier</key>
 		<string>place</string>
 		<key>name</key>
@@ -73,7 +73,7 @@
 		<key>show</key>
 		<true/>
 		<key>slider</key>
-		<integer>10</integer>
+		<integer>150</integer>
 		<key>identifier</key>
 		<string>place</string>
 		<key>name</key>
@@ -85,7 +85,7 @@
 		<key>show</key>
 		<true/>
 		<key>slider</key>
-		<integer>10</integer>
+		<integer>100</integer>
 		<key>identifier</key>
 		<string>place</string>
 		<key>name</key>
@@ -141,7 +141,7 @@
 	</dict>
 	<dict>
 		<key>slider</key>
-		<integer>5</integer>
+		<integer>50</integer>
 		<key>identifier</key>
 		<string>place</string>
 		<key>name</key>
@@ -185,7 +185,7 @@
 	</dict>
 	<dict>
 		<key>slider</key>
-		<integer>15</integer>
+		<integer>200</integer>
 		<key>identifier</key>
 		<string>place</string>
 		<key>name</key>

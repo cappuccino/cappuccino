@@ -74,6 +74,19 @@ CPSegmentSwitchTrackingMomentary = 2;
         };
 }
 
++ (Class)_binderClassForBinding:(CPString)aBinding
+{
+    if ([self _isSelectionBinding:aBinding])
+        return [_CPSegmentedControlBinder class];
+
+    return [super _binderClassForBinding:aBinding];
+}
+
++ (BOOL)_isSelectionBinding:(CPString)aBinding
+{
+    return (aBinding === CPSelectedIndexBinding || aBinding === CPSelectedLabelBinding || aBinding === CPSelectedTagBinding);
+}
+
 - (id)initWithFrame:(CGRect)aRect
 {
     _segments = [];
@@ -89,6 +102,19 @@ CPSegmentSwitchTrackingMomentary = 2;
     }
 
     return self;
+}
+
+- (void)bind:(CPString)aBinding toObject:(id)anObject withKeyPath:(CPString)aKeyPath options:(CPDictionary)options
+{
+    if ([[self class] _isSelectionBinding:aBinding] && _trackingMode !== CPSegmentSwitchTrackingSelectOne)
+        CPLog.warn("Binding " + aBinding + " needs CPSegmentSwitchTrackingSelectOne tracking mode");
+    else
+        [super bind:aBinding toObject:anObject withKeyPath:aKeyPath options:options];
+}
+
+- (void)_reverseSetBinding
+{
+    [_CPSegmentedControlBinder reverseSetValueForObject:self];
 }
 
 /*!
@@ -180,6 +206,21 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     for (; index < _segments.length; ++index)
         if (_segments[index].tag == aTag)
+        {
+            [self setSelectedSegment:index];
+
+            return YES;
+        }
+
+    return NO;
+}
+
+- (BOOL)_selectSegmentWithLabel:(CPString)aLabel
+{
+    var index = 0;
+
+    for (; index < _segments.length; ++index)
+        if (_segments[index].label == aLabel)
         {
             [self setSelectedSegment:index];
 
@@ -903,6 +944,74 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
 
 @end
 
+var CPSegmentedControlBindersMap = {},
+    CPSegmentedControlNoSelectionPlaceholder = "CPSegmentedControlNoSelectionPlaceholder";
+
+@implementation _CPSegmentedControlBinder : CPBinder
+{
+    CPString _selectionBinding @accessors(readonly, getter=selectionBinding);
+}
+
++ (void)reverseSetValueForObject:(id)aSource
+{
+    var binder = CPSegmentedControlBindersMap[[aSource UID]];
+    [binder reverseSetValueFor:[binder selectionBinding]];
+}
+
+- (id)initWithBinding:(CPString)aBinding name:(CPString)aName to:(id)aDestination keyPath:(CPString)aKeyPath options:(CPDictionary)options from:(id)aSource
+{
+    self = [super initWithBinding:aBinding name:aName to:aDestination keyPath:aKeyPath options:options from:aSource];
+
+    if (self)
+    {
+        CPSegmentedControlBindersMap[[aSource UID]] = self;
+        _selectionBinding = aName;
+    }
+
+    return self;
+}
+
+- (void)_updatePlaceholdersWithOptions:(CPDictionary)options
+{
+    [super _updatePlaceholdersWithOptions:options];
+
+    [self _setPlaceholder:CPSegmentedControlNoSelectionPlaceholder forMarker:CPMultipleValuesMarker isDefault:YES];
+    [self _setPlaceholder:CPSegmentedControlNoSelectionPlaceholder forMarker:CPNoSelectionMarker isDefault:YES];
+    [self _setPlaceholder:CPSegmentedControlNoSelectionPlaceholder forMarker:CPNotApplicableMarker isDefault:YES];
+    [self _setPlaceholder:CPSegmentedControlNoSelectionPlaceholder forMarker:CPNullMarker isDefault:YES];
+}
+
+- (void)setPlaceholderValue:(id)aValue withMarker:(CPString)aMarker forBinding:(CPString)aBinding
+{
+    if (aValue == CPSegmentedControlNoSelectionPlaceholder)
+        [_source setSelected:NO forSegment:[_source selectedSegment]];
+    else
+        [self setValue:aValue forBinding:aBinding];
+}
+
+- (void)setValue:(id)aValue forBinding:(CPString)aBinding
+{
+    if (aBinding == CPSelectedIndexBinding)
+        [_source setSelectedSegment:aValue];
+    else if (aBinding == CPSelectedTagBinding)
+        [_source selectSegmentWithTag:aValue];
+    else if (aBinding == CPSelectedLabelBinding)
+        [_source _selectSegmentWithLabel:aValue];
+}
+
+- (id)valueForBinding:(CPString)aBinding
+{
+    var selectedIndex = [_source selectedSegment];
+
+    if (aBinding == CPSelectedIndexBinding)
+        return selectedIndex;
+    else if (aBinding == CPSelectedTagBinding)
+        return [_source tagForSegment:selectedIndex];
+    else if (aBinding == CPSelectedLabelBinding)
+        return [_source labelForSegment:selectedIndex];
+}
+
+@end
 
 @implementation _CPSegmentItem : CPObject
 {

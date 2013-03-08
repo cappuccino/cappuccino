@@ -35,11 +35,11 @@
 
         [self setNumberStyle:[attributes valueForKey:@"numberStyle"] || CPNumberFormatterNoStyle];
 
-        // if ([attributes containsKey:@"minimum"])
-        //     [self setMinimum:[attributes valueForKey:@"minimum"]];
+        if ([attributes containsKey:@"minimum"])
+            [self setMinimum:[attributes valueForKey:@"minimum"]];
 
-        // if ([attributes containsKey:@"maximum"])
-        //     [self setMaximum:[attributes valueForKey:@"maximum"]];
+        if ([attributes containsKey:@"maximum"])
+            [self setMaximum:[attributes valueForKey:@"maximum"]];
     }
 
     return self;

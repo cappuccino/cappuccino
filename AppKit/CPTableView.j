@@ -2520,6 +2520,26 @@ NOT YET IMPLEMENTED
     The delegate can provide easy notification for user interaction, display behaviour, contextual menus, and more.
 
 
+@section Providing Views for Rows and Columns:
+
+Returns the view used to display the specified row and column.
+@code
+- (CPView)tableView:(CPTableView)tableView viewForTableColumn:(CPTableColumn)tableColumn row:(CPInteger)row
+@endcode
+
+@param
+The view to display the specified column and row. Returning nil is acceptable, and a view will not be shown at that location.
+
+@discussion
+This method is required if you wish to use a view-based table view in Interface builder or cell-based table views without using CPTableColumn's setDataView: method.
+
+It is recommended that the implementation of this method first call the CPTableView method makeViewWithIdentifier:owner: passing, respectively, the tableColumn parameter’s identifier and self as the owner to attempt to reuse a view that is no longer visible. The frame of the view returned by this method is not important, and it will be automatically set by the table.
+
+The view's properties should be properly set up before returning the result. The delegate do not need to implement tableview:objectValueforTableColumn:row:.
+
+When using bindings, this method is optional if at least one identifier has been associated with the table view at design time. If this method is not implemented, the table will automatically call the CPTableView method makeViewWithIdentifier:owner: with the tableColumn parameter’s identifier and the table view’s delegate respectively as parameters, to attempt to reuse a previous view, or automatically unarchive a prototype associated with the table view.
+
+The autoresizingMask of the returned view will automatically be set to CPViewNotSizable if the data view was created in Interface builder in a table column. Otherwise, for example if the view is created manually in code, this methods expects the data view to have a CPViewNotSizable mask.
 
 
 @section displayingcells Displaying Cells:
@@ -3778,6 +3798,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         if ([obj isKindOfClass:[CPView class]])
         {
             [obj setIdentifier:anIdentifier];
+            [obj setAutoresizingMask:CPViewNotSizable];
+
             return obj;
         }
     }
@@ -5118,7 +5140,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_)
     {
 
-        while (![_delegate tableView:self shouldSelectRow:i] && (i < [self numberOfRows] || i > 0))
+        while (![_delegate tableView:self shouldSelectRow:i] && (i < [self numberOfRows] && i > 0))
             shouldGoUpward ? i-- : i++; //check to see if the row can be selected if it can't be then see if the next row can be selected
 
         // If the index still can be selected after the loop then just return.
@@ -5528,29 +5550,6 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
     CPTextField _textField  @accessors(property=textField);
     CPImageView _imageView  @accessors(property=imageView);
-}
-
-- (id)initWithFrame:(CGRect)aRect
-{
-    self = [super initWithFrame:aRect];
-
-    [self _init];
-
-    return self;
-}
-
-- (id)initWithCoder:(CPCoder)aCoder
-{
-    self = [super initWithCoder:aCoder];
-
-    [self _init];
-
-    return self;
-}
-
-- (void)_init
-{
-    [self setAutoresizingMask:CPViewHeightSizable];
 }
 
 - (void)awakeFromCib
