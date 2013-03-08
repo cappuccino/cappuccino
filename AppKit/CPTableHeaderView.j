@@ -503,9 +503,12 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 - (void)_moveColumn:(int)aFromIndex toColumn:(int)aToIndex
 {
-    [_tableView moveColumn:aFromIndex toColumn:aToIndex];
-    _activeColumn = aToIndex;
-    _pressedColumn = _activeColumn;
+    if ([_tableView _shouldReorderColumn:aFromIndex toColumn:aToIndex])
+    {
+        [_tableView moveColumn:aFromIndex toColumn:aToIndex];
+        _activeColumn = aToIndex;
+        _pressedColumn = _activeColumn;
+    }
 }
 
 - (void)draggedView:(CPView)aView beganAt:(CGPoint)aPoint

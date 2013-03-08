@@ -1027,9 +1027,6 @@ NOT YET IMPLEMENTED
     if (fromIndex === toIndex)
         return;
 
-    if (![self _shouldReorderColumn:fromIndex toColumn:toIndex])
-        return;
-
     if (_dirtyTableColumnRangeIndex < 0)
         _dirtyTableColumnRangeIndex = MIN(fromIndex, toIndex);
     else
