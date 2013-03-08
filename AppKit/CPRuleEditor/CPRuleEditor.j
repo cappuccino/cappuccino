@@ -1877,17 +1877,17 @@ TODO: implement
 
 - (CPString)_toolTipForAddCompoundRowButton
 {
-    return @"Add Compound row";
+    return [_standardLocalizer localizedStringForString:@"Add Compound row"];
 }
 
 - (CPString)_toolTipForAddSimpleRowButton
 {
-    return @"Add row";
+    return [_standardLocalizer localizedStringForString:@"Add row"];
 }
 
 - (CPString)_toolTipForDeleteRowButton
 {
-    return @"Delete row";
+    return [_standardLocalizer localizedStringForString:@"Delete row"];
 }
 
 - (void)_updateSliceIndentations
