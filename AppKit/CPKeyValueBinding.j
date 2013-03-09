@@ -350,7 +350,7 @@ var CPBindingOperationAnd = 0,
     var placeholder = _placeholderForMarker[[aMarker UID]];
 
     if (placeholder)
-        return placeholder['value'];
+        return placeholder.value;
 
     return nil;
 }
@@ -362,7 +362,7 @@ var CPBindingOperationAnd = 0,
         var existingPlaceholder = _placeholderForMarker[[aMarker UID]];
 
         // Don't overwrite an explicitly set placeholder with a default.
-        if (existingPlaceholder && !existingPlaceholder['isDefault'])
+        if (existingPlaceholder && !existingPlaceholder.isDefault)
             return;
     }
 
