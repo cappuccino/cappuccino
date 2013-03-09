@@ -4934,8 +4934,42 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 /*!
     @ignore
 */
+- (void)becomeKeyWindow
+{
+    var selectionColor = [[self theme] valueForAttributeWithName:@"selection-color" forClass:[self class]];
+    if ([self selectionHighlightColor] != selectionColor)
+        [self setSelectionHighlightColor:selectionColor];
+}
+
+/*!
+    @ignore
+*/
+- (void)resignKeyWindow
+{
+    var selectionColor = [CPColor secondarySelectedControlColor];
+    if ([self selectionHighlightColor] != selectionColor)
+        [self setSelectionHighlightColor:selectionColor];
+}
+
+/*!
+    @ignore
+*/
 - (BOOL)becomeFirstResponder
 {
+    var selectionColor = [[self theme] valueForAttributeWithName:@"selection-color" forClass:[self class]];
+    if ([self selectionHighlightColor] != selectionColor)
+        [self setSelectionHighlightColor:selectionColor];
+    return YES;
+}
+
+/*!
+    @ignore
+*/
+- (BOOL)resignFirstResponder
+{
+    var selectionColor = [CPColor secondarySelectedControlColor];
+    if ([self selectionHighlightColor] != selectionColor)
+        [self setSelectionHighlightColor:selectionColor];
     return YES;
 }
 
@@ -4946,6 +4980,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     return YES;
 }
+
 /*!
     @ignore
 */
