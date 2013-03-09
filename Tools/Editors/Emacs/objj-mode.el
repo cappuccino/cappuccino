@@ -5,8 +5,7 @@
 
 ;;; To install, save this somewhere and add the following to your .emacs file:
 ;;;
-;;; (add-to-list 'load-path "/path/to/objc-c-mode.el")
-;;; (add-to-list 'load-path "/path/to/objj-mode.el")
+;;; (add-to-list 'load-path "/path/to/cappuccino/Tools/Editors/Emacs/")
 ;;; (require 'objj-mode)
 ;;;
 ;;; Features:

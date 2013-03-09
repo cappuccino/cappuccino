@@ -18,8 +18,7 @@ Installation
 Add objc-c-mode.el and objj-mode.el to your load path and require 
 objj-mode.
 
-  (add-to-list 'load-path "/path/to/objc-c-mode.el")
-  (add-to-list 'load-path "/path/to/objj-mode.el")
+  (add-to-list 'load-path "/path/to/cappuccino/Tools/Editors/Emacs/")
   (require 'objj-mode)
 
 Other
