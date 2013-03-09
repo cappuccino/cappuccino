@@ -2557,7 +2557,7 @@ setBoundsOrigin:
 
 - (void)_setPreviousKeyView:(CPView)previous
 {
-    if ([previous isEqual:self])
+    if ([previous isEqual:self] || ![[previous window] isEqual:[self window]])
         _previousKeyView = nil;
     else
         _previousKeyView = previous;
@@ -2565,7 +2565,7 @@ setBoundsOrigin:
 
 - (void)setNextKeyView:(CPView)next
 {
-    if ([next isEqual:self])
+    if ([next isEqual:self] || ![[next window] isEqual:[self window]])
         _nextKeyView = nil;
     else
     {
