@@ -4953,7 +4953,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)becomeKeyWindow
 {
-    [self setSelectionHighlightColor:[[self theme] valueForAttributeWithName:@"selection-color" forClass:[self class]]];
+    [self _updateSelectionHighlightColorForFocused:YES];
 }
 
 /*!
