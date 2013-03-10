@@ -1007,9 +1007,11 @@ NOT YET IMPLEMENTED
 */
 - (BOOL)_shouldReorderColumn:(int)columnIndex toColumn:(int)newColumnIndex
 {
-    if ([self allowsColumnReordering]
-        && _implementedDelegateMethods & CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_)
-            return [_delegate tableView:self shouldReorderColumn:columnIndex toColumn:newColumnIndex];
+    if ([self allowsColumnReordering] &&
+        _implementedDelegateMethods & CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_)
+    {
+        return [_delegate tableView:self shouldReorderColumn:columnIndex toColumn:newColumnIndex];
+    }
 
     return [self allowsColumnReordering];
 }
@@ -2766,7 +2768,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     if ([_delegate respondsToSelector:@selector(tableView:shouldReorderColumn:toColumn:)])
         _implementedDelegateMethods |= CPTableViewDelegate_tableView_shouldReorderColumn_toColumn_;
-
 
     if ([_delegate respondsToSelector:@selector(tableViewColumnDidMove:)])
         [defaultCenter
