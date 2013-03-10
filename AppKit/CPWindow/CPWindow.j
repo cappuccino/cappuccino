@@ -2453,6 +2453,22 @@ CPTexturedBackgroundWindowMask
     return _parentWindow;
 }
 
+/*!
+    Return YES if anAncestor is the parent or a higher ancestor of the receiver.
+
+    @ignore
+*/
+- (BOOL)_hasAncestorWindow:(CPWindow)anAncestor
+{
+    if (!_parentWindow || !anAncestor)
+        return NO;
+
+    if (anAncestor === _parentWindow)
+        return YES;
+
+    return [_parentWindow _hasAncestorWindow:anAncestor];
+}
+
 - (CPWindow)setParentWindow:(CPWindow)parentWindow
 {
     _parentWindow = parentWindow;
