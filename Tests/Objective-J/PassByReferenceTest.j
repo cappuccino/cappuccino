@@ -23,6 +23,22 @@ var addRef = function(aRef)
     getRef = function(aRef)
     {
         return @deref(aRef)
+    },
+    incrementRefPrefix = function(aRef)
+    {
+        return ++@deref(aRef);
+    },
+    incrementRefPostfix = function(aRef)
+    {
+        return @deref(aRef)++;
+    },
+    decrementRefPrefix = function(aRef)
+    {
+        return --@deref(aRef);
+    },
+    decrementRefPostfix = function(aRef)
+    {
+        return @deref(aRef)--;
     };
 
 @implementation PassByReferenceTest : OJTestCase
@@ -59,6 +75,42 @@ var addRef = function(aRef)
 
     subtractRef(@ref(x));
 
+    [self assert:-2 equals:x];
+}
+
+- (void)testIncrementPrefixByReference
+{
+    var x = -1,
+        r = incrementRefPrefix(@ref(x));
+
+    [self assert:0 equals:r];
+    [self assert:0 equals:x];
+}
+
+- (void)testIncrementPostfixByReference
+{
+    var x = -1,
+        r = incrementRefPostfix(@ref(x));
+
+    [self assert:-1 equals:r];
+    [self assert:0 equals:x];
+}
+
+- (void)testDecrementPrefixByReference
+{
+    var x = -1,
+        r = decrementRefPrefix(@ref(x));
+
+    [self assert:-2 equals:r];
+    [self assert:-2 equals:x];
+}
+
+- (void)testDecrementPostfixByReference
+{
+    var x = -1,
+        r = decrementRefPostfix(@ref(x));
+
+    [self assert:-1 equals:r];
     [self assert:-2 equals:x];
 }
 

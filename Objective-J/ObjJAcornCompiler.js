@@ -444,6 +444,31 @@ AssignmentExpression: function(node, st, c) {
     if (st.isRootScope() && node.left.type === "Identifier" && !st.getLvar(node.left.name))
         st.vars[node.left.name] = {type: "global", node: node.left};
 },
+UpdateExpression: function(node, st, c) {
+    if (node.argument.type === "Dereference") {
+        // @deref(x)++ and ++@deref(x) require special handling.
+        CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
+
+        // Output the dereference function, "(...)(z)"
+        CONCAT(st.compiler.jsBuffer, (node.prefix ? "" : "(") + "(");
+
+        // The thing being dereferenced.
+        st.compiler.lastPos = node.argument.expr.start;
+        c(node.argument.expr, st, "Expression");
+        CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.argument.expr.end));
+        CONCAT(st.compiler.jsBuffer, ")(");
+
+        st.compiler.lastPos = node.argument.start;
+        c(node.argument, st, "Expression");
+        CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.argument.end));
+        CONCAT(st.compiler.jsBuffer, " " + node.operator.substring(0, 1) + " 1)" + (node.prefix ? "" : node.operator == '++' ? " - 1)" : " + 1)"));
+
+        st.compiler.lastPos = node.end;
+        return;
+    }
+
+    c(node.argument, st, "Expression");
+},
 MemberExpression: function(node, st, c) {
     c(node.object, st, "Expression");
     st.secondMemberExpression = !node.computed;
