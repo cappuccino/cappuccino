@@ -96,6 +96,20 @@ CPSourceListGradient = "CPSourceListGradient";
 CPSourceListTopLineColor = "CPSourceListTopLineColor";
 CPSourceListBottomLineColor = "CPSourceListBottomLineColor";
 
+var CPTableViewSourcelistNotFocusedSelectionColor = @{
+            CPSourceListGradient: CGGradientCreateWithColorComponents(
+                                     CGColorSpaceCreateDeviceRGB(),
+                                     [
+                                         (200.0 / 255), (200.0 / 255), (200.0 / 255), 1.0,
+                                         (210.0 / 255), (210.0 / 255), (210.0 / 255), 1.0,
+                                     ],
+                                     [0, 1],
+                                     2
+                                 ),
+            CPSourceListTopLineColor: [CPColor secondarySelectedControlColor],
+            CPSourceListBottomLineColor: [CPColor secondarySelectedControlColor],
+        };
+
 // TODO: add docs
 
 CPTableViewSelectionHighlightStyleNone = -1;
@@ -827,6 +841,9 @@ NOT YET IMPLEMENTED
 */
 - (void)setSelectionHighlightColor:(CPColor)aColor
 {
+    if ([[self selectionHighlightColor] isEqual:aColor])
+        return;
+
     [self setValue:aColor forThemeAttribute:@"selection-color"];
 
     [self setNeedsDisplay:YES];
@@ -4936,9 +4953,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)becomeKeyWindow
 {
-    var selectionColor = [[self theme] valueForAttributeWithName:@"selection-color" forClass:[self class]];
-    if ([self selectionHighlightColor] != selectionColor)
-        [self setSelectionHighlightColor:selectionColor];
+    [self setSelectionHighlightColor:[[self theme] valueForAttributeWithName:@"selection-color" forClass:[self class]]];
 }
 
 /*!
@@ -4946,9 +4961,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)resignKeyWindow
 {
-    var selectionColor = [CPColor secondarySelectedControlColor];
-    if ([self selectionHighlightColor] != selectionColor)
-        [self setSelectionHighlightColor:selectionColor];
+    [self _updateSelectionHighlightColorForFocused:NO];
 }
 
 /*!
@@ -4956,9 +4969,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (BOOL)becomeFirstResponder
 {
-    var selectionColor = [[self theme] valueForAttributeWithName:@"selection-color" forClass:[self class]];
-    if ([self selectionHighlightColor] != selectionColor)
-        [self setSelectionHighlightColor:selectionColor];
+    [self _updateSelectionHighlightColorForFocused:YES];
     return YES;
 }
 
@@ -4967,9 +4978,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (BOOL)resignFirstResponder
 {
-    var selectionColor = [CPColor secondarySelectedControlColor];
-    if ([self selectionHighlightColor] != selectionColor)
-        [self setSelectionHighlightColor:selectionColor];
+    [self _updateSelectionHighlightColorForFocused:NO];
     return YES;
 }
 
@@ -4978,7 +4987,31 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (BOOL)acceptsFirstResponder
 {
+    [self _updateSelectionHighlightColorForFocused:YES];
     return YES;
+}
+
+/*!
+    @ignore
+*/
+- (void)_updateSelectionHighlightColorForFocused:(BOOL)focused
+{
+    if (_selectionHighlightStyle === CPTableViewSelectionHighlightStyleNone)
+        return;
+
+    if (_selectionHighlightStyle === CPTableViewSelectionHighlightStyleSourceList)
+    {
+        if (focused)
+            [self setSelectionGradientColors:[[self theme] valueForAttributeWithName:@"sourcelist-selection-color" forClass:[self class]]];
+        else
+            [self setSelectionGradientColors:CPTableViewSourcelistNotFocusedSelectionColor];
+        return;
+    }
+
+    if (focused)
+        [self setSelectionHighlightColor:[[self theme] valueForAttributeWithName:@"selection-color" forClass:[self class]]];
+    else
+        [self setSelectionHighlightColor:[CPColor secondarySelectedControlColor]];
 }
 
 /*!

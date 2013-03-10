@@ -12,8 +12,8 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="2"/>
 			<integer value="85"/>
-			<integer value="1"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -107,7 +107,7 @@
 										<object class="NSTableView" id="144610870">
 											<reference key="NSNextResponder" ref="544211696"/>
 											<int key="NSvFlags">256</int>
-											<string key="NSFrameSize">{344, 184}</string>
+											<string key="NSFrameSize">{344, 165}</string>
 											<reference key="NSSuperview" ref="544211696"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSTableHeaderView" key="NSHeaderView" id="687245611">
@@ -224,10 +224,7 @@
 											</object>
 											<double key="NSIntercellSpacingWidth">3</double>
 											<double key="NSIntercellSpacingHeight">2</double>
-											<object class="NSColor" key="NSBackgroundColor" id="658736636">
-												<int key="NSColorSpace">3</int>
-												<bytes key="NSWhite">MQA</bytes>
-											</object>
+											<reference key="NSBackgroundColor" ref="292314166"/>
 											<object class="NSColor" key="NSGridColor">
 												<int key="NSColorSpace">6</int>
 												<string key="NSCatalogName">System</string>
@@ -248,7 +245,7 @@
 											<int key="NSTableViewDraggingDestinationStyle">0</int>
 										</object>
 									</object>
-									<string key="NSFrame">{{1, 17}, {344, 184}}</string>
+									<string key="NSFrame">{{1, 17}, {344, 165}}</string>
 									<reference key="NSSuperview" ref="31411179"/>
 									<reference key="NSNextKeyView" ref="144610870"/>
 									<reference key="NSDocView" ref="144610870"/>
@@ -291,7 +288,7 @@
 								</object>
 								<reference ref="1006235186"/>
 							</object>
-							<string key="NSFrame">{{20, 48}, {346, 202}}</string>
+							<string key="NSFrame">{{20, 48}, {346, 183}}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<reference key="NSNextKeyView" ref="544211696"/>
 							<int key="NSsFlags">562</int>
@@ -342,10 +339,30 @@
 								<int key="NSPeriodicInterval">25</int>
 							</object>
 						</object>
+						<object class="NSButton" id="35456987">
+							<reference key="NSNextResponder" ref="1006"/>
+							<int key="NSvFlags">268</int>
+							<string key="NSFrame">{{14, 256}, {358, 32}}</string>
+							<reference key="NSSuperview" ref="1006"/>
+							<bool key="NSEnabled">YES</bool>
+							<object class="NSButtonCell" key="NSCell" id="1035276617">
+								<int key="NSCellFlags">67239424</int>
+								<int key="NSCellFlags2">134217728</int>
+								<string key="NSContents">CPTableViewSelectionHighlightStyleRegular</string>
+								<reference key="NSSupport" ref="392541906"/>
+								<reference key="NSControlView" ref="35456987"/>
+								<int key="NSButtonFlags">-2038284033</int>
+								<int key="NSButtonFlags2">129</int>
+								<string key="NSAlternateContents"/>
+								<string key="NSKeyEquivalent"/>
+								<int key="NSPeriodicDelay">200</int>
+								<int key="NSPeriodicInterval">25</int>
+							</object>
+						</object>
 						<object class="NSTextField" id="207635663">
 							<reference key="NSNextResponder" ref="1006"/>
 							<int key="NSvFlags">268</int>
-							<string key="NSFrame">{{20, 262}, {96, 22}}</string>
+							<string key="NSFrame">{{20, 236}, {96, 22}}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="150344314">
@@ -359,7 +376,10 @@
 									<int key="NSColorSpace">6</int>
 									<string key="NSCatalogName">System</string>
 									<string key="NSColorName">textBackgroundColor</string>
-									<reference key="NSColor" ref="658736636"/>
+									<object class="NSColor" key="NSColor">
+										<int key="NSColorSpace">3</int>
+										<bytes key="NSWhite">MQA</bytes>
+									</object>
 								</object>
 								<object class="NSColor" key="NSTextColor" id="1030721833">
 									<int key="NSColorSpace">6</int>
@@ -562,6 +582,14 @@
 					</object>
 					<int key="connectionID">79</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">nextHighlightStyle:</string>
+						<reference key="source" ref="793752084"/>
+						<reference key="destination" ref="35456987"/>
+					</object>
+					<int key="connectionID">122</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -608,6 +636,7 @@
 							<reference ref="1027504291"/>
 							<reference ref="275684078"/>
 							<reference ref="207635663"/>
+							<reference ref="35456987"/>
 						</object>
 						<reference key="parent" ref="1005"/>
 					</object>
@@ -760,6 +789,20 @@
 						<reference key="object" ref="732622908"/>
 						<reference key="parent" ref="222844200"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">114</int>
+						<reference key="object" ref="35456987"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="1035276617"/>
+						</object>
+						<reference key="parent" ref="1006"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">115</int>
+						<reference key="object" ref="1035276617"/>
+						<reference key="parent" ref="35456987"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -777,6 +820,8 @@
 					<string>1.editorWindowContentRectSynchronizationRect</string>
 					<string>10.IBPluginDependency</string>
 					<string>11.IBPluginDependency</string>
+					<string>114.IBPluginDependency</string>
+					<string>115.IBPluginDependency</string>
 					<string>12.IBPluginDependency</string>
 					<string>14.IBPluginDependency</string>
 					<string>19.IBPluginDependency</string>
@@ -833,6 +878,8 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{478, 436}, {386, 304}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{478, 436}, {386, 304}}</string>
@@ -859,7 +906,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">111</int>
+			<int key="maxID">122</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -868,13 +915,13 @@
 					<string key="className">AppController</string>
 					<string key="superclassName">NSObject</string>
 					<object class="NSMutableDictionary" key="actions">
-						<string key="NS.key.0">updateOrReloadContent:</string>
+						<string key="NS.key.0">nextHighlightStyle:</string>
 						<string key="NS.object.0">id</string>
 					</object>
 					<object class="NSMutableDictionary" key="actionInfosByName">
-						<string key="NS.key.0">updateOrReloadContent:</string>
+						<string key="NS.key.0">nextHighlightStyle:</string>
 						<object class="IBActionInfo" key="NS.object.0">
-							<string key="name">updateOrReloadContent:</string>
+							<string key="name">nextHighlightStyle:</string>
 							<string key="candidateClassName">id</string>
 						</object>
 					</object>
@@ -883,11 +930,13 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>dictionaryController</string>
+							<string>selectionHighlightStyleString</string>
 							<string>tableView</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>NSDictionaryController</string>
+							<string>id</string>
 							<string>NSTableView</string>
 						</object>
 					</object>
@@ -896,6 +945,7 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>dictionaryController</string>
+							<string>selectionHighlightStyleString</string>
 							<string>tableView</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -903,6 +953,10 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">dictionaryController</string>
 								<string key="candidateClassName">NSDictionaryController</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">selectionHighlightStyleString</string>
+								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">tableView</string>
