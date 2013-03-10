@@ -132,4 +132,25 @@ var addRef = function(aRef)
     [self assert:-0.5 equals:x];
 }
 
+- (void)testComplexDereference
+{
+    var x = 1,
+        xRef = @ref(x),
+        xRefRef = @ref(xRef),
+        y = 10,
+        yRef = @ref(y),
+        yRefRef = @ref(yRef);
+
+    var r = @deref(@deref(xRefRef))++;
+
+    [self assert:1 equals:r];
+    [self assert:2 equals:x];
+
+    var r = @deref(@deref(x == 1 ? xRefRef : yRefRef))++;
+
+    [self assert:10 equals:r];
+    [self assert:2 equals:x];
+    [self assert:11 equals:y];
+}
+
 @end

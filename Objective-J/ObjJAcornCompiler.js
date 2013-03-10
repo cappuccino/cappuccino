@@ -330,10 +330,79 @@ function createMessage(/* String */ aMessage, /* SpiderMonkey AST node */ node, 
 
 function compile(node, state, visitor) {
     function c(node, st, override) {
-      visitor[override || node.type](node, st, c);
+        visitor[override || node.type](node, st, c);
     }
     c(node, state);
 };
+
+function isIdempotentExpression(node) {
+    switch (node.type) {
+        case "Literal":
+        case "Identifier":
+            return true;
+
+        case "ArrayExpression":
+            for (var i = 0; i < node.elements.length; ++i) {
+                if (!isIdempotentExpression(node.elements[i]))
+                    return false;
+            }
+
+            return true;
+
+        case "DictionaryLiteral":
+            for (var i = 0; i < node.keys.length; ++i) {
+                if (!isIdempotentExpression(node.keys[i]))
+                    return false;
+                if (!isIdempotentExpression(node.values[i]))
+                    return false;
+            }
+
+            return true;
+
+        case "ObjectExpression":
+            for (var i = 0; i < node.properties.length; ++i)
+                if (!isIdempotentExpression(node.properties[i].value))
+                    return false;
+
+            return true;
+
+        case "FunctionExpression":
+            for (var i = 0; i < node.params.length; ++i)
+                if (!isIdempotentExpression(node.params[i]))
+                    return false;
+
+            return true;
+
+        case "SequenceExpression":
+            for (var i = 0; i < node.expressions.length; ++i)
+                if (!isIdempotentExpression(node.expressions[i]))
+                    return false;
+
+            return true;
+
+        case "UnaryExpression":
+            return isIdempotentExpression(node.argument);
+
+        case "BinaryExpression":
+            return isIdempotentExpression(node.left) && isIdempotentExpression(node.right);
+
+        case "ConditionalExpression":
+            return isIdempotentExpression(node.test) && isIdempotentExpression(node.consequent) && isIdempotentExpression(node.alternate);
+
+        case "MemberExpression":
+            return isIdempotentExpression(node.object) && (!node.computed || isIdempotentExpression(node.property));
+
+        case "Dereference":
+            return isIdempotentExpression(node.expr);
+
+        case "Reference":
+            return isIdempotentExpression(node.element);
+
+        case "UpdateExpression":
+        default:
+            return false;
+    }
+}
 
 var pass1 = exports.acorn.walk.make({
 ImportStatement: function(node, st, c) {
@@ -406,6 +475,9 @@ VariableDeclaration: function(node, scope, c) {
 },
 AssignmentExpression: function(node, st, c) {
     if (node.left.type === "Dereference") {
+        if (!isIdempotentExpression(node.left))
+            throw st.compiler.error_message("Unable to dereference expression with side effects", node.left);
+
         // @deref(x) = z    -> x(z) etc
         CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
 
@@ -446,6 +518,9 @@ AssignmentExpression: function(node, st, c) {
 },
 UpdateExpression: function(node, st, c) {
     if (node.argument.type === "Dereference") {
+        if (!isIdempotentExpression(node.argument))
+            throw st.compiler.error_message("Unable to dereference expression with side effects", node.argument);
+
         // @deref(x)++ and ++@deref(x) require special handling.
         CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
 
@@ -899,6 +974,9 @@ Reference: function(node, st, c) {
     st.compiler.lastPos = node.end;
 },
 Dereference: function(node, st, c) {
+    if (!isIdempotentExpression(node.expr))
+        throw st.compiler.error_message("Unable to dereference expression with side effects", node.expr);
+
     // @deref(y) -> y()
     // @deref(@deref(y)) -> y()()
     CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));

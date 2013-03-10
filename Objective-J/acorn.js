@@ -1940,10 +1940,6 @@ if (!exports.acorn) {
       expect(_parenL, "Expected '(' after '@deref'");
       node.expr = parseExpression(true, true);
       expect(_parenR, "Expected closing ')' after deref");
-
-      if (node.expr.type !== "Identifier" && node.expr.type !== "MemberExpression" && node.expr.type !== "Reference" && node.expr.type !== "Dereference")
-        raise(node, "Dereference of " + node.expr.type);
-
       return finishNode(node, "Dereference");
 
     default:
