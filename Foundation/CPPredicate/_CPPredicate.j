@@ -279,15 +279,6 @@
 
 @end
 
-#define REFERENCE(variable) \
-function(newValue)\
-{\
-    var oldValue = variable;\
-    if (typeof newValue != 'undefined')\
-        variable = newValue;\
-    return oldValue;\
-}
-
 @implementation CPPredicateScanner : CPScanner
 {
     CPEnumerator    _args;
@@ -573,7 +564,7 @@ function(newValue)\
         ident,
         dbl;
 
-    if ([self scanDouble:REFERENCE(dbl)])
+    if ([self scanDouble:@ref(dbl)])
         return [CPExpression expressionForConstantValue:dbl];
 
     // FIXME: handle integer, hex constants, 0x 0o 0b
@@ -706,7 +697,7 @@ function(newValue)\
             str = @"";
 
         [self setCharactersToBeSkipped:nil];
-        [self scanUpToString:@"\"" intoString:REFERENCE(str)];
+        [self scanUpToString:@"\"" intoString:@ref(str)];
 
         if ([self scanString:@"\"" intoString:NULL] == NO)
             CPRaiseParseError(self, @"expression");
@@ -722,7 +713,7 @@ function(newValue)\
             str = @"";
 
         [self setCharactersToBeSkipped:nil];
-        [self scanUpToString:@"'" intoString:REFERENCE(str)];
+        [self scanUpToString:@"'" intoString:@ref(str)];
 
         if ([self scanString:@"'" intoString:NULL] == NO)
             CPRaiseParseError(self, @"expression");
@@ -784,7 +775,7 @@ function(newValue)\
     if (!identifier)
         identifier = [CPCharacterSet characterSetWithCharactersInString:@"_$abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"];
 
-    if (![self scanCharactersFromSet:identifier intoString:REFERENCE(ident)])
+    if (![self scanCharactersFromSet:identifier intoString:@ref(ident)])
         CPRaiseParseError(self, @"expression");
 
     return [CPExpression expressionForKeyPath:ident];
@@ -846,7 +837,7 @@ function(newValue)\
             if (![self scanString:@"(" intoString:NULL])
             {
                 var str;
-                [self scanCharactersFromSet:[CPCharacterSet lowercaseLetterCharacterSet] intoString:REFERENCE(str)];
+                [self scanCharactersFromSet:[CPCharacterSet lowercaseLetterCharacterSet] intoString:@ref(str)];
 
                 if (![self scanString:@":(" intoString:NULL])
                     CPRaiseParseError(self, @"expression");
