@@ -550,6 +550,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     {
         var columnRect = [self headerRectOfColumn:hoveredColumn],
             columnCenterPoint = [self convertPoint:CGPointMake(_CGRectGetMidX(columnRect), _CGRectGetMidY(columnRect)) fromView:self];
+
         if (hoveredColumn < _activeColumn && hoverPoint.x < columnCenterPoint.x)
         {
             [self _moveColumn:_activeColumn toColumn:hoveredColumn];
@@ -560,8 +561,6 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
             [self _moveColumn:_activeColumn toColumn:hoveredColumn];
             _lastDragDestinationColumnIndex = hoveredColumn;
         }
-
-
     }
 
     _previousTrackingLocation = aPoint;
