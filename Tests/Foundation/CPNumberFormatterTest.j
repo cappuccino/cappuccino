@@ -51,41 +51,54 @@
 - (void)testMinimumMaximumValues
 {
     var numberFormatter = [CPNumberFormatter new],
-        noneFunction = function() {};
+        objectValue = nil,
+        objectValueRef = @ref(objectValue),
+        testErrorDescription = @"",
+        testErrorDescriptionRef = @ref(testErrorDescription);
 
     [numberFormatter setMinimum:10];
     [numberFormatter setMaximum:20];
 
-    [self assertTrue:[numberFormatter getObjectValue:noneFunction forString:@"10" errorDescription:nil]
+    [self assertTrue:[numberFormatter getObjectValue:objectValueRef forString:@"10" errorDescription:nil]
              message:@"MinMax T1: Expected True."];
-    [self assertTrue:[numberFormatter getObjectValue:noneFunction forString:@"15" errorDescription:nil]
+    [self assert:10 equals:objectValue];
+
+    [self assertTrue:[numberFormatter getObjectValue:objectValueRef forString:@"15" errorDescription:nil]
              message:@"MinMax T2: Expected True."];
-    [self assertTrue:[numberFormatter getObjectValue:noneFunction forString:@"20" errorDescription:nil]
+    [self assert:15 equals:objectValue];
+
+    [self assertTrue:[numberFormatter getObjectValue:objectValueRef forString:@"20" errorDescription:nil]
              message:@"MinMax T3: Expected True."];
-    [self assertTrue:[numberFormatter getObjectValue:noneFunction forString:@"020" errorDescription:nil]
+    [self assert:20 equals:objectValue];
+
+    [self assertTrue:[numberFormatter getObjectValue:objectValueRef forString:@"020" errorDescription:nil]
              message:@"MinMax T4: Expected True."];
+    [self assert:20 equals:objectValue];
 
     // check if this formatter behaves like Cocoa, which allows a blank string to pass
-    [self assertTrue:[numberFormatter getObjectValue:noneFunction forString:@"" errorDescription:nil]
+    [self assertTrue:[numberFormatter getObjectValue:objectValueRef forString:@"" errorDescription:nil]
              message:@"MinMax T5: Expected True."];
+    [self assert:nil equals:objectValue message:"MinMax T5: nil for @\"\"."];
 
-    [self assertFalse:[numberFormatter getObjectValue:noneFunction forString:@"-1" errorDescription:nil]
+    [self assertFalse:[numberFormatter getObjectValue:objectValueRef forString:@"-1" errorDescription:nil]
               message:@"MinMax T6: Expected False."];
-    [self assertFalse:[numberFormatter getObjectValue:noneFunction forString:@"1" errorDescription:nil]
+    [self assert:nil equals:objectValue];
+
+    [self assertFalse:[numberFormatter getObjectValue:objectValueRef forString:@"1" errorDescription:testErrorDescriptionRef]
               message:@"MinMax T7: Expected False."];
-    [self assertFalse:[numberFormatter getObjectValue:noneFunction forString:@"100" errorDescription:nil]
+    [self assert:nil equals:objectValue];
+    [self assert:testErrorDescription equals:@"Value is less than the minimum allowed value" message:@"MinMax T7: Error string does not match."];
+
+    [self assertFalse:[numberFormatter getObjectValue:objectValueRef forString:@"100" errorDescription:testErrorDescriptionRef]
               message:@"MinMax T8: Expected False."];
+    [self assert:nil equals:objectValue];
+    [self assert:testErrorDescription equals:@"Value is greater than the maximum allowed value" message:@"MinMax T8: Error string does not match."];
 
-    var testErrorDescription = @"",
-        testWithString = [numberFormatter getObjectValue:noneFunction
+    var testWithString = [numberFormatter getObjectValue:objectValueRef
                                                forString:@"Cappuccino"
-                                        errorDescription:function(value)
-                                            {
-                                                if (arguments.length)
-                                                    return testErrorDescription = value;
+                                        errorDescription:@ref(testErrorDescription)];
+    [self assert:nil equals:objectValue];
 
-                                                return testErrorDescription;
-                                            }];
     [self assertFalse:testWithString
               message:@"MinMax T9: Expected False."];
     [self assert:testErrorDescription
