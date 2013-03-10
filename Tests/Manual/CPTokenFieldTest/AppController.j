@@ -133,7 +133,27 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
 
     [[self class] createTokenfieldContents:contentView withDelegate:self];
 
+    var popoverButton = [[CPButton alloc] initWithFrame:CGRectMake(15, 310, 0, 0)];
+    [popoverButton setTitle:"Token Field in a Popover"];
+    [popoverButton sizeToFit];
+    [popoverButton setTarget:self];
+    [popoverButton setAction:@selector(openPopover:)];
+    [contentView addSubview:popoverButton];
+
     [theWindow orderFront:self];
+}
+
+- (@action)openPopover:(id)sender
+{
+    var aPopover = [CPPopover new],
+        controller = [CPViewController new];
+
+    [aPopover setContentViewController:controller];
+    [aPopover setContentSize:CGSizeMake(800, 315)];
+    [[self class] createTokenfieldContents:[controller view] withDelegate:self];
+    [aPopover setAnimates:YES];
+    [aPopover showRelativeToRect:[sender bounds] ofView:sender preferredEdge:CPMaxXEdge];
+    [aPopover setBehavior:CPPopoverBehaviorTransient];
 }
 
 - (CPArray)tokenField:(CPTokenField)aTokenField completionsForSubstring:(CPString)substring indexOfToken:(int)tokenIndex indexOfSelectedItem:(int)selectedIndex
