@@ -348,7 +348,7 @@ Program: function(node, st, c) {
     for (var i = 0; i < node.body.length; ++i) {
       c(node.body[i], st, "Statement");
     }
-    CONCAT(st.compiler.jsBuffer,st.compiler.source.substring(st.compiler.lastPos, node.end));
+    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.end));
     // Check maybe warnings
     var maybeWarnings = st.maybeWarnings();
     if (maybeWarnings) for (var i = 0; i < maybeWarnings.length; i++) {
@@ -405,6 +405,37 @@ VariableDeclaration: function(node, scope, c) {
   }
 },
 AssignmentExpression: function(node, st, c) {
+    if (node.left.type === "Dereference") {
+        // @deref(x) = z    -> x(z) etc
+        CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
+
+        // Output the dereference function, "(...)(z)"
+        CONCAT(st.compiler.jsBuffer, "(");
+        // What's being dereferenced could itself be an expression, such as when dereferencing a deref.
+        st.compiler.lastPos = node.left.expr.start;
+        c(node.left.expr, st, "Expression");
+        CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.left.expr.end));
+        CONCAT(st.compiler.jsBuffer, ")(");
+
+        // Now "(x)(...)". We have to manually expand +=, -=, *= etc.
+        if (node.operator !== "=") {
+            // Output the whole .left, not just .left.expr.
+            st.compiler.lastPos = node.left.start;
+            c(node.left, st, "Expression");
+            CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.left.end));
+            CONCAT(st.compiler.jsBuffer, " " + node.operator.substring(0, 1) + " ");
+        }
+
+        st.compiler.lastPos = node.right.start;
+        c(node.right, st, "Expression");
+        CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.right.end));
+        CONCAT(st.compiler.jsBuffer, ")");
+
+        st.compiler.lastPos = node.end;
+
+        return;
+    }
+
     var saveAssignment = st.assignment;
     st.assignment = true;
     c(node.left, st, "Expression");
@@ -832,6 +863,26 @@ SelectorLiteralExpression: function(node, st, c) {
     CONCAT(st.compiler.jsBuffer, node.selector);
     CONCAT(st.compiler.jsBuffer, "\")");
     st.compiler.lastPos = node.end;
+},
+Reference: function(node, st, c) {
+    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
+    CONCAT(st.compiler.jsBuffer, "function(__input) { if (arguments.length) return ");
+    CONCAT(st.compiler.jsBuffer, node.element.name);
+    CONCAT(st.compiler.jsBuffer, " = __input; return ");
+    CONCAT(st.compiler.jsBuffer, node.element.name);
+    CONCAT(st.compiler.jsBuffer, "; }");
+    st.compiler.lastPos = node.end;
+},
+Dereference: function(node, st, c) {
+    // @deref(y) -> y()
+    // @deref(@deref(y)) -> y()()
+    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
+    st.compiler.lastPos = node.expr.start;
+    c(node.expr, st, "Expression");
+    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.expr.end));
+    CONCAT(st.compiler.jsBuffer, "()");
+    st.compiler.lastPos = node.end;
+
 },
 Literal: function(node, st, c) {
     if (node.raw && node.raw.charAt(0) === "@")

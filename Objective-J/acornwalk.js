@@ -228,6 +228,14 @@ if (!exports.acorn) {
 
   exports.SelectorLiteralExpression = ignore;
 
+  exports.Reference = function(node, st, c) {
+    c(node.element, st, "Identifier");
+  }
+
+  exports.Dereference = function(node, st, c) {
+    c(node.expr, st, "Expression");
+  }
+
   // A custom walker that keeps track of the scope chain and the
   // variables defined in it.
   function makeScope(prev) {
