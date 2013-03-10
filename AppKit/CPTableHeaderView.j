@@ -229,6 +229,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     CGPoint                 _previousTrackingLocation;
     int                     _activeColumn;
     int                     _pressedColumn;
+    int                     _lastDragDestinationColumnIndex;
 
     BOOL                    _isResizing;
     BOOL                    _isDragging;
@@ -417,6 +418,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 - (void)startTrackingTableColumn:(int)aColumnIndex at:(CGPoint)aPoint
 {
+    _lastDragDestinationColumnIndex = -1;
     [self _setPressedColumn:aColumnIndex];
 }
 
@@ -544,14 +546,22 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
     var hoveredColumn = [self columnAtPoint:hoverPoint];
 
-    if (hoveredColumn !== -1)
+    if (hoveredColumn !== _lastDragDestinationColumnIndex)
     {
         var columnRect = [self headerRectOfColumn:hoveredColumn],
             columnCenterPoint = [self convertPoint:CGPointMake(_CGRectGetMidX(columnRect), _CGRectGetMidY(columnRect)) fromView:self];
         if (hoveredColumn < _activeColumn && hoverPoint.x < columnCenterPoint.x)
+        {
             [self _moveColumn:_activeColumn toColumn:hoveredColumn];
+            _lastDragDestinationColumnIndex = hoveredColumn;
+        }
         else if (hoveredColumn > _activeColumn && hoverPoint.x > columnCenterPoint.x)
+        {
             [self _moveColumn:_activeColumn toColumn:hoveredColumn];
+            _lastDragDestinationColumnIndex = hoveredColumn;
+        }
+
+
     }
 
     _previousTrackingLocation = aPoint;
