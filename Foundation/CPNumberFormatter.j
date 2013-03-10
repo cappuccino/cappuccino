@@ -183,9 +183,12 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
 
 - (BOOL)getObjectValue:(id)anObjectRef forString:(CPString)aString errorDescription:(CPString)anErrorRef
 {
-    // allows an empty string to pass without validation
+    // Interpret an empty string as nil, like in Cocoa.
     if (aString === @"")
+    {
+        @deref(anObjectRef) = nil;
         return YES;
+    }
 
     var value = [self numberFromString:aString],
         error = @"";
