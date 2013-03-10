@@ -20,8 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#import "Ref.h"
-
 @import "CPString.j"
 @import "CPFormatter.j"
 @import "CPDecimalNumber.j"
@@ -183,7 +181,7 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
     return [self stringForObjectValue:anObject];
 }
 
-- (BOOL)getObjectValue:(id)anObject forString:(CPString)aString errorDescription:(CPString)anError
+- (BOOL)getObjectValue:(id)anObjectRef forString:(CPString)aString errorDescription:(CPString)anErrorRef
 {
     // allows an empty string to pass without validation
     if (aString === @"")
@@ -202,13 +200,13 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
 
     if (error)
     {
-        if (anError)
-            AT_DEREF(anError, error);
+        if (anErrorRef)
+            @deref(anErrorRef) = error;
 
         return NO;
     }
 
-    AT_DEREF(anObject, value);
+    @deref(anObjectRef) = value;
 
     return YES;
 }

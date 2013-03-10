@@ -621,7 +621,7 @@
     {
         [output setValue:anObject forKey:"" + idx];
         if ([output count] > 1)
-            stop(YES); // AT_DEREF(stop, YES) - FIXME Replace with proper @ref @deref when in ObjJ.
+            @deref(stop) = YES;
     }
     output = [CPMutableDictionary dictionary];
 

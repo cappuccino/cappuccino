@@ -20,8 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#import "Ref.h"
-
 @import "CPDate.j"
 @import "CPString.j"
 @import "CPFormatter.j"
@@ -104,7 +102,7 @@ CPDateFormatterFullStyle   = 4;
 {
     // TODO Error handling.
     var value = [self dateFromString:aString];
-    AT_DEREF(anObject, value);
+    @deref(anObject) = value;
 
     return YES;
 }

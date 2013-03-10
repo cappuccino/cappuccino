@@ -618,7 +618,7 @@ var concat = Array.prototype.concat,
     var index = 0,
         count = [self count],
         shouldStop = NO,
-        shouldStopRef = AT_REF(shouldStop);
+        shouldStopRef = @ref(shouldStop);
 
     for (; index < count; ++index)
     {
@@ -648,7 +648,7 @@ var concat = Array.prototype.concat,
 
     for (; index !== stop; index += increment)
     {
-        aFunction([self objectAtIndex:index], index, AT_REF(shouldStop));
+        aFunction([self objectAtIndex:index], index, @ref(shouldStop));
 
         if (shouldStop)
             return;

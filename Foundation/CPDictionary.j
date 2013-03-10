@@ -25,7 +25,6 @@
 @import "CPException.j"
 @import "CPNull.j"
 @import "CPObject.j"
-#import "Ref.h"
 
 //FIXME: After release of 0.9.7 remove below variable
 var CPDictionaryShowNilDeprecationMessage = YES;
@@ -459,7 +458,7 @@ var CPDictionaryShowNilDeprecationMessage = YES;
         key = nil,
         value = nil,
         shouldStop = NO,
-        stopRef = AT_REF(shouldStop);
+        stopRef = @ref(shouldStop);
 
     for (; index !== stop; index += increment)
     {
@@ -749,7 +748,7 @@ var CPDictionaryShowNilDeprecationMessage = YES;
 - (void)enumerateKeysAndObjectsUsingBlock:(Function /*(id aKey, id anObject, @ref BOOL stop)*/)aFunction
 {
     var shouldStop = NO,
-        shouldStopRef = AT_REF(shouldStop),
+        shouldStopRef = @ref(shouldStop),
         keys = self._keys,
         count = self._count;
 

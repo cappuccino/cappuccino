@@ -21,7 +21,6 @@
  */
 
 #import "../Foundation/CPRange.h"
-#import "../Foundation/Ref.h"
 
 @import <Foundation/CPArray.j>
 @import <Foundation/CPData.j>
@@ -501,7 +500,7 @@ var HORIZONTAL_MARGIN = 2;
 
     [self _updateMinMaxItemSizeIfNeeded];
 
-    [self _computeGridWithSize:frameSize count:AT_REF(count)];
+    [self _computeGridWithSize:frameSize count:@ref(count)];
 
     //CPLog.debug("frameSize="+CPStringFromSize(frameSize) + "itemSize="+CPStringFromSize(itemSize) + " ncols=" +  colsRowsCount[0] +" nrows="+ colsRowsCount[1]+" displayCount="+ colsRowsCount[2]);
 
@@ -1032,7 +1031,7 @@ var HORIZONTAL_MARGIN = 2;
 - (CPDragOperation)draggingEntered:(id)draggingInfo
 {
     var dropIndex = -1,
-        dropIndexRef = AT_REF(dropIndex),
+        dropIndexRef = @ref(dropIndex),
         dragOp = [self _validateDragWithInfo:draggingInfo dropIndex:dropIndexRef dropOperation:1];
 
     dropIndex = dropIndexRef();
@@ -1050,7 +1049,7 @@ var HORIZONTAL_MARGIN = 2;
         return _currentDragOperation;
 
     var dropIndex,
-        dropIndexRef = AT_REF(dropIndex);
+        dropIndexRef = @ref(dropIndex);
 
     var dragOperation = [self _validateDragWithInfo:draggingInfo dropIndex:dropIndexRef dropOperation:1];
 
@@ -1068,7 +1067,7 @@ var HORIZONTAL_MARGIN = 2;
 
     if ([_delegate respondsToSelector:@selector(collectionView:validateDrop:proposedIndex:dropOperation:)])
     {
-        var dropIndexRef2 = AT_REF(dropIndex);
+        var dropIndexRef2 = @ref(dropIndex);
 
         result = [_delegate collectionView:self validateDrop:draggingInfo proposedIndex:dropIndexRef2  dropOperation:dropOperation];
 

@@ -542,7 +542,7 @@ function descriptionWithoutEntity(aString)
     {
         visitedIndexes.push(idx);
         if (visitedIndexes.length >= 2)
-            stop(YES); // AT_DEREF(stop, YES) - FIXME Replace with proper @ref @deref when in ObjJ.
+            @deref(stop) = YES;
     }
 
     [set0 enumerateIndexesUsingBlock:aBlock];
