@@ -398,10 +398,15 @@ function isIdempotentExpression(node) {
         case "Reference":
             return isIdempotentExpression(node.element);
 
-        case "UpdateExpression":
         default:
             return false;
     }
+}
+
+// We do not allow dereferencing of expressions with side effects because we might need to evaluate the expression twice in certain uses of deref, which is not obvious when you look at the deref operator in plain code.
+function checkCanDereference(st, node) {
+    if (!isIdempotentExpression(node))
+        throw st.compiler.error_message("Dereference of expression with side effects", node);
 }
 
 var pass1 = exports.acorn.walk.make({
@@ -475,8 +480,7 @@ VariableDeclaration: function(node, scope, c) {
 },
 AssignmentExpression: function(node, st, c) {
     if (node.left.type === "Dereference") {
-        if (!isIdempotentExpression(node.left))
-            throw st.compiler.error_message("Unable to dereference expression with side effects", node.left);
+        checkCanDereference(st, node.left);
 
         // @deref(x) = z    -> x(z) etc
         CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
@@ -518,8 +522,7 @@ AssignmentExpression: function(node, st, c) {
 },
 UpdateExpression: function(node, st, c) {
     if (node.argument.type === "Dereference") {
-        if (!isIdempotentExpression(node.argument))
-            throw st.compiler.error_message("Unable to dereference expression with side effects", node.argument);
+        checkCanDereference(st, node.argument);
 
         // @deref(x)++ and ++@deref(x) require special handling.
         CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
@@ -974,8 +977,7 @@ Reference: function(node, st, c) {
     st.compiler.lastPos = node.end;
 },
 Dereference: function(node, st, c) {
-    if (!isIdempotentExpression(node.expr))
-        throw st.compiler.error_message("Unable to dereference expression with side effects", node.expr);
+    checkCanDereference(st, node.expr);
 
     // @deref(y) -> y()
     // @deref(@deref(y)) -> y()()
