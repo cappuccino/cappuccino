@@ -245,6 +245,8 @@ _CPWindowViewResizeSlop = 3;
         rects are the same size. So to save calculations, we can just create
         3 rects and move them around to do hit testing. Start with the corners
         and then do left/right and top/bottom.
+
+        NOTE: If the window is a sheet, the top is never eligible for resizing.
     */
     var wind = [self window],
         frame = [wind frame],
@@ -252,7 +254,8 @@ _CPWindowViewResizeSlop = 3;
         minSize = [wind minSize],
         maxSize = [wind maxSize],
         isFixedWidth = minSize.width === maxSize.width,
-        isFixedHeight = minSize.height === maxSize.height;
+        isFixedHeight = minSize.height === maxSize.height,
+        isSheet = wind._isSheet;
 
     if (isFixedWidth)
     {
@@ -262,7 +265,7 @@ _CPWindowViewResizeSlop = 3;
                            _CPWindowViewResizeSlop * 2);
 
         if (_CGRectContainsPoint(rect, aPoint))
-            return _CPWindowViewResizeRegionTop;
+            return isSheet ? _CPWindowViewResizeRegionNone : _CPWindowViewResizeRegionTop;
 
         rect.origin.y = _CGRectGetMaxY(frame) - _CPWindowViewResizeSlop;
 
@@ -292,12 +295,12 @@ _CPWindowViewResizeSlop = 3;
                            _CPWindowViewCornerResizeRectWidth + _CPWindowViewResizeSlop);
 
         if (_CGRectContainsPoint(rect, aPoint))
-            return _CPWindowViewResizeRegionTopLeft;
+            return isSheet ? _CPWindowViewResizeRegionNone : _CPWindowViewResizeRegionTopLeft;
 
         rect.origin.x = _CGRectGetMaxX(frame) - _CPWindowViewCornerResizeRectWidth;
 
         if (_CGRectContainsPoint(rect, aPoint))
-            return _CPWindowViewResizeRegionTopRight;
+            return isSheet ? _CPWindowViewResizeRegionNone : _CPWindowViewResizeRegionTopRight;
 
         rect.origin.y = _CGRectGetMaxY(frame) - _CPWindowViewCornerResizeRectWidth;
 
@@ -328,7 +331,7 @@ _CPWindowViewResizeSlop = 3;
                            _CPWindowViewResizeSlop * 2);
 
         if (_CGRectContainsPoint(rect, aPoint))
-            return _CPWindowViewResizeRegionTop;
+            return isSheet ? _CPWindowViewResizeRegionNone : _CPWindowViewResizeRegionTop;
 
         rect.origin.y = _CGRectGetMaxY(frame) - _CPWindowViewResizeSlop;
 
