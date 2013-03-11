@@ -1218,8 +1218,10 @@ Not supported. Use -collectionView:dataForItemsAtIndexes:fortype:
 - (void)_modifySelectionWithNewIndex:(int)anIndex direction:(int)aDirection expand:(BOOL)shouldExpand
 {
     var count = [[self items] count];
+
     if (count === 0)
         return;
+
     anIndex = MIN(MAX(anIndex, 0), count - 1);
 
     if (_allowsMultipleSelection && shouldExpand)
