@@ -38,7 +38,7 @@
 {
     return @{
             @"body-color": [CPColor whiteColor],
-            @"height-shadow": 8,
+            @"shadow-height": 8,
         };
 }
 
@@ -68,7 +68,7 @@
 
         [self addSubview:_bodyView];
 
-        _shadowView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, _CGRectGetWidth(bounds), [self valueForThemeAttribute:@"height-shadow"])];
+        _shadowView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, _CGRectGetWidth(bounds), [self valueForThemeAttribute:@"shadow-height"])];
         [_shadowView setAutoresizingMask:CPViewWidthSizable];
         [self addSubview:_shadowView];
      }
@@ -99,7 +99,7 @@
 
     [_bodyView setBackgroundColor:[self valueForThemeAttribute:@"body-color"]];
 
-    [_shadowView setFrame:CGRectMake(0,0, _CGRectGetWidth(bounds), [self valueForThemeAttribute:@"height-shadow"])];
+    [_shadowView setFrame:CGRectMake(0, 0, _CGRectGetWidth(bounds), [self valueForThemeAttribute:@"shadow-height"])];
     [_shadowView setBackgroundColor:[self valueForThemeAttribute:@"attached-sheet-shadow-color"]];
 }
 

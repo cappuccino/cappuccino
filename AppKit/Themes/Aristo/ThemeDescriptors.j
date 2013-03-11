@@ -2327,7 +2327,7 @@ var themedButtonValues = nil,
 {
     var windowView = [[_CPWindowView alloc] initWithFrame:CGRectMakeZero()],
 
-        sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
+        sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 1, 8),
         resizeIndicator = PatternImage(@"window-resize-indicator.png", 12, 12),
 
         shadowColor = PatternColor(
@@ -2457,7 +2457,7 @@ var themedButtonValues = nil,
         minimizeButtonImage =               PatternImage(@"window-standard-minimize-button.png",16, 16),
         minimizeButtonImageHighlighted =    PatternImage(@"window-standard-minimize-button-highlighted.png",16, 16),
 
-        sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
+        sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 1, 8),
         resizeIndicator = PatternImage(@"window-resize-indicator.png", 12, 12),
 
         themeValues =
@@ -2503,7 +2503,7 @@ var themedButtonValues = nil,
 
 + (_CPDocModalWindowView)themedDocModalWindowView
 {
-    var docModalWindowView = [[_CPDocModalWindowView alloc] initWithFrame:CGRectMake(0,0,200,200) styleMask:nil],
+    var docModalWindowView = [[_CPDocModalWindowView alloc] initWithFrame:CGRectMake(0, 0, 200, 200) styleMask:nil],
 
         bezelColor = PatternColor(
         [
@@ -2518,12 +2518,12 @@ var themedButtonValues = nil,
             [@"window-standard-bottom-right.png", 2.0, 2.0]
         ]),
 
-        sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
+        sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 1, 8),
 
         themeValues =
         [
             [@"body-color",                     bezelColor],
-            [@"height-shadow",                  8],
+            [@"shadow-height",                  8],
             [@"attached-sheet-shadow-color",    sheetShadow]
         ];
 
