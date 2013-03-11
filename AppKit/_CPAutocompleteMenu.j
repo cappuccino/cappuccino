@@ -275,6 +275,12 @@ var _CPAutocompleteMenuMaximumHeight = 307;
     return YES;
 }
 
+- (BOOL)worksWhenModal
+{
+    // Windows which serve as auxiliary controls should work when modal.
+    return YES;
+}
+
 @end
 
 @implementation _CPNonFirstResponderTableView : CPTableView
