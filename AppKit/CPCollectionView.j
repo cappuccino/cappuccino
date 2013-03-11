@@ -34,9 +34,6 @@
 @import "CPPasteboard.j"
 @import "CPView.j"
 
-//@class CPClipView
-
-
 /*!
     @ingroup appkit
     @class CPCollectionView
