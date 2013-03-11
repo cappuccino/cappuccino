@@ -218,6 +218,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
         _redoStack = [];
         _undoStack = [];
 
+        _disableCount = 0;
         _state = CPUndoManagerNormal;
 
         [self setRunLoopModes:[CPDefaultRunLoopMode]];

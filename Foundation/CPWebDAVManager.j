@@ -65,7 +65,7 @@ CPWebDAVManagerNonCollectionResourceType    = 0;
     self = [super init];
 
     if (self)
-        _blocksForConnections = [CPDictionary dictionary];
+        _blocksForConnections = @{};
 
     return self;
 }
@@ -198,7 +198,7 @@ var parsePROPFINDResponse = function(anXMLString)
         responses = XMLDocument.getElementsByTagNameNS("*", "response"),
         responseIndex = 0,
         responseCount = responses.length,
-        propertiesForURLs = [CPDictionary dictionary];
+        propertiesForURLs = @{};
 
     for (; responseIndex < responseCount; ++responseIndex)
     {
@@ -206,7 +206,7 @@ var parsePROPFINDResponse = function(anXMLString)
             elements = response.getElementsByTagNameNS("*", "prop").item(0).childNodes,
             index = 0,
             count = elements.length,
-            properties = [CPDictionary dictionary];
+            properties = @{};
 
         for (; index < count; ++index)
         {

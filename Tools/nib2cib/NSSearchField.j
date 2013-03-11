@@ -31,27 +31,24 @@
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    self = [super NS_initWithCoder:aCoder];
+    return [super NS_initWithCoder:aCoder];
+}
 
-    if (self)
+- (void)NS_initWithCell:(NSCell)cell
+{
+    [super NS_initWithCell:cell];
+
+    [self setRecentsAutosaveName:[cell recentsAutosaveName]];
+    [self setMaximumRecents:[cell maximumRecents]];
+    [self setSendsWholeSearchString:[cell sendsWholeSearchString]];
+    [self setSendsSearchStringImmediately:[cell sendsSearchStringImmediately]];
+
+    if ([[[Converter sharedConverter] themes][0] name] == @"Aristo" && [self isBezeled])
     {
-        var cell = [aCoder decodeObjectForKey:@"NSCell"];
-
-        [self setRecentsAutosaveName:[cell recentsAutosaveName]];
-        [self setMaximumRecents:[cell maximumRecents]];
-        [self setSendsWholeSearchString:[cell sendsWholeSearchString]];
-        [self setSendsSearchStringImmediately:[cell sendsSearchStringImmediately]];
-
-        if ([[[Converter sharedConverter] themes][0] name] == @"Aristo" && [self isBezeled])
-        {
-            // NSTextField.j makes the field +7.0 pixels tall. We want +8.0 to go to 30.
-            var frame = [self frame];
-            [self setFrameSize:CGSizeMake(frame.size.width, frame.size.height)];
-        }
-
+        // NSTextField.j makes the field +7.0 pixels tall. We want +8.0 to go to 30.
+        var frame = [self frame];
+        [self setFrameSize:CGSizeMake(frame.size.width, frame.size.height)];
     }
-
-    return self;
 }
 
 @end
@@ -63,6 +60,12 @@
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [self NS_initWithCoder:aCoder];
+
+    if (self)
+    {
+        var cell = [aCoder decodeObjectForKey:@"NSCell"];
+        [self NS_initWithCell:cell];
+    }
 
     return self;
 }

@@ -134,6 +134,7 @@ var CPViewFlags                     = { },
     CPGraphicsContext   _graphicsContext;
 
     int                 _tag;
+    CPString            _identifier @accessors(property=identifier);
 
     CGRect              _frame;
     CGRect              _bounds;
@@ -475,6 +476,10 @@ var CPViewFlags                     = { },
 {
     if (aSubview === self)
         [CPException raise:CPInvalidArgumentException reason:"can't add a view as a subview of itself"];
+#if DEBUG
+    if (!aSubview._superview && _subviews.indexOf(aSubview) !== CPNotFound)
+        [CPException raise:CPInvalidArgumentException reason:"can't insert a subview in duplicate (probably partially decoded)"];
+#endif
 
     // We will have to adjust the z-index of all views starting at this index.
     var count = _subviews.length;
@@ -1370,6 +1375,7 @@ var CPViewFlags                     = { },
     }
     else
     {
+        [self setNeedsDisplay:YES];
         [self _notifyViewDidUnhide];
     }
 }
@@ -1505,7 +1511,7 @@ var CPViewFlags                     = { },
 
 /*!
     Returns whether the receiver should be sent a \c -mouseDown: message for \c anEvent.<br/>
-    Returns \c YES by default.
+    Returns \c NO by default.
     @return \c YES, if the view object accepts first mouse-down event. \c NO, otherwise.
 */
 - (BOOL)acceptsFirstMouse:(CPEvent)anEvent
@@ -2556,7 +2562,7 @@ setBoundsOrigin:
 
 - (void)_setPreviousKeyView:(CPView)previous
 {
-    if ([previous isEqual:self])
+    if ([previous isEqual:self] || ![[previous window] isEqual:[self window]])
         _previousKeyView = nil;
     else
         _previousKeyView = previous;
@@ -2564,7 +2570,7 @@ setBoundsOrigin:
 
 - (void)setNextKeyView:(CPView)next
 {
-    if ([next isEqual:self])
+    if ([next isEqual:self] || ![[next window] isEqual:[self window]])
         _nextKeyView = nil;
     else
     {
@@ -2821,7 +2827,7 @@ setBoundsOrigin:
 
 - (CPDictionary)_themeAttributeDictionary
 {
-    var dictionary = [CPDictionary dictionary];
+    var dictionary = @{};
 
     if (_themeAttributes)
     {
@@ -3014,7 +3020,8 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewThemeStateKey             = @"CPViewThemeStateKey",
     CPViewWindowKey                 = @"CPViewWindowKey",
     CPViewNextKeyViewKey            = @"CPViewNextKeyViewKey",
-    CPViewPreviousKeyViewKey        = @"CPViewPreviousKeyViewKey";
+    CPViewPreviousKeyViewKey        = @"CPViewPreviousKeyViewKey",
+    CPReuseIdentifierKey            = @"CPReuseIdentifierKey";
 
 @implementation CPView (CPCoding)
 
@@ -3043,10 +3050,23 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     {
         // We have to manually check because it may be 0, so we can't use ||
         _tag = [aCoder containsValueForKey:CPViewTagKey] ? [aCoder decodeIntForKey:CPViewTagKey] : -1;
+        _identifier = [aCoder decodeObjectForKey:CPReuseIdentifierKey];
 
         _window = [aCoder decodeObjectForKey:CPViewWindowKey];
-        _subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey] || [];
         _superview = [aCoder decodeObjectForKey:CPViewSuperviewKey];
+
+        // We have to manually add the subviews so that they will receive
+        // viewWillMoveToSuperview: and viewDidMoveToSuperview:
+        _subviews = [];
+
+        var subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey] || [];
+
+        for (var i = 0, count = [subviews count]; i < count; ++i)
+        {
+            // addSubview won't do anything if the superview is already self, so clear it
+            subviews[i]._superview = nil;
+            [self addSubview:subviews[i]];
+        }
 
         // FIXME: Should we encode/decode this?
         _registeredDraggedTypes = [CPSet set];
@@ -3193,6 +3213,9 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     for (var attributeName in _themeAttributes)
         if (_themeAttributes.hasOwnProperty(attributeName))
             CPThemeAttributeEncode(aCoder, _themeAttributes[attributeName]);
+
+    if (_identifier)
+        [aCoder encodeObject:_identifier forKey:CPReuseIdentifierKey];
 }
 
 @end

@@ -44,7 +44,15 @@
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [self NS_initWithCoder:aCoder];
+    self = [self NS_initWithCoder:aCoder];
+
+    if (self)
+    {
+        var cell = [aCoder decodeObjectForKey:@"NSCell"];
+        [self NS_initWithCell:cell];
+    }
+
+    return self;
 }
 
 - (Class)classForKeyedArchiver

@@ -878,11 +878,17 @@ BundleTask.prototype.defineSourceTasks = function()
                         };
                         rhinoUglyFix = true;
                     }
+
+                    if (typeof navigator == "undefined")
+                    {
+                        navigator =  { "userAgent": "fakenavigator" };
+                        rhinoUglyFix = true;
+                    }
                 }
 
                 var compile;
                 // if this file doesn't exist or isn't a .j file, don't preprocess it.
-                if (FILE.extension(aFilename) !== ".j")
+                if (FILE.extension(aFilename).toLowerCase() !== ".j")
                 {
                     TERM.stream.write("Including [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)").flush();
                     var compiled = FILE.read(aFilename, { charset:"UTF-8" });

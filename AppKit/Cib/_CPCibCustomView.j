@@ -116,6 +116,7 @@ var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
         [view setHitTests:[self hitTests]];
         [view setHidden:[self isHidden]];
         [view setAlphaValue:[self alphaValue]];
+        [view setIdentifier:[self identifier]];
 
         [_superview replaceSubview:self with:view];
 

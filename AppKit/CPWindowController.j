@@ -41,7 +41,7 @@
 
     An instance of a CPWindowController manages a CPWindow. Windows are typically loaded via a cib,
     but they can also manage windows created in code. A CPWindowController can manage a window by
-    itself or work with  AppKits's document-based architecture.
+    itself or work with AppKit's document-based architecture.
 
     In a Document based app, a CPWindowController instance is created and managed by a CPDocument subclass.
 
@@ -144,7 +144,7 @@
     if (_window)
         return;
 
-    [[CPBundle mainBundle] loadCibFile:[self windowCibPath] externalNameTable:[CPDictionary dictionaryWithObject:_cibOwner forKey:CPCibOwner]];
+    [[CPBundle mainBundle] loadCibFile:[self windowCibPath] externalNameTable:@{ CPCibOwner: _cibOwner }];
 }
 
 /*!

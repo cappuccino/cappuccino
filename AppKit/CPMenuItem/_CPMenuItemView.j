@@ -55,8 +55,7 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[]
-                                       forKeys:[]];
+    return @{};
 }
 
 // Not used in the Appkit

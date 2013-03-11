@@ -273,6 +273,8 @@ if (!exports.acorn) {
   var _implementation = {keyword: "implementation"}, _outlet = {keyword: "outlet"}, _accessors = {keyword: "accessors"};
   var _end = {keyword: "end"}, _import = {keyword: "import", afterImport: true};
   var _action = {keyword: "action"}, _selector = {keyword: "selector"}, _class = {keyword: "class"}, _global = {keyword: "global"};
+  var _dictionaryLiteral = {keyword: "{"}, _arrayLiteral = {keyword: "["};
+  var _ref = {keyword: "ref"}, _deref = {keyword: "deref"};
 
   // Objective-J keywords
 
@@ -301,7 +303,8 @@ if (!exports.acorn) {
   // Map Objective-J "@" keyword names to token types.
 
   var objJAtKeywordTypes = {"implementation": _implementation, "outlet": _outlet, "accessors": _accessors, "end": _end,
-                            "import": _import, "action": _action, "selector": _selector, "class": _class, "global": _global};
+                            "import": _import, "action": _action, "selector": _selector, "class": _class, "global": _global,
+                            "ref": _ref, "deref": _deref};
 
   // Punctuation token types. Again, the `type` property is purely for debugging.
 
@@ -660,6 +663,11 @@ if (!exports.acorn) {
     var next = input.charCodeAt(++tokPos);
     if (next === 34 || next === 39)  // Read string if "'" or '"'
       return readString(next);
+    if (next === 123) // Read dictionary literal if "{"
+      return finishToken(_dictionaryLiteral);
+    if (next === 91) // Ready array literal if "["
+      return finishToken(_arrayLiteral);
+
     var word = readWord1(),
         token = objJAtKeywordTypes[word];
     if (!token) raise(tokStart, "Unrecognized Objective-J keyword '@" + word + "'");
@@ -1168,7 +1176,7 @@ if (!exports.acorn) {
   // to.
 
   function checkLVal(expr) {
-    if (expr.type !== "Identifier" && expr.type !== "MemberExpression")
+    if (expr.type !== "Identifier" && expr.type !== "MemberExpression" && expr.type !== "Dereference")
       raise(expr.start, "Assigning to rvalue");
     if (strict && expr.type === "Identifier" && isStrictBadIdWord(expr.name))
       raise(expr.start, "Assigning to " + expr.name + " in strict mode");
@@ -1847,7 +1855,7 @@ if (!exports.acorn) {
     case _null: case _true: case _false:
       var node = startNode();
       node.value = tokType.atomValue;
-      node.raw = tokType.keyword
+      node.raw = tokType.keyword;
       next();
       return finishNode(node, "Literal");
 
@@ -1866,6 +1874,18 @@ if (!exports.acorn) {
       expect(_parenR, "Expected closing ')' in expression");
       return val;
 
+    case _arrayLiteral:
+      var node = startNode(),
+          firstExpr = null;
+
+      next();
+      expect(_bracketL, "Expected '[' at beginning of array literal");
+
+      if (tokType !== _bracketR)
+        firstExpr = parseExpression(true, true);
+
+      node.elements = parseExprList(_bracketR, firstExpr, true, true);
+      return finishNode(node, "ArrayLiteral");
     case _bracketL:
       var node = startNode(),
           firstExpr = null;
@@ -1877,6 +1897,15 @@ if (!exports.acorn) {
       }
       node.elements = parseExprList(_bracketR, firstExpr, true, true);
       return finishNode(node, "ArrayExpression");
+
+    case _dictionaryLiteral:
+      var node = startNode();
+      next();
+
+      var r = parseDictionary();
+      node.keys = r[0];
+      node.values = r[1];
+      return finishNode(node, "DictionaryLiteral");
 
     case _braceL:
       return parseObj();
@@ -1896,6 +1925,22 @@ if (!exports.acorn) {
       parseSelector(node, _parenR);
       expect(_parenR, "Expected closing ')' after selector");
       return finishNode(node, "SelectorLiteralExpression");
+
+    case _ref:
+      var node = startNode();
+      next();
+      expect(_parenL, "Expected '(' after '@ref'");
+      node.element = parseIdent(node, _parenR);
+      expect(_parenR, "Expected closing ')' after ref");
+      return finishNode(node, "Reference");
+
+    case _deref:
+      var node = startNode();
+      next();
+      expect(_parenL, "Expected '(' after '@deref'");
+      node.expr = parseExpression(true, true);
+      expect(_parenR, "Expected closing ')' after deref");
+      return finishNode(node, "Dereference");
 
     default:
       unexpected();
@@ -2086,6 +2131,26 @@ if (!exports.acorn) {
       }
     }
     return elts;
+  }
+
+  // Parses a comma-separated list of <key>:<value> pairs and returns them as
+  // [arrayOfKeyExpressions, arrayOfValueExpressions].
+  function parseDictionary() {
+    expect(_braceL, "Expected '{' before dictionary");
+
+    var keys = [], values = [], first = true;
+    while (!eat(_braceR)) {
+      if (!first) {
+        expect(_comma, "Expected ',' between expressions");
+        if (options.allowTrailingCommas && eat(_braceR)) break;
+      }
+
+      keys.push(parseExpression(true, true));
+      expect(_colon, "Expected ':' between dictionary key and value");
+      values.push(parseExpression(true, true));
+      first = false;
+    }
+    return [keys, values];
   }
 
   // Parse the next token as an identifier. If `liberal` is true (used

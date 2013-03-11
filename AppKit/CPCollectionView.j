@@ -21,7 +21,6 @@
  */
 
 #import "../Foundation/CPRange.h"
-#import "../Foundation/Ref.h"
 
 @import <Foundation/CPArray.j>
 @import <Foundation/CPData.j>
@@ -49,7 +48,7 @@
     @par Delegate Methods
 
     @delegate - (void)collectionViewDidChangeSelection:(CPCollectionView)collectionView;
-    Called when the selection in the collection view has changed.
+    DEPRECATED: Please do not use.
     @param collectionView the collection view who's selection changed
 
     @delegate - (void)collectionView:(CPCollectionView)collectionView didDoubleClickOnItemAtIndex:(int)index;
@@ -405,7 +404,10 @@ var HORIZONTAL_MARGIN = 2;
     [[binderClass getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectionIndexes"];
 
     if ([_delegate respondsToSelector:@selector(collectionViewDidChangeSelection:)])
+    {
+        CPLog.warn("The delegate method collectionViewDidChangeSelection: is deprecated and will be removed in a future version, please bind to selectionIndexes instead.");
         [_delegate collectionViewDidChangeSelection:self];
+    }
 }
 
 /*!
@@ -497,7 +499,7 @@ var HORIZONTAL_MARGIN = 2;
 
     [self _updateMinMaxItemSizeIfNeeded];
 
-    [self _computeGridWithSize:frameSize count:AT_REF(count)];
+    [self _computeGridWithSize:frameSize count:@ref(count)];
 
     //CPLog.debug("frameSize="+CPStringFromSize(frameSize) + "itemSize="+CPStringFromSize(itemSize) + " ncols=" +  colsRowsCount[0] +" nrows="+ colsRowsCount[1]+" displayCount="+ colsRowsCount[2]);
 
@@ -1028,7 +1030,7 @@ var HORIZONTAL_MARGIN = 2;
 - (CPDragOperation)draggingEntered:(id)draggingInfo
 {
     var dropIndex = -1,
-        dropIndexRef = AT_REF(dropIndex),
+        dropIndexRef = @ref(dropIndex),
         dragOp = [self _validateDragWithInfo:draggingInfo dropIndex:dropIndexRef dropOperation:1];
 
     dropIndex = dropIndexRef();
@@ -1046,7 +1048,7 @@ var HORIZONTAL_MARGIN = 2;
         return _currentDragOperation;
 
     var dropIndex,
-        dropIndexRef = AT_REF(dropIndex);
+        dropIndexRef = @ref(dropIndex);
 
     var dragOperation = [self _validateDragWithInfo:draggingInfo dropIndex:dropIndexRef dropOperation:1];
 
@@ -1064,7 +1066,7 @@ var HORIZONTAL_MARGIN = 2;
 
     if ([_delegate respondsToSelector:@selector(collectionView:validateDrop:proposedIndex:dropOperation:)])
     {
-        var dropIndexRef2 = AT_REF(dropIndex);
+        var dropIndexRef2 = @ref(dropIndex);
 
         result = [_delegate collectionView:self validateDrop:draggingInfo proposedIndex:dropIndexRef2  dropOperation:dropOperation];
 

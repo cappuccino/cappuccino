@@ -129,7 +129,7 @@ var CPDocumentUntitledCount = 0;
     if (self)
     {
         _windowControllers = [];
-        _viewControllersForWindowControllers = [CPDictionary dictionary];
+        _viewControllersForWindowControllers = @{};
 
         _hasUndoManager = YES;
         _changeCount = 0;

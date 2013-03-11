@@ -508,13 +508,8 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 
         [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
 
-        var selected = [aCoder decodeObjectForKey:CPTabViewSelectedItemKey];
-        if (selected)
-            [self selectTabViewItem:selected];
-
-        [self setTabViewType:[aCoder decodeIntForKey:CPTabViewTypeKey]];
-
-        [self setNeedsLayout];
+        self.selectOnAwake = [aCoder decodeObjectForKey:CPTabViewSelectedItemKey];
+        _type = [aCoder decodeIntForKey:CPTabViewTypeKey];
     }
 
     return self;
@@ -522,13 +517,17 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 
 - (void)awakeFromCib
 {
-    // This is a quick and dirty fix of the tab view item we decode and install in _box
-    // having a different _superview decoded later in the decoding process - e.g. the
-    // CPTabView itself as is the case when we're coming from an xib. This solution could
-    // probably be improved by fixing this in nib2cib instead, but the _box doesn't yet
-    // exist then so it's not totally clear what to change the superview to at that stage.
-    if ([_box contentView])
-        _box._contentView._superview = _box;
+    if (self.selectOnAwake)
+    {
+        [self selectTabViewItem:self.selectOnAwake];
+        delete self.selectOnAwake;
+    }
+
+    var type = _type;
+    _type = nil;
+    [self setTabViewType:type];
+
+    [self setNeedsLayout];
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder

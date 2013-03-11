@@ -144,7 +144,7 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
 {
     var index = 0,
         count = keys.length,
-        dictionary = [CPDictionary dictionary];
+        dictionary = @{};
 
     for (; index < count; ++index)
     {
@@ -165,7 +165,7 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
 {
     [[CPException exceptionWithName:CPUndefinedKeyException
                             reason:[self _objectDescription] + " is not key value coding-compliant for the key " + aKey
-                          userInfo:[CPDictionary dictionaryWithObjects:[self, aKey] forKeys:[CPTargetObjectUserInfoKey, CPUnknownUserInfoKey]]] raise];
+                          userInfo:@{ CPTargetObjectUserInfoKey: self, CPUnknownUserInfoKey: aKey }] raise];
 }
 
 - (void)setValue:(id)aValue forKeyPath:(CPString)aKeyPath
@@ -258,7 +258,7 @@ var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
 {
     [[CPException exceptionWithName:CPUndefinedKeyException
                             reason:[self _objectDescription] + " is not key value coding-compliant for the key " + aKey
-                          userInfo:[CPDictionary dictionaryWithObjects:[self, aKey] forKeys:[CPTargetObjectUserInfoKey, CPUnknownUserInfoKey]]] raise];
+                          userInfo:@{ CPTargetObjectUserInfoKey: self, CPUnknownUserInfoKey: aKey }] raise];
 }
 
 - (CPString)_objectDescription

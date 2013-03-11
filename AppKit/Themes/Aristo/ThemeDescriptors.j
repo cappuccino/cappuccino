@@ -988,7 +988,9 @@ var themedButtonValues = nil,
         [@"text-color",         [CPColor colorWithCalibratedWhite:51.0 / 255.0 alpha:1.0], CPThemeStateTableDataView],
         [@"text-color",         [CPColor whiteColor],                CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
         [@"font",               [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize], CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
-        [@"text-color",         [CPColor blackColor],                CPThemeStateTableDataView | CPThemeStateEditing],
+        [@"text-color",         [CPColor blackColor],                CPThemeStateTableDataView | CPThemeStateEditable],
+        [@"text-color",         [CPColor blackColor],                CPThemeStateTableDataView | CPThemeStateSelectedTableDataView | CPThemeStateEditing],
+        [@"text-color",         [CPColor blackColor],                CPThemeStateTableDataView |  CPThemeStateBezeled],
         [@"content-inset",      CGInsetMake(8.0, 8.0, 7.0, 5.0),     CPThemeStateTableDataView | CPThemeStateEditing],
         [@"font",               [CPFont systemFontOfSize:CPFontCurrentSystemSize], CPThemeStateTableDataView | CPThemeStateEditing],
         [@"bezel-inset",        CGInsetMake(-1.0, -1.0, -1.0, -1.0), CPThemeStateTableDataView | CPThemeStateEditing],
@@ -1838,11 +1840,11 @@ var themedButtonValues = nil,
         alternatingRowColors = [[CPColor whiteColor], [CPColor colorWithRed:245.0 / 255.0 green:249.0 / 255.0 blue:252.0 / 255.0 alpha:1.0]],
         gridColor = [CPColor colorWithHexString:@"cccccc"],
         selectionColor = [CPColor colorWithHexString:@"5f83b9"],
-        sourceListSelectionColor = [CPDictionary dictionaryWithObjects: [CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [98.0 / 255.0, 143.0 / 210.0, 209.0 / 255.0, 1.0, 46.0 / 255.0, 88.0 / 176.0, 208.0 / 255.0,1.0], [0,1], 2),
-                                                                          [CPColor colorWithCalibratedRed:81.0 / 255.0 green:127.0 / 255.0 blue:200.0 / 255.0 alpha:1.0],
-                                                                          [CPColor colorWithCalibratedRed:34.0 / 255.0 green:63.0 / 255.0 blue:123.0 / 255.0 alpha:1.0]
-                                                                        ]
-                                                               forKeys: [CPSourceListGradient, CPSourceListTopLineColor, CPSourceListBottomLineColor]],
+        sourceListSelectionColor = @{
+            CPSourceListGradient: CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [98.0 / 255.0, 143.0 / 210.0, 209.0 / 255.0, 1.0, 46.0 / 255.0, 88.0 / 176.0, 208.0 / 255.0,1.0], [0,1], 2),
+            CPSourceListTopLineColor: [CPColor colorWithCalibratedRed:81.0 / 255.0 green:127.0 / 255.0 blue:200.0 / 255.0 alpha:1.0],
+            CPSourceListBottomLineColor: [CPColor colorWithCalibratedRed:34.0 / 255.0 green:63.0 / 255.0 blue:123.0 / 255.0 alpha:1.0],
+        },
 
         themedTableViewValues =
         [

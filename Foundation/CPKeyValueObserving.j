@@ -755,7 +755,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
 
     if (!observers)
     {
-        observers = [CPDictionary dictionary];
+        observers = @{};
         _observersForKey[aPath] = observers;
         _observersForKeyLength++;
     }
@@ -769,7 +769,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
         if (newValue === nil || newValue === undefined)
             newValue = [CPNull null];
 
-        var changes = [CPDictionary dictionaryWithObject:newValue forKey:CPKeyValueChangeNewKey];
+        var changes = @{ CPKeyValueChangeNewKey: newValue };
         [anObserver observeValueForKeyPath:aPath ofObject:_targetObject change:changes context:aContext];
     }
 }
@@ -1006,7 +1006,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     if (!aKey)
         return;
 
-    var changeOptions = [CPDictionary dictionaryWithObject:CPKeyValueChangeSetting forKey:CPKeyValueChangeKindKey];
+    var changeOptions = @{ CPKeyValueChangeKindKey: CPKeyValueChangeSetting };
 
     [[_CPKVOProxy proxyForObject:self] _sendNotificationsForKey:aKey changeOptions:changeOptions isBefore:YES];
 }
@@ -1036,7 +1036,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     if (!aKey)
         return;
 
-    var changeOptions = [CPDictionary dictionaryWithObjects:[change, indexes] forKeys:[CPKeyValueChangeKindKey, CPKeyValueChangeIndexesKey]];
+    var changeOptions = @{ CPKeyValueChangeKindKey: change, CPKeyValueChangeIndexesKey: indexes };
 
     [[_CPKVOProxy proxyForObject:self] _sendNotificationsForKey:aKey changeOptions:changeOptions isBefore:YES];
 }
@@ -1067,7 +1067,7 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
         return;
 
     var changeKind = _changeKindForSetMutationKind(mutationKind),
-        changeOptions = [CPDictionary dictionaryWithObject:changeKind forKey:CPKeyValueChangeKindKey];
+        changeOptions = @{ CPKeyValueChangeKindKey: changeKind };
     //set hidden change-dict ivars to support unordered to-many relationships
     changeOptions[_CPKeyValueChangeSetMutationObjectsKey] = objects;
     changeOptions[_CPKeyValueChangeSetMutationKindKey] = mutationKind;
@@ -1215,10 +1215,11 @@ var kvoNewAndOld        = CPKeyValueObservingOptionNew | CPKeyValueObservingOpti
     {
         var oldValue = [_value valueForKeyPath:_secondPart],
             newValue = [_object valueForKeyPath:_firstPart + "." + _secondPart],
-            pathChanges = [CPDictionary dictionaryWithObjectsAndKeys:
-                            newValue ? newValue : [CPNull null],    CPKeyValueChangeNewKey,
-                            oldValue ? oldValue : [CPNull null],    CPKeyValueChangeOldKey,
-                            CPKeyValueChangeSetting,                CPKeyValueChangeKindKey];
+            pathChanges = @{
+                    CPKeyValueChangeNewKey: newValue ? newValue : [CPNull null],
+                    CPKeyValueChangeOldKey: oldValue ? oldValue : [CPNull null],
+                    CPKeyValueChangeKindKey: CPKeyValueChangeSetting,
+                };
 
         [_observer observeValueForKeyPath:_firstPart + "." + _secondPart ofObject:_object change:pathChanges context:_context];
 

@@ -165,7 +165,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
 - (BOOL)instantiateCibWithOwner:(id)anOwner topLevelObjects:(CPArray)topLevelObjects
 {
-    return [self instantiateCibWithExternalNameTable:[CPDictionary dictionaryWithObjects:[anOwner, topLevelObjects] forKeys:[CPCibOwner, CPCibTopLevelObjects]]];
+    return [self instantiateCibWithExternalNameTable:@{ CPCibOwner: anOwner, CPCibTopLevelObjects: topLevelObjects }];
 }
 
 @end
@@ -195,6 +195,28 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
         [_loadDelegate cibDidFinishLoading:self];
 
     _loadDelegate = nil;
+}
+
+@end
+
+var CPCibDataFileKey = @"CPCibDataFileKey",
+    CPCibBundleIdentifierKey = @"CPCibBundleIdentifierKey";
+
+@implementation CPCib (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+
+    var base64 = [aCoder decodeObjectForKey:CPCibDataFileKey];
+    _data = [CPData dataWithBase64:base64];
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:[_data base64] forKey:CPCibDataFileKey];
 }
 
 @end

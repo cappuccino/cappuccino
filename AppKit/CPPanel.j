@@ -116,7 +116,7 @@ CPDocModalWindowMask    = 1 << 6;
 
 - (BOOL)canBecomeKeyWindow
 {
-  return YES;
+    return YES;
 }
 
 @end

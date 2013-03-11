@@ -165,7 +165,11 @@ var DOMFixedWidthSpanElement    = nil,
         baseline = DOMMetricsImgElement.offsetTop + DOMMetricsImgElement.offsetHeight,
         descender = baseline - lineHeight;
 
-    return [CPDictionary dictionaryWithObjectsAndKeys:baseline, @"ascender", descender, @"descender", lineHeight, @"lineHeight"];
+    return @{
+            @"ascender": baseline,
+            @"descender": descender,
+            @"lineHeight": lineHeight,
+        };
 }
 
 @end

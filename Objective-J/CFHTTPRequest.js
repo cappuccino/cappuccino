@@ -301,7 +301,7 @@ function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure)
         request.overrideMimeType("text/xml");
 
 #if COMMONJS
-    if (aURL.pathExtension() === "j")
+    if (aURL.pathExtension().toLowerCase() === "j")
     {
         var aFilePath = aURL.toString().substring(5),
             OS = require("os"),

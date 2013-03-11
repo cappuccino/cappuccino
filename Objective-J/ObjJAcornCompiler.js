@@ -330,10 +330,84 @@ function createMessage(/* String */ aMessage, /* SpiderMonkey AST node */ node, 
 
 function compile(node, state, visitor) {
     function c(node, st, override) {
-      visitor[override || node.type](node, st, c);
+        visitor[override || node.type](node, st, c);
     }
     c(node, state);
 };
+
+function isIdempotentExpression(node) {
+    switch (node.type) {
+        case "Literal":
+        case "Identifier":
+            return true;
+
+        case "ArrayExpression":
+            for (var i = 0; i < node.elements.length; ++i) {
+                if (!isIdempotentExpression(node.elements[i]))
+                    return false;
+            }
+
+            return true;
+
+        case "DictionaryLiteral":
+            for (var i = 0; i < node.keys.length; ++i) {
+                if (!isIdempotentExpression(node.keys[i]))
+                    return false;
+                if (!isIdempotentExpression(node.values[i]))
+                    return false;
+            }
+
+            return true;
+
+        case "ObjectExpression":
+            for (var i = 0; i < node.properties.length; ++i)
+                if (!isIdempotentExpression(node.properties[i].value))
+                    return false;
+
+            return true;
+
+        case "FunctionExpression":
+            for (var i = 0; i < node.params.length; ++i)
+                if (!isIdempotentExpression(node.params[i]))
+                    return false;
+
+            return true;
+
+        case "SequenceExpression":
+            for (var i = 0; i < node.expressions.length; ++i)
+                if (!isIdempotentExpression(node.expressions[i]))
+                    return false;
+
+            return true;
+
+        case "UnaryExpression":
+            return isIdempotentExpression(node.argument);
+
+        case "BinaryExpression":
+            return isIdempotentExpression(node.left) && isIdempotentExpression(node.right);
+
+        case "ConditionalExpression":
+            return isIdempotentExpression(node.test) && isIdempotentExpression(node.consequent) && isIdempotentExpression(node.alternate);
+
+        case "MemberExpression":
+            return isIdempotentExpression(node.object) && (!node.computed || isIdempotentExpression(node.property));
+
+        case "Dereference":
+            return isIdempotentExpression(node.expr);
+
+        case "Reference":
+            return isIdempotentExpression(node.element);
+
+        default:
+            return false;
+    }
+}
+
+// We do not allow dereferencing of expressions with side effects because we might need to evaluate the expression twice in certain uses of deref, which is not obvious when you look at the deref operator in plain code.
+function checkCanDereference(st, node) {
+    if (!isIdempotentExpression(node))
+        throw st.compiler.error_message("Dereference of expression with side effects", node);
+}
 
 var pass1 = exports.acorn.walk.make({
 ImportStatement: function(node, st, c) {
@@ -348,7 +422,7 @@ Program: function(node, st, c) {
     for (var i = 0; i < node.body.length; ++i) {
       c(node.body[i], st, "Statement");
     }
-    CONCAT(st.compiler.jsBuffer,st.compiler.source.substring(st.compiler.lastPos, node.end));
+    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.end));
     // Check maybe warnings
     var maybeWarnings = st.maybeWarnings();
     if (maybeWarnings) for (var i = 0; i < maybeWarnings.length; i++) {
@@ -405,6 +479,39 @@ VariableDeclaration: function(node, scope, c) {
   }
 },
 AssignmentExpression: function(node, st, c) {
+    if (node.left.type === "Dereference") {
+        checkCanDereference(st, node.left);
+
+        // @deref(x) = z    -> x(z) etc
+        CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
+
+        // Output the dereference function, "(...)(z)"
+        CONCAT(st.compiler.jsBuffer, "(");
+        // What's being dereferenced could itself be an expression, such as when dereferencing a deref.
+        st.compiler.lastPos = node.left.expr.start;
+        c(node.left.expr, st, "Expression");
+        CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.left.expr.end));
+        CONCAT(st.compiler.jsBuffer, ")(");
+
+        // Now "(x)(...)". We have to manually expand +=, -=, *= etc.
+        if (node.operator !== "=") {
+            // Output the whole .left, not just .left.expr.
+            st.compiler.lastPos = node.left.start;
+            c(node.left, st, "Expression");
+            CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.left.end));
+            CONCAT(st.compiler.jsBuffer, " " + node.operator.substring(0, 1) + " ");
+        }
+
+        st.compiler.lastPos = node.right.start;
+        c(node.right, st, "Expression");
+        CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.right.end));
+        CONCAT(st.compiler.jsBuffer, ")");
+
+        st.compiler.lastPos = node.end;
+
+        return;
+    }
+
     var saveAssignment = st.assignment;
     st.assignment = true;
     c(node.left, st, "Expression");
@@ -412,6 +519,33 @@ AssignmentExpression: function(node, st, c) {
     c(node.right, st, "Expression");
     if (st.isRootScope() && node.left.type === "Identifier" && !st.getLvar(node.left.name))
         st.vars[node.left.name] = {type: "global", node: node.left};
+},
+UpdateExpression: function(node, st, c) {
+    if (node.argument.type === "Dereference") {
+        checkCanDereference(st, node.argument);
+
+        // @deref(x)++ and ++@deref(x) require special handling.
+        CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
+
+        // Output the dereference function, "(...)(z)"
+        CONCAT(st.compiler.jsBuffer, (node.prefix ? "" : "(") + "(");
+
+        // The thing being dereferenced.
+        st.compiler.lastPos = node.argument.expr.start;
+        c(node.argument.expr, st, "Expression");
+        CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.argument.expr.end));
+        CONCAT(st.compiler.jsBuffer, ")(");
+
+        st.compiler.lastPos = node.argument.start;
+        c(node.argument, st, "Expression");
+        CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.argument.end));
+        CONCAT(st.compiler.jsBuffer, " " + node.operator.substring(0, 1) + " 1)" + (node.prefix ? "" : node.operator == '++' ? " - 1)" : " + 1)"));
+
+        st.compiler.lastPos = node.end;
+        return;
+    }
+
+    c(node.argument, st, "Expression");
 },
 MemberExpression: function(node, st, c) {
     c(node.object, st, "Expression");
@@ -774,12 +908,86 @@ Identifier: function(node, st, c) {
         }
     }
 },
+ArrayLiteral: function(node, st, c) {
+    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
+    st.compiler.lastPos = node.start;
+
+    if (!node.elements.length) {
+        CONCAT(st.compiler.jsBuffer, "objj_msgSend(objj_msgSend(CPArray, \"alloc\"), \"init\")");
+    } else {
+        CONCAT(st.compiler.jsBuffer, "objj_msgSend(objj_msgSend(CPArray, \"alloc\"), \"initWithObjects:count:\", [");
+        for (var i = 0; i < node.elements.length; i++) {
+            var elt = node.elements[i];
+
+            if (i)
+                CONCAT(st.compiler.jsBuffer, ", ");
+
+            st.compiler.lastPos = elt.start;
+            c(elt, st, "Expression");
+            CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, elt.end));
+        }
+        CONCAT(st.compiler.jsBuffer, "], " + node.elements.length + ")");
+    }
+
+    st.compiler.lastPos = node.end;
+},
+DictionaryLiteral: function(node, st, c) {
+    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
+    st.compiler.lastPos = node.start;
+
+    if (!node.keys.length) {
+        CONCAT(st.compiler.jsBuffer, "objj_msgSend(objj_msgSend(CPDictionary, \"alloc\"), \"init\")");
+    } else {
+        CONCAT(st.compiler.jsBuffer, "objj_msgSend(objj_msgSend(CPDictionary, \"alloc\"), \"initWithObjectsAndKeys:\"");
+        for (var i = 0; i < node.keys.length; i++) {
+            var key = node.keys[i],
+                value = node.values[i];
+
+            CONCAT(st.compiler.jsBuffer, ", ");
+
+            st.compiler.lastPos = value.start;
+            c(value, st, "Expression");
+            CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, value.end));
+
+            CONCAT(st.compiler.jsBuffer, ", ");
+
+            st.compiler.lastPos = key.start;
+            c(key, st, "Expression");
+            CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, key.end));
+        }
+        CONCAT(st.compiler.jsBuffer, ")");
+    }
+
+    st.compiler.lastPos = node.end;
+},
 SelectorLiteralExpression: function(node, st, c) {
     CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
     CONCAT(st.compiler.jsBuffer, "sel_getUid(\"");
     CONCAT(st.compiler.jsBuffer, node.selector);
     CONCAT(st.compiler.jsBuffer, "\")");
     st.compiler.lastPos = node.end;
+},
+Reference: function(node, st, c) {
+    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
+    CONCAT(st.compiler.jsBuffer, "function(__input) { if (arguments.length) return ");
+    CONCAT(st.compiler.jsBuffer, node.element.name);
+    CONCAT(st.compiler.jsBuffer, " = __input; return ");
+    CONCAT(st.compiler.jsBuffer, node.element.name);
+    CONCAT(st.compiler.jsBuffer, "; }");
+    st.compiler.lastPos = node.end;
+},
+Dereference: function(node, st, c) {
+    checkCanDereference(st, node.expr);
+
+    // @deref(y) -> y()
+    // @deref(@deref(y)) -> y()()
+    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
+    st.compiler.lastPos = node.expr.start;
+    c(node.expr, st, "Expression");
+    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.expr.end));
+    CONCAT(st.compiler.jsBuffer, "()");
+    st.compiler.lastPos = node.end;
+
 },
 Literal: function(node, st, c) {
     if (node.raw && node.raw.charAt(0) === "@")

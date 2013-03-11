@@ -494,7 +494,7 @@ SCKit = (function() {
             if (argsArray.length === 0)
                 return template;
 
-            argsDict = [CPDictionary dictionary];
+            argsDict = @{};
 
             for (var i = 0; i < argsArray.length; ++i)
                 [argsDict setObject:argsArray[i] forKey:String(i, 10)];

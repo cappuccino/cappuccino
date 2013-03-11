@@ -69,13 +69,12 @@ var RECENT_SEARCH_PREFIX = @"   ";
 
 + (CPDictionary)themeAttributes
 {
-    return [CPDictionary dictionaryWithJSObject:
-        {
+    return @{
             @"image-search": [CPNull null],
             @"image-find": [CPNull null],
             @"image-cancel": [CPNull null],
             @"image-cancel-pressed": [CPNull null]
-        }];
+        };
 }
 
 - (id)initWithFrame:(CGRect)frame

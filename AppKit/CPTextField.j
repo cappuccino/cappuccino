@@ -20,8 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#import "../Foundation/Ref.h"
-
 @import "CPControl.j"
 @import "CPStringDrawing.j"
 @import "CPCompatibility.j"
@@ -72,15 +70,15 @@ function CPTextFieldBlurFunction(anEvent, owner, domElement, inputElement, resig
         }, 0.0);
     }
 
-    CPTextFieldHandleBlur(anEvent, AT_REF(owner));
-    AT_DEREF(didBlurRef, YES);
+    CPTextFieldHandleBlur(anEvent, @ref(owner));
+    @deref(didBlurRef) = YES;
 
     return true;
 }
 
 function CPTextFieldHandleBlur(anEvent, ownerRef)
 {
-    AT_DEREF(ownerRef, nil);
+    @deref(ownerRef) = nil;
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
@@ -206,8 +204,11 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMake(1.0, 0.0, 0.0, 0.0), [CPNull null]]
-                                       forKeys:[@"bezel-inset", @"content-inset", @"bezel-color"]];
+    return @{
+            @"bezel-inset": _CGInsetMakeZero(),
+            @"content-inset": _CGInsetMake(1.0, 0.0, 0.0, 0.0),
+            @"bezel-color": [CPNull null],
+        };
 }
 
 /* @ignore */
@@ -233,7 +234,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
                         CPTextFieldInputOwner._DOMElement,
                         CPTextFieldDOMInputElement,
                         CPTextFieldInputResigning,
-                        AT_REF(CPTextFieldInputDidBlur));
+                        @ref(CPTextFieldInputDidBlur));
         };
 
         if (CPFeatureIsCompatible(CPInputOnInputEventFeature))
@@ -347,6 +348,11 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     // We only allow first responder status if the field is editable and enabled.
     if (!shouldBeEditable && [[self window] firstResponder] === self)
         [[self window] makeFirstResponder:nil];
+
+    if (shouldBeEditable)
+        [self setThemeState:CPThemeStateEditable];
+    else
+        [self unsetThemeState:CPThemeStateEditable];
 }
 
 /*!
@@ -770,7 +776,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     var error = @"";
 
-    if ([self _setStringValue:aValue isNewValue:NO errorDescription:AT_REF(error)] === NO)
+    if ([self _setStringValue:aValue isNewValue:NO errorDescription:@ref(error)] === NO)
     {
         var acceptInvalidValue = NO;
 
@@ -1037,7 +1043,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     {
         var object = nil;
 
-        if ([formatter getObjectValue:AT_REF(object) forString:aValue errorDescription:anError])
+        if ([formatter getObjectValue:@ref(object) forString:aValue errorDescription:anError])
             objectValue = object;
         else
         {
@@ -1076,7 +1082,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
             // Formatting failed, get an "empty" object by formatting an empty string.
             // If that fails, the value is undefined.
-            if ([formatter getObjectValue:AT_REF(value) forString:@"" errorDescription:nil] === NO)
+            if ([formatter getObjectValue:@ref(value) forString:@"" errorDescription:nil] === NO)
                 value = undefined;
 
             [super setObjectValue:value];
@@ -1652,6 +1658,9 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 - (void)setValue:(id)aValue forBinding:(CPString)aBinding
 {
+    if (!aValue || (aValue.isa && [aValue isMemberOfClass:CPNull]))
+        [_source setPlaceholderString:[self _placeholderForMarker:CPNullMarker]];
+
     [_source setObjectValue:aValue];
 }
 
@@ -1667,6 +1676,9 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
 - (void)setValue:(id)aValue forBinding:(CPString)aBinding
 {
+    if (!aValue || (aValue.isa && [aValue isMemberOfClass:CPNull]))
+        [_source setPlaceholderString:[self _placeholderForMarker:CPNullMarker]];
+
     [_source setObjectValue:aValue];
 }
 

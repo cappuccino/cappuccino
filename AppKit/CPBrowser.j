@@ -73,11 +73,11 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithJSObject:{
+    return @{
         @"image-control-resize": [CPNull null],
         @"image-control-leaf": [CPNull null],
         @"image-control-leaf-pressed": [CPNull null]
-    }];
+    };
 }
 
 - (id)initWithFrame:(CGRect)aFrame

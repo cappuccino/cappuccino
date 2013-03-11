@@ -78,15 +78,16 @@ CPBelowBottom = 6;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], 1.0, 3.0, CGSizeMakeZero(), 6.0, [CPNull null], CGSizeMakeZero()]
-                                       forKeys:[   @"background-color",
-                                                   @"border-color",
-                                                   @"border-width",
-                                                   @"corner-radius",
-                                                   @"inner-shadow-offset",
-                                                   @"inner-shadow-size",
-                                                   @"inner-shadow-color",
-                                                   @"content-margin"]];
+    return @{
+            @"background-color": [CPNull null],
+            @"border-color": [CPNull null],
+            @"border-width": 1.0,
+            @"corner-radius": 3.0,
+            @"inner-shadow-offset": CGSizeMakeZero(),
+            @"inner-shadow-size": 6.0,
+            @"inner-shadow-color": [CPNull null],
+            @"content-margin": CGSizeMakeZero(),
+        };
 }
 
 + (id)boxEnclosingView:(CPView)aView

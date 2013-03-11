@@ -400,7 +400,7 @@ GLOBAL(objj_allocateClassPair) = function(/*Class*/ superclass, /*String*/ aName
         // Give our current allocator all the instance variables of our super class' allocator.
         classObject.allocator.prototype = new superclass.allocator;
 
-        // "Inheret" parent properties.
+        // "Inherit" parent properties.
         classObject.ivar_dtable = classObject.ivar_store.prototype = new superclass.ivar_store;
         classObject.method_dtable = classObject.method_store.prototype = new superclass.method_store;
 

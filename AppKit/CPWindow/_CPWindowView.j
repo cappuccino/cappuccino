@@ -31,6 +31,7 @@
 @global CPApp
 
 var _CPWindowViewCornerResizeRectWidth = 10,
+    _CPWindowViewMinContentHeight = 2,
 
     _CPWindowViewResizeRegionNone = -1,
     _CPWindowViewResizeRegionTopLeft = 0,
@@ -82,26 +83,27 @@ _CPWindowViewResizeSlop = 3;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[25, CGInsetMakeZero(), 5, [CPColor clearColor], CGSizeMakeZero(), [CPNull null], [CPColor blackColor], [CPNull null],[CPNull null], [CPNull null], [CPNull null], [CPNull null] , [CPColor blackColor], [CPFont systemFontOfSize:CPFontCurrentSystemSize], [CPNull null], _CGSizeMakeZero(), CPCenterTextAlignment, CPLineBreakByTruncatingTail, CPTopVerticalTextAlignment]
-                                       forKeys:[    @"title-bar-height",
-                                                    @"shadow-inset",
-                                                    @"shadow-distance",
-                                                    @"window-shadow-color",
-                                                    @"size-indicator",
-                                                    @"resize-indicator",
-                                                    @"attached-sheet-shadow-color",
-                                                    @"close-image-origin",
-                                                    @"close-image-size",
-                                                    @"close-image",
-                                                    @"close-active-image",
-                                                    @"bezel-color",
-                                                    @"title-text-color",
-                                                    @"title-font",
-                                                    @"title-text-shadow-color",
-                                                    @"title-text-shadow-offset",
-                                                    @"title-alignment",
-                                                    @"title-line-break-mode",
-                                                    @"title-vertical-alignment"]];
+    return @{
+            @"title-bar-height": 25,
+            @"shadow-inset": CGInsetMakeZero(),
+            @"shadow-distance": 5,
+            @"window-shadow-color": [CPColor clearColor],
+            @"size-indicator": CGSizeMakeZero(),
+            @"resize-indicator": [CPNull null],
+            @"attached-sheet-shadow-color": [CPColor blackColor],
+            @"close-image-origin": [CPNull null],
+            @"close-image-size": [CPNull null],
+            @"close-image": [CPNull null],
+            @"close-active-image": [CPNull null],
+            @"bezel-color": [CPNull null],
+            @"title-text-color": [CPColor blackColor],
+            @"title-font": [CPFont systemFontOfSize:CPFontCurrentSystemSize],
+            @"title-text-shadow-color": [CPNull null],
+            @"title-text-shadow-offset": _CGSizeMakeZero(),
+            @"title-alignment": CPCenterTextAlignment,
+            @"title-line-break-mode": CPLineBreakByTruncatingTail,
+            @"title-vertical-alignment": CPTopVerticalTextAlignment,
+        };
 }
 
 - (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
@@ -176,7 +178,7 @@ _CPWindowViewResizeSlop = 3;
 - (void)mouseDown:(CPEvent)anEvent
 {
     var theWindow = [self window],
-        couldResize = _styleMask & CPResizableWindowMask;
+        couldResize = _styleMask & CPResizableWindowMask && ![theWindow isFullPlatformWindow];
 
     couldResize = couldResize && (
         (CPWindowResizeStyle === CPWindowResizeStyleModern) ||
@@ -465,13 +467,20 @@ _CPWindowViewResizeSlop = 3;
     {
         var deltaX = globalLocation.x - _mouseDraggedPoint.x,
             deltaY = globalLocation.y - _mouseDraggedPoint.y,
-            newX = _CGRectGetMinX(_resizeFrame),
-            newY = _CGRectGetMinY(_resizeFrame),
-            newWidth = _CGRectGetWidth(_resizeFrame),
-            newHeight = _CGRectGetHeight(_resizeFrame),
+            startX = _CGRectGetMinX(_resizeFrame),
+            startY = _CGRectGetMinY(_resizeFrame),
+            startWidth = _CGRectGetWidth(_resizeFrame),
+            startHeight = _CGRectGetHeight(_resizeFrame),
+            newX,
+            newY,
+            newWidth,
+            newHeight,
             platformFrame = [[theWindow platformWindow] usableContentFrame],
+            resizeMinSize = [self _minimumResizeSize],
             minSize = [theWindow minSize],
             maxSize = [theWindow maxSize];
+
+        minSize = _CGSizeMake(MAX(minSize.width, resizeMinSize.width), MAX(minSize.height, resizeMinSize.height));
 
         // Calculate x and width first
         switch (_resizeRegion)
@@ -479,20 +488,42 @@ _CPWindowViewResizeSlop = 3;
             case _CPWindowViewResizeRegionTopLeft:
             case _CPWindowViewResizeRegionLeft:
             case _CPWindowViewResizeRegionBottomLeft:
-                if (minSize && deltaX > 0)
-                    deltaX = MIN(newWidth - minSize.width, deltaX);
-                else if (maxSize && deltaX < 0)
-                    deltaX = MAX(newWidth - maxSize.width, deltaX);
+                // If it is shrinking from the left edge, the maximum distance it can move
+                // is the distance between the original width and the min width.
+                if (deltaX > 0)
+                    deltaX = MIN(startWidth - minSize.width, deltaX);
 
-                newX += deltaX,
-                newWidth -= deltaX;
+                // If it is growing from the left edge, the maximum distance it can move
+                // is the distance between the original width and the max width.
+                else if (deltaX < 0)
+                    deltaX = -MIN(maxSize.width - startWidth, ABS(deltaX));
+
+                // When resizing from the left, we change the origin and the width
+                newX = startX + deltaX;
+                newWidth = startWidth - deltaX;
                 break;
 
             case _CPWindowViewResizeRegionTopRight:
             case _CPWindowViewResizeRegionRight:
             case _CPWindowViewResizeRegionBottomRight:
-                newWidth += deltaX;
+                // If it is growing from the right edge, the maximum distance it can move
+                // is the distance between the original width and the max width.
+                if (deltaX > 0)
+                    deltaX = MIN(maxSize.width - startWidth, deltaX);
+
+                // If it is shrinking from the right edge, the maximum distance it can move
+                // is the distance between the original width and the min width.
+                else if (deltaX < 0)
+                    deltaX = -MIN(startWidth - minSize.width, ABS(deltaX));
+
+                // When resizing from the right, change only the width
+                newX = startX;
+                newWidth = startWidth + deltaX;
                 break;
+
+            default:
+                newX = startX;
+                newWidth = startWidth;
         }
 
         // Now calculate y and height
@@ -501,20 +532,42 @@ _CPWindowViewResizeSlop = 3;
             case _CPWindowViewResizeRegionTopLeft:
             case _CPWindowViewResizeRegionTop:
             case _CPWindowViewResizeRegionTopRight:
-                if (minSize && deltaY > 0)
-                    deltaY = MIN(newHeight - minSize.height, deltaY);
-                else if (maxSize && deltaY < 0)
-                    deltaY = MAX(newHeight - maxSize.height, deltaY);
+                // If it is shrinking from the top edge, the maximum distance it can move
+                // is the distance between the original height and the min height.
+                if (deltaY > 0)
+                    deltaY = MIN(startHeight - minSize.height, deltaY);
 
-                newY += deltaY,
-                newHeight -= deltaY;
+                // If it is growing from the top edge, the maximum distance it can move
+                // is the distance between the original height and the max height.
+                else if (deltaY < 0)
+                    deltaY = -MIN(maxSize.height - startHeight, ABS(deltaY));
+
+                // When resizing from the top, change the origin and the height
+                newY = startY + deltaY;
+                newHeight = startHeight - deltaY;
                 break;
 
             case _CPWindowViewResizeRegionBottomLeft:
             case _CPWindowViewResizeRegionBottom:
             case _CPWindowViewResizeRegionBottomRight:
-                newHeight += deltaY;
+                // If it is growing from the bottom edge, the maximum distance it can move
+                // is the distance between the original height and the max height.
+                if (deltaY > 0)
+                    deltaY = MIN(maxSize.height - startHeight, deltaY);
+
+                // If it is shrinking from the bottom edge, the maximum distance it can move
+                // is the distance between the original height and the min height.
+                else if (deltaY < 0)
+                    deltaY = -MIN(startHeight - minSize.height, ABS(deltaY));
+
+                // When resizing from the bottom, change only the height
+                newY = startY;
+                newHeight = startHeight + deltaY;
                 break;
+
+            default:
+                newY = startY;
+                newHeight = startHeight;
         }
 
         if (theWindow._isSheet && theWindow._parentView && (frame.size.width !== newWidth))
@@ -806,6 +859,11 @@ _CPWindowViewResizeSlop = 3;
         [_resizeIndicator setFrame:CGRectMake(boundsSize.width - size.width - _resizeIndicatorOffset.width, boundsSize.height - size.height - _resizeIndicatorOffset.height, size.width, size.height)];
         [_resizeIndicator setImage:[self valueForThemeAttribute:@"resize-indicator"]];
     }
+}
+
+- (CGSize)_minimumResizeSize
+{
+    return _CGSizeMake(0, _CPWindowViewMinContentHeight);
 }
 
 @end

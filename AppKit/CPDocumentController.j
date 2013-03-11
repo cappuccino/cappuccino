@@ -148,7 +148,7 @@ var CPSharedDocumentController = nil;
     {
         var type = [self typeForContentsOfURL:anAbsoluteURL error:anError];
 
-        result = [self makeDocumentWithContentsOfURL:anAbsoluteURL ofType:type delegate:self didReadSelector:@selector(document:didRead:contextInfo:) contextInfo:[CPDictionary dictionaryWithObject:shouldDisplay forKey:@"shouldDisplay"]];
+        result = [self makeDocumentWithContentsOfURL:anAbsoluteURL ofType:type delegate:self didReadSelector:@selector(document:didRead:contextInfo:) contextInfo:@{ @"shouldDisplay": shouldDisplay }];
 
         [self addDocument:result];
 

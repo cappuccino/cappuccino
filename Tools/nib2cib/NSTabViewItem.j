@@ -41,6 +41,12 @@
     return self;
 }
 
+- (void)awakeFromNib
+{
+    if ([_view superview])
+        [_view removeFromSuperview];
+}
+
 @end
 
 @implementation NSTabViewItem : CPTabViewItem

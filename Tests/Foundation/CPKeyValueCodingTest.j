@@ -454,14 +454,14 @@ var accessIVARS = YES;
 
 - (void)testIfValueForKeyAccessesObjectForKey
 {
-    var testDictionary = [CPDictionary dictionary];
+    var testDictionary = @{};
     [testDictionary setObject:kvcTestObject forKey:@"testKey"];
     [self assert: kvcTestObject same: [testDictionary valueForKey: @"testKey"]];
 }
 
 - (void)testIfSetValueForKeyModifiesObjectForKey
 {
-    var testDictionary = [CPDictionary dictionary];
+    var testDictionary = @{};
     [testDictionary setValue:kvcTestObject forKey:@"testKey"];
     [self assert: kvcTestObject same: [testDictionary objectForKey: @"testKey"]];
 }

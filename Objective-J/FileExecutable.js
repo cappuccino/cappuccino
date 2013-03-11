@@ -36,7 +36,7 @@ function FileExecutable(/*CFURL|String*/ aURL, /*Dictionary*/ aFilenameTranslate
 
     var fileContents = StaticResource.resourceAtURL(aURL).contents(),
         executable = NULL,
-        extension = aURL.pathExtension();
+        extension = aURL.pathExtension().toLowerCase();
 
     if (fileContents.match(/^@STATIC;/))
         executable = decompile(fileContents, aURL);

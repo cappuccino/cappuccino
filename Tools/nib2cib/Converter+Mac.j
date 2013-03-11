@@ -44,33 +44,9 @@
 
         [self replaceFontForObject:object];
 
-        if (![object isKindOfClass:[CPView class]])
-            continue;
-
-        var superview = [object superview];
-
-        if (!superview || [superview NS_isFlipped])
-            continue;
-
-        var superviewHeight = CGRectGetHeight([superview bounds]),
-            frame = [object frame];
-
-        [object setFrameOrigin:CGPointMake(CGRectGetMinX(frame), superviewHeight - CGRectGetMaxY(frame))];
-
-        var NS_autoresizingMask = [object autoresizingMask],
-            autoresizingMask = NS_autoresizingMask & ~(CPViewMaxYMargin | CPViewMinYMargin);
-
-        if (!(NS_autoresizingMask & (CPViewMaxYMargin | CPViewMinYMargin | CPViewHeightSizable)))
-            autoresizingMask |= CPViewMinYMargin;
-        else
-        {
-            if (NS_autoresizingMask & CPViewMaxYMargin)
-                autoresizingMask |= CPViewMinYMargin;
-            if (NS_autoresizingMask & CPViewMinYMargin)
-                autoresizingMask |= CPViewMaxYMargin;
-        }
-
-        [object setAutoresizingMask:autoresizingMask];
+        // Give the object a chance to do any final rewiring before being saved back.
+        if ([object respondsToSelector:@selector(awakeFromNib)])
+            [object awakeFromNib];
     }
 
     // Re-archive the CP data.

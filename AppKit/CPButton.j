@@ -76,9 +76,10 @@ CPButtonStateMixed             = CPThemeState("mixed");
 CPButtonStateBezelStyleRounded = CPThemeState("rounded");
 
 // add all future correspondance between bezel styles and theme state here.
-var CPButtonBezelStyleStateMap = [CPDictionary dictionaryWithObjectsAndKeys:
-                                    CPButtonStateBezelStyleRounded, CPRoundedBezelStyle,
-                                    [CPNull null], CPRoundRectBezelStyle];
+var CPButtonBezelStyleStateMap = @{
+        CPRoundedBezelStyle: CPButtonStateBezelStyleRounded,
+        CPRoundRectBezelStyle: [CPNull null],
+    };
 
 /// @cond IGNORE
 CPButtonDefaultHeight = 25.0;
@@ -150,8 +151,13 @@ CPButtonImageOffset   = 3.0;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], 0.0, _CGInsetMakeZero(), _CGInsetMakeZero(), [CPNull null]]
-                                       forKeys:[@"image", @"image-offset", @"bezel-inset", @"content-inset", @"bezel-color"]];
+    return @{
+            @"image": [CPNull null],
+            @"image-offset": 0.0,
+            @"bezel-inset": _CGInsetMakeZero(),
+            @"content-inset": _CGInsetMakeZero(),
+            @"bezel-color": [CPNull null],
+        };
 }
 
 /*!

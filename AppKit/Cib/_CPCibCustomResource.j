@@ -46,12 +46,12 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
 
 + (id)imageResourceWithName:(CPString)aResourceName size:(CGSize)aSize
 {
-    return [[self alloc] initWithClassName:@"CPImage" resourceName:aResourceName properties:[CPDictionary dictionaryWithObject:aSize forKey:@"size"]];
+    return [[self alloc] initWithClassName:@"CPImage" resourceName:aResourceName properties:@{ @"size": aSize }];
 }
 
 + (id)imageResourceWithName:(CPString)aResourceName size:(CGSize)aSize bundleClass:(CPString)aBundleClass
 {
-    return [[self alloc] initWithClassName:@"CPImage" resourceName:aResourceName properties:[CPDictionary dictionaryWithObjects:[aSize, aBundleClass] forKeys:[@"size", @"bundleClass"]]];
+    return [[self alloc] initWithClassName:@"CPImage" resourceName:aResourceName properties:@{ @"size": aSize, @"bundleClass": aBundleClass }];
 }
 
 - (id)initWithClassName:(CPString)aClassName resourceName:(CPString)aResourceName properties:(CPDictionary)properties

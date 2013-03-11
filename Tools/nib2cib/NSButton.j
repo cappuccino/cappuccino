@@ -66,23 +66,17 @@ var NSButtonIsBorderedMask = 0x00800000,
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    self = [super NS_initWithCoder:aCoder];
-
-    if (self)
-    {
-        var cell = [aCoder decodeObjectForKey:@"NSCell"];
-        self = [self NS_initWithCell:cell];
-    }
-
-    return self;
+    return [super NS_initWithCoder:aCoder];
 }
 
 /*!
     Intialise a button given a cell. This method is meant for reuse by controls which contain
     cells other than CPButton itself.
 */
-- (id)NS_initWithCell:(NSCell)cell
+- (void)NS_initWithCell:(NSCell)cell
 {
+    [super NS_initWithCell:cell];
+
     var alternateImage = [cell alternateImage],
         positionOffsetSizeWidth = 0,
         positionOffsetOriginX = 0,
@@ -275,8 +269,6 @@ var NSButtonIsBorderedMask = 0x00800000,
 
     _highlightsBy = [cell highlightsBy];
     _showsStateBy = [cell showsStateBy];
-
-    return self;
 }
 
 @end
@@ -285,7 +277,15 @@ var NSButtonIsBorderedMask = 0x00800000,
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [self NS_initWithCoder:aCoder];
+    self = [self NS_initWithCoder:aCoder];
+
+    if (self)
+    {
+        var cell = [aCoder decodeObjectForKey:@"NSCell"];
+        [self NS_initWithCell:cell];
+    }
+
+    return self;
 }
 
 - (Class)classForKeyedArchiver

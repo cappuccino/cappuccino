@@ -30,23 +30,22 @@
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    if (self = [super NS_initWithCoder:aCoder])
-    {
-        var cell = [aCoder decodeObjectForKey:@"NSCell"];
+    return [super NS_initWithCoder:aCoder];
+}
 
-        _menu = [cell menu];
+- (void)NS_initWithCell:(NSCell)cell
+{
+    [super NS_initWithCell:cell];
 
-        // adjust the frame
-        _frame.origin.x -= 4;
-        _frame.origin.y -= 4;
-        _frame.size.width += 7;
-        _bounds.size.width += 7;
+    _menu = [cell menu];
+    [self setPullsDown:[cell pullsDown]];
+    _preferredEdge  = [cell preferredEdge];
 
-        [self setPullsDown:[cell pullsDown]];
-        _preferredEdge  = [cell preferredEdge];
-    }
-
-    return self;
+    // adjust the frame
+    _frame.origin.x -= 4;
+    _frame.origin.y -= 4;
+    _frame.size.width += 7;
+    _bounds.size.width += 7;
 }
 
 @end
@@ -57,7 +56,15 @@
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [self NS_initWithCoder:aCoder];
+    self = [self NS_initWithCoder:aCoder];
+
+    if (self)
+    {
+        var cell = [aCoder decodeObjectForKey:@"NSCell"];
+        [self NS_initWithCell:cell];
+    }
+
+    return self;
 }
 
 - (Class)classForKeyedArchiver

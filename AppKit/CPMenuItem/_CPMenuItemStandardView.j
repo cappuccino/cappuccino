@@ -47,24 +47,25 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], 3.0, 17.0, 14.0, 17.0, 4.0, 30.0]
-                                       forKeys:[    @"submenu-indicator-color",
-                                                    @"menu-item-selection-color",
-                                                    @"menu-item-text-shadow-color",
-                                                    @"menu-item-text-color",
-                                                    @"menu-item-default-off-state-image",
-                                                    @"menu-item-default-off-state-highlighted-image",
-                                                    @"menu-item-default-on-state-image",
-                                                    @"menu-item-default-on-state-highlighted-image",
-                                                    @"menu-item-default-mixed-state-image",
-                                                    @"menu-item-default-mixed-state-highlighted-image",
-                                                    @"menu-item-separator-color",
-                                                    @"left-margin",
-                                                    @"right-margin",
-                                                    @"state-column-width",
-                                                    @"indentation-width",
-                                                    @"vertical-margin",
-                                                    @"right-columns-margin"]];
+    return @{
+            @"submenu-indicator-color": [CPNull null],
+            @"menu-item-selection-color": [CPNull null],
+            @"menu-item-text-shadow-color": [CPNull null],
+            @"menu-item-text-color": [CPNull null],
+            @"menu-item-default-off-state-image": [CPNull null],
+            @"menu-item-default-off-state-highlighted-image": [CPNull null],
+            @"menu-item-default-on-state-image": [CPNull null],
+            @"menu-item-default-on-state-highlighted-image": [CPNull null],
+            @"menu-item-default-mixed-state-image": [CPNull null],
+            @"menu-item-default-mixed-state-highlighted-image": [CPNull null],
+            @"menu-item-separator-color": [CPNull null],
+            @"left-margin": 3.0,
+            @"right-margin": 17.0,
+            @"state-column-width": 14.0,
+            @"indentation-width": 17.0,
+            @"vertical-margin": 4.0,
+            @"right-columns-margin": 30.0,
+        };
 }
 
 + (id)view
