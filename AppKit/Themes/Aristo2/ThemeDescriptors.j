@@ -2028,7 +2028,7 @@ var themedButtonValues = nil,
         [
             [@"menu-item-selection-color",                              [CPColor colorWithHexString:@"5C85D8"]],
             [@"menu-item-text-shadow-color",                            [CPColor colorWithCalibratedRed:26.0 / 255.0 green: 73.0 / 255.0 blue:109.0 / 255.0 alpha:1.0]],
-            [@"horizontal-margin",                                      12.0],
+            [@"horizontal-margin",                                      9.0],
             [@"submenu-indicator-margin",                               3.0],
             [@"vertical-margin",                                        4.0]
         ];
