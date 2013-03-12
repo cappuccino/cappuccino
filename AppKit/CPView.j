@@ -2513,7 +2513,9 @@ setBoundsOrigin:
 
 - (CPView)nextKeyView
 {
-    return _nextKeyView;
+    if (_nextKeyView && [[_nextKeyView window] isEqual:[self window]])
+        return _nextKeyView;
+    return nil;
 }
 
 - (CPView)nextValidKeyView
@@ -2535,7 +2537,9 @@ setBoundsOrigin:
 
 - (CPView)previousKeyView
 {
-    return _previousKeyView;
+    if (_previousKeyView && [[_previousKeyView window] isEqual:[self window]])
+        return _previousKeyView;
+    return nil;
 }
 
 - (CPView)previousValidKeyView
@@ -2557,7 +2561,7 @@ setBoundsOrigin:
 
 - (void)_setPreviousKeyView:(CPView)previous
 {
-    if ([previous isEqual:self] || ![[previous window] isEqual:[self window]])
+    if ([previous isEqual:self])
         _previousKeyView = nil;
     else
         _previousKeyView = previous;
@@ -2565,7 +2569,7 @@ setBoundsOrigin:
 
 - (void)setNextKeyView:(CPView)next
 {
-    if ([next isEqual:self] || ![[next window] isEqual:[self window]])
+    if ([next isEqual:self])
         _nextKeyView = nil;
     else
     {
