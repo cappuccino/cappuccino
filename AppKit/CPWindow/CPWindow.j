@@ -640,6 +640,9 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate
 {
+    if (_CGRectEqualToRect(aFrame, _frame))
+        return;
+
     aFrame = _CGRectMakeCopy(aFrame);
 
     var value = aFrame.origin.x,
@@ -665,6 +668,10 @@ CPTexturedBackgroundWindowMask
 
     if (delta)
         aFrame.size.height = value > 0.15 ? CEIL(value) : FLOOR(value);
+
+    // In Cocoa, if a window is already visible, only its height is pinned
+    if (_isVisible)
+        aFrame = [self _pinFrame:aFrame toUsableScreenWidth:NO andHeight:YES];
 
     if (shouldAnimate)
     {
@@ -718,6 +725,30 @@ CPTexturedBackgroundWindowMask
         if (originMoved)
             [self _moveChildWindows:delta];
     }
+}
+
+- (CGRect)_pinFrame:(CGRect)aFrame toUsableScreenWidth:(BOOL)pinWidth andHeight:(BOOL)pinHeight
+{
+    var usableRect = [_platformWindow usableContentFrame],
+        frame = _CGRectMakeCopy(aFrame);
+
+    if (pinWidth)
+    {
+        frame.origin.x = MAX(frame.origin.x, usableRect.origin.x);
+
+        var maxX = MIN(_CGRectGetMaxX(frame), _CGRectGetMaxX(usableRect));
+        frame.size.width = maxX - frame.origin.x;
+    }
+
+    if (pinHeight)
+    {
+        frame.origin.y = MAX(frame.origin.y, usableRect.origin.y);
+
+        var maxY = MIN(_CGRectGetMaxY(frame), _CGRectGetMaxY(usableRect));
+        frame.size.height = maxY - frame.origin.y;
+    }
+
+    return frame;
 }
 
 - (void)_moveChildWindows:(CGPoint)delta
@@ -787,6 +818,9 @@ CPTexturedBackgroundWindowMask
     // -dw- if a sheet is clicked, the parent window should come up too
     if ([self isSheet])
         [_parentView orderFront:self];
+
+    // Cocoa pins windows to the usable screen content during orderFront
+    [self setFrame:[self _pinFrame:_frame toUsableScreenWidth:YES andHeight:YES]];
 
     [_platformWindow orderFront:self];
     [_platformWindow order:CPWindowAbove window:self relativeTo:nil];
