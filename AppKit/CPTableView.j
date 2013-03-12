@@ -5007,8 +5007,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             [self setSelectionGradientColors:CPTableViewSourcelistNotFocusedSelectionColor];
         return;
     }
-
-    if (focused)
+    else if (focused)
         [self setSelectionHighlightColor:[[self theme] valueForAttributeWithName:@"selection-color" forClass:[self class]]];
     else
         [self setSelectionHighlightColor:[CPColor secondarySelectedControlColor]];
