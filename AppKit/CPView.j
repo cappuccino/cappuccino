@@ -1994,9 +1994,6 @@ setFrameOrigin:
         return;
 
     _postsFrameChangedNotifications = shouldPostFrameChangedNotifications;
-
-    if (_postsFrameChangedNotifications)
-        [CachedNotificationCenter postNotificationName:CPViewFrameDidChangeNotification object:self];
 }
 
 /*!
@@ -2027,9 +2024,6 @@ setBoundsOrigin:
         return;
 
     _postsBoundsChangedNotifications = shouldPostBoundsChangedNotifications;
-
-    if (_postsBoundsChangedNotifications)
-        [CachedNotificationCenter postNotificationName:CPViewBoundsDidChangeNotification object:self];
 }
 
 /*!
