@@ -618,11 +618,12 @@ var concat = Array.prototype.concat,
     var index = 0,
         count = [self count],
         shouldStop = NO,
-        shouldStopRef = AT_REF(shouldStop);
+        shouldStopRef = @ref(shouldStop);
 
     for (; index < count; ++index)
     {
         aFunction([self objectAtIndex:index], index, shouldStopRef);
+
         if (shouldStop)
             return;
     }
@@ -630,8 +631,6 @@ var concat = Array.prototype.concat,
 
 - (void)enumerateObjectsWithOptions:(CPEnumerationOptions)options usingBlock:(Function /*(id anObject, int idx, @ref BOOL stop)*/)aFunction
 {
-    var shouldStop = NO;
-
     if (options & CPEnumerationReverse)
     {
         var index = [self count] - 1,
@@ -645,9 +644,13 @@ var concat = Array.prototype.concat,
             increment = 1;
     }
 
+    var shouldStop = NO,
+        shouldStopRef = @ref(shouldStop);
+
     for (; index !== stop; index += increment)
     {
-        aFunction([self objectAtIndex:index], index, AT_REF(shouldStop));
+        aFunction([self objectAtIndex:index], index, shouldStopRef);
+
         if (shouldStop)
             return;
     }

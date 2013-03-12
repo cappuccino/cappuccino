@@ -49,11 +49,10 @@ CPThemeStateShadowViewHeavy = CPThemeState("shadowview-style-heavy");
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithJSObject:
-        {
+    return @{
             @"bezel-color": [CPNull null],
             @"content-inset": CGInsetMakeZero()
-        }];
+        };
 }
 
 + (CGRect)frameForContentFrame:(CGRect)aFrame withWeight:(CPShadowWeight)aWeight

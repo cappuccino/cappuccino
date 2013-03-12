@@ -1040,7 +1040,7 @@
     var arrayController1 = [CPArrayController new],
         arrayController2 = [CPArrayController new];
 
-    [arrayController2 setContent:[CPDictionary dictionaryWithObject:[1, 2, 3] forKey:@"x"]];
+    [arrayController2 setContent:@{ @"x": [1, 2, 3] }];
 
     [arrayController1 bind:@"contentArray" toObject:arrayController2 withKeyPath:@"selection.x" options:nil];
     // This used to cause a bug where the _CPKVCArray wrapping the selection proxy tried to call 'count' on
@@ -1165,8 +1165,14 @@
     if (self)
     {
         items = [CPMutableArray array];
-        [items addObject:[CPDictionary dictionaryWithObjectsAndKeys:@"Spacely Sprockets", @"name", [CPArray arrayWithObjects:@"Tom", @"Dick", @"Harry"], @"employees"]];
-        [items addObject:[CPDictionary dictionaryWithObjectsAndKeys:@"Cogswell Cogs", @"name", [CPArray arrayWithObjects:@"Jane", @"Mary", @"Vic"], @"employees"]];
+        [items addObject:@{
+                @"name": @"Spacely Sprockets",
+                @"employees": [CPArray arrayWithObjects:@"Tom", @"Dick", @"Harry"]
+            }];
+        [items addObject:@{
+                @"name": @"Cogswell Cogs",
+                @"employees": [CPArray arrayWithObjects:@"Jane", @"Mary", @"Vic"]
+            }];
     }
 
     return self;

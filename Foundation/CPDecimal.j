@@ -108,7 +108,7 @@ function CPDecimalMakeWithString(string, locale)
     // Regexp solution as found in JSON spec, with working regexp (I added groupings)
     // Test here: http://www.regexplanet.com/simple/index.html
     // Info from: http://stackoverflow.com/questions/638565/parsing-scientific-notation-sensibly
-    // ([+\-]?)((?:0|[1-9]\d*))  - integer part, cant have leading zeros
+    // ([+\-]?)((?:0|[0-9]\d*))  - integer part, can have leading zeros (follows Cocoa behaviour)
     //  (?:\.(\d*))?           - optional decimal part plus number in group
     //  (?:[eE]([+\-]?)(\d+))?   - optional exponent part plus number in group
     // group 0: string, 1: sign, 2: integer, 3: decimal, 4: exponent sign, 5: exponent
@@ -116,7 +116,7 @@ function CPDecimalMakeWithString(string, locale)
     // Note: this doesn't accept .01 for example, should it?
     // If yes simply add '?' after integer part group, i.e. ([+\-]?)((?:0|[1-9]\d*)?)
     // Note: now it accept .01 style.
-    var matches = string.match(/^([+\-]?)((?:0|[1-9]\d*)?)(?:\.(\d*))?(?:[eE]([+\-]?)(\d+))?$/);
+    var matches = string.match(/^([+\-]?)((?:0|[0-9]\d*)?)(?:\.(\d*))?(?:[eE]([+\-]?)(\d+))?$/);
 
     if (!matches)
         return CPDecimalMakeNaN();

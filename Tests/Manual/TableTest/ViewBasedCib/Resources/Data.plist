@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<dict>
+		<key>image</key>
+		<dict>
+			<key>path</key>
+			<string>Resources/brad.jpg</string>
+			<key>name</key>
+			<string>Brad</string>
+		</dict>
+		<key>show</key>
+		<true/>
+		<key>identifier</key>
+		<string>person</string>
+		<key>value</key>
+		<string>EDITABLE TEXT</string>
+	</dict>
+	<dict>
+		<key>show</key>
+		<true/>
+		<key>slider</key>
+		<integer>100</integer>
+		<key>identifier</key>
+		<string>place</string>
+		<key>name</key>
+		<string>Petrograd</string>
+		<key>value</key>
+		<string>EDITABLE TEXT</string>
+	</dict>
+	<dict>
+		<key>image</key>
+		<dict>
+			<key>path</key>
+			<string>Resources/george.jpg</string>
+			<key>name</key>
+			<string>George</string>
+		</dict>
+		<key>show</key>
+		<true/>
+		<key>identifier</key>
+		<string>person</string>
+		<key>value</key>
+		<string>EDITABLE TEXT</string>
+	</dict>
+	<dict>
+		<key>show</key>
+		<true/>
+		<key>identifier</key>
+		<string>multiple</string>
+		<key>name</key>
+		<string>Brad</string>
+		<key>value</key>
+		<string>EDITABLE TEXT</string>
+	</dict>
+	<dict>
+		<key>image</key>
+		<dict>
+			<key>path</key>
+			<string>Resources/john.jpg</string>
+			<key>name</key>
+			<string>John</string>
+		</dict>
+		<key>show</key>
+		<true/>
+		<key>identifier</key>
+		<string>person</string>
+		<key>value</key>
+		<string>EDITABLE TEXT</string>
+	</dict>
+	<dict>
+		<key>show</key>
+		<true/>
+		<key>slider</key>
+		<integer>150</integer>
+		<key>identifier</key>
+		<string>place</string>
+		<key>name</key>
+		<string>Brad</string>
+		<key>value</key>
+		<string>EDITABLE TEXT</string>
+	</dict>
+	<dict>
+		<key>show</key>
+		<true/>
+		<key>slider</key>
+		<integer>100</integer>
+		<key>identifier</key>
+		<string>place</string>
+		<key>name</key>
+		<string>Robert</string>
+		<key>value</key>
+		<string>EDITABLE TEXT</string>
+	</dict>
+	<dict>
+		<key>show</key>
+		<true/>
+		<key>identifier</key>
+		<string>person</string>
+		<key>name</key>
+		<string>Albert</string>
+		<key>value</key>
+		<string>EDITABLE TEXT</string>
+	</dict>
+	<dict>
+		<key>show</key>
+		<true/>
+		<key>identifier</key>
+		<string>person</string>
+		<key>name</key>
+		<string>Melissa</string>
+		<key>value</key>
+		<string>EDITABLE TEXT</string>
+	</dict>
+	<dict>
+		<key>image</key>
+		<dict>
+			<key>path</key>
+			<string>Resources/john.jpg</string>
+			<key>name</key>
+			<string>John</string>
+		</dict>
+		<key>identifier</key>
+		<string>multiple</string>
+		<key>value</key>
+		<string>EDITABLE TEXT</string>
+	</dict>
+	<dict>
+		<key>image</key>
+		<dict>
+			<key>name</key>
+			<string>Brad</string>
+			<key>path</key>
+			<string>Resources/brad.jpg</string>
+		</dict>
+		<key>identifier</key>
+		<string>person</string>
+		<key>value</key>
+		<string>EDITABLE TEXT</string>
+	</dict>
+	<dict>
+		<key>slider</key>
+		<integer>50</integer>
+		<key>identifier</key>
+		<string>place</string>
+		<key>name</key>
+		<string>Petrograd</string>
+		<key>value</key>
+		<string>EDITABLE TEXT</string>
+	</dict>
+	<dict>
+		<key>image</key>
+		<dict>
+			<key>name</key>
+			<string>George</string>
+			<key>path</key>
+			<string>Resources/george.jpg</string>
+		</dict>
+		<key>identifier</key>
+		<string>person</string>
+		<key>value</key>
+		<string>EDITABLE TEXT</string>
+	</dict>
+	<dict>
+		<key>identifier</key>
+		<string>multiple</string>
+		<key>name</key>
+		<string>Brad</string>
+		<key>value</key>
+		<string>EDITABLE TEXT</string>
+	</dict>
+	<dict>
+		<key>image</key>
+		<dict>
+			<key>name</key>
+			<string>John</string>
+			<key>path</key>
+			<string>Resources/john.jpg</string>
+		</dict>
+		<key>identifier</key>
+		<string>person</string>
+		<key>value</key>
+		<string>EDITABLE TEXT</string>
+	</dict>
+	<dict>
+		<key>slider</key>
+		<integer>200</integer>
+		<key>identifier</key>
+		<string>place</string>
+		<key>name</key>
+		<string>Brad</string>
+		<key>value</key>
+		<string>EDITABLE TEXT</string>
+	</dict>
+	<dict>
+		<key>identifier</key>
+		<string>place</string>
+		<key>name</key>
+		<string>Robert</string>
+		<key>value</key>
+		<string>EDITABLE TEXT</string>
+	</dict>
+	<dict>
+		<key>identifier</key>
+		<string>person</string>
+		<key>name</key>
+		<string>Albert</string>
+		<key>value</key>
+		<string>EDITABLE TEXT</string>
+	</dict>
+	<dict>
+		<key>identifier</key>
+		<string>person</string>
+		<key>name</key>
+		<string>Melissa</string>
+		<key>value</key>
+		<string>EDITABLE TEXT</string>
+	</dict>
+	<dict>
+		<key>image</key>
+		<dict>
+			<key>name</key>
+			<string>JFK</string>
+			<key>path</key>
+			<string>Resources/john.jpg</string>
+		</dict>
+		<key>identifier</key>
+		<string>multiple</string>
+		<key>value</key>
+		<string>EDITABLE TEXT</string>
+	</dict>
+</array>
+</plist>

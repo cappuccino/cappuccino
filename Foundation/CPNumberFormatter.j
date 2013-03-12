@@ -20,8 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#import "Ref.h"
-
 @import "CPString.j"
 @import "CPFormatter.j"
 @import "CPDecimalNumber.j"
@@ -63,6 +61,8 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
     CPNumberFormatterRoundingMode   _roundingMode @accessors(property=roundingMode);
     CPUInteger                      _minimumFractionDigits @accessors(property=minimumFractionDigits);
     CPUInteger                      _maximumFractionDigits @accessors(property=maximumFractionDigits);
+    CPUInteger                      _minimum @accessors(property=minimum);
+    CPUInteger                      _maximum @accessors(property=maximum);
     CPString                        _currencyCode @accessors(property=currencyCode);
     CPString                        _currencySymbol @accessors(property=currencySymbol);
     BOOL                            _generatesDecimalNumbers @accessors(property=generatesDecimalNumbers);
@@ -81,6 +81,8 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
         _maximumFractionDigits = 0;
         _groupingSeparator = @",";
         _generatesDecimalNumbers = YES;
+        _minimum = nil;
+        _maximum = nil;
 
         // FIXME Add locale support.
         _currencyCode = @"USD";
@@ -179,11 +181,35 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
     return [self stringForObjectValue:anObject];
 }
 
-- (BOOL)getObjectValue:(id)anObject forString:(CPString)aString errorDescription:(CPString)anError
+- (BOOL)getObjectValue:(id)anObjectRef forString:(CPString)aString errorDescription:(CPString)anErrorRef
 {
-    // TODO Error handling.
-    var value = [self numberFromString:aString];
-    AT_DEREF(anObject, value);
+    // Interpret an empty string as nil, like in Cocoa.
+    if (aString === @"")
+    {
+        @deref(anObjectRef) = nil;
+        return YES;
+    }
+
+    var value = [self numberFromString:aString],
+        error = @"";
+
+    // this will return false if we've received anything but a number, most likely NaN
+    if (!isFinite(value))
+        error = @"Value is not a number";
+    else if (_minimum !== nil && value < _minimum)
+        error = @"Value is less than the minimum allowed value";
+    else if (_maximum !== nil && value > _maximum)
+        error = @"Value is greater than the maximum allowed value";
+
+    if (error)
+    {
+        if (anErrorRef)
+            @deref(anErrorRef) = error;
+
+        return NO;
+    }
+
+    @deref(anObjectRef) = value;
 
     return YES;
 }
@@ -226,12 +252,29 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
     SET_NEEDS_NUMBER_HANDLER_UPDATE();
 }
 
+- (void)setMinimum:(CPUInteger)aNumber
+{
+    _minimum = aNumber;
+    SET_NEEDS_NUMBER_HANDLER_UPDATE();
+}
+
+- (void)setMaximum:(CPUInteger)aNumber
+{
+    _maximum = aNumber;
+    SET_NEEDS_NUMBER_HANDLER_UPDATE();
+}
+
 #pragma mark Private
 
 - (void)_updateNumberHandlerIfNecessary
 {
     if (!_numberHandler)
-        _numberHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:_roundingMode scale:_maximumFractionDigits raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:YES];
+        _numberHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundingMode:_roundingMode
+                                                                                scale:_maximumFractionDigits
+                                                                     raiseOnExactness:NO
+                                                                      raiseOnOverflow:NO
+                                                                     raiseOnUnderflow:NO
+                                                                  raiseOnDivideByZero:YES];
 }
 
 @end
@@ -239,6 +282,8 @@ var NumberRegex = new RegExp('(-)?(\\d*)(\\.(\\d*))?');
 var CPNumberFormatterStyleKey                   = @"CPNumberFormatterStyleKey",
     CPNumberFormatterMinimumFractionDigitsKey   = @"CPNumberFormatterMinimumFractionDigitsKey",
     CPNumberFormatterMaximumFractionDigitsKey   = @"CPNumberFormatterMaximumFractionDigitsKey",
+    CPNumberFormatterMinimumKey                 = @"CPNumberFormatterMinimumKey",
+    CPNumberFormatterMaximumKey                 = @"CPNumberFormatterMaximumKey",
     CPNumberFormatterRoundingModeKey            = @"CPNumberFormatterRoundingModeKey",
     CPNumberFormatterGroupingSeparatorKey       = @"CPNumberFormatterGroupingSeparatorKey",
     CPNumberFormatterCurrencyCodeKey            = @"CPNumberFormatterCurrencyCodeKey",
@@ -256,6 +301,8 @@ var CPNumberFormatterStyleKey                   = @"CPNumberFormatterStyleKey",
         _numberStyle = [aCoder decodeIntForKey:CPNumberFormatterStyleKey];
         _minimumFractionDigits = [aCoder decodeIntForKey:CPNumberFormatterMinimumFractionDigitsKey];
         _maximumFractionDigits = [aCoder decodeIntForKey:CPNumberFormatterMaximumFractionDigitsKey];
+        _minimum = [aCoder decodeIntForKey:CPNumberFormatterMinimumKey];
+        _maximum = [aCoder decodeIntForKey:CPNumberFormatterMaximumKey];
         _roundingMode = [aCoder decodeIntForKey:CPNumberFormatterRoundingModeKey];
         _groupingSeparator = [aCoder decodeObjectForKey:CPNumberFormatterGroupingSeparatorKey];
         _currencyCode = [aCoder decodeObjectForKey:CPNumberFormatterCurrencyCodeKey];
@@ -273,6 +320,8 @@ var CPNumberFormatterStyleKey                   = @"CPNumberFormatterStyleKey",
     [aCoder encodeInt:_numberStyle forKey:CPNumberFormatterStyleKey];
     [aCoder encodeInt:_minimumFractionDigits forKey:CPNumberFormatterMinimumFractionDigitsKey];
     [aCoder encodeInt:_maximumFractionDigits forKey:CPNumberFormatterMaximumFractionDigitsKey];
+    [aCoder encodeInt:_minimum forKey:CPNumberFormatterMinimumKey];
+    [aCoder encodeInt:_maximum forKey:CPNumberFormatterMaximumKey];
     [aCoder encodeInt:_roundingMode forKey:CPNumberFormatterRoundingModeKey];
     [aCoder encodeObject:_groupingSeparator forKey:CPNumberFormatterGroupingSeparatorKey];
     [aCoder encodeObject:_currencyCode forKey:CPNumberFormatterCurrencyCodeKey];

@@ -124,8 +124,16 @@ var CPRuleEditorItemPBoardType  = @"CPRuleEditorItemPBoardType",
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null], [CPNull null]]
-                                       forKeys:[@"alternating-row-colors", @"selected-color", @"slice-top-border-color", @"slice-bottom-border-color", @"slice-last-bottom-border-color", @"font", @"add-image", @"remove-image"]];
+    return @{
+            @"alternating-row-colors": [CPNull null],
+            @"selected-color": [CPNull null],
+            @"slice-top-border-color": [CPNull null],
+            @"slice-bottom-border-color": [CPNull null],
+            @"slice-last-bottom-border-color": [CPNull null],
+            @"font": [CPNull null],
+            @"add-image": [CPNull null],
+            @"remove-image": [CPNull null],
+        };
 }
 
 - (id)initWithFrame:(CGRect)frame
@@ -791,7 +799,7 @@ TODO: implement
 */
 - (CPPredicate)predicateForRow:(CPInteger)aRow
 {
-    var predicateParts = [CPDictionary dictionary],
+    var predicateParts = @{},
         items = [self criteriaForRow:aRow],
         count = [items count],
         predicate,
@@ -1387,7 +1395,10 @@ TODO: implement
     {
         var item = [items objectAtIndex:i],
             value = [values objectAtIndex:i],
-            itemAndValue = [CPDictionary dictionaryWithObjects:[item, value] forKeys:["item", "value"]];
+            itemAndValue = @{
+                    "item": item,
+                    "value": value,
+                };
 
         [itemsAndValues addObject:itemAndValue];
     }
@@ -1771,7 +1782,7 @@ TODO: implement
 
         if (animate)
         {
-            var animation = [CPDictionary dictionary];
+            var animation = @{};
             [animation setObject:aslice forKey:CPViewAnimationTargetKey];
             [animation setObject:startRect forKey:CPViewAnimationStartFrameKey];
             [animation setObject:targetRect forKey:CPViewAnimationEndFrameKey];
@@ -1866,17 +1877,17 @@ TODO: implement
 
 - (CPString)_toolTipForAddCompoundRowButton
 {
-    return @"Add Compound row";
+    return [_standardLocalizer localizedStringForString:@"Add compound row"];
 }
 
 - (CPString)_toolTipForAddSimpleRowButton
 {
-    return @"Add row";
+    return [_standardLocalizer localizedStringForString:@"Add row"];
 }
 
 - (CPString)_toolTipForDeleteRowButton
 {
-    return @"Delete row";
+    return [_standardLocalizer localizedStringForString:@"Delete row"];
 }
 
 - (void)_updateSliceIndentations
@@ -2268,7 +2279,7 @@ TODO: implement
 
 - (void)_postRowCountChangedNotificationOfType:(CPString)notificationName indexes:indexes
 {
-    var userInfo = [CPDictionary dictionaryWithObject:indexes forKey:"indexes"];
+    var userInfo = @{ "indexes": indexes };
     [[CPNotificationCenter defaultCenter] postNotificationName:notificationName object:self userInfo:userInfo];
 }
 

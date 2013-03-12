@@ -246,6 +246,26 @@ var concat = Array.prototype.concat,
     splice.call(self, anIndex, 1);
 }
 
+- (void)removeObjectIdenticalTo:(id)anObject
+{
+    if (indexOf)
+    {
+        var anIndex;
+        while ((anIndex = indexOf.call(self, anObject)) !== -1)
+            splice.call(self, anIndex, 1);
+    }
+    else
+        [super removeObjectIdenticalTo:anObject inRange:CPMakeRange(0, self.length)];
+}
+
+- (void)removeObjectIdenticalTo:(id)anObject inRange:(CPRange)aRange
+{
+    if (indexOf && !aRange)
+        [self removeObjectIdenticalTo:anObject];
+
+    [super removeObjectIdenticalTo:anObject inRange:aRange];
+}
+
 - (void)addObject:(id)anObject
 {
     push.call(self, anObject);

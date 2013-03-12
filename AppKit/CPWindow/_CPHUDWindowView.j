@@ -36,6 +36,22 @@
     return @"hud-window-view";
 }
 
++ (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
+{
+    /*
+        This window view class draws a frame.
+        So we have to inset the content rect to be inside the frame.
+        The top coordinate has already been adjusted by _CPTitleableWindowView.
+    */
+    var contentRect = [super contentRectForFrameRect:aFrameRect];
+
+    contentRect.origin.x += 1;
+    contentRect.size.width -= 2;
+    contentRect.size.height -= 1;
+
+    return contentRect;
+}
+
 - (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
     var contentRect = [[self class] contentRectForFrameRect:aFrameRect];

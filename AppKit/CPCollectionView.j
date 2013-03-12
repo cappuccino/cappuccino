@@ -21,7 +21,6 @@
  */
 
 #import "../Foundation/CPRange.h"
-#import "../Foundation/Ref.h"
 
 @import <Foundation/CPArray.j>
 @import <Foundation/CPData.j>
@@ -35,9 +34,6 @@
 @import "CPPasteboard.j"
 @import "CPView.j"
 
-@class CPClipView
-
-
 /*!
     @ingroup appkit
     @class CPCollectionView
@@ -49,7 +45,7 @@
     @par Delegate Methods
 
     @delegate - (void)collectionViewDidChangeSelection:(CPCollectionView)collectionView;
-    Called when the selection in the collection view has changed.
+    DEPRECATED: Please do not use.
     @param collectionView the collection view who's selection changed
 
     @delegate - (void)collectionView:(CPCollectionView)collectionView didDoubleClickOnItemAtIndex:(int)index;
@@ -176,50 +172,47 @@ var HORIZONTAL_MARGIN = 2;
 
 /*!
     Sets the item prototype to \c anItem
+    @param anItem the new item prototype.
 
-    The item prototype should implement the CPCoding protocol
-    because the item is copied by archiving and unarchiving the
-    prototypal view.
+    @note
+    - If anItem is located in an external cib file, representedObject, outlets, and bindings will be automatically restored when an item is created.
+    - If anItem and its view belong to the same cib as the collection view, the item prototype should implement the CPCoding protocol because the item is copied by archiving and unarchiving the prototypal view.
+    @note
+        Bindings won't be restored through archiving, instead you need to subclass the -representedObject: method and update the view there.
 
-    Example:
+    @par Example:
 
-    <pre>
-      @implement MyCustomView : CPCollectionViewItem
-      {
-          CPArray   items   @accessors;
-      }
+@code
+@implementation MyCustomPrototypeItem: CPCollectionViewItem
+{
+    @outlet CPTextField textField;
+}
 
-      - (id)initWithFrame:(CGRect)aFrame
-      {
-        self = [super initWithFrame:aFrame];
-        if (self)
-        {
-          items = [];
-        }
-        return self;
-      }
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
 
-      - (id)initWithCoder:(CPCoder)aCoder
-      {
-        self = [super initWithCoder:aCoder];
-        items = [aCoder decodeObjectForKey:@"KEY"];
-        return self;
-      }
+    textField = [aCoder decodeObjectForKey:@"TextField"];
 
-      - (void)encodeWithCoder:(CPCoder)aCoder
-      {
-        [aCoder encodeObject:items forKey:@"KEY"];
-        [super encodeWithCoder:aCoder];
-      }
+    return self;
+}
 
-      @end
-    </pre>
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+    [aCoder encodeConditionalObject:textField forKey:@"TextField"];
+}
 
-    This will allow the collection view to create multiple 'clean' copies
-    of the item prototype which will maintain the original values for item
-    and all of the properties archived by the super class.
+- (void)setRepresentedObject:(id)anObject
+{
+    [super setRepresentedObject:anObject];
+    [textField setStringValue:[anObject objectForKey:@"value"]];
+    [[self view] setColor:[anObject objectForKey:@"color"]];
+}
 
-    @param anItem the new item prototype
+@end
+@endcode
+
 */
 - (void)setItemPrototype:(CPCollectionViewItem)anItem
 {
@@ -406,7 +399,10 @@ var HORIZONTAL_MARGIN = 2;
     [[binderClass getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectionIndexes"];
 
     if ([_delegate respondsToSelector:@selector(collectionViewDidChangeSelection:)])
+    {
+        CPLog.warn("The delegate method collectionViewDidChangeSelection: is deprecated and will be removed in a future version, please bind to selectionIndexes instead.");
         [_delegate collectionViewDidChangeSelection:self];
+    }
 }
 
 /*!
@@ -498,7 +494,7 @@ var HORIZONTAL_MARGIN = 2;
 
     [self _updateMinMaxItemSizeIfNeeded];
 
-    [self _computeGridWithSize:frameSize count:AT_REF(count)];
+    [self _computeGridWithSize:frameSize count:@ref(count)];
 
     //CPLog.debug("frameSize="+CPStringFromSize(frameSize) + "itemSize="+CPStringFromSize(itemSize) + " ncols=" +  colsRowsCount[0] +" nrows="+ colsRowsCount[1]+" displayCount="+ colsRowsCount[2]);
 
@@ -1029,7 +1025,7 @@ var HORIZONTAL_MARGIN = 2;
 - (CPDragOperation)draggingEntered:(id)draggingInfo
 {
     var dropIndex = -1,
-        dropIndexRef = AT_REF(dropIndex),
+        dropIndexRef = @ref(dropIndex),
         dragOp = [self _validateDragWithInfo:draggingInfo dropIndex:dropIndexRef dropOperation:1];
 
     dropIndex = dropIndexRef();
@@ -1047,7 +1043,7 @@ var HORIZONTAL_MARGIN = 2;
         return _currentDragOperation;
 
     var dropIndex,
-        dropIndexRef = AT_REF(dropIndex);
+        dropIndexRef = @ref(dropIndex);
 
     var dragOperation = [self _validateDragWithInfo:draggingInfo dropIndex:dropIndexRef dropOperation:1];
 
@@ -1065,7 +1061,7 @@ var HORIZONTAL_MARGIN = 2;
 
     if ([_delegate respondsToSelector:@selector(collectionView:validateDrop:proposedIndex:dropOperation:)])
     {
-        var dropIndexRef2 = AT_REF(dropIndex);
+        var dropIndexRef2 = @ref(dropIndex);
 
         result = [_delegate collectionView:self validateDrop:draggingInfo proposedIndex:dropIndexRef2  dropOperation:dropOperation];
 

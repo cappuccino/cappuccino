@@ -45,10 +45,10 @@
     if (_documentView == aView)
         return;
 
-    var defaultCenter = [CPNotificationCenter defaultCenter];
-
     if (_documentView)
     {
+        var defaultCenter = [CPNotificationCenter defaultCenter];
+
         [defaultCenter
             removeObserver:self
                       name:CPViewFrameDidChangeNotification
@@ -67,22 +67,28 @@
     if (_documentView)
     {
         [self addSubview:_documentView];
-
-        [_documentView setPostsFrameChangedNotifications:YES];
-        [_documentView setPostsBoundsChangedNotifications:YES];
-
-        [defaultCenter
-            addObserver:self
-               selector:@selector(viewFrameChanged:)
-                   name:CPViewFrameDidChangeNotification
-                 object:_documentView];
-
-        [defaultCenter
-            addObserver:self
-               selector:@selector(viewBoundsChanged:)
-                   name:CPViewBoundsDidChangeNotification
-                 object:_documentView];
+        [self _observeDocumentView];
     }
+}
+
+- (void)_observeDocumentView
+{
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
+    [_documentView setPostsFrameChangedNotifications:YES];
+    [_documentView setPostsBoundsChangedNotifications:YES];
+
+    [defaultCenter
+        addObserver:self
+           selector:@selector(viewFrameChanged:)
+               name:CPViewFrameDidChangeNotification
+             object:_documentView];
+
+    [defaultCenter
+        addObserver:self
+           selector:@selector(viewBoundsChanged:)
+               name:CPViewBoundsDidChangeNotification
+             object:_documentView];
 }
 
 /*!
@@ -234,7 +240,12 @@ var CPClipViewDocumentViewKey = @"CPScrollViewDocumentView";
 - (id)initWithCoder:(CPCoder)aCoder
 {
     if (self = [super initWithCoder:aCoder])
-        [self setDocumentView:[aCoder decodeObjectForKey:CPClipViewDocumentViewKey]];
+    {
+        // Don't call setDocumentView: here. It calls addSubview:, but it's A) not necessary since the
+        // view hierarchy is fully encoded and B) dangerous if the subview is not fully decoded.
+        _documentView = [aCoder decodeObjectForKey:CPClipViewDocumentViewKey];
+        [self _observeDocumentView];
+    }
 
     return self;
 }

@@ -208,7 +208,8 @@ var CPSharedFontManager     = nil,
 
 - (@action)addFontTrait:(id)sender
 {
-    _activeChange = [CPDictionary dictionaryWithObject:[sender tag] forKey:@"addTraits"];
+    var tag = [sender tag];
+    _activeChange = tag === nil ? @{} : @{ @"addTraits": tag };
 
     [self sendAction];
 }

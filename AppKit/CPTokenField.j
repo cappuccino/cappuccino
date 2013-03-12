@@ -21,7 +21,6 @@
  */
 
 #import "../Foundation/CPRange.h"
-#import "../Foundation/Ref.h"
 
 @import <Foundation/CPCharacterSet.j>
 @import <Foundation/CPIndexSet.j>
@@ -101,7 +100,7 @@ CPTokenFieldDeleteButtonType     = 1;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObject:_CGInsetMakeZero() forKey:@"editor-inset"];
+    return @{ @"editor-inset": _CGInsetMakeZero() };
 }
 
 - (id)initWithFrame:(CGRect)frame
@@ -667,7 +666,7 @@ CPTokenFieldDeleteButtonType     = 1;
                         CPTokenFieldInputOwner ? [CPTokenFieldInputOwner._tokenScrollView documentView]._DOMElement : nil,
                         CPTokenFieldDOMInputElement,
                         CPTokenFieldInputResigning,
-                        AT_REF(CPTokenFieldInputDidBlur));
+                        @ref(CPTokenFieldInputDidBlur));
         };
 
         // FIXME make this not onblur

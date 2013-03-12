@@ -59,7 +59,7 @@ var LocalizerStringsRegex = new RegExp("\"(.+)\"\\s*=\\s*\"(.+)\"\\s*;\\s*(//.+)
 
 - (void)loadContent:(CPString)aContent
 {
-    var dict = [CPDictionary dictionary],
+    var dict = @{},
         lines = [aContent componentsSeparatedByString:"\n"],
         count = [lines count];
 

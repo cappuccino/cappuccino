@@ -40,16 +40,13 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPColor colorWithHexString:@"E3E3E3"],
-                                                [CPColor colorWithHexString:@"FFFFCA"],
-                                                2.0,
-                                                1.0,
-                                                [CPColor blackColor]]
-                                       forKeys:[@"stroke-color",
-                                                @"background-color",
-                                                @"border-radius",
-                                                @"stroke-width",
-                                                @"color"]];
+    return @{
+            @"stroke-color": [CPColor colorWithHexString:@"E3E3E3"],
+            @"background-color": [CPColor colorWithHexString:@"FFFFCA"],
+            @"border-radius": 2.0,
+            @"stroke-width": 1.0,
+            @"color": [CPColor blackColor],
+        };
 }
 
 /*! compute the contentView frame from a given window frame
@@ -57,7 +54,7 @@
 */
 + (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
-    var contentRect = CGRectMakeCopy(aFrameRect);
+    var contentRect = [super contentRectForFrameRect:aFrameRect];
 
     contentRect.origin.x += 3;
     contentRect.origin.y += 3;

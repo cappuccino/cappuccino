@@ -132,7 +132,7 @@ var NSTransformers = [CPSet setWithObjects:
         _binding = [aCoder decodeObjectForKey:@"NSBinding"];
         _keyPath = [aCoder decodeObjectForKey:@"NSKeyPath"];
 
-        _options = [CPDictionary dictionary];
+        _options = @{};
 
         var NSOptions = [aCoder decodeObjectForKey:@"NSOptions"],
             keyEnumerator = [NSOptions keyEnumerator],

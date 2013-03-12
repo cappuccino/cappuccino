@@ -118,8 +118,8 @@ var CPToolbarsByIdentifier              = nil,
     if (self !== [CPToolbar class])
         return;
 
-    CPToolbarsByIdentifier = [CPDictionary dictionary];
-    CPToolbarConfigurationsByIdentifier = [CPDictionary dictionary];
+    CPToolbarsByIdentifier = @{};
+    CPToolbarConfigurationsByIdentifier = @{};
 }
 
 /* @ignore */
@@ -230,7 +230,7 @@ var CPToolbarsByIdentifier              = nil,
 - (void)_setWindow:(CPWindow)aWindow
 {
     if (_window)
-        [[CPNotificationCenter defaultCenter] removeObserver:self object:_window];
+        [[CPNotificationCenter defaultCenter] removeObserver:self name:_CPWindowDidChangeFirstResponderNotification object:_window];
 
     _window = aWindow;
 
@@ -605,25 +605,17 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[10.0,
-                                                20.0,
-                                                [CPNull null],
-                                                [CPNull null],
-                                                _CGInsetMake(4.0, 4.0, 4.0, 10),
-                                                59.0,
-                                                46.0,
-                                                [CPNull null],
-                                                CGRectMake(0.0, 0.0, 2.0, 32.0)]
-                                       forKeys:[
-                                               @"item-margin",
-                                               @"extra-item-width",
-                                               @"extra-item-extra-image",
-                                               @"extra-item-extra-alternate-image",
-                                               @"content-inset",
-                                               @"regular-size-height",
-                                               @"small-size-height",
-                                               @"image-item-separator-color",
-                                               @"image-item-separator-size"]];
+    return @{
+            @"item-margin": 10.0,
+            @"extra-item-width": 20.0,
+            @"extra-item-extra-image": [CPNull null],
+            @"extra-item-extra-alternate-image": [CPNull null],
+            @"content-inset": _CGInsetMake(4.0, 4.0, 4.0, 10),
+            @"regular-size-height": 59.0,
+            @"small-size-height": 46.0,
+            @"image-item-separator-color": [CPNull null],
+            @"image-item-separator-size": CGRectMake(0.0, 0.0, 2.0, 32.0),
+        };
 }
 
 - (id)initWithFrame:(CGRect)aFrame

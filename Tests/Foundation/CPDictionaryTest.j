@@ -1,5 +1,7 @@
 @import <Foundation/CPDictionary.j>
 
+@import <OJUnit/OJTestCase.j>
+
 @implementation CPDictionaryTest : OJTestCase
 {
     CPDictionary    string_dict;
@@ -198,13 +200,14 @@
     [self assertFalse:[dict containsKey:"4"]];
 }
 
+// FIXME: When CPDictionary will throw exception on nil value the following test case can be turn on again
+/*
 - (void)testThrowsOnNilValue
 {
     [self assertThrows:function(){
         var dict = [[CPDictionary alloc] initWithObjects:[1, nil] forKeys:["1", "2"]];
-        [self assertFalse:dict];
     }];
-}
+}*/
 
 - (void)testKeysOfEntriesPassingTest
 {
@@ -350,7 +353,7 @@
 
 - (void)testEnumerateKeysAndObjectsUsingBlock_
 {
-    var input0 = [CPDictionary dictionary],
+    var input0 = @{},
         input1 = [CPDictionary dictionaryWithJSObject:{a: 1, b: 3, c: "b"}],
         output = [CPMutableDictionary dictionary],
         outputFunction = function(aKey, anObject)
@@ -371,7 +374,7 @@
     {
         [output setValue:anObject forKey:aKey];
         if ([output count] > 1)
-            stop(YES); // AT_DEREF(stop, YES) - FIXME Replace with proper @ref @deref when in ObjJ.
+            @deref(stop) = YES;
     }
 
     [input1 enumerateKeysAndObjectsUsingBlock:stoppingFunction];
@@ -403,9 +406,40 @@
 {
     var dict = [[CPDictionary alloc] initWithObjectsAndKeys:@"Value1", @"Key1", nil, @"Key2", @"Value3", @"Key3"];
 
-    [self assert:2 equals:[dict count]];    
+    [self assert:2 equals:[dict count]];
     [self assert:@"Value1" equals:[dict objectForKey:@"Key1"]];
     [self assert:nil equals:[dict objectForKey:@"Key2"]]; // No key/value pair
     [self assert:@"Value3" equals:[dict objectForKey:@"Key3"]];
 }
+
+- (void)testDictionaryLiteral
+{
+    var dict = @{
+            @"Key1": @"Value1",
+            @"Key2": [CPNull null],
+            @"Key3": 2
+        };
+
+    [self assert:3 equals:[dict count]];
+    [self assert:@"Value1" equals:[dict objectForKey:@"Key1"]];
+    [self assert:[CPNull null] same:[dict objectForKey:@"Key2"]];
+    [self assert:2 equals:[dict objectForKey:@"Key3"]];
+}
+
+- (void)testDictionaryLiteralExpressions
+{
+    var aKey = @"aKey",
+        aValue = 5,
+        dict = @{
+            @"Key" + 1: @"Value" + 1,
+            @"Key2": NO ? 1 : 2,
+            aKey: aValue,   // trailing comma is allowed
+        };
+
+    [self assert:3 equals:[dict count]];
+    [self assert:@"Value1" equals:[dict objectForKey:@"Key1"]];
+    [self assert:2 equals:[dict objectForKey:@"Key2"]];
+    [self assert:5 equals:[dict objectForKey:@"aKey"]];
+}
+
 @end

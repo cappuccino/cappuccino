@@ -1358,7 +1358,7 @@ var _CPAppBootstrapperActions = nil;
     if (mainCibFile)
     {
         [mainBundle loadCibFile:mainCibFile
-            externalNameTable:[CPDictionary dictionaryWithObject:CPApp forKey:CPCibOwner]
+            externalNameTable:@{ CPCibOwner: CPApp }
                  loadDelegate:self];
 
         return YES;

@@ -962,7 +962,7 @@ CPWebViewAppKitScrollMaxPollCount                  = 3;
     {
         try
         {
-            return _window[methodName].apply(args);
+            return _window[methodName].apply(_window, args);
         }
         catch (e)
         {

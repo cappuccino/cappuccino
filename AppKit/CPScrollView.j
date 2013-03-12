@@ -143,10 +143,10 @@ var CPScrollerStyleGlobal                       = CPScrollerStyleOverlay,
 
 + (CPDictionary)themeAttributes
 {
-    return [CPDictionary dictionaryWithJSObject:{
-        @"bottom-corner-color": [CPColor whiteColor],
-        @"border-color": [CPColor blackColor]
-    }];
+    return @{
+            @"bottom-corner-color": [CPColor whiteColor],
+            @"border-color": [CPColor blackColor]
+        };
 }
 
 + (CGSize)contentSizeForFrameSize:(CGSize)frameSize hasHorizontalScroller:(BOOL)hFlag hasVerticalScroller:(BOOL)vFlag borderType:(CPBorderType)borderType

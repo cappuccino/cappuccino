@@ -149,10 +149,18 @@ if (!exports.acorn) {
 
   exports.Expression = skipThrough;
   exports.ThisExpression = ignore;
-  exports.ArrayExpression = function(node, st, c) {
+  exports.ArrayExpression = exports.ArrayLiteral = function(node, st, c) {
     for (var i = 0; i < node.elements.length; ++i) {
       var elt = node.elements[i];
       if (elt) c(elt, st, "Expression");
+    }
+  };
+  exports.DictionaryLiteral = function(node, st, c) {
+    for (var i = 0; i < node.keys.length; i++) {
+      var key = node.keys[i];
+      c(key, st, "Expression");
+      var value = node.values[i];
+      c(value, st, "Expression");
     }
   };
   exports.ObjectExpression = function(node, st, c) {
@@ -195,7 +203,7 @@ if (!exports.acorn) {
       c(node.body[i], st, "Statement");
     }
   }
-  
+
   exports.ImportStatement = ignore;
 
   exports.IvarDeclaration = ignore;
@@ -219,6 +227,14 @@ if (!exports.acorn) {
   }
 
   exports.SelectorLiteralExpression = ignore;
+
+  exports.Reference = function(node, st, c) {
+    c(node.element, st, "Identifier");
+  }
+
+  exports.Dereference = function(node, st, c) {
+    c(node.expr, st, "Expression");
+  }
 
   // A custom walker that keeps track of the scope chain and the
   // variables defined in it.

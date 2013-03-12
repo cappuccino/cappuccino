@@ -360,7 +360,11 @@
         rootItems = [treeChild children];
     }
 
-    var row = [CPDictionary dictionaryWithObjectsAndKeys:criteria, @"criteria", values, @"displayValues", rowType, @"rowType"];
+    var row = @{
+            @"criteria": criteria,
+            @"displayValues": values,
+            @"rowType": rowType,
+        };
 
     return row;
 }

@@ -548,7 +548,7 @@
         {
             if (_CPLocationInRange(rangeIndex, enumerationRange))
             {
-                aFunction(rangeIndex, AT_REF(shouldStop));
+                aFunction(rangeIndex, @ref(shouldStop));
                 if (shouldStop)
                     return;
             }
@@ -629,7 +629,7 @@
         {
             if (_CPLocationInRange(rangeIndex, aRange))
             {
-                if (aPredicate(rangeIndex, AT_REF(shouldStop)))
+                if (aPredicate(rangeIndex, @ref(shouldStop)))
                     return rangeIndex;
 
                 if (shouldStop)
@@ -690,7 +690,7 @@
         {
             if (_CPLocationInRange(rangeIndex, aRange))
             {
-                if (aPredicate(rangeIndex, AT_REF(shouldStop)))
+                if (aPredicate(rangeIndex, @ref(shouldStop)))
                     [indexesPassingTest addIndex:rangeIndex];
 
                 if (shouldStop)

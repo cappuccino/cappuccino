@@ -3,4 +3,4 @@ node_js:
     - 0.8
 install: ./bootstrap.sh --quiet --noprompt --directory ./narwhal
 script: jake test
-env: PATH=$HOME/build/$TRAVIS_REPO_SLUG/narwhal/bin:$PATH CAPP_BUILD=$HOME/build/$TRAVIS_REPO_SLUG/Build NARWHAL_ENGINE=rhino
+env: PATH="$TRAVIS_BUILD_DIR/narwhal/bin:$PATH" CAPP_BUILD="$TRAVIS_BUILD_DIR/Build" NARWHAL_ENGINE=rhino

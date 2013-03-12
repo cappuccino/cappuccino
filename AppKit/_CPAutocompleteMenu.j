@@ -54,7 +54,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
     {
         textField = aTextField;
 
-        _menuWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0, 0, 100, 100) styleMask:CPBorderlessWindowMask];
+        _menuWindow = [[_CPAutocompleteWindow alloc] initWithContentRect:CGRectMake(0, 0, 100, 100) styleMask:CPBorderlessWindowMask];
 
         [_menuWindow setLevel:CPPopUpMenuWindowLevel];
         [_menuWindow setHasShadow:YES];
@@ -83,9 +83,8 @@ var _CPAutocompleteMenuMaximumHeight = 307;
         [tableView setHeaderView:nil];
         [tableView setCornerView:nil];
         [tableView setRowHeight:24.0];
-        [tableView setGridStyleMask:CPTableViewSolidHorizontalGridLineMask];
+        [tableView setGridStyleMask:CPTableViewGridNone];
         [tableView setBackgroundColor:[CPColor clearColor]];
-        [tableView setGridColor:[CPColor colorWithRed:242.0 / 255.0 green:243.0 / 255.0 blue:245.0 / 255.0 alpha:1.0]];
 
         [scrollView setDocumentView:tableView];
     }
@@ -269,8 +268,21 @@ var _CPAutocompleteMenuMaximumHeight = 307;
 
 @end
 
+@implementation _CPAutocompleteWindow : CPPanel
+
+- (BOOL)becomesKeyOnlyIfNeeded
+{
+    return YES;
+}
+
+@end
 
 @implementation _CPNonFirstResponderTableView : CPTableView
+
+- (BOOL)needsPanelToBecomeKey
+{
+    return NO;
+}
 
 - (BOOL)acceptsFirstResponder
 {

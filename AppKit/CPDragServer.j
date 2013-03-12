@@ -248,7 +248,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
             _draggingUpdateTimer = [CPTimer scheduledTimerWithTimeInterval:CPDragServerPeriodicUpdateInterval
                                                                     target:self
                                                                   selector:@selector(_sendPeriodicDraggingUpdate:)
-                                                                  userInfo:[CPDictionary dictionaryWithJSObject:{platformWindow:aPlatformWindow, location:aLocation}]
+                                                                  userInfo:@{ "platformWindow":aPlatformWindow, "location":aLocation }
                                                                    repeats:NO];
 
         var scrollView = [_draggingDestination isKindOfClass:[CPView class]] ? [_draggingDestination enclosingScrollView] : nil;

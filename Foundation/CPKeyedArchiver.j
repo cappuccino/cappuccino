@@ -132,7 +132,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     _CPKeyedArchiverStringClass = [CPString class];
     _CPKeyedArchiverNumberClass = [CPNumber class];
 
-    _CPKeyedArchiverNullReference = [CPDictionary dictionaryWithObject:0 forKey:_CPKeyedArchiverUIDKey];
+    _CPKeyedArchiverNullReference = @{ _CPKeyedArchiverUIDKey: 0 };
 }
 
 + (BOOL)allowsKeyedCoding
@@ -172,12 +172,12 @@ var _CPKeyedArchiverStringClass                         = Nil,
 
         _objects = [];
 
-        _UIDs = [CPDictionary dictionary];
-        _conditionalUIDs = [CPDictionary dictionary];
+        _UIDs = @{};
+        _conditionalUIDs = @{};
 
-        _replacementObjects = [CPDictionary dictionary];
+        _replacementObjects = @{};
 
-        _plistObject = [CPDictionary dictionary];
+        _plistObject = @{};
         _plistObjects = [CPArray arrayWithObject:_CPKeyedArchiverNullString];
     }
 
@@ -212,7 +212,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
             [_delegate archiver:self didEncodeObject:object];
     }
 
-    _plistObject = [CPDictionary dictionary];
+    _plistObject = @{};
 
     [_plistObject setObject:topObject forKey:_CPKeyedArchiverTopKey];
     [_plistObject setObject:_plistObjects forKey:_CPKeyedArchiverObjectsKey];
@@ -395,7 +395,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 {
     var key,
         keys = [aDictionary keyEnumerator],
-        references = [CPDictionary dictionary];
+        references = @{};
 
     while ((key = [keys nextObject]) !== nil)
         [references setObject:_CPKeyedArchiverEncodeObject(self, [aDictionary objectForKey:key], NO) forKey:key];
@@ -414,7 +414,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 + (void)setClassName:(CPString)aClassName forClass:(Class)aClass
 {
     if (!CPArchiverReplacementClassNames)
-        CPArchiverReplacementClassNames = [CPDictionary dictionary];
+        CPArchiverReplacementClassNames = @{};
 
     [CPArchiverReplacementClassNames setObject:aClassName forKey:CPStringFromClass(aClass)];
 }
@@ -446,7 +446,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 - (void)setClassName:(CPString)aClassName forClass:(Class)aClass
 {
     if (!_replacementClassNames)
-        _replacementClassNames = [CPDictionary dictionary];
+        _replacementClassNames = @{};
 
     [_replacementClassNames setObject:aClassName forKey:CPStringFromClass(aClass)];
 }
@@ -503,7 +503,8 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
             }
         }
 
-        [self._replacementObjects setObject:object forKey:GUID];
+        if (object != nil && GUID != nil)
+            [self._replacementObjects setObject:object forKey:GUID];
     }
 
     // If we still don't have an object by this point, then return a
@@ -541,7 +542,7 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
             else
             {
                 // Only actually encode the object and create a plist representation if it is not a simple type.
-                plistObject = [CPDictionary dictionary];
+                plistObject = @{};
 
                 [self._objects addObject:object];
 
@@ -559,7 +560,7 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
 
                 if (!classUID)
                 {
-                    var plistClass = [CPDictionary dictionary],
+                    var plistClass = @{},
                         hierarchy = [];
 
                     [plistClass setObject:className forKey:_CPKeyedArchiverClassNameKey];
@@ -576,7 +577,7 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
                     [self._UIDs setObject:classUID forKey:className];
                 }
 
-                [plistObject setObject:[CPDictionary dictionaryWithObject:classUID forKey:_CPKeyedArchiverUIDKey] forKey:_CPKeyedArchiverClassKey];
+                [plistObject setObject:@{ _CPKeyedArchiverUIDKey: classUID } forKey:_CPKeyedArchiverClassKey];
             }
 
             UID = [self._conditionalUIDs objectForKey:GUID];
@@ -595,5 +596,5 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
         }
     }
 
-    return [CPDictionary dictionaryWithObject:UID forKey:_CPKeyedArchiverUIDKey];
+    return @{ _CPKeyedArchiverUIDKey: UID };
 };

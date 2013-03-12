@@ -11,3 +11,5 @@ xcuserdata/
 !*.xcodeproj/project.pbxproj
 *.xCodeSupport/
 *.XcodeSupport/
+*.sublime-project
+*.sublime-workspace

@@ -49,7 +49,7 @@
     var bindTesterA = [BindingTestWithBool new],
         bindTesterB = [BindingTestWithBool new];
 
-    [bindTesterB bind:@"stringValue" toObject:bindTesterA withKeyPath:@"stringValue" options:[CPDictionary dictionary]];
+    [bindTesterB bind:@"stringValue" toObject:bindTesterA withKeyPath:@"stringValue" options:@{}];
     [self assert:nil equals:[bindTesterA stringValue] message:"initial A value unchanged"];
     [self assert:nil equals:[bindTesterB stringValue] message:"initial B value unchanged"];
 

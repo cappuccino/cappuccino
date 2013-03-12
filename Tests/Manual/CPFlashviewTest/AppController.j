@@ -25,11 +25,11 @@
     // note:
     // if both flashParams and flashVars are used flashParams must be setup first
 
-    var flashParameters = [CPDictionary dictionary];
+    var flashParameters = @{};
     [flashVars setObject:@"SampleParam" forKey:"SampleParamKey"];
     [flashView setParameters:flashParameters];
 
-    var flashVars = [CPDictionary dictionary];
+    var flashVars = @{};
     [flashVars setObject:@"SampleVar" forKey:"SampleVarKey"];
     [flashView setFlashVars:flashVars];
 

@@ -105,12 +105,12 @@ var StandardUserDefaults;
 
     if (self)
     {
-        _domains = [CPDictionary dictionary];
+        _domains = @{};
         [self _setupArgumentsDomain];
 
         var defaultStore = [CPUserDefaultsLocalStore supportsLocalStorage] ? CPUserDefaultsLocalStore : CPUserDefaultsCookieStore;
 
-        _stores = [CPDictionary dictionary];
+        _stores = @{};
         [self setPersistentStoreClass:defaultStore forDomain:CPGlobalDomain reloadData:YES];
         [self setPersistentStoreClass:defaultStore forDomain:CPApplicationDomain reloadData:YES];
     }
@@ -182,7 +182,7 @@ var StandardUserDefaults;
     var domain = [_domains objectForKey:aDomain];
     if (!domain)
     {
-        domain = [CPDictionary dictionary];
+        domain = @{};
         [_domains setObject:domain forKey:aDomain];
     }
 
@@ -264,7 +264,7 @@ var StandardUserDefaults;
         count = [dicts count],
         i = 0;
 
-    _searchList = [CPDictionary dictionary];
+    _searchList = @{};
 
     for (; i < count; i++)
     {
@@ -342,7 +342,10 @@ var StandardUserDefaults;
     var data = [[self persistentStoreForDomain:aDomain] data],
         domain = data ? [CPKeyedUnarchiver unarchiveObjectWithData:data] : nil;
 
-    [_domains setObject:domain forKey:aDomain];
+    if (domain === nil)
+        [_domains removeObjectForKey:aDomain];
+    else
+        [_domains setObject:domain forKey:aDomain];
 
     _searchListNeedsReload = YES;
 }

@@ -356,10 +356,84 @@ function createMessage(/* String */ aMessage, /* SpiderMonkey AST node */ node, 
 
 function compile(node, state, visitor) {
     function c(node, st, override) {
-      visitor[override || node.type](node, st, c);
+        visitor[override || node.type](node, st, c);
     }
     c(node, state);
 };
+
+function isIdempotentExpression(node) {
+    switch (node.type) {
+        case "Literal":
+        case "Identifier":
+            return true;
+
+        case "ArrayExpression":
+            for (var i = 0; i < node.elements.length; ++i) {
+                if (!isIdempotentExpression(node.elements[i]))
+                    return false;
+            }
+
+            return true;
+
+        case "DictionaryLiteral":
+            for (var i = 0; i < node.keys.length; ++i) {
+                if (!isIdempotentExpression(node.keys[i]))
+                    return false;
+                if (!isIdempotentExpression(node.values[i]))
+                    return false;
+            }
+
+            return true;
+
+        case "ObjectExpression":
+            for (var i = 0; i < node.properties.length; ++i)
+                if (!isIdempotentExpression(node.properties[i].value))
+                    return false;
+
+            return true;
+
+        case "FunctionExpression":
+            for (var i = 0; i < node.params.length; ++i)
+                if (!isIdempotentExpression(node.params[i]))
+                    return false;
+
+            return true;
+
+        case "SequenceExpression":
+            for (var i = 0; i < node.expressions.length; ++i)
+                if (!isIdempotentExpression(node.expressions[i]))
+                    return false;
+
+            return true;
+
+        case "UnaryExpression":
+            return isIdempotentExpression(node.argument);
+
+        case "BinaryExpression":
+            return isIdempotentExpression(node.left) && isIdempotentExpression(node.right);
+
+        case "ConditionalExpression":
+            return isIdempotentExpression(node.test) && isIdempotentExpression(node.consequent) && isIdempotentExpression(node.alternate);
+
+        case "MemberExpression":
+            return isIdempotentExpression(node.object) && (!node.computed || isIdempotentExpression(node.property));
+
+        case "Dereference":
+            return isIdempotentExpression(node.expr);
+
+        case "Reference":
+            return isIdempotentExpression(node.element);
+
+        default:
+            return false;
+    }
+}
+
+// We do not allow dereferencing of expressions with side effects because we might need to evaluate the expression twice in certain uses of deref, which is not obvious when you look at the deref operator in plain code.
+function checkCanDereference(st, node) {
+    if (!isIdempotentExpression(node))
+        throw st.compiler.error_message("Dereference of expression with side effects", node);
+}
 
 var pass1 = exports.acorn.walk.make({
 ImportStatement: function(node, st, c) {
@@ -377,6 +451,7 @@ Program: function(node, st, c) {
       c(node.body[i], st, "Statement");
     }
     if (!generate) CONCAT(compiler.jsBuffer,compiler.source.substring(st.compiler.lastPos, node.end));
+
     // Check maybe warnings
     var maybeWarnings = st.maybeWarnings();
     if (maybeWarnings) for (var i = 0; i < maybeWarnings.length; i++) {
@@ -673,6 +748,30 @@ UnaryExpression: function(node, st, c) {
 UpdateExpression: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate;
+    if (node.argument.type === "Dereference") {
+        checkCanDereference(st, node.argument);
+
+        // @deref(x)++ and ++@deref(x) require special handling.
+        if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
+
+        // Output the dereference function, "(...)(z)"
+        CONCAT(compiler.jsBuffer, (node.prefix ? "" : "(") + "(");
+
+        // The thing being dereferenced.
+        if (!generate) compiler.lastPos = node.argument.expr.start;
+        c(node.argument.expr, st, "Expression");
+        if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.argument.expr.end));
+        CONCAT(compiler.jsBuffer, ")(");
+
+        if (!generate) compiler.lastPos = node.argument.start;
+        c(node.argument, st, "Expression");
+        if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.argument.end));
+        CONCAT(compiler.jsBuffer, " " + node.operator.substring(0, 1) + " 1)" + (node.prefix ? "" : node.operator == '++' ? " - 1)" : " + 1)"));
+
+        if (!generate) compiler.lastPos = node.end;
+        return;
+    }
+
     if (node.prefix) {
       if (generate) {
         CONCAT(compiler.jsBuffer, node.operator);
@@ -692,17 +791,47 @@ BinaryExpression: function(node, st, c) {
     c(node.right, st, "Expression");
 },
 AssignmentExpression: function(node, st, c) {
-    var compiler = st.compiler;
-    c(node.left, st, "Expression");
-    if (compiler.generate) CONCAT(compiler.jsBuffer, node.operator);
-    c(node.right, st, "Expression");
-},
-AssignmentExpression: function(node, st, c) {
     var compiler = st.compiler,
+        generate = compiler.generate,
         saveAssignment = st.assignment;
+
+    if (node.left.type === "Dereference") {
+        checkCanDereference(st, node.left);
+
+        // @deref(x) = z    -> x(z) etc
+        if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
+
+        // Output the dereference function, "(...)(z)"
+        CONCAT(compiler.jsBuffer, "(");
+        // What's being dereferenced could itself be an expression, such as when dereferencing a deref.
+        if (!generate) compiler.lastPos = node.left.expr.start;
+        c(node.left.expr, st, "Expression");
+        if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.left.expr.end));
+        CONCAT(compiler.jsBuffer, ")(");
+
+        // Now "(x)(...)". We have to manually expand +=, -=, *= etc.
+        if (node.operator !== "=") {
+            // Output the whole .left, not just .left.expr.
+            if (!generate) compiler.lastPos = node.left.start;
+            c(node.left, st, "Expression");
+            if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.left.end));
+            CONCAT(compiler.jsBuffer, " " + node.operator.substring(0, 1) + " ");
+        }
+
+        if (!generate) compiler.lastPos = node.right.start;
+        c(node.right, st, "Expression");
+        if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.right.end));
+        CONCAT(st.compiler.jsBuffer, ")");
+
+        if (!generate) compiler.lastPos = node.end;
+
+        return;
+    }
+
+    var saveAssignment = st.assignment;
     st.assignment = true;
     c(node.left, st, "Expression");
-    if (compiler.generate) CONCAT(compiler.jsBuffer, node.operator);
+    if (generate) CONCAT(compiler.jsBuffer, node.operator);
     st.assignment = saveAssignment;
     c(node.right, st, "Expression");
     if (st.isRootScope() && node.left.type === "Identifier" && !st.getLvar(node.left.name))
@@ -1237,6 +1366,34 @@ SelectorLiteralExpression: function(node, st, c) {
     CONCAT(compiler.jsBuffer, "sel_getUid(\"");
     CONCAT(compiler.jsBuffer, node.selector);
     CONCAT(compiler.jsBuffer, "\")");
+    if (!generate) compiler.lastPos = node.end;
+},
+Reference: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
+    CONCAT(compiler.jsBuffer, "function(__input) { if (arguments.length) return ");
+    CONCAT(compiler.jsBuffer, node.element.name);
+    CONCAT(compiler.jsBuffer, " = __input; return ");
+    CONCAT(compiler.jsBuffer, node.element.name);
+    CONCAT(compiler.jsBuffer, "; }");
+    if (!generate) compiler.lastPos = node.end;
+},
+Dereference: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+
+    checkCanDereference(st, node.expr);
+
+    // @deref(y) -> y()
+    // @deref(@deref(y)) -> y()()
+    if (!generate) {
+        CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
+        compiler.lastPos = node.expr.start;
+    }
+    c(node.expr, st, "Expression");
+    if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.expr.end));
+    CONCAT(compiler.jsBuffer, "()");
     if (!generate) compiler.lastPos = node.end;
 },
 ClassStatement: function(node, st, c) {

@@ -7,6 +7,14 @@ var FILE = require("file");
 
 @global module
 
+//+ Jonas Raoni Soares Silva
+//@ http://jsfromhell.com/array/shuffle [v1.0]
+function shuffle(o)
+{ //v1.0
+    for (var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+    return o;
+};
+
 var ELEMENTS = 100,
     REPEATS = 10;
 
@@ -225,7 +233,7 @@ var ELEMENTS = 100,
         indexes = [CPIndexSet indexSet];
 
     while (c--)
-        array.push(""+c);
+        array.push("" + c);
 
     while (location < SIZE - 10)
     {
@@ -254,6 +262,50 @@ var ELEMENTS = 100,
         [self fail:"_CPJavaScriptArray -objectsAtIndexes: returns an wrong value"];
 }
 
+- (void)testRemoveObjectIdenticalTo
+{
+    REPEATS = 200;
+
+    var SIZE = 33 * 6,
+        allThings = [],
+        testSources = [];
+
+    for (var c = 0; c < SIZE; c++)
+        allThings.push("" + c);
+
+    var someThings = [allThings subarrayWithRange:CPMakeRange(SIZE / 3, SIZE / 3)],
+        removeThings = [allThings subarrayWithRange:(CPMakeRange(0, 2 * SIZE / 3))];
+
+    for (var r = 0; r < REPEATS * 2; r++)
+        testSources.push(shuffle(someThings));
+
+    var d = new Date(),
+        test1;
+    for (var r = 0; r < REPEATS; r++)
+    {
+        test1 = testSources.pop();
+        for (var i = 0, count = [removeThings count]; i < count; i++)
+            [test1 _previous_removeObjectIdenticalTo:removeThings[i]];
+    }
+
+    var dd = new Date(),
+        test2;
+    for (var r = 0; r < REPEATS; r++)
+    {
+        test2 = testSources.pop();
+        for (var i = 0, count = [removeThings count]; i < count; i++)
+            [test2 removeObjectIdenticalTo:removeThings[i]];
+    }
+    var ddd = new Date();
+
+    CPLog.warn("\n_CPJavaScriptArray -removeObjectIdenticalTo:");
+    CPLog.warn("           CPArray -removeObjectIdenticalTo: " + (dd - d) + "ms.");
+    CPLog.warn("_CPJavaScriptArray -removeObjectIdenticalTo: " + (ddd - dd) + "ms.");
+
+    if (![test1 isEqual:test2])
+        [self fail:"_CPJavaScriptArray -objectsAtIndexes: returns wrong value"];
+}
+
 @end
 
 @implementation _CPJavaScriptArray (ObjectsAtIndexes)
@@ -261,6 +313,16 @@ var ELEMENTS = 100,
 - (CPArray)_previous_objectsAtIndexes:(CPIndexSet)indexes
 {
     return [super objectsAtIndexes:indexes];
+}
+
+- (void)_previous_removeObjectIdenticalTo:(id)anObject
+{
+    [self _previous_removeObjectIdenticalTo:anObject inRange:CPMakeRange(0, [self count])];
+}
+
+- (void)_previous_removeObjectIdenticalTo:(id)anObject inRange:(CPRange)aRange
+{
+    [super removeObjectIdenticalTo:anObject inRange:aRange];
 }
 
 @end
@@ -326,3 +388,4 @@ var ELEMENTS = 100,
 }
 
 @end
+

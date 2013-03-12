@@ -213,7 +213,7 @@ var resizeTimer = nil;
         _contentRect = _CGRectMakeZero();
 
         _windowLevels = [];
-        _windowLayers = [CPDictionary dictionary];
+        _windowLayers = @{};
 
         [self registerDOMWindow];
         [self updateFromNativeContentRect];
