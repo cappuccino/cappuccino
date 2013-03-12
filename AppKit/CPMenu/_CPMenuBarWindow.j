@@ -67,6 +67,8 @@
 
     if (self)
     {
+        _constrainsToUsableScreen = NO;
+
         [self setLevel:CPMainMenuWindowLevel];
         [self setAutoresizingMask:CPWindowWidthSizable];
 

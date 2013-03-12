@@ -270,6 +270,14 @@ var _CPAutocompleteMenuMaximumHeight = 307;
 
 @implementation _CPAutocompleteWindow : CPPanel
 
+- (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned int)aStyleMask
+{
+    if (self = [super initWithContentRect:aContentRect styleMask:aStyleMask])
+        _constrainsToUsableScreen = NO;
+
+    return self;
+}
+
 - (BOOL)becomesKeyOnlyIfNeeded
 {
     return YES;

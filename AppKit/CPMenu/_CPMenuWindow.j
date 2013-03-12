@@ -87,6 +87,8 @@ _CPMenuWindowAttachedMenuBackgroundStyle    = 2;
 
     if (self)
     {
+        _constrainsToUsableScreen = NO;
+
         [self setLevel:CPPopUpMenuWindowLevel];
         [self setHasShadow:YES];
         [self setShadowStyle:CPMenuWindowShadowStyle];

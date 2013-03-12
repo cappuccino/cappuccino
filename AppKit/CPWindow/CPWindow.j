@@ -144,6 +144,7 @@ var CPWindowActionMessageKeys = [
     BOOL                                _hasShadow;
     BOOL                                _isMovableByWindowBackground;
     BOOL                                _isMovable;
+    BOOL                                _constrainsToUsableScreen;
     unsigned                            _shadowStyle;
     BOOL                                _showsResizeIndicator;
 
@@ -253,6 +254,7 @@ CPTexturedBackgroundWindowMask
         var windowViewClass = [[self class] _windowViewClassForStyleMask:aStyleMask];
 
         _frame = [windowViewClass frameRectForContentRect:aContentRect];
+        _constrainsToUsableScreen = YES;
 
         [self _setSharesChromeWithPlatformWindow:![CPPlatform isBrowser]];
 
@@ -729,6 +731,9 @@ CPTexturedBackgroundWindowMask
 
 - (CGRect)_pinFrame:(CGRect)aFrame toUsableScreenWidth:(BOOL)pinWidth andHeight:(BOOL)pinHeight
 {
+    if (!_constrainsToUsableScreen)
+        return CGRectMakeCopy(aFrame);
+
     var usableRect = [_platformWindow usableContentFrame],
         frame = _CGRectMakeCopy(aFrame);
 
