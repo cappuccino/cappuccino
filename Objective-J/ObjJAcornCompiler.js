@@ -139,6 +139,8 @@ var currentCompilerFlags = "";
 
 var reservedIdentifiers = exports.acorn.makePredicate("self _cmd undefined localStorage arguments");
 
+var wordPrefixOperators = exports.acorn.makePredicate("delete in instanceof new typeof void");
+
 var ObjJAcornCompiler = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags, /*unsigned*/ pass, /* Dictionary */ classDefs)
 {
     this.source = aString;
@@ -208,6 +210,7 @@ ObjJAcornCompiler.prototype.compilePass2 = function()
         print(message);
 #endif
     }
+    print("source: " + this.URL + "\n" + this.source + "\nCompiled into:\n" + this.jsBuffer.toString());
 
 	return this.jsBuffer.toString();
 }
@@ -368,114 +371,571 @@ ImportStatement: function(node, st, c) {
 
 var pass2 = exports.acorn.walk.make({
 Program: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
     for (var i = 0; i < node.body.length; ++i) {
       c(node.body[i], st, "Statement");
     }
-    CONCAT(st.compiler.jsBuffer,st.compiler.source.substring(st.compiler.lastPos, node.end));
+    if (!generate) CONCAT(compiler.jsBuffer,compiler.source.substring(st.compiler.lastPos, node.end));
     // Check maybe warnings
     var maybeWarnings = st.maybeWarnings();
     if (maybeWarnings) for (var i = 0; i < maybeWarnings.length; i++) {
         var maybeWarning = maybeWarnings[i];
         if (maybeWarning.checkIfWarning(st)) {
-            st.compiler.addWarning(maybeWarning.message);
+            compiler.addWarning(maybeWarning.message);
         }
     }
 },
-Function: function(node, scope, c) {
-  var inner = new Scope(scope);
-  for (var i = 0; i < node.params.length; ++i)
-    inner.vars[node.params[i].name] = {type: "argument", node: node.params[i]};
+BlockStatement: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    if (generate) CONCAT(compiler.jsBuffer, "{\n");
+    for (var i = 0; i < node.body.length; ++i) {
+      c(node.body[i], st, "Statement");
+    }
+    if (generate) CONCAT(compiler.jsBuffer, "}\n");
+},
+ExpressionStatement: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    c(node.expression, st, "Expression");
+    if (generate) CONCAT(compiler.jsBuffer, ";\n");
+},
+IfStatement: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    if (generate) CONCAT(compiler.jsBuffer, "if (");
+    c(node.test, st, "Expression");
+    if (generate) CONCAT(compiler.jsBuffer, ") ");
+    c(node.consequent, st, "Statement");
+    if (node.alternate) {
+      if (generate) CONCAT(compiler.jsBuffer, "else ");
+      c(node.alternate, st, "Statement");
+    }
+},
+LabeledStatement: function(node, st, c) {
+    var compiler = st.compiler;
+    if (compiler.generate) {
+      CONCAT(compiler.jsBuffer, node.label.name);
+      CONCAT(compiler.jsBuffer, ": ");
+    }
+    c(node.body, st, "Statement");
+},
+BreakStatement: function(node, st, c) {
+    var compiler = st.compiler;
+    if (compiler.generate) {
+      if (node.label) {
+        CONCAT(compiler.jsBuffer, "break ");
+        CONCAT(compiler.jsBuffer, node.label.name);
+        CONCAT(compiler.jsBuffer, ";\n");
+      } else
+        CONCAT(compiler.jsBuffer, "break;\n");
+    }
+},
+ContinueStatement: function(node, st, c) {
+    var compiler = st.compiler;
+    if (compiler.generate) {
+      if (node.label) {
+        CONCAT(compiler.jsBuffer, "continue ");
+        CONCAT(compiler.jsBuffer, node.label.name);
+        CONCAT(compiler.jsBuffer, ";\n");
+      } else
+        CONCAT(compiler.jsBuffer, "continue;\n");
+    }
+},
+WithStatement: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    if (generate) CONCAT(compiler.jsBuffer, "with(");
+    c(node.object, st, "Expression");
+    if (generate) CONCAT(compiler.jsBuffer, ") ");
+    c(node.body, st, "Statement");
+},
+SwitchStatement: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    if (generate) CONCAT(compiler.jsBuffer, "switch(");
+    c(node.discriminant, st, "Expression");
+    if (generate) CONCAT(compiler.jsBuffer, ") {\n");
+    for (var i = 0; i < node.cases.length; ++i) {
+      var cs = node.cases[i];
+      if (cs.test) {
+        if (generate) CONCAT(compiler.jsBuffer, "case ");
+        c(cs.test, st, "Expression");
+        if (generate) CONCAT(compiler.jsBuffer, ":\n");
+      } else
+        if (generate) CONCAT(compiler.jsBuffer, "default: ");
+      for (var j = 0; j < cs.consequent.length; ++j)
+        c(cs.consequent[j], st, "Statement");
+    }
+    if (generate) CONCAT(compiler.jsBuffer, "}\n");
+},
+ReturnStatement: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    if (generate) CONCAT(compiler.jsBuffer, "return");
+    if (node.argument) {
+      if (generate) CONCAT(compiler.jsBuffer, " ");
+      c(node.argument, st, "Expression");
+    }
+    if (generate) CONCAT(compiler.jsBuffer, ";\n");
+},
+ThrowStatement: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    if (generate) CONCAT(compiler.jsBuffer, "throw ");
+    c(node.argument, st, "Expression");
+    if (generate) CONCAT(compiler.jsBuffer, ";\n");
+},
+TryStatement: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    if (generate) CONCAT(compiler.jsBuffer, "try");
+      c(node.block, st, "Statement");
+    for (var i = 0; i < node.handlers.length; ++i) {
+      var handler = node.handlers[i], inner = new Scope(st),
+          param = handler.param,
+          name = param.name;
+      inner.vars[name] = {type: "catch clause", node: param};
+      if (generate) CONCAT(compiler.jsBuffer, "catch(");
+      if (generate) CONCAT(compiler.jsBuffer, name);
+      if (generate) CONCAT(compiler.jsBuffer, ")");
+      c(handler.body, inner, "ScopeBody");
+      inner.copyAddedSelfToIvarsToParent();
+    }
+    if (node.finalizer) c(node.finalizer, st, "Statement");
+},
+WhileStatement: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    if (generate) CONCAT(compiler.jsBuffer, "while(");
+    c(node.test, st, "Expression");
+    if (generate) CONCAT(compiler.jsBuffer, ")");
+    c(node.body, st, "Statement");
+},
+DoWhileStatement: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    if (generate) CONCAT(compiler.jsBuffer, "do");
+    c(node.body, st, "Statement");
+    if (generate) CONCAT(compiler.jsBuffer, "while(");
+    c(node.test, st, "Expression");
+    if (generate) CONCAT(compiler.jsBuffer, ");\n");
+},
+ForStatement: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    if (generate) CONCAT(compiler.jsBuffer, "for(");
+    if (node.init) c(node.init, st, "ForInit");
+    if (generate) CONCAT(compiler.jsBuffer, "; ");
+    if (node.test) c(node.test, st, "Expression");
+    if (generate) CONCAT(compiler.jsBuffer, "; ");
+    if (node.update) c(node.update, st, "Expression");
+    if (generate) CONCAT(compiler.jsBuffer, ")");
+    c(node.body, st, "Statement");
+},
+ForInStatement: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    if (generate) CONCAT(compiler.jsBuffer, "for(");
+    c(node.left, st, "ForInit");
+    if (generate) CONCAT(compiler.jsBuffer, " in ");
+    c(node.right, st, "Expression");
+    if (generate) CONCAT(compiler.jsBuffer, ")");
+    c(node.body, st, "Statement");
+},
+DebuggerStatement: function(node, st, c) {
+    var compiler = st.compiler;
+    if (compiler.generate) CONCAT(compiler.jsBuffer, "debugger;\n");
+},
+// FIXME: Missing stuff
+Function: function(node, st, c) {
+  var compiler = st.compiler,
+      generate = compiler.generate;
+  var inner = new Scope(st);
   if (node.id) {
     var decl = node.type == "FunctionDeclaration";
-    (decl ? scope : inner).vars[node.id.name] =
+    (decl ? st : inner).vars[node.id.name] =
       {type: decl ? "function" : "function name", node: node.id};
-    CONCAT(scope.compiler.jsBuffer,scope.compiler.source.substring(scope.compiler.lastPos, node.start));
-    CONCAT(scope.compiler.jsBuffer, node.id.name);
-    CONCAT(scope.compiler.jsBuffer, " = function");
-    scope.compiler.lastPos = node.id.end;
+    if (generate) {
+      CONCAT(compiler.jsBuffer, node.id.name);
+      CONCAT(compiler.jsBuffer, " = function(");
+      for (var i = 0; i < node.params.length; ++i) {
+        var paramNode = node.params[i],
+            name = paramNode.name;
+        if (i)
+          CONCAT(compiler.jsBuffer, ", ");
+        inner.vars[name] = {type: "argument", node: paramNode};
+        CONCAT(compiler.jsBuffer, name);
+      }
+      CONCAT(compiler.jsBuffer, ")");
+    } else {
+        CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
+        CONCAT(compiler.jsBuffer, node.id.name);
+        CONCAT(compiler.jsBuffer, " = function");
+        compiler.lastPos = node.id.end;
+    }
   }
   c(node.body, inner, "ScopeBody");
   inner.copyAddedSelfToIvarsToParent();
 },
-TryStatement: function(node, scope, c) {
-  c(node.block, scope, "Statement");
-  for (var i = 0; i < node.handlers.length; ++i) {
-    var handler = node.handlers[i], inner = new Scope(scope);
-    inner.vars[handler.param.name] = {type: "catch clause", node: handler.param};
-    c(handler.body, inner, "ScopeBody");
-    inner.copyAddedSelfToIvarsToParent();
-  }
-  if (node.finalizer) c(node.finalizer, scope, "Statement");
-},
-VariableDeclaration: function(node, scope, c) {
+VariableDeclaration: function(node, st, c) {
+  var compiler = st.compiler,
+      generate = compiler.generate;
+  if (generate) CONCAT(compiler.jsBuffer, "var ");
   for (var i = 0; i < node.declarations.length; ++i) {
     var decl = node.declarations[i],
         identifier = decl.id.name;
-    scope.vars[identifier] = {type: "var", node: decl.id};
-    if (decl.init) c(decl.init, scope, "Expression");
-    if (scope.addedSelfToIvars) {
-      var addedSelfToIvar = scope.addedSelfToIvars[identifier];
+    if (i !== 0)
+      if (generate) CONCAT(compiler.jsBuffer, ", ");
+    st.vars[identifier] = {type: "var", node: decl.id};
+    if (generate) CONCAT(compiler.jsBuffer, identifier);
+    if (decl.init) {
+      if (generate) CONCAT(compiler.jsBuffer, " = ");
+      c(decl.init, st, "Expression");
+    }
+    // FIXME: Extract to function
+    if (st.addedSelfToIvars) {
+      var addedSelfToIvar = st.addedSelfToIvars[identifier];
       if (addedSelfToIvar) {
-        var buffer = scope.compiler.jsBuffer.atoms;
+        var buffer = st.compiler.jsBuffer.atoms;
         for (var i = 0; i < addedSelfToIvar.length; i++) {
           var dict = addedSelfToIvar[i];
           buffer[dict.index] = "";
-          scope.compiler.addWarning(createMessage("Local declaration of '" + identifier + "' hides instance variable", dict.node, scope.compiler.source));
+          st.compiler.addWarning(createMessage("Local declaration of '" + identifier + "' hides instance variable", dict.node, st.compiler.source));
         }
-        scope.addedSelfToIvars[identifier] = [];
+        st.addedSelfToIvars[identifier] = [];
       }
     }
   }
 },
+ThisExpression: function(node, st, c) {
+    var compiler = st.compiler;
+    if (compiler.generate) CONCAT(compiler.jsBuffer, "this");
+},
+ArrayExpression: function(node, st, c) {
+  var compiler = st.compiler,
+      generate = compiler.generate;
+  if (generate) CONCAT(compiler.jsBuffer, "[");
+    for (var i = 0; i < node.elements.length; ++i) {
+      var elt = node.elements[i];
+      if (i !== 0)
+          if (generate) CONCAT(compiler.jsBuffer, ", ");
+
+      if (elt) c(elt, st, "Expression");
+    }
+  if (generate) CONCAT(compiler.jsBuffer, "]");
+},
+ObjectExpression: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    if (generate) CONCAT(compiler.jsBuffer, "{");
+    for (var i = 0; i < node.properties.length; ++i)
+    {
+        var prop = node.properties[i];
+        if (generate) {
+          if (i !== 0) CONCAT(compiler.jsBuffer, ", ");
+          CONCAT(compiler.jsBuffer, prop.key.name);
+          CONCAT(compiler.jsBuffer, ": ");
+        } else if (prop.key.raw && prop.key.raw.charAt(0) === "@") {
+          CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, prop.key.start));
+          compiler.lastPos = prop.key.start + 1;
+        }
+
+        c(prop.value, st, "Expression");
+    }
+    if (generate) CONCAT(compiler.jsBuffer, "}");
+},
+SequenceExpression: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    for (var i = 0; i < node.expressions.length; ++i) {
+      if (generate && i !== 0)
+        CONCAT(compiler.jsBuffer, ", ");
+      c(node.expressions[i], st, "Expression");
+    }
+},
+UnaryExpression: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    if (node.prefix) {
+      if (generate) {
+        CONCAT(compiler.jsBuffer, node.operator);
+        if (wordPrefixOperators())
+          CONCAT(compiler.jsBuffer, " ");
+      }
+      c(node.argument, st, "Expression");
+    } else {
+      c(node.argument, st, "Expression");
+      if (generate) CONCAT(compiler.jsBuffer, node.operator);
+    }
+},
+UpdateExpression: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    if (node.prefix) {
+      if (generate) {
+        CONCAT(compiler.jsBuffer, node.operator);
+        if (wordPrefixOperators())
+          CONCAT(compiler.jsBuffer, " ");
+      }
+      c(node.argument, st, "Expression");
+    } else {
+      c(node.argument, st, "Expression");
+      if (generate) CONCAT(compiler.jsBuffer, node.operator);
+    }
+},
+BinaryExpression: function(node, st, c) {
+    var compiler = st.compiler;
+    c(node.left, st, "Expression");
+    if (compiler.generate) CONCAT(compiler.jsBuffer, node.operator);
+    c(node.right, st, "Expression");
+},
 AssignmentExpression: function(node, st, c) {
-    var saveAssignment = st.assignment;
+    var compiler = st.compiler;
+    c(node.left, st, "Expression");
+    if (compiler.generate) CONCAT(compiler.jsBuffer, node.operator);
+    c(node.right, st, "Expression");
+},
+AssignmentExpression: function(node, st, c) {
+    var compiler = st.compiler,
+        saveAssignment = st.assignment;
     st.assignment = true;
     c(node.left, st, "Expression");
+    if (compiler.generate) CONCAT(compiler.jsBuffer, node.operator);
     st.assignment = saveAssignment;
     c(node.right, st, "Expression");
     if (st.isRootScope() && node.left.type === "Identifier" && !st.getLvar(node.left.name))
         st.vars[node.left.name] = {type: "global", node: node.left};
 },
+ConditionalExpression: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    c(node.test, st, "Expression");
+    if (generate) CONCAT(compiler.jsBuffer, " ? ");
+    c(node.consequent, st, "Expression");
+    if (generate) CONCAT(compiler.jsBuffer, " : ");
+    c(node.alternate, st, "Expression");
+},
+NewExpression: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    if (generate) CONCAT(compiler.jsBuffer, "new ");
+    c(node.callee, st, "Expression");
+    if (generate) CONCAT(compiler.jsBuffer, "(");
+    if (node.arguments) {
+      var first = true;
+      for (var i = 0; i < node.arguments.length; ++i) {
+        if (generate) {
+          if (first)
+            first = false;
+          else
+            CONCAT(compiler.jsBuffer, ", ");
+        }
+        c(node.arguments[i], st, "Expression");
+      }
+    }
+    if (generate) CONCAT(compiler.jsBuffer, ")");
+},
+CallExpression: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    c(node.callee, st, "Expression");
+    if (generate) CONCAT(compiler.jsBuffer, "(");
+    if (node.arguments) {
+      var first = true;
+      for (var i = 0; i < node.arguments.length; ++i) {
+        if (generate) {
+          if (first)
+            first = false;
+          else
+            CONCAT(compiler.jsBuffer, ", ");
+        }
+        c(node.arguments[i], st, "Expression");
+      }
+    }
+    if (generate) CONCAT(compiler.jsBuffer, ")");
+},
 MemberExpression: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate,
+        computed = node.computed;
     c(node.object, st, "Expression");
-    st.secondMemberExpression = !node.computed;
+    if (generate) {
+      if (computed)
+        CONCAT(compiler.jsBuffer, "[");
+      else
+        CONCAT(compiler.jsBuffer, ".");
+    }
+    st.secondMemberExpression = !computed;
     c(node.property, st, "Expression");
     st.secondMemberExpression = false;
+    if (generate && computed)
+      CONCAT(compiler.jsBuffer, "]");
+},
+Identifier: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate,
+        identifier = node.name;
+    if (st.currentMethodType() === "-" && !st.secondMemberExpression)
+    {
+        var lvar = st.getLvar(identifier, true), // Only look inside method
+            ivar = compiler.getIvarForClass(identifier, st);
+
+        if (ivar)
+        {
+            if (lvar)
+                compiler.addWarning(createMessage("Local declaration of '" + identifier + "' hides instance variable", node, compiler.source));
+            else
+            {
+                var nodeStart = node.start;
+
+                if (!generate) do {    // The Spider Monkey AST tree includes any parentheses in start and end properties so we have to make sure we skip those
+                    CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, nodeStart));
+                    compiler.lastPos = nodeStart;
+                } while (compiler.source.substr(nodeStart++, 1) === "(")
+                // Save the index in where the "self." string is stored and the node.
+                // These will be used if we find a variable declaration that is hoisting this identifier.
+                ((st.addedSelfToIvars || (st.addedSelfToIvars = Object.create(null)))[identifier] || (st.addedSelfToIvars[identifier] = [])).push({node: node, index: compiler.jsBuffer.atoms.length});
+                CONCAT(compiler.jsBuffer, "self.");
+            }
+        } else if (!reservedIdentifiers(identifier)) {  // Don't check for warnings if it is a reserved word like self, localStorage, _cmd, etc...
+            var message,
+                classOrGlobal = typeof global[identifier] !== "undefined" || typeof window[identifier] !== "undefined" || compiler.getClassDef(identifier),
+                globalVar = st.getLvar(identifier);
+            if (classOrGlobal && (!globalVar || globalVar.type !== "class")) { // It can't be declared with a @class statement.
+                /* Turned off this warning as there are many many warnings when compiling the Cappuccino frameworks - Martin
+                if (lvar) {
+                    message = st.compiler.addWarning(createMessage("Local declaration of '" + identifier + "' hides global variable", node, st.compiler.source));
+                }*/
+            } else if (!globalVar) {
+                if (st.assignment) {
+                    message = new GlobalVariableMaybeWarning("Creating global variable inside function or method '" + identifier + "'", node, compiler.source);
+                    // Turn off these warnings for this identifier, we only want one.
+                    st.vars[identifier] = {type: "remove global warning", node: node};
+                } else {
+                    message = new GlobalVariableMaybeWarning("Using unknown class or uninitialized global variable '" + identifier + "'", node, compiler.source);
+                }
+            }
+            if (message)
+                st.addMaybeWarning(message);
+        }
+    }
+    if (generate) CONCAT(compiler.jsBuffer, identifier);
+},
+Literal: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    if (generate) {
+      var isString = typeof node.value === "string";
+      if (isString)
+        CONCAT(st.compiler.jsBuffer, "\"");
+      CONCAT(st.compiler.jsBuffer, node.value);
+      if (isString)
+        CONCAT(st.compiler.jsBuffer, "\"");
+    } else if (node.raw && node.raw.charAt(0) === "@") {
+        CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
+        st.compiler.lastPos = node.start + 1;
+    }
+
+},
+ArrayLiteral: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    if (!generate) {
+        CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
+        compiler.lastPos = node.start;
+    }
+
+    if (!node.elements.length) {
+        CONCAT(compiler.jsBuffer, "objj_msgSend(objj_msgSend(CPArray, \"alloc\"), \"init\")");
+    } else {
+        CONCAT(compiler.jsBuffer, "objj_msgSend(objj_msgSend(CPArray, \"alloc\"), \"initWithObjects:count:\", [");
+        for (var i = 0; i < node.elements.length; i++) {
+            var elt = node.elements[i];
+
+            if (i)
+                CONCAT(compiler.jsBuffer, ", ");
+
+            if (!generate) compiler.lastPos = elt.start;
+            c(elt, st, "Expression");
+            if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, elt.end));
+        }
+        CONCAT(compiler.jsBuffer, "], " + node.elements.length + ")");
+    }
+
+    if (!generate) compiler.lastPos = node.end;
+},
+DictionaryLiteral: function(node, st, c) {
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    if (!generate) {
+        CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
+        compiler.lastPos = node.start;
+    }
+
+    if (!node.keys.length) {
+        CONCAT(compiler.jsBuffer, "objj_msgSend(objj_msgSend(CPDictionary, \"alloc\"), \"init\")");
+    } else {
+        CONCAT(compiler.jsBuffer, "objj_msgSend(objj_msgSend(CPDictionary, \"alloc\"), \"initWithObjectsAndKeys:\"");
+        for (var i = 0; i < node.keys.length; i++) {
+            var key = node.keys[i],
+                value = node.values[i];
+
+            CONCAT(compiler.jsBuffer, ", ");
+
+            if (!generate) compiler.lastPos = value.start;
+            c(value, st, "Expression");
+            if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, value.end));
+
+            CONCAT(compiler.jsBuffer, ", ");
+
+            if (!generate) compiler.lastPos = key.start;
+            c(key, st, "Expression");
+            if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, key.end));
+        }
+        CONCAT(compiler.jsBuffer, ")");
+    }
+
+    if (!generate) st.compiler.lastPos = node.end;
 },
 ImportStatement: function(node, st, c) {
-    var buffer = st.compiler.jsBuffer;
+    var compiler = st.compiler,
+        generate = compiler.generate,
+        buffer = compiler.jsBuffer;
 
-    if (!buffer) return;
-    CONCAT(buffer,st.compiler.source.substring(st.compiler.lastPos, node.start));
+    if (!generate) CONCAT(buffer,compiler.source.substring(st.compiler.lastPos, node.start));
     CONCAT(buffer, "objj_executeFile(\"");
     CONCAT(buffer, node.filename.value);
     CONCAT(buffer, node.localfilepath ? "\", YES);" : "\", NO);");
-    st.compiler.lastPos = node.end;
+    if (!generate) compiler.lastPos = node.end;
 },
 ClassDeclarationStatement: function(node, st, c) {
-    var classDef,
-        saveJSBuffer = st.compiler.jsBuffer,
+    var compiler = st.compiler,
+        generate = compiler.generate,
+        classDef,
+        saveJSBuffer = compiler.jsBuffer,
         className = node.classname.name,
         classScope = new Scope(st);
 
-    st.compiler.imBuffer = new StringBuffer();
-    st.compiler.cmBuffer = new StringBuffer();
-    st.compiler.classBodyBuffer = new StringBuffer();      // TODO: Check if this is needed
+    compiler.imBuffer = new StringBuffer();
+    compiler.cmBuffer = new StringBuffer();
+    compiler.classBodyBuffer = new StringBuffer();      // TODO: Check if this is needed
 
-    CONCAT(saveJSBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
+    if (!generate) CONCAT(saveJSBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
 
     // First we declare the class
     if (node.superclassname)
     {
-        classDef = st.compiler.getClassDef(className);
+        classDef = compiler.getClassDef(className);
         if (classDef && classDef.ivars)     // Must have ivars dictionary to be a real declaration. Without it is a "@class" declaration
-            throw st.compiler.error_message("Duplicate class " + className, node.classname);
-        if (!st.compiler.getClassDef(node.superclassname.name))
+            throw compiler.error_message("Duplicate class " + className, node.classname);
+        if (!compiler.getClassDef(node.superclassname.name))
         {
             var errorMessage = "Can't find superclass " + node.superclassname.name;
             for (var i = ObjJAcornCompiler.importStack.length; --i >= 0;)
                 errorMessage += "\n" + Array((ObjJAcornCompiler.importStack.length - i) * 2 + 1).join(" ") + "Imported by: " + ObjJAcornCompiler.importStack[i];
-            throw st.compiler.error_message(errorMessage, node.superclassname);
+            throw compiler.error_message(errorMessage, node.superclassname);
         }
 
         classDef = {"className": className, "superClassName": node.superclassname.name, "ivars": Object.create(null), "methods": Object.create(null)};
@@ -484,9 +944,9 @@ ClassDeclarationStatement: function(node, st, c) {
     }
     else if (node.categoryname)
     {
-        classDef = st.compiler.getClassDef(className);
+        classDef = compiler.getClassDef(className);
         if (!classDef)
-            throw st.compiler.error_message("Class " + className + " not found ", node.classname);
+            throw compiler.error_message("Class " + className + " not found ", node.classname);
 
         CONCAT(saveJSBuffer, "{\nvar the_class = objj_getClass(\"" + className + "\")\n");
         CONCAT(saveJSBuffer, "if(!the_class) throw new SyntaxError(\"*** Could not find definition for class \\\"" + className + "\\\"\");\n");
@@ -500,8 +960,8 @@ ClassDeclarationStatement: function(node, st, c) {
     }
 
     classScope.classDef = classDef;
-    st.compiler.currentSuperClass = "objj_getClass(\"" + className + "\").super_class";
-    st.compiler.currentSuperMetaClass = "objj_getMetaClass(\"" + className + "\").super_class";
+    compiler.currentSuperClass = "objj_getClass(\"" + className + "\").super_class";
+    compiler.currentSuperMetaClass = "objj_getMetaClass(\"" + className + "\").super_class";
 
     var firstIvarDeclaration = true,
         hasAccessors = false;
@@ -522,7 +982,7 @@ ClassDeclarationStatement: function(node, st, c) {
         else
             CONCAT(saveJSBuffer, ", ");
 
-        if (st.compiler.flags & ObjJAcornCompiler.Flags.IncludeTypeSignatures)
+        if (compiler.flags & ObjJAcornCompiler.Flags.IncludeTypeSignatures)
             CONCAT(saveJSBuffer, "new objj_ivar(\"" + ivarName + "\", \"" + ivarType + "\")");
         else
             CONCAT(saveJSBuffer, "new objj_ivar(\"" + ivarName + "\")");
@@ -547,7 +1007,7 @@ ClassDeclarationStatement: function(node, st, c) {
         var getterSetterBuffer = new StringBuffer();
 
         // Add the class declaration to compile accessors correctly
-        CONCAT(getterSetterBuffer, st.compiler.source.substring(node.start, node.endOfIvars));
+        CONCAT(getterSetterBuffer, compiler.source.substring(node.start, node.endOfIvars));
         CONCAT(getterSetterBuffer, "\n");
 
         for (var i = 0; i < node.ivardeclarations.length; ++i)
@@ -592,26 +1052,26 @@ ClassDeclarationStatement: function(node, st, c) {
 
         // Remove all @accessors or we will get a recursive loop in infinity
         var b = getterSetterBuffer.toString().replace(/@accessors(\(.*\))?/g, "");
-        var imBuffer = ObjJAcornCompiler.compileToIMBuffer(b, "Accessors", st.compiler.flags, st.compiler.classDefs);
+        var imBuffer = ObjJAcornCompiler.compileToIMBuffer(b, "Accessors", compiler.flags, st.compiler.classDefs);
 
         // Add the accessors methods first to instance method buffer.
         // This will allow manually added set and get methods to override the compiler generated
-        CONCAT(st.compiler.imBuffer, imBuffer);
+        CONCAT(compiler.imBuffer, imBuffer);
     }
 
     // We will store the classDef first after accessors are done so we don't get a duplicate class error
-    st.compiler.classDefs[className] = classDef;
+    compiler.classDefs[className] = classDef;
 
     if (node.body.length > 0)
     {
-        st.compiler.lastPos = node.body[0].start;
+        if (!generate) compiler.lastPos = node.body[0].start;
 
         // And last add methods and other statements
         for (var i = 0; i < node.body.length; ++i) {
             var body = node.body[i];
             c(body, classScope, "Statement");
         }
-        CONCAT(saveJSBuffer, st.compiler.source.substring(st.compiler.lastPos, body.end));
+        if (!generate) CONCAT(saveJSBuffer, compiler.source.substring(st.compiler.lastPos, body.end));
     }
 
     // We must make a new class object for our class definition if it's not a category
@@ -620,10 +1080,10 @@ ClassDeclarationStatement: function(node, st, c) {
     }
 
     // Add instance methods
-    if (IS_NOT_EMPTY(st.compiler.imBuffer))
+    if (IS_NOT_EMPTY(compiler.imBuffer))
     {
         CONCAT(saveJSBuffer, "class_addMethods(the_class, [");
-        saveJSBuffer.atoms.push.apply(saveJSBuffer.atoms, st.compiler.imBuffer.atoms); // FIXME: Move this append to StringBuffer
+        saveJSBuffer.atoms.push.apply(saveJSBuffer.atoms, compiler.imBuffer.atoms); // FIXME: Move this append to StringBuffer
         CONCAT(saveJSBuffer, "]);\n");
     }
 
@@ -631,28 +1091,30 @@ ClassDeclarationStatement: function(node, st, c) {
     if (IS_NOT_EMPTY(st.compiler.cmBuffer))
     {
         CONCAT(saveJSBuffer, "class_addMethods(meta_class, [");
-        saveJSBuffer.atoms.push.apply(saveJSBuffer.atoms, st.compiler.cmBuffer.atoms); // FIXME: Move this append to StringBuffer
+        saveJSBuffer.atoms.push.apply(saveJSBuffer.atoms, compiler.cmBuffer.atoms); // FIXME: Move this append to StringBuffer
         CONCAT(saveJSBuffer, "]);\n");
     }
 
     CONCAT(saveJSBuffer, "}");
 
-    st.compiler.jsBuffer = saveJSBuffer;
+    compiler.jsBuffer = saveJSBuffer;
 
     // Skip the "@end"
-    st.compiler.lastPos = node.end;
+    if (!generate) compiler.lastPos = node.end;
 },
 MethodDeclarationStatement: function(node, st, c) {
-    var saveJSBuffer = st.compiler.jsBuffer,
+    var compiler = st.compiler,
+        generate = compiler.generate,
+        saveJSBuffer = compiler.jsBuffer,
         methodScope = new Scope(st),
         selectors = node.selectors,
         arguments = node.arguments,
         types = [node.returntype ? node.returntype.name : "id"],
         selector = selectors[0].name;    // There is always at least one selector
 
-    CONCAT(saveJSBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
+    if (!generate) CONCAT(saveJSBuffer, compiler.source.substring(compiler.lastPos, node.start));
 
-    st.compiler.jsBuffer = node.methodtype === '-' ? st.compiler.imBuffer : st.compiler.cmBuffer;
+    compiler.jsBuffer = node.methodtype === '-' ? compiler.imBuffer : compiler.cmBuffer;
 
     // Put together the selector. Maybe this should be done in the parser...
     for (var i = 0; i < arguments.length; i++) {
@@ -662,17 +1124,17 @@ MethodDeclarationStatement: function(node, st, c) {
             selector += (selectors[i] ? selectors[i].name : "") + ":";
     }
 
-    if (IS_NOT_EMPTY(st.compiler.jsBuffer))           // Add comma separator if this is not first method in this buffer
-        CONCAT(st.compiler.jsBuffer, ", ");
-    CONCAT(st.compiler.jsBuffer, "new objj_method(sel_getUid(\"");
-    CONCAT(st.compiler.jsBuffer, selector);
-    CONCAT(st.compiler.jsBuffer, "\"), function");
+    if (IS_NOT_EMPTY(compiler.jsBuffer))           // Add comma separator if this is not first method in this buffer
+        CONCAT(compiler.jsBuffer, ", ");
+    CONCAT(compiler.jsBuffer, "new objj_method(sel_getUid(\"");
+    CONCAT(compiler.jsBuffer, selector);
+    CONCAT(compiler.jsBuffer, "\"), function");
 
 //    this.currentSelector = selector;
 
-    if (st.compiler.flags & ObjJAcornCompiler.Flags.IncludeDebugSymbols)
+    if (compiler.flags & ObjJAcornCompiler.Flags.IncludeDebugSymbols)
     {
-        CONCAT(st.compiler.jsBuffer, " $" + st.currentClassName() + "__" + selector.replace(/:/g, "_"));
+        CONCAT(compiler.jsBuffer, " $" + st.currentClassName() + "__" + selector.replace(/:/g, "_"));
     }
 
     CONCAT(st.compiler.jsBuffer, "(self, _cmd");
@@ -683,38 +1145,42 @@ MethodDeclarationStatement: function(node, st, c) {
         var argument = arguments[i],
             argumentName = argument.identifier.name;
 
-        CONCAT(st.compiler.jsBuffer, ", ");
-        CONCAT(st.compiler.jsBuffer, argumentName);
+        CONCAT(compiler.jsBuffer, ", ");
+        CONCAT(compiler.jsBuffer, argumentName);
         types.push(argument.type ? argument.type.name : null);
         methodScope.vars[argumentName] = {type: "method argument", node: argument};
     }
 
     CONCAT(st.compiler.jsBuffer, ")");
 
-    st.compiler.lastPos = node.startOfBody;
+    if (!generate) compiler.lastPos = node.startOfBody;
     c(node.body, methodScope, "Statement");
-    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.body.end));
+    if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.body.end));
 
-    CONCAT(st.compiler.jsBuffer, "\n");
-    if (st.compiler.flags & ObjJAcornCompiler.Flags.IncludeDebugSymbols)
-        CONCAT(st.compiler.jsBuffer, ","+JSON.stringify(types));
-    CONCAT(st.compiler.jsBuffer, ")");
-    st.compiler.jsBuffer = saveJSBuffer;
-    st.compiler.lastPos = node.end;
+    CONCAT(compiler.jsBuffer, "\n");
+    if (compiler.flags & ObjJAcornCompiler.Flags.IncludeDebugSymbols)
+        CONCAT(compiler.jsBuffer, ","+JSON.stringify(types));
+    CONCAT(compiler.jsBuffer, ")");
+    compiler.jsBuffer = saveJSBuffer;
+    if (!generate) compiler.lastPos = node.end;
 },
 MessageSendExpression: function(node, st, c) {
-    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
-    st.compiler.lastPos = node.object ? node.object.start : node.arguments.length ? node.arguments[0].start : node.end;
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    if (!generate) {
+        CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
+        compiler.lastPos = node.object ? node.object.start : node.arguments.length ? node.arguments[0].start : node.end;
+    }
     if (node.superObject)
     {
-        CONCAT(st.compiler.jsBuffer, "objj_msgSendSuper(");
-        CONCAT(st.compiler.jsBuffer, "{ receiver:self, super_class:" + (st.currentMethodType() === "+" ? st.compiler.currentSuperMetaClass : st.compiler.currentSuperClass ) + " }");
+        CONCAT(compiler.jsBuffer, "objj_msgSendSuper(");
+        CONCAT(compiler.jsBuffer, "{ receiver:self, super_class:" + (st.currentMethodType() === "+" ? compiler.currentSuperMetaClass : compiler.currentSuperClass ) + " }");
     }
     else
     {
-        CONCAT(st.compiler.jsBuffer, "objj_msgSend(");
+        CONCAT(compiler.jsBuffer, "objj_msgSend(");
         c(node.object, st, "Expression");
-        CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.object.end));
+        if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.object.end));
     }
 
     var selectors = node.selectors,
@@ -728,19 +1194,22 @@ MessageSendExpression: function(node, st, c) {
         else
             selector += (selectors[i] ? selectors[i].name : "") + ":";
 
-    CONCAT(st.compiler.jsBuffer, ", \"");
-    CONCAT(st.compiler.jsBuffer, selector); // FIXME: sel_getUid(selector + "") ? This FIXME is from the old preprocessor compiler
-    CONCAT(st.compiler.jsBuffer, "\"");
+    CONCAT(compiler.jsBuffer, ", \"");
+    CONCAT(compiler.jsBuffer, selector); // FIXME: sel_getUid(selector + "") ? This FIXME is from the old preprocessor compiler
+    CONCAT(compiler.jsBuffer, "\"");
 
     if (node.arguments) for (var i = 0; i < node.arguments.length; i++)
     {
         var argument = node.arguments[i];
 
-        CONCAT(st.compiler.jsBuffer, ", ");
-        st.compiler.lastPos = argument.start;
+        CONCAT(compiler.jsBuffer, ", ");
+        if (!generate)
+            compiler.lastPos = argument.start;
         c(argument, st, "Expression");
-        CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, argument.end));
-        st.compiler.lastPos = argument.end;
+        if (!generate) {
+            CONCAT(compiler.jsBuffer, compiler.source.substring(st.compiler.lastPos, argument.end));
+            compiler.lastPos = argument.end;
+        }
     }
 
     // TODO: Move this 'if' with body up inside the node.argument 'if'
@@ -748,110 +1217,57 @@ MessageSendExpression: function(node, st, c) {
     {
         var parameter = node.parameters[i];
 
-        CONCAT(st.compiler.jsBuffer, ", ");
-        st.compiler.lastPos = parameter.start;
+        CONCAT(compiler.jsBuffer, ", ");
+        if (!generate)
+            compiler.lastPos = parameter.start;
         c(parameter, st, "Expression");
-        CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, parameter.end));
-        st.compiler.lastPos = parameter.end;
-    }
-
-    CONCAT(st.compiler.jsBuffer, ")");
-    st.compiler.lastPos = node.end;
-},
-Identifier: function(node, st, c) {
-    if (st.currentMethodType() === "-" && !st.secondMemberExpression)
-    {
-        var identifier = node.name,
-            lvar = st.getLvar(identifier, true), // Only look inside method
-            ivar = st.compiler.getIvarForClass(identifier, st);
-
-        if (ivar)
-        {
-            if (lvar)
-                st.compiler.addWarning(createMessage("Local declaration of '" + identifier + "' hides instance variable", node, st.compiler.source));
-            else
-            {
-                var nodeStart = node.start,
-                    compiler = st.compiler;
-
-                do {    // The Spider Monkey AST tree includes any parentheses in start and end properties so we have to make sure we skip those
-                    CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, nodeStart));
-                    compiler.lastPos = nodeStart;
-                } while (compiler.source.substr(nodeStart++, 1) === "(")
-                // Save the index in where the "self." string is stored and the node.
-                // These will be used if we find a variable declaration that is hoisting this identifier.
-                ((st.addedSelfToIvars || (st.addedSelfToIvars = Object.create(null)))[identifier] || (st.addedSelfToIvars[identifier] = [])).push({node: node, index: compiler.jsBuffer.atoms.length});
-                CONCAT(compiler.jsBuffer, "self.");
-            }
-        } else if (!reservedIdentifiers(identifier)) {  // Don't check for warnings if it is a reserved word like self, localStorage, _cmd, etc...
-            var message,
-                classOrGlobal = typeof global[identifier] !== "undefined" || typeof window[identifier] !== "undefined" || st.compiler.getClassDef(identifier),
-                globalVar = st.getLvar(identifier);
-            if (classOrGlobal && (!globalVar || globalVar.type !== "class")) { // It can't be declared with a @class statement.
-                /* Turned off this warning as there are many many warnings when compiling the Cappuccino frameworks - Martin
-                if (lvar) {
-                    message = st.compiler.addWarning(createMessage("Local declaration of '" + identifier + "' hides global variable", node, st.compiler.source));
-                }*/
-            } else if (!globalVar) {
-                if (st.assignment) {
-                    message = new GlobalVariableMaybeWarning("Creating global variable inside function or method '" + identifier + "'", node, st.compiler.source);
-                    // Turn off these warnings for this identifier, we only want one.
-                    st.vars[identifier] = {type: "remove global warning", node: node};
-                } else {
-                    message = new GlobalVariableMaybeWarning("Using unknown class or uninitialized global variable '" + identifier + "'", node, st.compiler.source);
-                }
-            }
-            if (message)
-                st.addMaybeWarning(message);
+        if (!generate) {
+            CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, parameter.end));
+            compiler.lastPos = parameter.end;
         }
     }
+
+    CONCAT(compiler.jsBuffer, ")");
+    if (!generate) compiler.lastPos = node.end;
 },
 SelectorLiteralExpression: function(node, st, c) {
-    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
-    CONCAT(st.compiler.jsBuffer, "sel_getUid(\"");
-    CONCAT(st.compiler.jsBuffer, node.selector);
-    CONCAT(st.compiler.jsBuffer, "\")");
-    st.compiler.lastPos = node.end;
-},
-Literal: function(node, st, c) {
-    if (node.raw && node.raw.charAt(0) === "@")
-    {
-        CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
-        st.compiler.lastPos = node.start + 1;
-    }
-},
-ObjectExpression: function(node, st, c) {
-    for (var i = 0; i < node.properties.length; ++i)
-    {
-        var prop = node.properties[i];
-        if (prop.key.raw && prop.key.raw.charAt(0) === "@")
-        {
-            CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, prop.key.start));
-            st.compiler.lastPos = prop.key.start + 1;
-        }
-        c(prop.value, st, "Expression");
-    }
-},
-PreprocessStatement: function(node, st, c) {
-    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
-    st.compiler.lastPos = node.start;
-    CONCAT(st.compiler.jsBuffer, "//");
+    var compiler = st.compiler,
+        generate = compiler.generate;
+    if (!generate) CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
+    CONCAT(compiler.jsBuffer, "sel_getUid(\"");
+    CONCAT(compiler.jsBuffer, node.selector);
+    CONCAT(compiler.jsBuffer, "\")");
+    if (!generate) compiler.lastPos = node.end;
 },
 ClassStatement: function(node, st, c) {
-    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
-    st.compiler.lastPos = node.start;
-    CONCAT(st.compiler.jsBuffer, "//");
+    var compiler = st.compiler;
+    if (!compiler.generate) {
+        CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
+        compiler.lastPos = node.start;
+        CONCAT(compiler.jsBuffer, "//");
+    }
     var className = node.id.name;
-    if (!st.compiler.getClassDef(className)) {
+    if (!compiler.getClassDef(className)) {
         classDef = {"className": className};
-        st.compiler.classDefs[className] = classDef;
+        compiler.classDefs[className] = classDef;
     }
     st.vars[node.id.name] = {type: "class", node: node.id};
 },
 GlobalStatement: function(node, st, c) {
-    CONCAT(st.compiler.jsBuffer, st.compiler.source.substring(st.compiler.lastPos, node.start));
-    st.compiler.lastPos = node.start;
-    CONCAT(st.compiler.jsBuffer, "//");
+    var compiler = st.compiler;
+    if (!compiler.generate) {
+        CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
+        compiler.lastPos = node.start;
+        CONCAT(compiler.jsBuffer, "//");
+    }
     st.rootScope().vars[node.id.name] = {type: "global", node: node.id};
+},
+PreprocessStatement: function(node, st, c) {
+    var compiler = st.compiler;
+    if (!compiler.generate) {
+      CONCAT(compiler.jsBuffer, compiler.source.substring(compiler.lastPos, node.start));
+      compiler.lastPos = node.start;
+      CONCAT(compiler.jsBuffer, "//");
+    }
 }
 });
