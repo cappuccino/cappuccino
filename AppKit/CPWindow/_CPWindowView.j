@@ -179,7 +179,7 @@ _CPWindowViewResizeSlop = 3;
 - (void)mouseDown:(CPEvent)anEvent
 {
     var theWindow = [self window],
-        couldResize = _styleMask & CPResizableWindowMask;
+        couldResize = _styleMask & CPResizableWindowMask && ![theWindow isFullPlatformWindow];
 
     couldResize = couldResize && (
         (CPWindowResizeStyle === CPWindowResizeStyleModern) ||
