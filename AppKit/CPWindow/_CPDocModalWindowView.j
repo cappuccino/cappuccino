@@ -26,7 +26,6 @@
 @implementation _CPDocModalWindowView : _CPWindowView
 {
     CPView _bodyView;
-    CPView _shadowView;
 }
 
 + (CPString)defaultThemeClass
@@ -38,7 +37,7 @@
 {
     return @{
             @"body-color": [CPColor whiteColor],
-            @"height-shadow": 8,
+            @"shadow-height": 8,
         };
 }
 
@@ -61,17 +60,13 @@
     {
         var bounds = [self bounds];
 
-       _bodyView = [[CPView alloc] initWithFrame:_CGRectMake(0.0, 0.0, _CGRectGetWidth(bounds), _CGRectGetHeight(bounds))];
+        _bodyView = [[CPView alloc] initWithFrame:_CGRectMake(0.0, 0.0, _CGRectGetWidth(bounds), _CGRectGetHeight(bounds))];
 
         [_bodyView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
         [_bodyView setHitTests:NO];
 
         [self addSubview:_bodyView];
-
-        _shadowView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, _CGRectGetWidth(bounds), [self valueForThemeAttribute:@"height-shadow"])];
-        [_shadowView setAutoresizingMask:CPViewWidthSizable];
-        [self addSubview:_shadowView];
-     }
+    }
 
     return self;
 }
@@ -86,11 +81,6 @@
     return [[self class] frameRectForContentRect:aContentRect];
 }
 
-- (void)_enableSheet:(BOOL)enable
-{
-    // do nothing, already a sheet
-}
-
 - (void)layoutSubviews
 {
     [super layoutSubviews];
@@ -98,9 +88,11 @@
     var bounds = [self bounds];
 
     [_bodyView setBackgroundColor:[self valueForThemeAttribute:@"body-color"]];
+}
 
-    [_shadowView setFrame:CGRectMake(0,0, _CGRectGetWidth(bounds), [self valueForThemeAttribute:@"height-shadow"])];
-    [_shadowView setBackgroundColor:[self valueForThemeAttribute:@"attached-sheet-shadow-color"]];
+- (int)bodyOffset
+{
+    return [_bodyView frame].origin.y;
 }
 
 @end

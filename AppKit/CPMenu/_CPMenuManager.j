@@ -221,9 +221,9 @@ var STICKY_TIME_INTERVAL            = 0.4,
 
         if (_lastMouseOverMenuView != mouseOverMenuView)
         {
-            [mouseOverMenuView mouseExited:anEvent];
+            [_lastMouseOverMenuView mouseExited:anEvent];
             // FIXME: Possibly multiple of these?
-            [_lastMouseOverMenuView mouseEntered:anEvent];
+            [mouseOverMenuView mouseEntered:anEvent];
 
             _lastMouseOverMenuView = mouseOverMenuView;
         }

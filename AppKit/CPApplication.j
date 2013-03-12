@@ -978,7 +978,7 @@ CPRunContinuesResponse  = -1002;
         return;
     }
 
-    [aSheet._windowView _enableSheet:YES];
+    [aSheet._windowView _enableSheet:YES inWindow:aWindow];
 
     // -dw- if a sheet is already visible, we skip this since it serves no purpose and causes
     // orderOut: to be called on the sheet, which is not what we want.

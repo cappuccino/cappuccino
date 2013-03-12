@@ -1169,7 +1169,7 @@ CPTexturedBackgroundWindowMask
 
     if (_hasShadow && !_shadowView)
     {
-         _shadowView = [[_CPShadowWindowView alloc] initWithFrame:CGRectMakeZero()];
+        _shadowView = [[_CPShadowWindowView alloc] initWithFrame:CGRectMakeZero()];
 
         [_shadowView setWindowView:_windowView];
         [_shadowView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
@@ -2473,7 +2473,6 @@ CPTexturedBackgroundWindowMask
     return CPWindowResizeTime;
 }
 
-/* @ignore */
 - (void)_setAttachedSheetFrameOrigin
 {
     // Position the sheet above the contentRect.
@@ -2487,7 +2486,7 @@ CPTexturedBackgroundWindowMask
     [attachedSheet setFrame:sheetFrame display:YES animate:NO];
 }
 
-/* @ignore
+/*
     Starting point for sheet session, called from CPApplication beginSheet:
 */
 - (void)_attachSheet:(CPWindow)aSheet modalDelegate:(id)aModalDelegate
@@ -2503,13 +2502,13 @@ CPTexturedBackgroundWindowMask
     var sheetFrame = [aSheet frame];
 
     _sheetContext = {"sheet": aSheet, "modalDelegate": aModalDelegate, "endSelector": aDidEndSelector,
-        "contextInfo": aContextInfo, "frame": _CGRectMakeCopy(sheetFrame), "returnCode": -1,
+        "contextInfo": aContextInfo, "returnCode": -1,
         "opened": NO};
 
     [self _attachSheetWindow];
 }
 
-/* @ignore
+/*
     Called to animate the sheet in. The timer seems to solve a bug where sheets would
     be partially animated under certain conditions.
 */
@@ -2525,7 +2524,7 @@ CPTexturedBackgroundWindowMask
         repeats:NO];
 }
 
-/* @ignore
+/*
     Called to end the sheet. Note that orderOut: is needed to animate the sheet out, as in Cocoa.
     The sheet isn't completely gone until _cleanupSheetWindow gets called.
 */
@@ -2546,7 +2545,7 @@ CPTexturedBackgroundWindowMask
     }
 }
 
-/* @ignore
+/*
     Called to animate the sheet out. If called while animating in, schedules an animate
     out at completion
 */
@@ -2562,27 +2561,25 @@ CPTexturedBackgroundWindowMask
         repeats:NO];
 }
 
-/* @ignore
+/*
     Called to cleanup sheet, when we are definitely done with it
 */
 - (void)_cleanupSheetWindow
 {
     var sheet = _sheetContext["sheet"],
-        lastFrame = _sheetContext["frame"],
         deferDidEnd = _sheetContext["deferDidEndSelector"];
 
-    [sheet setFrame:lastFrame];
-    [self _restoreMasksForView:[sheet contentView]];
-
-    // if the parent window is modal, the sheet started its own modal session
+    // If the parent window is modal, the sheet started its own modal session
     if (sheet._isModal)
         [CPApp stopModal];
 
-    // restore the state of window before it was sheetified
-    [sheet._windowView _enableSheet:NO];
+    [self _removeClipForSheet:sheet];
 
-    // close it
+    // Restore the state of window before it was sheetified
     sheet._isSheet = NO;
+    [sheet._windowView _enableSheet:NO inWindow:self];
+
+    // Close it
     [sheet orderOut:self];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidEndSheetNotification object:self];
@@ -2594,7 +2591,7 @@ CPTexturedBackgroundWindowMask
             returnCode = _sheetContext["returnCode"],
             contextInfo = _sheetContext["contextInfo"];
 
-        // context must be destroyed, since didEnd might want to attach another sheet
+        // Context must be destroyed, since didEnd might want to attach another sheet
         _sheetContext = nil;
         sheet._parentView = nil;
 
@@ -2622,31 +2619,20 @@ CPTexturedBackgroundWindowMask
         repeats:NO];
 }
 
-/* @ignore */
 - (void)_sheetShouldAnimateIn:(CPTimer)timer
 {
-    // can't open sheet while opening or closing animation is going on
+    // Can't open sheet while opening or closing animation is going on
     if (_sheetContext["isOpening"] ||
         _sheetContext["isClosing"])
         return;
 
-    var sheet = _sheetContext["sheet"],
-        sheetFrame = [sheet frame],
-        frame = [self frame];
-
-    [self _setUpMasksForView:[sheet contentView]];
-
+    var sheet = _sheetContext["sheet"];
     sheet._isSheet = YES;
     sheet._parentView = self;
 
-    var originx = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width) / 2),
-        originy = frame.origin.y + [_contentView frame].origin.y,
-        startFrame = _CGRectMake(originx, originy, sheetFrame.size.width, 0),
-        endFrame = _CGRectMake(originx, originy, sheetFrame.size.width, sheetFrame.size.height);
-
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillBeginSheetNotification object:self];
 
-    // if sheet is attached to a modal window, the sheet runs
+    // If sheet is attached to a modal window, the sheet runs
     // as if itself and the parent window are modal
     sheet._isModal = NO;
 
@@ -2656,7 +2642,18 @@ CPTexturedBackgroundWindowMask
         sheet._isModal = YES;
     }
 
+    // The sheet starts hidden just above the top of a clip rect
+    var sheetFrame = [sheet frame],
+        sheetShadowFrame = sheet._hasShadow ? [sheet._shadowView frame] : sheetFrame,
+        frame = [self frame],
+        originX = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width) / 2),
+        startFrame = _CGRectMake(originX, -sheetShadowFrame.size.height, sheetFrame.size.width, sheetFrame.size.height),
+        endY = [_windowView bodyOffset] - [[self contentView] frame].origin.y,
+        endFrame = _CGRectMake(originX, endY, sheetFrame.size.width, sheetFrame.size.height);
+
     [sheet orderFront:self];
+
+    [self _clipSheet:sheet];
     [sheet setFrame:startFrame display:YES animate:NO];
 
     _sheetContext["opened"] = YES;
@@ -2671,16 +2668,11 @@ CPTexturedBackgroundWindowMask
     [sheet makeKeyWindow];
 }
 
-/* @ignore */
 - (void)_sheetShouldAnimateOut:(CPTimer)timer
 {
-    var sheet = _sheetContext["sheet"],
-        startFrame = [sheet frame],
-        endFrame = _CGRectMakeCopy(startFrame);
-
     if (_sheetContext["isOpening"])
     {
-        // allow sheet to be closed while opening, it will close when animate in completes
+        // Allow sheet to be closed while opening, it will close when animate in completes
         _sheetContext["shouldClose"] = YES;
         return;
     }
@@ -2689,14 +2681,21 @@ CPTexturedBackgroundWindowMask
         return;
 
     _sheetContext["opened"] = NO;
-    _sheetContext["frame"] = startFrame;
     _sheetContext["isClosing"] = YES;
 
-    // the parent window can be orderedOut to disable the sheet animate out, as in Cocoa
+    // The parent window can be orderedOut to disable the sheet animate out, as in Cocoa
     if ([self isVisible])
     {
-        endFrame.size.height = 0;
-        [self _setUpMasksForView:[sheet contentView]];
+        var sheet = _sheetContext["sheet"],
+            sheetFrame = [sheet frame],
+            fullHeight = sheet._hasShadow ? [sheet._shadowView frame].size.height : sheetFrame.size.height,
+            endFrame = _CGRectMakeCopy(sheetFrame),
+            contentOrigin = [self convertBaseToGlobal:[[self contentView] frame].origin];
+
+        [sheet setFrameOrigin:_CGPointMake(sheetFrame.origin.x, sheetFrame.origin.y - contentOrigin.y)];
+        [self _clipSheet:sheet];
+
+        endFrame.origin.y = -fullHeight;
         [sheet _setFrame:endFrame delegate:self duration:[self animationResizeTime:endFrame] curve:CPAnimationEaseIn];
     }
     else
@@ -2705,7 +2704,6 @@ CPTexturedBackgroundWindowMask
     }
 }
 
-/* @ignore */
 - (void)_sheetAnimationDidEnd:(CPTimer)timer
 {
     var sheet = _sheetContext["sheet"];
@@ -2715,12 +2713,17 @@ CPTexturedBackgroundWindowMask
 
     if (_sheetContext["opened"] === YES)
     {
-        // sheet is open and completely visible
-        [self _restoreMasksForView:[sheet contentView]];
-
         // we wanted to close the sheet while it animated in, do that now
         if (_sheetContext["shouldClose"] === YES)
             [self _detachSheetWindow];
+        else
+        {
+            var sheetFrame = [sheet frame],
+                sheetOrigin = _CGPointMakeCopy(sheetFrame.origin);
+
+            [self _removeClipForSheet:sheet];
+            [sheet setFrameOrigin:_CGPointMake(sheetOrigin.x, [sheet frame].origin.y + sheetOrigin.y)];
+        }
     }
     else
     {
@@ -2729,36 +2732,17 @@ CPTexturedBackgroundWindowMask
     }
 }
 
-- (void)_setUpMasksForView:(CPView)aView
+- (void)_clipSheet:(CPWindow)aSheet
 {
-    var views = [aView subviews];
+    var clipRect = [_platformWindow contentBounds];
+    clipRect.origin.y = [self frame].origin.y + [[self contentView] frame].origin.y;
 
-    [views addObject:aView];
-
-    for (var i = 0, count = [views count]; i < count; i++)
-    {
-        var view = [views objectAtIndex:i],
-            mask = [view autoresizingMask],
-            maskToAdd = (mask & CPViewMinYMargin) ? 128 : CPViewMinYMargin;
-
-        [view setAutoresizingMask:(mask | maskToAdd)];
-    }
+    [[_platformWindow layerAtLevel:_level create:NO] clipWindow:aSheet toRect:clipRect];
 }
 
-- (void)_restoreMasksForView:(CPView)aView
+- (void)_removeClipForSheet:(CPWindow)aSheet
 {
-    var views = [aView subviews];
-
-    [views addObject:aView];
-
-    for (var i = 0, count = [views count]; i < count; i++)
-    {
-        var view = [views objectAtIndex:i],
-            mask = [view autoresizingMask],
-            maskToRemove = (mask & 128) ? 128 : CPViewMinYMargin;
-
-        [view setAutoresizingMask:(mask & (~ maskToRemove))];
-    }
+    [[_platformWindow layerAtLevel:_level create:NO] removeClipForWindow:aSheet];
 }
 
 /*!
@@ -3175,7 +3159,7 @@ var keyViewComparator = function(lhs, rhs, context)
     if ([self isFullPlatformWindow])
         return [self setFrame:[_platformWindow visibleFrame]];
 
-    if (_autoresizingMask == CPWindowNotSizable)
+    if (_autoresizingMask === CPWindowNotSizable)
         return;
 
     var frame = [_platformWindow contentBounds],
@@ -3187,11 +3171,13 @@ var keyViewComparator = function(lhs, rhs, context)
 
     if (_autoresizingMask & CPWindowMinXMargin)
         newFrame.origin.x += dX;
+
     if (_autoresizingMask & CPWindowWidthSizable)
         newFrame.size.width += dX;
 
     if (_autoresizingMask & CPWindowMinYMargin)
         newFrame.origin.y += dY;
+
     if (_autoresizingMask & CPWindowHeightSizable)
         newFrame.size.height += dY;
 

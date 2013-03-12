@@ -121,4 +121,9 @@
     return size;
 }
 
+- (int)bodyOffset
+{
+    return [self contentRectForFrameRect:[self frame]].origin.y;
+}
+
 @end

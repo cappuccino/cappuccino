@@ -1773,7 +1773,7 @@ var themedButtonValues = nil,
 {
     var windowView = [[_CPWindowView alloc] initWithFrame:CGRectMakeZero(0.0, 0.0, 200, 200)],
 
-        sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
+        sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 1, 8),
         resizeIndicator = PatternImage(@"window-resize-indicator.png", 12, 12),
 
         shadowColor = PatternColor(
@@ -1794,6 +1794,7 @@ var themedButtonValues = nil,
         [@"window-shadow-color",            shadowColor],
         [@"resize-indicator",               resizeIndicator],
         [@"attached-sheet-shadow-color",    sheetShadow],
+        [@"shadow-height",                  8],
         [@"size-indicator",                 CGSizeMake(12, 12)]
     ];
 
@@ -1890,7 +1891,6 @@ var themedButtonValues = nil,
         minimizeButtonImage =               PatternImage(@"window-standard-minimize-button.png", 16, 16),
         minimizeButtonImageHighlighted =    PatternImage(@"window-standard-minimize-button-highlighted.png", 16, 16),
 
-        sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
         resizeIndicator = PatternImage(@"window-resize-indicator.png", 12, 12),
 
         themeValues =
@@ -1930,7 +1930,6 @@ var themedButtonValues = nil,
             [@"close-image-origin",             CGPointMake(8.0, 10.0)],
 
             [@"resize-indicator",               resizeIndicator],
-            [@"attached-sheet-shadow-color",    sheetShadow],
             [@"size-indicator",                 CGSizeMake(12, 12)]
         ];
 
@@ -1951,13 +1950,9 @@ var themedButtonValues = nil,
                 height: 5.0
             }),
 
-        sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
-
         themeValues =
         [
-            [@"body-color",                     bezelColor],
-            [@"height-shadow",                  8],
-            [@"attached-sheet-shadow-color",    sheetShadow]
+            [@"body-color", bezelColor]
         ];
 
     [self registerThemeValues:themeValues forView:docModalWindowView inherit:themedWindowViewValues];

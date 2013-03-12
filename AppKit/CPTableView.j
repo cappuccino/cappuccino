@@ -2319,9 +2319,7 @@ NOT YET IMPLEMENTED
 
         var heightObject = _cachedRowHeights[_cachedRowHeights.length - 1],
             height = heightObject.heightAboveRow + heightObject.height + _intercellSpacing.height;
-
     }
-
 
     if ([superview isKindOfClass:[CPClipView class]])
     {
@@ -2456,7 +2454,6 @@ NOT YET IMPLEMENTED
                 @"width": [column width]
             };
 
-
         [columnsSetup addObject:metaData];
     }
 
@@ -2498,7 +2495,7 @@ NOT YET IMPLEMENTED
     Sets the delegate of the receiver.
     @param aDelegate the delegate object for the tableview.
 
-    The delegate can provide easy notification for user interaction, display behaviour, contextual menus, and more.
+    The delegate can provide notification for user interaction, display behaviour, contextual menus, and more.
 
 
 @section Providing Views for Rows and Columns:
@@ -2520,7 +2517,7 @@ The view's properties should be properly set up before returning the result. The
 
 When using bindings, this method is optional if at least one identifier has been associated with the table view at design time. If this method is not implemented, the table will automatically call the CPTableView method makeViewWithIdentifier:owner: with the tableColumn parameter’s identifier and the table view’s delegate respectively as parameters, to attempt to reuse a previous view, or automatically unarchive a prototype associated with the table view.
 
-The autoresizingMask of the returned view will automatically be set to CPViewNotSizable if the data view was created in Interface builder in a table column. Otherwise, for example if the view is created manually in code, this methods expects the data view to have a CPViewNotSizable mask.
+The autoresizingMask of the returned view will automatically be set to CPViewNotSizable if the data view was created in Interface builder in a table column. Otherwise, for example if the view is created manually in code, this method expects the data view to have a CPViewNotSizable mask.
 
 
 @section displayingcells Displaying Cells:
@@ -2536,8 +2533,6 @@ Group rows are a way to separate a groups of data in a tableview. Return YES if 
 @endcode
 
 
-
-
 @section editingcells Editing Cells:
 
 Return YES if the dataview at a given index and column should be edited, otherwise NO.
@@ -2546,17 +2541,12 @@ Return YES if the dataview at a given index and column should be edited, otherwi
 @endcode
 
 
-
-
-
 @section sizes Setting Row and Column Size:
 
 Return the height of the row at a given index. Only implement this if you want variable row heights. Otherwise use setRowHeight: on the tableview.
 @code
 - (float)tableView:(CPTableView)tableView heightOfRow:(int)row;
 @endcode
-
-
 
 
 @section selection Selecting in the TableView:
@@ -2577,7 +2567,7 @@ Return YES if the table column given should be selected, otherwise NO to deny th
 - (BOOL)tableView:(CPTableView)aTableView shouldSelectTableColumn:(CPTableColumn)aTableColumn;
 @endcode
 
-Inform the delegate that the tableview is in the process of chaining the selection.
+Informs the delegate that the tableview is in the process of chaining the selection.
 This usually happens when the user is dragging their mouse across rows.
 @code
 - (void)tableViewSelectionIsChanging:(CPNotification)aNotification
@@ -2589,10 +2579,7 @@ Informs the delegate that the tableview selection has changed.
 @endcode
 
 
-
-
-
-@section movingandresizingcolumsn Moving and Resizing Columns:
+@section movingandresizingcolumns Moving and Resizing Columns:
 
 Return YES if the column at a given index should move to a new column index, otherwise NO.
 @code
@@ -2600,13 +2587,13 @@ Return YES if the column at a given index should move to a new column index, oth
 @endcode
 
 
-Notifies the delegate that the tableview drag occurred. This is send on mouse up.
+Notifies the delegate that the tableview drag occurred. This is sent on mouse up.
 @code
 - (void)tableView:(CPTableView)tableView didDragTableColumn:(CPTableColumn)tableColumn;
 @endcode
 
 
-Notifies the delegate that a tablecolumn was moved by the user.
+Notifies the delegate that a table column was moved by the user.
 @code
 - (void)tableViewColumnDidMove:(CPNotification)aNotification;
 @endcode
@@ -2617,8 +2604,6 @@ Notifies the delegate that the user resized the table column
 @endcode
 
 
-
-
 @section mousevents Responding to Mouse Events:
 
 Sent when the user clicks a table column but doesn't drag.
@@ -2627,7 +2612,7 @@ Sent when the user clicks a table column but doesn't drag.
 @endcode
 
 
-Notify the delegate that the user click the table header of a column.
+Notify the delegate that the user has clicked the table header of a column.
 @code
 - (void)tableView:(CPTableView)tableView mouseDownInHeaderOfTableColumn:(CPTableColumn)tableColumn;
 @endcode
@@ -2635,15 +2620,15 @@ Notify the delegate that the user click the table header of a column.
 
 @section contextualmenus Contextual Menus:
 
-Called when the user right clicks on the tableview. -1 is passed for the row or column if the user doesn't right click on a real row or column
-Return a CPMenu that should be displayed if the user right clicks. If you do not implement this the tableview will just call super on menuForEvent
+Called when the user right-clicks on the tableview. -1 is passed for the row or column if the user doesn't right click on a real row or column
+Return a CPMenu that should be displayed if the user right-clicks. If you do not implement this the tableview will call super on menuForEvent
 @code
 - (CPMenu)tableView:(CPTableView)aTableView menuForTableColumn:(CPTableColumn)aColumn row:(int)aRow;
 @endcode
 
 
 @section deletekey Delete Key
-Called when the user presses the delete key. Many times you will want to delete data (or prompt for deletion) when the user hids the delete key.
+Called when the user presses the delete key. Many times you will want to delete data (or prompt for deletion) when the user presses the delete key.
 Your delegate can implement this method to avoid subclassing the tableview to add this behaviour.
 
 @code
@@ -3120,7 +3105,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [[CPException exceptionWithName:@"Error" reason:reason userInfo:nil] raise];
     }
 
-
     _retargetedDropRow = row;
     _retargetedDropOperation = operation;
 }
@@ -3307,7 +3291,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         // there are multiple views in the clip view?
         if ([superview isKindOfClass:[CPClipView class]])
             _exposedRect = [superview bounds];
-
         else
             _exposedRect = [self bounds];
     }
@@ -3555,7 +3538,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (_contentBindingExpicitelySet)
         [self _prepareContentBindedDataView:aDataView forRow:aRow];
     else
-    // For both cell-based and view-based
+        // For both cell-based and view-based
         [aTableColumn _prepareDataView:aDataView forRow:aRow];
 }
 
@@ -4374,7 +4357,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     else
         _selectionAnchorRow = row;
 
-
     //set ivars for startTrackingPoint and time...
     _startTrackingPoint = aPoint;
     _startTrackingTimestamp = new Date();
@@ -4439,7 +4421,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
                 _draggedRowIndexes = [[CPIndexSet alloc] initWithIndexSet:_selectedRowIndexes];
             else
                 _draggedRowIndexes = [CPIndexSet indexSetWithIndex:row];
-
 
             //ask the datasource for the data
             var pboard = [CPPasteboard pasteboardWithName:CPDragPboard];
@@ -4647,7 +4628,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     var row = [self _proposedRowAtPoint:theDragPoint],
         rowRect = [self rectOfRow:row];
 
-    // If there is no (the default) or to little inter cell spacing we create some room for the CPTableViewDropAbove indicator
+    // If there is no (the default) or too little inter-cell spacing we create some room for the CPTableViewDropAbove indicator
     // This probably doesn't work if the row height is smaller than or around 5.0
     if ([self intercellSpacing].height < 5.0)
         rowRect = CGRectInset(rowRect, 0.0, 5.0 - [self intercellSpacing].height);
@@ -4667,7 +4648,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (CPInteger)_proposedRowAtPoint:(CGPoint)dragPoint
 {
     var row = [self rowAtPoint:dragPoint],
-    // Determine if the mouse is currently closer to this row or the row below it
+        // Determine if the mouse is currently closer to this row or the row below it
         lowerRow = row + 1,
         rect = [self rectOfRow:row],
         bottomPoint = _CGRectGetMaxY(rect),
@@ -4766,7 +4747,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (BOOL)prepareForDragOperation:(id)sender
 {
     // FIX ME: is there anything else that needs to happen here?
-    // actual validation is called in dragginUpdated:
+    // actual validation is called in draggingUpdated:
     [_dropOperationFeedbackView removeFromSuperview];
 
     return (_implementedDataSourceMethods & CPTableViewDataSource_tableView_validateDrop_proposedRow_proposedDropOperation_);
@@ -5003,7 +4984,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 - (void)_textFieldEditingDidEnd:(CPNotification)aNote
 {
-// FIXME: When you edit a text field and hit enter without any text mofification, the CPControlTextDidEndEditingNotification is NOT sent. This is a bug in CPTextField or CPControl according to cocoa.
+    // FIXME: When you edit a text field and hit enter without any text modification, the CPControlTextDidEndEditingNotification
+    // is NOT sent. This is a bug in CPTextField or CPControl according to cocoa.
     var textField = [aNote object];
 
     [self _unregisterForEndEditingNote:textField];
@@ -5016,7 +4998,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 - (SEL)_disableActionIfExists:(CPView)aView
 {
-// TODO: We disable action to prevent it from beeing sent twice when we resign the FR inside a textEndEditing notification. Check if this is due to a bug in CPTextField.
+    // TODO: We disable action to prevent it from beeing sent twice when we resign the FR inside a textEndEditing notification.
+    // Check if this is due to a bug in CPTextField.
     var action = nil;
     if ([aView respondsToSelector:@selector(action)] && (action = [aView action]))
         [aView setAction:nil];
@@ -5111,7 +5094,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (i >= [self numberOfRows] || i < 0)
         return;
 
-
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_)
     {
 
@@ -5164,6 +5146,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 }
 
 @end
+
 
 @implementation CPTableView (Bindings)
 
@@ -5218,6 +5201,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 @end
 
+
 @implementation CPTableContentBinder : CPBinder
 {
     id _content @accessors(property=content);
@@ -5234,6 +5218,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 }
 
 @end
+
 
 var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     CPTableViewDelegateKey                  = @"CPTableViewDelegateKey",
@@ -5350,6 +5335,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 }
 
 @end
+
 
 @implementation CPIndexSet (tableview)
 
@@ -5481,6 +5467,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
 @end
 
+
 @implementation _CPColumnDragView : CPView
 {
     CPColor _lineColor;
@@ -5518,6 +5505,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 }
 
 @end
+
 
 @implementation CPTableCellView : CPView
 {
