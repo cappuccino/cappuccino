@@ -22,7 +22,8 @@
     [wind setTitle:@"Untitled"];
 
     sheet = [[CPWindow alloc] initWithContentRect:CGRectMake(0, 0, 300, 100) styleMask:CPDocModalWindowMask | CPResizableWindowMask];
-    [sheet setMinSize:CGSizeMake(300,100)];
+    [sheet setMinSize:CGSizeMake(300, 100)];
+    [sheet setMaxSize:CGSizeMake(600, 300)];
 
     var sheetContent = [sheet contentView];
 

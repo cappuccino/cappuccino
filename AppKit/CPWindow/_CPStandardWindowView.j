@@ -130,7 +130,6 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
         The top coordinate has already been adjusted by _CPTitleableWindowView.
     */
     var contentRect = [super contentRectForFrameRect:aFrameRect];
-
     contentRect.origin.x += 1;
     contentRect.size.width -= 2;
     contentRect.size.height -= 1;
@@ -165,7 +164,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
         [self addSubview:_dividerView];
 
-        var y = _CGRectGetMaxY([_dividerView frame]);
+        var y = _CGRectGetMinY([_dividerView frame]);
 
         _bodyView = [[CPView alloc] initWithFrame:_CGRectMake(0.0, y, _CGRectGetWidth(bounds), _CGRectGetHeight(bounds) - y)];
 
@@ -226,18 +225,15 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
         headHeight = [self toolbarMaxY];
 
     [_headView setFrameSize:_CGSizeMake(width, headHeight)];
-    [_dividerView setFrame:_CGRectMake(0.0, headHeight, width, 1.0)];
+    [_dividerView setFrame:_CGRectMake(0.0, headHeight, width, _CPStandardWindowViewDividerViewHeight)];
 
-    var dividerMaxY = 0,
-        dividerMinY = 0;
+    var dividerMinY = 0,
+        dividerFrame = [_dividerView frame];
 
     if (![_dividerView isHidden])
-    {
-        dividerMinY = _CGRectGetMinY([_dividerView frame]);
-        dividerMaxY = _CGRectGetMaxY([_dividerView frame]);
-    }
+        dividerMinY = _CGRectGetMinY(dividerFrame);
 
-    [_bodyView setFrame:_CGRectMake(0.0, dividerMaxY, width, _CGRectGetHeight(bounds) - dividerMaxY)];
+    [_bodyView setFrame:_CGRectMake(0.0, dividerMinY, width, _CGRectGetHeight(bounds) - dividerMinY)];
 
     var leftOffset = 8;
 
@@ -248,9 +244,8 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
     [_titleField setFrame:_CGRectMake(leftOffset, 0, width - leftOffset * 2.0, [self valueForThemeAttribute:@"title-bar-height"])];
 
-    var contentRect = _CGRectMake(0.0, dividerMaxY, width, _CGRectGetHeight([_bodyView frame]));
-
-    [[theWindow contentView] setFrame:contentRect];
+    var contentFrame = [_bodyView frame];
+    [[theWindow contentView] setFrame:_CGRectInset(contentFrame, 1.0, 1.0)];
 }
 
 /*
@@ -313,9 +308,9 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     return [super couldBeMoveEvent:anEvent];
 }
 
-- (void)_enableSheet:(BOOL)enable
+- (void)_enableSheet:(BOOL)enable inWindow:(CPWindow)parentWindow
 {
-    [super _enableSheet:enable];
+    [super _enableSheet:enable inWindow:parentWindow];
 
     [_headView setHidden:enable];
     [_dividerView setHidden:enable];
@@ -324,22 +319,29 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     [_titleField setHidden:enable];
 
     if (enable)
+    {
         [_bodyView setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"body-color" forClass:_CPDocModalWindowView]];
+
+        // Move the shadow view down so it is inside the content border
+        var shadowFrame = [_sheetShadowView frame];
+        [_sheetShadowView setFrameOrigin:_CGPointMake(shadowFrame.origin.x, shadowFrame.origin.y + 1)];
+    }
     else
         [_bodyView setBackgroundColor:[self valueForThemeAttribute:@"body-color"]];
 
     // resize the window
     var theWindow = [self window],
         frame = [theWindow frame],
+        dividerHeight = [_dividerView frame].size.height,
         dy;
 
     if (enable)
-        dy = -(_CGRectGetHeight([_headView frame]) + _CGRectGetHeight([_dividerView frame]));
+        dy = -[_headView frame].size.height;
     else
-        dy = [self toolbarMaxY] + 1.0;
+        dy = [self toolbarMaxY] + dividerHeight;
 
-    var newHeight = _CGRectGetMaxY(frame) + dy,
-        newWidth = _CGRectGetMaxX(frame);
+    var newHeight = _CGRectGetHeight(frame) + dy,
+        newWidth = _CGRectGetWidth(frame);
 
     frame.size.height += dy;
 
@@ -378,6 +380,11 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     size.height += _CPStandardWindowViewDividerViewHeight;
 
     return size;
+}
+
+- (int)bodyOffset
+{
+    return [_bodyView frame].origin.y;
 }
 
 @end

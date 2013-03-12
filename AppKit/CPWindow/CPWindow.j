@@ -2576,10 +2576,10 @@ CPTexturedBackgroundWindowMask
     [self _removeClipForSheet:sheet];
 
     // Restore the state of window before it was sheetified
-    [sheet._windowView _enableSheet:NO];
+    sheet._isSheet = NO;
+    [sheet._windowView _enableSheet:NO inWindow:self];
 
     // Close it
-    sheet._isSheet = NO;
     [sheet orderOut:self];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidEndSheetNotification object:self];
@@ -2648,7 +2648,8 @@ CPTexturedBackgroundWindowMask
         frame = [self frame],
         originX = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width) / 2),
         startFrame = _CGRectMake(originX, -sheetShadowFrame.size.height, sheetFrame.size.width, sheetFrame.size.height),
-        endFrame = _CGRectMake(originX, 0, sheetFrame.size.width, sheetFrame.size.height);
+        endY = [_windowView bodyOffset] - [[self contentView] frame].origin.y,
+        endFrame = _CGRectMake(originX, endY, sheetFrame.size.width, sheetFrame.size.height);
 
     [sheet orderFront:self];
 
@@ -2688,9 +2689,10 @@ CPTexturedBackgroundWindowMask
         var sheet = _sheetContext["sheet"],
             sheetFrame = [sheet frame],
             fullHeight = sheet._hasShadow ? [sheet._shadowView frame].size.height : sheetFrame.size.height,
-            endFrame = _CGRectMakeCopy(sheetFrame);
+            endFrame = _CGRectMakeCopy(sheetFrame),
+            contentOrigin = [self convertBaseToGlobal:[[self contentView] frame].origin];
 
-        [sheet setFrameOrigin:_CGPointMake(sheetFrame.origin.x, 0)];
+        [sheet setFrameOrigin:_CGPointMake(sheetFrame.origin.x, sheetFrame.origin.y - contentOrigin.y)];
         [self _clipSheet:sheet];
 
         endFrame.origin.y = -fullHeight;
@@ -2715,7 +2717,13 @@ CPTexturedBackgroundWindowMask
         if (_sheetContext["shouldClose"] === YES)
             [self _detachSheetWindow];
         else
+        {
+            var sheetFrame = [sheet frame],
+                sheetOrigin = _CGPointMakeCopy(sheetFrame.origin);
+
             [self _removeClipForSheet:sheet];
+            [sheet setFrameOrigin:_CGPointMake(sheetOrigin.x, [sheet frame].origin.y + sheetOrigin.y)];
+        }
     }
     else
     {
@@ -3151,7 +3159,7 @@ var keyViewComparator = function(lhs, rhs, context)
     if ([self isFullPlatformWindow])
         return [self setFrame:[_platformWindow visibleFrame]];
 
-    if (_autoresizingMask == CPWindowNotSizable)
+    if (_autoresizingMask === CPWindowNotSizable)
         return;
 
     var frame = [_platformWindow contentBounds],
@@ -3163,11 +3171,13 @@ var keyViewComparator = function(lhs, rhs, context)
 
     if (_autoresizingMask & CPWindowMinXMargin)
         newFrame.origin.x += dX;
+
     if (_autoresizingMask & CPWindowWidthSizable)
         newFrame.size.width += dX;
 
     if (_autoresizingMask & CPWindowMinYMargin)
         newFrame.origin.y += dY;
+
     if (_autoresizingMask & CPWindowHeightSizable)
         newFrame.size.height += dY;
 

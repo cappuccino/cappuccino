@@ -1794,6 +1794,7 @@ var themedButtonValues = nil,
         [@"window-shadow-color",            shadowColor],
         [@"resize-indicator",               resizeIndicator],
         [@"attached-sheet-shadow-color",    sheetShadow],
+        [@"shadow-height",                  8],
         [@"size-indicator",                 CGSizeMake(12, 12)]
     ];
 
@@ -1951,8 +1952,7 @@ var themedButtonValues = nil,
 
         themeValues =
         [
-            [@"body-color",    bezelColor],
-            [@"shadow-height", 8]
+            [@"body-color", bezelColor]
         ];
 
     [self registerThemeValues:themeValues forView:docModalWindowView inherit:themedWindowViewValues];

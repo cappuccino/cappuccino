@@ -142,33 +142,24 @@
     // First check to see if the window is already clipped.
     // If so, just update its rect.
     var windowElement = aWindow._DOMElement,
-        clip = windowElement.parentNode,
-        style = clip.style,
-        isClipped = style.className === "cpwindowclip";
-
-    if (!isClipped)
-    {
-        clip = document.createElement("div");
-
+        clip = document.createElement("div"),
         style = clip.style;
-        style.className = "cpwindowclip";
-        style.position = "absolute";
-        style.overflow = "hidden";
-    }
+
+    style = clip.style;
+    style.className = "cpwindowclip";
+    style.position = "absolute";
+    style.overflow = "hidden";
 
     style.left = clipRect.origin.x + "px";
     style.top = clipRect.origin.y + "px";
     style.width = clipRect.size.width + "px";
     style.height = clipRect.size.height + "px";
 
-    if (!isClipped)
-    {
-        // Replace the window with the clip element, then put it inside the clip
-        var parent = windowElement.parentNode;
-        CPDOMDisplayServerInsertBefore(parent, clip, windowElement);
-        CPDOMDisplayServerRemoveChild(parent, windowElement);
-        CPDOMDisplayServerAppendChild(clip, windowElement);
-    }
+    // Replace the window with the clip element, then put it inside the clip
+    var parent = windowElement.parentNode;
+    CPDOMDisplayServerInsertBefore(parent, clip, windowElement);
+    CPDOMDisplayServerRemoveChild(parent, windowElement);
+    CPDOMDisplayServerAppendChild(clip, windowElement);
 }
 
 /*!
@@ -178,19 +169,13 @@
 - (void)removeClipForWindow:(CPWindow)aWindow
 {
     var windowElement = aWindow._DOMElement,
-        clip = windowElement.parentNode;
+        clip = windowElement.parentNode,
+        parent = clip.parentNode;
 
-    if (clip.style.className === "cpwindowclip")
-    {
-        var parent = clip.parentNode;
-
-        CPDOMDisplayServerRemoveChild(clip, windowElement);
-        [aWindow setFrameOrigin:_CGPointMake([aWindow frame].origin.x, clip.offsetTop)];
-        CPDOMDisplayServerInsertBefore(parent, windowElement, clip);
-        CPDOMDisplayServerRemoveChild(parent, clip);
-    }
-    else
-        CPLog.warn("%s %s was not previously clipped via clipWindow:toWindow:", _cmd, [aWindow description]);
+    CPDOMDisplayServerRemoveChild(clip, windowElement);
+    [aWindow setFrameOrigin:_CGPointMake([aWindow frame].origin.x, clip.offsetTop)];
+    CPDOMDisplayServerInsertBefore(parent, windowElement, clip);
+    CPDOMDisplayServerRemoveChild(parent, clip);
 }
 
 @end

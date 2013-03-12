@@ -149,9 +149,9 @@
     [[theWindow contentView] setFrame:contentRect];
 }
 
-- (void)_enableSheet:(BOOL)enable
+- (void)_enableSheet:(BOOL)enable inWindow:(CPWindow)parentWindow
 {
-    [super _enableSheet:enable];
+    // No need to call super, it just deals with the shadow view, which we don't want
 
     [_closeButton setHidden:enable];
     [_titleField setHidden:enable];
@@ -173,6 +173,8 @@
     [self tile];
     [theWindow setFrame:frame display:NO animate:NO];
     [theWindow setMovableByWindowBackground:!enable];
+
+    [self setNeedsLayout];
 }
 
 - (void)layoutSubviews
