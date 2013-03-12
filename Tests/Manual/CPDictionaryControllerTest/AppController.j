@@ -51,7 +51,12 @@
             [sender setTitle:"CPTableViewSelectionHighlightStyleNone"];
     }
 
-    [tableView _updateSelectionHighlightColorForFocused:([[sender window] firstResponder] == tableView)];
+    [tableView setNeedsDisplay:YES];
+}
+
+- (BOOL)tableView:(CPTableView)tableView isGroupRow:(int)row
+{
+    return (row > 2 && row < 5);
 }
 
 

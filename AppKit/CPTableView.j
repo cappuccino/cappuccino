@@ -4075,19 +4075,20 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         return;
 
     var drawGradient = (CPFeatureIsCompatible(CPHTMLCanvasFeature) && _selectionHighlightStyle === CPTableViewSelectionHighlightStyleSourceList && [_selectedRowIndexes count] >= 1),
-        deltaHeight = 0.5 * (_gridStyleMask & CPTableViewSolidHorizontalGridLineMask);
+        deltaHeight = 0.5 * (_gridStyleMask & CPTableViewSolidHorizontalGridLineMask),
+        focused = [[self window] isKeyWindow] && [[self window] firstResponder] === self;
 
     CGContextBeginPath(context);
 
     if (drawGradient)
     {
-        var gradientCache = [self selectionGradientColors],
+        var gradientCache = focused ? [self selectionGradientColors] : CPTableViewSourcelistNotFocusedSelectionColor,
             topLineColor = [gradientCache objectForKey:CPSourceListTopLineColor],
             bottomLineColor = [gradientCache objectForKey:CPSourceListBottomLineColor],
             gradientColor = [gradientCache objectForKey:CPSourceListGradient];
     }
 
-    var normalSelectionHighlightColor = [self selectionHighlightColor];
+    var normalSelectionHighlightColor = focused ? [self selectionHighlightColor] : [CPColor secondarySelectedControlColor];
 
     // don't do these lookups if there are no group rows
     if ([_groupRows count])
@@ -4953,7 +4954,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)becomeKeyWindow
 {
-    [self _updateSelectionHighlightColorForFocused:YES];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -4961,7 +4962,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)resignKeyWindow
 {
-    [self _updateSelectionHighlightColorForFocused:NO];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -4969,7 +4970,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (BOOL)becomeFirstResponder
 {
-    [self _updateSelectionHighlightColorForFocused:YES];
+    [self setNeedsDisplay:YES];
     return YES;
 }
 
@@ -4978,7 +4979,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (BOOL)resignFirstResponder
 {
-    [self _updateSelectionHighlightColorForFocused:NO];
+    [self setNeedsDisplay:YES];
     return YES;
 }
 
@@ -4987,30 +4988,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (BOOL)acceptsFirstResponder
 {
-    [self _updateSelectionHighlightColorForFocused:YES];
     return YES;
-}
-
-/*!
-    @ignore
-*/
-- (void)_updateSelectionHighlightColorForFocused:(BOOL)focused
-{
-    if (_selectionHighlightStyle === CPTableViewSelectionHighlightStyleNone)
-        return;
-
-    if (_selectionHighlightStyle === CPTableViewSelectionHighlightStyleSourceList)
-    {
-        if (focused)
-            [self setSelectionGradientColors:[[self theme] valueForAttributeWithName:@"sourcelist-selection-color" forClass:[self class]]];
-        else
-            [self setSelectionGradientColors:CPTableViewSourcelistNotFocusedSelectionColor];
-        return;
-    }
-    else if (focused)
-        [self setSelectionHighlightColor:[[self theme] valueForAttributeWithName:@"selection-color" forClass:[self class]]];
-    else
-        [self setSelectionHighlightColor:[CPColor secondarySelectedControlColor]];
 }
 
 /*!
