@@ -52,6 +52,7 @@ var CPOutlineViewDataSource_outlineView_objectValue_forTableColumn_byItem_      
     CPOutlineViewDataSource_outlineView_sortDescriptorsDidChange_                                   = 1 << 11;
 
 var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_                                  = 1 << 1,
+    CPOutlineViewDelegate_outlineView_viewForTableColumn_item_                                      = 1 << 26,
     CPOutlineViewDelegate_outlineView_didClickTableColumn_                                          = 1 << 2,
     CPOutlineViewDelegate_outlineView_didDragTableColumn_                                           = 1 << 3,
     CPOutlineViewDelegate_outlineView_heightOfRowByItem_                                            = 1 << 4,
@@ -871,6 +872,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     var delegateMethods = [
             CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_                       , @selector(outlineView:dataViewForTableColumn:item:),
+            CPOutlineViewDelegate_outlineView_viewForTableColumn_item_                           , @selector(outlineView:viewForTableColumn:item:),
             CPOutlineViewDelegate_outlineView_didClickTableColumn_                               , @selector(outlineView:didClickTableColumn:),
             CPOutlineViewDelegate_outlineView_didDragTableColumn_                                , @selector(outlineView:didDragTableColumn:),
             CPOutlineViewDelegate_outlineView_heightOfRowByItem_                                 , @selector(outlineView:heightOfRowByItem:),
@@ -963,6 +965,10 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
             name:CPOutlineViewItemDidCollapseNotification
             object:self];
 
+    [self _updateIsViewBased];
+
+    if ([self _delegateRespondsToDataViewForTableColumn])
+        CPLog.warn("outlineView:dataViewForTableColumn:item: is deprecated. You should use -outlineView:viewForTableColumn:item: where you can request the view with -makeViewWithIdentifier:owner:");
 }
 
 - (BOOL)_sendDelegateDeleteKeyPressed
@@ -1534,9 +1540,24 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     [super keyDown:anEvent];
 }
 
+- (CPView)_viewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
+{
+    return [_outlineViewDelegate outlineView:self viewForTableColumn:aTableColumn item:[self itemAtRow:aRow]];
+}
+
+- (CPView)_dataViewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
+{
+    return [_outlineViewDelegate outlineView:self dataViewForTableColumn:aTableColumn item:[self itemAtRow:aRow]];
+}
+
 - (BOOL)_dataSourceRespondsToObjectValueForTableColumn
 {
     return _implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_objectValue_forTableColumn_byItem_;
+}
+
+- (BOOL)_delegateRespondsToViewForTableColumn
+{
+    return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_viewForTableColumn_item_;
 }
 
 - (BOOL)_delegateRespondsToDataViewForTableColumn
@@ -1893,17 +1914,6 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return [_outlineView menu] || [[_outlineView class] defaultMenu];
 }
 
-- (CPView)tableView:(CPTableView)aTableView dataViewForTableColumn:(CPTableColumn)aTableColumn row:(int)aRow
-{
-    if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_))
-    {
-        var item = [_outlineView itemAtRow:aRow];
-        return [_outlineView._outlineViewDelegate outlineView:_outlineView dataViewForTableColumn:aTableColumn item:item]
-    }
-
-    return nil;
-}
-
 @end
 
 @implementation CPDisclosureButton : CPButton
@@ -2007,6 +2017,8 @@ var CPOutlineViewIndentationPerLevelKey = @"CPOutlineViewIndentationPerLevelKey"
 
         [super setDataSource:[[_CPOutlineViewTableViewDataSource alloc] initWithOutlineView:self]];
         [super setDelegate:[[_CPOutlineViewTableViewDelegate alloc] initWithOutlineView:self]];
+
+        [self _updateIsViewBased];
     }
 
     return self;

@@ -62,7 +62,8 @@ var CPTableViewDataSource_numberOfRowsInTableView_                              
     CPTableViewDataSource_tableView_sortDescriptorsDidChange_                                           = 1 << 7;
 
 var CPTableViewDelegate_selectionShouldChangeInTableView_                                               = 1 << 0,
-    CPTableViewDelegate_tableView_dataViewForTableColumn_row_                                           = 1 << 1,
+    CPTableViewDelegate_tableView_viewForTableColumn_row_                                               = 1 << 1,
+    CPTableViewDelegate_tableView_dataViewForTableColumn_row_                                           = 1 << 21,
     CPTableViewDelegate_tableView_didClickTableColumn_                                                  = 1 << 2,
     CPTableViewDelegate_tableView_didDragTableColumn_                                                   = 1 << 3,
     CPTableViewDelegate_tableView_heightOfRow_                                                          = 1 << 4,
@@ -263,6 +264,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     BOOL                _isViewBased;
     BOOL                _contentBindingExpicitelySet;
 
+    SEL                 _viewForTableColumnRowSelector;
+
     CPTableColumn       _draggedColumn;
     CPArray             _differedColumnDataToRemove;
 }
@@ -379,6 +382,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _exposedColumns = [CPIndexSet indexSet];
     _cachedDataViews = { };
     _archivedDataViews = nil;
+    _viewForTableColumnRowSelector = nil;
     _unavailable_custom_cibs = { };
     _cachedRowHeights = [];
 
@@ -2675,8 +2679,13 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if ([_delegate respondsToSelector:@selector(selectionShouldChangeInTableView:)])
         _implementedDelegateMethods |= CPTableViewDelegate_selectionShouldChangeInTableView_;
 
-    if ([_delegate respondsToSelector:@selector(tableView:dataViewForTableColumn:row:)])
+    if ([_delegate respondsToSelector:@selector(tableView:viewForTableColumn:row:)])
+        _implementedDelegateMethods |= CPTableViewDelegate_tableView_viewForTableColumn_row_;
+    else if ([_delegate respondsToSelector:@selector(tableView:dataViewForTableColumn:row:)])
+    {
         _implementedDelegateMethods |= CPTableViewDelegate_tableView_dataViewForTableColumn_row_;
+        CPLog.warn("tableView:dataViewForTableColumn: is deprecated. You should use -tableView:viewForTableColumn: where you can request the view with -makeViewWithIdentifier:owner:");
+    }
 
     [self _updateIsViewBased];
 
@@ -3244,6 +3253,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     return _implementedDelegateMethods & CPTableViewDelegate_tableView_dataViewForTableColumn_row_;
 }
 
+- (BOOL)_delegateRespondsToViewForTableColumn
+{
+    return _implementedDelegateMethods & CPTableViewDelegate_tableView_viewForTableColumn_row_;
+}
+
 /*!
     @ignore
 */
@@ -3268,7 +3282,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             objectValue = [_dataSource tableView:self objectValueForTableColumn:aTableColumn row:aRowIndex];
             tableColumnObjectValues[aRowIndex] = objectValue;
         }
-        else if (![self _delegateRespondsToDataViewForTableColumn] && ![self infoForBinding:@"content"])
+        else if (!_isViewBased && ![self infoForBinding:@"content"])
         {
             CPLog.warn(@"no content binding established and data source " + [_dataSource description] + " does not implement tableView:objectValueForTableColumn:row:");
         }
@@ -3653,19 +3667,14 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 /*!
     @ignore
 */
+- (CPView)_viewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
+{
+    return [_delegate tableView:self viewForTableColumn:aTableColumn row:aRow];
+}
+
 - (CPView)_dataViewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
 {
-    var view = nil;
-
-    if ([self _delegateRespondsToDataViewForTableColumn])
-    {
-        view = [_delegate tableView:self dataViewForTableColumn:aTableColumn row:aRow];
-
-        if (!view)
-            [CPException raise:CPInternalInconsistencyException reason:"The view returned by -tableView:dataViewForTableColumn:row: should not be nil"];
-    }
-
-    return view;
+    return [_delegate tableView:self dataViewForTableColumn:aTableColumn row:aRow];
 }
 
 /*!
@@ -3673,7 +3682,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (CPView)_newDataViewForRow:(CPInteger)aRow tableColumn:(CPTableColumn)aTableColumn
 {
-    var view = [self _dataViewForTableColumn:aTableColumn row:aRow];
+    var view = nil;
+
+    if (_viewForTableColumnRowSelector)
+        view = objj_msgSend(self, _viewForTableColumnRowSelector, aTableColumn, aRow);
 
     if (!view)
     {
@@ -3769,8 +3781,14 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 - (void)_updateIsViewBased
 {
-     _isViewBased = (_implementedDelegateMethods & CPTableViewDelegate_tableView_dataViewForTableColumn_row_ || _archivedDataViews != nil);
+    if ([self _delegateRespondsToViewForTableColumn])
+        _viewForTableColumnRowSelector = @selector(_viewForTableColumn:row:);
+    else if ([self _delegateRespondsToDataViewForTableColumn])
+        _viewForTableColumnRowSelector = @selector(_dataViewForTableColumn:row:);
+
+     _isViewBased = (_viewForTableColumnRowSelector !== nil || _archivedDataViews !== nil);
 }
+
 /*!
     @ignore
 */
