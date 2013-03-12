@@ -450,6 +450,28 @@
 }
 
 //
+// Test popover
+//
+- (@action)newPopover:(id)sender
+{
+    [[self allocController] runPopoverForWindow:[self window] withSender:sender];
+}
+
+- (void)runPopoverForWindow:(CPWindow)parentWindow withSender:(id)sender
+{
+    var aPopover = [CPPopover new],
+        viewController = [CPViewController new];
+
+    [aPopover setContentViewController:viewController];
+    [[self window] close];
+    [viewController setView:[[self window] contentView]];
+    [aPopover setContentSize:[[[self window] contentView] boundsSize]];
+    [aPopover setAnimates:YES];
+    [aPopover showRelativeToRect:[sender bounds] ofView:sender preferredEdge:CPMaxXEdge];
+    [aPopover setBehavior:CPPopoverBehaviorTransient];
+}
+
+//
 // Test notifications/delegate methods
 //
 - (void)didEndSheet:(CPWindow)sheet returnCode:(int)returnCode contextInfo:(id)parentWindow
