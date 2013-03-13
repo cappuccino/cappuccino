@@ -57,7 +57,7 @@ _CPWindowViewResizeSlop = 3;
     CGSize      _toolbarOffset;
 //    BOOL        _isAnimatingToolbar;
 
-    CGRect      _resizeFrame;
+    CGRect      _cachedFrame;
     int         _resizeRegion;
     CGPoint     _mouseDraggedPoint;
 
@@ -467,17 +467,17 @@ _CPWindowViewResizeSlop = 3;
     if (type === CPLeftMouseDown)
     {
         _mouseDraggedPoint = _CGPointMake(globalLocation.x, globalLocation.y);
-        _resizeFrame = _CGRectMakeCopy(frame);
+        _cachedFrame = _CGRectMakeCopy(frame);
         _cachedScreenFrame = [[CPPlatformWindow primaryPlatformWindow] visibleFrame];
     }
     else if (type === CPLeftMouseDragged)
     {
         var deltaX = globalLocation.x - _mouseDraggedPoint.x,
             deltaY = globalLocation.y - _mouseDraggedPoint.y,
-            startX = _CGRectGetMinX(_resizeFrame),
-            startY = _CGRectGetMinY(_resizeFrame),
-            startWidth = _CGRectGetWidth(_resizeFrame),
-            startHeight = _CGRectGetHeight(_resizeFrame),
+            startX = _CGRectGetMinX(_cachedFrame),
+            startY = _CGRectGetMinY(_cachedFrame),
+            startWidth = _CGRectGetWidth(_cachedFrame),
+            startHeight = _CGRectGetHeight(_cachedFrame),
             newX,
             newY,
             newWidth,
@@ -631,61 +631,40 @@ _CPWindowViewResizeSlop = 3;
                 newHeight = startHeight;
         }
 
-        [theWindow setFrame:_CGRectMake(newX, newY, newWidth, newHeight)];
+        [theWindow _setFrame:_CGRectMake(newX, newY, newWidth, newHeight) display:YES animate:NO constrainWidth:NO constrainHeight:NO];
         [self setCursorForLocation:location resizing:YES];
     }
 
     [CPApp setTarget:self selector:@selector(trackResizeWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
 }
 
-- (CGPoint)_pointWithinScreenFrame:(CGPoint)aPoint
-{
-    // FIXME: this is WRONG, all of this is WRONG
-    if (![CPPlatform isBrowser])
-        return aPoint;
-
-    var visibleFrame = _cachedScreenFrame;
-
-    if (!visibleFrame)
-        visibleFrame = [[CPPlatformWindow primaryPlatformWindow] visibleFrame];
-
-    var restrictedPoint = _CGPointMake(0, 0);
-
-    restrictedPoint.x = MIN(MAX(aPoint.x, -_frame.size.width + 4.0), _CGRectGetMaxX(visibleFrame) - 4.0);
-    restrictedPoint.y = MIN(MAX(aPoint.y, _CGRectGetMinY(visibleFrame)), _CGRectGetMaxY(visibleFrame) - 8.0);
-
-    return restrictedPoint;
-}
-
 - (void)trackMoveWithEvent:(CPEvent)anEvent
 {
-    if (![[self window] isMovable])
+    var theWindow = [self window];
+
+    if (![theWindow isMovable])
         return;
 
     var type = [anEvent type];
 
     if (type === CPLeftMouseUp)
     {
-        _cachedScreenFrame = nil;
         return;
     }
     else if (type === CPLeftMouseDown)
     {
-        _mouseDraggedPoint = [[self window] convertBaseToGlobal:[anEvent locationInWindow]];
-        _cachedScreenFrame = [[CPPlatformWindow primaryPlatformWindow] visibleFrame];
+        _mouseDraggedPoint = [theWindow convertBaseToGlobal:[anEvent locationInWindow]];
+        _cachedFrame = _CGRectMakeCopy([theWindow frame]);
     }
     else if (type === CPLeftMouseDragged)
     {
         var theWindow = [self window],
-            frame = [theWindow frame],
             location = [theWindow convertBaseToGlobal:[anEvent locationInWindow]],
             deltaX = location.x - _mouseDraggedPoint.x,
             deltaY = location.y - _mouseDraggedPoint.y,
-            origin = [self _pointWithinScreenFrame:_CGPointMake(frame.origin.x + deltaX,
-                                                                frame.origin.y + deltaY)];
-        [theWindow setFrameOrigin:origin];
+            origin = _CGPointMake(_cachedFrame.origin.x + deltaX, _cachedFrame.origin.y + deltaY);
 
-        _mouseDraggedPoint = [self _pointWithinScreenFrame:location];
+        [theWindow setFrameOrigin:origin];
     }
 
     [CPApp setTarget:self selector:@selector(trackMoveWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];

@@ -1,3 +1,8 @@
+@import <AppKit/CPAlert.j>
+@import <AppKit/CPApplication.j>
+@import <AppKit/CPPopover.j>
+@import <AppKit/CPViewController.j>
+@import <AppKit/CPWindowController.j>
 
 @implementation SheetWindowController : CPWindowController
 {

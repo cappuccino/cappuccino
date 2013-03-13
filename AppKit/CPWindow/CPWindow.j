@@ -56,7 +56,10 @@
 var CPWindowSaveImage       = nil,
 
     CPWindowResizeTime      = 0.2,
-    CPWindowResizeStyleGlobalChangeNotification = @"CPWindowResizeStyleGlobalChangeNotification";
+    CPWindowResizeStyleGlobalChangeNotification = @"CPWindowResizeStyleGlobalChangeNotification",
+
+    CPWindowMinVisibleHorizontalMargin = 40,
+    CPWindowMinVisibleVerticalMargin = 2;
 
 /*
     Keys for which action messages will be sent by default when unhandled, e.g. complete:.
@@ -642,50 +645,49 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate
 {
-    if (_CGRectEqualToRect(aFrame, _frame))
-        return;
+    [self _setFrame:aFrame display:shouldDisplay animate:shouldAnimate constrainWidth:NO constrainHeight:YES];
+}
 
-    aFrame = _CGRectMakeCopy(aFrame);
-
-    var value = aFrame.origin.x,
+- (void)_setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate constrainWidth:(BOOL)shouldConstrainWidth constrainHeight:(BOOL)shouldConstrainHeight
+{
+    var frame = CGRectMakeCopy(aFrame),
+        value = frame.origin.x,
         delta = value - FLOOR(value);
 
     if (delta)
-        aFrame.origin.x = value > 0.879 ? CEIL(value) : FLOOR(value);
+        frame.origin.x = value > 0.879 ? CEIL(value) : FLOOR(value);
 
-    value = aFrame.origin.y;
+    value = frame.origin.y;
     delta = value - FLOOR(value);
 
     if (delta)
-        aFrame.origin.y = value > 0.879 ? CEIL(value) : FLOOR(value);
+        frame.origin.y = value > 0.879 ? CEIL(value) : FLOOR(value);
 
-    value = aFrame.size.width;
+    value = frame.size.width;
     delta = value - FLOOR(value);
 
     if (delta)
-        aFrame.size.width = value > 0.15 ? CEIL(value) : FLOOR(value);
+        frame.size.width = value > 0.15 ? CEIL(value) : FLOOR(value);
 
-    value = aFrame.size.height;
+    value = frame.size.height;
     delta = value - FLOOR(value);
 
     if (delta)
-        aFrame.size.height = value > 0.15 ? CEIL(value) : FLOOR(value);
+        frame.size.height = value > 0.15 ? CEIL(value) : FLOOR(value);
 
-    // In Cocoa, if a window is already visible, only its height is pinned
-    if (_isVisible)
-        aFrame = [self _pinFrame:aFrame toUsableScreenWidth:NO andHeight:YES];
+    frame = [self _constrainFrame:frame toUsableScreenWidth:shouldConstrainWidth andHeight:shouldConstrainHeight];
 
     if (shouldAnimate)
     {
         [_frameAnimation stopAnimation];
-        _frameAnimation = [[_CPWindowFrameAnimation alloc] initWithWindow:self targetFrame:aFrame];
+        _frameAnimation = [[_CPWindowFrameAnimation alloc] initWithWindow:self targetFrame:frame];
 
         [_frameAnimation startAnimation];
     }
     else
     {
         var origin = _frame.origin,
-            newOrigin = aFrame.origin,
+            newOrigin = frame.origin,
             originMoved = !_CGPointEqualToPoint(origin, newOrigin);
 
         if (originMoved)
@@ -705,7 +707,7 @@ CPTexturedBackgroundWindowMask
         }
 
         var size = _frame.size,
-            newSize = aFrame.size;
+            newSize = frame.size;
 
         if (!_CGSizeEqualToSize(size, newSize))
         {
@@ -729,29 +731,76 @@ CPTexturedBackgroundWindowMask
     }
 }
 
-- (CGRect)_pinFrame:(CGRect)aFrame toUsableScreenWidth:(BOOL)pinWidth andHeight:(BOOL)pinHeight
+- (CGRect)_constrainFrame:(CGRect)aFrame toUsableScreenWidth:(BOOL)constrainWidth andHeight:(BOOL)constrainHeight
 {
-    if (!_constrainsToUsableScreen)
-        return CGRectMakeCopy(aFrame);
+    var frame = CGRectMakeCopy(aFrame);
 
-    var usableRect = [_platformWindow usableContentFrame],
-        frame = _CGRectMakeCopy(aFrame);
+    if (!_constrainsToUsableScreen || !_isVisible)
+        return frame;
 
-    if (pinWidth)
+    var usableRect = [_platformWindow usableContentFrame];
+
+    if (constrainWidth)
     {
+        // First move the frame right to ensure the left side is within the usable rect.
         frame.origin.x = MAX(frame.origin.x, usableRect.origin.x);
 
-        var maxX = MIN(_CGRectGetMaxX(frame), _CGRectGetMaxX(usableRect));
-        frame.size.width = maxX - frame.origin.x;
+        // Now move the frame left so that the right side is within the usable rect.
+        var maxX = MIN(CGRectGetMaxX(frame), CGRectGetMaxX(usableRect));
+        frame.origin.x = maxX - frame.size.width;
+
+        // Finally, adjust the left + width to ensure the left side is within the usable rect.
+        var usableWidth = CGRectGetWidth(usableRect);
+
+        if (CGRectGetWidth(frame) > usableWidth)
+        {
+            frame.origin.x = CGRectGetMinX(usableRect);
+            frame.size.width = usableWidth;
+        }
     }
 
-    if (pinHeight)
+    if (constrainHeight)
     {
+        // First move the frame down to ensure the top is within the usable rect.
         frame.origin.y = MAX(frame.origin.y, usableRect.origin.y);
 
-        var maxY = MIN(_CGRectGetMaxY(frame), _CGRectGetMaxY(usableRect));
-        frame.size.height = maxY - frame.origin.y;
+        // Now move the frame up so that the bottom is within the usable rect.
+        var maxY = MIN(CGRectGetMaxY(frame), CGRectGetMaxY(usableRect));
+        frame.origin.y = maxY - frame.size.height;
+
+        // Finally, adjust the top + height to ensure the top is within the usable rect.
+        var usableHeight = CGRectGetHeight(usableRect);
+
+        if (CGRectGetHeight(frame) > usableHeight)
+        {
+            frame.origin.y = CGRectGetMinY(usableRect);
+            frame.size.height = usableHeight;
+        }
     }
+
+    return frame;
+}
+
+- (CGRect)_constrainOriginOfFrame:(CGRect)aFrame
+{
+    var frame = CGRectMakeCopy(aFrame);
+
+    if (!_constrainsToUsableScreen || !_isVisible)
+        return frame;
+
+    /*
+        - CPWindowMinVisibleHorizontalMargin is kept onscreen at the left/right of the window.
+        - The top of the window is kept below the top of the usable content.
+        - The top of the contentView + CPWindowMinVisibleVerticalMargin is kept above the bottom of the usable content.
+    */
+    var usableRect = [_platformWindow usableContentFrame],
+        maxUsableY = CGRectGetMaxY(usableRect) - CGRectGetMinY([_contentView frame]) - CPWindowMinVisibleVerticalMargin;
+
+    frame.origin.x = MAX(frame.origin.x, CGRectGetMinX(usableRect) + CPWindowMinVisibleHorizontalMargin - CGRectGetWidth(frame));
+    frame.origin.x = MIN(frame.origin.x, CGRectGetMaxX(usableRect) - CPWindowMinVisibleHorizontalMargin);
+
+    frame.origin.y = MAX(frame.origin.y, CGRectGetMinY(usableRect));
+    frame.origin.y = MIN(frame.origin.y, maxUsableY);
 
     return frame;
 }
@@ -792,7 +841,8 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setFrameOrigin:(CGPoint)anOrigin
 {
-    [self setFrame:_CGRectMake(anOrigin.x, anOrigin.y, _CGRectGetWidth(_frame), _CGRectGetHeight(_frame)) display:YES animate:NO];
+    var frame = [self _constrainOriginOfFrame:CGRectMake(anOrigin.x, anOrigin.y, _frame.size.width, _frame.size.height)];
+    [self _setFrame:frame display:YES animate:NO constrainWidth:NO constrainHeight:NO];
 
     // reposition sheet
     if ([self attachedSheet])
@@ -824,8 +874,8 @@ CPTexturedBackgroundWindowMask
     if ([self isSheet])
         [_parentView orderFront:self];
 
-    // Cocoa pins windows to the usable screen content during orderFront
-    [self setFrame:[self _pinFrame:_frame toUsableScreenWidth:YES andHeight:YES]];
+    if (!_isVisible)
+        [self _setFrame:_frame display:YES animate:NO constrainWidth:YES constrainHeight:YES];
 
     [_platformWindow orderFront:self];
     [_platformWindow order:CPWindowAbove window:self relativeTo:nil];
@@ -2557,8 +2607,7 @@ CPTexturedBackgroundWindowMask
     var sheetFrame = [aSheet frame];
 
     _sheetContext = {"sheet": aSheet, "modalDelegate": aModalDelegate, "endSelector": aDidEndSelector,
-        "contextInfo": aContextInfo, "returnCode": -1,
-        "opened": NO};
+        "contextInfo": aContextInfo, "returnCode": -1, "opened": NO, "savedConstrains": aSheet._constrainsToUsableScreen};
 
     [self _attachSheetWindow];
 }
@@ -2570,6 +2619,7 @@ CPTexturedBackgroundWindowMask
 - (void)_attachSheetWindow
 {
     _sheetContext["isAttached"] = YES;
+    _sheetContext["sheet"]._constrainsToUsableScreen = NO;
 
     // it would be ideal to block here and spin an event loop, until attach is complete
     [CPTimer scheduledTimerWithTimeInterval:0.0
@@ -2633,6 +2683,7 @@ CPTexturedBackgroundWindowMask
     // Restore the state of window before it was sheetified
     sheet._isSheet = NO;
     [sheet._windowView _enableSheet:NO inWindow:self];
+    sheet._constrainsToUsableScreen = _sheetContext["savedConstrains"];
 
     // Close it
     [sheet orderOut:self];
@@ -2707,7 +2758,6 @@ CPTexturedBackgroundWindowMask
         endFrame = _CGRectMake(originX, endY, sheetFrame.size.width, sheetFrame.size.height);
 
     [sheet orderFront:self];
-
     [self _clipSheet:sheet];
     [sheet setFrame:startFrame display:YES animate:NO];
 
@@ -2746,6 +2796,9 @@ CPTexturedBackgroundWindowMask
             fullHeight = sheet._hasShadow ? [sheet._shadowView frame].size.height : sheetFrame.size.height,
             endFrame = _CGRectMakeCopy(sheetFrame),
             contentOrigin = [self convertBaseToGlobal:[[self contentView] frame].origin];
+
+        // Don't constrain sheets, they are controlled by the parent
+        sheet._constrainsToUsableScreen = NO;
 
         [sheet setFrameOrigin:_CGPointMake(sheetFrame.origin.x, sheetFrame.origin.y - contentOrigin.y)];
         [self _clipSheet:sheet];
