@@ -2601,24 +2601,21 @@ CPTexturedBackgroundWindowMask
         return;
     }
 
-    var sheetFrame = [aSheet frame];
+    _sheetContext = {
+        "sheet": aSheet,
+        "modalDelegate": aModalDelegate,
+        "endSelector": didEndSelector,
+        "contextInfo": contextInfo,
+        "returnCode": -1,
+        "opened": NO,
+        "isAttached": YES,
+        "savedConstrains": aSheet._constrainsToUsableScreen
+    };
 
-    _sheetContext = {"sheet": aSheet, "modalDelegate": aModalDelegate, "endSelector": aDidEndSelector,
-        "contextInfo": aContextInfo, "returnCode": -1, "opened": NO, "savedConstrains": aSheet._constrainsToUsableScreen};
+    // Sheets are not constrained, they are controlled by their parent
+    aSheet._constrainsToUsableScreen = NO;
 
-    [self _attachSheetWindow];
-}
-
-/*
-    Called to animate the sheet in. The timer seems to solve a bug where sheets would
-    be partially animated under certain conditions.
-*/
-- (void)_attachSheetWindow
-{
-    _sheetContext["isAttached"] = YES;
-    _sheetContext["sheet"]._constrainsToUsableScreen = NO;
-
-    // it would be ideal to block here and spin an event loop, until attach is complete
+    // A timer seems to be necessary for the animation to work correctly
     [CPTimer scheduledTimerWithTimeInterval:0.0
         target:self
         selector:@selector(_sheetShouldAnimateIn:)
@@ -2655,7 +2652,8 @@ CPTexturedBackgroundWindowMask
 {
     _sheetContext["isAttached"] = NO;
 
-    // it would be ideal to block here and spin the event loop, until attach is complete
+    // A timer seems to be necessary for the animation to work correctly.
+    // It would be ideal to block here and spin the event loop, until attach is complete.
     [CPTimer scheduledTimerWithTimeInterval:0.0
         target:self
         selector:@selector(_sheetShouldAnimateOut:)
@@ -2750,12 +2748,17 @@ CPTexturedBackgroundWindowMask
         sheetShadowFrame = sheet._hasShadow ? [sheet._shadowView frame] : sheetFrame,
         frame = [self frame],
         originX = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width) / 2),
-        startFrame = _CGRectMake(originX, -sheetShadowFrame.size.height, sheetFrame.size.width, sheetFrame.size.height),
+        startFrame = CGRectMake(originX, -sheetShadowFrame.size.height, sheetFrame.size.width, sheetFrame.size.height),
         endY = [_windowView bodyOffset] - [[self contentView] frame].origin.y,
-        endFrame = _CGRectMake(originX, endY, sheetFrame.size.width, sheetFrame.size.height);
+        endFrame = CGRectMake(originX, endY, sheetFrame.size.width, sheetFrame.size.height);
 
+    // Move the sheet offscreen before ordering front so it doesn't appear briefly
+    [sheet setFrameOrigin:CGPointMake(0, -13000)];
+
+    // Because clipping does funny thing with the DOM, we have to orderFront before clipping
     [sheet orderFront:self];
     [self _clipSheet:sheet];
+
     [sheet setFrame:startFrame display:YES animate:NO];
 
     _sheetContext["opened"] = YES;

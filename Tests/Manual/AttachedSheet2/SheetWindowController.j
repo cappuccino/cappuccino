@@ -400,12 +400,6 @@
         modalDelegate:self
         didEndSelector:@selector(didEndSheet:returnCode:contextInfo:)
         contextInfo:parentWindow];
-
-    // what is the difference between these two approaches?
-    [CPApp runModalForWindow:sheet];
-
-    //var session = [CPApp beginModalSessionForWindow:sheet];
-    //[CPApp runModalSession:session];
 }
 
 - (void)closeModalSheet:(id)sender
