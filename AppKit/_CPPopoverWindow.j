@@ -182,7 +182,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
 {
     var mainWindow      = [positioningView window],
         platformWindow  = [mainWindow platformWindow],
-        nativeRect      = [platformWindow nativeContentRect],
+        nativeRect      = [platformWindow usableContentFrame],
         baseOrigin      = [positioningView convertPointToBase:aRect.origin],
         platformOrigin  = [mainWindow convertBaseToPlatformWindow:baseOrigin],
         platformRect    = CGRectMake(platformOrigin.x, platformOrigin.y, aRect.size.width, aRect.size.height),
@@ -190,8 +190,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
         originRight     = CGPointCreateCopy(platformOrigin),
         originTop       = CGPointCreateCopy(platformOrigin),
         originBottom    = CGPointCreateCopy(platformOrigin),
-        frameSize       = [self frame].size,
-        menuBarHeight   = [CPMenu menuBarVisible] ? [CPMenu menuBarHeight] : 0;
+        frameSize       = [self frame].size;
 
     // CPMaxXEdge
     originRight.x += platformRect.size.width;
@@ -243,28 +242,28 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
         [_windowView setArrowOffsetY:0];
         [_windowView setPreferredEdge:edge];
 
-        if (origin.x < 0)
+        if (origin.x < CGRectGetMinX(nativeRect))
         {
             [_windowView setArrowOffsetX:origin.x];
-            origin.x = 0;
+            origin.x = CGRectGetMinX(nativeRect);
         }
 
-        if (origin.x + frameSize.width > nativeRect.size.width)
+        if (origin.x + frameSize.width > CGRectGetMaxX(nativeRect))
         {
-            [_windowView setArrowOffsetX:(origin.x + frameSize.width - nativeRect.size.width)];
-            origin.x = nativeRect.size.width - frameSize.width;
+            [_windowView setArrowOffsetX:(origin.x + frameSize.width - CGRectGetMaxX(nativeRect))];
+            origin.x = CGRectGetMaxX(nativeRect) - frameSize.width;
         }
 
-        if (origin.y < 0)
+        if (origin.y < CGRectGetMinY(nativeRect))
         {
-            [_windowView setArrowOffsetY:origin.y - menuBarHeight];
-            origin.y = menuBarHeight;
+            [_windowView setArrowOffsetY:origin.y - CGRectGetMinY(nativeRect)];
+            origin.y = CGRectGetMinY(nativeRect);
         }
 
-        if (origin.y + frameSize.height > nativeRect.size.height)
+        if (origin.y + frameSize.height > CGRectGetMaxY(nativeRect))
         {
-            [_windowView setArrowOffsetY:(frameSize.height + origin.y - nativeRect.size.height)];
-            origin.y = nativeRect.size.height - frameSize.height;
+            [_windowView setArrowOffsetY:(frameSize.height + origin.y - CGRectGetMaxY(nativeRect))];
+            origin.y = CGRectGetMaxY(nativeRect) - frameSize.height;
         }
 
         switch (edge)
