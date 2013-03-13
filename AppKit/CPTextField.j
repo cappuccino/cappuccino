@@ -556,10 +556,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 */
 - (BOOL)_becomeFirstKeyResponder
 {
-    // Make sure the text field is visible so the browser will not scroll
-    // without the NSScrollView knowing about it.
-    [self scrollRectToVisible:[self bounds]];
-
     // If the text field is still not completely on screen, refuse to become
     // first responder, because the browser will scroll it into view out of our control.
     if (![self _isWithinUsablePlatformRect])
@@ -1589,6 +1585,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (BOOL)_isWithinUsablePlatformRect
 {
+    // Make sure the text field is visible so the browser will not scroll
+    // without the NSScrollView knowing about it.
+    [self scrollRectToVisible:[self bounds]];
+
     var wind = [self window],
         frame = [self convertRectToBase:[self bounds]],
         usableRect = [[wind platformWindow] usableContentFrame];

@@ -19,6 +19,8 @@
     @outlet CPButton        _shadeWindowView;
     @outlet CPButton        _shadeContentView;
     @outlet CPButton        _shadeParentWindow;
+    @outlet CPTextField     _textField;
+    @outlet CPTokenField    _tokenField;
 
     CPModalSession          _modalSession;
     CPWindow                _parentWindow;
@@ -80,6 +82,8 @@
         [self setWindow:hudWindow];
         [contentView _setThemeIncludingDescendants:[CPTheme defaultHudTheme]];
     }
+
+    [[_textField window] makeFirstResponder:_textField];
 }
 
 - (void)unsetAction:(id)sender
