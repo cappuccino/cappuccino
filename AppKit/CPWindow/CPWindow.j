@@ -703,6 +703,10 @@ CPTexturedBackgroundWindowMask
             }
 #endif
 
+            // reposition sheet
+            if ([self attachedSheet])
+                [self _setAttachedSheetFrameOrigin];
+
             [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidMoveNotification object:self];
         }
 
@@ -843,10 +847,6 @@ CPTexturedBackgroundWindowMask
 {
     var frame = [self _constrainOriginOfFrame:CGRectMake(anOrigin.x, anOrigin.y, _frame.size.width, _frame.size.height)];
     [self _setFrame:frame display:YES animate:NO constrainWidth:NO constrainHeight:NO];
-
-    // reposition sheet
-    if ([self attachedSheet])
-        [self _setAttachedSheetFrameOrigin];
 }
 
 /*!
