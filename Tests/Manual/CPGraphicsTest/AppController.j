@@ -9,7 +9,8 @@
 
 @implementation AppController : CPObject
 {
-    CPWindow                theWindow;
+    @outlet CPWindow        window1;
+    @outlet CPWindow        window2;
 
     @outlet CustomDrawView  view1;
     @outlet CustomDrawView  view2;
