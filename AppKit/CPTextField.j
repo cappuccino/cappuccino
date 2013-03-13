@@ -238,7 +238,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             return CPTextFieldBlurFunction(
                         anEvent,
                         CPTextFieldInputOwner,
-                        CPTextFieldInputOwner._DOMElement,
+                        CPTextFieldInputOwner ? CPTextFieldInputOwner._DOMElement : nil,
                         CPTextFieldDOMInputElement,
                         CPTextFieldInputResigning,
                         @ref(CPTextFieldInputDidBlur));
