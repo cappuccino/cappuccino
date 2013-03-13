@@ -2821,17 +2821,15 @@ CPTexturedBackgroundWindowMask
 
     if (_sheetContext["opened"] === YES)
     {
+        var sheetFrame = [sheet frame],
+            sheetOrigin = CGPointMakeCopy(sheetFrame.origin);
+
+        [self _removeClipForSheet:sheet];
+        [sheet setFrameOrigin:CGPointMake(sheetOrigin.x, [sheet frame].origin.y + sheetOrigin.y)];
+
         // we wanted to close the sheet while it animated in, do that now
         if (_sheetContext["shouldClose"] === YES)
             [self _detachSheetWindow];
-        else
-        {
-            var sheetFrame = [sheet frame],
-                sheetOrigin = CGPointMakeCopy(sheetFrame.origin);
-
-            [self _removeClipForSheet:sheet];
-            [sheet setFrameOrigin:CGPointMake(sheetOrigin.x, [sheet frame].origin.y + sheetOrigin.y)];
-        }
     }
     else
     {
