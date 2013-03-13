@@ -675,10 +675,14 @@ _CPWindowViewResizeSlop = 3;
     [super setFrameSize:newSize];
 
     // reposition sheet if the parent window resizes or moves
-    var theWindow = [self window];
+    var theWindow = [self window],
+        sheet = [theWindow attachedSheet];
 
-    if ([theWindow attachedSheet])
+    if (sheet)
+    {
         [theWindow _setAttachedSheetFrameOrigin];
+        [sheet._windowView _adjustShadowViewSize];
+    }
     else if (theWindow._isSheet)
         [self _adjustShadowViewSize];
 }
