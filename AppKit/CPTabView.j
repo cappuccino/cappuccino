@@ -504,8 +504,6 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
         _items = [aCoder decodeObjectForKey:CPTabViewItemsKey];
         [_items makeObjectsPerformSelector:@selector(_setTabView:) withObject:self];
 
-        [self _updateItems];
-
         [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
 
         self.selectOnAwake = [aCoder decodeObjectForKey:CPTabViewSelectedItemKey];
@@ -517,6 +515,10 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 
 - (void)awakeFromCib
 {
+    // This cannot be run in initWithCoder because it might call selectTabViewItem:, which is
+    // not safe to call before the views of the tab views items are fully decoded.
+    [self _updateItems];
+
     if (self.selectOnAwake)
     {
         [self selectTabViewItem:self.selectOnAwake];
@@ -532,7 +534,13 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
+    // Don't bother to encode the CPBox. We will recreate it on decode and its content view is already
+    // stored by the tab view item. Not encoding _box makes the resulting archive smaller and reduces
+    // the surface for decoding bugs (of which we've had many in tab view).
+    var subviews = [self subviews];
+    [_box removeFromSuperview];
     [super encodeWithCoder:aCoder];
+    [self setSubviews:subviews];
 
     [aCoder encodeObject:_items forKey:CPTabViewItemsKey];
 
