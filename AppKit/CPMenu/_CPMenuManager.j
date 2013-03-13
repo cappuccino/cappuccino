@@ -132,6 +132,11 @@ var STICKY_TIME_INTERVAL            = 0.4,
     [self trackEvent:anEvent];
 }
 
+- (void)_trackAgain
+{
+    [CPApp setTarget:self selector:@selector(trackEvent:) forNextEventMatchingMask:CPKeyDownMask | CPPeriodicMask | CPMouseMovedMask | CPLeftMouseDraggedMask | CPLeftMouseDownMask | CPLeftMouseUpMask | CPRightMouseUpMask | CPAppKitDefinedMask | CPScrollWheelMask untilDate:nil inMode:nil dequeue:YES];
+}
+
 - (void)trackEvent:(CPEvent)anEvent
 {
     var type = [anEvent type],
@@ -140,8 +145,6 @@ var STICKY_TIME_INTERVAL            = 0.4,
     // Close Menu Event.
     if (type === CPAppKitDefined)
         return [self completeTracking];
-
-    [CPApp setTarget:self selector:@selector(trackEvent:) forNextEventMatchingMask:CPKeyDownMask | CPPeriodicMask | CPMouseMovedMask | CPLeftMouseDraggedMask | CPLeftMouseUpMask | CPRightMouseUpMask | CPAppKitDefinedMask | CPScrollWheelMask untilDate:nil inMode:nil dequeue:YES];
 
     if (type === CPKeyDown)
     {
@@ -158,6 +161,7 @@ var STICKY_TIME_INTERVAL            = 0.4,
         if ([menu numberOfItems])
             [self interpretKeyEvent:anEvent forMenu:menu];
 
+        [self _trackAgain];
         return;
     }
 
@@ -165,7 +169,10 @@ var STICKY_TIME_INTERVAL            = 0.4,
     var globalLocation = type === CPPeriodic ? _lastGlobalLocation : [anEvent globalLocation];
 
     if (!globalLocation)
+    {
+        [self _trackAgain];
         return;
+    }
 
     // Find which menu window the mouse is currently on top of
     var activeMenuContainer = [self menuContainerForPoint:globalLocation],
@@ -175,6 +182,28 @@ var STICKY_TIME_INTERVAL            = 0.4,
         // Find out the item the mouse is currently on top of
         activeItemIndex = activeMenuContainer ? [activeMenuContainer itemIndexAtPoint:menuLocation] : CPNotFound,
         activeItem = activeItemIndex !== CPNotFound ? [activeMenu itemAtIndex:activeItemIndex] : nil;
+
+    // Click outside the menu structure?
+    if (type === CPLeftMouseDown && (!activeMenuContainer || !CGRectContainsPoint([activeMenuContainer globalFrame], globalLocation)))
+    {
+        [self completeTracking];
+
+        /*
+        You can close and interact with a control in a single click. E.g. you can have a menu open,
+        click on a button outside of it and have the menu immediately close and the button activate,
+        without having to click once to close the menu and once to activate the button.
+
+        Since we normally dequeue the event after tracking it, we'll have to put it back on the stack
+        in this special case. Note that it's important the event is executed /right now/, since certain
+        controls such as HTML upload buttons need a native click event at the top of the stack trace
+        to activate - it's not something we can fake later.
+        */
+        [CPApp sendEvent:anEvent];
+
+        return;
+    }
+
+    [self _trackAgain];
 
     if (_keyBuffer)
     {
@@ -252,7 +281,7 @@ var STICKY_TIME_INTERVAL            = 0.4,
             _lastMouseOverMenuView = nil;
         }
 
-        if (activeItemIndex != CPNotFound)
+        if (activeItemIndex !== CPNotFound)
             [activeMenu _highlightItemAtIndex:activeItemIndex];
 
         if (type === CPMouseMoved || type === CPLeftMouseDragged || type === CPLeftMouseDown || type === CPPeriodic)
