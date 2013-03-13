@@ -1025,7 +1025,7 @@ CPRunContinuesResponse  = -1002;
         var aWindow = [_windows objectAtIndex:count],
             context = aWindow._sheetContext;
 
-        if (context != nil && context["sheet"] === sheet)
+        if (context && context["sheet"] === sheet)
         {
             context["returnCode"] = returnCode;
             [aWindow _endSheet];

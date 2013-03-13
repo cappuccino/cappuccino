@@ -871,7 +871,7 @@ CPTexturedBackgroundWindowMask
 {
 #if PLATFORM(DOM)
     // -dw- if a sheet is clicked, the parent window should come up too
-    if ([self isSheet])
+    if (_isSheet)
         [_parentView orderFront:self];
 
     if (!_isVisible)
@@ -2321,6 +2321,13 @@ CPTexturedBackgroundWindowMask
 */
 - (void)makeMainWindow
 {
+    // Sheets cannot be main. Their parent window becomes main.
+    if (_isSheet)
+    {
+        [_parentView makeMainWindow];
+        return;
+    }
+
     if ([CPApp mainWindow] === self || ![self canBecomeMainWindow])
         return;
 
