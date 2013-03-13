@@ -116,7 +116,7 @@ CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOutEffect";
             view = [self _targetView:dictionary],
             startFrame = [self _startFrame:dictionary],
             endFrame = [self _endFrame:dictionary],
-            differenceFrame = _CGRectMakeZero(),
+            differenceFrame = CGRectMakeZero(),
             value = [super currentValue];
 
         differenceFrame.origin.x = endFrame.origin.x - startFrame.origin.x;
@@ -124,7 +124,7 @@ CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOutEffect";
         differenceFrame.size.width = endFrame.size.width - startFrame.size.width;
         differenceFrame.size.height = endFrame.size.height - startFrame.size.height;
 
-        var intermediateFrame = _CGRectMakeZero();
+        var intermediateFrame = CGRectMakeZero();
         intermediateFrame.origin.x = startFrame.origin.x + differenceFrame.origin.x * value;
         intermediateFrame.origin.y = startFrame.origin.y + differenceFrame.origin.y * value;
         intermediateFrame.size.width = startFrame.size.width + differenceFrame.size.width * value;
@@ -140,7 +140,7 @@ CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOutEffect";
             [view setAlphaValue:1.0 + ( 0.0 - 1.0 ) * value];
 
         if (progress === 1.0)
-            [self _targetView:view setHidden:_CGRectIsNull(endFrame) || [view alphaValue] === 0.0];
+            [self _targetView:view setHidden:CGRectIsEmpty(endFrame) || [view alphaValue] === 0.0];
     }
 }
 
@@ -161,7 +161,7 @@ CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOutEffect";
         else if (effect === CPViewAnimationFadeOutEffect)
             [view setAlphaValue:0.0];
 
-        [self _targetView:view setHidden:_CGRectIsNull(endFrame) || [view alphaValue] === 0.0];
+        [self _targetView:view setHidden:CGRectIsEmpty(endFrame) || [view alphaValue] === 0.0];
     }
 
     [super stopAnimation];

@@ -173,7 +173,7 @@
         parent = clip.parentNode;
 
     CPDOMDisplayServerRemoveChild(clip, windowElement);
-    [aWindow setFrameOrigin:_CGPointMake([aWindow frame].origin.x, clip.offsetTop)];
+    [aWindow setFrameOrigin:CGPointMake([aWindow frame].origin.x, clip.offsetTop)];
     CPDOMDisplayServerInsertBefore(parent, windowElement, clip);
     CPDOMDisplayServerRemoveChild(parent, clip);
 }

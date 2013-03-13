@@ -49,26 +49,26 @@
     CPDOMDisplayServerInstructions[__index + 4] = y;
 #if !DOM_OPTIMIZATION
 #define CPDOMDisplayServerSetStyleLeftTop(aDOMElement, aTransform, aLeft, aTop) \
-if (aTransform) var ____p = _CGPointApplyAffineTransform(CGPointMake(aLeft, aTop), aTransform); \
-else var ____p = _CGPointMake(aLeft, aTop); \
+if (aTransform) var ____p = CGPointApplyAffineTransform(CGPointMake(aLeft, aTop), aTransform); \
+else var ____p = CGPointMake(aLeft, aTop); \
 aDOMElement.style.left = ROUND(____p.x) + "px";\
 aDOMElement.style.top = ROUND(____p.y) + "px";
 
 #define CPDOMDisplayServerSetStyleRightTop(aDOMElement, aTransform, aRight, aTop) \
-if (aTransform) var ____p = _CGPointApplyAffineTransform(CGPointMake(aRight, aTop), aTransform); \
-else var ____p = _CGPointMake(aRight, aTop); \
+if (aTransform) var ____p = CGPointApplyAffineTransform(CGPointMake(aRight, aTop), aTransform); \
+else var ____p = CGPointMake(aRight, aTop); \
 aDOMElement.style.right = ROUND(____p.x) + "px";\
 aDOMElement.style.top = ROUND(____p.y) + "px";
 
 #define CPDOMDisplayServerSetStyleLeftBottom(aDOMElement, aTransform, aLeft, aBottom) \
-if (aTransform) var ____p = _CGPointApplyAffineTransform(CGPointMake(aLeft, aBottom), aTransform); \
-else var ____p = _CGPointMake(aLeft, aBottom); \
+if (aTransform) var ____p = CGPointApplyAffineTransform(CGPointMake(aLeft, aBottom), aTransform); \
+else var ____p = CGPointMake(aLeft, aBottom); \
 aDOMElement.style.left = ROUND(____p.x) + "px";\
 aDOMElement.style.bottom = ROUND(____p.y) + "px";
 
 #define CPDOMDisplayServerSetStyleRightBottom(aDOMElement, aTransform, aRight, aBottom) \
-if (aTransform) var ____p = _CGPointApplyAffineTransform(CGPointMake(aRight, aBottom), aTransform); \
-else var ____p = _CGPointMake(aRight, aBottom); \
+if (aTransform) var ____p = CGPointApplyAffineTransform(CGPointMake(aRight, aBottom), aTransform); \
+else var ____p = CGPointMake(aRight, aBottom); \
 aDOMElement.style.right = ROUND(____p.x) + "px";\
 aDOMElement.style.bottom = ROUND(____p.y) + "px";
 
@@ -166,8 +166,8 @@ CPDOMDisplayServerInstructionCount = 0;
                                             var transform = CPDOMDisplayServerInstructions[index++];\
                                             if (transform)\
                                             {\
-                                                var point = _CGPointMake(CPDOMDisplayServerInstructions[index++], CPDOMDisplayServerInstructions[index++]),\
-                                                    transformed = _CGPointApplyAffineTransform(point, transform);\
+                                                var point = CGPointMake(CPDOMDisplayServerInstructions[index++], CPDOMDisplayServerInstructions[index++]),\
+                                                    transformed = CGPointApplyAffineTransform(point, transform);\
                                                 style[x] = ROUND(transformed.x) + "px";\
                                                 style[y] = ROUND(transformed.y) + "px";\
                                             }\

@@ -38,6 +38,7 @@
 
 - (void)textCPRectIsEmpty
 {
+    [self assertTrue:CPRectIsEmpty(CGRectMake(Infinity, 0, 10, 10))];
     [self assertTrue:CPRectIsEmpty(CGRectMake(0, 0, 0, 10))];
     [self assertTrue:CPRectIsEmpty(CGRectMake(0, 0, 10, 0))];
     [self assertTrue:CPRectIsEmpty(CGRectMake(0, 0, -10, 10))];
@@ -217,10 +218,10 @@
 
 - (void)testCPRectIsNull
 {
-    [self assertTrue:CPRectIsNull(CGRectMake(0, 0, 0, 10))];
-    [self assertTrue:CPRectIsNull(CGRectMake(0, 0, 10, 0))];
-    [self assertTrue:CPRectIsNull(CGRectMake(0, 0, -10, 10))];
-    [self assertTrue:CPRectIsNull(CGRectMake(0, 0, 10, -10))];
+    [self assertFalse:CPRectIsNull(CGRectMake(0, 0, 0, 10))];
+    [self assertTrue:CPRectIsNull(CGRectMake(Infinity, 0, 0, 0))];
+    [self assertTrue:CPRectIsNull(CGRectMake(0, Infinity, -10, 10))];
+    [self assertFalse:CPRectIsNull(CGRectMake(0, 0, 10, -10))];
     [self assertFalse:CPRectIsNull(CGRectMake(0, 0, 10, 10))];
 }
 

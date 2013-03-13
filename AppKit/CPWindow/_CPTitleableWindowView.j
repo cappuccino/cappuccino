@@ -95,7 +95,7 @@
 
     // The vertical alignment of the title is set by the theme, so just give it all available space. By default
     // the title will vertically centre within.
-    [_titleField setFrame:_CGRectMake(20.0, 0, width - 40.0, [[self class] titleBarHeight])];
+    [_titleField setFrame:CGRectMake(20.0, 0, width - 40.0, [[self class] titleBarHeight])];
 }
 
 - (void)layoutSubviews

@@ -413,7 +413,7 @@
 
     [super setFrame:aRect display:shouldDisplay animate:shouldAnimate];
 
-    if (!_CGSizeEqualToSize(size, aRect.size))
+    if (!CGSizeEqualToSize(size, aRect.size))
         [self tile];
 }
 

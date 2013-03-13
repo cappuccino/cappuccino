@@ -212,8 +212,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 + (id)themeAttributes
 {
     return @{
-            @"bezel-inset": _CGInsetMakeZero(),
-            @"content-inset": _CGInsetMake(1.0, 0.0, 0.0, 0.0),
+            @"bezel-inset": CGInsetMakeZero(),
+            @"content-inset": CGInsetMake(1.0, 0.0, 0.0, 0.0),
             @"bezel-color": [CPNull null],
         };
 }
@@ -252,7 +252,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
                     return;
 
                 var cappEvent = [CPEvent keyEventWithType:CPKeyUp
-                                                 location:_CGPointMakeZero()
+                                                 location:CGPointMakeZero()
                                             modifierFlags:0
                                                 timestamp:[CPEvent currentTimestamp]
                                              windowNumber:[[CPApp keyWindow] windowNumber]
@@ -607,32 +607,32 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     switch (verticalAlign)
     {
         case CPTopVerticalTextAlignment:
-            var topPoint = _CGRectGetMinY(contentRect) + "px";
+            var topPoint = CGRectGetMinY(contentRect) + "px";
             break;
 
         case CPCenterVerticalTextAlignment:
-            var topPoint = (_CGRectGetMidY(contentRect) - (lineHeight / 2)) + "px";
+            var topPoint = (CGRectGetMidY(contentRect) - (lineHeight / 2)) + "px";
             break;
 
         case CPBottomVerticalTextAlignment:
-            var topPoint = (_CGRectGetMaxY(contentRect) - lineHeight) + "px";
+            var topPoint = (CGRectGetMaxY(contentRect) - lineHeight) + "px";
             break;
 
         default:
-            var topPoint = _CGRectGetMinY(contentRect) + "px";
+            var topPoint = CGRectGetMinY(contentRect) + "px";
             break;
     }
 
     element.style.top = topPoint;
 
-    var left = _CGRectGetMinX(contentRect);
+    var left = CGRectGetMinX(contentRect);
 
     // If the browser has a built in left padding, compensate for it. We need the input text to be exactly on top of the original text.
     if (CPFeatureIsCompatible(CPInput1PxLeftPadding))
         left -= 1;
 
     element.style.left = left + "px";
-    element.style.width = _CGRectGetWidth(contentRect) + "px";
+    element.style.width = CGRectGetWidth(contentRect) + "px";
     element.style.height = ROUND(lineHeight) + "px";
     element.style.lineHeight = ROUND(lineHeight) + "px";
     element.style.verticalAlign = "top";
@@ -1191,7 +1191,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         maxSize = [self currentValueForThemeAttribute:@"max-size"],
         lineBreakMode = [self lineBreakMode],
         text = (_stringValue || @" "),
-        textSize = _CGSizeMakeCopy(frameSize),
+        textSize = CGSizeMakeCopy(frameSize),
         font = [self currentValueForThemeAttribute:@"font"];
 
     textSize.width -= contentInset.left + contentInset.right;
@@ -1485,14 +1485,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     var contentInset = [self currentValueForThemeAttribute:@"content-inset"];
 
-    return _CGRectInsetByInset(bounds, contentInset);
+    return CGRectInsetByInset(bounds, contentInset);
 }
 
 - (CGRect)bezelRectForBounds:(CGRect)bounds
 {
     var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"];
 
-    return _CGRectInsetByInset(bounds, bezelInset);
+    return CGRectInsetByInset(bounds, bezelInset);
 }
 
 - (CGRect)rectForEphemeralSubviewNamed:(CPString)aName
@@ -1510,7 +1510,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     if (aName === "bezel-view")
     {
-        var view = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
+        var view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
 
         [view setHitTests:NO];
 
@@ -1518,7 +1518,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
     else
     {
-        var view = [[_CPImageAndTextView alloc] initWithFrame:_CGRectMakeZero()];
+        var view = [[_CPImageAndTextView alloc] initWithFrame:CGRectMakeZero()];
 
         [view setHitTests:NO];
 

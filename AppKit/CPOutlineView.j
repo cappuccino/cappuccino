@@ -709,11 +709,11 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 {
     var theItem = [self itemAtRow:aRow];
     if (![self isExpandable:theItem] || ![self _shouldShowOutlineDisclosureControlForItem:theItem])
-        return _CGRectMakeZero();
+        return CGRectMakeZero();
 
     var dataViewFrame = [self _frameOfOutlineDataViewAtRow:aRow],
-        disclosureWidth = _CGRectGetWidth([_disclosureControlPrototype frame]),
-        frame = _CGRectMake(_CGRectGetMinX(dataViewFrame) - disclosureWidth, _CGRectGetMinY(dataViewFrame), disclosureWidth, _CGRectGetHeight(dataViewFrame));
+        disclosureWidth = CGRectGetWidth([_disclosureControlPrototype frame]),
+        frame = CGRectMake(CGRectGetMinX(dataViewFrame) - disclosureWidth, CGRectGetMinY(dataViewFrame), disclosureWidth, CGRectGetHeight(dataViewFrame));
 
     return frame;
 }
@@ -1060,7 +1060,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     var dragView = [[_CPColumnDragView alloc] initWithLineColor:[self gridColor]],
         tableColumn = [[self tableColumns] objectAtIndex:theColumnIndex],
         defaultRowHeight = [self valueForThemeAttribute:@"default-row-height"],
-        bounds = _CGRectMake(0.0, 0.0, [tableColumn width], _CGRectGetHeight([self exposedRect]) + defaultRowHeight),
+        bounds = CGRectMake(0.0, 0.0, [tableColumn width], CGRectGetHeight([self exposedRect]) + defaultRowHeight),
         columnRect = [self rectOfColumn:theColumnIndex],
         headerView = [tableColumn headerView],
         row = [_exposedRows firstIndex];
@@ -1074,7 +1074,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         dataViewFrame.origin.x = 0.0;
 
         // Offset by table header height - scroll position
-        dataViewFrame.origin.y = ( _CGRectGetMinY(dataViewFrame) - _CGRectGetMinY([self exposedRect]) ) + defaultRowHeight;
+        dataViewFrame.origin.y = (CGRectGetMinY(dataViewFrame) - CGRectGetMinY([self exposedRect])) + defaultRowHeight;
         [dataView setFrame:dataViewFrame];
 
         [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
@@ -1098,7 +1098,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     // Add the column header view
     var headerFrame = [headerView frame];
-    headerFrame.origin = _CGPointMakeZero();
+    headerFrame.origin = CGPointMakeZero();
 
     var columnHeaderView = [[_CPTableColumnHeaderView alloc] initWithFrame:headerFrame];
     [columnHeaderView setStringValue:[headerView stringValue]];
@@ -1304,7 +1304,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
         var disclosureControlFrame = [self frameOfOutlineDisclosureControlAtRow:row];
 
-        if (_CGRectIsEmpty(disclosureControlFrame))
+        if (CGRectIsEmpty(disclosureControlFrame))
             continue;
 
         var control = [self _dequeueDisclosureControl];
@@ -1361,7 +1361,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 - (void)_toggleFromDisclosureControl:(CPControl)aControl
 {
     var controlFrame = [aControl frame],
-        item = [self itemAtRow:[self rowAtPoint:_CGPointMake(_CGRectGetMinX(controlFrame), _CGRectGetMidY(controlFrame))]];
+        item = [self itemAtRow:[self rowAtPoint:CGPointMake(CGRectGetMinX(controlFrame), CGRectGetMidY(controlFrame))]];
 
     if ([self isItemExpanded:item])
         [self collapseItem:item];
@@ -1936,14 +1936,14 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 {
     var bounds = [self bounds],
         context = [[CPGraphicsContext currentContext] graphicsPort],
-        width = _CGRectGetWidth(bounds),
-        height = _CGRectGetHeight(bounds);
+        width = CGRectGetWidth(bounds),
+        height = CGRectGetHeight(bounds);
 
     CGContextBeginPath(context);
 
     if (_angle)
     {
-        var centre = _CGPointMake(FLOOR(width / 2.0), FLOOR(height / 2.0));
+        var centre = CGPointMake(FLOOR(width / 2.0), FLOOR(height / 2.0));
         CGContextTranslateCTM(context, centre.x, centre.y);
         CGContextRotateCTM(context, _angle);
         CGContextTranslateCTM(context, -centre.x, -centre.y);

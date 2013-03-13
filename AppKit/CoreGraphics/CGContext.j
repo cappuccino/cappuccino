@@ -116,7 +116,7 @@ function CGGStateCreate()
 {
     return { alpha:1.0, strokeStyle:"#000", fillStyle:"#ccc", lineWidth:1.0, lineJoin:kCGLineJoinMiter, lineCap:kCGLineCapButt, miterLimit:10.0, globalAlpha:1.0,
         blendMode:kCGBlendModeNormal,
-        shadowOffset:_CGSizeMakeZero(), shadowBlur:0.0, shadowColor:NULL, CTM:_CGAffineTransformMakeIdentity() };
+        shadowOffset:CGSizeMakeZero(), shadowBlur:0.0, shadowColor:NULL, CTM:CGAffineTransformMakeIdentity() };
 }
 
 /*!
@@ -129,7 +129,7 @@ function CGGStateCreateCopy(aGState)
     return { alpha:aGState.alpha, strokeStyle:aGState.strokeStyle, fillStyle:aGState.fillStyle, lineWidth:aGState.lineWidth,
         lineJoin:aGState.lineJoin, lineCap:aGState.lineCap, miterLimit:aGState.miterLimit, globalAlpha:aGState.globalAlpha,
         blendMode:aGState.blendMode,
-        shadowOffset:_CGSizeMakeCopy(aGState.shadowOffset), shadowBlur:aGState.shadowBlur, shadowColor:aGState.shadowColor, CTM:_CGAffineTransformMakeCopy(aGState.CTM) };
+        shadowOffset:CGSizeMakeCopy(aGState.shadowOffset), shadowBlur:aGState.shadowBlur, shadowColor:aGState.shadowColor, CTM:CGAffineTransformMakeCopy(aGState.CTM) };
 }
 
 /*!
@@ -418,7 +418,7 @@ function CGContextConcatCTM(aContext, aTransform)
 {
     var CTM = aContext.gState.CTM;
 
-    _CGAffineTransformConcatTo(CTM, aTransform, CTM);
+    CGAffineTransformConcatTo(CTM, aTransform, CTM);
 }
 
 /*!
@@ -456,7 +456,7 @@ function CGContextScaleCTM(aContext, sx, sy)
 {
     var gState = aContext.gState;
 
-    gState.CTM = _CGAffineTransformScale(gState.CTM, sx, sy);
+    gState.CTM = CGAffineTransformScale(gState.CTM, sx, sy);
 }
 
 /*!
@@ -470,7 +470,7 @@ function CGContextTranslateCTM(aContext, tx, ty)
 {
     var gState = aContext.gState;
 
-    gState.CTM = _CGAffineTransformTranslate(gState.CTM, tx, ty);
+    gState.CTM = CGAffineTransformTranslate(gState.CTM, tx, ty);
 }
 
 /*!
@@ -485,7 +485,7 @@ function CGContextSetShadow(aContext, aSize, aBlur)
 {
     var gState = aContext.gState;
 
-    gState.shadowOffset = _CGSizeMakeCopy(aSize);
+    gState.shadowOffset = CGSizeMakeCopy(aSize);
     gState.shadowBlur = aBlur;
     gState.shadowColor = [CPColor shadowColor];
 }
@@ -502,7 +502,7 @@ function CGContextSetShadowWithColor(aContext, aSize, aBlur, aColor)
 {
     var gState = aContext.gState;
 
-    gState.shadowOffset = _CGSizeMakeCopy(aSize);
+    gState.shadowOffset = CGSizeMakeCopy(aSize);
     gState.shadowBlur = aBlur;
     gState.shadowColor = aColor;
 }

@@ -963,7 +963,7 @@ var _CPMenuBarVisible               = NO,
 {
     [CPApp sendEvent:[CPEvent
         otherEventWithType:CPAppKitDefined
-                  location:_CGPointMakeZero()
+                  location:CGPointMakeZero()
              modifierFlags:0
                  timestamp:0
               windowNumber:0

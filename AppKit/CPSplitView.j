@@ -334,8 +334,8 @@ var ShouldSuppressResizeNotifications   = 1,
     }
 
     [self _setupDOMDivider];
-    CPDOMDisplayServerSetStyleLeftTop(_DOMDividerElements[_drawingDivider], NULL, _CGRectGetMinX(aRect), _CGRectGetMinY(aRect));
-    CPDOMDisplayServerSetStyleSize(_DOMDividerElements[_drawingDivider], _CGRectGetWidth(aRect), _CGRectGetHeight(aRect));
+    CPDOMDisplayServerSetStyleLeftTop(_DOMDividerElements[_drawingDivider], NULL, CGRectGetMinX(aRect), CGRectGetMinY(aRect));
+    CPDOMDisplayServerSetStyleSize(_DOMDividerElements[_drawingDivider], CGRectGetWidth(aRect), CGRectGetHeight(aRect));
 #endif
 }
 
@@ -1110,7 +1110,7 @@ The sum of the views and the sum of the dividers should be equal to the size of 
 */
 - (void)_restoreFromAutosaveIfNeeded
 {
-    if (_shouldRestoreFromAutosaveUnlessFrameSize && !_CGSizeEqualToSize([self frameSize], _shouldRestoreFromAutosaveUnlessFrameSize))
+    if (_shouldRestoreFromAutosaveUnlessFrameSize && !CGSizeEqualToSize([self frameSize], _shouldRestoreFromAutosaveUnlessFrameSize))
     {
         [self _restoreFromAutosave];
     }

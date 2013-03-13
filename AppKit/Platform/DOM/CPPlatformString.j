@@ -151,7 +151,7 @@ var DOMFixedWidthSpanElement    = nil,
     else if (CPFeatureIsCompatible(CPJavaScriptTextContentFeature))
         span.textContent = aString;
 
-    return _CGSizeMake(span.clientWidth, span.clientHeight);
+    return CGSizeMake(span.clientWidth, span.clientHeight);
 }
 
 + (CPDictionary)metricsOfFont:(CPFont)aFont

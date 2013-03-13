@@ -49,7 +49,7 @@
     */
     var contentRect = [super contentRectForFrameRect:aFrameRect];
 
-    return _CGRectInset(contentRect, 1.0, 1.0);
+    return CGRectInset(contentRect, 1.0, 1.0);
 }
 
 - (id)initWithFrame:(CGRect)aFrame styleMask:(unsigned)aStyleMask
@@ -60,7 +60,7 @@
     {
         var bounds = [self bounds];
 
-        _bodyView = [[CPView alloc] initWithFrame:_CGRectMake(0.0, 0.0, _CGRectGetWidth(bounds), _CGRectGetHeight(bounds))];
+        _bodyView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), CGRectGetHeight(bounds))];
 
         [_bodyView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
         [_bodyView setHitTests:NO];

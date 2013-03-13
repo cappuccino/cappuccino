@@ -26,62 +26,207 @@ CGGeometry is not a part of Foundation. The reason _CGGeometry.j exists, and is 
 
 */
 
-#define _function(inline) function inline { return _##inline; }
+function CGPointMake(x, y)
+{
+    return { x:x, y:y };
+}
 
-_function(CGPointMake(x, y))
-_function(CGPointMakeZero())
-_function(CGPointMakeCopy(aPoint))
-_function(CGPointCreateCopy(aPoint))
+function CGPointMakeZero()
+{
+    return { x:0, y:0 };
+}
 
-_function(CGPointEqualToPoint(lhsPoint, rhsPoint))
-_function(CGStringFromPoint(aPoint))
+function CGPointMakeCopy(aPoint)
+{
+    return { x:aPoint.x, y:aPoint.y };
+}
 
-_function(CGSizeMake(width, height))
-_function(CGSizeMakeZero())
-_function(CGSizeMakeCopy(aSize))
-_function(CGSizeCreateCopy(aSize))
+CGPointCreateCopy = CGPointMakeCopy;
 
-_function(CGSizeEqualToSize(lhsSize, rhsSize))
-_function(CGStringFromSize(aSize))
+function CGPointEqualToPoint(lhsPoint, rhsPoint)
+{
+    return (lhsPoint.x == rhsPoint.x && lhsPoint.y == rhsPoint.y);
+}
 
-_function(CGRectMake(x, y, width, height))
-_function(CGRectMakeZero())
-_function(CGRectMakeCopy(aRect))
-_function(CGRectCreateCopy(aRect))
+function CGStringFromPoint(aPoint)
+{
+    return "{" + aPoint.x + ", " + aPoint.y + "}";
+}
 
-_function(CGRectEqualToRect(lhsRect, rhsRect))
-_function(CGStringFromRect(aRect))
 
-_function(CGRectOffset(aRect, dX, dY))
-_function(CGRectInset(aRect, dX, dY))
+function CGSizeMake(width, height)
+{
+    return { width:width, height:height };
+}
 
-_function(CGRectGetHeight(aRect))
-_function(CGRectGetMaxX(aRect))
-_function(CGRectGetMaxY(aRect))
-_function(CGRectGetMidX(aRect))
-_function(CGRectGetMidY(aRect))
-_function(CGRectGetMinX(aRect))
-_function(CGRectGetMinY(aRect))
-_function(CGRectGetWidth(aRect))
+function CGSizeMakeZero()
+{
+    return { width:0, height:0 };
+}
 
-_function(CGRectIsEmpty(aRect))
-_function(CGRectIsNull(aRect))
+function CGSizeMakeCopy(aSize)
+{
+    return { width:aSize.width, height:aSize.height };
+}
 
-_function(CGRectContainsPoint(aRect, aPoint))
+CGSizeCreateCopy = CGSizeMakeCopy;
 
-_function(CGInsetMake(top, right, bottom, left))
-_function(CGInsetMakeZero())
-_function(CGInsetMakeCopy(anInset))
-_function(CGInsetMakeInvertedCopy(anInset))
-_function(CGInsetIsEmpty(anInset))
-_function(CGInsetEqualToInset(lhsInset, rhsInset))
+function CGSizeEqualToSize(lhsSize, rhsSize)
+{
+    return (lhsSize.width == rhsSize.width && lhsSize.height == rhsSize.height);
+}
+
+function CGStringFromSize(aSize)
+{
+    return "{" + aSize.width + ", " + aSize.height + "}";
+}
+
+
+function CGRectMake(x, y, width, height)
+{
+    return { origin:{ x:x, y:y }, size:{ width:width, height:height } };
+}
+
+function CGRectMakeZero()
+{
+    return { origin:{ x:0, y:0 }, size:{ width:0, height:0 } };
+}
+
+function CGRectMakeCopy(aRect)
+{
+    return { origin:{ x:aRect.origin.x, y:aRect.origin.y }, size:{ width:aRect.size.width, height:aRect.size.height } };
+}
+
+CGRectCreateCopy = CGRectMakeCopy;
+
+function CGRectEqualToRect(lhsRect, rhsRect)
+{
+    return (lhsRect.origin.x == rhsRect.origin.x &&
+            lhsRect.origin.y == rhsRect.origin.y &&
+            lhsRect.size.width == rhsRect.size.width &&
+            lhsRect.size.height == rhsRect.size.height);
+}
+
+function CGStringFromRect(aRect)
+{
+    return "{" + CGStringFromPoint(aRect.origin) + ", " + CGStringFromSize(aRect.size) + "}";
+}
+
+
+function CGRectOffset(aRect, dX, dY)
+{
+    return { origin:{ x:aRect.origin.x + dX, y:aRect.origin.y + dY }, size:{ width:aRect.size.width, height:aRect.size.height } };
+}
+
+function CGRectInset(aRect, dX, dY)
+{
+    return { origin:{ x:aRect.origin.x + dX, y:aRect.origin.y + dY }, size:{ width:aRect.size.width - 2 * dX, height:aRect.size.height - 2 * dY } };
+}
+
+
+function CGRectGetHeight(aRect)
+{
+    return aRect.size.height;
+}
+
+function CGRectGetMaxX(aRect)
+{
+    return aRect.origin.x + aRect.size.width;
+}
+
+function CGRectGetMaxY(aRect)
+{
+    return aRect.origin.y + aRect.size.height;
+}
+
+function CGRectGetMidX(aRect)
+{
+    return aRect.origin.x + (aRect.size.width / 2.0);
+}
+
+function CGRectGetMidY(aRect)
+{
+    return aRect.origin.y + (aRect.size.height / 2.0);
+}
+
+function CGRectGetMinX(aRect)
+{
+    return aRect.origin.x;
+}
+
+function CGRectGetMinY(aRect)
+{
+    return aRect.origin.y;
+}
+
+function CGRectGetWidth(aRect)
+{
+    return aRect.size.width;
+}
+
+
+function CGRectIsEmpty(aRect)
+{
+    return (aRect.size.width <= 0.0 || aRect.size.height <= 0.0 || aRect.origin.x === Infinity || aRect.origin.y === Infinity);
+}
+
+function CGRectIsNull(aRect)
+{
+    return (aRect.origin.x === Infinity || aRect.origin.y === Infinity);
+}
+
+
+function CGRectContainsPoint(aRect, aPoint)
+{
+    return (aPoint.x >= aRect.origin.x &&
+            aPoint.y >= aRect.origin.y &&
+            aPoint.x < CGRectGetMaxX(aRect) &&
+            aPoint.y < CGRectGetMaxY(aRect));
+}
+
+
+function CGInsetMake(top, right, bottom, left)
+{
+    return { top:top, right:right, bottom:bottom, left:left };
+}
+
+function CGInsetMakeZero()
+{
+    return { top:0, right:0, bottom:0, left:0 };
+}
+
+function CGInsetMakeCopy(anInset)
+{
+    return { top:anInset.top, right:anInset.right, bottom:anInset.bottom, left:anInset.left };
+}
+
+function CGInsetMakeInvertedCopy(anInset)
+{
+    return { top:-anInset.top, right:-anInset.right, bottom:-anInset.bottom, left:-anInset.left };
+}
+
+function CGInsetIsEmpty(anInset)
+{
+    return (anInset.top === 0 &&
+            anInset.right === 0 &&
+            anInset.bottom === 0 &&
+            anInset.left === 0);
+}
+
+function CGInsetEqualToInset(lhsInset, rhsInset)
+{
+    return (lhsInset.top === (rhsInset).top &&
+            lhsInset.right === rhsInset.right &&
+            lhsInset.bottom === rhsInset.bottom &&
+            lhsInset.left === rhsInset.left);
+}
 
 CGMinXEdge = 0;
 CGMinYEdge = 1;
 CGMaxXEdge = 2;
 CGMaxYEdge = 3;
 
-CGRectNull = _CGRectMake(Infinity, Infinity, 0.0, 0.0);
+CGRectNull = CGRectMake(Infinity, Infinity, 0.0, 0.0);
 
 /*!
     @addtogroup appkit
@@ -100,10 +245,10 @@ CGRectNull = _CGRectMake(Infinity, Infinity, 0.0, 0.0);
 */
 function CGRectDivide(inRect, slice, rem, amount, edge)
 {
-    slice.origin = _CGPointMakeCopy(inRect.origin);
-    slice.size = _CGSizeMakeCopy(inRect.size);
-    rem.origin = _CGPointMakeCopy(inRect.origin);
-    rem.size = _CGSizeMakeCopy(inRect.size);
+    slice.origin = CGPointMakeCopy(inRect.origin);
+    slice.size = CGSizeMakeCopy(inRect.size);
+    rem.origin = CGPointMakeCopy(inRect.origin);
+    rem.size = CGSizeMakeCopy(inRect.size);
 
     switch (edge)
     {
@@ -114,7 +259,7 @@ function CGRectDivide(inRect, slice, rem, amount, edge)
             break;
 
         case CGMaxXEdge:
-            slice.origin.x = _CGRectGetMaxX(slice) - amount;
+            slice.origin.x = CGRectGetMaxX(slice) - amount;
             slice.size.width = amount;
             rem.size.width -= amount;
             break;
@@ -126,7 +271,7 @@ function CGRectDivide(inRect, slice, rem, amount, edge)
             break;
 
         case CGMaxYEdge:
-            slice.origin.y = _CGRectGetMaxY(slice) - amount;
+            slice.origin.y = CGRectGetMaxY(slice) - amount;
             slice.size.height = amount;
             rem.size.height -= amount;
     }
@@ -144,7 +289,7 @@ function CGRectContainsRect(lhsRect, rhsRect)
 {
     var union = CGRectUnion(lhsRect, rhsRect);
 
-    return _CGRectEqualToRect(union, lhsRect);
+    return CGRectEqualToRect(union, lhsRect);
 }
 
 /*!
@@ -158,7 +303,7 @@ function CGRectIntersectsRect(lhsRect, rhsRect)
 {
     var intersection = CGRectIntersection(lhsRect, rhsRect);
 
-    return !_CGRectIsEmpty(intersection);
+    return !CGRectIsEmpty(intersection);
 }
 
 /*!
@@ -173,11 +318,11 @@ function CGRectIntegral(aRect)
     aRect = CGRectStandardize(aRect);
 
     // Store these out separately, if not the GetMaxes will return incorrect values.
-    var x = FLOOR(_CGRectGetMinX(aRect)),
-        y = FLOOR(_CGRectGetMinY(aRect));
+    var x = FLOOR(CGRectGetMinX(aRect)),
+        y = FLOOR(CGRectGetMinY(aRect));
 
-    aRect.size.width = CEIL(_CGRectGetMaxX(aRect)) - x;
-    aRect.size.height = CEIL(_CGRectGetMaxY(aRect)) - y;
+    aRect.size.width = CEIL(CGRectGetMaxX(aRect)) - x;
+    aRect.size.height = CEIL(CGRectGetMaxY(aRect)) - y;
 
     aRect.origin.x = x;
     aRect.origin.y = y;
@@ -194,15 +339,14 @@ function CGRectIntegral(aRect)
 */
 function CGRectIntersection(lhsRect, rhsRect)
 {
-    var intersection = _CGRectMake(
-        MAX(_CGRectGetMinX(lhsRect), _CGRectGetMinX(rhsRect)),
-        MAX(_CGRectGetMinY(lhsRect), _CGRectGetMinY(rhsRect)),
-        0, 0);
+    var intersection = CGRectMake(MAX(CGRectGetMinX(lhsRect), CGRectGetMinX(rhsRect)),
+                                  MAX(CGRectGetMinY(lhsRect), CGRectGetMinY(rhsRect)),
+                                  0, 0);
 
-    intersection.size.width = MIN(_CGRectGetMaxX(lhsRect), _CGRectGetMaxX(rhsRect)) - _CGRectGetMinX(intersection);
-    intersection.size.height = MIN(_CGRectGetMaxY(lhsRect), _CGRectGetMaxY(rhsRect)) - _CGRectGetMinY(intersection);
+    intersection.size.width = MIN(CGRectGetMaxX(lhsRect), CGRectGetMaxX(rhsRect)) - CGRectGetMinX(intersection);
+    intersection.size.height = MIN(CGRectGetMaxY(lhsRect), CGRectGetMaxY(rhsRect)) - CGRectGetMinY(intersection);
 
-    return _CGRectIsEmpty(intersection) ? _CGRectMakeZero() : intersection;
+    return CGRectIsEmpty(intersection) ? CGRectMakeZero() : intersection;
 }
 
 /*
@@ -210,9 +354,9 @@ function CGRectIntersection(lhsRect, rhsRect)
 */
 function CGRectStandardize(aRect)
 {
-    var width = _CGRectGetWidth(aRect),
-        height = _CGRectGetHeight(aRect),
-        standardized = _CGRectMakeCopy(aRect);
+    var width = CGRectGetWidth(aRect),
+        height = CGRectGetHeight(aRect),
+        standardized = CGRectMakeCopy(aRect);
 
     if (width < 0.0)
     {
@@ -240,12 +384,12 @@ function CGRectUnion(lhsRect, rhsRect)
     if (rhsRectIsNull)
         return lhsRectIsNull ? CGRectNull : lhsRect;
 
-    var minX = MIN(_CGRectGetMinX(lhsRect), _CGRectGetMinX(rhsRect)),
-        minY = MIN(_CGRectGetMinY(lhsRect), _CGRectGetMinY(rhsRect)),
-        maxX = MAX(_CGRectGetMaxX(lhsRect), _CGRectGetMaxX(rhsRect)),
-        maxY = MAX(_CGRectGetMaxY(lhsRect), _CGRectGetMaxY(rhsRect));
+    var minX = MIN(CGRectGetMinX(lhsRect), CGRectGetMinX(rhsRect)),
+        minY = MIN(CGRectGetMinY(lhsRect), CGRectGetMinY(rhsRect)),
+        maxX = MAX(CGRectGetMaxX(lhsRect), CGRectGetMaxX(rhsRect)),
+        maxY = MAX(CGRectGetMaxY(lhsRect), CGRectGetMaxY(rhsRect));
 
-    return _CGRectMake(minX, minY, maxX - minX, maxY - minY);
+    return CGRectMake(minX, minY, maxX - minX, maxY - minY);
 }
 
 /*!
@@ -254,7 +398,13 @@ function CGRectUnion(lhsRect, rhsRect)
     @param anInset a CGInset to inset by
     @return CGRect aRect inset by anInset
 */
-_function(CGRectInsetByInset(aRect, anInset));
+function CGRectInsetByInset(aRect, anInset)
+{
+    return CGRectMake(aRect.origin.x + anInset.left,
+                      aRect.origin.y + anInset.top,
+                      aRect.size.width - anInset.left - anInset.right,
+                      aRect.size.height - anInset.top - anInset.bottom);
+}
 
 function CGPointFromString(aString)
 {
@@ -279,7 +429,7 @@ function CGRectFromString(aString)
 
 function CGPointFromEvent(anEvent)
 {
-    return _CGPointMake(anEvent.clientX, anEvent.clientY);
+    return CGPointMake(anEvent.clientX, anEvent.clientY);
 }
 
 /*!
@@ -289,10 +439,10 @@ function CGPointFromEvent(anEvent)
 */
 function CGInsetUnion(lhsInset, rhsInset)
 {
-    return _CGInsetMake(lhsInset.top + rhsInset.top,
-                        lhsInset.right + rhsInset.right,
-                        lhsInset.bottom + rhsInset.bottom,
-                        lhsInset.left + rhsInset.left);
+    return CGInsetMake(lhsInset.top + rhsInset.top,
+                       lhsInset.right + rhsInset.right,
+                       lhsInset.bottom + rhsInset.bottom,
+                       lhsInset.left + rhsInset.left);
 }
 
 /*!
@@ -302,24 +452,24 @@ function CGInsetUnion(lhsInset, rhsInset)
 */
 function CGInsetDifference(lhsInset, rhsInset)
 {
-    return _CGInsetMake(lhsInset.top - rhsInset.top,
-                        lhsInset.right - rhsInset.right,
-                        lhsInset.bottom - rhsInset.bottom,
-                        lhsInset.left - rhsInset.left);
+    return CGInsetMake(lhsInset.top - rhsInset.top,
+                       lhsInset.right - rhsInset.right,
+                       lhsInset.bottom - rhsInset.bottom,
+                       lhsInset.left - rhsInset.left);
 }
 
 function CGInsetFromString(aString)
 {
     var numbers = aString.substr(1, aString.length - 2).split(',');
 
-    return _CGInsetMake(parseFloat(numbers[0]), parseFloat(numbers[1]), parseFloat(numbers[2]), parseFloat(numbers[3]));
+    return CGInsetMake(parseFloat(numbers[0]), parseFloat(numbers[1]), parseFloat(numbers[2]), parseFloat(numbers[3]));
 }
 
 CGInsetFromCPString = CGInsetFromString;
 
 function CPStringFromCGInset(anInset)
 {
-    return '{' + anInset.top + ", " + anInset.left + ", " + anInset.bottom + ", " + anInset.right + '}';
+    return "{" + anInset.top + ", " + anInset.left + ", " + anInset.bottom + ", " + anInset.right + "}";
 }
 
 /*!

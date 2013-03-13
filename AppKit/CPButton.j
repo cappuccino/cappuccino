@@ -154,8 +154,8 @@ CPButtonImageOffset   = 3.0;
     return @{
             @"image": [CPNull null],
             @"image-offset": 0.0,
-            @"bezel-inset": _CGInsetMakeZero(),
-            @"content-inset": _CGInsetMakeZero(),
+            @"bezel-inset": CGInsetMakeZero(),
+            @"content-inset": CGInsetMakeZero(),
             @"bezel-color": [CPNull null],
         };
 }
@@ -596,7 +596,7 @@ CPButtonImageOffset   = 3.0;
 {
     var contentInset = [self currentValueForThemeAttribute:@"content-inset"];
 
-    return _CGRectInsetByInset(bounds, contentInset);
+    return CGRectInsetByInset(bounds, contentInset);
 }
 
 - (CGRect)bezelRectForBounds:(CGRect)bounds
@@ -607,7 +607,7 @@ CPButtonImageOffset   = 3.0;
 
     var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"];
 
-    return _CGRectInsetByInset(bounds, bezelInset);
+    return CGRectInsetByInset(bounds, bezelInset);
 }
 
 - (CGSize)_minimumFrameSize
@@ -667,14 +667,14 @@ CPButtonImageOffset   = 3.0;
 {
     if (aName === "bezel-view")
     {
-        var view = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
+        var view = [[CPView alloc] initWithFrame:CGRectMakeZero()];
 
         [view setHitTests:NO];
 
         return view;
     }
     else
-        return [[_CPImageAndTextView alloc] initWithFrame:_CGRectMakeZero()];
+        return [[_CPImageAndTextView alloc] initWithFrame:CGRectMakeZero()];
 }
 
 - (void)layoutSubviews

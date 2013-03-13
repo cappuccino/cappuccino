@@ -38,9 +38,9 @@ var CANVAS_LINECAP_TABLE    = [ "butt", "round", "square" ],
 #define _CGContextClosePathCanvas(aContext) aContext.closePath()
 #define _CGContextMoveToPointCanvas(aContext, x, y) aContext.moveTo(x, y)
 
-#define _CGContextAddRectCanvas(aContext, aRect) aContext.rect(_CGRectGetMinX(aRect), _CGRectGetMinY(aRect), _CGRectGetWidth(aRect), _CGRectGetHeight(aRect))
+#define _CGContextAddRectCanvas(aContext, aRect) aContext.rect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect))
 #define _CGContextBeginPathCanvas(aContext) aContext.beginPath()
-#define _CGContextFillRectCanvas(aContext, aRect) aContext.fillRect(_CGRectGetMinX(aRect), _CGRectGetMinY(aRect), _CGRectGetWidth(aRect), _CGRectGetHeight(aRect))
+#define _CGContextFillRectCanvas(aContext, aRect) aContext.fillRect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect))
 #define _CGContextClipCanvas(aContext) aContext.clip()
 
 // In Cocoa, all primitives excepts rects cannot be added to the context's path
@@ -247,7 +247,7 @@ function CGContextMoveToPoint(aContext, x, y)
 
 function CGContextClearRect(aContext, aRect)
 {
-    aContext.clearRect(_CGRectGetMinX(aRect), _CGRectGetMinY(aRect), _CGRectGetWidth(aRect), _CGRectGetHeight(aRect));
+    aContext.clearRect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
     aContext.hasPath = NO;
 }
 
@@ -288,7 +288,7 @@ function CGContextFillRects(aContext, rects, count)
 
 function CGContextStrokeRect(aContext, aRect)
 {
-    aContext.strokeRect(_CGRectGetMinX(aRect), _CGRectGetMinY(aRect), _CGRectGetWidth(aRect), _CGRectGetHeight(aRect));
+    aContext.strokeRect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
     aContext.hasPath = NO;
 }
 
@@ -560,7 +560,7 @@ CGContextConcatCTM = function(aContext, anAffineTransform)
 
 function CGContextDrawImage(aContext, aRect, anImage)
 {
-    aContext.drawImage(anImage._image, _CGRectGetMinX(aRect), _CGRectGetMinY(aRect), _CGRectGetWidth(aRect), _CGRectGetHeight(aRect));
+    aContext.drawImage(anImage._image, CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
     aContext.hasPath = NO;
 }
 

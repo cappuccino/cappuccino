@@ -457,8 +457,8 @@ var STICKY_TIME_INTERVAL            = 0.4,
     {
         var menuContainer = _menuContainerStack[index],
             menuContainerFrame = [menuContainer globalFrame],
-            menuContainerMinX = _CGRectGetMinX(menuContainerFrame),
-            menuContainerMaxX = _CGRectGetMaxX(menuContainerFrame);
+            menuContainerMinX = CGRectGetMinX(menuContainerFrame),
+            menuContainerMaxX = CGRectGetMaxX(menuContainerFrame);
 
         // If within the x bounds of this menu container, return it.
         if (x < menuContainerMaxX && x >= menuContainerMinX)

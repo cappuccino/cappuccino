@@ -317,7 +317,7 @@
 
         while (index--)
         {
-            while ((position = [self indexOfObject:[theObjects objectAtIndex:index] inRange:_CPMakeRange(position + 1, count)]) !== CPNotFound)
+            while ((position = [self indexOfObject:[theObjects objectAtIndex:index] inRange:CPMakeRange(position + 1, count)]) !== CPNotFound)
                 [indexes addIndex:position];
         }
 

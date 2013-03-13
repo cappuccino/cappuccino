@@ -185,11 +185,11 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
         nativeRect      = [platformWindow nativeContentRect],
         baseOrigin      = [positioningView convertPointToBase:aRect.origin],
         platformOrigin  = [mainWindow convertBaseToPlatformWindow:baseOrigin],
-        platformRect    = _CGRectMake(platformOrigin.x, platformOrigin.y, aRect.size.width, aRect.size.height),
-        originLeft      = _CGPointCreateCopy(platformOrigin),
-        originRight     = _CGPointCreateCopy(platformOrigin),
-        originTop       = _CGPointCreateCopy(platformOrigin),
-        originBottom    = _CGPointCreateCopy(platformOrigin),
+        platformRect    = CGRectMake(platformOrigin.x, platformOrigin.y, aRect.size.width, aRect.size.height),
+        originLeft      = CGPointCreateCopy(platformOrigin),
+        originRight     = CGPointCreateCopy(platformOrigin),
+        originTop       = CGPointCreateCopy(platformOrigin),
+        originBottom    = CGPointCreateCopy(platformOrigin),
         frameSize       = [self frame].size,
         menuBarHeight   = [CPMenu menuBarVisible] ? [CPMenu menuBarHeight] : 0;
 
@@ -270,7 +270,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
         switch (edge)
         {
             case CPMaxXEdge:
-                if (origin.x >= _CGRectGetMaxX(platformRect))
+                if (origin.x >= CGRectGetMaxX(platformRect))
                     return origin;
                 break;
 
@@ -280,7 +280,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
                 break;
 
             case CPMaxYEdge:
-                if (origin.y >= _CGRectGetMaxY(platformRect))
+                if (origin.y >= CGRectGetMaxY(platformRect))
                     return origin;
                 break;
 
@@ -317,7 +317,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
 {
     var wasVisible = [self isVisible];
 
-    if (!aRect || _CGRectIsEmpty(aRect))
+    if (!aRect || CGRectIsEmpty(aRect))
         aRect = [positioningView bounds];
 
     var point = [self computeOriginFromRect:aRect ofView:positioningView preferredEdge:anEdge];

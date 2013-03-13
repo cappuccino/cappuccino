@@ -51,10 +51,10 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     if (self)
     {
         _parentView = parentView;
-        _gradientView = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
+        _gradientView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
         [self addSubview:_gradientView];
 
-        _solidView = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
+        _solidView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
         [self addSubview:_solidView];
     }
 
@@ -68,10 +68,10 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     var gradientHeight = [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView],
         bounds = [self bounds];
 
-    [_gradientView setFrame:_CGRectMake(0.0, 0.0, _CGRectGetWidth(bounds), gradientHeight)];
+    [_gradientView setFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), gradientHeight)];
     [_gradientView setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"bezel-head-color" inState:[_parentView themeState] forClass:_CPStandardWindowView]];
 
-    [_solidView setFrame:_CGRectMake(0.0, gradientHeight, _CGRectGetWidth(bounds), _CGRectGetHeight(bounds) - gradientHeight)];
+    [_solidView setFrame:CGRectMake(0.0, gradientHeight, CGRectGetWidth(bounds), CGRectGetHeight(bounds) - gradientHeight)];
     [_solidView setBackgroundColor:[[CPTheme defaultTheme] valueForAttributeWithName:@"solid-color" forClass:_CPStandardWindowView]];
 }
 
@@ -79,8 +79,8 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 {
     var bounds = [self bounds];
 
-    [_gradientView setFrameSize:_CGSizeMake(_CGRectGetWidth(bounds), [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView])];
-    [_solidView setFrameSize:_CGSizeMake(_CGRectGetWidth(bounds), _CGRectGetHeight(bounds) - [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView])];
+    [_gradientView setFrameSize:CGSizeMake(CGRectGetWidth(bounds), [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView])];
+    [_solidView setFrameSize:CGSizeMake(CGRectGetWidth(bounds), CGRectGetHeight(bounds) - [[CPTheme defaultTheme] valueForAttributeWithName:@"gradient-height" forClass:_CPStandardWindowView])];
 }
 
 @end
@@ -150,34 +150,34 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
         var theClass = [self class],
             bounds = [self bounds];
 
-        _headView = [[_CPTexturedWindowHeadView alloc] initWithFrame:_CGRectMake(0.0, 0.0, _CGRectGetWidth(bounds), [self valueForThemeAttribute:@"title-bar-height"]) windowView:self];
+        _headView = [[_CPTexturedWindowHeadView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), [self valueForThemeAttribute:@"title-bar-height"]) windowView:self];
 
         [_headView setAutoresizingMask:CPViewWidthSizable];;
         [_headView setHitTests:NO];
 
         [self addSubview:_headView positioned:CPWindowBelow relativeTo:_titleField];
 
-        _dividerView = [[CPView alloc] initWithFrame:_CGRectMake(0.0, _CGRectGetMaxY([_headView frame]), _CGRectGetWidth(bounds), _CPStandardWindowViewDividerViewHeight)];
+        _dividerView = [[CPView alloc] initWithFrame:CGRectMake(0.0, CGRectGetMaxY([_headView frame]), CGRectGetWidth(bounds), _CPStandardWindowViewDividerViewHeight)];
 
         [_dividerView setAutoresizingMask:CPViewWidthSizable];
         [_dividerView setHitTests:NO];
 
         [self addSubview:_dividerView];
 
-        var y = _CGRectGetMinY([_dividerView frame]);
+        var y = CGRectGetMinY([_dividerView frame]);
 
-        _bodyView = [[CPView alloc] initWithFrame:_CGRectMake(0.0, y, _CGRectGetWidth(bounds), _CGRectGetHeight(bounds) - y)];
+        _bodyView = [[CPView alloc] initWithFrame:CGRectMake(0.0, y, CGRectGetWidth(bounds), CGRectGetHeight(bounds) - y)];
 
         [_bodyView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
         [_bodyView setHitTests:NO];
 
         [self addSubview:_bodyView];
 
-        [self setResizeIndicatorOffset:_CGSizeMake(2.0, 2.0)];
+        [self setResizeIndicatorOffset:CGSizeMake(2.0, 2.0)];
 
         if (_styleMask & CPClosableWindowMask)
         {
-            _closeButton = [[CPButton alloc] initWithFrame:_CGRectMake(8.0, 8.0, 16.0, 16.0)];
+            _closeButton = [[CPButton alloc] initWithFrame:CGRectMake(8.0, 8.0, 16.0, 16.0)];
 
             [_closeButton setButtonType:CPMomentaryChangeButton];
             [_closeButton setBordered:NO];
@@ -188,7 +188,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
         if (_styleMask & CPMiniaturizableWindowMask && ![CPPlatform isBrowser])
         {
-            _minimizeButton = [[CPButton alloc] initWithFrame:_CGRectMake(27.0, 7.0, 16.0, 16.0)];
+            _minimizeButton = [[CPButton alloc] initWithFrame:CGRectMake(27.0, 7.0, 16.0, 16.0)];
             [_minimizeButton setButtonType:CPMomentaryChangeButton];
             [_minimizeButton setBordered:NO];
 
@@ -212,7 +212,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
 - (CGSize)toolbarOffset
 {
-    return _CGSizeMake(0.0, [self valueForThemeAttribute:@"title-bar-height"]);
+    return CGSizeMake(0.0, [self valueForThemeAttribute:@"title-bar-height"]);
 }
 
 - (void)tile
@@ -221,19 +221,19 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
     var theWindow = [self window],
         bounds = [self bounds],
-        width = _CGRectGetWidth(bounds),
+        width = CGRectGetWidth(bounds),
         headHeight = [self toolbarMaxY];
 
-    [_headView setFrameSize:_CGSizeMake(width, headHeight)];
-    [_dividerView setFrame:_CGRectMake(0.0, headHeight, width, _CPStandardWindowViewDividerViewHeight)];
+    [_headView setFrameSize:CGSizeMake(width, headHeight)];
+    [_dividerView setFrame:CGRectMake(0.0, headHeight, width, _CPStandardWindowViewDividerViewHeight)];
 
     var dividerMinY = 0,
         dividerFrame = [_dividerView frame];
 
     if (![_dividerView isHidden])
-        dividerMinY = _CGRectGetMinY(dividerFrame);
+        dividerMinY = CGRectGetMinY(dividerFrame);
 
-    [_bodyView setFrame:_CGRectMake(0.0, dividerMinY, width, _CGRectGetHeight(bounds) - dividerMinY)];
+    [_bodyView setFrame:CGRectMake(0.0, dividerMinY, width, CGRectGetHeight(bounds) - dividerMinY)];
 
     var leftOffset = 8;
 
@@ -242,10 +242,10 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     if (_minimizeButton)
         leftOffset += 19.0;
 
-    [_titleField setFrame:_CGRectMake(leftOffset, 0, width - leftOffset * 2.0, [self valueForThemeAttribute:@"title-bar-height"])];
+    [_titleField setFrame:CGRectMake(leftOffset, 0, width - leftOffset * 2.0, [self valueForThemeAttribute:@"title-bar-height"])];
 
     var contentFrame = [_bodyView frame];
-    [[theWindow contentView] setFrame:_CGRectInset(contentFrame, 1.0, 1.0)];
+    [[theWindow contentView] setFrame:CGRectInset(contentFrame, 1.0, 1.0)];
 }
 
 /*
@@ -302,7 +302,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 - (BOOL)couldBeMoveEvent:(CPEvent)anEvent
 {
     if (![_headView isHidden])
-        if (_CGRectContainsPoint([_headView frame], [self convertPoint:[anEvent locationInWindow] fromView:nil]))
+        if (CGRectContainsPoint([_headView frame], [self convertPoint:[anEvent locationInWindow] fromView:nil]))
             return YES;
 
     return [super couldBeMoveEvent:anEvent];
@@ -324,7 +324,7 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
 
         // Move the shadow view down so it is inside the content border
         var shadowFrame = [_sheetShadowView frame];
-        [_sheetShadowView setFrameOrigin:_CGPointMake(shadowFrame.origin.x, shadowFrame.origin.y + 1)];
+        [_sheetShadowView setFrameOrigin:CGPointMake(shadowFrame.origin.x, shadowFrame.origin.y + 1)];
     }
     else
         [_bodyView setBackgroundColor:[self valueForThemeAttribute:@"body-color"]];
@@ -340,12 +340,12 @@ var _CPStandardWindowViewDividerViewHeight = 1.0;
     else
         dy = [self toolbarMaxY] + dividerHeight;
 
-    var newHeight = _CGRectGetHeight(frame) + dy,
-        newWidth = _CGRectGetWidth(frame);
+    var newHeight = CGRectGetHeight(frame) + dy,
+        newWidth = CGRectGetWidth(frame);
 
     frame.size.height += dy;
 
-    [self setFrameSize:_CGSizeMake(newWidth, newHeight)];
+    [self setFrameSize:CGSizeMake(newWidth, newHeight)];
 
     [self tile];
     [theWindow setFrame:frame display:NO animate:NO];

@@ -108,13 +108,13 @@ CPGradientDrawsAfterEndingLocation      = kCGGradientDrawsAfterEndLocation;
     angle = ((angle % 360.0) + 360.0) % 360.0;
 
     if (angle < 90.0)
-        startPoint = _CGPointMake(_CGRectGetMinX(rect), _CGRectGetMinY(rect));
+        startPoint = CGPointMake(CGRectGetMinX(rect), CGRectGetMinY(rect));
     else if (angle < 180.0)
-        startPoint = _CGPointMake(_CGRectGetMaxX(rect), _CGRectGetMinY(rect));
+        startPoint = CGPointMake(CGRectGetMaxX(rect), CGRectGetMinY(rect));
     else if (angle < 270.0)
-        startPoint = _CGPointMake(_CGRectGetMaxX(rect), _CGRectGetMaxY(rect));
+        startPoint = CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect));
     else
-        startPoint = _CGPointMake(_CGRectGetMinX(rect), _CGRectGetMaxY(rect));
+        startPoint = CGPointMake(CGRectGetMinX(rect), CGRectGetMaxY(rect));
 
     // A line segment comes out of the starting point at the given angle, with the first colour
     // at the starting point and the last at the end. To do what drawInRect: is supposed to do
@@ -129,9 +129,9 @@ CPGradientDrawsAfterEndingLocation      = kCGGradientDrawsAfterEndLocation;
     // This simplifies down to (in the first quadrant) rectWidth * cos(a) + rectHeight * sin(a).
 
     var radians = PI * angle / 180.0,
-        length = ABS(_CGRectGetWidth(rect) * COS(radians)) + ABS(_CGRectGetHeight(rect) * SIN(radians));
+        length = ABS(CGRectGetWidth(rect) * COS(radians)) + ABS(CGRectGetHeight(rect) * SIN(radians));
 
-    endPoint = _CGPointMake(startPoint.x + length * COS(radians),
+    endPoint = CGPointMake(startPoint.x + length * COS(radians),
                            startPoint.y + length * SIN(radians));
 
     [self drawFromPoint:startPoint toPoint:endPoint options:CPGradientDrawsBeforeStartingLocation | CPGradientDrawsAfterEndingLocation];

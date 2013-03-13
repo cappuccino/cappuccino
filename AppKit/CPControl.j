@@ -117,11 +117,11 @@ var CPControlBlackColor = [CPColor blackColor];
             @"text-color": [CPColor blackColor],
             @"font": [CPFont systemFontOfSize:CPFontCurrentSystemSize],
             @"text-shadow-color": [CPNull null],
-            @"text-shadow-offset": _CGSizeMakeZero(),
+            @"text-shadow-offset": CGSizeMakeZero(),
             @"image-position": CPImageLeft,
             @"image-scaling": CPScaleToFit,
-            @"min-size": _CGSizeMakeZero(),
-            @"max-size": _CGSizeMake(-1.0, -1.0),
+            @"min-size": CGSizeMakeZero(),
+            @"max-size": CGSizeMake(-1.0, -1.0),
         };
 }
 

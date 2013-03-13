@@ -20,8 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#import "../Foundation/CPRange.h"
-
 @import <Foundation/CPBundle.j>
 
 @import "CPCompatibility.j"
@@ -706,7 +704,7 @@ CPRunContinuesResponse  = -1002;
 - (CPArray)windows
 {
     // Return all windows, but not the CPNull placeholder in _windows[0].
-    return [_windows subarrayWithRange:_CPMakeRange(1, [_windows count] - 1)];
+    return [_windows subarrayWithRange:CPMakeRange(1, [_windows count] - 1)];
 }
 
 /*!
@@ -989,10 +987,10 @@ CPRunContinuesResponse  = -1002;
     @param aSheet the window to display as a sheet
     @param aWindow the window that will hold the sheet as a child
     @param aModalDelegate
-    @param aDidEndSelector
-    @param aContextInfo
+    @param didEndSelector
+    @param contextInfo
 */
-- (void)beginSheet:(CPWindow)aSheet modalForWindow:(CPWindow)aWindow modalDelegate:(id)aModalDelegate didEndSelector:(SEL)aDidEndSelector contextInfo:(id)aContextInfo
+- (void)beginSheet:(CPWindow)aSheet modalForWindow:(CPWindow)aWindow modalDelegate:(id)aModalDelegate didEndSelector:(SEL)didEndSelector contextInfo:(id)contextInfo
 {
     if ([aWindow isSheet])
     {
@@ -1001,16 +999,7 @@ CPRunContinuesResponse  = -1002;
     }
 
     [aSheet._windowView _enableSheet:YES inWindow:aWindow];
-
-    // -dw- if a sheet is already visible, we skip this since it serves no purpose and causes
-    // orderOut: to be called on the sheet, which is not what we want.
-    if (![aWindow isVisible])
-    {
-        [aWindow orderFront:self];
-        [aSheet setPlatformWindow:[aWindow platformWindow]];
-    }
-
-    [aWindow _attachSheet:aSheet modalDelegate:aModalDelegate didEndSelector:aDidEndSelector contextInfo:aContextInfo];
+    [aWindow _attachSheet:aSheet modalDelegate:aModalDelegate didEndSelector:didEndSelector contextInfo:contextInfo];
 }
 
 /*!

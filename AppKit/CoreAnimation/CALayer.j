@@ -184,7 +184,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 
     var oldOrigin = _bounds.origin;
 
-    _bounds = _CGRectMakeCopy(aBounds);
+    _bounds = CGRectMakeCopy(aBounds);
 
     if (_hasSublayerTransform)
         _CALayerUpdateSublayerTransformForSublayers(self);
@@ -219,7 +219,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     if (CGPointEqualToPoint(_position, aPosition))
         return;
 
-    _position = _CGPointMakeCopy(aPosition);
+    _position = CGPointMakeCopy(aPosition);
 
     _CALayerRecalculateGeometry(self, CALayerGeometryPositionMask);
 }
@@ -252,7 +252,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 */
 - (void)setAnchorPoint:(CGPoint)anAnchorPoint
 {
-    anAnchorPoint = _CGPointMakeCopy(anAnchorPoint);
+    anAnchorPoint = CGPointMakeCopy(anAnchorPoint);
     anAnchorPoint.x = MIN(1.0, MAX(0.0, anAnchorPoint.x));
     anAnchorPoint.y = MIN(1.0, MAX(0.0, anAnchorPoint.y));
 
@@ -265,7 +265,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
         _CALayerUpdateSublayerTransformForSublayers(self);
 
     if (_owningView)
-        _position = CGPointMake(_CGRectGetWidth(_bounds) * _anchorPoint.x, _CGRectGetHeight(_bounds) * _anchorPoint.y);
+        _position = CGPointMake(CGRectGetWidth(_bounds) * _anchorPoint.x, CGRectGetHeight(_bounds) * _anchorPoint.y);
 
     _CALayerRecalculateGeometry(self, CALayerGeometryAnchorPointMask);
 }
@@ -287,7 +287,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     if (CGAffineTransformEqualToTransform(_affineTransform, anAffineTransform))
         return;
 
-    _affineTransform = _CGAffineTransformMakeCopy(anAffineTransform);
+    _affineTransform = CGAffineTransformMakeCopy(anAffineTransform);
 
     _CALayerRecalculateGeometry(self, CALayerGeometryAffineTransformMask);
 }
@@ -311,8 +311,8 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 
     var hadSublayerTransform = _hasSublayerTransform;
 
-    _sublayerTransform = _CGAffineTransformMakeCopy(anAffineTransform);
-    _hasSublayerTransform = !_CGAffineTransformIsIdentity(_sublayerTransform);
+    _sublayerTransform = CGAffineTransformMakeCopy(anAffineTransform);
+    _hasSublayerTransform = !CGAffineTransformIsIdentity(_sublayerTransform);
 
     if (_hasSublayerTransform)
     {
@@ -400,8 +400,8 @@ var CALayerRegisteredRunLoopUpdates             = nil;
             var bounds = [_superlayer bounds],
                 frame = [_superlayer convertRect:bounds toLayer:nil];
 
-            aFrame.origin.x -= _CGRectGetMinX(frame);
-            aFrame.origin.y -= _CGRectGetMinY(frame);
+            aFrame.origin.x -= CGRectGetMinX(frame);
+            aFrame.origin.y -= CGRectGetMinY(frame);
         }
         else
             aFrame = CGRectMakeCopy(aFrame);
@@ -449,7 +449,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     if (USE_BUFFER && !_contents || !_context)
         return;
 
-    CGContextClearRect(_context, _CGRectMake(0.0, 0.0, _CGRectGetWidth(_backingStoreFrame), _CGRectGetHeight(_backingStoreFrame)));
+    CGContextClearRect(_context, CGRectMake(0.0, 0.0, CGRectGetWidth(_backingStoreFrame), CGRectGetHeight(_backingStoreFrame)));
 
     // Recomposite
     var transform;
@@ -469,8 +469,8 @@ var CALayerRegisteredRunLoopUpdates             = nil;
         // Copy so we don't affect the original.
         transform = CGAffineTransformCreateCopy(_transformFromLayer);
 
-    transform.tx -= _CGRectGetMinX(_backingStoreFrame);
-    transform.ty -= _CGRectGetMinY(_backingStoreFrame);
+    transform.tx -= CGRectGetMinX(_backingStoreFrame);
+    transform.ty -= CGRectGetMinY(_backingStoreFrame);
 
     CGContextSaveGState(_context);
 
@@ -479,7 +479,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     if (USE_BUFFER)
     {
 //        CGContextDrawImage(_context, _bounds, _contents.context);
-        _context.drawImage(_contents.buffer, _CGRectGetMinX(_bounds), _CGRectGetMinY(_bounds));//, _CGRectGetWidth(_standardBackingStoreFrame), _CGRectGetHeight(_standardBackingStoreFrame));
+        _context.drawImage(_contents.buffer, CGRectGetMinX(_bounds), CGRectGetMinY(_bounds));//, CGRectGetWidth(_standardBackingStoreFrame), CGRectGetHeight(_standardBackingStoreFrame));
     }
     else
         [self drawInContext:_context];
@@ -504,13 +504,13 @@ var CALayerRegisteredRunLoopUpdates             = nil;
         _DOMContentsElement.style.position = "absolute";
         _DOMContentsElement.style.visibility = "visible";
 
-        _DOMContentsElement.width = ROUND(_CGRectGetWidth(_backingStoreFrame));
-        _DOMContentsElement.height = ROUND(_CGRectGetHeight(_backingStoreFrame));
+        _DOMContentsElement.width = ROUND(CGRectGetWidth(_backingStoreFrame));
+        _DOMContentsElement.height = ROUND(CGRectGetHeight(_backingStoreFrame));
 
         _DOMContentsElement.style.top = "0px";
         _DOMContentsElement.style.left = "0px";
-        _DOMContentsElement.style.width = ROUND(_CGRectGetWidth(_backingStoreFrame)) + "px";
-        _DOMContentsElement.style.height = ROUND(_CGRectGetHeight(_backingStoreFrame)) + "px";
+        _DOMContentsElement.style.width = ROUND(CGRectGetWidth(_backingStoreFrame)) + "px";
+        _DOMContentsElement.style.height = ROUND(CGRectGetHeight(_backingStoreFrame)) + "px";
 
         _DOMElement.appendChild(_DOMContentsElement);
     }
@@ -520,7 +520,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
         if (_delegateRespondsToDisplayLayerSelector)
             return [_delegate displayInLayer:self];
 
-        if (_CGRectGetWidth(_backingStoreFrame) == 0.0 || _CGRectGetHeight(_backingStoreFrame) == 0.0)
+        if (CGRectGetWidth(_backingStoreFrame) == 0.0 || CGRectGetHeight(_backingStoreFrame) == 0.0)
             return;
 
         if (!_contents)
@@ -913,7 +913,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 */
 - (BOOL)containsPoint:(CGPoint)aPoint
 {
-    return _CGRectContainsPoint(_bounds, aPoint);
+    return CGRectContainsPoint(_bounds, aPoint);
 }
 
 /*!
@@ -928,7 +928,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 
     var point = CGPointApplyAffineTransform(aPoint, _transformToLayer);
 
-    if (!_CGRectContainsPoint(_bounds, point))
+    if (!CGRectContainsPoint(_bounds, point))
         return nil;
 
     var layer = nil,
@@ -979,7 +979,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
         _owningView = anOwningView;
 
         _bounds.size = CGSizeMakeCopy([_owningView bounds].size);
-        _position = CGPointMake(_CGRectGetWidth(_bounds) * _anchorPoint.x, _CGRectGetHeight(_bounds) * _anchorPoint.y);
+        _position = CGPointMake(CGRectGetWidth(_bounds) * _anchorPoint.x, CGRectGetHeight(_bounds) * _anchorPoint.y);
     }
 
     _CALayerRecalculateGeometry(self, CALayerGeometryPositionMask | CALayerGeometryBoundsMask);
@@ -989,7 +989,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 - (void)_owningViewBoundsChanged
 {
     _bounds.size = CGSizeMakeCopy([_owningView bounds].size);
-    _position = CGPointMake(_CGRectGetWidth(_bounds) * _anchorPoint.x, _CGRectGetHeight(_bounds) * _anchorPoint.y);
+    _position = CGPointMake(CGRectGetWidth(_bounds) * _anchorPoint.x, CGRectGetHeight(_bounds) * _anchorPoint.y);
 
     _CALayerRecalculateGeometry(self, CALayerGeometryPositionMask | CALayerGeometryBoundsMask);
 }
@@ -1021,8 +1021,8 @@ function _CALayerUpdateSublayerTransformForSublayers(aLayer)
 {
     var bounds = aLayer._bounds,
         anchorPoint = aLayer._anchorPoint,
-        translateX = _CGRectGetWidth(bounds) * anchorPoint.x,
-        translateY = _CGRectGetHeight(bounds) * anchorPoint.y;
+        translateX = CGRectGetWidth(bounds) * anchorPoint.x,
+        translateY = CGRectGetHeight(bounds) * anchorPoint.y;
 
     aLayer._sublayerTransformForSublayers = CGAffineTransformConcat(
         CGAffineTransformMakeTranslation(-translateX, -translateY),
@@ -1041,14 +1041,14 @@ function _CALayerUpdateDOM(aLayer, aMask)
 
     if (aMask & CALayerFrameOriginUpdateMask)
     {
-        DOMElementStyle.top = ROUND(_CGRectGetMinY(frame)) + "px";
-        DOMElementStyle.left = ROUND(_CGRectGetMinX(frame)) + "px";
+        DOMElementStyle.top = ROUND(CGRectGetMinY(frame)) + "px";
+        DOMElementStyle.left = ROUND(CGRectGetMinX(frame)) + "px";
     }
 
     if (aMask & CALayerFrameSizeUpdateMask)
     {
-        var width = MAX(0.0, ROUND(_CGRectGetWidth(frame))),
-            height = MAX(0.0, ROUND(_CGRectGetHeight(frame))),
+        var width = MAX(0.0, ROUND(CGRectGetWidth(frame))),
+            height = MAX(0.0, ROUND(CGRectGetHeight(frame))),
             DOMContentsElement = aLayer._DOMContentsElement;
 
         DOMElementStyle.width = width + "px";
@@ -1068,24 +1068,24 @@ function _CALayerRecalculateGeometry(aLayer, aGeometryChange)
 {
     var bounds = aLayer._bounds,
         superlayer = aLayer._superlayer,
-        width = _CGRectGetWidth(bounds),
-        height = _CGRectGetHeight(bounds),
+        width = CGRectGetWidth(bounds),
+        height = CGRectGetHeight(bounds),
         position = aLayer._position,
         anchorPoint = aLayer._anchorPoint,
         affineTransform = aLayer._affineTransform,
-        backingStoreFrameSize = _CGSizeMakeCopy(aLayer._backingStoreFrame),
+        backingStoreFrameSize = CGSizeMakeCopy(aLayer._backingStoreFrame),
         hasCustomBackingStoreFrame = aLayer._hasCustomBackingStoreFrame;
 
     // Go to anchor, transform, go back to bounds.
     aLayer._transformFromLayer =  CGAffineTransformConcat(
-        CGAffineTransformMakeTranslation(-width * anchorPoint.x - _CGRectGetMinX(aLayer._bounds), -height * anchorPoint.y - _CGRectGetMinY(aLayer._bounds)),
+        CGAffineTransformMakeTranslation(-width * anchorPoint.x - CGRectGetMinX(aLayer._bounds), -height * anchorPoint.y - CGRectGetMinY(aLayer._bounds)),
         CGAffineTransformConcat(affineTransform,
         CGAffineTransformMakeTranslation(position.x, position.y)));
 
     if (superlayer && superlayer._hasSublayerTransform)
     {
         // aLayer._transformFromLayer = CGAffineTransformConcat(aLayer._transformFromLayer, superlayer._sublayerTransformForSublayers);
-        _CGAffineTransformConcatTo(aLayer._transformFromLayer, superlayer._sublayerTransformForSublayers, aLayer._transformFromLayer);
+        CGAffineTransformConcatTo(aLayer._transformFromLayer, superlayer._sublayerTransformForSublayers, aLayer._transformFromLayer);
     }
 
     aLayer._transformToLayer = CGAffineTransformInvert(aLayer._transformFromLayer);
@@ -1101,8 +1101,8 @@ function _CALayerRecalculateGeometry(aLayer, aGeometryChange)
         var bounds = [superlayer bounds],
             frame = [superlayer convertRect:bounds toLayer:nil];
 
-        aLayer._standardBackingStoreFrame.origin.x -= _CGRectGetMinX(frame);
-        aLayer._standardBackingStoreFrame.origin.y -= _CGRectGetMinY(frame);
+        aLayer._standardBackingStoreFrame.origin.x -= CGRectGetMinX(frame);
+        aLayer._standardBackingStoreFrame.origin.y -= CGRectGetMinY(frame);
     }
 
     // We used to use CGRectIntegral here, but what we actually want, is the largest integral
@@ -1128,13 +1128,13 @@ function _CALayerRecalculateGeometry(aLayer, aGeometryChange)
 
         // These values get rounded in the DOM, so don't both updating them if they're
         // not going to be different after rounding.
-        if (ROUND(_CGRectGetMinX(backingStoreFrame)) != ROUND(_CGRectGetMinX(aLayer._backingStoreFrame)) ||
-            ROUND(_CGRectGetMinY(backingStoreFrame)) != ROUND(_CGRectGetMinY(aLayer._backingStoreFrame)))
+        if (ROUND(CGRectGetMinX(backingStoreFrame)) != ROUND(CGRectGetMinX(aLayer._backingStoreFrame)) ||
+            ROUND(CGRectGetMinY(backingStoreFrame)) != ROUND(CGRectGetMinY(aLayer._backingStoreFrame)))
             [aLayer registerRunLoopUpdateWithMask:CALayerFrameOriginUpdateMask];
 
         // Any change in size due to a geometry change is purely due to rounding error.
-        if ((_CGRectGetWidth(backingStoreFrame) != ROUND(_CGRectGetWidth(aLayer._backingStoreFrame)) ||
-            _CGRectGetHeight(backingStoreFrame) != ROUND(_CGRectGetHeight(aLayer._backingStoreFrame))))
+        if ((CGRectGetWidth(backingStoreFrame) != ROUND(CGRectGetWidth(aLayer._backingStoreFrame)) ||
+            CGRectGetHeight(backingStoreFrame) != ROUND(CGRectGetHeight(aLayer._backingStoreFrame))))
             [aLayer registerRunLoopUpdateWithMask:CALayerFrameSizeUpdateMask];
 
         aLayer._backingStoreFrame = backingStoreFrame;
@@ -1172,7 +1172,7 @@ function _CALayerGetTransform(fromLayer, toLayer)
             var transformFromLayer = layer._transformFromLayer;
 
             //transform = CGAffineTransformConcat(transform, layer._transformFromLayer);
-            _CGAffineTransformConcatTo(transform, transformFromLayer, transform);
+            CGAffineTransformConcatTo(transform, transformFromLayer, transform);
 
             layer = layer._superlayer;
         }
@@ -1197,7 +1197,7 @@ function _CALayerGetTransform(fromLayer, toLayer)
     {
         var transformToLayer = layers[index]._transformToLayer;
 
-        _CGAffineTransformConcatTo(transform, transformToLayer, transform);
+        CGAffineTransformConcatTo(transform, transformToLayer, transform);
     }
 
     return transform;
