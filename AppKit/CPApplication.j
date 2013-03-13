@@ -628,10 +628,10 @@ CPRunContinuesResponse  = -1002;
     }
 
     /*
-    Event listeners are processed from back to front so that newer event listeners normally take
-    precedence. If during the execution of a callback a new event listener is added, it should
-    be inserted after the current callback but before any higher priority callbacks. This makes
-    repeating event listeners (those that reinsert themselves) stable relative to each other.
+        Event listeners are processed from back to front so that newer event listeners normally take
+        precedence. If during the execution of a callback a new event listener is added, it should
+        be inserted after the current callback but before any higher priority callbacks. This makes
+        repeating event listeners (those that reinsert themselves) stable relative to each other.
     */
     for (var i = _eventListeners.length - 1; i >= 0; i--)
     {
@@ -652,6 +652,7 @@ CPRunContinuesResponse  = -1002;
             }
         }
     }
+
     _eventListenerInsertionIndex = _eventListeners.length;
 
     if (theWindow)
