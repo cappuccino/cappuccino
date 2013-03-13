@@ -20,8 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#import "../Foundation/CPRange.h"
-
 @import <Foundation/CPCharacterSet.j>
 @import <Foundation/CPIndexSet.j>
 @import <Foundation/CPTimer.j>
