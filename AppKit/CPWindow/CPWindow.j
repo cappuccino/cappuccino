@@ -1543,8 +1543,6 @@ CPTexturedBackgroundWindowMask
 
     [_windowView setTitle:aTitle];
     [_platformWindow _setTitle:_title window:self];
-
-    [self _synchronizeMenuBarTitleWithWindowTitle];
 }
 
 /*!
@@ -2337,7 +2335,6 @@ CPTexturedBackgroundWindowMask
 {
     CPApp._mainWindow = self;
 
-    [self _synchronizeMenuBarTitleWithWindowTitle];
     [self _synchronizeSaveMenuWithDocumentSaving];
 
     [_windowView noteMainWindowStateChanged];
@@ -3243,19 +3240,6 @@ var keyViewComparator = function(lhs, rhs, context)
 
     return CPOrderedDescending;
 };
-
-@implementation CPWindow (MenuBar)
-
-- (void)_synchronizeMenuBarTitleWithWindowTitle
-{
-    // Windows with Documents automatically update the native window title and the menu bar title.
-    if (![_windowController document] || ![self isMainWindow])
-        return;
-
-    [CPMenu setMenuBarTitle:_title];
-}
-
-@end
 
 @implementation CPWindow (BridgeSupport)
 
