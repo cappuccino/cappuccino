@@ -3884,6 +3884,13 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [[self headerView] setNeedsLayout];
 }
 
+/*!
+    @ignore
+*/
+- (BOOL)_isFocused
+{
+    return [[self window] isKeyWindow] && [[self window] firstResponder] === self;
+}
 
 /*!
     @ignore
@@ -4076,7 +4083,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     var drawGradient = (CPFeatureIsCompatible(CPHTMLCanvasFeature) && _selectionHighlightStyle === CPTableViewSelectionHighlightStyleSourceList && [_selectedRowIndexes count] >= 1),
         deltaHeight = 0.5 * (_gridStyleMask & CPTableViewSolidHorizontalGridLineMask),
-        focused = [[self window] isKeyWindow] && [[self window] firstResponder] === self;
+        focused = [self _isFocused];
 
     CGContextBeginPath(context);
 
