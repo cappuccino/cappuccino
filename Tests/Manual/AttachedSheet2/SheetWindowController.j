@@ -154,10 +154,12 @@
         [[_windowTypeMatrix selectedRadio] tag]);
 
     var type = 1;
+
     if (_windowTypeMatrix)
         type = [[_windowTypeMatrix selectedRadio] tag];
 
     var styleMask = 0;
+
     if ([_titledMaskButton state])
         styleMask |= CPTitledWindowMask;
 
@@ -172,16 +174,21 @@
         case 2:
             styleMask |= CPHUDBackgroundWindowMask;
             break;
+
         case 3:
             styleMask = CPBorderlessWindowMask;
             break;
+
         case 4:
             styleMask |= CPTexturedBackgroundWindowMask;
             break;
+
         case 5:
             styleMask = CPDocModalWindowMask;
             break;
+
         default:
+            break;
     }
 
     if ([_resizableMaskButton state])
@@ -191,6 +198,7 @@
         styleMask = -1;
 
     var debug = 0;
+
     if ([_shadeWindowView state])
         debug |= 1;
 
@@ -212,6 +220,7 @@
     CPLog.debug("[%@ %@]", [self class], _cmd);
 
     var unsetSelector = @selector(unsetAction:);
+
     if (_closeButton)
         [_closeButton setEnabled:[_closeButton action] != unsetSelector];
 
