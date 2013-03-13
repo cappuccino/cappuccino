@@ -543,6 +543,7 @@ var _CPPopoverWindow_shouldClose_    = 1 << 0,
 #endif
 
     [_targetView removeObserver:self forKeyPath:@"frame"];
+    [_parentWindow removeChildWindow:self];
     [super _orderOutRecursively:recursive];
 
     _shouldPerformAnimation = YES;

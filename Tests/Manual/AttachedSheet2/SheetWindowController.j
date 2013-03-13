@@ -475,8 +475,8 @@
     [viewController setView:[[self window] contentView]];
     [aPopover setContentSize:[[[self window] contentView] boundsSize]];
     [aPopover setAnimates:YES];
-    [aPopover showRelativeToRect:[sender bounds] ofView:sender preferredEdge:CPMaxXEdge];
     [aPopover setBehavior:CPPopoverBehaviorTransient];
+    [aPopover showRelativeToRect:[sender bounds] ofView:sender preferredEdge:CPMaxXEdge];
 }
 
 //
