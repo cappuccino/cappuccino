@@ -1657,13 +1657,12 @@ CPTexturedBackgroundWindowMask
 - (void)sendEvent:(CPEvent)anEvent
 {
     var type = [anEvent type],
-        point = [anEvent locationInWindow];
+        sheet = [self attachedSheet];
 
     // If a sheet is attached events get filtered here.
     // It is not clear what events should be passed to the view, perhaps all?
     // CPLeftMouseDown is needed for window moving and resizing to work.
     // CPMouseMoved is needed for rollover effects on title bar buttons.
-    var sheet = [self attachedSheet];
 
     if (sheet)
     {
@@ -1675,14 +1674,19 @@ CPTexturedBackgroundWindowMask
                 // -dw- if the window is clicked, the sheet should come to front, and become key,
                 // and the window should be immediately behind
                 [sheet makeKeyAndOrderFront:self];
-                break;
-            case CPMouseMoved:
-                [_windowView mouseMoved:anEvent];
-                break;
-        }
+                return;
 
-        return;
+            case CPMouseMoved:
+                // Allow these through to the parent
+                break;
+
+            default:
+                // Everything else is filtered
+                return;
+        }
     }
+
+    var point = [anEvent locationInWindow];
 
     switch (type)
     {
@@ -1804,7 +1808,8 @@ CPTexturedBackgroundWindowMask
         case CPMouseMoved:
             [_windowView setCursorForLocation:point resizing:NO];
 
-            if (!_acceptsMouseMovedEvents)
+            // Ignore mouse moves for parents of sheets
+            if (!_acceptsMouseMovedEvents || sheet)
                 return;
 
             if (!_mouseEnteredStack)
