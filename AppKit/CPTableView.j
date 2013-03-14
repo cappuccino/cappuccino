@@ -1245,9 +1245,9 @@ NOT YET IMPLEMENTED
 - (void)_performSelection:(BOOL)select forRow:(CPInteger)rowIndex context:(id)context
 {
     var view = context[rowIndex],
-        selector = select ? @"setThemeState:" : @"unsetThemeState:";
+        selector = select ? @selector(setThemeState:) : @selector(unsetThemeState:);
 
-    [view performSelector:CPSelectorFromString(selector) withObject:CPThemeStateSelectedDataView];
+    [view performSelector:selector withObject:CPThemeStateSelectedDataView];
 }
 
 /*!
