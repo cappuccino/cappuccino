@@ -161,9 +161,9 @@ var _CPAutocompleteMenuMaximumHeight = 307;
 
         var dataView = [tableColumn dataView],
             fontNormal = [dataView valueForThemeAttribute:@"font" inState:CPThemeStateTableDataView],
-            fontSelected = [dataView valueForThemeAttribute:@"font" inState:CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
+            fontSelected = [dataView valueForThemeAttribute:@"font" inState:CPThemeStateTableDataView | CPThemeStateSelectedDataView],
             contentInsetNormal = [dataView valueForThemeAttribute:@"content-inset" inState:CPThemeStateTableDataView],
-            contentInsetSelected = [dataView valueForThemeAttribute:@"content-inset" inState:CPThemeStateTableDataView | CPThemeStateSelectedTableDataView];
+            contentInsetSelected = [dataView valueForThemeAttribute:@"content-inset" inState:CPThemeStateTableDataView | CPThemeStateSelectedDataView];
 
         var mergedString = contentArray.join("\n");
 
