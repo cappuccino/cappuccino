@@ -96,7 +96,7 @@ CPSourceListGradient = "CPSourceListGradient";
 CPSourceListTopLineColor = "CPSourceListTopLineColor";
 CPSourceListBottomLineColor = "CPSourceListBottomLineColor";
 
-var CPTableViewSourcelistNotFocusedSelectionColor = @{
+var CPTableViewSourceListUnfocusedSelectionColor = @{
             CPSourceListGradient: CGGradientCreateWithColorComponents(
                                      CGColorSpaceCreateDeviceRGB(),
                                      [
@@ -4089,7 +4089,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     if (drawGradient)
     {
-        var gradientCache = focused ? [self selectionGradientColors] : CPTableViewSourcelistNotFocusedSelectionColor,
+        var gradientCache = focused ? [self selectionGradientColors] : CPTableViewSourceListUnfocusedSelectionColor,
             topLineColor = [gradientCache objectForKey:CPSourceListTopLineColor],
             bottomLineColor = [gradientCache objectForKey:CPSourceListBottomLineColor],
             gradientColor = [gradientCache objectForKey:CPSourceListGradient];
