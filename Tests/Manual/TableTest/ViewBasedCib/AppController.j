@@ -21,6 +21,11 @@ CPLogRegister(CPLogConsole)
     CPArray content           @accessors;
 }
 
+- (IBAction)reload:(id)sender
+{
+    [tableView reloadData];
+}
+
 - (void)applicationDidFinishLaunching:(CPNotification)note
 {
     content = [CPArray new];
