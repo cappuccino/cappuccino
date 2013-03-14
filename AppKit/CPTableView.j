@@ -3410,12 +3410,14 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
             if (!dataViews || row >= dataViews.length)
                 continue;
 
+            if (row === _editingRow && column === _editingColumn)
+                [[self window] makeFirstResponder:self];
+
             var dataView = [dataViews objectAtIndex:row];
 
             [dataViews replaceObjectAtIndex:row withObject:nil];
 
-            if (row !== _editingRow || column !== _editingColumn)
-                [self _enqueueReusableDataView:dataView];
+            [self _enqueueReusableDataView:dataView];
         }
     }
 }
