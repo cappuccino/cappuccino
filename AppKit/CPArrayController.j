@@ -914,7 +914,7 @@
     var newObject = [self automaticallyPreparesContent] ? [self newObject] : [self _defaultNewObject],
         lastSelectedIndex = [_selectionIndexes lastIndex];
 
-    if (lastSelectedIndex)
+    if (lastSelectedIndex != CPNotFound)
         [self insertObject:newObject atArrangedObjectIndex:lastSelectedIndex];
     else
         [self addObject:newObject];
