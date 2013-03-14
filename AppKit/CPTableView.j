@@ -2833,6 +2833,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     [self _sendDelegateDidClickColumn:clickedColumn];
 
+    [self _changeSortDescriptorsForClickOnColumn:clickedColumn];
+
     if (_allowsColumnSelection)
     {
         [self _noteSelectionIsChanging];
@@ -2859,8 +2861,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         else
             [self selectColumnIndexes:[CPIndexSet indexSetWithIndex:clickedColumn] byExtendingSelection:NO];
     }
-
-    [self _changeSortDescriptorsForClickOnColumn:clickedColumn];
 }
 
 // From GNUSTEP
@@ -3198,12 +3198,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (void)setSortDescriptors:(CPArray)sortDescriptors
 {
     var oldSortDescriptors = [[self sortDescriptors] copy],
-        newSortDescriptors = nil;
-
-    if (sortDescriptors == nil)
         newSortDescriptors = [CPArray array];
-    else
-        newSortDescriptors = [CPArray arrayWithArray:sortDescriptors];
+
+    if (sortDescriptors !== nil)
+        [newSortDescriptors addObjectsFromArray:sortDescriptors];
 
     if ([newSortDescriptors isEqual:oldSortDescriptors])
         return;
