@@ -2735,8 +2735,7 @@ CPTexturedBackgroundWindowMask
 - (void)_sheetShouldAnimateIn:(CPTimer)timer
 {
     // Can't open sheet while opening or closing animation is going on
-    if (_sheetContext["isOpening"] ||
-        _sheetContext["isClosing"])
+    if (_sheetContext["isOpening"] || _sheetContext["isClosing"])
         return;
 
     var sheet = _sheetContext["sheet"];
@@ -2778,11 +2777,6 @@ CPTexturedBackgroundWindowMask
     _sheetContext["isOpening"] = YES;
 
     [sheet _setFrame:endFrame delegate:self duration:[self animationResizeTime:endFrame] curve:CPAnimationEaseOut];
-
-    // NOTE: cocoa doesn't make window key until animation is done, but a
-    // keypress while animating eventually gets to the window. Therefore,
-    // there must be a runloop specifically designed for sheets?
-    [sheet makeKeyWindow];
 }
 
 - (void)_sheetShouldAnimateOut:(CPTimer)timer
@@ -2842,6 +2836,8 @@ CPTexturedBackgroundWindowMask
         // we wanted to close the sheet while it animated in, do that now
         if (_sheetContext["shouldClose"] === YES)
             [self _detachSheetWindow];
+        else
+            [sheet makeKeyWindow];
     }
     else
     {
