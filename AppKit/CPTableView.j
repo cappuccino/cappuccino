@@ -101,14 +101,14 @@ var CPTableViewSourceListUnfocusedSelectionColor = @{
             CPSourceListGradient: CGGradientCreateWithColorComponents(
                                      CGColorSpaceCreateDeviceRGB(),
                                      [
-                                         (200.0 / 255), (200.0 / 255), (200.0 / 255), 1.0,
-                                         (210.0 / 255), (210.0 / 255), (210.0 / 255), 1.0,
+                                         (218.0 / 255), (223.0 / 255), (234.0 / 255), 1.0,
+                                         (178.0 / 255), (181.0 / 255), (190.0 / 255), 1.0,
                                      ],
                                      [0, 1],
                                      2
                                  ),
-            CPSourceListTopLineColor: [CPColor secondarySelectedControlColor],
-            CPSourceListBottomLineColor: [CPColor secondarySelectedControlColor],
+            CPSourceListTopLineColor: [CPColor colorWithCalibratedRed:192.0 / 255.0 green:195.0 / 255.0 blue:205.0 / 255.0 alpha:1.0],
+            CPSourceListBottomLineColor: [CPColor colorWithCalibratedRed:151.0 / 255.0 green:153.0 / 255.0 blue:160.0 / 255.0 alpha:1.0],
         };
 
 // TODO: add docs
