@@ -55,20 +55,29 @@ var IBDefaultFontSizeTableHeader = 11.0;
         {
             _dataView = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
             [_dataView NS_initWithCell:dataViewCell];
+            [[Converter sharedConverter] replaceFontForObject:_dataView];
 
+            // Make sure the font is registered for data view states.
+            // We will attempt to honor italic/bold for selected state.
             var font = [_dataView font],
-                selectedFont = nil;
+                selectedFont = [self valueForSelectedDataViewThemeAttribute:@"font"] || font,
+                name = [font familyName],
+                size = [font size],
+                italic = [font isItalic],
+                bold = [font isBold],
+                selectedFont = bold ? [CPFont boldFontWithName:name size:size italic:italic] :
+                                      [CPFont fontWithName:name size:size italic:italic];
 
-            if (font)
-                font = [font cibFontForNibFont];
+            [_dataView setValue:font forThemeAttribute:@"font" inState:CPThemeStateTableDataView];
+            [_dataView setValue:selectedFont forThemeAttribute:@"font" inState:CPThemeStateTableDataView | CPThemeStateSelectedDataView];
+            [_dataView setValue:font forThemeAttribute:@"font" inState:CPThemeStateTableDataView | CPThemeStateEditing];
 
-            if (!font)
-                font = [CPFont systemFontOfSize:[CPFont systemFontSize]];
+            // Also make sure to set the selected color, by default it will use the cells color
+            var color = [_dataView textColor],
+                selectedColor = [self valueForSelectedDataViewThemeAttribute:@"text-color"] || color;
 
-            var selectedFont = [CPFont boldFontWithName:[font familyName] size:[font size]];
-
-            [_dataView setFont:font];
-            [_dataView setValue:selectedFont forThemeAttribute:@"font" inState:CPThemeStateSelectedDataView];
+            [_dataView setValue:color forThemeAttribute:@"text-color" inState:CPThemeStateTableDataView];
+            [_dataView setValue:selectedColor forThemeAttribute:@"text-color" inState:CPThemeStateTableDataView | CPThemeStateSelectedDataView]
         }
         else if ([dataViewCell isKindOfClass:[NSButtonCell class]])
         {
@@ -112,6 +121,21 @@ var IBDefaultFontSizeTableHeader = 11.0;
     }
 
     return self;
+}
+
+- (id)valueForSelectedDataViewThemeAttribute:(CPString)attribute
+{
+    var themes = [[Converter sharedConverter] themes];
+
+    for (var i = 0; i < themes.length; ++i)
+    {
+        var value = [themes[i] valueForAttributeWithName:attribute inState:CPThemeStateTableDataView | CPThemeStateSelectedDataView forClass:CPTextField];
+
+        if (value)
+            return value;
+    }
+
+    return nil;
 }
 
 @end
