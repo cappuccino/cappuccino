@@ -667,10 +667,15 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     if (![self isEnabled] || ![self numberOfItems])
         return;
 
+    var menu = [self menu];
+
+    // Don't reopen the menu based on the same click which caused it to close, e.g. a click on this button.
+    if (menu._lastCloseEvent === anEvent)
+        return;
+
     [self highlight:YES];
 
-    var menu = [self menu],
-        bounds = [self bounds],
+    var bounds = [self bounds],
         minimumWidth = CGRectGetWidth(bounds);
 
     // FIXME: setFont: should set the font on the menu.

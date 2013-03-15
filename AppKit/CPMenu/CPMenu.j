@@ -68,6 +68,8 @@ var _CPMenuBarVisible               = NO,
 
     int             _highlightedIndex;
     _CPMenuWindow   _menuWindow;
+
+    CPEvent         _lastCloseEvent;
 }
 
 // Managing the Menu Bar
@@ -944,6 +946,10 @@ var _CPMenuBarVisible               = NO,
 
 - (void)_menuDidClose
 {
+    // Remember which event caused this menu to close, if any. CPPopUpButton uses this to detect
+    // when a click on the button itself caused the menu to close.
+    _lastCloseEvent = [CPApp currentEvent];
+
     var delegate = [self delegate];
 
     if ([delegate respondsToSelector:@selector(menuDidClose:)])
