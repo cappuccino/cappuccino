@@ -1230,28 +1230,27 @@ NOT YET IMPLEMENTED
     [deselectRowIndexes getIndexes:deselectRows maxCount:-1 inIndexRange:CPMakeRange(firstExposedRow, exposedLength)];
     [selectRowIndexes getIndexes:selectRows maxCount:-1 inIndexRange:CPMakeRange(firstExposedRow, exposedLength)];
 
+    var selectInfo = [deselectRows, 0, selectRows, 1],
+        selectors = [@selector(unsetThemeState:), @selector(setThemeState:)];
+
     for (var identifier in _dataViewsForTableColumns)
     {
-        var dataViewsInTableColumn = _dataViewsForTableColumns[identifier],
-            count = deselectRows.length;
-        while (count--)
-            [self _performSelection:NO forRow:deselectRows[count] context:dataViewsInTableColumn];
+        var dataViewsInTableColumn = _dataViewsForTableColumns[identifier]
 
-        count = selectRows.length;
-        while (count--)
-            [self _performSelection:YES forRow:selectRows[count] context:dataViewsInTableColumn];
+        for (var i = 0; i < selectInfo.length; i += 2)
+        {
+            var rows = selectInfo[i],
+                count = rows.length,
+                selectorIndex = selectInfo[i + 1];
+
+            while (count--)
+            {
+                var view = dataViewsInTableColumn[rows[count]];
+
+                [view performSelector:selectors[selectorIndex] withObject:CPThemeStateSelectedDataView];
+            }
+        }
     }
-}
-
-/*!
-    @ignore
-*/
-- (void)_performSelection:(BOOL)select forRow:(CPInteger)rowIndex context:(id)context
-{
-    var view = context[rowIndex],
-        selector = select ? @selector(setThemeState:) : @selector(unsetThemeState:);
-
-    [view performSelector:selector withObject:CPThemeStateSelectedDataView];
 }
 
 /*!
