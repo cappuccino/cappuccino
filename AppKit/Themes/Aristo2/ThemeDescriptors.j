@@ -1303,8 +1303,8 @@ var themedButtonValues = nil,
                 [0, 1],
                 2
             ),
-            CPSourceListTopLineColor: [CPColor colorWithCalibratedRed:73.0 / 255.0 green:109.0 / 255.0 blue:187.0 / 255.0 alpha:1.0],
-            CPSourceListBottomLineColor: [CPColor colorWithCalibratedRed:44.0 / 255.0 green:79.0 / 255.0 blue:155.0 / 255.0 alpha:1.0],
+            CPSourceListTopLineColor: [CPColor colorWithCalibratedRed:70.0 / 255.0 green:107.0 / 255.0 blue:215.0 / 255.0 alpha:1.0],
+            CPSourceListBottomLineColor: [CPColor colorWithCalibratedRed:42.0 / 255.0 green:74.0 / 255.0 blue:177.0 / 255.0 alpha:1.0],
         },
 
         themedTableViewValues =
