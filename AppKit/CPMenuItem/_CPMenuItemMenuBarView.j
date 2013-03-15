@@ -49,7 +49,7 @@
     return @{
             @"menu-item-selection-color": [CPNull null],
             @"menu-item-text-shadow-color": [CPNull null],
-            @"horizontal-margin": 12.0,
+            @"horizontal-margin": 9.0,
             @"submenu-indicator-margin": 3.0,
             @"vertical-margin": 4.0,
         };
