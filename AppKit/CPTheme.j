@@ -545,7 +545,14 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
         value = [_themeDefaultAttribute valueForState:aState];
 
     if (value === undefined || value === nil)
+    {
         value = _defaultValue;
+
+        // Class theme attributes cannot use nil because it's a dictionary.
+        // So transform CPNull into nil.
+        if (value === [CPNull null])
+            value = nil;
+    }
 
     _cache[aState] = value;
 
