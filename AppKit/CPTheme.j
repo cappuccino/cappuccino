@@ -431,7 +431,7 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
     CPDictionary        _values @accessors(readonly, getter=values);
 
     JSObject            _cache;
-    _CPThemeAttribute   _parentAttribute;
+    _CPThemeAttribute   _themeDefaultAttribute;
 }
 
 - (id)initWithName:(CPString)aName defaultValue:(id)aDefaultValue
@@ -542,7 +542,7 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
     }
 
     if (value === undefined || value === nil)
-        value = [_parentAttribute valueForState:aState];
+        value = [_themeDefaultAttribute valueForState:aState];
 
     if (value === undefined || value === nil)
         value = _defaultValue;
@@ -554,11 +554,11 @@ CPThemeStateKeyWindow        = CPThemeState("keyWindow");
 
 - (void)setParentAttribute:(_CPThemeAttribute)anAttribute
 {
-    if (_parentAttribute === anAttribute)
+    if (_themeDefaultAttribute === anAttribute)
         return;
 
     _cache = { };
-    _parentAttribute = anAttribute;
+    _themeDefaultAttribute = anAttribute;
 }
 
 - (_CPThemeAttribute)attributeMergedWithAttribute:(_CPThemeAttribute)anAttribute

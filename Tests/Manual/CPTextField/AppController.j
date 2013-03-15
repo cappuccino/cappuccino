@@ -93,10 +93,10 @@
 
     [bezelToggleField setEditable:YES];
     [bezelToggleField setFrameOrigin:CGPointMake(15, 445)];
-    console.log("" + bezelToggleField._themeAttributes['content-inset']._parentAttribute._values);
+    console.log("" + bezelToggleField._themeAttributes['content-inset']._themeDefaultAttribute._values);
     console.log("" + bezelToggleField._themeAttributes['content-inset']._values);
     [bezelToggleField setValue:[bezelToggleField valueForThemeAttribute:@"content-inset" inState:CPThemeStateBezeled] forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
-    console.log("" + bezelToggleField._themeAttributes['content-inset']._parentAttribute._values);
+    console.log("" + bezelToggleField._themeAttributes['content-inset']._themeDefaultAttribute._values);
     console.log("" + bezelToggleField._themeAttributes['content-inset']._values);
 
     [contentView addSubview:bezelToggleField];
