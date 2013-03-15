@@ -2559,21 +2559,35 @@ setBoundsOrigin:
 
 - (void)_setPreviousKeyView:(CPView)previous
 {
-    if ([previous isEqual:self])
-        _previousKeyView = nil;
-    else
-        _previousKeyView = previous;
+    if (![previous isEqual:self])
+    {
+        var previousWindow = [previous window];
+
+        if (!previousWindow || previousWindow === _window)
+        {
+            _previousKeyView = previous;
+            return;
+        }
+    }
+
+    _previousKeyView = nil;
 }
 
 - (void)setNextKeyView:(CPView)next
 {
-    if ([next isEqual:self])
-        _nextKeyView = nil;
-    else
+    if (![next isEqual:self])
     {
-        _nextKeyView = next;
-        [_nextKeyView _setPreviousKeyView:self];
+        var nextWindow = [next window];
+
+        if (!nextWindow || nextWindow === _window)
+        {
+            _nextKeyView = next;
+            [_nextKeyView _setPreviousKeyView:self];
+            return;
+        }
     }
+
+    _nextKeyView = nil;
 }
 
 @end
