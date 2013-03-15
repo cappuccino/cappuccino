@@ -44,51 +44,20 @@ var IBDefaultFontSizeTableHeader = 11.0;
     {
         _identifier = [aCoder decodeObjectForKey:@"NSIdentifier"];
 
-        var dataViewCell = [aCoder decodeObjectForKey:@"NSDataCell"];
+        var dataViewCell = [aCoder decodeObjectForKey:@"NSDataCell"],
+            viewClass = nil;
 
         if ([dataViewCell isKindOfClass:[NSImageCell class]])
-        {
-            _dataView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
-            [_dataView NS_initWithCell:dataViewCell];
-        }
+            viewClass = CPImageView;
         else if ([dataViewCell isKindOfClass:[NSTextFieldCell class]])
-        {
-            _dataView = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
-            [_dataView NS_initWithCell:dataViewCell];
-            [[Converter sharedConverter] replaceFontForObject:_dataView];
-
-            // Make sure the font is registered for data view states.
-            // We will attempt to honor italic/bold for selected state.
-            var font = [_dataView font],
-                selectedFont = [self valueForSelectedDataViewThemeAttribute:@"font"] || font,
-                name = [font familyName],
-                size = [font size],
-                italic = [font isItalic],
-                bold = [font isBold],
-                selectedFont = bold ? [CPFont boldFontWithName:name size:size italic:italic] :
-                                      [CPFont fontWithName:name size:size italic:italic];
-
-            [_dataView setValue:font forThemeAttribute:@"font" inState:CPThemeStateTableDataView];
-            [_dataView setValue:selectedFont forThemeAttribute:@"font" inState:CPThemeStateTableDataView | CPThemeStateSelectedDataView];
-            [_dataView setValue:font forThemeAttribute:@"font" inState:CPThemeStateTableDataView | CPThemeStateEditing];
-
-            // Also make sure to set the selected color, by default it will use the cells color
-            var color = [_dataView textColor],
-                selectedColor = [self valueForSelectedDataViewThemeAttribute:@"text-color"] || color;
-
-            [_dataView setValue:color forThemeAttribute:@"text-color" inState:CPThemeStateTableDataView];
-            [_dataView setValue:selectedColor forThemeAttribute:@"text-color" inState:CPThemeStateTableDataView | CPThemeStateSelectedDataView]
-        }
+            viewClass = CPTextField;
         else if ([dataViewCell isKindOfClass:[NSButtonCell class]])
-        {
-            _dataView = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
-            [_dataView NS_initWithCell:dataViewCell];
-        }
+            viewClass = CPButton;
         else if ([dataViewCell isKindOfClass:[NSLevelIndicatorCell class]])
-        {
-            _dataView = [[CPLevelIndicator alloc] initWithFrame:CGRectMakeZero()];
-            [_dataView NS_initWithCell:dataViewCell];
-        }
+            viewClass = CPLevelIndicator;
+
+        if (viewClass)
+            _dataView = [self makeDataViewOfClass:viewClass withCell:dataViewCell];
 
         [_dataView setValue:[dataViewCell alignment] forThemeAttribute:@"alignment"];
 
@@ -123,13 +92,43 @@ var IBDefaultFontSizeTableHeader = 11.0;
     return self;
 }
 
-- (id)valueForSelectedDataViewThemeAttribute:(CPString)attribute
+- (id)makeDataViewOfClass:(Class)aClass withCell:(NSCell)aCell
+{
+    var dataView = [[aClass alloc] initWithFrame:CGRectMakeZero()];
+
+    // Set the theme state to make sure the data view's theme attributes are correct
+    [dataView setThemeState:CPThemeStateTableDataView];
+    [dataView NS_initWithCell:aCell];
+
+    if (aClass === CPTextField)
+    {
+        // Text cells have to have their font replaced
+        [[Converter sharedConverter] replaceFontForObject:dataView];
+
+        // If a text cell has a custom color, we have to set the selected color,
+        // otherwise it defaults to the custom color.
+        var textColor = [aCell textColor],
+            defaultColor = [self valueForDataViewThemeAttribute:@"text-color" inState:CPThemeStateNormal];
+
+        if (![textColor isEqual:defaultColor])
+        {
+            var selectedColor = [self valueForDataViewThemeAttribute:@"text-color" inState:CPThemeStateTableDataView | CPThemeStateSelectedDataView];
+
+            [dataView setValue:selectedColor forThemeAttribute:@"text-color" inState:CPThemeStateTableDataView | CPThemeStateSelectedDataView];
+            [dataView setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeStateTableDataView | CPThemeStateSelectedDataView | CPThemeStateEditing];
+        }
+    }
+
+    return dataView;
+}
+
+- (id)valueForDataViewThemeAttribute:(CPString)attribute inState:(int)state
 {
     var themes = [[Converter sharedConverter] themes];
 
     for (var i = 0; i < themes.length; ++i)
     {
-        var value = [themes[i] valueForAttributeWithName:attribute inState:CPThemeStateTableDataView | CPThemeStateSelectedDataView forClass:CPTextField];
+        var value = [themes[i] valueForAttributeWithName:attribute inState:state forClass:CPTextField];
 
         if (value)
             return value;
