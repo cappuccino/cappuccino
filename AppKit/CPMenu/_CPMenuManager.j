@@ -45,6 +45,7 @@ var STICKY_TIME_INTERVAL            = 0.4,
 @implementation _CPMenuManager: CPObject
 {
     CPTimeInterval      _startTime;
+    CPEvent             _openEvent;
     BOOL                _mouseWasDragged;
     int                 _scrollingState;
     CGPoint             _lastGlobalLocation;
@@ -103,6 +104,7 @@ var STICKY_TIME_INTERVAL            = 0.4,
     CPApp._activeMenu = menu;
 
     _startTime = [anEvent timestamp];
+    _openEvent = anEvent;
     _scrollingState = _CPMenuManagerScrollingStateNone;
 
     _constraintRect = aRect;
@@ -183,8 +185,15 @@ var STICKY_TIME_INTERVAL            = 0.4,
         activeItemIndex = activeMenuContainer ? [activeMenuContainer itemIndexAtPoint:menuLocation] : CPNotFound,
         activeItem = activeItemIndex !== CPNotFound ? [activeMenu itemAtIndex:activeItemIndex] : nil;
 
-    // Click outside the menu structure?
-    if (type === CPLeftMouseDown && (!activeMenuContainer || !CGRectContainsPoint([activeMenuContainer globalFrame], globalLocation)))
+    /*
+    Click outside the menu structure?
+
+    The event which caused the menu to open is not considered even if it's
+    technically a click outside of an open menu, since this would mean the same
+    click which opened the menu could also close it. This is actually common.
+    E.g. you click on a button and it opens a menu below itself.
+    */
+    if (type === CPLeftMouseDown && _openEvent !== anEvent && (!activeMenuContainer || !CGRectContainsPoint([activeMenuContainer globalFrame], globalLocation)))
     {
         [self completeTracking];
 
