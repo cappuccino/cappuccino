@@ -532,7 +532,7 @@ var themedButtonValues = nil,
         [@"bezel-color",        bezelColor["@"],                    CPThemeStateBezeled],
         [@"bezel-color",        bezelFocusedColor,                  CPThemeStateBezeled | CPThemeStateEditing],
         [@"bezel-color",        bezelColor["disabled"],             CPThemeStateBezeled | CPThemeStateDisabled],
-        [@"font",               [CPFont systemFontOfSize:12.0],     CPThemeStateBezeled],
+        [@"font",               [CPFont systemFontOfSize:CPFontCurrentSystemSize],     CPThemeStateBezeled],
 
         [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 10.0),   CPThemeStateBezeled],
         [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 10.0),   CPThemeStateBezeled | CPThemeStateEditing],
@@ -547,11 +547,11 @@ var themedButtonValues = nil,
 
         [@"text-color",         [CPColor colorWithCalibratedWhite:51.0 / 255.0 alpha:1.0], CPThemeStateTableDataView],
         [@"text-color",         [CPColor whiteColor],                CPThemeStateTableDataView | CPThemeStateSelectedDataView],
-        [@"font",               [CPFont systemFontOfSize:12.0],      CPThemeStateTableDataView | CPThemeStateSelectedDataView],
+        [@"font",               [CPFont systemFontOfSize:CPFontCurrentSystemSize],      CPThemeStateTableDataView | CPThemeStateSelectedDataView],
         [@"text-color",         [CPColor blackColor],                CPThemeStateTableDataView | CPThemeStateEditing],
         [@"text-color",         [CPColor blackColor],                CPThemeStateTableDataView | CPThemeStateSelectedDataView | CPThemeStateEditable],
         [@"content-inset",      CGInsetMake(7.0, 7.0, 5.0, 10.0),     CPThemeStateTableDataView | CPThemeStateEditable],
-        [@"font",               [CPFont systemFontOfSize:12.0],      CPThemeStateTableDataView | CPThemeStateEditing],
+        [@"font",               [CPFont systemFontOfSize:CPFontCurrentSystemSize],      CPThemeStateTableDataView | CPThemeStateEditing],
         [@"bezel-inset",        CGInsetMake(-2.0, -2.0, -2.0, -2.0), CPThemeStateTableDataView | CPThemeStateEditing],
 
         [@"text-color",         [CPColor colorWithCalibratedWhite:125.0 / 255.0 alpha:1.0], CPThemeStateTableDataView | CPThemeStateGroupRow],
@@ -559,7 +559,7 @@ var themedButtonValues = nil,
         [@"text-shadow-color",  [CPColor whiteColor],                CPThemeStateTableDataView | CPThemeStateGroupRow],
         [@"text-shadow-offset",  CGSizeMake(0, 1),                   CPThemeStateTableDataView | CPThemeStateGroupRow],
         [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:0.0 alpha:0.6],                CPThemeStateTableDataView | CPThemeStateGroupRow | CPThemeStateSelectedDataView],
-        [@"font",               [CPFont boldSystemFontOfSize:12.0],  CPThemeStateTableDataView | CPThemeStateGroupRow]
+        [@"font",               [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize],  CPThemeStateTableDataView | CPThemeStateGroupRow]
     ];
 
     [self registerThemeValues:themedTextFieldValues forView:textfield];
