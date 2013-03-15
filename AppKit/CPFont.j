@@ -37,12 +37,12 @@ CPFontCurrentSystemSize = -1;
 // For internal use only by this class and subclasses
 _CPFontSystemFacePlaceholder = "_CPFontSystemFacePlaceholder";
 
-var _CPFontCache                     = {},
-    _CPSystemFontCache               = {},
-    _CPFontSystemFontFace            = CPFontDefaultSystemFontFace,
-    _CPFontSystemFontSize            = 12,
-    _CPFontFallbackFaces             = CPFontDefaultSystemFontFace.split(", "),
-    _CPFontStripRegExp               = new RegExp("(^\\s*[\"']?|[\"']?\\s*$)", "g");
+var _CPFontCache          = {},
+    _CPSystemFontCache    = {},
+    _CPFontSystemFontFace = CPFontDefaultSystemFontFace,
+    _CPFontSystemFontSize = 12,
+    _CPFontFallbackFaces  = CPFontDefaultSystemFontFace.split(", "),
+    _CPFontStripRegExp    = new RegExp("(^\\s*[\"']?|[\"']?\\s*$)", "g");
 
 
 #define _CPRealFontSize(aSize)  (aSize <= 0 ? _CPFontSystemFontSize : aSize)
@@ -181,8 +181,10 @@ following:
     {
         case CPSmallControlSize:
             return _CPFontSystemFontSize - 1;
+
         case CPMiniControlSize:
             return _CPFontSystemFontSize - 2;
+
         case CPRegularControlSize:
         default:
             return _CPFontSystemFontSize;
