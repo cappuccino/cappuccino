@@ -97,6 +97,20 @@ CPSourceListGradient = "CPSourceListGradient";
 CPSourceListTopLineColor = "CPSourceListTopLineColor";
 CPSourceListBottomLineColor = "CPSourceListBottomLineColor";
 
+var CPTableViewSourceListUnfocusedSelectionColor = @{
+            CPSourceListGradient: CGGradientCreateWithColorComponents(
+                                     CGColorSpaceCreateDeviceRGB(),
+                                     [
+                                         (200.0 / 255), (200.0 / 255), (200.0 / 255), 1.0,
+                                         (210.0 / 255), (210.0 / 255), (210.0 / 255), 1.0,
+                                     ],
+                                     [0, 1],
+                                     2
+                                 ),
+            CPSourceListTopLineColor: [CPColor secondarySelectedControlColor],
+            CPSourceListBottomLineColor: [CPColor secondarySelectedControlColor],
+        };
+
 // TODO: add docs
 
 CPTableViewSelectionHighlightStyleNone = -1;
@@ -831,6 +845,9 @@ NOT YET IMPLEMENTED
 */
 - (void)setSelectionHighlightColor:(CPColor)aColor
 {
+    if ([[self selectionHighlightColor] isEqual:aColor])
+        return;
+
     [self setValue:aColor forThemeAttribute:@"selection-color"];
 
     [self setNeedsDisplay:YES];
@@ -3867,6 +3884,13 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [[self headerView] setNeedsLayout];
 }
 
+/*!
+    @ignore
+*/
+- (BOOL)_isFocused
+{
+    return [[self window] isKeyWindow] && [[self window] firstResponder] === self;
+}
 
 /*!
     @ignore
@@ -4058,19 +4082,20 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         return;
 
     var drawGradient = (CPFeatureIsCompatible(CPHTMLCanvasFeature) && _selectionHighlightStyle === CPTableViewSelectionHighlightStyleSourceList && [_selectedRowIndexes count] >= 1),
-        deltaHeight = 0.5 * (_gridStyleMask & CPTableViewSolidHorizontalGridLineMask);
+        deltaHeight = 0.5 * (_gridStyleMask & CPTableViewSolidHorizontalGridLineMask),
+        focused = [self _isFocused];
 
     CGContextBeginPath(context);
 
     if (drawGradient)
     {
-        var gradientCache = [self selectionGradientColors],
+        var gradientCache = focused ? [self selectionGradientColors] : CPTableViewSourceListUnfocusedSelectionColor,
             topLineColor = [gradientCache objectForKey:CPSourceListTopLineColor],
             bottomLineColor = [gradientCache objectForKey:CPSourceListBottomLineColor],
             gradientColor = [gradientCache objectForKey:CPSourceListGradient];
     }
 
-    var normalSelectionHighlightColor = [self selectionHighlightColor];
+    var normalSelectionHighlightColor = focused ? [self selectionHighlightColor] : [CPColor secondarySelectedControlColor];
 
     // don't do these lookups if there are no group rows
     if ([_groupRows count])
@@ -4932,8 +4957,34 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 /*!
     @ignore
 */
+- (void)becomeKeyWindow
+{
+    [self setNeedsDisplay:YES];
+}
+
+/*!
+    @ignore
+*/
+- (void)resignKeyWindow
+{
+    [self setNeedsDisplay:YES];
+}
+
+/*!
+    @ignore
+*/
 - (BOOL)becomeFirstResponder
 {
+    [self setNeedsDisplay:YES];
+    return YES;
+}
+
+/*!
+    @ignore
+*/
+- (BOOL)resignFirstResponder
+{
+    [self setNeedsDisplay:YES];
     return YES;
 }
 
@@ -4944,6 +4995,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     return YES;
 }
+
 /*!
     @ignore
 */
