@@ -1239,40 +1239,10 @@ NOT YET IMPLEMENTED
 */
 - (void)_updateHighlightWithOldRows:(CPIndexSet)oldRows newRows:(CPIndexSet)newRows
 {
-    var firstExposedRow = [_exposedRows firstIndex],
-        exposedLength = [_exposedRows lastIndex] - firstExposedRow + 1,
-        deselectRows = [],
-        selectRows = [],
-        deselectRowIndexes = [oldRows copy],
-        selectRowIndexes = [newRows copy];
+    [self _enumerateViewsInColumns:_exposedColumns rows:oldRows usingBlock:_BlockDeselectView];
 
-    [deselectRowIndexes removeMatches:selectRowIndexes];
-    [deselectRowIndexes getIndexes:deselectRows maxCount:-1 inIndexRange:CPMakeRange(firstExposedRow, exposedLength)];
-    [selectRowIndexes getIndexes:selectRows maxCount:-1 inIndexRange:CPMakeRange(firstExposedRow, exposedLength)];
-
-    var showsSelection = _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone,
-        selectors = [@selector(unsetThemeState:), @selector(setThemeState:)],
-        selectInfo = [
-            { rows:deselectRows, selectorIndex:0 },
-            { rows:selectRows,   selectorIndex:showsSelection ? 1 : 0 }
-        ];
-
-    for (var identifier in _dataViewsForTableColumns)
-    {
-        var dataViewsInTableColumn = _dataViewsForTableColumns[identifier]
-
-        for (var i = 0; i < selectInfo.length; ++i)
-        {
-            var info = selectInfo[i],
-                count = info.rows.length;
-
-            while (count--)
-            {
-                var view = dataViewsInTableColumn[info.rows[count]];
-                [view performSelector:selectors[info.selectorIndex] withObject:CPThemeStateSelectedDataView];
-            }
-        }
-    }
+    if (_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone)
+        [self _enumerateViewsInColumns:_exposedColumns rows:newRows usingBlock:_BlockSelectView];
 }
 
 /*!
@@ -1280,64 +1250,25 @@ NOT YET IMPLEMENTED
 */
 - (void)_updateHighlightWithOldColumns:(CPIndexSet)oldColumns newColumns:(CPIndexSet)newColumns
 {
-    var firstExposedColumn = [_exposedColumns firstIndex],
-        exposedLength = [_exposedColumns lastIndex] - firstExposedColumn  +1,
-        deselectColumns  = [],
-        selectColumns  = [],
-        deselectColumnIndexes = [oldColumns copy],
-        selectColumnIndexes = [newColumns copy],
-        selectRows = [];
-
-    [deselectColumnIndexes removeMatches:selectColumnIndexes];
-    [deselectColumnIndexes getIndexes:deselectColumns maxCount:-1 inIndexRange:CPMakeRange(firstExposedColumn, exposedLength)];
-    [selectColumnIndexes getIndexes:selectColumns maxCount:-1 inIndexRange:CPMakeRange(firstExposedColumn, exposedLength)];
-    [_exposedRows getIndexes:selectRows maxCount:-1 inIndexRange:nil];
-
-    var showsSelection = _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone,
-        selectors = [@selector(unsetThemeState:), @selector(setThemeState:)],
-
-        // Rows do not show selection with CPTableViewSelectionHighlightStyleNone, but headers do
-        selectInfo = [
-            {
-                columns:deselectColumns,
-                rowSelectorIndex:0,
-                headerSelectorIndex:0
-            },
-            {
-                columns:selectColumns,
-                rowSelectorIndex:showsSelection ? 1 : 0,
-                headerSelectorIndex:1
-            }
-        ],
-        rowsCount = selectRows.length;
-
-    for (var selectIndex = 0; selectIndex < selectInfo.length; ++selectIndex)
+    var blockDeselectHeader = function(column, stop)
     {
-        var info = selectInfo[selectIndex],
-            count = info.columns.length,
-            rowSelector = selectors[info.rowSelectorIndex],
-            headerSelector = selectors[info.headerSelectorIndex];
+         var headerView = [_tableColumns[column] headerView];
+         [headerView unsetThemeState:CPThemeStateSelected];
+    };
 
-        while (count--)
+    var showSelection = _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone;
+
+    [self _enumerateViewsInColumns:oldColumns rows:_exposedRows usingBlock:_BlockDeselectView];
+    [oldColumns enumerateIndexesUsingBlock:blockDeselectHeader];
+
+    if (_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone)
+    {
+        [self _enumerateViewsInColumns:newColumns rows:_exposedRows usingBlock:_BlockSelectView];
+        [newColumns enumerateIndexesUsingBlock:function(column, stop)
         {
-            var columnIndex = info.columns[count],
-                identifier = [_tableColumns[columnIndex] UID],
-                dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
-
-            for (var i = 0; i < rowsCount; i++)
-            {
-                var rowIndex = selectRows[i],
-                    dataView = dataViewsInTableColumn[rowIndex];
-
-                [dataView performSelector:rowSelector withObject:CPThemeStateSelectedDataView];
-            }
-
-            if (_headerView)
-            {
-                var headerView = [_tableColumns[columnIndex] headerView];
-                [headerView performSelector:headerSelector withObject:CPThemeStateSelected];
-            }
-        }
+             var headerView = [_tableColumns[column] headerView];
+             [headerView setThemeState:CPThemeStateSelected];
+        }];
     }
 }
 
@@ -3497,7 +3428,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
         var rowIndex = 0,
             rowsCount = rowArray.length,
-            isColumnSelected = [_selectedColumnIndexes containsIndex:column];
+            isColumnSelected = [_selectedColumnIndexes containsIndex:column],
+            showSelection = _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone;
 
         for (; rowIndex < rowsCount; ++rowIndex)
         {
@@ -3510,13 +3442,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
             [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
 
-            if ((_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone) &&
-                (isColumnSelected || [self isRowSelected:row]))
-            {
-                [dataView setThemeState:CPThemeStateSelectedDataView];
-            }
-            else
-                [dataView unsetThemeState:CPThemeStateSelectedDataView];
+            var applyThemeStateBlock = (showSelection && (isColumnSelected || [self isRowSelected:row])) ? _BlockSelectView : _BlockDeselectView;
+
+            applyThemeStateBlock(dataView, 0, 0);
 
             // FIX ME: for performance reasons we might consider diverging from cocoa and moving this to the reloadData method
             if (_implementedDelegateMethods & CPTableViewDelegate_tableView_isGroupRow_)
@@ -3599,37 +3527,14 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 /*!
     @ignore
 */
-- (void)_layoutDataViewsInRows:(CPIndexSet)rows columns:(CPIndexSet)columns
+- (void)_layoutDataViewsInRows:(CPIndexSet)rowIndexes columns:(CPIndexSet)columnIndexes
 {
-    var rowArray = [],
-        columnArray = [];
-
-    [rows getIndexes:rowArray maxCount:-1 inIndexRange:nil];
-    [columns getIndexes:columnArray maxCount:-1 inIndexRange:nil];
-
-    var columnIndex = 0,
-        columnsCount = columnArray.length;
-
-    for (; columnIndex < columnsCount; ++columnIndex)
+    var blockUpdateFrame = function(view, column, row)
     {
-        var column = columnArray[columnIndex],
-            tableColumn = _tableColumns[column],
-            tableColumnUID = [tableColumn UID],
-            dataViewsForTableColumn = _dataViewsForTableColumns[tableColumnUID],
-            rowIndex = 0,
-            rowsCount = rowArray.length;
+        [view setFrame:[self frameOfDataViewAtColumn:column row:row]];
+    };
 
-        if (dataViewsForTableColumn)
-        {
-            for (; rowIndex < rowsCount; ++rowIndex)
-            {
-                var row = rowArray[rowIndex],
-                    dataView = dataViewsForTableColumn[row];
-
-                [dataView setFrame:[self frameOfDataViewAtColumn:column row:row]];
-            }
-        }
-    }
+    [self _enumerateViewsInColumns:columnIndexes rows:rowIndexes usingBlock:blockUpdateFrame];
 }
 
 /*!
@@ -3816,6 +3721,43 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         _viewForTableColumnRowSelector = @selector(_dataViewForTableColumn:row:);
 
      _isViewBased = (_viewForTableColumnRowSelector !== nil || _archivedDataViews !== nil);
+}
+
+/*!
+    Allows the enumeration of all the table views that are known to the table view.
+
+    @param handler The function to apply to elements in the set.
+
+    The function takes three arguments:
+
+    @param dataView
+    The view for the column and row.
+    @param column
+    The column index of the view.
+    @param row
+    The row index of the view.
+*/
+- (void)enumerateAvailableViewsUsingBlock:(Function/*CPView *dataView, CPInteger column, CPInteger row*/)handler
+{
+    [self _enumerateViewsInColumns:_exposedColumns rows:_exposedRows usingBlock:handler];
+}
+
+/*!
+    @ignore
+*/
+- (void)_enumerateViewsInColumns:(CPIndexSet)columnIndexes rows:(CPIndexSet)rowIndexes usingBlock:(Function/*CPView *dataView, CPInteger column, CPInteger row*/)handler
+{
+    [columnIndexes enumerateIndexesUsingBlock:function(columnIndex, stop)
+    {
+        var identifier = [_tableColumns[columnIndex] UID],
+            dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
+
+        [rowIndexes enumerateIndexesUsingBlock:function(rowIndex, stop)
+        {
+            var view = dataViewsInTableColumn[rowIndex];
+            handler(view, columnIndex, rowIndex);
+        }];
+    }];
 }
 
 /*!
@@ -5422,33 +5364,6 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
 @end
 
-
-@implementation CPIndexSet (tableview)
-
-- (void)removeMatches:(CPIndexSet)otherSet
-{
-    var firstindex = [self firstIndex],
-        index = MIN(firstindex, [otherSet firstIndex]),
-        switchFlag = (index == firstindex);
-
-    while (index != CPNotFound)
-    {
-        var indexSet = (switchFlag) ? otherSet : self,
-            otherIndex = [indexSet indexGreaterThanOrEqualToIndex:index];
-
-        if (otherIndex == index)
-        {
-            [self removeIndex:index];
-            [otherSet removeIndex:index];
-        }
-
-        index = otherIndex;
-        switchFlag = !switchFlag;
-    }
-}
-
-@end
-
 @implementation _CPDropOperationDrawingView : CPView
 {
     unsigned    dropOperation @accessors;
@@ -5635,3 +5550,13 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 }
 
 @end
+
+var _BlockDeselectView = function(view, column, row)
+{
+    [view unsetThemeState:CPThemeStateSelectedDataView];
+};
+
+var _BlockSelectView = function(view, column, row)
+{
+    [view setThemeState:CPThemeStateSelectedDataView];
+};
