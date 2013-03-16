@@ -3889,7 +3889,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (BOOL)_isFocused
 {
-    return [[self window] isKeyWindow] && [[self window] firstResponder] === self;
+    var isEditing = _editingRow !== CPNotFound || _editingCellIndex;
+
+    return [[self window] isKeyWindow] && ([[self window] firstResponder] === self || isEditing);
 }
 
 /*!
