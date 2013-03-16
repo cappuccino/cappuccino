@@ -240,7 +240,7 @@ var getMethodNoSuper = function(cls, sel)
 /*
     Utility for moving average
 */
-var moving_averager = function(period)
+function moving_averager(period)
 {
     var nums = [];
 

@@ -8,6 +8,7 @@
 
 @import <Foundation/CPObject.j>
 @import <AppKit/CPGraphicsContext.j>
+@import "../../CPTrace.j"
 
 var TABLE_DRAG_TYPE = @"TABLE_DRAG_TYPE";
 
@@ -35,6 +36,14 @@ CPLogRegister(CPLogConsole)
         connection = [CPURLConnection connectionWithRequest:request delegate:self];
 
     [tableView registerForDraggedTypes:[CPArray arrayWithObject:TABLE_DRAG_TYPE]];
+
+    var averager = moving_averager(50);
+
+    CPTrace("CPTableView", "load", function(receiver, selector, args, duration)
+    {
+        if (duration)
+            console.log(receiver + " " + selector + " in " + averager(duration));
+    });
 }
 
 - (void)awakeFromCib
