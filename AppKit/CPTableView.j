@@ -830,12 +830,15 @@ NOT YET IMPLEMENTED
 - (void)setSelectionHighlightStyle:(unsigned)aSelectionHighlightStyle
 {
     _selectionHighlightStyle = aSelectionHighlightStyle;
-    [self setNeedsDisplay:YES];
 
     if (aSelectionHighlightStyle === CPTableViewSelectionHighlightStyleSourceList)
         _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleSourceList;
     else
         _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleRegular;
+
+    [self _updateHighlightWithOldRows:[CPIndexSet indexSet] newRows:_selectedRowIndexes];
+    [self _updateHighlightWithOldColumns:[CPIndexSet indexSet] newColumns:_selectedColumnIndexes];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -1247,24 +1250,26 @@ NOT YET IMPLEMENTED
     [deselectRowIndexes getIndexes:deselectRows maxCount:-1 inIndexRange:CPMakeRange(firstExposedRow, exposedLength)];
     [selectRowIndexes getIndexes:selectRows maxCount:-1 inIndexRange:CPMakeRange(firstExposedRow, exposedLength)];
 
-    var selectInfo = [deselectRows, 0, selectRows, 1],
-        selectors = [@selector(unsetThemeState:), @selector(setThemeState:)];
+    var showsSelection = _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone,
+        selectors = [@selector(unsetThemeState:), @selector(setThemeState:)],
+        selectInfo = [
+            { rows:deselectRows, selectorIndex:0 },
+            { rows:selectRows,   selectorIndex:showsSelection ? 1 : 0 }
+        ];
 
     for (var identifier in _dataViewsForTableColumns)
     {
         var dataViewsInTableColumn = _dataViewsForTableColumns[identifier]
 
-        for (var i = 0; i < selectInfo.length; i += 2)
+        for (var i = 0; i < selectInfo.length; ++i)
         {
-            var rows = selectInfo[i],
-                count = rows.length,
-                selectorIndex = selectInfo[i + 1];
+            var info = selectInfo[i],
+                count = info.rows.length;
 
             while (count--)
             {
-                var view = dataViewsInTableColumn[rows[count]];
-
-                [view performSelector:selectors[selectorIndex] withObject:CPThemeStateSelectedDataView];
+                var view = dataViewsInTableColumn[info.rows[count]];
+                [view performSelector:selectors[info.selectorIndex] withObject:CPThemeStateSelectedDataView];
             }
         }
     }
@@ -1288,45 +1293,50 @@ NOT YET IMPLEMENTED
     [selectColumnIndexes getIndexes:selectColumns maxCount:-1 inIndexRange:CPMakeRange(firstExposedColumn, exposedLength)];
     [_exposedRows getIndexes:selectRows maxCount:-1 inIndexRange:nil];
 
-    var rowsCount = selectRows.length,
-        count = deselectColumns.length;
-    while (count--)
+    var showsSelection = _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone,
+        selectors = [@selector(unsetThemeState:), @selector(setThemeState:)],
+
+        // Rows do not show selection with CPTableViewSelectionHighlightStyleNone, but headers do
+        selectInfo = [
+            {
+                columns:deselectColumns,
+                rowSelectorIndex:0,
+                headerSelectorIndex:0
+            },
+            {
+                columns:selectColumns,
+                rowSelectorIndex:showsSelection ? 1 : 0,
+                headerSelectorIndex:1
+            }
+        ],
+        rowsCount = selectRows.length;
+
+    for (var selectIndex = 0; selectIndex < selectInfo.length; ++selectIndex)
     {
-        var columnIndex = deselectColumns[count],
-            identifier = [_tableColumns[columnIndex] UID],
-            dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
+        var info = selectInfo[selectIndex],
+            count = info.columns.length,
+            rowSelector = selectors[info.rowSelectorIndex],
+            headerSelector = selectors[info.headerSelectorIndex];
 
-        for (var i = 0; i < rowsCount; i++)
+        while (count--)
         {
-            var rowIndex = selectRows[i],
-                dataView = dataViewsInTableColumn[rowIndex];
-            [dataView unsetThemeState:CPThemeStateSelectedDataView];
-        }
+            var columnIndex = info.columns[count],
+                identifier = [_tableColumns[columnIndex] UID],
+                dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
 
-        if (_headerView)
-        {
-            var headerView = [_tableColumns[columnIndex] headerView];
-            [headerView unsetThemeState:CPThemeStateSelected];
-        }
-    }
+            for (var i = 0; i < rowsCount; i++)
+            {
+                var rowIndex = selectRows[i],
+                    dataView = dataViewsInTableColumn[rowIndex];
 
-    count = selectColumns.length;
-    while (count--)
-    {
-        var columnIndex = selectColumns[count],
-            identifier = [_tableColumns[columnIndex] UID],
-            dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
+                [dataView performSelector:rowSelector withObject:CPThemeStateSelectedDataView];
+            }
 
-        for (var i = 0; i < rowsCount; i++)
-        {
-            var rowIndex = selectRows[i],
-                dataView = dataViewsInTableColumn[rowIndex];
-            [dataView setThemeState:CPThemeStateSelectedDataView];
-        }
-        if (_headerView)
-        {
-            var headerView = [_tableColumns[columnIndex] headerView];
-            [headerView setThemeState:CPThemeStateSelected];
+            if (_headerView)
+            {
+                var headerView = [_tableColumns[columnIndex] headerView];
+                [headerView performSelector:headerSelector withObject:CPThemeStateSelected];
+            }
         }
     }
 }
@@ -1547,6 +1557,7 @@ NOT YET IMPLEMENTED
 {
     if (!_editingCellIndex)
         return CPNotFound;
+
     return _editingCellIndex.x;
 }
 
@@ -1557,6 +1568,7 @@ NOT YET IMPLEMENTED
 {
     if (!_editingCellIndex)
         return CPNotFound;
+
     return _editingCellIndex.y;
 }
 
@@ -3498,8 +3510,11 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
             [self _setObjectValueForTableColumn:tableColumn row:row forView:dataView];
 
-            if (isColumnSelected || [self isRowSelected:row])
+            if ((_selectionHighlightStyle !== CPTableViewSelectionHighlightStyleNone) &&
+                (isColumnSelected || [self isRowSelected:row]))
+            {
                 [dataView setThemeState:CPThemeStateSelectedDataView];
+            }
             else
                 [dataView unsetThemeState:CPThemeStateSelectedDataView];
 
