@@ -93,23 +93,9 @@ CPTableViewDraggingDestinationFeedbackStyleSourceList = 1;
 CPTableViewDropOn = 0;
 CPTableViewDropAbove = 1;
 
-CPSourceListGradient = "CPSourceListGradient";
-CPSourceListTopLineColor = "CPSourceListTopLineColor";
-CPSourceListBottomLineColor = "CPSourceListBottomLineColor";
-
-var CPTableViewSourceListUnfocusedSelectionColor = @{
-            CPSourceListGradient: CGGradientCreateWithColorComponents(
-                                     CGColorSpaceCreateDeviceRGB(),
-                                     [
-                                         (218.0 / 255), (223.0 / 255), (234.0 / 255), 1.0,
-                                         (178.0 / 255), (181.0 / 255), (190.0 / 255), 1.0,
-                                     ],
-                                     [0, 1],
-                                     2
-                                 ),
-            CPSourceListTopLineColor: [CPColor colorWithCalibratedRed:192.0 / 255.0 green:195.0 / 255.0 blue:205.0 / 255.0 alpha:1.0],
-            CPSourceListBottomLineColor: [CPColor colorWithCalibratedRed:151.0 / 255.0 green:153.0 / 255.0 blue:160.0 / 255.0 alpha:1.0],
-        };
+CPSourceListGradient = @"CPSourceListGradient";
+CPSourceListTopLineColor = @"CPSourceListTopLineColor";
+CPSourceListBottomLineColor = @"CPSourceListBottomLineColor";
 
 // TODO: add docs
 
@@ -224,6 +210,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPArray             _alternatingRowBackgroundColors;
 
     unsigned            _selectionHighlightStyle;
+    CPColor             _unfocusedSelectionHighlightColor;
+    CPDictionary        _unfocusedSourceListSelectionColor;
     CPTableColumn       _currentHighlightedTableColumn;
     unsigned            _gridStyleMask;
 
@@ -384,6 +372,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if (!_alternatingRowBackgroundColors)
         _alternatingRowBackgroundColors = [[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"]];
+
+    [self _updateUnfocusedSelectionColors];
 
     _tableColumnRanges = [];
     _dirtyTableColumnRangeIndex = 0;
@@ -852,6 +842,7 @@ NOT YET IMPLEMENTED
         return;
 
     [self setValue:aColor forThemeAttribute:@"selection-color"];
+    [self _updateUnfocusedSelectionColors];
 
     [self setNeedsDisplay:YES];
 }
@@ -878,6 +869,7 @@ NOT YET IMPLEMENTED
 - (void)setSelectionGradientColors:(CPDictionary)aDictionary
 {
     [self setValue:aDictionary forThemeAttribute:@"sourcelist-selection-color"];
+    [self _updateUnfocusedSelectionColors];
 
     [self setNeedsDisplay:YES];
 }
@@ -893,6 +885,42 @@ NOT YET IMPLEMENTED
 - (CPDictionary)selectionGradientColors
 {
     return [self currentValueForThemeAttribute:@"sourcelist-selection-color"];
+}
+
+- (void)_updateUnfocusedSelectionColors
+{
+    _unfocusedSelectionHighlightColor = [self _unfocusedSelectionColorFromColor:[self selectionHighlightColor] saturation:0];
+
+    var sourceListColors = [self selectionGradientColors];
+
+    _unfocusedSourceListSelectionColor = @{
+        CPSourceListGradient: [self _unfocusedGradientFromGradient:[sourceListColors objectForKey:CPSourceListGradient]],
+        CPSourceListTopLineColor: [self _unfocusedSelectionColorFromColor:[sourceListColors objectForKey:CPSourceListTopLineColor] saturation:0.2],
+        CPSourceListBottomLineColor: [self _unfocusedSelectionColorFromColor:[sourceListColors objectForKey:CPSourceListBottomLineColor] saturation:0.2]
+    }
+}
+
+- (CPColor)_unfocusedSelectionColorFromColor:(CPColor)aColor saturation:(float)saturation
+{
+    var hsb = [aColor hsbComponents];
+
+    return [CPColor colorWithHue:hsb[0] saturation:hsb[1] * saturation brightness:hsb[2]];
+}
+
+- (CGGradient)_unfocusedGradientFromGradient:(CGGradient)aGradient
+{
+    var colors = [aGradient.colors copy],
+        count = [colors count];
+
+    while (count--)
+    {
+        var rgba = colors[count].components,
+            hsb = [self _unfocusedSelectionColorFromColor:[CPColor colorWithRed:rgba[0] green:rgba[1] blue:rgba[2] alpha:rgba[3]] saturation:0.2];
+
+        colors[count] = CGColorCreate(aGradient.colorspace, [[hsb components] copy]);
+    }
+
+    return CGGradientCreateWithColors(aGradient.colorspace, colors, aGradient.locations);
 }
 
 /*!
@@ -4106,13 +4134,13 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     if (drawGradient)
     {
-        var gradientCache = focused ? [self selectionGradientColors] : CPTableViewSourceListUnfocusedSelectionColor,
+        var gradientCache = focused ? [self selectionGradientColors] : _unfocusedSourceListSelectionColor,
             topLineColor = [gradientCache objectForKey:CPSourceListTopLineColor],
             bottomLineColor = [gradientCache objectForKey:CPSourceListBottomLineColor],
             gradientColor = [gradientCache objectForKey:CPSourceListGradient];
     }
 
-    var normalSelectionHighlightColor = focused ? [self selectionHighlightColor] : [CPColor secondarySelectedControlColor];
+    var normalSelectionHighlightColor = focused ? [self selectionHighlightColor] : _unfocusedSelectionHighlightColor;
 
     // don't do these lookups if there are no group rows
     if ([_groupRows count])
