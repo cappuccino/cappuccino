@@ -1551,13 +1551,17 @@ if (typeof exports != "undefined" && !exports.acorn) {
   // does not help.
 
   function parseStatement() {
-    if (nodeMessageSendObjectExpression)
-      return parseMessageSendExpression(nodeMessageSendObjectExpression, nodeMessageSendObjectExpression.object);
-
     if (tokType === _slash)
       readToken(true);
 
     var starttype = tokType, node = startNode();
+
+    // This is a special case when trying figure out if this is a subscript to the former line or a new send message statement on this line...
+    if (nodeMessageSendObjectExpression) {
+        node.expression = parseMessageSendExpression(nodeMessageSendObjectExpression, nodeMessageSendObjectExpression.object);
+        semicolon();
+        return finishNode(node, "ExpressionStatement");
+    }
 
     // Most types of statements are recognized by the keyword they
     // start with. Many are trivial to parse, some require a bit of
