@@ -373,8 +373,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (!_alternatingRowBackgroundColors)
         _alternatingRowBackgroundColors = [[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"]];
 
-    [self _updateUnfocusedSelectionColors];
-
     _tableColumnRanges = [];
     _dirtyTableColumnRangeIndex = 0;
     _numberOfHiddenColumns = 0;
@@ -842,17 +840,26 @@ NOT YET IMPLEMENTED
         return;
 
     [self setValue:aColor forThemeAttribute:@"selection-color"];
-    [self _updateUnfocusedSelectionColors];
-
     [self setNeedsDisplay:YES];
 }
 
 /*!
-    Returns the highlight color for a row or column selection.
+    Returns the highlight color for a focused row or column selection.
 */
 - (CPColor)selectionHighlightColor
 {
     return [self currentValueForThemeAttribute:@"selection-color"];
+}
+
+/*!
+    Returns the highlight color for an unfocused row or column selection.
+*/
+- (CPColor)unfocusedSelectionHighlightColor
+{
+    if (!_unfocusedSelectionHighlightColor)
+        _unfocusedSelectionHighlightColor = [self _unfocusedSelectionColorFromColor:[self selectionHighlightColor] saturation:0];
+
+    return _unfocusedSelectionHighlightColor;
 }
 
 /*!
@@ -869,8 +876,6 @@ NOT YET IMPLEMENTED
 - (void)setSelectionGradientColors:(CPDictionary)aDictionary
 {
     [self setValue:aDictionary forThemeAttribute:@"sourcelist-selection-color"];
-    [self _updateUnfocusedSelectionColors];
-
     [self setNeedsDisplay:YES];
 }
 
@@ -887,17 +892,29 @@ NOT YET IMPLEMENTED
     return [self currentValueForThemeAttribute:@"sourcelist-selection-color"];
 }
 
-- (void)_updateUnfocusedSelectionColors
+/*!
+    Returns a dictionary of containing the keys:
+<pre>
+    CPSourceListGradient
+    CPSourceListTopLineColor
+    CPSourceListBottomLineColor
+</pre>
+*/
+
+- (void)unfocusedSelectionGradientColors
 {
-    _unfocusedSelectionHighlightColor = [self _unfocusedSelectionColorFromColor:[self selectionHighlightColor] saturation:0];
+    if (!_unfocusedSourceListSelectionColor)
+    {
+        var sourceListColors = [self selectionGradientColors];
 
-    var sourceListColors = [self selectionGradientColors];
-
-    _unfocusedSourceListSelectionColor = @{
-        CPSourceListGradient: [self _unfocusedGradientFromGradient:[sourceListColors objectForKey:CPSourceListGradient]],
-        CPSourceListTopLineColor: [self _unfocusedSelectionColorFromColor:[sourceListColors objectForKey:CPSourceListTopLineColor] saturation:0.2],
-        CPSourceListBottomLineColor: [self _unfocusedSelectionColorFromColor:[sourceListColors objectForKey:CPSourceListBottomLineColor] saturation:0.2]
+        _unfocusedSourceListSelectionColor = @{
+            CPSourceListGradient: [self _unfocusedGradientFromGradient:[sourceListColors objectForKey:CPSourceListGradient]],
+            CPSourceListTopLineColor: [self _unfocusedSelectionColorFromColor:[sourceListColors objectForKey:CPSourceListTopLineColor] saturation:0.2],
+            CPSourceListBottomLineColor: [self _unfocusedSelectionColorFromColor:[sourceListColors objectForKey:CPSourceListBottomLineColor] saturation:0.2]
+        };
     }
+
+    return _unfocusedSourceListSelectionColor;
 }
 
 - (CPColor)_unfocusedSelectionColorFromColor:(CPColor)aColor saturation:(float)saturation
@@ -4134,13 +4151,13 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     if (drawGradient)
     {
-        var gradientCache = focused ? [self selectionGradientColors] : _unfocusedSourceListSelectionColor,
+        var gradientCache = focused ? [self selectionGradientColors] : [self unfocusedSelectionGradientColors],
             topLineColor = [gradientCache objectForKey:CPSourceListTopLineColor],
             bottomLineColor = [gradientCache objectForKey:CPSourceListBottomLineColor],
             gradientColor = [gradientCache objectForKey:CPSourceListGradient];
     }
 
-    var normalSelectionHighlightColor = focused ? [self selectionHighlightColor] : _unfocusedSelectionHighlightColor;
+    var normalSelectionHighlightColor = focused ? [self selectionHighlightColor] : [self unfocusedSelectionHighlightColor];
 
     // don't do these lookups if there are no group rows
     if ([_groupRows count])
