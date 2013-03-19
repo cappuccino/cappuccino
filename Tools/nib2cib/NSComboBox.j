@@ -94,7 +94,6 @@
     BOOL    _completes              @accessors(readonly, getter=completes);
     CPArray _itemList               @accessors(readonly, getter=itemList);
     BOOL    _borderedButton         @accessors(readonly, getter=borderedButton);
-    BOOL    _enabled                @accessors(readonly, getter=isEnabled);
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -115,10 +114,6 @@
 
         // NSButtonBordered key is present only if the value is NO, go figure
         _borderedButton = [aCoder containsValueForKey:@"NSButtonBordered"] ? [aCoder decodeBoolForKey:@"NSButtonBordered"] : YES;
-
-        var flags = [aCoder decodeIntForKey:@"NSCellFlags"];
-        _enabled = (flags & 0x20000000) ? NO : YES;
-
     }
 
     return self;
