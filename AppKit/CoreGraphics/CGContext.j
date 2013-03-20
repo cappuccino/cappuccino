@@ -166,6 +166,12 @@ function CGContextSetLineCap(aContext, aLineCap)
     aContext.gState.lineCap = aLineCap;
 }
 
+function CGContextSetLineDash(aContext, aPhase, someDashes)
+{
+    aContext.gState.lineDashes = someDashes;
+    aContext.gState.lineDashesPhase = aPhase;
+}
+
 function CGContextSetLineJoin(aContext, aLineJoin)
 {
     aContext.gState.lineJoin = aLineJoin;
