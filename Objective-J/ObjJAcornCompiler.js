@@ -488,14 +488,14 @@ var expressionTypePrecedence = {
 }
 
 // Returns true if subNode has higher precedence the the root node.
-// Special case when operator is '+': It can be a string append to a numeric addition. Now we just return true to add extra parentheses.
-function nodePrecedence(node, subNode) {
+// If the subNode is the right (as in left/right) subNode
+function nodePrecedence(node, subNode, right) {
     var nodeType = node.type,
         nodePrecedence = expressionTypePrecedence[nodeType] || -1,
         subNodePrecedence = expressionTypePrecedence[subNode.type] || -1,
         nodeOperatorPrecedence,
         subNodeOperatorPrecedence;
-    return nodePrecedence < subNodePrecedence || (nodePrecedence === subNodePrecedence && isLogicalBinary(nodeType) && ((nodeOperatorPrecedence = operatorPrecedence[node.operator]) <= (subNodeOperatorPrecedence = operatorPrecedence[subNode.operator])) || (node.operator === "+" && nodeOperatorPrecedence === subNodeOperatorPrecedence));
+    return nodePrecedence < subNodePrecedence || (nodePrecedence === subNodePrecedence && isLogicalBinary(nodeType) && ((nodeOperatorPrecedence = operatorPrecedence[node.operator]) < (subNodeOperatorPrecedence = operatorPrecedence[subNode.operator]) || (right && nodeOperatorPrecedence === subNodeOperatorPrecedence)));
 }
 
 var pass1 = exports.acorn.walk.make({
@@ -878,14 +878,14 @@ BinaryExpression: function(node, st, c) {
     if (operatorType) CONCAT(compiler.jsBuffer, " ");
     if (generate) CONCAT(compiler.jsBuffer, node.operator);
     if (operatorType) CONCAT(compiler.jsBuffer, " ");
-    (generate && nodePrecedence(node, node.right) ? surroundExpression(c) : c)(node.right, st, "Expression");
+    (generate && nodePrecedence(node, node.right, true) ? surroundExpression(c) : c)(node.right, st, "Expression");
 },
 LogicalExpression: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate;
     (generate && nodePrecedence(node, node.left) ? surroundExpression(c) : c)(node.left, st, "Expression");
     if (generate) CONCAT(compiler.jsBuffer, node.operator);
-    (generate && nodePrecedence(node, node.right) ? surroundExpression(c) : c)(node.right, st, "Expression");
+    (generate && nodePrecedence(node, node.right, true) ? surroundExpression(c) : c)(node.right, st, "Expression");
 },
 AssignmentExpression: function(node, st, c) {
     var compiler = st.compiler,
@@ -930,7 +930,7 @@ AssignmentExpression: function(node, st, c) {
     (generate && nodePrecedence(node, node.left) ? surroundExpression(c) : c)(node.left, st, "Expression");
     if (generate) CONCAT(compiler.jsBuffer, node.operator);
     st.assignment = saveAssignment;
-    (generate && nodePrecedence(node, node.right) ? surroundExpression(c) : c)(node.right, st, "Expression");
+    (generate && nodePrecedence(node, node.right, true) ? surroundExpression(c) : c)(node.right, st, "Expression");
     if (st.isRootScope() && node.left.type === "Identifier" && !st.getLvar(node.left.name))
         st.vars[node.left.name] = {type: "global", node: node.left};
 },
