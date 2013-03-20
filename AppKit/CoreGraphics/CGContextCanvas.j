@@ -83,7 +83,7 @@ function CGContextSetLineDash(aContext, aPhase, someDashes)
     else if (typeof aContext['mozDash'] !== 'undefined')
     {
         aContext.mozDash = someDashes;
-        aContext.mozLineDashOffset = aPhase;
+        aContext.mozDashOffset = aPhase;
     }
     else if (someDashes)
     {
