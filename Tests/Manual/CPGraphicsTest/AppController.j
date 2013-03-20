@@ -23,6 +23,7 @@
     @outlet CustomDrawView  gradientView3;
 
     @outlet CustomDrawView pathView0;
+    @outlet CustomDrawView pathView1;
 }
 
 - (void)awakeFromCib
@@ -140,6 +141,49 @@
         [aPath appendBezierPathWithRect:CGRectMake(4 * 2.0 + 0.5, 4 * 16.0 + 0.5, 4 * 8.0, 4 * 5.0)];
         [[CPColor blackColor] set];
         [aPath stroke];
+    }
+    else if (aView === pathView1)
+    {
+        [[CPColor whiteColor] set];
+        [[CPBezierPath bezierPathWithRect:bounds] fill];
+
+        var frame = bounds,
+            shadow = [[CPShadow alloc] init];
+
+        [shadow setShadowColor:[CPColor blackColor]];
+        [shadow setShadowOffset:CGSizeMake(0, 3)];
+        [shadow setShadowBlurRadius:5];
+
+        //// Rounded Rectangle Drawing
+        var roundedRectanglePath = [CPBezierPath bezierPathWithRoundedRect:CGRectMake(CGRectGetMinX(frame) + 3.5, CGRectGetMinY(frame) + 3.5, CGRectGetWidth(frame) - 7, CGRectGetHeight(frame) - 7) xRadius:7 yRadius:7];
+        [[CPColor blackColor] setStroke];
+        [roundedRectanglePath setLineWidth:1];
+        var roundedRectanglePattern = [5, 1, 1, 1];
+        [roundedRectanglePath setLineDash:roundedRectanglePattern phase:0];
+        [roundedRectanglePath stroke];
+
+        var starPath = [CPBezierPath bezierPath];
+        [starPath moveToPoint:CGPointMake(CGRectGetMinX(frame) + 0.50000 * CGRectGetWidth(frame), CGRectGetMinY(frame) + 0.20513 * CGRectGetHeight(frame))];
+        [starPath lineToPoint:CGPointMake(CGRectGetMinX(frame) + 0.43029 * CGRectGetWidth(frame), CGRectGetMinY(frame) + 0.35357 * CGRectGetHeight(frame))];
+        [starPath lineToPoint:CGPointMake(CGRectGetMinX(frame) + 0.31200 * CGRectGetWidth(frame), CGRectGetMinY(frame) + 0.40445 * CGRectGetHeight(frame))];
+        [starPath lineToPoint:CGPointMake(CGRectGetMinX(frame) + 0.38720 * CGRectGetWidth(frame), CGRectGetMinY(frame) + 0.54707 * CGRectGetHeight(frame))];
+        [starPath lineToPoint:CGPointMake(CGRectGetMinX(frame) + 0.38381 * CGRectGetWidth(frame), CGRectGetMinY(frame) + 0.72696 * CGRectGetHeight(frame))];
+        [starPath lineToPoint:CGPointMake(CGRectGetMinX(frame) + 0.50000 * CGRectGetWidth(frame), CGRectGetMinY(frame) + 0.66667 * CGRectGetHeight(frame))];
+        [starPath lineToPoint:CGPointMake(CGRectGetMinX(frame) + 0.61619 * CGRectGetWidth(frame), CGRectGetMinY(frame) + 0.72696 * CGRectGetHeight(frame))];
+        [starPath lineToPoint:CGPointMake(CGRectGetMinX(frame) + 0.61280 * CGRectGetWidth(frame), CGRectGetMinY(frame) + 0.54707 * CGRectGetHeight(frame))];
+        [starPath lineToPoint:CGPointMake(CGRectGetMinX(frame) + 0.68800 * CGRectGetWidth(frame), CGRectGetMinY(frame) + 0.40445 * CGRectGetHeight(frame))];
+        [starPath lineToPoint:CGPointMake(CGRectGetMinX(frame) + 0.56971 * CGRectGetWidth(frame), CGRectGetMinY(frame) + 0.35357 * CGRectGetHeight(frame))];
+        [starPath closePath];
+        [[CPColor yellowColor] setFill];
+        [starPath fill];
+        [CPGraphicsContext saveGraphicsState];
+        [shadow set];
+        [[CPColor whiteColor] setStroke];
+        [starPath setLineWidth:3];
+        var starPattern = [5, 1, 5, 1];
+        [starPath setLineDash:starPattern phase:2];
+        [starPath stroke];
+        [CPGraphicsContext restoreGraphicsState];
     }
 }
 
