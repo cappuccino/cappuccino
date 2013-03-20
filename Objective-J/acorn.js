@@ -256,6 +256,11 @@ if (typeof exports != "undefined" && !exports.acorn) {
 
   var tokCurLine, tokLineStart, tokLineStartNext;
 
+  // Same as input but for the current token. If options.preprocess is used
+  // this can differ due to macros.
+
+  var tokInput;
+
   // These store the position of the previous token, which is useful
   // when finishing a node and assigning its `end` position.
 
@@ -600,6 +605,34 @@ if (typeof exports != "undefined" && !exports.acorn) {
     if (options.locations) tokEndLoc = new line_loc_t;
     tokType = type;
     skipSpace();
+    if (options.preprocess && input.charCodeAt(tokPos) === 35 && input.charCodeAt(tokPos + 1) === 35) { // '##'
+      var val1 = type === _name ? val : type.keyword;
+      tokPos += 2;
+      if (val1) {
+        skipSpace();
+        readToken();
+        var val2 = tokType === _name ? tokVal : tokType.keyword;
+        if (val2) {
+          var concat = "" + val1 + val2,
+              code = concat.charCodeAt(0),
+              tok;
+          if (isIdentifierStart(code))
+            tok = readWord(concat) !== false;
+
+          // We might got a word token from the concatenation
+          if (tok) return tok;
+          // FIXME: Is not using the concatenated token
+          tok = getTokenFromCode(code, finishToken);
+          if (tok === false) {
+            unexpected();
+          }
+          // We have now got another type of token from the concatenation
+          return tok;
+        } else {
+          // FIXME: Second token was not of right type. Save second token and return the first. When readToken is called again return the second.
+        }
+      }
+    }
     tokVal = val;
     lastTokCommentsAfter = tokCommentsAfter;
     lastTokSpacesAfter = tokSpacesAfter;
@@ -653,8 +686,8 @@ if (typeof exports != "undefined" && !exports.acorn) {
   function skipSpace() {
     tokComments = null;
     tokSpaces = null;
-  var spaceStart = tokPos;
-    while (tokPos < inputLen) {
+    var spaceStart = tokPos;
+    for(;;) {
       var ch = input.charCodeAt(tokPos);
       if (ch === 32) { // ' '
         ++tokPos;
@@ -691,6 +724,18 @@ if (typeof exports != "undefined" && !exports.acorn) {
         ++tokPos;
       } else if (ch >= 5760 && nonASCIIwhitespace.test(String.fromCharCode(ch))) {
         ++tokPos;
+      } else if (tokPos >= inputLen) {
+        if (options.preprocess && preprocessStack.length) {
+          // If we are at the end of the input inside a macro continue at last position
+          var lastItem = preprocessStack.pop();
+          tokPos = lastItem.end;
+          input = lastItem.input;
+          inputLen = lastItem.inputLen;
+          lastEnd = lastItem.lastEnd;
+          lastStart = lastItem.lastStart;
+        } else {
+          break;
+        }
       } else {
         break;
       }
@@ -956,8 +1001,15 @@ if (typeof exports != "undefined" && !exports.acorn) {
     if (tokPos >= inputLen) return _eof;
     var code = input.charCodeAt(tokPos);
     if (preprocessMacroParamterListMode && code !== 41 && code !== 44) { // ')', ','
-      while(tokPos < inputLen && code !== 41 && code !== 44) // ')', ','
+      var parenLevel = 0;
+      // If we are parsing a macro parameter list parentheses within each argument must balance
+      while(tokPos < inputLen && (parenLevel || (code !== 41 && code !== 44))) { // ')', ','
+        if (code === 40) // '('
+          parenLevel++;
+        if (code === 41) // ')'
+          parenLevel--;
         code = input.charCodeAt(++tokPos);
+      }
       return preprocessFinishToken(_preprocessParamItem, input.slice(preTokStart, tokPos));
     }
     if (isIdentifierStart(code) || code === 92 /* '\' */) return preprocessReadWord();
@@ -1008,20 +1060,13 @@ if (typeof exports != "undefined" && !exports.acorn) {
 
   function readToken(forceRegexp) {
     tokStart = tokPos;
+    tokInput = input;
     if (options.locations) tokStartLoc = new line_loc_t;
     tokCommentsBefore = tokComments;
     tokSpacesBefore = tokSpaces;
     if (forceRegexp) return readRegexp();
-    if (tokPos >= inputLen) {
-      if (options.preprocess && preprocessStack.length) {
-        var lastItem = preprocessStack.pop();
-        tokPos = lastItem.end;
-        input = lastItem.input;
-        inputLen = lastItem.inputLen;
-        return readToken(forceRegexp);
-      } else
-        return finishToken(_eof);
-    }
+    if (tokPos >= inputLen)
+      return finishToken(_eof);
 
     var code = input.charCodeAt(tokPos);
     // Identifier or keyword. '\uXXXX' sequences are allowed in
@@ -1229,80 +1274,77 @@ if (typeof exports != "undefined" && !exports.acorn) {
   }
 
   // Read an identifier or keyword token. Will check for reserved
-  // words when necessary.
+  // words when necessary. Argument preReadWord is used to concatenate
+  // The word is then passed in from caller.
 
-  function readWord() {
-    var word = readWord1();
+  function readWord(preReadWord) {
+    var word = preReadWord || readWord1();
     var type = _name;
-    var macro;
     var reservedError;
-    if (!containsEsc) {
-      if (options.preprocess) {
+    if (options.preprocess) {
+      var macro;
       var i = preprocessStack.length;
-        if (i > 0) {
-          var lastItem = preprocessStack[i - 1];
-          // If the macro has parameters check if this word should be translated
-          if (lastItem.parameterDict && lastItem.macro.isParameterFunction()(word)) {
-            macro = lastItem.parameterDict[word];
-          }
+      if (i > 0) {
+        var lastItem = preprocessStack[i - 1];
+        // If the current macro has parameters check if this word is one of them and should be translated
+        if (lastItem.parameterDict && lastItem.macro.isParameterFunction()(word)) {
+          macro = lastItem.parameterDict[word];
         }
-        // Does the word match agains any of the know macro names
-        if (!macro && options.preprocessIsMacro(word))
-          macro = options.preprocessGetMacro(word);
       }
-      // If we have a macro here finish the current token if we should use it.
+      // Does the word match agains any of the know macro names
+      if (!macro && options.preprocessIsMacro(word))
+        macro = options.preprocessGetMacro(word);
+      if (macro) {
+        var macroStart = tokStart;
+        var parameters;
+        var hasParameters = macro.parameters;
+        var nextIsParenL;
+        if (hasParameters)
+          nextIsParenL = tokPos < inputLen && input.charCodeAt(tokPos) === 40; // '('
+        if (!hasParameters || nextIsParenL) {
+          // Now we know that we have a matching macro. Get parameters if needed
+          var macroString = macro.macro;
+          var lastTokPos = tokPos;
+          if (nextIsParenL) {
+            var first = true;
+            var noParams = 0;
+            parameters = Object.create(null);
+            preprocessReadToken();
+            preprocessMacroParamterListMode = true;
+            preprocessExpect(_parenL);
+            lastTokPos = tokPos;
+            while (!preprocessEat(_parenR)) {
+              if (!first) preprocessExpect(_comma, "Expected ',' between macro parameters"); else first = false;
+              var ident = hasParameters[noParams++];
+              var val = preTokVal;
+              preprocessExpect(_preprocessParamItem);
+              parameters[ident] = new Macro(ident, val);
+              lastTokPos = tokPos;
+            }
+            preprocessMacroParamterListMode = false;
+          }
+          // If the macro defines anything add it to the preprocess input stack
+          if (macroString) {
+            preprocessStack.push({macro: macro, parameterDict: parameters, start: macroStart, end:lastTokPos, input: input, inputLen: inputLen, lastStart: tokStart, lastEnd: lastTokPos});
+            input = macroString;
+            inputLen = macroString.length;
+            tokPos = 0;
+          }
+          // Now read the next token
+          return next();
+        }
+      }
+    }
+
+    if (!containsEsc) {
       if (isKeyword(word)) type = keywordTypes[word];
       else if (options.objj && isKeywordObjJ(word)) type = keywordTypesObjJ[word];
       else if (options.forbidReserved &&
                (options.ecmaVersion === 3 ? isReservedWord3 : isReservedWord5)(word) ||
                strict && isStrictReservedWord(word))
-        reservedError = "The keyword '" + word + "' is reserved";
+        raise(tokStart, "The keyword '" + word + "' is reserved");
     }
-    var tok = finishToken(type, word);
-    // Check if the word was a macro
-    if (macro) {
-      var macroStart = tokStart;
-      var parameters;
-      var hasParameters = macro.parameters;
-      var nextIsParenL;
-      if (hasParameters)
-        nextIsParenL = tokPos < inputLen && input.charCodeAt(tokPos) === 40; // '('
-      if (!hasParameters || nextIsParenL) {
-        // Now we know that we have a matching macro. Get parameters if needed
-        var macroString = macro.macro;
-        var lastTokPos = tokPos;
-        if (nextIsParenL) {
-          var first = true;
-          var noParams = 0;
-          parameters = Object.create(null);
-          preprocessReadToken();
-          preprocessMacroParamterListMode = true;
-          preprocessExpect(_parenL);
-          lastTokPos = tokPos;
-          while (!preprocessEat(_parenR)) {
-            if (!first) preprocessExpect(_comma, "Expected ',' between macro parameters"); else first = false;
-            var ident = hasParameters[noParams++];
-            var val = preTokVal;
-            preprocessExpect(_preprocessParamItem);
-            parameters[ident] = new Macro(ident, val);
-            lastTokPos = tokPos;
-          }
-          preprocessMacroParamterListMode = false;
-        }
-        // If the macro defines anything add it to the preprocess input stack
-        if (macroString) {
-          preprocessStack.push({macro: macro, parameterDict: parameters, start: macroStart, end:lastTokPos, input: input, inputLen: inputLen});
-          input = macroString;
-          inputLen = macroString.length;
-          tokPos = 0;
-        }
-        // Now read the next token
-        next();
-        return;
-      }
-    }
-    if (reservedError) raise(tokStart, reservedError);
-    return tok;
+    return finishToken(type, word);
   }
 
   function Macro(ident, macro, parameters) {
@@ -1345,7 +1387,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
     lastEnd = tokEnd;
     lastEndLoc = tokEndLoc;
     nodeMessageSendObjectExpression = null;
-    readToken();
+    return readToken();
   }
 
   // Enter strict mode. Re-reads the next token to please pedantic
@@ -1481,7 +1523,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
 
   function canInsertSemicolon() {
     return !options.strictSemicolons &&
-      (tokType === _eof || tokType === _braceR || newline.test(input.slice(lastEnd, tokStart)) ||
+      (tokType === _eof || tokType === _braceR || newline.test(tokInput.slice(lastEnd, tokStart)) ||
         (nodeMessageSendObjectExpression && options.objj));
   }
 
@@ -1689,7 +1731,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
 
     case _throw:
       next();
-      if (newline.test(input.slice(lastEnd, tokStart)))
+      if (newline.test(tokInput.slice(lastEnd, tokStart)))
         raise(lastEnd, "Illegal newline after throw");
       node.argument = parseExpression();
       semicolon();
@@ -2505,7 +2547,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
   function parseStringNumRegExpLiteral() {
     var node = startNode();
     node.value = tokVal;
-    node.raw = input.slice(tokStart, tokEnd);
+    node.raw = tokInput.slice(tokStart, tokEnd);
     next();
     return finishNode(node, "Literal");
   }
