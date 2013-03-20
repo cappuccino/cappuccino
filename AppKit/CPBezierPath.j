@@ -48,6 +48,8 @@ var DefaultLineWidth = 1.0;
 {
     CGPath  _path;
     float   _lineWidth;
+    CPArray _lineDashes;
+    float   _lineDashesPhase;
 }
 
 /*!
@@ -205,6 +207,7 @@ var DefaultLineWidth = 1.0;
     CGContextBeginPath(ctx);
     CGContextAddPath(ctx, _path);
     CGContextSetLineWidth(ctx, [self lineWidth]);
+    CGContextSetLineDash(ctx, _lineDashesPhase, _lineDashes);
     CGContextStrokePath(ctx);
 }
 
@@ -218,8 +221,49 @@ var DefaultLineWidth = 1.0;
     CGContextBeginPath(ctx);
     CGContextAddPath(ctx, _path);
     CGContextSetLineWidth(ctx, [self lineWidth]);
+    CGContextSetLineDash(ctx, _lineDashesPhase, _lineDashes);
     CGContextClosePath(ctx);
     CGContextFillPath(ctx);
+}
+
+/*!
+    Cocoa compatibility.
+*/
+- (void)getLineDash:(CPArrayRef)patternRef count:(NSInteger)count phase:(CGFloat)phaseRef
+{
+    return [self getLineDash:patternRef phase:phaseRef];
+}
+
+/*!
+    Retrieve the line dash pattern and phase and write them into the provided references.
+*/
+- (void)getLineDash:(CPArrayRef)patternRef phase:(CGFloat)phaseRef
+{
+    @deref(patternRef) = [_lineDashes copy];
+    @deref(phaseRef) = _lineDashesPhase;
+}
+
+/*!
+    Cocoa compatibility.
+*/
+- (void)setLineDash:(CPArrayRef)patternRef count:(NSInteger)count phase:(CGFloat)phase
+{
+    [self setLineDash:patternRef ? @deref(patternRef) : nil phase:phase ? @deref(phase) : 0];
+}
+
+/*!
+    Set stroke line dash pattern.
+
+    @param aPattern an array of stroke-skip lengths such as [2, 2, 4, 4]
+    @param aPhase amount of shift for the starting position of the first stroke
+
+    Note: unlike setLineDash:count:phase:, this method takes an array and a
+    float, not a reference to an array and a reference to a float.
+*/
+- (void)setLineDash:(CPArray)aPattern phase:(CGFloat)aPhase
+{
+    _lineDashes = aPattern;
+    _lineDashesPhase = aPhase;
 }
 
 /*!
