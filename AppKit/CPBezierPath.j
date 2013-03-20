@@ -229,7 +229,7 @@ var DefaultLineWidth = 1.0;
 /*!
     Cocoa compatibility.
 */
-- (void)getLineDash:(CPArrayRef)patternRef count:(NSInteger)count phase:(CGFloat)phaseRef
+- (void)getLineDash:(CPArrayRef)patternRef count:(NSInteger)count phase:(CGFloatRef)phaseRef
 {
     return [self getLineDash:patternRef phase:phaseRef];
 }
@@ -237,18 +237,20 @@ var DefaultLineWidth = 1.0;
 /*!
     Retrieve the line dash pattern and phase and write them into the provided references.
 */
-- (void)getLineDash:(CPArrayRef)patternRef phase:(CGFloat)phaseRef
+- (void)getLineDash:(CPArrayRef)patternRef phase:(CGFloatRef)phaseRef
 {
-    @deref(patternRef) = [_lineDashes copy];
-    @deref(phaseRef) = _lineDashesPhase;
+    if (patternRef)
+        @deref(patternRef) = [_lineDashes copy];
+    if (phase)
+        @deref(phaseRef) = _lineDashesPhase;
 }
 
 /*!
     Cocoa compatibility.
 */
-- (void)setLineDash:(CPArrayRef)patternRef count:(NSInteger)count phase:(CGFloat)phase
+- (void)setLineDash:(CPArray)aPattern count:(NSInteger)count phase:(CGFloat)aPhase
 {
-    [self setLineDash:patternRef ? @deref(patternRef) : nil phase:phase ? @deref(phase) : 0];
+    [self setLineDash:aPattern phase:aPhase];
 }
 
 /*!
@@ -256,9 +258,6 @@ var DefaultLineWidth = 1.0;
 
     @param aPattern an array of stroke-skip lengths such as [2, 2, 4, 4]
     @param aPhase amount of shift for the starting position of the first stroke
-
-    Note: unlike setLineDash:count:phase:, this method takes an array and a
-    float, not a reference to an array and a reference to a float.
 */
 - (void)setLineDash:(CPArray)aPattern phase:(CGFloat)aPhase
 {
