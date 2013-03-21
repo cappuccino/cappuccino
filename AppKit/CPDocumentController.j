@@ -254,6 +254,14 @@ var CPSharedDocumentController = nil;
 }
 
 /*!
+    Returns the CPDocument object associated with the main window.
+*/
+- (CPDocument)currentDocument
+{
+    return [[[CPApp mainWindow] windowController] document];
+}
+
+/*!
     Adds \c aDocument under the control of the receiver.
     @param aDocument the document to add
 */
