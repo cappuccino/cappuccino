@@ -294,8 +294,8 @@ var CPViewFlags                     = { },
 
     if (self)
     {
-        var width = _CGRectGetWidth(aFrame),
-            height = _CGRectGetHeight(aFrame);
+        var width = CGRectGetWidth(aFrame),
+            height = CGRectGetHeight(aFrame);
 
         _subviews = [];
         _registeredDraggedTypes = [CPSet set];
@@ -303,8 +303,8 @@ var CPViewFlags                     = { },
 
         _tag = -1;
 
-        _frame = _CGRectMakeCopy(aFrame);
-        _bounds = _CGRectMake(0.0, 0.0, width, height);
+        _frame = CGRectMakeCopy(aFrame);
+        _bounds = CGRectMake(0.0, 0.0, width, height);
 
         _autoresizingMask = CPViewNotSizable;
         _autoresizesSubviews = YES;
@@ -317,7 +317,7 @@ var CPViewFlags                     = { },
 #if PLATFORM(DOM)
         _DOMElement = DOMElementPrototype.cloneNode(false);
 
-        CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, _CGRectGetMinX(aFrame), _CGRectGetMinY(aFrame));
+        CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, CGRectGetMinX(aFrame), CGRectGetMinY(aFrame));
         CPDOMDisplayServerSetStyleSize(_DOMElement, width, height);
 
         if (typeof(appkit_tag_dom_elements) !== "undefined" && !!appkit_tag_dom_elements)
@@ -829,7 +829,7 @@ var CPViewFlags                     = { },
 */
 - (void)setFrame:(CGRect)aFrame
 {
-    if (_CGRectEqualToRect(_frame, aFrame))
+    if (CGRectEqualToRect(_frame, aFrame))
         return;
 
     _inhibitFrameAndBoundsChangedNotifications = YES;
@@ -849,17 +849,17 @@ var CPViewFlags                     = { },
 */
 - (CGRect)frame
 {
-    return _CGRectMakeCopy(_frame);
+    return CGRectMakeCopy(_frame);
 }
 
 - (CGPoint)frameOrigin
 {
-    return _CGPointMakeCopy(_frame.origin);
+    return CGPointMakeCopy(_frame.origin);
 }
 
 - (CGSize)frameSize
 {
-    return _CGSizeMakeCopy(_frame.size);
+    return CGSizeMakeCopy(_frame.size);
 }
 
 /*!
@@ -894,7 +894,7 @@ var CPViewFlags                     = { },
 {
     var origin = _frame.origin;
 
-    if (!aPoint || _CGPointEqualToPoint(origin, aPoint))
+    if (!aPoint || CGPointEqualToPoint(origin, aPoint))
         return;
 
     origin.x = aPoint.x;
@@ -920,10 +920,10 @@ var CPViewFlags                     = { },
 {
     var size = _frame.size;
 
-    if (!aSize || _CGSizeEqualToSize(size, aSize))
+    if (!aSize || CGSizeEqualToSize(size, aSize))
         return;
 
-    var oldSize = _CGSizeMakeCopy(size);
+    var oldSize = CGSizeMakeCopy(size);
 
     size.width = aSize.width;
     size.height = aSize.height;
@@ -1060,7 +1060,7 @@ var CPViewFlags                     = { },
 */
 - (void)setBounds:(CGRect)bounds
 {
-    if (_CGRectEqualToRect(_bounds, bounds))
+    if (CGRectEqualToRect(_bounds, bounds))
         return;
 
     _inhibitFrameAndBoundsChangedNotifications = YES;
@@ -1080,17 +1080,17 @@ var CPViewFlags                     = { },
 */
 - (CGRect)bounds
 {
-    return _CGRectMakeCopy(_bounds);
+    return CGRectMakeCopy(_bounds);
 }
 
 - (CGPoint)boundsOrigin
 {
-    return _CGPointMakeCopy(_bounds.origin);
+    return CGPointMakeCopy(_bounds.origin);
 }
 
 - (CGSize)boundsSize
 {
-    return _CGSizeMakeCopy(_bounds.size);
+    return CGSizeMakeCopy(_bounds.size);
 }
 
 /*!
@@ -1103,7 +1103,7 @@ var CPViewFlags                     = { },
 {
     var origin = _bounds.origin;
 
-    if (_CGPointEqualToPoint(origin, aPoint))
+    if (CGPointEqualToPoint(origin, aPoint))
         return;
 
     origin.x = aPoint.x;
@@ -1111,7 +1111,7 @@ var CPViewFlags                     = { },
 
     if (origin.x != 0 || origin.y != 0)
     {
-        _boundsTransform = _CGAffineTransformMakeTranslation(-origin.x, -origin.y);
+        _boundsTransform = CGAffineTransformMakeTranslation(-origin.x, -origin.y);
         _inverseBoundsTransform = CGAffineTransformInvert(_boundsTransform);
     }
     else
@@ -1146,12 +1146,12 @@ var CPViewFlags                     = { },
 {
     var size = _bounds.size;
 
-    if (_CGSizeEqualToSize(size, aSize))
+    if (CGSizeEqualToSize(size, aSize))
         return;
 
     var frameSize = _frame.size;
 
-    if (!_CGSizeEqualToSize(size, frameSize))
+    if (!CGSizeEqualToSize(size, frameSize))
     {
         var origin = _bounds.origin;
 
@@ -1162,7 +1162,7 @@ var CPViewFlags                     = { },
     size.width = aSize.width;
     size.height = aSize.height;
 
-    if (!_CGSizeEqualToSize(size, frameSize))
+    if (!CGSizeEqualToSize(size, frameSize))
     {
         var origin = _bounds.origin;
 
@@ -1187,21 +1187,29 @@ var CPViewFlags                     = { },
         return;
 
     var frame = _superview._frame,
-        newFrame = _CGRectMakeCopy(_frame),
-        dX = (_CGRectGetWidth(frame) - aSize.width) /
-            (((mask & CPViewMinXMargin) ? 1 : 0) + (mask & CPViewWidthSizable ? 1 : 0) + (mask & CPViewMaxXMargin ? 1 : 0)),
-        dY = (_CGRectGetHeight(frame) - aSize.height) /
-            ((mask & CPViewMinYMargin ? 1 : 0) + (mask & CPViewHeightSizable ? 1 : 0) + (mask & CPViewMaxYMargin ? 1 : 0));
+        newFrame = CGRectMakeCopy(_frame),
+        dX = frame.size.width - aSize.width,
+        dY = frame.size.height - aSize.height,
+        evenFractionX = 1.0 / ((mask & CPViewMinXMargin ? 1 : 0) + (mask & CPViewWidthSizable ? 1 : 0) + (mask & CPViewMaxXMargin ? 1 : 0)),
+        evenFractionY = 1.0 / ((mask & CPViewMinYMargin ? 1 : 0) + (mask & CPViewHeightSizable ? 1 : 0) + (mask & CPViewMaxYMargin ? 1 : 0)),
+        baseX = (mask & CPViewMinXMargin    ? _frame.origin.x : 0) +
+                (mask & CPViewWidthSizable  ? _frame.size.width : 0) +
+                (mask & CPViewMaxXMargin    ? aSize.width - _frame.size.width - _frame.origin.x : 0),
+        baseY = (mask & CPViewMinYMargin    ? _frame.origin.y : 0) +
+                (mask & CPViewHeightSizable ? _frame.size.height : 0) +
+                (mask & CPViewMaxYMargin    ? aSize.height - _frame.size.height - _frame.origin.y : 0);
 
     if (mask & CPViewMinXMargin)
-        newFrame.origin.x += dX;
+        newFrame.origin.x += dX * (baseX > 0 ? _frame.origin.x / baseX : evenFractionX);
+
     if (mask & CPViewWidthSizable)
-        newFrame.size.width += dX;
+        newFrame.size.width += dX * (baseX > 0 ? _frame.size.width / baseX : evenFractionX);
 
     if (mask & CPViewMinYMargin)
-        newFrame.origin.y += dY;
+        newFrame.origin.y += dY * (baseY > 0 ? _frame.origin.y / baseY : evenFractionY);
+
     if (mask & CPViewHeightSizable)
-        newFrame.size.height += dY;
+        newFrame.size.height += dY * (baseY > 0 ? _frame.size.height / baseY : evenFractionY);
 
     [self setFrame:newFrame];
 }
@@ -1539,15 +1547,15 @@ var CPViewFlags                     = { },
 */
 - (CPView)hitTest:(CGPoint)aPoint
 {
-    if (_isHidden || !_hitTests || !_CGRectContainsPoint(_frame, aPoint))
+    if (_isHidden || !_hitTests || !CGRectContainsPoint(_frame, aPoint))
         return nil;
 
     var view = nil,
         i = _subviews.length,
-        adjustedPoint = _CGPointMake(aPoint.x - _CGRectGetMinX(_frame), aPoint.y - _CGRectGetMinY(_frame));
+        adjustedPoint = CGPointMake(aPoint.x - CGRectGetMinX(_frame), aPoint.y - CGRectGetMinY(_frame));
 
     if (_inverseBoundsTransform)
-        adjustedPoint = _CGPointApplyAffineTransform(adjustedPoint, _inverseBoundsTransform);
+        adjustedPoint = CGPointApplyAffineTransform(adjustedPoint, _inverseBoundsTransform);
 
     while (i--)
         if (view = [_subviews[i] hitTest:adjustedPoint])
@@ -1986,9 +1994,6 @@ setFrameOrigin:
         return;
 
     _postsFrameChangedNotifications = shouldPostFrameChangedNotifications;
-
-    if (_postsFrameChangedNotifications)
-        [CachedNotificationCenter postNotificationName:CPViewFrameDidChangeNotification object:self];
 }
 
 /*!
@@ -2019,9 +2024,6 @@ setBoundsOrigin:
         return;
 
     _postsBoundsChangedNotifications = shouldPostBoundsChangedNotifications;
-
-    if (_postsBoundsChangedNotifications)
-        [CachedNotificationCenter postNotificationName:CPViewBoundsDidChangeNotification object:self];
 }
 
 /*!
@@ -2134,20 +2136,20 @@ setBoundsOrigin:
     if (!(_viewClassFlags & CPViewHasCustomDrawRect))
         return;
 
-    if (_CGRectIsEmpty(aRect))
+    if (CGRectIsEmpty(aRect))
         return;
 
-    if (_dirtyRect && !_CGRectIsEmpty(_dirtyRect))
+    if (_dirtyRect && !CGRectIsEmpty(_dirtyRect))
         _dirtyRect = CGRectUnion(aRect, _dirtyRect);
     else
-        _dirtyRect = _CGRectMakeCopy(aRect);
+        _dirtyRect = CGRectMakeCopy(aRect);
 
     _CPDisplayServerAddDisplayObject(self);
 }
 
 - (BOOL)needsDisplay
 {
-    return _dirtyRect && !_CGRectIsEmpty(_dirtyRect);
+    return _dirtyRect && !CGRectIsEmpty(_dirtyRect);
 }
 
 /*!
@@ -2223,13 +2225,13 @@ setBoundsOrigin:
         _DOMContentsElement.style.position = "absolute";
         _DOMContentsElement.style.visibility = "visible";
 
-        _DOMContentsElement.width = ROUND(_CGRectGetWidth(_frame));
-        _DOMContentsElement.height = ROUND(_CGRectGetHeight(_frame));
+        _DOMContentsElement.width = ROUND(CGRectGetWidth(_frame));
+        _DOMContentsElement.height = ROUND(CGRectGetHeight(_frame));
 
         _DOMContentsElement.style.top = "0px";
         _DOMContentsElement.style.left = "0px";
-        _DOMContentsElement.style.width = ROUND(_CGRectGetWidth(_frame)) + "px";
-        _DOMContentsElement.style.height = ROUND(_CGRectGetHeight(_frame)) + "px";
+        _DOMContentsElement.style.width = ROUND(CGRectGetWidth(_frame)) + "px";
+        _DOMContentsElement.style.height = ROUND(CGRectGetHeight(_frame)) + "px";
 
         // The performance implications of this aren't clear, but without this subviews might not be redrawn when this
         // view moves.
@@ -2337,7 +2339,7 @@ setBoundsOrigin:
     aRect = CGRectIntersection(aRect, _bounds);
 
     // If aRect is empty no scrolling required.
-    if (_CGRectIsEmpty(aRect))
+    if (CGRectIsEmpty(aRect))
         return NO;
 
     var enclosingClipView = [self _enclosingClipView];
@@ -2360,18 +2362,18 @@ setBoundsOrigin:
     if (CGRectContainsRect(documentViewVisibleRect, rectInDocumentView))
         return NO;
 
-    var scrollPoint = _CGPointMakeCopy(documentViewVisibleRect.origin);
+    var scrollPoint = CGPointMakeCopy(documentViewVisibleRect.origin);
 
     // One of the following has to be true since our current visible rect didn't contain aRect.
-    if (_CGRectGetMinX(rectInDocumentView) < _CGRectGetMinX(documentViewVisibleRect))
-        scrollPoint.x = _CGRectGetMinX(rectInDocumentView);
-    else if (_CGRectGetMaxX(rectInDocumentView) > _CGRectGetMaxX(documentViewVisibleRect))
-        scrollPoint.x += _CGRectGetMaxX(rectInDocumentView) - _CGRectGetMaxX(documentViewVisibleRect);
+    if (CGRectGetMinX(rectInDocumentView) < CGRectGetMinX(documentViewVisibleRect))
+        scrollPoint.x = CGRectGetMinX(rectInDocumentView);
+    else if (CGRectGetMaxX(rectInDocumentView) > CGRectGetMaxX(documentViewVisibleRect))
+        scrollPoint.x += CGRectGetMaxX(rectInDocumentView) - CGRectGetMaxX(documentViewVisibleRect);
 
-    if (_CGRectGetMinY(rectInDocumentView) < _CGRectGetMinY(documentViewVisibleRect))
-        scrollPoint.y = _CGRectGetMinY(rectInDocumentView);
-    else if (_CGRectGetMaxY(rectInDocumentView) > _CGRectGetMaxY(documentViewVisibleRect))
-        scrollPoint.y += _CGRectGetMaxY(rectInDocumentView) - _CGRectGetMaxY(documentViewVisibleRect);
+    if (CGRectGetMinY(rectInDocumentView) < CGRectGetMinY(documentViewVisibleRect))
+        scrollPoint.y = CGRectGetMinY(rectInDocumentView);
+    else if (CGRectGetMaxY(rectInDocumentView) > CGRectGetMaxY(documentViewVisibleRect))
+        scrollPoint.y += CGRectGetMaxY(rectInDocumentView) - CGRectGetMaxY(documentViewVisibleRect);
 
     [enclosingClipView scrollToPoint:scrollPoint];
 
@@ -2557,21 +2559,35 @@ setBoundsOrigin:
 
 - (void)_setPreviousKeyView:(CPView)previous
 {
-    if ([previous isEqual:self])
-        _previousKeyView = nil;
-    else
-        _previousKeyView = previous;
+    if (![previous isEqual:self])
+    {
+        var previousWindow = [previous window];
+
+        if (!previousWindow || previousWindow === _window)
+        {
+            _previousKeyView = previous;
+            return;
+        }
+    }
+
+    _previousKeyView = nil;
 }
 
 - (void)setNextKeyView:(CPView)next
 {
-    if ([next isEqual:self])
-        _nextKeyView = nil;
-    else
+    if (![next isEqual:self])
     {
-        _nextKeyView = next;
-        [_nextKeyView _setPreviousKeyView:self];
+        var nextWindow = [next window];
+
+        if (!nextWindow || nextWindow === _window)
+        {
+            _nextKeyView = next;
+            [_nextKeyView _setPreviousKeyView:self];
+            return;
+        }
     }
+
+    _nextKeyView = nil;
 }
 
 @end
@@ -2948,7 +2964,7 @@ setBoundsOrigin:
 
 - (CGRect)rectForEphemeralSubviewNamed:(CPString)aViewName
 {
-    return _CGRectMakeZero();
+    return CGRectMakeZero();
 }
 
 - (CPView)layoutEphemeralSubviewNamed:(CPString)aViewName
@@ -3087,8 +3103,8 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         _DOMImageParts = [];
         _DOMImageSizes = [];
 
-        CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, _CGRectGetMinX(_frame), _CGRectGetMinY(_frame));
-        CPDOMDisplayServerSetStyleSize(_DOMElement, _CGRectGetWidth(_frame), _CGRectGetHeight(_frame));
+        CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, CGRectGetMinX(_frame), CGRectGetMinY(_frame));
+        CPDOMDisplayServerSetStyleSize(_DOMElement, CGRectGetWidth(_frame), CGRectGetHeight(_frame));
 
         var index = 0,
             count = _subviews.length;
@@ -3240,12 +3256,12 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
         {
             var frame = view._frame;
 
-            transform.tx += _CGRectGetMinX(frame);
-            transform.ty += _CGRectGetMinY(frame);
+            transform.tx += CGRectGetMinX(frame);
+            transform.ty += CGRectGetMinY(frame);
 
             if (view._boundsTransform)
             {
-                _CGAffineTransformConcatTo(transform, view._boundsTransform, transform);
+                CGAffineTransformConcatTo(transform, view._boundsTransform, transform);
             }
 
             view = view._superview;
@@ -3266,8 +3282,8 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
 
                 var frame = [fromWindow frame];
 
-                transform.tx += _CGRectGetMinX(frame);
-                transform.ty += _CGRectGetMinY(frame);
+                transform.tx += CGRectGetMinX(frame);
+                transform.ty += CGRectGetMinY(frame);
             }
         }
     }
@@ -3279,12 +3295,12 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
     {
         var frame = view._frame;
 
-        transform.tx -= _CGRectGetMinX(frame);
-        transform.ty -= _CGRectGetMinY(frame);
+        transform.tx -= CGRectGetMinX(frame);
+        transform.ty -= CGRectGetMinY(frame);
 
         if (view._boundsTransform)
         {
-            _CGAffineTransformConcatTo(transform, view._inverseBoundsTransform, transform);
+            CGAffineTransformConcatTo(transform, view._inverseBoundsTransform, transform);
         }
 
         view = view._superview;
@@ -3294,8 +3310,8 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
     {
         var frame = [toWindow frame];
 
-        transform.tx -= _CGRectGetMinX(frame);
-        transform.ty -= _CGRectGetMinY(frame);
+        transform.tx -= CGRectGetMinX(frame);
+        transform.ty -= CGRectGetMinY(frame);
     }
 /*    var views = [],
         view = toView;
@@ -3312,8 +3328,8 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
     {
         var frame = views[index]._frame;
 
-        transform.tx -= _CGRectGetMinX(frame);
-        transform.ty -= _CGRectGetMinY(frame);
+        transform.tx -= CGRectGetMinX(frame);
+        transform.ty -= CGRectGetMinY(frame);
     }*/
 
     return transform;

@@ -21,6 +21,11 @@ CPLogRegister(CPLogConsole)
     CPArray content           @accessors;
 }
 
+- (IBAction)reload:(id)sender
+{
+    [tableView reloadData];
+}
+
 - (void)applicationDidFinishLaunching:(CPNotification)note
 {
     content = [CPArray new];
@@ -107,7 +112,7 @@ CPLogRegister(CPLogConsole)
 }
 
 // DELEGATE METHODS FOR THE TABLE VIEW
-- (void)tableView:(CPTableView)aTableView dataViewForTableColumn:(CPTableColumn)aTableColumn row:(int)aRow
+- (void)tableView:(CPTableView)aTableView viewForTableColumn:(CPTableColumn)aTableColumn row:(int)aRow
 {
     var identifier = [aTableColumn identifier];
 

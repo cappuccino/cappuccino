@@ -53,7 +53,7 @@ CPCircularSlider    = 1;
 {
     return @{
             @"knob-color": [CPNull null],
-            @"knob-size": _CGSizeMakeZero(),
+            @"knob-size": CGSizeMakeZero(),
             @"track-width": 0.0,
             @"track-color": [CPNull null],
         };
@@ -162,16 +162,16 @@ CPCircularSlider    = 1;
         var trackWidth = [self currentValueForThemeAttribute:@"track-width"];
 
         if (trackWidth <= 0)
-            return _CGRectMakeZero();
+            return CGRectMakeZero();
 
         if ([self isVertical])
         {
-            bounds.origin.x = (_CGRectGetWidth(bounds) - trackWidth) / 2.0;
+            bounds.origin.x = (CGRectGetWidth(bounds) - trackWidth) / 2.0;
             bounds.size.width = trackWidth;
         }
         else
         {
-            bounds.origin.y = (_CGRectGetHeight(bounds) - trackWidth) / 2.0;
+            bounds.origin.y = (CGRectGetHeight(bounds) - trackWidth) / 2.0;
             bounds.size.height = trackWidth;
         }
     }
@@ -184,13 +184,13 @@ CPCircularSlider    = 1;
     var knobSize = [self currentValueForThemeAttribute:@"knob-size"];
 
     if (knobSize.width <= 0 || knobSize.height <= 0)
-        return _CGRectMakeZero();
+        return CGRectMakeZero();
 
-    var knobRect = _CGRectMake(0.0, 0.0, knobSize.width, knobSize.height),
+    var knobRect = CGRectMake(0.0, 0.0, knobSize.width, knobSize.height),
         trackRect = [self trackRectForBounds:bounds];
 
     // No track, do our best to approximate a place for this thing.
-    if (!trackRect || _CGRectIsEmpty(trackRect))
+    if (!trackRect || CGRectIsEmpty(trackRect))
         trackRect = bounds;
 
     if ([self hasThemeState:CPThemeStateCircular])
@@ -203,13 +203,13 @@ CPCircularSlider    = 1;
     }
     else if ([self isVertical])
     {
-        knobRect.origin.x = _CGRectGetMidX(trackRect) - knobSize.width / 2.0;
-        knobRect.origin.y = ((_maxValue - [self doubleValue]) / (_maxValue - _minValue)) * (_CGRectGetHeight(trackRect) - knobSize.height);
+        knobRect.origin.x = CGRectGetMidX(trackRect) - knobSize.width / 2.0;
+        knobRect.origin.y = ((_maxValue - [self doubleValue]) / (_maxValue - _minValue)) * (CGRectGetHeight(trackRect) - knobSize.height);
     }
     else
     {
-        knobRect.origin.x = (([self doubleValue] - _minValue) / (_maxValue - _minValue)) * (_CGRectGetWidth(trackRect) - knobSize.width);
-        knobRect.origin.y = _CGRectGetMidY(trackRect) - knobSize.height / 2.0;
+        knobRect.origin.x = (([self doubleValue] - _minValue) / (_maxValue - _minValue)) * (CGRectGetWidth(trackRect) - knobSize.width);
+        knobRect.origin.y = CGRectGetMidY(trackRect) - knobSize.height / 2.0;
     }
 
     return knobRect;
@@ -260,8 +260,8 @@ CPCircularSlider    = 1;
 {
     // Recalculate isVertical.
     var bounds = [self bounds],
-        width = _CGRectGetWidth(bounds),
-        height = _CGRectGetHeight(bounds);
+        width = CGRectGetWidth(bounds),
+        height = CGRectGetHeight(bounds);
 
     _isVertical = width < height ? 1 : (width > height ? 0 : -1);
 
@@ -306,55 +306,55 @@ CPCircularSlider    = 1;
 
     if ([self hasThemeState:CPThemeStateCircular])
     {
-        var knobWidth = _CGRectGetWidth(knobRect);
+        var knobWidth = CGRectGetWidth(knobRect);
 
         trackRect.origin.x += knobWidth / 2;
         trackRect.size.width -= knobWidth;
 
         var minValue = [self minValue],
-            dx = aPoint.x - _CGRectGetMidX(trackRect),
-            dy = aPoint.y - _CGRectGetMidY(trackRect);
+            dx = aPoint.x - CGRectGetMidX(trackRect),
+            dy = aPoint.y - CGRectGetMidY(trackRect);
 
         return MAX(0.0, MIN(1.0, 1.0 - (3 * PI_2 - ATAN2(dy, dx)) % PI2 / PI2)) * ([self maxValue] - minValue) + minValue;
     }
     else if ([self isVertical])
     {
-        var knobHeight = _CGRectGetHeight(knobRect);
+        var knobHeight = CGRectGetHeight(knobRect);
 
         trackRect.origin.y += knobHeight / 2;
         trackRect.size.height -= knobHeight;
 
         var minValue = [self minValue];
 
-        return MAX(0.0, MIN(1.0, (_CGRectGetMaxY(trackRect) - aPoint.y) / _CGRectGetHeight(trackRect))) * ([self maxValue] - minValue) + minValue;
+        return MAX(0.0, MIN(1.0, (CGRectGetMaxY(trackRect) - aPoint.y) / CGRectGetHeight(trackRect))) * ([self maxValue] - minValue) + minValue;
     }
     else
     {
-        var knobWidth = _CGRectGetWidth(knobRect);
+        var knobWidth = CGRectGetWidth(knobRect);
 
         trackRect.origin.x += knobWidth / 2;
         trackRect.size.width -= knobWidth;
 
         var minValue = [self minValue];
 
-        return MAX(0.0, MIN(1.0, (aPoint.x - _CGRectGetMinX(trackRect)) / _CGRectGetWidth(trackRect))) * ([self maxValue] - minValue) + minValue;
+        return MAX(0.0, MIN(1.0, (aPoint.x - CGRectGetMinX(trackRect)) / CGRectGetWidth(trackRect))) * ([self maxValue] - minValue) + minValue;
     }
 }
 
 - (BOOL)startTrackingAt:(CGPoint)aPoint
 {
     var bounds = [self bounds],
-        knobRect = [self knobRectForBounds:_CGRectMakeCopy(bounds)];
+        knobRect = [self knobRectForBounds:CGRectMakeCopy(bounds)];
 
-    if (_CGRectContainsPoint(knobRect, aPoint))
-        _dragOffset = _CGSizeMake(_CGRectGetMidX(knobRect) - aPoint.x, _CGRectGetMidY(knobRect) - aPoint.y);
+    if (CGRectContainsPoint(knobRect, aPoint))
+        _dragOffset = CGSizeMake(CGRectGetMidX(knobRect) - aPoint.x, CGRectGetMidY(knobRect) - aPoint.y);
     else
     {
         var trackRect = [self trackRectForBounds:bounds];
 
-        if (trackRect && _CGRectContainsPoint(trackRect, aPoint))
+        if (trackRect && CGRectContainsPoint(trackRect, aPoint))
         {
-            _dragOffset = _CGSizeMakeZero();
+            _dragOffset = CGSizeMakeZero();
 
             [self setObjectValue:[self _valueAtPoint:aPoint]];
         }
@@ -373,7 +373,7 @@ CPCircularSlider    = 1;
 
 - (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
 {
-    [self setObjectValue:[self _valueAtPoint:_CGPointMake(aPoint.x + _dragOffset.width, aPoint.y + _dragOffset.height)]];
+    [self setObjectValue:[self _valueAtPoint:CGPointMake(aPoint.x + _dragOffset.width, aPoint.y + _dragOffset.height)]];
 
     return YES;
 }

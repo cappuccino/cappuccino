@@ -54,7 +54,7 @@
         shadowDistance = [_windowView valueForThemeAttribute:@"shadow-distance"],
         shadowInset = [_windowView valueForThemeAttribute:@"shadow-inset"],
         size = [_windowView frameSize],
-        shadowSize = _CGSizeMake(size.width, size.height);
+        shadowSize = CGSizeMake(size.width, size.height);
 
     // if the shadow would be taller/wider than the window height,
     // make it the same as the window height. this allows views to

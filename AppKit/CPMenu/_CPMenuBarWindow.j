@@ -67,6 +67,8 @@
 
     if (self)
     {
+        _constrainsToUsableScreen = NO;
+
         [self setLevel:CPMainMenuWindowLevel];
         [self setAutoresizingMask:CPWindowWidthSizable];
 
@@ -411,7 +413,7 @@
 
     [super setFrame:aRect display:shouldDisplay animate:shouldAnimate];
 
-    if (!_CGSizeEqualToSize(size, aRect.size))
+    if (!CGSizeEqualToSize(size, aRect.size))
         [self tile];
 }
 

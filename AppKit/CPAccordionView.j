@@ -106,7 +106,7 @@ var secondItem = [[CPAccordionViewItem alloc] initWithIdentifier:@"secondSection
         _itemViews = [];
         _expandedItemIndexes = [CPIndexSet indexSet];
 
-        [self setItemHeaderPrototype:[[CPButton alloc] initWithFrame:_CGRectMake(0.0, 0.0, 100.0, 24.0)]];
+        [self setItemHeaderPrototype:[[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0)]];
     }
 
     return self;
@@ -258,18 +258,18 @@ var secondItem = [[CPAccordionViewItem alloc] initWithIdentifier:@"secondSection
 
 - (void)setFrameSize:(CGSize)aSize
 {
-    var width = _CGRectGetWidth([self frame]);
+    var width = CGRectGetWidth([self frame]);
 
     [super setFrameSize:aSize];
 
-    if (width !== _CGRectGetWidth([self frame]))
+    if (width !== CGRectGetWidth([self frame]))
         [self _invalidateItemsStartingAtIndex:0];
 }
 
 - (void)layoutSubviews
 {
     if (_items.length <= 0)
-        return [self setFrameSize:_CGSizeMake(_CGRectGetWidth([self frame]), 0.0)];
+        return [self setFrameSize:CGSizeMake(CGRectGetWidth([self frame]), 0.0)];
 
     if (_dirtyItemIndex === CPNotFound)
         return;
@@ -278,7 +278,7 @@ var secondItem = [[CPAccordionViewItem alloc] initWithIdentifier:@"secondSection
 
     var index = _dirtyItemIndex,
         count = _itemViews.length,
-        width = _CGRectGetWidth([self bounds]),
+        width = CGRectGetWidth([self bounds]),
         y = index > 0 ? CGRectGetMaxY([_itemViews[index - 1] frame]) : 0.0;
 
     // Do this now (instead of after looping), so that if we are made dirty again in the middle we don't blow this value away.
@@ -293,7 +293,7 @@ var secondItem = [[CPAccordionViewItem alloc] initWithIdentifier:@"secondSection
         y = CGRectGetMaxY([itemView frame]);
     }
 
-    [self setFrameSize:_CGSizeMake(_CGRectGetWidth([self frame]), y)];
+    [self setFrameSize:CGSizeMake(CGRectGetWidth([self frame]), y)];
 }
 
 @end
@@ -310,7 +310,7 @@ var secondItem = [[CPAccordionViewItem alloc] initWithIdentifier:@"secondSection
 
 - (id)initWithAccordionView:(CPAccordionView)anAccordionView
 {
-    self = [super initWithFrame:_CGRectMakeZero()];
+    self = [super initWithFrame:CGRectMakeZero()];
 
     if (self)
     {
@@ -376,21 +376,21 @@ var secondItem = [[CPAccordionViewItem alloc] initWithIdentifier:@"secondSection
 
 - (void)setFrameY:(float)aY width:(float)aWidth
 {
-    var headerHeight = _CGRectGetHeight([_headerView frame]);
+    var headerHeight = CGRectGetHeight([_headerView frame]);
 
     // Size to fit or something?
-    [_headerView setFrameSize:_CGSizeMake(aWidth, headerHeight)];
-    [_contentView setFrameOrigin:_CGPointMake(0.0, headerHeight)];
+    [_headerView setFrameSize:CGSizeMake(aWidth, headerHeight)];
+    [_contentView setFrameOrigin:CGPointMake(0.0, headerHeight)];
 
     if ([self isCollapsed])
-        [self setFrame:_CGRectMake(0.0, aY, aWidth, headerHeight)];
+        [self setFrame:CGRectMake(0.0, aY, aWidth, headerHeight)];
 
     else
     {
-        var contentHeight = _CGRectGetHeight([_contentView frame]);
+        var contentHeight = CGRectGetHeight([_contentView frame]);
 
-        [_contentView setFrameSize:_CGSizeMake(aWidth, contentHeight)];
-        [self setFrame:_CGRectMake(0.0, aY, aWidth, contentHeight + headerHeight)];
+        [_contentView setFrameSize:CGSizeMake(aWidth, contentHeight)];
+        [self setFrame:CGRectMake(0.0, aY, aWidth, contentHeight + headerHeight)];
     }
 }
 

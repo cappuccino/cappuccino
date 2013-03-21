@@ -38,9 +38,9 @@ var CANVAS_LINECAP_TABLE    = [ "butt", "round", "square" ],
 #define _CGContextClosePathCanvas(aContext) aContext.closePath()
 #define _CGContextMoveToPointCanvas(aContext, x, y) aContext.moveTo(x, y)
 
-#define _CGContextAddRectCanvas(aContext, aRect) aContext.rect(_CGRectGetMinX(aRect), _CGRectGetMinY(aRect), _CGRectGetWidth(aRect), _CGRectGetHeight(aRect))
+#define _CGContextAddRectCanvas(aContext, aRect) aContext.rect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect))
 #define _CGContextBeginPathCanvas(aContext) aContext.beginPath()
-#define _CGContextFillRectCanvas(aContext, aRect) aContext.fillRect(_CGRectGetMinX(aRect), _CGRectGetMinY(aRect), _CGRectGetWidth(aRect), _CGRectGetHeight(aRect))
+#define _CGContextFillRectCanvas(aContext, aRect) aContext.fillRect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect))
 #define _CGContextClipCanvas(aContext) aContext.clip()
 
 // In Cocoa, all primitives excepts rects cannot be added to the context's path
@@ -66,6 +66,29 @@ function CGContextRestoreGState(aContext)
 function CGContextSetLineCap(aContext, aLineCap)
 {
     aContext.lineCap = CANVAS_LINECAP_TABLE[aLineCap];
+}
+
+function CGContextSetLineDash(aContext, aPhase, someDashes)
+{
+    if (aContext.setLineDash)
+    {
+        aContext.setLineDash(someDashes);
+        aContext.lineDashOffset = aPhase;
+    }
+    else if (typeof aContext['webkitLineDash'] !== 'undefined')
+    {
+        aContext.webkitLineDash = someDashes;
+        aContext.webkitLineDashOffset = aPhase;
+    }
+    else if (typeof aContext['mozDash'] !== 'undefined')
+    {
+        aContext.mozDash = someDashes;
+        aContext.mozDashOffset = aPhase;
+    }
+    else if (someDashes)
+    {
+        CPLog.warn("CGContextSetLineDash not implemented in this environment.")
+    }
 }
 
 function CGContextSetLineJoin(aContext, aLineJoin)
@@ -247,7 +270,7 @@ function CGContextMoveToPoint(aContext, x, y)
 
 function CGContextClearRect(aContext, aRect)
 {
-    aContext.clearRect(_CGRectGetMinX(aRect), _CGRectGetMinY(aRect), _CGRectGetWidth(aRect), _CGRectGetHeight(aRect));
+    aContext.clearRect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
     aContext.hasPath = NO;
 }
 
@@ -288,7 +311,7 @@ function CGContextFillRects(aContext, rects, count)
 
 function CGContextStrokeRect(aContext, aRect)
 {
-    aContext.strokeRect(_CGRectGetMinX(aRect), _CGRectGetMinY(aRect), _CGRectGetWidth(aRect), _CGRectGetHeight(aRect));
+    aContext.strokeRect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
     aContext.hasPath = NO;
 }
 
@@ -560,7 +583,7 @@ CGContextConcatCTM = function(aContext, anAffineTransform)
 
 function CGContextDrawImage(aContext, aRect, anImage)
 {
-    aContext.drawImage(anImage._image, _CGRectGetMinX(aRect), _CGRectGetMinY(aRect), _CGRectGetWidth(aRect), _CGRectGetHeight(aRect));
+    aContext.drawImage(anImage._image, CGRectGetMinX(aRect), CGRectGetMinY(aRect), CGRectGetWidth(aRect), CGRectGetHeight(aRect));
     aContext.hasPath = NO;
 }
 

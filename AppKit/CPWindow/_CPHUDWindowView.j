@@ -127,7 +127,7 @@
 
 - (CGSize)toolbarOffset
 {
-    return _CGSizeMake(0.0, [[self class] titleBarHeight]);
+    return CGSizeMake(0.0, [[self class] titleBarHeight]);
 }
 
 - (void)tile
@@ -136,22 +136,22 @@
 
     var theWindow = [self window],
         bounds = [self bounds],
-        width = _CGRectGetWidth(bounds);
+        width = CGRectGetWidth(bounds);
 
-    [_titleField setFrame:_CGRectMake(20.0, 0, width - 40.0, [self toolbarOffset].height)];
+    [_titleField setFrame:CGRectMake(20.0, 0, width - 40.0, [self toolbarOffset].height)];
 
     var maxY = [self toolbarMaxY];
     if ([_titleField isHidden])
         maxY -= ([self toolbarOffset]).height;
 
-    var contentRect = _CGRectMake(0.0, maxY, width, _CGRectGetHeight(bounds) - maxY);
+    var contentRect = CGRectMake(0.0, maxY, width, CGRectGetHeight(bounds) - maxY);
 
     [[theWindow contentView] setFrame:contentRect];
 }
 
-- (void)_enableSheet:(BOOL)enable
+- (void)_enableSheet:(BOOL)enable inWindow:(CPWindow)parentWindow
 {
-    [super _enableSheet:enable];
+    // No need to call super, it just deals with the shadow view, which we don't want
 
     [_closeButton setHidden:enable];
     [_titleField setHidden:enable];
@@ -164,15 +164,17 @@
     if (enable)
         dy = -dy;
 
-    var newHeight = _CGRectGetMaxY(frame) + dy,
-        newWidth = _CGRectGetMaxX(frame);
+    var newHeight = CGRectGetMaxY(frame) + dy,
+        newWidth = CGRectGetMaxX(frame);
 
     frame.size.height += dy;
 
-    [self setFrameSize:_CGSizeMake(newWidth, newHeight)];
+    [self setFrameSize:CGSizeMake(newWidth, newHeight)];
     [self tile];
     [theWindow setFrame:frame display:NO animate:NO];
     [theWindow setMovableByWindowBackground:!enable];
+
+    [self setNeedsLayout];
 }
 
 - (void)layoutSubviews

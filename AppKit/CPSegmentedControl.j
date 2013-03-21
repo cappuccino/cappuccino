@@ -63,8 +63,8 @@ CPSegmentSwitchTrackingMomentary = 2;
             @"vertical-alignment": CPCenterVerticalTextAlignment,
             @"image-position": CPImageLeft,
             @"image-scaling": CPImageScaleNone,
-            @"bezel-inset": _CGInsetMakeZero(),
-            @"content-inset": _CGInsetMakeZero(),
+            @"bezel-inset": CGInsetMakeZero(),
+            @"content-inset": CGInsetMakeZero(),
             @"left-segment-bezel-color": [CPNull null],
             @"right-segment-bezel-color": [CPNull null],
             @"center-segment-bezel-color": [CPNull null],
@@ -564,9 +564,9 @@ CPSegmentSwitchTrackingMomentary = 2;
 - (CPView)createEphemeralSubviewNamed:(CPString)aName
 {
     if ([aName hasPrefix:@"segment-content"])
-        return [[_CPImageAndTextView alloc] initWithFrame:_CGRectMakeZero()];
+        return [[_CPImageAndTextView alloc] initWithFrame:CGRectMakeZero()];
 
-    return [[CPView alloc] initWithFrame:_CGRectMakeZero()];
+    return [[CPView alloc] initWithFrame:CGRectMakeZero()];
 }
 
 - (void)layoutSubviews

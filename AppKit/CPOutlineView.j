@@ -52,6 +52,7 @@ var CPOutlineViewDataSource_outlineView_objectValue_forTableColumn_byItem_      
     CPOutlineViewDataSource_outlineView_sortDescriptorsDidChange_                                   = 1 << 11;
 
 var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_                                  = 1 << 1,
+    CPOutlineViewDelegate_outlineView_viewForTableColumn_item_                                      = 1 << 26,
     CPOutlineViewDelegate_outlineView_didClickTableColumn_                                          = 1 << 2,
     CPOutlineViewDelegate_outlineView_didDragTableColumn_                                           = 1 << 3,
     CPOutlineViewDelegate_outlineView_heightOfRowByItem_                                            = 1 << 4,
@@ -709,11 +710,11 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 {
     var theItem = [self itemAtRow:aRow];
     if (![self isExpandable:theItem] || ![self _shouldShowOutlineDisclosureControlForItem:theItem])
-        return _CGRectMakeZero();
+        return CGRectMakeZero();
 
     var dataViewFrame = [self _frameOfOutlineDataViewAtRow:aRow],
-        disclosureWidth = _CGRectGetWidth([_disclosureControlPrototype frame]),
-        frame = _CGRectMake(_CGRectGetMinX(dataViewFrame) - disclosureWidth, _CGRectGetMinY(dataViewFrame), disclosureWidth, _CGRectGetHeight(dataViewFrame));
+        disclosureWidth = CGRectGetWidth([_disclosureControlPrototype frame]),
+        frame = CGRectMake(CGRectGetMinX(dataViewFrame) - disclosureWidth, CGRectGetMinY(dataViewFrame), disclosureWidth, CGRectGetHeight(dataViewFrame));
 
     return frame;
 }
@@ -871,6 +872,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     var delegateMethods = [
             CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_                       , @selector(outlineView:dataViewForTableColumn:item:),
+            CPOutlineViewDelegate_outlineView_viewForTableColumn_item_                           , @selector(outlineView:viewForTableColumn:item:),
             CPOutlineViewDelegate_outlineView_didClickTableColumn_                               , @selector(outlineView:didClickTableColumn:),
             CPOutlineViewDelegate_outlineView_didDragTableColumn_                                , @selector(outlineView:didDragTableColumn:),
             CPOutlineViewDelegate_outlineView_heightOfRowByItem_                                 , @selector(outlineView:heightOfRowByItem:),
@@ -963,6 +965,10 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
             name:CPOutlineViewItemDidCollapseNotification
             object:self];
 
+    [self _updateIsViewBased];
+
+    if ([self _delegateRespondsToDataViewForTableColumn])
+        CPLog.warn("outlineView:dataViewForTableColumn:item: is deprecated. You should use -outlineView:viewForTableColumn:item: where you can request the view with -makeViewWithIdentifier:owner:");
 }
 
 - (BOOL)_sendDelegateDeleteKeyPressed
@@ -1060,7 +1066,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     var dragView = [[_CPColumnDragView alloc] initWithLineColor:[self gridColor]],
         tableColumn = [[self tableColumns] objectAtIndex:theColumnIndex],
         defaultRowHeight = [self valueForThemeAttribute:@"default-row-height"],
-        bounds = _CGRectMake(0.0, 0.0, [tableColumn width], _CGRectGetHeight([self exposedRect]) + defaultRowHeight),
+        bounds = CGRectMake(0.0, 0.0, [tableColumn width], CGRectGetHeight([self exposedRect]) + defaultRowHeight),
         columnRect = [self rectOfColumn:theColumnIndex],
         headerView = [tableColumn headerView],
         row = [_exposedRows firstIndex];
@@ -1074,7 +1080,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         dataViewFrame.origin.x = 0.0;
 
         // Offset by table header height - scroll position
-        dataViewFrame.origin.y = ( _CGRectGetMinY(dataViewFrame) - _CGRectGetMinY([self exposedRect]) ) + defaultRowHeight;
+        dataViewFrame.origin.y = (CGRectGetMinY(dataViewFrame) - CGRectGetMinY([self exposedRect])) + defaultRowHeight;
         [dataView setFrame:dataViewFrame];
 
         [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
@@ -1098,7 +1104,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     // Add the column header view
     var headerFrame = [headerView frame];
-    headerFrame.origin = _CGPointMakeZero();
+    headerFrame.origin = CGPointMakeZero();
 
     var columnHeaderView = [[_CPTableColumnHeaderView alloc] initWithFrame:headerFrame];
     [columnHeaderView setStringValue:[headerView stringValue]];
@@ -1304,7 +1310,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
         var disclosureControlFrame = [self frameOfOutlineDisclosureControlAtRow:row];
 
-        if (_CGRectIsEmpty(disclosureControlFrame))
+        if (CGRectIsEmpty(disclosureControlFrame))
             continue;
 
         var control = [self _dequeueDisclosureControl];
@@ -1361,7 +1367,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 - (void)_toggleFromDisclosureControl:(CPControl)aControl
 {
     var controlFrame = [aControl frame],
-        item = [self itemAtRow:[self rowAtPoint:_CGPointMake(_CGRectGetMinX(controlFrame), _CGRectGetMidY(controlFrame))]];
+        item = [self itemAtRow:[self rowAtPoint:CGPointMake(CGRectGetMinX(controlFrame), CGRectGetMidY(controlFrame))]];
 
     if ([self isItemExpanded:item])
         [self collapseItem:item];
@@ -1534,9 +1540,24 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     [super keyDown:anEvent];
 }
 
+- (CPView)_viewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
+{
+    return [_outlineViewDelegate outlineView:self viewForTableColumn:aTableColumn item:[self itemAtRow:aRow]];
+}
+
+- (CPView)_dataViewForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
+{
+    return [_outlineViewDelegate outlineView:self dataViewForTableColumn:aTableColumn item:[self itemAtRow:aRow]];
+}
+
 - (BOOL)_dataSourceRespondsToObjectValueForTableColumn
 {
     return _implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_objectValue_forTableColumn_byItem_;
+}
+
+- (BOOL)_delegateRespondsToViewForTableColumn
+{
+    return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_viewForTableColumn_item_;
 }
 
 - (BOOL)_delegateRespondsToDataViewForTableColumn
@@ -1893,17 +1914,6 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return [_outlineView menu] || [[_outlineView class] defaultMenu];
 }
 
-- (CPView)tableView:(CPTableView)aTableView dataViewForTableColumn:(CPTableColumn)aTableColumn row:(int)aRow
-{
-    if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_))
-    {
-        var item = [_outlineView itemAtRow:aRow];
-        return [_outlineView._outlineViewDelegate outlineView:_outlineView dataViewForTableColumn:aTableColumn item:item]
-    }
-
-    return nil;
-}
-
 @end
 
 @implementation CPDisclosureButton : CPButton
@@ -1936,14 +1946,14 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 {
     var bounds = [self bounds],
         context = [[CPGraphicsContext currentContext] graphicsPort],
-        width = _CGRectGetWidth(bounds),
-        height = _CGRectGetHeight(bounds);
+        width = CGRectGetWidth(bounds),
+        height = CGRectGetHeight(bounds);
 
     CGContextBeginPath(context);
 
     if (_angle)
     {
-        var centre = _CGPointMake(FLOOR(width / 2.0), FLOOR(height / 2.0));
+        var centre = CGPointMake(FLOOR(width / 2.0), FLOOR(height / 2.0));
         CGContextTranslateCTM(context, centre.x, centre.y);
         CGContextRotateCTM(context, _angle);
         CGContextTranslateCTM(context, -centre.x, -centre.y);
@@ -2007,6 +2017,8 @@ var CPOutlineViewIndentationPerLevelKey = @"CPOutlineViewIndentationPerLevelKey"
 
         [super setDataSource:[[_CPOutlineViewTableViewDataSource alloc] initWithOutlineView:self]];
         [super setDelegate:[[_CPOutlineViewTableViewDelegate alloc] initWithOutlineView:self]];
+
+        [self _updateIsViewBased];
     }
 
     return self;

@@ -12,18 +12,11 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
 
 @implementation AppController : CPObject
 {
-    CPTokenField    tokenFieldD;
-
-    CPArray         allPersons;
-    CPButton        manipulateTokenInsertionButton;
 }
 
-- (void)applicationDidFinishLaunching:(CPNotification)aNotification
++ (void)createTokenfieldContents:(CPView)contentView withDelegate:(id)aDelegate
 {
-    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
-        contentView = [theWindow contentView],
-
-        tokenFieldA = [[CPTokenField alloc] initWithFrame:CGRectMake(15, 40, 500, 30)],
+    var tokenFieldA = [[CPTokenField alloc] initWithFrame:CGRectMake(15, 40, 500, 30)],
         label = [[CPTextField alloc] initWithFrame:CGRectMake(15, 15, 500, 24)];
 
     [label setStringValue:"This token field has no auto suggestions and uses space to separate tokens."];
@@ -47,16 +40,17 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     [tokenFieldB setPlaceholderString:"Edit me!"];
 
     [tokenFieldB setObjectValue:["Missouri", "California"]];
-    [tokenFieldB setDelegate:self];
+    [tokenFieldB setDelegate:aDelegate];
 
     [tokenFieldB setAction:@selector(tokenFieldAction:)];
-    [tokenFieldB setTarget:self];
+    [tokenFieldB setTarget:aDelegate];
 
     [contentView addSubview:tokenFieldB];
 
-    manipulateTokenInsertionButton = [CPCheckBox checkBoxWithTitle:"Token transformations"];
+    var manipulateTokenInsertionButton = [CPCheckBox checkBoxWithTitle:"Token transformations"];
     [manipulateTokenInsertionButton setFrame:CGRectMake(525, 110, 200, 50)];
     [contentView addSubview:manipulateTokenInsertionButton];
+    tokenFieldB.manipulateTokenInsertionButton = manipulateTokenInsertionButton;
 
     var tokenFieldC = [[CPTokenField alloc] initWithFrame:CGRectMake(15, 170, 500, 30)],
         labelC = [[CPTextField alloc] initWithFrame:CGRectMake(15, 150, 500, 24)];
@@ -68,16 +62,19 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     [tokenFieldC setPlaceholderString:"Edit me!"];
 
     [tokenFieldC setObjectValue:['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado']];
-    [tokenFieldC setDelegate:self];
+    [tokenFieldC setDelegate:aDelegate];
 
     [contentView addSubview:tokenFieldC];
 
     [tokenFieldC setSendsActionOnEndEditing:YES];
     [tokenFieldC setAction:@selector(tokenFieldAction:)];
-    [tokenFieldC setTarget:self];
+    [tokenFieldC setTarget:aDelegate];
 
-    tokenFieldD = [[CPTokenField alloc] initWithFrame:CGRectMake(15, 230, 500, 30)],
-        labelD = [[CPTextField alloc] initWithFrame:CGRectMake(15, 210, 500, 24)];
+    var tokenFieldD = [[CPTokenField alloc] initWithFrame:CGRectMake(15, 230, 500, 30)],
+        labelD = [[CPTextField alloc] initWithFrame:CGRectMake(15, 210, 500, 24)],
+        tokenFieldDController = [TokenFieldOptionsController new];
+
+    tokenFieldDController.tokenField = tokenFieldD;
 
     [labelD setStringValue:"This token field contains represented objects."];
     [contentView addSubview:labelD];
@@ -85,7 +82,7 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     [tokenFieldD setEditable:YES];
 
     // Delegate must be set before objectValue
-    [tokenFieldD setDelegate:self];
+    [tokenFieldD setDelegate:aDelegate];
 
     var tokenFieldDEditable = [CPCheckBox checkBoxWithTitle:"Editable"];
     [tokenFieldDEditable sizeToFit];
@@ -96,70 +93,67 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     var tokenFieldDMenus = [CPCheckBox checkBoxWithTitle:"Menus"];
     [tokenFieldDMenus sizeToFit];
     [tokenFieldDMenus setFrameOrigin:CGPointMake(CGRectGetMaxX([tokenFieldDEditable frame]) + 5, 5 + CGRectGetMinY([tokenFieldD frame]))];
-    [tokenFieldDMenus bind:CPValueBinding toObject:self withKeyPath:@"tokenFieldDHasMenus" options:nil];
+    [tokenFieldDMenus bind:CPValueBinding toObject:tokenFieldDController withKeyPath:@"tokenFieldHasMenus" options:nil];
     [contentView addSubview:tokenFieldDMenus];
 
     var tokenFieldDClose = [CPCheckBox checkBoxWithTitle:"Close Buttons"];
     [tokenFieldDClose sizeToFit];
     [tokenFieldDClose setFrameOrigin:CGPointMake(CGRectGetMaxX([tokenFieldDMenus frame]) + 5, 5 + CGRectGetMinY([tokenFieldD frame]))];
-    [tokenFieldDClose bind:CPValueBinding toObject:self withKeyPath:@"tokenFieldDHasCloseButtons" options:nil];
+    [tokenFieldDClose bind:CPValueBinding toObject:tokenFieldDController withKeyPath:@"tokenFieldHasCloseButtons" options:nil];
     [contentView addSubview:tokenFieldDClose];
 
-    allPersons = [
+    tokenFieldD._testCompletions = [
         [Person personWithFirstName:@"Luc" lastName:@"Vauvillier"],
         [Person personWithFirstName:@"John" lastName:@"Doe"],
         [Person personWithFirstName:@"Amélie" lastName:@"Poulain"],
         [Person personWithFirstName:@"Jean" lastName:@"Valjean"]
     ];
-    [tokenFieldD setObjectValue:[allPersons copy]];
+    [tokenFieldD setObjectValue:[tokenFieldD._testCompletions copy]];
+
+    var tokenFieldDEditable = [CPCheckBox checkBoxWithTitle:"Editable"];
+    [tokenFieldDEditable sizeToFit];
+    [tokenFieldDEditable setFrameOrigin:CGPointMake(525, 5 + CGRectGetMinY([tokenFieldD frame]))];
+    [tokenFieldDEditable bind:CPValueBinding toObject:tokenFieldD withKeyPath:@"editable" options:nil];
+    [contentView addSubview:tokenFieldDEditable];
 
     [contentView addSubview:tokenFieldD];
 
     var button = [[CPButton alloc] initWithFrame:CGRectMake(15, 270, 0, 0)];
     [button setTitle:"Get Object Values"];
     [button sizeToFit];
-    [button setTarget:self];
+    [button setTarget:tokenFieldDController];
     [button setAction:@selector(getObjectValues:)];
     [contentView addSubview:button];
+}
+
+- (void)applicationDidFinishLaunching:(CPNotification)aNotification
+{
+    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
+        contentView = [theWindow contentView];
+
+    [[self class] createTokenfieldContents:contentView withDelegate:self];
+
+    var popoverButton = [[CPButton alloc] initWithFrame:CGRectMake(15, 310, 0, 0)];
+    [popoverButton setTitle:"Token Field in a Popover"];
+    [popoverButton sizeToFit];
+    [popoverButton setTarget:self];
+    [popoverButton setAction:@selector(openPopover:)];
+    [contentView addSubview:popoverButton];
 
     [theWindow orderFront:self];
-
 }
 
-- (void)setTokenFieldDHasMenus:(BOOL)shouldHaveMenus
+- (@action)openPopover:(id)sender
 {
-    if (shouldHaveMenus)
-    {
-        [[tokenFieldD objectValue] enumerateObjectsUsingBlock:function(aPerson)
-            {
-                var menu = [CPMenu new];
-                for (var i = 0; i < 3; i++)
-                    [menu addItem:[[CPMenuItem alloc] initWithTitle:[CPString stringWithFormat:@"%@ Item %i", aPerson, i] action:nil keyEquivalent:nil]];
-                aPerson.menu = menu;
-            }];
-    }
-    else
-        [[tokenFieldD objectValue] makeObjectsPerformSelector:@selector(setMenu:) withObject:nil];
-}
+    var aPopover = [CPPopover new],
+        controller = [CPViewController new];
 
-- (BOOL)tokenFieldDHasMenus
-{
-    return !![[[tokenFieldD objectValue] firstObject] menu];
-}
-
-- (void)setTokenFieldDHasCloseButtons:(BOOL)shouldHaveCloseButtons
-{
-   [tokenFieldD setButtonType:shouldHaveCloseButtons ? CPTokenFieldDeleteButtonType : CPTokenFieldDisclosureButtonType];
-}
-
-- (BOOL)tokenFieldDHasCloseButtons
-{
-    return !![tokenFieldD buttonType] === CPTokenFieldDeleteButtonType;
-}
-
-- (void)getObjectValues:(id)sender
-{
-    alert([tokenFieldD objectValue]);
+    [aPopover setContentViewController:controller];
+    [aPopover setContentSize:CGSizeMake(800, 315)];
+    [[self class] createTokenfieldContents:[controller view] withDelegate:self];
+    [aPopover setAnimates:YES];
+    [aPopover showRelativeToRect:[sender bounds] ofView:sender preferredEdge:CPMaxXEdge];
+    [aPopover setBehavior:CPPopoverBehaviorTransient];
 }
 
 - (CPArray)tokenField:(CPTokenField)aTokenField completionsForSubstring:(CPString)substring indexOfToken:(int)tokenIndex indexOfSelectedItem:(int)selectedIndex
@@ -170,8 +164,7 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     if (!substring)
         return r;
 
-
-    if (aTokenField !== tokenFieldD)
+    if (!aTokenField['_testCompletions'])
     {
         for (var i = 0; i < STATES.length; i++)
             if (STATES[i].toLowerCase().indexOf(substring.toLowerCase()) == 0)
@@ -179,6 +172,7 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
     }
     else
     {
+        var allPersons = aTokenField._testCompletions;
         for (var i = 0; i < allPersons.length; i++)
             if ([allPersons[i] fullname].toLowerCase().indexOf(substring.toLowerCase()) == 0)
                 r.push(allPersons[i]);
@@ -208,7 +202,7 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
 
     // Texas -> Utah, Michigan -> Michigan & Arkansas, Washington -> nil
 
-    if ([manipulateTokenInsertionButton intValue])
+    if (tokenField['manipulateTokenInsertionButton'] && [tokenField['manipulateTokenInsertionButton'] intValue])
     {
         if (tokens[0] == "Texas")
             return ["Utah"];
@@ -229,6 +223,49 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
 - (CPMenu)tokenField:(CPTokenField)aTokenField menuForRepresentedObject:(id)aRepresentedObject
 {
     return aRepresentedObject.menu;
+}
+
+@end
+
+@implementation TokenFieldOptionsController : CPObject
+{
+    CPTokenField tokenField;
+}
+
+- (BOOL)tokenFieldHasMenus
+{
+    return !![[[tokenField objectValue] firstObject] menu];
+}
+
+- (void)setTokenFieldHasCloseButtons:(BOOL)shouldHaveCloseButtons
+{
+   [tokenField setButtonType:shouldHaveCloseButtons ? CPTokenFieldDeleteButtonType : CPTokenFieldDisclosureButtonType];
+}
+
+- (BOOL)tokenFieldHasCloseButtons
+{
+    return !![tokenField buttonType] === CPTokenFieldDeleteButtonType;
+}
+
+- (void)setTokenFieldHasMenus:(BOOL)shouldHaveMenus
+{
+    if (shouldHaveMenus)
+    {
+        [[tokenField objectValue] enumerateObjectsUsingBlock:function(aPerson)
+            {
+                var menu = [CPMenu new];
+                for (var i = 0; i < 3; i++)
+                    [menu addItem:[[CPMenuItem alloc] initWithTitle:[CPString stringWithFormat:@"%@ Item %i", aPerson, i] action:nil keyEquivalent:nil]];
+                aPerson.menu = menu;
+            }];
+    }
+    else
+        [[tokenField objectValue] makeObjectsPerformSelector:@selector(setMenu:) withObject:nil];
+}
+
+- (void)getObjectValues:(id)sender
+{
+    alert([tokenField objectValue]);
 }
 
 @end

@@ -8,6 +8,7 @@
 
 @import <Foundation/CPObject.j>
 
+CPLogRegister(CPLogConsole);
 
 @implementation AppController : CPObject
 {
@@ -43,11 +44,11 @@
 
     var view = [oview makeViewWithIdentifier:identifier owner:self];
     [[view textField] setStringValue:@"Item <" + [item UID] + ">"];
-    
+
     if (identifier = @"firstRoot")
     {
         var expandButton = [view viewWithTag:1000];
-        [expandButton setState:[outlineView isItemExpanded:item]];        
+        [expandButton setState:[outlineView isItemExpanded:item]];
     }
 
     return view;
@@ -57,7 +58,7 @@
 {
     var row = [outlineView rowForView:sender],
         item = [outlineView itemAtRow:row];
-    
+
     if ([outlineView isItemExpanded:item])
         [outlineView collapseItem:item];
     else

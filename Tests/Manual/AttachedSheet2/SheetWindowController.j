@@ -1,3 +1,8 @@
+@import <AppKit/CPAlert.j>
+@import <AppKit/CPApplication.j>
+@import <AppKit/CPPopover.j>
+@import <AppKit/CPViewController.j>
+@import <AppKit/CPWindowController.j>
 
 @implementation SheetWindowController : CPWindowController
 {
@@ -14,6 +19,8 @@
     @outlet CPButton        _shadeWindowView;
     @outlet CPButton        _shadeContentView;
     @outlet CPButton        _shadeParentWindow;
+    @outlet CPTextField     _textField;
+    @outlet CPTokenField    _tokenField;
 
     CPModalSession          _modalSession;
     CPWindow                _parentWindow;
@@ -75,6 +82,8 @@
         [self setWindow:hudWindow];
         [contentView _setThemeIncludingDescendants:[CPTheme defaultHudTheme]];
     }
+
+    [[_textField window] makeFirstResponder:_textField];
 }
 
 - (void)unsetAction:(id)sender
@@ -149,10 +158,12 @@
         [[_windowTypeMatrix selectedRadio] tag]);
 
     var type = 1;
+
     if (_windowTypeMatrix)
         type = [[_windowTypeMatrix selectedRadio] tag];
 
     var styleMask = 0;
+
     if ([_titledMaskButton state])
         styleMask |= CPTitledWindowMask;
 
@@ -167,16 +178,21 @@
         case 2:
             styleMask |= CPHUDBackgroundWindowMask;
             break;
+
         case 3:
             styleMask = CPBorderlessWindowMask;
             break;
+
         case 4:
             styleMask |= CPTexturedBackgroundWindowMask;
             break;
+
         case 5:
             styleMask = CPDocModalWindowMask;
             break;
+
         default:
+            break;
     }
 
     if ([_resizableMaskButton state])
@@ -186,6 +202,7 @@
         styleMask = -1;
 
     var debug = 0;
+
     if ([_shadeWindowView state])
         debug |= 1;
 
@@ -207,6 +224,7 @@
     CPLog.debug("[%@ %@]", [self class], _cmd);
 
     var unsetSelector = @selector(unsetAction:);
+
     if (_closeButton)
         [_closeButton setEnabled:[_closeButton action] != unsetSelector];
 
@@ -395,12 +413,6 @@
         modalDelegate:self
         didEndSelector:@selector(didEndSheet:returnCode:contextInfo:)
         contextInfo:parentWindow];
-
-    // what is the difference between these two approaches?
-    [CPApp runModalForWindow:sheet];
-
-    //var session = [CPApp beginModalSessionForWindow:sheet];
-    //[CPApp runModalSession:session];
 }
 
 - (void)closeModalSheet:(id)sender
@@ -447,6 +459,28 @@
                       modalDelegate:self
                      didEndSelector:@selector(didEndSheet:returnCode:contextInfo:)
                         contextInfo:parentWindow];
+}
+
+//
+// Test popover
+//
+- (@action)newPopover:(id)sender
+{
+    [[self allocController] runPopoverForWindow:[self window] withSender:sender];
+}
+
+- (void)runPopoverForWindow:(CPWindow)parentWindow withSender:(id)sender
+{
+    var aPopover = [CPPopover new],
+        viewController = [CPViewController new];
+
+    [aPopover setContentViewController:viewController];
+    [[self window] close];
+    [viewController setView:[[self window] contentView]];
+    [aPopover setContentSize:[[[self window] contentView] boundsSize]];
+    [aPopover setAnimates:YES];
+    [aPopover setBehavior:CPPopoverBehaviorTransient];
+    [aPopover showRelativeToRect:[sender bounds] ofView:sender preferredEdge:CPMaxXEdge];
 }
 
 //

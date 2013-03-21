@@ -404,25 +404,25 @@ function CPThemeStateName(aState)
     return name;
 }
 
-CPThemeStateNames[0]        = "normal";
-CPThemeStateNormal          = CPThemeStates["normal"] = 0;
-CPThemeStateDisabled        = CPThemeState("disabled");
-CPThemeStateHovered         = CPThemeState("hovered");
-CPThemeStateHighlighted     = CPThemeState("highlighted");
-CPThemeStateSelected        = CPThemeState("selected");
-CPThemeStateTableDataView   = CPThemeState("tableDataView");
-CPThemeStateSelectedDataView = CPThemeStateSelectedTableDataView = CPThemeState("selectedTableDataView");
-CPThemeStateGroupRow        = CPThemeState("CPThemeStateGroupRow");
-CPThemeStateBezeled         = CPThemeState("bezeled");
-CPThemeStateBordered        = CPThemeState("bordered");
-CPThemeStateEditable        = CPThemeState("editable");
-CPThemeStateEditing         = CPThemeState("editing");
-CPThemeStateVertical        = CPThemeState("vertical");
-CPThemeStateDefault         = CPThemeState("default");
-CPThemeStateCircular        = CPThemeState("circular");
-CPThemeStateAutocompleting  = CPThemeState("autocompleting");
-CPThemeStateMainWindow      = CPThemeState("mainWindow");
-CPThemeStateKeyWindow       = CPThemeState("keyWindow");
+CPThemeStateNames[0]         = "normal";
+CPThemeStateNormal           = CPThemeStates["normal"] = 0;
+CPThemeStateDisabled         = CPThemeState("disabled");
+CPThemeStateHovered          = CPThemeState("hovered");
+CPThemeStateHighlighted      = CPThemeState("highlighted");
+CPThemeStateSelected         = CPThemeState("selected");
+CPThemeStateTableDataView    = CPThemeState("tableDataView");
+CPThemeStateSelectedDataView = CPThemeState("selectedTableDataView");
+CPThemeStateGroupRow         = CPThemeState("CPThemeStateGroupRow");
+CPThemeStateBezeled          = CPThemeState("bezeled");
+CPThemeStateBordered         = CPThemeState("bordered");
+CPThemeStateEditable         = CPThemeState("editable");
+CPThemeStateEditing          = CPThemeState("editing");
+CPThemeStateVertical         = CPThemeState("vertical");
+CPThemeStateDefault          = CPThemeState("default");
+CPThemeStateCircular         = CPThemeState("circular");
+CPThemeStateAutocompleting   = CPThemeState("autocompleting");
+CPThemeStateMainWindow       = CPThemeState("mainWindow");
+CPThemeStateKeyWindow        = CPThemeState("keyWindow");
 
 @implementation _CPThemeAttribute : CPObject
 {
@@ -431,7 +431,7 @@ CPThemeStateKeyWindow       = CPThemeState("keyWindow");
     CPDictionary        _values @accessors(readonly, getter=values);
 
     JSObject            _cache;
-    _CPThemeAttribute   _parentAttribute;
+    _CPThemeAttribute   _themeDefaultAttribute;
 }
 
 - (id)initWithName:(CPString)aName defaultValue:(id)aDefaultValue
@@ -542,10 +542,17 @@ CPThemeStateKeyWindow       = CPThemeState("keyWindow");
     }
 
     if (value === undefined || value === nil)
-        value = [_parentAttribute valueForState:aState];
+        value = [_themeDefaultAttribute valueForState:aState];
 
     if (value === undefined || value === nil)
+    {
         value = _defaultValue;
+
+        // Class theme attributes cannot use nil because it's a dictionary.
+        // So transform CPNull into nil.
+        if (value === [CPNull null])
+            value = nil;
+    }
 
     _cache[aState] = value;
 
@@ -554,11 +561,11 @@ CPThemeStateKeyWindow       = CPThemeState("keyWindow");
 
 - (void)setParentAttribute:(_CPThemeAttribute)anAttribute
 {
-    if (_parentAttribute === anAttribute)
+    if (_themeDefaultAttribute === anAttribute)
         return;
 
     _cache = { };
-    _parentAttribute = anAttribute;
+    _themeDefaultAttribute = anAttribute;
 }
 
 - (_CPThemeAttribute)attributeMergedWithAttribute:(_CPThemeAttribute)anAttribute

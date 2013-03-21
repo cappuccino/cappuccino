@@ -986,20 +986,20 @@ var themedButtonValues = nil,
         [@"content-inset",      CGInsetMake(3.0, 3.0, 3.0, 5.0),    CPThemeStateTableDataView],
 
         [@"text-color",         [CPColor colorWithCalibratedWhite:51.0 / 255.0 alpha:1.0], CPThemeStateTableDataView],
-        [@"text-color",         [CPColor whiteColor],                CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
-        [@"font",               [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize], CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
+        [@"text-color",         [CPColor whiteColor],                CPThemeStateTableDataView | CPThemeStateSelectedDataView],
+        [@"font",               [CPFont systemFontOfSize:CPFontCurrentSystemSize], CPThemeStateTableDataView | CPThemeStateSelectedDataView],
         [@"text-color",         [CPColor blackColor],                CPThemeStateTableDataView | CPThemeStateEditable],
-        [@"text-color",         [CPColor blackColor],                CPThemeStateTableDataView | CPThemeStateSelectedTableDataView | CPThemeStateEditing],
+        [@"text-color",         [CPColor blackColor],                CPThemeStateTableDataView | CPThemeStateSelectedDataView | CPThemeStateEditing],
         [@"text-color",         [CPColor blackColor],                CPThemeStateTableDataView |  CPThemeStateBezeled],
         [@"content-inset",      CGInsetMake(8.0, 8.0, 7.0, 5.0),     CPThemeStateTableDataView | CPThemeStateEditing],
         [@"font",               [CPFont systemFontOfSize:CPFontCurrentSystemSize], CPThemeStateTableDataView | CPThemeStateEditing],
         [@"bezel-inset",        CGInsetMake(-1.0, -1.0, -1.0, -1.0), CPThemeStateTableDataView | CPThemeStateEditing],
 
         [@"text-color",         [CPColor colorWithCalibratedWhite:125.0 / 255.0 alpha:1.0], CPThemeStateTableDataView | CPThemeStateGroupRow],
-        [@"text-color",         [CPColor colorWithCalibratedWhite:1.0 alpha:1.0], CPThemeStateTableDataView | CPThemeStateGroupRow | CPThemeStateSelectedTableDataView],
+        [@"text-color",         [CPColor colorWithCalibratedWhite:1.0 alpha:1.0], CPThemeStateTableDataView | CPThemeStateGroupRow | CPThemeStateSelectedDataView],
         [@"text-shadow-color",  [CPColor whiteColor],                CPThemeStateTableDataView | CPThemeStateGroupRow],
         [@"text-shadow-offset",  CGSizeMake(0,1),                    CPThemeStateTableDataView | CPThemeStateGroupRow],
-        [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:0.0 alpha:0.6], CPThemeStateTableDataView | CPThemeStateGroupRow | CPThemeStateSelectedTableDataView],
+        [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:0.0 alpha:0.6], CPThemeStateTableDataView | CPThemeStateGroupRow | CPThemeStateSelectedDataView],
         [@"font",               [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize],  CPThemeStateTableDataView | CPThemeStateGroupRow]
     ];
 
@@ -1843,7 +1843,7 @@ var themedButtonValues = nil,
         sourceListSelectionColor = @{
             CPSourceListGradient: CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [98.0 / 255.0, 143.0 / 210.0, 209.0 / 255.0, 1.0, 46.0 / 255.0, 88.0 / 176.0, 208.0 / 255.0,1.0], [0,1], 2),
             CPSourceListTopLineColor: [CPColor colorWithCalibratedRed:81.0 / 255.0 green:127.0 / 255.0 blue:200.0 / 255.0 alpha:1.0],
-            CPSourceListBottomLineColor: [CPColor colorWithCalibratedRed:34.0 / 255.0 green:63.0 / 255.0 blue:123.0 / 255.0 alpha:1.0],
+            CPSourceListBottomLineColor: [CPColor colorWithCalibratedRed:34.0 / 255.0 green:63.0 / 255.0 blue:123.0 / 255.0 alpha:1.0]
         },
 
         themedTableViewValues =
@@ -2327,7 +2327,7 @@ var themedButtonValues = nil,
 {
     var windowView = [[_CPWindowView alloc] initWithFrame:CGRectMakeZero()],
 
-        sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
+        sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 1, 8),
         resizeIndicator = PatternImage(@"window-resize-indicator.png", 12, 12),
 
         shadowColor = PatternColor(
@@ -2350,6 +2350,7 @@ var themedButtonValues = nil,
         [@"window-shadow-color",            shadowColor],
         [@"resize-indicator",               resizeIndicator],
         [@"attached-sheet-shadow-color",    sheetShadow],
+        [@"shadow-height",                  8],
         [@"size-indicator",                 CGSizeMake(12, 12)]
     ];
 
@@ -2457,7 +2458,6 @@ var themedButtonValues = nil,
         minimizeButtonImage =               PatternImage(@"window-standard-minimize-button.png",16, 16),
         minimizeButtonImageHighlighted =    PatternImage(@"window-standard-minimize-button-highlighted.png",16, 16),
 
-        sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
         resizeIndicator = PatternImage(@"window-resize-indicator.png", 12, 12),
 
         themeValues =
@@ -2492,7 +2492,6 @@ var themedButtonValues = nil,
             [@"close-image-origin",                 CGPointMake(8.0, 10.0)],
 
             [@"resize-indicator",               resizeIndicator],
-            [@"attached-sheet-shadow-color",    sheetShadow],
             [@"size-indicator",                 CGSizeMake(12, 12)]
         ];
 
@@ -2503,7 +2502,7 @@ var themedButtonValues = nil,
 
 + (_CPDocModalWindowView)themedDocModalWindowView
 {
-    var docModalWindowView = [[_CPDocModalWindowView alloc] initWithFrame:CGRectMake(0,0,200,200) styleMask:nil],
+    var docModalWindowView = [[_CPDocModalWindowView alloc] initWithFrame:CGRectMake(0, 0, 200, 200) styleMask:nil],
 
         bezelColor = PatternColor(
         [
@@ -2518,13 +2517,9 @@ var themedButtonValues = nil,
             [@"window-standard-bottom-right.png", 2.0, 2.0]
         ]),
 
-        sheetShadow = PatternColor(@"window-attached-sheet-shadow.png", 9, 8),
-
         themeValues =
         [
-            [@"body-color",                     bezelColor],
-            [@"height-shadow",                  8],
-            [@"attached-sheet-shadow-color",    sheetShadow]
+            [@"body-color", bezelColor]
         ];
 
     [self registerThemeValues:themeValues forView:docModalWindowView inherit:themedWindowViewValues];

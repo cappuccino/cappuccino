@@ -53,8 +53,8 @@
     if (select == _selected)
         return;
 
-    var selector = select ? @"setThemeState:" : @"unsetThemeState:";
-    [[self subviews] makeObjectsPerformSelector:CPSelectorFromString(selector)  withObject:CPThemeStateSelectedDataView];
+    var selector = select ? @selector(setThemeState:) : @selector(unsetThemeState:);
+    [[self subviews] makeObjectsPerformSelector:selector  withObject:CPThemeStateSelectedDataView];
     _selected = select;
 }
 

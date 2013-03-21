@@ -122,7 +122,7 @@ CPRatingLevelIndicatorStyle                 = 3;
 
 - (CPView)createEphemeralSubviewNamed:(CPString)aName
 {
-    return [[CPView alloc] initWithFrame:_CGRectMakeZero()];
+    return [[CPView alloc] initWithFrame:CGRectMakeZero()];
 }
 
 - (CGRect)rectForEphemeralSubviewNamed:(CPString)aViewName
@@ -130,11 +130,11 @@ CPRatingLevelIndicatorStyle                 = 3;
     // TODO Put into theme attributes.
     var bezelHeight = 18,
         segmentHeight = 17,
-        bounds = _CGRectCreateCopy([self bounds]);
+        bounds = CGRectCreateCopy([self bounds]);
 
     if (aViewName == "bezel")
     {
-        bounds.origin.y = (_CGRectGetHeight(bounds) - bezelHeight) / 2.0;
+        bounds.origin.y = (CGRectGetHeight(bounds) - bezelHeight) / 2.0;
         bounds.size.height = bezelHeight;
         return bounds;
     }
@@ -144,13 +144,13 @@ CPRatingLevelIndicatorStyle                 = 3;
             segmentCount = _maxValue - _minValue;
 
         if (segment >= segmentCount)
-            return _CGRectMakeZero();
+            return CGRectMakeZero();
 
         var basicSegmentWidth = bounds.size.width / segmentCount,
             segmentFrame = CGRectCreateCopy([self bounds]),
             spacing = [self valueForThemeAttribute:@"spacing"];
 
-        segmentFrame.origin.y = (_CGRectGetHeight(bounds) - bezelHeight) / 2.0;
+        segmentFrame.origin.y = (CGRectGetHeight(bounds) - bezelHeight) / 2.0;
         segmentFrame.origin.x =  FLOOR(segment * basicSegmentWidth);
         segmentFrame.size.width = (segment == segmentCount - 1) ? bounds.size.width - segmentFrame.origin.x : FLOOR(((segment + 1) * basicSegmentWidth)) - FLOOR((segment * basicSegmentWidth)) - spacing;
         segmentFrame.size.height = segmentHeight;
@@ -158,7 +158,7 @@ CPRatingLevelIndicatorStyle                 = 3;
         return segmentFrame;
     }
 
-    return _CGRectMakeZero();
+    return CGRectMakeZero();
 }
 
 /*!

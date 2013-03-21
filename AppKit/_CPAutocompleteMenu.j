@@ -161,9 +161,9 @@ var _CPAutocompleteMenuMaximumHeight = 307;
 
         var dataView = [tableColumn dataView],
             fontNormal = [dataView valueForThemeAttribute:@"font" inState:CPThemeStateTableDataView],
-            fontSelected = [dataView valueForThemeAttribute:@"font" inState:CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
+            fontSelected = [dataView valueForThemeAttribute:@"font" inState:CPThemeStateTableDataView | CPThemeStateSelectedDataView],
             contentInsetNormal = [dataView valueForThemeAttribute:@"content-inset" inState:CPThemeStateTableDataView],
-            contentInsetSelected = [dataView valueForThemeAttribute:@"content-inset" inState:CPThemeStateTableDataView | CPThemeStateSelectedTableDataView];
+            contentInsetSelected = [dataView valueForThemeAttribute:@"content-inset" inState:CPThemeStateTableDataView | CPThemeStateSelectedDataView];
 
         var mergedString = contentArray.join("\n");
 
@@ -270,8 +270,22 @@ var _CPAutocompleteMenuMaximumHeight = 307;
 
 @implementation _CPAutocompleteWindow : CPPanel
 
+- (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned int)aStyleMask
+{
+    if (self = [super initWithContentRect:aContentRect styleMask:aStyleMask])
+        _constrainsToUsableScreen = NO;
+
+    return self;
+}
+
 - (BOOL)becomesKeyOnlyIfNeeded
 {
+    return YES;
+}
+
+- (BOOL)worksWhenModal
+{
+    // Windows which serve as auxiliary controls should work when modal.
     return YES;
 }
 

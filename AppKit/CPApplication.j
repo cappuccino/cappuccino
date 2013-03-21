@@ -20,8 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#import "../Foundation/CPRange.h"
-
 @import <Foundation/CPBundle.j>
 
 @import "CPCompatibility.j"
@@ -87,6 +85,7 @@ CPRunContinuesResponse  = -1002;
 @implementation CPApplication : CPResponder
 {
     CPArray                 _eventListeners;
+    int                     _eventListenerInsertionIndex;
 
     CPEvent                 _currentEvent;
     CPWindow                _lastMouseMoveWindow;
@@ -144,6 +143,7 @@ CPRunContinuesResponse  = -1002;
     if (self)
     {
         _eventListeners = [];
+        _eventListenerInsertionIndex = 0;
 
         _windows = [[CPNull null]];
     }
@@ -509,6 +509,8 @@ CPRunContinuesResponse  = -1002;
         if (_eventListeners[count]._callback === _CPRunModalLoop)
         {
             _eventListeners.splice(count, 1);
+            if (count <= _eventListenerInsertionIndex)
+                _eventListenerInsertionIndex--;
 
             return;
         }
@@ -625,25 +627,33 @@ CPRunContinuesResponse  = -1002;
         _lastMouseMoveWindow = theWindow;
     }
 
-    if (_eventListeners.length)
+    /*
+        Event listeners are processed from back to front so that newer event listeners normally take
+        precedence. If during the execution of a callback a new event listener is added, it should
+        be inserted after the current callback but before any higher priority callbacks. This makes
+        repeating event listeners (those that reinsert themselves) stable relative to each other.
+    */
+    for (var i = _eventListeners.length - 1; i >= 0; i--)
     {
-        var listener = _eventListeners[_eventListeners.length - 1];
+        var listener = _eventListeners[i];
 
         if (listener._mask & (1 << [anEvent type]))
         {
-            _eventListeners.pop();
+            _eventListeners.splice(i, 1);
+            // In case the callback wants to add more listeners.
+            _eventListenerInsertionIndex = i;
             listener._callback(anEvent);
-        }
 
-        /*
-            FIXME: This does not match Cocoa documented behavior for the dequeue
-            flag. Cocoa says the event is dequeued only if it matches the mask.
-            Unfortunately event handling code in Cappuccino is depending
-            on an event being dequeued even if it does not match.
-        */
-        if (listener._dequeue)
-            return;
+            if (listener._dequeue)
+            {
+                // Don't process the event normally and don't send it to any other listener.
+                _eventListenerInsertionIndex = _eventListeners.length;
+                return;
+            }
+        }
     }
+
+    _eventListenerInsertionIndex = _eventListeners.length;
 
     if (theWindow)
         [theWindow sendEvent:anEvent];
@@ -695,7 +705,7 @@ CPRunContinuesResponse  = -1002;
 - (CPArray)windows
 {
     // Return all windows, but not the CPNull placeholder in _windows[0].
-    return [_windows subarrayWithRange:_CPMakeRange(1, [_windows count] - 1)];
+    return [_windows subarrayWithRange:CPMakeRange(1, [_windows count] - 1)];
 }
 
 /*!
@@ -923,6 +933,12 @@ CPRunContinuesResponse  = -1002;
 
 /*!
     Fires a callback function when an event matching a given mask occurs.
+
+    If multiple callbacks are set which match the same event, later callbacks
+    take priority over earlier callbacks, unless a new callback is set while
+    an existing callback is being processed in which case it's given the same
+    priority as the currently processing callback.
+
     @param aCallback A js function to be fired.
     @prarm aMask An event mask for the next event.
     @param anExpiration The date for which this callback expires (not implemented).
@@ -932,12 +948,17 @@ CPRunContinuesResponse  = -1002;
 */
 - (void)setCallback:(Function)aCallback forNextEventMatchingMask:(unsigned int)aMask untilDate:(CPDate)anExpiration inMode:(CPString)aMode dequeue:(BOOL)shouldDequeue
 {
-    _eventListeners.push(_CPEventListenerMake(aMask, aCallback, shouldDequeue));
+    _eventListeners.splice(_eventListenerInsertionIndex++, 0, _CPEventListenerMake(aMask, aCallback, shouldDequeue));
 }
 
 /*!
     Assigns a target and action for the next event matching a given event mask.
     The callback method called will be passed the CPEvent when it fires.
+
+    If multiple callbacks are set which match the same event, later callbacks
+    take priority over earlier callbacks, unless a new callback is set while
+    an existing callback is being processed in which case it's given the same
+    priority as the currently processing callback.
 
     @param aTarget The target object for the callback.
     @param aSelector The selector which should be called on the target object.
@@ -949,7 +970,7 @@ CPRunContinuesResponse  = -1002;
 */
 - (void)setTarget:(id)aTarget selector:(SEL)aSelector forNextEventMatchingMask:(unsigned int)aMask untilDate:(CPDate)anExpiration inMode:(CPString)aMode dequeue:(BOOL)shouldDequeue
 {
-    _eventListeners.push(_CPEventListenerMake(aMask, function (anEvent) { objj_msgSend(aTarget, aSelector, anEvent); }, shouldDequeue));
+    _eventListeners.splice(_eventListenerInsertionIndex++, 0, _CPEventListenerMake(aMask, function (anEvent) { objj_msgSend(aTarget, aSelector, anEvent); }, shouldDequeue));
 }
 
 /*!
@@ -967,10 +988,10 @@ CPRunContinuesResponse  = -1002;
     @param aSheet the window to display as a sheet
     @param aWindow the window that will hold the sheet as a child
     @param aModalDelegate
-    @param aDidEndSelector
-    @param aContextInfo
+    @param didEndSelector
+    @param contextInfo
 */
-- (void)beginSheet:(CPWindow)aSheet modalForWindow:(CPWindow)aWindow modalDelegate:(id)aModalDelegate didEndSelector:(SEL)aDidEndSelector contextInfo:(id)aContextInfo
+- (void)beginSheet:(CPWindow)aSheet modalForWindow:(CPWindow)aWindow modalDelegate:(id)aModalDelegate didEndSelector:(SEL)didEndSelector contextInfo:(id)contextInfo
 {
     if ([aWindow isSheet])
     {
@@ -978,17 +999,8 @@ CPRunContinuesResponse  = -1002;
         return;
     }
 
-    [aSheet._windowView _enableSheet:YES];
-
-    // -dw- if a sheet is already visible, we skip this since it serves no purpose and causes
-    // orderOut: to be called on the sheet, which is not what we want.
-    if (![aWindow isVisible])
-    {
-        [aWindow orderFront:self];
-        [aSheet setPlatformWindow:[aWindow platformWindow]];
-    }
-
-    [aWindow _attachSheet:aSheet modalDelegate:aModalDelegate didEndSelector:aDidEndSelector contextInfo:aContextInfo];
+    [aSheet._windowView _enableSheet:YES inWindow:aWindow];
+    [aWindow _attachSheet:aSheet modalDelegate:aModalDelegate didEndSelector:didEndSelector contextInfo:contextInfo];
 }
 
 /*!
@@ -1013,7 +1025,7 @@ CPRunContinuesResponse  = -1002;
         var aWindow = [_windows objectAtIndex:count],
             context = aWindow._sheetContext;
 
-        if (context != nil && context["sheet"] === sheet)
+        if (context && context["sheet"] === sheet)
         {
             context["returnCode"] = returnCode;
             [aWindow _endSheet];
