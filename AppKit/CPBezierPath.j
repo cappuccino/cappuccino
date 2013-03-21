@@ -241,7 +241,7 @@ var DefaultLineWidth = 1.0;
 {
     if (patternRef)
         @deref(patternRef) = [_lineDashes copy];
-    if (phase)
+    if (phaseRef)
         @deref(phaseRef) = _lineDashesPhase;
 }
 
