@@ -279,6 +279,33 @@ var CPSharedDocumentController = nil;
     [_documents removeObjectIdenticalTo:aDocument];
 }
 
+/*!
+    Returns the document object whose window controller
+    owns a specified window.
+*/
+- (CPDocument)documentForWindow:(CPWindow)aWindow
+{
+   return [[aWindow windowController] document];
+}
+
+/*!
+    Returns a Boolean value that indicates whether the receiver
+    has any documents with unsaved changes.
+*/
+- (BOOL)hasEditedDocuments
+{
+    var iter =  [_documents objectEnumerator],
+        obj;
+        
+    while ((obj = [iter nextObject]) !== nil)
+    {
+        if ([obj isDocumentEdited])
+            return YES;
+    }
+
+    return NO;
+}
+
 - (CPString)defaultType
 {
     return [_documentTypes[0] objectForKey:@"CPBundleTypeName"];
