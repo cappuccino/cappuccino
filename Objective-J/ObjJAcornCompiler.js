@@ -534,6 +534,7 @@ BlockStatement: function(node, st, c) {
         generate = compiler.generate,
         buffer;
     if (generate) {
+      st.indentBlockLevel = typeof st.indentBlockLevel === "undefined" ? 0 : st.indentBlockLevel + 1;
       buffer = compiler.jsBuffer;
       CONCAT(buffer, indentation.substring(2));
       CONCAT(buffer, "{\n");
@@ -543,7 +544,10 @@ BlockStatement: function(node, st, c) {
     }
     if (generate) {
       CONCAT(buffer, indentation.substring(2));
-      CONCAT(buffer, "}\n");
+      CONCAT(buffer, "}");
+      if (st.isDecl || st.indentBlockLevel > 0)
+        CONCAT(buffer, "\n");
+      st.indentBlockLevel--;
     }
 },
 ExpressionStatement: function(node, st, c) {
@@ -731,7 +735,7 @@ WhileStatement: function(node, st, c) {
     if (generate) {
       buffer = compiler.jsBuffer;
       CONCAT(buffer, indentation);
-      CONCAT(buffer, "while(");
+      CONCAT(buffer, "while (");
     }
     c(node.test, st, "Expression");
     if (generate) CONCAT(buffer, ")\n");
@@ -751,7 +755,10 @@ DoWhileStatement: function(node, st, c) {
     indentation += indentStep;
     c(node.body, st, "Statement");
     indentation = indentation.substring(indentationSpaces);
-    if (generate) CONCAT(buffer, "while(");
+    if (generate) {
+      CONCAT(buffer, indentation);
+      CONCAT(buffer, "while (");
+    }
     c(node.test, st, "Expression");
     if (generate) CONCAT(buffer, ");\n");
 },
@@ -762,7 +769,7 @@ ForStatement: function(node, st, c) {
     if (generate) {
       buffer = compiler.jsBuffer;
       CONCAT(buffer, indentation);
-      CONCAT(buffer, "for(");
+      CONCAT(buffer, "for (");
     }
     if (node.init) c(node.init, st, "ForInit");
     if (generate) CONCAT(buffer, "; ");
@@ -781,7 +788,7 @@ ForInStatement: function(node, st, c) {
     if (generate) {
       buffer = compiler.jsBuffer;
       CONCAT(buffer, indentation);
-      CONCAT(buffer, "for(");
+      CONCAT(buffer, "for (");
     }
     c(node.left, st, "ForInit");
     if (generate) CONCAT(buffer, " in ");
@@ -813,11 +820,13 @@ Function: function(node, st, c) {
   var compiler = st.compiler,
       generate = compiler.generate,
       buffer = compiler.jsBuffer;
-      inner = new Scope(st);
+      inner = new Scope(st),
+      decl = node.type == "FunctionDeclaration";
+
+      inner.isDecl = decl;
   for (var i = 0; i < node.params.length; ++i)
     inner.vars[node.params[i].name] = {type: "argument", node: node.params[i]};
   if (node.id) {
-    var decl = node.type == "FunctionDeclaration";
     (decl ? st : inner).vars[node.id.name] =
       {type: decl ? "function" : "function name", node: node.id};
     if (generate) {
@@ -850,7 +859,7 @@ VariableDeclaration: function(node, st, c) {
       buffer;
   if (generate) {
     buffer = compiler.jsBuffer;
-    CONCAT(buffer, indentation);
+    if (!st.isFor) CONCAT(buffer, indentation);
     CONCAT(buffer, "var ");
   }
   for (var i = 0; i < node.declarations.length; ++i) {
@@ -1180,7 +1189,6 @@ Identifier: function(node, st, c) {
     }
     if (generate) CONCAT(compiler.jsBuffer, identifier);
 },
-// FIXME: Must escape '"'
 Literal: function(node, st, c) {
     var compiler = st.compiler,
         generate = compiler.generate;
