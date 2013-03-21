@@ -526,4 +526,44 @@
     [self assertTrue:sawException message:"expected CPRangeException"];
 }
 
+- (void)testStringByTrimmingCharactersInSet
+{
+    var startOneString = @".This is a test startOne",
+        startManyString = @".,.This is a test startMany",
+        endOneString = @"This is a test endOne.",
+        endManyString = @"This is a test endMany.,.",
+        bothOneString = @".This is a test bothOne,",
+        bothManyString = @".,,This is a test bothMany..,",
+        noneString = @"This is a test none",
+        set = [CPCharacterSet characterSetWithCharactersInString:@".,"];
+
+    [self assert:"This is a test startOne" equals:[startOneString stringByTrimmingCharactersInSet:set]];
+    [self assert:"This is a test startMany" equals:[startManyString stringByTrimmingCharactersInSet:set]];
+    [self assert:"This is a test endOne" equals:[endOneString stringByTrimmingCharactersInSet:set]];
+    [self assert:"This is a test endMany" equals:[endManyString stringByTrimmingCharactersInSet:set]];
+    [self assert:"This is a test bothOne" equals:[bothOneString stringByTrimmingCharactersInSet:set]];
+    [self assert:"This is a test bothMany" equals:[bothManyString stringByTrimmingCharactersInSet:set]];
+    [self assert:"This is a test none" equals:[noneString stringByTrimmingCharactersInSet:set]];
+}
+
+- (void)testStringByTrimmingWhitespace
+{
+    var startOneString = @" This is a test startOne",
+        startManyString = @"   This is a test startMany",
+        endOneString = @"This is a test endOne ",
+        endManyString = @"This is a test endMany   ",
+        bothOneString = @" This is a test bothOne ",
+        bothManyString = @"   This is a test bothMany   ",
+        noneString = @"This is a test none",
+        set = [CPCharacterSet characterSetWithCharactersInString:@" "];
+
+    [self assert:"This is a test startOne" equals:[startOneString stringByTrimmingCharactersInSet:set]];
+    [self assert:"This is a test startMany" equals:[startManyString stringByTrimmingCharactersInSet:set]];
+    [self assert:"This is a test endOne" equals:[endOneString stringByTrimmingCharactersInSet:set]];
+    [self assert:"This is a test endMany" equals:[endManyString stringByTrimmingCharactersInSet:set]];
+    [self assert:"This is a test bothOne" equals:[bothOneString stringByTrimmingCharactersInSet:set]];
+    [self assert:"This is a test bothMany" equals:[bothManyString stringByTrimmingCharactersInSet:set]];
+    [self assert:"This is a test none" equals:[noneString stringByTrimmingCharactersInSet:set]];
+}
+
 @end
