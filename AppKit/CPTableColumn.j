@@ -181,7 +181,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
             columns = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(index, [tableView._exposedColumns lastIndex] - index + 1)];
 
         // FIXME: Would be faster with some sort of -setNeedsDisplayInColumns: that updates a dirtyTableColumnForDisplay cache; then marked columns would relayout their data views at display time.
-        [tableView _layoutDataViewsInRows:rows columns:columns];
+        [tableView _layoutViewsForRowIndexes:rows columnIndexes:columns];
         [tableView tile];
 
         if (!_disableResizingPosting)

@@ -182,6 +182,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPInteger           _numberOfHiddenColumns;
 
     BOOL                _reloadAllRows;
+    BOOL                _invalidateObjectValuesCache;
     Object              _objectValues;
 
     CGRect              _exposedRect;
@@ -378,6 +379,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _numberOfHiddenColumns = 0;
 
     _objectValues = { };
+    _invalidateObjectValuesCache = NO;
     _dataViewsForRows = { };
     _numberOfRows = 0;
     _exposedRows = [CPIndexSet indexSet];
@@ -516,7 +518,7 @@ NOT YET IMPLEMENTED
     if ([_dataSource respondsToSelector:@selector(tableView:sortDescriptorsDidChange:)])
         _implementedDataSourceMethods |= CPTableViewDataSource_tableView_sortDescriptorsDidChange_;
 
-    [self reloadData];
+    [self _reloadDataViews];
 }
 
 /*!
@@ -528,6 +530,14 @@ NOT YET IMPLEMENTED
 }
 
 //Loading Data
+/*!
+    Reloads the data for visible data views.
+*/
+- (void)reloadData
+{
+    _objectValues = { };
+    [self reloadDataForRowIndexes:_exposedRows columnIndexes:_exposedColumns];
+}
 
 /*!
     Reloads the data for only the specified rows and columns.
@@ -536,15 +546,18 @@ NOT YET IMPLEMENTED
 */
 - (void)reloadDataForRowIndexes:(CPIndexSet)rowIndexes columnIndexes:(CPIndexSet)columnIndexes
 {
-    [self reloadData];
-//    [_previouslyExposedRows removeIndexes:rowIndexes];
-//    [_previouslyExposedColumns removeIndexes:columnIndexes];
+    var oldnumberOfRows = _numberOfRows;
+
+    if (oldnumberOfRows == 0 || oldnumberOfRows !== [self numberOfRows])
+        [self _reloadDataViews];
+    else
+        [self _enumerateViewsInRows:rowIndexes columns:columnIndexes usingBlock:function(view, row, column, stop)
+        {
+            [self _setObjectValueForTableColumn:_tableColumns[column] row:row forView:view useCache:NO];
+        }];
 }
 
-/*!
-    Reloads the data for all rows and columns.
-*/
-- (void)reloadData
+- (void)_reloadDataViews
 {
     //if (!_dataSource)
     //    return;
@@ -708,11 +721,10 @@ NOT YET IMPLEMENTED
     _dirtyTableColumnRangeIndex = 0; // so that _recalculateTableColumnRanges will work
     [self _recalculateTableColumnRanges];
 
-    [self setNeedsLayout];
     [_headerView setNeedsDisplay:YES];
     [_headerView setNeedsLayout];
 
-    [self reloadData];
+    [self _reloadDataViews];
 }
 
 /*!
@@ -1060,11 +1072,11 @@ NOT YET IMPLEMENTED
 
     // if a column is currently being dragged, update that column (removing data views)
     if (aColumn)
-        [self reloadDataForRowIndexes:_exposedRows columnIndexes:[CPIndexSet indexSetWithIndex:[_tableColumns indexOfObject:aColumn]]];
+        [self _layoutViewsForRowIndexes:_exposedRows columnIndexes:[CPIndexSet indexSetWithIndex:[_tableColumns indexOfObject:aColumn]]];
 
     // when the column is dropped, we should also update it.
     if (previouslyDraggedColumn)
-        [self reloadDataForRowIndexes:_exposedRows columnIndexes:[CPIndexSet indexSetWithIndex:[_tableColumns indexOfObject:previouslyDraggedColumn]]];
+        [self _layoutViewsForRowIndexes:_exposedRows columnIndexes:[CPIndexSet indexSetWithIndex:[_tableColumns indexOfObject:previouslyDraggedColumn]]];
 }
 
 /*
@@ -1093,11 +1105,10 @@ NOT YET IMPLEMENTED
     [[self headerView] setNeedsLayout];
     [[self headerView] setNeedsDisplay:YES];
 
-    var rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])],
-        columnIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(fromIndex, toIndex)];
+    var range = CPMakeRange(MIN(fromIndex, toIndex), ABS(fromIndex - toIndex) + 1);
+    var columnIndexes = [CPIndexSet indexSetWithIndexesInRange:range];
 
-    [self reloadDataForRowIndexes:rowIndexes columnIndexes:columnIndexes];
-
+    [self _layoutViewsForRowIndexes:_exposedRows columnIndexes:columnIndexes];
     // Notify even if programmatically moving a column as in Cocoa.
     // TODO Only notify when a column drag operation ends, not each time a column reaches a new slot?
     [[CPNotificationCenter defaultCenter] postNotificationName:CPTableViewColumnDidMoveNotification
@@ -1133,7 +1144,7 @@ NOT YET IMPLEMENTED
     [[self headerView] setNeedsDisplay:YES];
 
     var rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])];
-    [self reloadDataForRowIndexes:rowIndexes columnIndexes:[CPIndexSet indexSetWithIndex:columnIndex]];
+    [self _layoutViewsForRowIndexes:rowIndexes columnIndexes:[CPIndexSet indexSetWithIndex:columnIndex]];
 }
 
 /*!
@@ -1521,8 +1532,7 @@ NOT YET IMPLEMENTED
         _editingCellIndex = CGPointMake(columnIndex, rowIndex);
         _editingCellIndex._shouldSelect = flag;
 
-        [self reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:rowIndex]
-            columnIndexes:[CPIndexSet indexSetWithIndex:columnIndex]];
+        [self _reloadDataViews];
     }
 }
 
@@ -3258,8 +3268,10 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 /*!
     @ignore
 */
-- (id)_objectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex
+- (id)_objectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex useCache:(BOOL)useCache
 {
+    var objectValue;
+
     var tableColumnUID = [aTableColumn UID],
         tableColumnObjectValues = _objectValues[tableColumnUID];
 
@@ -3269,7 +3281,8 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         _objectValues[tableColumnUID] = tableColumnObjectValues;
     }
 
-    var objectValue = tableColumnObjectValues[aRowIndex];
+    if (useCache)
+        objectValue = tableColumnObjectValues[aRowIndex];
 
     // tableView:objectValueForTableColumn:row: is optional if content bindings are in place.
     if (objectValue === undefined)
@@ -3522,8 +3535,13 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
 - (void)_setObjectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow forView:(CPView)aDataView
 {
+    [self _setObjectValueForTableColumn:aTableColumn row:aRow forView:aDataView useCache:!_invalidateObjectValuesCache];
+}
+
+- (void)_setObjectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow forView:(CPView)aDataView useCache:(BOOL)useCache
+{
     if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_objectValueForTableColumn_row_)
-        [aDataView setObjectValue:[self _objectValueForTableColumn:aTableColumn row:aRow]];
+        [aDataView setObjectValue:[self _objectValueForTableColumn:aTableColumn row:aRow useCache:useCache]];
 
     // This gives the table column an opportunity to apply its bindings.
     // It will override the value set above if there is a binding.
@@ -3547,14 +3565,14 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 /*!
     @ignore
 */
-- (void)_layoutDataViewsInRows:(CPIndexSet)rowIndexes columns:(CPIndexSet)columnIndexes
+- (void)_layoutViewsForRowIndexes:(CPIndexSet)rowIndexes columnIndexes:(CPIndexSet)columnIndexes
 {
-    var blockUpdateFrame = function(view, row, column, stop)
+    [self _enumerateViewsInRows:rowIndexes columns:columnIndexes usingBlock:function(view, row, column, stop)
     {
         [view setFrame:[self frameOfDataViewAtColumn:column row:row]];
-    };
+    }];
 
-    [self _enumerateViewsInRows:rowIndexes columns:columnIndexes usingBlock:blockUpdateFrame];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -3590,11 +3608,9 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if ([sender isKindOfClass:[CPTextField class]])
         [sender setBezeled:NO];
 
-    [self reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:sender.tableViewEditedRowIndex]
-                    columnIndexes:[CPIndexSet indexSetWithIndex:[_tableColumns indexOfObject:sender.tableViewEditedColumnObj]]];
+    [self _reloadDataViews];
 
     [[self window] makeFirstResponder:self];
-
 }
 
 /*!
@@ -4831,7 +4847,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (void)concludeDragOperation:(id)sender
 {
-    [self reloadData];
+    [self _reloadDataViews];
 }
 
 /*
@@ -5301,7 +5317,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     _content = [destination valueForKey:keyPath];
 
-    [_source reloadData];
+    [_source _reloadDataViews];
 }
 
 @end
