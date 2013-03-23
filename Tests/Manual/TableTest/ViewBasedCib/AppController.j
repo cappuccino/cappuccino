@@ -209,11 +209,16 @@ CPLogRegister(CPLogConsole)
             row = [table rowForView:sender];
 
         [table noteHeightOfRowsWithIndexesChanged:[CPIndexSet indexSetWithIndex:row]];
-        [table reloadData];
     }
 
     // Action sent from a cellView subview to its target.
     CPLog.debug(_cmd + " value=" + [sender intValue]);
+}
+
+- (void)setVariableRowHeight:(BOOL)flag
+{
+    variableRowHeight = flag;
+    [[self tableView] reloadData];
 }
 
 - (IBAction)_textFieldNotBezeledAction:(id)sender

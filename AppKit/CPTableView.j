@@ -2210,7 +2210,7 @@ NOT YET IMPLEMENTED
     // this line serves two purposes
     // 1. it updates the _numberOfRows cache with the -numberOfRows call
     // 2. it updates the row height cache if needed
-    [self noteHeightOfRowsWithIndexesChanged:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])]];
+    [self _noteHeightOfRowsWithIndexesChanged:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])]];
 
     // remove row indexes from the selection if they no longer exist
     var hangingSelections = oldNumberOfRows - _numberOfRows;
@@ -2232,13 +2232,10 @@ NOT YET IMPLEMENTED
     [self tile];
 }
 
-
-/*!
-    Informs the receiver that the rows specified in indexSet have changed height.
-
-    @param anIndexSet an index set containing the indexes of the rows which changed height
+/*
+    Like noteHeightOfRowsWithIndexesChanged: but without reloading the data views
 */
-- (void)noteHeightOfRowsWithIndexesChanged:(CPIndexSet)anIndexSet
+- (void)_noteHeightOfRowsWithIndexesChanged:(CPIndexSet)anIndexSet
 {
     if (!(_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_))
         return;
@@ -2262,6 +2259,17 @@ NOT YET IMPLEMENTED
 }
 
 /*!
+    Informs the receiver that the rows specified in indexSet have changed height.
+
+    @param anIndexSet an index set containing the indexes of the rows which changed height
+*/
+- (void)noteHeightOfRowsWithIndexesChanged:(CPIndexSet)anIndexSet
+{
+    [self _noteHeightOfRowsWithIndexesChanged:anIndexSet];
+    [self _reloadDataViews];
+}
+
+/*!
     Lays out the dataviews and resizes the tableview so that everything fits.
 */
 - (void)tile
@@ -2279,7 +2287,7 @@ NOT YET IMPLEMENTED
     {
         // if this is the fist run we need to populate the cache
         if ([self numberOfRows] !== _cachedRowHeights.length)
-            [self noteHeightOfRowsWithIndexesChanged:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])]];
+            [self _noteHeightOfRowsWithIndexesChanged:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])]];
 
         var heightObject = _cachedRowHeights[_cachedRowHeights.length - 1],
             height = heightObject.heightAboveRow + heightObject.height + _intercellSpacing.height;
