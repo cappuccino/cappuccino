@@ -236,7 +236,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CGPoint             _startTrackingPoint;
     CPDate              _startTrackingTimestamp;
     BOOL                _trackingPointMovedOutOfClickSlop;
-    CGPoint             _editingCellIndex;
     CPInteger           _editingRow;
     CPInteger           _editingColumn;
 
@@ -1497,64 +1496,6 @@ NOT YET IMPLEMENTED
     return _numberOfRows;
 }
 
-/*!
-    Edits the dataview at a given row and column. This method is usually invoked automatically and should rarely be invoked directly
-    The row at supplied rowIndex must be selected otherwise an exception is thrown.
-
-    @param columnIndex the index of the column to edit
-    @param rowIndex the index of the row to edit
-    @param theEvent the mouse event which triggers the edit, you can pass nil
-    @param flag YES if the dataview text should be selected, otherwise NO. (NOT YET IMPLEMENTED)
-*/
-- (void)editColumn:(CPInteger)columnIndex row:(CPInteger)rowIndex withEvent:(CPEvent)theEvent select:(BOOL)flag
-{
-    // FIX ME: Cocoa documentation says all this should be called in THIS method:
-    // sets up the field editor, and sends selectWithFrame:inView:editor:delegate:start:length: and editWithFrame:inView:editor:delegate:event: to the field editor's NSCell object with the NSTableView as the text delegate.
-    if (_isViewBased)
-    {
-        var identifier = [_tableColumns[columnIndex] UID],
-            view = _dataViewsForRows[rowIndex][identifier];
-
-        [[self window] makeFirstResponder:view];
-    }
-    else
-    {
-        if (![self isRowSelected:rowIndex])
-            [[CPException exceptionWithName:@"Error" reason:@"Attempt to edit row="+rowIndex+" when not selected." userInfo:nil] raise];
-
-        [self scrollRowToVisible:rowIndex];
-        [self scrollColumnToVisible:columnIndex];
-
-        // TODO Do something with flag.
-
-        _editingCellIndex = CGPointMake(columnIndex, rowIndex);
-        _editingCellIndex._shouldSelect = flag;
-
-        [self _reloadDataViews];
-    }
-}
-
-/*!
-    Returns the column of the currently edited cell, or CPNotFound if none.
-*/
-- (CPInteger)editedColumn
-{
-    if (!_editingCellIndex)
-        return CPNotFound;
-
-    return _editingCellIndex.x;
-}
-
-/*!
-    Returns the row of the currently edited cell, or CPNotFound if none.
-*/
-- (CPInteger)editedRow
-{
-    if (!_editingCellIndex)
-        return CPNotFound;
-
-    return _editingCellIndex.y;
-}
 
 /*!
     Returns the cornerview for the scrollview
@@ -1979,7 +1920,7 @@ NOT YET IMPLEMENTED
             contentView = [[self window] contentView],
             max_rec = 100;
 
-        while (max_rec)
+        while (max_rec--)
         {
             if (!cellView || cellView === contentView)
             {
@@ -3469,9 +3410,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     var tableColumn = _tableColumns[column],
         tableColumnUID = [tableColumn UID],
-        dataView = [self _newDataViewForRow:row tableColumn:tableColumn],
-        isButton = [dataView isKindOfClass:[CPButton class]],
-        isTextField = [dataView isKindOfClass:[CPTextField class]];
+        dataView = [self _newDataViewForRow:row tableColumn:tableColumn];
 
     [dataView setFrame:[self frameOfDataViewAtColumn:column row:row]];
 
@@ -3500,32 +3439,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 
     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_)
         [_delegate tableView:self willDisplayView:dataView forTableColumn:tableColumn row:row];
-
-    if (_isViewBased)
-        return dataView;
-
-    if (isButton || (_editingCellIndex && _editingCellIndex.x === column && _editingCellIndex.y === row))
-    {
-        if (isTextField)
-        {
-            [dataView setEditable:YES];
-            [dataView setSendsActionOnEndEditing:YES];
-            [dataView setSelectable:YES];
-            [dataView selectText:nil];
-            [dataView setBezeled:YES];
-            [dataView setDelegate:self];
-        }
-
-        [dataView setTarget:self];
-        [dataView setAction:@selector(_commitDataViewObjectValue:)];
-        dataView.tableViewEditedColumnObj = tableColumn;
-        dataView.tableViewEditedRowIndex = row;
-    }
-    else if (isTextField)
-    {
-        [dataView setEditable:NO];
-        [dataView setSelectable:NO];
-    }
 
     return dataView;
 }
@@ -3570,65 +3483,6 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     }];
 
     [self setNeedsDisplay:YES];
-}
-
-/*!
-    @ignore
-    The action for any dataview that supports editing. This will only be called when the value was changed.
-    The table view becomes the first responder after user is done editing a dataview.
-*/
-- (void)_commitDataViewObjectValue:(id)sender
-{
-    /*
-        makeFirstResponder at the end of this method causes the dataview to resign.
-        If the dataview resigning triggers the action (as CPTextField does), we come right
-        back here and start an infinite loop. So we have to check this flag first.
-    */
-    if ([sender respondsToSelector:@selector(sendsActionOnEndEditing)] && [sender sendsActionOnEndEditing] && _editingCellIndex === nil)
-        return;
-
-    _editingCellIndex = nil;
-
-    if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_)
-        [_dataSource tableView:self setObjectValue:[sender objectValue] forTableColumn:sender.tableViewEditedColumnObj row:sender.tableViewEditedRowIndex];
-
-    // Allow the column binding to do a reverse set. Note that we do this even if the data source method above
-    // is implemented.
-    [sender.tableViewEditedColumnObj _reverseSetDataView:sender forRow:sender.tableViewEditedRowIndex];
-
-    if ([sender respondsToSelector:@selector(setEditable:)])
-        [sender setEditable:NO];
-
-    if ([sender respondsToSelector:@selector(setSelectable:)])
-        [sender setSelectable:NO];
-
-    if ([sender isKindOfClass:[CPTextField class]])
-        [sender setBezeled:NO];
-
-    [self _reloadDataViews];
-
-    [[self window] makeFirstResponder:self];
-}
-
-/*!
-    @ignore
-    Blur notification handler for editing textfields. This will always be called when a textfield loses focus.
-    This method is responsible for restoring the dataview to its non editable state.
-*/
-- (void)controlTextDidBlur:(CPNotification)theNotification
-{
-    var dataView = [theNotification object];
-
-    if ([dataView respondsToSelector:@selector(setEditable:)])
-        [dataView setEditable:NO];
-
-    if ([dataView respondsToSelector:@selector(setSelectable:)])
-        [dataView setSelectable:NO];
-
-    if ([dataView isKindOfClass:[CPTextField class]])
-        [dataView setBezeled:NO];
-
-    _editingCellIndex = nil;
 }
 
 /*!
@@ -3690,7 +3544,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     if (!anIdentifier)
         return nil;
 
-    var view,
+    var view = nil,
         // See if we have some reusable view available
         reusableViews = _cachedDataViews[anIdentifier];
 
@@ -3916,9 +3770,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 */
 - (BOOL)_isFocused
 {
-    var isEditing = _editingRow !== CPNotFound || _editingCellIndex;
-
-    return [[self window] isKeyWindow] && ([[self window] firstResponder] === self || isEditing);
+    return [[self window] isKeyWindow] && ([[self window] firstResponder] === self || _editingRow !== CPNotFound);
 }
 
 /*!
@@ -5029,10 +4881,35 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     var hit = [super hitTest:aPoint];
 
-    if ([[CPApp currentEvent] type] == CPLeftMouseDown && [hit acceptsFirstResponder] && ![self isRowSelected:[self rowForView:hit]])
-        return self;
+    if ([[CPApp currentEvent] type] !== CPLeftMouseDown)
+        return hit;
 
-    return hit;
+    return [self _hitTest:hit];
+}
+
+- (id)_hitTest:(CPView)aView
+{
+    var column,
+        row;
+
+    if ([aView acceptsFirstResponder])
+    {
+        [self getColumn:@ref(column) row:@ref(row) forView:aView];
+
+        if (![self isRowSelected:row])
+            return self;
+    }
+    else if (!_isViewBased && _implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_ && [aView isKindOfClass:[CPControl class]] && ![aView isKindOfClass:[CPTextField class]])
+    {
+        [self getColumn:@ref(column) row:@ref(row) forView:aView];
+
+        _editingColumn = column;
+        _editingRow = row;
+
+        [aView addObserver:self forKeyPath:@"objectValue" options:CPKeyValueObservingOptionOld|CPKeyValueObservingOptionNew context:"editing"];
+    }
+
+    return aView;
 }
 
 - (void)_startObservingFirstResponder
@@ -5051,10 +4928,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         column,
         row;
 
-    _editingRow = [self rowForView:responder];
-    _editingColumn = [self columnForView:responder];
+    [self getColumn:@ref(column) row:@ref(row) forView:responder];
 
-    if (_editingRow !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && ![responder isBezeled])
+    _editingRow = row;
+    _editingColumn = column;
+
+    if (_editingRow !== CPNotFound && _editingColumn !== CPNotFound && [responder isKindOfClass:[CPTextField class]] && (!_isViewBased || ![responder isBezeled]))
     {
         [responder setBezeled:YES];
         [self _registerForEndEditingNote:responder];
@@ -5078,11 +4957,42 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     var textField = [aNote object];
 
     [self _unregisterForEndEditingNote:textField];
-    [textField setBezeled:NO];
 
-    var action = [self _disableActionIfExists:textField];
-    [textField resignFirstResponder];
-    [textField setAction:action];
+    if (!_isViewBased)
+    {
+        [self _setEditingState:NO forView:textField];
+        [self _commitDataViewObjectValue:textField];
+    }
+    else
+        [textField setBezeled:NO];
+
+    [self _resignFirstResponderWithoutSendingAction:textField];
+}
+
+- (void)_resignFirstResponderWithoutSendingAction:(CPView)aView
+{
+    var action = [self _disableActionIfExists:aView];
+
+    [[self window] makeFirstResponder:self];
+
+    if (action)
+        [aView setAction:action];
+}
+
+- (void)_resignEditedView
+{
+    var view = [[self window] firstResponder];
+
+    if ([view respondsToSelector:@selector(selectText:)])
+        [view selectText:nil];
+
+    if (!_isViewBased)
+    {
+        [self _unregisterForEndEditingNote:view];
+        [self _setEditingState:NO forView:view];
+    }
+
+    [self _resignFirstResponderWithoutSendingAction:view];
 }
 
 - (SEL)_disableActionIfExists:(CPView)aView
@@ -5094,6 +5004,92 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
         [aView setAction:nil];
 
     return action;
+}
+
+/*!
+    @ignore
+    The action for any dataview that supports editing. This will only be called when the value was changed.
+    The table view becomes the first responder after user is done editing a dataview.
+*/
+- (void)_commitDataViewObjectValue:(id)aDataView
+{
+    var editingTableColumn = _tableColumns[_editingColumn];
+
+    if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_)
+        [_dataSource tableView:self setObjectValue:[aDataView objectValue] forTableColumn:editingTableColumn row:_editingRow];
+
+    // Allow the column binding to do a reverse set. Note that we do this even if the data source method above
+    // is implemented.
+    [editingTableColumn _reverseSetDataView:aDataView forRow:_editingRow];
+
+    [self reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:_editingRow] columnIndexes:[CPIndexSet indexSetWithIndex:_editingColumn]];
+}
+
+- (void)_setEditingState:(BOOL)editingState forView:(CPView)aView
+{
+    if ([aView respondsToSelector:@selector(setEditable:)])
+        [aView setEditable:editingState];
+
+    if ([aView respondsToSelector:@selector(setSelectable:)])
+        [aView setSelectable:editingState];
+
+    if ([aView isKindOfClass:[CPTextField class]])
+        [aView setBezeled:editingState];
+}
+/*!
+    Edits the dataview at a given row and column. This method is usually invoked automatically and should rarely be invoked directly
+    The row at supplied rowIndex must be selected otherwise an exception is thrown.
+
+    @param columnIndex the index of the column to edit
+    @param rowIndex the index of the row to edit
+    @param theEvent the mouse event which triggers the edit, you can pass nil
+    @param flag YES if the dataview text should be selected, otherwise NO. (NOT YET IMPLEMENTED)
+*/
+- (void)editColumn:(CPInteger)columnIndex row:(CPInteger)rowIndex withEvent:(CPEvent)theEvent select:(BOOL)flag
+{
+    if (![self isRowSelected:rowIndex])
+        [[CPException exceptionWithName:@"Error" reason:@"Attempt to edit row " + rowIndex + " when not selected." userInfo:nil] raise];
+
+    [self scrollRowToVisible:rowIndex];
+    [self scrollColumnToVisible:columnIndex];
+
+    // TODO Do something with flag.
+
+    _editingRow = rowIndex;
+    _editingColumn = columnIndex;
+
+    var editingTableColumnUID = [_tableColumns[_editingColumn] UID],
+        editingView = _dataViewsForRows[_editingRow][editingTableColumnUID];
+
+    [self _setEditingState:YES forView:editingView];
+    [[self window] makeFirstResponder:editingView];
+}
+
+- (void)observeValueForKeyPath:(CPString)keyPath ofObject:(id)object change:(CPDictionary)change context:(void)context
+{
+    if (context === "editing" && [object superview] === self)
+    {
+        [object removeObserver:self forKeyPath:keyPath];
+        [self _commitDataViewObjectValue:object];
+        _editingRow = CPNotFound;
+        _editingColumn = CPNotFound;
+    }
+}
+
+/*!
+    Returns the column of the currently edited cell, or CPNotFound if none.
+*/
+- (CPInteger)editedColumn
+{
+    return _editingColumn;
+}
+
+/*!
+    Returns the row of the currently edited cell, or CPNotFound if none.
+*/
+- (CPInteger)editedRow
+{
+    return _editingRow;
 }
 
 /*!

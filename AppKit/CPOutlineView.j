@@ -1565,6 +1565,14 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     return _implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_;
 }
 
+- (id)_hitTest:(CPView)aView
+{
+    if ([aView isKindOfClass:[CPDisclosureButton class]])
+        return aView;
+
+    return [super _hitTest:aView];
+}
+
 @end
 
 // FIX ME: We're using with() here because Safari fails if we use anOutlineView._itemInfosForItems or whatever...
