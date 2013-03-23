@@ -112,46 +112,57 @@
     var capitalizedKey = _key.charAt(0).toUpperCase() + _key.substring(1);
 
     _insertSEL = sel_getName(@"insertObject:in" + capitalizedKey + "AtIndex:");
+
     if ([_proxyObject respondsToSelector:_insertSEL])
         _insert = [_proxyObject methodForSelector:_insertSEL];
 
     _removeSEL = sel_getName(@"removeObjectFrom" + capitalizedKey + "AtIndex:");
+
     if ([_proxyObject respondsToSelector:_removeSEL])
         _remove = [_proxyObject methodForSelector:_removeSEL];
 
     _replaceSEL = sel_getName(@"replaceObjectIn" + capitalizedKey + "AtIndex:withObject:");
+
     if ([_proxyObject respondsToSelector:_replaceSEL])
         _replace = [_proxyObject methodForSelector:_replaceSEL];
 
     _insertManySEL = sel_getName(@"insert" + capitalizedKey + ":atIndexes:");
+
     if ([_proxyObject respondsToSelector:_insertManySEL])
         _insertMany = [_proxyObject methodForSelector:_insertManySEL];
 
     _removeManySEL = sel_getName(@"remove" + capitalizedKey + "AtIndexes:");
+
     if ([_proxyObject respondsToSelector:_removeManySEL])
         _removeMany = [_proxyObject methodForSelector:_removeManySEL];
 
     _replaceManySEL = sel_getName(@"replace" + capitalizedKey + "AtIndexes:with" + capitalizedKey + ":");
+
     if ([_proxyObject respondsToSelector:_replaceManySEL])
         _replaceMany = [_proxyObject methodForSelector:_replaceManySEL];
 
     _objectAtIndexSEL = sel_getName(@"objectIn" + capitalizedKey + "AtIndex:");
+
     if ([_proxyObject respondsToSelector:_objectAtIndexSEL])
         _objectAtIndex = [_proxyObject methodForSelector:_objectAtIndexSEL];
 
     _objectsAtIndexesSEL = sel_getName(_key + "AtIndexes:");
+
     if ([_proxyObject respondsToSelector:_objectsAtIndexesSEL])
         _objectsAtIndexes = [_proxyObject methodForSelector:_objectsAtIndexesSEL];
 
     _countSEL = sel_getName(@"countOf" + capitalizedKey);
+
     if ([_proxyObject respondsToSelector:_countSEL])
         _count = [_proxyObject methodForSelector:_countSEL];
 
     _accessSEL = sel_getName(_key);
+
     if ([_proxyObject respondsToSelector:_accessSEL])
         _access = [_proxyObject methodForSelector:_accessSEL];
 
     _setSEL = sel_getName(@"set" + capitalizedKey + ":");
+
     if ([_proxyObject respondsToSelector:_setSEL])
         _set = [_proxyObject methodForSelector:_setSEL];
 
@@ -525,29 +536,33 @@
 @implementation CPArray (KeyValueObserving)
 
 /*!
- Raises an exception.
+    Raises an exception for any key path other than "@count".
 
- CPArray objects are not observable, so this method raises an exception when invoked on an CPArray object.
- Instead of observing an array, observe the ordered to-many relationship for which the array is the collection of related objects.
+    CPArray objects are not observable (except for @count), so this method raises an exception
+    when invoked on an CPArray object. Instead of observing an array, observe the ordered
+    to-many relationship for which the array is the collection of related objects.
 */
 - (void)addObserver:(id)anObserver forKeyPath:(CPString)aKeyPath options:(CPKeyValueObservingOptions)anOptions context:(id)aContext
 {
-    [CPException raise:CPInvalidArgumentException reason:"[CPArray " + CPStringFromSelector(_cmd) + "] is not supported. Key path: " + aKeyPath];
+    if (aKeyPath !== @"@count")
+        [CPException raise:CPInvalidArgumentException reason:"[CPArray " + CPStringFromSelector(_cmd) + "] is not supported. Key path: " + aKeyPath];
 }
 
 /*!
- Raises an exception.
+    Raises an exception for any key path other than "@count".
 
- CPArray objects are not observable, so this method raises an exception when invoked on an CPArray object.
- Instead of observing an array, observe the ordered to-many relationship for which the array is the collection of related objects.
+    CPArray objects are not observable (except for @count), so this method raises an exception
+    when invoked on an CPArray object. Instead of observing an array, observe the ordered
+    to-many relationship for which the array is the collection of related objects.
 */
 - (void)removeObserver:(id)anObserver forKeyPath:(CPString)aKeyPath
 {
-    [CPException raise:CPInvalidArgumentException reason:"[CPArray " + CPStringFromSelector(_cmd) + "] is not supported. Key path: " + aKeyPath];
+    if (aKeyPath !== @"@count")
+        [CPException raise:CPInvalidArgumentException reason:"[CPArray " + CPStringFromSelector(_cmd) + "] is not supported. Key path: " + aKeyPath];
 }
 
 /*!
- Registers an observer to receive key value observer notifications for the specified key-path relative to the objects at the indexes.
+    Registers an observer to receive key value observer notifications for the specified key-path relative to the objects at the indexes.
 */
 - (void)addObserver:(id)anObserver toObjectsAtIndexes:(CPIndexSet)indexes forKeyPath:(CPString)aKeyPath options:(unsigned)options context:(id)context
 {
@@ -562,7 +577,7 @@
 }
 
 /*!
- Removes anObserver from all key value observer notifications associated with the specified keyPath relative to the array’s objects at indexes.
+    Removes anObserver from all key value observer notifications associated with the specified keyPath relative to the array’s objects at indexes.
 */
 - (void)removeObserver:(id)anObserver fromObjectsAtIndexes:(CPIndexSet)indexes forKeyPath:(CPString)aKeyPath
 {
