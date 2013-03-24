@@ -201,7 +201,12 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
 - (void)draggingSourceUpdatedWithGlobalLocation:(CGPoint)aGlobalLocation
 {
     if (![CPPlatform supportsDragAndDrop])
-        [_draggedWindow setFrameOrigin:CGPointMake(aGlobalLocation.x - _draggingOffset.width, aGlobalLocation.y - _draggingOffset.height)];
+    {
+        var frame = [_draggedWindow frame];
+        frame.origin.x = aGlobalLocation.x - _draggingOffset.width;
+        frame.origin.y = aGlobalLocation.y - _draggingOffset.height;
+        [_draggedWindow _setFrame:frame display:YES animate:NO constrainWidth:NO constrainHeight:NO];
+    }
 
     if (_implementedDraggingSourceMethods & CPDraggingSource_draggedImage_movedTo_)
         [_draggingSource draggedImage:[_draggedView image] movedTo:aGlobalLocation];
@@ -375,12 +380,16 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
 
     [aView setFrameOrigin:CGPointMakeZero()];
 
-    var mouseLocation = [CPEvent mouseLocation];
+    var mouseLocation = [CPEvent mouseLocation],
+        viewSize = [aView frameSize],
+        startDragLocationX = mouseLocation.x - _draggingOffset.width,
+        startDragLocationY = mouseLocation.y - _draggingOffset.height,
+        draggedWindowFrame = CGRectMake(startDragLocationX, startDragLocationY, viewSize.width, viewSize.height);
 
     // Place it where the mouse pointer is.
-    _startDragLocation = CGPointMake(mouseLocation.x - _draggingOffset.width, mouseLocation.y - _draggingOffset.height);
-    [_draggedWindow setFrameOrigin:_startDragLocation];
-    [_draggedWindow setFrameSize:[aView frame].size];
+    _startDragLocation = CGPointMake(startDragLocationX, startDragLocationY);
+
+    [_draggedWindow _setFrame:draggedWindowFrame display:YES animate:NO constrainWidth:NO constrainHeight:NO];
 
     [[_draggedWindow contentView] addSubview:aView];
 
