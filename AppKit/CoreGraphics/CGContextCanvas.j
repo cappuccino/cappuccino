@@ -68,6 +68,29 @@ function CGContextSetLineCap(aContext, aLineCap)
     aContext.lineCap = CANVAS_LINECAP_TABLE[aLineCap];
 }
 
+function CGContextSetLineDash(aContext, aPhase, someDashes)
+{
+    if (aContext.setLineDash)
+    {
+        aContext.setLineDash(someDashes);
+        aContext.lineDashOffset = aPhase;
+    }
+    else if (typeof aContext['webkitLineDash'] !== 'undefined')
+    {
+        aContext.webkitLineDash = someDashes;
+        aContext.webkitLineDashOffset = aPhase;
+    }
+    else if (typeof aContext['mozDash'] !== 'undefined')
+    {
+        aContext.mozDash = someDashes;
+        aContext.mozDashOffset = aPhase;
+    }
+    else if (someDashes)
+    {
+        CPLog.warn("CGContextSetLineDash not implemented in this environment.")
+    }
+}
+
 function CGContextSetLineJoin(aContext, aLineJoin)
 {
     aContext.lineJoin = CANVAS_LINEJOIN_TABLE[aLineJoin];

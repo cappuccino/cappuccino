@@ -45,6 +45,7 @@
     _numberOfVisibleItems = [cell visibleItemCount];
     _hasVerticalScroller = [cell hasVerticalScroller];
     [self setButtonBordered:[cell borderedButton]];
+    [self setEnabled:[cell isEnabled]];
 
     // Make sure the height is clipped to the max given by the theme
     var maxSize = [[[Converter sharedConverter] themes][0] valueForAttributeWithName:@"max-size" forClass:[CPComboBox class]],
