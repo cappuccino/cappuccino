@@ -1981,11 +1981,12 @@ NOT YET IMPLEMENTED
         return -1;
 
     var cellView = aView,
-        contentView = [[self window] contentView];
+        contentView = [[self window] contentView],
+        max_rec = 100;
 
-    while (1)
+    while (max_rec--)
     {
-        if (cellView == contentView)
+        if (!cellView || cellView === contentView)
         {
             return -1;
         }
@@ -5047,6 +5048,13 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 - (void)_firstResponderDidChange:(CPNotification)aNotification
 {
     var responder = [[self window] firstResponder];
+
+    if (!responder || ![responder isDescendantOf:self])
+    {
+        _editingRow = CPNotFound;
+        _editingColumn = CPNotFound;
+        return;
+    }
 
     _editingRow = [self rowForView:responder];
     _editingColumn = [self columnForView:responder];
