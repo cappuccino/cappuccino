@@ -585,7 +585,7 @@ var CPImageViewImageKey          = @"CPImageViewImageKey",
 
 @end
 
-@implementation CPImage (CahedImage)
+@implementation CPImage (CachedImage)
 
 + (CPImage)cachedImageWithContentsOfFile:(CPString)aFile
 {
