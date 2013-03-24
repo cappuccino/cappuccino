@@ -5094,7 +5094,7 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
 {
     var responder = [[self window] firstResponder];
 
-    if (!responder || ![responder isDescendantOf:self])
+    if (![responder isKindOfClass:[CPView class]] || ![responder isDescendantOf:self])
     {
         _editingRow = CPNotFound;
         _editingColumn = CPNotFound;
