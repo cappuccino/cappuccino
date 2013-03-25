@@ -50,10 +50,6 @@ var FILE = require("file"),
             // Defer resolving this path until runtime.
             _resourceName = _resourceName.replace("NS", "CP");
         }
-        else if (![[aCoder resourcesPath] length])
-        {
-            CPLog.warn("Resources found in nib, but no resources path specified with -R option.");
-        }
         else
         {
             var resourcePath = [aCoder resourcePathForName:_resourceName];
@@ -67,7 +63,7 @@ var FILE = require("file"),
             if (resourcePath && FILE.extension(resourcePath) !== FILE.extension(_resourceName))
                 _resourceName += FILE.extension(resourcePath);
 
-            CPLog.debug("   Path: %s\n   Size: %d x %d", FILE.canonical(resourcePath), size.width, size.height);
+            CPLog.debug("   Rsrc: %s\n   Path: %s\n   Size: %d x %d", _resourceName, FILE.canonical(resourcePath), size.width, size.height);
         }
 
         _properties = [CPDictionary dictionaryWithObject:size forKey:@"size"];
