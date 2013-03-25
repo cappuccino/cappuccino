@@ -744,6 +744,7 @@
         return;
 
     var willClearPredicate = NO;
+
     if (_clearsFilterPredicateOnInsertion && _filterPredicate)
     {
         [self willChangeValueForKey:@"filterPredicate"];
@@ -792,10 +793,18 @@
     // not appear in arrangedObjects and we do not have to update at all.
     */
 
-    // This will also send notificaitons for arrangedObjects.
+    // TODO: Remove these lines when granular notifications are implemented
+    var proxy = [_CPKVOProxy proxyForObject:self];
+    [proxy setAdding:YES];
+
+    // This will also send notifications for arrangedObjects.
     [self didChangeValueForKey:@"content"];
+
     if (willClearPredicate)
         [self didChangeValueForKey:@"filterPredicate"];
+
+    // TODO: Remove this line when granular notifications are implemented
+    [proxy setAdding:NO];
 }
 
 /*!
@@ -811,6 +820,7 @@
         return;
 
     var willClearPredicate = NO;
+
     if (_clearsFilterPredicateOnInsertion && _filterPredicate)
     {
         [self willChangeValueForKey:@"filterPredicate"];
@@ -848,9 +858,15 @@
     if ([self avoidsEmptySelection] && [[self selectionIndexes] count] <= 0 && [_contentObject count] > 0)
         [self __setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
 
+    var proxy = [_CPKVOProxy proxyForObject:self];
+    [proxy setAdding:YES];
+
     [self didChangeValueForKey:@"content"];
+
     if (willClearPredicate)
         [self didChangeValueForKey:@"filterPredicate"];
+
+    [proxy setAdding:NO];
 }
 
 /*!
