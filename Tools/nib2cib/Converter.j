@@ -68,7 +68,9 @@ ConverterConversionException = @"ConverterConversionException";
 
     if (self)
     {
-        SharedConverter = self;
+        if (!SharedConverter)
+            SharedConverter = self;
+
         inputPath = aPath;
         format = nibFormat;
         themes = themeList;
