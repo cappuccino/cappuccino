@@ -505,6 +505,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 - (void)_moveColumn:(int)aFromIndex toColumn:(int)aToIndex
 {
+    console.log("_moveColumn");
     if ([_tableView _shouldReorderColumn:aFromIndex toColumn:aToIndex])
     {
         [_tableView moveColumn:aFromIndex toColumn:aToIndex];
@@ -546,18 +547,21 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
     var hoveredColumn = [self columnAtPoint:hoverPoint];
 
-    if (hoveredColumn !== _lastDragDestinationColumnIndex)
+    if (hoveredColumn !== _lastDragDestinationColumnIndex && hoveredColumn !== -1)
     {
+
         var columnRect = [self headerRectOfColumn:hoveredColumn],
             columnCenterPoint = [self convertPoint:CGPointMake(_CGRectGetMidX(columnRect), _CGRectGetMidY(columnRect)) fromView:self];
 
         if (hoveredColumn < _activeColumn && hoverPoint.x < columnCenterPoint.x)
         {
+            console.log(hoveredColumn + " " +_activeColumn);
             [self _moveColumn:_activeColumn toColumn:hoveredColumn];
             _lastDragDestinationColumnIndex = hoveredColumn;
         }
         else if (hoveredColumn > _activeColumn && hoverPoint.x > columnCenterPoint.x)
         {
+            console.log(hoveredColumn + " " +_activeColumn);
             [self _moveColumn:_activeColumn toColumn:hoveredColumn];
             _lastDragDestinationColumnIndex = hoveredColumn;
         }
