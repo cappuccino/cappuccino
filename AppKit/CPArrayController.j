@@ -65,51 +65,51 @@
 
 + (CPSet)keyPathsForValuesAffectingContentArray
 {
-    return [CPSet setWithObjects:"content"];
+    return [CPSet setWithObjects:@"content"];
 }
 
 + (CPSet)keyPathsForValuesAffectingArrangedObjects
 {
     // Also depends on "filterPredicate" but we'll handle that manually.
-    return [CPSet setWithObjects:"content", "sortDescriptors"];
+    return [CPSet setWithObjects:@"content", @"sortDescriptors"];
 }
 
 + (CPSet)keyPathsForValuesAffectingSelection
 {
-    return [CPSet setWithObjects:"selectionIndexes"];
+    return [CPSet setWithObjects:@"selectionIndexes"];
 }
 
 + (CPSet)keyPathsForValuesAffectingSelectionIndex
 {
-    return [CPSet setWithObjects:"selectionIndexes"];
+    return [CPSet setWithObjects:@"selectionIndexes"];
 }
 
 + (CPSet)keyPathsForValuesAffectingSelectionIndexes
 {
     // When the arranged objects change, selection preservation may cause the indexes
     // to change.
-    return [CPSet setWithObjects:"arrangedObjects"];
+    return [CPSet setWithObjects:@"arrangedObjects"];
 }
 
 + (CPSet)keyPathsForValuesAffectingSelectedObjects
 {
     // Don't need to depend on arrangedObjects here because selectionIndexes already does.
-    return [CPSet setWithObjects:"selectionIndexes"];
+    return [CPSet setWithObjects:@"selectionIndexes"];
 }
 
 + (CPSet)keyPathsForValuesAffectingCanRemove
 {
-    return [CPSet setWithObjects:"selectionIndexes"];
+    return [CPSet setWithObjects:@"selectionIndexes"];
 }
 
 + (CPSet)keyPathsForValuesAffectingCanSelectNext
 {
-    return [CPSet setWithObjects:"selectionIndexes"];
+    return [CPSet setWithObjects:@"selectionIndexes"];
 }
 
 + (CPSet)keyPathsForValuesAffectingCanSelectPrevious
 {
-    return [CPSet setWithObjects:"selectionIndexes"];
+    return [CPSet setWithObjects:@"selectionIndexes"];
 }
 
 
