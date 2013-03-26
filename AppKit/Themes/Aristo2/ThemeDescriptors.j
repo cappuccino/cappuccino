@@ -834,7 +834,10 @@ var themedButtonValues = nil,
 
             // Because combo box uses a three-part bezel, the height is fixed
             [@"min-size",           CGSizeMake(0, 31.0)],
-            [@"max-size",           CGSizeMake(-1, 31.0)]
+            [@"max-size",           CGSizeMake(-1, 31.0)],
+
+            [@"text-color",         [CPColor colorWithCalibratedWhite:0.6 alpha:1.0], CPThemeStateBordered | CPThemeStateDisabled],
+            [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:0.6], CPThemeStateBordered | CPThemeStateDisabled],
         ];
 
     [self registerThemeValues:overrides forView:combo inherit:themedTextFieldValues];
