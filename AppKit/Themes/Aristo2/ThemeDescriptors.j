@@ -848,8 +848,8 @@ var themedButtonValues = nil,
         imageNormal = PatternImage("radio-image.png", 21.0, 21.0),
         imageSelected = PatternImage("radio-image-selected.png", 21.0, 21.0),
         imageSelectedHighlighted = PatternImage("radio-image-selected-highlighted.png", 21.0, 21.0),
-        imageSelectedDisabled = PatternImage("radio-image-selected-disabled.png", 21.0, 21.0),
-        imageDisabled = PatternImage("radio-image-disabled.png", 21.0, 21.0),
+        imageSelectedDisabled = PatternImage("radio-image-selected.png", 21.0, 21.0),
+        imageDisabled = PatternImage("radio-image.png", 21.0, 21.0),
         imageHighlighted = PatternImage("radio-image-highlighted.png", 21.0, 21.0);
 
     // Global
@@ -2384,8 +2384,8 @@ var themedButtonValues = nil,
         imageNormal = PatternImage("HUD/radio-image.png", 21.0, 21.0),
         imageSelected = PatternImage("HUD/radio-image-selected.png", 21.0, 21.0),
         imageSelectedHighlighted = PatternImage("HUD/radio-image-selected-highlighted.png", 21.0, 21.0),
-        imageSelectedDisabled = PatternImage("HUD/radio-image-selected-disabled.png", 21.0, 21.0),
-        imageDisabled = PatternImage("HUD/radio-image-disabled.png", 21.0, 21.0),
+        imageSelectedDisabled = PatternImage("HUD/radio-image-selected.png", 21.0, 21.0),
+        imageDisabled = PatternImage("HUD/radio-image.png", 21.0, 21.0),
         imageHighlighted = PatternImage("HUD/radio-image-highlighted.png", 21.0, 21.0),
 
         hudSpecific =
