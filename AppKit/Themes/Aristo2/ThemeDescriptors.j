@@ -884,8 +884,8 @@ var themedButtonValues = nil,
         imageNormal = PatternImage("check-box-image.png", 21.0, 21.0),
         imageSelected = PatternImage("check-box-image-selected.png", 21.0, 21.0),
         imageSelectedHighlighted = PatternImage("check-box-image-selected-highlighted.png", 21.0, 21.0),
-        imageSelectedDisabled = PatternImage("check-box-image-selected-disabled.png", 21.0, 21.0),
-        imageDisabled = PatternImage("check-box-image-disabled.png", 21.0, 21.0),
+        imageSelectedDisabled = PatternImage("check-box-image-selected.png", 21.0, 21.0),
+        imageDisabled = PatternImage("check-box-image.png", 21.0, 21.0),
         imageHighlighted = PatternImage("check-box-image-highlighted.png", 21.0, 21.0);
 
     // Global
@@ -924,7 +924,7 @@ var themedButtonValues = nil,
     [button setState:CPMixedState];
 
     var mixedHighlightedImage = PatternImage("check-box-image-mixed-highlighted.png", 21.0, 21.0),
-        mixedDisabledImage = PatternImage("check-box-image-mixed-disabled.png", 21.0, 21.0),
+        mixedDisabledImage = PatternImage("check-box-image-mixed.png", 21.0, 21.0),
         mixedImage = PatternImage("check-box-image-mixed.png", 21.0, 21.0),
 
         themeValues =
@@ -2341,11 +2341,11 @@ var themedButtonValues = nil,
     var imageNormal = PatternImage("HUD/check-box-image.png", 21.0, 21.0),
         imageSelected = PatternImage("HUD/check-box-image-selected.png", 21.0, 21.0),
         imageSelectedHighlighted = PatternImage("HUD/check-box-image-selected-highlighted.png", 21.0, 21.0),
-        imageSelectedDisabled = PatternImage("HUD/check-box-image-selected-disabled.png", 21.0, 21.0),
-        imageDisabled = PatternImage("HUD/check-box-image-disabled.png", 21.0, 21.0),
+        imageSelectedDisabled = PatternImage("HUD/check-box-image-selected.png", 21.0, 21.0),
+        imageDisabled = PatternImage("HUD/check-box-image.png", 21.0, 21.0),
         imageHighlighted = PatternImage("HUD/check-box-image-highlighted.png", 21.0, 21.0),
         mixedHighlightedImage = PatternImage("HUD/check-box-image-mixed-highlighted.png", 21.0, 21.0),
-        mixedDisabledImage = PatternImage("HUD/check-box-image-mixed-disabled.png", 21.0, 21.0),
+        mixedDisabledImage = PatternImage("HUD/check-box-image-mixed.png", 21.0, 21.0),
         mixedImage = PatternImage("HUD/check-box-image-mixed.png", 21.0, 21.0),
 
         hudSpecific =
