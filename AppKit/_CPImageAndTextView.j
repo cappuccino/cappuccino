@@ -632,9 +632,9 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         }
 
         if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
-            imageStyle.filter = @"alpha(opacity=" + _shouldDimImage ? 35 : 100 + ")";
+            imageStyle.filter = @"alpha(opacity=" + _shouldDimImage ? 50 : 100 + ")";
         else
-            imageStyle.opacity = _shouldDimImage ? 0.35 : 1.0;
+            imageStyle.opacity = _shouldDimImage ? 0.5 : 1.0;
 
         _DOMImageElement.width = imageWidth;
         _DOMImageElement.height = imageHeight;
