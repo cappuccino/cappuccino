@@ -2279,7 +2279,7 @@ TODO: implement
 
 - (void)_postRowCountChangedNotificationOfType:(CPString)notificationName indexes:indexes
 {
-    var userInfo = @{ "indexes": indexes };
+    var userInfo = indexes === nil ? @{} : @{ "indexes": indexes };
     [[CPNotificationCenter defaultCenter] postNotificationName:notificationName object:self userInfo:userInfo];
 }
 
