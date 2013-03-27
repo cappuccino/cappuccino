@@ -62,7 +62,10 @@ var themedButtonValues = nil,
     themedProgressIndicator = nil,
     themedIndeterminateProgressIndicator = nil,
     themedCheckBoxValues = nil,
-    themedRadioButtonValues = nil;
+    themedRadioButtonValues = nil,
+    disabledTextColor = [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:0.6],
+    disabledTextShadowColor = [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:0.6],
+    placeholderColor = [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:0.6];
 
 @implementation Aristo2ThemeDescriptor : BKThemeDescriptor
 
@@ -250,8 +253,8 @@ var themedButtonValues = nil,
             [@"text-color",         [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0]],
             [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0]],
 
-            [@"text-color",         [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:0.6],  CPThemeStateBordered | CPThemeStateDisabled],
-            [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:0.6], CPThemeStateBordered | CPThemeStateDisabled],
+            [@"text-color",         disabledTextColor,       CPThemeStateBordered | CPThemeStateDisabled],
+            [@"text-shadow-color",  disabledTextShadowColor, CPThemeStateBordered | CPThemeStateDisabled],
 
             [@"min-size", CGSizeMake(32.0, 25.0)],
             [@"max-size", CGSizeMake(-1.0, 25.0)]
@@ -288,8 +291,8 @@ var themedButtonValues = nil,
             [@"text-color",         [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0]],
             [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0]],
 
-            [@"text-color",         [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:0.6],  CPThemeStateBordered | CPThemeStateDisabled],
-            [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:0.6], CPThemeStateBordered | CPThemeStateDisabled],
+            [@"text-color",         disabledTextColor,       CPThemeStateBordered | CPThemeStateDisabled],
+            [@"text-shadow-color",  disabledTextShadowColor, CPThemeStateBordered | CPThemeStateDisabled],
 
             [@"min-size",           CGSizeMake(32.0, 25.0)],
             [@"max-size",           CGSizeMake(-1.0, 25.0)]
@@ -523,8 +526,6 @@ var themedButtonValues = nil,
                 height: 9.0
             }),
 
-        placeholderColor = [CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0];
-
     // Global for reuse by CPTokenField.
     themedTextFieldValues =
     [
@@ -533,6 +534,8 @@ var themedButtonValues = nil,
         [@"bezel-color",        bezelFocusedColor,                  CPThemeStateBezeled | CPThemeStateEditing],
         [@"bezel-color",        bezelColor["disabled"],             CPThemeStateBezeled | CPThemeStateDisabled],
         [@"font",               [CPFont systemFontOfSize:CPFontCurrentSystemSize],     CPThemeStateBezeled],
+        [@"text-color",         disabledTextColor,       CPThemeStateBezeled | CPThemeStateDisabled],
+        [@"text-shadow-color",  disabledTextShadowColor, CPThemeStateBezeled | CPThemeStateDisabled],
 
         [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 10.0),   CPThemeStateBezeled],
         [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 10.0),   CPThemeStateBezeled | CPThemeStateEditing],
@@ -593,8 +596,6 @@ var themedButtonValues = nil,
                 orientation: PatternIsHorizontal
             }),
 
-        placeholderColor = [CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0];
-
     // Global for reuse by CPSearchField
     themedRoundedTextFieldValues =
         [
@@ -612,7 +613,9 @@ var themedButtonValues = nil,
             [@"bezel-inset",    CGInsetMake(3.0, 4.0, 3.0, 4.0),    CPTextFieldStateRounded | CPThemeStateBezeled],
             [@"bezel-inset",    CGInsetMake(0.0, 1.0, 0.0, 1.0),    CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
 
-            [@"text-color",     placeholderColor,       CPTextFieldStateRounded | CPTextFieldStatePlaceholder],
+            [@"text-color",         placeholderColor,        CPTextFieldStateRounded | CPTextFieldStatePlaceholder],
+            [@"text-color",         disabledTextColor,       CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateDisabled],
+            [@"text-shadow-color",  disabledTextShadowColor, CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateDisabled],
 
             [@"min-size",       CGSizeMake(0.0, 29.0),  CPTextFieldStateRounded | CPThemeStateBezeled],
             [@"max-size",       CGSizeMake(-1.0, 29.0), CPTextFieldStateRounded | CPThemeStateBezeled]
@@ -836,8 +839,8 @@ var themedButtonValues = nil,
             [@"min-size",           CGSizeMake(0, 31.0)],
             [@"max-size",           CGSizeMake(-1, 31.0)],
 
-            [@"text-color",         [CPColor colorWithCalibratedWhite:0.6 alpha:1.0], CPThemeStateBordered | CPThemeStateDisabled],
-            [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:0.6], CPThemeStateBordered | CPThemeStateDisabled],
+            [@"text-color",         disabledTextColor,       CPThemeStateBordered | CPThemeStateDisabled],
+            [@"text-shadow-color",  disabledTextShadowColor, CPThemeStateBordered | CPThemeStateDisabled],
         ];
 
     [self registerThemeValues:overrides forView:combo inherit:themedTextFieldValues];
@@ -870,7 +873,7 @@ var themedButtonValues = nil,
         [@"image",          imageSelectedDisabled,              CPThemeStateSelected | CPThemeStateDisabled],
         [@"image-offset",   CPRadioImageOffset],
 
-        [@"text-color",     [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0],  CPThemeStateDisabled],
+        [@"text-color",     disabledTextColor,  CPThemeStateDisabled],
 
         [@"min-size",       CGSizeMake(21.0, 21.0)],
         [@"max-size",       CGSizeMake(-1.0, -1.0)]
@@ -906,7 +909,7 @@ var themedButtonValues = nil,
         [@"image-offset",   CPCheckBoxImageOffset],
 
         [@"font",           [CPFont systemFontOfSize:CPFontCurrentSystemSize], CPThemeStateNormal],
-        [@"text-color",     [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0],  CPThemeStateDisabled],
+        [@"text-color",     disabledTextColor,  CPThemeStateDisabled],
 
         [@"min-size",       CGSizeMake(21.0, 21.0)],
         [@"max-size",       CGSizeMake(-1.0, -1.0)]
@@ -1026,12 +1029,12 @@ var themedButtonValues = nil,
 
             [@"font",               [CPFont boldSystemFontOfSize:12.0]],
             [@"text-color",         [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0]],
-            [@"text-color",         [CPColor colorWithCalibratedWhite:0.6 alpha:1.0], CPThemeStateDisabled],
-            [@"text-color",         [CPColor colorWithCalibratedWhite:1.0 alpha:0.5], CPThemeStateDisabled | CPThemeStateSelected],
+            [@"text-color",         disabledTextColor, CPThemeStateDisabled],
+            [@"text-color",         disabledTextColor, CPThemeStateDisabled | CPThemeStateSelected],
             [@"text-color",         [CPColor whiteColor], CPThemeStateSelected],
             [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0]],
-            [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0], CPThemeStateDisabled],
-            [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0], CPThemeStateDisabled | CPThemeStateSelected],
+            [@"text-shadow-color",  disabledTextShadowColor, CPThemeStateDisabled],
+            [@"text-shadow-color",  disabledTextShadowColor, CPThemeStateDisabled | CPThemeStateSelected],
             [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:0.0 alpha:0.2], CPThemeStateSelected],
             [@"text-shadow-offset", CGSizeMake(0.0, 1.0)],
             [@"text-shadow-offset", CGSizeMake(0.0, 1.0), CPThemeStateSelected],
