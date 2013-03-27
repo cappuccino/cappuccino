@@ -525,7 +525,7 @@ var themedButtonValues = nil,
                 positions: "#",
                 width: 9.0,
                 height: 9.0
-            }),
+            });
 
     // Global for reuse by CPTokenField.
     themedTextFieldValues =
@@ -595,7 +595,7 @@ var themedButtonValues = nil,
                 width: 13.0,
                 height: 29.0,
                 orientation: PatternIsHorizontal
-            }),
+            });
 
     // Global for reuse by CPSearchField
     themedRoundedTextFieldValues =
