@@ -1147,9 +1147,9 @@ var themedButtonValues = nil,
     var slider = [self makeCircularSlider],
 
         trackColor = PatternColor("slider-circular-bezel.png", 30.0, 30.0),
-        trackDisabledColor = PatternColor("slider-circular-disabled-bezel.png", 30.0, 30.0),
+        trackDisabledColor = PatternColor("slider-circular-bezel.png", 30.0, 30.0),
         knobColor = PatternColor("slider-circular-knob.png", 5.0, 5.0),
-        knobDisabledColor = PatternColor("slider-circular-disabled-knob.png", 5.0, 5.0),
+        knobDisabledColor = PatternColor("slider-circular-knob.png", 5.0, 5.0),
         knobHighlightedColor = knobColor;
 
     themedCircularSliderValues =
