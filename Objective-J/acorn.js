@@ -122,6 +122,8 @@ if (typeof exports != "undefined" && !exports.acorn) {
     preprocessAddMacro: defaultAddMacro,
     // Preprocess get macro function
     preprocessGetMacro: defaultGetMacro,
+    // Preprocess undefine macro function
+    preprocessUndefineMacro: defaultUndefineMacro,
     // Preprocess is macro function
     preprocessIsMacro: defaultIsMacro
   };
@@ -143,6 +145,11 @@ if (typeof exports != "undefined" && !exports.acorn) {
 
   function defaultGetMacro(macroIdentifier) {
     return macros[macroIdentifier];
+  }
+
+  function defaultUndefineMacro(macroIdentifier) {
+    delete macros[macroIdentifier];
+    macrosIsPredicate = null;
   }
 
   function defaultIsMacro(macroIdentifier) {
@@ -321,7 +328,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
   // make them recognizeable when debugging.
 
   var _num = {type: "num"}, _regexp = {type: "regexp"}, _string = {type: "string"};
-  var _name = {type: "name"}, _eof = {type: "eof"};
+  var _name = {type: "name"}, _eof = {type: "eof"}, _eol = {type: "eol"};
 
   // Keyword tokens. The `keyword` property (also used in keyword-like
   // operators) indicates that the token originated from an
@@ -373,8 +380,15 @@ if (typeof exports != "undefined" && !exports.acorn) {
 
   // Preprocessor keywords
 
-  var _define = {keyword: "define"};
-  var _pragma = {keyword: "pragma"};
+  var _preDefine = {keyword: "define"};
+  var _preUndef = {keyword: "undef"};
+  var _preIfdef = {keyword: "ifdef"};
+  var _preIfndef = {keyword: "ifndef"};
+  var _preIf = {keyword: "if"};
+  var _preElse = {keyword: "else"};
+  var _preEndif = {keyword: "endif"};
+  var _preElseIf = {keyword: "elif"};
+  var _prePragma = {keyword: "pragma"};
 
   var _preprocessParamItem = {type: "preprocessParamItem"}
 
@@ -404,7 +418,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
 
   // Map Preprocessor keyword names to token types.
 
-  var keywordTypesPreprocess = {"define": _define, "pragma": _pragma};
+  var keywordTypesPreprocess = {"define": _preDefine, "pragma": _prePragma, "ifdef": _preIfdef, "ifndef": _preIfndef, "undef": _preUndef, "endif": _preEndif, "else": _preElse, "elif": _preElseIf};
 
   // Punctuation token types. Again, the `type` property is purely for debugging.
 
@@ -527,7 +541,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
 
   // The preprocessor keywords.
 
-  var isKeywordPreprocess = makePredicate("define pragma");
+  var isKeywordPreprocess = makePredicate("define pragma if ifdef ifndef else elif endif");
 
   // ## Character categories
 
@@ -600,7 +614,11 @@ if (typeof exports != "undefined" && !exports.acorn) {
   // after the token, so that the next one's `tokStart` will point at
   // the right position.
 
+var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _preEndif];
+
   function finishToken(type, val) {
+    // If we get any of these preprocess tokens skip it and read next
+    if (type in preprocessTokens) return readToken();
     tokEnd = tokPos;
     if (options.locations) tokEndLoc = new line_loc_t;
     tokType = type;
@@ -675,6 +693,13 @@ if (typeof exports != "undefined" && !exports.acorn) {
                         startLoc, options.locations && new line_loc_t);
     if (options.trackComments)
       (tokComments || (tokComments = [])).push(input.slice(start, tokPos));
+  }
+
+  function preprocesSkipRestOfLine() {
+    var ch = input.charCodeAt(tokPos);
+    while (tokPos < inputLen && ch !== 10 && ch !== 13 && ch !== 8232 && ch !== 8329) {
+      ch = input.charCodeAt(++tokPos);
+    }
   }
 
   // Called at the start of the parse and after every token. Skips
@@ -844,7 +869,102 @@ if (typeof exports != "undefined" && !exports.acorn) {
     return finishToken(token);
   }
 
-  function getTokenFromCode(code, finishToken) {
+// True if we are skipping token when finding #else or #endif after and #if
+
+var preNotSkipping = true;
+var preIfLevel = 0;
+
+  function readToken_preprocess(finishTokenFunction) { // '#'
+    ++tokPos;
+    preprocessReadToken();
+    switch (preTokType) {
+      case _preDefine:
+        preprocessReadToken();
+        var macroIdentifierEnd = preTokEnd;
+        var macroIdentifier = preprocessParseIdent();
+        // '(' Must follow directly after identifier to be a valid macro with parameters
+        if (input.charCodeAt(macroIdentifierEnd) === 40) { // '('
+          preprocessExpect(_parenL);
+          var parameters = [];
+          var first = true;
+          while (!preprocessEat(_parenR)) {
+            if (!first) preprocessExpect(_comma, "Expected ',' between macro parameters"); else first = false;
+            parameters.push(preprocessParseIdent());
+          }
+        }
+        var start = tokPos = preTokStart;
+        preprocesSkipRestOfLine();
+        options.preprocessAddMacro(new Macro(macroIdentifier, input.slice(start, tokPos), parameters));
+        break;
+
+      case _preUndef:
+        preprocessReadToken();
+        options.preprocessUndefineMacro(preprocessParseIdent());
+        preprocesSkipRestOfLine();
+        break;
+
+      case _preIfndef:
+        if (preNotSkipping) {
+          preIfLevel++;
+          preprocessReadToken();
+          var ident = preprocessParseIdent();
+          var test = options.preprocessGetMacro(ident);
+          if (test)
+            preNotSkipping = false
+          //preprocessExpect(_eol);
+          preprocessSkipToElseOrEndif(test);
+        } else {
+          //preprocesSkipRestOfLine();
+          return finishTokenFunction(_preIfndef);
+        }
+        break;
+
+      case _preElse:
+        if (preIfLevel) {
+          if (preNotSkipping) {
+            preNotSkipping = false;
+            finishTokenFunction(_preElse);
+            preprocessReadToken();
+            preprocessSkipToElseOrEndif(true, true); // no else
+          } else {
+            return finishTokenFunction(_preElse);
+          }
+        } else
+          raise(preTokStart, "#else without #if");
+        break;
+
+      case _preEndif:
+        if (preIfLevel) {
+          if (preNotSkipping) {
+            preIfLevel--;
+          }
+        } else {
+          raise(preTokStart, "#endif without #if");
+        }
+        return finishTokenFunction(_preEndif);
+        break;
+
+      case _prePragma:
+        preprocesSkipRestOfLine();
+        break;
+
+      case _prefix:
+        preprocesSkipRestOfLine();
+        break;
+
+      default:
+        raise(preTokStart, "Invalid preprocessing directive");
+        preprocesSkipRestOfLine();
+        // Return the complete line as a token to make it possible to create a PreProcessStatement if we are between two statements
+        return finishTokenFunction(_preprocess);
+        //raise(tokPos, "Invalid preprocessing directive '" + (preTokType.keyword || preTokVal) + "' " + input.slice(tokStart, tokPos));
+    }
+    // Drop this token and read next non preprocess token
+    finishToken(_preprocess);
+    return readToken();
+  }
+
+  function getTokenFromCode(code, finishToken, allowEndOfLineToken) {
     switch(code) {
       // The interpretation of a dot depends on whether it is followed
       // by a digit.
@@ -902,6 +1022,9 @@ if (typeof exports != "undefined" && !exports.acorn) {
     case 61: case 33: // '=!'
       return readToken_eq_excl(code, finishToken);
 
+    case 126: // '~'
+      return finishOp(_prefix, 1, finishToken);
+
     case 64: // '@'
       if (options.objj)
         return readToken_at(code, finishToken);
@@ -909,67 +1032,19 @@ if (typeof exports != "undefined" && !exports.acorn) {
 
     case 35: // '#'
       if (options.preprocess) {
-        ++tokPos;
-        preprocessReadToken();
-        switch (preTokType) {
-          case _define:
-            preprocessReadToken();
-            var macroIdentifierEnd = preTokEnd;
-            var macroIdentifier = preprocessParseIdent();
-            // '(' Must follow directly after identifier to be a valid macro with parameters
-            if (input.charCodeAt(macroIdentifierEnd) === 40) { // '('
-              preprocessExpect(_parenL);
-              var parameters = [];
-              var first = true;
-              while (!preprocessEat(_parenR)) {
-                if (!first) preprocessExpect(_comma, "Expected ',' between macro parameters"); else first = false;
-                parameters.push(preprocessParseIdent());
-              }
-            }
-            // Here we cheat and grabbing the macro definition directly without reading tokens
-            var start = tokPos = preTokStart;
-            var ch = input.charCodeAt(tokPos);
-            while (tokPos < inputLen && ch !== 10 && ch !== 13 && ch !== 8232 && ch !== 8329) {
-              ch = input.charCodeAt(++tokPos);
-            }
-            options.preprocessAddMacro(new Macro(macroIdentifier, input.slice(start, tokPos), parameters));
-            break;
-
-          case _pragma:
-            var ch = input.charCodeAt(tokPos);
-            while (tokPos < inputLen && ch !== 10 && ch !== 13 && ch !== 8232 && ch !== 8329) {
-              ch = input.charCodeAt(++tokPos);
-            }
-            break;
-
-          /*case _prefix:
-            var ch = input.charCodeAt(tokPos);
-            while (tokPos < inputLen && ch !== 10 && ch !== 13 && ch !== 8232 && ch !== 8329) {
-              ch = input.charCodeAt(++tokPos);
-            }
-            break;*/
-
-          default:
-            var ch = input.charCodeAt(tokPos);
-            while (tokPos < inputLen && ch !== 10 && ch !== 13 && ch !== 8232 && ch !== 8329) {
-              ch = input.charCodeAt(++tokPos);
-            }
-            // Return the complete line as a token to make it possible to create a PreProcessStatement if we are between two statements
-            return finishToken(_preprocess);
-            //raise(tokPos, "Invalid preprocessing directive '" + (preTokType.keyword || preTokVal) + "' " + input.slice(tokStart, tokPos));
-        }
-        // Drop this token and read next
-        finishToken(_preprocess);
-        return readToken();
+        return readToken_preprocess(finishToken);
       }
       return false;
+    }
 
-    case 126: // '~'
-      return finishOp(_prefix, 1, finishToken);
+    if (allowEndOfLineToken && newline.test(String.fromCharCode(code))) {
+      return finishOp(_eol, 1, finishToken);
     }
 
     return false;
-  }
+}
+
+// Returns true if it stops at a line break
 
   function preprocessSkipSpace() {
     while (tokPos < inputLen) {
@@ -988,11 +1063,40 @@ if (typeof exports != "undefined" && !exports.acorn) {
         if (match && match.index === 0) {
           tokPos = pos + match[0].length;
         } else {
-          break;
+          return false;
         }
       } else {
-        break;
+        lineBreak.lastIndex = 0;
+        var match = lineBreak.exec(input.slice(tokPos, tokPos + 2));
+        return match && match.index === 0;
       }
+    }
+  }
+
+  function preprocessSkipToElseOrEndif(test, skipElse) {
+    if (test) {
+      var ifLevel = 0;
+      while (ifLevel > 0 || (preTokType != _preEndif && (preTokType != _preElse || skipElse))) {
+        switch (preTokType) {
+          case _preIf:
+          case _preIfdef:
+          case _preIfndef:
+            ifLevel++;
+            break;
+
+          case _preEndif:
+            ifLevel--;
+            break;
+
+          case _eof:
+            preNotSkipping = true;
+            raise(preTokStart, "Missing #endif");
+        }
+        preprocessReadToken();
+      }
+      preNotSkipping = true;
+      if (preTokType === _preEndif)
+        preIfLevel--;
     }
   }
 
@@ -1013,7 +1117,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
       return preprocessFinishToken(_preprocessParamItem, input.slice(preTokStart, tokPos));
     }
     if (isIdentifierStart(code) || code === 92 /* '\' */) return preprocessReadWord();
-    if (getTokenFromCode(code, preprocessFinishToken) === false) {
+    if (getTokenFromCode(code, preprocessFinishToken, true) === false) {
       // If we are here, we either found a non-ASCII identifier
       // character, or something that's entirely disallowed.
       var ch = String.fromCharCode(code);
