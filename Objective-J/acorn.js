@@ -903,6 +903,23 @@ var preIfLevel = 0;
         preprocesSkipRestOfLine();
         break;
 
+
+      case _preIfdef:
+        if (preNotSkipping) {
+          preIfLevel++;
+          preprocessReadToken();
+          var ident = preprocessParseIdent();
+          var test = options.preprocessGetMacro(ident);
+          if (!test)
+            preNotSkipping = false
+          //preprocessExpect(_eol);
+          preprocessSkipToElseOrEndif(!test);
+        } else {
+          //preprocesSkipRestOfLine();
+          return finishTokenFunction(_preIfdef);
+        }
+        break;
+
       case _preIfndef:
         if (preNotSkipping) {
           preIfLevel++;
