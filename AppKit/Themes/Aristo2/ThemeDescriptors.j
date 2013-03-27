@@ -561,7 +561,6 @@ var themedButtonValues = nil,
         [@"text-color",         [CPColor colorWithCalibratedWhite:125.0 / 255.0 alpha:1.0], CPThemeStateTableDataView | CPThemeStateGroupRow],
         [@"text-color",         [CPColor colorWithCalibratedWhite:1.0 alpha:1.0], CPThemeStateTableDataView | CPThemeStateGroupRow | CPThemeStateSelectedDataView],
         [@"text-shadow-color",  [CPColor whiteColor],                CPThemeStateTableDataView | CPThemeStateGroupRow],
-        [@"text-shadow-offset",  CGSizeMake(0, 1),                   CPThemeStateTableDataView | CPThemeStateGroupRow],
         [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:0.0 alpha:0.6],                CPThemeStateTableDataView | CPThemeStateGroupRow | CPThemeStateSelectedDataView],
         [@"font",               [CPFont boldSystemFontOfSize:CPFontCurrentSystemSize],  CPThemeStateTableDataView | CPThemeStateGroupRow]
     ];
@@ -1152,9 +1151,9 @@ var themedButtonValues = nil,
     var slider = [self makeCircularSlider],
 
         trackColor = PatternColor("slider-circular-bezel.png", 30.0, 30.0),
-        trackDisabledColor = PatternColor("slider-circular-bezel.png", 30.0, 30.0),
+        trackDisabledColor = PatternColor("slider-circular-disabled-bezel.png", 30.0, 30.0),
         knobColor = PatternColor("slider-circular-knob.png", 5.0, 5.0),
-        knobDisabledColor = PatternColor("slider-circular-knob.png", 5.0, 5.0),
+        knobDisabledColor = PatternColor("slider-circular-disabled-knob.png", 5.0, 5.0),
         knobHighlightedColor = knobColor;
 
     themedCircularSliderValues =
