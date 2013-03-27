@@ -92,7 +92,7 @@ var sharedSystemLocale = nil,
         var localeIdentifier,
             language;
 
-        if (navigator)
+        if (typeof navigator != "undefined")
         {
             if (navigator.appVersion.indexOf("MSIE") >= 0)
                 language = navigator.browserLanguage.substring(0,2);
