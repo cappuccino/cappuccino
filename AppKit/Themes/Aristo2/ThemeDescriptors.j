@@ -179,6 +179,7 @@ var themedButtonValues = nil,
 
             [@"text-color",     defaultTextColor,         CPThemeStateDefault],
             [@"text-color",     defaultDisabledTextColor, CPThemeStateDefault | CPThemeStateDisabled],
+            [@"text-shadow-offset", CGSizeMake(0.0, 0.0), CPThemeStateDefault | CPThemeStateDisabled],
 
             [@"min-size",       CGSizeMake(0.0, CPButtonDefaultHeight)],
             [@"max-size",       CGSizeMake(-1.0, CPButtonDefaultHeight)],
@@ -1038,6 +1039,7 @@ var themedButtonValues = nil,
             [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:0.0 alpha:0.2], CPThemeStateSelected],
             [@"text-shadow-offset", CGSizeMake(0.0, 1.0)],
             [@"text-shadow-offset", CGSizeMake(0.0, 1.0), CPThemeStateSelected],
+            [@"text-shadow-offset", CGSizeMake(0.0, 0.0), CPThemeStateSelected | CPThemeStateDisabled],
             [@"line-break-mode",    CPLineBreakByTruncatingTail],
 
             [@"divider-thickness",  1.0],
