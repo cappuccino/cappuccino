@@ -228,7 +228,7 @@ var CPZeroKeyCode = 48,
 - (void)_clickStepper:(id)sender
 {
     // Success when clicking on the stepper if the datePicker is not selected
-    if ([[self window] firstResponder] != _datePicker)
+    if ([[self window] firstResponder] != _datePicker || !_currentTextField)
     {
         var isUp = NO;
 
@@ -1330,6 +1330,17 @@ var CPMonthDateType = 0,
     switch (_dateType)
     {
         case CPMonthDateType:
+
+            var dateNextMonth = [dateValue copy];
+
+            dateNextMonth.setDate(1);
+            dateNextMonth.setMonth(parseInt(anObjectValue) - 1);
+
+            var numberDayNextMonth = [dateNextMonth _daysInMonth];
+
+            if (numberDayNextMonth < [dateValue _daysInMonth] && dateValue.getDate() > numberDayNextMonth)
+                dateValue.setDate(numberDayNextMonth);
+
             dateValue.setMonth(parseInt(anObjectValue) - 1);
             break;
 
