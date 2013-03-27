@@ -250,7 +250,7 @@ var themedButtonValues = nil,
             [@"text-color",         [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0]],
             [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0]],
 
-            [@"text-color",         [CPColor colorWithCalibratedWhite:0.6 alpha:1.0],           CPThemeStateBordered | CPThemeStateDisabled],
+            [@"text-color",         [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:0.6],  CPThemeStateBordered | CPThemeStateDisabled],
             [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:0.6], CPThemeStateBordered | CPThemeStateDisabled],
 
             [@"min-size", CGSizeMake(32.0, 25.0)],
@@ -288,7 +288,7 @@ var themedButtonValues = nil,
             [@"text-color",         [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0]],
             [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0]],
 
-            [@"text-color",         [CPColor colorWithCalibratedWhite:0.6 alpha:1.0],           CPThemeStateBordered | CPThemeStateDisabled],
+            [@"text-color",         [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:0.6],  CPThemeStateBordered | CPThemeStateDisabled],
             [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:0.6], CPThemeStateBordered | CPThemeStateDisabled],
 
             [@"min-size",           CGSizeMake(32.0, 25.0)],
