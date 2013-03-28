@@ -2465,7 +2465,7 @@ CPTexturedBackgroundWindowMask
     // If this has an owner, dump it!
     [[aToolbar _window] setToolbar:nil];
 
-    // This is no longer out toolbar.
+    // This is no longer our toolbar.
     [_toolbar _setWindow:nil];
 
     _toolbar = aToolbar;
