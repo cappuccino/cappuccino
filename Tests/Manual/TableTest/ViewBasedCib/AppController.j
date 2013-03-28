@@ -44,6 +44,8 @@ CPLogRegister(CPLogConsole)
         if (duration)
             console.log(receiver + " " + selector + " in " + averager(duration));
     });
+
+    CPTrace("CPTableHeaderView", "_startDraggingTableColumn:at:");
 }
 
 - (void)awakeFromCib
