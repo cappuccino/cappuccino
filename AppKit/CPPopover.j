@@ -63,7 +63,7 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
     @outlet CPViewController    _contentViewController  @accessors(property=contentViewController);
     @outlet id                  _delegate               @accessors(getter=delegate);
 
-    BOOL                        _animates               @accessors(property=animates);
+    BOOL                        _animates               @accessors(getter=animates);
     int                         _appearance             @accessors(property=appearance);
     int                         _behavior               @accessors(getter=behavior);
 
@@ -151,6 +151,20 @@ var CPPopoverDelegate_popover_willShow_     = 1 << 0,
 - (BOOL)isShown
 {
     return [_popoverWindow isVisible];
+}
+
+/*!
+    Set if the popover should animate for open/close actions.
+
+    @param shouldAnimate if YES, the popover will be animated.
+*/
+- (void)setAnimates:(BOOL)shouldAnimate
+{
+    if (_animates == shouldAnimate)
+        return;
+
+    _animates = shouldAnimate;
+    [_popoverWindow setAnimates:_animates];
 }
 
 /*!
