@@ -266,7 +266,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
   // Same as input but for the current token. If options.preprocess is used
   // this can differ due to macros.
 
-  var tokInput;
+  var tokInput, preTokInput;
 
   // These store the position of the previous token, which is useful
   // when finishing a node and assigning its `end` position.
@@ -295,6 +295,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
   // These are used by the preprocess tokenizer.
 
   var preTokPos, preTokType, preTokVal, preTokStart, preTokEnd;
+  var preLastStart, preLastEnd;
   var preprocessStack = [];
   var preprocessMacroParamterListMode = false;
 
@@ -389,6 +390,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
   var _preEndif = {keyword: "endif"};
   var _preElseIf = {keyword: "elif"};
   var _prePragma = {keyword: "pragma"};
+  var _preDefined = {keyword: "defined"};
 
   var _preprocessParamItem = {type: "preprocessParamItem"}
 
@@ -418,7 +420,7 @@ if (typeof exports != "undefined" && !exports.acorn) {
 
   // Map Preprocessor keyword names to token types.
 
-  var keywordTypesPreprocess = {"define": _preDefine, "pragma": _prePragma, "ifdef": _preIfdef, "ifndef": _preIfndef, "undef": _preUndef, "endif": _preEndif, "else": _preElse, "elif": _preElseIf};
+  var keywordTypesPreprocess = {"define": _preDefine, "pragma": _prePragma, "ifdef": _preIfdef, "ifndef": _preIfndef, "undef": _preUndef, "if": _preIf, "endif": _preEndif, "else": _preElse, "elif": _preElseIf};
 
   // Punctuation token types. Again, the `type` property is purely for debugging.
 
@@ -447,14 +449,14 @@ if (typeof exports != "undefined" && !exports.acorn) {
   // binary operators with a very low precedence, that should result
   // in AssignmentExpression nodes.
 
-  var _slash = {binop: 10, beforeExpr: true}, _eq = {isAssign: true, beforeExpr: true};
-  var _assign = {isAssign: true, beforeExpr: true}, _plusmin = {binop: 9, prefix: true, beforeExpr: true};
+  var _slash = {binop: 10, beforeExpr: true, preprocess: true}, _eq = {isAssign: true, beforeExpr: true, preprocess: true};
+  var _assign = {isAssign: true, beforeExpr: true}, _plusmin = {binop: 9, prefix: true, beforeExpr: true, preprocess: true};
   var _incdec = {postfix: true, prefix: true, isUpdate: true}, _prefix = {prefix: true, beforeExpr: true};
-  var _bin1 = {binop: 1, beforeExpr: true}, _bin2 = {binop: 2, beforeExpr: true};
-  var _bin3 = {binop: 3, beforeExpr: true}, _bin4 = {binop: 4, beforeExpr: true};
-  var _bin5 = {binop: 5, beforeExpr: true}, _bin6 = {binop: 6, beforeExpr: true};
-  var _bin7 = {binop: 7, beforeExpr: true}, _bin8 = {binop: 8, beforeExpr: true};
-  var _bin10 = {binop: 10, beforeExpr: true};
+  var _bin1 = {binop: 1, beforeExpr: true, preprocess: true}, _bin2 = {binop: 2, beforeExpr: true, preprocess: true};
+  var _bin3 = {binop: 3, beforeExpr: true, preprocess: true}, _bin4 = {binop: 4, beforeExpr: true, preprocess: true};
+  var _bin5 = {binop: 5, beforeExpr: true, preprocess: true}, _bin6 = {binop: 6, beforeExpr: true, preprocess: true};
+  var _bin7 = {binop: 7, beforeExpr: true, preprocess: true}, _bin8 = {binop: 8, beforeExpr: true, preprocess: true};
+  var _bin10 = {binop: 10, beforeExpr: true, preprocess: true};
 
   // Provide access to the token types for external users of the
   // tokenizer.
@@ -903,6 +905,19 @@ var preIfLevel = 0;
         preprocesSkipRestOfLine();
         break;
 
+      case _preIf:
+        if (preNotSkipping) {
+          preIfLevel++;
+          preprocessReadToken();
+          var expr = preprocessParseExpression();
+          var test = preprocessEvalExpression(expr);
+          if (!test)
+            preNotSkipping = false
+          preprocessSkipToElseOrEndif(!test);
+        } else {
+          return finishTokenFunction(_preIf);
+        }
+        break;
 
       case _preIfdef:
         if (preNotSkipping) {
@@ -954,6 +969,7 @@ var preIfLevel = 0;
         if (preIfLevel) {
           if (preNotSkipping) {
             preIfLevel--;
+            break;
           }
         } else {
           raise(preTokStart, "#endif without #if");
@@ -979,6 +995,46 @@ var preIfLevel = 0;
     // Drop this token and read next non preprocess token
     finishToken(_preprocess);
     return readToken();
+  }
+
+  function preprocessEvalExpression(expr) {
+    return exports.walk.recursive(expr, {}, {
+      BinaryExpression: function(node, st, c) {
+        var left = c(node.left, st), right = c(node.right, st);
+        switch(node.operator) {
+          case "+":
+            return left + right;
+          case "-":
+            return left - right;
+          case "*":
+            return left * right;
+          case "/":
+            return left / right;
+          case "%":
+            return left % right;
+          case "<":
+            return left < right;
+          case ">":
+            return left > right;
+          case "=":
+          case "==":
+          case "===":
+            return left === right;
+          case "<=":
+            return left <= right;
+          case ">=":
+            return left >= right;
+          case "&&":
+            return left && right;
+          case "||":
+            return left || right;
+        }
+      },
+      Literal: function(node, st, c) {
+        return node.value;
+      }
+
+    }, {});
   }
 
   function getTokenFromCode(code, finishToken, allowEndOfLineToken) {
@@ -1119,6 +1175,7 @@ var preIfLevel = 0;
 
   function preprocessReadToken() {
     preTokStart = tokPos;
+    preTokInput = input;
     if (tokPos >= inputLen) return _eof;
     var code = input.charCodeAt(tokPos);
     if (preprocessMacroParamterListMode && code !== 41 && code !== 44) { // ')', ','
@@ -1155,12 +1212,21 @@ var preIfLevel = 0;
     preprocessSkipSpace();
   }
 
+  // Continue to the next token.
+
+  function preprocessNext() {
+    preLastStart = tokStart;
+    preLastEnd = tokEnd;
+    //lastEndLoc = tokEndLoc;
+    return preprocessReadToken();
+  }
+
   // Predicate that tests whether the next token is of the given
   // type, and if yes, consumes it as a side effect.
 
   function preprocessEat(type) {
     if (preTokType === type) {
-      preprocessReadToken();
+      preprocessNext();
       return true;
     }
   }
@@ -1175,8 +1241,105 @@ var preIfLevel = 0;
 
   function preprocessParseIdent() {
     var ident = preTokType === _name ? preTokVal : preTokType.keyword || raise(preTokStart, "Expected Macro identifier");
-    preprocessReadToken();
+    preprocessNext();
     return ident;
+  }
+
+  // Parse an  expression — either a single token that is an
+  // expression, an expression started by a keyword like `defined`,
+  // or an expression wrapped in punctuation like `()`.
+
+  function preprocessParseExpression() {
+    return preprocessParseExprOps();
+  }
+
+  // Start the precedence parser.
+
+  function preprocessParseExprOps() {
+    return preprocessParseExprOp(preprocessParseMaybeUnary(), -1);
+  }
+
+  // Parse binary operators with the operator precedence parsing
+  // algorithm. `left` is the left-hand side of the operator.
+  // `minPrec` provides context that allows the function to stop and
+  // defer further parser to one of its callers when it encounters an
+  // operator that has a lower precedence than the set it is parsing.
+
+  function preprocessParseExprOp(left, minPrec) {
+    var prec = preTokType.binop;
+    if (prec) {
+      if (!preTokType.preprocess) raise(preTokStart, "Unsupported macro operator");
+      if (prec > minPrec) {
+        var node = startNodeFrom(left);
+        node.left = left;
+        node.operator = preTokVal;
+        preprocessNext();
+        node.right = preprocessParseExprOp(preprocessParseMaybeUnary(), prec);
+        var node = preprocessFinishNode(node, /&&|\|\|/.test(node.operator) ? "LogicalExpression" : "BinaryExpression");
+        return preprocessParseExprOp(node, minPrec);
+      }
+    }
+    return left;
+  }
+
+  // Parse an unary expression if possible
+
+  function preprocessParseMaybeUnary() {
+    if (preTokType.preprocess && preTokType.prefix) {
+      var node = startNode();
+      node.operator = tokVal;
+      node.prefix = true;
+      preprocessNext();
+      node.argument = preprocessParseMaybeUnary();
+      return preprocessFinishNode(node, "UnaryExpression");
+    }
+    return preprocessParseExprAtom();
+  }
+
+  // Parse an atomic macro expression — either a single token that is an
+  // expression, an expression started by a keyword like `defined`,
+  // or an expression wrapped in punctuation like `()`.
+
+  function preprocessParseExprAtom() {
+    switch (preTokType) {
+    case _name:
+      return preprocessParseIdent();
+
+    case _num: case _string:
+      return preprocessParseStringNumLiteral();
+
+    case _parenL:
+      var tokStart1 = preTokStart;
+      preprocessNext();
+      var val = preprocessParseExpression();
+      val.start = tokStart1;
+      val.end = preTokEnd;
+      preprocessExpect(_parenR, "Expected closing ')' in macro expression");
+      return val;
+
+    case _preDefined:
+      var node = startNode();
+      preprocessNext();
+      node.expr = preprocessParseExpression();
+      return preprocessFinishNode(node, "DefinedExpression");
+
+    default:
+      unexpected();
+    }
+  }
+
+  function preprocessParseStringNumLiteral() {
+    var node = startNode();
+    node.value = preTokVal;
+    node.raw = preTokInput.slice(preTokStart, preTokEnd);
+    preprocessNext();
+    return preprocessFinishNode(node, "Literal");
+  }
+
+  function preprocessFinishNode(node, type) {
+    node.type = type;
+    node.end = preLastEnd;
+    return node;
   }
 
   function readToken(forceRegexp) {
