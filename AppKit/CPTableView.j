@@ -1205,7 +1205,7 @@ NOT YET IMPLEMENTED
 - (void)selectColumnIndexes:(CPIndexSet)columns byExtendingSelection:(BOOL)shouldExtendSelection
 {
     // If we're out of range, just return
-    if (([columns firstIndex] != CPNotFound && [columns firstIndex] < 0) || [columns lastIndex] >= [self numberOfColumns])
+    if (([columns firstIndex] != CPNotFound && [columns firstIndex] < 0) || [columns lastIndex] >= [self numberOfColumns] || (!shouldExtendSelection && [columns isEqualToIndexSet:_selectedColumnIndexes]) || (shouldExtendSelection && [columns count] === 0))
         return;
 
     // We deselect all rows when selecting columns.
