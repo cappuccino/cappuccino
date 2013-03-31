@@ -167,6 +167,22 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     return self;
 }
+
+- (void)_initSubclass
+{
+    _BlockDeselectView = function(view, row, column)
+    {
+        [view unsetThemeState:CPThemeStateSelectedDataView];
+        [_disclosureControlsForRows[row] unsetThemeState:CPThemeStateSelected];
+    };
+
+    _BlockSelectView = function(view, row, column)
+    {
+        [view setThemeState:CPThemeStateSelectedDataView];
+        [_disclosureControlsForRows[row] setThemeState:CPThemeStateSelected];
+    };
+}
+
 /*!
     In addition to standard delegation, the outline view also supports data
     source delegation. This method sets the data source object. Just like the
@@ -717,20 +733,6 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         frame = CGRectMake(CGRectGetMinX(dataViewFrame) - disclosureWidth, CGRectGetMinY(dataViewFrame), disclosureWidth, CGRectGetHeight(dataViewFrame));
 
     return frame;
-}
-
-/*!
-    @ignore
-    Select or deselect rows, this is overridden because we need to change the color or the outline control.
-*/
-- (void)_performSelection:(BOOL)select forRow:(CPInteger)rowIndex context:(id)context
-{
-    [super _performSelection:select forRow:rowIndex context:context];
-
-    var control = _disclosureControlsForRows[rowIndex],
-        selector = select ? @"setThemeState:" : @"unsetThemeState:";
-
-    [control performSelector:CPSelectorFromString(selector) withObject:CPThemeStateSelected];
 }
 
 /*!

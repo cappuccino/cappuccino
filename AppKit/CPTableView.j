@@ -271,6 +271,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPInteger           _draggedColumnIndex;
     BOOL                _draggedColumnIsSelected;
     CPArray             _differedColumnDataToRemove;
+
+    Function            _BlockDeselectView;
+    Function            _BlockSelectView;
 }
 
 /*!
@@ -413,7 +416,22 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (!_sortDescriptors)
         _sortDescriptors = [];
 
+    [self _initSubclass];
+
     [self _startObservingFirstResponder];
+}
+
+- (void)_initSubclass
+{
+    _BlockDeselectView = function(view, row, column)
+    {
+        [view unsetThemeState:CPThemeStateSelectedDataView];
+    };
+
+    _BlockSelectView = function(view, row, column)
+    {
+        [view setThemeState:CPThemeStateSelectedDataView];
+    };
 }
 
 /*!
@@ -5677,13 +5695,3 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 }
 
 @end
-
-var _BlockDeselectView = function(view, column, row)
-{
-    [view unsetThemeState:CPThemeStateSelectedDataView];
-};
-
-var _BlockSelectView = function(view, column, row)
-{
-    [view setThemeState:CPThemeStateSelectedDataView];
-};
