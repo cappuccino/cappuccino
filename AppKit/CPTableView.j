@@ -3063,19 +3063,12 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [dragView setColumnClipView:columnClipView];
     _draggedColumnIsSelected = [self isColumnSelected:columnIndex];
 
-    var columnLeft = CGRectGetMinX(columnRect);
+    var columnLeft = CGRectGetMinX(columnRect),
+        offset = CGPointMake(columnLeft, CGRectGetMinY(visibleRect));
 
-    [self _enumerateViewsInRows:_exposedRows columns:[CPIndexSet indexSetWithIndex:columnIndex] usingBlock:function(dataView,  row, column, stop)
+    [self _enumerateViewsInRows:_exposedRows columns:[CPIndexSet indexSetWithIndex:columnIndex] usingBlock:function(dataView, row, column, stop)
     {
-        var dataViewFrame = [self frameOfDataViewAtColumn:column row:row];
-
-        dataViewFrame.origin.x -= columnLeft;
-
-        // Offset by table header height - scroll position
-        dataViewFrame.origin.y -= CGRectGetMinY(visibleRect);
-        [dataView setFrame:dataViewFrame];
-
-        [columnClipView addSubview:dataView];
+        [self _addDraggedDataView:dataView toView:columnClipView forColumn:column row:row offset:offset];
 
         delete (_dataViewsForRows[row][tableColumnUID]);
     }];
@@ -3099,6 +3092,19 @@ Your delegate can implement this method to avoid subclassing the tableview to ad
     [_selectedColumnIndexes removeIndex:columnIndex];
 
     return dragView;
+}
+
+- (void)_addDraggedDataView:(CPView)aDataView toView:(CPView)aSuperview forColumn:(CPInteger)column row:(CPInteger)row offset:(CGPoint)offset
+{
+    var dataViewFrame = [self frameOfDataViewAtColumn:column row:row];
+
+    dataViewFrame.origin.x -= offset.x;
+    // Offset by table header height - scroll position
+    dataViewFrame.origin.y -= offset.y;
+
+    [aDataView setFrame:dataViewFrame];
+
+    [aSuperview addSubview:aDataView];
 }
 
 /*!

@@ -1044,6 +1044,25 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
     else
         [super removeTableColumn:aTableColumn];
 }
+
+- (void)_addDraggedDataView:(CPView)aDataView toView:(CPView)aSuperview forColumn:(CPInteger)column row:(CPInteger)row offset:(CGPoint)offset
+{
+    var control;
+
+    [super _addDraggedDataView:aDataView toView:aSuperview forColumn:column row:row offset:offset];
+
+    if (_tableColumns[column] === _outlineTableColumn && (control = _disclosureControlsForRows[row]))
+    {
+        var controlFrame = [self frameOfOutlineDisclosureControlAtRow:row];
+
+        controlFrame.origin.x -= offset.x;
+        controlFrame.origin.y -= offset.y;
+
+        [control setFrame:controlFrame];
+        [aSuperview addSubview:control];
+    }
+}
+
 /*!
     @ignore
     We override this because we need a special behavior for the outline
@@ -1057,67 +1076,6 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
         return [self _frameOfOutlineDataViewAtRow:aRow];
 
     return [super frameOfDataViewAtColumn:aColumn row:aRow];
-}
-
-/*!
-    @ignore
-    We need to offset the dataview and add the disclosure triangle.
-*/
-- (CPView)_dragViewForColumn:(int)theColumnIndex event:(CPEvent)theDragEvent offset:(CGPoint)theDragViewOffset
-{
-    var dragView = [[_CPColumnDragView alloc] initWithLineColor:[self gridColor]],
-        tableColumn = [[self tableColumns] objectAtIndex:theColumnIndex],
-        defaultRowHeight = [self valueForThemeAttribute:@"default-row-height"],
-        bounds = CGRectMake(0.0, 0.0, [tableColumn width], CGRectGetHeight([self exposedRect]) + defaultRowHeight),
-        columnRect = [self rectOfColumn:theColumnIndex],
-        headerView = [tableColumn headerView],
-        row = [_exposedRows firstIndex];
-
-    while (row !== CPNotFound)
-    {
-        var dataView = [self _newDataViewForRow:row tableColumn:tableColumn],
-            dataViewFrame = [self frameOfDataViewAtColumn:theColumnIndex row:row];
-
-        // Only one column is ever dragged so we just place the view at
-        dataViewFrame.origin.x = 0.0;
-
-        // Offset by table header height - scroll position
-        dataViewFrame.origin.y = (CGRectGetMinY(dataViewFrame) - CGRectGetMinY([self exposedRect])) + defaultRowHeight;
-        [dataView setFrame:dataViewFrame];
-
-        [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
-
-
-        if (tableColumn === _outlineTableColumn)
-        {
-            // first inset the dragview
-            var indentationWidth = ([self levelForRow:row] + 1) * [self indentationPerLevel];
-
-            dataViewFrame.origin.x += indentationWidth;
-            dataViewFrame.size.width -= indentationWidth;
-
-            [dataView setFrame:dataViewFrame];
-        }
-
-        [dragView addSubview:dataView];
-
-        row = [_exposedRows indexGreaterThanIndex:row];
-    }
-
-    // Add the column header view
-    var headerFrame = [headerView frame];
-    headerFrame.origin = CGPointMakeZero();
-
-    var columnHeaderView = [[_CPTableColumnHeaderView alloc] initWithFrame:headerFrame];
-    [columnHeaderView setStringValue:[headerView stringValue]];
-    [columnHeaderView setThemeState:[headerView themeState]];
-    [dragView addSubview:columnHeaderView];
-
-    [dragView setBackgroundColor:[CPColor whiteColor]];
-    [dragView setAlphaValue:0.7];
-    [dragView setFrame:bounds];
-
-    return dragView;
 }
 
 /*!
@@ -1270,7 +1228,7 @@ var CPOutlineViewCoalesceSelectionNotificationStateOff  = 0,
 
     var outlineColumn = [[self tableColumns] indexOfObjectIdenticalTo:[self outlineTableColumn]];
 
-    if (![columns containsIndex:outlineColumn] ||  [self outlineTableColumn] === _draggedColumn)
+    if (![columns containsIndex:outlineColumn] || outlineColumn === _draggedColumnIndex)
         return;
 
     var rowArray = [];
