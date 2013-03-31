@@ -319,9 +319,6 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     if (_image == anImage)
         return;
 
-    if ([_image delegate] === self)
-        [[CPNotificationCenter defaultCenter] removeObserver:self name:CPImageDidLoadNotification object:_image];
-
     _image = anImage;
     _flags |= _CPImageAndTextViewImageChangedFlag;
 
@@ -347,6 +344,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
 - (void)imageDidLoad:(CPNotification)aNotification
 {
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:CPImageDidLoadNotification object:_image];
     _flags |= _CPImageAndTextViewImageChangedFlag;
     [self setNeedsLayout];
 }
